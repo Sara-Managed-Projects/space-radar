@@ -77,6 +77,9 @@ try {
     sr.unplaced.setVisible(false);
     await snap('a45-1-sky-before', 'the sky sphere towards the galaxy\'s centre from Trappist-1\'s stage, the stars with no distance held off (the before)', 5000);
     sr.unplaced.setVisible(true);
+    sr.stars3d.setVisible(false);
+    await snap('a45-1-sky-only', 'only the stars with no distance, to see where they are (the placed stars held off for this one picture)', 3000);
+    sr.stars3d.setVisible(true);
     await snap('a45-1-sky-after', `the same with ${out.unplaced.drawn} of ${out.unplaced.count} stars with no distance on it (the rest are fainter than the shutter's 7.5)`, 3000);
     const garnet = need('hyg-u106916');
     if (garnet) {
@@ -85,7 +88,9 @@ try {
       await snap('a45-2-garnet-card', 'the Garnet Star taken as a tap takes it: a card with no distance, the camera where it was', 4000);
       const after = sr.camera.position;
       out.garnetCameraMoved = Math.hypot(after.x - before.x, after.y - before.y, after.z - before.z);
-      if (!/Not measured/.test(String(out.scenes[out.scenes.length - 1].card))) out.problems.push('the Garnet Star\'s card does not say the distance is not measured');
+      // the card keeps its rows under "About it": what must not be on screen is any distance (the placeholder of its direction is 100 000 light-years)
+      if (/99\s?9\d\d\s*light|100\s?000\s*light/i.test(document.body.innerText)) out.problems.push('a distance is on screen for a star with none');
+      out.garnetRecord = { noDistance: sr.recordById('hyg-u106916').meta.noDistance, distanceRow: null };
       sr.deselect();
     }
   }

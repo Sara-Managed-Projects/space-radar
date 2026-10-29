@@ -156,6 +156,9 @@ function layerRec(id) {
   return layerIndex.get(id);
 }
 const LATER_LAYERS = new Set(['stars', 'exoplanets', 'deep-sky']);
+// 0079 r15-a45: the four compact catalogues of release 1.5.0 stages A4 and A5 (data/a45.js): deferred like an on-demand layer, but small, so not `load: 'on-demand'`
+// (tests/test_layer_boot.mjs keeps that word for a catalogue-sized layer). ctx.loadMoreCatalogues fetches them.
+const MORE_CATALOGUES = new Set(['extremes-more', 'pulsars', 'beyond-more', 'quasars']);
 const LATER_LAYERS_MS = 3000;
 /** How long after sr:layers-ready the controls hint is imported and may show (ui/keyhint.js): after
  * the later layers and the aurora, when the first view has settled and before a visitor gives up. */
@@ -1732,6 +1735,8 @@ export async function boot({ setStatus } = {}) {
   }
 
   function positionOfRecord(record) {
+    // 0079 r15-a45: a star with a direction and no distance has no position to point at: the HUD's chevron would print the made-up distance of its direction
+    if (record && record.meta && record.meta.noDistance) return null;
     // A world is drawn where scene/worlds.js put its DISC -- nearer than it is for the planets
     // (PLANET_VIEW, and the card says so). Flying to the true position would arrive at empty sky.
     if (record && record.klass === 'world') return worlds.drawnPositionOf(record.id);
@@ -3013,7 +3018,7 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   const saveData = typeof navigator !== 'undefined' && shouldSaveData(navigator.connection);
   // `load: 'on-demand'` (registry/layers.yaml) is the same wait by design: the active catalogue
   // is 7 MB for 16 587 objects, and nobody asked for it until they ticked the box.
-  for (const l of LAYERS) l.deferred = !!(saveData && l.heavy) || l.load === 'on-demand';
+  for (const l of LAYERS) l.deferred = !!(saveData && l.heavy) || l.load === 'on-demand' || MORE_CATALOGUES.has(l.id); // 0079 r15-a45: the stage A4 and A5 catalogues wait for a visitor who needs them
   if (saveData) window.dispatchEvent(new CustomEvent('sr:quality', { detail: { level: 'data-saver' } }));
   const ordered = [...LAYERS].filter((l) => l.enabled !== false).sort((a, b) => (a.priority || 50) - (b.priority || 50));
 
@@ -3072,7 +3077,7 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   // 0079 r15-a45: begin -- the compact catalogues of stages A4 and A5 (data/a45.js, layers `extremes-more`, `pulsars`, `beyond-more`, `quasars`;
   // about 140 kB in all). Not at the idle moment: when a visitor does something that needs them (the search box taking focus, a ladder
   // stage, a link, a trip), or ticks one's box (loadLayerNow). The IAU's names of exoplanet hosts join the planets' aliases with them.
-  const CATALOGUE_LAYERS = ['extremes-more', 'beyond-more', 'pulsars', 'quasars'];
+  const CATALOGUE_LAYERS = [...MORE_CATALOGUES];
   let cataloguesLoad = null;
   ctx.loadMoreCatalogues = () => {
     if (!cataloguesLoad) {

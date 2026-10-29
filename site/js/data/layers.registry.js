@@ -159,7 +159,7 @@ export const LAYER_ROWS = [
   },
   {
     "id": "extremes-more",
-    "display": "More magnetars, black holes and dead stars",
+    "display": "Magnetars and dead stars",
     "group": "beyond",
     "enabled": true,
     "moments": {
@@ -199,7 +199,7 @@ export const LAYER_ROWS = [
   },
   {
     "id": "beyond-more",
-    "display": "The Local Group, clusters and the farthest galaxies",
+    "display": "Local Group and clusters",
     "group": "beyond",
     "enabled": true,
     "moments": {

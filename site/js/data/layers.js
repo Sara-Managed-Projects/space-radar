@@ -640,14 +640,14 @@ export const LAYERS = [
   },
   // 0079 r15-a45: begin
   // Stage A4 (stars) and A5 (beyond the Milky Way) of release 1.5.0. Four layers whose rows come from compact files under
-  // site/data/a45/ (scripts/gen_a45_data.py), fetched by data/a45.js the first time one is needed -- `load: 'on-demand'`: the search
+  // site/data/a45/ (scripts/gen_a45_data.py), fetched by data/a45.js the first time one is needed -- deferred by main.js (MORE_CATALOGUES): the search
   // box taking focus, a ladder stage, a link or the layer's box ticked (main.js ctx.loadMoreCatalogues) -- and never at boot. Each row
   // is a fact sheet in the shape of registry/exotics.yaml's, so the exotics' card, search row and glyph serve it; the three that are
   // thousands strong are small marks, and the pulsars among them do not blink (scene/pulsars.js keeps to the fact sheets').
   {
     id: 'extremes-more',
     ladderOnly: true,
-    display: 'More magnetars, black holes and dead stars',
+    display: 'Magnetars and dead stars',
     klass: 'exotic',
     source: 'bundled',
     parse: null,
@@ -656,7 +656,6 @@ export const LAYERS = [
     moments: { wonder: true, now: false, next: false },
     defaultOn: true,
     noModel: true,
-    load: 'on-demand',
     fetchLazy: () => import('./a45.js').then(async (m) => exoticRecordsFrom(m.extremeRows(await m.loadExtremes()))),
     select: all,
     budget: { maxItems: 400 },
@@ -679,7 +678,6 @@ export const LAYERS = [
     moments: { wonder: false, now: false, next: false },
     defaultOn: false,
     noModel: true,
-    load: 'on-demand',
     fetchLazy: () => import('./a45.js').then(async (m) => exoticRecordsFrom(m.pulsarRows(await m.loadPulsars()))),
     select: all,
     budget: { maxItems: 6000 },
@@ -693,7 +691,7 @@ export const LAYERS = [
   {
     id: 'beyond-more',
     ladderOnly: true,
-    display: 'The Local Group, clusters and the farthest galaxies',
+    display: 'Local Group and clusters',
     klass: 'dso',
     source: 'bundled',
     parse: null,
@@ -702,7 +700,6 @@ export const LAYERS = [
     moments: { wonder: true, now: false, next: false },
     defaultOn: true,
     noModel: true,
-    load: 'on-demand',
     // Two kinds of row in one file: dwarf galaxies of the Local Group (dso rows, parsed as data/dso.json's are) and the far things
     // that carry a redshift (clusters, the record-redshift galaxies), which the exotics' card knows how to date.
     fetchLazy: () => import('./a45.js').then(async (m) => {
@@ -730,7 +727,6 @@ export const LAYERS = [
     moments: { wonder: false, now: false, next: false },
     defaultOn: false,
     noModel: true,
-    load: 'on-demand',
     fetchLazy: () => import('./a45.js').then(async (m) => exoticRecordsFrom(m.quasarRows(await m.loadQuasars()))),
     select: all,
     budget: { maxItems: 1200 },

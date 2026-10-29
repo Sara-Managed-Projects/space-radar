@@ -205,7 +205,7 @@ check(Math.abs(polar[1] - Math.cos(23.4392911 * Math.PI / 180)) < 1e-9, 'the equ
 // the layers
 for (const id of ['extremes-more', 'pulsars', 'beyond-more', 'quasars']) {
   const l = LAYERS.find((x) => x.id === id);
-  check(l && l.load === 'on-demand' && typeof l.fetchLazy === 'function' && l.ladderOnly, `layer ${id}: on demand, fetched by a module of its own, ladder only`);
+  check(l && l.load !== 'on-demand' && typeof l.fetchLazy === 'function' && l.ladderOnly, `layer ${id}: fetched by a module of its own, ladder only`);
 }
 check(LAYERS.find((x) => x.id === 'pulsars').moments.wonder === false && LAYERS.find((x) => x.id === 'quasars').moments.wonder === false, 'the two thousands-strong layers start off, as the exoplanets do');
 check(LAYERS.find((x) => x.id === 'extremes-more').moments.wonder === true && LAYERS.find((x) => x.id === 'beyond-more').moments.wonder === true, 'the two small ones start on');

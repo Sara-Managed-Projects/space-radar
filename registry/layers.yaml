@@ -135,11 +135,11 @@ layers:
   # Stage A4 (stars) and A5 (beyond the Milky Way) of release 1.5.0: compact catalogues under site/data/a45/, written by
   # scripts/gen_a45_data.py (sources and licences in its head and in CREDITS.md section 3m), fetched by data/a45.js the first time a
   # visitor needs them (the search box, a ladder stage, a link, or the box ticked) and never at boot. Rows have the shape of
-  # exotics.yaml's, so the exotics' card serves them. Only `pulsars` says `load: on-demand` here (the check wants a thousand-plus layer for it);
-  # data/layers.js says it of all four, and main.js loads them together. The pulsars and the quasars are thousands of marks and start off, as the
+  # exotics.yaml's, so the exotics' card serves them. None says `load: on-demand` (that word is for a catalogue-sized layer, tests/test_layer_boot.mjs);
+  # main.js defers all four (MORE_CATALOGUES) and loads them together. The pulsars and the quasars are thousands of marks and start off, as the
   # exoplanets do (public #271); the other two are a hundred or so and start on.
   - id: extremes-more
-    display: More magnetars, black holes and dead stars
+    display: Magnetars and dead stars
     group: beyond
     moments: {wonder: on, now: off, next: off}
     source: bundled
@@ -161,10 +161,9 @@ layers:
     card: exotic
     select: {all: true}
     budget: {max_items: 6000}
-    load: on-demand
 
   - id: beyond-more
-    display: The Local Group, clusters and the farthest galaxies
+    display: Local Group and clusters
     group: beyond
     moments: {wonder: on, now: off, next: off}
     source: bundled
