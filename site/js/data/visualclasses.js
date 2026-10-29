@@ -1513,6 +1513,8 @@ export const VISUAL_CLASSES = [
 "deep-sky",
 "exotics",
 "far-bodies",
+"moons",
+"companions",
 "hand-kept-sites"
 ]
 }

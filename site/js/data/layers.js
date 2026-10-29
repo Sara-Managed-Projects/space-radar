@@ -951,6 +951,58 @@ export const LAYERS = [
     priority: 26,
     sentence: 'Eight dwarf planets, from Ceres in the asteroid belt to Sedna far past Neptune, and the two visitors from another star, each where it is today on its own orbit.',
   },
+  // 0079 a3: begin
+  {
+    // Mirrors registry/layers.yaml `moons` (release 1.5.0, internal i#1061). 439 moons of Jupiter, Saturn, Uranus, Neptune and
+    // Pluto that worlds.yaml has no row for; site/data/moons.json, built into records by data/moons.js, which is fetched with
+    // the layer (after the first visit: main.js LATER_LAYERS). `noModel`: nobody has a shape for most of them, and a satellite
+    // bus drawn on a 3 km rock would be the one lie this layer could tell; the glyph is the honest drawing and the card says so.
+    id: 'moons',
+    display: 'Moons of the planets',
+    klass: 'moon',
+    source: 'bundled',
+    parse: null,
+    fetchLazy: () => import('./moons.js').then((m) => m.fetchMoons()),
+    propagator: 'kepler',
+    frame: 'sun-inertial',
+    moments: { wonder: false, now: false, next: false },
+    defaultOn: false,
+    select: all,
+    budget: { maxItems: 600 },
+    colour: C.world,
+    glyph: 'moon',
+    sizePx: 8,
+    noModel: true,
+    nearKm: 0,
+    card: 'moon',
+    priority: 60,
+    sentence: 'Every moon of Jupiter, Saturn, Uranus, Neptune and Pluto that the map had no record of, each on its orbit on 1 January 2026.',
+  },
+  {
+    // Mirrors registry/layers.yaml `companions`. The asteroids' and far worlds' moons, the dwarf planets' moons, and five large
+    // objects beyond Neptune that may be dwarf planets (a `farKind: 'candidate'` asteroid row each, as the far-bodies are).
+    id: 'companions',
+    display: 'Asteroid and TNO moons',
+    klass: 'moon',
+    source: 'bundled',
+    parse: null,
+    fetchLazy: () => import('./moons.js').then((m) => m.fetchCompanions()),
+    propagator: 'kepler',
+    frame: 'sun-inertial',
+    moments: { wonder: false, now: false, next: false },
+    defaultOn: false,
+    select: all,
+    budget: { maxItems: 800 },
+    colour: C.asteroid,
+    glyph: 'moon',
+    sizePx: 8,
+    noModel: true,
+    nearKm: 0,
+    card: 'moon',
+    priority: 61,
+    sentence: 'The moons of asteroids and of the far worlds, the dwarf planets’ moons among them, and the large objects beyond Neptune that may be dwarf planets.',
+  },
+  // 0079 a3: end
   {
     id: 'comets',
     display: 'Comets',

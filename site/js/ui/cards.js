@@ -45,6 +45,7 @@ import {
   UNITS,
  article, typeWords, NAKED_EYE_LIMIT } from '../copy/en.js';
 import '../copy/en.later.js';
+import { sizeClause, lapClause } from './moonfacts.js'; // 0079 a3
 import { propagate } from '../propagate/index.js';
 import { launchLabel } from './labels.js';
 import { realModelFor, padVehicleShown } from '../scene/realmodels.js';
@@ -276,6 +277,9 @@ function farLead(record, m, T) {
     const now = m && Number.isFinite(m.tMs) ? m.tMs : Date.now();
     return t(periMs !== null && now < periMs ? T.leadInterstellarIn : T.leadInterstellarOut, { name });
   }
+  // 0079 a3: begin
+  if (kind === 'candidate' && T.leadCandidate) return t(T.leadCandidate, { name });
+  // 0079 a3: end
   if (kind === 'dwarf' && T.leadDwarf) {
     const region = farRegion(record);
     const lead = region === 'belt' ? T.leadDwarfBelt : region === 'farBeyond' ? T.leadDwarfFarBeyond : region === 'beyond' ? T.leadDwarfBeyond : T.leadDwarf;
@@ -630,6 +634,25 @@ const TEMPLATES = {
       lum !== null && lum > 0 && lum < 0.5 ? t(T.dimmer, { n: `${fmt.smart(lum * 100)}%` }) : null,
     ]);
   },
+
+  // 0079 a3: begin
+  // A moon of the moons and companions layers (data/moons.js): whose it is, then how big, how long its lap, when it was found.
+  moon(record, ctx, m, passInfo, T) {
+    const md = meta(record);
+    const name = displayName(record);
+    const planet = pick(md, 'planetName');
+    const year = pickNumber(md, 'discYear');
+    let lead;
+    if (planet) {
+      lead = t(pick(md, 'backwards') === true ? T.leadBackwards : T.lead, { name, planet: String(planet) });
+    } else {
+      const parent = String(pick(md, 'parentName') || pick(md, 'parentLabel') || '');
+      const far = pick(md, 'parentKind') === 'far';
+      lead = t(far ? T.leadFarWorld : year !== null ? T.leadAsteroidKnown : T.leadAsteroid, { name, parent, year: year !== null ? String(Math.round(year)) : '' });
+    }
+    return buildSentence(lead, [sizeClause(md), lapClause(md), planet && year !== null ? t(T.found, { year: String(Math.round(year)) }) : null]);
+  },
+  // 0079 a3: end
 
   world(record, ctx, m, passInfo, T) {
     const md = meta(record);
@@ -1233,6 +1256,7 @@ function derivedDrawingLine(record, T, tMs) {
   }
   if (!klass) return null;
   if (klass === 'storm') return T.storm;
+  if (klass === 'moon') return pick(meta(record), 'drawn') || null; // 0079 a3: a point on its orbit, and why
   if (klass === 'site' && pick(meta(record), 'siteKind') === 'feature' && T.feature) return T.feature; // 0077 W3-d: a named place, nothing standing on it
   if (klass === 'earthevent') return COPY.earthEvent.drawn;
   let entry = null;

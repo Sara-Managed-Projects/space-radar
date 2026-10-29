@@ -275,7 +275,13 @@ export function elementsToState(elIn, tMs, muIn) {
 export function kepler(record, tMs) {
   if (!record || !record.elements || !Number.isFinite(tMs)) return null;
   const frame = record.frame || 'sun-inertial';
-  const mu = frame.startsWith('earth') ? GM_EARTH : GM_SUN;
+  // 0079 a3: begin
+  // In a frame that is neither the Sun's nor the Earth's (`jupiter-inertial`: a moon of Jupiter, data/moons.js) the Sun's GM
+  // is the wrong one, and the Earth's is no better. Such an element set carries its own, and is read with it; the Sun's frames
+  // and the Earth's are read as they always were.
+  const own = record.elements.muKm3S2;
+  const mu = frame.startsWith('earth') ? GM_EARTH : frame !== 'sun-inertial' && Number.isFinite(own) && own > 0 ? own : GM_SUN;
+  // 0079 a3: end
   let st;
   try {
     st = elementsToState(record.elements, tMs, mu);

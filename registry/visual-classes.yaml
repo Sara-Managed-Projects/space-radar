@@ -149,6 +149,10 @@ domains:
       galaxy: {credit: "Reid, M. J. et al. 2019", source: "scripts/build-galaxy.py (Reid et al. 2019, ApJ 885, 131)"}
       exotics: {credit: "each read from the Wikipedia article's infobox", source: registry/exotics.yaml}
       far-bodies: {credit: "Orbits: NASA/JPL Small-Body Database", source: "https://ssd-api.jpl.nasa.gov/sbdb.api"}
+      # 0079 a3: begin
+      moons: {credit: "Moons: NASA/JPL Solar System Dynamics and Horizons", source: "site/data/moons.json"}
+      companions: {credit: "Moons of asteroids and far worlds: NASA/JPL Small-Body Database and the papers named on each card", source: "site/data/companions.json"}
+      # 0079 a3: end
       hand-kept-sites: {credit: "Landing sites, dishes and pads: each row of `registry/sites.yaml` names its reference", source: registry/sites.yaml}
       lightning: {credit: "NOAA nowCOAST", source: "registry/weather.yaml earth-lightning"}
       earth-events: {credit: "Fires, volcanoes and sea ice: NASA EONET", source: "registry/weather.yaml earth-events"}
@@ -807,4 +811,4 @@ classes:
       drawn: "As its members."
       rights: "As its members."
     records:
-      - {domain: layers, ids: [worlds, deep-sky, exotics, far-bodies, hand-kept-sites]}
+      - {domain: layers, ids: [worlds, deep-sky, exotics, far-bodies, hand-kept-sites, moons, companions]} # 0079 a3

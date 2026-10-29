@@ -21,6 +21,7 @@ import { launchLabel } from './labels.js';
 import { realModelFor } from '../scene/realmodels.js';
 import { sunlitState } from '../scene/shadow.js';
 import { periodMsOf } from '../scene/orbitline.js';
+import { moonRows } from './moonfacts.js'; // 0079 a3
 import { gmst, eciToEcef, ecefToGeodetic, geodeticToEcef, parseFrame, bodyFixedToSpherical, worldRadiusKm, toStage, spinPeriodHours, moonLapHours, yearDays } from '../propagate/frames.js';
 import { predictPasses } from '../sky/passes.js';
 import '../copy/en.facts.js';
@@ -756,6 +757,11 @@ export function rightNowRows(record, m, passInfo) {
     }
   }
 
+  // 0079 a3: begin
+  // A moon of the moons and companions layers: its lap, its distance, its size, who found it, and how far its place on the orbit can be trusted.
+  if (klassOf(record) === 'moon') rows.push(...moonRows(record));
+  // 0079 a3: end
+
   // A world's turn and year (spec 0061 §4: a planet leads with its distance, a turn and a year),
   // from astronomy-engine, the library that places and turns it (propagate/frames.js). A TURN,
   // against the stars, and the label says so: Mercury turns in 59 days and its day is 176.
@@ -1025,6 +1031,8 @@ export function classLine(record, m) {
   // elements that do not exist.
   if (pick(meta(record), 'unplaceable')) return COPY.cls.unplaced;
   const cls = m.cls || (record && record.cls) || '';
+  // 0079 a3: a moon whose place is illustrative has an orbit that is real, and says whose; the debris sentence names a catalogue it does not come from.
+  if (klassOf(record) === 'moon' && cls === 'illustrative' && COPY.moonCard) return COPY.moonCard.clsIllustrative; // 0079 a3
   switch (cls) {
     case 'measured':
       return COPY.cls.measured;

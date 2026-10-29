@@ -287,6 +287,44 @@ layers:
     select: {all: true}      # the curation IS the record list, as for the oddities
     budget: {max_items: 20}
 
+  # 0079 a3: begin
+  # Every moon the map had no record of (release 1.5.0, internal i#1061): 439 of Jupiter, Saturn, Uranus, Neptune and Pluto, each
+  # on its orbit for 2026-01-01 (JPL Horizons) carried along by JPL's mean period, with its card. `bundled`: site/data/moons.json,
+  # written by scripts/gen_moons.py from NASA/JPL Solar System Dynamics (public domain); data/moons.js builds the records when
+  # the layer loads, which is after the first visit (main.js LATER_LAYERS), never at boot. `kepler` in a frame per moon
+  # (`jupiter-inertial` and so on): propagate/kepler.js takes the element set's own mu in a frame that is neither the Sun's
+  # nor the Earth's. Off by default: a hundred and fifteen dots round Jupiter are a map of their own, and a search or a link
+  # to one switches the layer on. The 21 moons worlds.yaml already holds are not here.
+  - id: moons
+    display: Moons of the planets
+    group: solar-system
+    moments: {wonder: off, now: off, next: off}
+    source: bundled
+    propagator: per-record
+    frame: per-record
+    style: {kind: glyph, glyph: moon, colour: world}
+    card: moon
+    select: {all: true}
+    budget: {max_items: 600}
+
+  # The companions JPL's Small-Body Database lists for asteroids and far worlds (486 confirmed), the nine moons of the dwarf planets
+  # that its tables do not hold (Dysnomia, Hiʻiaka, Namaka, Vanth, Weywot, Xiangliu, MK 2, Actaea, Ilmarë), and five large objects beyond
+  # Neptune that may be dwarf planets (Salacia, Varda, Ixion, 2002 XV93, 2017 OF201). `bundled`: site/data/companions.json,
+  # written by scripts/gen_moons.py. The records are `kepler` (drawn at the parent's place when JPL holds no orbit round it)
+  # or `companion` (propagate/companion.js: the parent's orbit plus the moon's own), so the layer says `per-record`.
+  - id: companions
+    display: Asteroid and TNO moons
+    group: solar-system
+    moments: {wonder: off, now: off, next: off}
+    source: bundled
+    propagator: per-record
+    frame: per-record
+    style: {kind: glyph, glyph: moon, colour: world}
+    card: moon
+    select: {all: true}
+    budget: {max_items: 800}
+  # 0079 a3: end
+
   - id: comets
     display: Comets
     group: solar-system
