@@ -451,7 +451,7 @@ vec3 wxDeep( vec3 c, vec2 uv ) {
   float gap = ( 1.0 - smoothstep( uWxDeep.x, uWxDeep.y, dot( c, vec3( 0.3, 0.5, 0.2 ) ) ) ) * uWxDeep.w * uWxNear.w;
   if ( gap <= 0.0 ) return c;
   vec3 nrm = normalize( vNormalW );
-  vec3 vd = normalize( cameraPosition - vPosW );
+  vec3 vd = normalize( -vFromCamW );
   vec3 east = normalize( vEastW );
   vec3 nth = cross( nrm, east );
   vec3 q = normalize( vPosL );

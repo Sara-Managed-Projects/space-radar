@@ -54,6 +54,8 @@ export const MAX_PX = 1400;   // CSS px: half a quad is never wider (past it a g
 export const CULL_PX = 3;     // the cluster's radius on the screen below which it is not drawn
 export const FADE_PX = 40;    // and from which, going smaller, it fades out
 export const FOOT_PX = 4.5;   // the footprint of one member, CSS px of radius, for the crowd
+export const FIELD_NEAR_MLY = 150; // 0079 r151: the deep field's needle is drawn only from within this of its own line of sight (full light), ...
+export const FIELD_FAR_MLY = 600;  // ... and not at all from farther than this: from there it is a ray out of the Sun, which it is not (it is a keyhole's view)
 export const FIELD_LIGHT = 0.5; // 0077 W3-f: a deep field's galaxies at half a cluster member's floor (look run 1: the needle read as a white line)
 const SUN_INERTIAL = 'sun-inertial';
 const LY_KM = 9460730472580.8;
@@ -82,6 +84,30 @@ export function crowd(radiusPx, count) {
 export function tileRadiusPx(radiusScene, distanceScene, fovYRad, viewH) {
   if (!(distanceScene > radiusScene)) return Infinity;
   return (Math.asin(radiusScene / distanceScene) / (fovYRad / 2)) * (viewH / 2);
+}
+
+/**
+ * The distance from a point to the segment a-b, all in the same unit (arrays of three). Pure.
+ */
+export function distToSegment(p, a, b) {
+  const ab = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+  const ap = [p[0] - a[0], p[1] - a[1], p[2] - a[2]];
+  const len2 = ab[0] * ab[0] + ab[1] * ab[1] + ab[2] * ab[2];
+  const k = len2 > 0 ? Math.min(1, Math.max(0, (ap[0] * ab[0] + ap[1] * ab[1] + ap[2] * ab[2]) / len2)) : 0;
+  return Math.hypot(p[0] - (a[0] + ab[0] * k), p[1] - (a[1] + ab[1] * k), p[2] - (a[2] + ab[2] * k));
+}
+/**
+ * The deep field's light by how far the camera is from the needle's own line (million light-years): 1 within FIELD_NEAR_MLY, 0 beyond
+ * FIELD_FAR_MLY, smooth between. The field is real (7 607 galaxies, each at its own redshift's distance) and it is three arcminutes
+ * wide and thirty billion light-years long: seen from anywhere but along it, it is a line, and a line out of the Sun is what 1.5.0's
+ * Local Group rung showed as a dotted ray. Along it, or inside it, it is the field Webb saw. Pure.
+ */
+export function fieldGain(perpMly) {
+  if (!(perpMly > FIELD_NEAR_MLY)) return 1;
+  if (!(perpMly < FIELD_FAR_MLY)) return 0;
+  const k = (perpMly - FIELD_NEAR_MLY) / (FIELD_FAR_MLY - FIELD_NEAR_MLY);
+  const e = 1 - k * k * (3 - 2 * k);
+  return e;
 }
 
 /** The bin's rows, read and checked. Pure. */
@@ -302,6 +328,7 @@ export function createLayer(THREE, env = {}) {
     uScale: { value: 1 }, uPxPerRad: { value: 1000 }, uMinPx: { value: MIN_PX }, uMaxPx: { value: MAX_PX }, uGain: { value: 1 },
   };
   const state = { loaded: false, failed: null, manifest: null, tile: null, bytes: 0, fileBytes: 0, placedFor: null, calls: 0 };
+  let needle = null;     // 0079 r151: the deep field's line of sight in scene units, { a, b }
   const clusters = [];   // { info, mesh, material, uniforms, radiusPx, culled, fade, crowd }
   const quasars = [];    // { q, mesh, uniforms, culled }
   const sphere = new THREE.Sphere();
@@ -439,6 +466,17 @@ export function createLayer(THREE, env = {}) {
       ok = place(stage, A, { x: d[0] * r, y: d[1] * r, z: d[2] * r }, c.mesh) && ok;
     }
     for (const s of quasars) ok = place(stage, A, s.q.posKm, s.mesh) && ok;
+    // 0079 r151: the deep field's line of sight, from its nearest galaxy to its farthest, in this stage's scene units
+    needle = null;
+    const slices = clusters.filter((c) => c.field);
+    if (slices.length && stage.toSceneInto) {
+      const d = slices[0].info.centre.dir;
+      const lo = Math.min(...slices.map((c) => (c.info.distMlyRange ? c.info.distMlyRange[0] : c.info.distMly)));
+      const hi = Math.max(...slices.map((c) => (c.info.distMlyRange ? c.info.distMlyRange[1] : c.info.distMly)));
+      const a = stage.toSceneInto({ x: d[0] * lo * MLY_KM, y: d[1] * lo * MLY_KM, z: d[2] * lo * MLY_KM }, SUN_INERTIAL, new THREE.Vector3(), stage.tMs);
+      const b = stage.toSceneInto({ x: d[0] * hi * MLY_KM, y: d[1] * hi * MLY_KM, z: d[2] * hi * MLY_KM }, SUN_INERTIAL, new THREE.Vector3(), stage.tMs);
+      if (a && b) needle = { a: [a.x, a.y, a.z], b: [b.x, b.y, b.z] };
+    }
     if (!ok) return false;
     shared.uScale.value = MLY_KM / stage.unitKm;
     state.placedFor = key;
@@ -479,6 +517,11 @@ export function createLayer(THREE, env = {}) {
       if (c.radiusPx < CULL_PX) { c.culled = 'size'; continue; }
       c.crowd = Number.isFinite(c.radiusPx) ? crowd(c.radiusPx, c.info.count) : 1;
       c.fade = tileFade(c.radiusPx) * c.crowd * (c.field ? FIELD_LIGHT : 1); // 0077 W3-f: the deep field's thousands of specks, fainter
+      if (c.field && needle) { // 0079 r151: and only from along its own line
+        const cp = camera.position;
+        c.fade *= fieldGain(distToSegment([cp.x, cp.y, cp.z], needle.a, needle.b) / unit);
+        if (!(c.fade > 0.002)) { c.culled = 'off the line of sight'; continue; }
+      }
       c.uniforms.uFade.value = c.fade;
       c.mesh.visible = true;
       c.culled = null;

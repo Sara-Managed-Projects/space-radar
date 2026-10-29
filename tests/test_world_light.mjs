@@ -27,6 +27,25 @@ const near = (a, b, eps) => Math.abs(a - b) <= eps;
 const DEG = Math.PI / 180;
 const measured = [];
 
+// ---- 0. the vertex stage is camera-relative (release 1.5.1: Pluto and Charon drawn as stepped slabs) --------
+// On the Sun's stage Pluto stands 5 300 units (1 000 000 km each) from the origin and is 0.001188 units in
+// radius; a float32 step at 5 300 is 4.9e-4. A shader that multiplies modelMatrix and then viewMatrix puts
+// the vertices on that grid (40 % of Pluto's radius). modelViewMatrix is composed in double on the CPU.
+{
+  const { WORLD_VERT } = W;
+  check(/modelViewMatrix \* vec4\( position, 1\.0 \)/.test(WORLD_VERT) && /gl_Position = projectionMatrix \* mvPos;/.test(WORLD_VERT),
+    'WORLD_VERT places the vertex by modelViewMatrix (camera-relative, composed in double on the CPU)');
+  check(!/viewMatrix \* worldPos|cameraPosition/.test(WORLD_VERT) && !/cameraPosition/.test(WORLD_FRAG) && !/vPosW/.test(WORLD_FRAG),
+    'neither world shader works from the world position and cameraPosition (each a float32 of thousands of units)');
+  const f = Math.fround;
+  const stepAt = (x) => f(x * (1 + 2 ** -23)) - f(x);
+  const plutoUnits = 1188.3 / 1e6;
+  check(stepAt(5300) > 0.3 * plutoUnits, 'the premise holds: a float32 step at Pluto\'s place on the Sun\'s stage is a third of its radius or more');
+  // The camera-relative way: the difference of two places, taken in double, is a small number a float holds.
+  const pos = 5300.123456789; const cam = pos + 0.004; const vtx = 0.000812;
+  check(Math.abs(f((pos + vtx) - cam) - (vtx - 0.004)) < 1e-9, 'camera-relative maths keeps a vertex to a billionth of a unit');
+}
+
 // ---- 1. no bands --------------------------------------------------------------------------------
 // The cel shader was: shadow = base * 0.55 * vec3( 0.88, 0.94, 1.14 ), highlight = base * 1.25, two
 // smoothsteps at 0.02 and 0.55 of width uBand, a uAmbient floor and a widened uTerminator.

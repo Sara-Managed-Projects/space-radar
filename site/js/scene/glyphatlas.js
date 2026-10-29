@@ -243,10 +243,10 @@ const SHAPES = {
     }
     paint(ctx, polygon(pts), R);
   },
-  // a disc with one orbiting dot: a planet, and its star implied
-  exoplanet(ctx, cx, cy, R) {
-    paint(ctx, disc(cx, cy, R * 0.55), R);
-    paint(ctx, disc(cx + R * 0.72, cy - R * 0.55, R * 0.22), R * 0.5);
+  // a plain disc, in the exoplanet green: a planet, at its star. (Until 1.5.1 it had a small second dot, an orbiting planet; at the 5 px it is drawn
+  // on the Nearby stars rung, with six thousand of them on by default, that read as a green dot with a tail and was taken for a fault.)
+  exoplanet(ctx, cx, cy, R) { // 0079 r151
+    paint(ctx, disc(cx, cy, R * 0.62), R);
   },
   // a soft blob: a disc inside a wide ring, the way a nebula looks in a small telescope
   dso(ctx, cx, cy, R) {

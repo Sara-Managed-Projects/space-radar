@@ -142,11 +142,11 @@ const t = Date.UTC(2026, 9, 28);
 cam.position.set(0, 4e4, 1e4); cam.lookAt(0, 0, 0); cam.updateMatrixWorld(true);
 field.update(cam, renderer, true, t, null);
 st = field.state();
-check(st.visible && st.drawn === 4101 && st.orbitVerts === 4101 * F.ORBIT_SAMPLES && st.calls <= 3, `every comet's orbit is drawn in the same few calls (${st.drawn} orbits, ${st.calls} calls)`);
-check(st.bytes < 12e6, `its GPU memory is fixed and modest (${(st.bytes / 1e6).toFixed(1)} MB for ${st.comets})`);
+check(st.visible && st.drawn >= 1 && st.drawn <= F.ORBIT_MAX && st.orbitVerts === st.drawn * F.ORBIT_SAMPLES && st.calls <= 3, `a few orbits are drawn, not all of them (${st.drawn} of ${st.comets}, ${st.calls} calls)`);
+check(st.bytes < 1.5e6, `its GPU memory is fixed and modest (${(st.bytes / 1e6).toFixed(2)} MB for ${st.comets})`);
 {
   const lines = field.group.children.find((o) => o.isLineSegments);
-  check(lines && lines.geometry.index.count === 4101 * (F.ORBIT_SAMPLES - 1) * 2 && lines.geometry.drawRange.count === 4101 * (F.ORBIT_SAMPLES - 1) * 2, 'the orbits are one indexed line mesh');
+  check(lines && lines.geometry.index.count === F.ORBIT_MAX * (F.ORBIT_SAMPLES - 1) * 2 && lines.geometry.drawRange.count === st.drawn * (F.ORBIT_SAMPLES - 1) * 2, 'the orbits are one indexed line mesh with room for ORBIT_MAX, drawn for the few');
   const pts = field.group.children.find((o) => o.isPoints);
   const shown = pts.geometry.getAttribute('aShown').array;
   check(shown.slice(0, 4101).filter((v) => v === 0).length === 60, 'the comets that have a glyph are not drawn as points too');
@@ -154,16 +154,36 @@ check(st.bytes < 12e6, `its GPU memory is fixed and modest (${(st.bytes / 1e6).t
   const tails = field.group.children.find((o) => o.isMesh);
   check(tails.geometry.drawRange.count === st.tails * 2 * F.TAIL_SEGMENTS * 6, 'one ribbon of triangles per tail and kind');
 }
-// a tier keeps the brightest
+// a tier draws more of the famous and bright ones, never more than ORBIT_MAX, never a sungrazer's unless it is the selected one
 {
   let tier = 0;
   const small = F.createCometField(THREE, { load: async () => many, recordsFor: () => [], tier: () => tier });
   await small.whenLoaded();
   small.update(cam, renderer, true, t, null);
-  check(small.state().drawn === F.tierLimit(0), `on the lowest tier ${small.state().drawn} orbits are drawn (${F.tierLimit(0)})`);
+  const d0 = small.state().drawn;
   tier = 1; small.update(cam, renderer, true, t + 2e6, null);
-  check(small.state().drawn === F.tierLimit(1), 'the middle tier draws 2 000');
+  const d1 = small.state().drawn;
+  tier = 2; small.update(cam, renderer, true, t + 4e6, null);
+  const d2 = small.state().drawn;
+  check(d0 <= d1 && d1 <= d2 && d2 <= F.ORBIT_MAX, `a tier draws as many or more orbits (${d0}, ${d1}, ${d2}; at most ${F.ORBIT_MAX})`);
   small.dispose();
+}
+{
+  // the rows: 1 300 sungrazers and a few real ones
+  const rows = [];
+  for (let i = 0; i < 1300; i++) rows.push({ name: `C/2010 X${i} (SOHO)`, q: 0.004, tpMs: t, mag: 8 + (i % 5) });
+  rows.push({ name: '    1P/Halley', q: 0.58, tpMs: t - 40 * 365e3 * 86400e3 / 1e3, mag: 20 });
+  rows.push({ name: 'C/1995 O1 (Hale-Bopp)', q: 0.91, tpMs: t - 9000 * 86400e3, mag: NaN });
+  rows.push({ name: 'C/2026 B1 (Bright)', q: 0.4, tpMs: t - 20 * 86400e3, mag: 4 });
+  rows.push({ name: '5D/Brorsen', q: 0.6, tpMs: t, mag: 3 });
+  rows.push({ name: 'C/2025 K1 (Kreutz)', q: 0.005, tpMs: t, mag: 2 });
+  const pick = F.orbitRows(rows, t, 2, -1);
+  const names = pick.map((i) => rows[i].name.trim());
+  check(pick.length <= F.ORBIT_MAX && new Set(pick).size === pick.length, `at most ${F.ORBIT_MAX} orbits, none twice (${pick.length})`);
+  check(names.includes('1P/Halley') && names.includes('C/1995 O1 (Hale-Bopp)') && names.includes('C/2026 B1 (Bright)'), 'the famous ones and the bright one are drawn');
+  check(!pick.some((i) => rows[i].q < F.SUNGRAZER_AU) && !names.includes('5D/Brorsen'), 'no sungrazer, no defunct comet and no coronagraph fragment');
+  check(F.orbitRows(rows, t, 2, 1304)[0] === 1304 && F.orbitRows(rows, t, 0, 1304).includes(1304), 'a selected sungrazer has its orbit, first, on any tier');
+  check(F.orbitRows(rows, t, 0, -1).length < F.orbitRows(rows, t, 2, -1).length || F.orbitRows(rows, t, 2, -1).length <= 3, 'the lowest tier draws fewer');
 }
 // a tap finds a comet and gives its record
 {
@@ -205,6 +225,9 @@ check(!field.group.visible && field.state().calls === 0, 'off when the layer is 
 {
   const pts = field.group.children.find((o) => o.isPoints).geometry.getAttribute('position').array;
   check([...pts.slice(0, 4101 * 3)].every((x) => Number.isFinite(x)), 'every place is a number');
+  const shownAll = field.group.children.find((o) => o.isPoints).geometry.getAttribute('aShown').array;
+  const rAll = [...Array(field.count()).keys()].map((i) => Math.hypot(pts[i * 3], pts[i * 3 + 1], pts[i * 3 + 2]));
+  check(rAll.every((r, i) => r <= F.POINT_MAX_AU * 1.0001 || shownAll[i] === 0), 'no place beyond POINT_MAX_AU is drawn: no dotted ray out of the Sun');
 }
 field.dispose();
 

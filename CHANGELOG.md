@@ -13,9 +13,25 @@ tagged, and their dates are the day the last change in each landed.
 
 ### Fixed
 
+- Pluto and Charon are round again, with smooth relief, when you fly close to them from the Solar
+  System view: on real graphics cards the worlds' vertices were placed with too little precision
+  that far from the Sun, and each ball drew as stair-stepped slabs. The same drawing code now
+  places every world, ring, moon and haze shell relative to the camera.
+- With the sidebar folded, the "where you are" bar at the top left no longer covers the round
+  menu button: it starts beside it, and the scale badge with it.
 - `tools/cdp.mjs`: a failed `cdpShot` / `cdpCast` / `cdpInput` step now rejects in the page with
   its reason, and a Chrome that dies mid-run ends the run with the reason, instead of both waiting
   forever.
+
+## [1.5.1] - 2026-10-29
+
+Fixes for what 1.5.0 showed on real screens. Pluto and Charon are round again: far from the map's centre the
+graphics card's 32-bit arithmetic snapped their surfaces into slabs, and every world now places its surface
+relative to the camera (Titan's haze edge and the deep clouds are smooth too). The comets no longer pile into
+a band through the Sun: the chosen comet and a few famous ones show their orbits, the rest are quiet points.
+The Hubble Ultra Deep Field's galaxies are drawn only near their own line of sight instead of as a ray from the
+Sun, the Milky Way's cluster symbols appear only where the view reaches them, exoplanets are plain green
+discs, and the breadcrumbs no longer sit on the menu handle.
 
 ## [1.5.0] - 2026-10-29
 

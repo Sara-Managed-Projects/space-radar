@@ -56,6 +56,14 @@ export const INFERRED_LIGHT = 0.6;
 export const INFERRED_SIZE = 1.6;
 export const LITE = [0.55, 0.8];
 export const SELECTED_PX = 24;
+// 0079 r151: a mark of the Milky Way (any class but a galaxy) is drawn only at the scale where it means something. Its distance from the camera, against
+// the camera's distance from the Sun (how far out the view is), is full below VIEW_WIN[0] and gone above VIEW_WIN[1]; and once the camera is farther from
+// the Sun than MW_WIN[0] (gone at MW_WIN[1]), million light-years, the whole galaxy's marks are one point, so none is drawn. From the Nearby stars rung that
+// is the few clusters near the Sun, not six thousand rings among the stars. Far ones are drawn at most GALACTIC_MAX_PX wide and at GALACTIC_LIGHT of the light.
+export const VIEW_WIN = [3, 8];
+export const MW_WIN = [0.12, 0.5];
+export const GALACTIC_MAX_PX = 30;
+export const GALACTIC_LIGHT = 0.6;
 export const PICK_MIN_PX = 12;
 export const PICK_BEHIND_PX = 6;
 /** Flags (byte 19 of a row): bit 0 inferred, bit 1 range assumed, bits 2-4 the method, bit 5 a Caldwell number. */
@@ -211,6 +219,16 @@ export function glyphPx(radiusMly, dMly, cls, inferred, pxPerRad) {
   const wide = (2 * radiusMly / Math.max(1e-9, dMly)) * pxPerRad;
   const floor = (cls <= 1 ? MIN_PX : MIN_PX_CLASS) * (inferred ? INFERRED_SIZE : 1);
   return Math.min(MAX_PX, Math.max(wide, floor));
+}
+
+const smooth = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
+/**
+ * 0079 r151: how much of a Milky Way mark's light is drawn, 0..1: `dMly` is the mark's distance from the camera, `viewMly` the camera's distance from the
+ * Sun (the scale of the view), both million light-years. Pure; the vertex shader does the same sum.
+ */
+export function galacticFade(dMly, viewMly) {
+  if (!(viewMly > 0) || !(dMly >= 0)) return 0;
+  return (1 - smooth(VIEW_WIN[0], VIEW_WIN[1], dMly / viewMly)) * (1 - smooth(MW_WIN[0], MW_WIN[1], viewMly));
 }
 
 /** The tile's light as its radius on the screen shrinks from FADE_PX to CULL_PX: 1 to 0, smooth. Pure. */
@@ -393,6 +411,7 @@ uniform float uSelected;
 uniform vec2 uLite;
 uniform vec2 uInfer;
 uniform float uScale;      // scene units per million light-years
+uniform float uView;       // 0079 r151: the camera's distance from the Sun, million light-years (galacticFade)
 uniform float uPxPerRad;
 uniform float uPixelRatio;
 uniform vec2 uMinPx;       // a galaxy's floor, any other class's floor
@@ -408,15 +427,22 @@ void main() {
   float dMly = max(1e-9, length(mv.xyz) / uScale);
   float wide = 2.0 * aRadius / dMly * uPxPerRad;
   float floorPx = (aClass < 1.5 ? uMinPx.x : uMinPx.y) * mix(1.0, uInfer.y, aInferred);
-  float size = clamp(wide, floorPx, uMaxPx);
   float sel = step(abs(aIndex - uSelected), 0.5);
+  // 0079 r151: a Milky Way mark (not a galaxy) is quiet unless the view is at its scale: smaller when far, fainter, gone when out of the galaxy
+  float gal = step(1.5, aClass);
+  float ratio = dMly / max(uView, 1.0e-9);
+  float quiet = mix(1.0, (1.0 - smoothstep(${VIEW_WIN[0].toFixed(1)}, ${VIEW_WIN[1].toFixed(1)}, ratio)) * (1.0 - smoothstep(${MW_WIN[0].toFixed(2)}, ${MW_WIN[1].toFixed(2)}, uView)), gal);
+  quiet = max(quiet, sel);
+  float cap = mix(uMaxPx, ${GALACTIC_MAX_PX.toFixed(1)}, gal * smoothstep(1.5, 4.0, ratio));
+  float size = min(clamp(wide, floorPx, uMaxPx), max(cap, floorPx));
   size = max(size, sel * ${SELECTED_PX.toFixed(1)});
   float m = aMag + 5.0 * log(dMly * 1.0e6 / 32.6156) / log(10.0);
   float lit = aMag > 90.0 ? 0.3 : clamp((19.0 - m) / 11.0, 0.0, 1.0);
   float spread = clamp((floorPx * 2.5) / size, 0.18, 1.0);
   float past = wide > uMaxPx ? uMaxPx / wide : 1.0;
-  vLight = (uLite.x + uLite.y * lit) * spread * spread * past * mix(1.0, uInfer.x, aInferred);
+  vLight = (uLite.x + uLite.y * lit) * spread * spread * past * mix(1.0, uInfer.x, aInferred) * mix(1.0, ${GALACTIC_LIGHT.toFixed(2)} * quiet, gal);
   vLight = mix(vLight, max(vLight, 1.2), sel);
+  if (quiet < 0.01) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);   // not at this scale: outside the clip volume, no fragments
   vSoft = aInferred;
   vColour = aColour;
   vClass = aClass;
@@ -526,7 +552,7 @@ export function createLayer(THREE, env = {}) {
   group.matrixAutoUpdate = false;
   group.visible = false;
   const uniforms = {
-    uScale: { value: 1 }, uPxPerRad: { value: 1000 }, uPixelRatio: { value: 1 },
+    uScale: { value: 1 }, uView: { value: 1e9 }, uPxPerRad: { value: 1000 }, uPixelRatio: { value: 1 },
     uMinPx: { value: new THREE.Vector2(MIN_PX, MIN_PX_CLASS) }, uMaxPx: { value: MAX_PX }, uGain: { value: 1 }, uFade: { value: 1 }, uSelected: { value: -1 },
     uLite: { value: new THREE.Vector2(LITE[0], LITE[1]) }, uInfer: { value: new THREE.Vector2(INFERRED_LIGHT, INFERRED_SIZE) },
   };
@@ -653,6 +679,7 @@ export function createLayer(THREE, env = {}) {
     camera.updateMatrixWorld();
     _m.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     frustum.setFromProjectionMatrix(_m);
+    uniforms.uView.value = camera.position.distanceTo(_c) / uniforms.uScale.value; // 0079 r151: how far out the view is (galacticFade)
     state.radiusPx = tileRadiusPx(R, camera.position.distanceTo(_c), fovY, viewH);
     if (!frustum.intersectsSphere(sphere)) { group.visible = false; state.culled = 'frustum'; return; }
     if (state.radiusPx < CULL_PX) { group.visible = false; state.culled = 'size'; return; }
@@ -681,6 +708,7 @@ export function createLayer(THREE, env = {}) {
       const dx = ((e[0] * x + e[4] * y + e[8] * z + e[12]) / w - ndcX) * halfW, dy = ((e[1] * x + e[5] * y + e[9] * z + e[13]) / w - ndcY) * halfH;
       const px = Math.sqrt(dx * dx + dy * dy);
       if (px > 30) continue;
+      if (T.cls[i] >= 2 && i !== selectedRow && galacticFade(w / uniforms.uScale.value, uniforms.uView.value) < 0.2) continue; // 0079 r151: not drawn at this scale, so not to be tapped
       const dMly = T.distLy[i] / LY_PER_MLY;
       const reach = Math.min(24, Math.max(PICK_MIN_PX, glyphPx(A.radius[i], dMly, T.cls[i], T.inferred[i], uniforms.uPxPerRad.value) / 2 + 4));
       if (px > reach) continue;
