@@ -65,6 +65,12 @@ Chrome for this project on the same machine takes the same lock the same way: wa
 directory exists, take it over when its pid is gone or it has not been touched for six minutes,
 remove it when done. `cdp.mjs` run by hand does not take it: run one at a time, or wrap it.
 
+A `cdp.mjs` step that fails answers the page instead of leaving it waiting: `await cdpShot()`,
+`cdpCast()` and `cdpInput()` reject with the reason (an unwritable `--shot-dir`, a capture the
+protocol refused), so a probe can catch it, and an uncaught one ends the run with `PAGE THREW`.
+If Chrome dies mid-run every call still waiting is rejected and the run ends with `DRIVER FAILED:
+chrome exited ...` rather than hanging until whatever cap wraps it.
+
 | flag | what |
 |---|---|
 | `--port=8760` | the port the walk serves `--dir` on; its Chromes use the ports from `--port` + 80 up |
