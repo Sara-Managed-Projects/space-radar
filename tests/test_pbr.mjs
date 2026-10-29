@@ -193,7 +193,7 @@ for (const word of ['WebGLRenderTarget', 'PMREMGenerator', 'CubeCamera', 'Effect
   const RM = readFileSync(join(JS, 'scene/realmodels.js'), 'utf8');
   check(/import\('\.\/pbr\.js'\)/.test(RM) && /import\('\.\.\/data\/modellooks\.js'\)/.test(RM), 'realmodels.js fetches pbr.js and the looks table with the loader');
   check(!/^import [^(]*from '\.\/pbr\.js'/m.test(RM), 'realmodels.js imports pbr.js only when a file is loaded');
-  check(/applyToon\(scene, entry\.colour, null, entry\.file\)/.test(RM), 'a file is restyled knowing which file it is, for its stated look');
+  check(/applyToon\(scene, entry\.colour, null, entry\.file, entry\)/.test(RM), 'a file is restyled knowing its stated look and the body entry for its own tint');
   const { MODEL_LOOKS } = await import(pathToFileURL(join(JS, 'data/modellooks.js')).href);
   const yaml = readFileSync(join(ROOT, 'registry/models.yaml'), 'utf8');
   const stated = [...yaml.matchAll(/^ {2}- \{id: [\w-]+, file: site\/models\/([\w.-]+\.glb),.*?\blook: (\w+)/gm)];
