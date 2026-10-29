@@ -1491,6 +1491,10 @@ export const VISUAL_CLASSES = [
 "worlds",
 "deep-sky",
 "exotics",
+"extremes-more",
+"pulsars",
+"beyond-more",
+"quasars",
 "far-bodies",
 "hand-kept-sites"
 ]
