@@ -481,7 +481,7 @@ export const VISUAL_CLASSES = [
 "falcon9-stage2",
 "h2a-stage2",
 "kosmos3m-stage2",
-"r7-8k72k"
+"r7-8k72k",
 "sls-block1"
 ],
 "model_kinds": [
@@ -1527,7 +1527,11 @@ export const VISUAL_CLASSES = [
 "far-bodies",
 "moons",
 "companions",
-"hand-kept-sites"
+"hand-kept-sites",
+"observatories",
+"launch-sites",
+"landing-sites",
+"meteor-showers"
 ]
 }
 }

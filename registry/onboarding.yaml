@@ -158,7 +158,7 @@ features:
   - id: layers
     name: What to show (the layers, colour by, sound, density)
     files: [site/js/ui/whattoshow.js]
-    surfaces: ["rail:show", "want:wantNebulae", "want:wantFigures", "want:wantPulsars", "want:wantWeather", "want:wantUnplaced"] # 0079 r15-a45: the Stars layer's stars with no distance
+    surfaces: ["rail:show", "want:wantNebulae", "want:wantFigures", "want:wantPulsars", "want:wantWeather", "want:wantUnplaced", "want:wantCometField"] # 0079 r15-a45: the Stars layer's stars with no distance; 0079 a2: the Comets layer's tails
     step: layers
   - id: share
     name: Share (the link, the postcard, photo mode, the embed)
