@@ -958,7 +958,7 @@ export const LAYERS = [
     // the layer (after the first visit: main.js LATER_LAYERS). `noModel`: nobody has a shape for most of them, and a satellite
     // bus drawn on a 3 km rock would be the one lie this layer could tell; the glyph is the honest drawing and the card says so.
     id: 'moons',
-    display: 'Every moon',
+    display: 'Moons of the planets',
     klass: 'moon',
     source: 'bundled',
     parse: null,
@@ -982,7 +982,7 @@ export const LAYERS = [
     // Mirrors registry/layers.yaml `companions`. The asteroids' and far worlds' moons, the dwarf planets' moons, and five large
     // objects beyond Neptune that may be dwarf planets (a `farKind: 'candidate'` asteroid row each, as the far-bodies are).
     id: 'companions',
-    display: 'Moons of asteroids and far worlds',
+    display: 'Asteroid and TNO moons',
     klass: 'moon',
     source: 'bundled',
     parse: null,

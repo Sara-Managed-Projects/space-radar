@@ -296,7 +296,7 @@ layers:
   # nor the Earth's. Off by default: a hundred and fifteen dots round Jupiter are a map of their own, and a search or a link
   # to one switches the layer on. The 21 moons worlds.yaml already holds are not here.
   - id: moons
-    display: Every moon
+    display: Moons of the planets
     group: solar-system
     moments: {wonder: off, now: off, next: off}
     source: bundled
@@ -313,7 +313,7 @@ layers:
   # written by scripts/gen_moons.py. The records are `kepler` (drawn at the parent's place when JPL holds no orbit round it)
   # or `companion` (propagate/companion.js: the parent's orbit plus the moon's own), so the layer says `per-record`.
   - id: companions
-    display: Moons of asteroids and far worlds
+    display: Asteroid and TNO moons
     group: solar-system
     moments: {wonder: off, now: off, next: off}
     source: bundled

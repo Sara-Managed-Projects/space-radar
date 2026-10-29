@@ -381,7 +381,7 @@ export const LAYER_ROWS = [
   },
   {
     "id": "moons",
-    "display": "Every moon",
+    "display": "Moons of the planets",
     "group": "solar-system",
     "enabled": true,
     "moments": {
@@ -401,7 +401,7 @@ export const LAYER_ROWS = [
   },
   {
     "id": "companions",
-    "display": "Moons of asteroids and far worlds",
+    "display": "Asteroid and TNO moons",
     "group": "solar-system",
     "enabled": true,
     "moments": {
