@@ -672,6 +672,10 @@ jobs:
         run: python3 scripts/build_deep_lmc.py --check
       - name: every extreme object has a source and sits where its source says (spec 0028 step 7)
         run: node tests/test_exotics.mjs
+      # 0079 r15-a45: begin
+      - name: the stars and beyond catalogues (IAU names, stars with no distance, pulsars, magnetars, black holes, white and brown dwarfs, the Local Group, clusters, record-redshift galaxies, quasars) are whole, sourced, not doubled and found by search (release 1.5.0 stage A4 and A5)
+        run: node tests/test_a45.mjs
+      # 0079 r15-a45: end
       - name: every rung of the breadcrumb and every stop of the edge trip names something that exists (spec 0028 step 8)
         run: node tests/test_ladder_ui.mjs
       - name: labels name the selection, its train and the nearest notable things, never the catalogue (spec 0026 req 5)

@@ -131,6 +131,62 @@ layers:
     select: {all: true}
     budget: {max_items: 200}
 
+  # 0079 r15-a45: begin
+  # Stage A4 (stars) and A5 (beyond the Milky Way) of release 1.5.0: compact catalogues under site/data/a45/, written by
+  # scripts/gen_a45_data.py (sources and licences in its head and in CREDITS.md section 3m), fetched by data/a45.js the first time a
+  # visitor needs them (the search box, a ladder stage, a link, or the box ticked) and never at boot. Rows have the shape of
+  # exotics.yaml's, so the exotics' card serves them. None says `load: on-demand` (that word is for a catalogue-sized layer, tests/test_layer_boot.mjs);
+  # main.js defers all four (MORE_CATALOGUES) and loads them together. The pulsars and the quasars are thousands of marks and start off, as the
+  # exoplanets do (public #271); the other two are a hundred or so and start on.
+  - id: extremes-more
+    display: Magnetars and dead stars
+    group: beyond
+    moments: {wonder: on, now: off, next: off}
+    source: bundled
+    propagator: static
+    frame: sun-inertial
+    style: {kind: glyph, glyph: exotic, colour: exotic}
+    card: exotic
+    select: {all: true}
+    budget: {max_items: 400}
+
+  - id: pulsars
+    display: Pulsars
+    group: beyond
+    moments: {wonder: off, now: off, next: off}
+    source: bundled
+    propagator: static
+    frame: sun-inertial
+    style: {kind: glyph, glyph: exotic, colour: exotic}
+    card: exotic
+    select: {all: true}
+    budget: {max_items: 6000}
+
+  - id: beyond-more
+    display: Local Group and clusters
+    group: beyond
+    moments: {wonder: on, now: off, next: off}
+    source: bundled
+    propagator: static
+    frame: sun-inertial
+    style: {kind: glyph, glyph: dso, colour: dso}
+    card: dso
+    select: {all: true}
+    budget: {max_items: 400}
+
+  - id: quasars
+    display: Quasars
+    group: beyond
+    moments: {wonder: off, now: off, next: off}
+    source: bundled
+    propagator: static
+    frame: sun-inertial
+    style: {kind: glyph, glyph: exotic, colour: exotic}
+    card: exotic
+    select: {all: true}
+    budget: {max_items: 1200}
+  # 0079 r15-a45: end
+
   - id: stations
     display: Crewed stations
     group: around-earth

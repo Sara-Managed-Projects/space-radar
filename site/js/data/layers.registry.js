@@ -158,6 +158,86 @@ export const LAYER_ROWS = [
     "train": null
   },
   {
+    "id": "extremes-more",
+    "display": "Magnetars and dead stars",
+    "group": "beyond",
+    "enabled": true,
+    "moments": {
+      "wonder": true,
+      "now": false,
+      "next": false
+    },
+    "source": "bundled",
+    "sources": null,
+    "propagator": "static",
+    "frame": "sun-inertial",
+    "card": "exotic",
+    "glyph": "exotic",
+    "colour": "exotic",
+    "maxItems": 400,
+    "train": null
+  },
+  {
+    "id": "pulsars",
+    "display": "Pulsars",
+    "group": "beyond",
+    "enabled": true,
+    "moments": {
+      "wonder": false,
+      "now": false,
+      "next": false
+    },
+    "source": "bundled",
+    "sources": null,
+    "propagator": "static",
+    "frame": "sun-inertial",
+    "card": "exotic",
+    "glyph": "exotic",
+    "colour": "exotic",
+    "maxItems": 6000,
+    "train": null
+  },
+  {
+    "id": "beyond-more",
+    "display": "Local Group and clusters",
+    "group": "beyond",
+    "enabled": true,
+    "moments": {
+      "wonder": true,
+      "now": false,
+      "next": false
+    },
+    "source": "bundled",
+    "sources": null,
+    "propagator": "static",
+    "frame": "sun-inertial",
+    "card": "dso",
+    "glyph": "dso",
+    "colour": "dso",
+    "maxItems": 400,
+    "train": null
+  },
+  {
+    "id": "quasars",
+    "display": "Quasars",
+    "group": "beyond",
+    "enabled": true,
+    "moments": {
+      "wonder": false,
+      "now": false,
+      "next": false
+    },
+    "source": "bundled",
+    "sources": null,
+    "propagator": "static",
+    "frame": "sun-inertial",
+    "card": "exotic",
+    "glyph": "exotic",
+    "colour": "exotic",
+    "maxItems": 1200,
+    "train": null
+  },
+  {
     "id": "stations",
     "display": "Crewed stations",
     "group": "around-earth",

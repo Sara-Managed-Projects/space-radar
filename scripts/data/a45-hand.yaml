@@ -1,0 +1,183 @@
+# Hand-checked rows for scripts/gen_a45_data.py (release 1.5.0 stages A4 and A5). Every row names the page it was read from and
+# the day (2026-10-28). Nothing here is a number from memory: a row whose source did not print a value does not carry one.
+#
+# NOT HERE, ON PURPOSE: WD J1011+2845. It is the end-to-end test of the data pipeline and arrives through registry/exotics.yaml.
+version: 1
+read_on: 2026-10-28
+
+# --- the brown and sub-brown dwarfs within 20 light-years --------------------------------------------------------------------
+# The nearest-systems table of https://en.wikipedia.org/wiki/List_of_nearest_stars (read 2026-10-28), which marks 24 rows as brown
+# dwarfs (a section sign) or sub-brown dwarfs (an ampersand) inside 20 ly, with RECONS parallaxes (Henry and others, recons.org;
+# Gaia where the table says so). ra/dec J2000 of the system (a companion with its own entry has its own). `jmag` is the J-band
+# magnitude the table prints: most are far too faint to see in visible light, so no visual magnitude is carried.
+# columns: name, dist_ly, ra, dec, spect, mass_msun (the table's range, low end first), jmag, sub (1 = sub-brown dwarf / rogue-planet mass)
+brown_dwarfs:
+  - [Luhman 16 A,                6.5102, "10 49 18.9", "-53 19 10", L8±1,   0.032, 10.7,  0]
+  - [Luhman 16 B,                6.5102, "10 49 18.9", "-53 19 10", T1±2,   0.027, null,  0]
+  - [WISE 0855-0714,             7.430,  "08 55 10.8", "-07 14 43", Y4,     [0.003, 0.010], 25.0, 1]
+  - [Epsilon Indi Ba,            11.867, "22 04 10.5", "-56 46 58", T1,     0.065, 12.3,  0]
+  - [Epsilon Indi Bb,            11.867, "22 04 10.5", "-56 46 58", T6,     0.050, 13.2,  0]
+  - [SCR 1845-6357 B,            13.0638, "18 45 02.6", "-63 57 52", T6,    0.03,  13.3,  0]
+  - [UGPS J0722-0540,            13.43,  "07 22 27.3", "-05 40 30", T9,     [0.010, 0.025], 16.52, 1]
+  - [WISE 1741+2553,             15.22,  "17 41 24.2", "+25 53 19", T9,     null,  16.53, 0]
+  - [WISE 1639-6847,             15.336, "16 39 40.9", "-68 47 46", Y0.5,   null,  20.57, 0]
+  - [DENIS 0255-4700,            15.877, "02 55 03.7", "-47 00 52", L7.5,   [0.025, 0.065], null, 0]
+  - [WISE 1506+7027,             16.856, "15 06 52.4", "+70 27 25", T6,     null,  13.74, 0]
+  - [DENIS 0817-6155,            17.002, "08 17 30.1", "-61 55 16", T6,     0.015, 13.61, 0]
+  - [2MASS 0939-2448 A,          17.41,  "09 39 35.5", "-24 48 28", T8,     [0.019, 0.048], 15.61, 0]
+  - [2MASS 0939-2448 B,          17.41,  "09 39 35.5", "-24 48 28", T8,     [0.019, 0.038], null, 0]
+  - [WISE 0350-5658,             17.84,  "03 50 00.3", "-56 58 30", Y1,     null,  22.47, 0]
+  - [2MASS 1114-2618,            18.20,  "11 14 51.3", "-26 18 24", T7.5,   [0.029, 0.048], 15.86, 0]
+  - [LSR J1835+3259,             18.5534, "18 35 37.9", "+32 59 55", M8.5,  0.053, null,  0]
+  - [2MASS 0415-0935,            18.62,  "04 15 19.5", "-09 35 07", T8,     0.03,  15.34, 0]
+  - [Gliese 229 Ba,              18.7906, "06 10 34.6", "-21 51 53", T7,    0.036, 14.01, 0]
+  - [Gliese 229 Bb,              18.7906, "06 10 34.6", "-21 51 53", T8,    0.033, null,  0]
+  - [WISE 1541-2250,             18.93,  "15 41 51.6", "-22 50 25", Y0.5,   0.011, 20.99, 1]
+  - [Gliese 570 D,               19.1987, "14 57 28.0", "-21 24 56", T7.5,  0.05,  15.32, 0]
+  - [2MASS 0937+2931,            19.5,   "09 37 34.9", "+29 31 41", T7,     0.040, 14.65, 0]
+  - [SIMP 0136+0933,             19.955, "01 36 56.5", "+09 33 47", T2.5,   0.012, 13.25, 1]
+brown_dwarfs_source: "https://en.wikipedia.org/wiki/List_of_nearest_stars (the nearest-systems table, brown dwarfs marked, RECONS parallaxes; read 2026-10-28)"
+
+# --- one more stellar black hole -----------------------------------------------------------------------------------------------
+# Gaia BH1 and BH3 are in registry/exotics.yaml; BH2 is the third (Gaia DR3 astrometry, El-Badry and others 2023, MNRAS 521, 4323).
+black_holes:
+  - id: gaia-bh2
+    name: Gaia BH2
+    ra: "13 50 16.748"
+    dec: "-59 14 20.33"
+    dist_ly: 3800
+    dist_low_ly: null
+    mass_msun: 8.94
+    aliases: [Gaia DR3 5870569352746779008]
+    why: "The second black hole found in Gaia's measurements of how stars wobble: nine Suns, circled every 1 277 days by a red giant. The third nearest known."
+    source: "https://en.wikipedia.org/wiki/Gaia_BH2 (infobox: position, mass 8.94 solar masses; text: about 3 800 light-years, orbit 1 277 days, the third-closest known black hole system as of 2024; read 2026-10-28)"
+
+# --- white dwarfs that hold a record ---------------------------------------------------------------------------------------------
+# distance = 3 261.56 / parallax in milliarcseconds (Gaia), as the page prints the parallax. vmag is not carried (none of them is
+# visible without a telescope: the pages give G or J magnitudes only).
+white_dwarfs:
+  - id: ztf-j1901-1458
+    name: ZTF J1901+1458
+    ra: "19 01 32.73986"
+    dec: "+14 58 07.1761"
+    parallax_mas: 24.1538
+    period_s: 416.243  # 6.9373843 minutes, as the page prints it
+    aliases: [WD 1859+148, 2MASS J19013271+1458068]
+    why: "One of the heaviest white dwarfs known: about 1.3 Suns in a ball 2 700 km across, turning once every seven minutes. Probably what is left of two white dwarfs that merged."
+    source: "https://en.wikipedia.org/wiki/ZTF_J1901%2B1458 (infobox: position, parallax 24.1538 mas, radius 2 664 km, mass 1.32 or 1.29 solar masses by core; text: spin 6.9373843 minutes, 'hard to explain without supposing' a merger; read 2026-10-28)"
+  - id: h1504-65
+    name: H1504+65
+    ra: "15 02 09.6297"
+    dec: "+66 12 19.146"
+    parallax_mas: 2.0573
+    aliases: [WD 1501+663, PG 1500+662]
+    why: "A white dwarf at 200 000 K, the second hottest known, with an atmosphere of carbon and oxygen and no hydrogen or helium that anyone can see. How it came to be is not explained."
+    source: "https://en.wikipedia.org/wiki/H1504%2B65 (infobox: position, parallax 2.0573 mas, temperature 200 000 K; text: 'second hottest white dwarf ever discovered, with only RX J0439.8-6809 being hotter'; read 2026-10-28)"
+  - id: wd-j2147-4035
+    name: WD J2147-4035
+    ra: "21 47 56.59"
+    dec: "-40 35 27.79"
+    parallax_mas: 35.7904
+    period_s: 46800  # 13 hours, the page's rotation period
+    aliases: [DES J214756.46-403529.3, EQ J2147-4035]
+    why: "A white dwarf cooled to about 3 050 K, so old (some 10 billion years) that it would look reddish to the eye if it were bright enough to see. It is magnetic and polluted with the dust of a destroyed planet."
+    source: "https://en.wikipedia.org/wiki/WD_J2147%E2%80%934035 (infobox: position, parallax 35.7904 mas, temperature 3 048 K, rotation 13 hours, age 10.7 Gyr; text: very cold, magnetic, polluted with planetary debris; read 2026-10-28)"
+  - id: wd-1856-534
+    name: WD 1856+534
+    ra: "18 57 39.344"
+    dec: "+53 30 33.30"
+    parallax_mas: 40.3931
+    mass_msun: 0.605
+    aliases: [G 229-20 C, WD 1856+534 b host]
+    why: "A white dwarf the size of the Earth that has a giant planet: WD 1856 b, found passing in front of it, is a Jupiter-sized world that survived its star's death. It is the outer member of a triple star."
+    source: "https://en.wikipedia.org/wiki/WD_1856%2B534 (infobox: position of component 1, parallax 40.3931 mas, mass 0.605 solar masses, class DA; text: about 80 light-years away, outer component of the triple star G 229-20, the planet WD 1856+534 b, radius 0.911 Jupiter radii; read 2026-10-28)"
+
+# --- record-redshift galaxies (not in the deep-field file: outside the Hubble Ultra Deep Field's box) ------------------------------
+# `z` is the paper's; the distance is computed in the browser from it (data/cosmology.js, Planck 2018). `ra`/`dec` J2000.
+records:
+  - id: mom-z14
+    name: MoM-z14
+    ra_deg: 150.0933255
+    dec_deg: 2.2731627
+    z: 14.44
+    z_err: 0.02
+    aliases: [MoM-z14 galaxy]
+    why: "The most distant galaxy whose redshift has been measured from its spectrum (as of October 2026): we see it as it was 280 million years after the Big Bang. Webb found it in the COSMOS field. It is tiny, half its light coming from within about 240 light-years of its centre, and very bright."
+    source: "Naidu and others 2025, 'A Cosmic Miracle: A Remarkably Luminous Galaxy at z_spec = 14.44 Confirmed with JWST', arXiv:2505.11263 (abstract and Table 1: R.A. 150.0933255, Dec. 2.2731627, z = 14.44 +-0.02, 280 million years after the Big Bang, circularized r_e = 74 pc; read 2026-10-28)"
+  - id: jades-gs-z14-0
+    name: JADES-GS-z14-0
+    ra: "03 32 19.905"
+    dec: "-27 51 20.27"
+    z: 14.1796
+    z_err: 0.0007
+    aliases: [JADES-GS-z14-0 galaxy]
+    why: "A galaxy seen about 300 million years after the Big Bang. Webb found it; the ALMA telescopes then detected oxygen in it, an element stars make, and measured its redshift to four decimals."
+    source: "Carniani and others 2024, Nature, arXiv:2405.18485 (Table 1: JADES-GS-z14-0 at 3:32:19.905, -27:51:20.27; NIRSpec redshift 14.32 +0.08 -0.20); Carniani and others 2025, A&A, arXiv:2409.20533 (ALMA [OIII] 88 micron line, z = 14.1796 +-0.0007, UV magnitude -20.81, half-light radius 260 pc; read 2026-10-28)"
+  - id: gn-z11
+    name: GN-z11
+    ra: "12 36 25.46"
+    dec: "+62 14 31.4"
+    z: 10.603
+    z_err: null
+    aliases: [GN-z10-1, GNS-JD2]
+    why: "Hubble found it in 2015 and Webb confirmed it: a galaxy seen 400 million years after the Big Bang. In 2024 astronomers reported a black hole in its centre, then the earliest known."
+    source: "Oesch and others 2016, ApJ 819, 129, arXiv:1603.00461 (Table 2: R.A. 12:36:25.46, Dec. +62:14:31.4); Bunker and others 2023, A&A 677, A88, arXiv:2302.07256 ('z = 10.60'); Maiolino and others 2024, Nature, arXiv:2305.12492 (z = 10.603, a black hole in its centre; read 2026-10-28)"
+
+# --- galaxy clusters ---------------------------------------------------------------------------------------------------------------
+# Named by the common name; the position, redshift and X-ray size are MCXC's (Piffaretti and others 2011, A&A 534, A109, through
+# HEASARC), found by the MCXC name or alias in `mcxc`. Virgo and Fornax are drawn at the distance registry/galaxy-clusters.yaml
+# measures by surface-brightness fluctuations (`sbf_mpc`), as scene/deep/galclusters.js draws them. `why` is hand-written from the
+# page in `page`; a cluster without one gets a sentence made from MCXC's numbers.
+cluster_picks:
+  - {name: Virgo Cluster,       mcxc: Virgo,        sbf_mpc: 16.5, aliases: [Virgo, Virgo Galaxy Cluster],   page: Virgo_Cluster,    why: "About 1 300 galaxies, the heart of the Virgo Supercluster that our own Local Group belongs to."}
+  - {name: Coma Cluster,        mcxc: Coma,                        aliases: [Abell 1656, Coma Galaxy Cluster], page: Coma_Cluster,   why: "Over a thousand identified galaxies in Coma Berenices, one of the first clusters astronomers remarked on: William Herschel noted it in 1785 and Max Wolf photographed it in 1901."}
+  - {name: Fornax Cluster,      mcxc: FORNAX,       sbf_mpc: 20.0, aliases: [Fornax, Fornax Galaxy Cluster], page: Fornax_Cluster, why: "The second richest cluster of galaxies within 100 million light-years, after Virgo, mostly in the southern constellation Fornax."}
+  - {name: Perseus Cluster,     mcxc: A0426,                       aliases: [Abell 426, Perseus Galaxy Cluster], page: Perseus_Cluster, why: "Thousands of galaxies in a vast cloud of gas at many millions of degrees: one of the most massive objects in the known universe."}
+  - {name: Centaurus Cluster,   mcxc: A3526,                       aliases: [Abell 3526],  page: Centaurus_Cluster, why: "Hundreds of galaxies about 170 million light-years away, the brightest NGC 4696; it shares the Hydra-Centaurus supercluster with the Hydra cluster."}
+  - {name: Hydra Cluster,       mcxc: A1060,                       aliases: [Abell 1060]}
+  - {name: Norma Cluster,       mcxc: A3627,                       aliases: [Abell 3627, Great Attractor cluster]}
+  - {name: Hercules Cluster,    mcxc: A2151a,                      aliases: [Abell 2151],  page: Hercules_Cluster, why: "About 200 galaxies some 500 million light-years away, rich in spirals and in galaxies caught colliding."}
+  - {name: Ophiuchus Cluster,   mcxc: Ophiuchus,                   aliases: [RXC J1712.4-2321]}
+  - {name: Bullet Cluster,      mcxc: 1ES0657,                     aliases: [1E 0657-56, 1E 0657-558, Abell 1E 0657], page: Bullet_Cluster, why: "Two clusters of galaxies in collision. Astrophysicists prize it because studies of how it bends light are claimed to give direct evidence for dark matter."}
+  - {name: Pandora's Cluster,   mcxc: A2744,                       aliases: [Abell 2744, Pandora Cluster], page: Abell_2744, why: "At least four smaller clusters piling into one over 350 million years, about 4 billion light-years away. The galaxies are under five per cent of its mass; most of the rest is dark matter."}
+  - {name: Abell 1689,          mcxc: A1689,                       aliases: [A1689],       page: Abell_1689, why: "A cluster of galaxies in the sky of Virgo, over 2.3 billion light-years away."}
+  - {name: Abell 85,            mcxc: A0085,                       aliases: [A85]}
+  - {name: Abell 478,           mcxc: A0478,                       aliases: [A478]}
+  - {name: Abell 754,           mcxc: A0754,                       aliases: [A754]}
+  - {name: Abell 1795,          mcxc: A1795,                       aliases: [A1795]}
+  - {name: Abell 2029,          mcxc: A2029,                       aliases: [A2029]}
+  - {name: Abell 2142,          mcxc: A2142,                       aliases: [A2142]}
+  - {name: Abell 2163,          mcxc: A2163,                       aliases: [A2163]}
+  - {name: Abell 2199,          mcxc: A2199,                       aliases: [A2199]}
+  - {name: Abell 2218,          mcxc: A2218,                       aliases: [A2218]}
+  - {name: Abell 2255,          mcxc: A2255,                       aliases: [A2255]}
+  - {name: Abell 3558,          mcxc: "A3558",                     aliases: [Shapley supercluster core]}
+  - {name: Abell 3667,          mcxc: A3667,                       aliases: [A3667]}
+  - {name: Abell 401,           mcxc: A0401,                       aliases: [A401]}
+  - {name: Abell 496,           mcxc: A0496,                       aliases: [A496]}
+  - {name: Abell 1835,          mcxc: A1835,                       aliases: [A1835]}
+  - {name: Abell 2390,          mcxc: A2390,                       aliases: [A2390]}
+  - {name: Abell 2597,          mcxc: A2597,                       aliases: [A2597]}
+  - {name: Cygnus A cluster,    mcxc: Cygnus A,                    aliases: [Cygnus A, 3C 405 cluster]}
+  - {name: RX J1347.5-1145,     mcxc: "RXC J1347.5-1144",                     aliases: [RX J1347.5-1145, RXC J1347.5-1144]}
+  - {name: MACS J0717.5+3745,   mcxc: "MACS J0717.5+3745",        aliases: [MACS J0717]}
+  - {name: Abell S1063,         mcxc: S1063,                       aliases: [RXC J2248.7-4431, Abell 1063]}
+
+# Two famous clusters the X-ray catalogue (ROSAT) lacks. Position from the page's infobox; redshift from the paper.
+clusters_hand:
+  - id: el-gordo
+    name: El Gordo
+    ra: "01 02 52.50"
+    dec: "-49 14 58.0"
+    z: 0.870
+    aliases: [ACT-CL J0102-4915, SPT-CL J0102-4915]
+    why: "'The Fat One': two clusters merging, about 2.1 quadrillion Suns in all. When it was found in 2011 it was the largest cluster known at its distance."
+    source: "https://en.wikipedia.org/wiki/El_Gordo_(galaxy_cluster) (infobox: position, redshift 0.87; text: the largest distant cluster, mass reduced to about 2.1e15 solar masses; read 2026-10-28); Menanteau and others 2012, ApJ 748, 7, arXiv:1109.0953"
+  - id: phoenix-cluster
+    name: Phoenix Cluster
+    ra: "23 44 40.9"
+    dec: "-42 41 54"
+    z: 0.597
+    aliases: [SPT-CL J2344-4243]
+    why: "Found by the South Pole Telescope: about two quadrillion Suns, and the most luminous X-ray cluster discovered."
+    source: "https://en.wikipedia.org/wiki/Phoenix_Cluster (infobox: position, host galaxy redshift 0.597; text: detected by the South Pole Telescope, mass of the order of 2e15 solar masses, the most luminous X-ray cluster discovered; read 2026-10-28); McDonald and others 2012, Nature 488, 349, arXiv:1208.2962"

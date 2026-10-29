@@ -377,7 +377,7 @@ export function systemHostRecords(systems = [...SYSTEMS, ...MORE_SYSTEMS]) {
 
 function exoticDeparture(x) {
   const T = COPY.drawing.exoticDeparture;
-  const shown = shownPeriod(x.periodS);
+  const shown = x.noBlink ? null : shownPeriod(x.periodS); // 0079 r15-a45: the catalogue's pulsars do not blink (scene/pulsars.js draws the fact sheets' only)
   const parts = [];
   if (shown) parts.push(shown.slower > 1 ? t(T.pulseSlowed, { n: fmt.int(shown.slower) }) : T.pulseTrue);
   if (x.kind === 'blackhole') parts.push(T.portrait); // 0078 r14-mw-bh: every black hole is drawn in 3D (the quasars keep the far layer's words)
@@ -386,9 +386,15 @@ function exoticDeparture(x) {
 
 /** Exported for tests/test_pulse.mjs. */
 export function exoticRecords() {
+  return exoticRecordsFrom(EXOTICS);
+}
+
+// 0079 r15-a45: begin
+/** The same records for any rows in data/exotics.js's shape: the catalogues of stage A4 and A5 (data/a45.js) come through here. */
+export function exoticRecordsFrom(rows) {
   const LY = 9460730472580.8;
   const e = 23.4392911 * (Math.PI / 180);
-  return EXOTICS.map((x) => {
+  return rows.map((x) => {
     const ra = x.raDeg * (Math.PI / 180), dec = x.decDeg * (Math.PI / 180), r = x.distLy * LY;
     const ex = Math.cos(dec) * Math.cos(ra), ey = Math.cos(dec) * Math.sin(ra), ez = Math.sin(dec);
     return {
@@ -425,10 +431,15 @@ export function exoticRecords() {
         // pictures are CC BY 4.0 through ESO; the row carries the credit and the licence with the
         // file because that is the licence's bargain, and ui/cards.js prints them under it.
         image: x.image || null,
+        ...(x.spect ? { spect: x.spect } : {}),
+        ...(x.jmag != null ? { jmag: x.jmag } : {}),
+        ...(x.flags ? { flags: x.flags } : {}),
       },
+      ...(x.sizePx ? { sizePx: x.sizePx } : {}),
     };
   });
 }
+// 0079 r15-a45: end
 
 export const LAYERS = [
   {
@@ -627,6 +638,106 @@ export const LAYERS = [
     priority: 64,
     sentence: 'Black holes, pulsars, a magnetar and two doomed stars with a fact sheet each, and the page every number came from.',
   },
+  // 0079 r15-a45: begin
+  // Stage A4 (stars) and A5 (beyond the Milky Way) of release 1.5.0. Four layers whose rows come from compact files under
+  // site/data/a45/ (scripts/gen_a45_data.py), fetched by data/a45.js the first time one is needed -- deferred by main.js (MORE_CATALOGUES): the search
+  // box taking focus, a ladder stage, a link or the layer's box ticked (main.js ctx.loadMoreCatalogues) -- and never at boot. Each row
+  // is a fact sheet in the shape of registry/exotics.yaml's, so the exotics' card, search row and glyph serve it; the three that are
+  // thousands strong are small marks, and the pulsars among them do not blink (scene/pulsars.js keeps to the fact sheets').
+  {
+    id: 'extremes-more',
+    ladderOnly: true,
+    display: 'Magnetars and dead stars',
+    klass: 'exotic',
+    source: 'bundled',
+    parse: null,
+    propagator: 'static',
+    frame: 'sun-inertial',
+    moments: { wonder: true, now: false, next: false },
+    defaultOn: true,
+    noModel: true,
+    fetchLazy: () => import('./a45.js').then(async (m) => exoticRecordsFrom(m.extremeRows(await m.loadExtremes()))),
+    select: all,
+    budget: { maxItems: 400 },
+    colour: C.exotic,
+    glyph: 'exotic',
+    nearKm: 0,
+    card: 'exotic',
+    priority: 66,
+    sentence: 'The magnetars of the McGill catalogue, the black holes that flare in X-rays (BlackCAT) and Gaia BH2, four white dwarfs that hold a record, and the brown dwarfs within 20 light-years, each at its measured distance.',
+  },
+  {
+    id: 'pulsars',
+    ladderOnly: true,
+    display: 'Pulsars',
+    klass: 'exotic',
+    source: 'bundled',
+    parse: null,
+    propagator: 'static',
+    frame: 'sun-inertial',
+    moments: { wonder: false, now: false, next: false },
+    defaultOn: false,
+    noModel: true,
+    fetchLazy: () => import('./a45.js').then(async (m) => exoticRecordsFrom(m.pulsarRows(await m.loadPulsars()))),
+    select: all,
+    budget: { maxItems: 6000 },
+    colour: C.exotic,
+    glyph: 'exotic',
+    nearKm: 0,
+    card: 'exotic',
+    priority: 67,
+    sentence: 'Every pulsar in the ATNF catalogue that has a distance, a small mark at its place in the Galaxy. Distances are measured by parallax for a few hundred and modelled from the radio signal for the rest.',
+  },
+  {
+    id: 'beyond-more',
+    ladderOnly: true,
+    display: 'Local Group and clusters',
+    klass: 'dso',
+    source: 'bundled',
+    parse: null,
+    propagator: 'static',
+    frame: 'sun-inertial',
+    moments: { wonder: true, now: false, next: false },
+    defaultOn: true,
+    noModel: true,
+    // Two kinds of row in one file: dwarf galaxies of the Local Group (dso rows, parsed as data/dso.json's are) and the far things
+    // that carry a redshift (clusters, the record-redshift galaxies), which the exotics' card knows how to date.
+    fetchLazy: () => import('./a45.js').then(async (m) => {
+      const doc = await m.loadBeyond();
+      return [...parseDso({ objects: doc.localGroup.objects }), ...exoticRecordsFrom(m.farRows(doc.far))];
+    }),
+    select: all,
+    budget: { maxItems: 400 },
+    colour: C.dso,
+    glyph: 'dso',
+    nearKm: 0,
+    card: 'dso',
+    priority: 68,
+    sentence: 'The rest of the Local Group, named galaxy clusters from Virgo to El Gordo, and the three galaxies with the highest redshifts, MoM-z14, JADES-GS-z14-0 and GN-z11.',
+  },
+  {
+    id: 'quasars',
+    ladderOnly: true,
+    display: 'Quasars',
+    klass: 'exotic',
+    source: 'bundled',
+    parse: null,
+    propagator: 'static',
+    frame: 'sun-inertial',
+    moments: { wonder: false, now: false, next: false },
+    defaultOn: false,
+    noModel: true,
+    fetchLazy: () => import('./a45.js').then(async (m) => exoticRecordsFrom(m.quasarRows(await m.loadQuasars()))),
+    select: all,
+    budget: { maxItems: 1200 },
+    colour: C.exotic,
+    glyph: 'exotic',
+    nearKm: 0,
+    card: 'exotic',
+    priority: 69,
+    sentence: 'The brightest thousand quasars of the Million Quasars catalogue and every quasar known beyond redshift 7, each at how far it is now.',
+  },
+  // 0079 r15-a45: end
   {
     id: 'stations',
     display: 'Crewed stations',

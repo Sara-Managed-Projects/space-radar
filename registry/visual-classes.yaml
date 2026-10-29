@@ -157,6 +157,12 @@ domains:
       lightning: {credit: "NOAA nowCOAST", source: "registry/weather.yaml earth-lightning"}
       earth-events: {credit: "Fires, volcanoes and sea ice: NASA EONET", source: "registry/weather.yaml earth-events"}
       oddities: {credit: "Oddities: each row of `registry/oddities.yaml` cites where it was read", source: registry/oddities.yaml}
+      # 0079 r15-a45: begin (CREDITS.md section 3n carries each credit line word for word)
+      extremes-more: {credit: "McGill Online Magnetar Catalog (Olausen and Kaspi 2014); BlackCAT (Corral-Santana et al. 2016)", source: scripts/data/a45-hand.yaml}
+      pulsars: {credit: "ATNF Pulsar Catalogue v2.9.0 (Manchester, Hobbs, Teoh and Hobbs 2005)", source: "https://www.atnf.csiro.au/research/pulsar/psrcat/"}
+      beyond-more: {credit: "The Local Volume Database, A. Pace 2024 (CC0); MCXC (Piffaretti et al. 2011)", source: scripts/data/a45-hand.yaml}
+      quasars: {credit: "Million Quasars Catalog v8 (Flesch 2023)", source: "https://quasars.org/milliquas.htm"}
+      # 0079 r15-a45: end
 
 classes:
   # --- the Sun and the planets -------------------------------------------------------------------------
@@ -812,3 +818,4 @@ classes:
       rights: "As its members."
     records:
       - {domain: layers, ids: [worlds, deep-sky, exotics, far-bodies, hand-kept-sites, moons, companions]} # 0079 a3
+      - {domain: layers, ids: [worlds, deep-sky, exotics, far-bodies, hand-kept-sites, extremes-more, pulsars, beyond-more, quasars]} # 0079 r15-a45

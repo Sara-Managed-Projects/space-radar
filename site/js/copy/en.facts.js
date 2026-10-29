@@ -103,6 +103,10 @@ Object.assign(COPY, {
 
   unplaced: {
     why: '{whyUnknown}',
+    // 0079 r15-a45: begin -- a star the catalogue has a direction and a brightness for and no distance (scene/unplaced.js), and the IAU's name for a star
+    noDistanceRow: 'Not measured: the catalogue has no parallax for it',
+    iauApproved: '{name}, approved on {date}',
+    // 0079 r15-a45: end
   },
 
   // ------------------------------------------------------------------------------------

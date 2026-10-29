@@ -186,17 +186,18 @@ function famousRow(proper, hip) {
 export function recordsFromNames(rows) {
   const out = [];
   for (const r of Array.isArray(rows) ? rows : []) {
-    const [idx, proper, bayer, flam, hip, spect, distLy, mag, lum, x, y, z] = r;
+    const [idx, proper, bayer, flam, hip, spect, distLy, mag, lum, x, y, z, iau] = r; // 0079 r15-a45: the IAU's name, joined in by data/a45.js withIauNames
     if (!Number.isFinite(x)) continue;
-    const catalogueName = proper || bayer || flam || (hip ? `HIP ${hip}` : null);
+    const catalogueName = proper || (iau && iau.name) || bayer || flam || (hip ? `HIP ${hip}` : null); // 0079 r15-a45
     if (!catalogueName) continue;
     const famous = famousRow(proper, hip);
     // The name a person uses wins over the names file's (Tau Ceti over "τ Cet", Alpha Centauri A
     // over Rigil Kentaurus): search lists record.name and the label and card print it. The file's
     // own name stays first among the aliases, so "rigil kentaurus" and "ran" still find their star.
     const name = famous && famous.name ? famous.name : catalogueName;
-    const aliases = [...new Set([catalogueName, bayer, flam, hip ? `HIP ${hip}` : null])].filter((a) => a && a !== name);
+    const aliases = [...new Set([catalogueName, bayer, flam, hip ? `HIP ${hip}` : null, iau ? iau.name : null, iau ? iau.designation : null])].filter((a) => a && a !== name); // 0079 r15-a45: + the IAU's name and designation
     const meta = { hip, spect, distLy, mag, lum, aliases, named: true };
+    if (iau) meta.iau = iau; // 0079 r15-a45
     if (famous) {
       meta.why = famous.why; meta.whySource = famous.source;
       // A width read off an interferometer, with its source (registry/stars-notable.yaml): the card then says "measured".
@@ -272,6 +273,7 @@ export function createStars3d(scene, opts = {}) {
 
   let data = null; // parseStars3d result
   let namedRows = null;
+  let byIndex = new Map(); // 0079 r15-a45: named records by star index (the IAU names a star the binary's name column does not)
   let records = [];
   let points = null;
   let geometry = null;
@@ -307,7 +309,19 @@ export function createStars3d(scene, opts = {}) {
     if (namedRows) return records;
     const doc = opts.namesDoc || await fetchJson(src.names);
     namedRows = Array.isArray(doc && doc.rows) ? doc.rows : [];
-    records = recordsFromNames(namedRows);
+    // 0079 r15-a45: begin -- the IAU Working Group on Star Names' list, joined to the names (data/a45.js); a miss leaves the names as they were
+    let noDistance = [];
+    try {
+      const a45 = await import('../data/a45.js');
+      const iauDoc = opts.iauDoc || (opts.namesDoc ? null : await a45.loadIau());
+      if (iauDoc) namedRows = a45.withIauNames(namedRows, iauDoc);
+      // the 63 named stars HYG has a direction for and no distance (scene/unplaced.js draws the rest): searchable, with no place in space
+      const unplacedDoc = opts.unplacedNames || (opts.namesDoc ? null : await a45.loadUnplacedNames());
+      if (unplacedDoc) noDistance = a45.unplacedNamedRecords(unplacedDoc);
+    } catch (e) { console.warn('stars3d: the IAU names did not load', e); }
+    // 0079 r15-a45: end
+    records = recordsFromNames(namedRows).concat(noDistance); // 0079 r15-a45
+    byIndex = new Map(records.filter((r) => r.meta.starIndex >= 0).map((r) => [r.meta.starIndex, r])); // 0079 r15-a45
     regroupRecords();
     return records;
   }
@@ -515,6 +529,7 @@ export function createStars3d(scene, opts = {}) {
 
   /** The record for star `i` of the binary: the named one if it has a name, a plain one if not. */
   function recordAt(i) {
+    if (byIndex.has(i)) return byIndex.get(i); // 0079 r15-a45
     const ref = data.nameRef[i];
     if (ref > 0 && namedRows && namedRows[ref - 1]) {
       const rec = records.find((r) => r.meta.starIndex === namedRows[ref - 1][0]);
@@ -597,3 +612,8 @@ export function createStars3d(scene, opts = {}) {
     mode: () => mode,
   };
 }
+
+// 0079 r15-a45: begin
+// scene/unplaced.js draws the stars HYG has no distance for with this very shader, so a star of one magnitude is the same light in either file.
+export { VERT as STARS3D_VERT, FRAG as STARS3D_FRAG };
+// 0079 r15-a45: end
