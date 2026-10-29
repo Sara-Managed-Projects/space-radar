@@ -243,7 +243,6 @@ const CRAFT = {
     whole: { at: [0, 19.1, 0], span: 38.6, side: 'h', az: [-50, -17, 17, 50], el: 8 },
     details: [
       ['nose-and-block-e', [0, 33.6, 0], 10, -35, 7, 'min'],
-      ['nose-and-block-e-b', [0, 33.6, 0], 10, 30, 7, 'min'],
       ['truss', [0, 29.0, 0], 5.5, 22, 5, 'min'],
       ['shoulder', [0, 19.4, 0], 7.5, -22, 8, 'min'],
       ['tail-and-nozzles', [0, 3.6, 0], 8.5, -30, 9, 'min'],
@@ -281,6 +280,8 @@ const CRAFT = {
     apart: null,
   },
 };
+// THE CLOCK: the job is cut at 45 minutes (look.yml); what is not photographed by minute 36 is left out and said so.
+const late = () => Date.now() - lookT0 > 36 * 60e3;
 const key = (wearAs || '').replace(/ /g, '-');
 const spec = CRAFT[key];
 if (!spec) return { ...out, fail: 'r15-c2 has no list for the route `' + wearAs + '`; it knows ' + Object.keys(CRAFT).join(', ') };
@@ -386,6 +387,7 @@ try {
   const w = spec.whole;
   setFocus(w.at);
   for (let i = 0; i < w.az.length; i++) {
+    if (late()) { look.warns.push('probe: out of time; the whole views of ' + key + ' from ' + (i + 1) + ' on are left out'); break; }
     const fit = await fitTo(camDir(w.az[i], w.el), (0.92 * sideOf(w.side)) / w.span);
     await take('2-whole-' + (i + 1), 'the whole craft, held upright, from ' + (w.az[i] === 0 && key === 'vostok-chutes' ? 'the Sun\'s side (the row of canopies square on)' : w.az[i] + ' degrees round from the Sun\'s side'), { fit });
     if (key === 'vostok-chutes') break;      // four azimuths of 0 would be four copies of one picture
@@ -393,6 +395,7 @@ try {
 } catch (e) { look.warns.push('probe: the whole views of ' + key + ' failed: ' + String((e && e.message) || e)); }
 // 3. the details
 for (const [name, at, span, az, el, side] of spec.details) {
+  if (late()) { look.warns.push('probe: out of time; the detail ' + name + ' of ' + key + ' is left out'); continue; }
   try {
     setFocus(at);
     const fit = await fitTo(camDir(az, el), (0.92 * sideOf(side)) / span);
@@ -400,7 +403,7 @@ for (const [name, at, span, az, el, side] of spec.details) {
   } catch (e) { look.warns.push('probe: the detail ' + name + ' of ' + key + ' failed: ' + String((e && e.message) || e)); }
 }
 // 4. pulled apart along its named parts
-if (spec.apart) {
+if (spec.apart && !late()) {
   const saved = [];
   try {
     const A = spec.apart;
