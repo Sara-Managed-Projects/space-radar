@@ -386,7 +386,10 @@ export const VISUAL_CLASSES = [
 "resourcesat-2",
 "eos-06",
 "kanopus-v",
-"resurs-p"
+"resurs-p",
+"vostok-3ka",
+"vostok-seat",
+"vostok-chutes"
 ],
 "model_kinds": [
 "satellite-iridium",
@@ -462,7 +465,8 @@ export const VISUAL_CLASSES = [
 "centaur-d",
 "falcon9-stage2",
 "h2a-stage2",
-"kosmos3m-stage2"
+"kosmos3m-stage2",
+"r7-8k72k"
 ],
 "model_kinds": [
 "rocket-upper-stage",
