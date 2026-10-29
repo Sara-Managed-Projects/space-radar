@@ -94,4 +94,5 @@ for (const [id, name, relief] of BODIES) {
   if (!arrived) out.problems.push(id + ': the model file did not replace the procedural shape in two minutes');
 }
 sr.clock.live();
-return finish({ ...out, fail: out.problems.length ? out.problems.join('; ') : undefined });
+const fail = out.problems.length ? out.problems.join('; ') : undefined;
+return finish({ ...out, fail });
