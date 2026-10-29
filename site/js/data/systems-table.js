@@ -3234,6 +3234,24 @@ export const SYSTEMS_TABLE = [
 "insolationEarths": 0.000605,
 "equilibriumK": 40,
 "zone": "colder"
+},
+{
+"id": "exo-pds-70-c",
+"name": "PDS 70 c",
+"periodDays": 74041.6,
+"periodFrom": "kepler",
+"aAu": 34.3,
+"aFrom": "table",
+"radiusEarths": 22.19378179,
+"radiusFrom": "measured",
+"massEarths": 2383.7130525,
+"massFrom": "measured",
+"eccentricity": 0.037,
+"method": "Imaging",
+"year": 2019,
+"insolationEarths": 0.000297,
+"equilibriumK": 33,
+"zone": "colder"
 }
 ]
 },

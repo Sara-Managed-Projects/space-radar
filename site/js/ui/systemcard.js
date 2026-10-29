@@ -44,7 +44,9 @@ export function planetFacts(system, planet, albedo = 0.3) {
     : !planet.radiusFrom ? C.sizeDefault : null;
   const mass = planet.massFrom === 'estimated' ? t(C.massEstimated, { n: n(planet.massEarths) })
     : planet.massFrom === 'least' ? t(C.massLeast, { n: n(planet.massEarths) }) : null;
-  rows.push([R.orbit, t(planet.aFrom === 'kepler' ? C.auComputed : C.au, { n: n(planet.aAu) })]);
+  rows.push([R.orbit, planet.periodFrom === 'kepler' && C.auYearComputed
+    ? t(C.auYearComputed, { n: n(planet.aAu), y: fmt.int(Math.round(planet.periodDays / 365.25)) }) // 0079 a13: its year is worked out, not measured
+    : t(planet.aFrom === 'kepler' ? C.auComputed : C.au, { n: n(planet.aAu) })]);
   if (Number.isFinite(planet.equilibriumK)) {
     rows.push([R.temperature, t(C.temperature, { k: fmt.int(planet.equilibriumK), c: fmt.int(Math.round(planet.equilibriumK - 273.15)), pct: fmt.int(Math.round(albedo * 100)) })]);
   }

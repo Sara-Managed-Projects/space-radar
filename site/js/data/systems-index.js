@@ -1274,6 +1274,9 @@ export const SYSTEM_INDEX = [
 "planets": [
 {
 "id": "exo-pds-70-b"
+},
+{
+"id": "exo-pds-70-c"
 }
 ]
 },

@@ -845,6 +845,7 @@ export const VISUAL_CLASSES = [
 "exo-wasp-39-b",
 "exo-51-eri-b",
 "exo-pds-70-b",
+"exo-pds-70-c",
 "exo-af-lep-b"
 ],
 "layers": [

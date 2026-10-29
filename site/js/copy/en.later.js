@@ -100,6 +100,7 @@ Object.assign(COPY, {
     what: { size: 'size', year: 'year', mass: 'mass', least: 'least possible mass' },
     au: '{n} AU',
     auComputed: '{n} AU, computed from its year and its star’s mass',
+    auYearComputed: '{n} AU; its year, about {y} years, is worked out from that and its star’s mass', // 0079 a13
     earthsEstimated: '{n}× Earth, the archive’s estimate from its mass',
     massEstimated: '{n}× Earth, the archive’s estimate from its size',
     massLeast: 'At least {n}× Earth',

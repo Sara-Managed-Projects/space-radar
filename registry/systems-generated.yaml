@@ -2774,6 +2774,22 @@ systems:
     equilibrium_k: 40
     zone: colder
     source: https://exoplanetarchive.ipac.caltech.edu/overview/PDS%2070 (read 2026-10-28)
+  - id: exo-pds-70-c
+    period_days: 74041.6
+    a_au: 34.3
+    a_from: table
+    period_from: kepler
+    radius_earths: 22.19378179
+    radius_from: measured
+    mass_earths: 2383.7130525
+    mass_from: measured
+    eccentricity: 0.037
+    method: Imaging
+    year: 2019
+    insolation_earths: 0.000297
+    equilibrium_k: 33
+    zone: colder
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/PDS%2070 (read 2026-10-28)
 - id: af-lep
   host: AF Lep
   display: AF Leporis

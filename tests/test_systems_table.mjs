@@ -127,7 +127,11 @@ for (const { s, p } of planets) {
   check(!!r && r.meta.host === s.host, `${p.id} is a record of ${s.host}`);
   if (!r) continue;
   const current = currentById.get(p.id);
-  check(near(p.periodDays, current.meta.periodDays, 1e-6), `${p.id}: the year is the table's`);
+  // 0079 a13: PDS 70 c has a distance and no year in the table; its year is Kepler's third law with the star's mass, and says so
+  if (p.periodFrom === 'kepler') {
+    check(current.meta.periodDays === null && p.aFrom === 'table', `${p.id}: a computed year only where the table has none, from the table's distance`);
+    check(near(p.periodDays, 365.25 * Math.sqrt(p.aAu ** 3 / s.star.massSuns), 1e-3), `${p.id}: its year is a^1.5 over the star's mass`);
+  } else check(near(p.periodDays, current.meta.periodDays, 1e-6), `${p.id}: the year is the table's`);
   check((p.radiusEarths ?? null) === current.meta.radiusEarths, `${p.id}: the radius is the table's (${p.radiusEarths}, ${r.meta.radiusEarths})`);
   check((p.radiusEarths === undefined) === (p.radiusFrom === undefined), `${p.id}: a radius says whether it is measured`);
 }
