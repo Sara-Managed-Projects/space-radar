@@ -264,7 +264,11 @@ assert.equal(colourRoute(root([])), 'class', 'a model with no materials keeps th
   for (const m of src.matchAll(/file: '([A-Za-z0-9_.-]+\.glb)'/g)) routed.add(m[1]);
   const shipped = readdirSync(join(ROOT, 'site/models')).filter((n) => n.endsWith('.glb'));
   const yaml = readFileSync(join(ROOT, 'registry/models.yaml'), 'utf8');
-  const UNROUTED_ON_PURPOSE = {}; // MAVEN was the one, until 2026-10-08: it has a record now (data/sample.js LOST_ORBITERS)
+  const UNROUTED_ON_PURPOSE = {
+    // 0079 c3: begin
+    'apollo-csm.glb': /NOTHING YET/, // a vehicle of the Moments, loaded by id by site/js/moments/: no object on the map is the CSM
+    // 0079 c3: end
+  }; // MAVEN was the one, until 2026-10-08: it has a record now (data/sample.js LOST_ORBITERS)
   const unreachable = shipped.filter((f) => !routed.has(f) && !UNROUTED_ON_PURPOSE[f]);
   assert.deepEqual(unreachable, [], 'models that ship and that no record can be drawn with');
   for (const [f, why] of Object.entries(UNROUTED_ON_PURPOSE)) {

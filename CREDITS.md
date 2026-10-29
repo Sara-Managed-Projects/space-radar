@@ -653,7 +653,7 @@ than counted by hand.
 | `dawn.glb` | Dawn | Horizons -203 (Dawn, 2007 to 2018) | 116 KB |
 | `maven.glb` | Mars Atmosphere and Volatile EvolutioN (MAVEN) (B) | Horizons -202 (MAVEN, on its last tracked orbit of Mars; no contact since 6 December 2025) | 179 KB |
 | `odyssey.glb` | Mars Odyssey | Horizons -53 (Mars Odyssey) | 95 KB |
-| `saturn-v.glb` | Saturn V (NASA/Michael D. Carbajal) | the Saturn V on Launch Complex 39A (`saturn-v-lc-39a`) | 96 KB |
+| `saturn-v.glb` | Saturn V (NASA/Michael D. Carbajal), cut into its eleven separable parts, with the J-2 engines and the launch escape tower added by Space Radar (public domain: "These assets are free and without copyright", NASA 3D Resources README, read 2026-10-28) | the Saturn V on Launch Complex 39A (`saturn-v-lc-39a`) and the stack of the Apollo 11 Moment | 182 KB | <!-- 0079 c3 -->
 | `shuttle-stack.glb` | Space Shuttle (A) (NASA/Michael D. Carbajal): the orbiter on its tank and boosters | the Space Shuttle on Launch Complex 39B (`shuttle-lc-39b`) | 130 KB |
 | `rosetta.glb` | Rosetta | Horizons -226 (Rosetta, 2004 to 2016) | 125 KB |
 | `new-horizons.glb` | New Horizons: NASA's printable body and RTG parts (science.nasa.gov/3d-resources/new-horizons, read 2026-10-20; the page names no author), assembled by us; the dish, its tripod and feed rebuilt from NASA's own 1/12 drawings on the same page (readme.pdf), colours ours from NASA's photographs ([3b-15](#3b-15-release-130-crewed-craft-and-nasa-flagships--tiangong-shenzhou-orbital-module-themis-new-horizons-2026-10-20)) | Horizons -98 (New Horizons) | 151 KB |  <!-- 0077 W1-a -->
@@ -701,7 +701,8 @@ NASA's science data policy, as for Eros.
 | `dsn70.glb` | Deep Space Network 70-meter | DEFAULT for ground sites of class `dish` | 149 KB |
 | `insight.glb` | InSight Cruise Lander | the InSight landing site at Elysium Planitia | 267 KB |
 | `ingenuity.glb` | Ingenuity Mars Helicopter | the Ingenuity site at Valinor Hills | 86 KB |
-| `lunar-module.glb` | Apollo Lunar Module | the Apollo 11, 12, 14, 15, 16 and 17 landing sites -- one vehicle design, six descent stages | 203 KB |
+| `lunar-module.glb` | Apollo Lunar Module (NASA), cut into its descent and ascent stages (public domain: "These assets are free and without copyright", NASA 3D Resources README, read 2026-10-28) | the Apollo 11, 12, 14, 15, 16 and 17 landing sites -- one vehicle design, six descent stages -- and the Apollo 11 Moment | 240 KB | <!-- 0079 c3 -->
+| `apollo-csm.glb` | Apollo Soyuz (NASA 3D Resources, `3D Models/Apollo Soyuz`; NASA has no other Apollo command and service module): its CSM cut out and rescaled, then the high-gain antenna, the windows, the docking ring and probe, the SM's beams, radiators and fairing drawn by Space Radar from NASA's Apollo 9 and Apollo 17 photographs (public domain). The terms: "All of these assets are free to download and use" (science.nasa.gov/3d-resources, read 2026-10-28) | the Command and Service Module of the Apollo Moments (no object on the map wears it yet) | 98 KB | <!-- 0079 c3 -->
 | `mer.glb` | Mars Exploration Rover - Opportunity (MER-B) | the Opportunity site, and the Spirit site as its twin | 38 KB |
 | `pad.glb` | Mobile Launcher | DEFAULT for every launch pad -- 17 today, more with each Launch Library refresh | 74 KB |
 | `perseverance.glb` | Mars 2020 Perseverance Rover | Jezero crater on Mars (until 2026-10-15 also Gale crater, as the kind of thing; Gale now wears NASA's own Curiosity, [3b-13](#3b-13-five-agencies-own-models--europa-clipper-smap-jason-3-curiosity-sorce-2026-10-15)) | 256 KB |
