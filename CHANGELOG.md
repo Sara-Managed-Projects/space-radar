@@ -23,6 +23,16 @@ tagged, and their dates are the day the last change in each landed.
   its reason, and a Chrome that dies mid-run ends the run with the reason, instead of both waiting
   forever.
 
+## [1.5.1] - 2026-10-29
+
+Fixes for what 1.5.0 showed on real screens. Pluto and Charon are round again: far from the map's centre the
+graphics card's 32-bit arithmetic snapped their surfaces into slabs, and every world now places its surface
+relative to the camera (Titan's haze edge and the deep clouds are smooth too). The comets no longer pile into
+a band through the Sun: the chosen comet and a few famous ones show their orbits, the rest are quiet points.
+The Hubble Ultra Deep Field's galaxies are drawn only near their own line of sight instead of as a ray from the
+Sun, the Milky Way's cluster symbols appear only where the view reaches them, exoplanets are plain green
+discs, and the breadcrumbs no longer sit on the menu handle.
+
 ## [1.5.0] - 2026-10-29
 
 The map now holds the deep sky, the comets, the stars, the moons and the sites it lacked, and it can replay a
