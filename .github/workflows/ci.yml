@@ -1236,3 +1236,13 @@ jobs:
       - name: "every comet's orbit, place and tail: the field agrees with the propagator, orbits lie on their conic, tails point away from the Sun, one indexed mesh for 4 000 comets (release 1.5.0 stage A8, internal #1068)"
         run: node tests/test_cometfield.mjs
       # 0079 a8: end
+      # 0079 a6: begin
+      - name: "the small complete lists: the IAU's showers, the observatories with their MPC codes, the launch sites and every landing and impact site become records, and their cards say what is not drawn (release 1.5.0 stage A6, internal #1064)"
+        run: node tests/test_small_lists.mjs
+      - name: "the small lists' cards open, and search finds a shower, an observatory, a probe and an impact site by name (release 1.5.0 stage A6)"
+        run: node tests/test_small_lists_cards.mjs
+      - name: "the other showers' radiants are placed on the dome, each at its altitude, none when the box is off (release 1.5.0 stage A6)"
+        run: node tests/test_radiants_catalogue.mjs
+      - name: "the packed exoplanets (site/data/exoplanets.bin) are the bundled table, to what a card prints, in 133 kB gzipped (release 1.5.0 stage A13, internal #1073)"
+        run: node tests/test_exopack.mjs
+      # 0079 a6: end

@@ -3614,6 +3614,46 @@ export const COPY = {
   }
 };
 
+// 0079 int: begin -- the strings stages A4, A5 and A6 of release 1.5.0 added to the English copy, in Spanish like the rest of this file
+// (machine-drafted until two native speakers have read it). A key this file already has is left as it is.
+{
+  const topUp = (dst, src) => {
+    for (const k of Object.keys(src)) {
+      if (src[k] && typeof src[k] === 'object' && !Array.isArray(src[k]) && dst[k] && typeof dst[k] === 'object') topUp(dst[k], src[k]);
+      else if (!(k in dst)) dst[k] = src[k];
+    }
+  };
+  topUp(COPY, {
+    card: { rows: { iauName: "Nombre aprobado por la UAI", onBody: "En", whenSite: "Cuándo" } },
+    drawing: {
+      markOnly: "una marca en su lugar; no hay nada allí que dibujar",
+      noPlace: "no se dibuja: no hay un lugar suyo que marcar",
+      shower: "un nombre en el punto de donde parecen venir sus meteoros, en la vista del cielo cerca de su máximo; una dirección, no un lugar del espacio"
+    },
+    klass: { shower: "Lluvia de meteoros" },
+    cls: {
+      shower: "una dirección en el cielo: la mediana de las soluciones publicadas por la UAI para esta lluvia",
+      noPlace: "no se dibuja ningún lugar para él: el cuerpo en que está no es un mundo de esta aplicación",
+      approxPlace: "situado según coordenadas publicadas, con una precisión de unos {n} grados"
+    },
+    unplaced: { noDistanceRow: "Sin medir: el catálogo no tiene paralaje para ella", iauApproved: "{name}, aprobado el {date}" },
+    starSystem: { auYearComputed: "{n} UA; su año, de unos {y} años, se calcula a partir de eso y de la masa de su estrella" },
+    searchRows: { kinds: { galaxy: "Galaxia", cluster: "Cúmulo de galaxias", browndwarf: "Enana marrón", whitedwarf: "Enana blanca" } },
+    templates: {
+      exotic: {
+        kinds: { galaxy: "galaxia", cluster: "cúmulo de galaxias", browndwarf: "enana marrón", whitedwarf: "enana blanca" },
+        leadGalaxy: "{name} es una galaxia a {dist} años luz, donde está ahora",
+        leadCluster: "{name} es un cúmulo de galaxias a {dist} años luz, donde está ahora",
+        leadBrowndwarf: "{name} es una enana marrón a {dist} años luz",
+        leadWhitedwarf: "{name} es una enana blanca a {dist} años luz"
+      },
+      site: { mpc: "su código del Minor Planet Center es {code}", closed: "cerrado en {year}", kinds: { "launch-site": "base de lanzamiento", "landing-site": "lugar de aterrizaje" } },
+      shower: { lead: "{name} es una lluvia de meteoros", peak: "con su máximo hacia el {date}", speed: "con meteoros que entran en el aire a {n} km por segundo", parent: "del polvo de {parent}" }
+    }
+  });
+}
+// 0079 int: end
+
 export const GLOSSARY = {
   orbit: "Un camino alrededor de algo, sostenido por la gravedad. Si vas lo bastante rápido de lado, sigues cayendo al lado de la Tierra en lugar de caer sobre ella.",
   "low Earth orbit": "La capa concurrida de unos 200 a 2 000 km de altura. Aquí están la estación, la mayoría de los satélites y la mayor parte de la basura.",
