@@ -385,6 +385,7 @@ classes:
     records:
       - {domain: probes}
       - {domain: real_models, where: {class: probe}}
+      - {domain: real_models, ids: [orion-esm]}
       - {domain: model_kinds, prefix: [probe-]}
       - {domain: layers, ids: [deep-space]}
 

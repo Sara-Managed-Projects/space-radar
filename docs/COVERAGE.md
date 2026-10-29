@@ -24,7 +24,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | catalogues | 4 | 110 191 |
 | other_light | 3 | 3 |
 | sites | 44 | 44 |
-| real_models | 225 | 225 |
+| real_models | 227 | 227 |
 | model_kinds | 52 | 52 |
 | small_bodies | 20 | 20 |
 | probes | 37 | 37 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 29 | 29 |
-| **all** | **1011** | **111 198** |
+| **all** | **1013** | **111 200** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -50,8 +50,8 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [ASTEROID](#asteroid) | 20 | `models.js`, `realmodels.js`, `glyphs.js`, `kepler.js`, `moonshape.js` | modelled | - |
 | [COMET](#comet) | 3 | `models.js`, `glyphs.js`, `kepler.js` | modelled | - |
 | [ARTIFICIAL_SATELLITE](#artificial_satellite) | 205 | `sgp4.js`, `glyphs.js`, `realmodels.js`, `models.js` | measured | - |
-| [LAUNCH_AND_ROCKET](#launch_and_rocket) | 64 | `models.js`, `ascent.js`, `realmodels.js` | illustrative | - |
-| [SPACE_PROBE](#space_probe) | 69 | `sampled.js`, `realmodels.js`, `models.js`, `glyphs.js` | measured | - |
+| [LAUNCH_AND_ROCKET](#launch_and_rocket) | 65 | `models.js`, `ascent.js`, `realmodels.js` | illustrative | - |
+| [SPACE_PROBE](#space_probe) | 70 | `sampled.js`, `realmodels.js`, `models.js`, `glyphs.js` | measured | - |
 | [LANDING_SITE](#landing_site) | 64 | `models.js`, `realmodels.js`, `shadow.js` | measured | - |
 | [EXOPLANET](#exoplanet) | 146 | `systems.js`, `systemextras.js`, `exoface.js`, `exostage.js` | modelled | - |
 | [STAR](#star) | 46 | `stars3d.js`, `starfield.js`, `stardisc.js` | measured | - |
@@ -82,7 +82,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 1011 records: 300 measured, 356 modelled, 355 illustrative.
+Honesty over the 1013 records: 302 measured, 356 modelled, 355 illustrative.
 
 ## The classes
 
@@ -305,9 +305,9 @@ Honesty over the 1011 records: 300 measured, 356 modelled, 355 illustrative.
 - **Measured, modelled or reconstructed:** Measured: the pad, the time, the vehicle's dimensions. Illustrative: the ascent arc (the real track is not published; the launches layer says so) and the procedural rocket's details.
 - **Rights:** LL2 free to 15 requests an hour, no published licence; NASA models free and without copyright; facts cited.
 - **What is missing is tracked in:** #867 (a real launch replayed on its event clock)
-- **Records (64):**
+- **Records (65):**
   - sites (2): `saturn-v-lc-39a`, `shuttle-lc-39b`
-  - real_models (8): `saturn-v`, `shuttle-stack`, `delta2-stage`, `atlas5-centaur`, `centaur-d`, `falcon9-stage2`, `h2a-stage2`, `kosmos3m-stage2`
+  - real_models (9): `saturn-v`, `shuttle-stack`, `delta2-stage`, `atlas5-centaur`, `centaur-d`, `falcon9-stage2`, `h2a-stage2`, `kosmos3m-stage2`, `sls-block1`
   - model_kinds (3): `rocket-upper-stage`, `rocket-spent-stage`, `pad-generic`
   - rockets (49): `falcon-9`, `falcon-heavy`, `ariane-62`, `ariane-64`, `ariane-6`, `electron`, `neutron`, `spectrum`, `starship`, `soyuz-2`, `vulcan`, `vulcan-vc2s`, `vulcan-vc4s`, `vulcan-vc4l`, `vulcan-vc6l`, `vega-c`, `vega`, `atlas-v`, `h3`, `h3-24`, `sls`, `new-glenn`, `firefly-alpha`, `terran-r`, `pslv`, `pslv-ca`, `gslv-mk2`, `lvm3`, `long-march-2d`, `long-march-2f`, `long-march-5`, `long-march-5b`, `long-march-8a`, `long-march-10`, `long-march-12a`, `nuri`, `themis`, `hanbit-nano`, `angara-12`, `minotaur-iv`, `delta-iv-heavy`, `proton-m`, `angara-a5`, `zhuque-2e`, `gravity-1`, `kinetica-1`, `kuaizhou-1a`, `minotaur-i`, `small-commercial-orbital`
   - layers (2): `launches`, `ground-sites`
@@ -323,8 +323,8 @@ Honesty over the 1011 records: 300 measured, 356 modelled, 355 illustrative.
 - **Dates and filters:** Horizons windows per craft (ephemerides.yaml); events dated to the minute where the mission page gives one.
 - **Measured, modelled or reconstructed:** Measured: the paths. A stand-in (sample.js, dashed halo) where Horizons cannot be read from a browser, said on the card.
 - **Rights:** Horizons data courtesy NASA/JPL-Caltech; NASA models free and without copyright.
-- **Records (69):**
-  - real_models (27): `mro`, `parker`, `juno`, `voyager`, `cassini`, `galileo`, `pioneer`, `lro`, `osiris-rex`, `stereo`, `dawn`, `odyssey`, `rosetta`, `near`, `stardust`, `deep-impact`, `maven`, `new-horizons`, `europa-clipper`, `psyche`, `juice`, `bepicolombo`, `hera`, `lucy`, `mars-express`, `hayabusa2`, `hope`
+- **Records (70):**
+  - real_models (28): `mro`, `parker`, `juno`, `voyager`, `cassini`, `galileo`, `pioneer`, `lro`, `osiris-rex`, `stereo`, `dawn`, `odyssey`, `rosetta`, `near`, `stardust`, `deep-impact`, `maven`, `new-horizons`, `europa-clipper`, `psyche`, `juice`, `bepicolombo`, `hera`, `lucy`, `mars-express`, `hayabusa2`, `hope`, `orion-esm`
   - model_kinds (4): `probe-generic`, `probe-new-horizons`, `probe-mars-2020-cruise`, `probe-solar-orbiter`
   - probes (37): `deep-jwst`, `deep-soho`, `deep-roman`, `deep-mro`, `deep-mars-express`, `deep-mars-odyssey`, `deep-hope`, `deep-juno`, `deep-lro`, `deep-voyager-1`, `deep-voyager-2`, `deep-new-horizons`, `deep-pioneer-10`, `deep-pioneer-11`, `deep-maven`, `deep-cassini`, `deep-galileo`, `deep-mars-2020`, `deep-dawn`, `deep-rosetta`, `deep-near`, `deep-stardust`, `deep-deep-impact`, `deep-parker`, `deep-solar-orbiter`, `deep-psyche`, `deep-lucy`, `deep-europa-clipper`, `deep-juice`, `deep-bepicolombo`, `deep-hera`, `deep-osiris-apex`, `deep-hayabusa2`, `deep-stereo-a`, `deep-gaia`, `deep-spitzer`, `deep-kepler`
   - layers (1): `deep-space`

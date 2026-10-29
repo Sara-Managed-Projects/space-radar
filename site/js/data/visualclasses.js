@@ -462,7 +462,8 @@ export const VISUAL_CLASSES = [
 "centaur-d",
 "falcon9-stage2",
 "h2a-stage2",
-"kosmos3m-stage2"
+"kosmos3m-stage2",
+"sls-block1"
 ],
 "model_kinds": [
 "rocket-upper-stage",
@@ -558,7 +559,8 @@ export const VISUAL_CLASSES = [
 "lucy",
 "mars-express",
 "hayabusa2",
-"hope"
+"hope",
+"orion-esm"
 ],
 "model_kinds": [
 "probe-generic",

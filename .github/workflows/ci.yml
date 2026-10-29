@@ -1096,6 +1096,8 @@ jobs:
         run: node tests/test_story.mjs
       - name: "Return to base: what away is, what coming home does, where the house lives (public #241)"
         run: node tests/test_base.mjs
+      - name: "Artemis models preserve their named parts, attachment points and triangle budgets"
+        run: node tests/test_artemis_models.mjs
       - name: "every test file in tests/ is run by this workflow"
         run: node tests/test_ci_runs_every_test.mjs
       # 0076 W1-a
