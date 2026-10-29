@@ -3,9 +3,10 @@
   vostok-sm-sphere   the 2.3 m descent sphere (SA): its ablative coat, the entry opening with its flange, the Vzor window,
                      the vent boss, the green strap, the cable runs, the gold-lined cabin seen through the opening
   vostok-hatch       the entry hatch with its porthole and bolts: jettisoned at 7 km, two seconds before the seat
+  vostok-antennas    the four hairpin loops and four whips (folded inside the shroud, deployed after it goes)
   vostok-im          the instrument module (PA): the grey drum with its plumbing, the white sensor discs and the sixteen
                      attitude jets, the ring of twelve green nitrogen spheres, the louvred radiator cone, the TDU-1 retro
-                     engine, the four hairpin and four whip antennas
+                     engine.
 
 Metres, +Y up the spacecraft's axis (the sphere on top), the origin on the lower interface of the instrument module (the
 plane the launcher's adapter takes it by). Dimensions: sphere 2.3 m, instrument module 2.25 m long and 2.43 m across,
@@ -352,26 +353,35 @@ def build_im():
     # brackets where the four sphere straps land on the drum's top
     for ang in ring_angles(4, 0):
         st.add("lug", "body", STEEL, box(polar(1.0, ang, 2.13), (0.12, 0.10, 0.10), rot("y", -ang)))
-    # ---- the antennas: four hairpin loops and four whips on bases round the collar
+    return st
+
+
+def build_antennas():
+    st = Stage("vostok-antennas")
+    # four hairpin loops standing on the sphere's shoulder (from the full-size copies: tall thin U's, a little outward), and four
+    # long whips from bases lower on the sphere, as the photographs of the Le Bourget and Speyer copies show them
     for k, ang in enumerate(ring_angles(4, 45)):
         a = math.radians(ang)
         out = V(math.cos(a), 0, math.sin(a))
-        base = polar(0.92, ang, 2.30)
-        st.add("ant-base", "body", STEEL_D, frustum(base - V(0, 0.05, 0), base + out * 0.06 + V(0, 0.05, 0), 0.035, 0.028, 8, caps=True))
-        # hairpin: out and up, a U at the end
-        d = unit(out * 0.8 + V(0, 0.65, 0))
+        th = math.radians(40.0)
+        n = V(math.sin(th) * math.cos(a), math.cos(th), math.sin(th) * math.sin(a))
+        base = C_SPH + n * (R_SPH - 0.01)
+        st.add("ant-base", "body", STEEL_D, frustum(base - n * 0.03, base + n * 0.06, 0.04, 0.03, 10, caps=True))
+        d = unit(n * 0.85 + V(0, 0.55, 0))
         side = V(-math.sin(a), 0, math.cos(a))
-        p0 = base + out * 0.04
-        p1 = p0 + d * 0.62
-        pts_a = [p0 + side * 0.035, p1 + side * 0.035, p1 + d * 0.07 + side * 0.012, p1 + d * 0.07 - side * 0.012, p1 - side * 0.035, p0 - side * 0.035]
-        st.add("hairpin", "body", STEEL, tube(pts_a, 0.011, 5))
+        p0 = base + n * 0.05
+        p1 = p0 + d * 0.78
+        pts_a = [p0 + side * 0.05, p1 + side * 0.05, p1 + d * 0.09 + side * 0.016, p1 + d * 0.09 - side * 0.016, p1 - side * 0.05, p0 - side * 0.05]
+        st.add("hairpin", "body", STEEL, tube(pts_a, 0.0125, 5))
     for k, ang in enumerate(ring_angles(4, 0)):
         a = math.radians(ang)
         out = V(math.cos(a), 0, math.sin(a))
-        base = polar(1.02, ang, 2.52)
-        d = unit(out * 0.95 + V(0, 0.30, 0))
-        st.add("whip-base", "body", STEEL_D, frustum(base - d * 0.03, base + d * 0.05, 0.03, 0.02, 8, caps=True))
-        st.add("whip", "body", STEEL, rod(base, base + d * 1.55, 0.012, 5))
+        th = math.radians(78.0)
+        n = V(math.sin(th) * math.cos(a), math.cos(th), math.sin(th) * math.sin(a))
+        base = C_SPH + n * (R_SPH - 0.01)
+        d = unit(n * 0.9 + V(0, 0.25, 0))
+        st.add("whip-base", "body", STEEL_D, frustum(base - n * 0.03, base + n * 0.07, 0.035, 0.025, 10, caps=True))
+        st.add("whip", "body", STEEL, rod(base, base + d * 1.6, 0.012, 5))
     return st
 
 
@@ -384,6 +394,7 @@ def build():
     veh.add("vostok-im", im, (0.0, 1.35, 0.0))
     veh.add("vostok-sm-sphere", sph, tuple(C_SPH))
     d_h = sph_dir(HATCH_AZ, HATCH_EL)
+    veh.add("vostok-antennas", build_antennas(), (0.0, 3.4, 0.0))
     veh.add("vostok-hatch", hat, tuple(C_SPH + d_h * (R_SPH + 0.03)))
     return veh
 

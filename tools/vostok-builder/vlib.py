@@ -166,8 +166,8 @@ class Vehicle:
             st.m = keep
             rec = {"name": d["name"], "origin": (o - parent_origin).round(5).tolist(), "groups": [], "children": []}
             if m.parts:
-                tris, ncol = m.export(tmp, crease=crease, foil_crease=foil_crease)
-                rec["groups"] = json.load(open(tmp))["groups"]
+                tris, ncol = m.export(None, crease=crease, foil_crease=foil_crease)
+                rec["groups"] = m._recs
                 stats.append((d["name"], tris, ncol, merges))
             for c in d["children"]:
                 rec["children"].append(one(c, o))
@@ -177,7 +177,7 @@ class Vehicle:
         if os.path.exists(tmp):
             os.remove(tmp)
         with open(path, "w") as fh:
-            json.dump({"name": self.name, "parts": parts}, fh)
+            json.dump({"name": self.name, "parts": parts}, fh, separators=(",", ":"))
         if verbose:
             for n, t, c, mg in stats:
                 print("  %-22s %6d tris %2d colours%s" % (n, t, c, ("  (merged %d)" % len(mg)) if mg else ""), flush=True)
@@ -187,3 +187,64 @@ class Vehicle:
 
 def new_stage(name):
     return Stage(name)
+
+
+# ---- a faster Model.export (same json, same creased normals; the stage-builder's version loops in Python per corner) -----
+def _fast_export(self, path, crease=40.0, max_colours=14, foil_crease=None):
+    base_cos = math.cos(math.radians(crease))
+    recs = []
+    groups = self.groups()
+    self.folds = []
+    while len(groups) > max_colours:
+        small = min(groups, key=lambda k: len(groups[k][1]))
+        rgb = np.array(hexrgb(small[1]))
+        cands = [k for k in groups if k != small and k[0] == small[0]] or [k for k in groups if k != small]
+        near = min(cands, key=lambda k: np.sum((np.array(hexrgb(k[1])) - rgb) ** 2))
+        groups[near] = merge([groups[near], groups.pop(small)])
+        self.folds.append("%s %s -> %s" % (small[0], small[1], near[1]))
+    for (role, colour), (Vv, F) in sorted(groups.items()):
+        cosc = math.cos(math.radians(foil_crease)) if (foil_crease is not None and role == "foil") else base_cos
+        key = np.round(Vv / 1e-5).astype(np.int64)
+        _, ids, inv = np.unique(key, axis=0, return_index=True, return_inverse=True)
+        inv = inv.reshape(-1)
+        P = Vv[ids]
+        Fw = inv[F]
+        Fw = Fw[(Fw[:, 0] != Fw[:, 1]) & (Fw[:, 1] != Fw[:, 2]) & (Fw[:, 0] != Fw[:, 2])]
+        fn = np.cross(P[Fw[:, 1]] - P[Fw[:, 0]], P[Fw[:, 2]] - P[Fw[:, 0]])
+        area = np.linalg.norm(fn, axis=1)
+        ok = area > 1e-12
+        Fw, fn, area = Fw[ok], fn[ok], area[ok]
+        fu = fn / area[:, None]
+        T = len(Fw)
+        corner_v = Fw.reshape(-1)                      # corner c = 3 t + i
+        corner_t = np.repeat(np.arange(T), 3)
+        order = np.argsort(corner_v, kind="stable")
+        sv = corner_v[order]
+        starts = np.nonzero(np.r_[True, sv[1:] != sv[:-1]])[0]
+        ends = np.r_[starts[1:], len(sv)]
+        nrm = np.zeros((len(corner_v), 3))
+        for s, e in zip(starts, ends):
+            cs = order[s:e]                            # the corners at this vertex
+            ts = corner_t[cs]
+            fu_v = fu[ts]
+            M = fu_v @ fu_v.T >= cosc                  # which incident faces each corner's face smooths with
+            sums = M.astype(float) @ fn[ts]
+            nrm[cs] = sums
+        ln = np.linalg.norm(nrm, axis=1)
+        ln[ln == 0] = 1
+        nrm = nrm / ln[:, None]
+        q = np.round(nrm * 32).astype(np.int64)
+        keyc = np.column_stack([corner_v, q])
+        _, first, remap = np.unique(keyc, axis=0, return_index=True, return_inverse=True)
+        remap = remap.reshape(-1)
+        pos = P[corner_v[first]]
+        nor = nrm[first]
+        recs.append({"role": role, "colour": colour, "positions": np.round(pos, 5).tolist(), "normals": np.round(nor, 4).tolist(), "indices": remap.tolist()})
+    self._recs = recs
+    if path:
+        with open(path, "w") as fh:
+            json.dump({"name": self.name, "groups": recs}, fh, separators=(",", ":"))
+    return sum(len(r["indices"]) // 3 for r in recs), len(recs)
+
+
+lib.Model.export = _fast_export

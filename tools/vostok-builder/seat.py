@@ -52,57 +52,64 @@ def joint(c, r, seg=10):
 
 def build_seat():
     st = Stage("vostok-seat")
-    # ---- the hull: an elliptic cylinder along Y behind and under the pan, 1.15 m long, rounded ends, riveted bands
-    seg = 28
-    def ell(y0, y1, rx, rz, cz, caps=True):
-        t = np.linspace(0, 2 * math.pi, seg, endpoint=False)
+    # ---- the hull: a TROUGH, an elliptic half-cylinder along Y open toward the pilot (+Z), 1.2 m long, riveted bands, a cream lining,
+    # a closed foot plate (the photograph of the seat shows the pilot lying IN the silver tub with the white cushions at his sides)
+    seg = 18
+    rx, rz, cz = 0.33, 0.30, 0.20
+    def arc(y0, y1, rx_, rz_, back=True, flip=False):
+        a0, a1 = (math.pi, 2 * math.pi)       # the half with z < cz: the back of the tub
         P, F = [], []
         for y in (y0, y1):
-            for a in t:
-                P.append([rx * math.cos(a), y, cz + rz * math.sin(a)])
+            for i in range(seg + 1):
+                a = a0 + (a1 - a0) * i / seg
+                P.append([rx_ * math.cos(a), y, cz + rz_ * math.sin(a)])
+        n = seg + 1
         for i in range(seg):
-            j = (i + 1) % seg
-            F += [[i, seg + j, j], [i, seg + i, seg + j]]
-        m = (np.array(P), np.array(F))
-        return m
-    parts = []
-    ys = [-0.36, -0.20, 0.00, 0.20, 0.40, 0.58]
+            if flip:
+                F += [[i, i + 1, n + i + 1], [i, n + i + 1, n + i]]
+            else:
+                F += [[i, n + i + 1, i + 1], [i, n + i, n + i + 1]]
+        return np.array(P), np.array(F)
+    ys = [-0.60, -0.40, -0.20, 0.00, 0.20, 0.40, 0.60]
     for k in range(len(ys) - 1):
-        m = ell(ys[k], ys[k + 1], 0.27, 0.19, -0.11)
-        st.add("hull", "body", shade(ALU, 1 + 0.035 * (1 if k % 2 else -1)), m)
-    # end plates: the foot end (flat with a flange) and the top
-    c_lo = V(0, -0.36, -0.11)
-    st.add("hull-foot", "body", ALU_D, xf(lib.disc(V(0, 0, 0), DOWN, 1.0, seg), np.diag([0.27, 1, 0.19]), c_lo))
-    st.add("hull-top", "body", ALU_D, xf(lib.disc(V(0, 0, 0), UP, 1.0, seg), np.diag([0.27, 1, 0.19]), V(0, 0.58, -0.11)))
-    # riveted bands and rows of rivets
-    for y in (-0.20, 0.0, 0.20, 0.40):
-        st.add("band", "body", ALU_D, merge([frustum(V(0, y - 0.012, -0.11), V(0, y + 0.012, -0.11), 1.0, 1.0, 4, caps=False)]) if False else
-               xf(frustum(V(0, y - 0.012, 0), V(0, y + 0.012, 0), 1.0, 1.0, seg, caps=False), np.diag([0.278, 1, 0.198]), V(0, 0, -0.11)))
+        st.add("hull", "body", shade(ALU, 1 + 0.035 * (1 if k % 2 else -1)), arc(ys[k], ys[k + 1], rx, rz))
+    st.add("lining", "body", STRAP_W, arc(-0.60, 0.60, rx - 0.03, rz - 0.03, flip=True))
+    # the rolled edge along both sides, and the foot plate closing the tub
+    for sx in (-1, 1):
+        st.add("rim", "body", ALU_L, rod(V(sx * rx, -0.60, cz), V(sx * rx, 0.60, cz), 0.022, 8))
+    c_lo = V(0, -0.60, cz)
+    half_disc = lib.disc(V(0, 0, 0), DOWN, 1.0, 36)
+    Vv, F = half_disc
+    keep = [i for i in range(len(F)) if Vv[F[i]][:, 2].mean() <= 0.02]
+    st.add("hull-foot", "body", ALU_D, xf((Vv, F[keep]), np.diag([rx, 1, rz]), c_lo))
+    for y in (-0.40, -0.20, 0.0, 0.20, 0.40):
+        st.add("band", "body", ALU_D, arc(y - 0.012, y + 0.012, rx + 0.008, rz + 0.008))
     rivets = []
-    for y in (-0.28, -0.10, 0.10, 0.30, 0.50):
-        for k in range(24):
-            a = 2 * math.pi * k / 24
-            p = V(0.274 * math.cos(a), y, -0.11 + 0.194 * math.sin(a))
+    for y in (-0.50, -0.30, -0.10, 0.10, 0.30, 0.50):
+        for k in range(14):
+            a = math.pi + math.pi * (k + 0.5) / 14
+            p = V((rx + 0.008) * math.cos(a), y, cz + (rz + 0.008) * math.sin(a))
             rivets.append(lib.sphere(p, 0.006, 3, 5))
     st.add("rivets", "body", ALU_L, merge(rivets))
-    # the two ejection-rocket housings at the foot: short cylinders with a flared mouth, pointing down the seat
-    for x in (-0.12, 0.12):
-        st.add("rocket", "body", ALU_D, frustum(V(x, -0.34, -0.11), V(x, -0.58, -0.11), 0.095, 0.095, 18, caps=False))
-        st.add("rocket-mouth", "body", ALU_L, frustum(V(x, -0.58, -0.11), V(x, -0.64, -0.11), 0.095, 0.115, 18, caps=False))
-        st.add("rocket-throat", "body", BLACK, lib.disc(V(x, -0.62, -0.11), DOWN, 0.085, 18))
-        st.add("rocket-band", "body", RAIL, frustum(V(x, -0.44, -0.11), V(x, -0.46, -0.11), 0.1, 0.1, 18, caps=False))
+    # the two ejection-rocket housings under the foot plate: short cylinders with a flared mouth, pointing down the seat
+    zr = cz - 0.12
+    for x in (-0.14, 0.14):
+        st.add("rocket", "body", ALU_D, frustum(V(x, -0.60, zr), V(x, -0.82, zr), 0.115, 0.115, 20, caps=False))
+        st.add("rocket-mouth", "body", ALU_L, frustum(V(x, -0.82, zr), V(x, -0.88, zr), 0.115, 0.135, 20, caps=False))
+        st.add("rocket-throat", "body", BLACK, lib.disc(V(x, -0.86, zr), DOWN, 0.105, 20))
+        st.add("rocket-band", "body", RAIL, frustum(V(x, -0.68, zr), V(x, -0.70, zr), 0.12, 0.12, 20, caps=False))
     # access plates on the hull
-    for y, a, w, h in ((0.05, 70, 0.12, 0.14), (0.28, -60, 0.14, 0.12), (-0.10, 200, 0.12, 0.10), (0.42, 140, 0.10, 0.12)):
-        ar = math.radians(a)
-        p = V(0.275 * math.cos(ar), y, -0.11 + 0.195 * math.sin(ar))
-        n = unit(V(math.cos(ar) / 0.27, 0, math.sin(ar) / 0.19))
+    for y, deg, w, h in ((0.05, 215, 0.12, 0.14), (0.28, 250, 0.14, 0.12), (-0.10, 300, 0.12, 0.10), (0.42, 330, 0.10, 0.12)):
+        ar = math.radians(deg)
+        p = V((rx + 0.008) * math.cos(ar), y, cz + (rz + 0.008) * math.sin(ar))
+        n = unit(V(math.cos(ar) / rx, 0, math.sin(ar) / rz))
         t_ = V(-n[2], 0, n[0])
         st.add("plate", "body", ALU_L, box(p + n * 0.004, (w, h, 0.01), np.column_stack([t_, [0, 1, 0], n])))
     # ---- the rails: two tubes down the back of the hull, with their carriages
-    for x in (-0.255, 0.255):
-        st.add("rail", "body", RAIL, rod(V(x, -0.52, -0.33), V(x, 1.10, -0.33), 0.022, 10))
-        st.add("rail-arm", "body", RAIL, merge([rod(V(x * 0.96, y, -0.26), V(x, y, -0.33), 0.016, 6) for y in (-0.30, 0.15, 0.55, 0.95)]))
-        st.add("carriage", "body", ALU_D, box(V(x, 0.20, -0.33), (0.06, 0.20, 0.06)))
+    for x in (-0.30, 0.30):
+        st.add("rail", "body", RAIL, rod(V(x, -0.70, -0.16), V(x, 1.10, -0.16), 0.022, 10))
+        st.add("rail-arm", "body", RAIL, merge([rod(V(x * 0.96, y, -0.08), V(x, y, -0.16), 0.016, 6) for y in (-0.30, 0.15, 0.55, 0.95)]))
+        st.add("carriage", "body", ALU_D, box(V(x, 0.20, -0.16), (0.06, 0.20, 0.06)))
     # ---- backrest: a shaped plate on the hull's front, side wings, and the headrest above it
     st.add("backrest", "body", ALU, box(V(0, 0.42, 0.075), (0.50, 0.95, 0.035)))
     st.add("back-pad", "body", STRAP_W, box(V(0, 0.42, 0.10), (0.42, 0.88, 0.03)))
@@ -116,7 +123,7 @@ def build_seat():
     st.add("chute-lid", "body", ALU_L, box(V(0, 1.16, -0.13), (0.42, 0.03, 0.26)))
     st.add("chute-latch", "body", BUCKLE, merge([box(V(x, 1.12, 0.0), (0.04, 0.06, 0.02)) for x in (-0.12, 0.12)]))
     # ---- the pan, the boat pack under it, the calf rest
-    st.add("pan", "body", ALU, box(V(0, -0.075, 0.30), (0.50, 0.035, 0.50)))
+    st.add("pan", "body", ALU, box(V(0, -0.075, 0.33), (0.46, 0.035, 0.46)))
     st.add("pan-pad", "body", STRAP_W, box(V(0, -0.045, 0.30), (0.42, 0.03, 0.42)))
     st.add("boat", "body", ORANGE_D, box(V(0, -0.15, 0.30), (0.46, 0.09, 0.46)))
     st.add("boat-strap", "body", STRAP, merge([box(V(x, -0.15, 0.30), (0.03, 0.10, 0.48)) for x in (-0.12, 0.12)]))

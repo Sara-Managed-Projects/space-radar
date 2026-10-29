@@ -1,8 +1,8 @@
 """vostok-chutes: the parachutes of Vostok, each canopy its own named part, drawn inflated.
 
-  chute-sa-drogue     the capsule's drogue (the extractor that pulls the main canopy out of its container)
-  chute-sa-brake      the capsule's braking canopy, a small flat dome
-  chute-sa-main       the capsule's main canopy (PS-6415-59), a dome of more than 500 m^2 (Rambler / RussianSpaceWeb)
+  chute-sa-drogue     the capsule's pullout parachute, 1.5 m^2 (RussianSpaceWeb, 'Botched Vostok launch tests emergency landing'): it pulls the braking canopy out
+  chute-sa-brake      the capsule's braking parachute, 18 m^2 (same page): 180 m/s to 70 m/s, released at 4 km
+  chute-sa-main       the capsule's main canopy (PS-6415-59), 574 m^2 (same page), released at 2 km
   chute-pilot-drogue  the seat's stabilising drogue (museum: 2 m^2)
   chute-pilot-main    the cosmonaut's main canopy, 83.5 m^2 (Rambler)
   chute-pilot-reserve the cosmonaut's reserve canopy, 56 m^2 (Rambler); on 12 April 1961 it opened by itself and both flew
@@ -116,8 +116,8 @@ def build():
         return st
 
     # the capsule's: drogue, brake, main
-    put("chute-sa-drogue", 2.0, gores=8, line_len=3.0, riser_len=1.0, sub=2, rows=5, line_r=0.012, flat=True)
-    put("chute-sa-brake", 25.0, gores=12, line_len=9.0, riser_len=2.0, sub=2, rows=6, line_r=0.02, flat=True)
+    put("chute-sa-drogue", 1.5, gores=8, line_len=3.0, riser_len=1.0, sub=2, rows=5, line_r=0.012, flat=True)
+    put("chute-sa-brake", 18.0, gores=12, line_len=9.0, riser_len=2.0, sub=2, rows=6, line_r=0.02, flat=True)
     put("chute-sa-main", 574.0, gores=48, line_len=26.0, riser_len=5.0, sub=1, rows=10, line_r=0.03)
     # the seat's and the cosmonaut's: stabilising drogue, main, reserve
     put("chute-pilot-drogue", 2.0, gores=8, line_len=2.2, riser_len=0.6, sub=2, rows=5, line_r=0.008, flat=True)

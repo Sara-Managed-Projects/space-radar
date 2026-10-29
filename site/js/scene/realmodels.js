@@ -1128,6 +1128,15 @@ export const REAL_MODELS = {
    * Keys are lower-cased substrings of the catalogue name.
    */
   named: {
+    // 0079 c2: begin -- THE VOSTOK MODELS OF THE MOMENTS (release 1.5.0, stage r15-c2; internal #1051). Four files for the player of stage C1 to load by id
+    // and to take apart by node name (registry/models.yaml rows r7-8k72k, vostok-3ka, vostok-seat, vostok-chutes: `parts`, `attach`, `engines`). THEY ARE NOT
+    // ROUTES TO ANY CATALOGUE OBJECT: the class gate `moment` is a class no record has, so no record of the app ever matches these keys. They are here so that the
+    // look probe `r15-c2` can wear them on a stand-in record (`sat-25544.as.r7-8k72k`) and photograph them through the app's own loader, light and finish.
+    'r7 8k72k': { file: 'r7-8k72k.glb', build: 'stage', colour: 'rocket', name: 'the R-7 8K72K Vostok-K launcher', klass: ['moment'], made: 'dimensions' },
+    'vostok 3ka': { file: 'vostok-3ka.glb', build: 'stage', colour: 'station', name: 'the Vostok 3KA spacecraft', klass: ['moment'], made: 'dimensions' },
+    'vostok seat': { file: 'vostok-seat.glb', build: 'stage', colour: 'station', name: 'the Vostok ejection seat', klass: ['moment'], made: 'dimensions' },
+    'vostok chutes': { file: 'vostok-chutes.glb', build: 'stage', colour: 'station', name: 'the parachutes of Vostok', klass: ['moment'], made: 'dimensions' },
+    // 0079 c2: end
     // 0078 r14-m1: begin -- SIX SPENT STAGES WITH THEIR OWN SHAPES (release 1.4.0, stage r14-m1; public #1160, #1164 to #1167, #1169).
     // Built in code from published dimensions and Commons photographs (registry/models.yaml, tools/stage-builder/): the Kosmos-3M
     // second stage, the Delta II second stage (Delta K), the Common Centaur of Atlas V, the Centaur D of Atlas-Centaur, the Falcon 9

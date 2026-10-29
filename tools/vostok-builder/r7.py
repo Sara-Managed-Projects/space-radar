@@ -8,7 +8,7 @@
   fairing      the payload shroud: ogive and cylinder
 
 Metres, +Y up the axis, y = 0 at the plane of the nozzle exits (the base of the stack), the payload (vostok-3ka, origin at its
-lower interface) standing on the adapter at y = 31.5 inside the fairing. The strap-ons stand on the diagonals (45, 135, ...
+lower interface) standing on the adapter at y = 32.0 inside the fairing. The strap-ons stand on the diagonals (45, 135, ...
 degrees from +X), their air rudders pointing out.
 
 Dimensions (published): overall 38.246 m with the shroud, span 10.303 m across the rudders, central block 28.131 m, strap-on
@@ -31,12 +31,13 @@ R_CORE = 1.475           # 2.95 m
 R_BOOST = 1.34           # 2.68 m
 R_E = 1.28               # 2.56 m
 H_TOTAL = 38.246
-Y_BOOST_BASE = 1.0       # the skirts end here; the nozzles hang to y = 0
-Y_CORE_BASE = 0.95
+Y_BOOST_BASE = 1.05       # the skirts end here; the nozzles hang to y = 0
+Y_CORE_BASE = 1.0
 Y_BOOST_TIP = 19.6
 Y_TRUSS0, Y_TRUSS1 = 27.2, 28.4
 Y_E0, Y_E1 = 28.4, 31.5
 Y_FAIR0, Y_FAIR_OGIVE, Y_FAIR1 = 31.5, 35.2, H_TOTAL
+Y_PAYLOAD = 32.0         # the payload's lower interface: vostok-3ka's origin stands here
 D_BOOST = R_CORE + R_BOOST + 0.03       # the strap-ons' axes at the base, 2.845 m from the core's
 
 # ---- colours (ours, read off the photographs of the museum copies at VDNKh and Kaluga)
@@ -91,7 +92,7 @@ def orient_mesh(mesh, ref):
     return (Vv, F[:, ::-1].copy()) if s < 0 else mesh
 
 
-def engine_cluster(st, label, cx, cz, ex, ez, y_skirt, mains, verniers, rt=0.105, re=0.31, length=0.92, seg=14):
+def engine_cluster(st, label, cx, cz, ex, ez, y_skirt, mains, verniers, rt=0.11, re=0.335, length=1.02, seg=14):
     """Main chambers at (u, v) offsets from (cx, cz) along (ex, ez); verniers likewise; each a barrel into the skirt and a bell
     hanging to y = 0."""
     ex, ez = V(ex), V(ez)
@@ -195,9 +196,9 @@ def build_booster(name, ang):
     bay = lib.disc(ex * cx0 + V(0, Y_BOOST_BASE - 0.02, 0), DOWN, R_BOOST - 0.02, seg)
     st.add("bay", "body", DARK, bay)
     # the engine: four main chambers (a 2 x 2 square, 0.75 m between centres) and two verniers on the tangent
-    s = 0.375
+    s = 0.39
     mains = [(s, s), (s, -s), (-s, s), (-s, -s)]
-    verns = [(0.0, 1.02), (0.0, -1.02)]
+    verns = [(0.0, 1.05), (0.0, -1.05)]
     engine_cluster(st, "rd107", ex[0] * cx0, ex[2] * cx0, ex, ez, Y_BOOST_BASE - 0.02, mains, verns)
     # struts to the core: four short ones near the tail, as in the photograph's brackets
     for dy in (1.9, 2.6):
@@ -255,11 +256,11 @@ def build_core():
         ang = 360 * k / 10 + 18
         hatch_plate(st, "tail-hatch", rng.uniform(1.4, 3.0), ang, 1.30, (0.3, 0.4), HATCH, lift=0.026)
     # tail: the engine, four main chambers in a 2 x 2 square and four verniers at the corners, as in the photograph from below
-    s = 0.40
+    s = 0.41
     mains = [(s, s), (s, -s), (-s, s), (-s, -s)]
-    verns = [(0.0, 1.05), (0.0, -1.05), (1.05, 0.0), (-1.05, 0.0)]
+    verns = [(0.0, 1.08), (0.0, -1.08), (1.08, 0.0), (-1.08, 0.0)]
     # the core's engine sits turned 45 degrees to the strap-ons' axes: its chambers point along the cross
-    engine_cluster(st, "rd108", 0.0, 0.0, V(1, 0, 0), V(0, 0, 1), Y_CORE_BASE - 0.02, mains, verns, re=0.31, length=0.9)
+    engine_cluster(st, "rd108", 0.0, 0.0, V(1, 0, 0), V(0, 0, 1), Y_CORE_BASE - 0.02, mains, verns)
     # the open lattice between the core and block E: two rings and 24 zig-zag struts, a dark floor
     r0, r1 = R_E + 0.03, R_E
     n = 12
@@ -290,7 +291,9 @@ def build_blok_e():
         weld_ring(st, "ring", y, R_E, RING, 0.03, 0.01, seg)
     st.add("lid", "body", SKIN_D, lib.disc((0, y1 + 0.02, 0), UP, R_E + 0.018, seg))
     # the payload adapter: a short cone the instrument module's flange stands on (inside the shroud)
-    st.add("adapter", "body", BRACE, frustum((0, y1 + 0.02, 0), (0, y1 + 0.32, 0), 1.18, 0.98, 48, caps=True))
+    st.add("adapter", "body", BRACE, frustum((0, y1 + 0.02, 0), (0, Y_PAYLOAD, 0), 1.20, 0.58, 48, caps=False))
+    st.add("adapter-ring", "body", RING, frustum((0, Y_PAYLOAD - 0.06, 0), (0, Y_PAYLOAD, 0), 0.60, 0.60, 36, caps=False))
+    st.add("adapter-ribs", "body", SEAM, merge([rod(polar(1.19, a, y1 + 0.03), polar(0.58, a, Y_PAYLOAD - 0.03), 0.025, 4) for a in ring_angles(12)]))
     # access panels, round ports and the red-ringed fittings of the photographs
     rng = np.random.default_rng(9)
     for k in range(16):
@@ -385,3 +388,30 @@ if __name__ == "__main__":
     os.makedirs(os.path.dirname(out) or ".", exist_ok=True)
     v = build()
     v.export(out, limit=12)
+
+
+def engine_points():
+    """Nozzle exit points (metres, vehicle frame) for the engine flame: main chambers first, then verniers."""
+    out = {"boosters-4": [], "core-stage": [], "blok-e": []}
+    s = 0.39
+    for ang in (45.0, 135.0, 225.0, 315.0):
+        a = math.radians(ang)
+        ex = (math.cos(a), math.sin(a))
+        ez = (-math.sin(a), math.cos(a))
+        c = (D_BOOST * ex[0], D_BOOST * ex[1])
+        for u, v in ((s, s), (s, -s), (-s, s), (-s, -s)):
+            out["boosters-4"].append([round(c[0] + ex[0] * u + ez[0] * v, 3), 0.0, round(c[1] + ex[1] * u + ez[1] * v, 3)])
+    for ang in (45.0, 135.0, 225.0, 315.0):
+        a = math.radians(ang)
+        ex = (math.cos(a), math.sin(a))
+        ez = (-math.sin(a), math.cos(a))
+        c = (D_BOOST * ex[0], D_BOOST * ex[1])
+        for v in (1.05, -1.05):
+            out["boosters-4"].append([round(c[0] + ez[0] * v, 3), 0.59, round(c[1] + ez[1] * v, 3)])
+    s = 0.41
+    for u, v in ((s, s), (s, -s), (-s, s), (-s, -s)):
+        out["core-stage"].append([u, 0.0, v])
+    for u, v in ((0.0, 1.08), (0.0, -1.08), (1.08, 0.0), (-1.08, 0.0)):
+        out["core-stage"].append([u, 0.58, v])
+    out["blok-e"].append([0.0, round(Y_E0 - 0.1 - 0.35 - 0.78, 3), 0.0])
+    return out
