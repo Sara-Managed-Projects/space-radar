@@ -76,6 +76,9 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 <!-- 0078 r14-m1: begin -->
 | The shapes of six spent rocket stages (Delta II and Falcon 9 second stages, Atlas V Centaur, Centaur D, H-IIA and Kosmos-3M second stages) | built by us in code from published dimensions | public domain, CC0, CC BY 2.0, 3.0 or 4.0 where a picture was used; share-alike pictures looked at only; ours | [3b-rocket-stages](#3b-rocket-stages-spent-rocket-stages-built-in-code-from-published-dimensions-2026-10-27) |
 <!-- 0078 r14-m1: end -->
+<!-- 0079 c2: begin -->
+| The shapes of the R-7 8K72K launcher with its parts, the Vostok 3KA spacecraft, the Vostok ejection seat with its pilot and the Vostok parachutes | built by us in code from published dimensions | public domain, CC0, CC BY 4.0, CC BY 2.0 or CC BY-SA where a picture was looked at; ours | [3b-vostok](#3b-vostok-the-vostok-models-of-the-moments-built-in-code-from-published-dimensions-2026-10-29) |
+<!-- 0079 c2: end -->
 
 <!-- 0078 r14-m4: begin -->
 | The shapes of Meteosat Second Generation, Meteosat Third Generation (imager and sounder), Fengyun-2, INSAT-3D, GEO-KOMPSAT-2A and 2B, Meteor-M No.2, Midori II and Resurs-DK 1 | built by us in code from published dimensions | CC0, public domain, CC BY-SA 2.0 de to 4.0 incl. 3.0 IGO and KOGL Type 1 where a picture was compared; ours | [3b-r14-m4](#3b-r14-m4-ten-weather-and-earth-observation-craft-built-from-dimensions-2026-10-27) |
@@ -1596,6 +1599,28 @@ number and says what is ours. Pictures whose licence is CC BY-SA were looked at 
 
 **Credit lines:** `3D model: built by Space Radar from published dimensions; compared with ...` (each row's `credit:`).
 <!-- 0078 r14-m1: end -->
+
+<!-- 0079 c2: begin -->
+## 3b-vostok. The Vostok models of the Moments, built in code from published dimensions (2026-10-29)
+
+Release 1.5.0, stage r15-c2 (internal spec 0079, internal #1051). **No free agency, operator or museum 3D model of the R-7 8K72K, the Vostok 3KA, its
+seat or its parachutes was found**: NASA 3D Resources' file listing (1 583 paths, the GitHub tree of `nasa/NASA-3D-Resources`, read 2026-10-29) has nothing of
+Vostok or the R-7 (its one Soyuz is the Apollo-Soyuz one); the Smithsonian National Air and Space Museum's records show physical models only (its 3D site was
+down on 2026-10-29); Wikimedia Commons has no 3D file of any of them; the downloadable meshes a web search found (CGTrader, MyMiniFactory, RenderHub,
+Unity's store) are sold or for personal use only. Each model was built in code by the parts-aware builder `tools/vostok-builder/` (on the stage builder of
+1.4.0), from cited metres, and compared at close-up, side by side with the photographs below, from four angles. No image-to-3D model was used; no picture is
+in any file; no logo and no lettering is on any mesh. Their parts are named nodes, for the Moments player (moments-contract.md). Each row of
+`registry/models.yaml` cites every number and says what is ours. Pictures whose licence is CC BY-SA were looked at only: nothing of them is in a file.
+
+| File | What | What it was compared with | Terms |
+|---|---|---|---|
+| `r7-8k72k.glb` (292 KB) | The Vostok-K launcher in four parts: strap-ons (B, V, G, D), core with its truss, block E, shroud; every strap-on a long cone with its RD-107 and air rudder | the cutaway drawing of the Vostok launcher with its metres (Commons, public domain); a NASA line drawing of the Vostok rocket; the museum copy at VDNKh (Alan Wilson, CC BY-SA 2.0; Dmitry Ivanov, CC BY-SA 4.0; Gennady Grachev, CC BY 2.0) and at Kaluga (Andrey Baburov, CC BY-SA 3.0; Tatyanakorneeva, CC BY-SA 4.0); Vostok-2M at RKK Energia (Dmitry Ivanov, CC BY-SA 4.0) | ours, from facts; pictures only looked at |
+| `vostok-3ka.glb` (261 KB) | The Vostok 3KA: the 2.3 m sphere with its coat, opening, hatch, Vzor window and straps; the instrument module with its twelve nitrogen spheres, louvred cone and retro engine; the antennas | RKK Energia's full-size copy at Speyer (Stolbovsky, CC BY 4.0), the copies at Le Bourget (Pline, CC BY-SA 3.0; Alan Wilson, CC BY-SA 2.0) and the Memorial Museum of Cosmonautics (Armael, CC0), replicas (CC0), Gagarin's capsule (SiefkinDR, CC BY-SA 3.0; Errabee, CC BY-SA 2.5), the Vostok 5 and 6 capsules (Stolbovsky, CC BY 4.0; Ardfern, CC BY 4.0), a Korabl-Sputnik hatch (CC BY-SA 4.0) | ours, from facts; pictures only looked at |
+| `vostok-seat.glb` (78 KB) | The ejection seat in its silver trough with its two rocket housings, and the cosmonaut in the orange SK-1 suit | the Vostok ejection seat (Stolbovsky, CC BY 4.0), the Vostok 5 capsule exhibit (Stolbovsky, CC BY 4.0), NASA's cutaway of the seating (public domain) | ours; sizes illustrative (no published seat dimension) |
+| `vostok-chutes.glb` (121 KB) | Six inflated canopies: the capsule's pullout, braking and main, the cosmonaut's drogue, main and reserve | areas from RussianSpaceWeb and Rambler (facts); the suit's orange from the seat photograph above | ours; shapes illustrative |
+
+**Credit lines:** `3D model: built by Space Radar from published dimensions; compared with ...` (each row's `credit:`).
+<!-- 0079 c2: end -->
 
 <!-- 0078 r14-m2: begin -->
 ## 3b-17. Six communications craft built from dimensions — Thuraya-2 and -3, Inmarsat-4, ViaSat-3, O3b, Globalstar second generation, O3b mPOWER (2026-10-27)

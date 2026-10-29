@@ -42,6 +42,7 @@ export const MODEL_LOOKS = {
   "proba-3-csc.glb": "pbr",
   "proba-3-osc.glb": "pbr",
   "proba-v.glb": "pbr",
+  "r7-8k72k.glb": "pbr",
   "resurs-dk1.glb": "pbr",
   "satellogic-newsat.glb": "pbr",
   "scisat-1.glb": "pbr",
@@ -50,5 +51,8 @@ export const MODEL_LOOKS = {
   "swarm.glb": "pbr",
   "timed.glb": "pbr",
   "tracers.glb": "pbr",
+  "vostok-3ka.glb": "pbr",
+  "vostok-chutes.glb": "pbr",
+  "vostok-seat.glb": "pbr",
   "worldview-3.glb": "pbr"
 };
