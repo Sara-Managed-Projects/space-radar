@@ -390,6 +390,9 @@ rockets:
     engines: {count: 4, pattern: quad}
     livery: {body: "#D2743A", boosters: "#EEF2F7", class: measured}
     class: measured
+    # 0079 c4: begin
+    model: sls-block1   # the 3D model of this vehicle, a `real_models` row of registry/models.yaml (Block 1 as flown on Artemis II); the card still says the drawing is the family's
+    # 0079 c4: end
     source: "Wikipedia Space Launch System: Block 1 with Orion is 98 m, 8.4 m core, two five-segment boosters 3.7 m x 54 m, four RS-25, orange foam core and white boosters"
     note: "Block 1B is taller than Block 1; one row draws both and the card says the drawing, and the height, are the family's. NASA publishes Block 1B as 364 ft (111 m) CREWED and 327 ft (99.7 m) as CARGO; LL2's `Space Launch System Block 1B` does not say which, so neither figure is written into a row -- picking one would be the app asserting a configuration nobody stated. What sits on top is Orion and its launch-abort tower -- a spike, not a fairing."
 

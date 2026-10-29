@@ -269,6 +269,9 @@ assert.equal(colourRoute(root([])), 'class', 'a model with no materials keeps th
     'apollo-csm.glb': /NOTHING YET/, // a vehicle of the Moments, loaded by id by site/js/moments/: no object on the map is the CSM
     // 0079 c3: end
   }; // MAVEN was the one, until 2026-10-08: it has a record now (data/sample.js LOST_ORBITERS)
+    'sls-block1.glb': /used_for: "NOTHING YET, waiting for the Artemis II Moments replay and its scene route\./,
+    'orion-esm.glb': /used_for: "NOTHING YET, waiting for the Artemis II Moments replay and its scene route\./,
+  };
   const unreachable = shipped.filter((f) => !routed.has(f) && !UNROUTED_ON_PURPOSE[f]);
   assert.deepEqual(unreachable, [], 'models that ship and that no record can be drawn with');
   for (const [f, why] of Object.entries(UNROUTED_ON_PURPOSE)) {
@@ -276,7 +279,7 @@ assert.equal(colourRoute(root([])), 'class', 'a model with no materials keeps th
     assert.ok(shipped.includes(f) && !routed.has(f) && why.test(row), `${f} is the stated exception: shipped, not routed, and its row says why`);
   }
   assert.deepEqual([...routed].filter((f) => !shipped.includes(f)), [], 'routes to a model file that does not ship');
-  console.log(`  ${shipped.length} model files: every one reachable by a record; no route to a missing file`);
+  console.log(`  ${shipped.length} model files: each reachable or explicitly waiting for its replay; no route to a missing file`);
 }
 
 console.log('model colour: ok');
