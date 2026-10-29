@@ -145,7 +145,7 @@ for (const id of ['moons', 'companions']) {
   check(got.length === (id === 'moons' ? moons.length : comp.length), `${id}: loadLayer returns ${id === 'moons' ? moons.length : comp.length} records (${got.length})`);
 }
 const main = read('site/js/main.js');
-check(/LATER_LAYERS = new Set\(\[[^\]]*'moons', 'companions'\]/.test(main), 'main.js loads the two layers after the first visit, not at boot');
+check(/LATER_LAYERS\.add\('moons'\);\s*LATER_LAYERS\.add\('companions'\);/.test(main), 'main.js loads the two layers after the first visit, not at boot');
 const layersJs = read('site/js/data/layers.js');
 check(!/from '\.\/moons\.js'/.test(layersJs), 'data/layers.js imports data/moons.js only dynamically');
 
