@@ -39,10 +39,10 @@ const GM = 1.32712440018e11;
 const records = farBodies();
 const byId = new Map(records.map((r) => [r.id, r]));
 const DWARFS = ['dwarf-ceres', 'dwarf-eris', 'dwarf-haumea', 'dwarf-makemake', 'dwarf-sedna', 'dwarf-gonggong', 'dwarf-quaoar', 'dwarf-orcus'];
-const VISITORS = ['interstellar-1i', 'interstellar-2i'];
+const VISITORS = ['interstellar-1i', 'interstellar-2i', 'interstellar-3i']; // 0079 a6: 3I/ATLAS, no Horizons vector below (the fetch from this laptop failed TLS); it is held by the e > 1 tests and by JPL's own tp
 
 // ------------------------------------------------------------------------------ the records
-check(records.length === 10, `ten far bodies (${records.length})`);
+check(records.length === 11, `eleven far bodies, 0079 a6 (${records.length})`);
 for (const id of [...DWARFS, ...VISITORS]) check(byId.has(id), `${id} is among them`);
 for (const r of records) {
   check(r.layer === 'far-bodies' && r.propagator === 'kepler' && r.frame === 'sun-inertial', `${r.id}: far-bodies / kepler / sun-inertial`);
@@ -51,18 +51,18 @@ for (const r of records) {
   check(Number.isFinite(r.elements.maRad) && Number.isFinite(r.elements.epochMs), `${r.id} carries its phase (mean anomaly at an epoch)`);
   check(r.meta.cite && /JPL Small-Body Database/.test(r.meta.cite), `${r.id} cites the SBDB on its card`);
   check(r.meta.why && r.meta.whySource && /Wikipedia/.test(r.meta.whySource), `${r.id} has a sourced line`);
-  check(Number.isFinite(r.epoch) && r.epoch <= Date.UTC(2026, 8, 22), `${r.id}: the age is of the last observation, which is in the past`);
+  check(Number.isFinite(r.epoch) && r.epoch <= Date.UTC(2026, 9, 29), `${r.id}: the age is of the last observation, which is in the past`); // 0079 a6: 3I's is 16 October 2026
 }
 // Ceres moved; it is not on the map twice on the day the NEO snapshot is missing.
 const asteroidNames = new Set(sampleAsteroids().map((r) => r.name));
 for (const r of records) check(!asteroidNames.has(r.name), `${r.name} is in the far-bodies layer AND the asteroid stand-ins`);
 
-// The layer: bundled, in the registry, loads its ten records with nothing to fetch.
+// The layer: bundled, in the registry, loads its eleven records with nothing to fetch.
 const layer = LAYERS.find((l) => l.id === 'far-bodies');
 check(layer && layer.source === 'bundled' && layer.enabled !== false, 'the far-bodies layer exists, bundled and enabled');
 if (layer) {
   const loaded = await loadLayer(layer, Date.UTC(2026, 8, 22));
-  check(loaded.length === 10 && loaded.every((r) => r.layer === 'far-bodies'), `loadLayer gives the ten (${loaded.length})`);
+  check(loaded.length === 11 && loaded.every((r) => r.layer === 'far-bodies'), `loadLayer gives the eleven (${loaded.length})`); // 0079 a6
   const borisov = loaded.find((r) => r.id === 'interstellar-2i');
   check(borisov && borisov.klass === 'comet' && borisov.colour === '#D9F3FF', 'Borisov is a comet and wears the comet colour');
 }
@@ -81,6 +81,8 @@ const HORIZONS = {
   'dwarf-orcus': [-43.962290, 9.718536, -16.581578],
   'interstellar-1i': [49.677021, 7.899514, 21.030300],
   'interstellar-2i': [0.549359, -41.784924, -24.537127],
+  // 0079 a6: read 2026-10-29 from JPL Horizons (COMMAND='DES=2025 N1;', heliocentric, ecliptic J2000, AU-D, 2461305.5 TDB), the same way
+  'interstellar-3i': [-2.547062227465882, 11.22023488135902, -0.6188068897156920],
 };
 for (const [id, ref] of Object.entries(HORIZONS)) {
   const r = byId.get(id);

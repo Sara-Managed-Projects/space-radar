@@ -538,12 +538,39 @@ const TEMPLATES = {
       : kindWord
         ? t(T.leadKind, { name: displayName(record), a: article(kindWord), kind: kindWord })
         : t(T.lead, { name: displayName(record) });
+    const code = pick(md, 'mpc'); // 0079 a6: an observatory's Minor Planet Center code
+    const closed = pickNumber(md, 'closedYear'); // 0079 a6
     return buildSentence(lead, [
       spacecraft ? t(T.whyDsn, { spacecraft: String(spacecraft) }) : null,
       launch && when ? t(T.whyLaunch, { launch: String(launch), when }) : null,
       where ? t(T.where, { where: String(where) }) : null,
+      code && T.mpc ? t(T.mpc, { code: String(code) }) : null, // 0079 a6
+      closed !== null && T.closed ? t(T.closed, { year: String(closed) }) : null, // 0079 a6
     ]);
   },
+
+  // 0079 a6: begin -- an IAU established meteor shower (data/smalllists.js). A radiant is a direction in the sky, so the
+  // sentence says when it peaks, how fast its meteors are and what left them; where to look is the sky view's.
+  shower(record, ctx, m, passInfo, T) {
+    const md = meta(record);
+    const mm = /^(\d{2})-(\d{2})$/.exec(String(pick(md, 'peakMd') || ''));
+    let when = null;
+    if (mm) {
+      const base = m && Number.isFinite(m.tMs) ? m.tMs : Date.now();
+      const y = new Date(base).getUTCFullYear();
+      let ms = Date.UTC(y, Number(mm[1]) - 1, Number(mm[2]));
+      if (ms < base - 2 * 86400000) ms = Date.UTC(y + 1, Number(mm[1]) - 1, Number(mm[2]));
+      when = timeText.dateNear(ms, base);
+    }
+    const vg = pickNumber(md, 'vgKms');
+    const parent = pick(md, 'parent');
+    return buildSentence(t(T.lead, { name: displayName(record) }), [
+      when ? t(T.peak, { date: when }) : null,
+      vg !== null ? t(T.speed, { n: fmt.int(vg) }) : null,
+      parent ? t(T.parent, { parent: String(parent).split(' (')[0].slice(0, 40) }) : null,
+    ]);
+  },
+  // 0079 a6: end
 
   exotic(record, ctx, m, passInfo, T) {
     const md = meta(record);
@@ -1259,6 +1286,9 @@ function derivedDrawingLine(record, T, tMs) {
   if (klass === 'storm') return T.storm;
   if (klass === 'moon') return pick(meta(record), 'drawn') || null; // 0079 a3: a point on its orbit, and why
   if (klass === 'site' && pick(meta(record), 'siteKind') === 'feature' && T.feature) return T.feature; // 0077 W3-d: a named place, nothing standing on it
+  if (klass === 'site' && pick(meta(record), 'noPlace') === true && T.noPlace) return T.noPlace; // 0079 a6
+  if (klass === 'site' && pick(meta(record), 'markOnly') === true && T.markOnly) return T.markOnly; // 0079 a6: a list's site, a mark and nothing standing there
+  if (klass === 'shower' && T.shower) return T.shower; // 0079 a6
   if (klass === 'earthevent') return COPY.earthEvent.drawn;
   let entry = null;
   try { entry = realModelFor(record); } catch { entry = null; }

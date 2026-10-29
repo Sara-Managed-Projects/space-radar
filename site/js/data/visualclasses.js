@@ -212,7 +212,8 @@ export const VISUAL_CLASSES = [
 "asteroid-2",
 "asteroid-3200",
 "interstellar-1i",
-"interstellar-2i"
+"interstellar-2i",
+"interstellar-3i"
 ],
 "layers": [
 "asteroids"
@@ -751,7 +752,10 @@ export const VISUAL_CLASSES = [
 "system-hd-10180",
 "system-kepler-1649",
 "system-wasp-17",
-"system-wasp-39"
+"system-wasp-39",
+"system-51-eri",
+"system-pds-70",
+"system-af-lep"
 ],
 "planets": [
 "exo-trappist-1-b",
@@ -859,7 +863,11 @@ export const VISUAL_CLASSES = [
 "exo-kepler-1649-c",
 "exo-kepler-1647-b",
 "exo-wasp-17-b",
-"exo-wasp-39-b"
+"exo-wasp-39-b",
+"exo-51-eri-b",
+"exo-pds-70-b",
+"exo-pds-70-c",
+"exo-af-lep-b"
 ],
 "layers": [
 "exoplanets",

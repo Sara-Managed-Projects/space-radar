@@ -164,6 +164,7 @@ LATER_LAYERS.add('companions');
 // 0079 r15-a45: the four compact catalogues of release 1.5.0 stages A4 and A5 (data/a45.js): deferred like an on-demand layer, but small, so not `load: 'on-demand'`
 // (tests/test_layer_boot.mjs keeps that word for a catalogue-sized layer). ctx.loadMoreCatalogues fetches them.
 const MORE_CATALOGUES = new Set(['extremes-more', 'pulsars', 'beyond-more', 'quasars']);
+const LATER_LAYERS = new Set(['stars', 'exoplanets', 'deep-sky', 'launch-sites', 'landing-sites', 'meteor-showers']); // 0079 a6: the last three
 const LATER_LAYERS_MS = 3000;
 /** How long after sr:layers-ready the controls hint is imported and may show (ui/keyhint.js): after
  * the later layers and the aurora, when the first view has settled and before a visitor gives up. */

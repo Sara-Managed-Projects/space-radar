@@ -63,7 +63,7 @@ export const LAYER_ROWS = [
     "group": "beyond",
     "enabled": true,
     "moments": {
-      "wonder": false,
+      "wonder": true,
       "now": false,
       "next": false
     },
@@ -717,6 +717,86 @@ export const LAYER_ROWS = [
     "glyph": "oddity",
     "colour": "probe",
     "maxItems": 60,
+    "train": null
+  },
+  {
+    "id": "observatories",
+    "display": "All observatories",
+    "group": "earth",
+    "enabled": true,
+    "moments": {
+      "wonder": false,
+      "now": false,
+      "next": false
+    },
+    "source": "bundled",
+    "sources": null,
+    "propagator": "fixed",
+    "frame": "earth-fixed",
+    "card": "site",
+    "glyph": "site",
+    "colour": "site",
+    "maxItems": 6000,
+    "train": null
+  },
+  {
+    "id": "launch-sites",
+    "display": "All launch sites",
+    "group": "earth",
+    "enabled": true,
+    "moments": {
+      "wonder": false,
+      "now": false,
+      "next": false
+    },
+    "source": "bundled",
+    "sources": null,
+    "propagator": "fixed",
+    "frame": "earth-fixed",
+    "card": "site",
+    "glyph": "site",
+    "colour": "site",
+    "maxItems": 300,
+    "train": null
+  },
+  {
+    "id": "landing-sites",
+    "display": "Every landing and impact site",
+    "group": "solar-system",
+    "enabled": true,
+    "moments": {
+      "wonder": false,
+      "now": false,
+      "next": false
+    },
+    "source": "bundled",
+    "sources": null,
+    "propagator": "fixed",
+    "frame": "earth-fixed",
+    "card": "site",
+    "glyph": "site",
+    "colour": "site",
+    "maxItems": 400,
+    "train": null
+  },
+  {
+    "id": "meteor-showers",
+    "display": "Meteor showers",
+    "group": "beyond",
+    "enabled": true,
+    "moments": {
+      "wonder": true,
+      "now": true,
+      "next": false
+    },
+    "source": "bundled",
+    "sources": null,
+    "propagator": "per-record",
+    "frame": "per-record",
+    "card": "shower",
+    "glyph": "comet",
+    "colour": "comet",
+    "maxItems": 300,
     "train": null
   }
 ];

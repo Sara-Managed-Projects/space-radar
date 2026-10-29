@@ -100,6 +100,7 @@ Object.assign(COPY, {
     what: { size: 'size', year: 'year', mass: 'mass', least: 'least possible mass' },
     au: '{n} AU',
     auComputed: '{n} AU, computed from its year and its star’s mass',
+    auYearComputed: '{n} AU; its year, about {y} years, is worked out from that and its star’s mass', // 0079 a13
     earthsEstimated: '{n}× Earth, the archive’s estimate from its mass',
     massEstimated: '{n}× Earth, the archive’s estimate from its size',
     massLeast: 'At least {n}× Earth',
@@ -1507,13 +1508,25 @@ Object.assign(COPY, {
       where: 'in {where}',
       whyDsn: 'talking to {spacecraft} right now',
       whyLaunch: 'with {launch} due {when}',
+      mpc: 'its Minor Planet Center code is {code}', // 0079 a6
+      closed: 'closed in {year}', // 0079 a6
       kinds: {
         pad: 'launch pad',
         dish: 'radio dish',
         observatory: 'observatory',
         tracking: 'tracking station',
+        'launch-site': 'launch site', // 0079 a6
+        'landing-site': 'landing site', // 0079 a6
       },
     },
+    // 0079 a6: begin -- an IAU established meteor shower (ui/cards.js TEMPLATES.shower)
+    shower: {
+      lead: '{name} is a meteor shower',
+      peak: 'peaking around {date}',
+      speed: 'with meteors that hit the air at {n} km a second',
+      parent: 'from the dust of {parent}',
+    },
+    // 0079 a6: end
     world: {
       lead: '{name} is a world in the solar system',
       leadMoon: '{name} is the Earth’s own moon',

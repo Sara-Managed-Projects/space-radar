@@ -513,7 +513,8 @@ export const LAYERS = [
     parse: 'exoplanets',
     sample: () => [],
     bundledText: 'data/exoplanets.csv',
-    bundledAsOf: '2026-10-08',
+    bundledAsOf: '2026-10-28', // 0079 a13
+    packedUrl: 'data/exoplanets.bin', // 0079 a13: the quantised copy (data/exopack.js) is read before the snapshot or the CSV
     propagator: 'static',
     frame: 'sun-inertial',
     moments: { wonder: true, now: false, next: false },
@@ -1060,7 +1061,7 @@ export const LAYERS = [
     card: 'asteroid',
     // Nothing to fetch, so it is nearly free and on screen early, beside the oddities.
     priority: 26,
-    sentence: 'Eight dwarf planets, from Ceres in the asteroid belt to Sedna far past Neptune, and the two visitors from another star, each where it is today on its own orbit.',
+    sentence: 'Eight dwarf planets, from Ceres in the asteroid belt to Sedna far past Neptune, and the three visitors from another star, each where it is today on its own orbit.',
   },
   // 0079 a3: begin
   {
@@ -1302,6 +1303,94 @@ export const LAYERS = [
     card: 'debris',
     sentence: 'Where some big ones ended up.',
   },
+  // 0079 a6: begin -- the small complete lists (data/smalllists.js; registry/layers.yaml has the reviewable copy of each row)
+  {
+    // Every observatory with a place: Wikidata's (CC0), joined to the Minor Planet Center's codes. 3 850 marks on the
+    // Earth, so on demand: nothing is fetched until the box is ticked (88 kB gzipped).
+    id: 'observatories',
+    display: 'All observatories',
+    klass: 'site',
+    source: 'bundled',
+    parse: null,
+    fetchLazy: () => import('./smalllists.js').then((m) => m.fetchObservatories()),
+    propagator: 'fixed',
+    frame: 'earth-fixed',
+    moments: { wonder: false, now: false, next: false },
+    defaultOn: false,
+    select: all,
+    budget: { maxItems: 6000 },
+    colour: C.site,
+    glyph: 'site',
+    noModel: true,
+    nearKm: 800,
+    card: 'site',
+    load: 'on-demand',
+    sentence: 'Every observatory with a place on a map: about 3 850, 2 700 of them with the code the Minor Planet Center knows them by.',
+  },
+  {
+    id: 'launch-sites',
+    display: 'All launch sites',
+    klass: 'site',
+    source: 'bundled',
+    parse: null,
+    fetchLazy: () => import('./smalllists.js').then((m) => m.fetchLaunchSites()),
+    propagator: 'fixed',
+    frame: 'earth-fixed',
+    moments: { wonder: false, now: false, next: false },
+    defaultOn: false,
+    select: all,
+    budget: { maxItems: 300 },
+    colour: C.site,
+    glyph: 'site',
+    noModel: true,
+    nearKm: 800,
+    card: 'site',
+    sentence: 'The spaceports and launch sites of the world, the old ones too, and not only where something is about to leave from.',
+  },
+  {
+    // Loaded after the first screen so that search finds a landing site at once; the marks wait for the box.
+    id: 'landing-sites',
+    display: 'Every landing and impact site',
+    klass: 'site',
+    source: 'bundled',
+    parse: null,
+    fetchLazy: () => import('./smalllists.js').then((m) => m.fetchLandingSites()),
+    propagator: 'fixed',
+    frame: 'earth-fixed', // each record carries its own world's frame
+    moments: { wonder: false, now: false, next: false },
+    defaultOn: false,
+    select: all,
+    budget: { maxItems: 400 },
+    colour: C.site,
+    glyph: 'site',
+    noModel: true,
+    nearKm: 900,
+    card: 'site',
+    sentence: 'Where probes came down on the Moon, Venus and Mars, and on the small bodies, the crashes and the wrecks with them.',
+  },
+  {
+    // A radiant is a direction, not a place: these records have no mark. The box switches the radiants of the sky view
+    // (sky/skyview.js), and the records are what search and the card read.
+    id: 'meteor-showers',
+    display: 'Meteor showers',
+    klass: 'shower',
+    source: 'bundled',
+    parse: null,
+    fetchLazy: () => import('./smalllists.js').then((m) => m.fetchShowers()),
+    propagator: 'per-record',
+    frame: 'per-record',
+    moments: { wonder: true, now: true, next: false },
+    defaultOn: true,
+    select: all,
+    budget: { maxItems: 300 },
+    colour: C.comet,
+    glyph: 'comet',
+    noModel: true,
+    nearKm: 0,
+    card: 'shower',
+    sentence: 'All 172 showers the IAU has established. From the ground, the radiants of those near their peak are marked in the sky.',
+  },
+  // 0079 a6: end
 ];
 
 const BY_ID = new Map(LAYERS.map((l) => [l.id, l]));
@@ -1406,12 +1495,28 @@ export async function loadLayerDetailed(layer, nowMs) {
       // with no parser yet (reentries: Space-Track needs a login nobody has registered) is the
       // stand-in always, as before.
       let bodies = null;
-      if (layer.parse && ids.length) {
+      // 0079 a13: begin -- a layer's packed file first (the exoplanets: 133 kB gzipped against the snapshot's 879 kB).
+      // A failure is silent: the snapshot, then the CSV, then the stand-in, as before.
+      if (layer.packedUrl) {
+        try {
+          const r = await fetch(layer.packedUrl, { cache: 'no-cache' });
+          if (r.ok) {
+            const m = await import('./exopack.js');
+            parsed = m.decodeExoplanets(await r.arrayBuffer());
+            if (parsed.length) {
+              layer.lastBodyWasBundled = true;
+              result = { id: 'bundled', data: true, error: null, bundled: true, fetchedAt: layer.bundledAsOf ? Date.parse(layer.bundledAsOf) : null };
+            }
+          }
+        } catch { parsed = []; }
+      }
+      // 0079 a13: end
+      if (!parsed.length && layer.parse && ids.length) {
         const results = await Promise.all(ids.map((id) => load(id)));
         result = results[0];
         if (results.every((r) => r && r.data != null)) bodies = results.map((r) => r.data);
       }
-      if (!bodies && layer.bundledText && (layer.parse)) {
+      if (!parsed.length && !bodies && layer.bundledText && (layer.parse)) { // 0079 a13: !parsed.length
         // A dated copy checked into the repository (spec 0028 step 4): the same columns the
         // snapshot carries, so the same parser reads it, and every record says "as of <date>".
         // Same origin, so it is a plain fetch; a failure falls through to the stand-in.

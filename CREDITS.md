@@ -96,6 +96,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Deep-space positions, asteroids, comets, close approaches | NASA/JPL Horizons, Small-Body Database, CNEOS | see the section | [4.18](#418-the-sources-the-harvester-reads) |
 | Space weather and the aurora | NOAA SWPC | public domain | [4.4](#44-noaa-swpc) |
 | Exoplanets | NASA Exoplanet Archive | public; cite the DOI | [4.7](#47-nasa-exoplanet-archive--confirmed-planets) |
+| Meteor showers, every observatory, launch sites, landing and impact sites | IAU Meteor Data Center; Wikidata; Minor Planet Center; NASA NSSDCA; Wikipedia | cite the MDC; CC0; MPC; public domain; CC BY-SA 4.0 | [4.24](#424-release-150-the-small-complete-lists-0079-a6-internal-1064-and-the-packed-exoplanets-0079-a13-internal-1073) | <!-- 0079 a6 -->
 | Today's clouds | NASA GIBS (GOES, Himawari) | open; acknowledgement asked | [4.13](#413-nasa-gibs--todays-clouds-2026-09-28) |
 | Storms, lightning | GDACS; NOAA nowCOAST | CC BY 4.0; public domain | [4.14](#414-gdacs--tropical-cyclones-2026-09-28), [4.17](#417-noaa-nowcoast--lightning-2026-10-03) |
 | Fires, volcanoes and icebergs | NASA EONET | NASA service; its disclaimer | [4.20](#420-nasa-eonet--fires-volcanoes-and-icebergs-2026-10-07) |
@@ -3385,6 +3386,36 @@ every record of the map to a line of this file (`docs/COVERAGE.md` lists them by
 - Landing sites, dishes and pads: each row of `registry/sites.yaml` names its reference: LROC (Arizona State University) and NASA NSSDCA on the Moon; the PDS Geosciences Node, HiRISE (University of Arizona), Golombek et al. 2020, Wu et al. 2024 (Scientific Reports, CC BY-NC-ND 4.0, one coordinate quoted) and the Mars 2020 mission map (NASA/JPL-Caltech) on Mars; NASA/JPL's DSN Telecommunications Link Design Handbook (810-005, module 301) for the Deep Space Network's dishes; Wikipedia for the two pads.
 - Rockets: the heights, widths and shapes in `registry/rockets.yaml` come from the user's guides, agency pages and Wikipedia articles each row's `source:` names; which rocket is launching when is Launch Library 2's (§4.2).
 - Oddities: each row of `registry/oddities.yaml` cites where it was read: JPL Horizons, LROC and NASA, The Planetary Society, Space.com, collectSPACE, Space Center Houston, Andy Saunders's 2021 work from the Apollo 14 film and Astronomical Returns, each as its row says, with how sure its place is.
+
+<!-- 0079 a6: begin -->
+### 4.24 Release 1.5.0: the small complete lists (0079 a6, internal #1064) and the packed exoplanets (0079 a13, internal #1073)
+
+`scripts/gen_small_lists.py` downloads each source to `~/.cache/spaceradar-src/small-lists/` and writes
+`site/data/lists/*.json`; nothing is hot-linked, and the pages are read only by that script.
+
+- **Meteor showers** (`showers.json`): the IAU Meteor Data Center's file of established meteor showers,
+  `streamestablisheddata2026.txt` ("Last update: Oct 23, 2026"), <http://www.ta3.sk/IAUC22DB/MDC2022/>:
+  172 showers from 776 solutions, one row each, the median of a shower's solutions. The MDC states no licence
+  and asks to be cited as Jenniskens, Jopek, Janches, Hajdukova, Kokhirova and Rudawska (2020, *Planetary and
+  Space Science* 182, 104821) and Jopek and Kanuchova (2017, *Planetary and Space Science* 143, 3-6).
+- **Observatories** (`observatories.json`): Wikidata (CC0 1.0), every item that is an observatory or a kind of
+  one with coordinates on the Earth, read 2026-10-28 (3 526 items); joined by MPC code to the Minor Planet
+  Center's list of observatory codes, <https://www.minorplanetcenter.net/iau/lists/ObsCodes.html> (2 700 stations
+  with a place; the MPC publishes the list for use and asks for no more than a citation, see 4.5).
+- **Launch sites** (`launch-sites.json`): Wikidata (CC0 1.0), the items that are a spaceport or a launch site.
+- **Landing and impact sites** (`landing-sites.json`): the Moon from NASA NSSDCA's *Table of Anthropogenic Impacts
+  and Spacecraft on the Moon* (D. R. Williams, last updated 13 August 2025,
+  <https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_artifact_impacts.html>; NASA, public domain). Venus, Mars and
+  the small bodies from `registry/landing-sites-1-5.yaml`: the coordinates Wikipedia's articles carry
+  (CC BY-SA 4.0; MediaWiki GeoData, read 2026-10-28), DART's from Daly et al. 2023 (*Nature* 616, 443, Table 1),
+  Tianwen-2 from Wikipedia and MMX from ESA's launch page (read 2026-10-29).
+- **3I/ATLAS and Kamoʻoalewa** (`site/js/data/sample.js`): JPL Small-Body Database orbits (solutions of 2026-10-21
+  and 2026-09-03), read 2026-10-29, and checked against JPL Horizons vectors (`tests/test_far_bodies.mjs`,
+  `tests/test_remaining_trips.mjs`); the lines on their cards from NASA Science and Wikipedia.
+- **Exoplanets** (`site/data/exoplanets.bin`, `scripts/exopack.py`): the same pscomppars table as 4.7, 6 451
+  confirmed planets on 2026-10-28 of which 6 423 have a sky position and a distance, packed to 259 kB (133 kB
+  gzipped) with the numbers rounded to what a card prints. The DOI and the citation of 4.7 stand.
+<!-- 0079 a6: end -->
 
 ## 4.6 Third-party trademarks the app names or draws
 

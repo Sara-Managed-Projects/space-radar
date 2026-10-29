@@ -3139,5 +3139,174 @@ export const SYSTEMS_TABLE = [
 "zone": "hotter"
 }
 ]
+},
+{
+"id": "51-eri",
+"stage": "system-51-eri",
+"host": "51 Eri",
+"display": "51 Eridani",
+"aliases": [
+"51 Eri"
+],
+"hostId": "star-51-eri",
+"hostSky": {
+"raDeg": 69.4007424,
+"decDeg": -2.4738245,
+"distPc": 29.7575,
+"spect": "F0 IV"
+},
+"star": {
+"radiusSuns": 1.45,
+"teffK": 7422.0,
+"massSuns": 1.75,
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/51%20Eri (read 2026-10-28)",
+"lumSuns": 5.72,
+"lumFrom": "table"
+},
+"starsInSystem": 3,
+"zone": null,
+"zoneMissing": "too-hot",
+"colourNote": "illustrative",
+"asOf": "2026-10-28",
+"planets": [
+{
+"id": "exo-51-eri-b",
+"name": "51 Eri b",
+"periodDays": 9100.0,
+"aAu": 10.4,
+"aFrom": "table",
+"massEarths": 3464.3296363,
+"massFrom": "measured",
+"eccentricity": 0.57,
+"method": "Imaging",
+"year": 2015,
+"insolationEarths": 0.0529,
+"equilibriumK": 122
+}
+]
+},
+{
+"id": "pds-70",
+"stage": "system-pds-70",
+"host": "PDS 70",
+"display": "PDS 70",
+"aliases": [],
+"hostId": "star-pds-70",
+"hostSky": {
+"raDeg": 212.0421402,
+"decDeg": -41.3980405,
+"distPc": 113.064,
+"spect": "K7"
+},
+"star": {
+"radiusSuns": 1.26,
+"teffK": 4109.0,
+"massSuns": 0.982,
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/PDS%2070 (read 2026-10-28)",
+"lumSuns": 0.35,
+"lumFrom": "table"
+},
+"starsInSystem": 1,
+"zone": {
+"innerAu": 0.6063,
+"outerAu": 1.142,
+"wideInnerAu": 0.4786,
+"wideOuterAu": 1.205
+},
+"zoneMissing": null,
+"colourNote": "illustrative",
+"asOf": "2026-10-28",
+"planets": [
+{
+"id": "exo-pds-70-b",
+"name": "PDS 70 b",
+"periodDays": 43500.0,
+"aAu": 24.06,
+"aFrom": "kepler",
+"aTableAu": 20.8,
+"radiusEarths": 21.96960217,
+"radiusFrom": "measured",
+"massEarths": 1017.0509024,
+"massFrom": "measured",
+"eccentricity": 0.17,
+"method": "Imaging",
+"year": 2018,
+"insolationEarths": 0.000605,
+"equilibriumK": 40,
+"zone": "colder"
+},
+{
+"id": "exo-pds-70-c",
+"name": "PDS 70 c",
+"periodDays": 74041.6,
+"periodFrom": "kepler",
+"aAu": 34.3,
+"aFrom": "table",
+"radiusEarths": 22.19378179,
+"radiusFrom": "measured",
+"massEarths": 2383.7130525,
+"massFrom": "measured",
+"eccentricity": 0.037,
+"method": "Imaging",
+"year": 2019,
+"insolationEarths": 0.000297,
+"equilibriumK": 33,
+"zone": "colder"
+}
+]
+},
+{
+"id": "af-lep",
+"stage": "system-af-lep",
+"host": "AF Lep",
+"display": "AF Leporis",
+"aliases": [
+"AF Lep"
+],
+"hostId": "star-af-lep",
+"hostSky": {
+"raDeg": 81.7699216,
+"decDeg": -11.9011752,
+"distPc": 26.8564,
+"spect": "F8"
+},
+"star": {
+"radiusSuns": 1.25,
+"teffK": 6140.0,
+"massSuns": 1.218,
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/AF%20Lep (read 2026-10-28)",
+"lumSuns": 1.95,
+"lumFrom": "table"
+},
+"starsInSystem": 1,
+"zone": {
+"innerAu": 1.298,
+"outerAu": 2.27,
+"wideInnerAu": 1.025,
+"wideOuterAu": 2.395
+},
+"zoneMissing": null,
+"colourNote": "illustrative",
+"asOf": "2026-10-28",
+"planets": [
+{
+"id": "exo-af-lep-b",
+"name": "AF Lep b",
+"periodDays": 8905.0,
+"aAu": 8.996,
+"aFrom": "table",
+"radiusEarths": 13.0,
+"radiusFrom": "estimated",
+"massEarths": 1147.36054927,
+"massFrom": "measured",
+"eccentricity": 0.015,
+"transitMidJd": 2456700.0,
+"method": "Imaging",
+"year": 2023,
+"insolationEarths": 0.0241,
+"equilibriumK": 100,
+"zone": "colder"
+}
+]
 }
 ];

@@ -58,3 +58,8 @@ hosts:
   - {host: Kepler-1647, why: extreme}
   - {host: WASP-17, why: extreme}
   - {host: WASP-39, why: extreme}
+  # 0079 a13: begin -- the directly imaged planets not yet staged (HR 8799 and Beta Pictoris already are, above)
+  - {host: 51 Eri, display: 51 Eridani, aliases: [51 Eri], why: extreme}
+  - {host: PDS 70, why: extreme, year_from_kepler: true} # PDS 70 c has a distance and no year in the table
+  - {host: AF Lep, display: AF Leporis, aliases: [AF Lep], why: extreme}
+  # 0079 a13: end

@@ -1222,5 +1222,90 @@ export const SYSTEM_INDEX = [
 "id": "exo-wasp-39-b"
 }
 ]
+},
+{
+"id": "51-eri",
+"stage": "system-51-eri",
+"host": "51 Eri",
+"display": "51 Eridani",
+"aliases": [
+"51 Eri"
+],
+"hostId": "star-51-eri",
+"hostSky": {
+"raDeg": 69.4007424,
+"decDeg": -2.4738245,
+"distPc": 29.7575,
+"spect": "F0 IV"
+},
+"star": {
+"radiusSuns": 1.45,
+"teffK": 7422.0,
+"massSuns": 1.75,
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/51%20Eri (read 2026-10-28)"
+},
+"why": "extreme",
+"planets": [
+{
+"id": "exo-51-eri-b"
+}
+]
+},
+{
+"id": "pds-70",
+"stage": "system-pds-70",
+"host": "PDS 70",
+"display": "PDS 70",
+"aliases": [],
+"hostId": "star-pds-70",
+"hostSky": {
+"raDeg": 212.0421402,
+"decDeg": -41.3980405,
+"distPc": 113.064,
+"spect": "K7"
+},
+"star": {
+"radiusSuns": 1.26,
+"teffK": 4109.0,
+"massSuns": 0.982,
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/PDS%2070 (read 2026-10-28)"
+},
+"why": "extreme",
+"planets": [
+{
+"id": "exo-pds-70-b"
+},
+{
+"id": "exo-pds-70-c"
+}
+]
+},
+{
+"id": "af-lep",
+"stage": "system-af-lep",
+"host": "AF Lep",
+"display": "AF Leporis",
+"aliases": [
+"AF Lep"
+],
+"hostId": "star-af-lep",
+"hostSky": {
+"raDeg": 81.7699216,
+"decDeg": -11.9011752,
+"distPc": 26.8564,
+"spect": "F8"
+},
+"star": {
+"radiusSuns": 1.25,
+"teffK": 6140.0,
+"massSuns": 1.218,
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/AF%20Lep (read 2026-10-28)"
+},
+"why": "extreme",
+"planets": [
+{
+"id": "exo-af-lep-b"
+}
+]
 }
 ];

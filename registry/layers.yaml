@@ -65,7 +65,11 @@ layers:
   - id: exoplanets
     display: Planets around other stars
     group: beyond
-    moments: {wonder: off, now: off, next: off}
+    # 0079 a13: begin -- ON in the opening moment since release 1.5.0 (Ivan's decision 2). Still loaded after the
+    # first screen (main.js LATER_LAYERS) and still drawn only from the ladder's rungs, so the Earth a first
+    # visit shows is the same picture; the planets arrive as site/data/exoplanets.bin, 133 kB gzipped.
+    moments: {wonder: on, now: off, next: off}
+    # 0079 a13: end
     source: nasa-exoplanet-archive
     propagator: static
     frame: sun-inertial
@@ -571,3 +575,57 @@ layers:
     card: oddity
     select: {all: true}      # the curation IS the record list; a second filter would be theatre
     budget: {max_items: 60}
+
+  # 0079 a6: begin -- the small complete lists of release 1.5.0 (internal #1064). scripts/gen_small_lists.py writes
+  # site/data/lists/*.json; site/js/data/smalllists.js turns each into records. `bundled`: the data lives in this repository.
+  # The observatories (3 850 marks) are on demand: nothing is fetched until the box is ticked. The launch sites, the landing
+  # sites and the showers are small and are fetched after the first screen (main.js LATER_LAYERS), so search finds them at once.
+  - id: observatories
+    display: All observatories
+    group: earth
+    moments: {wonder: off, now: off, next: off}
+    source: bundled
+    propagator: fixed
+    frame: earth-fixed
+    style: {kind: glyph, glyph: site, colour: site}
+    card: site
+    select: {all: true}
+    budget: {max_items: 6000}
+    load: on-demand
+
+  - id: launch-sites
+    display: All launch sites
+    group: earth
+    moments: {wonder: off, now: off, next: off}
+    source: bundled
+    propagator: fixed
+    frame: earth-fixed
+    style: {kind: glyph, glyph: site, colour: site}
+    card: site
+    select: {all: true}
+    budget: {max_items: 300}
+
+  - id: landing-sites
+    display: Every landing and impact site
+    group: solar-system
+    moments: {wonder: off, now: off, next: off}
+    source: bundled
+    propagator: fixed
+    frame: earth-fixed
+    style: {kind: glyph, glyph: site, colour: site}
+    card: site
+    select: {all: true}
+    budget: {max_items: 400}
+
+  - id: meteor-showers
+    display: Meteor showers
+    group: beyond
+    moments: {wonder: on, now: on, next: off}
+    source: bundled
+    propagator: per-record
+    frame: per-record
+    style: {kind: glyph, glyph: comet, colour: comet}
+    card: shower
+    select: {all: true}
+    budget: {max_items: 300}
+  # 0079 a6: end
