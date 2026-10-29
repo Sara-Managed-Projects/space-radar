@@ -2163,7 +2163,9 @@ export function heroNumbers(record, m, rows) {
     }
     return out;
   }
-  return slots.map((slot) => {
+  // 0079 r15-a45: a star with a direction and no distance (meta.noDistance) has no distance cell: "— light-years away" would say a number is missing that nobody has measured
+  const noDistance = !!(record && record.meta && record.meta.noDistance);
+  return slots.filter((slot) => !(noDistance && slot.rows[0] === 'distanceFromSun')).map((slot) => {
     for (const key of slot.rows) {
       const c = byKey.has(key) ? cell(key, byKey.get(key), slot.cap) : null;
       if (c) return c;

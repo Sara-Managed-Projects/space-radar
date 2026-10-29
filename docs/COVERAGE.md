@@ -18,8 +18,8 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | photographs | 30 | 30 |
 | heroes | 33 | 33 |
 | exotics | 23 | 23 |
-| systems | 40 | 40 |
-| planets | 106 | 106 |
+| systems | 43 | 43 |
+| planets | 110 | 110 |
 | stars_notable | 41 | 41 |
 | catalogues | 4 | 110 191 |
 | other_light | 3 | 3 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 39 | 39 |
-| **all** | **1041** | **111 228** |
+| **all** | **1048** | **111 235** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -53,7 +53,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [LAUNCH_AND_ROCKET](#launch_and_rocket) | 66 | `models.js`, `ascent.js`, `realmodels.js` | illustrative | - |
 | [SPACE_PROBE](#space_probe) | 70 | `sampled.js`, `realmodels.js`, `models.js`, `glyphs.js` | measured | - |
 | [LANDING_SITE](#landing_site) | 65 | `models.js`, `realmodels.js`, `shadow.js` | measured | - |
-| [EXOPLANET](#exoplanet) | 146 | `systems.js`, `systemextras.js`, `exoface.js`, `exostage.js` | modelled | - |
+| [EXOPLANET](#exoplanet) | 153 | `systems.js`, `systemextras.js`, `exoface.js`, `exostage.js` | modelled | - |
 | [STAR](#star) | 46 | `stars3d.js`, `starfield.js`, `stardisc.js` | measured | - |
 | [BINARY_AND_MULTIPLE](#binary_and_multiple) | 2 | `systems.js` | modelled | - |
 | [COMPACT_REMNANT](#compact_remnant) | 9 | `pulsars.js` | illustrative | - |
@@ -78,15 +78,11 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [EARTH_LIVE](#earth_live) *house* | 6 | `aurora.js`, `lightning.js`, `liveclouds.js`, `glyphs.js` | measured | - |
 | [GROUND_SITE](#ground_site) *house* | 6 | `models.js`, `glyphs.js` | measured | - |
 | [ODDITY](#oddity) *house* | 10 | `models.js`, `glyphs.js` | modelled | - |
-| [MIXED_LAYER](#mixed_layer) *house* | 11 | `layers.js`, `glyphs.js` | measured | - |
+| [MIXED_LAYER](#mixed_layer) *house* | 15 | `layers.js`, `glyphs.js` | measured | - |
 
-**Unresolved records: 4.**
+**Unresolved records: 0.** Every record has one class.
 
-- layers `observatories`
-- layers `launch-sites`
-- layers `landing-sites`
-- layers `meteor-showers`
-Honesty over the 1041 records: 320 measured, 362 modelled, 355 illustrative.
+Honesty over the 1048 records: 324 measured, 369 modelled, 355 illustrative.
 
 ## The classes
 
@@ -363,9 +359,9 @@ Honesty over the 1041 records: 320 measured, 362 modelled, 355 illustrative.
 - **Measured, modelled or reconstructed:** Measured: periods, sizes, orbits where published (estimated values marked `_from`). Illustrative: every planet's face, tagged 'Artist's impression' (tests/test_exoface_truth.mjs).
 - **Rights:** The archive's data are public; its DOI cited (10.26133/NEA13).
 - **What is missing is tracked in:** public #556 (more systems)
-- **Records (146):**
-  - systems (38): `trappist-1`, `proxima-cen`, `lhs-1140`, `kepler-186`, `kepler-452`, `kepler-62`, `kepler-442`, `kepler-22`, `kepler-69`, `toi-700`, `toi-715`, `teegardens-star`, `gliese-12`, `k2-18`, `l-98-59`, `gj-1132`, `gj-1214`, `ross-128`, `wolf-1069`, `gj-667-c`, `55-cnc`, `wasp-12`, `wasp-121`, `hd-189733`, `hd-209458`, `51-peg`, `kelt-9`, `toi-849`, `psr-b1257-12`, `hr-8799`, `beta-pictoris`, `kepler-90`, `k2-138`, `kepler-11`, `hd-10180`, `kepler-1649`, `wasp-17`, `wasp-39`
-  - planets (106): `exo-trappist-1-b`, `exo-trappist-1-c`, `exo-trappist-1-d`, `exo-trappist-1-e`, `exo-trappist-1-f`, `exo-trappist-1-g`, `exo-trappist-1-h`, `exo-proxima-cen-d`, `exo-proxima-cen-b`, `exo-lhs-1140-c`, `exo-lhs-1140-b`, `exo-kepler-186-b`, `exo-kepler-186-c`, `exo-kepler-186-d`, `exo-kepler-186-e`, `exo-kepler-186-f`, `exo-kepler-452-b`, `exo-kepler-62-b`, `exo-kepler-62-c`, `exo-kepler-62-d`, `exo-kepler-62-e`, `exo-kepler-62-f`, `exo-kepler-442-b`, `exo-kepler-22-b`, `exo-kepler-69-b`, `exo-kepler-69-c`, `exo-toi-700-b`, `exo-toi-700-c`, `exo-toi-700-e`, `exo-toi-700-d`, `exo-toi-715-b`, `exo-teegarden-s-star-b`, `exo-teegarden-s-star-c`, `exo-teegarden-s-star-d`, `exo-gliese-12-b`, `exo-k2-18-c`, `exo-k2-18-b`, `exo-l-98-59-b`, `exo-l-98-59-c`, `exo-l-98-59-d`, `exo-l-98-59-e`, `exo-l-98-59-f`, `exo-gj-1132-b`, `exo-gj-1132-c`, `exo-gj-1214-b`, `exo-ross-128-b`, `exo-wolf-1069-b`, `exo-gj-667-c-b`, `exo-gj-667-c-c`, `exo-gj-667-c-f`, `exo-gj-667-c-e`, `exo-gj-667-c-g`, `exo-55-cnc-e`, `exo-55-cnc-b`, `exo-55-cnc-c`, `exo-55-cnc-f`, `exo-55-cnc-d`, `exo-wasp-12-b`, `exo-wasp-121-b`, `exo-hd-189733-b`, `exo-hd-209458-b`, `exo-51-peg-b`, `exo-kepler-16-b`, `exo-kelt-9-b`, `exo-toi-849-b`, `exo-psr-b1257-12-b`, `exo-psr-b1257-12-c`, `exo-psr-b1257-12-d`, `exo-hr-8799-e`, `exo-hr-8799-d`, `exo-hr-8799-c`, `exo-hr-8799-b`, `exo-bet-pic-c`, `exo-bet-pic-b`, `exo-bet-pic-d`, `exo-koi-351-b`, `exo-koi-351-c`, `exo-kepler-90-i`, `exo-koi-351-d`, `exo-koi-351-e`, `exo-koi-351-f`, `exo-koi-351-g`, `exo-koi-351-h`, `exo-k2-138-b`, `exo-k2-138-c`, `exo-k2-138-d`, `exo-k2-138-e`, `exo-k2-138-f`, `exo-k2-138-g`, `exo-kepler-11-b`, `exo-kepler-11-c`, `exo-kepler-11-d`, `exo-kepler-11-e`, `exo-kepler-11-f`, `exo-kepler-11-g`, `exo-hd-10180-c`, `exo-hd-10180-d`, `exo-hd-10180-e`, `exo-hd-10180-f`, `exo-hd-10180-g`, `exo-hd-10180-h`, `exo-kepler-1649-b`, `exo-kepler-1649-c`, `exo-kepler-1647-b`, `exo-wasp-17-b`, `exo-wasp-39-b`
+- **Records (153):**
+  - systems (41): `trappist-1`, `proxima-cen`, `lhs-1140`, `kepler-186`, `kepler-452`, `kepler-62`, `kepler-442`, `kepler-22`, `kepler-69`, `toi-700`, `toi-715`, `teegardens-star`, `gliese-12`, `k2-18`, `l-98-59`, `gj-1132`, `gj-1214`, `ross-128`, `wolf-1069`, `gj-667-c`, `55-cnc`, `wasp-12`, `wasp-121`, `hd-189733`, `hd-209458`, `51-peg`, `kelt-9`, `toi-849`, `psr-b1257-12`, `hr-8799`, `beta-pictoris`, `kepler-90`, `k2-138`, `kepler-11`, `hd-10180`, `kepler-1649`, `wasp-17`, `wasp-39`, `51-eri`, `pds-70`, `af-lep`
+  - planets (110): `exo-trappist-1-b`, `exo-trappist-1-c`, `exo-trappist-1-d`, `exo-trappist-1-e`, `exo-trappist-1-f`, `exo-trappist-1-g`, `exo-trappist-1-h`, `exo-proxima-cen-d`, `exo-proxima-cen-b`, `exo-lhs-1140-c`, `exo-lhs-1140-b`, `exo-kepler-186-b`, `exo-kepler-186-c`, `exo-kepler-186-d`, `exo-kepler-186-e`, `exo-kepler-186-f`, `exo-kepler-452-b`, `exo-kepler-62-b`, `exo-kepler-62-c`, `exo-kepler-62-d`, `exo-kepler-62-e`, `exo-kepler-62-f`, `exo-kepler-442-b`, `exo-kepler-22-b`, `exo-kepler-69-b`, `exo-kepler-69-c`, `exo-toi-700-b`, `exo-toi-700-c`, `exo-toi-700-e`, `exo-toi-700-d`, `exo-toi-715-b`, `exo-teegarden-s-star-b`, `exo-teegarden-s-star-c`, `exo-teegarden-s-star-d`, `exo-gliese-12-b`, `exo-k2-18-c`, `exo-k2-18-b`, `exo-l-98-59-b`, `exo-l-98-59-c`, `exo-l-98-59-d`, `exo-l-98-59-e`, `exo-l-98-59-f`, `exo-gj-1132-b`, `exo-gj-1132-c`, `exo-gj-1214-b`, `exo-ross-128-b`, `exo-wolf-1069-b`, `exo-gj-667-c-b`, `exo-gj-667-c-c`, `exo-gj-667-c-f`, `exo-gj-667-c-e`, `exo-gj-667-c-g`, `exo-55-cnc-e`, `exo-55-cnc-b`, `exo-55-cnc-c`, `exo-55-cnc-f`, `exo-55-cnc-d`, `exo-wasp-12-b`, `exo-wasp-121-b`, `exo-hd-189733-b`, `exo-hd-209458-b`, `exo-51-peg-b`, `exo-kepler-16-b`, `exo-kelt-9-b`, `exo-toi-849-b`, `exo-psr-b1257-12-b`, `exo-psr-b1257-12-c`, `exo-psr-b1257-12-d`, `exo-hr-8799-e`, `exo-hr-8799-d`, `exo-hr-8799-c`, `exo-hr-8799-b`, `exo-bet-pic-c`, `exo-bet-pic-b`, `exo-bet-pic-d`, `exo-koi-351-b`, `exo-koi-351-c`, `exo-kepler-90-i`, `exo-koi-351-d`, `exo-koi-351-e`, `exo-koi-351-f`, `exo-koi-351-g`, `exo-koi-351-h`, `exo-k2-138-b`, `exo-k2-138-c`, `exo-k2-138-d`, `exo-k2-138-e`, `exo-k2-138-f`, `exo-k2-138-g`, `exo-kepler-11-b`, `exo-kepler-11-c`, `exo-kepler-11-d`, `exo-kepler-11-e`, `exo-kepler-11-f`, `exo-kepler-11-g`, `exo-hd-10180-c`, `exo-hd-10180-d`, `exo-hd-10180-e`, `exo-hd-10180-f`, `exo-hd-10180-g`, `exo-hd-10180-h`, `exo-kepler-1649-b`, `exo-kepler-1649-c`, `exo-kepler-1647-b`, `exo-wasp-17-b`, `exo-wasp-39-b`, `exo-51-eri-b`, `exo-pds-70-b`, `exo-pds-70-c`, `exo-af-lep-b`
   - layers (2): `exoplanets`, `systems`
 
 ### STAR
@@ -766,5 +762,5 @@ Honesty over the 1041 records: 320 measured, 362 modelled, 355 illustrative.
 - **Dates and filters:** As its members.
 - **Measured, modelled or reconstructed:** As its members.
 - **Rights:** As its members.
-- **Records (11):**
-  - layers (11): `worlds`, `deep-sky`, `exotics`, `extremes-more`, `pulsars`, `beyond-more`, `quasars`, `far-bodies`, `moons`, `companions`, `hand-kept-sites`
+- **Records (15):**
+  - layers (15): `worlds`, `deep-sky`, `exotics`, `extremes-more`, `pulsars`, `beyond-more`, `quasars`, `far-bodies`, `moons`, `companions`, `hand-kept-sites`, `observatories`, `launch-sites`, `landing-sites`, `meteor-showers`

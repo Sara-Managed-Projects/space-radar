@@ -163,6 +163,12 @@ domains:
       beyond-more: {credit: "The Local Volume Database, A. Pace 2024 (CC0); MCXC (Piffaretti et al. 2011)", source: scripts/data/a45-hand.yaml}
       quasars: {credit: "Million Quasars Catalog v8 (Flesch 2023)", source: "https://quasars.org/milliquas.htm"}
       # 0079 r15-a45: end
+      # 0079 a6: begin (CREDITS.md section 4.24 carries each credit line word for word)
+      observatories: {credit: "Observatories: Wikidata (CC0 1.0), joined by code to the Minor Planet Center's list of observatory codes", source: "site/data/lists/observatories.json"}
+      launch-sites: {credit: "Launch sites: Wikidata (CC0 1.0)", source: "site/data/lists/launch-sites.json"}
+      landing-sites: {credit: "Landing and impact sites: NASA NSSDCA (public domain) and Wikipedia coordinates (CC BY-SA 4.0)", source: "site/data/lists/landing-sites.json"}
+      meteor-showers: {credit: "Meteor showers: IAU Meteor Data Center (Jenniskens et al. 2020; Jopek and Kanuchova 2017)", source: "site/data/lists/showers.json"}
+      # 0079 a6: end
 
 classes:
   # --- the Sun and the planets -------------------------------------------------------------------------
@@ -817,5 +823,4 @@ classes:
       drawn: "As its members."
       rights: "As its members."
     records:
-      - {domain: layers, ids: [worlds, deep-sky, exotics, far-bodies, hand-kept-sites, moons, companions]} # 0079 a3
-      - {domain: layers, ids: [worlds, deep-sky, exotics, far-bodies, hand-kept-sites, extremes-more, pulsars, beyond-more, quasars]} # 0079 r15-a45
+      - {domain: layers, ids: [worlds, deep-sky, exotics, far-bodies, hand-kept-sites, moons, companions, extremes-more, pulsars, beyond-more, quasars, observatories, launch-sites, landing-sites, meteor-showers]} # 0079 a3, r15-a45, a6

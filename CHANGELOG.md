@@ -11,6 +11,79 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-10-29
+
+The map now holds the deep sky, the comets, the stars, the moons and the sites it lacked, and it can replay a
+mission. Every known NGC and IC object, Harris's globular clusters, Green's supernova remnants and the open
+clusters are there, with every comet on its orbit and its tail. Stars the catalogue has no distance for are
+drawn as directions. Pulsars, magnetars, quasars, the whole Local Group and 6 423 exoplanets (on by
+default) join them. Every moon of the planets and of the asteroids and far worlds is a layer of its own.
+Eleven small bodies have the shape a spacecraft or a radar saw. And a new kind of tour, a Moment, plays a
+mission on one clock in 3D; it ships with its engine, a Saturn V demonstration and the vehicles of Vostok 1,
+Apollo and Artemis II taken apart into their parts. It is a minor release: everything new is added, and
+the 1.0.0 promises hold. A shared link (`v=1`, with `build=1.5.0` beside it), the saved-data format
+(`/data/v1/`) and the registry row formats all still work.
+
+Counted on release day with `python3 scripts/count_facts.py`: 30 trips and 227 stops, 109 389 stars (and
+10 224 more with a direction and no distance), 43 star systems (40 in 1.4.0, three directly imaged ones
+more), 21 moons with their own world (20 with a map) and 934 more in two layers, 21 landing sites on the
+Moon and 12 on Mars, 243 models of spacecraft and small bodies (225 in 1.4.0, 18 more), 39 layers (29), 16
+sources and 33 feeds (as they were), and 326 test files (315). 1 048 records with a class, a source and a
+credit (1 011) in 40 classes (40).
+
+### Added
+- **Moments** ([#1305]): `#moment=<id>&t=<s>` replays a mission from launch to landing on one clock, with
+  the pace and the compression printed on screen (`×1`, `×27.5`), the mission clock (`T−00:00:08`), chapters,
+  seven kinds of shot, flames, steam, separations, parachutes and entry plasma. A visitor can take the
+  camera at any time. Nothing of it loads until the link is opened. The one Moment that ships is a Saturn V
+  demonstration whose heights are approximate; Vostok 1, Apollo 11 and Artemis II are not written yet.
+- **Vostok** ([#1313]): the R-7 launcher with its four strap-ons, the Vostok 3KA, the ejection seat with
+  its pilot and the parachutes, built here from published dimensions and museum photographs.
+- **Apollo** ([#1307]): the Saturn V in eleven parts in flight order (NASA's own model, cut at its ring
+  edges), the Lunar Module in two stages, and the Command and Service Module from NASA's model.
+- **Artemis** ([#1314]): SLS Block 1 and Orion with its European Service Module, each in named parts;
+  the core barrel, boosters and adapter skins on NASA's hardware are drawn here, and the model's credit says so.
+- **The deep sky and the comets** ([#1308]): about 19 500 more NGC, IC, globular-cluster, remnant and
+  open-cluster objects, fetched when the deep sky is entered, and every comet on its orbit with a tail.
+- **Every moon** ([#1310]): 439 moons of Jupiter, Saturn, Uranus, Neptune and Pluto on their orbits for 1
+  January 2026, 495 companions of asteroids and far worlds, the nine moons of dwarf planets JPL's tables
+  lack, and five dwarf-planet candidates. Both layers are off until asked for.
+- **Stars and what lies beyond** ([#1312]): the IAU's approved star names, 10 224 stars with a direction and
+  no distance (a card says "Not measured"), 4 383 pulsars, 78 magnetars, black holes and dead stars, the
+  Local Group's 85 dwarfs, named clusters, the farthest galaxies and 1 006 quasars.
+- **The small complete lists** ([#1311]): the IAU's 172 established meteor showers, 3 850 observatories,
+  111 launch sites, 105 landing and impact sites, and Tianwen-2 and MMX as landings to come.
+- **6 423 exoplanets, on by default** ([#1311]): one 133 kB file in place of a table, drawn from the ladder's
+  rungs as before. 51 Eridani, PDS 70 and AF Leporis are star systems you can fly into.
+- **Eleven real shapes** ([#1309]): 67P/Churyumov-Gerasimenko, Lutetia, Steins, Donaldjohanson and
+  Arrokoth from the missions that imaged them, and Toutatis, Geographos, Kleopatra, Mithra, Golevka and 1996
+  HW1 from radar. Each card says what was imaged, what is fitted and what is not turned.
+
+### Changed
+- **The exoplanet layer starts on** ([#1311]); it is still loaded after the first screen.
+- **A star with no distance shows no distance** ([#1312]): its card has no "— light-years away" among
+  the big numbers.
+- **Budgets were raised** where the data above arrives after the first visit (`after_first_visit_bytes`,
+  `deployed_boot_js_bytes`), each with its reason in `registry/budgets.yaml`.
+
+### Not yet
+- The Moments of Vostok 1, Apollo 11 and Artemis II themselves, and the places to open them from.
+- The Rosetta shapes of 67P, Lutetia and Steins state no licence in their datasets; the owner has still to decide
+  whether to keep them. About 54 more radar shapes, Halley, Gaspra, Ida and Mathilde wait on a server that
+  refused our build machine.
+- The moons' orbits are for 1 January 2026 carried on by a mean period, and the places of 392 are inferred;
+  the card says which. The 677 companions in Johnston's Archive are not used: it asks for permission first.
+- Artemis's markings, the Apollo parachutes and the Lunar Module's folded legs are not drawn.
+- The member galaxies of Virgo and the other clusters are drawn but cannot be selected.
+- The Milky Way from inside is still the NASA SVS photo map.
+
+### For contributors
+- How the release was assembled: stages `r15-c1`, `r15-c2`, `r15-c3`, `r15-c4`, `r15-b1`, `r15-a3`,
+  `r15-a45`, `r15-a2` and `r15-a6` reached `main` as one integration pull request, with their own pull
+  requests [#1305], [#1313], [#1307], [#1314], [#1309], [#1310], [#1312], [#1308] and [#1311].
+- A registry row may now list `stations:` (where a payload model of another file stands in a stack) and
+  name its `subparts:` in `attach:`; `scripts/check_registry.py` holds both.
+
 ## [1.4.0] - 2026-10-27
 
 The page keeps its own copy of the data, the nebulae are drawn in 3D and sixty more craft have shapes of
@@ -701,7 +774,8 @@ The first public map.
 - A registry of YAML files as the architecture, with generated mirrors and a validator in CI.
 - No server, no database, no build step.
 
-[Unreleased]: https://github.com/Sara-Managed-Projects/space-radar/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/Sara-Managed-Projects/space-radar/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.5.0
 [1.4.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.4.0
 [1.3.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.3.0
 [1.2.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.2.0
@@ -878,3 +952,12 @@ The first public map.
 [#1298]: https://github.com/Sara-Managed-Projects/space-radar/pull/1298
 [#1300]: https://github.com/Sara-Managed-Projects/space-radar/pull/1300
 [#1301]: https://github.com/Sara-Managed-Projects/space-radar/pull/1301
+[#1305]: https://github.com/Sara-Managed-Projects/space-radar/pull/1305
+[#1307]: https://github.com/Sara-Managed-Projects/space-radar/pull/1307
+[#1308]: https://github.com/Sara-Managed-Projects/space-radar/pull/1308
+[#1309]: https://github.com/Sara-Managed-Projects/space-radar/pull/1309
+[#1310]: https://github.com/Sara-Managed-Projects/space-radar/pull/1310
+[#1311]: https://github.com/Sara-Managed-Projects/space-radar/pull/1311
+[#1312]: https://github.com/Sara-Managed-Projects/space-radar/pull/1312
+[#1313]: https://github.com/Sara-Managed-Projects/space-radar/pull/1313
+[#1314]: https://github.com/Sara-Managed-Projects/space-radar/pull/1314

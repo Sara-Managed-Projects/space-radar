@@ -34,7 +34,7 @@ git clone https://github.com/Sara-Managed-Projects/space-radar.git
 cd space-radar && python3 -m http.server 8177 --directory site      # then open http://localhost:8177
 ```
 
-30 narrated trips (227 stops), 109 389 stars in 3D, 40 star systems to fly into, about 17 000
+30 narrated trips (227 stops), 109 389 stars in 3D, 43 star systems to fly into, about 17 000
 satellites at their real positions, and every picture labelled as measured, modelled or an
 artist's impression. **Teach with it:** present mode and an autopilot screen for a classroom or a
 museum, and a [zip that runs offline](docs/RUN_LOCALLY.md).

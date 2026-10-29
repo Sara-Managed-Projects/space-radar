@@ -3415,6 +3415,7 @@ every record of the map to a line of this file (`docs/COVERAGE.md` lists them by
 - **Exoplanets** (`site/data/exoplanets.bin`, `scripts/exopack.py`): the same pscomppars table as 4.7, 6 451
   confirmed planets on 2026-10-28 of which 6 423 have a sky position and a distance, packed to 259 kB (133 kB
   gzipped) with the numbers rounded to what a card prints. The DOI and the citation of 4.7 stand.
+- **Credit lines of the four layers** (`registry/visual-classes.yaml`, word for word): "Observatories: Wikidata (CC0 1.0), joined by code to the Minor Planet Center's list of observatory codes"; "Launch sites: Wikidata (CC0 1.0)"; "Landing and impact sites: NASA NSSDCA (public domain) and Wikipedia coordinates (CC BY-SA 4.0)"; "Meteor showers: IAU Meteor Data Center (Jenniskens et al. 2020; Jopek and Kanuchova 2017)".
 <!-- 0079 a6: end -->
 
 ## 4.6 Third-party trademarks the app names or draws

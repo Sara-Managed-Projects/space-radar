@@ -2693,3 +2693,145 @@ systems:
     equilibrium_k: 1076
     zone: hotter
     source: https://exoplanetarchive.ipac.caltech.edu/overview/WASP-39 (read 2026-10-28)
+- id: 51-eri
+  host: 51 Eri
+  display: 51 Eridani
+  aliases:
+  - 51 Eri
+  why: extreme
+  as_of: '2026-10-28'
+  sky:
+    ra_deg: 69.4007424
+    dec_deg: -2.4738245
+    dist_pc: 29.7575
+    spect: F0 IV
+  stars_in_system: 3
+  star:
+    radius_suns: 1.45
+    teff_k: 7422.0
+    mass_suns: 1.75
+    lum_suns: 5.72
+    lum_from: table
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/51%20Eri (read 2026-10-28)
+  habitable_zone: null
+  habitable_zone_missing: too-hot
+  colour_note: illustrative
+  planets:
+  - id: exo-51-eri-b
+    period_days: 9100.0
+    a_au: 10.4
+    a_from: table
+    radius_earths: null
+    radius_from: null
+    mass_earths: 3464.3296363
+    mass_from: measured
+    eccentricity: 0.57
+    method: Imaging
+    year: 2015
+    insolation_earths: 0.0529
+    equilibrium_k: 122
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/51%20Eri (read 2026-10-28)
+- id: pds-70
+  host: PDS 70
+  why: extreme
+  as_of: '2026-10-28'
+  sky:
+    ra_deg: 212.0421402
+    dec_deg: -41.3980405
+    dist_pc: 113.064
+    spect: K7
+  stars_in_system: 1
+  star:
+    radius_suns: 1.26
+    teff_k: 4109.0
+    mass_suns: 0.982
+    lum_suns: 0.35
+    lum_from: table
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/PDS%2070 (read 2026-10-28)
+  habitable_zone:
+    inner_au: 0.6063
+    outer_au: 1.142
+    wide_inner_au: 0.4786
+    wide_outer_au: 1.205
+  habitable_zone_formula: Kopparapu et al. 2014, ApJ Letters 787, L29, equations 4 and 5 (https://arxiv.org/abs/1404.5292,
+    read 2026-10-08)
+  colour_note: illustrative
+  planets:
+  - id: exo-pds-70-b
+    period_days: 43500.0
+    a_au: 24.06
+    a_from: kepler
+    a_table_au: 20.8
+    a_table_mismatch_pct: -35.4
+    radius_earths: 21.96960217
+    radius_from: measured
+    mass_earths: 1017.0509024
+    mass_from: measured
+    eccentricity: 0.17
+    method: Imaging
+    year: 2018
+    insolation_earths: 0.000605
+    equilibrium_k: 40
+    zone: colder
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/PDS%2070 (read 2026-10-28)
+  - id: exo-pds-70-c
+    period_days: 74041.6
+    a_au: 34.3
+    a_from: table
+    period_from: kepler
+    radius_earths: 22.19378179
+    radius_from: measured
+    mass_earths: 2383.7130525
+    mass_from: measured
+    eccentricity: 0.037
+    method: Imaging
+    year: 2019
+    insolation_earths: 0.000297
+    equilibrium_k: 33
+    zone: colder
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/PDS%2070 (read 2026-10-28)
+- id: af-lep
+  host: AF Lep
+  display: AF Leporis
+  aliases:
+  - AF Lep
+  why: extreme
+  as_of: '2026-10-28'
+  sky:
+    ra_deg: 81.7699216
+    dec_deg: -11.9011752
+    dist_pc: 26.8564
+    spect: F8
+  stars_in_system: 1
+  star:
+    radius_suns: 1.25
+    teff_k: 6140.0
+    mass_suns: 1.218
+    lum_suns: 1.95
+    lum_from: table
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/AF%20Lep (read 2026-10-28)
+  habitable_zone:
+    inner_au: 1.298
+    outer_au: 2.27
+    wide_inner_au: 1.025
+    wide_outer_au: 2.395
+  habitable_zone_formula: Kopparapu et al. 2014, ApJ Letters 787, L29, equations 4 and 5 (https://arxiv.org/abs/1404.5292,
+    read 2026-10-08)
+  colour_note: illustrative
+  planets:
+  - id: exo-af-lep-b
+    period_days: 8905.0
+    a_au: 8.996
+    a_from: table
+    radius_earths: 13.0
+    radius_from: estimated
+    mass_earths: 1147.36054927
+    mass_from: measured
+    eccentricity: 0.015
+    transit_mid_jd: 2456700.0
+    method: Imaging
+    year: 2023
+    insolation_earths: 0.0241
+    equilibrium_k: 100
+    zone: colder
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/AF%20Lep (read 2026-10-28)

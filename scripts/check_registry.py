@@ -5243,7 +5243,10 @@ def main() -> int:
             if not isinstance(parts, list) or not parts or not all(isinstance(x, str) and x for x in parts) or len(set(parts)) != len(parts):
                 fail(where, "`parts:` must be a list of distinct node names")
                 parts = []
-            for key in ("attach", "engines"):
+            # 0079 int: a sub-part (`subparts:`) is a node under a part, so `attach` may name it; `stations:` gives where a
+            # payload model of ANOTHER file stands in the stack (it is not a node of this file) and is checked like `attach`.
+            subs = {s for v in (m.get("subparts") or {}).values() for s in (v or [])}
+            for key in ("attach", "stations", "engines"):
                 table = m.get(key)
                 if table is None:
                     continue
@@ -5251,12 +5254,14 @@ def main() -> int:
                     fail(where, f"`{key}:` must map a part name to metres")
                     continue
                 for name, val in table.items():
-                    if name not in parts:
+                    if key == "stations":
+                        pass
+                    elif name not in parts and not (key == "attach" and name in subs):
                         fail(where, f"`{key}:` names `{name}`, which is not in `parts:`")
-                    pts = [val] if key == "attach" else val
+                    pts = [val] if key in ("attach", "stations") else val
                     ok = isinstance(pts, list) and pts and all(isinstance(q, list) and len(q) == 3 and all(isinstance(c, (int, float)) and not isinstance(c, bool) for c in q) for q in pts)
                     if not ok:
-                        fail(where, f"`{key}.{name}` must be {'[x, y, z]' if key == 'attach' else 'a list of [x, y, z]'} in metres")
+                        fail(where, f"`{key}.{name}` must be {'[x, y, z]' if key in ('attach', 'stations') else 'a list of [x, y, z]'} in metres")
         # 0079 c4: end
 
     # ...and CREDITS.md is the document that actually discharges the obligation, so it has to

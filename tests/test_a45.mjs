@@ -143,6 +143,12 @@ check(garnet && garnet.meta.noDistance === true && garnet.klass === 'star' && ga
 check(unNames.rows.length === 63 && a45.unplacedNamedRecords(unNames).every((r) => Math.abs(Math.hypot(r.pos.x, r.pos.y, r.pos.z) / LY - 1e5) < 1), 'the 63 named ones sit on a direction only (the record\'s own distance is a placeholder no card prints)');
 const unnamed = a45.unplacedRecord([5, '', '', '', 0, 0, '', '', 10, 20, 9.5, 12345]);
 check(unnamed.name === 'HYG star 12345' && unnamed.meta.noDistance && unnamed.meta.mag === 9.5, 'an unnamed one is named by the catalogue\'s number');
+// 0079 integration: a star with no distance has no distance cell among the card's big numbers ("— light-years away" was one)
+{
+  const Cards = await import(join(JS, 'ui/cards.js'));
+  const heroes = Cards.heroNumbers(unnamed, {}, [[COPY.card.rows.distanceFromSun, COPY.unplaced.noDistanceRow], [COPY.card.rows.brightness, '9.5']]);
+  check(heroes.length === 2 && !heroes.some((h) => h.key === 'distanceFromSun'), `no distance cell for a star with no distance (${heroes.map((h) => h.key)})`);
+}
 const dir = a45.eclipticDirection(0, 0);
 check(Math.abs(dir[0] - 1) < 1e-12 && Math.abs(dir[1]) < 1e-12, 'RA 0, Dec 0 is the ecliptic +X');
 const polar = a45.eclipticDirection(90, 0);
