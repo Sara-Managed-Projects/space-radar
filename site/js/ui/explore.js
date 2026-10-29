@@ -437,7 +437,7 @@ export function createExplore(ctx, host) {
   if (input) { input.addEventListener('input', onType); input.addEventListener('change', onType); input.addEventListener('blur', () => setTimeout(onType, 0)); }
   // The named stars and the exoplanets load after the first visit (main.js OFF THE FIRST VISIT);
   // a visitor reaching for the search box wants them now, so the first focus asks for them.
-  if (input) input.addEventListener('focus', () => { if (typeof ctx.loadAfterFirstVisit === 'function') ctx.loadAfterFirstVisit(); });
+  if (input) input.addEventListener('focus', () => { if (typeof ctx.loadAfterFirstVisit === 'function') ctx.loadAfterFirstVisit(); if (typeof ctx.loadMoreCatalogues === 'function') ctx.loadMoreCatalogues(); }); // 0079 r15-a45: the catalogues of stages A4 and A5 too
 
   const tabs = el('div', 'sr-tabs');
   tabs.setAttribute('role', 'tablist');

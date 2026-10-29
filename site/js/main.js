@@ -1292,13 +1292,14 @@ export async function boot({ setStatus } = {}) {
     window.__srLayersReady = true;
     window.dispatchEvent(new CustomEvent('sr:layers-ready'));
     // An embed: only what its link names (openAt).
-    if (!embed) afterFirstVisit(LATER_LAYERS_MS, () => ctx.loadAfterFirstVisit({ idle: true })); // 0079 r15-a45: the idle moment loads the later layers only
+    if (!embed) afterFirstVisit(LATER_LAYERS_MS, () => ctx.loadAfterFirstVisit());
   });
   let shellsLoad = null;
   // A rung of the ladder or a star system's stage draws them: no waiting for the idle moment.
   window.addEventListener('sr:stage', (e) => {
     const id = e && e.detail ? e.detail.worldId : stage.worldId;
     if ((isLadderStage(id) || isSystemStage(id)) && ctx.loadAfterFirstVisit) ctx.loadAfterFirstVisit();
+    if ((isLadderStage(id) || isSystemStage(id)) && ctx.loadMoreCatalogues) ctx.loadMoreCatalogues(); // 0079 r15-a45
     // The radio bubble and the microwave background's surface (scene/shells.js, internal #306):
     // two wire spheres, fetched with the first rung and drawn only on rungs.
     if (isLadderStage(id) && !ctx.shells && !shellsLoad) {
@@ -3081,7 +3082,7 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   let cataloguesLoad = null;
   ctx.loadMoreCatalogues = () => {
     if (!cataloguesLoad) {
-      cataloguesLoad = ctx.loadAfterFirstVisit({ idle: true })
+      cataloguesLoad = ctx.loadAfterFirstVisit()
         .then(() => Promise.all(CATALOGUE_LAYERS.map((id) => layerRec(id)).filter(Boolean).map((l) => ctx.loadLayerNow(l))))
         .then(() => import('./data/a45.js'))
         .then((m) => m.loadIau().then((doc) => {
@@ -3092,8 +3093,7 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
     return cataloguesLoad;
   };
   // 0079 r15-a45: end
-  ctx.loadAfterFirstVisit = (callOpts) => {
-    if (!(callOpts && callOpts.idle) && ctx.loadMoreCatalogues) ctx.loadMoreCatalogues(); // 0079 r15-a45: whoever needs the later layers is likely to need these
+  ctx.loadAfterFirstVisit = () => {
     if (!laterLoad) {
       // The star systems' index rides with the exoplanet table it is joined to (internal #466):
       // thirty-nine more host stars for the search box, and a stage for each. Not the systems
@@ -3341,7 +3341,7 @@ function openAt(ctx, id) {
   const record = resolveAt(ctx, id);
   // A star or an exoplanet before its layer has landed (OFF THE FIRST VISIT): load it, then look again.
   if (!record && ctx.loadAfterFirstVisit && !ctx.laterLayersLoaded()) {
-    ctx.loadAfterFirstVisit().then(() => openAt(ctx, id), () => openAt(ctx, id));
+    ctx.loadAfterFirstVisit().then(() => ctx.loadMoreCatalogues()).then(() => openAt(ctx, id), () => openAt(ctx, id)); // 0079 r15-a45: a link may name a pulsar or a cluster
     return;
   }
   if (!record) { linkNote(ctx, COPY.link.unknownAt, ['at']); return; }
