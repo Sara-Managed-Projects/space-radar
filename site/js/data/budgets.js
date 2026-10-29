@@ -64,5 +64,7 @@ export const BUDGETS = {
   "deep_nebula_bytes": 600000,
   "deep_nebula_draw_calls": 3,
   "deep_galclusters_bytes": 150000,
-  "deep_galclusters_draw_calls": 6
+  "deep_galclusters_draw_calls": 6,
+  "deep_catalogue_bytes": 1300000,
+  "deep_catalogue_draw_calls": 2
 };

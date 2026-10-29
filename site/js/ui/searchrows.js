@@ -48,6 +48,22 @@ import { loadCss } from './latercss.js';
 /** The classes found by where they are round the Sun, not round the Earth (whereNow). */
 const WANDERERS = new Set(['probe', 'comet', 'asteroid']);
 
+// 0079 a2: begin
+// THE CATALOGUE'S NAMES (scene/deep/catalogue.js). The 13 000 NGC and IC objects, Harris's globulars, Green's remnants and
+// the open clusters are not records until one is asked for, so the field cannot find them in its index. A query that reads
+// like a designation ("NGC 1068", "IC 434", "Caldwell 20", "G1.9+0.3", "Stock 2") fetches the catalogue (two files, once) and the
+// best three rows are offered as extras, under the objects the index finds. Nothing is fetched for any other query.
+const CATALOGUE_RX = /^(ngc|ic|c|caldwell|cald|g|snr|pal|terzan|ugc|pgc|mcg|eso|stock|ruprecht|trumpler|berkeley|collinder|melotte|king|dolidze|basel|harvard|haffner)\s*[-.]?\s*\d/i;
+let catalogue = null;
+let catalogueAsked = null;
+/** A promise while the catalogue is on its way for this query, else null. `get()` asks main.js's coordinator for it. */
+export function wantCatalogue(q, get) {
+  if (catalogue || !CATALOGUE_RX.test(String(q || '').trim()) || typeof get !== 'function') return null;
+  if (!catalogueAsked) catalogueAsked = Promise.resolve(get()).then((layer) => { if (layer) catalogue = layer; else catalogueAsked = null; }, () => { catalogueAsked = null; });
+  return catalogueAsked;
+}
+// 0079 a2: end
+
 /** Above this, a thing is "up": the same ten degrees a pass must clear (sky/tonightbest.js MIN_ALT_DEG). */
 export const UP_DEG = 10;
 export const EXTRA_ROWS = 3;
@@ -384,6 +400,11 @@ export function findExtras(query, limit = EXTRA_ROWS) {
     out.push({ extra: e.extra, id: e.id, name: e.name, sub: e.sub, record: e.record || null, ...(e.extra === 'constellation' ? { raDeg: e.raDeg, decDeg: e.decDeg } : {}) });
     if (out.length >= limit) break;
   }
+  // 0079 a2: begin
+  if (catalogue && CATALOGUE_RX.test(String(query || '').trim())) {
+    for (const h of catalogue.search(query, 3)) out.push({ extra: 'catalogue', id: h.id, name: h.name, sub: h.sub, record: h.id, row: h.row });
+  }
+  // 0079 a2: end
   return out;
 }
 
@@ -408,6 +429,16 @@ export function runExtra(ctx, hit) {
     if (hit.extra === 'trip') { if (ctx.trip && typeof ctx.trip.start === 'function') { ctx.trip.start(hit.id); return true; } return false; }
     if (hit.extra === 'constellation') return turnToStars(ctx, hit);
     if (hit.extra === 'suggest') { if (ctx.explore && typeof ctx.explore.setTab === 'function') { ctx.explore.setTab('tonight'); return true; } return false; }
+    // 0079 a2: begin
+    if (hit.extra === 'catalogue') {
+      if (typeof ctx.isLayerOn === 'function' && typeof ctx.setLayerOn === 'function' && !ctx.isLayerOn('deep-sky')) ctx.setLayerOn('deep-sky', true);
+      const have = typeof ctx.recordById === 'function' ? ctx.recordById(hit.record) : null;
+      if (have) { ctx.select(have); return true; }
+      if (typeof ctx.wantDeep !== 'function') return false;
+      ctx.wantDeep().then((d) => (d && d.loadCatalogue ? d.loadCatalogue() : null)).then((c) => { const r = c ? c.recordById(hit.record) : null; if (r) ctx.select(r); });
+      return true;
+    }
+    // 0079 a2: end
     const record = typeof ctx.recordById === 'function' ? ctx.recordById(hit.record) : null;
     if (hit.extra === 'mission') { if (record) { ctx.select(record); return true; } return false; }
     if (hit.extra === 'event') {
@@ -727,7 +758,8 @@ export const KIND_CAP = 5000;
  * classes are on their way, or that the toggle left nothing; either way not a miss) ride on the answer;
  * `again` is called once the classes have arrived.
  */
-export function answer(index, q, only, { find, limit = 8, exact = 900, word = 700, again = null } = {}) {
+export function answer(index, q, only, { find, limit = 8, exact = 900, word = 700, again = null, catalogue: getCatalogue = null } = {}) {
+  { const w = wantCatalogue(q, getCatalogue); if (w && again) w.then(again); } // 0079 a2
   const on = kindsOn();
   const kind = on ? readKind(q, index) : null;
   const wait = on ? wantKinds(kind, only) : null;

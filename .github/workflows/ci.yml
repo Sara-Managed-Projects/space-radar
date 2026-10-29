@@ -1209,3 +1209,13 @@ jobs:
       - name: "no photographs in the scene: M27, the Southern Ring and the Pleiades' nebulosity as 3D heroes from their sources, their light maps the bakes (release 1.4.0 stage r14-neb-b)"
         run: node tests/test_hero_r14neb.mjs
       # 0078 r14-neb-b: end
+      # 0079 a2: begin
+      - name: "every known deep-sky object: the catalogue's files are the hash and size their manifests say, every count adds up, nothing the map draws is drawn twice, rows become records, a tap and a name find them (release 1.5.0 stage A2, internal #1060)"
+        run: node tests/test_catalogue.mjs
+      - name: "the catalogue's files are the size and hash their manifests say (release 1.5.0 stage A2)"
+        run: python3 scripts/build_deep_catalogue.py --check
+      # 0079 a2: end
+      # 0079 a8: begin
+      - name: "every comet's orbit, place and tail: the field agrees with the propagator, orbits lie on their conic, tails point away from the Sun, one indexed mesh for 4 000 comets (release 1.5.0 stage A8, internal #1068)"
+        run: node tests/test_cometfield.mjs
+      # 0079 a8: end

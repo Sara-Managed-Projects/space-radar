@@ -904,7 +904,7 @@ export function createSearch(ctx, host) {
     // A kind of thing ("galaxies", "moons of saturn") or the 3D toggle (spec 0076 W3-e): ui/searchrows.js
     // answer() asks findMatches itself, and asks again (`again`) when the classes it reads have arrived.
     const kinds = state.more && typeof state.more.answer === 'function' ? state.more : null;
-    const result = kinds ? kinds.answer(state.index, q, state.only, { find: findMatches, limit: MAX_RESULTS, exact: NAME_EXACT, word: WORD_PREFIX, again: () => { if (state.open && norm(input.value) === q) run(input.value); } })
+    const result = kinds ? kinds.answer(state.index, q, state.only, { find: findMatches, limit: MAX_RESULTS, exact: NAME_EXACT, word: WORD_PREFIX, again: () => { if (state.open && norm(input.value) === q) run(input.value); }, catalogue: () => (ctx.wantDeep ? ctx.wantDeep().then((d) => (d && d.loadCatalogue ? d.loadCatalogue() : null)) : null) /* 0079 a2 */ })
       : findMatches(state.index, q, MAX_RESULTS);
     const kind = result.kind;
     state.hits = result.hits;
@@ -937,6 +937,8 @@ export function createSearch(ctx, host) {
       const merged = state.hits.length - before;
       const extras = kind ? [] : m.findExtras(q).filter((x) => !(x.extra === 'mission' && rows.some((h) => h.record && h.record.id === x.record)));
       if (extras.length && state.missed && !rows.length) state.missed = '';
+      // 0079 a2: a designation only the catalogue knows is an answer, not a miss: the nearest names are not offered beside it
+      if (state.missed && extras.some((x) => x.extra === 'catalogue')) { state.missed = ''; state.total = 0; rows.splice(0, rows.length); }
       state.total = Math.max(0, state.total - merged);
       state.hits = rows.slice(0, MAX_RESULTS - Math.min(extras.length, rows.length ? extras.length : 0)).concat(state.missed ? [] : extras);
       state.total += state.missed ? 0 : extras.length;
