@@ -175,8 +175,7 @@ const SOUTH = { name: 'Southville', latDeg: -33.9, lonDeg: 18.4, altKm: 0, sourc
   const AU = 149597870.7;
   const tMs = (2461319.5 - 2440587.5) * 86400e3 - 69184; // TDB to UTC, 69.184 s in 2026
   const named = [...namedAsteroids(), ...namedComets()];
-  check(named.length === 19 && named.every((r) => r.cls === 'inferred' && r.propagator === 'kepler' && Number.isFinite(r.elements.maRad)), 'nineteen named bodies, each with its phase and classed inferred, never sample'); // 0077 W3-d: and Ryugu and Itokawa; 0079 B1: and eleven more
-  check(named.length === 9 && named.every((r) => r.cls === 'inferred' && r.propagator === 'kepler' && Number.isFinite(r.elements.maRad)), 'nine named bodies, each with its phase and classed inferred, never sample'); // 0077 W3-d, 0079 a6: and Kamoʻoalewa: and Ryugu and Itokawa
+  check(named.length === 20 && named.every((r) => r.cls === 'inferred' && r.propagator === 'kepler' && Number.isFinite(r.elements.maRad)), 'twenty named bodies, each with its phase and classed inferred, never sample'); // 0077 W3-d: and Ryugu and Itokawa; 0079 B1: and eleven more; 0079 a6: and Kamoʻoalewa
   for (const r of named) {
     const want = HORIZONS[r.id];
     const p = kepler(r, tMs);
