@@ -9,11 +9,15 @@
 // the sky now: a glyph, a card and, for the selected one, its orbit (scene/orbitline.js). The rest were parsed and dropped.
 //
 // WHAT THIS ADDS, while the layer is on and the stage is a heliocentric one, never at boot (main.js imports this the first time):
-//   - EVERY comet's ORBIT, from the feed's own elements (q, e, i, node, argument of perihelion), as one indexed line mesh in one draw call:
-//     the whole ellipse, or for a long or open orbit the part inside R_CUT_AU, so a hyperbola is its passage. The orbit is the two-body
-//     path in space; it does not change with the clock and costs nothing per frame. The brighter a comet is now the brighter its line.
+//   - A FEW ORBITS, from the feed's own elements (q, e, i, node, argument of perihelion), as one indexed line mesh in one draw call: the
+//     selected comet's, a handful of famous ones (FAMOUS: Halley, Hale-Bopp, NEOWISE...) and the few brightest now, faint; never all of
+//     them. (Release 1.5.0 drew all 4 000 at once: 1 300 of them are sungrazers that pass within 0.01 au of the Sun, so they piled up
+//     into a band through the Sun's disc and a beam outward; see orbitRows.) The whole ellipse, or for a long or open orbit the part
+//     inside R_CUT_AU, so a hyperbola is its passage. The orbit is the two-body path in space; it does not change with the clock.
 //   - Every comet's PLACE as a small point, from the same elements and the app's clock (two-body, so `inferred`, as its glyph is).
-//     The 60 comets that have a glyph keep it; their point is dimmed so they are not drawn twice.
+//     The 60 comets that have a glyph keep it; their point is not drawn twice. A sungrazer's point is fainter still (a thousand of one
+//     family are one haze, not a thousand dots), and a place beyond POINT_MAX_AU is not drawn: a two-body hyperbola with a 1895 perihelion
+//     is millions of au out by now and was a dotted ray, so its card says where it is and the map does not.
 //   - TAILS on the bright ones: a comet whose brightness law is in the feed (M1) and which would be at least magnitude TAIL_MAG now and
 //     is nearer the Sun than TAIL_AU. Two ribbons from the head, away from the Sun: the ion tail straight and blue, the dust tail
 //     curved back along the orbit and cream. WHAT IS MEASURED: where the Sun is, so the tail's direction (a comet's gas tail points
@@ -36,6 +40,14 @@ const SUN_INERTIAL = 'sun-inertial';
 /** An orbit is drawn out to this distance from the Sun, au; a longer one is cut there (a passage). Neptune is at 30. */
 export const R_CUT_AU = 120;
 export const ORBIT_SAMPLES = 41; // odd, so the middle sample is perihelion
+/** The most orbits drawn at once (the selected one, the famous ones, the brightest now): the line mesh is this big and no bigger. */
+export const ORBIT_MAX = 40;
+/** A comet nearer the Sun than this at perihelion, au, is a sungrazer: its orbit is drawn only for the selected one, its point is faint. */
+export const SUNGRAZER_AU = 0.06;
+/** A place farther from the Sun than this, au, is not drawn as a point (the orbits are cut at R_CUT_AU; this is the Oort cloud's inner edge). */
+export const POINT_MAX_AU = 1000;
+/** Famous comets, in the order they are drawn when a tier cannot draw them all (by their designation in the feed's full name). */
+export const FAMOUS = [/^\s*1P\//, /^\s*C\/1995 O1/, /^\s*C\/2020 F3/, /^\s*C\/1996 B2/, /^\s*C\/2023 A3/, /^\s*67P\//, /^\s*2P\//, /^\s*109P\//, /^\s*12P\//, /^\s*C\/2011 W3/, /^\s*C\/2012 S1/, /^\s*C\/2022 E3/, /^\s*C\/2025 N1/, /^\s*C\/2021 A1/, /^\s*C\/2006 P1/, /^\s*17P\//];
 /** A tail is drawn on a comet at least this bright now (magnitude, total, the feed's law) and nearer the Sun than this (au). */
 export const TAIL_MAG = 12;
 export const TAIL_AU = 3.4;
@@ -155,6 +167,33 @@ export function tierLimit(tier) {
 }
 
 /**
+ * Which comets' orbits are drawn: the selected one (whatever it is), then the famous ones the feed has (FAMOUS, in that order; a tier takes
+ * 5, 12 or all), then the brightest now that are in an apparition and are not sungrazers, defunct ("D/") or coronagraph fragments (a tier
+ * adds 2, 6 or 12). At most ORBIT_MAX, no row twice. `rows` are {name, q (au), tpMs, mag (now, NaN where none)}. Pure.
+ */
+export function orbitRows(rows, tMs, tier, selected = -1) {
+  const out = [];
+  const take = (i) => { if (i >= 0 && i < rows.length && !out.includes(i) && out.length < ORBIT_MAX) out.push(i); };
+  take(selected);
+  const t = tier <= 0 ? 0 : tier === 1 ? 1 : 2;
+  const quiet = (r) => !(r.q < SUNGRAZER_AU) && !/^\s*\d+D\//.test(String(r.name)) && !/SOHO|STEREO|LASCO/i.test(String(r.name));
+  let famous = 0;
+  for (const re of FAMOUS) {
+    if (famous >= [5, 12, 16][t]) break;
+    const i = rows.findIndex((r) => re.test(String(r.name)) && quiet(r));
+    if (i >= 0) { take(i); famous += 1; }
+  }
+  const bright = [];
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    if (Number.isFinite(r.mag) && quiet(r) && Math.abs(tMs - r.tpMs) <= 1100 * 86400e3) bright.push(i);
+  }
+  bright.sort((a, b) => rows[a].mag - rows[b].mag);
+  for (const i of bright.slice(0, [2, 6, 12][t])) take(i);
+  return out;
+}
+
+/**
  * May this comet be drawn with a tail at app time `tMs`? Only one in an apparition (within 400 days of its perihelion), not one that has
  * not been seen again ("D/", Brorsen's, Biela's) and not a fragment seen only by a coronagraph (SOHO, STEREO, LASCO: their brightness law is
  * a few sightings, data/layers.js says so). Pure.
@@ -229,8 +268,10 @@ void main() {
   vec4 mv = modelViewMatrix * vec4(position, 1.0);
   gl_Position = projectionMatrix * mv;
   float sel = step(abs(aIndex - uSelected), 0.5);
-  vWeight = aShown * (0.35 + 0.65 * aWeight);
-  gl_PointSize = (3.0 + 3.5 * aWeight + sel * 6.0) * uPixelRatio * step(0.5, aShown);
+  vWeight = aShown * (0.3 + 0.5 * aWeight);
+  // small points (a place is two-body, not a picture of the comet): 2 to 3 px, a sungrazer's (aShown below a half) 1.5; the selected one larger
+  float tiny = 1.0 - step(0.5, aShown);
+  gl_PointSize = (mix(2.0 + 1.2 * aWeight, 1.5, tiny) + sel * 6.0) * uPixelRatio * step(0.01, aShown);
   #include <logdepthbuf_vertex>
 }`;
 const FRAG_POINT = /* glsl */ `
@@ -296,7 +337,7 @@ export function createCometField(THREE, env = {}) {
   group.visible = false;
   const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const uniforms = {
-    uColour: { value: new THREE.Color(0xd9f3ff) }, uLight: { value: 0.085 }, uPixelRatio: { value: 1 }, uSelected: { value: -1 },
+    uColour: { value: new THREE.Color(0xd9f3ff) }, uLight: { value: 0.3 }, uPixelRatio: { value: 1 }, uSelected: { value: -1 },
   };
   const tailUniforms = { uLight: { value: 0.85 } };
   const S = { loaded: false, failed: null, n: 0, records: [], byId: new Map(), els: [], H: [], pos: null, r: null, mag: null, lastT: NaN, placedFor: null, tails: 0, drawn: 0, orbitVerts: 0, rows: [], bytes: 0 };
@@ -306,6 +347,9 @@ export function createCometField(THREE, env = {}) {
   const noted = new Set(); // rows whose card carries the tail's note
   const scratch = [0, 0, 0, 0];
   const scratch2 = [0, 0, 0, 0];
+
+  /** A point's light: 0 where the layer's own glyph stands for it, a fifth for a sungrazer (a family of a thousand is one haze), else 1. */
+  const shownOf = (i) => (S.rows[i].own ? 0 : S.rows[i].q < SUNGRAZER_AU ? 0.2 : 1);
 
   const loading = Promise.resolve()
     .then(() => (env.load ? env.load() : load('jpl-sbdb-comets').then((res) => (res && res.data != null ? parseComets(res.data) : []))))
@@ -327,7 +371,7 @@ export function createCometField(THREE, env = {}) {
     S.records = keyed.map((k) => k.r);
     S.els = S.records.map((r) => r.elements);
     S.H = S.records.map((r) => (r.meta && Number.isFinite(r.meta.absoluteMagnitude) ? r.meta.absoluteMagnitude : NaN));
-    S.rows = S.records.map((r, i) => ({ i, own: own.has(r.id) }));
+    S.rows = S.records.map((r, i) => ({ i, own: own.has(r.id), name: r.name, q: r.elements.qKm / AU_KM, tpMs: r.elements.tpMs, mag: NaN }));
     S.records.forEach((r, i) => {
       S.byId.set(r.id, i);
       r.layer = 'comets';
@@ -336,38 +380,29 @@ export function createCometField(THREE, env = {}) {
     S.pos = new Float32Array(n * 3);
     S.r = new Float32Array(n);
     S.mag = new Float32Array(n).fill(NaN);
-    // ---- orbits: one indexed line mesh
-    const verts = n * ORBIT_SAMPLES;
-    const op = new Float32Array(verts * 3);
-    const ow = new Float32Array(verts);
-    const idx = new Uint32Array(n * (ORBIT_SAMPLES - 1) * 2);
+    // ---- orbits: one indexed line mesh with room for ORBIT_MAX of them, filled for the few that are drawn (setOrbits)
+    const verts = ORBIT_MAX * ORBIT_SAMPLES;
+    const idx = new Uint32Array(ORBIT_MAX * (ORBIT_SAMPLES - 1) * 2);
     let k = 0;
-    for (let i = 0; i < n; i++) {
-      const pts = orbitPoints(S.els[i], ORBIT_SAMPLES, R_CUT_AU);
-      op.set(pts, i * ORBIT_SAMPLES * 3);
-      const w = orbitWeight(keyed[i].mag);
-      for (let v = 0; v < ORBIT_SAMPLES; v++) {
-        const r = Math.hypot(pts[v * 3], pts[v * 3 + 1], pts[v * 3 + 2]);
-        ow[i * ORBIT_SAMPLES + v] = w / (1 + Math.pow(r / 18, 1.5));
-        if (v < ORBIT_SAMPLES - 1) { idx[k++] = i * ORBIT_SAMPLES + v; idx[k++] = i * ORBIT_SAMPLES + v + 1; }
-      }
+    for (let i = 0; i < ORBIT_MAX; i++) {
+      for (let v = 0; v < ORBIT_SAMPLES - 1; v++) { idx[k++] = i * ORBIT_SAMPLES + v; idx[k++] = i * ORBIT_SAMPLES + v + 1; }
     }
     const og = new THREE.BufferGeometry();
-    og.setAttribute('position', new THREE.BufferAttribute(op, 3));
-    og.setAttribute('aWeight', new THREE.BufferAttribute(ow, 1));
+    og.setAttribute('position', new THREE.BufferAttribute(new Float32Array(verts * 3), 3));
+    og.setAttribute('aWeight', new THREE.BufferAttribute(new Float32Array(verts), 1));
     og.setIndex(new THREE.BufferAttribute(idx, 1));
+    og.setDrawRange(0, 0);
     orbits = new THREE.LineSegments(og, new THREE.ShaderMaterial({
       vertexShader: VERT_ORBIT, fragmentShader: FRAG_ORBIT, uniforms,
       transparent: true, depthTest: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false,
     }));
     orbits.name = 'comet-orbits';
     orbits.frustumCulled = false;
-    S.orbitVerts = verts;
     // ---- places: one point each
     const pg = new THREE.BufferGeometry();
     pg.setAttribute('position', new THREE.BufferAttribute(S.pos, 3));
     pg.setAttribute('aWeight', new THREE.BufferAttribute(new Float32Array(n).fill(0.14), 1));
-    pg.setAttribute('aShown', new THREE.BufferAttribute(new Float32Array(n).map((_, i) => (S.rows[i].own ? 0 : 1)), 1));
+    pg.setAttribute('aShown', new THREE.BufferAttribute(new Float32Array(n).map((_, i) => shownOf(i)), 1));
     pg.setAttribute('aIndex', new THREE.BufferAttribute(Float32Array.from({ length: n }, (_, i) => i), 1));
     points = new THREE.Points(pg, new THREE.ShaderMaterial({
       vertexShader: VERT_POINT, fragmentShader: FRAG_POINT, uniforms,
@@ -430,22 +465,25 @@ export function createCometField(THREE, env = {}) {
     {
       // the comets that have a glyph (the layer's own records, landed by now): their point is not drawn
       const own = new Set(((env.recordsFor && env.recordsFor('comets')) || []).map((r) => r.id));
-      const shown = points.geometry.getAttribute('aShown');
-      for (let i = 0; i < S.n; i++) { S.rows[i].own = own.has(S.records[i].id); shown.array[i] = S.rows[i].own ? 0 : 1; }
-      shown.needsUpdate = true;
+      for (let i = 0; i < S.n; i++) S.rows[i].own = own.has(S.records[i].id);
     }
+    const shown = points.geometry.getAttribute('aShown');
     let nTail = 0;
     tailRows.length = 0;
     for (let i = 0; i < S.n; i++) {
       const p = keplerPosAu(S.els[i], tMs, scratch);
-      if (!p || !Number.isFinite(p[0])) { S.pos[i * 3] = S.pos[i * 3 + 1] = S.pos[i * 3 + 2] = 0; S.r[i] = 0; wAttr.array[i] = 0; continue; }
+      if (!p || !Number.isFinite(p[0])) { S.pos[i * 3] = S.pos[i * 3 + 1] = S.pos[i * 3 + 2] = 0; S.r[i] = 0; wAttr.array[i] = 0; shown.array[i] = 0; S.rows[i].mag = NaN; continue; }
       S.pos[i * 3] = p[0]; S.pos[i * 3 + 1] = p[1]; S.pos[i * 3 + 2] = p[2]; S.r[i] = p[3];
+      shown.array[i] = p[3] > POINT_MAX_AU ? 0 : shownOf(i); // a two-body place thousands of au out is not drawn
       const m = magNow(S.H[i], p[3]);
       S.mag[i] = m === null ? NaN : m;
+      S.rows[i].mag = S.mag[i];
       wAttr.array[i] = orbitWeight(m);
       if (nTail < TAIL_MAX && m !== null && p[3] < TAIL_AU && m <= TAIL_MAG && i < limit && tailEligible(S.records[i], tMs)) { tailRows.push(i); nTail += 1; }
     }
     wAttr.needsUpdate = true;
+    shown.needsUpdate = true;
+    orbitKey = ''; // the brightest now may have changed
     points.geometry.getAttribute('position').needsUpdate = true;
     fillTails(tMs);
     // the cards: the comets with a tail now say it is illustrative, the layer's own sixty as well as the field's
@@ -499,6 +537,31 @@ export function createCometField(THREE, env = {}) {
     else if (r.meta.departure === NOTE_TAIL || r.meta.departure === `${NOTE_POINT}. ${NOTE_TAIL}`) { if (base) r.meta.departure = NOTE_POINT; else delete r.meta.departure; }
   }
 
+  // ---- the few orbits that are drawn: the selected comet's, the famous, the brightest now (orbitRows)
+  let orbitKey = '';
+  function setOrbits(tier, selRow) {
+    const key = `${tier}:${selRow}`;
+    if (key === orbitKey) return;
+    orbitKey = key;
+    const rows = orbitRows(S.rows, S.lastT, tier, selRow);
+    const g = orbits.geometry;
+    const pos = g.getAttribute('position'), wt = g.getAttribute('aWeight');
+    rows.forEach((row, slot) => {
+      const pts = orbitPoints(S.els[row], ORBIT_SAMPLES, R_CUT_AU);
+      pos.array.set(pts, slot * ORBIT_SAMPLES * 3);
+      const picked = row === selRow;
+      const w = picked ? 0.9 : S.rows[row].mag === S.rows[row].mag ? 0.5 : 0.4; // the selected one is the line to read; the others are faint
+      for (let v = 0; v < ORBIT_SAMPLES; v++) {
+        const r = Math.hypot(pts[v * 3], pts[v * 3 + 1], pts[v * 3 + 2]);
+        wt.array[slot * ORBIT_SAMPLES + v] = picked ? w : w / (1 + Math.pow(r / 24, 1.5));
+      }
+    });
+    pos.needsUpdate = true; wt.needsUpdate = true;
+    g.setDrawRange(0, rows.length * (ORBIT_SAMPLES - 1) * 2);
+    S.drawn = rows.length;
+    S.orbitVerts = rows.length * ORBIT_SAMPLES;
+  }
+
   let selectedRow = -1;
   /** Per frame. `visible`: the comets layer is drawable and the stage is a heliocentric one. `tMs` the app clock. */
   function update(camera, renderer, visible, tMs, selectedId) {
@@ -511,8 +574,7 @@ export function createCometField(THREE, env = {}) {
     if (!Number.isFinite(S.lastT) || Math.abs(tMs - S.lastT) > REFRESH_SIM_MS) refresh(tMs, limit);
     const row = typeof selectedId === 'string' && S.byId.has(selectedId) ? S.byId.get(selectedId) : -1;
     if (row !== selectedRow) { selectedRow = row; uniforms.uSelected.value = row; }
-    S.drawn = Math.min(S.n, limit);
-    orbits.geometry.setDrawRange(0, S.drawn * (ORBIT_SAMPLES - 1) * 2);
+    setOrbits(tier, row);
     group.updateMatrixWorld(true);
     group.visible = true;
   }
