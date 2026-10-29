@@ -144,6 +144,7 @@ function limb(key, k, sun) {
 // ---- 4. the GLSL --------------------------------------------------------------------------------
 {
   check(new RegExp(`const int VIEW_STEPS = ${VIEW_STEPS};`).test(AIR_SHELL_FRAG) && VIEW_STEPS === 12, 'the shell marches 12 view steps, as the Earth\'s');
+  check(!/cameraPosition|vPosW/.test(AIR_SHELL_FRAG) && /ro = -vCentreRel \/ groundR/.test(AIR_SHELL_FRAG) && /rd = normalize\( vFromCamW \)/.test(AIR_SHELL_FRAG), 'the shell marches from the camera-relative centre and ray (release 1.5.1: a float32 of thousands of units gave Titan a ragged edge on the Sun\'s stage)');
   check(!/LIGHT_STEPS/.test(AIR_SHELL_FRAG) && /float lR = uHR \* chapman\( 1\.0 \/ uHR, h \/ uHR, cosChi \);/.test(AIR_SHELL_FRAG), 'the light path is chapman(), not a march');
   check(/float c = sqrt\( 0\.5 \* PI \* \( X \+ h \) \);/.test(AIR_SHELL_FRAG) && /return c \/ \( \( c - 1\.0 \) \* cosChi \+ 1\.0 \);/.test(AIR_SHELL_FRAG), 'the GLSL chapmanUp is the twin\'s');
   // Since 2026-10-08 a row with `twilight` (Venus, public #417) lights the shadowed steps faintly; a row without still skips them.

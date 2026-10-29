@@ -16,7 +16,7 @@ tagged, and their dates are the day the last change in each landed.
 - Pluto and Charon are round again, with smooth relief, when you fly close to them from the Solar
   System view: on real graphics cards the worlds' vertices were placed with too little precision
   that far from the Sun, and each ball drew as stair-stepped slabs. The same drawing code now
-  places every world, ring and moon relative to the camera.
+  places every world, ring, moon and haze shell relative to the camera.
 - With the sidebar folded, the "where you are" bar at the top left no longer covers the round
   menu button: it starts beside it, and the scale badge with it.
 - `tools/cdp.mjs`: a failed `cdpShot` / `cdpCast` / `cdpInput` step now rejects in the page with

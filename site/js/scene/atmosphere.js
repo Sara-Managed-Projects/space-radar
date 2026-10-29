@@ -362,15 +362,20 @@ export function scatter(p, ro, rd, sunDir) {
 const AIR_SHELL_VERT = /* glsl */`
 #include <common>
 #include <logdepthbuf_pars_vertex>
-varying vec3 vPosW;
-varying vec3 vCentre;
+varying vec3 vFromCamW;   // from the camera to this point, in world axes
+varying vec3 vCentreRel;  // from the camera to the world's centre, in world axes
 varying float vShellR;
 void main() {
-  vec4 worldPos = modelMatrix * vec4( position, 1.0 );
-  vPosW = worldPos.xyz;
-  vCentre = ( modelMatrix * vec4( 0.0, 0.0, 0.0, 1.0 ) ).xyz;
+  // CAMERA-RELATIVE (release 1.5.1; scene/worlds.js WORLD_VERT says why): on the Sun's stage a world's
+  // place is thousands of units from the origin, where a float32 step is hundreds of km, and a shell
+  // placed through modelMatrix and viewMatrix draws a ragged edge (Titan's, seen on 2026-10-29).
+  // modelViewMatrix is composed in double on the CPU and holds only the small difference.
+  vec4 mvPos = modelViewMatrix * vec4( position, 1.0 );
+  mat3 toWorld = transpose( mat3( viewMatrix ) );
+  vFromCamW = toWorld * mvPos.xyz;
+  vCentreRel = toWorld * modelViewMatrix[ 3 ].xyz;
   vShellR = length( modelMatrix[0].xyz );
-  gl_Position = projectionMatrix * viewMatrix * worldPos;
+  gl_Position = projectionMatrix * mvPos;
   #include <logdepthbuf_vertex>
 }
 `;
@@ -399,8 +404,8 @@ uniform vec4  uLayer; // 0077 W1-f: layerCoefficients(); w 1 where a row has one
 uniform vec3  uLayerAlbedo;
 uniform float uLayerG;
 const int LAYER_STEPS = ${LAYER_STEPS};
-varying vec3 vPosW;
-varying vec3 vCentre;
+varying vec3 vFromCamW;
+varying vec3 vCentreRel;
 varying float vShellR;
 const int VIEW_STEPS = ${VIEW_STEPS};
 
@@ -432,8 +437,8 @@ vec3 hg( float mu, vec3 g ) {
 void main() {
   #include <logdepthbuf_fragment>
   float groundR = vShellR / uTop;
-  vec3 ro = ( cameraPosition - vCentre ) / groundR;   // in ground radii, the world at the origin
-  vec3 rd = normalize( vPosW - cameraPosition );
+  vec3 ro = -vCentreRel / groundR;   // in ground radii, the world at the origin
+  vec3 rd = normalize( vFromCamW );
   vec2 shell = sphere( ro, rd, uTop );
   float t0 = max( shell.x, 0.0 );
   float t1 = shell.y;
