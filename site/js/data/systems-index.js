@@ -17,16 +17,16 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-proxima-cen",
 "hostSky": {
-"raDeg": 217.393,
-"decDeg": -62.6762,
-"distPc": 1.301,
+"raDeg": 217.3934657,
+"decDeg": -62.6761821,
+"distPc": 1.30119,
 "spect": "M5.5 V"
 },
 "star": {
 "radiusSuns": 0.141,
 "teffK": 2900.0,
 "massSuns": 0.1221,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Proxima%20Cen (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Proxima%20Cen (read 2026-10-28)"
 },
 "why": "temperate",
 "planets": [
@@ -46,16 +46,16 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-lhs-1140",
 "hostSky": {
-"raDeg": 11.2486,
-"decDeg": -15.2741,
-"distPc": 14.986,
+"raDeg": 11.248632,
+"decDeg": -15.2741085,
+"distPc": 14.9861,
 "spect": "M4.5 V"
 },
 "star": {
-"radiusSuns": 0.216,
+"radiusSuns": 0.2159,
 "teffK": 3096.0,
 "massSuns": 0.1844,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/LHS%201140 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/LHS%201140 (read 2026-10-28)"
 },
 "why": "temperate",
 "planets": [
@@ -75,8 +75,8 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-kepler-186",
 "hostSky": {
-"raDeg": 298.653,
-"decDeg": 43.955,
+"raDeg": 298.652736,
+"decDeg": 43.9549884,
 "distPc": 177.594,
 "spect": "M1"
 },
@@ -84,7 +84,7 @@ export const SYSTEM_INDEX = [
 "radiusSuns": 0.472,
 "teffK": 3788.0,
 "massSuns": 0.478,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-186 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-186 (read 2026-10-28)"
 },
 "why": "temperate",
 "planets": [
@@ -115,8 +115,8 @@ export const SYSTEM_INDEX = [
 ],
 "hostId": "star-kepler-452",
 "hostSky": {
-"raDeg": 296.004,
-"decDeg": 44.2776,
+"raDeg": 296.003752,
+"decDeg": 44.2775861,
 "distPc": 551.727,
 "spect": "G2"
 },
@@ -124,7 +124,7 @@ export const SYSTEM_INDEX = [
 "radiusSuns": 1.11,
 "teffK": 5757.0,
 "massSuns": 1.037,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-452 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-452 (read 2026-10-28)"
 },
 "why": "temperate",
 "planets": [
@@ -141,8 +141,8 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-kepler-62",
 "hostSky": {
-"raDeg": 283.213,
-"decDeg": 45.3497,
+"raDeg": 283.2125621,
+"decDeg": 45.3496992,
 "distPc": 300.874,
 "spect": "K2 V"
 },
@@ -150,7 +150,7 @@ export const SYSTEM_INDEX = [
 "radiusSuns": 0.64,
 "teffK": 4925.0,
 "massSuns": 0.69,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-62 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-62 (read 2026-10-28)"
 },
 "why": "temperate",
 "planets": [
@@ -179,8 +179,8 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-kepler-442",
 "hostSky": {
-"raDeg": 285.367,
-"decDeg": 39.2801,
+"raDeg": 285.3666029,
+"decDeg": 39.2800704,
 "distPc": 365.965,
 "spect": null
 },
@@ -188,7 +188,7 @@ export const SYSTEM_INDEX = [
 "radiusSuns": 0.598,
 "teffK": 4402.0,
 "massSuns": 0.609,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-442 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-442 (read 2026-10-28)"
 },
 "why": "temperate",
 "planets": [
@@ -205,8 +205,8 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-kepler-22",
 "hostSky": {
-"raDeg": 289.217,
-"decDeg": 47.8841,
+"raDeg": 289.2172051,
+"decDeg": 47.8841427,
 "distPc": 194.642,
 "spect": "G5 V"
 },
@@ -214,7 +214,7 @@ export const SYSTEM_INDEX = [
 "radiusSuns": 0.869,
 "teffK": 5596.0,
 "massSuns": 0.857,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-22 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-22 (read 2026-10-28)"
 },
 "why": "temperate",
 "planets": [
@@ -231,8 +231,8 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-kepler-69",
 "hostSky": {
-"raDeg": 293.261,
-"decDeg": 44.8689,
+"raDeg": 293.2609013,
+"decDeg": 44.8688656,
 "distPc": 730.625,
 "spect": "G4 V"
 },
@@ -240,7 +240,7 @@ export const SYSTEM_INDEX = [
 "radiusSuns": 0.93,
 "teffK": 5638.0,
 "massSuns": 0.81,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-69 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-69 (read 2026-10-28)"
 },
 "why": "temperate",
 "planets": [
@@ -260,16 +260,16 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-toi-700",
 "hostSky": {
-"raDeg": 97.0957,
-"decDeg": -65.5786,
-"distPc": 31.127,
+"raDeg": 97.0957165,
+"decDeg": -65.5786149,
+"distPc": 31.1265,
 "spect": "M2.5 V"
 },
 "star": {
-"radiusSuns": 0.41,
+"radiusSuns": 0.4104,
 "teffK": 3459.0,
 "massSuns": 0.417,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-700 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-700 (read 2026-10-28)"
 },
 "why": "temperate",
 "planets": [
@@ -295,16 +295,16 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-toi-715",
 "hostSky": {
-"raDeg": 113.852,
-"decDeg": -73.5774,
-"distPc": 42.405,
+"raDeg": 113.8523276,
+"decDeg": -73.5774089,
+"distPc": 42.4048,
 "spect": "M4"
 },
 "star": {
 "radiusSuns": 0.24,
 "teffK": 3075.0,
 "massSuns": 0.225,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-715 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-715 (read 2026-10-28)"
 },
 "why": "temperate",
 "planets": [
@@ -321,16 +321,16 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-teegardens-star",
 "hostSky": {
-"raDeg": 43.2691,
-"decDeg": 16.8649,
-"distPc": 3.831,
+"raDeg": 43.2691449,
+"decDeg": 16.8649024,
+"distPc": 3.83078,
 "spect": "M7.0 V"
 },
 "star": {
 "radiusSuns": 0.12,
 "teffK": 3034.0,
 "massSuns": 0.097,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Teegarden%27s%20Star (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Teegarden%27s%20Star (read 2026-10-28)"
 },
 "why": "temperate",
 "planets": [
@@ -355,8 +355,8 @@ export const SYSTEM_INDEX = [
 ],
 "hostId": "star-gliese-12",
 "hostSky": {
-"raDeg": 3.95791,
-"decDeg": 13.5576,
+"raDeg": 3.9579137,
+"decDeg": 13.5576175,
 "distPc": 12.21,
 "spect": "M4 V"
 },
@@ -364,7 +364,7 @@ export const SYSTEM_INDEX = [
 "radiusSuns": 0.265,
 "teffK": 3328.0,
 "massSuns": 0.255,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Gliese%2012 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Gliese%2012 (read 2026-10-28)"
 },
 "why": "temperate",
 "planets": [
@@ -381,16 +381,16 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-k2-18",
 "hostSky": {
-"raDeg": 172.56,
-"decDeg": 7.58783,
-"distPc": 38.027,
+"raDeg": 172.560141,
+"decDeg": 7.5878315,
+"distPc": 38.0266,
 "spect": "M2.5 V"
 },
 "star": {
 "radiusSuns": 0.411,
 "teffK": 3457.0,
 "massSuns": 0.359,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/K2-18 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/K2-18 (read 2026-10-28)"
 },
 "why": "temperate",
 "planets": [
@@ -410,16 +410,16 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-l-98-59",
 "hostSky": {
-"raDeg": 124.533,
-"decDeg": -68.3145,
-"distPc": 10.619,
+"raDeg": 124.5328604,
+"decDeg": -68.3144658,
+"distPc": 10.6194,
 "spect": "M3 V"
 },
 "star": {
-"radiusSuns": 0.316,
+"radiusSuns": 0.3155,
 "teffK": 3415.0,
 "massSuns": 0.2923,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/L%2098-59 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/L%2098-59 (read 2026-10-28)"
 },
 "why": "temperate",
 "planets": [
@@ -450,16 +450,16 @@ export const SYSTEM_INDEX = [
 ],
 "hostId": "star-gj-1132",
 "hostSky": {
-"raDeg": 153.709,
-"decDeg": -47.1549,
+"raDeg": 153.7090696,
+"decDeg": -47.1549358,
 "distPc": 12.613,
 "spect": "M4.5 V"
 },
 "star": {
-"radiusSuns": 0.221,
+"radiusSuns": 0.2211,
 "teffK": 3090.0,
 "massSuns": 0.1945,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201132 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201132 (read 2026-10-28)"
 },
 "why": "temperate",
 "planets": [
@@ -481,16 +481,16 @@ export const SYSTEM_INDEX = [
 ],
 "hostId": "star-gj-1214",
 "hostSky": {
-"raDeg": 258.831,
-"decDeg": 4.96068,
-"distPc": 14.643,
+"raDeg": 258.8313991,
+"decDeg": 4.9606795,
+"distPc": 14.6427,
 "spect": "M4 V"
 },
 "star": {
-"radiusSuns": 0.216,
+"radiusSuns": 0.2162,
 "teffK": 3101.0,
 "massSuns": 0.182,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201214 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201214 (read 2026-10-28)"
 },
 "why": "temperate",
 "planets": [
@@ -507,16 +507,16 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-ross-128",
 "hostSky": {
-"raDeg": 176.938,
-"decDeg": 0.79929,
-"distPc": 3.375,
+"raDeg": 176.9376036,
+"decDeg": 0.7992898,
+"distPc": 3.37454,
 "spect": "M4"
 },
 "star": {
-"radiusSuns": 0.197,
+"radiusSuns": 0.1967,
 "teffK": 3192.0,
 "massSuns": 0.168,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Ross%20128 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Ross%20128 (read 2026-10-28)"
 },
 "why": "temperate",
 "planets": [
@@ -533,16 +533,16 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-wolf-1069",
 "hostSky": {
-"raDeg": 306.524,
-"decDeg": 58.5753,
-"distPc": 9.583,
+"raDeg": 306.5242477,
+"decDeg": 58.5753044,
+"distPc": 9.58341,
 "spect": "M5.0 V"
 },
 "star": {
-"radiusSuns": 0.181,
+"radiusSuns": 0.1813,
 "teffK": 3158.0,
 "massSuns": 0.167,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Wolf%201069 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Wolf%201069 (read 2026-10-28)"
 },
 "why": "temperate",
 "planets": [
@@ -561,16 +561,16 @@ export const SYSTEM_INDEX = [
 ],
 "hostId": "star-gj-667-c",
 "hostSky": {
-"raDeg": 259.751,
-"decDeg": -34.9978,
-"distPc": 7.244,
+"raDeg": 259.7510609,
+"decDeg": -34.9977651,
+"distPc": 7.24396,
 "spect": "M1.5 V"
 },
 "star": {
 "radiusSuns": null,
 "teffK": 3350.0,
 "massSuns": 0.33,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20667%20C (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20667%20C (read 2026-10-28)"
 },
 "why": "temperate",
 "planets": [
@@ -601,16 +601,16 @@ export const SYSTEM_INDEX = [
 ],
 "hostId": "star-55-cnc",
 "hostSky": {
-"raDeg": 133.147,
-"decDeg": 28.3298,
-"distPc": 12.585,
+"raDeg": 133.1468373,
+"decDeg": 28.3298154,
+"distPc": 12.5855,
 "spect": "G8 V"
 },
 "star": {
 "radiusSuns": 0.98,
 "teffK": 5198.0,
 "massSuns": 1.015,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/55%20Cnc (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/55%20Cnc (read 2026-10-28)"
 },
 "why": "extreme",
 "planets": [
@@ -639,8 +639,8 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-wasp-12",
 "hostSky": {
-"raDeg": 97.6367,
-"decDeg": 29.6723,
+"raDeg": 97.636645,
+"decDeg": 29.6722662,
 "distPc": 427.246,
 "spect": null
 },
@@ -648,7 +648,7 @@ export const SYSTEM_INDEX = [
 "radiusSuns": 1.69,
 "teffK": 6265.0,
 "massSuns": 1.325,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-12 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-12 (read 2026-10-28)"
 },
 "why": "extreme",
 "planets": [
@@ -665,8 +665,8 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-wasp-121",
 "hostSky": {
-"raDeg": 107.6,
-"decDeg": -39.0973,
+"raDeg": 107.6002312,
+"decDeg": -39.0972705,
 "distPc": 269.898,
 "spect": "F6 V"
 },
@@ -674,7 +674,7 @@ export const SYSTEM_INDEX = [
 "radiusSuns": 1.461,
 "teffK": 6628.0,
 "massSuns": 1.33,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-121 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-121 (read 2026-10-28)"
 },
 "why": "extreme",
 "planets": [
@@ -691,16 +691,16 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-hd-189733",
 "hostSky": {
-"raDeg": 300.182,
-"decDeg": 22.7098,
-"distPc": 19.764,
+"raDeg": 300.1821223,
+"decDeg": 22.7097759,
+"distPc": 19.7638,
 "spect": "K2 V"
 },
 "star": {
 "radiusSuns": 0.75,
 "teffK": 5052.0,
 "massSuns": 0.79,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/HD%20189733 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/HD%20189733 (read 2026-10-28)"
 },
 "why": "extreme",
 "planets": [
@@ -717,16 +717,16 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-hd-209458",
 "hostSky": {
-"raDeg": 330.795,
-"decDeg": 18.8842,
-"distPc": 48.302,
+"raDeg": 330.7950219,
+"decDeg": 18.8842419,
+"distPc": 48.3016,
 "spect": "G0 V"
 },
 "star": {
 "radiusSuns": 1.19,
 "teffK": 6091.0,
 "massSuns": 1.23,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/HD%20209458 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/HD%20209458 (read 2026-10-28)"
 },
 "why": "extreme",
 "planets": [
@@ -745,16 +745,16 @@ export const SYSTEM_INDEX = [
 ],
 "hostId": "star-51-peg",
 "hostSky": {
-"raDeg": 344.368,
-"decDeg": 20.7691,
-"distPc": 15.461,
+"raDeg": 344.3675399,
+"decDeg": 20.7690958,
+"distPc": 15.4614,
 "spect": "G5V"
 },
 "star": {
 "radiusSuns": 1.19,
 "teffK": 5761.0,
 "massSuns": 1.07,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/51%20Peg (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/51%20Peg (read 2026-10-28)"
 },
 "why": "extreme",
 "planets": [
@@ -771,16 +771,16 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-kepler-16",
 "hostSky": {
-"raDeg": 289.076,
-"decDeg": 51.7572,
-"distPc": 75.085,
+"raDeg": 289.0758307,
+"decDeg": 51.757229,
+"distPc": 75.0852,
 "spect": null
 },
 "star": {
-"radiusSuns": 0.649,
+"radiusSuns": 0.6489,
 "teffK": 4450.0,
 "massSuns": 0.6897,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-16 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-16 (read 2026-10-28)"
 },
 "why": "extreme",
 "planets": [
@@ -797,8 +797,8 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-kelt-9",
 "hostSky": {
-"raDeg": 307.86,
-"decDeg": 39.9389,
+"raDeg": 307.8598998,
+"decDeg": 39.9389161,
 "distPc": 204.455,
 "spect": "A"
 },
@@ -806,7 +806,7 @@ export const SYSTEM_INDEX = [
 "radiusSuns": 2.418,
 "teffK": 9270.0,
 "massSuns": 2.32,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/KELT-9 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/KELT-9 (read 2026-10-28)"
 },
 "why": "extreme",
 "planets": [
@@ -823,8 +823,8 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-toi-849",
 "hostSky": {
-"raDeg": 28.7158,
-"decDeg": -29.4217,
+"raDeg": 28.7157956,
+"decDeg": -29.4217086,
 "distPc": 225.734,
 "spect": "G"
 },
@@ -832,7 +832,7 @@ export const SYSTEM_INDEX = [
 "radiusSuns": 0.97,
 "teffK": 5257.0,
 "massSuns": 0.97,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-849 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-849 (read 2026-10-28)"
 },
 "why": "extreme",
 "planets": [
@@ -851,8 +851,8 @@ export const SYSTEM_INDEX = [
 ],
 "hostId": "star-psr-b1257-12",
 "hostSky": {
-"raDeg": 195.015,
-"decDeg": 12.6823,
+"raDeg": 195.0149029,
+"decDeg": 12.6823534,
 "distPc": 600.0,
 "spect": null
 },
@@ -860,7 +860,7 @@ export const SYSTEM_INDEX = [
 "radiusSuns": null,
 "teffK": null,
 "massSuns": 1.4,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/PSR%20B1257%2B12 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/PSR%20B1257%2B12 (read 2026-10-28)"
 },
 "why": "extreme",
 "planets": [
@@ -883,16 +883,16 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-hr-8799",
 "hostSky": {
-"raDeg": 346.87,
-"decDeg": 21.134,
-"distPc": 41.244,
+"raDeg": 346.8701486,
+"decDeg": 21.1340376,
+"distPc": 41.2441,
 "spect": "A5 V"
 },
 "star": {
-"radiusSuns": 1.493,
-"teffK": 7205.0,
+"radiusSuns": 1.49338,
+"teffK": 7204.58,
 "massSuns": 1.5,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/HR%208799 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/HR%208799 (read 2026-10-28)"
 },
 "why": "extreme",
 "planets": [
@@ -920,16 +920,16 @@ export const SYSTEM_INDEX = [
 ],
 "hostId": "star-beta-pictoris",
 "hostSky": {
-"raDeg": 86.8212,
-"decDeg": -51.0662,
-"distPc": 19.744,
+"raDeg": 86.8212337,
+"decDeg": -51.066148,
+"distPc": 19.7442,
 "spect": "A6 V"
 },
 "star": {
-"radiusSuns": 1.544,
-"teffK": 8039.0,
+"radiusSuns": 1.54416,
+"teffK": 8038.68,
 "massSuns": 1.789,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/bet%20Pic (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/bet%20Pic (read 2026-10-28)"
 },
 "why": "extreme",
 "planets": [
@@ -954,8 +954,8 @@ export const SYSTEM_INDEX = [
 ],
 "hostId": "star-kepler-90",
 "hostSky": {
-"raDeg": 284.433,
-"decDeg": 49.3051,
+"raDeg": 284.4334642,
+"decDeg": 49.3051239,
 "distPc": 848.254,
 "spect": null
 },
@@ -963,7 +963,7 @@ export const SYSTEM_INDEX = [
 "radiusSuns": 1.2,
 "teffK": 6080.0,
 "massSuns": 1.2,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-10-28)"
 },
 "why": "extreme",
 "planets": [
@@ -1001,16 +1001,16 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-k2-138",
 "hostSky": {
-"raDeg": 348.949,
-"decDeg": -10.8497,
+"raDeg": 348.9490311,
+"decDeg": -10.8497391,
 "distPc": 202.585,
 "spect": "G8 V"
 },
 "star": {
 "radiusSuns": 0.863,
-"teffK": 5356.0,
+"teffK": 5356.3,
 "massSuns": 0.935,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/K2-138 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/K2-138 (read 2026-10-28)"
 },
 "why": "extreme",
 "planets": [
@@ -1042,8 +1042,8 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-kepler-11",
 "hostSky": {
-"raDeg": 297.115,
-"decDeg": 41.9091,
+"raDeg": 297.1150949,
+"decDeg": 41.9091092,
 "distPc": 646.346,
 "spect": null
 },
@@ -1051,7 +1051,7 @@ export const SYSTEM_INDEX = [
 "radiusSuns": 1.065,
 "teffK": 5663.0,
 "massSuns": 0.961,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-11 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-11 (read 2026-10-28)"
 },
 "why": "extreme",
 "planets": [
@@ -1083,16 +1083,16 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-hd-10180",
 "hostSky": {
-"raDeg": 24.4731,
-"decDeg": -60.5115,
-"distPc": 38.961,
+"raDeg": 24.4731133,
+"decDeg": -60.5114881,
+"distPc": 38.9607,
 "spect": "G1 V"
 },
 "star": {
 "radiusSuns": 1.109,
 "teffK": 5911.0,
 "massSuns": 1.06,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/HD%2010180 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/HD%2010180 (read 2026-10-28)"
 },
 "why": "extreme",
 "planets": [
@@ -1124,16 +1124,16 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-kepler-1649",
 "hostSky": {
-"raDeg": 292.503,
-"decDeg": 41.83,
-"distPc": 92.191,
+"raDeg": 292.5029676,
+"decDeg": 41.8299933,
+"distPc": 92.1913,
 "spect": null
 },
 "star": {
-"radiusSuns": 0.232,
+"radiusSuns": 0.2317,
 "teffK": 3240.0,
 "massSuns": 0.1977,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1649 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1649 (read 2026-10-28)"
 },
 "why": "temperate",
 "planets": [
@@ -1153,16 +1153,16 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-kepler-1647",
 "hostSky": {
-"raDeg": 298.15,
-"decDeg": 40.6562,
+"raDeg": 298.150057,
+"decDeg": 40.6561751,
 "distPc": 1212.45,
 "spect": null
 },
 "star": {
-"radiusSuns": 1.79,
+"radiusSuns": 1.7903,
 "teffK": 6210.0,
 "massSuns": 1.2207,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1647 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1647 (read 2026-10-28)"
 },
 "why": "extreme",
 "planets": [
@@ -1179,8 +1179,8 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-wasp-17",
 "hostSky": {
-"raDeg": 239.962,
-"decDeg": -28.0618,
+"raDeg": 239.9622479,
+"decDeg": -28.0617941,
 "distPc": 405.908,
 "spect": "F4"
 },
@@ -1188,7 +1188,7 @@ export const SYSTEM_INDEX = [
 "radiusSuns": 1.49,
 "teffK": 6550.0,
 "massSuns": 2.28,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-17 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-17 (read 2026-10-28)"
 },
 "why": "extreme",
 "planets": [
@@ -1205,8 +1205,8 @@ export const SYSTEM_INDEX = [
 "aliases": [],
 "hostId": "star-wasp-39",
 "hostSky": {
-"raDeg": 217.327,
-"decDeg": -3.4445,
+"raDeg": 217.3266477,
+"decDeg": -3.4444994,
 "distPc": 213.982,
 "spect": null
 },
@@ -1214,7 +1214,7 @@ export const SYSTEM_INDEX = [
 "radiusSuns": 0.939,
 "teffK": 5485.0,
 "massSuns": 0.913,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-39 (read 2026-10-08)"
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-39 (read 2026-10-28)"
 },
 "why": "extreme",
 "planets": [

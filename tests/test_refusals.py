@@ -24,6 +24,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 
+def generated_orbit_mutation() -> tuple[str, str]:
+    """Break the current orbit, so an Archive correction cannot invalidate the fixture."""
+    text = (ROOT / "registry/systems-generated.yaml").read_text(encoding="utf-8")
+    match = re.search(r"  - id: exo-lhs-1140-b\n    period_days: [^\n]+\n    a_au: ([^\n]+)", text)
+    if match is None:
+        raise AssertionError("generated orbit fixture: LHS 1140 b has no period and orbit row")
+    before = match.group(0)
+    return before, before[:before.rfind("a_au:")] + f"a_au: {float(match.group(1)) * 2}"
+
+
 def link(src, dst):
     """A hard link where the filesystem allows, a copy where it does not."""
     try:
@@ -755,7 +765,7 @@ CASES: list[tuple[str, str, str, str]] = [
     ("a listed host the exoplanet table does not have",
      "systems-list.yaml", "  - {host: LHS 1140, why: temperate}", "  - {host: LHS 1141, why: temperate}"),
     ("a generated orbit edited by hand, which Kepler's third law refuses",
-     "systems-generated.yaml", "  - id: exo-lhs-1140-b\n    period_days: 24.7372\n    a_au: 0.0946", "  - id: exo-lhs-1140-b\n    period_days: 24.7372\n    a_au: 0.1946"),
+     "systems-generated.yaml", *generated_orbit_mutation()),
     ("a planet called inside the habitable zone whose orbit is outside the computed band",
      "systems-generated.yaml", "    equilibrium_k: 385\n    zone: hotter", "    equilibrium_k: 385\n    zone: inside"),
     ("a habitable verdict on a planet of two stars, where none is computed",

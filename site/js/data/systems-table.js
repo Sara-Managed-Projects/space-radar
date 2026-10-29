@@ -14,7 +14,7 @@
 export const SYSTEMS_ALBEDO = 0.3;
 
 /** The day the Archive's table was read. */
-export const SYSTEMS_AS_OF = "2026-10-08";
+export const SYSTEMS_AS_OF = "2026-10-28";
 
 /** Every generated system in full: what scene/systems.js draws and the card prints. */
 export const SYSTEMS_TABLE = [
@@ -26,16 +26,16 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-proxima-cen",
 "hostSky": {
-"raDeg": 217.393,
-"decDeg": -62.6762,
-"distPc": 1.301,
+"raDeg": 217.3934657,
+"decDeg": -62.6761821,
+"distPc": 1.30119,
 "spect": "M5.5 V"
 },
 "star": {
 "radiusSuns": 0.141,
 "teffK": 2900.0,
 "massSuns": 0.1221,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Proxima%20Cen (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Proxima%20Cen (read 2026-10-28)",
 "lumSuns": 0.00151,
 "lumFrom": "table"
 },
@@ -48,7 +48,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-proxima-cen-d",
@@ -70,7 +70,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-proxima-cen-b",
 "name": "Proxima Cen b",
-"periodDays": 11.1846,
+"periodDays": 11.18465,
 "aAu": 0.04848,
 "aFrom": "table",
 "radiusEarths": 1.02,
@@ -95,16 +95,16 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-lhs-1140",
 "hostSky": {
-"raDeg": 11.2486,
-"decDeg": -15.2741,
-"distPc": 14.986,
+"raDeg": 11.248632,
+"decDeg": -15.2741085,
+"distPc": 14.9861,
 "spect": "M4.5 V"
 },
 "star": {
-"radiusSuns": 0.216,
+"radiusSuns": 0.2159,
 "teffK": 3096.0,
 "massSuns": 0.1844,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/LHS%201140 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/LHS%201140 (read 2026-10-28)",
 "lumSuns": 0.0038,
 "lumFrom": "table"
 },
@@ -117,7 +117,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-lhs-1140-c",
@@ -140,7 +140,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-lhs-1140-b",
 "name": "LHS 1140 b",
-"periodDays": 24.7372,
+"periodDays": 24.73723,
 "aAu": 0.0946,
 "aFrom": "table",
 "radiusEarths": 1.73,
@@ -165,8 +165,8 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-kepler-186",
 "hostSky": {
-"raDeg": 298.653,
-"decDeg": 43.955,
+"raDeg": 298.652736,
+"decDeg": 43.9549884,
 "distPc": 177.594,
 "spect": "M1"
 },
@@ -174,7 +174,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.472,
 "teffK": 3788.0,
 "massSuns": 0.478,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-186 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-186 (read 2026-10-28)",
 "lumSuns": 0.04121,
 "lumFrom": "table"
 },
@@ -187,12 +187,12 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-kepler-186-b",
 "name": "Kepler-186 b",
-"periodDays": 3.88679,
+"periodDays": 3.8867907,
 "aAu": 0.03783,
 "aFrom": "kepler",
 "aTableAu": 0.0343,
@@ -211,7 +211,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-kepler-186-c",
 "name": "Kepler-186 c",
-"periodDays": 7.2673,
+"periodDays": 7.267302,
 "aAu": 0.05741,
 "aFrom": "kepler",
 "aTableAu": 0.0451,
@@ -230,7 +230,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-kepler-186-d",
 "name": "Kepler-186 d",
-"periodDays": 13.343,
+"periodDays": 13.342996,
 "aAu": 0.08608,
 "aFrom": "kepler",
 "aTableAu": 0.0781,
@@ -249,7 +249,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-kepler-186-e",
 "name": "Kepler-186 e",
-"periodDays": 22.4077,
+"periodDays": 22.407704,
 "aAu": 0.1216,
 "aFrom": "kepler",
 "aTableAu": 0.11,
@@ -268,7 +268,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-kepler-186-f",
 "name": "Kepler-186 f",
-"periodDays": 129.944,
+"periodDays": 129.9441,
 "aAu": 0.3926,
 "aFrom": "kepler",
 "aTableAu": 0.432,
@@ -296,8 +296,8 @@ export const SYSTEMS_TABLE = [
 ],
 "hostId": "star-kepler-452",
 "hostSky": {
-"raDeg": 296.004,
-"decDeg": 44.2776,
+"raDeg": 296.003752,
+"decDeg": 44.2775861,
 "distPc": 551.727,
 "spect": "G2"
 },
@@ -305,7 +305,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 1.11,
 "teffK": 5757.0,
 "massSuns": 1.037,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-452 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-452 (read 2026-10-28)",
 "lumSuns": 1.215,
 "lumFrom": "table"
 },
@@ -318,7 +318,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-kepler-452-b",
@@ -348,8 +348,8 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-kepler-62",
 "hostSky": {
-"raDeg": 283.213,
-"decDeg": 45.3497,
+"raDeg": 283.2125621,
+"decDeg": 45.3496992,
 "distPc": 300.874,
 "spect": "K2 V"
 },
@@ -357,7 +357,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.64,
 "teffK": 4925.0,
 "massSuns": 0.69,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-62 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-62 (read 2026-10-28)",
 "lumSuns": 0.2099,
 "lumFrom": "table"
 },
@@ -370,12 +370,12 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-kepler-62-b",
 "name": "Kepler-62 b",
-"periodDays": 5.71493,
+"periodDays": 5.714932,
 "aAu": 0.0553,
 "aFrom": "table",
 "radiusEarths": 1.31,
@@ -411,7 +411,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-kepler-62-d",
 "name": "Kepler-62 d",
-"periodDays": 18.1641,
+"periodDays": 18.16406,
 "aAu": 0.12,
 "aFrom": "table",
 "radiusEarths": 1.95,
@@ -429,7 +429,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-kepler-62-e",
 "name": "Kepler-62 e",
-"periodDays": 122.387,
+"periodDays": 122.3874,
 "aAu": 0.427,
 "aFrom": "table",
 "radiusEarths": 1.61,
@@ -472,8 +472,8 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-kepler-442",
 "hostSky": {
-"raDeg": 285.367,
-"decDeg": 39.2801,
+"raDeg": 285.3666029,
+"decDeg": 39.2800704,
 "distPc": 365.965,
 "spect": null
 },
@@ -481,7 +481,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.598,
 "teffK": 4402.0,
 "massSuns": 0.609,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-442 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-442 (read 2026-10-28)",
 "lumSuns": 0.1169,
 "lumFrom": "table"
 },
@@ -494,12 +494,12 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-kepler-442-b",
 "name": "Kepler-442 b",
-"periodDays": 112.305,
+"periodDays": 112.3053,
 "aAu": 0.3861,
 "aFrom": "kepler",
 "aTableAu": 0.409,
@@ -525,8 +525,8 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-kepler-22",
 "hostSky": {
-"raDeg": 289.217,
-"decDeg": 47.8841,
+"raDeg": 289.2172051,
+"decDeg": 47.8841427,
 "distPc": 194.642,
 "spect": "G5 V"
 },
@@ -534,7 +534,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.869,
 "teffK": 5596.0,
 "massSuns": 0.857,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-22 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-22 (read 2026-10-28)",
 "lumSuns": 0.6453,
 "lumFrom": "table"
 },
@@ -547,12 +547,12 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-kepler-22-b",
 "name": "Kepler-22 b",
-"periodDays": 289.864,
+"periodDays": 289.863876,
 "aAu": 0.812,
 "aFrom": "table",
 "radiusEarths": 2.1,
@@ -577,8 +577,8 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-kepler-69",
 "hostSky": {
-"raDeg": 293.261,
-"decDeg": 44.8689,
+"raDeg": 293.2609013,
+"decDeg": 44.8688656,
 "distPc": 730.625,
 "spect": "G4 V"
 },
@@ -586,7 +586,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.93,
 "teffK": 5638.0,
 "massSuns": 0.81,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-69 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-69 (read 2026-10-28)",
 "lumSuns": 0.7998,
 "lumFrom": "table"
 },
@@ -599,12 +599,12 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-kepler-69-b",
 "name": "Kepler-69 b",
-"periodDays": 13.7223,
+"periodDays": 13.722341,
 "aAu": 0.1046,
 "aFrom": "kepler",
 "aTableAu": 0.094,
@@ -623,7 +623,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-kepler-69-c",
 "name": "Kepler-69 c",
-"periodDays": 242.461,
+"periodDays": 242.4613,
 "aAu": 0.7094,
 "aFrom": "kepler",
 "aTableAu": 0.64,
@@ -649,16 +649,16 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-toi-700",
 "hostSky": {
-"raDeg": 97.0957,
-"decDeg": -65.5786,
-"distPc": 31.127,
+"raDeg": 97.0957165,
+"decDeg": -65.5786149,
+"distPc": 31.1265,
 "spect": "M2.5 V"
 },
 "star": {
-"radiusSuns": 0.41,
+"radiusSuns": 0.4104,
 "teffK": 3459.0,
 "massSuns": 0.417,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-700 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-700 (read 2026-10-28)",
 "lumSuns": 0.0233,
 "lumFrom": "table"
 },
@@ -671,7 +671,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-toi-700-b",
@@ -694,7 +694,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-toi-700-c",
 "name": "TOI-700 c",
-"periodDays": 16.0511,
+"periodDays": 16.0511039,
 "aAu": 0.0931,
 "aFrom": "table",
 "radiusEarths": 2.535,
@@ -712,7 +712,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-toi-700-e",
 "name": "TOI-700 e",
-"periodDays": 27.8101,
+"periodDays": 27.810124,
 "aAu": 0.1336,
 "aFrom": "table",
 "radiusEarths": 0.919,
@@ -730,7 +730,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-toi-700-d",
 "name": "TOI-700 d",
-"periodDays": 37.4235,
+"periodDays": 37.423457,
 "aAu": 0.1642,
 "aFrom": "table",
 "radiusEarths": 1.145,
@@ -755,16 +755,16 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-toi-715",
 "hostSky": {
-"raDeg": 113.852,
-"decDeg": -73.5774,
-"distPc": 42.405,
+"raDeg": 113.8523276,
+"decDeg": -73.5774089,
+"distPc": 42.4048,
 "spect": "M4"
 },
 "star": {
 "radiusSuns": 0.24,
 "teffK": 3075.0,
 "massSuns": 0.225,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-715 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-715 (read 2026-10-28)",
 "lumSuns": 0.004909,
 "lumFrom": "table"
 },
@@ -777,12 +777,12 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-toi-715-b",
 "name": "TOI-715 b",
-"periodDays": 19.288,
+"periodDays": 19.288004,
 "aAu": 0.08561,
 "aFrom": "kepler",
 "aTableAu": 0.083,
@@ -807,16 +807,16 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-teegardens-star",
 "hostSky": {
-"raDeg": 43.2691,
-"decDeg": 16.8649,
-"distPc": 3.831,
+"raDeg": 43.2691449,
+"decDeg": 16.8649024,
+"distPc": 3.83078,
 "spect": "M7.0 V"
 },
 "star": {
 "radiusSuns": 0.12,
 "teffK": 3034.0,
 "massSuns": 0.097,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Teegarden%27s%20Star (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Teegarden%27s%20Star (read 2026-10-28)",
 "lumSuns": 0.000722,
 "lumFrom": "table"
 },
@@ -829,7 +829,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-teegarden-s-star-b",
@@ -894,8 +894,8 @@ export const SYSTEMS_TABLE = [
 ],
 "hostId": "star-gliese-12",
 "hostSky": {
-"raDeg": 3.95791,
-"decDeg": 13.5576,
+"raDeg": 3.9579137,
+"decDeg": 13.5576175,
 "distPc": 12.21,
 "spect": "M4 V"
 },
@@ -903,7 +903,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.265,
 "teffK": 3328.0,
 "massSuns": 0.255,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Gliese%2012 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Gliese%2012 (read 2026-10-28)",
 "lumSuns": 0.00728,
 "lumFrom": "table"
 },
@@ -916,12 +916,12 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-gliese-12-b",
 "name": "Gliese 12 b",
-"periodDays": 12.7614,
+"periodDays": 12.761418,
 "aAu": 0.067,
 "aFrom": "table",
 "radiusEarths": 0.93,
@@ -946,16 +946,16 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-k2-18",
 "hostSky": {
-"raDeg": 172.56,
-"decDeg": 7.58783,
-"distPc": 38.027,
+"raDeg": 172.560141,
+"decDeg": 7.5878315,
+"distPc": 38.0266,
 "spect": "M2.5 V"
 },
 "star": {
 "radiusSuns": 0.411,
 "teffK": 3457.0,
 "massSuns": 0.359,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/K2-18 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/K2-18 (read 2026-10-28)",
 "lumSuns": 0.0253,
 "lumFrom": "table"
 },
@@ -968,7 +968,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-k2-18-c",
@@ -990,7 +990,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-k2-18-b",
 "name": "K2-18 b",
-"periodDays": 32.9396,
+"periodDays": 32.939623,
 "aAu": 0.1429,
 "aFrom": "table",
 "radiusEarths": 2.37,
@@ -1015,16 +1015,16 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-l-98-59",
 "hostSky": {
-"raDeg": 124.533,
-"decDeg": -68.3145,
-"distPc": 10.619,
+"raDeg": 124.5328604,
+"decDeg": -68.3144658,
+"distPc": 10.6194,
 "spect": "M3 V"
 },
 "star": {
-"radiusSuns": 0.316,
+"radiusSuns": 0.3155,
 "teffK": 3415.0,
 "massSuns": 0.2923,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/L%2098-59 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/L%2098-59 (read 2026-10-28)",
 "lumSuns": 0.0122,
 "lumFrom": "table"
 },
@@ -1037,12 +1037,12 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-l-98-59-b",
 "name": "L 98-59 b",
-"periodDays": 2.25311,
+"periodDays": 2.253114,
 "aAu": 0.0223,
 "aFrom": "table",
 "radiusEarths": 0.837,
@@ -1060,7 +1060,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-l-98-59-c",
 "name": "L 98-59 c",
-"periodDays": 3.69068,
+"periodDays": 3.6906764,
 "aAu": 0.0309,
 "aFrom": "table",
 "radiusEarths": 1.329,
@@ -1078,7 +1078,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-l-98-59-d",
 "name": "L 98-59 d",
-"periodDays": 7.45073,
+"periodDays": 7.450729,
 "aAu": 0.0494,
 "aFrom": "table",
 "radiusEarths": 1.627,
@@ -1141,16 +1141,16 @@ export const SYSTEMS_TABLE = [
 ],
 "hostId": "star-gj-1132",
 "hostSky": {
-"raDeg": 153.709,
-"decDeg": -47.1549,
+"raDeg": 153.7090696,
+"decDeg": -47.1549358,
 "distPc": 12.613,
 "spect": "M4.5 V"
 },
 "star": {
-"radiusSuns": 0.221,
+"radiusSuns": 0.2211,
 "teffK": 3090.0,
 "massSuns": 0.1945,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201132 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201132 (read 2026-10-28)",
 "lumSuns": 0.00477,
 "lumFrom": "table"
 },
@@ -1163,17 +1163,17 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-gj-1132-b",
 "name": "GJ 1132 b",
-"periodDays": 1.62893,
+"periodDays": 1.62892911,
 "aAu": 0.0157,
 "aFrom": "table",
-"radiusEarths": 1.192,
+"radiusEarths": 1.19151465,
 "radiusFrom": "measured",
-"massEarths": 1.837,
+"massEarths": 1.83704819,
 "massFrom": "measured",
 "eccentricity": 0.0118,
 "transitMidJd": 2459280.98988,
@@ -1214,16 +1214,16 @@ export const SYSTEMS_TABLE = [
 ],
 "hostId": "star-gj-1214",
 "hostSky": {
-"raDeg": 258.831,
-"decDeg": 4.96068,
-"distPc": 14.643,
+"raDeg": 258.8313991,
+"decDeg": 4.9606795,
+"distPc": 14.6427,
 "spect": "M4 V"
 },
 "star": {
-"radiusSuns": 0.216,
+"radiusSuns": 0.2162,
 "teffK": 3101.0,
 "massSuns": 0.182,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201214 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201214 (read 2026-10-28)",
 "lumSuns": 0.0039,
 "lumFrom": "table"
 },
@@ -1236,12 +1236,12 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-gj-1214-b",
 "name": "GJ 1214 b",
-"periodDays": 1.5804,
+"periodDays": 1.580404531,
 "aAu": 0.01505,
 "aFrom": "table",
 "radiusEarths": 2.733,
@@ -1266,16 +1266,16 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-ross-128",
 "hostSky": {
-"raDeg": 176.938,
-"decDeg": 0.79929,
-"distPc": 3.375,
+"raDeg": 176.9376036,
+"decDeg": 0.7992898,
+"distPc": 3.37454,
 "spect": "M4"
 },
 "star": {
-"radiusSuns": 0.197,
+"radiusSuns": 0.1967,
 "teffK": 3192.0,
 "massSuns": 0.168,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Ross%20128 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Ross%20128 (read 2026-10-28)",
 "lumSuns": 0.00362,
 "lumFrom": "table"
 },
@@ -1288,7 +1288,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-ross-128-b",
@@ -1317,16 +1317,16 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-wolf-1069",
 "hostSky": {
-"raDeg": 306.524,
-"decDeg": 58.5753,
-"distPc": 9.583,
+"raDeg": 306.5242477,
+"decDeg": 58.5753044,
+"distPc": 9.58341,
 "spect": "M5.0 V"
 },
 "star": {
-"radiusSuns": 0.181,
+"radiusSuns": 0.1813,
 "teffK": 3158.0,
 "massSuns": 0.167,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Wolf%201069 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Wolf%201069 (read 2026-10-28)",
 "lumSuns": 0.002944,
 "lumFrom": "table"
 },
@@ -1339,7 +1339,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-wolf-1069-b",
@@ -1369,16 +1369,16 @@ export const SYSTEMS_TABLE = [
 ],
 "hostId": "star-gj-667-c",
 "hostSky": {
-"raDeg": 259.751,
-"decDeg": -34.9978,
-"distPc": 7.244,
+"raDeg": 259.7510609,
+"decDeg": -34.9977651,
+"distPc": 7.24396,
 "spect": "M1.5 V"
 },
 "star": {
 "radiusSuns": null,
 "teffK": 3350.0,
 "massSuns": 0.33,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20667%20C (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20667%20C (read 2026-10-28)",
 "lumSuns": 0.01371,
 "lumFrom": "table"
 },
@@ -1391,7 +1391,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-gj-667-c-b",
@@ -1490,16 +1490,16 @@ export const SYSTEMS_TABLE = [
 ],
 "hostId": "star-55-cnc",
 "hostSky": {
-"raDeg": 133.147,
-"decDeg": 28.3298,
-"distPc": 12.585,
+"raDeg": 133.1468373,
+"decDeg": 28.3298154,
+"distPc": 12.5855,
 "spect": "G8 V"
 },
 "star": {
 "radiusSuns": 0.98,
 "teffK": 5198.0,
 "massSuns": 1.015,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/55%20Cnc (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/55%20Cnc (read 2026-10-28)",
 "lumSuns": 0.6354,
 "lumFrom": "table"
 },
@@ -1512,12 +1512,12 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-55-cnc-e",
 "name": "55 Cnc e",
-"periodDays": 0.73655,
+"periodDays": 0.7365474,
 "aAu": 0.01604,
 "aFrom": "kepler",
 "aTableAu": 0.01544,
@@ -1536,12 +1536,12 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-55-cnc-b",
 "name": "55 Cnc b",
-"periodDays": 14.6516,
+"periodDays": 14.651552,
 "aAu": 0.118,
 "aFrom": "table",
 "radiusEarths": 13.9,
 "radiusFrom": "estimated",
-"massEarths": 263.978,
+"massEarths": 263.9785,
 "massFrom": "measured",
 "eccentricity": 0.0029,
 "transitMidJd": 2455495.595,
@@ -1559,7 +1559,7 @@ export const SYSTEMS_TABLE = [
 "aFrom": "table",
 "radiusEarths": 8.51,
 "radiusFrom": "estimated",
-"massEarths": 54.474,
+"massEarths": 54.4738,
 "massFrom": "measured",
 "eccentricity": 0.088,
 "transitMidJd": 2455491.23,
@@ -1595,7 +1595,7 @@ export const SYSTEMS_TABLE = [
 "aFrom": "table",
 "radiusEarths": 13.0,
 "radiusFrom": "estimated",
-"massEarths": 1232.49,
+"massEarths": 1232.493,
 "massFrom": "measured",
 "eccentricity": 0.0913,
 "transitMidJd": 2451517.8,
@@ -1615,8 +1615,8 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-wasp-12",
 "hostSky": {
-"raDeg": 97.6367,
-"decDeg": 29.6723,
+"raDeg": 97.636645,
+"decDeg": 29.6722662,
 "distPc": 427.246,
 "spect": null
 },
@@ -1624,7 +1624,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 1.69,
 "teffK": 6265.0,
 "massSuns": 1.325,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-12 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-12 (read 2026-10-28)",
 "lumSuns": 3.955,
 "lumFrom": "table"
 },
@@ -1637,18 +1637,18 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-wasp-12-b",
 "name": "WASP-12 b",
-"periodDays": 1.09142,
+"periodDays": 1.091418901,
 "aAu": 0.02279,
 "aFrom": "kepler",
 "aTableAu": 0.0234,
-"radiusEarths": 22.026,
+"radiusEarths": 22.02564708,
 "radiusFrom": "measured",
-"massEarths": 467.21,
+"massEarths": 467.2101,
 "massFrom": "measured",
 "eccentricity": 0.0447,
 "transitMidJd": 2457607.519305,
@@ -1668,8 +1668,8 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-wasp-121",
 "hostSky": {
-"raDeg": 107.6,
-"decDeg": -39.0973,
+"raDeg": 107.6002312,
+"decDeg": -39.0972705,
 "distPc": 269.898,
 "spect": "F6 V"
 },
@@ -1677,7 +1677,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 1.461,
 "teffK": 6628.0,
 "massSuns": 1.33,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-121 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-121 (read 2026-10-28)",
 "lumSuns": 4.403,
 "lumFrom": "table"
 },
@@ -1690,17 +1690,17 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-wasp-121-b",
 "name": "WASP-121 b",
-"periodDays": 1.27493,
+"periodDays": 1.27492504,
 "aAu": 0.02571,
 "aFrom": "table",
-"radiusEarths": 19.526,
+"radiusEarths": 19.52604438,
 "radiusFrom": "measured",
-"massEarths": 371.859,
+"massEarths": 371.85923619,
 "massFrom": "measured",
 "eccentricity": 0.0085,
 "transitMidJd": 2460245.02038,
@@ -1720,16 +1720,16 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-hd-189733",
 "hostSky": {
-"raDeg": 300.182,
-"decDeg": 22.7098,
-"distPc": 19.764,
+"raDeg": 300.1821223,
+"decDeg": 22.7097759,
+"distPc": 19.7638,
 "spect": "K2 V"
 },
 "star": {
 "radiusSuns": 0.75,
 "teffK": 5052.0,
 "massSuns": 0.79,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/HD%20189733 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/HD%20189733 (read 2026-10-28)",
 "lumSuns": 0.3458,
 "lumFrom": "table"
 },
@@ -1742,17 +1742,17 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-hd-189733-b",
 "name": "HD 189733 b",
-"periodDays": 2.21858,
+"periodDays": 2.21857567,
 "aAu": 0.03126,
 "aFrom": "table",
-"radiusEarths": 12.666,
+"radiusEarths": 12.66617,
 "radiusFrom": "measured",
-"massEarths": 359.148,
+"massEarths": 359.1479,
 "massFrom": "measured",
 "eccentricity": 0.0,
 "transitMidJd": 2453955.5255511,
@@ -1772,16 +1772,16 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-hd-209458",
 "hostSky": {
-"raDeg": 330.795,
-"decDeg": 18.8842,
-"distPc": 48.302,
+"raDeg": 330.7950219,
+"decDeg": 18.8842419,
+"distPc": 48.3016,
 "spect": "G0 V"
 },
 "star": {
 "radiusSuns": 1.19,
 "teffK": 6091.0,
 "massSuns": 1.23,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/HD%20209458 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/HD%20209458 (read 2026-10-28)",
 "lumSuns": 1.702,
 "lumFrom": "table"
 },
@@ -1794,18 +1794,18 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-hd-209458-b",
 "name": "HD 209458 b",
-"periodDays": 3.52475,
+"periodDays": 3.52474859,
 "aAu": 0.04857,
 "aFrom": "kepler",
 "aTableAu": 0.04707,
-"radiusEarths": 15.581,
+"radiusEarths": 15.58051,
 "radiusFrom": "measured",
-"massEarths": 232.016,
+"massEarths": 232.0159,
 "massFrom": "measured",
 "eccentricity": 0.0,
 "transitMidJd": 2451659.93742,
@@ -1827,16 +1827,16 @@ export const SYSTEMS_TABLE = [
 ],
 "hostId": "star-51-peg",
 "hostSky": {
-"raDeg": 344.368,
-"decDeg": 20.7691,
-"distPc": 15.461,
+"raDeg": 344.3675399,
+"decDeg": 20.7690958,
+"distPc": 15.4614,
 "spect": "G5V"
 },
 "star": {
 "radiusSuns": 1.19,
 "teffK": 5761.0,
 "massSuns": 1.07,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/51%20Peg (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/51%20Peg (read 2026-10-28)",
 "lumSuns": 1.369,
 "lumFrom": "table"
 },
@@ -1849,17 +1849,17 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-51-peg-b",
 "name": "51 Peg b",
-"periodDays": 4.2308,
+"periodDays": 4.2307966,
 "aAu": 0.052,
 "aFrom": "table",
 "radiusEarths": 14.1,
 "radiusFrom": "estimated",
-"massEarths": 193.875,
+"massEarths": 193.87532827,
 "massFrom": "measured",
 "eccentricity": 0.0063,
 "transitMidJd": 2456326.9323,
@@ -1879,16 +1879,16 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-kepler-16",
 "hostSky": {
-"raDeg": 289.076,
-"decDeg": 51.7572,
-"distPc": 75.085,
+"raDeg": 289.0758307,
+"decDeg": 51.757229,
+"distPc": 75.0852,
 "spect": null
 },
 "star": {
-"radiusSuns": 0.649,
+"radiusSuns": 0.6489,
 "teffK": 4450.0,
 "massSuns": 0.6897,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-16 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-16 (read 2026-10-28)",
 "lumSuns": 0.125,
 "lumFrom": "table"
 },
@@ -1925,7 +1925,7 @@ export const SYSTEMS_TABLE = [
 "teffWeightedK": 4409
 },
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-kepler-16-b",
@@ -1934,7 +1934,7 @@ export const SYSTEMS_TABLE = [
 "aAu": 0.7048,
 "aFrom": "table",
 "circumbinary": true,
-"radiusEarths": 8.449,
+"radiusEarths": 8.4493,
 "radiusFrom": "measured",
 "massEarths": 105.833,
 "massFrom": "measured",
@@ -1953,8 +1953,8 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-kelt-9",
 "hostSky": {
-"raDeg": 307.86,
-"decDeg": 39.9389,
+"raDeg": 307.8598998,
+"decDeg": 39.9389161,
 "distPc": 204.455,
 "spect": "A"
 },
@@ -1962,7 +1962,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 2.418,
 "teffK": 9270.0,
 "massSuns": 2.32,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/KELT-9 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/KELT-9 (read 2026-10-28)",
 "lumSuns": 38.9,
 "lumFrom": "table"
 },
@@ -1970,17 +1970,17 @@ export const SYSTEMS_TABLE = [
 "zone": null,
 "zoneMissing": "too-hot",
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-kelt-9-b",
 "name": "KELT-9 b",
-"periodDays": 1.48112,
+"periodDays": 1.4811235,
 "aAu": 0.03368,
 "aFrom": "table",
-"radiusEarths": 21.701,
+"radiusEarths": 21.70058664,
 "radiusFrom": "measured",
-"massEarths": 915.346,
+"massEarths": 915.34581216,
 "massFrom": "measured",
 "eccentricity": 0.0,
 "transitMidJd": 2457095.68572,
@@ -1999,8 +1999,8 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-toi-849",
 "hostSky": {
-"raDeg": 28.7158,
-"decDeg": -29.4217,
+"raDeg": 28.7157956,
+"decDeg": -29.4217086,
 "distPc": 225.734,
 "spect": "G"
 },
@@ -2008,7 +2008,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.97,
 "teffK": 5257.0,
 "massSuns": 0.97,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-849 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-849 (read 2026-10-28)",
 "lumSuns": 0.6048,
 "lumFrom": "table"
 },
@@ -2021,12 +2021,12 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-toi-849-b",
 "name": "TOI-849 b",
-"periodDays": 0.76555,
+"periodDays": 0.765548,
 "aAu": 0.01621,
 "aFrom": "kepler",
 "aTableAu": 0.0155,
@@ -2054,8 +2054,8 @@ export const SYSTEMS_TABLE = [
 ],
 "hostId": "star-psr-b1257-12",
 "hostSky": {
-"raDeg": 195.015,
-"decDeg": 12.6823,
+"raDeg": 195.0149029,
+"decDeg": 12.6823534,
 "distPc": 600.0,
 "spect": null
 },
@@ -2063,7 +2063,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": null,
 "teffK": null,
 "massSuns": 1.4,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/PSR%20B1257%2B12 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/PSR%20B1257%2B12 (read 2026-10-28)",
 "lumSuns": null,
 "lumFrom": null
 },
@@ -2071,7 +2071,7 @@ export const SYSTEMS_TABLE = [
 "zone": null,
 "zoneMissing": "no-temperature",
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-psr-b1257-12-b",
@@ -2125,16 +2125,16 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-hr-8799",
 "hostSky": {
-"raDeg": 346.87,
-"decDeg": 21.134,
-"distPc": 41.244,
+"raDeg": 346.8701486,
+"decDeg": 21.1340376,
+"distPc": 41.2441,
 "spect": "A5 V"
 },
 "star": {
-"radiusSuns": 1.493,
-"teffK": 7205.0,
+"radiusSuns": 1.49338,
+"teffK": 7204.58,
 "massSuns": 1.5,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/HR%208799 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/HR%208799 (read 2026-10-28)",
 "lumSuns": 4.92,
 "lumFrom": "table"
 },
@@ -2142,7 +2142,7 @@ export const SYSTEMS_TABLE = [
 "zone": null,
 "zoneMissing": "too-hot",
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-hr-8799-e",
@@ -2151,7 +2151,7 @@ export const SYSTEMS_TABLE = [
 "aAu": 16.95,
 "aFrom": "kepler",
 "aTableAu": 16.4,
-"radiusEarths": 13.115,
+"radiusEarths": 13.11453,
 "radiusFrom": "measured",
 "massEarths": 3178.3,
 "massFrom": "measured",
@@ -2221,16 +2221,16 @@ export const SYSTEMS_TABLE = [
 ],
 "hostId": "star-beta-pictoris",
 "hostSky": {
-"raDeg": 86.8212,
-"decDeg": -51.0662,
-"distPc": 19.744,
+"raDeg": 86.8212337,
+"decDeg": -51.066148,
+"distPc": 19.7442,
 "spect": "A6 V"
 },
 "star": {
-"radiusSuns": 1.544,
-"teffK": 8039.0,
+"radiusSuns": 1.54416,
+"teffK": 8038.68,
 "massSuns": 1.789,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/bet%20Pic (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/bet%20Pic (read 2026-10-28)",
 "lumSuns": 8.971,
 "lumFrom": "table"
 },
@@ -2238,7 +2238,7 @@ export const SYSTEMS_TABLE = [
 "zone": null,
 "zoneMissing": "too-hot",
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-bet-pic-c",
@@ -2248,7 +2248,7 @@ export const SYSTEMS_TABLE = [
 "aFrom": "table",
 "radiusEarths": 12.5,
 "radiusFrom": "estimated",
-"massEarths": 2765.11,
+"massEarths": 2765.1071409,
 "massFrom": "measured",
 "eccentricity": 0.307,
 "method": "Radial Velocity",
@@ -2262,9 +2262,9 @@ export const SYSTEMS_TABLE = [
 "periodDays": 8682.0,
 "aAu": 10.07,
 "aFrom": "table",
-"radiusEarths": 18.495,
+"radiusEarths": 18.49485,
 "radiusFrom": "measured",
-"massEarths": 2765.11,
+"massEarths": 2765.1071409,
 "massFrom": "measured",
 "eccentricity": 0.105,
 "method": "Imaging",
@@ -2279,9 +2279,9 @@ export const SYSTEMS_TABLE = [
 "aAu": 24.54,
 "aFrom": "kepler",
 "aTableAu": 26.0,
-"radiusEarths": 14.123,
+"radiusEarths": 14.12331568,
 "radiusFrom": "measured",
-"massEarths": 762.788,
+"massEarths": 762.7881768,
 "massFrom": "measured",
 "eccentricity": 0.44,
 "method": "Imaging",
@@ -2301,8 +2301,8 @@ export const SYSTEMS_TABLE = [
 ],
 "hostId": "star-kepler-90",
 "hostSky": {
-"raDeg": 284.433,
-"decDeg": 49.3051,
+"raDeg": 284.4334642,
+"decDeg": 49.3051239,
 "distPc": 848.254,
 "spect": null
 },
@@ -2310,7 +2310,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 1.2,
 "teffK": 6080.0,
 "massSuns": 1.2,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-10-28)",
 "lumSuns": 1.856,
 "lumFrom": "table"
 },
@@ -2323,12 +2323,12 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-koi-351-b",
 "name": "KOI-351 b",
-"periodDays": 7.00815,
+"periodDays": 7.008151,
 "aAu": 0.07616,
 "aFrom": "kepler",
 "aTableAu": 0.074,
@@ -2347,7 +2347,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-koi-351-c",
 "name": "KOI-351 c",
-"periodDays": 8.71937,
+"periodDays": 8.719375,
 "aAu": 0.089,
 "aFrom": "table",
 "radiusEarths": 1.19,
@@ -2365,7 +2365,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-kepler-90-i",
 "name": "Kepler-90 i",
-"periodDays": 14.4491,
+"periodDays": 14.44912,
 "aAu": 0.1234,
 "aFrom": "kepler",
 "aTableAu": 0.1201380843,
@@ -2384,7 +2384,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-koi-351-d",
 "name": "KOI-351 d",
-"periodDays": 59.7367,
+"periodDays": 59.73667,
 "aAu": 0.32,
 "aFrom": "table",
 "radiusEarths": 2.87,
@@ -2402,7 +2402,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-koi-351-e",
 "name": "KOI-351 e",
-"periodDays": 91.9391,
+"periodDays": 91.93913,
 "aAu": 0.42,
 "aFrom": "table",
 "radiusEarths": 2.66,
@@ -2420,7 +2420,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-koi-351-f",
 "name": "KOI-351 f",
-"periodDays": 124.914,
+"periodDays": 124.9144,
 "aAu": 0.5197,
 "aFrom": "kepler",
 "aTableAu": 0.48,
@@ -2439,7 +2439,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-koi-351-g",
 "name": "KOI-351 g",
-"periodDays": 210.735,
+"periodDays": 210.73514,
 "aAu": 0.7365,
 "aFrom": "kepler",
 "aTableAu": 0.71704,
@@ -2458,7 +2458,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-koi-351-h",
 "name": "KOI-351 h",
-"periodDays": 331.603,
+"periodDays": 331.60296,
 "aAu": 0.9964,
 "aFrom": "kepler",
 "aTableAu": 0.97062,
@@ -2484,16 +2484,16 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-k2-138",
 "hostSky": {
-"raDeg": 348.949,
-"decDeg": -10.8497,
+"raDeg": 348.9490311,
+"decDeg": -10.8497391,
 "distPc": 202.585,
 "spect": "G8 V"
 },
 "star": {
 "radiusSuns": 0.863,
-"teffK": 5356.0,
+"teffK": 5356.3,
 "massSuns": 0.935,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/K2-138 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/K2-138 (read 2026-10-28)",
 "lumSuns": 0.517,
 "lumFrom": "table"
 },
@@ -2501,12 +2501,12 @@ export const SYSTEMS_TABLE = [
 "zone": {
 "innerAu": 0.7004,
 "outerAu": 1.251,
-"wideInnerAu": 0.553,
+"wideInnerAu": 0.5529,
 "wideOuterAu": 1.319
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-k2-138-b",
@@ -2583,7 +2583,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-k2-138-f",
 "name": "K2-138 f",
-"periodDays": 12.7576,
+"periodDays": 12.75758,
 "aAu": 0.10447,
 "aFrom": "table",
 "radiusEarths": 2.904,
@@ -2601,7 +2601,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-k2-138-g",
 "name": "K2-138 g",
-"periodDays": 41.968,
+"periodDays": 41.96797,
 "aAu": 0.23109,
 "aFrom": "table",
 "radiusEarths": 3.013,
@@ -2626,8 +2626,8 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-kepler-11",
 "hostSky": {
-"raDeg": 297.115,
-"decDeg": 41.9091,
+"raDeg": 297.1150949,
+"decDeg": 41.9091092,
 "distPc": 646.346,
 "spect": null
 },
@@ -2635,7 +2635,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 1.065,
 "teffK": 5663.0,
 "massSuns": 0.961,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-11 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-11 (read 2026-10-28)",
 "lumSuns": 1.319,
 "lumFrom": "table"
 },
@@ -2648,7 +2648,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-kepler-11-b",
@@ -2743,7 +2743,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-kepler-11-g",
 "name": "Kepler-11 g",
-"periodDays": 118.381,
+"periodDays": 118.3807,
 "aAu": 0.466,
 "aFrom": "table",
 "radiusEarths": 3.33,
@@ -2768,16 +2768,16 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-hd-10180",
 "hostSky": {
-"raDeg": 24.4731,
-"decDeg": -60.5115,
-"distPc": 38.961,
+"raDeg": 24.4731133,
+"decDeg": -60.5114881,
+"distPc": 38.9607,
 "spect": "G1 V"
 },
 "star": {
 "radiusSuns": 1.109,
 "teffK": 5911.0,
 "massSuns": 1.06,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/HD%2010180 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/HD%2010180 (read 2026-10-28)",
 "lumSuns": 1.49,
 "lumFrom": "table"
 },
@@ -2790,7 +2790,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-hd-10180-c",
@@ -2798,7 +2798,7 @@ export const SYSTEMS_TABLE = [
 "periodDays": 5.75969,
 "aAu": 0.06412,
 "aFrom": "table",
-"massEarths": 2741.59,
+"massEarths": 2741.58783878,
 "massFrom": "measured",
 "eccentricity": 0.073,
 "method": "Radial Velocity",
@@ -2813,7 +2813,7 @@ export const SYSTEMS_TABLE = [
 "periodDays": 16.357,
 "aAu": 0.12859,
 "aFrom": "table",
-"massEarths": 3295.88,
+"massEarths": 3295.88058059,
 "massFrom": "measured",
 "eccentricity": 0.131,
 "method": "Radial Velocity",
@@ -2862,7 +2862,7 @@ export const SYSTEMS_TABLE = [
 "periodDays": 604.67,
 "aAu": 1.427,
 "aFrom": "table",
-"massEarths": 3375.34,
+"massEarths": 3375.33768234,
 "massFrom": "measured",
 "eccentricity": 0.263,
 "method": "Radial Velocity",
@@ -2898,16 +2898,16 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-kepler-1649",
 "hostSky": {
-"raDeg": 292.503,
-"decDeg": 41.83,
-"distPc": 92.191,
+"raDeg": 292.5029676,
+"decDeg": 41.8299933,
+"distPc": 92.1913,
 "spect": null
 },
 "star": {
-"radiusSuns": 0.232,
+"radiusSuns": 0.2317,
 "teffK": 3240.0,
 "massSuns": 0.1977,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1649 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1649 (read 2026-10-28)",
 "lumSuns": 0.00516,
 "lumFrom": "table"
 },
@@ -2920,12 +2920,12 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-kepler-1649-b",
 "name": "Kepler-1649 b",
-"periodDays": 8.6891,
+"periodDays": 8.689099,
 "aAu": 0.04819,
 "aFrom": "kepler",
 "aTableAu": 0.0514,
@@ -2944,7 +2944,7 @@ export const SYSTEMS_TABLE = [
 {
 "id": "exo-kepler-1649-c",
 "name": "Kepler-1649 c",
-"periodDays": 19.5353,
+"periodDays": 19.53527,
 "aAu": 0.0827,
 "aFrom": "kepler",
 "aTableAu": 0.0649,
@@ -2970,16 +2970,16 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-kepler-1647",
 "hostSky": {
-"raDeg": 298.15,
-"decDeg": 40.6562,
+"raDeg": 298.150057,
+"decDeg": 40.6561751,
 "distPc": 1212.45,
 "spect": null
 },
 "star": {
-"radiusSuns": 1.79,
+"radiusSuns": 1.7903,
 "teffK": 6210.0,
 "massSuns": 1.2207,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1647 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1647 (read 2026-10-28)",
 "lumSuns": 4.408,
 "lumFrom": "table"
 },
@@ -3015,16 +3015,16 @@ export const SYSTEMS_TABLE = [
 "teffWeightedK": 6132
 },
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-kepler-1647-b",
 "name": "Kepler-1647 b",
-"periodDays": 1107.59,
+"periodDays": 1107.5923,
 "aAu": 2.7205,
 "aFrom": "table",
 "circumbinary": true,
-"radiusEarths": 11.874,
+"radiusEarths": 11.8739,
 "radiusFrom": "measured",
 "massEarths": 483.0,
 "massFrom": "measured",
@@ -3043,8 +3043,8 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-wasp-17",
 "hostSky": {
-"raDeg": 239.962,
-"decDeg": -28.0618,
+"raDeg": 239.9622479,
+"decDeg": -28.0617941,
 "distPc": 405.908,
 "spect": "F4"
 },
@@ -3052,7 +3052,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 1.49,
 "teffK": 6550.0,
 "massSuns": 2.28,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-17 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-17 (read 2026-10-28)",
 "lumSuns": 4.099,
 "lumFrom": "table"
 },
@@ -3065,7 +3065,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-wasp-17-b",
@@ -3074,9 +3074,9 @@ export const SYSTEMS_TABLE = [
 "aAu": 0.06201,
 "aFrom": "kepler",
 "aTableAu": 0.0515,
-"radiusEarths": 20.961,
+"radiusEarths": 20.96083,
 "radiusFrom": "measured",
-"massEarths": 247.907,
+"massEarths": 247.9074,
 "massFrom": "measured",
 "eccentricity": 0.0,
 "transitMidJd": 2454592.80154,
@@ -3096,8 +3096,8 @@ export const SYSTEMS_TABLE = [
 "aliases": [],
 "hostId": "star-wasp-39",
 "hostSky": {
-"raDeg": 217.327,
-"decDeg": -3.4445,
+"raDeg": 217.3266477,
+"decDeg": -3.4444994,
 "distPc": 213.982,
 "spect": null
 },
@@ -3105,7 +3105,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.939,
 "teffK": 5485.0,
 "massSuns": 0.913,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-39 (read 2026-10-08)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-39 (read 2026-10-28)",
 "lumSuns": 0.7449,
 "lumFrom": "table"
 },
@@ -3118,17 +3118,17 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-08",
+"asOf": "2026-10-28",
 "planets": [
 {
 "id": "exo-wasp-39-b",
 "name": "WASP-39 b",
-"periodDays": 4.05529,
+"periodDays": 4.0552941,
 "aAu": 0.04828,
 "aFrom": "table",
-"radiusEarths": 14.336,
+"radiusEarths": 14.336311,
 "radiusFrom": "measured",
-"massEarths": 89.31,
+"massEarths": 89.31023,
 "massFrom": "measured",
 "eccentricity": 0.0,
 "transitMidJd": 2455342.96913,
