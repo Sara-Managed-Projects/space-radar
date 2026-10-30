@@ -316,6 +316,15 @@ ok("facebook" not in about_html.lower(), "no Facebook")
 ok("The name" in about.plain and "Free, and staying usable" in about.plain, "the name note and the free note")
 ok(all(in_map(p) for p in ("about/index.html", "sources/index.html", "accuracy/index.html", "teachers/index.html", "events/index.html")), "all in the sitemap")
 
+# --- NASA's Eyes comparison ------------------------------------------------------------------------------
+eyes_html = (BUILT / "nasa-eyes-alternative" / "index.html").read_text(encoding="utf-8")
+eyes = parse(BUILT / "nasa-eyes-alternative" / "index.html")
+ok(eyes_html.count("<h1") == 1 and "NASA's Eyes" in eyes.plain and "open source" in eyes.plain.lower(), "the comparison page: one H1, names both, says which is open source")
+ok(f"read on {seo_pages.EYES_READ}" in eyes.plain and seo_pages.EYES_FAQ in eyes_html and seo_pages.EYES_NEWS in eyes_html,
+   "what it says about NASA's Eyes is dated and links NASA's own pages")
+ok("not endorsed by, NASA" in eyes.plain and f"{counts['trips']} guided trips" in eyes.plain, "the endorsement line and the registry's trip count")
+ok(in_map("nasa-eyes-alternative/index.html") and 'href="../nasa-eyes-alternative/index.html"' in about_html, "in the sitemap, and /about/ links it")
+
 # --- teachers ----------------------------------------------------------------------------------------
 t_html = (BUILT / "teachers" / "index.html").read_text(encoding="utf-8")
 teach = parse(BUILT / "teachers" / "index.html")
@@ -381,7 +390,7 @@ for f in pages + [BUILT / "404.html"]:
         dirty.append(f.name)
 ok(not dirty, f"no bare #NNN, no Facebook, nothing from the plan on any page ({dirty[:3]})")
 ok(not re.search(r"\{\{|\bTODO\b|\blorem\b", "".join(f.read_text(encoding="utf-8") for f in pages)), "no placeholder left")
-ok((BUILT / "pages-dirs.txt").read_text(encoding="utf-8").split() == sorted({"about", "accuracy", "events", "iss", "planets-tonight", "read", "satellites", "sources", "starlink", "teachers"}),
+ok((BUILT / "pages-dirs.txt").read_text(encoding="utf-8").split() == sorted({"about", "accuracy", "events", "iss", "nasa-eyes-alternative", "planets-tonight", "read", "satellites", "sources", "starlink", "teachers"}),
    "pages-dirs.txt lists the directories deploy.sh must ship")
 
 # --- the share pictures ----------------------------------------------------------------------------------
@@ -429,7 +438,7 @@ with tempfile.TemporaryDirectory() as tmp:
     r = run("bash", "scripts/deploy.sh", "--bucket", "example-bucket", "--app-only", "--dry-run", env=env)
     calls = log.read_text(encoding="utf-8").splitlines() if log.is_file() else []
     ok(r.returncode == 0, f"deploy.sh --app-only --dry-run: {(r.stderr or r.stdout).strip().splitlines()[-1:]}")
-    for d in ("about", "accuracy", "events", "iss", "planets-tonight", "read", "satellites", "sources", "starlink", "teachers"):
+    for d in ("about", "accuracy", "events", "iss", "nasa-eyes-alternative", "planets-tonight", "read", "satellites", "sources", "starlink", "teachers"):
         s = [c for c in calls if c.startswith("s3 sync") and f"s3://example-bucket/{d} " in c + " "]
         ok(len(s) == 1 and "text/html" in s[0] and "max-age=0, must-revalidate" in s[0] and "--content-encoding" not in s[0] and "--delete" in s[0],
            f"{d}/ is synced as written, as HTML a browser revalidates on every load, with --delete")
