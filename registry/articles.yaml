@@ -19,6 +19,39 @@
 version: 1
 
 articles:
+  - slug: moments-a-mission-on-one-clock
+    title: "Moments: a mission replayed in 3D on one clock"
+    short: "Moments: watch the Saturn V launch in 3D, on one clock"
+    description: "Release 1.5.0 adds Moments, missions replayed in 3D on one clock. The first is Apollo 11's Saturn V from ignition to the escape tower."
+    lead: "Release 1.5.0 adds a new kind of tour, a Moment, and its first demonstration: Apollo 11's Saturn V from ignition to the jettison of the escape tower."
+    release: "1.5.0"
+    published: 2026-10-30
+    hero: centre-engine-out.webp
+    hero_alt: "The Saturn V 45 km up, a long white plume behind it over a blue Earth."
+    open: "https://www.spaceradar.ai/#moment=demo-saturn&t=-9.5"
+    open_label: "Watch the Saturn V Moment"
+  - slug: eleven-small-worlds-in-their-own-shapes
+    title: "Arrokoth, Kleopatra and nine more small worlds in their own shapes"
+    short: "Arrokoth, Kleopatra and nine small worlds in their shapes"
+    description: "Release 1.5.0 draws eleven asteroids and a comet from the shape models of New Horizons, Lucy, Rosetta and radar, each on its own orbit."
+    lead: "Release 1.5.0 replaces the generic rock with the shapes spacecraft and radar measured for eleven small bodies, and says on every card what was seen."
+    release: "1.5.0"
+    published: 2026-10-30
+    hero: arrokoth.webp
+    hero_alt: "Arrokoth, two reddish lobes joined at a neck, against the Milky Way."
+    open: "https://www.spaceradar.ai/#go=asteroid-486958"
+    open_label: "Fly to Arrokoth"
+  - slug: stars-without-a-distance-and-the-farthest-light
+    title: "Stars with no distance, 4 383 pulsars and the farthest galaxy"
+    short: "Stars with no distance, pulsars and the farthest galaxy"
+    description: "Release 1.5.0 adds 10 224 stars with no measured distance, 4 383 pulsars, the Local Group's dwarfs, quasars and MoM-z14 at redshift 14.44."
+    lead: "Release 1.5.0 fills the sky with what the catalogues know, and says on every card how a distance was found, or that it never was."
+    release: "1.5.0"
+    published: 2026-10-30
+    hero: psr-j0437.webp
+    hero_alt: "The pulsar PSR J0437-4715 selected on the Milky Way's stage, with its card open."
+    open: "https://www.spaceradar.ai/#go=exotic-psr-j0437-4715"
+    open_label: "Fly to the nearest millisecond pulsar"
   - slug: nebulae-in-three-dimensions
     title: "Orion, the Ring and the nebulae you can fly into"
     short: "Orion, the Ring and the nebulae you can fly into"
