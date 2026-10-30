@@ -544,12 +544,70 @@ def about_page(host: str) -> Page:
         "<h2>How to trust it</h2>\n"
         '<ul class="links"><li><a href="../accuracy/index.html">How accurate it is</a></li><li><a href="../sources/index.html">Where every number comes from</a></li>'
         '<li><a href="../read/index.html">Long reads: what each release added, and how it is known</a></li>'
+        '<li><a href="../nasa-eyes-alternative/index.html">How it compares with NASA\'s Eyes on the Solar System</a></li>'
         f'<li><a href="{GITHUB}/blob/main/CREDITS.md">Credits and licences</a></li></ul>\n'
         f'<h2>Find us</h2>\n<ul class="links">{me}</ul>\n')
     page = Page(path="about/index.html", title=short, description=desc, body=body, og_title=short)
     page.jsonld = [webpage(host, page, [("About", "")], page_type="AboutPage")]
     page.share = Spec(key="about/index", name="About Space Radar", number=f"{n['layers']} layers, {n['sources']} sources", caption="Space Radar", kind="plain",
                       colour="#ff9f43", alt="Rings and a dot, captioned About Space Radar.")
+    return page
+
+
+# What the comparison page says about NASA's Eyes is read from NASA's own pages on this day, and dated on the page.
+EYES_READ = "30 October 2026"
+EYES_FAQ = "https://science.nasa.gov/eyes/faq"
+EYES_NEWS = "https://www.jpl.nasa.gov/news/explore-the-solar-system-with-nasas-new-and-improved-3d-eyes/"
+EYES_APP = "https://eyes.nasa.gov/apps/solar-system/"
+
+
+def eyes_page(host: str) -> Page:
+    """Space Radar beside NASA's Eyes on the Solar System: what each does, from each one's own pages, so a reader can pick."""
+    n = counts_of_registries()
+    short = "Open-source alternative to NASA's Eyes, in a browser"
+    desc = ("Space Radar and NASA's Eyes on the Solar System side by side: both free 3D maps of space in a browser. "
+            "Who makes each, what each shows, offline and source code.")
+    rows = [
+        ("Who makes it", "NASA's Jet Propulsion Laboratory", f'An open-source project on <a href="{GITHUB}">GitHub</a>, not part of NASA'),
+        ("Cost and account", "Free to use", "Free; no account, no advertising, no tracker"),
+        ("Where it runs", "A web browser, on a phone, tablet or computer, Linux included", "A web browser, on a phone, tablet or computer"),
+        ("Internet", "NASA's FAQ says it needs an internet connection",
+         'Online, or with no internet from a copy downloaded once (<a href="../teachers/index.html">three steps</a>)'),
+        ("Source code", "NASA's pages we read do not say it is open source", f"Open, under the {esc(licence_name())}: anyone may read, run or change it"),
+        ("What it shows best", "NASA's missions: renderings of 126 NASA spacecraft, their paths from 1949 to 2049",
+         f"Where things are right now: satellites and the space station, launches, probes, planets, the nearest stars; {n['layers']} layers from {n['sources']} public sources"),
+        ("Stories to follow", "Mission events such as Perseverance's landing and Voyager's Grand Tour", f"{n['trips']} guided trips, with a present mode for a classroom"),
+    ]
+    table = "".join(f"<tr><th scope=\"row\">{a}</th><td>{b}</td><td>{c}</td></tr>" for a, b, c in rows)
+    body = (
+        '<p class="micro">Compare</p>\n<h1>Space Radar and NASA\'s Eyes on the Solar System</h1>\n'
+        '<p class="lead">Both are free 3D maps of space that run in a web browser. NASA\'s Eyes is the deeper look at NASA\'s own spacecraft and missions. '
+        "Space Radar is open source, centres on what is overhead right now, from satellites to the nearest stars, and runs with no internet from a copy. "
+        "Many people will want both.</p>\n"
+        '<div class="cta"><a class="live" href="../">Open Space Radar</a><p>NASA\'s Eyes is at <a href="' + EYES_APP + '">eyes.nasa.gov</a>.</p></div>\n'
+        "<h2>Side by side</h2>\n"
+        '<div class="tablewrap"><table><thead><tr><th></th><th>NASA\'s Eyes on the Solar System</th><th>Space Radar</th></tr></thead>'
+        f"<tbody>{table}</tbody></table></div>\n"
+        "<h2>When to use NASA's Eyes</h2>\n"
+        "<p>To follow a NASA mission: where a spacecraft went, when, and what it looks like. NASA's Jet Propulsion Laboratory says it has renderings of 126 NASA spacecraft "
+        "and follows spacecraft and planets from 1949 to 2049. Nothing here replaces that.</p>\n"
+        "<h2>When to use Space Radar</h2>\n"
+        "<ul>\n"
+        "<li>You want to know what is above you now: the space station, a Starlink train, tonight's planets, each placed from public data for the moment on the clock.</li>\n"
+        "<li>You teach in a room with poor or no internet: a downloaded copy runs from a folder, with no install beyond Python to serve it.</li>\n"
+        "<li>You want to read the code, check a number, or change something: every source is listed and every card says how old its data is.</li>\n"
+        "</ul>\n"
+        "<h2>Other open-source choices</h2>\n"
+        "<p>OpenSpace and Celestia are open-source 3D space programs, installed on a computer rather than opened in a browser. "
+        "Stellarium is an open-source planetarium for the sky as seen from the ground.</p>\n"
+        "<h2>How this page was checked</h2>\n"
+        f'<p>What it says about NASA\'s Eyes was read on {EYES_READ} from <a href="{EYES_FAQ}">NASA\'s Eyes FAQ</a> and '
+        f'<a href="{EYES_NEWS}">JPL\'s announcement of the browser version</a> (2 September 2022). If it is out of date, '
+        f'<a href="{ACCURACY_FORM}">tell us</a> and it will be corrected. Space Radar is not part of, and not endorsed by, NASA or JPL.</p>\n')
+    page = Page(path="nasa-eyes-alternative/index.html", title=short, description=desc, body=body, og_title=short)
+    page.jsonld = [webpage(host, page, [("Space Radar and NASA's Eyes", "")])]
+    page.share = Spec(key="nasa-eyes-alternative/index", name="Space Radar and NASA's Eyes", number="both free, one open source", caption="Compare", kind="plain",
+                      colour="#ff9f43", alt="Rings and a dot, captioned Space Radar and NASA's Eyes.")
     return page
 
 
@@ -789,7 +847,7 @@ def build_pages(host: str, objects: list[dict], today: str, snapshot_index: dict
     pages += [starlink_page(host, counts, slugs, today), satellites_page(host, counts, slugs), planets_page(host, today)]
     pages += [events_index(events, host)] + [event_page(e, host, tours) for e in events]
     pages += [about_page(host), sources_page(host, snapshot_index), accuracy_page(host),
-              teachers_page(host, tours, yml("autopilot.yaml"), url_keys())]
+              teachers_page(host, tours, yml("autopilot.yaml"), url_keys()), eyes_page(host)]
     sysl = seo_systems.pages(host, by_slug, today)
     pages += sysl
     pages += seo_read.pages(host)
