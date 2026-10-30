@@ -52,6 +52,39 @@ articles:
     hero_alt: "The pulsar PSR J0437-4715 selected on the Milky Way's stage, with its card open."
     open: "https://www.spaceradar.ai/#go=exotic-psr-j0437-4715"
     open_label: "Fly to the nearest millisecond pulsar"
+  - slug: eight-nebulae-walls-of-glowing-gas
+    title: "Eight nebulae as walls of glowing gas, dust and stars"
+    short: "Eight nebulae in 3D: the Lagoon, the Eagle, the Rosette"
+    description: "Release 1.4.0 draws the Lagoon, Trifid, Eagle, Omega, Rosette and three more nebulae in 3D. The light is measured, the shape reconstructed."
+    lead: "Release 1.4.0 turns eight photographs into walls of gas you can fly round, and says on every card which part is measured and which is a model."
+    release: "1.4.0"
+    published: 2026-10-30
+    hero: lagoon.webp
+    hero_alt: "The Lagoon Nebula, glowing pink gas round a pale hollow, with dark dust in front."
+    open: "https://www.spaceradar.ai/#go=dso-m8"
+    open_label: "Fly into the Lagoon Nebula"
+  - slug: black-holes-sized-to-the-eht-shadows
+    title: "Black holes in 3D, sized to the Event Horizon Telescope"
+    short: "Black holes in 3D, sized to the EHT's measured shadows"
+    description: "Release 1.4.0 draws Sagittarius A*, M87* and Cygnus X-1 in 3D, with shadows that follow from their masses and match the EHT's measurements."
+    lead: "Release 1.4.0 draws three black holes by tracing light through curved space, and each shadow's size follows from the hole's mass."
+    release: "1.4.0"
+    published: 2026-10-30
+    hero: sgr-a-star.webp
+    hero_alt: "Sagittarius A*: a dark shadow, a thin bright ring and a disc of orange light brighter on one side."
+    open: "https://www.spaceradar.ai/#go=exotic-sgr-a-star"
+    open_label: "Fly to Sagittarius A*"
+  - slug: sixty-more-craft-with-shapes-of-their-own
+    title: "Sixty more craft with shapes of their own"
+    short: "Sixty more spacecraft and rocket stages in 3D"
+    description: "Release 1.4.0 adds sixty models of landers, weather satellites, Earth imagers and spent stages, built from cited metres and photographs."
+    lead: "Release 1.4.0 takes the map from 165 models to 225, so that a weather satellite, a spy satellite and a spent stage no longer look the same."
+    release: "1.4.0"
+    published: 2026-10-30
+    hero: worldview-3.webp
+    hero_alt: "WorldView-3 in orbit, a gold foil telescope barrel above a dark bus with two blue solar wings."
+    open: "https://www.spaceradar.ai/#go=sat-40115"
+    open_label: "See WorldView-3"
   - slug: nebulae-in-three-dimensions
     title: "Orion, the Ring and the nebulae you can fly into"
     short: "Orion, the Ring and the nebulae you can fly into"
