@@ -68,8 +68,10 @@ remove it when done. `cdp.mjs` run by hand does not take it: run one at a time, 
 A `cdp.mjs` step that fails answers the page instead of leaving it waiting: `await cdpShot()`,
 `cdpCast()` and `cdpInput()` reject with the reason (an unwritable `--shot-dir`, a capture the
 protocol refused), so a probe can catch it, and an uncaught one ends the run with `PAGE THREW`.
-If Chrome dies mid-run every call still waiting is rejected and the run ends with `DRIVER FAILED:
-chrome exited ...` rather than hanging until whatever cap wraps it.
+If Chrome dies mid-run every call still waiting is rejected and the run ends with a reason rather
+than hanging until whatever cap wraps it: `DRIVER FAILED: chrome closed the debugging connection
+(code 1006)` when the socket closes first, as it did in every measured run, or `DRIVER FAILED:
+chrome exited ...` when the process exit is seen first.
 
 | flag | what |
 |---|---|
