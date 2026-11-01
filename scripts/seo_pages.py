@@ -7,6 +7,7 @@
     /events/index.html and /events/<id>.html                dated sky events (registry/sky-events.yaml)
     /about/, /sources/, /accuracy/                          the trust pages, from the registries
     /teachers/index.html                                    for the classroom
+    /first-pull-request/index.html                          for a first contribution
     /o/<system>.html                                        the 40 star systems (scripts/seo_systems.py)
 
 THE RULE OF EVERY PAGE HERE. The static HTML already answers: the question is the H1 (or the first
@@ -35,6 +36,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from urllib.parse import quote_plus
 
 import yaml
 
@@ -545,6 +547,7 @@ def about_page(host: str) -> Page:
         '<ul class="links"><li><a href="../accuracy/index.html">How accurate it is</a></li><li><a href="../sources/index.html">Where every number comes from</a></li>'
         '<li><a href="../read/index.html">Long reads: what each release added, and how it is known</a></li>'
         '<li><a href="../nasa-eyes-alternative/index.html">How it compares with NASA\'s Eyes on the Solar System</a></li>'
+        '<li><a href="../first-pull-request/index.html">Your first pull request: good first issues in three.js and beyond</a></li>'
         f'<li><a href="{GITHUB}/blob/main/CREDITS.md">Credits and licences</a></li></ul>\n'
         f'<h2>Find us</h2>\n<ul class="links">{me}</ul>\n')
     page = Page(path="about/index.html", title=short, description=desc, body=body, og_title=short)
@@ -608,6 +611,69 @@ def eyes_page(host: str) -> Page:
     page.jsonld = [webpage(host, page, [("Space Radar and NASA's Eyes", "")])]
     page.share = Spec(key="nasa-eyes-alternative/index", name="Space Radar and NASA's Eyes", number="both free, one open source", caption="Compare", kind="plain",
                       colour="#ff9f43", alt="Rings and a dot, captioned Space Radar and NASA's Eyes.")
+    return page
+
+
+# The starter issues as counted on GitHub on this day, and dated on the page: the links below always show today's list.
+STARTER_READ = "1 November 2026"
+STARTER_COUNT = 269
+STARTER_QUERY = 'is:issue is:open label:"good first issue" no:assignee -linked:pr -label:sara:doing'
+STARTER_TRACKS = [
+    ("data", "Check a number against its source", "Name the page and the day a figure was read, in one YAML comment", "a browser"),
+    ("docs", "Tidy words and comments", "Fix a comment that points at a file which has moved", "a browser"),
+    ("tests", "Write a test", "Pin what one small function returns, in a new test file", "Node 22, or a Codespace"),
+    ("code", "Make a small code change", "Make a script answer --help instead of printing a traceback", "Python 3 or Node 22"),
+    ("ui", "CSS and how things look", "Put one spacing value on the 4 px grid", "a browser"),
+    ("lab", "Make something you can see", "Build one small simulator in one HTML file, with no libraries", "a browser"),
+]
+
+
+def starter_link(track: str | None = None) -> str:
+    q = STARTER_QUERY + (f" label:track:{track}" if track else "")
+    return f"{GITHUB}/issues?q=" + quote_plus(q)
+
+
+def first_pr_page(host: str) -> Page:
+    """For someone looking for a first pull request in a three.js space project: what the work is, and who reads it."""
+    short = "A three.js space project for your first pull request"
+    desc = ("Space Radar is an open-source three.js map of space with labelled good first issues. "
+            "Each names the file, the change and the check to run. No build step, MIT.")
+    rows = "".join(f'<tr><th scope="row"><a href="{esc(starter_link(t))}">{esc(what)}</a></th><td>{esc(eg)}</td><td>{esc(need)}</td></tr>'
+                   for t, what, eg, need in STARTER_TRACKS)
+    body = (
+        '<p class="micro">Contribute</p>\n<h1>A three.js space project for your first pull request</h1>\n'
+        f'<p class="lead">Space Radar is an open-source 3D map of space, built with three.js and plain ES modules, with no build step. '
+        f"On {STARTER_READ} it had {STARTER_COUNT} open good first issues that nobody had taken. "
+        "Each one names the file, the change, the check to run and when it is done. Many need no three.js at all.</p>\n"
+        f'<div class="cta"><a class="live" href="{esc(starter_link())}">See the open issues</a><p>The list is GitHub\'s own, so it is always current.</p></div>\n'
+        "<h2>Choose by what you like doing</h2>\n"
+        '<div class="tablewrap"><table><thead><tr><th>Track</th><th>A typical task</th><th>You need</th></tr></thead>'
+        f"<tbody>{rows}</tbody></table></div>\n"
+        "<h2>What the code is like</h2>\n"
+        "<ul>\n"
+        "<li>The app is served as it is: no bundler and no framework. Clone it, run Python's built-in web server, and it opens.</li>\n"
+        "<li>The rendering is three.js. Most of what the map knows lives in YAML registries, each row with a source.</li>\n"
+        "<li>One command, <code>scripts/check.sh</code>, runs the fast checks a pull request meets and says how to fix each failure.</li>\n"
+        "<li>The licence is MIT.</li>\n"
+        "</ul>\n"
+        "<h2>What happens to your pull request</h2>\n"
+        "<p>If the checks are green and it is not a draft, it merges on its own, and you are named in the release notes and in the contributors list. "
+        "A change to what the product does is discussed in an issue first.</p>\n"
+        "<p>Most commits come from an account operated by AI coding agents under the project's founder, and that account is held to the same tests and sources as everyone else. "
+        f'The <a href="{GITHUB}/blob/main/GOVERNANCE.md">governance page</a> says who decides what, and there are no outside reviewers yet: you could be the first.</p>\n'
+        "<h2>Start here</h2>\n"
+        '<ul class="links">'
+        f'<li><a href="{GITHUB}/blob/main/docs/FIRST_PR.md">Your first pull request, in ten minutes</a></li>'
+        f'<li><a href="{GITHUB}/blob/main/docs/ARCHITECTURE.md">A one-page map of the code</a></li>'
+        f'<li><a href="{GITHUB}/blob/main/CONTRIBUTORS.md">Everyone whose pull request has been merged</a></li>'
+        "</ul>\n"
+        "<h2>Looking elsewhere too?</h2>\n"
+        '<p>GitHub keeps a starter list for most repositories at the address ending <code>/contribute</code>; '
+        'the one for <a href="https://github.com/mrdoob/three.js/contribute">three.js itself</a> is a good place to look if you want to work on the library rather than on something built with it.</p>\n')
+    page = Page(path="first-pull-request/index.html", title=short, description=desc, body=body, og_title=short)
+    page.jsonld = [webpage(host, page, [("Your first pull request", "")])]
+    page.share = Spec(key="first-pull-request/index", name="Your first pull request", number="in a three.js space project", caption="Contribute", kind="plain",
+                      colour="#ff9f43", alt="Rings and a dot, captioned Your first pull request.")
     return page
 
 
@@ -847,7 +913,7 @@ def build_pages(host: str, objects: list[dict], today: str, snapshot_index: dict
     pages += [starlink_page(host, counts, slugs, today), satellites_page(host, counts, slugs), planets_page(host, today)]
     pages += [events_index(events, host)] + [event_page(e, host, tours) for e in events]
     pages += [about_page(host), sources_page(host, snapshot_index), accuracy_page(host),
-              teachers_page(host, tours, yml("autopilot.yaml"), url_keys()), eyes_page(host)]
+              teachers_page(host, tours, yml("autopilot.yaml"), url_keys()), eyes_page(host), first_pr_page(host)]
     sysl = seo_systems.pages(host, by_slug, today)
     pages += sysl
     pages += seo_read.pages(host)
