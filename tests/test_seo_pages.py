@@ -382,6 +382,19 @@ for f in pages:
         tw_missing.append(f.relative_to(BUILT).as_posix())
 ok(len(pages) >= 320 and not nav_missing, f"{len(pages)} built pages, each footer links About, Sources, Accuracy, For teachers and Events ({nav_missing[:3]})")
 ok(not tw_missing, f"every built page has a twitter:image equal to its og:image ({tw_missing[:3]})")
+# --- the first pull request ------------------------------------------------------------------------------
+first_html = (BUILT / "first-pull-request" / "index.html").read_text(encoding="utf-8")
+first = parse(BUILT / "first-pull-request" / "index.html")
+ok(first_html.count("<h1") == 1 and "three.js" in first.plain and "good first issues" in first.plain, "the first-PR page: one H1, says three.js and good first issues")
+ok(f"On {seo_pages.STARTER_READ} it had {seo_pages.STARTER_COUNT}" in first.plain, "the count of starter issues is dated on the page")
+ok(first_html.count("is%3Aissue") == len(seo_pages.STARTER_TRACKS) + 1 and all(f"track%3A{t[0]}" in first_html for t in seo_pages.STARTER_TRACKS),
+   "the page links the whole free list and each track")
+ok("-linked%3Apr" in seo_pages.starter_link() and "-label%3Asara%3Adoing" in seo_pages.starter_link(), "the links leave out taken and reserved issues, as docs/FIRST_PR.md's do")
+tracks = {m for m in re.findall(r"label%3Atrack%3A(\w+)", (ROOT / "docs" / "FIRST_PR.md").read_text(encoding="utf-8"))}
+ok({t[0] for t in seo_pages.STARTER_TRACKS} <= tracks, "every track on the page is one docs/FIRST_PR.md lists")
+ok("AI coding agents" in first.plain and "GOVERNANCE.md" in first_html, "the page says who writes most commits, and links the governance page")
+ok(in_map("first-pull-request/index.html") and 'href="../first-pull-request/index.html"' in about_html, "in the sitemap, and /about/ links it")
+
 dirty = []
 for f in pages + [BUILT / "404.html"]:
     html = f.read_text(encoding="utf-8")
@@ -390,7 +403,7 @@ for f in pages + [BUILT / "404.html"]:
         dirty.append(f.name)
 ok(not dirty, f"no bare #NNN, no Facebook, nothing from the plan on any page ({dirty[:3]})")
 ok(not re.search(r"\{\{|\bTODO\b|\blorem\b", "".join(f.read_text(encoding="utf-8") for f in pages)), "no placeholder left")
-ok((BUILT / "pages-dirs.txt").read_text(encoding="utf-8").split() == sorted({"about", "accuracy", "events", "iss", "nasa-eyes-alternative", "planets-tonight", "read", "satellites", "sources", "starlink", "teachers"}),
+ok((BUILT / "pages-dirs.txt").read_text(encoding="utf-8").split() == sorted({"about", "accuracy", "events", "first-pull-request", "iss", "nasa-eyes-alternative", "planets-tonight", "read", "satellites", "sources", "starlink", "teachers"}),
    "pages-dirs.txt lists the directories deploy.sh must ship")
 
 # --- the share pictures ----------------------------------------------------------------------------------
@@ -438,7 +451,7 @@ with tempfile.TemporaryDirectory() as tmp:
     r = run("bash", "scripts/deploy.sh", "--bucket", "example-bucket", "--app-only", "--dry-run", env=env)
     calls = log.read_text(encoding="utf-8").splitlines() if log.is_file() else []
     ok(r.returncode == 0, f"deploy.sh --app-only --dry-run: {(r.stderr or r.stdout).strip().splitlines()[-1:]}")
-    for d in ("about", "accuracy", "events", "iss", "nasa-eyes-alternative", "planets-tonight", "read", "satellites", "sources", "starlink", "teachers"):
+    for d in ("about", "accuracy", "events", "first-pull-request", "iss", "nasa-eyes-alternative", "planets-tonight", "read", "satellites", "sources", "starlink", "teachers"):
         s = [c for c in calls if c.startswith("s3 sync") and f"s3://example-bucket/{d} " in c + " "]
         ok(len(s) == 1 and "text/html" in s[0] and "max-age=0, must-revalidate" in s[0] and "--content-encoding" not in s[0] and "--delete" in s[0],
            f"{d}/ is synced as written, as HTML a browser revalidates on every load, with --delete")
