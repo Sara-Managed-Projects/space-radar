@@ -107,6 +107,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Dishes, crews, observatories | NASA DSN Now; Open Notify; Wikidata | see the section; CC0 for Wikidata | [4.3](#43-nasa--dsn-now), [4.18](#418-the-sources-the-harvester-reads) |
 | Music and sounds | John Bartmann (Free Music Archive); Freesound contributors | CC0 1.0 | [9](#9-audio--music-and-sounds) |
 | The trips' voice | Kokoro-82M, a synthetic voice | Apache-2.0 | [9b](#9b-audio--the-trips-narration-a-synthetic-voice) |
+| A NASA recording in the Apollo 11 Moment | NASA (Neil Armstrong's first words on the Moon, 1969) | Public domain (NASA) | [9c](#9c-audio--a-nasa-recording-in-the-apollo-11-moment) |
 | Typefaces | Inter, Barlow Semi Condensed, JetBrains Mono | SIL OFL 1.1 | [10](#10-fonts) |
 | The GitHub mark | GitHub, Inc. | a trademark, used under GitHub's logo rules | [4.6](#46-third-party-trademarks-the-app-names-or-draws) |
 
@@ -4102,6 +4103,20 @@ was measured before and after, and that a machine chose the setting.
 Why this model and not another: the spec ordered the choice by licence. XTTS-v2 (Coqui Public Model
 Licence) and F5-TTS (CC BY-NC) forbid commercial use and were refused; Piper (MIT code, per-voice
 licences) was the fallback and was not needed.
+
+## 9c. Audio — a NASA recording in the Apollo 11 Moment
+
+`site/audio/a11-small-step.m4a` (97 kB, mono AAC, 24 s) is Neil Armstrong's first words on the Moon, 21 July
+1969 (109:24:48 into the mission), played once at that second of the Apollo 11 Moment
+(`site/data/moments/apollo-11.json`, internal spec 0079 C6) when the visitor has sound on, and fetched only then.
+It is a NASA recording: NASA's media usage guidelines put its works in the public domain, and Wikimedia
+Commons carries it as "Public domain", credit "Neil Armstrong/NASA"
+(<https://commons.wikimedia.org/wiki/File:Neil_Armstrong_small_step.wav>, read 2026-11-02). We re-encoded
+the Commons file (8-bit mono, 11 025 Hz) to AAC with macOS `afconvert` and changed nothing else. The app's
+house rule is "Opus with an AAC twin"; no Opus encoder was to hand on the machine that built this, so the AAC file
+is both (the player's loader decodes AAC on every browser). No other recording is used: the radio exchange of Vostok 1
+is shown as captions because no Soviet-era recording with a clear licence was found, and the NASA audio of the rest
+of Apollo 11 and Artemis II was not found as a small file with its licence stated, so those moments are captioned.
 
 ## 10. Fonts
 

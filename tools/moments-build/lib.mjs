@@ -22,21 +22,28 @@ const S = (z) => (z > 1e-8 ? (Math.sqrt(z) - Math.sin(Math.sqrt(z))) / Math.sqrt
 /** Advance a two-body state (metres, m/s) by dt seconds about a body of gravitational parameter mu (universal variables). */
 export function kepler(r0, v0, dt, mu = MU) {
   if (dt === 0) return { r: r0.slice(), v: v0.slice() };
+  if (dt < 0) { const k = kepler(r0, scale(v0, -1), -dt, mu); return { r: k.r, v: scale(k.v, -1) }; }
   const rn = len(r0), vr = dot(r0, v0) / rn, alpha = 2 / rn - dot(v0, v0) / mu, sm = Math.sqrt(mu);
-  let chi = sm * Math.abs(alpha) * dt;
-  if (!Number.isFinite(chi) || Math.abs(alpha) < 1e-12) chi = sm * dt / rn;
-  for (let i = 0; i < 80; i += 1) {
-    const z = alpha * chi * chi, c = C(z), s = S(z);
-    const F = (rn * vr / sm) * chi * chi * c + (1 - alpha * rn) * chi ** 3 * s + rn * chi - sm * dt;
-    const dF = (rn * vr / sm) * chi * (1 - z * s) + (1 - alpha * rn) * chi * chi * c + rn;
-    const d = F / dF;
-    chi -= d;
-    if (Math.abs(d) < 1e-9 * Math.max(1, Math.abs(chi))) break;
+  const Fx = (chi) => { const z = alpha * chi * chi; return (rn * vr / sm) * chi * chi * C(z) + (1 - alpha * rn) * chi ** 3 * S(z) + rn * chi - sm * dt; };
+  // F is increasing in chi: bracket the root, then Newton inside the bracket (bisecting when it would leave it).
+  let lo = 0, hi = Math.max(sm * dt / rn, 1e-3);
+  for (let i = 0; i < 200 && Fx(hi) < 0; i += 1) { lo = hi; hi *= 2; }
+  if (alpha > 1e-14) hi = Math.min(hi, 2 * Math.PI / Math.sqrt(alpha) * (1 + Math.ceil(sm * dt * alpha ** 1.5 / (2 * Math.PI) + 1)));
+  let chi = Math.min(hi, Math.max(lo, sm * Math.abs(alpha) * dt));
+  for (let i = 0; i < 200; i += 1) {
+    const z = alpha * chi * chi, c = C(z), s2 = S(z);
+    const F = Fx(chi);
+    if (F < 0) lo = chi; else hi = chi;
+    const dF = (rn * vr / sm) * chi * (1 - z * s2) + (1 - alpha * rn) * chi * chi * c + rn;
+    let next = chi - F / dF;
+    if (!(next > lo && next < hi) || !Number.isFinite(next)) next = (lo + hi) / 2;
+    if (Math.abs(next - chi) < 1e-12 * Math.max(1, Math.abs(chi))) { chi = next; break; }
+    chi = next;
   }
-  const z = alpha * chi * chi, c = C(z), s = S(z);
-  const f = 1 - chi * chi / rn * c, g = dt - chi ** 3 * s / sm;
+  const z = alpha * chi * chi, c = C(z), s3 = S(z);
+  const f = 1 - chi * chi / rn * c, g = dt - chi ** 3 * s3 / sm;
   const r = add(scale(r0, f), scale(v0, g)), rr = len(r);
-  const fd = sm / (rr * rn) * (z * s - 1) * chi, gd = 1 - chi * chi / rr * c;
+  const fd = sm / (rr * rn) * (z * s3 - 1) * chi, gd = 1 - chi * chi / rr * c;
   return { r, v: add(scale(r0, fd), scale(v0, gd)) };
 }
 

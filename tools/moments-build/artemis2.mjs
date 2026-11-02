@@ -51,7 +51,7 @@ console.log('apogee-raise burn at', T.ar, 'HEO', el(b2.after));
 // the second perigee after that, near flight day 2: TLI (planned minute)
 const period = 2 * Math.PI * Math.sqrt(((EARTH_R + 185e3 + EARTH_R + 70174e3) / 2) ** 3 / MU);
 T.tliC = T.ar + Math.round(period);
-T.tli0 = T.tliC - 175; T.tli1 = T.tliC + 174;
+T.tli0 = T.tliC - 60; T.tli1 = T.tliC + 289;
 T.sep = T.ar + 450 + 900;
 console.log('HEO period min', (period / 60).toFixed(0), 'TLI (perigee) at', T.tliC, 'that is T+', (T.tliC / H).toFixed(2), 'h');
 const sT0 = heo(T.tli0);
@@ -59,9 +59,13 @@ const kT1 = L.kepler(sT0.r, sT0.v, T.tli1 - T.tli0);
 
 // --- the flyby: a hyperbola round the Moon, pericentre 8 282 km from its centre, on the far side
 const rp = R_MOON + 6545e3, rSoi = 66e6;
-const mCA = mn(T.ca), pHat = norm(mCA.r);
-const a1 = norm(cross([0, 0, 1], pHat)), a2 = cross(pHat, a1);
-const hyper = (psi, sigma, vinf) => {
+const mCA = mn(T.ca), mHat = norm(mCA.r);
+// the pericentre is on the far side, off the Earth-Moon line by the angle that puts the craft 406 771 km from the Earth (the reported maximum)
+const cosTh = Math.max(-1, Math.min(1, (406771e3 - len(mCA.r)) / rp)), sinTh = Math.sqrt(1 - cosTh * cosTh);
+const bb1 = norm(cross([0, 0, 1], mHat)), bb2 = cross(mHat, bb1);
+const hyper = (psi, sigma, vinf, phi) => {
+  const pHat = add(scale(mHat, cosTh), scale(add(scale(bb1, Math.cos(phi)), scale(bb2, Math.sin(phi))), sinTh));
+  const a1 = norm(cross(add(pHat, [1e-3, 2e-3, 3e-3]), pHat)), a2 = cross(pHat, a1);
   const q = add(scale(a1, Math.cos(psi)), scale(a2, Math.sin(psi)));
   const rpv = scale(pHat, rp), vp = scale(q, sigma * Math.sqrt(vinf * vinf + 2 * MU_MOON / rp));
   const at = (t) => L.kepler(rpv, vp, t - T.ca, MU_MOON);
@@ -76,17 +80,17 @@ const tHatE = norm(sub(mHatEI, scale(norm(sEnd), dot(mHatEI, norm(sEnd)))));
 const uEI = add(scale(norm(sEnd), Math.cos(arcEI)), scale(tHatE, Math.sin(arcEI)));
 const rEIv = scale(uEI, EARTH_R + 121.9e3);
 let best = null;
-for (let psi = 0; psi < 2 * Math.PI; psi += 10 * DEG) for (const sigma of [1, -1]) for (let vinf = 300; vinf <= 1300; vinf += 100) {
-  const hy = hyper(psi, sigma, vinf);
+for (let phi = 0; phi < 2 * Math.PI; phi += 30 * DEG) for (let psi = 0; psi < 2 * Math.PI; psi += 10 * DEG) for (const sigma of [1, -1]) for (let vinf = 300; vinf <= 1300; vinf += 100) {
+  const hy = hyper(psi, sigma, vinf, phi);
   const tIn = T.ca - hy.dtSoi, tOut = T.ca + hy.dtSoi;
   const pin = hy.at(tIn), pout = hy.at(tOut), mi = mn(tIn), mo = mn(tOut);
   const rin = add(mi.r, pin.r), rout = add(mo.r, pout.r);
   const l1 = L.lambert(kT1.r, rin, tIn - T.tli1, MU, cross(kT1.r, kT1.v));
   const l2 = L.lambert(rout, rEIv, T.ei - tOut, MU, cross(rout, rEIv));
   const m1 = len(sub(l1.v2, add(mi.v, pin.v))), m2 = len(sub(l2.v1, add(mo.v, pout.v)));
-  if (!best || m1 + m2 < best.c) best = { psi, sigma, vinf, hy, tIn, tOut, rin, rout, l1, l2, m1, m2, c: m1 + m2 };
+  if (!best || m1 + m2 < best.c) best = { phi, psi, sigma, vinf, hy, tIn, tOut, rin, rout, l1, l2, m1, m2, c: m1 + m2 };
 }
-console.log('flyby: v-infinity', best.vinf, 'sense', best.sigma, 'plane angle deg', (best.psi / DEG).toFixed(0), 'mismatch in / out m/s', best.m1.toFixed(0), best.m2.toFixed(0), 'SOI crossing at CA -/+ h', (best.hy.dtSoi / H).toFixed(1));
+console.log('flyby: v-infinity', best.vinf, 'sense', best.sigma, 'plane angle deg', (best.psi / DEG).toFixed(0), 'pericentre off the Earth-Moon line deg', (Math.acos(cosTh) / DEG).toFixed(0), 'at', (best.phi / DEG).toFixed(0), 'mismatch in / out m/s', best.m1.toFixed(0), best.m2.toFixed(0), 'SOI crossing at CA -/+ h', (best.hy.dtSoi / H).toFixed(1));
 console.log('entry: arrival speed', len(best.l2.v2).toFixed(0), 'fpa deg', (Math.asin(dot(norm(rEIv), norm(best.l2.v2))) / DEG).toFixed(1));
 const mAtCA = len(best.hy.at(T.ca).r) - R_MOON; console.log('closest approach above the surface km', (mAtCA / 1e3).toFixed(0));
 const hy = best.hy;
@@ -109,9 +113,13 @@ const tripAt = (t) => {
   if (t <= T.ar + 450) return L.hermite(orbit1(T.ar - 450), heo(T.ar + 450), T.ar - 450, T.ar + 450, t);
   if (t <= T.tli0) return heo(t);
   if (t <= T.tli1) return L.hermite(sT0, { r: kT1.r, v: best.l1.v1 }, T.tli0, T.tli1, t);
-  if (t <= best.tIn) return L.kepler(kT1.r, best.l1.v1, t - T.tli1);
-  if (t <= best.tOut) return moonAbs(t, hy.at(t));
-  if (t <= T.ei - 300) return L.kepler(rEI0.r, rEI0.v, t - best.tOut);
+  const W = 3600, conicIn = (x) => L.kepler(kT1.r, best.l1.v1, x - T.tli1), hypAt = (x) => moonAbs(x, hy.at(x)), conicOut = (x) => L.kepler(rEI0.r, rEI0.v, x - best.tOut);
+  // the joins at the edge of the Moon's sphere are blended over two hours, so the turn from one conic to the other is a curve
+  if (t <= best.tIn - W) return conicIn(t);
+  if (t <= best.tIn + W) return L.hermite(conicIn(best.tIn - W), hypAt(best.tIn + W), best.tIn - W, best.tIn + W, t);
+  if (t <= best.tOut - W) return hypAt(t);
+  if (t <= best.tOut + W) return L.hermite(hypAt(best.tOut - W), conicOut(best.tOut + W), best.tOut - W, best.tOut + W, t);
+  if (t <= T.ei - 300) return conicOut(t);
   if (t <= T.ei) return L.hermite(L.kepler(rEI0.r, rEI0.v, T.ei - 300 - best.tOut), entryAt(T.ei), T.ei - 300, T.ei, t);
   return entryAt(t);
 };
@@ -127,6 +135,7 @@ const stepOf = (t) => ((t > T.tli0 - 300 && t < T.tli1 + 300) || (t > T.ei - 300
 const seg = (from, to, at, step) => ({ from, to, at, step });
 L.save(OUT + 'paths/artemis-ii-trip.json', L.rowsOf([seg(T.hand, T.splash - 1, orionAt, stepOf), seg(T.splash - 1, T.splash, orionAt, () => 1)]), 'Artemis II Orion, from the stack after core separation to splashdown; reconstructed by tools/moments-build/artemis2.mjs. Earth-inertial (TEME) km and km/s.');
 L.save(OUT + 'paths/artemis-ii-icps.json', L.rowsOf([seg(T.hand, T.sep + 3500, tripAt, stepOf)]), 'Artemis II: the upper stage and the base of the stack, from core separation to the end of the separation from Orion.');
+let minR = 1e9; for (const r of JSON.parse(JSON.stringify(0 ? [] : []))) minR = 0;
 console.log('times s:', JSON.stringify(T));
 
 // --- the moment
@@ -174,7 +183,7 @@ const cam = [
   { t: T.ei + 640, shot: 'orbit', az: 200, el: 6, dist: 140, lookY: 6, fov: 50, vehicle: 'orion', spin: 0.6, blend: 2 },
 ];
 const caps = [[-10, 'ready'], [-6.4, 'cored'], [0, 'liftoff'], [T.srb, 'srb'], [T.las, 'las'], [T.meco, 'meco'], [T.cs, 'coresep'], [T.pr - 60, 'prb'], [T.ar - 500, 'arb'], [1200, 'fairings'], [1500, 'arrays'], [T.sep, 'sep'],
-  [T.tliC - 300, 'tli'], [T.tli1 + 600, 'outbound'], [T.apollo13 - 600, 'record'], [T.ca - 2400, 'moon'], [T.los0, 'los'], [T.ca, 'closest'], [T.maxd + 60, 'far'], [T.los1, 'aos'], [T.ca + 3600, 'home'],
+  [T.tliC - 300, 'tli'], [T.tli1 + 600, 'outbound'], [T.apollo13 - 600, 'record'], [T.ca - 2400, 'moon'], [T.los0, 'los'], [T.ca, 'closest'], [T.maxd, 'far'], [T.los1, 'aos'], [T.ca + 3600, 'home'],
   [T.esmsep, 'esmsep'], [T.ei, 'entry'], [T.ei + 520, 'drogue'], [T.ei + 580, 'mains'], [T.splash - 25, 'splash']].map(([t, say]) => ({ t, say })).sort((a, b) => a.t - b.t);
 const pace = [[-10, 12, 1], [12, 126, 8], [126, 140, 3], [140, 200, 6], [200, 490, 16], [490, 540, 4], [540, T.pr - 200, 400], [T.pr - 200, T.pr + 200, 40], [T.pr + 200, T.ar - 700, 400], [T.ar - 700, T.ar + 700, 100],
   [T.ar + 700, T.sep + 1500, 100], [T.sep + 1500, T.tli0 - 400, 4000], [T.tli0 - 400, T.tli1 + 200, 25], [T.tli1 + 200, best.tIn - 30000, 12000], [best.tIn - 30000, T.ca - 5000, 1500], [T.ca - 5000, T.ca + 5000, 60],
