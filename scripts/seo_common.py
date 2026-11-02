@@ -191,7 +191,7 @@ def from_blog(keywords: tuple[str, ...] = (), limit: int = 3, skip: str = "") ->
 BLOG_FOR = [("read/index", (), 6), ("read/", (), 3), ("teachers/", ("classroom", "teacher", "offline", "guided trips"), 3),
             ("starlink/", ("starlink", "satellites"), 3), ("satellites/", ("satellite", "accuracy", "tracking"), 3),
             ("planets-tonight/", ("tonight", "skywatching", "stargazing"), 3), ("events/", ("eclipse", "skywatching"), 3),
-            ("accuracy/", ("accuracy", "tle"), 3), ("about/", (), 3), ("o/international-space-station", ("iss",), 3)]
+            ("accuracy/", ("accuracy", "tle"), 3), ("about/", (), 3), ("o/international-space-station", ("iss",), 3), ("iss/", ("iss",), 3)]
 
 
 def blog_for(page: "Page") -> str:

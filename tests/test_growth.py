@@ -156,6 +156,7 @@ def main() -> int:
         work = Path(tmp) / "repo"
         shutil.copytree(ROOT / "registry", work / "registry")
         shutil.copytree(ROOT / "scripts", work / "scripts")
+        shutil.copytree(ROOT / "templates", work / "templates")
         # registry/exotics.yaml points at the two photographs and the validator checks they
         # are really in the tree, so the tree needs them.
         shutil.copytree(ROOT / "site" / "images", work / "site" / "images")

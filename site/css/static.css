@@ -24,9 +24,10 @@ body{margin:0;min-height:100vh;background:radial-gradient(110% 46% at 85% -8%,#1
 .top nav a:hover{color:var(--sr-text)}
 .top nav+.openmap{margin-left:0}
 .top .mark+.openmap{margin-left:auto}
-.openmap,.live{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:999px;background:var(--sr-ember);color:var(--sr-ink)!important;font:600 15px/1 Inter,system-ui,sans-serif;text-decoration:none;white-space:nowrap;transition:background .2s,translate .2s}
-.openmap:hover,.live:hover{background:var(--sr-ember-light);translate:0 -1px}
-.live{min-height:52px;padding:0 26px;font-size:17px}
+.openmap,.live,.opentrip a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:999px;background:var(--sr-ember);color:var(--sr-ink)!important;font:600 15px/1 Inter,system-ui,sans-serif;text-decoration:none;white-space:nowrap;transition:background .2s,translate .2s}
+.openmap:hover,.live:hover,.opentrip a:hover{background:var(--sr-ember-light);translate:0 -1px}
+.live,.opentrip a{min-height:52px;padding:0 26px;font-size:17px}
+.opentrip{margin:28px 0}
 @media (max-width:520px){.mark{font-size:13px;letter-spacing:.12em;gap:8px}.mark:before{width:26px;height:26px}.top__in{gap:6px}.top nav a{padding:0 6px}.openmap{padding:0 14px;font-size:14px}}
 
 /* the reading column */

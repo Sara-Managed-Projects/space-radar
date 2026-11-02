@@ -116,8 +116,8 @@ PAGE = """<!doctype html>
 <p class="micro">Guided trip</p>
 <h1>{title}</h1>
 <p class="lead">{blurb}</p>
-<div class="cta"><a class="live" href="../#trip={id}">Open the trip: {title}</a></div>
-{stops}<p class="dim">{truth}</p>
+<p class="opentrip"><a href="../#trip={id}">Open the trip: {title}</a></p>
+{stops}<p>{truth}</p>
 </main>
 <footer><div class="foot__in">
 {sitelinks}
