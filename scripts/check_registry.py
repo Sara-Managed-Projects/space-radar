@@ -3826,7 +3826,7 @@ def budget(bid: str, fallback: float) -> float:
 # too, because a bed is the largest thing a visitor can download after the first visit and the
 # only way it stays small is a number that fails the build.
 AUDIO_FIELDS = ("id", "kind", "file", "twin", "seconds", "kb", "loop", "licence", "source", "credit")
-AUDIO_KINDS = {"bed", "sting"}
+AUDIO_KINDS = {"bed", "sting", "clip"}  # a `clip` (release 1.6.0, the Moments): one recording of a real voice, one file, played at one second
 AUDIO_STAGES = {"earth", "world", "sun", "ladder"}
 AUDIO_KB_SLACK = 0.05
 AUDIO_FILE = re.compile(r"[A-Za-z0-9_.-]+\.(?:opus|m4a)")
@@ -3987,7 +3987,7 @@ def check_audio() -> list:
             fail(where, f"loop {r.get('loop')!r} must be true or false")
         if not is_number(r.get("seconds")) or not r.get("seconds") > 0:
             fail(where, f"seconds {r.get('seconds')!r} must be a positive number")
-        for key, ext in (("file", ".opus"), ("twin", ".m4a")):
+        for key, ext in (("file", ".m4a" if kind == "clip" else ".opus"), ("twin", ".m4a")):
             f = str(r.get(key) or "")
             if not f:
                 continue

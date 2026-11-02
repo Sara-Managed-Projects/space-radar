@@ -131,3 +131,17 @@ audio:
     credit: "harp flourish by nathanmanaker (Freesound), CC0"
     original: {url: "https://cdn.freesound.org/previews/486/486952_6657415-hq.ogg", sha256: c973756c27d870b6a9150312e027e13662b203053028983288e7093861ad204b, bytes: 55548}
     make: {original: fs486952-harp-flourish.ogg, from: 0, seconds: 2.5, fade_out: 0.5, lufs: -21}
+
+  # RELEASE 1.6.0, THE MOMENTS (internal spec 0079 C6): the one real voice. Its file is the AAC alone (no Opus encoder was to
+  # hand), so `file` and `twin` are the same m4a and the row's kind is `clip`. The player asks for it only at its second.
+  - id: a11-small-step
+    kind: clip
+    file: site/audio/a11-small-step.m4a
+    twin: site/audio/a11-small-step.m4a
+    seconds: 24
+    kb: 97.1
+    loop: false
+    licence: "Public domain (NASA); Wikimedia Commons: \"Public domain\", credit \"Neil Armstrong/NASA\""
+    source: "https://commons.wikimedia.org/wiki/File:Neil_Armstrong_small_step.wav (read 2026-11-02)"
+    credit: "Neil Armstrong's first words on the Moon, NASA (1969), public domain"
+    make: {original: "Neil_Armstrong_small_step.wav (8-bit mono 11 025 Hz, 265 886 bytes)", tool: "afconvert -f WAVE -d LEI16@22050, then afconvert -f m4af -d aac -b 32000"}

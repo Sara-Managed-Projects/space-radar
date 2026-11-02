@@ -78,5 +78,15 @@ export const AUDIO = [
     "kb": 20.7,
     "loop": false,
     "credit": "harp flourish by nathanmanaker (Freesound), CC0"
+  },
+  {
+    "id": "a11-small-step",
+    "kind": "clip",
+    "file": "audio/a11-small-step.m4a",
+    "twin": "audio/a11-small-step.m4a",
+    "seconds": 24,
+    "kb": 97.1,
+    "loop": false,
+    "credit": "Neil Armstrong's first words on the Moon, NASA (1969), public domain"
   }
 ];
