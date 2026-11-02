@@ -4003,7 +4003,11 @@ def check_audio() -> list:
         kb = r.get("kb")
         f = ROOT / str(r.get("file") or "")
         if is_number(kb):
-            total_kb += kb
+            if kind == "clip":
+                if kb > 150:
+                    fail(where, f"a clip of {kb} kB is over the 150 kB a single recording may be (it is fetched once, at its second)")
+            else:
+                total_kb += kb
             if r.get("file") and f.is_file():
                 real = f.stat().st_size / 1000
                 if abs(real - kb) > AUDIO_KB_SLACK * real:

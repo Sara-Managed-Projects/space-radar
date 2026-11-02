@@ -30,6 +30,8 @@ def render(doc: dict) -> list:
     for r in doc.get("audio") or []:
         if not isinstance(r, dict):
             continue
+        if r.get("kind") == "clip":
+            continue  # a recording the Moments fetch by name at one second: not for the sound engine, and not in the boot's bytes
         row = pick(r, FIELDS)
         for key in ("file", "twin"):
             if key in row:
