@@ -1,0 +1,51 @@
+// The words of the Moment `artemis-ii` (internal spec 0079 C7): the crewed flight round the Moon, 1 to 11 April 2026
+// (the account of what was flown is Wikipedia's "Artemis II" and NASA's, read 2 November 2026). Named by the moment's
+// `wordsFile`; imported by moments/player.js only. WHERE A TIME IS PLANNED AND NOT REPORTED, THE WORDS SAY SO.
+import { COPY } from './en.js';
+import './en.moments.js';
+
+Object.assign(COPY.momentStories, {
+  'artemis-ii': {
+    title: 'Artemis II: round the Moon',
+    blurb: 'Launch Complex 39B, 1 April 2026, to the Pacific off San Diego on the 10th: four people round the far side of the Moon, on the mission clock.',
+    chPad: 'Pad 39B',
+    chLiftoff: 'Lift-off',
+    chStaging: 'Boosters away',
+    chOrbit: 'High Earth orbit',
+    chTli: 'Leaving for the Moon',
+    chMoon: 'The far side',
+    chHome: 'Coming home',
+    chEntry: 'Entry',
+    chSplash: 'Splashdown',
+    ready: 'Launch Complex 39B, Kennedy Space Center, 1 April 2026. Wiseman, Glover, Koch and Hansen are aboard Orion, on top of the Space Launch System.',
+    cored: 'T−6.4 s: the four RS-25 engines of the core stage start. Flown, as planned.',
+    liftoff: 'Lift-off, 22:35:12 UTC (6:35 p.m. EDT): the two five-segment boosters light at zero. Flown.',
+    srb: 'About T+2 min: the boosters burn out and separate at 48 km, 5 000 km/h. Flown; they splash into the Atlantic.',
+    las: 'Planned, T+3 min 22 s: the launch-abort tower is jettisoned. The reported flights give no second; this is the flight plan\'s.',
+    meco: 'Planned, T+8 min: the core stage shuts down, in a suborbital arc with an apogee near 2 300 km. The flight plan\'s time.',
+    coresep: 'The core stage is released and falls to a destructive entry over the Pacific, some two hours after the launch. Flown.',
+    prb: 'About T+50 min, at the top of the arc: the upper stage burns to lift the low point out of the air. Flown, the second is not published.',
+    arb: 'An hour later, at the low point: a 15 minute burn raises the far side of the orbit to 70 000 km, a lap of nearly a day. Flown.',
+    fairings: 'Planned: the three panels round the service module are jettisoned; the four solar arrays unfold. The flight plan\'s time, drawn here deployed.',
+    arrays: 'Orion\'s four arrays are out: they will make its power for ten days.',
+    sep: 'Planned: Orion parts from the upper stage; Glover then flies it by hand beside the stage for about 70 minutes. The time of the separation is not published.',
+    tli: 'Flight day 2, about 25 hours in: the service module\'s main engine burns 5 min 49 s, for the Moon. Flown; the minute shown is the flight plan\'s.',
+    outbound: 'Four days out. One outbound correction burn was flown, 17.5 s on flight day 5; it is too small to draw.',
+    record: '17:56 UTC on 6 April: Orion passes Apollo 13\'s 1970 distance record, 248 655 miles from Earth. Flown.',
+    moon: 'Flight day 6: Orion enters the Moon\'s sphere of influence. It will not orbit: it flies round the far side and falls home.',
+    los: '22:46 UTC: behind the Moon, out of contact for 38 minutes. Flown.',
+    closest: 'Closest approach, 23:00 UTC on 6 April: 6 545 km above the far side of the Moon. Flown.',
+    far: '23:02 UTC: farthest from Earth, 406 771 km. Flown.',
+    aos: '23:24 UTC: contact again from behind the Moon. Flown.',
+    home: 'Four days home. Three return correction burns were flown, of 15, 9 and 8 seconds; they are too small to draw.',
+    esmsep: 'Planned: the service module is released about 20 minutes before entry. The release time is not published; the flight plan\'s is drawn.',
+    entry: 'Entry interface, planned about 13 minutes before splashdown: 122 km up at 11 km/s, the heat shield glowing. A steeper direct entry replaced the planned skip entry. Flown.',
+    drogue: 'Drogue parachutes, then pilot chutes and three main canopies, 35 m across. Flown; the times are the flight plan\'s.',
+    mains: 'Three mains take the capsule down to the sea.',
+    splash: 'Splashdown, 00:07:27 UTC on 11 April (5:07 p.m. PDT, 10 April), 32.3 N 117.8 W, southwest of San Diego; the USS John P. Murtha recovers the crew (ship not drawn). Nine days, one hour, 32 minutes. Flown.',
+    pathAscent: 'the flight plan\'s event times with heights and distances between them ours; lift-off and the boosters\' separation are flown',
+    pathTrip: 'reconstructed from the flown orbit, closest approach and splashdown, as two-body arcs and a hyperbola round the Moon; not tracking data',
+    srcWiki: 'Wikipedia, Artemis II (what was flown, with times and distances; read 2 November 2026)',
+    srcNasa: 'NASA, Artemis II (the flight plan; model of the rocket and capsule: NASA 3D Resources)',
+  },
+});
