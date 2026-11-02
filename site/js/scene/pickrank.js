@@ -23,9 +23,13 @@
 // be held by a test with made-up pixels.
 
 /** How far from the pointer a candidate may be, CSS px, by what is pointing. */
+// onDisc: the reach of a mark drawn over a world's disc when the pointer is on that disc. A home view of
+// the Earth carries thousands of satellite dots, so with the full reach nearly every click on the Earth
+// opened a satellite nobody had aimed at (seen on the live site, 2026-11-02, after 1.5.2). On a disc a dot
+// wins only when the pointer is on the dot itself.
 export const REACH = {
-  mouse: { local: 10, backdrop: 5 },
-  touch: { local: 24, backdrop: 12 },
+  mouse: { local: 10, backdrop: 5, onDisc: 4 },
+  touch: { local: 24, backdrop: 12, onDisc: 10 },
 };
 /** Two best marks of one tier closer than this to each other are shown as a list. */
 export const AMBIGUITY_PX = 3;
@@ -67,16 +71,17 @@ export function decide(marks, discs, reach = REACH.touch) {
     }
     return false;
   };
-  const reachOf = (tier) => (tier === 'backdrop' ? reach.backdrop : reach.local);
-  const near = ms.filter((m) => m.px <= reachOf(m.tier) && !covered(m));
-  const localMarks = near.filter((m) => m.tier !== 'backdrop').sort((a, b) => scoreOf(a) - scoreOf(b));
-  const backMarks = near.filter((m) => m.tier === 'backdrop').sort((a, b) => scoreOf(a) - scoreOf(b));
 
   // Discs: the one the pointer is on and nearest the camera, then what is in front of it.
   const inReach = ds.filter((d) => d.edge <= reach.local);
   const inside = inReach.filter((d) => d.edge <= 0).sort((a, b) => depthOf(a) - depthOf(b));
   const front = inside.length ? inReach.filter((d) => d.edge > 0 && depthOf(d) < depthOf(inside[0])) : inReach.filter((d) => d.edge > 0);
   front.sort((a, b) => (a.edge - b.edge) || (depthOf(a) - depthOf(b)));
+  const onDisc = inside.length > 0;
+  const reachOf = (tier) => (tier === 'backdrop' ? reach.backdrop : (onDisc ? Math.min(reach.local, reach.onDisc ?? reach.local) : reach.local));
+  const near = ms.filter((m) => m.px <= reachOf(m.tier) && !covered(m));
+  const localMarks = near.filter((m) => m.tier !== 'backdrop').sort((a, b) => scoreOf(a) - scoreOf(b));
+  const backMarks = near.filter((m) => m.tier === 'backdrop').sort((a, b) => scoreOf(a) - scoreOf(b));
   const discList = front.concat(inside);
 
   const out = [];
