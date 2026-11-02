@@ -23,6 +23,34 @@ tagged, and their dates are the day the last change in each landed.
   its reason, and a Chrome that dies mid-run ends the run with the reason, instead of both waiting
   forever.
 
+## [1.5.5] - 2026-11-02
+
+### Fixed
+- In the star view a click on one of the thousands of unnamed stars opens its card and leaves the camera where it is; "Fly to it" on the card goes there. Before, a click on what looked like dark sky could fly you to a faint star you had not seen.
+
+## [1.5.4] - 2026-11-02
+
+### Fixed
+- A click on the Earth at the home view opens the Earth. Thousands of satellite dots lie over it there, and a click still found one; where several dots crowd a click on a world, the world is what was meant. A satellite on its own over a world is still taken.
+
+## [1.5.3] - 2026-11-02
+
+### Fixed
+- A click on the Earth, or any world, opens that world. A satellite dot over it is taken only when the click is on the dot itself.
+- A click that only comes near a star or a dot opens its card and leaves the camera where it is. The camera flies only for a click right on the dot, or for a choice from the list. Before, a click on dark sky between dense stars could fly you thousands of light-years to a faint star.
+
+## [1.5.2] - 2026-11-02
+
+### Fixed
+- A click now does what you meant. A click near a far star or galaxy opens its card and leaves you where you are; "Fly to it" on the card makes the journey. A click on empty space only clears the selection.
+- A click on a planet opens that planet, not a star behind it. Marks behind a world can no longer be clicked, and a satellite in front of one still can.
+- Things that are not drawn can no longer be clicked: faint stars, hidden comets and faded galaxies.
+- A mouse click counts however long it is held, and the reach of a click fits a mouse or a finger. Lifting a finger after a pinch is never a tap.
+- Where two marks sit too close to tell apart, a small list asks which one.
+
+### Added
+- With a mouse, the name of what a click would open shows at the pointer.
+
 ## [1.5.1] - 2026-10-29
 
 Fixes for what 1.5.0 showed on real screens. Pluto and Charon are round again: far from the map's centre the

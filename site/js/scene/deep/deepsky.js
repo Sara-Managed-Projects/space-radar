@@ -432,7 +432,7 @@ export function createDeepSky(THREE, env = {}) {
     // (0076 W4-a, spec 0075 task 63) the local volume's galaxies as selectable records: found by id, and by a tap (main.js pick)
     // 0079 a2: begin (the catalogue's records are found by id and tapped like the local volume's; `loadCatalogue` is for the search)
     volumeRecord: (id) => { const v = volumeLayer(); const row = v && typeof id === 'string' && id.startsWith('dso-lv-') ? v.rowOfId(id) : -1; if (row >= 0) return v.records()[row]; const c = catalogueLayer(); return c ? c.recordById(id) : null; },
-    pickAll: (ndcX, ndcY, camera, viewport, limit) => { const v = volumeLayer(); const c = catalogueLayer(); return (v ? v.pickAll(ndcX, ndcY, camera, viewport, limit) : []).concat(c ? c.pickAll(ndcX, ndcY, camera, viewport, limit) : []); },
+    pickAll: (ndcX, ndcY, camera, viewport, limit, reachPx) => { const v = volumeLayer(); const c = catalogueLayer(); return (v ? v.pickAll(ndcX, ndcY, camera, viewport, limit, reachPx) : []).concat(c ? c.pickAll(ndcX, ndcY, camera, viewport, limit, reachPx) : []); },
     catalogue: () => catalogueLayer(),
     loadCatalogue() { const l = layers.get('catalogue'); if (!l) return Promise.resolve(null); wantLayer(l); return Promise.resolve(l.loading || null).then(() => (l.layer && l.layer.whenLoaded ? l.layer.whenLoaded().then(() => l.layer) : null)); },
     // 0079 a2: end

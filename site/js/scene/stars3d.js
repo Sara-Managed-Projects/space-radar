@@ -34,6 +34,7 @@ import { COPY, t } from '../copy/en.js';
 import { STARS_NOTABLE } from '../data/starsnotable.js';
 import { drawnPositions } from './clusters.js';
 import { HOLES_GLSL_HEAD, holeUniforms, setHoles as setHoleUniforms } from './starholes.js';
+import { createPickIndex } from './pickindex.js';
 import { STRETCH_PX, STRETCH_VERT_HEAD, STRETCH_VERT, STRETCH_FRAG_HEAD, STRETCH_FRAG, STAR_LIGHT_GLSL, stretchUniforms, writeStretch } from './stretch.js';
 
 // Spec 0034: the star-stretch's length lives in scene/stretch.js (both star draws read it) and is
@@ -55,6 +56,14 @@ const SHELL_UNITS = 1e8; // the shell's radius in scene units: far inside the 1e
 const RECORD_BYTES = 24;
 const HEADER_BYTES = 16;
 const PICK_PX = 24;
+const PICK_MIN_OPACITY = 0.15; // below this the layer is a ghost of itself (a cross-fade's end), not something to tap
+
+/** The magnitude the shader cuts on (VERT above): the catalogue's in shell mode, the one at the camera otherwise. Pure. */
+export function apparentMagOf(appMag, absMag, shell, x, y, z, cam, unitsPerPc) {
+  if (shell) return appMag;
+  const dpc = Math.max(1e-9, Math.hypot(x - cam.x, y - cam.y, z - cam.z) / unitsPerPc);
+  return absMag + 5 * Math.log10(dpc / 10);
+}
 const SUN_INERTIAL = 'sun-inertial';
 
 const VERT = /* glsl */ `
@@ -496,35 +505,32 @@ export function createStars3d(scene, opts = {}) {
   }
 
   const _m = new THREE.Matrix4();
+  const index = createPickIndex(); // scene/pickindex.js: the hover asks every 50 ms of 120 000 stars
 
   /**
    * Every star within the forgiveness rule, nearest first, as {record, px, score} for
    * scene/pickrank.js. An unnamed star becomes a record here and now, saying it is unnamed.
    */
-  function pickAll(ndcX, ndcY, camera, viewport, limit = 6) {
+  function pickAll(ndcX, ndcY, camera, viewport, limit = 6, reachPx = PICK_PX) {
     if (!points || !points.visible || !geometry || !camera || !viewport) return [];
+    if (opacity < PICK_MIN_OPACITY) return []; // faded out (the climb's cross-fade): not drawn, not tapped
     camera.updateMatrixWorld();
     group.updateMatrixWorld();
     _m.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse).multiply(group.matrixWorld);
     const e = _m.elements;
-    const pos = geometry.getAttribute('position').array;
+    const attr = geometry.getAttribute('position');
     const halfW = viewport.w * 0.5, halfH = viewport.h * 0.5;
+    const shell = mode === 'shell';
+    const cp = camera.position, upp = uniforms.uUnitsPerPc.value, lim = uniforms.uMagLimit.value;
     const out = [];
-    for (let i = 0; i < data.count; i++) {
-      const x = pos[i * 3], y = pos[i * 3 + 1], z = pos[i * 3 + 2];
-      const w = e[3] * x + e[7] * y + e[11] * z + e[15];
-      if (w <= 0) continue;
-      const cx = (e[0] * x + e[4] * y + e[8] * z + e[12]) / w;
-      const cy = (e[1] * x + e[5] * y + e[9] * z + e[13]) / w;
-      const dx = (cx - ndcX) * halfW, dy = (cy - ndcY) * halfH;
-      const px = Math.sqrt(dx * dx + dy * dy);
-      if (px > PICK_PX) continue;
-      // Faint stars are not drawn (alpha 0 past magnitude 7.5 in shell mode); do not let them be tapped.
-      if (mode === 'shell' && data.appMag[i] > uniforms.uMagLimit.value) continue;
-      out.push({ i, px });
-    }
+    index.query(e, attr.array, attr.version, data.count, halfW, halfH, ndcX, ndcY, reachPx, (i, px, sx, sy, depth) => {
+      if (i === hiddenIdx) return; // (the one drawn as a disc is that disc's)
+      // Not drawn is not tapped: the shader's own magnitude cut, in both modes (the stellar rung's is the magnitude AT THE CAMERA).
+      if (apparentMagOf(data.appMag[i], data.absMag[i], shell, attr.array[i * 3], attr.array[i * 3 + 1], attr.array[i * 3 + 2], cp, upp) > lim) return;
+      out.push({ i, px, sx, sy, depth });
+    });
     out.sort((p, q) => p.px - q.px);
-    return out.slice(0, Math.max(1, limit)).map(({ i, px }) => ({ record: recordAt(i), px, score: px }));
+    return out.slice(0, Math.max(1, limit)).map(({ i, px, sx, sy, depth }) => ({ record: recordAt(i), px, score: px, sx, sy, depth }));
   }
 
   /** The record for star `i` of the binary: the named one if it has a name, a plain one if not. */
