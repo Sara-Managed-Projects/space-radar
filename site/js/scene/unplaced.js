@@ -141,7 +141,8 @@ export function createUnplaced(scene, opts = {}) {
   }
 
   /** Every star within the forgiveness rule, nearest first, as {record, px, score} for scene/pickrank.js. */
-  function pickAll(ndcX, ndcY, camera, viewport, limit = 6) {
+  function pickAll(ndcX, ndcY, camera, viewport, limit = 6, reachPx = PICK_PX) {
+    if (opacity < 0.15) return []; // faded out: not drawn, not tapped
     if (!points || !points.visible || !geometry || !camera || !viewport) return [];
     camera.updateMatrixWorld();
     group.updateMatrixWorld();
@@ -159,10 +160,10 @@ export function createUnplaced(scene, opts = {}) {
       const cy = (e[1] * x + e[5] * y + e[9] * z + e[13]) / w;
       const dx = (cx - ndcX) * halfW, dy = (cy - ndcY) * halfH;
       const px = Math.sqrt(dx * dx + dy * dy);
-      if (px <= PICK_PX) out.push({ i, px });
+      if (px <= reachPx) out.push({ i, px, sx: (cx + 1) * halfW, sy: (1 - cy) * halfH, depth: w });
     }
     out.sort((p, q) => p.px - q.px);
-    return out.slice(0, Math.max(1, limit)).map(({ i, px }) => ({ record: recordAt(i), px, score: px }));
+    return out.slice(0, Math.max(1, limit)).map(({ i, px, sx, sy, depth }) => ({ record: recordAt(i), px, score: px, sx, sy, depth }));
   }
 
   function dispose() {

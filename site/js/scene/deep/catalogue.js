@@ -691,8 +691,9 @@ export function createLayer(THREE, env = {}) {
 
   const _p = new THREE.Vector3();
   /** Candidates for a tap: {record, px, score}, nearest first. Ranks just behind the map's own marks. */
-  function pickAll(ndcX, ndcY, camera, viewport, limit = 6) {
+  function pickAll(ndcX, ndcY, camera, viewport, limit = 6, reachPx = 12) {
     if (!state.loaded || !group.visible || state.culled || !camera || !viewport) return [];
+    if (uniforms.uFade.value < 0.1 || uniforms.uGain.value < 0.1) return []; // the tile is a speck or the layer faded out: not drawn, not tapped
     camera.updateMatrixWorld();
     group.updateMatrixWorld();
     _m.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse).multiply(group.matrixWorld);
@@ -707,15 +708,16 @@ export function createLayer(THREE, env = {}) {
       if (w <= 0) continue;
       const dx = ((e[0] * x + e[4] * y + e[8] * z + e[12]) / w - ndcX) * halfW, dy = ((e[1] * x + e[5] * y + e[9] * z + e[13]) / w - ndcY) * halfH;
       const px = Math.sqrt(dx * dx + dy * dy);
-      if (px > 30) continue;
+      if (px > 30 || px > Math.max(reachPx, 24)) continue;
       if (T.cls[i] >= 2 && i !== selectedRow && galacticFade(w / uniforms.uScale.value, uniforms.uView.value) < 0.2) continue; // 0079 r151: not drawn at this scale, so not to be tapped
       const dMly = T.distLy[i] / LY_PER_MLY;
-      const reach = Math.min(24, Math.max(PICK_MIN_PX, glyphPx(A.radius[i], dMly, T.cls[i], T.inferred[i], uniforms.uPxPerRad.value) / 2 + 4));
+      // On the mark itself always; near it by the pointer's own reach.
+      const reach = Math.min(24, Math.max(reachPx, glyphPx(A.radius[i], dMly, T.cls[i], T.inferred[i], uniforms.uPxPerRad.value) / 2));
       if (px > reach) continue;
-      out.push({ i, px });
+      out.push({ i, px, sx: (e[0] * x + e[4] * y + e[8] * z + e[12]) / w * halfW + halfW, sy: halfH - (e[1] * x + e[5] * y + e[9] * z + e[13]) / w * halfH, depth: w });
     }
     out.sort((p, q) => p.px - q.px);
-    return out.slice(0, Math.max(1, limit)).map(({ i, px }) => ({ record: recordAt(i), px, score: px + PICK_BEHIND_PX })).filter((c) => c.record);
+    return out.slice(0, Math.max(1, limit)).map(({ i, px, sx, sy, depth }) => ({ record: recordAt(i), px, score: px + PICK_BEHIND_PX, sx, sy, depth })).filter((c) => c.record);
   }
 
   function showRange(i) {

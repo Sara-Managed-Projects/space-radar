@@ -44,7 +44,7 @@ import { createBeds } from './audio/beds.js';
 import { createStings } from './audio/stings.js';
 import { rungOf } from './audio/pick.js';
 import { AUDIO } from './data/audio.js';
-import { rankPick, rankAll } from './scene/pickrank.js';
+import { decide, reachFor, LONG_PRESS_MS, TAP_SLOP_PX } from './scene/pickrank.js';
 import { createLod } from './scene/lod.js';
 import { createStars3d, NAMED_STARS, SUN_RADIUS_KM, SUN_TEFF_K } from './scene/stars3d.js';
 import { createGalaxy } from './scene/galaxy.js';
@@ -303,7 +303,7 @@ export async function boot({ setStatus } = {}) {
     selected: () => selected,
     select,
     deselect,
-    flyToRecord: (record, ms, flight) => { leaveGround(); return flyToRecord(record, ms, flight); },
+    flyToRecord: (record, ms, flight) => { leaveGround(); return needsStageHop(record) ? hopTo(record, ms, flight) : flyToRecord(record, ms, flight); },
     get observer() { return observer; },
     // The one door a place comes in by. The browser's own answer is rounded here as well as where it
     // is read (ui/place.js), so no caller can hand the app a precise position (spec 0051 req 3).
@@ -1347,32 +1347,38 @@ export async function boot({ setStatus } = {}) {
 
   // --- interaction ----------------------------------------------------------
 
-  canvas.addEventListener('pointerdown', onPointerDown);
-  let downAt = null;
-  function onPointerDown(e) { downAt = { x: e.clientX, y: e.clientY, t: performance.now() }; }
+  // WHAT A TAP MEANS IS DECIDED WHERE THE VISITOR AIMED (internal pick review, 2026-11-02). The decision
+  // is worked out at pointerdown and used at pointerup, so a tap during a flight, the opening or the
+  // drift gets what was under the pointer, not what has drifted under it since. A second finger makes
+  // the gesture a pinch and never a tap. A long press is for fingers; a mouse click is a click however
+  // long it was held. The rules themselves are scene/pickrank.js.
+  const pointers = new Set();
+  let gesture = null;
+  canvas.addEventListener('pointerdown', (e) => {
+    pointers.add(e.pointerId);
+    if (pointers.size > 1) { if (gesture) gesture.pinched = true; return; }
+    const type = e.pointerType === 'touch' ? 'touch' : 'mouse';
+    gesture = { id: e.pointerId, type, x: e.clientX, y: e.clientY, t: performance.now(), pinched: false, decision: decisionAt(e.clientX, e.clientY, type) };
+  });
+  window.addEventListener('pointerup', (e) => { pointers.delete(e.pointerId); });
+  const cancelGesture = () => { pointers.clear(); gesture = null; };
+  window.addEventListener('pointercancel', cancelGesture);
   canvas.addEventListener('pointerup', (e) => {
-    if (!downAt) return;
-    const moved = Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y);
-    const held = performance.now() - downAt.t;
-    downAt = null;
-    // A drag is a camera move, not a tap. 6 px is the usual threshold.
-    if (moved > 6) return;
-    const rect = canvas.getBoundingClientRect();
-    const ndcX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-    const ndcY = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    const g = gesture;
+    if (!g || g.id !== e.pointerId) return;
+    gesture = null;
+    if (g.pinched || pointers.size > 1) return;
+    // A drag is a camera move, not a tap: 5 px for a mouse, 10 for a finger.
+    if (Math.hypot(e.clientX - g.x, e.clientY - g.y) > TAP_SLOP_PX[g.type]) return;
+    const held = performance.now() - g.t;
     hideChooser();
-    if (held > 400) {
-      // A long press on a crowded spot lists everything within reach instead of guessing.
-      const all = candidatesAt(ndcX, ndcY, rect);
-      const list = rankAll(all.glyphs, all.discs, 6);
-      if (list.length > 1) { showChooser(list, e.clientX, e.clientY, (rec) => select(rec, { from: 'pick' }), { layers: LAYERS }); return; }
-      if (list.length === 1) { select(list[0].record, { from: 'pick' }); return; }
-      deselect();
-      return;
+    const d = g.decision;
+    // A long press on a crowded spot, and a tap the two best of which are too close to tell apart, list what is there instead of guessing.
+    if ((g.type === 'touch' && held >= LONG_PRESS_MS) || d.ambiguous) {
+      const list = d.list.slice(0, 6);
+      if (list.length > 1) { showChooser(list, e.clientX, e.clientY, (rec) => select(rec, pickOpts(list.find((x) => x.record === rec))), { layers: LAYERS }); return; }
     }
-    // From the ground the air lifts what is low (internal #418): the pick looks where the thing is before the air.
-    const [pickX, pickY] = ctx.skyView && ctx.skyView.trueNdc ? ctx.skyView.trueNdc(ndcX, ndcY) : [ndcX, ndcY];
-    let hit = pick(pickX, pickY, rect);
+    let hit = d.winner;
     // From the ground a tap asks "what is that" (sky/skyview.js tapSky): a satellite's dot or a
     // photograph answers as before with its card; a star, a planet or anything else in the sky is
     // named in a tag first, and the same thing tapped again is its card.
@@ -1381,9 +1387,30 @@ export async function boot({ setStatus } = {}) {
       hit = hit || skyPicturePick(e.clientX, e.clientY);
       if (!hit && typeof ctx.skyView.tapSky === 'function' && ctx.skyView.tapSky(e.clientX, e.clientY)) return;
     }
-    if (hit) select(hit, { from: 'pick' });
-    else deselect();
+    // An empty tap clears the card and leaves the camera where it is: going home is the card's close button.
+    if (hit) select(hit, pickOpts(d.list.find((x) => x.record === hit)));
+    else deselect({ stay: true });
   });
+  /** A tap on something that is only BEHIND the stage opens its card and moves nothing: "Fly to it" is the journey. */
+  function pickOpts(item) { return item && item.tier === 'backdrop' ? { from: 'pick', cardOnly: true } : { from: 'pick' }; }
+
+  // HOVER (mouse only): the same decision a click makes, no more than every 50 ms, with a pointer cursor and the name at the pointer.
+  let hover = null;
+  canvas.addEventListener('pointermove', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    if (hover) { hover.move(e); return; }
+    hover = { move() {}, clear() {} };
+    import('./ui/hover.js').then((m) => {
+      hover = m.createHover({
+        canvas,
+        decideAt: (x, y) => decisionAt(x, y, 'mouse'),
+        nameOf: (rec) => labelName(rec) || rec.name,
+        busy: () => cameraRig.state.flying || (ctx.skyView && ctx.skyView.ownsSky) || inTrip() || pointers.size > 0,
+      });
+      hover.move(e);
+    }).catch(() => {});
+  });
+  canvas.addEventListener('pointerleave', () => hover && hover.clear());
 
   /** From the ground, a tap on a nebula's or a galaxy's photograph opens its card (sky/groundpictures.js). */
   function skyPicturePick(clientX, clientY) {
@@ -1392,44 +1419,59 @@ export async function boot({ setStatus } = {}) {
     return id ? (ctx.recordsFor('deep-sky').find((r) => r.id === id) || null) : null;
   }
 
-  /** Everything within the forgiveness rule, from every layer that is on, unranked. */
-  function candidatesAt(ndcX, ndcY, rect) {
+  /** What a tap at this point means, by what is pointing (scene/pickrank.js): {winner, list, ambiguous}. */
+  function decisionAt(clientX, clientY, type) {
+    const rect = canvas.getBoundingClientRect();
+    const ndcX = ((clientX - rect.left) / rect.width) * 2 - 1;
+    const ndcY = -((clientY - rect.top) / rect.height) * 2 + 1;
+    // From the ground the air lifts what is low (internal #418): the pick looks where the thing is before the air.
+    const [pickX, pickY] = ctx.skyView && ctx.skyView.trueNdc ? ctx.skyView.trueNdc(ndcX, ndcY) : [ndcX, ndcY];
+    return pick(pickX, pickY, rect, reachFor(type));
+  }
+
+  const BACKDROP_KLASSES = new Set(['star', 'exoplanet', 'dso', 'exotic']);
+  /** "local" is of the stage's own scale; "backdrop" is only behind it: a star seen from a world, a galaxy past the rung's far plane. */
+  function tierOfRecord(rec) {
+    if (!rec) return 'local';
+    if (BACKDROP_KLASSES.has(rec.klass) && !isLadderStage(stage.worldId)) return 'backdrop';
+    return farOff(rec) && stage.worldId !== 'local-group' ? 'backdrop' : 'local';
+  }
+
+  /** Everything within the pointer's reach, from every layer that is on, unranked, each mark with its tier. */
+  function candidatesAt(ndcX, ndcY, rect, reach) {
+    const vp = { w: rect.width, h: rect.height };
+    const r = reach.local; // the layers scan with the wider reach; pickrank.js cuts each tier at its own
     const glyphs = [];
+    const add = (list, tier) => { for (const c of list) { c.tier = tier || tierOfRecord(c.record); glyphs.push(c); } };
     for (const layer of LAYERS) {
       if (!isLayerDrawable(layer)) continue;
       const gl = glyphLayers.get(layer.id);
       if (!gl || !gl.pickAll) continue;
-      for (const c of gl.pickAll(ndcX, ndcY, 6)) glyphs.push(c);
+      add(gl.pickAll(ndcX, ndcY, 6, r, camera, vp));
     }
     if (isLayerOn('stars') && ctx.stars3d) {
-      for (const c of ctx.stars3d.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height }, 6)) glyphs.push(c);
-      if (ctx.unplaced) for (const c of ctx.unplaced.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height }, 6)) glyphs.push(c); // 0079 r15-a45
+      add(ctx.stars3d.pickAll(ndcX, ndcY, camera, vp, 6, r));
+      if (ctx.unplaced) add(ctx.unplaced.pickAll(ndcX, ndcY, camera, vp, 6, r)); // 0079 r15-a45
     }
     // 0076 W4-a (spec 0075 task 63): the local volume's galaxies (scene/deep/localvolume.js), on the Local Group's rung
-    if (ctx.deep && ctx.deep.pickAll) {
-      for (const c of ctx.deep.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height }, 6)) glyphs.push(c);
-    }
+    if (ctx.deep && ctx.deep.pickAll) add(ctx.deep.pickAll(ndcX, ndcY, camera, vp, 6, r));
     // 0079 a8: begin (every other comet of the feed, scene/cometfield.js)
-    if (ctx.cometField && ctx.cometField.pickAll && isLayerDrawable(layerRec('comets'))) {
-      for (const c of ctx.cometField.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height }, 6)) glyphs.push(c);
-    }
+    if (ctx.cometField && ctx.cometField.pickAll && isLayerDrawable(layerRec('comets'))) add(ctx.cometField.pickAll(ndcX, ndcY, camera, vp, 6, r), 'local');
     // 0079 a8: end
-    // A star system's own star and planets, on its stage (spec 0040): the same exo-... records.
-    if (ctx.systems && ctx.systems.active) {
-      for (const c of ctx.systems.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height }, 6)) glyphs.push(c);
-    }
-    const discs = isLayerOn('worlds') && worlds.pickAll
-      ? worlds.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height })
-      : [];
+    // A star system's own star and planets, on its stage (spec 0040): the same exo-... records, and what the stage is about.
+    if (ctx.systems && ctx.systems.active) add(ctx.systems.pickAll(ndcX, ndcY, camera, vp, 6, r), 'local');
+    // Every disc near the pointer, also those too far to be taken: a disc hides the marks behind it.
+    const discs = isLayerOn('worlds') && worlds.pickAll ? worlds.pickAll(ndcX, ndcY, camera, vp, r + 24) : [];
     return { glyphs, discs };
   }
 
-  function pick(ndcX, ndcY, rect) {
-    // One decision across every layer (scene/pickrank.js): the smaller thing wins. A glyph within
-    // 24 px beats any world's disc, the nearest glyph beats the rest (debris penalised), and a disc
-    // is chosen by its rim and its size. The layer draw order no longer decides between glyphs.
-    const all = candidatesAt(ndcX, ndcY, rect || canvas.getBoundingClientRect());
-    return rankPick(all.glyphs, all.discs);
+  function pick(ndcX, ndcY, rect, reach) {
+    // One decision across every layer (scene/pickrank.js): what belongs to the stage beats what is
+    // only behind it, a disc hides what is behind it, the nearer mark wins, and two marks too close to
+    // tell apart are shown as a list. The layer draw order does not decide.
+    const all = candidatesAt(ndcX, ndcY, rect || canvas.getBoundingClientRect(), reach || reachFor('touch'));
+    for (const d of all.discs) d.tier = 'local';
+    return decide(all.glyphs, all.discs, reach || reachFor('touch'));
   }
 
   /**
@@ -1443,6 +1485,8 @@ export async function boot({ setStatus } = {}) {
    *   selecting from inside one used to look like.
    */
   function select(record, opts = {}) {
+    // A tap on something that is only BEHIND the stage (pickrank.js tier): its card, and nothing moves, not the stage, not the camera, not a follow.
+    if (opts.cardOnly) opts = { ...opts, fly: false };
     // 0079 r15-a45: a star with a direction and no distance has no place to fly to, and the map does not make one up: the card opens, the camera stays.
     if (record && record.meta && record.meta.noDistance && opts.fly !== false) opts = { ...opts, fly: false };
     // From the ground nothing flies: the visitor is standing in a field. The card opens, and the
@@ -1519,6 +1563,7 @@ export async function boot({ setStatus } = {}) {
     if (ctx.orbitLine) ctx.orbitLine.setRecord(record);
     if (ctx.groundTrack) ctx.groundTrack.set(record);
     if (opts.fly !== false) flyToRecord(record, opts.flyMs, opts.flight);
+    else if (opts.cardOnly) cameraRig.stopFollow();
     else if (!(record && record.meta && record.meta.noDistance)) cameraRig.follow(() => positionOfRecord(record)); // 0079 r15-a45: nothing to follow
     window.dispatchEvent(new CustomEvent('sr:select', { detail: record }));
     // A place met on the night side is met from the whole Earth's distance, and the toast says why
@@ -1754,7 +1799,7 @@ export async function boot({ setStatus } = {}) {
     // was a few thousand kilometres over a storm or a pad, or turned to the night side, and that
     // is not a home view. Not for a trip's own stops, nor from the ground's sky.
     const wasGround = groundArrival && groundArrival === selected && (!opts || opts.keepCard !== true)
-      && stage.worldId === 'earth' && !inTrip() && !(ctx.skyView && ctx.skyView.active);
+      && !(opts && opts.stay) && stage.worldId === 'earth' && !inTrip() && !(ctx.skyView && ctx.skyView.active);
     groundArrival = null;
     selected = null;
     wantStarDisc(null);
@@ -1822,6 +1867,16 @@ export async function boot({ setStatus } = {}) {
   }
 
   /** More than a billion light-years from the Sun: past the stellar rung's far plane (1e9 units). */
+  /** A card opened by a tap leaves the camera where it was; the card's "Fly to it" is the journey, so it makes the stage hop select() would have. */
+  function needsStageHop(record) {
+    return !!record && ['star', 'exoplanet', 'dso', 'exotic'].includes(record.klass) && !(ctx.systems && ctx.systems.drawnPositionOf(record.id))
+      && (!isLadderStage(stage.worldId) || (farOff(record) && stage.worldId !== 'local-group'));
+  }
+  function hopTo(record, ms, flight) {
+    rememberView();
+    select(record, { from: 'journey', flyMs: ms, flight, remembered: true });
+    return true;
+  }
   function farOff(record) {
     const p = record && record.klass !== 'world' && record.pos;
     return !!p && Math.hypot(p.x, p.y, p.z) > 1e9 * 9460730472580.8;

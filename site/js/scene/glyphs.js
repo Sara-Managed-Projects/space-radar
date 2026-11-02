@@ -63,7 +63,8 @@ const DEBRIS_OPACITY = 0.5; // half opacity
 const RENDER_ORDER_DEBRIS = 5; // under everything else that is drawn
 const RENDER_ORDER_GLYPH = 10;
 const PAD = 1.7; // the quad is 1.7x the glyph, leaving room for the sample halo
-const PICK_PX = 24; // the contract's forgiveness rule
+const PICK_PX = 24; // the contract's forgiveness rule; a caller passes the pointer's own (pickrank.js REACH)
+const PICK_MIN_OPACITY = 0.08; // a dot fainter than this is not drawn to the eye, so it is not tapped
 const DEBRIS_PICK_PENALTY = 1.6; // a satellite beats a speck at the same distance
 /** How much of a dot is left in the Earth's shadow, seen from space. Ours, illustrative. */
 export const SHADOW_OPACITY = 0.6;
@@ -700,15 +701,17 @@ export function createGlyphLayer(scene, layer = {}) {
    * penalised score -- for scene/pickrank.js to weigh against other layers and for a long press to
    * list. pick() is the one-winner form of the same scan.
    */
-  function pickAll(ndcX, ndcY, limit = 6) {
-    if (!lastCamera || !geometry || !mesh.visible || geometry.instanceCount === 0) return [];
-    lastCamera.updateMatrixWorld();
+  function pickAll(ndcX, ndcY, limit = 6, reachPx = PICK_PX, camera = null, vp = null) {
+    const cam = camera || lastCamera;
+    if (!cam || !geometry || !mesh.visible || geometry.instanceCount === 0) return [];
+    cam.updateMatrixWorld();
     mesh.updateMatrixWorld();
-    _m.multiplyMatrices(lastCamera.projectionMatrix, lastCamera.matrixWorldInverse);
+    _m.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
     _m.multiply(mesh.matrixWorld);
     const e = _m.elements;
-    const halfW = viewport.w * 0.5;
-    const halfH = viewport.h * 0.5;
+    // The canvas as it is now (the caller's), not the size it had when this layer last drew.
+    const halfW = (vp ? vp.w : viewport.w) * 0.5;
+    const halfH = (vp ? vp.h : viewport.h) * 0.5;
     const out = [];
     for (let i = 0; i < geometry.instanceCount; i++) {
       const x = livePos[i * 3];
@@ -721,10 +724,12 @@ export function createGlyphLayer(scene, layer = {}) {
       const dx = (cx - ndcX) * halfW;
       const dy = (cy - ndcY) * halfH;
       const px = Math.sqrt(dx * dx + dy * dy);
-      if (px > PICK_PX) continue;
+      if (px > reachPx) continue;
+      // Not drawn is not tappable: a record the layer has faded out (its own opacity, not the model's yield).
+      if (attrRing.array[i] < PICK_MIN_OPACITY && !(selectedRec && live[i] === selectedRec)) continue;
       const rec = live[i];
       if (!rec) continue;
-      out.push({ record: rec, px, score: rec.klass === 'debris' ? px * DEBRIS_PICK_PENALTY : px });
+      out.push({ record: rec, px, score: rec.klass === 'debris' ? px * DEBRIS_PICK_PENALTY : px, sx: (cx + 1) * halfW, sy: (1 - cy) * halfH, depth: w });
     }
     out.sort((p, q) => p.score - q.score);
     return out.slice(0, Math.max(1, limit));

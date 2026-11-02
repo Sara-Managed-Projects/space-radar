@@ -700,7 +700,7 @@ export function createSystems(scene, ctx = {}) {
   }
 
   const _m = new THREE.Matrix4();
-  function pickAll(ndcX, ndcY, camera, viewport, limit = 6) {
+  function pickAll(ndcX, ndcY, camera, viewport, limit = 6, reachPx = PICK_PX) {
     if (!isActive() || !group.visible || !camera || !viewport) return [];
     camera.updateMatrixWorld();
     _m.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
@@ -716,8 +716,8 @@ export function createSystems(scene, ctx = {}) {
       p.applyMatrix4(_m);
       if (p.z > 1 || p.z < -1) continue;
       const px = Math.hypot((p.x - ndcX) * halfW, (p.y - ndcY) * halfH);
-      if (px > Math.max(PICK_PX, radiusPx + 8)) continue;
-      out.push({ record: rec, px: Math.max(0, px - radiusPx), score: Math.max(0, px - radiusPx) });
+      if (px > Math.max(reachPx, radiusPx + 8)) continue;
+      out.push({ record: rec, px: Math.max(0, px - radiusPx), score: Math.max(0, px - radiusPx), sx: (p.x + 1) * halfW, sy: (1 - p.y) * halfH, depth: dist });
     }
     out.sort((a, b) => a.px - b.px);
     return out.slice(0, Math.max(1, limit));
