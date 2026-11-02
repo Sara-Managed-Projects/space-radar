@@ -423,12 +423,12 @@ export function createPlasma({ radiusM = 2 }) {
   // `radiusM` is the capsule's radius. The layer is a dome 1.3 times it, over the heat shield face, dim and
   // orange-pink, with a short wake of 4.5 radii (about three capsule lengths) that tapers to nothing.
   const R = radiusM * 1.3, h = radiusM * 4.5;
-  const mk = (a, b, flip) => new THREE.ShaderMaterial({
+  const mk = (a, b, flip, side = THREE.DoubleSide) => new THREE.ShaderMaterial({
     uniforms: { uOn: { value: 0 }, uTime: { value: 0 }, uStill: { value: 0 }, uA: { value: a }, uB: { value: b }, uFlip: { value: flip } },
     vertexShader: PLASMA_V, fragmentShader: PLASMA_F,
-    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side,
   });
-  const shellMat = mk(R * 0.26, R * 0.62, 0), wakeMat = mk(-h * 0.5, h * 0.5, 1);
+  const shellMat = mk(R * 0.26, R * 0.62, 0, THREE.FrontSide), wakeMat = mk(-h * 0.5, h * 0.5, 1);
   const mats = [shellMat, wakeMat];
   const group = new THREE.Group();
   const shell = new THREE.Mesh(new THREE.SphereGeometry(R, 32, 14, 0, Math.PI * 2, 0, Math.PI * 0.42), shellMat);
