@@ -141,12 +141,12 @@ def examples(pages: list[dict]) -> str:
     return "".join(f'<div><h3>{esc(title)}</h3><pre class="code">{esc(code)}</pre></div>\n' for title, code in cards)
 
 
-def build(out: Path, host: str, pages: list[dict], style: str, icon: str) -> Path:
+def build(out: Path, host: str, pages: list[dict], icon: str) -> Path:
     dest = out / "embed"
     dest.mkdir(parents=True, exist_ok=True)
     objs, tr = options(pages)
     page = (TEMPLATES / "embed.html").read_text(encoding="utf-8")
-    values = {"url": esc(f"{host}/embed/index.html"), "host": esc(host), "style": style, "icon": icon,
+    values = {"url": esc(f"{host}/embed/index.html"), "host": esc(host), "icon": icon,
               "object_options": objs, "trip_options": tr, "examples": examples(pages),
               "embedders": embedders_html(read_embedders()), "sitelinks": sitelinks("../"), "root": "../"}
     for key, value in values.items():
@@ -179,9 +179,8 @@ def main(argv: list[str]) -> int:
     if run.returncode != 0:
         raise SystemExit(f"seo_embed: scripts/object_pages.mjs failed:\n{run.stderr}")
     pages = json.loads(run.stdout)["pages"]
-    style = (TEMPLATES / "seo.css").read_text(encoding="utf-8")
     from build_seo import ICON
-    print(f"wrote {build(out, host, pages, style, ICON)}")
+    print(f"wrote {build(out, host, pages, ICON)}")
     return 0
 
 

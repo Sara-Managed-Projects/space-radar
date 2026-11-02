@@ -166,7 +166,6 @@ def build(out: Path, host: str) -> Path:
     page = fill((TEMPLATES / "press.html").read_text(encoding="utf-8"), {
         "host": host.rstrip("/"),
         "host_bare": e(host.rstrip("/").split("://", 1)[-1].removeprefix("www.")),
-        "style": (TEMPLATES / "seo.css").read_text(encoding="utf-8"),
         "facts": "".join(f"<li>{e(line)}</li>\n" for line in facts(counts())),
         "boilerplate": e(boilerplate(count_facts.facts())),
         "one_liner": e(ONE_LINER),

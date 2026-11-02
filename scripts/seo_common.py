@@ -16,6 +16,7 @@ CloudFront setting (a function that appends `index.html`), Ivan's, and nothing h
 from __future__ import annotations
 
 import dataclasses
+import datetime as dt
 import html
 import json
 import re
@@ -95,7 +96,6 @@ class Page:
 class Ctx:
     host: str
     template: str
-    style: str
     header: str
     footer: str
     shares: dict                      # share key -> relative path of a picture that was drawn
@@ -109,8 +109,7 @@ class Ctx:
 
 
 def make_ctx(host: str, shares: dict) -> Ctx:
-    style = (TEMPLATES / "seo.css").read_text(encoding="utf-8") + (TEMPLATES / "pages.css").read_text(encoding="utf-8")
-    return Ctx(host=host, template=(TEMPLATES / "page.html").read_text(encoding="utf-8"), style=style,
+    return Ctx(host=host, template=(TEMPLATES / "page.html").read_text(encoding="utf-8"),
                header=(TEMPLATES / "partials" / "header.html").read_text(encoding="utf-8"),
                footer=(TEMPLATES / "partials" / "footer.html").read_text(encoding="utf-8"), shares=shares)
 
@@ -152,10 +151,10 @@ def render(page: Page, ctx: Ctx) -> str:
         "robots": f'<meta name="robots" content="{esc(page.robots)}">\n' if page.robots else "",
         "canonical": esc(canonical), "og_type": page.og_type, "og_title": esc(page.og_title or page.title),
         "url": esc(url), "image": esc(f"{ctx.host}/{rel}"), "image_w": str(w), "image_h": str(h), "image_alt": esc(alt),
-        "icon": ICON, "style": ctx.style,
+        "icon": ICON,
         "jsonld": json.dumps(graph, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/"),
         "header": ctx.header, "live_attr": f' data-live="{esc(page.live)}"' if page.live else "",
-        "body": page.body, "footer": footer, "script": script + page.extra_script,
+        "body": page.body + blog_for(page), "footer": footer, "script": script + page.extra_script,
     })
     return out
 
@@ -165,6 +164,41 @@ def place_picker(hint: str = "") -> str:
     return ('<div class="place"><label for="place-select">Choose a city</label>'
             '<select id="place-select" data-slot="place-select"></select></div>\n'
             f'<p class="dim"><span data-slot="place-note">{esc(hint)}</span> <span data-slot="place"></span></p>\n')
+
+
+BLOG = "https://blog.spaceradar.ai/"
+BLOG_SNAPSHOT = ROOT / "registry" / "blog-feed.json"
+
+
+def from_blog(keywords: tuple[str, ...] = (), limit: int = 3, skip: str = "") -> str:
+    """The "From the blog" list: the posts of the committed snapshot (scripts/refresh_blog_feed.py) that mention a keyword, newest first,
+    topped up with the newest others to `limit`. `skip` is the address of a post not to offer (the page's own). "" when there is no snapshot."""
+    if not BLOG_SNAPSHOT.is_file():
+        return ""
+    posts = [p for p in json.loads(BLOG_SNAPSHOT.read_text(encoding="utf-8"))["items"] if p["url"] != skip]
+    hay = lambda p: " ".join([p["title"], p["summary"], *p["tags"]]).lower()  # noqa: E731
+    hits = [p for p in posts if any(k.lower() in hay(p) for k in keywords)]
+    pick = (hits + [p for p in posts if p not in hits])[:limit]
+    if not pick:
+        return ""
+    cards = "".join(f'<li><h3><a href="{esc(p["url"])}">{esc(p["title"])}</a></h3><p>{esc(p["summary"])}</p>'
+                    f'<p class="meta">{esc(dt.date.fromisoformat(p["date"]).strftime("%-d %B %Y"))}</p></li>' for p in pick)
+    return (f'<section class="fromblog" aria-labelledby="fromblog-h"><h2 id="fromblog-h">From the blog</h2>\n<ul class="cards">{cards}</ul>\n'
+            f'<p class="dim"><a href="{BLOG}">All posts on the Space Radar blog</a></p></section>\n')
+
+
+# What each kind of page offers from the blog: (path prefix, keywords, how many). The first prefix that matches wins.
+BLOG_FOR = [("read/index", (), 6), ("read/", (), 3), ("teachers/", ("classroom", "teacher", "offline", "guided trips"), 3),
+            ("starlink/", ("starlink", "satellites"), 3), ("satellites/", ("satellite", "accuracy", "tracking"), 3),
+            ("planets-tonight/", ("tonight", "skywatching", "stargazing"), 3), ("events/", ("eclipse", "skywatching"), 3),
+            ("accuracy/", ("accuracy", "tle"), 3), ("about/", (), 3), ("o/international-space-station", ("iss",), 3)]
+
+
+def blog_for(page: "Page") -> str:
+    for prefix, keywords, limit in BLOG_FOR:
+        if page.path.startswith(prefix):
+            return from_blog(keywords, limit, skip=page.canonical)
+    return ""
 
 
 def sentence_case(s: str) -> str:
