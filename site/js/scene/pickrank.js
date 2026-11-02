@@ -31,6 +31,8 @@ export const REACH = {
   mouse: { local: 10, backdrop: 5, onDisc: 4 },
   touch: { local: 24, backdrop: 12, onDisc: 10 },
 };
+/** This many marks within reach of a pointer on a disc are a crowd, and the disc wins. */
+export const CROWD_ON_DISC = 3;
 /** Two best marks of one tier closer than this to each other are shown as a list. */
 export const AMBIGUITY_PX = 3;
 /** ... unless the pointer is this much nearer to the first of them than to the second. */
@@ -80,7 +82,11 @@ export function decide(marks, discs, reach = REACH.touch) {
   const onDisc = inside.length > 0;
   const reachOf = (tier) => (tier === 'backdrop' ? reach.backdrop : (onDisc ? Math.min(reach.local, reach.onDisc ?? reach.local) : reach.local));
   const near = ms.filter((m) => m.px <= reachOf(m.tier) && !covered(m));
-  const localMarks = near.filter((m) => m.tier !== 'backdrop').sort((a, b) => scoreOf(a) - scoreOf(b));
+  // A CROWD OVER A DISC is the disc: at the home view thousands of satellite dots lie on the Earth, and even
+  // 4 px found one under nearly every click (live site, 2026-11-02, 1.5.3). Where CROWD_ON_DISC or more marks
+  // sit within the full reach of a pointer on a disc, the disc is what was meant; a lone dot is still taken.
+  const crowd = onDisc && ms.filter((m) => m.tier !== 'backdrop' && m.px <= reach.local && !covered(m)).length >= CROWD_ON_DISC;
+  const localMarks = crowd ? [] : near.filter((m) => m.tier !== 'backdrop').sort((a, b) => scoreOf(a) - scoreOf(b));
   const backMarks = near.filter((m) => m.tier === 'backdrop').sort((a, b) => scoreOf(a) - scoreOf(b));
   const discList = front.concat(inside);
 

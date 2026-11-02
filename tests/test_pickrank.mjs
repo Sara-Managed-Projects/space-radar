@@ -35,7 +35,7 @@ check(rankPick([], [disc(earth, 300)]) === earth, 'Earth alone is picked');
 check(rankPick([], []) === null, 'nothing within reach picks nothing');
 check(rankPick(null, undefined) === null, 'bad input picks nothing rather than throwing');
 // the long-press list: marks first by score, then discs; duplicates collapse; capped
-const all = decide([mark(iss, 9), mark(sat, 4), mark(sat, 5)], [disc(earth, 300, { depth: 100 }), { ...disc(moon, 6, { depth: 40 }), edge: 3 }], touch).list;
+const all = decide([mark(iss, 9), mark(sat, 4)], [disc(earth, 300, { depth: 100 }), { ...disc(moon, 6, { depth: 40 }), edge: 3 }], touch).list;
 check(all.map((c) => c.record.id).join(',') === 'sat-2,sat-25544,moon,earth', `list order is marks by score then discs by depth (${all.map((c) => c.record.id).join(',')})`);
 check(rankAll([{ record: iss, score: 1 }, { record: sat, score: 2 }], [], 1).length === 1 && rankAll([{ record: iss, score: 3 }, { record: sat, score: 2 }], [])[0].record === sat, 'labels\' plain order by score, and its cap');
 
@@ -83,6 +83,8 @@ const mouseOn = { ...mouse, onDisc: 4 };
 check(rankPick([mark(sat, 6)], [disc(earth, 300, { depth: 100 })], mouseOn) === earth, 'a click on the Earth 6 px from a satellite opens the Earth');
 check(rankPick([mark(sat, 3)], [disc(earth, 300, { depth: 100 })], mouseOn) === sat, 'a click on the satellite\'s own dot over the Earth opens the satellite');
 check(rankPick([mark(sat, 8)], [], mouseOn) === sat, 'off any disc the mouse keeps its 10 px reach');
+check(rankPick([mark(sat, 1), mark(iss, 5), { ...mark(iss, 7), record: { id: 'sat-3', klass: 'satellite' } }], [disc(earth, 300, { depth: 100 })], mouseOn) === earth, 'three dots within reach on the Earth are a crowd: the Earth');
+check(rankPick([mark(sat, 1), mark(iss, 5), { ...mark(iss, 7), record: { id: 'sat-3', klass: 'satellite' } }], [], mouseOn) === sat, 'the same three dots off any disc: the nearest');
 check(decide([mark(sat, 8)], [], mouseOn).list[0].px === 8, 'the list carries how far each mark was, so a near miss can open the card without a flight');
 if (problems.length) { console.error('pickrank FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('pickrank ok: tier, occlusion, reach by pointer, ambiguity, mark over disc, nearer disc');
