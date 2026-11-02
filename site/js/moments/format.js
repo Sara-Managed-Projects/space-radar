@@ -215,6 +215,11 @@ export function validateMoment(m, opts = {}) {
   const place = m.place || {};
   if (!isNum(place.lat) || Math.abs(place.lat) > 90 || !isNum(place.lon) || Math.abs(place.lon) > 180) say('place needs lat and lon in degrees');
   if (place.ground && !GROUNDS.includes(place.ground.kind)) say(`place.ground.kind must be one of ${GROUNDS.join(', ')}`);
+  for (const q of Array.isArray(m.places) ? m.places : []) {
+    if (!isNum(q.from) || !q.place || !isNum(q.place.lat) || !isNum(q.place.lon)) say('places: each is {from, place: {name, lat, lon, ground}}');
+    else if (q.place.ground && !GROUNDS.includes(q.place.ground.kind)) say(`places: ground.kind must be one of ${GROUNDS.join(', ')}`);
+  }
+  if (m.moonSite !== undefined && !(isNum(m.moonSite.lat) && isNum(m.moonSite.lon))) say('moonSite needs lat and lon in degrees');
   // Trajectories.
   const trajs = m.trajectories || {};
   for (const [id, tr] of Object.entries(trajs)) {
@@ -240,6 +245,9 @@ export function validateMoment(m, opts = {}) {
     if (opts.models && !opts.models.includes(v.model)) say(`vehicle ${v.id}: model ${v.model} is not a row of registry/models.yaml`);
     if (!(v.lengthM > 0)) say(`vehicle ${v.id}: lengthM, its real length in metres`);
     if (v.path && !trajs[v.path]) say(`vehicle ${v.id}: path ${v.path} is not a trajectory`);
+    if (v.window !== undefined && !(isVec(v.window, 2) && v.window[1] > v.window[0])) say(`vehicle ${v.id}: window is [from, to] mission seconds`);
+    if (v.rideOn !== undefined && !(v.rideOn && typeof v.rideOn.vehicle === 'string' && (v.rideOn.at === undefined || isVec(v.rideOn.at)))) say(`vehicle ${v.id}: rideOn is {vehicle, at: [x, y, z]}`);
+    if (v.body !== undefined && v.body !== 'moon') say(`vehicle ${v.id}: body is moon, or left out for the Earth`);
     const names = new Set([...(Array.isArray(v.parts) ? v.parts : []), ...Object.keys(v.cuts || {})]);
     for (const [name, band] of Object.entries(v.cuts || {})) {
       if (!isVec(band, 2) || !(band[1] > band[0])) say(`vehicle ${v.id}: cut ${name} is [from, to] metres up the stack`);

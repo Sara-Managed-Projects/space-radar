@@ -291,16 +291,45 @@ export function createStage(renderer, { tier = 1, place, frame }) {
     const b = ((Number(g.shoreBearing) || 0) + 90) * Math.PI / 180;
     capMat.uniforms.uShore.value.set(Math.sin(b), -Math.cos(b), Number(g.shoreM) || 800);
   }
-  const cap = new THREE.Mesh(capGeometry(frame, tier > 0 ? 128 : 72), capMat);
+  const capSeg = tier > 0 ? 128 : 72;
+  const cap = new THREE.Mesh(capGeometry(frame, capSeg), capMat);
   cap.frustumCulled = false;
   placeGroup.add(cap);
 
+  /** A moment that goes somewhere else (the landing, the splashdown): the same cap, drawn round the new place. */
+  function setPlace(pl, fr) {
+    const k = (pl.ground || {});
+    cap.geometry.dispose();
+    cap.geometry = capGeometry(fr, capSeg);
+    capMat.uniforms.uKind.value = k.kind === 'coast' ? 0 : k.kind === 'sea' ? 2 : 1;
+    capMat.uniforms.uPad.value = k.pad ? 1 : 0;
+    if (k.kind === 'coast') {
+      const b = ((Number(k.shoreBearing) || 0) + 90) * Math.PI / 180;
+      capMat.uniforms.uShore.value.set(Math.sin(b), -Math.cos(b), Number(k.shoreM) || 800);
+    }
+  }
+
   // The Moon, the Sun.
   // The Moon's map (640 kB) is fetched only once the Moon is more than a few pixels across: a launch never asks.
-  const moon = new THREE.Mesh(new THREE.SphereGeometry(1737400, 64, 32), new THREE.MeshLambertMaterial({ color: 0x8a8a86 }));
+  const moon = new THREE.Mesh(new THREE.SphereGeometry(1737400, 192, 96), new THREE.MeshLambertMaterial({ color: 0x8a8a86 }));
   let moonMapped = false;
   moon.frustumCulled = false;
   scene.add(moon);
+  // The ground of a landing site, a flat disc tangent to the Moon where the site is (the sphere is a 192-gon: its facets
+  // stand some hundreds of metres off the true surface at that scale, so a lander needs ground of its own). The regolith
+  // is a generated grey grain, illustrative.
+  const grain = document.createElement('canvas');
+  grain.width = grain.height = 256;
+  { const x = grain.getContext('2d'); x.fillStyle = '#8d8b86'; x.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 5200; i += 1) { const v = 110 + Math.floor(Math.random() * 60); x.fillStyle = `rgba(${v},${v - 2},${v - 6},0.5)`; x.fillRect(Math.random() * 256, Math.random() * 256, 1 + Math.random() * 3, 1 + Math.random() * 2); } }
+  const grainTex = new THREE.CanvasTexture(grain);
+  grainTex.wrapS = grainTex.wrapT = THREE.RepeatWrapping;
+  grainTex.repeat.set(60, 60);
+  grainTex.colorSpace = THREE.SRGBColorSpace;
+  const siteDisc = new THREE.Mesh(new THREE.CircleGeometry(6000, 72), new THREE.MeshLambertMaterial({ map: grainTex, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
+  siteDisc.visible = false;
+  siteDisc.frustumCulled = false;
+  scene.add(siteDisc);
   const sunDisc = new THREE.Sprite(new THREE.SpriteMaterial({ color: 0xfff8ea, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false }));
   const disc = document.createElement('canvas');
   disc.width = disc.height = 64;
@@ -317,7 +346,7 @@ export function createStage(renderer, { tier = 1, place, frame }) {
    * Pose everything for one frame. `origin` (stage metres) is where the camera is; `placeBasis` the place's east,
    * up and south axes and its position in the stage frame now; `sunDir` unit; `moon` stage metres.
    */
-  function update({ origin, sidereal, sunDir, moonPos, placeNow, pose, aspect, shiftPx = 0, width = 0, height = 0 }) {
+  function update({ origin, sidereal, sunDir, moonPos, moonAxes: ax = null, siteDir = null, placeNow, pose, aspect, shiftPx = 0, width = 0, height = 0 }) {
     const o = origin;
     earth.position.set(-o[0], -o[1], -o[2]);
     earth.rotation.set(0, sidereal, 0);
@@ -367,6 +396,21 @@ export function createStage(renderer, { tier = 1, place, frame }) {
     if (moonPos) {
       moon.visible = true;
       moon.position.set(moonPos[0] - o[0], moonPos[1] - o[1], moonPos[2] - o[2]);
+      if (ax) {
+        // The map's own axes (three.js sphere: +x the Moon's longitude 0, +y north, -z east) onto the Moon's body axes.
+        m4.makeBasis(v1.set(ax.x[0], ax.x[1], ax.x[2]), v2.set(ax.z[0], ax.z[1], ax.z[2]), v3.set(-ax.y[0], -ax.y[1], -ax.y[2]));
+        moon.quaternion.setFromRotationMatrix(m4);
+      }
+      if (ax && siteDir) {
+        // The disc stands on the Moon at the site, its normal the site's vertical.
+        const near = Math.hypot(pose.pos[0] - (moonPos[0] + siteDir[0] * 1737400), pose.pos[1] - (moonPos[1] + siteDir[1] * 1737400), pose.pos[2] - (moonPos[2] + siteDir[2] * 1737400)) < 200000;
+        siteDisc.visible = near;
+        if (near) {
+          v1.set(siteDir[0], siteDir[1], siteDir[2]);
+          siteDisc.quaternion.setFromUnitVectors(v2.set(0, 0, 1), v1);
+          siteDisc.position.set(moonPos[0] + siteDir[0] * 1737400 - o[0], moonPos[1] + siteDir[1] * 1737400 - o[1], moonPos[2] + siteDir[2] * 1737400 - o[2]);
+        }
+      } else siteDisc.visible = false;
       const px = (1737400 / Math.max(1, moon.position.length())) / Math.tan((pose.fov * Math.PI) / 360) * (height || 900) / 2;
       if (!moonMapped && px > 4) { moonMapped = true; moon.material.map = tex('2k_moon.webp'); moon.material.color.set(0xffffff); moon.material.needsUpdate = true; }
     } else moon.visible = false;
@@ -401,5 +445,5 @@ export function createStage(renderer, { tier = 1, place, frame }) {
     });
   }
 
-  return { scene, camera, update, dispose, state, placeGroup };
+  return { scene, camera, update, dispose, state, placeGroup, setPlace };
 }
