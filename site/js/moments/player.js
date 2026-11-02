@@ -409,12 +409,28 @@ export function createMomentPlayer(ctx, opts = {}) {
         if (!stage || vehicles.get(spec.id) !== entry) { disposeVehicle(v); return; }
         entry.v = v;
         stage.scene.add(v.root);
+        entry.marker = makeMarker();
+        stage.scene.add(entry.marker);
         if (!v.ok) setNote(fill(W().modelMissing, { model: spec.model }));
         paintTruth();
         import('../scene/models.js').then((mod) => { lightU = mod.lightUniforms(); }).catch(() => {});
       });
     }
     return true;
+  }
+
+  // A vehicle too small to see at the scale of the Earth and the Moon is marked by a dot of fixed size on the screen.
+  function makeMarker() {
+    const c = doc.createElement('canvas');
+    c.width = c.height = 64;
+    const x = c.getContext('2d');
+    x.strokeStyle = '#ffd98a'; x.lineWidth = 6; x.beginPath(); x.arc(32, 32, 22, 0, Math.PI * 2); x.stroke();
+    x.fillStyle = '#ffd98a'; x.beginPath(); x.arc(32, 32, 7, 0, Math.PI * 2); x.fill();
+    const mk = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthTest: false, depthWrite: false }));
+    mk.renderOrder = 10;
+    mk.visible = false;
+    mk.frustumCulled = false;
+    return mk;
   }
 
   function title() {
@@ -494,6 +510,18 @@ export function createMomentPlayer(ctx, opts = {}) {
     return r;
   }
 
+  // `phases` on a vehicle: from `t` on, a different attitude and/or the body it is flown about ('moon', 'earth'): a
+  // capsule that turns round for its burn, a lander that comes upright, a spacecraft that goes from the Earth's sky to the Moon's.
+  function phaseAt(spec, tt) {
+    let attitude = spec.attitude, body = spec.body;
+    for (const q of spec.phases || []) {
+      if (q.t > tt) break;
+      if (q.attitude) attitude = q.attitude;
+      if (q.body !== undefined) body = q.body;
+    }
+    return { attitude, body };
+  }
+
   /** A vehicle's state at t in its own trajectory's frame (Earth-fixed or inertial), metres. */
   function stateOf(entry, tt) {
     const spec = entry.spec;
@@ -511,18 +539,19 @@ export function createMomentPlayer(ctx, opts = {}) {
       const ref = enuToEcef(frame, [Math.sin(tr.azimuth), Math.cos(tr.azimuth), 0], true);
       const pitchStart = Number.isFinite(spec.pitchStart) ? spec.pitchStart : Number.isFinite(tr.spec.pitchStart) ? tr.spec.pitchStart : 10;
       const turnS = Number.isFinite(spec.turnS) ? spec.turnS : Number.isFinite(tr.spec.turnS) ? tr.spec.turnS : 12;
-      const basis = attitude(spec.attitude || 'ascent', { up, vel, ref, t: tt, pitchStart, turnS });
+      const basis = attitude(phaseAt(spec, tt).attitude || 'ascent', { up, vel, ref, t: tt, pitchStart, turnS });
       return { kind: 'fixed', p: enuToEcef(frame, s.p), v: vel, up, basis, altM: s.altM };
     }
     if (tr && tr.frame === 'inertial') {
       const s = tr.stateAt(tt);
       // A vehicle at the Moon (`body: "moon"`) stands, points and flies by the Moon's vertical and the Moon's velocity.
-      const mo = spec.body === 'moon' ? moonAt(tt) : null;
+      const ph = phaseAt(spec, tt);
+      const mo = ph.body === 'moon' ? moonAt(tt) : null;
       const rel = mo ? add(s.r, scale(mo.r, -1)) : s.r;
       const velRel = mo ? add(s.v, scale(mo.v, -1)) : s.v;
       const up = norm(rel);
       const ref = norm(cross(rel, velRel));
-      const basis = attitude(spec.attitude || 'prograde', { up, vel: velRel, ref, t: tt });
+      const basis = attitude(ph.attitude || 'prograde', { up, vel: velRel, ref, t: tt });
       return { kind: 'inertial', p: s.r, v: s.v, up, basis, altM: len(rel) - (mo ? MOON_R : EARTH_R), vrel: velRel };
     }
     const basis = attitude('vertical', { up: frame.u, vel: [0, 0, 0], ref: frame.n });
@@ -625,6 +654,18 @@ export function createMomentPlayer(ctx, opts = {}) {
       if (!v) continue;
       const shownNow = inWindow(entry.spec, t);
       v.root.visible = shownNow;
+      if (entry.marker) {
+        const ps0 = poses.get(id);
+        const d = Math.hypot(ps0.pos[0] - origin[0], ps0.pos[1] - origin[1], ps0.pos[2] - origin[2]);
+        const tanH = Math.tan((lens.fov * DEG) / 2);
+        const pxPerM = size.y / (2 * tanH * Math.max(d, 1));
+        const small = entry.spec.marker !== false && shownNow && entry.spec.lengthM * pxPerM < 7;
+        entry.marker.visible = small;
+        if (small) {
+          entry.marker.position.set(ps0.pos[0] - origin[0], ps0.pos[1] - origin[1], ps0.pos[2] - origin[2]);
+          entry.marker.scale.setScalar(26 / pxPerM);
+        }
+      }
       if (!shownNow) continue;
       const st = states.get(id);
       const ps = poses.get(id);

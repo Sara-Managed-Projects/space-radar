@@ -247,6 +247,7 @@ export function validateMoment(m, opts = {}) {
     if (v.path && !trajs[v.path]) say(`vehicle ${v.id}: path ${v.path} is not a trajectory`);
     if (v.window !== undefined && !(isVec(v.window, 2) && v.window[1] > v.window[0])) say(`vehicle ${v.id}: window is [from, to] mission seconds`);
     if (v.rideOn !== undefined && !(v.rideOn && typeof v.rideOn.vehicle === 'string' && (v.rideOn.at === undefined || isVec(v.rideOn.at)))) say(`vehicle ${v.id}: rideOn is {vehicle, at: [x, y, z]}`);
+    if (v.phases !== undefined && !(Array.isArray(v.phases) && sorted(v.phases) && v.phases.every((q) => isNum(q.t) && (q.attitude === undefined || ['ascent', 'prograde', 'retrograde', 'vertical'].includes(q.attitude)) && (q.body === undefined || ['moon', 'earth'].includes(q.body))))) say(`vehicle ${v.id}: phases are {t, attitude?, body?} in time order`);
     if (v.body !== undefined && v.body !== 'moon') say(`vehicle ${v.id}: body is moon, or left out for the Earth`);
     const names = new Set([...(Array.isArray(v.parts) ? v.parts : []), ...Object.keys(v.cuts || {})]);
     for (const [name, band] of Object.entries(v.cuts || {})) {
