@@ -23,6 +23,11 @@ tagged, and their dates are the day the last change in each landed.
   its reason, and a Chrome that dies mid-run ends the run with the reason, instead of both waiting
   forever.
 
+## [1.5.5] - 2026-11-02
+
+### Fixed
+- In the star view a click on one of the thousands of unnamed stars opens its card and leaves the camera where it is; "Fly to it" on the card goes there. Before, a click on what looked like dark sky could fly you to a faint star you had not seen.
+
 ## [1.5.4] - 2026-11-02
 
 ### Fixed

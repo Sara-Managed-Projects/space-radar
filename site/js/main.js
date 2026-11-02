@@ -1397,7 +1397,10 @@ export async function boot({ setStatus } = {}) {
   // or for a choice from the list (reach null).
   function pickOpts(item, reach) {
     const nearMiss = reach && item && item.kind === 'glyph' && Number.isFinite(item.px) && item.px > reach.onDisc;
-    return item && (item.tier === 'backdrop' || nearMiss) ? { from: 'pick', cardOnly: true } : { from: 'pick' };
+    // An unnamed catalogue star is a speck among thousands: tapped, it opens its card and "Fly to it" is the journey
+    // (live 1.5.4: a tap on dark sky on the stellar rung flew to HYG 20454, 68 light-years off).
+    const speck = reach && item && item.record && item.record.meta && item.record.meta.named === false;
+    return item && (item.tier === 'backdrop' || nearMiss || speck) ? { from: 'pick', cardOnly: true } : { from: 'pick' };
   }
 
   // HOVER (mouse only): the same decision a click makes, no more than every 50 ms, with a pointer cursor and the name at the pointer.
