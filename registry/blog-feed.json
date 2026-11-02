@@ -1,0 +1,232 @@
+{
+ "source": "https://blog.spaceradar.ai/feed.json",
+ "title": "Space Radar Journal",
+ "items": [
+  {
+   "title": "Stars with no distance, 4 383 pulsars and the farthest galaxy",
+   "url": "https://blog.spaceradar.ai/stars-without-a-distance-and-the-farthest-light/",
+   "date": "2026-10-31",
+   "summary": "Release 1.5.0 adds 10 224 stars with no measured distance, 4 383 pulsars, the Local Group's dwarfs, quasars and MoM-z14 at redshift 14.44.",
+   "image": "https://blog.spaceradar.ai/media/stars-without-a-distance-and-the-farthest-light/share.jpg",
+   "tags": [
+    "Stars & Galaxies",
+    "pulsars",
+    "stars",
+    "MoM-z14",
+    "distance",
+    "release 1.5"
+   ]
+  },
+  {
+   "title": "Arrokoth, Kleopatra and nine more small worlds in their own shapes",
+   "url": "https://blog.spaceradar.ai/eleven-small-worlds-in-their-own-shapes/",
+   "date": "2026-10-30",
+   "summary": "Release 1.5.0 draws eleven asteroids and a comet from the shape models of New Horizons, Lucy, Rosetta and radar, each on its own orbit.",
+   "image": "https://blog.spaceradar.ai/media/eleven-small-worlds-in-their-own-shapes/share.jpg",
+   "tags": [
+    "Solar System",
+    "asteroids",
+    "Arrokoth",
+    "Kleopatra",
+    "comets",
+    "shape models",
+    "release 1.5"
+   ]
+  },
+  {
+   "title": "Moments: a mission replayed in 3D on one clock",
+   "url": "https://blog.spaceradar.ai/moments-a-mission-on-one-clock/",
+   "date": "2026-10-29",
+   "summary": "Release 1.5.0 adds Moments, missions replayed in 3D on one clock. The first is Apollo 11's Saturn V from ignition to the escape tower.",
+   "image": "https://blog.spaceradar.ai/media/moments-a-mission-on-one-clock/share.jpg",
+   "tags": [
+    "Missions & Spacecraft",
+    "Saturn V",
+    "Apollo 11",
+    "Moments",
+    "rockets",
+    "release 1.5"
+   ]
+  },
+  {
+   "title": "Free planetarium software for a classroom with no Wi-Fi",
+   "url": "https://blog.spaceradar.ai/free-planetarium-software-offline-classroom/",
+   "date": "2026-10-26",
+   "summary": "Free planetarium software that runs with no internet: how a school keeps its own copy of Space Radar, what a lesson looks like, and what stops working.",
+   "image": "https://blog.spaceradar.ai/media/free-planetarium-software-offline-classroom/share.jpg",
+   "tags": [
+    "How It's Built",
+    "classroom",
+    "offline",
+    "planetarium software",
+    "education",
+    "present mode"
+   ]
+  },
+  {
+   "title": "A solar eclipse simulator, and a clock you can drag",
+   "url": "https://blog.spaceradar.ai/solar-eclipse-simulator-time-machine/",
+   "date": "2026-10-24",
+   "summary": "A solar eclipse simulator is a clock you can drag. What obeys when you scrub time on Space Radar's live map of space, what does not, and why it says so.",
+   "image": "https://blog.spaceradar.ai/media/solar-eclipse-simulator-time-machine/share.jpg",
+   "tags": [
+    "Solar System",
+    "time machine",
+    "eclipse simulator",
+    "Moon phases",
+    "orbits",
+    "accuracy"
+   ]
+  },
+  {
+   "title": "A virtual space tour that begins with a family photo",
+   "url": "https://blog.spaceradar.ai/virtual-space-tour-narrated-trips/",
+   "date": "2026-10-22",
+   "summary": "A virtual space tour should be a story, not a manual. How Space Radar's 26 narrated trips are written, and three retold, from the Moon to a dead star.",
+   "image": "https://blog.spaceradar.ai/media/virtual-space-tour-narrated-trips/share.jpg",
+   "tags": [
+    "How It's Built",
+    "guided trips",
+    "narration",
+    "education",
+    "3D map",
+    "astronomy"
+   ]
+  },
+  {
+   "title": "What Is in the Sky Tonight? Relearning to Look Up",
+   "url": "https://blog.spaceradar.ai/what-is-in-the-sky-tonight/",
+   "date": "2026-10-20",
+   "summary": "Most of us have never seen the Milky Way from home. Here is what is in the sky tonight from a city balcony, and how to read it in ten minutes.",
+   "image": "https://blog.spaceradar.ai/media/what-is-in-the-sky-tonight/share.jpg",
+   "tags": [
+    "Skywatching",
+    "stargazing",
+    "night sky",
+    "light pollution",
+    "planets",
+    "constellations"
+   ]
+  },
+  {
+   "title": "ISS pass tonight? Ask the sky over your own street",
+   "url": "https://blog.spaceradar.ai/iss-pass-tonight-sky-from-your-street/",
+   "date": "2026-10-19",
+   "summary": "Is there an ISS pass tonight, and what else is up? How Space Radar's Tonight view works out the sky from a named street, and what “visible” really means.",
+   "image": "https://blog.spaceradar.ai/media/iss-pass-tonight-sky-from-your-street/share.jpg",
+   "tags": [
+    "Skywatching",
+    "ISS pass",
+    "tonight",
+    "visible passes",
+    "stargazing",
+    "ISS"
+   ]
+  },
+  {
+   "title": "A live satellite map that tells you when it is guessing",
+   "url": "https://blog.spaceradar.ai/live-satellite-map-open-source/",
+   "date": "2026-10-17",
+   "summary": "Space Radar is a free, open-source live satellite map of everything in orbit. Why a map of space has to be honest and kind at once, and what that costs.",
+   "image": "https://blog.spaceradar.ai/media/live-satellite-map-open-source/share.jpg",
+   "tags": [
+    "How It's Built",
+    "open source",
+    "3D map",
+    "honest data",
+    "accuracy",
+    "satellites"
+   ]
+  },
+  {
+   "title": "How accurate is satellite tracking? Follow the numbers",
+   "url": "https://blog.spaceradar.ai/how-accurate-is-satellite-tracking/",
+   "date": "2026-10-15",
+   "summary": "How accurate is satellite tracking, and where does the data come from? One number on Space Radar, followed back to its source, and how to correct it.",
+   "image": "https://blog.spaceradar.ai/media/how-accurate-is-satellite-tracking/share.jpg",
+   "tags": [
+    "How It's Built",
+    "accuracy",
+    "TLE",
+    "SGP4",
+    "data sources",
+    "satellites"
+   ]
+  },
+  {
+   "title": "Where Is Voyager 1 Now? The Farthest Things We Threw",
+   "url": "https://blog.spaceradar.ai/where-is-voyager-1-now/",
+   "date": "2026-10-14",
+   "summary": "Where is Voyager 1 now? One light-day from Earth, still answering on 23 watts. With Voyager 2, New Horizons, Webb and a car: what distance really means.",
+   "image": "https://blog.spaceradar.ai/media/where-is-voyager-1-now/share.jpg",
+   "tags": [
+    "Black Holes & Extremes",
+    "Voyager 1",
+    "deep space",
+    "JWST",
+    "New Horizons",
+    "interstellar"
+   ]
+  },
+  {
+   "title": "Where is the ISS right now? Two addresses in the sky",
+   "url": "https://blog.spaceradar.ai/where-is-the-iss-right-now/",
+   "date": "2026-10-12",
+   "summary": "Where is the ISS right now, who is aboard, and how do you see it tonight? The two places where people live in space, and what happens after 2030.",
+   "image": "https://blog.spaceradar.ai/media/where-is-the-iss-right-now/share.jpg",
+   "tags": [
+    "Missions & Spacecraft",
+    "ISS",
+    "space stations",
+    "Tiangong",
+    "astronauts",
+    "orbit"
+   ]
+  },
+  {
+   "title": "How many satellites are in orbit? The junkyard above us",
+   "url": "https://blog.spaceradar.ai/how-many-satellites-in-orbit/",
+   "date": "2026-10-09",
+   "summary": "How many satellites are in orbit in 2026, how much of it is space debris, who tracks it all, and why a crash 800 km up could spoil your weather forecast.",
+   "image": "https://blog.spaceradar.ai/media/how-many-satellites-in-orbit/share.jpg",
+   "tags": [
+    "Earth & Orbit",
+    "space debris",
+    "satellites",
+    "Kessler syndrome",
+    "Starlink",
+    "collisions"
+   ]
+  },
+  {
+   "title": "What do satellites do? The machines you used before breakfast",
+   "url": "https://blog.spaceradar.ai/what-do-satellites-do/",
+   "date": "2026-10-07",
+   "summary": "What do satellites do for you every day? How GPS really works, where the forecast comes from, and how fragile the machines behind a normal morning are.",
+   "image": "https://blog.spaceradar.ai/media/what-do-satellites-do/share.jpg",
+   "tags": [
+    "Earth & Orbit",
+    "satellites",
+    "GPS",
+    "weather satellites",
+    "navigation",
+    "Galileo"
+   ]
+  },
+  {
+   "title": "Solar Eclipse 2027: Six Minutes of Night at Noon",
+   "url": "https://blog.spaceradar.ai/solar-eclipse-2027-six-minutes/",
+   "date": "2026-09-27",
+   "summary": "The total solar eclipse of 2 August 2027 crosses Spain, North Africa and Arabia, with six minutes of night near Luxor. Where to stand and what you’ll see.",
+   "image": "https://blog.spaceradar.ai/media/solar-eclipse-2027-six-minutes/share.jpg",
+   "tags": [
+    "Skywatching",
+    "solar eclipse",
+    "eclipse 2027",
+    "Moon",
+    "totality",
+    "Luxor"
+   ]
+  }
+ ]
+}
