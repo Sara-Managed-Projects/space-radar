@@ -23,6 +23,14 @@ tagged, and their dates are the day the last change in each landed.
   its reason, and a Chrome that dies mid-run ends the run with the reason, instead of both waiting
   forever.
 
+## [1.5.6] - 2026-11-02
+
+### Added
+- A Blog button in the tool rail, after the tour: the Space Radar Journal at https://blog.spaceradar.ai, with long reads about what is in the sky and how the map is made. On a phone it is a row of the More menu.
+
+### Changed
+- The three long reads of 1.5 now live on the blog. Their pages here stay and name the blog's copy as the one to index.
+
 ## [1.5.5] - 2026-11-02
 
 ### Fixed
