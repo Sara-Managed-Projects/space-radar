@@ -9,6 +9,7 @@
 //   [eye]      Hide everything: ui/cleanview.js (H)
 //   [tour]     The tour (ui/onboarding.js, internal spec 0074; Ivan, 2026-10-14: "on the right should
 //              appear another icon of onboarding"): fetched on the first press, a row of More on a phone
+//   [blog]     The journal at blog.spaceradar.ai (Ivan, 2026-11-02), a link in a new tab, a row of More on a phone
 //   [github]   The repository, the mark from ui/github.js (Ivan, 2026-10-02: the next icon after the eye)
 //   [more]     The phone only: Share, Hide and the repository, folded into one menu (below)
 //
@@ -55,6 +56,9 @@ const HIDE_PATH = [
 
 // Lucide `circle-question-mark` (Feather's `help-circle`, MIT): the mark every app starts its help with. The circle as one path.
 const TOUR_PATH = ['M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z', 'M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3', 'M12 17h.01'];
+
+// Lucide `newspaper` (ISC): the mark for the journal.
+const BLOG_PATH = ['M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2', 'M18 14h-8', 'M15 18h-5', 'M10 6h8v4h-8V6Z'];
 
 /** What a key press means to the rail, or null. Pure, like ui/cleanview.js wantsToggle. */
 export function railKey(event, activeElement) {
@@ -190,6 +194,17 @@ export function createRail(ctx, host) {
   const toggleTour = () => { closeShow(false); if (ctx && typeof ctx.wantOnboarding === 'function') ctx.wantOnboarding('rail'); };
   tourBtn.addEventListener('click', toggleTour);
 
+  // --- The journal: a plain link, it leaves the map ------------------------------------------------
+  const blogLink = document.createElement('a');
+  blogLink.className = 'sr-rail__btn sr-rail__btn--blog';
+  blogLink.href = COPY.rail.blogHref;
+  blogLink.target = '_blank';
+  blogLink.rel = 'noopener';
+  blogLink.setAttribute('aria-label', COPY.rail.blog);
+  blogLink.title = COPY.rail.blog;
+  blogLink.appendChild(icon(BLOG_PATH));
+  root.appendChild(blogLink);
+
   // --- The repository: GitHub's own mark, after the eye ---------------------------------------------
   const gitHub = createGitHubMark(root, { className: 'sr-rail__btn sr-rail__btn--github' });
 
@@ -231,6 +246,10 @@ export function createRail(ctx, host) {
   menuRow('button', icon(SHARE_PATH), COPY.rail.menuShare, () => share.open({ opener: moreBtn }));
   menuRow('button', icon(HIDE_PATH), COPY.rail.menuHide, () => { if (ctx && ctx.cleanView) ctx.cleanView.set(true); });
   menuRow('button', icon(TOUR_PATH), COPY.rail.menuTour, toggleTour);
+  const blogRow = menuRow('a', icon(BLOG_PATH), COPY.rail.blog, () => {});
+  blogRow.href = COPY.rail.blogHref;
+  blogRow.target = '_blank';
+  blogRow.rel = 'noopener';
   // GitHub's own mark, cloned from the rail's link: the octicon is not redrawn (ui/github.js).
   const mark = gitHub && gitHub.querySelector('svg') ? gitHub.querySelector('svg').cloneNode(true) : icon([]);
   mark.setAttribute('width', '20');

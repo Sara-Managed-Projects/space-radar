@@ -13,6 +13,7 @@
 #   hero         the picture (a file of site/images/read/<slug>/) the share card is made from
 #   hero_alt     what the hero shows, for someone who cannot see it
 #   open         the address in the map the article ends on, and open_label the words of its button
+#   blog         optional: the address of the same article on blog.spaceradar.ai, which is then its canonical home
 # THE RULES (tests/test_seo_read.py): 600 to 1 000 words; every picture has alt text and a caption and is under 300 kB;
 # a heading that starts "Measured"; a link into the map. Pictures are screenshots of the live map from the `look`
 # workflow (tools/README.md); the run each one came from is in the commit that added it.
@@ -30,6 +31,7 @@ articles:
     hero_alt: "The Saturn V 45 km up, a long white plume behind it over a blue Earth."
     open: "https://www.spaceradar.ai/#moment=demo-saturn&t=-9.5"
     open_label: "Watch the Saturn V Moment"
+    blog: "https://blog.spaceradar.ai/moments-a-mission-on-one-clock/"
   - slug: eleven-small-worlds-in-their-own-shapes
     title: "Arrokoth, Kleopatra and nine more small worlds in their own shapes"
     short: "Arrokoth, Kleopatra and nine small worlds in their shapes"
@@ -41,6 +43,7 @@ articles:
     hero_alt: "Arrokoth, two reddish lobes joined at a neck, against the Milky Way."
     open: "https://www.spaceradar.ai/#go=asteroid-486958"
     open_label: "Fly to Arrokoth"
+    blog: "https://blog.spaceradar.ai/eleven-small-worlds-in-their-own-shapes/"
   - slug: stars-without-a-distance-and-the-farthest-light
     title: "Stars with no distance, 4 383 pulsars and the farthest galaxy"
     short: "Stars with no distance, pulsars and the farthest galaxy"
@@ -52,6 +55,7 @@ articles:
     hero_alt: "The pulsar PSR J0437-4715 selected on the Milky Way's stage, with its card open."
     open: "https://www.spaceradar.ai/#go=exotic-psr-j0437-4715"
     open_label: "Fly to the nearest millisecond pulsar"
+    blog: "https://blog.spaceradar.ai/stars-without-a-distance-and-the-farthest-light/"
   - slug: eight-nebulae-walls-of-glowing-gas
     title: "Eight nebulae as walls of glowing gas, dust and stars"
     short: "Eight nebulae in 3D: the Lagoon, the Eagle, the Rosette"
