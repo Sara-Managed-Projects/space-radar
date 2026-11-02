@@ -83,5 +83,6 @@ const mouseOn = { ...mouse, onDisc: 4 };
 check(rankPick([mark(sat, 6)], [disc(earth, 300, { depth: 100 })], mouseOn) === earth, 'a click on the Earth 6 px from a satellite opens the Earth');
 check(rankPick([mark(sat, 3)], [disc(earth, 300, { depth: 100 })], mouseOn) === sat, 'a click on the satellite\'s own dot over the Earth opens the satellite');
 check(rankPick([mark(sat, 8)], [], mouseOn) === sat, 'off any disc the mouse keeps its 10 px reach');
+check(decide([mark(sat, 8)], [], mouseOn).list[0].px === 8, 'the list carries how far each mark was, so a near miss can open the card without a flight');
 if (problems.length) { console.error('pickrank FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('pickrank ok: tier, occlusion, reach by pointer, ambiguity, mark over disc, nearer disc');

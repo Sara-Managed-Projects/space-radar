@@ -86,14 +86,14 @@ export function decide(marks, discs, reach = REACH.touch) {
 
   const out = [];
   const seen = new Set();
-  const push = (record, kind, tier) => {
+  const push = (record, kind, tier, px) => {
     if (!record || seen.has(record.id)) return;
     seen.add(record.id);
-    out.push({ record, kind, tier });
+    out.push({ record, kind, tier, px });
   };
-  for (const m of localMarks) push(m.record, 'glyph', 'local');
+  for (const m of localMarks) push(m.record, 'glyph', 'local', m.px);
   for (const d of discList) push(d.record, 'disc', 'local');
-  for (const m of backMarks) push(m.record, 'glyph', 'backdrop');
+  for (const m of backMarks) push(m.record, 'glyph', 'backdrop', m.px);
 
   // Too close to call: the two best marks of the first tier are within a few px of each other.
   let ambiguous = false;
