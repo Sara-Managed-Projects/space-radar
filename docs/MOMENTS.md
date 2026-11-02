@@ -70,6 +70,24 @@ words key of its one-line description) and `source` (where its numbers come from
 
 The model contract (part names, units, origins, budgets) is the stages' own file; `parts` and `engines` follow it.
 
+## Longer stories (release 1.6.0)
+
+A story that goes from a pad to the Moon and home needs more than one path and one place. Added to the format:
+
+| field | what |
+|---|---|
+| `places` | on the moment: `[{from, place}]`, each `place` as the top-level one (name, lat, lon, alt, ground); from second `from` the drawn ground and the `pad` and `track` shots are about that place (a splashdown field, the Pacific). The profiles are still laid from the first |
+| `moonSite` | on the moment: `{name, lat, lon}` (degrees): a landing site on the Moon. A flat patch of regolith is drawn there when the camera is within 200 km, and the Moon is turned to face the Earth with the ecliptic's north for its pole (so the site is within about 8 degrees of where the map puts it) |
+| vehicle `window` | `[from, to]` mission seconds the vehicle is drawn in; the lead (the camera's default and the honesty line's path) is the first vehicle whose window holds the second |
+| vehicle `rideOn` | `{vehicle, at: [x, y, z]}`: the vehicle follows another, the point moved by `at` metres in the host's axes (a spacecraft on its launcher's adapter) |
+| vehicle `phases` | `[{t, attitude?, body?}]` in time order: from `t` a different `attitude` and/or `body` (`moon` or `earth`: a vehicle at the Moon stands, points and flies by the Moon's vertical and the Moon's velocity) |
+| vehicle `body` | `moon` for a vehicle that is at the Moon for the whole moment |
+| vehicle `colour` | the class colour the model is drawn in where it has no look of its own (`rocket` by default) |
+
+A vehicle too small to see at the scale of the Earth and the Moon (seven pixels or fewer) is drawn as a ringed dot of a
+fixed size. A path file is `{note, rows}` under `site/data/moments/paths/`, written by `tools/moments-build/` (the three stories'
+generators: `vostok1.mjs`, `apollo11.mjs`, `artemis2.mjs`, with `lib.mjs`).
+
 ## Tracks
 
 **`parts`**: `{t, part, action, vehicle?}`: at second `t`, the part named `part` does `action`. `vehicle` defaults to the lead. The actions:
