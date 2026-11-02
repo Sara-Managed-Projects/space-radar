@@ -107,6 +107,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Dishes, crews, observatories | NASA DSN Now; Open Notify; Wikidata | see the section; CC0 for Wikidata | [4.3](#43-nasa--dsn-now), [4.18](#418-the-sources-the-harvester-reads) |
 | Music and sounds | John Bartmann (Free Music Archive); Freesound contributors | CC0 1.0 | [9](#9-audio--music-and-sounds) |
 | The trips' voice | Kokoro-82M, a synthetic voice | Apache-2.0 | [9b](#9b-audio--the-trips-narration-a-synthetic-voice) |
+| A NASA recording in the Apollo 11 Moment | NASA (Neil Armstrong's first words on the Moon, 1969) | Public domain (NASA) | [9](#9-audio--music-and-sounds) |
 | Typefaces | Inter, Barlow Semi Condensed, JetBrains Mono | SIL OFL 1.1 | [10](#10-fonts) |
 | The GitHub mark | GitHub, Inc. | a trademark, used under GitHub's logo rules | [4.6](#46-third-party-trademarks-the-app-names-or-draws) |
 
@@ -4071,6 +4072,15 @@ Modified: each bed is a 72 s cut of a 4:04 piece with its last 4 s cross-faded i
 it loops, levelled to −23 LUFS; each sting is trimmed to 2.5–3 s with a fade and levelled to
 −21 LUFS; all are re-encoded to Opus 64 kbps and AAC 64 kbps. The stings are made from Freesound's
 HQ previews, not the uploaded originals.
+
+| `a11-small-step.m4a` | Armstrong's first words on the Moon, played once at 109:24:48 of the Apollo 11 Moment | Public domain (NASA) | Neil Armstrong's first words on the Moon, NASA (1969), public domain | <https://commons.wikimedia.org/wiki/File:Neil_Armstrong_small_step.wav> |
+
+The one NASA clip (97 kB, mono AAC, 24 s) is the Wikimedia Commons file "Neil Armstrong small step.wav" (credit there:
+"Neil Armstrong/NASA", licence "Public domain", read 2026-11-02; NASA's media usage guidelines put its works in the
+public domain), re-encoded from 8-bit mono 11 025 Hz to AAC with macOS `afconvert`, and changed in nothing else. It
+is fetched only when the Apollo 11 Moment reaches that second with sound on. The house rule is "Opus with an AAC twin"; no
+Opus encoder was to hand when it was added, so the row is a `clip` whose one file is the AAC. No other recording is used:
+the radio exchange of Vostok 1 is shown as captions because no Soviet-era recording with a clear licence was found.
 
 ## 9b. Audio — the trips' narration (a synthetic voice)
 

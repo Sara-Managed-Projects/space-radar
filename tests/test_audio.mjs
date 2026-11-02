@@ -275,7 +275,8 @@ console.log('8. the shipped rows');
   const stages = beds.map((r) => r.stage);
   check(new Set(stages).size === stages.length, `one bed per rung (${stages.join(', ') || 'none yet'})`);
   check(beds.every((r) => RUNGS.includes(r.stage)), 'every bed names a rung rungOf() can answer');
-  check(AUDIO.every((r) => /^audio\/[\w.-]+\.opus$/.test(r.file) && /^audio\/[\w.-]+\.m4a$/.test(r.twin)), 'every file is an Opus file with an AAC twin under audio/');
+  // A `clip` (release 1.6.0, the Moments: one real recording, played at one second) is the AAC alone, its file and twin the same.
+  check(AUDIO.every((r) => (r.kind === 'clip' ? /^audio\/[\w.-]+\.m4a$/.test(r.file) : /^audio\/[\w.-]+\.opus$/.test(r.file)) && /^audio\/[\w.-]+\.m4a$/.test(r.twin)), 'every file is an Opus file with an AAC twin under audio/ (a clip is the AAC alone)');
   check(AUDIO.every((r) => typeof r.credit === 'string' && r.credit.length > 0), 'every row carries its credit to the Sources panel');
   const stingIds = AUDIO.filter((r) => r.kind === 'sting').map((r) => r.id.replace(/^sting-/, ''));
   check(stingIds.every((id) => ['arrive', 'stage', 'end'].includes(id)), `every sting is one main.js plays (${stingIds.join(', ') || 'none yet'})`);

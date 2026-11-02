@@ -388,16 +388,20 @@ export function createChutes({ diameterM = 20, count = 1, lineM, gores = 24, col
 // --- the plasma of an entry ----------------------------------------------------------------------------------------
 
 const PLASMA_F = `${LOG_F}
-uniform float uOn, uTime, uStill;
+uniform float uOn, uTime, uStill, uA, uB, uFlip;
 varying float vEdge;
 varying float vY;
 void main() {
   #include <logdepthbuf_fragment>
   float t = uTime * (1.0 - uStill);
-  float glow = pow(1.0 - vEdge, 1.5) * 0.6 + pow(vEdge, 3.0) * 0.5;
-  float wob = 0.85 + 0.15 * sin(vY * 9.0 - t * 20.0);
-  vec3 c = mix(vec3(1.0, 0.42, 0.22), vec3(1.0, 0.86, 0.72), vEdge);
-  gl_FragColor = vec4(c * glow * uOn * wob * 1.6, 1.0);
+  // A soft glow: strongest where the layer faces the camera, none at its silhouette or at the cut edge of the dome,
+  // fading along the wake. No hard edge anywhere, so no ring.
+  float fade = smoothstep(uA, uB, vY);
+  fade = mix(fade, 1.0 - fade, uFlip);
+  float glow = pow(vEdge, 1.4) * fade;
+  float wob = 0.9 + 0.1 * sin(vY * 7.0 - t * 14.0);
+  vec3 c = vec3(1.0, 0.46, 0.34);
+  gl_FragColor = vec4(c * glow * uOn * wob * 0.55, 1.0);
   ${OUT_F}
 }`;
 const PLASMA_V = `${LOG_V}
@@ -416,27 +420,30 @@ void main() {
  * group's frame (the player turns it along the velocity). set(k, time, still), k the brightness 0..1.
  */
 export function createPlasma({ radiusM = 2 }) {
-  const mat = new THREE.ShaderMaterial({
-    uniforms: { uOn: { value: 0 }, uTime: { value: 0 }, uStill: { value: 0 } },
+  // `radiusM` is the capsule's radius. The layer is a dome 1.3 times it, over the heat shield face, dim and
+  // orange-pink, with a short wake of 4.5 radii (about three capsule lengths) that tapers to nothing.
+  const R = radiusM * 1.3, h = radiusM * 4.5;
+  const mk = (a, b, flip, side = THREE.DoubleSide) => new THREE.ShaderMaterial({
+    uniforms: { uOn: { value: 0 }, uTime: { value: 0 }, uStill: { value: 0 }, uA: { value: a }, uB: { value: b }, uFlip: { value: flip } },
     vertexShader: PLASMA_V, fragmentShader: PLASMA_F,
-    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side,
   });
+  const shellMat = mk(R * 0.26, R * 0.62, 0, THREE.FrontSide), wakeMat = mk(-h * 0.5, h * 0.5, 1);
+  const mats = [shellMat, wakeMat];
   const group = new THREE.Group();
-  const shell = new THREE.Mesh(new THREE.SphereGeometry(radiusM * 1.25, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.42), mat);
+  const shell = new THREE.Mesh(new THREE.SphereGeometry(R, 32, 14, 0, Math.PI * 2, 0, Math.PI * 0.42), shellMat);
   shell.position.y = -radiusM * 0.55;
-  const wake = new THREE.Mesh(new THREE.ConeGeometry(radiusM * 1.1, radiusM * 9, 20, 6, true), mat);
+  const wake = new THREE.Mesh(new THREE.ConeGeometry(R * 0.95, h, 24, 6, true), wakeMat);
   wake.rotation.x = Math.PI;
-  wake.position.y = -radiusM * 5;
+  wake.position.y = -radiusM * 0.45 - h / 2;
   group.add(shell, wake);
   group.visible = false;
   return {
     group,
     set(k, time = 0, still = false) {
       group.visible = k > 0.003;
-      mat.uniforms.uOn.value = k;
-      mat.uniforms.uTime.value = time;
-      mat.uniforms.uStill.value = still ? 1 : 0;
+      for (const m of mats) { m.uniforms.uOn.value = k; m.uniforms.uTime.value = time; m.uniforms.uStill.value = still ? 1 : 0; }
     },
-    dispose() { mat.dispose(); shell.geometry.dispose(); wake.geometry.dispose(); },
+    dispose() { for (const m of mats) m.dispose(); shell.geometry.dispose(); wake.geometry.dispose(); },
   };
 }

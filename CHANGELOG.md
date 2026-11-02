@@ -11,6 +11,30 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-11-02
+
+### Added
+
+- **Moments: three missions replayed in 3D on their own clock.** Apollo 11 (16 to 24 July 1969), Artemis II (1 to 10 April 2026)
+  and Vostok 1 (12 April 1961) each play from the pad to the sea with the real event times on a mission clock, a director's
+  camera that cuts and chases, and the time compression printed on screen at every second. Take the camera at any second by
+  dragging; Director gives it back. Open one from the new Moments shelf under the trips on the Earth pane, from "Replay this
+  moment" on the card of Launch Complex 39A, 39B or the Apollo 11 landing site, or by a link: `#moment=<id>` or, at a second,
+  `#moment=<id>&t=<seconds>` (the Share button in the player copies it).
+- **Apollo 11**: the Saturn V from Launch Complex 39A through staging, the parking orbit, the burn for the Moon, the three days
+  out, lunar orbit, Eagle's descent to Tranquility Base on the Moon's own ground, Armstrong's first words (the NASA recording,
+  fetched only when it plays, sound on), the ascent, the rendezvous, the burn home, the entry and splashdown near the USS Hornet.
+- **Artemis II**: the Space Launch System and Orion from pad 39B, boosters away, the high Earth orbit, the burn for the Moon, the
+  far side at 6 545 km, and the splashdown off San Diego. Where the flight reports give a time it says "Flown"; where only
+  the flight plan does it says "Planned", in the caption on screen.
+- **Vostok 1**: Gagarin from Baikonur's Site 1 once round the Earth: the strap-ons and shroud at their seconds, retrofire over the
+  west coast of Africa, the wires that held the instrument module, the entry, the ejection at 7 km and the two parachutes, to
+  a field near Smelovka. The radio words are captions: no Soviet-era recording with a clear licence was found.
+- Every path says what it is: reconstructed from the published events (two-body arcs and a hyperbola, never tracking data) or
+  illustrative, in the line at the foot, with the sources. A craft too small to see at the scale of the Earth and the Moon is
+  a marked dot. Moments are fetched only when opened: a first visit loads none of it.
+
+
 ### Fixed
 
 - Pluto and Charon are round again, with smooth relief, when you fly close to them from the Solar

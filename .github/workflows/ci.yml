@@ -589,6 +589,13 @@ jobs:
       - name: "Moments: every replay file valid; its clock, paths, camera and part events hold"
         run: node tests/test_moments.mjs
       # 0079 C1: end
+      # 0079 C5 to C7: begin
+      # Internal spec 0079 stages C5 to C7 (internal #1054, #1055, #1056): the three stories. Event order and times against the
+      # published ones, every part event on a part of its model, the paths' rows, the landing on the Moon's ground, the flyby
+      # at 6 545 km, planned times said to be planned, the clip's size and credit.
+      - name: "Moment stories: Vostok 1, Apollo 11, Artemis II: event order, times, parts of their models, the landing, the flyby"
+        run: node tests/test_moment_stories.mjs
+      # 0079 C5 to C7: end
       - name: Satellite positions move and reject stale orbital elements
         run: node tests/test_sgp4.mjs
       - name: The scene says so when no satellite could be read
