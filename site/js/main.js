@@ -1376,7 +1376,7 @@ export async function boot({ setStatus } = {}) {
     // A long press on a crowded spot, and a tap the two best of which are too close to tell apart, list what is there instead of guessing.
     if ((g.type === 'touch' && held >= LONG_PRESS_MS) || d.ambiguous) {
       const list = d.list.slice(0, 6);
-      if (list.length > 1) { showChooser(list, e.clientX, e.clientY, (rec) => select(rec, pickOpts(list.find((x) => x.record === rec))), { layers: LAYERS }); return; }
+      if (list.length > 1) { showChooser(list, e.clientX, e.clientY, (rec) => select(rec, pickOpts(list.find((x) => x.record === rec), null)), { layers: LAYERS }); return; }
     }
     let hit = d.winner;
     // From the ground a tap asks "what is that" (sky/skyview.js tapSky): a satellite's dot or a
@@ -1388,11 +1388,17 @@ export async function boot({ setStatus } = {}) {
       if (!hit && typeof ctx.skyView.tapSky === 'function' && ctx.skyView.tapSky(e.clientX, e.clientY)) return;
     }
     // An empty tap clears the card and leaves the camera where it is: going home is the card's close button.
-    if (hit) select(hit, pickOpts(d.list.find((x) => x.record === hit)));
+    if (hit) select(hit, pickOpts(d.list.find((x) => x.record === hit), reachFor(g.type)));
     else deselect({ stay: true });
   });
   /** A tap on something that is only BEHIND the stage opens its card and moves nothing: "Fly to it" is the journey. */
-  function pickOpts(item) { return item && item.tier === 'backdrop' ? { from: 'pick', cardOnly: true } : { from: 'pick' }; }
+  // A near miss opens the card and flies nowhere (live site, 2026-11-02: a click on dark sky between dense stars
+  // flew the camera 2 313 light-years to a faint unnamed star). The camera goes only for a click on the dot itself,
+  // or for a choice from the list (reach null).
+  function pickOpts(item, reach) {
+    const nearMiss = reach && item && item.kind === 'glyph' && Number.isFinite(item.px) && item.px > reach.onDisc;
+    return item && (item.tier === 'backdrop' || nearMiss) ? { from: 'pick', cardOnly: true } : { from: 'pick' };
+  }
 
   // HOVER (mouse only): the same decision a click makes, no more than every 50 ms, with a pointer cursor and the name at the pointer.
   let hover = null;

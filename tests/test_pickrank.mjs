@@ -21,8 +21,9 @@ const mark = (record, px, extra = {}) => ({ record, px, score: px, tier: 'local'
 const disc = (record, r, extra = {}) => ({ record, edge: 0, r, tier: 'local', ...extra });
 const touch = REACH.touch, mouse = REACH.mouse;
 
-// a mark within reach beats a disc the pointer is ON (a satellite drawn over Earth is what is meant)
-check(rankPick([mark(iss, 20)], [disc(earth, 300)]) === iss, 'a satellite 20 px away beats the Earth disc under the finger');
+// a mark under the finger beats a disc the pointer is ON (a satellite drawn over Earth is what is meant); one 20 px off it does not
+check(rankPick([mark(iss, 8)], [disc(earth, 300)]) === iss, 'a satellite 8 px from a finger beats the Earth disc under it');
+check(rankPick([mark(iss, 20)], [disc(earth, 300)]) === earth, 'a satellite 20 px from a finger on the Earth loses to the Earth');
 // among marks the nearest wins, whatever layer drew first
 check(rankPick([mark(iss, 18), mark(sat, 4)], []) === sat, 'the nearer glyph wins over draw order');
 // debris is penalised: a satellite 10 px away beats debris 8 px away (8 * 1.6 = 12.8)
@@ -34,7 +35,7 @@ check(rankPick([], [disc(earth, 300)]) === earth, 'Earth alone is picked');
 check(rankPick([], []) === null, 'nothing within reach picks nothing');
 check(rankPick(null, undefined) === null, 'bad input picks nothing rather than throwing');
 // the long-press list: marks first by score, then discs; duplicates collapse; capped
-const all = decide([mark(iss, 18), mark(sat, 4), mark(sat, 5)], [disc(earth, 300, { depth: 100 }), { ...disc(moon, 6, { depth: 40 }), edge: 3 }], touch).list;
+const all = decide([mark(iss, 9), mark(sat, 4), mark(sat, 5)], [disc(earth, 300, { depth: 100 }), { ...disc(moon, 6, { depth: 40 }), edge: 3 }], touch).list;
 check(all.map((c) => c.record.id).join(',') === 'sat-2,sat-25544,moon,earth', `list order is marks by score then discs by depth (${all.map((c) => c.record.id).join(',')})`);
 check(rankAll([{ record: iss, score: 1 }, { record: sat, score: 2 }], [], 1).length === 1 && rankAll([{ record: iss, score: 3 }, { record: sat, score: 2 }], [])[0].record === sat, 'labels\' plain order by score, and its cap');
 
@@ -77,5 +78,11 @@ check(AMBIGUITY_PX === 3 && LONG_PRESS_MS === 450 && TAP_SLOP_PX.mouse === 5 && 
 // the winner of the list is the winner
 check(decide([mark(sat, 4), mark(iss, 9)], [disc(earth, 200)], touch).list[0].record === sat && decide([mark(sat, 4)], [disc(earth, 200)], touch).list[1].record === earth, 'the list is the order of choice');
 
+// On a disc a dot wins only under the pointer: a click on the Earth 6 px from a satellite is the Earth (live site, 2026-11-02).
+const mouseOn = { ...mouse, onDisc: 4 };
+check(rankPick([mark(sat, 6)], [disc(earth, 300, { depth: 100 })], mouseOn) === earth, 'a click on the Earth 6 px from a satellite opens the Earth');
+check(rankPick([mark(sat, 3)], [disc(earth, 300, { depth: 100 })], mouseOn) === sat, 'a click on the satellite\'s own dot over the Earth opens the satellite');
+check(rankPick([mark(sat, 8)], [], mouseOn) === sat, 'off any disc the mouse keeps its 10 px reach');
+check(decide([mark(sat, 8)], [], mouseOn).list[0].px === 8, 'the list carries how far each mark was, so a near miss can open the card without a flight');
 if (problems.length) { console.error('pickrank FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('pickrank ok: tier, occlusion, reach by pointer, ambiguity, mark over disc, nearer disc');

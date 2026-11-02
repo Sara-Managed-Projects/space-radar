@@ -23,6 +23,12 @@ tagged, and their dates are the day the last change in each landed.
   its reason, and a Chrome that dies mid-run ends the run with the reason, instead of both waiting
   forever.
 
+## [1.5.3] - 2026-11-02
+
+### Fixed
+- A click on the Earth, or any world, opens that world. A satellite dot over it is taken only when the click is on the dot itself.
+- A click that only comes near a star or a dot opens its card and leaves the camera where it is. The camera flies only for a click right on the dot, or for a choice from the list. Before, a click on dark sky between dense stars could fly you thousands of light-years to a faint star.
+
 ## [1.5.2] - 2026-11-02
 
 ### Fixed
