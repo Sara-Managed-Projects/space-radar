@@ -23,6 +23,7 @@ import { starTint } from './starfield.js';
 import { holeUniforms, setHoles as setHoleUniforms } from './starholes.js';
 import { stretchUniforms } from './stretch.js';
 import { STARS3D_VERT, STARS3D_FRAG } from './stars3d.js';
+import { createPickIndex } from './pickindex.js';
 import { loadUnplaced, parseUnplaced, eclipticDirection, unplacedRecord } from '../data/a45.js';
 
 const SUN_INERTIAL = 'sun-inertial';
@@ -51,6 +52,7 @@ export function createUnplaced(scene, opts = {}) {
   };
   const _v = new THREE.Vector3();
   const _m = new THREE.Matrix4();
+  const index = createPickIndex(); // scene/pickindex.js
 
   function load() {
     if (loading) return loading;
@@ -148,20 +150,13 @@ export function createUnplaced(scene, opts = {}) {
     group.updateMatrixWorld();
     _m.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse).multiply(group.matrixWorld);
     const e = _m.elements;
-    const pos = geometry.getAttribute('position').array;
+    const attr = geometry.getAttribute('position');
     const halfW = viewport.w * 0.5, halfH = viewport.h * 0.5;
     const out = [];
-    for (let i = 0; i < data.count; i++) {
-      if (data.mag[i] > uniforms.uMagLimit.value) continue; // not drawn, so not to be tapped
-      const x = pos[i * 3], y = pos[i * 3 + 1], z = pos[i * 3 + 2];
-      const w = e[3] * x + e[7] * y + e[11] * z + e[15];
-      if (w <= 0) continue;
-      const cx = (e[0] * x + e[4] * y + e[8] * z + e[12]) / w;
-      const cy = (e[1] * x + e[5] * y + e[9] * z + e[13]) / w;
-      const dx = (cx - ndcX) * halfW, dy = (cy - ndcY) * halfH;
-      const px = Math.sqrt(dx * dx + dy * dy);
-      if (px <= reachPx) out.push({ i, px, sx: (cx + 1) * halfW, sy: (1 - cy) * halfH, depth: w });
-    }
+    index.query(e, attr.array, attr.version, data.count, halfW, halfH, ndcX, ndcY, reachPx, (i, px, sx, sy, depth) => {
+      if (data.mag[i] > uniforms.uMagLimit.value) return; // not drawn, so not to be tapped
+      out.push({ i, px, sx, sy, depth });
+    });
     out.sort((p, q) => p.px - q.px);
     return out.slice(0, Math.max(1, limit)).map(({ i, px, sx, sy, depth }) => ({ record: recordAt(i), px, score: px, sx, sy, depth }));
   }
