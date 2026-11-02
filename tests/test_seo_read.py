@@ -96,8 +96,12 @@ for a in rows:
     ok(p.h1 == 1, f"{slug}: one H1")
     ok(len(title) <= 60, f"{slug}: title fits a result ({len(title)})")
     ok(70 <= len(desc) <= 160, f"{slug}: description {len(desc)} characters")
-    ok(f'<link rel="canonical" href="{HOST}/read/{slug}.html">' in html, f"{slug}: canonical is its own address")
-    ok(f"<loc>{HOST}/read/{slug}.html</loc><lastmod>{a['published']}</lastmod>" in sitemap, f"{slug}: in the sitemap with its date")
+    if a.get("blog"):
+        ok(f'<link rel="canonical" href="{a["blog"]}">' in html, f"{slug}: canonical is the blog's copy")
+        ok(f"{HOST}/read/{slug}.html" not in sitemap, f"{slug}: left out of the sitemap, the blog's copy is the one to index")
+    else:
+        ok(f'<link rel="canonical" href="{HOST}/read/{slug}.html">' in html, f"{slug}: canonical is its own address")
+        ok(f"<loc>{HOST}/read/{slug}.html</loc><lastmod>{a['published']}</lastmod>" in sitemap, f"{slug}: in the sitemap with its date")
     blocks = re.findall(r'<script type="application/ld\+json">(.*?)</script>', html, re.S)
     nodes = [n for b in blocks for n in json.loads(b.replace("<\\/", "</")).get("@graph", [])]
     art = [n for n in nodes if n.get("@type") == "Article"]

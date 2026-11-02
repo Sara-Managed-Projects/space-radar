@@ -727,6 +727,9 @@ export const COPY = {
     menuShare: 'Share',
     menuHide: 'Hide the panels',
     menuGitHub: 'Source on GitHub',
+    // The journal (ui/rail.js): the word is the same in every language we ship.
+    blog: 'Blog',
+    blogHref: 'https://blog.spaceradar.ai/',
     // The tour (ui/onboarding.js, internal spec 0074): the fourth tool, and its row on a phone.
     tour: 'Take the tour',
     menuTour: 'Take the tour',

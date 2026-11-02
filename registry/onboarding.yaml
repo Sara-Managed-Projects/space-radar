@@ -204,6 +204,11 @@ features:
     files: [site/js/ui/base.js]
     surfaces: ["rail:base"]
     not: "It appears only when the view is away from home, with its own name; nothing to point at on a first screen."
+  - id: journal
+    name: The journal
+    files: [site/js/ui/rail.js]
+    surfaces: ["rail:blog"]
+    not: "A link out of the app to the journal, not a feature of the map."
   - id: repository
     name: The GitHub mark
     files: [site/js/ui/github.js]

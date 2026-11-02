@@ -154,7 +154,7 @@ def article_page(a: dict, host: str, others: list[dict]) -> Page:
         + '<div class="cta"><a class="live" href="' + esc(a["open"]) + '">' + esc(a["open_label"]) + "</a></div>\n"
         + (f"<h2>More long reads</h2>\n<ul>{related}<li><a href=\"index.html\">All the long reads</a></li></ul>\n" if related else "")
     )
-    page = Page(path=f"read/{slug}.html", title=a["short"], description=a["description"], body=body, og_title=a["short"], og_type="article",
+    page = Page(path=f"read/{slug}.html", canonical=a.get("blog", ""), in_sitemap=not a.get("blog"), title=a["short"], description=a["description"], body=body, og_title=a["short"], og_type="article",
                 lastmod=str(a["published"]), image_alt=a["hero_alt"])
     image = f"{host}/{IMAGES}/{slug}/{a['hero']}"
     page.jsonld = [webpage(host, page, [("Long reads", "read/index.html"), (a["title"], "")], page_type="Article", extra={
