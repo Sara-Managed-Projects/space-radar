@@ -24,7 +24,8 @@ THE GROWTH PAGES (scripts/seo_pages.py, scripts/seo_share.py), held to the same 
                carries a twitter:image equal to its og:image (a card falls back to og:image, but a
                page that forgot one is a page nobody looked at). A trip page or the home page, in
                site/, may leave twitter:image out and must not contradict og:image where it has one.
-  an alias     (a page whose canonical is another page, such as /iss/) is not in the sitemap, and its
+  an alias     (a page whose canonical is another page, such as /iss/, or a long read whose
+               canonical is on blog.spaceradar.ai) is not in the sitemap; a same-host alias's
                canonical is a page that is.
   share pictures  when the build drew them (share-manifest.json), every built page has a picture of
                its own under /share/, which is a 1200 x 630 PNG inside the og_png budgets of
@@ -59,6 +60,7 @@ import indexnow  # noqa: E402
 from seo_footer import REQUIRED_EXTERNAL, REQUIRED_INTERNAL  # noqa: E402
 
 HOST = "https://www.spaceradar.ai"
+BLOG_HOST = "https://blog.spaceradar.ai"
 NS = "http://www.sitemaps.org/schemas/sitemap/0.9"
 TITLE_MAX = 60
 DESC_MIN, DESC_MAX = 70, 160
@@ -312,8 +314,11 @@ def check(root: Path, built: Path, require_share: bool = False) -> list[str]:
             say(f"{rel}: {len(canon)} canonical links, not one")
         elif canon[0] != url:
             # An alias (/iss/ for the station's page): its canonical is another page of the sitemap, and it is not in it.
+            # A long read that lives on the journal: its canonical is on blog.spaceradar.ai, and it is not in the sitemap.
             target = site_file(site, built, canon[0])
             if target is not None and target.is_file() and canon[0] in in_sitemap and url not in in_sitemap and base == built:
+                alias = True
+            elif canon[0].startswith(BLOG_HOST + "/") and url not in in_sitemap and base == built:
                 alias = True
             else:
                 say(f"{rel}: the canonical is {canon[0]}, not the page's own address {url}")
