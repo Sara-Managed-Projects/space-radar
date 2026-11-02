@@ -87,6 +87,9 @@ const walkView = async (name, setup) => {
 };
 
 const out = { views: {} };
+// The sky's marks are what an empty tap used to land on: switch them on, as a visitor in Wonder has them.
+for (const id of ['stars', 'deep-sky', 'exoplanets', 'galaxy', 'comets']) { try { sr.setLayerOn(id, true); } catch (e) { look.missing.push('layer ' + id + ': ' + e); } }
+await sleep(8000);
 await until(() => !rig.state.flying, 90000, 500);
 await sleep(3000);
 const run = async (name, setup) => {

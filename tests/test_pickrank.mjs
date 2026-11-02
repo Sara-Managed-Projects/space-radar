@@ -68,6 +68,7 @@ const d2 = decide([twinA, twinB], [], touch);
 check(d2.ambiguous && d2.list.length === 2 && d2.winner === star, 'two stars 2.2 px apart are ambiguous');
 check(!decide([twinA, { ...twinB, sx: 130, sy: 100 }], [], touch).ambiguous, 'two stars 30 px apart are not');
 check(!decide([twinA], [], touch).ambiguous, 'one mark is not');
+check(!decide([{ ...twinA, px: 0.5, score: 0.5 }, { ...twinB, px: 2.4, score: 2.4 }], [], touch).ambiguous, 'two stars 2.2 px apart with the pointer plainly on the first: the first');
 check(!decide([twinA, { ...twinB, tier: 'backdrop', px: 3 }], [], touch).ambiguous, 'marks of different tiers are not weighed against each other');
 check(AMBIGUITY_PX === 3 && LONG_PRESS_MS === 450 && TAP_SLOP_PX.mouse === 5 && TAP_SLOP_PX.touch === 10, 'the thresholds are the ones the interaction says');
 // the winner of the list is the winner

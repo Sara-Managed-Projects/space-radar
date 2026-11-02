@@ -16,7 +16,8 @@
 //   3. In a tier, a mark within reach beats a disc (a satellite drawn over Earth is what the pointer
 //      means); among marks the nearer wins; among discs the nearer to the camera wins, and one that is
 //      only near the pointer must be in FRONT of the disc the pointer is on.
-//   4. Two marks of the best tier less than AMBIGUITY_PX apart are not guessed between: `ambiguous`.
+//   4. Two marks of the best tier less than AMBIGUITY_PX apart, and about as near the pointer as each other, are
+//      not guessed between: `ambiguous`. One the pointer is plainly on is taken.
 //
 // Reach is the pointer's: a finger is wide, a mouse is not. Pure and DOM-free, so the whole decision can
 // be held by a test with made-up pixels.
@@ -28,6 +29,8 @@ export const REACH = {
 };
 /** Two best marks of one tier closer than this to each other are shown as a list. */
 export const AMBIGUITY_PX = 3;
+/** ... unless the pointer is this much nearer to the first of them than to the second. */
+const AIM_PX = 1.5;
 /** A press this long, touch only, is a long press. A mouse click is a click however long it was held. */
 export const LONG_PRESS_MS = 450;
 /** How far a pointer may travel and still be a tap. */
@@ -90,7 +93,9 @@ export function decide(marks, discs, reach = REACH.touch) {
   if (first.length > 1 && first[0].record.id !== first[1].record.id) {
     const [a, b] = first;
     const apart = Number.isFinite(a.sx) && Number.isFinite(b.sx) ? Math.hypot(a.sx - b.sx, a.sy - b.sy) : Math.abs(a.score - b.score);
-    ambiguous = apart <= AMBIGUITY_PX;
+    // ... and the pointer was not plainly on the first: one that is the nearer by more than a pixel and a half is the one aimed at.
+    const nearer = Math.abs((b.px ?? b.score) - (a.px ?? a.score));
+    ambiguous = apart <= AMBIGUITY_PX && nearer <= AIM_PX;
   }
   return { winner: out.length ? out[0].record : null, list: out, ambiguous };
 }
