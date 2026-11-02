@@ -596,6 +596,13 @@ jobs:
       - name: "Moment stories: Vostok 1, Apollo 11, Artemis II: event order, times, parts of their models, the landing, the flyby"
         run: node tests/test_moment_stories.mjs
       # 0079 C5 to C7: end
+      # 1.6.2: begin
+      # Release 1.6.2 (internal #1054 to #1057, public #548): Gagarin's Start and the Vostok 1 landing site cited and agreeing with
+      # the Moment's own positions, the Replay row on vehicle cards by their words (and not on a Soyuz-2 or the Orion Nebula), the
+      # Moments' words in es, fr, de and pt with the same slots, the onboarding row, the Kennedy trip on its pads and voiced.
+      - name: "Moments finish: the two Vostok places, Replay on vehicle cards, four languages, the Kennedy trip"
+        run: node tests/test_moments_finish.mjs
+      # 1.6.2: end
       - name: Satellite positions move and reject stale orbital elements
         run: node tests/test_sgp4.mjs
       - name: The scene says so when no satellite could be read

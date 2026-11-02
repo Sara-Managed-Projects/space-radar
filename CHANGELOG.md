@@ -11,6 +11,35 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [1.6.2] - 2026-11-03
+
+### Added
+
+- **Gagarin's Start and the field Vostok 1 came down in are places on the map.** Baikonur Site 1 is a pad with a card, and the
+  Vostok 1 landing site near Smelovka a named place on the ground, each with the position and the page it was read from
+  (Wikipedia's article on Vostok 1, read 3 November 2026), and each carries "Replay this moment" for the Gagarin story.
+- **"Replay this moment" on the cards of the craft the stories fly**: the Space Launch System, the Saturn V, the Apollo
+  command and service module and lunar module, Orion, and the R-7 of Vostok, found by the words a record carries and never by a
+  guess (a Soyuz-2 or a nebula named Orion does not get one).
+- **The Moments in Spanish, French, German and Portuguese**: the player, the shelf and the words of the three stories, drafted by a
+  program from the English like the rest of those files and not yet read by a native speaker. Armstrong's words stay as he said them.
+- **A trip, "Two pads at Kennedy, two ages of rockets"**: five launch mornings on pads 39A and 39B (Apollo 8, 11 and 17, STS-31 and
+  STS-116), the vehicle drawn on its pad on each, with its voice and its pictures (public #548).
+
+### Changed
+
+- The onboarding row for Moments names the doors a newcomer finds after the first two minutes: the shelf and the Replay row on pads,
+  landing sites and craft.
+- A place's card, where nothing is drawn but a mark, no longer says the position is from the IAU gazetteer: it says it is placed from
+  the cited reference, which is true of the Moon's craters and of the field near Smelovka.
+
+### Fixed
+
+- On a phone the player no longer hides the scale rail's Back button under its title card; the rail is out of the way while a
+  moment plays, like the rest of the map's own controls. The player was checked at 390 px: no control clipped, covered or
+  overlapping, the chapters list scrolls above the strip, nothing wider than the window.
+- The glow of an entry no longer ends in a faint band round the capsule's rim: its wake now starts from nothing there.
+
 ## [1.6.1] - 2026-11-03
 
 ### Changed
