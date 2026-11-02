@@ -23,6 +23,11 @@ tagged, and their dates are the day the last change in each landed.
   its reason, and a Chrome that dies mid-run ends the run with the reason, instead of both waiting
   forever.
 
+## [1.5.4] - 2026-11-02
+
+### Fixed
+- A click on the Earth at the home view opens the Earth. Thousands of satellite dots lie over it there, and a click still found one; where several dots crowd a click on a world, the world is what was meant. A satellite on its own over a world is still taken.
+
 ## [1.5.3] - 2026-11-02
 
 ### Fixed
