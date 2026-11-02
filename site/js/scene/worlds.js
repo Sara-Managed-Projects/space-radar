@@ -2968,7 +2968,8 @@ export function createWorlds(scene, opts = {}) {
       const edge = Math.max(0, Math.hypot((_proj.x + 1) * halfW - tapX, (1 - _proj.y) * halfH - tapY) - r);
       if (edge > forgivePx) continue;
       const record = records.find((x) => x.id === w.id);
-      if (record) out.push({ record, edge, r });
+      // `depth` and the centre are for scene/pickrank.js: the nearer disc wins, and a disc hides what is behind it.
+      if (record) out.push({ record, edge, r, cx: (_proj.x + 1) * halfW, cy: (1 - _proj.y) * halfH, depth: dist });
     }
     return out.sort((p, q) => (p.r - q.r) || (p.edge - q.edge));
   }

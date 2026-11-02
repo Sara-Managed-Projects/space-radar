@@ -80,7 +80,7 @@ check([...COPY.undo.back].length <= 60 && COPY.undo.back === 'Back to where you 
 const view = (over) => ({ stage: 'earth', moment: 'wonder', selected: null, clock: { mode: 'live', t: now }, ...over });
 check(U.sameView(view(), view()) && !U.sameView(view(), view({ stage: 'sun' })) && !U.sameView(view(), view({ selected: iss })) && !U.sameView(view(), view({ clock: { mode: 'scrub', t: now } })), 'an undo is offered only when the view changed: the stage, the selection or the clock');
 check(U.sameView(view({ clock: { mode: 'scrub', t: now } }), view({ clock: { mode: 'scrub', t: now + 30e3 } })) && !U.sameView(null, view()), 'a scrubbed clock half a minute on is the same view');
-check(/opts\.from !== 'pick'/.test(main) && /select\(hit, \{ from: 'pick' \}\)/.test(main), 'a tap on the thing itself is pointing at it: no toast');
+check(/opts\.from !== 'pick'/.test(main) && /select\(hit, pickOpts\(/.test(main) && /\{ from: 'pick' \}/.test(main), 'a tap on the thing itself is pointing at it: no toast');
 check(/if \(inTrip\(\)\) return null/.test(main), 'and a trip\'s own stops are not offered back');
 check(/ctx\.rememberView\(\)/.test(readFileSync(join(JS, 'ui/explore.js'), 'utf8')) && /ctx\.rememberView\(\)/.test(readFileSync(join(JS, 'ui/scrubber.js'), 'utf8')) && /ctx\.rememberView\(\)/.test(readFileSync(join(JS, 'ui/missions.js'), 'utf8')), 'a tab, a mark on the timeline and a mission\'s event each keep the view first');
 check(U.UNDO_MS >= 4000 && U.UNDO_MS <= 8000 && /pointerenter/.test(readFileSync(join(JS, 'ui/camundo.js'), 'utf8')) && /Escape/.test(readFileSync(join(JS, 'ui/camundo.js'), 'utf8')), 'the toast stays a few seconds, holds under the pointer and the focus, and Escape puts it away');
