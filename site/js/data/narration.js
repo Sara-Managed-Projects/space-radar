@@ -12,10 +12,7 @@ export const NARRATION = {
   "scripted": [
     "the-constellations/southern-cross",
     "to-the-edge/edge",
-    "travel-to-exoplanets/all",
-    "two-pads-at-kennedy/apollo-8",
-    "two-pads-at-kennedy/sts-116",
-    "two-pads-at-kennedy/sts-31"
+    "travel-to-exoplanets/all"
   ],
   "clips": {
     "people-in-space/far": 9.58,
@@ -245,11 +242,11 @@ export const NARRATION = {
     "out-to-the-edge/first-galaxies": 17.88,
     "out-to-the-edge/oldest-light": 20.74,
     "out-to-the-edge/edge": 19.73,
-    "two-pads-at-kennedy/apollo-8": 17.67,
+    "two-pads-at-kennedy/apollo-8": 17.66,
     "two-pads-at-kennedy/apollo-11": 13.5,
     "two-pads-at-kennedy/apollo-17": 14.67,
-    "two-pads-at-kennedy/sts-31": 18.06,
-    "two-pads-at-kennedy/sts-116": 15.65,
+    "two-pads-at-kennedy/sts-31": 18.03,
+    "two-pads-at-kennedy/sts-116": 15.62,
     "onboarding/move": 6.72,
     "onboarding/find": 6.15,
     "onboarding/card": 6.06,
