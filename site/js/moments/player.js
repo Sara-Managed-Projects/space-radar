@@ -27,7 +27,7 @@ import { icon } from '../ui/icons.js';
 import { write as writeUrl, clear as clearUrl } from '../ui/urlstate.js';
 import { worldPositionKm } from '../propagate/body.js';
 import { paceTable, playOf, missionOf, rateAt, compressionText, formatMet, chapterAt, captionAt, crossed, isMomentId, shareHash, parseT, lastAt } from './format.js';
-import { MOON_R, moonAxes, moonSurfaceDir, placeFrame, profileTrack, vectorTrack, fromHorizons, enuToEcef, fixedToInertial, siderealAt, attitude, ballistic, spinBasis, fromBasis, add, scale, norm, len, cross, EARTH_R } from './trajectory.js';
+import { OMEGA, MOON_R, moonAxes, moonSurfaceDir, placeFrame, profileTrack, vectorTrack, fromHorizons, enuToEcef, fixedToInertial, siderealAt, attitude, ballistic, spinBasis, fromBasis, add, scale, norm, len, cross, EARTH_R } from './trajectory.js';
 import { directAt, freePose, poseAngles } from './director.js';
 import { createStage, eciToThree } from './stage.js';
 import { loadVehicle, disposeVehicle } from './vehicles.js';
@@ -548,7 +548,8 @@ export function createMomentPlayer(ctx, opts = {}) {
       const ph = phaseAt(spec, tt);
       const mo = ph.body === 'moon' ? moonAt(tt) : null;
       const rel = mo ? add(s.r, scale(mo.r, -1)) : s.r;
-      const velRel = mo ? add(s.v, scale(mo.v, -1)) : s.v;
+      // Relative to the Moon, or to the turning Earth's air and ground (a capsule hangs from its canopy by the wind, not by the inertial frame)
+      const velRel = mo ? add(s.v, scale(mo.v, -1)) : add(s.v, [OMEGA * s.r[1], -OMEGA * s.r[0], 0]);
       const up = norm(rel);
       const ref = norm(cross(rel, velRel));
       const basis = attitude(ph.attitude || 'prograde', { up, vel: velRel, ref, t: tt });

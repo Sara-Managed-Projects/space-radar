@@ -326,7 +326,7 @@ export function createStage(renderer, { tier = 1, place, frame }) {
   grainTex.wrapS = grainTex.wrapT = THREE.RepeatWrapping;
   grainTex.repeat.set(60, 60);
   grainTex.colorSpace = THREE.SRGBColorSpace;
-  const siteDisc = new THREE.Mesh(new THREE.CircleGeometry(6000, 72), new THREE.MeshLambertMaterial({ map: grainTex, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
+  const siteDisc = new THREE.Mesh(new THREE.CircleGeometry(6000, 72), new THREE.MeshLambertMaterial({ map: grainTex, emissive: 0x1a1915, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
   siteDisc.visible = false;
   siteDisc.frustumCulled = false;
   scene.add(siteDisc);

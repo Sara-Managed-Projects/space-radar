@@ -6,7 +6,7 @@ look.probe = 'moment-stories';
 const out = { scenes: [] };
 const text = (sel) => { const n = document.querySelector(sel); return n ? n.textContent : null; };
 const STORIES = [
-  ['vostok-1', [[-4, 'pad', 'the R-7 on Site 1, five minutes before the world heard of it: the flames in the trench'], [121, 'strapons', 'the four strap-on boosters falling away at T+119 s, the core stage burning on'],
+  ['vostok-1', [[-4, 'pad', 'the R-7 on Site 1, five minutes before the world heard of it: the flames in the trench'], [127, 'strapons', 'the four strap-on boosters, seven seconds after they fell away at T+119 s, the core stage burning on'],
     [5848, 'ejection', 'the seat leaving the capsule at 7 km, the hatch gone, the drogue out'], [6030, 'chutes', 'the capsule under its 27 m canopy and the pilot under his own, over the landing field']]],
   ['apollo-11', [[-4, 'ignition', 'the Saturn V at ignition on pad 39A'], [9930, 'tli', 'the S-IVB burning for the Moon, 185 km over the Earth, the Sun low'],
     [369915, 'descent', 'Eagle in powered descent, a little over a hundred metres up, the descent engine lit'], [370070, 'landed', 'Eagle on the Moon at Tranquility Base, the Earth in the black sky'],

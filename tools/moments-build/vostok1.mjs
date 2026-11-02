@@ -86,7 +86,7 @@ for (const b of Object.keys(B)) parts.push(ev(-9, b, 'ignite', { rampS: 8 }));
 parts.push(ev(-9, 'core-stage', 'ignite', { rampS: 8 }));
 for (const [b, [x, z]] of Object.entries(B)) {
   parts.push(ev(119, b, 'cutoff'));
-  parts.push(ev(119.4, b, 'separate', { dv: [1.6 * x, -1.2, 1.6 * z], spin: [0.05 * z, 0, -0.05 * x] }));
+  parts.push(ev(119.4, b, 'separate', { dv: [4 * x, -3, 4 * z], spin: [0.05 * z, 0, -0.05 * x] }));
 }
 parts.push(ev(156, 'fairing', 'separate', { dv: [0.6, 3.0, 0], spin: [0.15, 0, 0.1] }));
 parts.push(ev(300, 'core-stage', 'cutoff'));
@@ -133,7 +133,7 @@ const moment = {
       engines: { 'vostok-im': [[0, 0, 0]] }, flames: { 'vostok-im': { kind: 'hypergolic', exitM: 0.35 } },
       chutes: { drogue: { diameterM: 2.2, count: 1, lineM: 6, at: [0, 1.5, 0], colours: ['#d9d4c8', '#d9d4c8'] },
         main: { diameterM: 27, count: 1, lineM: 24, at: [0, 1.5, 0], colours: ['#e2622a', '#f1efe9'], spreadDeg: 0 } },
-      plasma: { radiusM: 1.4, at: [0, -0.4, 0] } },
+      plasma: { radiusM: 1.2, at: [0, 2.1, 0] } },
     { id: 'seat', model: 'vostok-seat', lengthM: 1.5, path: 'pilot', attitude: 'vertical', window: [5840, 6480], colour: 'station',
       parts: ['vostok-seat', 'vostok-pilot'],
       engines: { 'vostok-seat': [[-0.14, -0.88, 0.08], [0.14, -0.88, 0.08]] }, flames: { 'vostok-seat': { kind: 'solid', exitM: 0.12 } },
