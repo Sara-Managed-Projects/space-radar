@@ -5134,6 +5134,8 @@ tours:
     group: earth-orbit
     requires: [hand-kept-sites]
     clock: as-found
+    # The share and card picture: the Saturn V of Apollo 11 on pad 39A (stop 2).
+    og_stop: 2
     stops:
       - id: apollo-8
         target: {site: saturn-v-lc-39a}
@@ -5159,7 +5161,7 @@ tours:
         card:
           title: "Four days to Tranquility Base"
           body: >-
-            Apollo 11 left this pad in the morning, Florida time. Four days later two of its three
+            Apollo 11 left this pad one morning. Four days later two of its three
             astronauts landed in the Sea of Tranquility. All three were home eight days after the
             launch.
 

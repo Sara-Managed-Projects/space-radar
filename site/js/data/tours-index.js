@@ -350,6 +350,6 @@ export const TOURS_INDEX = [
 "group": "earth-orbit",
 "min_stops": 3,
 "count": 5,
-"estimate_ms": 88524
+"estimate_ms": 87525
 }
 ];

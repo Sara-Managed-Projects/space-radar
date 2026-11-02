@@ -5800,6 +5800,7 @@ export const TOURS = [
 ],
 "clock": "as-found",
 "group": "earth-orbit",
+"og_stop": 2,
 "pacing": "auto",
 "stage": "earth",
 "min_stops": 3,
@@ -5833,7 +5834,7 @@ export const TOURS = [
 "time": "1969-07-16T13:00:00Z",
 "card": {
 "title": "Four days to Tranquility Base",
-"body": "Apollo 11 left this pad in the morning, Florida time. Four days later two of its three astronauts landed in the Sea of Tranquility. All three were home eight days after the launch."
+"body": "Apollo 11 left this pad one morning. Four days later two of its three astronauts landed in the Sea of Tranquility. All three were home eight days after the launch."
 },
 "frame_radii": 5.0,
 "drift_deg": 34,
@@ -5842,7 +5843,7 @@ export const TOURS = [
 "key_light_deg": 125,
 "ease": "auto",
 "on_unresolved": "drop",
-"dwell_ms": 13489
+"dwell_ms": 12490
 },
 {
 "id": "apollo-17",
@@ -5905,6 +5906,6 @@ export const TOURS = [
 "dwell_ms": 12823
 }
 ],
-"estimate_ms": 88524
+"estimate_ms": 87525
 }
 ];
