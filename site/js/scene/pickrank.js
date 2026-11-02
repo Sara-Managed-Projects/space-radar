@@ -31,6 +31,9 @@ export const REACH = {
 export const AMBIGUITY_PX = 3;
 /** ... unless the pointer is this much nearer to the first of them than to the second. */
 const AIM_PX = 1.5;
+/** A planet's mark is drawn ON its star; a pointer on that spot means the star, so the mark counts this much farther. */
+const EXOPLANET_MARK_PX = 2;
+const scoreOf = (m) => m.score + (m.record && m.record.klass === 'exoplanet' ? EXOPLANET_MARK_PX : 0);
 /** A press this long, touch only, is a long press. A mouse click is a click however long it was held. */
 export const LONG_PRESS_MS = 450;
 /** How far a pointer may travel and still be a tap. */
@@ -66,8 +69,8 @@ export function decide(marks, discs, reach = REACH.touch) {
   };
   const reachOf = (tier) => (tier === 'backdrop' ? reach.backdrop : reach.local);
   const near = ms.filter((m) => m.px <= reachOf(m.tier) && !covered(m));
-  const localMarks = near.filter((m) => m.tier !== 'backdrop').sort((a, b) => a.score - b.score);
-  const backMarks = near.filter((m) => m.tier === 'backdrop').sort((a, b) => a.score - b.score);
+  const localMarks = near.filter((m) => m.tier !== 'backdrop').sort((a, b) => scoreOf(a) - scoreOf(b));
+  const backMarks = near.filter((m) => m.tier === 'backdrop').sort((a, b) => scoreOf(a) - scoreOf(b));
 
   // Discs: the one the pointer is on and nearest the camera, then what is in front of it.
   const inReach = ds.filter((d) => d.edge <= reach.local);
@@ -94,7 +97,7 @@ export function decide(marks, discs, reach = REACH.touch) {
     const [a, b] = first;
     const apart = Number.isFinite(a.sx) && Number.isFinite(b.sx) ? Math.hypot(a.sx - b.sx, a.sy - b.sy) : Math.abs(a.score - b.score);
     // ... and the pointer was not plainly on the first: one that is the nearer by more than a pixel and a half is the one aimed at.
-    const nearer = Math.abs((b.px ?? b.score) - (a.px ?? a.score));
+    const nearer = Math.abs(scoreOf(b) - scoreOf(a));
     ambiguous = apart <= AMBIGUITY_PX && nearer <= AIM_PX;
   }
   return { winner: out.length ? out[0].record : null, list: out, ambiguous };

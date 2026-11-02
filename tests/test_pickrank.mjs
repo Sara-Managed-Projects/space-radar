@@ -70,6 +70,9 @@ check(!decide([twinA, { ...twinB, sx: 130, sy: 100 }], [], touch).ambiguous, 'tw
 check(!decide([twinA], [], touch).ambiguous, 'one mark is not');
 check(!decide([{ ...twinA, px: 0.5, score: 0.5 }, { ...twinB, px: 2.4, score: 2.4 }], [], touch).ambiguous, 'two stars 2.2 px apart with the pointer plainly on the first: the first');
 check(!decide([twinA, { ...twinB, tier: 'backdrop', px: 3 }], [], touch).ambiguous, 'marks of different tiers are not weighed against each other');
+const planet = { id: 'exo-tau-ceti-e', name: 'tau Cet e', klass: 'exoplanet', layer: 'exoplanets' };
+const onStar = decide([{ record: planet, px: 0.4, score: 0.4, tier: 'local', sx: 100, sy: 100 }, { record: star, px: 0.5, score: 0.5, tier: 'local', sx: 100.2, sy: 100 }], [], touch);
+check(onStar.winner === star && !onStar.ambiguous, 'a planet\'s mark drawn on its star does not make that star a list: the star is taken');
 check(AMBIGUITY_PX === 3 && LONG_PRESS_MS === 450 && TAP_SLOP_PX.mouse === 5 && TAP_SLOP_PX.touch === 10, 'the thresholds are the ones the interaction says');
 // the winner of the list is the winner
 check(decide([mark(sat, 4), mark(iss, 9)], [disc(earth, 200)], touch).list[0].record === sat && decide([mark(sat, 4)], [disc(earth, 200)], touch).list[1].record === earth, 'the list is the order of choice');
