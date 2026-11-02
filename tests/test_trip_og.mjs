@@ -72,7 +72,7 @@ check(real.status === 0, `scripts/build_trip_og.py --check fails on the tree as 
 if (real.status === 0 && TOURS.length) {
   const work = mkdtempSync(join(tmpdir(), 'trip-og-'));
   try {
-    for (const d of ['scripts', 'registry', 'site/og', 'site/t']) cpSync(join(ROOT, d), join(work, d), { recursive: true, filter: (p) => !p.includes('__pycache__') });
+    for (const d of ['scripts', 'registry', 'templates', 'site/og', 'site/t']) cpSync(join(ROOT, d), join(work, d), { recursive: true, filter: (p) => !p.includes('__pycache__') });
     // The body expands {exoplanet_count} from site/data/exoplanets.csv. Without that file
     // --check exits before it can name a trip that would show default.png.
     mkdirSync(join(work, 'site/data'), { recursive: true });

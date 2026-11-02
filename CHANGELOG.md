@@ -11,6 +11,15 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-11-03
+
+### Changed
+- The static pages (object pages, long reads, events, Teachers, Starlink, satellites, planets tonight, Accuracy, Sources, Press, Embed, the Lab index, trip pages and the 404) are in the blog's design: a sticky header with the mark, a Blog link and the "Open the 3D map" button, the deep-space ground, a reading column, rounded cards and figures, a darker footer. They share one stylesheet, `css/static.css`, and use the map's own faces: Inter for text, Barlow Semi Condensed for headings and labels, JetBrains Mono for numbers.
+- Trip pages (`/t/`), which had no styling, now use the same design.
+
+### Added
+- A "From the blog" list on the long reads, Teachers, Starlink, satellites, planets tonight, events, Accuracy and About pages, built from a committed snapshot of the blog's feed (`registry/blog-feed.json`, refreshed by `scripts/refresh_blog_feed.py`, which a deploy runs when it is online).
+
 ## [1.6.0] - 2026-11-02
 
 ### Added
