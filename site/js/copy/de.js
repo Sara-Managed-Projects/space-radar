@@ -325,6 +325,8 @@ export const COPY = {
     "menuShare": "Teilen",
     "menuHide": "Bereiche ausblenden",
     "menuGitHub": "Quellcode auf GitHub",
+    "blog": "Blog",
+    "blogHref": "https://blog.spaceradar.ai/",
     "tour": "Rundgang machen",
     "menuTour": "Rundgang machen"
   },

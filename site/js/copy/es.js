@@ -213,6 +213,8 @@ export const COPY = {
     menuShare: "Compartir",
     menuHide: "Ocultar los paneles",
     menuGitHub: "Código en GitHub",
+    blog: "Blog",
+    blogHref: "https://blog.spaceradar.ai/",
     tour: "Hacer el recorrido",
     menuTour: "Hacer el recorrido"
   },
