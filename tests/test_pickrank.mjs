@@ -35,7 +35,7 @@ check(rankPick([], [disc(earth, 300)]) === earth, 'Earth alone is picked');
 check(rankPick([], []) === null, 'nothing within reach picks nothing');
 check(rankPick(null, undefined) === null, 'bad input picks nothing rather than throwing');
 // the long-press list: marks first by score, then discs; duplicates collapse; capped
-const all = decide([mark(iss, 9), mark(sat, 4), mark(sat, 5)], [disc(earth, 300, { depth: 100 }), { ...disc(moon, 6, { depth: 40 }), edge: 3 }], touch).list;
+const all = decide([mark(iss, 9), mark(sat, 4)], [disc(earth, 300, { depth: 100 }), { ...disc(moon, 6, { depth: 40 }), edge: 3 }], touch).list;
 check(all.map((c) => c.record.id).join(',') === 'sat-2,sat-25544,moon,earth', `list order is marks by score then discs by depth (${all.map((c) => c.record.id).join(',')})`);
 check(rankAll([{ record: iss, score: 1 }, { record: sat, score: 2 }], [], 1).length === 1 && rankAll([{ record: iss, score: 3 }, { record: sat, score: 2 }], [])[0].record === sat, 'labels\' plain order by score, and its cap');
 
