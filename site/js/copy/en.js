@@ -1700,7 +1700,7 @@ export const COPY = {
     // A storm is not an object with a shape: the mark is where its centre is, the storm is cloud.
     storm: 'drawn as a mark at its centre; the storm itself is the cloud around it',
     // 0077 W3-d: a named place on a world's ground (registry/sites.yaml `class: feature`): nothing stands there to draw.
-    feature: 'a named place: nothing is drawn here but a mark at its centre, from the IAU gazetteer; the ground under it is the map itself',  // 0077 W3-d
+    feature: 'a named place: nothing is drawn here but a mark at its centre, placed from the cited reference; the ground under it is the map itself',  // 0077 W3-d
     markOnly: 'a mark at its place; nothing stands there to draw', // 0079 a6
     noPlace: 'not drawn: there is no place of it to mark', // 0079 a6
     shower: 'a name at the point its meteors seem to come from, in the sky view near its peak; a direction, not a place in space', // 0079 a6

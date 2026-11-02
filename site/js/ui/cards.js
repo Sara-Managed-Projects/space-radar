@@ -64,7 +64,7 @@ import { attachedOdditiesFor, attachedOddityRecord } from '../data/attached.js';
 import { openShare, savePostcard } from './share.js';
 import { exposurePanel, pictureNote } from './exposure.js';
 import { stage } from '../scene/stage.js';
-import { momentFor } from '../moments/shelf.js'; // 0079 C8: the card's "Replay this moment"
+import { momentForRecord } from '../moments/shelf.js'; // 0079 C8: the card's "Replay this moment"
 import { icon } from './icons.js';
 import { overlayLine, legendNode, paintLegend } from './overlaylegend.js';
 import { systemOfRecordId, phaseIsMeasured, faceLineOf } from '../scene/systems.js';
@@ -2923,7 +2923,7 @@ function render(record, ctx, opts = {}) {
   body.appendChild(actions);
 
   // 3'. A MOMENT this place or craft was part of (internal spec 0079 C8): one quiet row, which opens the replay.
-  const story = momentFor(record.id);
+  const story = momentForRecord(record);
   if (story && typeof ctx.wantMoment === 'function') {
     const W = COPY.momentShelf;
     const go = el('button', 'sr-btn sr-btn--quiet sr-card__inline', W.replay);
