@@ -134,7 +134,7 @@ const tour = (id) => TOURS.find((t) => t.id === id);
   const { displayName } = await import(join(JS, 'ui/cardfacts.js'));
   const { handKeptSites } = await import(join(JS, 'data/sample.js'));
   const { labelName } = await import(join(JS, 'ui/labels.js'));
-  const pads = handKeptSites().filter((r) => r.meta.siteKind === 'pad');
+  const pads = handKeptSites().filter((r) => r.meta.siteKind === 'pad' && Array.isArray(r.meta.liftoffs)); // Baikonur Site 1 (release 1.6.2) has no vehicle standing on it
   const want = { 'saturn-v-lc-39a': ['Launch Complex 39A', 'Saturn V'], 'shuttle-lc-39b': ['Launch Complex 39B', 'Space Shuttle'] };
   for (const pad of pads) {
     const [title, rocket] = want[pad.id] || [];

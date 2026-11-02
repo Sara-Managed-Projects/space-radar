@@ -38,7 +38,7 @@ for (const [id, note] of [
 // --- the player ---------------------------------------------------------------------------------------------------
 const CONTROLS = '.sr-moment__close, .sr-moment__play, .sr-moment__scrub, .sr-moment__text, .sr-moment__director, .sr-moment__share';
 const box = (n) => { const r = n.getBoundingClientRect(); return { l: r.left, t: r.top, r: r.right, b: r.bottom, w: r.width, h: r.height }; };
-const measure = (tag) => {
+const measure = (tag, listOpen = false) => {
   const bad = [];
   const root = document.querySelector('.sr-moment');
   if (!root) return [`${tag}: no player on the page`];
@@ -58,8 +58,23 @@ const measure = (tag) => {
     if (ox > 1 && oy > 1) bad.push(`${tag}: ${rects[i][0].className.split(' ')[1] || rects[i][0].tagName} overlaps ${rects[j][0].className.split(' ')[1] || rects[j][0].tagName} by ${Math.round(ox)} x ${Math.round(oy)}`);
   }
   const dock = document.querySelector('.sr-moment__dock'), head = document.querySelector('.sr-moment__head');
-  if (dock) { const d = box(dock); if (d.h > H * 0.6) bad.push(`${tag}: the strip is ${Math.round(d.h)} px of ${H}`); if (d.l < -0.5 || d.r > W + 0.5) bad.push(`${tag}: the strip leaves the window`); }
+  if (dock) { const d = box(dock); if (!listOpen && d.h > H * 0.45) bad.push(`${tag}: the strip is ${Math.round(d.h)} px of ${H}`); if (d.l < -0.5 || d.r > W + 0.5) bad.push(`${tag}: the strip leaves the window`); }
   if (dock && head) { const d = box(dock), h = box(head); if (d.t < h.b + 8) bad.push(`${tag}: the strip (top ${Math.round(d.t)}) touches the title card (bottom ${Math.round(h.b)})`); }
+  // Anything of the app's own, outside the player, drawn over its title card or its strip (the scale rail's Back sat under
+  // the title card in the first look of 2026-11-02): every visible fixed or absolute box outside the player that crosses them.
+  for (const part of [head, dock]) {
+    if (!part) continue;
+    const pr = box(part);
+    for (const n of document.body.querySelectorAll('*')) {
+      if (root.contains(n) || n === root || n.contains(root) || n.tagName === 'CANVAS' || n.tagName === 'SCRIPT' || n.tagName === 'STYLE') continue;
+      const cs = getComputedStyle(n);
+      if (!(cs.position === 'fixed' || cs.position === 'absolute') || cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) === 0) continue;
+      const r = box(n);
+      if (r.w < 4 || r.h < 4) continue;
+      const ox = Math.min(pr.r, r.r) - Math.max(pr.l, r.l), oy = Math.min(pr.b, r.b) - Math.max(pr.t, r.t);
+      if (ox > 2 && oy > 2) bad.push(`${tag}: ${n.id || n.className || n.tagName} (outside the player) overlaps the ${part === head ? 'title card' : 'strip'} by ${Math.round(ox)} x ${Math.round(oy)}`);
+    }
+  }
   // A word cut off by its box: any text node of the player wider than the box that holds it.
   for (const n of document.querySelectorAll('.sr-moment__title, .sr-moment__caption, .sr-moment__truth, .sr-moment__met, .sr-moment__rate, .sr-moment__chapter, .sr-moment__rowname')) {
     if (n.offsetParent !== null && n.scrollWidth > n.clientWidth + 1 && getComputedStyle(n).overflowX !== 'visible') bad.push(`${tag}: ${n.className.split(' ')[0]} is cut at the side (${n.scrollWidth} > ${n.clientWidth})`);
@@ -91,11 +106,12 @@ for (const [id, frames] of STORIES) {
       b.click(); await sleep(800);
       const list = document.querySelector('.sr-moment__chapters');
       const rows = [...document.querySelectorAll('.sr-moment__row')];
-      const bad = measure(`${id} chapters`);
+      const bad = measure(`${id} chapters`, true);
       if (list && !list.hidden) {
         const lr = box(list);
         if (lr.t < 0 || lr.l < -0.5 || lr.r > W + 0.5) bad.push(`${id} chapters: the list leaves the window (${[lr.l, lr.t, lr.r, lr.b].map(Math.round)})`);
         const scrolls = list.scrollHeight > list.clientHeight + 1;
+        if (lr.b - lr.t > H * 0.5) bad.push(`${id} chapters: the list is ${Math.round(lr.b - lr.t)} px of ${H}`);
         out.player.push({ id, name: 'chapters', rows: rows.length, list: [lr.l, lr.t, lr.r, lr.b].map(Math.round), scrolls });
         rows.forEach((r) => { r.scrollIntoView({ block: 'nearest' }); });
         const last = rows[rows.length - 1];

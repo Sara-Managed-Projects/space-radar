@@ -4,6 +4,7 @@
 // The radio exchange is captions, not sound: no recording with a clear licence was found.
 import { COPY } from './en.js';
 import './en.moments.js';
+import { HOOK } from './lang.js';
 
 Object.assign(COPY.momentStories, {
   'vostok-1': {
@@ -38,3 +39,6 @@ Object.assign(COPY.momentStories, {
     srcNssdc: 'NASA NSSDCA, Vostok 1 (orbit, spacecraft)',
   },
 });
+
+// The story's words in the visitor's language when a translation has them (copy/lang.js; the other sections are localised by en.moments.js).
+if (HOOK.localise) HOOK.localise({ COPY }, ['momentStories']);

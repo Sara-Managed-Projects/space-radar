@@ -28,7 +28,7 @@ export function momentFor(id) {
 /**
  * THE VEHICLES (internal #1057, release 1.6.2). A card of a craft a story flies offers the story too: the R-7 of Vostok,
  * the Saturn V, the Apollo CSM and LM, the SLS and Orion. The craft are matched by the words a record carries for them
- * (a launch's `meta.rocket` and rocket-family path, a spacecraft's name), never by a guess: a Soyuz-2 is a descendant
+ * (a launch's `meta.rocket` and nearest family, a spacecraft's name), never by a guess: a Soyuz-2 is a descendant
  * of the R-7 and is not Vostok's rocket, so it does not match. Orion is only a craft on the layers that hold craft,
  * because Orion is also a constellation and a nebula.
  */
@@ -45,8 +45,8 @@ export function momentForRecord(record) {
   const byId = momentFor(record.id);
   if (byId) return byId;
   const meta = record.meta || {};
-  const rocketWords = [meta.rocket, meta.rocketFamily, ...(Array.isArray(meta.rocketFamilyPath) ? meta.rocketFamilyPath : [])]
-    .filter((x) => typeof x === 'string');
+  // The rocket's own name and its nearest family only: the family PATH runs up to the root (Soyuz-2's root is R-7).
+  const rocketWords = [meta.rocket, meta.rocketFamily].filter((x) => typeof x === 'string');
   const name = typeof record.name === 'string' ? record.name.trim() : '';
   for (const v of VEHICLES) {
     if (rocketWords.some((w) => v.rocket.test(w.trim()))) return SHELF.find((s) => s.id === v.id) || null;

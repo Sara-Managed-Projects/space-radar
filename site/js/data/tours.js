@@ -5790,5 +5790,121 @@ export const TOURS = [
 }
 ],
 "estimate_ms": 161184
+},
+{
+"id": "two-pads-at-kennedy",
+"title": "Two pads at Kennedy, two ages of rockets",
+"blurb": "The Saturn V from pad 39A, the Shuttle from pad 39B, on five launch mornings.",
+"requires": [
+"hand-kept-sites"
+],
+"clock": "as-found",
+"group": "earth-orbit",
+"pacing": "auto",
+"stage": "earth",
+"min_stops": 3,
+"stops": [
+{
+"id": "apollo-8",
+"target": {
+"site": "saturn-v-lc-39a"
+},
+"distance_km": 2,
+"time": "1968-12-21T12:30:00Z",
+"card": {
+"title": "The first crew to leave for the Moon",
+"body": "A Saturn V lifted off from pad 39A with Frank Borman, James Lovell and William Anders on board. Apollo 8 was the first crewed spacecraft to leave Earth's gravity and reach the Moon. The rocket here is NASA's model of it."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 16153
+},
+{
+"id": "apollo-11",
+"target": {
+"site": "saturn-v-lc-39a"
+},
+"distance_km": 2,
+"time": "1969-07-16T13:00:00Z",
+"card": {
+"title": "Four days to Tranquility Base",
+"body": "Apollo 11 left this pad in the morning, Florida time. Four days later two of its three astronauts landed in the Sea of Tranquility. All three were home eight days after the launch."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 13489
+},
+{
+"id": "apollo-17",
+"target": {
+"site": "saturn-v-lc-39a"
+},
+"distance_km": 2,
+"time": "1972-12-07T05:30:00Z",
+"card": {
+"title": "The last people to leave for the Moon",
+"body": "Apollo 17 lifted off after a delay of 2 hours and 40 minutes, in the dark. It was the first night launch of an Apollo, and the last Apollo mission on which people walked on the Moon."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 14821
+},
+{
+"id": "sts-31",
+"target": {
+"site": "shuttle-lc-39b"
+},
+"distance_km": 2,
+"time": "1990-04-24T12:00:00Z",
+"card": {
+"title": "A telescope goes up in a Shuttle",
+"body": "The Space Shuttle Discovery left pad 39B on STS-31, to deploy the Hubble Space Telescope. To leave it in an orbit that would last, Discovery climbed to 600 km, then the highest a Shuttle had flown."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 14488
+},
+{
+"id": "sts-116",
+"target": {
+"site": "shuttle-lc-39b"
+},
+"distance_km": 2,
+"time": "2006-12-10T01:30:00Z",
+"card": {
+"title": "The last Shuttle from this pad",
+"body": "Pad 39B saw 53 Space Shuttle launches. The last, STS-116, left in the dark with a crew of seven for the International Space Station. Discovery was the Shuttle on the pad."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 12823
+}
+],
+"estimate_ms": 88524
 }
 ];

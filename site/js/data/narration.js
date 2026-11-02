@@ -12,7 +12,10 @@ export const NARRATION = {
   "scripted": [
     "the-constellations/southern-cross",
     "to-the-edge/edge",
-    "travel-to-exoplanets/all"
+    "travel-to-exoplanets/all",
+    "two-pads-at-kennedy/apollo-8",
+    "two-pads-at-kennedy/sts-116",
+    "two-pads-at-kennedy/sts-31"
   ],
   "clips": {
     "people-in-space/far": 9.58,
@@ -242,6 +245,11 @@ export const NARRATION = {
     "out-to-the-edge/first-galaxies": 17.88,
     "out-to-the-edge/oldest-light": 20.74,
     "out-to-the-edge/edge": 19.73,
+    "two-pads-at-kennedy/apollo-8": 17.67,
+    "two-pads-at-kennedy/apollo-11": 14.46,
+    "two-pads-at-kennedy/apollo-17": 14.67,
+    "two-pads-at-kennedy/sts-31": 18.06,
+    "two-pads-at-kennedy/sts-116": 15.65,
     "onboarding/move": 6.72,
     "onboarding/find": 6.15,
     "onboarding/card": 6.06,
@@ -480,6 +488,11 @@ export const NARRATION = {
     "out-to-the-edge/first-galaxies": "61aa1acb",
     "out-to-the-edge/oldest-light": "4e547036",
     "out-to-the-edge/edge": "1ec83f63",
+    "two-pads-at-kennedy/apollo-8": "f58a8e6a",
+    "two-pads-at-kennedy/apollo-11": "ab022863",
+    "two-pads-at-kennedy/apollo-17": "e13ada2a",
+    "two-pads-at-kennedy/sts-31": "231e64c7",
+    "two-pads-at-kennedy/sts-116": "0d7e1ece",
     "onboarding/move": "cd8319e1",
     "onboarding/find": "5e6b109d",
     "onboarding/card": "86da3981",

@@ -37,5 +37,6 @@ export const TOUR_WORDS = {
 "into-the-helix": "the helix nebula telescope sees photograph turn and becomes shape inside ring around dying star heart how big scale",
 "inside-a-neighbouring-galaxy": "galaxy you can see its photograph from home turned becomes model the tarantula inside cloud hollow blown young stars shell heaviest known r136 our and neighbour depart",
 "across-the-local-group": "our galaxy from outside milky way the large magellanic cloud lmc andromeda other giant triangulum third spiral local group among its neighbours sun",
-"out-to-the-edge": "start home our group galaxies local sun the volume ton 618 quasar where first are now microwave background oldest light end this map edge"
+"out-to-the-edge": "start home our group galaxies local sun the volume ton 618 quasar where first are now microwave background oldest light end this map edge",
+"two-pads-at-kennedy": "the first crew leave for moon apollo four days tranquility base last people telescope goes shuttle sts from this pad 116"
 };

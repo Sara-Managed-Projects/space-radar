@@ -342,5 +342,14 @@ export const TOURS_INDEX = [
 "min_stops": 3,
 "count": 7,
 "estimate_ms": 161184
+},
+{
+"id": "two-pads-at-kennedy",
+"title": "Two pads at Kennedy, two ages of rockets",
+"blurb": "The Saturn V from pad 39A, the Shuttle from pad 39B, on five launch mornings.",
+"group": "earth-orbit",
+"min_stops": 3,
+"count": 5,
+"estimate_ms": 88524
 }
 ];
