@@ -8,9 +8,10 @@
     python3 scripts/minify_site.py --out /tmp/x --node node      # and `node --check` every output
     python3 scripts/minify_site.py --out /tmp/x --esbuild auto   # then a real minifier over the modules,
                                                                  # with a source map beside each (see below)
-    python3 scripts/minify_site.py --out /tmp/x --shaders        # and strip the comments and indentation of
-                                                                 # shader text in templates (OFF unless asked, or
-                                                                 # SR_STRIP_SHADERS=1; scripts/strip_shaders.py)
+    python3 scripts/minify_site.py --out /tmp/x                  # shader text in templates loses its comments and
+                                                                 # indentation too (ON since 1.7.4, internal #531;
+                                                                 # --no-shaders or SR_STRIP_SHADERS=0 is the way back;
+                                                                 # scripts/strip_shaders.py)
 
 WHY (internal #405, 2026-10-06). The source is the project's documentation: every module says why
 it is the way it is, at length, and that is not negotiable. But there is no build step, so every
@@ -455,7 +456,8 @@ def build(site: Path, out: Path, tree: bool = False, node: str | None = None, qu
         raise SystemExit(f"minify_site: {out} is not empty; give it a new folder")
     out.mkdir(parents=True, exist_ok=True)
     if shaders is None:
-        shaders = os.environ.get("SR_STRIP_SHADERS", "") not in ("", "0")
+        # ON unless asked not to (release 1.7.4, internal #531): SR_STRIP_SHADERS=0 or --no-shaders is the way back.
+        shaders = os.environ.get("SR_STRIP_SHADERS", "") != "0"
     shader_inputs: dict[str, str] = {}
     shader_saved = 0
     before = after = 0
@@ -553,8 +555,10 @@ def main() -> int:
     ap.add_argument("--tree", action="store_true", help="also link everything else in site/ into --out, so it can be served whole")
     ap.add_argument("--node", help="a node binary: `node --check` every stripped module, exit 1 if one fails")
     ap.add_argument("--esbuild", help="`auto` (the pinned binary of scripts/get_esbuild.py) or a path: minify the ES modules after stripping them, with source maps")
-    ap.add_argument("--shaders", action="store_true", default=None,
-                    help="also strip comments and indentation from shader text in templates (scripts/strip_shaders.py); off unless given or SR_STRIP_SHADERS=1")
+    ap.add_argument("--shaders", dest="shaders", action="store_true", default=None,
+                    help="strip comments and indentation from shader text in templates (scripts/strip_shaders.py); ON by default since 1.7.4")
+    ap.add_argument("--no-shaders", dest="shaders", action="store_false",
+                    help="leave shader text as written: the way back from the default (or SR_STRIP_SHADERS=0)")
     ap.add_argument("--quiet", action="store_true")
     args = ap.parse_args()
     return build(args.site, args.out, tree=args.tree, node=args.node, quiet=args.quiet, esbuild=args.esbuild,

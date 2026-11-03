@@ -59,7 +59,6 @@ const LIGHT_URL = '../../../images/deep/carina/carina-light.webp';
 const FRONT_URL = '../../../data/deep/carina-front.bin';
 const DETAIL_URL = '../../../images/deep/carina/carina-detail.webp';
 const CLUSTER_BY_TIER = [600, 1400, 2600];
-const LY_PER_PC = 3.26156;
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
 const part = (P, k) => (P.layers || []).find((l) => l && l.part === k) || {};
 const isOurs = (p) => p && Array.isArray(p.layers) && p.layers.some((l) => l && l.part === 'front' && Array.isArray(l.lobes));

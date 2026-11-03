@@ -449,7 +449,6 @@ export function createLayer(THREE, env = {}) {
     uniforms.uSelected.value = row;
     showRange(row); // an inferred galaxy's line of possible distances, for the one selected (-1 hides it)
   }
-  const _p = new THREE.Vector3();
   /** Candidates for a tap: {record, px, score}, nearest first. The tile has to be on screen; ranks just behind the map's own marks. */
   function pickAll(ndcX, ndcY, camera, viewport, limit = 6, reachPx = 12) {
     if (!state.loaded || !group.visible || state.culled || !camera || !viewport) return [];

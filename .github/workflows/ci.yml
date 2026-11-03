@@ -1269,3 +1269,17 @@ jobs:
       - name: "the packed exoplanets (site/data/exoplanets.bin) are the bundled table, to what a card prints, in 133 kB gzipped (release 1.5.0 stage A13, internal #1073)"
         run: node tests/test_exopack.mjs
       # 0079 a6: end
+      # 1.7.4 checks: begin
+      - name: "no name is declared and never used: unused imports, consts, lets, functions and classes in site/js, tools, scripts and tests, with a list of known exceptions that may only shrink (public #1229)"
+        run: node tests/test_lint.mjs
+      - name: "a command-line tool says what it wants: --help prints usage and exits 0, and a new tool that reads its arguments by position needs a usage line (public #1230)"
+        run: node tests/test_cli_usage.mjs
+      - name: "the README's launch with nothing built: python3 -m http.server on site/, the page and every module on the way to the first frame come back 200 as JavaScript (public #1203)"
+        run: node tests/test_nobuild_launch.mjs
+      - name: "no WebGL 2: createRenderer refuses the way a browser does and the readable page with every trip is shown (public #1243)"
+        run: node tests/test_nowebgl.mjs
+      - name: "reduced motion through two real trips: no flight, no veil, the timed stops hold the clock still, leaving puts it back (public #236)"
+        run: node tests/test_reduced_motion_trips.mjs
+      - name: "the deep-space baseline captures are wired: every block and pose names a scene group, the package's DS poses are all there (public #1189)"
+        run: node tests/test_baselines.mjs
+      # 1.7.4 checks: end
