@@ -2359,6 +2359,20 @@ mission or radar team published, in the body's own axes, by `scripts/gen_smallbo
   and was not worked around. Dinkinesh and Selam have no published shape file (their NAIF constants are placeholders).
 <!-- 0079 B1: end -->
 
+### The landers' and impactors' dated events (release 1.7.3)
+
+No picture or file is added beyond the data file `site/js/data/missions-landers.js` (generated from `registry/missions-landers.yaml`). It is
+numbers and one sentence per event, each written from the page named on its mission, read on 2026-11-03.
+
+- **NASA NSSDCA** (public domain, NASA): the pages of Ranger 7, 8 and 9, Surveyor 1 to 7, Viking 1 and 2 Landers, Mars Pathfinder, Spirit,
+  Opportunity, Phoenix and InSight (<https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1964-041A> and the other COSPAR ids named in the
+  registry); the "Chronology of Lunar and Planetary Exploration" (<https://nssdc.gsfc.nasa.gov/planetary/chronology.html>) for launch dates the
+  mission's page does not give; the "Table of Anthropogenic Impacts and Spacecraft on the Moon" for the landing days.
+- **Wikipedia** (CC BY-SA 4.0): the articles on Venera 7 to 14, VEGA 1 and 2, Luna 9, 13, 16, 17, 20, 21, 23 and 24, Chang'e 3, 4, 5 and 6
+  and Zhurong, for the times and sentences they give (NSSDCA's catalogue pages of the Soviet and Chinese craft did not answer on 2026-11-03).
+  Each such mission names its article and the licence in the card's source link. A time worked out from a duration the article gives
+  ("53 minutes after landing") is said to be about that on the card.
+
 ### Ring and spot data (0076 W2-b)
 
 No picture or file is added: these are numbers, each typed into the code with its source beside it.
