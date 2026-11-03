@@ -95,6 +95,15 @@ player keeps it in the frame and not for hours (Apollo 13's service module, `sm`
 `sputnik-1`, once riding the rocket's head and once on its orbit). Apollo 13's path is integrated (`apollo13.mjs`: the Earth and the Moon,
 the Moon from the app's ephemeris, a trim found by search); the others are conics.
 
+**Release 1.7.2 notes.** Vehicle `phases` may carry `pitchDeg` and `rollDeg`, keyframes blended linearly from one phase that names them to the
+next: the pitch turns the nose (Y) towards the vehicle's X (up, for `prograde` on an orbit) and the roll turns the vehicle about its nose; STS-1's
+orbiter enters at 40 degrees nose-high and is flown dorsal side up. `rideOn.spin: [x, y, z]` (degrees) turns the rider about its host's axes
+(Leonov floating along the airlock's axis). A vehicle's `keepXZ: true` keeps the file's own axis as the vehicle's axis instead of centring the
+model's box (the Voskhod 3KD has an airlock and an umbilical to one side). A `ground` may be `lakebed: true`, a pale dry lake, with a `runway`
+`{bearing, widthM, lengthM}` painted on it, centred on the place (Edwards). The player lights a night pad with a lamp (the Sun below the
+horizon, the camera in the air) and marks every vehicle shorter than 40 px on the screen with the ringed dot. The generators are `voskhod2.mjs`
+and `sts1.mjs`; both search for the least correction that meets the published landing and print how far the reconstruction had to be nudged.
+
 ## Tracks
 
 **`parts`**: `{t, part, action, vehicle?}`: at second `t`, the part named `part` does `action`. `vehicle` defaults to the lead. The actions:

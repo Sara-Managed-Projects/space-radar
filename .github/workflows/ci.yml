@@ -612,6 +612,12 @@ jobs:
       - name: "More Moments: Apollo 13: event order, times, the incident, the radio, the flyby, the burn home, entry, the shelf and the cards"
         run: node tests/test_moments_more.mjs
       # 1.7.0: end
+      # 1.7.2: begin
+      # Release 1.7.2 (internal #1058): the Voskhod 2 and STS-1 Moments (the published times, the orbits, the landings near Perm and at Edwards, the parts of
+      # the new models), the night pad's lamp, the marker's floor, the attitude tilt, and Apollo 13 and Sputnik 1 in four languages.
+      - name: "Voskhod 2 and STS-1: the times, the orbits, the landings, the models, the shelf, the night lamp and the four languages"
+        run: node tests/test_moments_voskhod_sts1.mjs
+      # 1.7.2: end
       - name: Satellite positions move and reject stale orbital elements
         run: node tests/test_sgp4.mjs
       - name: The scene says so when no satellite could be read
