@@ -45,6 +45,11 @@ try {
   rig.flyTo({ offset: mix(sunward('venus'), 1, north('venus'), 0.25), distance: R * 3.2, ms: 0 });
 } catch (e) { out.problems.push('venus framing: ' + e); }
 await snap('01-venus-sites', 'Venus from its sunlit side with the Venera and VEGA landing sites (marks: nothing is drawn there but a mark)', 5000);
+// A regional view round Venera 13: the sites of Venera 9 to 14 are within a few hundred kilometres of each other
+if (await go('venera-13', null, 8000)) {
+  try { rig.flyTo({ distance: (6051.8 / sr.stage.unitKm) * 0.6, ms: 0 }); } catch (e) { out.problems.push('venus regional: ' + e); }
+  await snap('01b-venus-region', 'round the Venera 13 site, 0.6 of Venus\'s radius up: the marks of the Venera sites round it', 5000);
+}
 location.hash = '#event=venera-13.landing';
 const cardUp = await until(() => /Venera 13/.test(text('.sr-mission') || ''), 60000);
 if (!cardUp) out.problems.push('the link #event=venera-13.landing never opened a card with the Venera 13 events (the landers\' file did not load?)');
@@ -61,6 +66,10 @@ try {
   rig.flyTo({ offset: mix(sunward('moon'), 1, north('moon'), 0.3), distance: R * 3.0, ms: 0 });
 } catch (e) { out.problems.push('moon framing: ' + e); }
 await snap('03-moon-sites', 'the Moon with the Ranger, Surveyor, Luna, Lunokhod and Chang\'e sites', 5000);
+if (await go('surveyor-3', null, 8000)) {
+  try { rig.flyTo({ distance: 0.9, ms: 0 }); } catch (e) { out.problems.push('moon regional: ' + e); }
+  await snap('03b-moon-region', 'round Surveyor 3 from 900 km up: Surveyor 1 and 3, Apollo 12, Ranger 7 and the Luna sites of Oceanus Procellarum with their marks', 5000);
+}
 location.hash = '#event=ranger-7.impact';
 await until(() => /Ranger 7/.test(text('.sr-mission') || ''), 60000);
 await sleep(7000);
