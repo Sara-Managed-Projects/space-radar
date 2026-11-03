@@ -1,0 +1,249 @@
+{
+ "format": "SRTC-1",
+ "id": "tracked",
+ "title": "Tracked debris and rocket bodies, by their own elements",
+ "build": 847022400,
+ "built_at": "2026-11-03T12:00:00Z",
+ "count": 12403,
+ "id_field": "id",
+ "rank": {
+  "field": "size_rank",
+  "cuts": [
+   1,
+   2
+  ],
+  "note": "0 rocket body or radar cross-section 1 m2 or more; 1 from 0.1 to 1 m2; 2 smaller or not measured"
+ },
+ "schema": [
+  {
+   "name": "id",
+   "type": "u32"
+  },
+  {
+   "name": "epoch",
+   "type": "f64",
+   "unit": "seconds since 2000-01-01T00:00:00Z"
+  },
+  {
+   "name": "n",
+   "type": "f64",
+   "unit": "revolutions per day"
+  },
+  {
+   "name": "ecc",
+   "type": "u32",
+   "scale": 2.3283064365386963e-10
+  },
+  {
+   "name": "inc",
+   "type": "u32",
+   "scale": 4.190951586745435e-08,
+   "unit": "degrees"
+  },
+  {
+   "name": "raan",
+   "type": "u32",
+   "scale": 8.381903171539307e-08,
+   "unit": "degrees"
+  },
+  {
+   "name": "argp",
+   "type": "u32",
+   "scale": 8.381903171539307e-08,
+   "unit": "degrees"
+  },
+  {
+   "name": "ma",
+   "type": "u32",
+   "scale": 8.381903171539307e-08,
+   "unit": "degrees"
+  },
+  {
+   "name": "bstar",
+   "type": "f32"
+  },
+  {
+   "name": "ndot",
+   "type": "f32",
+   "unit": "revolutions per day squared"
+  },
+  {
+   "name": "kind",
+   "type": "u8",
+   "classes": [
+    "debris",
+    "rocket"
+   ]
+  }
+ ],
+ "partition": {
+  "kind": "bands",
+  "field": "alt_km",
+  "edges": [
+   600,
+   1000,
+   2000,
+   34000,
+   37600
+  ]
+ },
+ "levels": [
+  {
+   "level": 0,
+   "rank_from": null,
+   "rank_to": 1,
+   "count": 2390,
+   "bytes": 117214
+  },
+  {
+   "level": 1,
+   "rank_from": 1,
+   "rank_to": 2,
+   "count": 967,
+   "bytes": 47475
+  },
+  {
+   "level": 2,
+   "rank_from": 2,
+   "rank_to": null,
+   "count": 9046,
+   "bytes": 443358
+  }
+ ],
+ "tiles": [
+  {
+   "key": "b0",
+   "level": 0,
+   "path": "L0/b0.bin",
+   "count": 177,
+   "bytes": 8693
+  },
+  {
+   "key": "b1",
+   "level": 0,
+   "path": "L0/b1.bin",
+   "count": 635,
+   "bytes": 31135
+  },
+  {
+   "key": "b2",
+   "level": 0,
+   "path": "L0/b2.bin",
+   "count": 276,
+   "bytes": 13540
+  },
+  {
+   "key": "b3",
+   "level": 0,
+   "path": "L0/b3.bin",
+   "count": 1020,
+   "bytes": 49996
+  },
+  {
+   "key": "b4",
+   "level": 0,
+   "path": "L0/b4.bin",
+   "count": 258,
+   "bytes": 12658
+  },
+  {
+   "key": "b5",
+   "level": 0,
+   "path": "L0/b5.bin",
+   "count": 24,
+   "bytes": 1192
+  },
+  {
+   "key": "b0",
+   "level": 1,
+   "path": "L1/b0.bin",
+   "count": 15,
+   "bytes": 755
+  },
+  {
+   "key": "b1",
+   "level": 1,
+   "path": "L1/b1.bin",
+   "count": 318,
+   "bytes": 15598
+  },
+  {
+   "key": "b2",
+   "level": 1,
+   "path": "L1/b2.bin",
+   "count": 316,
+   "bytes": 15500
+  },
+  {
+   "key": "b3",
+   "level": 1,
+   "path": "L1/b3.bin",
+   "count": 313,
+   "bytes": 15357
+  },
+  {
+   "key": "b4",
+   "level": 1,
+   "path": "L1/b4.bin",
+   "count": 5,
+   "bytes": 265
+  },
+  {
+   "key": "b0",
+   "level": 2,
+   "path": "L2/b0.bin",
+   "count": 412,
+   "bytes": 20204
+  },
+  {
+   "key": "b1",
+   "level": 2,
+   "path": "L2/b1.bin",
+   "count": 5994,
+   "bytes": 293722
+  },
+  {
+   "key": "b2",
+   "level": 2,
+   "path": "L2/b2.bin",
+   "count": 2109,
+   "bytes": 103361
+  },
+  {
+   "key": "b3",
+   "level": 2,
+   "path": "L2/b3.bin",
+   "count": 415,
+   "bytes": 20355
+  },
+  {
+   "key": "b4",
+   "level": 2,
+   "path": "L2/b4.bin",
+   "count": 112,
+   "bytes": 5504
+  },
+  {
+   "key": "b5",
+   "level": 2,
+   "path": "L2/b5.bin",
+   "count": 4,
+   "bytes": 212
+  }
+ ],
+ "pick": {
+  "path": "ids.bin",
+  "bytes": 124048
+ },
+ "source": "CelesTrak GP (NAME=DEB and NAME=R/B), radar cross-sections from CelesTrak SATCAT",
+ "licence": "Free to use under CelesTrak's usage policy (no licence text; the rate limits are enforced)",
+ "attribution": "Orbital data: CelesTrak (T. S. Kelso)",
+ "names": {
+  "path": "names.txt",
+  "bytes": 168971
+ },
+ "classes": [
+  "debris",
+  "rocket"
+ ]
+}
