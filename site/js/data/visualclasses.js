@@ -148,6 +148,8 @@ export const VISUAL_CLASSES = [
 ],
 "sites": [
 "vostok-1-landing",
+"voskhod-2-landing",
+"edwards-afb-runway-23",
 "copernicus",
 "tycho",
 "shackleton",
