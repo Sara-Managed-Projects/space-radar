@@ -618,6 +618,12 @@ jobs:
       - name: "Voskhod 2 and STS-1: the times, the orbits, the landings, the models, the shelf, the night lamp and the four languages"
         run: node tests/test_moments_voskhod_sts1.mjs
       # 1.7.2: end
+      # 1.7.6: begin
+      # Release 1.7.6 (internal #1058, #867): part poses and carried riders in the Moments engine (the Hubble's arrays and the Canadarm), and the new stories'
+      # tests (tests/test_moment_stories.mjs, above).
+      - name: "Moments: part poses, carried riders, the shot's lookAt"
+        run: node tests/test_moments_pose.mjs
+      # 1.7.6: end
       - name: Satellite positions move and reject stale orbital elements
         run: node tests/test_sgp4.mjs
       - name: The scene says so when no satellite could be read
