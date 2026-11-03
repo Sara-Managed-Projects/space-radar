@@ -50,8 +50,10 @@
 //     between 1 and 2 million would read "1,4 millions" where French writes "1,4 million".
 //   * card.it / leadVerbs: the card turns "{name} est ..." into "Ceci est ..." under a title that already names the object;
 //     "C'est ..." would be better but the code joins with a space ("C' est"). articles is ["Le", "le"] (two items, as English).
-//   * r12Navigate.the and theWord: left empty on purpose. The code writes "{theWord} {name}" for the English names "Sun",
-//     "Moon", "Milky Way", which would print "le Sun"; the names come from the registry in English.
+//   * r12Navigate.the / theWord: the English list of names that take "the" cannot carry French genders (le Soleil, la Lune,
+//     la Voie lactée), and an empty string falls back to English (copy/index.js), which would print "the Sun". the is set to
+//     placeholders that never match (∅), so the button reads the registry name alone; theWord stays empty on purpose (same
+//     pattern as Portuguese).
 //   * Names that come from the registry (object names, "Earth", "the Moon", a star's host, a shower's name, the type of a
 //     rocket mission, an exoplanet's discovery method) are English and are put into French sentences as they are.
 //   * sky.worldFrom.*: the English "rises {rise} in the {riseDir}" is written as nouns ("lever à 09:46, à l'est") so that no
@@ -3729,9 +3731,9 @@ export const COPY = {
     "milkyWay": "Voie lactée",
     "outside": "Hors de la Voie lactée",
     "the": [
-      "",
-      "",
-      ""
+      "∅",
+      "∅",
+      "∅"
     ],
     "theWord": "",
     "backParent": "Retour : {parent}",
