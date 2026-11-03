@@ -4056,6 +4056,323 @@ Object.assign(COPY, {
   }
 });
 
+// 1.6.3 (internal #995): the sections and strings this file did not have yet (r13Deep, compare, passportKinds, photoCompare, entrances,
+// the 1.5 strings and the gaps in card, drawing, cls, templates and the rest), de. Machine-drafted like the rest of this file (docs/TRANSLATING.md):
+// drafted by a program from the English, NOT read by a native speaker. A key this file already has is left as it is.
+{
+  const topUp = (dst, src) => {
+    for (const k of Object.keys(src)) {
+      if (src[k] && typeof src[k] === 'object' && !Array.isArray(src[k]) && dst[k] && typeof dst[k] === 'object') topUp(dst[k], src[k]);
+      else if (!(k in dst)) dst[k] = src[k];
+    }
+  };
+  topUp(COPY, {
+    "card": {
+      "rows": {
+        "iauName": "Von der IAU anerkannter Name",
+        "onBody": "Auf",
+        "whenSite": "Wann"
+      }
+    },
+    "drawing": {
+      "markOnly": "eine Markierung an seinem Ort; dort gibt es nichts zu zeichnen",
+      "noPlace": "nicht gezeichnet: Für ihn lässt sich kein Ort markieren",
+      "shower": "ein Name an dem Punkt, aus dem seine Meteore zu kommen scheinen, in der Himmelsansicht nahe dem Maximum; eine Richtung, kein Ort im Raum"
+    },
+    "klass": {
+      "shower": "Meteorstrom"
+    },
+    "cls": {
+      "shower": "eine Richtung am Himmel: der Median der von der IAU veröffentlichten Lösungen für diesen Meteorstrom",
+      "noPlace": "für ihn wird kein Ort gezeichnet: Der Körper, auf dem er liegt, ist in dieser App keine Welt",
+      "approxPlace": "nach veröffentlichten Koordinaten platziert, auf etwa {n} Grad genau"
+    },
+    "unplaced": {
+      "noDistanceRow": "Nicht gemessen: Der Katalog hat keine Parallaxe dafür",
+      "iauApproved": "{name}, anerkannt am {date}"
+    },
+    "starSystem": {
+      "auYearComputed": "{n} AE; das Jahr dort, etwa {y} Jahre, ist daraus und aus der Masse des Sterns berechnet"
+    },
+    "searchRows": {
+      "kinds": {
+        "galaxy": "Galaxie",
+        "cluster": "Galaxienhaufen",
+        "browndwarf": "Brauner Zwerg",
+        "whitedwarf": "Weißer Zwerg"
+      }
+    },
+    "templates": {
+      "exotic": {
+        "kinds": {
+          "galaxy": "Galaxie",
+          "cluster": "Galaxienhaufen",
+          "browndwarf": "Brauner Zwerg",
+          "whitedwarf": "Weißer Zwerg"
+        },
+        "leadGalaxy": "{name} ist eine Galaxie, {dist} Lichtjahre entfernt, dort, wo sie jetzt ist",
+        "leadCluster": "{name} ist ein Galaxienhaufen, {dist} Lichtjahre entfernt, dort, wo er jetzt ist",
+        "leadBrowndwarf": "{name} ist ein Brauner Zwerg, {dist} Lichtjahre entfernt",
+        "leadWhitedwarf": "{name} ist ein Weißer Zwerg, {dist} Lichtjahre entfernt"
+      },
+      "site": {
+        "mpc": "sein Code beim Minor Planet Center ist {code}",
+        "closed": "{year} geschlossen",
+        "kinds": {
+          "launch-site": "Startplatz",
+          "landing-site": "Landeplatz"
+        }
+      },
+      "shower": {
+        "lead": "{name} ist ein Meteorstrom",
+        "peak": "mit dem Maximum etwa am {date}",
+        "speed": "mit Meteoren, die mit {n} km pro Sekunde in die Luft eintreten",
+        "parent": "aus dem Staub von {parent}"
+      }
+    },
+    "a45": {
+      "farNote": "wie weit er jetzt entfernt ist ({how}), aus seiner Rotverschiebung von {z} in der Kosmologie von Planck 2018",
+      "comoving": "mitbewegte Entfernung",
+      "pulsarDistance": [
+        "aus der Parallaxe des Pulsars selbst",
+        "die Entfernung des Kugelsternhaufens, Supernova-Überrests oder anderen Objekts, zu dem er gehört",
+        "die Schätzung eines Modells aus dem Radiosignal (das Modell YMW16 für die freien Elektronen der Galaxis), keine Messung: Sie kann weit danebenliegen"
+      ],
+      "shape": {
+        "galaxy": "eine Markierung in der Entfernung, die ihre Rotverschiebung ergibt; eine so ferne Galaxie ist höchstens ein paar Pixel groß, ihre Form wird also nicht gezeichnet",
+        "browndwarf": "ein Ring in seiner gemessenen Entfernung; ein Brauner Zwerg ist in diesem Maßstab ein Punkt und gibt fast kein sichtbares Licht ab",
+        "whitedwarf": "ein Ring in seiner gemessenen Entfernung; der Weiße Zwerg selbst ist in diesem Maßstab ein Punkt",
+        "cluster": "eine Markierung im Röntgenzentrum des Haufens; die Mitgliedsgalaxien werden nur für Virgo, Coma, Fornax und Perseus gezeichnet (die Stufe der Lokalen Gruppe)"
+      },
+      "quasarZ7": "Ein Quasar, gesehen, wie er etwa {age} Millionen Jahre nach dem Urknall war: einer von {n} bekannten jenseits der Rotverschiebung 7.",
+      "unplaced": {
+        "unnamed": "HYG-Stern {id}",
+        "lead": "{name} ist ein Stern in der Richtung, in die du schaust; niemand hat gemessen, wie weit er entfernt ist",
+        "leadColour": "{name} ist {a} {colour} Stern in der Richtung, in die du schaust; niemand hat gemessen, wie weit er entfernt ist",
+        "note": "Auf den Himmel gezeichnet und nirgends im Raum, denn ein Ort braucht eine Entfernung.",
+        "cite": "HYG Stellar Database v4.4 (CC BY-SA 4.0): nur Richtung und Helligkeit"
+      }
+    },
+    "r13Deep": {
+      "card": {
+        "dso-tarantula-nebula": "Ihr Licht nahe unserer Blickrichtung ist das Foto von Webb; ihr Gas ist ein Modell einer Höhle um den Haufen R136 in einer Hülle aus leuchtendem Gas, die von Molekülwolken eingefasst wird, nach Pellegrini, Baldwin und Ferland (2011). Noch nicht von einem Astronomen geprüft.",
+        "dso-m43": "Ihr Licht stammt aus dem Foto der ESO, ihre Form ist rekonstruiert als kleinere Mulde in derselben dunklen Wolke wie der Orionnebel, beleuchtet vom Stern NU Orionis. Noch nicht von einem Astronomen geprüft.",
+        "dso-m51": "Gebaut aus ihrer veröffentlichten Neigung und Struktur: eine Spirale mit zwei Armen, fast von oben gesehen, ihre Begleiterin NGC 5195 hinter dem Ende ihres Nordarms und der Arm, der sie erreicht; die Tiefen sind ein Modell. Noch nicht von einem Astronomen geprüft.",
+        "dso-m81": "Gebaut aus ihrer veröffentlichten Neigung und Struktur: ein großer, alter Bulge und zwei eng gewundene Arme mit Staub an der Innenseite. Noch nicht von einem Astronomen geprüft.",
+        "dso-m101": "Gebaut aus ihrer veröffentlichten Neigung und Struktur: eine große Scheibe, fast von oben gesehen, viele Arme und ihre riesigen Sternentstehungsgebiete dort, wo der Himmel sie zeigt. Noch nicht von einem Astronomen geprüft.",
+        "dso-m104": "Gebaut aus ihrer veröffentlichten Neigung und Struktur: ein riesiger runder Bulge und eine dünne Scheibe, fast von der Kante gesehen, mit ihrem Staubring davor. Noch nicht von einem Astronomen geprüft.",
+        "dso-antennae-galaxies": "Zwei zusammenstoßende Galaxien dort, wo der Himmel sie zeigt, und ihre beiden Gezeitenschweife; wie weit jeder Teil davor oder dahinter liegt, ist ein Modell nach den Simulationen des Zusammenstoßes. Noch nicht von einem Astronomen geprüft.",
+        "dso-m83": "Gebaut aus ihrer veröffentlichten Neigung und Struktur: eine Balkenspirale, fast von oben gesehen, ihre Arme reich an jungen Sternen und leuchtendem Wasserstoff. Noch nicht von einem Astronomen geprüft.",
+        "dso-ngc-1300": "Gebaut aus ihrer veröffentlichten Struktur: ein langer Balken mit Staubbändern an seinen vorderen Kanten und zwei Armen, die von seinen Enden ausgehen, ihre Form dem Foto von Hubble angepasst. Noch nicht von einem Astronomen geprüft.",
+        "dso-centaurus-a": "Gebaut aus veröffentlichten Zahlen: eine riesige elliptische Galaxie, von einer verbogenen Scheibe aus Staub und jungen Sternen durchzogen, nach einem Modell, das an die Bilder von Spitzer angepasst ist; ihre beiden Jets sind in Falschfarben gezeichnet, denn sie leuchten im Röntgen- und Radiolicht, nicht im sichtbaren Licht. Noch nicht von einem Astronomen geprüft."
+      }
+    },
+    "compare": {
+      "row": "Vergleichen",
+      "hint": "maßstabsgetreu",
+      "missing": "—",
+      "none": "Keine",
+      "yes": "Ja",
+      "no": "Nein",
+      "range": "{a} bis {b}",
+      "numUnit": "{num} {unit}",
+      "modeLabel": "Ansicht",
+      "modes": {
+        "pair": "Nebeneinander",
+        "lab": "Alle Welten"
+      },
+      "withLabel": "Vergleichen mit",
+      "scaleLabel": "Maßstab",
+      "scales": {
+        "true": "Maßstabsgetreu",
+        "same": "Gleiche Breite"
+      },
+      "propLabel": "Alle Welten sortieren nach",
+      "props": {
+        "across": "Breite",
+        "mass": "Masse",
+        "gravity": "Schwerkraft",
+        "temp": "Temperatur",
+        "spin": "Dauer einer Drehung",
+        "year": "Länge eines Jahres",
+        "dist": "Abstand zur Sonne",
+        "moons": "Zahl der Monde"
+      },
+      "names": {
+        "sun": "Die Sonne",
+        "mercury": "Merkur",
+        "venus": "Venus",
+        "earth": "Erde",
+        "moon": "Der Mond",
+        "mars": "Mars",
+        "jupiter": "Jupiter",
+        "saturn": "Saturn",
+        "uranus": "Uranus",
+        "neptune": "Neptun",
+        "pluto": "Pluto"
+      },
+      "the": {
+        "sun": "die Sonne",
+        "moon": "der Mond"
+      },
+      "wider": "{big} ist {n}-mal so breit wie {small}.",
+      "same": "{a} und {b} sind etwa gleich breit.",
+      "figure": "{a} und {b}, gezeichnet {how}.",
+      "figureTrue": "in einem Maßstab",
+      "figureSame": "in gleicher Breite, nicht maßstabsgetreu",
+      "tableLabel": "{a} und {b} im Vergleich",
+      "rows": {
+        "across": "Durchmesser",
+        "mass": "Masse",
+        "gravity": "Schwerkraft",
+        "temp": "Temperatur",
+        "spin": "Eine Drehung dauert",
+        "year": "Ein Jahr dort",
+        "dist": "Von der Sonne",
+        "air": "Atmosphäre",
+        "pressure": "Luftdruck",
+        "moons": "Monde",
+        "rings": "Ringe"
+      },
+      "units": {
+        "km": "km",
+        "earthOne": "Erde",
+        "earths": "Erden",
+        "g": "m/s²",
+        "c": "°C",
+        "hours": "Stunden",
+        "days": "Tage",
+        "years": "Jahre",
+        "au": "AE",
+        "bar": "bar",
+        "microbar": "µbar"
+      },
+      "notes": {
+        "average": "Mittelwert",
+        "flattened": "im Mittel; die Welt ist abgeplattet",
+        "range": "ihr Bereich",
+        "bar1": "auf der Ebene von 1 bar",
+        "edge": "am sichtbaren Rand",
+        "photosphere": "die sichtbare Oberfläche",
+        "retro": "dreht sich rückwärts",
+        "sunSpin": "bei 16° Breite",
+        "withEarth": "mit der Erde",
+        "exosphere": "eine dünne Exosphäre",
+        "photosphereAir": "in der Photosphäre"
+      },
+      "air": {
+        "part": "{share} % {gas}",
+        "join": ", ",
+        "almostNone": "Fast keine",
+        "noSurface": "Keine Oberfläche"
+      },
+      "gas": {
+        "hydrogen": "Wasserstoff",
+        "helium": "Helium",
+        "methane": "Methan",
+        "nitrogen": "Stickstoff",
+        "oxygen": "Sauerstoff",
+        "argon": "Argon",
+        "carbon dioxide": "Kohlendioxid"
+      },
+      "source": "Planetary Fact Sheets der NASA, gelesen am {date}.",
+      "giantNote": "Ein Riese hat keine Oberfläche: Seine Schwerkraft und seine Temperatur gelten auf der Ebene von 1 bar.",
+      "moonsNote": "Die Zahl der Monde wächst, wenn neue bestätigt werden.",
+      "spinNote": "Die Drehung der Sonne ist der Wert des Datenblatts bei 16° Breite.",
+      "drawnTrue": "In einem Maßstab aus dem mittleren Radius jeder Welt gezeichnet, keine Fotos.",
+      "drawnSame": "Gleiche Breite, also nicht maßstabsgetreu. Ringe behalten ihren Anteil daran.",
+      "tiny": "{name} ist hier kleiner als ein Pixel und wird als Punkt gezeichnet.",
+      "ringsDrawn": "Die Ringe sind für das Bild gekippt; ihre Radien sind die der NASA.",
+      "labLog": "Die Balken sind logarithmisch, damit kleine Werte sichtbar bleiben.",
+      "labLinear": "Die Balken sind proportional zur Anzahl.",
+      "labTitle": "Vergleich: {name}",
+      "thisCard": "Die Welt auf diesem Steckbrief"
+    },
+    "passportKinds": {
+      "kindsTitle": "Geöffnet, nach Art",
+      "noKinds": "Noch nichts, was sich nach Art zählen lässt.",
+      "kinds": {
+        "worlds": "Planeten, Monde und die Sonne",
+        "stations": "Raumstationen",
+        "satellites": "Satelliten und ihre Raketen",
+        "spacecraft": "Sonden und Weltraumteleskope",
+        "small": "Kometen und Asteroiden",
+        "stars": "Sterne",
+        "exoplanets": "Planeten anderer Sterne",
+        "deep": "Nebel, Galaxien und der tiefe Himmel",
+        "earth": "Orte und Wetter auf der Erde"
+      },
+      "notedTitle": "Vermerkt",
+      "noNoted": "Noch nichts vermerkt. Öffne einen Ort auf der Karte.",
+      "notedFine": "Der Tag, an dem in diesem Browser zum ersten Mal zu sehen war, dass ein Vermerk gilt. Er bleibt hier, wird nie eingeordnet oder gesendet.",
+      "noted": {
+        "first": {
+          "name": "Ein erster Ort",
+          "said": "Du hast einen Ort auf der Karte geöffnet."
+        },
+        "planets": {
+          "name": "Alle acht Planeten",
+          "said": "Du hast jeden Planeten geöffnet, von Merkur bis Neptun."
+        },
+        "station": {
+          "name": "Eine Raumstation",
+          "said": "Du hast eine Station im Orbit geöffnet."
+        },
+        "craft": {
+          "name": "Ein Raumfahrzeug da draußen",
+          "said": "Du hast eine Sonde oder ein Weltraumteleskop geöffnet."
+        },
+        "small": {
+          "name": "Ein Komet oder ein Asteroid",
+          "said": "Du hast einen kleinen Körper des Sonnensystems geöffnet."
+        },
+        "star": {
+          "name": "Ein Stern",
+          "said": "Du hast einen Stern jenseits der Sonne geöffnet."
+        },
+        "exoplanet": {
+          "name": "Der Planet eines anderen Sterns",
+          "said": "Du hast einen Planeten geöffnet, der einen anderen Stern umkreist."
+        },
+        "deep": {
+          "name": "Der tiefe Himmel",
+          "said": "Du hast einen Nebel, eine Galaxie oder einen Haufen geöffnet."
+        },
+        "trip": {
+          "name": "Eine Reise bis zum Ende",
+          "said": "Du hast eine geführte Reise beendet."
+        },
+        "eyes": {
+          "name": "Mit eigenen Augen gesehen",
+          "said": "Du hast etwas als gesehen abgehakt."
+        },
+        "every": {
+          "name": "Eins von jeder Art",
+          "said": "Du hast von jeder Art oben mindestens eins geöffnet."
+        }
+      }
+    },
+    "photoCompare": {
+      "title": "Mit dem Foto vergleichen",
+      "reconstruction": "Rekonstruktion",
+      "photograph": "Foto",
+      "valueText": "{n} % Foto",
+      "flying": "Flug zu dem Ort, von dem aus das Foto aufgenommen wurde.",
+      "note": "Die Karte zeichnet ein 3D-Modell. Das Foto wird nur hier gezeigt: flach und der Sonne zugewandt, dreh dich also weg, und es blendet aus."
+    },
+    "entrances": {
+      "label": "Drei Wege hinein",
+      "tonight": "Heute Nacht",
+      "tonightTitle": "Was heute Nacht über dir steht, von deinem Ort aus",
+      "explore": "Erkunden",
+      "exploreTitle": "Die ganze Karte ansehen",
+      "trip": "Geführte Reise",
+      "tripTitle": "Startet die erste geführte Reise der Liste"
+    }
+  });
+}
+// 1.6.3: end
+
 export const GLOSSARY = {
   "orbit": "Ein Weg um etwas herum, von der Schwerkraft gehalten. Wer seitlich schnell genug ist, fällt immer wieder an der Erde vorbei, statt auf sie.",
   "low Earth orbit": "Die belebte Schale in etwa 200 bis 2 000 km Höhe. Die Station, die meisten Satelliten und die meisten Trümmer sind hier.",

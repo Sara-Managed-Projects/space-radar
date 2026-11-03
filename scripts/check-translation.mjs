@@ -173,6 +173,29 @@ export async function docWithTable() {
   const shape = (t) => t.replace(/[\d\u202f.]+( %)?/g, '#');
   return { text, stale: shape(text) !== shape(doc), st };
 }
+
+// 1.6.3 (internal #688): a badge per language in README.md, between two markers, from the same rows as the table.
+const README = resolve(HERE, '../README.md');
+const BADGE_BEGIN = '<!-- translation-badges:begin (node scripts/check-translation.mjs --write-doc) -->';
+const BADGE_END = '<!-- translation-badges:end -->';
+const shield = (s) => encodeURIComponent(s).replace(/-/g, '--').replace(/_/g, '__');
+/** One shields.io badge per language: its own name, how many strings it has, who has read it. */
+export function badges(st) {
+  return st.rows.map((r) => {
+    const review = r.review === 'reviewed' ? 'reviewed' : r.review;
+    const colour = r.review === 'reviewed' ? 'brightgreen' : r.present / r.total >= 0.99 ? 'yellow' : 'lightgrey';
+    return `[![${r.english}: ${pct(r.present, r.total)}, ${review}](https://img.shields.io/badge/${shield(r.name)}-${shield(pct(r.present, r.total))}%20${shield(review)}-${colour})](docs/TRANSLATING.md)`;
+  }).join('\n');
+}
+export async function readmeWithBadges() {
+  const st = await status();
+  const doc = readFileSync(README, 'utf8');
+  const from = doc.indexOf(BADGE_BEGIN), to = doc.indexOf(BADGE_END);
+  if (from < 0 || to < from) throw new Error(`README.md needs the markers ${BADGE_BEGIN} ... ${BADGE_END}`);
+  const text = `${doc.slice(0, from)}${BADGE_BEGIN}\n${badges(st)}\n${doc.slice(to)}`;
+  const shape = (t) => t.replace(/[\d .%]+/g, '#').replace(/#(?:25)?/g, '#');
+  return { text, stale: shape(text) !== shape(doc) };
+}
 // 0077 W1-e: end
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -193,9 +216,16 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   if (args.includes('--write-doc') || args.includes('--check-doc')) {
     const { text, stale, st } = await docWithTable();
     for (const p of st.problems) console.log(`problem: ${p}`);
-    if (args.includes('--write-doc')) { if (stale) writeFileSync(DOC, text); console.log(stale ? 'docs/TRANSLATING.md: table refreshed' : 'docs/TRANSLATING.md: table already current'); process.exit(st.problems.length ? 1 : 0); }
+    const rd = await readmeWithBadges(); // 1.6.3: the badges in README.md move with the table
+    if (args.includes('--write-doc')) {
+      if (stale) writeFileSync(DOC, text);
+      if (rd.stale) writeFileSync(README, rd.text);
+      console.log(stale ? 'docs/TRANSLATING.md: table refreshed' : 'docs/TRANSLATING.md: table already current', rd.stale ? '| README.md: badges refreshed' : '| README.md: badges already current');
+      process.exit(st.problems.length ? 1 : 0);
+    }
     if (stale) console.log('docs/TRANSLATING.md: the translation table is stale: run node scripts/check-translation.mjs --write-doc');
-    process.exit(stale || st.problems.length ? 1 : 0);
+    if (rd.stale) console.log('README.md: the language badges are stale: run node scripts/check-translation.mjs --write-doc');
+    process.exit(stale || rd.stale || st.problems.length ? 1 : 0);
   }
   // 0077 W1-e: end
   const file = args.find((a) => !a.startsWith('--'));

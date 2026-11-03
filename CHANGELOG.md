@@ -42,6 +42,30 @@ tagged, and their dates are the day the last change in each landed.
 
 - Voskhod 2 and STS-1, and the Apollo 13 and Sputnik 1 words in Spanish, French, German and Portuguese (the shelf cards are translated, the
   stories are in English).
+## [1.6.3] - 2026-11-03
+
+### Added
+
+- **Six more languages, drafted: Russian, Ukrainian, Chinese (Simplified), Hindi, Hebrew and Arabic** (`?lang=ru`, `uk`, `zh`, `hi`, `he`, `ar`;
+  public #529 to #534). Every string of the interface, the cards, the glossary and the Moments is there, drafted by a program from the English and
+  **not yet read by a native speaker**: each file says so, the page offers none of them from a browser's language, and there is no language picker. They
+  load only when asked for; a first visit in English fetches none of it.
+- **Hebrew and Arabic read right to left.** `<html dir="rtl">`, and a stylesheet (`css/rtl.css`) that only those two languages fetch: the sidebar on
+  the right, the tool rail on the left, margins, rules and aligned text turned round, and the globe moved into the middle of what the sidebar leaves.
+  Numbers, the clock and the time tape stay left to right.
+- **Chinese is ready for Traditional characters later**: Simplified is `zh` (`<html lang="zh-Hans">`); adding `zh-Hant.js` and one row makes the page read
+  `zh-TW`, `zh-HK` and `zh-Hant` as that file. The mainland-only terms to change are listed in `docs/zh-hant-terms.txt`.
+- **A progress badge per language in the README**, written from the same counts as the table in `docs/TRANSLATING.md` (`node scripts/check-translation.mjs
+  --write-doc`; `--check-doc` fails in CI when either is stale). `scripts/translation-flat.mjs` works a translation in small pieces.
+- **A check on a real page that a failing language leaves English** (public #1265): the language file refused, the file broken, and one key missing, each
+  booted in a browser by `scripts/check-language-fallback.mjs` in the `screens` job, on a desktop and on a phone.
+
+### Changed
+
+- **Spanish, French, German and Portuguese are complete.** The sections 1.3.0 and 1.5.0 left in English (`r13Deep`, `compare`, `passportKinds`,
+  `photoCompare`, `entrances`, and the card, drawing, class and template strings) are drafted, and the allowed-gaps lists in
+  `tests/test_language_loader.mjs` are empty: a stage that adds an English string must now add its four drafts.
+- A language file that fails to load puts `<html lang>` back to `en` and takes `dir` off, so a refused Hebrew file is not English read right to left.
 
 ## [1.6.2] - 2026-11-03
 
