@@ -28,6 +28,8 @@ const lerp = (a, b, k) => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a
 
 /** The focus of a vehicle shot: a point `lookY` metres up the stack (half its length by default). */
 function focusOf(v, s) {
+  // 1.7.6: `lookAt` [x, y, z] metres in the vehicle's own axes (the open bay of an orbiter that is not on its axis), instead of `lookY` up the axis
+  if (Array.isArray(s.lookAt) && s.lookAt.length === 3) return add(v.pos, fromBasis(v.basis, s.lookAt));
   const y = Number.isFinite(s.lookY) ? s.lookY : v.lengthM / 2;
   return add(v.pos, scale(v.basis[1], y));
 }

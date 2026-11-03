@@ -31,6 +31,7 @@ import { tilt, OMEGA, MOON_R, moonAxes, moonSurfaceDir, placeFrame, profileTrack
 import { directAt, freePose, poseAngles } from './director.js';
 import { createStage, eciToThree } from './stage.js';
 import { loadVehicle, disposeVehicle } from './vehicles.js';
+import { partPoseAt, carrierAt, quatColumns, poseKeys } from './pose.js';
 import { createExhaustCloud } from './effects.js';
 
 const DATA = new URL('../../data/moments/', import.meta.url);
@@ -409,7 +410,8 @@ export function createMomentPlayer(ctx, opts = {}) {
     const events = m.tracks.parts || [];
     const lead = m.vehicles[0] && m.vehicles[0].id;
     for (const spec of m.vehicles) {
-      const entry = { spec, v: null, events: compileEvents(events, spec.id, lead), sep: new Map() };
+      const entry = { spec, v: null, events: compileEvents(events, spec.id, lead), sep: new Map(), poseKeys: new Map() };
+      for (const [name, list] of entry.events) { const ks = poseKeys(list); if (ks.length) entry.poseKeys.set(name, ks); }
       vehicles.set(spec.id, entry);
       loadVehicle(spec, events.filter((e) => (e.vehicle || lead) === spec.id), { tier: tier() }).then((v) => {
         if (!stage || vehicles.get(spec.id) !== entry) { disposeVehicle(v); return; }
@@ -549,6 +551,12 @@ export function createMomentPlayer(ctx, opts = {}) {
       if (host) {
         const hs = stateOf(host, tt);
         // 1.7.2: `spin` [x, y, z] degrees turns the rider about the host's axes (a cosmonaut floating along an airlock's axis).
+        // 1.7.6: `keys` [{t, at, quat}] move the rider about on its host (the telescope lifted out of the bay on the arm): the point and the turn, in the host's axes.
+        const car = Array.isArray(spec.rideOn.keys) && spec.rideOn.keys.length ? carrierAt(spec.rideOn.keys, tt) : null;
+        if (car) {
+          const R = quatColumns(car.quat);
+          return { ...hs, basis: R.map((col) => fromBasis(hs.basis, col)), p: add(hs.p, fromBasis(hs.basis, car.at)) };
+        }
         const basis = Array.isArray(spec.rideOn.spin) ? spinBasis(hs.basis, spec.rideOn.spin.map((d) => d * Math.PI / 180)) : hs.basis;
         return { ...hs, basis, p: add(hs.p, fromBasis(hs.basis, spec.rideOn.at || [0, 0, 0])) };
       }
@@ -706,7 +714,11 @@ export function createMomentPlayer(ctx, opts = {}) {
         part.pivot.visible = shown;
         if (!shown) continue;
         if (!sep) {
-          setMatrix(part.pivot, ps.basis, add(ps.pos, fromBasis(ps.basis, part.centre)), origin);
+          // 1.7.6: a part with `pose` keyframes is scaled, turned and moved on its vehicle (pose.js): the arrays unroll, the arm bends
+          const keys = entry.poseKeys.get(name);
+          const pp = keys ? partPoseAt(keys, part.centre, t) : null;
+          if (pp) setMatrix(part.pivot, pp.cols.map((col) => fromBasis(ps.basis, col)), add(ps.pos, fromBasis(ps.basis, pp.centre)), origin);
+          else setMatrix(part.pivot, ps.basis, add(ps.pos, fromBasis(ps.basis, part.centre)), origin);
           continue;
         }
         // Separated: a ballistic arc from the second it left, in its trajectory's frame.

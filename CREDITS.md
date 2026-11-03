@@ -1827,6 +1827,25 @@ landing gear (tyres 44.5 x 16.0 in main, two a side, and 32 x 8.8 in nose, two),
 `3D model: NASA (3D Resources), with the landing gear built by Space Radar` (`shuttle-orbiter.glb`).
 <!-- 1.7.2 sts1: end -->
 
+<!-- 1.7.6 hubble: begin -->
+## 3b-r176. Release 1.7.6: the Hubble Space Telescope as released in 1990, and the Shuttle's arm with the telescope's berth, for the STS-31 Moment (2026-11-03)
+
+Two files built by Space Radar in code for the Moment `hubble-deployment` (STS-31, 25 April 1990), and one change to a NASA file. No published mesh was used: NASA's 3D Resources
+and NASA Science's 3D models have neither the telescope as it left Discovery nor the arm (read 2026-10-20 and 2026-11-03).
+
+| File | What | From | Size |
+|---|---|---|---|
+| `hubble-sts31.glb` | the telescope with its aperture door shut, the first (golden-yellow) solar arrays and the antenna booms as parts the Moment poses, and two grapple fixtures; the 1.3.0 build of `hubble.glb` re-made in parts by `tools/hubble-builder/hubble_sts31.py` | ESA/Hubble's fact sheet and NASA's HST media reference guide (dimensions); NASA's photographs of the release of 25 April 1990 (Commons, public domain: `1990 s31 IMAX view of HST release`, `1990 s31 IMAX view of HST in payload bay`, `Hubble Solar Array Deployment STS-31`) | 429 KB |
+| `shuttle-rms.glb` | the Remote Manipulator System (the Canadarm) on the port longeron of Discovery's bay, three links and the base, and the berth that held the telescope: two trunnion latches and a keel latch; built by `tools/hubble-builder/canadarm.py` | the arm's published size (Wikipedia, "Canadarm": 15.2 m, 38 cm; the IEEE Canadian Millennium Project's technical page: booms of about 5 m and 5.8 m) and NASA's STS-31 photographs; the latches are ours | 38 KB |
+| `shuttle-orbiter.glb` | the DFI pallet of STS-1 split into a part of its own (`scripts/shuttle/split-dfi-pallet.mjs`), so that STS-31's bay can leave it out | NASA 3D Resources, as in 3b-r171 | 240 KB |
+
+**Credit lines:** `3D model: built by Space Radar from NASA's and ESA's published dimensions; compared with NASA's photographs of the release on 25 April 1990 (public domain)` (`hubble-sts31.glb`);
+`3D model: built by Space Radar from NASA's published dimensions of the arm; compared with NASA's STS-31 photographs (public domain)` (`shuttle-rms.glb`).
+**The story's sources, read 2026-11-03:** NASA's STS-31 archive page and press kit (the launch time, the orbit, the plan of the deployment); Jonathan's Space Report no. 36
+(<https://www.planet4589.org/space/jsr/back/news.36.txt>: the release at 19:38 UTC, the delay of one orbit, the array that would not open); America Space,
+"Somebody Get a Camera" (the arrays, the antennas, the thruster pulses; 3:37 p.m. EDT). No audio plays.
+<!-- 1.7.6 hubble: end -->
+
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 
 `site/images/` holds two pictures, shown on the cards for the only two objects in

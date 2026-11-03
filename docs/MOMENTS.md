@@ -104,6 +104,20 @@ model's box (the Voskhod 3KD has an airlock and an umbilical to one side). A `gr
 horizon, the camera in the air) and marks every vehicle shorter than 40 px on the screen with the ringed dot. The generators are `voskhod2.mjs`
 and `sts1.mjs`; both search for the least correction that meets the published landing and print how far the reconstruction had to be nudged.
 
+**Release 1.7.6 notes.** Three additions to the engine, all in `site/js/moments/pose.js` (pure maths, tested without a browser):
+
+- Part action `pose`: `{t, part, action: "pose", about: [x, y, z], pos: [x, y, z], quat: [x, y, z, w], scale: [x, y, z], ease?: "smooth"}`, one KEYFRAME of the
+  part's own pose in the vehicle's frame (metres): the point `about` stays, the part is scaled along the vehicle's axes, turned by the unit quaternion and
+  moved by `pos`. Between two keyframes of a part it is linear, or smooth when the later one says `ease: "smooth"`; before the first it holds the first.
+  Hubble's arrays unroll by a scale along the tube; the arm's links turn about their joints.
+- `rideOn.keys`: `[{t, at, quat}]`, where a rider is in its host's axes second by second (the telescope lifted out of the bay on the arm). `at` and `quat` are
+  interpolated like a pose; the static `at` and `spin` are ignored when there are keys.
+- A camera shot's `lookAt: [x, y, z]`, metres in the vehicle's own axes, looks there instead of `lookY` up the axis (an open bay is not on an orbiter's axis).
+
+`hubble.mjs` (tools/moments-build) makes the STS-31 Moment `hubble-deployment`: Discovery on a circular orbit, the Canadarm (`shuttle-rms`) reaching the grapple
+fixture of the telescope (`hubble-sts31`) by a two-link arm's inverse kinematics at every keyframe, the telescope on a carrier that follows the arm's end, and,
+from the release, on its own path. Only the release (19:38 UTC, 25 April 1990) is a published clock; the others are ours, and the Moment says so.
+
 ## Tracks
 
 **`parts`**: `{t, part, action, vehicle?}`: at second `t`, the part named `part` does `action`. `vehicle` defaults to the lead. The actions:
