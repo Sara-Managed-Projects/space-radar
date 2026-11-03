@@ -2250,7 +2250,9 @@ export const COPY = {
     "storyOldest": "Le plus vieil objet encore en orbite est {name}, lancé en {year} : {years} ans de tours.",
     "untracked": "Trop petits pour être suivis, d’après le modèle de l’ESA : environ {mid} millions de morceaux de 1 à 10 cm et {small} millions de 1 mm à 1 cm (chiffres : {when}). Une estimation, pas un comptage.",
     "untrackedSource": "Statistiques de l’ESA sur l’environnement spatial",
-    "honesty": "Compté d’après le catalogue de CelesTrak lu le {date} : ce que le radar peut suivre, à partir d’environ 10 cm de large. Les morceaux plus petits sont bien plus nombreux et ne sont dans aucun catalogue. L’endroit où se trouve chaque point sur son orbite est illustratif."
+    "honesty": "Compté d’après le catalogue de CelesTrak lu le {date} : ce que le radar peut suivre, à partir d’environ 10 cm de large. Les morceaux plus petits sont bien plus nombreux et ne sont dans aucun catalogue. L’endroit où se trouve chaque point sur son orbite est illustratif.",
+    "drawnPlaced": "{n} points : le gris est un débris, le jaune un étage de fusée usagé. {placed} sont là où les place leur propre jeu d’éléments ; les {rest} autres sont à leur vraie altitude et à leur vraie inclinaison, à un endroit inventé de l’orbite.",
+    "honestyPlaced": "Compté d’après le catalogue de CelesTrak lu le {date} : ce que le radar peut suivre, à partir d’environ 10 cm de large. Les morceaux plus petits sont bien plus nombreux et ne sont dans aucun catalogue. Les endroits viennent des jeux d’éléments de CelesTrak du {built} ; un point sans jeu d’éléments publié est à un endroit inventé de son orbite, et sa fiche le dit."
   },
   "klassFar": {
     "dwarf": "Planète naine",

@@ -42,7 +42,7 @@ tagged, and their dates are the day the last change in each landed.
 ### Changed
 
 - The debris view says how many of the dots are where their element sets put them, and its closing line says the places are illustrative
-  only for those that have none. English only for now: the translations of the two lines are not written, and keep saying every place is made up.
+  only for those that have none (the two lines are in all ten languages).
 
 ### Not done
 

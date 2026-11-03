@@ -2096,7 +2096,9 @@ export const COPY = {
     storyOldest: "Lo más antiguo que sigue en órbita es {name}, lanzado en {year}: {years} años de vueltas.",
     untracked: "Demasiado pequeño para seguirlo, según el modelo de la ESA: unos {mid} millones de fragmentos de 1 a 10 cm y {small} millones de 1 mm a 1 cm, a {when}. Una estimación, no un recuento.",
     untrackedSource: "Estadísticas del entorno espacial de la ESA",
-    honesty: "Contado a partir del catálogo de CelesTrak leído el {date}: lo que el radar puede seguir, a partir de unos 10 cm de ancho. Los fragmentos más pequeños son mucho más numerosos y no están en ningún catálogo. Dónde está un punto a lo largo de su órbita es ilustrativo."
+    honesty: "Contado a partir del catálogo de CelesTrak leído el {date}: lo que el radar puede seguir, a partir de unos 10 cm de ancho. Los fragmentos más pequeños son mucho más numerosos y no están en ningún catálogo. Dónde está un punto a lo largo de su órbita es ilustrativo.",
+    drawnPlaced: "{n} puntos: el gris es basura y el amarillo un cohete agotado. {placed} están donde los pone su propio conjunto de elementos; los otros {rest} están a su altura e inclinación reales, en un lugar inventado de la órbita.",
+    honestyPlaced: "Contado a partir del catálogo de CelesTrak leído el {date}: lo que el radar puede seguir, a partir de unos 10 cm de ancho. Los fragmentos más pequeños son mucho más numerosos y no están en ningún catálogo. Los lugares vienen de los conjuntos de elementos de CelesTrak del {built}; un punto sin conjunto de elementos publicado está en un lugar inventado de su órbita, y su ficha lo dice."
   },
   klassFar: {
     dwarf: "Planeta enano",
