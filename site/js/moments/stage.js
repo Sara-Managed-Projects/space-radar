@@ -40,7 +40,7 @@ export function airAt(altM, sunUp) {
     // Stars only where a camera exposed for a sunlit scene would see them: none by day, all on the night side.
     stars: Math.max(0, 1 - 1.4 * day) * (1 - density),
     hazeK: density / 22000,
-    // 1.7.1: how much a floodlit night pad is wanted: the Sun down and the camera in the air (the pad's own lamps, as a launch at night has).
+    // 1.7.2: how much a floodlit night pad is wanted: the Sun down and the camera in the air (the pad's own lamps, as a launch at night has).
     night: (1 - day) * Math.min(1, density * 2),
   };
 }
@@ -99,7 +99,7 @@ const GROUND_F = `${LOG_F}
 uniform sampler2D uDay;
 uniform vec3 uSun, uHaze, uShore;
 uniform float uHazeK, uKind, uPad, uLocalR, uLift, uLocalOn;
-uniform vec4 uRun;   // 1.7.1: a runway: direction (east, south), half width, half length in metres; half width 0 = none
+uniform vec4 uRun;   // 1.7.2: a runway: direction (east, south), half width, half length in metres; half width 0 = none
 varying vec2 vLL;
 varying vec3 vObj;
 varying vec3 vN;
@@ -145,7 +145,7 @@ void main() {
       float trench = (1.0 - smoothstep(8.0, 9.5, abs(q.x))) * (1.0 - smoothstep(70.0, 72.0, abs(q.y)));
       local = mix(local, vec3(0.09, 0.09, 0.09), trench);
     }
-    // 1.7.1: a dry lakebed (Edwards): pale baked clay with fine cracks, and a runway painted on it (a darker strip, a centre line, the two thresholds).
+    // 1.7.2: a dry lakebed (Edwards): pale baked clay with fine cracks, and a runway painted on it (a darker strip, a centre line, the two thresholds).
     if (uKind > 2.5) {
       vec3 clay = mix(vec3(0.66, 0.58, 0.45), vec3(0.78, 0.71, 0.58), n1 * 0.6 + n2 * 0.4);
       local = clay * (0.94 + 0.06 * n3);
@@ -311,7 +311,7 @@ export function createStage(renderer, { tier = 1, place, frame }) {
     const b = ((Number(g.shoreBearing) || 0) + 90) * Math.PI / 180;
     capMat.uniforms.uShore.value.set(Math.sin(b), -Math.cos(b), Number(g.shoreM) || 800);
   }
-  // 1.7.1: a ground that is a dry lakebed (`lakebed: true`) with a `runway` {bearing (degrees from north), widthM, lengthM}: Edwards.
+  // 1.7.2: a ground that is a dry lakebed (`lakebed: true`) with a `runway` {bearing (degrees from north), widthM, lengthM}: Edwards.
   const groundKind = (k) => (k.lakebed ? 3 : k.kind === 'coast' ? 0 : k.kind === 'sea' ? 2 : 1);
   const setRunway = (k) => {
     const r = k.runway;

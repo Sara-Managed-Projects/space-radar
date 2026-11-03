@@ -189,7 +189,7 @@ references:
     url: "https://en.wikipedia.org/wiki/Vostok_1"
     read: 2026-11-03
     says: "Wikipedia, Vostok 1, the infobox: launch site 'Baikonur, Site 1/5', 45.920278 N 63.342222 E (it cites a map of the pad, Gagarin's Start); landing site 51.270682 N 45.99727 E (it cites a map of the monument there). The text puts the landing '26 km south west of Engels, in the Saratov region'. Decimal degrees on Earth, east positive, the sources' own digits; the monument stands at the landing place, so the second is the place to within the monument's footprint, not a survey."
-  # 2026-11-03 (release 1.7.1, internal #1058): the landing places of Voskhod 2 and STS-1.
+  # 2026-11-03 (release 1.7.2, internal #1058): the landing places of Voskhod 2 and STS-1.
   wikipedia-voskhod-2:
     url: "https://en.wikipedia.org/wiki/Voskhod_2"
     read: 2026-11-03
@@ -560,7 +560,7 @@ sites:
   # Moon's named places below), on Earth. Its width is the framing only (a field, about a kilometre), not a measurement.
   - {id: vostok-1-landing, display: "Vostok 1 landing site, near Smelovka", class: feature, world: earth, lat: 51.27068, lon: 45.99727, diameter_m: 1000, source: wikipedia-vostok-1, aliases: ["Smelovka", "Gagarin landing site", "Vostok 1 landing"], doing: "A field 26 km south-west of Engels, Saratov region, where Vostok 1's capsule came down on 12 April 1961. A monument marks the spot."}
 
-  # Where Voskhod 2 came down and where STS-1 did (internal #1058, release 1.7.1): PLACES, so `class: feature`, on Earth; the width is the framing only.
+  # Where Voskhod 2 came down and where STS-1 did (internal #1058, release 1.7.2): PLACES, so `class: feature`, on Earth; the width is the framing only.
   - {id: voskhod-2-landing, display: "Voskhod 2 landing site, taiga north-east of Perm", class: feature, world: earth, lat: 59.5667, lon: 55.4667, diameter_m: 2000, source: wikipedia-voskhod-2, aliases: ["Voskhod 2 landing", "Leonov landing site", "Belyayev landing site", "Berezniki taiga"], doing: "Forest and deep snow about 75 km from Perm, where Voskhod 2 came down on 19 March 1965, 386 km off its field. Belyayev and Leonov spent two nights there."}
   - {id: edwards-afb-runway-23, display: "Edwards Air Force Base, lakebed runway 23", class: feature, world: earth, lat: 34.9, lon: -117.883, diameter_m: 8000, source: wikipedia-edwards-afb, aliases: ["Edwards AFB", "Rogers Dry Lake", "STS-1 landing site", "Columbia landing site"], doing: "The dry lake bed where Columbia landed on 14 April 1981 at the end of STS-1, on runway 23. Several of the early Space Shuttle flights ended here."}
   # 0077 W3-d: begin

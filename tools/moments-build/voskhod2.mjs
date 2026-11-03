@@ -1,4 +1,4 @@
-// tools/moments-build/voskhod2.mjs -- Voskhod 2, 18 to 19 March 1965 (release 1.7.1, internal #1058).
+// tools/moments-build/voskhod2.mjs -- Voskhod 2, 18 to 19 March 1965 (release 1.7.2, internal #1058).
 // Writes site/data/moments/voskhod-2.json and paths/voskhod-2-orbit.json. `node tools/moments-build/voskhod2.mjs`.
 //
 // WHAT IS FLOWN, from the published accounts (Wikipedia "Voskhod 2" and "Voskhod (rocket)", read 3 November 2026; Sven Grahn, "The Voskhod 2

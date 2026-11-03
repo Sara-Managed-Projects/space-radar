@@ -187,7 +187,7 @@ export function attitude(mode, { up, vel, ref, t = 0, pitchStart = 0, turnS = 12
 }
 
 /**
- * 1.7.1: a basis tilted: `pitchDeg` turns the nose (Y) towards X (for 'prograde' on an orbit X is up, so a positive pitch lifts the nose
+ * 1.7.2: a basis tilted: `pitchDeg` turns the nose (Y) towards X (for 'prograde' on an orbit X is up, so a positive pitch lifts the nose
  * above the flight path: an orbiter's 40 degree entry), `rollDeg` turns the vehicle about its own Y (nose) axis. Both 0: the same basis.
  */
 export function tilt(b, pitchDeg = 0, rollDeg = 0) {

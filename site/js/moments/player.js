@@ -35,10 +35,10 @@ import { createExhaustCloud } from './effects.js';
 
 const DATA = new URL('../../data/moments/', import.meta.url);
 const W = () => COPY.momentPlayer;
-// 1.7.1: the lamp a night pad is lit with (scene/models.js floodLit, the same one the model cards offer), at a launch pad in the dark: the Sun
+// 1.7.2: the lamp a night pad is lit with (scene/models.js floodLit, the same one the model cards offer), at a launch pad in the dark: the Sun
 // below the horizon and the camera low. Weaker than the card's 0.9 so the flames still read as the light. Drawn, not measured.
 const NIGHT_PAD_LAMP = 0.6;
-// 1.7.1: a vehicle shorter than this on the screen (CSS px) is marked by the ringed dot as well as drawn: the one floor every story's vehicles get
+// 1.7.2: a vehicle shorter than this on the screen (CSS px) is marked by the ringed dot as well as drawn: the one floor every story's vehicles get
 // (Sputnik's whips over the Earth were a speck inside the old 7 px); the ring is 44 px across.
 const MARKER_BELOW_PX = 40;
 const fill = (s, o) => String(s).replace(/\{(\w+)\}/g, (_, k) => (o[k] !== undefined ? o[k] : `{${k}}`));
@@ -521,7 +521,7 @@ export function createMomentPlayer(ctx, opts = {}) {
   // capsule that turns round for its burn, a lander that comes upright, a spacecraft that goes from the Earth's sky to the Moon's.
   function phaseAt(spec, tt) {
     let attitude = spec.attitude, body = spec.body;
-    // 1.7.1: `pitchDeg` and `rollDeg` are keyframes, blended linearly between one phase that names them and the next (an entry's pitch-up).
+    // 1.7.2: `pitchDeg` and `rollDeg` are keyframes, blended linearly between one phase that names them and the next (an entry's pitch-up).
     const key = { pitchDeg: [], rollDeg: [] };
     for (const q of spec.phases || []) {
       for (const k of Object.keys(key)) if (q[k] !== undefined) key[k].push([q.t, q[k]]);
@@ -548,7 +548,7 @@ export function createMomentPlayer(ctx, opts = {}) {
       const host = vehicles.get(spec.rideOn.vehicle);
       if (host) {
         const hs = stateOf(host, tt);
-        // 1.7.1: `spin` [x, y, z] degrees turns the rider about the host's axes (a cosmonaut floating along an airlock's axis).
+        // 1.7.2: `spin` [x, y, z] degrees turns the rider about the host's axes (a cosmonaut floating along an airlock's axis).
         const basis = Array.isArray(spec.rideOn.spin) ? spinBasis(hs.basis, spec.rideOn.spin.map((d) => d * Math.PI / 180)) : hs.basis;
         return { ...hs, basis, p: add(hs.p, fromBasis(hs.basis, spec.rideOn.at || [0, 0, 0])) };
       }

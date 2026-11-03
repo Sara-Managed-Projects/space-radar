@@ -1801,8 +1801,8 @@ KSC-20250303-PH-KLS01_0028; art002e012583; MAF_20230915_CS2_Eng2047Install1).
 `3D model: NASA/JPL-Caltech (Eyes on the Solar System) and NASA (3D Resources)` (`orion-esm.glb`).
 <!-- 0079 c4: end -->
 
-<!-- 1.7.1 sts1: begin -->
-## 3b-r171. Release 1.7.1: the Shuttle stack without its orbiter, and the orbiter with its doors and gear, for the STS-1 Moment, from NASA's own files (2026-11-03)
+<!-- 1.7.2 sts1: begin -->
+## 3b-r171. Release 1.7.2: the Shuttle stack without its orbiter, and the orbiter with its doors and gear, for the STS-1 Moment, from NASA's own files (2026-11-03)
 
 Two files for the STS-1 Moment (Columbia, 12 to 14 April 1981), each split into named parts for the Moments player. `shuttle-sts-stack.glb` is the launch stack WITHOUT the orbiter; `shuttle-orbiter.glb` is the orbiter on its own, which the Moment sets on the stack, in orbit and on the runway. Built by `scripts/shuttle/build-sts1.mjs`.
 
@@ -1825,7 +1825,7 @@ landing gear (tyres 44.5 x 16.0 in main, two a side, and 32 x 8.8 in nose, two),
 
 **Credit lines:** `3D model: NASA (3D Resources), with the tank and booster painted white by Space Radar` (`shuttle-sts-stack.glb`);
 `3D model: NASA (3D Resources), with the landing gear built by Space Radar` (`shuttle-orbiter.glb`).
-<!-- 1.7.1 sts1: end -->
+<!-- 1.7.2 sts1: end -->
 
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 

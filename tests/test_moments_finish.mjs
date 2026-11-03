@@ -72,7 +72,7 @@ check(/momentsForRecord\(record\)/.test(cards) && /import \{ momentsForRecord \}
 // --- the words in four languages ----------------------------------------------------------------------------------------
 const { COPY } = await mod('copy/en.js');
 await mod('copy/en.moments.js');
-for (const f of ['vostok', 'apollo11', 'artemis2', 'apollo13', 'sputnik']) await mod(`copy/en.moments.${f}.js`);   // 1.7.1: Apollo 13 and Sputnik 1 are translated too (Voskhod 2 and STS-1 are English only for now)
+for (const f of ['vostok', 'apollo11', 'artemis2', 'apollo13', 'sputnik']) await mod(`copy/en.moments.${f}.js`);   // 1.7.2: Apollo 13 and Sputnik 1 are translated too (Voskhod 2 and STS-1 are English only for now)
 const slots = (s) => (String(s).match(/\{[a-zA-Z]+\}/g) || []).sort().join(',');
 const leaves = (o, path = '') => Object.entries(o).flatMap(([k, v]) => (typeof v === 'string' ? [[path + k, v]] : leaves(v, `${path}${k}.`)));
 for (const code of ['es', 'fr', 'de', 'pt']) {

@@ -452,7 +452,7 @@ export function createPlasma({ radiusM = 2 }) {
 }
 
 /**
- * 1.7.1: the shock layer of a winged entry (the Space Shuttle's orbiter), in the VEHICLE's own frame (+Y the nose, +Z the top, so the belly is -Z): a soft
+ * 1.7.2: the shock layer of a winged entry (the Space Shuttle's orbiter), in the VEHICLE's own frame (+Y the nose, +Z the top, so the belly is -Z): a soft
  * orange-pink layer a little under the belly, brightest at the nose cap and along the wings' leading edges and fading toward the trailing edge, and a short wake
  * trailing along the flight path (`set` is given the direction of flight in the vehicle's frame). The same additive, unlit, dim glow as the capsule's: no bloom,
  * no post-processing, no render target. `spec`: { lengthM, planform: [[x, y], ...] the outline of the lower surface, noseCap: [x, y, z], zM the layer's height,

@@ -1,4 +1,4 @@
-// tools/moments-build/sts1.mjs -- STS-1, 12 to 14 April 1981 (release 1.7.1, internal #1058).
+// tools/moments-build/sts1.mjs -- STS-1, 12 to 14 April 1981 (release 1.7.2, internal #1058).
 // Writes site/data/moments/sts-1.json and paths/sts-1-orbit.json. `node tools/moments-build/sts1.mjs`.
 //
 // WHAT IS FLOWN, from the published accounts (Wikipedia "STS-1", read 3 November 2026, from NASA's mission documents): lift-off from Launch

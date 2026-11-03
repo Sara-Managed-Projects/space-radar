@@ -1,4 +1,4 @@
-// moments-voskhod-sts1: the Moments of release 1.7.1 (internal #1058), four frames of each new story at named seconds, and the two Sputnik 1 frames the 1.7.0 review
+// moments-voskhod-sts1: the Moments of release 1.7.2 (internal #1058), four frames of each new story at named seconds, and the two Sputnik 1 frames the 1.7.0 review
 // said were wrong (the night pad, the satellite over the Earth), each with the player's own state beside it: the shot, the mission clock, the compression on
 // screen, the chapter, the caption, the foot line. Opened as a visitor's link opens one, paused at each second. Also the shelf and the card of Launch Complex 39A.
 // Run it at -f width=1600 -f height=900.

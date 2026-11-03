@@ -1,4 +1,4 @@
-// The words of the Moment `sts-1` (internal #1058, release 1.7.1): the first Space Shuttle flight, 12 to 14 April 1981. Named by the moment's
+// The words of the Moment `sts-1` (internal #1058, release 1.7.2): the first Space Shuttle flight, 12 to 14 April 1981. Named by the moment's
 // `wordsFile`; imported by moments/player.js only, never at boot. Every time is the published one (Wikipedia, "STS-1", from NASA's mission
 // documents); the sources say so. What is ours is said in the caption where it is shown.
 import { COPY } from './en.js';

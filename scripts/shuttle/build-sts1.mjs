@@ -1,4 +1,4 @@
-// build-sts1.mjs -- the two models of the STS-1 Moment (Columbia, 12-14 April 1981; release 1.7.1): the launch stack WITHOUT the orbiter
+// build-sts1.mjs -- the two models of the STS-1 Moment (Columbia, 12-14 April 1981; release 1.7.2): the launch stack WITHOUT the orbiter
 // (`shuttle-sts-stack`: parts srb-l, srb-r, tank) and the orbiter on its own (`shuttle-orbiter`: orbiter-body, bay-door-l, bay-door-r,
 // bay-door-l-open, bay-door-r-open, gear-nose, gear-main-l, gear-main-r). Both in metres, +Y = nose, +Z = dorsal (the orbiter's top; for
 // the stack: the side the orbiter rides on), X along the wings (starboard = +X).

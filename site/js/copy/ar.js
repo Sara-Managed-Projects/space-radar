@@ -4086,7 +4086,7 @@ export const COPY = {
     "replayTitle": "أعد {title} على ساعة المهمة",
     "replayNamed": "إعادة عرض {title}",
     "cards": {
-      // 1.7.1: English until a translator has them
+      // 1.7.2: English until a translator has them
       "voskhod-2": {
         "title": "Voskhod 2",
         "when": "18 to 19 March 1965",
@@ -4125,7 +4125,7 @@ export const COPY = {
     }
   },
   "momentStories": {
-    // 1.7.1: Apollo 13 and Sputnik 1, English until a translator has them (Spanish, French, German and Portuguese have them)
+    // 1.7.2: Apollo 13 and Sputnik 1, English until a translator has them (Spanish, French, German and Portuguese have them)
     "apollo-13": {
       "title": "Apollo 13: the flight home",
       "blurb": "Launch Complex 39A, 11 April 1970, to the Pacific on the 17th: a Moon landing that did not happen, an oxygen tank that burst, and the lunar module as the lifeboat.",

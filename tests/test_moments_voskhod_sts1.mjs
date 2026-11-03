@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// tests/test_moments_voskhod_sts1.mjs -- the Moments of release 1.7.1 (internal #1058): Voskhod 2 and STS-1, and the three fixes from the 1.7.0 review.
+// tests/test_moments_voskhod_sts1.mjs -- the Moments of release 1.7.2 (internal #1058): Voskhod 2 and STS-1, and the three fixes from the 1.7.0 review.
 // For each story: its event order and times against the published ones (UTC, from the moment's own epoch), every part event naming a node of the model
 // file it is for, the paths' rows sorted, finite and at believable speeds, the orbit's elements, the landing where the sources put it, what is
 // drawn and not measured said so, the audio said to be none (and why), the shelf and the cards. And: the night pad's lamp, the marker's floor, the

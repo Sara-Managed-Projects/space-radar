@@ -286,7 +286,7 @@ assert.equal(colourRoute(root([])), 'class', 'a model with no materials keeps th
     'apollo-csm.glb': /NOTHING YET/, // a vehicle of the Moments, loaded by id by site/js/moments/: no object on the map is the CSM
     // 0079 c3: end
     'sputnik-1.glb': /NOTHING YET/, // 1.7.0: the satellite of the Sputnik 1 Moment, loaded by id by site/js/moments/
-    // 1.7.1: the models of the Voskhod 2 and STS-1 Moments, loaded by id by site/js/moments/
+    // 1.7.2: the models of the Voskhod 2 and STS-1 Moments, loaded by id by site/js/moments/
     'voskhod-3kd.glb': /NOTHING YET/,
     'leonov-eva.glb': /NOTHING YET/,
     'shuttle-sts-stack.glb': /NOTHING YET/,

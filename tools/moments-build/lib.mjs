@@ -176,7 +176,7 @@ export const diffState = (posAt) => (t) => ({ r: posAt(t), v: sub(posAt(t + 0.5)
 /** The inertial position of a point at geodetic (lat, lon, alt m) on the turning Earth at second t. */
 export const groundPos = (epochMs, lat, lon, altM, t) => fromEcef(placeFrame({ lat, lon, alt: altM }).ecef, epochMs, t).r;
 
-// --- 1.7.1 --------------------------------------------------------------------------------------------------------------
+// --- 1.7.2 --------------------------------------------------------------------------------------------------------------
 
 /** The bounding box of a .glb (nodes' own transforms kept, POSITION accessors' min and max): { min, max } in the file's units. */
 export function glbBox(file) {

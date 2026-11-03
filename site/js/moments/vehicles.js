@@ -28,7 +28,7 @@ export function standInMetres(model, lengthM, keepXZ = false) {
   const box = new THREE.Box3().setFromObject(model);
   const h = box.max.y - box.min.y || 1;
   const k = lengthM / h;
-  // 1.7.1 keepXZ: the file's own axis stays the vehicle's axis (a craft with an airlock to one side). The loader centres every model on its
+  // 1.7.2 keepXZ: the file's own axis stays the vehicle's axis (a craft with an airlock to one side). The loader centres every model on its
   // box (scene/realmodels.js normalise: wrapper > inner > the file's scene), so the file's origin is where the scene object's origin is now.
   const c = new THREE.Vector3();
   const fileRoot = keepXZ && model.children[0] && model.children[0].children[0];
@@ -185,7 +185,7 @@ export async function loadVehicle(spec, events = [], { tier = 1 } = {}) {
   }
   let plasma = null;
   if (spec.plasma) {
-    // 1.7.1: `plasma.kind: 'belly'` is a winged vehicle's layer under its belly, drawn in the vehicle's own frame (effects.js createBellyPlasma)
+    // 1.7.2: `plasma.kind: 'belly'` is a winged vehicle's layer under its belly, drawn in the vehicle's own frame (effects.js createBellyPlasma)
     plasma = { spec: spec.plasma, fx: spec.plasma.kind === 'belly' ? createBellyPlasma(spec.plasma) : createPlasma({ radiusM: spec.plasma.radiusM || 2 }) };
     plasma.fx.group.matrixAutoUpdate = false;
     root.add(plasma.fx.group);

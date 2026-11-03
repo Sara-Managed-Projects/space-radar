@@ -1,4 +1,4 @@
-// The words of the Moment `voskhod-2` (internal #1058, release 1.7.1): Leonov's spacewalk and the landing in the taiga, 18 and 19 March 1965.
+// The words of the Moment `voskhod-2` (internal #1058, release 1.7.2): Leonov's spacewalk and the landing in the taiga, 18 and 19 March 1965.
 // Named by the moment's `wordsFile`; imported by moments/player.js only, never at boot. Every time is the published one (Wikipedia, "Voskhod 2";
 // Sven Grahn's account, which cites General Kamanin's diary); the sources say so. What is ours is said in the caption where it is shown.
 import { COPY } from './en.js';
