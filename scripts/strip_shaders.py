@@ -3,7 +3,7 @@
 
     python3 scripts/strip_shaders.py                  # dry run over site/js: what it would save, file by file
     python3 scripts/strip_shaders.py --check          # the same, exit 1 if any shader would change meaning
-    python3 scripts/minify_site.py --out X --shaders  # the real thing (OFF by default; or SR_STRIP_SHADERS=1)
+    python3 scripts/minify_site.py --out X            # the real thing (ON by default since 1.7.4; --no-shaders or SR_STRIP_SHADERS=0 turns it off)
 
 WHY (internal #553 / #531, 2026-10-10). scripts/minify_site.py copies a template literal byte for byte,
 because inside a template a `//` may be a URL and a space may be part of the text. A shader is the
@@ -12,11 +12,11 @@ indentation never matters. The shaders of this app are documented at length (the
 documentation) and every visitor downloaded that documentation. This module is the step that stops it,
 and ONLY for a template that is a shader.
 
-OFF BY DEFAULT. A deploy builds exactly what it built before until the lead switches this on
-(`--shaders` on minify_site.py, or `SR_STRIP_SHADERS=1` in the environment of scripts/deploy.sh,
-scripts/verify-deploy.sh and the screens workflow, which all call minify_site.py). Switching it on
-changes what every deploy builds and every shader the visitor compiles, so it wants the `screens`
-drawn-world check on the stripped tree once (tools/cdp.mjs reports any shader that fails to compile).
+ON BY DEFAULT since release 1.7.4 (internal #531). It was built off in 1.0 so that the lead could look at the
+drawn world once first; the way back is `--no-shaders` on minify_site.py, or `SR_STRIP_SHADERS=0` in the
+environment of scripts/deploy.sh, scripts/verify-deploy.sh and the screens workflow, which all call
+minify_site.py. tools/cdp.mjs reports any shader that fails to compile, and the screens job's drawn-world
+check runs on the stripped tree.
 
 THE RULES, each one a way to do nothing instead of something wrong:
   - A template is a shader when the whole of it (all its `${}` pieces) contains `gl_` or `void main`.

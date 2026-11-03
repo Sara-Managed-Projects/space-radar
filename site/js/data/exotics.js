@@ -164,7 +164,7 @@ export const EXOTICS = [
     "id": "sgr-1806-20",
     "name": "SGR 1806-20",
     "kind": "magnetar",
-    "why": "A magnetar: a neutron star with the strongest magnetic field known. Its flare of 27 December 2004 was the brightest event ever seen from outside the Solar System, and it briefly stretched Earth's ionosphere.",
+    "why": "A magnetar: a neutron star with the strongest magnetic field known. Its 27 December 2004 flare, brightest beyond the Solar System, stretched Earth's ionosphere.",
     "aliases": [
       "SGR 1806−20",
       "GRB 790107"
@@ -196,7 +196,7 @@ export const EXOTICS = [
     "id": "eta-carinae",
     "name": "Eta Carinae",
     "kind": "star",
-    "why": "A star of about a hundred Suns that erupted in the 1840s, briefly the second brightest in the sky, and wrapped itself in the Homunculus Nebula. A supernova waiting to happen.",
+    "why": "A star of about a hundred Suns that erupted in the 1840s, briefly second brightest in the sky, wrapped in the Homunculus Nebula. A supernova waiting to happen.",
     "aliases": [
       "η Carinae",
       "η Car",
@@ -213,7 +213,7 @@ export const EXOTICS = [
     "id": "wd-j1330-6435",
     "name": "WD J1330+6435",
     "kind": "star",
-    "why": "The first star found that would look green, in its discoverers' colour models: a cool white dwarf whose sodium-rich atmosphere absorbs yellow, orange and red light. A star this cool would otherwise look orange.",
+    "why": "The first star to look green, in its discoverers' colour models: a cool white dwarf whose sodium absorbs yellow, orange and red. It would otherwise look orange.",
     "aliases": [
       "SDSS J1330+6435",
       "WD 1328+648"
@@ -264,7 +264,7 @@ export const EXOTICS = [
     "id": "grs-1915-105",
     "name": "GRS 1915+105",
     "kind": "blackhole",
-    "why": "For years the heaviest stellar black hole known in our galaxy, and the first thing in it seen throwing out matter apparently faster than light: a trick of geometry called superluminal motion.",
+    "why": "For years our heaviest stellar black hole, the first seen throwing matter out apparently faster than light. A trick of geometry called superluminal motion.",
     "aliases": [
       "V1487 Aquilae"
     ],
@@ -294,7 +294,7 @@ export const EXOTICS = [
     "id": "hulse-taylor",
     "name": "Hulse-Taylor pulsar",
     "kind": "pulsar",
-    "why": "Two neutron stars circling each other every 7.75 hours, spiralling inward exactly as Einstein's gravitational waves demand. It won the 1993 Nobel Prize, twenty-two years before the waves were heard directly.",
+    "why": "Two neutron stars orbit every 7.75 hours as Einstein's gravitational waves demand. The 1993 Nobel Prize came twenty-two years before the waves were heard.",
     "aliases": [
       "PSR B1913+16",
       "PSR J1915+1606"
@@ -310,7 +310,7 @@ export const EXOTICS = [
     "id": "psr-j1614-2230",
     "name": "PSR J1614-2230",
     "kind": "pulsar",
-    "why": "A neutron star of nearly two Suns, weighed in 2010 by the delay its companion's gravity puts on its radio ticks, a mass that ruled out many ideas of what neutron stars are made of.",
+    "why": "A neutron star of nearly two Suns, weighed in 2010 by how its companion's gravity delays its radio ticks, ruling out many ideas of what they are made of.",
     "aliases": [
       "J1614-2230"
     ],
@@ -340,7 +340,7 @@ export const EXOTICS = [
     "id": "3c-273",
     "name": "3C 273",
     "kind": "quasar",
-    "why": "The first quasar ever identified and the brightest in our sky: a black hole of nearly a billion Suns eating gas, outshining the whole giant galaxy around it sixteen times over.",
+    "why": "The first quasar identified, and the brightest in our sky: a black hole of nearly a billion Suns eating gas, outshining its giant galaxy sixteen times over.",
     "aliases": [
       "3C273",
       "PGC 41121"
@@ -358,7 +358,7 @@ export const EXOTICS = [
     "id": "3c-279",
     "name": "3C 279",
     "kind": "quasar",
-    "why": "A quasar that flickers in visible light, radio waves and X-rays; in 1973 its jet seemed to move faster than light, an illusion that comes from the angle we see it at.",
+    "why": "A quasar that flickers in visible light, radio waves and X-rays. In 1973 its jet seemed to move faster than light, an illusion from the angle we see it at.",
     "aliases": [
       "3C279",
       "4C -05.55",

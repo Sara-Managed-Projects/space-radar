@@ -20,6 +20,9 @@ runs (`python3 tools/serve.py . 8386` puts the app at `/site/`). `og:url` and th
 are absolute, because a crawler needs them to be; the host is `--host`, defaulting to the one
 scripts/deploy.sh already knows, so a fork is not hardcoded to it.
 
+THE SCRIPT CARRIES THE QUERY ON. `/t/<id>.html?from=ig` goes to `/?from=ig#trip=<id>`, so the tag a
+link hands out (ui/urlstate.js) reaches the app; the refresh cannot and the script runs first.
+
     python3 scripts/gen_trip_pages.py             # write site/t/<id>.html for every trip
     python3 scripts/gen_trip_pages.py --check     # exit 1 if a page is stale
     python3 scripts/gen_trip_pages.py --host URL  # set the site address (default https://www.spaceradar.ai)
@@ -110,7 +113,7 @@ PAGE = """<!doctype html>
 <meta http-equiv="refresh" content="0; url=../#trip={id}">
 </head>
 <body>
-<script>location.replace('../#trip={id}');</script>
+<script>location.replace('../' + location.search + '#trip={id}');</script>
 <header class="top"><div class="top__in"><a class="mark" href="../">Space Radar</a><nav aria-label="Site"><a href="https://blog.spaceradar.ai/">Blog</a></nav><a class="openmap" href="../">Open the 3D map</a></div></header>
 <main>
 <p class="micro">Guided trip</p>
