@@ -64,7 +64,7 @@ import { attachedOdditiesFor, attachedOddityRecord } from '../data/attached.js';
 import { openShare, savePostcard } from './share.js';
 import { exposurePanel, pictureNote } from './exposure.js';
 import { stage } from '../scene/stage.js';
-import { momentForRecord } from '../moments/shelf.js'; // 0079 C8: the card's "Replay this moment"
+import { momentsForRecord } from '../moments/shelf.js'; // 0079 C8: the card's "Replay this moment", one row a story (1.7.0: a pad or a Saturn V is in two)
 import { icon } from './icons.js';
 import { overlayLine, legendNode, paintLegend } from './overlaylegend.js';
 import { systemOfRecordId, phaseIsMeasured, faceLineOf } from '../scene/systems.js';
@@ -2923,12 +2923,12 @@ function render(record, ctx, opts = {}) {
   body.appendChild(actions);
 
   // 3'. A MOMENT this place or craft was part of (internal spec 0079 C8): one quiet row, which opens the replay.
-  const story = momentForRecord(record);
-  if (story && typeof ctx.wantMoment === 'function') {
+  const stories = typeof ctx.wantMoment === 'function' ? momentsForRecord(record) : [];
+  for (const story of stories) {
     const W = COPY.momentShelf;
-    const go = el('button', 'sr-btn sr-btn--quiet sr-card__inline', W.replay);
+    const go = el('button', 'sr-btn sr-btn--quiet sr-card__inline', stories.length > 1 ? t(W.replayNamed, { title: W.cards[story.id].title }) : W.replay);
     go.type = 'button';
-    go.dataset.focus = 'replay-moment';
+    go.dataset.focus = stories.length > 1 ? `replay-moment-${story.id}` : 'replay-moment';
     go.dataset.moment = story.id;
     go.title = t(W.replayTitle, { title: W.cards[story.id].title });
     go.addEventListener('click', () => ctx.wantMoment(story.id, null));

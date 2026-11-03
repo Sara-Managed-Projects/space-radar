@@ -5,24 +5,30 @@ translate Space Radar. This page says what there is to translate, how to start, 
 work, and what is not ready yet. Where a step needs a tool you do not have, say so in your issue and
 we will do that step for you.
 
-**Status, honestly.** The site can now speak another language: `?lang=es` shows Spanish (public
-[#524](https://github.com/Sara-Managed-Projects/space-radar/issues/524) and
-[#525](https://github.com/Sara-Managed-Projects/space-radar/issues/525)). That Spanish was drafted
-by a program from the English and **no native speaker has read it yet**: the table below
-says so, and until two people have, the page offers it only to a visitor who asks for it (see
-"Review"). The words of the interface, the cards and the glossary are translated; the trips, the
-spoken voice and the pages a search engine reads are not yet, and a string that is not translated
-shows in English rather than as a gap. Writing a language now is not wasted: the loader reads exactly
-the file you write.
+**Status, honestly.** The site can speak ten other languages: `?lang=es`, `fr`, `de`, `pt` (Brazilian), `ru`, `uk`, `zh` (Simplified),
+`hi`, `he` and `ar` (public [#525](https://github.com/Sara-Managed-Projects/space-radar/issues/525) to
+[#534](https://github.com/Sara-Managed-Projects/space-radar/issues/534)). Every one was drafted by a program from the English and
+**no native speaker has read any of them yet**: the table below says so, and until two people have, the page offers a language only to a
+visitor who asks for it (see "Review"); there is no language picker yet. Each file has every string of the interface, the cards, the glossary,
+the trips' stops that are in `en.js` and the Moments. What is not translated: the 30 trips' longer texts in `registry/tours.yaml`, the spoken
+voice, the pages a search engine reads, and the type phrases of the catalogue (a galaxy's "barred spiral galaxy" comes from the data in
+English; only French has a table for them). A string that is not translated shows in English rather than as a gap. Writing a language now
+is not wasted: the loader reads exactly the file you write.
 
 <!-- translation-status:begin (node scripts/check-translation.mjs --write-doc) -->
 | Language | File | Strings present | Changed from English | Review | Shown from the browser’s language |
 | --- | --- | --- | --- | --- | --- |
-| English | `en.js` | 2 894 (the source) | - | the source | yes |
-| Deutsch (German) | `de.js` | 2 892 of 2 894 (99.9 %) | 2 763 (95.4 %) | machine-drafted | no: `?lang=de` only |
-| Español (Spanish) | `es.js` | 2 894 of 2 894 (100 %) | 2 784 (96.1 %) | machine-drafted | no: `?lang=es` only |
-| Français (French) | `fr.js` | 2 890 of 2 894 (99.8 %) | 2 749 (94.9 %) | machine-drafted | no: `?lang=fr` only |
-| Português (Brasil) (Portuguese (Brazil)) | `pt.js` | 2 893 of 2 894 (99.9 %) | 2 776 (95.9 %) | machine-drafted | no: `?lang=pt` only |
+| English | `en.js` | 3 325 (the source) | - | the source | yes |
+| العربية (Arabic) | `ar.js` | 3 325 of 3 325 (100 %) | 3 247 (97.6 %) | machine-drafted | no: `?lang=ar` only |
+| Deutsch (German) | `de.js` | 3 323 of 3 325 (99.9 %) | 3 176 (95.5 %) | machine-drafted | no: `?lang=de` only |
+| Español (Spanish) | `es.js` | 3 325 of 3 325 (100 %) | 3 202 (96.3 %) | machine-drafted | no: `?lang=es` only |
+| Français (French) | `fr.js` | 3 321 of 3 325 (99.8 %) | 3 162 (95 %) | machine-drafted | no: `?lang=fr` only |
+| עברית (Hebrew) | `he.js` | 3 325 of 3 325 (100 %) | 3 233 (97.2 %) | machine-drafted | no: `?lang=he` only |
+| हिन्दी (Hindi) | `hi.js` | 3 325 of 3 325 (100 %) | 3 236 (97.3 %) | machine-drafted | no: `?lang=hi` only |
+| Português (Brasil) (Portuguese (Brazil)) | `pt.js` | 3 324 of 3 325 (99.9 %) | 3 194 (96 %) | machine-drafted | no: `?lang=pt` only |
+| Русский (Russian) | `ru.js` | 3 325 of 3 325 (100 %) | 3 237 (97.3 %) | machine-drafted | no: `?lang=ru` only |
+| Українська (Ukrainian) | `uk.js` | 3 325 of 3 325 (100 %) | 3 236 (97.3 %) | machine-drafted | no: `?lang=uk` only |
+| 简体中文 (Chinese (Simplified)) | `zh.js` | 3 325 of 3 325 (100 %) | 3 259 (98 %) | machine-drafted | no: `?lang=zh` only |
 <!-- translation-status:end -->
 
 ## What is translated, in order
@@ -60,6 +66,13 @@ key, never remove one, and never remove or rename a `{slot}`:
 ```
 
 (These two are in the `app` section of the file.)
+
+## Working in pieces
+
+`node scripts/translation-flat.mjs --out DIR` writes the whole English as small JSON files (`{"COPY.card.lead": "..."}`), twelve thousand
+characters each, so a translator or a program can work a piece at a time and leave out what must stay. `--new <code> DIR "<own name>" <English name>`
+builds `copy/<code>.js` from `DIR/<code>-NN.json` (and a `<code>-rules.js` and `<code>-notes.txt` if there are any); `--topup <code> DIR` adds the keys
+an existing file lacks, as a block before its glossary. `--out DIR --missing <code>` lists only those keys.
 
 ## Check your work
 
@@ -124,7 +137,18 @@ classroom meets first. The rule, as the checker holds it:
   list. What cannot be a string is a function, and a language file may export them as `RULES` (see `site/js/copy/es.js`):
   `article(phrase)` for the "a/an" of a type word (Spanish needs the gender), `typeWords(text)`, and `plural(n, one, many)`
   for a language whose plural is not "one, else many". Write the rule in your pull request; copy/en.js asks `RULES` first.
-- **Right-to-left languages** (Hebrew, Arabic) need the layout checked too. Say you can test it.
+- **Right-to-left languages** (Hebrew, Arabic): `?lang=he` and `?lang=ar` set `<html dir="rtl">` and link `css/rtl.css`, which only they
+  fetch. It puts the sidebar on the right and the tool rail on the left, turns round the margins, rules and aligned text that
+  `ui.css` wrote with a physical side, and moves the globe to the middle of what the sidebar leaves. Numbers, the clock pill and the time
+  tape stay left to right. A right-to-left reader should look at the card, the Tonight tab, What to show and a trip at a phone's width and at a
+  desktop's, and say what is still the wrong way round.
+- **Chinese** is Simplified (`zh.js`, `<html lang="zh-Hans">`) until the script is chosen. A Traditional file is `zh-Hant.js` plus one row
+  in `LANGUAGES` (the comment there says which); the page then reads `zh-TW`, `zh-HK` and `zh-Hant` as that file and `zh-CN` as Simplified.
+  [docs/zh-hant-terms.txt](zh-hant-terms.txt) lists the mainland-only words to change.
+- **Plurals with more than two forms** (Russian, Ukrainian, Arabic, Hebrew): the pair `plural(n, one, many)` is called with two strings, so
+  a language puts the extra forms in the second string joined by `|` and its `RULES.plural` picks (`COPY.cls.minutesWord` is "минуты|минут" in Russian).
+  A word that has no article in your language (`{a}`, `card.articles`, `r12Navigate.theWord`) is a zero-width space, `\u200b`: an empty string
+  means "not translated" and shows the English.
 
 ## The narration (205 clips)
 

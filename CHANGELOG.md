@@ -28,6 +28,61 @@ tagged, and their dates are the day the last change in each landed.
 - **Venera, Vega, Mariner 4 and 10, Ranger, Giotto, Magellan, Tianwen-2 and MMX** are still without a model on the map. Horizons holds no
   path for any of them but MMX, and none of the Soviet craft has a free photograph or drawing to build from; NASA's Magellan model exists and is
   waiting for a place to draw it.
+## [1.7.0] - 2026-11-03
+
+### Added
+
+- **Apollo 13, 11 to 17 April 1970, as a Moment.** Lift-off, the second stage's centre engine cutting off early, translunar injection, the
+  tank that burst at 55:54:53 and blew the panel off bay 4 of the service module, the lunar module as the lifeboat, the descent engine's
+  two burns, the far side of the Moon 254 km below, the service module let go and photographed, the lunar module let go, entry and
+  splashdown in sight of USS Iwo Jima, every time the Mission Report's (NASA MSC-02680). Odyssey's service module is drawn with its panel
+  coming off as a part event, the bay behind it (shelf, tanks, torn Mylar) built from NASA's photograph AS13-59-8500, and the service
+  module kept in view as a vehicle of its own when it is let go. The path to the Moon is integrated from the Report's own state at
+  injection, with a trim of 27.7 m/s on its speed that puts the pericentre where the Report puts it; the story says so.
+- **The real radio.** "Okay, Houston, we've had a problem here" and "Houston, we've had a problem", NASA's recording from Wikimedia
+  Commons (public domain), cut into two clips of 13 kB and 8 kB and played at 55:55:20 and 55:55:42, fetched only when the story gets
+  there.
+- **Sputnik 1, 4 October 1957, as a Moment.** The 8K71PS from Site 1, the strap-ons at 116 s, the core stage's cut-off at 295.4 s,
+  PS-1 let go 19.9 s later with its cone falling away and its four whips out, and one lap of the 223 by 950 km orbit, with NASA's recording
+  of the beep (public domain, from Wikimedia Commons). PS-1 and the head of its rocket are a new model built from the published
+  dimensions (`sputnik-1.glb`, 26 kB); the rocket is the Vostok launcher's model with its third stage and shroud put away.
+- **"Replay this moment" has a row for each story.** Launch Complex 39A and the Saturn V, the Apollo command and service module and lunar
+  module cards offer Apollo 11 and Apollo 13; Baikonur Site 1 and the R-7 card offer Vostok 1 and Sputnik 1.
+
+### Changed
+
+- **`apollo-csm.glb`** is two parts richer (the bay-4 panel and the torn foil; 98 to 136 kB, loaded only inside a Moment); with the panel on
+  and the foil hidden the module is the 1.5.0 one, and Apollo 11 hides the foil.
+- The Moments shelf says five missions.
+
+### Not in this release
+
+- Voskhod 2 and STS-1, and the Apollo 13 and Sputnik 1 words in Spanish, French, German and Portuguese (the shelf cards are translated, the
+  stories are in English).
+## [1.6.3] - 2026-11-03
+
+### Added
+
+- **Six more languages, drafted: Russian, Ukrainian, Chinese (Simplified), Hindi, Hebrew and Arabic** (`?lang=ru`, `uk`, `zh`, `hi`, `he`, `ar`;
+  public #529 to #534). Every string of the interface, the cards, the glossary and the Moments is there, drafted by a program from the English and
+  **not yet read by a native speaker**: each file says so, the page offers none of them from a browser's language, and there is no language picker. They
+  load only when asked for; a first visit in English fetches none of it.
+- **Hebrew and Arabic read right to left.** `<html dir="rtl">`, and a stylesheet (`css/rtl.css`) that only those two languages fetch: the sidebar on
+  the right, the tool rail on the left, margins, rules and aligned text turned round, and the globe moved into the middle of what the sidebar leaves.
+  Numbers, the clock and the time tape stay left to right.
+- **Chinese is ready for Traditional characters later**: Simplified is `zh` (`<html lang="zh-Hans">`); adding `zh-Hant.js` and one row makes the page read
+  `zh-TW`, `zh-HK` and `zh-Hant` as that file. The mainland-only terms to change are listed in `docs/zh-hant-terms.txt`.
+- **A progress badge per language in the README**, written from the same counts as the table in `docs/TRANSLATING.md` (`node scripts/check-translation.mjs
+  --write-doc`; `--check-doc` fails in CI when either is stale). `scripts/translation-flat.mjs` works a translation in small pieces.
+- **A check on a real page that a failing language leaves English** (public #1265): the language file refused, the file broken, and one key missing, each
+  booted in a browser by `scripts/check-language-fallback.mjs` in the `screens` job, on a desktop and on a phone.
+
+### Changed
+
+- **Spanish, French, German and Portuguese are complete.** The sections 1.3.0 and 1.5.0 left in English (`r13Deep`, `compare`, `passportKinds`,
+  `photoCompare`, `entrances`, and the card, drawing, class and template strings) are drafted, and the allowed-gaps lists in
+  `tests/test_language_loader.mjs` are empty: a stage that adds an English string must now add its four drafts.
+- A language file that fails to load puts `<html lang>` back to `en` and takes `dir` off, so a refused Hebrew file is not English read right to left.
 
 ## [1.6.2] - 2026-11-03
 

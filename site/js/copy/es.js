@@ -3697,20 +3697,31 @@ Object.assign(COPY, {
   },
   "momentShelf": {
     "title": "Momentos",
-    "note": "Tres misiones repetidas en un solo reloj, con las horas reales de los sucesos. Las trayectorias son reconstruidas y lo dicen.",
+    "note": "Cinco misiones repetidas en un solo reloj, con las horas reales de los sucesos. Las trayectorias son reconstruidas y lo dicen.",
     "minutes": "{m} min",
     "replay": "Repetir este momento",
     "replayTitle": "Repetir {title} en el reloj de la misión",
+    "replayNamed": "Repetir {title}",
     "cards": {
       "apollo-11": {
         "title": "Apolo 11",
         "when": "del 16 al 24 de julio de 1969",
         "blurb": "De la plataforma 39A al Pacífico pasando por la Base Tranquilidad: despegue, la Luna, el alunizaje, el ascenso, el regreso."
       },
+      "apollo-13": {
+        "title": "Apolo 13",
+        "when": "del 11 al 17 de abril de 1970",
+        "blurb": "De la plataforma 39A al Pacífico: el alunizaje que no ocurrió, un tanque de oxígeno que estalló y el módulo lunar como bote salvavidas."
+      },
       "artemis-ii": {
         "title": "Artemis II",
         "when": "del 1 al 10 de abril de 2026",
         "blurb": "De la plataforma 39B al Pacífico frente a San Diego, por la cara oculta de la Luna. Se dice qué se voló y qué estaba planeado."
+      },
+      "sputnik-1": {
+        "title": "Sputnik 1",
+        "when": "4 de octubre de 1957",
+        "blurb": "De Baikonur a la primera vuelta a la Tierra: el primer satélite artificial, una esfera pulida de 585 mm, y su pitido."
       },
       "vostok-1": {
         "title": "Vostok 1",
@@ -3873,6 +3884,260 @@ Object.assign(COPY, {
     }
   }
 });
+
+// 1.6.3 (internal #995): the sections and strings this file did not have yet (r13Deep, compare, passportKinds, photoCompare, entrances,
+// the 1.5 strings and the gaps in card, drawing, cls, templates and the rest), es. Machine-drafted like the rest of this file (docs/TRANSLATING.md):
+// drafted by a program from the English, NOT read by a native speaker. A key this file already has is left as it is.
+{
+  const topUp = (dst, src) => {
+    for (const k of Object.keys(src)) {
+      if (src[k] && typeof src[k] === 'object' && !Array.isArray(src[k]) && dst[k] && typeof dst[k] === 'object') topUp(dst[k], src[k]);
+      else if (!(k in dst)) dst[k] = src[k];
+    }
+  };
+  topUp(COPY, {
+    "a45": {
+      "farNote": "a qué distancia está ahora ({how}), según su corrimiento al rojo de {z} en la cosmología de Planck 2018",
+      "comoving": "distancia comóvil",
+      "pulsarDistance": [
+        "del propio paralaje del púlsar",
+        "la distancia del cúmulo globular, del remanente de supernova o del otro objeto al que pertenece",
+        "una estimación de un modelo a partir de la señal de radio (el modelo YMW16 de los electrones libres de la Galaxia), no una medición: puede errar bastante"
+      ],
+      "shape": {
+        "galaxy": "una marca a la distancia que da su corrimiento al rojo; una galaxia tan lejana mide como mucho unos pocos píxeles, así que su forma no se dibuja",
+        "browndwarf": "un anillo a su distancia medida; una enana marrón es un punto a esta escala y casi no da luz visible",
+        "whitedwarf": "un anillo a su distancia medida; la propia enana blanca es un punto a esta escala",
+        "cluster": "una marca en el centro del cúmulo en rayos X; las galaxias miembro se dibujan solo para Virgo, Coma, Fornax y Perseus (la etapa del Grupo Local)"
+      },
+      "quasarZ7": "Un cuásar visto como era unos {age} millones de años después del Big Bang: uno de los {n} conocidos más allá del corrimiento al rojo 7.",
+      "unplaced": {
+        "unnamed": "Estrella HYG {id}",
+        "lead": "{name} es una estrella en la dirección en la que miras; nadie ha medido a qué distancia está",
+        "leadColour": "{name} es {a} estrella {colour} en la dirección en la que miras; nadie ha medido a qué distancia está",
+        "note": "Dibujada en el cielo y en ningún lugar del espacio, porque un lugar necesita una distancia.",
+        "cite": "HYG Stellar Database v4.4 (CC BY-SA 4.0): solo dirección y magnitud"
+      }
+    },
+    "r13Deep": {
+      "card": {
+        "dso-tarantula-nebula": "Su luz cerca de nuestra línea de visión es la fotografía de Webb; su gas es un modelo de una cavidad alrededor del cúmulo R136, dentro de una envoltura de gas brillante contenida por nubes moleculares, según Pellegrini, Baldwin y Ferland (2011). Aún no revisado por un astrónomo.",
+        "dso-m43": "Su luz está tomada de la fotografía de ESO y su forma está reconstruida como un hueco más pequeño en la misma nube oscura que la Nebulosa de Orión, iluminado por la estrella NU Orionis. Aún no revisado por un astrónomo.",
+        "dso-m51": "Construida a partir de su inclinación y estructura publicadas: una espiral de dos brazos vista casi de frente, su compañera NGC 5195 detrás del extremo de su brazo norte y el brazo que llega hasta ella; las profundidades son un modelo. Aún no revisado por un astrónomo.",
+        "dso-m81": "Construida a partir de su inclinación y estructura publicadas: un bulbo grande y viejo y dos brazos muy apretados con polvo en su borde interior. Aún no revisado por un astrónomo.",
+        "dso-m101": "Construida a partir de su inclinación y estructura publicadas: un disco grande visto casi de frente, con muchos brazos y sus gigantescas regiones de formación de estrellas donde las pone el cielo. Aún no revisado por un astrónomo.",
+        "dso-m104": "Construida a partir de su inclinación y estructura publicadas: un enorme bulbo redondo y un disco fino visto casi de canto, con su anillo de polvo por delante. Aún no revisado por un astrónomo.",
+        "dso-antennae-galaxies": "Dos galaxias que chocan, donde las pone el cielo, y sus dos colas de marea; lo lejos o cerca que está cada parte es un modelo, según las simulaciones de la colisión. Aún no revisado por un astrónomo.",
+        "dso-m83": "Construida a partir de su inclinación y estructura publicadas: una espiral barrada vista casi de frente, con brazos ricos en estrellas jóvenes e hidrógeno brillante. Aún no revisado por un astrónomo.",
+        "dso-ngc-1300": "Construida a partir de su estructura publicada: una barra larga con bandas de polvo en sus bordes delanteros y dos brazos que salen de sus extremos, con su forma ajustada a la fotografía de Hubble. Aún no revisado por un astrónomo.",
+        "dso-centaurus-a": "Construida a partir de números publicados: una galaxia elíptica gigante cruzada por un disco deformado de polvo y estrellas jóvenes, según un modelo ajustado a las imágenes de Spitzer; sus dos chorros se dibujan en falso color, porque brillan en rayos X y en ondas de radio, no en luz visible. Aún no revisado por un astrónomo."
+      }
+    },
+    "compare": {
+      "row": "Comparar",
+      "hint": "a escala",
+      "missing": "—",
+      "none": "Ninguno",
+      "yes": "Sí",
+      "no": "No",
+      "range": "{a} a {b}",
+      "numUnit": "{num} {unit}",
+      "modeLabel": "Vista",
+      "modes": {
+        "pair": "Lado a lado",
+        "lab": "Todos los mundos"
+      },
+      "withLabel": "Comparar con",
+      "scaleLabel": "Escala",
+      "scales": {
+        "true": "A escala",
+        "same": "Mismo ancho"
+      },
+      "propLabel": "Ordenar todos los mundos por",
+      "props": {
+        "across": "Anchura",
+        "mass": "Masa",
+        "gravity": "Gravedad",
+        "temp": "Temperatura",
+        "spin": "Duración de un giro",
+        "year": "Duración de un año",
+        "dist": "Distancia al Sol",
+        "moons": "Número de lunas"
+      },
+      "names": {
+        "sun": "El Sol",
+        "mercury": "Mercurio",
+        "venus": "Venus",
+        "earth": "Tierra",
+        "moon": "La Luna",
+        "mars": "Marte",
+        "jupiter": "Júpiter",
+        "saturn": "Saturno",
+        "uranus": "Urano",
+        "neptune": "Neptuno",
+        "pluto": "Plutón"
+      },
+      "the": {
+        "sun": "el Sol",
+        "moon": "la Luna"
+      },
+      "wider": "{big} es {n} veces más ancho que {small}.",
+      "same": "{a} y {b} tienen más o menos el mismo ancho.",
+      "figure": "{a} y {b}, dibujados {how}.",
+      "figureTrue": "a una sola escala",
+      "figureSame": "con el mismo ancho, sin escala",
+      "tableLabel": "{a} junto a {b}",
+      "rows": {
+        "across": "Diámetro",
+        "mass": "Masa",
+        "gravity": "Gravedad",
+        "temp": "Temperatura",
+        "spin": "Un giro dura",
+        "year": "Un año allí",
+        "dist": "Desde el Sol",
+        "air": "Atmósfera",
+        "pressure": "Presión del aire",
+        "moons": "Lunas",
+        "rings": "Anillos"
+      },
+      "units": {
+        "km": "km",
+        "earthOne": "Tierra",
+        "earths": "Tierras",
+        "g": "m/s²",
+        "c": "°C",
+        "hours": "horas",
+        "days": "días",
+        "years": "años",
+        "au": "UA",
+        "bar": "bar",
+        "microbar": "µbar"
+      },
+      "notes": {
+        "average": "media",
+        "flattened": "de media; está achatado",
+        "range": "su intervalo",
+        "bar1": "al nivel de 1 bar",
+        "edge": "en el borde visible",
+        "photosphere": "la superficie visible",
+        "retro": "gira hacia atrás",
+        "sunSpin": "a 16° de latitud",
+        "withEarth": "con la Tierra",
+        "exosphere": "una exosfera tenue",
+        "photosphereAir": "en la fotosfera"
+      },
+      "air": {
+        "part": "{share}% {gas}",
+        "join": ", ",
+        "almostNone": "Casi ninguna",
+        "noSurface": "Sin superficie"
+      },
+      "gas": {
+        "hydrogen": "hidrógeno",
+        "helium": "helio",
+        "methane": "metano",
+        "nitrogen": "nitrógeno",
+        "oxygen": "oxígeno",
+        "argon": "argón",
+        "carbon dioxide": "dióxido de carbono"
+      },
+      "source": "Hojas de datos planetarios de la NASA, leídas el {date}.",
+      "giantNote": "Un gigante no tiene superficie: su gravedad y su temperatura son las del nivel de 1 bar.",
+      "moonsNote": "El número de lunas crece a medida que se confirman otras nuevas.",
+      "spinNote": "El giro del Sol es el valor de la hoja a 16° de latitud.",
+      "drawnTrue": "Dibujados a una sola escala a partir del radio medio de cada uno; no son fotografías.",
+      "drawnSame": "Mismo ancho, así que no están a escala. Los anillos conservan su parte proporcional.",
+      "tiny": "{name} mide menos de un píxel aquí y se dibuja como un punto.",
+      "ringsDrawn": "Los anillos se inclinan para el dibujo; sus radios son los de la NASA.",
+      "labLog": "Las barras son logarítmicas, para que los valores pequeños se sigan viendo.",
+      "labLinear": "Las barras son proporcionales a la cantidad.",
+      "labTitle": "Comparar con {name}",
+      "thisCard": "El mundo de esta ficha"
+    },
+    "passportKinds": {
+      "kindsTitle": "Abiertos, por tipo",
+      "noKinds": "Aún no hay nada que contar por tipo.",
+      "kinds": {
+        "worlds": "Planetas, lunas y el Sol",
+        "stations": "Estaciones espaciales",
+        "satellites": "Satélites y sus cohetes",
+        "spacecraft": "Sondas y telescopios espaciales",
+        "small": "Cometas y asteroides",
+        "stars": "Estrellas",
+        "exoplanets": "Planetas de otras estrellas",
+        "deep": "Nebulosas, galaxias y el cielo profundo",
+        "earth": "Lugares y tiempo en la Tierra"
+      },
+      "notedTitle": "Anotado",
+      "noNoted": "Aún no hay nada anotado. Abre un lugar en el mapa.",
+      "notedFine": "El día en que se vio por primera vez que una nota se cumplía en este navegador. Se guarda aquí, nunca se clasifica ni se envía.",
+      "noted": {
+        "first": {
+          "name": "Un primer lugar",
+          "said": "Abriste un lugar en el mapa."
+        },
+        "planets": {
+          "name": "Los ocho planetas",
+          "said": "Abriste todos los planetas, de Mercurio a Neptuno."
+        },
+        "station": {
+          "name": "Una estación espacial",
+          "said": "Abriste una estación en órbita."
+        },
+        "craft": {
+          "name": "Una nave allá fuera",
+          "said": "Abriste una sonda o un telescopio espacial."
+        },
+        "small": {
+          "name": "Un cometa o un asteroide",
+          "said": "Abriste un cuerpo pequeño del Sistema Solar."
+        },
+        "star": {
+          "name": "Una estrella",
+          "said": "Abriste una estrella más allá del Sol."
+        },
+        "exoplanet": {
+          "name": "El planeta de otra estrella",
+          "said": "Abriste un planeta que gira alrededor de otra estrella."
+        },
+        "deep": {
+          "name": "El cielo profundo",
+          "said": "Abriste una nebulosa, una galaxia o un cúmulo."
+        },
+        "trip": {
+          "name": "Un viaje hasta el final",
+          "said": "Terminaste un viaje guiado."
+        },
+        "eyes": {
+          "name": "Visto con tus propios ojos",
+          "said": "Marcaste algo como visto."
+        },
+        "every": {
+          "name": "Uno de cada tipo",
+          "said": "Abriste al menos una cosa de cada tipo de arriba."
+        }
+      }
+    },
+    "photoCompare": {
+      "title": "Comparar con la fotografía",
+      "reconstruction": "Reconstrucción",
+      "photograph": "Fotografía",
+      "valueText": "{n}% fotografía",
+      "flying": "Yendo al punto desde el que se tomó la fotografía.",
+      "note": "El mapa dibuja un modelo 3D. La fotografía se muestra solo aquí: plana y de cara al Sol, así que si te giras se desvanece."
+    },
+    "entrances": {
+      "label": "Tres formas de entrar",
+      "tonight": "Esta noche",
+      "tonightTitle": "Qué hay sobre ti esta noche, desde tu lugar",
+      "explore": "Explorar",
+      "exploreTitle": "Mira todo el mapa",
+      "trip": "Viaje guiado",
+      "tripTitle": "Empieza el primer viaje guiado de la lista"
+    }
+  });
+}
+// 1.6.3: end
 
 export const GLOSSARY = {
   orbit: "Un camino alrededor de algo, sostenido por la gravedad. Si vas lo bastante rápido de lado, sigues cayendo al lado de la Tierra en lugar de caer sobre ella.",

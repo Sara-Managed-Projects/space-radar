@@ -208,6 +208,7 @@ const parts = [
   ev(T.sla, 'ivb', 'sla-1', 'separate', { dv: [0, -0.3, 1.8], spin: [-0.5, 0, 0] }), ev(T.sla, 'ivb', 'sla-2', 'separate', { dv: [-1.8, -0.3, 0], spin: [0, 0, -0.5] }),
   ev(T.sla, 'ivb', 'sla-3', 'separate', { dv: [0, -0.3, -1.8], spin: [0.5, 0, 0] }), ev(T.sla, 'ivb', 'sla-4', 'separate', { dv: [1.8, -0.3, 0], spin: [0, 0, 0.5] }),
   ev(T.extr, 'ivb', 'csm-stowed', 'hide'),
+  ev(T.extr, 'csm', 'sm-bay-foil', 'hide'),   // 1.7.0: the SM's torn foil of bay 4 belongs to Apollo 13's story (the model has it as a part)
   ev(T.loi, 'csm', 'service-module', 'ignite', { rampS: 2 }), ev(T.loi1, 'csm', 'service-module', 'cutoff'),
   ev(T.pdi, 'lm', 'descent-stage', 'ignite', { rampS: 3 }), ev(T.pdi + 26, 'lm', 'descent-stage', 'throttle', { level: 0.95 }), ev(T.pdi + 600, 'lm', 'descent-stage', 'throttle', { level: 0.55 }), ev(T.land - 0.1, 'lm', 'descent-stage', 'cutoff'),
   ev(T.lift, 'lm', 'ascent-stage', 'hide'),

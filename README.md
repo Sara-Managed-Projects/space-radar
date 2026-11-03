@@ -16,6 +16,20 @@ A live 3D map of space in your browser. Free, open source, no account.
 [![Good first issues](https://img.shields.io/github/issues/Sara-Managed-Projects/space-radar/good%20first%20issue?label=good%20first%20issues&color=7057ff)](https://github.com/Sara-Managed-Projects/space-radar/labels/good%20first%20issue)
 [![Open in GitHub Codespaces](https://img.shields.io/badge/open%20in-Codespaces-24292f?logo=github)](https://codespaces.new/Sara-Managed-Projects/space-radar)
 
+Translations, as they stand (all machine-drafted and not yet shown from a browser's language until two native readers have read them; [how to help](docs/TRANSLATING.md)):<br>
+<!-- translation-badges:begin (node scripts/check-translation.mjs --write-doc) -->
+[![Arabic: 100 %, machine-drafted](https://img.shields.io/badge/%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9-100%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
+[![German: 99.9 %, machine-drafted](https://img.shields.io/badge/Deutsch-99.9%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
+[![Spanish: 100 %, machine-drafted](https://img.shields.io/badge/Espa%C3%B1ol-100%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
+[![French: 99.8 %, machine-drafted](https://img.shields.io/badge/Fran%C3%A7ais-99.8%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
+[![Hebrew: 100 %, machine-drafted](https://img.shields.io/badge/%D7%A2%D7%91%D7%A8%D7%99%D7%AA-100%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
+[![Hindi: 100 %, machine-drafted](https://img.shields.io/badge/%E0%A4%B9%E0%A4%BF%E0%A4%A8%E0%A5%8D%E0%A4%A6%E0%A5%80-100%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
+[![Portuguese (Brazil): 99.9 %, machine-drafted](https://img.shields.io/badge/Portugu%C3%AAs%20(Brasil)-99.9%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
+[![Russian: 100 %, machine-drafted](https://img.shields.io/badge/%D0%A0%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9-100%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
+[![Ukrainian: 100 %, machine-drafted](https://img.shields.io/badge/%D0%A3%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%B0-100%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
+[![Chinese (Simplified): 100 %, machine-drafted](https://img.shields.io/badge/%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-100%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
+<!-- translation-badges:end -->
+
 </div>
 
 - **It is real.** Satellites are worked out in your browser from public orbital data, and every
