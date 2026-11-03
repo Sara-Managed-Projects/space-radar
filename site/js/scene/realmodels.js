@@ -238,7 +238,12 @@ export const REAL_MODELS = {
     // for, so `was: 'hitomi'` makes the card say that in a sentence of its own
     // (COPY.drawing.objectWas): an intact telescope may not be drawn on a wreck without saying so.
     41337: { build: 'space-telescope', file: 'hitomi.glb', colour: 'telescope', name: 'Hitomi (ASTRO-H)', catalogue: 'ASTRO-H (HITOMI)', made: 'render', was: 'hitomi', axes: 'app' },
-    42758: { build: 'space-telescope', colour: 'telescope', name: 'a space telescope', catalogue: 'HXMT (HUIYAN)', generic: true },
+    // HXMT (INSIGHT-HXMT, "HUIYAN") HAS ITS OWN SHAPE since release 1.7.5 (public #967): hxmt.glb, BUILT in code from cited metres
+    // and IHEP's pictures (registry/models.yaml row `hxmt`, kind `built-from-dimensions`; no agency publishes a mesh). It was the
+    // generic space telescope. `axes: 'app'`: the telescopes' boresight (up the payload) at -Z, away from the Earth; the gold
+    // platform at +Z; the two wings along X with their cells toward +Y. NOT AS IT FLIES: the real craft points its telescopes
+    // at whatever it observes; the app knows no target.
+    42758: { file: 'hxmt.glb', colour: 'telescope', name: 'Insight-HXMT (Huiyan)', catalogue: 'HXMT (HUIYAN)', made: 'dimensions', axes: 'app' },
     // XRISM's own shape since 2026-10-13 (public #968): xrism.glb, GENERATED from two frames of NASA
     // Goddard's turntable render and its two solar paddles then REPLACED by flat ones built in code
     // (registry/models.yaml row `xrism`). The build stays as what is drawn while the file is on its
@@ -249,6 +254,29 @@ export const REAL_MODELS = {
     // -Z, away from the Earth; paddles along X; cells toward +Y) and flew at the seeded constant
     // angle every loaded file had, its paddles' backs to the Sun. Now it flies as its build did.
     57800: { build: 'space-telescope', file: 'xrism.glb', colour: 'telescope', name: 'XRISM', catalogue: 'XRISM', made: 'render', axes: 'app' },
+    // CHEOPS (public #963): ESA's exoplanet photometry telescope on its hexagonal Airbus platform, built from ESA's, Bern's and the mission paper's published
+    // dimensions (registry/models.yaml row `cheops`, kind `built-from-dimensions`; none of the pictures it was drawn from is in the file). `axes: 'app'`:
+    // +X the array axis, +Y the cells' side (the Sun's), +Z the launcher ring toward the Earth; THE TELESCOPE LOOKS ALONG -Y, not -Z: on this craft the boresight is
+    // square to the prism axis and opposite the cells, so the app's "optics at -Z" rule cannot hold with the cells at +Y, and the cells' side was kept.
+    // Drawn with its cover closed, as launched and photographed. Not `generic`: it is this craft.
+    44874: { file: 'cheops.glb', colour: 'telescope', name: 'CHEOPS', catalogue: 'CHEOPS', made: 'dimensions', axes: 'app' },
+    // EINSTEIN PROBE has its own shape since release 1.7.5 (public #972): einstein-probe.glb was BUILT HERE, in code, from the cited masses and
+    // instrument counts (ESA's factsheet; Yuan et al., arXiv:2209.09763) and read off China News Service's two CC BY 4.0 illustrations and the
+    // paper's CAD view and qualification-model photograph (registry/models.yaml row `einstein-probe`, kind `built-from-dimensions`): the twelve
+    // white WXT lobster-eye modules in a fanned ring round the two FXT cylinders, the gold-foil payload cabin with its sunshade, the grey bus with its
+    // equipment deck, and two three-panel wings. By NUMBER (CelesTrak's name is EINSTEIN PROBE, read 2026-11-03), so its Long March 2C rocket body
+    // (58754) and every other X-ray telescope keep what they had. `axes: 'app'`: the optics look away from the Earth (-Z, the telescope rule, as NuSTAR and
+    // XRISM), the wings along X, the cells toward +Y. NOT AS IT FLIES: EP points anywhere in the sky and the app knows no target.
+    58753: { file: 'einstein-probe.glb', colour: 'telescope', name: 'Einstein Probe', catalogue: 'EINSTEIN PROBE', made: 'dimensions', axes: 'app' },
+    // SVOM HAS ITS OWN SHAPE since release 1.7.5 (public #971): svom.glb was BUILT HERE, in code, from the cited numbers (the mission papers: the
+    // 54 cm ECLAIRs mask 46 cm above its detectors, the three GRM detectors 30 degrees off its axis, the MXT's 20 cm optics, the VT's 44 cm mirror) and
+    // read off CNES's illustrations and the SVOM collaboration's photographs, looked at only (registry/models.yaml row `svom`, kind
+    // `built-from-dimensions`): a gold-blanketed body with white radiator panels, the deck with ECLAIRs' coded mask, the MXT, the red-capped VT and the
+    // three GRM heads, the adapter ring with its ribs, two three-panel wings. By NUMBER (CelesTrak's name is SVOM, to be confirmed against the live
+    // catalogue), so its Long March 2C rocket body and every other gamma-ray or X-ray telescope keep what they had. `axes: 'app'`: the instruments look away
+    // from the Earth (-Z, the telescope rule, as NuSTAR and XRISM), the adapter at +Z, the wings along X, the cells toward +Y. NOT AS IT FLIES: SVOM points
+    // 45 degrees off the anti-Sun direction and the app knows no target; its real wings face the adapter side.
+    60089: { file: 'svom.glb', colour: 'telescope', name: 'SVOM', catalogue: 'SVOM', made: 'dimensions', axes: 'app' },
     // THE FIRST BATCH OF THE "3D model:" ISSUES (2026-10-13). NuSTAR had no route at all: on the layer
     // of satellites worth knowing it was the generic satellite, a box with a dish, and it is two small
     // boxes ten metres apart on a lattice mast, which is the whole of what a person recognises
