@@ -148,6 +148,8 @@ export const VISUAL_CLASSES = [
 ],
 "sites": [
 "vostok-1-landing",
+"voskhod-2-landing",
+"edwards-afb-runway-23",
 "copernicus",
 "tycho",
 "shackleton",
@@ -406,6 +408,8 @@ export const VISUAL_CLASSES = [
 "vostok-3ka",
 "vostok-seat",
 "vostok-chutes",
+"voskhod-3kd",
+"leonov-eva",
 "sputnik-1"
 ],
 "model_kinds": [
@@ -478,6 +482,8 @@ export const VISUAL_CLASSES = [
 "real_models": [
 "saturn-v",
 "shuttle-stack",
+"shuttle-sts-stack",
+"shuttle-orbiter",
 "delta2-stage",
 "atlas5-centaur",
 "centaur-d",
