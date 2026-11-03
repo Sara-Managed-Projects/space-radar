@@ -239,7 +239,7 @@ const common = async (id, cover, models) => {
   const rl = TR.tilt(b, 0, -90);
   check(Math.abs(rl[2][2] - 1) < 1e-9 && Math.abs(rl[1][0] - 1) < 1e-9, 'tilt: a roll of -90 turns the dorsal axis up and keeps the nose on the flight path');
   check(F.validateMoment({ ...JSON.parse(src('site/data/moments/sts-1.json')) }, { words: COPY.momentStories['sts-1'] }).length === 0, 'format: pitchDeg and rollDeg in phases are valid');
-  // the words of Apollo 13 and Sputnik 1 in four languages; Voskhod 2 and STS-1 drafted in Spanish (#525) and Portuguese Brazil (#526), English stubs in fr/de
+  // the words of Apollo 13 and Sputnik 1 in four languages; Voskhod 2 and STS-1 drafted in Spanish (#525), Portuguese Brazil (#526) and French (#527), English stubs in de
   await mod('copy/en.moments.apollo13.js'); await mod('copy/en.moments.sputnik.js');
   await mod('copy/en.moments.voskhod.js'); await mod('copy/en.moments.sts1.js');
   const slots = (s) => (String(s).match(/\{[a-zA-Z]+\}/g) || []).sort().join(',');
@@ -262,15 +262,15 @@ const common = async (id, cover, models) => {
       if (!tr) continue;
       check(Object.keys(en).every((k) => typeof tr[k] === 'string' && tr[k].trim()) && Object.keys(tr).every((k) => k in en), `${code}: ${id} has every key of the English, and no other`);
       check(Object.keys(en).every((k) => slots(tr[k]) === slots(en[k])), `${code}: ${id} keeps every {slot}`);
-      if (code === 'es' || code === 'pt') {
+      if (code === 'es' || code === 'pt' || code === 'fr') {
         check(Object.keys(en).filter((k) => en[k].split(/\s+/).length >= 6 && !/world's greatest all-electric/.test(en[k])).every((k) => tr[k] !== en[k]), `${code}: ${id} has no long sentence left in English`);
       }
     }
-    if (code === 'es' || code === 'pt') {
+    if (code === 'es' || code === 'pt' || code === 'fr') {
       check(/world's greatest all-electric flying machine/.test(lang.COPY.momentStories['sts-1'].stop), `${code}: Young's words stay as he said them`);
     }
   }
 }
 
 if (problems.length) { for (const p of problems) console.error(`::error::${p}`); console.error(`${problems.length} problem(s)`); process.exit(1); }
-console.log('voskhod and sts-1 ok: Voskhod 2 (the airlock, the walk from 08:34:51 to 08:47:00, the failed automatic descent, the manual burn, the landing near Perm) and STS-1 (the boosters at 2:12, the tank at 8:52, 246 and 274 km, the deorbit over the Indian Ocean, Edwards runway 23), the shelf and the cards, the night lamp, the marker floor, the tilt, Apollo 13 and Sputnik 1 in four languages, and Voskhod 2 and STS-1 in Spanish and Portuguese (Brazil)');
+console.log('voskhod and sts-1 ok: Voskhod 2 (the airlock, the walk from 08:34:51 to 08:47:00, the failed automatic descent, the manual burn, the landing near Perm) and STS-1 (the boosters at 2:12, the tank at 8:52, 246 and 274 km, the deorbit over the Indian Ocean, Edwards runway 23), the shelf and the cards, the night lamp, the marker floor, the tilt, Apollo 13 and Sputnik 1 in four languages, and Voskhod 2 and STS-1 in Spanish, Portuguese (Brazil) and French');
