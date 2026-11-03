@@ -103,7 +103,7 @@ const GAP0 = 2.4, GAP1 = 8.8, UNDER = 1.4;                                  // t
 const vz0 = -alt1(T.bs).dy;
 const A_RS = 22.4, A_TD = GAP1;                                             // the stage's underside at rover separation (rover wheels at 20 m) and at touchdown (7.6 m of bridle plus the rover's 1.2 m to its deck)
 const pExp = (() => { const mean = (A_BS - UNDER - A_RS) / (T.rover - T.bs); return (vz0 - 0.73) / (mean - 0.73) - 1; })();
-const dsAlt = [], dsS = [];
+const dsAlt = [];
 {
   let s = S_BS + S_PRE, h = A_BS - UNDER;
   dsAlt.push([T.bs, h, s]);
