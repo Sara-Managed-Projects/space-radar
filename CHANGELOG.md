@@ -11,6 +11,30 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [1.7.5] - 2026-11-03
+
+### Added
+
+- **Four astronomy satellites have a model of their own: CHEOPS, Insight-HXMT, SVOM and the Einstein Probe.** Each was the generic
+  space telescope or the plain satellite shape; each is now built in code from published dimensions and from pictures read for the layout,
+  by NORAD number, and its card says "shape built from published dimensions and pictures; details simplified". No agency publishes a mesh
+  of any of them (NASA's 3D Resources and science.nasa.gov/3d-resources have none; ESA's terms forbid derivatives), so no mesh and no picture
+  is in a file. **CHEOPS** (`cheops.glb`, 114 kB): the hexagonal platform on its launcher ring, the 30 cm telescope behind its black baffle
+  with the copper cover, two star-tracker heads, the instrument radiators, and the three-panel Sun shield with its blue cells wrapped round the
+  back, at ESA's 1.55 by 1.49 by 1.4 m. **Insight-HXMT** (`hxmt.glb`, 158 kB): the gold platform, the 18 HE detector modules with their slat
+  collimators, the three LE and three ME boxes, the star trackers, the sun-shielding board and two three-panel wings. **SVOM** (`svom.glb`,
+  151 kB): the gold-blanketed body with ECLAIRs' coded mask, the MXT, the visible telescope, the three GRM heads tilted 30 degrees, the
+  adapter ring and two wings. **Einstein Probe** (`einstein-probe.glb`, 107 kB): the twelve lobster-eye WXT modules fanned round the two FXT
+  cylinders on the gold payload cabin, the bus and two three-panel wings. Each is 12 000 to 19 000 triangles, loaded only when its craft is selected.
+  The sources, what was cited and what was estimated are in `registry/models.yaml` and `CREDITS.md` §3q to §3t.
+
+### Not yet
+
+- **The solar arrays of Insight-HXMT, SVOM and the Einstein Probe are estimates** (no page opened gives their span), and every array's cell
+  grid is coarse (the bake keeps the colour of nothing smaller than about 10 cm on a craft this size); the rows say so. CHEOPS' telescope looks along
+  the Sun shield's normal, so in the app it looks sideways, not away from the Earth.
+- **The optical Earth-observation group** (Pleiades, SPOT, SkySat, BeiDou-3 MEO) is the next craft batch; the radar pair after it.
+
 ## [1.7.2] - 2026-11-03
 
 ### Added
