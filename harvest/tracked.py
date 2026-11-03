@@ -8,12 +8,14 @@ read under; one request each a day, far inside the two-hour cycle):
     gp.php?NAME=DEB&FORMAT=json      pieces of debris
     gp.php?NAME=R/B&FORMAT=json      spent rocket bodies
 
-on 2026-11-03 these answered 10 245 and 2 192 element sets: 12 437 objects placed by their own elements (SGP4), where the
-debris view had drawn 14 604 at made-up places along their orbits' real size and tilt. The catalogue lists about 13 800
-pieces and rocket bodies in orbit; the rest have no element set CelesTrak publishes and the page keeps drawing them as
-illustrative (site/js/data/tracked.js merges). The ~34 800 of the tracker's wording needs the 16 600 working payloads
-(already drawn from `celestrak-active`) and the dead ones, which the public GP queries cannot select; those are not here
-and the page says so.
+on 2026-11-03 these answered 10 245 and 2 192 element sets, 12 403 objects once SATCAT's own types are applied: placed by
+their own elements (SGP4), where the debris view had drawn every one at a made-up place along its orbit's real size and tilt.
+The catalogue lists 14 835 pieces and rocket bodies in Earth orbit; the other 2 432 have no element set CelesTrak publishes
+and the page keeps drawing them as illustrative (site/js/data/tracked.js merges).
+
+THE ~34 800 of the issue's wording is the whole catalogue in orbit. It needs the 16 600 working payloads (already drawn
+from `celestrak-active`) and the dead ones, which no public GP query selects by type; those are not in this set, and the
+debris view still draws only debris and rocket bodies, as before.
 
 THE SIZE comes from SATCAT's radar cross-section (the `celestrak-satcat` snapshot of the same publish): rocket bodies
 and anything of 1 m2 or more are level 0, 0.1 to 1 m2 level 1, smaller or unmeasured level 2. A device that has

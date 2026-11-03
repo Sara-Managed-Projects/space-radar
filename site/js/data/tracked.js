@@ -9,7 +9,7 @@
 //
 // WHAT CHANGED. data/satcat.js fieldRecords() gives each piece of debris its orbit's real size and tilt at a
 // made-up place along it (the catalogue lists the shape of an orbit, not where on it the thing is). CelesTrak
-// does publish element sets for most of them, so the places can be real: 12 402 of the 14 604 on 2026-11-03.
+// does publish element sets for most of them, so the places can be real: 12 403 of the 14 835 in Earth orbit on 2026-11-03.
 // Those are drawn by SGP4 from their own elements (class `measured` within half a day of the element set's epoch,
 // `inferred` after it, as for the active satellites). The rest keep the illustrative place and the card says so.
 // The count of each is on the card of the layer.
