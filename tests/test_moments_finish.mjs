@@ -72,7 +72,7 @@ check(/momentsForRecord\(record\)/.test(cards) && /import \{ momentsForRecord \}
 // --- the words in four languages ----------------------------------------------------------------------------------------
 const { COPY } = await mod('copy/en.js');
 await mod('copy/en.moments.js');
-for (const f of ['vostok', 'apollo11', 'artemis2', 'apollo13', 'sputnik']) await mod(`copy/en.moments.${f}.js`);   // 1.7.2: Apollo 13 and Sputnik 1 are translated too (Voskhod 2 and STS-1 are English only for now)
+for (const f of ['vostok', 'apollo11', 'artemis2', 'apollo13', 'sputnik', 'hubble', 'falcon9']) await mod(`copy/en.moments.${f}.js`);   // 1.7.2: Apollo 13 and Sputnik 1 are translated too (Voskhod 2 and STS-1 are English only for now); 1.7.6: Hubble's deployment and the first Falcon 9 landing too
 const slots = (s) => (String(s).match(/\{[a-zA-Z]+\}/g) || []).sort().join(',');
 const leaves = (o, path = '') => Object.entries(o).flatMap(([k, v]) => (typeof v === 'string' ? [[path + k, v]] : leaves(v, `${path}${k}.`)));
 for (const code of ['es', 'fr', 'de', 'pt']) {
@@ -98,10 +98,10 @@ for (const code of ['es', 'fr', 'de', 'pt']) {
     }
     for (const [path] of have) if (!leaves(en, `${section}.`).some(([p]) => p === path)) check(false, `${code}: ${path} has no English`);
   }
-  check(n === 283, `${code}: all 283 strings of the Moments are covered (${n})`);
+  check(n === 354, `${code}: all 354 strings of the Moments are covered (${n})`);
 }
 // The stories hand their words to the language hook once they are in COPY; the lines said in the recordings stay in their own language.
-for (const f of ['vostok', 'apollo11', 'artemis2', 'apollo13', 'sputnik', 'voskhod', 'sts1']) {
+for (const f of ['vostok', 'apollo11', 'artemis2', 'apollo13', 'sputnik', 'voskhod', 'sts1', 'hubble', 'falcon9']) {
   const t = src(`site/js/copy/en.moments.${f}.js`);
   check(/HOOK\.localise\(\{ COPY \}, \['momentStories'\]\)/.test(t), `en.moments.${f}.js calls HOOK.localise for momentStories`);
 }
