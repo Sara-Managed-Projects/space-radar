@@ -4076,6 +4076,7 @@ export const COPY = {
     "cutNote": "المراحل مقصوصة من نموذج واحد حاليًا.",
     "drawnNote": "اللهب والبخار مرسومان.",
     "groundNote": "الأرض قرب المنصة توضيحية؛ وخريطة الأرض من Solar System Scope، CC BY 4.0.",
+    "groundNoteMars": "Ground near the site illustrative; Mars map Solar System Scope, CC BY 4.0.",
     "keys": "مسافة للتشغيل أو الإيقاف المؤقت، والأسهم للخطو، وEscape للإغلاق"
   },
   "momentShelf": {
@@ -4116,6 +4117,11 @@ export const COPY = {
         "title": "سبوتنيك 1",
         "when": "4 أكتوبر 1957",
         "blurb": "من بايكونور إلى أول دورة حول الأرض: أول قمر صناعي، كرة مصقولة قطرها 585 مم، وصفيرها."
+      },
+      "curiosity-edl": {
+        "title": "Curiosity landing",
+        "when": "6 August 2012",
+        "blurb": "The seven minutes from the top of the Martian air to Gale crater: the heat shield, the parachute, the rocket backpack and the sky crane, on JPL's own clock."
       },
       "vostok-1": {
         "title": "Vostok 1",

@@ -286,6 +286,8 @@ export const VISUAL_CLASSES = [
 "spitzer",
 "kepler",
 "roman",
+"msl-entry",
+"msl-descent-stage",
 "radarsat1",
 "cygnus",
 "nustar",

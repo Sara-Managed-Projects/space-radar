@@ -3856,11 +3856,12 @@ Object.assign(COPY, {
     "cutNote": "Por enquanto, os estágios são recortados de um único modelo.",
     "drawnNote": "As chamas e o vapor são desenhados.",
     "groundNote": "O chão perto da plataforma é ilustrativo; mapa da Terra do Solar System Scope, CC BY 4.0.",
+    "groundNoteMars": "O chão perto do local é ilustrativo; mapa de Marte do Solar System Scope, CC BY 4.0.",
     "keys": "Espaço reproduz ou pausa, as setas avançam, Esc fecha"
   },
   "momentShelf": {
     "title": "Momentos",
-    "note": "Sete missões repetidas em um único relógio, com os horários reais dos eventos. As trajetórias são reconstruídas e dizem isso.",
+    "note": "Missões repetidas em um único relógio, com os horários reais dos eventos. As trajetórias são reconstruídas e dizem isso.",
     "minutes": "{m} min",
     "replay": "Rever este momento",
     "replayTitle": "Rever {title} no relógio da missão",
@@ -3895,6 +3896,11 @@ Object.assign(COPY, {
         "title": "STS-1",
         "when": "de 12 a 14 de abril de 1981",
         "blurb": "O primeiro ônibus espacial: o Columbia a partir da plataforma 39A, os foguetes e o tanque, 54 horas em órbita e uma planagem até o leito seco de Edwards."
+      },
+      "curiosity-edl": {
+        "title": "Pouso do Curiosity",
+        "when": "6 de agosto de 2012",
+        "blurb": "Os sete minutos do alto do ar marciano até a cratera Gale: o escudo térmico, o paraquedas, a mochila foguete e o guindaste celeste, no relógio do JPL."
       },
       "vostok-1": {
         "title": "Vostok 1",

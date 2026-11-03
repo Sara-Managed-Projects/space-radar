@@ -3864,11 +3864,12 @@ Object.assign(COPY, {
     "cutNote": "Die Stufen sind vorerst aus einem einzigen Modell geschnitten.",
     "drawnNote": "Flammen und Dampf sind gezeichnet.",
     "groundNote": "Der Boden an der Rampe ist illustrativ; Erdkarte von Solar System Scope, CC BY 4.0.",
+    "groundNoteMars": "Der Boden am Landeplatz ist illustrativ; Marskarte von Solar System Scope, CC BY 4.0.",
     "keys": "Leertaste startet oder pausiert, Pfeile springen, Esc schließt"
   },
   "momentShelf": {
     "title": "Momente",
-    "note": "Sieben Missionen, auf einer einzigen Uhr wiederholt, mit den echten Zeiten der Ereignisse. Die Bahnen sind rekonstruiert und sagen es.",
+    "note": "Missionen, auf einer einzigen Uhr wiederholt, mit den echten Zeiten der Ereignisse. Die Bahnen sind rekonstruiert und sagen es.",
     "minutes": "{m} Min.",
     "replay": "Diesen Moment ansehen",
     "replayTitle": "{title} auf der Missionsuhr ansehen",
@@ -3903,6 +3904,11 @@ Object.assign(COPY, {
         "title": "STS-1",
         "when": "12. bis 14. April 1981",
         "blurb": "Das erste Space Shuttle: Columbia von Rampe 39A, die Booster und der Tank, 54 Stunden im Orbit und ein Gleitflug auf den ausgetrockneten See von Edwards."
+      },
+      "curiosity-edl": {
+        "title": "Curiositys Landung",
+        "when": "6. August 2012",
+        "blurb": "Die sieben Minuten von der Obergrenze der Marsluft bis zum Gale-Krater: Hitzeschild, Fallschirm, Raketenrucksack und Himmelskran, auf der Uhr des JPL."
       },
       "vostok-1": {
         "title": "Wostok 1",

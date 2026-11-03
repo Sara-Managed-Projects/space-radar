@@ -35,6 +35,8 @@ export const MODEL_LOOKS = {
   "meteosat-msg.glb": "pbr",
   "metop-sg-a.glb": "pbr",
   "midori-2.glb": "pbr",
+  "msl-descent-stage.glb": "pbr",
+  "msl-entry.glb": "pbr",
   "mtg-i.glb": "pbr",
   "mtg-s.glb": "pbr",
   "oao-2.glb": "pbr",

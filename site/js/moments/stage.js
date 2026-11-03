@@ -17,7 +17,7 @@
 // The Sun and the Moon stand where they were at the mission's second (propagate/body.js, astronomy-engine).
 
 import * as THREE from '../../vendor/three.module.min.js';
-import { EARTH_R } from './trajectory.js';
+import { EARTH_R, WORLD } from './trajectory.js';
 
 export const eciToThree = (v) => [v[0], v[2], -v[1]];
 const TEX = new URL('../../textures/', import.meta.url);
@@ -29,8 +29,8 @@ const LOCAL_R = 25000;
 const AIR_H = 8000;
 
 /** What the air does at a camera `altM` up with the Sun `sunUp` (sine of its elevation): sky light, haze, stars. */
-export function airAt(altM, sunUp) {
-  const density = Math.exp(-Math.max(0, altM) / AIR_H);
+export function airAt(altM, sunUp, airH = AIR_H, hazeM = 22000) {
+  const density = Math.exp(-Math.max(0, altM) / airH);
   const day = Math.min(1, Math.max(0, (sunUp + 0.1) / 0.35));
   return {
     density,
@@ -39,7 +39,7 @@ export function airAt(altM, sunUp) {
     sky: day * Math.pow(density, 0.45),
     // Stars only where a camera exposed for a sunlit scene would see them: none by day, all on the night side.
     stars: Math.max(0, 1 - 1.4 * day) * (1 - density),
-    hazeK: density / 22000,
+    hazeK: density / hazeM,
     // 1.7.2: how much a floodlit night pad is wanted: the Sun down and the camera in the air (the pad's own lamps, as a launch at night has).
     night: (1 - day) * Math.min(1, density * 2),
   };
@@ -55,19 +55,20 @@ void main() {
 const SKY_F = `${LOG_F}
 uniform vec3 uSun, uUp;
 uniform float uSky, uDensity, uHorizon, uSunUp;
+uniform vec3 uZen, uHorC, uGlow;   // 1.7.9: the world's sky: overhead, at the horizon, round the Sun
 varying vec3 vDir;
 void main() {
   #include <logdepthbuf_fragment>
   vec3 d = normalize(vDir);
   float mu = dot(d, uUp);
   float x = clamp((mu - uHorizon) / (1.0 - uHorizon), 0.0, 1.0);
-  vec3 zen = mix(vec3(0.015, 0.03, 0.09), vec3(0.11, 0.27, 0.64), pow(uDensity, 0.3));
-  vec3 hor = vec3(0.64, 0.75, 0.88);
+  vec3 zen = mix(vec3(0.015, 0.03, 0.09), uZen, pow(uDensity, 0.3));
+  vec3 hor = uHorC;
   vec3 c = mix(hor, zen, pow(x, 0.42));
   float low = 1.0 - smoothstep(0.0, 0.35, uSunUp);
   c = mix(c, vec3(0.95, 0.56, 0.32), (1.0 - x) * (1.0 - x) * low * 0.65);
   float sd = max(dot(d, uSun), 0.0);
-  c += vec3(1.0, 0.9, 0.76) * (0.22 * pow(sd, 5.0) + 0.55 * pow(sd, 48.0)) * uDensity;
+  c += uGlow * (0.22 * pow(sd, 5.0) + 0.55 * pow(sd, 48.0)) * uDensity;
   c *= uSky;
   if (mu < uHorizon) c = mix(c, hor * uSky * 0.8, 0.5);
   gl_FragColor = vec4(c, 1.0);
@@ -146,7 +147,7 @@ void main() {
       local = mix(local, vec3(0.09, 0.09, 0.09), trench);
     }
     // 1.7.2: a dry lakebed (Edwards): pale baked clay with fine cracks, and a runway painted on it (a darker strip, a centre line, the two thresholds).
-    if (uKind > 2.5) {
+    if (uKind > 2.5 && uKind < 3.5) {
       vec3 clay = mix(vec3(0.66, 0.58, 0.45), vec3(0.78, 0.71, 0.58), n1 * 0.6 + n2 * 0.4);
       local = clay * (0.94 + 0.06 * n3);
       if (uRun.z > 0.0) {
@@ -162,6 +163,12 @@ void main() {
         local = mix(local, vec3(0.92, 0.9, 0.84), thr * inside * 0.9);
       }
     }
+    // 1.7.9: Mars's ground (kind 4): rust-brown dust and gravel, pale where it is thin, with dark pebbles scattered over it. Illustrative.
+    if (uKind > 3.5) {
+      vec3 dust = mix(vec3(0.40, 0.25, 0.16), vec3(0.58, 0.40, 0.27), n1 * 0.55 + n2 * 0.3 + n3 * 0.15);
+      float pebble = smoothstep(0.80, 0.86, noise(q * 0.9)) * 0.55 + smoothstep(0.83, 0.88, noise(q * 3.1 + 17.0)) * 0.5;
+      local = mix(dust, vec3(0.20, 0.14, 0.11), clamp(pebble, 0.0, 1.0)) * (0.9 + 0.1 * n3);
+    }
     albedo = mix(albedo, local, w);
   }
 #endif
@@ -174,7 +181,7 @@ void main() {
 }`;
 
 const RIM_F = `${LOG_F}
-uniform vec3 uSun;
+uniform vec3 uSun, uRimC;
 uniform float uOn;
 varying vec3 vN;
 varying vec3 vV;
@@ -182,7 +189,7 @@ void main() {
   #include <logdepthbuf_fragment>
   float f = 1.0 - abs(dot(normalize(vN), normalize(vV)));
   float day = smoothstep(-0.25, 0.3, dot(normalize(vN), uSun));
-  gl_FragColor = vec4(vec3(0.35, 0.6, 1.0) * pow(f, 3.5) * day * uOn * 1.4, 1.0);
+  gl_FragColor = vec4(uRimC * pow(f, 3.5) * day * uOn * 1.4, 1.0);
   ${OUT_F}
 }`;
 const RIM_V = `${LOG_V}
@@ -252,16 +259,21 @@ export function createStage(renderer, { tier = 1, place, frame }) {
     textures.push(t);
     return t;
   };
-  const day = tex('2k_earth_daymap.webp');
+  // 1.7.9: the world the moment is on: its map, its sky, its light (trajectory.js setWorld has been called by the player).
+  const mars = WORLD.id === 'mars';
+  const day = tex(mars ? '2k_mars.webp' : '2k_earth_daymap.webp');
 
-  const sun = new THREE.DirectionalLight(0xfff4e6, 3.0);
+  const sun = new THREE.DirectionalLight(mars ? 0xfff0e0 : 0xfff4e6, mars ? 2.6 : 3.0);
   const hemi = new THREE.HemisphereLight(0x9cc2ff, 0x6a5e48, 0);
   const fill = new THREE.AmbientLight(0x2a3550, 0.35);
   scene.add(sun, sun.target, hemi, fill);
 
   // The sky, round the camera, first.
   const skyMat = new THREE.ShaderMaterial({
-    uniforms: { uSun: { value: new THREE.Vector3(0, 1, 0) }, uUp: { value: new THREE.Vector3(0, 1, 0) }, uSky: { value: 1 }, uDensity: { value: 1 }, uHorizon: { value: 0 }, uSunUp: { value: 1 } },
+    uniforms: { uSun: { value: new THREE.Vector3(0, 1, 0) }, uUp: { value: new THREE.Vector3(0, 1, 0) }, uSky: { value: 1 }, uDensity: { value: 1 }, uHorizon: { value: 0 }, uSunUp: { value: 1 },
+      uZen: { value: new THREE.Vector3(...(mars ? [0.34, 0.22, 0.15] : [0.11, 0.27, 0.64])) },
+      uHorC: { value: new THREE.Vector3(...(mars ? [0.74, 0.57, 0.42] : [0.64, 0.75, 0.88])) },
+      uGlow: { value: new THREE.Vector3(...(mars ? [0.62, 0.72, 1.0] : [1.0, 0.9, 0.76])) } },
     vertexShader: SKY_V, fragmentShader: SKY_F, side: THREE.BackSide, depthTest: false, depthWrite: false,
   });
   const sky = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 24), skyMat);
@@ -292,10 +304,10 @@ export function createStage(renderer, { tier = 1, place, frame }) {
   globe.frustumCulled = false;
   earth.add(globe);
   const rimMat = new THREE.ShaderMaterial({
-    uniforms: { uSun: { value: new THREE.Vector3(0, 1, 0) }, uOn: { value: 0 } },
+    uniforms: { uSun: { value: new THREE.Vector3(0, 1, 0) }, uOn: { value: 0 }, uRimC: { value: new THREE.Vector3(...(mars ? [0.62, 0.46, 0.36] : [0.35, 0.6, 1.0])) } },
     vertexShader: RIM_V, fragmentShader: RIM_F, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
   });
-  const rim = new THREE.Mesh(new THREE.SphereGeometry(EARTH_R + 70000, 96, 48), rimMat);
+  const rim = new THREE.Mesh(new THREE.SphereGeometry(EARTH_R + WORLD.rimM, 96, 48), rimMat);
   rim.frustumCulled = false;
   earth.add(rim);
 
@@ -312,7 +324,7 @@ export function createStage(renderer, { tier = 1, place, frame }) {
     capMat.uniforms.uShore.value.set(Math.sin(b), -Math.cos(b), Number(g.shoreM) || 800);
   }
   // 1.7.2: a ground that is a dry lakebed (`lakebed: true`) with a `runway` {bearing (degrees from north), widthM, lengthM}: Edwards.
-  const groundKind = (k) => (k.lakebed ? 3 : k.kind === 'coast' ? 0 : k.kind === 'sea' ? 2 : 1);
+  const groundKind = (k) => (WORLD.id !== 'earth' && k.kind !== 'sea' ? 4 : k.lakebed ? 3 : k.kind === 'coast' ? 0 : k.kind === 'sea' ? 2 : 1);
   const setRunway = (k) => {
     const r = k.runway;
     if (!r) { capMat.uniforms.uRun.value.set(0, 0, 0, 0); return; }
@@ -392,7 +404,7 @@ export function createStage(renderer, { tier = 1, place, frame }) {
     const up = [rel[0] / r, rel[1] / r, rel[2] / r];
     const altM = r - EARTH_R;
     const sunUp = up[0] * sunDir[0] + up[1] * sunDir[1] + up[2] * sunDir[2];
-    const air = airAt(altM, sunUp);
+    const air = airAt(altM, sunUp, WORLD.airH, WORLD.id === 'mars' ? 30000 : 22000);
     state.altM = altM;
     state.air = air;
     // Sky.
@@ -404,7 +416,7 @@ export function createStage(renderer, { tier = 1, place, frame }) {
     skyMat.uniforms.uHorizon.value = -Math.sqrt(Math.max(0, 2 * altM / EARTH_R));
     starMat.color.setScalar(air.stars * 0.85);
     // Ground and globe.
-    const haze = new THREE.Color(0.64, 0.75, 0.88).multiplyScalar(air.sky * 0.95);
+    const haze = (WORLD.id === 'mars' ? new THREE.Color(0.66, 0.50, 0.38) : new THREE.Color(0.64, 0.75, 0.88)).multiplyScalar(air.sky * 0.95);
     for (const m of [capMat, globeMat]) {
       m.uniforms.uSun.value.set(...sunDir);
       m.uniforms.uHaze.value.copy(haze);
@@ -445,7 +457,7 @@ export function createStage(renderer, { tier = 1, place, frame }) {
     } else moon.visible = false;
     const D = 1e10;
     sunDisc.position.set(sunDir[0] * D, sunDir[1] * D, sunDir[2] * D);
-    const k = 0.0093 * D * (1.6 + 2.4 * air.density);
+    const k = 0.0093 * D * (WORLD.id === 'mars' ? 0.66 : 1) * (1.6 + 2.4 * air.density);
     sunDisc.scale.set(k, k, 1);
     sunDisc.material.opacity = 0.9;
     // Camera at the origin.

@@ -4091,6 +4091,7 @@ export const COPY = {
     "cutNote": "Ступени пока вырезаны из одной модели.",
     "drawnNote": "Пламя и пар нарисованы.",
     "groundNote": "Земля у площадки иллюстративна; карта Земли — Solar System Scope, CC BY 4.0.",
+    "groundNoteMars": "Ground near the site illustrative; Mars map Solar System Scope, CC BY 4.0.",
     "keys": "Пробел — играть или пауза, стрелки — шаг, Esc — закрыть"
   },
   "momentShelf": {
@@ -4131,6 +4132,11 @@ export const COPY = {
         "title": "Спутник-1",
         "when": "4 октября 1957",
         "blurb": "От Байконура до первого витка вокруг Земли: первый искусственный спутник, полированный шар диаметром 585 мм, и его сигнал."
+      },
+      "curiosity-edl": {
+        "title": "Curiosity landing",
+        "when": "6 August 2012",
+        "blurb": "The seven minutes from the top of the Martian air to Gale crater: the heat shield, the parachute, the rocket backpack and the sky crane, on JPL's own clock."
       },
       "vostok-1": {
         "title": "Vostok 1",

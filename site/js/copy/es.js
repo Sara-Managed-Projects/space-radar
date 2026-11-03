@@ -3693,11 +3693,12 @@ Object.assign(COPY, {
     "cutNote": "Por ahora, las etapas se recortan de un único modelo.",
     "drawnNote": "Las llamas y el vapor son dibujados.",
     "groundNote": "El suelo junto a la plataforma es ilustrativo; mapa de la Tierra de Solar System Scope, CC BY 4.0.",
+    "groundNoteMars": "El suelo junto al sitio es ilustrativo; mapa de Marte de Solar System Scope, CC BY 4.0.",
     "keys": "Espacio reproduce o pausa, las flechas avanzan, Escape cierra"
   },
   "momentShelf": {
     "title": "Momentos",
-    "note": "Siete misiones repetidas en un solo reloj, con las horas reales de los sucesos. Las trayectorias son reconstruidas y lo dicen.",
+    "note": "Misiones repetidas en un solo reloj, con las horas reales de los sucesos. Las trayectorias son reconstruidas y lo dicen.",
     "minutes": "{m} min",
     "replay": "Repetir este momento",
     "replayTitle": "Repetir {title} en el reloj de la misión",
@@ -3732,6 +3733,11 @@ Object.assign(COPY, {
         "title": "STS-1",
         "when": "del 12 al 14 de abril de 1981",
         "blurb": "El primer transbordador espacial: el Columbia desde la plataforma 39A, los cohetes y el tanque, 54 horas en órbita y un planeo hasta el lecho seco de Edwards."
+      },
+      "curiosity-edl": {
+        "title": "Aterrizaje de Curiosity",
+        "when": "6 de agosto de 2012",
+        "blurb": "Los siete minutos desde lo alto del aire marciano hasta el cráter Gale: el escudo térmico, el paracaídas, la mochila cohete y la grúa celeste, con el reloj del JPL."
       },
       "vostok-1": {
         "title": "Vostok 1",

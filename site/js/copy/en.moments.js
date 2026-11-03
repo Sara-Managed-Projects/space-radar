@@ -43,7 +43,8 @@ Object.assign(COPY, {
     // The honesty line at the foot. `{path}` is the trajectory's own sentence from the story's words.
     truthLine: '{truth}: {path}.',
     cutNote: 'Stages cut from one model for now.',
-    drawnNote: 'Flames and steam are drawn.',
+    drawnNote: 'Flames, steam, parachutes and the glow of an entry are drawn.',
+    groundNoteMars: 'Ground near the site illustrative; Mars map Solar System Scope, CC BY 4.0.',
     groundNote: 'Ground near the pad illustrative; Earth map Solar System Scope, CC BY 4.0.',
     keys: 'Space plays or pauses, arrows step, Escape closes',
   },
@@ -51,7 +52,7 @@ Object.assign(COPY, {
   // Where a moment is offered (moments/shelf.js): the section of the Earth pane, and the card's one row.
   momentShelf: {
     title: 'Moments',
-    note: 'Seven missions replayed on one clock, with the real event times. Paths are reconstructed and say so.',
+    note: 'Missions replayed on one clock, with the real event times. Paths are reconstructed and say so.',
     minutes: '{m} min',
     replay: 'Replay this moment',
     replayTitle: 'Replay {title} on the mission clock',
@@ -63,6 +64,7 @@ Object.assign(COPY, {
       'sputnik-1': { title: 'Sputnik 1', when: '4 October 1957', blurb: 'Baikonur to a first lap of the Earth: the first artificial satellite, a polished sphere of 585 mm, and its beep.' },
       'voskhod-2': { title: 'Voskhod 2', when: '18 to 19 March 1965', blurb: 'Alexei Leonov steps out of an inflatable airlock into space for twelve minutes, and the crew land by hand in the taiga, far from their field.' },
       'sts-1': { title: 'STS-1', when: '12 to 14 April 1981', blurb: 'The first Space Shuttle: Columbia from pad 39A, the boosters and the tank, 54 hours in orbit and a glide onto the Edwards lakebed.' },
+      'curiosity-edl': { title: 'Curiosity landing', when: '6 August 2012', blurb: 'The seven minutes from the top of the Martian air to Gale crater: the heat shield, the parachute, the rocket backpack and the sky crane, on JPL\'s own clock.' },
       'vostok-1': { title: 'Vostok 1', when: '12 April 1961', blurb: 'Yuri Gagarin, once round the Earth in 108 minutes, from Baikonur to a field near Smelovka.' },
     },
   },

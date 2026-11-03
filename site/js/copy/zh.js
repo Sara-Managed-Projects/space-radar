@@ -4076,6 +4076,7 @@ export const COPY = {
     "cutNote": "各级火箭暂时都是从同一个模型上切出来的。",
     "drawnNote": "火焰和蒸汽是画出来的。",
     "groundNote": "发射台附近的地面是示意的；地球地图来自 Solar System Scope，CC BY 4.0。",
+    "groundNoteMars": "Ground near the site illustrative; Mars map Solar System Scope, CC BY 4.0.",
     "keys": "空格键播放或暂停，方向键单步，Esc 关闭"
   },
   "momentShelf": {
@@ -4116,6 +4117,11 @@ export const COPY = {
         "title": "斯普特尼克 1 号",
         "when": "1957 年 10 月 4 日",
         "blurb": "从拜科努尔到绕地球的第一圈：第一颗人造卫星，一个直径 585 毫米的抛光球体，以及它的哔哔声。"
+      },
+      "curiosity-edl": {
+        "title": "Curiosity landing",
+        "when": "6 August 2012",
+        "blurb": "The seven minutes from the top of the Martian air to Gale crater: the heat shield, the parachute, the rocket backpack and the sky crane, on JPL's own clock."
       },
       "vostok-1": {
         "title": "Vostok 1",

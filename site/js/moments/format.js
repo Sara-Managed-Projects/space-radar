@@ -212,6 +212,8 @@ export function validateMoment(m, opts = {}) {
   const need = (key, where) => { if (words && (typeof key !== 'string' || !(key in words))) say(`${where}: no words for ${JSON.stringify(key)}`); };
   need('title', 'title');
   need('blurb', 'blurb');
+  // 1.7.9: the world the moment is played on (the Earth when it says nothing).
+  if (m.world !== undefined && !['earth', 'mars'].includes(m.world)) say(`world must be earth or mars, not ${JSON.stringify(m.world)}`);
   const place = m.place || {};
   if (!isNum(place.lat) || Math.abs(place.lat) > 90 || !isNum(place.lon) || Math.abs(place.lon) > 180) say('place needs lat and lon in degrees');
   if (place.ground && !GROUNDS.includes(place.ground.kind)) say(`place.ground.kind must be one of ${GROUNDS.join(', ')}`);
