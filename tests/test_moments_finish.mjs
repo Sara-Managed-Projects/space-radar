@@ -72,9 +72,10 @@ check(/momentsForRecord\(record\)/.test(cards) && /import \{ momentsForRecord \}
 // --- the words in four languages ----------------------------------------------------------------------------------------
 const { COPY } = await mod('copy/en.js');
 await mod('copy/en.moments.js');
-for (const f of ['vostok', 'apollo11', 'artemis2', 'apollo13', 'sputnik']) await mod(`copy/en.moments.${f}.js`);   // 1.7.2: Apollo 13 and Sputnik 1 are translated too (Voskhod 2 and STS-1 are English only for now)
+for (const f of ['vostok', 'apollo11', 'artemis2', 'apollo13', 'sputnik', 'voskhod', 'sts1']) await mod(`copy/en.moments.${f}.js`);   // 1.7.2: Apollo 13 and Sputnik 1 in four languages; Voskhod 2 and STS-1 drafted in Spanish (public #525), English stubs in fr/de/pt for now
 const slots = (s) => (String(s).match(/\{[a-zA-Z]+\}/g) || []).sort().join(',');
 const leaves = (o, path = '') => Object.entries(o).flatMap(([k, v]) => (typeof v === 'string' ? [[path + k, v]] : leaves(v, `${path}${k}.`)));
+const stubbedStory = (path) => /^momentStories\.(voskhod-2|sts-1)\./.test(path);
 for (const code of ['es', 'fr', 'de', 'pt']) {
   const lang = await mod(`copy/${code}.js`);
   check(lang.META && lang.META.review && lang.META.review.status === 'machine-drafted', `${code}: the file still says it is machine-drafted`);
@@ -91,14 +92,16 @@ for (const code of ['es', 'fr', 'de', 'pt']) {
       check(typeof t === 'string' && t.trim() !== '', `${code}: ${path} is missing`);
       if (typeof t === 'string') {
         check(slots(t) === slots(text), `${code}: ${path} loses or invents a {slot}`);
-        // a long sentence identical to the English was not translated (single words such as Moment, Pause and Director may agree)
-        const same = t === text && text.split(/\s+/).length >= 5 && !/Houston|one small step/.test(text) && !/^\{truth\}/.test(text);
+        // a long sentence identical to the English was not translated (single words such as Moment, Pause and Director may agree).
+        // Voskhod 2 and STS-1 stay English in fr/de/pt until their translation issues; Spanish must translate them (Young's line stays as said).
+        const allowEnglish = (code !== 'es' && stubbedStory(path)) || /Houston|one small step|world's greatest all-electric/.test(text) || /^\{truth\}/.test(text);
+        const same = t === text && text.split(/\s+/).length >= 5 && !allowEnglish;
         check(!same, `${code}: ${path} is still English`);
       }
     }
     for (const [path] of have) if (!leaves(en, `${section}.`).some(([p]) => p === path)) check(false, `${code}: ${path} has no English`);
   }
-  check(n === 290, `${code}: all 290 strings of the Moments are covered (${n})`);
+  check(n === 366, `${code}: all 366 strings of the Moments are covered (${n})`);
 }
 // The stories hand their words to the language hook once they are in COPY; the lines said in the recordings stay in their own language.
 for (const f of ['vostok', 'apollo11', 'artemis2', 'apollo13', 'sputnik', 'voskhod', 'sts1']) {
