@@ -246,7 +246,9 @@ class Horizons:
                 with urllib.request.urlopen(url, timeout=180, context=self.ctx) as r:
                     text = r.read().decode("utf-8", "replace")
                 self.requests += 1
-                header = "MAKE_EPHEM" in params and params["MAKE_EPHEM"] == "NO" and "JPL/HORIZONS" in text
+                header = "MAKE_EPHEM" in params and params["MAKE_EPHEM"] == "NO" and (
+                    "JPL/HORIZONS" in text or ("API SOURCE" in text and "*****" in text and "No output possible" not in text
+                                                and "No such record" not in text))  # Mariner 2's header carries a date, not "Revised:"
                 if "$$SOE" in text or "No ephemeris" in text or "Revised" in text or header:
                     if hit and ("$$SOE" in text or "Revised" in text or header):
                         hit.write_text(text, encoding="utf-8")
@@ -295,6 +297,8 @@ class Horizons:
     def header(self, command: str) -> dict:
         text = self.get({"format": "text", "COMMAND": command, "OBJ_DATA": "YES", "MAKE_EPHEM": "NO"})
         m = re.search(r"Revised\s*:\s*([A-Z][a-z]{2} \d{1,2}, \d{4})", text)
+        if not m:  # a header that opens with its date and no "Revised:" (Mariner 2: "Oct 18, 2012  Mariner 2 Spacecraft ...")
+            m = re.search(r"\*{20,}\s*\n\s*([A-Z][a-z]{2} \d{1,2}, \d{4})\s", text)
         out = {"revised": m.group(1) if m else None}
         m = re.search(r"JPL/HORIZONS\s+(.*?)\s+\d{4}-[A-Z][a-z]{2}-\d\d", text)
         if m and not out["revised"]:

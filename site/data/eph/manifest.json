@@ -8,7 +8,7 @@
   "credit": "NASA/JPL-Caltech, Solar System Dynamics Group, Horizons On-Line Ephemeris System"
  },
  "frame": "ecliptic J2000 axes (Horizons REF_PLANE=ECLIPTIC, REF_SYSTEM=ICRF), relative to each segment's centre; km and km/s; times UTC (TIME_TYPE=UT)",
- "retrieved": "2026-10-08",
+ "retrieved": "2026-11-03",
  "craft": [
   {
    "id": "deep-voyager-1",
@@ -1137,6 +1137,175 @@
      },
      "passes": 35,
      "centre_source": "galileo_merged"
+    }
+   ]
+  },
+  {
+   "id": "deep-mariner-2",
+   "name": "Mariner 2",
+   "command": "-2",
+   "file": "deep-mariner-2.bin",
+   "bytes": 4036,
+   "sha256": "6549a2bca82a2354a85ccf5c0c83dab13c2eb086d9757db9987e5106695f5f9b",
+   "span": [
+    "1962-08-27T07:21:00Z",
+    "1962-12-31T23:59:00Z"
+   ],
+   "samples": 116,
+   "solution": "mariner2_m2_620827_62123",
+   "header_revised": "Oct 18, 2012",
+   "retrieved": "2026-11-03",
+   "fit_max_km": 4.791,
+   "heldout": {
+    "n": 48,
+    "max_km": 5.897
+   },
+   "good_to_km": 10.0,
+   "segments": [
+    {
+     "centre": "earth",
+     "from": "1962-08-27T07:21:00Z",
+     "to": "1962-08-30T00:00:00Z",
+     "samples": 26,
+     "tol_km": 1.0,
+     "fit_max_km": 0.998,
+     "fetched": 161,
+     "step_min_s": 300.0,
+     "step_max_s": 43200.0,
+     "steps": {
+      "under 10 min": 4,
+      "10 min to 1 h": 7,
+      "1 h to 6 h": 10,
+      "6 h to 1 d": 4
+     },
+     "closest": {
+      "at": "1962-08-27T07:21:00Z",
+      "km": 6523.4
+     },
+     "passes": 1,
+     "centre_source": "mariner2_m2_620827_62123"
+    },
+    {
+     "centre": "sun",
+     "from": "1962-08-30T00:00:00Z",
+     "to": "1962-12-12T00:00:00Z",
+     "samples": 46,
+     "tol_km": 5.0,
+     "fit_max_km": 4.791,
+     "fetched": 201,
+     "step_min_s": 180.0,
+     "step_max_s": 345600.0,
+     "steps": {
+      "under 10 min": 1,
+      "1 d to 10 d": 44
+     },
+     "centre_source": "mariner2_m2_620827_62123"
+    },
+    {
+     "centre": "venus",
+     "from": "1962-12-12T00:00:00Z",
+     "to": "1962-12-17T00:00:00Z",
+     "samples": 33,
+     "tol_km": 1.0,
+     "fit_max_km": 0.862,
+     "fetched": 178,
+     "step_min_s": 1800.0,
+     "step_max_s": 57600.0,
+     "steps": {
+      "10 min to 1 h": 8,
+      "1 h to 6 h": 17,
+      "6 h to 1 d": 7
+     },
+     "closest": {
+      "at": "1962-12-14T20:00:00Z",
+      "km": 40993.8
+     },
+     "passes": 1,
+     "centre_source": "mariner2_m2_620827_62123"
+    },
+    {
+     "centre": "sun",
+     "from": "1962-12-17T00:00:00Z",
+     "to": "1962-12-31T23:59:00Z",
+     "samples": 11,
+     "tol_km": 5.0,
+     "fit_max_km": 4.679,
+     "fetched": 93,
+     "step_min_s": 43140.0,
+     "step_max_s": 151200.0,
+     "steps": {
+      "6 h to 1 d": 1,
+      "1 d to 10 d": 9
+     },
+     "centre_source": "mariner2_m2_620827_62123"
+    }
+   ],
+   "rough": {
+    "until": "1962-12-31T23:59:00Z",
+    "text": "JPL calls its Mariner 2 path a reconstruction from a fit to the Doppler data of 1962, good for general historical purposes and to be used cautiously for precision."
+   }
+  },
+  {
+   "id": "deep-galileo-probe",
+   "name": "Galileo Probe",
+   "command": "-344",
+   "file": "deep-galileo-probe.bin",
+   "bytes": 2184,
+   "sha256": "0328dab006395fe5e9f88ee5c567fd9661bf7a3a79025acf4f4bbc772dda32e9",
+   "span": [
+    "1995-07-13T05:31:00Z",
+    "1995-12-07T22:05:00Z"
+   ],
+   "samples": 67,
+   "solution": "galileo_probe",
+   "header_revised": "Aug 07, 2000",
+   "retrieved": "2026-11-03",
+   "fit_max_km": 4.973,
+   "heldout": {
+    "n": 48,
+    "max_km": 5.093
+   },
+   "good_to_km": 10.0,
+   "segments": [
+    {
+     "centre": "sun",
+     "from": "1995-07-13T05:31:00Z",
+     "to": "1995-11-20T00:00:00Z",
+     "samples": 21,
+     "tol_km": 5.0,
+     "fit_max_km": 4.973,
+     "fetched": 153,
+     "step_min_s": 109740.0,
+     "step_max_s": 1296000.0,
+     "steps": {
+      "1 d to 10 d": 15,
+      "over 10 d": 5
+     },
+     "centre_source": "galileo_probe"
+    },
+    {
+     "centre": "jupiter",
+     "from": "1995-11-20T00:00:00Z",
+     "to": "1995-12-07T22:05:00Z",
+     "samples": 46,
+     "tol_km": 5.0,
+     "fit_max_km": 4.953,
+     "fetched": 512,
+     "step_min_s": 360.0,
+     "step_max_s": 86400.0,
+     "steps": {
+      "under 10 min": 2,
+      "10 min to 1 h": 10,
+      "1 h to 6 h": 10,
+      "6 h to 1 d": 21,
+      "1 d to 10 d": 2
+     },
+     "closest": {
+      "at": "1995-12-07T22:05:00Z",
+      "km": 71766.4
+     },
+     "passes": 1,
+     "centre_source": "galileo_probe"
     }
    ]
   },
