@@ -3,8 +3,8 @@
 
     python3 tests/test_strip_shaders.py
 
-Internal #553 / #531. The step is OFF by default (scripts/minify_site.py --shaders, or
-SR_STRIP_SHADERS=1); this test holds three things:
+Internal #553 / #531. The step is ON by default since release 1.7.4 (scripts/minify_site.py --no-shaders, or
+SR_STRIP_SHADERS=0, is the way back); this test holds three things:
 
   1. THE HARD CASES: a trailing `//`, a block comment inside a line and across lines, a `#define`
      and `#version` that must stay lines of their own, a `${}` in the middle of a line, a URL in a
@@ -21,6 +21,7 @@ This file reads site/js as text, so it must not be in scripts/check_built_tree.m
 from __future__ import annotations
 
 import filecmp
+import os
 import shutil
 import subprocess
 import sys
@@ -109,7 +110,16 @@ try:
     minify_site.build(site, tmp / "default", quiet=True)
     minify_site.build(site, tmp / "off", quiet=True, shaders=False)
     minify_site.build(site, tmp / "on", quiet=True, shaders=True)
-    check(filecmp.cmp(tmp / "default/js/a.js", tmp / "off/js/a.js", shallow=False), "the default build is the build with the flag off")
+    check(filecmp.cmp(tmp / "default/js/a.js", tmp / "on/js/a.js", shallow=False), "the default build is the build with the flag on (since 1.7.4)")
+    check(not filecmp.cmp(tmp / "default/js/a.js", tmp / "off/js/a.js", shallow=False), "and not the build with it off")
+    os.environ["SR_STRIP_SHADERS"] = "0"
+    try:
+        minify_site.build(site, tmp / "env0", quiet=True)
+    finally:
+        del os.environ["SR_STRIP_SHADERS"]
+    check(filecmp.cmp(tmp / "env0/js/a.js", tmp / "off/js/a.js", shallow=False), "SR_STRIP_SHADERS=0 is the way back")
+    r0 = subprocess.run([sys.executable, str(ROOT / "scripts/minify_site.py"), "--site", str(site), "--out", str(tmp / "cli-off"), "--no-shaders", "--quiet"], capture_output=True, text=True)
+    check(r0.returncode == 0 and filecmp.cmp(tmp / "cli-off/js/a.js", tmp / "off/js/a.js", shallow=False), f"--no-shaders is the way back: {r0.stderr[:200]}")
     check("// shader note" in (tmp / "off/js/a.js").read_text(), "off: the shader keeps its comments")
     on = (tmp / "on/js/a.js").read_text()
     check("shader note" not in on and "gl_FragColor = vec4(1.0);\n" in on and "white" not in on, f"on: the shader loses them: {on!r}")
@@ -131,4 +141,4 @@ finally:
 if failures:
     print(f"{len(failures)} failure(s)")
     sys.exit(1)
-print(f"strip_shaders ok: {changed}/{templates} shader templates in {files} files, {before} B -> {after} B ({before - after} B, {100 * (before - after) // max(before, 1)} % of shader text, after the stripper's own pass); off by default, hard cases and the switch held")
+print(f"strip_shaders ok: {changed}/{templates} shader templates in {files} files, {before} B -> {after} B ({before - after} B, {100 * (before - after) // max(before, 1)} % of shader text, after the stripper's own pass); on by default since 1.7.4, hard cases and the switch held")

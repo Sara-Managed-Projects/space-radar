@@ -689,7 +689,6 @@ export function createLayer(THREE, env = {}) {
     state.calls = 1 + (lines && lines.visible ? 1 : 0);
   }
 
-  const _p = new THREE.Vector3();
   /** Candidates for a tap: {record, px, score}, nearest first. Ranks just behind the map's own marks. */
   function pickAll(ndcX, ndcY, camera, viewport, limit = 6, reachPx = 12) {
     if (!state.loaded || !group.visible || state.culled || !camera || !viewport) return [];

@@ -724,7 +724,7 @@ NASA's science data policy, as for Eros.
 | `insight.glb` | InSight Cruise Lander | the InSight landing site at Elysium Planitia | 267 KB |
 | `ingenuity.glb` | Ingenuity Mars Helicopter | the Ingenuity site at Valinor Hills | 86 KB |
 | `lunar-module.glb` | Apollo Lunar Module (NASA), cut into its descent and ascent stages (public domain: "These assets are free and without copyright", NASA 3D Resources README, read 2026-10-28) | the Apollo 11, 12, 14, 15, 16 and 17 landing sites -- one vehicle design, six descent stages -- and the Apollo 11 Moment | 240 KB | <!-- 0079 c3 -->
-| `apollo-csm.glb` | Apollo Soyuz (NASA 3D Resources, `3D Models/Apollo Soyuz`; NASA has no other Apollo command and service module): its CSM cut out and rescaled, then the high-gain antenna, the windows, the docking ring and probe, the SM's beams, radiators and fairing drawn by Space Radar from NASA's Apollo 9 and Apollo 17 photographs (public domain). The terms: "All of these assets are free to download and use" (science.nasa.gov/3d-resources, read 2026-10-28) | the Command and Service Module of the Apollo Moments (no object on the map wears it yet) | 98 KB | <!-- 0079 c3 -->
+| `apollo-csm.glb` | Apollo Soyuz (NASA 3D Resources, `3D Models/Apollo Soyuz`; NASA has no other Apollo command and service module): its CSM cut out and rescaled, then the high-gain antenna, the windows, the docking ring and probe, the SM's beams, radiators and fairing drawn by Space Radar from NASA's Apollo 9 and Apollo 17 photographs (public domain); and since 1.7.0 bay 4 of the SM (the outer panel as its own part, the shelf, tanks and torn Mylar behind it) drawn from NASA's Apollo 13 photograph AS13-59-8500 (public domain). The terms: "All of these assets are free to download and use" (science.nasa.gov/3d-resources, read 2026-10-28) | the Command and Service Module of the Apollo Moments (no object on the map wears it yet) | 136 KB | <!-- 0079 c3 -->
 | `mer.glb` | Mars Exploration Rover - Opportunity (MER-B) | the Opportunity site, and the Spirit site as its twin | 38 KB |
 | `pad.glb` | Mobile Launcher | DEFAULT for every launch pad -- 17 today, more with each Launch Library refresh | 74 KB |
 | `perseverance.glb` | Mars 2020 Perseverance Rover | Jezero crater on Mars (until 2026-10-15 also Gale crater, as the kind of thing; Gale now wears NASA's own Curiosity, [3b-13](#3b-13-five-agencies-own-models--europa-clipper-smap-jason-3-curiosity-sorce-2026-10-15)) | 256 KB |
@@ -1635,7 +1635,10 @@ in any file; no logo and no lettering is on any mesh. Their parts are named node
 |---|---|---|---|
 | `r7-8k72k.glb` (292 KB) | The Vostok-K launcher in four parts: strap-ons (B, V, G, D), core with its truss, block E, shroud; every strap-on a long cone with its RD-107 and air rudder | the cutaway drawing of the Vostok launcher with its metres (Commons, public domain); a NASA line drawing of the Vostok rocket; the museum copy at VDNKh (Alan Wilson, CC BY-SA 2.0; Dmitry Ivanov, CC BY-SA 4.0; Gennady Grachev, CC BY 2.0) and at Kaluga (Andrey Baburov, CC BY-SA 3.0; Tatyanakorneeva, CC BY-SA 4.0); Vostok-2M at RKK Energia (Dmitry Ivanov, CC BY-SA 4.0) | ours, from facts; pictures only looked at |
 | `vostok-3ka.glb` (261 KB) | The Vostok 3KA: the 2.3 m sphere with its coat, opening, hatch, Vzor window and straps; the instrument module with its twelve nitrogen spheres, louvred cone and retro engine; the antennas | RKK Energia's full-size copy at Speyer (Stolbovsky, CC BY 4.0), the copies at Le Bourget (Pline, CC BY-SA 3.0; Alan Wilson, CC BY-SA 2.0) and the Memorial Museum of Cosmonautics (Armael, CC0), replicas (CC0), Gagarin's capsule (SiefkinDR, CC BY-SA 3.0; Errabee, CC BY-SA 2.5), the Vostok 5 and 6 capsules (Stolbovsky, CC BY 4.0; Ardfern, CC BY 4.0), a Korabl-Sputnik hatch (CC BY-SA 4.0) | ours, from facts; pictures only looked at |
+| `sputnik-1.glb` (26 KB) | PS-1, the first Sputnik, and the head of its rocket: the 585 mm sphere, its seam and 36 bolts, the four whips of 2.4 m and 2.9 m, the cone-shaped head | The published dimensions only (Wikipedia, "Sputnik 1", from NASA, NSSDC and Russian sources; facts); no picture is used | ours, from facts; for the Sputnik 1 Moment, no object of the map wears it |
 | `vostok-seat.glb` (78 KB) | The ejection seat in its silver trough with its two rocket housings, and the cosmonaut in the orange SK-1 suit | the Vostok ejection seat (Stolbovsky, CC BY 4.0), the Vostok 5 capsule exhibit (Stolbovsky, CC BY 4.0), NASA's cutaway of the seating (public domain) | ours; sizes illustrative (no published seat dimension) |
+| `voskhod-3kd.glb` (329 KB) | The Voskhod 3KD of Voskhod 2: the Vostok sphere and instrument module, the back-up retro rocket on top, the VOLGA airlock as launched and deployed (ring, 40 air-booms, upper ring, outer hatch, camera boom, four oxygen spheres), Leonov's 5.35 m umbilical | the Voskhod 2 airlock on display (Armael, CC0; Kucharek, public domain), NASA's cutaway and the Voskhod diagram (public domain), a Voskhod capsule (Andrew Gray, CC BY-SA 3.0), a stamp sheet (USSR Post, public domain), a life-support unit (Steve Jurvetson, CC BY 4.0, nothing taken), the preview picture of Fac-tory-o's STL (CC BY-SA 4.0; the 3D file itself not used); the Vostok parts as `vostok-3ka.glb`; Wikipedia 'Voskhod (spacecraft)' and 'Voskhod 2' for the numbers | ours, from facts; pictures only looked at |
+| `leonov-eva.glb` (76 KB) | Leonov in the Berkut suit in the pose of the film of his walk (arms forward and down, legs trailing), puffed, with the white EVA pack: helmet with its hinged sun visor, harness, hoses, chest camera, gloves, boots | the Berkut suit on display (Armael, CC0; Александр Сигачёв, CC0; Музей Космонавтики, CC0; Craigboy, CC BY-SA 3.0), the airlock and suit (Kucharek, public domain), a stamp sheet (USSR Post, public domain), a frame of the film (public domain), a crowd photograph (Sergeev L.V., CC BY-SA 3.0, nothing taken) | ours, from facts and pictures only looked at; sizes illustrative |
 | `vostok-chutes.glb` (121 KB) | Six inflated canopies: the capsule's pullout, braking and main, the cosmonaut's drogue, main and reserve | areas from RussianSpaceWeb and Rambler (facts); the suit's orange from the seat photograph above | ours; shapes illustrative |
 
 **Credit lines:** `3D model: built by Space Radar from published dimensions; compared with ...` (each row's `credit:`).
@@ -1797,6 +1800,32 @@ KSC-20250303-PH-KLS01_0028; art002e012583; MAF_20230915_CS2_Eng2047Install1).
 **Credit lines:** `3D model: NASA (3D Resources), with the skins built by Space Radar` (`sls-block1.glb`);
 `3D model: NASA/JPL-Caltech (Eyes on the Solar System) and NASA (3D Resources)` (`orion-esm.glb`).
 <!-- 0079 c4: end -->
+
+<!-- 1.7.2 sts1: begin -->
+## 3b-r171. Release 1.7.2: the Shuttle stack without its orbiter, and the orbiter with its doors and gear, for the STS-1 Moment, from NASA's own files (2026-11-03)
+
+Two files for the STS-1 Moment (Columbia, 12 to 14 April 1981), each split into named parts for the Moments player. `shuttle-sts-stack.glb` is the launch stack WITHOUT the orbiter; `shuttle-orbiter.glb` is the orbiter on its own, which the Moment sets on the stack, in orbit and on the runway. Built by `scripts/shuttle/build-sts1.mjs`.
+
+| File | Parts | From | Size |
+|---|---|---|---|
+| `shuttle-sts-stack.glb` | the white external tank with its attach beams, struts and lines; the two solid rocket boosters, white with a dark nozzle | NASA 3D Resources, `3D Models/Space Shuttle Parts` (the files named External tank and Solid Rocket Booster), <https://github.com/nasa/NASA-3D-Resources> | 87 KB |
+| `shuttle-orbiter.glb` | the orbiter with its three SSME bells; the payload bay doors closed and, as in orbit, open; the landing gear down: nose gear and two main gears, with their doors | NASA 3D Resources, `3D Models/Space Shuttle (D)` (the files named Space Shuttle (D), its door-prt, door-stb and eng), <https://github.com/nasa/NASA-3D-Resources>; the landing gear is built by Space Radar from published tyre sizes | 216 KB |
+
+**Terms, read 2026-11-03.** NASA 3D Resources: "These assets are free and without copyright." NASA Images and Media Usage Guidelines
+(<https://www.nasa.gov/nasa-brand-center/images-and-media/>): "NASA content - images, audio, video, and media files used in the rendition of
+3-dimensional models, such as texture maps and polygon data in any format - generally are not subject to copyright in the United States." NASA is
+acknowledged as the source. The NASA insignia and logotype are not in the public domain: none is on either mesh, and neither is a flag or a name.
+The repository does not name an author for these files (its README lists its contributors, not their models); the credit line is therefore NASA 3D Resources
+and not a person.
+
+**What is NASA's and what is ours.** The hulls, the doors, the bell, the tank and the booster are NASA's, baked by `scripts/bake-own-colours.mjs` (decimated,
+flat colours, creased normals). OURS, each said in `registry/models.yaml`: the tank and the booster are painted white (STS-1 and STS-2 flew with a white tank; NASA's
+file shows the later orange foam, and its booster texture is a layout sheet), the open positions of the doors, the places and the cant of the three bells, the
+landing gear (tyres 44.5 x 16.0 in main, two a side, and 32 x 8.8 in nose, two), and where the boosters and the orbiter stand against the tank.
+
+**Credit lines:** `3D model: NASA (3D Resources), with the tank and booster painted white by Space Radar` (`shuttle-sts-stack.glb`);
+`3D model: NASA (3D Resources), with the landing gear built by Space Radar` (`shuttle-orbiter.glb`).
+<!-- 1.7.2 sts1: end -->
 
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 
@@ -2330,6 +2359,20 @@ mission or radar team published, in the body's own axes, by `scripts/gen_smallbo
   and was not worked around. Dinkinesh and Selam have no published shape file (their NAIF constants are placeholders).
 <!-- 0079 B1: end -->
 
+### The landers' and impactors' dated events (release 1.7.3)
+
+No picture or file is added beyond the data file `site/js/data/missions-landers.js` (generated from `registry/missions-landers.yaml`). It is
+numbers and one sentence per event, each written from the page named on its mission, read on 2026-11-03.
+
+- **NASA NSSDCA** (public domain, NASA): the pages of Ranger 7, 8 and 9, Surveyor 1 to 7, Viking 1 and 2 Landers, Mars Pathfinder, Spirit,
+  Opportunity, Phoenix and InSight (<https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1964-041A> and the other COSPAR ids named in the
+  registry); the "Chronology of Lunar and Planetary Exploration" (<https://nssdc.gsfc.nasa.gov/planetary/chronology.html>) for launch dates the
+  mission's page does not give; the "Table of Anthropogenic Impacts and Spacecraft on the Moon" for the landing days.
+- **Wikipedia** (CC BY-SA 4.0): the articles on Venera 7 to 14, VEGA 1 and 2, Luna 9, 13, 16, 17, 20, 21, 23 and 24, Chang'e 3, 4, 5 and 6
+  and Zhurong, for the times and sentences they give (NSSDCA's catalogue pages of the Soviet and Chinese craft did not answer on 2026-11-03).
+  Each such mission names its article and the licence in the card's source link. A time worked out from a duration the article gives
+  ("53 minutes after landing") is said to be about that on the card.
+
 ### Ring and spot data (0076 W2-b)
 
 No picture or file is added: these are numbers, each typed into the code with its source beside it.
@@ -2706,6 +2749,15 @@ Planck 2018 cosmology (`site/js/data/cosmology.js`), from the redshift, never a 
 A star with no parallax is drawn as a direction only, on a world's sky sphere, and nowhere on the ladder.
 **Left out on purpose:** WD J1011+2845 (it arrives through `registry/exotics.yaml`).
 <!-- 0079 r15-a45: end -->
+
+## 3p. Two ended probes built from dimensions — Mariner 2 and the Galileo probe (release 1.7.2)
+
+Each is drawn from its own path (JPL Horizons -2 and -344, `registry/ephemerides.yaml`), only inside the days it flew. NASA publishes no 3D model of either (its 3D Resources on GitHub, 1 583 paths, and science.nasa.gov/3d-resources, read 2026-11-03; the Galileo model there is the orbiter). Both are built here in code, offline, from cited metres and NASA's own pictures; no picture or mesh is in the files, no image-to-3D model was used, and the shapes are this project's, under this repository's licence. The card says "shape built from published dimensions and pictures; details simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `mariner-2.glb` (45 KB) | Mariner 2: a hexagonal base 1.04 m across and 0.36 m thick with louvers and a gold shield, a pyramidal mast 3.66 m from the engine's bell to the omni antenna, two wings 0.76 m wide (1.83 m and 1.52 m, the short one with its 0.31 m dacron extension), the retro-rocket's gold bell, the radiometer dish and the high-gain antenna on its arm | NASA NSSDCA, "Mariner 2" (<https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1962-041A>) and JPL Horizons' header for -2, for the metres; NASA/JPL's painting PIA04594, JPL's labelled drawing of the Mariner spacecraft and NASA Glenn's photograph of the model GRC-1964-C-70182 (all on Wikimedia Commons), looked at | Public domain (NASA/JPL, NASA Glenn); the shape is this project's, under this repository's licence. The high-gain antenna's 0.8 m is an estimate from the drawing |
+| `galileo-probe.glb` (63 KB) | The Galileo atmospheric probe closed in its aeroshell: the 45 degree heat shield 1.27 m across, the bolted aluminium ring, the aft cover with its mortar cover and access cover, 0.91 m in all | JPL Horizons' header for -344 ("conical, 1.27m x .91m") and NASA Science's Galileo page (<https://science.nasa.gov/mission/galileo/>), for the metres; the NASA Ames drawing "PROBE", NASA's photograph AC84-0228-3 and Ken Hodges's painting AC81-0174 (all on Wikimedia Commons), looked at | Public domain (NASA Ames, NASA); the shape is this project's, under this repository's licence. The aft cover's colour is an assumption: no free photograph of the closed probe was found |
 
 ## 4. Runtime data sources
 
@@ -4074,12 +4126,17 @@ it loops, levelled to −23 LUFS; each sting is trimmed to 2.5–3 s with a fade
 HQ previews, not the uploaded originals.
 
 | `a11-small-step.m4a` | Armstrong's first words on the Moon, played once at 109:24:48 of the Apollo 11 Moment | Public domain (NASA) | Neil Armstrong's first words on the Moon, NASA (1969), public domain | <https://commons.wikimedia.org/wiki/File:Neil_Armstrong_small_step.wav> |
+| `a13-problem-1.m4a` | The first radio line of the Apollo 13 Moment, played once at 55:55:20 ("Okay, Houston, we've had a problem here") | Public domain (NASA) | Apollo 13 air-to-ground recording, NASA (14 April 1970 GMT), public domain: John Swigert, 55:55:20 | <https://commons.wikimedia.org/wiki/File:Houston_problem.ogg> |
+| `a13-problem-2.m4a` | The second radio line, played once at 55:55:42 ("Houston, we've had a problem") | Public domain (NASA) | Apollo 13 air-to-ground recording, NASA (14 April 1970 GMT), public domain: James Lovell, 55:55:42 | <https://commons.wikimedia.org/wiki/File:Houston_problem.ogg> |
+| `sputnik-beep.m4a` | Sputnik's radio beep, played twice from the second the satellite is let go in the Sputnik 1 Moment | Public domain (NASA) | Sputnik's radio beep, recorded and published by NASA (1957), public domain | <https://commons.wikimedia.org/wiki/File:Sputnik_beep.ogg> |
 
 The one NASA clip (97 kB, mono AAC, 24 s) is the Wikimedia Commons file "Neil Armstrong small step.wav" (credit there:
 "Neil Armstrong/NASA", licence "Public domain", read 2026-11-02; NASA's media usage guidelines put its works in the
 public domain), re-encoded from 8-bit mono 11 025 Hz to AAC with macOS `afconvert`, and changed in nothing else. It
 is fetched only when the Apollo 11 Moment reaches that second with sound on. The house rule is "Opus with an AAC twin"; no
-Opus encoder was to hand when it was added, so the row is a `clip` whose one file is the AAC. No other recording is used:
+Opus encoder was to hand when it was added, so the row is a `clip` whose one file is the AAC. Since 1.7.0 the Apollo 13 Moment adds two short lines (13 kB and 8 kB, mono AAC, 3.0 s and 1.6 s) cut by `ffmpeg` from the
+Wikimedia Commons file "Houston problem.ogg" (artist NASA, licence "Public domain", read 2026-11-03), a recording of 11.5 seconds whose
+gaps are edited out, so each line is played on its own at the time the Flight Journal logs it, and the Sputnik 1 Moment plays the 4.4-second Commons file "Sputnik beep.ogg" (author NASA, {{PD-USGov-NASA}}, read 2026-11-03; who recorded it is not stated on the page), re-encoded to AAC. No other recording is used:
 the radio exchange of Vostok 1 is shown as captions because no Soviet-era recording with a clear licence was found.
 
 ## 9b. Audio — the trips' narration (a synthetic voice)

@@ -583,7 +583,7 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
 {
   const { sampleDeepSpace } = await import(join(ROOT, 'site/js/data/sample.js'));
   const rows = sampleDeepSpace();
-  check(rows.length === 37, `the deep-space layer holds thirty-seven records (found ${rows.length})`);
+  check(rows.length === 39, `the deep-space layer holds thirty-nine records (found ${rows.length})`);
   const want = {
     'deep-jwst': 'jwst.glb', 'deep-soho': 'soho.glb', 'deep-mro': 'mro.glb', 'deep-juno': 'juno.glb',
     'deep-voyager-1': 'voyager.glb', 'deep-voyager-2': 'voyager.glb', 'deep-parker': 'parker.glb',
@@ -603,6 +603,8 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
     // 2026-10-08: four more ended missions with NASA's mesh (public #431).
     'deep-maven': 'maven.glb',
     'deep-rosetta': 'rosetta.glb', 'deep-near': 'near.glb', 'deep-stardust': 'stardust.glb', 'deep-deep-impact': 'deep-impact.glb',
+    // 2026-11-03, release 1.7.2: two ended missions built from NASA's published dimensions.
+    'deep-mariner-2': 'mariner-2.glb', 'deep-galileo-probe': 'galileo-probe.glb',
     // 2026-10-15, batch eleven (public #1075): NASA's own Europa Clipper, turned to the app's axes.
     'deep-europa-clipper': 'europa-clipper.glb',
     // 2026-10-15, batch twelve (public #1080 to #1084): five built here from published dimensions.

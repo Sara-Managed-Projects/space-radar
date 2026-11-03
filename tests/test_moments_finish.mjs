@@ -67,12 +67,12 @@ want({ id: 'dso-orion', layer: 'deep-sky', name: 'Orion Nebula' }, null, 'the Or
 want({ id: 'con-ori', layer: 'stars', name: 'Orion' }, null, 'a star or constellation called Orion');
 want(null, null, 'no record');
 const cards = src('site/js/ui/cards.js');
-check(/momentForRecord\(record\)/.test(cards) && /import \{ momentForRecord \}/.test(cards), 'the card asks momentForRecord with the record, not only its id');
+check(/momentsForRecord\(record\)/.test(cards) && /import \{ momentsForRecord \}/.test(cards), 'the card asks momentsForRecord with the record, not only its id');
 
 // --- the words in four languages ----------------------------------------------------------------------------------------
 const { COPY } = await mod('copy/en.js');
 await mod('copy/en.moments.js');
-for (const f of ['vostok', 'apollo11', 'artemis2']) await mod(`copy/en.moments.${f}.js`);
+for (const f of ['vostok', 'apollo11', 'artemis2', 'apollo13', 'sputnik']) await mod(`copy/en.moments.${f}.js`);   // 1.7.2: Apollo 13 and Sputnik 1 are translated too (Voskhod 2 and STS-1 are English only for now)
 const slots = (s) => (String(s).match(/\{[a-zA-Z]+\}/g) || []).sort().join(',');
 const leaves = (o, path = '') => Object.entries(o).flatMap(([k, v]) => (typeof v === 'string' ? [[path + k, v]] : leaves(v, `${path}${k}.`)));
 for (const code of ['es', 'fr', 'de', 'pt']) {
@@ -98,10 +98,10 @@ for (const code of ['es', 'fr', 'de', 'pt']) {
     }
     for (const [path] of have) if (!leaves(en, `${section}.`).some(([p]) => p === path)) check(false, `${code}: ${path} has no English`);
   }
-  check(n === 188, `${code}: all 188 strings of the Moments are covered (${n})`);
+  check(n === 283, `${code}: all 283 strings of the Moments are covered (${n})`);
 }
 // The stories hand their words to the language hook once they are in COPY; the lines said in the recordings stay in their own language.
-for (const f of ['vostok', 'apollo11', 'artemis2']) {
+for (const f of ['vostok', 'apollo11', 'artemis2', 'apollo13', 'sputnik', 'voskhod', 'sts1']) {
   const t = src(`site/js/copy/en.moments.${f}.js`);
   check(/HOOK\.localise\(\{ COPY \}, \['momentStories'\]\)/.test(t), `en.moments.${f}.js calls HOOK.localise for momentStories`);
 }

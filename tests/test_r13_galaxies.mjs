@@ -7,7 +7,7 @@
 //      their tails, each where the sky puts it and at a modelled depth, labelled.
 //
 //   node tests/test_r13_galaxies.mjs
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';

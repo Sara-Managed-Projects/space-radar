@@ -523,6 +523,7 @@ export function groundShadowPose(sunLocal) {
  * Illustrative, like the shadow. The Moon only: its regolith is one grey, and Mars's ground is not.
  */
 const GROUND_NAME = 'ground-patch';
+
 export function addGroundPatch(obj, record, reach = 0.5) {
   if (!obj || !record || !record.meta || record.meta.world !== 'moon' || obj.getObjectByName(GROUND_NAME)) return null;
   const patch = M.modelFor('site', 'ground-moon');
@@ -530,6 +531,7 @@ export function addGroundPatch(obj, record, reach = 0.5) {
   patch.traverse((n) => { n.userData.noReach = true; n.renderOrder = -3 + (n.userData.layer || 0); });
   patch.scale.setScalar(Math.max(0.3, reach) * 1.9); // just past the footpads
   patch.position.y = SHADOW_LIFT * 0.3;
+  obj.userData.groundPatch = patch; // fadeGroundPatch (models.js) fades it with the camera's distance
   obj.add(patch);
   return patch;
 }
@@ -974,6 +976,10 @@ export function createHeroes(scene, ctx) {
         if (entry.fadeStart == null) shadow.material.opacity = pose.opacity;
       }
 
+      // The patch under a lander fades out as the camera pulls away (models.js groundPatchFade).
+      const groundPatch = obj.userData.groundPatch;
+      if (groundPatch) M.fadeGroundPatch(groundPatch, c.d, (ctx.layers.find((l) => l.id === c.record.layer) || {}).nearKm / stage.unitKm, entry.fadeStart == null);
+
       // A rocket on a hand-kept pad is drawn only around its listed liftoffs (realmodels.js padVehicleShown).
       if (!padVehicleShown(c.record, tMs)) { obj.visible = false; continue; }
       if (!obj.visible) {
@@ -991,7 +997,8 @@ export function createHeroes(scene, ctx) {
             // 1 the moment the fade finished, and turned its transparency off with it.
             const ceiling = n.material.userData && n.material.userData.baseOpacity;
             const top = Number.isFinite(ceiling) ? ceiling : 1;
-            n.material.transparent = k < 1 || top < 1;
+            // A material that is transparent by design (the patch's soft edge is an alpha on its vertices) stays so.
+            n.material.transparent = k < 1 || top < 1 || !!(n.material.userData && n.material.userData.alwaysTransparent);
             n.material.opacity = k * top;
           }
         });

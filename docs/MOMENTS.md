@@ -85,8 +85,24 @@ A story that goes from a pad to the Moon and home needs more than one path and o
 | vehicle `colour` | the class colour the model is drawn in where it has no look of its own (`rocket` by default) |
 
 A vehicle too small to see at the scale of the Earth and the Moon (seven pixels or fewer) is drawn as a ringed dot of a
-fixed size. A path file is `{note, rows}` under `site/data/moments/paths/`, written by `tools/moments-build/` (the three stories'
-generators: `vostok1.mjs`, `apollo11.mjs`, `artemis2.mjs`, with `lib.mjs`).
+fixed size. A path file is `{note, rows}` under `site/data/moments/paths/`, written by `tools/moments-build/` (the stories'
+generators: `vostok1.mjs`, `apollo11.mjs`, `artemis2.mjs` and, since 1.7.0, `apollo13.mjs` and `sputnik1.mjs`, with `lib.mjs`).
+
+**Release 1.7.0 notes.** A part a story wants out of sight until an event is `hide` at the start of the window and `show` at the event
+(Apollo 13's torn foil, `sm-bay-foil`); a part that lives longer than a few minutes after it leaves (a spent module that is watched for an
+hour) is a vehicle of its own with its own path, because a separated part flies a straight line with gravity for the second or two the
+player keeps it in the frame and not for hours (Apollo 13's service module, `sm`). The same model may be two vehicles (Sputnik 1's
+`sputnik-1`, once riding the rocket's head and once on its orbit). Apollo 13's path is integrated (`apollo13.mjs`: the Earth and the Moon,
+the Moon from the app's ephemeris, a trim found by search); the others are conics.
+
+**Release 1.7.2 notes.** Vehicle `phases` may carry `pitchDeg` and `rollDeg`, keyframes blended linearly from one phase that names them to the
+next: the pitch turns the nose (Y) towards the vehicle's X (up, for `prograde` on an orbit) and the roll turns the vehicle about its nose; STS-1's
+orbiter enters at 40 degrees nose-high and is flown dorsal side up. `rideOn.spin: [x, y, z]` (degrees) turns the rider about its host's axes
+(Leonov floating along the airlock's axis). A vehicle's `keepXZ: true` keeps the file's own axis as the vehicle's axis instead of centring the
+model's box (the Voskhod 3KD has an airlock and an umbilical to one side). A `ground` may be `lakebed: true`, a pale dry lake, with a `runway`
+`{bearing, widthM, lengthM}` painted on it, centred on the place (Edwards). The player lights a night pad with a lamp (the Sun below the
+horizon, the camera in the air) and marks every vehicle shorter than 40 px on the screen with the ringed dot. The generators are `voskhod2.mjs`
+and `sts1.mjs`; both search for the least correction that meets the published landing and print how far the reconstruction had to be nudged.
 
 ## Tracks
 
