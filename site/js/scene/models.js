@@ -3374,6 +3374,7 @@ function softPatch(r, n, seed, y, colour, profile, layer, name) {
   mat.vertexColors = true;
   mat.transparent = true;
   mat.depthWrite = false;
+  mat.userData.alwaysTransparent = true; // heroes.js's fade-in must not turn it opaque: the edge IS the alpha
   const m = new THREE.Mesh(softPatchGeometry(r, n, seed, y, profile), mat);
   m.name = name;
   m.castShadow = false;

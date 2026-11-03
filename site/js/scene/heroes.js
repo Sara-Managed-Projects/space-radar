@@ -523,6 +523,35 @@ export function groundShadowPose(sunLocal) {
  * Illustrative, like the shadow. The Moon only: its regolith is one grey, and Mars's ground is not.
  */
 const GROUND_NAME = 'ground-patch';
+
+/**
+ * THE PATCH FADES AS THE CAMERA PULLS AWAY (release 1.7.3; public #267: "a hard edge", internal #478).
+ * A hero is drawn at a steady size on the screen, so the ragged patch under a lander (1.9 reaches wide) is as
+ * big on the screen at 1 400 km as it is at 14 km, and from far out it is a grey plate on a Moon that has
+ * shrunk beneath it. The selected lander is drawn at any distance, so nothing else takes it away. The patch is
+ * kept whole while the camera is within half its layer's nearKm (the arrival is at 35 % of it) and gone by the
+ * nearKm itself, on a smoothstep, so there is never a point at which the plate is there and then is not.
+ * Pure, and exported for tests/test_landing_sites.mjs.
+ * @param {number} d          the camera's distance from the lander, scene units
+ * @param {number} nearUnits  the lander's layer's nearKm, scene units
+ */
+export const PATCH_FADE_FROM = 0.5;
+export const PATCH_FADE_TO = 1.0;
+export function groundPatchFade(d, nearUnits) {
+  if (!(nearUnits > 0) || !Number.isFinite(d)) return 1;
+  const t = Math.min(1, Math.max(0, (d / nearUnits - PATCH_FADE_FROM) / (PATCH_FADE_TO - PATCH_FADE_FROM)));
+  return 1 - t * t * (3 - 2 * t);
+}
+/** Set the patch's opacity to `k`. `live` false while the model's own fade-in is writing opacities (it reads baseOpacity). */
+function setPatchOpacity(patch, k, live) {
+  const mats = patch.userData.mats || [];
+  patch.visible = k > 0.004;
+  for (const m of mats) {
+    m.userData.baseOpacity = k;
+    if (live) { m.opacity = k; m.transparent = k < 1 || !!m.userData.alwaysTransparent; }
+  }
+}
+
 export function addGroundPatch(obj, record, reach = 0.5) {
   if (!obj || !record || !record.meta || record.meta.world !== 'moon' || obj.getObjectByName(GROUND_NAME)) return null;
   const patch = M.modelFor('site', 'ground-moon');
@@ -530,6 +559,10 @@ export function addGroundPatch(obj, record, reach = 0.5) {
   patch.traverse((n) => { n.userData.noReach = true; n.renderOrder = -3 + (n.userData.layer || 0); });
   patch.scale.setScalar(Math.max(0.3, reach) * 1.9); // just past the footpads
   patch.position.y = SHADOW_LIFT * 0.3;
+  const mats = new Set();
+  patch.traverse((n) => { if (n.material) mats.add(n.material); });
+  patch.userData.mats = [...mats];
+  obj.userData.groundPatch = patch;
   obj.add(patch);
   return patch;
 }
@@ -974,6 +1007,13 @@ export function createHeroes(scene, ctx) {
         if (entry.fadeStart == null) shadow.material.opacity = pose.opacity;
       }
 
+      // The patch under a lander fades out as the camera pulls away (groundPatchFade).
+      const groundPatch = obj.userData.groundPatch;
+      if (groundPatch) {
+        const lay = ctx.layers.find((l) => l.id === c.record.layer);
+        setPatchOpacity(groundPatch, groundPatchFade(c.d, ((lay && lay.nearKm) || 2000) / stage.unitKm), entry.fadeStart == null);
+      }
+
       // A rocket on a hand-kept pad is drawn only around its listed liftoffs (realmodels.js padVehicleShown).
       if (!padVehicleShown(c.record, tMs)) { obj.visible = false; continue; }
       if (!obj.visible) {
@@ -991,7 +1031,8 @@ export function createHeroes(scene, ctx) {
             // 1 the moment the fade finished, and turned its transparency off with it.
             const ceiling = n.material.userData && n.material.userData.baseOpacity;
             const top = Number.isFinite(ceiling) ? ceiling : 1;
-            n.material.transparent = k < 1 || top < 1;
+            // A material that is transparent by design (the patch's soft edge is an alpha on its vertices) stays so.
+            n.material.transparent = k < 1 || top < 1 || !!(n.material.userData && n.material.userData.alwaysTransparent);
             n.material.opacity = k * top;
           }
         });
