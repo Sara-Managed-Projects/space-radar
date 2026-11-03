@@ -142,7 +142,7 @@ const bsRows = [];
   bsRows.push([T.bs, h, s]);
   for (let t = T.bs + 2; t <= T.bs + 40; t += 2) {
     const tau = t - T.bs;
-    h = Math.max(0, A_BS - 58 * tau + 0.0); s += (VH_BS * Math.exp(-tau / 12) + 6) * 2;
+    h = Math.max(0, A_BS - (55 * tau + 100 * (1 - Math.exp(-tau / 4)))); s += (VH_BS * Math.exp(-tau / 12) + 6) * 2;   // 80 m/s as it lets go, 55 m/s under the canopy a few seconds on
     bsRows.push([t, h, s]);
     if (h <= 0) break;
   }
