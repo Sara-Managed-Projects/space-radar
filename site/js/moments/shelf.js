@@ -16,13 +16,19 @@ import { shareHash } from './format.js';
 /** The stories, in the order the shelf shows them. `minutes` is the play time; `records` are the ids a card can carry the story on. */
 export const SHELF = [
   { id: 'apollo-11', minutes: 11, records: ['saturn-v-lc-39a', 'apollo-11'], hue: '96, 64, 30', models: ['saturn-v', 'apollo-csm', 'lunar-module'] },
+  { id: 'apollo-13', minutes: 14, records: ['saturn-v-lc-39a'], hue: '210, 40, 70', models: ['saturn-v', 'apollo-csm', 'lunar-module'] },
   { id: 'artemis-ii', minutes: 11, records: ['shuttle-lc-39b'], hue: '36, 64, 100', models: ['sls-block1', 'orion-esm'] },
   { id: 'vostok-1', minutes: 5, records: ['baikonur-site-1', 'vostok-1-landing'], hue: '100, 50, 40', models: ['r7-8k72k', 'vostok-3ka', 'vostok-seat'] },
 ];
 
-/** The story a card for record `id` can replay, or null. */
+/** The story a card for record `id` can replay, or null (the first, when several are about it: see `momentsFor`). */
 export function momentFor(id) {
   return SHELF.find((s) => s.records.includes(id)) || null;
+}
+
+/** Every story a card for record `id` can replay, in the shelf's order: Launch Complex 39A is the pad of Apollo 11 and of Apollo 13. */
+export function momentsFor(id) {
+  return SHELF.filter((s) => s.records.includes(id));
 }
 
 /**
@@ -35,26 +41,34 @@ export function momentFor(id) {
 const VEHICLES = [
   { id: 'vostok-1', rocket: /^(vostok(-k|-2m)?|r-7(\b|$)|8k72k)/i, craft: /^vostok( ?1| 3ka|\b)/i },
   { id: 'apollo-11', rocket: /^saturn ?(v|5)\b/i, craft: /^(apollo[ -](cs?m|command|service)|lunar module|apollo lunar module)/i },
+  { id: 'apollo-13', rocket: /^saturn ?(v|5)\b/i, craft: /^(apollo[ -](cs?m|command|service)|lunar module|apollo lunar module)/i },
   { id: 'artemis-ii', rocket: /^(space launch system|sls)\b/i, craft: /^orion\b/i },
 ];
 const CRAFT_LAYERS = new Set(['launches', 'stations', 'notable', 'active', 'deep-space', 'just-launched']);
 
-/** The story a card for `record` can replay: by its id (a pad, a landing site) or by the craft it is (above), else null. */
-export function momentForRecord(record) {
-  if (!record) return null;
-  const byId = momentFor(record.id);
-  if (byId) return byId;
+/**
+ * Every story a card for `record` can replay: by its id (a pad, a landing site) or by the craft it is (above), in the shelf's
+ * order, without repeats. A Saturn V, the Apollo CSM and the lunar module are in more than one story (Apollo 11 and Apollo 13).
+ */
+export function momentsForRecord(record) {
+  if (!record) return [];
+  const out = momentsFor(record.id);
   const meta = record.meta || {};
   // The rocket's own name and its nearest family only: the family PATH runs up to the root (Soyuz-2's root is R-7).
   const rocketWords = [meta.rocket, meta.rocketFamily].filter((x) => typeof x === 'string');
   const name = typeof record.name === 'string' ? record.name.trim() : '';
   for (const v of VEHICLES) {
-    if (rocketWords.some((w) => v.rocket.test(w.trim()))) return SHELF.find((s) => s.id === v.id) || null;
-    if (CRAFT_LAYERS.has(record.layer) && name && (v.craft.test(name) || (record.layer !== 'launches' && v.rocket.test(name)))) {
-      return SHELF.find((s) => s.id === v.id) || null;
-    }
+    const hit = rocketWords.some((w) => v.rocket.test(w.trim()))
+      || (CRAFT_LAYERS.has(record.layer) && name && (v.craft.test(name) || (record.layer !== 'launches' && v.rocket.test(name))));
+    const story = hit ? SHELF.find((s) => s.id === v.id) : null;
+    if (story && !out.includes(story)) out.push(story);
   }
-  return null;
+  return SHELF.filter((s) => out.includes(s));
+}
+
+/** The first story a card for `record` can replay, or null. */
+export function momentForRecord(record) {
+  return momentsForRecord(record)[0] || null;
 }
 
 /** The link to a story at a mission second (or its start). */

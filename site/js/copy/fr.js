@@ -3872,15 +3872,21 @@ Object.assign(COPY, {
   },
   "momentShelf": {
     "title": "Moments",
-    "note": "Trois missions rejouées sur une seule horloge, avec les heures réelles des événements. Les trajectoires sont reconstituées et le disent.",
+    "note": "Quatre missions rejouées sur une seule horloge, avec les heures réelles des événements. Les trajectoires sont reconstituées et le disent.",
     "minutes": "{m} min",
     "replay": "Rejouer ce moment",
     "replayTitle": "Rejouer {title} sur l’horloge de la mission",
+    "replayNamed": "Rejouer {title}",
     "cards": {
       "apollo-11": {
         "title": "Apollo 11",
         "when": "du 16 au 24 juillet 1969",
         "blurb": "Du pas de tir 39A au Pacifique en passant par la base de la Tranquillité : décollage, la Lune, l’alunissage, la remontée, le retour."
+      },
+      "apollo-13": {
+        "title": "Apollo 13",
+        "when": "du 11 au 17 avril 1970",
+        "blurb": "Du pas de tir 39A au Pacifique : l’alunissage qui n’a pas eu lieu, un réservoir d’oxygène qui a explosé, et le module lunaire comme canot de sauvetage."
       },
       "artemis-ii": {
         "title": "Artemis II",

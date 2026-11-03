@@ -3697,15 +3697,21 @@ Object.assign(COPY, {
   },
   "momentShelf": {
     "title": "Momentos",
-    "note": "Tres misiones repetidas en un solo reloj, con las horas reales de los sucesos. Las trayectorias son reconstruidas y lo dicen.",
+    "note": "Cuatro misiones repetidas en un solo reloj, con las horas reales de los sucesos. Las trayectorias son reconstruidas y lo dicen.",
     "minutes": "{m} min",
     "replay": "Repetir este momento",
     "replayTitle": "Repetir {title} en el reloj de la misión",
+    "replayNamed": "Repetir {title}",
     "cards": {
       "apollo-11": {
         "title": "Apolo 11",
         "when": "del 16 al 24 de julio de 1969",
         "blurb": "De la plataforma 39A al Pacífico pasando por la Base Tranquilidad: despegue, la Luna, el alunizaje, el ascenso, el regreso."
+      },
+      "apollo-13": {
+        "title": "Apolo 13",
+        "when": "del 11 al 17 de abril de 1970",
+        "blurb": "De la plataforma 39A al Pacífico: el alunizaje que no ocurrió, un tanque de oxígeno que estalló y el módulo lunar como bote salvavidas."
       },
       "artemis-ii": {
         "title": "Artemis II",

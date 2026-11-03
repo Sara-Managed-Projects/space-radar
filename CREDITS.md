@@ -724,7 +724,7 @@ NASA's science data policy, as for Eros.
 | `insight.glb` | InSight Cruise Lander | the InSight landing site at Elysium Planitia | 267 KB |
 | `ingenuity.glb` | Ingenuity Mars Helicopter | the Ingenuity site at Valinor Hills | 86 KB |
 | `lunar-module.glb` | Apollo Lunar Module (NASA), cut into its descent and ascent stages (public domain: "These assets are free and without copyright", NASA 3D Resources README, read 2026-10-28) | the Apollo 11, 12, 14, 15, 16 and 17 landing sites -- one vehicle design, six descent stages -- and the Apollo 11 Moment | 240 KB | <!-- 0079 c3 -->
-| `apollo-csm.glb` | Apollo Soyuz (NASA 3D Resources, `3D Models/Apollo Soyuz`; NASA has no other Apollo command and service module): its CSM cut out and rescaled, then the high-gain antenna, the windows, the docking ring and probe, the SM's beams, radiators and fairing drawn by Space Radar from NASA's Apollo 9 and Apollo 17 photographs (public domain). The terms: "All of these assets are free to download and use" (science.nasa.gov/3d-resources, read 2026-10-28) | the Command and Service Module of the Apollo Moments (no object on the map wears it yet) | 98 KB | <!-- 0079 c3 -->
+| `apollo-csm.glb` | Apollo Soyuz (NASA 3D Resources, `3D Models/Apollo Soyuz`; NASA has no other Apollo command and service module): its CSM cut out and rescaled, then the high-gain antenna, the windows, the docking ring and probe, the SM's beams, radiators and fairing drawn by Space Radar from NASA's Apollo 9 and Apollo 17 photographs (public domain); and since 1.7.0 bay 4 of the SM (the outer panel as its own part, the shelf, tanks and torn Mylar behind it) drawn from NASA's Apollo 13 photograph AS13-59-8500 (public domain). The terms: "All of these assets are free to download and use" (science.nasa.gov/3d-resources, read 2026-10-28) | the Command and Service Module of the Apollo Moments (no object on the map wears it yet) | 136 KB | <!-- 0079 c3 -->
 | `mer.glb` | Mars Exploration Rover - Opportunity (MER-B) | the Opportunity site, and the Spirit site as its twin | 38 KB |
 | `pad.glb` | Mobile Launcher | DEFAULT for every launch pad -- 17 today, more with each Launch Library refresh | 74 KB |
 | `perseverance.glb` | Mars 2020 Perseverance Rover | Jezero crater on Mars (until 2026-10-15 also Gale crater, as the kind of thing; Gale now wears NASA's own Curiosity, [3b-13](#3b-13-five-agencies-own-models--europa-clipper-smap-jason-3-curiosity-sorce-2026-10-15)) | 256 KB |
@@ -4074,12 +4074,15 @@ it loops, levelled to −23 LUFS; each sting is trimmed to 2.5–3 s with a fade
 HQ previews, not the uploaded originals.
 
 | `a11-small-step.m4a` | Armstrong's first words on the Moon, played once at 109:24:48 of the Apollo 11 Moment | Public domain (NASA) | Neil Armstrong's first words on the Moon, NASA (1969), public domain | <https://commons.wikimedia.org/wiki/File:Neil_Armstrong_small_step.wav> |
+| `a13-problem-1.m4a`, `a13-problem-2.m4a` | The two radio lines of the Apollo 13 Moment, played once each at 55:55:20 and 55:55:42 | Public domain (NASA) | Apollo 13 air-to-ground recording, NASA (14 April 1970 GMT), public domain: "Okay, Houston, we've had a problem here" (Swigert) and "Houston, we've had a problem" (Lovell) | <https://commons.wikimedia.org/wiki/File:Houston_problem.ogg> |
 
 The one NASA clip (97 kB, mono AAC, 24 s) is the Wikimedia Commons file "Neil Armstrong small step.wav" (credit there:
 "Neil Armstrong/NASA", licence "Public domain", read 2026-11-02; NASA's media usage guidelines put its works in the
 public domain), re-encoded from 8-bit mono 11 025 Hz to AAC with macOS `afconvert`, and changed in nothing else. It
 is fetched only when the Apollo 11 Moment reaches that second with sound on. The house rule is "Opus with an AAC twin"; no
-Opus encoder was to hand when it was added, so the row is a `clip` whose one file is the AAC. No other recording is used:
+Opus encoder was to hand when it was added, so the row is a `clip` whose one file is the AAC. Since 1.7.0 the Apollo 13 Moment adds two short lines (13 kB and 8 kB, mono AAC, 3.0 s and 1.6 s) cut by `ffmpeg` from the
+Wikimedia Commons file "Houston problem.ogg" (artist NASA, licence "Public domain", read 2026-11-03), a recording of 11.5 seconds whose
+gaps are edited out, so each line is played on its own at the time the Flight Journal logs it. No other recording is used:
 the radio exchange of Vostok 1 is shown as captions because no Soviet-era recording with a clear licence was found.
 
 ## 9b. Audio — the trips' narration (a synthetic voice)
