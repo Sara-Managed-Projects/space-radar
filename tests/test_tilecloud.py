@@ -338,11 +338,13 @@ class Queue(unittest.TestCase):
         out, _ = self.run_queue(st, deadline=200.0, clock=lambda: 50.0)
         self.assertEqual(out, {"tracked": "built"})
 
-    def test_the_hourly_run_and_the_command_line_both_run_the_queue(self):
+    def test_the_hourly_run_and_the_asked_for_command_line_run_the_queue(self):
         pub = (ROOT / "harvest/publish.py").read_text()
         self.assertIn("def finish_and_queue", pub)
         self.assertIn("finish=lambda *a: publish.finish_and_queue(*a, deadline=deadline)", (ROOT / "harvest/lambda_handler.py").read_text())
-        self.assertIn("finish=publish.finish_and_queue", (ROOT / "harvest/__main__.py").read_text())
+        main = (ROOT / "harvest/__main__.py").read_text()
+        self.assertIn("publish.finish_and_queue if args.with_slow_jobs else publish.finish", main)
+        self.assertIn("--with-slow-jobs", (ROOT / "scripts/refresh-snapshots.sh").read_text())
 
 
 if __name__ == "__main__":

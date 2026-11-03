@@ -35,7 +35,8 @@ tagged, and their dates are the day the last change in each landed.
 - **The harvester's daily slow-job queue** (`harvest/slowjobs.py`). After the hourly sources, jobs that cut a catalogue into tiles run when
   their set is a day old, oldest first, while the run has time (a job is not started without 100 s left); the last good set stays when a build
   fails or has under 80 % of the last one's objects; `set.json` is written last. `python3 -m harvest --dest DIR --slow-only [ID]` runs it by
-  hand, and `scripts/refresh-snapshots.sh` runs it with the rest. CelesTrak is asked once a day for each of the two queries, never retried
+  hand, `--with-slow-jobs` adds it to a run (the Lambda always does, and `scripts/refresh-snapshots.sh` asks for it; without the flag a run in
+  which nothing is due still touches no network). CelesTrak is asked once a day for each of the two queries, never retried
   and not asked the second after a non-200 answer, as its usage policy asks (CREDITS.md 4.1).
 - A look probe, `r177-tracked`, and the `look` workflow's step that serves it the tracked set.
 

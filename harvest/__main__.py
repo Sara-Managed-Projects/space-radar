@@ -27,6 +27,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--finish-only", action="store_true",
                     help="fetch nothing: apply the publish rules (keep last good, cuts, derived files, column twins) "
                          "to the files already in --dest, for example after merging a GitHub runner's harvest into it")
+    ap.add_argument("--with-slow-jobs", action="store_true",
+                    help="after the sources, run the daily slow-job queue (tile sets: harvest/slowjobs.py), which asks the "
+                         "network for what it builds. The Lambda always does; here it is asked for, so a run in which "
+                         "nothing is due still touches no network")
     ap.add_argument("--slow-only", nargs="?", const="", metavar="ID",
                     help="fetch no source: run the slow-job queue (tile sets) in --dest, every job or the one named, "
                          "whether due or not")
@@ -64,7 +68,7 @@ def main(argv: list[str] | None = None) -> int:
     doc = run(store, sources, now=now, only=args.only, dry_run=args.dry_run, runner="local",
               log=lambda line: print(line, flush=True), slack_s=args.slack,
               force_due=publish.force_due(snap.read_index(store), now or snap.utcnow(), args.slack),
-              finish=publish.finish_and_queue)
+              finish=publish.finish_and_queue if args.with_slow_jobs else publish.finish)
 
     statuses = {}
     for e in doc["snapshots"].values():
