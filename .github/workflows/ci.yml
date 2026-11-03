@@ -603,6 +603,13 @@ jobs:
       - name: "Moments finish: the two Vostok places, Replay on vehicle cards, four languages, the Kennedy trip"
         run: node tests/test_moments_finish.mjs
       # 1.6.2: end
+      # 1.7.0: begin
+      # Release 1.7.0 (internal #1058): the Apollo 13 Moment. Its event order and times against the Mission Report, the panel and the
+      # foil of bay 4, the two radio lines (size, cue, credit), the Moon passed on the far side, the burn home, entry and landing, the
+      # shelf and the cards that offer more than one story.
+      - name: "More Moments: Apollo 13: event order, times, the incident, the radio, the flyby, the burn home, entry, the shelf and the cards"
+        run: node tests/test_moments_more.mjs
+      # 1.7.0: end
       - name: Satellite positions move and reject stale orbital elements
         run: node tests/test_sgp4.mjs
       - name: The scene says so when no satellite could be read

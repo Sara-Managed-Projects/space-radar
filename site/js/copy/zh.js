@@ -4084,16 +4084,27 @@ export const COPY = {
     "minutes": "{m} 分钟",
     "replay": "重现这个时刻",
     "replayTitle": "在任务时钟上重现“{title}”",
+    "replayNamed": "重放{title}",
     "cards": {
       "apollo-11": {
         "title": "Apollo 11",
         "when": "1969 年 7 月 16 日至 24 日",
         "blurb": "从 39A 发射台到太平洋，途经静海基地：升空、月球、着陆、起飞、回家。"
       },
+      "apollo-13": {
+        "title": "阿波罗 13 号",
+        "when": "1970 年 4 月 11 日至 17 日",
+        "blurb": "从 39A 发射台到太平洋：没有实现的登月、爆炸的氧气罐，以及当作救生艇的登月舱。"
+      },
       "artemis-ii": {
         "title": "Artemis II",
         "when": "2026 年 4 月 1 日至 10 日",
         "blurb": "从 39B 发射台到圣迭戈外海的太平洋，绕过月球背面。飞了什么、计划了什么，都会分别说明。"
+      },
+      "sputnik-1": {
+        "title": "斯普特尼克 1 号",
+        "when": "1957 年 10 月 4 日",
+        "blurb": "从拜科努尔到绕地球的第一圈：第一颗人造卫星，一个直径 585 毫米的抛光球体，以及它的哔哔声。"
       },
       "vostok-1": {
         "title": "Vostok 1",

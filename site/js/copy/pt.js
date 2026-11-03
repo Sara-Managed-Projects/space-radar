@@ -3860,20 +3860,31 @@ Object.assign(COPY, {
   },
   "momentShelf": {
     "title": "Momentos",
-    "note": "Três missões reprisadas em um só relógio, com os horários reais dos eventos. As trajetórias são reconstruídas e dizem isso.",
+    "note": "Cinco missões reprisadas em um só relógio, com os horários reais dos eventos. As trajetórias são reconstruídas e dizem isso.",
     "minutes": "{m} min",
     "replay": "Rever este momento",
     "replayTitle": "Rever {title} no relógio da missão",
+    "replayNamed": "Rever {title}",
     "cards": {
       "apollo-11": {
         "title": "Apollo 11",
         "when": "de 16 a 24 de julho de 1969",
         "blurb": "Da plataforma 39A ao Pacífico passando pela Base da Tranquilidade: decolagem, a Lua, o pouso, a subida, a volta."
       },
+      "apollo-13": {
+        "title": "Apollo 13",
+        "when": "de 11 a 17 de abril de 1970",
+        "blurb": "Da plataforma 39A ao Pacífico: o pouso na Lua que não aconteceu, um tanque de oxigênio que estourou e o módulo lunar como bote salva-vidas."
+      },
       "artemis-ii": {
         "title": "Artemis II",
         "when": "de 1 a 10 de abril de 2026",
         "blurb": "Da plataforma 39B ao Pacífico ao largo de San Diego, em volta do lado oculto da Lua. Diz-se o que foi voado e o que estava planejado."
+      },
+      "sputnik-1": {
+        "title": "Sputnik 1",
+        "when": "4 de outubro de 1957",
+        "blurb": "De Baikonur à primeira volta à Terra: o primeiro satélite artificial, uma esfera polida de 585 mm, e o seu bipe."
       },
       "vostok-1": {
         "title": "Vostok 1",

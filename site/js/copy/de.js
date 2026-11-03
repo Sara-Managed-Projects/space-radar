@@ -3868,20 +3868,31 @@ Object.assign(COPY, {
   },
   "momentShelf": {
     "title": "Momente",
-    "note": "Drei Missionen auf einer Uhr noch einmal erlebt, mit den echten Ereigniszeiten. Die Bahnen sind rekonstruiert und sagen es.",
+    "note": "Fünf Missionen auf einer Uhr noch einmal erlebt, mit den echten Ereigniszeiten. Die Bahnen sind rekonstruiert und sagen es.",
     "minutes": "{m} Min.",
     "replay": "Diesen Moment ansehen",
     "replayTitle": "{title} auf der Missionsuhr ansehen",
+    "replayNamed": "{title} ansehen",
     "cards": {
       "apollo-11": {
         "title": "Apollo 11",
         "when": "16. bis 24. Juli 1969",
         "blurb": "Von Rampe 39A über die Tranquility Base zum Pazifik: Start, der Mond, die Landung, der Aufstieg, die Heimkehr."
       },
+      "apollo-13": {
+        "title": "Apollo 13",
+        "when": "11. bis 17. April 1970",
+        "blurb": "Von Rampe 39A zum Pazifik: die Mondlandung, die nicht stattfand, ein geplatzter Sauerstofftank und die Mondfähre als Rettungsboot."
+      },
       "artemis-ii": {
         "title": "Artemis II",
         "when": "1. bis 10. April 2026",
         "blurb": "Von Rampe 39B zum Pazifik vor San Diego, um die Rückseite des Mondes. Es steht dabei, was geflogen wurde und was geplant war."
+      },
+      "sputnik-1": {
+        "title": "Sputnik 1",
+        "when": "4. Oktober 1957",
+        "blurb": "Von Baikonur zur ersten Erdumrundung: der erste künstliche Satellit, eine polierte Kugel von 585 mm, und sein Piepen."
       },
       "vostok-1": {
         "title": "Wostok 1",
