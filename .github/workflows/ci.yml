@@ -717,6 +717,8 @@ jobs:
         run: node tests/test_scrubber.mjs
       - name: A mission as a place in time (public #452)
         run: node tests/test_missions.mjs
+      - name: The landers' and impactors' events load on demand, name a place the map has, and fall on the registry's day (release 1.7.3)
+        run: node tests/test_missions_landers.mjs
       - name: A craft's own path holds the bound its card states, and loads nothing at boot (internal #277)
         run: node tests/test_ephemerides.mjs
       - name: The home's dated cards and the way back from an automatic move (internal #270, #274)
