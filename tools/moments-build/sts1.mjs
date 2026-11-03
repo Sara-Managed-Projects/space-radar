@@ -143,7 +143,7 @@ const pStart = [centre[0] + R_HAC * Math.cos(aStart), centre[1] + R_HAC * Math.s
 const ll = (p) => L.destination(EDW.lat, EDW.lon, ((Math.atan2(p[0], p[1]) / DEG) + 360) % 360, Math.hypot(p[0], p[1]) / 1000);
 const HAC0 = ll(pStart);
 const arcLen = R_HAC * rad(240), T_HAC0 = T_LAND - 170, DIST = mono([[170, arcLen + S_FINAL], [130, 24500], [90, 13200], [60, 7000], [30, 2700], [10, 800], [0, 0]].map(([a, b]) => [-a, b]));
-const ALT2 = mono([[170, 12.5], [130, 9], [90, 6], [60, 4.2], [30, 1.8], [10, 0.5], [4, 0.12], [0, 0]].map(([a, b]) => [-a, b]));
+const ALT2 = mono([[170, 12.5], [130, 9], [90, 6], [60, 4.2], [30, 1.8], [10, 0.22], [4, 0.04], [0, 0]].map(([a, b]) => [-a, b]));
 const ROLL = (tt) => { const d = 94 * tt - 0.5 * 1.9 * tt * tt; return Math.min(d, 94 * 94 / (2 * 1.9)); };
 const GROUND_M = 700;                                             // Rogers Dry Lake is about 700 m above the sea
 const clearance = 8.592, clearTouch = 6.546;                                          // the model's origin above the runway when level on its gear (shuttle-orbiter.glb, from its own file)
@@ -252,7 +252,7 @@ const moment = {
       { t: T_START + 12, shot: 'orbit', az: 40, el: 16, dist: 70, lookY: 18, fov: 44, vehicle: 'columbia', blend: 2 },
       { t: 900, shot: 'globe', altKm: 2400, backKm: 2200, fov: 46, vehicle: 'columbia', blend: 3 },
       { t: T_OMS2 - 120, shot: 'globe', altKm: 1800, backKm: 2400, fov: 46, vehicle: 'columbia', blend: 3 },
-      { t: T_DOORS_OPEN - 100, shot: 'orbit', az: 160, el: 22, dist: 62, lookY: 19, fov: 44, vehicle: 'columbia', blend: 2 },
+      { t: T_DOORS_OPEN - 100, shot: 'orbit', az: 160, el: 48, dist: 62, lookY: 19, fov: 44, vehicle: 'columbia', blend: 2 },
       { t: T_DOORS_OPEN + 240, shot: 'globe', altKm: 2600, backKm: 2400, fov: 46, vehicle: 'columbia', blend: 3 },
       { t: T_OMS3 - 40, shot: 'orbit', az: 30, el: 20, dist: 58, lookY: 19, fov: 44, vehicle: 'columbia', blend: 3 },
       { t: T_OMS3 + 150, shot: 'globe', altKm: 3200, backKm: 2600, fov: 46, vehicle: 'columbia', blend: 3 },
