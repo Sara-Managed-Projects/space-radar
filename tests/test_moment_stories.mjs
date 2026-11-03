@@ -222,11 +222,62 @@ for (const id of ['vostok-1', 'apollo-11', 'artemis-ii']) {
   check(play > 150 && play < 600, `Hubble: ${Math.round(play)} s of play time`);
   check(host.keepXZ && rms.keepXZ && hub.keepXZ && rms.rideOn.vehicle === 'discovery', 'Hubble: the arm and the telescope ride the orbiter in its own file frame');
 }
+// --- The first Falcon 9 landing (1.7.6, internal #1058 and #867): flight 20, ORBCOMM OG2 Mission 2
+{
+  const { m, words } = await load('falcon9-og2-2');
+  const t = (p, a, v) => first(m, p, a, v);
+  check(!!words && F.validateMoment(m, { words }).length === 0, `Falcon 9: valid, with its words (${words ? F.validateMoment(m, { words }).join('; ') : 'no words'})`);
+  check(iso(m, 0) === '2015-12-22T01:29:00Z', 'Falcon 9: T-0 is the lift-off, 01:29:00 UTC on 22 December 2015 (8:29 p.m. EST on the 21st)');
+  check(m.floodlit === true, 'Falcon 9: it flew in the dark, and the file says the rocket is lit by a lamp');
+  // the published clock (SpaceX's press kit, and the reconstruction of the webcast): separation 2:25, second stage 2:34, fairing 2:48, boostback 3:47, entry burn 8:01 to 8:21, landing burn 9:11, landing 9:44
+  const ig = (veh, from) => m.tracks.parts.filter((e) => e.vehicle === veh && e.part === 'booster' && e.action === 'ignite' && e.t > from).map((e) => e.t);
+  check(t('stage2', 'ignite') === 154 && t('fairing-a', 'separate') === 168 && t('fairing-b', 'separate') === 168, 'Falcon 9: the second stage lights at T+2:34 and the fairing goes at T+2:48');
+  check(m.vehicles.find((v) => v.id === 'booster').window[0] === 145 && m.vehicles.find((v) => v.id === 'booster-up').window[1] === 145, 'Falcon 9: the stages part at T+2:25');
+  const bb = m.tracks.parts.filter((e) => e.vehicle === 'booster' && e.part === 'booster' && e.action === 'ignite');
+  check(bb.length === 3 && Math.abs(bb[0].t + 1.5 - 227) < 1e-9 && bb[1].t === 481 && bb[2].t === 551, `Falcon 9: the boostback at T+3:47, the entry burn at T+8:01, the landing burn at T+9:11 (${bb.map((e) => e.t).join(', ')})`);
+  const cut = m.tracks.parts.filter((e) => e.vehicle === 'booster' && e.part === 'booster' && e.action === 'cutoff');
+  check(cut.length === 3 && cut[1].t === 501 && cut[0].t > 227 && cut[0].t < 270, `Falcon 9: the boostback burns less than a minute and the entry burn ends at T+8:21 (${cut.map((e) => e.t).join(', ')})`);
+  check(bb[0].engines.length === 3 && bb[2].engines.length === 1 && bb.every((e) => e.engines.every((i) => i >= 0 && i < 9)), 'Falcon 9: three engines for the boostback and the entry burn, one for the landing, of nine');
+  check(iso(m, 584) === '2015-12-22T01:38:44Z' && m.tracks.captions.some((c) => c.say === 'touch' && c.t >= 580 && c.t <= 584), 'Falcon 9: touchdown at T+9:44, 01:38:44 UTC');
+  const poses = m.tracks.parts.filter((e) => e.action === 'pose');
+  const legs = poses.filter((e) => /^leg-/.test(e.part)), fins = poses.filter((e) => /^fin-/.test(e.part));
+  check(legs.length === 8 && legs.every((e) => e.t >= 551 && e.t <= 584) && fins.length === 8 && fins.every((e) => e.t > cut[0].t && e.t < 481), 'Falcon 9: four fins swing out after the boostback, four legs swing down in the landing burn');
+  // the paths: the booster's ends where it should, the stage never under the ground, the apogee where the physics says, the speeds believable
+  const rows = rowsOf(m, 'booster'), rows2 = rowsOf(m, 'stage2');
+  check(rows.length > 200 && rows.every((r, i) => r.length === 7 && r.every(Number.isFinite) && (i === 0 || r[0] > rows[i - 1][0])), 'Falcon 9: the booster path has sorted, finite rows');
+  const fixed = (r) => { const g = TR.siderealAt(Date.parse(m.epoch), r[0]), c = Math.cos(g), s_ = Math.sin(g); return [(r[1] * c + r[2] * s_) * 1000, (-r[1] * s_ + r[2] * c) * 1000, r[3] * 1000]; };
+  const lz = TR.placeFrame({ lat: 28.48583, lon: -80.54444, alt: 3 }).ecef;
+  const end = rows[rows.length - 1], fe = fixed(end);
+  check(end[0] === 584 && Math.hypot(fe[0] - lz[0], fe[1] - lz[1], fe[2] - lz[2]) < 80, `Falcon 9: the last row is the touchdown, on Landing Zone 1 (${Math.hypot(fe[0] - lz[0], fe[1] - lz[1], fe[2] - lz[2]).toFixed(0)} m off)`);
+  const rel = (r) => { const v = [r[4] * 1000 + 7.2921159e-5 * r[2] * 1000, r[5] * 1000 - 7.2921159e-5 * r[1] * 1000, r[6] * 1000]; return Math.hypot(...v); };
+  check(rel(end) < 3, `Falcon 9: it is at rest at touchdown (${rel(end).toFixed(2)} m/s against the ground)`);
+  const rLoc = Math.hypot(...TR.placeFrame({ lat: 28.5619, lon: -80.5772, alt: 0 }).ecef) / 1000;
+  const hts = rows.map((r) => Math.hypot(r[1], r[2], r[3]) - rLoc);
+  const apo = Math.max(...hts);
+  check(apo > 150 && apo < 260 && Math.min(...hts) > -4, `Falcon 9: the stage tops out at ${apo.toFixed(0)} km and is never below the ground`);
+  check(Math.max(...rows.map(rel)) < 2500, 'Falcon 9: never faster than 2.5 km/s against the ground');
+  // MECO is where the published numbers put it: 75 km and 1.67 km/s (the ascent is a profile: its own track says)
+  const ascent = m.trajectories.ascent, pts = ascent.points, tr = TR.profileTrack({ points: pts, azimuth: ascent.azimuth }, { azimuth: ascent.azimuth });
+  const sm = tr.stateAt(143);
+  check(Math.abs(sm.altM - 75000) < 600 && Math.abs(Math.hypot(...sm.v) - 1670) < 25, `Falcon 9: main engine cut-off at ${(sm.altM / 1000).toFixed(1)} km and ${Math.hypot(...sm.v).toFixed(0)} m/s (75 km and 1.67 km/s published)`);
+  check(rows[0][0] === 145 && rows2[0][0] === 145 && Math.abs(Math.hypot(rows[0][1] - rows2[0][1], rows[0][2] - rows2[0][2], rows[0][3] - rows2[0][3]) * 1000 - 41.65) < 0.5, 'Falcon 9: the second stage leaves 41.65 m up the stack from the first stage, at the same second');
+  check(Math.max(...rows2.map((r) => Math.hypot(r[4], r[5], r[6]))) < 8, 'Falcon 9: the second stage stays under orbital speed within the picture');
+  check(m.tracks.audio.length === 0 && /No recording/.test(m.audio_note), 'Falcon 9: no audio plays, and the file says why');
+  check(Object.values(m.trajectories).every((x) => x.truth === 'illustrative' && /ours/.test(x.source)), 'Falcon 9: every path is illustrative and says what is ours');
+  check(m.places && m.places.length === 1 && Math.abs(m.places[0].place.lat - 28.48583) < 1e-4 && m.places[0].place.ground.pad === 'landing', 'Falcon 9: the ground changes to Landing Zone 1 before the landing');
+  check(m.sources.length >= 3 && m.sources.every((x) => /^https:\/\//.test(x.url)), 'Falcon 9: sources');
+  check(m.tracks.captions.every((c) => (words[c.say] || '').length > 20 && words[c.say].length < 360), 'Falcon 9: every caption is a sentence or two');
+  let play = 0; for (const q of m.pace) play += (q.to - q.from) / q.rate;
+  check(play > 120 && play < 400, `Falcon 9: ${Math.round(play)} s of play time`);
+  // the reusable part: another flight is a record and its words
+  const gen = readFileSync(join(ROOT, 'tools/moments-build/falcon9-flight.mjs'), 'utf8');
+  check(/export function buildFalcon9Moment\(/.test(gen) && /buildFalcon9Moment\(flight/.test(readFileSync(join(ROOT, 'tools/moments-build/falcon9-og2-2.mjs'), 'utf8')), 'Falcon 9: the builder takes a flight record (the next flight is a record and its words)');
+}
 // --- the shelf and the entry points (C8): read from the data, so the test names what is missing
 {
   const shelf = await mod('moments/shelf.js');
-  for (const id of ['vostok-1', 'apollo-11', 'artemis-ii', 'hubble-deployment']) check(shelf.SHELF.some((s) => s.id === id && existsSync(join(ROOT, 'site/data/moments', `${id}.json`))), `the shelf lists ${id}`);
-  for (const rec of ['saturn-v-lc-39a', 'apollo-11', 'shuttle-lc-39b', 'sat-20580']) check(!!shelf.momentFor(rec), `the card of ${rec} offers its moment`);
+  for (const id of ['vostok-1', 'apollo-11', 'artemis-ii', 'hubble-deployment', 'falcon9-og2-2']) check(shelf.SHELF.some((s) => s.id === id && existsSync(join(ROOT, 'site/data/moments', `${id}.json`))), `the shelf lists ${id}`);
+  for (const rec of ['saturn-v-lc-39a', 'apollo-11', 'shuttle-lc-39b', 'sat-20580', 'spacex-slc-40', 'falcon-lz-1']) check(!!shelf.momentFor(rec), `the card of ${rec} offers its moment`);
 }
 if (problems.length) { for (const p of problems) console.error(`::error::${p}`); console.error(`${problems.length} problem(s)`); process.exit(1); }
-console.log('moment stories ok: Hubble\'s deployment (the arm holds the telescope, the arrays, the orbit, the sun, the release at 19:38:00), Vostok 1, Apollo 11 and Artemis II: event order and times, parts of their models, the landing on the Moon\'s ground, the flyby at 6 545 km, planned times said to be planned');
+console.log('moment stories ok: the first Falcon 9 landing (the clock, MECO at 75 km and 1.67 km/s, the landing on Landing Zone 1 at rest, the fins and legs), Hubble\'s deployment (the arm holds the telescope, the arrays, the orbit, the sun, the release at 19:38:00), Vostok 1, Apollo 11 and Artemis II: event order and times, parts of their models, the landing on the Moon\'s ground, the flyby at 6 545 km, planned times said to be planned');

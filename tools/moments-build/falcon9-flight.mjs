@@ -157,7 +157,9 @@ export function buildFalcon9Moment(f, OUT) {
   L.save(OUT + `paths/${f.id}-booster.json`, dedup, `${f.name}: the first stage from separation to the touchdown on ${f.landing.name}: flown as a point mass by tools/moments-build/falcon9-flight.mjs (the published event times, the published height and speed at MECO and the published landing place; every number between is ours). Earth-inertial (TEME) km and km/s.`);
   // the second stage: pushed on from separation, nose along the path turned toward the horizon, to the end of the picture
   const T2 = E.stage2End;
-  let s2 = { r: sMeco.r, v: sMeco.v }, t2 = E.sep; const rows2 = [rowOf({ t: t2, r: s2.r, v: s2.v })];
+  // the second stage's origin is 41.65 m up the stack from the booster's, along the stack's axis (the nose is along the velocity relative to the ground)
+  const AXIS = norm(rel(sMeco.r, sMeco.v));
+  let s2 = { r: add(sMeco.r, scale(AXIS, 41.65)), v: sMeco.v }, t2 = E.sep; const rows2 = [rowOf({ t: t2, r: s2.r, v: s2.v })];
   const a2 = (tt) => 9.5 + (tt - E.sep) * 0.09;
   while (t2 < T2 - 1e-9) {
     const k = Math.min(1, Math.max(0, (t2 - E.s2ignite) / 110));

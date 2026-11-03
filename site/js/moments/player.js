@@ -679,7 +679,7 @@ export function createMomentPlayer(ctx, opts = {}) {
     const band = freeBand(size.y);
     if (shot.index !== lastShot) { lastShot = shot.index; if (ui) ui.root.dataset.shot = shot.shot.shot; }
     const origin = pose.pos;
-    const air = stage.update({ origin, sidereal: g, sunDir, moonPos, moonAxes: moonAx, siteDir, placeNow, pose: lens, aspect, shiftPx: band, width: size.x, height: size.y });
+    const air = stage.update({ origin, sidereal: g, sunDir, moonPos, moonAxes: moonAx, siteDir, placeNow, pose: lens, aspect, shiftPx: band, width: size.x, height: size.y, lamp: m.floodlit ? 1 : 0 });
     // Parts, flames, separation motors, chutes, plasma.
     for (const [id, entry] of vehicles) {
       const v = entry.v;

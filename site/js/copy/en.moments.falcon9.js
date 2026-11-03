@@ -21,7 +21,7 @@ Object.assign(COPY.momentStories, {
     liftoff: 'Lift-off at 01:29:00 UTC on 22 December. The first stage is 41 m of the 70.',
     mach1: 'T+1:05: Mach 1, as the reconstruction of the webcast has it.',
     maxq: 'T+1:13: max Q, the moment the air presses hardest; the engines were throttled back for it.',
-    meco: 'T+2:23: main engine cut-off at 75 km and 1.67 km/s (the reconstruction of the webcast; SpaceX had planned T+2:20). The rocket is going nearly straight up, a steep climb that is ours to draw.',
+    meco: 'T+2:23: main engine cut-off at 75 km and 1.67 km/s (the reconstruction of the webcast; SpaceX had planned T+2:20).',
     sep: 'T+2:25: the stages separate. The first stage turns tail-first on its cold-gas thrusters, which is drawn over about half a minute; how long it took is ours.',
     s2: 'T+2:34: the second stage\'s vacuum engine lights and it pulls away. Its path is drawn only a little way, and is ours.',
     fairing: 'T+2:48: the two halves of the fairing, 5.2 m across, are let go.',

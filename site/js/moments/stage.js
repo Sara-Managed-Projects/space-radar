@@ -385,7 +385,7 @@ export function createStage(renderer, { tier = 1, place, frame }) {
    * Pose everything for one frame. `origin` (stage metres) is where the camera is; `placeBasis` the place's east,
    * up and south axes and its position in the stage frame now; `sunDir` unit; `moon` stage metres.
    */
-  function update({ origin, sidereal, sunDir, moonPos, moonAxes: ax = null, siteDir = null, placeNow, pose, aspect, shiftPx = 0, width = 0, height = 0 }) {
+  function update({ origin, sidereal, sunDir, moonPos, moonAxes: ax = null, siteDir = null, placeNow, pose, aspect, shiftPx = 0, width = 0, height = 0, lamp = 0 }) {
     const o = origin;
     earth.position.set(-o[0], -o[1], -o[2]);
     earth.rotation.set(0, sidereal, 0);
@@ -419,7 +419,8 @@ export function createStage(renderer, { tier = 1, place, frame }) {
       m.uniforms.uSun.value.set(...sunDir);
       m.uniforms.uHaze.value.copy(haze);
       m.uniforms.uHazeK.value = air.hazeK;
-      m.uniforms.uLift.value = 0.05 * air.sky + 0.05 * air.night;
+      // 1.7.6: a `floodlit` moment (Falcon 9 at night) lifts its dark ground a little so that the landing pad can be seen, as the lamps on the vehicle lift the vehicle
+      m.uniforms.uLift.value = 0.05 * air.sky + 0.05 * air.night + 0.1 * lamp * (1 - air.day);
     }
     // The drawn ground near the place gives way to the map as the camera climbs (it is a close-up's, not a view's).
     capMat.uniforms.uLocalOn.value = 1 - Math.min(1, Math.max(0, (altM - 3000) / 12000));
