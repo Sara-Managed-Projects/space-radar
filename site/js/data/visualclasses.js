@@ -410,7 +410,11 @@ export const VISUAL_CLASSES = [
 "vostok-chutes",
 "voskhod-3kd",
 "leonov-eva",
-"sputnik-1"
+"sputnik-1",
+"cheops",
+"hxmt",
+"svom",
+"einstein-probe"
 ],
 "model_kinds": [
 "satellite-iridium",
