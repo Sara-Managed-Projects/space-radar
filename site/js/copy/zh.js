@@ -4082,6 +4082,8 @@ export const COPY = {
     "title": "历史时刻",
     "note": "三次任务，按同一个时钟重现，用的是真实的事件时间。轨迹是重建的，并且会这样说明。",
     "minutes": "{m} 分钟",
+    "all": "全部 {n} 个历史时刻",
+    "fewer": "收起历史时刻",
     "replay": "重现这个时刻",
     "replayTitle": "在任务时钟上重现“{title}”",
     "replayNamed": "重放{title}",
