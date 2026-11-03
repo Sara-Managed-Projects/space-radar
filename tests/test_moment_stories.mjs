@@ -5,7 +5,7 @@
 // event inside the vehicle's window, the paths' rows sorted, finite and at believable speeds, the landing on the Moon's
 // own ground, the flyby at the far side's distance, what is planned said to be planned, the audio's size and credit.
 //   node tests/test_moment_stories.mjs
-import { readFileSync, existsSync, statSync } from 'node:fs';
+import { readFileSync, existsSync, statSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -278,6 +278,81 @@ for (const id of ['vostok-1', 'apollo-11', 'artemis-ii']) {
   const shelf = await mod('moments/shelf.js');
   for (const id of ['vostok-1', 'apollo-11', 'artemis-ii', 'hubble-deployment', 'falcon9-og2-2']) check(shelf.SHELF.some((s) => s.id === id && existsSync(join(ROOT, 'site/data/moments', `${id}.json`))), `the shelf lists ${id}`);
   for (const rec of ['saturn-v-lc-39a', 'apollo-11', 'shuttle-lc-39b', 'sat-20580', 'spacex-slc-40', 'falcon-lz-1']) check(!!shelf.momentFor(rec), `the card of ${rec} offers its moment`);
+}
+// --- the shelf looks and behaves like the trips (release 1.7.7): a picture under every card, four shown, "All {n} moments" / "Fewer moments"
+{
+  const shelf = await mod('moments/shelf.js');
+  const { BUDGETS } = await mod('data/budgets.js');
+  const webpSize = (b) => {
+    if (b.length < 30 || b.toString('ascii', 0, 4) !== 'RIFF' || b.toString('ascii', 8, 12) !== 'WEBP') return null;
+    const kind = b.toString('ascii', 12, 16), body = b.subarray(20);
+    if (kind === 'VP8 ') return [body.readUInt16LE(6) & 0x3fff, body.readUInt16LE(8) & 0x3fff];
+    if (kind === 'VP8L') { const v = body.readUInt32LE(1); return [(v & 0x3fff) + 1, ((v >>> 14) & 0x3fff) + 1]; }
+    if (kind === 'VP8X') return [body.readUIntLE(4, 3) + 1, body.readUIntLE(7, 3) + 1];
+    return null;
+  };
+  // THE FILES: every SHELF story has its picture, a WebP of 640 x 360 within the trip pictures' budget, and names the second it was taken at.
+  const dir = join(ROOT, 'site/images/moments');
+  for (const s of shelf.SHELF) {
+    const path = join(dir, `${s.id}.webp`);
+    check(Number.isFinite(s.picture), `the shelf row of ${s.id} names its picture second (\`picture\`), so the same command can render it again`);
+    if (!existsSync(path)) { check(false, `site/images/moments/${s.id}.webp is missing: its card would have no picture`); continue; }
+    const b = readFileSync(path), wh = webpSize(b);
+    check(!!wh && wh[0] === 640 && wh[1] === 360, `${s.id}.webp is ${wh && wh.join(' x ')}, not a WebP of 640 x 360`);
+    check(b.length <= BUDGETS.trip_picture_bytes, `${s.id}.webp is ${b.length} B, over trip_picture_bytes (${BUDGETS.trip_picture_bytes})`);
+  }
+  if (existsSync(dir)) for (const f of readdirSync(dir)) check(shelf.SHELF.some((s) => `${s.id}.webp` === f), `site/images/moments/${f} belongs to no story on the shelf`);
+  // THE SHELF, drawn into a minimal document: four cards each with its picture, the button shows them all and back.
+  class El {
+    constructor(tag) { this.tagName = tag.toUpperCase(); this.children = []; this.dataset = {}; this.attrs = {}; this.listeners = {}; this.hidden = false; this.textContent = ''; this.className = ''; this.style = { setProperty() {} }; this.isConnected = false; }
+    get firstChild() { return this.children[0] || null; }
+    append(...n) { this.children.push(...n); }
+    appendChild(n) { this.children.push(n); return n; }
+    removeChild(n) { this.children.splice(this.children.indexOf(n), 1); return n; }
+    contains(n) { return n === this || this.children.some((c) => c.contains && c.contains(n)); }
+    setAttribute(k, v) { this.attrs[k] = String(v); }
+    getAttribute(k) { return k in this.attrs ? this.attrs[k] : null; }
+    addEventListener(t, f) { (this.listeners[t] ||= []).push(f); }
+    click() { for (const f of this.listeners.click || []) f(); }
+    querySelector(sel) { return this.children.find((c) => c.tagName === sel.toUpperCase()) || null; }
+    focus() {}
+  }
+  globalThis.document = { createElement: (t) => new El(t), activeElement: null };
+  const host = new El('section');
+  host.appendChild(new El('h2'));
+  const opened = [];
+  shelf.mountShelf(host, { wantMoment: (id) => opened.push(id) });
+  const grid = host.children.find((c) => /sr-momentgrid/.test(c.className));
+  const more = host.children.find((c) => c.tagName === 'BUTTON');
+  const words = COPY.momentShelf;
+  const all = shelf.SHELF.filter((s) => words.cards[s.id]);
+  check(shelf.MOMENTS_SHOWN === 4 && all.length > 4, `the shelf shows ${shelf.MOMENTS_SHOWN} of ${all.length} stories (the trips show 4)`);
+  check(!!grid && grid.children.length === 4, `closed, the shelf shows 4 cards, not ${grid && grid.children.length}`);
+  check(!!more && more.className === 'sr-more' && !more.hidden, 'the button is the trips\' .sr-more and is shown');
+  check(more && more.textContent === `All ${all.length} moments` && more.getAttribute('aria-expanded') === 'false', `closed, the button says "All ${all.length} moments" with aria-expanded=false (it says "${more && more.textContent}")`);
+  const cardIds = () => grid.children.map((c) => c.dataset.moment);
+  check(cardIds().join() === all.slice(0, 4).map((s) => s.id).join(), 'the first four are the first four of the shelf, in its order');
+  for (const c of grid.children) {
+    const pic = c.children[0];
+    check(pic && pic.tagName === 'IMG' && pic.className === 'sr-tripcard__pic' && pic.alt === '' && pic.getAttribute('aria-hidden') === 'true' && pic.dataset.src === `images/moments/${c.dataset.moment}.webp`, `${c.dataset.moment}: the card has its picture first, decorative, from images/moments/${c.dataset.moment}.webp`);
+    check(pic && !pic.getAttribute('src'), `${c.dataset.moment}: the picture is not fetched when the card is drawn (it waits for the gate and the screen)`);
+  }
+  more.click();
+  check(grid.children.length === all.length && cardIds().join() === all.map((s) => s.id).join(), `opened, the shelf shows all ${all.length} cards in the shelf's order`);
+  check(more.textContent === 'Fewer moments' && more.getAttribute('aria-expanded') === 'true', 'opened, the button says "Fewer moments" with aria-expanded=true');
+  check(grid.children.every((c) => c.children[0].tagName === 'IMG'), 'every opened card has its picture');
+  more.click();
+  check(grid.children.length === 4 && more.textContent === `All ${all.length} moments` && more.getAttribute('aria-expanded') === 'false', 'pressed again, the shelf is back to 4 and the button to "All n moments"');
+  grid.children[1].click();
+  check(opened.join() === all[1].id, 'a card still opens its Moment');
+  // THE WORDS: the copy carries the two lines, and the four translated files carry them too.
+  check(words.all === 'All {n} moments' && words.fewer === 'Fewer moments', 'COPY.momentShelf has all and fewer');
+  for (const code of ['es', 'fr', 'de', 'pt']) {
+    const lang = await mod(`copy/${code}.js`);
+    const w = lang.COPY.momentShelf;
+    check(w && /\{n\}/.test(w.all || '') && typeof w.fewer === 'string' && w.fewer.trim() !== '' && w.fewer !== words.fewer, `${code}: the shelf's "all {n} moments" and "fewer" are translated`);
+  }
+  delete globalThis.document;
 }
 if (problems.length) { for (const p of problems) console.error(`::error::${p}`); console.error(`${problems.length} problem(s)`); process.exit(1); }
 console.log('moment stories ok: the first Falcon 9 landing (the clock, MECO at 75 km and 1.67 km/s, the landing on Landing Zone 1 at rest, the fins and legs), Hubble\'s deployment (the arm holds the telescope, the arrays, the orbit, the sun, the release at 19:38:00), Vostok 1, Apollo 11 and Artemis II: event order and times, parts of their models, the landing on the Moon\'s ground, the flyby at 6 545 km, planned times said to be planned');

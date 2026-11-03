@@ -53,6 +53,8 @@ Object.assign(COPY, {
     title: 'Moments',
     note: 'Missions replayed on one clock, with the real event times. Paths are reconstructed or illustrative and say so.',
     minutes: '{m} min',
+    all: 'All {n} moments',
+    fewer: 'Fewer moments',
     replay: 'Replay this moment',
     replayTitle: 'Replay {title} on the mission clock',
     replayNamed: 'Replay {title}',

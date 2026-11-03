@@ -11,7 +11,7 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
-## [1.7.6] - 2026-11-03
+## [1.7.7] - 2026-11-03
 
 ### Added
 
@@ -40,6 +40,11 @@ tagged, and their dates are the day the last change in each landed.
 
 ### Changed
 
+- **The Moments shelf looks and behaves like the trips.** A picture under every Moment card, the story's own frame at its most telling second (`site/images/moments/<id>.webp`, 640 x 360, within the
+  trip pictures' budget), fetched lazily and only after the first visit has settled, as the trips' are (`ui/trippics.js` now serves both; the card's hue is the fallback tint). The shelf shows four
+  Moments, then "All {n} moments" / "Fewer moments" on the same button as the trips (Spanish, French, German and Portuguese translated; the other languages show it in English). Each shelf
+  row names its picture second (`picture` in `site/js/moments/shelf.js`); a story added later is rendered by `tools/moment-pictures.probe.js` and `scripts/build_trip_thumbs.py --moments`,
+  and `build_trip_thumbs.py --check` refuses a shelf story without its picture.
 - The STS-1 Moment's open bay no longer shows the DFI pallet in every flight: it is a part of its own in `shuttle-orbiter.glb`, shown with STS-1's open doors and left out of STS-31's.
 - The shelf's note no longer counts the missions.
 

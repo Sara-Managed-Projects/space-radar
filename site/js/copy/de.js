@@ -3870,6 +3870,8 @@ Object.assign(COPY, {
     "title": "Momente",
     "note": "Missionen, auf einer einzigen Uhr wiederholt, mit den echten Zeiten der Ereignisse. Die Bahnen sind rekonstruiert oder illustrativ und sagen es.",
     "minutes": "{m} Min.",
+    "all": "Alle {n} Momente",
+    "fewer": "Weniger Momente",
     "replay": "Diesen Moment ansehen",
     "replayTitle": "{title} auf der Missionsuhr ansehen",
     "replayNamed": "{title} ansehen",

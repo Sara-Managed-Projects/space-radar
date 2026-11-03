@@ -3699,6 +3699,8 @@ Object.assign(COPY, {
     "title": "Momentos",
     "note": "Misiones repetidas en un solo reloj, con las horas reales de los sucesos. Las trayectorias son reconstruidas o ilustrativas, y lo dicen.",
     "minutes": "{m} min",
+    "all": "Los {n} momentos",
+    "fewer": "Menos momentos",
     "replay": "Repetir este momento",
     "replayTitle": "Repetir {title} en el reloj de la misión",
     "replayNamed": "Repetir {title}",

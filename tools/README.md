@@ -7,7 +7,7 @@ Things run by hand on a laptop. CI does not run them; each file's head comment s
 | `serve.py` | a threaded static server for `site/` (the app asks for ~90 files at boot) |
 | `cdp.mjs` | run a script inside the page in a real headless Chrome, with a screenshot |
 | `render-trip.mjs`, `render-trip.lib.mjs` | a trip as a video for YouTube (below) |
-| `sheet-png.mjs`, `*.html`, `trip-pictures.probe.js` | contact sheets and probes |
+| `sheet-png.mjs`, `*.html`, `trip-pictures.probe.js`, `moment-pictures.probe.js` | contact sheets and probes |
 | `systems.probe.js` | the star systems walk: six systems framed, a planet's card, the `#go=` link on a phone (its header says how) |
 | `walk.mjs`, `walk.probe.js` | the regression walk: every flow of the product at two sizes, with contact sheets (below) |
 | `chromelock.mjs` | the one-Chrome-on-the-machine lock `walk.mjs` takes; `node tools/chromelock.mjs --wait=20` says who holds it and starts no Chrome |
