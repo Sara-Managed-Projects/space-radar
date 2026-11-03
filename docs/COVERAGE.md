@@ -24,16 +24,16 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | catalogues | 4 | 110 191 |
 | other_light | 3 | 3 |
 | sites | 46 | 46 |
-| real_models | 243 | 243 |
+| real_models | 245 | 245 |
 | model_kinds | 52 | 52 |
 | small_bodies | 22 | 22 |
-| probes | 37 | 37 |
+| probes | 39 | 39 |
 | reentries | 3 | 3 |
 | rockets | 49 | 49 |
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 39 | 39 |
-| **all** | **1050** | **111 237** |
+| **all** | **1054** | **111 241** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -51,7 +51,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [COMET](#comet) | 5 | `models.js`, `glyphs.js`, `kepler.js` | modelled | - |
 | [ARTIFICIAL_SATELLITE](#artificial_satellite) | 208 | `sgp4.js`, `glyphs.js`, `realmodels.js`, `models.js` | measured | - |
 | [LAUNCH_AND_ROCKET](#launch_and_rocket) | 67 | `models.js`, `ascent.js`, `realmodels.js` | illustrative | - |
-| [SPACE_PROBE](#space_probe) | 70 | `sampled.js`, `realmodels.js`, `models.js`, `glyphs.js` | measured | - |
+| [SPACE_PROBE](#space_probe) | 74 | `sampled.js`, `realmodels.js`, `models.js`, `glyphs.js` | measured | - |
 | [LANDING_SITE](#landing_site) | 65 | `models.js`, `realmodels.js`, `shadow.js` | measured | - |
 | [EXOPLANET](#exoplanet) | 153 | `systems.js`, `systemextras.js`, `exoface.js`, `exostage.js` | modelled | - |
 | [STAR](#star) | 46 | `stars3d.js`, `starfield.js`, `stardisc.js` | measured | - |
@@ -82,7 +82,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 1050 records: 326 measured, 369 modelled, 355 illustrative.
+Honesty over the 1054 records: 328 measured, 371 modelled, 355 illustrative.
 
 ## The classes
 
@@ -324,10 +324,10 @@ Honesty over the 1050 records: 326 measured, 369 modelled, 355 illustrative.
 - **Dates and filters:** Horizons windows per craft (ephemerides.yaml); events dated to the minute where the mission page gives one.
 - **Measured, modelled or reconstructed:** Measured: the paths. A stand-in (sample.js, dashed halo) where Horizons cannot be read from a browser, said on the card.
 - **Rights:** Horizons data courtesy NASA/JPL-Caltech; NASA models free and without copyright.
-- **Records (70):**
-  - real_models (28): `mro`, `parker`, `juno`, `voyager`, `cassini`, `galileo`, `pioneer`, `lro`, `osiris-rex`, `stereo`, `dawn`, `odyssey`, `rosetta`, `near`, `stardust`, `deep-impact`, `maven`, `new-horizons`, `europa-clipper`, `psyche`, `juice`, `bepicolombo`, `hera`, `lucy`, `mars-express`, `hayabusa2`, `hope`, `orion-esm`
+- **Records (74):**
+  - real_models (30): `mro`, `parker`, `juno`, `voyager`, `cassini`, `galileo`, `pioneer`, `lro`, `osiris-rex`, `stereo`, `dawn`, `odyssey`, `rosetta`, `near`, `stardust`, `deep-impact`, `maven`, `new-horizons`, `europa-clipper`, `psyche`, `juice`, `bepicolombo`, `hera`, `lucy`, `mars-express`, `hayabusa2`, `hope`, `orion-esm`, `mariner-2`, `galileo-probe`
   - model_kinds (4): `probe-generic`, `probe-new-horizons`, `probe-mars-2020-cruise`, `probe-solar-orbiter`
-  - probes (37): `deep-jwst`, `deep-soho`, `deep-roman`, `deep-mro`, `deep-mars-express`, `deep-mars-odyssey`, `deep-hope`, `deep-juno`, `deep-lro`, `deep-voyager-1`, `deep-voyager-2`, `deep-new-horizons`, `deep-pioneer-10`, `deep-pioneer-11`, `deep-maven`, `deep-cassini`, `deep-galileo`, `deep-mars-2020`, `deep-dawn`, `deep-rosetta`, `deep-near`, `deep-stardust`, `deep-deep-impact`, `deep-parker`, `deep-solar-orbiter`, `deep-psyche`, `deep-lucy`, `deep-europa-clipper`, `deep-juice`, `deep-bepicolombo`, `deep-hera`, `deep-osiris-apex`, `deep-hayabusa2`, `deep-stereo-a`, `deep-gaia`, `deep-spitzer`, `deep-kepler`
+  - probes (39): `deep-jwst`, `deep-soho`, `deep-roman`, `deep-mro`, `deep-mars-express`, `deep-mars-odyssey`, `deep-hope`, `deep-juno`, `deep-lro`, `deep-voyager-1`, `deep-voyager-2`, `deep-new-horizons`, `deep-pioneer-10`, `deep-pioneer-11`, `deep-maven`, `deep-cassini`, `deep-galileo`, `deep-mars-2020`, `deep-dawn`, `deep-rosetta`, `deep-near`, `deep-stardust`, `deep-deep-impact`, `deep-mariner-2`, `deep-galileo-probe`, `deep-parker`, `deep-solar-orbiter`, `deep-psyche`, `deep-lucy`, `deep-europa-clipper`, `deep-juice`, `deep-bepicolombo`, `deep-hera`, `deep-osiris-apex`, `deep-hayabusa2`, `deep-stereo-a`, `deep-gaia`, `deep-spitzer`, `deep-kepler`
   - layers (1): `deep-space`
 
 ### LANDING_SITE
