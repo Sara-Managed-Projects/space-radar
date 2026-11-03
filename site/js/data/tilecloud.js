@@ -16,13 +16,13 @@
 //   parseNames(text)               -> string[]
 //   tilesFor(set, opts)            -> the tiles to fetch, level 0 first: opts { maxLevel, keys, cone, tilesInCone }
 //   maxLevelFor(set, plan)         -> the finest level this device may draw (see LOD below)
-//   setLatched(v) / isLatched() / setSaveData(v)   the frame-rate latch and data-saver, told by main.js
+//   isLatched() / setLatched(v) / setSaveData(v)   the frame-rate latch (read from window.spaceRadar.latch) and data-saver
 //   createTileCloud(opts)          -> { open(), tiles(opts), load(opts), find(id), nameOf(id), set() } (impure: fetches)
 //
 // LOD ON THE FRAME LATCH. The levels are cuts by rank (size, brightness), level 0 the few that matter at
 // a glance. A device whose frame rate has tripped the latch (scene/quality.js) draws level 0 only, and a
 // connection that asked to save data draws none and gets the layer's illustrative stand-in, as for every
-// other on-demand layer. The latch is told here by main.js and never un-tripped by this module.
+// other on-demand layer. The latch is read from `window.spaceRadar.latch` (isLatched) and never un-tripped here.
 
 export class TileError extends Error {}
 
@@ -39,13 +39,27 @@ export const BASE = 'data/v1/tiles/';
 let latched = false;
 let saveData = false;
 export function setLatched(v) { latched = !!v || latched; }
-export function isLatched() { return latched; }
+/**
+ * Has this device tripped the frame-rate latch? Read from where main.js keeps it (`window.spaceRadar.latch.latched`, the
+ * same object the look probes read) and remembered: a latch never un-trips. main.js says nothing to this module, so a
+ * module that loads long after the latch tripped still draws one level. A page of a test or a worker has none: false.
+ */
+export function isLatched() {
+  if (!latched && typeof window !== 'undefined') {
+    try { if (window.spaceRadar && window.spaceRadar.latch && window.spaceRadar.latch.latched === true) latched = true; } catch { /* no latch to read */ }
+  }
+  return latched;
+}
 export function setSaveData(v) { saveData = !!v; }
-export function isSaveData() { return saveData; }
+/** Has the connection asked to save data (navigator.connection.saveData, as the other on-demand layers read it)? */
+export function isSaveData() {
+  if (saveData) return true;
+  try { const c = typeof navigator !== 'undefined' ? navigator.connection : null; return !!(c && c.saveData === true); } catch { return false; }
+}
 
 export function maxLevelFor(set, plan = {}) {
-  const l = plan.latched === undefined ? latched : !!plan.latched;
-  const s = plan.saveData === undefined ? saveData : !!plan.saveData;
+  const l = plan.latched === undefined ? isLatched() : !!plan.latched;
+  const s = plan.saveData === undefined ? isSaveData() : !!plan.saveData;
   if (s) return -1;
   if (!set || !Array.isArray(set.levels) || !set.levels.length) return -1;
   return l ? 0 : set.levels.length - 1;

@@ -2739,8 +2739,6 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (worlds && worlds.setLatched) worlds.setLatched(true);
     // The tier falls with the latch and only with it: every world back on its boot map.
     if (ctx.quality && ctx.quality.latch()) sayFellBack();
-    // Streamed tile sets (data/tilecloud.js) draw their first level alone from here on. A dynamic import: nothing at boot.
-    import('./data/tilecloud.js').then((m) => m.setLatched(true)).catch(() => {});
     window.dispatchEvent(new CustomEvent('sr:quality', { detail: { level: 'low', medianMs: Math.round(latch.median()) } }));
   }
   // Read by ui/trip.js, which keeps the star-stretch at 0 on a latched device (spec 0034 req 6),

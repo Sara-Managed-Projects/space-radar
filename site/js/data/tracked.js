@@ -6,6 +6,8 @@
 //   tileRecords(set, tile)            -> Record[]   one decoded tile as map records (pure)
 //   ommOf(set, tile, i)               -> the element set as CelesTrak's OMM JSON, for satellite.js
 //   mergeTracked(illustrative, placed)-> { records, placed, illustrative }   (pure)
+//   parseDebris(satcatText, opts)     -> the debris layer's records: the catalogue's, with the tracked ones placed (what
+//                                        data/layers.js `debris-field` parses with; anything that goes wrong leaves the illustrative ones)
 //
 // WHAT CHANGED. data/satcat.js fieldRecords() gives each piece of debris its orbit's real size and tilt at a
 // made-up place along it (the catalogue lists the shape of an orbit, not where on it the thing is). CelesTrak
@@ -23,6 +25,7 @@
 // data/tilecloud.js by main.js.
 
 import { createTileCloud, decodeTile, fieldValue, maxLevelFor } from './tilecloud.js';
+import { fieldRecords, parseSatcat, noteFieldStats } from './satcat.js';
 
 const SET_ID = 'tracked';
 const EPOCH_2000_MS = Date.UTC(2000, 0, 1);
@@ -150,6 +153,25 @@ export async function loadTracked(opts = {}) {
   const records = [];
   for (const t of tiles) for (const r of tileRecords(set, t, opts)) records.push(r);
   return { records, set, failed, level: maxLevel, cloud };
+}
+
+/**
+ * The debris layer's parser. The catalogue's text becomes the illustrative records (data/satcat.js), and the tracked set,
+ * when the harvester has built one and this device may draw it, replaces the places of those it holds. Tells ui/debris.js
+ * how many (satcat.js noteFieldStats). Never throws on the tiles' account.
+ */
+export async function parseDebris(data, opts = {}) {
+  const base = fieldRecords(parseSatcat(data));
+  try {
+    const got = await loadTracked(opts);
+    if (!got || !got.records.length) { noteFieldStats({ placed: 0, total: base.length }); return base; }
+    const merged = mergeTracked(base, got.records);
+    noteFieldStats({ placed: merged.placed, total: merged.records.length, builtAt: Date.parse(got.set.built_at) || null, level: got.level, levels: got.set.levels.length });
+    return merged.records;
+  } catch {
+    noteFieldStats({ placed: 0, total: base.length });
+    return base;
+  }
 }
 
 export { decodeTile };

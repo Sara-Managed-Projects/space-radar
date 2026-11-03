@@ -100,11 +100,19 @@ const all = T.tilesFor(set);
 check(all.length === set.tiles.length && all.every((t, i) => !i || t.level >= all[i - 1].level), 'level 0 comes first');
 check(T.tilesFor(set, { maxLevel: 0 }).every((t) => t.level === 0), 'maxLevel 0 gives level 0 alone');
 check(T.maxLevelFor(set, {}) === 2 && T.maxLevelFor(set, { latched: true }) === 0 && T.maxLevelFor(set, { saveData: true }) === -1 && T.maxLevelFor(null) === -1, 'all levels; the latch draws level 0; data-saver none');
-check(T.isLatched() === false, 'not latched until main.js says so');
-T.setLatched(true);
-check(T.isLatched() && T.maxLevelFor(set) === 0, 'once the frame latch trips the default is level 0');
-T.setLatched(false);
-check(T.isLatched(), 'the latch never un-trips');
+// The latch is read where main.js keeps it, so no code at boot has to tell this module: a page that tripped it before the module loaded still draws level 0.
+globalThis.window = { spaceRadar: { latch: { latched: false } } };
+check(T.isLatched() === false && T.maxLevelFor(set) === 2, 'a page whose latch has not tripped draws every level');
+globalThis.window.spaceRadar.latch.latched = true;
+check(T.isLatched() && T.maxLevelFor(set) === 0, 'once window.spaceRadar.latch says latched the default is level 0');
+globalThis.window.spaceRadar.latch.latched = false;
+check(T.isLatched() && T.maxLevelFor(set) === 0, 'and a latch never un-trips');
+delete globalThis.window;
+check(T.isSaveData() === false, 'no data-saver in a plain page');
+Object.defineProperty(globalThis, 'navigator', { value: { connection: { saveData: true } }, configurable: true });
+check(T.isSaveData() === true && T.maxLevelFor(set) === -1, 'navigator.connection.saveData: no tile at all');
+Object.defineProperty(globalThis, 'navigator', { value: { connection: { saveData: false } }, configurable: true });
+check(T.isSaveData() === false, 'and a connection that did not ask is left alone');
 
 // --- 5. a view -------------------------------------------------------------------------------------
 const cone = { dir: [1, 0, 0], radiusDeg: 15 };
@@ -175,8 +183,7 @@ check(true, 'and a second try is allowed');
 
 // --- 7. the boot ------------------------------------------------------------------------------------
 const main = readFileSync(join(JS, 'main.js'), 'utf8');
-check(!/from '\.\/data\/(tilecloud|tracked)\.js'/.test(main), 'main.js imports neither module statically');
-check(/import\('\.\/data\/tilecloud\.js'\)/.test(main) && /setLatched/.test(main), 'main.js tells the tiles when the frame latch trips, by a dynamic import');
+check(!/data\/(tilecloud|tracked)\.js/.test(main), 'main.js names neither module: nothing at boot, and no byte of main.js for the tiles');
 const diet = readFileSync(join(ROOT, 'tests/test_boot_diet.mjs'), 'utf8');
 check(/data\/tilecloud\.js/.test(diet) && /data\/tracked\.js/.test(diet), 'the boot-diet test holds both modules out of the boot graph');
 

@@ -138,8 +138,19 @@ check((await TR.loadTracked({ fetchBytes: transport(sd), plan: { saveData: true 
 check((await TR.loadTracked({ fetchBytes: () => Promise.reject(new TC.TileError('404')) })) === null, 'no set on the server: null, and the layer keeps its illustrative places');
 const layers = readFileSync(join(JS, 'data/layers.js'), 'utf8');
 const block = layers.slice(layers.indexOf("id: 'debris-field'"), layers.indexOf("id: 'launches'"));
-check(/import\('\.\/tracked\.js'\)/.test(block) && /load: 'on-demand'/.test(block) && /noteFieldStats/.test(block), 'the debris layer asks for the tiles when it loads, and says what it got');
-check(/catch \{ m\.noteFieldStats\(\{ placed: 0/.test(block), 'and falls back to the illustrative records when anything fails');
+check(/import\('\.\/tracked\.js'\)\.then\(\(m\) => m\.parseDebris\(data\)\)/.test(block) && /load: 'on-demand'/.test(block), 'the debris layer parses through data/tracked.js, and only when it is asked for');
+check(!/tracked\.js/.test(readFileSync(join(JS, 'main.js'), 'utf8')), 'main.js is untouched: the boot grows by no byte');
+// parseDebris: the satcat's records with the tracked ones placed; anything wrong leaves the illustrative ones.
+const satText = readFileSync(join(ROOT, 'tests/fixtures/tracked-satcat-sample.csv'), 'utf8');
+const plain = SC.fieldRecords(SC.parseSatcat(satText));
+const got2 = await TR.parseDebris(satText, { fetchBytes: transport([]), nowMs: Date.parse('2026-11-03T12:00:00Z') });
+const placedN = got2.filter((r) => r.propagator === 'sgp4').length;
+check(plain.length > 100 && got2.length >= plain.length && placedN > 100 && SC.FIELD_STATS.placed === placedN, `parseDebris: ${placedN} of ${got2.length} placed, and ui/debris.js is told`);
+check(got2.filter((r) => r.propagator === 'kepler').every((r) => r.cls === 'illustrative'), 'the ones the tiles do not hold stay illustrative');
+const none = await TR.parseDebris(satText, { fetchBytes: () => Promise.reject(new TC.TileError('404')) });
+check(none.length === plain.length && none.every((r) => r.propagator === 'kepler') && SC.FIELD_STATS.placed === 0, 'with no set on the server the layer is the illustrative one, as before');
+const sd2 = await TR.parseDebris(satText, { fetchBytes: transport([]), plan: { saveData: true } });
+check(sd2.every((r) => r.propagator === 'kepler') && SC.FIELD_STATS.placed === 0, 'on data-saver it is the illustrative one too');
 const registry = readFileSync(join(ROOT, 'registry/layers.yaml'), 'utf8');
 check(/tiles:\s*tracked/.test(registry.slice(registry.indexOf('id: debris-field'), registry.indexOf('id: debris-field') + 900)), 'registry/layers.yaml says the debris layer reads the tracked tiles');
 

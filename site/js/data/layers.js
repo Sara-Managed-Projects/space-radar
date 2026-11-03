@@ -919,20 +919,8 @@ export const LAYERS = [
     display: 'All tracked debris',
     klass: 'debris',
     source: 'celestrak-satcat',
-    // Release 1.7.7 (A9, internal I#1069): the pieces CelesTrak publishes elements for are placed by them
-    // (data/tracked.js, tiles built daily by the harvester); the rest keep the illustrative place.
-    parseLazy: async (data) => {
-      const m = await import('./satcat.js');
-      const base = m.fieldRecords(m.parseSatcat(data));
-      try {
-        const t = await import('./tracked.js');
-        const got = await t.loadTracked();
-        if (!got || !got.records.length) { m.noteFieldStats({ placed: 0, total: base.length }); return base; }
-        const merged = t.mergeTracked(base, got.records);
-        m.noteFieldStats({ placed: merged.placed, total: merged.records.length, builtAt: Date.parse(got.set.built_at) || null, level: got.level, levels: got.set.levels.length });
-        return merged.records;
-      } catch { m.noteFieldStats({ placed: 0, total: base.length }); return base; }
-    },
+    // Release 1.7.7 (A9, internal I#1069): data/tracked.js places the pieces CelesTrak publishes element sets for by them.
+    parseLazy: (data) => import('./tracked.js').then((m) => m.parseDebris(data)),
     propagator: 'kepler',
     frame: 'earth-inertial',
     moments: { wonder: false, now: false, next: false },
