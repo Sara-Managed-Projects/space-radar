@@ -573,6 +573,9 @@ Object.assign(COPY, {
     untracked: 'Too small to track, by ESA’s model: about {mid} million pieces of 1 to 10 cm and {small} million of 1 mm to 1 cm, as of {when}. An estimate, not a count.',
     untrackedSource: 'ESA space environment statistics',
     honesty: 'Counted from CelesTrak’s catalogue as read on {date}: what radar can track, from about 10 cm across. Smaller pieces are far more numerous and are in no catalogue. Where a dot is along its orbit is illustrative.',
+    // 1.7.7 (A9): said only when the harvester's tiles were found; the lines above stay for when they were not.
+    drawnPlaced: '{n} dots: grey is debris, yellow a spent rocket. {placed} are where their own element sets put them; the other {rest} are at their real height and tilt, at a made-up place on the orbit.',
+    honestyPlaced: 'Counted from CelesTrak’s catalogue as read on {date}: what radar can track, from about 10 cm across. Smaller pieces are far more numerous and are in no catalogue. Places come from CelesTrak’s element sets of {built}; a dot with no published element set is at a made-up place on its orbit, and its card says so.',
   },
 
   // The card's badge for the far-bodies layer, whose records are filed under the asteroid and comet

@@ -26,7 +26,7 @@
 import { COPY, t, fmt, timeText } from '../copy/en.js';
 import '../copy/en.later.js';
 import { load } from '../data/sources.js';
-import { parseSatcat, decayedRows, census, stories, KINDS, rememberLaunches, oldestRows } from '../data/satcat.js';
+import { parseSatcat, decayedRows, census, stories, KINDS, rememberLaunches, oldestRows, FIELD_STATS } from '../data/satcat.js';
 import { OLDEST_NOTES } from '../data/oldestnotes.js';
 import { satId } from '../data/catnum.js';
 
@@ -53,6 +53,26 @@ export const ESA_MODEL = {
   oneToTenCmMillion: 1.5,
   oneMmToOneCmMillion: 230,
 };
+
+/**
+ * The line under the dots. When the layer found the harvester's tiles (data/tracked.js), most dots are where their
+ * own element sets put them and the line says how many; when it did not, every place is made up and it says that.
+ */
+export function drawnWords(c, stats) {
+  const D = COPY.debris;
+  const n = c.kinds.debris + c.kinds.rocket;
+  const placed = stats && stats.placed > 0 ? Math.min(stats.placed, n) : 0;
+  if (!placed) return t(D.drawn, { n: fmt.int(n) });
+  return t(D.drawnPlaced, { n: fmt.int(n), placed: fmt.int(placed), rest: fmt.int(Math.max(0, n - placed)) });
+}
+
+/** The last honesty line: the places are illustrative only for the pieces that have no element set. */
+export function honestyWords(stats, asOfMs) {
+  const D = COPY.debris;
+  const date = timeText.utcLong(asOfMs);
+  if (!stats || !(stats.placed > 0)) return t(D.honesty, { date });
+  return t(D.honestyPlaced, { date, built: timeText.utcLong(Number.isFinite(stats.builtAt) ? stats.builtAt : asOfMs) });
+}
 
 const MONTH = new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 
@@ -229,7 +249,7 @@ export function createDebris(ctx, host, opts = {}) {
     map.title = D.showTitle;
     map.addEventListener('click', () => { setOnMap(!st.onMap); const b = root.querySelector('.sr-debris__map'); if (b) b.focus({ preventScroll: true }); });
     root.appendChild(map);
-    if (st.onMap) root.appendChild(el('p', 'sr-debris__note', t(D.drawn, { n: fmt.int(c.kinds.debris + c.kinds.rocket) })));
+    if (st.onMap) root.appendChild(el('p', 'sr-debris__note', drawnWords(c, FIELD_STATS)));
 
     const lines = storyLines(st.data.stories, st.data.asOfMs);
     if (lines.length) {
@@ -263,7 +283,7 @@ export function createDebris(ctx, host, opts = {}) {
       root.appendChild(list);
       root.appendChild(el('p', 'sr-debris__honesty', O.note));
     }
-    root.appendChild(el('p', 'sr-debris__honesty', t(D.honesty, { date: timeText.utcLong(st.data.asOfMs) })));
+    root.appendChild(el('p', 'sr-debris__honesty', honestyWords(FIELD_STATS, st.data.asOfMs)));
     // What no catalogue holds, from ESA's model, with the page it was read on.
     const more = el('p', 'sr-debris__honesty sr-debris__untracked', untrackedWords() + ' ');
     // The mission card's link style: ember underlined, a 44 px target on a phone (ui.css).
