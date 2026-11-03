@@ -35,6 +35,12 @@ import { createExhaustCloud } from './effects.js';
 
 const DATA = new URL('../../data/moments/', import.meta.url);
 const W = () => COPY.momentPlayer;
+// 1.7.1: the lamp a night pad is lit with (scene/models.js floodLit, the same one the model cards offer), at a launch pad in the dark: the Sun
+// below the horizon and the camera low. Weaker than the card's 0.9 so the flames still read as the light. Drawn, not measured.
+const NIGHT_PAD_LAMP = 0.6;
+// 1.7.1: a vehicle shorter than this on the screen (CSS px) is marked by the ringed dot as well as drawn: the one floor every story's vehicles get
+// (Sputnik's whips over the Earth were a speck inside the old 7 px).
+const MARKER_BELOW_PX = 24;
 const fill = (s, o) => String(s).replace(/\{(\w+)\}/g, (_, k) => (o[k] !== undefined ? o[k] : `{${k}}`));
 const DEG = Math.PI / 180;
 
@@ -424,6 +430,7 @@ export function createMomentPlayer(ctx, opts = {}) {
     const c = doc.createElement('canvas');
     c.width = c.height = 64;
     const x = c.getContext('2d');
+    x.strokeStyle = 'rgba(8, 10, 18, 0.75)'; x.lineWidth = 11; x.beginPath(); x.arc(32, 32, 22, 0, Math.PI * 2); x.stroke();
     x.strokeStyle = '#ffd98a'; x.lineWidth = 6; x.beginPath(); x.arc(32, 32, 22, 0, Math.PI * 2); x.stroke();
     x.fillStyle = '#ffd98a'; x.beginPath(); x.arc(32, 32, 7, 0, Math.PI * 2); x.fill();
     const mk = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthTest: false, depthWrite: false }));
@@ -660,7 +667,7 @@ export function createMomentPlayer(ctx, opts = {}) {
         const d = Math.hypot(ps0.pos[0] - origin[0], ps0.pos[1] - origin[1], ps0.pos[2] - origin[2]);
         const tanH = Math.tan((lens.fov * DEG) / 2);
         const pxPerM = size.y / (2 * tanH * Math.max(d, 1));
-        const small = entry.spec.marker !== false && shownNow && entry.spec.lengthM * pxPerM < 7;
+        const small = entry.spec.marker !== false && shownNow && entry.spec.lengthM * pxPerM < MARKER_BELOW_PX;
         entry.marker.visible = small;
         if (small) {
           entry.marker.position.set(ps0.pos[0] - origin[0], ps0.pos[1] - origin[1], ps0.pos[2] - origin[2]);
@@ -737,7 +744,7 @@ export function createMomentPlayer(ctx, opts = {}) {
       }
     }
     // The models' shared light (scene/models.js): the Sun and the Earth of THIS stage while it draws, then the map's back.
-    const saved = lightU ? swapLight(sunDir, air.capCentre, origin) : null;
+    const saved = lightU ? swapLight(sunDir, air.capCentre, origin, NIGHT_PAD_LAMP * air.air.night) : null;
     renderer.render(stage.scene, stage.camera);
     if (saved) restoreLight(saved);
   }
@@ -758,7 +765,7 @@ export function createMomentPlayer(ctx, opts = {}) {
     return bandShift;
   }
 
-  function swapLight(sunDir, centre, origin) {
+  function swapLight(sunDir, centre, origin, flood = 0) {
     const keys = ['uSunDir', 'uShineCentre', 'uShineRadius', 'uShadeRadius', 'uFlood', 'uAirH', 'uSunRim'];
     const saved = {};
     for (const k of keys) { const u = lightU[k]; if (!u) continue; saved[k] = u.value && u.value.clone ? u.value.clone() : u.value; }
@@ -766,7 +773,7 @@ export function createMomentPlayer(ctx, opts = {}) {
     if (lightU.uShineCentre) lightU.uShineCentre.value.set(centre[0] - origin[0], centre[1] - origin[1], centre[2] - origin[2]);
     if (lightU.uShineRadius) lightU.uShineRadius.value = EARTH_R;
     if (lightU.uShadeRadius) lightU.uShadeRadius.value = EARTH_R;
-    if (lightU.uFlood) lightU.uFlood.value = 0;
+    if (lightU.uFlood) lightU.uFlood.value = flood;
     if (lightU.uAirH) lightU.uAirH.value = 0;
     return saved;
   }

@@ -15,7 +15,7 @@ Object.assign(COPY.momentStories, {
     chCore: 'The core stage',
     chSep: 'PS-1 is let go',
     chOrbit: 'One lap',
-    ready: 'T−10 s at Site 1, Baikonur: the 8K71PS rocket and, under its cone, a sphere of 585 mm. 19:28:34 UTC on 4 October 1957, already the 5th at the launch site.',
+    ready: 'T−10 s at Site 1, Baikonur: the 8K71PS rocket and, under its cone, a sphere of 585 mm. 19:28:34 UTC on 4 October 1957, already the 5th at the launch site. The pad\'s lamp is ours: it was a dark pad, and the rocket is lit so it can be seen.',
     liftoff: 'Lift-off. The core stage and the four strap-on blocks of the R-7 burn together; the military rocket has been stripped of its warhead for this.',
     regulator: 'About 16 s in a fuel regulator fails: the core stage burns kerosene too fast and its thrust runs 4 percent high for most of the flight. The mission survives it.',
     boosters: 'T+116 s: the four strap-on blocks fall away, as the telemetry shows. The core stage goes on alone.',

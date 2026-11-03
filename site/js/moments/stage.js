@@ -40,6 +40,8 @@ export function airAt(altM, sunUp) {
     // Stars only where a camera exposed for a sunlit scene would see them: none by day, all on the night side.
     stars: Math.max(0, 1 - 1.4 * day) * (1 - density),
     hazeK: density / 22000,
+    // 1.7.1: how much a floodlit night pad is wanted: the Sun down and the camera in the air (the pad's own lamps, as a launch at night has).
+    night: (1 - day) * Math.min(1, density * 2),
   };
 }
 
@@ -380,7 +382,7 @@ export function createStage(renderer, { tier = 1, place, frame }) {
       m.uniforms.uSun.value.set(...sunDir);
       m.uniforms.uHaze.value.copy(haze);
       m.uniforms.uHazeK.value = air.hazeK;
-      m.uniforms.uLift.value = 0.05 * air.sky;
+      m.uniforms.uLift.value = 0.05 * air.sky + 0.05 * air.night;
     }
     // The drawn ground near the place gives way to the map as the camera climbs (it is a close-up's, not a view's).
     capMat.uniforms.uLocalOn.value = 1 - Math.min(1, Math.max(0, (altM - 3000) / 12000));
