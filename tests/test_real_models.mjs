@@ -141,6 +141,10 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
   const copy = sentences.images || null;
   check(made.some((row) => row.id === 'cygnus'), 'the Cygnus row is no longer read as a made model: the pattern above has stopped matching models.yaml');
   for (const row of made) {
+    // A Moments-only model (used_for: "NOTHING YET, ...") is loaded by id by site/js/moments/,
+    // not by a scene/realmodels.js route — the waiting check above already holds that contract.
+    const reg = rows.find((r) => r.id === row.id);
+    if (reg && waiting(reg)) continue;
     const worn = routes.filter((r) => r.entry && r.entry.file === row.file);
     check(worn.length > 0, `${row.id}: no route wears ${row.file}`);
     for (const r of worn) {

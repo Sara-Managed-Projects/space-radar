@@ -405,7 +405,8 @@ export const VISUAL_CLASSES = [
 "resurs-p",
 "vostok-3ka",
 "vostok-seat",
-"vostok-chutes"
+"vostok-chutes",
+"sputnik-1"
 ],
 "model_kinds": [
 "satellite-iridium",
