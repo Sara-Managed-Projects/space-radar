@@ -76,7 +76,7 @@ const interp = (t) => { let i = rows.findIndex((r) => r[0] >= t); if (i < 1) i =
 const rotZ = (v, deg) => { const c = Math.cos(deg * DEG), s = Math.sin(deg * DEG); return [v[0] * c - v[1] * s, v[0] * s + v[1] * c, v[2]]; };
 const unit3 = (v) => { const l = Math.hypot(...v); return v.map((x) => x / l); };
 const a0 = unit3(rows[0].slice(1, 4));
-const approach = rotZ(a0, 2.5);
+const approach = rotZ(a0, -3.5);
 const toStage = (v) => [v[0], v[2], -v[1]];
 const sub3 = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]], dot3 = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2], cross3 = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 function azElBehind(t, aside = 6) {

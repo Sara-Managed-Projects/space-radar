@@ -14,7 +14,7 @@ const FRAMES = JSON.parse((new URLSearchParams(location.search).get('lookFrames'
   [276, 'chute-wide', 'the whole vehicle under the canopy, the shield about to go'],
   [279.9, 'shield-off', 'the heat shield 1 s after it was let go at 05:15:24.6 UTC, falling away below the back shell'],
   [322, 'descent', 'under the canopy at 322 s, Mars below'],
-  [362, 'backshell', 'the back shell letting go at 358.9 s: the stage and rover dropped out below it, the engines lit'],
+  [360.4, 'backshell', 'the back shell letting go at 358.9 s: the stage and rover dropped out below it, the engines lit'],
   [386, 'powered', 'the descent stage under power, the rover under it'],
   [404, 'low', 'the stage 300 m up, the ground close, the plumes of the engines'],
   [417, 'crane', 'the sky crane at 417 s: the rover let go of the stage, cords out'],

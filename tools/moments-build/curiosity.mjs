@@ -230,7 +230,7 @@ const moment = {
       { t: 273, shot: 'orbit', az: 215, el: -2, dist: 34, lookY: 6, fov: 40, vehicle: 'entry', blend: 1.5 },
       { t: 290, shot: 'orbit', az: 195, el: 6, dist: 110, lookY: -30, fov: 42, vehicle: 'entry', blend: 3 },
       { t: 346, shot: 'orbit', az: 215, el: 4, dist: 40, lookY: -8, fov: 40, vehicle: 'entry', blend: 2 },
-      { t: T.bs + 0.5, shot: 'orbit', az: 215, el: -3, dist: 34, lookY: 2, fov: 40, vehicle: 'bs', blend: 0.8 },
+      { t: T.bs + 0.5, shot: 'orbit', az: 215, el: -3, dist: 70, lookY: 10, fov: 40, vehicle: 'bs', blend: 0.8 },
       { t: 366, shot: 'orbit', az: 210, el: -8, dist: 24, lookY: 2, fov: 42, vehicle: 'ds', blend: 2.5 },
       { t: 372, shot: 'orbit', az: 255, el: 14, dist: 28, lookY: 1.5, fov: 42, spin: 0.5, vehicle: 'ds', blend: 3 },
       { t: 396, shot: 'orbit', az: 215, el: 8, dist: 30, lookY: 0, fov: 42, vehicle: 'ds', blend: 3 },
