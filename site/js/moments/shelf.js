@@ -17,12 +17,44 @@ import { shareHash } from './format.js';
 export const SHELF = [
   { id: 'apollo-11', minutes: 11, records: ['saturn-v-lc-39a', 'apollo-11'], hue: '96, 64, 30', models: ['saturn-v', 'apollo-csm', 'lunar-module'] },
   { id: 'artemis-ii', minutes: 11, records: ['shuttle-lc-39b'], hue: '36, 64, 100', models: ['sls-block1', 'orion-esm'] },
-  { id: 'vostok-1', minutes: 5, records: [], hue: '100, 50, 40', models: ['r7-8k72k', 'vostok-3ka', 'vostok-seat'] },
+  { id: 'vostok-1', minutes: 5, records: ['baikonur-site-1', 'vostok-1-landing'], hue: '100, 50, 40', models: ['r7-8k72k', 'vostok-3ka', 'vostok-seat'] },
 ];
 
 /** The story a card for record `id` can replay, or null. */
 export function momentFor(id) {
   return SHELF.find((s) => s.records.includes(id)) || null;
+}
+
+/**
+ * THE VEHICLES (internal #1057, release 1.6.2). A card of a craft a story flies offers the story too: the R-7 of Vostok,
+ * the Saturn V, the Apollo CSM and LM, the SLS and Orion. The craft are matched by the words a record carries for them
+ * (a launch's `meta.rocket` and nearest family, a spacecraft's name), never by a guess: a Soyuz-2 is a descendant
+ * of the R-7 and is not Vostok's rocket, so it does not match. Orion is only a craft on the layers that hold craft,
+ * because Orion is also a constellation and a nebula.
+ */
+const VEHICLES = [
+  { id: 'vostok-1', rocket: /^(vostok(-k|-2m)?|r-7(\b|$)|8k72k)/i, craft: /^vostok( ?1| 3ka|\b)/i },
+  { id: 'apollo-11', rocket: /^saturn ?(v|5)\b/i, craft: /^(apollo[ -](cs?m|command|service)|lunar module|apollo lunar module)/i },
+  { id: 'artemis-ii', rocket: /^(space launch system|sls)\b/i, craft: /^orion\b/i },
+];
+const CRAFT_LAYERS = new Set(['launches', 'stations', 'notable', 'active', 'deep-space', 'just-launched']);
+
+/** The story a card for `record` can replay: by its id (a pad, a landing site) or by the craft it is (above), else null. */
+export function momentForRecord(record) {
+  if (!record) return null;
+  const byId = momentFor(record.id);
+  if (byId) return byId;
+  const meta = record.meta || {};
+  // The rocket's own name and its nearest family only: the family PATH runs up to the root (Soyuz-2's root is R-7).
+  const rocketWords = [meta.rocket, meta.rocketFamily].filter((x) => typeof x === 'string');
+  const name = typeof record.name === 'string' ? record.name.trim() : '';
+  for (const v of VEHICLES) {
+    if (rocketWords.some((w) => v.rocket.test(w.trim()))) return SHELF.find((s) => s.id === v.id) || null;
+    if (CRAFT_LAYERS.has(record.layer) && name && (v.craft.test(name) || (record.layer !== 'launches' && v.rocket.test(name)))) {
+      return SHELF.find((s) => s.id === v.id) || null;
+    }
+  }
+  return null;
 }
 
 /** The link to a story at a mission second (or its start). */

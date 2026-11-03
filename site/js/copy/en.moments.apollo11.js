@@ -3,6 +3,7 @@
 // Flight Journal's, as the path's own sentence and the sources say.
 import { COPY } from './en.js';
 import './en.moments.js';
+import { HOOK } from './lang.js';
 
 Object.assign(COPY.momentStories, {
   'apollo-11': {
@@ -64,3 +65,6 @@ Object.assign(COPY.momentStories, {
     srcClip: 'Armstrong\'s first words on the Moon: NASA recording, public domain, from Wikimedia Commons',
   },
 });
+
+// The story's words in the visitor's language when a translation has them (copy/lang.js; the other sections are localised by en.moments.js).
+if (HOOK.localise) HOOK.localise({ COPY }, ['momentStories']);

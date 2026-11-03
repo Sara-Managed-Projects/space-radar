@@ -398,6 +398,9 @@ void main() {
   // fading along the wake. No hard edge anywhere, so no ring.
   float fade = smoothstep(uA, uB, vY);
   fade = mix(fade, 1.0 - fade, uFlip);
+  // The wake's wide end sits at the capsule's rim and was cut off at full brightness there: a faint band round the rim. It
+  // now starts from nothing and reaches full over a fifth of the wake (release 1.6.2); the dome's own edge is already at zero.
+  fade *= mix(1.0, smoothstep(uA, uA + 0.2 * (uB - uA), vY), uFlip);
   float glow = pow(vEdge, 1.4) * fade;
   float wob = 0.9 + 0.1 * sin(vY * 7.0 - t * 14.0);
   vec3 c = vec3(1.0, 0.46, 0.34);

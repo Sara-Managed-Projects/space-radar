@@ -91,6 +91,23 @@ export const SITES = [
     "doing": "A pad 53 Space Shuttle flights left from, the last in 2006. The stack is drawn only on the day of each launch listed here: choose one to go there."
   },
   {
+    "id": "baikonur-site-1",
+    "display": "Baikonur Site 1, Gagarin's Start",
+    "class": "pad",
+    "world": "earth",
+    "lat": 45.92028,
+    "lon": 63.34222,
+    "alt_m": 0,
+    "aliases": [
+      "Gagarin's Start",
+      "Site 1",
+      "Site 1/5",
+      "Baikonur Site 1",
+      "Vostok 1 pad"
+    ],
+    "doing": "Gagarin's Start, Site 1 at Baikonur: Sputnik 1 left from here in 1957 and Vostok 1 in 1961, with the first person in space."
+  },
+  {
     "id": "apollo-11",
     "display": "Apollo 11 landing site",
     "class": "surface",
@@ -502,6 +519,21 @@ export const SITES = [
       "Huygens landing site"
     ],
     "doing": "ESA's probe came down on Titan in January 2005, the first landing in the outer Solar System, and sent home pictures of rounded pebbles."
+  },
+  {
+    "id": "vostok-1-landing",
+    "display": "Vostok 1 landing site, near Smelovka",
+    "class": "feature",
+    "world": "earth",
+    "lat": 51.27068,
+    "lon": 45.99727,
+    "diameter_m": 1000,
+    "aliases": [
+      "Smelovka",
+      "Gagarin landing site",
+      "Vostok 1 landing"
+    ],
+    "doing": "A field 26 km south-west of Engels, Saratov region, where Vostok 1's capsule came down on 12 April 1961. A monument marks the spot."
   },
   {
     "id": "copernicus",

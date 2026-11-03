@@ -5101,3 +5101,107 @@ tours:
             Nearly fifty billion light-years out, this map ends. What we can see ends sooner, about 46
             billion light-years away: farther light has not had time to reach us. Nothing measured lies
             past it, so this band is an illustration. Space goes on; our view of it does not.
+
+  # =============================================================================================
+  # Two pads at Kennedy (public #548). The Saturn V stood on 39A and the Space Shuttle on 39B, and each stop is a
+  # launch morning on which the app draws NASA's model of that vehicle on its pad (registry/sites.yaml `liftoffs:`,
+  # scene/realmodels.js padVehicleShown); the stop's `time:` is chosen inside that window.
+  #
+  # FACTS, read 2026-11-03: https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1968-118A
+  #   (Apollo 8: launch 1968-12-21 on Saturn 5; "the first manned spacecraft to leave Earth's gravity and reach the Moon";
+  #   crew Borman, Lovell and Anders; "the first of the Apollo series to successfully orbit the moon")
+  # FACTS, read 2026-11-03: https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059A
+  #   (Apollo 11: "After launch on Saturn V SA-504 on 16 July 1969 at 13:32 UT (9:32 a.m. EDT) from pad 39A of Kennedy Space
+  #   Center"; landed on 20 July in Mare Tranquillitatis; the astronauts returned to Earth on 24 July)
+  # FACTS, read 2026-11-03: https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1972-096A
+  #   (Apollo 17: "lifted off at 05:33:00 UT (12:33:00 a.m. EST) on 7 December 1972 after a 2 hour, 40 minute delay due to a
+  #   malfunction of a launch sequencer. Launch was on Saturn V SA-512 from Pad 39A ... the first nighttime launch of an
+  #   Apollo"; "the sixth and last Apollo mission in which humans walked on the lunar surface")
+  # FACTS, read 2026-11-03: https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1990-037A
+  #   (STS-31: launch 1990-04-24; "the tenth launch of the shuttle Discovery"; its main purpose "to deploy the Hubble Space
+  #   Telescope"; "Discovery soared to 600 km - the highest shuttle altitude to date")
+  # FACTS, read 2026-11-03: https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2006-055A
+  #   (STS-116: "launched from Cape Canaveral at 01:47 UT on 10 December 2006", a crew of seven to the International Space Station)
+  # FACTS, read 2026-11-03: https://en.wikipedia.org/wiki/Kennedy_Space_Center_Launch_Complex_39B
+  #   ("hosted 53 Space Shuttle launches until December 2006, when Discovery launched from the pad for the final time during the
+  #   STS-116 mission"; the Saturn V of Apollo 10 is the only one to leave from 39B; STS-31 is in its table)
+  # FACTS, read 2026-11-03: https://en.wikipedia.org/wiki/Saturn_V (its launch table: "Only Saturn V launched from Pad 39B" is
+  #   Apollo 10, so Apollo 8, 11 and 17 left from 39A)
+  # =============================================================================================
+  - id: two-pads-at-kennedy
+    title: "Two pads at Kennedy, two ages of rockets"
+    blurb: "The Saturn V from pad 39A, the Shuttle from pad 39B, on five launch mornings."
+    group: earth-orbit
+    requires: [hand-kept-sites]
+    clock: as-found
+    # The share and card picture: the Saturn V of Apollo 11 on pad 39A (stop 2).
+    og_stop: 2
+    stops:
+      - id: apollo-8
+        target: {site: saturn-v-lc-39a}
+        distance_km: 2
+        time: "1968-12-21T12:30:00Z"
+        # read 2026-11-03, https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1968-118A:
+        # "the first manned spacecraft to leave Earth's gravity and reach the Moon"; crew "Commander Frank Borman, Command Module Pilot James A. Lovell, Jr., and Lunar Module Pilot William A. Anders"; Launch Vehicle: Saturn 5.
+        # (card figure = page figure: Apollo 8 = Apollo 8 ; pad 39A = Wikipedia Saturn V, only Apollo 10 left from 39B)
+        card:
+          title: "The first crew to leave for the Moon"
+          body: >-
+            A Saturn V lifted off from pad 39A with Frank Borman, James Lovell and William Anders on
+            board. Apollo 8 was the first crewed spacecraft to leave Earth's gravity and reach the
+            Moon. The rocket here is NASA's model of it.
+
+      - id: apollo-11
+        target: {site: saturn-v-lc-39a}
+        distance_km: 2
+        time: "1969-07-16T13:00:00Z"
+        # read 2026-11-03, https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059A:
+        # "After launch on Saturn V SA-504 on 16 July 1969 at 13:32 UT (9:32 a.m. EDT) from pad 39A"; "landed in Mare Tranquilitatis"; "the astronauts returned to Earth on 24 July".
+        # (card figure = page figure: Four days later = launch 16 July, landing 20 July (4 computed) ; two of its three astronauts = Armstrong and Aldrin landed, Collins stayed in the CSM ; eight days after the launch = 16 July to 24 July (8 computed) ; the morning = 9:32 a.m. EDT)
+        card:
+          title: "Four days to Tranquility Base"
+          body: >-
+            Apollo 11 left this pad one morning. Four days later two of its three
+            astronauts landed in the Sea of Tranquility. All three were home eight days after the
+            launch.
+
+      - id: apollo-17
+        target: {site: saturn-v-lc-39a}
+        distance_km: 2
+        time: "1972-12-07T05:30:00Z"
+        # read 2026-11-03, https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1972-096A:
+        # "lifted off at 05:33:00 UT (12:33:00 a.m. EST) on 7 December 1972 after a 2 hour, 40 minute delay due to a malfunction of a launch sequencer ... the first nighttime launch of an Apollo"; "the sixth and last Apollo mission in which humans walked on the lunar surface".
+        # (card figure = page figure: 2 hours and 40 minutes = 2 hour, 40 minute delay ; first night launch of an Apollo = "first nighttime launch of an Apollo" ; Apollo 17 = Apollo 17)
+        card:
+          title: "The last people to leave for the Moon"
+          body: >-
+            Apollo 17 lifted off after a delay of 2 hours and 40 minutes, in the dark. It was the
+            first night launch of an Apollo, and the last Apollo mission on which people walked on
+            the Moon.
+
+      - id: sts-31
+        target: {site: shuttle-lc-39b}
+        distance_km: 2
+        time: "1990-04-24T12:00:00Z"
+        # read 2026-11-03, https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1990-037A:
+        # "The main purpose of this mission was to deploy the Hubble Space Telescope ... To launch HST into an orbit that guaranteed longevity, Discovery soared to 600 km - the highest shuttle altitude to date." Pad 39B: Wikipedia, Launch Complex 39B launch table (STS-31).
+        # (card figure = page figure: STS-31 = STS-31 ; 600 km = 600 km)
+        card:
+          title: "A telescope goes up in a Shuttle"
+          body: >-
+            The Space Shuttle Discovery left pad 39B on STS-31, to deploy the Hubble Space Telescope.
+            To leave it in an orbit that would last, Discovery climbed to 600 km, then the highest
+            a Shuttle had flown.
+
+      - id: sts-116
+        target: {site: shuttle-lc-39b}
+        distance_km: 2
+        time: "2006-12-10T01:30:00Z"
+        # read 2026-11-03, https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2006-055A:
+        # "launched from Cape Canaveral at 01:47 UT on 10 December 2006 ... carried a crew of seven"; and https://en.wikipedia.org/wiki/Kennedy_Space_Center_Launch_Complex_39B: "hosted 53 Space Shuttle launches until December 2006, when Discovery launched from the pad for the final time during the STS-116 mission".
+        # (card figure = page figure: 53 = 53 Space Shuttle launches ; seven = crew of seven ; in the dark = 01:47 UT = 8:47 p.m. EST the evening before)
+        card:
+          title: "The last Shuttle from this pad"
+          body: >-
+            Pad 39B saw 53 Space Shuttle launches. The last, STS-116, left in the dark with a crew
+            of seven for the International Space Station. Discovery was the Shuttle on the pad.

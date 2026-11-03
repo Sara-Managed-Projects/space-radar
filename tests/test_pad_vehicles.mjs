@@ -16,8 +16,13 @@ const check = (ok, msg) => { if (!ok) problems.push(msg); };
 const at = (s) => Date.parse(s);
 
 const sites = handKeptSites();
-const pads = sites.filter((r) => r.meta.siteKind === 'pad');
-check(pads.length === 2, `two hand-kept pads (${pads.length})`);
+const allPads = sites.filter((r) => r.meta.siteKind === 'pad');
+const pads = allPads.filter((r) => Array.isArray(r.meta.liftoffs));
+check(pads.length === 2, `two hand-kept pads with a vehicle on them (${pads.length})`);
+// Release 1.6.2: Gagarin's Start is a hand-kept pad with NO vehicle: no model, no list, so nothing is ever drawn on it.
+const baikonur = allPads.find((r) => r.id === 'baikonur-site-1');
+check(!!baikonur && !REAL_MODELS.bySite[baikonur.id] && !baikonur.meta.liftoffs, 'baikonur-site-1 is a pad with no vehicle model and no liftoffs');
+check(allPads.length === 3, `three hand-kept pads in all (${allPads.length})`);
 for (const pad of pads) {
   const entry = REAL_MODELS.bySite[pad.id];
   check(entry && entry.file && realModelFor(pad) === entry, `${pad.id} wears a vehicle's file`);

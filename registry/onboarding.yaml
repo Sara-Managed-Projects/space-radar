@@ -300,5 +300,5 @@ features:
     name: A Moment, a mission replayed in 3D on one clock
     files: [site/js/moments/player.js, site/js/moments/shelf.js]
     surfaces: ["want:wantMoment"]
-    not: "A shelf of three missions under the trips on the Earth pane, and a Replay this moment row on the card of each pad or landing site: somewhere to go after the first two minutes the nine steps are about."
+    not: "A shelf of three missions under the trips on the Earth pane, and a Replay this moment row on the card of each pad, landing site and craft a story flies (Baikonur Site 1, LC-39A and 39B, the Apollo 11 and Vostok 1 landing sites, the SLS, the Saturn V, Orion): somewhere to go after the first two minutes the nine steps are about, found on the cards a visitor has already opened."
   # 0079 C1: end

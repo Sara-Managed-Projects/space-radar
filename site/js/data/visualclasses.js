@@ -147,6 +147,7 @@ export const VISUAL_CLASSES = [
 "deimos"
 ],
 "sites": [
+"vostok-1-landing",
 "copernicus",
 "tycho",
 "shackleton",
@@ -470,7 +471,8 @@ export const VISUAL_CLASSES = [
 "members": {
 "sites": [
 "saturn-v-lc-39a",
-"shuttle-lc-39b"
+"shuttle-lc-39b",
+"baikonur-site-1"
 ],
 "real_models": [
 "saturn-v",

@@ -3,6 +3,7 @@
 // `wordsFile`; imported by moments/player.js only. WHERE A TIME IS PLANNED AND NOT REPORTED, THE WORDS SAY SO.
 import { COPY } from './en.js';
 import './en.moments.js';
+import { HOOK } from './lang.js';
 
 Object.assign(COPY.momentStories, {
   'artemis-ii': {
@@ -49,3 +50,6 @@ Object.assign(COPY.momentStories, {
     srcNasa: 'NASA, Artemis II (the flight plan; model of the rocket and capsule: NASA 3D Resources)',
   },
 });
+
+// The story's words in the visitor's language when a translation has them (copy/lang.js; the other sections are localised by en.moments.js).
+if (HOOK.localise) HOOK.localise({ COPY }, ['momentStories']);
