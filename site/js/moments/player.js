@@ -27,7 +27,7 @@ import { icon } from '../ui/icons.js';
 import { write as writeUrl, clear as clearUrl } from '../ui/urlstate.js';
 import { worldPositionKm } from '../propagate/body.js';
 import { paceTable, playOf, missionOf, rateAt, compressionText, formatMet, chapterAt, captionAt, crossed, isMomentId, shareHash, parseT, lastAt } from './format.js';
-import { tilt, OMEGA, MOON_R, moonAxes, moonSurfaceDir, placeFrame, profileTrack, vectorTrack, fromHorizons, enuToEcef, fixedToInertial, siderealAt, attitude, ballistic, spinBasis, fromBasis, add, scale, norm, len, cross, EARTH_R } from './trajectory.js';
+import { tilt, OMEGA, MOON_R, moonAxes, moonSurfaceDir, placeFrame, profileTrack, vectorTrack, fromHorizons, enuToEcef, fixedToInertial, siderealAt, attitude, ballistic, spinBasis, fromBasis, add, scale, norm, len, cross, dot, EARTH_R } from './trajectory.js';
 import { directAt, freePose, poseAngles } from './director.js';
 import { createStage, eciToThree } from './stage.js';
 import { loadVehicle, disposeVehicle } from './vehicles.js';
@@ -737,8 +737,15 @@ export function createMomentPlayer(ctx, opts = {}) {
           const peak = Number.isFinite(fx.peak) ? fx.peak : (fx.t + fx.until) / 2;
           k = t < peak ? (t - fx.t) / Math.max(1e-6, peak - fx.t) : 1 - (t - peak) / Math.max(1e-6, fx.until - peak);
         }
-        v.plasma.fx.set(Math.max(0, Math.min(1, k)), t, still);
-        if (k > 0) setMatrix(v.plasma.fx.group, basisAlong(norm(ps.vel)), add(ps.pos, fromBasis(ps.basis, v.plasma.spec.at || [0, 0, 0])), origin);
+        if (v.plasma.spec.kind === 'belly') {
+          // a winged vehicle: the layer rides the vehicle's own frame; the wake runs along the flight path, given in that frame
+          const fv = norm(ps.vel);
+          v.plasma.fx.set(Math.max(0, Math.min(1, k)), t, still, [dot(fv, ps.basis[0]), dot(fv, ps.basis[1]), dot(fv, ps.basis[2])]);
+          if (k > 0) setMatrix(v.plasma.fx.group, ps.basis, ps.pos, origin);
+        } else {
+          v.plasma.fx.set(Math.max(0, Math.min(1, k)), t, still);
+          if (k > 0) setMatrix(v.plasma.fx.group, basisAlong(norm(ps.vel)), add(ps.pos, fromBasis(ps.basis, v.plasma.spec.at || [0, 0, 0])), origin);
+        }
       }
     }
     // The steam at the pad, in the place's own axes.

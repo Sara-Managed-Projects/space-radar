@@ -29,7 +29,7 @@ const frame = L.placeFrame(place);
 // --- the published clock (mission seconds from lift-off)
 const T_MAXQ = 56, T_SRB = 132, T_MECO = 514, T_ET = 532, T_OMS1 = 634, T_OMS1_S = 86, T_OMS2_S = 75, T_OMS3 = 6 * 3600 + 20 * 60 + 46, T_OMS4 = 7 * 3600 + 5 * 60 + 32;
 const T_LAND = 54 * 3600 + 20 * 60 + 53;
-let T_EI = T_LAND - 1800; const T_DEORBIT_S = 160, T_DOORS_OPEN = 5700, T_START = 534;
+let T_EI = T_LAND - 1800; const T_DEORBIT_S = 160, T_DOORS_OPEN = 5400, T_START = 534;
 const T_END = T_LAND + 85;
 
 // --- the ascent: a profile (t s, altitude km, downrange km); the events are published, the numbers between them approximate
@@ -232,9 +232,14 @@ const moment = {
       engines: { 'orbiter-body': SSME }, flames: { 'orbiter-body': { kind: 'hydrolox', exitM: 2.3 } } },
     { id: 'columbia', model: 'shuttle-orbiter', lengthM: H_ORB, path: 'orbit', attitude: 'prograde', window: [T_START, T_END], colour: 'station', parts: ORB_PARTS,
       phases: [{ t: T_START, rollDeg: -90, pitchDeg: 0 }, { t: T_DEORBIT - 400, attitude: 'retrograde', rollDeg: -90, pitchDeg: 0 },
-        { t: T_DEORBIT_END + 200, attitude: 'prograde', rollDeg: -90, pitchDeg: 0 }, { t: T_DEORBIT_END + 900, rollDeg: -90, pitchDeg: 40 }, { t: T_LAND - 700, rollDeg: -90, pitchDeg: 40 },
-        { t: T_LAND - 480, rollDeg: -90, pitchDeg: 25 }, { t: T_LAND - 300, rollDeg: -90, pitchDeg: 15 }, { t: T_LAND - 170, rollDeg: -90, pitchDeg: 10 }, { t: T_LAND - 6, rollDeg: -90, pitchDeg: 8 }, { t: T_LAND + 12, rollDeg: -90, pitchDeg: 0 }],
-      plasma: { radiusM: 6, at: [0, 4, -2] } },
+        { t: T_DEORBIT_END + 200, attitude: 'prograde', rollDeg: -90, pitchDeg: 0 }, { t: T_DEORBIT_END + 900, rollDeg: -90, pitchDeg: 40 },
+        // the entry: belly first, 40 degrees nose-up held to Mach 8; the bank of the roll reversals (Mach 18.5 and 9.8) drawn as 45 degrees each way, ours in size and clock
+        { t: T_EI + 120, rollDeg: -90 }, { t: T_EI + 330, rollDeg: -45 }, { t: T_LAND - 1130, rollDeg: -45 }, { t: T_LAND - 1090, rollDeg: -135 },
+        { t: T_LAND - 780, rollDeg: -135 }, { t: T_LAND - 740, rollDeg: -45 }, { t: T_LAND - 700, pitchDeg: 40 }, { t: T_LAND - 520, rollDeg: -45 },
+        { t: T_LAND - 480, rollDeg: -90, pitchDeg: 25 }, { t: T_LAND - 300, pitchDeg: 15 }, { t: T_LAND - 170, pitchDeg: 10 }, { t: T_LAND - 6, pitchDeg: 8 }, { t: T_LAND + 12, pitchDeg: 0 }],
+      // the layer under the belly (effects.js createBellyPlasma), in the model's frame: the lower surface's outline, the nose cap, the wake along the flight path
+      plasma: { kind: 'belly', zM: -4.4, planform: [[0, 37.0], [2.2, 32], [4.5, 24], [11.7, 9.0], [11.5, 3.8], [4.0, 1.5], [-4.0, 1.5], [-11.5, 3.8], [-11.7, 9.0], [-4.5, 24], [-2.2, 32]],
+        noseCap: [0, 35.6, -3.9], capRadiusM: 1.8, wakeM: 18, wakeRadiusM: 5 } },
   ],
   tracks: {
     parts,
@@ -252,14 +257,14 @@ const moment = {
       { t: T_START + 12, shot: 'orbit', az: 40, el: 16, dist: 70, lookY: 18, fov: 44, vehicle: 'columbia', blend: 2 },
       { t: 900, shot: 'globe', altKm: 2400, backKm: 2200, fov: 46, vehicle: 'columbia', blend: 3 },
       { t: T_OMS2 - 120, shot: 'globe', altKm: 1800, backKm: 2400, fov: 46, vehicle: 'columbia', blend: 3 },
-      { t: T_DOORS_OPEN - 100, shot: 'orbit', az: 160, el: 48, dist: 62, lookY: 19, fov: 44, vehicle: 'columbia', blend: 2 },
+      { t: T_DOORS_OPEN - 100, shot: 'orbit', az: 160, el: 22, dist: 72, lookY: 19, fov: 52, vehicle: 'columbia', blend: 2 },
       { t: T_DOORS_OPEN + 240, shot: 'globe', altKm: 2600, backKm: 2400, fov: 46, vehicle: 'columbia', blend: 3 },
       { t: T_OMS3 - 40, shot: 'orbit', az: 30, el: 20, dist: 58, lookY: 19, fov: 44, vehicle: 'columbia', blend: 3 },
       { t: T_OMS3 + 150, shot: 'globe', altKm: 3200, backKm: 2600, fov: 46, vehicle: 'columbia', blend: 3 },
       { t: T_DEORBIT - 120, shot: 'orbit', az: 210, el: 12, dist: 60, lookY: 19, fov: 44, vehicle: 'columbia', blend: 3 },
       { t: T_DEORBIT_END + 60, shot: 'globe', altKm: 2000, backKm: 2400, fov: 46, vehicle: 'columbia', blend: 3 },
       { t: T_EI - 40, shot: 'orbit', az: 200, el: 14, dist: 48, lookY: 18, fov: 44, vehicle: 'columbia', blend: 2 },
-      { t: T_EI + 200, shot: 'chase', offset: [22, -14, -34], lookY: 12, fov: 46, vehicle: 'columbia', blend: 2 },
+      { t: T_EI + 200, shot: 'chase', offset: [26, 4, -50], lookY: 18, fov: 46, vehicle: 'columbia', blend: 2 },
       { t: T_EI + 900, shot: 'orbit', az: 140, el: 10, dist: 80, lookY: 18, fov: 46, vehicle: 'columbia', blend: 2 },
       { t: T_LAND - 330, shot: 'chase', offset: [40, -10, -60], lookY: 10, fov: 48, vehicle: 'columbia', blend: 2 },
       { t: T_LAND - 150, shot: 'orbit', az: 250, el: 12, dist: 110, lookY: 6, fov: 48, vehicle: 'columbia', blend: 2 },

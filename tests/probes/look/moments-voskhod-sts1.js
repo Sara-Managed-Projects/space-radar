@@ -6,12 +6,13 @@ look.probe = 'moments-voskhod-sts1';
 const out = { scenes: [] };
 const text = (sel) => { const n = document.querySelector(sel); return n ? n.textContent : null; };
 const STORIES = [
+  ['apollo-13', [[513850, 'capsule-entry', 'the capsule check: the command module in entry, the dome of glow in front of its heat shield as before']]],
   ['sputnik-1', [[-4, 'pad', 'the 8K71PS on Site 1 at ignition, a night launch, lit now by the pad\'s lamp (the 1.7.0 frame was a silhouette)'],
     [2200, 'orbit', 'PS-1 over the Earth, a third of the way round its first lap, with the ringed marker every small vehicle gets']]],
   ['voskhod-2', [[4800, 'volga', 'the Volga airlock out on the Voskhod 3KD, 2.5 m of ribbed fabric tube, before the walk'], [5760, 'walk', 'Leonov at the end of his 5.35 m umbilical, the airlock and the spacecraft in the frame, the Earth below'], [5900, 'close', 'Leonov close up in the Berkut suit, the backpack and the tether'],
     [6360, 'back', 'Leonov coming back in head first, a minute before 08:47:00'], [92860, 'entry', 'the sphere in entry, the instrument module gone, the shock layer glowing'], [93640, 'landing', 'the sphere under its red canopy over the taiga near Perm, 100 s before touchdown']]],
   ['sts-1', [[-4, 'pad', 'Columbia on the white tank at ignition on Launch Complex 39A'], [134, 'srb', 'two seconds after the boosters were let go at 2 min 12 s'],
-    [5800, 'bay', 'Columbia in orbit with the payload bay doors open, the Earth below'], [194290, 'entry', 'Columbia in entry, nose-high, the shock layer glowing, the Pacific below'], [195590, 'approach', 'the last minute: the glide to runway 23, gear still up'], [195652, 'touch', 'the main gear about to touch the lakebed at Edwards, runway 23, a second before 18:20:57']]],
+    [5500, 'bay', 'Columbia at T+1:31 with the payload bay doors open (opened at T+1:30), the Earth\'s limb and black space in the frame'], [194290, 'entry', 'Columbia in entry, belly first at 40 degrees nose-up, the shock layer under the belly'], [195590, 'approach', 'the last minute: the glide to runway 23, gear still up'], [195652, 'touch', 'the main gear about to touch the lakebed at Edwards, runway 23, a second before 18:20:57']]],
 ];
 for (const [id, frames] of STORIES) {
   try {

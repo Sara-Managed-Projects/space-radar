@@ -20,7 +20,7 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { loadRealModel } from '../scene/realmodels.js';
-import { createFlames, createPuffs, createChutes, createPlasma } from './effects.js';
+import { createFlames, createPuffs, createChutes, createPlasma, createBellyPlasma } from './effects.js';
 
 /** Stand a loaded model in metres: `lengthM` along +Y, base at y = 0, axis through x = z = 0. */
 export function standInMetres(model, lengthM, keepXZ = false) {
@@ -185,7 +185,8 @@ export async function loadVehicle(spec, events = [], { tier = 1 } = {}) {
   }
   let plasma = null;
   if (spec.plasma) {
-    plasma = { spec: spec.plasma, fx: createPlasma({ radiusM: spec.plasma.radiusM || 2 }) };
+    // 1.7.1: `plasma.kind: 'belly'` is a winged vehicle's layer under its belly, drawn in the vehicle's own frame (effects.js createBellyPlasma)
+    plasma = { spec: spec.plasma, fx: spec.plasma.kind === 'belly' ? createBellyPlasma(spec.plasma) : createPlasma({ radiusM: spec.plasma.radiusM || 2 }) };
     plasma.fx.group.matrixAutoUpdate = false;
     root.add(plasma.fx.group);
   }
