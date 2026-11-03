@@ -35,8 +35,10 @@
 // NOTES, for the reviewer and the lead (things the code or the data cannot carry in German):
 //   * COPY.card.articles is ["Die", ""]: withoutLeadingName() ("X ist ..." becomes "Es ist ...") only knows the names it is
 //     given; the second entry is the "the" put before a place name, which English place data has and German cannot decline, so it is empty.
-//   * COPY.r12Navigate.the / theWord: the English list names the registry names that take "the". German articles change with
-//     the case ("zur Sonne", "zum Mond"), so theWord is empty and "Back to Sun" shows the registry's own English name.
+//   * COPY.r12Navigate.the / theWord: the English list of names that take "the" cannot carry German case ("zur Sonne",
+//     "zum Mond"), and an empty string falls back to English (copy/index.js), which would print "the Sun". the is set to
+//     placeholders that never match (∅), so the button reads the registry name alone; theWord stays empty on purpose (same
+//     pattern as Portuguese and French).
 //   * templates.satellite.leadKind and leadDocked take `kind` from the model registry in English ("a Dragon spacecraft"), which
 //     German cannot decline; the template is written so that it still reads ("{name} ist {kind} im Orbit um die Erde").
 //   * templates.exoplanet.found puts the data's lowercase English method word inside „...“ ("mit der Methode „transit“ entdeckt").
@@ -3725,9 +3727,9 @@ export const COPY = {
     "milkyWay": "Milchstraße",
     "outside": "Außerhalb der Milchstraße",
     "the": [
-      "Sun",
-      "Moon",
-      "Milky Way"
+      "∅",
+      "∅",
+      "∅"
     ],
     "theWord": "",
     "backParent": "Zurück zu {parent}",
