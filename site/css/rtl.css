@@ -80,7 +80,7 @@ html[dir='rtl'] .sr-skip { left: auto; right: var(--sp-2); }
 /* --- what stays left to right --------------------------------------------------------------------------------- */
 
 /* The clock pill, the time tape and every figure with its unit: isolated so a Hebrew or Arabic word beside them cannot reorder them. */
-html[dir='rtl'] :is(.sr-time, .sr-tape, .sr-skytime, .sr-tag) {
+html[dir='rtl'] :is(.sr-time, .sr-time__read, .sr-time__words, .sr-tape, .sr-skytime, .sr-tag) {
   direction: ltr;
   unicode-bidi: isolate;
 }

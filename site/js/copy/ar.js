@@ -225,7 +225,7 @@ export const COPY = {
   },
   "timePill": {
     "label": "الوقت",
-    "when": "{date} {time} UTC",
+    "when": "\u2066{date} {time} UTC\u2069",
     "live": "مباشر · {when}",
     "held": "{when} · متوقف",
     "away": "{when} · {off}",

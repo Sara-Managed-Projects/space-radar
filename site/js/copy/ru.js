@@ -775,7 +775,7 @@ export const COPY = {
     "pathEndedLine": "Траектория, которая есть у JPL, заканчивается {date}. События ниже ведут в то время.",
     "pathBeginsLine": "Траектория, которая есть у JPL, начинается {date}. События ниже ведут в то время.",
     "actions": {
-      "flyTo": "Лететь к нему",
+      "flyTo": "Лететь",
       "flyToTitle": "Переместить камеру к этому объекту",
       "flyEnded": "Миссия закончилась {date}. Выберите событие миссии, чтобы перейти к нему",
       "flyPathEnded": "Траектория заканчивается {date}. Выберите событие миссии, чтобы перейти к нему",
@@ -789,7 +789,7 @@ export const COPY = {
       "rideShort": "Вместе",
       "seeShort": "Смотреть",
       "postcard": "Открытка",
-      "share": "Поделиться"
+      "share": "Ссылка"
     },
     "micro": "{klass} · {regime}",
     "microKlass": {
@@ -1536,7 +1536,7 @@ export const COPY = {
   },
   "hud": {
     "fromYou": "от вас",
-    "fromPlace": "от места «{place}»",
+    "fromPlace": "от {place}",
     "behind": "за телом: {world}",
     "offScreen": "{name}, {distance} отсюда, за краем экрана: лететь к нему",
     "live": "{name}: {readouts}"

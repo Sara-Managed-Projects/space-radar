@@ -232,7 +232,7 @@ export const COPY = {
   },
   "timePill": {
     "label": "זמן",
-    "when": "{date} {time} UTC",
+    "when": "\u2066{date} {time} UTC\u2069",
     "live": "חי · {when}",
     "held": "{when} · מוקפא",
     "away": "{when} · {off}",
