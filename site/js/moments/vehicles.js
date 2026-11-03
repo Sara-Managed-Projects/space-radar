@@ -28,7 +28,11 @@ export function standInMetres(model, lengthM, keepXZ = false) {
   const box = new THREE.Box3().setFromObject(model);
   const h = box.max.y - box.min.y || 1;
   const k = lengthM / h;
-  const c = keepXZ ? new THREE.Vector3(0, 0, 0) : box.getCenter(new THREE.Vector3());   // 1.7.1 keepXZ: the file's own axis stays the vehicle's axis (a craft with a long boom or airlock to one side)
+  // 1.7.1 keepXZ: the file's own axis stays the vehicle's axis (a craft with an airlock to one side). The loader centres every model on its
+  // box (scene/realmodels.js normalise: wrapper > inner > the file's scene), so the file's origin is where the scene object's origin is now.
+  const c = new THREE.Vector3();
+  const fileRoot = keepXZ && model.children[0] && model.children[0].children[0];
+  if (fileRoot) fileRoot.getWorldPosition(c); else box.getCenter(c);
   model.scale.multiplyScalar(k);
   model.position.set(-c.x * k, -box.min.y * k, -c.z * k);
   model.updateMatrixWorld(true);

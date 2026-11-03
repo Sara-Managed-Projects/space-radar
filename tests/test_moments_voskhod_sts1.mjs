@@ -231,6 +231,7 @@ const common = async (id, cover, models) => {
   check(/MARKER_BELOW_PX = 40/.test(player) && /lengthM \* pxPerM < MARKER_BELOW_PX/.test(player), 'every vehicle shorter than 40 px on the screen gets the ringed marker (Sputnik 1 over the Earth)');
   const s1 = JSON.parse(src('site/data/moments/sputnik-1.json'));
   check(s1.vehicles.find((v) => v.id === 'sat').marker !== false, 'Sputnik 1\'s satellite has the marker');
+  check(/keepXZ && model\.children\[0\] && model\.children\[0\]\.children\[0\]/.test(src('site/js/moments/vehicles.js')) && /fileRoot\.getWorldPosition\(c\)/.test(src('site/js/moments/vehicles.js')), 'keepXZ keeps the file\'s own origin: the loader centres every model on its box, so it reads where the scene object\'s origin now is');
   // the tilt
   const b = TR.attitude('prograde', { up: [0, 0, 1], vel: [1, 0, 0], ref: [0, 1, 0] });
   const tl = TR.tilt(b, 40, 0), up = tl[1][2];
