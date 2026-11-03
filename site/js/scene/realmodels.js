@@ -1127,7 +1127,7 @@ export const REAL_MODELS = {
     // The records are data/sample.js `deep-mariner-2` and `deep-galileo-probe`, drawn only inside the years of
     // their paths (site/data/eph).
     '-2': { file: 'mariner-2.glb', colour: 'probe', name: 'Mariner 2', made: 'dimensions', axes: 'app' },
-    '-344': { file: 'galileo-probe.glb', colour: 'probe', name: 'the Galileo probe in its aeroshell', made: 'dimensions', axes: 'app' },
+    '-344': { file: 'galileo-probe.glb', colour: 'probe', name: 'Galileo Probe', made: 'dimensions', axes: 'app' },
     // r172-probes: end
   },
   /**

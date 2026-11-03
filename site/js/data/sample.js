@@ -1613,13 +1613,10 @@ const PAST_CRAFT = [
     launched: '1962-08-27',
     ended: '1963-01-03',
     pathEnds: '1962-12-31',
-    pathEndsWhy: 'The path JPL holds for it stops on 31 December 1962, three days before its last ' +
-      'signal, and it is a reconstruction fitted to the Doppler data of 1962.',
+    pathEndsWhy: 'The path JPL holds for it stops on 31 December 1962, before its last signal.',
     klass: 'probe',
     horizonsId: -2,
-    aliases: ['Mariner II', 'Mariner R-2'],
-    note: 'The first spacecraft to fly past another planet: Venus, 34 773 km away on 14 December 1962. ' +
-      'It found the planet hot and cloud-covered.',
+    note: 'The first spacecraft to fly past another planet: Venus, in December 1962.',
     end: 'Its last signal reached Earth on 3 January 1963',
   },
   {
@@ -1629,10 +1626,8 @@ const PAST_CRAFT = [
     ended: '1995-12-07',
     klass: 'probe',
     horizonsId: -344,
-    aliases: ['Galileo atmospheric probe', 'Galileo descent probe'],
-    note: 'Released by Galileo in July 1995, it dived into Jupiter’s atmosphere at 47.6 km per ' +
-      'second and sent data for nearly an hour.',
-    end: 'It dived into Jupiter’s atmosphere on 7 December 1995 and was silenced by the heat and pressure',
+    note: 'Released by Galileo in July 1995, it dived into Jupiter’s atmosphere that December.',
+    end: 'It dived into Jupiter’s atmosphere on 7 December 1995',
   },
 ];
 
