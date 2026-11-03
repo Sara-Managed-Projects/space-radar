@@ -150,6 +150,7 @@ export const VISUAL_CLASSES = [
 "vostok-1-landing",
 "voskhod-2-landing",
 "edwards-afb-runway-23",
+"falcon-lz-1",
 "copernicus",
 "tycho",
 "shackleton",
@@ -286,6 +287,7 @@ export const VISUAL_CLASSES = [
 "spitzer",
 "kepler",
 "roman",
+"hubble-sts31",
 "radarsat1",
 "cygnus",
 "nustar",
@@ -477,17 +479,21 @@ export const VISUAL_CLASSES = [
 "sites": [
 "saturn-v-lc-39a",
 "shuttle-lc-39b",
-"baikonur-site-1"
+"baikonur-site-1",
+"spacex-slc-40"
 ],
 "real_models": [
 "saturn-v",
 "shuttle-stack",
 "shuttle-sts-stack",
 "shuttle-orbiter",
+"shuttle-rms",
 "delta2-stage",
 "atlas5-centaur",
 "centaur-d",
 "falcon9-stage2",
+"falcon9-stage1",
+"falcon9-upper",
 "h2a-stage2",
 "kosmos3m-stage2",
 "r7-8k72k",
