@@ -57,8 +57,7 @@ const flight = {
     { t: E.entry[0] - 14, shot: 'orbit', az: 90, el: 6, dist: 60, lookY: 12, fov: 46, vehicle: 'booster', blend: 3 },
     { t: E.entry[1] + 8, shot: 'orbit', az: 200, el: 10, dist: 90, lookY: 20, fov: 46, vehicle: 'booster', blend: 3 },
     { t: E.landingBurn[0] - 8, shot: 'chase', offset: [62, 16, 40], lookY: 14, fov: 44, vehicle: 'booster', blend: 2 },
-    { t: TL - 24, shot: 'pad', at: [-330, 230, 4], lookY: 8, fov: 28, vehicle: 'booster', blend: 2 },
-    { t: TL - 7, shot: 'pad', at: [-110, 80, 2.5], lookY: 9, fov: 36, vehicle: 'booster', blend: 1.5 },
+    { t: TL - 9, shot: 'pad', at: [-95, 70, 2.5], lookY: 9, fov: 38, vehicle: 'booster', blend: 2 },
     { t: TL + 2, shot: 'orbit', az: 220, el: 5, dist: 105, lookY: 21, fov: 44, vehicle: 'booster', blend: 1.5 },
   ],
   captions: (E, TL, run) => [
