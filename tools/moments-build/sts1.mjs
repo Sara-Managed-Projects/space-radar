@@ -239,7 +239,7 @@ const moment = {
         { t: T_LAND - 480, rollDeg: -90, pitchDeg: 25 }, { t: T_LAND - 300, pitchDeg: 15 }, { t: T_LAND - 170, pitchDeg: 10 }, { t: T_LAND - 6, pitchDeg: 8 }, { t: T_LAND + 12, pitchDeg: 0 }],
       // the layer under the belly (effects.js createBellyPlasma), in the model's frame: the lower surface's outline, the nose cap, the wake along the flight path
       plasma: { kind: 'belly', zM: -4.4, planform: [[0, 37.0], [2.2, 32], [4.5, 24], [11.7, 9.0], [11.5, 3.8], [4.0, 1.5], [-4.0, 1.5], [-11.5, 3.8], [-11.7, 9.0], [-4.5, 24], [-2.2, 32]],
-        noseCap: [0, 35.6, -3.9], capRadiusM: 1.8, wakeM: 18, wakeRadiusM: 5 } },
+        noseCap: [0, 35.6, -3.9], capRadiusM: 1.4, wakeM: 16, wakeRadiusM: 4.5 } },
   ],
   tracks: {
     parts,

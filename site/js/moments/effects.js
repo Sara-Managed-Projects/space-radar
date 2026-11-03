@@ -482,31 +482,33 @@ void main() {
     vertexShader: LAYER_V, fragmentShader: LAYER_F, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
   const group = new THREE.Group();
   const geos = [], mats = [];
-  // the planform, twice: the layer, and a wider fainter one round it so the edge is soft
+  // the planform as a fan from a centre ahead of the middle: dim at the outline (so the edge is soft), brightest at the nose and along the leading edges,
+  // none toward the trailing edge
   const pts = spec.planform;
-  const cx = 0, cy = pts.reduce((a, p) => a + p[1], 0) / pts.length;
   const yMax = Math.max(...pts.map((p) => p[1])), yMin = Math.min(...pts.map((p) => p[1]));
-  for (const [grow, k, dz] of [[1.0, 0.5, 0], [1.1, 0.22, -0.25]]) {
-    const shape = new THREE.Shape(pts.map((p) => new THREE.Vector2(cx + (p[0] - cx) * grow, cy + (p[1] - cy) * grow)));
-    const g = new THREE.ShapeGeometry(shape);
-    const pos = g.attributes.position, a = new Float32Array(pos.count);
-    for (let i = 0; i < pos.count; i += 1) {
-      const y = pos.getY(i), ax = Math.abs(pos.getX(i));
-      // brightest at the nose and, along the wing, at the leading edge (the vertices of the outline ahead of the tip); none at the trailing edge
-      const ahead = (y - yMin) / (yMax - yMin);
-      a[i] = Math.min(1, 0.15 + 1.15 * Math.pow(ahead, 1.6) + 0.25 * Math.min(1, ax / 10) * (1 - Math.abs(ahead - 0.45)));
-    }
+  {
+    const cY = yMin + 0.62 * (yMax - yMin), n = pts.length;
+    const pos = new Float32Array((n + 1) * 3), a = new Float32Array(n + 1), idx = [];
+    pos.set([0, cY, spec.zM], 0); a[0] = 0.5;
+    pts.forEach((p, i) => {
+      const ahead = (p[1] - yMin) / (yMax - yMin);
+      pos.set([p[0] * 1.03, p[1], spec.zM - 0.1], (i + 1) * 3);
+      a[i + 1] = 0.05 + 0.4 * Math.pow(ahead, 1.4);
+      idx.push(0, i + 1, ((i + 1) % n) + 1);
+    });
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     g.setAttribute('glowA', new THREE.BufferAttribute(a, 1));
-    g.translate(0, 0, spec.zM + dz);
-    const m = layerMat(k);
+    g.setIndex(idx);
+    const m = layerMat(0.55);
     group.add(new THREE.Mesh(g, m));
     geos.push(g); mats.push(m);
   }
   // the nose cap: a small bright dome under the nose
-  const capMat = layerMat(0.9);
+  const capMat = layerMat(0.5);
   const cap = new THREE.SphereGeometry(spec.capRadiusM || 1.7, 16, 8);
   const capA = new Float32Array(cap.attributes.position.count);
-  for (let i = 0; i < capA.length; i += 1) capA[i] = 0.55 + 0.45 * Math.max(0, -cap.attributes.position.getZ(i) / (spec.capRadiusM || 1.7));
+  for (let i = 0; i < capA.length; i += 1) capA[i] = 0.2 + 0.6 * Math.max(0, -cap.attributes.position.getZ(i) / (spec.capRadiusM || 1.7));
   cap.setAttribute('glowA', new THREE.BufferAttribute(capA, 1));
   const capMesh = new THREE.Mesh(cap, capMat);
   capMesh.position.set(spec.noseCap[0], spec.noseCap[1], spec.noseCap[2]);
@@ -531,7 +533,7 @@ void main() {
     group,
     set(k, time = 0, still = false, flight = null) {
       group.visible = k > 0.003;
-      for (const m of mats) { m.uniforms.uOn.value = k; m.uniforms.uTime.value = time; m.uniforms.uStill.value = still ? 1 : 0; }
+      for (const m of mats) { m.uniforms.uOn.value = m === wakeMat ? k * 0.45 : k; m.uniforms.uTime.value = time; m.uniforms.uStill.value = still ? 1 : 0; }
       if (flight) { dir.set(-flight[0], -flight[1], -flight[2]).normalize(); wakeHolder.quaternion.setFromUnitVectors(down, dir); }
     },
     dispose() { for (const m of mats) m.dispose(); for (const g of geos) g.dispose(); },
