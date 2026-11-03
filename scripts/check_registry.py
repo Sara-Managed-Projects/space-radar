@@ -2312,6 +2312,11 @@ def check_dso_hand() -> list:
             if (row.get("why") or None) != (o.get("why") or None):
                 fail(where, "`why:` differs from site/data/dso.json, which is what the card prints. "
                             "Rebuild with scripts/build-dso.py, or patch the same sentence into both")
+            # Same pass as the JSON comparison, and not skipped when the two lines disagree:
+            # a mismatch would otherwise hide a sentence the card prints in full.
+            why = o.get("why")
+            if isinstance(why, str) and len(why) > MAX_SENTENCE:
+                fail(where, f"`why:` is {len(why)} characters, over {MAX_SENTENCE}")
             d = o.get("dist_kly")
             mid = (d[0] + d[1]) / 2 if isinstance(d, list) and len(d) == 2 else d
             if isinstance(mid, (int, float)) and row.get("distLy") != round(mid * 1000):
@@ -2671,8 +2676,12 @@ def check_exotics() -> list:
                     fail(where, f"`image.file` must live under site/images/, not {f!r}")
                 if f and not (ROOT / f).exists():
                     fail(where, f"`image.file` {f} is not in the repository")
-        if not r.get("why"):
+        # The card prints this paragraph in full, the same line a famous star is held to.
+        why = r.get("why")
+        if not isinstance(why, str) or not why.strip():
             fail(where, "no `why:` sentence")
+        elif len(why) > MAX_SENTENCE:
+            fail(where, f"`why:` is {len(why)} characters, over {MAX_SENTENCE}")
         if not re.match(r"^\s*\d+h\s*\d+m\s*[\d.]+s\s*$", str(r.get("ra") or "")):
             fail(where, f"`ra` must be `HHh MMm SS.Ss` as the source prints it, not {r.get('ra')!r}")
         if not re.match(r"^\s*[+-]?\d+°\s*\d+′\s*[\d.]+″\s*$", str(r.get("dec") or "")):
@@ -3826,7 +3835,7 @@ def budget(bid: str, fallback: float) -> float:
 # too, because a bed is the largest thing a visitor can download after the first visit and the
 # only way it stays small is a number that fails the build.
 AUDIO_FIELDS = ("id", "kind", "file", "twin", "seconds", "kb", "loop", "licence", "source", "credit")
-AUDIO_KINDS = {"bed", "sting"}
+AUDIO_KINDS = {"bed", "sting", "clip"}  # a `clip` (release 1.6.0, the Moments): one recording of a real voice, one file, played at one second
 AUDIO_STAGES = {"earth", "world", "sun", "ladder"}
 AUDIO_KB_SLACK = 0.05
 AUDIO_FILE = re.compile(r"[A-Za-z0-9_.-]+\.(?:opus|m4a)")
@@ -3987,7 +3996,7 @@ def check_audio() -> list:
             fail(where, f"loop {r.get('loop')!r} must be true or false")
         if not is_number(r.get("seconds")) or not r.get("seconds") > 0:
             fail(where, f"seconds {r.get('seconds')!r} must be a positive number")
-        for key, ext in (("file", ".opus"), ("twin", ".m4a")):
+        for key, ext in (("file", ".m4a" if kind == "clip" else ".opus"), ("twin", ".m4a")):
             f = str(r.get(key) or "")
             if not f:
                 continue
@@ -4003,7 +4012,11 @@ def check_audio() -> list:
         kb = r.get("kb")
         f = ROOT / str(r.get("file") or "")
         if is_number(kb):
-            total_kb += kb
+            if kind == "clip":
+                if kb > 150:
+                    fail(where, f"a clip of {kb} kB is over the 150 kB a single recording may be (it is fetched once, at its second)")
+            else:
+                total_kb += kb
             if r.get("file") and f.is_file():
                 real = f.stat().st_size / 1000
                 if abs(real - kb) > AUDIO_KB_SLACK * real:

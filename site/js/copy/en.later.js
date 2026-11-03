@@ -2249,10 +2249,6 @@ Object.assign(COPY, {
   },
 });
 // 0077 W2-e: end
-// 0077 W1-e: begin
-// The sections this file added, in the visitor's language (copy/lang.js says how; public #524).
-if (HOOK.localise) HOOK.localise({ COPY }, Object.keys(COPY).filter((k) => !KEYS_BEFORE.has(k)));
-// 0077 W1-e: end
 
 // 0077 W2-d: begin (Compare and the comparison lab, the passport's kinds and notes, the photograph slider)
 Object.assign(COPY, {
@@ -2379,3 +2375,9 @@ Object.assign(COPY, {
   },
 });
 // 0077 W3-e: end
+
+// 0077 W1-e: begin
+// The sections this file added, in the visitor's language (copy/lang.js says how; public #524). 1.6.3: asked at the END of the file: wave 2's Compare,
+// passport and photograph sections are added above, and were never put into a language while this call sat before them.
+if (HOOK.localise) HOOK.localise({ COPY }, Object.keys(COPY).filter((k) => !KEYS_BEFORE.has(k)));
+// 0077 W1-e: end

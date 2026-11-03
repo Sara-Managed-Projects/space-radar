@@ -476,7 +476,7 @@ export const timeText = {
     // More than half a year from now the year is the point: "05 MAR 12:05" for Voyager at Jupiter
     // would read as last spring (the Roadster mistake, dateNear above).
     const far = Number.isFinite(nowMs) && Math.abs(ms - nowMs) > 180 * 86400e3;
-    const day = `${parts.day} ${String(parts.month || '').toUpperCase()}`;
+    const day = `${parts.day} ${String(parts.month || '').toUpperCase().replace(/\.$/, '')}`; // 1.6.3: de, ru, uk write "NOV."; the pill has no room for the point
     return t(COPY.timePill.when, {
       date: far ? `${day} ${new Date(ms).getUTCFullYear()}` : day,
       time: `${parts.hour === '24' ? '00' : parts.hour}:${parts.minute}`,
@@ -727,6 +727,9 @@ export const COPY = {
     menuShare: 'Share',
     menuHide: 'Hide the panels',
     menuGitHub: 'Source on GitHub',
+    // The journal (ui/rail.js): the word is the same in every language we ship.
+    blog: 'Blog',
+    blogHref: 'https://blog.spaceradar.ai/',
     // The tour (ui/onboarding.js, internal spec 0074): the fourth tool, and its row on a phone.
     tour: 'Take the tour',
     menuTour: 'Take the tour',
@@ -1697,7 +1700,7 @@ export const COPY = {
     // A storm is not an object with a shape: the mark is where its centre is, the storm is cloud.
     storm: 'drawn as a mark at its centre; the storm itself is the cloud around it',
     // 0077 W3-d: a named place on a world's ground (registry/sites.yaml `class: feature`): nothing stands there to draw.
-    feature: 'a named place: nothing is drawn here but a mark at its centre, from the IAU gazetteer; the ground under it is the map itself',  // 0077 W3-d
+    feature: 'a named place: nothing is drawn here but a mark at its centre, placed from the cited reference; the ground under it is the map itself',  // 0077 W3-d
     markOnly: 'a mark at its place; nothing stands there to draw', // 0079 a6
     noPlace: 'not drawn: there is no place of it to mark', // 0079 a6
     shower: 'a name at the point its meteors seem to come from, in the sky view near its peak; a direction, not a place in space', // 0079 a6

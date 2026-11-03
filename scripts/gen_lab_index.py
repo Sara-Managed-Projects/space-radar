@@ -66,21 +66,20 @@ def esc(s: str) -> str:
     return html.escape(s, quote=True)
 
 
-CSS = (ROOT / "templates" / "seo.css").read_text(encoding="utf-8")
 LAB_CSS = """
-main{max-width:1160px}
-.top,footer{max-width:1160px}
+main,.top__in,.foot__in{width:min(100% - 2*var(--g),1160px)}
 .intro{display:flex;flex-wrap:wrap;align-items:center;gap:16px 24px;margin:0 0 24px}
 .intro p{margin:0}
 .grid{list-style:none;margin:0;padding:0;display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr))}
-.card{display:flex;flex-direction:column;gap:6px;height:100%;box-sizing:border-box;padding:16px;border:1px solid var(--sr-line);border-radius:var(--sr-radius);background:var(--sr-wash);color:var(--sr-text);text-decoration:none}
-.card:hover{background:var(--sr-wash-hover)}
+.grid{gap:16px}
+.card{display:flex;flex-direction:column;gap:6px;height:100%;padding:18px 20px 20px;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.015));box-shadow:0 0 0 1px rgba(255,255,255,.09);color:var(--sr-text);text-decoration:none;transition:box-shadow .4s,translate .4s}
+.card:hover{color:var(--sr-text);box-shadow:0 0 0 1px rgba(255,159,67,.7),0 22px 50px -28px var(--sr-ember);translate:0 -3px}
 .card .micro{margin:0}
-.card h3{margin:0;font:600 20px/24px Inter,system-ui,sans-serif;color:var(--sr-text)}
-.card p{margin:0;font-size:15px;line-height:20px;color:var(--sr-text-dim)}
+.card h3{margin:0;font-size:1.25rem;line-height:1.2}
+.card p{margin:0;font-size:14.5px;line-height:1.5;color:#b9c2d0}
 .cat{margin:32px 0 12px;padding-top:0;border-top:0;scroll-margin-top:12px}
 .topics{margin:0 0 8px}
-.add{margin-top:32px;padding:16px;border:1px dashed var(--sr-line);border-radius:var(--sr-radius)}
+.add{margin-top:40px;padding:20px;border:1px dashed var(--sr-line);border-radius:18px}
 .add h2{margin:0 0 8px;padding:0;border:0}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 """
@@ -125,11 +124,12 @@ def build() -> str:
 <meta name="twitter:image" content="{HOST}/og/default.png">
 <link rel="icon" href="{icon}">
 <link rel="stylesheet" href="../css/fonts.css">
+<link rel="stylesheet" href="../css/static.css">
 <style>
-{CSS}{LAB_CSS}</style>
+{LAB_CSS}</style>
 </head>
 <body>
-<header class="top"><a class="mark" href="../index.html">Space Radar</a><a href="../index.html">Open the live map</a></header>
+<header class="top"><div class="top__in"><a class="mark" href="../index.html">Space Radar</a><nav aria-label="Site"><a href="https://blog.spaceradar.ai/">Blog</a></nav><a class="openmap" href="../index.html">Open the 3D map</a></div></header>
 <main>
 <p class="micro">Space Radar Lab</p>
 <h1>Tiny space simulators</h1>
@@ -142,9 +142,9 @@ def build() -> str:
 <ul class="links"><li><a href="{GUIDE}">Read the guide</a></li><li><a href="{PROPOSE}">Propose or build a simulator</a></li><li><a href="https://github.com/Sara-Managed-Projects/space-radar/labels/track%3Alab">Open tasks</a></li></ul>
 </section>
 </main>
-<footer>
+<footer><div class="foot__in">
 {sitelinks("../")}
-</footer>
+</div></footer>
 </body>
 </html>
 """

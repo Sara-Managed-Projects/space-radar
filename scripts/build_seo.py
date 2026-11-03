@@ -121,7 +121,7 @@ def read_pages() -> list[dict]:
     return json.loads(run.stdout)["pages"]
 
 
-def object_page(p: dict, host: str, template: str, style: str, share: "seo_share.Spec | None" = None) -> str:
+def object_page(p: dict, host: str, template: str, share: "seo_share.Spec | None" = None) -> str:
     for key in ("id", "slug"):
         if not SAFE.match(p[key]):
             raise SystemExit(f"build_seo: {key} {p[key]!r} is not a safe path segment")
@@ -180,7 +180,7 @@ def object_page(p: dict, host: str, template: str, style: str, share: "seo_share
     return fill(template, {
         "title": esc(p["title"]), "description": esc(p["description"]), "url": esc(url), "name": esc(p["name"]),
         "image": esc(image), "image_w": str(image_w), "image_h": str(image_h), "image_alt": esc(image_alt),
-        "icon": ICON, "style": style, "sitelinks": sitelinks("../"),
+        "icon": ICON, "sitelinks": sitelinks("../"),
         "jsonld": json.dumps(ld, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/"),
         "colour": esc(p.get("colour") or "#9aa4b2"), "klass": esc(p["klassLabel"]), "lead": esc(p["lead"]),
         "why": f'<p>{esc(p["why"])}</p>\n' if p.get("why") else "", "id": p["id"],
@@ -254,7 +254,6 @@ def page_dates(host: str, pages: list[dict]) -> dict[str, str]:
 
 
 def build(out: Path, host: str, today: str | None = None, snapshot_index: dict | None = None, share_mode: str = "auto") -> int:
-    style = (TEMPLATES / "seo.css").read_text(encoding="utf-8")
     template = (TEMPLATES / "object.html").read_text(encoding="utf-8")
     pages = read_pages()
     if not (out / "press" / "index.html").is_file():
@@ -275,18 +274,18 @@ def build(out: Path, host: str, today: str | None = None, snapshot_index: dict |
         if p["slug"] in extra["replaced"]:
             continue
         share = extra["specs"].get(f"o/{p['slug']}") if extra["drawn"] else None
-        (o / f"{p['slug']}.html").write_text(object_page(p, host, template, style, share), encoding="utf-8")
+        (o / f"{p['slug']}.html").write_text(object_page(p, host, template, share), encoding="utf-8")
     for slug in extra["replaced"]:
         if slug not in slugs:
             slugs.append(slug)
     stale = keep - {f"{s}.html" for s in slugs}
     for name in stale:
         (o / name).unlink()
-    nf = fill((TEMPLATES / "404.html").read_text(encoding="utf-8"), {"icon": ICON, "style": style, "sitelinks": sitelinks("/")})
+    nf = fill((TEMPLATES / "404.html").read_text(encoding="utf-8"), {"icon": ICON, "sitelinks": sitelinks("/")})
     (out / "404.html").write_text(nf, encoding="utf-8")
     # The embed gallery and its generator (scripts/seo_embed.py), and the IndexNow key file
     # (scripts/indexnow.py: public by design, written beside the pages so a deploy ships it).
-    seo_embed.build(out, host, pages, style, ICON)
+    seo_embed.build(out, host, pages, ICON)
     # The Lab's simulators with a canonical, Open Graph and a LearningResource block, from their own heads
     # (scripts/seo_lab.py); deploy.sh uploads lab/ from here, so the committed files stay as contributors wrote them.
     seo_lab.build(out, host)

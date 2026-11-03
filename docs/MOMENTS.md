@@ -70,6 +70,40 @@ words key of its one-line description) and `source` (where its numbers come from
 
 The model contract (part names, units, origins, budgets) is the stages' own file; `parts` and `engines` follow it.
 
+## Longer stories (release 1.6.0)
+
+A story that goes from a pad to the Moon and home needs more than one path and one place. Added to the format:
+
+| field | what |
+|---|---|
+| `places` | on the moment: `[{from, place}]`, each `place` as the top-level one (name, lat, lon, alt, ground); from second `from` the drawn ground and the `pad` and `track` shots are about that place (a splashdown field, the Pacific). The profiles are still laid from the first |
+| `moonSite` | on the moment: `{name, lat, lon}` (degrees): a landing site on the Moon. A flat patch of regolith is drawn there when the camera is within 200 km, and the Moon is turned to face the Earth with the ecliptic's north for its pole (so the site is within about 8 degrees of where the map puts it) |
+| vehicle `window` | `[from, to]` mission seconds the vehicle is drawn in; the lead (the camera's default and the honesty line's path) is the first vehicle whose window holds the second |
+| vehicle `rideOn` | `{vehicle, at: [x, y, z]}`: the vehicle follows another, the point moved by `at` metres in the host's axes (a spacecraft on its launcher's adapter) |
+| vehicle `phases` | `[{t, attitude?, body?}]` in time order: from `t` a different `attitude` and/or `body` (`moon` or `earth`: a vehicle at the Moon stands, points and flies by the Moon's vertical and the Moon's velocity) |
+| vehicle `body` | `moon` for a vehicle that is at the Moon for the whole moment |
+| vehicle `colour` | the class colour the model is drawn in where it has no look of its own (`rocket` by default) |
+
+A vehicle too small to see at the scale of the Earth and the Moon (seven pixels or fewer) is drawn as a ringed dot of a
+fixed size. A path file is `{note, rows}` under `site/data/moments/paths/`, written by `tools/moments-build/` (the stories'
+generators: `vostok1.mjs`, `apollo11.mjs`, `artemis2.mjs` and, since 1.7.0, `apollo13.mjs` and `sputnik1.mjs`, with `lib.mjs`).
+
+**Release 1.7.0 notes.** A part a story wants out of sight until an event is `hide` at the start of the window and `show` at the event
+(Apollo 13's torn foil, `sm-bay-foil`); a part that lives longer than a few minutes after it leaves (a spent module that is watched for an
+hour) is a vehicle of its own with its own path, because a separated part flies a straight line with gravity for the second or two the
+player keeps it in the frame and not for hours (Apollo 13's service module, `sm`). The same model may be two vehicles (Sputnik 1's
+`sputnik-1`, once riding the rocket's head and once on its orbit). Apollo 13's path is integrated (`apollo13.mjs`: the Earth and the Moon,
+the Moon from the app's ephemeris, a trim found by search); the others are conics.
+
+**Release 1.7.2 notes.** Vehicle `phases` may carry `pitchDeg` and `rollDeg`, keyframes blended linearly from one phase that names them to the
+next: the pitch turns the nose (Y) towards the vehicle's X (up, for `prograde` on an orbit) and the roll turns the vehicle about its nose; STS-1's
+orbiter enters at 40 degrees nose-high and is flown dorsal side up. `rideOn.spin: [x, y, z]` (degrees) turns the rider about its host's axes
+(Leonov floating along the airlock's axis). A vehicle's `keepXZ: true` keeps the file's own axis as the vehicle's axis instead of centring the
+model's box (the Voskhod 3KD has an airlock and an umbilical to one side). A `ground` may be `lakebed: true`, a pale dry lake, with a `runway`
+`{bearing, widthM, lengthM}` painted on it, centred on the place (Edwards). The player lights a night pad with a lamp (the Sun below the
+horizon, the camera in the air) and marks every vehicle shorter than 40 px on the screen with the ringed dot. The generators are `voskhod2.mjs`
+and `sts1.mjs`; both search for the least correction that meets the published landing and print how far the reconstruction had to be nudged.
+
 ## Tracks
 
 **`parts`**: `{t, part, action, vehicle?}`: at second `t`, the part named `part` does `action`. `vehicle` defaults to the lead. The actions:

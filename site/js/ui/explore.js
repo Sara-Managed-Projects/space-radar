@@ -552,6 +552,17 @@ export function createExplore(ctx, host) {
     tripHosts.set(id, { s, grid, more, off, expanded: false });
   }
   earth.appendChild(tripHosts.get('earth').s);
+  // MOMENTS (internal spec 0079 C8): the shelf of replayed missions, under the trips. Empty and hidden until
+  // moments/shelf.js is fetched, after the first visit has settled, in an idle moment; never at boot.
+  const momentsHost = section('', 'sr-moments');
+  momentsHost.hidden = true;
+  earth.appendChild(momentsHost);
+  const mountMoments = () => {
+    const go = () => import('../moments/shelf.js').then((m) => m.mountShelf(momentsHost, ctx)).catch((err) => console.warn('the moments shelf did not load', err));
+    if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(go, { timeout: 8000 }); else setTimeout(go, 3000);
+  };
+  window.addEventListener('sr:layers-ready', mountMoments, { once: true });
+  if (window.__srLayersReady) mountMoments();
   const next = createNext(ctx, { limit: COMING_UP_ROWS });
   next.root.classList.add('sr-sect');
   earth.appendChild(next.root);

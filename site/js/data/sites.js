@@ -91,6 +91,23 @@ export const SITES = [
     "doing": "A pad 53 Space Shuttle flights left from, the last in 2006. The stack is drawn only on the day of each launch listed here: choose one to go there."
   },
   {
+    "id": "baikonur-site-1",
+    "display": "Baikonur Site 1, Gagarin's Start",
+    "class": "pad",
+    "world": "earth",
+    "lat": 45.92028,
+    "lon": 63.34222,
+    "alt_m": 0,
+    "aliases": [
+      "Gagarin's Start",
+      "Site 1",
+      "Site 1/5",
+      "Baikonur Site 1",
+      "Vostok 1 pad"
+    ],
+    "doing": "Gagarin's Start, Site 1 at Baikonur: Sputnik 1 left from here in 1957, Vostok 1 in 1961, Voskhod 2 in 1965 (the first spacewalk)."
+  },
+  {
     "id": "apollo-11",
     "display": "Apollo 11 landing site",
     "class": "surface",
@@ -502,6 +519,53 @@ export const SITES = [
       "Huygens landing site"
     ],
     "doing": "ESA's probe came down on Titan in January 2005, the first landing in the outer Solar System, and sent home pictures of rounded pebbles."
+  },
+  {
+    "id": "vostok-1-landing",
+    "display": "Vostok 1 landing site, near Smelovka",
+    "class": "feature",
+    "world": "earth",
+    "lat": 51.27068,
+    "lon": 45.99727,
+    "diameter_m": 1000,
+    "aliases": [
+      "Smelovka",
+      "Gagarin landing site",
+      "Vostok 1 landing"
+    ],
+    "doing": "A field 26 km south-west of Engels, Saratov region, where Vostok 1's capsule came down on 12 April 1961. A monument marks the spot."
+  },
+  {
+    "id": "voskhod-2-landing",
+    "display": "Voskhod 2 landing site, taiga north-east of Perm",
+    "class": "feature",
+    "world": "earth",
+    "lat": 59.5667,
+    "lon": 55.4667,
+    "diameter_m": 2000,
+    "aliases": [
+      "Voskhod 2 landing",
+      "Leonov landing site",
+      "Belyayev landing site",
+      "Berezniki taiga"
+    ],
+    "doing": "Forest and deep snow about 75 km from Perm, where Voskhod 2 came down on 19 March 1965, 386 km off its field. Belyayev and Leonov spent two nights there."
+  },
+  {
+    "id": "edwards-afb-runway-23",
+    "display": "Edwards Air Force Base, lakebed runway 23",
+    "class": "feature",
+    "world": "earth",
+    "lat": 34.9,
+    "lon": -117.883,
+    "diameter_m": 8000,
+    "aliases": [
+      "Edwards AFB",
+      "Rogers Dry Lake",
+      "STS-1 landing site",
+      "Columbia landing site"
+    ],
+    "doing": "The dry lake bed where Columbia landed on 14 April 1981 at the end of STS-1, on runway 23. Several of the early Space Shuttle flights ended here."
   },
   {
     "id": "copernicus",

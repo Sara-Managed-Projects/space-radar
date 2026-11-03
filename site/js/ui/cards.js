@@ -46,8 +46,6 @@ import {
  article, typeWords, NAKED_EYE_LIMIT } from '../copy/en.js';
 import '../copy/en.later.js';
 import { sizeClause, lapClause } from './moonfacts.js'; // 0079 a3
-import { propagate } from '../propagate/index.js';
-import { launchLabel } from './labels.js';
 import { realModelFor, padVehicleShown } from '../scene/realmodels.js';
 import { periodMsOf, wholePathKind } from '../scene/orbitline.js';
 import {
@@ -64,6 +62,7 @@ import { attachedOdditiesFor, attachedOddityRecord } from '../data/attached.js';
 import { openShare, savePostcard } from './share.js';
 import { exposurePanel, pictureNote } from './exposure.js';
 import { stage } from '../scene/stage.js';
+import { momentsForRecord } from '../moments/shelf.js'; // 0079 C8: the card's "Replay this moment", one row a story (1.7.0: a pad or a Saturn V is in two)
 import { icon } from './icons.js';
 import { overlayLine, legendNode, paintLegend } from './overlaylegend.js';
 import { systemOfRecordId, phaseIsMeasured, faceLineOf } from '../scene/systems.js';
@@ -2920,6 +2919,19 @@ function render(record, ctx, opts = {}) {
     actions.appendChild(b);
   }
   body.appendChild(actions);
+
+  // 3'. A MOMENT this place or craft was part of (internal spec 0079 C8): one quiet row, which opens the replay.
+  const stories = typeof ctx.wantMoment === 'function' ? momentsForRecord(record) : [];
+  for (const story of stories) {
+    const W = COPY.momentShelf;
+    const go = el('button', 'sr-btn sr-btn--quiet sr-card__inline', stories.length > 1 ? t(W.replayNamed, { title: W.cards[story.id].title }) : W.replay);
+    go.type = 'button';
+    go.dataset.focus = stories.length > 1 ? `replay-moment-${story.id}` : 'replay-moment';
+    go.dataset.moment = story.id;
+    go.title = t(W.replayTitle, { title: W.cards[story.id].title });
+    go.addEventListener('click', () => ctx.wantMoment(story.id, null));
+    body.appendChild(go);
+  }
 
   // 3a. the quiet row, straight under the four (Ivan, 2026-10-14: "Light it" and "Seen it" were two
   // outlined buttons stacked at the left edge, under the time bar, in a style of their own). One

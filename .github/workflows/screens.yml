@@ -47,6 +47,7 @@ on:
       - ".github/workflows/screens.yml"
       - "scripts/shots.mjs"
       - "scripts/check-drawn.mjs"
+      - "scripts/check-language-fallback.mjs"
       # The byte gate (spec 0044) reads its number from the registry and its rules from the test.
       - "registry/budgets.yaml"
       - "tests/test_first_visit_bytes.mjs"
@@ -167,6 +168,23 @@ jobs:
               # (internal #520; an automated browser does not get it otherwise) and prints what the
               # loop drew and skipped at rest.
               node scripts/check-drawn.mjs --base=http://127.0.0.1:8178 --idle'
+
+      # A TRANSLATION THAT FAILS IS ENGLISH, NOT A HOLE (public #1265, release 1.6.3). The loader's promise is that a refused
+      # file, a file that does not parse and a key a language lacks all leave a working page in English with no key name on it.
+      # tests/test_language_loader.mjs holds it in node; this asks the real page, three ways, on a desktop and on a phone.
+      - name: A language file that is refused, broken or short leaves English (public #1265)
+        if: steps.page.outputs.found == '1'
+        run: |
+          set -euo pipefail
+          docker run --rm --network host \
+            -u "$(id -u):$(id -g)" -e HOME=/tmp \
+            -e PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+            -v "$PWD:/work" -w /work \
+            mcr.microsoft.com/playwright:v1.49.1-jammy \
+            bash -c 'set -euo pipefail
+              npm install --no-save --no-audit --no-fund playwright@1.49.1
+              node scripts/check-language-fallback.mjs --base=http://127.0.0.1:8177 --lang=de
+              node scripts/check-language-fallback.mjs --base=http://127.0.0.1:8177 --lang=ar --mobile'
 
       # SPEC 0044: WHAT A FIRST VISIT COSTS IS A NUMBER, not a hope. A phone boots the app with
       # CelesTrak and Launch Library blocked, waits for the layers and two seconds more, and every

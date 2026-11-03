@@ -131,3 +131,59 @@ audio:
     credit: "harp flourish by nathanmanaker (Freesound), CC0"
     original: {url: "https://cdn.freesound.org/previews/486/486952_6657415-hq.ogg", sha256: c973756c27d870b6a9150312e027e13662b203053028983288e7093861ad204b, bytes: 55548}
     make: {original: fs486952-harp-flourish.ogg, from: 0, seconds: 2.5, fade_out: 0.5, lufs: -21}
+
+  # RELEASE 1.6.0, THE MOMENTS (internal spec 0079 C6): the one real voice. Its file is the AAC alone (no Opus encoder was to
+  # hand), so `file` and `twin` are the same m4a and the row's kind is `clip`. The player asks for it only at its second.
+  - id: a11-small-step
+    kind: clip
+    file: site/audio/a11-small-step.m4a
+    twin: site/audio/a11-small-step.m4a
+    seconds: 24
+    kb: 97.1
+    loop: false
+    licence: "Public domain (NASA); Wikimedia Commons: \"Public domain\", credit \"Neil Armstrong/NASA\""
+    source: "https://commons.wikimedia.org/wiki/File:Neil_Armstrong_small_step.wav (read 2026-11-02)"
+    credit: "Neil Armstrong's first words on the Moon, NASA (1969), public domain"
+    make: {original: "Neil_Armstrong_small_step.wav (8-bit mono 11 025 Hz, 265 886 bytes)", tool: "afconvert -f WAVE -d LEI16@22050, then afconvert -f m4af -d aac -b 32000"}
+
+  # RELEASE 1.7.0, THE APOLLO 13 MOMENT (internal #1058): the two radio lines, cut from one 11.5-second recording (the gaps of the original are
+  # edited out, so each line is cued on its own at the time the Flight Journal logs it). The player asks for them only at their seconds.
+  - id: a13-problem-1
+    kind: clip
+    file: site/audio/a13-problem-1.m4a
+    twin: site/audio/a13-problem-1.m4a
+    seconds: 3.0
+    kb: 13.1
+    loop: false
+    licence: "Public domain (NASA); Wikimedia Commons: \"Public domain\", artist \"National Aeronautics and Space Administration (NASA)\", the file page says it is in the public domain in the United States because it was solely created by NASA"
+    source: "https://commons.wikimedia.org/wiki/File:Houston_problem.ogg (read 2026-11-03)"
+    credit: "Apollo 13 air-to-ground recording, NASA (14 April 1970 GMT), public domain: John Swigert, 55:55:20"
+    original: {url: "https://upload.wikimedia.org/wikipedia/commons/8/8d/Houston_problem.ogg", sha256: b2ee82189cae5ab110ddb2549c63f42b0b7c0eb0a9bc6b204a2292d2d54b479e, bytes: 54176}
+    make: {original: "Houston_problem.ogg (Vorbis, mono, 11 025 Hz, 11.5 s)", from: 0, seconds: 3.0, tool: "ffmpeg -ss 0 -t 3.0, 0.2 s fade out, -ar 22050 -c:a aac -b:a 32k"}
+  - id: a13-problem-2
+    kind: clip
+    file: site/audio/a13-problem-2.m4a
+    twin: site/audio/a13-problem-2.m4a
+    seconds: 1.6
+    kb: 7.6
+    loop: false
+    licence: "Public domain (NASA); Wikimedia Commons: \"Public domain\", artist \"National Aeronautics and Space Administration (NASA)\", the file page says it is in the public domain in the United States because it was solely created by NASA"
+    source: "https://commons.wikimedia.org/wiki/File:Houston_problem.ogg (read 2026-11-03)"
+    credit: "Apollo 13 air-to-ground recording, NASA (14 April 1970 GMT), public domain: James Lovell, 55:55:42"
+    original: {url: "https://upload.wikimedia.org/wikipedia/commons/8/8d/Houston_problem.ogg", sha256: b2ee82189cae5ab110ddb2549c63f42b0b7c0eb0a9bc6b204a2292d2d54b479e, bytes: 54176}
+    make: {original: "Houston_problem.ogg (Vorbis, mono, 11 025 Hz, 11.5 s)", from: 9.9, seconds: 1.6, tool: "ffmpeg -ss 9.9 -t 1.6, 0.2 s fade out, -ar 22050 -c:a aac -b:a 32k"}
+
+  # RELEASE 1.7.0, THE SPUTNIK 1 MOMENT (internal #1058): the beep. NASA's recording of Sputnik's radio signal, as Wikimedia Commons holds it
+  # (public domain, author NASA, credit NASA's SoundCloud page). The player asks for it only at the second the satellite is let go.
+  - id: sputnik-beep
+    kind: clip
+    file: site/audio/sputnik-beep.m4a
+    twin: site/audio/sputnik-beep.m4a
+    seconds: 4.4
+    kb: 18.6
+    loop: false
+    licence: "Public domain (NASA); Wikimedia Commons: \"Public domain\" ({{PD-USGov-NASA}}), author \"NASA\", description \"Audio recording of Sputnik's radio transmission by NASA\""
+    source: "https://commons.wikimedia.org/wiki/File:Sputnik_beep.ogg (read 2026-11-03); the file's own source is https://soundcloud.com/nasa/sputnik-beep"
+    credit: "Sputnik's radio beep, recorded and published by NASA (1957), public domain"
+    original: {url: "https://upload.wikimedia.org/wikipedia/commons/c/c6/Sputnik_beep.ogg", sha256: 9276b15eab6a1308ee866d3badf76f8fa0099ad644acd06e112c5dc34ac082cf, bytes: 53073}
+    make: {original: "Sputnik_beep.ogg (Vorbis, stereo, 48 kHz, 4.4 s)", from: 0, seconds: 4.4, tool: "ffmpeg -ar 22050 -ac 1 -c:a aac -b:a 32k"}

@@ -466,6 +466,11 @@ clips:
   - {trip: "out-to-the-edge", stop: "first-galaxies", hash: "61aa1acb4b017063", seconds: 17.88, words: 49, lufs: -16.4, opus: 70680, m4a: 92643, vtt: 382, wer: 0.0, heard: "2e99dc5e9c572b85", voice: 0}
   - {trip: "out-to-the-edge", stop: "oldest-light", hash: "4e54703678c12276", seconds: 20.74, words: 55, lufs: -16.4, opus: 82366, m4a: 107204, vtt: 404, wer: 0.0, heard: "78b7fab6bf665058", voice: 0}
   - {trip: "out-to-the-edge", stop: "edge", hash: "1ec83f6386ec9dec", seconds: 19.73, words: 53, lufs: -16.3, opus: 77257, m4a: 101988, vtt: 418, wer: 0.0, heard: "4022cc0551a30349", voice: 0}
+  - {trip: "two-pads-at-kennedy", stop: "apollo-8", hash: "f58a8e6ab5a1cc27", seconds: 17.66, words: 50, lufs: -16.3, opus: 70042, m4a: 91339, vtt: 366, wer: 0.0, heard: "8ab4f4f1e0d86db4", voice: 0}
+  - {trip: "two-pads-at-kennedy", stop: "apollo-11", hash: "7d42a843046e2b1a", seconds: 13.5, words: 35, lufs: -16.3, opus: 52387, m4a: 70258, vtt: 302, wer: 0.0, heard: "76d83fb6c5710a89", voice: 0}
+  - {trip: "two-pads-at-kennedy", stop: "apollo-17", hash: "e13ada2a89b78fb1", seconds: 14.67, words: 45, lufs: -16.5, opus: 58367, m4a: 76126, vtt: 304, wer: 0.0, heard: "418c01ae1a619683", voice: 0}
+  - {trip: "two-pads-at-kennedy", stop: "sts-31", hash: "231e64c73935b682", seconds: 18.03, words: 48, lufs: -16.4, opus: 71961, m4a: 93295, vtt: 314, wer: 0.0, heard: "e9bb2c09855a6f8c", voice: 0}
+  - {trip: "two-pads-at-kennedy", stop: "sts-116", hash: "0d7e1ece56c58f69", seconds: 15.62, words: 42, lufs: -16.3, opus: 61382, m4a: 81124, vtt: 310, wer: 0.0, heard: "683791ab6a70a78e", voice: 0}
   - {trip: "onboarding", stop: "move", hash: "cd8319e1352dbc30", seconds: 6.72, words: 20, lufs: -16.3, opus: 25882, m4a: 35702, vtt: 183, wer: 0.0, heard: "3022a96bb2ebbc6b", voice: 0}
   - {trip: "onboarding", stop: "find", hash: "5e6b109dd872fb4a", seconds: 6.15, words: 22, lufs: -16.4, opus: 24002, m4a: 32876, vtt: 153, wer: 0.0, heard: "62ed02af288f2515", voice: 0}
   - {trip: "onboarding", stop: "card", hash: "86da3981052d2b0a", seconds: 6.06, words: 21, lufs: -16.2, opus: 23890, m4a: 32442, vtt: 152, wer: 0.0, heard: "28f4591d3249e2dd", voice: 0}

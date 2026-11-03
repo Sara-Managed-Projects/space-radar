@@ -27,7 +27,7 @@ import { icon } from '../ui/icons.js';
 import { write as writeUrl, clear as clearUrl } from '../ui/urlstate.js';
 import { worldPositionKm } from '../propagate/body.js';
 import { paceTable, playOf, missionOf, rateAt, compressionText, formatMet, chapterAt, captionAt, crossed, isMomentId, shareHash, parseT, lastAt } from './format.js';
-import { placeFrame, profileTrack, vectorTrack, fromHorizons, enuToEcef, fixedToInertial, siderealAt, attitude, ballistic, spinBasis, fromBasis, add, scale, norm, len, cross, EARTH_R } from './trajectory.js';
+import { tilt, OMEGA, MOON_R, moonAxes, moonSurfaceDir, placeFrame, profileTrack, vectorTrack, fromHorizons, enuToEcef, fixedToInertial, siderealAt, attitude, ballistic, spinBasis, fromBasis, add, scale, norm, len, cross, dot, EARTH_R } from './trajectory.js';
 import { directAt, freePose, poseAngles } from './director.js';
 import { createStage, eciToThree } from './stage.js';
 import { loadVehicle, disposeVehicle } from './vehicles.js';
@@ -35,6 +35,12 @@ import { createExhaustCloud } from './effects.js';
 
 const DATA = new URL('../../data/moments/', import.meta.url);
 const W = () => COPY.momentPlayer;
+// 1.7.2: the lamp a night pad is lit with (scene/models.js floodLit, the same one the model cards offer), at a launch pad in the dark: the Sun
+// below the horizon and the camera low. Weaker than the card's 0.9 so the flames still read as the light. Drawn, not measured.
+const NIGHT_PAD_LAMP = 0.6;
+// 1.7.2: a vehicle shorter than this on the screen (CSS px) is marked by the ringed dot as well as drawn: the one floor every story's vehicles get
+// (Sputnik's whips over the Earth were a speck inside the old 7 px); the ring is 44 px across.
+const MARKER_BELOW_PX = 40;
 const fill = (s, o) => String(s).replace(/\{(\w+)\}/g, (_, k) => (o[k] !== undefined ? o[k] : `{${k}}`));
 const DEG = Math.PI / 180;
 
@@ -102,7 +108,10 @@ export function createMomentPlayer(ctx, opts = {}) {
   let words = {};
   let table = null;
   let epochMs = 0;
-  let frame = null;        // the place as east/north/up
+  let frame = null;        // the pad (the first place) as east/north/up: the profiles are laid from it
+  let curFrame = null;     // the place in force at t (a moment may move on: `places`)
+  let curPlace = null;
+  let placesList = [];
   let tracks = {};
   let stage = null;
   let vehicles = new Map();// id -> { spec, v (loaded), events: Map(part -> list) }
@@ -127,6 +136,8 @@ export function createMomentPlayer(ctx, opts = {}) {
     } catch { return false; }
   };
   const tier = () => (ctx.latch && ctx.latch.latched ? 0 : ctx.quality && Number.isFinite(ctx.quality.tier) ? ctx.quality.tier : 1);
+  const inWindow = (spec, tt) => !spec.window || (tt >= spec.window[0] && tt <= spec.window[1]);
+  const leadAt = (tt) => { const v = m.vehicles.find((x) => inWindow(x, tt)); return v || m.vehicles[0]; };
   const say = (key) => (key && words[key] !== undefined ? words[key] : '');
 
   // --- the chrome -------------------------------------------------------------------------------------------------
@@ -307,6 +318,7 @@ export function createMomentPlayer(ctx, opts = {}) {
     if (ui.caption.textContent !== cap) ui.caption.textContent = cap;
     ui.caption.hidden = !cap;
     if (doc.activeElement !== ui.scrub) ui.scrub.value = String(p);
+    if (m.vehicles.length > 1 && leadAt(t).id !== truthLead) paintTruth();
     ui.scrub.setAttribute('aria-valuetext', `${formatMet(t)}, ${chText}`);
     const end = p >= table.total - 1e-6;
     const label = playing ? W().pause : end ? W().replay : W().play;
@@ -319,8 +331,10 @@ export function createMomentPlayer(ctx, opts = {}) {
     }
   }
 
+  let truthLead = null;
   function paintTruth() {
-    const lead = m.vehicles[0];
+    const lead = leadAt(t);
+    truthLead = lead && lead.id;
     const tr = lead && lead.path ? m.trajectories[lead.path] : null;
     const parts = [];
     if (tr) parts.push(fill(W().truthLine, { truth: W().truthWords[tr.truth] || tr.truth, path: say(tr.say) || tr.source }));
@@ -359,6 +373,10 @@ export function createMomentPlayer(ctx, opts = {}) {
     table = paceTable(m.pace);
     epochMs = Date.parse(m.epoch);
     frame = placeFrame(m.place);
+    curFrame = frame;
+    curPlace = m.place;
+    placesList = (m.places || []).map((q) => ({ from: q.from, place: q.place, frame: placeFrame(q.place) }));
+    moonMemo.clear();
     tracks = {};
     for (const [tid, tr] of Object.entries(m.trajectories || {})) {
       try {
@@ -397,12 +415,29 @@ export function createMomentPlayer(ctx, opts = {}) {
         if (!stage || vehicles.get(spec.id) !== entry) { disposeVehicle(v); return; }
         entry.v = v;
         stage.scene.add(v.root);
+        entry.marker = makeMarker();
+        stage.scene.add(entry.marker);
         if (!v.ok) setNote(fill(W().modelMissing, { model: spec.model }));
         paintTruth();
         import('../scene/models.js').then((mod) => { lightU = mod.lightUniforms(); }).catch(() => {});
       });
     }
     return true;
+  }
+
+  // A vehicle too small to see at the scale of the Earth and the Moon is marked by a dot of fixed size on the screen.
+  function makeMarker() {
+    const c = doc.createElement('canvas');
+    c.width = c.height = 64;
+    const x = c.getContext('2d');
+    x.strokeStyle = 'rgba(8, 10, 18, 0.75)'; x.lineWidth = 11; x.beginPath(); x.arc(32, 32, 22, 0, Math.PI * 2); x.stroke();
+    x.strokeStyle = '#ffd98a'; x.lineWidth = 6; x.beginPath(); x.arc(32, 32, 22, 0, Math.PI * 2); x.stroke();
+    x.fillStyle = '#ffd98a'; x.beginPath(); x.arc(32, 32, 7, 0, Math.PI * 2); x.fill();
+    const mk = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthTest: false, depthWrite: false }));
+    mk.renderOrder = 10;
+    mk.visible = false;
+    mk.frustumCulled = false;
+    return mk;
   }
 
   function title() {
@@ -468,9 +503,56 @@ export function createMomentPlayer(ctx, opts = {}) {
 
   // --- one frame ---------------------------------------------------------------------------------------------------
 
+  // The Moon at second tt: its position and velocity in the Earth-inertial frame, metres (a short difference).
+  const moonMemo = new Map();
+  function moonAt(tt) {
+    const key = Math.round(tt * 4);
+    let r = moonMemo.get(key);
+    if (r) return r;
+    const at = (x) => { const q = worldPositionKm('moon', epochMs + x * 1000, 'earth-inertial'); return q ? [q.x * 1000, q.y * 1000, q.z * 1000] : [0, 0, 0]; };
+    const a = at(tt - 5), b = at(tt + 5);
+    r = { r: at(tt), v: scale(add(b, scale(a, -1)), 0.1) };
+    if (moonMemo.size > 64) moonMemo.clear();
+    moonMemo.set(key, r);
+    return r;
+  }
+
+  // `phases` on a vehicle: from `t` on, a different attitude and/or the body it is flown about ('moon', 'earth'): a
+  // capsule that turns round for its burn, a lander that comes upright, a spacecraft that goes from the Earth's sky to the Moon's.
+  function phaseAt(spec, tt) {
+    let attitude = spec.attitude, body = spec.body;
+    // 1.7.2: `pitchDeg` and `rollDeg` are keyframes, blended linearly between one phase that names them and the next (an entry's pitch-up).
+    const key = { pitchDeg: [], rollDeg: [] };
+    for (const q of spec.phases || []) {
+      for (const k of Object.keys(key)) if (q[k] !== undefined) key[k].push([q.t, q[k]]);
+      if (q.t > tt) continue;
+      if (q.attitude) attitude = q.attitude;
+      if (q.body !== undefined) body = q.body;
+    }
+    const at = (list) => {
+      if (!list.length || tt <= list[0][0]) return list.length ? list[0][1] : 0;
+      for (let i = 1; i < list.length; i += 1) {
+        if (tt <= list[i][0]) { const [t0, a] = list[i - 1], [t1, b] = list[i]; return t1 > t0 ? a + (b - a) * (tt - t0) / (t1 - t0) : b; }
+      }
+      return list[list.length - 1][1];
+    };
+    return { attitude, body, pitchDeg: at(key.pitchDeg), rollDeg: at(key.rollDeg) };
+  }
+
   /** A vehicle's state at t in its own trajectory's frame (Earth-fixed or inertial), metres. */
   function stateOf(entry, tt) {
     const spec = entry.spec;
+    // A vehicle that rides another (the spacecraft on its launcher's adapter): the host's state, the point moved by `at`
+    // metres in the host's own axes.
+    if (spec.rideOn) {
+      const host = vehicles.get(spec.rideOn.vehicle);
+      if (host) {
+        const hs = stateOf(host, tt);
+        // 1.7.2: `spin` [x, y, z] degrees turns the rider about the host's axes (a cosmonaut floating along an airlock's axis).
+        const basis = Array.isArray(spec.rideOn.spin) ? spinBasis(hs.basis, spec.rideOn.spin.map((d) => d * Math.PI / 180)) : hs.basis;
+        return { ...hs, basis, p: add(hs.p, fromBasis(hs.basis, spec.rideOn.at || [0, 0, 0])) };
+      }
+    }
     const tr = spec.path ? tracks[spec.path] : null;
     if (tr && tr.frame === 'fixed') {
       const s = tr.stateAt(tt);
@@ -479,15 +561,22 @@ export function createMomentPlayer(ctx, opts = {}) {
       const ref = enuToEcef(frame, [Math.sin(tr.azimuth), Math.cos(tr.azimuth), 0], true);
       const pitchStart = Number.isFinite(spec.pitchStart) ? spec.pitchStart : Number.isFinite(tr.spec.pitchStart) ? tr.spec.pitchStart : 10;
       const turnS = Number.isFinite(spec.turnS) ? spec.turnS : Number.isFinite(tr.spec.turnS) ? tr.spec.turnS : 12;
-      const basis = attitude(spec.attitude || 'ascent', { up, vel, ref, t: tt, pitchStart, turnS });
+      const phx = phaseAt(spec, tt);
+      const basis = tilt(attitude(phx.attitude || 'ascent', { up, vel, ref, t: tt, pitchStart, turnS }), phx.pitchDeg, phx.rollDeg);
       return { kind: 'fixed', p: enuToEcef(frame, s.p), v: vel, up, basis, altM: s.altM };
     }
     if (tr && tr.frame === 'inertial') {
       const s = tr.stateAt(tt);
-      const up = norm(s.r);
-      const ref = norm(cross(s.r, s.v));
-      const basis = attitude(spec.attitude || 'prograde', { up, vel: s.v, ref, t: tt });
-      return { kind: 'inertial', p: s.r, v: s.v, up, basis, altM: len(s.r) - EARTH_R };
+      // A vehicle at the Moon (`body: "moon"`) stands, points and flies by the Moon's vertical and the Moon's velocity.
+      const ph = phaseAt(spec, tt);
+      const mo = ph.body === 'moon' ? moonAt(tt) : null;
+      const rel = mo ? add(s.r, scale(mo.r, -1)) : s.r;
+      // Relative to the Moon, or to the turning Earth's air and ground (a capsule hangs from its canopy by the wind, not by the inertial frame)
+      const velRel = mo ? add(s.v, scale(mo.v, -1)) : add(s.v, [OMEGA * s.r[1], -OMEGA * s.r[0], 0]);
+      const up = norm(rel);
+      const ref = norm(cross(rel, velRel));
+      const basis = tilt(attitude(ph.attitude || 'prograde', { up, vel: velRel, ref, t: tt }), ph.pitchDeg, ph.rollDeg);
+      return { kind: 'inertial', p: s.r, v: s.v, up, basis, altM: len(rel) - (mo ? MOON_R : EARTH_R), vrel: velRel };
     }
     const basis = attitude('vertical', { up: frame.u, vel: [0, 0, 0], ref: frame.n });
     return { kind: 'fixed', p: frame.ecef.slice(), v: [0, 0, 0], up: frame.u, basis, altM: 0 };
@@ -502,7 +591,7 @@ export function createMomentPlayer(ctx, opts = {}) {
   let poses = new Map();
 
   function focusNow() {
-    const lead = m.vehicles[0];
+    const lead = leadAt(t);
     const v = poses.get(lead.id);
     if (!v) return { pos: lastPose ? lastPose.look : [0, 0, 0], up: [0, 1, 0] };
     return { pos: add(v.pos, scale(v.basis[1], v.lengthM / 2)), up: v.up };
@@ -528,11 +617,19 @@ export function createMomentPlayer(ctx, opts = {}) {
   function drawFrame() {
     const g = siderealAt(epochMs, t);
     const tMs = epochMs + t * 1000;
+    if (placesList.length) {
+      let pick = { place: m.place, frame };
+      for (const q of placesList) if (t >= q.from) pick = q;
+      if (pick.place !== curPlace) { curPlace = pick.place; curFrame = pick.frame; stage.setPlace(curPlace, curFrame); }
+    }
     const still = reducedMotion();
     const s = worldPositionKm('sun', tMs, 'earth-inertial');
     const sunDir = s ? norm(eciToThree([s.x, s.y, s.z])) : [1, 0, 0];
     const mo = worldPositionKm('moon', tMs, 'earth-inertial');
     const moonPos = mo ? eciToThree([mo.x * 1000, mo.y * 1000, mo.z * 1000]) : null;
+    const mAxes = mo ? moonAxes([mo.x, mo.y, mo.z]) : null;
+    const moonAx = mAxes ? { x: eciToThree(mAxes.x), y: eciToThree(mAxes.y), z: eciToThree(mAxes.z) } : null;
+    const siteDir = mAxes && m.moonSite ? eciToThree(moonSurfaceDir(mAxes, m.moonSite.lat, m.moonSite.lon)) : null;
     // Vehicles: where each stands now, in the stage's frame.
     poses = new Map();
     const states = new Map();
@@ -541,18 +638,19 @@ export function createMomentPlayer(ctx, opts = {}) {
       states.set(id, st);
       poses.set(id, {
         pos: toStage(st.kind, st.p, g), basis: st.basis.map((b) => toStage(st.kind, b, g)),
-        vel: toStage(st.kind, st.v, g), up: toStage(st.kind, st.up, g), lengthM: entry.spec.lengthM, altM: st.altM,
+        vel: toStage(st.kind, st.vrel || st.v, g), up: toStage(st.kind, st.up, g), lengthM: entry.spec.lengthM, altM: st.altM,
       });
     }
     // The camera.
+    const pf = curFrame || frame;
     const placeNow = {
-      p: toStage('fixed', frame.ecef, g), e: toStage('fixed', frame.e, g), u: toStage('fixed', frame.u, g),
-      s: toStage('fixed', scale(frame.n, -1), g),
+      p: toStage('fixed', pf.ecef, g), e: toStage('fixed', pf.e, g), u: toStage('fixed', pf.u, g),
+      s: toStage('fixed', scale(pf.n, -1), g),
     };
     const world = {
-      lead: m.vehicles[0] && m.vehicles[0].id,
+      lead: leadAt(t).id,
       vehicle: (id) => poses.get(id) || null,
-      place: { toWorld: (enu) => toStage('fixed', enuToEcef(frame, enu), g), up: placeNow.u },
+      place: { toWorld: (enu) => toStage('fixed', enuToEcef(pf, enu), g), up: placeNow.u },
       earth: { centre: [0, 0, 0], radius: EARTH_R },
       moon: moonPos,
       dirToWorld: (v) => eciToThree(v),
@@ -573,11 +671,26 @@ export function createMomentPlayer(ctx, opts = {}) {
     const band = freeBand(size.y);
     if (shot.index !== lastShot) { lastShot = shot.index; if (ui) ui.root.dataset.shot = shot.shot.shot; }
     const origin = pose.pos;
-    const air = stage.update({ origin, sidereal: g, sunDir, moonPos, placeNow, pose: lens, aspect, shiftPx: band, width: size.x, height: size.y });
+    const air = stage.update({ origin, sidereal: g, sunDir, moonPos, moonAxes: moonAx, siteDir, placeNow, pose: lens, aspect, shiftPx: band, width: size.x, height: size.y });
     // Parts, flames, separation motors, chutes, plasma.
     for (const [id, entry] of vehicles) {
       const v = entry.v;
       if (!v) continue;
+      const shownNow = inWindow(entry.spec, t);
+      v.root.visible = shownNow;
+      if (entry.marker) {
+        const ps0 = poses.get(id);
+        const d = Math.hypot(ps0.pos[0] - origin[0], ps0.pos[1] - origin[1], ps0.pos[2] - origin[2]);
+        const tanH = Math.tan((lens.fov * DEG) / 2);
+        const pxPerM = size.y / (2 * tanH * Math.max(d, 1));
+        const small = entry.spec.marker !== false && shownNow && entry.spec.lengthM * pxPerM < MARKER_BELOW_PX;
+        entry.marker.visible = small;
+        if (small) {
+          entry.marker.position.set(ps0.pos[0] - origin[0], ps0.pos[1] - origin[1], ps0.pos[2] - origin[2]);
+          entry.marker.scale.setScalar(44 / pxPerM);
+        }
+      }
+      if (!shownNow) continue;
       const st = states.get(id);
       const ps = poses.get(id);
       for (const [name, part] of v.parts) {
@@ -624,8 +737,15 @@ export function createMomentPlayer(ctx, opts = {}) {
           const peak = Number.isFinite(fx.peak) ? fx.peak : (fx.t + fx.until) / 2;
           k = t < peak ? (t - fx.t) / Math.max(1e-6, peak - fx.t) : 1 - (t - peak) / Math.max(1e-6, fx.until - peak);
         }
-        v.plasma.fx.set(Math.max(0, Math.min(1, k)), t, still);
-        if (k > 0) setMatrix(v.plasma.fx.group, basisAlong(norm(ps.vel)), add(ps.pos, fromBasis(ps.basis, v.plasma.spec.at || [0, 0, 0])), origin);
+        if (v.plasma.spec.kind === 'belly') {
+          // a winged vehicle: the layer rides the vehicle's own frame; the wake runs along the flight path, given in that frame
+          const fv = norm(ps.vel);
+          v.plasma.fx.set(Math.max(0, Math.min(1, k)), t, still, [dot(fv, ps.basis[0]), dot(fv, ps.basis[1]), dot(fv, ps.basis[2])]);
+          if (k > 0) setMatrix(v.plasma.fx.group, ps.basis, ps.pos, origin);
+        } else {
+          v.plasma.fx.set(Math.max(0, Math.min(1, k)), t, still);
+          if (k > 0) setMatrix(v.plasma.fx.group, basisAlong(norm(ps.vel)), add(ps.pos, fromBasis(ps.basis, v.plasma.spec.at || [0, 0, 0])), origin);
+        }
       }
     }
     // The steam at the pad, in the place's own axes.
@@ -647,7 +767,7 @@ export function createMomentPlayer(ctx, opts = {}) {
       }
     }
     // The models' shared light (scene/models.js): the Sun and the Earth of THIS stage while it draws, then the map's back.
-    const saved = lightU ? swapLight(sunDir, air.capCentre, origin) : null;
+    const saved = lightU ? swapLight(sunDir, air.capCentre, origin, NIGHT_PAD_LAMP * air.air.night) : null;
     renderer.render(stage.scene, stage.camera);
     if (saved) restoreLight(saved);
   }
@@ -668,7 +788,7 @@ export function createMomentPlayer(ctx, opts = {}) {
     return bandShift;
   }
 
-  function swapLight(sunDir, centre, origin) {
+  function swapLight(sunDir, centre, origin, flood = 0) {
     const keys = ['uSunDir', 'uShineCentre', 'uShineRadius', 'uShadeRadius', 'uFlood', 'uAirH', 'uSunRim'];
     const saved = {};
     for (const k of keys) { const u = lightU[k]; if (!u) continue; saved[k] = u.value && u.value.clone ? u.value.clone() : u.value; }
@@ -676,7 +796,7 @@ export function createMomentPlayer(ctx, opts = {}) {
     if (lightU.uShineCentre) lightU.uShineCentre.value.set(centre[0] - origin[0], centre[1] - origin[1], centre[2] - origin[2]);
     if (lightU.uShineRadius) lightU.uShineRadius.value = EARTH_R;
     if (lightU.uShadeRadius) lightU.uShadeRadius.value = EARTH_R;
-    if (lightU.uFlood) lightU.uFlood.value = 0;
+    if (lightU.uFlood) lightU.uFlood.value = flood;
     if (lightU.uAirH) lightU.uAirH.value = 0;
     return saved;
   }

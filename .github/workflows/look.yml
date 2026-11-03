@@ -227,6 +227,12 @@ jobs:
           json.dump(idx, open(os.path.join(dest, "index.json"), "w"))
           PY
 
+      # 1.6.3: the runner has no font for Chinese, so a Chinese page photographs as empty boxes. A probe that looks at Chinese (r163-languages)
+      # gets the Noto CJK face first; every other probe is as it was.
+      - name: Fonts for a probe that looks at Chinese
+        if: matrix.probe == 'r163-languages'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk fonts-noto-core >/dev/null && fc-list | grep -c -i "noto sans cjk"
+
       - name: Serve the site looked at
         run: |
           set -euo pipefail

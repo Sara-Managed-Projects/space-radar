@@ -54,6 +54,12 @@ m = re.search(r"tests/\s+more than (\d+) node and python test files", readme)
 if not m or not n["test_files"] > int(m.group(1)):
     problems.append(f"README's test-file claim is missing or too high; there are {n['test_files']}")
 
+# The models: "more than N spacecraft and shape models" must be true and not stale (it said 70 when the registry held 246).
+flat = re.sub(r"\s+", " ", readme)
+m = re.search(r"more than (\d+) spacecraft and shape models", flat)
+if not m or not (n["real_models"] > int(m.group(1)) >= n["real_models"] - 25):
+    problems.append(f"README's spacecraft-and-shape-models claim is missing, too high or stale; registry/models.yaml has {n['real_models']} real models")
+
 # The contributor documents quote the trips too (internal spec 0076 W2-e, #920, SR-PLAN-180): they said 26
 # for a week after the 27th and 28th trips shipped, and nothing held them.
 OTHER_DOCS = {

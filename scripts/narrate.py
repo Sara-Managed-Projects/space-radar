@@ -157,6 +157,11 @@ def spoken(text: str) -> str:
     # "3 February 1966" -> "the third of February 1966" (the year is said by the year rule).
     s = re.sub(r"\b(\d{1,2}) (%s)\b" % "|".join(MONTHS),
                lambda m: f"the {ordinal_words(int(m.group(1)))} of {m.group(2)}", s)
+    # Release 1.6.2 (the Kennedy trip, public #548): a pad is "thirty-nine A", and a Shuttle flight "S T S thirty-one", or
+    # "S T S one sixteen" for the three-digit ones, which are said as a digit and a pair.
+    s = re.sub(r"\bSTS-(\d)(\d\d)\b", lambda m: f"S T S {int_words(int(m.group(1)))} {int_words(int(m.group(2)))}", s)
+    s = re.sub(r"\bSTS-(\d{1,2})\b", lambda m: f"S T S {int_words(int(m.group(1)))}", s)
+    s = re.sub(r"\b(\d{2})([AB])\b", lambda m: f"{int_words(int(m.group(1)))} {m.group(2)}", s)
     # "TRAPPIST-1", "IM-2", "Chandrayaan-2", "560-year": the hyphen is not a minus.
     s = re.sub(r"(?<=[A-Za-z])-(?=\d)", " ", s)
     s = re.sub(r"(?<=\d)-(?=[A-Za-z])", " ", s)

@@ -16,6 +16,20 @@ A live 3D map of space in your browser. Free, open source, no account.
 [![Good first issues](https://img.shields.io/github/issues/Sara-Managed-Projects/space-radar/good%20first%20issue?label=good%20first%20issues&color=7057ff)](https://github.com/Sara-Managed-Projects/space-radar/labels/good%20first%20issue)
 [![Open in GitHub Codespaces](https://img.shields.io/badge/open%20in-Codespaces-24292f?logo=github)](https://codespaces.new/Sara-Managed-Projects/space-radar)
 
+Translations, as they stand (all machine-drafted and not yet shown from a browser's language until two native readers have read them; [how to help](docs/TRANSLATING.md)):<br>
+<!-- translation-badges:begin (node scripts/check-translation.mjs --write-doc) -->
+[![Arabic: 100 %, machine-drafted](https://img.shields.io/badge/%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9-100%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
+[![German: 99.9 %, machine-drafted](https://img.shields.io/badge/Deutsch-99.9%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
+[![Spanish: 100 %, machine-drafted](https://img.shields.io/badge/Espa%C3%B1ol-100%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
+[![French: 99.8 %, machine-drafted](https://img.shields.io/badge/Fran%C3%A7ais-99.8%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
+[![Hebrew: 100 %, machine-drafted](https://img.shields.io/badge/%D7%A2%D7%91%D7%A8%D7%99%D7%AA-100%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
+[![Hindi: 100 %, machine-drafted](https://img.shields.io/badge/%E0%A4%B9%E0%A4%BF%E0%A4%A8%E0%A5%8D%E0%A4%A6%E0%A5%80-100%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
+[![Portuguese (Brazil): 99.9 %, machine-drafted](https://img.shields.io/badge/Portugu%C3%AAs%20(Brasil)-99.9%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
+[![Russian: 100 %, machine-drafted](https://img.shields.io/badge/%D0%A0%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9-100%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
+[![Ukrainian: 100 %, machine-drafted](https://img.shields.io/badge/%D0%A3%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%B0-100%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
+[![Chinese (Simplified): 100 %, machine-drafted](https://img.shields.io/badge/%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-100%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
+<!-- translation-badges:end -->
+
 </div>
 
 - **It is real.** Satellites are worked out in your browser from public orbital data, and every
@@ -34,7 +48,7 @@ git clone https://github.com/Sara-Managed-Projects/space-radar.git
 cd space-radar && python3 -m http.server 8177 --directory site      # then open http://localhost:8177
 ```
 
-30 narrated trips (227 stops), 109 389 stars in 3D, 43 star systems to fly into, about 17 000
+31 narrated trips (232 stops), 109 389 stars in 3D, 43 star systems to fly into, about 17 000
 satellites at their real positions, and every picture labelled as measured, modelled or an
 artist's impression. **Teach with it:** present mode and an autopilot screen for a classroom or a
 museum, and a [zip that runs offline](docs/RUN_LOCALLY.md).
@@ -67,7 +81,7 @@ Space Radar is a living 3D map of space. It draws the Earth with today's clouds,
 satellites where they are this minute, the space stations and who is aboard, rockets about to
 launch, probes on their way out, every planet and 21 moons (20 of them with a real map), the stars
 in three dimensions, nebulae and galaxies as 3D models built from published measurements, and the Milky Way from outside. Step
-down to the ground and it is tonight's sky from your own street. Thirty guided trips, read
+down to the ground and it is tonight's sky from your own street. Thirty-one guided trips, read
 aloud, fly the camera for you; forty nearby star systems have a stage you can fly into. It is a static website: the physics runs in your browser, on public
 data, and every number on screen says where it came from.
 
@@ -90,7 +104,7 @@ data, and every number on screen says where it came from.
 | | |
 |---|---|
 | ![Saturn and its rings, backlit, at a stop of the trip out past Jupiter](assets/screenshots/saturn.webp) | ![The Apollo 11 lunar module on the Moon, a stop of the Moon landings trip](assets/screenshots/moon-landing.webp) |
-| **Take a guided trip.** Tonight from your street, why the Moon changes shape, the life of a star, black holes, back to the Moon with Artemis. 30 trips and 227 stops, read aloud, with captions and music. | **Stand where we have been.** Twenty-one places on the Moon and twelve on Mars that spacecraft reached, each on its own ground, with the facts and their sources on the card. |
+| **Take a guided trip.** Tonight from your street, why the Moon changes shape, the life of a star, black holes, back to the Moon with Artemis. 31 trips and 232 stops, read aloud, with captions and music. | **Stand where we have been.** Twenty-one places on the Moon and twelve on Mars that spacecraft reached, each on its own ground, with the facts and their sources on the card. |
 | ![The sky from the ground: constellations, the Milky Way and tonight's satellites over the southern horizon](assets/screenshots/sky-from-the-ground.webp) | ![The Earth coloured by the temperature of the sea, a stop of the trip The living Earth](assets/screenshots/living-earth.webp) |
 | **Look up from your own street.** The sky from the ground: figures, grids, tonight's best passes and planets, a city, town or dark sky, and a red night mode. | **Read the living Earth.** Seven maps of data measured from orbit, from NASA: sea temperature, sea ice, rain, plant life and more, each with its key and its source. |
 
@@ -111,7 +125,7 @@ data, and every number on screen says where it came from.
 - **Use it on a phone.** The same map, one sheet, one thumb.
 
 Also: live clouds, storms, lightning and the aurora on the Earth · close-up map tiles of the Earth,
-the Moon and Mars · today's sunspot groups · eclipses computed for any date · 70 spacecraft and
+the Moon and Mars · today's sunspot groups · eclipses computed for any date · more than 240 spacecraft and
 shape models · fires, volcanoes and icebergs from NASA's EONET and the wind from NOAA's GFS ·
 "Point your phone" at the sky · a passport of places opened and one true sentence on the home ·
 reels that play on their own on a screen in a lobby (spec 0036) · artist's impressions, labelled

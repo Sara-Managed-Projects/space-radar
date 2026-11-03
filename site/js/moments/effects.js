@@ -388,16 +388,23 @@ export function createChutes({ diameterM = 20, count = 1, lineM, gores = 24, col
 // --- the plasma of an entry ----------------------------------------------------------------------------------------
 
 const PLASMA_F = `${LOG_F}
-uniform float uOn, uTime, uStill;
+uniform float uOn, uTime, uStill, uA, uB, uFlip;
 varying float vEdge;
 varying float vY;
 void main() {
   #include <logdepthbuf_fragment>
   float t = uTime * (1.0 - uStill);
-  float glow = pow(1.0 - vEdge, 1.5) * 0.6 + pow(vEdge, 3.0) * 0.5;
-  float wob = 0.85 + 0.15 * sin(vY * 9.0 - t * 20.0);
-  vec3 c = mix(vec3(1.0, 0.42, 0.22), vec3(1.0, 0.86, 0.72), vEdge);
-  gl_FragColor = vec4(c * glow * uOn * wob * 1.6, 1.0);
+  // A soft glow: strongest where the layer faces the camera, none at its silhouette or at the cut edge of the dome,
+  // fading along the wake. No hard edge anywhere, so no ring.
+  float fade = smoothstep(uA, uB, vY);
+  fade = mix(fade, 1.0 - fade, uFlip);
+  // The wake's wide end sits at the capsule's rim and was cut off at full brightness there: a faint band round the rim. It
+  // now starts from nothing and reaches full over a fifth of the wake (release 1.6.2); the dome's own edge is already at zero.
+  fade *= mix(1.0, smoothstep(uA, uA + 0.2 * (uB - uA), vY), uFlip);
+  float glow = pow(vEdge, 1.4) * fade;
+  float wob = 0.9 + 0.1 * sin(vY * 7.0 - t * 14.0);
+  vec3 c = vec3(1.0, 0.46, 0.34);
+  gl_FragColor = vec4(c * glow * uOn * wob * 0.55, 1.0);
   ${OUT_F}
 }`;
 const PLASMA_V = `${LOG_V}
@@ -416,27 +423,119 @@ void main() {
  * group's frame (the player turns it along the velocity). set(k, time, still), k the brightness 0..1.
  */
 export function createPlasma({ radiusM = 2 }) {
-  const mat = new THREE.ShaderMaterial({
-    uniforms: { uOn: { value: 0 }, uTime: { value: 0 }, uStill: { value: 0 } },
+  // `radiusM` is the capsule's radius. The layer is a dome 1.3 times it, over the heat shield face, dim and
+  // orange-pink, with a short wake of 4.5 radii (about three capsule lengths) that tapers to nothing.
+  const R = radiusM * 1.3, h = radiusM * 4.5;
+  const mk = (a, b, flip, side = THREE.DoubleSide) => new THREE.ShaderMaterial({
+    uniforms: { uOn: { value: 0 }, uTime: { value: 0 }, uStill: { value: 0 }, uA: { value: a }, uB: { value: b }, uFlip: { value: flip } },
     vertexShader: PLASMA_V, fragmentShader: PLASMA_F,
-    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side,
   });
+  const shellMat = mk(R * 0.26, R * 0.62, 0, THREE.FrontSide), wakeMat = mk(-h * 0.5, h * 0.5, 1);
+  const mats = [shellMat, wakeMat];
   const group = new THREE.Group();
-  const shell = new THREE.Mesh(new THREE.SphereGeometry(radiusM * 1.25, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.42), mat);
+  const shell = new THREE.Mesh(new THREE.SphereGeometry(R, 32, 14, 0, Math.PI * 2, 0, Math.PI * 0.42), shellMat);
   shell.position.y = -radiusM * 0.55;
-  const wake = new THREE.Mesh(new THREE.ConeGeometry(radiusM * 1.1, radiusM * 9, 20, 6, true), mat);
+  const wake = new THREE.Mesh(new THREE.ConeGeometry(R * 0.95, h, 24, 6, true), wakeMat);
   wake.rotation.x = Math.PI;
-  wake.position.y = -radiusM * 5;
+  wake.position.y = -radiusM * 0.45 - h / 2;
   group.add(shell, wake);
   group.visible = false;
   return {
     group,
     set(k, time = 0, still = false) {
       group.visible = k > 0.003;
-      mat.uniforms.uOn.value = k;
-      mat.uniforms.uTime.value = time;
-      mat.uniforms.uStill.value = still ? 1 : 0;
+      for (const m of mats) { m.uniforms.uOn.value = k; m.uniforms.uTime.value = time; m.uniforms.uStill.value = still ? 1 : 0; }
     },
-    dispose() { mat.dispose(); shell.geometry.dispose(); wake.geometry.dispose(); },
+    dispose() { for (const m of mats) m.dispose(); shell.geometry.dispose(); wake.geometry.dispose(); },
+  };
+}
+
+/**
+ * 1.7.2: the shock layer of a winged entry (the Space Shuttle's orbiter), in the VEHICLE's own frame (+Y the nose, +Z the top, so the belly is -Z): a soft
+ * orange-pink layer a little under the belly, brightest at the nose cap and along the wings' leading edges and fading toward the trailing edge, and a short wake
+ * trailing along the flight path (`set` is given the direction of flight in the vehicle's frame). The same additive, unlit, dim glow as the capsule's: no bloom,
+ * no post-processing, no render target. `spec`: { lengthM, planform: [[x, y], ...] the outline of the lower surface, noseCap: [x, y, z], zM the layer's height,
+ * wakeM, wakeRadiusM }.
+ */
+export function createBellyPlasma(spec) {
+  const LAYER_V = `${LOG_V}
+attribute float glowA;
+varying float vA;
+void main() {
+  vA = glowA;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  #include <logdepthbuf_vertex>
+}`;
+  const LAYER_F = `${LOG_F}
+uniform float uOn, uTime, uStill, uK;
+varying float vA;
+void main() {
+  #include <logdepthbuf_fragment>
+  float t = uTime * (1.0 - uStill);
+  float wob = 0.92 + 0.08 * sin(vA * 9.0 - t * 12.0);
+  vec3 c = vec3(1.0, 0.46, 0.34);
+  gl_FragColor = vec4(c * vA * uOn * uK * wob, 1.0);
+  ${OUT_F}
+}`;
+  const layerMat = (k) => new THREE.ShaderMaterial({ uniforms: { uOn: { value: 0 }, uTime: { value: 0 }, uStill: { value: 0 }, uK: { value: k } },
+    vertexShader: LAYER_V, fragmentShader: LAYER_F, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+  const group = new THREE.Group();
+  const geos = [], mats = [];
+  // the planform as a fan from a centre ahead of the middle: dim at the outline (so the edge is soft), brightest at the nose and along the leading edges,
+  // none toward the trailing edge
+  const pts = spec.planform;
+  const yMax = Math.max(...pts.map((p) => p[1])), yMin = Math.min(...pts.map((p) => p[1]));
+  {
+    const cY = yMin + 0.62 * (yMax - yMin), n = pts.length;
+    const pos = new Float32Array((n + 1) * 3), a = new Float32Array(n + 1), idx = [];
+    pos.set([0, cY, spec.zM], 0); a[0] = 0.5;
+    pts.forEach((p, i) => {
+      const ahead = (p[1] - yMin) / (yMax - yMin);
+      pos.set([p[0] * 1.03, p[1], spec.zM - 0.1], (i + 1) * 3);
+      a[i + 1] = 0.05 + 0.4 * Math.pow(ahead, 1.4);
+      idx.push(0, i + 1, ((i + 1) % n) + 1);
+    });
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setAttribute('glowA', new THREE.BufferAttribute(a, 1));
+    g.setIndex(idx);
+    const m = layerMat(0.55);
+    group.add(new THREE.Mesh(g, m));
+    geos.push(g); mats.push(m);
+  }
+  // the nose cap: a small bright dome under the nose
+  const capMat = layerMat(0.5);
+  const cap = new THREE.SphereGeometry(spec.capRadiusM || 1.7, 16, 8);
+  const capA = new Float32Array(cap.attributes.position.count);
+  for (let i = 0; i < capA.length; i += 1) capA[i] = 0.2 + 0.6 * Math.max(0, -cap.attributes.position.getZ(i) / (spec.capRadiusM || 1.7));
+  cap.setAttribute('glowA', new THREE.BufferAttribute(capA, 1));
+  const capMesh = new THREE.Mesh(cap, capMat);
+  capMesh.position.set(spec.noseCap[0], spec.noseCap[1], spec.noseCap[2]);
+  group.add(capMesh); geos.push(cap); mats.push(capMat);
+  // the wake: the capsule's tapering cone, short, along the flight path
+  const h = spec.wakeM || 16;
+  const wakeMat = new THREE.ShaderMaterial({
+    uniforms: { uOn: { value: 0 }, uTime: { value: 0 }, uStill: { value: 0 }, uA: { value: -h * 0.5 }, uB: { value: h * 0.5 }, uFlip: { value: 1 } },
+    vertexShader: PLASMA_V, fragmentShader: PLASMA_F, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+  });
+  const wakeGeo = new THREE.ConeGeometry(spec.wakeRadiusM || 5, h, 20, 4, true);
+  wakeGeo.rotateX(Math.PI);                     // the wide end up (+Y), tapering toward -Y
+  wakeGeo.translate(0, -h / 2, 0);              // the wide end at the origin
+  const wake = new THREE.Mesh(wakeGeo, wakeMat);
+  const wakeHolder = new THREE.Group();
+  wakeHolder.position.set(0, (yMax + yMin) / 2, spec.zM);
+  wakeHolder.add(wake);
+  group.add(wakeHolder); geos.push(wakeGeo); mats.push(wakeMat);
+  group.visible = false;
+  const down = new THREE.Vector3(0, -1, 0), dir = new THREE.Vector3();
+  return {
+    group,
+    set(k, time = 0, still = false, flight = null) {
+      group.visible = k > 0.003;
+      for (const m of mats) { m.uniforms.uOn.value = m === wakeMat ? k * 0.22 : k; m.uniforms.uTime.value = time; m.uniforms.uStill.value = still ? 1 : 0; }
+      if (flight) { dir.set(-flight[0], -flight[1], -flight[2]).normalize(); wakeHolder.quaternion.setFromUnitVectors(down, dir); }
+    },
+    dispose() { for (const m of mats) m.dispose(); for (const g of geos) g.dispose(); },
   };
 }

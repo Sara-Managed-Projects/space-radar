@@ -219,7 +219,6 @@ function pointDensity(g, p) {
   return windowPoint(g, p) * Math.exp(-(z ** 4));
 }
 /** The disc's window for a step at point p of a ray: along our line (M57's) or at the point (`window: point`). Pure. */
-const windowFor = (g, p) => (g.point ? windowPoint(g, p) : windowAt(g, p[0], p[1]));
 // 0078 r14-neb-b: end
 /** The disc's span along a ray: in its scaled frame the ellipses are circles (t keeps its meaning). Pure. */
 function discSpan(g, ro, rd, t0, t1) {

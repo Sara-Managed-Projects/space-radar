@@ -56,7 +56,6 @@ export const TAIL_SEGMENTS = 12;
 const REFRESH_SIM_MS = 600e3; // places and tails are worked out again after this much clock
 const PICK_PX = 14;
 const PICK_BEHIND_PX = 3;
-const DEG = Math.PI / 180;
 
 // ------------------------------------------------------------------------------------------------ the maths
 /** Newton for Kepler's equation, ellipse (E - e sin E = M) and hyperbola (e sinh H - H = M). */
@@ -457,7 +456,6 @@ export function createCometField(THREE, env = {}) {
     return true;
   }
 
-  const velScratch = [0, 0, 0];
   /** Work out every comet's place and the tails (when the clock has moved REFRESH_SIM_MS or the first time). */
   function refresh(tMs, limit) {
     S.lastT = tMs;
@@ -592,9 +590,8 @@ export function createCometField(THREE, env = {}) {
   }
   const rowOf = (id) => (S.loaded && S.byId.has(id) ? S.byId.get(id) : -1);
 
-  const _p = new THREE.Vector3();
   /** Candidates for a tap: {record, px, score}, nearest first. A comet with a glyph is the glyph layer's, not this field's. */
-  function pickAll(ndcX, ndcY, camera, viewport, limit = 6) {
+  function pickAll(ndcX, ndcY, camera, viewport, limit = 6, reachPx = PICK_PX) {
     if (!S.loaded || !group.visible || !camera || !viewport) return [];
     camera.updateMatrixWorld();
     group.updateMatrixWorld();
@@ -603,17 +600,18 @@ export function createCometField(THREE, env = {}) {
     const halfW = viewport.w * 0.5, halfH = viewport.h * 0.5;
     const out = [];
     const lim = Math.min(S.n, tierLimit(env.tier ? env.tier() : 1));
+    const shown = points.geometry.getAttribute('aShown').array; // the draw's own gate: a comet with no place (zeroed, at the Sun), one past POINT_MAX_AU, one that is another layer's
     for (let i = 0; i < lim; i++) {
-      if (S.rows[i].own) continue;
+      if (S.rows[i].own || !(shown[i] > 0)) continue;
       const x = S.pos[i * 3], y = S.pos[i * 3 + 1], z = S.pos[i * 3 + 2];
       const w = e[3] * x + e[7] * y + e[11] * z + e[15];
       if (w <= 0) continue;
       const dx = ((e[0] * x + e[4] * y + e[8] * z + e[12]) / w - ndcX) * halfW, dy = ((e[1] * x + e[5] * y + e[9] * z + e[13]) / w - ndcY) * halfH;
       const px = Math.sqrt(dx * dx + dy * dy);
-      if (px <= PICK_PX) out.push({ i, px });
+      if (px <= reachPx) out.push({ i, px, sx: (e[0] * x + e[4] * y + e[8] * z + e[12]) / w * halfW + halfW, sy: halfH - (e[1] * x + e[5] * y + e[9] * z + e[13]) / w * halfH, depth: w });
     }
     out.sort((p, q) => p.px - q.px);
-    return out.slice(0, Math.max(1, limit)).map(({ i, px }) => ({ record: recordAt(i), px, score: px + PICK_BEHIND_PX })).filter((c) => c.record);
+    return out.slice(0, Math.max(1, limit)).map(({ i, px, sx, sy, depth }) => ({ record: recordAt(i), px, score: px + PICK_BEHIND_PX, sx, sy, depth })).filter((c) => c.record);
   }
 
   return {

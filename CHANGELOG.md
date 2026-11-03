@@ -11,6 +11,244 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [1.7.4] - 2026-11-03
+
+### Added
+
+- **Six small checks in CI** (`.github/workflows/ci.yml`, the `rails` job, each in under a minute and with nothing to install): `tests/test_lint.mjs`
+  (a name that an import, const, let, function or class declares and its file never mentions again; 14 such names in the shipped code are gone,
+  36 in build scripts and tests are listed as known and may only shrink), `tests/test_cli_usage.mjs` (36 command-line tools answer `--help`
+  with a usage line and exit 0; 75 tools that read their arguments by position and say nothing are listed in `tests/cli_usage_gaps.txt`, and a
+  new one fails), `tests/test_nobuild_launch.mjs` (starts the README's own `python3 -m http.server --directory site` and follows every module on the
+  way to the first frame: 125 files, all 200, all JavaScript, nothing built), `tests/test_nowebgl.mjs` (calls the real `createRenderer()` with a
+  canvas that refuses WebGL 2 and holds the readable page with all 31 trips), `tests/test_reduced_motion_trips.mjs` (runs the outer-solar-system
+  and a-year-in-a-minute trips end to end under `prefers-reduced-motion`: no flight, no veil, the clock held still on every timed stop, and
+  leaving puts it back) and `tests/test_baselines.mjs` (the deep-space baseline probe's blocks and poses all name a real scene group).
+  The baselines test does not compare pictures: none is kept in the repository to compare with.
+- The release zip check refuses a manifest icon that is missing, empty or outside `site/`, and compares the zip's four brand icons to the tree
+  (public #1277). Every card sentence is held to 160 characters, and nine that were over are shortened (public #1286).
+
+### Changed
+
+- **Shader text is stripped of its comments and indentation in every served build** (internal #531). `scripts/minify_site.py` did it only when
+  asked; it is now the default, with `--no-shaders` or `SR_STRIP_SHADERS=0` as the way back. 185 shader templates in 58 files go from 283 187 B to
+  196 885 B of text before compression, and the boot graph of the built tree from 1 950 547 B to 1 920 102 B (30 445 B); no line holding a `${` is touched, and each template is checked to say the same GLSL.
+- The README says "more than 240 spacecraft and shape models" where it said 70 (the registry holds 246), and a test now keeps the claim current.
+
+### Not yet
+
+- **Content-hashed file names (internal #517) and a trimmed upcoming-launches file (internal #524)** are not done: the first rewrites every path in
+  the generated mirrors and wants its own browser walk, the second needs the harvester deployed and an answer on Launch Library's terms (internal #370).
+- **The AVIF decision (internal #530)** is written on the issue; the maps are still WebP.
+
+## [1.7.3] - 2026-11-03
+
+### Added
+
+- **Dated events for forty craft that came down on Venus, the Moon and Mars.** The cards of Venera 7 to 14 and VEGA 1 and 2 on Venus; Ranger
+  7, 8 and 9 and Surveyor 1 to 7 (the signal that stopped on Surveyor 4, the hop of Surveyor 6); Luna 9, 13, 16, 20, 23 and 24, Lunokhod 1 and
+  2 and Chang'e 3, 4, 5 and 6 on the Moon; Viking 1 and 2, Mars Pathfinder, Spirit, Opportunity, Phoenix, InSight and Zhurong on Mars. Each
+  has three to five events (the launch, the orbit, the landing or impact, the first picture, the last signal), each with its date and, where
+  the page gives one, its UTC minute, and Prev and Next move the clock to the ones that happened at the site. A launch or a flight is told
+  without moving the clock. `#event=venera-13.landing` is a link. The craft are read on NASA NSSDCA's pages where they answer and on
+  Wikipedia (CC BY-SA 4.0) where they do not (the Soviet and Chinese craft), and each mission says which. 135 events in a file of 50 kB that
+  loads only when the card of a lander, an impact site or a landing site asks (`registry/missions-landers.yaml`,
+  `site/js/data/missions-landers.js`, `scripts/gen_missions_landers_js.py`, `tests/test_missions_landers.mjs`).
+- A look probe, `landers`, for Venus, the Moon, Mars and the ground patch near and far.
+
+### Changed
+
+- **The ground patch under a lander fades out as the camera pulls away** (public #267). A model is drawn at a steady size on the screen, so the
+  patch was as wide on the screen far out as near, and from far out it showed as a grey plate on a shrinking Moon. It is now whole at the arrival
+  distance and gone by the layer's nearKm, on a smoothstep. Its soft edge was also being turned opaque by the model's fade-in (the
+  material was set not transparent once the fade finished, so the vertex alpha was ignored); it stays transparent now.
+
+### Not done
+
+- **Magellan** is not on Venus: NASA's model exists, but no page read (NSSDCA, the PDS mission catalogue, the Explorer's Guide) gives the
+  orientation of its orbit (the ascending node), so a polar orbit drawn from published elements would have an invented plane, and its
+  orbit changed when it braked in the air in 1993 (to 197 by 540 km, 94 minutes).
+- **No lander model is new.** NASA 3D Resources and NASA Science publish the Viking lander, the Mars Exploration Rover and InSight (already
+  on the map); they publish no Surveyor, Pathfinder, Sojourner or Phoenix (read 2026-11-03), which keep the models built from NASA's
+  dimensions and photographs in 1.5.0. No free photograph or drawing of a Venera lander was found to build one from, so the Venus sites
+  stay marks, and say so.
+## [1.7.2] - 2026-11-03
+
+### Added
+
+- **Voskhod 2, 18 to 19 March 1965, as a Moment: the first spacewalk.** Lift-off from Site 1 at 07:00:00 UTC, the Volga inflatable
+  airlock, Leonov's twelve minutes outside from 08:34:51 to 08:47:00 at the end of his 5.35 m umbilical in the Berkut suit that ballooned
+  on him, his coming back in head first, the airlock let go; then, on 19 March, the automatic landing that did not take its orders, the call
+  for the manual descent at 07:16 UT, retrofire by hand 46 seconds late, and the landing at 09:02:17 UT near 59.57 N 55.47 E in the taiga
+  north-east of Perm, 386 km from the field. Every published time is the sources' (Wikipedia, "Voskhod 2" and "Voskhod (rocket)"; Sven
+  Grahn's account, which cites General Kamanin's diary) and each caption says what is ours: when the airlock was inflated, where and when the
+  manual burn was, the entry's heights, Leonov's pose (read off a frame of the film). The rocket drawn is the Vostok-K's, said in the first
+  caption; the real third stage differed. No recording plays: the Soviet-era audio has no clear free licence on any page found, and the
+  file says so. New models: the Voskhod 3KD spacecraft with the airlock folded and out, its umbilical and the spare retro rocket, and Leonov in
+  his suit, built from the published numbers and photographs (none exists under a free licence).
+- **STS-1, 12 to 14 April 1981, as a Moment: Columbia's first flight.** Lift-off from Launch Complex 39A at 12:00:04 UTC on a white external
+  tank (STS-1 and STS-2 flew it painted), Max Q at 56 s, the boosters let go at 2 min 12 s at 53 km, main engine cut-off at 8 min 34 s,
+  the tank 18 s later, the burns to 246 and then 274 km, the bay doors opening, the 160-second deorbit burn over the southern Indian Ocean,
+  entry with its 21 minutes of blackout, the coast at Big Sur at Mach 7, the heading-alignment turn, and the touchdown at Edwards on the
+  lakebed runway 23 at 18:20:57 UTC (54 h 20 m 53 s), every time the published one (Wikipedia, "STS-1", from NASA's mission documents).
+  The stack is NASA's own public-domain models in parts (two boosters, the tank, and Columbia with her doors and gear), rebuilt by
+  `scripts/shuttle/build-sts1.mjs`. The reconstruction's own errors are said: the entry interface comes out over the western Pacific
+  where the report says the eastern, and the orbit's node and clock are nudged a few degrees and minutes over the 54 hours to meet the field.
+  No recording plays: NASA's air-to-ground audio of the mission is on Wikimedia Commons as hundreds of unlabelled clips, only the first day, and
+  nothing says which holds which line.
+- **Columbia's bay is open from T+1:30**, with the radiator tubes on the inner faces of the doors, the sill longerons and the DFI pallet (the only thing STS-1 carried), added to the orbiter model as a part (`scripts/shuttle/add-bay-detail.mjs`); the entry's glow is a layer under the orbiter's belly, not the capsule's dome.
+- **Both are on the shelf**, with "Replay this moment" on Baikonur Site 1 (now three stories, Vostok 1 first) and Launch Complex 39A (Apollo
+  11, Apollo 13 and STS-1), on two new places on the map, the Voskhod 2 landing site in the taiga and Edwards' lakebed runway 23, and on the
+  cards of a Voskhod rocket or spacecraft and of the Space Shuttle or Columbia.
+- **The engine learned a little**: a vehicle can be tilted (`pitchDeg`, `rollDeg` in its phases, keyframed: an orbiter's 40 degrees nose-high
+  entry), turned on its host (`rideOn.spin`), keep its file's own axis (`keepXZ`: a craft with an airlock to one side), and a ground can be a dry
+  lakebed with a runway painted on it. docs/MOMENTS.md has the fields.
+
+### Changed
+
+- **Sputnik 1's pad is lit.** It was a night launch and the rocket was a silhouette under its own exhaust. A night pad (the Sun down, the camera
+  in the air) now gets a lamp on the models and a little light on the ground, the same lamp the model cards offer, weaker; the first caption says
+  it is ours.
+- **Every small vehicle has the same floor on the screen.** The ringed marker, which marks a vehicle too small to see, now comes on below 40 px
+  instead of 7, is 44 px across and has a dark ring round the gold one, so Sputnik 1 over the Earth is no longer a speck.
+- **The words of Apollo 13 and Sputnik 1 in Spanish, French, German and Portuguese**, machine-drafted like the rest of those files and not yet
+  read by a native speaker; the radio lines stay as they were said. Voskhod 2 and STS-1 are English only for now.
+
+## [1.7.1] - 2026-11-03
+
+### Added
+
+- **Mariner 2 and the Galileo probe are on the map, each where JPL Horizons puts it, with a model built from NASA's own numbers.** Mariner 2
+  is drawn from its launch on 27 August 1962 to the end of JPL's path on 31 December 1962, past Venus on 14 December at 34 773 km; the Galileo
+  probe from its release on 13 July 1995 to its entry into Jupiter's atmosphere on 7 December. Each has a mission card with dated events that
+  move the clock, and a path file of about 2 to 4 kB that loads when its card opens, never at boot. The models (hexagonal base, pyramid mast,
+  two unequal wings, the high-gain antenna and the louvers of Mariner 2; the heat shield, bolted ring and covers of the probe's aeroshell) are
+  built in code from NSSDCA's and Horizons' dimensions and NASA's drawings and photographs, and the card says "shape built from published
+  dimensions and pictures; details simplified". Mariner 2's high-gain antenna size and the closed aeroshell's aft-cover colour are estimates, said so in `registry/models.yaml`.
+
+### Not yet
+
+- **Venera, Vega, Mariner 4 and 10, Ranger, Giotto, Magellan, Tianwen-2 and MMX** are still without a model on the map. Horizons holds no
+  path for any of them but MMX, and none of the Soviet craft has a free photograph or drawing to build from; NASA's Magellan model exists and is
+  waiting for a place to draw it.
+## [1.7.0] - 2026-11-03
+
+### Added
+
+- **Apollo 13, 11 to 17 April 1970, as a Moment.** Lift-off, the second stage's centre engine cutting off early, translunar injection, the
+  tank that burst at 55:54:53 and blew the panel off bay 4 of the service module, the lunar module as the lifeboat, the descent engine's
+  two burns, the far side of the Moon 254 km below, the service module let go and photographed, the lunar module let go, entry and
+  splashdown in sight of USS Iwo Jima, every time the Mission Report's (NASA MSC-02680). Odyssey's service module is drawn with its panel
+  coming off as a part event, the bay behind it (shelf, tanks, torn Mylar) built from NASA's photograph AS13-59-8500, and the service
+  module kept in view as a vehicle of its own when it is let go. The path to the Moon is integrated from the Report's own state at
+  injection, with a trim of 27.7 m/s on its speed that puts the pericentre where the Report puts it; the story says so.
+- **The real radio.** "Okay, Houston, we've had a problem here" and "Houston, we've had a problem", NASA's recording from Wikimedia
+  Commons (public domain), cut into two clips of 13 kB and 8 kB and played at 55:55:20 and 55:55:42, fetched only when the story gets
+  there.
+- **Sputnik 1, 4 October 1957, as a Moment.** The 8K71PS from Site 1, the strap-ons at 116 s, the core stage's cut-off at 295.4 s,
+  PS-1 let go 19.9 s later with its cone falling away and its four whips out, and one lap of the 223 by 950 km orbit, with NASA's recording
+  of the beep (public domain, from Wikimedia Commons). PS-1 and the head of its rocket are a new model built from the published
+  dimensions (`sputnik-1.glb`, 26 kB); the rocket is the Vostok launcher's model with its third stage and shroud put away.
+- **"Replay this moment" has a row for each story.** Launch Complex 39A and the Saturn V, the Apollo command and service module and lunar
+  module cards offer Apollo 11 and Apollo 13; Baikonur Site 1 and the R-7 card offer Vostok 1 and Sputnik 1.
+
+### Changed
+
+- **`apollo-csm.glb`** is two parts richer (the bay-4 panel and the torn foil; 98 to 136 kB, loaded only inside a Moment); with the panel on
+  and the foil hidden the module is the 1.5.0 one, and Apollo 11 hides the foil.
+- The Moments shelf says five missions.
+
+### Not in this release
+
+- Voskhod 2 and STS-1, and the Apollo 13 and Sputnik 1 words in Spanish, French, German and Portuguese (the shelf cards are translated, the
+  stories are in English).
+## [1.6.3] - 2026-11-03
+
+### Added
+
+- **Six more languages, drafted: Russian, Ukrainian, Chinese (Simplified), Hindi, Hebrew and Arabic** (`?lang=ru`, `uk`, `zh`, `hi`, `he`, `ar`;
+  public #529 to #534). Every string of the interface, the cards, the glossary and the Moments is there, drafted by a program from the English and
+  **not yet read by a native speaker**: each file says so, the page offers none of them from a browser's language, and there is no language picker. They
+  load only when asked for; a first visit in English fetches none of it.
+- **Hebrew and Arabic read right to left.** `<html dir="rtl">`, and a stylesheet (`css/rtl.css`) that only those two languages fetch: the sidebar on
+  the right, the tool rail on the left, margins, rules and aligned text turned round, and the globe moved into the middle of what the sidebar leaves.
+  Numbers, the clock and the time tape stay left to right.
+- **Chinese is ready for Traditional characters later**: Simplified is `zh` (`<html lang="zh-Hans">`); adding `zh-Hant.js` and one row makes the page read
+  `zh-TW`, `zh-HK` and `zh-Hant` as that file. The mainland-only terms to change are listed in `docs/zh-hant-terms.txt`.
+- **A progress badge per language in the README**, written from the same counts as the table in `docs/TRANSLATING.md` (`node scripts/check-translation.mjs
+  --write-doc`; `--check-doc` fails in CI when either is stale). `scripts/translation-flat.mjs` works a translation in small pieces.
+- **A check on a real page that a failing language leaves English** (public #1265): the language file refused, the file broken, and one key missing, each
+  booted in a browser by `scripts/check-language-fallback.mjs` in the `screens` job, on a desktop and on a phone.
+
+### Changed
+
+- **Spanish, French, German and Portuguese are complete.** The sections 1.3.0 and 1.5.0 left in English (`r13Deep`, `compare`, `passportKinds`,
+  `photoCompare`, `entrances`, and the card, drawing, class and template strings) are drafted, and the allowed-gaps lists in
+  `tests/test_language_loader.mjs` are empty: a stage that adds an English string must now add its four drafts.
+- A language file that fails to load puts `<html lang>` back to `en` and takes `dir` off, so a refused Hebrew file is not English read right to left.
+
+## [1.6.2] - 2026-11-03
+
+### Added
+
+- **Gagarin's Start and the field Vostok 1 came down in are places on the map.** Baikonur Site 1 is a pad with a card, and the
+  Vostok 1 landing site near Smelovka a named place on the ground, each with the position and the page it was read from
+  (Wikipedia's article on Vostok 1, read 3 November 2026), and each carries "Replay this moment" for the Gagarin story.
+- **"Replay this moment" on the cards of the craft the stories fly**: the Space Launch System, the Saturn V, the Apollo
+  command and service module and lunar module, Orion, and the R-7 of Vostok, found by the words a record carries and never by a
+  guess (a Soyuz-2 or a nebula named Orion does not get one).
+- **The Moments in Spanish, French, German and Portuguese**: the player, the shelf and the words of the three stories, drafted by a
+  program from the English like the rest of those files and not yet read by a native speaker. Armstrong's words stay as he said them.
+- **A trip, "Two pads at Kennedy, two ages of rockets"**: five launch mornings on pads 39A and 39B (Apollo 8, 11 and 17, STS-31 and
+  STS-116), the vehicle drawn on its pad on each, with its voice and its pictures (public #548).
+
+### Changed
+
+- The onboarding row for Moments names the doors a newcomer finds after the first two minutes: the shelf and the Replay row on pads,
+  landing sites and craft.
+- A place's card, where nothing is drawn but a mark, no longer says the position is from the IAU gazetteer: it says it is placed from
+  the cited reference, which is true of the Moon's craters and of the field near Smelovka.
+
+### Fixed
+
+- On a phone the player no longer hides the scale rail's Back button under its title card; the rail is out of the way while a
+  moment plays, like the rest of the map's own controls. The player was checked at 390 px: no control clipped, covered or
+  overlapping, the chapters list scrolls above the strip, nothing wider than the window.
+- The glow of an entry no longer ends in a faint band round the capsule's rim: its wake now starts from nothing there.
+
+## [1.6.1] - 2026-11-03
+
+### Changed
+- The static pages (object pages, long reads, events, Teachers, Starlink, satellites, planets tonight, Accuracy, Sources, Press, Embed, the Lab index, trip pages and the 404) are in the blog's design: a sticky header with the mark, a Blog link and the "Open the 3D map" button, the deep-space ground, a reading column, rounded cards and figures, a darker footer. They share one stylesheet, `css/static.css`, and use the map's own faces: Inter for text, Barlow Semi Condensed for headings and labels, JetBrains Mono for numbers.
+- Trip pages (`/t/`), which had no styling, now use the same design.
+
+### Added
+- A "From the blog" list on the long reads, Teachers, Starlink, satellites, planets tonight, events, Accuracy and About pages, built from a committed snapshot of the blog's feed (`registry/blog-feed.json`, refreshed by `scripts/refresh_blog_feed.py`, which a deploy runs when it is online).
+
+## [1.6.0] - 2026-11-02
+
+### Added
+
+- **Moments: three missions replayed in 3D on their own clock.** Apollo 11 (16 to 24 July 1969), Artemis II (1 to 10 April 2026)
+  and Vostok 1 (12 April 1961) each play from the pad to the sea with the real event times on a mission clock, a director's
+  camera that cuts and chases, and the time compression printed on screen at every second. Take the camera at any second by
+  dragging; Director gives it back. Open one from the new Moments shelf under the trips on the Earth pane, from "Replay this
+  moment" on the card of Launch Complex 39A, 39B or the Apollo 11 landing site, or by a link: `#moment=<id>` or, at a second,
+  `#moment=<id>&t=<seconds>` (the Share button in the player copies it).
+- **Apollo 11**: the Saturn V from Launch Complex 39A through staging, the parking orbit, the burn for the Moon, the three days
+  out, lunar orbit, Eagle's descent to Tranquility Base on the Moon's own ground, Armstrong's first words (the NASA recording,
+  fetched only when it plays, sound on), the ascent, the rendezvous, the burn home, the entry and splashdown near the USS Hornet.
+- **Artemis II**: the Space Launch System and Orion from pad 39B, boosters away, the high Earth orbit, the burn for the Moon, the
+  far side at 6 545 km, and the splashdown off San Diego. Where the flight reports give a time it says "Flown"; where only
+  the flight plan does it says "Planned", in the caption on screen.
+- **Vostok 1**: Gagarin from Baikonur's Site 1 once round the Earth: the strap-ons and shroud at their seconds, retrofire over the
+  west coast of Africa, the wires that held the instrument module, the entry, the ejection at 7 km and the two parachutes, to
+  a field near Smelovka. The radio words are captions: no Soviet-era recording with a clear licence was found.
+- Every path says what it is: reconstructed from the published events (two-body arcs and a hyperbola, never tracking data) or
+  illustrative, in the line at the foot, with the sources. A craft too small to see at the scale of the Earth and the Moon is
+  a marked dot. Moments are fetched only when opened: a first visit loads none of it.
+
+
 ### Fixed
 
 - Pluto and Charon are round again, with smooth relief, when you fly close to them from the Solar
@@ -22,6 +260,42 @@ tagged, and their dates are the day the last change in each landed.
 - `tools/cdp.mjs`: a failed `cdpShot` / `cdpCast` / `cdpInput` step now rejects in the page with
   its reason, and a Chrome that dies mid-run ends the run with the reason, instead of both waiting
   forever.
+
+## [1.5.6] - 2026-11-02
+
+### Added
+- A Blog button in the tool rail, after the tour: the Space Radar Journal at https://blog.spaceradar.ai, with long reads about what is in the sky and how the map is made. On a phone it is a row of the More menu.
+
+### Changed
+- The three long reads of 1.5 now live on the blog. Their pages here stay and name the blog's copy as the one to index.
+
+## [1.5.5] - 2026-11-02
+
+### Fixed
+- In the star view a click on one of the thousands of unnamed stars opens its card and leaves the camera where it is; "Fly to it" on the card goes there. Before, a click on what looked like dark sky could fly you to a faint star you had not seen.
+
+## [1.5.4] - 2026-11-02
+
+### Fixed
+- A click on the Earth at the home view opens the Earth. Thousands of satellite dots lie over it there, and a click still found one; where several dots crowd a click on a world, the world is what was meant. A satellite on its own over a world is still taken.
+
+## [1.5.3] - 2026-11-02
+
+### Fixed
+- A click on the Earth, or any world, opens that world. A satellite dot over it is taken only when the click is on the dot itself.
+- A click that only comes near a star or a dot opens its card and leaves the camera where it is. The camera flies only for a click right on the dot, or for a choice from the list. Before, a click on dark sky between dense stars could fly you thousands of light-years to a faint star.
+
+## [1.5.2] - 2026-11-02
+
+### Fixed
+- A click now does what you meant. A click near a far star or galaxy opens its card and leaves you where you are; "Fly to it" on the card makes the journey. A click on empty space only clears the selection.
+- A click on a planet opens that planet, not a star behind it. Marks behind a world can no longer be clicked, and a satellite in front of one still can.
+- Things that are not drawn can no longer be clicked: faint stars, hidden comets and faded galaxies.
+- A mouse click counts however long it is held, and the reach of a click fits a mouse or a finger. Lifting a finger after a pinch is never a tap.
+- Where two marks sit too close to tell apart, a small list asks which one.
+
+### Added
+- With a mouse, the name of what a click would open shows at the pointer.
 
 ## [1.5.1] - 2026-10-29
 

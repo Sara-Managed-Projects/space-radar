@@ -20,15 +20,19 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { loadRealModel } from '../scene/realmodels.js';
-import { createFlames, createPuffs, createChutes, createPlasma } from './effects.js';
+import { createFlames, createPuffs, createChutes, createPlasma, createBellyPlasma } from './effects.js';
 
 /** Stand a loaded model in metres: `lengthM` along +Y, base at y = 0, axis through x = z = 0. */
-export function standInMetres(model, lengthM) {
+export function standInMetres(model, lengthM, keepXZ = false) {
   model.updateMatrixWorld(true);
   const box = new THREE.Box3().setFromObject(model);
   const h = box.max.y - box.min.y || 1;
   const k = lengthM / h;
-  const c = box.getCenter(new THREE.Vector3());
+  // 1.7.2 keepXZ: the file's own axis stays the vehicle's axis (a craft with an airlock to one side). The loader centres every model on its
+  // box (scene/realmodels.js normalise: wrapper > inner > the file's scene), so the file's origin is where the scene object's origin is now.
+  const c = new THREE.Vector3();
+  const fileRoot = keepXZ && model.children[0] && model.children[0].children[0];
+  if (fileRoot) fileRoot.getWorldPosition(c); else box.getCenter(c);
   model.scale.multiplyScalar(k);
   model.position.set(-c.x * k, -box.min.y * k, -c.z * k);
   model.updateMatrixWorld(true);
@@ -107,7 +111,7 @@ export async function loadVehicle(spec, events = [], { tier = 1 } = {}) {
     const holder = new THREE.Group();
     const model = src.clone(true);
     holder.add(model);
-    standInMetres(model, spec.lengthM);
+    standInMetres(model, spec.lengthM, !!spec.keepXZ);
     const named = Array.isArray(spec.parts) ? spec.parts.filter((n) => model.getObjectByName(n)) : [];
     if (named.length) {
       split = 'named';
@@ -181,7 +185,8 @@ export async function loadVehicle(spec, events = [], { tier = 1 } = {}) {
   }
   let plasma = null;
   if (spec.plasma) {
-    plasma = { spec: spec.plasma, fx: createPlasma({ radiusM: spec.plasma.radiusM || 2 }) };
+    // 1.7.2: `plasma.kind: 'belly'` is a winged vehicle's layer under its belly, drawn in the vehicle's own frame (effects.js createBellyPlasma)
+    plasma = { spec: spec.plasma, fx: spec.plasma.kind === 'belly' ? createBellyPlasma(spec.plasma) : createPlasma({ radiusM: spec.plasma.radiusM || 2 }) };
     plasma.fx.group.matrixAutoUpdate = false;
     root.add(plasma.fx.group);
   }

@@ -40,6 +40,8 @@ export function airAt(altM, sunUp) {
     // Stars only where a camera exposed for a sunlit scene would see them: none by day, all on the night side.
     stars: Math.max(0, 1 - 1.4 * day) * (1 - density),
     hazeK: density / 22000,
+    // 1.7.2: how much a floodlit night pad is wanted: the Sun down and the camera in the air (the pad's own lamps, as a launch at night has).
+    night: (1 - day) * Math.min(1, density * 2),
   };
 }
 
@@ -97,6 +99,7 @@ const GROUND_F = `${LOG_F}
 uniform sampler2D uDay;
 uniform vec3 uSun, uHaze, uShore;
 uniform float uHazeK, uKind, uPad, uLocalR, uLift, uLocalOn;
+uniform vec4 uRun;   // 1.7.2: a runway: direction (east, south), half width, half length in metres; half width 0 = none
 varying vec2 vLL;
 varying vec3 vObj;
 varying vec3 vN;
@@ -141,6 +144,23 @@ void main() {
       local = mix(local, concrete, 1.0 - smoothstep(118.0, 124.0, rr));
       float trench = (1.0 - smoothstep(8.0, 9.5, abs(q.x))) * (1.0 - smoothstep(70.0, 72.0, abs(q.y)));
       local = mix(local, vec3(0.09, 0.09, 0.09), trench);
+    }
+    // 1.7.2: a dry lakebed (Edwards): pale baked clay with fine cracks, and a runway painted on it (a darker strip, a centre line, the two thresholds).
+    if (uKind > 2.5) {
+      vec3 clay = mix(vec3(0.66, 0.58, 0.45), vec3(0.78, 0.71, 0.58), n1 * 0.6 + n2 * 0.4);
+      local = clay * (0.94 + 0.06 * n3);
+      if (uRun.z > 0.0) {
+        vec2 dir = uRun.xy;
+        float along = dot(q, dir), across = dot(q, vec2(-dir.y, dir.x));
+        float inside = (1.0 - smoothstep(uRun.z, uRun.z + 1.5, abs(across))) * (1.0 - smoothstep(uRun.w, uRun.w + 3.0, abs(along)));
+        local = mix(local, clay * 0.82, inside);
+        float dash = step(0.5, fract(along / 40.0)) * (1.0 - smoothstep(0.4, 0.7, abs(across)));
+        local = mix(local, vec3(0.9, 0.88, 0.8), dash * inside * 0.8);
+        float edge = (smoothstep(uRun.z - 1.2, uRun.z - 0.6, abs(across)) - smoothstep(uRun.z - 0.6, uRun.z, abs(across))) * inside;
+        local = mix(local, vec3(0.9, 0.88, 0.8), edge * 0.8);
+        float thr = (1.0 - smoothstep(0.0, 4.0, abs(abs(along) - uRun.w + 60.0))) * (1.0 - smoothstep(uRun.z - 8.0, uRun.z - 6.0, abs(across)));
+        local = mix(local, vec3(0.92, 0.9, 0.84), thr * inside * 0.9);
+      }
     }
     albedo = mix(albedo, local, w);
   }
@@ -264,7 +284,7 @@ export function createStage(renderer, { tier = 1, place, frame }) {
   const groundUniforms = () => ({
     uDay: { value: day }, uSun: { value: new THREE.Vector3(0, 1, 0) }, uHaze: { value: new THREE.Color(0.6, 0.7, 0.8) },
     uHazeK: { value: 0 }, uShore: { value: new THREE.Vector3(1, 0, 800) }, uKind: { value: 1 }, uPad: { value: 0 },
-    uLocalR: { value: LOCAL_R }, uLift: { value: 0 }, uLocalOn: { value: 1 },
+    uLocalR: { value: LOCAL_R }, uLift: { value: 0 }, uLocalOn: { value: 1 }, uRun: { value: new THREE.Vector4(0, 0, 0, 0) },
   });
   const globeMat = new THREE.ShaderMaterial({ uniforms: groundUniforms(), vertexShader: GROUND_V, fragmentShader: GROUND_F });
   const seg = tier > 0 ? 160 : 96;
@@ -291,16 +311,54 @@ export function createStage(renderer, { tier = 1, place, frame }) {
     const b = ((Number(g.shoreBearing) || 0) + 90) * Math.PI / 180;
     capMat.uniforms.uShore.value.set(Math.sin(b), -Math.cos(b), Number(g.shoreM) || 800);
   }
-  const cap = new THREE.Mesh(capGeometry(frame, tier > 0 ? 128 : 72), capMat);
+  // 1.7.2: a ground that is a dry lakebed (`lakebed: true`) with a `runway` {bearing (degrees from north), widthM, lengthM}: Edwards.
+  const groundKind = (k) => (k.lakebed ? 3 : k.kind === 'coast' ? 0 : k.kind === 'sea' ? 2 : 1);
+  const setRunway = (k) => {
+    const r = k.runway;
+    if (!r) { capMat.uniforms.uRun.value.set(0, 0, 0, 0); return; }
+    const b = (Number(r.bearing) || 0) * Math.PI / 180;
+    capMat.uniforms.uRun.value.set(Math.sin(b), -Math.cos(b), (Number(r.widthM) || 90) / 2, (Number(r.lengthM) || 4500) / 2);
+  };
+  capMat.uniforms.uKind.value = groundKind(g); setRunway(g);
+  const capSeg = tier > 0 ? 128 : 72;
+  const cap = new THREE.Mesh(capGeometry(frame, capSeg), capMat);
   cap.frustumCulled = false;
   placeGroup.add(cap);
 
+  /** A moment that goes somewhere else (the landing, the splashdown): the same cap, drawn round the new place. */
+  function setPlace(pl, fr) {
+    const k = (pl.ground || {});
+    cap.geometry.dispose();
+    cap.geometry = capGeometry(fr, capSeg);
+    capMat.uniforms.uKind.value = groundKind(k); setRunway(k);
+    capMat.uniforms.uPad.value = k.pad ? 1 : 0;
+    if (k.kind === 'coast') {
+      const b = ((Number(k.shoreBearing) || 0) + 90) * Math.PI / 180;
+      capMat.uniforms.uShore.value.set(Math.sin(b), -Math.cos(b), Number(k.shoreM) || 800);
+    }
+  }
+
   // The Moon, the Sun.
   // The Moon's map (640 kB) is fetched only once the Moon is more than a few pixels across: a launch never asks.
-  const moon = new THREE.Mesh(new THREE.SphereGeometry(1737400, 64, 32), new THREE.MeshLambertMaterial({ color: 0x8a8a86 }));
+  const moon = new THREE.Mesh(new THREE.SphereGeometry(1737400, 192, 96), new THREE.MeshLambertMaterial({ color: 0x8a8a86 }));
   let moonMapped = false;
   moon.frustumCulled = false;
   scene.add(moon);
+  // The ground of a landing site, a flat disc tangent to the Moon where the site is (the sphere is a 192-gon: its facets
+  // stand some hundreds of metres off the true surface at that scale, so a lander needs ground of its own). The regolith
+  // is a generated grey grain, illustrative.
+  const grain = document.createElement('canvas');
+  grain.width = grain.height = 256;
+  { const x = grain.getContext('2d'); x.fillStyle = '#8d8b86'; x.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 5200; i += 1) { const v = 110 + Math.floor(Math.random() * 60); x.fillStyle = `rgba(${v},${v - 2},${v - 6},0.5)`; x.fillRect(Math.random() * 256, Math.random() * 256, 1 + Math.random() * 3, 1 + Math.random() * 2); } }
+  const grainTex = new THREE.CanvasTexture(grain);
+  grainTex.wrapS = grainTex.wrapT = THREE.RepeatWrapping;
+  grainTex.repeat.set(60, 60);
+  grainTex.colorSpace = THREE.SRGBColorSpace;
+  const siteDisc = new THREE.Mesh(new THREE.CircleGeometry(6000, 72), new THREE.MeshLambertMaterial({ map: grainTex, emissive: 0x1a1915, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
+  siteDisc.visible = false;
+  siteDisc.frustumCulled = false;
+  scene.add(siteDisc);
   const sunDisc = new THREE.Sprite(new THREE.SpriteMaterial({ color: 0xfff8ea, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false }));
   const disc = document.createElement('canvas');
   disc.width = disc.height = 64;
@@ -317,7 +375,7 @@ export function createStage(renderer, { tier = 1, place, frame }) {
    * Pose everything for one frame. `origin` (stage metres) is where the camera is; `placeBasis` the place's east,
    * up and south axes and its position in the stage frame now; `sunDir` unit; `moon` stage metres.
    */
-  function update({ origin, sidereal, sunDir, moonPos, placeNow, pose, aspect, shiftPx = 0, width = 0, height = 0 }) {
+  function update({ origin, sidereal, sunDir, moonPos, moonAxes: ax = null, siteDir = null, placeNow, pose, aspect, shiftPx = 0, width = 0, height = 0 }) {
     const o = origin;
     earth.position.set(-o[0], -o[1], -o[2]);
     earth.rotation.set(0, sidereal, 0);
@@ -351,7 +409,7 @@ export function createStage(renderer, { tier = 1, place, frame }) {
       m.uniforms.uSun.value.set(...sunDir);
       m.uniforms.uHaze.value.copy(haze);
       m.uniforms.uHazeK.value = air.hazeK;
-      m.uniforms.uLift.value = 0.05 * air.sky;
+      m.uniforms.uLift.value = 0.05 * air.sky + 0.05 * air.night;
     }
     // The drawn ground near the place gives way to the map as the camera climbs (it is a close-up's, not a view's).
     capMat.uniforms.uLocalOn.value = 1 - Math.min(1, Math.max(0, (altM - 3000) / 12000));
@@ -367,6 +425,21 @@ export function createStage(renderer, { tier = 1, place, frame }) {
     if (moonPos) {
       moon.visible = true;
       moon.position.set(moonPos[0] - o[0], moonPos[1] - o[1], moonPos[2] - o[2]);
+      if (ax) {
+        // The map's own axes (three.js sphere: +x the Moon's longitude 0, +y north, -z east) onto the Moon's body axes.
+        m4.makeBasis(v1.set(ax.x[0], ax.x[1], ax.x[2]), v2.set(ax.z[0], ax.z[1], ax.z[2]), v3.set(-ax.y[0], -ax.y[1], -ax.y[2]));
+        moon.quaternion.setFromRotationMatrix(m4);
+      }
+      if (ax && siteDir) {
+        // The disc stands on the Moon at the site, its normal the site's vertical.
+        const near = Math.hypot(pose.pos[0] - (moonPos[0] + siteDir[0] * 1737400), pose.pos[1] - (moonPos[1] + siteDir[1] * 1737400), pose.pos[2] - (moonPos[2] + siteDir[2] * 1737400)) < 200000;
+        siteDisc.visible = near;
+        if (near) {
+          v1.set(siteDir[0], siteDir[1], siteDir[2]);
+          siteDisc.quaternion.setFromUnitVectors(v2.set(0, 0, 1), v1);
+          siteDisc.position.set(moonPos[0] + siteDir[0] * 1737400 - o[0], moonPos[1] + siteDir[1] * 1737400 - o[1], moonPos[2] + siteDir[2] * 1737400 - o[2]);
+        }
+      } else siteDisc.visible = false;
       const px = (1737400 / Math.max(1, moon.position.length())) / Math.tan((pose.fov * Math.PI) / 360) * (height || 900) / 2;
       if (!moonMapped && px > 4) { moonMapped = true; moon.material.map = tex('2k_moon.webp'); moon.material.color.set(0xffffff); moon.material.needsUpdate = true; }
     } else moon.visible = false;
@@ -401,5 +474,5 @@ export function createStage(renderer, { tier = 1, place, frame }) {
     });
   }
 
-  return { scene, camera, update, dispose, state, placeGroup };
+  return { scene, camera, update, dispose, state, placeGroup, setPlace };
 }

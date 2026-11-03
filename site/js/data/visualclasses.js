@@ -147,6 +147,9 @@ export const VISUAL_CLASSES = [
 "deimos"
 ],
 "sites": [
+"vostok-1-landing",
+"voskhod-2-landing",
+"edwards-afb-runway-23",
 "copernicus",
 "tycho",
 "shackleton",
@@ -404,7 +407,10 @@ export const VISUAL_CLASSES = [
 "resurs-p",
 "vostok-3ka",
 "vostok-seat",
-"vostok-chutes"
+"vostok-chutes",
+"voskhod-3kd",
+"leonov-eva",
+"sputnik-1"
 ],
 "model_kinds": [
 "satellite-iridium",
@@ -470,11 +476,14 @@ export const VISUAL_CLASSES = [
 "members": {
 "sites": [
 "saturn-v-lc-39a",
-"shuttle-lc-39b"
+"shuttle-lc-39b",
+"baikonur-site-1"
 ],
 "real_models": [
 "saturn-v",
 "shuttle-stack",
+"shuttle-sts-stack",
+"shuttle-orbiter",
 "delta2-stage",
 "atlas5-centaur",
 "centaur-d",
@@ -579,7 +588,9 @@ export const VISUAL_CLASSES = [
 "mars-express",
 "hayabusa2",
 "hope",
-"orion-esm"
+"orion-esm",
+"mariner-2",
+"galileo-probe"
 ],
 "model_kinds": [
 "probe-generic",
@@ -611,6 +622,8 @@ export const VISUAL_CLASSES = [
 "deep-near",
 "deep-stardust",
 "deep-deep-impact",
+"deep-mariner-2",
+"deep-galileo-probe",
 "deep-parker",
 "deep-solar-orbiter",
 "deep-psyche",

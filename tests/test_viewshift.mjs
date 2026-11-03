@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const { coveredFromBottom, coveredFromLeft, shiftFor, MAX_SHIFT_FRACTION } = await import(join(ROOT, 'site/js/scene/viewshift.js'));
+const { coveredFromBottom, coveredFromLeft, coveredFromRight, shiftFor, MAX_SHIFT_FRACTION } = await import(join(ROOT, 'site/js/scene/viewshift.js'));
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
@@ -40,6 +40,12 @@ check(shiftFor(523, H) === H * MAX_SHIFT_FRACTION, 'and the shift for it hits th
   check(coveredFromLeft([{ ...side, left: -400, right: -40 }], 1440, 900) === 0, 'a sidebar slid off screen by a trip moves nothing');
   check(coveredFromLeft([{ left: 1040, right: 1420, top: 20, bottom: 880 }], 1440, 900) === 0, 'a column on the right is not docked on the left');
   check(coveredFromLeft([{ left: 0, right: 900, top: 0, bottom: 900 }], 1440, 900) === 720, 'and it never claims more than half the width');
+  // 1.6.3, right to left (he, ar; css/rtl.css): the same column docked on the right, and the same rule mirrored.
+  const right = { left: 1060, right: 1420, top: 20, bottom: 880 };
+  check(coveredFromRight([right], 1440, 900) === 380, `a sidebar docked on the right covers to its left edge (${coveredFromRight([right], 1440, 900)})`);
+  check(coveredFromRight([side], 1440, 900) === 0 && coveredFromLeft([right], 1440, 900) === 0, 'and each side counts only a column docked on it');
+  check(coveredFromRight([{ left: 1356, right: 1420, top: 20, bottom: 68 }], 1440, 900) === 0, 'the collapsed handle on the right moves nothing');
+  check(coveredFromRight([{ left: 540, right: 1440, top: 0, bottom: 900 }], 1440, 900) === 720, 'and it never claims more than half the width');
   check(coveredFromLeft([], 1440, 900) === 0 && coveredFromLeft([side], 0, 900) === 0, 'no column, or no canvas, no shift');
 }
 {

@@ -20,8 +20,8 @@
 <link rel="icon" href="space-radar-mark.svg">
 <link rel="preload" href="../fonts/inter-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="../css/fonts.css">
+<link rel="stylesheet" href="../css/static.css">
 <style>
-{{style}}
 ol.facts{margin:0;padding:0 0 0 20px;max-width:65ch}
 ol.facts li{margin:0 0 12px}
 .shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin:0}
@@ -40,7 +40,7 @@ blockquote.copy p{margin:0}
 </style>
 </head>
 <body>
-<header class="top"><a class="mark" href="../">Space Radar</a><a href="../">Open the live map</a></header>
+<header class="top"><div class="top__in"><a class="mark" href="../">Space Radar</a><nav aria-label="Site"><a href="https://blog.spaceradar.ai/">Blog</a></nav><a class="openmap" href="../">Open the 3D map</a></div></header>
 <main>
 <p class="micro">Press kit</p>
 <h1>Space Radar</h1>
@@ -93,10 +93,10 @@ blockquote.copy p{margin:0}
 <h2>Contact</h2>
 <p>Questions, corrections and press requests go through the project's GitHub: <a href="https://github.com/Sara-Managed-Projects/space-radar/issues/new">open an issue</a> or start a <a href="https://github.com/Sara-Managed-Projects/space-radar/discussions">discussion</a>. A correction to a fact on a card is always welcome there.</p>
 </main>
-<footer>
+<footer><div class="foot__in">
 <p>Built {{built}} from the project's registry; the counts above are read from it.</p>
 <p><a href="../">Open the live map</a> · <a href="https://github.com/Sara-Managed-Projects/space-radar">Source code</a></p>
 {{sitelinks}}
-</footer>
+</div></footer>
 </body>
 </html>

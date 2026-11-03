@@ -325,6 +325,8 @@ export const COPY = {
     "menuShare": "Teilen",
     "menuHide": "Bereiche ausblenden",
     "menuGitHub": "Quellcode auf GitHub",
+    "blog": "Blog",
+    "blogHref": "https://blog.spaceradar.ai/",
     "tour": "Rundgang machen",
     "menuTour": "Rundgang machen"
   },
@@ -1071,7 +1073,7 @@ export const COPY = {
       "exoticStar": "ein Ring in seiner gemessenen Entfernung; der Stern selbst ist in diesem Maßstab ein Punkt"
     },
     "storm": "gezeichnet als Markierung an seinem Zentrum; der Sturm selbst ist die Wolke darum herum",
-    "feature": "ein benannter Ort: gezeichnet ist hier nur eine Markierung an seinem Zentrum, nach dem Verzeichnis der IAU; der Boden darunter ist die Karte selbst", // 0077 W3-d
+    "feature": "ein benannter Ort: gezeichnet ist hier nur eine Markierung an seinem Zentrum, gesetzt nach der genannten Quelle; der Boden darunter ist die Karte selbst", // 0077 W3-d
     "objectSpin": { "spin": "er dreht sich um seinen gemessenen Pol mit der gemessenen Geschwindigkeit; welche Seite gerade zur Sonne zeigt, ist keine Vorhersage", "pair": "beide drehen sich um ihren gemessenen Pol mit den gemessenen Geschwindigkeiten, und Dimorphos umkreist ihn in dem Abstand und der Zeit, die nach dem Einschlag von DART gemessen wurden; wo er auf dieser Bahn steht, ist illustrativ", "comet": "er dreht sich um seinen gemessenen Pol mit der 2014 gemessenen Geschwindigkeit, die die Sonne seither bei jedem Vorbeiflug um einige Minuten verändert hat; welche Seite der Sonne in diesem Moment zugewandt ist, ist keine Vorhersage", "still": "er ist in der Ausrichtung seines Radarmodells gezeichnet und dreht sich hier nicht: das Modell gibt nicht an, wo seine Drehachse liegt" }, // 0077 W3-d
     "objectSeen": { "lutetia": "Rosettas Bilder decken mehr als die Hälfte seiner Oberfläche ab; der Rest der Form ist aus seinen Helligkeitsänderungen angepasst, nicht fotografiert", "steins": "Rosettas Bilder decken etwa 60 Prozent seiner Oberfläche ab; der Rest der Form ist aus seinen Helligkeitsänderungen angepasst, nicht fotografiert", "donj": "die Form ist aus Lucys Bildern durch Stereophotogrammetrie und durch Anpassen seines Umrisses gebaut; die Seite, die Lucy nicht gesehen hat, ist die der Anpassung", "arrokoth": "die Bilder von New Horizons decken die Seite ab, an der die Sonde vorbeiflog; die andere Seite ist erschlossen, nicht fotografiert, und die Farbe ist seine Albedokarte in einem roten Ton", "radar": "die Form ist aus Radarechos gebaut, nicht aus Bildern: ihr Umriss ist gemessen, ihre feinsten Einzelheiten sind es nicht", "comet": "die Form ist die von Rosetta, aus mehr als 20 000 Bildern über zwei Jahre, und die ganze Oberfläche ist abgedeckt" }, // 0079 B1
     "objectRelief": "das Modell ist vereinfacht, und das feine Relief darauf ist das des vollständigen Modells, in die Oberfläche eingebrannt", // 0079 B1
@@ -3824,6 +3826,648 @@ export const COPY = {
     }
   }
 };
+
+// 1.6.2 (internal #1057): the words of the Moments (copy/en.moments.js and its three story files), German. Machine-drafted like the rest of this file
+// (docs/TRANSLATING.md): drafted by a program from the English, NOT read by a native speaker. The spoken lines of the recordings
+// (Armstrong's first words) stay in the language they were said in. Added to COPY here; the story files call HOOK.localise after they load.
+Object.assign(COPY, {
+  "momentPlayer": {
+    "micro": "Moment",
+    "play": "Abspielen",
+    "pause": "Pause",
+    "replay": "Nochmal ansehen",
+    "close": "Den Moment schließen",
+    "chapters": "Kapitel",
+    "chaptersTitle": "Zu einem Kapitel springen",
+    "share": "Einen Link zu dieser Sekunde kopieren",
+    "copied": "Link kopiert",
+    "copyFailed": "Diesen Link kopieren: {url}",
+    "director": "Regie",
+    "directorTitle": "Die Kamera an die Regie zurückgeben",
+    "freeNote": "Deine Kamera. Zieh, um dich umzusehen; Regie nimmt sie zurück.",
+    "scrubber": "Missionszeit",
+    "met": "Seit Missionsbeginn vergangene Zeit",
+    "rateTitle": "Die Zeit läuft hier {rate} so schnell wie in Wirklichkeit",
+    "realTime": "Echtzeit",
+    "loading": "Der Moment wird geladen …",
+    "missing": "Es gibt keinen Moment namens {id}.",
+    "unreachable": "Dieser Moment wurde nicht geladen. Er wird auf diesem Gerät erst gespeichert, nachdem er einmal online geöffnet wurde.",
+    "modelMissing": "Das Modell {model} wurde nicht geladen; seine Bahn und seine Flammen werden trotzdem gezeichnet.",
+    "chapterOf": "Kapitel {n} von {m}",
+    "quoteBy": "{who}, {at}",
+    "truthWords": {
+      "measured": "Gemessen",
+      "reconstructed": "Rekonstruiert",
+      "illustrative": "Illustrativ"
+    },
+    "truthLine": "{truth}: {path}.",
+    "cutNote": "Die Stufen sind vorerst aus einem einzigen Modell geschnitten.",
+    "drawnNote": "Flammen und Dampf sind gezeichnet.",
+    "groundNote": "Der Boden an der Rampe ist illustrativ; Erdkarte von Solar System Scope, CC BY 4.0.",
+    "keys": "Leertaste startet oder pausiert, Pfeile springen, Esc schließt"
+  },
+  "momentShelf": {
+    "title": "Momente",
+    "note": "Sieben Missionen, auf einer einzigen Uhr wiederholt, mit den echten Zeiten der Ereignisse. Die Bahnen sind rekonstruiert und sagen es.",
+    "minutes": "{m} Min.",
+    "replay": "Diesen Moment ansehen",
+    "replayTitle": "{title} auf der Missionsuhr ansehen",
+    "replayNamed": "{title} ansehen",
+    "cards": {
+      "apollo-11": {
+        "title": "Apollo 11",
+        "when": "16. bis 24. Juli 1969",
+        "blurb": "Von Rampe 39A über die Tranquility Base zum Pazifik: Start, der Mond, die Landung, der Aufstieg, die Heimkehr."
+      },
+      "apollo-13": {
+        "title": "Apollo 13",
+        "when": "11. bis 17. April 1970",
+        "blurb": "Von Rampe 39A zum Pazifik: die Mondlandung, die nicht stattfand, ein geplatzter Sauerstofftank und die Mondfähre als Rettungsboot."
+      },
+      "artemis-ii": {
+        "title": "Artemis II",
+        "when": "1. bis 10. April 2026",
+        "blurb": "Von Rampe 39B zum Pazifik vor San Diego, um die Rückseite des Mondes. Es steht dabei, was geflogen wurde und was geplant war."
+      },
+      "sputnik-1": {
+        "title": "Sputnik 1",
+        "when": "4. Oktober 1957",
+        "blurb": "Von Baikonur zur ersten Erdumrundung: der erste künstliche Satellit, eine polierte Kugel von 585 mm, und sein Piepen."
+      },
+      "voskhod-2": {
+        "title": "Woschod 2",
+        "when": "18. bis 19. März 1965",
+        "blurb": "Alexei Leonow steigt zwölf Minuten lang durch eine aufblasbare Schleuse in den Weltraum, und die Besatzung landet von Hand in der Taiga, weit von ihrem Feld entfernt."
+      },
+      "sts-1": {
+        "title": "STS-1",
+        "when": "12. bis 14. April 1981",
+        "blurb": "Das erste Space Shuttle: Columbia von Rampe 39A, die Booster und der Tank, 54 Stunden im Orbit und ein Gleitflug auf den ausgetrockneten See von Edwards."
+      },
+      "vostok-1": {
+        "title": "Wostok 1",
+        "when": "12. April 1961",
+        "blurb": "Juri Gagarin, einmal um die Erde in 108 Minuten, von Baikonur zu einem Feld bei Smelowka."
+      }
+    }
+  },
+  "momentStories": {
+    "demo-saturn": {
+      "title": "Saturn V: von der Zündung bis zur Stufentrennung",
+      "blurb": "Die ersten drei Minuten von Apollo 11, am 16. Juli 1969, von der Rampe am Startkomplex 39A.",
+      "chIgnition": "Zündung",
+      "chLiftoff": "Start",
+      "chClimb": "Maximaler Staudruck",
+      "chStaging": "Stufentrennung",
+      "ignition": "T−8.9 s: Die Zündfolge startet die fünf F-1-Triebwerke, das mittlere zuerst, dann die äußeren Paare.",
+      "holddown": "Die Haltearme halten die Rakete auf der Rampe, bis alle fünf Triebwerke volle Schubkraft haben.",
+      "liftoff": "Start, 13:32:00.6 UTC: fünf F-1, rund 33 800 kN, die fast 3 000 Tonnen heben.",
+      "tower": "Frei vom Turm dreht die Rakete auf ihren Flugazimut ein, 72 Grad östlich von Nord.",
+      "maxq": "Nach einer Minute die Schallgrenze, dann der maximale Staudruck, wenn die Luft am stärksten drückt: 35 kPa (735 lb/ft²).",
+      "ceco": "T+135 s: Das mittlere Triebwerk schaltet ab, damit die Beschleunigung unter 4 g bleibt.",
+      "staging": "T+161.7 s: Die äußeren Triebwerke schalten ab. In etwa 67 km Höhe fällt die S-IC ab, ihre Bremsraketen zünden.",
+      "sii": "T+163.0 s: Die fünf J-2-Triebwerke der S-II zünden. Wasserstoff brennt blass und fast klar.",
+      "interstage": "Der Zwischenstufenring löst sich; bei T+197.9 s geht der Fluchtturm ab. Die Parkbahn ist 8.5 Minuten entfernt.",
+      "pathAscent": "Zeiten aus dem Apollo-11-Missionsbericht, die Höhen dazwischen angenähert",
+      "sources": "Apollo-11-Missionsbericht, NASA MSC-00171, 1969 (Tabelle 3-I, Ereignisfolge; Abschnitt 7.1, Start)"
+    },
+    "vostok-1": {
+      "title": "Wostok 1: der erste Mensch im Weltraum",
+      "blurb": "Juri Gagarin, 12. April 1961: von Baikonur einmal um die Erde bis zu einem Feld bei Smelowka, auf der Missionsuhr, in 108 Minuten.",
+      "chPad": "Gagarins Start",
+      "chAscent": "Aufstieg",
+      "chOrbit": "Eine Umlaufbahn",
+      "chRetro": "Bremszündung",
+      "chEntry": "Wiedereintritt",
+      "chEject": "Ausschuss",
+      "chLand": "Landung",
+      "ready": "Baikonur, Startplatz 1, 06:07 UTC. Juri Gagarin, 27, sitzt in der Kapsel oben auf der R-7-Rakete.",
+      "korolev": "Sergei Koroljow im Funk: „Vorstufe … Zwischenstufe … Hauptstufe … Abheben!“",
+      "liftoff": "Start. Gagarin: „Poyekhali!“, „Los geht’s!“",
+      "boosters": "T+119 s: Die vier Seitenbooster brennen aus und fallen ab.",
+      "shroud": "T+156 s: Die Verkleidung über der Kapsel wird abgeworfen.",
+      "core": "T+300 s: Die Kernstufe ist leer und fällt ab; die letzte Stufe zündet.",
+      "earth": "Etwa bei T+6 min, Gagarin: „Ich sehe die Erde. Die Sicht ist gut.“",
+      "kosberg": "Etwa bei T+10 min schaltet die letzte Stufe ab. Gagarin: „Kosberg hat funktioniert!“, nach dem Konstrukteur ihres Triebwerks.",
+      "orbit": "In der Umlaufbahn: 181 mal 327 km, 64.95 Grad zum Äquator geneigt, 89.1 Minuten pro Umlauf. Die Kapsel trennt sich von der Stufe.",
+      "retro": "T+1 h 18 min, über der Westküste Afrikas: Das Bremstriebwerk brennt etwa 42 Sekunden. Zeit und Ort sind veröffentlicht; seine Stärke ist hier an die Landung angepasst.",
+      "wires": "Das Instrumentenmodul sollte sich zehn Sekunden nach der Bremszündung lösen. Ein Kabelbündel hält es; beide taumeln zusammen in die Luft.",
+      "entry": "Die Kabel brennen durch, und die Kugel richtet sich mit dem Hitzeschild nach vorn aus. Gagarin berichtete später von mehr als 10 g.",
+      "eject": "In 7 km Höhe wird die Luke abgesprengt, und der Sitz schießt Gagarin hinaus. Wostoks Kugel landete zu hart für einen Menschen darin.",
+      "chutes": "In 2.5 km Höhe öffnet sich der Hauptfallschirm der Kapsel, 27 m breit; der Fallschirm des Piloten hatte sich fast sofort geöffnet. Der Sitz fällt frei.",
+      "landing": "T+1 h 48 min: Gagarin landet 26 km südwestlich von Engels im Gebiet Saratow, 108 Minuten nach dem Start. Die Quellen weichen bei der Landung um zehn Minuten ab.",
+      "pathAscent": "der Aufstieg sind die veröffentlichten Ereigniszeiten, durch glatte Kurven verbunden; Höhen und Entfernungen dazwischen sind unsere",
+      "pathOrbit": "Umlaufbahn, Bremszündung und Wiedereintritt sind Zweikörperbögen, angepasst an die veröffentlichten Zeiten und das Landefeld, keine Bahnverfolgungsdaten",
+      "pathPilot": "der Abstieg am Fallschirm des Piloten ist gezeichnet; keine Quelle nennt die Entfernung zur Kapsel",
+      "srcWiki": "Wikipedia, Wostok 1 (Ereigniszeiten, Umlaufbahn, Zitate; gelesen am 2. November 2026)",
+      "srcNssdc": "NASA NSSDCA, Wostok 1 (Umlaufbahn, Raumfahrzeug)"
+    },
+    "apollo-11": {
+      "title": "Apollo 11: zum Mond und zurück",
+      "blurb": "Vom Startkomplex 39A am 16. Juli 1969 zum Pazifik am 24.: Start, der Mond, die Tranquility Base und die Heimkehr, auf der Missionsuhr.",
+      "chIgnition": "Zündung",
+      "chLiftoff": "Start",
+      "chStaging": "Stufentrennung",
+      "chParking": "Parkbahn",
+      "chTli": "Aufbruch zum Mond",
+      "chCoast": "Drei Tage unterwegs",
+      "chLoi": "In die Mondumlaufbahn",
+      "chUndock": "Eagle trennt sich",
+      "chDescent": "Angetriebener Abstieg",
+      "chSurface": "Tranquility Base",
+      "chAscent": "Wieder hinauf",
+      "chDock": "Ankopplung",
+      "chTei": "Heimwärts",
+      "chEntry": "Wiedereintritt",
+      "chSplash": "Wasserung",
+      "ignition": "T−8.9 s: Die Zündfolge startet die fünf F-1-Triebwerke, das mittlere zuerst, dann die äußeren Paare.",
+      "liftoff": "Start, 13:32:00 UTC: fünf F-1, rund 33 800 kN, die fast 3 000 Tonnen heben.",
+      "tower": "Frei vom Turm dreht die Rakete auf ihren Flugazimut ein, 72 Grad östlich von Nord.",
+      "maxq": "Nach einer Minute die Schallgrenze; dann der maximale Staudruck, wenn die Luft am stärksten drückt: 35 kPa.",
+      "ceco": "T+135 s: Das mittlere Triebwerk schaltet ab, damit die Beschleunigung unter 4 g bleibt.",
+      "staging": "T+161.7 s: Die äußeren Triebwerke schalten ab. In etwa 67 km Höhe fällt die S-IC ab, ihre Bremsraketen zünden.",
+      "sii": "T+163.0 s: Die fünf J-2-Triebwerke der S-II zünden. Wasserstoff brennt blass und fast klar.",
+      "interstage": "Der Zwischenstufenring löst sich; bei T+197.9 s geht der Fluchtturm ab.",
+      "siicut": "T+9 min 13 s: Die S-II schaltet ab und fällt ab; die S-IVB zündet.",
+      "parking": "T+11 min 52 s: Parkbahn, 185 km hoch. Zweieinhalb Stunden Kontrollen, anderthalb Runden um die Erde.",
+      "tli": "2:44:16: Die S-IVB zündet noch einmal für 5 min 48 s und bringt den Verband auf 10.8 km/s. Das Ziel ist der Mond.",
+      "sla": "3:17: Die vier Platten um die Mondfähre klappen auf. Columbia trennt sich, dreht um und koppelt Nase an Nase an Eagle an (nicht gezeichnet).",
+      "extract": "Etwa 3:57: Columbia zieht Eagle aus der S-IVB. Die leere Stufe bleibt zurück.",
+      "coast": "Drei Tage bis zum Mond, 384 000 km, gezeichnet mit etwa der 8 000-fachen Geschwindigkeit. Das Raumschiff ist 11 Meter lang, also ein Punkt.",
+      "loi": "75:49:50, hinter dem Mond und ohne Funkkontakt: Das Servicetriebwerk brennt sechs Minuten, um eingefangen zu werden.",
+      "lunarorbit": "Mondumlaufbahn, etwa 100 km hoch, zwei Stunden pro Runde.",
+      "undock": "100:12: Eagle mit Armstrong und Aldrin trennt sich von Columbia, wo Collins bleibt.",
+      "pdi": "102:33:05: Der angetriebene Abstieg beginnt, 15 km hoch und etwa 500 km vor dem Ziel.",
+      "landing": "Der Computer würde in einem Krater voller Felsbrocken landen. Armstrong übernimmt die Steuerung und fliegt weiter, mit weniger als einer Minute Treibstoff.",
+      "landed": "102:45:40, 20:17:40 UTC. „Houston, Tranquility Base here. The Eagle has landed.“",
+      "step": "109:24:15, 02:56 UTC am 21. Juli: Armstrong steigt von der Leiter.",
+      "smallstep": "„That's one small step for [a] man, one giant leap for mankind.“ Armstrong, 109:24:48; der Ausschnitt ist die NASA-Aufnahme.",
+      "liftoffe": "124:22: Die Aufstiegsstufe hebt von der Abstiegsstufe ab, die auf dem Mond bleibt. 17:54 UTC am 21. Juli.",
+      "rendezvous": "Eagle jagt Columbia von 18 km auf 100 km hinauf. Die Manöver sind als Form gezeichnet, nicht die der Mission.",
+      "docked": "128:03, 21:35 UTC: angekoppelt. Die Besatzung und 21.5 kg Mondgestein wechseln hinüber.",
+      "jettison": "130:09: Eagles Aufstiegsstufe wird abgeworfen und kreist um den Mond.",
+      "tei": "135:23:42, auf der Rückseite: Das Servicetriebwerk zündet für 2 min 30 s. Heimwärts.",
+      "home": "Zweieinhalb Tage zurück, dieselben 384 000 km.",
+      "smsep": "194:49: Das Servicemodul wird abgetrennt, und die Kapsel dreht ihren Hitzeschild nach vorn.",
+      "entry": "195:03, Eintrittsschnittstelle, 122 km hoch bei 11 km/s. Der Schild glüht; bis zu etwa 6 g.",
+      "drogue": "Etwa 195:12: zwei Bremsfallschirme, dann drei Hauptfallschirme.",
+      "mains": "Drei Hauptfallschirme, 25 m breit, bremsen die Kapsel auf etwa 9 m/s.",
+      "splash": "195:18:35, 16:50:35 UTC am 24. Juli: Wasserung im Pazifik, 24 km vom Flugzeugträger USS Hornet entfernt (nicht gezeichnet). Acht Tage, drei Stunden, 18 Minuten.",
+      "pathAscent": "die Ereigniszeiten des Missionsberichts, Höhen und Entfernungen dazwischen angenähert",
+      "pathTrip": "rekonstruiert aus den Ereigniszeiten des Flugjournals als Zweikörperbögen: ein Kegelschnitt hinaus, ein Kreis um den Mond, ein Kegelschnitt heim; keine Bahnverfolgungsdaten",
+      "pathLm": "der Abstieg ist rückwärts von der Tranquility Base aus gezeichnet und das Rendezvous ist eine Form; die Ereigniszeiten sind die der Mission",
+      "srcReport": "Apollo-11-Missionsbericht, NASA MSC-00171, 1969 (Ereigniszeiten, Start, Landung)",
+      "srcJournal": "Apollo-11-Flugjournal, NASA (Ereigniszeiten auf die Sekunde)",
+      "srcClip": "Armstrongs erste Worte auf dem Mond: NASA-Aufnahme, gemeinfrei, von Wikimedia Commons"
+    },
+    "artemis-ii": {
+      "title": "Artemis II: um den Mond",
+      "blurb": "Vom Startkomplex 39B am 1. April 2026 zum Pazifik vor San Diego am 10.: vier Menschen um die Rückseite des Mondes, auf der Missionsuhr.",
+      "chPad": "Rampe 39B",
+      "chLiftoff": "Start",
+      "chStaging": "Booster abgeworfen",
+      "chOrbit": "Hohe Erdumlaufbahn",
+      "chTli": "Aufbruch zum Mond",
+      "chMoon": "Die Rückseite",
+      "chHome": "Auf dem Heimweg",
+      "chEntry": "Wiedereintritt",
+      "chSplash": "Wasserung",
+      "ready": "Startkomplex 39B, Kennedy Space Center, 1. April 2026. Wiseman, Glover, Koch und Hansen sind an Bord von Orion, oben auf dem Space Launch System.",
+      "cored": "T−6.4 s: Die vier RS-25-Triebwerke der Kernstufe starten. Geflogen, wie geplant.",
+      "liftoff": "Start, 22:35:12 UTC (18:35 Uhr EDT): Die beiden Booster mit fünf Segmenten zünden bei null. Geflogen.",
+      "srb": "Etwa bei T+2 min: Die Booster brennen aus und trennen sich in 48 km Höhe bei 5 000 km/h. Geflogen; sie stürzen in den Atlantik.",
+      "las": "Geplant, T+3 min 22 s: Der Fluchtturm wird abgeworfen. Die berichteten Flüge geben die Sekunde nicht an; dies ist die des Flugplans.",
+      "meco": "Geplant, T+8 min: Die Kernstufe schaltet ab, auf einem suborbitalen Bogen mit einem Apogäum bei etwa 2 300 km. Die Zeit des Flugplans.",
+      "coresep": "Die Kernstufe wird freigegeben und stürzt etwa zwei Stunden nach dem Start in einem zerstörerischen Wiedereintritt über den Pazifik. Geflogen.",
+      "prb": "Etwa bei T+50 min, am höchsten Punkt des Bogens: Die Oberstufe brennt, um den tiefsten Punkt aus der Luft zu heben. Geflogen, die Sekunde ist nicht veröffentlicht.",
+      "arb": "Eine Stunde später, am tiefsten Punkt: Ein 15-Minuten-Brennen hebt die ferne Seite der Bahn auf 70 000 km, ein Umlauf von fast einem Tag. Geflogen.",
+      "fairings": "Geplant: Die drei Platten um das Servicemodul werden abgeworfen; die vier Solarflächen entfalten sich. Die Zeit des Flugplans, hier schon entfaltet gezeichnet.",
+      "arrays": "Orions vier Solarflächen sind draußen: Sie liefern zehn Tage lang seinen Strom.",
+      "sep": "Geplant: Orion trennt sich von der Oberstufe; Glover fliegt es dann etwa 70 Minuten lang von Hand neben der Stufe. Die Zeit der Trennung ist nicht veröffentlicht.",
+      "tli": "Flugtag 2, etwa 25 Stunden nach dem Start: Das Haupttriebwerk des Servicemoduls brennt 5 min 49 s, zum Mond. Geflogen; die gezeigte Minute ist die des Flugplans.",
+      "outbound": "Vier Tage hinaus. Ein Korrekturbrennen auf dem Hinweg wurde geflogen, 17.5 s an Flugtag 5; es ist zu klein zum Zeichnen.",
+      "record": "17:56 UTC am 6. April: Orion übertrifft den Entfernungsrekord von Apollo 13 aus dem Jahr 1970, 248 655 Meilen von der Erde. Geflogen.",
+      "moon": "Flugtag 6: Orion tritt in den Einflussbereich des Mondes ein. Es geht nicht in eine Umlaufbahn: Es fliegt um die Rückseite und fällt heim.",
+      "los": "22:46 UTC: hinter dem Mond, 38 Minuten ohne Kontakt. Geflogen.",
+      "closest": "Größte Annäherung, 23:00 UTC am 6. April: 6 545 km über der Rückseite des Mondes. Geflogen.",
+      "far": "23:02 UTC: größte Entfernung von der Erde, 406 771 km. Geflogen.",
+      "aos": "23:24 UTC: wieder Kontakt von hinter dem Mond. Geflogen.",
+      "home": "Vier Tage heim. Drei Korrekturbrennen auf dem Rückweg wurden geflogen, von 15, 9 und 8 Sekunden; sie sind zu klein zum Zeichnen.",
+      "esmsep": "Geplant: Das Servicemodul wird etwa 20 Minuten vor dem Wiedereintritt abgetrennt. Die Zeit der Trennung ist nicht veröffentlicht; gezeichnet ist die des Flugplans.",
+      "entry": "Eintrittsschnittstelle, geplant etwa 13 Minuten vor der Wasserung: 122 km hoch bei 11 km/s, der Hitzeschild glüht. Ein steilerer direkter Eintritt ersetzte den geplanten Eintritt mit Sprung. Geflogen.",
+      "drogue": "Bremsfallschirme, dann Hilfsschirme und drei Hauptfallschirme, 35 m breit. Geflogen; die Zeiten sind die des Flugplans.",
+      "mains": "Drei Hauptfallschirme bringen die Kapsel hinunter zum Meer.",
+      "splash": "Wasserung, 00:07:27 UTC am 11. April (17:07 Uhr PDT, 10. April), 32.3 N 117.8 W, südwestlich von San Diego; die USS John P. Murtha birgt die Besatzung (Schiff nicht gezeichnet). Neun Tage, eine Stunde, 32 Minuten. Geflogen.",
+      "pathAscent": "die Ereigniszeiten des Flugplans, Höhen und Entfernungen dazwischen sind unsere; Start und Boostertrennung sind geflogen",
+      "pathTrip": "rekonstruiert aus der geflogenen Bahn, der größten Annäherung und der Wasserung, als Zweikörperbögen und eine Hyperbel um den Mond; keine Bahnverfolgungsdaten",
+      "srcWiki": "Wikipedia, Artemis II (was geflogen wurde, mit Zeiten und Entfernungen; gelesen am 2. November 2026)",
+      "srcNasa": "NASA, Artemis II (der Flugplan; Modell der Rakete und der Kapsel: NASA 3D Resources)"
+    },
+    "apollo-13": {
+      "title": "Apollo 13: der Flug nach Hause",
+      "blurb": "Vom Startkomplex 39A, 11. April 1970, bis in den Pazifik am 17.: eine Mondlandung, die nicht stattfand, ein geplatzter Sauerstofftank und die Mondfähre als Rettungsboot.",
+      "chIgnition": "Zündung",
+      "chLiftoff": "Start",
+      "chStaging": "Stufentrennung",
+      "chParking": "Parkbahn",
+      "chTli": "Aufbruch zum Mond",
+      "chCoast": "Zwei Tage unterwegs",
+      "chBang": "Der Knall",
+      "chLifeboat": "Aquarius, das Rettungsboot",
+      "chReturn": "Wieder auf Rückkehrbahn",
+      "chMoon": "Um die Rückseite",
+      "chBurn": "Die Zündung nach Hause",
+      "chHome": "Drei Tage heimwärts",
+      "chSm": "Das Servicemodul",
+      "chUndock": "Aquarius wird abgeworfen",
+      "chEntry": "Wiedereintritt",
+      "chSplash": "Wasserung",
+      "ignition": "Etwa T−9 s: Die fünf F-1-Triebwerke zünden, das mittlere zuerst. Startkomplex 39A, 2:13 p.m. Ostküstenzeit.",
+      "liftoff": "Start, 19:13:00 UTC, 11. April 1970: James Lovell, Jack Swigert und Fred Haise, unterwegs zum Hochland von Fra Mauro.",
+      "roll": "Bei 12.6 s dreht der Verband auf seinen Flugazimut ein, 72.043 Grad östlich von Nord.",
+      "staging": "2:44: Die äußeren Triebwerke der ersten Stufe schalten ab, und die Stufe fällt ab; die zweite Stufe zündet bei 2:45.",
+      "tower": "3:21: Der Fluchtturm wird abgeworfen.",
+      "pogo": "Bei 5:30 schaltet das mittlere Triebwerk der zweiten Stufe von selbst ab, 132 Sekunden zu früh, nachdem die Stufe zu stark zu vibrieren begann. Die anderen vier brennen 34 Sekunden länger, um das auszugleichen.",
+      "siicut": "9:53: Die zweite Stufe schaltet ab und fällt ab; die S-IVB zündet.",
+      "parking": "12:30: Parkbahn, 190 mal 185 km hoch. Es folgen zweieinhalb Stunden Kontrollen.",
+      "tli": "2:35:46: Die S-IVB zündet noch einmal, 5 min 51 s lang, und schickt das Raumschiff mit fast 11 km/s zum Mond.",
+      "sep": "3:06:39: Odyssey trennt sich von der S-IVB, dreht um und koppelt bei 3:19:09 an Aquarius an. Die vier Adapterplatten fallen ab.",
+      "extract": "4:01: Odyssey zieht Aquarius aus der leeren Stufe, die zurückbleibt.",
+      "coast": "Zwei Tage bis zum Mond, gezeichnet mit etwa der 9 000-fachen Geschwindigkeit. Das Raumschiff ist 11 Meter lang, also ein Punkt.",
+      "tv": "55:53:20: Das Kontrollzentrum bittet um ein routinemäßiges Durchrühren der Sauerstofftanks. Eine Fernsehübertragung ist vor wenigen Minuten zu Ende gegangen; die Besatzung räumt auf.",
+      "bang": "55:54:53, 03:07 UTC am 14. April: ein Knall. Sauerstofftank 2 ist geplatzt und hat die Außenplatte von Fach 4 des Servicemoduls weggerissen. Der Flug der Platte ist gezeichnet, nicht gemessen.",
+      "problem": "55:55:20: „Okay, Houston, we've had a problem here.“ Jack Swigert; die NASA-Aufnahme, abgespielt wie protokolliert.",
+      "problem2": "55:55:42: „Houston, we've had a problem.“ James Lovell; die NASA-Aufnahme.",
+      "barber": "Binnen Minuten entweicht auch der Sauerstoff aus Tank 1. Die Brennstoffzellen erzeugen aus diesem Sauerstoff Strom und Wasser für das Raumschiff, und sie fallen aus.",
+      "lifeboat": "Aquarius wird zum Rettungsboot: gebaut, um zwei Männer zwei Tage am Leben zu halten, muss es drei vier Tage am Leben halten. Odyssey wird heruntergefahren, damit seine Batterien für den Wiedereintritt reichen.",
+      "mcc2": "61:29:43: Das Abstiegstriebwerk der Mondfähre zündet 34 s lang, 11.5 m/s, um das Raumschiff auf eine Bahn zu bringen, die zur Erde zurückführt. Die gezeichnete Bahn knickt dafür nicht ab.",
+      "impact": "77:56:40: Die leere S-IVB, vorausgeschickt, schlägt bei 2.4 S 27.9 W auf dem Mond auf, und das Seismometer von Apollo 12 zeichnet es auf (nicht gezeichnet).",
+      "farside": "Etwa 77:28, hinter dem Mond und ohne Funkkontakt: die Rückseite, 254 km darunter.",
+      "closest": "Größte Annäherung, 254 km über der Mondrückseite. Rund 400 000 km von der Erde: weiter weg, als je Menschen gewesen waren.",
+      "tei": "79:27:39, zwei Stunden nach dem Mond: Das Abstiegstriebwerk zündet 4 min 24 s lang, 262 m/s, um die Landung von 152 auf 143 Stunden vorzuziehen und in den Pazifik zu legen.",
+      "home": "Drei Tage heimwärts, kalt, mit knappem Wasser und das Raumschiff auf das Minimum heruntergefahren.",
+      "mcc3": "105:18: Das Abstiegstriebwerk zündet 14 s lang mit 10 Prozent, 2.4 m/s, um den Wiedereintritt etwas steiler zu machen.",
+      "mcc4": "137:39:52: eine letzte Korrektur von 0.9 m/s, ausgeführt von den kleinen Triebwerken der Mondfähre (nicht gezeichnet).",
+      "smsep": "138:01:48, 4 Stunden 39 Minuten vor dem Wiedereintritt: Das Servicemodul wird abgetrennt. Seine Platte fehlt seit 82 Stunden.",
+      "photo": "Die Besatzung fotografiert das Modul, während es davontreibt: eine ganze Platte fehlt, und zerrissene Isolierung ragt heraus. Das Fach ist nach AS13-59-8500 gezeichnet; der Schaden an einer Antennenschüssel nicht.",
+      "undock": "141:30: Aquarius, das drei Männer rund 83 Stunden am Leben gehalten hat, wird mit dem Druck im Kopplungstunnel abgeworfen. Die Kommandokapsel ist auf sich allein gestellt.",
+      "entry": "142:40:46, Eintrittsschnittstelle, 122 km hoch bei 11 km/s. Die erste Spitze liegt bei etwa 5 g.",
+      "drogue": "Etwa 142:48: zwei Bremsfallschirme, dann drei Hauptfallschirme.",
+      "mains": "Drei Hauptfallschirme bremsen die Kapsel auf etwa 9 m/s.",
+      "splash": "142:54:41, 18:07 UTC am 17. April: Wasserung im Südpazifik, in Sichtweite der USS Iwo Jima. Alle drei sind innerhalb von 45 Minuten an Bord.",
+      "pathAscent": "die Ereigniszeiten des Missionsberichts, die Höhen und Entfernungen dazwischen angenähert",
+      "pathTrip": "die Zustände und Zeiten des Missionsberichts, eine integrierte Bahn mit einer Anpassung der Einschussgeschwindigkeit und ein Lambert-Bogen nach Hause; keine Bahnverfolgungsdaten",
+      "pathLm": "an Odyssey angekoppelt bis 141:30; die Drift nach dem Abkoppeln ist illustrativ",
+      "pathSm": "illustrativ: die Driftgeschwindigkeit des leeren Servicemoduls ist unsere",
+      "srcReport": "Apollo-13-Missionsbericht, NASA MSC-02680, 1971 (Ereigniszeiten, Zustände, Wiedereintritt)",
+      "srcJournal": "Apollo-13-Flugjournal, NASA (der Funk, auf die Sekunde)",
+      "srcClip": "Die beiden Funksprüche: NASA-Aufnahme, gemeinfrei, von Wikimedia Commons",
+      "srcPhoto": "Fach 4 des Servicemoduls: NASA-Foto AS13-59-8500, gemeinfrei, von Wikimedia Commons"
+    },
+    "sputnik-1": {
+      "title": "Sputnik 1: der erste Satellit",
+      "blurb": "Baikonur, 4. Oktober 1957: der erste künstliche Satellit, eine polierte Kugel von 585 mm, von der Rampe bis zu seiner ersten Erdumrundung, mit seinem Piepen.",
+      "chPad": "Startplatz 1",
+      "chAscent": "Start",
+      "chBoosters": "Die Seitenbooster",
+      "chCore": "Die Kernstufe",
+      "chSep": "PS-1 wird abgeworfen",
+      "chOrbit": "Eine Runde",
+      "ready": "T−10 s auf Startplatz 1 in Baikonur: die Rakete 8K71PS und, unter ihrer Spitze, eine Kugel von 585 mm. 19:28:34 UTC am 4. Oktober 1957, am Startort schon der 5. Die Lampe an der Rampe ist von uns: Die Rampe war dunkel, und die Rakete wird angestrahlt, damit man sie sieht.",
+      "liftoff": "Start. Die Kernstufe und die vier Seitenblöcke der R-7 brennen gemeinsam; der Militärrakete wurde dafür der Sprengkopf abgenommen.",
+      "regulator": "Nach etwa 16 s fällt ein Treibstoffregler aus: Die Kernstufe verbrennt das Kerosin zu schnell, und ihr Schub liegt fast den ganzen Flug über 4 Prozent zu hoch. Die Mission übersteht das.",
+      "boosters": "T+116 s: Die vier Seitenblöcke fallen ab, wie die Telemetrie zeigt. Die Kernstufe fliegt allein weiter.",
+      "core": "T+295.4 s: Die Kernstufe schaltet ab, 223 km hoch bei etwa 7.8 km/s, eine Sekunde früher als vorgesehen, als ein Sensor die leere Kerosinpumpe hochdrehen sieht.",
+      "sep": "T+315.3 s, 19.9 s nach dem Abschalten: PS-1 wird abgeworfen. Die Spitze fällt ab, die vier Antennen schwenken aus (hier nicht animiert), und der Sender startet.",
+      "beep": "Die ersten Piepsignale sind an der Bodenstation IP-1 zwei Minuten lang zu hören, bis der Satellit unter den Horizont sinkt. Der Ton ist die NASA-Aufnahme des Signals.",
+      "shadow": "Der Start war kurz nach Mitternacht am Startort, und in seinen ersten 13 Minuten fliegt PS-1 im Erdschatten, deshalb wird er dunkel gezeichnet. Etwa bei T+13 min tritt er ins Sonnenlicht.",
+      "orbit": "Umlaufbahn: 223 mal 950 km, 65.1 Grad, 96.2 Minuten pro Runde. Die Kernstufe folgt ihm auf der Bahn (nicht gezeichnet).",
+      "lap": "Eine Runde in dieser Wiedergabe. Die Batterien waren am 26. Oktober nach 326 Umläufen leer; die Kugel stürzte am 4. Januar 1958 nach etwa 1 440 ab.",
+      "pathAscent": "die veröffentlichten Ereigniszeiten, die Höhen und Entfernungen dazwischen angenähert",
+      "pathOrbit": "die veröffentlichte Bahn als Kegelschnitt ab dem Ende des Starts, eine Runde; das Taumeln des Satelliten ist nicht gezeichnet",
+      "srcWiki": "Sputnik 1, Wikipedia (Ereigniszeiten, Umlaufbahn, Abmessungen), nach NASA, NSSDC und den russischen Quellen, die sie nennt",
+      "srcNssdc": "Sputnik 1, NASA NSSDCA Master Catalog (Start und Umlaufbahn)",
+      "srcClip": "Das Piepen: NASA-Aufnahme, gemeinfrei, von Wikimedia Commons"
+    }
+  }
+});
+
+// 1.6.3 (internal #995): the sections and strings this file did not have yet (r13Deep, compare, passportKinds, photoCompare, entrances,
+// the 1.5 strings and the gaps in card, drawing, cls, templates and the rest), de. Machine-drafted like the rest of this file (docs/TRANSLATING.md):
+// drafted by a program from the English, NOT read by a native speaker. A key this file already has is left as it is.
+{
+  const topUp = (dst, src) => {
+    for (const k of Object.keys(src)) {
+      if (src[k] && typeof src[k] === 'object' && !Array.isArray(src[k]) && dst[k] && typeof dst[k] === 'object') topUp(dst[k], src[k]);
+      else if (!(k in dst)) dst[k] = src[k];
+    }
+  };
+  topUp(COPY, {
+    "card": {
+      "rows": {
+        "iauName": "Von der IAU anerkannter Name",
+        "onBody": "Auf",
+        "whenSite": "Wann"
+      }
+    },
+    "drawing": {
+      "markOnly": "eine Markierung an seinem Ort; dort gibt es nichts zu zeichnen",
+      "noPlace": "nicht gezeichnet: Für ihn lässt sich kein Ort markieren",
+      "shower": "ein Name an dem Punkt, aus dem seine Meteore zu kommen scheinen, in der Himmelsansicht nahe dem Maximum; eine Richtung, kein Ort im Raum"
+    },
+    "klass": {
+      "shower": "Meteorstrom"
+    },
+    "cls": {
+      "shower": "eine Richtung am Himmel: der Median der von der IAU veröffentlichten Lösungen für diesen Meteorstrom",
+      "noPlace": "für ihn wird kein Ort gezeichnet: Der Körper, auf dem er liegt, ist in dieser App keine Welt",
+      "approxPlace": "nach veröffentlichten Koordinaten platziert, auf etwa {n} Grad genau"
+    },
+    "unplaced": {
+      "noDistanceRow": "Nicht gemessen: Der Katalog hat keine Parallaxe dafür",
+      "iauApproved": "{name}, anerkannt am {date}"
+    },
+    "starSystem": {
+      "auYearComputed": "{n} AE; das Jahr dort, etwa {y} Jahre, ist daraus und aus der Masse des Sterns berechnet"
+    },
+    "searchRows": {
+      "kinds": {
+        "galaxy": "Galaxie",
+        "cluster": "Galaxienhaufen",
+        "browndwarf": "Brauner Zwerg",
+        "whitedwarf": "Weißer Zwerg"
+      }
+    },
+    "templates": {
+      "exotic": {
+        "kinds": {
+          "galaxy": "Galaxie",
+          "cluster": "Galaxienhaufen",
+          "browndwarf": "Brauner Zwerg",
+          "whitedwarf": "Weißer Zwerg"
+        },
+        "leadGalaxy": "{name} ist eine Galaxie, {dist} Lichtjahre entfernt, dort, wo sie jetzt ist",
+        "leadCluster": "{name} ist ein Galaxienhaufen, {dist} Lichtjahre entfernt, dort, wo er jetzt ist",
+        "leadBrowndwarf": "{name} ist ein Brauner Zwerg, {dist} Lichtjahre entfernt",
+        "leadWhitedwarf": "{name} ist ein Weißer Zwerg, {dist} Lichtjahre entfernt"
+      },
+      "site": {
+        "mpc": "sein Code beim Minor Planet Center ist {code}",
+        "closed": "{year} geschlossen",
+        "kinds": {
+          "launch-site": "Startplatz",
+          "landing-site": "Landeplatz"
+        }
+      },
+      "shower": {
+        "lead": "{name} ist ein Meteorstrom",
+        "peak": "mit dem Maximum etwa am {date}",
+        "speed": "mit Meteoren, die mit {n} km pro Sekunde in die Luft eintreten",
+        "parent": "aus dem Staub von {parent}"
+      }
+    },
+    "a45": {
+      "farNote": "wie weit er jetzt entfernt ist ({how}), aus seiner Rotverschiebung von {z} in der Kosmologie von Planck 2018",
+      "comoving": "mitbewegte Entfernung",
+      "pulsarDistance": [
+        "aus der Parallaxe des Pulsars selbst",
+        "die Entfernung des Kugelsternhaufens, Supernova-Überrests oder anderen Objekts, zu dem er gehört",
+        "die Schätzung eines Modells aus dem Radiosignal (das Modell YMW16 für die freien Elektronen der Galaxis), keine Messung: Sie kann weit danebenliegen"
+      ],
+      "shape": {
+        "galaxy": "eine Markierung in der Entfernung, die ihre Rotverschiebung ergibt; eine so ferne Galaxie ist höchstens ein paar Pixel groß, ihre Form wird also nicht gezeichnet",
+        "browndwarf": "ein Ring in seiner gemessenen Entfernung; ein Brauner Zwerg ist in diesem Maßstab ein Punkt und gibt fast kein sichtbares Licht ab",
+        "whitedwarf": "ein Ring in seiner gemessenen Entfernung; der Weiße Zwerg selbst ist in diesem Maßstab ein Punkt",
+        "cluster": "eine Markierung im Röntgenzentrum des Haufens; die Mitgliedsgalaxien werden nur für Virgo, Coma, Fornax und Perseus gezeichnet (die Stufe der Lokalen Gruppe)"
+      },
+      "quasarZ7": "Ein Quasar, gesehen, wie er etwa {age} Millionen Jahre nach dem Urknall war: einer von {n} bekannten jenseits der Rotverschiebung 7.",
+      "unplaced": {
+        "unnamed": "HYG-Stern {id}",
+        "lead": "{name} ist ein Stern in der Richtung, in die du schaust; niemand hat gemessen, wie weit er entfernt ist",
+        "leadColour": "{name} ist {a} {colour} Stern in der Richtung, in die du schaust; niemand hat gemessen, wie weit er entfernt ist",
+        "note": "Auf den Himmel gezeichnet und nirgends im Raum, denn ein Ort braucht eine Entfernung.",
+        "cite": "HYG Stellar Database v4.4 (CC BY-SA 4.0): nur Richtung und Helligkeit"
+      }
+    },
+    "r13Deep": {
+      "card": {
+        "dso-tarantula-nebula": "Ihr Licht nahe unserer Blickrichtung ist das Foto von Webb; ihr Gas ist ein Modell einer Höhle um den Haufen R136 in einer Hülle aus leuchtendem Gas, die von Molekülwolken eingefasst wird, nach Pellegrini, Baldwin und Ferland (2011). Noch nicht von einem Astronomen geprüft.",
+        "dso-m43": "Ihr Licht stammt aus dem Foto der ESO, ihre Form ist rekonstruiert als kleinere Mulde in derselben dunklen Wolke wie der Orionnebel, beleuchtet vom Stern NU Orionis. Noch nicht von einem Astronomen geprüft.",
+        "dso-m51": "Gebaut aus ihrer veröffentlichten Neigung und Struktur: eine Spirale mit zwei Armen, fast von oben gesehen, ihre Begleiterin NGC 5195 hinter dem Ende ihres Nordarms und der Arm, der sie erreicht; die Tiefen sind ein Modell. Noch nicht von einem Astronomen geprüft.",
+        "dso-m81": "Gebaut aus ihrer veröffentlichten Neigung und Struktur: ein großer, alter Bulge und zwei eng gewundene Arme mit Staub an der Innenseite. Noch nicht von einem Astronomen geprüft.",
+        "dso-m101": "Gebaut aus ihrer veröffentlichten Neigung und Struktur: eine große Scheibe, fast von oben gesehen, viele Arme und ihre riesigen Sternentstehungsgebiete dort, wo der Himmel sie zeigt. Noch nicht von einem Astronomen geprüft.",
+        "dso-m104": "Gebaut aus ihrer veröffentlichten Neigung und Struktur: ein riesiger runder Bulge und eine dünne Scheibe, fast von der Kante gesehen, mit ihrem Staubring davor. Noch nicht von einem Astronomen geprüft.",
+        "dso-antennae-galaxies": "Zwei zusammenstoßende Galaxien dort, wo der Himmel sie zeigt, und ihre beiden Gezeitenschweife; wie weit jeder Teil davor oder dahinter liegt, ist ein Modell nach den Simulationen des Zusammenstoßes. Noch nicht von einem Astronomen geprüft.",
+        "dso-m83": "Gebaut aus ihrer veröffentlichten Neigung und Struktur: eine Balkenspirale, fast von oben gesehen, ihre Arme reich an jungen Sternen und leuchtendem Wasserstoff. Noch nicht von einem Astronomen geprüft.",
+        "dso-ngc-1300": "Gebaut aus ihrer veröffentlichten Struktur: ein langer Balken mit Staubbändern an seinen vorderen Kanten und zwei Armen, die von seinen Enden ausgehen, ihre Form dem Foto von Hubble angepasst. Noch nicht von einem Astronomen geprüft.",
+        "dso-centaurus-a": "Gebaut aus veröffentlichten Zahlen: eine riesige elliptische Galaxie, von einer verbogenen Scheibe aus Staub und jungen Sternen durchzogen, nach einem Modell, das an die Bilder von Spitzer angepasst ist; ihre beiden Jets sind in Falschfarben gezeichnet, denn sie leuchten im Röntgen- und Radiolicht, nicht im sichtbaren Licht. Noch nicht von einem Astronomen geprüft."
+      }
+    },
+    "compare": {
+      "row": "Vergleichen",
+      "hint": "maßstabsgetreu",
+      "missing": "—",
+      "none": "Keine",
+      "yes": "Ja",
+      "no": "Nein",
+      "range": "{a} bis {b}",
+      "numUnit": "{num} {unit}",
+      "modeLabel": "Ansicht",
+      "modes": {
+        "pair": "Nebeneinander",
+        "lab": "Alle Welten"
+      },
+      "withLabel": "Vergleichen mit",
+      "scaleLabel": "Maßstab",
+      "scales": {
+        "true": "Maßstabsgetreu",
+        "same": "Gleiche Breite"
+      },
+      "propLabel": "Alle Welten sortieren nach",
+      "props": {
+        "across": "Breite",
+        "mass": "Masse",
+        "gravity": "Schwerkraft",
+        "temp": "Temperatur",
+        "spin": "Dauer einer Drehung",
+        "year": "Länge eines Jahres",
+        "dist": "Abstand zur Sonne",
+        "moons": "Zahl der Monde"
+      },
+      "names": {
+        "sun": "Die Sonne",
+        "mercury": "Merkur",
+        "venus": "Venus",
+        "earth": "Erde",
+        "moon": "Der Mond",
+        "mars": "Mars",
+        "jupiter": "Jupiter",
+        "saturn": "Saturn",
+        "uranus": "Uranus",
+        "neptune": "Neptun",
+        "pluto": "Pluto"
+      },
+      "the": {
+        "sun": "die Sonne",
+        "moon": "der Mond"
+      },
+      "wider": "{big} ist {n}-mal so breit wie {small}.",
+      "same": "{a} und {b} sind etwa gleich breit.",
+      "figure": "{a} und {b}, gezeichnet {how}.",
+      "figureTrue": "in einem Maßstab",
+      "figureSame": "in gleicher Breite, nicht maßstabsgetreu",
+      "tableLabel": "{a} und {b} im Vergleich",
+      "rows": {
+        "across": "Durchmesser",
+        "mass": "Masse",
+        "gravity": "Schwerkraft",
+        "temp": "Temperatur",
+        "spin": "Eine Drehung dauert",
+        "year": "Ein Jahr dort",
+        "dist": "Von der Sonne",
+        "air": "Atmosphäre",
+        "pressure": "Luftdruck",
+        "moons": "Monde",
+        "rings": "Ringe"
+      },
+      "units": {
+        "km": "km",
+        "earthOne": "Erde",
+        "earths": "Erden",
+        "g": "m/s²",
+        "c": "°C",
+        "hours": "Stunden",
+        "days": "Tage",
+        "years": "Jahre",
+        "au": "AE",
+        "bar": "bar",
+        "microbar": "µbar"
+      },
+      "notes": {
+        "average": "Mittelwert",
+        "flattened": "im Mittel; die Welt ist abgeplattet",
+        "range": "ihr Bereich",
+        "bar1": "auf der Ebene von 1 bar",
+        "edge": "am sichtbaren Rand",
+        "photosphere": "die sichtbare Oberfläche",
+        "retro": "dreht sich rückwärts",
+        "sunSpin": "bei 16° Breite",
+        "withEarth": "mit der Erde",
+        "exosphere": "eine dünne Exosphäre",
+        "photosphereAir": "in der Photosphäre"
+      },
+      "air": {
+        "part": "{share} % {gas}",
+        "join": ", ",
+        "almostNone": "Fast keine",
+        "noSurface": "Keine Oberfläche"
+      },
+      "gas": {
+        "hydrogen": "Wasserstoff",
+        "helium": "Helium",
+        "methane": "Methan",
+        "nitrogen": "Stickstoff",
+        "oxygen": "Sauerstoff",
+        "argon": "Argon",
+        "carbon dioxide": "Kohlendioxid"
+      },
+      "source": "Planetary Fact Sheets der NASA, gelesen am {date}.",
+      "giantNote": "Ein Riese hat keine Oberfläche: Seine Schwerkraft und seine Temperatur gelten auf der Ebene von 1 bar.",
+      "moonsNote": "Die Zahl der Monde wächst, wenn neue bestätigt werden.",
+      "spinNote": "Die Drehung der Sonne ist der Wert des Datenblatts bei 16° Breite.",
+      "drawnTrue": "In einem Maßstab aus dem mittleren Radius jeder Welt gezeichnet, keine Fotos.",
+      "drawnSame": "Gleiche Breite, also nicht maßstabsgetreu. Ringe behalten ihren Anteil daran.",
+      "tiny": "{name} ist hier kleiner als ein Pixel und wird als Punkt gezeichnet.",
+      "ringsDrawn": "Die Ringe sind für das Bild gekippt; ihre Radien sind die der NASA.",
+      "labLog": "Die Balken sind logarithmisch, damit kleine Werte sichtbar bleiben.",
+      "labLinear": "Die Balken sind proportional zur Anzahl.",
+      "labTitle": "Vergleich: {name}",
+      "thisCard": "Die Welt auf diesem Steckbrief"
+    },
+    "passportKinds": {
+      "kindsTitle": "Geöffnet, nach Art",
+      "noKinds": "Noch nichts, was sich nach Art zählen lässt.",
+      "kinds": {
+        "worlds": "Planeten, Monde und die Sonne",
+        "stations": "Raumstationen",
+        "satellites": "Satelliten und ihre Raketen",
+        "spacecraft": "Sonden und Weltraumteleskope",
+        "small": "Kometen und Asteroiden",
+        "stars": "Sterne",
+        "exoplanets": "Planeten anderer Sterne",
+        "deep": "Nebel, Galaxien und der tiefe Himmel",
+        "earth": "Orte und Wetter auf der Erde"
+      },
+      "notedTitle": "Vermerkt",
+      "noNoted": "Noch nichts vermerkt. Öffne einen Ort auf der Karte.",
+      "notedFine": "Der Tag, an dem in diesem Browser zum ersten Mal zu sehen war, dass ein Vermerk gilt. Er bleibt hier, wird nie eingeordnet oder gesendet.",
+      "noted": {
+        "first": {
+          "name": "Ein erster Ort",
+          "said": "Du hast einen Ort auf der Karte geöffnet."
+        },
+        "planets": {
+          "name": "Alle acht Planeten",
+          "said": "Du hast jeden Planeten geöffnet, von Merkur bis Neptun."
+        },
+        "station": {
+          "name": "Eine Raumstation",
+          "said": "Du hast eine Station im Orbit geöffnet."
+        },
+        "craft": {
+          "name": "Ein Raumfahrzeug da draußen",
+          "said": "Du hast eine Sonde oder ein Weltraumteleskop geöffnet."
+        },
+        "small": {
+          "name": "Ein Komet oder ein Asteroid",
+          "said": "Du hast einen kleinen Körper des Sonnensystems geöffnet."
+        },
+        "star": {
+          "name": "Ein Stern",
+          "said": "Du hast einen Stern jenseits der Sonne geöffnet."
+        },
+        "exoplanet": {
+          "name": "Der Planet eines anderen Sterns",
+          "said": "Du hast einen Planeten geöffnet, der einen anderen Stern umkreist."
+        },
+        "deep": {
+          "name": "Der tiefe Himmel",
+          "said": "Du hast einen Nebel, eine Galaxie oder einen Haufen geöffnet."
+        },
+        "trip": {
+          "name": "Eine Reise bis zum Ende",
+          "said": "Du hast eine geführte Reise beendet."
+        },
+        "eyes": {
+          "name": "Mit eigenen Augen gesehen",
+          "said": "Du hast etwas als gesehen abgehakt."
+        },
+        "every": {
+          "name": "Eins von jeder Art",
+          "said": "Du hast von jeder Art oben mindestens eins geöffnet."
+        }
+      }
+    },
+    "photoCompare": {
+      "title": "Mit dem Foto vergleichen",
+      "reconstruction": "Rekonstruktion",
+      "photograph": "Foto",
+      "valueText": "{n} % Foto",
+      "flying": "Flug zu dem Ort, von dem aus das Foto aufgenommen wurde.",
+      "note": "Die Karte zeichnet ein 3D-Modell. Das Foto wird nur hier gezeigt: flach und der Sonne zugewandt, dreh dich also weg, und es blendet aus."
+    },
+    "entrances": {
+      "label": "Drei Wege hinein",
+      "tonight": "Heute Nacht",
+      "tonightTitle": "Was heute Nacht über dir steht, von deinem Ort aus",
+      "explore": "Erkunden",
+      "exploreTitle": "Die ganze Karte ansehen",
+      "trip": "Geführte Reise",
+      "tripTitle": "Startet die erste geführte Reise der Liste"
+    }
+  });
+}
+// 1.6.3: end
 
 export const GLOSSARY = {
   "orbit": "Ein Weg um etwas herum, von der Schwerkraft gehalten. Wer seitlich schnell genug ist, fällt immer wieder an der Erde vorbei, statt auf sie.",

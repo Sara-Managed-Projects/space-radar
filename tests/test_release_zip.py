@@ -17,7 +17,9 @@ stations. Held:
   3. The .sha256 beside it is the zip's.
   4. It REFUSES, non-zero and with the reason: no saved data, saved data without the stations, a
      version that is not MAJOR.MINOR.PATCH, a missing LICENSE. Each is the zip a school could not use.
-  5. Its own check catches a zip that lost a promised file (verify() on a zip with one removed).
+  5. Its own check catches a zip that lost a promised file, or a brand icon the manifest names
+     (verify() on a zip with one removed). The four PNGs in a good zip match the repository,
+     and the stamped shell carries their hashes.
   6. The real tree has every file the zip promises beside site/, and release.yml builds with this
      script and still serves the unpacked zip before it publishes.
 """
@@ -37,8 +39,22 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 import build_release  # noqa: E402
+import stamp_sw  # noqa: E402
 
 problems: list = []
+
+ICON_PNGS = ("apple-touch-icon.png", "icon-192.png", "icon-512.png", "icon-maskable-512.png")
+
+
+def repo_line(needle: str) -> str:
+    for line in (ROOT / "site/index.html").read_text(encoding="utf-8").splitlines():
+        if needle in line:
+            return line.strip()
+    raise SystemExit(f"site/index.html has no line containing {needle}")
+
+
+FAVICON_LINE = repo_line('rel="icon"')
+APPLE_LINE = repo_line("apple-touch-icon")
 
 
 def check(ok: bool, msg: str) -> None:
@@ -55,12 +71,18 @@ def make_checkout(tmp: Path) -> Path:
     (site / "images/icons").mkdir(parents=True)
     (root / "docs").mkdir()
     (root / "scripts").mkdir()
-    (site / "index.html").write_text('<!doctype html><canvas id="stage"></canvas><script type="module" src="js/main.js"></script>\n')
+    (site / "index.html").write_text(
+        "<!doctype html><canvas id=\"stage\"></canvas>\n"
+        + FAVICON_LINE + "\n"
+        + APPLE_LINE + "\n"
+        + '<script type="module" src="js/main.js"></script>\n'
+    )
     (site / "js/main.js").write_text("export const boot = () => 1;\n")
     (site / "css/site.css").write_text("body { margin: 0; }\n")
     shutil.copy2(ROOT / "site/sw.js", site / "sw.js")
     shutil.copy2(ROOT / "site/manifest.webmanifest", site / "manifest.webmanifest")
-    (site / "images/icons/icon-192.png").write_bytes(b"\x89PNG\r\n\x1a\n")
+    for png in ICON_PNGS:
+        shutil.copy2(ROOT / "site/images/icons" / png, site / "images/icons" / png)
     (site / ".DS_Store").write_bytes(b"x")
     (site / "js/.DS_Store").write_bytes(b"x")
     (site / "data/v1/index.json").write_text(json.dumps({"schema": 1, "snapshots": {"celestrak-stations": {"fetched_at": "2026-10-07T00:00:00Z"}}}))
@@ -106,6 +128,14 @@ with tempfile.TemporaryDirectory() as t:
             listed = set(shell) if isinstance(shell, dict) else {(e[0] if isinstance(e, list) else e.get("url", e)) if not isinstance(e, str) else e for e in shell}
             check(any("js/main.js" in str(x) for x in listed) and any("index.html" in str(x) or str(x) in ("./", "") for x in listed), f"and lists the app's files ({sorted(map(str, listed))[:6]})")
             check(not any("data/v1" in str(x) for x in listed), "but not the data: that is kept as it is used")
+            hashes = {e[0]: e[1] for e in (build.get("shell") or []) if isinstance(e, (list, tuple)) and len(e) >= 2}
+            for png in ICON_PNGS:
+                rel = f"images/icons/{png}"
+                digest = hashlib.sha256((ROOT / "site" / rel).read_bytes()).hexdigest()[:stamp_sw.HASH_CHARS]
+                check(hashes.get(rel) == digest, f"the stamped shell lists {rel} as {digest} (got {hashes.get(rel)!r})")
+                member = f"site/{rel}"
+                check(zf.read(f"{name}/{member}") == (ROOT / member).read_bytes(), f"the zip's {member} matches the repository file")
+            check(FAVICON_LINE in read("site/index.html"), "the zip's index.html carries the repository favicon line")
         check((root / "site/sw.js").read_text() == before, "the checkout's own sw.js is not stamped")
         sha = (out / f"{name}.zip.sha256").read_text().split()
         check(len(sha) == 2 and sha[0] == hashlib.sha256(z.read_bytes()).hexdigest() and sha[1] == f"{name}.zip", "the .sha256 beside the zip is the zip's")
@@ -137,7 +167,7 @@ with tempfile.TemporaryDirectory() as t:
 
     # --- 5: its own check sees a zip that lost something --------------------------------------------
     if z.is_file():
-        for lost in ("site/data/v1/index.json", "docs/RUN_LOCALLY.md", "START-HERE.txt"):
+        for lost in ("site/data/v1/index.json", "docs/RUN_LOCALLY.md", "START-HERE.txt", "site/images/icons/icon-512.png"):
             cut = tmp / "cut.zip"
             with zipfile.ZipFile(z) as src, zipfile.ZipFile(cut, "w", zipfile.ZIP_DEFLATED) as dst:
                 for item in src.infolist():
@@ -158,6 +188,36 @@ with tempfile.TemporaryDirectory() as t:
         except build_release.Refused as err:
             check("stamped" in str(err), f"verify() says the worker is not stamped: {err}")
 
+        def replaced(dest: Path, member: str, data: bytes) -> None:
+            with zipfile.ZipFile(z) as src, zipfile.ZipFile(dest, "w", zipfile.ZIP_DEFLATED) as dst:
+                for item in src.infolist():
+                    dst.writestr(item, data if item.filename == member else src.read(item.filename))
+
+        def names_refusal(dest: Path, needle: str, why: str) -> None:
+            try:
+                build_release.verify(dest, name)
+                check(False, f"verify() passes a zip {why}")
+            except build_release.Refused as err:
+                check(needle in str(err), f"verify() names {needle} for a zip {why}: {err}")
+
+        empty_icon = tmp / "empty-icon.zip"
+        replaced(empty_icon, f"{name}/site/images/icons/icon-512.png", b"")
+        names_refusal(empty_icon, "site/images/icons/icon-512.png", "whose icon-512.png is empty")
+        with zipfile.ZipFile(z) as src:
+            manifest = json.loads(src.read(f"{name}/site/manifest.webmanifest"))
+            page = src.read(f"{name}/site/index.html")
+        manifest["icons"][0]["src"] = "https://example.invalid/icon.png"
+        absolute = tmp / "absolute-icon.zip"
+        replaced(absolute, f"{name}/site/manifest.webmanifest", json.dumps(manifest).encode())
+        names_refusal(absolute, "https://example.invalid/icon.png is absolute", "whose manifest icon is absolute")
+        manifest["icons"][0]["src"] = "../LICENSE"
+        escaped = tmp / "escaped-icon.zip"
+        replaced(escaped, f"{name}/site/manifest.webmanifest", json.dumps(manifest).encode())
+        names_refusal(escaped, "../LICENSE escapes site/", "whose manifest icon climbs out of site/")
+        touch = tmp / "touch-icon.zip"
+        replaced(touch, f"{name}/site/index.html", page.replace(b"images/icons/apple-touch-icon.png", b"../LICENSE", 1))
+        names_refusal(touch, "../LICENSE escapes site/", "whose apple-touch icon climbs out of site/")
+
 # --- 6: the real tree and the workflow --------------------------------------------------------------
 for rel in build_release.BESIDE + ("site/index.html", "site/sw.js", "site/manifest.webmanifest", "site/js/main.js"):
     check((ROOT / rel).is_file(), f"{rel} is in the repository: the zip promises it")
@@ -174,4 +234,5 @@ if problems:
     print("release zip FAILED:\n  " + "\n  ".join(problems), file=sys.stderr)
     sys.exit(1)
 print(f"release zip ok: scripts/build_release.py builds space-radar-<version>.zip from a small checkout with {len(build_release.PROMISED)} promised files, "
-      "a stamped worker and its sha256; refuses 7 checkouts a school could not use; its own check names a lost file; release.yml builds with it")
+      "a stamped worker and its sha256; the four brand icons match the tree and the shell; refuses 7 checkouts a school could not use; "
+      "its own check names a lost file and a bad icon; release.yml builds with it")

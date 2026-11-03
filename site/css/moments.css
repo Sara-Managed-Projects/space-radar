@@ -6,7 +6,7 @@
  * scrubber with its chapter ticks, Chapters, Share) with the honesty line inside it. Every target 44 px on touch.
  */
 
-html.sr-moment-on :is(#sr-side, #sr-rail, #sr-time, .sr-top, .sr-toast, .sr-scenenote, .sr-keyhint, #labels, #sr-hud, .sr-card, .sr-tour) {
+html.sr-moment-on :is(#sr-side, #sr-rail, #sr-time, .sr-top, .sr-toast, .sr-scenenote, .sr-keyhint, #labels, #sr-hud, .sr-card, .sr-tour, .sr-scalerail) {
   display: none;
 }
 

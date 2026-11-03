@@ -317,6 +317,8 @@ export const COPY = {
     "menuShare": "Compartilhar",
     "menuHide": "Ocultar os painéis",
     "menuGitHub": "Código no GitHub",
+    "blog": "Blog",
+    "blogHref": "https://blog.spaceradar.ai/",
     "tour": "Fazer o tour",
     "menuTour": "Fazer o tour"
   },
@@ -1063,7 +1065,7 @@ export const COPY = {
       "exoticStar": "um anel na distância medida; a estrela em si é um ponto nesta escala"
     },
     "storm": "desenhada como uma marca no centro; a tempestade em si é a nuvem ao redor",
-    "feature": "um lugar com nome: nada é desenhado aqui além de uma marca no centro, segundo o catálogo da UAI; o chão embaixo é o próprio mapa", // 0077 W3-d
+    "feature": "um lugar com nome: nada é desenhado aqui além de uma marca no centro, posta segundo a fonte citada; o chão embaixo é o próprio mapa", // 0077 W3-d
     "objectSpin": { "spin": "ele gira em torno do polo medido, na velocidade medida; o lado voltado para o Sol neste momento não é uma previsão", "pair": "os dois giram em torno do polo medido, nas velocidades medidas, e Dimorphos dá a volta na distância e no período medidos depois do impacto da DART; onde ele está nessa órbita é ilustrativo", "comet": "ele gira em torno do polo medido, na velocidade medida em 2014, que o Sol alterou em alguns minutos a cada passagem desde então; o lado voltado para o Sol neste momento não é uma previsão", "still": "ele é desenhado na orientação do seu modelo de radar e não gira aqui: o modelo não diz para onde aponta o seu eixo de rotação" }, // 0077 W3-d
     "objectSeen": { "lutetia": "as imagens da Rosetta cobrem mais da metade da sua superfície; o resto da forma é ajustado a partir das variações de brilho, não fotografado", "steins": "as imagens da Rosetta cobrem cerca de 60 por cento da sua superfície; o resto da forma é ajustado a partir das variações de brilho, não fotografado", "donj": "a forma é construída a partir das imagens da Lucy por fotogrametria estéreo e pelo ajuste do seu contorno; o lado que a Lucy não viu é o do ajuste", "arrokoth": "as imagens da New Horizons cobrem o lado junto ao qual ela passou; o outro lado é inferido, não fotografado, e a cor é o seu mapa de albedo num tom vermelho", "radar": "a forma é construída a partir de ecos de radar, não de imagens: o contorno é medido e os detalhes mais finos não", "comet": "a forma é a da Rosetta, a partir de mais de 20 000 imagens ao longo de dois anos, e cobre toda a superfície" }, // 0079 B1
     "objectRelief": "o modelo é simplificado, e o relevo fino nele é o do modelo completo, gravado na superfície", // 0079 B1
@@ -3816,6 +3818,648 @@ export const COPY = {
     }
   }
 };
+
+// 1.6.2 (internal #1057): the words of the Moments (copy/en.moments.js and its three story files), Brazilian Portuguese. Machine-drafted like the rest of this file
+// (docs/TRANSLATING.md): drafted by a program from the English, NOT read by a native speaker. The spoken lines of the recordings
+// (Armstrong's first words) stay in the language they were said in. Added to COPY here; the story files call HOOK.localise after they load.
+Object.assign(COPY, {
+  "momentPlayer": {
+    "micro": "Momento",
+    "play": "Reproduzir",
+    "pause": "Pausar",
+    "replay": "Ver de novo",
+    "close": "Fechar o momento",
+    "chapters": "Capítulos",
+    "chaptersTitle": "Ir para um capítulo",
+    "share": "Copiar um link para este segundo",
+    "copied": "Link copiado",
+    "copyFailed": "Copie este link: {url}",
+    "director": "Direção",
+    "directorTitle": "Devolver a câmera à direção",
+    "freeNote": "Sua câmera. Arraste para olhar ao redor; Direção a pega de volta.",
+    "scrubber": "Tempo de missão",
+    "met": "Tempo decorrido da missão",
+    "rateTitle": "Aqui o tempo corre {rate} mais rápido que o real",
+    "realTime": "Tempo real",
+    "loading": "Carregando o momento…",
+    "missing": "Não existe nenhum momento chamado {id}.",
+    "unreachable": "Este momento não carregou. Ele só fica salvo neste aparelho depois de aberto uma vez online.",
+    "modelMissing": "O modelo {model} não carregou; a trajetória e as chamas continuam desenhadas.",
+    "chapterOf": "Capítulo {n} de {m}",
+    "quoteBy": "{who}, {at}",
+    "truthWords": {
+      "measured": "Medido",
+      "reconstructed": "Reconstruído",
+      "illustrative": "Ilustrativo"
+    },
+    "truthLine": "{truth}: {path}.",
+    "cutNote": "Por enquanto, os estágios são recortados de um único modelo.",
+    "drawnNote": "As chamas e o vapor são desenhados.",
+    "groundNote": "O chão perto da plataforma é ilustrativo; mapa da Terra do Solar System Scope, CC BY 4.0.",
+    "keys": "Espaço reproduz ou pausa, as setas avançam, Esc fecha"
+  },
+  "momentShelf": {
+    "title": "Momentos",
+    "note": "Sete missões repetidas em um único relógio, com os horários reais dos eventos. As trajetórias são reconstruídas e dizem isso.",
+    "minutes": "{m} min",
+    "replay": "Rever este momento",
+    "replayTitle": "Rever {title} no relógio da missão",
+    "replayNamed": "Rever {title}",
+    "cards": {
+      "apollo-11": {
+        "title": "Apollo 11",
+        "when": "de 16 a 24 de julho de 1969",
+        "blurb": "Da plataforma 39A ao Pacífico passando pela Base da Tranquilidade: decolagem, a Lua, o pouso, a subida, a volta."
+      },
+      "apollo-13": {
+        "title": "Apollo 13",
+        "when": "de 11 a 17 de abril de 1970",
+        "blurb": "Da plataforma 39A ao Pacífico: o pouso na Lua que não aconteceu, um tanque de oxigênio que estourou e o módulo lunar como bote salva-vidas."
+      },
+      "artemis-ii": {
+        "title": "Artemis II",
+        "when": "de 1 a 10 de abril de 2026",
+        "blurb": "Da plataforma 39B ao Pacífico ao largo de San Diego, em volta do lado oculto da Lua. Diz-se o que foi voado e o que estava planejado."
+      },
+      "sputnik-1": {
+        "title": "Sputnik 1",
+        "when": "4 de outubro de 1957",
+        "blurb": "De Baikonur à primeira volta à Terra: o primeiro satélite artificial, uma esfera polida de 585 mm, e o seu bipe."
+      },
+      "voskhod-2": {
+        "title": "Voskhod 2",
+        "when": "de 18 a 19 de março de 1965",
+        "blurb": "Alexei Leonov sai ao espaço por doze minutos por uma câmara de ar inflável, e a tripulação pousa à mão na taiga, longe do seu campo."
+      },
+      "sts-1": {
+        "title": "STS-1",
+        "when": "de 12 a 14 de abril de 1981",
+        "blurb": "O primeiro ônibus espacial: o Columbia a partir da plataforma 39A, os foguetes e o tanque, 54 horas em órbita e uma planagem até o leito seco de Edwards."
+      },
+      "vostok-1": {
+        "title": "Vostok 1",
+        "when": "12 de abril de 1961",
+        "blurb": "Yuri Gagarin, uma volta à Terra em 108 minutos, de Baikonur a um campo perto de Smelovka."
+      }
+    }
+  },
+  "momentStories": {
+    "demo-saturn": {
+      "title": "Saturn V: da ignição à separação dos estágios",
+      "blurb": "Os três primeiros minutos da Apollo 11, em 16 de julho de 1969, da plataforma do Complexo de Lançamento 39A.",
+      "chIgnition": "Ignição",
+      "chLiftoff": "Decolagem",
+      "chClimb": "Pressão dinâmica máxima",
+      "chStaging": "Separação dos estágios",
+      "ignition": "T−8.9 s: a sequência de ignição liga os cinco motores F-1, o central primeiro, depois os pares externos.",
+      "holddown": "Os braços de fixação mantêm o foguete na plataforma até os cinco motores chegarem ao empuxo total.",
+      "liftoff": "Decolagem, 13:32:00.6 UTC: cinco F-1, uns 33 800 kN, erguendo quase 3 000 toneladas.",
+      "tower": "Livre da torre, o foguete gira para o azimute de voo, 72 graus a leste do norte.",
+      "maxq": "Passada a velocidade do som, um minuto depois vem a pressão dinâmica máxima, quando o ar empurra mais forte: 35 kPa (735 lb/ft²).",
+      "ceco": "T+135 s: o motor central desliga, para manter a aceleração abaixo de 4 g.",
+      "staging": "T+161.7 s: os motores externos desligam. A uns 67 km de altura o S-IC se solta e cai, com seus retrofoguetes acesos.",
+      "sii": "T+163.0 s: os cinco motores J-2 do S-II acendem. O hidrogênio queima com uma chama pálida e quase transparente.",
+      "interstage": "O anel entre estágios se solta; em T+197.9 s a torre de escape sai. A órbita de estacionamento está 8.5 minutos adiante.",
+      "pathAscent": "horários do Relatório da Missão Apollo 11, com as alturas intermediárias aproximadas",
+      "sources": "Relatório da Missão Apollo 11, NASA MSC-00171, 1969 (tabela 3-I, sequência de eventos; seção 7.1, lançamento)"
+    },
+    "vostok-1": {
+      "title": "Vostok 1: a primeira pessoa no espaço",
+      "blurb": "Yuri Gagarin, 12 de abril de 1961: de Baikonur, uma volta à Terra, até um campo perto de Smelovka, no relógio da missão, em 108 minutos.",
+      "chPad": "A Partida de Gagarin",
+      "chAscent": "Subida",
+      "chOrbit": "Uma órbita",
+      "chRetro": "Retrofrenagem",
+      "chEntry": "Reentrada",
+      "chEject": "Ejeção",
+      "chLand": "Pouso",
+      "ready": "Baikonur, Local 1, 06:07 UTC. Yuri Gagarin, 27 anos, está na cápsula no alto do foguete R-7.",
+      "korolev": "Serguei Korolev no rádio: “Estágio preliminar… intermediário… principal… decolagem!”",
+      "liftoff": "Decolagem. Gagarin: “Poyekhali!”, “Vamos!”",
+      "boosters": "T+119 s: os quatro propulsores laterais se esgotam e se soltam.",
+      "shroud": "T+156 s: a carenagem sobre a cápsula é lançada fora.",
+      "core": "T+300 s: o estágio central se esgota e se solta; o último estágio acende.",
+      "earth": "Por volta de T+6 min, Gagarin: “Estou vendo a Terra. A visibilidade é boa.”",
+      "kosberg": "Por volta de T+10 min o último estágio desliga. Gagarin: “O Kosberg funcionou!”, pelo projetista do motor.",
+      "orbit": "Em órbita: 181 por 327 km, inclinada 64.95 graus em relação ao equador, 89.1 minutos por volta. A cápsula se separa do estágio.",
+      "retro": "T+1 h 18 min, sobre a costa oeste da África: o retrofoguete queima por cerca de 42 segundos. Seu horário e lugar são publicados; sua força aqui é ajustada ao pouso.",
+      "wires": "O módulo de instrumentos deveria se soltar dez segundos após a retrofrenagem. Um feixe de fios o prende; os dois caem juntos, girando, no ar.",
+      "entry": "Os fios queimam e a esfera se estabiliza com o escudo térmico para a frente. Gagarin relatou depois mais de 10 g.",
+      "eject": "A 7 km a escotilha é arrancada e o assento dispara Gagarin para fora. A esfera da Vostok pousava forte demais para uma pessoa dentro.",
+      "chutes": "A 2.5 km o paraquedas principal da cápsula se abre, com 27 m de largura; o do piloto abriu quase na hora. O assento cai solto.",
+      "landing": "T+1 h 48 min: Gagarin pousa a 26 km a sudoeste de Engels, na região de Saratov, 108 minutos após o lançamento. As fontes diferem em dez minutos sobre o pouso.",
+      "pathAscent": "a subida são os horários publicados dos eventos ligados por curvas suaves; as alturas e distâncias entre eles são nossas",
+      "pathOrbit": "a órbita, a retrofrenagem e a reentrada são arcos de dois corpos ajustados aos horários publicados e ao campo de pouso, não dados de rastreio",
+      "pathPilot": "a descida sob o paraquedas do piloto é desenhada; nenhuma fonte dá a distância até a cápsula",
+      "srcWiki": "Wikipédia, Vostok 1 (horários dos eventos, órbita, citações; lido em 2 de novembro de 2026)",
+      "srcNssdc": "NASA NSSDCA, Vostok 1 (órbita, nave)"
+    },
+    "apollo-11": {
+      "title": "Apollo 11: à Lua e de volta",
+      "blurb": "Do Complexo de Lançamento 39A, em 16 de julho de 1969, ao Pacífico no dia 24: decolagem, a Lua, a Base da Tranquilidade e a volta, no relógio da missão.",
+      "chIgnition": "Ignição",
+      "chLiftoff": "Decolagem",
+      "chStaging": "Separação dos estágios",
+      "chParking": "Órbita de estacionamento",
+      "chTli": "Rumo à Lua",
+      "chCoast": "Três dias de viagem",
+      "chLoi": "Para a órbita lunar",
+      "chUndock": "O Eagle se separa",
+      "chDescent": "Descida propulsada",
+      "chSurface": "Base da Tranquilidade",
+      "chAscent": "De volta lá para cima",
+      "chDock": "Acoplamento",
+      "chTei": "Para casa",
+      "chEntry": "Reentrada",
+      "chSplash": "Amerissagem",
+      "ignition": "T−8.9 s: a sequência de ignição liga os cinco motores F-1, o central primeiro, depois os pares externos.",
+      "liftoff": "Decolagem, 13:32:00 UTC: cinco F-1, uns 33 800 kN, erguendo quase 3 000 toneladas.",
+      "tower": "Livre da torre, o foguete gira para o azimute de voo, 72 graus a leste do norte.",
+      "maxq": "Passada a velocidade do som, um minuto depois; então a pressão dinâmica máxima, quando o ar empurra mais forte: 35 kPa.",
+      "ceco": "T+135 s: o motor central desliga, para manter a aceleração abaixo de 4 g.",
+      "staging": "T+161.7 s: os motores externos desligam. A uns 67 km de altura o S-IC se solta e cai, com seus retrofoguetes acesos.",
+      "sii": "T+163.0 s: os cinco motores J-2 do S-II acendem. O hidrogênio queima com uma chama pálida e quase transparente.",
+      "interstage": "O anel entre estágios se solta; em T+197.9 s a torre de escape sai.",
+      "siicut": "T+9 min 13 s: o S-II desliga e se solta; o S-IVB acende.",
+      "parking": "T+11 min 52 s: órbita de estacionamento, a 185 km. Duas horas e meia de verificações, uma volta e meia à Terra.",
+      "tli": "2:44:16: o S-IVB acende de novo por 5 min 48 s e leva o conjunto a 10.8 km/s. O destino é a Lua.",
+      "sla": "3:17: os quatro painéis em volta do módulo lunar se abrem. O Columbia se separa, dá meia-volta e acopla de frente com o Eagle (não desenhado).",
+      "extract": "Por volta de 3:57: o Columbia puxa o Eagle para fora do S-IVB. O estágio vazio fica para trás.",
+      "coast": "Três dias até a Lua, 384 000 km, desenhados a umas 8 000 vezes a velocidade real. A nave tem 11 metros, então é um ponto.",
+      "loi": "75:49:50, atrás da Lua e sem contato de rádio: o motor de serviço queima seis minutos para ser capturado.",
+      "lunarorbit": "Órbita lunar, a uns 100 km de altura, duas horas por volta.",
+      "undock": "100:12: o Eagle, com Armstrong e Aldrin, se separa do Columbia, onde Collins fica.",
+      "pdi": "102:33:05: começa a descida propulsada, a 15 km de altura e a uns 500 km do local.",
+      "landing": "O computador pousaria numa cratera cheia de pedras. Armstrong assume os controles e segue voando, com menos de um minuto de combustível.",
+      "landed": "102:45:40, 20:17:40 UTC. “Houston, Tranquility Base here. The Eagle has landed.”",
+      "step": "109:24:15, 02:56 UTC de 21 de julho: Armstrong desce da escada.",
+      "smallstep": "“That's one small step for [a] man, one giant leap for mankind.” Armstrong, 109:24:48; o trecho é a gravação da NASA.",
+      "liftoffe": "124:22: o estágio de subida decola do estágio de descida, que fica na Lua. 17:54 UTC de 21 de julho.",
+      "rendezvous": "O Eagle persegue o Columbia de 18 km até 100 km. As manobras são desenhadas como uma forma, não as da missão.",
+      "docked": "128:03, 21:35 UTC: acoplados. A tripulação e 21.5 kg de rocha lunar passam para o Columbia.",
+      "jettison": "130:09: o estágio de subida do Eagle é solto para circular a Lua.",
+      "tei": "135:23:42, no lado oculto: o motor de serviço queima 2 min 30 s. Para casa.",
+      "home": "Dois dias e meio de volta, os mesmos 384 000 km.",
+      "smsep": "194:49: o módulo de serviço é cortado e a cápsula vira o escudo térmico para a frente.",
+      "entry": "195:03, interface de reentrada, a 122 km de altura e 11 km/s. O escudo brilha; até uns 6 g.",
+      "drogue": "Por volta de 195:12: dois paraquedas estabilizadores, depois três principais.",
+      "mains": "Três paraquedas principais, de 25 m de largura, reduzem a cápsula a uns 9 m/s.",
+      "splash": "195:18:35, 16:50:35 UTC de 24 de julho: amerissagem no Pacífico, a 24 km do porta-aviões USS Hornet (não desenhado). Oito dias, três horas, 18 minutos.",
+      "pathAscent": "os horários dos eventos do Relatório da Missão, com alturas e distâncias intermediárias aproximadas",
+      "pathTrip": "reconstruído a partir dos horários do Diário de Voo como arcos de dois corpos: uma cônica de ida, um círculo em volta da Lua, uma cônica de volta; não são dados de rastreio",
+      "pathLm": "a descida é desenhada de trás para a frente a partir da Base da Tranquilidade e o encontro é uma forma; os horários dos eventos são os da missão",
+      "srcReport": "Relatório da Missão Apollo 11, NASA MSC-00171, 1969 (horários dos eventos, lançamento, pouso)",
+      "srcJournal": "Diário de Voo da Apollo 11, NASA (horários dos eventos ao segundo)",
+      "srcClip": "As primeiras palavras de Armstrong na Lua: gravação da NASA, domínio público, do Wikimedia Commons"
+    },
+    "artemis-ii": {
+      "title": "Artemis II: em volta da Lua",
+      "blurb": "Do Complexo de Lançamento 39B, em 1 de abril de 2026, ao Pacífico ao largo de San Diego no dia 10: quatro pessoas em volta do lado oculto da Lua, no relógio da missão.",
+      "chPad": "Plataforma 39B",
+      "chLiftoff": "Decolagem",
+      "chStaging": "Propulsores soltos",
+      "chOrbit": "Órbita terrestre alta",
+      "chTli": "Rumo à Lua",
+      "chMoon": "O lado oculto",
+      "chHome": "A volta",
+      "chEntry": "Reentrada",
+      "chSplash": "Amerissagem",
+      "ready": "Complexo de Lançamento 39B, Centro Espacial Kennedy, 1 de abril de 2026. Wiseman, Glover, Koch e Hansen estão a bordo da Orion, no alto do Space Launch System.",
+      "cored": "T−6.4 s: os quatro motores RS-25 do estágio central dão partida. Voado, como planejado.",
+      "liftoff": "Decolagem, 22:35:12 UTC (18:35 EDT): os dois propulsores de cinco segmentos acendem em zero. Voado.",
+      "srb": "Por volta de T+2 min: os propulsores se esgotam e se separam a 48 km, a 5 000 km/h. Voado; caem no Atlântico.",
+      "las": "Planejado, T+3 min 22 s: a torre de aborto do lançamento é lançada fora. Os voos relatados não dão o segundo; este é o do plano de voo.",
+      "meco": "Planejado, T+8 min: o estágio central desliga, num arco suborbital com apogeu perto de 2 300 km. O horário do plano de voo.",
+      "coresep": "O estágio central é solto e cai numa reentrada destrutiva sobre o Pacífico, umas duas horas após o lançamento. Voado.",
+      "prb": "Por volta de T+50 min, no alto do arco: o estágio superior queima para tirar o ponto baixo de dentro do ar. Voado, o segundo não é publicado.",
+      "arb": "Uma hora depois, no ponto baixo: uma queima de 15 minutos eleva o lado distante da órbita a 70 000 km, uma volta de quase um dia. Voado.",
+      "fairings": "Planejado: os três painéis em volta do módulo de serviço são lançados fora; os quatro painéis solares se desdobram. O horário do plano de voo, desenhados aqui já abertos.",
+      "arrays": "Os quatro painéis da Orion estão abertos: farão sua energia por dez dias.",
+      "sep": "Planejado: a Orion se separa do estágio superior; Glover então a pilota à mão ao lado do estágio por uns 70 minutos. O horário da separação não é publicado.",
+      "tli": "Dia de voo 2, umas 25 horas depois: o motor principal do módulo de serviço queima 5 min 49 s, rumo à Lua. Voado; o minuto mostrado é o do plano de voo.",
+      "outbound": "Quatro dias de ida. Uma queima de correção de ida foi voada, de 17.5 s no dia de voo 5; é pequena demais para desenhar.",
+      "record": "17:56 UTC de 6 de abril: a Orion passa o recorde de distância da Apollo 13, de 1970, 248 655 milhas da Terra. Voado.",
+      "moon": "Dia de voo 6: a Orion entra na esfera de influência da Lua. Não entrará em órbita: contorna o lado oculto e cai de volta para casa.",
+      "los": "22:46 UTC: atrás da Lua, sem contato por 38 minutos. Voado.",
+      "closest": "Maior aproximação, 23:00 UTC de 6 de abril: 6 545 km acima do lado oculto da Lua. Voado.",
+      "far": "23:02 UTC: mais longe da Terra, 406 771 km. Voado.",
+      "aos": "23:24 UTC: contato de novo, de trás da Lua. Voado.",
+      "home": "Quatro dias de volta. Três queimas de correção de volta foram voadas, de 15, 9 e 8 segundos; são pequenas demais para desenhar.",
+      "esmsep": "Planejado: o módulo de serviço é solto uns 20 minutos antes da reentrada. O horário da soltura não é publicado; desenha-se o do plano de voo.",
+      "entry": "Interface de reentrada, planejada uns 13 minutos antes da amerissagem: a 122 km de altura e 11 km/s, com o escudo térmico brilhando. Uma reentrada direta mais íngreme substituiu a reentrada com salto planejada. Voado.",
+      "drogue": "Paraquedas estabilizadores, depois paraquedas-piloto e três principais, de 35 m de largura. Voado; os horários são os do plano de voo.",
+      "mains": "Três principais levam a cápsula até o mar.",
+      "splash": "Amerissagem, 00:07:27 UTC de 11 de abril (17:07 PDT, 10 de abril), 32.3 N 117.8 O, a sudoeste de San Diego; o USS John P. Murtha recolhe a tripulação (navio não desenhado). Nove dias, uma hora, 32 minutos. Voado.",
+      "pathAscent": "os horários do plano de voo, com alturas e distâncias intermediárias nossas; a decolagem e a separação dos propulsores são voadas",
+      "pathTrip": "reconstruído a partir da órbita voada, da maior aproximação e da amerissagem, como arcos de dois corpos e uma hipérbole em volta da Lua; não são dados de rastreio",
+      "srcWiki": "Wikipédia, Artemis II (o que foi voado, com horários e distâncias; lido em 2 de novembro de 2026)",
+      "srcNasa": "NASA, Artemis II (o plano de voo; modelo do foguete e da cápsula: NASA 3D Resources)"
+    },
+    "apollo-13": {
+      "title": "Apollo 13: o voo para casa",
+      "blurb": "Do Complexo de Lançamento 39A, em 11 de abril de 1970, ao Pacífico no dia 17: um pouso lunar que não aconteceu, um tanque de oxigênio que estourou e o módulo lunar como bote salva-vidas.",
+      "chIgnition": "Ignição",
+      "chLiftoff": "Decolagem",
+      "chStaging": "Separação de estágios",
+      "chParking": "Órbita de estacionamento",
+      "chTli": "Rumo à Lua",
+      "chCoast": "Dois dias de viagem",
+      "chBang": "O estrondo",
+      "chLifeboat": "O Aquarius, o bote salva-vidas",
+      "chReturn": "De volta a uma trajetória de retorno",
+      "chMoon": "Pelo lado oculto",
+      "chBurn": "A queima para casa",
+      "chHome": "Três dias para casa",
+      "chSm": "O módulo de serviço",
+      "chUndock": "O Aquarius é solto",
+      "chEntry": "Reentrada",
+      "chSplash": "Amerissagem",
+      "ignition": "Por volta de T−9 s: os cinco motores F-1 ligam, o central primeiro. Complexo de Lançamento 39A, 2:13 p.m., horário do leste dos EUA.",
+      "liftoff": "Decolagem, 19:13:00 UTC, 11 de abril de 1970: James Lovell, Jack Swigert e Fred Haise, rumo às terras altas de Fra Mauro.",
+      "roll": "Aos 12.6 s o conjunto gira para o azimute de voo, 72.043 graus a leste do norte.",
+      "staging": "2:44: os motores externos do primeiro estágio desligam e o estágio se solta; o segundo estágio acende aos 2:45.",
+      "tower": "3:21: a torre de escape do lançamento é lançada fora.",
+      "pogo": "Aos 5:30 o motor central do segundo estágio se desliga sozinho, 132 segundos antes do previsto, depois que o estágio começou a vibrar forte demais. Os outros quatro queimam 34 segundos a mais para compensar.",
+      "siicut": "9:53: o segundo estágio desliga e se solta; o S-IVB acende.",
+      "parking": "12:30: órbita de estacionamento, de 190 por 185 km de altura. Seguem-se duas horas e meia de verificações.",
+      "tli": "2:35:46: o S-IVB acende de novo, por 5 min 51 s, e envia a nave rumo à Lua a quase 11 km/s.",
+      "sep": "3:06:39: o Odyssey se separa do S-IVB, dá meia-volta e acopla ao Aquarius às 3:19:09. Os quatro painéis do adaptador se soltam.",
+      "extract": "4:01: o Odyssey puxa o Aquarius para fora do estágio vazio, que fica para trás.",
+      "coast": "Dois dias até a Lua, desenhados a umas 9 000 vezes a velocidade real. A nave tem 11 metros, então é um ponto.",
+      "tv": "55:53:20: o Controle da Missão pede uma agitação de rotina dos tanques de oxigênio. Uma transmissão de televisão terminou minutos atrás; a tripulação está arrumando tudo.",
+      "bang": "55:54:53, 03:07 UTC de 14 de abril: um estrondo. O tanque de oxigênio 2 estourou e arrancou o painel externo do compartimento 4 do módulo de serviço. O voo do painel é desenhado, não medido.",
+      "problem": "55:55:20: “Okay, Houston, we've had a problem here.” Jack Swigert; a gravação da NASA, tocada como foi registrada.",
+      "problem2": "55:55:42: “Houston, we've had a problem.” James Lovell; a gravação da NASA.",
+      "barber": "Em poucos minutos o oxigênio do tanque 1 também vaza. As células de combustível produzem a energia e a água da nave a partir desse oxigênio, e estão falhando.",
+      "lifeboat": "O Aquarius vira o bote salva-vidas: construído para manter dois homens vivos por dois dias, precisa manter três vivos por quatro. O Odyssey é desligado para guardar suas baterias para a reentrada.",
+      "mcc2": "61:29:43: o motor de descida do módulo lunar queima por 34 s, 11.5 m/s, para pôr a nave numa trajetória que volta à Terra. A trajetória desenhada não se curva por isso.",
+      "impact": "77:56:40: o S-IVB vazio, enviado à frente, atinge a Lua em 2.4 S 27.9 O, e o sismômetro da Apollo 12 o registra (não desenhado).",
+      "farside": "Por volta de 77:28, atrás da Lua e sem contato de rádio: o lado oculto, 254 km abaixo.",
+      "closest": "Maior aproximação, 254 km acima do lado oculto. A uns 400 000 km da Terra: mais longe do que quaisquer humanos já tinham estado.",
+      "tei": "79:27:39, duas horas depois da Lua: o motor de descida queima por 4 min 24 s, 262 m/s, para antecipar a chegada de 152 horas para 143 e levá-la ao Pacífico.",
+      "home": "Três dias para casa, com frio, pouca água e a nave desligada ao mínimo.",
+      "mcc3": "105:18: o motor de descida queima por 14 s a 10 por cento, 2.4 m/s, para deixar a reentrada um pouco mais íngreme.",
+      "mcc4": "137:39:52: uma última correção de 0.9 m/s, feita pelos pequenos propulsores do módulo lunar (não desenhada).",
+      "smsep": "138:01:48, 4 horas 39 minutos antes da reentrada: o módulo de serviço é cortado. Seu painel está faltando há 82 horas.",
+      "photo": "A tripulação fotografa o módulo enquanto ele se afasta: falta um painel inteiro e o isolamento rasgado aparece. O compartimento é desenhado a partir de AS13-59-8500; o dano a uma antena parabólica não é.",
+      "undock": "141:30: o Aquarius, que manteve três homens vivos por cerca de 83 horas, é solto com a pressão do túnel de acoplamento. O módulo de comando fica sozinho.",
+      "entry": "142:40:46, interface de reentrada, a 122 km de altura e 11 km/s. O primeiro pico é de uns 5 g.",
+      "drogue": "Por volta de 142:48: dois paraquedas estabilizadores, depois três principais.",
+      "mains": "Três paraquedas principais reduzem a cápsula a uns 9 m/s.",
+      "splash": "142:54:41, 18:07 UTC de 17 de abril: amerissagem no Pacífico Sul, à vista do USS Iwo Jima. Os três estão a bordo em até 45 minutos.",
+      "pathAscent": "os horários dos eventos do Relatório da Missão, com alturas e distâncias intermediárias aproximadas",
+      "pathTrip": "os estados e horários do Relatório da Missão, uma trajetória integrada com um ajuste da velocidade de injeção e um arco de Lambert de volta; não são dados de rastreio",
+      "pathLm": "acoplado ao Odyssey até 141:30; a deriva depois do desacoplamento é ilustrativa",
+      "pathSm": "ilustrativo: a velocidade de deriva do módulo de serviço vazio é nossa",
+      "srcReport": "Relatório da Missão Apollo 13, NASA MSC-02680, 1971 (horários dos eventos, estados, reentrada)",
+      "srcJournal": "Diário de Voo da Apollo 13, NASA (o rádio, ao segundo)",
+      "srcClip": "As duas falas de rádio: gravação da NASA, domínio público, do Wikimedia Commons",
+      "srcPhoto": "O compartimento 4 do módulo de serviço: fotografia AS13-59-8500 da NASA, domínio público, do Wikimedia Commons"
+    },
+    "sputnik-1": {
+      "title": "Sputnik 1: o primeiro satélite",
+      "blurb": "Baikonur, 4 de outubro de 1957: o primeiro satélite artificial, uma esfera polida de 585 mm, da plataforma à sua primeira volta à Terra, com seu bipe.",
+      "chPad": "Local 1",
+      "chAscent": "Decolagem",
+      "chBoosters": "Os propulsores laterais",
+      "chCore": "O estágio central",
+      "chSep": "O PS-1 é solto",
+      "chOrbit": "Uma volta",
+      "ready": "T−10 s no Local 1, Baikonur: o foguete 8K71PS e, sob sua carenagem, uma esfera de 585 mm. 19:28:34 UTC de 4 de outubro de 1957, já dia 5 no local de lançamento. A lâmpada da plataforma é nossa: era uma plataforma no escuro, e o foguete é iluminado para poder ser visto.",
+      "liftoff": "Decolagem. O estágio central e os quatro blocos laterais do R-7 queimam juntos; o foguete militar foi despojado da ogiva para isso.",
+      "regulator": "Por volta dos 16 s um regulador de combustível falha: o estágio central queima querosene rápido demais e seu empuxo fica 4 por cento acima durante a maior parte do voo. A missão sobrevive a isso.",
+      "boosters": "T+116 s: os quatro blocos laterais se soltam, como a telemetria mostra. O estágio central segue sozinho.",
+      "core": "T+295.4 s: o estágio central desliga, a 223 km de altura e uns 7.8 km/s, um segundo antes do previsto, quando um sensor vê a bomba de querosene vazia disparar.",
+      "sep": "T+315.3 s, 19.9 s após o desligamento: o PS-1 é solto. A carenagem se solta, as quatro antenas se abrem (não animadas aqui) e o transmissor liga.",
+      "beep": "Os primeiros bipes são ouvidos na estação de rastreio IP-1 por dois minutos, até o satélite afundar abaixo do horizonte. O som é a gravação do sinal pela NASA.",
+      "shadow": "O lançamento foi logo após a meia-noite no local, e nos primeiros 13 minutos o PS-1 voa na sombra da Terra, por isso é desenhado escuro. Ele entra na luz do Sol por volta de T+13 min.",
+      "orbit": "Órbita: 223 por 950 km, 65.1 graus, 96.2 minutos por volta. O estágio central o acompanha (não desenhado).",
+      "lap": "Uma volta nesta reprodução. As baterias acabaram em 26 de outubro, após 326 órbitas; a esfera caiu em 4 de janeiro de 1958, após cerca de 1 440.",
+      "pathAscent": "os horários publicados dos eventos, com alturas e distâncias intermediárias aproximadas",
+      "pathOrbit": "a órbita publicada como uma cônica a partir do fim do lançamento, uma volta; o giro descontrolado do satélite não é desenhado",
+      "srcWiki": "Sputnik 1, Wikipédia (horários dos eventos, órbita, dimensões), a partir da NASA, do NSSDC e das fontes russas que ela cita",
+      "srcNssdc": "Sputnik 1, Catálogo Mestre NSSDCA da NASA (lançamento e órbita)",
+      "srcClip": "O bipe: gravação da NASA, domínio público, do Wikimedia Commons"
+    }
+  }
+});
+
+// 1.6.3 (internal #995): the sections and strings this file did not have yet (r13Deep, compare, passportKinds, photoCompare, entrances,
+// the 1.5 strings and the gaps in card, drawing, cls, templates and the rest), pt. Machine-drafted like the rest of this file (docs/TRANSLATING.md):
+// drafted by a program from the English, NOT read by a native speaker. A key this file already has is left as it is.
+{
+  const topUp = (dst, src) => {
+    for (const k of Object.keys(src)) {
+      if (src[k] && typeof src[k] === 'object' && !Array.isArray(src[k]) && dst[k] && typeof dst[k] === 'object') topUp(dst[k], src[k]);
+      else if (!(k in dst)) dst[k] = src[k];
+    }
+  };
+  topUp(COPY, {
+    "card": {
+      "rows": {
+        "iauName": "Nome aprovado pela UAI",
+        "onBody": "Em",
+        "whenSite": "Quando"
+      }
+    },
+    "drawing": {
+      "markOnly": "uma marca no lugar dele; não há nada ali para desenhar",
+      "noPlace": "não desenhado: não há lugar dele para marcar",
+      "shower": "um nome no ponto de onde seus meteoros parecem vir, na vista do céu perto do pico; uma direção, não um lugar no espaço"
+    },
+    "klass": {
+      "shower": "Chuva de meteoros"
+    },
+    "cls": {
+      "shower": "uma direção no céu: a mediana das soluções publicadas pela UAI para esta chuva",
+      "noPlace": "nenhum lugar é desenhado para ele: o corpo em que ele está não é um mundo neste app",
+      "approxPlace": "colocado a partir de coordenadas publicadas, com precisão de cerca de {n} graus"
+    },
+    "unplaced": {
+      "noDistanceRow": "Não medida: o catálogo não tem paralaxe para ela",
+      "iauApproved": "{name}, aprovado em {date}"
+    },
+    "starSystem": {
+      "auYearComputed": "{n} UA; o ano de lá, cerca de {y} anos, é calculado a partir disso e da massa da estrela"
+    },
+    "searchRows": {
+      "kinds": {
+        "galaxy": "Galáxia",
+        "cluster": "Aglomerado de galáxias",
+        "browndwarf": "Anã marrom",
+        "whitedwarf": "Anã branca"
+      }
+    },
+    "templates": {
+      "exotic": {
+        "kinds": {
+          "galaxy": "galáxia",
+          "cluster": "aglomerado de galáxias",
+          "browndwarf": "anã marrom",
+          "whitedwarf": "anã branca"
+        },
+        "leadGalaxy": "{name} é uma galáxia a {dist} anos-luz de distância, onde ela está agora",
+        "leadCluster": "{name} é um aglomerado de galáxias a {dist} anos-luz de distância, onde ele está agora",
+        "leadBrowndwarf": "{name} é uma anã marrom a {dist} anos-luz de distância",
+        "leadWhitedwarf": "{name} é uma anã branca a {dist} anos-luz de distância"
+      },
+      "site": {
+        "mpc": "o código dele no Minor Planet Center é {code}",
+        "closed": "fechado em {year}",
+        "kinds": {
+          "launch-site": "local de lançamento",
+          "landing-site": "local de pouso"
+        }
+      },
+      "shower": {
+        "lead": "{name} é uma chuva de meteoros",
+        "peak": "com pico por volta de {date}",
+        "speed": "com meteoros que atingem o ar a {n} km por segundo",
+        "parent": "vinda da poeira de {parent}"
+      }
+    },
+    "a45": {
+      "farNote": "a que distância está agora ({how}), a partir do desvio para o vermelho de {z} na cosmologia de Planck 2018",
+      "comoving": "distância comóvel",
+      "pulsarDistance": [
+        "da própria paralaxe do pulsar",
+        "a distância do aglomerado globular, do remanescente de supernova ou de outro objeto a que ele pertence",
+        "a estimativa de um modelo a partir do sinal de rádio (o modelo YMW16 dos elétrons livres da Galáxia), não uma medição: pode errar bastante"
+      ],
+      "shape": {
+        "galaxy": "uma marca na distância que o desvio para o vermelho dá; uma galáxia tão distante tem no máximo alguns pixels, então a forma dela não é desenhada",
+        "browndwarf": "um anel na distância medida; uma anã marrom é um ponto nesta escala e quase não dá luz visível",
+        "whitedwarf": "um anel na distância medida; a própria anã branca é um ponto nesta escala",
+        "cluster": "uma marca no centro do aglomerado em raios X; as galáxias membros só são desenhadas para Virgo, Coma, Fornax e Perseus (a etapa do Grupo Local)"
+      },
+      "quasarZ7": "Um quasar visto como era cerca de {age} milhões de anos depois do Big Bang: um dos {n} conhecidos além do desvio para o vermelho 7.",
+      "unplaced": {
+        "unnamed": "Estrela HYG {id}",
+        "lead": "{name} é uma estrela na direção em que você olha; ninguém mediu a que distância ela está",
+        "leadColour": "{name} é {a} estrela {colour} na direção em que você olha; ninguém mediu a que distância ela está",
+        "note": "Desenhada no céu e em lugar nenhum do espaço, porque um lugar precisa de uma distância.",
+        "cite": "HYG Stellar Database v4.4 (CC BY-SA 4.0): só direção e magnitude"
+      }
+    },
+    "r13Deep": {
+      "card": {
+        "dso-tarantula-nebula": "A luz dela perto da nossa linha de visada é a fotografia do Webb; o gás é um modelo de uma cavidade em volta do aglomerado R136, dentro de uma casca de gás brilhante contida por nuvens moleculares, segundo Pellegrini, Baldwin e Ferland (2011). Ainda não revisado por um astrônomo.",
+        "dso-m43": "A luz dela vem da fotografia do ESO, e a forma é reconstruída como uma cavidade menor na mesma nuvem escura da Nebulosa de Órion, iluminada pela estrela NU Orionis. Ainda não revisado por um astrônomo.",
+        "dso-m51": "Construída a partir da inclinação e da estrutura publicadas: uma espiral de dois braços vista quase de frente, a companheira NGC 5195 atrás da ponta do braço norte e o braço que chega até ela; as profundidades são um modelo. Ainda não revisado por um astrônomo.",
+        "dso-m81": "Construída a partir da inclinação e da estrutura publicadas: um bojo grande e antigo e dois braços bem enrolados, com poeira na borda interna. Ainda não revisado por um astrônomo.",
+        "dso-m101": "Construída a partir da inclinação e da estrutura publicadas: um disco grande visto quase de frente, muitos braços e as regiões gigantes de formação de estrelas onde o céu as coloca. Ainda não revisado por um astrônomo.",
+        "dso-m104": "Construída a partir da inclinação e da estrutura publicadas: um bojo enorme e redondo e um disco fino visto quase de perfil, com o anel de poeira na frente. Ainda não revisado por um astrônomo.",
+        "dso-antennae-galaxies": "Duas galáxias em colisão onde o céu as coloca, e as duas caudas de maré; a que distância cada parte está, à frente ou atrás, é um modelo segundo as simulações da colisão. Ainda não revisado por um astrônomo.",
+        "dso-m83": "Construída a partir da inclinação e da estrutura publicadas: uma espiral barrada vista quase de frente, com braços ricos em estrelas jovens e hidrogênio brilhante. Ainda não revisado por um astrônomo.",
+        "dso-ngc-1300": "Construída a partir da estrutura publicada: uma barra longa com faixas de poeira nas bordas da frente e dois braços que saem das pontas, com a forma ajustada à fotografia do Hubble. Ainda não revisado por um astrônomo.",
+        "dso-centaurus-a": "Construída a partir de números publicados: uma galáxia elíptica gigante cortada por um disco deformado de poeira e estrelas jovens, segundo um modelo ajustado às imagens do Spitzer; os dois jatos são desenhados em cores falsas, porque brilham em raios X e ondas de rádio, não em luz visível. Ainda não revisado por um astrônomo."
+      }
+    },
+    "compare": {
+      "row": "Comparar",
+      "hint": "em escala",
+      "missing": "—",
+      "none": "Nenhum",
+      "yes": "Sim",
+      "no": "Não",
+      "range": "{a} a {b}",
+      "numUnit": "{num} {unit}",
+      "modeLabel": "Vista",
+      "modes": {
+        "pair": "Lado a lado",
+        "lab": "Todos os mundos"
+      },
+      "withLabel": "Comparar com",
+      "scaleLabel": "Escala",
+      "scales": {
+        "true": "Em escala",
+        "same": "Mesma largura"
+      },
+      "propLabel": "Ordenar todos os mundos por",
+      "props": {
+        "across": "Largura",
+        "mass": "Massa",
+        "gravity": "Gravidade",
+        "temp": "Temperatura",
+        "spin": "Duração de uma volta",
+        "year": "Duração de um ano",
+        "dist": "Distância do Sol",
+        "moons": "Número de luas"
+      },
+      "names": {
+        "sun": "O Sol",
+        "mercury": "Mercúrio",
+        "venus": "Vênus",
+        "earth": "Terra",
+        "moon": "A Lua",
+        "mars": "Marte",
+        "jupiter": "Júpiter",
+        "saturn": "Saturno",
+        "uranus": "Urano",
+        "neptune": "Netuno",
+        "pluto": "Plutão"
+      },
+      "the": {
+        "sun": "o Sol",
+        "moon": "a Lua"
+      },
+      "wider": "{big} tem {n} vezes mais largura que {small}.",
+      "same": "{a} e {b} têm quase a mesma largura.",
+      "figure": "{a} e {b}, desenhados {how}.",
+      "figureTrue": "em uma só escala",
+      "figureSame": "com a mesma largura, fora de escala",
+      "tableLabel": "{a} e {b}, lado a lado",
+      "rows": {
+        "across": "Diâmetro",
+        "mass": "Massa",
+        "gravity": "Gravidade",
+        "temp": "Temperatura",
+        "spin": "Uma volta dura",
+        "year": "Um ano lá",
+        "dist": "Distância do Sol",
+        "air": "Atmosfera",
+        "pressure": "Pressão do ar",
+        "moons": "Luas",
+        "rings": "Anéis"
+      },
+      "units": {
+        "km": "km",
+        "earthOne": "Terra",
+        "earths": "Terras",
+        "g": "m/s²",
+        "c": "°C",
+        "hours": "horas",
+        "days": "dias",
+        "years": "anos",
+        "au": "UA",
+        "bar": "bar",
+        "microbar": "µbar"
+      },
+      "notes": {
+        "average": "média",
+        "flattened": "em média; a forma é achatada",
+        "range": "a faixa dele",
+        "bar1": "no nível de 1 bar",
+        "edge": "na borda visível",
+        "photosphere": "a superfície visível",
+        "retro": "gira ao contrário",
+        "sunSpin": "a 16° de latitude",
+        "withEarth": "com a Terra",
+        "exosphere": "uma exosfera fina",
+        "photosphereAir": "na fotosfera"
+      },
+      "air": {
+        "part": "{share}% {gas}",
+        "join": ", ",
+        "almostNone": "Quase nenhuma",
+        "noSurface": "Sem superfície"
+      },
+      "gas": {
+        "hydrogen": "hidrogênio",
+        "helium": "hélio",
+        "methane": "metano",
+        "nitrogen": "nitrogênio",
+        "oxygen": "oxigênio",
+        "argon": "argônio",
+        "carbon dioxide": "dióxido de carbono"
+      },
+      "source": "Planetary Fact Sheets da NASA (tabelas de dados planetários), lidas em {date}.",
+      "giantNote": "Um gigante não tem superfície: a gravidade e a temperatura dele são as do nível de 1 bar.",
+      "moonsNote": "O número de luas cresce à medida que novas são confirmadas.",
+      "spinNote": "A volta do Sol é o valor da tabela a 16° de latitude.",
+      "drawnTrue": "Desenhados em uma só escala a partir do raio médio de cada um, não são fotografias.",
+      "drawnSame": "Mesma largura, então fora de escala. Os anéis mantêm a parte deles nela.",
+      "tiny": "Aqui, {name} é menor que um pixel e vira um ponto.",
+      "ringsDrawn": "Os anéis são inclinados para a imagem; os raios deles são os da NASA.",
+      "labLog": "As barras são logarítmicas, para os valores pequenos continuarem visíveis.",
+      "labLinear": "As barras são proporcionais à quantidade.",
+      "labTitle": "Comparar: {name}",
+      "thisCard": "O mundo desta ficha"
+    },
+    "passportKinds": {
+      "kindsTitle": "Abertos, por tipo",
+      "noKinds": "Ainda não há nada para contar por tipo.",
+      "kinds": {
+        "worlds": "Planetas, luas e o Sol",
+        "stations": "Estações espaciais",
+        "satellites": "Satélites e seus foguetes",
+        "spacecraft": "Sondas e telescópios espaciais",
+        "small": "Cometas e asteroides",
+        "stars": "Estrelas",
+        "exoplanets": "Planetas de outras estrelas",
+        "deep": "Nebulosas, galáxias e o céu profundo",
+        "earth": "Lugares e clima na Terra"
+      },
+      "notedTitle": "Anotados",
+      "noNoted": "Ainda não há nada anotado. Abra um lugar no mapa.",
+      "notedFine": "O dia em que se viu pela primeira vez que uma anotação valia neste navegador. Fica guardado aqui, nunca é classificado nem enviado.",
+      "noted": {
+        "first": {
+          "name": "Um primeiro lugar",
+          "said": "Você abriu um lugar no mapa."
+        },
+        "planets": {
+          "name": "Todos os oito planetas",
+          "said": "Você abriu todos os planetas, de Mercúrio a Netuno."
+        },
+        "station": {
+          "name": "Uma estação espacial",
+          "said": "Você abriu uma estação em órbita."
+        },
+        "craft": {
+          "name": "Uma nave lá fora",
+          "said": "Você abriu uma sonda ou um telescópio espacial."
+        },
+        "small": {
+          "name": "Um cometa ou um asteroide",
+          "said": "Você abriu um corpo pequeno do Sistema Solar."
+        },
+        "star": {
+          "name": "Uma estrela",
+          "said": "Você abriu uma estrela além do Sol."
+        },
+        "exoplanet": {
+          "name": "O planeta de outra estrela",
+          "said": "Você abriu um planeta que gira em torno de outra estrela."
+        },
+        "deep": {
+          "name": "O céu profundo",
+          "said": "Você abriu uma nebulosa, uma galáxia ou um aglomerado."
+        },
+        "trip": {
+          "name": "Uma viagem até o fim",
+          "said": "Você terminou uma viagem guiada."
+        },
+        "eyes": {
+          "name": "Visto com seus próprios olhos",
+          "said": "Você marcou algo como visto."
+        },
+        "every": {
+          "name": "Um de cada tipo",
+          "said": "Você abriu pelo menos uma coisa de cada tipo acima."
+        }
+      }
+    },
+    "photoCompare": {
+      "title": "Comparar com a fotografia",
+      "reconstruction": "Reconstrução",
+      "photograph": "Fotografia",
+      "valueText": "{n}% fotografia",
+      "flying": "Indo até o ponto de onde a fotografia foi tirada.",
+      "note": "O mapa desenha um modelo 3D. A fotografia aparece só aqui: plana e virada para o Sol, então, se você se virar, ela some."
+    },
+    "entrances": {
+      "label": "Três jeitos de entrar",
+      "tonight": "Esta noite",
+      "tonightTitle": "O que está sobre você esta noite, a partir do seu lugar",
+      "explore": "Explorar",
+      "exploreTitle": "Olhe o mapa inteiro",
+      "trip": "Viagem guiada",
+      "tripTitle": "Começa a primeira viagem guiada da lista"
+    }
+  });
+}
+// 1.6.3: end
 
 export const GLOSSARY = {
   "orbit": "Um caminho ao redor de algo, mantido pela gravidade. Se você for rápido o bastante para o lado, continua caindo ao largo da Terra, em vez de cair nela.",

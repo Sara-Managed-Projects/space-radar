@@ -186,6 +186,25 @@ export function attitude(mode, { up, vel, ref, t = 0, pitchStart = 0, turnS = 12
   return [x, y, z];
 }
 
+/**
+ * 1.7.2: a basis tilted: `pitchDeg` turns the nose (Y) towards X (for 'prograde' on an orbit X is up, so a positive pitch lifts the nose
+ * above the flight path: an orbiter's 40 degree entry), `rollDeg` turns the vehicle about its own Y (nose) axis. Both 0: the same basis.
+ */
+export function tilt(b, pitchDeg = 0, rollDeg = 0) {
+  let [x, y, z] = b;
+  if (pitchDeg) {
+    const c = Math.cos(pitchDeg * DEG), s = Math.sin(pitchDeg * DEG);
+    const ny = add(scale(y, c), scale(x, s)), nx = add(scale(x, c), scale(y, -s));
+    x = nx; y = ny;
+  }
+  if (rollDeg) {
+    const c = Math.cos(rollDeg * DEG), s = Math.sin(rollDeg * DEG);
+    const nx = add(scale(x, c), scale(z, s)), nz = add(scale(z, c), scale(x, -s));
+    x = nx; z = nz;
+  }
+  return [x, y, z];
+}
+
 /** A vector given in a basis [X, Y, Z] (components along each) -> the frame the basis is written in. */
 export function fromBasis(b, v) {
   return add(add(scale(b[0], v[0]), scale(b[1], v[1])), scale(b[2], v[2]));
@@ -198,4 +217,31 @@ export function spinBasis(b, w) {
   if (ang < 1e-9) return b;
   const k = scale(axisWorld, 1 / ang), c = Math.cos(ang), s = Math.sin(ang);
   return b.map((e) => add(add(scale(e, c), scale(cross(k, e), s)), scale(k, dot(k, e) * (1 - c))));
+}
+
+// --- the Moon's own axes (moments with a landing, spec 0079 C6) --------------------------------------------------------
+
+export const MOON_R = 1737400;
+export const MU_MOON = 4.9028e12;
+const OBLIQUITY = 23.4392911 * DEG;
+
+/**
+ * The Moon's body axes in the Earth-inertial frame, from its position `moonPos` (any unit): x toward the Earth
+ * (longitude 0, latitude 0), z the ecliptic's north (the Moon's own pole is 1.5 degrees from it), y east
+ * (z cross x). The Moon always shows us the same face, so the first is exact to its libration (a few degrees) and
+ * the pole is the ecliptic's: a landing site stands within about 8 degrees of where the Moon's map puts it, which
+ * is drawn, and is said to be, an illustration of the place.
+ */
+export function moonAxes(moonPos) {
+  const x = norm(scale(moonPos, -1));
+  let z = [0, -Math.sin(OBLIQUITY), Math.cos(OBLIQUITY)];
+  const y = norm(cross(z, x));
+  z = norm(cross(x, y));
+  return { x, y, z };
+}
+
+/** The unit vector, Earth-inertial, from the Moon's centre to the surface point at latitude and longitude (degrees). */
+export function moonSurfaceDir(axes, latDeg, lonDeg) {
+  const la = latDeg * DEG, lo = lonDeg * DEG;
+  return add(add(scale(axes.x, Math.cos(la) * Math.cos(lo)), scale(axes.y, Math.cos(la) * Math.sin(lo))), scale(axes.z, Math.sin(la)));
 }

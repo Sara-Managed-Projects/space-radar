@@ -449,10 +449,10 @@ export function createLayer(THREE, env = {}) {
     uniforms.uSelected.value = row;
     showRange(row); // an inferred galaxy's line of possible distances, for the one selected (-1 hides it)
   }
-  const _p = new THREE.Vector3();
   /** Candidates for a tap: {record, px, score}, nearest first. The tile has to be on screen; ranks just behind the map's own marks. */
-  function pickAll(ndcX, ndcY, camera, viewport, limit = 6) {
+  function pickAll(ndcX, ndcY, camera, viewport, limit = 6, reachPx = 12) {
     if (!state.loaded || !group.visible || state.culled || !camera || !viewport) return [];
+    if (uniforms.uFade.value < 0.1 || uniforms.uGain.value < 0.1) return []; // the tile is a speck or the layer faded out: not drawn, not tapped
     const recsNow = records();
     camera.updateMatrixWorld();
     group.updateMatrixWorld();
@@ -467,12 +467,12 @@ export function createLayer(THREE, env = {}) {
       if (w <= 0) continue;
       const dx = ((e[0] * x + e[4] * y + e[8] * z + e[12]) / w - ndcX) * halfW, dy = ((e[1] * x + e[5] * y + e[9] * z + e[13]) / w - ndcY) * halfH;
       const px = Math.sqrt(dx * dx + dy * dy);
-      const reach = Math.min(24, Math.max(PICK_MIN_PX, pointPx(rowOf(state.tile, i), uniforms.uPxPerRad.value) / 2 + 4));
+      const reach = Math.min(24, Math.max(reachPx, pointPx(rowOf(state.tile, i), uniforms.uPxPerRad.value) / 2));
       if (px > reach || !recsNow[i]) continue;
-      out.push({ i, px });
+      out.push({ i, px, sx: (e[0] * x + e[4] * y + e[8] * z + e[12]) / w * halfW + halfW, sy: halfH - (e[1] * x + e[5] * y + e[9] * z + e[13]) / w * halfH, depth: w });
     }
     out.sort((p, q) => p.px - q.px);
-    return out.slice(0, Math.max(1, limit)).map(({ i, px }) => ({ record: recsNow[i], px, score: px + PICK_BEHIND_PX }));
+    return out.slice(0, Math.max(1, limit)).map(({ i, px, sx, sy, depth }) => ({ record: recsNow[i], px, score: px + PICK_BEHIND_PX, sx, sy, depth }));
   }
 
   /** Show one galaxy's range of distance (a selection or a hover will ask), or none (-1). */
