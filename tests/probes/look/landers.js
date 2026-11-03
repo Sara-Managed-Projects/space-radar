@@ -86,8 +86,9 @@ if (await go('surveyor-3', null, 9000)) {
   const d0 = camState().distance;
   out.arrivalDistance = d0;
   const steps = [['06-patch-arrival', 1, 'Surveyor 3 as met: the camera at the arrival distance'], ['07-patch-near', 0.12, 'Surveyor 3 from close, the camera at 12 % of the arrival distance'],
-    ['08-patch-1.6', 1.6, 'pulled away to 1.6 times the arrival distance (0.56 of the layer\'s nearKm): the fade has begun'],
-    ['09-patch-2.3', 2.3, 'at 2.3 times (0.8 of nearKm): the patch is nearly gone'], ['10-patch-3.0', 3.0, 'at 3 times (1.05 of nearKm): no patch; the model is still drawn because it is selected']];
+    ['08-patch-2', 2, 'pulled away to twice the arrival distance: the fade has begun (it starts at 1.7 times)'],
+    ['09-patch-3.5', 3.5, 'at 3.5 times: the patch is half gone'], ['10-patch-5.5', 5.5, 'at 5.5 times (0.6 of the layer\'s nearKm): no patch; the model is still drawn because it is selected'],
+    ['11-patch-9', 9, 'at 9 times: far out, the lander on the shrunk Moon with no plate under it']];
   for (const [name, k, note] of steps) {
     try { rig.flyTo({ distance: d0 * k, ms: 0 }); } catch (e) { out.problems.push('pull away: ' + e); }
     await sleep(4500);

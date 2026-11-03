@@ -34,7 +34,8 @@ const { firstSentence, rightNowFor, drawingLine } = await import(join(JS, 'ui/ca
 const { buildIndex, findMatches } = await import(join(JS, 'ui/search.js'));
 const { LAYERS } = await import(join(JS, 'data/layers.js'));
 const { worldRecords, positionOf } = await import(join(JS, 'scene/worlds.js'));
-const { nadirOf, standOnGround, altitudeCapApplies, addContactShadow, groundShadowPose, addGroundPatch, groundPatchFade, PATCH_FADE_FROM, PATCH_FADE_TO, warmModels } = await import(join(JS, 'scene/heroes.js'));
+const { groundPatchFade, PATCH_FADE_FROM, PATCH_FADE_TO } = await import(join(JS, 'scene/models.js'));
+const { nadirOf, standOnGround, altitudeCapApplies, addContactShadow, groundShadowPose, addGroundPatch, warmModels } = await import(join(JS, 'scene/heroes.js'));
 const { stage } = await import(join(JS, 'scene/stage.js'));
 
 const problems = [];
@@ -345,13 +346,14 @@ for (const r of records) {
 // ------------------------------------------------------------------------ 7. the patch fades as the camera pulls away (1.7.3)
 {
   // A hero is drawn at a steady size on the screen, so the patch under a lander is as wide on the screen far out as near:
-  // it has to go on its own. Whole at the arrival (35 % of the layer's nearKm), gone by the nearKm, smooth between.
-  const near = 4000;
-  check(groundPatchFade(0, near) === 1 && groundPatchFade(0.35 * near, near) === 1, 'PATCH    whole at the arrival distance');
-  check(groundPatchFade(near, near) === 0 && groundPatchFade(10 * near, near) === 0, 'PATCH    gone by the layer\'s nearKm and beyond it');
+  // it has to go on its own. A lander is met from 0.12 of its layer's nearKm (108.6 km of 900, measured in a look run on
+  // 2026-11-03): whole there, gone by 0.6 of nearKm, smooth between.
+  const near = 900;
+  check(groundPatchFade(0, near) === 1 && groundPatchFade(0.12 * near, near) === 1 && groundPatchFade(0.2 * near, near) === 1, 'PATCH    whole at the arrival distance and out to 1.7 times it');
+  check(groundPatchFade(0.6 * near, near) === 0 && groundPatchFade(10 * near, near) === 0, 'PATCH    gone by 0.6 of the layer\'s nearKm and beyond it');
   let prev = 1, mono = true, steps = 0;
   for (let i = 0; i <= 200; i++) {
-    const k = groundPatchFade((i / 200) * 1.2 * near, near);
+    const k = groundPatchFade((i / 200) * 0.8 * near, near);
     if (k > prev + 1e-12) mono = false;
     if (i > 0 && Math.abs(k - prev) > 0.03) steps += 1;
     prev = k;
@@ -370,7 +372,7 @@ for (const r of records) {
   check(soft.length === 2 && soft.every((m) => m.transparent && m.vertexColors && m.depthWrite === false), 'PATCH    the two soft plates stay transparent whatever the fade-in does to the rest of the model');
   check(patch.userData.mats.every((m) => m.userData.perModel === true), 'PATCH    its materials are the model\'s own, so one lander\'s fade is not another\'s');
   const heroSrc = readFileSync(join(JS, 'scene/heroes.js'), 'utf8');
-  check(/userData\.alwaysTransparent/.test(heroSrc) && /setPatchOpacity\(groundPatch, groundPatchFade\(c\.d,/.test(heroSrc), 'PATCH    heroes.js keeps the soft edge transparent through the fade-in and fades the patch by the camera\'s distance');
+  check(/userData\.alwaysTransparent/.test(heroSrc) && /M\.fadeGroundPatch\(groundPatch, c\.d,/.test(heroSrc), 'PATCH    heroes.js keeps the soft edge transparent through the fade-in and fades the patch by the camera\'s distance');
   disposeModels();
 }
 
