@@ -1118,6 +1118,17 @@ export const REAL_MODELS = {
     '-37': { file: 'hayabusa2.glb', colour: 'probe', name: 'Hayabusa2', made: 'dimensions', axes: 'app' },
     '-62': { file: 'hope.glb', colour: 'probe', name: 'Hope (Emirates Mars Mission)', made: 'dimensions', axes: 'app' },
     // 0077 W1-b: end
+    // r172-probes: begin
+    // TWO ENDED MISSIONS DRAWN FROM THEIR OWN PATHS (release 1.7.2; internal #1076, public #267), each BUILT in
+    // code from NASA's published numbers and NASA's own pictures (`made: 'dimensions'`; no agency model of
+    // either exists, registry/models.yaml says what was looked for). Mariner 2 flies with its mast and its cells
+    // on +Z (the Sun's side, which is how it flew) and its wings along X; the Galileo probe, closed in its
+    // aeroshell, has its heat shield's nose on +Z (it entered nose first, at the world the stage is centred on).
+    // The records are data/sample.js `deep-mariner-2` and `deep-galileo-probe`, drawn only inside the years of
+    // their paths (site/data/eph).
+    '-2': { file: 'mariner-2.glb', colour: 'probe', name: 'Mariner 2', made: 'dimensions', axes: 'app' },
+    '-344': { file: 'galileo-probe.glb', colour: 'probe', name: 'Galileo Probe', made: 'dimensions', axes: 'app' },
+    // r172-probes: end
   },
   /**
    * Matched on the catalogue NAME rather than a catalogue number, deliberately.

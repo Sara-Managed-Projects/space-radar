@@ -124,6 +124,38 @@ craft:
       - {centre: earth, from: "1992-12-04T00:00:00Z", to: "1992-12-13T00:00:00Z"}
       - {centre: jupiter, from: "1995-11-01T00:00:00Z", to: "2003-09-21T18:00:00Z", tol_km: 60}
 
+  # Mariner 2, Venus 1962 (release 1.7.2). Horizons' header, opened 2026-11-03: trajectory
+  # `m2_620827_621231_ja_v1`, 1962-Aug-27 07:20 to 1963-Jan-01 00:00 (CT), "provided by John D.
+  # Anderson (JPL, Retired), based on a fit to the encounter data with planetary positions and
+  # masses from JPL DE405", "intended for general historical purposes, but should be used
+  # cautiously for high-precision applications"; "Data between orbital injection at Earth and the
+  # TCM are not included and are presumably lost". Asked on 2026-11-03: "No ephemeris ... after
+  # A.D. 1962-DEC-31 23:59:25 UT", so the file stops on the last whole minute before that;
+  # contact ended on 3 January 1963.
+  - id: deep-mariner-2
+    name: Mariner 2
+    command: "-2"
+    from: "1962-08-27T07:21:00Z"
+    to: "1962-12-31T23:59:00Z"
+    windows:
+      - {centre: earth, from: "1962-08-27T07:21:00Z", to: "1962-08-30T00:00:00Z"}
+      - {centre: venus, from: "1962-12-12T00:00:00Z", to: "1962-12-17T00:00:00Z"}
+    rough:
+      until: "1962-12-31T23:59:00Z"
+      text: "JPL calls its Mariner 2 path a reconstruction from a fit to the Doppler data of 1962, good for general historical purposes and to be used cautiously for precision."
+
+  # Galileo's atmospheric probe (release 1.7.2). Horizons' header, opened 2026-11-03: "Reconstructed
+  # trajectory provided by the Navigation Team (JPL): Probe S960730A (13-Jul-1995 to 07-Dec-1995)";
+  # released on 13 July 1995, atmospheric entry on 7 December 1995. Asked on 2026-11-03: "No
+  # ephemeris ... prior to A.D. 1995-JUL-13 05:30:01 UT" and "... after A.D. 1995-DEC-07 22:05:58 UT".
+  - id: deep-galileo-probe
+    name: Galileo Probe
+    command: "-344"
+    from: "1995-07-13T05:31:00Z"
+    to: "1995-12-07T22:05:00Z"
+    windows:
+      - {centre: jupiter, from: "1995-11-20T00:00:00Z", to: "1995-12-07T22:05:00Z", tol_km: 5}
+
   # prior to 1972-MAR-03 02:04:00 UT, after 2050-JAN-01: nothing.
   - id: deep-pioneer-10
     name: Pioneer 10
