@@ -533,7 +533,7 @@ void main() {
     group,
     set(k, time = 0, still = false, flight = null) {
       group.visible = k > 0.003;
-      for (const m of mats) { m.uniforms.uOn.value = m === wakeMat ? k * 0.45 : k; m.uniforms.uTime.value = time; m.uniforms.uStill.value = still ? 1 : 0; }
+      for (const m of mats) { m.uniforms.uOn.value = m === wakeMat ? k * 0.22 : k; m.uniforms.uTime.value = time; m.uniforms.uStill.value = still ? 1 : 0; }
       if (flight) { dir.set(-flight[0], -flight[1], -flight[2]).normalize(); wakeHolder.quaternion.setFromUnitVectors(down, dir); }
     },
     dispose() { for (const m of mats) m.dispose(); for (const g of geos) g.dispose(); },
