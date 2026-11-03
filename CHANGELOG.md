@@ -47,8 +47,8 @@ tagged, and their dates are the day the last change in each landed.
 - **Sputnik 1's pad is lit.** It was a night launch and the rocket was a silhouette under its own exhaust. A night pad (the Sun down, the camera
   in the air) now gets a lamp on the models and a little light on the ground, the same lamp the model cards offer, weaker; the first caption says
   it is ours.
-- **Every small vehicle has the same floor on the screen.** The ringed marker, which marks a vehicle too small to see, now comes on below 24 px
-  instead of 7 and has a dark ring round the gold one, so Sputnik 1 over the Earth is no longer a speck.
+- **Every small vehicle has the same floor on the screen.** The ringed marker, which marks a vehicle too small to see, now comes on below 40 px
+  instead of 7, is 44 px across and has a dark ring round the gold one, so Sputnik 1 over the Earth is no longer a speck.
 - **The words of Apollo 13 and Sputnik 1 in Spanish, French, German and Portuguese**, machine-drafted like the rest of those files and not yet
   read by a native speaker; the radio lines stay as they were said. Voskhod 2 and STS-1 are English only for now.
 

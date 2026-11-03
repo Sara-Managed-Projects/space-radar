@@ -101,7 +101,7 @@ orbiter enters at 40 degrees nose-high and is flown dorsal side up. `rideOn.spin
 (Leonov floating along the airlock's axis). A vehicle's `keepXZ: true` keeps the file's own axis as the vehicle's axis instead of centring the
 model's box (the Voskhod 3KD has an airlock and an umbilical to one side). A `ground` may be `lakebed: true`, a pale dry lake, with a `runway`
 `{bearing, widthM, lengthM}` painted on it, centred on the place (Edwards). The player lights a night pad with a lamp (the Sun below the
-horizon, the camera in the air) and marks every vehicle shorter than 24 px on the screen with the ringed dot. The generators are `voskhod2.mjs`
+horizon, the camera in the air) and marks every vehicle shorter than 40 px on the screen with the ringed dot. The generators are `voskhod2.mjs`
 and `sts1.mjs`; both search for the least correction that meets the published landing and print how far the reconstruction had to be nudged.
 
 ## Tracks

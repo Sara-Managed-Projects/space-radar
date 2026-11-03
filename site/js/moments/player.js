@@ -39,8 +39,8 @@ const W = () => COPY.momentPlayer;
 // below the horizon and the camera low. Weaker than the card's 0.9 so the flames still read as the light. Drawn, not measured.
 const NIGHT_PAD_LAMP = 0.6;
 // 1.7.1: a vehicle shorter than this on the screen (CSS px) is marked by the ringed dot as well as drawn: the one floor every story's vehicles get
-// (Sputnik's whips over the Earth were a speck inside the old 7 px).
-const MARKER_BELOW_PX = 24;
+// (Sputnik's whips over the Earth were a speck inside the old 7 px); the ring is 44 px across.
+const MARKER_BELOW_PX = 40;
 const fill = (s, o) => String(s).replace(/\{(\w+)\}/g, (_, k) => (o[k] !== undefined ? o[k] : `{${k}}`));
 const DEG = Math.PI / 180;
 
@@ -687,7 +687,7 @@ export function createMomentPlayer(ctx, opts = {}) {
         entry.marker.visible = small;
         if (small) {
           entry.marker.position.set(ps0.pos[0] - origin[0], ps0.pos[1] - origin[1], ps0.pos[2] - origin[2]);
-          entry.marker.scale.setScalar(26 / pxPerM);
+          entry.marker.scale.setScalar(44 / pxPerM);
         }
       }
       if (!shownNow) continue;

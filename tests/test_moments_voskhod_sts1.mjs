@@ -228,7 +228,7 @@ const common = async (id, cover, models) => {
     check(airAt(2000, -0.5).night > 0.6 && airAt(2000, 0.9).night === 0 && airAt(200000, -0.5).night < 0.01, 'a night pad is lit (the Sun down, the camera in the air); by day, and from orbit, it is not');
   } else check(/night: \(1 - day\) \* Math\.min\(1, density \* 2\)/.test(stage), 'the air says how much of a night pad lamp is wanted');
   check(/uLift\.value = 0\.05 \* air\.sky \+ 0\.05 \* air\.night/.test(stage) && /swapLight\(sunDir, air\.capCentre, origin, NIGHT_PAD_LAMP \* air\.air\.night\)/.test(player) && /if \(lightU\.uFlood\) lightU\.uFlood\.value = flood/.test(player), 'the lamp lifts the rocket and the ground at a night pad (Sputnik 1\'s launch was at night)');
-  check(/MARKER_BELOW_PX = 24/.test(player) && /lengthM \* pxPerM < MARKER_BELOW_PX/.test(player), 'every vehicle shorter than 24 px on the screen gets the ringed marker (Sputnik 1 over the Earth)');
+  check(/MARKER_BELOW_PX = 40/.test(player) && /lengthM \* pxPerM < MARKER_BELOW_PX/.test(player), 'every vehicle shorter than 40 px on the screen gets the ringed marker (Sputnik 1 over the Earth)');
   const s1 = JSON.parse(src('site/data/moments/sputnik-1.json'));
   check(s1.vehicles.find((v) => v.id === 'sat').marker !== false, 'Sputnik 1\'s satellite has the marker');
   // the tilt

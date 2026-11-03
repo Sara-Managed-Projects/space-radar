@@ -145,25 +145,26 @@ const HAC0 = ll(pStart);
 const arcLen = R_HAC * rad(240), T_HAC0 = T_LAND - 170, DIST = mono([[170, arcLen + S_FINAL], [130, 24500], [90, 13200], [60, 7000], [30, 2700], [10, 800], [0, 0]].map(([a, b]) => [-a, b]));
 const ALT2 = mono([[170, 12.5], [130, 9], [90, 6], [60, 4.2], [30, 1.8], [10, 0.5], [4, 0.12], [0, 0]].map(([a, b]) => [-a, b]));
 const ROLL = (tt) => { const d = 94 * tt - 0.5 * 1.9 * tt * tt; return Math.min(d, 94 * 94 / (2 * 1.9)); };
-const clearance = 8.592;                                          // the model's origin above the runway when level on its gear (shuttle-orbiter.glb, from its own file)
+const GROUND_M = 700;                                             // Rogers Dry Lake is about 700 m above the sea
+const clearance = 8.592, clearTouch = 6.546;                                          // the model's origin above the runway when level on its gear (shuttle-orbiter.glb, from its own file)
 const bearingTo = (a, b) => { const p1 = rad(a.lat), p2 = rad(b.lat), dl = rad(b.lon - a.lon); return (Math.atan2(Math.sin(dl) * Math.cos(p2), Math.cos(p1) * Math.sin(p2) - Math.sin(p1) * Math.cos(p2) * Math.cos(dl)) / DEG + 360) % 360; };
 const distKm = (a, b) => 6371.0088 * Math.acos(Math.min(1, Math.sin(rad(a.lat)) * Math.sin(rad(b.lat)) + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.cos(rad(b.lon - a.lon))));
 const brgEi = bearingTo(EI, HAC0), kmEi = distKm(EI, HAC0);
 const entryGround = (t) => {
   const tt = t - T_LAND;                                           // seconds from touchdown (negative before)
-  if (tt >= 0) { const p = ll([u[0] * ROLL(tt), u[1] * ROLL(tt)]); return { lat: p.lat, lon: p.lon, altM: clearance + 0 }; }
+  if (tt >= 0) { const p = ll([u[0] * ROLL(tt), u[1] * ROLL(tt)]); const k = Math.min(1, tt / 12); return { lat: p.lat, lon: p.lon, altM: GROUND_M + clearTouch + (clearance - clearTouch) * k * k * (3 - 2 * k) }; }
   if (tt < -170) {
     const q = Math.max(-2090, tt * 1800 / (T_LAND - T_EI));       // the table's own clock, stretched to the entry's length
     const f = RTG(q); const along = (8110 - f) / (8110 - RTG(-170));
     const p = L.destination(EI.lat, EI.lon, brgEi, Math.min(1, along) * kmEi);
-    return { lat: p.lat, lon: p.lon, altM: ALT(q) * 1000 };
+    return { lat: p.lat, lon: p.lon, altM: ALT(q) * 1000 + GROUND_M };
   }
   const d = DIST(tt);                                              // distance still to go along circle + final
   let pos;
   if (d > S_FINAL) { const a = aEnd - (d - S_FINAL) / R_HAC; pos = [centre[0] + R_HAC * Math.cos(a), centre[1] + R_HAC * Math.sin(a)]; }
   else pos = [-u[0] * d, -u[1] * d];
   const p = ll(pos);
-  return { lat: p.lat, lon: p.lon, altM: ALT2(tt) * 1000 + clearance };
+  return { lat: p.lat, lon: p.lon, altM: ALT2(tt) * 1000 + GROUND_M + clearTouch };
 };
 const entryPos = (t) => { const g = entryGround(t); return L.groundPos(epochMs, g.lat, g.lon, g.altM, t); };
 const entryAt = L.diffState(entryPos);
@@ -230,16 +231,16 @@ const moment = {
     { id: 'columbia-up', model: 'shuttle-orbiter', lengthM: H_ORB, rideOn: { vehicle: 'stack', at: ORB_AT }, attitude: 'ascent', window: [-10, T_START], parts: ORB_PARTS, marker: false,
       engines: { 'orbiter-body': SSME }, flames: { 'orbiter-body': { kind: 'hydrolox', exitM: 2.3 } } },
     { id: 'columbia', model: 'shuttle-orbiter', lengthM: H_ORB, path: 'orbit', attitude: 'prograde', window: [T_START, T_END], colour: 'station', parts: ORB_PARTS,
-      phases: [{ t: T_START, rollDeg: 90, pitchDeg: 0 }, { t: T_DEORBIT - 400, attitude: 'retrograde', rollDeg: 90, pitchDeg: 0 },
-        { t: T_DEORBIT_END + 200, attitude: 'prograde', rollDeg: 90, pitchDeg: 0 }, { t: T_DEORBIT_END + 900, rollDeg: -90, pitchDeg: 40 }, { t: T_LAND - 700, rollDeg: -90, pitchDeg: 40 },
+      phases: [{ t: T_START, rollDeg: -90, pitchDeg: 0 }, { t: T_DEORBIT - 400, attitude: 'retrograde', rollDeg: -90, pitchDeg: 0 },
+        { t: T_DEORBIT_END + 200, attitude: 'prograde', rollDeg: -90, pitchDeg: 0 }, { t: T_DEORBIT_END + 900, rollDeg: -90, pitchDeg: 40 }, { t: T_LAND - 700, rollDeg: -90, pitchDeg: 40 },
         { t: T_LAND - 480, rollDeg: -90, pitchDeg: 25 }, { t: T_LAND - 300, rollDeg: -90, pitchDeg: 15 }, { t: T_LAND - 170, rollDeg: -90, pitchDeg: 10 }, { t: T_LAND - 6, rollDeg: -90, pitchDeg: 8 }, { t: T_LAND + 12, rollDeg: -90, pitchDeg: 0 }],
       plasma: { radiusM: 6, at: [0, 4, -2] } },
   ],
   tracks: {
     parts,
     camera: [
-      { t: -10, shot: 'pad', at: [260, -170, 5], lookY: 28, fov: 42, vehicle: 'stack' },
-      { t: -3, shot: 'pad', at: [130, -80, 5], lookY: 16, fov: 56, vehicle: 'stack' },
+      { t: -10, shot: 'pad', at: [190, -125, 5], lookY: 28, fov: 40, vehicle: 'stack' },
+      { t: -3, shot: 'pad', at: [120, -75, 5], lookY: 20, fov: 50, vehicle: 'stack' },
       { t: 4, shot: 'track', at: [-1300, -900, 12], lookY: 30, fill: 0.55, fovMin: 0.6, fovMax: 20, vehicle: 'stack' },
       { t: 24, shot: 'chase', offset: [160, -40, 150], lookY: 28, fov: 40, blend: 1.5, vehicle: 'stack' },
       { t: 112, shot: 'chase', offset: [70, -30, 70], lookY: 22, fov: 46, vehicle: 'stack' },

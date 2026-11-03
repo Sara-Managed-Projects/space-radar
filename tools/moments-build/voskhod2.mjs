@@ -100,13 +100,14 @@ const entryAlt = mono(ENTRY_ALT), entryRng = mono(ENTRY_RNG);
 const rad = (x) => x * DEG;
 const distKm = (a, b) => 6371.0088 * Math.acos(Math.min(1, Math.sin(rad(a.lat)) * Math.sin(rad(b.lat)) + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.cos(rad(b.lon - a.lon))));
 const bearing = (a, b) => { const p1 = rad(a.lat), p2 = rad(b.lat), dl = rad(b.lon - a.lon); return (Math.atan2(Math.sin(dl) * Math.cos(p2), Math.cos(p1) * Math.sin(p2) - Math.sin(p1) * Math.cos(p2) * Math.cos(dl)) / DEG + 360) % 360; };
-const brg = bearing(EI, LAND), totalKm = distKm(EI, LAND);
-const entryPos = (t) => { const p = L.destination(EI.lat, EI.lon, brg, entryRng(t - T_EI) * totalKm / 1090); return L.groundPos(epochMs, p.lat, p.lon, entryAlt(t - T_EI) * 1000, t); };
+const START = L.destination(LAND.lat, LAND.lon, 237, 0.6);   // the canopy comes down almost straight: the wind's drift is 0.6 km
+const GROUND_M = 150;                                          // the place's height (the ground is drawn there)
+const brg = bearing(EI, START), totalKm = distKm(EI, START);
+const entryPos = (t) => { const p = L.destination(EI.lat, EI.lon, brg, Math.min(1, entryRng(t - T_EI) / 1090) * totalKm); return L.groundPos(epochMs, p.lat, p.lon, entryAlt(t - T_EI) * 1000 + GROUND_M, t); };
 const entryAt = L.diffState(entryPos);
 const DESCENT = [[T_EJECT, 7.0], [T_EJECT + 40, 6.2], [T_EJECT + 160, 3.2], [T_EJECT + 400, 1.0], [T_EJECT + 600, 0.2], [T_LAND, 0.0]];
 const lerpGround = (a, b, u) => ({ lat: a.lat + (b.lat - a.lat) * u, lon: a.lon + (b.lon - a.lon) * u });
-const START = L.destination(LAND.lat, LAND.lon, 237, 1100 - 1090 + 8);
-const shipDown = L.diffState((t) => { const u = (t - T_EJECT) / (T_LAND - T_EJECT); const p = lerpGround(START, LAND, u); return L.groundPos(epochMs, p.lat, p.lon, mono(DESCENT)(t) * 1000, t); });
+const shipDown = L.diffState((t) => { const u = (t - T_EJECT) / (T_LAND - T_EJECT); const p = lerpGround(START, LAND, u); return L.groundPos(epochMs, p.lat, p.lon, mono(DESCENT)(t) * 1000 + GROUND_M, t); });
 console.log('entry bearing', brg.toFixed(1), 'EI to landing km', totalKm.toFixed(0), 'retro-to-EI lambert arrival m/s', len(lam.v2).toFixed(0), 'join EI', len(sub(lam.v2, entryAt(T_EI).v)).toFixed(0), 'ejection join', len(sub(entryAt(T_EJECT).v, shipDown(T_EJECT).v)).toFixed(0));
 const segs = [
   { from: T_INS, to: T_RETRO, at: orbitAt, step: (t) => L.arcStep(len(orbitAt(t).r), len(orbitAt(t).v), 6, 150) },
@@ -210,10 +211,10 @@ const moment = {
       { t: 700, shot: 'globe', altKm: 2600, backKm: 2200, fov: 46, vehicle: 'ship', blend: 3 },
       { t: T_DEPLOY - 30, shot: 'chase', offset: [-8, 3, 9], lookY: 3.5, fov: 46, vehicle: 'ship', blend: 2 },
       { t: T_EVA_DEPRESS - 20, shot: 'chase', offset: [-11, 4.5, 8], lookY: 3.8, fov: 46, vehicle: 'ship', blend: 2 },
-      { t: T_EVA_OUT - 8, shot: 'orbit', az: 140, el: 12, dist: 8, lookY: 0.9, fov: 46, vehicle: 'leonov', blend: 1.5 },
-      { t: T_EVA_OUT + 150, shot: 'orbit', az: 40, el: 22, dist: 13, lookY: 0.9, fov: 48, spin: 1.5, vehicle: 'leonov', blend: 2 },
+      { t: T_EVA_OUT - 8, shot: 'chase', offset: [-13, 7, 15], lookY: 4.2, fov: 50, vehicle: 'ship', blend: 1.5 },
+      { t: T_EVA_OUT + 200, shot: 'orbit', az: 140, el: 12, dist: 8, lookY: 0.9, fov: 46, vehicle: 'leonov', blend: 2.5 },
       { t: T_EVA_OUT + 460, shot: 'globe', altKm: 1600, backKm: 1800, fov: 46, vehicle: 'ship', blend: 3 },
-      { t: T_EVA_IN - 85, shot: 'orbit', az: 110, el: 10, dist: 8, lookY: 0.9, fov: 46, vehicle: 'leonov-in', blend: 1.5 },
+      { t: T_EVA_IN - 85, shot: 'chase', offset: [-10, 6.5, 11], lookY: 4, fov: 48, vehicle: 'ship', blend: 1.5 },
       { t: T_EVA_SHUT, shot: 'chase', offset: [-9, 3, 7], lookY: 3.8, fov: 46, vehicle: 'ship', blend: 2 },
       { t: T_JETTISON - 10, shot: 'chase', offset: [-5, 5, 12], lookY: 3.6, fov: 46, vehicle: 'ship', blend: 1.5 },
       { t: T_JETTISON + 70, shot: 'globe', altKm: 2400, backKm: 2400, fov: 46, vehicle: 'ship', blend: 3 },
