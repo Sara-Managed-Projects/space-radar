@@ -61,10 +61,12 @@ await sleep(6000);
 if (await go('venera-13', null, 6000)) {
   await lightUp('venera-13', 'venus', 2 * 86400e3, 80);
   try { rig.flyTo({ offset: dirOf('venera-13', 'venus'), distance: (6051.8 / sr.stage.unitKm) * 2.6, ms: 0 }); } catch (e) { out.problems.push('venus framing: ' + e); }
-  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  try { sr.deselect(); } catch { /* the site stays selected */ }
   await sleep(3000);
   await snap('01-venus-sites', 'Venus with the Sun over the Venera 13 site, seen from straight above it: the Venera and VEGA sites round it, each a mark (nothing is drawn there but a mark)', 6000);
 }
+location.hash = '';
+await sleep(1000);
 location.hash = '#event=venera-13.landing';
 const cardUp = await until(() => /Venera 13/.test(text('.sr-mission') || ''), 60000);
 if (!cardUp) out.problems.push('the link #event=venera-13.landing never opened a card with the Venera 13 events (the landers\' file did not load?)');
@@ -79,7 +81,7 @@ await sleep(6000);
 if (await go('surveyor-3', null, 6000)) {
   await lightUp('surveyor-3', 'moon', 86400e3, 30);
   try { rig.flyTo({ offset: dirOf('surveyor-3', 'moon'), distance: (1737.4 / sr.stage.unitKm) * 1.7, ms: 0 }); } catch (e) { out.problems.push('moon framing: ' + e); }
-  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); // the selected lander is drawn 260 px tall at any distance: put it away to see the marks
+  try { sr.deselect(); } catch { /* the lander stays */ } // the selected lander is drawn 260 px tall at any distance: put it away to see the marks
   await sleep(3000);
   await snap('03-moon-sites', 'the Moon with the Sun over Oceanus Procellarum, from straight above Surveyor 3: the Surveyor, Ranger, Luna, Lunokhod and Apollo sites round it', 6000);
 }
