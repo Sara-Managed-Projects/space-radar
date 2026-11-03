@@ -242,7 +242,7 @@ const parts = [
   // the CSM: bay 4's torn foil is hidden until the panel goes
   ev(T.extr, 'csm', 'sm-bay-foil', 'hide'),
   ev(T.boom, 'csm', 'sm-bay-foil', 'show'),
-  ev(T.boom, 'csm', 'sm-panel-4', 'separate', { dv: [-4.2, 1.4, -7.3], spin: [0.5, 0.2, -0.8], puffs: { part: 'service-module', at: ventAt, dir: ventDir, exitM: 2.4, dur: 400 } }),
+  ev(T.boom, 'csm', 'sm-panel-4', 'separate', { dv: [-1.6, 0.9, -2.7], spin: [0.18, 0.1, -0.3], puffs: { part: 'service-module', at: ventAt, dir: ventDir, exitM: 0.7, dur: 180 } }),
   ev(T.boom + 80, 'csm', 'sm-panel-4', 'hide'),
   ev(T.mcc2, 'lm', 'descent-stage', 'ignite', { rampS: 3 }), ev(T.mcc2 + 4, 'lm', 'descent-stage', 'throttle', { level: 0.15 }), ev(T.mcc2 + 34.2, 'lm', 'descent-stage', 'cutoff'),
   ev(T.tei0, 'lm', 'descent-stage', 'ignite', { rampS: 3 }), ev(T.tei0 + 26, 'lm', 'descent-stage', 'throttle', { level: 0.95 }), ev(T.tei1, 'lm', 'descent-stage', 'cutoff'),
@@ -254,6 +254,7 @@ const parts = [
   ev(T.drogue, 'csm', 'drogue', 'deploy', { reefS: 3, openS: 2 }), ev(T.main, 'csm', 'main', 'deploy', { reefS: 5, openS: 4 }), ev(T.main + 2, 'csm', 'drogue', 'hide'),
 ].sort((a, b) => a.t - b.t);
 
+const wideLit = (t) => { const m = norm(mn(t).r); const d = norm(add(scale(norm(cross([0, 0, 1], m)), -0.9), [0, 0, 0.35])); return d.map((x) => +x.toFixed(3)); };
 const wideDir = (t) => { const m = norm(mn(t).r); const d = norm(add(scale(norm(cross([0, 0, 1], m)), 0.9), [0, 0, 0.35])); return d.map((x) => +x.toFixed(3)); };
 const cam = [
   { t: -9.5, shot: 'pad', at: [190, -150, 4], lookY: 45, fov: 42, vehicle: 'saturn' }, { t: -2.5, shot: 'pad', at: [95, -60, 5], lookY: 14, fov: 56, vehicle: 'saturn' },
@@ -271,15 +272,15 @@ const cam = [
   { t: 16000, shot: 'wide', look: 'earth', distKm: 22000, dir: wideDir(16000), fov: 40, vehicle: 'csm', blend: 3 },
   { t: 40000, shot: 'wide', look: 'earth-moon', distKm: 800000, dir: wideDir(60000), fov: 38, vehicle: 'csm', blend: 3 },
   { t: T.boom - 70, shot: 'orbit', az: 160, el: 14, dist: 52, lookY: 6, fov: 40, vehicle: 'csm', blend: 3 },
-  { t: T.boom - 6, shot: 'chase', offset: [-13, 3, -23], lookY: 4.5, fov: 40, vehicle: 'csm', blend: 1.5 },
+  { t: T.boom - 6, shot: 'chase', offset: [11, 3, -22], lookY: 4.5, fov: 40, vehicle: 'csm', blend: 1.5 },
   { t: T.boom + 26, shot: 'orbit', az: 100, el: 10, dist: 38, lookY: 5, fov: 42, vehicle: 'csm', spin: 2.5, blend: 1 },
   { t: T.boom + 120, shot: 'wide', look: 'vehicle', distKm: 0.12, dir: wideDir(T.boom), fov: 40, vehicle: 'csm', blend: 3 },
   { t: T.boom + 4000, shot: 'wide', look: 'earth-moon', distKm: 900000, dir: wideDir(T.boom + 100000), fov: 38, vehicle: 'csm', blend: 3 },
   { t: T.mcc2 - 60, shot: 'orbit', az: 200, el: 12, dist: 45, lookY: 4, fov: 40, vehicle: 'lm', blend: 3 },
   { t: T.mcc2 + 60, shot: 'wide', look: 'moon', distKm: 140000, dir: wideDir(T.mcc2 + 20000), fov: 40, vehicle: 'csm', blend: 3 },
-  { t: T.pc - 7000, shot: 'wide', look: 'moon', distKm: 9000, dir: wideDir(T.pc - 3000), fov: 40, vehicle: 'csm', blend: 3 },
-  { t: T.pc - 400, shot: 'wide', look: 'moon', distKm: 2600, dir: wideDir(T.pc), fov: 46, vehicle: 'csm', blend: 3 },
-  { t: T.pc + 600, shot: 'wide', look: 'moon', distKm: 9000, dir: wideDir(T.pc + 7000), fov: 40, vehicle: 'csm', blend: 3 },
+  { t: T.pc - 7000, shot: 'wide', look: 'moon', distKm: 14000, dir: wideLit(T.pc - 3000), fov: 40, vehicle: 'csm', blend: 3 },
+  { t: T.pc - 500, shot: 'wide', look: 'vehicle', distKm: 3600, dir: wideLit(T.pc), fov: 40, vehicle: 'csm', blend: 3 },
+  { t: T.pc + 500, shot: 'wide', look: 'moon', distKm: 14000, dir: wideLit(T.pc + 7000), fov: 40, vehicle: 'csm', blend: 3 },
   { t: T.tei0 - 200, shot: 'orbit', az: 200, el: 12, dist: 40, lookY: 4, fov: 40, vehicle: 'lm', blend: 3 }, { t: T.tei0 + 120, shot: 'chase', offset: [22, -6, -26], lookY: 3, fov: 46, vehicle: 'lm', blend: 1.5 },
   { t: T.tei1 + 300, shot: 'wide', look: 'earth-moon', distKm: 800000, dir: wideDir(T.tei1 + 200000), fov: 38, vehicle: 'csm', blend: 3 },
   { t: 400000, shot: 'wide', look: 'earth', distKm: 90000, dir: wideDir(400000), fov: 40, vehicle: 'csm', blend: 3 },

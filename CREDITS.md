@@ -4074,7 +4074,8 @@ it loops, levelled to −23 LUFS; each sting is trimmed to 2.5–3 s with a fade
 HQ previews, not the uploaded originals.
 
 | `a11-small-step.m4a` | Armstrong's first words on the Moon, played once at 109:24:48 of the Apollo 11 Moment | Public domain (NASA) | Neil Armstrong's first words on the Moon, NASA (1969), public domain | <https://commons.wikimedia.org/wiki/File:Neil_Armstrong_small_step.wav> |
-| `a13-problem-1.m4a`, `a13-problem-2.m4a` | The two radio lines of the Apollo 13 Moment, played once each at 55:55:20 and 55:55:42 | Public domain (NASA) | Apollo 13 air-to-ground recording, NASA (14 April 1970 GMT), public domain: "Okay, Houston, we've had a problem here" (Swigert) and "Houston, we've had a problem" (Lovell) | <https://commons.wikimedia.org/wiki/File:Houston_problem.ogg> |
+| `a13-problem-1.m4a` | The first radio line of the Apollo 13 Moment, played once at 55:55:20 ("Okay, Houston, we've had a problem here") | Public domain (NASA) | Apollo 13 air-to-ground recording, NASA (14 April 1970 GMT), public domain: John Swigert, 55:55:20 | <https://commons.wikimedia.org/wiki/File:Houston_problem.ogg> |
+| `a13-problem-2.m4a` | The second radio line, played once at 55:55:42 ("Houston, we've had a problem") | Public domain (NASA) | Apollo 13 air-to-ground recording, NASA (14 April 1970 GMT), public domain: James Lovell, 55:55:42 | <https://commons.wikimedia.org/wiki/File:Houston_problem.ogg> |
 
 The one NASA clip (97 kB, mono AAC, 24 s) is the Wikimedia Commons file "Neil Armstrong small step.wav" (credit there:
 "Neil Armstrong/NASA", licence "Public domain", read 2026-11-02; NASA's media usage guidelines put its works in the

@@ -161,7 +161,7 @@ for (const a of [deg(120), deg(240)]) { const sc = radial(a, R_SM + 0.12, Y_SM_F
 // as a model; its tanks, tubing and the tears are drawn as shapes. Everything here is hidden by the panel until it goes.
 {
   let seed = 1013904223; const rnd = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
-  const DARK = col('#303236'), WALL = col('#42444a'), TUBE = col('#cfd0cd'), O2 = col('#bfc3c7'), H2 = col('#d4d6d8'), BURN = col('#17171a');
+  const DARK = col('#303236'), WALL = col('#42444a'), TUBE = col('#cfd0cd'), O2 = col('#bfc3c7'), H2 = col('#d4d6d8'), BURN = col('#2a2a2e');
   const MYLAR = col('#d6d9dc'), GOLDM = col('#d7b153'), SOOT = col('#4b4a48');
   const R_IN = R_SM * 0.985, R_TUBE = 1.02, Y_TOP = Y_SM_FRONT - 0.02, Y_SHELF = 5.12;
   const polar = (r, a, y) => [r * Math.cos(a), y, r * Math.sin(a)];
