@@ -207,7 +207,7 @@ export function buildFalcon9Moment(f, OUT) {
   // cold gas thrusters flip the stage after separation: puffs on the booster's top
   parts.sort((a, b) => a.t - b.t);
   // the pitch of the booster after separation: it flips tail-first (nose against the path) over 40 s and keeps that to the landing; the up stack is the ascent's
-  const flip0 = E.sep + 3, flip1 = E.sep + 40, hold1 = TL - 12;
+  const flip0 = E.sep + 3, flip1 = E.sep + 40;
   const pace = f.pace.map(([from, to, rate]) => ({ from, to, rate }));
   let play = 0; for (const q of pace) play += (q.to - q.from) / q.rate;
   pace.forEach((q, i) => { if (i && q.from !== pace[i - 1].to) console.log('PACE GAP', pace[i - 1].to, q.from); });
@@ -226,7 +226,8 @@ export function buildFalcon9Moment(f, OUT) {
         engines: { booster: ENG }, flames: { booster: { kind: 'kerolox', exitM: 0.92 } } },
       { id: 'stage2-up', model: 'falcon9-upper', lengthM: +H2.toFixed(4), keepXZ: true, rideOn: { vehicle: 'booster-up', at: AT2 }, window: [-10, E.sep], colour: 'rocket', parts: ['stage2', 'fairing-a', 'fairing-b'], marker: false },
       { id: 'booster', model: 'falcon9-stage1', lengthM: +H1.toFixed(4), keepXZ: true, path: 'booster', attitude: 'prograde', window: [E.sep, f.end], colour: 'rocket', parts: ['booster', 'leg-a', 'leg-b', 'leg-c', 'leg-d', 'fin-a', 'fin-b', 'fin-c', 'fin-d'],
-        phases: [{ t: E.sep, pitchDeg: 0 }, { t: flip0, pitchDeg: 0 }, { t: flip1, pitchDeg: 180 }, { t: hold1, pitchDeg: 180 }, { t: TL - 3, pitchDeg: 180 }],
+        // the flip: nose along the path, then turned over 180 degrees to nose against it (retrograde, the same pose); in the last seconds, standing still, upright
+        phases: [{ t: E.sep, pitchDeg: 0 }, { t: flip0, pitchDeg: 0 }, { t: flip1, pitchDeg: 180 }, { t: flip1, attitude: 'retrograde', pitchDeg: 0 }, { t: TL - 7, attitude: 'vertical', pitchDeg: 0 }],
         engines: { booster: ENG }, flames: { booster: { kind: 'kerolox', exitM: 0.92 } } },
       { id: 'stage2', model: 'falcon9-upper', lengthM: +H2.toFixed(4), keepXZ: true, path: 'stage2', attitude: 'prograde', window: [E.sep, E.stage2End], colour: 'rocket', parts: ['stage2', 'fairing-a', 'fairing-b'],
         engines: { stage2: [[0, 0.05, 0]] }, flames: { stage2: { kind: 'kerolox', exitM: 2.5 } } },
