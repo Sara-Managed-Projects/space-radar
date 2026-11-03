@@ -232,6 +232,9 @@ const ALLOWED = {
   'tests/test_wind.mjs': ['e0'],
   'tests/test_worlds_films.mjs': ['LATER'],
   'tests/test_year_trip.mjs': ['MERCURY_ORBIT_KM'],
+  'scripts/shuttle/build-sts1.mjs': ['recolour', 'require', 'TILE', 'body', 'DOORIN'], // 1.7.1, merged while this test was in review
+  'tests/test_moments_voskhod_sts1.mjs': ['T_E'],
+  'tools/moments-build/sts1.mjs': ['T_HAC0'],
   'tools/exoface.probe.js': ['s'],
   'tools/moments-build/apollo11.mjs': ['moonRel', 'nearAt'],
   'tools/moments-build/artemis2.mjs': ['rEI', 'fairings'],

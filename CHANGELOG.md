@@ -17,7 +17,7 @@ tagged, and their dates are the day the last change in each landed.
 
 - **Six small checks in CI** (`.github/workflows/ci.yml`, the `rails` job, each in under a minute and with nothing to install): `tests/test_lint.mjs`
   (a name that an import, const, let, function or class declares and its file never mentions again; 14 such names in the shipped code are gone,
-  29 in build scripts and tests are listed as known and may only shrink), `tests/test_cli_usage.mjs` (36 command-line tools answer `--help`
+  36 in build scripts and tests are listed as known and may only shrink), `tests/test_cli_usage.mjs` (36 command-line tools answer `--help`
   with a usage line and exit 0; 75 tools that read their arguments by position and say nothing are listed in `tests/cli_usage_gaps.txt`, and a
   new one fails), `tests/test_nobuild_launch.mjs` (starts the README's own `python3 -m http.server --directory site` and follows every module on the
   way to the first frame: 125 files, all 200, all JavaScript, nothing built), `tests/test_nowebgl.mjs` (calls the real `createRenderer()` with a
