@@ -266,7 +266,8 @@ export const REAL_MODELS = {
     // white WXT lobster-eye modules in a fanned ring round the two FXT cylinders, the gold-foil payload cabin with its sunshade, the grey bus with its
     // equipment deck, and two three-panel wings. By NUMBER (CelesTrak's name is EINSTEIN PROBE, read 2026-11-03), so its Long March 2C rocket body
     // (58754) and every other X-ray telescope keep what they had. `axes: 'app'`: the optics look away from the Earth (-Z, the telescope rule, as NuSTAR and
-    // XRISM), the wings along X, the cells toward +Y. NOT AS IT FLIES: EP points anywhere in the sky and the app knows no target.
+    // XRISM), the wings along X, the cells toward +Y. NOT AS IT FLIES: EP points anywhere in the sky and the app knows no target, and
+    // the payload is canted 20 degrees toward +Y so that the module dome shows in the app's sunward views (release 1.7.5 review).
     58753: { file: 'einstein-probe.glb', colour: 'telescope', name: 'Einstein Probe', catalogue: 'EINSTEIN PROBE', made: 'dimensions', axes: 'app' },
     // SVOM HAS ITS OWN SHAPE since release 1.7.5 (public #971): svom.glb was BUILT HERE, in code, from the cited numbers (the mission papers: the
     // 54 cm ECLAIRs mask 46 cm above its detectors, the three GRM detectors 30 degrees off its axis, the MXT's 20 cm optics, the VT's 44 cm mirror) and

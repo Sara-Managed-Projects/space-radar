@@ -24,7 +24,7 @@ tagged, and their dates are the day the last change in each landed.
   back, at ESA's 1.55 by 1.49 by 1.4 m. **Insight-HXMT** (`hxmt.glb`, 158 kB): the gold platform, the 18 HE detector modules with their slat
   collimators, the three LE and three ME boxes, the star trackers, the sun-shielding board and two three-panel wings. **SVOM** (`svom.glb`,
   151 kB): the gold-blanketed body with ECLAIRs' coded mask, the MXT, the visible telescope, the three GRM heads tilted 30 degrees, the
-  adapter ring and two wings. **Einstein Probe** (`einstein-probe.glb`, 107 kB): the twelve lobster-eye WXT modules fanned round the two FXT
+  adapter ring and two wings. **Einstein Probe** (`einstein-probe.glb`, 113 kB): the twelve lobster-eye WXT modules fanned round the two FXT
   cylinders on the gold payload cabin, the bus and two three-panel wings. Each is 12 000 to 19 000 triangles, loaded only when its craft is selected.
   The sources, what was cited and what was estimated are in `registry/models.yaml` and `CREDITS.md` §3q to §3t.
 
