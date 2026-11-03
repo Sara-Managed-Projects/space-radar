@@ -11,7 +11,7 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
-## [1.7.2] - 2026-11-03
+## [1.7.1] - 2026-11-03
 
 ### Added
 
