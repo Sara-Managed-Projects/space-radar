@@ -3860,7 +3860,7 @@ Object.assign(COPY, {
   },
   "momentShelf": {
     "title": "Momentos",
-    "note": "Quatro missões reprisadas em um só relógio, com os horários reais dos eventos. As trajetórias são reconstruídas e dizem isso.",
+    "note": "Cinco missões reprisadas em um só relógio, com os horários reais dos eventos. As trajetórias são reconstruídas e dizem isso.",
     "minutes": "{m} min",
     "replay": "Rever este momento",
     "replayTitle": "Rever {title} no relógio da missão",
@@ -3880,6 +3880,11 @@ Object.assign(COPY, {
         "title": "Artemis II",
         "when": "de 1 a 10 de abril de 2026",
         "blurb": "Da plataforma 39B ao Pacífico ao largo de San Diego, em volta do lado oculto da Lua. Diz-se o que foi voado e o que estava planejado."
+      },
+      "sputnik-1": {
+        "title": "Sputnik 1",
+        "when": "4 de outubro de 1957",
+        "blurb": "De Baikonur à primeira volta à Terra: o primeiro satélite artificial, uma esfera polida de 585 mm, e o seu bipe."
       },
       "vostok-1": {
         "title": "Vostok 1",

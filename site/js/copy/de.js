@@ -3868,7 +3868,7 @@ Object.assign(COPY, {
   },
   "momentShelf": {
     "title": "Momente",
-    "note": "Vier Missionen auf einer Uhr noch einmal erlebt, mit den echten Ereigniszeiten. Die Bahnen sind rekonstruiert und sagen es.",
+    "note": "Fünf Missionen auf einer Uhr noch einmal erlebt, mit den echten Ereigniszeiten. Die Bahnen sind rekonstruiert und sagen es.",
     "minutes": "{m} Min.",
     "replay": "Diesen Moment ansehen",
     "replayTitle": "{title} auf der Missionsuhr ansehen",
@@ -3888,6 +3888,11 @@ Object.assign(COPY, {
         "title": "Artemis II",
         "when": "1. bis 10. April 2026",
         "blurb": "Von Rampe 39B zum Pazifik vor San Diego, um die Rückseite des Mondes. Es steht dabei, was geflogen wurde und was geplant war."
+      },
+      "sputnik-1": {
+        "title": "Sputnik 1",
+        "when": "4. Oktober 1957",
+        "blurb": "Von Baikonur zur ersten Erdumrundung: der erste künstliche Satellit, eine polierte Kugel von 585 mm, und sein Piepen."
       },
       "vostok-1": {
         "title": "Wostok 1",

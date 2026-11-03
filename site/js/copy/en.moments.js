@@ -51,7 +51,7 @@ Object.assign(COPY, {
   // Where a moment is offered (moments/shelf.js): the section of the Earth pane, and the card's one row.
   momentShelf: {
     title: 'Moments',
-    note: 'Four missions replayed on one clock, with the real event times. Paths are reconstructed and say so.',
+    note: 'Five missions replayed on one clock, with the real event times. Paths are reconstructed and say so.',
     minutes: '{m} min',
     replay: 'Replay this moment',
     replayTitle: 'Replay {title} on the mission clock',
@@ -60,6 +60,7 @@ Object.assign(COPY, {
       'apollo-11': { title: 'Apollo 11', when: '16 to 24 July 1969', blurb: 'Pad 39A to the Pacific by way of Tranquility Base: lift-off, the Moon, the landing, the ascent, home.' },
       'apollo-13': { title: 'Apollo 13', when: '11 to 17 April 1970', blurb: 'Pad 39A to the Pacific: the Moon landing that did not happen, an oxygen tank that burst, and the lunar module as the lifeboat.' },
       'artemis-ii': { title: 'Artemis II', when: '1 to 10 April 2026', blurb: 'Pad 39B to the Pacific off San Diego, round the far side of the Moon. What was flown is said to be, and what was planned.' },
+      'sputnik-1': { title: 'Sputnik 1', when: '4 October 1957', blurb: 'Baikonur to a first lap of the Earth: the first artificial satellite, a polished sphere of 585 mm, and its beep.' },
       'vostok-1': { title: 'Vostok 1', when: '12 April 1961', blurb: 'Yuri Gagarin, once round the Earth in 108 minutes, from Baikonur to a field near Smelovka.' },
     },
   },

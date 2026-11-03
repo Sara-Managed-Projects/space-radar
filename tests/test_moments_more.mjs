@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// tests/test_moments_more.mjs -- the Moments of release 1.7.0 (internal #1058): Apollo 13. For each: its event order and its times against the
+// tests/test_moments_more.mjs -- the Moments of release 1.7.0 (internal #1058): Apollo 13 and Sputnik 1. For each: its event order and its times against the
 // Mission Report's (UTC, from the moment's own epoch), every part event naming a part of the model it is for, every vehicle event inside the
 // vehicle's window, the paths' rows sorted, finite and at believable speeds, the flyby where the Report puts it, the return to the entry point
 // and the landing, what is drawn and not measured said so, the radio clips' size and credit, the shelf and the cards.
@@ -155,15 +155,52 @@ const common = async (id, cover) => {
   check(a11.tracks.parts.some((e) => e.part === 'sm-bay-foil' && e.action === 'hide' && e.vehicle === 'csm'), 'Apollo 11: the torn foil of bay 4 is hidden (it is the story of Apollo 13)');
 }
 
+// --- Sputnik 1 ---------------------------------------------------------------------------------------------------------------------
+{
+  const T_SEP = 315.3, T_COFF = 295.4;
+  const { m, words } = await common('sputnik-1', { orbit: [T_SEP, 5800] });
+  const t = (p, a, v) => first(m, p, a, v);
+  check(iso(m, 0) === '1957-10-04T19:28:34Z', 'Sputnik 1: T-0 is 19:28:34 UTC on 4 October 1957');
+  check(Math.abs(t('booster-b', 'separate') - 116.4) < 0.01 && t('booster-b', 'cutoff') === 116, 'Sputnik 1: the strap-ons go 116 seconds in');
+  check(t('core-stage', 'cutoff') === T_COFF, 'Sputnik 1: the core stage cuts off at 295.4 s');
+  check(Math.abs(t('sputnik-nose', 'separate') - t('core-stage', 'cutoff') - 19.9) < 0.01, 'Sputnik 1: the satellite and its head are let go 19.9 s after cut-off');
+  check(['blok-e', 'fairing'].every((p) => m.tracks.parts.some((e) => e.part === p && e.action === 'hide' && e.vehicle === 'rocket' && e.t <= 0)), 'Sputnik 1: the Vostok launcher\'s third stage and shroud are put away (the 8K71PS had neither)');
+  check(m.tracks.parts.some((e) => e.part === 'sputnik-antennas' && e.action === 'hide' && e.vehicle === 'sat-up') && m.tracks.parts.some((e) => e.part === 'sputnik-nose' && e.action === 'hide' && e.vehicle === 'sat'), 'Sputnik 1: the whips are folded in the head and the head is gone from the satellite alone');
+  // the orbit the path gives at the separation: 223 by 950 km, 65.10 degrees, 96.20 minutes
+  const MUm = 398600.4418;
+  const rows = rowsOf(m, 'orbit'), r0 = rows[0], r = [r0[1], r0[2], r0[3]], v = [r0[4], r0[5], r0[6]];
+  const rn = Math.hypot(...r), vn = Math.hypot(...v), a = 1 / (2 / rn - vn * vn / MUm);
+  const h = [r[1] * v[2] - r[2] * v[1], r[2] * v[0] - r[0] * v[2], r[0] * v[1] - r[1] * v[0]], hn = Math.hypot(...h), e = Math.sqrt(Math.max(0, 1 - hn * hn / (MUm * a)));
+  const per = a * (1 - e) - 6371.0, apo = a * (1 + e) - 6371.0, incl = Math.acos(h[2] / hn) * 180 / Math.PI, period = 2 * Math.PI * Math.sqrt(a ** 3 / MUm) / 60;
+  check(Math.abs(per - 223) < 15 && Math.abs(apo - 950) < 40, `Sputnik 1: the orbit is ${per.toFixed(0)} by ${apo.toFixed(0)} km (223 by 950)`);
+  check(Math.abs(incl - 65.1) < 0.5 && Math.abs(period - 96.2) < 0.5, `Sputnik 1: ${incl.toFixed(2)} degrees and ${period.toFixed(1)} minutes (65.10 and 96.20)`);
+  // the beep: a NASA recording, small, credited, cued at the separation
+  const clips = m.tracks.audio.filter((x) => x.src);
+  check(clips.length >= 1 && clips.every((c) => existsSync(join(ROOT, 'site', c.src)) && statSync(join(ROOT, 'site', c.src)).size < 60000 && c.t >= T_SEP && c.t < T_SEP + 30), 'Sputnik 1: the beep is under 60 kB and plays within half a minute of the separation');
+  const credits = readFileSync(join(ROOT, 'CREDITS.md'), 'utf8'), audioYaml = readFileSync(join(ROOT, 'registry/audio.yaml'), 'utf8');
+  check(/sputnik-beep\.m4a/.test(credits) && /Sputnik_beep/.test(credits) && /id: sputnik-beep/.test(audioYaml), 'Sputnik 1: the beep has its CREDITS.md line and its row in registry/audio.yaml');
+  check(/PD-USGov-NASA/.test(audioYaml) && /NASA/.test(words.srcClip), 'Sputnik 1: the beep\'s licence is stated and its words credit NASA');
+  check(/tumble/.test(words.pathOrbit) && /approximate/.test(words.pathAscent), 'Sputnik 1: what is not drawn as flown, and what is approximate, is said');
+  // the model
+  const sp = partsOf('sputnik-1');
+  check(['sputnik-nose', 'sputnik-sphere', 'sputnik-antennas'].every((x) => sp.includes(x)) && existsSync(join(ROOT, 'site/models/sputnik-1.glb')), 'Sputnik 1: the model has its three parts');
+  check(/stations: \{[^}]*sputnik-1: \[0\.0, 25\.5245, 0\.0\]/.test(registry), 'Sputnik 1: the head stands on the launcher\'s core at the row r7-8k72k\'s station');
+}
+
 // --- the shelf and the cards ------------------------------------------------------------------------------------------------
 {
   const shelf = await mod('moments/shelf.js');
-  for (const id of ['apollo-13']) {
+  for (const id of ['apollo-13', 'sputnik-1']) {
     check(shelf.SHELF.some((s) => s.id === id && existsSync(join(ROOT, 'site/data/moments', `${id}.json`))), `the shelf lists ${id}`);
     check(!!COPY.momentShelf.cards[id] && COPY.momentShelf.cards[id].title && COPY.momentShelf.cards[id].blurb, `the shelf has the words of ${id}`);
   }
   const both = shelf.momentsFor('saturn-v-lc-39a').map((s) => s.id);
   check(both.includes('apollo-11') && both.includes('apollo-13'), `Launch Complex 39A carries Apollo 11 and Apollo 13 (${both.join(', ')})`);
+  const pad1 = shelf.momentsFor('baikonur-site-1').map((s) => s.id);
+  check(pad1.join() === 'vostok-1,sputnik-1', `Baikonur Site 1 carries Vostok 1 and Sputnik 1 (${pad1.join(', ')})`);
+  const r7 = { id: 'launch-y', layer: 'launches', name: 'R-7 Semyorka | something', meta: { rocket: 'R-7 Semyorka', rocketFamily: 'R-7', rocketFamilyPath: ['R-7'] } };
+  check(shelf.momentsForRecord(r7).map((s) => s.id).join() === 'vostok-1,sputnik-1', 'an R-7 card offers Vostok 1 and Sputnik 1, Vostok first');
+  check(shelf.momentsForRecord({ id: 'launch-z', layer: 'launches', name: 'Soyuz 2.1a | x', meta: { rocket: 'Soyuz 2.1a', rocketFamily: 'Soyuz', rocketFamilyPath: ['R-7', 'Soyuz'] } }).length === 0, 'a Soyuz-2 is a descendant of the R-7 and has no replay');
   const rocket = { id: 'launch-x', layer: 'launches', name: 'Saturn V | something', meta: { rocket: 'Saturn V', rocketFamily: 'Saturn', rocketFamilyPath: ['Saturn'] } };
   check(shelf.momentsForRecord(rocket).map((s) => s.id).join() === 'apollo-11,apollo-13', 'a Saturn V card offers both Apollo stories, Apollo 11 first');
   check(shelf.momentsForRecord({ id: 'csm-1', layer: 'stations', name: 'Apollo CSM Odyssey' }).map((s) => s.id).includes('apollo-13'), 'the Apollo command and service module card offers Apollo 13');
@@ -175,4 +212,4 @@ const common = async (id, cover) => {
 }
 
 if (problems.length) { for (const p of problems) console.error(`::error::${p}`); console.error(`${problems.length} problem(s)`); process.exit(1); }
-console.log('more moments ok: Apollo 13 (event order and times, the incident and the two radio lines, the Moon passed at 254 km on the far side, the burn home, entry and landing at 21.6 S 165.4 W), the shelf and the cards');
+console.log('more moments ok: Sputnik 1 (the strap-ons, the core, the separation, the orbit of 224 by 945 km at 65 degrees, the NASA beep) and Apollo 13 (event order and times, the incident and the two radio lines, the Moon passed at 254 km on the far side, the burn home, entry and landing at 21.6 S 165.4 W), the shelf and the cards');

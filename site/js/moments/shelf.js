@@ -19,6 +19,7 @@ export const SHELF = [
   { id: 'apollo-13', minutes: 14, records: ['saturn-v-lc-39a'], hue: '210, 40, 70', models: ['saturn-v', 'apollo-csm', 'lunar-module'] },
   { id: 'artemis-ii', minutes: 11, records: ['shuttle-lc-39b'], hue: '36, 64, 100', models: ['sls-block1', 'orion-esm'] },
   { id: 'vostok-1', minutes: 5, records: ['baikonur-site-1', 'vostok-1-landing'], hue: '100, 50, 40', models: ['r7-8k72k', 'vostok-3ka', 'vostok-seat'] },
+  { id: 'sputnik-1', minutes: 4, records: ['baikonur-site-1'], hue: '210, 14, 60', models: ['r7-8k72k', 'sputnik-1'] },
 ];
 
 /** The story a card for record `id` can replay, or null (the first, when several are about it: see `momentsFor`). */
@@ -39,6 +40,7 @@ export function momentsFor(id) {
  * because Orion is also a constellation and a nebula.
  */
 const VEHICLES = [
+  { id: 'sputnik-1', rocket: /^(sputnik|8k71ps|r-7(\b|$))/i, craft: /^(sputnik[ -]?1|ps-1)\b/i },
   { id: 'vostok-1', rocket: /^(vostok(-k|-2m)?|r-7(\b|$)|8k72k)/i, craft: /^vostok( ?1| 3ka|\b)/i },
   { id: 'apollo-11', rocket: /^saturn ?(v|5)\b/i, craft: /^(apollo[ -](cs?m|command|service)|lunar module|apollo lunar module)/i },
   { id: 'apollo-13', rocket: /^saturn ?(v|5)\b/i, craft: /^(apollo[ -](cs?m|command|service)|lunar module|apollo lunar module)/i },

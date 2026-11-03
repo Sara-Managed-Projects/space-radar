@@ -242,7 +242,7 @@ const parts = [
   // the CSM: bay 4's torn foil is hidden until the panel goes
   ev(T.extr, 'csm', 'sm-bay-foil', 'hide'),
   ev(T.boom, 'csm', 'sm-bay-foil', 'show'),
-  ev(T.boom, 'csm', 'sm-panel-4', 'separate', { dv: [-1.6, 0.9, -2.7], spin: [0.18, 0.1, -0.3], puffs: { part: 'service-module', at: ventAt, dir: ventDir, exitM: 0.7, dur: 180 } }),
+  ev(T.boom, 'csm', 'sm-panel-4', 'separate', { dv: [-1.6, 0.9, -2.7], spin: [0.18, 0.1, -0.3], puffs: { part: 'service-module', at: ventAt, dir: ventDir, exitM: 0.45, dur: 180 } }),
   ev(T.boom + 80, 'csm', 'sm-panel-4', 'hide'),
   ev(T.mcc2, 'lm', 'descent-stage', 'ignite', { rampS: 3 }), ev(T.mcc2 + 4, 'lm', 'descent-stage', 'throttle', { level: 0.15 }), ev(T.mcc2 + 34.2, 'lm', 'descent-stage', 'cutoff'),
   ev(T.tei0, 'lm', 'descent-stage', 'ignite', { rampS: 3 }), ev(T.tei0 + 26, 'lm', 'descent-stage', 'throttle', { level: 0.95 }), ev(T.tei1, 'lm', 'descent-stage', 'cutoff'),
