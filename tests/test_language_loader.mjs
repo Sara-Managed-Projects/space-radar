@@ -197,7 +197,7 @@ const probe3 = `out({
   lang: globalThis.document.documentElement.lang || '', dir: globalThis.document.documentElement.dir || '', tonight: m.COPY.tabs.tonight,
   later: m.COPY.templates.storm.lead, facts: m.COPY.klass.station, glossary: m.GLOSSARY.orbit.slice(0, 24), ago: m.ageInWords(3 * 3600e3),
   num: m.fmt.num(1234.5, 1), int: m.fmt.int(1234567), plural: [0, 1, 2, 5, 21, 1.5].map((n) => m.fmt.plural(n, 'one', 'a|b|c|d')),
-  article: m.article('galaxy'), compass: m.compassWords(45),
+  article: m.article('galaxy'), compass: m.compassWords(45), compare: m.COPY.compare.row, kinds: m.COPY.passportKinds && Object.values(m.COPY.passportKinds)[0],
 });`;
 const NEW = {
   ru: { name: 'Русский', locale: 'ru-RU', tag: 'ru', dir: '', num: '1\u202f234,5' },
@@ -224,6 +224,7 @@ for (const [code, want] of Object.entries(NEW)) {
   assert.match(got.later, /\{name\}/, `${code}: the sections copy/en.later.js adds are in the language, with their slots`);
   assert.notEqual(got.facts, 'Space station', `${code}: and the ones copy/en.facts.js adds`);
   assert.notEqual(got.ago, '3 hours ago', `${code}: the time words`);
+  assert.notEqual(got.compare, 'Compare', `${code}: the sections added after the first localise call of en.later.js (Compare, wave 2) are in the language too`);
   assert.equal(typeof got.article, 'string', `${code}: RULES.article answers`);
   assert.ok(got.plural.every((p) => ['one', 'a', 'b', 'c', 'd'].includes(p.split('|')[0]) || typeof p === 'string'), `${code}: RULES.plural answers`);
   if (want.num) assert.equal(got.num, want.num, `${code}: the decimal is a comma, the groups are narrow no-break spaces`);
