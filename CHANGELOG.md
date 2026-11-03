@@ -11,6 +11,36 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [1.7.4] - 2026-11-03
+
+### Added
+
+- **Six small checks in CI** (`.github/workflows/ci.yml`, the `rails` job, each in under a minute and with nothing to install): `tests/test_lint.mjs`
+  (a name that an import, const, let, function or class declares and its file never mentions again; 14 such names in the shipped code are gone,
+  36 in build scripts and tests are listed as known and may only shrink), `tests/test_cli_usage.mjs` (36 command-line tools answer `--help`
+  with a usage line and exit 0; 75 tools that read their arguments by position and say nothing are listed in `tests/cli_usage_gaps.txt`, and a
+  new one fails), `tests/test_nobuild_launch.mjs` (starts the README's own `python3 -m http.server --directory site` and follows every module on the
+  way to the first frame: 125 files, all 200, all JavaScript, nothing built), `tests/test_nowebgl.mjs` (calls the real `createRenderer()` with a
+  canvas that refuses WebGL 2 and holds the readable page with all 31 trips), `tests/test_reduced_motion_trips.mjs` (runs the outer-solar-system
+  and a-year-in-a-minute trips end to end under `prefers-reduced-motion`: no flight, no veil, the clock held still on every timed stop, and
+  leaving puts it back) and `tests/test_baselines.mjs` (the deep-space baseline probe's blocks and poses all name a real scene group).
+  The baselines test does not compare pictures: none is kept in the repository to compare with.
+- The release zip check refuses a manifest icon that is missing, empty or outside `site/`, and compares the zip's four brand icons to the tree
+  (public #1277). Every card sentence is held to 160 characters, and nine that were over are shortened (public #1286).
+
+### Changed
+
+- **Shader text is stripped of its comments and indentation in every served build** (internal #531). `scripts/minify_site.py` did it only when
+  asked; it is now the default, with `--no-shaders` or `SR_STRIP_SHADERS=0` as the way back. 185 shader templates in 58 files go from 283 187 B to
+  196 885 B of text before compression, and the boot graph of the built tree from 1 950 547 B to 1 920 102 B (30 445 B); no line holding a `${` is touched, and each template is checked to say the same GLSL.
+- The README says "more than 240 spacecraft and shape models" where it said 70 (the registry holds 246), and a test now keeps the claim current.
+
+### Not yet
+
+- **Content-hashed file names (internal #517) and a trimmed upcoming-launches file (internal #524)** are not done: the first rewrites every path in
+  the generated mirrors and wants its own browser walk, the second needs the harvester deployed and an answer on Launch Library's terms (internal #370).
+- **The AVIF decision (internal #530)** is written on the issue; the maps are still WebP.
+
 ## [1.7.3] - 2026-11-03
 
 ### Added

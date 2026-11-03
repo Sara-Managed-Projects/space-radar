@@ -81,7 +81,6 @@ export const LF = { tip: -2.5, cut: 4.0, slope: 0.3, light: 0.6, hbShare: 0.35 }
 
 const LY_KM = 9460730472580.8;
 const PC_KM = 30856775814913.67;
-const PC_LY = PC_KM / LY_KM;
 const SUN_V = 4.83;
 const SUN_INERTIAL = 'sun-inertial';
 const ARCMIN = Math.PI / 10800;

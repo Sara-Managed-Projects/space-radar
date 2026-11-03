@@ -148,7 +148,9 @@ with tempfile.TemporaryDirectory() as tmp:
 node = shutil.which("node")
 with tempfile.TemporaryDirectory() as tmp:
     out = Path(tmp) / "min"
-    code = build(ROOT / "site", out, node=node, quiet=True)
+    # shaders=False: this test is the plain stripper, which keeps every code token. Shader text is stripped by default
+    # since 1.7.4 and held by tests/test_strip_shaders.py (its own meaning check).
+    code = build(ROOT / "site", out, node=node, quiet=True, shaders=False)
     check(code == 0, "a module of the stripped site fails `node --check`")
     before = after = modules = 0
     shader_lines = 0
