@@ -23,12 +23,12 @@ import { loadRealModel } from '../scene/realmodels.js';
 import { createFlames, createPuffs, createChutes, createPlasma } from './effects.js';
 
 /** Stand a loaded model in metres: `lengthM` along +Y, base at y = 0, axis through x = z = 0. */
-export function standInMetres(model, lengthM) {
+export function standInMetres(model, lengthM, keepXZ = false) {
   model.updateMatrixWorld(true);
   const box = new THREE.Box3().setFromObject(model);
   const h = box.max.y - box.min.y || 1;
   const k = lengthM / h;
-  const c = box.getCenter(new THREE.Vector3());
+  const c = keepXZ ? new THREE.Vector3(0, 0, 0) : box.getCenter(new THREE.Vector3());   // 1.7.1 keepXZ: the file's own axis stays the vehicle's axis (a craft with a long boom or airlock to one side)
   model.scale.multiplyScalar(k);
   model.position.set(-c.x * k, -box.min.y * k, -c.z * k);
   model.updateMatrixWorld(true);
@@ -107,7 +107,7 @@ export async function loadVehicle(spec, events = [], { tier = 1 } = {}) {
     const holder = new THREE.Group();
     const model = src.clone(true);
     holder.add(model);
-    standInMetres(model, spec.lengthM);
+    standInMetres(model, spec.lengthM, !!spec.keepXZ);
     const named = Array.isArray(spec.parts) ? spec.parts.filter((n) => model.getObjectByName(n)) : [];
     if (named.length) {
       split = 'named';

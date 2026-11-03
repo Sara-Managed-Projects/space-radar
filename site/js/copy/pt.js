@@ -3860,7 +3860,7 @@ Object.assign(COPY, {
   },
   "momentShelf": {
     "title": "Momentos",
-    "note": "Cinco missões reprisadas em um só relógio, com os horários reais dos eventos. As trajetórias são reconstruídas e dizem isso.",
+    "note": "Sete missões repetidas em um único relógio, com os horários reais dos eventos. As trajetórias são reconstruídas e dizem isso.",
     "minutes": "{m} min",
     "replay": "Rever este momento",
     "replayTitle": "Rever {title} no relógio da missão",
@@ -3885,6 +3885,16 @@ Object.assign(COPY, {
         "title": "Sputnik 1",
         "when": "4 de outubro de 1957",
         "blurb": "De Baikonur à primeira volta à Terra: o primeiro satélite artificial, uma esfera polida de 585 mm, e o seu bipe."
+      },
+      "voskhod-2": {
+        "title": "Voskhod 2",
+        "when": "de 18 a 19 de março de 1965",
+        "blurb": "Alexei Leonov sai ao espaço por doze minutos por uma câmara de ar inflável, e a tripulação pousa à mão na taiga, longe do seu campo."
+      },
+      "sts-1": {
+        "title": "STS-1",
+        "when": "de 12 a 14 de abril de 1981",
+        "blurb": "O primeiro ônibus espacial: o Columbia a partir da plataforma 39A, os foguetes e o tanque, 54 horas em órbita e uma planagem até o leito seco de Edwards."
       },
       "vostok-1": {
         "title": "Vostok 1",

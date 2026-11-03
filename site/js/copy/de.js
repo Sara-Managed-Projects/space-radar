@@ -3868,7 +3868,7 @@ Object.assign(COPY, {
   },
   "momentShelf": {
     "title": "Momente",
-    "note": "Fünf Missionen auf einer Uhr noch einmal erlebt, mit den echten Ereigniszeiten. Die Bahnen sind rekonstruiert und sagen es.",
+    "note": "Sieben Missionen, auf einer einzigen Uhr wiederholt, mit den echten Zeiten der Ereignisse. Die Bahnen sind rekonstruiert und sagen es.",
     "minutes": "{m} Min.",
     "replay": "Diesen Moment ansehen",
     "replayTitle": "{title} auf der Missionsuhr ansehen",
@@ -3893,6 +3893,16 @@ Object.assign(COPY, {
         "title": "Sputnik 1",
         "when": "4. Oktober 1957",
         "blurb": "Von Baikonur zur ersten Erdumrundung: der erste künstliche Satellit, eine polierte Kugel von 585 mm, und sein Piepen."
+      },
+      "voskhod-2": {
+        "title": "Woschod 2",
+        "when": "18. bis 19. März 1965",
+        "blurb": "Alexei Leonow steigt zwölf Minuten lang durch eine aufblasbare Schleuse in den Weltraum, und die Besatzung landet von Hand in der Taiga, weit von ihrem Feld entfernt."
+      },
+      "sts-1": {
+        "title": "STS-1",
+        "when": "12. bis 14. April 1981",
+        "blurb": "Das erste Space Shuttle: Columbia von Rampe 39A, die Booster und der Tank, 54 Stunden im Orbit und ein Gleitflug auf den ausgetrockneten See von Edwards."
       },
       "vostok-1": {
         "title": "Wostok 1",

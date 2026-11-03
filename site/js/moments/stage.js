@@ -99,6 +99,7 @@ const GROUND_F = `${LOG_F}
 uniform sampler2D uDay;
 uniform vec3 uSun, uHaze, uShore;
 uniform float uHazeK, uKind, uPad, uLocalR, uLift, uLocalOn;
+uniform vec4 uRun;   // 1.7.1: a runway: direction (east, south), half width, half length in metres; half width 0 = none
 varying vec2 vLL;
 varying vec3 vObj;
 varying vec3 vN;
@@ -143,6 +144,23 @@ void main() {
       local = mix(local, concrete, 1.0 - smoothstep(118.0, 124.0, rr));
       float trench = (1.0 - smoothstep(8.0, 9.5, abs(q.x))) * (1.0 - smoothstep(70.0, 72.0, abs(q.y)));
       local = mix(local, vec3(0.09, 0.09, 0.09), trench);
+    }
+    // 1.7.1: a dry lakebed (Edwards): pale baked clay with fine cracks, and a runway painted on it (a darker strip, a centre line, the two thresholds).
+    if (uKind > 2.5) {
+      vec3 clay = mix(vec3(0.66, 0.58, 0.45), vec3(0.78, 0.71, 0.58), n1 * 0.6 + n2 * 0.4);
+      local = clay * (0.94 + 0.06 * n3);
+      if (uRun.z > 0.0) {
+        vec2 dir = uRun.xy;
+        float along = dot(q, dir), across = dot(q, vec2(-dir.y, dir.x));
+        float inside = (1.0 - smoothstep(uRun.z, uRun.z + 1.5, abs(across))) * (1.0 - smoothstep(uRun.w, uRun.w + 3.0, abs(along)));
+        local = mix(local, clay * 0.82, inside);
+        float dash = step(0.5, fract(along / 40.0)) * (1.0 - smoothstep(0.4, 0.7, abs(across)));
+        local = mix(local, vec3(0.9, 0.88, 0.8), dash * inside * 0.8);
+        float edge = (smoothstep(uRun.z - 1.2, uRun.z - 0.6, abs(across)) - smoothstep(uRun.z - 0.6, uRun.z, abs(across))) * inside;
+        local = mix(local, vec3(0.9, 0.88, 0.8), edge * 0.8);
+        float thr = (1.0 - smoothstep(0.0, 4.0, abs(abs(along) - uRun.w + 60.0))) * (1.0 - smoothstep(uRun.z - 8.0, uRun.z - 6.0, abs(across)));
+        local = mix(local, vec3(0.92, 0.9, 0.84), thr * inside * 0.9);
+      }
     }
     albedo = mix(albedo, local, w);
   }
@@ -266,7 +284,7 @@ export function createStage(renderer, { tier = 1, place, frame }) {
   const groundUniforms = () => ({
     uDay: { value: day }, uSun: { value: new THREE.Vector3(0, 1, 0) }, uHaze: { value: new THREE.Color(0.6, 0.7, 0.8) },
     uHazeK: { value: 0 }, uShore: { value: new THREE.Vector3(1, 0, 800) }, uKind: { value: 1 }, uPad: { value: 0 },
-    uLocalR: { value: LOCAL_R }, uLift: { value: 0 }, uLocalOn: { value: 1 },
+    uLocalR: { value: LOCAL_R }, uLift: { value: 0 }, uLocalOn: { value: 1 }, uRun: { value: new THREE.Vector4(0, 0, 0, 0) },
   });
   const globeMat = new THREE.ShaderMaterial({ uniforms: groundUniforms(), vertexShader: GROUND_V, fragmentShader: GROUND_F });
   const seg = tier > 0 ? 160 : 96;
@@ -293,6 +311,15 @@ export function createStage(renderer, { tier = 1, place, frame }) {
     const b = ((Number(g.shoreBearing) || 0) + 90) * Math.PI / 180;
     capMat.uniforms.uShore.value.set(Math.sin(b), -Math.cos(b), Number(g.shoreM) || 800);
   }
+  // 1.7.1: a ground that is a dry lakebed (`lakebed: true`) with a `runway` {bearing (degrees from north), widthM, lengthM}: Edwards.
+  const groundKind = (k) => (k.lakebed ? 3 : k.kind === 'coast' ? 0 : k.kind === 'sea' ? 2 : 1);
+  const setRunway = (k) => {
+    const r = k.runway;
+    if (!r) { capMat.uniforms.uRun.value.set(0, 0, 0, 0); return; }
+    const b = (Number(r.bearing) || 0) * Math.PI / 180;
+    capMat.uniforms.uRun.value.set(Math.sin(b), -Math.cos(b), (Number(r.widthM) || 90) / 2, (Number(r.lengthM) || 4500) / 2);
+  };
+  capMat.uniforms.uKind.value = groundKind(g); setRunway(g);
   const capSeg = tier > 0 ? 128 : 72;
   const cap = new THREE.Mesh(capGeometry(frame, capSeg), capMat);
   cap.frustumCulled = false;
@@ -303,7 +330,7 @@ export function createStage(renderer, { tier = 1, place, frame }) {
     const k = (pl.ground || {});
     cap.geometry.dispose();
     cap.geometry = capGeometry(fr, capSeg);
-    capMat.uniforms.uKind.value = k.kind === 'coast' ? 0 : k.kind === 'sea' ? 2 : 1;
+    capMat.uniforms.uKind.value = groundKind(k); setRunway(k);
     capMat.uniforms.uPad.value = k.pad ? 1 : 0;
     if (k.kind === 'coast') {
       const b = ((Number(k.shoreBearing) || 0) + 90) * Math.PI / 180;

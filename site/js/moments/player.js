@@ -27,7 +27,7 @@ import { icon } from '../ui/icons.js';
 import { write as writeUrl, clear as clearUrl } from '../ui/urlstate.js';
 import { worldPositionKm } from '../propagate/body.js';
 import { paceTable, playOf, missionOf, rateAt, compressionText, formatMet, chapterAt, captionAt, crossed, isMomentId, shareHash, parseT, lastAt } from './format.js';
-import { OMEGA, MOON_R, moonAxes, moonSurfaceDir, placeFrame, profileTrack, vectorTrack, fromHorizons, enuToEcef, fixedToInertial, siderealAt, attitude, ballistic, spinBasis, fromBasis, add, scale, norm, len, cross, EARTH_R } from './trajectory.js';
+import { tilt, OMEGA, MOON_R, moonAxes, moonSurfaceDir, placeFrame, profileTrack, vectorTrack, fromHorizons, enuToEcef, fixedToInertial, siderealAt, attitude, ballistic, spinBasis, fromBasis, add, scale, norm, len, cross, EARTH_R } from './trajectory.js';
 import { directAt, freePose, poseAngles } from './director.js';
 import { createStage, eciToThree } from './stage.js';
 import { loadVehicle, disposeVehicle } from './vehicles.js';
@@ -521,12 +521,22 @@ export function createMomentPlayer(ctx, opts = {}) {
   // capsule that turns round for its burn, a lander that comes upright, a spacecraft that goes from the Earth's sky to the Moon's.
   function phaseAt(spec, tt) {
     let attitude = spec.attitude, body = spec.body;
+    // 1.7.1: `pitchDeg` and `rollDeg` are keyframes, blended linearly between one phase that names them and the next (an entry's pitch-up).
+    const key = { pitchDeg: [], rollDeg: [] };
     for (const q of spec.phases || []) {
-      if (q.t > tt) break;
+      for (const k of Object.keys(key)) if (q[k] !== undefined) key[k].push([q.t, q[k]]);
+      if (q.t > tt) continue;
       if (q.attitude) attitude = q.attitude;
       if (q.body !== undefined) body = q.body;
     }
-    return { attitude, body };
+    const at = (list) => {
+      if (!list.length || tt <= list[0][0]) return list.length ? list[0][1] : 0;
+      for (let i = 1; i < list.length; i += 1) {
+        if (tt <= list[i][0]) { const [t0, a] = list[i - 1], [t1, b] = list[i]; return t1 > t0 ? a + (b - a) * (tt - t0) / (t1 - t0) : b; }
+      }
+      return list[list.length - 1][1];
+    };
+    return { attitude, body, pitchDeg: at(key.pitchDeg), rollDeg: at(key.rollDeg) };
   }
 
   /** A vehicle's state at t in its own trajectory's frame (Earth-fixed or inertial), metres. */
@@ -536,7 +546,12 @@ export function createMomentPlayer(ctx, opts = {}) {
     // metres in the host's own axes.
     if (spec.rideOn) {
       const host = vehicles.get(spec.rideOn.vehicle);
-      if (host) { const hs = stateOf(host, tt); return { ...hs, p: add(hs.p, fromBasis(hs.basis, spec.rideOn.at || [0, 0, 0])) }; }
+      if (host) {
+        const hs = stateOf(host, tt);
+        // 1.7.1: `spin` [x, y, z] degrees turns the rider about the host's axes (a cosmonaut floating along an airlock's axis).
+        const basis = Array.isArray(spec.rideOn.spin) ? spinBasis(hs.basis, spec.rideOn.spin.map((d) => d * Math.PI / 180)) : hs.basis;
+        return { ...hs, basis, p: add(hs.p, fromBasis(hs.basis, spec.rideOn.at || [0, 0, 0])) };
+      }
     }
     const tr = spec.path ? tracks[spec.path] : null;
     if (tr && tr.frame === 'fixed') {
@@ -546,7 +561,8 @@ export function createMomentPlayer(ctx, opts = {}) {
       const ref = enuToEcef(frame, [Math.sin(tr.azimuth), Math.cos(tr.azimuth), 0], true);
       const pitchStart = Number.isFinite(spec.pitchStart) ? spec.pitchStart : Number.isFinite(tr.spec.pitchStart) ? tr.spec.pitchStart : 10;
       const turnS = Number.isFinite(spec.turnS) ? spec.turnS : Number.isFinite(tr.spec.turnS) ? tr.spec.turnS : 12;
-      const basis = attitude(phaseAt(spec, tt).attitude || 'ascent', { up, vel, ref, t: tt, pitchStart, turnS });
+      const phx = phaseAt(spec, tt);
+      const basis = tilt(attitude(phx.attitude || 'ascent', { up, vel, ref, t: tt, pitchStart, turnS }), phx.pitchDeg, phx.rollDeg);
       return { kind: 'fixed', p: enuToEcef(frame, s.p), v: vel, up, basis, altM: s.altM };
     }
     if (tr && tr.frame === 'inertial') {
@@ -559,7 +575,7 @@ export function createMomentPlayer(ctx, opts = {}) {
       const velRel = mo ? add(s.v, scale(mo.v, -1)) : add(s.v, [OMEGA * s.r[1], -OMEGA * s.r[0], 0]);
       const up = norm(rel);
       const ref = norm(cross(rel, velRel));
-      const basis = attitude(ph.attitude || 'prograde', { up, vel: velRel, ref, t: tt });
+      const basis = tilt(attitude(ph.attitude || 'prograde', { up, vel: velRel, ref, t: tt }), ph.pitchDeg, ph.rollDeg);
       return { kind: 'inertial', p: s.r, v: s.v, up, basis, altM: len(rel) - (mo ? MOON_R : EARTH_R), vrel: velRel };
     }
     const basis = attitude('vertical', { up: frame.u, vel: [0, 0, 0], ref: frame.n });

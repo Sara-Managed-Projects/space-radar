@@ -175,3 +175,67 @@ export function profileInertial(epochMs, track, frame, t) {
 export const diffState = (posAt) => (t) => ({ r: posAt(t), v: sub(posAt(t + 0.5), posAt(t - 0.5)) });
 /** The inertial position of a point at geodetic (lat, lon, alt m) on the turning Earth at second t. */
 export const groundPos = (epochMs, lat, lon, altM, t) => fromEcef(placeFrame({ lat, lon, alt: altM }).ecef, epochMs, t).r;
+
+// --- 1.7.1 --------------------------------------------------------------------------------------------------------------
+
+/** The bounding box of a .glb (nodes' own transforms kept, POSITION accessors' min and max): { min, max } in the file's units. */
+export function glbBox(file) {
+  const buf = readFileSync(file);
+  const jl = buf.readUInt32LE(12);
+  const j = JSON.parse(buf.slice(20, 20 + jl).toString('utf8'));
+  const lo = [1e30, 1e30, 1e30], hi = [-1e30, -1e30, -1e30];
+  const mat = (n) => {
+    if (n.matrix) return n.matrix;
+    const [x, y, z, w] = n.rotation || [0, 0, 0, 1], [sx, sy, sz] = n.scale || [1, 1, 1], [tx, ty, tz] = n.translation || [0, 0, 0];
+    return [(1 - 2 * (y * y + z * z)) * sx, 2 * (x * y + z * w) * sx, 2 * (x * z - y * w) * sx, 0, 2 * (x * y - z * w) * sy, (1 - 2 * (x * x + z * z)) * sy, 2 * (y * z + x * w) * sy, 0, 2 * (x * z + y * w) * sz, 2 * (y * z - x * w) * sz, (1 - 2 * (x * x + y * y)) * sz, 0, tx, ty, tz, 1];
+  };
+  const mul = (a, b) => { const o = new Array(16).fill(0); for (let c = 0; c < 4; c += 1) for (let r = 0; r < 4; r += 1) for (let k = 0; k < 4; k += 1) o[c * 4 + r] += a[k * 4 + r] * b[c * 4 + k]; return o; };
+  const walk = (i, M) => {
+    const n = j.nodes[i], W = mul(M, mat(n));
+    if (n.mesh !== undefined) for (const p of j.meshes[n.mesh].primitives) {
+      const a0 = j.accessors[p.attributes.POSITION];
+      const nm = a0.normalized ? { 5120: 127, 5121: 255, 5122: 32767, 5123: 65535 }[a0.componentType] : 1;
+      const a = { min: a0.min.map((x) => x / nm), max: a0.max.map((x) => x / nm) };
+      for (let m = 0; m < 8; m += 1) {
+        const v = [m & 1 ? a.max[0] : a.min[0], m & 2 ? a.max[1] : a.min[1], m & 4 ? a.max[2] : a.min[2]];
+        for (let k = 0; k < 3; k += 1) { const q = W[k] * v[0] + W[4 + k] * v[1] + W[8 + k] * v[2] + W[12 + k]; lo[k] = Math.min(lo[k], q); hi[k] = Math.max(hi[k], q); }
+      }
+    }
+    for (const c of n.children || []) walk(c, W);
+  };
+  const I = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+  for (const i of j.scenes[j.scene || 0].nodes) walk(i, I);
+  return { min: lo, max: hi };
+}
+
+/** The J2 secular drift (node, perigee, mean motion) added to two-body motion: the state `dt` seconds on, metres. Good to a few km a day for a low orbit. */
+export function j2Kepler(r0, v0, dt, mu = MU) {
+  const J2 = 1.08263e-3;
+  const rn = len(r0), vn2 = dot(v0, v0);
+  const h = cross(r0, v0), hn = len(h);
+  const a = 1 / (2 / rn - vn2 / mu);
+  const ev = sub(scale(cross(v0, h), 1 / mu), scale(r0, 1 / rn));
+  const e = len(ev), inc = Math.acos(h[2] / hn);
+  const nv = [-h[1], h[0], 0], nn = len(nv);
+  let raan = Math.atan2(nv[1], nv[0]);
+  let argp = e > 1e-9 && nn > 1e-9 ? Math.acos(Math.max(-1, Math.min(1, dot(nv, ev) / (nn * e)))) * (ev[2] < 0 ? -1 : 1) : 0;
+  let nu = Math.acos(Math.max(-1, Math.min(1, dot(ev, r0) / (e * rn)))); if (dot(r0, v0) < 0) nu = 2 * Math.PI - nu;
+  const E0 = 2 * Math.atan2(Math.sqrt(1 - e) * Math.sin(nu / 2), Math.sqrt(1 + e) * Math.cos(nu / 2));
+  let M = E0 - e * Math.sin(E0);
+  const n = Math.sqrt(mu / a ** 3), p = a * (1 - e * e), f = (EARTH_R / p) ** 2 * J2;
+  const si2 = Math.sin(inc) ** 2;
+  M += n * (1 + 1.5 * f * Math.sqrt(1 - e * e) * (1 - 1.5 * si2)) * dt;
+  raan += -1.5 * f * n * Math.cos(inc) * dt;
+  argp += 0.75 * f * n * (4 - 5 * si2) * dt;
+  let E = M; for (let i = 0; i < 40; i += 1) E -= (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+  const nu2 = 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2));
+  const r = a * (1 - e * Math.cos(E)), u = argp + nu2;
+  const px = Math.cos(u), py = Math.sin(u), ci = Math.cos(inc), si = Math.sin(inc), cO = Math.cos(raan), sO = Math.sin(raan);
+  const pos = [r * (cO * px - sO * ci * py), r * (sO * px + cO * ci * py), r * si * py];
+  // velocity from the vis-viva pieces: radial and transverse components in the perifocal frame
+  const vr = Math.sqrt(mu / p) * e * Math.sin(nu2), vt = Math.sqrt(mu / p) * (1 + e * Math.cos(nu2));
+  const ur = [pos[0] / r, pos[1] / r, pos[2] / r];
+  const ut = [-(cO * py + sO * ci * px), -(sO * py - cO * ci * px), si * px];
+  const t = ut;   // transverse unit: derivative of the position's direction in u
+  return { r: pos, v: add(scale(ur, vr), scale(t, vt)) };
+}

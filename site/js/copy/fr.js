@@ -3872,7 +3872,7 @@ Object.assign(COPY, {
   },
   "momentShelf": {
     "title": "Moments",
-    "note": "Cinq missions rejouées sur une seule horloge, avec les heures réelles des événements. Les trajectoires sont reconstituées et le disent.",
+    "note": "Sept missions rejouées sur une seule horloge, avec les heures réelles des événements. Les trajectoires sont reconstruites et le disent.",
     "minutes": "{m} min",
     "replay": "Rejouer ce moment",
     "replayTitle": "Rejouer {title} sur l’horloge de la mission",
@@ -3897,6 +3897,16 @@ Object.assign(COPY, {
         "title": "Spoutnik 1",
         "when": "4 octobre 1957",
         "blurb": "De Baïkonour au premier tour de la Terre : le premier satellite artificiel, une sphère polie de 585 mm, et son bip."
+      },
+      "voskhod-2": {
+        "title": "Voskhod 2",
+        "when": "du 18 au 19 mars 1965",
+        "blurb": "Alexeï Leonov sort dans l’espace pendant douze minutes par un sas gonflable, puis l’équipage se pose à la main dans la taïga, loin de son champ."
+      },
+      "sts-1": {
+        "title": "STS-1",
+        "when": "du 12 au 14 avril 1981",
+        "blurb": "La première navette spatiale : Columbia depuis le pas de tir 39A, les propulseurs et le réservoir, 54 heures en orbite et un vol plané jusqu’au lac asséché d’Edwards."
       },
       "vostok-1": {
         "title": "Vostok 1",

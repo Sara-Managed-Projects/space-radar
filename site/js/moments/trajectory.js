@@ -186,6 +186,25 @@ export function attitude(mode, { up, vel, ref, t = 0, pitchStart = 0, turnS = 12
   return [x, y, z];
 }
 
+/**
+ * 1.7.1: a basis tilted: `pitchDeg` turns the nose (Y) towards X (for 'prograde' on an orbit X is up, so a positive pitch lifts the nose
+ * above the flight path: an orbiter's 40 degree entry), `rollDeg` turns the vehicle about its own Y (nose) axis. Both 0: the same basis.
+ */
+export function tilt(b, pitchDeg = 0, rollDeg = 0) {
+  let [x, y, z] = b;
+  if (pitchDeg) {
+    const c = Math.cos(pitchDeg * DEG), s = Math.sin(pitchDeg * DEG);
+    const ny = add(scale(y, c), scale(x, s)), nx = add(scale(x, c), scale(y, -s));
+    x = nx; y = ny;
+  }
+  if (rollDeg) {
+    const c = Math.cos(rollDeg * DEG), s = Math.sin(rollDeg * DEG);
+    const nx = add(scale(x, c), scale(z, s)), nz = add(scale(z, c), scale(x, -s));
+    x = nx; z = nz;
+  }
+  return [x, y, z];
+}
+
 /** A vector given in a basis [X, Y, Z] (components along each) -> the frame the basis is written in. */
 export function fromBasis(b, v) {
   return add(add(scale(b[0], v[0]), scale(b[1], v[1])), scale(b[2], v[2]));
