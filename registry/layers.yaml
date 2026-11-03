@@ -289,7 +289,7 @@ layers:
   # Every tracked piece of debris and spent rocket body (public #449), from the catalogue's own
   # orbit shapes: the count and the heights are measured, the place along each orbit is
   # illustrative (site/js/data/satcat.js). 6.8 MB, so it loads only when the debris view asks.
-  # RELEASE 1.7.7 (A9, internal I#1069): `tiles: tracked` -- the pieces CelesTrak publishes an element set
+  # RELEASE 1.7.6 (A9, internal I#1069): `tiles: tracked` -- the pieces CelesTrak publishes an element set
   # for (12 403 of the 14 835 in Earth orbit on 2026-11-03) are placed by it, SGP4, from the tile set the harvester builds daily
   # (harvest/tracked.py; site/js/data/tracked.js merges it into this layer's records; data/v1/tiles/tracked/).
   # The rest keep the illustrative place. Under the frame latch only the first level loads, none on data-saver.

@@ -1,5 +1,5 @@
 // data/tracked.js -- A9, tracked objects: debris and spent rocket bodies at the places their own elements give.
-// (release 1.7.7, internal I#1069; the set is built daily by harvest/tracked.py and read by data/tilecloud.js)
+// (release 1.7.6, internal I#1069; the set is built daily by harvest/tracked.py and read by data/tilecloud.js)
 //
 // Contract:
 //   loadTracked(opts)                 -> { records, set, failed, level } or null    fetches the tiles; opts { fetchBytes, plan }
@@ -70,7 +70,6 @@ function fieldMap(set) {
 }
 
 const DAY_MS = 86400e3;
-const DEG = Math.PI / 180;
 
 /** One tile as records, in the shape data/satcat.js fieldRecords() makes, with `propagator: 'sgp4'` and the `omm`. */
 export function tileRecords(set, tile, opts = {}) {

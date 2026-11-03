@@ -1,4 +1,4 @@
-"""Quantised point-cloud tiles: the writer half of the A1 layer (public release 1.7.7, internal I#1059).
+"""Quantised point-cloud tiles: the writer half of the A1 layer (public release 1.7.6, internal I#1059).
 
     from harvest import tilepack
     files = tilepack.build_set(spec, rows, built_at)      # {path: bytes}, nothing written, deterministic

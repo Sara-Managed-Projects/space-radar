@@ -1,4 +1,4 @@
-// data/tilecloud.js -- streamed point-cloud tiles: the reader half of A1 (release 1.7.7, internal I#1059).
+// data/tilecloud.js -- streamed point-cloud tiles: the reader half of A1 (release 1.7.6, internal I#1059).
 //
 // A TILE SET is a catalogue the harvester cut into small binary files (harvest/tilepack.py says how and why):
 //   data/v1/tiles/<id>/set.json      what it is, its schema, its levels and its tiles; read first

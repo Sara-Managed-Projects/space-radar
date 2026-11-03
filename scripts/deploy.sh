@@ -28,6 +28,8 @@
 #                         (scripts/get_esbuild.py), with a source map beside each; this is the
 #                         way back if that pass is ever in doubt, or the binary cannot be fetched.
 #   --no-minify           upload js/ and css/ as they are written: the way back from both passes.
+#   (SR_STRIP_SHADERS=0 in the environment)  keep the comments and indentation of shader text, which both
+#                         passes now strip by default (release 1.7.4, internal #531): the way back from that alone.
 #   --no-precompress      upload the code and the bundled data uncompressed and let CloudFront
 #                         compress per request, as every deploy before 2026-10-09 did. By default
 #                         they are stored at Brotli 11 with `Content-Encoding: br`, and a gzip 9

@@ -11,7 +11,7 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
-## [1.7.7] - 2026-11-03
+## [1.7.6] - 2026-11-03
 
 ### Added
 
@@ -55,6 +55,59 @@ tagged, and their dates are the day the last change in each landed.
   but most are bulk imports with no name, and no source was chosen for them.
 - Not touched: A7 asteroids, A10 events, A11 structure (all three can now be built on the tiles), pass brightness (#391), star radii (#412),
   star-system orbits (#474), more star systems (P#556).
+## [1.7.5] - 2026-11-03
+
+### Added
+
+- **Four astronomy satellites have a model of their own: CHEOPS, Insight-HXMT, SVOM and the Einstein Probe.** Each was the generic
+  space telescope or the plain satellite shape; each is now built in code from published dimensions and from pictures read for the layout,
+  by NORAD number, and its card says "shape built from published dimensions and pictures; details simplified". No agency publishes a mesh
+  of any of them (NASA's 3D Resources and science.nasa.gov/3d-resources have none; ESA's terms forbid derivatives), so no mesh and no picture
+  is in a file. **CHEOPS** (`cheops.glb`, 114 kB): the hexagonal platform on its launcher ring, the 30 cm telescope behind its black baffle
+  with the copper cover, two star-tracker heads, the instrument radiators, and the three-panel Sun shield with its blue cells wrapped round the
+  back, at ESA's 1.55 by 1.49 by 1.4 m. **Insight-HXMT** (`hxmt.glb`, 158 kB): the gold platform, the 18 HE detector modules with their slat
+  collimators, the three LE and three ME boxes, the star trackers, the sun-shielding board and two three-panel wings. **SVOM** (`svom.glb`,
+  151 kB): the gold-blanketed body with ECLAIRs' coded mask, the MXT, the visible telescope, the three GRM heads tilted 30 degrees, the
+  adapter ring and two wings. **Einstein Probe** (`einstein-probe.glb`, 113 kB): the twelve lobster-eye WXT modules fanned round the two FXT
+  cylinders on the gold payload cabin, the bus and two three-panel wings. Each is 12 000 to 19 000 triangles, loaded only when its craft is selected.
+  The sources, what was cited and what was estimated are in `registry/models.yaml` and `CREDITS.md` §3q to §3t.
+
+### Not yet
+
+- **The solar arrays of Insight-HXMT, SVOM and the Einstein Probe are estimates** (no page opened gives their span), and every array's cell
+  grid is coarse (the bake keeps the colour of nothing smaller than about 10 cm on a craft this size); the rows say so. CHEOPS' telescope looks along
+  the Sun shield's normal, so in the app it looks sideways, not away from the Earth.
+- **The optical Earth-observation group** (Pleiades, SPOT, SkySat, BeiDou-3 MEO) is the next craft batch; the radar pair after it.
+
+## [1.7.4] - 2026-11-03
+
+### Added
+
+- **Six small checks in CI** (`.github/workflows/ci.yml`, the `rails` job, each in under a minute and with nothing to install): `tests/test_lint.mjs`
+  (a name that an import, const, let, function or class declares and its file never mentions again; 14 such names in the shipped code are gone,
+  36 in build scripts and tests are listed as known and may only shrink), `tests/test_cli_usage.mjs` (36 command-line tools answer `--help`
+  with a usage line and exit 0; 75 tools that read their arguments by position and say nothing are listed in `tests/cli_usage_gaps.txt`, and a
+  new one fails), `tests/test_nobuild_launch.mjs` (starts the README's own `python3 -m http.server --directory site` and follows every module on the
+  way to the first frame: 125 files, all 200, all JavaScript, nothing built), `tests/test_nowebgl.mjs` (calls the real `createRenderer()` with a
+  canvas that refuses WebGL 2 and holds the readable page with all 31 trips), `tests/test_reduced_motion_trips.mjs` (runs the outer-solar-system
+  and a-year-in-a-minute trips end to end under `prefers-reduced-motion`: no flight, no veil, the clock held still on every timed stop, and
+  leaving puts it back) and `tests/test_baselines.mjs` (the deep-space baseline probe's blocks and poses all name a real scene group).
+  The baselines test does not compare pictures: none is kept in the repository to compare with.
+- The release zip check refuses a manifest icon that is missing, empty or outside `site/`, and compares the zip's four brand icons to the tree
+  (public #1277). Every card sentence is held to 160 characters, and nine that were over are shortened (public #1286).
+
+### Changed
+
+- **Shader text is stripped of its comments and indentation in every served build** (internal #531). `scripts/minify_site.py` did it only when
+  asked; it is now the default, with `--no-shaders` or `SR_STRIP_SHADERS=0` as the way back. 185 shader templates in 58 files go from 283 187 B to
+  196 885 B of text before compression, and the boot graph of the built tree from 1 950 547 B to 1 920 102 B (30 445 B); no line holding a `${` is touched, and each template is checked to say the same GLSL.
+- The README says "more than 240 spacecraft and shape models" where it said 70 (the registry holds 246), and a test now keeps the claim current.
+
+### Not yet
+
+- **Content-hashed file names (internal #517) and a trimmed upcoming-launches file (internal #524)** are not done: the first rewrites every path in
+  the generated mirrors and wants its own browser walk, the second needs the harvester deployed and an answer on Launch Library's terms (internal #370).
+- **The AVIF decision (internal #530)** is written on the issue; the maps are still WebP.
 
 ## [1.7.3] - 2026-11-03
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""A1 tiles, the harvester's half (release 1.7.7, internal I#1059) and A9's tracked set built on it (I#1069).
+"""A1 tiles, the harvester's half (release 1.7.6, internal I#1059) and A9's tracked set built on it (I#1069).
 
 Held here, with no network:
 

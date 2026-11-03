@@ -22,7 +22,7 @@
 // Pure builders (buildMoons, buildCompanions) are exported for tests/test_moons.mjs; the fetchers only read the file.
 
 import '../copy/en.moons.js';
-import { COPY, t, fmt, timeText } from '../copy/en.js';
+import { COPY, t, timeText } from '../copy/en.js';
 
 const DEG = Math.PI / 180;
 const AU_KM = 149597870.7;
@@ -42,7 +42,6 @@ const EPOCH_WORDS = timeText.longDate(Date.UTC(2026, 0, 1, 12));
 /** A day the sources give at 00:00 UTC, as words that read the same in every time zone. */
 const dayWords = (ms) => timeText.longDate(ms + 12 * 3600e3);
 
-const slug = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
 /** Mean motion that makes a two-body orbit of semi-major axis aKm take periodDays: mu = a^3 n^2, km^3/s^2. */
 export function muFor(aKm, periodDays) {
@@ -189,13 +188,6 @@ export function heliocentric(b) {
 
 function parentLabel(b) {
   return b.number ? `(${b.number}) ${b.name}` : b.name;
-}
-
-function periodWords(days) {
-  const C = COPY.moonCard.values;
-  if (days < 2) return t(C.hours, { n: fmt.smart(days * 24) });
-  if (days > 700) return t(C.years, { n: fmt.smart(days / 365.25) });
-  return t(C.days, { n: fmt.smart(days) });
 }
 
 /**

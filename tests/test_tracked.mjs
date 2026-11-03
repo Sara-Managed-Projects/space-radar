@@ -1,4 +1,4 @@
-// tests/test_tracked.mjs -- A9, tracked objects placed by their own elements (data/tracked.js; release 1.7.7, internal I#1069).
+// tests/test_tracked.mjs -- A9, tracked objects placed by their own elements (data/tracked.js; release 1.7.6, internal I#1069).
 //
 // The set harvest/tracked.py builds (tests/helpers/build_tile_fixtures.py, from a cut of 142 real CelesTrak element sets
 // of 2026-11-02: debris and rocket bodies from low orbit to beyond geostationary) is read by the page and held to:

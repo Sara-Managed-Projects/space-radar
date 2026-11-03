@@ -227,7 +227,7 @@ jobs:
           json.dump(idx, open(os.path.join(dest, "index.json"), "w"))
           PY
 
-      # 1.7.7 (A9, internal #1069): the debris layer merges the harvester's tracked tiles into the catalogue (6.9 MB, left out
+      # 1.7.6 (A9, internal #1069): the debris layer merges the harvester's tracked tiles into the catalogue (6.9 MB, left out
       # above). CelesTrak turns away GitHub's runners, so the tiles are not harvested here: the branch `look-data-tracked` holds
       # the set built on 2026-11-03 from CelesTrak's own answers (a throwaway branch, files exactly as `python3 -m harvest
       # --slow-only tracked` writes them). A ref from before the tiles (main, for the BEFORE) never reads them.

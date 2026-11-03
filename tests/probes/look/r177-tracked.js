@@ -1,4 +1,4 @@
-// r177-tracked: release 1.7.7's debris, placed by their own element sets (A9, internal #1069), looked at.
+// r177-tracked: release 1.7.6's debris, placed by their own element sets (A9, internal #1069), looked at.
 //   The clock held at 2026-11-03 12:00 UTC (the day the tile set the workflow serves was built). The debris layer is
 //   switched on the way the debris view does it (the whole Earth from a distance), and photographed from four places:
 //     01 the whole Earth, the crowd at 800 km and the belt at 36 000 km

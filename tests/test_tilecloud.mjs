@@ -1,4 +1,4 @@
-// tests/test_tilecloud.mjs -- A1 tiles, the page's half (data/tilecloud.js; release 1.7.7, internal I#1059).
+// tests/test_tilecloud.mjs -- A1 tiles, the page's half (data/tilecloud.js; release 1.7.6, internal I#1059).
 //
 // A set that harvest/tilepack.py wrote (tests/helpers/build_tile_fixtures.py: 600 made-up sky objects cut by
 // HEALPix cell into three levels) is read back by the page's reader, and the two are held to each other:
