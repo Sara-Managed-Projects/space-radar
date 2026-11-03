@@ -33,6 +33,24 @@ const patchOpacity = () => {
   } catch { return null; }
 };
 
+const P = await import(new URL('./js/propagate/index.js', document.baseURI).href);
+const dot = (a, c) => a.x * c.x + a.y * c.y + a.z * c.z;
+/** From a world's centre to a site on it, in the scene, now. */
+const dirOf = (id, world) => {
+  const t = sr.clock.now(); const rec = sr.recordById(id); const p = P.propagate(rec, t); const pos = sr.stage.toScene(p, p.frame, t);
+  const c = sr.worlds.meshFor(world).position; return unit({ x: pos.x - c.x, y: pos.y - c.y, z: pos.z - c.z });
+};
+/** Put the clock where the Sun is highest over a site: the best of `n` instants `stepMs` apart. */
+const lightUp = async (id, world, stepMs, n) => {
+  let best = null; const t0 = sr.clock.now();
+  for (let k = 0; k < n; k++) {
+    sr.clock.goTo(t0 + k * stepMs); await sleep(300);
+    const c = dot(dirOf(id, world), sunward(world));
+    if (!best || c > best.c) best = { c, t: t0 + k * stepMs };
+  }
+  sr.clock.goTo(best.t); await sleep(1500); out.lit = out.lit || {}; out.lit[id] = +best.c.toFixed(3);
+  return best;
+};
 try { sr.clock.setPaused(true); sr.clock.goTo(Date.UTC(2026, 9, 15, 12, 0)); } catch { /* the clock stays live */ }
 
 // --- Venus ---------------------------------------------------------------------------------------------------
@@ -40,15 +58,10 @@ on('landing-sites');
 need(await until(() => has('venera-13') && has('moon-ranger-7'), 60000), 'the landing sites never loaded');
 sr.setStage('venus');
 await sleep(6000);
-try {
-  const R = 6051.8 / sr.stage.unitKm;
-  rig.flyTo({ offset: mix(sunward('venus'), 1, north('venus'), 0.25), distance: R * 3.2, ms: 0 });
-} catch (e) { out.problems.push('venus framing: ' + e); }
-await snap('01-venus-sites', 'Venus from its sunlit side with the Venera and VEGA landing sites (marks: nothing is drawn there but a mark)', 5000);
-// A regional view round Venera 13: the sites of Venera 9 to 14 are within a few hundred kilometres of each other
-if (await go('venera-13', null, 8000)) {
-  try { rig.flyTo({ distance: (6051.8 / sr.stage.unitKm) * 0.6, ms: 0 }); } catch (e) { out.problems.push('venus regional: ' + e); }
-  await snap('01b-venus-region', 'round the Venera 13 site, 0.6 of Venus\'s radius up: the marks of the Venera sites round it', 5000);
+if (await go('venera-13', null, 6000)) {
+  await lightUp('venera-13', 'venus', 2 * 86400e3, 80);
+  try { rig.flyTo({ offset: dirOf('venera-13', 'venus'), distance: (6051.8 / sr.stage.unitKm) * 2.6, ms: 0 }); } catch (e) { out.problems.push('venus framing: ' + e); }
+  await snap('01-venus-sites', 'Venus with the Sun over the Venera 13 site, seen from straight above it: the Venera and VEGA sites round it, each a mark (nothing is drawn there but a mark)', 6000);
 }
 location.hash = '#event=venera-13.landing';
 const cardUp = await until(() => /Venera 13/.test(text('.sr-mission') || ''), 60000);
@@ -61,14 +74,10 @@ out.venera13Card = text('.sr-card');
 location.hash = '';
 sr.setStage('moon');
 await sleep(6000);
-try {
-  const R = 1737.4 / sr.stage.unitKm;
-  rig.flyTo({ offset: mix(sunward('moon'), 1, north('moon'), 0.3), distance: R * 3.0, ms: 0 });
-} catch (e) { out.problems.push('moon framing: ' + e); }
-await snap('03-moon-sites', 'the Moon with the Ranger, Surveyor, Luna, Lunokhod and Chang\'e sites', 5000);
-if (await go('surveyor-3', null, 8000)) {
-  try { rig.flyTo({ distance: 0.9, ms: 0 }); } catch (e) { out.problems.push('moon regional: ' + e); }
-  await snap('03b-moon-region', 'round Surveyor 3 from 900 km up: Surveyor 1 and 3, Apollo 12, Ranger 7 and the Luna sites of Oceanus Procellarum with their marks', 5000);
+if (await go('surveyor-3', null, 6000)) {
+  await lightUp('surveyor-3', 'moon', 86400e3, 30);
+  try { rig.flyTo({ offset: dirOf('surveyor-3', 'moon'), distance: (1737.4 / sr.stage.unitKm) * 1.7, ms: 0 }); } catch (e) { out.problems.push('moon framing: ' + e); }
+  await snap('03-moon-sites', 'the Moon with the Sun over Oceanus Procellarum, from straight above Surveyor 3: the Surveyor, Ranger, Luna, Lunokhod and Apollo sites round it', 6000);
 }
 location.hash = '#event=ranger-7.impact';
 await until(() => /Ranger 7/.test(text('.sr-mission') || ''), 60000);
