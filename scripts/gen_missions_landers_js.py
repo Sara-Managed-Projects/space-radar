@@ -40,4 +40,7 @@ HEADER = """// GENERATED from registry/missions-landers.yaml by scripts/gen_miss
 MIRROR = Mirror(source="registry/missions-landers.yaml", target="site/js/data/missions-landers.js", header=HEADER, render=render, what="missions-landers.js")
 
 if __name__ == "__main__":
+    if any(a in ("-h", "--help") for a in sys.argv[1:]):
+        print("usage: python3 scripts/gen_missions_landers_js.py [--check]")
+        sys.exit(0)
     sys.exit(MIRROR.main(sys.argv[1:]))
