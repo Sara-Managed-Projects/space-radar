@@ -476,7 +476,7 @@ export const timeText = {
     // More than half a year from now the year is the point: "05 MAR 12:05" for Voyager at Jupiter
     // would read as last spring (the Roadster mistake, dateNear above).
     const far = Number.isFinite(nowMs) && Math.abs(ms - nowMs) > 180 * 86400e3;
-    const day = `${parts.day} ${String(parts.month || '').toUpperCase()}`;
+    const day = `${parts.day} ${String(parts.month || '').toUpperCase().replace(/\.$/, '')}`; // 1.6.3: de, ru, uk write "NOV."; the pill has no room for the point
     return t(COPY.timePill.when, {
       date: far ? `${day} ${new Date(ms).getUTCFullYear()}` : day,
       time: `${parts.hour === '24' ? '00' : parts.hour}:${parts.minute}`,

@@ -99,6 +99,20 @@ export function coveredFromLeft(rects, w, h) {
 }
 
 /**
+ * The sidebar of a right-to-left language (he, ar) sits on the RIGHT edge (css/rtl.css): the same rule, mirrored (1.6.3).
+ * @returns {number} px covered from the right edge by a tall column docked on it
+ */
+export function coveredFromRight(rects, w, h) {
+  if (!(w > 0) || !(h > 0)) return 0;
+  let edge = 0;
+  for (const r of Array.isArray(rects) ? rects : []) {
+    if (!r || r.right < w - LEFT_EDGE_PX || r.left >= w || r.bottom - r.top < h * TALL) continue;
+    edge = Math.max(edge, Math.min(w - r.left, w * 0.5));
+  }
+  return edge;
+}
+
+/**
  * @param {{top:number, bottom:number, width:number}[]} rects  canvas-relative CSS px
  * @returns {number} px covered from the bottom edge up by panels stacked on it
  */
@@ -223,7 +237,8 @@ export function createViewShift(camera, canvas, opts = {}) {
       if (!(r.width > 0)) continue;
       rects.push({ left: r.left - c.left, right: r.right - c.left, top: r.top - c.top, bottom: r.bottom - c.top });
     }
-    return Math.round(coveredFromLeft(rects, c.width, c.height) / 2);
+    // Left-to-right: positive (the picture moves right); right-to-left, the column is on the right and the picture moves left.
+    return Math.round((coveredFromLeft(rects, c.width, c.height) - coveredFromRight(rects, c.width, c.height)) / 2);
   }
 
   function update(dtMs) {

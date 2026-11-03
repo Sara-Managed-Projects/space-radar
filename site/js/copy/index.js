@@ -51,8 +51,25 @@ export function localise(target, keys = null, lang = loaded) {
 }
 
 let loaded = null;
+
+/** The right-to-left stylesheet (css/rtl.css), linked only for a right-to-left language; waits for it, but never longer than 2.5 s. */
+function linkRtl() {
+  if (typeof document === 'undefined' || document.documentElement.dir !== 'rtl') return Promise.resolve();
+  return new Promise((done) => {
+    try {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = new URL('../../css/rtl.css', import.meta.url).href;
+      link.onload = link.onerror = () => done();
+      document.head.appendChild(link);
+      setTimeout(done, 2500);
+    } catch { done(); }
+  });
+}
+
 /**
- * Fetch the chosen language's file and arm HOOK.localise. Never throws: a failed fetch is English for the whole visit.
+ * Fetch the chosen language's file and arm HOOK.localise. Never throws: a failed fetch is English for the whole visit, and the
+ * page says so (<html lang> back to en, no right-to-left layout for English words: release 1.6.3, public #1265).
  * Returns the language code that is in force ('en' when there is none).
  */
 export async function prepare() {
@@ -60,10 +77,12 @@ export async function prepare() {
   try {
     loaded = await import(`./${LANG}.js`);
     HOOK.localise = (target, keys) => localise(target, keys);
+    await linkRtl();
     return LANG;
   } catch (err) {
     console.warn(`The ${LANG} words did not load; the page stays in English.`, err);
     loaded = null;
+    if (typeof document !== 'undefined') { document.documentElement.lang = 'en'; document.documentElement.removeAttribute('dir'); }
     return 'en';
   }
 }

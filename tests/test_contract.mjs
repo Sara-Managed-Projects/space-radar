@@ -40,7 +40,7 @@ const CONTRACT = {
   'scene/stage.js': ['stage'],
   // What the chrome covers and where that moves the view: the desktop sidebar, the phone's sheet and
   // its top bar (spec 0061 tasks 1 and 3).
-  'scene/viewshift.js': ['createViewShift', 'coveredFromBottom', 'coveredFromLeft', 'coveredFromTop', 'shiftFor', 'uncoveredBand', 'MAX_SHIFT_FRACTION', 'MEASURE_MS', 'EASE_MS'],
+  'scene/viewshift.js': ['createViewShift', 'coveredFromBottom', 'coveredFromLeft', 'coveredFromRight', 'coveredFromTop', 'shiftFor', 'uncoveredBand', 'MAX_SHIFT_FRACTION', 'MEASURE_MS', 'EASE_MS'],
   // Spec 0054: the one physically lit world material, and the JS twins of its two reflectance laws
   // and of the earthshine share (tests/test_world_light.mjs), the way scene/eclipse.js has one.
   'scene/worlds.js': ['createWorlds', 'worldMaterial', 'WORLD_FRAG', 'orenNayar', 'minnaert', 'earthshineShare', 'EARTHSHINE_GAIN', 'EARTH_GEOMETRIC_ALBEDO', 'MU_FLOOR', 'DEFAULT_ROUGHNESS',
