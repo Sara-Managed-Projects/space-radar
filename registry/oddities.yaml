@@ -94,6 +94,8 @@ attachable:
   - {id: deep-near,          horizons_id: "-93", emitted_by: "sample.js sampleDeepSpace(), PAST_CRAFT"}
   - {id: deep-stardust,      horizons_id: "-29", emitted_by: "sample.js sampleDeepSpace(), PAST_CRAFT"}
   - {id: deep-deep-impact,   horizons_id: "-140", emitted_by: "sample.js sampleDeepSpace(), PAST_CRAFT"}
+  - {id: deep-mariner-2,     horizons_id: "-2", emitted_by: "sample.js sampleDeepSpace(), PAST_CRAFT"}
+  - {id: deep-galileo-probe, horizons_id: "-344", emitted_by: "sample.js sampleDeepSpace(), PAST_CRAFT"}
   - {id: deep-roman,         horizons_id: "-211", emitted_by: "sample.js sampleDeepSpace(), ANCHORED_CRAFT"}
   - {id: deep-mars-odyssey,  horizons_id: "-53", emitted_by: "sample.js sampleDeepSpace(), PLANET_ORBITERS"}
   - {id: deep-spitzer,       horizons_id: "-79", emitted_by: "sample.js sampleDeepSpace(), OSCULATING_CRAFT"}

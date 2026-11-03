@@ -281,6 +281,28 @@ missions:
       - {id: impact, date: "2005-07-04", precision: day, title: "The impact", text: "Its impactor strikes comet Tempel 1 while the spacecraft watches from a distance.", place: path}
       - {id: hartley-2, date: "2010-11-04", precision: day, title: "Past Hartley 2", text: "On an extended mission it flies past a second comet, Hartley 2.", place: path}
 
+  # Release 1.7.2: two ended missions drawn from their own paths (registry/ephemerides.yaml). Every figure was read on the page named, 2026-11-03. NSSDCA gives the closest approach to Venus at 19:59:28 UT; an event sits on a whole minute, so it is 19:59.
+  - id: mariner-2
+    record: deep-mariner-2
+    display: Mariner 2
+    read: 2026-11-03
+    source: {name: "NASA NSSDCA, Mariner 2", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1962-041A"}
+    events:
+      - {id: launch, date: "1962-08-27", precision: day, title: "Launch", text: "Mariner 2 leaves Cape Canaveral on an Atlas-Agena rocket, bound for Venus.", place: path, path_at: "1962-08-27T07:21:00Z", world: earth}
+      - {id: course-correction, date: "1962-09-04T22:49:00Z", title: "The course correction", text: "It starts the one course correction of its flight, which aims it at Venus.", place: path}
+      - {id: venus, date: "1962-12-14T19:59:00Z", title: "Past Venus", text: "It passes 34 773 km from Venus, the first spacecraft to fly past another planet.", place: path, world: venus}
+      - {id: last-signal, date: "1963-01-03", precision: day, title: "The last signal", text: "Its last signal reaches Earth. It is still in orbit round the Sun.", place: none}
+
+  - id: galileo-probe
+    record: deep-galileo-probe
+    display: Galileo Probe
+    read: 2026-11-03
+    source: {name: "NASA Science, Galileo", url: "https://science.nasa.gov/mission/galileo/"}
+    events:
+      - {id: release, date: "1995-07-13", precision: day, title: "Let go", text: "Galileo releases its atmospheric probe, five months before Jupiter.", place: path, path_at: "1995-07-13T05:31:00Z", source: {name: "JPL Horizons, the header for the Galileo probe (released 13 July 1995 UTC; NASA Science dates it 12 July, local time)", url: "https://ssd.jpl.nasa.gov/horizons/"}}
+      - {id: entry, date: "1995-12-07", precision: day, title: "Into Jupiter’s air", text: "It meets Jupiter’s atmosphere at 47.6 km per second, then sends data for 58 minutes on a parachute.", place: path, path_at: "1995-12-07T22:05:00Z", world: jupiter}
+      - {id: silenced, date: "1995-12-07", precision: day, title: "Silenced by the heat", text: "After 58 minutes and about 200 km down, the heat silences its transmitter.", place: none}
+
   - id: perseverance
     record: jezero
     path_record: deep-mars-2020

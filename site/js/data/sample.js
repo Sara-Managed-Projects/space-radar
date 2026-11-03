@@ -1600,6 +1600,40 @@ const PAST_CRAFT = [
     end: 'Contact was lost in August 2013 and NASA declared the mission over on 19 September 2013 ' +
       '(its path after January 2012 is JPL’s prediction, not tracking)',
   },
+  // Two more ended missions with their own paths (release 1.7.2). Mariner 2: NASA NSSDCA 1962-041A
+  // (launch date 1962-08-27; closest approach to Venus 34 773 km at 19:59:28 UT on 14 December 1962;
+  // "The last transmission from Mariner 2 was received on 3 January 1963 at 07:00 UT"), read
+  // 2026-11-03; JPL Horizons' -2 header (a trajectory "to 1963-Jan-01 00:00 (CT)", refused after
+  // 1962-DEC-31 23:59:25 UT). The Galileo probe: NASA Science's Galileo page (released 12 July 1995 local time,
+  // entry 7 December 1995 at 47.6 km per second) and Horizons' -344 header ("RELEASED : Jul 13, 1995", UTC, which `launched` takes; "Probe S960730A
+  // (13-Jul-1995 to 07-Dec-1995)", refused after 1995-DEC-07 22:05:58 UT), read 2026-11-03.
+  {
+    id: 'deep-mariner-2',
+    name: 'Mariner 2',
+    launched: '1962-08-27',
+    ended: '1963-01-03',
+    pathEnds: '1962-12-31',
+    pathEndsWhy: 'The path JPL holds for it stops on 31 December 1962, three days before its last ' +
+      'signal, and it is a reconstruction fitted to the Doppler data of 1962.',
+    klass: 'probe',
+    horizonsId: -2,
+    aliases: ['Mariner II', 'Mariner R-2'],
+    note: 'The first spacecraft to fly past another planet: Venus, 34 773 km away on 14 December 1962. ' +
+      'It found the planet hot and cloud-covered.',
+    end: 'Its last signal reached Earth on 3 January 1963',
+  },
+  {
+    id: 'deep-galileo-probe',
+    name: 'Galileo Probe',
+    launched: '1995-07-13',
+    ended: '1995-12-07',
+    klass: 'probe',
+    horizonsId: -344,
+    aliases: ['Galileo atmospheric probe', 'Galileo descent probe'],
+    note: 'Released by Galileo in July 1995, it dived into Jupiter’s atmosphere at 47.6 km per ' +
+      'second and sent data for nearly an hour.',
+    end: 'It dived into Jupiter’s atmosphere on 7 December 1995 and was silenced by the heat and pressure',
+  },
 ];
 
 /** Orbits given as elements where I am confident of the shape but not of the phase. */
