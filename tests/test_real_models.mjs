@@ -409,6 +409,57 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     check(!got || !r14m7.includes(got.file), `${name} (${norad}) wears none of stage r14-m7's files: ${JSON.stringify(got)}`);
   }
   // 0078 r14-m7: end
+  // RELEASE 1.7.8 (public #973): Pleiades 1A and 1B wear pleiades.glb as themselves, by number (CelesTrak names 'PLEIADES 1A' and 'PLEIADES 1B', from the issue's table).
+  for (const [norad, cat, name] of [[38012, 'PLEIADES 1A', 'Pleiades 1A'], [39019, 'PLEIADES 1B', 'Pleiades 1B']]) {
+    const got = sat(norad, cat);
+    check(got && got.file === 'pleiades.glb' && got.colour === 'satellite' && got.name === name && !got.generic && got.made === 'dimensions' && got.axes === 'app', `${cat} (${norad}) wears pleiades.glb as itself: ${JSON.stringify(got)}`);
+  }
+  // It does not reach: Pleiades Neo 3 and 4 (a different bus), another optical imager, the Soyuz rocket body or debris that carries the name, or a name that only contains the letters.
+  for (const [norad, name, klass] of [[48268, 'PLEIADES NEO 3'], [49070, 'PLEIADES NEO 4'], [99998, 'PLEIADES 1A DEB', 'debris'], [99997, 'FREGAT DEB', 'debris'], [90038, 'PLEIADES-HR TEST SATELLITE']]) {
+    const got = sat(norad, name, klass || 'satellite');
+    check(!got || got.file !== 'pleiades.glb', `${name} (${norad}) does not wear pleiades.glb: ${JSON.stringify(got)}`);
+  }
+  // RELEASE 1.7.8 (public #974): SPOT 6 and SPOT 7 wear spot67.glb as themselves, by number (CelesTrak names 'SPOT 6' and 'SPOT 7').
+  for (const [norad, cat] of [[38755, 'SPOT 6'], [40053, 'SPOT 7']]) {
+    const got = sat(norad, cat);
+    check(got && got.file === 'spot67.glb' && got.colour === 'satellite' && !got.generic && got.made === 'dimensions' && got.axes === 'app', `${cat} (${norad}) wears spot67.glb as itself: ${JSON.stringify(got)}`);
+  }
+  // It does not reach: the other SPOT craft (other buses), the Pleiades pair and Pleiades Neo (a different bus), debris, or a name that only contains the letters.
+  // (The NORAD numbers below that are not routes in realmodels.js are the lead's to confirm against the live catalogue; I did not look them up.)
+  for (const [norad, name, klass] of [[25260, 'SPOT 4'], [27421, 'SPOT 5'], [38012, 'PLEIADES 1A'], [39019, 'PLEIADES 1B'], [48268, 'PLEIADES NEO 3'], [49070, 'PLEIADES NEO 4'],
+    [99999, 'SPOT 6 DEB', 'debris'], [90038, 'SPOTIFY TEST SATELLITE']]) {
+    const got = sat(norad, name, klass || 'satellite');
+    check(!got || got.file !== 'spot67.glb', `${name} (${norad}) does not wear spot67.glb: ${JSON.stringify(got)}`);
+  }
+  // RELEASE 1.7.8 (public #975): the twelve SkySat C-series craft wear skysat.glb as themselves, by number (CelesTrak names SKYSAT-C1 to -C12, from the issue's table; the lead to confirm each against the live catalogue).
+  for (const [norad, cat] of [[41601, 'SKYSAT-C1'], [41773, 'SKYSAT-C2'], [41774, 'SKYSAT-C3'], [41771, 'SKYSAT-C4'], [41772, 'SKYSAT-C5'], [42992, 'SKYSAT-C6'],
+    [42991, 'SKYSAT-C7'], [42990, 'SKYSAT-C8'], [42989, 'SKYSAT-C9'], [42988, 'SKYSAT-C10'], [42987, 'SKYSAT-C11'], [43797, 'SKYSAT-C12']]) {
+    const got = sat(norad, cat);
+    check(got && got.file === 'skysat.glb' && got.colour === 'satellite' && got.name === 'SkySat' && got.catalogue === cat && !got.generic && got.made === 'dimensions' && got.axes === 'app',
+      `${cat} (${norad}) wears skysat.glb as itself: ${JSON.stringify(got)}`);
+  }
+  // It does not reach: the prototypes SkySat-A and -B (shorter, no propulsion, another look), Planet's Pelican and Doves (Flock), a rocket body or debris of the same launches, or a name that only contains
+  // the letters. (The numbers of the Dove, the debris and the made-up name are not routes; I did not look them up: the lead to confirm.)
+  for (const [norad, name, klass] of [[39418, 'SKYSAT-A'], [40072, 'SKYSAT-B'], [58296, 'PELICAN-1'], [99999, 'FLOCK 4P-1'], [99998, 'PSLV DEB', 'debris'], [99997, 'SKYSAT-C1 DEB', 'debris'],
+    [90041, 'SKYSAT-X TEST SATELLITE']]) {
+    const got = sat(norad, name, klass || 'satellite');
+    check(!got || got.file !== 'skysat.glb', `${name} (${norad}) does not wear skysat.glb: ${JSON.stringify(got)}`);
+  }
+  // RELEASE 1.7.8 (public #987): the 28 BeiDou-3 medium-orbit craft wear beidou-3-meo.glb by NUMBER. CAST's twelve (M1 to M6, M13, M14, M17, M18, M23, M24) as themselves; SECM's eight
+  // (M7 to M12, M15, M16) and the eight not confirmed either way (M19 to M22, M25 to M28) still `generic`, the kind of thing.
+  for (const [norad, cat, generic] of [[43001, 'BEIDOU-3 M1', false], [43002, 'BEIDOU-3 M2', false], [43107, 'BEIDOU-3 M7', true], [43108, 'BEIDOU-3 M8', true], [43207, 'BEIDOU-3 M4', false], [43208, 'BEIDOU-3 M3', false], [43245, 'BEIDOU-3 M9', true], [43246, 'BEIDOU-3 M10', true], [43581, 'BEIDOU-3 M5', false], [43582, 'BEIDOU-3 M6', false], [43602, 'BEIDOU-3 M12', true], [43603, 'BEIDOU-3 M11', true], [43622, 'BEIDOU-3 M13', false], [43623, 'BEIDOU-3 M14', false], [43647, 'BEIDOU-3 M16', true], [43648, 'BEIDOU-3 M15', true], [43706, 'BEIDOU-3 M17', false], [43707, 'BEIDOU-3 M18', false], [44542, 'BEIDOU-3 M24', false], [44543, 'BEIDOU-3 M23', false], [44793, 'BEIDOU-3 M22', true], [44794, 'BEIDOU-3 M21', true], [44864, 'BEIDOU-3 M19', true], [44865, 'BEIDOU-3 M20', true], [58654, 'BEIDOU-3 M28', true], [58655, 'BEIDOU-3 M26', true], [61186, 'BEIDOU-3 M25', true], [61187, 'BEIDOU-3 M27', true]]) {
+    const got = sat(norad, cat);
+    check(got && got.file === 'beidou-3-meo.glb' && got.colour === 'satellite' && got.name === `BeiDou-3 ${cat.split(' ').pop()}` && got.catalogue === cat && !got.build && !!got.generic === generic && got.made === 'dimensions' && got.axes === 'app', `${cat} (${norad}) wears beidou-3-meo.glb: ${JSON.stringify(got)}`);
+  }
+  // It does not reach: BeiDou's geostationary and inclined craft, BeiDou-2, a placeholder number with a BeiDou-3 M name (the name key keeps its box), a rocket body, or the other navigation craft.
+  for (const [norad, name, klass] of [[45344, 'BEIDOU-3 G2'], [44204, 'BEIDOU-3 IGSO-1'], [37763, 'BEIDOU-2 G1'], [99300, 'BEIDOU-3 M1'], [43005, 'CZ-3B R/B', 'debris'],
+    [41549, 'NAVSTAR 74 (USA 266)'], [37846, 'GSAT0102 (GALILEO-FM2)'], [32275, 'COSMOS 2433 [GLONASS-M]'], [41875, 'QZS-2 (MICHIBIKI-2)']]) {
+    const got = sat(norad, name, klass || 'satellite');
+    check(!got || got.file !== 'beidou-3-meo.glb', `${name} (${norad}) does not wear beidou-3-meo.glb: ${JSON.stringify(got)}`);
+  }
+  // (The numbers 45344, 44204, 37763, 43005, 41549, 37846 and 41875 are from memory of the catalogue, not looked up: the lead confirms them or swaps in numbers it knows.)
+  // The two existing checks that name 'BEIDOU-3 M1' (the `nav()` loop 'keeps a procedural navigation shape', and batch ten's 'does not reach') stay true: the first uses the
+  // placeholder number 99300 (the name key still answers), the second only asks that no file of batch ten is worn.
   // SWOT is JPL's OWN published model (public #952): its file, as itself, and NOT `made`: nobody here made it.
   {
     const swot = sat(54754, 'SWOT');
