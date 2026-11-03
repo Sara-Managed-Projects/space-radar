@@ -23,24 +23,41 @@ export const LANGUAGES = {
   de: { locale: 'de-DE', pill: 'de-DE', reviewed: false }, // machine-drafted
   pt: { locale: 'pt-BR', pill: 'pt-BR', reviewed: false }, // Brazil; ?lang=pt-BR is read as pt
   // 0077 W2-f: end
+  // 1.6.3 (public #529 to #534): machine-drafted, hidden: reached by ?lang= alone (reviewed stays false until a native reader signs off) and
+  // listed by no picker. zh is Simplified (Ivan has not chosen yet); `tag` is what <html lang> says when it is not the code. For Traditional
+  // add `'zh-Hant': { locale: 'zh-TW', pill: 'zh-TW', tag: 'zh-Hant', reviewed: false }` and a copy/zh-Hant.js: pickLanguage already reads
+  // zh-TW, zh-HK, zh-MO and zh-Hant as that entry once it exists, and zh-CN, zh-SG and zh-Hans as zh.
+  // 1.6.3: begin
+  ru: { locale: 'ru-RU', pill: 'ru-RU', reviewed: false },
+  uk: { locale: 'uk-UA', pill: 'uk-UA', reviewed: false },
+  zh: { locale: 'zh-CN', pill: 'zh-CN', tag: 'zh-Hans', reviewed: false },
+  hi: { locale: 'hi-IN', pill: 'hi-IN', reviewed: false },
+  he: { locale: 'he-IL', pill: 'he-IL', reviewed: false }, // right to left: <html dir="rtl"> and css/rtl.css
+  ar: { locale: 'ar-u-nu-latn', pill: 'ar-u-nu-latn', reviewed: false }, // right to left; Latin digits, as the app's numbers are
+  // 1.6.3: end
 };
 const RTL = ['he', 'ar'];
+const TRADITIONAL = ['hant', 'tw', 'hk', 'mo']; // the second part of zh-Hant, zh-TW, zh-HK, zh-MO
 
 /** Filled by copy/index.js `prepare()` with { localise(target, keys) }. Empty in English. */
 export const HOOK = {};
 
-const base = (tag) => String(tag || '').toLowerCase().split(/[-_]/)[0];
+const base = (tag, languages) => {
+  const [first, second] = String(tag || '').toLowerCase().split(/[-_]/);
+  // 1.6.3: Chinese in the traditional script is its own file once one is registered; until then zh-TW is read as zh.
+  return first === 'zh' && TRADITIONAL.includes(second) && languages && Object.prototype.hasOwnProperty.call(languages, 'zh-Hant') ? 'zh-Hant' : first;
+};
 
 /** The language to speak. Pure: `search` is location.search, `preferred` navigator.languages. */
 export function pickLanguage(search, preferred, languages = LANGUAGES) {
   const asked = /[?&]lang=([^&#]*)/.exec(String(search || ''));
   if (asked) {
     let code = '';
-    try { code = base(decodeURIComponent(asked[1])); } catch { /* a stray % in the address: no such language */ }
+    try { code = base(decodeURIComponent(asked[1]), languages); } catch { /* a stray % in the address: no such language */ }
     return Object.prototype.hasOwnProperty.call(languages, code) ? code : 'en';
   }
   for (const tag of preferred || []) {
-    const code = base(tag);
+    const code = base(tag, languages);
     if (Object.prototype.hasOwnProperty.call(languages, code) && languages[code].reviewed) return code;
   }
   return 'en';
@@ -55,6 +72,6 @@ export const LOCALE = LANGUAGES[LANG].locale;
 export const PILL_LOCALE = LANGUAGES[LANG].pill;
 
 if (LANG !== 'en' && typeof document !== 'undefined') {
-  document.documentElement.lang = LANG;
+  document.documentElement.lang = LANGUAGES[LANG].tag || LANG;
   if (RTL.includes(LANG)) document.documentElement.dir = 'rtl';
 }

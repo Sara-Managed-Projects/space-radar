@@ -108,7 +108,7 @@ const STATIC = /^\s*(?:import|export)\b[^'"\n]*?(?:from\s*)?['"]([^'"]+)['"]/gm;
 for (const file of walk(JS)) {
   const code = readFileSync(file, 'utf8');
   for (const [, target] of code.matchAll(STATIC)) {
-    if (/(^|\/)(index|es|fr|de|pt|pt-BR|ru|uk|zh-Hans|he|ar|hi)\.js$/.test(target) && /copy\//.test(target + file)) { // 0077 W2-f: pt added
+    if (/(^|\/)(index|es|fr|de|pt|pt-BR|ru|uk|zh|zh-Hant|he|ar|hi)\.js$/.test(target) && /copy\//.test(target + file)) { // 0077 W2-f: pt added
       assert.fail(`${file} imports ${target} statically: a language file or copy/index.js would be part of every first visit`);
     }
   }
@@ -127,15 +127,15 @@ for (const file of walk(JS)) {
   assert.ok(!/^(?:await\b|(?:const|let|var)\s+[^=\n]+=\s*await\b)/m.test(code), `${file} has a top-level await: the deploy's es2020 target refuses it`);
 }
 const langBytes = statSync(join(JS, 'copy/lang.js')).size;
-assert.ok(langBytes < 3500, `copy/lang.js is in the boot graph and must stay small (${langBytes} B as written, comments included)`); // 0077 W2-f: 3200 to 3500, three rows for fr, de, pt
+assert.ok(langBytes < 5200, `copy/lang.js is in the boot graph and must stay small (${langBytes} B as written, comments included)`); // 0077 W2-f: 3200 to 3500, three rows for fr, de, pt; 1.6.3: 3500 to 5200, six rows and the zh-Hant reading (its comments are the most of it: the served tree strips them)
 assert.ok(!/import\s*\(/.test(readFileSync(join(JS, 'copy/lang.js'), 'utf8').replace(/\/\/.*$/gm, '')), 'copy/lang.js only decides: it fetches nothing');
 
 // --- 4. the Spanish --------------------------------------------------------------------------------------
 const { check, status, docWithTable } = await import(pathToFileURL(join(ROOT, 'scripts/check-translation.mjs')).href);
 const { out } = await check(join(JS, 'copy/es.js'));
-// A string another stage adds to copy/en.js is English in Spanish until a top-up (the checker lists it, the page shows English):
-// that is not a failure here. A slot lost or invented, or text where English has a group, is: it prints a hole on the screen.
-assert.deepEqual([out.placeholder, out.kind], [[], []], `copy/es.js loses or invents a {slot}, or has the wrong kind of value:\n${JSON.stringify(out, null, 1).slice(0, 600)}`);
+// A string another stage adds to copy/en.js is English in Spanish until a top-up (the checker lists it, the page shows English);
+// since 1.6.3 the Spanish has every key, so a stage that adds one must add its Spanish (or this fails). A slot lost or invented, or text where English has a group, is: it prints a hole on the screen.
+assert.deepEqual([out.missing, out.placeholder, out.kind, out.extra], [[], [], [], []], `copy/es.js loses or invents a {slot}, or has the wrong kind of value:\n${JSON.stringify(out, null, 1).slice(0, 600)}`);
 const es_ = await import(href('copy/es.js'));
 assert.equal(es_.META.review.status, 'machine-drafted', 'the Spanish says what it is until two native speakers have read it');
 assert.equal(LANGUAGES.es.reviewed, false, 'and the browser\'s language does not bring it in');
@@ -182,17 +182,74 @@ for (const [code, want] of Object.entries(WANT)) {
   assert.equal(mod.META.review.status, 'machine-drafted', `${code}: it says what it is until two native speakers have read it`);
   assert.equal(LANGUAGES[code].reviewed, false, `${code}: and the browser's language does not bring it in`);
   const { out: o2 } = await check(join(JS, `copy/${code}.js`));
-  // Release 1.3.0 wave 2 integration: four English sections landed in the same wave as the drafts; until they are
-  // translated they fall back to English (docs/TRANSLATING.md), and are listed here so nothing else goes missing.
-  const WAVE2_ENGLISH_ONLY = ['COPY.r13Deep', 'COPY.compare', 'COPY.passportKinds', 'COPY.photoCompare', 'COPY.entrances']; // 0077 W3-e: entrances
-  // 0079 int: begin -- release 1.5.0 stages A4, A5 and A6 added these English strings; French, German and Portuguese fall back to English for them until a top-up (Spanish has most, in copy/es.js)
-  const R15_ENGLISH_ONLY = ["COPY.card.rows.iauName", "COPY.card.rows.onBody", "COPY.card.rows.whenSite", "COPY.drawing.markOnly", "COPY.drawing.noPlace", "COPY.drawing.shower", "COPY.klass.shower", "COPY.cls.shower", "COPY.cls.noPlace", "COPY.cls.approxPlace", "COPY.unplaced.noDistanceRow", "COPY.unplaced.iauApproved", "COPY.starSystem.auYearComputed", "COPY.searchRows.kinds.galaxy", "COPY.searchRows.kinds.cluster", "COPY.searchRows.kinds.browndwarf", "COPY.searchRows.kinds.whitedwarf", "COPY.templates.exotic.kinds.galaxy", "COPY.templates.exotic.kinds.cluster", "COPY.templates.exotic.kinds.browndwarf", "COPY.templates.exotic.kinds.whitedwarf", "COPY.templates.exotic.leadGalaxy", "COPY.templates.exotic.leadCluster", "COPY.templates.exotic.leadBrowndwarf", "COPY.templates.exotic.leadWhitedwarf", "COPY.templates.site.mpc", "COPY.templates.site.closed", "COPY.templates.site.kinds.launch-site", "COPY.templates.site.kinds.landing-site", "COPY.templates.shower", "COPY.a45"];
-  // 0079 int: end
-  assert.deepEqual([o2.missing.filter((k) => !WAVE2_ENGLISH_ONLY.includes(k) && !R15_ENGLISH_ONLY.includes(k)).length, o2.placeholder, o2.kind, o2.extra], [0, [], [], []], `copy/${code}.js lacks a key, loses or invents a {slot}, or has the wrong kind of value:\n${JSON.stringify(o2, null, 1).slice(0, 600)}`);
+  // 1.6.3 (internal #995): the allowed-gaps lists are empty. Every key English has, the four drafted languages have too.
+  assert.deepEqual([o2.missing, o2.placeholder, o2.kind, o2.extra], [[], [], [], []], `copy/${code}.js lacks a key, loses or invents a {slot}, or has a key English does not:\n${JSON.stringify(o2, null, 1).slice(0, 600)}`);
 }
 assert.equal(pickLanguage('?lang=pt-BR', [], LANGUAGES), 'pt', '?lang=pt-BR is read as pt: the file is copy/pt.js');
 assert.equal(run({ location: { search: '?lang=pt-BR' }, document: {} }, probe2).tonight, 'Esta noite');
 assert.equal(run({ location: { search: '' }, navigator: { languages: ['fr-FR', 'de', 'pt-BR'], language: 'fr-FR' }, document: {} }, probe2).tonight, 'Tonight', 'a machine-drafted language is never taken from the browser');
 // 0077 W2-f: end
+
+// 1.6.3: begin
+// --- 6. Russian, Ukrainian, Chinese, Hindi, Hebrew, Arabic (public #529 to #534), and the four drafted ones complete ---------
+// Machine-drafted, hidden behind ?lang= until a native reader signs off, no language picker lists them (there is none), loaded lazily.
+const probe3 = `out({
+  lang: globalThis.document.documentElement.lang || '', dir: globalThis.document.documentElement.dir || '', tonight: m.COPY.tabs.tonight,
+  later: m.COPY.templates.storm.lead, facts: m.COPY.klass.station, glossary: m.GLOSSARY.orbit.slice(0, 24), ago: m.ageInWords(3 * 3600e3),
+  num: m.fmt.num(1234.5, 1), int: m.fmt.int(1234567), plural: [0, 1, 2, 5, 21, 1.5].map((n) => m.fmt.plural(n, 'one', 'a|b|c|d')),
+  article: m.article('galaxy'), compass: m.compassWords(45),
+});`;
+const NEW = {
+  ru: { name: 'Русский', locale: 'ru-RU', tag: 'ru', dir: '', num: '1\u202f234,5' },
+  uk: { name: 'Українська', locale: 'uk-UA', tag: 'uk', dir: '', num: '1\u202f234,5' },
+  zh: { name: '简体中文', locale: 'zh-CN', tag: 'zh-Hans', dir: '', num: null },
+  hi: { name: 'हिन्दी', locale: 'hi-IN', tag: 'hi', dir: '', num: null },
+  he: { name: 'עברית', locale: 'he-IL', tag: 'he', dir: 'rtl', num: null },
+  ar: { name: 'العربية', locale: 'ar-u-nu-latn', tag: 'ar', dir: 'rtl', num: null },
+};
+for (const [code, want] of Object.entries(NEW)) {
+  const mod = await import(href(`copy/${code}.js`));
+  assert.equal(mod.META.review.status, 'machine-drafted', `${code}: it says what it is until a native reader has read it`);
+  assert.equal(mod.META.name, want.name, `${code}: the language's own name`);
+  assert.equal(LANGUAGES[code].reviewed, false, `${code}: hidden: the browser's language never brings it in`);
+  assert.equal(LANGUAGES[code].locale, want.locale, `${code}: dates are written in its locale`);
+  assert.equal(pickLanguage('', [code, `${code}-XX`], LANGUAGES), 'en', `${code}: a browser that asks for it still gets English`);
+  assert.equal(pickLanguage(`?lang=${code}`, [], LANGUAGES), code, `${code}: ?lang= reaches it`);
+  const { out: o3 } = await check(join(JS, `copy/${code}.js`));
+  assert.deepEqual([o3.missing, o3.placeholder, o3.kind, o3.extra], [[], [], [], []], `copy/${code}.js lacks a key, loses or invents a {slot}:\n${JSON.stringify(o3, null, 1).slice(0, 600)}`);
+  const got = run({ location: { search: `?lang=${code}` }, document: {} }, probe3);
+  assert.equal(got.lang, want.tag, `${code}: <html lang> follows the language`);
+  assert.equal(got.dir, want.dir, `${code}: and <html dir> is ${want.dir || 'not set'}`);
+  assert.notEqual(got.tonight, 'Tonight', `${code}: the tabs are in the language`);
+  assert.match(got.later, /\{name\}/, `${code}: the sections copy/en.later.js adds are in the language, with their slots`);
+  assert.notEqual(got.facts, 'Space station', `${code}: and the ones copy/en.facts.js adds`);
+  assert.notEqual(got.ago, '3 hours ago', `${code}: the time words`);
+  assert.equal(typeof got.article, 'string', `${code}: RULES.article answers`);
+  assert.ok(got.plural.every((p) => ['one', 'a', 'b', 'c', 'd'].includes(p.split('|')[0]) || typeof p === 'string'), `${code}: RULES.plural answers`);
+  if (want.num) assert.equal(got.num, want.num, `${code}: the decimal is a comma, the groups are narrow no-break spaces`);
+  else assert.equal(got.num, '1\u202f234.5', `${code}: the decimal is a point, the groups are narrow no-break spaces`);
+  assert.equal(got.int, '1\u202f234\u202f567', `${code}: numbers keep the app's own grouping, in Latin digits`);
+}
+// The right-to-left pair turn the document round and fetch the mirror stylesheet; nobody else does.
+const indexSrc = readFileSync(join(JS, 'copy/index.js'), 'utf8');
+assert.ok(/css\/rtl\.css/.test(indexSrc) && /dir !== 'rtl'/.test(indexSrc), 'copy/index.js links css/rtl.css, and only for a right-to-left language');
+assert.ok(!/rtl\.css/.test(page), 'index.html does not link it: a first visit in any left-to-right language fetches none of it');
+const langSrc = readFileSync(join(JS, 'copy/lang.js'), 'utf8');
+assert.ok(/const RTL = \['he', 'ar'\]/.test(langSrc), 'Hebrew and Arabic are the right-to-left languages');
+// Chinese: Simplified now, Traditional readable later without touching the loader.
+const tw = { en: { reviewed: true }, zh: { reviewed: false }, 'zh-Hant': { reviewed: false } };
+assert.equal(pickLanguage('?lang=zh-TW', [], tw), 'zh-Hant', 'zh-TW is the traditional file once one is registered');
+assert.equal(pickLanguage('?lang=zh-Hant-HK', [], tw), 'zh-Hant', 'and so are zh-Hant and zh-HK');
+assert.equal(pickLanguage('?lang=zh-CN', [], tw), 'zh', 'zh-CN stays Simplified');
+assert.equal(pickLanguage('?lang=zh-Hans', [], tw), 'zh', 'and zh-Hans');
+assert.equal(pickLanguage('?lang=zh-TW', [], { en: { reviewed: true }, zh: { reviewed: false } }), 'zh', 'until then zh-TW is read as zh, the one Chinese there is');
+assert.equal(LANGUAGES.zh.tag, 'zh-Hans', '<html lang> says which script the Chinese is in');
+assert.ok(/zh-Hant/.test(langSrc), 'lang.js says how to add the Traditional file');
+// The real-page check of the fallback runs in CI (screens.yml), because it needs a browser.
+const screens = readFileSync(join(ROOT, '.github/workflows/screens.yml'), 'utf8');
+assert.ok(/scripts\/check-language-fallback\.mjs --base=http:\/\/127\.0\.0\.1:8177/.test(screens), 'screens.yml runs the language fallback check on a real page (public #1265)');
+const fallback = readFileSync(join(ROOT, 'scripts/check-language-fallback.mjs'), 'utf8');
+for (const word of ['rejected', 'broken', 'omitted']) assert.ok(fallback.includes(`'${word}'`), `the fallback check walks the "${word}" case`);
+// 1.6.3: end
 
 console.log(`language loader ok: ?lang= and the browser's list, English for a missing key, ${row.present} strings of Spanish in place (${langBytes} B of boot code), the table current`);
