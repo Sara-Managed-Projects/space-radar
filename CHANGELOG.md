@@ -29,15 +29,15 @@ tagged, and their dates are the day the last change in each landed.
 ### Changed
 
 - **The ground patch under a lander fades out as the camera pulls away** (public #267). A model is drawn at a steady size on the screen, so the
-  patch was as wide on the screen from 14 000 km as from 14 and showed as a grey plate on a shrinking Moon. It is now whole at the arrival
+  patch was as wide on the screen far out as near, and from far out it showed as a grey plate on a shrinking Moon. It is now whole at the arrival
   distance and gone by the layer's nearKm, on a smoothstep. Its soft edge was also being turned opaque by the model's fade-in (the
   material was set not transparent once the fade finished, so the vertex alpha was ignored); it stays transparent now.
 
 ### Not done
 
 - **Magellan** is not on Venus: NASA's model exists, but no page read (NSSDCA, the PDS mission catalogue, the Explorer's Guide) gives the
-  orientation of its orbit (the ascending node), so a polar orbit drawn from published elements would have an invented plane, and it
-  changed from 295 by 8 463 km to 197 by 541 km when it braked in the air in 1993.
+  orientation of its orbit (the ascending node), so a polar orbit drawn from published elements would have an invented plane, and its
+  orbit changed when it braked in the air in 1993 (to 197 by 540 km, 94 minutes).
 - **No lander model is new.** NASA 3D Resources and NASA Science publish the Viking lander, the Mars Exploration Rover and InSight (already
   on the map); they publish no Surveyor, Pathfinder, Sojourner or Phoenix (read 2026-11-03), which keep the models built from NASA's
   dimensions and photographs in 1.5.0. No free photograph or drawing of a Venera lander was found to build one from, so the Venus sites
