@@ -41,6 +41,37 @@ tagged, and their dates are the day the last change in each landed.
   the generated mirrors and wants its own browser walk, the second needs the harvester deployed and an answer on Launch Library's terms (internal #370).
 - **The AVIF decision (internal #530)** is written on the issue; the maps are still WebP.
 
+## [1.7.3] - 2026-11-03
+
+### Added
+
+- **Dated events for forty craft that came down on Venus, the Moon and Mars.** The cards of Venera 7 to 14 and VEGA 1 and 2 on Venus; Ranger
+  7, 8 and 9 and Surveyor 1 to 7 (the signal that stopped on Surveyor 4, the hop of Surveyor 6); Luna 9, 13, 16, 20, 23 and 24, Lunokhod 1 and
+  2 and Chang'e 3, 4, 5 and 6 on the Moon; Viking 1 and 2, Mars Pathfinder, Spirit, Opportunity, Phoenix, InSight and Zhurong on Mars. Each
+  has three to five events (the launch, the orbit, the landing or impact, the first picture, the last signal), each with its date and, where
+  the page gives one, its UTC minute, and Prev and Next move the clock to the ones that happened at the site. A launch or a flight is told
+  without moving the clock. `#event=venera-13.landing` is a link. The craft are read on NASA NSSDCA's pages where they answer and on
+  Wikipedia (CC BY-SA 4.0) where they do not (the Soviet and Chinese craft), and each mission says which. 135 events in a file of 50 kB that
+  loads only when the card of a lander, an impact site or a landing site asks (`registry/missions-landers.yaml`,
+  `site/js/data/missions-landers.js`, `scripts/gen_missions_landers_js.py`, `tests/test_missions_landers.mjs`).
+- A look probe, `landers`, for Venus, the Moon, Mars and the ground patch near and far.
+
+### Changed
+
+- **The ground patch under a lander fades out as the camera pulls away** (public #267). A model is drawn at a steady size on the screen, so the
+  patch was as wide on the screen far out as near, and from far out it showed as a grey plate on a shrinking Moon. It is now whole at the arrival
+  distance and gone by the layer's nearKm, on a smoothstep. Its soft edge was also being turned opaque by the model's fade-in (the
+  material was set not transparent once the fade finished, so the vertex alpha was ignored); it stays transparent now.
+
+### Not done
+
+- **Magellan** is not on Venus: NASA's model exists, but no page read (NSSDCA, the PDS mission catalogue, the Explorer's Guide) gives the
+  orientation of its orbit (the ascending node), so a polar orbit drawn from published elements would have an invented plane, and its
+  orbit changed when it braked in the air in 1993 (to 197 by 540 km, 94 minutes).
+- **No lander model is new.** NASA 3D Resources and NASA Science publish the Viking lander, the Mars Exploration Rover and InSight (already
+  on the map); they publish no Surveyor, Pathfinder, Sojourner or Phoenix (read 2026-11-03), which keep the models built from NASA's
+  dimensions and photographs in 1.5.0. No free photograph or drawing of a Venera lander was found to build one from, so the Venus sites
+  stay marks, and say so.
 ## [1.7.2] - 2026-11-03
 
 ### Added

@@ -3227,8 +3227,42 @@ function buildGroundPatch() {
   // drew as a beige plate on the dark map of the Sea of Tranquility. This is the tone of that map
   // in sunlight, so the patch reads as disturbed ground and not as a mat.
   g.add(regolith(0.5, '#55544F', 28, true));
+  const mats = new Set();
+  g.traverse((n) => { if (n.material) mats.add(n.material); });
+  g.userData.mats = [...mats]; // fadeGroundPatch writes these
   return g;
 }
+
+/**
+ * THE PATCH FADES AS THE CAMERA PULLS AWAY (release 1.7.3; public #267: "a hard edge", internal #478).
+ * A hero is drawn at a steady size on the screen, so the ragged patch under a lander (1.9 reaches wide) is as
+ * big on the screen at 500 km as it is close, and from far out it is a grey plate on a Moon that has shrunk
+ * beneath it. The selected lander is drawn at any distance, so nothing else takes it away. The patch is whole
+ * to 1.7 times the distance a lander is met from (108.6 km for Surveyor 3, 0.12 of its layer's 900 km nearKm,
+ * measured in a look run on 2026-11-03) and gone by 5 times it, 0.6 of nearKm, on a smoothstep, so there is
+ * never a point at which the plate is there and then is not. Pure; heroes.js calls
+ * fadeGroundPatch each frame, and tests/test_landing_sites.mjs holds the curve.
+ * @param {number} d          the camera's distance from the lander, scene units
+ * @param {number} nearUnits  the lander's layer's nearKm, scene units
+ */
+export const PATCH_FADE_FROM = 0.2;
+export const PATCH_FADE_TO = 0.6;
+export function groundPatchFade(d, nearUnits) {
+  if (!(nearUnits > 0) || !Number.isFinite(d)) return 1;
+  const t = Math.min(1, Math.max(0, (d / nearUnits - PATCH_FADE_FROM) / (PATCH_FADE_TO - PATCH_FADE_FROM)));
+  return 1 - t * t * (3 - 2 * t);
+}
+/** Fade a lander's patch for a camera `d` away. `live` is false while the model's own fade-in is writing opacities (it reads baseOpacity). */
+export function fadeGroundPatch(patch, d, nearUnits, live) {
+  const k = groundPatchFade(d, nearUnits);
+  patch.visible = k > 0.004;
+  for (const m of patch.userData.mats || []) {
+    m.userData.baseOpacity = k;
+    if (live) { m.opacity = k; m.transparent = k < 1 || !!m.userData.alwaysTransparent; }
+  }
+  return k;
+}
+
 
 // ------------------------------------------------------------------------- odd things we sent
 
@@ -3374,6 +3408,7 @@ function softPatch(r, n, seed, y, colour, profile, layer, name) {
   mat.vertexColors = true;
   mat.transparent = true;
   mat.depthWrite = false;
+  mat.userData.alwaysTransparent = true; // heroes.js's fade-in must not turn it opaque: the edge IS the alpha
   const m = new THREE.Mesh(softPatchGeometry(r, n, seed, y, profile), mat);
   m.name = name;
   m.castShadow = false;
