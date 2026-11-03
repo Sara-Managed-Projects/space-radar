@@ -35,6 +35,7 @@ tagged, and their dates are the day the last change in each landed.
   where the report says the eastern, and the orbit's node and clock are nudged a few degrees and minutes over the 54 hours to meet the field.
   No recording plays: NASA's air-to-ground audio of the mission is on Wikimedia Commons as hundreds of unlabelled clips, only the first day, and
   nothing says which holds which line.
+- **Columbia's bay is open from T+1:30**, with the radiator tubes on the inner faces of the doors, the sill longerons and the DFI pallet (the only thing STS-1 carried), added to the orbiter model as a part (`scripts/shuttle/add-bay-detail.mjs`); the entry's glow is a layer under the orbiter's belly, not the capsule's dome.
 - **Both are on the shelf**, with "Replay this moment" on Baikonur Site 1 (now three stories, Vostok 1 first) and Launch Complex 39A (Apollo
   11, Apollo 13 and STS-1), on two new places on the map, the Voskhod 2 landing site in the taiga and Edwards' lakebed runway 23, and on the
   cards of a Voskhod rocket or spacecraft and of the Space Shuttle or Columbia.
