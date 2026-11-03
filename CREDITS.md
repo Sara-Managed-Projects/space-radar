@@ -1637,6 +1637,8 @@ in any file; no logo and no lettering is on any mesh. Their parts are named node
 | `vostok-3ka.glb` (261 KB) | The Vostok 3KA: the 2.3 m sphere with its coat, opening, hatch, Vzor window and straps; the instrument module with its twelve nitrogen spheres, louvred cone and retro engine; the antennas | RKK Energia's full-size copy at Speyer (Stolbovsky, CC BY 4.0), the copies at Le Bourget (Pline, CC BY-SA 3.0; Alan Wilson, CC BY-SA 2.0) and the Memorial Museum of Cosmonautics (Armael, CC0), replicas (CC0), Gagarin's capsule (SiefkinDR, CC BY-SA 3.0; Errabee, CC BY-SA 2.5), the Vostok 5 and 6 capsules (Stolbovsky, CC BY 4.0; Ardfern, CC BY 4.0), a Korabl-Sputnik hatch (CC BY-SA 4.0) | ours, from facts; pictures only looked at |
 | `sputnik-1.glb` (26 KB) | PS-1, the first Sputnik, and the head of its rocket: the 585 mm sphere, its seam and 36 bolts, the four whips of 2.4 m and 2.9 m, the cone-shaped head | The published dimensions only (Wikipedia, "Sputnik 1", from NASA, NSSDC and Russian sources; facts); no picture is used | ours, from facts; for the Sputnik 1 Moment, no object of the map wears it |
 | `vostok-seat.glb` (78 KB) | The ejection seat in its silver trough with its two rocket housings, and the cosmonaut in the orange SK-1 suit | the Vostok ejection seat (Stolbovsky, CC BY 4.0), the Vostok 5 capsule exhibit (Stolbovsky, CC BY 4.0), NASA's cutaway of the seating (public domain) | ours; sizes illustrative (no published seat dimension) |
+| `voskhod-3kd.glb` (329 KB) | The Voskhod 3KD of Voskhod 2: the Vostok sphere and instrument module, the back-up retro rocket on top, the VOLGA airlock as launched and deployed (ring, 40 air-booms, upper ring, outer hatch, camera boom, four oxygen spheres), Leonov's 5.35 m umbilical | the Voskhod 2 airlock on display (Armael, CC0; Kucharek, public domain), NASA's cutaway and the Voskhod diagram (public domain), a Voskhod capsule (Andrew Gray, CC BY-SA 3.0), a stamp sheet (USSR Post, public domain), a life-support unit (Steve Jurvetson, CC BY 4.0, nothing taken), the preview picture of Fac-tory-o's STL (CC BY-SA 4.0; the 3D file itself not used); the Vostok parts as `vostok-3ka.glb`; Wikipedia 'Voskhod (spacecraft)' and 'Voskhod 2' for the numbers | ours, from facts; pictures only looked at |
+| `leonov-eva.glb` (76 KB) | Leonov in the Berkut suit in the pose of the film of his walk (arms forward and down, legs trailing), puffed, with the white EVA pack: helmet with its hinged sun visor, harness, hoses, chest camera, gloves, boots | the Berkut suit on display (Armael, CC0; Александр Сигачёв, CC0; Музей Космонавтики, CC0; Craigboy, CC BY-SA 3.0), the airlock and suit (Kucharek, public domain), a stamp sheet (USSR Post, public domain), a frame of the film (public domain), a crowd photograph (Sergeev L.V., CC BY-SA 3.0, nothing taken) | ours, from facts and pictures only looked at; sizes illustrative |
 | `vostok-chutes.glb` (121 KB) | Six inflated canopies: the capsule's pullout, braking and main, the cosmonaut's drogue, main and reserve | areas from RussianSpaceWeb and Rambler (facts); the suit's orange from the seat photograph above | ours; shapes illustrative |
 
 **Credit lines:** `3D model: built by Space Radar from published dimensions; compared with ...` (each row's `credit:`).
@@ -1798,6 +1800,32 @@ KSC-20250303-PH-KLS01_0028; art002e012583; MAF_20230915_CS2_Eng2047Install1).
 **Credit lines:** `3D model: NASA (3D Resources), with the skins built by Space Radar` (`sls-block1.glb`);
 `3D model: NASA/JPL-Caltech (Eyes on the Solar System) and NASA (3D Resources)` (`orion-esm.glb`).
 <!-- 0079 c4: end -->
+
+<!-- 1.7.1 sts1: begin -->
+## 3b-r171. Release 1.7.1: the Shuttle stack without its orbiter, and the orbiter with its doors and gear, for the STS-1 Moment, from NASA's own files (2026-11-03)
+
+Two files for the STS-1 Moment (Columbia, 12 to 14 April 1981), each split into named parts for the Moments player. `shuttle-sts-stack.glb` is the launch stack WITHOUT the orbiter; `shuttle-orbiter.glb` is the orbiter on its own, which the Moment sets on the stack, in orbit and on the runway. Built by `scripts/shuttle/build-sts1.mjs`.
+
+| File | Parts | From | Size |
+|---|---|---|---|
+| `shuttle-sts-stack.glb` | the white external tank with its attach beams, struts and lines; the two solid rocket boosters, white with a dark nozzle | NASA 3D Resources, `3D Models/Space Shuttle Parts` (the files named External tank and Solid Rocket Booster), <https://github.com/nasa/NASA-3D-Resources> | 87 KB |
+| `shuttle-orbiter.glb` | the orbiter with its three SSME bells; the payload bay doors closed and, as in orbit, open; the landing gear down: nose gear and two main gears, with their doors | NASA 3D Resources, `3D Models/Space Shuttle (D)` (the files named Space Shuttle (D), its door-prt, door-stb and eng), <https://github.com/nasa/NASA-3D-Resources>; the landing gear is built by Space Radar from published tyre sizes | 216 KB |
+
+**Terms, read 2026-11-03.** NASA 3D Resources: "These assets are free and without copyright." NASA Images and Media Usage Guidelines
+(<https://www.nasa.gov/nasa-brand-center/images-and-media/>): "NASA content - images, audio, video, and media files used in the rendition of
+3-dimensional models, such as texture maps and polygon data in any format - generally are not subject to copyright in the United States." NASA is
+acknowledged as the source. The NASA insignia and logotype are not in the public domain: none is on either mesh, and neither is a flag or a name.
+The repository does not name an author for these files (its README lists its contributors, not their models); the credit line is therefore NASA 3D Resources
+and not a person.
+
+**What is NASA's and what is ours.** The hulls, the doors, the bell, the tank and the booster are NASA's, baked by `scripts/bake-own-colours.mjs` (decimated,
+flat colours, creased normals). OURS, each said in `registry/models.yaml`: the tank and the booster are painted white (STS-1 and STS-2 flew with a white tank; NASA's
+file shows the later orange foam, and its booster texture is a layout sheet), the open positions of the doors, the places and the cant of the three bells, the
+landing gear (tyres 44.5 x 16.0 in main, two a side, and 32 x 8.8 in nose, two), and where the boosters and the orbiter stand against the tank.
+
+**Credit lines:** `3D model: NASA (3D Resources), with the tank and booster painted white by Space Radar` (`shuttle-sts-stack.glb`);
+`3D model: NASA (3D Resources), with the landing gear built by Space Radar` (`shuttle-orbiter.glb`).
+<!-- 1.7.1 sts1: end -->
 
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 
