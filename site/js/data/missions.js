@@ -1007,31 +1007,29 @@ export const MISSIONS = [
         "date": "1995-07-13",
         "precision": "day",
         "title": "Let go",
-        "text": "Galileo releases its atmospheric probe, five months before Jupiter.",
+        "text": "Galileo releases its atmospheric probe, which has no engine and falls towards Jupiter for five months.",
         "place": "path",
-        "path_at": "1995-07-13T05:31:00Z",
-        "source": {
-          "name": "JPL Horizons, the header for the Galileo probe (released 13 July 1995 UTC; NASA Science dates it 12 July, local time)",
-          "url": "https://ssd.jpl.nasa.gov/horizons/"
-        }
+        "path_at": "1995-07-13T05:31:00Z"
+      },
+      {
+        "id": "europa-io",
+        "date": "1995-12-07",
+        "precision": "day",
+        "title": "Europa and Io, on the way in",
+        "text": "While the probe is still approaching, the orbiter passes Europa and then Io.",
+        "place": "path"
       },
       {
         "id": "entry",
-        "date": "1995-12-07",
-        "precision": "day",
+        "date": "1995-12-07T22:05:00Z",
         "title": "Into Jupiter’s air",
-        "text": "It meets Jupiter’s atmosphere at 47.6 km per second, then sends data for 58 minutes on a parachute.",
+        "text": "It meets Jupiter’s atmosphere at 47.6 km per second, then sends data for 58 minutes on a parachute. JPL’s path for it ends at this minute.",
         "place": "path",
-        "path_at": "1995-12-07T22:05:00Z",
-        "world": "jupiter"
-      },
-      {
-        "id": "silenced",
-        "date": "1995-12-07",
-        "precision": "day",
-        "title": "Silenced by the heat",
-        "text": "After 58 minutes and about 200 km down, the heat silences its transmitter.",
-        "place": "none"
+        "world": "jupiter",
+        "source": {
+          "name": "JPL Horizons, the header for the Galileo probe (its path ends at 22:05:58 UT on 7 December 1995)",
+          "url": "https://ssd.jpl.nasa.gov/horizons/"
+        }
       }
     ]
   },
