@@ -96,6 +96,7 @@ that command with the AWS upload around it, for a source the Lambda is refused b
 | Add a famous star's line | `registry/stars-notable.yaml` | `python3 scripts/gen_stars_notable_js.py` |
 | Add a meteor shower | `registry/showers.yaml` | `python3 scripts/gen_showers_js.py` |
 | Add a dated event to a mission | `registry/missions.yaml` | `python3 scripts/gen_missions_js.py` |
+| Add a dated event to a lander's or an impactor's mission | `registry/missions-landers.yaml` | `python3 scripts/gen_missions_landers_js.py` |
 | Add an object we sent to space | `registry/oddities.yaml` | `python3 scripts/gen_oddities_js.py` |
 | Add a moon or a dwarf planet | `registry/worlds.yaml` and `site/js/scene/worlds.js` | `python3 scripts/check_registry.py` |
 | Add a 3D model or fix its credit | `registry/models.yaml`, `site/models/`, `CREDITS.md` | `python3 tests/test_credits.py` |
