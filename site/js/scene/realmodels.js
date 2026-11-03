@@ -1136,6 +1136,7 @@ export const REAL_MODELS = {
     'vostok 3ka': { file: 'vostok-3ka.glb', build: 'stage', colour: 'station', name: 'the Vostok 3KA spacecraft', klass: ['moment'], made: 'dimensions' },
     'vostok seat': { file: 'vostok-seat.glb', build: 'stage', colour: 'station', name: 'the Vostok ejection seat', klass: ['moment'], made: 'dimensions' },
     'vostok chutes': { file: 'vostok-chutes.glb', build: 'stage', colour: 'station', name: 'the parachutes of Vostok', klass: ['moment'], made: 'dimensions' },
+    'sputnik 1': { file: 'sputnik-1.glb', build: 'stage', colour: 'station', name: 'Sputnik 1 and the head of its rocket', klass: ['moment'], made: 'dimensions' },
     // 0079 c2: end
     // 0078 r14-m1: begin -- SIX SPENT STAGES WITH THEIR OWN SHAPES (release 1.4.0, stage r14-m1; public #1160, #1164 to #1167, #1169).
     // Built in code from published dimensions and Commons photographs (registry/models.yaml, tools/stage-builder/): the Kosmos-3M

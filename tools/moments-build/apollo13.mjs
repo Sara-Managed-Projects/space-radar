@@ -242,7 +242,7 @@ const parts = [
   // the CSM: bay 4's torn foil is hidden until the panel goes
   ev(T.extr, 'csm', 'sm-bay-foil', 'hide'),
   ev(T.boom, 'csm', 'sm-bay-foil', 'show'),
-  ev(T.boom, 'csm', 'sm-panel-4', 'separate', { dv: [-1.1, 0.0, -1.9], spin: [0.1, 0.05, -0.2], puffs: { part: 'service-module', at: ventAt, dir: ventDir, exitM: 0.12, dur: 180 } }),
+  ev(T.boom, 'csm', 'sm-panel-4', 'separate', { dv: [-0.5, 0.0, -0.9], spin: [0.08, 0.04, -0.16], puffs: { part: 'service-module', at: ventAt, dir: ventDir, exitM: 0.12, dur: 180 } }),
   ev(T.boom + 80, 'csm', 'sm-panel-4', 'hide'),
   ev(T.mcc2, 'lm', 'descent-stage', 'ignite', { rampS: 3 }), ev(T.mcc2 + 4, 'lm', 'descent-stage', 'throttle', { level: 0.15 }), ev(T.mcc2 + 34.2, 'lm', 'descent-stage', 'cutoff'),
   ev(T.tei0, 'lm', 'descent-stage', 'ignite', { rampS: 3 }), ev(T.tei0 + 26, 'lm', 'descent-stage', 'throttle', { level: 0.95 }), ev(T.tei1, 'lm', 'descent-stage', 'cutoff'),
@@ -272,7 +272,7 @@ const cam = [
   { t: 16000, shot: 'wide', look: 'earth', distKm: 22000, dir: wideDir(16000), fov: 40, vehicle: 'csm', blend: 3 },
   { t: 40000, shot: 'wide', look: 'earth-moon', distKm: 800000, dir: wideDir(60000), fov: 38, vehicle: 'csm', blend: 3 },
   { t: T.boom - 70, shot: 'orbit', az: 160, el: 14, dist: 52, lookY: 6, fov: 40, vehicle: 'csm', blend: 3 },
-  { t: T.boom - 6, shot: 'chase', offset: [11, 3, -22], lookY: 4.5, fov: 40, vehicle: 'csm', blend: 1.5 },
+  { t: T.boom - 6, shot: 'chase', offset: [9, 5, -26], lookY: 4.5, fov: 52, vehicle: 'csm', blend: 1.5 },
   { t: T.boom + 26, shot: 'orbit', az: 100, el: 10, dist: 38, lookY: 5, fov: 42, vehicle: 'csm', spin: 2.5, blend: 1 },
   { t: T.boom + 120, shot: 'wide', look: 'vehicle', distKm: 0.12, dir: wideDir(T.boom), fov: 40, vehicle: 'csm', blend: 3 },
   { t: T.boom + 4000, shot: 'wide', look: 'earth-moon', distKm: 900000, dir: wideDir(T.boom + 100000), fov: 38, vehicle: 'csm', blend: 3 },

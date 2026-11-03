@@ -7,7 +7,7 @@ const out = { scenes: [] };
 const text = (sel) => { const n = document.querySelector(sel); return n ? n.textContent : null; };
 const STORIES = [
   ['sputnik-1', [[-4, 'pad', 'the 8K71PS on Site 1 at ignition, the third stage and shroud of the Vostok launcher put away'], [118, 'strapons', 'two seconds after the strap-on blocks fell away, the core burning on'],
-    [845, 'sphere', 'PS-1 in sunlight, 13 minutes out (it flew in the Earth\'s shadow until then): the polished sphere with its seam and its four whips, 6.5 m away'], [2200, 'orbit', 'the satellite over the Earth, a third of the way round its first lap']]],
+    [960, 'sphere', 'PS-1 in sunlight, 16 minutes out (it flew in the Earth\'s shadow until 13): the polished sphere with its seam and its four whips, 6.5 m away'], [2200, 'orbit', 'the satellite over the Earth, a third of the way round its first lap']]],
   ['apollo-13', [[-4, 'ignition', 'the Saturn V of Apollo 13 at ignition on pad 39A'], [338, 'pogo', 'eight seconds after the S-II centre engine cut off early: four engines burning, the centre one dark'],
     [201298, 'bang', 'four and a half seconds after the tank burst: the panel of bay 4 flying clear, the foil standing out of the bay, the vent'], [278990, 'farside', 'two minutes past the far side of the Moon at 254 km: the stack, the Moon behind it, the Earth far off'],
     [496985, 'photo', 'the service module a minute after it was let go: the open bay 4, as the crew photographed it'], [513850, 'entry', 'the command module in entry alone, the shock layer glowing']]],
