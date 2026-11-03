@@ -1,7 +1,7 @@
 // assemble.mjs config.json out.glb [--plain]
 // Merge baked part files into ONE glb: a top-level node per part (named), each part's origin at its centre of mass
 // (area-weighted), children `body` / `solar-panel` / `foil` as the bake names them. Metres, +Y up.
-import { createRequire } from 'node:module'; import { join } from 'node:path'; import { readFileSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module'; import { join } from 'node:path'; import { readFileSync } from 'node:fs';
 const require = createRequire(join(process.cwd(), 'package.json'));
 const gt = await import(require.resolve('@gltf-transform/core'));
 const { NodeIO, Document } = gt;

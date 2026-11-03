@@ -889,7 +889,7 @@ objects:
     maj_ax_arcmin: 4.6
     con: Lynx
     source: "https://en.wikipedia.org/wiki/NGC_2419 (infobox, read 2026-09-09)"
-    why: "A globular cluster so far out, farther than the Magellanic Clouds, that it was once thought to be leaving the galaxy. It is not; it just takes three billion years to go round."
+    why: "A globular cluster farther out than the Magellanic Clouds, once thought to be leaving the galaxy. It is not leaving; it takes three billion years to go round."
 
   - id: eskimo-nebula
     name: Eskimo Nebula

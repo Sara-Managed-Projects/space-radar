@@ -6,35 +6,37 @@ page.
 
 ## Pick a task (2 minutes)
 
-There are a few hundred open starter issues, which is more than anyone should read. Do not scroll
-the whole label: choose by what you like doing. Each link below lists only the issues nobody has
-started (open, nobody assigned, no pull request linked, not reserved for a maintainers' batch with
-the `sara:doing` label), so whatever it shows is free to take.
+Choose by what you like doing. These links list open issues with nobody assigned and no closing
+pull request linked, excluding `sara:doing`, `blocked` and `reserved:maintainers`. Search cannot
+detect unlinked pull requests or work mentioned only in comments. Read the latest comments and
+the Development box before choosing.
 
 | If you like | Track | A typical task | You need |
 |---|---|---|---|
-| Checking a number against its source | [data](https://github.com/Sara-Managed-Projects/space-radar/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+-label%3Asara%3Adoing+label%3Atrack%3Adata) | Name the page and the day a figure was read, in one YAML comment. | A browser. The pencil on GitHub is enough. |
-| Tidying words and comments | [docs](https://github.com/Sara-Managed-Projects/space-radar/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+-label%3Asara%3Adoing+label%3Atrack%3Adocs) | Fix a comment that points at a file which has moved. | A browser. |
-| Writing a test | [tests](https://github.com/Sara-Managed-Projects/space-radar/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+-label%3Asara%3Adoing+label%3Atrack%3Atests) | Pin what one small function returns, in a new test file. | Node 22 or a Codespace. |
-| Small code changes | [code](https://github.com/Sara-Managed-Projects/space-radar/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+-label%3Asara%3Adoing+label%3Atrack%3Acode) | Make a script answer `--help` instead of printing a traceback. | Python 3 or Node 22. |
-| CSS and how things look | [ui](https://github.com/Sara-Managed-Projects/space-radar/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+-label%3Asara%3Adoing+label%3Atrack%3Aui) | Put one spacing value on the 4 px grid. | A browser to look at it. |
-| Keyboard and screen-reader use | [accessibility](https://github.com/Sara-Managed-Projects/space-radar/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+-label%3Asara%3Adoing+label%3Atrack%3Aaccessibility) | Give one control a visible focus mark. | A browser and a keyboard. |
-| Making something you can see | [lab](https://github.com/Sara-Managed-Projects/space-radar/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+-label%3Asara%3Adoing+label%3Atrack%3Alab) | Build one small simulator in one HTML file. | A browser. No libraries. |
-| Wording for translators | [translation](https://github.com/Sara-Managed-Projects/space-radar/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+-label%3Asara%3Adoing+label%3Atrack%3Atranslation) | Move a sentence out of code into the copy file. | Node 22 or a Codespace. |
-| Astronomy and teaching | [teaching](https://github.com/Sara-Managed-Projects/space-radar/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+-label%3Asara%3Adoing+label%3Atrack%3Ateaching), [astronomers](https://github.com/Sara-Managed-Projects/space-radar/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+-label%3Asara%3Adoing+label%3Atrack%3Aastronomers), [trips](https://github.com/Sara-Managed-Projects/space-radar/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+-label%3Asara%3Adoing+label%3Atrack%3Atrips) | Add a glossary word, or correct a fact on a trip card. | A source you have read. |
+| Checking a number against its source | [data](https://github.com/Sara-Managed-Projects/space-radar/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+-label%3Asara%3Adoing+-label%3Ablocked+-label%3Areserved%3Amaintainers+label%3Atrack%3Adata) | Name the page and the day a figure was read, in one YAML comment. | A browser. The pencil on GitHub is enough. |
+| Tidying words and comments | [docs](https://github.com/Sara-Managed-Projects/space-radar/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+-label%3Asara%3Adoing+-label%3Ablocked+-label%3Areserved%3Amaintainers+label%3Atrack%3Adocs) | Fix a comment that points at a file which has moved. | A browser. |
+| Writing a test | [tests](https://github.com/Sara-Managed-Projects/space-radar/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+-label%3Asara%3Adoing+-label%3Ablocked+-label%3Areserved%3Amaintainers+label%3Atrack%3Atests) | Pin what one small function returns, in a new test file. | Node 22 or a Codespace. |
+| Small code changes | [code](https://github.com/Sara-Managed-Projects/space-radar/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+-label%3Asara%3Adoing+-label%3Ablocked+-label%3Areserved%3Amaintainers+label%3Atrack%3Acode) | Make a script answer `--help` instead of printing a traceback. | Python 3 or Node 22. |
+| CSS and how things look | [ui](https://github.com/Sara-Managed-Projects/space-radar/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+-label%3Asara%3Adoing+-label%3Ablocked+-label%3Areserved%3Amaintainers+label%3Atrack%3Aui) | Put one spacing value on the 4 px grid. | A browser to look at it. |
+| Keyboard and screen-reader use | [accessibility](https://github.com/Sara-Managed-Projects/space-radar/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+-label%3Asara%3Adoing+-label%3Ablocked+-label%3Areserved%3Amaintainers+label%3Atrack%3Aaccessibility) | Give one control a visible focus mark. | A browser and a keyboard. |
+| Making something you can see | [lab](https://github.com/Sara-Managed-Projects/space-radar/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+-label%3Asara%3Adoing+-label%3Ablocked+-label%3Areserved%3Amaintainers+label%3Atrack%3Alab) | Build one small simulator in one HTML file. | A browser. No libraries. |
+| Wording for translators | [translation](https://github.com/Sara-Managed-Projects/space-radar/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+-label%3Asara%3Adoing+-label%3Ablocked+-label%3Areserved%3Amaintainers+label%3Atrack%3Atranslation) | Move a sentence out of code into the copy file. | Node 22 or a Codespace. |
+| Astronomy and teaching | [teaching](https://github.com/Sara-Managed-Projects/space-radar/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+-label%3Asara%3Adoing+-label%3Ablocked+-label%3Areserved%3Amaintainers+label%3Atrack%3Ateaching), [astronomers](https://github.com/Sara-Managed-Projects/space-radar/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+-label%3Asara%3Adoing+-label%3Ablocked+-label%3Areserved%3Amaintainers+label%3Atrack%3Aastronomers), [trips](https://github.com/Sara-Managed-Projects/space-radar/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+-label%3Asara%3Adoing+-label%3Ablocked+-label%3Areserved%3Amaintainers+label%3Atrack%3Atrips) | Add a glossary word, or correct a fact on a trip card. | A source you have read. |
 
 Every one of them names the file, the change, the check to run and a "Done when" line.
-[All of them, every track](https://github.com/Sara-Managed-Projects/space-radar/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+-label%3Asara%3Adoing), if you do want the whole list.
+[All of them, every track](https://github.com/Sara-Managed-Projects/space-radar/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+-label%3Asara%3Adoing+-label%3Ablocked+-label%3Areserved%3Amaintainers), if you do want the whole list.
 
 **You do not need to ask before you start.** Whoever opens the pull request first has the issue.
 So, to save yourself and the next person from doing the same work twice:
 
-- **Reserved means taken.** An issue that carries `sara:doing` is already being built by the
-  maintainers: pick another. A comment saying which issue you are starting is welcome, and the
+- **Reserved means taken.** An issue carrying `sara:doing` or `reserved:maintainers` is set aside for
+  maintainers; `blocked` means a dependency or decision is unresolved. Pick another. A comment
+  saying which issue you are starting is welcome, and the
   maintainers' own batches leave alone any issue with an outside comment or an assignee.
 - **Look before you start.** On the issue page, the right-hand column has a "Development" box. If
   a pull request is linked there, somebody is on it: go back and pick another. The links above
-  already leave those out.
+  exclude closing-linked PRs. Also read recent comments and search open PRs
+  for the issue number; a plain mention may not appear in that box.
 - **Say it is taken by opening your pull request early**, as a draft, with `Closes #<the issue's
   number>` in the description. GitHub then shows it on the issue, and the links above stop listing
   it. A comment on the issue is welcome too, and is not needed.

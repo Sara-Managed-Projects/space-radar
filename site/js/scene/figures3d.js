@@ -230,7 +230,6 @@ export function createFigures3d(ctx, opts = {}) {
 
   const _km = { x: 0, y: 0, z: 0 };
   const _o = new THREE.Vector3();
-  const _v = new THREE.Vector3();
 
   /** A place in light-years from the Sun (ecliptic axes) -> this stage's scene, minus the Sun's. */
   function toLocal(ly, out) {

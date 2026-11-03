@@ -49,8 +49,8 @@ export function compare(en, tr, path = '', out = { missing: [], extra: [], kind:
 async function english() {
   const base = await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.js')).href);
   await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.later.js')).href); // adds its sections to base.COPY
-  // 1.6.2: the Moments' words (momentPlayer, momentShelf, momentStories) and the three stories' words, each added to base.COPY; 1.7.2: Apollo 13's and Sputnik 1's too (Voskhod 2 and STS-1 are English only until they are translated)
-  for (const f of ['en.moments.js', 'en.moments.vostok.js', 'en.moments.apollo11.js', 'en.moments.artemis2.js', 'en.moments.apollo13.js', 'en.moments.sputnik.js']) await import(pathToFileURL(resolve(HERE, '../site/js/copy/' + f)).href);
+  // 1.6.2: the Moments' words (momentPlayer, momentShelf, momentStories) and the three stories' words, each added to base.COPY; 1.7.2: Apollo 13, Sputnik 1, Voskhod 2 and STS-1 too (Spanish has Voskhod 2 and STS-1 drafted, public #525; the other languages keep the English until a translator has them)
+  for (const f of ['en.moments.js', 'en.moments.vostok.js', 'en.moments.apollo11.js', 'en.moments.artemis2.js', 'en.moments.apollo13.js', 'en.moments.sputnik.js', 'en.moments.voskhod.js', 'en.moments.sts1.js']) await import(pathToFileURL(resolve(HERE, '../site/js/copy/' + f)).href);
   return { COPY: base.COPY, GLOSSARY: base.GLOSSARY };
 }
 
