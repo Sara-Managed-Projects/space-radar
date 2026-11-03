@@ -22,7 +22,6 @@
 //      their written instants, the north pole lit at the first and dark at the second; every live
 //      stop is shown at the present; an overlay is asked for as the flight to its stop begins;
 //      `over:` puts the camera above the place; the layers a stop draws are not waited for.
-import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 

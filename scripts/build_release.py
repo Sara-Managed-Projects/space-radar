@@ -18,8 +18,9 @@ It REFUSES, with the reason, rather than build a zip a school cannot use:
     OTHER source the copy lacks is printed, not refused: the app says per source what it has);
   - a file the zip promises that is not in the tree (LICENSE, CREDITS.md, the guide).
 And it CHECKS what it built by unpacking it: every promised file is there, the service worker is
-stamped with this build, the data's index reads, the manifest starts at "./", and no .DS_Store
-travelled. Standard library only.
+stamped with this build, the data's index reads, the manifest starts at "./", each icon the
+manifest names is a non-empty file under site/ (and the apple-touch icon too, when the page
+links one), and no .DS_Store travelled. Standard library only.
 """
 
 from __future__ import annotations
@@ -46,6 +47,9 @@ PROMISED = BESIDE + (
     "site/data/v1/index.json", "site/data/v1/celestrak-stations.json",
 )
 STAMPED = re.compile(r'^const BUILD = \{"version":"[0-9a-f]{16}"', re.M)
+_LINK = re.compile(r"<link\b([^>]*)>", re.I)
+_ATTR = re.compile(r"""\b(rel|href)\s*=\s*(?:"([^"]*)"|'([^']*)')""", re.I)
+_SCHEME = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
 
 
 class Refused(Exception):
@@ -122,6 +126,63 @@ def saved_sources(data: Path) -> tuple:
     return saved, sorted(k for k in rows if k not in saved)
 
 
+def apple_touch_srcs(html: str) -> list[str]:
+    """The apple-touch hrefs on the page. A page with none returns nothing, which is not a refusal.
+
+    The favicon is an inline SVG, and that line contains `>`, so this only looks at lines that
+    name apple-touch-icon. Those tags are ordinary.
+    """
+    found: list[str] = []
+    for line in html.splitlines():
+        if "apple-touch-icon" not in line.lower():
+            continue
+        for attrs in _LINK.findall(line):
+            rel = href = None
+            for match in _ATTR.finditer(attrs):
+                value = match.group(2) if match.group(2) is not None else match.group(3)
+                if match.group(1).lower() == "rel":
+                    rel = value
+                elif match.group(1).lower() == "href":
+                    href = value
+            if rel and "apple-touch-icon" in rel.lower().split():
+                found.append("" if href is None else href)
+    return found
+
+
+def require_icon(top: Path, src: object) -> None:
+    """Refuse unless src is a non-empty file under site/. The message names src.
+
+    Absolute (a scheme, or a leading slash) and a path that climbs out of site/ are refused
+    before any join. LICENSE sits beside site/, so a join of `../LICENSE` would otherwise
+    land on a real file and look fine.
+    """
+    if not isinstance(src, str) or src.strip() == "":
+        raise Refused(f"an icon src is missing or empty: {src!r}")
+    if _SCHEME.match(src) or src.startswith(("/", "\\")):
+        raise Refused(f"{src} is absolute and is not a file under site/")
+    parts: list[str] = []
+    for part in src.replace("\\", "/").split("/"):
+        if part in ("", "."):
+            continue
+        if part == "..":
+            if not parts:
+                raise Refused(f"{src} escapes site/")
+            parts.pop()
+            continue
+        parts.append(part)
+    rel = "/".join(parts)
+    if not rel:
+        raise Refused(f"{src} escapes site/")
+    site = (top / "site").resolve()
+    path = site / rel
+    try:
+        path.resolve().relative_to(site)
+    except ValueError:
+        raise Refused(f"{src} escapes site/") from None
+    if not path.is_file() or path.stat().st_size == 0:
+        raise Refused(f"site/{src} is missing or empty")
+
+
 def verify(zip_path: Path, name: str) -> None:
     """Unpack what was built and hold it to what it promises."""
     with tempfile.TemporaryDirectory() as tmp:
@@ -146,11 +207,16 @@ def verify(zip_path: Path, name: str) -> None:
         if index.get("schema") != 1 or not index.get("snapshots"):
             raise Refused("site/data/v1/index.json in the zip is not a schema 1 index with snapshots")
         manifest = json.loads((top / "site/manifest.webmanifest").read_text(encoding="utf-8"))
-        if manifest.get("start_url") != "./" or not manifest.get("icons"):
+        icons = manifest.get("icons")
+        if manifest.get("start_url") != "./" or not isinstance(icons, list) or not icons:
             raise Refused("site/manifest.webmanifest in the zip does not start at ./ with icons")
+        for icon in icons:
+            require_icon(top, icon.get("src") if isinstance(icon, dict) else None)
         html = (top / "site/index.html").read_text(encoding="utf-8")
         if "<canvas" not in html or "js/main.js" not in html:
             raise Refused("site/index.html in the zip is not the app's page")
+        for src in apple_touch_srcs(html):
+            require_icon(top, src)
 
 
 def build(version: str, root: Path, out: Path, day: str | None = None, quiet: bool = False) -> Path:
@@ -192,7 +258,7 @@ def build(version: str, root: Path, out: Path, day: str | None = None, quiet: bo
     if not quiet:
         print(f"saved data: {len(saved)} sources" + (f"; NOT in the copy (the app will say so): {', '.join(absent)}" if absent else ""))
         print(f"{zip_path} ({zip_path.stat().st_size} B), sha256 {digest}; unpacked and checked: "
-              f"{len(PROMISED)} promised files, a stamped worker, the data's index and the manifest")
+              f"{len(PROMISED)} promised files, a stamped worker, the data's index, the manifest and its icons")
     return zip_path
 
 

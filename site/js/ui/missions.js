@@ -43,12 +43,31 @@ import { write as writeUrl, read as readUrl } from './urlstate.js';
 
 export { MISSIONS };
 
+// THE LANDERS' MISSIONS (release 1.7.3, registry/missions-landers.yaml). Forty craft that came down on Venus, the Moon and
+// Mars, with their dated events; a file of its own, fetched when the card of a landing, an impact site or a landing site
+// asks, or when a link names an event that is not in MISSIONS. Until then `landers` is empty and nothing else changes.
+let landers = [];
+let landersImport = null;
+let landersTried = false;
+/** The landers' missions, once loadLanders() has resolved; [] before. */
+export const landerMissions = () => landers;
+/** Fetch them (once). Resolves to the list, or [] if the file did not load (the card then has no event list, as before). */
+export function loadLanders() {
+  landersTried = true;
+  return landersImport || (landersImport = import('../data/missions-landers.js')
+    .then((m) => { landers = m.LANDER_MISSIONS || []; return landers; })
+    .catch((e) => { landersImport = null; console.warn('the landers\' missions did not load', e); return []; }));
+}
+const everyMission = () => (landers.length ? MISSIONS.concat(landers) : MISSIONS);
+/** A record whose card may have a lander's events: a site on a surface (sites.yaml) or a landing or impact site (the list of 1.5.0). */
+const isLanderSite = (record) => !!(record && record.klass === 'site' && record.meta && (record.meta.siteKind === 'surface' || record.meta.siteKind === 'landing-site'));
+
 const DAY_MS = 86400e3;
 /** A `cruise` knot is laid this far before the event, so the hour around it is on the line too. */
 const KNOT_LEAD_MS = 30 * DAY_MS;
 
 export function missionOf(recordId) {
-  return MISSIONS.find((m) => m.record === recordId || (m.path_record && m.path_record === recordId)) || null;
+  return everyMission().find((m) => m.record === recordId || (m.path_record && m.path_record === recordId)) || null;
 }
 
 /**
@@ -86,7 +105,7 @@ export function findEvent(id) {
   const text = String(id || '');
   const dot = text.indexOf('.');
   if (dot < 1) return null;
-  const mission = MISSIONS.find((m) => m.id === text.slice(0, dot));
+  const mission = everyMission().find((m) => m.id === text.slice(0, dot));
   if (!mission) return null;
   const index = mission.events.findIndex((e) => e.id === text.slice(dot + 1));
   return index < 0 ? null : { mission, event: mission.events[index], index };
@@ -427,6 +446,10 @@ export function mountMission(host, record, ctx) {
   const mission = record ? missionOf(record.id) : null;
   const file = record ? indexOf(record.id) : null;
   if (!host) return false;
+  // A lander's card: its events are in a file that has not been fetched. Ask once, then paint again.
+  if (!mission && !landersTried && isLanderSite(record)) {
+    loadLanders().then((list) => { if (list.length && host.isConnected) mountMission(host, record, ctx); });
+  }
   host.hidden = !mission;
   while (host.firstChild) host.removeChild(host.firstChild);
   if (file) wantPath(ctx, record);
@@ -567,6 +590,8 @@ export function openEvent(ctx, id) {
  * `subscribe(fn)` -> unsubscribe is injected for the test; the browser's own is the two window events.
  */
 export function openEventWhenReady(ctx, id, opts = {}) {
+  // An event of the landers' file is not known until the file is here: fetch it first, and only then ask.
+  if (!landersTried && !findEvent(id) && opts.landers !== false) return loadLanders().then(() => openEventWhenReady(ctx, id, { ...opts, landers: false }));
   const { timeoutMs = 45000, subscribe = null, later = (fn, ms) => setTimeout(fn, ms), cancel = (t) => clearTimeout(t) } = opts;
   return new Promise((resolve) => {
     if (openEvent(ctx, id)) { resolve(true); return; }
