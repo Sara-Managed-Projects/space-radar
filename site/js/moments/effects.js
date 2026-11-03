@@ -450,3 +450,92 @@ export function createPlasma({ radiusM = 2 }) {
     dispose() { for (const m of mats) m.dispose(); shell.geometry.dispose(); wake.geometry.dispose(); },
   };
 }
+
+/**
+ * 1.7.2: the shock layer of a winged entry (the Space Shuttle's orbiter), in the VEHICLE's own frame (+Y the nose, +Z the top, so the belly is -Z): a soft
+ * orange-pink layer a little under the belly, brightest at the nose cap and along the wings' leading edges and fading toward the trailing edge, and a short wake
+ * trailing along the flight path (`set` is given the direction of flight in the vehicle's frame). The same additive, unlit, dim glow as the capsule's: no bloom,
+ * no post-processing, no render target. `spec`: { lengthM, planform: [[x, y], ...] the outline of the lower surface, noseCap: [x, y, z], zM the layer's height,
+ * wakeM, wakeRadiusM }.
+ */
+export function createBellyPlasma(spec) {
+  const LAYER_V = `${LOG_V}
+attribute float glowA;
+varying float vA;
+void main() {
+  vA = glowA;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  #include <logdepthbuf_vertex>
+}`;
+  const LAYER_F = `${LOG_F}
+uniform float uOn, uTime, uStill, uK;
+varying float vA;
+void main() {
+  #include <logdepthbuf_fragment>
+  float t = uTime * (1.0 - uStill);
+  float wob = 0.92 + 0.08 * sin(vA * 9.0 - t * 12.0);
+  vec3 c = vec3(1.0, 0.46, 0.34);
+  gl_FragColor = vec4(c * vA * uOn * uK * wob, 1.0);
+  ${OUT_F}
+}`;
+  const layerMat = (k) => new THREE.ShaderMaterial({ uniforms: { uOn: { value: 0 }, uTime: { value: 0 }, uStill: { value: 0 }, uK: { value: k } },
+    vertexShader: LAYER_V, fragmentShader: LAYER_F, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+  const group = new THREE.Group();
+  const geos = [], mats = [];
+  // the planform as a fan from a centre ahead of the middle: dim at the outline (so the edge is soft), brightest at the nose and along the leading edges,
+  // none toward the trailing edge
+  const pts = spec.planform;
+  const yMax = Math.max(...pts.map((p) => p[1])), yMin = Math.min(...pts.map((p) => p[1]));
+  {
+    const cY = yMin + 0.62 * (yMax - yMin), n = pts.length;
+    const pos = new Float32Array((n + 1) * 3), a = new Float32Array(n + 1), idx = [];
+    pos.set([0, cY, spec.zM], 0); a[0] = 0.5;
+    pts.forEach((p, i) => {
+      const ahead = (p[1] - yMin) / (yMax - yMin);
+      pos.set([p[0] * 1.03, p[1], spec.zM - 0.1], (i + 1) * 3);
+      a[i + 1] = 0.05 + 0.4 * Math.pow(ahead, 1.4);
+      idx.push(0, i + 1, ((i + 1) % n) + 1);
+    });
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setAttribute('glowA', new THREE.BufferAttribute(a, 1));
+    g.setIndex(idx);
+    const m = layerMat(0.55);
+    group.add(new THREE.Mesh(g, m));
+    geos.push(g); mats.push(m);
+  }
+  // the nose cap: a small bright dome under the nose
+  const capMat = layerMat(0.5);
+  const cap = new THREE.SphereGeometry(spec.capRadiusM || 1.7, 16, 8);
+  const capA = new Float32Array(cap.attributes.position.count);
+  for (let i = 0; i < capA.length; i += 1) capA[i] = 0.2 + 0.6 * Math.max(0, -cap.attributes.position.getZ(i) / (spec.capRadiusM || 1.7));
+  cap.setAttribute('glowA', new THREE.BufferAttribute(capA, 1));
+  const capMesh = new THREE.Mesh(cap, capMat);
+  capMesh.position.set(spec.noseCap[0], spec.noseCap[1], spec.noseCap[2]);
+  group.add(capMesh); geos.push(cap); mats.push(capMat);
+  // the wake: the capsule's tapering cone, short, along the flight path
+  const h = spec.wakeM || 16;
+  const wakeMat = new THREE.ShaderMaterial({
+    uniforms: { uOn: { value: 0 }, uTime: { value: 0 }, uStill: { value: 0 }, uA: { value: -h * 0.5 }, uB: { value: h * 0.5 }, uFlip: { value: 1 } },
+    vertexShader: PLASMA_V, fragmentShader: PLASMA_F, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+  });
+  const wakeGeo = new THREE.ConeGeometry(spec.wakeRadiusM || 5, h, 20, 4, true);
+  wakeGeo.rotateX(Math.PI);                     // the wide end up (+Y), tapering toward -Y
+  wakeGeo.translate(0, -h / 2, 0);              // the wide end at the origin
+  const wake = new THREE.Mesh(wakeGeo, wakeMat);
+  const wakeHolder = new THREE.Group();
+  wakeHolder.position.set(0, (yMax + yMin) / 2, spec.zM);
+  wakeHolder.add(wake);
+  group.add(wakeHolder); geos.push(wakeGeo); mats.push(wakeMat);
+  group.visible = false;
+  const down = new THREE.Vector3(0, -1, 0), dir = new THREE.Vector3();
+  return {
+    group,
+    set(k, time = 0, still = false, flight = null) {
+      group.visible = k > 0.003;
+      for (const m of mats) { m.uniforms.uOn.value = m === wakeMat ? k * 0.22 : k; m.uniforms.uTime.value = time; m.uniforms.uStill.value = still ? 1 : 0; }
+      if (flight) { dir.set(-flight[0], -flight[1], -flight[2]).normalize(); wakeHolder.quaternion.setFromUnitVectors(down, dir); }
+    },
+    dispose() { for (const m of mats) m.dispose(); for (const g of geos) g.dispose(); },
+  };
+}

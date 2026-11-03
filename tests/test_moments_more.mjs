@@ -197,7 +197,7 @@ const common = async (id, cover) => {
   const both = shelf.momentsFor('saturn-v-lc-39a').map((s) => s.id);
   check(both.includes('apollo-11') && both.includes('apollo-13'), `Launch Complex 39A carries Apollo 11 and Apollo 13 (${both.join(', ')})`);
   const pad1 = shelf.momentsFor('baikonur-site-1').map((s) => s.id);
-  check(pad1.join() === 'vostok-1,sputnik-1', `Baikonur Site 1 carries Vostok 1 and Sputnik 1 (${pad1.join(', ')})`);
+  check(pad1.join() === 'vostok-1,sputnik-1,voskhod-2', `Baikonur Site 1 carries Vostok 1, Sputnik 1 and (1.7.2) Voskhod 2 (${pad1.join(', ')})`);
   const r7 = { id: 'launch-y', layer: 'launches', name: 'R-7 Semyorka | something', meta: { rocket: 'R-7 Semyorka', rocketFamily: 'R-7', rocketFamilyPath: ['R-7'] } };
   check(shelf.momentsForRecord(r7).map((s) => s.id).join() === 'vostok-1,sputnik-1', 'an R-7 card offers Vostok 1 and Sputnik 1, Vostok first');
   check(shelf.momentsForRecord({ id: 'sat-1', layer: 'notable', name: 'Sputnik 1' }).map((s) => s.id).join() === 'sputnik-1', 'the card of Sputnik 1 offers its story');
