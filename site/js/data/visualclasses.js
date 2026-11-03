@@ -582,7 +582,9 @@ export const VISUAL_CLASSES = [
 "mars-express",
 "hayabusa2",
 "hope",
-"orion-esm"
+"orion-esm",
+"mariner-2",
+"galileo-probe"
 ],
 "model_kinds": [
 "probe-generic",
@@ -614,6 +616,8 @@ export const VISUAL_CLASSES = [
 "deep-near",
 "deep-stardust",
 "deep-deep-impact",
+"deep-mariner-2",
+"deep-galileo-probe",
 "deep-parker",
 "deep-solar-orbiter",
 "deep-psyche",

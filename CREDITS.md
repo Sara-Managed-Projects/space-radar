@@ -2722,6 +2722,15 @@ A star with no parallax is drawn as a direction only, on a world's sky sphere, a
 **Left out on purpose:** WD J1011+2845 (it arrives through `registry/exotics.yaml`).
 <!-- 0079 r15-a45: end -->
 
+## 3p. Two ended probes built from dimensions — Mariner 2 and the Galileo probe (release 1.7.2)
+
+Each is drawn from its own path (JPL Horizons -2 and -344, `registry/ephemerides.yaml`), only inside the days it flew. NASA publishes no 3D model of either (its 3D Resources on GitHub, 1 583 paths, and science.nasa.gov/3d-resources, read 2026-11-03; the Galileo model there is the orbiter). Both are built here in code, offline, from cited metres and NASA's own pictures; no picture or mesh is in the files, no image-to-3D model was used, and the shapes are this project's, under this repository's licence. The card says "shape built from published dimensions and pictures; details simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `mariner-2.glb` (45 KB) | Mariner 2: a hexagonal base 1.04 m across and 0.36 m thick with louvers and a gold shield, a pyramidal mast 3.66 m from the engine's bell to the omni antenna, two wings 0.76 m wide (1.83 m and 1.52 m, the short one with its 0.31 m dacron extension), the retro-rocket's gold bell, the radiometer dish and the high-gain antenna on its arm | NASA NSSDCA, "Mariner 2" (<https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1962-041A>) and JPL Horizons' header for -2, for the metres; NASA/JPL's painting PIA04594, JPL's labelled drawing of the Mariner spacecraft and NASA Glenn's photograph of the model GRC-1964-C-70182 (all on Wikimedia Commons), looked at | Public domain (NASA/JPL, NASA Glenn); the shape is this project's, under this repository's licence. The high-gain antenna's 0.8 m is an estimate from the drawing |
+| `galileo-probe.glb` (63 KB) | The Galileo atmospheric probe closed in its aeroshell: the 45 degree heat shield 1.27 m across, the bolted aluminium ring, the aft cover with its mortar cover and access cover, 0.91 m in all | JPL Horizons' header for -344 ("conical, 1.27m x .91m") and NASA Science's Galileo page (<https://science.nasa.gov/mission/galileo/>), for the metres; the NASA Ames drawing "PROBE", NASA's photograph AC84-0228-3 and Ken Hodges's painting AC81-0174 (all on Wikimedia Commons), looked at | Public domain (NASA Ames, NASA); the shape is this project's, under this repository's licence. The aft cover's colour is an assumption: no free photograph of the closed probe was found |
+
 ## 4. Runtime data sources
 
 The app calls these from the visitor's browser. Nothing here is redistributed in this repository —

@@ -43,6 +43,23 @@ tagged, and their dates are the day the last change in each landed.
   dimensions and photographs in 1.5.0. No free photograph or drawing of a Venera lander was found to build one from, so the Venus sites
   stay marks, and say so.
 
+## [1.7.1] - 2026-11-03
+
+### Added
+
+- **Mariner 2 and the Galileo probe are on the map, each where JPL Horizons puts it, with a model built from NASA's own numbers.** Mariner 2
+  is drawn from its launch on 27 August 1962 to the end of JPL's path on 31 December 1962, past Venus on 14 December at 34 773 km; the Galileo
+  probe from its release on 13 July 1995 to its entry into Jupiter's atmosphere on 7 December. Each has a mission card with dated events that
+  move the clock, and a path file of about 2 to 4 kB that loads when its card opens, never at boot. The models (hexagonal base, pyramid mast,
+  two unequal wings, the high-gain antenna and the louvers of Mariner 2; the heat shield, bolted ring and covers of the probe's aeroshell) are
+  built in code from NSSDCA's and Horizons' dimensions and NASA's drawings and photographs, and the card says "shape built from published
+  dimensions and pictures; details simplified". Mariner 2's high-gain antenna size and the closed aeroshell's aft-cover colour are estimates, said so in `registry/models.yaml`.
+
+### Not yet
+
+- **Venera, Vega, Mariner 4 and 10, Ranger, Giotto, Magellan, Tianwen-2 and MMX** are still without a model on the map. Horizons holds no
+  path for any of them but MMX, and none of the Soviet craft has a free photograph or drawing to build from; NASA's Magellan model exists and is
+  waiting for a place to draw it.
 ## [1.7.0] - 2026-11-03
 
 ### Added
