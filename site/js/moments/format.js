@@ -246,8 +246,8 @@ export function validateMoment(m, opts = {}) {
     if (!(v.lengthM > 0)) say(`vehicle ${v.id}: lengthM, its real length in metres`);
     if (v.path && !trajs[v.path]) say(`vehicle ${v.id}: path ${v.path} is not a trajectory`);
     if (v.window !== undefined && !(isVec(v.window, 2) && v.window[1] > v.window[0])) say(`vehicle ${v.id}: window is [from, to] mission seconds`);
-    if (v.rideOn !== undefined && !(v.rideOn && typeof v.rideOn.vehicle === 'string' && (v.rideOn.at === undefined || isVec(v.rideOn.at)))) say(`vehicle ${v.id}: rideOn is {vehicle, at: [x, y, z]}`);
-    if (v.phases !== undefined && !(Array.isArray(v.phases) && sorted(v.phases) && v.phases.every((q) => isNum(q.t) && (q.attitude === undefined || ['ascent', 'prograde', 'retrograde', 'vertical'].includes(q.attitude)) && (q.body === undefined || ['moon', 'earth'].includes(q.body))))) say(`vehicle ${v.id}: phases are {t, attitude?, body?} in time order`);
+    if (v.rideOn !== undefined && !(v.rideOn && typeof v.rideOn.vehicle === 'string' && (v.rideOn.at === undefined || isVec(v.rideOn.at)) && (v.rideOn.spin === undefined || isVec(v.rideOn.spin)))) say(`vehicle ${v.id}: rideOn is {vehicle, at: [x, y, z], spin?: [x, y, z] degrees}`);
+    if (v.phases !== undefined && !(Array.isArray(v.phases) && sorted(v.phases) && v.phases.every((q) => isNum(q.t) && (q.attitude === undefined || ['ascent', 'prograde', 'retrograde', 'vertical'].includes(q.attitude)) && (q.body === undefined || ['moon', 'earth'].includes(q.body)) && (q.pitchDeg === undefined || isNum(q.pitchDeg)) && (q.rollDeg === undefined || isNum(q.rollDeg))))) say(`vehicle ${v.id}: phases are {t, attitude?, body?, pitchDeg?, rollDeg?} in time order`);
     if (v.body !== undefined && v.body !== 'moon') say(`vehicle ${v.id}: body is moon, or left out for the Earth`);
     const names = new Set([...(Array.isArray(v.parts) ? v.parts : []), ...Object.keys(v.cuts || {})]);
     for (const [name, band] of Object.entries(v.cuts || {})) {

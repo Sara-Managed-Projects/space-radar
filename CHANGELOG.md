@@ -41,6 +41,48 @@ tagged, and their dates are the day the last change in each landed.
   the generated mirrors and wants its own browser walk, the second needs the harvester deployed and an answer on Launch Library's terms (internal #370).
 - **The AVIF decision (internal #530)** is written on the issue; the maps are still WebP.
 
+## [1.7.2] - 2026-11-03
+
+### Added
+
+- **Voskhod 2, 18 to 19 March 1965, as a Moment: the first spacewalk.** Lift-off from Site 1 at 07:00:00 UTC, the Volga inflatable
+  airlock, Leonov's twelve minutes outside from 08:34:51 to 08:47:00 at the end of his 5.35 m umbilical in the Berkut suit that ballooned
+  on him, his coming back in head first, the airlock let go; then, on 19 March, the automatic landing that did not take its orders, the call
+  for the manual descent at 07:16 UT, retrofire by hand 46 seconds late, and the landing at 09:02:17 UT near 59.57 N 55.47 E in the taiga
+  north-east of Perm, 386 km from the field. Every published time is the sources' (Wikipedia, "Voskhod 2" and "Voskhod (rocket)"; Sven
+  Grahn's account, which cites General Kamanin's diary) and each caption says what is ours: when the airlock was inflated, where and when the
+  manual burn was, the entry's heights, Leonov's pose (read off a frame of the film). The rocket drawn is the Vostok-K's, said in the first
+  caption; the real third stage differed. No recording plays: the Soviet-era audio has no clear free licence on any page found, and the
+  file says so. New models: the Voskhod 3KD spacecraft with the airlock folded and out, its umbilical and the spare retro rocket, and Leonov in
+  his suit, built from the published numbers and photographs (none exists under a free licence).
+- **STS-1, 12 to 14 April 1981, as a Moment: Columbia's first flight.** Lift-off from Launch Complex 39A at 12:00:04 UTC on a white external
+  tank (STS-1 and STS-2 flew it painted), Max Q at 56 s, the boosters let go at 2 min 12 s at 53 km, main engine cut-off at 8 min 34 s,
+  the tank 18 s later, the burns to 246 and then 274 km, the bay doors opening, the 160-second deorbit burn over the southern Indian Ocean,
+  entry with its 21 minutes of blackout, the coast at Big Sur at Mach 7, the heading-alignment turn, and the touchdown at Edwards on the
+  lakebed runway 23 at 18:20:57 UTC (54 h 20 m 53 s), every time the published one (Wikipedia, "STS-1", from NASA's mission documents).
+  The stack is NASA's own public-domain models in parts (two boosters, the tank, and Columbia with her doors and gear), rebuilt by
+  `scripts/shuttle/build-sts1.mjs`. The reconstruction's own errors are said: the entry interface comes out over the western Pacific
+  where the report says the eastern, and the orbit's node and clock are nudged a few degrees and minutes over the 54 hours to meet the field.
+  No recording plays: NASA's air-to-ground audio of the mission is on Wikimedia Commons as hundreds of unlabelled clips, only the first day, and
+  nothing says which holds which line.
+- **Columbia's bay is open from T+1:30**, with the radiator tubes on the inner faces of the doors, the sill longerons and the DFI pallet (the only thing STS-1 carried), added to the orbiter model as a part (`scripts/shuttle/add-bay-detail.mjs`); the entry's glow is a layer under the orbiter's belly, not the capsule's dome.
+- **Both are on the shelf**, with "Replay this moment" on Baikonur Site 1 (now three stories, Vostok 1 first) and Launch Complex 39A (Apollo
+  11, Apollo 13 and STS-1), on two new places on the map, the Voskhod 2 landing site in the taiga and Edwards' lakebed runway 23, and on the
+  cards of a Voskhod rocket or spacecraft and of the Space Shuttle or Columbia.
+- **The engine learned a little**: a vehicle can be tilted (`pitchDeg`, `rollDeg` in its phases, keyframed: an orbiter's 40 degrees nose-high
+  entry), turned on its host (`rideOn.spin`), keep its file's own axis (`keepXZ`: a craft with an airlock to one side), and a ground can be a dry
+  lakebed with a runway painted on it. docs/MOMENTS.md has the fields.
+
+### Changed
+
+- **Sputnik 1's pad is lit.** It was a night launch and the rocket was a silhouette under its own exhaust. A night pad (the Sun down, the camera
+  in the air) now gets a lamp on the models and a little light on the ground, the same lamp the model cards offer, weaker; the first caption says
+  it is ours.
+- **Every small vehicle has the same floor on the screen.** The ringed marker, which marks a vehicle too small to see, now comes on below 40 px
+  instead of 7, is 44 px across and has a dark ring round the gold one, so Sputnik 1 over the Earth is no longer a speck.
+- **The words of Apollo 13 and Sputnik 1 in Spanish, French, German and Portuguese**, machine-drafted like the rest of those files and not yet
+  read by a native speaker; the radio lines stay as they were said. Voskhod 2 and STS-1 are English only for now.
+
 ## [1.7.1] - 2026-11-03
 
 ### Added
