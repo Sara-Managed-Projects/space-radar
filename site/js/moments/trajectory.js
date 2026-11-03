@@ -30,7 +30,7 @@ import { monotoneCubic } from './format.js';
  */
 export const WORLDS = {
   earth: { id: 'earth', R: 6371008.8, MU: 3.986004418e14, OMEGA: 7.2921159e-5, airH: 8000, rimM: 70000 },
-  mars: { id: 'mars', R: 3391100, MU: 4.282837e13, OMEGA: 7.0882181e-5, airH: 11100, rimM: 60000 },
+  mars: { id: 'mars', R: 3391100, MU: 4.282837e13, OMEGA: 7.0882181e-5, airH: 11100, rimM: 30000 },
   // Pluto (release 1.7.9): the IAU mean radius, its GM alone (NASA/JPL: 869.6 km^3/s^2), the rotation is retrograde (6.387 d). Almost no air to
   // draw (its haze is a thin blue limb, seen by New Horizons to 130 km), so the scale height is a metre and the limb glow stays. Charon stands above
   // longitude 0 on the equator at 19 591 km (the two are locked to each other): `moon` is what the stage draws in the Moon's place.

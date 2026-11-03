@@ -816,7 +816,7 @@ export function createMomentPlayer(ctx, opts = {}) {
   }
 
   function swapLight(sunDir, centre, origin, flood = 0) {
-    const keys = ['uSunDir', 'uShineCentre', 'uShineRadius', 'uShadeRadius', 'uFlood', 'uAirH', 'uSunRim'];
+    const keys = ['uSunDir', 'uShineCentre', 'uShineRadius', 'uShadeRadius', 'uFlood', 'uAirH', 'uSunRim', 'uRimShade'];
     const saved = {};
     for (const k of keys) { const u = lightU[k]; if (!u) continue; saved[k] = u.value && u.value.clone ? u.value.clone() : u.value; }
     if (lightU.uSunDir) lightU.uSunDir.value.set(sunDir[0], sunDir[1], sunDir[2]);
@@ -825,6 +825,8 @@ export function createMomentPlayer(ctx, opts = {}) {
     if (lightU.uShadeRadius) lightU.uShadeRadius.value = EARTH_R;
     if (lightU.uFlood) lightU.uFlood.value = flood;
     if (lightU.uAirH) lightU.uAirH.value = 0;
+    // 1.7.9: the rim the dark side of a model catches is the Earth's blue air; on Mars it is the dust's
+    if (WORLD.id === 'mars' && lightU.uRimShade && lightU.uRimShade.value.set) lightU.uRimShade.value = lightU.uRimShade.value.clone().set('#b88f6c');
     return saved;
   }
   function restoreLight(saved) {

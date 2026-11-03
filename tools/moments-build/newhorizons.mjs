@@ -70,9 +70,28 @@ const lengthM = +(box.max[1] - box.min[1]).toFixed(3);
 const pace = [[T0, -3600, 300], [-3600, -300, 40], [-300, -40, 6], [-40, 40, 1.5], [40, 700, 20], [700, 1000, 10], [1000, T1, 25]].map(([from, to, rate]) => ({ from, to, rate }));
 let play = 0; for (const q of pace) play += (q.to - q.from) / q.rate;
 console.log('play time s', play.toFixed(0), 'length', lengthM);
-// the side the camera looks from for the wide views: across the approach, in Pluto's equator plane
-const a0 = rows[0].slice(1, 4);
-const side = [-a0[1], a0[0], 0].map((x) => x / Math.hypot(a0[0], a0[1]));
+// the camera: a wide view along the line of the approach, turned a little aside so the craft is not in front of the planet; and the compass
+// azimuth and elevation (the director's own horizon axes, stage +Y the pole) of a camera that has Charon behind the craft, a few degrees to one side
+const interp = (t) => { let i = rows.findIndex((r) => r[0] >= t); if (i < 1) i = 1; const a = rows[i - 1], b = rows[i], u = (t - a[0]) / (b[0] - a[0]); return [1, 2, 3].map((k) => a[k] + (b[k] - a[k]) * u); };
+const rotZ = (v, deg) => { const c = Math.cos(deg * DEG), s = Math.sin(deg * DEG); return [v[0] * c - v[1] * s, v[0] * s + v[1] * c, v[2]]; };
+const unit3 = (v) => { const l = Math.hypot(...v); return v.map((x) => x / l); };
+const a0 = unit3(rows[0].slice(1, 4));
+const approach = rotZ(a0, 2.5);
+const toStage = (v) => [v[0], v[2], -v[1]];
+const sub3 = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]], dot3 = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2], cross3 = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+function azElBehind(t, aside = 6) {
+  const nh = interp(t), w = W.worldAxes('pluto', epochMs + t * 1000).w;
+  const ch = [CHARON_A * Math.cos(w), CHARON_A * Math.sin(w), 0];
+  const back = unit3(sub3(nh, ch));                                        // from Charon through the craft: where a camera must be to have Charon behind it
+  const up = toStage(unit3(nh));
+  let n = sub3([0, 1, 0], up.map((x) => x * up[1])); n = unit3(n);
+  const e = unit3(cross3(n, up));
+  const b = toStage(back), side = unit3(cross3(b, up));
+  const d = unit3(b.map((x, k) => x * Math.cos(aside * DEG) + side[k] * Math.sin(aside * DEG)));
+  return { az: +(Math.atan2(dot3(d, e), dot3(d, n)) / DEG + 360) % 360, el: +(Math.asin(dot3(d, up)) / DEG) };
+}
+const ch1 = azElBehind(tC - 20);
+console.log('camera for Charon', ch1);
 const moment = {
   format: 1, id: 'new-horizons-pluto', words: 'new-horizons-pluto', wordsFile: 'en.moments.newhorizons.js', world: 'pluto',
   epoch: '2015-07-14T11:48:29Z', span: [T0, T1], pace,
@@ -87,14 +106,14 @@ const moment = {
   tracks: {
     parts: [],
     camera: [
-      { t: T0, shot: 'wide', look: 'earth-moon', dir: side.map((x) => +x.toFixed(4)), distKm: 900000, fov: 34, vehicle: 'nh' },
-      { t: -7200, shot: 'orbit', az: 90, el: 72, dist: 36, lookY: 1.2, fov: 42, vehicle: 'nh', blend: 5 },
-      { t: -900, shot: 'orbit', az: 60, el: 74, dist: 16, lookY: 1.2, fov: 42, spin: 1.5, vehicle: 'nh', blend: 3 },
-      { t: -40, shot: 'orbit', az: 20, el: 66, dist: 12, lookY: 1.2, fov: 42, spin: 5, vehicle: 'nh', blend: 3 },
+      { t: T0, shot: 'wide', look: 'earth-moon', dir: approach.map((x) => +x.toFixed(4)), distKm: 340000, fov: 34, vehicle: 'nh' },
+      { t: -7200, shot: 'orbit', az: 90, el: 84, dist: 90, lookY: 1.2, fov: 36, vehicle: 'nh', blend: 5 },
+      { t: -900, shot: 'orbit', az: 60, el: 84, dist: 60, lookY: 1.2, fov: 40, vehicle: 'nh', blend: 3 },
+      { t: -40, shot: 'orbit', az: 20, el: 82, dist: 14, lookY: 1.2, fov: 42, spin: 0.2, vehicle: 'nh', blend: 3 },
       { t: 30, shot: 'orbit', az: 200, el: 86, dist: 13, lookY: 1.2, fov: 42, vehicle: 'nh', blend: 2 },
-      { t: 200, shot: 'wide', look: 'earth-moon', dir: side.map((x) => +(-x).toFixed(4)), distKm: 160000, fov: 34, vehicle: 'nh', blend: 5 },
-      { t: 820, shot: 'orbit', az: 250, el: 70, dist: 16, lookY: 1.2, fov: 42, vehicle: 'nh', blend: 3 },
-      { t: 1300, shot: 'wide', look: 'earth-moon', dir: side.map((x) => +x.toFixed(4)), distKm: 260000, fov: 34, vehicle: 'nh', blend: 4 },
+      { t: 200, shot: 'wide', look: 'earth-moon', dir: rotZ(a0, 100).map((x) => +x.toFixed(4)), distKm: 90000, fov: 30, vehicle: 'nh', blend: 5 },
+      { t: tC - 60, shot: 'orbit', az: +ch1.az.toFixed(1), el: +ch1.el.toFixed(1), dist: 40, lookY: 1.2, fov: 40, vehicle: 'nh', blend: 3 },
+      { t: 1300, shot: 'wide', look: 'earth-moon', dir: rotZ(a0, 100).map((x) => +x.toFixed(4)), distKm: 200000, fov: 34, vehicle: 'nh', blend: 4 },
     ],
     captions: [
       { t: T0, say: 'ready' }, { t: -7000, say: 'approach' }, { t: -900, say: 'last' }, { t: -45, say: 'closest' }, { t: 20, say: 'pluto' }, { t: 260, say: 'away' },

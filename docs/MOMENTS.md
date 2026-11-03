@@ -115,6 +115,10 @@ site, 3 391.1 km (NASA's press kit), so a place on it has `alt: 0` and every hei
 matching point on another (Curiosity's bridle); a vehicle's `marker: false` keeps the ringed dot off it. The generator is `curiosity.mjs`
 (it searches for the entry angle and lift of a point mass that meets the published parachute second, height and speed and prints how far
 its deceleration peak is from the press kit's); the models are `tools/msl-builder/`.
+`world: "pluto"` is the same for New Horizons: Pluto's radius and GM, its retrograde turn, Charon (`WORLDS.pluto.moon`) drawn in the Moon's place above
+longitude 0 of Pluto's equator (the two keep one face to each other), no sky, a blue rim; a `vectors` path with `frame: "world"` holds rows already in the world's
+frame (`newhorizons.mjs` reads the repository's file of JPL Horizons' track about Pluto and writes them). A shot's `wide` with `look: "earth-moon"` frames the world
+and its moon (the names are the Earth's and kept).
 
 ## Tracks
 

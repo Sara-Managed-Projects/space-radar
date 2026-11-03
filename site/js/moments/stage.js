@@ -306,7 +306,7 @@ export function createStage(renderer, { tier = 1, place, frame }) {
   globe.frustumCulled = false;
   earth.add(globe);
   const rimMat = new THREE.ShaderMaterial({
-    uniforms: { uSun: { value: new THREE.Vector3(0, 1, 0) }, uOn: { value: 0 }, uRimC: { value: new THREE.Vector3(...(mars ? [0.30, 0.24, 0.21] : pluto ? [0.30, 0.42, 0.78] : [0.35, 0.6, 1.0])) } },
+    uniforms: { uSun: { value: new THREE.Vector3(0, 1, 0) }, uOn: { value: 0 }, uRimC: { value: new THREE.Vector3(...(mars ? [0.20, 0.16, 0.14] : pluto ? [0.30, 0.42, 0.78] : [0.35, 0.6, 1.0])) } },
     vertexShader: RIM_V, fragmentShader: RIM_F, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
   });
   const rim = new THREE.Mesh(new THREE.SphereGeometry(EARTH_R + WORLD.rimM, 96, 48), rimMat);
