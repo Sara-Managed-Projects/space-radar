@@ -779,7 +779,9 @@ export function createMomentPlayer(ctx, opts = {}) {
       }
     }
     // The models' shared light (scene/models.js): the Sun and the Earth of THIS stage while it draws, then the map's back.
-    const saved = lightU ? swapLight(sunDir, air.capCentre, origin, NIGHT_PAD_LAMP * air.air.night) : null;
+    // 1.7.6: a moment flown in the dark (`floodlit: true`: Falcon 9 at night) keeps its lamp on at every height, so that the vehicle is seen; its foot line says so
+    const lampK = m.floodlit ? Math.max(air.air.night, 1 - air.air.day) : air.air.night;
+    const saved = lightU ? swapLight(sunDir, air.capCentre, origin, NIGHT_PAD_LAMP * lampK) : null;
     renderer.render(stage.scene, stage.camera);
     if (saved) restoreLight(saved);
   }

@@ -237,6 +237,7 @@ export function validateMoment(m, opts = {}) {
     } else say(`trajectory ${id}: kind must be profile or vectors`);
   }
   // Vehicles and their parts.
+  if (m.floodlit !== undefined && typeof m.floodlit !== 'boolean') say('floodlit is true or false');
   const vehicles = Array.isArray(m.vehicles) ? m.vehicles : [];
   if (!vehicles.length) say('no vehicles');
   const parts = new Map();

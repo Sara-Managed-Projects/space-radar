@@ -137,7 +137,17 @@ void main() {
       local = mix(scrub, sand, smoothstep(-70.0, -40.0, d));
       local = mix(local, sea, smoothstep(10.0, 40.0, d));
     }
-    if (uPad > 0.5) {
+    if (uPad > 1.5) {
+      // 1.7.6: a landing zone (Landing Zone 1): a round concrete pad of 86 m across with a painted ring and a cross, on a wider apron
+      float rr = length(q);
+      vec3 concrete = vec3(0.60, 0.60, 0.57) * (0.92 + 0.08 * n3);
+      local = mix(local, vec3(0.50, 0.49, 0.45), 1.0 - smoothstep(60.0, 90.0, rr));
+      local = mix(local, concrete, 1.0 - smoothstep(42.0, 43.5, rr));
+      float ring = (1.0 - smoothstep(0.0, 0.8, abs(rr - 36.0)));
+      vec2 a = abs(vec2(q.x + q.y, q.x - q.y)) * 0.7071;
+      float cross = (1.0 - smoothstep(0.8, 1.6, min(a.x, a.y))) * (1.0 - smoothstep(30.0, 31.0, rr));
+      local = mix(local, vec3(0.93, 0.92, 0.88), max(ring, cross) * (1.0 - smoothstep(42.0, 43.5, rr)));
+    } else if (uPad > 0.5) {
       float rr = length(q);
       vec3 concrete = vec3(0.56, 0.56, 0.53) * (0.92 + 0.08 * n3);
       local = mix(local, vec3(0.47, 0.46, 0.42), 1.0 - smoothstep(150.0, 210.0, rr));
@@ -305,7 +315,7 @@ export function createStage(renderer, { tier = 1, place, frame }) {
   const capMat = new THREE.ShaderMaterial({ uniforms: groundUniforms(), vertexShader: GROUND_V, fragmentShader: GROUND_F, defines: { CAP: '' } });
   const g = place.ground || {};
   capMat.uniforms.uKind.value = g.kind === 'coast' ? 0 : g.kind === 'sea' ? 2 : 1;
-  capMat.uniforms.uPad.value = g.pad ? 1 : 0;
+  capMat.uniforms.uPad.value = g.pad === 'landing' ? 2 : g.pad ? 1 : 0;
   if (g.kind === 'coast') {
     // Seaward: square to the shore's bearing, on its east side; in the cap's (east, south) axes.
     const b = ((Number(g.shoreBearing) || 0) + 90) * Math.PI / 180;
@@ -331,7 +341,7 @@ export function createStage(renderer, { tier = 1, place, frame }) {
     cap.geometry.dispose();
     cap.geometry = capGeometry(fr, capSeg);
     capMat.uniforms.uKind.value = groundKind(k); setRunway(k);
-    capMat.uniforms.uPad.value = k.pad ? 1 : 0;
+    capMat.uniforms.uPad.value = k.pad === 'landing' ? 2 : k.pad ? 1 : 0;
     if (k.kind === 'coast') {
       const b = ((Number(k.shoreBearing) || 0) + 90) * Math.PI / 180;
       capMat.uniforms.uShore.value.set(Math.sin(b), -Math.cos(b), Number(k.shoreM) || 800);

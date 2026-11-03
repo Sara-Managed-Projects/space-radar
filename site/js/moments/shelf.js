@@ -22,6 +22,7 @@ export const SHELF = [
   { id: 'vostok-1', minutes: 5, records: ['baikonur-site-1', 'vostok-1-landing'], hue: '100, 50, 40', models: ['r7-8k72k', 'vostok-3ka', 'vostok-seat'] },
   { id: 'sputnik-1', minutes: 4, records: ['baikonur-site-1'], hue: '210, 14, 60', models: ['r7-8k72k', 'sputnik-1'] },
   { id: 'hubble-deployment', minutes: 7, records: ['shuttle-lc-39b', 'sat-20580'], hue: '40, 56, 96', models: ['hubble-sts31', 'shuttle-orbiter', 'shuttle-rms'] },
+  { id: 'falcon9-og2-2', minutes: 3, records: ['spacex-slc-40', 'falcon-lz-1'], hue: '30, 36, 60', models: ['falcon9-stage1', 'falcon9-upper'] },
   { id: 'voskhod-2', minutes: 15, records: ['baikonur-site-1', 'voskhod-2-landing'], hue: '24, 40, 70', models: ['r7-8k72k', 'voskhod-3kd', 'leonov-eva'] },
 ];
 
@@ -44,6 +45,8 @@ export function momentsFor(id) {
  */
 const VEHICLES = [
   { id: 'hubble-deployment', rocket: /(?!)/, craft: /^(hst|hubble space telescope)\b/i },
+  // the launch of this one flight (a launch record's name carries its mission), never every Falcon 9
+  { id: 'falcon9-og2-2', rocket: /(?!)/, craft: /\borbcomm[ -]og-?2 (mission|flight) 2\b/i },
   { id: 'sts-1', rocket: /^(space shuttle|shuttle)\b/i, craft: /^(space shuttle )?columbia\b/i },
   { id: 'sputnik-1', rocket: /^(sputnik 8k71ps|8k71ps|r-7(\b|$))/i, craft: /^(sputnik[ -]?1|ps-1)\b/i },
   { id: 'voskhod-2', rocket: /^(voskhod(-3kd)?|11a57)\b/i, craft: /^voskhod( ?2| 3k[dv]|\b)/i },
