@@ -104,6 +104,18 @@ model's box (the Voskhod 3KD has an airlock and an umbilical to one side). A `gr
 horizon, the camera in the air) and marks every vehicle shorter than 40 px on the screen with the ringed dot. The generators are `voskhod2.mjs`
 and `sts1.mjs`; both search for the least correction that meets the published landing and print how far the reconstruction had to be nudged.
 
+**Release 1.7.9 notes: another world.** A moment may say `world: "mars"` (`earth` is the default). `moments/trajectory.js` `setWorld` then turns the
+constants every Moment reads (`EARTH_R`, `MU`, `OMEGA`, the air's scale height) into that world's: the profile paths are laid over its round
+radius, a separated part falls under its pull, a place is a point on its sphere. `moments/world.js` gives the frame: +Z the world's north pole
+and +X its node on the ICRF equator, so a body-fixed vector is turned by the prime meridian angle W that astronomy-engine's `RotationAxis`
+returns (the IAU report's elements), and the Sun is seen from the world's centre; the stage draws the world's map, a butterscotch sky,
+a rust-and-pebble ground (`ground.kind: "land"` is Mars's regolith there) and no Moon. Mars's radius is the ground at Gale crater's landing
+site, 3 391.1 km (NASA's press kit), so a place on it has `alt: 0` and every height of a profile is over the ground. The new effect `tether`
+(`{t, until, from: {vehicle, at: [[x, y, z], ...]}, to: {vehicle, at: [...]}, colour}`) draws a cord from each point on one vehicle to the
+matching point on another (Curiosity's bridle); a vehicle's `marker: false` keeps the ringed dot off it. The generator is `curiosity.mjs`
+(it searches for the entry angle and lift of a point mass that meets the published parachute second, height and speed and prints how far
+its deceleration peak is from the press kit's); the models are `tools/msl-builder/`.
+
 ## Tracks
 
 **`parts`**: `{t, part, action, vehicle?}`: at second `t`, the part named `part` does `action`. `vehicle` defaults to the lead. The actions:

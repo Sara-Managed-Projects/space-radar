@@ -3739,6 +3739,11 @@ Object.assign(COPY, {
         "when": "6 de agosto de 2012",
         "blurb": "Los siete minutos desde lo alto del aire marciano hasta el cráter Gale: el escudo térmico, el paracaídas, la mochila cohete y la grúa celeste, con el reloj del JPL."
       },
+      "new-horizons-pluto": {
+        "title": "New Horizons en Plutón",
+        "when": "14 de julio de 2015",
+        "blurb": "La primera visita a Plutón: de seis horas antes al paso a 13,8 km/s, por la trayectoria del propio JPL, Plutón y Caronte como discos, la media luna que queda atrás."
+      },
       "vostok-1": {
         "title": "Vostok 1",
         "when": "12 de abril de 1961",

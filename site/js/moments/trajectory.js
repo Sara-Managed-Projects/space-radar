@@ -31,6 +31,11 @@ import { monotoneCubic } from './format.js';
 export const WORLDS = {
   earth: { id: 'earth', R: 6371008.8, MU: 3.986004418e14, OMEGA: 7.2921159e-5, airH: 8000, rimM: 70000 },
   mars: { id: 'mars', R: 3391100, MU: 4.282837e13, OMEGA: 7.0882181e-5, airH: 11100, rimM: 60000 },
+  // Pluto (release 1.7.9): the IAU mean radius, its GM alone (NASA/JPL: 869.6 km^3/s^2), the rotation is retrograde (6.387 d). Almost no air to
+  // draw (its haze is a thin blue limb, seen by New Horizons to 130 km), so the scale height is a metre and the limb glow stays. Charon stands above
+  // longitude 0 on the equator at 19 591 km (the two are locked to each other): `moon` is what the stage draws in the Moon's place.
+  pluto: { id: 'pluto', R: 1188300, MU: 8.696e11, OMEGA: -1.13856e-5, airH: 1, rimM: 90000,
+    moon: { id: 'charon', R: 606000, aM: 19591000, map: '2k_charon_nh_colour.webp' } },
 };
 export let WORLD = WORLDS.earth;
 /** The round Earth a profile is laid over, metres (IUGG mean radius); the world's radius once `setWorld` has been called. */

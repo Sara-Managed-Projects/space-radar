@@ -27,7 +27,7 @@ import { icon } from '../ui/icons.js';
 import { write as writeUrl, clear as clearUrl } from '../ui/urlstate.js';
 import { worldPositionKm } from '../propagate/body.js';
 import { paceTable, playOf, missionOf, rateAt, compressionText, formatMet, chapterAt, captionAt, crossed, isMomentId, shareHash, parseT, lastAt } from './format.js';
-import { tilt, OMEGA, MOON_R, moonAxes, moonSurfaceDir, placeFrame, profileTrack, vectorTrack, fromHorizons, enuToEcef, fixedToInertial, siderealAt, attitude, ballistic, spinBasis, fromBasis, add, scale, norm, len, cross, dot, EARTH_R, setWorld } from './trajectory.js';
+import { tilt, OMEGA, MOON_R, moonAxes, moonSurfaceDir, placeFrame, profileTrack, vectorTrack, fromHorizons, enuToEcef, fixedToInertial, siderealAt, attitude, ballistic, spinBasis, fromBasis, add, scale, norm, len, cross, dot, EARTH_R, WORLD, setWorld } from './trajectory.js';
 import { worldTurn, sunFromWorld } from './world.js';
 import { directAt, freePose, poseAngles } from './director.js';
 import { createStage, eciToThree } from './stage.js';
@@ -638,9 +638,16 @@ export function createMomentPlayer(ctx, opts = {}) {
     const s = turnFn ? null : worldPositionKm('sun', tMs, 'earth-inertial');
     const sunDir = turnFn ? norm(eciToThree(sunFromWorld(m.world, tMs))) : s ? norm(eciToThree([s.x, s.y, s.z])) : [1, 0, 0];
     const mo = turnFn ? null : worldPositionKm('moon', tMs, 'earth-inertial');
-    const moonPos = mo ? eciToThree([mo.x * 1000, mo.y * 1000, mo.z * 1000]) : null;
-    const mAxes = mo ? moonAxes([mo.x, mo.y, mo.z]) : null;
-    const moonAx = mAxes ? { x: eciToThree(mAxes.x), y: eciToThree(mAxes.y), z: eciToThree(mAxes.z) } : null;
+    let moonPos = mo ? eciToThree([mo.x * 1000, mo.y * 1000, mo.z * 1000]) : null;
+    let mAxes = mo ? moonAxes([mo.x, mo.y, mo.z]) : null;
+    let moonAx = mAxes ? { x: eciToThree(mAxes.x), y: eciToThree(mAxes.y), z: eciToThree(mAxes.z) } : null;
+    if (turnFn && WORLD.moon) {
+      // 1.7.9: Charon stands above longitude 0 on Pluto's equator, its face toward Pluto, its pole Pluto's (the two keep one face to each other)
+      const q = fixedToInertial([WORLD.moon.aM, 0, 0], g);
+      const x = norm(scale(q, -1)), z = [0, 0, 1], y = cross(z, x);
+      moonPos = eciToThree(q);
+      moonAx = { x: eciToThree(x), y: eciToThree(y), z: eciToThree(z) };
+    }
     const siteDir = mAxes && m.moonSite ? eciToThree(moonSurfaceDir(mAxes, m.moonSite.lat, m.moonSite.lon)) : null;
     // Vehicles: where each stands now, in the stage's frame.
     poses = new Map();

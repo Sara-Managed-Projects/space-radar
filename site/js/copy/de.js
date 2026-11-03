@@ -3910,6 +3910,11 @@ Object.assign(COPY, {
         "when": "6. August 2012",
         "blurb": "Die sieben Minuten von der Obergrenze der Marsluft bis zum Gale-Krater: Hitzeschild, Fallschirm, Raketenrucksack und Himmelskran, auf der Uhr des JPL."
       },
+      "new-horizons-pluto": {
+        "title": "New Horizons am Pluto",
+        "when": "14. Juli 2015",
+        "blurb": "Der erste Besuch beim Pluto: von sechs Stunden vorher bis zum Vorbeiflug mit 13,8 km/s, auf der Bahn des JPL selbst, Pluto und Charon als Scheiben, die Sichel dahinter."
+      },
       "vostok-1": {
         "title": "Wostok 1",
         "when": "12. April 1961",

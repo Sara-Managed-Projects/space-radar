@@ -4138,6 +4138,11 @@ export const COPY = {
         "when": "6 August 2012",
         "blurb": "The seven minutes from the top of the Martian air to Gale crater: the heat shield, the parachute, the rocket backpack and the sky crane, on JPL's own clock."
       },
+      "new-horizons-pluto": {
+        "title": "New Horizons at Pluto",
+        "when": "14 July 2015",
+        "blurb": "The first visit to Pluto: from six hours out to the pass at 13.8 km/s on JPL's own track, Pluto and Charon as discs, the crescent left behind."
+      },
       "vostok-1": {
         "title": "Vostok 1",
         "when": "12 апреля 1961",

@@ -291,6 +291,9 @@ assert.equal(colourRoute(root([])), 'class', 'a model with no materials keeps th
     'leonov-eva.glb': /NOTHING YET/,
     'shuttle-sts-stack.glb': /NOTHING YET/,
     'shuttle-orbiter.glb': /NOTHING YET/,
+    // 1.7.9: the models of the Curiosity Moment, loaded by id by site/js/moments/
+    'msl-entry.glb': /NOTHING YET/,
+    'msl-descent-stage.glb': /NOTHING YET/,
     // MAVEN was the one, until 2026-10-08: it has a record now (data/sample.js LOST_ORBITERS)
     'sls-block1.glb': /used_for: "NOTHING YET, waiting for the Artemis II Moments replay and its scene route\./,
     'orion-esm.glb': /used_for: "NOTHING YET, waiting for the Artemis II Moments replay and its scene route\./,

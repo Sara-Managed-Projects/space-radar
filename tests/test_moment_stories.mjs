@@ -245,6 +245,47 @@ for (const id of ['vostok-1', 'apollo-11', 'artemis-ii']) {
   check(shelf.momentsFor('gale').some((x) => x.id === 'curiosity-edl') && shelf.SHELF.every((x) => !x.models || x.models.every((id) => new RegExp(`id: ${id},`).test(registry))), 'Curiosity: the card of Gale crater offers the replay; every model the shelf names is a registry row');
   check(!!COPY.momentShelf.cards['curiosity-edl'], 'Curiosity: the shelf has its card');
 }
+// --- New Horizons at Pluto (release 1.7.9): JPL's track, the pass at 12 500 km, the approach on the lit side, Charon about fourteen minutes later
+{
+  const { m, words } = await load('new-horizons-pluto');
+  const W = await mod('moments/world.js');
+  const A = await import(pathToFileURL(join(ROOT, 'site/vendor/astronomy.js')).href);
+  const ms = (t) => Date.parse(m.epoch) + t * 1000;
+  check(m.world === 'pluto' && F.validateMoment(m, { words }).length === 0, `New Horizons: valid, with its words (${F.validateMoment(m, { words }).join('; ')})`);
+  check(m.trajectories.path.frame === 'world' && m.vehicles.length === 1 && m.vehicles[0].model === 'new-horizons' && new RegExp('id: new-horizons,').test(registry), 'New Horizons: one vehicle, the craft\'s own model, on a path in Pluto\'s frame');
+  const rows = rowsOf(m, 'path');
+  check(rows.length > 100 && rows.every((r, i) => r.length === 7 && r.every(Number.isFinite) && (i === 0 || r[0] > rows[i - 1][0])), 'New Horizons: the path has sorted, finite rows');
+  check(rows[0][0] === m.span[0] && rows[rows.length - 1][0] >= m.span[1], 'New Horizons: the path covers the span');
+  // the pass: the nearest second is T-0, JPL Horizons' own (the range rate changes sign between 11:48:00 and 11:49:00 UT), 13.8 km/s, about 12 500 km up
+  let near = null; for (let t = -120; t <= 120; t += 0.25) { const r = interp(rows, t); const d = Math.hypot(r[0], r[1], r[2]); if (!near || d < near.d) near = { d, t }; }
+  check(Math.abs(near.t) <= 1 && m.epoch === '2015-07-14T11:48:29Z', `New Horizons: T-0 is the nearest second in JPL's track, 11:48:29 UT (${near.t} s)`);
+  check(Math.abs(near.d - 1188.3 - 12500) < 60, `New Horizons: ${Math.round(near.d - 1188.3)} km over Pluto's surface at the nearest second (NASA: about 12 500)`);
+  const row0 = rows.reduce((a, r) => (Math.abs(r[0]) < Math.abs(a[0]) ? r : a));
+  check(Math.abs(Math.hypot(row0[4], row0[5], row0[6]) - 13.78) < 0.05, `New Horizons: ${Math.hypot(row0[4], row0[5], row0[6]).toFixed(2)} km/s at the pass (NASA: 30 800 mph, 13.8 km/s)`);
+  check(/11:48:29/.test(words.closest) && /11:49:57/.test(words.closest) && /not reconciled/.test(words.closest), 'New Horizons: the words give both clocks and say they are not reconciled');
+  // Pluto's frame: its pole is the IAU's (right ascension 132.993, declination -6.163 degrees)
+  const ax = W.worldAxes('pluto', ms(0));
+  check(Math.abs(ax.z[2] - Math.sin(-6.163 * Math.PI / 180)) < 0.005 && Math.abs(Math.atan2(ax.z[1], ax.z[0]) * 180 / Math.PI - 132.993) < 0.2, 'New Horizons: Pluto\'s pole is at right ascension 133 degrees, declination -6.2');
+  // the geometry the captions rest on: the approach over the lit side, the craft on the night side from the pass, a thin crescent when it looks back
+  const phase = (t) => { const r = interp(rows, t), s = W.sunFromWorld('pluto', ms(t)); return Math.acos((r[0] * s[0] + r[1] * s[1] + r[2] * s[2]) / Math.hypot(...r)) * 180 / Math.PI; };
+  check(phase(-900) < 80 && phase(0) > 95 && phase(300) > 115 && phase(2000) > 160, `New Horizons: lit side on the approach (${phase(-900).toFixed(0)}), night side from the pass (${phase(0).toFixed(0)}), looking back at a crescent (${phase(2000).toFixed(0)} degrees from the Sun)`);
+  // Charon above longitude 0 on the equator at 19 591 km: nearest the craft about 14 minutes after the pass, within about 28 860 km
+  let ch = null; for (let t = 400; t <= 1300; t += 1) { const w = W.worldAxes('pluto', ms(t)).w, r = interp(rows, t), q = [19591 * Math.cos(w), 19591 * Math.sin(w), 0]; const d = Math.hypot(r[0] - q[0], r[1] - q[1], r[2] - q[2]); if (!ch || d < ch.d) ch = { d, t }; }
+  check(Math.abs(ch.t - 14 * 60) < 60 && Math.abs(ch.d - 28860) < 1000 && Math.abs(ch.t - m.facts.charonNearS) < 1.5, `New Horizons: Charon is nearest ${Math.round(ch.d)} km at ${ch.t} s, about 14 minutes after the pass (NASA: within 28 860 km)`);
+  check(TR.WORLDS.pluto.moon.aM === 19591000 && TR.WORLDS.pluto.moon.R === 606000 && Math.abs(TR.WORLDS.pluto.R - 1188300) < 1, 'New Horizons: Pluto\'s radius, Charon\'s radius and the distance between them');
+  // the radio: Earth to Pluto that day, 4.77 billion km, 4 h 25 min
+  const pl = A.HelioVector(A.Body.Pluto, new Date('2015-07-15T00:53:00Z')), ea = A.HelioVector(A.Body.Earth, new Date('2015-07-15T00:53:00Z'));
+  const au = Math.hypot(pl.x - ea.x, pl.y - ea.y, pl.z - ea.z);
+  check(Math.abs(au * 1.495978707e8 / 1e9 - 4.77) < 0.03 && Math.abs(au * 499.00478 / 60 - 265) < 4 && /4\.77 billion km/.test(words.away) && /4 hours 25 minutes/.test(words.away), 'New Horizons: the Earth was 4.77 billion km away, 4 hours 25 minutes by radio');
+  check(/00:53 UTC on 15 July/.test(words.home) && /8:53 pm EDT/.test(words.home), 'New Horizons: the "phone home" signal at 00:53 UTC (8:53 pm EDT)');
+  let play = 0; for (const q of m.pace) play += (q.to - q.from) / q.rate;
+  check(play > 150 && play < 900, `New Horizons: ${Math.round(play)} s of play time`);
+  check(m.sources.length >= 3 && m.sources.every((q) => /^https:\/\//.test(q.url) && words[q.say]), 'New Horizons: sources, each with its words');
+  check(m.tracks.captions.every((c) => (words[c.say] || '').length > 20 && words[c.say].length < 330), 'New Horizons: every caption is a sentence or two');
+  const shelf = await mod('moments/shelf.js');
+  check(['pluto', 'charon', 'deep-new-horizons'].every((id) => shelf.momentsFor(id).some((x) => x.id === 'new-horizons-pluto')) && shelf.momentsForRecord({ id: 'x', name: 'New Horizons', layer: 'deep-space' }).some((x) => x.id === 'new-horizons-pluto'), 'New Horizons: the cards of Pluto, Charon and the craft offer the replay');
+  check(!!COPY.momentShelf.cards['new-horizons-pluto'], 'New Horizons: the shelf has its card');
+}
 // --- the shelf and the entry points (C8): read from the data, so the test names what is missing
 {
   const shelf = await mod('moments/shelf.js');
@@ -252,4 +293,4 @@ for (const id of ['vostok-1', 'apollo-11', 'artemis-ii']) {
   for (const rec of ['saturn-v-lc-39a', 'apollo-11', 'shuttle-lc-39b']) check(!!shelf.momentFor(rec), `the card of ${rec} offers its moment`);
 }
 if (problems.length) { for (const p of problems) console.error(`::error::${p}`); console.error(`${problems.length} problem(s)`); process.exit(1); }
-console.log('moment stories ok: Curiosity\'s entry (the JPL clock, 131 km and 5.9 km/s, the parachute at 11 km, the 7.6 m bridle, the landing on Bradbury Landing, the Martian Sun), then Vostok 1, Apollo 11 and Artemis II: event order and times, parts of their models, the landing on the Moon\'s ground, the flyby at 6 545 km, planned times said to be planned');
+console.log('moment stories ok: Curiosity\'s entry (the JPL clock, 131 km and 5.9 km/s, the parachute at 11 km, the 7.6 m bridle, the landing on Bradbury Landing, the Martian Sun), New Horizons\' pass of Pluto (JPL\'s track, 12 500 km, the lit side, Charon 14 minutes later), then Vostok 1, Apollo 11 and Artemis II: event order and times, parts of their models, the landing on the Moon\'s ground, the flyby at 6 545 km, planned times said to be planned');

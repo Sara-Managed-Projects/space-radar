@@ -261,11 +261,13 @@ export function createStage(renderer, { tier = 1, place, frame }) {
   };
   // 1.7.9: the world the moment is on: its map, its sky, its light (trajectory.js setWorld has been called by the player).
   const mars = WORLD.id === 'mars';
-  const day = tex(mars ? '2k_mars.webp' : '2k_earth_daymap.webp');
+  const pluto = WORLD.id === 'pluto';
+  const day = tex(mars ? '2k_mars.webp' : pluto ? '2k_pluto_nh_colour.webp' : '2k_earth_daymap.webp');
 
   const sun = new THREE.DirectionalLight(mars ? 0xfff0e0 : 0xfff4e6, mars ? 2.6 : 3.0);
-  const hemi = new THREE.HemisphereLight(0x9cc2ff, 0x6a5e48, 0);
-  const fill = new THREE.AmbientLight(0x2a3550, 0.35);
+  // 1.7.9: the sky's fill and the night fill are the world's: warm dust on Mars, not the Earth's blue
+  const hemi = new THREE.HemisphereLight(WORLD.id === 'mars' ? 0xd8b896 : 0x9cc2ff, WORLD.id === 'mars' ? 0x6a4a38 : 0x6a5e48, 0);
+  const fill = new THREE.AmbientLight(WORLD.id === 'mars' ? 0x3a3028 : 0x2a3550, 0.35);
   scene.add(sun, sun.target, hemi, fill);
 
   // The sky, round the camera, first.
@@ -304,7 +306,7 @@ export function createStage(renderer, { tier = 1, place, frame }) {
   globe.frustumCulled = false;
   earth.add(globe);
   const rimMat = new THREE.ShaderMaterial({
-    uniforms: { uSun: { value: new THREE.Vector3(0, 1, 0) }, uOn: { value: 0 }, uRimC: { value: new THREE.Vector3(...(mars ? [0.62, 0.46, 0.36] : [0.35, 0.6, 1.0])) } },
+    uniforms: { uSun: { value: new THREE.Vector3(0, 1, 0) }, uOn: { value: 0 }, uRimC: { value: new THREE.Vector3(...(mars ? [0.30, 0.24, 0.21] : pluto ? [0.30, 0.42, 0.78] : [0.35, 0.6, 1.0])) } },
     vertexShader: RIM_V, fragmentShader: RIM_F, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
   });
   const rim = new THREE.Mesh(new THREE.SphereGeometry(EARTH_R + WORLD.rimM, 96, 48), rimMat);
@@ -352,7 +354,10 @@ export function createStage(renderer, { tier = 1, place, frame }) {
 
   // The Moon, the Sun.
   // The Moon's map (640 kB) is fetched only once the Moon is more than a few pixels across: a launch never asks.
-  const moon = new THREE.Mesh(new THREE.SphereGeometry(1737400, 192, 96), new THREE.MeshLambertMaterial({ color: 0x8a8a86 }));
+  // 1.7.9: the world's own moon in its place (Charon at Pluto), else the Earth's Moon.
+  const moonR = WORLD.moon ? WORLD.moon.R : 1737400;
+  const moonMap = WORLD.moon ? WORLD.moon.map : '2k_moon.webp';
+  const moon = new THREE.Mesh(new THREE.SphereGeometry(moonR, 192, 96), new THREE.MeshLambertMaterial({ color: 0x8a8a86 }));
   let moonMapped = false;
   moon.frustumCulled = false;
   scene.add(moon);
@@ -452,12 +457,12 @@ export function createStage(renderer, { tier = 1, place, frame }) {
           siteDisc.position.set(moonPos[0] + siteDir[0] * 1737400 - o[0], moonPos[1] + siteDir[1] * 1737400 - o[1], moonPos[2] + siteDir[2] * 1737400 - o[2]);
         }
       } else siteDisc.visible = false;
-      const px = (1737400 / Math.max(1, moon.position.length())) / Math.tan((pose.fov * Math.PI) / 360) * (height || 900) / 2;
-      if (!moonMapped && px > 4) { moonMapped = true; moon.material.map = tex('2k_moon.webp'); moon.material.color.set(0xffffff); moon.material.needsUpdate = true; }
+      const px = (moonR / Math.max(1, moon.position.length())) / Math.tan((pose.fov * Math.PI) / 360) * (height || 900) / 2;
+      if (!moonMapped && px > 4) { moonMapped = true; moon.material.map = tex(moonMap); moon.material.color.set(0xffffff); moon.material.needsUpdate = true; }
     } else moon.visible = false;
     const D = 1e10;
     sunDisc.position.set(sunDir[0] * D, sunDir[1] * D, sunDir[2] * D);
-    const k = 0.0093 * D * (WORLD.id === 'mars' ? 0.66 : 1) * (1.6 + 2.4 * air.density);
+    const k = 0.0093 * D * (WORLD.id === 'mars' ? 0.66 : pluto ? 0.2 : 1) * (1.6 + 2.4 * air.density);
     sunDisc.scale.set(k, k, 1);
     sunDisc.material.opacity = 0.9;
     // Camera at the origin.

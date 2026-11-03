@@ -46,6 +46,7 @@ SEAM = "#171615"
 LIP = "#3C3935"
 GOLD = "#C98A2E"        # kapton-wrapped tanks
 GOLD_D = "#A96E1F"
+GOLD_L = "#D6A646"
 ORANGE = "#C4622A"      # the engines' outer skins
 NOZ = "#5A4B42"
 BLACK = "#202226"
@@ -255,10 +256,10 @@ def build_descent():
     # three big propellant spheres and three smaller pressurant tanks, in gold blanket, standing on the lower plane
     for k in range(3):
         a = math.radians(90 + 120 * k)
-        tank(st, (0.62 * math.cos(a), 0.52, 0.62 * math.sin(a)), 0.44, GOLD, "tank")
+        tank(st, (0.68 * math.cos(a), 0.66, 0.68 * math.sin(a)), 0.50, GOLD, "tank")
     for k in range(3):
         a = math.radians(30 + 120 * k)
-        tank(st, (0.92 * math.cos(a), 0.34, 0.92 * math.sin(a)), 0.26, GOLD_D, "tank-small")
+        tank(st, (1.02 * math.cos(a), 0.42, 1.02 * math.sin(a)), 0.31, GOLD_D, "tank-small")
     # the central column: the sky crane's bridle spool housing, a silver barrel with a collar
     st.add("column", "body", SILVER, frustum((0, 0.0, 0), (0, 0.95, 0), 0.20, 0.20, 24, caps=True))
     st.add("column-ring", "body", SILVER_D, torus(V(0, 0.55, 0), V(0, 1, 0), 0.205, 0.02, 24, 5))
@@ -272,6 +273,7 @@ def build_descent():
         out = V(x, 0, z) / math.hypot(x, z)
         pod = V(x, 0, z) + out * 0.55 + V(0, -0.25, 0)
         beam((x, 0.1, z), tuple(pod), 0.09, ALU, st, "boom")
+        st.add("boom-wrap", "foil", GOLD_L, rod(V(x, 0.1, z) + (pod - V(x, 0.1, z)) * 0.25, V(x, 0.1, z) + (pod - V(x, 0.1, z)) * 0.8, 0.075, 8))
         st.add("pod", "foil", MLI, box(tuple(pod + V(0, 0.05, 0)), (0.48, 0.30, 0.48), None, 0.01, 40 + k))
         perp = V(-math.sin(math.radians(a)), 0, math.cos(math.radians(a)))
         for s in (-1, 1):
@@ -280,7 +282,8 @@ def build_descent():
     # blanket patches (crinkled silver MLI) laid over the frame's four sides, between the posts, as in the lab photograph
     for k, (x, z) in enumerate(((S, 0.0), (-S, 0.0), (0.0, S), (0.0, -S))):
         w = (0.05, 0.62, 1.7) if x else (1.7, 0.62, 0.05)
-        st.add("blanket", "foil", MLI, box((x * 0.985, 0.50, z * 0.985), w, None, 0.02, 60 + k))
+        st.add("blanket", "foil", MLI, box((x * 0.985, 0.34, z * 0.985), (w[0] * (0.5 if not x else 1), 0.34, w[2] * (0.5 if x else 1)), None, 0.02, 60 + k))
+        st.add("blanket-gold", "foil", GOLD_L, box((x * 0.985, 0.74, z * 0.985), (w[0] * (0.7 if not x else 1), 0.26, w[2] * (0.7 if x else 1)), None, 0.02, 90 + k))
     # tanks' feed lines and the hydrazine plumbing: a few thin silver tubes along the rails
     for (x0, z0, x1, z1) in ((-S, -S, S, -S), (S, -S, S, S), (S, S, -S, S), (-S, S, -S, -S)):
         st.add("line", "body", SILVER_D, rod(V(x0, 0.2, z0), V(x1, 0.2, z1), 0.018, 5))
@@ -295,7 +298,7 @@ def build_descent():
         st.add("strut", "body", SILVER_D, rod(q, q + V(0, -0.34, 0), 0.04, 6))
         st.add("strut-foot", "body", BLACK, frustum(q + V(0, -0.34, 0), q + V(0, -0.38, 0), 0.06, 0.06, 8, caps=True))
     # the antenna mast on top (the tall whip, label 4 in NASA's drawing) and two small dishes
-    st.add("mast", "body", BLACK, rod(V(0, H, 0), V(0, H + 1.05, 0), 0.016, 5))
+    st.add("mast", "body", BLACK, rod(V(0, H, 0), V(0, H + 1.05, 0), 0.026, 6))
     st.add("mast-foot", "body", SILVER_D, frustum((0, H, 0), (0, H + 0.12, 0), 0.07, 0.04, 10, caps=True))
     st.add("dish", "body", WHITE_D, lib.dome(V(1.05, H + 0.08, -0.9), 0.14, (0, 1, 0), 4, 14, 0.07))
     st.add("dish-stem", "body", SILVER_D, rod(V(1.05, H, -0.9), V(1.05, H + 0.1, -0.9), 0.012, 4))

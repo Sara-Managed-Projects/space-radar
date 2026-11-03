@@ -20,6 +20,7 @@ export const SHELF = [
   { id: 'sts-1', minutes: 15, records: ['saturn-v-lc-39a', 'edwards-afb-runway-23'], hue: '36, 12, 90', models: ['shuttle-sts-stack', 'shuttle-orbiter'] },
   { id: 'artemis-ii', minutes: 11, records: ['shuttle-lc-39b'], hue: '36, 64, 100', models: ['sls-block1', 'orion-esm'] },
   { id: 'curiosity-edl', minutes: 6, records: ['gale'], hue: '18, 62, 48', models: ['msl-entry', 'msl-descent-stage', 'curiosity'] },
+  { id: 'new-horizons-pluto', minutes: 6, records: ['pluto', 'charon', 'deep-new-horizons'], hue: '224, 28, 46', models: ['new-horizons'] },
   { id: 'vostok-1', minutes: 5, records: ['baikonur-site-1', 'vostok-1-landing'], hue: '100, 50, 40', models: ['r7-8k72k', 'vostok-3ka', 'vostok-seat'] },
   { id: 'sputnik-1', minutes: 4, records: ['baikonur-site-1'], hue: '210, 14, 60', models: ['r7-8k72k', 'sputnik-1'] },
   { id: 'voskhod-2', minutes: 15, records: ['baikonur-site-1', 'voskhod-2-landing'], hue: '24, 40, 70', models: ['r7-8k72k', 'voskhod-3kd', 'leonov-eva'] },
@@ -50,6 +51,7 @@ const VEHICLES = [
   { id: 'apollo-11', rocket: /^saturn ?(v|5)\b/i, craft: /^(apollo[ -](cs?m|command|service)|lunar module|apollo lunar module)/i },
   { id: 'apollo-13', rocket: /^saturn ?(v|5)\b/i, craft: /^(apollo[ -](cs?m|command|service)|lunar module|apollo lunar module)/i },
   { id: 'curiosity-edl', rocket: /(?!)/, craft: /^(curiosity|mars science laboratory|msl)\b/i },
+  { id: 'new-horizons-pluto', rocket: /(?!)/, craft: /^new horizons\b/i },
   { id: 'artemis-ii', rocket: /^(space launch system|sls)\b/i, craft: /^orion\b/i },
 ];
 const CRAFT_LAYERS = new Set(['launches', 'stations', 'notable', 'active', 'deep-space', 'just-launched']);

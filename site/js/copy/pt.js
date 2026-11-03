@@ -3902,6 +3902,11 @@ Object.assign(COPY, {
         "when": "6 de agosto de 2012",
         "blurb": "Os sete minutos do alto do ar marciano até a cratera Gale: o escudo térmico, o paraquedas, a mochila foguete e o guindaste celeste, no relógio do JPL."
       },
+      "new-horizons-pluto": {
+        "title": "New Horizons em Plutão",
+        "when": "14 de julho de 2015",
+        "blurb": "A primeira visita a Plutão: de seis horas antes à passagem a 13,8 km/s, pela trajetória do próprio JPL, Plutão e Caronte como discos, o crescente que fica para trás."
+      },
       "vostok-1": {
         "title": "Vostok 1",
         "when": "12 de abril de 1961",

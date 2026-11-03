@@ -3914,6 +3914,11 @@ Object.assign(COPY, {
         "when": "6 août 2012",
         "blurb": "Les sept minutes du haut de l'air martien au cratère Gale : le bouclier thermique, le parachute, le sac à dos fusée et la grue céleste, à l'heure du JPL."
       },
+      "new-horizons-pluto": {
+        "title": "New Horizons à Pluton",
+        "when": "14 juillet 2015",
+        "blurb": "La première visite de Pluton : de six heures avant au passage à 13,8 km/s, sur la trajectoire du JPL, Pluton et Charon en disques, le croissant laissé derrière."
+      },
       "vostok-1": {
         "title": "Vostok 1",
         "when": "12 avril 1961",
