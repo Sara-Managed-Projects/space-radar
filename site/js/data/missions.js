@@ -1025,11 +1025,7 @@ export const MISSIONS = [
         "title": "Into Jupiter’s air",
         "text": "It meets Jupiter’s atmosphere at 47.6 km per second, then sends data for 58 minutes on a parachute. JPL’s path for it ends at this minute.",
         "place": "path",
-        "world": "jupiter",
-        "source": {
-          "name": "JPL Horizons, the header for the Galileo probe (its path ends at 22:05:58 UT on 7 December 1995)",
-          "url": "https://ssd.jpl.nasa.gov/horizons/"
-        }
+        "world": "jupiter"
       }
     ]
   },

@@ -301,7 +301,7 @@ missions:
     events:
       - {id: release, date: "1995-07-13", precision: day, title: "Let go", text: "Galileo releases its atmospheric probe, which has no engine and falls towards Jupiter for five months.", place: path, path_at: "1995-07-13T05:31:00Z"}
       - {id: europa-io, date: "1995-12-07", precision: day, title: "Europa and Io, on the way in", text: "While the probe is still approaching, the orbiter passes Europa and then Io.", place: path}
-      - {id: entry, date: "1995-12-07T22:05:00Z", title: "Into Jupiter’s air", text: "It meets Jupiter’s atmosphere at 47.6 km per second, then sends data for 58 minutes on a parachute. JPL’s path for it ends at this minute.", place: path, world: jupiter, source: {name: "JPL Horizons, the header for the Galileo probe (its path ends at 22:05:58 UT on 7 December 1995)", url: "https://ssd.jpl.nasa.gov/horizons/"}}
+      - {id: entry, date: "1995-12-07T22:05:00Z", title: "Into Jupiter’s air", text: "It meets Jupiter’s atmosphere at 47.6 km per second, then sends data for 58 minutes on a parachute. JPL’s path for it ends at this minute.", place: path, world: jupiter}
 
   - id: perseverance
     record: jezero
