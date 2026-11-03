@@ -22,6 +22,7 @@ Object.assign(COPY.momentStories, {
     core: 'T+295.4 s: the core stage shuts down, 223 km up at some 7.8 km/s, a second before it was meant to, when a sensor sees the empty kerosene pump racing.',
     sep: 'T+315.3 s, 19.9 s after cut-off: PS-1 is let go. The cone falls away, the four whips swing out (not animated here) and the transmitter starts.',
     beep: 'The first beeps are heard at tracking station IP-1 for two minutes, until the satellite sinks below the horizon. The sound is NASA\'s recording of the signal.',
+    shadow: 'The launch was just after midnight at the site, and for its first 13 minutes PS-1 flies in the Earth\'s shadow, so it is drawn dark. It comes into sunlight at about T+13 min.',
     orbit: 'Orbit: 223 by 950 km, 65.1 degrees, 96.2 minutes a lap. The core stage follows it round (not drawn).',
     lap: 'One lap in this replay. The batteries ran out on 26 October, after 326 orbits; the sphere fell on 4 January 1958, after about 1 440.',
     pathAscent: 'the published event times, with heights and distances between them approximate',

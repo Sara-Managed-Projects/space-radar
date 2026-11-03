@@ -85,8 +85,15 @@ A story that goes from a pad to the Moon and home needs more than one path and o
 | vehicle `colour` | the class colour the model is drawn in where it has no look of its own (`rocket` by default) |
 
 A vehicle too small to see at the scale of the Earth and the Moon (seven pixels or fewer) is drawn as a ringed dot of a
-fixed size. A path file is `{note, rows}` under `site/data/moments/paths/`, written by `tools/moments-build/` (the three stories'
-generators: `vostok1.mjs`, `apollo11.mjs`, `artemis2.mjs`, with `lib.mjs`).
+fixed size. A path file is `{note, rows}` under `site/data/moments/paths/`, written by `tools/moments-build/` (the stories'
+generators: `vostok1.mjs`, `apollo11.mjs`, `artemis2.mjs` and, since 1.7.0, `apollo13.mjs` and `sputnik1.mjs`, with `lib.mjs`).
+
+**Release 1.7.0 notes.** A part a story wants out of sight until an event is `hide` at the start of the window and `show` at the event
+(Apollo 13's torn foil, `sm-bay-foil`); a part that lives longer than a few minutes after it leaves (a spent module that is watched for an
+hour) is a vehicle of its own with its own path, because a separated part flies a straight line with gravity for the second or two the
+player keeps it in the frame and not for hours (Apollo 13's service module, `sm`). The same model may be two vehicles (Sputnik 1's
+`sputnik-1`, once riding the rocket's head and once on its orbit). Apollo 13's path is integrated (`apollo13.mjs`: the Earth and the Moon,
+the Moon from the app's ephemeris, a trim found by search); the others are conics.
 
 ## Tracks
 

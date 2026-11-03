@@ -40,7 +40,7 @@ export function momentsFor(id) {
  * because Orion is also a constellation and a nebula.
  */
 const VEHICLES = [
-  { id: 'sputnik-1', rocket: /^(sputnik|8k71ps|r-7(\b|$))/i, craft: /^(sputnik[ -]?1|ps-1)\b/i },
+  { id: 'sputnik-1', rocket: /^(sputnik 8k71ps|8k71ps|r-7(\b|$))/i, craft: /^(sputnik[ -]?1|ps-1)\b/i },
   { id: 'vostok-1', rocket: /^(vostok(-k|-2m)?|r-7(\b|$)|8k72k)/i, craft: /^vostok( ?1| 3ka|\b)/i },
   { id: 'apollo-11', rocket: /^saturn ?(v|5)\b/i, craft: /^(apollo[ -](cs?m|command|service)|lunar module|apollo lunar module)/i },
   { id: 'apollo-13', rocket: /^saturn ?(v|5)\b/i, craft: /^(apollo[ -](cs?m|command|service)|lunar module|apollo lunar module)/i },

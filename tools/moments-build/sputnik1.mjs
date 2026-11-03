@@ -73,7 +73,7 @@ const moment = {
   tracks: {
     parts,
     camera: [
-      { t: -10, shot: 'pad', at: [120, -95, 3], lookY: 15, fov: 42, vehicle: 'rocket' },
+      { t: -10, shot: 'pad', at: [75, -55, 3], lookY: 14, fov: 50, vehicle: 'rocket' },
       { t: -3, shot: 'pad', at: [75, -45, 4], lookY: 8, fov: 54, vehicle: 'rocket' },
       { t: 4, shot: 'track', at: [-900, -700, 10], lookY: 15, fill: 0.55, fovMin: 0.6, fovMax: 20, vehicle: 'rocket' },
       { t: 22, shot: 'chase', offset: [90, -30, -80], lookY: 13, fov: 40, blend: 1.5, vehicle: 'rocket' },
@@ -83,14 +83,15 @@ const moment = {
       { t: 270, shot: 'orbit', az: 60, el: 5, dist: 70, lookY: 12, fov: 42, vehicle: 'rocket', blend: 2 },
       { t: 306, shot: 'orbit', az: 25, el: 10, dist: 14, lookY: 28, fov: 40, vehicle: 'rocket', blend: 2 },
       { t: T_SEP + 0.5, shot: 'orbit', az: 40, el: 14, dist: 7.5, lookY: SPH_Y, fov: 42, vehicle: 'sat', blend: 1 },
-      { t: T_SEP + 30, shot: 'orbit', az: 150, el: 18, dist: 11, lookY: SPH_Y, fov: 42, vehicle: 'sat', spin: 1.2, blend: 2 },
-      { t: T_SEP + 260, shot: 'globe', altKm: 2200, backKm: 2600, fov: 46, vehicle: 'sat', blend: 3 },
+      { t: T_SEP + 30, shot: 'globe', altKm: 2200, backKm: 2600, fov: 46, vehicle: 'sat', blend: 3 },
+      { t: 830, shot: 'orbit', az: 40, el: 14, dist: 6.5, lookY: SPH_Y, fov: 40, vehicle: 'sat', spin: 3, blend: 2 },
+      { t: 1500, shot: 'globe', altKm: 2200, backKm: 2600, fov: 46, vehicle: 'sat', blend: 3 },
       { t: 3200, shot: 'globe', altKm: 3600, backKm: 3000, fov: 46, vehicle: 'sat', blend: 3 },
       { t: 5300, shot: 'orbit', az: 200, el: 14, dist: 16, lookY: SPH_Y, fov: 42, vehicle: 'sat', blend: 3 },
     ],
     captions: [
-      { t: -10, say: 'ready' }, { t: 0.6, say: 'liftoff' }, { t: 16, say: 'regulator' }, { t: T_STRAP, say: 'boosters' }, { t: T_COFF, say: 'core' }, { t: T_SEP, say: 'sep' }, { t: T_SEP + 4, say: 'beep' },
-      { t: T_SEP + 400, say: 'orbit' }, { t: 5500, say: 'lap' },
+      { t: -10, say: 'ready' }, { t: 0.6, say: 'liftoff' }, { t: 16, say: 'regulator' }, { t: T_STRAP, say: 'boosters' }, { t: T_COFF, say: 'core' }, { t: T_SEP, say: 'sep' }, { t: T_SEP + 4, say: 'beep' }, { t: T_SEP + 40, say: 'shadow' },
+      { t: 830, say: 'orbit' }, { t: 5500, say: 'lap' },
     ],
     audio: [
       { t: T_SEP + 0.8, src: 'audio/sputnik-beep.m4a', twin: 'audio/sputnik-beep.m4a', gain: 1 },
@@ -100,7 +101,7 @@ const moment = {
       { t: -9, effect: 'exhaust-cloud', until: 14, axis: [0, 1, 0], count: 500, fire: 'core-stage', vehicle: 'rocket' },
     ],
   },
-  chapters: [{ t: -10, say: 'chPad' }, { t: 0.6, say: 'chAscent' }, { t: T_STRAP - 6, say: 'chBoosters' }, { t: T_COFF - 8, say: 'chCore' }, { t: T_SEP, say: 'chSep' }, { t: T_SEP + 260, say: 'chOrbit' }],
+  chapters: [{ t: -10, say: 'chPad' }, { t: 0.6, say: 'chAscent' }, { t: T_STRAP - 6, say: 'chBoosters' }, { t: T_COFF - 8, say: 'chCore' }, { t: T_SEP, say: 'chSep' }, { t: 830, say: 'chOrbit' }],
   sources: [
     { say: 'srcWiki', url: 'https://en.wikipedia.org/wiki/Sputnik_1' },
     { say: 'srcNssdc', url: 'https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1957-001B' },

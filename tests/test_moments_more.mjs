@@ -200,6 +200,8 @@ const common = async (id, cover) => {
   check(pad1.join() === 'vostok-1,sputnik-1', `Baikonur Site 1 carries Vostok 1 and Sputnik 1 (${pad1.join(', ')})`);
   const r7 = { id: 'launch-y', layer: 'launches', name: 'R-7 Semyorka | something', meta: { rocket: 'R-7 Semyorka', rocketFamily: 'R-7', rocketFamilyPath: ['R-7'] } };
   check(shelf.momentsForRecord(r7).map((s) => s.id).join() === 'vostok-1,sputnik-1', 'an R-7 card offers Vostok 1 and Sputnik 1, Vostok first');
+  check(shelf.momentsForRecord({ id: 'sat-1', layer: 'notable', name: 'Sputnik 1' }).map((s) => s.id).join() === 'sputnik-1', 'the card of Sputnik 1 offers its story');
+  check(shelf.momentsForRecord({ id: 'sat-3', layer: 'notable', name: 'Sputnik 3' }).length === 0 && shelf.momentsForRecord({ id: 'launch-s', layer: 'launches', name: 'Sputnik 8K71PS | Sputnik 1', meta: { rocket: 'Sputnik 8K71PS', rocketFamily: 'R-7' } }).map((s) => s.id).includes('sputnik-1'), 'Sputnik 3 has no replay, the Sputnik 8K71PS launch has Sputnik 1\'s');
   check(shelf.momentsForRecord({ id: 'launch-z', layer: 'launches', name: 'Soyuz 2.1a | x', meta: { rocket: 'Soyuz 2.1a', rocketFamily: 'Soyuz', rocketFamilyPath: ['R-7', 'Soyuz'] } }).length === 0, 'a Soyuz-2 is a descendant of the R-7 and has no replay');
   const rocket = { id: 'launch-x', layer: 'launches', name: 'Saturn V | something', meta: { rocket: 'Saturn V', rocketFamily: 'Saturn', rocketFamilyPath: ['Saturn'] } };
   check(shelf.momentsForRecord(rocket).map((s) => s.id).join() === 'apollo-11,apollo-13', 'a Saturn V card offers both Apollo stories, Apollo 11 first');
