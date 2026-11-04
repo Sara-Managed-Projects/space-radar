@@ -9,7 +9,15 @@ and fades it out under the title; the trip's intro sheet uses the same file as i
     $PY scripts/build_trip_thumbs.py --from=a.json,b.json --pick=trip:stop --only=id,...
                                                             from tools/trip-frames.probe.js
     $PY scripts/build_trip_thumbs.py --from-og [--only=id]  from site/og/<id>.png's scene band (PIL)
-    python3 scripts/build_trip_thumbs.py --check            stdlib only: what CI runs
+    python3 scripts/build_trip_thumbs.py --check            stdlib only: what CI runs (the trips' and the Moments')
+
+THE MOMENTS SHELF (release 1.7.7). The Moments under the trips have pictures the same way, site/images/moments/<id>.webp, one
+per story on the shelf (site/js/moments/shelf.js SHELF), 640 x 360 and within the same budget. Each is the story's own
+frame at its `picture` second (the shelf row names it), rendered by tools/moment-pictures.probe.js:
+
+    node tools/cdp.mjs "http://127.0.0.1:8450/index.html?momentPictures=ID,ID" tools/moment-pictures.probe.js \\
+      --width=1200 --height=900 --block=celestrak.org,ll.thespacedevs.com > /tmp/moment-pictures.json
+    $PY scripts/build_trip_thumbs.py --moments --from=/tmp/moment-pictures.json [--only=id,...]
 
 WHERE THE PICTURES COME FROM. The app's own renderer, at each trip's picture stop
 (tools/trip-pictures.probe.js says how and which stop): the same scene a visitor flies to, never
@@ -45,6 +53,8 @@ OUT = ROOT / "site" / "images" / "trips"
 TOURS = ROOT / "registry" / "tours.yaml"
 BUDGETS = ROOT / "registry" / "budgets.yaml"
 OG = ROOT / "site" / "og"
+MOMENTS_OUT = ROOT / "site" / "images" / "moments"
+SHELF = ROOT / "site" / "js" / "moments" / "shelf.js"
 SIZE = (640, 360)
 QUALITIES = range(82, 39, -4)
 
@@ -69,6 +79,26 @@ def trip_ids() -> list[str]:
         if inside and m:
             ids.append(m.group(1))
     return ids
+
+
+def shelf_ids() -> list[str]:
+    """The Moments on the shelf, in its order: the `{ id: '...'` of every row of SHELF (moments/shelf.js)."""
+    text = SHELF.read_text(encoding="utf-8")
+    m = re.search(r"export const SHELF = \[(.*?)\n\];", text, re.S)
+    return re.findall(r"^\s*\{ id: '([\w-]+)'", m.group(1), re.M) if m else []
+
+
+def shelf_tops() -> dict[str, float]:
+    """Where in the 4:3 frame a Moment's 16:9 picture is taken from: the row's `pictureTop` (0 = the top, 1 = the bottom, the
+    default, as the trips'). A tall subject (a landed rocket) wants the middle, so that its top is not cut off."""
+    text = SHELF.read_text(encoding="utf-8")
+    m = re.search(r"export const SHELF = \[(.*?)\n\];", text, re.S)
+    tops = {}
+    for row in re.findall(r"^\s*\{ id: '[\w-]+'.*$", m.group(1) if m else "", re.M):
+        tid = re.match(r"\s*\{ id: '([\w-]+)'", row).group(1)
+        t = re.search(r"pictureTop: ([\d.]+)", row)
+        tops[tid] = float(t.group(1)) if t else 1.0
+    return tops
 
 
 def budget() -> int:
@@ -96,14 +126,12 @@ def webp_size(data: bytes) -> tuple[int, int] | None:
     return None
 
 
-def check() -> int:
-    problems = []
-    ids = trip_ids()
-    limit = budget()
+def check_dir(what: str, ids: list[str], out: Path, source: str, limit: int, problems: list[str]) -> str:
+    """One folder of pictures against the ids that need them; the problems are appended, the sizes returned."""
     if not ids:
-        problems.append("registry/tours.yaml: no trips found")
+        problems.append(f"{source}: no {what} found")
     for tid in ids:
-        path = OUT / f"{tid}.webp"
+        path = out / f"{tid}.webp"
         if not path.exists():
             problems.append(f"{path.relative_to(ROOT)}: missing; the {tid} card would show no picture "
                             f"(make it with scripts/build_trip_thumbs.py)")
@@ -116,14 +144,23 @@ def check() -> int:
             problems.append(f"{path.relative_to(ROOT)}: {size[0]} x {size[1]}, wanted {SIZE[0]} x {SIZE[1]}")
         if len(data) > limit:
             problems.append(f"{path.relative_to(ROOT)}: {len(data)} B, over trip_picture_bytes ({limit} B)")
-    for path in sorted(OUT.glob("*")) if OUT.exists() else []:
+    for path in sorted(out.glob("*")) if out.exists() else []:
         if path.suffix != ".webp" or path.stem not in ids:
-            problems.append(f"{path.relative_to(ROOT)}: no trip of that id in registry/tours.yaml")
+            problems.append(f"{path.relative_to(ROOT)}: no {what[:-1]} of that id in {source}")
+    return ", ".join(f"{t} {(out / f'{t}.webp').stat().st_size}" for t in ids if (out / f"{t}.webp").exists())
+
+
+def check() -> int:
+    problems: list[str] = []
+    ids, moments = trip_ids(), shelf_ids()
+    limit = budget()
+    sizes = check_dir("trips", ids, OUT, "registry/tours.yaml", limit, problems)
+    check_dir("moments", moments, MOMENTS_OUT, "the SHELF of site/js/moments/shelf.js", limit, problems)
     if problems:
         print("trip pictures FAILED:\n  " + "\n  ".join(problems))
         return 1
-    sizes = ", ".join(f"{t} {(OUT / f'{t}.webp').stat().st_size}" for t in ids)
-    print(f"trip pictures ok: {len(ids)} WebPs at {SIZE[0]} x {SIZE[1]}, each under {limit} B ({sizes})")
+    print(f"trip pictures ok: {len(ids)} WebPs at {SIZE[0]} x {SIZE[1]}, each under {limit} B ({sizes}); "
+          f"{len(moments)} Moments pictures likewise")
     return 0
 
 
@@ -160,13 +197,31 @@ def fit(im):
 def build() -> int:
     from PIL import Image  # the build needs it; the check does not
 
-    ids = trip_ids()
+    moments = "--moments" in sys.argv
+    ids = shelf_ids() if moments else trip_ids()
+    out_dir = MOMENTS_OUT if moments else OUT
     only = [x for x in arg("only").split(",") if x]
     limit = budget()
-    OUT.mkdir(parents=True, exist_ok=True)
+    out_dir.mkdir(parents=True, exist_ok=True)
     sources = {}
     probe = arg("from")
-    if probe:
+    if probe and moments:
+        # tools/moment-pictures.probe.js: {moments: [{id, t, png}]}; the first row of an id is the one used
+        # (a run that tried several seconds names the one to keep with --only and a single-second run).
+        for one in probe.split(","):
+            for row in json.loads(Path(one).read_text(encoding="utf-8")).get("moments", []):
+                if row.get("id") in sources:
+                    continue
+                if not row.get("png"):
+                    print(f"  {row.get('id')}: skipped ({row.get('error')})")
+                    continue
+                im = Image.open(io.BytesIO(base64.b64decode(row["png"].split(",", 1)[1]))).convert("RGB")
+                # The probe renders 4:3; as the trips', the picture is its lower 16:9 unless the shelf row says `pictureTop`.
+                w, h = im.size
+                keep = round(w * SIZE[1] / SIZE[0])
+                y0 = round((h - keep) * shelf_tops().get(row["id"], 1.0))
+                sources[row["id"]] = (im.crop((0, y0, w, y0 + keep)), f"second {row.get('t')}")
+    elif probe:
         doc = {}
         # One file from tools/trip-pictures.probe.js ({trip: {png, stop}}), or several from
         # tools/trip-frames.probe.js ({frames: [{trip, stop, number, png}]}), where a trip may have
@@ -207,7 +262,7 @@ def build() -> int:
         if tid not in ids or (only and tid not in only):
             continue
         data, how = encode(fit(im), limit)
-        (OUT / f"{tid}.webp").write_bytes(data)
+        (out_dir / f"{tid}.webp").write_bytes(data)
         print(f"  {tid}: {len(data)} B at {how}, from {what}")
     return 0
 

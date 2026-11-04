@@ -137,7 +137,17 @@ void main() {
       local = mix(scrub, sand, smoothstep(-70.0, -40.0, d));
       local = mix(local, sea, smoothstep(10.0, 40.0, d));
     }
-    if (uPad > 0.5) {
+    if (uPad > 1.5) {
+      // 1.7.7: a landing zone (Landing Zone 1): a round concrete pad of 86 m across with a painted ring and a cross, on a wider apron
+      float rr = length(q);
+      vec3 concrete = vec3(0.60, 0.60, 0.57) * (0.92 + 0.08 * n3);
+      local = mix(local, vec3(0.50, 0.49, 0.45), 1.0 - smoothstep(60.0, 90.0, rr));
+      local = mix(local, concrete, 1.0 - smoothstep(42.0, 43.5, rr));
+      float ring = (1.0 - smoothstep(0.0, 0.8, abs(rr - 36.0)));
+      vec2 a = abs(vec2(q.x + q.y, q.x - q.y)) * 0.7071;
+      float cross = (1.0 - smoothstep(0.8, 1.6, min(a.x, a.y))) * (1.0 - smoothstep(30.0, 31.0, rr));
+      local = mix(local, vec3(0.93, 0.92, 0.88), max(ring, cross) * (1.0 - smoothstep(42.0, 43.5, rr)));
+    } else if (uPad > 0.5) {
       float rr = length(q);
       vec3 concrete = vec3(0.56, 0.56, 0.53) * (0.92 + 0.08 * n3);
       local = mix(local, vec3(0.47, 0.46, 0.42), 1.0 - smoothstep(150.0, 210.0, rr));
@@ -305,7 +315,7 @@ export function createStage(renderer, { tier = 1, place, frame }) {
   const capMat = new THREE.ShaderMaterial({ uniforms: groundUniforms(), vertexShader: GROUND_V, fragmentShader: GROUND_F, defines: { CAP: '' } });
   const g = place.ground || {};
   capMat.uniforms.uKind.value = g.kind === 'coast' ? 0 : g.kind === 'sea' ? 2 : 1;
-  capMat.uniforms.uPad.value = g.pad ? 1 : 0;
+  capMat.uniforms.uPad.value = g.pad === 'landing' ? 2 : g.pad ? 1 : 0;
   if (g.kind === 'coast') {
     // Seaward: square to the shore's bearing, on its east side; in the cap's (east, south) axes.
     const b = ((Number(g.shoreBearing) || 0) + 90) * Math.PI / 180;
@@ -331,7 +341,7 @@ export function createStage(renderer, { tier = 1, place, frame }) {
     cap.geometry.dispose();
     cap.geometry = capGeometry(fr, capSeg);
     capMat.uniforms.uKind.value = groundKind(k); setRunway(k);
-    capMat.uniforms.uPad.value = k.pad ? 1 : 0;
+    capMat.uniforms.uPad.value = k.pad === 'landing' ? 2 : k.pad ? 1 : 0;
     if (k.kind === 'coast') {
       const b = ((Number(k.shoreBearing) || 0) + 90) * Math.PI / 180;
       capMat.uniforms.uShore.value.set(Math.sin(b), -Math.cos(b), Number(k.shoreM) || 800);
@@ -375,7 +385,7 @@ export function createStage(renderer, { tier = 1, place, frame }) {
    * Pose everything for one frame. `origin` (stage metres) is where the camera is; `placeBasis` the place's east,
    * up and south axes and its position in the stage frame now; `sunDir` unit; `moon` stage metres.
    */
-  function update({ origin, sidereal, sunDir, moonPos, moonAxes: ax = null, siteDir = null, placeNow, pose, aspect, shiftPx = 0, width = 0, height = 0 }) {
+  function update({ origin, sidereal, sunDir, moonPos, moonAxes: ax = null, siteDir = null, placeNow, pose, aspect, shiftPx = 0, width = 0, height = 0, lamp = 0 }) {
     const o = origin;
     earth.position.set(-o[0], -o[1], -o[2]);
     earth.rotation.set(0, sidereal, 0);
@@ -409,7 +419,8 @@ export function createStage(renderer, { tier = 1, place, frame }) {
       m.uniforms.uSun.value.set(...sunDir);
       m.uniforms.uHaze.value.copy(haze);
       m.uniforms.uHazeK.value = air.hazeK;
-      m.uniforms.uLift.value = 0.05 * air.sky + 0.05 * air.night;
+      // 1.7.7: a `floodlit` moment (Falcon 9 at night) lifts its dark ground a little so that the landing pad can be seen, as the lamps on the vehicle lift the vehicle
+      m.uniforms.uLift.value = 0.05 * air.sky + 0.05 * air.night + 0.1 * lamp * (1 - air.day);
     }
     // The drawn ground near the place gives way to the map as the camera climbs (it is a close-up's, not a view's).
     capMat.uniforms.uLocalOn.value = 1 - Math.min(1, Math.max(0, (altM - 3000) / 12000));

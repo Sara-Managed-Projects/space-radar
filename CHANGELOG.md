@@ -11,6 +11,42 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [1.7.7] - 2026-11-03
+
+### Added
+
+- **Moments: Hubble's release from Discovery and the first Falcon 9 landing.** Two new stories on the Moments shelf, each on its own mission clock with the published times and every
+  other number marked as ours.
+  - *Hubble's release* (STS-31, 25 April 1990): Discovery in a 613 km orbit with its bay open; the Canadarm snares the telescope's grapple fixture, lifts it out of its berth, and the
+    arrays unroll (the first comes out whole; the second stops part-way, is freed hours later, and finishes), the antenna booms spring out, the arm swings the telescope upright over
+    the bay, and at 19:38 UTC the end effector lets go. Discovery's thruster pulses take it backwards. The release, and the launch it counts from, are the published clock (Jonathan's
+    Space Report no. 36, America Space, NASA's press kit and archive page); the clocks of the grapple, the lift, the unrolling, the stop and the freeing, where over the Earth the shuttle
+    is (chosen to be in sunlight) and the arm's joints are ours, and the Moment says so. The arm holds the telescope at every second (a test checks the end effector against the grapple
+    fixture to 0.2 m). New models built in code from published dimensions: the telescope as it was in 1990 (aperture door shut, the golden-yellow first arrays and the antenna booms as
+    parts), the Canadarm with the telescope's berth. Replay on the card of Launch Complex 39B and of the Hubble Space Telescope.
+  - *The first Falcon 9 landing* (flight 20, ORBCOMM OG2 Mission 2, lift-off 01:29:00 UTC on 22 December 2015): from Space Launch Complex 40 to Landing Zone 1, with the event times of
+    SpaceX's press kit and of the reconstruction of the webcast (main engine cut-off at T+2:23 at 75 km and 1.67 km/s, separation, the second stage and the fairing, the boostback from
+    T+3:47, the entry burn from T+8:01 to T+8:21, the landing burn from T+9:11, touchdown at T+9:44, 01:38:44 UTC). The first stage is flown between those by a point-mass simulation
+    (a boostback found by search, a landing burn that is a guidance to rest on the pad at the published second); its heights and speeds, the length of the boostback and the clocks of
+    the grid fins and landing legs are ours and said so. A night launch, so the rocket is drawn in a lamp of ours. New models: the first stage (nine engines, four legs and four grid
+    fins as parts) and the second stage with its two fairing halves. New places: SpaceX's pad (Space Launch Complex 40) and Landing Zone 1, each with the Replay row, and the zone drawn
+    as the 86 m round pad with its X.
+  - **The Falcon 9 replay is reusable** (internal #867): `tools/moments-build/falcon9-flight.mjs` makes a whole Falcon 9 launch and landing from a flight record (the pad, the landing
+    place, the published event times, MECO's height and speed); another flight is a record, its words and a test block (docs/MOMENTS.md, "A Falcon 9 flight").
+- **The Moments engine moves parts and riders.** A part event `pose` (keyframes that scale, turn and move a part about a point: arrays unrolling, an arm bending, grid fins and legs
+  swinging out), `rideOn.keys` (a rider moving about its host: the telescope on the arm), a shot's `lookAt` (a point in the vehicle's own axes) and a moment's `floodlit` (a lamp on the
+  vehicle at every height, a little lift on the ground, for a flight in the dark); site/js/moments/pose.js, tested without a browser. The ground can be a round landing pad
+  (`ground.pad: "landing"`).
+
+### Changed
+
+- **The Moments shelf looks and behaves like the trips.** A picture under every Moment card, the story's own frame at its most telling second (`site/images/moments/<id>.webp`, 640 x 360, within the
+  trip pictures' budget), fetched lazily and only after the first visit has settled, as the trips' are (`ui/trippics.js` now serves both; the card's hue is the fallback tint). The shelf shows four
+  Moments, then "All {n} moments" / "Fewer moments" on the same button as the trips (Spanish, French, German and Portuguese translated; the other languages show it in English). Each shelf
+  row names its picture second (`picture` in `site/js/moments/shelf.js`); a story added later is rendered by `tools/moment-pictures.probe.js` and `scripts/build_trip_thumbs.py --moments`,
+  and `build_trip_thumbs.py --check` refuses a shelf story without its picture.
+- The STS-1 Moment's open bay no longer shows the DFI pallet in every flight: it is a part of its own in `shuttle-orbiter.glb`, shown with STS-1's open doors and left out of STS-31's.
+- The shelf's note no longer counts the missions.
 ## [1.7.6] - 2026-11-03
 
 ### Added

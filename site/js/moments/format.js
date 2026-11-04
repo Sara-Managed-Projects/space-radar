@@ -13,7 +13,7 @@
 
 export const FORMAT = 1;
 /** What a part event may do (the contract with the model stages, ~/space-radar-handoff/release-1.5/moments-contract.md). */
-export const ACTIONS = ['separate', 'hide', 'show', 'ignite', 'cutoff', 'throttle', 'deploy'];
+export const ACTIONS = ['separate', 'hide', 'show', 'ignite', 'cutoff', 'throttle', 'deploy', 'pose'];
 /** The director's shots (moments/director.js). */
 export const SHOTS = ['pad', 'track', 'chase', 'orbit', 'onboard', 'globe', 'wide'];
 /** The app's honesty classes, as a Moment uses them for a trajectory or a shot. */
@@ -237,6 +237,7 @@ export function validateMoment(m, opts = {}) {
     } else say(`trajectory ${id}: kind must be profile or vectors`);
   }
   // Vehicles and their parts.
+  if (m.floodlit !== undefined && typeof m.floodlit !== 'boolean') say('floodlit is true or false');
   const vehicles = Array.isArray(m.vehicles) ? m.vehicles : [];
   if (!vehicles.length) say('no vehicles');
   const parts = new Map();
@@ -246,7 +247,8 @@ export function validateMoment(m, opts = {}) {
     if (!(v.lengthM > 0)) say(`vehicle ${v.id}: lengthM, its real length in metres`);
     if (v.path && !trajs[v.path]) say(`vehicle ${v.id}: path ${v.path} is not a trajectory`);
     if (v.window !== undefined && !(isVec(v.window, 2) && v.window[1] > v.window[0])) say(`vehicle ${v.id}: window is [from, to] mission seconds`);
-    if (v.rideOn !== undefined && !(v.rideOn && typeof v.rideOn.vehicle === 'string' && (v.rideOn.at === undefined || isVec(v.rideOn.at)) && (v.rideOn.spin === undefined || isVec(v.rideOn.spin)))) say(`vehicle ${v.id}: rideOn is {vehicle, at: [x, y, z], spin?: [x, y, z] degrees}`);
+    if (v.rideOn !== undefined && !(v.rideOn && typeof v.rideOn.vehicle === 'string' && (v.rideOn.at === undefined || isVec(v.rideOn.at)) && (v.rideOn.spin === undefined || isVec(v.rideOn.spin)))) say(`vehicle ${v.id}: rideOn is {vehicle, at: [x, y, z], spin?: [x, y, z] degrees, keys?: [{t, at, quat}]}`);
+    if (v.rideOn && v.rideOn.keys !== undefined && !(Array.isArray(v.rideOn.keys) && sorted(v.rideOn.keys) && v.rideOn.keys.every((k) => isNum(k.t) && isVec(k.at) && isVec(k.quat, 4)))) say(`vehicle ${v.id}: rideOn.keys are {t, at: [x, y, z], quat: [x, y, z, w]} in time order`);
     if (v.phases !== undefined && !(Array.isArray(v.phases) && sorted(v.phases) && v.phases.every((q) => isNum(q.t) && (q.attitude === undefined || ['ascent', 'prograde', 'retrograde', 'vertical'].includes(q.attitude)) && (q.body === undefined || ['moon', 'earth'].includes(q.body)) && (q.pitchDeg === undefined || isNum(q.pitchDeg)) && (q.rollDeg === undefined || isNum(q.rollDeg))))) say(`vehicle ${v.id}: phases are {t, attitude?, body?, pitchDeg?, rollDeg?} in time order`);
     if (v.body !== undefined && v.body !== 'moon') say(`vehicle ${v.id}: body is moon, or left out for the Earth`);
     const names = new Set([...(Array.isArray(v.parts) ? v.parts : []), ...Object.keys(v.cuts || {})]);
@@ -282,6 +284,10 @@ export function validateMoment(m, opts = {}) {
     if (!names || !names.has(e.part)) say(`part event at ${e.t}: ${e.part} is not a part of ${e.vehicle || vehicles[0] && vehicles[0].id}`);
     if (e.dv !== undefined && !isVec(e.dv)) say(`part event at ${e.t}: dv is [x, y, z] m/s`);
     if (e.spin !== undefined && !isVec(e.spin)) say(`part event at ${e.t}: spin is [x, y, z] rad/s`);
+    if (e.action === 'pose') {
+      if ((e.quat !== undefined && !isVec(e.quat, 4)) || (e.pos !== undefined && !isVec(e.pos)) || (e.scale !== undefined && !isVec(e.scale)) || (e.about !== undefined && !isVec(e.about))) say(`part event at ${e.t}: a pose is {about?, pos?, quat?: [x, y, z, w], scale?, ease?}`);
+      if (e.ease !== undefined && e.ease !== 'smooth') say(`part event at ${e.t}: ease is smooth, or left out`);
+    }
   }
   const cam = tracks.camera || [];
   if (!cam.length) say('tracks.camera: the director needs one shot at least');
