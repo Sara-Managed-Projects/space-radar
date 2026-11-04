@@ -227,6 +227,20 @@ jobs:
           json.dump(idx, open(os.path.join(dest, "index.json"), "w"))
           PY
 
+      # 1.7.6 (A9, internal #1069): the debris layer merges the harvester's tracked tiles into the catalogue (6.9 MB, left out
+      # above). CelesTrak turns away GitHub's runners, so the tiles are not harvested here: the branch `look-data-tracked` holds
+      # the set built on 2026-11-03 from CelesTrak's own answers (a throwaway branch, files exactly as `python3 -m harvest
+      # --slow-only tracked` writes them). A ref from before the tiles (main, for the BEFORE) never reads them.
+      - name: The tracked set and the catalogue it is merged into
+        if: matrix.probe == 'r177-tracked'
+        run: |
+          set -euo pipefail
+          curl -fsS -o subject/site/data/v1/celestrak-satcat.json https://dus32w6mqcntr.cloudfront.net/data/v1/celestrak-satcat.json
+          mkdir -p subject/site/data/v1/tiles/tracked
+          git fetch -q --depth 1 origin look-data-tracked
+          git archive FETCH_HEAD | tar -x -C subject/site/data/v1/tiles/tracked
+          ls subject/site/data/v1/tiles/tracked | head
+
       # 1.6.3: the runner has no font for Chinese, so a Chinese page photographs as empty boxes. A probe that looks at Chinese (r163-languages)
       # gets the Noto CJK face first; every other probe is as it was.
       - name: Fonts for a probe that looks at Chinese

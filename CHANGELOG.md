@@ -11,6 +11,50 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [1.7.6] - 2026-11-03
+
+### Added
+
+- **Debris and spent rocket bodies placed by their own element sets** (A9, internal #1069). The debris view drew every piece at a made-up
+  place along its orbit's real height and tilt, because SATCAT gives an orbit's shape and not where on it a piece is. CelesTrak does publish
+  element sets for most of them (`gp.php?NAME=DEB` and `NAME=R/B`: 10 245 and 2 192 answers on 2026-11-03), so 12 403 of the layer's
+  14 603 dots now sit where SGP4 puts them, as the active satellites do, `measured` within seven days of the element set's epoch and `inferred`
+  after it. The other 2 200 have no published element set and stay illustrative, and the view's lines say how many are which. The tiles are
+  built once a day by the harvester, 905 kB for the set (608 kB of tiles; gzip 580 kB with the pick index and the names) against the 6.8 MB
+  catalogue the view already reads, and are fetched only when the debris layer loads (`harvest/tracked.py`, `site/js/data/tracked.js`,
+  `tests/test_tracked.mjs`). The elements keep SGP4's own precision: 142 real element sets, propagated from CelesTrak's numbers and from the
+  tile's, agree to under 0.3 m for a week. Not here: the working payloads are drawn from the active catalogue as before, and the dead ones
+  have no public query that selects them by type, so "all 34 800" is not reached; decayed objects are not in any GP answer.
+- **A1 tiles: streamed point-cloud tile sets** (internal #1059), the base the asteroids, the events and the structure catalogues sit on. A set
+  is a catalogue cut by rank (brightness or size) into levels and by band or HEALPix cell into tiles of quantised columns, with a pick index
+  from catalogue id to tile and row and a names file (`harvest/tilepack.py`, `site/js/data/tilecloud.js`; the format is in the first lines of
+  the first). The page fetches `set.json` and then the tiles a view asks for, level 0 first; **under the frame latch only level 0 is drawn,
+  and on a connection that saves data none**. A tile carries its set's build stamp, so a CDN that still holds yesterday's tile costs one
+  refetch and never a wrong picture. `tests/test_tilecloud.py` and `tests/test_tilecloud.mjs` hold the two halves to the same bytes,
+  and the HEALPix cells to `sky/startiles.js`.
+- **The harvester's daily slow-job queue** (`harvest/slowjobs.py`). After the hourly sources, jobs that cut a catalogue into tiles run when
+  their set is a day old, oldest first, while the run has time (a job is not started without 100 s left); the last good set stays when a build
+  fails or has under 80 % of the last one's objects; `set.json` is written last. `python3 -m harvest --dest DIR --slow-only [ID]` runs it by
+  hand, `--with-slow-jobs` adds it to a run (the Lambda always does, and `scripts/refresh-snapshots.sh` asks for it; without the flag a run in
+  which nothing is due still touches no network). CelesTrak is asked once a day for each of the two queries, never retried
+  and not asked the second after a non-200 answer, as its usage policy asks (CREDITS.md 4.1).
+- A look probe, `r177-tracked`, and the `look` workflow's step that serves it the tracked set.
+
+### Changed
+
+- The debris view says how many of the dots are where their element sets put them, and its closing line says the places are illustrative
+  only for those that have none (the two lines are in all ten languages).
+
+### Not done
+
+- **A12 surface names** (internal #1072) is not started. The source is settled (the USGS Gazetteer's point files, public domain, with each
+  feature's centre, diameter and type: Mars 2 052 names, read 2026-11-03), and what is missing is a name overlay: `ui/labels.js` is capped at
+  eight names by the design rule, so a name-by-zoom layer needs a design of its own against the UI guide.
+- **A2 planetary nebulae** (internal #1060) stays at OpenNGC's 130. HASH, the source the issue names, is behind a registration and states no
+  licence for reuse (`scripts/build_deep_catalogue.py` records this), so it cannot be redistributed. Wikidata (CC0) has 10 793 items of the class
+  but most are bulk imports with no name, and no source was chosen for them.
+- Not touched: A7 asteroids, A10 events, A11 structure (all three can now be built on the tiles), pass brightness (#391), star radii (#412),
+  star-system orbits (#474), more star systems (P#556).
 ## [1.7.5] - 2026-11-03
 
 ### Added

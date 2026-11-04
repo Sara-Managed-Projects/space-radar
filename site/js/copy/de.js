@@ -2248,7 +2248,9 @@ export const COPY = {
     "storyOldest": "Das älteste Ding, das noch im Orbit ist, ist {name}, gestartet {year}: {years} Jahre voller Umläufe.",
     "untracked": "Zu klein zum Verfolgen, nach dem Modell der ESA: etwa {mid} Millionen Teile von 1 bis 10 cm und {small} Millionen von 1 mm bis 1 cm, Stand {when}. Eine Schätzung, keine Zählung.",
     "untrackedSource": "Statistiken der ESA zur Weltraumumgebung",
-    "honesty": "Gezählt nach dem Katalog von CelesTrak, wie er am {date} gelesen wurde: was Radar verfolgen kann, ab etwa 10 cm Größe. Kleinere Teile sind weit zahlreicher und stehen in keinem Katalog. Wo ein Punkt auf seiner Bahn liegt, ist illustrativ."
+    "honesty": "Gezählt nach dem Katalog von CelesTrak, wie er am {date} gelesen wurde: was Radar verfolgen kann, ab etwa 10 cm Größe. Kleinere Teile sind weit zahlreicher und stehen in keinem Katalog. Wo ein Punkt auf seiner Bahn liegt, ist illustrativ.",
+    "drawnPlaced": "{n} Punkte: Grau sind Trümmer, Gelb eine ausgediente Rakete. {placed} liegen dort, wo ihr eigener Bahnelementesatz sie hinsetzt; die übrigen {rest} liegen in ihrer echten Höhe und Neigung, an einem erfundenen Ort auf der Bahn.",
+    "honestyPlaced": "Gezählt nach dem Katalog von CelesTrak, wie er am {date} gelesen wurde: was Radar verfolgen kann, ab etwa 10 cm Größe. Kleinere Teile sind weit zahlreicher und stehen in keinem Katalog. Die Orte stammen aus den Bahnelementesätzen von CelesTrak vom {built}; ein Punkt ohne veröffentlichten Bahnelementesatz liegt an einem erfundenen Ort auf seiner Bahn, und seine Karte sagt es."
   },
   "klassFar": {
     "dwarf": "Zwergplanet",

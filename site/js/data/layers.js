@@ -919,7 +919,8 @@ export const LAYERS = [
     display: 'All tracked debris',
     klass: 'debris',
     source: 'celestrak-satcat',
-    parseLazy: (data) => import('./satcat.js').then((m) => m.fieldRecords(m.parseSatcat(data))),
+    // Release 1.7.6 (A9, internal I#1069): data/tracked.js places the pieces CelesTrak publishes element sets for by them.
+    parseLazy: (data) => import('./tracked.js').then((m) => m.parseDebris(data)),
     propagator: 'kepler',
     frame: 'earth-inertial',
     moments: { wonder: false, now: false, next: false },

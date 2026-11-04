@@ -2238,7 +2238,9 @@ export const COPY = {
     "storyOldest": "A coisa mais antiga ainda em órbita é {name}, lançada em {year}: {years} anos de voltas.",
     "untracked": "Pequenos demais para rastrear, segundo o modelo da ESA: cerca de {mid} milhões de fragmentos de 1 a 10 cm e {small} milhões de 1 mm a 1 cm, em {when}. Uma estimativa, não uma contagem.",
     "untrackedSource": "Estatísticas do ambiente espacial da ESA",
-    "honesty": "Contado a partir do catálogo do CelesTrak lido em {date}: o que o radar consegue rastrear, a partir de cerca de 10 cm de largura. Pedaços menores são muito mais numerosos e não estão em nenhum catálogo. O ponto em que cada um fica na órbita é ilustrativo."
+    "honesty": "Contado a partir do catálogo do CelesTrak lido em {date}: o que o radar consegue rastrear, a partir de cerca de 10 cm de largura. Pedaços menores são muito mais numerosos e não estão em nenhum catálogo. O ponto em que cada um fica na órbita é ilustrativo.",
+    "drawnPlaced": "{n} pontos: cinza é detrito, amarelo é um foguete gasto. {placed} estão onde o seu próprio conjunto de elementos os põe; os outros {rest} estão na altura e na inclinação reais, em um ponto inventado da órbita.",
+    "honestyPlaced": "Contado a partir do catálogo do CelesTrak lido em {date}: o que o radar consegue rastrear, a partir de cerca de 10 cm de largura. Pedaços menores são muito mais numerosos e não estão em nenhum catálogo. Os pontos vêm dos conjuntos de elementos do CelesTrak de {built}; um ponto sem conjunto de elementos publicado fica em um ponto inventado da órbita, e o seu cartão diz isso."
   },
   "klassFar": {
     "dwarf": "Planeta anão",
