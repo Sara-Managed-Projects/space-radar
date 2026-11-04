@@ -76,9 +76,9 @@ for (const id of trips) {
     const plan = await sr.trip.plan(id);
     if (!plan || !plan.offerable) { out.problems.push(`${id}: not offerable`); continue; }
     await sr.trip.start(id);
-    const start = await until(() => { const b = document.querySelector('.sr-tripsheet__start'); return b && b.getBoundingClientRect().width > 0 ? b : null; }, 30000);
-    if (!start) { out.problems.push(`${id}: no Start`); continue; }
-    start.click();
+    const shown = () => { const b = document.querySelector('.sr-tripsheet__start'); return b && b.getBoundingClientRect().width > 0 ? b : null; };
+    if (!(await until(shown, 30000))) { out.problems.push(`${id}: no Start`); continue; }
+    shown().click();
     await arrive();
     const rows = [];
     for (let i = 0; i < sr.trip.state.count; i += 1) {
