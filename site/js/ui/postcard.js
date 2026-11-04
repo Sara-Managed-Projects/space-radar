@@ -19,7 +19,7 @@ export const OG_H = 630;
 export const OG_BAND_H = 126;
 
 const FALLBACK_FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
-const FALLBACK_COLOURS = { space: '#0b0e14', fg: '#e8ecf2', dim: '#9aa4b2' };
+const FALLBACK_COLOURS = { space: '#0b0e14', fg: '#e8ecf2', dim: '#9aa4b2', ember: '#ff9f43', glass: 'rgba(11, 14, 20, 0.82)' };
 
 function pageFont() {
   try {
@@ -30,17 +30,23 @@ function pageFont() {
   }
 }
 
-function pageColours() {
+/**
+ * The palette a canvas draws in, read off the page's tokens (a canvas cannot read a var()), with the
+ * palette's own values where there is no page. `clear` is the glass at no opacity, for a gradient
+ * that fades in from nothing without passing through grey. Shared with ui/printcompose.js.
+ */
+export function pageColours() {
   const out = { ...FALLBACK_COLOURS };
   try {
     const css = getComputedStyle(document.documentElement);
-    for (const [key, name] of [['space', '--sr-space'], ['fg', '--sr-text'], ['dim', '--sr-text-dim']]) {
+    for (const [key, name] of [['space', '--sr-space'], ['fg', '--sr-text'], ['dim', '--sr-text-dim'], ['ember', '--sr-ember'], ['glass', '--sr-glass']]) {
       const v = css.getPropertyValue(name).trim();
       if (v) out[key] = v;
     }
   } catch {
     /* node, or a page without the stylesheet: the palette's own values above */
   }
+  out.clear = out.glass.replace(/[\d.]+\s*\)\s*$/, '0)');
   return out;
 }
 

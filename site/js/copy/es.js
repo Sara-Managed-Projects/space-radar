@@ -47,7 +47,10 @@ export const COPY = {
   app: {
     name: "Space Radar",
     tagline: "Todo lo que se mueve alrededor de la Tierra, donde está de verdad, ahora mismo.",
-    sceneSelected: "Un mapa del espacio dibujado en posiciones reales; has seleccionado {name}: su ficha, en el panel junto al mapa, dice qué es."
+    sceneSelected: "Un mapa del espacio dibujado en posiciones reales; has seleccionado {name}: su ficha, en el panel junto al mapa, dice qué es.",
+    bootSky: "Construyendo el cielo…",
+    bootEarth: "Colocando la Tierra…",
+    bootCatalogues: "Leyendo los catálogos…"
   },
   compareText: {
     size: [
@@ -343,7 +346,8 @@ export const COPY = {
   },
   ladder: {
     title: "A qué distancia",
-    notLoaded: "cargando todavía",
+    rowName: "{label}, {distance}",
+    rowNameLoading: "{label}, cargando todavía",
     weShowTitle: "Lo que este mapa dibuja de lo que se conoce",
     weShowRow: "{n} {what} — de {of}",
     edge: "El borde del mapa",
@@ -4432,5 +4436,13 @@ export const GLOSSARY = {
   L2: "Un punto de equilibrio a 1.5 millones de km de la Tierra, del lado opuesto al Sol, donde un telescopio puede mantener la Tierra y el Sol a su espalda y seguir frío.",
   transit: "Cuando una cosa pasa por delante de otra vista desde donde estás.",
   conjunction: "Cuando dos cosas parecen estar juntas en el cielo. No están cerca en el espacio.",
-  ephemeris: "Una tabla de dónde estará algo, calculada de antemano."
+  ephemeris: "Una tabla de dónde estará algo, calculada de antemano.",
+  umbra:
+    "La parte oscura del centro de una sombra, donde la luz queda bloqueada por completo. Si estás en la umbra de la Luna, el Sol desaparece.",
+  penumbra:
+    "La parte más clara del exterior de una sombra, donde solo se bloquea parte de la luz. Una Luna en la penumbra de la Tierra solo se atenúa un poco.",
+  totality:
+    "Los minutos de un eclipse total en que el Sol queda cubierto por completo. El cielo se oscurece lo bastante para ver estrellas.",
+  annular:
+    "En forma de anillo. En un eclipse anular la Luna está demasiado lejos para cubrir todo el Sol, así que queda un anillo brillante a su alrededor."
 };

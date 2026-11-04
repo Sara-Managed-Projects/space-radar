@@ -357,6 +357,12 @@ html.sr-phone.sr-card-open .sr-keyhint {
     transition: opacity 120ms linear;
   }
 
+  /* The phone's rule outweighs the fade above, so the hint still slid its foot for 120 ms behind a
+     sheet that jumps (public #675). */
+  html.sr-phone .sr-keyhint {
+    transition: opacity 120ms linear;
+  }
+
   .sr-keyhint.is-playing .sr-keyhint__cap,
   .sr-keyhint.is-playing .sr-keyhint__pad .sr-keyhint__dot,
   .sr-keyhint.is-playing .sr-keyhint__pad--tap::after {
