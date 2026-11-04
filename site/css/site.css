@@ -157,7 +157,7 @@ html.sr-render .sr-skip { display: none; }
 /* One drawn thing: an orbit around a world. It says what the app is before a word is read. */
 .boot-mark {
   width: 64px; height: 64px;
-  margin: 0 auto 22px;
+  margin: 0 auto 24px;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 32%, var(--boot-earth-lit), var(--boot-earth) 70%, var(--boot-earth-dark));
   box-shadow: 0 0 0 1px var(--boot-halo), 0 0 34px var(--boot-halo-soft);
@@ -198,7 +198,7 @@ html.sr-render .sr-skip { display: none; }
   white-space: nowrap;
   pointer-events: none;
 }
-.labels .label .dot { opacity: .8; margin-right: 5px; display: inline-block; width: 7px; height: 7px; border-radius: 50%; vertical-align: middle; }
+.labels .label .dot { opacity: .8; margin-right: 4px; display: inline-block; width: 7px; height: 7px; border-radius: 50%; vertical-align: middle; }
 /* The deep-sky swatches take their mark's shape (internal spec 0075 task 4): a galaxy's ellipse, a
    planetary nebula's ring, a nebula's cloud, a cluster's three dots. A mask reads only alpha: any
    opaque token draws the shape. */

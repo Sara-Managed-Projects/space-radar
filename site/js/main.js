@@ -250,7 +250,7 @@ export async function boot({ setStatus } = {}) {
     : null;
   const canvas = document.getElementById('stage');
 
-  say('Building the sky…');
+  say(COPY.app.bootSky);
   const rendererApi = createRenderer(canvas);
   const { renderer, scene, camera, resize, render } = rendererApi;
   // The arrow keys fly the camera (scene/camera.js). Not during a trip: ui/tripframe.js gives the
@@ -768,7 +768,7 @@ export async function boot({ setStatus } = {}) {
   // Regular or Compact (spec 0045 req 10), set on <html> before any panel is built.
   ctx.density = createDensity();
 
-  say('Placing Earth…');
+  say(COPY.app.bootEarth);
   // One frame before any data: the world, the stars, the light.
   worlds.update(clock.now());
   // The camera rig knows nothing about worlds; it is told the radius so it can clamp, and where
@@ -1023,7 +1023,7 @@ export async function boot({ setStatus } = {}) {
     }
   }
 
-  say('Reading the catalogues…');
+  say(COPY.app.bootCatalogues);
   // THE LAYOUT (spec 0061): one sidebar, one tool rail, one time pill. The shell builds the boxes;
   // each module below fills its own. The explore view (wordmark, search, the four tabs, Right now,
   // Trips, Coming up, the status line) is the sidebar's home; the sources sheet is a view of it; the

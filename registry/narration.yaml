@@ -263,7 +263,7 @@ clips:
   - {trip: "to-the-edge", stop: "edge", hash: "e5b25fffdf5cbb46", seconds: 28.53, words: 75, lufs: -16.5, opus: 113788, m4a: 146759, vtt: 591, wer: 0.0, heard: "68e6be59cc5d14fa", voice: 0}
   - {trip: "roof-to-the-edge", stop: "roof", hash: "2a071e2beca5cb04", seconds: 15.26, words: 47, lufs: -16.4, opus: 59751, m4a: 79168, vtt: 346, wer: 0.0, heard: "877cbd0d20aa60ab", voice: 0}
   - {trip: "roof-to-the-edge", stop: "earth", hash: "43aacee9aed59205", seconds: 13.5, words: 39, lufs: -16.5, opus: 52399, m4a: 70258, vtt: 290, wer: 0.0, heard: "ed25319239a08a19", voice: 0}
-  - {trip: "roof-to-the-edge", stop: "moon-orbit", hash: "4a9c60f383e332be", seconds: 16.57, words: 42, lufs: -16.4, opus: 66978, m4a: 85906, vtt: 293, wer: 0.0, heard: "4b12a3a2be146faf", voice: 0}
+  - {trip: "roof-to-the-edge", stop: "moon-orbit", hash: "569015e3fdaedeb8", seconds: 18.16, words: 49, lufs: -16.3, opus: 73684, m4a: 93947, vtt: 321, wer: 0.0, heard: "a70debeeb9c1d173", voice: 0}
   - {trip: "roof-to-the-edge", stop: "planets", hash: "069c8dbeac53f03f", seconds: 12.17, words: 37, lufs: -16.5, opus: 47604, m4a: 63520, vtt: 262, wer: 0.0, heard: "b2ef586398a3420e", voice: 0}
   - {trip: "roof-to-the-edge", stop: "oort", hash: "579a8384726f16bf", seconds: 18.47, words: 50, lufs: -16.4, opus: 73536, m4a: 95686, vtt: 365, wer: 0.0, heard: "9ad1529249bd8e19", voice: 0}
   - {trip: "roof-to-the-edge", stop: "nearest-stars", hash: "9ae3a77dacbe965d", seconds: 16.92, words: 45, lufs: -16.4, opus: 66491, m4a: 87644, vtt: 354, wer: 0.0, heard: "f86aadaad5ffdb23", voice: 0}

@@ -104,6 +104,35 @@ tagged, and their dates are the day the last change in each landed.
   November) and Geminids (14 December).** Each has the day and hour of the maximum from the International Meteor Organization's 2027 calendar,
   the Moon's lit fraction computed for that hour, and a link into the sky then. `tests/test_seo_pages.py` now asks for at least six events
   instead of exactly six.
+## [1.7.16] - 2026-11-04
+
+### Changed
+
+- **Thirteen spacing values moved onto the 4 px grid.** The loading screen's orbit sits 24 px above the title (was 22), the dot before a
+  label's name is 4 px from it (5), the copied-link toast is padded 8 px above and below (10), the on-map tag is padded 4 px at the foot (5)
+  with 8 px between its glyph and its name (6) and 4 px either side of the dot between its readouts (6), the off-screen chevron's gap is 4 px
+  (6) and its padding 4 12 4 8 (3 10 3 6; it is still 28 px tall), and the Explore panel's collapse button is nudged up 4 px (6). The count of
+  off-grid values the guide-rails test holds went from 17 to 5.
+- **The loading screen's three lines and the far-places rows' spoken names are in `copy/en.js`**, where a translator finds them: `app.bootSky`,
+  `bootEarth` and `bootCatalogues`, and `ladder.rowName` and `rowNameLoading` as templates (the two drafts that had the old
+  `ladder.notLoaded` carry the same words in the new keys). The words and what is read aloud are unchanged.
+- **The postcard reads its colours from the page's tokens.** `ui/printcompose.js` no longer writes the palette again as canvas literals: it
+  takes them from `pageColours()` in `ui/postcard.js` (now exported, with `ember` and `glass` added; the palette's own values are the fallback
+  when there is no page). The printed postcard is the same.
+- **The press page's two borders say `var(--sr-line)`**, not a fallback hex that never applied, and the accuracy page's "measured" and
+  "modelled" badges take two named tokens (`--sr-badge-measured`, `--sr-badge-modelled`) in `css/static.css` instead of two hex colours in a rule.
+
+### Fixed
+
+- **A trip card no longer says nobody has travelled further than the Moon.** In "From your roof to the edge" the Moon's card now says only a few
+  people have gone further, swinging round the far side of the Moon, as the Artemis II card does; the source (NASA's page on Artemis II passing
+  Apollo 13's record) is in the trip's facts comment.
+- **The long-press chooser is a list of buttons.** Its `listbox` and `option` roles are gone, so a screen reader meets the buttons inside it.
+- **The timeline and the Tonight sky-time strip show a keyboard focus ring** (ember, drawn inside their box, which clips what is outside it).
+- **With reduced motion the phone's first-visit key hint no longer slides** behind the sheet: it jumps with it, as the sheet does.
+- **The press page's link preview says its size and what the picture shows** (`og:image:width`, `og:image:height`, `og:image:alt`), as the embed
+  page's does.
+- **The glossary has the four eclipse words** (umbra, penumbra, totality, annular) the registry had and the app lacked.
 
 ## [1.7.8] - 2026-11-03
 

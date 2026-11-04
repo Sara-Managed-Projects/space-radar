@@ -653,7 +653,7 @@ export const TOURS = [
 "climb": true,
 "card": {
 "title": "The Moon's orbit",
-"body": "The Moon goes round the Earth about 384 400 kilometres out, once in 27.3 days. Light crosses that gap in 1.3 seconds. Nobody has travelled further from home than this."
+"body": "The Moon goes round the Earth about 384 400 kilometres out, once in 27.3 days. Light crosses that gap in 1.3 seconds. Only a few people have gone further, swinging round the far side of the Moon."
 },
 "frame_radii": 5.0,
 "drift_deg": 34,
@@ -661,7 +661,7 @@ export const TOURS = [
 "key_light_deg": 125,
 "ease": "auto",
 "on_unresolved": "drop",
-"dwell_ms": 12490
+"dwell_ms": 14821
 },
 {
 "id": "planets",
@@ -822,7 +822,7 @@ export const TOURS = [
 "dwell_ms": 20000
 }
 ],
-"estimate_ms": 212884
+"estimate_ms": 215215
 },
 {
 "id": "travel-to-exoplanets",

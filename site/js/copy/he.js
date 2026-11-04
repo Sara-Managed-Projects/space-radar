@@ -355,7 +355,8 @@ export const COPY = {
   },
   "ladder": {
     "title": "כמה רחוק",
-    "notLoaded": "עדיין נטען",
+    "rowName": "{label}, {distance}",
+    "rowNameLoading": "{label}, עדיין נטען",
     "weShowTitle": "כמה ממה שידוע המפה הזאת מציירת",
     "weShowRow": "{n} {what} — מתוך {of}",
     "edge": "קצה המפה",
