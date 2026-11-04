@@ -45,7 +45,8 @@ const BODY = { sun: 'Sun', moon: 'Moon', mercury: 'Mercury', venus: 'Venus', mar
  * Heavens-Above lists as "intrinsic brightness" on each object's page, read 2026-10-05
  * (heavens-above.com/SatInfo.aspx?satid=25544 and 48274). sky/passes.js turns one into the
  * brightness of a pass from its range and phase. Every other object has none here, and its row
- * says "—": a missing number is never a guess.
+ * says "—": a missing number is never a guess. GCAT (CC BY 4.0) has no magnitude column and
+ * SatNOGS DB (CC BY-SA 4.0) has no public magnitude field, read 2026-11-04: CREDITS.md 3d-5.
  */
 export const STANDARD_MAGNITUDE = { 25544: -1.8, 48274: 0.0 };
 

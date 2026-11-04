@@ -242,6 +242,10 @@ def planet_section(sysd: dict, p: dict) -> str:
     if p.get("a_from") == "kepler" and p.get("a_table_au"):
         extra = (f" The Archive's own distance for it is {p['a_table_au']:g} au; the three papers behind its period, its star's mass and that distance "
                  f"do not agree with Kepler's third law, so the page uses the one the period and the star's mass give.")
+    if p.get("a_ref"):
+        extra = (f" The Archive's composite table gives {p['a_default_au']:g} au for it, which does not agree with Kepler's third law; "
+                 f"the page uses the distance in {p['a_ref']}, a single paper whose own period and star's mass do.") if p.get("a_default_au") else \
+            f" The page uses the distance in {p['a_ref']}, a single paper whose own period and star's mass agree with Kepler's third law."
     if p.get("zone") == "inside":
         zone_line = "Its orbit lies inside the conservative habitable zone computed for its star (liquid water on a rocky world's surface would be possible there, which says nothing about whether any is)."
     elif p.get("zone") == "edge":

@@ -146,7 +146,7 @@ check(whyLine({ klass: 'station', name: 'ISS (ZARYA)', meta: { why: 'Seven peopl
   const { createStars3d } = await import(join(JS, 'scene/stars3d.js'));
   const st = createStars3d(null);
   const measured = STARS_NOTABLE.filter((r) => r.radius_suns > 0);
-  check(measured.length === 11 && measured.every((r) => r.radius_err_suns > 0 && /^https:\/\/arxiv\.org\/abs\/[a-z0-9.\/-]+ \(read \d{4}-\d{2}-\d{2}\)$/.test(r.physical_source) && (r.teff_k === undefined || r.teff_k > 2500)), `eleven rows carry a radius with its error and the paper read (${measured.length})`);
+  check(measured.length === 17 && measured.every((r) => r.radius_err_suns > 0 && /^https:\/\/arxiv\.org\/abs\/[a-z0-9.\/-]+ \(read \d{4}-\d{2}-\d{2}\)$/.test(r.physical_source) && (r.teff_k === undefined || r.teff_k > 2500)), `seventeen rows carry a radius with its error and the paper read (${measured.length})`);
   check(measured.filter((r) => r.teff_k > 0).every((r) => r.teff_err_k > 0), 'a temperature is only given with its error');
 
   // 8a. Capella regression (issue #832): assert the measured values directly, so a wrong star's data would fail
@@ -166,6 +166,12 @@ check(whyLine({ klass: 'station', name: 'ISS (ZARYA)', meta: { why: 'Seven peopl
     const rec = byId.get(`hip-${row.hip}`);
     const ph = rec && st.physicalOf(rec);
     check(ph && ph.how === 'measured' && Math.abs(ph.radiusKm / 695700 - row.radius_suns) < 1e-9 && (row.teff_k === undefined || ph.teffK === row.teff_k), `${row.name}: its width is the paper's, and says measured`);
+  }
+  // Six more rows (release 1.7.24), asserted by value for the same reason: a count alone would pass with a number on the wrong star.
+  for (const [name, hip, radius, err] of [['Canopus', 30438, 73.2, 3.9], ['Achernar', 7588, 12.0, 0.4], ['Regulus', 49669, 4.16, 0.08],
+    ['Algol', 14576, 2.73, 0.2], ['Castor', 36850, 2.089, 0.005], ['Upsilon Andromedae', 7513, 1.7, 0.02]]) {
+    const row = STARS_NOTABLE.find((r) => r.name === name);
+    check(row && row.hip === hip && row.radius_suns === radius && row.radius_err_suns === err, `${name} carries ${radius}±${err} Rsun (got ${row && row.radius_suns}±${row && row.radius_err_suns})`);
   }
   const prox = byId.get('hip-70890');
   check(prox && prox.meta.widthSource && /1208\.2431/.test(prox.meta.widthSource), 'Proxima carries where its width was read');
