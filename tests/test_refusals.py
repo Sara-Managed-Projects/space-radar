@@ -763,7 +763,7 @@ CASES: list[tuple[str, str, str, str]] = [
     # Nobody types registry/systems-generated.yaml, so a hand edit is itself the refusal; and the
     # rules a row keeps are checked apart from the script that wrote it.
     ("a listed host the exoplanet table does not have",
-     "systems-list.yaml", "  - {host: LHS 1140, why: temperate}", "  - {host: LHS 1141, why: temperate}"),
+     "systems-list.yaml", "  - {host: Kepler-186, why: temperate}", "  - {host: Kepler-99186, why: temperate}"),
     ("a generated orbit edited by hand, which Kepler's third law refuses",
      "systems-generated.yaml", *generated_orbit_mutation()),
     ("a planet called inside the habitable zone whose orbit is outside the computed band",
