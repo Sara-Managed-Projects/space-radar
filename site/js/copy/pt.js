@@ -447,7 +447,8 @@ export const COPY = {
   },
   "ladder": {
     "title": "Quão longe",
-    "notLoaded": "ainda carregando",
+    "rowName": "{label}, {distance}",
+    "rowNameLoading": "{label}, ainda carregando",
     "weShowTitle": "O que este mapa desenha do que se conhece",
     "weShowRow": "{n} {what} — de {of}",
     "edge": "A borda do mapa",

@@ -969,7 +969,7 @@ export function createExplore(ctx, host) {
     for (const { rung, r } of farRows) {
       const ok = !!(typeof ctx.recordById === 'function' && ctx.recordById(rung.target.record));
       r.b.disabled = !ok;
-      r.b.setAttribute('aria-label', ok ? `${rung.label}, ${rung.distance}` : `${rung.label}, ${COPY.ladder.notLoaded}`);
+      r.b.setAttribute('aria-label', t(ok ? COPY.ladder.rowName : COPY.ladder.rowNameLoading, { label: rung.label, distance: rung.distance }));
     }
     paintExo();
     // A row that names its layer prints what that layer holds, so it agrees with What to show.
