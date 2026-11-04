@@ -551,7 +551,7 @@ export function createMomentPlayer(ctx, opts = {}) {
       if (host) {
         const hs = stateOf(host, tt);
         // 1.7.2: `spin` [x, y, z] degrees turns the rider about the host's axes (a cosmonaut floating along an airlock's axis).
-        // 1.7.6: `keys` [{t, at, quat}] move the rider about on its host (the telescope lifted out of the bay on the arm): the point and the turn, in the host's axes.
+        // 1.7.7: `keys` [{t, at, quat}] move the rider about on its host (the telescope lifted out of the bay on the arm): the point and the turn, in the host's axes.
         const car = Array.isArray(spec.rideOn.keys) && spec.rideOn.keys.length ? carrierAt(spec.rideOn.keys, tt) : null;
         if (car) {
           const R = quatColumns(car.quat);
@@ -714,7 +714,7 @@ export function createMomentPlayer(ctx, opts = {}) {
         part.pivot.visible = shown;
         if (!shown) continue;
         if (!sep) {
-          // 1.7.6: a part with `pose` keyframes is scaled, turned and moved on its vehicle (pose.js): the arrays unroll, the arm bends
+          // 1.7.7: a part with `pose` keyframes is scaled, turned and moved on its vehicle (pose.js): the arrays unroll, the arm bends
           const keys = entry.poseKeys.get(name);
           const pp = keys ? partPoseAt(keys, part.centre, t) : null;
           if (pp) setMatrix(part.pivot, pp.cols.map((col) => fromBasis(ps.basis, col)), add(ps.pos, fromBasis(ps.basis, pp.centre)), origin);
@@ -779,7 +779,7 @@ export function createMomentPlayer(ctx, opts = {}) {
       }
     }
     // The models' shared light (scene/models.js): the Sun and the Earth of THIS stage while it draws, then the map's back.
-    // 1.7.6: a moment flown in the dark (`floodlit: true`: Falcon 9 at night) keeps its lamp on at every height, so that the vehicle is seen; its foot line says so
+    // 1.7.7: a moment flown in the dark (`floodlit: true`: Falcon 9 at night) keeps its lamp on at every height, so that the vehicle is seen; its foot line says so
     const lampK = m.floodlit ? Math.max(air.air.night, 1 - air.air.day) : air.air.night;
     const saved = lightU ? swapLight(sunDir, air.capCentre, origin, NIGHT_PAD_LAMP * lampK) : null;
     renderer.render(stage.scene, stage.camera);

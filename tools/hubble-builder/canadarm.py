@@ -1,5 +1,5 @@
 """The Shuttle Remote Manipulator System (the Canadarm) on its port sill, and the Hubble's berth in the bay, in parts
-for the Moment `hubble-deployment` (release 1.7.6, internal #1058).
+for the Moment `hubble-deployment` (release 1.7.7, internal #1058).
 
 THE FRAME is the file `site/models/shuttle-orbiter.glb`'s own (metres, +Y toward the nose, +X starboard, +Z up out of the
 open bay, y = 0 at the tail's tip): the arm is stowed on the port longeron (x = -2.6) with its shoulder at the bay's

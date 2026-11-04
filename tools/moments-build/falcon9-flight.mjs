@@ -1,4 +1,4 @@
-// tools/moments-build/falcon9-flight.mjs -- a Falcon 9 launch and landing replayed on its own event clock (release 1.7.6, internal #1058 and #867).
+// tools/moments-build/falcon9-flight.mjs -- a Falcon 9 launch and landing replayed on its own event clock (release 1.7.7, internal #1058 and #867).
 //
 // THE REUSABLE PART. A flight is a record (see falcon9-og2-2.mjs: the pad, the landing place, the epoch, the published event times, what the sources say of
 // the ascent's end); `buildFalcon9Moment(flight, outDir)` turns it into site/data/moments/<id>.json and the paths beside it, and a second flight is a second
@@ -17,7 +17,7 @@
 import { writeFileSync } from 'node:fs';
 import * as L from './lib.mjs';
 import { quatAxis } from '../../site/js/moments/pose.js';
-import { siderealAt, OMEGA, EARTH_R, placeFrame, fixedToInertial } from '../../site/js/moments/trajectory.js';
+import { siderealAt, OMEGA, placeFrame, fixedToInertial } from '../../site/js/moments/trajectory.js';
 const { add, sub, scale, dot, cross, len, norm, MU, DEG } = L;
 const MODELS = new URL('../../site/models/', import.meta.url).pathname;
 const g0 = 9.80665;
@@ -80,7 +80,7 @@ export function buildFalcon9Moment(f, OUT) {
     const push = (thr) => hist.push({ t, r: st.r, v: st.v, thr });
     let bbEnd = null, vdes = null;
     const bb0 = E.boostback;
-    let phase = 'coast1', log = { maxLandingAccel: 0, boostbackS: 0, entryMin: 1e9 };
+    let log = { maxLandingAccel: 0, boostbackS: 0, entryMin: 1e9 };
     while (t < E.landingBurn[0] - 1e-9) {
       let thrust = () => [0, 0, 0], thr = 0;
       if (t >= bb0 - 1e-9 && bbEnd === null) {
@@ -176,7 +176,6 @@ export function buildFalcon9Moment(f, OUT) {
   if (Math.abs(bS.min[1]) > 0.01) throw new Error('the booster file no longer stands on y = 0');
   const AT2 = [0, 41.65, 0];                                                 // the second stage's origin on the booster's axis: its thrust skirt meets the top of the interstage
   const ENG = [[0, 0, 0]]; for (let k = 0; k < 8; k += 1) { const a = (45 * k + 22.5) * DEG; ENG.push([1.05 * Math.cos(a), 0, 1.05 * Math.sin(a)]); }
-  const ring = [1, 2, 3, 4, 5, 6, 7, 8];
   const LEGS = 'abcd';
   const legPose = (k) => { const a = (45 + 90 * k) * DEG, rh = [Math.cos(a), 0, Math.sin(a)], w = norm(cross([0, 1, 0], rh)); return { about: v4([(1.83 + 0.12) * rh[0], 2.2, (1.83 + 0.12) * rh[2]]), w }; };
   const finPose = (k) => { const a = 90 * k * DEG, rh = [Math.cos(a), 0, Math.sin(a)], th = [-Math.sin(a), 0, Math.cos(a)]; const c = [rh[0] * 2.03, 44.0, rh[2] * 2.03]; return { about: v4([c[0] - th[0] * 0.75, 44.0, c[2] - th[2] * 0.75]) }; };

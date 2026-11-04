@@ -1,4 +1,4 @@
-// tools/moments-build/hubble.mjs -- Hubble's deployment from Discovery, STS-31, 25 April 1990 (release 1.7.6, internal #1058).
+// tools/moments-build/hubble.mjs -- Hubble's deployment from Discovery, STS-31, 25 April 1990 (release 1.7.7, internal #1058).
 // Writes site/data/moments/hubble-deployment.json and paths/hubble-deployment-{orbit,hst}.json. `node tools/moments-build/hubble.mjs`.
 //
 // WHAT IS PUBLISHED (and read): lift-off from Launch Complex 39B on 24 April 1990 at 12:33:51 UTC (NASA, STS-31 archive page and the press kit); an orbit
@@ -15,7 +15,7 @@
 // antenna booms lie. NOT DRAWN: the crew, the cabin, the IMAX camera and the other payloads of the bay, the cable runs, thruster plumes.
 import { writeFileSync } from 'node:fs';
 import * as L from './lib.mjs';
-import { quatMul, quatAxis, quatColumns, slerp } from '../../site/js/moments/pose.js';
+import { quatAxis, quatColumns, slerp } from '../../site/js/moments/pose.js';
 import { siderealAt, attitude, tilt, OMEGA, EARTH_R } from '../../site/js/moments/trajectory.js';
 import { worldPositionKm } from '../../site/js/propagate/body.js';
 const { sub, add, scale, dot, cross, len, norm, MU, DEG } = L;
@@ -91,7 +91,6 @@ const frameOf = (f) => {                                                  // a l
   u = norm(u);
   return [cross(f, u), f, u];
 };
-const mat3FromCols = (c) => c;                                            // columns, as pose.js's quatColumns gives them
 const quatOfCols = (c) => {                                               // a unit quaternion from a rotation given as columns
   const m00 = c[0][0], m10 = c[0][1], m20 = c[0][2], m01 = c[1][0], m11 = c[1][1], m21 = c[1][2], m02 = c[2][0], m12 = c[2][1], m22 = c[2][2];
   const tr = m00 + m11 + m22;
@@ -242,7 +241,6 @@ let play = 0; for (const q of paceList) play += (q.to - q.from) / q.rate;
 console.log('play time s', play.toFixed(0));
 
 const cam = (t, shot) => ({ t: rel(t), ...shot });
-const BAY = [0, 20.5, -1.2];                                                // the middle of the open bay, in the orbiter's axes
 const moment = {
   format: 1, id: 'hubble-deployment', words: 'hubble-deployment', wordsFile: 'en.moments.hubble.js',
   epoch: '1990-04-24T12:33:51Z', span: [rel(T.start), rel(T.end)], pace: paceList, place,

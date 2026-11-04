@@ -1,4 +1,4 @@
-// moments/pose.js -- a part that moves on its vehicle, and a vehicle that moves on its host (release 1.7.6, internal #1058).
+// moments/pose.js -- a part that moves on its vehicle, and a vehicle that moves on its host (release 1.7.7, internal #1058).
 //
 // Two pieces of animation the player did not have, both pure maths so that a test can ask them without a browser:
 //

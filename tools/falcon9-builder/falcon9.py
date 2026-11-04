@@ -1,5 +1,5 @@
 """The Falcon 9 Full Thrust of 21 December 2015 (flight 20, ORBCOMM OG2 Mission 2), in parts for the Moment `falcon9-og2-2`
-(release 1.7.6, internal #1058 and #867): the first stage with its nine Merlin 1D, four landing legs and four grid fins as
+(release 1.7.7, internal #1058 and #867): the first stage with its nine Merlin 1D, four landing legs and four grid fins as
 parts the Moment poses, and the upper stack (the second stage with its Merlin Vacuum, the two fairing halves).
 
 Two files, each a tree of named parts for the Moments player (tools/vostok-builder/vlib.py, write-glb-parts.mjs):

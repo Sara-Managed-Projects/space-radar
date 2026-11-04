@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// tests/test_moments_pose.mjs -- the part poses and the carried riders of release 1.7.6 (site/js/moments/pose.js; internal #1058).
+// tests/test_moments_pose.mjs -- the part poses and the carried riders of release 1.7.7 (site/js/moments/pose.js; internal #1058).
 // A part's keyframes scale, turn and move it about a point; a rider's keyframes move it about its host; the validator knows both; the player uses both
 // (read as text: the player is a browser module, so what it must call is checked in its source).
 //   node tests/test_moments_pose.mjs

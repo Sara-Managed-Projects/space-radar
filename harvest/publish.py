@@ -251,6 +251,15 @@ def _twin(store, sid: str, e: snap.Entry, prev: snap.Entry | None, now, log) -> 
     log(f"    {sid}: {rows} rows also as columns, {e.bytes} B -> {len(data)} B")
 
 
+def finish_and_queue(store: snap.Store, manifest: snap.Manifest, previous: snap.Manifest, sources, now: datetime,
+                     log=print, deadline: float | None = None) -> None:
+    """`finish`, then the daily slow-job queue (harvest/slowjobs.py: tile sets), which writes beside the snapshots
+    and puts nothing in the manifest. What the hourly run and `python3 -m harvest` pass to `run`."""
+    finish(store, manifest, previous, sources, now, log)
+    from . import slowjobs
+    slowjobs.run_due(store, now, log=log, deadline=deadline)
+
+
 def finish_only(store: snap.Store, sources, *, now: datetime | None = None, runner: str = "local", log=print) -> dict:
     """Apply `finish` to the manifest the store already holds, fetching nothing, and write the index.
 

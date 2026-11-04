@@ -1,4 +1,4 @@
-// The words of the Moment `falcon9-og2-2` (internal #1058 and #867, release 1.7.6): Falcon 9 flight 20, ORBCOMM OG2 Mission 2, 22 December 2015 UTC, and the first landing of
+// The words of the Moment `falcon9-og2-2` (internal #1058 and #867, release 1.7.7): Falcon 9 flight 20, ORBCOMM OG2 Mission 2, 22 December 2015 UTC, and the first landing of
 // its first stage on Landing Zone 1. Named by the moment's `wordsFile`; imported by moments/player.js only, never at boot. The event times are the published ones (SpaceX's press
 // kit and Spaceflight101's reconstruction of the webcast); what is ours is said in the caption where it is shown. Another Falcon 9 flight made with
 // tools/moments-build/falcon9-flight.mjs has the same keys in a file of its own.

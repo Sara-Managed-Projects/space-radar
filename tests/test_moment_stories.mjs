@@ -151,7 +151,7 @@ for (const id of ['vostok-1', 'apollo-11', 'artemis-ii']) {
   for (const k of ['las', 'meco', 'fairings', 'sep', 'esmsep']) check(/lanned/.test(words[k]), `Artemis II: "${k}" says it is planned`);
   for (const k of ['liftoff', 'srb', 'closest', 'far', 'splash']) check(/Flown/.test(words[k]), `Artemis II: "${k}" says it was flown`);
 }
-// --- Hubble's deployment from Discovery (1.7.6, internal #1058)
+// --- Hubble's deployment from Discovery (1.7.7, internal #1058)
 {
   const { m, words } = await load('hubble-deployment');
   const POSE = await mod('moments/pose.js');
@@ -222,7 +222,7 @@ for (const id of ['vostok-1', 'apollo-11', 'artemis-ii']) {
   check(play > 150 && play < 600, `Hubble: ${Math.round(play)} s of play time`);
   check(host.keepXZ && rms.keepXZ && hub.keepXZ && rms.rideOn.vehicle === 'discovery', 'Hubble: the arm and the telescope ride the orbiter in its own file frame');
 }
-// --- The first Falcon 9 landing (1.7.6, internal #1058 and #867): flight 20, ORBCOMM OG2 Mission 2
+// --- The first Falcon 9 landing (1.7.7, internal #1058 and #867): flight 20, ORBCOMM OG2 Mission 2
 {
   const { m, words } = await load('falcon9-og2-2');
   const t = (p, a, v) => first(m, p, a, v);

@@ -116,7 +116,7 @@ def handler(event, context):
     previous = snap.read_index(store)
     doc = run(store, registry.load(), now=now, only=event.get("only"), runner="lambda",
               slack_s=SLACK_S, force_due=publish.force_due(previous, now or snap.utcnow(), SLACK_S),
-              finish=publish.finish, deadline=deadline)
+              finish=lambda *a: publish.finish_and_queue(*a, deadline=deadline), deadline=deadline)
 
     # The manifest is written (last, by run); only now is the edge told. One path, never the snapshot files:
     # their s-maxage is five minutes (harvest/snapshot.py), so the edge catches up by itself.

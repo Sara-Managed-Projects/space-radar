@@ -50,8 +50,10 @@
 //     between 1 and 2 million would read "1,4 millions" where French writes "1,4 million".
 //   * card.it / leadVerbs: the card turns "{name} est ..." into "Ceci est ..." under a title that already names the object;
 //     "C'est ..." would be better but the code joins with a space ("C' est"). articles is ["Le", "le"] (two items, as English).
-//   * r12Navigate.the and theWord: left empty on purpose. The code writes "{theWord} {name}" for the English names "Sun",
-//     "Moon", "Milky Way", which would print "le Sun"; the names come from the registry in English.
+//   * r12Navigate.the / theWord: the English list of names that take "the" cannot carry French genders (le Soleil, la Lune,
+//     la Voie lactée), and an empty string falls back to English (copy/index.js), which would print "the Sun". the is set to
+//     placeholders that never match (∅), so the button reads the registry name alone; theWord stays empty on purpose (same
+//     pattern as Portuguese).
 //   * Names that come from the registry (object names, "Earth", "the Moon", a star's host, a shower's name, the type of a
 //     rocket mission, an exoplanet's discovery method) are English and are put into French sentences as they are.
 //   * sky.worldFrom.*: the English "rises {rise} in the {riseDir}" is written as nouns ("lever à 09:46, à l'est") so that no
@@ -2250,7 +2252,9 @@ export const COPY = {
     "storyOldest": "Le plus vieil objet encore en orbite est {name}, lancé en {year} : {years} ans de tours.",
     "untracked": "Trop petits pour être suivis, d’après le modèle de l’ESA : environ {mid} millions de morceaux de 1 à 10 cm et {small} millions de 1 mm à 1 cm (chiffres : {when}). Une estimation, pas un comptage.",
     "untrackedSource": "Statistiques de l’ESA sur l’environnement spatial",
-    "honesty": "Compté d’après le catalogue de CelesTrak lu le {date} : ce que le radar peut suivre, à partir d’environ 10 cm de large. Les morceaux plus petits sont bien plus nombreux et ne sont dans aucun catalogue. L’endroit où se trouve chaque point sur son orbite est illustratif."
+    "honesty": "Compté d’après le catalogue de CelesTrak lu le {date} : ce que le radar peut suivre, à partir d’environ 10 cm de large. Les morceaux plus petits sont bien plus nombreux et ne sont dans aucun catalogue. L’endroit où se trouve chaque point sur son orbite est illustratif.",
+    "drawnPlaced": "{n} points : le gris est un débris, le jaune un étage de fusée usagé. {placed} sont là où les place leur propre jeu d’éléments ; les {rest} autres sont à leur vraie altitude et à leur vraie inclinaison, à un endroit inventé de l’orbite.",
+    "honestyPlaced": "Compté d’après le catalogue de CelesTrak lu le {date} : ce que le radar peut suivre, à partir d’environ 10 cm de large. Les morceaux plus petits sont bien plus nombreux et ne sont dans aucun catalogue. Les endroits viennent des jeux d’éléments de CelesTrak du {built} ; un point sans jeu d’éléments publié est à un endroit inventé de son orbite, et sa fiche le dit."
   },
   "klassFar": {
     "dwarf": "Planète naine",
@@ -3729,9 +3733,9 @@ export const COPY = {
     "milkyWay": "Voie lactée",
     "outside": "Hors de la Voie lactée",
     "the": [
-      "",
-      "",
-      ""
+      "∅",
+      "∅",
+      "∅"
     ],
     "theWord": "",
     "backParent": "Retour : {parent}",
@@ -4164,6 +4168,87 @@ Object.assign(COPY, {
       "srcWiki": "Sputnik 1, Wikipédia (heures des événements, orbite, dimensions), d’après la NASA, le NSSDC et les sources russes qu’elle cite",
       "srcNssdc": "Sputnik 1, catalogue maître NSSDCA de la NASA (lancement et orbite)",
       "srcClip": "Le bip : enregistrement de la NASA, domaine public, de Wikimedia Commons"
+    },
+    // 1.7.2: Voskhod 2 and STS-1 drafted in French (public #527), Spanish (#525) and Portuguese Brazil (#526). Machine-drafted like the rest of this file.
+    "voskhod-2": {
+      "title": "Voskhod 2 : la première sortie dans l’espace",
+      "blurb": "Baïkonour, 18 mars 1965 : Alexeï Leonov quitte le vaisseau par un sas gonflable pendant 12 minutes et, un jour plus tard, l’équipage se pose à la main dans la taïga, à 386 km de l’endroit prévu.",
+      "chPad": "Site 1",
+      "chAscent": "Décollage",
+      "chOrbit": "Orbite",
+      "chEva": "Le sas et la sortie",
+      "chBack": "Le retour à bord",
+      "chFail": "L’atterrissage automatique échoue",
+      "chRetro": "Rétrofreinage à la main",
+      "chEntry": "Rentrée",
+      "chLand": "La taïga",
+      "ready": "T−10 s au site 1, Baïkonour : la fusée Voskhod et, sous sa coiffe, la Voskhod 3KD avec Pavel Belyayev et Alexeï Leonov. 07:00:00 UTC le 18 mars 1965. La fusée dessinée est celle de la Vostok-K ; la vraie avait un troisième étage différent.",
+      "liftoff": "Décollage. Comme sur Voskhod 1, il n’y a aucun moyen d’abandonner pendant les premières minutes, jusqu’à ce que la coiffe parte.",
+      "boosters": "T+119 s : les quatre blocs latéraux se détachent.",
+      "shroud": "Vers T+2.5 minutes : la coiffe est éjectée et le vaisseau apparaît pour la première fois, avec le sas Volga replié contre sa sphère.",
+      "core": "T+301 s : l’étage central est libéré et le troisième étage, le Blok I, prend le relais pour encore 240 secondes.",
+      "orbit": "Orbite : 167 sur 475 km, 64.8 degrés, 90.9 minutes par tour. Une sphère Vostok, une rétrofusée de réserve au-dessus, et deux sièges d’équipage là où Vostok avait un siège éjectable.",
+      "volga": "Belyayev gonfle le sas Volga : une quarantaine de tubes d’air rigidifient un tube de tissu de 2.5 m de long et 1.2 m de large en environ sept minutes. L’instant où il l’a fait est le nôtre ; il est dessiné déjà déployé, pas en train de gonfler.",
+      "depress": "08:28:13 UTC : Leonov, dans la combinaison Berkut et son sac à dos blanc, dépressurise le sas. L’électronique du vaisseau était refroidie par son air, c’est pourquoi un sas était nécessaire.",
+      "hatch": "08:32:54 : l’écoutille extérieure du sas est ouverte.",
+      "out": "08:34:51 : Leonov quitte le sas, haut au-dessus du centre-nord de l’Afrique, et se pousse jusqu’au bout de son ombilical de 5.35 m. La première personne dans l’espace hors d’un vaisseau.",
+      "tether": "Il fixe une caméra sur le rebord du sas et regarde du détroit de Gibraltar à la mer Caspienne. Sa pose ici est lue sur une image du film.",
+      "swell": "Sa combinaison s’est gonflée dans le vide : il n’atteint pas le déclencheur de sa caméra de poitrine sur la jambe, et ses gants et bottes se sont raidies. Pour rentrer, il devra laisser sortir de l’air de la combinaison.",
+      "back": "Il rentre la tête la première, contre la procédure, et se coince de travers dans le tube en tournant pour fermer l’écoutille extérieure. Il laisse la pression de la combinaison descendre sous la limite de sécurité pour pouvoir se plier.",
+      "inside": "08:47:00 : de retour dans le sas ; l’écoutille est fermée à 08:48:40. 12 minutes 9 secondes dehors, du centre-nord de l’Afrique à l’est de la Sibérie.",
+      "repress": "08:51:54 : le sas est repressurisé. Un peu plus tard Belyayev tire les boulons, et le sas est largué (l’instant est le nôtre).",
+      "jettison": "La Volga est larguée et s’éloigne en tournoyant ; le vaisseau ne peut plus s’en servir.",
+      "auto": "À la révolution 16 le système d’atterrissage automatique est programmé depuis le sol, mais son ordre « 6 » ne passe pas, apparemment à cause d’une panne du système d’orientation vers le Soleil. La poussée prévue vers maintenant (son horloge est la nôtre, approximative) n’a pas lieu.",
+      "manual": "07:16 UTC, 19 mars : Vjezna-3 dit à l’équipage par ondes courtes de couper le système automatique et d’utiliser la descente manuelle. Belyayev a encore une révolution pour se préparer.",
+      "late": "Les deux hommes, dans leurs combinaisons, ne peuvent pas regagner leurs sièges une fois que Belyayev a tourné le vaisseau à la main avec le viseur optique Vzor. Le rétrofreinage arrive avec 46 secondes de retard.",
+      "retro": "Rétrofreinage à la main avec le moteur KTDU-60. Son heure et son lieu sont les nôtres : c’était environ 45 minutes avant l’atterrissage publié, et les sources ne le disent pas.",
+      "wires": "Le module d’instruments ne se sépare pas proprement ; la sphère tourne violemment jusqu’à ce que les câbles brûlent vers 100 km. (Dessiné séparé à la rentrée, un peu tôt.)",
+      "entry": "Rentrée. Les 46 secondes portent le vaisseau environ 386 km au-delà de son champ, dans la forêt des hautes terres de la Haute Kama, au nord-est de Perm.",
+      "chutes": "Les parachutes. Contrairement à Vostok, personne ne s’éjecte : l’équipage atterrit dans la sphère, avec une fusée à propergol solide qui s’allume à environ un mètre pour amortir l’impact (non dessinée).",
+      "landing": "09:02:17 UTC : touché vers 59.57 N 55.47 E, dans la neige profonde de la taïga, à 75 km de Perm.",
+      "taiga": "Les pilotes des hélicoptères de recherche ne trouvent le parachute rouge que des heures plus tard. L’équipage passe deux nuits dans la forêt à moins 5 et plus froid avant de skier jusqu’à un hélicoptère.",
+      "pathAscent": "les heures publiées des événements, hauteurs et distances intermédiaires approximatives",
+      "pathOrbit": "l’orbite publiée avec sa dérive d’un jour, le rétrofreinage à une heure et un lieu qui sont les nôtres, et la rentrée et la voilure dessinées entre les deux",
+      "srcWiki": "Voskhod 2, Wikipédia (les heures de la sortie dans l’espace, l’orbite, l’atterrissage)",
+      "srcRocket": "Voskhod (fusée), Wikipédia (les durées de combustion des trois étages)",
+      "srcGrahn": "Sven Grahn, « The Voskhod 2 mission revisited » (l’échec de la descente automatique, l’appel à la manuelle, citant le journal du général Kamanin)",
+      "srcNssdc": "Voskhod 2, catalogue maître NSSDCA de la NASA (lancement et orbite)"
+    },
+    "sts-1": {
+      "title": "STS-1 : le premier vol de Columbia",
+      "blurb": "Kennedy, 12 avril 1981 : John Young et Robert Crippen emmènent la première navette spatiale du complexe de lancement 39A en orbite et, 54 heures plus tard, la font planer jusqu’au lit de lac asséché d’Edwards.",
+      "chPad": "Complexe de lancement 39A",
+      "chAscent": "Décollage",
+      "chSrb": "Les propulseurs",
+      "chMeco": "Moteurs principaux coupés",
+      "chOrbit": "Orbite",
+      "chHome": "Le chemin du retour",
+      "chEntry": "Rentrée",
+      "chLand": "Piste 23",
+      "ready": "T−10 s au complexe de lancement 39A, centre spatial Kennedy : Columbia, un réservoir externe blanc et deux propulseurs à propergol solide. 12:00:04 UTC le 12 avril 1981, vingt ans jour pour jour après Vostok 1. STS-1 et STS-2 ont volé avec le réservoir peint en blanc.",
+      "ignition": "T−6.6 s : les trois moteurs principaux démarrent, et tout l’ensemble bascule vers l’avant, vers les pieds de l’équipage, puis revient.",
+      "liftoff": "Décollage : les propulseurs s’allument quand l’ensemble revient à la verticale. Crippen l’a comparé à une catapulte à vapeur. Le pas de tir est dessiné simple et la tranchée de flammes est la nôtre.",
+      "roll": "Dégagé de la tour, l’ensemble roule sur son cap, 067 degrés, et s’incline tête en bas, l’orbiteur sous le réservoir, pour ménager ses ailes. (Dessiné déjà sur le cap.)",
+      "maxq": "T+56 s : Max Q, à Mach 1.06 et 29 kPa. Les moteurs principaux ont été réduits à 65 pour cent pour la traverser.",
+      "srb": "T+2 min 12 s : les propulseurs, qui ont mieux fonctionné que prévu, sont largués à 53 km, 2.8 km plus haut que prévu. Ils retombent dans l’Atlantique sous parachutes.",
+      "meco": "T+8 min 34 s : extinction des moteurs principaux à 118 km.",
+      "tank": "18 secondes plus tard le réservoir externe est largué. Il se brise en vol et retombe dans l’océan Indien.",
+      "oms1": "T+10 min 34 s : la première poussée de l’OMS, 86 secondes, avec les deux moteurs dans les nacelles de queue de l’orbiteur (non dessinée : la flamme est presque invisible).",
+      "oms2": "T+44 min 2 s : la deuxième poussée, 75 secondes, au sommet de la montée : 246 sur 248 km, 40.3 degrés, 89.9 minutes. L’heure de l’apogée est celle du rapport ; la trajectoire jusqu’à elle est la nôtre.",
+      "doors": "Les portes de la baie cargo s’ouvrent pour que les radiateurs fonctionnent ; avant la fin de la deuxième orbite, sinon l’équipage aurait dû rentrer. L’heure est la nôtre. À la télévision ils voient des tuiles manquantes sur les nacelles de l’OMS.",
+      "oms3": "T+6 h 20 min 46 s et 7 h 05 min 32 s : deux poussées sur un seul moteur portent l’orbite à 274 km. L’équipage passe environ 53 heures en orbite à tester la machine.",
+      "wake": "Jour 3 : petit déjeuner, rangement, les combinaisons d’éjection, et les portes de la baie fermées pour la rentrée. Young et Crippen s’attachent. Leur orbite a fait 35 tours.",
+      "deorbit": "À la 36ᵉ orbite, au-dessus du sud de l’océan Indien, une poussée de 160 secondes des deux moteurs OMS. Son heure et son lieu sont les nôtres, environ 55 minutes avant le terrain. Young cabre Columbia en attitude de rentrée nez haut.",
+      "entry": "Interface de rentrée à 120 km, à quelque 8 110 km du terrain à 28 240 km/h. L’angle d’attaque est de 40 degrés jusqu’à ce que le pire du chauffage soit passé. Cette reconstitution place l’interface au-dessus du Pacifique occidental ; le rapport dit l’oriental.",
+      "blackout": "Une lueur rose à 100 km ; les deux hommes baissent leurs visières. Environ 21 minutes sans radio, dont 16 pour l’air ionisé. La plus grande partie de la rentrée est volée par les ordinateurs, avec des inversions de roulis à Mach 18.5 et 9.8.",
+      "bigsur": "La côte californienne près de Big Sur à Mach 7 et 41 km. Columbia a volé 583 km en travers de la trace de son orbite pour rejoindre le terrain, qui est dessiné.",
+      "hac": "Young prend les commandes. Inversions à Mach 4.8 et 2.8 faites, un large virage à gauche vers la piste 23 du lit de lac, un T-38 d’accompagnement rejoignant. La taille du virage est la nôtre.",
+      "touch": "T+54 h 20 m 53 s, 18:20:57 UTC : le train principal touche à 339 km/h, plus lent et environ 800 m plus loin sur la piste que prévu, à Edwards, piste 23. La descente du train est dessinée quelques secondes avant.",
+      "stop": "Young : « This is the world's greatest all-electric flying machine. I'll tell you that. That was super! » 36 orbites, 1 729 348 km, 2 jours 6 heures 20 minutes 53 secondes.",
+      "pathAscent": "les heures et hauteurs publiées des événements, avec les distances entre elles approximatives",
+      "pathOrbit": "les poussées et orbites publiées reliées par des arcs, la poussée de désorbitation, la rentrée et l’approche dessinées entre les deux ; les heures et les lieux que nous avons choisis sont dits dans les légendes",
+      "srcWiki": "STS-1, Wikipédia (heures et hauteurs des événements, les orbites, les poussées, la rentrée et l’atterrissage), d’après les documents de mission de la NASA",
+      "srcNssdc": "STS-1 Columbia, catalogue maître NSSDCA de la NASA (lancement et atterrissage)"
     },
     "hubble-deployment": {
       "title": "Hubble largué par Discovery",

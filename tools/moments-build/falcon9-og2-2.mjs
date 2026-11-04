@@ -1,5 +1,5 @@
 // tools/moments-build/falcon9-og2-2.mjs -- the first landing of a Falcon 9 first stage: ORBCOMM OG2 Mission 2 (Falcon 9 flight 20), lift-off from Space Launch Complex
-// 40 at 01:29:00 UTC on 22 December 2015 (8:29 p.m. EST, 21 December), the booster B1019 down on Landing Zone 1 at T+9:44. Release 1.7.6, internal #1058 and #867.
+// 40 at 01:29:00 UTC on 22 December 2015 (8:29 p.m. EST, 21 December), the booster B1019 down on Landing Zone 1 at T+9:44. Release 1.7.7, internal #1058 and #867.
 // `node tools/moments-build/falcon9-og2-2.mjs` writes site/data/moments/falcon9-og2-2.json and its two paths; the work is falcon9-flight.mjs's, which any other
 // Falcon 9 flight can use with its own record like this one.
 //

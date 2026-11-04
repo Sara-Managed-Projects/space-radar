@@ -198,7 +198,7 @@ references:
     url: "https://en.wikipedia.org/wiki/Edwards_Air_Force_Base"
     read: 2026-11-03
     says: "Wikipedia, Edwards Air Force Base, the infobox: 34 degrees 54 minutes N 117 degrees 53 minutes W (34.9, -117.883), Kern County, California; the base's runways include the lakebed runways on Rogers Dry Lake (the text of STS-1 says Columbia touched down on 'lake bed runway 23'). Decimal degrees on Earth, east positive; the point is the base, not the runway's threshold, which is not looked up."
-  # 2026-11-03 (release 1.7.6, internal #1058 and #867): the pad and the landing place of the first Falcon 9 landing.
+  # 2026-11-03 (release 1.7.7, internal #1058 and #867): the pad and the landing place of the first Falcon 9 landing.
   wikipedia-slc-40:
     url: "https://en.wikipedia.org/wiki/Cape_Canaveral_Space_Launch_Complex_40"
     read: 2026-11-03

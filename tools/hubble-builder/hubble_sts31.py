@@ -1,5 +1,5 @@
 """The Hubble Space Telescope as it left Discovery on 25 April 1990 (STS-31), in parts for the Moment `hubble-deployment`
-(release 1.7.6, internal #1058). Derived from release 1.3.0's builder of the telescope as it has flown since Servicing
+(release 1.7.7, internal #1058). Derived from release 1.3.0's builder of the telescope as it has flown since Servicing
 Mission 4 (NORAD 20580; `hubble.glb`), kept in ~/space-radar-handoff/release-1.3/W3-a/build/hubble.py. What changed, and
 why (each against the photographs of the release, NASA, public domain: IMAX Cargo Bay Camera frames of 25 April 1990):
 - the aperture door is SHUT (the telescope's checkout came first; the press kit plans its opening for flight day 3) and the high gain antennas and the arrays are split off as parts

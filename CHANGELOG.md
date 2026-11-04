@@ -47,6 +47,103 @@ tagged, and their dates are the day the last change in each landed.
   and `build_trip_thumbs.py --check` refuses a shelf story without its picture.
 - The STS-1 Moment's open bay no longer shows the DFI pallet in every flight: it is a part of its own in `shuttle-orbiter.glb`, shown with STS-1's open doors and left out of STS-31's.
 - The shelf's note no longer counts the missions.
+## [1.7.6] - 2026-11-03
+
+### Added
+
+- **Debris and spent rocket bodies placed by their own element sets** (A9, internal #1069). The debris view drew every piece at a made-up
+  place along its orbit's real height and tilt, because SATCAT gives an orbit's shape and not where on it a piece is. CelesTrak does publish
+  element sets for most of them (`gp.php?NAME=DEB` and `NAME=R/B`: 10 245 and 2 192 answers on 2026-11-03), so 12 403 of the layer's
+  14 603 dots now sit where SGP4 puts them, as the active satellites do, `measured` within seven days of the element set's epoch and `inferred`
+  after it. The other 2 200 have no published element set and stay illustrative, and the view's lines say how many are which. The tiles are
+  built once a day by the harvester, 905 kB for the set (608 kB of tiles; gzip 580 kB with the pick index and the names) against the 6.8 MB
+  catalogue the view already reads, and are fetched only when the debris layer loads (`harvest/tracked.py`, `site/js/data/tracked.js`,
+  `tests/test_tracked.mjs`). The elements keep SGP4's own precision: 142 real element sets, propagated from CelesTrak's numbers and from the
+  tile's, agree to under 0.3 m for a week. Not here: the working payloads are drawn from the active catalogue as before, and the dead ones
+  have no public query that selects them by type, so "all 34 800" is not reached; decayed objects are not in any GP answer.
+- **A1 tiles: streamed point-cloud tile sets** (internal #1059), the base the asteroids, the events and the structure catalogues sit on. A set
+  is a catalogue cut by rank (brightness or size) into levels and by band or HEALPix cell into tiles of quantised columns, with a pick index
+  from catalogue id to tile and row and a names file (`harvest/tilepack.py`, `site/js/data/tilecloud.js`; the format is in the first lines of
+  the first). The page fetches `set.json` and then the tiles a view asks for, level 0 first; **under the frame latch only level 0 is drawn,
+  and on a connection that saves data none**. A tile carries its set's build stamp, so a CDN that still holds yesterday's tile costs one
+  refetch and never a wrong picture. `tests/test_tilecloud.py` and `tests/test_tilecloud.mjs` hold the two halves to the same bytes,
+  and the HEALPix cells to `sky/startiles.js`.
+- **The harvester's daily slow-job queue** (`harvest/slowjobs.py`). After the hourly sources, jobs that cut a catalogue into tiles run when
+  their set is a day old, oldest first, while the run has time (a job is not started without 100 s left); the last good set stays when a build
+  fails or has under 80 % of the last one's objects; `set.json` is written last. `python3 -m harvest --dest DIR --slow-only [ID]` runs it by
+  hand, `--with-slow-jobs` adds it to a run (the Lambda always does, and `scripts/refresh-snapshots.sh` asks for it; without the flag a run in
+  which nothing is due still touches no network). CelesTrak is asked once a day for each of the two queries, never retried
+  and not asked the second after a non-200 answer, as its usage policy asks (CREDITS.md 4.1).
+- A look probe, `r177-tracked`, and the `look` workflow's step that serves it the tracked set.
+
+### Changed
+
+- The debris view says how many of the dots are where their element sets put them, and its closing line says the places are illustrative
+  only for those that have none (the two lines are in all ten languages).
+
+### Not done
+
+- **A12 surface names** (internal #1072) is not started. The source is settled (the USGS Gazetteer's point files, public domain, with each
+  feature's centre, diameter and type: Mars 2 052 names, read 2026-11-03), and what is missing is a name overlay: `ui/labels.js` is capped at
+  eight names by the design rule, so a name-by-zoom layer needs a design of its own against the UI guide.
+- **A2 planetary nebulae** (internal #1060) stays at OpenNGC's 130. HASH, the source the issue names, is behind a registration and states no
+  licence for reuse (`scripts/build_deep_catalogue.py` records this), so it cannot be redistributed. Wikidata (CC0) has 10 793 items of the class
+  but most are bulk imports with no name, and no source was chosen for them.
+- Not touched: A7 asteroids, A10 events, A11 structure (all three can now be built on the tiles), pass brightness (#391), star radii (#412),
+  star-system orbits (#474), more star systems (P#556).
+## [1.7.5] - 2026-11-03
+
+### Added
+
+- **Four astronomy satellites have a model of their own: CHEOPS, Insight-HXMT, SVOM and the Einstein Probe.** Each was the generic
+  space telescope or the plain satellite shape; each is now built in code from published dimensions and from pictures read for the layout,
+  by NORAD number, and its card says "shape built from published dimensions and pictures; details simplified". No agency publishes a mesh
+  of any of them (NASA's 3D Resources and science.nasa.gov/3d-resources have none; ESA's terms forbid derivatives), so no mesh and no picture
+  is in a file. **CHEOPS** (`cheops.glb`, 114 kB): the hexagonal platform on its launcher ring, the 30 cm telescope behind its black baffle
+  with the copper cover, two star-tracker heads, the instrument radiators, and the three-panel Sun shield with its blue cells wrapped round the
+  back, at ESA's 1.55 by 1.49 by 1.4 m. **Insight-HXMT** (`hxmt.glb`, 158 kB): the gold platform, the 18 HE detector modules with their slat
+  collimators, the three LE and three ME boxes, the star trackers, the sun-shielding board and two three-panel wings. **SVOM** (`svom.glb`,
+  151 kB): the gold-blanketed body with ECLAIRs' coded mask, the MXT, the visible telescope, the three GRM heads tilted 30 degrees, the
+  adapter ring and two wings. **Einstein Probe** (`einstein-probe.glb`, 113 kB): the twelve lobster-eye WXT modules fanned round the two FXT
+  cylinders on the gold payload cabin, the bus and two three-panel wings. Each is 12 000 to 19 000 triangles, loaded only when its craft is selected.
+  The sources, what was cited and what was estimated are in `registry/models.yaml` and `CREDITS.md` §3q to §3t.
+
+### Not yet
+
+- **The solar arrays of Insight-HXMT, SVOM and the Einstein Probe are estimates** (no page opened gives their span), and every array's cell
+  grid is coarse (the bake keeps the colour of nothing smaller than about 10 cm on a craft this size); the rows say so. CHEOPS' telescope looks along
+  the Sun shield's normal, so in the app it looks sideways, not away from the Earth.
+- **The optical Earth-observation group** (Pleiades, SPOT, SkySat, BeiDou-3 MEO) is the next craft batch; the radar pair after it.
+
+## [1.7.4] - 2026-11-03
+
+### Added
+
+- **Six small checks in CI** (`.github/workflows/ci.yml`, the `rails` job, each in under a minute and with nothing to install): `tests/test_lint.mjs`
+  (a name that an import, const, let, function or class declares and its file never mentions again; 14 such names in the shipped code are gone,
+  36 in build scripts and tests are listed as known and may only shrink), `tests/test_cli_usage.mjs` (36 command-line tools answer `--help`
+  with a usage line and exit 0; 75 tools that read their arguments by position and say nothing are listed in `tests/cli_usage_gaps.txt`, and a
+  new one fails), `tests/test_nobuild_launch.mjs` (starts the README's own `python3 -m http.server --directory site` and follows every module on the
+  way to the first frame: 125 files, all 200, all JavaScript, nothing built), `tests/test_nowebgl.mjs` (calls the real `createRenderer()` with a
+  canvas that refuses WebGL 2 and holds the readable page with all 31 trips), `tests/test_reduced_motion_trips.mjs` (runs the outer-solar-system
+  and a-year-in-a-minute trips end to end under `prefers-reduced-motion`: no flight, no veil, the clock held still on every timed stop, and
+  leaving puts it back) and `tests/test_baselines.mjs` (the deep-space baseline probe's blocks and poses all name a real scene group).
+  The baselines test does not compare pictures: none is kept in the repository to compare with.
+- The release zip check refuses a manifest icon that is missing, empty or outside `site/`, and compares the zip's four brand icons to the tree
+  (public #1277). Every card sentence is held to 160 characters, and nine that were over are shortened (public #1286).
+
+### Changed
+
+- **Shader text is stripped of its comments and indentation in every served build** (internal #531). `scripts/minify_site.py` did it only when
+  asked; it is now the default, with `--no-shaders` or `SR_STRIP_SHADERS=0` as the way back. 185 shader templates in 58 files go from 283 187 B to
+  196 885 B of text before compression, and the boot graph of the built tree from 1 950 547 B to 1 920 102 B (30 445 B); no line holding a `${` is touched, and each template is checked to say the same GLSL.
+- The README says "more than 240 spacecraft and shape models" where it said 70 (the registry holds 246), and a test now keeps the claim current.
+
+### Not yet
+
+- **Content-hashed file names (internal #517) and a trimmed upcoming-launches file (internal #524)** are not done: the first rewrites every path in
+  the generated mirrors and wants its own browser walk, the second needs the harvester deployed and an answer on Launch Library's terms (internal #370).
+- **The AVIF decision (internal #530)** is written on the issue; the maps are still WebP.
 
 ## [1.7.3] - 2026-11-03
 

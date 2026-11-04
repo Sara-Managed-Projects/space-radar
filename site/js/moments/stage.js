@@ -138,7 +138,7 @@ void main() {
       local = mix(local, sea, smoothstep(10.0, 40.0, d));
     }
     if (uPad > 1.5) {
-      // 1.7.6: a landing zone (Landing Zone 1): a round concrete pad of 86 m across with a painted ring and a cross, on a wider apron
+      // 1.7.7: a landing zone (Landing Zone 1): a round concrete pad of 86 m across with a painted ring and a cross, on a wider apron
       float rr = length(q);
       vec3 concrete = vec3(0.60, 0.60, 0.57) * (0.92 + 0.08 * n3);
       local = mix(local, vec3(0.50, 0.49, 0.45), 1.0 - smoothstep(60.0, 90.0, rr));
@@ -419,7 +419,7 @@ export function createStage(renderer, { tier = 1, place, frame }) {
       m.uniforms.uSun.value.set(...sunDir);
       m.uniforms.uHaze.value.copy(haze);
       m.uniforms.uHazeK.value = air.hazeK;
-      // 1.7.6: a `floodlit` moment (Falcon 9 at night) lifts its dark ground a little so that the landing pad can be seen, as the lamps on the vehicle lift the vehicle
+      // 1.7.7: a `floodlit` moment (Falcon 9 at night) lifts its dark ground a little so that the landing pad can be seen, as the lamps on the vehicle lift the vehicle
       m.uniforms.uLift.value = 0.05 * air.sky + 0.05 * air.night + 0.1 * lamp * (1 - air.day);
     }
     // The drawn ground near the place gives way to the map as the camera climbs (it is a close-up's, not a view's).

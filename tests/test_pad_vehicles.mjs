@@ -22,7 +22,7 @@ check(pads.length === 2, `two hand-kept pads with a vehicle on them (${pads.leng
 // Release 1.6.2: Gagarin's Start is a hand-kept pad with NO vehicle: no model, no list, so nothing is ever drawn on it.
 const baikonur = allPads.find((r) => r.id === 'baikonur-site-1');
 check(!!baikonur && !REAL_MODELS.bySite[baikonur.id] && !baikonur.meta.liftoffs, 'baikonur-site-1 is a pad with no vehicle model and no liftoffs');
-check(allPads.length === 4, `four hand-kept pads in all (${allPads.length}): Gagarin's Start, the two with vehicles, and SLC-40 (1.7.6, a Falcon 9 pad with no vehicle model)`);
+check(allPads.length === 4, `four hand-kept pads in all (${allPads.length}): Gagarin's Start, the two with vehicles, and SLC-40 (1.7.7, a Falcon 9 pad with no vehicle model)`);
 for (const pad of pads) {
   const entry = REAL_MODELS.bySite[pad.id];
   check(entry && entry.file && realModelFor(pad) === entry, `${pad.id} wears a vehicle's file`);

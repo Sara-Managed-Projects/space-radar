@@ -47,6 +47,8 @@ Each of these takes minutes, needs no install, and is named in the release notes
   [Discussions](https://github.com/Sara-Managed-Projects/space-radar/discussions). A GitHub account
   is needed only to talk here; using Space Radar needs none.
 
+Maintainers preparing a starter task: use the [starter issue checklist](docs/STARTER_ISSUES.md).
+
 ## What you can expect from us
 
 - **A first reply within 48 hours**, from a person, on every issue and pull request.

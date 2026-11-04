@@ -1,4 +1,4 @@
-// The words of the Moment `hubble-deployment` (internal #1058, release 1.7.6): the Hubble Space Telescope let go from Discovery's arm on 25 April 1990, STS-31.
+// The words of the Moment `hubble-deployment` (internal #1058, release 1.7.7): the Hubble Space Telescope let go from Discovery's arm on 25 April 1990, STS-31.
 // Named by the moment's `wordsFile`; imported by moments/player.js only, never at boot. The release time is the published one; every other clock, and where the
 // shuttle was over the Earth, is ours, and the captions say so where it is shown.
 import { COPY } from './en.js';

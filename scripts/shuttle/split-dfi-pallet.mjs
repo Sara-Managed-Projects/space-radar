@@ -1,4 +1,4 @@
-// split-dfi-pallet.mjs -- release 1.7.6: the DFI pallet of STS-1 becomes a part of its own in site/models/shuttle-orbiter.glb.
+// split-dfi-pallet.mjs -- release 1.7.7: the DFI pallet of STS-1 becomes a part of its own in site/models/shuttle-orbiter.glb.
 //
 //   cd <a folder with node_modules for @gltf-transform/core extensions functions, meshoptimizer, draco3dgltf, sharp>
 //   node /path/to/space-radar/scripts/shuttle/split-dfi-pallet.mjs site/models/shuttle-orbiter.glb

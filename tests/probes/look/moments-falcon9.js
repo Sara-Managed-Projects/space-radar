@@ -1,4 +1,4 @@
-// moments-falcon9: the Moment of release 1.7.6 (internal #1058, #867), the first Falcon 9 landing (flight 20, ORBCOMM OG2 Mission 2, 22 December 2015 UTC), at named seconds, each with the player's own state
+// moments-falcon9: the Moment of release 1.7.7 (internal #1058, #867), the first Falcon 9 landing (flight 20, ORBCOMM OG2 Mission 2, 22 December 2015 UTC), at named seconds, each with the player's own state
 // beside it: the shot, the mission clock, the compression on screen, the chapter, the caption, the foot line. Opened as a visitor's link opens one, paused at each second.
 // The release is at mission second 111 849 (19:38:00 UTC). Also the shelf, and the card of Launch Complex 39B with its Replay row.
 // Run it at -f width=1600 -f height=900.

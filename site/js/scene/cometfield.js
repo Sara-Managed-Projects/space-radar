@@ -56,7 +56,6 @@ export const TAIL_SEGMENTS = 12;
 const REFRESH_SIM_MS = 600e3; // places and tails are worked out again after this much clock
 const PICK_PX = 14;
 const PICK_BEHIND_PX = 3;
-const DEG = Math.PI / 180;
 
 // ------------------------------------------------------------------------------------------------ the maths
 /** Newton for Kepler's equation, ellipse (E - e sin E = M) and hyperbola (e sinh H - H = M). */
@@ -457,7 +456,6 @@ export function createCometField(THREE, env = {}) {
     return true;
   }
 
-  const velScratch = [0, 0, 0];
   /** Work out every comet's place and the tails (when the clock has moved REFRESH_SIM_MS or the first time). */
   function refresh(tMs, limit) {
     S.lastT = tMs;
@@ -592,7 +590,6 @@ export function createCometField(THREE, env = {}) {
   }
   const rowOf = (id) => (S.loaded && S.byId.has(id) ? S.byId.get(id) : -1);
 
-  const _p = new THREE.Vector3();
   /** Candidates for a tap: {record, px, score}, nearest first. A comet with a glyph is the glyph layer's, not this field's. */
   function pickAll(ndcX, ndcY, camera, viewport, limit = 6, reachPx = PICK_PX) {
     if (!S.loaded || !group.visible || !camera || !viewport) return [];

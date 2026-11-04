@@ -104,7 +104,7 @@ model's box (the Voskhod 3KD has an airlock and an umbilical to one side). A `gr
 horizon, the camera in the air) and marks every vehicle shorter than 40 px on the screen with the ringed dot. The generators are `voskhod2.mjs`
 and `sts1.mjs`; both search for the least correction that meets the published landing and print how far the reconstruction had to be nudged.
 
-**Release 1.7.6 notes.** Three additions to the engine, all in `site/js/moments/pose.js` (pure maths, tested without a browser):
+**Release 1.7.7 notes.** Three additions to the engine, all in `site/js/moments/pose.js` (pure maths, tested without a browser):
 
 - Part action `pose`: `{t, part, action: "pose", about: [x, y, z], pos: [x, y, z], quat: [x, y, z, w], scale: [x, y, z], ease?: "smooth"}`, one KEYFRAME of the
   part's own pose in the vehicle's frame (metres): the point `about` stays, the part is scaled along the vehicle's axes, turned by the unit quaternion and
@@ -118,7 +118,7 @@ and `sts1.mjs`; both search for the least correction that meets the published la
 fixture of the telescope (`hubble-sts31`) by a two-link arm's inverse kinematics at every keyframe, the telescope on a carrier that follows the arm's end, and,
 from the release, on its own path. Only the release (19:38 UTC, 25 April 1990) is a published clock; the others are ours, and the Moment says so.
 
-**A Falcon 9 flight (release 1.7.6, internal #867).** `tools/moments-build/falcon9-flight.mjs` makes a whole Falcon 9 launch and landing on its own event clock from a
+**A Falcon 9 flight (release 1.7.7, internal #867).** `tools/moments-build/falcon9-flight.mjs` makes a whole Falcon 9 launch and landing on its own event clock from a
 flight RECORD; `falcon9-og2-2.mjs` (the first landing, ORBCOMM OG2 Mission 2, 22 December 2015 UTC) is the first record and the model of the next. To add a flight:
 
 1. Copy `falcon9-og2-2.mjs` to `falcon9-<mission>.mjs` and change the record: `id`, `wordsFile`, `epoch` (lift-off, UTC), the `pad` (its row in registry/sites.yaml, azimuth and

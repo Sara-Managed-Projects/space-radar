@@ -31,7 +31,7 @@
 // tools/walk.probe.js; the offline step reuses tests/probes/offline-probe.js against a stamped
 // copy of --dir with the server stopped.
 import { spawn, execFileSync } from 'node:child_process';
-import { mkdirSync, writeFileSync, readdirSync, cpSync, rmSync, existsSync, readFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync, readdirSync, cpSync, rmSync, existsSync } from 'node:fs';
 import { createChromeLock } from './chromelock.mjs';
 import { waitForQuiet } from './chrome-quiet.lib.mjs';
 import { join, dirname, resolve } from 'node:path';

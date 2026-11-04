@@ -2913,7 +2913,7 @@ for (const file of allFiles) {
       if (attr(html, /rel="canonical" href="([^"]+)"/) !== ogUrl) problems.push(`TRIPPAGE ${tour.id}: canonical and og:url disagree`);
       const refresh = attr(html, /http-equiv="refresh" content="0; url=([^"]+)"/);
       if (!refresh.endsWith(`#trip=${tour.id}`)) problems.push(`TRIPPAGE ${tour.id}: the refresh goes to '${refresh}', not #trip=${tour.id}`);
-      if (!html.includes(`location.replace('../#trip=${tour.id}')`)) problems.push(`TRIPPAGE ${tour.id}: no script redirect to its hash`);
+      if (!html.includes(`location.replace('../' + location.search + '#trip=${tour.id}')`)) problems.push(`TRIPPAGE ${tour.id}: no script redirect to its hash that keeps the query (?from=)`);
       if (!html.includes(`<a href="../#trip=${tour.id}">`)) problems.push(`TRIPPAGE ${tour.id}: no plain link for no-script`);
       const description = attr(html, /name="description" content="([^"]*)"/);
       if (!description) problems.push(`TRIPPAGE ${tour.id}: no description`);
