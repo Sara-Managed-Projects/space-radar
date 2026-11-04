@@ -48,7 +48,7 @@ git clone https://github.com/Sara-Managed-Projects/space-radar.git
 cd space-radar && python3 -m http.server 8177 --directory site      # then open http://localhost:8177
 ```
 
-31 narrated trips (232 stops), 109 389 stars in 3D, 43 star systems to fly into, about 17 000
+31 narrated trips (232 stops), 109 389 stars in 3D, 51 star systems to fly into, about 17 000
 satellites at their real positions, and every picture labelled as measured, modelled or an
 artist's impression. **Teach with it:** present mode and an autopilot screen for a classroom or a
 museum, and a [zip that runs offline](docs/RUN_LOCALLY.md).
@@ -82,7 +82,7 @@ satellites where they are this minute, the space stations and who is aboard, roc
 launch, probes on their way out, every planet and 21 moons (20 of them with a real map), the stars
 in three dimensions, nebulae and galaxies as 3D models built from published measurements, and the Milky Way from outside. Step
 down to the ground and it is tonight's sky from your own street. Thirty-one guided trips, read
-aloud, fly the camera for you; forty nearby star systems have a stage you can fly into. It is a static website: the physics runs in your browser, on public
+aloud, fly the camera for you; fifty-one nearby star systems have a stage you can fly into. It is a static website: the physics runs in your browser, on public
 data, and every number on screen says where it came from.
 
 ![Space Radar: the Earth with today's clouds, the aurora and the satellites around it](assets/screenshots/hero.webp)
