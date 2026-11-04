@@ -60,6 +60,9 @@ on:
       - "scripts/check-trips.mjs"
       - "tools/trips-cost.probe.js"
       - "registry/tours.yaml"
+      # The README's no-build boot in a clean browser (public #1203, spec 0036).
+      - "scripts/check-nobuild-boot.mjs"
+      - "registry/nobuild-boot.yaml"
 
 permissions:
   contents: read
@@ -95,6 +98,29 @@ jobs:
             sleep 0.25
           done
           echo "::error::the static server never came up"; cat /tmp/serve.log; exit 1
+
+      # THE README'S NO-BUILD LAUNCH, IN A CLEAN BROWSER (public #1203, spec 0036). Starts the
+      # README's own command on a free port (not 8177), opens a fresh Chromium, reaches the map,
+      # opens the ISS card and starts a trip by clicking, and fails on pageerror, unlisted
+      # console.error, same-origin 4xx/5xx and unlisted hosts. The tree must still be the clone:
+      # a earlier step that wrote into site/ would make this a different promise.
+      - name: The README's no-build launch reaches the map, a card and a trip
+        if: steps.page.outputs.found == '1'
+        run: |
+          set -euo pipefail
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::the checkout is not clean; the README promises an unmodified tree"
+            git status --porcelain
+            exit 1
+          fi
+          docker run --rm --network host \
+            -u "$(id -u):$(id -g)" -e HOME=/tmp \
+            -e PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+            -v "$PWD:/work" -w /work \
+            mcr.microsoft.com/playwright:v1.49.1-jammy \
+            bash -c 'set -euo pipefail
+              npm install --no-save --no-audit --no-fund playwright@1.49.1
+              node scripts/check-nobuild-boot.mjs'
 
       # WHAT A VISITOR IS SENT (internal #405). scripts/deploy.sh uploads js/ and css/ without their
       # comments and indentation (scripts/minify_site.py); the byte gate below is on that tree, so

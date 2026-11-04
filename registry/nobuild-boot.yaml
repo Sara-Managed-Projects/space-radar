@@ -1,0 +1,43 @@
+# Hosts a local copy of site/ may reach during the README's no-build boot, and console lines
+# that are known. Each row: why, and an issue. A row that matched nothing in the run fails, so
+# the list cannot outlive what it excuses (spec 0036, public #1203).
+#
+# Measured Wed 4 Nov 2026 on this host: python3 -m http.server --directory site, a clean Chromium
+# context, map → ISS card → Moon landings trip. Off-origin hosts seen: celestrak.org,
+# gibs.earthdata.nasa.gov, services.swpc.noaa.gov, ll.thespacedevs.com, www.gdacs.org.
+# Same-origin 404s under /data/v1/ are the snapshot-first probe on a clean clone (gitignored).
+
+hosts:
+  - host: celestrak.org
+    why: stations for the ISS card; a clean clone has no data/v1 and falls back to the publisher
+    issue: "#1203"
+  - host: gibs.earthdata.nasa.gov
+    why: today's clouds on a first visit
+    issue: "#1203"
+  - host: services.swpc.noaa.gov
+    why: planetary K-index; blocked so CI never spends a visitor's budget on space weather
+    issue: "#1203"
+    block: true
+  - host: ll.thespacedevs.com
+    why: launches; blocked so CI never spends the Launch Library per-IP budget a visitor needs
+    issue: "#1203"
+    block: true
+  - host: www.gdacs.org
+    why: tropical cyclones; blocked so CI never spends a visitor's budget
+    issue: "#1203"
+    block: true
+
+console:
+  - match: "Failed to load resource: the server responded with a status of 404"
+    why: the snapshot-first probe asks for data/v1 on a clean clone; the app falls back to live
+    issue: "#1203"
+  - match: "Failed to load resource: net::ERR_(FAILED|ABORTED)"
+    why: a host listed with block: true is refused by route
+    issue: "#1203"
+
+# Same-origin answers of 400 or more fail unless a row here names the path prefix and status.
+same_origin_ok:
+  - path: /data/v1/
+    status: 404
+    why: snapshot-first probe; a clean clone has none and falls back to the live host
+    issue: "#1203"
