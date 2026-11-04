@@ -11,6 +11,34 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [1.7.23] - 2026-11-04
+
+### Added
+
+- **The PSLV fourth stage and BeiDou-3's IGSO and GEO craft have models of their own, from a second hunt for sources over the 14 craft held back since 1.4.0.** Of the 14 (public #996, #1095, #1120,
+  #1144, #1153, #1157, #1158, #1159, #1161, #1162, #1163, #1168, #1170 and #1171), two had a source that was not there before; the other twelve still have none and each issue says what was searched
+  and found. No agency publishes a mesh of any of them (`scripts/check-model-sources.py` and NASA's 3D Resources index: none), so both are built in code from published dimensions and pictures read
+  for the layout; no mesh and no picture is in a file.
+  - **PSLV R/B** (`pslv-ps4.glb`, 94 kB, 12 800 triangles; also PSLV R/B(1)): the 1.4.0 build of this stage was held because ISRO's photographs seemed to disagree on where its platform sits. They do not:
+    the gold barrel and the big dark nozzle of that build are the THIRD stage (its Kevlar case; 'PS3' is written on the nozzle), which hangs under the fourth in five ISRO photographs on Commons
+    (GODL-India, 2008 to 2023). The model is rebuilt as the stage that stands on it: the black ribbed skirt, the white ring 2.8 m across, the open ring of struts with four gold helium spheres, the
+    equipment platform with its black and gold boxes and harness, and the 1.34 m stainless tank with its domed top and adapter ring, with the two 7.4 kN engines under it. Tank width and length are
+    the numbers 1.4.0 quoted from ISRO's mission brief; the skirt, ring and struts are read off the photographs against the 2.0 m third stage and the PSLV's 2.8 m diameter; the engines are in no picture.
+  - **BeiDou-3 IGSO** (`beidou-3-igso.glb`, 110 kB, 13 806 triangles): CAST's DFH-3B bus as the China Satellite Navigation Office's metadata gives it, 2.098 x 2.358 m across and 3.602 m long with 17.7 m2
+    of cells a wing, as an open-access paper quotes it with CSNO's own rendering of the craft on orbit (CC BY 4.0): a gold box with a round array on its Earth deck, a white panel on its Sun face, a
+    hexagonal lattice reflector on a boom and two white dishes, all four looking at the Earth, and two wings of three panels. The three IGSO craft (BEIDOU-3 IGSO-1 to -3) wear it as themselves; the four
+    geostationary craft (G1 to G4) have the same bus size in Springer's table but no layout was opened, so they wear it as "the kind of thing". BeiDou-2's craft are another bus (DFH-3A) and keep what they had.
+    The sources, what was cited and what was estimated are in `registry/models.yaml` and `CREDITS.md` 3y and 3z.
+
+### Not yet
+
+- **Twelve of the 14 held craft stay held**: Fengyun-3 and -4 (one mockup photograph and a rendering of each, no layout or, for -4, size), DMSP Block 5D-3 and Milstar (paintings only; the satellite is in
+  its shipping container in every photograph), Oceansat-2 (no picture of the satellite), ORBCOMM OG2 and Qianfan (no picture of either), and the Zenit-2, Blok E, Tsyklon-3, Blok DM, Long March 4 and
+  Breeze-M stages (no photograph of flight hardware). Public #1172, the tracker for the second hundred, stays open for them.
+- **BeiDou-3's hexagonal reflector and dishes are drawn at the sizes the paper assumes** (a hexagon of side 2.358 m, dishes 1.0 m across): CSNO does not publish them, and the museum mockups agree. Where the
+  Earth is, the reflector boom and the dishes' places are read off one rendering and two mockups. The PSLV skirt's height and whether it stays with the stage in orbit are not stated by any page opened.
+  No model has been seen by a person who knows the craft; the pictures in the pull request are the first look.
+
 ## [1.7.8] - 2026-11-03
 
 ### Added
