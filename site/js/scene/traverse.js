@@ -32,6 +32,34 @@ export const TRAVERSE_LOOK = { widthPx: 2.25, colour: 0xffcf7a, alpha: 0.9, near
 /** A tile is pulled 0.001 of its distance toward the camera in its depth test; a traverse twice that. */
 export const DEPTH_PULL = 0.002;
 
+/**
+ * A SHORT LINE IS READ FROM FARTHER, AND WIDER (internal #992). Apollo 15's 23 km and Opportunity's 45 km lines
+ * read from the 120 to 320 km above. Spirit's 7.07 km in Gusev was 318 km from the camera at its site's arrival
+ * pose, where the fade left it at 0.3 %, and drawn 12 px long beside a rover model many times its true size.
+ * A line shorter than SHORT_KM has the fade's two distances stretched by SHORT_KM over its length (at most
+ * SHORT_STRETCH times), and its ribbon widened, up to SHORT_WIDEN times, as its length falls from WIDEN_FROM[0] to
+ * WIDEN_FROM[1] of the camera's distance (which is what a line's size on the screen is). A line of SHORT_KM or more,
+ * the Moon's two and Opportunity's, is as it was. The 2-draw-call budget a world has is untouched: one mesh a line.
+ */
+export const SHORT_KM = 15;
+export const SHORT_STRETCH = 2.5;
+export const SHORT_WIDEN = 1.6;
+/** The ratio of a line's length to the camera's distance above which the ribbon is not widened, and below which it is widest. */
+export const WIDEN_FROM = [0.15, 0.02];
+
+/** The fade's distances for a line `lengthKm` long: TRAVERSE_LOOK's, stretched for a short one. Pure. */
+export function traverseReach(lengthKm, look = TRAVERSE_LOOK) {
+  const k = lengthKm > 0 && lengthKm < SHORT_KM ? Math.min(SHORT_STRETCH, SHORT_KM / lengthKm) : 1;
+  return { ...look, nearKm: look.nearKm * k, farKm: look.farKm * k };
+}
+
+/** How many times the ribbon's width a short line is drawn at: 1 while it fills WIDEN_FROM[0] of the distance or more, SHORT_WIDEN at WIDEN_FROM[1] and under. Pure. */
+export function traverseWidthK(lengthKm, distKm) {
+  if (!(lengthKm > 0 && lengthKm < SHORT_KM) || !(distKm > 0)) return 1;
+  const x = Math.min(1, Math.max(0, (WIDEN_FROM[0] - lengthKm / distKm) / (WIDEN_FROM[0] - WIDEN_FROM[1])));
+  return 1 + (SHORT_WIDEN - 1) * x * x * (3 - 2 * x);
+}
+
 /** A path's "lon,lat lon,lat ..." string as [lon, lat] pairs in degrees. Pure. */
 export function parsePath(str) {
   const out = [];
@@ -209,10 +237,10 @@ export function createTraverses({ world = 'moon' } = {}) {
       halfPx.set(Math.max(1, viewportPx[0] / 2), Math.max(1, viewportPx[1] / 2));
       for (const it of items) {
         const d = Math.hypot(camLocal.x - it.mid.x, camLocal.y - it.mid.y, camLocal.z - it.mid.z) * radiusKm;
-        it.fade = traverseFade(d);
+        it.fade = traverseFade(d, traverseReach(it.row.lengthKm));
         it.mesh.visible = it.fade > 0.001;
         it.mesh.material.uniforms.uAlpha.value = TRAVERSE_LOOK.alpha * it.fade;
-        it.mesh.material.uniforms.uWidthPx.value = TRAVERSE_LOOK.widthPx * Math.max(1, pixelRatio);
+        it.mesh.material.uniforms.uWidthPx.value = TRAVERSE_LOOK.widthPx * traverseWidthK(it.row.lengthKm, d) * Math.max(1, pixelRatio);
       }
     },
     /** Off at once (the layer has gone). */

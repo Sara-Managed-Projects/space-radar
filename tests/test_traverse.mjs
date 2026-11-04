@@ -85,6 +85,25 @@ check(V.traverseFade(0) === 1 && V.traverseFade(V.TRAVERSE_LOOK.nearKm) === 1 &&
   for (let d = V.TRAVERSE_LOOK.nearKm; d < V.TRAVERSE_LOOK.farKm; d += 5) if (V.traverseFade(d + 5) > V.traverseFade(d)) mono = false;
   check(mono, 'and it only fades as the camera goes');
 }
+// --- a short line is read from farther and wider (internal #992) -----------------------------------------------
+{
+  const spirit = TRAVERSES.find((t) => t.site === 'spirit');
+  const long = TRAVERSES.filter((t) => t.lengthKm >= V.SHORT_KM);
+  check(spirit && spirit.lengthKm < V.SHORT_KM && long.length === 3, `Spirit's line is the one short line (${long.length} of 4 are ${V.SHORT_KM} km or longer)`);
+  for (const t of long) {
+    const r = V.traverseReach(t.lengthKm);
+    check(r.nearKm === V.TRAVERSE_LOOK.nearKm && r.farKm === V.TRAVERSE_LOOK.farKm, `${t.site}: a line of ${t.lengthKm} km keeps the fade it had`);
+    check(V.traverseWidthK(t.lengthKm, 300) === 1 && V.traverseWidthK(t.lengthKm, 2000) === 1, `${t.site}: and its ribbon's width`);
+  }
+  const r = V.traverseReach(spirit.lengthKm);
+  check(r.nearKm > V.TRAVERSE_LOOK.nearKm && r.farKm > V.TRAVERSE_LOOK.farKm && r.farKm <= V.TRAVERSE_LOOK.farKm * V.SHORT_STRETCH, `Spirit's fade is stretched (${r.nearKm.toFixed(0)} to ${r.farKm.toFixed(0)} km), by at most ${V.SHORT_STRETCH}`);
+  check(V.traverseFade(310, r) > 0.8 && V.traverseFade(310) < 0.01, `from the 310 km of Spirit's arrival pose the line is drawn (${V.traverseFade(310, r).toFixed(2)}), and was not (${V.traverseFade(310).toFixed(3)})`);
+  let mono = true;
+  for (let d = 0; d < 1000; d += 5) if (V.traverseFade(d + 5, r) > V.traverseFade(d, r) + 1e-12 || V.traverseWidthK(spirit.lengthKm, d + 5) < V.traverseWidthK(spirit.lengthKm, d) - 1e-12) mono = false;
+  check(mono, 'and with the camera going away it only fades and only widens');
+  check(V.traverseWidthK(spirit.lengthKm, spirit.lengthKm / V.WIDEN_FROM[0]) === 1 && Math.abs(V.traverseWidthK(spirit.lengthKm, spirit.lengthKm / V.WIDEN_FROM[1]) - V.SHORT_WIDEN) < 1e-9 && V.traverseWidthK(spirit.lengthKm, 1e6) === V.SHORT_WIDEN, 'the ribbon is 1 x wide where the line fills the view and SHORT_WIDEN x where it is a speck');
+  check(V.traverseWidthK(0, 100) === 1 && V.traverseWidthK(7, 0) === 1 && V.traverseReach(0).nearKm === V.TRAVERSE_LOOK.nearKm, 'no length, no distance: nothing changes');
+}
 // --- the module: built, shown near, credited, disposed -------------------------------------------------------
 {
   const T = V.createTraverses({ world: 'moon' });
