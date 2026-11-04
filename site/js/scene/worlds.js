@@ -1480,6 +1480,15 @@ export function segmentsFor(id) { return SITE_BODIES.has(id) ? { width: 192, hei
  */
 export const FINE_CUT_AT = 0.05;
 export function fineCutWanted(share) { return Number.isFinite(share) && share >= FINE_CUT_AT; }
+/**
+ * A world this small on the screen is drawn with a 16 x 12 sphere: below this share of HALF the view's height (a disc
+ * 1.8 px in radius in a view 900 px tall) its facets are 0.04 px from round, and the other worlds' 6 016 triangles each,
+ * forty of them, were 240 000 triangles a frame on the deep stops, where every planet and moon is a dot under one pixel
+ * (CI's trips walk; internal #994). The Earth has its own sphere (scene/earth.js) and keeps it. Pure.
+ */
+export const DOT_CUT_BELOW = 0.004;
+export const DOT_SEGMENTS = { width: 16, height: 12 };
+export function dotCutWanted(share) { return Number.isFinite(share) && share < DOT_CUT_BELOW; }
 /** The deepest a facet sags under the sphere, km: the middle of a longitude step on the equator. Pure. */
 export function sagKm(radiusKm, widthSegments) { return radiusKm * (1 - Math.cos(Math.PI / widthSegments)); }
 
@@ -2202,6 +2211,11 @@ export function createWorlds(scene, opts = {}) {
       mesh.userData.cut = { fine: mesh.geometry, coarse: w.look.oblate ? oblateGeometry(w.look.oblate, 64, 48) : new THREE.SphereGeometry(1, 64, 48) };
       mesh.geometry = mesh.userData.cut.coarse;
     }
+    // The dot cut: the sphere a world too small to show a facet is drawn with (update() step 5b).
+    if (!w.look.earth) {
+      mesh.userData.full = mesh.userData.cut ? mesh.userData.cut.coarse : mesh.geometry;
+      mesh.userData.dot = w.look.oblate ? oblateGeometry(w.look.oblate, DOT_SEGMENTS.width, DOT_SEGMENTS.height) : new THREE.SphereGeometry(1, DOT_SEGMENTS.width, DOT_SEGMENTS.height);
+    }
     if (!w.look.earth && w.look.map) {
       const material = mesh.material;
       const job = {
@@ -2635,9 +2649,17 @@ export function createWorlds(scene, opts = {}) {
     for (const id of SITE_BODIES) {
       const mesh = meshes.get(id);
       const cut = mesh && mesh.userData.cut;
-      if (!cut) continue;
+      if (!cut || (camera && dotCutWanted(discShare(id)))) continue; // a dot: the loop below
       const g = fineCutWanted(discShare(id)) ? cut.fine : cut.coarse;
       if (mesh.geometry !== g) mesh.geometry = g;
+    }
+    // 5c. And every world that is a dot wears the small sphere (internal #994), the 64 x 48 one again from the share up.
+    if (camera) {
+      for (const [id, mesh] of meshes) {
+        if (!mesh.userData.dot) continue;
+        const g = dotCutWanted(discShare(id)) ? mesh.userData.dot : (SITE_BODIES.has(id) ? null : mesh.userData.full); // a site body's own cut is 5b's
+        if (g && mesh.geometry !== g) mesh.geometry = g;
+      }
     }
 
     // 6. Past the count this device may hold, the world that has been a dot the longest gives its
@@ -3049,6 +3071,7 @@ export function createWorlds(scene, opts = {}) {
     if (stage.viewAdjust === viewAdjust) stage.setViewAdjust(null);
     for (const mesh of meshes.values()) {
       if (mesh.userData.cut) { mesh.userData.cut.fine.dispose(); mesh.userData.cut.coarse.dispose(); }
+      if (mesh.userData.dot) mesh.userData.dot.dispose();
       mesh.traverse((o) => {
         if (o.geometry) o.geometry.dispose();
         if (o.material) {
