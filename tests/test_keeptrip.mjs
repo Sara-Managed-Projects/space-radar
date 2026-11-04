@@ -91,6 +91,26 @@ check(biggest.bytes < 40e6, `${biggest.id} keeps ${(biggest.bytes / 1e6).toFixed
   check(!phone.urls.some((u) => u.startsWith('textures/4k/')), 'a tier-0 device is asked for a 4k map');
 }
 
+// --- 2a. the sharper maps a later promotion asks for are kept too (internal #564) ---------------
+{
+  // The five maps bulk 2 saw asked and not kept on moon-landings (Moon, Earth night and water, Milky Way, Earth relief).
+  const tour = TOURS.find((x) => x.id === 'moon-landings');
+  const urls = K.tripAssets(tour, env({ tier: 2, month: 11 })).urls;
+  for (const f of ['textures/4k/moon.webp', 'textures/4k/earth_night.webp', 'textures/4k/earth_water.webp', 'textures/4k/milky_way.webp', 'textures/1k_earth_relief.webp', 'textures/4k/earth_day_11.webp']) {
+    check(urls.includes(f), `moon-landings at tier 2 does not keep ${f}`);
+  }
+  check(!K.tripAssets(tour, env({ tier: 2 })).urls.some((u) => u.includes('earth_day_')), 'a monthly map is kept with no month to name it');
+  check(!K.tripAssets(tour, env({ tier: 0, month: 11 })).urls.some((u) => u.startsWith('textures/4k/')), 'a tier-0 device keeps a 4k map');
+  // Every kept map is a file a texture row lists, so the list cannot name one the tiers never ask for.
+  const asked = new Set(TEXTURES.flatMap((r) => r.files.map((f) => f.file)));
+  for (const u of urls.filter((x) => x.startsWith('textures/'))) check(asked.has(u) || /earth_day_\d\d/.test(u), `${u} is in no texture row`);
+  // keptTier: the ceiling while Auto still promotes, the tier itself for a chosen quality, the latch and no quality at 0.
+  const q = (tier, ceiling, promote) => ({ tier, ceiling, plan: () => ({ promote }) });
+  check(K.keptTier(q(0, 2, true)) === 2 && K.keptTier(q(1, 1, true)) === 1, 'Auto keeps up to the ceiling');
+  check(K.keptTier(q(1, 2, false)) === 1 && K.keptTier(q(0, 2, false)) === 0, 'a chosen quality keeps its own tier');
+  check(K.keptTier(null) === 0 && K.keptTier({}) === 0, 'no quality keeps tier 0');
+}
+
 // --- 2b. a deep-sky trip keeps its heroes' files (spec 0075 stage f), and a photograph only where a hero's light is it (0078) ---
 {
   const helix = TOURS.find((x) => x.id === 'into-the-helix');

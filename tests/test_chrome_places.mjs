@@ -41,6 +41,9 @@ const cardToast = rule(css, "html.sr-phone[data-sheet='full'] .sr-toast,\nhtml.s
 check(cardToast && /var\(--sr-sheet-h\) \+ var\(--sp-3\)/.test(cardToast) && !/--sr-time-h/.test(cardToast),
   'on a phone with a card up there is no pill, and the toast stands on the sheet, not a pill\'s height above it');
 check(/min\(/.test(cardToast), 'with the sheet at full the toast stops under the top bar instead of leaving the screen');
+// internal #569: under the top bar is the full sheet's tab row, so at full (outside a trip) the toast stands at the foot of the screen.
+const fullToast = rule(css, "html.sr-phone[data-sheet='full']:not(.sr-trip-mode) .sr-toast");
+check(fullToast && /bottom: calc\(var\(--sp-4\) \+ env\(safe-area-inset-bottom, 0px\)\)/.test(fullToast) && css.indexOf(fullToast) > css.indexOf(cardToast), 'with the sheet at full the toast stands at the foot of the screen, after the rule that put it under the top bar, and not across the tab row');
 
 // --- the scene note: its words' own width ----------------------------------------------------------
 check(/width: max-content/.test(rule(css, '.sr-scenenote')), 'the scene note takes its words\' width, not half a phone');
