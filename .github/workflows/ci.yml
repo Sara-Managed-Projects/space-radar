@@ -1293,6 +1293,54 @@ jobs:
       - name: "A9 tracked objects: 142 real element sets come back from tiles within 10 m of CelesTrak's own SGP4 for a week, merge into the debris layer, and the panel says how many dots are placed (release 1.7.6, internal #1069)"
         run: node tests/test_tracked.mjs
       # 1.7.6 r177-sky: end
+      # 1.7.11 tests II: begin
+      - name: "equatorialToEcliptic turns a direction about the x axis by the J2000 obliquity and in the right sign: the x axis stays, the celestial pole and the y axis tip (public #770)"
+        run: node tests/test_frames_equatorial_to_ecliptic.mjs
+      - name: "radecToVec turns degrees of right ascension and declination into the unit vector in equatorial J2000 axes: the equinox, 90 degrees of RA, the pole (public #783)"
+        run: node tests/test_frames_radec_to_vec.mjs
+      - name: "parseFrame reads a record's frame word: case ignored, a bare kind means the Earth, a word that is not a kind or has none is null (public #794)"
+        run: node tests/test_frames_parse_frame.mjs
+      - name: "isPlanetMoon holds the list of worlds placed as their planet plus an offset: Titan, Charon and Io are, the Moon and Mars are not (public #800)"
+        run: node tests/test_frames_is_planet_moon.mjs
+      - name: "qMul is the Hamilton product in the three.js order: the identity, two quarter turns, and the product that is not commutative (public #804)"
+        run: node tests/test_pointing_qmul.mjs
+      - name: "qRotate carries a direction by a phone's quaternion the right way: identity, a quarter turn about z and y, a half turn about x (public #809)"
+        run: node tests/test_pointing_qrotate.mjs
+      - name: "qSlerp slides along the shorter arc between two attitudes: both ends, the middle, a negated quaternion goes the same way, equal inputs (public #811)"
+        run: node tests/test_pointing_qslerp.mjs
+      - name: "glowOfLights is nothing under 0.1, the square of the rest of the range, full from 0.9, and 0 for a reading that is not a number (public #813)"
+        run: node tests/test_skymath_glow_of_lights.mjs
+      - name: "leadingDigit, the key that makes the tracked tag speak its number again, handles spaces, signs, decimals, zero and nothing (public #815)"
+        run: node tests/test_hud_leading_digit.mjs
+      - name: "kickerDate prints the small date above a Today card in UTC and adds the year past 180 days either side of now (public #818)"
+        run: node tests/test_today_kicker_date.mjs
+      - name: "shortUtcDate prints an asteroid's closest-approach date in UTC with no leading zero, whatever the visitor's time zone (public #820)"
+        run: node tests/test_cardlive_short_utc_date.mjs
+      - name: "span0Of gives a level-0 tile's side in degrees for both kinds of tile grid and for the default grid (public #822)"
+        run: node tests/test_tilemath_span0.mjs
+      - name: "bytesFor reads a texture's size, and a monthly file's entry with the month clamped to 1-12 (public #824)"
+        run: node tests/test_texturetiers_bytes_for.mjs
+      - name: "fitDistanceUnits sets the camera back so a star-system orbit fills 85 % of the view, face-on and edge-on (public #826)"
+        run: node tests/test_systems_fit_distance.mjs
+      - name: "starRadiusKm draws a star at its measured radius and gives 0, never a guess, when the row has none (public #829)"
+        run: node tests/test_systems_star_radius.mjs
+      - name: "planetRadiusKm gives a planet's measured radius or one Earth's when it has none, and does not accept a string (public #831)"
+        run: node tests/test_systems_planet_radius.mjs
+      - name: "samePassKey makes two passes the same pass when the plain name and the start minute are the same (public #833)"
+        run: node tests/test_tonightbest_same_pass_key.mjs
+      - name: "nextLightChange reads the next sun/shadow change from the runs lightWindows returns, and is null for fewer than two (public #835)"
+        run: node tests/test_timefacts_next_light_change.mjs
+      - name: "stopBudgetMs gives the autopilot's watchdog each phase's budget, a dwell plus its grace, and the flight budget for an unknown phase (public #837)"
+        run: node tests/test_autopilotplan_stop_budget.mjs
+      - name: "worldOfTarget says which world a trip stop stands on for the offline files, and is null for an inertial frame, no frame, an unknown record or no lookup (public #839)"
+        run: node tests/test_keeptrip_world_of_target.mjs
+      - name: "eventSizeText prints a wildfire's, volcano's or iceberg's area to two significant figures, 'under 1 km²' for less than one, null for none (public #846)"
+        run: node tests/test_cardfacts_event_size.mjs
+      - name: "splitReadout finds where a card value's number ends: the first ordinary space, since groups inside a number use U+202F (public #848)"
+        run: node tests/test_cardfacts_split_readout.mjs
+      - name: "ageParts switches an age from minutes to hours at 90 minutes, to days at 48 hours and to years at 730 days (public #850)"
+        run: node tests/test_cardfacts_age_parts.mjs
+      # 1.7.11 tests II: end
       # 1.7.4 checks: begin
       - name: "no name is declared and never used: unused imports, consts, lets, functions and classes in site/js, tools, scripts and tests, with a list of known exceptions that may only shrink (public #1229)"
         run: node tests/test_lint.mjs

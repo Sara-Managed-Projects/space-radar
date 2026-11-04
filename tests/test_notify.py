@@ -136,6 +136,13 @@ class ShowerPeakTest(unittest.TestCase):
         self.assertEqual(dates, sorted(dates))
         self.assertEqual(out[0]["id"], "orionids")  # the next peak after Sep 8 is Oct 21
 
+    def test_ledger_key_shower_names_the_year(self):
+        self.assertEqual(dig.ledger_key_shower({"id": "perseids", "year": 2026}), "shower:perseids:2026")
+        # the next year is a new key, so a shower is emailed again each year
+        self.assertNotEqual(dig.ledger_key_shower({"id": "perseids", "year": 2027}), dig.ledger_key_shower({"id": "perseids", "year": 2026}))
+        with self.assertRaises(KeyError):
+            dig.ledger_key_shower({"id": "perseids"})
+
 
 class NextLaunchesTest(unittest.TestCase):
     BODY = {

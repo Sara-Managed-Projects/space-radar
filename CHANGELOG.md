@@ -110,6 +110,19 @@ tagged, and their dates are the day the last change in each landed.
   bus), how SPOT's three panels stand, the SkySat flap and dish, and the BeiDou wing panels. Cell grids are coarse. No model has been seen by a
   person who knows the craft; the pictures in the pull request are the first look.
 - **Pleiades Neo and the radar pair (COSMO-SkyMed, RADARSAT-2) are not built in this release.**
+## [1.7.11] - 2026-11-04
+
+### Added
+
+- **Tests II: twenty-three small functions have a test of their own, and five more get the edge cases they lacked** (public #770, #777, #783, #789, #794, #800, #804, #809, #811, #813, #815,
+  #818, #820, #822, #824, #826, #829, #831, #833, #835, #837, #839, #846, #848, #850, #852, #854, #858). One new file per function in the style of `tests/test_colorkeys.mjs`, each with its step in
+  `.github/workflows/ci.yml`: `equatorialToEcliptic`, `radecToVec`, `parseFrame` and `isPlanetMoon` (propagate/frames.js); `qMul`, `qRotate` and `qSlerp` (sky/pointing.js);
+  `glowOfLights`, `samePassKey` and `nextLightChange` (sky/); `leadingDigit`, `kickerDate`, `shortUtcDate`, `stopBudgetMs`, `worldOfTarget`, `eventSizeText`, `splitReadout` and `ageParts`
+  (ui/); `span0Of`, `bytesFor`, `fitDistanceUnits`, `starRadiusKm` and `planetRadiusKm` (scene/). The window of `activeShowers` and the span of `trackTimes` and `tickTimes` are
+  now passed in tests/test_radiants.mjs and tests/test_groundtrack.mjs; `with_params` and `expand_url` (harvest) are in tests/test_harvest.py, `ledger_key_shower` (notify) in
+  tests/test_notify.py. No behaviour changes. One finding: `equatorialToEcliptic` takes its obliquity from astronomy-engine's matrix, about 2e-7 in a sine away from the 23.4392911 degrees
+  the issue quotes, so its test compares the tilted axes to 1e-6.
+
 ## [1.7.7] - 2026-11-03
 
 ### Added
