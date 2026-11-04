@@ -4500,7 +4500,8 @@ export const COPY = {
       "pathLm": "спуск намальовано в зворотний бік від Бази Спокою, а зустріч — це форма; часи подій — місії",
       "srcReport": "Apollo 11 Mission Report, NASA MSC-00171, 1969 (часи подій, запуск, посадка)",
       "srcJournal": "Apollo 11 Flight Journal, NASA (часи подій з точністю до секунди)",
-      "srcClip": "Перші слова Армстронга на Місяці: запис NASA, суспільне надбання, з Wikimedia Commons"
+      "srcClip": "Перші слова Армстронга на Місяці: запис NASA, суспільне надбання, з Wikimedia Commons",
+      "srcLanding": "Повідомлення про посадку: запис NASA, суспільне надбання, з Wikimedia Commons"
     },
     "artemis-ii": {
       "title": "Artemis II: навколо Місяця",

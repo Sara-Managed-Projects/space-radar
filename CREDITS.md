@@ -4215,6 +4215,7 @@ it loops, levelled to −23 LUFS; each sting is trimmed to 2.5–3 s with a fade
 HQ previews, not the uploaded originals.
 
 | `a11-small-step.m4a` | Armstrong's first words on the Moon, played once at 109:24:48 of the Apollo 11 Moment | Public domain (NASA) | Neil Armstrong's first words on the Moon, NASA (1969), public domain | <https://commons.wikimedia.org/wiki/File:Neil_Armstrong_small_step.wav> |
+| `a11-landed.m4a` | The landing call in the Apollo 11 Moment, played once at 102:45:40 ("Houston, Tranquility Base here. The Eagle has landed.") | Public domain (NASA) | Apollo 11's landing call from Tranquility Base, NASA (1969), public domain | <https://commons.wikimedia.org/wiki/File:Apollo_11_Eagle_Has_Landed.mp3> |
 | `a13-problem-1.m4a` | The first radio line of the Apollo 13 Moment, played once at 55:55:20 ("Okay, Houston, we've had a problem here") | Public domain (NASA) | Apollo 13 air-to-ground recording, NASA (14 April 1970 GMT), public domain: John Swigert, 55:55:20 | <https://commons.wikimedia.org/wiki/File:Houston_problem.ogg> |
 | `a13-problem-2.m4a` | The second radio line, played once at 55:55:42 ("Houston, we've had a problem") | Public domain (NASA) | Apollo 13 air-to-ground recording, NASA (14 April 1970 GMT), public domain: James Lovell, 55:55:42 | <https://commons.wikimedia.org/wiki/File:Houston_problem.ogg> |
 | `sputnik-beep.m4a` | Sputnik's radio beep, played twice from the second the satellite is let go in the Sputnik 1 Moment | Public domain (NASA) | Sputnik's radio beep, recorded and published by NASA (1957), public domain | <https://commons.wikimedia.org/wiki/File:Sputnik_beep.ogg> |
@@ -4225,7 +4226,10 @@ public domain), re-encoded from 8-bit mono 11 025 Hz to AAC with macOS `afconver
 is fetched only when the Apollo 11 Moment reaches that second with sound on. The house rule is "Opus with an AAC twin"; no
 Opus encoder was to hand when it was added, so the row is a `clip` whose one file is the AAC. Since 1.7.0 the Apollo 13 Moment adds two short lines (13 kB and 8 kB, mono AAC, 3.0 s and 1.6 s) cut by `ffmpeg` from the
 Wikimedia Commons file "Houston problem.ogg" (artist NASA, licence "Public domain", read 2026-11-03), a recording of 11.5 seconds whose
-gaps are edited out, so each line is played on its own at the time the Flight Journal logs it, and the Sputnik 1 Moment plays the 4.4-second Commons file "Sputnik beep.ogg" (author NASA, {{PD-USGov-NASA}}, read 2026-11-03; who recorded it is not stated on the page), re-encoded to AAC. No other recording is used:
+gaps are edited out, so each line is played on its own at the time the Flight Journal logs it, and the Sputnik 1 Moment plays the 4.4-second Commons file "Sputnik beep.ogg" (author NASA, {{PD-USGov-NASA}}, read 2026-11-03; who recorded it is not stated on the page), re-encoded to AAC. Since 1.7.22 the Apollo 11 Moment adds the landing call (24 kB, mono AAC, 5.3 s): the Wikimedia Commons file "Apollo 11 Eagle Has Landed.mp3"
+(author NASA, licence "Public domain", {{PD-USGov-NASA}}, read 2026-11-04; the page's own source link, nasa.gov/connect/sounds, no longer
+resolves), re-encoded from MP3 to AAC with `ffmpeg` and changed in nothing else. The 1202 alarms and the launch stay captions: Commons holds no
+recording of either, and the Apollo Flight Journal's audio files did not load when this was looked for (2026-11-04). No other recording is used:
 the radio exchange of Vostok 1 is shown as captions because no Soviet-era recording with a clear licence was found.
 
 ## 9b. Audio — the trips' narration (a synthetic voice)

@@ -4042,7 +4042,8 @@ Object.assign(COPY, {
       "pathLm": "der Abstieg ist rückwärts von der Tranquility Base aus gezeichnet und das Rendezvous ist eine Form; die Ereigniszeiten sind die der Mission",
       "srcReport": "Apollo-11-Missionsbericht, NASA MSC-00171, 1969 (Ereigniszeiten, Start, Landung)",
       "srcJournal": "Apollo-11-Flugjournal, NASA (Ereigniszeiten auf die Sekunde)",
-      "srcClip": "Armstrongs erste Worte auf dem Mond: NASA-Aufnahme, gemeinfrei, von Wikimedia Commons"
+      "srcClip": "Armstrongs erste Worte auf dem Mond: NASA-Aufnahme, gemeinfrei, von Wikimedia Commons",
+      "srcLanding": "Die Landemeldung: NASA-Aufnahme, gemeinfrei, von Wikimedia Commons"
     },
     "artemis-ii": {
       "title": "Artemis II: um den Mond",

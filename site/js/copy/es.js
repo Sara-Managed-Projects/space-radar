@@ -3869,7 +3869,8 @@ Object.assign(COPY, {
       "pathLm": "el descenso se dibuja hacia atrás desde la Base Tranquilidad y el encuentro es una forma; las horas de los sucesos son las de la misión",
       "srcReport": "Informe de la misión Apolo 11, NASA MSC-00171, 1969 (horas de los sucesos, lanzamiento, alunizaje)",
       "srcJournal": "Diario de vuelo del Apolo 11, NASA (horas de los sucesos al segundo)",
-      "srcClip": "Las primeras palabras de Armstrong en la Luna: grabación de la NASA, dominio público, de Wikimedia Commons"
+      "srcClip": "Las primeras palabras de Armstrong en la Luna: grabación de la NASA, dominio público, de Wikimedia Commons",
+      "srcLanding": "El aviso del alunizaje: grabación de la NASA, dominio público, de Wikimedia Commons"
     },
     "artemis-ii": {
       "title": "Artemis II: alrededor de la Luna",

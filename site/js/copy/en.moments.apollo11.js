@@ -63,6 +63,7 @@ Object.assign(COPY.momentStories, {
     srcReport: 'Apollo 11 Mission Report, NASA MSC-00171, 1969 (event times, launch, landing)',
     srcJournal: 'Apollo 11 Flight Journal, NASA (event times to the second)',
     srcClip: 'Armstrong\'s first words on the Moon: NASA recording, public domain, from Wikimedia Commons',
+    srcLanding: 'The landing call from Tranquility Base: NASA recording, public domain, from Wikimedia Commons',
   },
 });
 

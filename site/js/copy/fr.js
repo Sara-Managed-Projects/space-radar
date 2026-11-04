@@ -4046,7 +4046,8 @@ Object.assign(COPY, {
       "pathLm": "la descente est dessinée à rebours depuis la base de la Tranquillité et le rendez-vous est une forme ; les heures des événements sont celles de la mission",
       "srcReport": "Rapport de mission d’Apollo 11, NASA MSC-00171, 1969 (heures des événements, lancement, alunissage)",
       "srcJournal": "Journal de vol d’Apollo 11, NASA (heures des événements à la seconde)",
-      "srcClip": "Les premiers mots d’Armstrong sur la Lune : enregistrement de la NASA, domaine public, de Wikimedia Commons"
+      "srcClip": "Les premiers mots d’Armstrong sur la Lune : enregistrement de la NASA, domaine public, de Wikimedia Commons",
+      "srcLanding": "L’annonce de l’alunissage : enregistrement de la NASA, domaine public, de Wikimedia Commons"
     },
     "artemis-ii": {
       "title": "Artemis II : autour de la Lune",

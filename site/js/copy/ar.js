@@ -4491,7 +4491,8 @@ export const COPY = {
       "pathLm": "النزول مرسوم عكسيًا من قاعدة الهدوء، واللقاء شكل؛ وأوقات الأحداث هي أوقات المهمة",
       "srcReport": "تقرير مهمة Apollo 11، NASA MSC-00171، 1969 (أوقات الأحداث، الإطلاق، الهبوط)",
       "srcJournal": "Apollo 11 Flight Journal، NASA (أوقات الأحداث حتى الثانية)",
-      "srcClip": "أولى كلمات أرمسترونغ على القمر: تسجيل NASA، ملكية عامة، من Wikimedia Commons"
+      "srcClip": "أولى كلمات أرمسترونغ على القمر: تسجيل NASA، ملكية عامة، من Wikimedia Commons",
+      "srcLanding": "إعلان الهبوط: تسجيل NASA، ملكية عامة، من Wikimedia Commons"
     },
     "artemis-ii": {
       "title": "Artemis II: حول القمر",

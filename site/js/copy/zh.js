@@ -4491,7 +4491,8 @@ export const COPY = {
       "pathLm": "下降是从静海基地往回画的，会合只是一个形状；事件时间是任务本身的",
       "srcReport": "Apollo 11 任务报告，NASA MSC-00171，1969 年（事件时间、发射、着陆）",
       "srcJournal": "Apollo 11 飞行日志，NASA（精确到秒的事件时间）",
-      "srcClip": "阿姆斯特朗在月球上的第一句话：NASA 录音，公有领域，来自维基共享资源"
+      "srcClip": "阿姆斯特朗在月球上的第一句话：NASA 录音，公有领域，来自维基共享资源",
+      "srcLanding": "着陆通报：NASA 录音，公有领域，来自维基共享资源"
     },
     "artemis-ii": {
       "title": "Artemis II：绕月飞行",

@@ -4492,7 +4492,8 @@ export const COPY = {
       "pathLm": "उतरना Tranquility Base से पीछे की ओर बनाया गया है और मिलन एक आकार है; घटना-समय मिशन के अपने हैं",
       "srcReport": "Apollo 11 Mission Report, NASA MSC-00171, 1969 (घटना-समय, प्रक्षेपण, उतरना)",
       "srcJournal": "Apollo 11 Flight Journal, NASA (सेकंड तक के घटना-समय)",
-      "srcClip": "चंद्रमा पर आर्मस्ट्रांग के पहले शब्द: NASA की रिकॉर्डिंग, सार्वजनिक संपत्ति, Wikimedia Commons से"
+      "srcClip": "चंद्रमा पर आर्मस्ट्रांग के पहले शब्द: NASA की रिकॉर्डिंग, सार्वजनिक संपत्ति, Wikimedia Commons से",
+      "srcLanding": "लैंडिंग की सूचना: NASA की रिकॉर्डिंग, सार्वजनिक संपत्ति, Wikimedia Commons से"
     },
     "artemis-ii": {
       "title": "Artemis II: चंद्रमा का चक्कर",
