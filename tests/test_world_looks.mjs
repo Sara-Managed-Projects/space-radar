@@ -141,5 +141,17 @@ check(/laser altimeter measured/.test(recs.get('mars').meta.departure || '') && 
   check(fineCutWanted(1737.4 / (1737.4 + 35) / Math.tan(22.5 * Math.PI / 180)), 'at a ground site the fine cut is worn');
 }
 
+// A world that is a dot wears a 16 x 12 sphere (internal #994): forty worlds at 6 016 triangles were 240 000 a frame on the deep stops.
+{
+  const { dotCutWanted, DOT_CUT_BELOW, DOT_SEGMENTS, FINE_CUT_AT } = await import(join(JS, 'scene/worlds.js'));
+  check(dotCutWanted(0) === true && dotCutWanted(DOT_CUT_BELOW / 2) === true && dotCutWanted(DOT_CUT_BELOW) === false && dotCutWanted(0.05) === false && dotCutWanted(NaN) === false, 'a world wears the dot sphere below DOT_CUT_BELOW of half the view, and no other');
+  check(DOT_CUT_BELOW < FINE_CUT_AT, 'the dot cut ends before the fine cut begins');
+  // Where it stops being worn, a facet is a few hundredths of a pixel from round in a view 900 px tall (half the view 450 px), and 2 160 px tall.
+  const sag = (1 - Math.cos(Math.PI / DOT_SEGMENTS.width));
+  check(sag * DOT_CUT_BELOW * 450 < 0.05 && sag * DOT_CUT_BELOW * 1080 < 0.1, `the dot sphere's facets sag ${(sag * DOT_CUT_BELOW * 450).toFixed(3)} px at its largest`);
+  const src = readFileSync(join(JS, 'scene/worlds.js'), 'utf8');
+  check(/mesh\.userData\.dot = /.test(src) && /dotCutWanted\(discShare\(id\)\) \? mesh\.userData\.dot/.test(src) && /userData\.dot\.dispose\(\)/.test(src), 'worlds.js builds, wears and disposes the dot sphere');
+}
+
 if (problems.length) { console.error(`world looks: ${problems.length} problem(s)\n  - ` + problems.join('\n  - ')); process.exit(1); }
 console.log('world looks ok: Venus\'s soft terminator, Saturn\'s contrast (not on the Hubble face) and Mercury\'s relief (tier 1 up, given back with the map) are each behind their own uniform, and each card says what is adjusted');

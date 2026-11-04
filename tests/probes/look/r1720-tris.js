@@ -11,11 +11,14 @@
 //   gh workflow run look.yml -f probe=r1720-tris -f ref=<branch> -f width=1600 -f height=900
 //   -f subject=out-to-the-edge_roof-to-the-edge     trips to walk, joined by an underscore (that is the default)
 //
-// No pictures: the rows are in out.json and the summary. Run it on `-f ref=main` for the before.
+// The rows are in out.json and the summary; PICTURES are photographed too. Run it on `-f ref=main` for the before.
 look.probe = 'r1720-tris';
 const out = { trips: [], problems: [] };
 const param = new URLSearchParams(location.search).get('lookSubject');
 const trips = param ? param.split('_').filter(Boolean) : ['out-to-the-edge', 'roof-to-the-edge'];
+// The stops photographed, so a before (`-f ref=main`) and an after can be set side by side: the Solar System's planets as dots
+// and discs (the roof trip's stop 4 and 5), the Oort cloud's distance, the Local Group's rung and the way out's first and last.
+const PICTURES = [['roof-to-the-edge', 3], ['roof-to-the-edge', 4], ['roof-to-the-edge', 8], ['roof-to-the-edge', 10], ['out-to-the-edge', 1], ['out-to-the-edge', 7]];
 const THREE_FRUSTUM = (() => {
   const cam = sr.camera;
   const m = cam.projectionMatrix.clone().multiply(cam.matrixWorldInverse);
@@ -88,6 +91,7 @@ for (const id of trips) {
       const c = census();
       let deep = null;
       try { deep = sr.deep && sr.deep.stats ? sr.deep.stats() : null; } catch { /* no stats */ }
+      if (PICTURES.some(([t, n]) => t === id && n === i + 1)) await shot(`${id}-${String(i + 1).padStart(2, '0')}`, `${id} stop ${i + 1} "${sr.trip.state.stopTitle}": ${d.triangles} triangles, ${d.calls} draw calls`, 0);
       rows.push({ n: i + 1, stop: sr.trip.state.stopTitle, calls: d.calls, triangles: d.triangles, census: c.sum, top: c.top.map(([k, v]) => `${k}: ${v}`), deep: deep && deep.layers ? deep.layers : null });
     }
     sr.trip.stop();
