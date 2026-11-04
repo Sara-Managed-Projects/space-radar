@@ -10,8 +10,8 @@
 //      window (it must fit, not cut) and the page's width.
 //   3. EARTH EVENTS DRAWN FROM THE COPY (#565): the layer on, the Earth's whole face, then closer over the
 //      busiest place; the count of records and what is drawn.
-//   4. 'YOUR OWN SKY, TONIGHT' (#566): the trip a-dark-sky's second stop (900 km over Lisbon), the night
-//      lights' map read at 5, 20 and 60 s after arriving: is the map sharp by the time the words are read?
+//   4. 'YOUR OWN SKY, TONIGHT' (#566): the trip a-dark-sky's second stop (900 km over Lisbon), held, the night
+//      lights' map photographed 3, 15 and 45 s after arriving: is the map sharp by the time the words are read?
 //   5. NAMES IN THE EARTH FRAME (#566): the plain map outside a trip, nothing selected, then "orion" typed in
 //      the search and its first row chosen: the names drawn, and any of a far world's moons among them.
 //   6. THE UNDO TOAST OVER THE SHEET'S TABS AT 390 PX (#569): the sheet full, the toast as the app offers it
@@ -131,14 +131,14 @@ await section('darksky', async () => {
   sr.trip.jumpTo(1);
   await sleep(400);
   await arrive();
-  const o = { stop: sr.trip.state.stopTitle, at: [] };
+  // The stop is held (paused) so the trip does not move on in the minute the maps take: its dwell is 17 s.
+  try { sr.trip.pause(); } catch (e) { look.warns.push('probe: the trip would not pause: ' + e); }
+  const o = { stop: sr.trip.state.stopTitle, phase: sr.trip.state.phase, at: [] };
   const t0 = Date.now();
-  for (const s of [5, 20, 60]) {
+  for (const s of [3, 15, 45]) {
     await sleep(Math.max(0, s * 1000 - (Date.now() - t0)));
-    let tiers = null;
-    try { tiers = sr.textures && sr.textures.state ? sr.textures.state() : null; } catch { /* no state */ }
-    o.at.push({ seconds: s, km: Math.round(rig.state.distance), tiers: tiers ? JSON.stringify(tiers).slice(0, 400) : null });
-    await shot('darksky-stop2-' + s + 's', `"${sr.trip.state.stopTitle}" ${s} s after arriving: is the night-lights map sharp?`, 0);
+    await shot('darksky-stop2-' + s + 's', `"${sr.trip.state.stopTitle}" (stop ${sr.trip.state.index + 1}, ${sr.trip.state.phase}) ${s} s after arriving, held: is the night-lights map sharp?`, 0);
+    o.at.push({ seconds: s, stop: sr.trip.state.index + 1, phase: sr.trip.state.phase });
   }
   sr.trip.stop();
   return o;
