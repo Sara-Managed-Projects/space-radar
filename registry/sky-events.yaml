@@ -90,6 +90,84 @@ events:
     sources:
       - {words: "IMO Meteor Shower Calendar 2027 (rates, radiant, activity)", url: "https://imo.net/ShCal27s.pdf", read: 2026-10-07}
 
+  - id: lyrids-2027
+    kind: meteor-shower
+    name: "Lyrids 2027"
+    short: "Lyrids 2027: when and where to look"
+    summary: "The Lyrids peak in the early hours of 23 April 2027 under a nearly full waning Moon: what to expect, where the radiant is, and a link into that sky."
+    shower: lyrids
+    year: 2027
+    moon_at: 2027-04-23T01:00:00Z
+    link: {t: "2027-04-23T01:00:00Z", at: moon}
+    trip: comets-and-meteors
+    sources:
+      - {words: "IMO Meteor Shower Calendar 2027, Lyrids: maximum April 23 at 01h40m UT, three days after Full Moon, ZHR 18", url: "https://www.imo.net/files/meteor-shower/cal2027.pdf", read: 2026-11-04}
+
+  - id: eta-aquariids-2027
+    kind: meteor-shower
+    name: "Eta Aquariids 2027"
+    short: "Eta Aquariids 2027: when and where to look"
+    summary: "The Eta Aquariids peak on 6 May 2027 under a new Moon, best in the hours before dawn from south of about 40 degrees north: a link into that sky."
+    shower: eta-aquariids
+    year: 2027
+    moon_at: 2027-05-06T09:00:00Z
+    link: {t: "2027-05-06T09:00:00Z", at: moon}
+    trip: comets-and-meteors
+    sources:
+      - {words: "IMO Meteor Shower Calendar 2027, Eta Aquariids: maximum May 6 at 09h UT, no moonlight interference, ZHR 50", url: "https://www.imo.net/files/meteor-shower/cal2027.pdf", read: 2026-11-04}
+
+  - id: perseids-2027
+    kind: meteor-shower
+    name: "Perseids 2027"
+    short: "Perseids 2027: when and where to look"
+    summary: "The Perseids peak on 13 August 2027 at about 08 to 10 hours UT under a bright waxing Moon: what to expect, where the radiant is, and a link into that sky."
+    shower: perseids
+    year: 2027
+    moon_at: 2027-08-13T09:00:00Z
+    link: {t: "2027-08-13T09:00:00Z", at: moon}
+    trip: comets-and-meteors
+    sources:
+      - {words: "IMO Meteor Shower Calendar 2027, Perseids: maximum August 13, 08h to 10h UT, ZHR 110+, the Moon waxing", url: "https://www.imo.net/files/meteor-shower/cal2027.pdf", read: 2026-11-04}
+
+  - id: orionids-2027
+    kind: meteor-shower
+    name: "Orionids 2027"
+    short: "Orionids 2027: when and where to look"
+    summary: "The Orionids peak on 22 October 2027 under a bright waning Moon: what to expect, where the radiant is, and a link into that sky."
+    shower: orionids
+    year: 2027
+    moon_at: 2027-10-22T00:00:00Z
+    link: {t: "2027-10-22T00:00:00Z", at: moon}
+    trip: comets-and-meteors
+    sources:
+      - {words: "IMO Meteor Shower Calendar 2027, Orionids: maximum October 22, a bright waning Moon in Gemini, ZHR 20", url: "https://www.imo.net/files/meteor-shower/cal2027.pdf", read: 2026-11-04}
+
+  - id: leonids-2027
+    kind: meteor-shower
+    name: "Leonids 2027"
+    short: "Leonids 2027: when and where to look"
+    summary: "The Leonids peak on 18 November 2027 at about 06 hours UT under a bright waning Moon: what to expect, where the radiant is, and a link into that sky."
+    shower: leonids
+    year: 2027
+    moon_at: 2027-11-18T06:00:00Z
+    link: {t: "2027-11-18T06:00:00Z", at: moon}
+    trip: comets-and-meteors
+    sources:
+      - {words: "IMO Meteor Shower Calendar 2027, Leonids: nodal maximum November 18 at 06h UT, a gibbous Moon in Gemini, ZHR 15", url: "https://www.imo.net/files/meteor-shower/cal2027.pdf", read: 2026-11-04}
+
+  - id: geminids-2027
+    kind: meteor-shower
+    name: "Geminids 2027"
+    short: "Geminids 2027: when and where to look"
+    summary: "The Geminids, the year's richest shower, peak on 14 December 2027 under a nearly full Moon: when to look, where the radiant is, and a link into that sky."
+    shower: geminids
+    year: 2027
+    moon_at: 2027-12-14T20:00:00Z
+    link: {t: "2027-12-14T20:00:00Z", at: moon}
+    trip: comets-and-meteors
+    sources:
+      - {words: "IMO Meteor Shower Calendar 2027, Geminids: maximum December 14, centred around 20h UT, the full Moon severely disturbs, ZHR 150", url: "https://www.imo.net/files/meteor-shower/cal2027.pdf", read: 2026-11-04}
+
   - id: annular-eclipse-2027
     kind: eclipse
     name: "The annular solar eclipse of 6 February 2027"
