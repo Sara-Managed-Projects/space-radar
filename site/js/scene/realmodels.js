@@ -671,13 +671,17 @@ export const REAL_MODELS = {
     // degrees off the nadir, the solar array is fixed on the opposite face, and a 3.3 m boom carries
     // the downlink antenna toward the Earth. The `radar` build stays as what is drawn while the file
     // is on its way. Not `generic` any more: the file is these two craft ("TanDEM-X is identical to
-    // its twin", eoPortal). PAZ (by name, below) is the same Airbus design by this file's own comment
-    // further down; no page opened for this batch says so in a sentence, so PAZ keeps the blade.
+    // its twin", eoPortal). PAZ is the same Airbus platform (release 1.8.0, internal #753): see the number route below.
     // `axes: 'app'`, AND THIS IS HOW THEY FLY: a dawn-dusk orbit, so the Sun is square to the track;
     // the long axis along the track (the app's X, square to the Sun), the array up and toward the Sun,
     // the antenna down and to the side away from it.
     31698: { build: 'radar', file: 'terrasar-x.glb', colour: 'satellite', name: 'TerraSAR-X', catalogue: 'TERRASAR-X', made: 'dimensions', axes: 'app' },
     36605: { build: 'radar', file: 'terrasar-x.glb', colour: 'satellite', name: 'TanDEM-X', catalogue: 'TANDEM-X', made: 'dimensions', axes: 'app' },
+    // PAZ WEARS THE SAME FILE since release 1.8.0 (internal #753). eoPortal: "PAZ is an X-band SAR (Synthetic Aperture Radar) spacecraft based on the TerraSAR-X platform",
+    // "built on a Service Module (SM) platform based on that of TerraSAR-X and TanDEM-X": the same 5 m by 2.4 m body, the 3.3 m boom and a 4.8 m antenna (0.7 m wide where the file
+    // draws 0.8 m); DLR calls the three "almost identical". Airbus built it for Hisdesat and it flies in the TerraSAR-X orbit. By NUMBER (CelesTrak: `PAZ`, 2018-020A); a record with a
+    // placeholder number still reaches the name key `paz` below and keeps the blade. Not `generic`: the file is this craft's own design (the registry row `terrasar-x` says so).
+    43215: { build: 'radar', file: 'terrasar-x.glb', colour: 'satellite', name: 'PAZ', catalogue: 'PAZ', made: 'dimensions', axes: 'app' },
     31598: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'COSMO-SKYMED 1', generic: true },
     32376: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'COSMO-SKYMED 2', generic: true },
     33412: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'COSMO-SKYMED 3', generic: true },
@@ -1340,7 +1344,7 @@ export const REAL_MODELS = {
     // The twenty-two mapped by id are the big national ones. These are the commercial and small
     // ones, and they carry the same flat side-looking blade: ICEYE's is 3.25 m on an 85 kg
     // microsatellite, Synspective's StriX about 5 m, and PAZ is a TerraSAR-X built from the same
-    // drawing. That range -- 3.25 m to RADARSAT-2's 15 m -- is wider than the family shape admits,
+    // drawing (since release 1.8.0 PAZ has terrasar-x.glb by number, above; this key keeps a record with a placeholder number). That range -- 3.25 m to RADARSAT-2's 15 m -- is wider than the family shape admits,
     // which is what `generic: true` and "the kind of thing" are for.
     //
     // NOT EVERY RADAR SATELLITE HAS A BLADE, and the three that do not are excluded on purpose:
@@ -1435,13 +1439,16 @@ export const REAL_MODELS = {
     //              14.67 m tip to tip, the 1.4 m navigation antenna on the Earth face. WHAT THE FILE
     //              CORRECTS: the body is a slab lying ACROSS the wing axis with its largest face to
     //              the Earth; the family box stood it on end. The three In-Orbit Validation craft
-    //              (`GSAT0101` to `GSAT0103`, another maker's bus) keep the family box, as would a
-    //              second-generation craft under a `GSAT03nn` name.
+    //              (`GSAT0101` to `GSAT0103`, another maker's bus) have galileo-iov.glb since release
+    //              1.8.0 (internal #751: EUSPA's 2.611 x 1.149 x 1.149 m box, the 13 m span); a
+    //              second-generation craft under a `GSAT03nn` name would keep the family box.
     //   QZSS       michibiki.glb is QZS-2 and QZS-4 ONLY (2 records): the Cabinet Office's drawing of
     //              QZS-2 gives 2.4 m, 6.2 m and two 8.3 m wings, and its L-band antenna as a cone
-    //              1.8 m to 1.5 m across and 0.8 m tall. QZS-1R has a flat antenna deck (the same
-    //              office's drawing), QZS-3 "uses a flat patch antenna" and carries a 3.2 m dish
-    //              (eoPortal), QZS-6 and QZS-7 are later craft: all four keep the family box.
+    //              1.8 m to 1.5 m across and 0.8 m tall. Since release 1.8.0 (internal #751) the other
+    //              four have files from the same office's SPI documents: qzs-1r.glb is QZS-1R and QZS-6
+    //              (a flat octagonal antenna, 8 271 mm wings; QZS-6's three small extra antennas are not
+    //              drawn), qzs-3.glb is QZS-3 (a flat patch, a 9.1 m2 and a 0.8 m2 reflector) and
+    //              qzs-7.glb is QZS-7 (two reflectors, their normals cited).
     //   NavIC      irnss.glb is the first generation on ISRO's I-1K bus, `IRNSS-1A` to `IRNSS-1I`
     //              (7 records). `NVS-01 (IRNSS-1J)` is the second generation on a larger bus: the
     //              key matches its name and the answer leaves it the family box.
@@ -1453,7 +1460,12 @@ export const REAL_MODELS = {
     // two are never near the camera together; each file is fetched once and cloned.
     galileo: {
       build: 'navigation', colour: 'satellite', name: 'a Galileo navigation satellite', klass: ['satellite'], generic: true,
-      resolve: (record) => (/\bgsat02\d\d\b/i.test(String(record && record.name)) ? { file: 'galileo-foc.glb', made: 'dimensions', axes: 'app' } : {}),
+      resolve: (record) => {
+        const name = String(record && record.name);
+        if (/\bgsat02\d\d\b/i.test(name)) return { file: 'galileo-foc.glb', made: 'dimensions', axes: 'app' };
+        if (/\bgsat01\d\d\b/i.test(name)) return { file: 'galileo-iov.glb', made: 'dimensions', axes: 'app' };
+        return {};
+      },
     },
     // TWO KEYS FOR ONE CONSTELLATION, and this is the endpoint trap again rather than belt and
     // braces. GROUP=active -- the file sources.yaml actually fetches -- calls them
@@ -1490,7 +1502,14 @@ export const REAL_MODELS = {
     },
     qzs: {
       build: 'navigation', colour: 'satellite', name: 'a QZSS navigation satellite', klass: ['satellite'], generic: true,
-      resolve: (record) => (/^qzs-[24]\b/i.test(String(record && record.name).trim()) ? { file: 'michibiki.glb', made: 'dimensions', axes: 'app' } : {}),
+      resolve: (record) => {
+        const name = String(record && record.name).trim();
+        if (/^qzs-[24]\b/i.test(name)) return { file: 'michibiki.glb', made: 'dimensions', axes: 'app' };
+        if (/^qzs-(1r|6)\b/i.test(name)) return { file: 'qzs-1r.glb', made: 'dimensions', axes: 'app' };
+        if (/^qzs-3\b/i.test(name)) return { file: 'qzs-3.glb', made: 'dimensions', axes: 'app' };
+        if (/^qzs-7\b/i.test(name)) return { file: 'qzs-7.glb', made: 'dimensions', axes: 'app' };
+        return {};
+      },
     },
     // THE 3U CUBESATS -- 164 objects, and the largest population in this app outside Starlink.
     //
