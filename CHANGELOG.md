@@ -25,11 +25,21 @@ tagged, and their dates are the day the last change in each landed.
   (NOAA SWPC's page for the OVATION model, which is the model the in-app aurora layer draws too) and its record in `registry/links.yaml`
   says so (public #1232).
 
+### Fixed
+
+- **A reply of the wrong shape no longer replaces the data the browser holds, and a read of our own saved files can no longer hang** (public #1304).
+  A publisher's error page that is valid JSON (`{"error": "rate limited"}`), a number, a string, or rows without the fields the parser reads
+  used to be kept as the new copy of a feed; now each json feed is checked against the least its consumer needs (`shape` in
+  `site/js/data/sources.js`: the CelesTrak feeds, Launch Library, the people in space, GDACS, EONET, JPL's tables, the Kp forecast; the
+  others must at least be an object or a list) before it can replace the copy, from the publisher and from our own saved file. The manifest,
+  a saved file and its column twin are read within 20 seconds, as a publisher's reply already was; before, a hung one held the page until
+  the browser gave up and the publisher behind it was not asked.
+
 ### Added
 
 - **Five new checks, no change to what a visitor sees** (public #1271, #1304, #1322, #555). Every trip of `registry/tours.yaml` is its own URL
   in `sitemap.xml`, once, with a page of its own H1 and description. A read of the hourly copy that never answers, comes back empty, is cut off
-  or is not data leaves the copy the browser holds as it was, with its own time, marked old, with the reason, from the publisher and from our
+  or is not data, or is data of the wrong shape, leaves the copy the browser holds as it was, with its own time, marked old, with the reason, from the publisher and from our
   own file (`tests/test_cache_keeps_last_good.mjs`). `scripts/check-phone-menu.mjs` opens a moon, a landing site and a long name at 320 and
   390 px with a trail behind them and checks that no breadcrumb overlaps the More button, none is cut at the side, and the menu opens and
   closes; it runs in the `ui` job of `screens.yml`. docs/RELEASING.md says how to run the Rich Results Test and the Schema Markup Validator

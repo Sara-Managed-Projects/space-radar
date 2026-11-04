@@ -13,9 +13,10 @@
 //   - in the browser's store, byte for byte, with its fetched_at;
 //   - in what load() hands back: the same objects, the same time, stale, not ok, with the reason in words.
 // The routes failed: the publisher (no snapshot row) with a timeout, an empty list, an empty text, a cut-off body,
-// a page of HTML and an object where a list belongs; and our own file (the manifest names a newer snapshot) with a
-// refusal, a request that fails, an empty body, a null body, a cut-off file, the wrong schema and a body that is not
-// a list; then both at once.
+// a page of HTML, and valid JSON of the wrong shape (a publisher's error object, a number, a string, rows without the
+// fields the parser reads); and our own file (the manifest names a newer snapshot) with a refusal, a request that fails
+// or never answers (the 20 s limit of a read of our own file), an empty body, a null body, a cut-off file, the wrong
+// schema and a body of the wrong shape; then both at once. And wrongShape() on its own, source by source.
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -78,8 +79,8 @@ async function load({ publisher, file = null }) {
 }
 
 const text = (body, status = 200) => () => new Response(body, { status });
-// a request that never answers until its abort signal fires, as a dead host does (the publisher's is aborted by the
-// module's 20 s timer; a read of our own file has no timer of its own, which the 'hang' case below says in its way)
+// a request that never answers until its abort signal fires, as a dead host does (both the publisher's and a read of our
+// own file are aborted by the module's own 20 s timer, shortened below)
 const hangs = (_url, init) => new Promise((_, reject) => {
   const sig = init && init.signal;
   if (sig) sig.addEventListener('abort', () => reject(Object.assign(new Error('The operation was aborted.'), { name: 'AbortError' })));
@@ -95,56 +96,26 @@ const cases = [
   ['publisher: a body cut off in the middle', { publisher: text('[{"OBJECT_NAME":"OBJ 1","OBJECT_ID":"20') }, null],
   ['publisher: a page of HTML', { publisher: text('<html><body>Service unavailable</body></html>') }, null],
   ['publisher: null', { publisher: text('null') }, /nothing in it/],
+  ['publisher: valid JSON, an error object where a list belongs', { publisher: text('{"error":"rate limited","retry_after":3600}') }, /object where a list belongs/],
+  ['publisher: valid JSON, a number', { publisher: text('42') }, /not with data: number/],
+  ['publisher: valid JSON, a string', { publisher: text('"ok"') }, /not with data: string/],
+  ['publisher: valid JSON, rows without the fields the parser reads', { publisher: text('[{"status":"maintenance"}]') }, /lack EPOCH, NORAD_CAT_ID/],
   // our own saved file, the manifest naming a snapshot newer than the copy held; the publisher is down behind it
   ['snapshot: the file is refused (404)', { file: text('no', 404), publisher: text('down', 503) }, null],
   ['snapshot: the request fails', { file: refuses, publisher: text('down', 503) }, null],
-  ['snapshot: the request never answers', { file: hangs, publisher: text('down', 503) }, 'hang'],
+  ['snapshot: the request never answers', { file: hangs, publisher: text('down', 503) }, null],
   ['snapshot: an empty body list', { file: fileWith({ body: [] }), publisher: text('down', 503) }, null],
   ['snapshot: a null body', { file: fileWith({ body: null }), publisher: text('down', 503) }, null],
   ['snapshot: a file cut off in the middle', { file: text('{"schema":1,"source":"celestrak-visual","fetched_at":"2026-1'), publisher: text('down', 503) }, null],
   ['snapshot: the wrong schema', { file: fileWith({ schema: 99 }), publisher: text('down', 503) }, null],
+  ['snapshot: a body that is an error object', { file: fileWith({ body: { error: 'rate limited' } }), publisher: text('down', 503) }, null],
+  ['snapshot: a body of rows without the fields the parser reads', { file: fileWith({ body: [{ status: 'maintenance' }] }), publisher: text('down', 503) }, null],
   ['snapshot: a time that is not a time', { file: fileWith({ fetched_at: 'sometime', valid_until: 'later' }), publisher: text('down', 503) }, null],
   // both routes bad at once
   ['both: an empty snapshot and an empty publisher', { file: fileWith({ body: [] }), publisher: text('[]') }, /nothing in it/],
 ];
 
-for (const [name, world, wantError] of cases) {
-  // A read of our own file that never answers has no limit of its own in the module (only the publisher's has, 20 s): a
-  // caller that awaits it waits as long as the browser does. So this case is raced, and what it holds is the visitor's side:
-  // the copy held is drawn at once, in its own time, while the request hangs.
-  if (wantError === 'hang') {
-    const raced = await Promise.race([load(world), new Promise((r) => realSetTimeout(() => r('waited'), 3000))]);
-    if (raced === 'waited') {
-      // The held copy must still be served at once, without waiting for the file (load() without await).
-      const w = await loadHeldAtOnce(world);
-      check(w.result.data && w.result.data.length === 3 && w.result.fetchedAt === HELD_AT, `${name}: the held copy is drawn at once while the file is awaited (${w.result.data && w.result.data.length})`);
-      continue;
-    }
-    verify(name, raced, null);
-    continue;
-  }
-  verify(name, await load(world), wantError);
-}
-
-/** load() without waiting for the revalidation: what a visitor gets while a request hangs. */
-async function loadHeldAtOnce(world) {
-  run += 1;
-  const store = new Map();
-  globalThis.localStorage = {
-    get length() { return store.size; }, key: (i) => [...store.keys()][i] ?? null,
-    getItem: (k) => store.get(k) ?? null, removeItem: (k) => { store.delete(k); }, setItem: (k, v) => { store.set(k, String(v)); },
-  };
-  delete globalThis.caches;
-  store.set(KEY, JSON.stringify({ data: HELD, fetchedAt: HELD_AT, lastAttemptAt: N - 10 * HOUR, lastError: null, lastStatus: 200, via: 'live', validUntil: null, readAt: HELD_AT, reason: null, snapshot: null }));
-  globalThis.fetch = async (url, init) => {
-    url = String(url);
-    if (url.endsWith('data/v1/index.json')) return new Response(JSON.stringify({ schema: 1, generated_at: iso(N), run: {}, snapshots: { [ID]: row(N - HOUR, N + 2 * HOUR) } }), { status: 200 });
-    if (url.includes('data/v1/')) return world.file(url, init);
-    return world.publisher(url, init);
-  };
-  const mod = await import(join(ROOT, 'site/js/data/sources.js') + `?kept=${run}`);
-  return { result: await mod.load(ID) };
-}
+for (const [name, world, wantError] of cases) verify(name, await load(world), wantError);
 
 function verify(name, got, wantError) {
   const { result: r, after, stored } = got;
@@ -159,5 +130,26 @@ function verify(name, got, wantError) {
   if (wantError instanceof RegExp) check(wantError.test(r.error || ''), `${name}: the reason is "${r.error}"`);
 }
 
+// wrongShape(): what each kind of source must be, and what it lets through
+{
+  const { wrongShape, SOURCES } = await import(join(ROOT, 'site/js/data/sources.js') + '?shape');
+  const omm1 = [omm(1)];
+  for (const id of Object.keys(SOURCES).filter((i) => i.startsWith('celestrak-') && SOURCES[i].kind === 'json')) {
+    check(wrongShape(SOURCES[id], omm1) === null, `${id}: a list of elements passes`);
+    check(wrongShape(SOURCES[id], { error: 'x' }) !== null && wrongShape(SOURCES[id], [{}]) !== null, `${id}: an object, and rows without the fields, do not`);
+  }
+  const need = { 'll2-upcoming': 'results', 'll2-previous': 'results', 'll2-stations': 'results', 'll2-astronauts': 'results', 'open-notify-astros': 'people', 'gdacs-tc': 'features', 'eonet-fires': 'events', 'eonet-volcanoes-ice': 'events' };
+  for (const [id, key] of Object.entries(need)) {
+    check(wrongShape(SOURCES[id], { [key]: [] }) === null, `${id}: an object with its ${key} list passes`);
+    check(wrongShape(SOURCES[id], { [key]: 'x' }) !== null && wrongShape(SOURCES[id], [1]) !== null, `${id}: a ${key} that is not a list, and a bare list, do not`);
+  }
+  for (const id of ['jpl-cad', 'jpl-sbdb-neo', 'jpl-sbdb-comets']) {
+    check(wrongShape(SOURCES[id], { fields: ['a'], data: [[1]] }) === null && wrongShape(SOURCES[id], { fields: ['a'] }) !== null, `${id}: a table needs its fields and its data`);
+  }
+  check(wrongShape(SOURCES['swpc-kp'], [['time_tag', 'kp'], ['2026-11-04', '3']]) === null && wrongShape(SOURCES['swpc-kp'], { error: 'x' }) !== null, 'swpc-kp: a list passes, an object does not');
+  check(wrongShape(SOURCES['swpc-solar-regions'], 7) !== null && wrongShape(SOURCES['swpc-solar-regions'], [{ x: 1 }]) === null, 'a json source with no shape of its own still needs an object or a list');
+  check(wrongShape(SOURCES['celestrak-satcat'], '') !== null && wrongShape(SOURCES['celestrak-satcat'], 'a,b\n1,2') === null, 'a text source needs some text');
+}
+
 if (problems.length) { console.error('CACHE KEEPS LAST GOOD FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
-console.log(`cache keeps last good ok: ${cases.length} ways a read goes wrong (no answer, empty, cut off, not data), each leaving the copy held as it was, at its own time, marked old with a reason`);
+console.log(`cache keeps last good ok: ${cases.length} ways a read goes wrong (no answer, empty, cut off, not data, data of the wrong shape), each leaving the copy held as it was, at its own time, marked old with a reason`);
