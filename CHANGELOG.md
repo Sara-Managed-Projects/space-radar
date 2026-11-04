@@ -11,6 +11,26 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [1.7.21] - 2026-11-04
+
+### Added
+
+- **Proof tools for the deep-space heroes, for contributors and reviewers; nothing a visitor sees changes.** `sr.perf.stats()` carries `gpuTime`, the GPU's own
+  time for the frame's `render()` from a timer query (`EXT_disjoint_timer_query_webgl2`, one query in flight, read a frame or more later; it says
+  `supported: false` and why where the browser has none, as headless Chrome on SwiftShader usually does). It draws nothing and holds no render target, so a
+  deep-space effect's cost is the difference of `gpuTime.p50Ms` between its BEFORE and AFTER pictures. `sr.perf.whenIdle()` is the asset-idle signal a
+  probe awaits before a picture: it names what the scene still waits for (the slider's photographs, the deep sky's heroes, the sharper maps being swapped in,
+  map tiles in flight or wanted). `tools/hero-clips.mjs` films a 5 to 10 second clip of a hero's arrival on `render-trip.mjs`'s film clock (pictures, a row a
+  frame, and the pops, flickers and jumps found; `ffmpeg` joins them only if it is on the PATH). `tests/test_hero_cycles.mjs` visits every shipped hero ten
+  times through the real coordinator and checks that each departure gives the scene graph back, and the `hero-cycles` look probe does the same on a real GL
+  with `renderer.info.memory`. The heroes probe writes the GPU time and the idle answer beside each picture. (internal #832, #834, #779)
+
+### Changed
+
+- **Under `?look=1` the drift's walk, its dwell times and the meteors draw from a fixed seed**, as the wind, the currents and the weather's flashes already did,
+  so two runs of a tool photograph the same. The seed moved from `scene/wind.js` to `scene/lookrandom.js`, which the wind still re-exports; a visitor's
+  `Math.random` is unchanged. (internal #779)
+
 ## [1.7.8] - 2026-11-03
 
 ### Added

@@ -16,13 +16,21 @@
 //    Math.random as before.
 // 5. THE PROBE. tests/probes/look/heroes.js walks the thirteen heroes at far, middle, near and turned,
 //    pauses the clock at one instant, and takes the context away once.
+// 7. THE GPU'S TIME (internal #832). createGpuTimer(gl) reads EXT_disjoint_timer_query_webgl2 on a fake
+//    WebGL2: results arrive frames later, a disjoint one is dropped with the queries behind it, at most a
+//    few queries exist and they are reused, and where there is no extension it does nothing. main.js calls
+//    it around render() only when sr.perf is there. No render target, no post-processing.
+// 8. THE ASSET-IDLE SIGNAL (internal #779). assetsIdle(ctx) names what the scene still waits for (photographs,
+//    the deep sky, the sharper maps, tiles); whenIdle() holds it for a few polls.
+// 9. THE REST OF THE SEEDS (internal #779). The drift, its plan's defaults and the meteors take scene/lookrandom.js.
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setFlagsFromString } from 'node:v8';
 import { runInNewContext } from 'node:vm';
-import { createPerf, sceneBytes, textureBytes, geometryBytes, quantile, RING, LOOK_SEED } from '../site/js/scene/perf.js';
-import { lookRandom } from '../site/js/scene/wind.js';
+import { createPerf, createGpuTimer, assetsIdle, sceneBytes, textureBytes, geometryBytes, quantile, RING, LOOK_SEED } from '../site/js/scene/perf.js';
+import { lookRandom } from '../site/js/scene/lookrandom.js';
+import { lookRandom as windRandom } from '../site/js/scene/wind.js';
 import { KEYS } from '../site/js/ui/urlstate.js';
 import { summarise, scenesCsv, scenesOf, CSV_COLUMNS } from '../tools/look-summary.mjs';
 
@@ -187,9 +195,133 @@ ok(bare.calls === null && bare.gpu.totalMiB === 0 && bare.tier === null, 'stats(
   ok(!summarise({ out: { errors: [], warns: [], shots: [] }, errText: '' }).text.includes('Numbers per scene'), 'no table for a probe without scenes');
 }
 
+// 7. The GPU's time.
+{
+  const fake = (extra = {}) => {
+    const g = { made: 0, deleted: 0, active: null, disjoint: false, calls: [], ...extra };
+    g.QUERY_RESULT_AVAILABLE = 1; g.QUERY_RESULT = 2;
+    g.getExtension = (n) => (g.noExt || n !== 'EXT_disjoint_timer_query_webgl2' ? null : { TIME_ELAPSED_EXT: 10, GPU_DISJOINT_EXT: 11 });
+    g.createQuery = () => { if (g.throwOnCreate) throw new Error('lost'); g.made += 1; return { id: g.made, available: false, ns: 0 }; };
+    g.deleteQuery = () => { g.deleted += 1; };
+    g.beginQuery = (t, q) => { if (g.active) throw new Error('a query is already active'); g.active = q; g.calls.push('begin'); };
+    g.endQuery = () => { g.active = null; g.calls.push('end'); };
+    g.getQueryParameter = (q, p) => (p === 1 ? q.available : q.ns);
+    g.getParameter = () => { const d = g.disjoint; g.disjoint = false; return d; };
+    return g;
+  };
+  const gl = fake();
+  const t = createGpuTimer(gl, { maxOpen: 3 });
+  ok(t.supported && t.why === '', 'a context with the extension is supported');
+  const made = [];
+  const wrap = (q) => { made.push(q); return q; };
+  const cq = gl.createQuery; gl.createQuery = () => wrap(cq());
+  for (let i = 0; i < 3; i++) { t.begin(); t.end(); }
+  ok(t.stats().samples === 0, 'a result is not read before the GPU has it');
+  made.forEach((q, i) => { q.available = true; q.ns = (i + 1) * 2e6; });
+  t.begin(); t.end();
+  ok(t.stats().samples === 3 && t.stats().p50Ms === 4 && t.stats().maxMs === 6, `the results come in a frame later, in nanoseconds read as ms (${JSON.stringify(t.stats())})`);
+  for (let i = 0; i < 40; i++) { for (const q of made) { q.available = true; q.ns = 3e6; } t.begin(); t.end(); }
+  ok(gl.made <= 4, `queries are made once and reused (${gl.made} made in 43 frames)`);
+  // Never available: the queue fills, begin() asks for no more, and says so.
+  const stuck = fake(); const ts = createGpuTimer(stuck, { maxOpen: 2 });
+  for (let i = 0; i < 6; i++) { ts.begin(); ts.end(); }
+  ok(stuck.made === 2 && ts.stats().dropped === 4 && stuck.calls.filter((c) => c === 'begin').length === 2, `a GPU that never answers is not given more than maxOpen queries (${stuck.made} made, ${ts.stats().dropped} dropped)`);
+  // Disjoint: the one just read and every one behind it are not trusted.
+  const dj = fake(); const td = createGpuTimer(dj, { maxOpen: 4 });
+  const qs = [];
+  const dq = dj.createQuery; dj.createQuery = () => { const q = dq(); qs.push(q); return q; };
+  for (let i = 0; i < 3; i++) { td.begin(); td.end(); }
+  qs.forEach((q) => { q.available = true; q.ns = 9e6; });
+  dj.disjoint = true;
+  td.begin(); td.end();
+  ok(td.stats().samples === 0 && td.stats().disjoint === 3, `a disjoint result is dropped with the queries behind it (${JSON.stringify(td.stats())})`);
+  td.reset();
+  ok(td.stats().samples === 0 && td.stats().disjoint === 0, 'reset() opens a new window');
+  td.dispose();
+  ok(dj.deleted >= 3 && !td.supported && td.why === 'disposed', 'dispose() gives the queries back');
+  // No extension, no context, a context that throws: nothing is asked of the GL.
+  const none = fake({ noExt: true }); const tn = createGpuTimer(none);
+  tn.begin(); tn.end();
+  ok(!tn.supported && /not offered/.test(tn.why) && none.made === 0 && tn.stats().supported === false && tn.stats().p50Ms === null, 'without the extension it is unsupported, says why and does nothing');
+  ok(!createGpuTimer(null).supported && createGpuTimer(null).why === 'no WebGL context', 'without a context it says so');
+  const th = fake({ throwOnCreate: true }); const tt = createGpuTimer(th);
+  tt.begin(); tt.end();
+  ok(!tt.supported && /lost/.test(tt.why), 'a GL that throws turns it off with the reason, never into the loop');
+  // sr.perf wiring: stats() carries it, mark() resets it, the loop calls it around render() and only when sr.perf is there.
+  const pg = fake();
+  const perf = createPerf({ renderer: { getContext: () => pg } }, { now: () => 5 });
+  perf.gpuBegin(); perf.gpuEnd();
+  ok(perf.stats().gpuTime.supported === true && perf.stats().gpuTime.samples === 0, 'sr.perf.stats() carries gpuTime');
+  perf.dispose();
+  ok(createPerf({}, { now: () => 5 }).stats().gpuTime.supported === false, 'sr.perf on a ref with no renderer carries gpuTime unsupported');
+  const main = read('site/js/main.js');
+  ok(/if \(ctx\.perf\) ctx\.perf\.gpuBegin\(\);[^\n]*\n    if \(ctx\.bareFrame\)[^\n]*\n    render\(\);\n    if \(ctx\.perf\) ctx\.perf\.gpuEnd\(\);/.test(main), 'the loop brackets render() with gpuBegin and gpuEnd, behind ctx.perf');
+  const src = read('site/js/scene/perf.js').replace(/^\s*(\/\/|\*|\/\*).*$/gm, '');
+  ok(!/WebGLRenderTarget|EffectComposer|Bloom|UnrealBloom|setRenderTarget|createFramebuffer/.test(src), 'no render target and no post-processing: a timer query only (the design contract)');
+}
+
+// 8. The asset-idle signal.
+{
+  ok(assetsIdle({}).idle === true && assetsIdle().waiting.length === 0, 'a ref with none of the owners is idle');
+  const st = { photo: false, deepReady: true, swap: false, tiles: { inFlight: 0, sets: {} } };
+  const ctx = {
+    nebulae: { busy: () => st.photo }, deep: { ready: () => st.deepReady },
+    quality: { textures: () => ({ busy: st.swap ? 'earth' : null }), tiles: () => st.tiles },
+  };
+  ok(assetsIdle(ctx).idle, 'everything quiet: idle');
+  st.photo = true; ok(assetsIdle(ctx).waiting.join() === 'photographs', 'a photograph on its way is named');
+  st.photo = false; st.deepReady = false; ok(assetsIdle(ctx).waiting.join() === 'deep sky', 'the deep sky not ready is named');
+  st.deepReady = true; st.swap = true; ok(assetsIdle(ctx).waiting.join() === 'map swaps', 'a map swap in progress is named');
+  st.swap = false; st.tiles = { inFlight: 2, sets: {} }; ok(assetsIdle(ctx).waiting.join() === 'tiles', 'tiles in flight are named');
+  st.tiles = { inFlight: 0, sets: { a: { showing: true, waiting: ['3/1/2 not asked'] } } }; ok(assetsIdle(ctx).waiting.join() === 'tiles', 'a wanted tile not yet asked for is named');
+  st.tiles = { inFlight: 0, sets: { a: { showing: true, waiting: ['3/1/2 dead', '3/1/3 ready'] }, b: { showing: false, waiting: ['1/0/0 loading'] } } };
+  ok(assetsIdle(ctx).idle, 'a dead tile, a ready one and a layer that is not showing are not waited for');
+  ok(assetsIdle({ deep: { ready: () => { throw new Error('x'); } } }).idle, 'an owner that throws is not waited for');
+  // whenIdle: held for `calm` polls; gives the last answer at the limit.
+  const p = createPerf(ctx);
+  let polls = 0;
+  st.photo = true; setTimeout(() => { st.photo = false; }, 250);
+  const a = await p.whenIdle(5000, 3);
+  polls = a.waitedMs;
+  ok(a.idle === true && polls >= 250 && polls < 2000, `whenIdle resolves once idle holds (${polls} ms)`);
+  st.deepReady = false;
+  const b = await p.whenIdle(300, 3);
+  ok(b.idle === false && b.waiting.join() === 'deep sky' && b.waitedMs >= 300, 'whenIdle gives the last answer, not idle, at its limit');
+  p.dispose();
+}
+
+// 9. The rest of the seeds.
+{
+  ok(lookRandom === windRandom, 'scene/wind.js still exports lookRandom: it is scene/lookrandom.js');
+  ok(!/^import \{[^}]*lookHeld/m.test(read('site/js/scene/wind.js')), 'the wind no longer carries a copy');
+  for (const [f, re, what] of [
+    ['site/js/ui/drift.js', /env\.rng \|\| lookRandom\(4\);/, 'the drift\'s choices'],
+    ['site/js/ui/driftplan.js', /const DICE = lookRandom\(5\);/, 'the drift plan\'s default dice'],
+    ['site/js/sky/meteors.js', /: lookRandom\(6\);/, 'the meteors'],
+  ]) {
+    const text = read(f);
+    ok(re.test(text) && /import \{ lookRandom \} from '\.\.\/scene\/lookrandom\.js';/.test(text), `${f}: ${what} take the seeded random by default`);
+    ok(!/Math\.random\(\)|\? [a-z.]+ : Math\.random|= Math\.random;/.test(text.replace(/^\s*(\/\/|\*).*$/gm, '')), `${f}: no Math.random default is left`);
+  }
+  // The drift plan under ?look=1: two copies of the module, loaded apart, walk and dwell the same.
+  globalThis.location = { search: '?look=1' };
+  const A = await import('../site/js/ui/driftplan.js?seed-a');
+  const B = await import('../site/js/ui/driftplan.js?seed-b');
+  delete globalThis.location;
+  const C = await import('../site/js/ui/driftplan.js?unseeded-a');
+  const D = await import('../site/js/ui/driftplan.js?unseeded-b');
+  const dwells = (M) => Array.from({ length: 6 }, () => M.dwellFor('steady')).map((d) => d.ms + ':' + d.deg);
+  ok(dwells(A).join() === dwells(B).join(), 'under ?look=1 two runs of the drift\'s dwell draw the same stays and turns');
+  ok(new Set(dwells(A)).size > 1, 'and the stream goes on: successive dwells differ');
+  const places = Array.from({ length: 12 }, (_, i) => ({ id: 'p' + i, hood: i % 3 === 0 ? 'earth' : 'planets', name: 'p' + i }));
+  const order = (M) => { const w = M.createWalk(places, { startHood: 'earth' }); return Array.from({ length: 10 }, () => w.next().id).join(); };
+  ok(order(A) === order(B), 'under ?look=1 two walks over one pool take the same order');
+  ok(dwells(C).join() !== dwells(D).join(), 'without it the dice are Math.random\'s');
+}
+
 if (problems.length) {
   console.error(`test_perf: ${problems.length} problem(s)`);
   for (const p of problems) console.error('  - ' + p);
   process.exit(1);
 }
-console.log('test_perf: ok (the shape, no allocation per frame, off unless asked, the seed, the heroes probe)');
+console.log('test_perf: ok (the shape, no allocation per frame, off unless asked, the seeds, the heroes probe, the GPU timer, the asset-idle signal)');

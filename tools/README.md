@@ -7,6 +7,7 @@ Things run by hand on a laptop. CI does not run them; each file's head comment s
 | `serve.py` | a threaded static server for `site/` (the app asks for ~90 files at boot) |
 | `cdp.mjs` | run a script inside the page in a real headless Chrome, with a screenshot |
 | `render-trip.mjs`, `render-trip.lib.mjs` | a trip as a video for YouTube (below) |
+| `hero-clips.mjs` | a 5 to 10 second clip of each deep-space hero's arrival on `render-trip.mjs`'s film clock, a row a frame, and the motion defects found (below) |
 | `sheet-png.mjs`, `*.html`, `trip-pictures.probe.js`, `moment-pictures.probe.js` | contact sheets and probes |
 | `systems.probe.js` | the star systems walk: six systems framed, a planet's card, the `#go=` link on a phone (its header says how) |
 | `walk.mjs`, `walk.probe.js` | the regression walk: every flow of the product at two sizes, with contact sheets (below) |
@@ -160,6 +161,7 @@ sips -Z 800 /tmp/look/pluto-1-stage.png --out /tmp/look/small.png # shrink befor
 | `r15-c2` | the four Vostok models of the Moments (release 1.5.0 stage r15-c2: `r7-8k72k`, `vostok-3ka`, `vostok-seat`, `vostok-chutes`; `-f subject=c2`) through the app's own loader, light and finish, each worn on a stand-in record by its named route (ISS, Tianhe, XRISM, NuSTAR) FOR THE PICTURE ONLY: as the app frames it; then the `model` probe's lens with the model HELD UPRIGHT (the hero layer tumbles a rocket) and fitted by metres a picture spans: the whole craft from four places on the Sun's side, each detail the registry row lists (the R-7's nose and block E, truss, shoulder and nozzle cluster; the capsule's sphere and hatch and its bottle ring; the seat's back and rockets; the canopies), and every named part moved away from the others, which proves in the app that each part is its own node. Fails when a part node the row lists is missing from the loaded file. Run it at `-f width=1600 -f height=900` and with `-f mobile=true` |
 <!-- 0079 c2: end -->
 | `r13-w1d` | the small fixes of release 1.3.0 stage W1-d (internal spec 0077 task 4), one walk: Tonight with Change place open and a place set (each control's height, corner and fill beside the picture); the station stop of "Where people are living in space right now" on arrival and again after 25 held minutes of the clock (whether the Earth lies between the camera and the station, the HUD tag's words); Cassini's card with the clock in 1990, "Go to nearest available date" pressed and the card at the path's first moment; the time tape stepped back twice, every mark's box against the Now button's (a 0.5 px overlap fails). Run it at `-f width=1600 -f height=900` and with `-f mobile=true` |
+| `hero-cycles` | a deep-space hero gives its memory back (internal #834): ten visits to one hero (`-f subject=helix`, `lmc`, `orion`, `m57`, `carina` or `smc`) and ten departures of twelve seconds, writing down after each what the renderer holds (`renderer.info.memory`), `sr.perf`'s estimate of the scene in MiB and the GPU's own time for a frame. Fails when the tenth departure holds more than two geometries or textures, or 2 MiB, more than the first, or when a visit never found the hero drawn. The same loop in node, over every shipped hero, is `tests/test_hero_cycles.mjs`. Run it at `-f width=1600 -f height=900` |
 | `r12-orion` | the Orion Nebula as a hero (release 1.2.0 stage W1-a, internal spec 0076): every pose twice in one run, BEFORE (the hero's `shipped` switched off for the shot: the photograph, the glow, the holder) and AFTER: M42 at arrival, turned 30 and 60 degrees round theta1 Ori C, from the side, from behind (the dark cloud), 3 ly from the Trapezium, M43 at its framing and turned 50; then the Measured look and Low (T0) at 60 degrees. Beside each picture the angle off our line, the photograph's share, the hero's `sr.deep.stats()` row, the renderer's counts and p50/p95 of 20 frames. Fails when the hero never drew with its light and its front. Run it at `-f width=1600 -f height=900` and with `-f mobile=true` |
 | `r12-edge` | stage W1-b (internal spec 0076, internal #781): the way out to the edge on the Local Group's stage: the local volume, 1, 20 and 40 billion light-years (the microwave map from inside, with its scale), the horizon from just outside with the map seen through it (only its inside is painted), the same turned 60 degrees, the 50 billion light-year endpoint by the climb. Each scene twice where the map is drawn: with it held off (`sr.shells.debug({ cmb: false })`, `?look=1` only: the before) and on. Beside each picture the shells' state and the words the screen reader is given. Run it at `-f width=1600 -f height=900` and again with `-f mobile=true` |
 | `r12-truth` | the truth on every card (internal spec 0076 W1-c): the cards of a photograph (M42), a hero (the Helix, on our line and turned, with the HUD's tag), an illustration (the Milky Way from outside), a measured world (Mars) under the infrared sky, each with the row "How we know" open, plus the HUD tag's words. Beside each picture: the card's row hint, the legend's rows and the tag. On a ref without the row it photographs the same cards closed (the before). Run it at 1440 x 900 and on a 320 px phone (`-f mobile=true -f width=320 -f height=700`); `-f ref=main` for today's app |
@@ -226,6 +228,32 @@ node tools/look-summary.mjs --dir=/tmp/look --probe=frametime --browser=chromium
 (which waits for `window.__srLayersReady`, collects errors and warnings and gives it `sr`, `rig`,
 `shot(name, note)`, `go(id, name)`, `stage(id)`, `until(fn, capMs)`), sets `look.probe = '<name>'`
 and ends with `return finish({...})`. `tests/test_look_tool.mjs` holds the shape.
+
+### GPU time, the asset-idle signal and the clips (internal #832, #779)
+
+`sr.perf.stats().gpuTime` is the GPU's own time for the frame's `render()`, `{ supported, why, samples, p50Ms, p95Ms, maxMs, disjoint, dropped }`, from a timer
+query (`EXT_disjoint_timer_query_webgl2`; one query in flight, read a frame or more later, so the loop does not stall). It is `supported: false` with a
+reason where the browser offers none, which headless Chrome on SwiftShader usually does not. It draws nothing and holds no render target. A deep-space effect's
+cost is the difference of `gpuTime.p50Ms` between its BEFORE and AFTER pictures, in any probe that writes `sr.perf.stats()`; for absolute numbers run the probe
+with `tools/cdp.mjs --gl=gpu` on a machine with a GPU (above).
+
+`await sr.perf.whenIdle(ms, calm)` resolves `{ idle, waiting, waitedMs }` once nothing the scene asked for is still on its way (the slider's photographs,
+the deep sky's heroes and layers, the sharper maps being swapped in, map tiles in flight or wanted and not yet asked for) for `calm` polls a tenth of a second
+apart; `sr.perf.idle()` is one look. A probe awaits it before it photographs. It uses real timers: on the film clock the page's `film.advance()` settles by itself.
+
+`?look=1` also seeds the drift's walk and dwell and the meteors (`scene/lookrandom.js`, with the wind, the currents and the weather's flashes), so two runs draw the
+same.
+
+```sh
+node tools/hero-clips.mjs helix --seconds=6          # out/hero-clips/helix/: pictures, clip.json, helix.mp4 if ffmpeg is on the PATH
+node tools/hero-clips.mjs all --gl=gpu --res=1280x720 # every shipped hero
+```
+
+A clip is the hero's arrival, as a visitor gets it, on the film clock (`?render=1&clock=1`): the camera at three times the arrival distance, then one flight to a
+third of it, turning 40 degrees, for the seconds asked. `clip.json` has a row a frame and the defects found: a pop (the camera's distance or angle moves more
+than five times what the four frames either side of it move, in one frame), a flicker (the hero's level goes up and down more than twice), a jump of the hero's share of the picture over 0.35
+in a frame, or a hero that never reached level 2. A defect is a place to look at the frames, not a verdict. The exit code is 1 when any hero has one. Nothing is
+installed: without `ffmpeg` on the PATH the pictures are the clip.
 
 ## Running the harvester by hand (internal spec 0078)
 

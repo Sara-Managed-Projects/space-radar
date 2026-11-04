@@ -52,6 +52,7 @@ import * as Astronomy from '../../vendor/astronomy.js';
 import { SHOWERS } from '../data/showers.js';
 import { SHOWER_ACTIVITY, ANTIHELION } from '../data/showers-activity.js';
 import { radiantAltAz } from './radiants.js';
+import { lookRandom } from '../scene/lookrandom.js';
 
 const DEG = Math.PI / 180;
 const DAY = 86400000;
@@ -208,7 +209,7 @@ void main() {
 
 export function createMeteors(env) {
   const R = env.radius;
-  const random = typeof env.random === 'function' ? env.random : Math.random;
+  const random = typeof env.random === 'function' ? env.random : lookRandom(6); // fixed under ?look=1
   const pos = new Float32Array(POOL * 4 * 3);
   const uv = new Float32Array(POOL * 4 * 2);
   const alpha = new Float32Array(POOL * 4);

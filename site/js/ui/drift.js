@@ -56,6 +56,7 @@ import { parseFrame } from '../propagate/frames.js';
 import { inEarthShadow } from '../scene/shadow.js';
 import { propagate } from '../propagate/index.js';
 import { icon } from './icons.js';
+import { lookRandom } from '../scene/lookrandom.js';
 import {
   CATEGORIES, PACES, URL_KEY, buildPlaces, createWalk, flightMs, planFlight, dwellFor, readOptions, writeOptions,
 } from './driftplan.js';
@@ -289,7 +290,7 @@ export function createDrift(ctx, env = {}) {
   const win = env.window || (doc && doc.defaultView) || (typeof window !== 'undefined' ? window : null);
   const nav = env.navigator || (win && win.navigator) || {};
   const now = env.now || (() => Date.now());
-  const rng = env.rng || Math.random;
+  const rng = env.rng || lookRandom(4); // a fixed seed under ?look=1 (internal #779); Math.random for a visitor
   const setTick = env.setInterval || ((fn, ms) => setInterval(fn, ms));
   const clearTick = env.clearInterval || ((id) => clearInterval(id));
   const storage = env.storage !== undefined ? env.storage : (() => { try { return win && win.localStorage; } catch { return null; } })();
