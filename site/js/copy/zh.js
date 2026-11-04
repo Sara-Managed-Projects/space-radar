@@ -39,6 +39,9 @@ export const RULES = {
 export const COPY = {
   "app": {
     "name": "Space Radar",
+    "bootSky": "正在构建天空…",
+    "bootEarth": "正在放置地球…",
+    "bootCatalogues": "正在读取星表…",
     "tagline": "地球周围的一切运动，在它们真实所在的位置，此刻。",
     "sceneSelected": "一幅按真实位置绘制的太空地图，当前选中的是 {name}：地图旁边面板里的卡片会告诉你它是什么。"
   },
@@ -348,7 +351,8 @@ export const COPY = {
   },
   "ladder": {
     "title": "有多远",
-    "notLoaded": "还在加载",
+    "rowName": "{label}, {distance}",
+    "rowNameLoading": "{label}, 还在加载",
     "weShowTitle": "已知的天体里，这张地图画出了多少",
     "weShowRow": "{n} 个{what}——已知共 {of} 个",
     "edge": "地图的边缘",
@@ -4573,5 +4577,9 @@ export const GLOSSARY = {
   "L2": "在地球背着太阳的一侧、离地球 150 万公里的平衡点，望远镜在这里可以让地球和太阳都在身后，并保持低温。",
   "transit": "从你站的地方看，一个东西从另一个东西前面经过的时候。",
   "conjunction": "两个东西在天空中看起来靠得很近的时候。它们在太空里并不近。",
-  "ephemeris": "一张提前算好的表，告诉你某个东西将会在哪里。"
+  "ephemeris": "一张提前算好的表，告诉你某个东西将会在哪里。",
+  "umbra": "影子中央最暗的部分，光线被完全挡住。站在月球的本影里，太阳就不见了。",
+  "penumbra": "影子外围较亮的部分，只有一部分光被挡住。月球进入地球的半影时只会稍微变暗。",
+  "totality": "日全食中太阳被完全遮住的那几分钟。天空暗到可以看见星星。",
+  "annular": "环形的。日环食时月球离得太远，遮不住整个太阳，周围留下一圈明亮的光环。"
 };
