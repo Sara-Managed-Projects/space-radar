@@ -372,5 +372,39 @@ export const EXOTICS = [
     "raDeg": 194.04625,
     "decDeg": -5.789444,
     "distLy": 6740000000
+  },
+  {
+    "id": "vy-canis-majoris",
+    "name": "VY Canis Majoris",
+    "kind": "star",
+    "why": "One of the largest known stars, estimated at 1,420 times the Sun's radius. Put in the Sun's place, its surface would reach beyond the orbit of Jupiter.",
+    "aliases": [
+      "VY CMa",
+      "HD 58061",
+      "HIP 35793"
+    ],
+    "source": "https://en.wikipedia.org/wiki/VY_Canis_Majoris (infobox: position, distance, mass and V magnitude 7.95, with the 6.5 to 9.6 range; the opening paragraph for the radius of 1,420 Suns and the Jupiter comparison; read 2026-11-04)",
+    "distance_note": "3,820 light-years (1,170 parsecs) in the infobox, with an error of +260 and -230 light-years; the article's opening paragraph rounds it to 3,900",
+    "vmag": 7.95,
+    "raDeg": 110.743037,
+    "decDeg": -25.767565,
+    "distLy": 3820,
+    "massMsun": 17
+  },
+  {
+    "id": "r136a1",
+    "name": "R136a1",
+    "kind": "star",
+    "why": "The most massive and luminous star known, a Wolf-Rayet star in the Tarantula Nebula of the Large Magellanic Cloud, at around 291 Suns.",
+    "aliases": [
+      "RMC 136a1"
+    ],
+    "source": "https://en.wikipedia.org/wiki/R136a1 (infobox: position, distance, mass and apparent magnitude 12.23; the opening paragraph for the mass, luminosity and cluster; the Distance section; read 2026-11-04)",
+    "distance_note": "assumed to be the Large Magellanic Cloud's distance, 163,000 light-years: the article says the star's own distance cannot be determined directly",
+    "vmag": 12.23,
+    "raDeg": 84.676625,
+    "decDeg": -69.100806,
+    "distLy": 163000,
+    "massMsun": 291
   }
 ];
