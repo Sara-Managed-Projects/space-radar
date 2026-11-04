@@ -303,3 +303,29 @@ exotics:
     why: "A quasar that flickers in visible light, radio waves and X-rays. In 1973 its jet seemed to move faster than light, an illusion from the angle we see it at."
     aliases: [3C279, 4C -05.55, NRAO 413, PKS 1253-05]
     source: "https://en.wikipedia.org/wiki/3C_279 (infobox: position, redshift 0.5362 and magnitude 17.8 from NED; read 2026-10-20)"
+
+  - id: vy-canis-majoris
+    name: VY Canis Majoris
+    kind: star
+    ra: 07h 22m 58.32877s
+    dec: -25° 46′ 03.2355″
+    dist_ly: 3820             # +260 / -230, as the infobox prints it
+    mass_msun: 17             # the infobox and the opening paragraph give 17 +/- 8
+    vmag: 7.95                # the infobox's V magnitude; it pulses from 6.5 at brightest to 9.6 at faintest
+    distance_note: "3,820 light-years (1,170 parsecs) in the infobox, with an error of +260 and -230 light-years; the article's opening paragraph rounds it to 3,900"
+    why: "One of the largest known stars, estimated at 1,420 times the Sun's radius. Put in the Sun's place, its surface would reach beyond the orbit of Jupiter."
+    aliases: [VY CMa, HD 58061, HIP 35793]
+    source: "https://en.wikipedia.org/wiki/VY_Canis_Majoris (infobox: position, distance, mass and V magnitude 7.95, with the 6.5 to 9.6 range; the opening paragraph for the radius of 1,420 Suns and the Jupiter comparison; read 2026-11-04)"
+
+  - id: r136a1
+    name: R136a1
+    kind: star
+    ra: 05h 38m 42.39s
+    dec: -69° 06′ 02.9″
+    dist_ly: 163000           # 49,970 pc, the Large Magellanic Cloud's
+    mass_msun: 291            # the infobox gives 291 +/- 46
+    vmag: 12.23
+    distance_note: "assumed to be the Large Magellanic Cloud's distance, 163,000 light-years: the article says the star's own distance cannot be determined directly"
+    why: "The most massive and luminous star known, a Wolf-Rayet star in the Tarantula Nebula of the Large Magellanic Cloud, at around 291 Suns."
+    aliases: [RMC 136a1]
+    source: "https://en.wikipedia.org/wiki/R136a1 (infobox: position, distance, mass and apparent magnitude 12.23; the opening paragraph for the mass, luminosity and cluster; the Distance section; read 2026-11-04)"

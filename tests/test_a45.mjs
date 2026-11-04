@@ -215,7 +215,7 @@ for (const id of ['extremes-more', 'pulsars', 'beyond-more', 'quasars']) {
 }
 check(LAYERS.find((x) => x.id === 'pulsars').moments.wonder === false && LAYERS.find((x) => x.id === 'quasars').moments.wonder === false, 'the two thousands-strong layers start off, as the exoplanets do');
 check(LAYERS.find((x) => x.id === 'extremes-more').moments.wonder === true && LAYERS.find((x) => x.id === 'beyond-more').moments.wonder === true, 'the two small ones start on');
-check(EXOTICS.length === 23, 'registry/exotics.yaml is untouched (23 fact sheets)');
+check(EXOTICS.length === 25, 'registry/exotics.yaml holds the same 25 fact sheets as test_exotics.mjs');
 
 if (problems.length) { console.error('a45 FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`a45 ok: ${sets.pulsars.length} pulsars, ${sets.quasars.length} quasars, ${sets.extremes.length} magnetars, black holes, white dwarfs and brown dwarfs, ${sets.far.length} far galaxies and clusters, ${lg.length} Local Group dwarfs, ${iau.stars.length} IAU names joined, ${un.count} stars with no distance`);
