@@ -19,5 +19,8 @@ export const ALIASES = {
   "lobster nebula": "war and peace",
   "pillars of creation": "eagle nebula",
   "seven sisters": "pleiades",
-  "chinese space station": "css"
+  "chinese space station": "css",
+  "north star": "polaris",
+  "dog star": "sirius",
+  "starlink train": "starlink"
 };

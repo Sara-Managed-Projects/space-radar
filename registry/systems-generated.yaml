@@ -69,6 +69,8 @@ systems:
     source: https://exoplanetarchive.ipac.caltech.edu/overview/Proxima%20Cen (read 2026-10-28)
 - id: lhs-1140
   host: LHS 1140
+  aliases:
+  - Gliese 3053
   why: temperate
   as_of: '2026-10-28'
   sky:
@@ -631,6 +633,8 @@ systems:
     source: https://exoplanetarchive.ipac.caltech.edu/overview/TOI-700 (read 2026-10-28)
 - id: toi-715
   host: TOI-715
+  aliases:
+  - TIC 271971130
   why: temperate
   as_of: '2026-10-28'
   sky:
@@ -1058,6 +1062,9 @@ systems:
     source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201214 (read 2026-10-28)
 - id: ross-128
   host: Ross 128
+  aliases:
+  - FI Vir
+  - Gliese 447
   why: temperate
   as_of: '2026-10-28'
   sky:
@@ -1099,6 +1106,8 @@ systems:
     source: https://exoplanetarchive.ipac.caltech.edu/overview/Ross%20128 (read 2026-10-28)
 - id: wolf-1069
   host: Wolf 1069
+  aliases:
+  - Gliese 1253
   why: temperate
   as_of: '2026-10-28'
   sky:

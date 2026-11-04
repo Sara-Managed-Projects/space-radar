@@ -3044,8 +3044,10 @@ that stands in until the first snapshot lands, every record saying *as of* its d
 - Source: the **Planetary Systems Composite Parameters** table (`pscomppars`), NASA Exoplanet Archive,
   operated by the California Institute of Technology under contract with NASA's Exoplanet Exploration
   Program. Table DOI **10.26133/NEA13**; the archive asks users to cite Christiansen et al. 2025.
-- Terms: the archive's data are publicly available; its documentation asks for the DOI to be cited,
-  which this file and the `attribution:` on the row do. No licence text is asserted by the archive.
+- Terms: the archive's data are publicly available; its acknowledgement page asks for a standard
+  acknowledgement and a citation of Christiansen et al. 2025, and its DOI page lists this table as
+  10.26133/NEA13 (both read 2026-11-04). This file and the `attribution:` on the row cite the DOI.
+  No licence text is asserted by the archive.
 - Used unmodified in the snapshot; in the bundled copy, columns reduced to thirteen and numbers
   rounded to the precision the card prints (`scripts/build-exoplanets.py` says which).
 - The bundled copy was read from the archive's TAP service on **2026-10-08** (6 347 planets with a
@@ -3378,8 +3380,8 @@ Exoplanet Archive §4.7, GDACS §4.14) are repeated only where the credit line d
 | `ocean-currents` | NOAA CoastWatch (NOAA NESDIS, Laboratory for Satellite Altimetry) | the sea's surface current worked out from satellite altimetry, one day, every fourth point of a quarter-degree grid | §4.22: "Data courtesy of NOAA; Sentinel data courtesy of Copernicus Program; Generated using AVISO+ products. The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies." (the dataset's own licence attribute, read 2026-10-12) | Ocean currents: NOAA CoastWatch, from satellite altimetry (Sentinel data courtesy of the Copernicus Programme; generated using AVISO+ products) | `coastwatch.noaa.gov` |
 | `ocean-temperature` | NOAA National Centers for Environmental Information, through the CoastWatch West Coast node (NOAA NMFS SWFSC ERD) | the sea surface temperature (OISST v2.1, near real time), one day, every fourth point | §4.22: "The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies." (the dataset's own licence attribute, read 2026-10-12); NCEI asks for the citation in §4.22 | Sea temperature: NOAA NCEI OISST v2.1, through NOAA CoastWatch West Coast ERDDAP | `coastwatch.pfeg.noaa.gov` |
 | `nasa-exoplanet-archive` | NASA Exoplanet Archive, Caltech/IPAC | every confirmed exoplanet | §4.7 | Exoplanets: NASA Exoplanet Archive (Caltech/IPAC), DOI 10.26133/NEA13 | `exoplanetarchive.ipac.caltech.edu` |
-| `open-notify-astros` | Open Notify (a personal open-source project) | who is aboard the ISS and Tiangong | The site calls itself "an open source project" and states no licence for the data (read 2026-10-05); the list is a handful of names and facts. | Who is in space: Open Notify | `api.open-notify.org` |
-| `wikidata-observatories` | Wikidata | where observatories are | CC0 1.0: Wikidata's structured data is dedicated to the public domain | Observatory locations: Wikidata (CC0) | `query.wikidata.org` |
+| `open-notify-astros` | Open Notify (a personal open-source project) | who is aboard the ISS and Tiangong | The site calls itself "an open source project" and states no licence for the data (read 2026-10-05); its footer licenses the site's own pages under CC BY 3.0 and the API's repository carries a GPL-3.0 LICENSE file for the code (both read 2026-11-04); the list is a handful of names and facts. | Who is in space: Open Notify | `api.open-notify.org` |
+| `wikidata-observatories` | Wikidata | where observatories are | CC0 1.0: Wikidata's structured data is dedicated to the public domain (read 2026-11-04) | Observatory locations: Wikidata (CC0) | `query.wikidata.org` |
 | `space-track-tip` | 18th Space Defense Squadron, through Space-Track.org | reentry predictions | **Switched off** (`enabled: false`). Space-Track needs an account and its user agreement restricts passing the data on; nothing from it is fetched, saved or shipped. The row exists so the app can say "could not look" about it by name. | Reentry predictions: 18 SDS via Space-Track.org | `www.space-track.org` |
 
 Comets came from the Minor Planet Center (§4.5) until 2026-10-01 and come from JPL's Small-Body
