@@ -910,7 +910,9 @@ export const VISUAL_CLASSES = [
 "exotics": [
 "exotic-eta-carinae",
 "exotic-wd-j1330-6435",
-"exotic-betelgeuse"
+"exotic-betelgeuse",
+"exotic-vy-canis-majoris",
+"exotic-r136a1"
 ],
 "stars_notable": [
 "hip-70890",
@@ -953,7 +955,18 @@ export const VISUAL_CLASSES = [
 "hip-79672",
 "hip-113357",
 "hip-7513",
-"hip-27321"
+"hip-27321",
+"hip-26311",
+"hip-54061",
+"hip-26727",
+"hip-25930",
+"hip-25336",
+"hip-27366",
+"hip-100453",
+"hip-46390",
+"hip-9884",
+"hip-85927",
+"hip-15863"
 ],
 "catalogues": [
 "stars3d"

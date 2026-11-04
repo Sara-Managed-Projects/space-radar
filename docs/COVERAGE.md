@@ -17,10 +17,10 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | dso | 209 | 209 |
 | photographs | 30 | 30 |
 | heroes | 33 | 33 |
-| exotics | 23 | 23 |
+| exotics | 25 | 25 |
 | systems | 43 | 43 |
 | planets | 110 | 110 |
-| stars_notable | 41 | 41 |
+| stars_notable | 52 | 52 |
 | catalogues | 4 | 110 191 |
 | other_light | 3 | 3 |
 | sites | 50 | 50 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 39 | 39 |
-| **all** | **1075** | **111 262** |
+| **all** | **1088** | **111 275** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -54,7 +54,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [SPACE_PROBE](#space_probe) | 74 | `sampled.js`, `realmodels.js`, `models.js`, `glyphs.js` | measured | - |
 | [LANDING_SITE](#landing_site) | 65 | `models.js`, `realmodels.js`, `shadow.js` | measured | - |
 | [EXOPLANET](#exoplanet) | 153 | `systems.js`, `systemextras.js`, `exoface.js`, `exostage.js` | modelled | - |
-| [STAR](#star) | 46 | `stars3d.js`, `starfield.js`, `stardisc.js` | measured | - |
+| [STAR](#star) | 59 | `stars3d.js`, `starfield.js`, `stardisc.js` | measured | - |
 | [BINARY_AND_MULTIPLE](#binary_and_multiple) | 2 | `systems.js` | modelled | - |
 | [COMPACT_REMNANT](#compact_remnant) | 9 | `pulsars.js` | illustrative | - |
 | [BLACK_HOLE](#black_hole) | 8 | `portraits.js`, `glyphs.js` | illustrative | - |
@@ -82,7 +82,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 1075 records: 334 measured, 386 modelled, 355 illustrative.
+Honesty over the 1088 records: 347 measured, 386 modelled, 355 illustrative.
 
 ## The classes
 
@@ -375,9 +375,9 @@ Honesty over the 1075 records: 334 measured, 386 modelled, 355 illustrative.
 - **Dates and filters:** Hipparcos (1997) positions and Gaia DR3 distances through AT-HYG; the line on each card read on the day its row says.
 - **Measured, modelled or reconstructed:** Measured: positions, magnitudes, colours from B-V. Modelled: the limb-darkened disc of a near star. Red stars' radii are estimates where no interferometry exists.
 - **Rights:** HYG and AT-HYG CC BY-SA 4.0; d3-celestial BSD-3-Clause; facts cited.
-- **Records (46  109 434 drawn things):**
-  - exotics (3): `eta-carinae`, `wd-j1330-6435`, `betelgeuse`
-  - stars_notable (41): `hip-70890`, `hip-71683`, `hip-71681`, `hip-87937`, `Wolf 359`, `hip-32349`, `hip-16537`, `hip-104214`, `hip-37279`, `hip-8102`, `hip-24186`, `hip-3829`, `hip-30438`, `hip-69673`, `hip-91262`, `hip-24608`, `hip-24436`, `hip-7588`, `hip-97649`, `hip-21421`, `hip-65474`, `hip-80763`, `hip-37826`, `hip-113368`, `hip-102098`, `hip-49669`, `hip-60718`, `hip-36850`, `hip-11767`, `hip-68756`, `hip-116727`, `hip-10826`, `hip-14576`, `hip-110991`, `hip-23416`, `hip-65378`, `hip-95947`, `hip-79672`, `hip-113357`, `hip-7513`, `hip-27321`
+- **Records (59  109 447 drawn things):**
+  - exotics (5): `eta-carinae`, `wd-j1330-6435`, `betelgeuse`, `vy-canis-majoris`, `r136a1`
+  - stars_notable (52): `hip-70890`, `hip-71683`, `hip-71681`, `hip-87937`, `Wolf 359`, `hip-32349`, `hip-16537`, `hip-104214`, `hip-37279`, `hip-8102`, `hip-24186`, `hip-3829`, `hip-30438`, `hip-69673`, `hip-91262`, `hip-24608`, `hip-24436`, `hip-7588`, `hip-97649`, `hip-21421`, `hip-65474`, `hip-80763`, `hip-37826`, `hip-113368`, `hip-102098`, `hip-49669`, `hip-60718`, `hip-36850`, `hip-11767`, `hip-68756`, `hip-116727`, `hip-10826`, `hip-14576`, `hip-110991`, `hip-23416`, `hip-65378`, `hip-95947`, `hip-79672`, `hip-113357`, `hip-7513`, `hip-27321`, `hip-26311`, `hip-54061`, `hip-26727`, `hip-25930`, `hip-25336`, `hip-27366`, `hip-100453`, `hip-46390`, `hip-9884`, `hip-85927`, `hip-15863`
   - catalogues (1): `stars3d` (109 389)
   - layers (1): `stars`
 
