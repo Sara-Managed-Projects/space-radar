@@ -14,7 +14,7 @@
 export const SYSTEMS_ALBEDO = 0.3;
 
 /** The day the Archive's table was read. */
-export const SYSTEMS_AS_OF = "2026-10-28";
+export const SYSTEMS_AS_OF = "2026-11-04";
 
 /** Every generated system in full: what scene/systems.js draws and the card prints. */
 export const SYSTEMS_TABLE = [
@@ -35,7 +35,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.141,
 "teffK": 2900.0,
 "massSuns": 0.1221,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Proxima%20Cen (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Proxima%20Cen (read 2026-11-04)",
 "lumSuns": 0.00151,
 "lumFrom": "table"
 },
@@ -48,7 +48,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-proxima-cen-d",
@@ -104,7 +104,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.2159,
 "teffK": 3096.0,
 "massSuns": 0.1844,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/LHS%201140 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/LHS%201140 (read 2026-11-04)",
 "lumSuns": 0.0038,
 "lumFrom": "table"
 },
@@ -117,7 +117,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-lhs-1140-c",
@@ -174,7 +174,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.472,
 "teffK": 3788.0,
 "massSuns": 0.478,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-186 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-186 (read 2026-11-04)",
 "lumSuns": 0.04121,
 "lumFrom": "table"
 },
@@ -187,7 +187,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-kepler-186-b",
@@ -305,7 +305,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 1.11,
 "teffK": 5757.0,
 "massSuns": 1.037,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-452 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-452 (read 2026-11-04)",
 "lumSuns": 1.215,
 "lumFrom": "table"
 },
@@ -318,7 +318,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-kepler-452-b",
@@ -357,7 +357,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.64,
 "teffK": 4925.0,
 "massSuns": 0.69,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-62 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-62 (read 2026-11-04)",
 "lumSuns": 0.2099,
 "lumFrom": "table"
 },
@@ -370,7 +370,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-kepler-62-b",
@@ -481,7 +481,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.598,
 "teffK": 4402.0,
 "massSuns": 0.609,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-442 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-442 (read 2026-11-04)",
 "lumSuns": 0.1169,
 "lumFrom": "table"
 },
@@ -494,7 +494,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-kepler-442-b",
@@ -534,7 +534,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.869,
 "teffK": 5596.0,
 "massSuns": 0.857,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-22 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-22 (read 2026-11-04)",
 "lumSuns": 0.6453,
 "lumFrom": "table"
 },
@@ -547,7 +547,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-kepler-22-b",
@@ -586,7 +586,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.93,
 "teffK": 5638.0,
 "massSuns": 0.81,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-69 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-69 (read 2026-11-04)",
 "lumSuns": 0.7998,
 "lumFrom": "table"
 },
@@ -599,7 +599,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-kepler-69-b",
@@ -658,7 +658,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.4104,
 "teffK": 3459.0,
 "massSuns": 0.417,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-700 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-700 (read 2026-11-04)",
 "lumSuns": 0.0233,
 "lumFrom": "table"
 },
@@ -671,7 +671,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-toi-700-b",
@@ -764,7 +764,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.24,
 "teffK": 3075.0,
 "massSuns": 0.225,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-715 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-715 (read 2026-11-04)",
 "lumSuns": 0.004909,
 "lumFrom": "table"
 },
@@ -777,7 +777,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-toi-715-b",
@@ -816,7 +816,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.12,
 "teffK": 3034.0,
 "massSuns": 0.097,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Teegarden%27s%20Star (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Teegarden%27s%20Star (read 2026-11-04)",
 "lumSuns": 0.000722,
 "lumFrom": "table"
 },
@@ -829,7 +829,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-teegarden-s-star-b",
@@ -903,7 +903,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.265,
 "teffK": 3328.0,
 "massSuns": 0.255,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Gliese%2012 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Gliese%2012 (read 2026-11-04)",
 "lumSuns": 0.00728,
 "lumFrom": "table"
 },
@@ -916,7 +916,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-gliese-12-b",
@@ -955,7 +955,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.411,
 "teffK": 3457.0,
 "massSuns": 0.359,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/K2-18 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/K2-18 (read 2026-11-04)",
 "lumSuns": 0.0253,
 "lumFrom": "table"
 },
@@ -968,7 +968,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-k2-18-c",
@@ -1024,7 +1024,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.3155,
 "teffK": 3415.0,
 "massSuns": 0.2923,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/L%2098-59 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/L%2098-59 (read 2026-11-04)",
 "lumSuns": 0.0122,
 "lumFrom": "table"
 },
@@ -1037,7 +1037,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-l-98-59-b",
@@ -1150,7 +1150,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.2211,
 "teffK": 3090.0,
 "massSuns": 0.1945,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201132 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201132 (read 2026-11-04)",
 "lumSuns": 0.00477,
 "lumFrom": "table"
 },
@@ -1163,7 +1163,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-gj-1132-b",
@@ -1223,7 +1223,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.2162,
 "teffK": 3101.0,
 "massSuns": 0.182,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201214 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201214 (read 2026-11-04)",
 "lumSuns": 0.0039,
 "lumFrom": "table"
 },
@@ -1236,7 +1236,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-gj-1214-b",
@@ -1275,7 +1275,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.1967,
 "teffK": 3192.0,
 "massSuns": 0.168,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Ross%20128 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Ross%20128 (read 2026-11-04)",
 "lumSuns": 0.00362,
 "lumFrom": "table"
 },
@@ -1288,7 +1288,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-ross-128-b",
@@ -1326,7 +1326,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.1813,
 "teffK": 3158.0,
 "massSuns": 0.167,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Wolf%201069 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Wolf%201069 (read 2026-11-04)",
 "lumSuns": 0.002944,
 "lumFrom": "table"
 },
@@ -1339,7 +1339,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-wolf-1069-b",
@@ -1378,7 +1378,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": null,
 "teffK": 3350.0,
 "massSuns": 0.33,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20667%20C (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20667%20C (read 2026-11-04)",
 "lumSuns": 0.01371,
 "lumFrom": "table"
 },
@@ -1391,7 +1391,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-gj-667-c-b",
@@ -1499,7 +1499,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.98,
 "teffK": 5198.0,
 "massSuns": 1.015,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/55%20Cnc (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/55%20Cnc (read 2026-11-04)",
 "lumSuns": 0.6354,
 "lumFrom": "table"
 },
@@ -1512,7 +1512,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-55-cnc-e",
@@ -1624,7 +1624,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 1.69,
 "teffK": 6265.0,
 "massSuns": 1.325,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-12 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-12 (read 2026-11-04)",
 "lumSuns": 3.955,
 "lumFrom": "table"
 },
@@ -1637,7 +1637,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-wasp-12-b",
@@ -1677,7 +1677,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 1.461,
 "teffK": 6628.0,
 "massSuns": 1.33,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-121 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-121 (read 2026-11-04)",
 "lumSuns": 4.403,
 "lumFrom": "table"
 },
@@ -1690,7 +1690,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-wasp-121-b",
@@ -1729,7 +1729,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.75,
 "teffK": 5052.0,
 "massSuns": 0.79,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/HD%20189733 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/HD%20189733 (read 2026-11-04)",
 "lumSuns": 0.3458,
 "lumFrom": "table"
 },
@@ -1742,7 +1742,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-hd-189733-b",
@@ -1781,7 +1781,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 1.19,
 "teffK": 6091.0,
 "massSuns": 1.23,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/HD%20209458 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/HD%20209458 (read 2026-11-04)",
 "lumSuns": 1.702,
 "lumFrom": "table"
 },
@@ -1794,7 +1794,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-hd-209458-b",
@@ -1836,7 +1836,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 1.19,
 "teffK": 5761.0,
 "massSuns": 1.07,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/51%20Peg (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/51%20Peg (read 2026-11-04)",
 "lumSuns": 1.369,
 "lumFrom": "table"
 },
@@ -1849,7 +1849,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-51-peg-b",
@@ -1888,7 +1888,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.6489,
 "teffK": 4450.0,
 "massSuns": 0.6897,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-16 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-16 (read 2026-11-04)",
 "lumSuns": 0.125,
 "lumFrom": "table"
 },
@@ -1925,7 +1925,7 @@ export const SYSTEMS_TABLE = [
 "teffWeightedK": 4409
 },
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-kepler-16-b",
@@ -1962,7 +1962,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 2.418,
 "teffK": 9270.0,
 "massSuns": 2.32,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/KELT-9 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/KELT-9 (read 2026-11-04)",
 "lumSuns": 38.9,
 "lumFrom": "table"
 },
@@ -1970,7 +1970,7 @@ export const SYSTEMS_TABLE = [
 "zone": null,
 "zoneMissing": "too-hot",
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-kelt-9-b",
@@ -2008,7 +2008,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.97,
 "teffK": 5257.0,
 "massSuns": 0.97,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-849 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-849 (read 2026-11-04)",
 "lumSuns": 0.6048,
 "lumFrom": "table"
 },
@@ -2021,7 +2021,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-toi-849-b",
@@ -2063,7 +2063,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": null,
 "teffK": null,
 "massSuns": 1.4,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/PSR%20B1257%2B12 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/PSR%20B1257%2B12 (read 2026-11-04)",
 "lumSuns": null,
 "lumFrom": null
 },
@@ -2071,7 +2071,7 @@ export const SYSTEMS_TABLE = [
 "zone": null,
 "zoneMissing": "no-temperature",
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-psr-b1257-12-b",
@@ -2134,7 +2134,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 1.49338,
 "teffK": 7204.58,
 "massSuns": 1.5,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/HR%208799 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/HR%208799 (read 2026-11-04)",
 "lumSuns": 4.92,
 "lumFrom": "table"
 },
@@ -2142,7 +2142,7 @@ export const SYSTEMS_TABLE = [
 "zone": null,
 "zoneMissing": "too-hot",
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-hr-8799-e",
@@ -2230,7 +2230,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 1.54416,
 "teffK": 8038.68,
 "massSuns": 1.789,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/bet%20Pic (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/bet%20Pic (read 2026-11-04)",
 "lumSuns": 8.971,
 "lumFrom": "table"
 },
@@ -2238,7 +2238,7 @@ export const SYSTEMS_TABLE = [
 "zone": null,
 "zoneMissing": "too-hot",
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-bet-pic-c",
@@ -2310,7 +2310,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 1.2,
 "teffK": 6080.0,
 "massSuns": 1.2,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-11-04)",
 "lumSuns": 1.856,
 "lumFrom": "table"
 },
@@ -2323,7 +2323,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-koi-351-b",
@@ -2493,7 +2493,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.863,
 "teffK": 5356.3,
 "massSuns": 0.935,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/K2-138 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/K2-138 (read 2026-11-04)",
 "lumSuns": 0.517,
 "lumFrom": "table"
 },
@@ -2506,7 +2506,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-k2-138-b",
@@ -2635,7 +2635,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 1.065,
 "teffK": 5663.0,
 "massSuns": 0.961,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-11 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-11 (read 2026-11-04)",
 "lumSuns": 1.319,
 "lumFrom": "table"
 },
@@ -2648,7 +2648,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-kepler-11-b",
@@ -2777,7 +2777,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 1.109,
 "teffK": 5911.0,
 "massSuns": 1.06,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/HD%2010180 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/HD%2010180 (read 2026-11-04)",
 "lumSuns": 1.49,
 "lumFrom": "table"
 },
@@ -2790,7 +2790,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-hd-10180-c",
@@ -2907,7 +2907,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.2317,
 "teffK": 3240.0,
 "massSuns": 0.1977,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1649 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1649 (read 2026-11-04)",
 "lumSuns": 0.00516,
 "lumFrom": "table"
 },
@@ -2920,7 +2920,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-kepler-1649-b",
@@ -2979,7 +2979,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 1.7903,
 "teffK": 6210.0,
 "massSuns": 1.2207,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1647 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1647 (read 2026-11-04)",
 "lumSuns": 4.408,
 "lumFrom": "table"
 },
@@ -3015,7 +3015,7 @@ export const SYSTEMS_TABLE = [
 "teffWeightedK": 6132
 },
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-kepler-1647-b",
@@ -3052,7 +3052,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 1.49,
 "teffK": 6550.0,
 "massSuns": 2.28,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-17 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-17 (read 2026-11-04)",
 "lumSuns": 4.099,
 "lumFrom": "table"
 },
@@ -3065,7 +3065,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-wasp-17-b",
@@ -3105,7 +3105,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 0.939,
 "teffK": 5485.0,
 "massSuns": 0.913,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-39 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-39 (read 2026-11-04)",
 "lumSuns": 0.7449,
 "lumFrom": "table"
 },
@@ -3118,7 +3118,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-wasp-39-b",
@@ -3159,7 +3159,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 1.45,
 "teffK": 7422.0,
 "massSuns": 1.75,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/51%20Eri (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/51%20Eri (read 2026-11-04)",
 "lumSuns": 5.72,
 "lumFrom": "table"
 },
@@ -3167,7 +3167,7 @@ export const SYSTEMS_TABLE = [
 "zone": null,
 "zoneMissing": "too-hot",
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-51-eri-b",
@@ -3202,7 +3202,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 1.26,
 "teffK": 4109.0,
 "massSuns": 0.982,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/PDS%2070 (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/PDS%2070 (read 2026-11-04)",
 "lumSuns": 0.35,
 "lumFrom": "table"
 },
@@ -3215,7 +3215,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-pds-70-b",
@@ -3274,7 +3274,7 @@ export const SYSTEMS_TABLE = [
 "radiusSuns": 1.25,
 "teffK": 6140.0,
 "massSuns": 1.218,
-"source": "https://exoplanetarchive.ipac.caltech.edu/overview/AF%20Lep (read 2026-10-28)",
+"source": "https://exoplanetarchive.ipac.caltech.edu/overview/AF%20Lep (read 2026-11-04)",
 "lumSuns": 1.95,
 "lumFrom": "table"
 },
@@ -3287,7 +3287,7 @@ export const SYSTEMS_TABLE = [
 },
 "zoneMissing": null,
 "colourNote": "illustrative",
-"asOf": "2026-10-28",
+"asOf": "2026-11-04",
 "planets": [
 {
 "id": "exo-af-lep-b",
