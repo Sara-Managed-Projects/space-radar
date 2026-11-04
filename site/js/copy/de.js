@@ -149,7 +149,10 @@ export const COPY = {
   "app": {
     "name": "Space Radar",
     "tagline": "Alles, was sich rund um die Erde bewegt – dort, wo es wirklich ist, genau jetzt.",
-    "sceneSelected": "Eine Karte des Weltraums mit den echten Positionen. Ausgewählt ist {name}: Der Steckbrief im Bereich neben der Karte sagt, was es ist."
+    "sceneSelected": "Eine Karte des Weltraums mit den echten Positionen. Ausgewählt ist {name}: Der Steckbrief im Bereich neben der Karte sagt, was es ist.",
+  "bootSky": "Himmel wird gebaut…",
+  "bootEarth": "Erde wird platziert…",
+  "bootCatalogues": "Kataloge werden gelesen…"
   },
   "compareText": {
     "size": [
@@ -457,7 +460,8 @@ export const COPY = {
   },
   "ladder": {
     "title": "Wie weit",
-    "notLoaded": "lädt noch",
+    "rowName": "{label}, {distance}",
+    "rowNameLoading": "{label}, lädt noch",
     "weShowTitle": "Was diese Karte von allem Bekannten zeichnet",
     "weShowRow": "{n} {what} – von {of}",
     "edge": "Der Rand der Karte",
@@ -4668,5 +4672,9 @@ export const GLOSSARY = {
   "L2": "Ein Gleichgewichtspunkt 1,5 Millionen km von der Erde entfernt, auf der sonnenabgewandten Seite, wo ein Teleskop Erde und Sonne hinter sich lassen und kalt bleiben kann.",
   "transit": "Wenn von deinem Standort aus gesehen ein Ding vor einem anderen vorbeizieht (Transit).",
   "conjunction": "Wenn zwei Dinge am Himmel dicht beieinander erscheinen (Konjunktion). Im Raum sind sie nicht nah.",
-  "ephemeris": "Eine Tabelle, wo etwas sein wird, im Voraus berechnet (Ephemeride)."
+  "ephemeris": "Eine Tabelle, wo etwas sein wird, im Voraus berechnet (Ephemeride).",
+  "umbra": "Die dunkle Mitte eines Schattens, wo das Licht ganz blockiert ist. Stehst du im Kernschatten des Mondes, ist die Sonne weg.",
+  "penumbra": "Der hellere äußere Teil eines Schattens, wo nur ein Teil des Lichts blockiert ist. Ein Mond im Halbschatten der Erde verdunkelt sich nur wenig.",
+  "totality": "Die Minuten einer totalen Finsternis, in denen die Sonne ganz bedeckt ist. Der Himmel wird dunkel genug, dass man Sterne sieht.",
+  "annular": "Ringförmig. Bei einer ringförmigen Finsternis ist der Mond zu weit weg, um die ganze Sonne zu bedecken, und um ihn herum bleibt ein heller Ring."
 };

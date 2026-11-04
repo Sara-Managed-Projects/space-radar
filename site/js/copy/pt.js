@@ -139,7 +139,10 @@ export const COPY = {
   "app": {
     "name": "Space Radar",
     "tagline": "Tudo o que se move ao redor da Terra, onde realmente está, agora mesmo.",
-    "sceneSelected": "Um mapa do espaço desenhado em posições reais, com {name} selecionado: a ficha dele, no painel ao lado do mapa, diz o que ele é."
+    "sceneSelected": "Um mapa do espaço desenhado em posições reais, com {name} selecionado: a ficha dele, no painel ao lado do mapa, diz o que ele é.",
+  "bootSky": "Montando o céu…",
+  "bootEarth": "Colocando a Terra…",
+  "bootCatalogues": "Lendo os catálogos…"
   },
   "compareText": {
     "size": [
@@ -4659,5 +4662,9 @@ export const GLOSSARY = {
   "L2": "Um ponto de equilíbrio a 1,5 milhão de km da Terra, no lado oposto ao Sol, onde um telescópio pode manter a Terra e o Sol atrás dele e continuar frio.",
   "transit": "Quando uma coisa passa na frente de outra, vista de onde você está.",
   "conjunction": "Quando duas coisas aparecem juntas no céu. Elas não estão perto no espaço.",
-  "ephemeris": "Uma tabela de onde algo estará, calculada com antecedência."
+  "ephemeris": "Uma tabela de onde algo estará, calculada com antecedência.",
+  "umbra": "A parte escura do meio de uma sombra, onde a luz fica bloqueada por completo. Se você está na umbra da Lua, o Sol desaparece.",
+  "penumbra": "A parte mais clara do exterior de uma sombra, onde só parte da luz é bloqueada. Uma Lua na penumbra da Terra só escurece um pouco.",
+  "totality": "Os minutos de um eclipse total em que o Sol fica coberto por completo. O céu escurece o bastante para se verem estrelas.",
+  "annular": "Em forma de anel. Num eclipse anular a Lua está longe demais para cobrir o Sol inteiro, e fica um anel brilhante à volta."
 };
