@@ -1300,6 +1300,8 @@ jobs:
         run: node tests/test_cli_usage.mjs
       - name: "the README's launch with nothing built: python3 -m http.server on site/, the page and every module on the way to the first frame come back 200 as JavaScript (public #1203)"
         run: node tests/test_nobuild_launch.mjs
+      - name: "the README's no-build browser check: the command is read from the README, records match the registry, a stale row fails (public #1203, spec 0036)"
+        run: node tests/test_nobuild_boot.mjs
       - name: "no WebGL 2: createRenderer refuses the way a browser does and the readable page with every trip is shown (public #1243)"
         run: node tests/test_nowebgl.mjs
       - name: "reduced motion through two real trips: no flight, no veil, the timed stops hold the clock still, leaving puts it back (public #236)"
