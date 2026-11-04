@@ -673,7 +673,7 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
 }
 // 0078 r14-m6: end
 
-// RELEASE 1.7.23 (public #1171): the PSLV fourth stage wears pslv-ps4.glb, by catalogue name and only as a spent stage (klass rocket).
+// RELEASE 1.8.0 (public #1171): the PSLV fourth stage wears pslv-ps4.glb, by catalogue name and only as a spent stage (klass rocket).
 {
   const rb = (norad, name, klass = 'rocket') => realModelFor({ id: `sat-${norad}`, name, klass, layer: 'debris-notable', meta: { noradId: norad } });
   for (const [norad, name] of [[44862, 'PSLV R/B'], [99970, 'PSLV R/B(1)']]) {
@@ -688,7 +688,7 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
   }
 }
 
-// RELEASE 1.7.23 (public #1153): the three BeiDou-3 IGSO craft wear beidou-3-igso.glb as themselves; the four BeiDou-3 geostationary craft wear it as the kind of thing; BeiDou-2 and the MEO craft never do.
+// RELEASE 1.8.0 (public #1153): the three BeiDou-3 IGSO craft wear beidou-3-igso.glb as themselves; the four BeiDou-3 geostationary craft wear it as the kind of thing; BeiDou-2 and the MEO craft never do.
 {
   const bd = (norad, name, klass = 'satellite') => realModelFor({ id: `sat-${norad}`, name, klass, layer: 'active', meta: { noradId: norad } });
   for (const [norad, cat, generic] of [[44204, 'BEIDOU-3 IGSO-1', false], [44337, 'BEIDOU-3 IGSO-2', false], [44709, 'BEIDOU-3 IGSO-3', false], [43683, 'BEIDOU-3 G1', true], [45344, 'BEIDOU-3 G2', true], [45807, 'BEIDOU-3 G3', true], [56564, 'BEIDOU-3 G4', true]]) {

@@ -146,7 +146,7 @@ audio:
     credit: "Neil Armstrong's first words on the Moon, NASA (1969), public domain"
     make: {original: "Neil_Armstrong_small_step.wav (8-bit mono 11 025 Hz, 265 886 bytes)", tool: "afconvert -f WAVE -d LEI16@22050, then afconvert -f m4af -d aac -b 32000"}
 
-  # RELEASE 1.7.22, THE APOLLO 11 MOMENT'S SECOND LINE (internal #1055): the landing call, cued at 102:45:40 with the caption "landed". The Commons file
+  # RELEASE 1.8.0, THE APOLLO 11 MOMENT'S SECOND LINE (internal #1055): the landing call, cued at 102:45:40 with the caption "landed". The Commons file
   # is a 5.4-second excerpt of NASA's recording (author NASA, {{PD-USGov-NASA}}); its own source link, nasa.gov/connect/sounds, no longer resolves, so
   # the licence rests on the Commons page. The Moment's other key lines (the 1202 alarms, the launch) have no clip with a stated licence and stay captions.
   - id: a11-landed

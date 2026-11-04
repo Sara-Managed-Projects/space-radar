@@ -7,7 +7,7 @@ named in the registry row.
 SHIPPED (registry/models.yaml, site/models): delta2, centaur3, centaur_d, falcon9, h2a, kosmos3m.
 BUILT AND NOT SHIPPED, because no photograph of the flight hardware that a person could check the shape against is free to use
 (the issue stays open; what is missing is in the pull request): zenit2 (#1159), blok_e (#1161), tsyklon3 (#1162), blok_dm (#1163),
-cz4 (#1168), breezem (#1170). SHIPPED IN RELEASE 1.7.23: pslv (#1171), rebuilt from ISRO's own photographs. They are here so that the next person starts from the numbers and the part library,
+cz4 (#1168), breezem (#1170). SHIPPED IN RELEASE 1.8.0: pslv (#1171), rebuilt from ISRO's own photographs. They are here so that the next person starts from the numbers and the part library,
 not from nothing; their shapes are plain stages with the right dimensions and engines, nothing more.
 """
 import math
@@ -466,7 +466,7 @@ def breezem():
 
 # ============================================================================================ PSLV PS4
 def pslv_ps4():
-    """PSLV fourth stage PS4 (SATCAT name PSLV R/B), rebuilt in release 1.7.23 from ISRO's own photographs (GODL-India, Commons).
+    """PSLV fourth stage PS4 (SATCAT name PSLV R/B), rebuilt in release 1.8.0 from ISRO's own photographs (GODL-India, Commons).
     THE EARLIER BUILD HAD THE WRONG STAGE: its gold tank, big dark bell and ribbed skirt are the THIRD stage's Kevlar motor case
     and nozzle (the gold barrel hanging in 'PSLV-C44 Third and Fourth stages at Stage Preparation Facility' and 'PSLV-C55, TeLEOS-2 -
     Third and fourth stage combined stack' has 'PS3' written on its nozzle). The PS4 is what stands on it: from below, a black

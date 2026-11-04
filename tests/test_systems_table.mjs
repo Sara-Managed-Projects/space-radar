@@ -2,7 +2,7 @@
 //
 //   node tests/test_systems_table.mjs
 //
-// registry/systems-list.yaml names fifty hosts (thirty-nine until release 1.5.0, forty-two until 1.7.24); scripts/build-systems.py writes every number
+// registry/systems-list.yaml names fifty hosts (thirty-nine until release 1.5.0, forty-two until 1.8.0); scripts/build-systems.py writes every number
 // from the NASA Exoplanet Archive's table. What this holds, in the browser's own code:
 //
 //   1. KEPLER'S THIRD LAW on every generated row, within 5 % (a planet of two stars: its orbit

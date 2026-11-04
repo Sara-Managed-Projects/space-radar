@@ -1,4 +1,4 @@
-// r1720-owed: the looks the bulk 2 and bulk 3 passes left owed, and the findings they made (release 1.7.20,
+// r1720-owed: the looks the bulk 2 and bulk 3 passes left owed, and the findings they made (release 1.8.0,
 // internal #565, #566, #569). One section each, each in its own try so one that breaks does not take the
 // rest with it; every picture says what it is a picture of.
 //

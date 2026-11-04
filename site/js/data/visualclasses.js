@@ -569,6 +569,15 @@ export const VISUAL_CLASSES = [
 "kinetica-1",
 "kuaizhou-1a",
 "minotaur-i",
+"orbex-prime",
+"skyrora-xl",
+"rfa-one",
+"latitude-zephyr",
+"nebula-1",
+"maia",
+"miura-5",
+"epsilon-s",
+"sslv",
 "small-commercial-orbital"
 ],
 "layers": [
@@ -678,6 +687,9 @@ export const VISUAL_CLASSES = [
 "apollo-17",
 "change-4",
 "beresheet",
+"hakuto-r-1",
+"luna-25",
+"hakuto-r-2",
 "surveyor-1",
 "surveyor-3",
 "apollo-12",
@@ -790,7 +802,15 @@ export const VISUAL_CLASSES = [
 "system-wasp-39",
 "system-51-eri",
 "system-pds-70",
-"system-af-lep"
+"system-af-lep",
+"system-barnards-star",
+"system-tau-ceti",
+"system-epsilon-eridani",
+"system-gj-887",
+"system-gj-581",
+"system-gj-876",
+"system-gj-273",
+"system-gj-1061"
 ],
 "planets": [
 "exo-trappist-1-b",
@@ -902,7 +922,31 @@ export const VISUAL_CLASSES = [
 "exo-51-eri-b",
 "exo-pds-70-b",
 "exo-pds-70-c",
-"exo-af-lep-b"
+"exo-af-lep-b",
+"exo-barnard-d",
+"exo-barnard-b",
+"exo-barnard-c",
+"exo-barnard-e",
+"exo-tau-cet-g",
+"exo-tau-cet-h",
+"exo-tau-cet-f",
+"exo-eps-eri-b",
+"exo-gj-887-e",
+"exo-gj-887-b",
+"exo-gj-887-c",
+"exo-gj-887-d",
+"exo-gj-581-e",
+"exo-gj-581-b",
+"exo-gj-581-c",
+"exo-gj-876-d",
+"exo-gj-876-c",
+"exo-gj-876-b",
+"exo-gj-876-e",
+"exo-gj-273-c",
+"exo-gj-273-b",
+"exo-gj-1061-b",
+"exo-gj-1061-c",
+"exo-gj-1061-d"
 ],
 "layers": [
 "exoplanets",
@@ -918,7 +962,9 @@ export const VISUAL_CLASSES = [
 "exotics": [
 "exotic-eta-carinae",
 "exotic-wd-j1330-6435",
-"exotic-betelgeuse"
+"exotic-betelgeuse",
+"exotic-vy-canis-majoris",
+"exotic-r136a1"
 ],
 "stars_notable": [
 "hip-70890",
@@ -961,7 +1007,18 @@ export const VISUAL_CLASSES = [
 "hip-79672",
 "hip-113357",
 "hip-7513",
-"hip-27321"
+"hip-27321",
+"hip-26311",
+"hip-54061",
+"hip-26727",
+"hip-25930",
+"hip-25336",
+"hip-27366",
+"hip-100453",
+"hip-46390",
+"hip-9884",
+"hip-85927",
+"hip-15863"
 ],
 "catalogues": [
 "stars3d"

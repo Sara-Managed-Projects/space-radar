@@ -1323,7 +1323,7 @@ jobs:
       - name: "A9 tracked objects: 142 real element sets come back from tiles within 10 m of CelesTrak's own SGP4 for a week, merge into the debris layer, and the panel says how many dots are placed (release 1.7.6, internal #1069)"
         run: node tests/test_tracked.mjs
       # 1.7.6 r177-sky: end
-      # 1.7.11 tests II: begin
+      # 1.8.0 tests II: begin
       - name: "equatorialToEcliptic turns a direction about the x axis by the J2000 obliquity and in the right sign: the x axis stays, the celestial pole and the y axis tip (public #770)"
         run: node tests/test_frames_equatorial_to_ecliptic.mjs
       - name: "radecToVec turns degrees of right ascension and declination into the unit vector in equatorial J2000 axes: the equinox, 90 degrees of RA, the pole (public #783)"
@@ -1370,7 +1370,7 @@ jobs:
         run: node tests/test_cardfacts_split_readout.mjs
       - name: "ageParts switches an age from minutes to hours at 90 minutes, to days at 48 hours and to years at 730 days (public #850)"
         run: node tests/test_cardfacts_age_parts.mjs
-      # 1.7.11 tests II: end
+      # 1.8.0 tests II: end
       # 1.7.4 checks: begin
       - name: "no name is declared and never used: unused imports, consts, lets, functions and classes in site/js, tools, scripts and tests, with a list of known exceptions that may only shrink (public #1229)"
         run: node tests/test_lint.mjs
@@ -1387,7 +1387,7 @@ jobs:
       - name: "the deep-space baseline captures are wired: every block and pose names a scene group, the package's DS poses are all there (public #1189)"
         run: node tests/test_baselines.mjs
       # 1.7.4 checks: end
-      # 1.7.10 tests I: begin
+      # 1.8.0 tests I: begin
       - name: "hermite and sampled: a table of spacecraft positions becomes a position at any moment, measured near a sample and inferred between (public #619)"
         run: node tests/test_propagate_sampled.mjs
       - name: "staticPos places every star and galaxy and answers null for a record with no usable position (public #620)"
@@ -1422,4 +1422,4 @@ jobs:
         run: node tests/test_frames_spherical_to_bodyfixed.mjs
       - name: "bodyFixedToSpherical is its inverse, with the round trip held (public #757)"
         run: node tests/test_frames_bodyfixed_to_spherical.mjs
-      # 1.7.10 tests I: end
+      # 1.8.0 tests I: end

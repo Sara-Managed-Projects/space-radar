@@ -1,4 +1,4 @@
-// r1720-mars: Spirit's and Opportunity's traverses as a visitor first meets them (release 1.7.20, internal #992).
+// r1720-mars: Spirit's and Opportunity's traverses as a visitor first meets them (release 1.8.0, internal #992).
 //
 // Internal #992: Spirit's 7.07 km line in Gusev was drawn and no picture showed it legibly, because the stage's
 // camera stayed at the Mars stage view; Opportunity's 45 km line read plainly. This photographs both sites the

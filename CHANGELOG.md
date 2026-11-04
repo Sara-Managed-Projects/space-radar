@@ -11,74 +11,13 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
-## [1.7.10] - 2026-11-04
-
-### Added
-
-- **Seventeen new tests for small functions that had none**, each in its own file and its own CI step (public #619 to #628, #704, #712, #720, #728, #735, #742, #749, #757):
-  `hermite` and `sampled` (`tests/test_propagate_sampled.mjs`), `staticPos` (`test_propagate_static.mjs`), the Kepler solvers (`test_kepler.mjs`), `editDistance`
-  (`test_edit_distance.mjs`), `launchAzimuth` (`test_launch_azimuth.mjs`), `decimalYear` (`test_decimal_year.mjs`), `latText` and `lonText` (`test_card_latlon.mjs`),
-  the exoplanet face's `starRgb`, `habitableFlux` and `radiusFromMass` (`test_exoface_helpers.mjs`), `bisect` (`test_bisect.mjs`), `typeWords`
-  (`test_type_words.mjs`), `degWords` (`test_live_degwords.mjs`), `orbitsEarth` (`test_shadow_orbits_earth.mjs`), `placeLabel` (`test_live_placelabel.mjs`),
-  `groundRelativeAzimuth` (`test_ascent_ground_azimuth.mjs`), `normaliseFixed` (`test_fixed_normalise.mjs`), `sphericalToBodyFixed`
-  (`test_frames_spherical_to_bodyfixed.mjs`) and `bodyFixedToSpherical` (`test_frames_bodyfixed_to_spherical.mjs`). Each pins the values the code returns today, edge
-  cases included.
-- **Edge cases added to nine existing tests**: the azimuth wrap and the refused spellings of `parseCam`, the poles and the date line in `parsePlaceValue`, both ends
-  of the ellipse band in `ellipseRatio`, one case per spelling of `splitCometName`, five more year ends in `isoWeek`, the ends of the `countBrighter` search, an
-  empty `closestWords`, two close marks, a tie and a short reach in `nearestMark`, and an empty address in `subscribePayload` (public #707, #715, #723, #731, #738,
-  #745, #752, #764, #623).
-
-### Changed
-
-- **Three tests stop holding numbers that move.** `tests/test_starsnotable.mjs` asks for at least ten measured stellar radii instead of exactly eleven (public #617);
-  `tests/test_seo_pages.py` asks for the events index to link every event and at least six, instead of exactly six (public #618); and `tests/test_readme_facts.py`
-  also holds the star count `docs/RUN_LOCALLY.md` quotes to the registry, as it already did for the trips in `CONTRIBUTING.md` and `docs/TRANSLATING.md` (public #629).
-  No behaviour of the app changes.
-
-## [1.7.20] - 2026-11-04
-
-### Fixed
-
-- **"Keep for offline" keeps the sharper maps a trip may ask for later.** The list was built for the texture tier the device was at when the
-  button was pressed, so a trip kept on a device that was promoted a few seconds afterwards still asked for 4 k maps the cache did not hold,
-  and the Earth's and the Milky Way's own maps were in no trip's list at all. It now takes the highest tier the visit may reach (the device's
-  ceiling while Auto still promotes, the chosen quality's own tier otherwise) and the maps the page fetches whatever the stop (the Earth's day
-  for the clock's month, night, water and relief, and the Milky Way). `keptTier()` in `ui/keeptrip.js`, held by `tests/test_keeptrip.mjs` for
-  `moon-landings`. (internal #564)
-- **Spirit's line on Mars can be seen from where its site is arrived at.** The fade of a traverse (whole inside 120 km, none past 320 km) left
-  Spirit's 7.07 km line at 0.3 % from the 309 km the arrival pose stands from it, and a thin gold line on Mars's rust ground was lost even
-  where it was drawn. A line shorter than 15 km now has the fade's distances stretched by 15 km over its length (at most 2.5 times) and its
-  ribbon widened up to 2.2 times, with a dark rim, as it shrinks on the screen; the Moon's two lines and Opportunity's are as they were, a
-  phone (no tiles) still draws none, and a world still has one mesh a line. (internal #992)
-- **The undo toast no longer lies across the sheet's tabs on a phone.** With the sheet full at 390 by 844 "Moved to Planets, Back to where you
-  were" stood under the top bar, over the Earth, Planets, Stars and Tonight row; it now stands at the foot of the screen. (internal #569)
-
-### Changed
-
-- **Worlds too small to show a facet are drawn with a 16 by 12 sphere.** Thirty-one worlds of 6 016 triangles each were 190 000 of the
-  triangles of every deep stop, where each is a dot under two pixels wide; below 0.4 % of half the view's height (a disc 1.8 px in radius at 900
-  px) a world now wears a sphere whose facets sag 0.04 px, and the 64 by 48 one again from there up. The most a stop of the two trips to the edge
-  draws fell from 254 694 to 84 774 triangles at 1600 by 900 (from 254 310 to 84 390 at 390 by 844), with the stops looking the same. The row
-  `triangles_per_stop` goes from 270 100 to 100 000. (internal #994)
-
-### Added
-
-- **Three look probes.** `r1720-mars` (Spirit's and Opportunity's traverses from the app's arrival pose and three heights, each with the line
-  and the rover hidden), `r1720-tris` (a census of the triangles of a trip's stops by group, beside the renderer's own count) and `r1720-owed`
-  (the sunspot close-up, the 'Following Saturn' line, Earth events from the copy, the dark-sky stop, names in the Earth frame and the undo toast
-  over the sheet's tabs), in `tests/probes/look/`, documented in `tools/README.md`. (internal #565, #566, #569, #992, #994)
-## [1.7.22] - 2026-11-04
-
-### Added
-
-- **The Apollo 11 Moment plays the landing call.** With sound on, "Houston, Tranquility Base here. The Eagle has landed." is heard at 102:45:40,
-  the second of the "landed" caption: NASA's recording (the Wikimedia Commons file "Apollo 11 Eagle Has Landed.mp3", public domain), a 24 kB
-  mono AAC cut by `ffmpeg` from the 5.4-second MP3 and fetched only when the Moment reaches that second. Its credit is in `CREDITS.md` section 9,
-  `registry/audio.yaml` and the Moment's own sources, in all ten languages. The 1202 alarms and the launch stay captions: Commons holds no
-  recording of either, and the Apollo Flight Journal's audio files did not load.
 ## [1.8.0] - 2026-11-04
 
-### Added
+1.8.0 gathers fifteen batches that were planned as releases 1.7.10 to 1.7.24 and never shipped on their own, plus its own navigation-satellite models. Each part below is one batch.
+
+### Navigation satellites, PAZ and MetOp
+
+#### Added
 
 - **Four more navigation satellites and the three Galileo In-Orbit Validation craft have a model of their own.** Each was the generic navigation box; each is now built in code
   from published dimensions and from pictures read for the layout, by name, and its card says "shape built from published dimensions and pictures; details simplified". The
@@ -95,19 +34,371 @@ tagged, and their dates are the day the last change in each landed.
   eighth, and the close-up sheet's fifth picture, stand there under the craft's horizon with the card's lamp on for that picture only, and the picture's line says it is the
   lamp that lights it. (Internal #753.)
 
-### Changed
+#### Changed
 
 - **NavIC's first-generation wings are no longer an estimate.** URSC's page of IRNSS-1A gives one panel of 2.15 by 1.8 m a side and a 1.1 m dual-helix antenna; `irnss.glb`
   is rebuilt with them (7.6 m tip to tip; the 0.9 m arm between body and panel is still ours). (Internal #751.)
 - **MetOp's wing is now cited.** ESA's page says eight hinged panels of 1 m by 5 m, which is what the file already drew from a NASA picture; the registry row now says so.
   (Internal #753.)
 
-### Not yet
+#### Not yet
 
 - **How MetOp's 20 degree solar-array cant lies to its arm, and which way the body lies to its track, are on no page found**: the file does not draw the cant. NavIC's arm
   between body and panel and NVS-01's bus are not found either.
 - **The reflectors of QZS-3 and QZS-7 are drawn solid and their sizes are read off the Cabinet Office's figures**; the real ones are a mesh. QZS-6's small extra antennas are not drawn.
 - **No model has been seen by a person who knows the craft**; the pictures in the pull request are the first look.
+
+### Tests, part one (planned as 1.7.10)
+
+#### Added
+
+- **Seventeen new tests for small functions that had none**, each in its own file and its own CI step (public #619 to #628, #704, #712, #720, #728, #735, #742, #749, #757):
+  `hermite` and `sampled` (`tests/test_propagate_sampled.mjs`), `staticPos` (`test_propagate_static.mjs`), the Kepler solvers (`test_kepler.mjs`), `editDistance`
+  (`test_edit_distance.mjs`), `launchAzimuth` (`test_launch_azimuth.mjs`), `decimalYear` (`test_decimal_year.mjs`), `latText` and `lonText` (`test_card_latlon.mjs`),
+  the exoplanet face's `starRgb`, `habitableFlux` and `radiusFromMass` (`test_exoface_helpers.mjs`), `bisect` (`test_bisect.mjs`), `typeWords`
+  (`test_type_words.mjs`), `degWords` (`test_live_degwords.mjs`), `orbitsEarth` (`test_shadow_orbits_earth.mjs`), `placeLabel` (`test_live_placelabel.mjs`),
+  `groundRelativeAzimuth` (`test_ascent_ground_azimuth.mjs`), `normaliseFixed` (`test_fixed_normalise.mjs`), `sphericalToBodyFixed`
+  (`test_frames_spherical_to_bodyfixed.mjs`) and `bodyFixedToSpherical` (`test_frames_bodyfixed_to_spherical.mjs`). Each pins the values the code returns today, edge
+  cases included.
+- **Edge cases added to nine existing tests**: the azimuth wrap and the refused spellings of `parseCam`, the poles and the date line in `parsePlaceValue`, both ends
+  of the ellipse band in `ellipseRatio`, one case per spelling of `splitCometName`, five more year ends in `isoWeek`, the ends of the `countBrighter` search, an
+  empty `closestWords`, two close marks, a tie and a short reach in `nearestMark`, and an empty address in `subscribePayload` (public #707, #715, #723, #731, #738,
+  #745, #752, #764, #623).
+
+#### Changed
+
+- **Three tests stop holding numbers that move.** `tests/test_starsnotable.mjs` asks for at least ten measured stellar radii instead of exactly eleven (public #617);
+  `tests/test_seo_pages.py` asks for the events index to link every event and at least six, instead of exactly six (public #618); and `tests/test_readme_facts.py`
+  also holds the star count `docs/RUN_LOCALLY.md` quotes to the registry, as it already did for the trips in `CONTRIBUTING.md` and `docs/TRANSLATING.md` (public #629).
+  No behaviour of the app changes.
+
+### Tests, part two (planned as 1.7.11)
+
+#### Added
+
+- **Tests II: twenty-three small functions have a test of their own, and five more get the edge cases they lacked** (public #770, #777, #783, #789, #794, #800, #804, #809, #811, #813, #815,
+  #818, #820, #822, #824, #826, #829, #831, #833, #835, #837, #839, #846, #848, #850, #852, #854, #858). One new file per function in the style of `tests/test_colorkeys.mjs`, each with its step in
+  `.github/workflows/ci.yml`: `equatorialToEcliptic`, `radecToVec`, `parseFrame` and `isPlanetMoon` (propagate/frames.js); `qMul`, `qRotate` and `qSlerp` (sky/pointing.js);
+  `glowOfLights`, `samePassKey` and `nextLightChange` (sky/); `leadingDigit`, `kickerDate`, `shortUtcDate`, `stopBudgetMs`, `worldOfTarget`, `eventSizeText`, `splitReadout` and `ageParts`
+  (ui/); `span0Of`, `bytesFor`, `fitDistanceUnits`, `starRadiusKm` and `planetRadiusKm` (scene/). The window of `activeShowers` and the span of `trackTimes` and `tickTimes` are
+  now passed in tests/test_radiants.mjs and tests/test_groundtrack.mjs; `with_params` and `expand_url` (harvest) are in tests/test_harvest.py, `ledger_key_shower` (notify) in
+  tests/test_notify.py. No behaviour changes. One finding: `equatorialToEcliptic` takes its obliquity from astronomy-engine's matrix, about 2e-7 in a sine away from the 23.4392911 degrees
+  the issue quotes, so its test compares the tilted axes to 1e-6.
+
+### Docs (planned as 1.7.12)
+
+#### Changed
+
+- **Comments and guides now point at things that exist.** No behaviour changes, except the one search word below. Comments that named a test that was never there now name the one that
+  holds the code (`ui/camundo.js`, `ui/photomode.js`, `sky/skybodies.js`, `scripts/minify_site.py`, `scripts/seo_dates.py`; public #708, #716, #732, #739, #746); `registry/sky-events.yaml`
+  names `scripts/seo_facts.mjs`, the script that does the work (public #607); `registry/showers.yaml` points at `notify/` (public #753); five comments no longer point at
+  `docs/data-sources.md` and `scene/wind.js` at `docs/inspirations.md`, which are not in the repository (public #652, #766); the landing-sites check and `registry/sites.yaml` no longer count the
+  uncited rows (public #606); `docs/ARCHITECTURE.md` says what the module contract covers (public #653).
+- **Search calls a storm what its card calls it.** The kind on a storm's row in search is "Tropical cyclone", not "Tropical storm" (public #682).
+- **JSDoc on nine small functions**: `clipKey`, `plural`, `saffirSimpson`, `shouldSaveData`, `dirOf`, `angleBetween`, `tileUrl`, `seedOf` and `phaseRayleigh`, each with an example that was run
+  (public #706, #714, #722, #730, #737, #744, #751, #762, #774).
+
+#### Added
+
+- **`docs/FAQ.md`**: three answers, each checked against the app. Live or a snapshot (the time the elements were issued against the time the position is computed for, with the
+  station as the worked case, read from CelesTrak on the day); how to leave a trip (Escape or Leave); why distances and sizes are not to scale (public #1013, #1015, #1017).
+- **`docs/RUN_LOCALLY.md`** shows what "Address already in use" prints, from a real run, and what to do (public #1014).
+- **`tools/README.md`** has the "How long it takes" section of the trip-video guide, and one command each for `cdp.mjs` and `sheet-png.mjs`; **`CONTRIBUTING.md`** shows how to run one Python
+  test (public #609, #711, #719, #727).
+
+### Code hygiene (planned as 1.7.13)
+
+#### Changed
+
+- **Every generator answers `--help`.** `python3 scripts/gen_aliases_js.py --help` (41 generators in all: the 34 that share `scripts/_genmirror.py`, and `gen_rockets_js.py`, `gen_sources_json.py`,
+  `gen_modulepreload.py`, `gen_home_seo.py`, `gen_contributors.py`, `build-skystars.py`, `build-galaxy.py`) prints a usage and exits 0 instead of rewriting a tracked file, and a mistyped flag
+  (`--chek`) prints `unknown option` and the usage on stderr and exits 2. `--check` and the no-argument run are as before. 37 lines leave `tests/cli_usage_gaps.txt`;
+  `tests/test_generator_help.mjs` holds it.
+- `scripts/build-galaxy.py` has a `--check` (CI runs it), so `site/data/galaxy.bin` can no longer drift from the script.
+- Error messages say what was found and what to do: `build-skystars.py` (the path, the four bytes it found, how to make the right file), `build-skycultures.py`'s boundary reader (the bytes found; the
+  leftover count), `build-exoplanets.py` (which file lacks columns, `pull with --pull`), `build-moon-shapes.py` (how many grid points are empty and where the first is), `bake-own-colours.mjs` (the
+  file and the likely causes) and `scripts/_png_text.mjs` (the first eight bytes; the length).
+
+#### Removed
+
+- Names nothing used: `TICK_PX` (`ui/hud.js`), `sunDirection` (`propagate/body.js`), `subSolarPoint` (`scene/earth.js`), `loadedCount` (`scene/realmodels.js`), `systemById` (`scene/systems.js`),
+  `ascentPath` (`propagate/ascent.js`), `disposeGlyphAtlas` (`scene/glyphatlas.js`) and `setNavigator` in `tests/test_share.mjs`.
+- Three strings nothing read, in English and in every translation: `card.oftenSaidLabel`, `card.notApplicable` and `tonight.skybar.timeNoNight`.
+
+#### Fixed
+
+- The comment that describes `ctx.setStage` sits above it again (it had been left above the colour key).
+- `resetPlaces()` in `sky/overplace.js` has a test (`tests/test_overplace.mjs`): forget, a failed load that leaves nothing behind, a load that builds the places anew.
+
+### Data rows (planned as 1.7.14)
+
+#### Added
+
+- **Three more places a machine hit the Moon.** Hakuto-R Mission 1 (25 April 2023), Luna 25 (19 August 2023) and Hakuto-R Mission 2 (5 June 2025) join Beresheet as coordinates on the
+  Moon list, not records: position and UTC date from NASA's NSSDCA table, a sentence from the LROC or NASA page about each. The README now says twenty-four places on the Moon.
+- **Five links to the publisher's own pages.** The cards of Perseverance (Jezero), Curiosity (Gale), SOHO, Voyager 1 and Voyager 2 link to NASA's raw-image pages, SOHO's real-time
+  images and "Where are Voyager 1 and 2 now?". Each row says the day it was opened and what was on the page.
+- **More names that find things.** "North star" finds Polaris, "dog star" Sirius and "starlink train" the Starlink satellites; "Statio Cognitum" finds the Apollo 12 site, "Statio
+  Tianchuan" Chang'e 5, "Mons Latreille" Blue Ghost 1 and "Tidbinbilla" the Canberra dish DSS-43; "FI Vir", "Gliese 447", "Gliese 1253", "Gliese 3053" and "TIC 271971130" find
+  Ross 128, Wolf 1069, LHS 1140 and TOI-715. Each name was read on a public page that day.
+
+#### Changed
+
+- **The /sources/ page says when eight sources' terms were last read** (Launch Library 2, the NASA Exoplanet Archive, DSN Now, GDACS, Wikidata and the two SWPC sources, 4 November 2026).
+  The Exoplanet Archive line now says what its acknowledgement page asks (a standard acknowledgement and a citation of Christiansen et al. 2025) and that 10.26133/NEA13 is the table's DOI.
+- **Open Notify's terms address works.** `https://open-notify.org/` still answers with a certificate for another host, so the row points at the project's GitHub repository, whose LICENSE
+  file is the GPL-3.0 for the code; the line still says no licence is stated for the data.
+
+### Rockets, mission events and the 2027 meteor showers (planned as 1.7.15)
+
+#### Added
+
+- **Nine launchers that were drawn as "a small commercial launcher" or as the generic rocket now have a row of their own, each from one page
+  read on 2026-11-04.** Orbex Prime (19 m, 1.45 m), Skyrora XL (22.7 m, 2.2 m), RFA One (30 m, 2 m), Latitude's Zephyr (30 m, 2 m), Nebula-1
+  (30.2 m, a 3.35 m first stage under a 2.25 m second), Maia (50 m, 3.5 m), Miura 5 (35.7 m, 2.0 m), Epsilon S (27.2 m, 2.5 m) and SSLV (34 m,
+  2 m). A fairing diameter, a livery or a leg count that the page does not give is left out. Epsilon S and SSLV count one first-stage solid
+  motor, which their infoboxes name without a count, and say `inferred`; Miura 5 uses five engines (its page contradicts itself, and
+  a second page says five) and says where the heights differ. The last-resort row no longer lists the four small launchers among those with no
+  source. `tests/test_contract.mjs` asks for a made-up Orbex vehicle to show a launch drawn by provider, since Orbex Prime has its own row now.
+- **Nine events on the NEAR Shoemaker, Stardust and Deep Impact timelines**, each with the date (and time, where the page gives one) read on the
+  NSSDCA page the mission cites: NEAR past Mathilde (27 June 1997, 12:56 UT), its Earth swingby (23 January 1998, 07:23 UT) and its first pass of
+  Eros (23 December 1998, 18:41 UT); Stardust past Earth on 15 January 2001 and 14 January 2009; Deep Impact past Earth and the Moon on 31 December
+  2007, 29 December 2008 and 27 June 2010. The Eros orbit insertion now carries its time, 14 February 2000, 15:33 UT. The Stardust and Deep
+  Impact Earth flybys name no world: their path files hold no Earth-centred window on those days.
+- **Six more sky-event pages for 2027: the Lyrids (23 April), Eta Aquariids (6 May), Perseids (13 August), Orionids (22 October), Leonids (18
+  November) and Geminids (14 December).** Each has the day and hour of the maximum from the International Meteor Organization's 2027 calendar,
+  the Moon's lit fraction computed for that hour, and a link into the sky then. `tests/test_seo_pages.py` now asks for at least six events
+  instead of exactly six.
+
+### Spacing, focus and reduced motion (planned as 1.7.16)
+
+#### Changed
+
+- **Thirteen spacing values moved onto the 4 px grid.** The loading screen's orbit sits 24 px above the title (was 22), the dot before a
+  label's name is 4 px from it (5), the copied-link toast is padded 8 px above and below (10), the on-map tag is padded 4 px at the foot (5)
+  with 8 px between its glyph and its name (6) and 4 px either side of the dot between its readouts (6), the off-screen chevron's gap is 4 px
+  (6) and its padding 4 12 4 8 (3 10 3 6; it is still 28 px tall), and the Explore panel's collapse button is nudged up 4 px (6). The count of
+  off-grid values the guide-rails test holds went from 17 to 5.
+- **The loading screen's three lines and the far-places rows' spoken names are in `copy/en.js`**, where a translator finds them: `app.bootSky`,
+  `bootEarth` and `bootCatalogues`, and `ladder.rowName` and `rowNameLoading` as templates (the two drafts that had the old
+  `ladder.notLoaded` carry the same words in the new keys). The words and what is read aloud are unchanged.
+- **The postcard reads its colours from the page's tokens.** `ui/printcompose.js` no longer writes the palette again as canvas literals: it
+  takes them from `pageColours()` in `ui/postcard.js` (now exported, with `ember` and `glass` added; the palette's own values are the fallback
+  when there is no page). The printed postcard is the same.
+- **The press page's two borders say `var(--sr-line)`**, not a fallback hex that never applied, and the accuracy page's "measured" and
+  "modelled" badges take two named tokens (`--sr-badge-measured`, `--sr-badge-modelled`) in `css/static.css` instead of two hex colours in a rule.
+
+#### Fixed
+
+- **A trip card no longer says nobody has travelled further than the Moon.** In "From your roof to the edge" the Moon's card now says only a few
+  people have gone further, swinging round the far side of the Moon, as the Artemis II card does; the source (NASA's page on Artemis II passing
+  Apollo 13's record) is in the trip's facts comment.
+- **The long-press chooser is a list of buttons.** Its `listbox` and `option` roles are gone, so a screen reader meets the buttons inside it.
+- **The timeline and the Tonight sky-time strip show a keyboard focus ring** (ember, drawn inside their box, which clips what is outside it).
+- **With reduced motion the phone's first-visit key hint no longer slides** behind the sheet: it jumps with it, as the sheet does.
+- **The press page's link preview says its size and what the picture shows** (`og:image:width`, `og:image:height`, `og:image:alt`), as the embed
+  page's does.
+- **The glossary has the four eclipse words** (umbra, penumbra, totality, annular) the registry had and the app lacked.
+
+### Famous stars and measured radii (planned as 1.7.17)
+
+#### Added
+
+- **Eleven more famous stars have a line of their own: Alnilam, Alnitak and Mintaka (Orion's Belt), Bellatrix and Saiph (Orion), Dubhe, Sadr, Alphard, Hamal, Shaula and Mirfak.**
+  Each is a row in `registry/stars-notable.yaml` with one sentence of at most 160 characters, every claim read on the Wikipedia page the row cites
+  on 2026-11-04, and no distance or magnitude (the card prints those from the catalogue). Regulus, Canopus, Kochab, Rasalhague and Alioth are not here.
+- **Seven famous stars carry a measured radius, so their cards say "measured" instead of "estimated": Vega, Altair, Aldebaran, Pollux, Fomalhaut, Polaris and Tau Ceti.**
+  Each row cites the arXiv page of the paper and quotes the sentence the number was taken from: Vega's and Altair's are equatorial radii (both spin fast), Polaris's is
+  a mean (it pulses), and Pollux's is the radius Hatzes et al. derive from an interferometric diameter of Nordgren et al. Fomalhaut also carries the paper's temperature. Antares has no
+  radius with an error bar in any paper read, so it keeps the colour-index estimate.
+- **Two more fact sheets among the extremes: VY Canis Majoris and R136a1.** Positions, distances, masses and magnitudes are the Wikipedia infobox values read on 2026-11-04;
+  VY Canis Majoris pulses between magnitude 6.5 and 9.6 and the row keeps the infobox's V magnitude of 7.95, and R136a1's distance is the Large Magellanic Cloud's, as its article says.
+  The fact-sheet count in `tests/test_exotics.mjs` and `tests/test_a45.mjs` is now 25, and the measured-radius count in `tests/test_starsnotable.mjs` is 18.
+
+### Star-brightness and deep-space checks (planned as 1.7.18)
+
+#### Added
+
+- **The boot timeline is also run as a phone.** The CI screenshots job (`screens.yml`) already wrote `boot-timeline.json` for a desktop window; it
+  now boots the same tree a second time at 390 by 844 with touch (`scripts/boot-timeline.mjs --mobile`) and uploads `boot-timeline-phone.json` beside
+  it: first paint, the main module, layers ready, every long task and the total blocking time. It still only reports; the two budget rows are not
+  gated until someone has read the first runner numbers. (internal #528)
+- **Tests that hold the stars' order.** `tests/test_star_magnitude.mjs` holds, on the real `stars3d.bin` and the real functions, that a brighter
+  nearby star is never drawn smaller or fainter (the sky's curve and the 3D draw's, whose arithmetic it pins), that the catalogue's apparent
+  magnitude agrees with its absolute magnitude and distance for the 921 drawn stars within 100 ly, that on the stellar rung doubling the
+  distance costs 5 log10 2 magnitudes, that the Eye, Camera and Deep exposures only ever let more stars through, and that a cooler star
+  (higher B-V) is never bluer in the colour its sprite is given. `magToSize` and `magToAlpha` in `scene/starfield.js` are exported for it; nothing
+  else about them changed. (internal #818)
+- **A reduced-motion regression for the deep sky.** `tests/test_deep_reduced_motion.mjs` runs the real deep-sky coordinator with the real Helix
+  hero and an LMC holder for ten simulated minutes: with the preference off the gas's time uniform moves (the control), with it on it stays at 0.
+  It also fails if a file in `scene/deep/` gains a time uniform without reading `reduced`, and holds that the camera rig's constant drift refuses
+  with 'reduced-motion' and leaves the camera where it was. (internal #836)
+- **A gate on drawing the cosmic web.** `tests/test_cosmic_web_gate.mjs` holds that, while nothing draws it, the class says so and credits no
+  survey; and that the day a renderer is listed under COSMIC_WEB the class note must say what DESI DR1 is and is not (its licence, the part of the
+  sky it covers as a footprint, that the rest was not observed), name the observed and the simulated styles apart with a legend, and that
+  `CREDITS.md` carries the survey. (internal #826, #828)
+
+#### Not yet
+
+- **No DESI wedge and no simulated filaments are drawn.** The gate above is the check; the data, the renderer and the looks at 1600 and 390 are
+  still to build, so internal #826 and #828 stay open.
+
+### Cache, phone menu and sitemap checks (planned as 1.7.19)
+
+#### Changed
+
+- **The astronomical unit is written AU everywhere a visitor reads a distance** (public #1234). After #1217 made the star-system cards say AU,
+  the sentence under an object ("is 2.31 AU (346 million km) from the Earth right now"), the object and star-system pages a search engine
+  reads, the sample cards (Gonggong, 3I/ATLAS, Lucy), the oddities, the Helix, Dumbbell and Ring Nebula cards and four Lab pages still said
+  "au". A test now reads the files a visitor sees and refuses "au", "a.u." and "AUs". Other languages keep their own abbreviation.
+- **A way to report a wrong phrase in a translation** (public #1269). The French, German, Portuguese and the other drafts have no native
+  reader yet; `.github/ISSUE_TEMPLATE/mistranslation.yml` is a form for one wrong phrase (language, what it says, what a person would
+  say, where), linked from the README, CONTRIBUTING and docs/TRANSLATING.md. The aurora-forecast link on the Earth card was opened again
+  (NOAA SWPC's page for the OVATION model, which is the model the in-app aurora layer draws too) and its record in `registry/links.yaml`
+  says so (public #1232).
+
+#### Fixed
+
+- **A reply of the wrong shape no longer replaces the data the browser holds, and a read of our own saved files can no longer hang** (public #1304).
+  A publisher's error page that is valid JSON (`{"error": "rate limited"}`), a number, a string, or rows without the fields the parser reads
+  used to be kept as the new copy of a feed; now each json feed is checked against the least its consumer needs (`shape` in
+  `site/js/data/sources.js`: the CelesTrak feeds, Launch Library, the people in space, GDACS, EONET, JPL's tables, the Kp forecast; the
+  others must at least be an object or a list) before it can replace the copy, from the publisher and from our own saved file. The manifest,
+  a saved file and its column twin are read within 20 seconds, as a publisher's reply already was; before, a hung one held the page until
+  the browser gave up and the publisher behind it was not asked.
+
+#### Added
+
+- **Five new checks, no change to what a visitor sees** (public #1271, #1304, #1322, #555). Every trip of `registry/tours.yaml` is its own URL
+  in `sitemap.xml`, once, with a page of its own H1 and description. A read of the hourly copy that never answers, comes back empty, is cut off
+  or is not data, or is data of the wrong shape, leaves the copy the browser holds as it was, with its own time, marked old, with the reason, from the publisher and from our
+  own file (`tests/test_cache_keeps_last_good.mjs`). `scripts/check-phone-menu.mjs` opens a moon, a landing site and a long name at 320 and
+  390 px with a trail behind them and checks that no breadcrumb overlaps the More button, none is cut at the side, and the menu opens and
+  closes; it runs in the `ui` job of `screens.yml`. docs/RELEASING.md says how to run the Rich Results Test and the Schema Markup Validator
+  against the live pages after a deploy (a person runs them; no account or key is made for it).
+
+### Looks: far worlds, Spirit, the phone toast, offline maps (planned as 1.7.20)
+
+#### Fixed
+
+- **"Keep for offline" keeps the sharper maps a trip may ask for later.** The list was built for the texture tier the device was at when the
+  button was pressed, so a trip kept on a device that was promoted a few seconds afterwards still asked for 4 k maps the cache did not hold,
+  and the Earth's and the Milky Way's own maps were in no trip's list at all. It now takes the highest tier the visit may reach (the device's
+  ceiling while Auto still promotes, the chosen quality's own tier otherwise) and the maps the page fetches whatever the stop (the Earth's day
+  for the clock's month, night, water and relief, and the Milky Way). `keptTier()` in `ui/keeptrip.js`, held by `tests/test_keeptrip.mjs` for
+  `moon-landings`. (internal #564)
+- **Spirit's line on Mars can be seen from where its site is arrived at.** The fade of a traverse (whole inside 120 km, none past 320 km) left
+  Spirit's 7.07 km line at 0.3 % from the 309 km the arrival pose stands from it, and a thin gold line on Mars's rust ground was lost even
+  where it was drawn. A line shorter than 15 km now has the fade's distances stretched by 15 km over its length (at most 2.5 times) and its
+  ribbon widened up to 2.2 times, with a dark rim, as it shrinks on the screen; the Moon's two lines and Opportunity's are as they were, a
+  phone (no tiles) still draws none, and a world still has one mesh a line. (internal #992)
+- **The undo toast no longer lies across the sheet's tabs on a phone.** With the sheet full at 390 by 844 "Moved to Planets, Back to where you
+  were" stood under the top bar, over the Earth, Planets, Stars and Tonight row; it now stands at the foot of the screen. (internal #569)
+
+#### Changed
+
+- **Worlds too small to show a facet are drawn with a 16 by 12 sphere.** Thirty-one worlds of 6 016 triangles each were 190 000 of the
+  triangles of every deep stop, where each is a dot under two pixels wide; below 0.4 % of half the view's height (a disc 1.8 px in radius at 900
+  px) a world now wears a sphere whose facets sag 0.04 px, and the 64 by 48 one again from there up. The most a stop of the two trips to the edge
+  draws fell from 254 694 to 84 774 triangles at 1600 by 900 (from 254 310 to 84 390 at 390 by 844), with the stops looking the same. The row
+  `triangles_per_stop` goes from 270 100 to 100 000. (internal #994)
+
+#### Added
+
+- **Three look probes.** `r1720-mars` (Spirit's and Opportunity's traverses from the app's arrival pose and three heights, each with the line
+  and the rover hidden), `r1720-tris` (a census of the triangles of a trip's stops by group, beside the renderer's own count) and `r1720-owed`
+  (the sunspot close-up, the 'Following Saturn' line, Earth events from the copy, the dark-sky stop, names in the Earth frame and the undo toast
+  over the sheet's tabs), in `tests/probes/look/`, documented in `tools/README.md`. (internal #565, #566, #569, #992, #994)
+
+### Proof: GPU frame time and hero checks (planned as 1.7.21)
+
+#### Added
+
+- **Proof tools for the deep-space heroes, for contributors and reviewers; nothing a visitor sees changes.** `sr.perf.stats()` carries `gpuTime`, the GPU's own
+  time for the frame's `render()` from a timer query (`EXT_disjoint_timer_query_webgl2`, one query in flight, read a frame or more later; it says
+  `supported: false` and why where the browser has none, as headless Chrome on SwiftShader usually does). It draws nothing and holds no render target, so a
+  deep-space effect's cost is the difference of `gpuTime.p50Ms` between its BEFORE and AFTER pictures. `sr.perf.whenIdle()` is the asset-idle signal a
+  probe awaits before a picture: it names what the scene still waits for (the slider's photographs, the deep sky's heroes, the sharper maps being swapped in,
+  map tiles in flight or wanted). `tools/hero-clips.mjs` films a 5 to 10 second clip of a hero's arrival on `render-trip.mjs`'s film clock (pictures, a row a
+  frame, and the pops, flickers and jumps found; `ffmpeg` joins them only if it is on the PATH). `tests/test_hero_cycles.mjs` visits every shipped hero ten
+  times through the real coordinator and checks that each departure gives the scene graph back, and the `hero-cycles` look probe does the same on a real GL
+  with `renderer.info.memory`. The heroes probe writes the GPU time and the idle answer beside each picture. (internal #832, #834, #779)
+
+#### Changed
+
+- **Under `?look=1` the drift's walk, its dwell times and the meteors draw from a fixed seed**, as the wind, the currents and the weather's flashes already did,
+  so two runs of a tool photograph the same. The seed moved from `scene/wind.js` to `scene/lookrandom.js`, which the wind still re-exports; a visitor's
+  `Math.random` is unchanged. (internal #779)
+
+### Apollo 11: the Eagle has landed (planned as 1.7.22)
+
+#### Added
+
+- **The Apollo 11 Moment plays the landing call.** With sound on, "Houston, Tranquility Base here. The Eagle has landed." is heard at 102:45:40,
+  the second of the "landed" caption: NASA's recording (the Wikimedia Commons file "Apollo 11 Eagle Has Landed.mp3", public domain), a 24 kB
+  mono AAC cut by `ffmpeg` from the 5.4-second MP3 and fetched only when the Moment reaches that second. Its credit is in `CREDITS.md` section 9,
+  `registry/audio.yaml` and the Moment's own sources, in all ten languages. The 1202 alarms and the launch stay captions: Commons holds no
+  recording of either, and the Apollo Flight Journal's audio files did not load.
+
+### Craft: PSLV PS4 and BeiDou-3 (planned as 1.7.23)
+
+#### Added
+
+- **The PSLV fourth stage and BeiDou-3's IGSO and GEO craft have models of their own, from a second hunt for sources over the 14 craft held back since 1.4.0.** Of the 14 (public #996, #1095, #1120,
+  #1144, #1153, #1157, #1158, #1159, #1161, #1162, #1163, #1168, #1170 and #1171), two had a source that was not there before; the other twelve still have none and each issue says what was searched
+  and found. No agency publishes a mesh of any of them (`scripts/check-model-sources.py` and NASA's 3D Resources index: none), so both are built in code from published dimensions and pictures read
+  for the layout; no mesh and no picture is in a file.
+  - **PSLV R/B** (`pslv-ps4.glb`, 94 kB, 12 800 triangles; also PSLV R/B(1)): the 1.4.0 build of this stage was held because ISRO's photographs seemed to disagree on where its platform sits. They do not:
+    the gold barrel and the big dark nozzle of that build are the THIRD stage (its Kevlar case; 'PS3' is written on the nozzle), which hangs under the fourth in five ISRO photographs on Commons
+    (GODL-India, 2008 to 2023). The model is rebuilt as the stage that stands on it: the black ribbed skirt, the white ring 2.8 m across, the open ring of struts with four gold helium spheres, the
+    equipment platform with its black and gold boxes and harness, and the 1.34 m stainless tank with its domed top and adapter ring, with the two 7.4 kN engines under it. Tank width and length are
+    the numbers 1.4.0 quoted from ISRO's mission brief; the skirt, ring and struts are read off the photographs against the 2.0 m third stage and the PSLV's 2.8 m diameter; the engines are in no picture.
+  - **BeiDou-3 IGSO** (`beidou-3-igso.glb`, 110 kB, 13 806 triangles): CAST's DFH-3B bus as the China Satellite Navigation Office's metadata gives it, 2.098 x 2.358 m across and 3.602 m long with 17.7 m2
+    of cells a wing, as an open-access paper quotes it with CSNO's own rendering of the craft on orbit (CC BY 4.0): a gold box with a round array on its Earth deck, a white panel on its Sun face, a
+    hexagonal lattice reflector on a boom and two white dishes, all four looking at the Earth, and two wings of three panels. The three IGSO craft (BEIDOU-3 IGSO-1 to -3) wear it as themselves; the four
+    geostationary craft (G1 to G4) have the same bus size in Springer's table but no layout was opened, so they wear it as "the kind of thing". BeiDou-2's craft are another bus (DFH-3A) and keep what they had.
+    The sources, what was cited and what was estimated are in `registry/models.yaml` and `CREDITS.md` 3y and 3z.
+
+#### Not yet
+
+- **Twelve of the 14 held craft stay held**: Fengyun-3 and -4 (one mockup photograph and a rendering of each, no layout or, for -4, size), DMSP Block 5D-3 and Milstar (paintings only; the satellite is in
+  its shipping container in every photograph), Oceansat-2 (no picture of the satellite), ORBCOMM OG2 and Qianfan (no picture of either), and the Zenit-2, Blok E, Tsyklon-3, Blok DM, Long March 4 and
+  Breeze-M stages (no photograph of flight hardware). Public #1172, the tracker for the second hundred, stays open for them.
+- **BeiDou-3's hexagonal reflector and dishes are drawn at the sizes the paper assumes** (a hexagon of side 2.358 m, dishes 1.0 m across): CSNO does not publish them, and the museum mockups agree. Where the
+  Earth is, the reflector boom and the dishes' places are read off one rendering and two mockups. The PSLV skirt's height and whether it stays with the stage in orbit are not stated by any page opened.
+  No model has been seen by a person who knows the craft; the pictures in the pull request are the first look.
+
+### Exoplanets, orbits and star radii (planned as 1.7.24)
+
+#### Added
+
+- **Eight more nearby stars with planets can be flown into: Barnard's Star, Tau Ceti, Epsilon Eridani, Gliese 887, Gliese 581, Gliese 876, Luyten's Star and GJ 1061.**
+  They are hosts in `registry/systems-list.yaml`, so every number is the NASA Exoplanet Archive's, read on 2026-11-04 (the list is a choice, not data); there are now 50
+  generated systems and 127 planets beside TRAPPIST-1. Gliese 887, Gliese 876, Luyten's Star and GJ 1061 sit in "Planets near the habitable zone" because a planet
+  lies inside or at the edge of the band the build computes; the other four have none there, and the card says nothing about habitability for them.
+- **Six more famous stars carry a measured radius: Canopus, Achernar, Regulus, Algol, Castor and Upsilon Andromedae.** Each row cites the arXiv page of the paper, read on
+  2026-11-04, and quotes the sentence or table row the number was taken from: Canopus 73.2 ± 3.9 (Domiciano de Souza et al. 2021), Achernar's equatorial 12.0 ± 0.4
+  (2003), Regulus's equatorial 4.16 ± 0.08 (McAlister et al. 2005), Algol A 2.73 ± 0.20 (Baron et al. 2012), Castor Aa 2.089 ± 0.005 (Torres et al. 2022) and
+  Upsilon Andromedae 1.70 ± 0.02 (Ligi et al. 2012). Achernar and Regulus spin fast and are flattened, so the equatorial radius is the one drawn, as for Vega and Altair.
+  Antares and Spica were read and not used: the paper read gives Antares a radius of 680 Suns with no error bar, and Spica's radii come from spectroscopic modelling, not a
+  diameter. No paper with a radius and its error was found for the other stars still on the colour-index estimate.
+  `CREDITS.md` §3d-4 lists the papers.
+
+#### Changed
+
+- **A planet's orbit takes one paper's numbers when the composite table disagrees with itself.** The Archive's composite table fills each column from whichever paper had it, so
+  a planet's distance, period and star's mass can come from three papers that disagree (25 of 99 orbits did on 2026-10-08). `scripts/build-exoplanets.py` now also pulls the
+  Archive's `ps` table for the listed hosts into `registry/systems-sets.csv` (the Kepler pipeline's KOI tables left out: they are catalogues), and
+  `scripts/build-systems.py` picks the star's mass with which most planets keep a distance the Archive gives within Kepler's 5 %, then the newest paper's set for each planet that
+  needs one; the paper is named (`a_ref`, and `mass_ref` for a star). The idea in internal #474 was to read `default_flag = 1`; measured 2026-11-04, none of the 26 planets that
+  failed the check passes on its default row, and other papers' rows pass for 23 of them. Orbits computed from the period fall from 26 to 7. WASP-17 b is at 0.0515 au around a
+  1.31-Sun star (the composite row had 2.28), HD 209458, GJ 1132, Beta Pictoris, Kepler-69, Kepler-90 and PDS 70 change star mass the same way, each with its paper named.
+  The weekly refresh workflow commits the new file with the others.
+
+#### Not changed
+
+- **Standard magnitudes of satellites: nothing adopted** (internal #391). GCAT is CC BY 4.0 (redistribution allowed with a citation) but has no magnitude column; SatNOGS DB
+  data is CC BY-SA 4.0, its public satellite record has no magnitude, and its optical observations need an account. `CREDITS.md` §3d-5 holds the sentences read.
 
 ## [1.7.9] - 2026-11-03
 
@@ -158,207 +449,6 @@ tagged, and their dates are the day the last change in each landed.
   just before touchdown). The parachute is a drawn canopy of 16 m on lines of 50 m, not NASA's colours or its gores' pattern.
 - **The 88 seconds** between Horizons' and NASA's times for New Horizons' closest approach are not explained here.
 - **Words**: the two stories' words are English until a translator has them; only the shelf's cards are translated.
-## [1.7.15] - 2026-11-04
-
-### Added
-
-- **Nine launchers that were drawn as "a small commercial launcher" or as the generic rocket now have a row of their own, each from one page
-  read on 2026-11-04.** Orbex Prime (19 m, 1.45 m), Skyrora XL (22.7 m, 2.2 m), RFA One (30 m, 2 m), Latitude's Zephyr (30 m, 2 m), Nebula-1
-  (30.2 m, a 3.35 m first stage under a 2.25 m second), Maia (50 m, 3.5 m), Miura 5 (35.7 m, 2.0 m), Epsilon S (27.2 m, 2.5 m) and SSLV (34 m,
-  2 m). A fairing diameter, a livery or a leg count that the page does not give is left out. Epsilon S and SSLV count one first-stage solid
-  motor, which their infoboxes name without a count, and say `inferred`; Miura 5 uses five engines (its page contradicts itself, and
-  a second page says five) and says where the heights differ. The last-resort row no longer lists the four small launchers among those with no
-  source. `tests/test_contract.mjs` asks for a made-up Orbex vehicle to show a launch drawn by provider, since Orbex Prime has its own row now.
-- **Nine events on the NEAR Shoemaker, Stardust and Deep Impact timelines**, each with the date (and time, where the page gives one) read on the
-  NSSDCA page the mission cites: NEAR past Mathilde (27 June 1997, 12:56 UT), its Earth swingby (23 January 1998, 07:23 UT) and its first pass of
-  Eros (23 December 1998, 18:41 UT); Stardust past Earth on 15 January 2001 and 14 January 2009; Deep Impact past Earth and the Moon on 31 December
-  2007, 29 December 2008 and 27 June 2010. The Eros orbit insertion now carries its time, 14 February 2000, 15:33 UT. The Stardust and Deep
-  Impact Earth flybys name no world: their path files hold no Earth-centred window on those days.
-- **Six more sky-event pages for 2027: the Lyrids (23 April), Eta Aquariids (6 May), Perseids (13 August), Orionids (22 October), Leonids (18
-  November) and Geminids (14 December).** Each has the day and hour of the maximum from the International Meteor Organization's 2027 calendar,
-  the Moon's lit fraction computed for that hour, and a link into the sky then. `tests/test_seo_pages.py` now asks for at least six events
-  instead of exactly six.
-## [1.7.16] - 2026-11-04
-
-### Changed
-
-- **Thirteen spacing values moved onto the 4 px grid.** The loading screen's orbit sits 24 px above the title (was 22), the dot before a
-  label's name is 4 px from it (5), the copied-link toast is padded 8 px above and below (10), the on-map tag is padded 4 px at the foot (5)
-  with 8 px between its glyph and its name (6) and 4 px either side of the dot between its readouts (6), the off-screen chevron's gap is 4 px
-  (6) and its padding 4 12 4 8 (3 10 3 6; it is still 28 px tall), and the Explore panel's collapse button is nudged up 4 px (6). The count of
-  off-grid values the guide-rails test holds went from 17 to 5.
-- **The loading screen's three lines and the far-places rows' spoken names are in `copy/en.js`**, where a translator finds them: `app.bootSky`,
-  `bootEarth` and `bootCatalogues`, and `ladder.rowName` and `rowNameLoading` as templates (the two drafts that had the old
-  `ladder.notLoaded` carry the same words in the new keys). The words and what is read aloud are unchanged.
-- **The postcard reads its colours from the page's tokens.** `ui/printcompose.js` no longer writes the palette again as canvas literals: it
-  takes them from `pageColours()` in `ui/postcard.js` (now exported, with `ember` and `glass` added; the palette's own values are the fallback
-  when there is no page). The printed postcard is the same.
-- **The press page's two borders say `var(--sr-line)`**, not a fallback hex that never applied, and the accuracy page's "measured" and
-  "modelled" badges take two named tokens (`--sr-badge-measured`, `--sr-badge-modelled`) in `css/static.css` instead of two hex colours in a rule.
-
-### Fixed
-
-- **A trip card no longer says nobody has travelled further than the Moon.** In "From your roof to the edge" the Moon's card now says only a few
-  people have gone further, swinging round the far side of the Moon, as the Artemis II card does; the source (NASA's page on Artemis II passing
-  Apollo 13's record) is in the trip's facts comment.
-- **The long-press chooser is a list of buttons.** Its `listbox` and `option` roles are gone, so a screen reader meets the buttons inside it.
-- **The timeline and the Tonight sky-time strip show a keyboard focus ring** (ember, drawn inside their box, which clips what is outside it).
-- **With reduced motion the phone's first-visit key hint no longer slides** behind the sheet: it jumps with it, as the sheet does.
-- **The press page's link preview says its size and what the picture shows** (`og:image:width`, `og:image:height`, `og:image:alt`), as the embed
-  page's does.
-- **The glossary has the four eclipse words** (umbra, penumbra, totality, annular) the registry had and the app lacked.
-## [1.7.17] - 2026-11-04
-
-### Added
-
-- **Eleven more famous stars have a line of their own: Alnilam, Alnitak and Mintaka (Orion's Belt), Bellatrix and Saiph (Orion), Dubhe, Sadr, Alphard, Hamal, Shaula and Mirfak.**
-  Each is a row in `registry/stars-notable.yaml` with one sentence of at most 160 characters, every claim read on the Wikipedia page the row cites
-  on 2026-11-04, and no distance or magnitude (the card prints those from the catalogue). Regulus, Canopus, Kochab, Rasalhague and Alioth are not here.
-- **Seven famous stars carry a measured radius, so their cards say "measured" instead of "estimated": Vega, Altair, Aldebaran, Pollux, Fomalhaut, Polaris and Tau Ceti.**
-  Each row cites the arXiv page of the paper and quotes the sentence the number was taken from: Vega's and Altair's are equatorial radii (both spin fast), Polaris's is
-  a mean (it pulses), and Pollux's is the radius Hatzes et al. derive from an interferometric diameter of Nordgren et al. Fomalhaut also carries the paper's temperature. Antares has no
-  radius with an error bar in any paper read, so it keeps the colour-index estimate.
-- **Two more fact sheets among the extremes: VY Canis Majoris and R136a1.** Positions, distances, masses and magnitudes are the Wikipedia infobox values read on 2026-11-04;
-  VY Canis Majoris pulses between magnitude 6.5 and 9.6 and the row keeps the infobox's V magnitude of 7.95, and R136a1's distance is the Large Magellanic Cloud's, as its article says.
-  The fact-sheet count in `tests/test_exotics.mjs` and `tests/test_a45.mjs` is now 25, and the measured-radius count in `tests/test_starsnotable.mjs` is 18.
-## [1.7.18] - 2026-11-04
-
-### Added
-
-- **The boot timeline is also run as a phone.** The CI screenshots job (`screens.yml`) already wrote `boot-timeline.json` for a desktop window; it
-  now boots the same tree a second time at 390 by 844 with touch (`scripts/boot-timeline.mjs --mobile`) and uploads `boot-timeline-phone.json` beside
-  it: first paint, the main module, layers ready, every long task and the total blocking time. It still only reports; the two budget rows are not
-  gated until someone has read the first runner numbers. (internal #528)
-- **Tests that hold the stars' order.** `tests/test_star_magnitude.mjs` holds, on the real `stars3d.bin` and the real functions, that a brighter
-  nearby star is never drawn smaller or fainter (the sky's curve and the 3D draw's, whose arithmetic it pins), that the catalogue's apparent
-  magnitude agrees with its absolute magnitude and distance for the 921 drawn stars within 100 ly, that on the stellar rung doubling the
-  distance costs 5 log10 2 magnitudes, that the Eye, Camera and Deep exposures only ever let more stars through, and that a cooler star
-  (higher B-V) is never bluer in the colour its sprite is given. `magToSize` and `magToAlpha` in `scene/starfield.js` are exported for it; nothing
-  else about them changed. (internal #818)
-- **A reduced-motion regression for the deep sky.** `tests/test_deep_reduced_motion.mjs` runs the real deep-sky coordinator with the real Helix
-  hero and an LMC holder for ten simulated minutes: with the preference off the gas's time uniform moves (the control), with it on it stays at 0.
-  It also fails if a file in `scene/deep/` gains a time uniform without reading `reduced`, and holds that the camera rig's constant drift refuses
-  with 'reduced-motion' and leaves the camera where it was. (internal #836)
-- **A gate on drawing the cosmic web.** `tests/test_cosmic_web_gate.mjs` holds that, while nothing draws it, the class says so and credits no
-  survey; and that the day a renderer is listed under COSMIC_WEB the class note must say what DESI DR1 is and is not (its licence, the part of the
-  sky it covers as a footprint, that the rest was not observed), name the observed and the simulated styles apart with a legend, and that
-  `CREDITS.md` carries the survey. (internal #826, #828)
-
-### Not yet
-
-- **No DESI wedge and no simulated filaments are drawn.** The gate above is the check; the data, the renderer and the looks at 1600 and 390 are
-  still to build, so internal #826 and #828 stay open.
-## [1.7.19] - 2026-11-04
-
-### Changed
-
-- **The astronomical unit is written AU everywhere a visitor reads a distance** (public #1234). After #1217 made the star-system cards say AU,
-  the sentence under an object ("is 2.31 AU (346 million km) from the Earth right now"), the object and star-system pages a search engine
-  reads, the sample cards (Gonggong, 3I/ATLAS, Lucy), the oddities, the Helix, Dumbbell and Ring Nebula cards and four Lab pages still said
-  "au". A test now reads the files a visitor sees and refuses "au", "a.u." and "AUs". Other languages keep their own abbreviation.
-- **A way to report a wrong phrase in a translation** (public #1269). The French, German, Portuguese and the other drafts have no native
-  reader yet; `.github/ISSUE_TEMPLATE/mistranslation.yml` is a form for one wrong phrase (language, what it says, what a person would
-  say, where), linked from the README, CONTRIBUTING and docs/TRANSLATING.md. The aurora-forecast link on the Earth card was opened again
-  (NOAA SWPC's page for the OVATION model, which is the model the in-app aurora layer draws too) and its record in `registry/links.yaml`
-  says so (public #1232).
-
-### Fixed
-
-- **A reply of the wrong shape no longer replaces the data the browser holds, and a read of our own saved files can no longer hang** (public #1304).
-  A publisher's error page that is valid JSON (`{"error": "rate limited"}`), a number, a string, or rows without the fields the parser reads
-  used to be kept as the new copy of a feed; now each json feed is checked against the least its consumer needs (`shape` in
-  `site/js/data/sources.js`: the CelesTrak feeds, Launch Library, the people in space, GDACS, EONET, JPL's tables, the Kp forecast; the
-  others must at least be an object or a list) before it can replace the copy, from the publisher and from our own saved file. The manifest,
-  a saved file and its column twin are read within 20 seconds, as a publisher's reply already was; before, a hung one held the page until
-  the browser gave up and the publisher behind it was not asked.
-
-### Added
-
-- **Five new checks, no change to what a visitor sees** (public #1271, #1304, #1322, #555). Every trip of `registry/tours.yaml` is its own URL
-  in `sitemap.xml`, once, with a page of its own H1 and description. A read of the hourly copy that never answers, comes back empty, is cut off
-  or is not data, or is data of the wrong shape, leaves the copy the browser holds as it was, with its own time, marked old, with the reason, from the publisher and from our
-  own file (`tests/test_cache_keeps_last_good.mjs`). `scripts/check-phone-menu.mjs` opens a moon, a landing site and a long name at 320 and
-  390 px with a trail behind them and checks that no breadcrumb overlaps the More button, none is cut at the side, and the menu opens and
-  closes; it runs in the `ui` job of `screens.yml`. docs/RELEASING.md says how to run the Rich Results Test and the Schema Markup Validator
-  against the live pages after a deploy (a person runs them; no account or key is made for it).
-## [1.7.21] - 2026-11-04
-
-### Added
-
-- **Proof tools for the deep-space heroes, for contributors and reviewers; nothing a visitor sees changes.** `sr.perf.stats()` carries `gpuTime`, the GPU's own
-  time for the frame's `render()` from a timer query (`EXT_disjoint_timer_query_webgl2`, one query in flight, read a frame or more later; it says
-  `supported: false` and why where the browser has none, as headless Chrome on SwiftShader usually does). It draws nothing and holds no render target, so a
-  deep-space effect's cost is the difference of `gpuTime.p50Ms` between its BEFORE and AFTER pictures. `sr.perf.whenIdle()` is the asset-idle signal a
-  probe awaits before a picture: it names what the scene still waits for (the slider's photographs, the deep sky's heroes, the sharper maps being swapped in,
-  map tiles in flight or wanted). `tools/hero-clips.mjs` films a 5 to 10 second clip of a hero's arrival on `render-trip.mjs`'s film clock (pictures, a row a
-  frame, and the pops, flickers and jumps found; `ffmpeg` joins them only if it is on the PATH). `tests/test_hero_cycles.mjs` visits every shipped hero ten
-  times through the real coordinator and checks that each departure gives the scene graph back, and the `hero-cycles` look probe does the same on a real GL
-  with `renderer.info.memory`. The heroes probe writes the GPU time and the idle answer beside each picture. (internal #832, #834, #779)
-
-### Changed
-
-- **Under `?look=1` the drift's walk, its dwell times and the meteors draw from a fixed seed**, as the wind, the currents and the weather's flashes already did,
-  so two runs of a tool photograph the same. The seed moved from `scene/wind.js` to `scene/lookrandom.js`, which the wind still re-exports; a visitor's
-  `Math.random` is unchanged. (internal #779)
-## [1.7.23] - 2026-11-04
-
-### Added
-
-- **The PSLV fourth stage and BeiDou-3's IGSO and GEO craft have models of their own, from a second hunt for sources over the 14 craft held back since 1.4.0.** Of the 14 (public #996, #1095, #1120,
-  #1144, #1153, #1157, #1158, #1159, #1161, #1162, #1163, #1168, #1170 and #1171), two had a source that was not there before; the other twelve still have none and each issue says what was searched
-  and found. No agency publishes a mesh of any of them (`scripts/check-model-sources.py` and NASA's 3D Resources index: none), so both are built in code from published dimensions and pictures read
-  for the layout; no mesh and no picture is in a file.
-  - **PSLV R/B** (`pslv-ps4.glb`, 94 kB, 12 800 triangles; also PSLV R/B(1)): the 1.4.0 build of this stage was held because ISRO's photographs seemed to disagree on where its platform sits. They do not:
-    the gold barrel and the big dark nozzle of that build are the THIRD stage (its Kevlar case; 'PS3' is written on the nozzle), which hangs under the fourth in five ISRO photographs on Commons
-    (GODL-India, 2008 to 2023). The model is rebuilt as the stage that stands on it: the black ribbed skirt, the white ring 2.8 m across, the open ring of struts with four gold helium spheres, the
-    equipment platform with its black and gold boxes and harness, and the 1.34 m stainless tank with its domed top and adapter ring, with the two 7.4 kN engines under it. Tank width and length are
-    the numbers 1.4.0 quoted from ISRO's mission brief; the skirt, ring and struts are read off the photographs against the 2.0 m third stage and the PSLV's 2.8 m diameter; the engines are in no picture.
-  - **BeiDou-3 IGSO** (`beidou-3-igso.glb`, 110 kB, 13 806 triangles): CAST's DFH-3B bus as the China Satellite Navigation Office's metadata gives it, 2.098 x 2.358 m across and 3.602 m long with 17.7 m2
-    of cells a wing, as an open-access paper quotes it with CSNO's own rendering of the craft on orbit (CC BY 4.0): a gold box with a round array on its Earth deck, a white panel on its Sun face, a
-    hexagonal lattice reflector on a boom and two white dishes, all four looking at the Earth, and two wings of three panels. The three IGSO craft (BEIDOU-3 IGSO-1 to -3) wear it as themselves; the four
-    geostationary craft (G1 to G4) have the same bus size in Springer's table but no layout was opened, so they wear it as "the kind of thing". BeiDou-2's craft are another bus (DFH-3A) and keep what they had.
-    The sources, what was cited and what was estimated are in `registry/models.yaml` and `CREDITS.md` 3y and 3z.
-
-### Not yet
-
-- **Twelve of the 14 held craft stay held**: Fengyun-3 and -4 (one mockup photograph and a rendering of each, no layout or, for -4, size), DMSP Block 5D-3 and Milstar (paintings only; the satellite is in
-  its shipping container in every photograph), Oceansat-2 (no picture of the satellite), ORBCOMM OG2 and Qianfan (no picture of either), and the Zenit-2, Blok E, Tsyklon-3, Blok DM, Long March 4 and
-  Breeze-M stages (no photograph of flight hardware). Public #1172, the tracker for the second hundred, stays open for them.
-- **BeiDou-3's hexagonal reflector and dishes are drawn at the sizes the paper assumes** (a hexagon of side 2.358 m, dishes 1.0 m across): CSNO does not publish them, and the museum mockups agree. Where the
-  Earth is, the reflector boom and the dishes' places are read off one rendering and two mockups. The PSLV skirt's height and whether it stays with the stage in orbit are not stated by any page opened.
-  No model has been seen by a person who knows the craft; the pictures in the pull request are the first look.
-
-## [1.7.24] - 2026-11-04
-
-### Added
-
-- **Eight more nearby stars with planets can be flown into: Barnard's Star, Tau Ceti, Epsilon Eridani, Gliese 887, Gliese 581, Gliese 876, Luyten's Star and GJ 1061.**
-  They are hosts in `registry/systems-list.yaml`, so every number is the NASA Exoplanet Archive's, read on 2026-11-04 (the list is a choice, not data); there are now 50
-  generated systems and 127 planets beside TRAPPIST-1. Gliese 887, Gliese 876, Luyten's Star and GJ 1061 sit in "Planets near the habitable zone" because a planet
-  lies inside or at the edge of the band the build computes; the other four have none there, and the card says nothing about habitability for them.
-- **Six more famous stars carry a measured radius: Canopus, Achernar, Regulus, Algol, Castor and Upsilon Andromedae.** Each row cites the arXiv page of the paper, read on
-  2026-11-04, and quotes the sentence or table row the number was taken from: Canopus 73.2 ± 3.9 (Domiciano de Souza et al. 2021), Achernar's equatorial 12.0 ± 0.4
-  (2003), Regulus's equatorial 4.16 ± 0.08 (McAlister et al. 2005), Algol A 2.73 ± 0.20 (Baron et al. 2012), Castor Aa 2.089 ± 0.005 (Torres et al. 2022) and
-  Upsilon Andromedae 1.70 ± 0.02 (Ligi et al. 2012). Achernar and Regulus spin fast and are flattened, so the equatorial radius is the one drawn, as for Vega and Altair.
-  Antares and Spica were read and not used: the paper read gives Antares a radius of 680 Suns with no error bar, and Spica's radii come from spectroscopic modelling, not a
-  diameter. No paper with a radius and its error was found for the other stars still on the colour-index estimate.
-  `CREDITS.md` §3d-4 lists the papers.
-
-### Changed
-
-- **A planet's orbit takes one paper's numbers when the composite table disagrees with itself.** The Archive's composite table fills each column from whichever paper had it, so
-  a planet's distance, period and star's mass can come from three papers that disagree (25 of 99 orbits did on 2026-10-08). `scripts/build-exoplanets.py` now also pulls the
-  Archive's `ps` table for the listed hosts into `registry/systems-sets.csv` (the Kepler pipeline's KOI tables left out: they are catalogues), and
-  `scripts/build-systems.py` picks the star's mass with which most planets keep a distance the Archive gives within Kepler's 5 %, then the newest paper's set for each planet that
-  needs one; the paper is named (`a_ref`, and `mass_ref` for a star). The idea in internal #474 was to read `default_flag = 1`; measured 2026-11-04, none of the 26 planets that
-  failed the check passes on its default row, and other papers' rows pass for 23 of them. Orbits computed from the period fall from 26 to 7. WASP-17 b is at 0.0515 au around a
-  1.31-Sun star (the composite row had 2.28), HD 209458, GJ 1132, Beta Pictoris, Kepler-69, Kepler-90 and PDS 70 change star mass the same way, each with its paper named.
-  The weekly refresh workflow commits the new file with the others.
-
-### Not changed
-
-- **Standard magnitudes of satellites: nothing adopted** (internal #391). GCAT is CC BY 4.0 (redistribution allowed with a citation) but has no magnitude column; SatNOGS DB
-  data is CC BY-SA 4.0, its public satellite record has no magnitude, and its optical observations need an account. `CREDITS.md` §3d-5 holds the sentences read.
 ## [1.7.8] - 2026-11-03
 
 ### Added
@@ -384,80 +474,6 @@ tagged, and their dates are the day the last change in each landed.
   bus), how SPOT's three panels stand, the SkySat flap and dish, and the BeiDou wing panels. Cell grids are coarse. No model has been seen by a
   person who knows the craft; the pictures in the pull request are the first look.
 - **Pleiades Neo and the radar pair (COSMO-SkyMed, RADARSAT-2) are not built in this release.**
-## [1.7.11] - 2026-11-04
-
-### Added
-
-- **Tests II: twenty-three small functions have a test of their own, and five more get the edge cases they lacked** (public #770, #777, #783, #789, #794, #800, #804, #809, #811, #813, #815,
-  #818, #820, #822, #824, #826, #829, #831, #833, #835, #837, #839, #846, #848, #850, #852, #854, #858). One new file per function in the style of `tests/test_colorkeys.mjs`, each with its step in
-  `.github/workflows/ci.yml`: `equatorialToEcliptic`, `radecToVec`, `parseFrame` and `isPlanetMoon` (propagate/frames.js); `qMul`, `qRotate` and `qSlerp` (sky/pointing.js);
-  `glowOfLights`, `samePassKey` and `nextLightChange` (sky/); `leadingDigit`, `kickerDate`, `shortUtcDate`, `stopBudgetMs`, `worldOfTarget`, `eventSizeText`, `splitReadout` and `ageParts`
-  (ui/); `span0Of`, `bytesFor`, `fitDistanceUnits`, `starRadiusKm` and `planetRadiusKm` (scene/). The window of `activeShowers` and the span of `trackTimes` and `tickTimes` are
-  now passed in tests/test_radiants.mjs and tests/test_groundtrack.mjs; `with_params` and `expand_url` (harvest) are in tests/test_harvest.py, `ledger_key_shower` (notify) in
-  tests/test_notify.py. No behaviour changes. One finding: `equatorialToEcliptic` takes its obliquity from astronomy-engine's matrix, about 2e-7 in a sine away from the 23.4392911 degrees
-  the issue quotes, so its test compares the tilted axes to 1e-6.
-## [1.7.12] - 2026-11-04
-
-### Changed
-
-- **Comments and guides now point at things that exist.** No behaviour changes, except the one search word below. Comments that named a test that was never there now name the one that
-  holds the code (`ui/camundo.js`, `ui/photomode.js`, `sky/skybodies.js`, `scripts/minify_site.py`, `scripts/seo_dates.py`; public #708, #716, #732, #739, #746); `registry/sky-events.yaml`
-  names `scripts/seo_facts.mjs`, the script that does the work (public #607); `registry/showers.yaml` points at `notify/` (public #753); five comments no longer point at
-  `docs/data-sources.md` and `scene/wind.js` at `docs/inspirations.md`, which are not in the repository (public #652, #766); the landing-sites check and `registry/sites.yaml` no longer count the
-  uncited rows (public #606); `docs/ARCHITECTURE.md` says what the module contract covers (public #653).
-- **Search calls a storm what its card calls it.** The kind on a storm's row in search is "Tropical cyclone", not "Tropical storm" (public #682).
-- **JSDoc on nine small functions**: `clipKey`, `plural`, `saffirSimpson`, `shouldSaveData`, `dirOf`, `angleBetween`, `tileUrl`, `seedOf` and `phaseRayleigh`, each with an example that was run
-  (public #706, #714, #722, #730, #737, #744, #751, #762, #774).
-
-### Added
-
-- **`docs/FAQ.md`**: three answers, each checked against the app. Live or a snapshot (the time the elements were issued against the time the position is computed for, with the
-  station as the worked case, read from CelesTrak on the day); how to leave a trip (Escape or Leave); why distances and sizes are not to scale (public #1013, #1015, #1017).
-- **`docs/RUN_LOCALLY.md`** shows what "Address already in use" prints, from a real run, and what to do (public #1014).
-- **`tools/README.md`** has the "How long it takes" section of the trip-video guide, and one command each for `cdp.mjs` and `sheet-png.mjs`; **`CONTRIBUTING.md`** shows how to run one Python
-  test (public #609, #711, #719, #727).
-## [1.7.13] - 2026-11-04
-
-### Changed
-
-- **Every generator answers `--help`.** `python3 scripts/gen_aliases_js.py --help` (41 generators in all: the 34 that share `scripts/_genmirror.py`, and `gen_rockets_js.py`, `gen_sources_json.py`,
-  `gen_modulepreload.py`, `gen_home_seo.py`, `gen_contributors.py`, `build-skystars.py`, `build-galaxy.py`) prints a usage and exits 0 instead of rewriting a tracked file, and a mistyped flag
-  (`--chek`) prints `unknown option` and the usage on stderr and exits 2. `--check` and the no-argument run are as before. 37 lines leave `tests/cli_usage_gaps.txt`;
-  `tests/test_generator_help.mjs` holds it.
-- `scripts/build-galaxy.py` has a `--check` (CI runs it), so `site/data/galaxy.bin` can no longer drift from the script.
-- Error messages say what was found and what to do: `build-skystars.py` (the path, the four bytes it found, how to make the right file), `build-skycultures.py`'s boundary reader (the bytes found; the
-  leftover count), `build-exoplanets.py` (which file lacks columns, `pull with --pull`), `build-moon-shapes.py` (how many grid points are empty and where the first is), `bake-own-colours.mjs` (the
-  file and the likely causes) and `scripts/_png_text.mjs` (the first eight bytes; the length).
-
-### Removed
-
-- Names nothing used: `TICK_PX` (`ui/hud.js`), `sunDirection` (`propagate/body.js`), `subSolarPoint` (`scene/earth.js`), `loadedCount` (`scene/realmodels.js`), `systemById` (`scene/systems.js`),
-  `ascentPath` (`propagate/ascent.js`), `disposeGlyphAtlas` (`scene/glyphatlas.js`) and `setNavigator` in `tests/test_share.mjs`.
-- Three strings nothing read, in English and in every translation: `card.oftenSaidLabel`, `card.notApplicable` and `tonight.skybar.timeNoNight`.
-
-### Fixed
-
-- The comment that describes `ctx.setStage` sits above it again (it had been left above the colour key).
-- `resetPlaces()` in `sky/overplace.js` has a test (`tests/test_overplace.mjs`): forget, a failed load that leaves nothing behind, a load that builds the places anew.
-## [1.7.14] - 2026-11-04
-
-### Added
-
-- **Three more places a machine hit the Moon.** Hakuto-R Mission 1 (25 April 2023), Luna 25 (19 August 2023) and Hakuto-R Mission 2 (5 June 2025) join Beresheet as coordinates on the
-  Moon list, not records: position and UTC date from NASA's NSSDCA table, a sentence from the LROC or NASA page about each. The README now says twenty-four places on the Moon.
-- **Five links to the publisher's own pages.** The cards of Perseverance (Jezero), Curiosity (Gale), SOHO, Voyager 1 and Voyager 2 link to NASA's raw-image pages, SOHO's real-time
-  images and "Where are Voyager 1 and 2 now?". Each row says the day it was opened and what was on the page.
-- **More names that find things.** "North star" finds Polaris, "dog star" Sirius and "starlink train" the Starlink satellites; "Statio Cognitum" finds the Apollo 12 site, "Statio
-  Tianchuan" Chang'e 5, "Mons Latreille" Blue Ghost 1 and "Tidbinbilla" the Canberra dish DSS-43; "FI Vir", "Gliese 447", "Gliese 1253", "Gliese 3053" and "TIC 271971130" find
-  Ross 128, Wolf 1069, LHS 1140 and TOI-715. Each name was read on a public page that day.
-
-### Changed
-
-- **The /sources/ page says when eight sources' terms were last read** (Launch Library 2, the NASA Exoplanet Archive, DSN Now, GDACS, Wikidata and the two SWPC sources, 4 November 2026).
-  The Exoplanet Archive line now says what its acknowledgement page asks (a standard acknowledgement and a citation of Christiansen et al. 2025) and that 10.26133/NEA13 is the table's DOI.
-- **Open Notify's terms address works.** `https://open-notify.org/` still answers with a certificate for another host, so the row points at the project's GitHub repository, whose LICENSE
-  file is the GPL-3.0 for the code; the line still says no licence is stated for the data.
-
 ## [1.7.7] - 2026-11-03
 
 ### Added

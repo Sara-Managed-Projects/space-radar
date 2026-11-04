@@ -808,7 +808,7 @@ rockets:
     class: measured
     source: "Wikipedia Minotaur I: 19.21 m, 1.67 m, Minuteman II M55A1 and SR19 under Orion 50XL and Orion 38"
 
-  # ---- Release 1.7.15: nine launchers that were in the feed with no row. Each row is from ONE page,
+  # ---- Release 1.8.0: nine launchers that were in the feed with no row. Each row is from ONE page,
   #      read 2026-11-04; a height the page calls "length" is the height of a rocket.
   - id: orbex-prime
     display: "Orbex Prime"

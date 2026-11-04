@@ -1,4 +1,4 @@
-// r1720-tris: where the triangles of the to-the-edge stops go (release 1.7.20, internal #994).
+// r1720-tris: where the triangles of the to-the-edge stops go (release 1.8.0, internal #994).
 //
 // `triangles_per_stop` (registry/budgets.yaml) was raised for the deep sky of release 1.3.0 and again for
 // release 1.5.0. This walks the stops the trips job measured highest (out-to-the-edge and roof-to-the-edge,

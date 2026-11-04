@@ -250,7 +250,7 @@ missions:
   # path file begins two days after its launch, so that event is `none`; the other two launches
   # go to the first minute their file holds. Rosetta has a record and no row here: NSSDCA's page
   # for it returned an error that day, and JPL's header alone gives two dates, not three.
-  # Release 1.7.15: nine events for the three missions below (NEAR Shoemaker, Stardust, Deep Impact) and a time for the Eros orbit insertion. Every date and time was read on the NSSDCA page each mission names, 2026-11-04; a day with no time on the page is `precision: day`. The Stardust and Deep Impact Earth flybys carry no `world`: their path files hold no Earth-centred window on those days (registry/ephemerides.yaml), and tests/test_ephemerides.mjs refuses a `world` the file does not put the craft at.
+  # Release 1.8.0: nine events for the three missions below (NEAR Shoemaker, Stardust, Deep Impact) and a time for the Eros orbit insertion. Every date and time was read on the NSSDCA page each mission names, 2026-11-04; a day with no time on the page is `precision: day`. The Stardust and Deep Impact Earth flybys carry no `world`: their path files hold no Earth-centred window on those days (registry/ephemerides.yaml), and tests/test_ephemerides.mjs refuses a `world` the file does not put the craft at.
   - id: near-shoemaker
     record: deep-near
     display: NEAR Shoemaker
