@@ -15,9 +15,15 @@ Issue: [#1203](https://github.com/Sara-Managed-Projects/space-radar/issues/1203)
 - [x] T4. `registry/nobuild-boot.yaml` with the measured rows, each with `why` and `issue` (R7).
 - [x] T5. `screens.yml` `shots`: the unmodified-tree guard and the step; add the script and the
   registry file to `paths:` (R8).
-- [ ] T6. Prove A2, A3 and A4 on throwaway branches (delete one lazy module; throw in the card;
+- [x] T6. Prove A2, A3 and A4 on throwaway branches (delete one lazy module; throw in the card;
   fetch an unlisted host) and link the three failing runs in the implementation PR. Do not merge
-  them.
+  them. Closed after proof: A2 [#1359](https://github.com/Sara-Managed-Projects/space-radar/pull/1359)
+  [run 41770445210](https://github.com/Sara-Managed-Projects/space-radar/actions/runs/41770445210)
+  (`same-origin 404: /js/ui/cards.js`); A3 [#1360](https://github.com/Sara-Managed-Projects/space-radar/pull/1360)
+  [run 41770444961](https://github.com/Sara-Managed-Projects/space-radar/actions/runs/41770444961)
+  (`pageerror: nobuild-a3 card path`); A4 [#1361](https://github.com/Sara-Managed-Projects/space-radar/pull/1361)
+  [run 41770444821](https://github.com/Sara-Managed-Projects/space-radar/actions/runs/41770444821)
+  (`unlisted host: evil.example`).
 - [x] T7. One line under the README's "Run it locally" section is not needed: the README is the
   promise, the check holds it. Change nothing in the README unless T3 shows the command is wrong.
 
