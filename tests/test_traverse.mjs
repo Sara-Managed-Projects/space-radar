@@ -102,6 +102,7 @@ check(V.traverseFade(0) === 1 && V.traverseFade(V.TRAVERSE_LOOK.nearKm) === 1 &&
   for (let d = 0; d < 1000; d += 5) if (V.traverseFade(d + 5, r) > V.traverseFade(d, r) + 1e-12 || V.traverseWidthK(spirit.lengthKm, d + 5) < V.traverseWidthK(spirit.lengthKm, d) - 1e-12) mono = false;
   check(mono, 'and with the camera going away it only fades and only widens');
   check(V.traverseWidthK(spirit.lengthKm, spirit.lengthKm / V.WIDEN_FROM[0]) === 1 && Math.abs(V.traverseWidthK(spirit.lengthKm, spirit.lengthKm / V.WIDEN_FROM[1]) - V.SHORT_WIDEN) < 1e-9 && V.traverseWidthK(spirit.lengthKm, 1e6) === V.SHORT_WIDEN, 'the ribbon is 1 x wide where the line fills the view and SHORT_WIDEN x where it is a speck');
+  check(V.traverseRim(spirit.lengthKm, 1e6) === 1 && V.traverseRim(spirit.lengthKm, spirit.lengthKm / V.WIDEN_FROM[0]) === 0 && long.every((x) => V.traverseRim(x.lengthKm, 1e6) === 0), 'the dark rim is whole on a short line at its widest and not there on the others');
   check(V.traverseWidthK(0, 100) === 1 && V.traverseWidthK(7, 0) === 1 && V.traverseReach(0).nearKm === V.TRAVERSE_LOOK.nearKm, 'no length, no distance: nothing changes');
 }
 // --- the module: built, shown near, credited, disposed -------------------------------------------------------
