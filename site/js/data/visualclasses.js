@@ -503,6 +503,7 @@ export const VISUAL_CLASSES = [
 "falcon9-stage1",
 "falcon9-upper",
 "h2a-stage2",
+"pslv-ps4",
 "kosmos3m-stage2",
 "r7-8k72k",
 "sls-block1"

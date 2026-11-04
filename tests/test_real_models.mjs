@@ -644,5 +644,20 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
 }
 // 0078 r14-m6: end
 
+// RELEASE 1.7.23 (public #1171): the PSLV fourth stage wears pslv-ps4.glb, by catalogue name and only as a spent stage (klass rocket).
+{
+  const rb = (norad, name, klass = 'rocket') => realModelFor({ id: `sat-${norad}`, name, klass, layer: 'debris-notable', meta: { noradId: norad } });
+  for (const [norad, name] of [[44862, 'PSLV R/B'], [99970, 'PSLV R/B(1)']]) {
+    const got = rb(norad, name);
+    check(got && got.file === 'pslv-ps4.glb' && got.build === 'stage' && got.colour === 'rocket' && got.made === 'dimensions' && got.axes === 'app' && !got.generic,
+      `${name} wears pslv-ps4.glb as a stage built from dimensions: ${JSON.stringify(got)}`);
+  }
+  // It does not reach: the variant's other catalogue name, the debris of the same launches, a satellite that carries the letters, another country's stage, or the stages that still wait for pictures.
+  for (const [norad, name, klass] of [[99971, 'PSLV-CA R/B'], [27089, 'PSLV DEB', 'debris'], [99972, 'PSLV R/B', 'satellite'], [99973, 'PSLVX TEST R/B'], [99974, 'DELTA 2 R/B'], [99975, 'KOSMOS 3M R/B'], [99976, 'ZENIT-2 R/B'], [99977, 'CZ-4B R/B']]) {
+    const got = rb(norad, name, klass || 'rocket');
+    check(!got || got.file !== 'pslv-ps4.glb', `${name} (klass ${klass || 'rocket'}) does not wear pslv-ps4.glb: ${JSON.stringify(got)}`);
+  }
+}
+
 if (problems.length) { console.error('real models FAILED:\n  ' + problems.slice(0, 40).join('\n  ') + (problems.length > 40 ? `\n  ... and ${problems.length - 40} more` : '')); process.exit(1); }
 console.log(`real models ok: ${rows.length} models on disc are binary glTF 2 with meshes (${triangles} triangles in all), each worn by a route (${rows.filter(waiting).map((r) => r.id).join(', ') || 'none'} waiting, and saying so) and each route's file a row; ${own} craft with a route of their own get it from realModelFor, none a generic shape (${generic} routes are a class's shape and say so)`);

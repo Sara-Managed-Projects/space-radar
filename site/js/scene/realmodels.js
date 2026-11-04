@@ -1258,7 +1258,8 @@ export const REAL_MODELS = {
     // `made: 'dimensions'` makes the card say the shape was built from published dimensions; `axes: 'app'` keeps the tumble the
     // generic stage has: a dead stage has no attitude control. The stages of the same catalogue families that are NOT drawn here keep
     // the generic stage: DELTA 2 R/B(2) is a Star-48 motor, SL-12 R/B(1) a Blok DM auxiliary motor, and the Zenit-2, Vostok Blok E,
-    // Tsyklon-3, Long March 4, Proton Blok DM, Breeze-M and PSLV fourth stages wait for pictures of flight hardware (the PR says what).
+    // Tsyklon-3, Long March 4, Proton Blok DM and Breeze-M stages wait for pictures of flight hardware (the PR says what). The PSLV fourth stage has had its own
+    // file since release 1.7.23 (below): ISRO's photographs, GODL-India, show it.
     'sl-8 r/b': { file: 'kosmos3m-stage2.glb', build: 'stage', colour: 'rocket', name: 'a Kosmos-3M second stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
     'delta 2 r/b(2)': { build: 'stage', colour: 'rocket', name: 'a spent rocket stage', klass: ['rocket'], generic: true },
     'delta 2 r/b': { file: 'delta2-stage.glb', build: 'stage', colour: 'rocket', name: 'a Delta II second stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
@@ -1266,6 +1267,8 @@ export const REAL_MODELS = {
     'atlas centaur r/b': { file: 'centaur-d.glb', build: 'stage', colour: 'rocket', name: 'a Centaur D upper stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
     'falcon 9 r/b': { file: 'falcon9-stage2.glb', build: 'stage', colour: 'rocket', name: 'a Falcon 9 second stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
     'h-2a r/b': { file: 'h2a-stage2.glb', build: 'stage', colour: 'rocket', name: 'an H-IIA second stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
+    // Release 1.7.23 (public #1171): the PS4, the stage that stays in orbit; `pslv r/b` also reaches PSLV R/B(1), the same stage, and never PSLV-CA R/B or PSLV DEB (debris class).
+    'pslv r/b': { file: 'pslv-ps4.glb', build: 'stage', colour: 'rocket', name: 'a PSLV fourth stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
     // 0078 r14-m1: end
     // Every spent stage on the visible layer -- SL-16, CZ-2C, Centaur, Delta, H10 -- was drawn as
     // a LAUNCHING rocket: fairing, nose, plume. A spent stage is a tube with a nozzle, tumbling.
