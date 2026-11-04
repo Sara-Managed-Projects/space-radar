@@ -11,6 +11,30 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [1.7.10] - 2026-11-04
+
+### Added
+
+- **Seventeen new tests for small functions that had none**, each in its own file and its own CI step (public #619 to #628, #704, #712, #720, #728, #735, #742, #749, #757):
+  `hermite` and `sampled` (`tests/test_propagate_sampled.mjs`), `staticPos` (`test_propagate_static.mjs`), the Kepler solvers (`test_kepler.mjs`), `editDistance`
+  (`test_edit_distance.mjs`), `launchAzimuth` (`test_launch_azimuth.mjs`), `decimalYear` (`test_decimal_year.mjs`), `latText` and `lonText` (`test_card_latlon.mjs`),
+  the exoplanet face's `starRgb`, `habitableFlux` and `radiusFromMass` (`test_exoface_helpers.mjs`), `bisect` (`test_bisect.mjs`), `typeWords`
+  (`test_type_words.mjs`), `degWords` (`test_live_degwords.mjs`), `orbitsEarth` (`test_shadow_orbits_earth.mjs`), `placeLabel` (`test_live_placelabel.mjs`),
+  `groundRelativeAzimuth` (`test_ascent_ground_azimuth.mjs`), `normaliseFixed` (`test_fixed_normalise.mjs`), `sphericalToBodyFixed`
+  (`test_frames_spherical_to_bodyfixed.mjs`) and `bodyFixedToSpherical` (`test_frames_bodyfixed_to_spherical.mjs`). Each pins the values the code returns today, edge
+  cases included.
+- **Edge cases added to nine existing tests**: the azimuth wrap and the refused spellings of `parseCam`, the poles and the date line in `parsePlaceValue`, both ends
+  of the ellipse band in `ellipseRatio`, one case per spelling of `splitCometName`, five more year ends in `isoWeek`, the ends of the `countBrighter` search, an
+  empty `closestWords`, two close marks, a tie and a short reach in `nearestMark`, and an empty address in `subscribePayload` (public #707, #715, #723, #731, #738,
+  #745, #752, #764, #623).
+
+### Changed
+
+- **Three tests stop holding numbers that move.** `tests/test_starsnotable.mjs` asks for at least ten measured stellar radii instead of exactly eleven (public #617);
+  `tests/test_seo_pages.py` asks for the events index to link every event and at least six, instead of exactly six (public #618); and `tests/test_readme_facts.py`
+  also holds the star count `docs/RUN_LOCALLY.md` quotes to the registry, as it already did for the trips in `CONTRIBUTING.md` and `docs/TRANSLATING.md` (public #629).
+  No behaviour of the app changes.
+
 ## [1.7.7] - 2026-11-03
 
 ### Added

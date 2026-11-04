@@ -218,6 +218,16 @@ if (said) {
   const round = raw.filter((o) => o.typeCode === 'G' && o.majAxArcmin > 0 && o.minAxArcmin / o.majAxArcmin >= 0.8 && o.id !== 'm31');
   check(round.length > 0 && round.every((o) => { const r = recs.find((x) => x.id === `dso-${o.id}`); const q = glowFor(r); return !q || !q.shape; }), `${round.length} galaxies that are nearly round stay round`);
   check(ellipseRatio({ typeCode: 'OCl', majAxArcmin: 10, minAxArcmin: 4, posAngDeg: 3 }) === null && ellipseRatio({ typeCode: 'G', majAxArcmin: 10, minAxArcmin: 4 }) === null, 'only a galaxy with both its minor axis and its angle is shaped');
+  // The band is 0.05 up to, but not including, 0.8; the ends are where `<` against `<=` would show (public #723).
+  const gal = (min, maj) => ({ typeCode: 'G', majAxArcmin: maj, minAxArcmin: min, posAngDeg: 10 });
+  const closeTo = (a, b) => a !== null && Math.abs(a - b) < 1e-9;
+  check(closeTo(ellipseRatio(gal(7.99, 10)), 0.799), 'a ratio just inside the top of the band is shaped');
+  check(ellipseRatio(gal(8, 10)) === null, 'a ratio of exactly 0.8 is round enough to stay round');
+  check(closeTo(ellipseRatio(gal(5, 100)), 0.05), 'exactly the bottom of the band is kept');
+  check(ellipseRatio(gal(4.99, 100)) === null, 'below the band is not shaped');
+  check(closeTo(ellipseRatio({ typeCode: 'G', majAxArcmin: 10, minAxArcmin: 4, posAngDeg: 0 }), 0.4), 'an angle of 0 is a real angle');
+  check(ellipseRatio({ typeCode: 'G', majAxArcmin: 0, minAxArcmin: 0, posAngDeg: 0 }) === null, 'no axes, no shape');
+  check(ellipseRatio(null) === null, 'no object, no shape');
   const src = readFileSync(join(ROOT, 'site/js/scene/dsoglow.js'), 'utf8');
   check(/mix\( 1\.0, uShaped, aStep \)/.test(src), 'only the ellipses that a photograph holds step back for it');
 }

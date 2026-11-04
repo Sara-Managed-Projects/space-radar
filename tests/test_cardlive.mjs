@@ -87,6 +87,10 @@ const cw = live.closestWords({ tMs: Date.UTC(2029, 3, 13, 21, 46), km: 38000 }, 
 check(cw === 'Closest: 13 Apr 2029 · 0.1 Moon distances', `the closest approach in words, the date in UTC (${cw})`);
 check(live.closestWords({ tMs: Date.UTC(2029, 3, 13), km: 38000 }, true).startsWith('Closest: about '), 'an approximate path says "about"');
 check(cw.length <= 44 && live.closestWords({ tMs: Date.UTC(2029, 8, 23), km: 99 * 384400 }, true).length <= 50, `one line of a 320 px card (${cw.length} characters)`);
+// A closest approach that is missing or half-known prints nothing, not "Closest: NaN" (public #752).
+check(live.closestWords(null) === '' && live.closestWords(undefined, true) === '' && live.closestWords({}) === '', 'no closest approach, no line');
+check(live.closestWords({ tMs: NaN, km: 5 }) === '', 'no time, no line');
+check(live.closestWords({ tMs: 1, km: NaN }) === '', 'no distance, no line');
 check(g && g.tickY < 56 - 10, `the closest approach's mark stands on the baseline even when the curve touches it (${g && g.tickY})`);
 
 // --- 4. the card's own distance function: from the same propagation, and null where it has none --

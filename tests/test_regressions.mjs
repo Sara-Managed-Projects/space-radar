@@ -202,6 +202,15 @@ const code = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/
     const { designation } = splitCometName(full, numberField, orbitType);
     return { id: `comet-${(designation || packed || full).replace(/\s+/g, '')}`, full };
   };
+  // One case per spelling, both fields (public #731).
+  const split = (...a) => JSON.stringify(splitCometName(...a));
+  const want = (designation, name) => JSON.stringify({ designation, name });
+  check(split('C/1942 EA (Vaisala)', '', '') === want('C/1942 EA', 'Vaisala'), 'a name in brackets is the name, the rest the designation');
+  check(split('1P/Halley', '1', 'P') === want('1P', 'Halley'), 'a number, a letter and a slash');
+  check(split('73P-B/Schwassmann-Wachmann 3', '73', 'P') === want('73P-B', 'Schwassmann-Wachmann 3'), 'a fragment letter after a dash');
+  check(split('C/2023 A3', '', null) === want('C/2023 A3', 'C/2023 A3'), 'nothing to split: the whole text is both');
+  check(split('Encke', '2', 'P') === want('2P', 'Encke'), 'the number field and orbit type make the designation');
+  check(split('  Wild  ', '81', 'P') === want('81P', 'Wild'), 'white space is trimmed');
   const mpc = readFileSync(join(ROOT, 'tests/fixtures/harvest/mpc_comets.txt'), 'utf8').split(/\r?\n/).filter((l) => l.length >= 100).map(oldId);
   check(mpc.length === 5, `the Minor Planet Center lines kept from before the switch were read (${mpc.length})`);
   for (const old of mpc) {

@@ -34,6 +34,13 @@ check(t1.mag[0] > nakedMax - 0.05 && t1.mag[t1.count - 1] <= 7.05, `tier 1 runs 
 check(t2.mag[0] >= t1.mag[t1.count - 1] - 1e-6, 'every star of tier 2 is fainter than every star of tier 1, so the joined list is sorted');
 for (const t of [t1, t2]) { let sorted = true; for (let i = 1; i < t.count; i += 1) if (t.mag[i] < t.mag[i - 1]) { sorted = false; break; } check(sorted, 'a tier is in order of magnitude: the reader draws a prefix'); }
 check(countBrighter(t1.mag, 6.5) > 3000, 'countBrighter finds the prefix');
+// A binary search has edges a catalogue never reaches (public #745).
+check(countBrighter([], 5) === 0, 'an empty list has nothing brighter');
+check(countBrighter([1, 2, 3], 0.5) === 0, 'a limit brighter than the first star counts none');
+check(countBrighter([1, 2, 3], 2) === 2, 'a star of exactly the limit counts');
+check(countBrighter([1, 2, 3], 2.5) === 2, 'a limit between two stars counts those above it');
+check(countBrighter([1, 2, 3], 9) === 3, 'a limit fainter than the last star counts all');
+check(countBrighter([1, 2, 2, 2, 3], 2) === 4, 'repeated values are all counted');
 
 // Every star is where the catalogue has it: the same multiset of directions, to the format's step.
 {

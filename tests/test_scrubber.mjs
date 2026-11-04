@@ -81,6 +81,15 @@ check(marks[3].tMs <= win.hi, 'next August\'s eclipse is inside the year the tap
   const x = S.tapeX(marks[0].tMs, now, 'hour', 480);
   check(S.nearestMark(marks, x + 10, now, 'hour', 480) === marks[0], 'a tap within reach of a mark means the mark');
   check(S.nearestMark(marks, x + 60, now, 'hour', 480) === null, 'a tap on empty tape means the instant under it');
+  // Two close marks, a tie, no marks and the reach argument (public #764).
+  const close = [{ tMs: 0, id: 'a' }, { tMs: 3600e3, id: 'b' }];
+  check(S.tapeX(0, 0, 'hour', 480) === 160 && S.tapeX(3600e3, 0, 'hour', 480) === 180, 'two marks an hour apart stand at 160 and 180 px');
+  check(S.nearestMark(close, 165, 0, 'hour', 480).id === 'a', 'of two marks the nearer one wins (5 px against 15)');
+  check(S.nearestMark(close, 175, 0, 'hour', 480).id === 'b', 'and from the other side the other one');
+  check(S.nearestMark(close, 170, 0, 'hour', 480).id === 'b', 'an exact tie goes to the later mark');
+  check(S.nearestMark(close, 165, 0, 'hour', 480, 5).id === 'a', 'a reach of exactly 5 px still counts');
+  check(S.nearestMark(close, 165, 0, 'hour', 480, 4) === null, 'a shorter reach finds nothing');
+  check(S.nearestMark(null, 165, 0, 'hour', 480) === null && S.nearestMark([], 165, 0, 'hour', 480) === null, 'no marks, or no list, finds nothing');
 }
 
 // --- where the tape is rough, and where it ends ----------------------------------------------------
