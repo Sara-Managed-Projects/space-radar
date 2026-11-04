@@ -16,7 +16,7 @@ A live 3D map of space in your browser. Free, open source, no account.
 [![Good first issues](https://img.shields.io/github/issues/Sara-Managed-Projects/space-radar/good%20first%20issue?label=good%20first%20issues&color=7057ff)](https://github.com/Sara-Managed-Projects/space-radar/labels/good%20first%20issue)
 [![Open in GitHub Codespaces](https://img.shields.io/badge/open%20in-Codespaces-24292f?logo=github)](https://codespaces.new/Sara-Managed-Projects/space-radar)
 
-Translations, as they stand (all machine-drafted and not yet shown from a browser's language until two native readers have read them; [how to help](docs/TRANSLATING.md)):<br>
+Translations, as they stand (all machine-drafted and not yet shown from a browser's language until two native readers have read them; [how to help](docs/TRANSLATING.md), or [report a wrong phrase](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=mistranslation.yml)):<br>
 <!-- translation-badges:begin (node scripts/check-translation.mjs --write-doc) -->
 [![Arabic: 100 %, machine-drafted](https://img.shields.io/badge/%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9-100%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
 [![German: 99.9 %, machine-drafted](https://img.shields.io/badge/Deutsch-99.9%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)

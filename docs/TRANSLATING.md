@@ -165,3 +165,10 @@ does the same work twice. Offering a language that has no issue yet:
 [open the translation form](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=translation.yml).
 Every translator is named in the release notes of the release that carries their language.
 We answer within 48 hours.
+
+## A phrase is wrong
+
+Every language here is a draft, so a wrong phrase is expected. To report one without writing any code,
+[open the form for a wrong phrase](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=mistranslation.yml):
+pick the language, paste what it says now and, if you can, what a person would say. One phrase is enough, and a report in your own
+language is fine. Fixing it yourself is one line in `site/js/copy/<code>.js` and a pull request.

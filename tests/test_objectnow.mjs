@@ -13,19 +13,19 @@ const problems = [];
 const at = new Date('2026-07-01T12:00:00Z');
 
 const sun = nowSentence(A, 'Sun', at);
-if (!/^Sun is 1\.0\d au \(15\d(\.\d)? million km\) from the Earth right now, in the constellation Gemini\./.test(sun || '')) problems.push(`the Sun on 1 July 2026: ${sun}`);
+if (!/^Sun is 1\.0\d AU \(15\d(\.\d)? million km\) from the Earth right now, in the constellation Gemini\./.test(sun || '')) problems.push(`the Sun on 1 July 2026: ${sun}`);
 const moon = nowSentence(A, 'Moon', at, 'The Moon');
 const km = Number((moon || '').match(/is ([\d ]+) km/)?.[1].replace(/ /g, ''));
 if (!(km >= 356000 && km <= 407000)) problems.push(`the Moon's distance must lie between its perigee and apogee: ${moon}`);
 const mars = nowSentence(A, 'Mars', at);
-const au = Number((mars || '').match(/is ([\d.]+) au/)?.[1]);
+const au = Number((mars || '').match(/is ([\d.]+) AU/)?.[1]);
 if (!(au >= 0.37 && au <= 2.68)) problems.push(`Mars is between 0.37 and 2.68 au from the Earth: ${mars}`);
 for (const b of BODIES) if (!nowSentence(A, b, at)) problems.push(`no sentence for ${b}`);
 for (const bad of ['Earth', 'Ceres', 'Halley', '', undefined]) if (nowSentence(A, bad, at) !== null) problems.push(`invented a sentence for ${bad}`);
 if (nowSentence(null, 'Mars', at) !== null) problems.push('no library must give null, not an exception');
 // Different days give different words: it reads the date it is given.
 if (nowSentence(A, 'Mars', new Date('2026-01-01T00:00:00Z')) === mars) problems.push('the sentence ignores the date');
-if (distanceWords('Jupiter', 5.2) !== '5.20 au (778.0 million km)' && distanceWords('Jupiter', 5.2) !== '5.20 au (778 million km)') problems.push(`distanceWords(Jupiter, 5.2) = ${distanceWords('Jupiter', 5.2)}`);
+if (distanceWords('Jupiter', 5.2) !== '5.20 AU (778.0 million km)' && distanceWords('Jupiter', 5.2) !== '5.20 AU (778 million km)') problems.push(`distanceWords(Jupiter, 5.2) = ${distanceWords('Jupiter', 5.2)}`);
 // The module must never be pulled into the app: it is for the static pages only.
 const main = readFileSync(join(ROOT, 'site/js/main.js'), 'utf8');
 if (/objectnow/.test(main)) problems.push('main.js imports objectnow.js: it belongs to the static object pages only');

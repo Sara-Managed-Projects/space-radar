@@ -80,8 +80,8 @@ layers:
     head_au: 150
     tail_au: 300
     min_px: 2.2
-    drawn: "a seeded sample (model): the count and the size are measured, each knot's place is not, and the 300 au tail is an illustration. Under 2.2 px a knot is drawn 2.2 px wide and its darkness EXAGGERATED (it falls as one over the square root of the enlargement, not as one over its area), so that they can be seen at mid distance"
-    source: "O'Dell, Ferland, Henney & Peimbert 2013, AJ 145, 92, sections II.2 and the summary (about 0.2″, 150 au, near the current ionisation boundaries); Wesson et al. 2024, MNRAS (arXiv:2308.09027, CC BY 4.0): \"some 20 000 dense globules\" of about 0.2″"
+    drawn: "a seeded sample (model): the count and the size are measured, each knot's place is not, and the 300 AU tail is an illustration. Under 2.2 px a knot is drawn 2.2 px wide and its darkness EXAGGERATED (it falls as one over the square root of the enlargement, not as one over its area), so that they can be seen at mid distance"
+    source: "O'Dell, Ferland, Henney & Peimbert 2013, AJ 145, 92, sections II.2 and the summary (about 0.2″, 150 AU, near the current ionisation boundaries); Wesson et al. 2024, MNRAS (arXiv:2308.09027, CC BY 4.0): \"some 20 000 dense globules\" of about 0.2″"
 colours:
   mode: enhanced
   lines: {Ha: "#f08a50", star: "#c9d8ff"}

@@ -55,6 +55,7 @@ on:
       - "scripts/minify_site.py"
       # The UI gate and the trips walk (internal #374 and #123): each runs when what it reads changes.
       - "scripts/check-ui.mjs"
+      - "scripts/check-phone-menu.mjs"
       - "tests/probes/ui_probe.js"
       - "tests/probes/ui_probe.known.json"
       - "scripts/check-trips.mjs"
@@ -289,12 +290,29 @@ jobs:
             bash -c 'set -euo pipefail
               npm install --no-save --no-audit --no-fund playwright@1.49.1
               node scripts/check-ui.mjs --base=http://127.0.0.1:8177 --out=.ci-screens/ui.json'
+      # Public #1322, after #1319: the breadcrumbs of a deep scene and the More button, at 320 and 390 px.
+      # The gate above measures one planet's card at 390 and no trail; this opens three deep scenes (a moon,
+      # a landing site, a long name) with a trail behind them, and presses the button.
+      - name: The phone's menu opens and closes with a deep scene's breadcrumbs up, at 320 and 390 px
+        run: |
+          set -euo pipefail
+          mkdir -p .ci-screens
+          docker run --rm --network host \
+            -u "$(id -u):$(id -g)" -e HOME=/tmp \
+            -e PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+            -v "$PWD:/work" -w /work \
+            mcr.microsoft.com/playwright:v1.49.1-jammy \
+            bash -c 'set -euo pipefail
+              npm install --no-save --no-audit --no-fund playwright@1.49.1
+              node scripts/check-phone-menu.mjs --base=http://127.0.0.1:8177 --out=.ci-screens/phone-menu.json'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: ui-gate
           include-hidden-files: true
-          path: .ci-screens/ui.json
+          path: |
+            .ci-screens/ui.json
+            .ci-screens/phone-menu.json
           if-no-files-found: warn
 
   # THE TRIPS WALK (internal #123, spec 0044 task 3). Every stop of every trip, as a desktop and as a

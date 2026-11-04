@@ -290,6 +290,11 @@ jobs:
       # the teachers' page and the events; the pictures; deploy.sh shipping every directory.
       - name: "The question pages, the 40 star systems, /sources/ equal to the registry, /teachers/ with the app's own parameters, /events/, the share pictures, deploy.sh"
         run: python3 tests/test_seo_pages.py
+      # Public #1271: the trip pages carry the trip's own words, which only helps search if each trip is its own URL in
+      # sitemap.xml. The trips of registry/tours.yaml are diffed against the sitemap both ways (check_seo.py only sees
+      # the pages that exist), and each page has an H1 and a description of its own.
+      - name: "Every trip is its own URL in sitemap.xml, once, with a page of its own words"
+        run: python3 tests/test_sitemap_trips.py
       # The long reads (registry/articles.yaml, registry/articles/*.md): built, in the sitemap, 600 to 1 000 words, a "Measured" heading,
       # a link into the map, every picture with alt text and a caption and under 300 kB, nothing unused.
       - name: "The long reads: /read/ and each article built, in the sitemap, every picture with alt text, a caption and under 300 kB"
@@ -348,6 +353,10 @@ jobs:
       # line number into the command). This holds it to failing on a failed or unrun check.
       - name: "scripts/check.sh exits non-zero on a failed or unrun check, and never says PASS after a FAIL"
         run: python3 tests/test_check_harness.py
+      # Public #1234: #1217 made the star-system cards say AU and the sentence under an object, the SEO pages,
+      # the sample and deep-sky cards and the Lab still said au. This holds every file a visitor reads to AU.
+      - name: "The astronomical unit is written AU wherever a visitor reads a distance"
+        run: python3 tests/test_au_spelling.py
       # Growth: what a search engine reads beyond the object pages. The structured data is parsed back
       # out of the pages (and each validator is shown to refuse a broken one); the footer, the
       # sitemap's own lastmod per page and the IndexNow key and ping are held; the /embed/ generator
@@ -397,6 +406,11 @@ jobs:
       # place of a missing one, the browser's own copy last; and the same for clouds, lightning and aurora.
       - name: The read order is our copy, then the publisher, then the browser's copy
         run: node tests/test_read_order.mjs
+      # Public #1304: the hourly copy is never replaced by nothing. A request that never answers, an empty
+      # answer, a cut-off one and a page that is not data, from the publisher and from our own file, each
+      # leave the copy held as it was, at its own time, marked old with a reason.
+      - name: A failed read keeps the last good data, with its own time
+        run: node tests/test_cache_keeps_last_good.mjs
       - name: The clouds, the lightning and the aurora read our copy first too
         run: node tests/test_saved_pictures.mjs
       # 0078 r14-data: end
@@ -1000,6 +1014,10 @@ jobs:
       # measures a control cut by the fold by its box, the walk reads both budget rows at every stop.
       - name: "The UI gate's known findings, the probe's three fixes, and the trips walk's wiring"
         run: node tests/test_ui_gate.mjs
+      # Public #1322: the half of the phone menu check that node holds (screens.yml `ui` runs it in a browser at
+      # 320 and 390 px): each rule fails on a broken measurement, and the check cannot pass having looked at nothing.
+      - name: "The phone menu check: each rule fails on a broken measurement, and the real run is clean"
+        run: node tests/test_phone_menu_gate.mjs
       # Spec 0049 task 1 (public #285): 1 000 element sets through propagate/worker.js in a real worker
       # thread, every number compared with the in-thread path by Object.is; the pool's one question
       # in flight; the fallback when there is no Worker.

@@ -18,12 +18,12 @@ function groups(n) {
   return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
 
-/** "2.31 au (346 million km)" for a planet or the Sun, "384 000 km" for the Moon: two to three figures, as the data allows. */
+/** "2.31 AU (346 million km)" for a planet or the Sun, "384 000 km" for the Moon: two to three figures, as the data allows. */
 export function distanceWords(body, au) {
   const km = au * KM_PER_AU;
   if (body === 'Moon') return `${groups(Math.round(km / 1000) * 1000)} km`;
   const million = km / 1e6;
-  return `${au >= 10 ? au.toFixed(1) : au.toFixed(2)} au (${million >= 100 ? Math.round(million) : million.toFixed(1)} million km)`;
+  return `${au >= 10 ? au.toFixed(1) : au.toFixed(2)} AU (${million >= 100 ? Math.round(million) : million.toFixed(1)} million km)`;
 }
 
 /**
