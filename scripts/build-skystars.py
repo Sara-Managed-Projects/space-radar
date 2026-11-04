@@ -75,7 +75,7 @@ def pack(rows: list[tuple[float, float, float, float | None]]) -> bytes:
 def build() -> dict[Path, bytes]:
     data = SRC.read_bytes()
     if data[:4] != b"SR3D":
-        raise SystemExit("stars3d.bin: not the file this was written for")
+        raise SystemExit(f"{SRC.relative_to(ROOT)} starts with {data[:4]!r} (expected b'SR3D'); rebuild it with python3 scripts/build-stars3d.py <hyg csv>")
     count = struct.unpack_from("<I", data, 8)[0]
     naked = array.array("f")
     naked.frombytes(NAKED.read_bytes())
@@ -99,7 +99,20 @@ def build() -> dict[Path, bytes]:
     return {OUT1: pack(tier1), OUT2: pack(tier2), OUT_NAMES: names_text.encode("utf-8")}
 
 
+USAGE = """usage: python3 scripts/build-skystars.py [--check]
+  Repacks site/data/stars3d.bin into site/data/skystars-1.bin, skystars-2.bin and skystars.names.json.
+  --check  write nothing; exit 1 if they are not what this script writes"""
+
+
 def main() -> int:
+    argv = sys.argv[1:]
+    if "--help" in argv or "-h" in argv:
+        print(USAGE)
+        return 0
+    unknown = [a for a in argv if a != "--check"]
+    if unknown:
+        print(f"unknown option: {unknown[0]}\n{USAGE}", file=sys.stderr)
+        return 2
     files = build()
     if "--check" in sys.argv:
         bad = [str(p.relative_to(ROOT)) for p, b in files.items() if not p.exists() or p.read_bytes() != b]

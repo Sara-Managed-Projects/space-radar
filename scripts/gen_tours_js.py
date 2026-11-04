@@ -417,4 +417,4 @@ WORDS = Mirror(
 
 if __name__ == "__main__":
     # All three mirrors, and --check fails if any is stale.
-    sys.exit(max(MIRROR.main(sys.argv[1:]), INDEX.main(sys.argv[1:]), WORDS.main(sys.argv[1:])))
+    sys.exit(max(MIRROR.main(), INDEX.main(), WORDS.main()))

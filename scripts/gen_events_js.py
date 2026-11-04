@@ -53,4 +53,4 @@ HEADER = """// GENERATED from registry/events.yaml by scripts/gen_events_js.py. 
 MIRROR = Mirror(source="registry/events.yaml", target="site/js/data/events.registry.js", header=HEADER, render=render, what="events.registry.js")
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

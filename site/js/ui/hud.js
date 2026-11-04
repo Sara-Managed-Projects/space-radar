@@ -49,7 +49,6 @@ export const LEADER_PX = 24;
 export const EDGE_PX = 8;
 // Req 6: a 20 px tick, hidden under 2 px of projected motion per clock second (a GEO satellite seen
 // from the Earth's side, a planet): below that the direction is noise, and it would jitter.
-export const TICK_PX = 20;
 export const TICK_FLOOR_PX_S = 2;
 // Req 7: the chevron sits 16 px inside the nearest edge.
 export const CHEVRON_INSET_PX = 16;

@@ -41,4 +41,4 @@ HEADER = """// GENERATED from registry/autopilot.yaml by scripts/gen_autopilot_j
 MIRROR = Mirror(source="registry/autopilot.yaml", target="site/js/data/autopilot.js", header=HEADER, render=render, what="autopilot.js")
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

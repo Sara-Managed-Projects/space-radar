@@ -740,8 +740,6 @@ export const COPY = {
     couldNotLook: "No se pudo calcular",
     nobodyKnows: "Nadie lo sabe",
     wouldNeed: "Haría falta {wouldNeed}.",
-    oftenSaidLabel: "Se dice a menudo",
-    notApplicable: "Algo que este objeto no tiene",
     endedLine: "Su misión terminó el {date}. Sus hitos, más abajo, te llevan de vuelta a ella.",
     pathEndedLine: "La trayectoria que guarda el JPL termina el {date}. Sus hitos, más abajo, te llevan de vuelta a ella.",
     pathBeginsLine: "La trayectoria que guarda el JPL empieza el {date}. Sus hitos, más abajo, te llevan de vuelta a ella.",
@@ -2629,7 +2627,6 @@ export const COPY = {
         astronomical: "último crepúsculo",
         night: "noche"
       },
-      timeNoNight: "Esta noche no oscurece aquí.",
       timeFar: "Sin satélites tan lejos de hoy: sus órbitas caducan.",
       eyepiece: "Ocular",
       eyepieces: {

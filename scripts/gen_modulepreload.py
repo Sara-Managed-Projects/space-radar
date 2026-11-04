@@ -72,7 +72,20 @@ def render(html: str) -> str:
     return html.replace("</head>", new + "\n</head>", 1)
 
 
+USAGE = """usage: python3 scripts/gen_modulepreload.py [--check]
+  Rewrites the modulepreload block of site/index.html.
+  --check  write nothing; exit 1 if the block is stale"""
+
+
 def main() -> int:
+    argv = sys.argv[1:]
+    if "--help" in argv or "-h" in argv:
+        print(USAGE)
+        return 0
+    unknown = [a for a in argv if a != "--check"]
+    if unknown:
+        print(f"unknown option: {unknown[0]}\n{USAGE}", file=sys.stderr)
+        return 2
     html = HTML.read_text(encoding="utf-8")
     out = render(html)
     n = out.count('rel="modulepreload"')

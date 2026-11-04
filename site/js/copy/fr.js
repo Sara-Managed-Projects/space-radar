@@ -864,8 +864,6 @@ export const COPY = {
     "couldNotLook": "Calcul impossible",
     "nobodyKnows": "Personne ne le sait",
     "wouldNeed": "Il faudrait {wouldNeed}.",
-    "oftenSaidLabel": "On dit souvent",
-    "notApplicable": "Cet objet n’en a pas",
     "endedLine": "Sa mission s’est terminée le {date}. Ses événements, plus bas, y remontent.",
     "pathEndedLine": "La trajectoire de cet objet que JPL conserve s’arrête le {date}. Ses événements, plus bas, y remontent.",
     "pathBeginsLine": "La trajectoire de cet objet que JPL conserve commence le {date}. Ses événements, plus bas, y remontent.",
@@ -2785,7 +2783,6 @@ export const COPY = {
         "astronomical": "dernier crépuscule",
         "night": "nuit"
       },
-      "timeNoNight": "Il ne fait pas nuit noire ici ce soir.",
       "timeFar": "Pas de satellites si loin d’aujourd’hui : orbites périmées.",
       "eyepiece": "Oculaire",
       "eyepieces": {

@@ -97,16 +97,6 @@ export function worldPositionKm(worldId, tMs, frame = 'sun-inertial') {
   return { x: helio.x - origin.x, y: helio.y - origin.y, z: helio.z - origin.z };
 }
 
-/** Sun -> world unit vector in the world's own inertial frame; what the lighting needs. */
-export function sunDirection(worldId, tMs, frame) {
-  const f = frame || `${String(worldId || 'earth').toLowerCase()}-inertial`;
-  const p = worldPositionKm('sun', tMs, f);
-  if (!p) return null;
-  const r = Math.hypot(p.x, p.y, p.z);
-  if (!(r > 0)) return null;
-  return { x: p.x / r, y: p.y / r, z: p.z / r };
-}
-
 /** propagate signature: (record, tMs) -> {x, y, z, frame, cls} | null. */
 export function body(record, tMs) {
   const name = nameOf(record);

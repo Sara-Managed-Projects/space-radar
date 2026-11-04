@@ -36,4 +36,4 @@ HEADER = """// GENERATED from registry/colorkeys.yaml by scripts/gen_colorkeys_j
 MIRROR = Mirror(source="registry/colorkeys.yaml", target="site/js/data/colorkeys.js", header=HEADER, render=render, what="colorkeys.js")
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

@@ -34,4 +34,4 @@ HEADER = """// GENERATED from registry/ladder.yaml by scripts/gen_ladder_js.py. 
 MIRROR = Mirror(source="registry/ladder.yaml", target="site/js/data/ladder.js", header=HEADER, render=render, what="ladder.js")
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

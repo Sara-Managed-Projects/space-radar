@@ -41,4 +41,4 @@ HEADER = """// GENERATED from registry/missions.yaml by scripts/gen_missions_js.
 MIRROR = Mirror(source="registry/missions.yaml", target="site/js/data/missions.js", header=HEADER, render=render, what="missions.js")
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

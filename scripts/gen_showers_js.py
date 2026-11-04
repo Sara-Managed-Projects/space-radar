@@ -33,4 +33,4 @@ HEADER = """// GENERATED from registry/showers.yaml by scripts/gen_showers_js.py
 MIRROR = Mirror(source="registry/showers.yaml", target="site/js/data/showers.js", header=HEADER, render=render, what="showers.js")
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

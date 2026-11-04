@@ -48,4 +48,4 @@ MIRROR = Mirror(
 )
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

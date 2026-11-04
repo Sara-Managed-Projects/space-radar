@@ -45,4 +45,4 @@ HEADER = """// GENERATED from registry/weather.yaml by scripts/gen_weather_js.py
 MIRROR = Mirror(source="registry/weather.yaml", target="site/js/data/weather.js", header=HEADER, render=render, what="weather.js")
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

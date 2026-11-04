@@ -47,4 +47,4 @@ HEADER = """// GENERATED from registry/visual-classes.yaml and the registries it
 
 if __name__ == "__main__":
     sys.exit(Mirror(source="registry/visual-classes.yaml", target="site/js/data/visualclasses.js",
-                    header=HEADER, render=render, what="visualclasses.js", indent=0).main(sys.argv[1:]))
+                    header=HEADER, render=render, what="visualclasses.js", indent=0).main())

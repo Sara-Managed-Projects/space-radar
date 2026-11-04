@@ -74,4 +74,4 @@ HEADER = """// GENERATED from registry/exotics.yaml by scripts/gen_exotics_js.py
 MIRROR = Mirror(source="registry/exotics.yaml", target="site/js/data/exotics.js", header=HEADER, render=render, what="exotics.js")
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

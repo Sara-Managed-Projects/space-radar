@@ -214,7 +214,7 @@ for (const node of jobs) {
     }
   }
 }
-if (!raw.length) { console.error('no triangles in that file'); process.exit(1); }
+if (!raw.length) { console.error(`no triangles in ${IN}: it has no mesh with triangle primitives, or --skip left out every mesh with them (${skippedNodes} nodes skipped), or every material is nearly transparent`); process.exit(1); }
 let cropped = 0;
 if (CROP > 0) {
   const cross = (a, b, c) => { const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2], vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2]; return [uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx]; };

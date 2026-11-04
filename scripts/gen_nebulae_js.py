@@ -47,4 +47,4 @@ HEADER = """// GENERATED from registry/nebulae.yaml by scripts/gen_nebulae_js.py
 MIRROR = Mirror(source="registry/nebulae.yaml", target="site/js/data/nebulae.js", header=HEADER, render=render, what="nebulae.js")
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

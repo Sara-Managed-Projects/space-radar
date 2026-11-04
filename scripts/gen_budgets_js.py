@@ -31,4 +31,4 @@ HEADER = """// GENERATED from registry/budgets.yaml by scripts/gen_budgets_js.py
 MIRROR = Mirror(source="registry/budgets.yaml", target="site/js/data/budgets.js", header=HEADER, render=render, what="budgets.js")
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

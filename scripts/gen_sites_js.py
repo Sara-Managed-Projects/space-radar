@@ -74,6 +74,6 @@ TRAVERSES_MIRROR = Mirror(source="registry/sites.yaml", target="site/js/data/tra
                           render=render_traverses, what="traverses.js", indent=1)
 
 if __name__ == "__main__":
-    a = MIRROR.main(sys.argv[1:])
-    b = TRAVERSES_MIRROR.main(sys.argv[1:])
+    a = MIRROR.main()
+    b = TRAVERSES_MIRROR.main()
     sys.exit(a or b)

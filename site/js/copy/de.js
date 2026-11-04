@@ -860,8 +860,6 @@ export const COPY = {
     "couldNotLook": "Ließ sich nicht berechnen",
     "nobodyKnows": "Das weiß niemand",
     "wouldNeed": "Es würde {wouldNeed} dauern.",
-    "oftenSaidLabel": "Oft gesagt",
-    "notApplicable": "Nichts, was dieses Objekt hat",
     "endedLine": "Seine Mission endete am {date}. Seine Ereignisse unten führen dorthin zurück.",
     "pathEndedLine": "Der Weg, den das JPL für es hat, endet am {date}. Seine Ereignisse unten führen dorthin zurück.",
     "pathBeginsLine": "Der Weg, den das JPL für es hat, beginnt am {date}. Seine Ereignisse unten führen dorthin zurück.",
@@ -2781,7 +2779,6 @@ export const COPY = {
         "astronomical": "letzte Dämmerung",
         "night": "Nacht"
       },
-      "timeNoNight": "Hier wird es heute Nacht nicht dunkel.",
       "timeFar": "Keine Satelliten so weit von heute: Ihre Bahnen veralten.",
       "eyepiece": "Okular",
       "eyepieces": {
