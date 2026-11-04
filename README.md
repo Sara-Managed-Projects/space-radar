@@ -57,7 +57,8 @@ museum, and a [zip that runs offline](docs/RUN_LOCALLY.md).
 [Instagram](https://www.instagram.com/spaceradar.ai/) ·
 [LinkedIn](https://www.linkedin.com/company/spaceradar-ai) ·
 [Discussions](https://github.com/Sara-Managed-Projects/space-radar/discussions) ·
-[Roadmap](ROADMAP.md)
+[Roadmap](ROADMAP.md) ·
+[FAQ](docs/FAQ.md)
 
 ## You can help without writing code
 

@@ -215,6 +215,12 @@ export function orderFor(fovDeg, heightPx, tileWidth = 512, minOrder = 0, maxOrd
   return k;
 }
 
+/**
+ * The address of one HiPS tile: `<base>/Norder<order>/Dir<n>/Npix<npix>.<ext>`, where `Dir` is `npix`
+ * rounded down to a multiple of 10 000. A trailing slash on `base` is ignored; `ext` defaults to
+ * `jpg`: `tileUrl('https://example.org/hips/', 3, 12345)` is
+ * `'https://example.org/hips/Norder3/Dir10000/Npix12345.jpg'`.
+ */
 export function tileUrl(base, order, npix, ext = 'jpg') {
   return `${String(base).replace(/\/$/, '')}/Norder${order}/Dir${Math.floor(npix / 10000) * 10000}/Npix${npix}.${ext}`;
 }

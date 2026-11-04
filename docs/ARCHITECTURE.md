@@ -39,8 +39,11 @@ layer that is off by default loads with a dynamic `import()` when it is switched
 first visit has a byte budget (`registry/budgets.yaml`, held by
 `tests/test_first_visit_bytes.mjs`).
 
-`tests/test_contract.mjs` is the module contract: it lists every module and the names it must
-export, and fails when two modules disagree.
+`tests/test_contract.mjs` is the module contract: it lists the modules whose exported names other
+modules rely on, and fails when a listed module stops exporting one of them. Apart from that list,
+it also checks every relative import in `site/js` against the exports of the file it points at,
+and fails when two modules disagree. A new module need not be added to the list: its imports are
+checked anyway, and it is added only when a name it exports should never go missing.
 
 ## Registry to screen
 

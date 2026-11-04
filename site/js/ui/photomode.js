@@ -4,7 +4,7 @@
 // it always did; photo mode is one press further in, and takes no key of its own.
 //
 // Contract: openPhotoMode(ctx, { record, opener }) -> { close(), state() }   (one at a time)
-// Also exported, pure, for tests/test_photomode.mjs:
+// Also exported, pure, for tests/test_embed.mjs:
 //   SHAPES                               the four presets, in the order the bar shows them
 //   frameRect(viewW, viewH, shape, margin) -> { x, y, w, h, fovScale }
 //   LENS, clampLens(deg, own)            the lens slider's range, and a value held inside it

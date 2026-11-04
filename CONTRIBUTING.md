@@ -253,6 +253,7 @@ scripts/test.sh --quick main    # ...changed since main, not since your last com
 scripts/test.sh contract        # only items whose name contains "contract"
 scripts/test.sh --list          # what there is
 node tests/test_contract.mjs    # or run one file directly
+python3 tests/test_credits.py   # ...and one Python file the same way
 ```
 
 The tests are plain scripts: no framework, no install. Each prints what it checked. A check that

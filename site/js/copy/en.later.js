@@ -298,7 +298,7 @@ Object.assign(COPY, {
     kinds: {
       sun: 'Star', planet: 'Planet', moon: 'Moon', station: 'Space station', satellite: 'Satellite', telescope: 'Space telescope',
       probe: 'Spacecraft', rocket: 'Rocket', launch: 'Launch', debris: 'Debris', asteroid: 'Asteroid', comet: 'Comet', site: 'Place', landing: 'Landing site',
-      star: 'Star', exoplanet: 'Planet of another star', dso: 'Deep-sky object', storm: 'Tropical storm', oddity: 'Oddity',
+      star: 'Star', exoplanet: 'Planet of another star', dso: 'Deep-sky object', storm: 'Tropical cyclone', oddity: 'Oddity',
       earthevent: 'Event on Earth',
       blackhole: 'Black hole', pulsar: 'Pulsar', magnetar: 'Magnetar',
       quasar: 'Quasar', // 0076 W4-b

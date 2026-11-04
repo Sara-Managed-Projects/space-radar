@@ -122,6 +122,26 @@ tagged, and their dates are the day the last change in each landed.
   now passed in tests/test_radiants.mjs and tests/test_groundtrack.mjs; `with_params` and `expand_url` (harvest) are in tests/test_harvest.py, `ledger_key_shower` (notify) in
   tests/test_notify.py. No behaviour changes. One finding: `equatorialToEcliptic` takes its obliquity from astronomy-engine's matrix, about 2e-7 in a sine away from the 23.4392911 degrees
   the issue quotes, so its test compares the tilted axes to 1e-6.
+## [1.7.12] - 2026-11-04
+
+### Changed
+
+- **Comments and guides now point at things that exist.** No behaviour changes, except the one search word below. Comments that named a test that was never there now name the one that
+  holds the code (`ui/camundo.js`, `ui/photomode.js`, `sky/skybodies.js`, `scripts/minify_site.py`, `scripts/seo_dates.py`; public #708, #716, #732, #739, #746); `registry/sky-events.yaml`
+  names `scripts/seo_facts.mjs`, the script that does the work (public #607); `registry/showers.yaml` points at `notify/` (public #753); five comments no longer point at
+  `docs/data-sources.md` and `scene/wind.js` at `docs/inspirations.md`, which are not in the repository (public #652, #766); the landing-sites check and `registry/sites.yaml` no longer count the
+  uncited rows (public #606); `docs/ARCHITECTURE.md` says what the module contract covers (public #653).
+- **Search calls a storm what its card calls it.** The kind on a storm's row in search is "Tropical cyclone", not "Tropical storm" (public #682).
+- **JSDoc on nine small functions**: `clipKey`, `plural`, `saffirSimpson`, `shouldSaveData`, `dirOf`, `angleBetween`, `tileUrl`, `seedOf` and `phaseRayleigh`, each with an example that was run
+  (public #706, #714, #722, #730, #737, #744, #751, #762, #774).
+
+### Added
+
+- **`docs/FAQ.md`**: three answers, each checked against the app. Live or a snapshot (the time the elements were issued against the time the position is computed for, with the
+  station as the worked case, read from CelesTrak on the day); how to leave a trip (Escape or Leave); why distances and sizes are not to scale (public #1013, #1015, #1017).
+- **`docs/RUN_LOCALLY.md`** shows what "Address already in use" prints, from a real run, and what to do (public #1014).
+- **`tools/README.md`** has the "How long it takes" section of the trip-video guide, and one command each for `cdp.mjs` and `sheet-png.mjs`; **`CONTRIBUTING.md`** shows how to run one Python
+  test (public #609, #711, #719, #727).
 
 ## [1.7.7] - 2026-11-03
 

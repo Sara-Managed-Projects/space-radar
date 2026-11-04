@@ -1,7 +1,7 @@
 // ui/camundo.js -- "the view moved, and here is the way back" (internal #274).
 //
 // Contract: offerUndo(ctx, { name, undo, ms }) -> the toast's node, or null
-// Also exported, pure, for tests/test_camundo.mjs:
+// Also exported, pure, for tests/test_today.mjs:
 //   undoWords(name) -> the toast's line;  sameView(a, b) -> whether an undo would change anything
 //
 // WHY. Choosing a search result, a row of Coming up, a tab, a mark on the timeline or an event of a

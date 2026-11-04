@@ -21,6 +21,24 @@ Things run by hand on a laptop. CI does not run them; each file's head comment s
 <!-- 0079 c2: end -->
 | `look-playwright.mjs`, `look-summary.mjs` | the look workflow's Firefox and WebKit runner, and its summary and verdict (below) |
 
+Two of these in one command each. `cdp.mjs` runs a script inside a page: its `return` value is
+printed as JSON, and `--shot` writes a PNG of the page after the script has run (a header lists
+the other flags). It needs a real Chrome on the machine.
+
+```sh
+python3 tools/serve.py site 8177 &
+node tools/cdp.mjs http://127.0.0.1:8177/ tests/probes/boot-timeline.js --shot=out.png
+```
+
+`sheet-png.mjs` writes a PNG of a contact sheet's WebGL buffer (no screenshot is involved). The
+server must serve the repository root, not `site/`, because the sheet lives in `tools/`. It needs a
+real Chrome too.
+
+```sh
+python3 tools/serve.py . 8190 &
+node tools/sheet-png.mjs 'http://127.0.0.1:8190/tools/shape-sheet.html?m=telescope:gaia' out.png
+```
+
 ## The regression walk
 
 `node tools/walk.mjs --dir=<tree>` walks the product the way a visitor does, in a real headless
@@ -340,7 +358,13 @@ the same sky. A killed run can leave a headless Chrome and `serve.py` behind: `p
 
 ### How long it takes
 
-TIMING_PLACEHOLDER
+The time is the number of frames times the seconds each takes. The cue sheet (`<trip>.json`) holds
+both: `frames` and `secondsPerFrame`, and `renderSeconds`, the total, which the renderer also logs
+when it ends. `--fps=60` doubles the frames, so it doubles the time. Software rendering
+(`--gl=swiftshader`, and any machine without a GPU) takes many times longer per frame than a GPU,
+as the walk's section above says of itself, so render on a machine with one, and try `--stops=2`
+first to measure `secondsPerFrame` before committing to the whole trip. This guide has no measured
+example yet: run one trip with the GPU and add its three numbers and the machine.
 
 ### Uploading to YouTube (by hand)
 

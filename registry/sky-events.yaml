@@ -7,7 +7,7 @@
 # WHAT IS TYPED AND WHAT IS COMPUTED. A row types only what is a fact of a calendar or of an agency:
 # which shower and year, which body, which eclipse, a mission's date with the page that says it. Every
 # instant, phase, elongation and path that astronomy can work out is COMPUTED when the page is built
-# (scripts/sky_events.mjs, Astronomy Engine in site/vendor/, the library the map itself uses), and
+# (scripts/seo_facts.mjs, Astronomy Engine in site/vendor/, the library the map itself uses), and
 # tests/test_sky_events.mjs recomputes each row and fails if a typed date has moved off the computed
 # one by more than a day. `checked_on` is the day that was last done by a person reading the output.
 # The moon is asked at `moon_at`, an instant we choose to stand for the night (UT midnight of the
@@ -34,7 +34,7 @@
 #   sources    [{words, url, read}] where `read` is the day the page was opened
 version: 1
 checked_on: 2026-10-09
-checked_with: "Astronomy Engine (site/vendor/astronomy.js), run by scripts/sky_events.mjs"
+checked_with: "Astronomy Engine (site/vendor/astronomy.js), run by scripts/seo_facts.mjs"
 
 events:
   - id: leonids-2026

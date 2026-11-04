@@ -10,9 +10,9 @@
 #                 it never fails the run for the free sources.
 # browser         true when the host answers a page with `Access-Control-Allow-Origin: *`, so
 #                 the app may read it directly when our snapshot is missing; false when it
-#                 cannot (no CORS header, or a login). MEASURED 2026-09-06 -- the CORS column
-#                 of docs/data-sources.md -- never assumed. For a `false` row the snapshot is
-#                 the only route and the app says "could not look" rather than inventing.
+#                 cannot (no CORS header, or a login). MEASURED 2026-09-06 -- each row's own
+#                 `browser:` value is that measurement -- never assumed. For a `false` row the
+#                 snapshot is the only route and the app says "could not look" rather than inventing.
 # licence         the publisher's terms in one honest line, as CREDITS.md section 4 records them
 #                 ("no licence stated" is an answer; a licence nobody wrote down is not).
 # terms_url       the page that states them (https), or the publisher's home where it has none.
