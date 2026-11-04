@@ -11,6 +11,34 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [1.7.18] - 2026-11-04
+
+### Added
+
+- **The boot timeline is also run as a phone.** The CI screenshots job (`screens.yml`) already wrote `boot-timeline.json` for a desktop window; it
+  now boots the same tree a second time at 390 by 844 with touch (`scripts/boot-timeline.mjs --mobile`) and uploads `boot-timeline-phone.json` beside
+  it: first paint, the main module, layers ready, every long task and the total blocking time. It still only reports; the two budget rows are not
+  gated until someone has read the first runner numbers. (internal #528)
+- **Tests that hold the stars' order.** `tests/test_star_magnitude.mjs` holds, on the real `stars3d.bin` and the real functions, that a brighter
+  nearby star is never drawn smaller or fainter (the sky's curve and the 3D draw's, whose arithmetic it pins), that the catalogue's apparent
+  magnitude agrees with its absolute magnitude and distance for the 921 drawn stars within 100 ly, that on the stellar rung doubling the
+  distance costs 5 log10 2 magnitudes, that the Eye, Camera and Deep exposures only ever let more stars through, and that a cooler star
+  (higher B-V) is never bluer in the colour its sprite is given. `magToSize` and `magToAlpha` in `scene/starfield.js` are exported for it; nothing
+  else about them changed. (internal #818)
+- **A reduced-motion regression for the deep sky.** `tests/test_deep_reduced_motion.mjs` runs the real deep-sky coordinator with the real Helix
+  hero and an LMC holder for ten simulated minutes: with the preference off the gas's time uniform moves (the control), with it on it stays at 0.
+  It also fails if a file in `scene/deep/` gains a time uniform without reading `reduced`, and holds that the camera rig's constant drift refuses
+  with 'reduced-motion' and leaves the camera where it was. (internal #836)
+- **A gate on drawing the cosmic web.** `tests/test_cosmic_web_gate.mjs` holds that, while nothing draws it, the class says so and credits no
+  survey; and that the day a renderer is listed under COSMIC_WEB the class note must say what DESI DR1 is and is not (its licence, the part of the
+  sky it covers as a footprint, that the rest was not observed), name the observed and the simulated styles apart with a legend, and that
+  `CREDITS.md` carries the survey. (internal #826, #828)
+
+### Not yet
+
+- **No DESI wedge and no simulated filaments are drawn.** The gate above is the check; the data, the renderer and the looks at 1600 and 390 are
+  still to build, so internal #826 and #828 stay open.
+
 ## [1.7.8] - 2026-11-03
 
 ### Added

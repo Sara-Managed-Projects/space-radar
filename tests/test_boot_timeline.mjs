@@ -35,6 +35,8 @@ check(/buffered:\s*true/.test(body), 'long tasks are read buffered, so a late ob
 
 const screens = readFileSync(join(ROOT, '.github/workflows/screens.yml'), 'utf8');
 check(/scripts\/boot-timeline\.mjs --base=http:\/\/127\.0\.0\.1:8178/.test(screens), 'screens.yml runs the timeline on the tree a deploy uploads');
+check(/boot-timeline\.mjs --base=http:\/\/127\.0\.0\.1:8178 --mobile --out=\.ci-screens\/boot-timeline-phone\.json/.test(screens), 'and once more as a phone (390 by 844), written beside the desktop one');
+check(/\.ci-screens\/boot-timeline-phone\.json\n\s+if-no-files-found/.test(screens), 'the phone timeline is uploaded with the other shots');
 check(!/boot-timeline\.mjs[^\n]*--gate/.test(screens), 'and only reports: the gate is switched on by someone who has seen the first numbers');
 
 if (problems.length) { console.error('boot timeline FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
