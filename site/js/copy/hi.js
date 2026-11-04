@@ -4079,6 +4079,7 @@ export const COPY = {
     "cutNote": "चरण अभी एक ही मॉडल से काटे गए हैं।",
     "drawnNote": "लपटें और भाप बनाई गई हैं।",
     "groundNote": "लॉन्च पैड के पास की ज़मीन सांकेतिक; पृथ्वी का नक्शा Solar System Scope, CC BY 4.0।",
+    "groundNoteMars": "Ground near the site illustrative; Mars map Solar System Scope, CC BY 4.0.",
     "keys": "Space चलाता या रोकता है, तीर कदम बढ़ाते हैं, Escape बंद करता है"
   },
   "momentShelf": {
@@ -4131,6 +4132,16 @@ export const COPY = {
         "title": "स्पुतनिक 1",
         "when": "4 अक्टूबर 1957",
         "blurb": "बैकोनूर से पृथ्वी के पहले चक्कर तक: पहला कृत्रिम उपग्रह, 585 मिमी का चमकाया हुआ गोला, और उसकी बीप।"
+      },
+      "curiosity-edl": {
+        "title": "Curiosity landing",
+        "when": "6 August 2012",
+        "blurb": "The seven minutes from the top of the Martian air to Gale crater: the heat shield, the parachute, the rocket backpack and the sky crane, on JPL's own clock."
+      },
+      "new-horizons-pluto": {
+        "title": "New Horizons at Pluto",
+        "when": "14 July 2015",
+        "blurb": "The first visit to Pluto: from six hours out to the pass at 13.8 km/s on JPL's own track, Pluto and Charon as discs, the crescent left behind."
       },
       "vostok-1": {
         "title": "Vostok 1",

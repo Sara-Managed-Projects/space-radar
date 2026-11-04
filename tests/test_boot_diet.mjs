@@ -201,6 +201,7 @@ const DEFERRED = {
   'js/moments/player.js': 'the Moment player, a mission replayed: main.js fetches it for `#moment=`',
   'js/moments/format.js': 'a moment\'s clock and its validator: with the player',
   'js/moments/trajectory.js': 'a moment\'s paths: with the player',
+  'js/moments/world.js': 'another world\'s axes, turn and Sun for a moment on Mars: with the player',
   'js/moments/director.js': 'a moment\'s camera: with the player',
   'js/moments/stage.js': 'a moment\'s sky, Earth and ground: with the player',
   'js/moments/vehicles.js': 'a moment\'s vehicles and their parts: with the player',

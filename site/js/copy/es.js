@@ -3695,6 +3695,7 @@ Object.assign(COPY, {
     "cutNote": "Por ahora, las etapas se recortan de un único modelo.",
     "drawnNote": "Las llamas y el vapor son dibujados.",
     "groundNote": "El suelo junto a la plataforma es ilustrativo; mapa de la Tierra de Solar System Scope, CC BY 4.0.",
+    "groundNoteMars": "El suelo junto al sitio es ilustrativo; mapa de Marte de Solar System Scope, CC BY 4.0.",
     "keys": "Espacio reproduce o pausa, las flechas avanzan, Escape cierra"
   },
   "momentShelf": {
@@ -3736,6 +3737,16 @@ Object.assign(COPY, {
         "title": "STS-1",
         "when": "del 12 al 14 de abril de 1981",
         "blurb": "El primer transbordador espacial: el Columbia desde la plataforma 39A, los cohetes y el tanque, 54 horas en órbita y un planeo hasta el lecho seco de Edwards."
+      },
+      "curiosity-edl": {
+        "title": "Aterrizaje de Curiosity",
+        "when": "6 de agosto de 2012",
+        "blurb": "Los siete minutos desde lo alto del aire marciano hasta el cráter Gale: el escudo térmico, el paracaídas, la mochila cohete y la grúa celeste, con el reloj del JPL."
+      },
+      "new-horizons-pluto": {
+        "title": "New Horizons en Plutón",
+        "when": "14 de julio de 2015",
+        "blurb": "La primera visita a Plutón: de seis horas antes al paso a 13,8 km/s, por la trayectoria del propio JPL, Plutón y Caronte como discos, la media luna que queda atrás."
       },
       "hubble-deployment": {
         "title": "La suelta del Hubble",

@@ -291,6 +291,9 @@ assert.equal(colourRoute(root([])), 'class', 'a model with no materials keeps th
     'leonov-eva.glb': /NOTHING YET/,
     'shuttle-sts-stack.glb': /NOTHING YET/,
     'shuttle-orbiter.glb': /NOTHING YET/,
+    // 1.7.9: the models of the Curiosity Moment, loaded by id by site/js/moments/
+    'msl-entry.glb': /NOTHING YET/,
+    'msl-descent-stage.glb': /NOTHING YET/,
     // 1.7.7: the models of the Hubble deployment Moment, loaded by id by site/js/moments/
     'hubble-sts31.glb': /NOTHING YET/,
     'shuttle-rms.glb': /NOTHING YET/,

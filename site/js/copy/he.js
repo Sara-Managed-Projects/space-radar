@@ -4085,6 +4085,7 @@ export const COPY = {
     "cutNote": "שלבים נחתכו ממודל אחד בינתיים.",
     "drawnNote": "להבות ואדים מצוירים.",
     "groundNote": "הקרקע ליד המשטח להמחשה; מפת כדור הארץ Solar System Scope, CC BY 4.0.",
+    "groundNoteMars": "Ground near the site illustrative; Mars map Solar System Scope, CC BY 4.0.",
     "keys": "רווח מפעיל או משהה, חצים מתקדמים, Escape סוגר"
   },
   "momentShelf": {
@@ -4137,6 +4138,16 @@ export const COPY = {
         "title": "ספוטניק 1",
         "when": "4 באוקטובר 1957",
         "blurb": "מבייקונור אל ההקפה הראשונה סביב כדור הארץ: הלוויין המלאכותי הראשון, כדור מלוטש בקוטר 585 מ\"מ, והצפצוף שלו."
+      },
+      "curiosity-edl": {
+        "title": "Curiosity landing",
+        "when": "6 August 2012",
+        "blurb": "The seven minutes from the top of the Martian air to Gale crater: the heat shield, the parachute, the rocket backpack and the sky crane, on JPL's own clock."
+      },
+      "new-horizons-pluto": {
+        "title": "New Horizons at Pluto",
+        "when": "14 July 2015",
+        "blurb": "The first visit to Pluto: from six hours out to the pass at 13.8 km/s on JPL's own track, Pluto and Charon as discs, the crescent left behind."
       },
       "vostok-1": {
         "title": "Vostok 1",

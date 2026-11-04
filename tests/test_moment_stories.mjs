@@ -157,6 +157,141 @@ for (const id of ['vostok-1', 'apollo-11', 'artemis-ii']) {
   for (const k of ['las', 'meco', 'fairings', 'sep', 'esmsep']) check(/lanned/.test(words[k]), `Artemis II: "${k}" says it is planned`);
   for (const k of ['liftoff', 'srb', 'closest', 'far', 'splash']) check(/Flown/.test(words[k]), `Artemis II: "${k}" says it was flown`);
 }
+// --- Curiosity's entry, descent and landing (release 1.7.9): the published clock, the heights and speeds, the place on Mars
+{
+  const { m, words } = await load('curiosity-edl');
+  const W = await mod('moments/world.js');
+  const ms = (t) => Date.parse(m.epoch) + t * 1000;
+  check(m.world === 'mars' && F.validateMoment(m, { words }).length === 0, `Curiosity: valid, with its words (${F.validateMoment(m, { words }).join('; ')})`);
+  check(F.validateMoment({ ...m, world: 'venus' }, { words }).some((x) => /world/.test(x)), 'Curiosity: a world that is not on the list is refused');
+  // JPL's timeline, PDT + 7 h: entry 10:10:45.7 PM, parachute 10:15:04.9, heat shield 10:15:24.6, rover separation 10:17:38.6, touchdown 10:17:57.3
+  const at = (t) => new Date(ms(t)).toISOString();
+  check(m.epoch === '2012-08-06T05:10:45.7Z', 'Curiosity: T-0 is the entry, 05:10:45.7 UTC');
+  const ev = (p, a, v) => first(m, p, a, v);
+  check(at(ev('main', 'deploy', 'entry')) === '2012-08-06T05:15:04.900Z', `Curiosity: the parachute at 05:15:04.9 UTC (${at(ev('main', 'deploy', 'entry'))})`);
+  check(at(ev('msl-heat-shield', 'separate', 'entry')) === '2012-08-06T05:15:24.600Z', 'Curiosity: the heat shield at 05:15:24.6 UTC');
+  const crane = m.tracks.effects.find((e) => e.effect === 'tether');
+  check(at(crane.t) === '2012-08-06T05:17:38.600Z', 'Curiosity: the rover leaves the stage at 05:17:38.6 UTC');
+  const tdT = m.vehicles.find((v) => v.id === 'rover').window[0] + (431.6 - 412.9);
+  check(at(tdT) === '2012-08-06T05:17:57.300Z', 'Curiosity: touchdown at 05:17:57.3 UTC, seven minutes and eleven seconds after the entry');
+  check(Math.abs((Date.parse('2012-08-06T05:31:45.4Z') - Date.parse('2012-08-06T05:17:57.3Z')) / 1000 - 828.1) < 0.01, 'Curiosity: the signal takes 13 min 48 s to reach the Earth (JPL: 10:31:45.4 PM)');
+  check(ev('msl-descent-stage', 'ignite', 'ds') > 358.9 && ev('msl-descent-stage', 'ignite', 'ds') < 360, 'Curiosity: the eight landing engines light as the back shell lets go, 80 s after the shield');
+  const cut = m.tracks.parts.find((e) => e.part === 'msl-descent-stage' && e.action === 'cutoff' && e.engines);
+  check(cut && cut.engines.length === 4 && cut.t < crane.t, 'Curiosity: four of the eight engines go out just before the rover is lowered');
+  const re = m.tracks.parts.filter((e) => e.part === 'msl-descent-stage' && e.action === 'ignite');
+  check(re.length === 2 && re[1].t === crane.until, 'Curiosity: the stage lights its four again when the cords are cut');
+  check(Math.abs(crane.until - 433.6) < 1e-9 && crane.until - tdT === 2.0, 'Curiosity: the cords are cut two seconds after touchdown');
+  // the models: parts, engines, the chute
+  const byId = new Map(m.vehicles.map((v) => [v.id, v]));
+  for (const e of m.tracks.parts) {
+    const v = byId.get(e.vehicle), parts = partsOf(v.model);
+    check(parts.includes(e.part) || (v.chutes && e.part in v.chutes), `Curiosity: ${e.part} at ${e.t} is a part of ${v.model} or a chute of ${v.id}`);
+  }
+  for (const v of m.vehicles) check(new RegExp(`id: ${v.model},`).test(registry) && existsSync(join(ROOT, `site/models/${v.model}.glb`)), `Curiosity: ${v.id}'s model ${v.model} is a registry row with a file`);
+  check(byId.get('ds').engines['msl-descent-stage'].length === 8 && /engines: \{msl-descent-stage: \[\[/.test(registry), 'Curiosity: eight engine mouths on the stage');
+  check(byId.get('entry').chutes.main.diameterM === 16 && byId.get('entry').chutes.main.lineM >= 50, 'Curiosity: the parachute is 16 m across on lines of 50 m or more');
+  check(crane.from.vehicle === 'ds' && crane.to.vehicle === 'rover' && crane.from.at.length === 3 && crane.to.at.length === 3, 'Curiosity: the bridle is three cords from the stage to the rover');
+  // the paths: sorted, finite; the heights and speeds the press kit gives; the landing on Gale; the bridle's length
+  TR.setWorld('mars');
+  const tracks = Object.fromEntries(Object.entries(m.trajectories).map(([k, tr]) => [k, TR.profileTrack(tr, m.place)]));
+  for (const [k, tr] of Object.entries(m.trajectories)) {
+    check(tr.points.every((r, i) => r.every(Number.isFinite) && (i === 0 || r[0] > tr.points[i - 1][0])), `Curiosity: path ${k} has sorted, finite points`);
+    check(tr.truth !== 'measured', `Curiosity: path ${k} does not claim to be measured`);
+  }
+  const sp = (k, t) => tracks[k].stateAt(t);
+  const e0 = sp('edl', 0);
+  check(Math.abs(e0.altM - 131100) < 400 && Math.abs(Math.hypot(e0.v[0], e0.v[1], e0.v[2]) - 5900) < 120, `Curiosity: at the entry interface 131 km up at 5.9 km/s (${(e0.altM / 1000).toFixed(1)} km, ${Math.hypot(...e0.v).toFixed(0)} m/s)`);
+  const c0 = sp('edl', 259.2), h0 = sp('edl', 278.9), b0 = sp('edl', 358.9);
+  check(Math.abs(c0.altM - 11000) < 300 && Math.abs(Math.hypot(...c0.v) - 405) < 12, `Curiosity: the parachute opens at 11 km and 405 m/s (${(c0.altM / 1000).toFixed(2)} km, ${Math.hypot(...c0.v).toFixed(0)} m/s)`);
+  check(Math.abs(h0.altM - 8000) < 250 && Math.abs(Math.hypot(...h0.v) - 125) < 25, `Curiosity: the heat shield goes at 8 km and about 125 m/s (${(h0.altM / 1000).toFixed(2)} km, ${Math.hypot(...h0.v).toFixed(0)} m/s)`);
+  check(Math.abs(b0.altM - 1600) < 60 && Math.hypot(...b0.v) < 100, `Curiosity: the back shell goes at 1.6 km and under 100 m/s (${b0.altM.toFixed(0)} m, ${Math.hypot(...b0.v).toFixed(0)} m/s)`);
+  const pts = m.trajectories.edl.points;
+  check(pts.filter((r) => r[0] >= 0).every((r, i, a) => i === 0 || r[1] < a[i - 1][1]), 'Curiosity: from the entry the height only falls');
+  check(m.facts.peakAtS > 75 && m.facts.peakAtS < 100 && m.facts.peakG > 6 && m.facts.peakG < 16, `Curiosity: the reconstruction's deceleration peaks near the press kit's +90 s (${m.facts.peakAtS} s, ${m.facts.peakG} g)`);
+  const rv = sp('rover-path', 431.6), rvA = sp('rover-path', 431.1), rv2 = sp('rover-path', 431.6 - 1), d0 = sp('ds-path', 412.9), d1 = sp('ds-path', 431.6), r0 = sp('rover-path', 412.9);
+  const vTouch = (rvA.altM - rv.altM) / 0.5;
+  check(rv.altM < 0.05 && vTouch > 0.4 && vTouch < 1.0, `Curiosity: the rover reaches the ground at under a metre a second (${vTouch.toFixed(2)} m/s; JPL: 0.75)`);
+  check(Math.abs(r0.altM - 20) < 0.2 && Math.abs(d0.altM - 22.4) < 0.3, `Curiosity: at separation the rover is 20 m up (${r0.altM.toFixed(1)} m), its stage 22.4 m (${d0.altM.toFixed(1)} m)`);
+  const bridle = d1.altM - rv.altM - 1.3;
+  check(bridle > 7.2 && bridle < 7.9, `Curiosity: at touchdown the cords are 7.6 m long between the stage and the rover's deck (${bridle.toFixed(2)} m)`);
+  check(rv2.altM > 0 && rv2.altM < 2, 'Curiosity: a second before touchdown the wheels are about a metre up');
+  const crash = sp('ds-path', 433.6 + 17.5), land = sp('ds-path', 433.6);
+  const away = Math.hypot(crash.p[0] - land.p[0], crash.p[1] - land.p[1]);
+  check(crash.altM < 1 && away > 600 && away < 700, `Curiosity: the stage comes down some 650 m from the landing (${away.toFixed(0)} m)`);
+  // the end of the path is on Gale crater's Bradbury Landing (4.5895 S, 137.4417 E)
+  const fr = TR.placeFrame(m.place), end = sp('rover-path', 431.6);
+  const ecef = TR.enuToEcef(fr, end.p), lat = Math.asin(ecef[2] / Math.hypot(...ecef)) * 180 / Math.PI, lon = Math.atan2(ecef[1], ecef[0]) * 180 / Math.PI;
+  const dkm = Math.hypot((lat + 4.5895) * 59.2, (lon - 137.4417) * 59.2 * Math.cos(4.5895 * Math.PI / 180));
+  check(dkm < 0.3, `Curiosity: the path ends within 300 m of Bradbury Landing (${lat.toFixed(4)}, ${lon.toFixed(4)}: ${(dkm * 1000).toFixed(0)} m off)`);
+  const landed = m.places[0].place;
+  check(Math.abs(landed.lat + 4.5895) < 1e-4 && Math.abs(landed.lon - 137.4417) < 1e-4 && landed.alt === 0, 'Curiosity: the drawn ground from 200 s is Bradbury Landing');
+  // Mars as a place: its radius and pull, its day, the Sun in mid-afternoon at the site
+  check(TR.EARTH_R === 3391100 && Math.abs(TR.gravity([TR.EARTH_R, 0, 0])[0] + 3.72) < 0.02 && Math.abs(TR.OMEGA - 7.088e-5) < 1e-8, `Curiosity: Mars's radius and its pull (${TR.gravity([TR.EARTH_R, 0, 0])[0].toFixed(2)} m/s^2)`);
+  const lt = W.localSolarHours('mars', ms(431.6), 137.4417);
+  check(lt > 14.4 && lt < 16.4, `Curiosity: mid-afternoon at Gale at touchdown (the press kit: about 3 p.m. local mean solar time; ${lt.toFixed(1)} h true solar time here)`);
+  const sun = W.sunFromWorld('mars', ms(431.6)), ax = W.worldAxes('mars', ms(431.6));
+  const ang = (ax.w + 137.4417 * Math.PI / 180), up = [Math.cos(-4.5895 * Math.PI / 180) * (Math.cos(ang)), Math.cos(-4.5895 * Math.PI / 180) * Math.sin(ang), Math.sin(-4.5895 * Math.PI / 180)];
+  const elev = Math.asin(sun[0] * up[0] + sun[1] * up[1] + sun[2] * up[2]) * 180 / Math.PI;
+  check(elev > 20 && elev < 55, `Curiosity: the Sun is ${elev.toFixed(0)} degrees up at the site at touchdown`);
+  check(Math.abs(Math.hypot(...sun) - 1) < 1e-9 && Math.abs(W.sunDistanceAu('mars', ms(431.6)) - 1.536) < 0.01, 'Curiosity: Mars was 1.54 au from the Sun');
+  TR.setWorld('earth');
+  check(TR.EARTH_R > 6.3e6 && Math.abs(TR.gravity([TR.EARTH_R, 0, 0])[0] + 9.82) < 0.05, 'Curiosity: setWorld puts the Earth back');
+  const { airAt } = await mod('moments/stage.js');
+  TR.setWorld('mars'); const mars = TR.WORLD; TR.setWorld('earth');
+  check(Math.abs(airAt(11100, 1, mars.airH).density - Math.exp(-1)) < 1e-9 && airAt(8000, 1).density < airAt(8000, 1, mars.airH).density, 'Curiosity: the stage reads the world\'s scale height of its air');
+  // the story is long enough to watch and short enough not to tire; the words
+  let play = 0; for (const q of m.pace) play += (q.to - q.from) / q.rate;
+  check(play > 150 && play < 900, `Curiosity: ${Math.round(play)} s of play time`);
+  check(m.sources.length >= 3 && m.sources.every((q) => /^https:\/\//.test(q.url) && words[q.say]), 'Curiosity: sources, each with its words');
+  check(m.tracks.captions.every((c) => (words[c.say] || '').length > 20 && words[c.say].length < 330), 'Curiosity: every caption is a sentence or two');
+  check(/Touchdown confirmed\. We're safe on Mars!/.test(words.earth) && /Allen Chen/.test(words.earth) && /13 min 48 s/.test(words.earth), 'Curiosity: the closing caption quotes the line, says who and the 13 min 48 s');
+  check(!!COPY.momentPlayer.groundNoteMars && /Mars map/.test(COPY.momentPlayer.groundNoteMars), 'Curiosity: the foot line names the Mars map');
+  for (const k of ['pathEdl', 'pathDescent', 'pathBackshell', 'pathRover']) check(!!words[k], `Curiosity: words for ${k}`);
+  const shelf = await mod('moments/shelf.js');
+  check(shelf.momentsFor('gale').some((x) => x.id === 'curiosity-edl') && shelf.SHELF.every((x) => !x.models || x.models.every((id) => new RegExp(`id: ${id},`).test(registry))), 'Curiosity: the card of Gale crater offers the replay; every model the shelf names is a registry row');
+  check(!!COPY.momentShelf.cards['curiosity-edl'], 'Curiosity: the shelf has its card');
+}
+// --- New Horizons at Pluto (release 1.7.9): JPL's track, the pass at 12 500 km, the approach on the lit side, Charon about fourteen minutes later
+{
+  const { m, words } = await load('new-horizons-pluto');
+  const W = await mod('moments/world.js');
+  const A = await import(pathToFileURL(join(ROOT, 'site/vendor/astronomy.js')).href);
+  const ms = (t) => Date.parse(m.epoch) + t * 1000;
+  check(m.world === 'pluto' && F.validateMoment(m, { words }).length === 0, `New Horizons: valid, with its words (${F.validateMoment(m, { words }).join('; ')})`);
+  check(m.trajectories.path.frame === 'world' && m.vehicles.length === 1 && m.vehicles[0].model === 'new-horizons' && new RegExp('id: new-horizons,').test(registry), 'New Horizons: one vehicle, the craft\'s own model, on a path in Pluto\'s frame');
+  const rows = rowsOf(m, 'path');
+  check(rows.length > 100 && rows.every((r, i) => r.length === 7 && r.every(Number.isFinite) && (i === 0 || r[0] > rows[i - 1][0])), 'New Horizons: the path has sorted, finite rows');
+  check(rows[0][0] === m.span[0] && rows[rows.length - 1][0] >= m.span[1], 'New Horizons: the path covers the span');
+  // the pass: the nearest second is T-0, JPL Horizons' own (the range rate changes sign between 11:48:00 and 11:49:00 UT), 13.8 km/s, about 12 500 km up
+  let near = null; for (let t = -120; t <= 120; t += 0.25) { const r = interp(rows, t); const d = Math.hypot(r[0], r[1], r[2]); if (!near || d < near.d) near = { d, t }; }
+  check(Math.abs(near.t) <= 1 && m.epoch === '2015-07-14T11:48:29Z', `New Horizons: T-0 is the nearest second in JPL's track, 11:48:29 UT (${near.t} s)`);
+  check(Math.abs(near.d - 1188.3 - 12500) < 60, `New Horizons: ${Math.round(near.d - 1188.3)} km over Pluto's surface at the nearest second (NASA: about 12 500)`);
+  const row0 = rows.reduce((a, r) => (Math.abs(r[0]) < Math.abs(a[0]) ? r : a));
+  check(Math.abs(Math.hypot(row0[4], row0[5], row0[6]) - 13.78) < 0.05, `New Horizons: ${Math.hypot(row0[4], row0[5], row0[6]).toFixed(2)} km/s at the pass (NASA: 30 800 mph, 13.8 km/s)`);
+  check(/11:48:29/.test(words.closest) && /11:49:57/.test(words.closest) && /not reconciled/.test(words.closest), 'New Horizons: the words give both clocks and say they are not reconciled');
+  // Pluto's frame: its pole is the IAU's (right ascension 132.993, declination -6.163 degrees)
+  const ax = W.worldAxes('pluto', ms(0));
+  check(Math.abs(ax.z[2] - Math.sin(-6.163 * Math.PI / 180)) < 0.005 && Math.abs(Math.atan2(ax.z[1], ax.z[0]) * 180 / Math.PI - 132.993) < 0.2, 'New Horizons: Pluto\'s pole is at right ascension 133 degrees, declination -6.2');
+  // the geometry the captions rest on: the approach over the lit side, the craft on the night side from the pass, a thin crescent when it looks back
+  const phase = (t) => { const r = interp(rows, t), s = W.sunFromWorld('pluto', ms(t)); return Math.acos((r[0] * s[0] + r[1] * s[1] + r[2] * s[2]) / Math.hypot(...r)) * 180 / Math.PI; };
+  check(phase(-900) < 80 && phase(0) > 95 && phase(300) > 115 && phase(2000) > 160, `New Horizons: lit side on the approach (${phase(-900).toFixed(0)}), night side from the pass (${phase(0).toFixed(0)}), looking back at a crescent (${phase(2000).toFixed(0)} degrees from the Sun)`);
+  // Charon above longitude 0 on the equator at 19 591 km: nearest the craft about 14 minutes after the pass, within about 28 860 km
+  let ch = null; for (let t = 400; t <= 1300; t += 1) { const w = W.worldAxes('pluto', ms(t)).w, r = interp(rows, t), q = [19591 * Math.cos(w), 19591 * Math.sin(w), 0]; const d = Math.hypot(r[0] - q[0], r[1] - q[1], r[2] - q[2]); if (!ch || d < ch.d) ch = { d, t }; }
+  check(Math.abs(ch.t - 14 * 60) < 60 && Math.abs(ch.d - 28860) < 1000 && Math.abs(ch.t - m.facts.charonNearS) < 1.5, `New Horizons: Charon is nearest ${Math.round(ch.d)} km at ${ch.t} s, about 14 minutes after the pass (NASA: within 28 860 km)`);
+  check(TR.WORLDS.pluto.moon.aM === 19591000 && TR.WORLDS.pluto.moon.R === 606000 && Math.abs(TR.WORLDS.pluto.R - 1188300) < 1, 'New Horizons: Pluto\'s radius, Charon\'s radius and the distance between them');
+  // the radio: Earth to Pluto that day, 4.77 billion km, 4 h 25 min
+  const pl = A.HelioVector(A.Body.Pluto, new Date('2015-07-15T00:53:00Z')), ea = A.HelioVector(A.Body.Earth, new Date('2015-07-15T00:53:00Z'));
+  const au = Math.hypot(pl.x - ea.x, pl.y - ea.y, pl.z - ea.z);
+  check(Math.abs(au * 1.495978707e8 / 1e9 - 4.77) < 0.03 && Math.abs(au * 499.00478 / 60 - 265) < 4 && /4\.77 billion km/.test(words.away) && /4 hours 25 minutes/.test(words.away), 'New Horizons: the Earth was 4.77 billion km away, 4 hours 25 minutes by radio');
+  check(/00:53 UTC on 15 July/.test(words.home) && /8:53 pm EDT/.test(words.home), 'New Horizons: the "phone home" signal at 00:53 UTC (8:53 pm EDT)');
+  let play = 0; for (const q of m.pace) play += (q.to - q.from) / q.rate;
+  check(play > 150 && play < 900, `New Horizons: ${Math.round(play)} s of play time`);
+  check(m.sources.length >= 3 && m.sources.every((q) => /^https:\/\//.test(q.url) && words[q.say]), 'New Horizons: sources, each with its words');
+  check(m.tracks.captions.every((c) => (words[c.say] || '').length > 20 && words[c.say].length < 330), 'New Horizons: every caption is a sentence or two');
+  const shelf = await mod('moments/shelf.js');
+  check(['pluto', 'charon', 'deep-new-horizons'].every((id) => shelf.momentsFor(id).some((x) => x.id === 'new-horizons-pluto')) && shelf.momentsForRecord({ id: 'x', name: 'New Horizons', layer: 'deep-space' }).some((x) => x.id === 'new-horizons-pluto'), 'New Horizons: the cards of Pluto, Charon and the craft offer the replay');
+  check(!!COPY.momentShelf.cards['new-horizons-pluto'], 'New Horizons: the shelf has its card');
+}
 // --- Hubble's deployment from Discovery (1.7.7, internal #1058)
 {
   const { m, words } = await load('hubble-deployment');
@@ -361,4 +496,5 @@ for (const id of ['vostok-1', 'apollo-11', 'artemis-ii']) {
   delete globalThis.document;
 }
 if (problems.length) { for (const p of problems) console.error(`::error::${p}`); console.error(`${problems.length} problem(s)`); process.exit(1); }
+console.log('moment stories ok: Curiosity\'s entry (the JPL clock, 131 km and 5.9 km/s, the parachute at 11 km, the 7.6 m bridle, the landing on Bradbury Landing, the Martian Sun), New Horizons\' pass of Pluto (JPL\'s track, 12 500 km, the lit side, Charon 14 minutes later), then Vostok 1, Apollo 11 and Artemis II: event order and times, parts of their models, the landing on the Moon\'s ground, the flyby at 6 545 km, planned times said to be planned');
 console.log('moment stories ok: the first Falcon 9 landing (the clock, MECO at 75 km and 1.67 km/s, the landing on Landing Zone 1 at rest, the fins and legs), Hubble\'s deployment (the arm holds the telescope, the arrays, the orbit, the sun, the release at 19:38:00), Vostok 1, Apollo 11 and Artemis II: event order and times, parts of their models, the landing on the Moon\'s ground, the flyby at 6 545 km, planned times said to be planned');

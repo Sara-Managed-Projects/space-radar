@@ -385,6 +385,38 @@ export function createChutes({ diameterM = 20, count = 1, lineM, gores = 24, col
   };
 }
 
+// --- a tether between two vehicles (release 1.7.9: Curiosity's bridle) --------------------------------------------------
+
+/**
+ * `count` straight cords, each from a point on one vehicle to a point on another, redrawn every frame by the player
+ * (`set(from, to)`: lists of positions in the stage's metres, relative to the camera). Thin lines, as the chutes' lines are.
+ */
+export function createTether({ count = 3, colour = '#e4dccb', opacity = 0.95 } = {}) {
+  const group = new THREE.Group();
+  group.name = 'tether';
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(count * 6), 3));
+  const mat = new THREE.LineBasicMaterial({ color: new THREE.Color(colour), transparent: true, opacity });
+  const lines = new THREE.LineSegments(geo, mat);
+  lines.frustumCulled = false;
+  group.add(lines);
+  group.visible = false;
+  return {
+    group,
+    set(from, to) {
+      group.visible = !!from;
+      if (!from) return;
+      const arr = geo.attributes.position.array;
+      for (let i = 0; i < count; i += 1) {
+        const a = from[i % from.length], b = to[i % to.length];
+        arr.set([a[0], a[1], a[2], b[0], b[1], b[2]], i * 6);
+      }
+      geo.attributes.position.needsUpdate = true;
+    },
+    dispose() { geo.dispose(); mat.dispose(); },
+  };
+}
+
 // --- the plasma of an entry ----------------------------------------------------------------------------------------
 
 const PLASMA_F = `${LOG_F}

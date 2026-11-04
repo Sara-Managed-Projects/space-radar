@@ -43,7 +43,8 @@ Object.assign(COPY, {
     // The honesty line at the foot. `{path}` is the trajectory's own sentence from the story's words.
     truthLine: '{truth}: {path}.',
     cutNote: 'Stages cut from one model for now.',
-    drawnNote: 'Flames and steam are drawn.',
+    drawnNote: 'Flames, steam, parachutes and the glow of an entry are drawn.',
+    groundNoteMars: 'Ground near the site illustrative; Mars map Solar System Scope, CC BY 4.0.',
     groundNote: 'Ground near the pad illustrative; Earth map Solar System Scope, CC BY 4.0.',
     keys: 'Space plays or pauses, arrows step, Escape closes',
   },
@@ -67,6 +68,8 @@ Object.assign(COPY, {
       'hubble-deployment': { title: 'Hubble\'s release', when: '25 April 1990', blurb: 'Discovery\'s arm lifts the Hubble Space Telescope out of the bay on STS-31, one solar array stops, and at 19:38 UTC the telescope is let go.' },
       'falcon9-og2-2': { title: 'The first Falcon 9 landing', when: '21 December 2015', blurb: 'Falcon 9 flight 20 lifts 11 ORBCOMM satellites away from Cape Canaveral, and its first stage flies back and lands on Landing Zone 1: the first landing of an orbital rocket\'s first stage.' },
       'sts-1': { title: 'STS-1', when: '12 to 14 April 1981', blurb: 'The first Space Shuttle: Columbia from pad 39A, the boosters and the tank, 54 hours in orbit and a glide onto the Edwards lakebed.' },
+      'curiosity-edl': { title: 'Curiosity landing', when: '6 August 2012', blurb: 'The seven minutes from the top of the Martian air to Gale crater: the heat shield, the parachute, the rocket backpack and the sky crane, on JPL\'s own clock.' },
+      'new-horizons-pluto': { title: 'New Horizons at Pluto', when: '14 July 2015', blurb: 'The first visit to Pluto: from six hours out to the pass at 13.8 km/s on JPL\'s own track, Pluto and Charon as discs, the crescent left behind.' },
       'vostok-1': { title: 'Vostok 1', when: '12 April 1961', blurb: 'Yuri Gagarin, once round the Earth in 108 minutes, from Baikonur to a field near Smelovka.' },
     },
   },
