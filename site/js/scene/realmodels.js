@@ -148,6 +148,8 @@ const R14_PEL = { ...W3B, file: 'planet-pelican.glb', name: 'Planet Pelican' };
 const R14_HAWK = { ...W3B, file: 'hawkeye360-block1.glb', name: 'HawkEye 360 Pathfinder' };
 const R14_GHG = { ...W3B, file: 'ghgsat-c.glb', name: 'GHGSat-C' };
 const R14_GF1 = { ...W3B, file: 'gaofen-1.glb', name: 'Gaofen-1' };
+const R178_SPOT = { colour: 'satellite', made: 'dimensions', axes: 'app', file: 'spot67.glb', name: 'SPOT 6 / SPOT 7' };
+const R178_SKY = { ...W3B, file: 'skysat.glb', name: 'SkySat' }; // release 1.7.8 craft part B (public #975): SkySat C series
 // 0078 r14-m5: end
 function gpsBlock(record) {
   const year = record && record.meta ? record.meta.launchYear : null;
@@ -998,6 +1000,77 @@ export const REAL_MODELS = {
     69018: R14_PEL,
     69019: R14_PEL,
     69871: R14_PEL,
+    // PLEIADES 1A AND 1B HAVE THEIR OWN SHAPE since release 1.7.8 (public #973): pleiades.glb was BUILT HERE, in code, from eoPortal's cited numbers (the three
+    // 2.3 m by 1.0 m arrays at 120 degrees on a hexagonal bus, the 65 cm Korsch telescope, three star trackers, the X-band horn) and read off CNES's pictures,
+    // looked at only (registry/models.yaml row `pleiades`, kind `built-from-dimensions`): a gold-blanketed hexagonal bus with a taper, the white baffle and bore
+    // of the telescope on the Earth face, white radiators, three fixed arrays. By NUMBER, so Pleiades Neo (48268, 49070, another bus) keeps the generic satellite.
+    // `axes: 'app'`: +Z toward the Earth (the aperture), the arrays on the zenith end with their cells toward the zenith as they fly (NOT +Y: from the +Y sunward view two
+    // arrays spread along X seen at a grazing angle).
+    38012: { file: 'pleiades.glb', colour: 'satellite', name: 'Pleiades 1A', catalogue: 'PLEIADES 1A', made: 'dimensions', axes: 'app' },
+    39019: { file: 'pleiades.glb', colour: 'satellite', name: 'Pleiades 1B', catalogue: 'PLEIADES 1B', made: 'dimensions', axes: 'app' },
+    // SPOT 6 AND SPOT 7 HAVE THEIR OWN SHAPE since release 1.7.8 (public #974): spot67.glb was BUILT HERE, in code, from the cited metres (eoPortal and ESA:
+    // body 1.55 x 1.75 x 2.7 m, 5.4 m2 of panels, two 200 mm NAOMI telescopes) and read off EADS Astrium's, ISRO's and Airbus's pictures, looked at only
+    // (registry/models.yaml row `spot-6-7`, kind `built-from-dimensions`): a gold-blanketed box, the two telescope baffles on the Earth face, the Isoflux
+    // dish, the adapter cone, three flat panels standing off the body round its long axis. By NUMBER, so SPOT 1 to 5 and the Pleiades pair (other buses)
+    // keep what they had. `axes: 'app'`: +Z the Earth face (the baffles), the adapter at -Z, the +X panel's cells toward +Y.
+    38755: R178_SPOT,
+    40053: R178_SPOT,
+    // SKYSAT C SERIES HAS ITS OWN SHAPE since release 1.7.8 (public #975): skysat.glb was BUILT HERE, in code, from eoPortal's numbers (the C generation's 60 x 60 x 95 cm
+    // body, 110 kg, the 35 cm Cassegrain telescope behind the aperture ring on one end, body-mounted cells, the aperture cover that opens out as a flap carrying the dish
+    // antenna) and read off Space Systems Loral's and Skybox's pictures, looked at only (registry/models.yaml row `skysat`, kind `built-from-dimensions`): a cuboid with cells
+    // on all four side faces, the aperture ring and secondary on its Earth face, the cover flap with its dish and bipod, an aluminium band with a star-tracker baffle and four
+    // thrusters, the launcher ring on the opposite end. By NUMBER, the twelve C-series craft CelesTrak lists as SKYSAT-C1 to -C12 (the lead to confirm each number and name against
+    // the live catalogue). NOT SkySat-A and -B (39418, 40072): the prototypes are 15 cm shorter, have no propulsion band and blue cells in three stacked panels a face (eoPortal,
+    // Figure 2 and Table 3); and not the six 2020 craft (SkySat-16 to -21, the same C bus), whose numbers were not in the issue and which the lead may add by the same constant.
+    // Not Planet's Doves (Flock, the 3U cubesats), not the Pelican. `axes: 'app'`: the aperture face toward the Earth (+Z), the cover flap and the thruster band on +X, cells on all four sides.
+    41601: { ...R178_SKY, catalogue: 'SKYSAT-C1' },
+    41771: { ...R178_SKY, catalogue: 'SKYSAT-C4' },
+    41772: { ...R178_SKY, catalogue: 'SKYSAT-C5' },
+    41773: { ...R178_SKY, catalogue: 'SKYSAT-C2' },
+    41774: { ...R178_SKY, catalogue: 'SKYSAT-C3' },
+    42987: { ...R178_SKY, catalogue: 'SKYSAT-C11' },
+    42988: { ...R178_SKY, catalogue: 'SKYSAT-C10' },
+    42989: { ...R178_SKY, catalogue: 'SKYSAT-C9' },
+    42990: { ...R178_SKY, catalogue: 'SKYSAT-C8' },
+    42991: { ...R178_SKY, catalogue: 'SKYSAT-C7' },
+    42992: { ...R178_SKY, catalogue: 'SKYSAT-C6' },
+    43797: { ...R178_SKY, catalogue: 'SKYSAT-C12' },
+    // BEIDOU-3 MEO HAS A SHAPE OF ITS OWN since release 1.7.8 (public #987, earlier notes #429, #513): beidou-3-meo.glb was BUILT HERE, in code, from the dimensions Satellite
+    // Navigation (2021) tabulates for CAST's craft (a 1.68 x 1.30 x 1.30 m box with a 1.00 x 1.30 x 0.85 m block on its Earth face, 20.44 m2 of cells: two wings of three 1.68 x 2.03 m
+    // panels, 15.5 m tip to tip) and from CAST's render and mechanical drawing in ESA's IGS-workshop slides (looked at only): the round L-band array of cups on the Earth block, the laser
+    // retroreflector, the inter-satellite-link array, the separation ring on the far deck, V yokes (registry/models.yaml row `beidou-3-meo`, kind `built-from-dimensions`).
+    // ONE FILE, TWO MAKERS: the file is CAST's type. The twelve craft Gunter's Space Page lists as CAST's (M1 to M6, M13, M14, M17, M18, M23, M24) wear it as themselves; the eight M7 to M12,
+    // M15 and M16 are SECM's smaller type (about 2.8 x 0.92 x 1.35 m, 10.8 m2 of cells, many small elements on the Earth face) and the other eight (M19 to M22, M25 to M28) were not
+    // confirmed either way: those wear it with `generic: true`, so the card says 'the kind of thing', as every navigation file does. By NUMBER, so BeiDou-2 and the G/IGSO craft keep
+    // what they had. `axes: 'app'`: the Earth block at +Z, the wings along X, the cells toward +Y.
+    43001: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M1', catalogue: 'BEIDOU-3 M1', made: 'dimensions', axes: 'app' },  // 2017-069A, CAST
+    43002: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M2', catalogue: 'BEIDOU-3 M2', made: 'dimensions', axes: 'app' },  // 2017-069B, CAST
+    43107: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M7', catalogue: 'BEIDOU-3 M7', generic: true, made: 'dimensions', axes: 'app' },  // 2018-003A, SECM
+    43108: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M8', catalogue: 'BEIDOU-3 M8', generic: true, made: 'dimensions', axes: 'app' },  // 2018-003B, SECM
+    43207: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M4', catalogue: 'BEIDOU-3 M4', made: 'dimensions', axes: 'app' },  // 2018-018A, CAST
+    43208: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M3', catalogue: 'BEIDOU-3 M3', made: 'dimensions', axes: 'app' },  // 2018-018B, CAST
+    43245: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M9', catalogue: 'BEIDOU-3 M9', generic: true, made: 'dimensions', axes: 'app' },  // 2018-029A, SECM
+    43246: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M10', catalogue: 'BEIDOU-3 M10', generic: true, made: 'dimensions', axes: 'app' },  // 2018-029B, SECM
+    43581: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M5', catalogue: 'BEIDOU-3 M5', made: 'dimensions', axes: 'app' },  // 2018-062A, CAST
+    43582: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M6', catalogue: 'BEIDOU-3 M6', made: 'dimensions', axes: 'app' },  // 2018-062B, CAST
+    43602: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M12', catalogue: 'BEIDOU-3 M12', generic: true, made: 'dimensions', axes: 'app' },  // 2018-067A, SECM
+    43603: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M11', catalogue: 'BEIDOU-3 M11', generic: true, made: 'dimensions', axes: 'app' },  // 2018-067B, SECM
+    43622: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M13', catalogue: 'BEIDOU-3 M13', made: 'dimensions', axes: 'app' },  // 2018-072A, CAST
+    43623: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M14', catalogue: 'BEIDOU-3 M14', made: 'dimensions', axes: 'app' },  // 2018-072B, CAST
+    43647: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M16', catalogue: 'BEIDOU-3 M16', generic: true, made: 'dimensions', axes: 'app' },  // 2018-078A, SECM
+    43648: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M15', catalogue: 'BEIDOU-3 M15', generic: true, made: 'dimensions', axes: 'app' },  // 2018-078B, SECM
+    43706: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M17', catalogue: 'BEIDOU-3 M17', made: 'dimensions', axes: 'app' },  // 2018-093A, CAST
+    43707: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M18', catalogue: 'BEIDOU-3 M18', made: 'dimensions', axes: 'app' },  // 2018-093B, CAST
+    44542: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M24', catalogue: 'BEIDOU-3 M24', made: 'dimensions', axes: 'app' },  // 2019-061A, CAST
+    44543: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M23', catalogue: 'BEIDOU-3 M23', made: 'dimensions', axes: 'app' },  // 2019-061B, CAST
+    44793: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M22', catalogue: 'BEIDOU-3 M22', generic: true, made: 'dimensions', axes: 'app' },  // 2019-078A, unconfirmed
+    44794: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M21', catalogue: 'BEIDOU-3 M21', generic: true, made: 'dimensions', axes: 'app' },  // 2019-078B, unconfirmed
+    44864: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M19', catalogue: 'BEIDOU-3 M19', generic: true, made: 'dimensions', axes: 'app' },  // 2019-090A, unconfirmed
+    44865: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M20', catalogue: 'BEIDOU-3 M20', generic: true, made: 'dimensions', axes: 'app' },  // 2019-090B, unconfirmed
+    58654: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M28', catalogue: 'BEIDOU-3 M28', generic: true, made: 'dimensions', axes: 'app' },  // 2023-207A, unconfirmed
+    58655: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M26', catalogue: 'BEIDOU-3 M26', generic: true, made: 'dimensions', axes: 'app' },  // 2023-207B, unconfirmed
+    61186: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M25', catalogue: 'BEIDOU-3 M25', generic: true, made: 'dimensions', axes: 'app' },  // 2024-168B, unconfirmed
+    61187: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M27', catalogue: 'BEIDOU-3 M27', generic: true, made: 'dimensions', axes: 'app' },  // 2024-168C, unconfirmed
     43765: R14_HAWK,
     43794: R14_HAWK,
     43799: R14_HAWK,

@@ -11,6 +11,31 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [1.7.8] - 2026-11-03
+
+### Added
+
+- **Four Earth-observation and navigation satellites have a model of their own: Pleiades 1A and 1B, SPOT 6 and 7, the SkySat C series and
+  BeiDou-3 MEO.** Each was the generic satellite shape; each is now built in code from published dimensions and from pictures read for the
+  layout, by NORAD number, and its card says "shape built from published dimensions and pictures; details simplified". No agency publishes a
+  mesh of any of them (NASA's 3D Resources has none, and Airbus, CNES and Planet publish none), so no mesh and no picture is in a file.
+  **Pleiades** (`pleiades.glb`, 146 kB): the gold-blanketed hexagonal bus with the white baffle and bore of the 65 cm telescope on its Earth
+  face, three star trackers, the X-band horn and the three 2.3 by 1.0 m arrays at 120 degrees (Pleiades Neo is another bus and keeps the
+  generic shape). **SPOT 6 and 7** (`spot67.glb`, 104 kB): the gold box with the two NAOMI telescope baffles side by side on the Earth face,
+  the propulsion dome, the Isoflux dish and three flat panels standing off the body. **SkySat C series** (`skysat.glb`, 105 kB): the 60 by 60 by
+  95 cm cuboid with cells on its four side faces, the aperture ring and secondary mirror, the cover that opens out as a flap carrying the dish,
+  the thruster band; the prototypes SkySat-A and B are shorter and keep the generic shape. **BeiDou-3 MEO** (`beidou-3-meo.glb`, 91 kB): CAST's
+  type, a box with the round L-band array, the retroreflector and the inter-satellite-link array on its Earth block and two wings 15.5 m across;
+  the 12 craft confirmed as CAST's wear it as themselves and the other 16 wear it as "the kind of thing" (SECM built a smaller type). Each is 9 700
+  to 17 300 triangles, loaded only when its craft is selected. The sources, what was cited and what was estimated are in `registry/models.yaml`
+  and `CREDITS.md` §3u to §3x.
+
+### Not yet
+
+- **Sizes and panel layouts are partly estimates, and the rows say which**: Pleiades' bus (eoPortal gives the arrays and the telescope, not the
+  bus), how SPOT's three panels stand, the SkySat flap and dish, and the BeiDou wing panels. Cell grids are coarse. No model has been seen by a
+  person who knows the craft; the pictures in the pull request are the first look.
+- **Pleiades Neo and the radar pair (COSMO-SkyMed, RADARSAT-2) are not built in this release.**
 ## [1.7.7] - 2026-11-03
 
 ### Added
