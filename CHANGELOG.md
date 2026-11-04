@@ -133,6 +133,20 @@ tagged, and their dates are the day the last change in each landed.
 - **The press page's link preview says its size and what the picture shows** (`og:image:width`, `og:image:height`, `og:image:alt`), as the embed
   page's does.
 - **The glossary has the four eclipse words** (umbra, penumbra, totality, annular) the registry had and the app lacked.
+## [1.7.17] - 2026-11-04
+
+### Added
+
+- **Eleven more famous stars have a line of their own: Alnilam, Alnitak and Mintaka (Orion's Belt), Bellatrix and Saiph (Orion), Dubhe, Sadr, Alphard, Hamal, Shaula and Mirfak.**
+  Each is a row in `registry/stars-notable.yaml` with one sentence of at most 160 characters, every claim read on the Wikipedia page the row cites
+  on 2026-11-04, and no distance or magnitude (the card prints those from the catalogue). Regulus, Canopus, Kochab, Rasalhague and Alioth are not here.
+- **Seven famous stars carry a measured radius, so their cards say "measured" instead of "estimated": Vega, Altair, Aldebaran, Pollux, Fomalhaut, Polaris and Tau Ceti.**
+  Each row cites the arXiv page of the paper and quotes the sentence the number was taken from: Vega's and Altair's are equatorial radii (both spin fast), Polaris's is
+  a mean (it pulses), and Pollux's is the radius Hatzes et al. derive from an interferometric diameter of Nordgren et al. Fomalhaut also carries the paper's temperature. Antares has no
+  radius with an error bar in any paper read, so it keeps the colour-index estimate.
+- **Two more fact sheets among the extremes: VY Canis Majoris and R136a1.** Positions, distances, masses and magnitudes are the Wikipedia infobox values read on 2026-11-04;
+  VY Canis Majoris pulses between magnitude 6.5 and 9.6 and the row keeps the infobox's V magnitude of 7.95, and R136a1's distance is the Large Magellanic Cloud's, as its article says.
+  The fact-sheet count in `tests/test_exotics.mjs` and `tests/test_a45.mjs` is now 25, and the measured-radius count in `tests/test_starsnotable.mjs` is 18.
 
 ## [1.7.8] - 2026-11-03
 
