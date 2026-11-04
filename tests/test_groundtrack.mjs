@@ -35,6 +35,11 @@ const times = trackTimes(T0);
 check(times.length === 271 && times[0] === T0 - 45 * 60e3 && times[270] === T0 + 90 * 60e3 && times.includes(T0), `271 samples, -45 to +90 min, now among them (${times.length})`);
 const ticks = tickTimes(T0);
 check(ticks.length === 28 && ticks[0].minutes === -45 && ticks[27].minutes === 90 && ticks.some((k) => k.minutes === 0), `28 ticks every 5 minutes (${ticks.length})`);
+// Both take their span and step as arguments (public #789): a short track, and the loops' end condition.
+const short = trackTimes(1000, 1, 2, 30);
+check(short.length === 7 && short[0] === -59000 && short[6] === 121000, `a short track: 7 samples, 1 minute back to exactly 2 ahead, every 30 s (${short.length}, ${short[0]}, ${short[short.length - 1]})`);
+const fewTicks = tickTimes(0, 10, 10, 5);
+check(fewTicks.map((k) => k.minutes).join() === '-10,-5,0,5,10' && fewTicks[2].tMs === 0, `a short row of ticks every 5 minutes, the middle one is t0 itself (${fewTicks.map((k) => k.minutes)})`);
 const pts = trackPoints(iss, T0);
 check(pts.length === 271 && pts.every((p) => Math.abs(p.latDeg) <= 52), 'every point is placed, under the 51.6 degree inclination');
 
