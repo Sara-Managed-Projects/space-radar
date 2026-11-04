@@ -659,5 +659,21 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
   }
 }
 
+// RELEASE 1.7.23 (public #1153): the three BeiDou-3 IGSO craft wear beidou-3-igso.glb as themselves; the four BeiDou-3 geostationary craft wear it as the kind of thing; BeiDou-2 and the MEO craft never do.
+{
+  const bd = (norad, name, klass = 'satellite') => realModelFor({ id: `sat-${norad}`, name, klass, layer: 'active', meta: { noradId: norad } });
+  for (const [norad, cat, generic] of [[44204, 'BEIDOU-3 IGSO-1', false], [44337, 'BEIDOU-3 IGSO-2', false], [44709, 'BEIDOU-3 IGSO-3', false], [43683, 'BEIDOU-3 G1', true], [45344, 'BEIDOU-3 G2', true], [45807, 'BEIDOU-3 G3', true], [56564, 'BEIDOU-3 G4', true]]) {
+    const got = bd(norad, cat);
+    check(got && got.file === 'beidou-3-igso.glb' && got.colour === 'satellite' && got.catalogue === cat && !!got.generic === generic && got.made === 'dimensions' && got.axes === 'app',
+      `${cat} (${norad}) wears beidou-3-igso.glb${generic ? ' as the kind of thing' : ' as itself'}: ${JSON.stringify(got)}`);
+  }
+  // It does not reach: BeiDou-2's craft (another bus), BeiDou-3's medium-orbit craft (their own file), debris or a rocket body of the same launches, or a name that only contains the letters.
+  for (const [norad, name, klass] of [[36828, 'BEIDOU-2 IGSO-1'], [37256, 'BEIDOU-2 IGSO-2'], [36287, 'BEIDOU-2 G1'], [44231, 'BEIDOU-2 G8'], [43001, 'BEIDOU-3 M1'], [43107, 'BEIDOU-3 M7'],
+    [99980, 'BEIDOU-3 IGSO-1 DEB', 'debris'], [99981, 'CZ-3B R/B', 'rocket'], [90050, 'BEIDOU-3 IGSO-9 TEST SATELLITE']]) {
+    const got = bd(norad, name, klass || 'satellite');
+    check(!got || got.file !== 'beidou-3-igso.glb', `${name} (${norad}) does not wear beidou-3-igso.glb: ${JSON.stringify(got)}`);
+  }
+}
+
 if (problems.length) { console.error('real models FAILED:\n  ' + problems.slice(0, 40).join('\n  ') + (problems.length > 40 ? `\n  ... and ${problems.length - 40} more` : '')); process.exit(1); }
 console.log(`real models ok: ${rows.length} models on disc are binary glTF 2 with meshes (${triangles} triangles in all), each worn by a route (${rows.filter(waiting).map((r) => r.id).join(', ') || 'none'} waiting, and saying so) and each route's file a row; ${own} craft with a route of their own get it from realModelFor, none a generic shape (${generic} routes are a class's shape and say so)`);

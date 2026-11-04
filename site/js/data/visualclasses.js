@@ -417,6 +417,7 @@ export const VISUAL_CLASSES = [
 "spot-6-7",
 "skysat",
 "beidou-3-meo",
+"beidou-3-igso",
 "cheops",
 "hxmt",
 "svom",

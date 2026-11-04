@@ -1071,6 +1071,18 @@ export const REAL_MODELS = {
     58655: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M26', catalogue: 'BEIDOU-3 M26', generic: true, made: 'dimensions', axes: 'app' },  // 2023-207B, unconfirmed
     61186: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M25', catalogue: 'BEIDOU-3 M25', generic: true, made: 'dimensions', axes: 'app' },  // 2024-168B, unconfirmed
     61187: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M27', catalogue: 'BEIDOU-3 M27', generic: true, made: 'dimensions', axes: 'app' },  // 2024-168C, unconfirmed
+    // BEIDOU-3 IGSO AND GEO (release 1.7.23, public #1153): beidou-3-igso.glb was BUILT HERE, in code, from the body the China Satellite Navigation Office's metadata gives for the IGSO craft
+    // (2.098 x 2.358 m across, 3.602 m long, as Xia et al. 2022 quote it) and 17.7 m2 of cells a wing, and from CSNO's rendering of the craft on orbit (CC BY 4.0, in that paper) and two
+    // museum mockups: the round array on the Earth deck, a white panel on the Sun face, a hexagonal lattice reflector on a boom and two dishes, all looking at the Earth, and two wings of
+    // three panels (registry/models.yaml row `beidou-3-igso`). THE THREE IGSO CRAFT wear it as themselves; the four GEO craft (G1 to G4) fly the same bus type, whose size Springer's table gives alike
+    // for both, but no page opened shows their layout, so they wear it with `generic: true`, the kind of thing. BeiDou-2's craft are DFH-3A (another bus) and keep what they had.
+    44204: { file: 'beidou-3-igso.glb', colour: 'satellite', name: 'BeiDou-3 IGSO-1', catalogue: 'BEIDOU-3 IGSO-1', made: 'dimensions', axes: 'app' },  // 2019-023A
+    44337: { file: 'beidou-3-igso.glb', colour: 'satellite', name: 'BeiDou-3 IGSO-2', catalogue: 'BEIDOU-3 IGSO-2', made: 'dimensions', axes: 'app' },  // 2019-035A
+    44709: { file: 'beidou-3-igso.glb', colour: 'satellite', name: 'BeiDou-3 IGSO-3', catalogue: 'BEIDOU-3 IGSO-3', made: 'dimensions', axes: 'app' },  // 2019-073A
+    43683: { file: 'beidou-3-igso.glb', colour: 'satellite', name: 'BeiDou-3 G1', catalogue: 'BEIDOU-3 G1', generic: true, made: 'dimensions', axes: 'app' },  // 2018-085A, geostationary, same bus type
+    45344: { file: 'beidou-3-igso.glb', colour: 'satellite', name: 'BeiDou-3 G2', catalogue: 'BEIDOU-3 G2', generic: true, made: 'dimensions', axes: 'app' },  // 2020-017A
+    45807: { file: 'beidou-3-igso.glb', colour: 'satellite', name: 'BeiDou-3 G3', catalogue: 'BEIDOU-3 G3', generic: true, made: 'dimensions', axes: 'app' },  // 2020-040A
+    56564: { file: 'beidou-3-igso.glb', colour: 'satellite', name: 'BeiDou-3 G4', catalogue: 'BEIDOU-3 G4', generic: true, made: 'dimensions', axes: 'app' },  // 2023-066A
     43765: R14_HAWK,
     43794: R14_HAWK,
     43799: R14_HAWK,
