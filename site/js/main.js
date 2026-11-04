@@ -3060,8 +3060,10 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       ctx.stars3d.hidePoint(rec && rec.klass === 'star' && rec.meta ? rec.meta.starIndex : -1);
     }
     if (ctx.skyView.active) ctx.skyView.update(t);
+    if (ctx.perf) ctx.perf.gpuBegin(); // 0076 W1-e, internal #832: the GPU's time for render(), a timer query; tools only (sr.perf)
     if (ctx.bareFrame) ctx.bareFrame(); // only space (ui/drift.js): marks and lines are not drawn
     render();
+    if (ctx.perf) ctx.perf.gpuEnd();
     // A drawn world on its plain stage is drawn over the frame; the map's own scene is hidden while
     // it is up (scene/exostage.js), so that render() above clears and draws nothing.
     if (ctx.imagine && ctx.imagine.active) ctx.imagine.render(t);

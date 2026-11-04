@@ -1203,8 +1203,10 @@ jobs:
       - name: "the Sun's face of the day, harvested: the newest 171 picture by its name, yesterday's after midnight, refused over budget (internal spec 0076 W1-d)"
         run: python3 tests/test_harvest_sdo.py
       # 0076 W1-e
-      - name: "sr.perf: a tools-only counter, no allocation per frame, off unless asked; the seed under ?look=1"
+      - name: "sr.perf: a tools-only counter, no allocation per frame, off unless asked; the seeds under ?look=1; the GPU timer query and the asset-idle signal (internal #832, #779)"
         run: node tests/test_perf.mjs
+      - name: "Every shipped deep-space hero gives its memory back across ten visits and departures; the clips' defect judge (internal #834, #779)"
+        run: node tests/test_hero_cycles.mjs
       # 0076 W2-a
       - name: "the Moon close up: shadows cast from LOLA's heights, the Apollo 15 and 17 traverses on the ground, the red of the station's sunrise (internal spec 0076 W2-a)"
         run: node tests/test_traverse.mjs && python3 scripts/build_traverses.py --check
