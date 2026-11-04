@@ -21,11 +21,11 @@ tagged, and their dates are the day the last change in each landed.
   ceiling while Auto still promotes, the chosen quality's own tier otherwise) and the maps the page fetches whatever the stop (the Earth's day
   for the clock's month, night, water and relief, and the Milky Way). `keptTier()` in `ui/keeptrip.js`, held by `tests/test_keeptrip.mjs` for
   `moon-landings`. (internal #564)
-- **Spirit's line on Mars can be seen from where its site is arrived at.** The fade of a traverse (full inside 120 km, none past 320 km) left
-  Spirit's 7.07 km line at 0.3 % from the 309 km the arrival pose stands from it, and it was 12 px long beside a rover model many times its size.
-  A line shorter than 15 km now has the fade's distances stretched by 15 km over its length (at most 2.5 times) and its ribbon widened up to 1.6
-  times as it shrinks on the screen; the Moon's two lines and Opportunity's are as they were, a phone (no tiles) still draws none, and a world
-  still has one mesh a line. (internal #992)
+- **Spirit's line on Mars can be seen from where its site is arrived at.** The fade of a traverse (whole inside 120 km, none past 320 km) left
+  Spirit's 7.07 km line at 0.3 % from the 309 km the arrival pose stands from it, and a thin gold line on Mars's rust ground was lost even
+  where it was drawn. A line shorter than 15 km now has the fade's distances stretched by 15 km over its length (at most 2.5 times) and its
+  ribbon widened up to 2.2 times, with a dark rim, as it shrinks on the screen; the Moon's two lines and Opportunity's are as they were, a
+  phone (no tiles) still draws none, and a world still has one mesh a line. (internal #992)
 - **The undo toast no longer lies across the sheet's tabs on a phone.** With the sheet full at 390 by 844 "Moved to Planets, Back to where you
   were" stood under the top bar, over the Earth, Planets, Stars and Tonight row; it now stands at the foot of the screen. (internal #569)
 
