@@ -848,9 +848,30 @@ export const MISSIONS = [
         "world": "earth"
       },
       {
+        "id": "mathilde",
+        "date": "1997-06-27T12:56:00Z",
+        "title": "Past Mathilde",
+        "text": "It flies past the asteroid Mathilde on the way to Eros.",
+        "place": "path"
+      },
+      {
+        "id": "earth-flyby",
+        "date": "1998-01-23T07:23:00Z",
+        "title": "Back past Earth",
+        "text": "It swings past Earth for a gravity assist, 540 km away at its closest.",
+        "place": "path",
+        "world": "earth"
+      },
+      {
+        "id": "eros-flyby",
+        "date": "1998-12-23T18:41:00Z",
+        "title": "A first pass of Eros",
+        "text": "A burn that failed just before leaves it to fly past Eros, taking pictures, instead of going into orbit.",
+        "place": "path"
+      },
+      {
         "id": "eros-orbit",
-        "date": "2000-02-14",
-        "precision": "day",
+        "date": "2000-02-14T15:33:00Z",
         "title": "Into orbit round Eros",
         "text": "NEAR goes into orbit round the asteroid Eros.",
         "place": "path"
@@ -885,6 +906,14 @@ export const MISSIONS = [
         "path_at": "1999-02-07T21:32:00Z"
       },
       {
+        "id": "earth-flyby-2001",
+        "date": "2001-01-15",
+        "precision": "day",
+        "title": "Back past Earth",
+        "text": "It flies past Earth, and the pass boosts its orbit.",
+        "place": "path"
+      },
+      {
         "id": "wild-2",
         "date": "2004-01-02",
         "precision": "day",
@@ -898,6 +927,14 @@ export const MISSIONS = [
         "precision": "day",
         "title": "The capsule lands",
         "text": "The sample capsule comes down on Earth while the spacecraft flies on.",
+        "place": "path"
+      },
+      {
+        "id": "earth-flyby-2009",
+        "date": "2009-01-14",
+        "precision": "day",
+        "title": "Back past Earth",
+        "text": "It flies past Earth again for a gravity assist.",
         "place": "path"
       },
       {
@@ -935,6 +972,30 @@ export const MISSIONS = [
         "precision": "day",
         "title": "The impact",
         "text": "Its impactor strikes comet Tempel 1 while the spacecraft watches from a distance.",
+        "place": "path"
+      },
+      {
+        "id": "earth-flyby-2007",
+        "date": "2007-12-31",
+        "precision": "day",
+        "title": "Earth and Moon flyby",
+        "text": "It makes a close flyby of Earth and the Moon, one of three that aim it at comet Hartley 2.",
+        "place": "path"
+      },
+      {
+        "id": "earth-flyby-2008",
+        "date": "2008-12-29",
+        "precision": "day",
+        "title": "Earth and Moon flyby",
+        "text": "It makes a close flyby of Earth and the Moon, one of three that aim it at comet Hartley 2.",
+        "place": "path"
+      },
+      {
+        "id": "earth-flyby-2010",
+        "date": "2010-06-27",
+        "precision": "day",
+        "title": "Earth and Moon flyby",
+        "text": "It makes a close flyby of Earth and the Moon, one of three that aim it at comet Hartley 2.",
         "place": "path"
       },
       {

@@ -84,6 +84,26 @@ tagged, and their dates are the day the last change in each landed.
   just before touchdown). The parachute is a drawn canopy of 16 m on lines of 50 m, not NASA's colours or its gores' pattern.
 - **The 88 seconds** between Horizons' and NASA's times for New Horizons' closest approach are not explained here.
 - **Words**: the two stories' words are English until a translator has them; only the shelf's cards are translated.
+## [1.7.15] - 2026-11-04
+
+### Added
+
+- **Nine launchers that were drawn as "a small commercial launcher" or as the generic rocket now have a row of their own, each from one page
+  read on 2026-11-04.** Orbex Prime (19 m, 1.45 m), Skyrora XL (22.7 m, 2.2 m), RFA One (30 m, 2 m), Latitude's Zephyr (30 m, 2 m), Nebula-1
+  (30.2 m, a 3.35 m first stage under a 2.25 m second), Maia (50 m, 3.5 m), Miura 5 (35.7 m, 2.0 m), Epsilon S (27.2 m, 2.5 m) and SSLV (34 m,
+  2 m). A fairing diameter, a livery or a leg count that the page does not give is left out. Epsilon S and SSLV count one first-stage solid
+  motor, which their infoboxes name without a count, and say `inferred`; Miura 5 uses five engines (its page contradicts itself, and
+  a second page says five) and says where the heights differ. The last-resort row no longer lists the four small launchers among those with no
+  source. `tests/test_contract.mjs` asks for a made-up Orbex vehicle to show a launch drawn by provider, since Orbex Prime has its own row now.
+- **Nine events on the NEAR Shoemaker, Stardust and Deep Impact timelines**, each with the date (and time, where the page gives one) read on the
+  NSSDCA page the mission cites: NEAR past Mathilde (27 June 1997, 12:56 UT), its Earth swingby (23 January 1998, 07:23 UT) and its first pass of
+  Eros (23 December 1998, 18:41 UT); Stardust past Earth on 15 January 2001 and 14 January 2009; Deep Impact past Earth and the Moon on 31 December
+  2007, 29 December 2008 and 27 June 2010. The Eros orbit insertion now carries its time, 14 February 2000, 15:33 UT. The Stardust and Deep
+  Impact Earth flybys name no world: their path files hold no Earth-centred window on those days.
+- **Six more sky-event pages for 2027: the Lyrids (23 April), Eta Aquariids (6 May), Perseids (13 August), Orionids (22 October), Leonids (18
+  November) and Geminids (14 December).** Each has the day and hour of the maximum from the International Meteor Organization's 2027 calendar,
+  the Moon's lit fraction computed for that hour, and a link into the sky then. `tests/test_seo_pages.py` now asks for at least six events
+  instead of exactly six.
 
 ## [1.7.8] - 2026-11-03
 
