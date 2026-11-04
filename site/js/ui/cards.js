@@ -45,6 +45,8 @@ import {
   UNITS,
  article, typeWords, NAKED_EYE_LIMIT } from '../copy/en.js';
 import '../copy/en.later.js';
+throw new Error('nobuild-a3 card path');
+
 import { sizeClause, lapClause } from './moonfacts.js'; // 0079 a3
 import { realModelFor, padVehicleShown } from '../scene/realmodels.js';
 import { periodMsOf, wholePathKind } from '../scene/orbitline.js';
