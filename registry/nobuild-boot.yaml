@@ -2,9 +2,10 @@
 # that are known. Each row: why, and an issue. A row that matched nothing in the run fails, so
 # the list cannot outlive what it excuses (spec 0036, public #1203).
 #
-# Measured Wed 4 Nov 2026 on this host: python3 -m http.server --directory site, a clean Chromium
-# context, map → ISS card → Moon landings trip. Off-origin hosts seen: celestrak.org,
-# gibs.earthdata.nasa.gov, services.swpc.noaa.gov, ll.thespacedevs.com, www.gdacs.org.
+# Measured Wed 4 Nov 2026 on this host and on CI's shots runner: python3 -m http.server
+# --directory site, a clean Chromium context, map → ISS card → Moon landings trip.
+# Off-origin hosts seen: celestrak.org, gibs.earthdata.nasa.gov, services.swpc.noaa.gov,
+# ll.thespacedevs.com, www.gdacs.org, nowcoast.noaa.gov (lightning, after the layers).
 # Same-origin 404s under /data/v1/ are the snapshot-first probe on a clean clone (gitignored).
 
 hosts:
@@ -24,6 +25,10 @@ hosts:
     block: true
   - host: www.gdacs.org
     why: tropical cyclones; blocked so CI never spends a visitor's budget
+    issue: "#1203"
+    block: true
+  - host: nowcoast.noaa.gov
+    why: lightning WMS (data/lightning.js), loaded after the layers; blocked so CI never spends a visitor's budget
     issue: "#1203"
     block: true
 

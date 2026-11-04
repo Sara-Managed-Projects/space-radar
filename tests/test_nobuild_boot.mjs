@@ -52,7 +52,7 @@ const clean = {
     { url: '/data/v1/gibs-clouds.json', status: 404 },
     { url: '/js/main.js', status: 200 },
   ],
-  hosts: ['celestrak.org', 'gibs.earthdata.nasa.gov', 'services.swpc.noaa.gov', 'll.thespacedevs.com', 'www.gdacs.org'],
+  hosts: ['celestrak.org', 'gibs.earthdata.nasa.gov', 'services.swpc.noaa.gov', 'll.thespacedevs.com', 'www.gdacs.org', 'nowcoast.noaa.gov'],
 };
 
 // 3. A record set with only same-origin 200s and listed hosts passes.
