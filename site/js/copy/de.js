@@ -3868,6 +3868,7 @@ Object.assign(COPY, {
     "cutNote": "Die Stufen sind vorerst aus einem einzigen Modell geschnitten.",
     "drawnNote": "Flammen und Dampf sind gezeichnet.",
     "groundNote": "Der Boden an der Rampe ist illustrativ; Erdkarte von Solar System Scope, CC BY 4.0.",
+    "groundNoteMars": "Der Boden am Landeplatz ist illustrativ; Marskarte von Solar System Scope, CC BY 4.0.",
     "keys": "Leertaste startet oder pausiert, Pfeile springen, Esc schließt"
   },
   "momentShelf": {
@@ -3909,6 +3910,16 @@ Object.assign(COPY, {
         "title": "STS-1",
         "when": "12. bis 14. April 1981",
         "blurb": "Das erste Space Shuttle: Columbia von Rampe 39A, die Booster und der Tank, 54 Stunden im Orbit und ein Gleitflug auf den ausgetrockneten See von Edwards."
+      },
+      "curiosity-edl": {
+        "title": "Curiositys Landung",
+        "when": "6. August 2012",
+        "blurb": "Die sieben Minuten von der Obergrenze der Marsluft bis zum Gale-Krater: Hitzeschild, Fallschirm, Raketenrucksack und Himmelskran, auf der Uhr des JPL."
+      },
+      "new-horizons-pluto": {
+        "title": "New Horizons am Pluto",
+        "when": "14. Juli 2015",
+        "blurb": "Der erste Besuch beim Pluto: von sechs Stunden vorher bis zum Vorbeiflug mit 13,8 km/s, auf der Bahn des JPL selbst, Pluto und Charon als Scheiben, die Sichel dahinter."
       },
       "hubble-deployment": {
         "title": "Hubbles Freisetzung",

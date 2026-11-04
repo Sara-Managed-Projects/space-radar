@@ -4087,6 +4087,7 @@ export const COPY = {
     "cutNote": "Ступені поки вирізано з однієї моделі.",
     "drawnNote": "Полум’я й пару намальовано.",
     "groundNote": "Земля біля стартового майданчика ілюстративна; мапа Землі — Solar System Scope, CC BY 4.0.",
+    "groundNoteMars": "Ground near the site illustrative; Mars map Solar System Scope, CC BY 4.0.",
     "keys": "Пробіл грає або ставить на паузу, стрілки крокують, Escape закриває"
   },
   "momentShelf": {
@@ -4139,6 +4140,16 @@ export const COPY = {
         "title": "Супутник-1",
         "when": "4 жовтня 1957",
         "blurb": "Від Байконура до першого витка навколо Землі: перший штучний супутник, полірована куля діаметром 585 мм, і його сигнал."
+      },
+      "curiosity-edl": {
+        "title": "Curiosity landing",
+        "when": "6 August 2012",
+        "blurb": "The seven minutes from the top of the Martian air to Gale crater: the heat shield, the parachute, the rocket backpack and the sky crane, on JPL's own clock."
+      },
+      "new-horizons-pluto": {
+        "title": "New Horizons at Pluto",
+        "when": "14 July 2015",
+        "blurb": "The first visit to Pluto: from six hours out to the pass at 13.8 km/s on JPL's own track, Pluto and Charon as discs, the crescent left behind."
       },
       "vostok-1": {
         "title": "Vostok 1",
