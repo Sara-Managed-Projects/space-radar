@@ -63,3 +63,14 @@ hosts:
   - {host: PDS 70, why: extreme, year_from_kepler: true} # PDS 70 c has a distance and no year in the table
   - {host: AF Lep, display: AF Leporis, aliases: [AF Lep], why: extreme}
   # 0079 a13: end
+# Release 1.7.24 (public #556): eight of the best-known nearby hosts. Each `why` follows the habitable-zone band scripts/build-systems.py
+# computes: `temperate` where a planet lies inside or at the edge of it (read from registry/systems-generated.yaml on 2026-11-04), else `extreme`.
+  - {host: Barnard's star, id: barnards-star, display: Barnard's Star, why: extreme}
+  - {host: tau Cet, id: tau-ceti, display: Tau Ceti, aliases: [tau Cet], why: extreme}
+  - {host: eps Eri, id: epsilon-eridani, display: Epsilon Eridani, aliases: [eps Eri], why: extreme}
+  - {host: GJ 887, aliases: [Gliese 887], display: Gliese 887, why: temperate}
+  - {host: GJ 581, aliases: [Gliese 581], display: Gliese 581, why: extreme}
+  - {host: GJ 876, aliases: [Gliese 876], display: Gliese 876, why: temperate}
+  - {host: GJ 273, aliases: [Gliese 273], display: Luyten's Star, why: temperate}
+  - {host: GJ 1061, aliases: [Gliese 1061], display: GJ 1061, why: temperate}
+# Release 1.7.24: end

@@ -295,6 +295,37 @@ tagged, and their dates are the day the last change in each landed.
   Earth is, the reflector boom and the dishes' places are read off one rendering and two mockups. The PSLV skirt's height and whether it stays with the stage in orbit are not stated by any page opened.
   No model has been seen by a person who knows the craft; the pictures in the pull request are the first look.
 
+## [1.7.24] - 2026-11-04
+
+### Added
+
+- **Eight more nearby stars with planets can be flown into: Barnard's Star, Tau Ceti, Epsilon Eridani, Gliese 887, Gliese 581, Gliese 876, Luyten's Star and GJ 1061.**
+  They are hosts in `registry/systems-list.yaml`, so every number is the NASA Exoplanet Archive's, read on 2026-11-04 (the list is a choice, not data); there are now 50
+  generated systems and 127 planets beside TRAPPIST-1. Gliese 887, Gliese 876, Luyten's Star and GJ 1061 sit in "Planets near the habitable zone" because a planet
+  lies inside or at the edge of the band the build computes; the other four have none there, and the card says nothing about habitability for them.
+- **Six more famous stars carry a measured radius: Canopus, Achernar, Regulus, Algol, Castor and Upsilon Andromedae.** Each row cites the arXiv page of the paper, read on
+  2026-11-04, and quotes the sentence or table row the number was taken from: Canopus 73.2 ± 3.9 (Domiciano de Souza et al. 2021), Achernar's equatorial 12.0 ± 0.4
+  (2003), Regulus's equatorial 4.16 ± 0.08 (McAlister et al. 2005), Algol A 2.73 ± 0.20 (Baron et al. 2012), Castor Aa 2.089 ± 0.005 (Torres et al. 2022) and
+  Upsilon Andromedae 1.70 ± 0.02 (Ligi et al. 2012). Achernar and Regulus spin fast and are flattened, so the equatorial radius is the one drawn, as for Vega and Altair.
+  Antares and Spica were read and not used: the paper read gives Antares a radius of 680 Suns with no error bar, and Spica's radii come from spectroscopic modelling, not a
+  diameter. No paper with a radius and its error was found for the other stars still on the colour-index estimate.
+  `CREDITS.md` §3d-4 lists the papers.
+
+### Changed
+
+- **A planet's orbit takes one paper's numbers when the composite table disagrees with itself.** The Archive's composite table fills each column from whichever paper had it, so
+  a planet's distance, period and star's mass can come from three papers that disagree (25 of 99 orbits did on 2026-10-08). `scripts/build-exoplanets.py` now also pulls the
+  Archive's `ps` table for the listed hosts into `registry/systems-sets.csv` (the Kepler pipeline's KOI tables left out: they are catalogues), and
+  `scripts/build-systems.py` picks the star's mass with which most planets keep a distance the Archive gives within Kepler's 5 %, then the newest paper's set for each planet that
+  needs one; the paper is named (`a_ref`, and `mass_ref` for a star). The idea in internal #474 was to read `default_flag = 1`; measured 2026-11-04, none of the 26 planets that
+  failed the check passes on its default row, and other papers' rows pass for 23 of them. Orbits computed from the period fall from 26 to 7. WASP-17 b is at 0.0515 au around a
+  1.31-Sun star (the composite row had 2.28), HD 209458, GJ 1132, Beta Pictoris, Kepler-69, Kepler-90 and PDS 70 change star mass the same way, each with its paper named.
+  The weekly refresh workflow commits the new file with the others.
+
+### Not changed
+
+- **Standard magnitudes of satellites: nothing adopted** (internal #391). GCAT is CC BY 4.0 (redistribution allowed with a citation) but has no magnitude column; SatNOGS DB
+  data is CC BY-SA 4.0, its public satellite record has no magnitude, and its optical observations need an account. `CREDITS.md` §3d-5 holds the sentences read.
 ## [1.7.8] - 2026-11-03
 
 ### Added

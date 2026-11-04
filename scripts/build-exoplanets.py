@@ -19,6 +19,14 @@ has to know. Those columns are written for the listed hosts only, to registry/sy
 with the slim columns too. --systems-only refreshes this side file without changing the bundled
 catalogue; scripts/build-systems.py validates the new rows before this file is replaced.
 
+ONE PAPER'S SET PER PLANET (internal #474). The composite table takes each column from whichever paper
+filled it, so a planet's distance, period and star's mass can come from three papers that disagree. The
+Archive's `ps` table keeps every paper's row; registry/systems-sets.csv holds, for the listed hosts' planets,
+the rows that give a distance, a period and a stellar mass together (the Kepler pipeline's KOI tables left
+out: they are catalogues, not one paper's analysis). scripts/build-systems.py takes the newest row whose own
+numbers agree with Kepler's third law when the composite row's do not. It is pulled with the same
+--pull and --systems-only, and is kept as it is when the source is a file.
+
 The live layer reads the harvester's snapshot of the same query (registry/sources.yaml
 `nasa-exoplanet-archive`, weekly). This file is the BUNDLED COPY the layer falls back to when no
 snapshot exists yet -- dated, so the card can say "as of <date>" -- and it is the same columns the
@@ -36,8 +44,10 @@ table DOI (CREDITS.md §4.7).
 from __future__ import annotations
 
 import csv
+import html
 import importlib.util
 import io
+import re
 import sys
 import tempfile
 import urllib.parse
@@ -52,6 +62,9 @@ COLUMNS = ("pl_name", "hostname", "ra", "dec", "sy_dist", "pl_rade", "pl_bmasse"
            "disc_year", "discoverymethod", "st_teff", "st_rad", "st_spectype")
 # The wider columns, kept for the hosts of registry/systems-list.yaml only (the docstring says why).
 SIDE = ROOT / "registry/systems-columns.csv"
+# The per-paper rows of the Archive's `ps` table for the same hosts (the docstring says why).
+SETS = ROOT / "registry/systems-sets.csv"
+SETS_COLUMNS = ("pl_name", "default_flag", "pl_orbsmax", "pl_orbper", "st_mass", "pubdate", "ref")
 SIDE_COLUMNS = ("pl_name", "hostname", "pl_orbsmax", "st_mass", "st_lum", "pl_orbeccen", "pl_tranmid",
                 "cb_flag", "sy_snum", "pl_bmassprov")
 # The columns whose reference says whether the Archive measured the number or calculated it. The
@@ -62,6 +75,8 @@ TAP = "https://exoplanetarchive.ipac.caltech.edu/TAP/sync"
 QUERY = ("select pl_name,hostname,ra,dec,sy_dist,pl_rade,pl_bmasse,pl_orbper,disc_year,discoverymethod,"
          "st_teff,st_rad,st_spectype,pl_orbsmax,st_mass,st_lum,pl_orbeccen,pl_tranmid,cb_flag,sy_snum,"
          "pl_bmassprov,pl_rade_reflink,pl_bmasse_reflink from pscomppars")
+SETS_QUERY = ("select pl_name,default_flag,pl_orbsmax,pl_orbper,st_mass,pl_refname,pl_pubdate from ps "
+              "where pl_orbsmax is not null and pl_orbper is not null and st_mass is not null")
 ROUND = {"ra": 5, "dec": 5, "sy_dist": 3, "pl_rade": 3, "pl_bmasse": 3, "pl_orbper": 5, "st_teff": 0, "st_rad": 3}
 
 
@@ -78,12 +93,47 @@ def pull(keep: Path | None, systems_only: bool = False) -> Path:
     return dest
 
 
+def pull_sets() -> Path:
+    """The `ps` rows that give a distance, a period and a star's mass, for the listed hosts, as a temporary file."""
+    query = SETS_QUERY + " and hostname in (" + ",".join("'" + h.replace("'", "''") + "'" for h in sorted(listed_hosts())) + ")"
+    url = TAP + "?" + urllib.parse.urlencode({"query": query, "format": "csv"})
+    dest = Path(tempfile.mkdtemp(prefix="ps-sets-")) / "ps.csv"
+    with urllib.request.urlopen(url, timeout=600) as resp:  # noqa: S310 -- one fixed https host
+        dest.write_bytes(resp.read())
+    print(f"exoplanets: pulled {dest.stat().st_size} B of per-paper rows from {TAP}")
+    return dest
+
+
+def sets_text(src: Path, planets: set[str], as_of: str) -> str:
+    """registry/systems-sets.csv: one row per paper per planet, the pipeline's KOI tables left out."""
+    with src.open(encoding="utf-8", newline="") as fh:
+        reader = csv.DictReader(fh)
+        missing = [c for c in ("pl_name", "default_flag", "pl_orbsmax", "pl_orbper", "st_mass", "pl_refname", "pl_pubdate") if c not in (reader.fieldnames or [])]
+        if missing:
+            raise SystemExit(f"per-paper source lacks columns {missing}")
+        rows = []
+        for r in reader:
+            ref = html.unescape(re.sub(r"<[^>]+>", "", r["pl_refname"] or "")).strip()
+            if r["pl_name"].strip() in planets and ref and "KOI Table" not in ref:
+                rows.append((r["pl_name"].strip(), (r["pl_pubdate"] or "").strip(), ref, (r["default_flag"] or "").strip(),
+                             (r["pl_orbsmax"] or "").strip(), (r["pl_orbper"] or "").strip(), (r["st_mass"] or "").strip()))
+    rows.sort()
+    out = io.StringIO(newline="")
+    out.write(f"# NASA Exoplanet Archive ps (one row per paper), as of {as_of}; the rows with a distance, a period and a stellar mass, "
+              f"for the planets of registry/systems-columns.csv; written by scripts/build-exoplanets.py\n")
+    w = csv.writer(out, lineterminator="\n")
+    w.writerow(SETS_COLUMNS)
+    for name, pub, ref, flag, a, per, mass in rows:
+        w.writerow([name, flag, a, per, mass, pub, ref])
+    return out.getvalue()
+
+
 def listed_hosts() -> set[str]:
     doc = yaml.safe_load((ROOT / "registry/systems-list.yaml").read_text(encoding="utf-8")) or {}
     return {str(h["host"]) for h in doc.get("hosts") or []}
 
 
-def write_side(src: Path, as_of: str) -> None:
+def write_side(src: Path, as_of: str, sets_src: Path | None = None) -> None:
     """registry/systems-columns.csv: the wider columns for the listed hosts, as the Archive gave them."""
     hosts = listed_hosts()
     with src.open(encoding="utf-8", newline="") as fh:
@@ -109,10 +159,16 @@ def write_side(src: Path, as_of: str) -> None:
     for r in rows:
         calc = "".join(letter for letter, col in CALC if "CALCULATED" in (r.get(col) or "").upper())
         w.writerow([(r.get(c) or "").strip() for c in SIDE_COLUMNS] + [calc])
+    # The per-paper rows: the new pull, or the file as it stands (a source that is a file has none).
+    sets_out = sets_text(sets_src, {r["pl_name"].strip() for r in rows}, as_of) if sets_src is not None else \
+        SETS.read_text(encoding="utf-8") if SETS.exists() else None
     # Validate the entire new chain before replacing even the side file.
     with tempfile.TemporaryDirectory(prefix="systems-validate-") as directory:
         candidate = Path(directory) / "systems-columns.csv"
         candidate.write_text(out.getvalue(), encoding="utf-8")
+        candidate_sets = Path(directory) / "systems-sets.csv"
+        if sets_out is not None:
+            candidate_sets.write_text(sets_out, encoding="utf-8")
         spec = importlib.util.spec_from_file_location("build_systems", ROOT / "scripts/build-systems.py")
         builder = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(builder)
@@ -121,8 +177,11 @@ def write_side(src: Path, as_of: str) -> None:
         builder.TABLE = OUT
         builder.BINARIES = ROOT / "registry/systems-binaries.yaml"
         builder.SIDE = candidate
+        builder.SETS = candidate_sets
         builder.build()
     SIDE.write_text(out.getvalue(), encoding="utf-8")
+    if sets_src is not None:
+        SETS.write_text(sets_out, encoding="utf-8")
     print(f"star systems: {len(rows)} planets of {len(hosts)} hosts -> {SIDE.relative_to(ROOT)} ({SIDE.stat().st_size} B)")
 
 
@@ -139,7 +198,7 @@ def main(argv: list[str]) -> int:
     from datetime import date
     date.fromisoformat(as_of)
     if argv[0] == "--systems-only":
-        write_side(pull(keep, systems_only=True), as_of)
+        write_side(pull(keep, systems_only=True), as_of, pull_sets())
         return 0
     src = pull(keep) if argv[0] == "--pull" else Path(argv[0])
     kept = skipped = 0
@@ -176,7 +235,7 @@ def main(argv: list[str]) -> int:
     (ROOT / "site/data/exoplanets.bin").write_bytes(packed)
     print(f"exoplanets: packed -> site/data/exoplanets.bin {len(packed)} B")
     # 0079 a13: end
-    write_side(src, as_of)
+    write_side(src, as_of, pull_sets() if argv[0] == "--pull" else None)
     return 0
 
 

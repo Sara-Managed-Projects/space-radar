@@ -42,11 +42,13 @@ class RefreshTest(unittest.TestCase):
         self.pull.ROOT = self.root
         self.pull.OUT = self.root / "site/data/exoplanets.csv"
         self.pull.SIDE = self.root / "registry/systems-columns.csv"
+        self.pull.SETS = self.root / "registry/systems-sets.csv"
         self.before = {
             p: p.read_bytes()
             for p in [
                 self.pull.OUT,
                 self.pull.SIDE,
+                self.pull.SETS,
                 self.root / "registry/systems-generated.yaml",
             ]
         }
@@ -65,7 +67,8 @@ class RefreshTest(unittest.TestCase):
 
     def run_pull(self):
         self.write_fixture()
-        with patch.object(self.pull, "pull", return_value=self.fixture):
+        # No per-paper pull here: the checked-in sets file stands (the pull's second query is read by tests/test_systems_sets.py).
+        with patch.object(self.pull, "pull", return_value=self.fixture), patch.object(self.pull, "pull_sets", return_value=None):
             self.assertEqual(self.pull.main(["--systems-only", "2026-10-25"]), 0)
 
     def test_refresh_and_offline_generation(self):

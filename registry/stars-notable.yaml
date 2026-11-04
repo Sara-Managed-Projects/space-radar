@@ -142,6 +142,10 @@ stars:
     name: Canopus
     why: "The second-brightest star in the night sky. Spacecraft steer by it: in 1964 Mariner 4 locked on to it, the first time a star had been used."
     source: "https://en.wikipedia.org/wiki/Canopus (read 2026-09-22)"
+    radius_suns: 73.2
+    radius_err_suns: 3.9
+    physical_source: "https://arxiv.org/abs/2109.07153 (read 2026-11-04)"
+    physical_note: "Domiciano de Souza, Zorec and Millour 2021, \"Refined fundamental parameters of Canopus from combined near-IR interferometry and spectral energy distribution\", section 4.3: \"From our best-fit power-law LD [angular diameter] given in Table 3 and from the Hipparcos parallax, we straightforwardly computed the Canopus radius: R = 0.5 [angular diameter] d = 73.2 ± 3.9 R_sun\" (the abstract gives the PIONIER angular diameter, 7.184 mas; no temperature taken)"
 
   - hip: 69673
     name: Arcturus
@@ -183,6 +187,10 @@ stars:
     name: Achernar
     why: "It spins so fast it is 35% wider at the equator than pole to pole: in 2015, the least spherical star known in the Milky Way."
     source: "https://en.wikipedia.org/wiki/Achernar (read 2026-09-22)"
+    radius_suns: 12.0
+    radius_err_suns: 0.4
+    physical_source: "https://arxiv.org/abs/astro-ph/0306277 (read 2026-11-04)"
+    physical_note: "Domiciano de Souza et al. 2003, \"The spinning-top Be star Achernar from VLTI-VINCI\": \"using the Hipparcos distance (d = 44.1 ± 1.1 pc; Perryman et al. 1997), we derive an equatorial radius R_eq = 12.0 ± 0.4 R_sun and a maximum polar radius R_pol_max = 7.7 ± 0.2 R_sun\" (the equatorial radius: Achernar spins fast and is flattened, the polar one is smaller; no temperature taken)"
 
   - hip: 97649
     name: Altair
@@ -247,6 +255,10 @@ stars:
     name: Regulus
     why: "The closest bright star to the ecliptic, so the Moon often passes in front of it. It spins every 15.9 hours, near the speed that would tear it apart."
     source: "https://en.wikipedia.org/wiki/Regulus (read 2026-09-22)"
+    radius_suns: 4.16
+    radius_err_suns: 0.08
+    physical_source: "https://arxiv.org/abs/astro-ph/0501261 (read 2026-11-04)"
+    physical_note: "McAlister et al. 2005, \"First Results from the CHARA Array. I. An Interferometric and Spectroscopic Study of the Fast Rotator alpha Leonis (Regulus)\", Table 5 \"Final Parameters for Regulus\": R_e (R_sun) 4.16 ± 0.08 and R_p (R_sun) 3.14 ± 0.06, at d = 23.5 ± 0.4 pc (the equatorial radius: Regulus spins fast and its text says \"an equatorial radius that is 32 % larger than the polar radius\"; no temperature taken, the paper gives a polar and an equatorial one)"
 
   - hip: 60718
     name: Acrux
@@ -257,6 +269,10 @@ stars:
     name: Castor
     why: "One point of light, six stars in three pairs. It was first recorded as a double star in 1718."
     source: "https://en.wikipedia.org/wiki/Castor_(star) (read 2026-09-22)"
+    radius_suns: 2.089
+    radius_err_suns: 0.005
+    physical_source: "https://arxiv.org/abs/2210.16322 (read 2026-11-04)"
+    physical_note: "Torres, Schaefer and Monnier 2022, \"The Orbits and Dynamical Masses of the Castor System\": \"With our distance to the system from Table 5, we obtain finally R_Aa = 2.089 ± 0.005 R_sun and R_Ba = 1.648 ± 0.011 R_sun\" (the radius of Castor Aa, the brighter star of Castor A, from its CHARA angular diameter of 1.289 ± 0.003 mas; no temperature taken)"
 
   # --- pole stars, past, present and future -------------------------------------------------------
   - hip: 11767
@@ -288,6 +304,10 @@ stars:
     name: Algol
     why: "The Demon Star. Every 2 days 20 hours 49 minutes its companion passes in front of it and it dims for about ten hours."
     source: "https://en.wikipedia.org/wiki/Algol (read 2026-09-22)"
+    radius_suns: 2.73
+    radius_err_suns: 0.2
+    physical_source: "https://arxiv.org/abs/1205.0754 (read 2026-11-04)"
+    physical_note: "Baron et al. 2012, \"Imaging the Algol Triple System in H Band with the CHARA Interferometer\", Table 4 \"Radius and Mass Estimates of Algol A, Algol B and Algol C\": R_A (R_sun) 2.73 ± 0.20 \"assuming a parallax of 34.7 ± 0.6 mas\" (the radius of Algol A, the star the system is named for; B and C are fainter)"
 
   - hip: 110991
     name: Delta Cephei
@@ -324,6 +344,10 @@ stars:
     name: Upsilon Andromedae
     why: "The first main-sequence star found with more than one planet, and the first planetary system known in a system of more than one star."
     source: "https://en.wikipedia.org/wiki/Upsilon_Andromedae (read 2026-09-22)"
+    radius_suns: 1.7
+    radius_err_suns: 0.02
+    physical_source: "https://arxiv.org/abs/1208.3895 (read 2026-11-04)"
+    physical_note: "Ligi et al. 2012, \"A new interferometric study of four exoplanet host stars: theta Cygni, 14 Andromedae, upsilon Andromedae and 42 Draconis\", Table 5 \"Summary of the fundamental parameters of 14 And, upsilon And and 42 Dra calculated using VEGA interferometric data\": upsilon And, Radius 1.70 ± 0.02, from a limb-darkened diameter of 1.17 ± 0.01 mas (Table 4) and a parallax of 74.12 ± 0.19 mas (Table 1); no temperature taken (the paper computes it from an adopted luminosity)"
 
   - hip: 27321
     name: Beta Pictoris

@@ -51,7 +51,7 @@ jobs:
           BRANCH: auto/star-systems
         run: |
           set -euo pipefail
-          FILES=(registry/systems-columns.csv registry/systems-generated.yaml site/js/data/systems-index.js site/js/data/systems-table.js)
+          FILES=(registry/systems-columns.csv registry/systems-sets.csv registry/systems-generated.yaml site/js/data/systems-index.js site/js/data/systems-table.js)
           if git diff --quiet -- "${FILES[@]}"; then
             echo "The successful pull matched the tree." >> "$GITHUB_STEP_SUMMARY"
             exit 0

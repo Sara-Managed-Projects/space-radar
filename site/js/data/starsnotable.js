@@ -123,7 +123,10 @@ export const STARS_NOTABLE = [
     "hip": 30438,
     "name": "Canopus",
     "why": "The second-brightest star in the night sky. Spacecraft steer by it: in 1964 Mariner 4 locked on to it, the first time a star had been used.",
-    "source": "https://en.wikipedia.org/wiki/Canopus (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Canopus (read 2026-09-22)",
+    "radius_suns": 73.2,
+    "radius_err_suns": 3.9,
+    "physical_source": "https://arxiv.org/abs/2109.07153 (read 2026-11-04)"
   },
   {
     "hip": 69673,
@@ -166,7 +169,10 @@ export const STARS_NOTABLE = [
     "hip": 7588,
     "name": "Achernar",
     "why": "It spins so fast it is 35% wider at the equator than pole to pole: in 2015, the least spherical star known in the Milky Way.",
-    "source": "https://en.wikipedia.org/wiki/Achernar (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Achernar (read 2026-09-22)",
+    "radius_suns": 12.0,
+    "radius_err_suns": 0.4,
+    "physical_source": "https://arxiv.org/abs/astro-ph/0306277 (read 2026-11-04)"
   },
   {
     "hip": 97649,
@@ -233,7 +239,10 @@ export const STARS_NOTABLE = [
     "hip": 49669,
     "name": "Regulus",
     "why": "The closest bright star to the ecliptic, so the Moon often passes in front of it. It spins every 15.9 hours, near the speed that would tear it apart.",
-    "source": "https://en.wikipedia.org/wiki/Regulus (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Regulus (read 2026-09-22)",
+    "radius_suns": 4.16,
+    "radius_err_suns": 0.08,
+    "physical_source": "https://arxiv.org/abs/astro-ph/0501261 (read 2026-11-04)"
   },
   {
     "hip": 60718,
@@ -245,7 +254,10 @@ export const STARS_NOTABLE = [
     "hip": 36850,
     "name": "Castor",
     "why": "One point of light, six stars in three pairs. It was first recorded as a double star in 1718.",
-    "source": "https://en.wikipedia.org/wiki/Castor_(star) (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Castor_(star) (read 2026-09-22)",
+    "radius_suns": 2.089,
+    "radius_err_suns": 0.005,
+    "physical_source": "https://arxiv.org/abs/2210.16322 (read 2026-11-04)"
   },
   {
     "hip": 11767,
@@ -278,7 +290,10 @@ export const STARS_NOTABLE = [
     "hip": 14576,
     "name": "Algol",
     "why": "The Demon Star. Every 2 days 20 hours 49 minutes its companion passes in front of it and it dims for about ten hours.",
-    "source": "https://en.wikipedia.org/wiki/Algol (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Algol (read 2026-09-22)",
+    "radius_suns": 2.73,
+    "radius_err_suns": 0.2,
+    "physical_source": "https://arxiv.org/abs/1205.0754 (read 2026-11-04)"
   },
   {
     "hip": 110991,
@@ -320,7 +335,10 @@ export const STARS_NOTABLE = [
     "hip": 7513,
     "name": "Upsilon Andromedae",
     "why": "The first main-sequence star found with more than one planet, and the first planetary system known in a system of more than one star.",
-    "source": "https://en.wikipedia.org/wiki/Upsilon_Andromedae (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Upsilon_Andromedae (read 2026-09-22)",
+    "radius_suns": 1.7,
+    "radius_err_suns": 0.02,
+    "physical_source": "https://arxiv.org/abs/1208.3895 (read 2026-11-04)"
   },
   {
     "hip": 27321,
