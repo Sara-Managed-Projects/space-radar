@@ -11,6 +11,38 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [1.7.20] - 2026-11-04
+
+### Fixed
+
+- **"Keep for offline" keeps the sharper maps a trip may ask for later.** The list was built for the texture tier the device was at when the
+  button was pressed, so a trip kept on a device that was promoted a few seconds afterwards still asked for 4 k maps the cache did not hold,
+  and the Earth's and the Milky Way's own maps were in no trip's list at all. It now takes the highest tier the visit may reach (the device's
+  ceiling while Auto still promotes, the chosen quality's own tier otherwise) and the maps the page fetches whatever the stop (the Earth's day
+  for the clock's month, night, water and relief, and the Milky Way). `keptTier()` in `ui/keeptrip.js`, held by `tests/test_keeptrip.mjs` for
+  `moon-landings`. (internal #564)
+- **Spirit's line on Mars can be seen from where its site is arrived at.** The fade of a traverse (full inside 120 km, none past 320 km) left
+  Spirit's 7.07 km line at 0.3 % from the 309 km the arrival pose stands from it, and it was 12 px long beside a rover model many times its size.
+  A line shorter than 15 km now has the fade's distances stretched by 15 km over its length (at most 2.5 times) and its ribbon widened up to 1.6
+  times as it shrinks on the screen; the Moon's two lines and Opportunity's are as they were, a phone (no tiles) still draws none, and a world
+  still has one mesh a line. (internal #992)
+- **The undo toast no longer lies across the sheet's tabs on a phone.** With the sheet full at 390 by 844 "Moved to Planets, Back to where you
+  were" stood under the top bar, over the Earth, Planets, Stars and Tonight row; it now stands at the foot of the screen. (internal #569)
+
+### Changed
+
+- **Worlds too small to show a facet are drawn with a 16 by 12 sphere.** Thirty-one worlds of 6 016 triangles each were 190 000 of the
+  triangles of every deep stop, where each is a dot under two pixels wide; below 0.4 % of half the view's height (a disc 1.8 px in radius at 900
+  px) a world now wears a sphere whose facets sag 0.04 px, and the 64 by 48 one again from there up. The most a stop of the two trips to the edge
+  draws fell from 254 694 to 84 774 triangles at 1600 by 900 (from 254 310 to 84 390 at 390 by 844), with the stops looking the same. The row
+  `triangles_per_stop` goes from 270 100 to 100 000. (internal #994)
+
+### Added
+
+- **Three look probes.** `r1720-mars` (Spirit's and Opportunity's traverses from the app's arrival pose and three heights, each with the line
+  and the rover hidden), `r1720-tris` (a census of the triangles of a trip's stops by group, beside the renderer's own count) and `r1720-owed`
+  (the sunspot close-up, the 'Following Saturn' line, Earth events from the copy, the dark-sky stop, names in the Earth frame and the undo toast
+  over the sheet's tabs), in `tests/probes/look/`, documented in `tools/README.md`. (internal #565, #566, #569, #992, #994)
 ## [1.7.9] - 2026-11-03
 
 ### Added
