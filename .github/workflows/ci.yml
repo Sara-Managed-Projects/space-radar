@@ -1406,9 +1406,9 @@ jobs:
         run: node tests/test_exoface_helpers.mjs
       - name: "bisect, the interval halving every shadow time depends on, in both directions and in a bounded number of calls (public #628)"
         run: node tests/test_bisect.mjs
-      - name: "typeWords keeps H II and the proper names and lowers the rest, the fix for "a h ii region nebula" (public #704)"
+      - name: 'typeWords keeps H II and the proper names and lowers the rest, the fix for "a h ii region nebula" (public #704)'
         run: node tests/test_type_words.mjs
-      - name: "degWords writes the live page's "51.2° N", including the hemisphere of a value that rounds to zero (public #712)"
+      - name: 'degWords writes the live page''s "51.2° N", including the hemisphere of a value that rounds to zero (public #712)'
         run: node tests/test_live_degwords.mjs
       - name: "orbitsEarth lets only things that go round the Earth have a sunlight or shadow line (public #720)"
         run: node tests/test_shadow_orbits_earth.mjs
