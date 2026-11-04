@@ -10,6 +10,7 @@
 //   flightMs(from, to, pace)           how long the camera takes between two places
 //   planFlight(hop)                    the curve and the length of a long flight, from its geometry
 //   dwellFor(pace, rng)                how long it stays, and the slow turn it makes there
+//                                      (`rng` defaults to one stream, a fixed seed under ?look=1: internal #779)
 //   readOptions(value, stored)         what `#drift=…` and the remembered choices ask for
 //   writeOptions(options)              the same, as the address says it
 //
@@ -27,6 +28,8 @@
 // NOTHING HERE IS PREDEFINED. A trip is a registry row somebody wrote (registry/tours.yaml); a
 // reel is a list of trips (registry/autopilot.yaml). The drift has no row: its pool is whatever
 // the layers hold when it starts, so a satellite launched this morning is in it tonight.
+
+import { lookRandom } from '../scene/lookrandom.js';
 
 /** What the drift can travel through, in the order the options list them. */
 export const CATEGORIES = ['craft', 'worlds', 'small', 'stars', 'deep'];
@@ -64,6 +67,9 @@ export const PACES = {
  * `bare` is "only space" (ui/drift.js): nothing on the screen but the sky and the things in it.
  */
 export const DEFAULTS = { through: ['craft', 'worlds'], realOnly: true, tags: true, bare: false, pace: 'steady' };
+
+/** The walk's and the dwell's default dice: one stream, so a seeded run goes on from where it was (scene/lookrandom.js). */
+const DICE = lookRandom(5);
 
 /** The one key the mode owns in the address. */
 export const URL_KEY = 'drift';
@@ -174,7 +180,7 @@ export const TURN_CHANCE = 0.18;
  * empty. It never ends and never returns the place it returned last, unless that is the only one.
  */
 export function createWalk(places, opts = {}) {
-  const rng = typeof opts.rng === 'function' ? opts.rng : Math.random;
+  const rng = typeof opts.rng === 'function' ? opts.rng : DICE;
   const byHood = new Map();
   for (const p of places || []) {
     if (!byHood.has(p.hood)) byHood.set(p.hood, []);
@@ -603,7 +609,7 @@ function bendRound(body, curve, line, sep, perX, up) {
  * How long it stays, and the turn it makes while it does: `deg` is signed (the way round is a coin
  * toss) and is what one dwell at the pace's rate covers, so the turn ends as the stay does.
  */
-export function dwellFor(pace = 'steady', rng = Math.random) {
+export function dwellFor(pace = 'steady', rng = DICE) {
   const p = PACES[pace] || PACES.steady;
   const s = p.dwell[0] + rng() * (p.dwell[1] - p.dwell[0]);
   const sign = rng() < 0.5 ? -1 : 1;

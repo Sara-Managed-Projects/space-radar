@@ -84,4 +84,4 @@ KIND_MIRROR = Mirror(source="registry/aliases.yaml", target="site/js/data/kindwo
                      render=render_kinds, what="kindwords.js", indent=0)
 
 if __name__ == "__main__":
-    sys.exit(max(MIRROR.main(sys.argv[1:]), KIND_MIRROR.main(sys.argv[1:])))
+    sys.exit(max(MIRROR.main(), KIND_MIRROR.main()))

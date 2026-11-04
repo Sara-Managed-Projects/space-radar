@@ -36,7 +36,7 @@ is not wasted: the loader reads exactly the file you write.
 1. **The interface and the cards** (`site/js/copy/en.js` and `en.later.js`): about 2 300 strings
    across 100 sections (counted 2026-10-09): buttons, menus, panel names, the words on an object's
    card. This is the first milestone, and it is already useful alone.
-2. **The glossary** (`GLOSSARY` in the same file, from `registry/glossary.yaml`): 43 short
+2. **The glossary** (`GLOSSARY` in the same file, from `registry/glossary.yaml`): the short
    explanations, each written for a curious 14-year-old and read aloud to a 9-year-old.
    Keep each key as it is (`"low Earth orbit"`): the card finds a term by its key, so a translated
    explanation shows on a card whose own text contains that English key; matching terms in your language is
@@ -165,3 +165,10 @@ does the same work twice. Offering a language that has no issue yet:
 [open the translation form](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=translation.yml).
 Every translator is named in the release notes of the release that carries their language.
 We answer within 48 hours.
+
+## A phrase is wrong
+
+Every language here is a draft, so a wrong phrase is expected. To report one without writing any code,
+[open the form for a wrong phrase](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=mistranslation.yml):
+pick the language, paste what it says now and, if you can, what a person would say. One phrase is enough, and a report in your own
+language is fine. Fixing it yourself is one line in `site/js/copy/<code>.js` and a pull request.

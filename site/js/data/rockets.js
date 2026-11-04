@@ -1464,6 +1464,250 @@ export const ROCKETS = [
     "class": "measured"
   },
   {
+    "id": "orbex-prime",
+    "display": "Orbex Prime",
+    "match": {
+      "full_name": [
+        "Orbex Prime"
+      ]
+    },
+    "stands_for": "variant",
+    "height_m": 19.0,
+    "core_dia_m": 1.45,
+    "taper": "tube",
+    "top": {
+      "kind": "fairing"
+    },
+    "boosters": {
+      "shape": "none",
+      "count": 0
+    },
+    "engines": {
+      "count": 6,
+      "pattern": "unknown"
+    },
+    "livery": "unknown",
+    "class": "measured"
+  },
+  {
+    "id": "skyrora-xl",
+    "display": "Skyrora XL",
+    "match": {
+      "full_name": [
+        "Skyrora XL"
+      ]
+    },
+    "stands_for": "variant",
+    "height_m": 22.7,
+    "core_dia_m": 2.2,
+    "taper": "tube",
+    "top": {
+      "kind": "fairing"
+    },
+    "boosters": {
+      "shape": "none",
+      "count": 0
+    },
+    "engines": {
+      "count": 9,
+      "pattern": "unknown"
+    },
+    "livery": "unknown",
+    "class": "measured"
+  },
+  {
+    "id": "rfa-one",
+    "display": "RFA One",
+    "match": {
+      "full_name": [
+        "RFA One"
+      ]
+    },
+    "stands_for": "variant",
+    "height_m": 30.0,
+    "core_dia_m": 2.0,
+    "taper": "tube",
+    "top": {
+      "kind": "fairing"
+    },
+    "boosters": {
+      "shape": "none",
+      "count": 0
+    },
+    "engines": {
+      "count": 9,
+      "pattern": "unknown"
+    },
+    "livery": "unknown",
+    "class": "measured"
+  },
+  {
+    "id": "latitude-zephyr",
+    "display": "Zephyr",
+    "match": {
+      "full_name": [
+        "Zéphyr"
+      ]
+    },
+    "stands_for": "variant",
+    "height_m": 30.0,
+    "core_dia_m": 2.0,
+    "taper": "tube",
+    "top": {
+      "kind": "fairing"
+    },
+    "boosters": {
+      "shape": "none",
+      "count": 0
+    },
+    "engines": {
+      "count": 7,
+      "pattern": "unknown"
+    },
+    "livery": "unknown",
+    "class": "measured"
+  },
+  {
+    "id": "nebula-1",
+    "display": "Nebula-1",
+    "match": {
+      "full_name": [
+        "Nebula-1"
+      ]
+    },
+    "stands_for": "variant",
+    "height_m": 30.2,
+    "core_dia_m": 3.35,
+    "taper": "stepped",
+    "sections": [
+      {
+        "dia_m": 3.35
+      },
+      {
+        "dia_m": 2.25
+      }
+    ],
+    "top": {
+      "kind": "fairing"
+    },
+    "boosters": {
+      "shape": "none",
+      "count": 0
+    },
+    "engines": {
+      "count": 9,
+      "pattern": "unknown"
+    },
+    "livery": "unknown",
+    "class": "measured"
+  },
+  {
+    "id": "maia",
+    "display": "Maia",
+    "match": {
+      "full_name": [
+        "Maia"
+      ]
+    },
+    "stands_for": "variant",
+    "height_m": 50.0,
+    "core_dia_m": 3.5,
+    "taper": "tube",
+    "top": {
+      "kind": "fairing"
+    },
+    "boosters": {
+      "shape": "none",
+      "count": 0
+    },
+    "engines": {
+      "count": 3,
+      "pattern": "unknown"
+    },
+    "livery": "unknown",
+    "class": "measured"
+  },
+  {
+    "id": "miura-5",
+    "display": "Miura 5",
+    "match": {
+      "full_name": [
+        "Miura 5"
+      ]
+    },
+    "stands_for": "variant",
+    "height_m": 35.7,
+    "core_dia_m": 2.0,
+    "taper": "tube",
+    "top": {
+      "kind": "fairing"
+    },
+    "boosters": {
+      "shape": "none",
+      "count": 0
+    },
+    "engines": {
+      "count": 5,
+      "pattern": "unknown"
+    },
+    "stage1_len_m": 26.3,
+    "livery": "unknown",
+    "class": "measured"
+  },
+  {
+    "id": "epsilon-s",
+    "display": "Epsilon S",
+    "match": {
+      "full_name": [
+        "Epsilon S"
+      ]
+    },
+    "stands_for": "variant",
+    "height_m": 27.2,
+    "core_dia_m": 2.5,
+    "taper": "tube",
+    "top": {
+      "kind": "fairing"
+    },
+    "boosters": {
+      "shape": "none",
+      "count": 0
+    },
+    "engines": {
+      "count": 1,
+      "pattern": "single"
+    },
+    "livery": "unknown",
+    "class": "inferred"
+  },
+  {
+    "id": "sslv",
+    "display": "SSLV",
+    "match": {
+      "full_name": [
+        "SSLV"
+      ]
+    },
+    "stands_for": "variant",
+    "height_m": 34.0,
+    "core_dia_m": 2.0,
+    "taper": "tube",
+    "top": {
+      "kind": "fairing"
+    },
+    "boosters": {
+      "shape": "none",
+      "count": 0
+    },
+    "engines": {
+      "count": 1,
+      "pattern": "single"
+    },
+    "stage1_len_m": 22.5,
+    "livery": "unknown",
+    "class": "inferred"
+  },
+  {
     "id": "small-commercial-orbital",
     "display": "a small commercial launcher",
     "match": {

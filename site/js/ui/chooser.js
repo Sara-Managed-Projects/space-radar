@@ -36,10 +36,10 @@ export function showChooser(items, x, y, onPick, opts = {}) {
   if (!host) {
     host = el('ul', 'sr-pick');
     host.id = HOST_ID;
-    host.setAttribute('role', 'listbox');
     document.body.appendChild(host);
   }
   host.textContent = '';
+  // A list of buttons, with the list's own roles: a listbox's options hide the button inside them from a reader (public #545).
   host.setAttribute('aria-label', COPY.chooser.label);
   const layers = Array.isArray(opts.layers) ? opts.layers : [];
   const whereOf = (id) => { const l = layers.find((r) => r.id === id); return l ? l.display || l.id : ''; };
@@ -47,7 +47,6 @@ export function showChooser(items, x, y, onPick, opts = {}) {
   for (const item of items) {
     const rec = item.record;
     const li = el('li', 'sr-pick__item');
-    li.setAttribute('role', 'option');
     const btn = el('button', 'sr-pick__btn');
     btn.type = 'button';
     const dot = el('span', `sr-swatch sr-swatch--${rec.klass || 'satellite'}`);

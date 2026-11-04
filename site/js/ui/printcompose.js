@@ -49,6 +49,7 @@
 import { COPY, t } from '../copy/en.js';
 import '../copy/en.later.js';
 import { tagLines } from './cards.js';
+import { pageColours } from './postcard.js';
 import { tagPlacement, reticleBox, LEADER_PX } from './hud.js';
 
 export const PRINT_DPI = 300;
@@ -209,7 +210,7 @@ export function printTag(lines, at, size, measure) {
 }
 
 function drawTag(g, d, fontFamily) {
-  const ember = '#ff9f43';
+  const { ember, glass, fg, dim } = pageColours();
   const k = d.k;
   // The brackets: 8 px ticks, 1.5 px thick on the screen. On paper that scaled to 2 px at 300 dpi,
   // a sixth of a millimetre, and the first sample print lost them in the clouds (2026-09-29), so
@@ -239,18 +240,18 @@ function drawTag(g, d, fontFamily) {
   g.globalAlpha = 1;
   // The tag on the full glass: a print has no blur behind it and may land on a bright cloud.
   const tg = d.tag;
-  g.fillStyle = 'rgba(11,14,20,0.82)';
+  g.fillStyle = glass;
   g.fillRect(tg.x, tg.y, tg.w, tg.h);
   g.textAlign = 'left';
   g.textBaseline = 'alphabetic';
-  g.fillStyle = '#e8ecf2';
+  g.fillStyle = fg;
   g.font = `600 ${d.font.name}px ${fontFamily}`;
   let y = tg.y + tg.pad + d.font.name;
   g.fillText(d.text.name, tg.x + tg.pad, y);
   g.font = `400 ${d.font.line}px ${fontFamily}`;
   y += d.font.line * 1.4;
   g.fillText(d.text.readouts, tg.x + tg.pad, y);
-  g.fillStyle = '#9aa4b2';
+  g.fillStyle = dim;
   y += d.font.line * 1.4;
   g.fillText(d.text.honesty, tg.x + tg.pad, y);
   g.restore();
@@ -265,6 +266,7 @@ function drawTag(g, d, fontFamily) {
  * mode, on its on-screen frame: one function, so the preview is the picture.
  */
 export function drawBand(g, words, size, font = bandFont()) {
+  const c = pageColours();
   const short = Math.min(size.w, size.h);
   const pad = Math.round(short * 0.04);
   const big = Math.round(short * 0.042);
@@ -272,12 +274,12 @@ export function drawBand(g, words, size, font = bandFont()) {
   const foot = words.honesty ? Math.round(small * 1.5) : 0;
   const bandH = Math.round(short * 0.16) + foot;
   const grad = g.createLinearGradient(0, size.h - bandH, 0, size.h);
-  grad.addColorStop(0, 'rgba(11,14,20,0)');
-  grad.addColorStop(1, 'rgba(11,14,20,0.82)');
+  grad.addColorStop(0, c.clear);
+  grad.addColorStop(1, c.glass);
   g.fillStyle = grad;
   g.fillRect(0, size.h - bandH, size.w, bandH);
   g.textBaseline = 'alphabetic';
-  g.fillStyle = '#e8ecf2';
+  g.fillStyle = c.fg;
   g.font = `600 ${big}px ${font}`;
   g.textAlign = 'left';
   const fit = (text, maxW) => {
@@ -289,14 +291,14 @@ export function drawBand(g, words, size, font = bandFont()) {
   g.fillText(fit(words.title, size.w - pad * 2), pad, base - small * 1.5);
   g.font = `400 ${small}px ${font}`;
   const markW = g.measureText(words.mark).width;
-  g.fillStyle = '#9aa4b2';
+  g.fillStyle = c.dim;
   g.fillText(fit(words.when, size.w - pad * 3 - markW), pad, base);
   g.textAlign = 'right';
-  g.fillStyle = '#e8ecf2';
+  g.fillStyle = c.fg;
   g.fillText(words.mark, size.w - pad, base);
   if (words.honesty) {
     g.textAlign = 'left';
-    g.fillStyle = '#9aa4b2';
+    g.fillStyle = c.dim;
     g.fillText(fit(words.honesty, size.w - pad * 2), pad, size.h - pad);
   }
 }
@@ -326,7 +328,7 @@ function compose(frame, words, size, tag = null) {
   canvas.width = size.w;
   canvas.height = size.h;
   const g = canvas.getContext('2d');
-  g.fillStyle = '#0b0e14';
+  g.fillStyle = pageColours().space;
   g.fillRect(0, 0, size.w, size.h);
   if (frame) g.drawImage(frame, 0, 0, size.w, size.h);
   const font = bandFont();

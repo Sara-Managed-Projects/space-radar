@@ -23,6 +23,7 @@ check(same(subscribePayload('a@b.com', false, true, false), { email: 'a@b.com', 
 check(same(subscribePayload('a@b.com', false, false, true), { email: 'a@b.com', categories: ['close-approaches'] }), 'close approaches only when that box is ticked');
 check(same(subscribePayload('a@b.com', true, true, true).categories, ['launches', 'meteor-showers', 'close-approaches']), 'all three when all three are ticked');
 check(subscribePayload('a@b.com', false, false, false).categories.length === 0, 'none ticked is an empty list');
+check(same(subscribePayload(null, false, true, false), { email: '', categories: ['meteor-showers'] }), 'no address is an empty one, not "null" (public #623)');
 
 check(COPY.subscribe.heading === "Email me what's coming up", 'the heading names what is coming up');
 check(!/two|launches and showers/i.test(COPY.subscribe.heading + COPY.subscribe.pickOne), 'the heading and the empty line no longer say two');

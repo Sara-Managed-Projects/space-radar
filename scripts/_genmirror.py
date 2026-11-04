@@ -80,7 +80,24 @@ class Mirror:
             parts.append(f"/** {comment} */\nexport const {name} = {body};\n")
         return "\n".join(parts)
 
-    def main(self, argv: list[str]) -> int:
+    def usage(self) -> str:
+        return (
+            f"usage: python3 scripts/{Path(sys.argv[0]).name} [--check]\n"
+            f"  Writes {self.target.relative_to(ROOT)} from {self.source.relative_to(ROOT)}.\n"
+            f"  --check  write nothing; exit 1 if the checked-in file is stale"
+        )
+
+    def main(self, argv: list[str] | None = None) -> int:
+        """`argv` is the command line after the script's name (the default). `--help` and an unknown
+        option end the process here, so a script that runs several mirrors answers once."""
+        argv = sys.argv[1:] if argv is None else argv
+        if "--help" in argv or "-h" in argv:
+            print(self.usage())
+            raise SystemExit(0)
+        unknown = [a for a in argv if a != "--check"]
+        if unknown:
+            print(f"unknown option: {unknown[0]}\n{self.usage()}", file=sys.stderr)
+            raise SystemExit(2)
         want = self.text()
         if "--check" in argv:
             have = self.target.read_text(encoding="utf-8") if self.target.exists() else ""

@@ -19,7 +19,7 @@
 version: 1
 hosts:
   - {host: Proxima Cen, display: Proxima Centauri, why: temperate}
-  - {host: LHS 1140, why: temperate}
+  - {host: LHS 1140, aliases: [Gliese 3053], why: temperate}
   - {host: Kepler-186, why: temperate}
   - {host: Kepler-452, aliases: [KOI-7016], why: temperate}
   - {host: Kepler-62, why: temperate}
@@ -27,15 +27,15 @@ hosts:
   - {host: Kepler-22, why: temperate}
   - {host: Kepler-69, why: temperate}
   - {host: TOI-700, why: temperate}
-  - {host: TOI-715, why: temperate}
+  - {host: TOI-715, aliases: [TIC 271971130], why: temperate}
   - {host: "Teegarden's Star", id: teegardens-star, why: temperate}
   - {host: Gliese 12, aliases: [GJ 12], why: temperate}
   - {host: K2-18, why: temperate}
   - {host: L 98-59, why: temperate}
   - {host: GJ 1132, aliases: [Gliese 1132], why: temperate}
   - {host: GJ 1214, aliases: [Gliese 1214], why: temperate}
-  - {host: Ross 128, why: temperate}
-  - {host: Wolf 1069, why: temperate}
+  - {host: Ross 128, aliases: [FI Vir, Gliese 447], why: temperate}
+  - {host: Wolf 1069, aliases: [Gliese 1253], why: temperate}
   - {host: GJ 667 C, aliases: [Gliese 667 C], why: temperate}
   - {host: 55 Cnc, display: 55 Cancri, aliases: [Copernicus], why: extreme}
   - {host: WASP-12, why: extreme}
@@ -63,3 +63,14 @@ hosts:
   - {host: PDS 70, why: extreme, year_from_kepler: true} # PDS 70 c has a distance and no year in the table
   - {host: AF Lep, display: AF Leporis, aliases: [AF Lep], why: extreme}
   # 0079 a13: end
+# Release 1.8.0 (public #556): eight of the best-known nearby hosts. Each `why` follows the habitable-zone band scripts/build-systems.py
+# computes: `temperate` where a planet lies inside or at the edge of it (read from registry/systems-generated.yaml on 2026-11-04), else `extreme`.
+  - {host: Barnard's star, id: barnards-star, display: Barnard's Star, why: extreme}
+  - {host: tau Cet, id: tau-ceti, display: Tau Ceti, aliases: [tau Cet], why: extreme}
+  - {host: eps Eri, id: epsilon-eridani, display: Epsilon Eridani, aliases: [eps Eri], why: extreme}
+  - {host: GJ 887, aliases: [Gliese 887], display: Gliese 887, why: temperate}
+  - {host: GJ 581, aliases: [Gliese 581], display: Gliese 581, why: extreme}
+  - {host: GJ 876, aliases: [Gliese 876], display: Gliese 876, why: temperate}
+  - {host: GJ 273, aliases: [Gliese 273], display: Luyten's Star, why: temperate}
+  - {host: GJ 1061, aliases: [Gliese 1061], display: GJ 1061, why: temperate}
+# Release 1.8.0: end

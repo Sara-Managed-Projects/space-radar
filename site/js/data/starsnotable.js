@@ -102,7 +102,10 @@ export const STARS_NOTABLE = [
     "hip": 8102,
     "name": "Tau Ceti",
     "why": "The closest solitary Sun-like star. In 1960 Project Ozma, the first modern search for alien radio signals, listened to it and heard nothing.",
-    "source": "https://en.wikipedia.org/wiki/Tau_Ceti (read 2026-09-22) and https://en.wikipedia.org/wiki/Project_Ozma (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Tau_Ceti (read 2026-09-22) and https://en.wikipedia.org/wiki/Project_Ozma (read 2026-09-22)",
+    "radius_suns": 0.793,
+    "radius_err_suns": 0.004,
+    "physical_source": "https://arxiv.org/abs/0811.3989 (read 2026-11-04)"
   },
   {
     "hip": 24186,
@@ -120,7 +123,10 @@ export const STARS_NOTABLE = [
     "hip": 30438,
     "name": "Canopus",
     "why": "The second-brightest star in the night sky. Spacecraft steer by it: in 1964 Mariner 4 locked on to it, the first time a star had been used.",
-    "source": "https://en.wikipedia.org/wiki/Canopus (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Canopus (read 2026-09-22)",
+    "radius_suns": 73.2,
+    "radius_err_suns": 3.9,
+    "physical_source": "https://arxiv.org/abs/2109.07153 (read 2026-11-04)"
   },
   {
     "hip": 69673,
@@ -137,7 +143,10 @@ export const STARS_NOTABLE = [
     "hip": 91262,
     "name": "Vega",
     "why": "The first star after the Sun to be photographed, and the star the brightness scale was calibrated on. It was the pole star around 12 000 BCE.",
-    "source": "https://en.wikipedia.org/wiki/Vega (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Vega (read 2026-09-22)",
+    "radius_suns": 2.726,
+    "radius_err_suns": 0.006,
+    "physical_source": "https://arxiv.org/abs/1211.6055 (read 2026-11-04)"
   },
   {
     "hip": 24608,
@@ -160,19 +169,28 @@ export const STARS_NOTABLE = [
     "hip": 7588,
     "name": "Achernar",
     "why": "It spins so fast it is 35% wider at the equator than pole to pole: in 2015, the least spherical star known in the Milky Way.",
-    "source": "https://en.wikipedia.org/wiki/Achernar (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Achernar (read 2026-09-22)",
+    "radius_suns": 12.0,
+    "radius_err_suns": 0.4,
+    "physical_source": "https://arxiv.org/abs/astro-ph/0306277 (read 2026-11-04)"
   },
   {
     "hip": 97649,
     "name": "Altair",
     "why": "It spins in under eight hours and bulges over 20% at its equator. The first main-sequence star after the Sun to have its surface imaged.",
-    "source": "https://en.wikipedia.org/wiki/Altair (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Altair (read 2026-09-22)",
+    "radius_suns": 2.008,
+    "radius_err_suns": 0.006,
+    "physical_source": "https://arxiv.org/abs/1912.03138 (read 2026-11-04)"
   },
   {
     "hip": 21421,
     "name": "Aldebaran",
     "why": "The eye of Taurus, a red giant 45 times as wide as the Sun. It lies in line with the Hyades cluster but is unrelated. Pioneer 10 is heading its way.",
-    "source": "https://en.wikipedia.org/wiki/Aldebaran (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Aldebaran (read 2026-09-22)",
+    "radius_suns": 44.2,
+    "radius_err_suns": 0.9,
+    "physical_source": "https://arxiv.org/abs/astro-ph/0502181 (read 2026-11-04)"
   },
   {
     "hip": 65474,
@@ -190,13 +208,21 @@ export const STARS_NOTABLE = [
     "hip": 37826,
     "name": "Pollux",
     "why": "The closest giant star to the Sun, and the brightest star in Gemini. A planet, Thestias, was announced around it in 2006.",
-    "source": "https://en.wikipedia.org/wiki/Pollux_(star) (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Pollux_(star) (read 2026-09-22)",
+    "radius_suns": 8.8,
+    "radius_err_suns": 0.1,
+    "physical_source": "https://arxiv.org/abs/1205.5889 (read 2026-11-04)"
   },
   {
     "hip": 113368,
     "name": "Fomalhaut",
     "why": "Ringed by a disc of debris. The 'planet' photographed inside it in 2008 turned out to be an expanding cloud from a collision.",
-    "source": "https://en.wikipedia.org/wiki/Fomalhaut (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Fomalhaut (read 2026-09-22)",
+    "radius_suns": 1.744,
+    "radius_err_suns": 0.016,
+    "teff_k": 8819,
+    "teff_err_k": 67,
+    "physical_source": "https://arxiv.org/abs/astro-ph/0410625 (read 2026-11-04)"
   },
   {
     "hip": 102098,
@@ -213,7 +239,10 @@ export const STARS_NOTABLE = [
     "hip": 49669,
     "name": "Regulus",
     "why": "The closest bright star to the ecliptic, so the Moon often passes in front of it. It spins every 15.9 hours, near the speed that would tear it apart.",
-    "source": "https://en.wikipedia.org/wiki/Regulus (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Regulus (read 2026-09-22)",
+    "radius_suns": 4.16,
+    "radius_err_suns": 0.08,
+    "physical_source": "https://arxiv.org/abs/astro-ph/0501261 (read 2026-11-04)"
   },
   {
     "hip": 60718,
@@ -225,13 +254,19 @@ export const STARS_NOTABLE = [
     "hip": 36850,
     "name": "Castor",
     "why": "One point of light, six stars in three pairs. It was first recorded as a double star in 1718.",
-    "source": "https://en.wikipedia.org/wiki/Castor_(star) (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Castor_(star) (read 2026-09-22)",
+    "radius_suns": 2.089,
+    "radius_err_suns": 0.005,
+    "physical_source": "https://arxiv.org/abs/2210.16322 (read 2026-11-04)"
   },
   {
     "hip": 11767,
     "name": "Polaris",
     "why": "The North Star: it sits less than a degree from the north celestial pole, so the northern sky turns around it. It is three stars, not one.",
-    "source": "https://en.wikipedia.org/wiki/Polaris (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Polaris (read 2026-09-22)",
+    "radius_suns": 46.27,
+    "radius_err_suns": 0.42,
+    "physical_source": "https://arxiv.org/abs/2407.09641 (read 2026-11-04)"
   },
   {
     "hip": 68756,
@@ -255,7 +290,10 @@ export const STARS_NOTABLE = [
     "hip": 14576,
     "name": "Algol",
     "why": "The Demon Star. Every 2 days 20 hours 49 minutes its companion passes in front of it and it dims for about ten hours.",
-    "source": "https://en.wikipedia.org/wiki/Algol (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Algol (read 2026-09-22)",
+    "radius_suns": 2.73,
+    "radius_err_suns": 0.2,
+    "physical_source": "https://arxiv.org/abs/1205.0754 (read 2026-11-04)"
   },
   {
     "hip": 110991,
@@ -297,12 +335,81 @@ export const STARS_NOTABLE = [
     "hip": 7513,
     "name": "Upsilon Andromedae",
     "why": "The first main-sequence star found with more than one planet, and the first planetary system known in a system of more than one star.",
-    "source": "https://en.wikipedia.org/wiki/Upsilon_Andromedae (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Upsilon_Andromedae (read 2026-09-22)",
+    "radius_suns": 1.7,
+    "radius_err_suns": 0.02,
+    "physical_source": "https://arxiv.org/abs/1208.3895 (read 2026-11-04)"
   },
   {
     "hip": 27321,
     "name": "Beta Pictoris",
     "why": "The first star whose disc of debris was photographed, in 1984. It is only about 23 million years old, and both of its known planets have been imaged.",
     "source": "https://en.wikipedia.org/wiki/Beta_Pictoris (read 2026-09-22)"
+  },
+  {
+    "hip": 26311,
+    "name": "Alnilam",
+    "why": "The middle star of Orion's Belt, a blue supergiant. Since 1943 its spectrum has been one of the stable anchor points for classifying other stars.",
+    "source": "https://en.wikipedia.org/wiki/Alnilam (read 2026-11-04)"
+  },
+  {
+    "hip": 54061,
+    "name": "Dubhe",
+    "why": "The northern of the two Pointers: it and Merak point towards Polaris. Though named Alpha, it is only the second-brightest object in Ursa Major.",
+    "source": "https://en.wikipedia.org/wiki/Dubhe (read 2026-11-04)"
+  },
+  {
+    "hip": 26727,
+    "name": "Alnitak",
+    "why": "The brightest class O star in the night sky, at the eastern end of Orion's Belt. The system is bathed in the nebulosity of IC 434.",
+    "source": "https://en.wikipedia.org/wiki/Alnitak (read 2026-11-04)"
+  },
+  {
+    "hip": 25930,
+    "name": "Mintaka",
+    "why": "The westernmost star of Orion's Belt, five hot stars in one system. In 1904 a calcium line in its spectrum gave the first detection of the interstellar medium.",
+    "source": "https://en.wikipedia.org/wiki/Mintaka (read 2026-11-04)"
+  },
+  {
+    "hip": 25336,
+    "name": "Bellatrix",
+    "why": "The closest major star in Orion, and one of the closest known candidates for a core-collapse supernova. Its name is Latin for 'female warrior'.",
+    "source": "https://en.wikipedia.org/wiki/Bellatrix (read 2026-11-04)"
+  },
+  {
+    "hip": 27366,
+    "name": "Saiph",
+    "why": "A blue supergiant at the south-eastern corner of Orion's main quadrangle. It is smaller and less luminous than Rigel but hotter at its surface.",
+    "source": "https://en.wikipedia.org/wiki/Saiph (read 2026-11-04)"
+  },
+  {
+    "hip": 100453,
+    "name": "Sadr",
+    "why": "The star at the crossing of the Northern Cross, an F-type supergiant surrounded by the diffuse nebula IC 1318. It has enough mass to explode as a supernova.",
+    "source": "https://en.wikipedia.org/wiki/Gamma_Cygni (read 2026-11-04)"
+  },
+  {
+    "hip": 46390,
+    "name": "Alphard",
+    "why": "The brightest star in Hydra. Its name is Arabic for 'the individual', there being no other bright stars near it.",
+    "source": "https://en.wikipedia.org/wiki/Alpha_Hydrae (read 2026-11-04)"
+  },
+  {
+    "hip": 9884,
+    "name": "Hamal",
+    "why": "The brightest star in Aries. The Sun stood in Aries at the spring equinox from 2000 to 100 BCE, which is why most astrology columns begin with Aries.",
+    "source": "https://en.wikipedia.org/wiki/Hamal (read 2026-11-04)"
+  },
+  {
+    "hip": 85927,
+    "name": "Shaula",
+    "why": "The star in the tail of Scorpius, whose name means 'the raised [tail]'. Its three stars share an orbital plane, strongly suggesting they formed together.",
+    "source": "https://en.wikipedia.org/wiki/Lambda_Scorpii (read 2026-11-04)"
+  },
+  {
+    "hip": 15863,
+    "name": "Mirfak",
+    "why": "The brightest star in Perseus, outshining Algol. It lies in the midst of the Alpha Persei Cluster, which is easily visible in binoculars.",
+    "source": "https://en.wikipedia.org/wiki/Alpha_Persei (read 2026-11-04)"
   }
 ];

@@ -37,6 +37,7 @@ const num = findMatches(index, '25544');
 check(num.hits[0].record.id === 'sat-25544', 'a NORAD number finds its object first');
 // requirement 6: aliases come from the registry mirror
 check(ALIASES.hubble === 'hst' && ALIASES.jwst === 'james webb' && ALIASES.tiangong === 'css', 'the alias table is the registry mirror');
+check(ALIASES['north star'] === 'polaris' && ALIASES['dog star'] === 'sirius' && ALIASES['starlink train'] === 'starlink', 'the nicknames north star, dog star and starlink train are in the table');
 // "jwst" is how the telescope is written, and no record is called that: it sits at L2, has no
 // CelesTrak element set, and the app's record is the deep-space layer's full name. The old alias
 // ran the other way (webb -> jwst) and pointed at a name nothing had, so "jwst" found nothing.

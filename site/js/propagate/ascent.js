@@ -432,30 +432,6 @@ export function ascentClimbAngleDeg(record, f) {
 }
 
 /**
- * The whole arc as a polyline, for the dashed curve. `segments` edges, so segments+1 points.
- * Returns {frame, cls, points, orbit, azimuthDeg, t0Ms, durationSec} or null.
- */
-export function ascentPath(record, segments = 60) {
-  const g = ascentGeometry(record);
-  if (!g) return null;
-  const n = Math.max(2, Math.floor(segments));
-  const points = new Array(n + 1);
-  for (let i = 0; i <= n; i++) points[i] = pointAt(g, i / n);
-  return {
-    frame: 'earth-fixed',
-    cls: 'illustrative',
-    points,
-    orbit: g.orbit,
-    azimuthDeg: (g.azRad * 180) / Math.PI,
-    azimuthInertialDeg: (g.azInertialRad * 180) / Math.PI,
-    inclinationDeg: g.inclinationDeg,
-    t0Ms: g.t0Ms,
-    durationSec: g.durationSec,
-    insertionAltKm: g.insertionAltKm,
-  };
-}
-
-/**
  * propagate signature: (record, tMs) -> {x, y, z, frame, cls, f, phase} | null.
  * Before T0 the vehicle sits on the pad; after insertion it holds at the end of the arc until the
  * catalogue takes over (spec 0011: the arc is removed when a measured object matches, and expires

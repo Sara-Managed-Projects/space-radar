@@ -304,6 +304,22 @@ only the scene.
 | After updating the folder, the old version still shows | Press Reload on the "A newer version is ready" line, or close every tab of the app and open it again. If it still shows the old one, open it once with `?sw=0` at the end of the address. |
 | The status line says "Offline" although the network is fine | The app could not reach its own server (the one started in step 2). Start it again; the line clears on the next read. |
 
+**What "Address already in use" looks like.** Start the server while another copy of it (or another
+program) holds port 8177, and the terminal prints a long error. Only its last line matters:
+
+```text
+$ python3 -m http.server 8177 --directory site
+Traceback (most recent call last):
+  ...
+    self.socket.bind(self.server_address)
+OSError: [Errno 48] Address already in use
+```
+
+That output is from macOS; the number and wording differ on other systems (Linux prints
+`[Errno 98]`). Close the terminal that is already running the server, or start this one on another
+port and open that address instead: `python3 -m http.server 8200 --directory site`, then
+<http://localhost:8200>.
+
 Something else? [Open an issue](https://github.com/Sara-Managed-Projects/space-radar/issues/new/choose)
 and say what computer and browser you have. Reports from real classrooms are the most useful ones
 we get.

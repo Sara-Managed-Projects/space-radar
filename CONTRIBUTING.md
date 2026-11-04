@@ -37,7 +37,8 @@ Each of these takes minutes, needs no install, and is named in the release notes
 - **Build a tiny space simulator.** One HTML file, no libraries, about ten minutes: [docs/ADD_A_SIMULATOR.md](docs/ADD_A_SIMULATOR.md),
   or pick a [track:lab task](https://github.com/Sara-Managed-Projects/space-radar/labels/track%3Alab).
 - **Send a translation.** Start with [docs/TRANSLATING.md](docs/TRANSLATING.md), or
-  [offer a language](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=translation.yml).
+  [offer a language](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=translation.yml),
+  or [report a wrong phrase](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=mistranslation.yml) in one that exists.
 - **Offer a shape model.** NASA publishes 3D models of spacecraft; if you can slim one for the web
   (or know one we lack), say so in an [idea](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=idea.yml).
   The recipe is under [Add or fix an object](#add-or-fix-an-object).
@@ -253,6 +254,7 @@ scripts/test.sh --quick main    # ...changed since main, not since your last com
 scripts/test.sh contract        # only items whose name contains "contract"
 scripts/test.sh --list          # what there is
 node tests/test_contract.mjs    # or run one file directly
+python3 tests/test_credits.py   # ...and one Python file the same way
 ```
 
 The tests are plain scripts: no framework, no install. Each prints what it checked. A check that

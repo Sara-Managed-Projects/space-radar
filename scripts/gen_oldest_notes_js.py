@@ -32,4 +32,4 @@ HEADER = """// GENERATED from registry/oldest-notes.yaml by scripts/gen_oldest_n
 MIRROR = Mirror(source="registry/oldest-notes.yaml", target="site/js/data/oldestnotes.js", header=HEADER, render=render, what="oldestnotes.js")
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

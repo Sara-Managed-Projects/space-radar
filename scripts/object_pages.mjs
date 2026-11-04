@@ -204,8 +204,8 @@ function factsFor(r, klass, nameOf) {
     if (md.designation) add('Catalogue', md.designation);
     if (md.diameterKm) add('Diameter', md.diameterKm >= 10 ? `${fmt.int(md.diameterKm)} km` : `${fmt.num(md.diameterKm, 2)} km`);
     if (md.periodDays && md.periodDays < 1e8) add('One lap of the Sun', md.periodDays > 730 ? `${fmt.int(md.periodDays / 365.25)} years` : `${fmt.int(md.periodDays)} days`);
-    if (md.qAu) add('Closest to the Sun', `${fmt.num(md.qAu, 2)} au`);
-    if (md.aphelionAu) add('Farthest from the Sun', `${fmt.num(md.aphelionAu, 1)} au`);
+    if (md.qAu) add('Closest to the Sun', `${fmt.num(md.qAu, 2)} AU`);
+    if (md.aphelionAu) add('Farthest from the Sun', `${fmt.num(md.aphelionAu, 1)} AU`);
     if (Array.isArray(md.moons) && md.moons.length) add('Moons', md.moons.join(', '));
   } else if (klass === 'site') {
     if (md.world) add('On', nameOf(md.world), md.world);

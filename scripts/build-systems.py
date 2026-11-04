@@ -24,6 +24,21 @@ WHAT IS WORKED OUT HERE, and labelled as worked out in every row and on every ca
   `a_table_au`. A planet of two stars (the table's `cb_flag`) keeps the table's value: the law needs
   the mass of both stars and the table has one.
 
+  ONE PAPER'S SET FIRST (internal #474). The composite table takes each column from whichever paper
+  filled it, so a distance, a period and a star's mass can come from three. The Archive's `ps` table
+  keeps every paper's row; registry/systems-sets.csv (written by scripts/build-exoplanets.py) holds
+  the rows that give all three, the Kepler pipeline's KOI tables left out (catalogues, not papers).
+  A row is a set when its own a^3 / P^2 is within the same 5 % of its own mass. The star has ONE
+  mass on the card, and every orbit on the page obeys Kepler's law against it
+  (tests/test_systems_table.mjs), so the mass is chosen first: of the composite mass and the masses
+  of the sets, the one with which most planets keep a distance the Archive gives (the composite
+  value, or a set's) within 5 %; a tie keeps the composite mass, then the newest paper's. Then each
+  planet takes the composite distance if it agrees, else the newest set that does (`a_from: table`,
+  `a_ref` the paper, `a_default_au` the composite value passed over), else the computed one below.
+  A star whose mass came from a paper says so: `mass_ref` and `mass_default_suns`. Measured
+  2026-11-04: the Archive's `default_flag = 1` rows alone do not help, none of the 26 planets that
+  failed the check passes it on its default row; other papers' rows do for 23 of them.
+
   THE HABITABLE ZONE. Kopparapu et al. 2014 (ApJ Letters 787, L29, arXiv:1404.5292, read 2026-10-08),
   equations 4 and 5 and their table of coefficients:
       S_eff = S_sun + a T + b T^2 + c T^3 + d T^4,   T = T_eff - 5780 K,   d = sqrt(L / S_eff) au
@@ -63,6 +78,7 @@ ROOT = Path(__file__).resolve().parent.parent
 LIST = ROOT / "registry/systems-list.yaml"
 TABLE = ROOT / "site/data/exoplanets.csv"
 SIDE = ROOT / "registry/systems-columns.csv"
+SETS = ROOT / "registry/systems-sets.csv"
 OUT = ROOT / "registry/systems-generated.yaml"
 BINARIES = ROOT / "registry/systems-binaries.yaml"
 
@@ -168,6 +184,68 @@ def read_side() -> tuple[dict, str]:
     return {r["pl_name"].strip(): r for r in rows}, dated.group(1) if dated else ""
 
 
+def read_sets() -> dict:
+    """The Archive's per-paper rows (a, P, star mass) for the listed hosts' planets, by planet name; none when the file is absent."""
+    if not SETS.exists():
+        return {}
+    lines = [ln for ln in SETS.read_text(encoding="utf-8").splitlines() if ln.strip() and not ln.startswith("#")]
+    by_planet: dict = {}
+    for r in csv.DictReader(lines):
+        by_planet.setdefault(r["pl_name"].strip(), []).append(r)
+    return by_planet
+
+
+def paper_sets(rows: list) -> list:
+    """A planet's sets (see the docstring), newest first: [{a, m, ref, pubdate}]."""
+    out = []
+    for r in rows:
+        a, per, m = num(r, "pl_orbsmax"), num(r, "pl_orbper"), num(r, "st_mass")
+        if a and per and m and per > 0 and orbit_agrees(a, per, m):
+            out.append({"a": a, "m": m, "ref": (r.get("ref") or "").strip(), "pubdate": r.get("pubdate") or "", "default": r.get("default_flag") == "1"})
+    return sorted(out, key=lambda x: (x["pubdate"], x["default"]), reverse=True)
+
+
+def orbit_agrees(a, per_days, mass) -> bool:
+    return bool(a and per_days and per_days > 0 and mass and abs(a ** 3 / (per_days / JULIAN_YEAR_DAYS) ** 2 / mass - 1) <= KEPLER_TOLERANCE)
+
+
+def settle(planets: list, mass):
+    """With this star mass: how many planets keep a distance the Archive gives, and which (None, "table" or a set) each takes."""
+    score, picks = 0, []
+    for per, a_table, circumbinary, papers in planets:
+        if per is None or per <= 0:
+            picks.append(None)
+        elif circumbinary and a_table:
+            picks.append("table"); score += 1
+        elif orbit_agrees(a_table, per, mass):
+            picks.append("table"); score += 1
+        else:
+            hit = next((x for x in papers if orbit_agrees(x["a"], per, mass)), None)
+            picks.append(hit)
+            score += hit is not None
+    return score, picks
+
+
+def star_mass(planets: list, composite):
+    """The one mass the card prints, its picks, and the paper that gave it (None when it is the composite's)."""
+    masses = [composite] if composite else []
+    for x in sorted((x for _, _, _, papers in planets for x in papers), key=lambda x: x["pubdate"], reverse=True):
+        if x["m"] not in masses:
+            masses.append(x["m"])
+    best = None
+    for m in masses:
+        score, picks = settle(planets, m)
+        if best is None or score > best[0]:
+            best = (score, m, picks)
+    if best is None:
+        return composite, [None] * len(planets), None
+    _, m, picks = best
+    if m == composite:
+        return m, picks, None
+    ref = next(x["ref"] for _, _, _, papers in planets for x in papers if x["m"] == m)
+    return m, picks, ref
+
+
 def slug(name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
 
@@ -178,6 +256,7 @@ def build() -> dict:
     if rows is None:
         raise SystemExit("build-systems: site/data/exoplanets.csv is missing or empty")
     side, side_date = read_side()
+    sets = read_sets()
     binaries = read_binaries()
     unused = sorted(set(binaries) - {str(e["host"]) for e in listed})
     if unused:
@@ -246,7 +325,15 @@ def build() -> dict:
                 system.pop("habitable_zone_missing", None)
         system["colour_note"] = "illustrative"
         planets = []
-        for r, w in zip(host_rows, wide):
+        sheet = [(num(r, "pl_orbper"), num(w, "pl_orbsmax"), (w.get("cb_flag") or "").strip() == "1", paper_sets(sets.get(r["pl_name"].strip(), [])))
+                 for r, w in zip(host_rows, wide)]
+        composite_mass = mass
+        mass, picks, mass_ref = star_mass(sheet, composite_mass)
+        if mass_ref:
+            system["star"]["mass_suns"] = mass
+            system["star"]["mass_ref"] = mass_ref
+            system["star"]["mass_default_suns"] = composite_mass
+        for (r, w), pick in zip(zip(host_rows, wide), picks):
             per = num(r, "pl_orbper")
             a_table = num(w, "pl_orbsmax")
             per_from = None
@@ -259,7 +346,10 @@ def build() -> dict:
             circumbinary = (w.get("cb_flag") or "").strip() == "1"
             implied = a_table ** 3 / (per / JULIAN_YEAR_DAYS) ** 2 if a_table else None
             mismatch = (implied / mass - 1) if implied and mass else None
-            if a_table and (circumbinary or (mismatch is not None and abs(mismatch) <= KEPLER_TOLERANCE)):
+            chosen = pick if isinstance(pick, dict) else None
+            if chosen:
+                a, a_from = chosen["a"], "table"
+            elif a_table and (circumbinary or (mismatch is not None and abs(mismatch) <= KEPLER_TOLERANCE)):
                 a, a_from = a_table, "table"
             elif mass:
                 a, a_from = sig((mass * (per / JULIAN_YEAR_DAYS) ** 2) ** (1 / 3), 4), "kepler"
@@ -284,6 +374,9 @@ def build() -> dict:
             if a_from == "kepler" and a_table:
                 p["a_table_au"] = a_table
                 p["a_table_mismatch_pct"] = round(mismatch * 100, 1)
+            if chosen:
+                p["a_ref"] = chosen["ref"]
+                p["a_default_au"] = a_table
             if circumbinary:
                 p["circumbinary"] = True
             p["radius_earths"] = radius
@@ -322,7 +415,8 @@ HEADER = """# GENERATED by scripts/build-systems.py from registry/systems-list.y
 # registry/systems-columns.csv. Do not edit: `python3 scripts/build-systems.py --check` fails CI when
 # this file and its three sources disagree. The script's docstring says where every number comes
 # from and which of them are computed (the orbit's size where `a_from: kepler`, the habitable zone,
-# `equilibrium_k`, `insolation_earths`, `zone`). `*_from: estimated` is the Archive's own estimate
+# `equilibrium_k`, `insolation_earths`, `zone`; where `a_ref` is set, the orbit's size is one paper's
+# own value, read from registry/systems-sets.csv). `*_from: estimated` is the Archive's own estimate
 # of a radius from a mass or a mass from a radius; `mass_from: least` is a radial-velocity minimum
 # mass. A null is "not measured", and the card says so.
 """

@@ -83,7 +83,19 @@ def row_of(r: dict) -> dict:
     return {k: r[k] for k in FIELDS if k in r}
 
 
+USAGE = """usage: python3 scripts/gen_rockets_js.py [--check]
+  Writes site/js/data/rockets.js from registry/rockets.yaml.
+  --check  write nothing; exit 1 if the checked-in file is stale"""
+
+
 def main(argv: list[str]) -> int:
+    if "--help" in argv or "-h" in argv:
+        print(USAGE)
+        return 0
+    unknown = [a for a in argv if a != "--check"]
+    if unknown:
+        print(f"unknown option: {unknown[0]}\n{USAGE}", file=sys.stderr)
+        return 2
     want = render()
     if "--check" in argv:
         have = TARGET.read_text(encoding="utf-8") if TARGET.exists() else ""

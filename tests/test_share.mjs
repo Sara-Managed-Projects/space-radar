@@ -73,7 +73,6 @@ globalThis.document = {
 document.activeElement = document.body;
 globalThis.location = { origin: 'https://www.spaceradar.ai', pathname: '/', hash: '', search: '' };
 globalThis.history = { replaceState(_s, _t, url) { const i = url.indexOf('#'); location.hash = i >= 0 ? url.slice(i) : ''; } };
-const setNavigator = (value) => Object.defineProperty(globalThis, 'navigator', { value, configurable: true, writable: true });
 
 const shareMod = await import(join(JS, 'ui/share.js'));
 const { shareUrl, shareState, appBase, tripWords, toast, shareButton } = shareMod;

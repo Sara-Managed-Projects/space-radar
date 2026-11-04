@@ -16,6 +16,12 @@
 //   count()                   drawn frames since the mark (cheap: a probe polls it)
 //   netTotal()                bytes fetched since this was made (cheap: a probe diffs two pictures)
 //   stats()                   the window, as one object (below); allocates, walks the scene: not per frame
+//   gpuBegin(), gpuEnd()      around the frame's render(): the GPU's own time for it, where the browser has
+//                             EXT_disjoint_timer_query_webgl2 (below). Nothing is queued where it has not
+//   idle()                    -> { idle, waiting } whether anything the scene is waiting for is still on its
+//                             way: photographs, tiles, map swaps, the deep sky's heroes (assetsIdle below)
+//   whenIdle(ms?, calm?)      a promise of idle() held true for `calm` polls (a tenth of a second apart), or of
+//                             the last answer at `ms`: what a probe awaits before it photographs
 //   seed                      the fixed seed that ?look=1 gives the modules that would roll dice
 //   dispose()
 // }
@@ -33,8 +39,18 @@
 //                                      buffers. Uploaded only once drawn, so `visibleMiB` (what the
 //                                      visible graph holds) is the nearer figure for "now on the GPU"
 //   net: { bytes, requests, sinceStartBytes }   Resource Timing since the mark, and since this was made
+//   gpuTime: { supported, why, samples, p50Ms, p95Ms, maxMs, disjoint, dropped }
+//                                      THE GPU'S TIME for the frame's render() since the mark, from a timer
+//                                      query (createGpuTimer). `supported` is false, with `why`, where the
+//                                      browser offers none (headless Chrome on SwiftShader usually does not).
+//                                      One query is in flight at a time and a result is read a frame or more
+//                                      later, so it costs the loop no stall. A deep-space effect's cost is
+//                                      the difference of this between its BEFORE and AFTER shots
 //   tier, look, exposure, held, latched, seed, at (ISO time of the clock), deep (sr.deep.stats() or null)
 // }
+//
+// NO POST-PROCESSING, NO RENDER TARGET: a timer query reads a counter the GPU keeps; it draws nothing and
+// holds no texture (the deep-space design contract allows it, internal #832).
 //
 // FRAME TIMES ARE RELATIVE on a runner: its GL is SwiftShader (tools/README.md). The same probe through
 // `tools/cdp.mjs --gl=gpu` on a machine with a GPU gives absolute ones (internal #832).
@@ -128,6 +144,97 @@ export function sceneBytes(scene) {
   return { textureMiB: r(t), geometryMiB: r(g), totalMiB: r(t + g), visibleMiB: r(v), textures: tex.size, geometries: geo.size };
 }
 
+/**
+ * The GPU's time for what is drawn between begin() and end(), from EXT_disjoint_timer_query_webgl2. Pure over
+ * a WebGL2-like `gl`. A result is read once it is available, a frame or more after it was asked for; a disjoint
+ * result (the GPU was reset or the clock moved) is dropped with every query still waiting. At most MAX_OPEN queries
+ * exist, made once and reused: nothing is allocated per frame. Where the extension is missing, or `gl` throws, it
+ * is `supported: false` with a reason, and begin() and end() do nothing.
+ */
+export function createGpuTimer(gl, opts = {}) {
+  const ring = opts.ring || 120;
+  const maxOpen = opts.maxOpen || 6;
+  let ext = null;
+  let why = '';
+  try { ext = gl && typeof gl.getExtension === 'function' ? gl.getExtension('EXT_disjoint_timer_query_webgl2') : null; } catch (e) { why = String(e); }
+  if (!ext && !why) why = gl ? 'EXT_disjoint_timer_query_webgl2 is not offered here' : 'no WebGL context';
+  const ms = new Float64Array(ring);
+  let n = 0; let head = 0; let disjoint = 0; let dropped = 0;
+  let open = null;            // the query between begin() and end()
+  const waiting = [];         // ended, result not read yet, oldest first
+  const spare = [];           // read, ready for the next frame
+  const fail = (e) => { ext = null; why = String(e); open = null; waiting.length = 0; spare.length = 0; };
+
+  function poll() {
+    while (waiting.length) {
+      const q = waiting[0];
+      if (!gl.getQueryParameter(q, gl.QUERY_RESULT_AVAILABLE)) return;
+      waiting.shift();
+      if (gl.getParameter(ext.GPU_DISJOINT_EXT)) {
+        // Every query still waiting was timed across the same upset.
+        disjoint += 1 + waiting.length;
+        spare.push(q);
+        for (const w of waiting.splice(0)) gl.deleteQuery(w);
+        return;
+      }
+      ms[head] = gl.getQueryParameter(q, gl.QUERY_RESULT) / 1e6;
+      head = (head + 1) % ring;
+      if (n < ring) n += 1;
+      spare.push(q);
+    }
+  }
+  return {
+    get supported() { return !!ext; },
+    get why() { return ext ? '' : why; },
+    begin() {
+      if (!ext || open) return;
+      try {
+        poll();
+        if (waiting.length >= maxOpen) { dropped += 1; return; }
+        const q = spare.pop() || gl.createQuery();
+        if (!q) { dropped += 1; return; } // a lost context gives none
+        gl.beginQuery(ext.TIME_ELAPSED_EXT, q);
+        open = q;
+      } catch (e) { fail(e); }
+    },
+    end() {
+      if (!open) return;
+      try { gl.endQuery(ext.TIME_ELAPSED_EXT); waiting.push(open); open = null; } catch (e) { fail(e); }
+    },
+    /** Start a new window: the samples go, the queries in flight stay (their results fall in the new one). */
+    reset() { n = 0; head = 0; disjoint = 0; dropped = 0; },
+    stats() {
+      return { supported: !!ext, why: ext ? '' : why, samples: n, p50Ms: quantile(ms, n, 0.5), p95Ms: quantile(ms, n, 0.95), maxMs: quantile(ms, n, 1), disjoint, dropped };
+    },
+    dispose() {
+      if (!ext) return;
+      try { for (const q of [...waiting, ...spare, ...(open ? [open] : [])]) gl.deleteQuery(q); } catch { /* gone with the context */ }
+      waiting.length = 0; spare.length = 0; open = null; ext = null; why = 'disposed';
+    },
+  };
+}
+
+/**
+ * Is the scene still waiting for something it asked for? `waiting` names what: the slider's photographs
+ * (scene/nebulae.js busy), the deep sky's heroes and layers and the photographs under them (sr.deep.ready), the
+ * sharper maps being swapped in (sr.quality.textures().busy) and the map tiles (sr.quality.tiles(): in flight, or
+ * wanted and not yet asked for). Pure on `ctx`; each part is optional, so a ref without one answers for the rest.
+ */
+export function assetsIdle(ctx = {}) {
+  const waiting = [];
+  const ask = (name, fn) => { try { if (fn()) waiting.push(name); } catch { /* an owner that throws is not waited for */ } };
+  ask('photographs', () => ctx.nebulae && ctx.nebulae.busy && ctx.nebulae.busy());
+  ask('deep sky', () => ctx.deep && ctx.deep.ready && !ctx.deep.ready());
+  ask('map swaps', () => ctx.quality && ctx.quality.textures && ctx.quality.textures().busy);
+  ask('tiles', () => {
+    const t = ctx.quality && ctx.quality.tiles ? ctx.quality.tiles() : null;
+    if (!t) return false;
+    if (t.inFlight > 0) return true;
+    return Object.values(t.sets || {}).some((set) => set.showing && (set.waiting || []).some((w) => / (not asked|loading|waiting)$/.test(w)));
+  });
+  return { idle: waiting.length === 0, waiting };
+}
+
 export function createPerf(ctx = {}, opts = {}) {
   const now = opts.now || (() => performance.now());
   const gaps = new Float64Array(RING);
@@ -138,6 +245,9 @@ export function createPerf(ctx = {}, opts = {}) {
   // Network: Resource Timing as it arrives (an observer sees every entry, whatever the buffer's size).
   let netBytes = 0; let netReqs = 0; let netAll = 0;
   let observer = null;
+  let gl = null;
+  try { gl = ctx.renderer && ctx.renderer.getContext ? ctx.renderer.getContext() : null; } catch { gl = null; }
+  const timer = createGpuTimer(gl);
   try {
     if (typeof PerformanceObserver === 'function') {
       observer = new PerformanceObserver((list) => {
@@ -156,7 +266,25 @@ export function createPerf(ctx = {}, opts = {}) {
       if (n < RING) n += 1;
       total += 1;
     },
-    mark() { n = 0; head = 0; netBytes = 0; netReqs = 0; },
+    mark() { n = 0; head = 0; netBytes = 0; netReqs = 0; timer.reset(); },
+    /** Around the frame's render() (main.js): the GPU's time for it, read some frames later. */
+    gpuBegin: () => timer.begin(),
+    gpuEnd: () => timer.end(),
+    idle: () => assetsIdle(ctx),
+    /** Idle for `calm` polls in a row, or the last answer when `ms` is up. Real timers: not for a film's clock. */
+    whenIdle(ms = 20000, calm = 3) {
+      return new Promise((resolve) => {
+        const began = now();
+        let run = 0;
+        const poll = () => {
+          const a = assetsIdle(ctx);
+          run = a.idle ? run + 1 : 0;
+          if (run >= calm || now() - began >= ms) { resolve({ ...a, idle: run >= calm, waitedMs: Math.round(now() - began) }); return; }
+          setTimeout(poll, 100);
+        };
+        poll();
+      });
+    },
     count: () => n,
     /** Bytes and requests since this was made (cheap): a probe diffs it between two pictures. */
     netTotal: () => netAll,
@@ -177,6 +305,7 @@ export function createPerf(ctx = {}, opts = {}) {
         ...r,
         gpu: sceneBytes(ctx.scene),
         net: { bytes: netBytes, requests: netReqs, sinceStartBytes: netAll },
+        gpuTime: timer.stats(),
         tier: q ? q.tier : null,
         look: ctx.drawn && ctx.drawn.mode ? ctx.drawn.mode() : null,
         exposure: ctx.exposure && ctx.exposure.mode ? ctx.exposure.mode() : null,
@@ -187,7 +316,7 @@ export function createPerf(ctx = {}, opts = {}) {
         deep,
       };
     },
-    dispose() { if (observer) { try { observer.disconnect(); } catch { /* gone */ } observer = null; } },
+    dispose() { timer.dispose(); if (observer) { try { observer.disconnect(); } catch { /* gone */ } observer = null; } },
   };
   return api;
 }

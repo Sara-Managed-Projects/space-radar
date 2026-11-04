@@ -28,6 +28,9 @@ aliases:
   - {say: pillars of creation, means: eagle nebula, why: "Hubble's 1995 picture of the columns inside M16; the catalogue row is named for the nebula"}
   - {say: seven sisters, means: pleiades, why: "the Pleiades star cluster M45; the catalogue row is named M45 · Pleiades"}
   - {say: chinese space station, means: css, why: "what most people call Tiangong; CelesTrak lists its modules as CSS (TIANHE), CSS (WENTIAN), CSS (MENGTIAN)"}
+  - {say: north star, means: polaris, why: "the name most people know it by (Wikipedia, Polaris, read 2026-11-04: 'commonly called the North Star'); the catalogue's proper name is Polaris"}
+  - {say: dog star, means: sirius, why: "Sirius is the Dog Star (Wikipedia, Sirius, read 2026-11-04: 'Sirius A, also known as the Dog Star'); the catalogue row is named Sirius"}
+  - {say: starlink train, means: starlink, why: "what people call a fresh launch of Starlink satellites in a line (Wikipedia, Starlink, read 2026-11-04, uses 'Starlink satellite train'); the catalogue lists each one as STARLINK-nnnn"}
 
 # WHAT A KIND IS CALLED (internal spec 0076 W3-e; internal #879, #880). Typing a word below lists the
 # records of those classes (registry/visual-classes.yaml, through site/js/data/visualclasses.js), grouped by

@@ -148,6 +148,9 @@ const TYPES = {
 export const COPY = {
   "app": {
     "name": "Space Radar",
+    "bootSky": "Der Himmel wird aufgebaut…",
+    "bootEarth": "Die Erde wird platziert…",
+    "bootCatalogues": "Die Kataloge werden gelesen…",
     "tagline": "Alles, was sich rund um die Erde bewegt – dort, wo es wirklich ist, genau jetzt.",
     "sceneSelected": "Eine Karte des Weltraums mit den echten Positionen. Ausgewählt ist {name}: Der Steckbrief im Bereich neben der Karte sagt, was es ist."
   },
@@ -457,7 +460,8 @@ export const COPY = {
   },
   "ladder": {
     "title": "Wie weit",
-    "notLoaded": "lädt noch",
+    "rowName": "{label}, {distance}",
+    "rowNameLoading": "{label}, lädt noch",
     "weShowTitle": "Was diese Karte von allem Bekannten zeichnet",
     "weShowRow": "{n} {what} – von {of}",
     "edge": "Der Rand der Karte",
@@ -860,8 +864,6 @@ export const COPY = {
     "couldNotLook": "Ließ sich nicht berechnen",
     "nobodyKnows": "Das weiß niemand",
     "wouldNeed": "Es würde {wouldNeed} dauern.",
-    "oftenSaidLabel": "Oft gesagt",
-    "notApplicable": "Nichts, was dieses Objekt hat",
     "endedLine": "Seine Mission endete am {date}. Seine Ereignisse unten führen dorthin zurück.",
     "pathEndedLine": "Der Weg, den das JPL für es hat, endet am {date}. Seine Ereignisse unten führen dorthin zurück.",
     "pathBeginsLine": "Der Weg, den das JPL für es hat, beginnt am {date}. Seine Ereignisse unten führen dorthin zurück.",
@@ -2781,7 +2783,6 @@ export const COPY = {
         "astronomical": "letzte Dämmerung",
         "night": "Nacht"
       },
-      "timeNoNight": "Hier wird es heute Nacht nicht dunkel.",
       "timeFar": "Keine Satelliten so weit von heute: Ihre Bahnen veralten.",
       "eyepiece": "Okular",
       "eyepieces": {
@@ -4045,7 +4046,8 @@ Object.assign(COPY, {
       "pathLm": "der Abstieg ist rückwärts von der Tranquility Base aus gezeichnet und das Rendezvous ist eine Form; die Ereigniszeiten sind die der Mission",
       "srcReport": "Apollo-11-Missionsbericht, NASA MSC-00171, 1969 (Ereigniszeiten, Start, Landung)",
       "srcJournal": "Apollo-11-Flugjournal, NASA (Ereigniszeiten auf die Sekunde)",
-      "srcClip": "Armstrongs erste Worte auf dem Mond: NASA-Aufnahme, gemeinfrei, von Wikimedia Commons"
+      "srcClip": "Armstrongs erste Worte auf dem Mond: NASA-Aufnahme, gemeinfrei, von Wikimedia Commons",
+      "srcLanding": "Die Landemeldung: NASA-Aufnahme, gemeinfrei, von Wikimedia Commons"
     },
     "artemis-ii": {
       "title": "Artemis II: um den Mond",
@@ -4679,5 +4681,9 @@ export const GLOSSARY = {
   "L2": "Ein Gleichgewichtspunkt 1,5 Millionen km von der Erde entfernt, auf der sonnenabgewandten Seite, wo ein Teleskop Erde und Sonne hinter sich lassen und kalt bleiben kann.",
   "transit": "Wenn von deinem Standort aus gesehen ein Ding vor einem anderen vorbeizieht (Transit).",
   "conjunction": "Wenn zwei Dinge am Himmel dicht beieinander erscheinen (Konjunktion). Im Raum sind sie nicht nah.",
-  "ephemeris": "Eine Tabelle, wo etwas sein wird, im Voraus berechnet (Ephemeride)."
+  "ephemeris": "Eine Tabelle, wo etwas sein wird, im Voraus berechnet (Ephemeride).",
+  "umbra": "Der dunkle Kern eines Schattens, in dem das Licht ganz abgeschirmt ist. Im Kernschatten des Mondes verschwindet die Sonne.",
+  "penumbra": "Der hellere äußere Teil eines Schattens, in dem nur ein Teil des Lichts abgeschirmt ist. Ein Mond im Halbschatten der Erde wird nur ein wenig dunkler.",
+  "totality": "Die Minuten einer totalen Finsternis, in denen die Sonne ganz bedeckt ist. Der Himmel wird so dunkel, dass man Sterne sieht.",
+  "annular": "Ringförmig. Bei einer ringförmigen Finsternis ist der Mond zu weit entfernt, um die ganze Sonne zu bedecken, und um ihn bleibt ein heller Ring."
 };

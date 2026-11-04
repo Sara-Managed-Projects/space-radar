@@ -10,9 +10,9 @@
 #                 it never fails the run for the free sources.
 # browser         true when the host answers a page with `Access-Control-Allow-Origin: *`, so
 #                 the app may read it directly when our snapshot is missing; false when it
-#                 cannot (no CORS header, or a login). MEASURED 2026-09-06 -- the CORS column
-#                 of docs/data-sources.md -- never assumed. For a `false` row the snapshot is
-#                 the only route and the app says "could not look" rather than inventing.
+#                 cannot (no CORS header, or a login). MEASURED 2026-09-06 -- each row's own
+#                 `browser:` value is that measurement -- never assumed. For a `false` row the
+#                 snapshot is the only route and the app says "could not look" rather than inventing.
 # licence         the publisher's terms in one honest line, as CREDITS.md section 4 records them
 #                 ("no licence stated" is an answer; a licence nobody wrote down is not).
 # terms_url       the page that states them (https), or the publisher's home where it has none.
@@ -143,8 +143,8 @@ sources:
     parser: open_notify
     outputs: [astros.json]
     attribution: "Who is in space: Open Notify"
-    licence: "No licence stated by the publisher (an open-source project); a handful of names and facts"
-    terms_url: https://open-notify.org/
+    licence: "No licence stated for the data; the project's source code is GPL-3.0 (its LICENSE file, read 2026-11-04); a handful of names and facts"
+    terms_url: https://github.com/open-notify/Open-Notify-API
     terms_recorded: 2026-10-05
     publisher: Open Notify
 
@@ -161,7 +161,7 @@ sources:
     parser: ll2
     outputs: [launches.json, sites-pads.json]
     attribution: "Launch data by The Space Devs"
-    licence: "No published licence; free up to 15 requests an hour"
+    licence: "No published licence; free up to 15 requests an hour (read 2026-11-04)"
     terms_url: https://thespacedevs.com/llapi
     terms_recorded: 2026-09-07
     publisher: The Space Devs
@@ -284,7 +284,7 @@ sources:
     parser: nasa_exoplanet_archive
     outputs: [exoplanets.json]
     attribution: "Exoplanets: NASA Exoplanet Archive (Caltech/IPAC), DOI 10.26133/NEA13"
-    licence: "Publicly available; the archive asks to cite its table (DOI 10.26133/NEA13); no licence text"
+    licence: "Publicly available; the archive asks for its acknowledgement text and a citation of Christiansen et al. 2025 (this table's DOI is 10.26133/NEA13); no licence text (acknowledgement and DOI pages read 2026-11-04)"
     terms_url: https://exoplanetarchive.ipac.caltech.edu/
     terms_recorded: 2026-09-08
     publisher: NASA Exoplanet Archive
@@ -361,7 +361,7 @@ sources:
     parser: dsn_now
     outputs: [dsn.json]
     attribution: "NASA Deep Space Network"
-    licence: "NASA content, generally not copyrighted in the United States; the endpoint is undocumented"
+    licence: "NASA content, generally not copyrighted in the United States (NASA's media usage guidelines, read 2026-11-04; the DSN Now page states no terms of its own); the endpoint is undocumented"
     terms_url: https://eyes.nasa.gov/dsn/
     terms_recorded: 2026-09-07
     publisher: NASA Deep Space Network
@@ -376,7 +376,7 @@ sources:
     parser: swpc
     outputs: [space-weather.json]
     attribution: "Space weather: NOAA SWPC"
-    licence: "US Government work, public domain"
+    licence: "US Government work, public domain (read 2026-11-04)"
     terms_url: https://www.weather.gov/disclaimer
     terms_recorded: 2026-09-07
     publisher: NOAA SWPC
@@ -394,7 +394,7 @@ sources:
     # this row at deploy, so the change reaches it with the next redeploy (internal #192 item 5, #552).
     outputs: [aurora-summary.json]
     attribution: "Aurora forecast: NOAA SWPC"
-    licence: "US Government work, public domain"
+    licence: "US Government work, public domain (read 2026-11-04)"
     terms_url: https://www.weather.gov/disclaimer
     terms_recorded: 2026-10-05
     publisher: NOAA SWPC
@@ -665,7 +665,7 @@ sources:
     parser: gdacs_tc
     outputs: [storms.json]
     attribution: "Tropical cyclones: GDACS, European Commission Joint Research Centre (CC BY 4.0)"
-    licence: "CC BY 4.0 by the European Commission's reuse decision; GDACS calls it purely indicative"
+    licence: "CC BY 4.0 by the European Commission's reuse decision; GDACS calls it purely indicative (GDACS terms page and the Commission's legal notice, read 2026-11-04)"
     terms_url: https://www.gdacs.org/
     terms_recorded: 2026-09-29
     publisher: GDACS
@@ -683,7 +683,7 @@ sources:
     query: harvest/queries/observatories.rq
     outputs: [sites-observatories.json]
     attribution: "Observatory locations: Wikidata (CC0)"
-    licence: "CC0 1.0: Wikidata's structured data is dedicated to the public domain"
+    licence: "CC0 1.0: Wikidata's structured data is dedicated to the public domain (read 2026-11-04)"
     terms_url: https://www.wikidata.org/wiki/Wikidata:Licensing
     terms_recorded: 2026-10-05
     publisher: Wikidata

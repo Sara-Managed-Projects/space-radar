@@ -84,11 +84,13 @@ export function starTint(bv, chroma = STAR_CHROMA) {
 // Magnitude -> size in device pixels and alpha. Sirius (-1.44) draws at ~6 px, a 6.0 star at ~1 px.
 const MAG_MIN = -1.5;
 const MAG_MAX = 6.0;
-function magToSize(mag) {
+/** Exported so tests/test_star_magnitude.mjs can hold the curve's order. Pure. */
+export function magToSize(mag) {
   const t = Math.min(1, Math.max(0, (MAG_MAX - mag) / (MAG_MAX - MAG_MIN)));
   return 1.0 + 5.0 * Math.pow(t, 1.6);
 }
-function magToAlpha(mag) {
+/** Exported for the same test. Pure. */
+export function magToAlpha(mag) {
   const t = Math.min(1, Math.max(0, (MAG_MAX - mag) / (MAG_MAX - MAG_MIN)));
   return 0.35 + 0.65 * t;
 }

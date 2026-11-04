@@ -174,6 +174,16 @@ setHash('');
   const p = U.parseCam(v);
   check(p && p.azimuthDeg === 40 && p.polarDeg === 62 && p.distanceKm === 26540, 'and reads back');
   for (const bad of ['', '1,2', '1,2,3,4', 'a,b,c', '10,0,5', '10,180,5', '10,90,-1', '10,90,0', '1;2;3', '10,90,5<script>']) check(U.parseCam(bad) === null, `not a pose: ${JSON.stringify(bad)}`);
+  // The azimuth wraps into 0 to 360; a number is plain decimal, an exponent allowed, a plus sign or a bare point not (public #707).
+  const pose = (az) => ({ azimuthDeg: az, polarDeg: 90, distanceKm: 5 });
+  const same = (a, b) => a && a.azimuthDeg === b.azimuthDeg && a.polarDeg === b.polarDeg && a.distanceKm === b.distanceKm;
+  check(same(U.parseCam('-90,90,5'), pose(270)), 'a negative azimuth wraps into 0 to 360');
+  check(same(U.parseCam('450,90,5'), pose(90)), 'an azimuth past a turn wraps');
+  check(same(U.parseCam('360,90,5'), pose(0)), 'a full turn is 0');
+  check(same(U.parseCam('1e2,90,5'), pose(100)), 'an exponent is allowed');
+  check(same(U.parseCam(' 10 , 90 , 5'), pose(10)), 'spaces round a number are allowed');
+  check(U.parseCam('10,90,.5') === null, 'a number must start with a digit');
+  check(U.parseCam('+10,90,5') === null, 'no plus sign');
   write({ at: 'europa', cam: v });
   check(location.hash.endsWith('&cam=40%2C62%2C26540') && read().cam === v, `the key is read back whole (${location.hash})`);
   check(laterLink({ at: 'europa', cam: v, m: 'wonder' }, true).cam === undefined, 'a link\'s camera is not applied over a trip the visitor started');

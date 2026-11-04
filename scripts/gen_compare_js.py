@@ -36,4 +36,4 @@ HEADER = """// GENERATED from registry/compare.yaml by scripts/gen_compare_js.py
 MIRROR = Mirror(source="registry/compare.yaml", target="site/js/data/compare.js", header=HEADER, render=render, what="compare.js")
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

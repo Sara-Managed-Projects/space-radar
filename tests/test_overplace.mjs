@@ -89,6 +89,16 @@ const over = rows.find(([label]) => label === 'Passing over');
 check(!!below && typeof below[1] === 'string' && below[1].length > 0, `after, one row says what is below (${below && below[1]})`);
 check(rows.indexOf(below) === rows.indexOf(over) + 1, 'right under "Passing over", whose numbers stay');
 
+// --- forget and load again -------------------------------------------------------------------------------
+// resetPlaces() is the helper for this: after it nothing is loaded, a failed load leaves nothing behind
+// (a later card may try again), and the next good load builds the places anew.
+op.resetPlaces();
+check(op.placesNow() === null, 'resetPlaces() forgets what was loaded');
+check(await op.loadPlaces({ fetchFn: async () => ({ ok: false, status: 404 }), inflate: (z) => inflateSync(z) }) === null, 'a failed load resolves to null');
+check(op.placesNow() === null, 'and leaves nothing loaded');
+const again = await op.loadPlaces({ fetchFn, inflate: (z) => inflateSync(z) });
+check(!!again && again !== loaded && again.entries.length === loaded.entries.length, 'the next good load builds the places again');
+
 // --- never at boot ---------------------------------------------------------------------------------------
 // ensurePlaces() and the row it feeds live in ui/cardfacts.js since 2026-10-08 (the card's facts, apart from the card).
 const cards = readFileSync(join(JS, 'ui/cards.js'), 'utf8') + readFileSync(join(JS, 'ui/cardfacts.js'), 'utf8');

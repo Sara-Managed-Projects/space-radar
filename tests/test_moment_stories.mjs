@@ -115,9 +115,15 @@ for (const id of ['vostok-1', 'apollo-11', 'artemis-ii']) {
   check(iso(m, m.span[1]) === '1969-07-24T16:50:35Z', 'Apollo 11: splashdown at 16:50:35 UTC on 24 July');
   const step = m.tracks.captions.find((c) => c.say === 'step').t;
   check(iso(m, step) === '1969-07-21T02:56:15Z', 'Apollo 11: the first step at 02:56:15 UTC on 21 July');
-  const clip = m.tracks.audio.find((a) => a.src);
+  const clip = m.tracks.audio.find((a) => /a11-small-step/.test(a.src || ''));
   check(clip && existsSync(join(ROOT, 'site', clip.src)) && statSync(join(ROOT, 'site', clip.src)).size < 120000 && clip.t > step && clip.t < step + 60, 'Apollo 11: the NASA clip is under 120 kB and plays within a minute of the first step');
   check(/a11-small-step/.test(readFileSync(join(ROOT, 'CREDITS.md'), 'utf8')), 'Apollo 11: the clip has a CREDITS.md line');
+  // 1.8.0: the landing call at 102:45:40, the caption's own second; the 1202 alarms and the launch have no clip with a stated licence
+  const call = m.tracks.audio.find((a) => /a11-landed/.test(a.src || '')), landed = m.tracks.captions.find((c) => c.say === 'landed').t;
+  check(call && call.t === landed && iso(m, call.t) === '1969-07-20T20:17:40Z' && existsSync(join(ROOT, 'site', call.src)) && statSync(join(ROOT, 'site', call.src)).size < 60000, 'Apollo 11: the landing call is under 60 kB and cued at 20:17:40 UTC with the caption');
+  const credits11 = readFileSync(join(ROOT, 'CREDITS.md'), 'utf8'), audioYaml11 = readFileSync(join(ROOT, 'registry/audio.yaml'), 'utf8');
+  check(/a11-landed\.m4a/.test(credits11) && /Apollo_11_Eagle_Has_Landed/.test(credits11) && /id: a11-landed/.test(audioYaml11) && /PD-USGov-NASA/.test(audioYaml11), 'Apollo 11: the landing call has its CREDITS.md line and its row in registry/audio.yaml, licence stated');
+  check(m.sources.some((x) => x.say === 'srcLanding'), 'Apollo 11: the Moment lists the landing call among its sources');
   // the landing is on the Moon's ground at Tranquility Base
   const lm = rowsOf(m, 'lm'), tLand = m.tracks.parts.find((e) => e.part === 'descent-stage' && e.action === 'cutoff').t + 0.1;
   for (let tt of [tLand + 300, tLand + 40000]) {

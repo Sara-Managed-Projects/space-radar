@@ -121,6 +121,15 @@ check(pl.placeValue({ ...preciseO, source: 'guess' }) === '' && pl.placeValue(nu
 const back = pl.parsePlaceValue('48.9,2.3');
 check(back && back.latDeg === 48.9 && back.lonDeg === 2.3 && back.source === 'shared' && Math.abs(back.latRad - 48.9 * Math.PI / 180) < 1e-12 && !('name' in back), 'and it reads back as a shared place with no name');
 for (const bad of ['48.85837,2.294481', '48.9', '48.9,2.3,5', 'x,y', '91,0', '0,181', '', null, '48.9, 2.3;drop', '1e1,2']) check(pl.parsePlaceValue(bad) === null, `a value this app never writes is refused: ${JSON.stringify(bad)}`);
+// The edges (public #715): the pole and the date line are places, a hair beyond is not, and the south and west read back.
+check(pl.parsePlaceValue('90,180').latDeg === 90, 'the pole and the date line are places');
+check(pl.parsePlaceValue('-90,-180').lonDeg === -180, 'the south pole and the western date line are places');
+check(pl.parsePlaceValue('-33.9,151.2').latDeg === -33.9, 'a southern place reads back');
+check(pl.parsePlaceValue('48,2').source === 'shared', 'whole degrees need no decimal');
+check(pl.parsePlaceValue(' 48.9,2.3 ').lonDeg === 2.3, 'white space round the whole value is trimmed');
+check(pl.parsePlaceValue('48.9 ,2.3') === null, 'but white space inside it is refused');
+check(pl.parsePlaceValue('90.1,0') === null, 'a latitude a hair past the pole is refused');
+check(pl.parsePlaceValue('0,-180.5') === null, 'a longitude past the date line is refused');
 const mem = new Map();
 const store = { setItem: (k, v) => mem.set(k, String(v)), getItem: (k) => (mem.has(k) ? mem.get(k) : null), removeItem: (k) => mem.delete(k) };
 check(pl.keptPlace(store) === null, 'nothing is kept until asked');

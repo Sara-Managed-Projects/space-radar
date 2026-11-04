@@ -98,6 +98,10 @@ export const fmt = {
   },
 };
 
+/**
+ * `one` for a count of 1 (or -1), `many` for anything else, 0 and fractions included. Delegates to
+ * `fmt.plural`: `plural(1, 'minute', 'minutes')` is `'minute'`, `plural(0, ...)` is `'minutes'`.
+ */
 export function plural(n, one, many) {
   return fmt.plural(n, one, many);
 }
@@ -566,6 +570,10 @@ export const COPY = {
     // The canvas's spoken name while something is selected (public #315): one sentence, changed
     // on selection and never per frame. With nothing selected it is the sentence index.html wrote.
     sceneSelected: 'A map of space drawn at real positions, with {name} selected: its card, in the panel beside the map, says what it is.',
+    // The three lines the loading screen shows while the map builds (public #683), in the order main.js says them.
+    bootSky: 'Building the sky…',
+    bootEarth: 'Placing Earth…',
+    bootCatalogues: 'Reading the catalogues…',
   },
 
   // 0077 W1-e: begin
@@ -886,7 +894,9 @@ export const COPY = {
   // honesty line under them.
   ladder: {
     title: 'How far',
-    notLoaded: 'still loading',
+    // A far-places row's spoken name (public #684): a template, so a translation can move the slots.
+    rowName: '{label}, {distance}',
+    rowNameLoading: '{label}, still loading',
     weShowTitle: 'What this map draws of what is known',
     weShowRow: '{n} {what} — of {of}',
     // One flight without a cut (scene/climb.js): two rows at the head of the far places.
@@ -1358,8 +1368,6 @@ export const COPY = {
     couldNotLook: 'Could not work this out',
     nobodyKnows: 'Nobody knows',
     wouldNeed: 'It would take {wouldNeed}.',
-    oftenSaidLabel: 'Often said',
-    notApplicable: 'Not something this object has',
     // In place of the three numbers, on the card of a craft whose mission is over.
     endedLine: 'Its mission ended on {date}. Its events, below, go back to it.',
     pathEndedLine: 'The path JPL holds for it ends on {date}. Its events, below, go back to it.',
@@ -2495,7 +2503,8 @@ export const COPY = {
 };
 
 // ---------------------------------------------------------------------------------------
-// GLOSSARY -- the 32 terms from registry/glossary.yaml, verbatim. A term used on a card
+// GLOSSARY -- the terms of registry/glossary.yaml, verbatim, but for the deep sky's five (parsec to comoving
+// distance), which the legend reads from r12Truth.terms in en.later.js. A term used on a card
 // that is not here fails CI (spec 0013 requirement 7).
 // ---------------------------------------------------------------------------------------
 
@@ -2548,6 +2557,14 @@ export const GLOSSARY = {
   transit: 'When one thing passes in front of another as seen from where you stand.',
   conjunction: 'When two things appear close together in the sky. They are not close in space.',
   ephemeris: 'A table of where something will be, worked out in advance.',
+  umbra:
+    'The dark middle of a shadow, where the light is blocked completely. Stand in the Moon\'s umbra and the Sun is gone.',
+  penumbra:
+    'The paler outer part of a shadow, where only some of the light is blocked. A Moon in the Earth\'s penumbra only dims a little.',
+  totality:
+    'The minutes of a total eclipse when the Sun is covered completely. The sky goes dark enough to see stars.',
+  annular:
+    'Ring-shaped. In an annular eclipse the Moon is too far away to cover the whole Sun, so a bright ring is left around it.',
 };
 
 // ---------------------------------------------------------------------------------------

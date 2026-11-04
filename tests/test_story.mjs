@@ -30,6 +30,11 @@ check(wk('2026-10-08T12:00:00Z') === '2026-W41', `8 October 2026 is in week 41 (
 check(wk('2026-01-01T00:00:00Z') === '2026-W1', `1 January 2026, a Thursday, is in week 1 (${wk('2026-01-01T00:00:00Z')})`);
 check(wk('2027-01-03T23:59:00Z') === '2026-W53', `3 January 2027, a Sunday, still belongs to 2026's week 53 (${wk('2027-01-03T23:59:00Z')})`);
 check(wk('2024-12-30T00:00:00Z') === '2025-W1', `30 December 2024, a Monday, opens 2025's week 1 (${wk('2024-12-30T00:00:00Z')})`);
+check(wk('2025-12-29T00:00:00Z') === '2026-W1', 'a Monday in December that belongs to next year');
+check(wk('2021-01-03T00:00:00Z') === '2020-W53', 'a Sunday in January that belongs to last year');
+check(wk('2021-01-04T00:00:00Z') === '2021-W1', 'the Monday after it opens 2021\'s week 1');
+check(wk('2016-01-03T00:00:00Z') === '2015-W53', 'another 53-week year');
+check(wk('2024-02-29T00:00:00Z') === '2024-W9', 'a leap day');
 
 // --- element sets, as the parser makes them ------------------------------------------------------
 const NOW = Date.parse('2026-10-08T16:00:00Z');

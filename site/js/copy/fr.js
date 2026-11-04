@@ -152,6 +152,9 @@ export const RULES = {
 export const COPY = {
   "app": {
     "name": "Space Radar",
+    "bootSky": "Construction du ciel…",
+    "bootEarth": "Mise en place de la Terre…",
+    "bootCatalogues": "Lecture des catalogues…",
     "tagline": "Tout ce qui se déplace autour de la Terre, à sa vraie position, en ce moment.",
     "sceneSelected": "Une carte de l’espace dessinée aux positions réelles, avec {name} sélectionné : sa fiche, dans le panneau à côté de la carte, dit ce que c’est."
   },
@@ -461,7 +464,8 @@ export const COPY = {
   },
   "ladder": {
     "title": "À quelle distance",
-    "notLoaded": "chargement en cours",
+    "rowName": "{label}, {distance}",
+    "rowNameLoading": "{label}, chargement en cours",
     "weShowTitle": "Ce que la carte dessine de tout ce qu’on connaît",
     "weShowRow": "{n} {what} — sur {of}",
     "edge": "Le bord de la carte",
@@ -864,8 +868,6 @@ export const COPY = {
     "couldNotLook": "Calcul impossible",
     "nobodyKnows": "Personne ne le sait",
     "wouldNeed": "Il faudrait {wouldNeed}.",
-    "oftenSaidLabel": "On dit souvent",
-    "notApplicable": "Cet objet n’en a pas",
     "endedLine": "Sa mission s’est terminée le {date}. Ses événements, plus bas, y remontent.",
     "pathEndedLine": "La trajectoire de cet objet que JPL conserve s’arrête le {date}. Ses événements, plus bas, y remontent.",
     "pathBeginsLine": "La trajectoire de cet objet que JPL conserve commence le {date}. Ses événements, plus bas, y remontent.",
@@ -2785,7 +2787,6 @@ export const COPY = {
         "astronomical": "dernier crépuscule",
         "night": "nuit"
       },
-      "timeNoNight": "Il ne fait pas nuit noire ici ce soir.",
       "timeFar": "Pas de satellites si loin d’aujourd’hui : orbites périmées.",
       "eyepiece": "Oculaire",
       "eyepieces": {
@@ -4049,7 +4050,8 @@ Object.assign(COPY, {
       "pathLm": "la descente est dessinée à rebours depuis la base de la Tranquillité et le rendez-vous est une forme ; les heures des événements sont celles de la mission",
       "srcReport": "Rapport de mission d’Apollo 11, NASA MSC-00171, 1969 (heures des événements, lancement, alunissage)",
       "srcJournal": "Journal de vol d’Apollo 11, NASA (heures des événements à la seconde)",
-      "srcClip": "Les premiers mots d’Armstrong sur la Lune : enregistrement de la NASA, domaine public, de Wikimedia Commons"
+      "srcClip": "Les premiers mots d’Armstrong sur la Lune : enregistrement de la NASA, domaine public, de Wikimedia Commons",
+      "srcLanding": "L’annonce de l’alunissage : enregistrement de la NASA, domaine public, de Wikimedia Commons"
     },
     "artemis-ii": {
       "title": "Artemis II : autour de la Lune",
@@ -4683,5 +4685,9 @@ export const GLOSSARY = {
   "L2": "Un point d’équilibre à 1,5 million de km de la Terre, du côté opposé au Soleil, où un télescope peut garder la Terre et le Soleil derrière lui et rester froid.",
   "transit": "Quand une chose passe devant une autre, vue de là où tu es.",
   "conjunction": "Quand deux choses paraissent proches dans le ciel. Elles ne sont pas proches dans l’espace.",
-  "ephemeris": "Un tableau de l’endroit où sera quelque chose, calculé à l’avance."
+  "ephemeris": "Un tableau de l’endroit où sera quelque chose, calculé à l’avance.",
+  "umbra": "La partie sombre au centre d’une ombre, où la lumière est entièrement bloquée. Dans l’ombre de la Lune, le Soleil disparaît.",
+  "penumbra": "La partie extérieure et plus claire d’une ombre, où seule une partie de la lumière est bloquée. Une Lune dans la pénombre de la Terre ne s’assombrit qu’un peu.",
+  "totality": "Les minutes d’une éclipse totale pendant lesquelles le Soleil est entièrement caché. Le ciel devient assez sombre pour voir des étoiles.",
+  "annular": "En forme d’anneau. Lors d’une éclipse annulaire, la Lune est trop loin pour couvrir tout le Soleil, et un anneau brillant reste autour d’elle."
 };

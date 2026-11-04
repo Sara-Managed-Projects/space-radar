@@ -128,8 +128,7 @@ TABLE = Mirror(source="registry/systems-generated.yaml", target="site/js/data/sy
                render=render_table, what="systems-table.js")
 
 if __name__ == "__main__":
-    argv = sys.argv[1:]
     rc = 0
-    if "--check" in argv:
+    if "--check" in sys.argv:
         rc = subprocess.call([sys.executable, str(ROOT / "scripts/build-systems.py"), "--check"])
-    sys.exit(rc or INDEX.main(argv) or TABLE.main(argv))
+    sys.exit(rc or INDEX.main() or TABLE.main())

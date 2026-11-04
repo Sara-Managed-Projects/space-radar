@@ -124,4 +124,4 @@ HEADER = """// GENERATED from registry/plumes.yaml by scripts/gen_plumes_js.py. 
 MIRROR = Mirror(source="registry/plumes.yaml", target="site/js/data/plumes.js", header=HEADER, render=render, what="plumes.js")
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

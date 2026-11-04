@@ -48,6 +48,7 @@ export const MODEL_LOOKS = {
   "proba-3-csc.glb": "pbr",
   "proba-3-osc.glb": "pbr",
   "proba-v.glb": "pbr",
+  "pslv-ps4.glb": "pbr",
   "r7-8k72k.glb": "pbr",
   "resurs-dk1.glb": "pbr",
   "satellogic-newsat.glb": "pbr",

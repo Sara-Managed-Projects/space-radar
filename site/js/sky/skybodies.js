@@ -4,7 +4,7 @@
 //           eqjToLocal(date, observer) -> number[9] (row-major 3x3), localOf(m9, v) -> [x, y, z],
 //           altAzOf(local) -> {altDeg, azDeg}, bodyFrame(axis) -> {x, y, z}
 // Pure given Astronomy Engine: no DOM, no three, no clock. sky/groundsky.js draws from these and
-// sky/tonightbest.js ranks from them; tests/test_skybodies.mjs holds them to Astronomy Engine's own
+// sky/tonightbest.js ranks from them; tests/test_skymath.mjs holds them to Astronomy Engine's own
 // numbers.
 //
 // EVERYTHING HERE IS COMPUTED, NOTHING IS FETCHED. Directions are topocentric (from the visitor's

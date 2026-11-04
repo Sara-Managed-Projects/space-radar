@@ -777,12 +777,12 @@ for (const file of allFiles) {
         `HONESTY  a family match claims "drawn from published dimensions for ${byFamily.drawnName}"`
       );
     }
-    const byProvider = metaOf(launch('Orbex Prime', [], 'Orbex'));
+    const byProvider = metaOf(launch('Orbex Unnamed', [], 'Orbex'));
     if (byProvider.drawnVia !== 'provider') {
-      problems.push(`HONESTY  'Orbex Prime' should match by provider; got ${byProvider.drawnVia}`);
+      problems.push(`HONESTY  'Orbex Unnamed' should match by provider; got ${byProvider.drawnVia}`);
     } else {
       if (byProvider.drawsAs === 'variant') problems.push('HONESTY  a provider match claims an exact vehicle');
-      // Its row's own source reads "NOT this vehicle: no source was read for Prime...".
+      // Its row's own source reads "NOT this vehicle: no source was read for SL1 or ZERO".
       if (byProvider.sizeM !== null) {
         problems.push(`HONESTY  the provider stand-in states a height (${byProvider.sizeM} m) for a vehicle it says it cannot size`);
       }

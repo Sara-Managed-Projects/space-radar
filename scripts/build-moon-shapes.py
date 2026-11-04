@@ -40,6 +40,13 @@ ROWS, COLS = 180 // STEP + 1, 360 // STEP
 RADIUS_KM = {"phobos": 11.08, "deimos": 6.2}   # registry/worlds.yaml, checked in main()
 
 
+def holes(grid: list[list[float]]) -> str:
+    """How many grid points are empty, out of all of them, and where the first one is."""
+    empty = [(iy, ix) for iy, row in enumerate(grid) for ix, v in enumerate(row) if v != v]
+    iy, ix = empty[0]
+    return f"{len(empty)} of {ROWS * COLS} points are empty, the first at latitude {iy * STEP - 90} and east longitude {ix * STEP}"
+
+
 def phobos(path: Path) -> list[list[float]]:
     lines = path.read_text().split("\n")
     nv = int(lines[0].split()[0])
@@ -78,7 +85,7 @@ def phobos(path: Path) -> list[list[float]]:
         for (iy, ix), v in fill.items():
             grid[iy][ix] = v
     if any(v != v for row in grid for v in row):
-        raise SystemExit("phobos: a grid point no vertex reached")
+        raise SystemExit(f"phobos: a grid point no vertex reached: {holes(grid)}")
     return grid
 
 
@@ -92,7 +99,7 @@ def deimos(path: Path) -> list[list[float]]:
         east = (360 - west) % 360
         grid[round((lat + 90) / STEP)][round(east / STEP) % COLS] = r
     if any(v != v for row in grid for v in row):
-        raise SystemExit("deimos: the table does not fill the grid")
+        raise SystemExit(f"deimos: the table does not fill the grid: {holes(grid)}")
     return grid
 
 

@@ -43,4 +43,4 @@ HEADER = """// GENERATED from registry/models.yaml by scripts/gen_model_looks_js
 MIRROR = Mirror(source="registry/models.yaml", target="site/js/data/modellooks.js", header=HEADER, render=render, what="modellooks.js")
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

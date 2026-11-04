@@ -42,4 +42,4 @@ MIRROR = Mirror(source="registry/stars-notable.yaml", target="site/js/data/stars
                 render=render, what="starsnotable.js")
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

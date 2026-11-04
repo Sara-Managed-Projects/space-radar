@@ -166,10 +166,6 @@ export function systemForStage(stageId) {
   return BY_STAGE.get(stageId) || null;
 }
 
-export function systemById(id) {
-  return BY_ID.get(id) || null;
-}
-
 /** The host star's heliocentric position, km, sun-inertial: the planets' own row of the table. */
 export function hostPositionKm(system) {
   const h = system.hostSky;

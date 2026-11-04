@@ -94,4 +94,4 @@ HEADER = """// GENERATED from registry/systems.yaml by scripts/gen_systems_js.py
 MIRROR = Mirror(source="registry/systems.yaml", target="site/js/data/systems.js", header=HEADER, render=render, what="systems.js")
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

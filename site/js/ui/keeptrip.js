@@ -1,6 +1,7 @@
 // ui/keeptrip.js -- "Keep for offline" on a trip's intro (internal #551, from #390).
 //
 // Contract: tripAssets(tour, env) -> { urls, voice, models, maps, beds, other }   pure
+//           keptTier(quality) -> 0|1|2                                              pure: the highest texture tier the visit may reach
 //           deepFilesOf(profile) -> [path]                                       pure: a deep-sky hero's files
 //           keepTrip(urls, opts) -> Promise<{ done, failed, bytes }>               the fetching
 //           keptRow(ctx, tour) -> HTMLElement | null                                the row's button and its line
@@ -70,7 +71,10 @@ export function worldOfTarget(target, recordById) {
  *   recordById  id -> record | null
  *   realModelFor  record -> { file?, map? } | null
  *   canPlay     audio element canPlayType, to pick Opus or AAC as the engine would
- *   tier        the device's texture tier (0, 1, 2)
+ *   tier        the highest texture tier the device may wear during the visit (0, 1, 2): its ceiling
+ *               while the tier is still promoted (a later promotion asks for the sharper maps, which
+ *               must already be kept; internal #564), else the tier it is at
+ *   month       the clock's month (1-12), for the Earth's monthly day map; unset: that map is left out
  *   isLadder    stage id -> bool, for the music
  *   voice       false when the voice is not wanted (the clips are then left out)
  *   pictures    data/nebulae.js NEBULAE: the photographs' files, read by the heroes HERO_PICTURES names
@@ -142,10 +146,14 @@ export function tripAssets(tour, env) {
   if (far > 0 && stops.some((s) => s.target && s.target.world === 'sun' && Number(s.distance_km) >= far)) add('other', CMB_MAP);
 
   const tier = Number.isFinite(e.tier) ? e.tier : 0;
+  const month = Math.min(12, Math.max(1, Math.round(Number(e.month) || 0)));
   for (const row of Array.isArray(e.textures) ? e.textures : []) {
-    if (!row || !worlds.has(row.world)) continue;
-    // The cheapest file first (what a world shows at once), and the best the device earns.
-    const files = (row.files || []).filter((f) => f && f.tier >= 0 && f.tier <= tier && plain(f.file)).sort((a, b) => a.tier - b.tier);
+    // A world the trip visits, and what scene/texturetiers.js fetches whatever the stop (`when: idle`: the Earth and the Milky Way).
+    if (!row || !(worlds.has(row.world) || row.when === 'idle')) continue;
+    // The cheapest file first (what a world shows at once), and the best the device earns. A monthly file is the clock's month.
+    const files = (row.files || []).filter((f) => f && f.tier >= 0 && f.tier <= tier)
+      .map((f) => ({ tier: f.tier, file: f.monthly && Number(e.month) > 0 ? String(f.file).replace('{mm}', String(month).padStart(2, '0')) : f.file }))
+      .filter((f) => plain(f.file)).sort((a, b) => a.tier - b.tier);
     if (files.length) add('maps', files[0].file);
     if (files.length > 1) add('maps', files[files.length - 1].file);
   }
@@ -296,6 +304,13 @@ export function keptRow(ctx, tour, env, { storage } = {}) {
   return { button, note };
 }
 
+/** The texture tier a visit may reach: the device's ceiling while Auto still promotes, else the tier it is at. Pure. */
+export function keptTier(q) {
+  if (!q || !Number.isFinite(q.tier)) return 0;
+  const auto = typeof q.plan === 'function' ? q.plan().promote : false;
+  return auto && Number.isFinite(q.ceiling) ? Math.max(q.tier, q.ceiling) : q.tier;
+}
+
 /**
  * keptRow() with its registries read from the app: what ui/tripframe.js calls, once the intro is
  * on screen. Resolves to `{ button, note }` or null (no worker keeps anything here).
@@ -327,7 +342,9 @@ export async function keptRowFor(ctx, tour) {
     recordById: typeof ctx.recordById === 'function' ? ctx.recordById : null,
     realModelFor: R.realModelFor,
     canPlay,
-    tier: ctx.quality && Number.isFinite(ctx.quality.tier) ? ctx.quality.tier : 0,
+    // The ceiling while the tier is promoted by itself (a promotion mid-trip asks for the sharper maps); a chosen quality stays where it is.
+    tier: keptTier(ctx.quality),
+    month: new Date().getUTCMonth() + 1,
     isLadder: S.isLadderStage,
     pictures: P.NEBULAE,
     deepFiles: (id) => deep.get(id) || [],

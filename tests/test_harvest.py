@@ -30,7 +30,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -38,7 +38,7 @@ sys.path.insert(0, str(ROOT))
 
 from harvest import fetch, parsers, registry  # noqa: E402
 from harvest import snapshot as snap  # noqa: E402
-from harvest.run import run  # noqa: E402
+from harvest.run import expand_url, run  # noqa: E402
 
 FIXTURES = ROOT / "tests" / "fixtures" / "harvest"
 NOW = snap.parse_iso("2026-09-08T00:00:00Z")
@@ -281,6 +281,29 @@ class Clock(unittest.TestCase):
     def test_iso_shape(self):
         self.assertEqual(snap.iso(NOW), "2026-09-08T00:00:00Z")
         self.assertEqual(fetch.http_date("2026-09-08T00:00:00Z"), "Tue, 08 Sep 2026 00:00:00 GMT")
+
+
+class UrlBuilding(unittest.TestCase):
+    def test_with_params_encodes_and_keeps_an_existing_query(self):
+        self.assertEqual(fetch.with_params("https://x.org/a", {}), "https://x.org/a")
+        # a space becomes %20, an ampersand %26
+        self.assertEqual(fetch.with_params("https://x.org/a", {"a": "1 2", "b": "x&y"}), "https://x.org/a?a=1%202&b=x%26y")
+        self.assertEqual(fetch.with_params("https://x.org/a?z=1", {"a": "1"}), "https://x.org/a?z=1&a=1")
+
+    def test_expand_url_rounds_the_hour_down_to_a_multiple_of_three_in_utc(self):
+        url = "https://e.org/wind_{hour3}.json"
+        for hour, minute, want in ((0, 41, "00"), (2, 41, "00"), (5, 41, "03"), (23, 59, "21")):
+            self.assertEqual(
+                expand_url(url, datetime(2026, 10, 9, hour, minute, tzinfo=timezone.utc)),
+                f"https://e.org/wind_2026-10-09T{want}:00:00Z.json",
+            )
+        # another offset is converted to UTC first: 23:59 at +02:00 is 21:59 UTC
+        self.assertEqual(
+            expand_url("https://e.org/{hour3}", datetime(2026, 10, 9, 23, 59, tzinfo=timezone(timedelta(hours=2)))),
+            "https://e.org/2026-10-09T21:00:00Z",
+        )
+        # no placeholder: the url comes back unchanged
+        self.assertEqual(expand_url("https://e.org/x.json", datetime(2026, 10, 9, 5, tzinfo=timezone.utc)), "https://e.org/x.json")
 
 
 # --- 4. the quirks ---------------------------------------------------------------------------------

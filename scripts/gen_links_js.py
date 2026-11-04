@@ -36,4 +36,4 @@ HEADER = """// GENERATED from registry/links.yaml by scripts/gen_links_js.py. Do
 MIRROR = Mirror(source="registry/links.yaml", target="site/js/data/links.js", header=HEADER, render=render, what="links.js")
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

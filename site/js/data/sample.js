@@ -416,7 +416,7 @@ const FAR_BODIES = [
     diameterKm: 1230,
     moons: ['Xiangliu'],
     // 31 degrees is the SBDB inclination above; 33 to 101 au are its perihelion and aphelion.
-    why: 'Its orbit swings it between 33 and 101 au from the Sun, tilted 31 degrees out of the ' +
+    why: 'Its orbit swings it between 33 and 101 AU from the Sun, tilted 31 degrees out of the ' +
       'plane the planets move in. It has one moon, Xiangliu.',
     whySource: 'Wikipedia, Gonggong (dwarf planet), read 22 September 2026',
   },
@@ -520,7 +520,7 @@ const FAR_BODIES = [
     diameterKm: null, // "as small as 440 metres" and "upper limit 5.6 kilometres" are limits, not a size
     moons: null,
     why: 'The third object seen passing through the Solar System from another star, reported by the ATLAS survey in Chile on 1 July 2025. ' +
-      'It came closest to the Sun, about 1.4 au, at the end of that October.',
+      'It came closest to the Sun, about 1.4 AU, at the end of that October.',
     whySource: 'Wikipedia, 3I/ATLAS, and NASA Science, 3I/ATLAS, read 29 October 2026',
     departure: 'its nucleus is hidden in its cloud and nobody has seen it; the tails are part of the drawing, not an observation',
     orbitCaveat: 'where it is now is worked out from JPL’s orbit, not seen',
@@ -1709,7 +1709,7 @@ const OSCULATING_CRAFT = [
     horizonsId: -49,
     // Horizons -49 header (revised 2025-10-25): 3548 Eurybates on 2027-08-11 is the first of the
     // five Jupiter Trojans in its flyby list. 5.05 au from the Sun on 2026-09-22 (Horizons).
-    note: 'Now 5 au from the Sun, it flies past 3548 Eurybates in August 2027, the first of the ' +
+    note: 'Now 5 AU from the Sun, it flies past 3548 Eurybates in August 2027, the first of the ' +
       'five Trojan asteroids sharing Jupiter’s orbit that it will visit.',
     destination: 'Jupiter’s Trojan asteroids',
     aAu: 3.354199, e: 0.71343, iDeg: 4.4203, nodeDeg: 261.2311, argpDeg: 160.4172, maDeg: 106.295,
@@ -2046,7 +2046,7 @@ export function sampleDeepSpace() {
           NO_CORS +
           ' This one is built from three numbers: ' +
           c.distanceAu +
-          ' au from the Sun' +
+          ' AU from the Sun' +
           (c.distanceMeasured
             ? ' (checked against JPL Horizons on ' + (c.checkedWords || '7 September 2026') + ')'
             : ' (the published figure, rounded)') +

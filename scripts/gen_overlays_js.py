@@ -42,4 +42,4 @@ HEADER = """// GENERATED from registry/overlays.yaml by scripts/gen_overlays_js.
 MIRROR = Mirror(source="registry/overlays.yaml", target="site/js/data/overlays.js", header=HEADER, render=render, what="overlays.js")
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

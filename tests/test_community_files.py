@@ -3,7 +3,7 @@
 
     python3 tests/test_community_files.py
 
-Asserted, each by reading the files: the issue chooser offers seven forms and three contact links and
+Asserted, each by reading the files: the issue chooser offers eight forms and three contact links and
 every form parses with the fields GitHub needs; CITATION.cff parses and names this repository and
 the MIT licence; every relative link in README, CONTRIBUTING, ROADMAP and docs/TRANSLATING.md goes
 to a file that exists; CONTRIBUTING opens with "no install, no build" and has the no-code section
@@ -31,7 +31,7 @@ def check(ok, msg):
 # --- the issue chooser
 forms = sorted((ROOT / ".github" / "ISSUE_TEMPLATE").glob("*.yml"))
 forms = [f for f in forms if f.name != "config.yml"]
-check(len(forms) == 7, f"the chooser should show 7 forms, there are {len(forms)}: {[f.name for f in forms]}")
+check(len(forms) == 8, f"the chooser should show 8 forms, there are {len(forms)}: {[f.name for f in forms]}")
 for f in forms:
     d = yaml.safe_load(f.read_text(encoding="utf-8"))
     check(all(k in d for k in ("name", "description", "body", "labels")), f"{f.name} lacks name, description, labels or body")
@@ -40,6 +40,16 @@ for f in forms:
     check(any(b.get("validations", {}).get("required") for b in d.get("body", [])), f"{f.name}: at least one field should be required")
 for name in ("classroom.yml", "translation.yml"):
     check((ROOT / ".github" / "ISSUE_TEMPLATE" / name).is_file(), f"{name} is missing")
+# a native speaker can report one wrong phrase in a draft language (internal #1269): a form, linked where translators and readers look
+mis = yaml.safe_load((ROOT / ".github" / "ISSUE_TEMPLATE" / "mistranslation.yml").read_text(encoding="utf-8"))
+mis_ids = {b.get("id"): b for b in mis["body"] if b.get("type") != "markdown"}
+check({"language", "says"} <= set(mis_ids) and all(mis_ids[k].get("validations", {}).get("required") for k in ("language", "says")),
+      "mistranslation.yml must require the language and the words as they are now")
+langs = [o.split("(")[-1].rstrip(")") for o in mis_ids["language"]["attributes"]["options"] if "(" in o]
+check(sorted(langs) == sorted(p.stem for p in (ROOT / "site" / "js" / "copy").glob("*.js") if re.fullmatch(r"[a-z]{2}", p.stem) and p.stem != "en"),
+      f"mistranslation.yml offers {langs}: every language file in site/js/copy/ and no other")
+for name in ("README.md", "CONTRIBUTING.md", "docs/TRANSLATING.md"):
+    check("template=mistranslation.yml" in (ROOT / name).read_text(encoding="utf-8"), f"{name} does not link the form for a wrong phrase")
 cfg = yaml.safe_load((ROOT / ".github" / "ISSUE_TEMPLATE" / "config.yml").read_text(encoding="utf-8"))
 links = cfg.get("contact_links", [])
 check(len(links) == 3 and all(l["url"].startswith("https://") and l.get("about") for l in links), f"three contact links with a URL and an 'about', not {len(links)}")

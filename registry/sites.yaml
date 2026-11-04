@@ -36,10 +36,10 @@
 # fails any of them that would be drawn with the class default -- so the first surface row that
 # is a place rather than a machine will need a shape of its own before it ships.
 #
-# `source: uncited` is the reserved literal for the six rows that predate the rule and whose
+# `source: uncited` is the reserved literal for the rows that predate the rule and whose
 # numbers were not matched to a reference when it was written. It is not a new row's option:
-# check_registry.py holds the six ids in a frozen set, so citing nothing is a deliberate edit
-# there and never a silent default here.
+# check_registry.py holds their ids in a frozen set (UNCITED_SITES), so citing
+# nothing is a deliberate edit there and never a silent default here.
 #
 # THE CONVENTIONS, because a latitude is only a number once you know which one it is:
 #   * Moon: planetocentric latitude, east longitude 0-360, in the mean Earth/polar axis frame
@@ -222,7 +222,7 @@ sites:
   # --- Deep Space Network: three complexes, the big dishes ---------------------------
   - {id: dss-14, display: "Goldstone DSS-14", class: dish, world: earth, lat: 35.4259, lon: -116.8895, alt_m: 1001, diameter_m: 70, source: dsn-810-005-301, doing: "The 70-metre dish at Goldstone, California."}
   - {id: dss-25, display: "Goldstone DSS-25", class: dish, world: earth, lat: 35.3376, lon: -116.8754, alt_m: 960, diameter_m: 34, source: dsn-810-005-301, doing: "A 34-metre dish at Goldstone."}
-  - {id: dss-43, display: "Canberra DSS-43", class: dish, world: earth, lat: -35.4024, lon: 148.9813, alt_m: 689, diameter_m: 70, source: dsn-810-005-301, doing: "The only dish that can still send commands to Voyager 2."}
+  - {id: dss-43, display: "Canberra DSS-43", class: dish, world: earth, lat: -35.4024, lon: 148.9813, alt_m: 689, diameter_m: 70, source: dsn-810-005-301, aliases: ["Tidbinbilla"], doing: "The only dish that can still send commands to Voyager 2."}
   - {id: dss-63, display: "Madrid DSS-63", class: dish, world: earth, lat: 40.4312, lon: -4.2480, alt_m: 865, diameter_m: 70, source: dsn-810-005-301, doing: "The 70-metre dish outside Madrid."}
 
   # --- Two pads, and the vehicles that left from them (public #427, 2026-10-08) ------------------
@@ -261,6 +261,16 @@ sites:
   # coordinate and NOT a record (`record: false`): nothing lies here to draw a shape of, and a
   # lander standing upright at a crash site would be a stand-in that says something false.
   - {id: beresheet, display: "Beresheet impact site", class: surface, world: moon, lat: 32.5956, lon: 19.3496, landed: 2019-04-11, record: false, source: nssdc-lunar, doing: "Where an Israeli lander hit Mare Serenitatis in April 2019, carrying a stack of nickel discs."}
+  # Three more places a machine hit the Moon (2026-11-04; public #778, #780, #782), the same kind
+  # of row as Beresheet: a coordinate and not a record. Position and UTC date are NSSDCA's table
+  # (`nssdc-lunar`, which says all its dates are UTC); no uncertainty is given because the table
+  # gives none. The sentences are from pages read the same day: LROC's "Impact Site of the
+  # HAKUTO-R Mission 1 Lunar Lander" (lroc.im-ldi.com/images/1302), NASA's "NASA's LRO Observes
+  # Crater Likely from Luna 25 Impact" (31 August 2023, nasa.gov) and LROC's "HAKUTO-R Venture
+  # Moon Impact Site" and "Mission 2 Landing Site" (lroc.im-ldi.com/images/1456 and 1412).
+  - {id: hakuto-r-1, display: "Hakuto-R Mission 1 impact site", class: surface, world: moon, lat: 47.581, lon: 44.094, landed: 2023-04-25, record: false, source: nssdc-lunar, doing: "Where ispace's Hakuto-R Mission 1 lander was lost in April 2023, as it descended to land near Atlas crater."}
+  - {id: luna-25, display: "Luna 25 impact site", class: surface, world: moon, lat: -57.865, lon: 61.360, landed: 2023-08-19, record: false, source: nssdc-lunar, doing: "Where Russia's Luna 25 hit the Moon in August 2023, on the southwest rim of Pontécoulant G crater, about 400 km short of its landing point."}
+  - {id: hakuto-r-2, display: "Hakuto-R Mission 2 impact site", class: surface, world: moon, lat: 60.4445, lon: 355.412, landed: 2025-06-05, record: false, source: nssdc-lunar, doing: "Where ispace's Hakuto-R Mission 2 lander, Resilience, made a hard landing in June 2025, in its landing area in Mare Frigoris."}
 
   # Added 2026-09-22: fourteen more places a machine came down on the Moon, each where LROC has
   # photographed the hardware. LROC's 2016 table for everything it covers, because it states an
@@ -299,6 +309,7 @@ sites:
     landed: 1969-11-19
     shape: lunar-module
     source: lroc-2016
+    aliases: ["Statio Cognitum"]
     doing: "Pete Conrad and Alan Bean, November 1969. They landed about 180 m from Surveyor 3, a robot that had been there since 1967."
   - id: luna-16
     display: "Luna 16, Mare Fecunditatis"
@@ -388,7 +399,7 @@ sites:
     landed: 2020-12-01
     shape: lander
     source: nssdc-lunar
-    aliases: ["Change 5"]
+    aliases: ["Change 5", "Statio Tianchuan"]
     doing: "Collected 1 731 grams of soil and rock in December 2020, the first Moon samples brought to Earth since 1976."
   - id: chandrayaan-3
     display: "Chandrayaan-3 Vikram lander"
@@ -447,7 +458,7 @@ sites:
     landed: 2025-03-02
     shape: lander
     source: nssdc-lunar
-    aliases: ["Firefly"]
+    aliases: ["Firefly", "Mons Latreille"]
     doing: "Firefly's lander, March 2025: the first fully successful commercial Moon landing. It worked for a whole lunar day and into the night."
 
   # --- On Mars ------------------------------------------------------------------------

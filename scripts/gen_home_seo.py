@@ -127,7 +127,19 @@ def rewrite(text: str) -> str:
     return foot.sub(lambda _: footer(), text, count=1)
 
 
+USAGE = """usage: python3 scripts/gen_home_seo.py [--check]
+  Writes the search and preview tags of site/index.html if they are stale.
+  --check  write nothing; exit 1 if they are stale"""
+
+
 def main(argv: list[str]) -> int:
+    if "--help" in argv or "-h" in argv:
+        print(USAGE)
+        return 0
+    unknown = [a for a in argv if a != "--check"]
+    if unknown:
+        print(f"unknown option: {unknown[0]}\n{USAGE}", file=sys.stderr)
+        return 2
     check = "--check" in argv
     current = HTML.read_text(encoding="utf-8")
     want = rewrite(current)

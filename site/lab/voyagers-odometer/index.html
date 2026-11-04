@@ -89,7 +89,7 @@ const EMBER='#ff9f43',INK='#e8ecf4',DIM='#a3adc0',FONT='Inter,system-ui,-apple-s
 const LD=299792.458*86400,DT=1552670406,AV=LD/DT,YR=DT/31557600,L0=520,L1=1300,LX=180,PL=[['Jupiter',778.5],['Saturn',1432],['Uranus',2867],['Neptune',4515]],fm=n=>Math.round(n).toLocaleString('en-US');
 const SIM={dur:12.6,reveal:10,hook:'VOYAGER 1: 49 YEARS|ONE LIGHT-DAY',
  honest:'Time-lapse, 1 s = 5 years. Average speed, straight line; Sun and probe not to scale.',
- line(){return`Voyager 1 needs ${YR.toFixed(1)} years to reach one light-day (${(LD/1e9).toFixed(1)} billion km, ${(LD/149597870.7).toFixed(2)} au), an average of ${AV.toFixed(1)} km/s. Light covers that distance in 24 hours.`},
+ line(){return`Voyager 1 needs ${YR.toFixed(1)} years to reach one light-day (${(LD/1e9).toFixed(1)} billion km, ${(LD/149597870.7).toFixed(2)} AU), an average of ${AV.toFixed(1)} km/s. Light covers that distance in 24 hours.`},
  draw(c,t){
   const s=seg(t,.4,10),D=LD*s,y=L0+(L1-L0)*s,ph=seg(t,10,11),py=L0+(L1-L0)*ph;
   stars(c);c.strokeStyle='rgba(255,255,255,.25)';c.lineWidth=4;c.beginPath();c.moveTo(LX,L0);c.lineTo(LX,L1+60);c.stroke();
@@ -99,7 +99,7 @@ const SIM={dur:12.6,reveal:10,hook:'VOYAGER 1: 49 YEARS|ONE LIGHT-DAY',
   c.strokeStyle='rgba(255,159,67,.8)';c.lineWidth=8;c.beginPath();c.moveTo(LX,L0);c.lineTo(LX,y);c.stroke();glow(c,LX,y,60,'#ffb347',.8);disc(c,LX,y,15,'#fff');
   if(ph>0&&ph<1){glow(c,LX,py,90,'#fff',.9);disc(c,LX,py,12,'#fff')}
   text('YEAR',1020,470,34,DIM,600,'right');text(String(Math.floor(1977.68+(DT/31557600)*s)),1020,550,72,INK,800,'right');
-  text('DISTANCE',1020,640,34,DIM,600,'right');text(fm(D),1020,710,52,EMBER,800,'right');text('km  ('+(D/149597870.7).toFixed(1)+' au)',1020,760,34,DIM,400,'right');
+  text('DISTANCE',1020,640,34,DIM,600,'right');text(fm(D),1020,710,52,EMBER,800,'right');text('km  ('+(D/149597870.7).toFixed(1)+' AU)',1020,760,34,DIM,400,'right');
   text('AVERAGE SPEED',1020,860,34,DIM,600,'right');text(AV.toFixed(1)+' km/s',1020,930,52,INK,800,'right');
   text(t<10?'LAUNCHED SEPT 1977':ph<1?'LIGHT STARTS NOW...':'LIGHT: 24 HOURS',1020,1415,44,t<10?INK:EMBER,800,'right')}};
 // ============================================ 2. THE PAGE (shared; rarely needs a change) =========================

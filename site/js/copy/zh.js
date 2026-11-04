@@ -39,6 +39,9 @@ export const RULES = {
 export const COPY = {
   "app": {
     "name": "Space Radar",
+    "bootSky": "正在构建天空…",
+    "bootEarth": "正在放置地球…",
+    "bootCatalogues": "正在读取星表…",
     "tagline": "地球周围的一切运动，在它们真实所在的位置，此刻。",
     "sceneSelected": "一幅按真实位置绘制的太空地图，当前选中的是 {name}：地图旁边面板里的卡片会告诉你它是什么。"
   },
@@ -348,7 +351,8 @@ export const COPY = {
   },
   "ladder": {
     "title": "有多远",
-    "notLoaded": "还在加载",
+    "rowName": "{label}, {distance}",
+    "rowNameLoading": "{label}, 还在加载",
     "weShowTitle": "已知的天体里，这张地图画出了多少",
     "weShowRow": "{n} 个{what}——已知共 {of} 个",
     "edge": "地图的边缘",
@@ -754,8 +758,6 @@ export const COPY = {
     "couldNotLook": "无法算出",
     "nobodyKnows": "没有人知道",
     "wouldNeed": "那需要 {wouldNeed}。",
-    "oftenSaidLabel": "常见的说法",
-    "notApplicable": "这类天体没有这一项",
     "endedLine": "它的任务已于 {date} 结束。下面列出的事件，都可以追溯到那时。",
     "pathEndedLine": "JPL 保存的它的轨迹，到 {date} 为止。下面列出的事件，都可以追溯到那时。",
     "pathBeginsLine": "JPL 保存的它的轨迹，从 {date} 开始。下面列出的事件，都可以追溯到那时。",
@@ -2701,7 +2703,6 @@ export const COPY = {
         "astronomical": "天文曙暮光",
         "night": "夜晚"
       },
-      "timeNoNight": "今晚这里天不会黑。",
       "timeFar": "离今天这么远，没有卫星：它们的轨道数据已经过期。",
       "eyepiece": "目镜",
       "eyepieces": {
@@ -4494,7 +4495,8 @@ export const COPY = {
       "pathLm": "下降是从静海基地往回画的，会合只是一个形状；事件时间是任务本身的",
       "srcReport": "Apollo 11 任务报告，NASA MSC-00171，1969 年（事件时间、发射、着陆）",
       "srcJournal": "Apollo 11 飞行日志，NASA（精确到秒的事件时间）",
-      "srcClip": "阿姆斯特朗在月球上的第一句话：NASA 录音，公有领域，来自维基共享资源"
+      "srcClip": "阿姆斯特朗在月球上的第一句话：NASA 录音，公有领域，来自维基共享资源",
+      "srcLanding": "着陆通报：NASA 录音，公有领域，来自维基共享资源"
     },
     "artemis-ii": {
       "title": "Artemis II：绕月飞行",
@@ -4575,5 +4577,9 @@ export const GLOSSARY = {
   "L2": "在地球背着太阳的一侧、离地球 150 万公里的平衡点，望远镜在这里可以让地球和太阳都在身后，并保持低温。",
   "transit": "从你站的地方看，一个东西从另一个东西前面经过的时候。",
   "conjunction": "两个东西在天空中看起来靠得很近的时候。它们在太空里并不近。",
-  "ephemeris": "一张提前算好的表，告诉你某个东西将会在哪里。"
+  "ephemeris": "一张提前算好的表，告诉你某个东西将会在哪里。",
+  "umbra": "影子中央最暗的部分，光线被完全挡住。站在月球的本影里，太阳就不见了。",
+  "penumbra": "影子外围较亮的部分，只有一部分光被挡住。月球进入地球的半影时只会稍微变暗。",
+  "totality": "日全食中太阳被完全遮住的那几分钟。天空暗到可以看见星星。",
+  "annular": "环形的。日环食时月球离得太远，遮不住整个太阳，周围留下一圈明亮的光环。"
 };

@@ -91,7 +91,7 @@ const yrs=t=>YRS*Math.pow(seg(t,.8,SIM.reveal),2);   // time-lapse that speeds u
 const fmt=n=>Math.round(n).toString().replace(/\B(?=(\d{3})+$)/g,',');
 const SIM={dur:12.6,reveal:9.6,hook:'75,000 YEARS TO THE|NEAREST STAR',
  honest:"Straight line at Voyager 1's 17.0 km/s (NASA); Proxima's own motion ignored. Time-lapse; dots enlarged.",
- line(){return`At ${V.toFixed(1)} km/s, Voyager 1 would need about ${fmt(Math.round(YRS/100)*100)} years to cover the ${fmt(268550)} au to Proxima Centauri. That is 4.2465 light-years.`},
+ line(){return`At ${V.toFixed(1)} km/s, Voyager 1 would need about ${fmt(Math.round(YRS/100)*100)} years to cover the ${fmt(268550)} AU to Proxima Centauri. That is 4.2465 light-years.`},
  draw(c,t){
   const y=yrs(t),f=y/YRS,dy=540+(PY-540)*f,sp=1+9*f;
   stars(c,60);let s=11;const r=()=>(s=(s*16807)%2147483647)/2147483647;

@@ -3125,7 +3125,7 @@ html.sr-trip-mode .sr-scenenote { display: none; }
   z-index: var(--sr-z-toast);
   width: max-content;
   max-width: min(520px, calc(100vw - var(--sr-scene-left, 0px) - 32px));
-  padding: 10px 16px;
+  padding: var(--sp-2) var(--sp-4);
   /* Opaque: it lands on the scene note's spot on a phone, and two lines of text through one
      another read as neither (measured at 390 x 844, 2026-09-23). */
   background: var(--sr-panel-solid);
@@ -3339,7 +3339,7 @@ html.sr-phone .sr-sound__btn {
 /* The tag (req 3): borderless thin glass over space, the full glass over a world's disc, where a lit
    cloud under 0.62 would take the dim text to 2.2:1. */
 .sr-tag {
-  padding: 4px 8px 5px;
+  padding: var(--sp-1) var(--sp-2);
   background: var(--sr-glass-thin);
   border-radius: var(--sr-radius-sm);
   color: var(--sr-text);
@@ -3373,7 +3373,7 @@ html.sr-phone .sr-sound__btn {
 .sr-tag__name {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-2);
   font: 600 var(--sr-fs-body)/1.3 var(--sr-font-hud);
 }
 
@@ -3392,7 +3392,7 @@ html.sr-phone .sr-sound__btn {
 .sr-tag__readout + .sr-tag__readout::before,
 .sr-tag__behind::before {
   content: '\00B7';
-  margin: 0 6px;
+  margin: 0 var(--sp-1);
   color: var(--sr-text-dim);
 }
 
@@ -3438,9 +3438,9 @@ html.sr-phone .sr-sound__btn {
 .sr-chevron {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-1);
   min-height: 28px;
-  padding: 3px 10px 3px 6px;
+  padding: var(--sp-1) var(--sp-3) var(--sp-1) var(--sp-2);
   pointer-events: auto;
   background: var(--sr-glass);
   border: 1px solid var(--sr-line);
@@ -3699,7 +3699,7 @@ html.sr-phone .sr-chevron {
 .sr-explore__collapse {
   width: 36px;
   height: 36px;
-  margin: -6px -8px 0 0;
+  margin: -4px -8px 0 0;
   padding: 0;
   font: 400 var(--sr-fs-glyph)/1 var(--sr-font);
   color: var(--sr-text-soft);
@@ -5259,6 +5259,13 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   border-radius: var(--sr-radius);
 }
 
+/* Keyboard focus (public #676): the tape clips what is drawn outside it, so the ring is drawn inside the
+   slider's box, as the guide's ring on the other sliders is. */
+.sr-tape__slider:focus-visible {
+  outline: 2px solid var(--sr-ember);
+  outline-offset: -2px;
+}
+
 .sr-tape__ticks {
   position: absolute;
   right: 0;
@@ -5981,6 +5988,14 @@ html.sr-phone.sr-card-open .sr-toast {
   bottom: min(calc(var(--sr-sheet-h) + var(--sp-3)), calc(100dvh - var(--sr-top-end) - 44px));
 }
 
+/* Under the top bar is where the full sheet's tab row is (48 px, from 109 to 157 at 390 x 844): the undo toast, "Moved to
+   Planets / Back to where you were", lay across the labels of Earth, Planets, Stars and Tonight (internal #569, seen at 390 x 844
+   in the look of release 1.8.0). At full it stands at the foot of the screen, over the last row of the sheet, which is the
+   least that a six-second toast can hide. */
+html.sr-phone[data-sheet='full']:not(.sr-trip-mode) .sr-toast {
+  bottom: calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
+}
+
 html.sr-phone .sr-scenenote {
   top: var(--sr-top-end);
   max-width: calc(100vw - 2 * var(--sp-4));
@@ -6321,6 +6336,8 @@ html.sr-night-red::after {
 /* Where dusk, the middle of the night and dawn are on the strip: a hairline from the foot and a HUD
    unit beside it. The strip's middle is now. */
 .sr-skytime { position: relative; overflow: hidden; padding-bottom: var(--sp-4); }
+/* Keyboard focus (public #677): inside the strip, which clips what is drawn outside it. */
+.sr-skytime:focus-visible { outline: 2px solid var(--sr-ember); outline-offset: -2px; }
 .sr-skytime__ticks { position: absolute; inset: 0; pointer-events: none; }
 .sr-skytime__tick { position: absolute; bottom: 0; width: 1px; height: var(--sp-3); background: var(--sr-line-strong); }
 .sr-skytime__tick[hidden] { display: none; }

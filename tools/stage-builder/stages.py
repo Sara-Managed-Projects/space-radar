@@ -7,7 +7,7 @@ named in the registry row.
 SHIPPED (registry/models.yaml, site/models): delta2, centaur3, centaur_d, falcon9, h2a, kosmos3m.
 BUILT AND NOT SHIPPED, because no photograph of the flight hardware that a person could check the shape against is free to use
 (the issue stays open; what is missing is in the pull request): zenit2 (#1159), blok_e (#1161), tsyklon3 (#1162), blok_dm (#1163),
-cz4 (#1168), breezem (#1170), pslv (#1171). They are here so that the next person starts from the numbers and the part library,
+cz4 (#1168), breezem (#1170). SHIPPED IN RELEASE 1.8.0: pslv (#1171), rebuilt from ISRO's own photographs. They are here so that the next person starts from the numbers and the part library,
 not from nothing; their shapes are plain stages with the right dimensions and engines, nothing more.
 """
 import math
@@ -466,33 +466,67 @@ def breezem():
 
 # ============================================================================================ PSLV PS4
 def pslv_ps4():
-    """PSLV fourth stage PS4 (PSLV R/B): 3.0 m long, 1.34 m across, two L-2-5 engines of 7.4 kN, 2 500 kg of
-    MMH/MON (ISRO PSLV-C55 mission brief, as the Commons description of its photographs; Wikipedia 'PSLV'). It
-    sits on a 2.1 m interface ring. Photographs: ISRO's, GODL-India (Commons): 'PSLV-C11 Fourthstage' (the
-    steel tank with its domed top, the equipment platform with its two gold helium spheres) and 'PSLV-C44 Third and Fourth stages at
-    Stage Preparation Facility' (the gold-foil tank, the dark bell, the ribbed black skirt under the white ring)."""
+    """PSLV fourth stage PS4 (SATCAT name PSLV R/B), rebuilt in release 1.8.0 from ISRO's own photographs (GODL-India, Commons).
+    THE EARLIER BUILD HAD THE WRONG STAGE: its gold tank, big dark bell and ribbed skirt are the THIRD stage's Kevlar motor case
+    and nozzle (the gold barrel hanging in 'PSLV-C44 Third and Fourth stages at Stage Preparation Facility' and 'PSLV-C55, TeLEOS-2 -
+    Third and fourth stage combined stack' has 'PS3' written on its nozzle). The PS4 is what stands on it: from below, a black
+    ribbed conical skirt that flares from the motor's 2.0 m to a white ring about 2.8 m across (the stage's outer diameter, as the
+    PSLV's other stages), an open ring of struts with the gold helium spheres in it, the equipment platform with its black and gold
+    boxes and blue-green harness, and on the platform the stainless-steel propellant tank (1.34 m across, 2.5 t of MMH and MON-3)
+    with a domed top ('PSLV-C11 Fourthstage', 'PSLV-C40 integrated up to fourth stage', 'PSLV-C54, EOS-6 (aka Oceansat-3) on PSLV fourth
+    stage'). Two L-2-5 engines of 7.4 kN sit under the tank inside the skirt; no picture shows them, their size is ours. The
+    stage's length is the 2.9 to 3.0 m the mission brief gives for the tank section; skirt, ring and struts are read off the photographs
+    against the 2.0 m motor and add to it."""
     s = Stage("pslv-ps4")
-    R = 0.67
-    GOLDF = "#CFA23C"
-    yt = 1.15
+    RT = 0.67          # tank, 1.34 m across
+    RR = 1.40          # white ring and platform, 2.8 m across
+    STEEL_T = "#C3C7CD"
+    WHITE_R = "#E9ECE6"
+    GOLD_S = "#D2AC47"
+    # the engines first, hanging from the tank's lower dome inside the skirt
     for sx in (-1, 1):
-        x = sx * 0.2
-        s.engine_head("l25", yt, 0.1, 0.18, "#6F747B", x=x, line_col="#B5BAC1")
-        s.bell("l25-bell", yt, 0.05, 0.23, 0.75, "#2D2F34", x=x, seg=24, n=12, p=1.7, ribs=3, tilt=(0, sx * 3.0), inner_col="#17181B")
-    s.dome("aft-dome", 1.5, R, 0.4, GOLDF, up=False, role="foil", seg=48, n=8)
-    s.barrel("tank", 1.5, 2.1, R, GOLDF, role="foil", seg=48)
-    s.foil_patches("foil-fold", 1.5, 2.1, R, "#E0B84C", 10, seed=6, size=(0.5, 0.35), amp=0.01, lift=0.01)
-    for a in (20, 160, 250):
-        s.pipe("strap", [polar(R + 0.02, a, 1.55), polar(R + 0.02, a, 2.05)], 0.012, "#2F5F9E")
-    s.dome("fwd-dome", 2.1, R, 0.35, "#B7BCC3", up=True, seg=48, n=8, welds=1)
-    s.cone("ribbed-skirt", 2.0, 1.45, 1.05, 0.72, "#26282C", seg=48)
-    s.barrel("ring", 2.0, 2.2, 1.05, "#E7EADF", seg=56, welds=1, weld_col="#BEC2B8")
-    s.ring("ring-lip", 2.22, 1.05, 0.06, "#C9CDD2", lift=0.03, seg=56)
-    for a in (35, 215):
-        s.bottle("he", polar(0.95, a, 2.38), 0.17, "#D8B04C")
-    s.body("platform", "#8A9098", lib.disc((0, 2.24, 0), UP, 1.04, 56, r_in=R))
-    for k, a in enumerate(ang_ring(6, 20)):
-        s.pad("box-%d" % k, 2.31, a, 0.92, (0.2, 0.12, 0.16), "#323439" if k % 2 else "#C2C6CB")
+        x = sx * 0.24
+        s.engine_head("l25", 1.33, 0.09, 0.16, "#6F747B", x=x, line_col="#B5BAC1")
+        s.bell("l25-bell", 1.33, 0.05, 0.2, 0.58, "#8C9199", x=x, seg=24, n=12, p=1.7, ribs=3, tilt=(0, sx * 3.0), inner_col="#2B2D32")
+    # the black ribbed skirt: open at the bottom (the 2.0 m motor's end), 48 ribs on its outside
+    s.cone("skirt", 0.0, 0.9, 1.0, RR - 0.02, "#26282C", seg=72)
+    s.add("skirt-in", "body", "#17181B", (lambda m: (m[0], m[1][:, ::-1]))(lib.frustum((0, 0.0, 0), (0, 0.9, 0), 0.98, RR - 0.04, 72, caps=False)))
+    for k in range(48):
+        a = 360.0 * k / 48
+        p0, p1 = polar(1.02, a, 0.01), polar(RR - 0.01, a, 0.89)
+        s.body("skirt-rib", "#3A3D43", rod(p0, p1, 0.016, 4))
+    s.ring("skirt-rim", 0.015, 1.0, 0.03, "#3A3D43", lift=0.015, seg=56)
+    # the white ring, with its bolts and a blue-green stripe
+    s.barrel("ring", 0.9, 1.25, RR, WHITE_R, seg=72, welds=0)
+    s.ring("ring-lip", 1.25, RR, 0.04, "#CDD1CB", lift=0.015, seg=72)
+    s.barrel("ring-stripe", 1.05, 1.1, RR + 0.004, "#4B7C8C", seg=72)
+    for k in range(36):
+        s.pad("ring-bolt", 0.97, 360.0 * k / 36 + 3, RR, (0.05, 0.04, 0.02), "#B9BDB6")
+    # the open ring of struts between the white ring and the platform
+    s.truss_band("struts", 1.27, 1.88, RR - 0.04, RR - 0.1, "#DADDD6", n=12, tube=0.032)
+    for a in (35, 100, 215, 320):
+        s.bottle("he", polar(1.0, a, 1.56), 0.23, GOLD_S)
+    s.dome("tank-aft", 1.95, RT, 0.4, STEEL_T, up=False, seg=56, n=8, welds=1)
+    # the platform: a flat disc with a rim, avionics boxes (black, gold foil) and the harness
+    s.barrel("platform-rim", 1.88, 1.95, RR - 0.1, "#9EB3BD", seg=72)
+    s.plate_disc("platform", 1.95, RR - 0.1, "#B4B9BF", seg=72, r_in=RT)
+    s.plate_disc("platform-under", 1.88, RR - 0.1, "#3A3D43", up=False, seg=72, r_in=0.5)
+    for k, (a, rr, w, d, h) in enumerate([(10, 1.0, 0.36, 0.28, 0.16), (50, 1.02, 0.28, 0.24, 0.14), (95, 0.98, 0.34, 0.26, 0.2), (150, 1.0, 0.3, 0.22, 0.14),
+                                          (205, 1.02, 0.4, 0.3, 0.16), (255, 0.98, 0.3, 0.26, 0.18), (300, 1.0, 0.34, 0.24, 0.14), (340, 1.02, 0.28, 0.22, 0.16)]):
+        p = polar(rr, a, 1.95 + h / 2)
+        ang = math.radians(a)
+        n_ = np.array([math.cos(ang), 0, math.sin(ang)])
+        t_ = np.array([-math.sin(ang), 0, math.cos(ang)])
+        R_ = np.column_stack([t_, [0, 1, 0], n_])
+        s.body("avionics", "#2B2D31" if k % 3 else "#C9A646", box(p, (w, h, d), R_))
+    for a in (22, 120, 190, 280):
+        s.pipe("harness", [polar(RR - 0.14, a, 1.97), polar(RR - 0.5, a + 6, 2.0), polar(0.8, a + 12, 2.02)], 0.014, "#3F6FB3")
+    # the stainless tank: welds in four bands, a domed top, a boss and the payload adapter
+    s.barrel("tank", 1.95, 3.25, RT, STEEL_T, seg=56, welds=3, weld_col="#9FA4AB", weld_w=0.045, weld_lift=0.008, panels=4, tint=0.03)
+    s.dome("tank-fwd", 3.25, RT, 0.38, "#CBCFD4", up=True, seg=56, n=8, welds=1)
+    s.barrel("neck", 3.6, 3.66, 0.2, "#9FA4AB", seg=32, caps=True)
+    s.barrel("adapter", 3.66, 3.74, 0.34, "#26282C", seg=40, caps=True)
+    s.ring("adapter-lip", 3.74, 0.34, 0.03, "#D8DBD6", lift=0.012, seg=40)
     return s
 
 

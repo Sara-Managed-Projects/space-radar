@@ -34,5 +34,45 @@ export const LINKS = {
       "publisher": "NASA SDO",
       "url": "https://sdo.gsfc.nasa.gov/data/"
     }
+  ],
+  "jezero": [
+    {
+      "id": "perseverance-raw",
+      "words": "Perseverance's photos",
+      "publisher": "NASA Mars Exploration",
+      "url": "https://mars.nasa.gov/mars2020/multimedia/raw-images/"
+    }
+  ],
+  "gale": [
+    {
+      "id": "curiosity-raw",
+      "words": "Curiosity's photos",
+      "publisher": "NASA Mars Exploration",
+      "url": "https://mars.nasa.gov/msl/multimedia/raw-images/"
+    }
+  ],
+  "deep-soho": [
+    {
+      "id": "soho-latest",
+      "words": "SOHO's latest images",
+      "publisher": "NASA/ESA SOHO",
+      "url": "https://soho.nascom.nasa.gov/data/realtime-images.html"
+    }
+  ],
+  "deep-voyager-1": [
+    {
+      "id": "voyager-1-now",
+      "words": "Where is Voyager 1 now?",
+      "publisher": "NASA Science",
+      "url": "https://science.nasa.gov/mission/voyager/where-are-voyager-1-and-voyager-2-now/"
+    }
+  ],
+  "deep-voyager-2": [
+    {
+      "id": "voyager-2-now",
+      "words": "Where is Voyager 2 now?",
+      "publisher": "NASA Science",
+      "url": "https://science.nasa.gov/mission/voyager/where-are-voyager-1-and-voyager-2-now/"
+    }
   ]
 };

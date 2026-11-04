@@ -114,7 +114,7 @@ export const HERO = {
       "tail_au": 800,
       "min_px": 2.2,
       "seed": 6853,
-      "drawn": "a seeded sample (model): neither their count nor any knot's place is measured here; each about an arcsecond (400 au) wide, its tail an illustration. Under 2.2 px a knot is drawn 2.2 px wide and its darkness EXAGGERATED",
+      "drawn": "a seeded sample (model): neither their count nor any knot's place is measured here; each about an arcsecond (400 AU) wide, its tail an illustration. Under 2.2 px a knot is drawn 2.2 px wide and its darkness EXAGGERATED",
       "source": "O'Dell, Balick, Hajian, Henney & Burkert 2002, AJ 123, 3329 (Knots in nearby planetary nebulae): knots in the Dumbbell's bright ring, as in the Ring and the Helix; their sizes there"
     }
   ],

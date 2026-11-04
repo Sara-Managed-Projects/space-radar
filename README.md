@@ -16,7 +16,7 @@ A live 3D map of space in your browser. Free, open source, no account.
 [![Good first issues](https://img.shields.io/github/issues/Sara-Managed-Projects/space-radar/good%20first%20issue?label=good%20first%20issues&color=7057ff)](https://github.com/Sara-Managed-Projects/space-radar/labels/good%20first%20issue)
 [![Open in GitHub Codespaces](https://img.shields.io/badge/open%20in-Codespaces-24292f?logo=github)](https://codespaces.new/Sara-Managed-Projects/space-radar)
 
-Translations, as they stand (all machine-drafted and not yet shown from a browser's language until two native readers have read them; [how to help](docs/TRANSLATING.md)):<br>
+Translations, as they stand (all machine-drafted and not yet shown from a browser's language until two native readers have read them; [how to help](docs/TRANSLATING.md), or [report a wrong phrase](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=mistranslation.yml)):<br>
 <!-- translation-badges:begin (node scripts/check-translation.mjs --write-doc) -->
 [![Arabic: 100 %, machine-drafted](https://img.shields.io/badge/%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9-100%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
 [![German: 99.9 %, machine-drafted](https://img.shields.io/badge/Deutsch-99.9%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
@@ -48,7 +48,7 @@ git clone https://github.com/Sara-Managed-Projects/space-radar.git
 cd space-radar && python3 -m http.server 8177 --directory site      # then open http://localhost:8177
 ```
 
-31 narrated trips (232 stops), 109 389 stars in 3D, 43 star systems to fly into, about 17 000
+31 narrated trips (232 stops), 109 389 stars in 3D, 51 star systems to fly into, about 17 000
 satellites at their real positions, and every picture labelled as measured, modelled or an
 artist's impression. **Teach with it:** present mode and an autopilot screen for a classroom or a
 museum, and a [zip that runs offline](docs/RUN_LOCALLY.md).
@@ -57,7 +57,8 @@ museum, and a [zip that runs offline](docs/RUN_LOCALLY.md).
 [Instagram](https://www.instagram.com/spaceradar.ai/) ·
 [LinkedIn](https://www.linkedin.com/company/spaceradar-ai) ·
 [Discussions](https://github.com/Sara-Managed-Projects/space-radar/discussions) ·
-[Roadmap](ROADMAP.md)
+[Roadmap](ROADMAP.md) ·
+[FAQ](docs/FAQ.md)
 
 ## You can help without writing code
 
@@ -104,7 +105,7 @@ data, and every number on screen says where it came from.
 | | |
 |---|---|
 | ![Saturn and its rings, backlit, at a stop of the trip out past Jupiter](assets/screenshots/saturn.webp) | ![The Apollo 11 lunar module on the Moon, a stop of the Moon landings trip](assets/screenshots/moon-landing.webp) |
-| **Take a guided trip.** Tonight from your street, why the Moon changes shape, the life of a star, black holes, back to the Moon with Artemis. 31 trips and 232 stops, read aloud, with captions and music. | **Stand where we have been.** Twenty-one places on the Moon and twelve on Mars that spacecraft reached, each on its own ground, with the facts and their sources on the card. |
+| **Take a guided trip.** Tonight from your street, why the Moon changes shape, the life of a star, black holes, back to the Moon with Artemis. 31 trips and 232 stops, read aloud, with captions and music. | **Stand where we have been.** Twenty-four places on the Moon and twelve on Mars that spacecraft reached, each on its own ground, with the facts and their sources on the card. |
 | ![The sky from the ground: constellations, the Milky Way and tonight's satellites over the southern horizon](assets/screenshots/sky-from-the-ground.webp) | ![The Earth coloured by the temperature of the sea, a stop of the trip The living Earth](assets/screenshots/living-earth.webp) |
 | **Look up from your own street.** The sky from the ground: figures, grids, tonight's best passes and planets, a city, town or dark sky, and a red night mode. | **Read the living Earth.** Seven maps of data measured from orbit, from NASA: sea temperature, sea ice, rain, plant life and more, each with its key and its source. |
 
@@ -125,7 +126,7 @@ data, and every number on screen says where it came from.
 - **Use it on a phone.** The same map, one sheet, one thumb.
 
 Also: live clouds, storms, lightning and the aurora on the Earth · close-up map tiles of the Earth,
-the Moon and Mars · today's sunspot groups · eclipses computed for any date · more than 240 spacecraft and
+the Moon and Mars · today's sunspot groups · eclipses computed for any date · more than 250 spacecraft and
 shape models · fires, volcanoes and icebergs from NASA's EONET and the wind from NOAA's GFS ·
 "Point your phone" at the sky · a passport of places opened and one true sentence on the home ·
 reels that play on their own on a screen in a lobby (spec 0036) · artist's impressions, labelled

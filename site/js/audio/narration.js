@@ -69,6 +69,7 @@ export function writeVoice(storage, on) {
   }
 }
 
+/** The key of a trip stop's narration clip, `<tour>/<stop>`, or an empty string when either part is missing. */
 export function clipKey(tourId, stopId) {
   return tourId && stopId ? `${tourId}/${stopId}` : '';
 }

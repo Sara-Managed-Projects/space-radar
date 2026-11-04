@@ -1,0 +1,53 @@
+name: A phrase in a translation is wrong
+description: Report a sentence, a word or a label in a translated language that no one would say. One phrase is enough.
+labels: [translation]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you. French, German, Portuguese and the other languages were drafted by a program and **no native speaker has read them all yet**, so a native reader's correction is the most useful thing there is.
+
+        **Would you like to fix it yourself?** The phrase is one line in `site/js/copy/<code>.js` (`fr.js`, `de.js`, `pt.js` ...): change the words, run `node scripts/check-translation.mjs site/js/copy/<code>.js`, and open a pull request. [docs/TRANSLATING.md](https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/TRANSLATING.md) shows how. A report alone is just as welcome, and so is a report in your own language.
+  - type: dropdown
+    id: language
+    attributes:
+      label: Which language?
+      options:
+        - Arabic (ar)
+        - German (de)
+        - Spanish (es)
+        - French (fr)
+        - Hebrew (he)
+        - Hindi (hi)
+        - Portuguese, Brazil (pt)
+        - Russian (ru)
+        - Ukrainian (uk)
+        - Chinese, Simplified (zh)
+        - Another language
+    validations:
+      required: true
+  - type: textarea
+    id: says
+    attributes:
+      label: What does it say now?
+      description: Copy the words exactly, or attach a screenshot.
+    validations:
+      required: true
+  - type: textarea
+    id: better
+    attributes:
+      label: What would a person say instead?
+      description: Your wording, or what is wrong with this one (too stiff, a false friend, the wrong word for the thing). If you are not sure, say that.
+  - type: input
+    id: where
+    attributes:
+      label: Where did you see it?
+      description: The address from the address bar (it ends `?lang=<code>`) and the button, card or trip it was on.
+  - type: dropdown
+    id: speaker
+    attributes:
+      label: Is this your first language?
+      options:
+        - "Yes"
+        - "No, but I read and write it well"
+        - "No, I am not sure"

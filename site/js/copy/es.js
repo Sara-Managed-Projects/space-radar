@@ -46,6 +46,9 @@ export const RULES = {
 export const COPY = {
   app: {
     name: "Space Radar",
+    bootSky: "Construyendo el cielo…",
+    bootEarth: "Colocando la Tierra…",
+    bootCatalogues: "Leyendo los catálogos…",
     tagline: "Todo lo que se mueve alrededor de la Tierra, donde está de verdad, ahora mismo.",
     sceneSelected: "Un mapa del espacio dibujado en posiciones reales; has seleccionado {name}: su ficha, en el panel junto al mapa, dice qué es."
   },
@@ -343,7 +346,8 @@ export const COPY = {
   },
   ladder: {
     title: "A qué distancia",
-    notLoaded: "cargando todavía",
+    rowName: "{label}, {distance}",
+    rowNameLoading: "{label}, cargando todavía",
     weShowTitle: "Lo que este mapa dibuja de lo que se conoce",
     weShowRow: "{n} {what} — de {of}",
     edge: "El borde del mapa",
@@ -740,8 +744,6 @@ export const COPY = {
     couldNotLook: "No se pudo calcular",
     nobodyKnows: "Nadie lo sabe",
     wouldNeed: "Haría falta {wouldNeed}.",
-    oftenSaidLabel: "Se dice a menudo",
-    notApplicable: "Algo que este objeto no tiene",
     endedLine: "Su misión terminó el {date}. Sus hitos, más abajo, te llevan de vuelta a ella.",
     pathEndedLine: "La trayectoria que guarda el JPL termina el {date}. Sus hitos, más abajo, te llevan de vuelta a ella.",
     pathBeginsLine: "La trayectoria que guarda el JPL empieza el {date}. Sus hitos, más abajo, te llevan de vuelta a ella.",
@@ -2629,7 +2631,6 @@ export const COPY = {
         astronomical: "último crepúsculo",
         night: "noche"
       },
-      timeNoNight: "Esta noche no oscurece aquí.",
       timeFar: "Sin satélites tan lejos de hoy: sus órbitas caducan.",
       eyepiece: "Ocular",
       eyepieces: {
@@ -3872,7 +3873,8 @@ Object.assign(COPY, {
       "pathLm": "el descenso se dibuja hacia atrás desde la Base Tranquilidad y el encuentro es una forma; las horas de los sucesos son las de la misión",
       "srcReport": "Informe de la misión Apolo 11, NASA MSC-00171, 1969 (horas de los sucesos, lanzamiento, alunizaje)",
       "srcJournal": "Diario de vuelo del Apolo 11, NASA (horas de los sucesos al segundo)",
-      "srcClip": "Las primeras palabras de Armstrong en la Luna: grabación de la NASA, dominio público, de Wikimedia Commons"
+      "srcClip": "Las primeras palabras de Armstrong en la Luna: grabación de la NASA, dominio público, de Wikimedia Commons",
+      "srcLanding": "El aviso del alunizaje: grabación de la NASA, dominio público, de Wikimedia Commons"
     },
     "artemis-ii": {
       "title": "Artemis II: alrededor de la Luna",
@@ -4443,5 +4445,9 @@ export const GLOSSARY = {
   L2: "Un punto de equilibrio a 1.5 millones de km de la Tierra, del lado opuesto al Sol, donde un telescopio puede mantener la Tierra y el Sol a su espalda y seguir frío.",
   transit: "Cuando una cosa pasa por delante de otra vista desde donde estás.",
   conjunction: "Cuando dos cosas parecen estar juntas en el cielo. No están cerca en el espacio.",
-  ephemeris: "Una tabla de dónde estará algo, calculada de antemano."
+  ephemeris: "Una tabla de dónde estará algo, calculada de antemano.",
+  umbra: "La parte oscura del centro de una sombra, donde la luz queda bloqueada del todo. En la umbra de la Luna, el Sol desaparece.",
+  penumbra: "La parte exterior y más clara de una sombra, donde solo se bloquea parte de la luz. Una Luna en la penumbra de la Tierra apenas se oscurece un poco.",
+  totality: "Los minutos de un eclipse total en que el Sol queda cubierto por completo. El cielo se oscurece lo bastante para ver estrellas.",
+  annular: "En forma de anillo. En un eclipse anular la Luna está demasiado lejos para cubrir todo el Sol, y queda un anillo brillante a su alrededor."
 };

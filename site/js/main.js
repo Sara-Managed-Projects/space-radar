@@ -250,7 +250,7 @@ export async function boot({ setStatus } = {}) {
     : null;
   const canvas = document.getElementById('stage');
 
-  say('Building the sky…');
+  say(COPY.app.bootSky);
   const rendererApi = createRenderer(canvas);
   const { renderer, scene, camera, resize, render } = rendererApi;
   // The arrow keys fly the camera (scene/camera.js). Not during a trip: ui/tripframe.js gives the
@@ -768,7 +768,7 @@ export async function boot({ setStatus } = {}) {
   // Regular or Compact (spec 0045 req 10), set on <html> before any panel is built.
   ctx.density = createDensity();
 
-  say('Placing Earth…');
+  say(COPY.app.bootEarth);
   // One frame before any data: the world, the stars, the light.
   worlds.update(clock.now());
   // The camera rig knows nothing about worlds; it is told the radius so it can clamp, and where
@@ -1023,7 +1023,7 @@ export async function boot({ setStatus } = {}) {
     }
   }
 
-  say('Reading the catalogues…');
+  say(COPY.app.bootCatalogues);
   // THE LAYOUT (spec 0061): one sidebar, one tool rail, one time pill. The shell builds the boxes;
   // each module below fills its own. The explore view (wordmark, search, the four tabs, Right now,
   // Trips, Coming up, the status line) is the sidebar's home; the sources sheet is a view of it; the
@@ -2119,12 +2119,6 @@ export async function boot({ setStatus } = {}) {
 
 
   /**
-   * Make a world the centre of the map (spec 0006 req 5, spec 0028 req 2). The stage's floating
-   * origin moves to it, its neighbourhood draws at true scale, and the camera is told the new
-   * ground. Offered from the world card; not yet done on every select, because the Now moment's
-   * sky view still assumes Earth underfoot.
-   */
-  /**
    * Colour every dot by a key (spec 0026 req 11): registry/colorkeys.yaml's rows through
    * data/colorkeyrules.js. `class` (or an unknown id) puts the class colours back. Layers that load
    * later pick the key up in setRecords through the same function.
@@ -2149,6 +2143,12 @@ export async function boot({ setStatus } = {}) {
   ctx.confidence = () => (confidenceClasses ? [...confidenceClasses] : null);
   // 0077 W3-e: end
 
+  /**
+   * Make a world the centre of the map (spec 0006 req 5, spec 0028 req 2). The stage's floating
+   * origin moves to it, its neighbourhood draws at true scale, and the camera is told the new
+   * ground. Offered from the world card; not yet done on every select, because the Now moment's
+   * sky view still assumes Earth underfoot.
+   */
   ctx.setStage = (stageId) => {
     if (!STAGES[stageId] || stage.worldId === stageId) return false;
     // A world, or a rung of the ladder (stellar, galaxy, local-group: registry/stages.yaml). A rung
@@ -3060,8 +3060,10 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       ctx.stars3d.hidePoint(rec && rec.klass === 'star' && rec.meta ? rec.meta.starIndex : -1);
     }
     if (ctx.skyView.active) ctx.skyView.update(t);
+    if (ctx.perf) ctx.perf.gpuBegin(); // 0076 W1-e, internal #832: the GPU's time for render(), a timer query; tools only (sr.perf)
     if (ctx.bareFrame) ctx.bareFrame(); // only space (ui/drift.js): marks and lines are not drawn
     render();
+    if (ctx.perf) ctx.perf.gpuEnd();
     // A drawn world on its plain stage is drawn over the frame; the map's own scene is hidden while
     // it is up (scene/exostage.js), so that render() above clears and draws nothing.
     if (ctx.imagine && ctx.imagine.active) ctx.imagine.render(t);

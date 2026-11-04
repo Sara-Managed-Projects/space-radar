@@ -231,7 +231,7 @@ def planet_section(sysd: dict, p: dict) -> str:
     if mw:
         row("Mass", esc(mw[0]), mw[1].split(":")[0], "measured" if mw[1].startswith("measured") else "computed")
     row("One year", f"{num(p['period_days'])} days", "measured", "measured")
-    row("Distance from its star", f"{p['a_au']:g} au", "computed from the period and the star's mass" if p.get("a_from") == "kepler" else "from the Archive", "computed" if p.get("a_from") == "kepler" else "measured")
+    row("Distance from its star", f"{p['a_au']:g} AU", "computed from the period and the star's mass" if p.get("a_from") == "kepler" else "from the Archive", "computed" if p.get("a_from") == "kepler" else "measured")
     if p.get("equilibrium_k") is not None:
         row("Temperature of a bare ball there", f"{num(p['equilibrium_k'])} K", "computed, not measured", "computed")
     if p.get("insolation_earths") is not None:
@@ -240,8 +240,12 @@ def planet_section(sysd: dict, p: dict) -> str:
     ftxt = how
     extra = ""
     if p.get("a_from") == "kepler" and p.get("a_table_au"):
-        extra = (f" The Archive's own distance for it is {p['a_table_au']:g} au; the three papers behind its period, its star's mass and that distance "
+        extra = (f" The Archive's own distance for it is {p['a_table_au']:g} AU; the three papers behind its period, its star's mass and that distance "
                  f"do not agree with Kepler's third law, so the page uses the one the period and the star's mass give.")
+    if p.get("a_ref"):
+        extra = (f" The Archive's composite table gives {p['a_default_au']:g} AU for it, which does not agree with Kepler's third law; "
+                 f"the page uses the distance in {p['a_ref']}, a single paper whose own period and star's mass do.") if p.get("a_default_au") else \
+            f" The page uses the distance in {p['a_ref']}, a single paper whose own period and star's mass agree with Kepler's third law."
     if p.get("zone") == "inside":
         zone_line = "Its orbit lies inside the conservative habitable zone computed for its star (liquid water on a rocky world's surface would be possible there, which says nothing about whether any is)."
     elif p.get("zone") == "edge":
@@ -291,7 +295,7 @@ def system_page(sysd: dict, others: list[dict], host: str, old: dict | None, tod
     if ly:
         star_rows.append(("Distance", ly))
     if sysd["hz"]:
-        star_rows.append(("Habitable zone, computed", f"{sysd['hz']['inner_au']:g} to {sysd['hz']['outer_au']:g} au from the star"))
+        star_rows.append(("Habitable zone, computed", f"{sysd['hz']['inner_au']:g} to {sysd['hz']['outer_au']:g} AU from the star"))
     if sysd.get("stars_in_system", 1) > 1:
         star_rows.append(("Stars in the system", str(sysd["stars_in_system"])))
     star_dl = "".join(f"<div><dt>{esc(a)}</dt><dd>{esc(b)}</dd></div>" for a, b in star_rows)

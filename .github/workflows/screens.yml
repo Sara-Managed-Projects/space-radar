@@ -55,6 +55,7 @@ on:
       - "scripts/minify_site.py"
       # The UI gate and the trips walk (internal #374 and #123): each runs when what it reads changes.
       - "scripts/check-ui.mjs"
+      - "scripts/check-phone-menu.mjs"
       - "tests/probes/ui_probe.js"
       - "tests/probes/ui_probe.known.json"
       - "scripts/check-trips.mjs"
@@ -212,8 +213,9 @@ jobs:
               node tests/test_first_visit_bytes.mjs --base=http://127.0.0.1:8177 --info --out=.ci-screens/first-visit-source.json'
 
       # THE BOOT AS A TIMELINE (internal #528): first paint, the main module, the layers, every long task and
-      # the total blocking time of the same boot, on the tree a deploy uploads. REPORT ONLY: the numbers
-      # are in this step's log and in boot-timeline.json, and `--gate` (the two rows in
+      # the total blocking time of the same boot, on the tree a deploy uploads, as a desktop window and then
+      # as a 390 by 844 phone (`--mobile`). REPORT ONLY: the numbers are in this step's log and in
+      # boot-timeline.json and boot-timeline-phone.json, and `--gate` (the two rows in
       # registry/budgets.yaml) is added here when someone has looked at the first runner's numbers.
       - name: The boot as a timeline
         if: steps.page.outputs.found == '1'
@@ -227,7 +229,8 @@ jobs:
             mcr.microsoft.com/playwright:v1.49.1-jammy \
             bash -c 'set -euo pipefail
               npm install --no-save --no-audit --no-fund playwright@1.49.1
-              node scripts/boot-timeline.mjs --base=http://127.0.0.1:8178 --out=.ci-screens/boot-timeline.json'
+              node scripts/boot-timeline.mjs --base=http://127.0.0.1:8178 --out=.ci-screens/boot-timeline.json
+              node scripts/boot-timeline.mjs --base=http://127.0.0.1:8178 --mobile --out=.ci-screens/boot-timeline-phone.json'
 
       # A shot that exists but is a picture of a failure panel is the thing this job used to
       # produce. The selector wait above is the real guard; this only catches an empty file.
@@ -253,6 +256,7 @@ jobs:
             .ci-screens/first-visit.json
             .ci-screens/first-visit-source.json
             .ci-screens/boot-timeline.json
+            .ci-screens/boot-timeline-phone.json
           if-no-files-found: error
 
   # THE UI GATE (internal #374, spec 0061 task 6; docs/ui-guide.md section 7). tests/probes/ui_probe.js
@@ -289,12 +293,29 @@ jobs:
             bash -c 'set -euo pipefail
               npm install --no-save --no-audit --no-fund playwright@1.49.1
               node scripts/check-ui.mjs --base=http://127.0.0.1:8177 --out=.ci-screens/ui.json'
+      # Public #1322, after #1319: the breadcrumbs of a deep scene and the More button, at 320 and 390 px.
+      # The gate above measures one planet's card at 390 and no trail; this opens three deep scenes (a moon,
+      # a landing site, a long name) with a trail behind them, and presses the button.
+      - name: The phone's menu opens and closes with a deep scene's breadcrumbs up, at 320 and 390 px
+        run: |
+          set -euo pipefail
+          mkdir -p .ci-screens
+          docker run --rm --network host \
+            -u "$(id -u):$(id -g)" -e HOME=/tmp \
+            -e PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+            -v "$PWD:/work" -w /work \
+            mcr.microsoft.com/playwright:v1.49.1-jammy \
+            bash -c 'set -euo pipefail
+              npm install --no-save --no-audit --no-fund playwright@1.49.1
+              node scripts/check-phone-menu.mjs --base=http://127.0.0.1:8177 --out=.ci-screens/phone-menu.json'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: ui-gate
           include-hidden-files: true
-          path: .ci-screens/ui.json
+          path: |
+            .ci-screens/ui.json
+            .ci-screens/phone-menu.json
           if-no-files-found: warn
 
   # THE TRIPS WALK (internal #123, spec 0044 task 3). Every stop of every trip, as a desktop and as a

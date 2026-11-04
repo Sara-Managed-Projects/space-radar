@@ -14,6 +14,15 @@ const ids = (tMs) => activeShowers(tMs, SHOWERS).map((s) => s.id).join();
 check(ids(new Date(2026, 9, 21, 22).getTime()) === 'orionids', `on the Orionids' night only they are marked (${ids(new Date(2026, 9, 21, 22).getTime())})`);
 check(ids(new Date(2026, 9, 19, 22).getTime()) === 'orionids', 'two nights before the peak, still');
 check(ids(new Date(2026, 9, 25, 22).getTime()) === '', 'four nights after, no longer');
+// The window is a parameter (public #777): its edge, a window of none, and a list that is missing or empty.
+const oct = (day) => new Date(2026, 9, day, 22).getTime();
+const idsIn = (t, days) => activeShowers(t, SHOWERS, days).map((s) => s.id).join();
+check(idsIn(oct(25), 3) === '', 'a window of 3 days does not reach 4 days after the Orionids\' peak');
+check(idsIn(oct(25), 4) === 'orionids', 'a window of 4 days reaches it');
+check(idsIn(oct(21), 0) === 'orionids', 'a window of 0 is the peak\'s own day');
+check(idsIn(oct(20), 0) === '', 'and the day before is outside it');
+check(activeShowers(oct(21), null).length === 0, 'no list, nothing marked, no throw');
+check(activeShowers(oct(21), []).length === 0, 'an empty list, nothing marked');
 check(ids(new Date(2026, 8, 22, 22).getTime()) === '', 'and on 22 September nothing is near its peak');
 check(ids(new Date(2027, 0, 2, 22).getTime()).includes('quadrantids'), 'across the new year, the Quadrantids of 4 January 2027');
 // Each year's date is worked out from the Sun's longitude, not copied from one year's calendar

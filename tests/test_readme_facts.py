@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 import count_facts  # noqa: E402
 
-WORDS = {20: "Twenty", 21: "Twenty-one", 26: "Twenty-six", 12: "twelve"}  # 0077 W3-c: 21, the Yutu row
+WORDS = {20: "Twenty", 21: "Twenty-one", 24: "Twenty-four", 26: "Twenty-six", 12: "twelve"}  # 0077 W3-c: 21, the Yutu row; 24, the three impact sites
 
 
 def claims(readme: str, n: dict) -> list[str]:
@@ -77,7 +77,19 @@ problems += [f"{name} does not carry the registry's count of trips ({n['trips']}
 if sorted(doc_claims(texts, dict(n, trips=n["trips"] + 1))) != sorted(OTHER_DOCS):
     problems.append("the contributor documents' trips rule did not notice a count that is one trip behind")
 
+# docs/RUN_LOCALLY.md quotes the star count too (twice; public #629): every "109 389 stars" in it must be the registry's.
+def star_quotes(text: str, n: dict) -> list:
+    """The star counts the document writes that are not the registry's; a document that quotes none is also wrong."""
+    quoted = re.findall(r"\b(\d{1,3}(?: \d{3})+) stars", re.sub(r"\s+", " ", text))
+    return [q for q in quoted if q != count_facts.spaced(n["stars"])] or ([] if quoted else ["no count"])
+
+
+run_locally = (ROOT / "docs" / "RUN_LOCALLY.md").read_text(encoding="utf-8")
+problems += [f"docs/RUN_LOCALLY.md says {q} stars; the registry has {count_facts.spaced(n['stars'])}" for q in star_quotes(run_locally, n)]
+if not star_quotes(run_locally, dict(n, stars=n["stars"] + 1)):
+    problems.append("the RUN_LOCALLY.md stars rule did not notice a count that is one star behind")
+
 if problems:
     print("\n".join(problems))
     sys.exit(1)
-print(f"README, CONTRIBUTING.md and docs/TRANSLATING.md facts ok: {n['trips']} trips, {n['stops']} stops, {n['star_systems']} systems, {count_facts.spaced(n['stars'])} stars")
+print(f"README, CONTRIBUTING.md, docs/TRANSLATING.md and docs/RUN_LOCALLY.md facts ok: {n['trips']} trips, {n['stops']} stops, {n['star_systems']} systems, {count_facts.spaced(n['stars'])} stars")

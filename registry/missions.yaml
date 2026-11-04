@@ -250,6 +250,7 @@ missions:
   # path file begins two days after its launch, so that event is `none`; the other two launches
   # go to the first minute their file holds. Rosetta has a record and no row here: NSSDCA's page
   # for it returned an error that day, and JPL's header alone gives two dates, not three.
+  # Release 1.8.0: nine events for the three missions below (NEAR Shoemaker, Stardust, Deep Impact) and a time for the Eros orbit insertion. Every date and time was read on the NSSDCA page each mission names, 2026-11-04; a day with no time on the page is `precision: day`. The Stardust and Deep Impact Earth flybys carry no `world`: their path files hold no Earth-centred window on those days (registry/ephemerides.yaml), and tests/test_ephemerides.mjs refuses a `world` the file does not put the craft at.
   - id: near-shoemaker
     record: deep-near
     display: NEAR Shoemaker
@@ -257,7 +258,10 @@ missions:
     source: {name: "NASA NSSDCA, NEAR Shoemaker", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1996-008A"}
     events:
       - {id: launch, date: "1996-02-17", precision: day, title: "Launch", text: "NEAR leaves Earth for the asteroid Eros.", place: none, world: earth}
-      - {id: eros-orbit, date: "2000-02-14", precision: day, title: "Into orbit round Eros", text: "NEAR goes into orbit round the asteroid Eros.", place: path}
+      - {id: mathilde, date: "1997-06-27T12:56:00Z", title: "Past Mathilde", text: "It flies past the asteroid Mathilde on the way to Eros.", place: path}
+      - {id: earth-flyby, date: "1998-01-23T07:23:00Z", title: "Back past Earth", text: "It swings past Earth for a gravity assist, 540 km away at its closest.", place: path, world: earth}
+      - {id: eros-flyby, date: "1998-12-23T18:41:00Z", title: "A first pass of Eros", text: "A burn that failed just before leaves it to fly past Eros, taking pictures, instead of going into orbit.", place: path}
+      - {id: eros-orbit, date: "2000-02-14T15:33:00Z", title: "Into orbit round Eros", text: "NEAR goes into orbit round the asteroid Eros.", place: path}
       - {id: touchdown, date: "2001-02-12", precision: day, title: "Down on Eros", text: "At the end of its mission it is set down on the surface of Eros, and goes on sending for two weeks.", place: path}
 
   - id: stardust
@@ -267,8 +271,10 @@ missions:
     source: {name: "NASA NSSDCA, Stardust", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1999-003A"}
     events:
       - {id: launch, date: "1999-02-07", precision: day, title: "Launch", text: "Stardust leaves Earth for comet Wild 2.", place: path, path_at: "1999-02-07T21:32:00Z"}
+      - {id: earth-flyby-2001, date: "2001-01-15", precision: day, title: "Back past Earth", text: "It flies past Earth, and the pass boosts its orbit.", place: path}
       - {id: wild-2, date: "2004-01-02", precision: day, title: "Through the coma of Wild 2", text: "It makes its closest pass of comet Wild 2.", place: path}
       - {id: capsule, date: "2006-01-15", precision: day, title: "The capsule lands", text: "The sample capsule comes down on Earth while the spacecraft flies on.", place: path}
+      - {id: earth-flyby-2009, date: "2009-01-14", precision: day, title: "Back past Earth", text: "It flies past Earth again for a gravity assist.", place: path}
       - {id: tempel-1, date: "2011-02-15", precision: day, title: "Past Tempel 1", text: "On a second mission it passes comet Tempel 1, the comet Deep Impact struck.", place: path}
 
   - id: deep-impact
@@ -279,6 +285,9 @@ missions:
     events:
       - {id: launch, date: "2005-01-12", precision: day, title: "Launch", text: "Deep Impact leaves Earth carrying an impactor for comet Tempel 1.", place: path, path_at: "2005-01-12T19:23:00Z"}
       - {id: impact, date: "2005-07-04", precision: day, title: "The impact", text: "Its impactor strikes comet Tempel 1 while the spacecraft watches from a distance.", place: path}
+      - {id: earth-flyby-2007, date: "2007-12-31", precision: day, title: "Earth and Moon flyby", text: "It makes a close flyby of Earth and the Moon, one of three that aim it at comet Hartley 2.", place: path}
+      - {id: earth-flyby-2008, date: "2008-12-29", precision: day, title: "Earth and Moon flyby", text: "It makes a close flyby of Earth and the Moon, one of three that aim it at comet Hartley 2.", place: path}
+      - {id: earth-flyby-2010, date: "2010-06-27", precision: day, title: "Earth and Moon flyby", text: "It makes a close flyby of Earth and the Moon, one of three that aim it at comet Hartley 2.", place: path}
       - {id: hartley-2, date: "2010-11-04", precision: day, title: "Past Hartley 2", text: "On an extended mission it flies past a second comet, Hartley 2.", place: path}
 
   # Release 1.7.2: two ended missions drawn from their own paths (registry/ephemerides.yaml). Every figure was read on the page named, 2026-11-03. NSSDCA gives the closest approach to Venus at 19:59:28 UT; an event sits on a whole minute, so it is 19:59.

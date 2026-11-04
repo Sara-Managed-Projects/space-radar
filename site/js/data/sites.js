@@ -37,6 +37,9 @@ export const SITES = [
     "lon": 148.9813,
     "alt_m": 689,
     "diameter_m": 70,
+    "aliases": [
+      "Tidbinbilla"
+    ],
     "doing": "The only dish that can still send commands to Voyager 2."
   },
   {
@@ -175,6 +178,36 @@ export const SITES = [
     "doing": "Where an Israeli lander hit Mare Serenitatis in April 2019, carrying a stack of nickel discs."
   },
   {
+    "id": "hakuto-r-1",
+    "display": "Hakuto-R Mission 1 impact site",
+    "class": "surface",
+    "world": "moon",
+    "lat": 47.581,
+    "lon": 44.094,
+    "record": false,
+    "doing": "Where ispace's Hakuto-R Mission 1 lander was lost in April 2023, as it descended to land near Atlas crater."
+  },
+  {
+    "id": "luna-25",
+    "display": "Luna 25 impact site",
+    "class": "surface",
+    "world": "moon",
+    "lat": -57.865,
+    "lon": 61.36,
+    "record": false,
+    "doing": "Where Russia's Luna 25 hit the Moon in August 2023, on the southwest rim of Pontécoulant G crater, about 400 km short of its landing point."
+  },
+  {
+    "id": "hakuto-r-2",
+    "display": "Hakuto-R Mission 2 impact site",
+    "class": "surface",
+    "world": "moon",
+    "lat": 60.4445,
+    "lon": 355.412,
+    "record": false,
+    "doing": "Where ispace's Hakuto-R Mission 2 lander, Resilience, made a hard landing in June 2025, in its landing area in Mare Frigoris."
+  },
+  {
     "id": "surveyor-1",
     "display": "Surveyor 1, Oceanus Procellarum",
     "class": "surface",
@@ -202,6 +235,9 @@ export const SITES = [
     "lat": -3.0128,
     "lon": 336.5781,
     "shape": "lunar-module",
+    "aliases": [
+      "Statio Cognitum"
+    ],
     "doing": "Pete Conrad and Alan Bean, November 1969. They landed about 180 m from Surveyor 3, a robot that had been there since 1967."
   },
   {
@@ -287,7 +323,8 @@ export const SITES = [
     "lon": 308.0839,
     "shape": "lander",
     "aliases": [
-      "Change 5"
+      "Change 5",
+      "Statio Tianchuan"
     ],
     "doing": "Collected 1 731 grams of soil and rock in December 2020, the first Moon samples brought to Earth since 1976."
   },
@@ -353,7 +390,8 @@ export const SITES = [
     "lon": 61.81,
     "shape": "lander",
     "aliases": [
-      "Firefly"
+      "Firefly",
+      "Mons Latreille"
     ],
     "doing": "Firefly's lander, March 2025: the first fully successful commercial Moon landing. It worked for a whole lunar day and into the night."
   },

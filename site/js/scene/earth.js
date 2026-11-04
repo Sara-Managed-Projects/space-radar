@@ -1124,21 +1124,3 @@ export function earthMapsSettled(mesh) {
   const pending = mesh && mesh.userData && mesh.userData.pendingMaps;
   return !pending || pending.length === 0;
 }
-
-/** Sun direction on the surface, for anyone who wants the sub-solar point. Radians, earth-fixed. */
-export function subSolarPoint(sunDirScene, tMs) {
-  const g = gmst(new Date(tMs));
-  // scene -> earth-inertial -> earth-fixed, then geocentric lat/lon.
-  const x = sunDirScene.x;
-  const y = -sunDirScene.z;
-  const z = sunDirScene.y;
-  const cos = Math.cos(g);
-  const sin = Math.sin(g);
-  const fx = x * cos + y * sin;
-  const fy = -x * sin + y * cos;
-  const fz = z;
-  return {
-    latRad: Math.asin(fz / Math.hypot(fx, fy, fz)),
-    lonRad: Math.atan2(fy, fx),
-  };
-}

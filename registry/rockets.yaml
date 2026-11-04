@@ -808,6 +808,145 @@ rockets:
     class: measured
     source: "Wikipedia Minotaur I: 19.21 m, 1.67 m, Minuteman II M55A1 and SR19 under Orion 50XL and Orion 38"
 
+  # ---- Release 1.8.0: nine launchers that were in the feed with no row. Each row is from ONE page,
+  #      read 2026-11-04; a height the page calls "length" is the height of a rocket.
+  - id: orbex-prime
+    display: "Orbex Prime"
+    match: {full_name: ["Orbex Prime"]}
+    stands_for: variant
+    height_m: 19.0
+    core_dia_m: 1.45
+    taper: tube
+    top: {kind: fairing}
+    boosters: {shape: none, count: 0}
+    engines: {count: 6, pattern: unknown}
+    livery: unknown
+    class: measured
+    source: "Wikipedia Prime (rocket), read 2026-11-04: 19 m, 1.45 m for both stages, six gas-generator-cycle engines on the first stage; no strap-on boosters in the infobox"
+    note: "the same page says the project was cancelled in February 2026 when Orbex ceased operations; the feed of 2026-09-07 still lists the name. The fairing diameter is not given and is left out."
+
+  - id: skyrora-xl
+    display: "Skyrora XL"
+    match: {full_name: ["Skyrora XL"]}
+    stands_for: variant
+    height_m: 22.7
+    core_dia_m: 2.2
+    taper: tube
+    top: {kind: fairing}
+    boosters: {shape: none, count: 0}
+    engines: {count: 9, pattern: unknown}
+    livery: unknown
+    class: measured
+    source: "Skyrora, skyrora.com/skyrora-xl, read 2026-11-04: length 22.7 m, diameter 2.2 m, three stages, 9 x Skyforce engines on the first stage; no strap-on boosters listed"
+    note: "the page gives no fairing diameter, so none is written."
+
+  - id: rfa-one
+    display: "RFA One"
+    match: {full_name: ["RFA One"]}
+    stands_for: variant
+    height_m: 30.0
+    core_dia_m: 2.0
+    taper: tube
+    top: {kind: fairing}
+    boosters: {shape: none, count: 0}
+    engines: {count: 9, pattern: unknown}
+    livery: unknown
+    class: measured
+    source: "Wikipedia RFA One, read 2026-11-04: 30 m long, 2 m diameter, three stages, 9 x Helix on the first stage; no strap-on boosters in the infobox"
+
+  - id: latitude-zephyr
+    display: "Zephyr"
+    match: {full_name: ["Zéphyr"]}
+    stands_for: variant
+    height_m: 30.0
+    core_dia_m: 2.0
+    taper: tube
+    top: {kind: fairing}
+    boosters: {shape: none, count: 0}
+    engines: {count: 7, pattern: unknown}
+    livery: unknown
+    class: measured
+    source: "Latitude, latitude.eu/zephyr, read 2026-11-04: length 30 m, diameter 2 m, two stages, a first-stage cluster of seven Navier Sea Level engines; no strap-on boosters listed"
+    note: "the feed spells the name with an accent. The page gives fairing heights (2.3 m and 3.2 m) and no fairing diameter, so none is written."
+
+  - id: nebula-1
+    display: "Nebula-1"
+    match: {full_name: ["Nebula-1"]}
+    stands_for: variant
+    height_m: 30.2
+    core_dia_m: 3.35
+    taper: stepped
+    sections: [{dia_m: 3.35}, {dia_m: 2.25}]
+    top: {kind: fairing}
+    boosters: {shape: none, count: 0}
+    engines: {count: 9, pattern: unknown}
+    livery: unknown
+    class: measured
+    source: "Wikipedia Nebula-1, read 2026-11-04: 30.2 m, 3.35 m first stage and 2.25 m second stage, two stages, 9 x Thunder-R on the first stage; no strap-on boosters in the infobox"
+    note: "the page calls the first stage partly recoverable but names no legs or grid fins, so no `recovery` is written."
+
+  - id: maia
+    display: "Maia"
+    match: {full_name: ["Maia"]}
+    stands_for: variant
+    height_m: 50.0
+    core_dia_m: 3.5
+    taper: tube
+    top: {kind: fairing}
+    boosters: {shape: none, count: 0}
+    engines: {count: 3, pattern: unknown}
+    livery: unknown
+    class: measured
+    source: "Wikipedia Maia (rocket), read 2026-11-04: 50 m, 3.5 m, two stages plus an optional third, 3 x Prometheus on the first stage; no strap-on boosters in the infobox"
+    note: "the page gives one diameter and does not say whether it is the body or the fairing, so it is the body's and no fairing diameter is written."
+
+  - id: miura-5
+    display: "Miura 5"
+    match: {full_name: ["Miura 5"]}
+    stands_for: variant
+    height_m: 35.7
+    core_dia_m: 2.0
+    taper: tube
+    top: {kind: fairing}
+    boosters: {shape: none, count: 0}
+    engines: {count: 5, pattern: unknown}
+    stage1_len_m: 26.3
+    livery: unknown
+    class: measured
+    source: "Wikipedia Miura 5, read 2026-11-04: 35.7 m, 2.0 m, first stage 26.3 m, 5 x TEPREL-C on the first stage; no strap-on boosters in the infobox"
+    note: "the page disagrees with itself: its text says one TEPREL-C engine, its infobox says five. Five is used because alicanteplaza.es/pld-space-como-sera-miura-5, read 2026-11-04, says 5 motores TEPREL-C for the first stage. That page gives 34 m and 2 m for the first version, against 35.7 m here; the height is the Wikipedia figure, which cites a post by the maker's chief executive."
+
+  - id: epsilon-s
+    display: "Epsilon S"
+    match: {full_name: ["Epsilon S"]}
+    stands_for: variant
+    height_m: 27.2
+    core_dia_m: 2.5
+    taper: tube
+    top: {kind: fairing}
+    boosters: {shape: none, count: 0}
+    engines: {count: 1, pattern: single}
+    livery: unknown
+    class: inferred
+    source: "Wikipedia Epsilon (rocket), read 2026-11-04: 27.2 m for Epsilon S (26.8 m for Block 1), 2.5 m, first stage SRB-3; no strap-on boosters in the infobox"
+    note: "inferred: the infobox names one first-stage motor, SRB-3, and gives no count, so one solid motor is taken. The page gives a fairing diameter only for the Enhanced Epsilon, so none is written."
+
+  - id: sslv
+    display: "SSLV"
+    match: {full_name: ["SSLV"]}
+    stands_for: variant
+    height_m: 34.0
+    core_dia_m: 2.0
+    taper: tube
+    top: {kind: fairing}
+    boosters: {shape: none, count: 0}
+    engines: {count: 1, pattern: single}
+    stage1_len_m: 22.5
+    livery: unknown
+    class: inferred
+    source: "Wikipedia Small Satellite Launch Vehicle, read 2026-11-04: 34 m, 2 m, first stage (SS1) 22.5 m, three solid stages and a fourth velocity-trimming module; no strap-on boosters in the infobox"
+    note: "inferred: the infobox names one first-stage motor, S85, and gives no count, so one solid motor is taken."
+
   # ---- last resort before generic: a provider whose vehicles we cannot name ------------
   - id: small-commercial-orbital
     display: "a small commercial launcher"
@@ -823,8 +962,8 @@ rockets:
     engines: {count: 1, pattern: unknown}
     livery: unknown
     class: inferred
-    source: "class-typical dimensions for a small commercial orbital launcher. NOT this vehicle: no source was read for Prime, Skyrora XL, SL1, Zephyr, RFA One or ZERO"
-    note: "the card says this is a family shape, so a reader is told the drawing is a class and not the rocket. Providers whose vehicles are not small -- Stoke Space, i-Space, Orienspace, Relativity, MaiaSpace -- are deliberately absent and fall to the generic rocket."
+    source: "class-typical dimensions for a small commercial orbital launcher. NOT this vehicle: no source was read for SL1 or ZERO"
+    note: "the card says this is a family shape, so a reader is told the drawing is a class and not the rocket. Providers whose vehicles are not small -- Stoke Space, i-Space, Orienspace, Relativity, MaiaSpace -- are deliberately absent and fall to the generic rocket, except for the vehicles that have a row of their own (Maia)."
 
 # Every distinct value the live LL2 2.3.0 upcoming feed returned on 2026-09-07, with the number
 # of launches carrying it. All 359 launches were read, in four pages of 100. This is the evidence

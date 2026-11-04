@@ -32,6 +32,43 @@ export const TRAVERSE_LOOK = { widthPx: 2.25, colour: 0xffcf7a, alpha: 0.9, near
 /** A tile is pulled 0.001 of its distance toward the camera in its depth test; a traverse twice that. */
 export const DEPTH_PULL = 0.002;
 
+/**
+ * A SHORT LINE IS READ FROM FARTHER, AND WIDER (internal #992). The fade (TRAVERSE_LOOK: whole inside 120 km, none past 320 km
+ * from the line's middle) suits Apollo 15's 23 km, Apollo 17's 31 km and Opportunity's 45 km. Spirit's 7.07 km in Gusev stood
+ * about 309 km from the camera at its site's arrival pose, where the fade left it at 0.3 %, and drawn about 12 px long beside
+ * a rover model many times its true size, a thin gold line on rust ground was lost even where it was drawn.
+ * A line shorter than SHORT_KM has the fade's two distances stretched by SHORT_KM over its length (at most SHORT_STRETCH times),
+ * and its ribbon widened, up to SHORT_WIDEN times, as its length falls from WIDEN_FROM[0] to WIDEN_FROM[1] of the camera's
+ * distance (which is what a line's size on the screen is), with a dark rim as the widening goes (traverseRim: the gold alone is
+ * lost on Mars's ground, and a rim costs no second draw). A line of SHORT_KM or more, the Moon's two and Opportunity's, is as it
+ * was. The 2-draw-call budget a world has is untouched: one mesh a line.
+ */
+export const SHORT_KM = 15;
+export const SHORT_STRETCH = 2.5;
+export const SHORT_WIDEN = 2.2;
+/** The ratio of a line's length to the camera's distance above which the ribbon is not widened, and below which it is widest. */
+export const WIDEN_FROM = [0.2, 0.03];
+/** The dark rim a widened ribbon wears (the gold line on Mars's rust ground was lost; the rim is in the same draw), and where across it begins. */
+export const RIM = { colour: 0x2b1409, from: 0.55, to: 0.72, alpha: 0.9 };
+
+/** The fade's distances for a line `lengthKm` long: TRAVERSE_LOOK's, stretched for a short one. Pure. */
+export function traverseReach(lengthKm, look = TRAVERSE_LOOK) {
+  const k = lengthKm > 0 && lengthKm < SHORT_KM ? Math.min(SHORT_STRETCH, SHORT_KM / lengthKm) : 1;
+  return { ...look, nearKm: look.nearKm * k, farKm: look.farKm * k };
+}
+
+/** How many times the ribbon's width a short line is drawn at: 1 while it fills WIDEN_FROM[0] of the distance or more, SHORT_WIDEN at WIDEN_FROM[1] and under. Pure. */
+export function traverseWidthK(lengthKm, distKm) {
+  if (!(lengthKm > 0 && lengthKm < SHORT_KM) || !(distKm > 0)) return 1;
+  const x = Math.min(1, Math.max(0, (WIDEN_FROM[0] - lengthKm / distKm) / (WIDEN_FROM[0] - WIDEN_FROM[1])));
+  return 1 + (SHORT_WIDEN - 1) * x * x * (3 - 2 * x);
+}
+
+/** How much of the dark rim a line wears: 0 where it is not widened, 1 where it is widest. Pure. */
+export function traverseRim(lengthKm, distKm) {
+  return (traverseWidthK(lengthKm, distKm) - 1) / (SHORT_WIDEN - 1);
+}
+
 /** A path's "lon,lat lon,lat ..." string as [lon, lat] pairs in degrees. Pure. */
 export function parsePath(str) {
   const out = [];
@@ -141,14 +178,18 @@ const FRAG = /* glsl */`
 #include <common>
 #include <logdepthbuf_pars_fragment>
 uniform vec3 uColour;
+uniform vec3 uRimColour;
 uniform float uAlpha;
 uniform float uWidthPx;
+uniform float uRim;      // 0 for a line read as it always was, 1 for a short one at its widest
 varying float vSide;
 void main() {
   #include <logdepthbuf_fragment>
   // The last device pixel on each side fades: an edge, not a staircase.
   float edge = 1.0 - smoothstep( 1.0 - 2.0 / max( uWidthPx, 2.0 ), 1.0, abs( vSide ) );
-  gl_FragColor = vec4( uColour, uAlpha * edge );
+  // A widened short line is edged in dark (the same draw): gold on rust is not enough.
+  float rim = uRim * smoothstep( ${RIM.from.toFixed(2)}, ${RIM.to.toFixed(2)}, abs( vSide ) );
+  gl_FragColor = vec4( mix( uColour, uRimColour, rim ), uAlpha * edge );
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
 }
@@ -178,6 +219,8 @@ export function createTraverses({ world = 'moon' } = {}) {
       fragmentShader: FRAG,
       uniforms: {
         uColour: { value: new THREE.Color(TRAVERSE_LOOK.colour) },
+        uRimColour: { value: new THREE.Color(RIM.colour) },
+        uRim: { value: 0 },
         uAlpha: { value: 0 },
         uWidthPx: { value: TRAVERSE_LOOK.widthPx },
         uHalfPx: { value: halfPx },
@@ -209,10 +252,11 @@ export function createTraverses({ world = 'moon' } = {}) {
       halfPx.set(Math.max(1, viewportPx[0] / 2), Math.max(1, viewportPx[1] / 2));
       for (const it of items) {
         const d = Math.hypot(camLocal.x - it.mid.x, camLocal.y - it.mid.y, camLocal.z - it.mid.z) * radiusKm;
-        it.fade = traverseFade(d);
+        it.fade = traverseFade(d, traverseReach(it.row.lengthKm));
         it.mesh.visible = it.fade > 0.001;
         it.mesh.material.uniforms.uAlpha.value = TRAVERSE_LOOK.alpha * it.fade;
-        it.mesh.material.uniforms.uWidthPx.value = TRAVERSE_LOOK.widthPx * Math.max(1, pixelRatio);
+        it.mesh.material.uniforms.uWidthPx.value = TRAVERSE_LOOK.widthPx * traverseWidthK(it.row.lengthKm, d) * Math.max(1, pixelRatio);
+        it.mesh.material.uniforms.uRim.value = traverseRim(it.row.lengthKm, d);
       }
     },
     /** Off at once (the layer has gone). */

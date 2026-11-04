@@ -49,4 +49,4 @@ HEADER = """// GENERATED from registry/audio.yaml by scripts/gen_audio_js.py. Do
 MIRROR = Mirror(source="registry/audio.yaml", target="site/js/data/audio.js", header=HEADER, render=render, what="audio.js")
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

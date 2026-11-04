@@ -227,7 +227,6 @@ const ALLOWED = {
   'tests/test_hero_spiral.mjs': ['nb', 'nd', 'Rd'],
   'tests/test_localvolume.mjs': ['MLY_KM', 'ids'],
   'tests/test_missions.mjs': ['wantId'],
-  'tests/test_share.mjs': ['setNavigator'],
   'tests/test_trip_playback.mjs': ['AT'],
   'tests/test_wind.mjs': ['e0'],
   'tests/test_worlds_films.mjs': ['LATER'],

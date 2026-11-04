@@ -223,7 +223,7 @@ shutil.rmtree(other, ignore_errors=True)
 # --- the 40 systems -----------------------------------------------------------------------------------
 import seo_systems  # noqa: E402
 sysl = seo_systems.systems()
-ok(len(sysl) == 43 and sum(len(s["planets"]) for s in sysl) == 110, f"43 systems and 110 planets: 42 generated systems with 103 (release 1.5.0 added 51 Eri, PDS 70 and AF Lep), TRAPPIST-1 with 7 ({len(sysl)})")
+ok(len(sysl) == 51 and sum(len(s["planets"]) for s in sysl) == 134, f"51 systems and 134 planets: 50 generated systems with 127 (release 1.8.0 added eight nearby hosts to the 42 of release 1.5.0), TRAPPIST-1 with 7 ({len(sysl)})")
 bad = []
 for s in sysl:
     f = BUILT / "o" / f"{s['slug']}.html"
@@ -351,7 +351,7 @@ ok(len(re.search(r"<title>(.*?)</title>", t_html).group(1)) <= 60, "a title unde
 # --- events -------------------------------------------------------------------------------------------
 evs = yml("sky-events.yaml")["events"]
 ev_index = parse(BUILT / "events" / "index.html")
-ok(len(evs) == 6 and all(f"{e['id']}.html" in ev_index.hrefs for e in evs), "the index links six events")
+ok(len(evs) >= 6 and all(f"{e['id']}.html" in ev_index.hrefs for e in evs), "the index links every event, six or more")
 for e in evs:
     f = BUILT / "events" / f"{e['id']}.html"
     html = f.read_text(encoding="utf-8")

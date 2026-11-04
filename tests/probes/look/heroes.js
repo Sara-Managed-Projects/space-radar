@@ -87,6 +87,8 @@ const scene = async (hero, at, note, settleMs = 3000) => {
   await sleep(settleMs);
   const t0 = Date.now();
   if (onLadder() && sr.deep && sr.deep.whenReady) await sr.deep.whenReady(10000);
+  // The asset-idle signal (internal #779): photographs, tiles and map swaps as well as the deep sky; the older ref has none.
+  const idle = sr.perf && sr.perf.whenIdle ? await sr.perf.whenIdle(10000, 3) : null;
   const readyWaitMs = Date.now() - t0;
   const m = await measure();
   n += 1;
@@ -100,6 +102,8 @@ const scene = async (hero, at, note, settleMs = 3000) => {
     tier: m.tier, look: m.look, exposure: m.exposure, seed: m.seed, held: m.held, latched: m.latched, clock: m.at,
     frames: m.frames, p50Ms: m.p50Ms, p95Ms: m.p95Ms, maxMs: m.maxMs, workP50Ms: m.workP50Ms ?? null, workP95Ms: m.workP95Ms ?? null,
     calls: m.calls, triangles: m.triangles, textures: m.textures, geometries: m.geometries, programs: m.programs,
+    gpuTimeP50Ms: m.gpuTime && m.gpuTime.supported ? m.gpuTime.p50Ms : null, gpuTimeP95Ms: m.gpuTime && m.gpuTime.supported ? m.gpuTime.p95Ms : null, gpuTimeSupported: m.gpuTime ? m.gpuTime.supported : null,
+    idle: idle ? idle.idle : null, waiting: idle ? idle.waiting : null,
     gpuMiB: m.gpu ? m.gpu.totalMiB : null, gpuVisibleMiB: m.gpu ? m.gpu.visibleMiB : null, gpu: m.gpu,
     // Fetched since the last picture: the move here, the settle and the measure (sr.perf.netTotal).
     netBytes: netAt !== null ? sr.perf.netTotal() - netAt : null, netInWindow: m.net ? m.net.bytes : null, netRequests: m.net ? m.net.requests : null, netSinceStart: m.net ? m.net.sinceStartBytes : null,

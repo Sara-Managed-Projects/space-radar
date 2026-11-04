@@ -1645,6 +1645,11 @@ export const STORM_AFTER_MS = 12 * 3600 * 1000;
  */
 const SAFFIR_SIMPSON_KMH = [[252, 5], [209, 4], [178, 3], [154, 2], [119, 1]];
 
+/**
+ * Saffir-Simpson category 0 to 5 from a sustained wind in km/h (category 1 starts at 119 km/h,
+ * category 5 at 252); 0 below that, `null` when the wind is not a finite number.
+ * `saffirSimpson(118)` is 0, `saffirSimpson(119)` is 1, `saffirSimpson(NaN)` is `null`.
+ */
 export function saffirSimpson(windKmh) {
   if (!Number.isFinite(windKmh)) return null;
   for (const [min, cat] of SAFFIR_SIMPSON_KMH) if (windKmh >= min) return cat;

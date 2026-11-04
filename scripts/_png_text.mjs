@@ -29,7 +29,7 @@ function crc32(buf) {
 
 /** The tEXt/iTXt text under `key` (iTXt uncompressed only), or null. Stops at the first IDAT. */
 export function readText(png, key = 'Software') {
-  if (!png.slice(0, 8).equals(SIGNATURE)) throw new Error('not a PNG');
+  if (!png.slice(0, 8).equals(SIGNATURE)) throw new Error(`not a PNG: the first eight bytes are ${png.slice(0, 8).toString('hex')}, expected ${SIGNATURE.toString('hex')}`);
   for (let at = 8; at + 8 <= png.length;) {
     const len = png.readUInt32BE(at);
     const kind = png.slice(at + 4, at + 8).toString('latin1');
@@ -59,7 +59,7 @@ export function addText(png, key, text) {
   tail.writeUInt32BE(crc32(Buffer.concat([head.slice(4), body])), 0);
   let at = 8;
   while (at + 8 <= png.length && png.slice(at + 4, at + 8).toString('latin1') !== 'IDAT') at += 12 + png.readUInt32BE(at);
-  if (at + 8 > png.length) throw new Error('no IDAT chunk');
+  if (at + 8 > png.length) throw new Error(`no IDAT chunk in ${png.length} bytes: the file ends before its image data`);
   return Buffer.concat([png.slice(0, at), head, body, tail, png.slice(at)]);
 }
 

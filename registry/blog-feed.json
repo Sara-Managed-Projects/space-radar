@@ -3,6 +3,21 @@
  "title": "Space Radar Journal",
  "items": [
   {
+   "title": "Curiosity’s Landing: The Seven Minutes of Terror, Step by Step",
+   "url": "https://blog.spaceradar.ai/curiosity-landing-seven-minutes-of-terror/",
+   "date": "2026-11-04",
+   "summary": "Why is Curiosity’s landing called the seven minutes of terror? The JPL clock, NASA’s heights and speeds, the sky crane, and what a replay must reconstruct.",
+   "image": "https://blog.spaceradar.ai/media/curiosity-landing-seven-minutes-of-terror/share.jpg",
+   "tags": [
+    "Missions & Spacecraft",
+    "Curiosity",
+    "Mars",
+    "sky crane",
+    "entry descent landing",
+    "mission replay"
+   ]
+  },
+  {
    "title": "Stars with no distance, 4 383 pulsars and the farthest galaxy",
    "url": "https://blog.spaceradar.ai/stars-without-a-distance-and-the-farthest-light/",
    "date": "2026-10-31",

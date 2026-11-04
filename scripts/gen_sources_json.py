@@ -92,7 +92,19 @@ def render_notable() -> str | None:
     return json.dumps(doc, indent=2) + "\n"
 
 
+USAGE = """usage: python3 scripts/gen_sources_json.py [--check]
+  Writes harvest/sources.json from registry/sources.yaml (and harvest/notable.json from site/js/data/layers.js).
+  --check  write nothing; exit 1 if a checked-in file is stale"""
+
+
 def main(argv: list[str]) -> int:
+    if "--help" in argv or "-h" in argv:
+        print(USAGE)
+        return 0
+    unknown = [a for a in argv if a != "--check"]
+    if unknown:
+        print(f"unknown option: {unknown[0]}\n{USAGE}", file=sys.stderr)
+        return 2
     want = render()
     want_notable = render_notable()
     if "--check" in argv:

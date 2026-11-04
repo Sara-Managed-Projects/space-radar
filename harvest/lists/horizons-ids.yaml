@@ -4,7 +4,7 @@
 # writes ONE snapshot whose body maps id -> the Horizons response text.
 #
 # Every id below is one site/js/data/sample.js sampleDeepSpace() or scene/realmodels.js `horizons:`
-# names today. -170 and -31 were VERIFIED by fetch on 2026-09-06 (docs/data-sources.md §4); the
+# names today. -170 and -31 were VERIFIED by fetch on 2026-09-06; the
 # rest were confirmed against Horizons' own object header on 2026-09-08 when this list was written.
 # tests/test_deep_space.mjs holds the two sides together: every id here has a record, and every
 # record with an id is here.
