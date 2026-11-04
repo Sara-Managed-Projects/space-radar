@@ -29,11 +29,11 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | small_bodies | 22 | 22 |
 | probes | 39 | 39 |
 | reentries | 3 | 3 |
-| rockets | 49 | 49 |
+| rockets | 58 | 58 |
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 39 | 39 |
-| **all** | **1075** | **111 262** |
+| **all** | **1084** | **111 271** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -50,7 +50,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [ASTEROID](#asteroid) | 31 | `models.js`, `realmodels.js`, `glyphs.js`, `kepler.js`, `moonshape.js` | modelled | - |
 | [COMET](#comet) | 5 | `models.js`, `glyphs.js`, `kepler.js` | modelled | - |
 | [ARTIFICIAL_SATELLITE](#artificial_satellite) | 220 | `sgp4.js`, `glyphs.js`, `realmodels.js`, `models.js` | measured | - |
-| [LAUNCH_AND_ROCKET](#launch_and_rocket) | 73 | `models.js`, `ascent.js`, `realmodels.js` | illustrative | - |
+| [LAUNCH_AND_ROCKET](#launch_and_rocket) | 82 | `models.js`, `ascent.js`, `realmodels.js` | illustrative | - |
 | [SPACE_PROBE](#space_probe) | 74 | `sampled.js`, `realmodels.js`, `models.js`, `glyphs.js` | measured | - |
 | [LANDING_SITE](#landing_site) | 65 | `models.js`, `realmodels.js`, `shadow.js` | measured | - |
 | [EXOPLANET](#exoplanet) | 153 | `systems.js`, `systemextras.js`, `exoface.js`, `exostage.js` | modelled | - |
@@ -82,7 +82,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 1075 records: 334 measured, 386 modelled, 355 illustrative.
+Honesty over the 1084 records: 334 measured, 386 modelled, 364 illustrative.
 
 ## The classes
 
@@ -306,11 +306,11 @@ Honesty over the 1075 records: 334 measured, 386 modelled, 355 illustrative.
 - **Measured, modelled or reconstructed:** Measured: the pad, the time, the vehicle's dimensions. Illustrative: the ascent arc (the real track is not published; the launches layer says so) and the procedural rocket's details.
 - **Rights:** LL2 free to 15 requests an hour, no published licence; NASA models free and without copyright; facts cited.
 - **What is missing is tracked in:** #867 (a real launch replayed on its event clock)
-- **Records (73):**
+- **Records (82):**
   - sites (4): `saturn-v-lc-39a`, `shuttle-lc-39b`, `baikonur-site-1`, `spacex-slc-40`
   - real_models (15): `saturn-v`, `shuttle-stack`, `shuttle-sts-stack`, `shuttle-orbiter`, `shuttle-rms`, `delta2-stage`, `atlas5-centaur`, `centaur-d`, `falcon9-stage2`, `falcon9-stage1`, `falcon9-upper`, `h2a-stage2`, `kosmos3m-stage2`, `r7-8k72k`, `sls-block1`
   - model_kinds (3): `rocket-upper-stage`, `rocket-spent-stage`, `pad-generic`
-  - rockets (49): `falcon-9`, `falcon-heavy`, `ariane-62`, `ariane-64`, `ariane-6`, `electron`, `neutron`, `spectrum`, `starship`, `soyuz-2`, `vulcan`, `vulcan-vc2s`, `vulcan-vc4s`, `vulcan-vc4l`, `vulcan-vc6l`, `vega-c`, `vega`, `atlas-v`, `h3`, `h3-24`, `sls`, `new-glenn`, `firefly-alpha`, `terran-r`, `pslv`, `pslv-ca`, `gslv-mk2`, `lvm3`, `long-march-2d`, `long-march-2f`, `long-march-5`, `long-march-5b`, `long-march-8a`, `long-march-10`, `long-march-12a`, `nuri`, `themis`, `hanbit-nano`, `angara-12`, `minotaur-iv`, `delta-iv-heavy`, `proton-m`, `angara-a5`, `zhuque-2e`, `gravity-1`, `kinetica-1`, `kuaizhou-1a`, `minotaur-i`, `small-commercial-orbital`
+  - rockets (58): `falcon-9`, `falcon-heavy`, `ariane-62`, `ariane-64`, `ariane-6`, `electron`, `neutron`, `spectrum`, `starship`, `soyuz-2`, `vulcan`, `vulcan-vc2s`, `vulcan-vc4s`, `vulcan-vc4l`, `vulcan-vc6l`, `vega-c`, `vega`, `atlas-v`, `h3`, `h3-24`, `sls`, `new-glenn`, `firefly-alpha`, `terran-r`, `pslv`, `pslv-ca`, `gslv-mk2`, `lvm3`, `long-march-2d`, `long-march-2f`, `long-march-5`, `long-march-5b`, `long-march-8a`, `long-march-10`, `long-march-12a`, `nuri`, `themis`, `hanbit-nano`, `angara-12`, `minotaur-iv`, `delta-iv-heavy`, `proton-m`, `angara-a5`, `zhuque-2e`, `gravity-1`, `kinetica-1`, `kuaizhou-1a`, `minotaur-i`, `orbex-prime`, `skyrora-xl`, `rfa-one`, `latitude-zephyr`, `nebula-1`, `maia`, `miura-5`, `epsilon-s`, `sslv`, `small-commercial-orbital`
   - layers (2): `launches`, `ground-sites`
 
 ### SPACE_PROBE
