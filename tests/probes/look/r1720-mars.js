@@ -90,11 +90,14 @@ for (const [id, name, lat, lon, lengthKm] of SITES) {
     MARS.over(lat, lon, km, MARS_KM, 25, 180);
     if (tiled()) await tilesReady('mars-themis-day-ir');
     await sleep(5000);
-    const at = { id, tag, km: Math.round(km), shown: shown() };
+    const at = { id, tag, km: Math.round(km), actualKm: camKm('mars', MARS_KM), distance: +rig.state.distance.toFixed(5), shown: shown() };
     out.scenes.push(at);
     if (tiled() && tag === 'mid' && !at.shown.some((t) => t.startsWith(id))) out.problems.push(`${id}: its traverse is not shown from ${Math.round(km)} km: ${JSON.stringify(shown())}`);
     await shot(`${name}-${tag}-after`, `${id} from ${Math.round(km)} km (${k} x its line's ${lengthKm} km), the Sun ${e} degrees up; traverses shown: ${at.shown.join(', ') || 'none'}`);
     if (setGroup(false)) { await sleep(1200); await shot(`${name}-${tag}-before`, 'the same place with the traverse group hidden for the shot'); setGroup(true); }
+    // The rover's model (scene/heroes.js) stands over the path it drove, bigger than the path is wide: once with it hidden.
+    const heroes = sr.scene.getObjectByName('heroes');
+    if (heroes && tag !== 'wide') { heroes.visible = false; await sleep(1200); await shot(`${name}-${tag}-norover`, `${id} from ${Math.round(km)} km with the traverse drawn and the rover's model hidden for the shot`); heroes.visible = true; }
   }
 }
 if (!tiled()) {
