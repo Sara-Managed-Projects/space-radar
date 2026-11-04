@@ -1071,6 +1071,18 @@ export const REAL_MODELS = {
     58655: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M26', catalogue: 'BEIDOU-3 M26', generic: true, made: 'dimensions', axes: 'app' },  // 2023-207B, unconfirmed
     61186: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M25', catalogue: 'BEIDOU-3 M25', generic: true, made: 'dimensions', axes: 'app' },  // 2024-168B, unconfirmed
     61187: { file: 'beidou-3-meo.glb', colour: 'satellite', name: 'BeiDou-3 M27', catalogue: 'BEIDOU-3 M27', generic: true, made: 'dimensions', axes: 'app' },  // 2024-168C, unconfirmed
+    // BEIDOU-3 IGSO AND GEO (release 1.7.23, public #1153): beidou-3-igso.glb was BUILT HERE, in code, from the body the China Satellite Navigation Office's metadata gives for the IGSO craft
+    // (2.098 x 2.358 m across, 3.602 m long, as Xia et al. 2022 quote it) and 17.7 m2 of cells a wing, and from CSNO's rendering of the craft on orbit (CC BY 4.0, in that paper) and two
+    // museum mockups: the round array on the Earth deck, a white panel on the Sun face, a hexagonal lattice reflector on a boom and two dishes, all looking at the Earth, and two wings of
+    // three panels (registry/models.yaml row `beidou-3-igso`). THE THREE IGSO CRAFT wear it as themselves; the four GEO craft (G1 to G4) fly the same bus type, whose size Springer's table gives alike
+    // for both, but no page opened shows their layout, so they wear it with `generic: true`, the kind of thing. BeiDou-2's craft are DFH-3A (another bus) and keep what they had.
+    44204: { file: 'beidou-3-igso.glb', colour: 'satellite', name: 'BeiDou-3 IGSO-1', catalogue: 'BEIDOU-3 IGSO-1', made: 'dimensions', axes: 'app' },  // 2019-023A
+    44337: { file: 'beidou-3-igso.glb', colour: 'satellite', name: 'BeiDou-3 IGSO-2', catalogue: 'BEIDOU-3 IGSO-2', made: 'dimensions', axes: 'app' },  // 2019-035A
+    44709: { file: 'beidou-3-igso.glb', colour: 'satellite', name: 'BeiDou-3 IGSO-3', catalogue: 'BEIDOU-3 IGSO-3', made: 'dimensions', axes: 'app' },  // 2019-073A
+    43683: { file: 'beidou-3-igso.glb', colour: 'satellite', name: 'BeiDou-3 G1', catalogue: 'BEIDOU-3 G1', generic: true, made: 'dimensions', axes: 'app' },  // 2018-085A, geostationary, same bus type
+    45344: { file: 'beidou-3-igso.glb', colour: 'satellite', name: 'BeiDou-3 G2', catalogue: 'BEIDOU-3 G2', generic: true, made: 'dimensions', axes: 'app' },  // 2020-017A
+    45807: { file: 'beidou-3-igso.glb', colour: 'satellite', name: 'BeiDou-3 G3', catalogue: 'BEIDOU-3 G3', generic: true, made: 'dimensions', axes: 'app' },  // 2020-040A
+    56564: { file: 'beidou-3-igso.glb', colour: 'satellite', name: 'BeiDou-3 G4', catalogue: 'BEIDOU-3 G4', generic: true, made: 'dimensions', axes: 'app' },  // 2023-066A
     43765: R14_HAWK,
     43794: R14_HAWK,
     43799: R14_HAWK,
@@ -1258,7 +1270,8 @@ export const REAL_MODELS = {
     // `made: 'dimensions'` makes the card say the shape was built from published dimensions; `axes: 'app'` keeps the tumble the
     // generic stage has: a dead stage has no attitude control. The stages of the same catalogue families that are NOT drawn here keep
     // the generic stage: DELTA 2 R/B(2) is a Star-48 motor, SL-12 R/B(1) a Blok DM auxiliary motor, and the Zenit-2, Vostok Blok E,
-    // Tsyklon-3, Long March 4, Proton Blok DM, Breeze-M and PSLV fourth stages wait for pictures of flight hardware (the PR says what).
+    // Tsyklon-3, Long March 4, Proton Blok DM and Breeze-M stages wait for pictures of flight hardware (the PR says what). The PSLV fourth stage has had its own
+    // file since release 1.7.23 (below): ISRO's photographs, GODL-India, show it.
     'sl-8 r/b': { file: 'kosmos3m-stage2.glb', build: 'stage', colour: 'rocket', name: 'a Kosmos-3M second stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
     'delta 2 r/b(2)': { build: 'stage', colour: 'rocket', name: 'a spent rocket stage', klass: ['rocket'], generic: true },
     'delta 2 r/b': { file: 'delta2-stage.glb', build: 'stage', colour: 'rocket', name: 'a Delta II second stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
@@ -1266,6 +1279,8 @@ export const REAL_MODELS = {
     'atlas centaur r/b': { file: 'centaur-d.glb', build: 'stage', colour: 'rocket', name: 'a Centaur D upper stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
     'falcon 9 r/b': { file: 'falcon9-stage2.glb', build: 'stage', colour: 'rocket', name: 'a Falcon 9 second stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
     'h-2a r/b': { file: 'h2a-stage2.glb', build: 'stage', colour: 'rocket', name: 'an H-IIA second stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
+    // Release 1.7.23 (public #1171): the PS4, the stage that stays in orbit; `pslv r/b` also reaches PSLV R/B(1), the same stage, and never PSLV-CA R/B or PSLV DEB (debris class).
+    'pslv r/b': { file: 'pslv-ps4.glb', build: 'stage', colour: 'rocket', name: 'a PSLV fourth stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
     // 0078 r14-m1: end
     // Every spent stage on the visible layer -- SL-16, CZ-2C, Centaur, Delta, H10 -- was drawn as
     // a LAUNCHING rocket: fairing, nose, plume. A spent stage is a tube with a nozzle, tumbling.

@@ -419,6 +419,7 @@ export const VISUAL_CLASSES = [
 "spot-6-7",
 "skysat",
 "beidou-3-meo",
+"beidou-3-igso",
 "cheops",
 "hxmt",
 "svom",
@@ -505,6 +506,7 @@ export const VISUAL_CLASSES = [
 "falcon9-stage1",
 "falcon9-upper",
 "h2a-stage2",
+"pslv-ps4",
 "kosmos3m-stage2",
 "r7-8k72k",
 "sls-block1"
