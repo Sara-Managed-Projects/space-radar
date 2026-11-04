@@ -243,7 +243,7 @@ def planet_section(sysd: dict, p: dict) -> str:
         extra = (f" The Archive's own distance for it is {p['a_table_au']:g} AU; the three papers behind its period, its star's mass and that distance "
                  f"do not agree with Kepler's third law, so the page uses the one the period and the star's mass give.")
     if p.get("a_ref"):
-        extra = (f" The Archive's composite table gives {p['a_default_au']:g} au for it, which does not agree with Kepler's third law; "
+        extra = (f" The Archive's composite table gives {p['a_default_au']:g} AU for it, which does not agree with Kepler's third law; "
                  f"the page uses the distance in {p['a_ref']}, a single paper whose own period and star's mass do.") if p.get("a_default_au") else \
             f" The page uses the distance in {p['a_ref']}, a single paper whose own period and star's mass agree with Kepler's third law."
     if p.get("zone") == "inside":
