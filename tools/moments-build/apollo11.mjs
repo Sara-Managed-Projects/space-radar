@@ -298,7 +298,7 @@ const moment = {
     parts,
     camera: cam.sort((a, b) => a.t - b.t),
     captions: caps,
-    audio: [{ t: 162.3, sting: 'stage' }, { t: T.land, sting: 'arrive' }, { t: T.step + 33, src: 'audio/a11-small-step.m4a', twin: 'audio/a11-small-step.m4a', gain: 1 }, { t: T.splash, sting: 'end' }],
+    audio: [{ t: 162.3, sting: 'stage' }, { t: T.land, sting: 'arrive' }, { t: T.land, src: 'audio/a11-landed.m4a', twin: 'audio/a11-landed.m4a', gain: 0.7 }, { t: T.step + 33, src: 'audio/a11-small-step.m4a', twin: 'audio/a11-small-step.m4a', gain: 1 }, { t: T.splash, sting: 'end' }],
     effects: [
       { t: -8.9, effect: 'exhaust-cloud', until: 14, axis: [0, 1, 0], count: 600, fire: 's-ic', vehicle: 'saturn' },
       { t: T.ei + 30, effect: 'plasma', until: T.ei + 420, peak: T.ei + 150, vehicle: 'csm' },
@@ -311,6 +311,7 @@ const moment = {
     { say: 'srcReport', url: 'https://ntrs.nasa.gov/citations/19700008096' },
     { say: 'srcJournal', url: 'https://www.nasa.gov/history/afj/ap11fj/' },
     { say: 'srcClip', url: 'https://commons.wikimedia.org/wiki/File:Neil_Armstrong_small_step.wav' },
+    { say: 'srcLanding', url: 'https://commons.wikimedia.org/wiki/File:Apollo_11_Eagle_Has_Landed.mp3' },
   ],
 };
 writeFileSync(OUT + 'apollo-11.json', JSON.stringify(moment, null, 1).replace(/\n\s+/g, (m) => (m.length > 40 ? m : ' ')) + '\n');

@@ -11,6 +11,16 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [1.7.22] - 2026-11-04
+
+### Added
+
+- **The Apollo 11 Moment plays the landing call.** With sound on, "Houston, Tranquility Base here. The Eagle has landed." is heard at 102:45:40,
+  the second of the "landed" caption: NASA's recording (the Wikimedia Commons file "Apollo 11 Eagle Has Landed.mp3", public domain), a 24 kB
+  mono AAC cut by `ffmpeg` from the 5.4-second MP3 and fetched only when the Moment reaches that second. Its credit is in `CREDITS.md` section 9,
+  `registry/audio.yaml` and the Moment's own sources, in all ten languages. The 1202 alarms and the launch stay captions: Commons holds no
+  recording of either, and the Apollo Flight Journal's audio files did not load.
+
 ## [1.7.8] - 2026-11-03
 
 ### Added

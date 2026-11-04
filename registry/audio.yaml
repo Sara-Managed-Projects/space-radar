@@ -146,6 +146,22 @@ audio:
     credit: "Neil Armstrong's first words on the Moon, NASA (1969), public domain"
     make: {original: "Neil_Armstrong_small_step.wav (8-bit mono 11 025 Hz, 265 886 bytes)", tool: "afconvert -f WAVE -d LEI16@22050, then afconvert -f m4af -d aac -b 32000"}
 
+  # RELEASE 1.7.22, THE APOLLO 11 MOMENT'S SECOND LINE (internal #1055): the landing call, cued at 102:45:40 with the caption "landed". The Commons file
+  # is a 5.4-second excerpt of NASA's recording (author NASA, {{PD-USGov-NASA}}); its own source link, nasa.gov/connect/sounds, no longer resolves, so
+  # the licence rests on the Commons page. The Moment's other key lines (the 1202 alarms, the launch) have no clip with a stated licence and stay captions.
+  - id: a11-landed
+    kind: clip
+    file: site/audio/a11-landed.m4a
+    twin: site/audio/a11-landed.m4a
+    seconds: 5.3
+    kb: 23.9
+    loop: false
+    licence: "Public domain (NASA); Wikimedia Commons: \"Public domain\" ({{PD-USGov-NASA}}), author \"NASA\", description \"Audio excerpt of Apollo 11's landing\""
+    source: "https://commons.wikimedia.org/wiki/File:Apollo_11_Eagle_Has_Landed.mp3 (read 2026-11-04)"
+    credit: "Apollo 11's landing call from Tranquility Base, NASA (1969), public domain"
+    original: {url: "https://upload.wikimedia.org/wikipedia/commons/8/87/Apollo_11_Eagle_Has_Landed.mp3", sha256: c2cf9c2754ec3c2f7315acd4fcdd7d892fb2027919c1a80adf90a49f63c0316c, bytes: 26388}
+    make: {original: "Apollo_11_Eagle_Has_Landed.mp3 (MP3, mono, 16 kHz, 5.4 s)", from: 0, seconds: 5.36, tool: "ffmpeg -ar 22050 -ac 1 -c:a aac -b:a 32k"}
+
   # RELEASE 1.7.0, THE APOLLO 13 MOMENT (internal #1058): the two radio lines, cut from one 11.5-second recording (the gaps of the original are
   # edited out, so each line is cued on its own at the time the Flight Journal logs it). The player asks for them only at their seconds.
   - id: a13-problem-1

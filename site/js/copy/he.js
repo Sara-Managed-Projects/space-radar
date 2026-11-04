@@ -4490,7 +4490,8 @@ export const COPY = {
       "pathLm": "הירידה מצוירת לאחור מבסיס השלווה והמפגש הוא צורה; זמני האירועים הם של המשימה",
       "srcReport": "דו״ח משימת Apollo 11, NASA MSC-00171, 1969 (זמני אירועים, שיגור, נחיתה)",
       "srcJournal": "יומן הטיסה של Apollo 11, NASA (זמני אירועים עד השנייה)",
-      "srcClip": "המילים הראשונות של ארמסטרונג על הירח: הקלטה של NASA, נחלת הכלל, מ-Wikimedia Commons"
+      "srcClip": "המילים הראשונות של ארמסטרונג על הירח: הקלטה של NASA, נחלת הכלל, מ-Wikimedia Commons",
+      "srcLanding": "הודעת הנחיתה: הקלטה של NASA, נחלת הכלל, מ-Wikimedia Commons"
     },
     "artemis-ii": {
       "title": "Artemis II: סביב הירח",
