@@ -1066,7 +1066,7 @@ export function classLine(record, m) {
       // GP records carry `satrec` (an SGP4 element set), not `elements`; both are elements in
       // the sense this sentence means. MEASURED 2026-09-08: every satellite card said
       // "worked out rather than measured" with no age, the ISS included, on 19-hour-old data.
-      if (!record || !(record.elements || record.satrec)) return COPY.cls.inferredNoElements;
+      if (!record || !(record.elements || record.satrec || record.omm)) return COPY.cls.inferredNoElements; // `omm`: an element set read from tiles (data/tracked.js)
       if (!Number.isFinite(epoch) || !Number.isFinite(m.tMs)) return COPY.cls.inferredUnknownAge;
       return t(COPY.cls.inferred, ageParts(Math.max(0, m.tMs - epoch)));
     }

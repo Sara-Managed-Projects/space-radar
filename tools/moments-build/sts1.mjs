@@ -192,10 +192,10 @@ const SRB_EXIT = { 'srb-l': [[-6.782, 0, 0.076]], 'srb-r': [[6.782, 0, 0.076]] }
 const stackEv = (t, part, action, extra = {}) => ({ t, part, action, vehicle: 'stack', ...extra });
 const orbEv = (t, part, action, extra = {}) => ({ t, part, action, vehicle: 'columbia-up', ...extra });
 const col = (t, part, action, extra = {}) => ({ t, part, action, vehicle: 'columbia', ...extra });
-const ORB_PARTS = ['orbiter-body', 'bay-door-l', 'bay-door-r', 'bay-door-l-open', 'bay-door-r-open', 'gear-nose', 'gear-main-l', 'gear-main-r', 'bay-open-detail'];
+const ORB_PARTS = ['orbiter-body', 'bay-door-l', 'bay-door-r', 'bay-door-l-open', 'bay-door-r-open', 'gear-nose', 'gear-main-l', 'gear-main-r', 'bay-open-detail', 'dfi-pallet'];
 const parts = [];
 // on the pad and up: the doors shut and the gear up; the open doors and the gear are out of sight
-for (const p of ['bay-door-l-open', 'bay-door-r-open', 'bay-open-detail', 'gear-nose', 'gear-main-l', 'gear-main-r']) { parts.push(orbEv(-10, p, 'hide'), col(T_START, p, 'hide')); }
+for (const p of ['bay-door-l-open', 'bay-door-r-open', 'bay-open-detail', 'dfi-pallet', 'gear-nose', 'gear-main-l', 'gear-main-r']) { parts.push(orbEv(-10, p, 'hide'), col(T_START, p, 'hide')); }
 parts.push(col(T_START, 'bay-door-l-open', 'hide'));
 parts.push(orbEv(-6.6, 'orbiter-body', 'ignite', { rampS: 3 }));
 parts.push(stackEv(0, 'srb-l', 'ignite', { rampS: 0.3 }), stackEv(0, 'srb-r', 'ignite', { rampS: 0.3 }));
@@ -205,8 +205,8 @@ parts.push(stackEv(T_SRB, 'srb-l', 'separate', { dv: [-6, -2, 0.6], spin: [0.0, 
 parts.push(orbEv(T_MECO, 'orbiter-body', 'cutoff'));
 parts.push(stackEv(T_ET, 'tank', 'separate', { dv: [0, -0.5, -1.4], spin: [0.012, 0.004, 0.0] }));
 // in orbit: the doors open for the radiators, shut again before the burn home; the gear is lowered seconds before touchdown
-parts.push(col(T_DOORS_OPEN, 'bay-door-l', 'hide'), col(T_DOORS_OPEN, 'bay-door-r', 'hide'), col(T_DOORS_OPEN, 'bay-door-l-open', 'show'), col(T_DOORS_OPEN, 'bay-door-r-open', 'show'), col(T_DOORS_OPEN, 'bay-open-detail', 'show'));
-parts.push(col(T_DEORBIT - 1800, 'bay-door-l-open', 'hide'), col(T_DEORBIT - 1800, 'bay-door-r-open', 'hide'), col(T_DEORBIT - 1800, 'bay-open-detail', 'hide'), col(T_DEORBIT - 1800, 'bay-door-l', 'show'), col(T_DEORBIT - 1800, 'bay-door-r', 'show'));
+parts.push(col(T_DOORS_OPEN, 'bay-door-l', 'hide'), col(T_DOORS_OPEN, 'bay-door-r', 'hide'), col(T_DOORS_OPEN, 'bay-door-l-open', 'show'), col(T_DOORS_OPEN, 'bay-door-r-open', 'show'), col(T_DOORS_OPEN, 'bay-open-detail', 'show'), col(T_DOORS_OPEN, 'dfi-pallet', 'show'));
+parts.push(col(T_DEORBIT - 1800, 'bay-door-l-open', 'hide'), col(T_DEORBIT - 1800, 'bay-door-r-open', 'hide'), col(T_DEORBIT - 1800, 'bay-open-detail', 'hide'), col(T_DEORBIT - 1800, 'dfi-pallet', 'hide'), col(T_DEORBIT - 1800, 'bay-door-l', 'show'), col(T_DEORBIT - 1800, 'bay-door-r', 'show'));
 for (const p of ['gear-nose', 'gear-main-l', 'gear-main-r']) parts.push(col(T_LAND - 14, p, 'show'));
 parts.sort((a, b) => a.t - b.t);
 // the hide of the open doors at T_START must come before the show: sort is stable on time

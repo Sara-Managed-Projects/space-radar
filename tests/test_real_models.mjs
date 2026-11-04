@@ -460,6 +460,23 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
   // (The numbers 45344, 44204, 37763, 43005, 41549, 37846 and 41875 are from memory of the catalogue, not looked up: the lead confirms them or swaps in numbers it knows.)
   // The two existing checks that name 'BEIDOU-3 M1' (the `nav()` loop 'keeps a procedural navigation shape', and batch ten's 'does not reach') stay true: the first uses the
   // placeholder number 99300 (the name key still answers), the second only asks that no file of batch ten is worn.
+  // RELEASE 1.7.5, CRAFT PART A (public #963, #967, #971, #972): four astronomy satellites wear a file of their own as themselves, by NORAD number
+  // (read in the live saved catalogue of 2026-11-03): none was a generic shape with a name, and HXMT, which was the generic space telescope, no longer is.
+  for (const [norad, cat, name, file] of [[44874, 'CHEOPS', 'CHEOPS', 'cheops.glb'], [42758, 'HXMT (HUIYAN)', 'Insight-HXMT (Huiyan)', 'hxmt.glb'],
+    [60089, 'SVOM', 'SVOM', 'svom.glb'], [58753, 'EINSTEIN PROBE', 'Einstein Probe', 'einstein-probe.glb']]) {
+    const got = sat(norad, cat);
+    check(got && got.file === file && !got.build && got.colour === 'telescope' && got.name === name && !got.generic && got.made === 'dimensions' && got.axes === 'app',
+      `${cat} (${norad}) wears ${file} as itself: ${JSON.stringify(got)}`);
+  }
+  // None of the four files reaches another craft: each other, the other X-ray and gamma-ray telescopes, the Chinese science satellite DAMPE, debris with the name.
+  {
+    const craftFiles = ['cheops.glb', 'hxmt.glb', 'svom.glb', 'einstein-probe.glb'];
+    for (const [norad, cat, klass] of [[25989, 'XMM-NEWTON'], [28485, 'SWIFT'], [38358, 'NUSTAR'], [41173, 'DAMPE'], [57800, 'XRISM'], [41337, 'ASTRO-H (HITOMI)'],
+      [99998, 'CHEOPS DEB', 'debris'], [99997, 'HXMT (HUIYAN) DEB', 'debris'], [99996, 'SVOM DEB', 'debris'], [99995, 'EINSTEIN PROBE DEB', 'debris'], [90060, 'SVOM-X TEST SATELLITE']]) {
+      const got = sat(norad, cat, klass || 'satellite');
+      check(!got || !craftFiles.includes(got.file), `${cat} (${norad}) wears none of release 1.7.5's four telescope files: ${JSON.stringify(got)}`);
+    }
+  }
   // SWOT is JPL's OWN published model (public #952): its file, as itself, and NOT `made`: nobody here made it.
   {
     const swot = sat(54754, 'SWOT');

@@ -1,4 +1,6 @@
-// ui/trippics.js -- a trip's picture, under its card and over its intro (spec 0068 task 1).
+// ui/trippics.js -- a trip's picture, under its card and over its intro (spec 0068 task 1); and a Moment's, under its
+// card on the Moments shelf (release 1.7.7: the same lazy, gated picture, from site/images/moments/<id>.webp,
+// rendered by tools/moment-pictures.probe.js).
 //
 // Ivan, 2026-10-02: "tour cards should have in background picture for this tour (showing
 // explanation not only with text but image itself, should gradual image on the grid square)". One
@@ -26,6 +28,11 @@ export const PICTURE_DELAY_MS = 3000;
 /** Where a trip's picture is served from, relative to the page (index.html is at the site root). */
 export function tripPictureUrl(id) {
   return `images/trips/${encodeURIComponent(String(id || ''))}.webp`;
+}
+
+/** Where a Moment's picture is served from (moments/shelf.js). */
+export function momentPictureUrl(id) {
+  return `images/moments/${encodeURIComponent(String(id || ''))}.webp`;
 }
 
 const shown = new Set();
@@ -67,12 +74,12 @@ if (typeof window !== 'undefined') {
 }
 
 /**
- * The picture for trip `id`, as an <img> to lay under a card or over a sheet. It fetches nothing
+ * The picture at `url`, as an <img> to lay under a card or over a sheet. It fetches nothing
  * until the gate is open and it is on screen, then fades in (class `is-loaded`).
- * @param {string} id
+ * @param {string} url
  * @param {string} className
  */
-export function tripPicture(id, className) {
+function pictureAt(url, className) {
   const img = document.createElement('img');
   img.className = className;
   img.alt = '';
@@ -82,7 +89,6 @@ export function tripPicture(id, className) {
   img.draggable = false;
   img.width = 640;
   img.height = 360;
-  const url = tripPictureUrl(id);
   img.dataset.src = url;
   if (shown.has(url)) {
     img.classList.add('is-loaded');
@@ -96,4 +102,14 @@ export function tripPicture(id, className) {
     else waiting.add(img);
   });
   return img;
+}
+
+/** The picture for trip `id` (above). */
+export function tripPicture(id, className) {
+  return pictureAt(tripPictureUrl(id), className);
+}
+
+/** The picture for Moment `id` (above): the same gate, the same fade. */
+export function momentPicture(id, className) {
+  return pictureAt(momentPictureUrl(id), className);
 }

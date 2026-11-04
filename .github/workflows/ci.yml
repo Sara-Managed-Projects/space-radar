@@ -618,6 +618,12 @@ jobs:
       - name: "Voskhod 2 and STS-1: the times, the orbits, the landings, the models, the shelf, the night lamp and the four languages"
         run: node tests/test_moments_voskhod_sts1.mjs
       # 1.7.2: end
+      # 1.7.7: begin
+      # Release 1.7.7 (internal #1058, #867): part poses and carried riders in the Moments engine (the Hubble's arrays and the Canadarm), and the new stories'
+      # tests (tests/test_moment_stories.mjs, above).
+      - name: "Moments: part poses, carried riders, the shot's lookAt"
+        run: node tests/test_moments_pose.mjs
+      # 1.7.7: end
       - name: Satellite positions move and reject stale orbital elements
         run: node tests/test_sgp4.mjs
       - name: The scene says so when no satellite could be read
@@ -1279,6 +1285,14 @@ jobs:
       - name: "the packed exoplanets (site/data/exoplanets.bin) are the bundled table, to what a card prints, in 133 kB gzipped (release 1.5.0 stage A13, internal #1073)"
         run: node tests/test_exopack.mjs
       # 0079 a6: end
+      # 1.7.6 r177-sky: begin
+      - name: "A1 tiles, the harvester's half: the format round-trips on aligned columns, the same rows are the same bytes, levels cut by rank, the daily queue writes set.json last and keeps the last good set, and the tracked set drops what is not debris or not in orbit (release 1.7.6, internal #1059, #1069)"
+        run: python3 tests/test_tilecloud.py
+      - name: "A1 tiles, the page's half: a set the harvester wrote decodes to what set.json says, cuts the same HEALPix cells as the sky, finds an id and its name, loads level 0 first (alone under the latch, none on data-saver) and asks for nothing at boot (release 1.7.6, internal #1059)"
+        run: node tests/test_tilecloud.mjs
+      - name: "A9 tracked objects: 142 real element sets come back from tiles within 10 m of CelesTrak's own SGP4 for a week, merge into the debris layer, and the panel says how many dots are placed (release 1.7.6, internal #1069)"
+        run: node tests/test_tracked.mjs
+      # 1.7.6 r177-sky: end
       # 1.7.4 checks: begin
       - name: "no name is declared and never used: unused imports, consts, lets, functions and classes in site/js, tools, scripts and tests, with a list of known exceptions that may only shrink (public #1229)"
         run: node tests/test_lint.mjs

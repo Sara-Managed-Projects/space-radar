@@ -49,7 +49,7 @@ ROOT = Path(__file__).resolve().parent.parent
 CACHE = Path.home() / ".cache/spaceradar-src/small-lists"
 OUT = ROOT / "site/data/lists"
 AS_OF = "2026-10-28"
-UA = "SpaceRadar-build/1.5 (https://spaceradar.ai; sushkov.ivan91@gmail.com)"
+UA = "SpaceRadar-build/1.5 (https://spaceradar.ai; https://github.com/Sara-Managed-Projects/space-radar/issues)"
 
 SHOWERS_URL = "http://www.ta3.sk/IAUC22DB/MDC2022/Etc/streamestablisheddata2026.txt"
 MPC_URL = "https://www.minorplanetcenter.net/iau/lists/ObsCodes.html"

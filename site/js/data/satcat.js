@@ -246,6 +246,13 @@ export function fieldRecords(rows, opts = {}) {
   return out;
 }
 
+/**
+ * How many of the dots the debris layer drew are placed by their own element sets (data/tracked.js), told by
+ * the layer's loader (data/layers.js) and read by ui/debris.js for the sentence under the dots.
+ */
+export const FIELD_STATS = { placed: 0, total: 0, builtAt: null, level: null, levels: null };
+export function noteFieldStats(s) { Object.assign(FIELD_STATS, { placed: 0, total: 0, builtAt: null, level: null, levels: null }, s || {}); return FIELD_STATS; }
+
 // The launch dates of the catalogue last parsed, by catalogue number: kept so a satellite's card
 // can say "Up for 28 years" once the debris view has read the 1.5 MB file, without the card ever
 // asking for it (internal #127). Empty until then; the card falls back to the designator's year.
