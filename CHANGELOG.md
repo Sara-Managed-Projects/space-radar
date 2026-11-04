@@ -174,6 +174,39 @@ tagged, and their dates are the day the last change in each landed.
 
 - **No DESI wedge and no simulated filaments are drawn.** The gate above is the check; the data, the renderer and the looks at 1600 and 390 are
   still to build, so internal #826 and #828 stay open.
+## [1.7.19] - 2026-11-04
+
+### Changed
+
+- **The astronomical unit is written AU everywhere a visitor reads a distance** (public #1234). After #1217 made the star-system cards say AU,
+  the sentence under an object ("is 2.31 AU (346 million km) from the Earth right now"), the object and star-system pages a search engine
+  reads, the sample cards (Gonggong, 3I/ATLAS, Lucy), the oddities, the Helix, Dumbbell and Ring Nebula cards and four Lab pages still said
+  "au". A test now reads the files a visitor sees and refuses "au", "a.u." and "AUs". Other languages keep their own abbreviation.
+- **A way to report a wrong phrase in a translation** (public #1269). The French, German, Portuguese and the other drafts have no native
+  reader yet; `.github/ISSUE_TEMPLATE/mistranslation.yml` is a form for one wrong phrase (language, what it says, what a person would
+  say, where), linked from the README, CONTRIBUTING and docs/TRANSLATING.md. The aurora-forecast link on the Earth card was opened again
+  (NOAA SWPC's page for the OVATION model, which is the model the in-app aurora layer draws too) and its record in `registry/links.yaml`
+  says so (public #1232).
+
+### Fixed
+
+- **A reply of the wrong shape no longer replaces the data the browser holds, and a read of our own saved files can no longer hang** (public #1304).
+  A publisher's error page that is valid JSON (`{"error": "rate limited"}`), a number, a string, or rows without the fields the parser reads
+  used to be kept as the new copy of a feed; now each json feed is checked against the least its consumer needs (`shape` in
+  `site/js/data/sources.js`: the CelesTrak feeds, Launch Library, the people in space, GDACS, EONET, JPL's tables, the Kp forecast; the
+  others must at least be an object or a list) before it can replace the copy, from the publisher and from our own saved file. The manifest,
+  a saved file and its column twin are read within 20 seconds, as a publisher's reply already was; before, a hung one held the page until
+  the browser gave up and the publisher behind it was not asked.
+
+### Added
+
+- **Five new checks, no change to what a visitor sees** (public #1271, #1304, #1322, #555). Every trip of `registry/tours.yaml` is its own URL
+  in `sitemap.xml`, once, with a page of its own H1 and description. A read of the hourly copy that never answers, comes back empty, is cut off
+  or is not data, or is data of the wrong shape, leaves the copy the browser holds as it was, with its own time, marked old, with the reason, from the publisher and from our
+  own file (`tests/test_cache_keeps_last_good.mjs`). `scripts/check-phone-menu.mjs` opens a moon, a landing site and a long name at 320 and
+  390 px with a trail behind them and checks that no breadcrumb overlaps the More button, none is cut at the side, and the menu opens and
+  closes; it runs in the `ui` job of `screens.yml`. docs/RELEASING.md says how to run the Rich Results Test and the Schema Markup Validator
+  against the live pages after a deploy (a person runs them; no account or key is made for it).
 
 ## [1.7.8] - 2026-11-03
 

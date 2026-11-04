@@ -98,6 +98,9 @@ const EMPTY_RETRY_MS = 15 * MINUTE;
 const EMPTY_RETRY_STEPS = 4;
 // How long a live upstream fetch may take before it is abandoned. See fetchLive().
 const LIVE_TIMEOUT_MS = 20 * 1000;
+// The same limit for a read of our own saved files (the manifest, a snapshot, its column twin): a same-origin
+// request can hang on a dead edge just as a publisher's can, and the publisher is not asked until it has ended.
+const SNAPSHOT_TIMEOUT_MS = 20 * 1000;
 // Manifest statuses under which a snapshot FILE exists to read. `not-due` is here on purpose:
 // a 24 h source is due once in 48 runs and the file from the earlier run is still there.
 // `refused`, `error` and `skipped` are not: §4 says a snapshot that errored is one we do not have.
@@ -117,6 +120,9 @@ const SNAPSHOT_USABLE = new Set(['ok', 'not-modified', 'not-due']);
  * @property {string}  attribution      the credit line the card must carry
  * @property {string}  kind             'json' | 'text' | 'xml'
  * @property {string}  [registryId]     the row in registry/sources.yaml this implements
+ * @property {{array?: string[], object?: string[]}} [shape]  the least a json reply must be to replace the copy held:
+ *                                      `array`: an array whose first row is an object with these keys (none: any array);
+ *                                      `object`: an object in which each of these keys is an array. See wrongShape().
  * @property {string}  [note]
  */
 
@@ -133,6 +139,7 @@ export const SOURCES = {
     freshnessMaxMs: 48 * HOUR,
     browser: true,
     kind: 'json',
+    shape: { array: ['EPOCH', 'NORAD_CAT_ID'] },
     attribution: 'Orbital data: CelesTrak (T. S. Kelso)',
     note: '22 objects, 9.3 kB measured 2026-09-06.',
   },
@@ -148,6 +155,7 @@ export const SOURCES = {
     freshnessMaxMs: 72 * HOUR,
     browser: true,
     kind: 'json',
+    shape: { array: ['EPOCH', 'NORAD_CAT_ID'] },
     attribution: 'Orbital data: CelesTrak (T. S. Kelso)',
     note: '16 511 objects, 6 907 333 bytes measured 2026-09-06. Load only when asked.',
   },
@@ -161,6 +169,7 @@ export const SOURCES = {
     freshnessMaxMs: 24 * HOUR,
     browser: true,
     kind: 'json',
+    shape: { array: ['EPOCH', 'NORAD_CAT_ID'] },
     attribution: 'Orbital data: CelesTrak (T. S. Kelso)',
     note: "SpaceX's own elements, hours fresher than the tracked catalogue. 11 129 objects, 5.1 MB.",
   },
@@ -188,6 +197,7 @@ export const SOURCES = {
     freshnessMaxMs: 24 * HOUR,
     browser: true,
     kind: 'json',
+    shape: { array: ['EPOCH', 'NORAD_CAT_ID'] },
     attribution: 'Orbital data: CelesTrak (T. S. Kelso)',
     note: 'The active catalogue cut to the satellites the hand-kept list names, when our copy has the cut.',
   },
@@ -202,6 +212,7 @@ export const SOURCES = {
     freshnessMaxMs: 24 * HOUR,
     browser: true,
     kind: 'json',
+    shape: { array: ['EPOCH', 'NORAD_CAT_ID'] },
     attribution: 'Orbital data: CelesTrak (T. S. Kelso)',
     note: 'The active catalogue cut to the ring (data/parsers.js GEO_RING) when our copy has the cut: ' +
       'about 900 rows, 100 kB, instead of the 7 MB file.',
@@ -217,6 +228,7 @@ export const SOURCES = {
     freshnessMaxMs: 24 * HOUR,
     browser: true,
     kind: 'json',
+    shape: { array: ['EPOCH', 'NORAD_CAT_ID'] },
     attribution: 'Orbital data: CelesTrak (T. S. Kelso)',
     note: 'SpaceX\'s file cut to its latest launches, when our copy has the cut: the trains are drawn from those.',
   },
@@ -229,6 +241,7 @@ export const SOURCES = {
     freshnessMaxMs: 48 * HOUR,
     browser: true,
     kind: 'json',
+    shape: { array: ['EPOCH', 'NORAD_CAT_ID'] },
     attribution: 'Orbital data: CelesTrak (T. S. Kelso)',
     note: '157 objects, 65 kB measured 2026-09-06. The calm default: everything here is ' +
       'visible to the naked eye from a dark-enough place.',
@@ -242,6 +255,7 @@ export const SOURCES = {
     freshnessMaxMs: 48 * HOUR,
     browser: true,
     kind: 'json',
+    shape: { array: ['EPOCH', 'NORAD_CAT_ID'] },
     attribution: 'Orbital data: CelesTrak (T. S. Kelso)',
     note: '264 objects, 112 kB measured 2026-09-06.',
   },
@@ -273,6 +287,7 @@ export const SOURCES = {
     freshnessMaxMs: 12 * HOUR,
     browser: true,
     kind: 'json',
+    shape: { object: ['results'] },
     attribution: 'Launch data by The Space Devs',
     note: '15 requests per hour per IP, measured from the API\'s own /api-throttle/ endpoint. ' +
       'At most one call per page load. 30 detailed launches, 982 kB.',
@@ -305,6 +320,7 @@ export const SOURCES = {
     freshnessMaxMs: 6 * HOUR,
     browser: true,
     kind: 'json',
+    shape: { array: [] },
     attribution: 'Space weather: NOAA SWPC',
     note: '6.9 kB, 81 rows measured 2026-09-06.',
   },
@@ -324,6 +340,7 @@ export const SOURCES = {
     freshnessMaxMs: 24 * HOUR,
     browser: false,
     kind: 'json',
+    shape: { object: ['people'] },
     attribution: 'Who is in space: Open Notify',
     note: 'No https endpoint at all (TLS refused), so a page served over https cannot reach it ' +
       'even though it sends Access-Control-Allow-Origin `*`. Read from our snapshot only.',
@@ -335,18 +352,21 @@ export const SOURCES = {
     id: 'll2-stations', registryId: 'll2-stations', label: 'Launch Library 2 — stations and docked vehicles', publisher: 'The Space Devs',
     url: 'https://ll.thespacedevs.com/2.3.0/space_stations/?status=1&mode=detailed',
     cadenceMs: 6 * HOUR, freshnessMaxMs: 48 * HOUR, browser: false, kind: 'json',
+    shape: { object: ['results'] },
     attribution: 'Launch data by The Space Devs',
   },
   'll2-astronauts': {
     id: 'll2-astronauts', registryId: 'll2-astronauts', label: 'Launch Library 2 — people in space', publisher: 'The Space Devs',
     url: 'https://ll.thespacedevs.com/2.3.0/astronauts/?in_space=true&limit=30',
     cadenceMs: 6 * HOUR, freshnessMaxMs: 48 * HOUR, browser: false, kind: 'json',
+    shape: { object: ['results'] },
     attribution: 'Launch data by The Space Devs',
   },
   'll2-previous': {
     id: 'll2-previous', registryId: 'll2-previous', label: 'Launch Library 2 — launches that happened', publisher: 'The Space Devs',
     url: 'https://ll.thespacedevs.com/2.3.0/launches/previous/?limit=30',
     cadenceMs: 6 * HOUR, freshnessMaxMs: 48 * HOUR, browser: false, kind: 'json',
+    shape: { object: ['results'] },
     attribution: 'Launch data by The Space Devs',
   },
 
@@ -362,6 +382,7 @@ export const SOURCES = {
     freshnessMaxMs: 12 * HOUR,
     browser: true,
     kind: 'json',
+    shape: { object: ['features'] },
     attribution: 'Tropical cyclones: GDACS, European Commission Joint Research Centre (CC BY 4.0)',
     note: '27.6 kB, the newest 20 storms, measured 2026-09-28. GDACS calls its information "purely indicative".',
   },
@@ -379,6 +400,7 @@ export const SOURCES = {
     freshnessMaxMs: 12 * HOUR,
     browser: true,
     kind: 'json',
+    shape: { object: ['events'] },
     attribution: 'Fires, volcanoes and sea ice: NASA EONET',
     note: '69 kB for both lists before they were ours, measured 2026-10-09.',
   },
@@ -392,6 +414,7 @@ export const SOURCES = {
     freshnessMaxMs: 12 * HOUR,
     browser: true,
     kind: 'json',
+    shape: { object: ['events'] },
     attribution: 'Fires, volcanoes and sea ice: NASA EONET',
   },
   'swpc-solar-regions': {
@@ -510,6 +533,7 @@ export const SOURCES = {
     freshnessMaxMs: 168 * HOUR,
     browser: false,
     kind: 'json',
+    shape: { object: ['fields', 'data'] },
     attribution: 'Orbits: NASA/JPL Small-Body Database',
     note: NO_CORS_REASON + ' Read from our snapshot; sampleAsteroids() stands in only when that is missing.',
   },
@@ -523,6 +547,7 @@ export const SOURCES = {
     freshnessMaxMs: 168 * HOUR,
     browser: false,
     kind: 'json',
+    shape: { object: ['fields', 'data'] },
     attribution: 'Orbits: NASA/JPL Small-Body Database',
     note: NO_CORS_REASON + ' Replaces the Minor Planet Center’s CometEls.txt, which did ' +
       'allow a direct fetch; JPL does not, so the comets layer is snapshot-only and shows ' +
@@ -551,6 +576,7 @@ export const SOURCES = {
     freshnessMaxMs: 168 * HOUR,
     browser: false,
     kind: 'json',
+    shape: { object: ['fields', 'data'] },
     attribution: 'Close approaches: NASA/JPL CNEOS',
     // Which asteroids are "passing by" this month. Paired with jpl-sbdb-neo, which has their
     // orbits; parsers.js parseNeoApproaches joins the two.
@@ -1281,6 +1307,8 @@ async function fetchLive(src, prev, attemptAt) {
       if (payload == null || (Array.isArray(payload) && payload.length === 0)) {
         error = 'The server answered, but with nothing in it.';
         payload = null;
+      } else if ((error = wrongShape(src, payload))) {
+        payload = null;
       }
     }
   } catch (e) {
@@ -1341,10 +1369,10 @@ function ensureIndex() {
 async function fetchIndex() {
   let httpStatus = null;
   try {
-    const response = await fetch(SNAPSHOT_INDEX_URL, { credentials: 'omit' });
-    httpStatus = response.status;
-    if (!response.ok) throw new Error(`The server answered ${response.status}.`);
-    const doc = JSON.parse(await response.text());
+    const got = await ourFile(SNAPSHOT_INDEX_URL);
+    httpStatus = got.status;
+    if (!got.ok) throw new Error(`The server answered ${got.status}.`);
+    const doc = JSON.parse(got.text);
     if (!doc || doc.schema !== SNAPSHOT_SCHEMA || !doc.snapshots || typeof doc.snapshots !== 'object') {
       throw new Error(`The snapshot index is not schema ${SNAPSHOT_SCHEMA}.`);
     }
@@ -1391,12 +1419,10 @@ async function readSnapshot(src) {
 
   let httpStatus = null;
   try {
-    const response = await fetch(SNAPSHOT_BASE + encodeURIComponent(rid) + '.json', {
-      credentials: 'omit',
-    });
-    httpStatus = response.status;
-    if (!response.ok) return { ok: false, httpStatus, why: 'unreadable' };
-    const file = JSON.parse(await response.text());
+    const got = await ourFile(SNAPSHOT_BASE + encodeURIComponent(rid) + '.json');
+    httpStatus = got.status;
+    if (!got.ok) return { ok: false, httpStatus, why: 'unreadable' };
+    const file = JSON.parse(got.text);
     if (!file || file.schema !== SNAPSHOT_SCHEMA || file.body == null) {
       return { ok: false, httpStatus, why: 'unreadable' };
     }
@@ -1404,7 +1430,7 @@ async function readSnapshot(src) {
     // body that arrived as text is parsed here so the parser sees exactly what a live fetch gives.
     let body = file.body;
     if (src.kind === 'json' && typeof body === 'string') body = JSON.parse(body);
-    if (body == null || body === '' || (Array.isArray(body) && body.length === 0)) {
+    if (body == null || body === '' || (Array.isArray(body) && body.length === 0) || wrongShape(src, body)) {
       return { ok: false, httpStatus, why: 'unreadable' };
     }
     const fetchedAt = Date.parse(file.fetched_at || row.fetched_at);
@@ -1428,21 +1454,65 @@ async function readColumns(src, row) {
   const twin = row.columns;
   if (src.kind !== 'json' || !twin || typeof twin.path !== 'string' || !/^[\w.-]+\.cols\.json$/.test(twin.path)) return null;
   try {
-    const response = await fetch(SNAPSHOT_BASE + encodeURIComponent(twin.path), { credentials: 'omit' });
-    if (!response.ok) return null;
-    const file = JSON.parse(await response.text());
+    const got = await ourFile(SNAPSHOT_BASE + encodeURIComponent(twin.path));
+    if (!got.ok) return null;
+    const file = JSON.parse(got.text);
     if (!file || file.schema !== SNAPSHOT_SCHEMA) return null;
     // The twin of THIS publish, not a file an edge kept from the last one: the manifest row and
     // the file must agree on when the publisher was read and on how many rows there are.
     if ((file.fetched_at || null) !== (row.fetched_at || null) || file.rows !== twin.rows) return null;
     const { decodeColumns } = await import('./columnar.js');
     const body = decodeColumns(file);
+    if (wrongShape(src, body)) return null; // the verbatim file is read instead
     const fetchedAt = Date.parse(file.fetched_at);
     if (!Number.isFinite(fetchedAt)) return null;
     const validUntil = Date.parse(file.valid_until || row.valid_until);
-    return { ok: true, body, fetchedAt, validUntil: Number.isFinite(validUntil) ? validUntil : null, httpStatus: response.status, why: null };
+    return { ok: true, body, fetchedAt, validUntil: Number.isFinite(validUntil) ? validUntil : null, httpStatus: got.status, why: null };
   } catch {
     return null;
+  }
+}
+
+/**
+ * Why a reply must not replace the copy held, or null when it may. A reply that parsed is not yet the data: a
+ * publisher's error page can be JSON ({"error": "rate limited"}), and so can a number or a string. A json source needs
+ * an object or an array, and its `shape` (the keys its consumer, data/parsers.js, reads before it reads anything else);
+ * any other kind needs some text. Pure: tests/test_cache_keeps_last_good.mjs.
+ * @param {Source} src
+ * @param {*} payload  what the reply parsed to (json) or its text
+ * @returns {string|null}
+ */
+export function wrongShape(src, payload) {
+  if (src.kind !== 'json') return typeof payload === 'string' && payload.trim() !== '' ? null : 'The server answered, but with no text in it.';
+  if (payload === null || typeof payload !== 'object') return 'The server answered, but not with data: ' + (payload === null ? 'null' : typeof payload) + '.';
+  const shape = src.shape;
+  if (!shape) return null;
+  if (shape.array) {
+    if (!Array.isArray(payload)) return 'The server answered with an object where a list belongs.';
+    const first = payload[0];
+    const missing = shape.array.filter((k) => !first || typeof first !== 'object' || !(k in first));
+    if (missing.length) return 'The server answered, but its rows lack ' + missing.join(', ') + '.';
+  }
+  if (shape.object) {
+    if (Array.isArray(payload)) return 'The server answered with a list where an object belongs.';
+    const missing = shape.object.filter((k) => !Array.isArray(payload[k]));
+    if (missing.length) return 'The server answered, but without the list ' + missing.join(', ') + '.';
+  }
+  return null;
+}
+
+/**
+ * GET a file of ours and read it whole within SNAPSHOT_TIMEOUT_MS: the timer runs until the body is in, so a response
+ * that stalls half way ends too. Rejects (AbortError) when it runs out; callers already treat any throw as "unreadable".
+ */
+async function ourFile(url) {
+  const abort = new AbortController();
+  const timer = setTimeout(() => abort.abort(), SNAPSHOT_TIMEOUT_MS);
+  try {
+    const response = await fetch(url, { credentials: 'omit', signal: abort.signal });
+    return { status: response.status, ok: response.ok, text: response.ok ? await response.text() : '' };
+  } finally {
+    clearTimeout(timer);
   }
 }
 

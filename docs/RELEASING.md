@@ -61,6 +61,34 @@ request when possible.
    off**, and make sure the Earth has satellites. If it does not, delete the release and the tag,
    fix, and tag again; do not leave a broken zip for a teacher to find.
 
+## After a deploy that changes a page's structured data
+
+The pages carry JSON-LD (the home page, the trips, the object pages, the Lab, and the question pages: the ISS, Starlink,
+planets tonight, the star systems, the events, the teachers' page). `tests/test_structured_data.py` and
+`scripts/check_seo.py` hold the fields offline, and each validator in them is shown to refuse a broken page. Two outside
+validators read what Google and schema.org read, from the live address, and are run by a person: neither has an interface a
+script can use without an account or a key, and none is created for this.
+
+1. List the live addresses by kind (needs only `curl` and `python3`):
+
+   ```bash
+   curl -fsS https://www.spaceradar.ai/sitemap.xml | python3 -c '
+   import re, sys
+   urls = re.findall(r"<loc>([^<]+)</loc>", sys.stdin.read())
+   kind = lambda u: "trip" if "/t/" in u else "object" if "/o/" in u else "lab" if "/lab/" in u else "other"
+   for k in ("other", "trip", "object", "lab"):
+       print("##", k); print("\n".join(u for u in urls if kind(u) == k))' | less
+   ```
+
+   Check every address under `other` (the question pages), and one or two of each other kind.
+2. Open [the Rich Results Test](https://search.google.com/test/rich-results) and [the Schema Markup Validator](https://validator.schema.org/),
+   choose "URL", paste an address, and run it. If either asks you to sign in, stop there and say so on the issue.
+3. Write down, per address, the types found and every error or warning with its message, and put the list on
+   [issue #555](https://github.com/Sara-Managed-Projects/space-radar/issues/555). Errors are fixed in
+   `scripts/seo_common.py`, `scripts/seo_pages.py`, `scripts/build_seo.py` or `scripts/gen_trip_pages.py` (the pages are generated, never
+   edited by hand), together with a check in `tests/test_structured_data.py` that would have caught it. A warning for a field
+   Google lists as optional (a price, a review) is left alone and noted.
+
 ## What is in the zip, and what is not
 
 In: `site/` as served, with `site/sw.js` stamped (so the copy works offline after one visit) and

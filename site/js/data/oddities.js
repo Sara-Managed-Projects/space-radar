@@ -56,7 +56,7 @@ export const ODDITIES = [
     "myths": [
       {
         "claim": "it is heading for the asteroid belt",
-        "correction": "its furthest point from the Sun is 1.66 au and the belt starts near 2.1 au. It does cross Mars's orbit, but it will never meet the planet.",
+        "correction": "its furthest point from the Sun is 1.66 AU and the belt starts near 2.1 AU. It does cross Mars's orbit, but it will never meet the planet.",
         "source": "CNBC and Space.com, 8 February 2018, correcting the launch-day statement"
       },
       {

@@ -89,7 +89,7 @@ const el=t=>DEL*seg(t,T0,T1),th=t=>(20+4.5*t)*D2R,mmss=s=>Math.floor(s/60)+':'+S
 const ep=t=>{if(t<=T1){const a=th(t);return[SX+RO*Math.cos(a),SY+RO*Math.sin(a)]}const a=th(T1),v=4.5*D2R*RO,q=t-T1;return[SX+RO*Math.cos(a)-Math.sin(a)*v*q,SY+RO*Math.sin(a)+Math.cos(a)*v*q]};
 const SIM={dur:12.6,reveal:10,hook:'THE SUN VANISHES.|NOTHING HAPPENS.',
  honest:'Gap and sideways motion exaggerated. Gravity changes travel at light speed (general relativity).',
- line(){return`Light needs ${mmss(DEL)} to cross 1 au, so if the Sun vanished we would see it and keep orbiting for ${Math.floor(DEL/60)} min ${Math.round(DEL%60)} s. Earth moves ${Math.round(VE*DEL).toLocaleString('en-US')} km meanwhile.`},
+ line(){return`Light needs ${mmss(DEL)} to cross 1 AU, so if the Sun vanished we would see it and keep orbiting for ${Math.floor(DEL/60)} min ${Math.round(DEL%60)} s. Earth moves ${Math.round(VE*DEL).toLocaleString('en-US')} km meanwhile.`},
  draw(c,t){
   const on=1-ease(seg(t,T0-.2,T0+.2)),e=el(t),p=ep(t),r=rev(t),fr=(t-T0)/(T1-T0),a0=th(0);
   c.strokeStyle='rgba(255,255,255,.18)';c.lineWidth=3;c.beginPath();c.arc(SX,SY,RO,5*D2R,88*D2R);c.stroke();
