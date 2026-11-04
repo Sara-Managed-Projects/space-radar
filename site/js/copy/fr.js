@@ -3872,6 +3872,7 @@ Object.assign(COPY, {
     "cutNote": "Pour l’instant, les étages sont découpés dans un seul modèle.",
     "drawnNote": "Les flammes et la vapeur sont dessinées.",
     "groundNote": "Le sol près du pas de tir est illustratif ; carte de la Terre Solar System Scope, CC BY 4.0.",
+    "groundNoteMars": "Le sol près du site est illustratif ; carte de Mars Solar System Scope, CC BY 4.0.",
     "keys": "Espace lance ou met en pause, les flèches avancent, Échap ferme"
   },
   "momentShelf": {
@@ -3913,6 +3914,16 @@ Object.assign(COPY, {
         "title": "STS-1",
         "when": "du 12 au 14 avril 1981",
         "blurb": "La première navette spatiale : Columbia depuis le pas de tir 39A, les propulseurs et le réservoir, 54 heures en orbite et un vol plané jusqu’au lac asséché d’Edwards."
+      },
+      "curiosity-edl": {
+        "title": "Atterrissage de Curiosity",
+        "when": "6 août 2012",
+        "blurb": "Les sept minutes du haut de l'air martien au cratère Gale : le bouclier thermique, le parachute, le sac à dos fusée et la grue céleste, à l'heure du JPL."
+      },
+      "new-horizons-pluto": {
+        "title": "New Horizons à Pluton",
+        "when": "14 juillet 2015",
+        "blurb": "La première visite de Pluton : de six heures avant au passage à 13,8 km/s, sur la trajectoire du JPL, Pluton et Charon en disques, le croissant laissé derrière."
       },
       "hubble-deployment": {
         "title": "Le largage de Hubble",

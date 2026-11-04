@@ -212,6 +212,8 @@ export function validateMoment(m, opts = {}) {
   const need = (key, where) => { if (words && (typeof key !== 'string' || !(key in words))) say(`${where}: no words for ${JSON.stringify(key)}`); };
   need('title', 'title');
   need('blurb', 'blurb');
+  // 1.7.9: the world the moment is played on (the Earth when it says nothing).
+  if (m.world !== undefined && !['earth', 'mars', 'pluto'].includes(m.world)) say(`world must be earth, mars or pluto, not ${JSON.stringify(m.world)}`);
   const place = m.place || {};
   if (!isNum(place.lat) || Math.abs(place.lat) > 90 || !isNum(place.lon) || Math.abs(place.lon) > 180) say('place needs lat and lon in degrees');
   if (place.ground && !GROUNDS.includes(place.ground.kind)) say(`place.ground.kind must be one of ${GROUNDS.join(', ')}`);
@@ -233,7 +235,8 @@ export function validateMoment(m, opts = {}) {
     } else if (tr.kind === 'vectors') {
       const rows = tr.rows;
       if (!tr.file && (!Array.isArray(rows) || rows.length < 2 || !rows.every((r) => isVec(r, 7)))) say(`trajectory ${id}: rows are [t, x, y, z, vx, vy, vz] in km and km/s, or a file`);
-      if (!['earth-j2000', 'earth-teme'].includes(tr.frame)) say(`trajectory ${id}: frame must be earth-j2000 or earth-teme`);
+      // 1.7.9: `world` is rows already in the moment's own world's frame (z its pole, x its node on the ICRF equator: moments/world.js)
+      if (!['earth-j2000', 'earth-teme', 'world'].includes(tr.frame)) say(`trajectory ${id}: frame must be earth-j2000, earth-teme or world`);
     } else say(`trajectory ${id}: kind must be profile or vectors`);
   }
   // Vehicles and their parts.

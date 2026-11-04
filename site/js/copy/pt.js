@@ -3858,6 +3858,7 @@ Object.assign(COPY, {
     "cutNote": "Por enquanto, os estágios são recortados de um único modelo.",
     "drawnNote": "As chamas e o vapor são desenhados.",
     "groundNote": "O chão perto da plataforma é ilustrativo; mapa da Terra do Solar System Scope, CC BY 4.0.",
+    "groundNoteMars": "O chão perto do local é ilustrativo; mapa de Marte do Solar System Scope, CC BY 4.0.",
     "keys": "Espaço reproduz ou pausa, as setas avançam, Esc fecha"
   },
   "momentShelf": {
@@ -3899,6 +3900,16 @@ Object.assign(COPY, {
         "title": "STS-1",
         "when": "de 12 a 14 de abril de 1981",
         "blurb": "O primeiro ônibus espacial: o Columbia a partir da plataforma 39A, os foguetes e o tanque, 54 horas em órbita e uma planagem até o leito seco de Edwards."
+      },
+      "curiosity-edl": {
+        "title": "Pouso do Curiosity",
+        "when": "6 de agosto de 2012",
+        "blurb": "Os sete minutos do alto do ar marciano até a cratera Gale: o escudo térmico, o paraquedas, a mochila foguete e o guindaste celeste, no relógio do JPL."
+      },
+      "new-horizons-pluto": {
+        "title": "New Horizons em Plutão",
+        "when": "14 de julho de 2015",
+        "blurb": "A primeira visita a Plutão: de seis horas antes à passagem a 13,8 km/s, pela trajetória do próprio JPL, Plutão e Caronte como discos, o crescente que fica para trás."
       },
       "hubble-deployment": {
         "title": "A liberação do Hubble",

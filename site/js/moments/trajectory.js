@@ -20,11 +20,35 @@ import { geodeticToEcef, gmst, j2000ToTeme } from '../propagate/frames.js';
 import { horizonsSamples, horizonsToUtcMs } from '../data/parsers.js';
 import { monotoneCubic } from './format.js';
 
-/** The round Earth a profile is laid over, metres (IUGG mean radius). */
-export const EARTH_R = 6371008.8;
-export const MU = 3.986004418e14;
-/** The Earth's rotation, rad/s. */
-export const OMEGA = 7.2921159e-5;
+/**
+ * THE WORLD A MOMENT PLAYS ON (release 1.7.9). Every Moment before it was the Earth's; Curiosity's landing is Mars's. The names below
+ * keep their old spelling (`EARTH_R`, `MU`, `OMEGA`) because a dozen places read them, but they are live bindings: `setWorld('mars')`
+ * (the player calls it for a moment with `world: "mars"`, before it builds anything) turns them into that world's round radius, pull and
+ * turn. `airH` is the air's scale height (m): the stage's sky, haze and flames read it. Mars: the radius of the ground at Gale crater's landing
+ * site, 3 391.1 km (NASA's Mars Science Laboratory press kit: the entry interface at 3 522.2 km from the centre is 131.1 km over it; the mean
+ * radius is 3 389.5 km), the GM of NASA's Mars fact sheet, and its sidereal day.
+ */
+export const WORLDS = {
+  earth: { id: 'earth', R: 6371008.8, MU: 3.986004418e14, OMEGA: 7.2921159e-5, airH: 8000, rimM: 70000 },
+  mars: { id: 'mars', R: 3391100, MU: 4.282837e13, OMEGA: 7.0882181e-5, airH: 11100, rimM: 30000 },
+  // Pluto (release 1.7.9): the IAU mean radius, its GM alone (NASA/JPL: 869.6 km^3/s^2), the rotation is retrograde (6.387 d). Almost no air to
+  // draw (its haze is a thin blue limb, seen by New Horizons to 130 km), so the scale height is a metre and the limb glow stays. Charon stands above
+  // longitude 0 on the equator at 19 591 km (the two are locked to each other): `moon` is what the stage draws in the Moon's place.
+  pluto: { id: 'pluto', R: 1188300, MU: 8.696e11, OMEGA: -1.13856e-5, airH: 1, rimM: 90000,
+    moon: { id: 'charon', R: 606000, aM: 19591000, map: '2k_charon_nh_colour.webp' } },
+};
+export let WORLD = WORLDS.earth;
+/** The round Earth a profile is laid over, metres (IUGG mean radius); the world's radius once `setWorld` has been called. */
+export let EARTH_R = WORLD.R;
+export let MU = WORLD.MU;
+/** The world's rotation, rad/s (the Earth's by default). */
+export let OMEGA = WORLD.OMEGA;
+/** Choose the world the next moment is played on (`earth` when `id` is not a world). */
+export function setWorld(id) {
+  WORLD = WORLDS[id] || WORLDS.earth;
+  EARTH_R = WORLD.R; MU = WORLD.MU; OMEGA = WORLD.OMEGA;
+  return WORLD;
+}
 const DEG = Math.PI / 180;
 
 export const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
@@ -38,7 +62,9 @@ export const norm = (a) => { const l = len(a) || 1; return [a[0] / l, a[1] / l, 
 /** A place on the Earth as a local frame: its position (ECEF, metres, WGS84) and east, north, up unit vectors. */
 export function placeFrame(place) {
   const lat = place.lat * DEG, lon = place.lon * DEG;
-  const p = geodeticToEcef(lat, lon, (place.alt || 0) / 1000);
+  // The Earth is the WGS84 ellipsoid; another world is its round radius (the profile paths are laid over that sphere).
+  const p = WORLD.id === 'earth' ? geodeticToEcef(lat, lon, (place.alt || 0) / 1000)
+    : { x: (WORLD.R + (place.alt || 0)) * Math.cos(lat) * Math.cos(lon) / 1000, y: (WORLD.R + (place.alt || 0)) * Math.cos(lat) * Math.sin(lon) / 1000, z: (WORLD.R + (place.alt || 0)) * Math.sin(lat) / 1000 };
   const sl = Math.sin(lat), cl = Math.cos(lat), so = Math.sin(lon), co = Math.cos(lon);
   return {
     ecef: [p.x * 1000, p.y * 1000, p.z * 1000],
@@ -61,9 +87,9 @@ export function fixedToInertial(v, g) {
   return [v[0] * c - v[1] * s, v[0] * s + v[1] * c, v[2]];
 }
 
-/** Greenwich sidereal angle at mission second t of a moment whose T-0 is epochMs. */
-export function siderealAt(epochMs, t) {
-  return gmst(epochMs + t * 1000);
+/** Greenwich sidereal angle at mission second t of a moment whose T-0 is epochMs; on another world, `turn(ms)` is that world's prime meridian angle. */
+export function siderealAt(epochMs, t, turn = null) {
+  return turn ? turn(epochMs + t * 1000) : gmst(epochMs + t * 1000);
 }
 
 /**
