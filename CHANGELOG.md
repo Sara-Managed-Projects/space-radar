@@ -11,6 +11,56 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [1.7.9] - 2026-11-03
+
+### Added
+
+- **Curiosity's entry, descent and landing, 6 August 2012, as a Moment: the seven minutes.** From 30 seconds before the Martian air to the descent
+  stage's crash, on JPL's own clock (entry at 05:10:45.7 UTC, the parachute at 05:15:04.9, the heat shield at 05:15:24.6, the rover let go of
+  the stage at 05:17:38.6, touchdown at 05:17:57.3, 431.6 s after the entry; the signal reached the Earth 13 min 48 s later). The heights
+  and speeds are NASA's press kit's typical case: the entry at 131 km over the landing site's ground at 5.9 km/s, the parachute at 11 km and 405
+  m/s, the heat shield off at 8 km and 125 m/s, the back shell off at 1.6 km and 80 m/s with the eight landing engines lit, the rover let go at about 20
+  m, 7.6 m of bridle, touchdown at about 0.75 m/s, the stage coming down some 650 m away. Between them the path is ours and says so: a point mass
+  on a round Mars that the generator searches (an entry angle and a lift) until it is at the published height and speed at the published second
+  (it finds 15.2 degrees, the figure the mission reports, and a peak deceleration of 9.7 g at 85 s, where the press kit has about +90 s); the
+  heading is ours; the back shell's drift, the heat shield's fall and the stage's flyaway are illustrative. The closing caption quotes "Touchdown
+  confirmed. We're safe on Mars!" (Allen Chen, JPL). No sound plays (no recording of the room has a clear free licence).
+- **New Horizons at Pluto, 14 July 2015, as a Moment: from six hours out to forty minutes after.** The path is JPL Horizons' (the repository's
+  own file of it, which follows JPL's track to a few kilometres), turned into Pluto's frame: 12 488 km over the surface at 13.78 km/s, the
+  approach over the lit side, the craft over the night side from the pass, Pluto a crescent as it looks back, Charon about 14 minutes after Pluto
+  and 29 000 km away. T-0 is the second Horizons has the craft nearest Pluto, 11:48:29 UT (read again through Horizons' API on 3 November: its range
+  rate changes sign between 11:48 and 11:49); NASA's timetable has the closest approach at 11:49:57 UTC, 88 seconds later, and the captions give both and
+  say the two are not reconciled. Charon is drawn above longitude 0 on Pluto's equator at 19 591 km (the two keep one face to each other): ours. The
+  "phone home" signal at 00:53 UTC on 15 July closes it. Pluto's thin haze is not drawn: only the planet's rim glows.
+- **Another world for the Moments engine.** A moment may say `world: "mars"` or `"pluto"`: `moments/trajectory.js` `setWorld` turns the radius, the
+  pull, the rotation and the scale height the paths and the falling parts read into that world's, and `moments/world.js` gives the frame (the
+  pole and the prime meridian from astronomy-engine's `RotationAxis`, the IAU report's elements) and the Sun seen from it. The stage draws that
+  world's map, a butterscotch sky and rust-and-pebble ground on Mars (the Sun is 36 degrees up at touchdown, mid-afternoon at Gale as the press kit
+  says), no sky and a blue rim on Pluto, and Charon in the Moon's place. A vectors path may be in `world` frame; a vehicle may say `marker: false`;
+  the new effect `tether` draws a cord from each of several points on one vehicle to the matching points on another (Curiosity's bridle). docs/MOMENTS.md.
+- **The aeroshell and the descent stage of the Mars Science Laboratory, built from NASA's numbers and photographs** (`msl-entry`: the 4.5 m heat
+  shield of charcoal tiles and the white back shell with its plugs, hatch and parachute canister, 6 236 triangles; `msl-descent-stage`: the beam frame
+  with six gold tanks, four pods of two landing engines, the mast and the rover's struts, 7 798 triangles), in `tools/msl-builder/` on the Vostok builder's
+  part library. NASA publishes no model of either (NASA 3D Resources and science.nasa.gov, read 3 November: the rover and InSight's cruise stage and lander
+  only); the rover is NASA's own Curiosity model, as before. Each row says what was cited and what was read off a photograph (no drawing with dimensions
+  of the back shell or the stage was found: illustrative to about ten per cent).
+- **Both are on the shelf**, with "Replay this moment" on Gale crater's card (Curiosity), on Pluto's and Charon's and on New Horizons'; the card words are in
+  es, fr, de and pt (machine-drafted) and in English in the six newer languages. The shelf's note no longer counts the stories.
+- Two look probes, `moments-curiosity` and `moments-newhorizons`.
+- **Their shelf pictures**: the sky crane lowering the rover (second 420) and the probe passing a lit Pluto (second -12), rendered by the app with `tools/moment-pictures.probe.js`.
+
+### Changed
+
+- The foot line of a Moment names what it draws on a Mars moment (`groundNoteMars`), and the "drawn" sentence names parachutes and the glow of an entry.
+
+### Not done
+
+- **The cruise stage** (let go ten minutes before the entry, so it is before the first frame), **the two tungsten ballast drops and the back shell's thruster
+  firings** are in the captions and not drawn. The rover is drawn with its wheels down all the way (NASA's model is one pose: the real wheels folded until
+  just before touchdown). The parachute is a drawn canopy of 16 m on lines of 50 m, not NASA's colours or its gores' pattern.
+- **The 88 seconds** between Horizons' and NASA's times for New Horizons' closest approach are not explained here.
+- **Words**: the two stories' words are English until a translator has them; only the shelf's cards are translated.
+
 ## [1.7.8] - 2026-11-03
 
 ### Added

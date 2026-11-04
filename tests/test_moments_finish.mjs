@@ -100,7 +100,7 @@ for (const code of ['es', 'fr', 'de', 'pt']) {
     }
     for (const [path] of have) if (!leaves(en, `${section}.`).some(([p]) => p === path)) check(false, `${code}: ${path} has no English`);
   }
-  check(n === 432, `${code}: all 432 strings of the Moments are covered (${n})`);
+  check(n === 439, `${code}: all 439 strings of the Moments are covered (${n})`);
 }
 // The stories hand their words to the language hook once they are in COPY; the lines said in the recordings stay in their own language.
 for (const f of ['vostok', 'apollo11', 'artemis2', 'apollo13', 'sputnik', 'voskhod', 'sts1', 'hubble', 'falcon9']) {

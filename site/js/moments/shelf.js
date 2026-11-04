@@ -29,6 +29,8 @@ export const SHELF = [
   { id: 'apollo-13', minutes: 14, picture: 286300, records: ['saturn-v-lc-39a'], hue: '210, 40, 70', models: ['saturn-v', 'apollo-csm', 'lunar-module'] },
   { id: 'sts-1', minutes: 15, picture: 60, records: ['saturn-v-lc-39a', 'edwards-afb-runway-23'], hue: '36, 12, 90', models: ['shuttle-sts-stack', 'shuttle-orbiter'] },
   { id: 'artemis-ii', minutes: 11, picture: 20, records: ['shuttle-lc-39b'], hue: '36, 64, 100', models: ['sls-block1', 'orion-esm'] },
+  { id: 'curiosity-edl', minutes: 6, picture: 420, records: ['gale'], hue: '18, 62, 48', models: ['msl-entry', 'msl-descent-stage', 'curiosity'] },
+  { id: 'new-horizons-pluto', minutes: 6, picture: -12, pictureTop: 0.5, records: ['pluto', 'charon', 'deep-new-horizons'], hue: '224, 28, 46', models: ['new-horizons'] },
   { id: 'vostok-1', minutes: 5, picture: 4700, records: ['baikonur-site-1', 'vostok-1-landing'], hue: '100, 50, 40', models: ['r7-8k72k', 'vostok-3ka', 'vostok-seat'] },
   { id: 'sputnik-1', minutes: 4, picture: 1500, records: ['baikonur-site-1'], hue: '210, 14, 60', models: ['r7-8k72k', 'sputnik-1'] },
   { id: 'hubble-deployment', minutes: 7, picture: 111909, records: ['shuttle-lc-39b', 'sat-20580'], hue: '40, 56, 96', models: ['hubble-sts31', 'shuttle-orbiter', 'shuttle-rms'] },
@@ -63,6 +65,8 @@ const VEHICLES = [
   { id: 'vostok-1', rocket: /^(vostok(-k|-2m)?|r-7(\b|$)|8k72k)/i, craft: /^vostok( ?1| 3ka|\b)/i },
   { id: 'apollo-11', rocket: /^saturn ?(v|5)\b/i, craft: /^(apollo[ -](cs?m|command|service)|lunar module|apollo lunar module)/i },
   { id: 'apollo-13', rocket: /^saturn ?(v|5)\b/i, craft: /^(apollo[ -](cs?m|command|service)|lunar module|apollo lunar module)/i },
+  { id: 'curiosity-edl', rocket: /(?!)/, craft: /^(curiosity|mars science laboratory|msl)\b/i },
+  { id: 'new-horizons-pluto', rocket: /(?!)/, craft: /^new horizons\b/i },
   { id: 'artemis-ii', rocket: /^(space launch system|sls)\b/i, craft: /^orion\b/i },
 ];
 const CRAFT_LAYERS = new Set(['launches', 'stations', 'notable', 'active', 'deep-space', 'just-launched']);

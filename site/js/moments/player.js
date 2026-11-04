@@ -27,12 +27,13 @@ import { icon } from '../ui/icons.js';
 import { write as writeUrl, clear as clearUrl } from '../ui/urlstate.js';
 import { worldPositionKm } from '../propagate/body.js';
 import { paceTable, playOf, missionOf, rateAt, compressionText, formatMet, chapterAt, captionAt, crossed, isMomentId, shareHash, parseT, lastAt } from './format.js';
-import { tilt, OMEGA, MOON_R, moonAxes, moonSurfaceDir, placeFrame, profileTrack, vectorTrack, fromHorizons, enuToEcef, fixedToInertial, siderealAt, attitude, ballistic, spinBasis, fromBasis, add, scale, norm, len, cross, dot, EARTH_R } from './trajectory.js';
+import { tilt, OMEGA, MOON_R, moonAxes, moonSurfaceDir, placeFrame, profileTrack, vectorTrack, fromHorizons, enuToEcef, fixedToInertial, siderealAt, attitude, ballistic, spinBasis, fromBasis, add, scale, norm, len, cross, dot, EARTH_R, WORLD, setWorld } from './trajectory.js';
+import { worldTurn, sunFromWorld } from './world.js';
 import { directAt, freePose, poseAngles } from './director.js';
 import { createStage, eciToThree } from './stage.js';
 import { loadVehicle, disposeVehicle } from './vehicles.js';
 import { partPoseAt, carrierAt, quatColumns, poseKeys } from './pose.js';
-import { createExhaustCloud } from './effects.js';
+import { createTether, createExhaustCloud } from './effects.js';
 
 const DATA = new URL('../../data/moments/', import.meta.url);
 const W = () => COPY.momentPlayer;
@@ -117,6 +118,7 @@ export function createMomentPlayer(ctx, opts = {}) {
   let stage = null;
   let vehicles = new Map();// id -> { spec, v (loaded), events: Map(part -> list) }
   let clouds = [];
+  let tethers = [];
   let t = 0, p = 0, playing = false, lastNow = 0;
   let free = null;         // a visitor's own camera { az, el, dist }
   let ui = null;
@@ -332,6 +334,7 @@ export function createMomentPlayer(ctx, opts = {}) {
     }
   }
 
+  let turnFn = null;
   let truthLead = null;
   function paintTruth() {
     const lead = leadAt(t);
@@ -343,7 +346,7 @@ export function createMomentPlayer(ctx, opts = {}) {
     if (v && v.v && v.v.split === 'cuts') parts.push(W().cutNote);
     parts.push(W().drawnNote);
     // Each piece is a sentence of its own.
-    if (m.place && m.place.ground) parts.push(W().groundNote);
+    if (m.place && m.place.ground) parts.push(m.world === 'mars' && W().groundNoteMars ? W().groundNoteMars : W().groundNote);
     ui.foot.textContent = parts.join(' ');
   }
 
@@ -373,6 +376,9 @@ export function createMomentPlayer(ctx, opts = {}) {
     words = (COPY.momentStories && COPY.momentStories[m.words || m.id]) || {};
     table = paceTable(m.pace);
     epochMs = Date.parse(m.epoch);
+    // 1.7.9: a moment on another world (`world: "mars"`): its radius, pull, turn, Sun and map, before anything is built on it.
+    setWorld(m.world || 'earth');
+    turnFn = m.world && m.world !== 'earth' ? worldTurn(m.world) : null;
     frame = placeFrame(m.place);
     curFrame = frame;
     curPlace = m.place;
@@ -399,6 +405,12 @@ export function createMomentPlayer(ctx, opts = {}) {
       const c = createExhaustCloud({ from: fx.t, to: fx.until, axis: [a[0], a[2], -a[1]], count: Math.round((fx.count || 400) * (tier() === 0 ? 0.4 : tier() > 1 ? 1.5 : 1)) });
       stage.placeGroup.add(c.group);
       clouds.push({ fx: c, fire: fx.fire ? { part: fx.fire, vehicle: fx.vehicle } : null });
+    }
+    for (const fx of m.tracks.effects || []) {
+      if (fx.effect !== 'tether') continue;
+      const tf = createTether({ count: (fx.from.at || [[0, 0, 0]]).length, colour: fx.colour });
+      stage.scene.add(tf.group);
+      tethers.push({ fx: tf, spec: fx });
     }
     title();
     buildChapters();
@@ -623,7 +635,7 @@ export function createMomentPlayer(ctx, opts = {}) {
   }
 
   function drawFrame() {
-    const g = siderealAt(epochMs, t);
+    const g = siderealAt(epochMs, t, turnFn);
     const tMs = epochMs + t * 1000;
     if (placesList.length) {
       let pick = { place: m.place, frame };
@@ -631,12 +643,19 @@ export function createMomentPlayer(ctx, opts = {}) {
       if (pick.place !== curPlace) { curPlace = pick.place; curFrame = pick.frame; stage.setPlace(curPlace, curFrame); }
     }
     const still = reducedMotion();
-    const s = worldPositionKm('sun', tMs, 'earth-inertial');
-    const sunDir = s ? norm(eciToThree([s.x, s.y, s.z])) : [1, 0, 0];
-    const mo = worldPositionKm('moon', tMs, 'earth-inertial');
-    const moonPos = mo ? eciToThree([mo.x * 1000, mo.y * 1000, mo.z * 1000]) : null;
-    const mAxes = mo ? moonAxes([mo.x, mo.y, mo.z]) : null;
-    const moonAx = mAxes ? { x: eciToThree(mAxes.x), y: eciToThree(mAxes.y), z: eciToThree(mAxes.z) } : null;
+    const s = turnFn ? null : worldPositionKm('sun', tMs, 'earth-inertial');
+    const sunDir = turnFn ? norm(eciToThree(sunFromWorld(m.world, tMs))) : s ? norm(eciToThree([s.x, s.y, s.z])) : [1, 0, 0];
+    const mo = turnFn ? null : worldPositionKm('moon', tMs, 'earth-inertial');
+    let moonPos = mo ? eciToThree([mo.x * 1000, mo.y * 1000, mo.z * 1000]) : null;
+    let mAxes = mo ? moonAxes([mo.x, mo.y, mo.z]) : null;
+    let moonAx = mAxes ? { x: eciToThree(mAxes.x), y: eciToThree(mAxes.y), z: eciToThree(mAxes.z) } : null;
+    if (turnFn && WORLD.moon) {
+      // 1.7.9: Charon stands above longitude 0 on Pluto's equator, its face toward Pluto, its pole Pluto's (the two keep one face to each other)
+      const q = fixedToInertial([WORLD.moon.aM, 0, 0], g);
+      const x = norm(scale(q, -1)), z = [0, 0, 1], y = cross(z, x);
+      moonPos = eciToThree(q);
+      moonAx = { x: eciToThree(x), y: eciToThree(y), z: eciToThree(z) };
+    }
     const siteDir = mAxes && m.moonSite ? eciToThree(moonSurfaceDir(mAxes, m.moonSite.lat, m.moonSite.lon)) : null;
     // Vehicles: where each stands now, in the stage's frame.
     poses = new Map();
@@ -760,6 +779,14 @@ export function createMomentPlayer(ctx, opts = {}) {
         }
       }
     }
+    // 1.7.9: tethers: cords from points on one vehicle to points on another, while the effect's seconds run.
+    for (const th of tethers) {
+      const a = poses.get(th.spec.from.vehicle), b = poses.get(th.spec.to.vehicle);
+      const on = a && b && t >= th.spec.t && t <= th.spec.until && inWindow(vehicles.get(th.spec.from.vehicle).spec, t) && inWindow(vehicles.get(th.spec.to.vehicle).spec, t);
+      if (!on) { th.fx.set(null); continue; }
+      const rel = (ps, p) => { const w = add(ps.pos, fromBasis(ps.basis, p)); return [w[0] - origin[0], w[1] - origin[1], w[2] - origin[2]]; };
+      th.fx.set(th.spec.from.at.map((p) => rel(a, p)), th.spec.to.at.map((p) => rel(b, p)));
+    }
     // The steam at the pad, in the place's own axes.
     if (clouds.length) {
       const sunLocal = [sunDir[0] * placeNow.e[0] + sunDir[1] * placeNow.e[1] + sunDir[2] * placeNow.e[2], sunDir[0] * placeNow.u[0] + sunDir[1] * placeNow.u[1] + sunDir[2] * placeNow.u[2], sunDir[0] * placeNow.s[0] + sunDir[1] * placeNow.s[1] + sunDir[2] * placeNow.s[2]];
@@ -803,7 +830,7 @@ export function createMomentPlayer(ctx, opts = {}) {
   }
 
   function swapLight(sunDir, centre, origin, flood = 0) {
-    const keys = ['uSunDir', 'uShineCentre', 'uShineRadius', 'uShadeRadius', 'uFlood', 'uAirH', 'uSunRim'];
+    const keys = ['uSunDir', 'uShineCentre', 'uShineRadius', 'uShadeRadius', 'uFlood', 'uAirH', 'uSunRim', 'uRimShade'];
     const saved = {};
     for (const k of keys) { const u = lightU[k]; if (!u) continue; saved[k] = u.value && u.value.clone ? u.value.clone() : u.value; }
     if (lightU.uSunDir) lightU.uSunDir.value.set(sunDir[0], sunDir[1], sunDir[2]);
@@ -812,6 +839,8 @@ export function createMomentPlayer(ctx, opts = {}) {
     if (lightU.uShadeRadius) lightU.uShadeRadius.value = EARTH_R;
     if (lightU.uFlood) lightU.uFlood.value = flood;
     if (lightU.uAirH) lightU.uAirH.value = 0;
+    // 1.7.9: the rim the dark side of a model catches is the Earth's blue air; on Mars it is the dust's
+    if (WORLD.id === 'mars' && lightU.uRimShade && lightU.uRimShade.value.set) lightU.uRimShade.value = lightU.uRimShade.value.clone().set('#b88f6c');
     return saved;
   }
   function restoreLight(saved) {
@@ -871,7 +900,10 @@ export function createMomentPlayer(ctx, opts = {}) {
     for (const entry of vehicles.values()) disposeVehicle(entry.v);
     vehicles = new Map();
     for (const c of clouds) c.fx.dispose();
+    for (const th of tethers) th.fx.dispose();
+    tethers = [];
     clouds = [];
+    setWorld('earth');
     if (stage) stage.dispose();
     stage = null;
     m = null;
