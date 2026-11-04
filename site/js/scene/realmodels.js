@@ -2266,8 +2266,3 @@ export function loadRealModel(entry, { keepMaterials = false } = {}) {
   cache.set(key, promise);
   return promise;
 }
-
-/** How many distinct files have been asked for. The status panel can show it. */
-export function loadedCount() {
-  return cache.size;
-}

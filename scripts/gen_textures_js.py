@@ -57,4 +57,4 @@ MIRROR = Mirror(source="registry/textures.yaml", target="site/js/data/textures.j
                 render=render, what="textures.js")
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

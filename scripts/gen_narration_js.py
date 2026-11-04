@@ -61,4 +61,4 @@ HEADER = """// GENERATED from registry/narration.yaml by scripts/gen_narration_j
 MIRROR = Mirror(source="registry/narration.yaml", target="site/js/data/narration.js", header=HEADER, render=render, what="narration.js")
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

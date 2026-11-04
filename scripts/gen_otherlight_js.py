@@ -40,4 +40,4 @@ HEADER = """// GENERATED from registry/otherlight.yaml by scripts/gen_otherlight
 MIRROR = Mirror(source="registry/otherlight.yaml", target="site/js/data/otherlight.js", header=HEADER, render=render, what="otherlight.js")
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

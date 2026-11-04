@@ -1129,7 +1129,6 @@ Object.assign(COPY, {
       timeStripAria: 'The sky’s time: drag, or use the arrow keys, ten minutes a step',
       timeAt: '{time} · {phase}',
       timePhases: { day: 'day', golden: 'low Sun', civil: 'civil twilight', nautical: 'nautical twilight', astronomical: 'last twilight', night: 'night' },
-      timeNoNight: 'It does not get dark here tonight.',
       timeFar: 'No satellites this far from today: their orbits go stale.',
       // The eyepiece (internal #351): three round fields through a telescope.
       eyepiece: 'Eyepiece',

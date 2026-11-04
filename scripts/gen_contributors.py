@@ -137,7 +137,21 @@ def render(prs):
     return "\n".join(lines)
 
 
+USAGE = """usage: python3 scripts/gen_contributors.py [--from-json FILE] [--stdout]
+  Writes CONTRIBUTORS.md from the merged pull requests GitHub lists (needs `gh`, signed in or GH_TOKEN).
+  --from-json FILE  read the pull requests from a saved list instead of asking GitHub
+  --stdout          print the file instead of writing it"""
+
+
 def main(argv):
+    if "--help" in argv or "-h" in argv:
+        print(USAGE)
+        return 0
+    # The word after --from-json is its file, not an option.
+    unknown = [a for i, a in enumerate(argv) if a not in ("--stdout", "--from-json") and not (i and argv[i - 1] == "--from-json")]
+    if unknown:
+        print(f"unknown option: {unknown[0]}\n{USAGE}", file=sys.stderr)
+        return 2
     if "--from-json" in argv:
         prs = json.loads(Path(argv[argv.index("--from-json") + 1]).read_text(encoding="utf-8"))
     else:

@@ -61,4 +61,4 @@ HEADER = """// GENERATED from registry/layers.yaml by scripts/gen_layers_js.py. 
 MIRROR = Mirror(source="registry/layers.yaml", target="site/js/data/layers.registry.js", header=HEADER, render=render, what="layers.registry.js")
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

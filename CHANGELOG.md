@@ -142,6 +142,29 @@ tagged, and their dates are the day the last change in each landed.
 - **`docs/RUN_LOCALLY.md`** shows what "Address already in use" prints, from a real run, and what to do (public #1014).
 - **`tools/README.md`** has the "How long it takes" section of the trip-video guide, and one command each for `cdp.mjs` and `sheet-png.mjs`; **`CONTRIBUTING.md`** shows how to run one Python
   test (public #609, #711, #719, #727).
+## [1.7.13] - 2026-11-04
+
+### Changed
+
+- **Every generator answers `--help`.** `python3 scripts/gen_aliases_js.py --help` (41 generators in all: the 34 that share `scripts/_genmirror.py`, and `gen_rockets_js.py`, `gen_sources_json.py`,
+  `gen_modulepreload.py`, `gen_home_seo.py`, `gen_contributors.py`, `build-skystars.py`, `build-galaxy.py`) prints a usage and exits 0 instead of rewriting a tracked file, and a mistyped flag
+  (`--chek`) prints `unknown option` and the usage on stderr and exits 2. `--check` and the no-argument run are as before. 37 lines leave `tests/cli_usage_gaps.txt`;
+  `tests/test_generator_help.mjs` holds it.
+- `scripts/build-galaxy.py` has a `--check` (CI runs it), so `site/data/galaxy.bin` can no longer drift from the script.
+- Error messages say what was found and what to do: `build-skystars.py` (the path, the four bytes it found, how to make the right file), `build-skycultures.py`'s boundary reader (the bytes found; the
+  leftover count), `build-exoplanets.py` (which file lacks columns, `pull with --pull`), `build-moon-shapes.py` (how many grid points are empty and where the first is), `bake-own-colours.mjs` (the
+  file and the likely causes) and `scripts/_png_text.mjs` (the first eight bytes; the length).
+
+### Removed
+
+- Names nothing used: `TICK_PX` (`ui/hud.js`), `sunDirection` (`propagate/body.js`), `subSolarPoint` (`scene/earth.js`), `loadedCount` (`scene/realmodels.js`), `systemById` (`scene/systems.js`),
+  `ascentPath` (`propagate/ascent.js`), `disposeGlyphAtlas` (`scene/glyphatlas.js`) and `setNavigator` in `tests/test_share.mjs`.
+- Three strings nothing read, in English and in every translation: `card.oftenSaidLabel`, `card.notApplicable` and `tonight.skybar.timeNoNight`.
+
+### Fixed
+
+- The comment that describes `ctx.setStage` sits above it again (it had been left above the colour key).
+- `resetPlaces()` in `sky/overplace.js` has a test (`tests/test_overplace.mjs`): forget, a failed load that leaves nothing behind, a load that builds the places anew.
 
 ## [1.7.7] - 2026-11-03
 

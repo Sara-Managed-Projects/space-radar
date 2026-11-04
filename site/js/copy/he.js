@@ -761,8 +761,6 @@ export const COPY = {
     "couldNotLook": "לא הצלחנו לחשב את זה",
     "nobodyKnows": "אף אחד לא יודע",
     "wouldNeed": "זה ידרוש {wouldNeed}.",
-    "oftenSaidLabel": "אומרים הרבה",
-    "notApplicable": "לא משהו שיש לאובייקט הזה",
     "endedLine": "המשימה שלו הסתיימה ב-{date}. האירועים שלו, למטה, חוזרים עד אליה.",
     "pathEndedLine": "המסלול ש-JPL מחזיק עבורו נגמר ב-{date}. האירועים שלו, למטה, חוזרים עד אליו.",
     "pathBeginsLine": "המסלול ש-JPL מחזיק עבורו מתחיל ב-{date}. האירועים שלו, למטה, חוזרים עד אליו.",
@@ -2708,7 +2706,6 @@ export const COPY = {
         "astronomical": "דמדומים אחרונים",
         "night": "לילה"
       },
-      "timeNoNight": "לא נהיה חשוך כאן הלילה.",
       "timeFar": "אין לוויינים כל כך רחוק מהיום: המסלולים שלהם מתיישנים.",
       "eyepiece": "עינית",
       "eyepieces": {

@@ -754,8 +754,6 @@ export const COPY = {
     "couldNotLook": "تعذر حساب هذا",
     "nobodyKnows": "لا أحد يعرف",
     "wouldNeed": "سيحتاج الأمر إلى {wouldNeed}.",
-    "oftenSaidLabel": "يُقال كثيرًا",
-    "notApplicable": "هذا ليس مما يخص هذا الجرم",
     "endedLine": "انتهت مهمته في {date}. أحداثه، أدناه، تعود إليه.",
     "pathEndedLine": "ينتهي المسار الذي يحتفظ به JPL له في {date}. أحداثه، أدناه، تعود إليه.",
     "pathBeginsLine": "يبدأ المسار الذي يحتفظ به JPL له في {date}. أحداثه، أدناه، تعود إليه.",
@@ -2701,7 +2699,6 @@ export const COPY = {
         "astronomical": "الشفق الأخير",
         "night": "ليل"
       },
-      "timeNoNight": "لا يحل الظلام هنا الليلة.",
       "timeFar": "لا أقمار اصطناعية على هذا البعد من اليوم: مداراتها تتقادم.",
       "eyepiece": "العدسة العينية",
       "eyepieces": {

@@ -2119,12 +2119,6 @@ export async function boot({ setStatus } = {}) {
 
 
   /**
-   * Make a world the centre of the map (spec 0006 req 5, spec 0028 req 2). The stage's floating
-   * origin moves to it, its neighbourhood draws at true scale, and the camera is told the new
-   * ground. Offered from the world card; not yet done on every select, because the Now moment's
-   * sky view still assumes Earth underfoot.
-   */
-  /**
    * Colour every dot by a key (spec 0026 req 11): registry/colorkeys.yaml's rows through
    * data/colorkeyrules.js. `class` (or an unknown id) puts the class colours back. Layers that load
    * later pick the key up in setRecords through the same function.
@@ -2149,6 +2143,12 @@ export async function boot({ setStatus } = {}) {
   ctx.confidence = () => (confidenceClasses ? [...confidenceClasses] : null);
   // 0077 W3-e: end
 
+  /**
+   * Make a world the centre of the map (spec 0006 req 5, spec 0028 req 2). The stage's floating
+   * origin moves to it, its neighbourhood draws at true scale, and the camera is told the new
+   * ground. Offered from the world card; not yet done on every select, because the Now moment's
+   * sky view still assumes Earth underfoot.
+   */
   ctx.setStage = (stageId) => {
     if (!STAGES[stageId] || stage.worldId === stageId) return false;
     // A world, or a rung of the ladder (stellar, galaxy, local-group: registry/stages.yaml). A rung

@@ -147,7 +147,7 @@ def main(argv: list[str]) -> int:
         reader = csv.DictReader(fh)
         missing = [c for c in COLUMNS if c not in (reader.fieldnames or [])]
         if missing:
-            raise SystemExit(f"source lacks columns {missing}")
+            raise SystemExit(f"{src} lacks columns {missing}; pull with --pull")
         out.write(f"# NASA Exoplanet Archive pscomppars, as of {as_of}; slimmed by scripts/build-exoplanets.py\n")
         w = csv.writer(out, lineterminator="\n")
         w.writerow(COLUMNS)

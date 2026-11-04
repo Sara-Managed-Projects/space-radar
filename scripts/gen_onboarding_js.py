@@ -47,4 +47,4 @@ HEADER = """// GENERATED from registry/onboarding.yaml by scripts/gen_onboarding
 MIRROR = Mirror(source="registry/onboarding.yaml", target="site/js/data/onboarding.js", header=HEADER, render=render, what="onboarding.js")
 
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    sys.exit(MIRROR.main())

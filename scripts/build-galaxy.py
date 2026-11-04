@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """An ILLUSTRATIVE Milky Way -- site/data/galaxy.bin (spec 0028 step 6).
 
-    python3 scripts/build-galaxy.py
+    python3 scripts/build-galaxy.py            write it
+    python3 scripts/build-galaxy.py --check    exit 1 if the checked-in file is not what this script writes
 
 Nobody has a picture of our galaxy from outside. What exists are measurements: the distance to the
 centre, the fitted spiral arms, the disc's size, a debated bar. This script turns those numbers into
@@ -37,6 +38,7 @@ from __future__ import annotations
 import math
 import random
 import struct
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -90,7 +92,8 @@ def arm_radius(beta_deg, beta_kink, r_kink, psi_lt, psi_gt):
     return r_kink * math.exp(-math.radians(beta_deg - beta_kink) * math.tan(math.radians(psi)))
 
 
-def main() -> int:
+def build() -> tuple[bytes, int]:
+    """The bytes of galaxy.bin and the number of points in them."""
     rnd = random.Random(SEED)
     pts = []  # (x, y, z galactocentric kpc, kind, weight)
 
@@ -139,8 +142,32 @@ def main() -> int:
         hx, hy, hz = gx + R0_KPC, gy, gz
         x, y, z = gal_to_ecl(hx, hy, hz)
         out += struct.pack("<fffBBH", x, y, z, kind, w, 0)
-    OUT.write_bytes(out)
-    print(f"galaxy: {len(pts)} points, seed {SEED} -> {OUT.stat().st_size} B")
+    return bytes(out), len(pts)
+
+
+USAGE = """usage: python3 scripts/build-galaxy.py [--check]
+  Writes site/data/galaxy.bin, the illustrative Milky Way, from a fixed seed.
+  --check  write nothing; exit 1 if the checked-in file is not what this script writes"""
+
+
+def main() -> int:
+    argv = sys.argv[1:]
+    if "--help" in argv or "-h" in argv:
+        print(USAGE)
+        return 0
+    unknown = [a for a in argv if a != "--check"]
+    if unknown:
+        print(f"unknown option: {unknown[0]}\n{USAGE}", file=sys.stderr)
+        return 2
+    data, n = build()
+    if "--check" in argv:
+        if not OUT.exists() or OUT.read_bytes() != data:
+            print(f"build-galaxy: {OUT.relative_to(ROOT)} is out of date (run python3 scripts/build-galaxy.py)")
+            return 1
+        print(f"build-galaxy: {OUT.relative_to(ROOT)} is current ({n} points, seed {SEED})")
+        return 0
+    OUT.write_bytes(data)
+    print(f"galaxy: {n} points, seed {SEED} -> {len(data)} B")
     return 0
 
 

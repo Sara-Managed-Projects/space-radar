@@ -754,8 +754,6 @@ export const COPY = {
     "couldNotLook": "无法算出",
     "nobodyKnows": "没有人知道",
     "wouldNeed": "那需要 {wouldNeed}。",
-    "oftenSaidLabel": "常见的说法",
-    "notApplicable": "这类天体没有这一项",
     "endedLine": "它的任务已于 {date} 结束。下面列出的事件，都可以追溯到那时。",
     "pathEndedLine": "JPL 保存的它的轨迹，到 {date} 为止。下面列出的事件，都可以追溯到那时。",
     "pathBeginsLine": "JPL 保存的它的轨迹，从 {date} 开始。下面列出的事件，都可以追溯到那时。",
@@ -2701,7 +2699,6 @@ export const COPY = {
         "astronomical": "天文曙暮光",
         "night": "夜晚"
       },
-      "timeNoNight": "今晚这里天不会黑。",
       "timeFar": "离今天这么远，没有卫星：它们的轨道数据已经过期。",
       "eyepiece": "目镜",
       "eyepieces": {

@@ -157,7 +157,7 @@ def build_bounds(path: Path) -> bytes:
 
 def read_bounds(buf: bytes) -> list:
     if buf[:4] != b"SRCB":
-        raise ValueError("not a boundary file")
+        raise ValueError(f"not a boundary file: it starts with {buf[:4]!r}, expected b'SRCB'")
     _, count = struct.unpack_from("<HH", buf, 4)
     o, out = 8, []
     for _ in range(count):
@@ -170,7 +170,7 @@ def read_bounds(buf: bytes) -> list:
             pts.append((ra / 65536 * 360, dec / 32767 * 90))
         out.append(pts)
     if o != len(buf):
-        raise ValueError("boundary file has trailing bytes")
+        raise ValueError(f"boundary file has {len(buf) - o} trailing bytes after its last border ({len(buf)} bytes in all)")
     return out
 
 

@@ -498,9 +498,3 @@ export function getGlyphAtlas() {
   cached = tex;
   return cached;
 }
-
-/** Drop the cached texture (a page teardown; the tests). */
-export function disposeGlyphAtlas() {
-  if (cached) cached.dispose();
-  cached = null;
-}
