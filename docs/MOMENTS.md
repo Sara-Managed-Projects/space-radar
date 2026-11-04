@@ -120,6 +120,39 @@ longitude 0 of Pluto's equator (the two keep one face to each other), no sky, a 
 frame (`newhorizons.mjs` reads the repository's file of JPL Horizons' track about Pluto and writes them). A shot's `wide` with `look: "earth-moon"` frames the world
 and its moon (the names are the Earth's and kept).
 
+**Release 1.7.7 notes.** Three additions to the engine, all in `site/js/moments/pose.js` (pure maths, tested without a browser):
+
+- Part action `pose`: `{t, part, action: "pose", about: [x, y, z], pos: [x, y, z], quat: [x, y, z, w], scale: [x, y, z], ease?: "smooth"}`, one KEYFRAME of the
+  part's own pose in the vehicle's frame (metres): the point `about` stays, the part is scaled along the vehicle's axes, turned by the unit quaternion and
+  moved by `pos`. Between two keyframes of a part it is linear, or smooth when the later one says `ease: "smooth"`; before the first it holds the first.
+  Hubble's arrays unroll by a scale along the tube; the arm's links turn about their joints.
+- `rideOn.keys`: `[{t, at, quat}]`, where a rider is in its host's axes second by second (the telescope lifted out of the bay on the arm). `at` and `quat` are
+  interpolated like a pose; the static `at` and `spin` are ignored when there are keys.
+- A camera shot's `lookAt: [x, y, z]`, metres in the vehicle's own axes, looks there instead of `lookY` up the axis (an open bay is not on an orbiter's axis).
+
+`hubble.mjs` (tools/moments-build) makes the STS-31 Moment `hubble-deployment`: Discovery on a circular orbit, the Canadarm (`shuttle-rms`) reaching the grapple
+fixture of the telescope (`hubble-sts31`) by a two-link arm's inverse kinematics at every keyframe, the telescope on a carrier that follows the arm's end, and,
+from the release, on its own path. Only the release (19:38 UTC, 25 April 1990) is a published clock; the others are ours, and the Moment says so.
+
+**A Falcon 9 flight (release 1.7.7, internal #867).** `tools/moments-build/falcon9-flight.mjs` makes a whole Falcon 9 launch and landing on its own event clock from a
+flight RECORD; `falcon9-og2-2.mjs` (the first landing, ORBCOMM OG2 Mission 2, 22 December 2015 UTC) is the first record and the model of the next. To add a flight:
+
+1. Copy `falcon9-og2-2.mjs` to `falcon9-<mission>.mjs` and change the record: `id`, `wordsFile`, `epoch` (lift-off, UTC), the `pad` (its row in registry/sites.yaml, azimuth and
+   the shore), the `landing` place (a landing zone; a drone ship is a place at sea: `shoreM` far off and `pad: true` left out of its ground), `events` (the published seconds: tower
+   clear, Mach 1, max Q, MECO, separation, second stage ignition, fairing, boostback start, the entry burn's start and end, the landing burn's start, touchdown) and `meco` (the
+   published height and speed at cut-off, and the path angle you choose), the camera, the captions and the chapters. Every number you cannot cite stays in `sources` as ours.
+2. Write the words in `site/js/copy/en.moments.<wordsFile>.js` with the same keys as `en.moments.falcon9.js` (the captions you name, `pathAscent`, `pathBooster`, `pathStage2`,
+   the sources), add the story to the shelf in `site/js/moments/shelf.js` (its pad and landing zone, and `craft` the launch record's name can match) and its card in
+   `en.moments.js`, then a test block in `tests/test_moment_stories.mjs` (copy the Falcon 9 one: the clock, MECO, the landing on its place, at rest).
+3. Run `node tools/moments-build/falcon9-<mission>.mjs`: the builder prints what it found (the ascent's fit to MECO, the boostback's length, the landing burn's largest thrust and
+   the miss at touchdown) and writes the Moment and its two paths. The ascent is a profile fitted to the published MECO; the first stage's return is flown as a point mass by a
+   search for the boostback's strength and a landing burn that is a polynomial guidance to the landing place at the published second, so a flight whose events do not fit one another
+   shows it there (a landing burn needing more than about 3 g, or a stage under the ground).
+
+What it draws: the two models `falcon9-stage1` (nine engines, four legs and four fins as parts the Moment poses) and `falcon9-upper` (the second stage and the two fairing halves),
+the pad's flame trench and steam, a round Landing Zone (`ground.pad: "landing"`: a pad 86 m across with a painted ring and X) and, because a night launch is dark, `floodlit: true`
+(a lamp on the vehicle at every height and a little lift on the ground, said in the path's sentence on the foot line).
+
 ## Tracks
 
 **`parts`**: `{t, part, action, vehicle?}`: at second `t`, the part named `part` does `action`. `vehicle` defaults to the lead. The actions:

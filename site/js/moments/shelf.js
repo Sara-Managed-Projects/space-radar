@@ -7,23 +7,35 @@
 //               asks `momentFor(record id)`; cards are never on a first visit either).
 //   THE LINK    `#moment=<id>&t=<seconds>`, which `replayHash` writes and the player's own Share button copies.
 // The words are COPY.momentShelf (copy/en.moments.js). The list is the stories' ids, how long each takes to watch
-// and the records each is about: a pad, a landing site, the craft's rocket.
+// and the records each is about: a pad, a landing site, the craft's rocket. The shelf looks like the trips above it
+// (ui/explore.js paintTrips): a picture under every card (site/images/moments/<id>.webp, fetched lazily and after the first
+// visit, ui/trippics.js), four cards, then "All {n} moments" / "Fewer moments".
 
 import { COPY } from '../copy/en.js';
 import '../copy/en.moments.js';
 import { shareHash } from './format.js';
+import { momentPicture } from '../ui/trippics.js';
 
-/** The stories, in the order the shelf shows them. `minutes` is the play time; `records` are the ids a card can carry the story on. */
+/** How many cards the shelf shows before "All {n} moments" (the trips show four too). */
+export const MOMENTS_SHOWN = 4;
+
+/**
+ * The stories, in the order the shelf shows them. `minutes` is the play time; `records` are the ids a card can carry the story on;
+ * `picture` is the mission second its card's picture is rendered at (tools/moment-pictures.probe.js, scripts/build_trip_thumbs.py
+ * --moments): a story added here names its second and is rendered by the same command.
+ */
 export const SHELF = [
-  { id: 'apollo-11', minutes: 11, records: ['saturn-v-lc-39a', 'apollo-11'], hue: '96, 64, 30', models: ['saturn-v', 'apollo-csm', 'lunar-module'] },
-  { id: 'apollo-13', minutes: 14, records: ['saturn-v-lc-39a'], hue: '210, 40, 70', models: ['saturn-v', 'apollo-csm', 'lunar-module'] },
-  { id: 'sts-1', minutes: 15, records: ['saturn-v-lc-39a', 'edwards-afb-runway-23'], hue: '36, 12, 90', models: ['shuttle-sts-stack', 'shuttle-orbiter'] },
-  { id: 'artemis-ii', minutes: 11, records: ['shuttle-lc-39b'], hue: '36, 64, 100', models: ['sls-block1', 'orion-esm'] },
-  { id: 'curiosity-edl', minutes: 6, records: ['gale'], hue: '18, 62, 48', models: ['msl-entry', 'msl-descent-stage', 'curiosity'] },
-  { id: 'new-horizons-pluto', minutes: 6, records: ['pluto', 'charon', 'deep-new-horizons'], hue: '224, 28, 46', models: ['new-horizons'] },
-  { id: 'vostok-1', minutes: 5, records: ['baikonur-site-1', 'vostok-1-landing'], hue: '100, 50, 40', models: ['r7-8k72k', 'vostok-3ka', 'vostok-seat'] },
-  { id: 'sputnik-1', minutes: 4, records: ['baikonur-site-1'], hue: '210, 14, 60', models: ['r7-8k72k', 'sputnik-1'] },
-  { id: 'voskhod-2', minutes: 15, records: ['baikonur-site-1', 'voskhod-2-landing'], hue: '24, 40, 70', models: ['r7-8k72k', 'voskhod-3kd', 'leonov-eva'] },
+  { id: 'apollo-11', minutes: 11, picture: 370200, records: ['saturn-v-lc-39a', 'apollo-11'], hue: '96, 64, 30', models: ['saturn-v', 'apollo-csm', 'lunar-module'] },
+  { id: 'apollo-13', minutes: 14, picture: 286300, records: ['saturn-v-lc-39a'], hue: '210, 40, 70', models: ['saturn-v', 'apollo-csm', 'lunar-module'] },
+  { id: 'sts-1', minutes: 15, picture: 60, records: ['saturn-v-lc-39a', 'edwards-afb-runway-23'], hue: '36, 12, 90', models: ['shuttle-sts-stack', 'shuttle-orbiter'] },
+  { id: 'artemis-ii', minutes: 11, picture: 20, records: ['shuttle-lc-39b'], hue: '36, 64, 100', models: ['sls-block1', 'orion-esm'] },
+  { id: 'curiosity-edl', minutes: 6, picture: 420, records: ['gale'], hue: '18, 62, 48', models: ['msl-entry', 'msl-descent-stage', 'curiosity'] },
+  { id: 'new-horizons-pluto', minutes: 6, picture: -12, pictureTop: 0.5, records: ['pluto', 'charon', 'deep-new-horizons'], hue: '224, 28, 46', models: ['new-horizons'] },
+  { id: 'vostok-1', minutes: 5, picture: 4700, records: ['baikonur-site-1', 'vostok-1-landing'], hue: '100, 50, 40', models: ['r7-8k72k', 'vostok-3ka', 'vostok-seat'] },
+  { id: 'sputnik-1', minutes: 4, picture: 1500, records: ['baikonur-site-1'], hue: '210, 14, 60', models: ['r7-8k72k', 'sputnik-1'] },
+  { id: 'hubble-deployment', minutes: 7, picture: 111909, records: ['shuttle-lc-39b', 'sat-20580'], hue: '40, 56, 96', models: ['hubble-sts31', 'shuttle-orbiter', 'shuttle-rms'] },
+  { id: 'falcon9-og2-2', minutes: 3, picture: 592, pictureTop: 0.45, records: ['spacex-slc-40', 'falcon-lz-1'], hue: '30, 36, 60', models: ['falcon9-stage1', 'falcon9-upper'] },
+  { id: 'voskhod-2', minutes: 15, picture: 5900, pictureTop: 0.25, records: ['baikonur-site-1', 'voskhod-2-landing'], hue: '24, 40, 70', models: ['r7-8k72k', 'voskhod-3kd', 'leonov-eva'] },
 ];
 
 /** The story a card for record `id` can replay, or null (the first, when several are about it: see `momentsFor`). */
@@ -44,6 +56,9 @@ export function momentsFor(id) {
  * because Orion is also a constellation and a nebula.
  */
 const VEHICLES = [
+  { id: 'hubble-deployment', rocket: /(?!)/, craft: /^(hst|hubble space telescope)\b/i },
+  // the launch of this one flight (a launch record's name carries its mission), never every Falcon 9
+  { id: 'falcon9-og2-2', rocket: /(?!)/, craft: /\borbcomm[ -]og-?2 (mission|flight) 2\b/i },
   { id: 'sts-1', rocket: /^(space shuttle|shuttle)\b/i, craft: /^(space shuttle )?columbia\b/i },
   { id: 'sputnik-1', rocket: /^(sputnik 8k71ps|8k71ps|r-7(\b|$))/i, craft: /^(sputnik[ -]?1|ps-1)\b/i },
   { id: 'voskhod-2', rocket: /^(voskhod(-3kd)?|11a57)\b/i, craft: /^voskhod( ?2| 3k[dv]|\b)/i },
@@ -101,26 +116,45 @@ export function mountShelf(host, ctx) {
   note.textContent = W.note;
   const grid = document.createElement('div');
   grid.className = 'sr-tripgrid sr-momentgrid';
-  for (const s of SHELF) {
-    const words = W.cards[s.id];
-    if (!words) continue;
-    const card = document.createElement('button');
-    card.type = 'button';
-    card.className = 'sr-tripcard sr-momentcard';
-    card.dataset.moment = s.id;
-    card.dataset.group = 'moments';
-    card.style.setProperty('--sr-trip-hue', s.hue);
-    const title = document.createElement('span');
-    title.className = 'sr-tripcard__title';
-    title.textContent = words.title;
-    const meta = document.createElement('span');
-    meta.className = 'sr-tripcard__meta';
-    meta.textContent = `${words.when} · ${W.minutes.replace('{m}', String(s.minutes))}`;
-    card.title = words.blurb;
-    card.append(title, meta);
-    card.addEventListener('click', () => { if (typeof ctx.wantMoment === 'function') ctx.wantMoment(s.id, null); });
-    grid.appendChild(card);
+  // Like the trips: four, then the rest behind one button, the same .sr-more with aria-expanded.
+  const more = document.createElement('button');
+  more.type = 'button';
+  more.className = 'sr-more';
+  more.hidden = true;
+  const rows = SHELF.filter((s) => W.cards[s.id]);
+  let expanded = false;
+  function paint() {
+    const active = document.activeElement;
+    const focused = active && grid.contains(active) && active.dataset ? active.dataset.moment : null;
+    while (grid.firstChild) grid.removeChild(grid.firstChild);
+    for (const s of expanded ? rows : rows.slice(0, MOMENTS_SHOWN)) {
+      const words = W.cards[s.id];
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'sr-tripcard sr-momentcard';
+      card.dataset.moment = s.id;
+      card.dataset.group = 'moments';
+      card.style.setProperty('--sr-trip-hue', s.hue);
+      // The story's own frame under the glass, fading out under the title; the hue is the card until it arrives (or if it never does).
+      card.appendChild(momentPicture(s.id, 'sr-tripcard__pic'));
+      const title = document.createElement('span');
+      title.className = 'sr-tripcard__title';
+      title.textContent = words.title;
+      const meta = document.createElement('span');
+      meta.className = 'sr-tripcard__meta';
+      meta.textContent = `${words.when} · ${W.minutes.replace('{m}', String(s.minutes))}`;
+      card.title = words.blurb;
+      card.append(title, meta);
+      card.addEventListener('click', () => { if (typeof ctx.wantMoment === 'function') ctx.wantMoment(s.id, null); });
+      grid.appendChild(card);
+      if (focused && s.id === focused) card.focus({ preventScroll: true });
+    }
+    more.hidden = rows.length <= MOMENTS_SHOWN;
+    more.textContent = expanded ? W.fewer : W.all.replace('{n}', String(rows.length));
+    more.setAttribute('aria-expanded', expanded ? 'true' : 'false');
   }
-  host.append(grid, note);
+  more.addEventListener('click', () => { expanded = !expanded; paint(); });
+  paint();
+  host.append(grid, more, note);
   host.hidden = false;
 }

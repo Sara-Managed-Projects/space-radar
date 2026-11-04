@@ -667,19 +667,16 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   // Hitomi left it the same day (public #969): hitomi.glb, XRISM's body with its own optical bench.
   // 0078 r14-m7: begin
   // OAO 2 and OAO 3 left this list on 2026-10-27 (public #1093): oao-2.glb and oao-3.glb, their own shapes (tests/test_real_models.mjs, stage r14-m7's block).
-  for (const [id, name] of [[42758, 'HXMT (HUIYAN)']]) {
+  // HXMT, the last one, left it in release 1.7.5 (public #967): hxmt.glb, its own shape (tests/test_real_models.mjs, the release 1.7.5 block).
   // 0078 r14-m7: end
-    const e = realModelFor(rec(id, name, 'satellite', 'visual'));
-    check(e?.build === 'space-telescope' && e.generic === true, `${name} is drawn as a space telescope: ${JSON.stringify(e)}`);
-  }
-  // The variant those five name must exist for a klass-satellite record -- otherwise modelFor falls
+  // The variant the generic space telescope names must exist for a klass-satellite record -- otherwise modelFor falls
   // back to the comms dish with `generic` set, and the route would change nothing on screen.
   const scope = modelFor('satellite', 'space-telescope');
   check(!scope.userData.generic, 'satellite:space-telescope is a real variant, not the comms fallback');
   check(scope.getObjectByName('boresight') !== undefined, 'satellite:space-telescope is the telescope tube');
   check(tris(scope) <= budgetOf('satellite-space-telescope'), `satellite:space-telescope builds ${tris(scope)} tris inside its budget`);
   disposeModels(scope);
-  if (!problems.length) console.log('  Nauka and Poisk draw the ISS, a 1963 Centaur stage draws as a stage, five observatories as telescopes');
+  if (!problems.length) console.log('  Nauka and Poisk draw the ISS, a 1963 Centaur stage draws as a stage, the generic space telescope is still a real variant');
 }
 
 // A CROWD OF FRAGMENTS, NOT ONE FRAGMENT REPEATED.

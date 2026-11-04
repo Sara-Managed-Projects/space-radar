@@ -568,6 +568,39 @@ export const SITES = [
     "doing": "The dry lake bed where Columbia landed on 14 April 1981 at the end of STS-1, on runway 23. Several of the early Space Shuttle flights ended here."
   },
   {
+    "id": "spacex-slc-40",
+    "display": "Space Launch Complex 40, Cape Canaveral (Falcon 9)",
+    "class": "pad",
+    "world": "earth",
+    "lat": 28.5619,
+    "lon": -80.5772,
+    "alt_m": 0,
+    "aliases": [
+      "SLC-40",
+      "Cape Canaveral SLC-40",
+      "Launch Complex 40",
+      "Falcon 9 pad",
+      "ORBCOMM-2 pad"
+    ],
+    "doing": "SpaceX's Falcon 9 pad at Cape Canaveral. Falcon 9 flight 20 left here on 21 December 2015 with 11 ORBCOMM satellites, and its first stage landed."
+  },
+  {
+    "id": "falcon-lz-1",
+    "display": "Landing Zone 1, Cape Canaveral",
+    "class": "feature",
+    "world": "earth",
+    "lat": 28.48583,
+    "lon": -80.54444,
+    "diameter_m": 86,
+    "aliases": [
+      "LZ-1",
+      "Landing Zone 1",
+      "Falcon 9 landing zone",
+      "first Falcon 9 landing"
+    ],
+    "doing": "A round pad 86 m across, with an X, where Falcon 9 flight 20's first stage landed on 22 December 2015, the first landing of an orbital rocket's first stage."
+  },
+  {
     "id": "copernicus",
     "display": "Copernicus crater",
     "class": "feature",

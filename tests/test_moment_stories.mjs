@@ -5,7 +5,7 @@
 // event inside the vehicle's window, the paths' rows sorted, finite and at believable speeds, the landing on the Moon's
 // own ground, the flyby at the far side's distance, what is planned said to be planned, the audio's size and credit.
 //   node tests/test_moment_stories.mjs
-import { readFileSync, existsSync, statSync } from 'node:fs';
+import { readFileSync, existsSync, statSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -286,11 +286,209 @@ for (const id of ['vostok-1', 'apollo-11', 'artemis-ii']) {
   check(['pluto', 'charon', 'deep-new-horizons'].every((id) => shelf.momentsFor(id).some((x) => x.id === 'new-horizons-pluto')) && shelf.momentsForRecord({ id: 'x', name: 'New Horizons', layer: 'deep-space' }).some((x) => x.id === 'new-horizons-pluto'), 'New Horizons: the cards of Pluto, Charon and the craft offer the replay');
   check(!!COPY.momentShelf.cards['new-horizons-pluto'], 'New Horizons: the shelf has its card');
 }
+// --- Hubble's deployment from Discovery (1.7.7, internal #1058)
+{
+  const { m, words } = await load('hubble-deployment');
+  const POSE = await mod('moments/pose.js');
+  const byId = new Map(m.vehicles.map((v) => [v.id, v]));
+  check(!!words && F.validateMoment(m, { words }).length === 0, `Hubble: valid, with its words (${words ? F.validateMoment(m, { words }).join('; ') : 'no words'})`);
+  check(iso(m, 0) === '1990-04-24T12:33:51Z', 'Hubble: T-0 is the lift-off, 12:33:51 UTC on 24 April 1990');
+  const rel = byId.get('hubble').window[0];
+  check(iso(m, rel) === '1990-04-25T19:38:00Z', `Hubble: the telescope leaves the arm at 19:38:00 UTC on 25 April (${iso(m, rel)})`);
+  check(byId.get('hubble-berthed').window[1] === rel, 'Hubble: the carried telescope and the free one swap at the release, on the same second');
+  for (const e of m.tracks.parts) {
+    const v = byId.get(e.vehicle);
+    check(!!v && partsOf(v.model).includes(e.part) && (v.parts || []).includes(e.part), `Hubble: ${e.part} at ${e.t} is a part of ${v && v.model}, in its vehicle's list`);
+    if (e.action === 'pose') check(Array.isArray(e.quat) && e.quat.length === 4 && Math.abs(Math.hypot(...e.quat) - 1) < 1e-3 && Array.isArray(e.about), `Hubble: the pose of ${e.part} at ${e.t} is a unit quaternion about a point`);
+  }
+  // the arm holds the telescope: the end effector's tip, by the poses of the three links, is where the grapple fixture's probe is, at every carried second
+  const rms = byId.get('rms'), host = byId.get('discovery'), hub = byId.get('hubble-berthed');
+  const keys = hub.rideOn.keys;
+  check(keys.length > 50 && keys.every((k, i) => i === 0 || k.t > keys[i - 1].t), `Hubble: the carrier has ${keys.length} keyframes in time order`);
+  const L1 = 6.0, L2 = 6.8, L3 = 2.4, P0 = [-2.62, 27.0, -0.8], minY = rms.rideOn.at[1];
+  const evOf = (part) => m.tracks.parts.filter((e) => e.part === part && e.action === 'pose');
+  const link = { upper: evOf('rms-upper'), lower: evOf('rms-lower'), wrist: evOf('rms-wrist') };
+  const mul = (c, v) => [0, 1, 2].map((r) => c[0][r] * v[0] + c[1][r] * v[1] + c[2][r] * v[2]);
+  const posed = (list, t, p) => { const i = list.findIndex((e) => e.t >= t); const a = list[Math.max(0, i - 1)], b = list[i < 0 ? list.length - 1 : i]; const u = b.t > a.t ? Math.min(1, Math.max(0, (t - a.t) / (b.t - a.t))) : 0;
+    const q = POSE.slerp(a.quat, b.quat, u), pos = [0, 1, 2].map((k) => a.pos[k] + (b.pos[k] - a.pos[k]) * u), ab = a.about; const d = [p[0] - ab[0], p[1] - ab[1], p[2] - ab[2]], r = mul(POSE.quatColumns(q), d);
+    return [ab[0] + r[0] + pos[0], ab[1] + r[1] + pos[1], ab[2] + r[2] + pos[2]]; };
+  const GRAPPLE = [0.62, -0.5, 1.8], mH = [0, -7.21, 0];
+  let worst = 0;
+  const held = m.tracks.captions.find((c) => c.say === 'umbilical').t;                  // from the grapple on the end effector is on the probe (before it, it hovers over it)
+  for (const k of keys.filter((x) => x.t >= held)) {
+    const R = POSE.quatColumns(k.quat), g = [GRAPPLE[0] - mH[0], GRAPPLE[1] - mH[1], GRAPPLE[2] - mH[2]], tip = mul(R, g).map((x, i) => x + k.at[i]);
+    const tip0 = [P0[0], P0[1] - minY - (L1 + L2 + L3), P0[2]];                          // the stowed tip, in the arm's vehicle frame
+    const got = posed(link.wrist, k.t, tip0), want = [tip[0], tip[1] - minY, tip[2]];
+    worst = Math.max(worst, Math.hypot(got[0] - want[0], got[1] - want[1], got[2] - want[2]));
+  }
+  check(worst < 0.2, `Hubble: the arm's tip is at the grapple fixture at every carried second, to ${worst.toFixed(3)} m (the links are rigid and 15.2 m long in all)`);
+  const elbowGap = (t) => Math.hypot(...[0, 1, 2].map((k) => posed(link.lower, t, [P0[0], P0[1] - minY - L1, P0[2]])[k] - posed(link.upper, t, [P0[0], P0[1] - minY - L1, P0[2]])[k]));
+  check([rel - 7600, rel - 7000, rel - 1000, rel - 500, rel - 10].every((t) => elbowGap(t) < 0.05), 'Hubble: the elbow stays whole (the lower arm turns about the same point the upper arm ends at)');
+  // the arrays: one comes out whole, the other stops part-way and waits, then finishes; the booms unfold; before the release, none of it is out at the start
+  const sc = (part, t) => { const ks = evOf(part).filter((e) => e.vehicle === 'hubble-berthed'); let v = null; for (const e of ks) if (e.t <= t) v = e.scale; return v ? v[1] : null; };
+  check(sc('array-l', m.span[0]) < 0.1 && sc('array-r', m.span[0]) < 0.1, 'Hubble: both arrays are rolled up at the start');
+  const jam = evOf('array-r').find((e) => e.scale && Math.abs(e.scale[1] - 0.38) < 1e-6);
+  check(!!jam && sc('array-l', jam.t) === 1 && sc('array-r', rel - 3000) < 0.5, 'Hubble: the first array is out and the second stopped part-way, hours before the release');
+  check(sc('array-r', rel - 5) === 1 && sc('array-l', rel - 5) === 1, 'Hubble: both arrays are out at the release');
+  check(m.tracks.parts.some((e) => e.part === 'hga-l' && e.action === 'pose') && m.tracks.parts.some((e) => e.part === 'hga-r' && e.action === 'pose'), 'Hubble: both antenna booms unfold');
+  // the orbit: a circle of 613 km at 28.45 degrees, 96.9 minutes round; the telescope and Discovery leave each other
+  const orb = rowsOf(m, 'orbit'), hst = rowsOf(m, 'hst');
+  const el = (r) => { const rr = r.slice(1, 4), v = r.slice(4, 7), rn = Math.hypot(...rr), a = 1 / (2 / rn - Math.hypot(...v) ** 2 / 398600.4418), h = [rr[1] * v[2] - rr[2] * v[1], rr[2] * v[0] - rr[0] * v[2], rr[0] * v[1] - rr[1] * v[0]]; return { alt: rn - 6371.0088, a, incl: Math.acos(h[2] / Math.hypot(...h)) * 180 / Math.PI, period: 2 * Math.PI * Math.sqrt(a ** 3 / 398600.4418) / 60 }; };
+  const e0 = el(orb[0]);
+  check(Math.abs(e0.alt - 613) < 3 && Math.abs(e0.incl - 28.45) < 0.01 && Math.abs(e0.period - 96.9) < 0.6, `Hubble: Discovery starts on a circle of 613 km at 28.45 degrees, ${e0.period.toFixed(1)} minutes round (${e0.alt.toFixed(1)} km, ${e0.incl.toFixed(2)} degrees)`);
+  check(orb.every((r, i) => i === 0 || r[0] > orb[i - 1][0]) && hst.every((r, i) => i === 0 || r[0] > hst[i - 1][0]) && orb.concat(hst).every((r) => r.length === 7 && r.every(Number.isFinite)), 'Hubble: both paths have sorted, finite rows');
+  const near = (rows, t) => { let b = rows[0]; for (const r of rows) if (Math.abs(r[0] - t) < Math.abs(b[0] - t)) b = r; return b; };
+  const herm = (rows, t) => { let i = rows.findIndex((r) => r[0] >= t); if (i < 1) i = 1; const a = rows[i - 1], b = rows[i], h = b[0] - a[0], u = (t - a[0]) / h, u2 = u * u, u3 = u2 * u;
+    return [1, 2, 3].map((k) => (2 * u3 - 3 * u2 + 1) * a[k] + (u3 - 2 * u2 + u) * h * a[k + 3] + (-2 * u3 + 3 * u2) * b[k] + (u3 - u2) * h * b[k + 3]); };
+  const gap = (t) => { const a = herm(orb, t), b = herm(hst, t); return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) * 1000; };
+  check(gap(rel + 60) < 60 && gap(m.span[1]) > 1000, `Hubble: Discovery is within 60 m of the telescope a minute after the release (${gap(rel + 60).toFixed(0)} m) and more than a kilometre off at the end (${gap(m.span[1]).toFixed(0)} m)`);
+  // the sun is on the telescope when it unrolls and when it is let go (the place along the orbit was chosen for that, and is said to be ours)
+  const litAt = (t) => { const r = TR.add ? null : null; const row = near(orb, t), q = worldPositionKm('sun', Date.parse(m.epoch) + t * 1000, 'earth-inertial'), sn = Math.hypot(q.x, q.y, q.z), s = [q.x / sn, q.y / sn, q.z / sn], p = row.slice(1, 4), d = p[0] * s[0] + p[1] * s[1] + p[2] * s[2];
+    return d > 0 || Math.hypot(p[0] - d * s[0], p[1] - d * s[1], p[2] - d * s[2]) > 6378.137; };
+  const unrollL = m.tracks.parts.find((e) => e.part === 'array-l' && e.ease === 'smooth' && e.scale && e.scale[1] === 1).t;
+  check([rel - 7400, unrollL - 120, jam.t - 60, rel - 1800, rel - 100, rel + 60, m.span[1] - 100].every(litAt), 'Hubble: Discovery is in sunlight at the lift out, the unrolling, the stop, the freeing, the release and the end');
+  // honest about what is ours
+  check(Object.values(m.trajectories).every((t) => t.truth === 'illustrative' && /ours/.test(t.source)), 'Hubble: the paths are illustrative and say what is ours');
+  check(/\bours?\b/i.test(words.ready) && /ours/.test(words.release + words.pulses), 'Hubble: the first caption says the clocks are ours; the release and the pulses say where ours begins');
+  check(m.tracks.audio.length === 0 && /No radio recording/.test(m.audio_note), 'Hubble: no audio plays, and the file says why');
+  check(m.sources.length >= 3 && m.sources.every((x) => /^https:\/\//.test(x.url)), 'Hubble: sources');
+  check(m.tracks.captions.every((c) => (words[c.say] || '').length > 20 && words[c.say].length < 360), 'Hubble: every caption is a sentence or two');
+  let play = 0; for (const q of m.pace) play += (q.to - q.from) / q.rate;
+  check(play > 150 && play < 600, `Hubble: ${Math.round(play)} s of play time`);
+  check(host.keepXZ && rms.keepXZ && hub.keepXZ && rms.rideOn.vehicle === 'discovery', 'Hubble: the arm and the telescope ride the orbiter in its own file frame');
+}
+// --- The first Falcon 9 landing (1.7.7, internal #1058 and #867): flight 20, ORBCOMM OG2 Mission 2
+{
+  const { m, words } = await load('falcon9-og2-2');
+  const t = (p, a, v) => first(m, p, a, v);
+  check(!!words && F.validateMoment(m, { words }).length === 0, `Falcon 9: valid, with its words (${words ? F.validateMoment(m, { words }).join('; ') : 'no words'})`);
+  check(iso(m, 0) === '2015-12-22T01:29:00Z', 'Falcon 9: T-0 is the lift-off, 01:29:00 UTC on 22 December 2015 (8:29 p.m. EST on the 21st)');
+  check(m.floodlit === true, 'Falcon 9: it flew in the dark, and the file says the rocket is lit by a lamp');
+  // the published clock (SpaceX's press kit, and the reconstruction of the webcast): separation 2:25, second stage 2:34, fairing 2:48, boostback 3:47, entry burn 8:01 to 8:21, landing burn 9:11, landing 9:44
+  const ig = (veh, from) => m.tracks.parts.filter((e) => e.vehicle === veh && e.part === 'booster' && e.action === 'ignite' && e.t > from).map((e) => e.t);
+  check(t('stage2', 'ignite') === 154 && t('fairing-a', 'separate') === 168 && t('fairing-b', 'separate') === 168, 'Falcon 9: the second stage lights at T+2:34 and the fairing goes at T+2:48');
+  check(m.vehicles.find((v) => v.id === 'booster').window[0] === 145 && m.vehicles.find((v) => v.id === 'booster-up').window[1] === 145, 'Falcon 9: the stages part at T+2:25');
+  const bb = m.tracks.parts.filter((e) => e.vehicle === 'booster' && e.part === 'booster' && e.action === 'ignite');
+  check(bb.length === 3 && Math.abs(bb[0].t + 1.5 - 227) < 1e-9 && bb[1].t === 481 && bb[2].t === 551, `Falcon 9: the boostback at T+3:47, the entry burn at T+8:01, the landing burn at T+9:11 (${bb.map((e) => e.t).join(', ')})`);
+  const cut = m.tracks.parts.filter((e) => e.vehicle === 'booster' && e.part === 'booster' && e.action === 'cutoff');
+  check(cut.length === 3 && cut[1].t === 501 && cut[0].t > 227 && cut[0].t < 270, `Falcon 9: the boostback burns less than a minute and the entry burn ends at T+8:21 (${cut.map((e) => e.t).join(', ')})`);
+  check(bb[0].engines.length === 3 && bb[2].engines.length === 1 && bb.every((e) => e.engines.every((i) => i >= 0 && i < 9)), 'Falcon 9: three engines for the boostback and the entry burn, one for the landing, of nine');
+  check(iso(m, 584) === '2015-12-22T01:38:44Z' && m.tracks.captions.some((c) => c.say === 'touch' && c.t >= 580 && c.t <= 584), 'Falcon 9: touchdown at T+9:44, 01:38:44 UTC');
+  const poses = m.tracks.parts.filter((e) => e.action === 'pose');
+  const legs = poses.filter((e) => /^leg-/.test(e.part)), fins = poses.filter((e) => /^fin-/.test(e.part));
+  check(legs.length === 8 && legs.every((e) => e.t >= 551 && e.t <= 584) && fins.length === 8 && fins.every((e) => e.t > cut[0].t && e.t < 481), 'Falcon 9: four fins swing out after the boostback, four legs swing down in the landing burn');
+  // the paths: the booster's ends where it should, the stage never under the ground, the apogee where the physics says, the speeds believable
+  const rows = rowsOf(m, 'booster'), rows2 = rowsOf(m, 'stage2');
+  check(rows.length > 200 && rows.every((r, i) => r.length === 7 && r.every(Number.isFinite) && (i === 0 || r[0] > rows[i - 1][0])), 'Falcon 9: the booster path has sorted, finite rows');
+  const fixed = (r) => { const g = TR.siderealAt(Date.parse(m.epoch), r[0]), c = Math.cos(g), s_ = Math.sin(g); return [(r[1] * c + r[2] * s_) * 1000, (-r[1] * s_ + r[2] * c) * 1000, r[3] * 1000]; };
+  const lz = TR.placeFrame({ lat: 28.48583, lon: -80.54444, alt: 3 }).ecef;
+  const end = rows[rows.length - 1], fe = fixed(end);
+  check(end[0] === 584 && Math.hypot(fe[0] - lz[0], fe[1] - lz[1], fe[2] - lz[2]) < 80, `Falcon 9: the last row is the touchdown, on Landing Zone 1 (${Math.hypot(fe[0] - lz[0], fe[1] - lz[1], fe[2] - lz[2]).toFixed(0)} m off)`);
+  const rel = (r) => { const v = [r[4] * 1000 + 7.2921159e-5 * r[2] * 1000, r[5] * 1000 - 7.2921159e-5 * r[1] * 1000, r[6] * 1000]; return Math.hypot(...v); };
+  check(rel(end) < 3, `Falcon 9: it is at rest at touchdown (${rel(end).toFixed(2)} m/s against the ground)`);
+  const rLoc = Math.hypot(...TR.placeFrame({ lat: 28.5619, lon: -80.5772, alt: 0 }).ecef) / 1000;
+  const hts = rows.map((r) => Math.hypot(r[1], r[2], r[3]) - rLoc);
+  const apo = Math.max(...hts);
+  check(apo > 150 && apo < 260 && Math.min(...hts) > -4, `Falcon 9: the stage tops out at ${apo.toFixed(0)} km and is never below the ground`);
+  check(Math.max(...rows.map(rel)) < 2500, 'Falcon 9: never faster than 2.5 km/s against the ground');
+  // MECO is where the published numbers put it: 75 km and 1.67 km/s (the ascent is a profile: its own track says)
+  const ascent = m.trajectories.ascent, pts = ascent.points, tr = TR.profileTrack({ points: pts, azimuth: ascent.azimuth }, { azimuth: ascent.azimuth });
+  const sm = tr.stateAt(143);
+  check(Math.abs(sm.altM - 75000) < 600 && Math.abs(Math.hypot(...sm.v) - 1670) < 25, `Falcon 9: main engine cut-off at ${(sm.altM / 1000).toFixed(1)} km and ${Math.hypot(...sm.v).toFixed(0)} m/s (75 km and 1.67 km/s published)`);
+  check(rows[0][0] === 145 && rows2[0][0] === 145 && Math.abs(Math.hypot(rows[0][1] - rows2[0][1], rows[0][2] - rows2[0][2], rows[0][3] - rows2[0][3]) * 1000 - 41.65) < 0.5, 'Falcon 9: the second stage leaves 41.65 m up the stack from the first stage, at the same second');
+  check(Math.max(...rows2.map((r) => Math.hypot(r[4], r[5], r[6]))) < 8, 'Falcon 9: the second stage stays under orbital speed within the picture');
+  check(m.tracks.audio.length === 0 && /No recording/.test(m.audio_note), 'Falcon 9: no audio plays, and the file says why');
+  check(Object.values(m.trajectories).every((x) => x.truth === 'illustrative' && /ours/.test(x.source)), 'Falcon 9: every path is illustrative and says what is ours');
+  check(m.places && m.places.length === 1 && Math.abs(m.places[0].place.lat - 28.48583) < 1e-4 && m.places[0].place.ground.pad === 'landing', 'Falcon 9: the ground changes to Landing Zone 1 before the landing');
+  check(m.sources.length >= 3 && m.sources.every((x) => /^https:\/\//.test(x.url)), 'Falcon 9: sources');
+  check(m.tracks.captions.every((c) => (words[c.say] || '').length > 20 && words[c.say].length < 360), 'Falcon 9: every caption is a sentence or two');
+  let play = 0; for (const q of m.pace) play += (q.to - q.from) / q.rate;
+  check(play > 120 && play < 400, `Falcon 9: ${Math.round(play)} s of play time`);
+  // the reusable part: another flight is a record and its words
+  const gen = readFileSync(join(ROOT, 'tools/moments-build/falcon9-flight.mjs'), 'utf8');
+  check(/export function buildFalcon9Moment\(/.test(gen) && /buildFalcon9Moment\(flight/.test(readFileSync(join(ROOT, 'tools/moments-build/falcon9-og2-2.mjs'), 'utf8')), 'Falcon 9: the builder takes a flight record (the next flight is a record and its words)');
+}
 // --- the shelf and the entry points (C8): read from the data, so the test names what is missing
 {
   const shelf = await mod('moments/shelf.js');
-  for (const id of ['vostok-1', 'apollo-11', 'artemis-ii']) check(shelf.SHELF.some((s) => s.id === id && existsSync(join(ROOT, 'site/data/moments', `${id}.json`))), `the shelf lists ${id}`);
-  for (const rec of ['saturn-v-lc-39a', 'apollo-11', 'shuttle-lc-39b']) check(!!shelf.momentFor(rec), `the card of ${rec} offers its moment`);
+  for (const id of ['vostok-1', 'apollo-11', 'artemis-ii', 'hubble-deployment', 'falcon9-og2-2']) check(shelf.SHELF.some((s) => s.id === id && existsSync(join(ROOT, 'site/data/moments', `${id}.json`))), `the shelf lists ${id}`);
+  for (const rec of ['saturn-v-lc-39a', 'apollo-11', 'shuttle-lc-39b', 'sat-20580', 'spacex-slc-40', 'falcon-lz-1']) check(!!shelf.momentFor(rec), `the card of ${rec} offers its moment`);
+}
+// --- the shelf looks and behaves like the trips (release 1.7.7): a picture under every card, four shown, "All {n} moments" / "Fewer moments"
+{
+  const shelf = await mod('moments/shelf.js');
+  const { BUDGETS } = await mod('data/budgets.js');
+  const webpSize = (b) => {
+    if (b.length < 30 || b.toString('ascii', 0, 4) !== 'RIFF' || b.toString('ascii', 8, 12) !== 'WEBP') return null;
+    const kind = b.toString('ascii', 12, 16), body = b.subarray(20);
+    if (kind === 'VP8 ') return [body.readUInt16LE(6) & 0x3fff, body.readUInt16LE(8) & 0x3fff];
+    if (kind === 'VP8L') { const v = body.readUInt32LE(1); return [(v & 0x3fff) + 1, ((v >>> 14) & 0x3fff) + 1]; }
+    if (kind === 'VP8X') return [body.readUIntLE(4, 3) + 1, body.readUIntLE(7, 3) + 1];
+    return null;
+  };
+  // THE FILES: every SHELF story has its picture, a WebP of 640 x 360 within the trip pictures' budget, and names the second it was taken at.
+  const dir = join(ROOT, 'site/images/moments');
+  for (const s of shelf.SHELF) {
+    const path = join(dir, `${s.id}.webp`);
+    check(Number.isFinite(s.picture), `the shelf row of ${s.id} names its picture second (\`picture\`), so the same command can render it again`);
+    if (!existsSync(path)) { check(false, `site/images/moments/${s.id}.webp is missing: its card would have no picture`); continue; }
+    const b = readFileSync(path), wh = webpSize(b);
+    check(!!wh && wh[0] === 640 && wh[1] === 360, `${s.id}.webp is ${wh && wh.join(' x ')}, not a WebP of 640 x 360`);
+    check(b.length <= BUDGETS.trip_picture_bytes, `${s.id}.webp is ${b.length} B, over trip_picture_bytes (${BUDGETS.trip_picture_bytes})`);
+  }
+  if (existsSync(dir)) for (const f of readdirSync(dir)) check(shelf.SHELF.some((s) => `${s.id}.webp` === f), `site/images/moments/${f} belongs to no story on the shelf`);
+  // THE SHELF, drawn into a minimal document: four cards each with its picture, the button shows them all and back.
+  class El {
+    constructor(tag) { this.tagName = tag.toUpperCase(); this.children = []; this.dataset = {}; this.attrs = {}; this.listeners = {}; this.hidden = false; this.textContent = ''; this.className = ''; this.style = { setProperty() {} }; this.isConnected = false; }
+    get firstChild() { return this.children[0] || null; }
+    append(...n) { this.children.push(...n); }
+    appendChild(n) { this.children.push(n); return n; }
+    removeChild(n) { this.children.splice(this.children.indexOf(n), 1); return n; }
+    contains(n) { return n === this || this.children.some((c) => c.contains && c.contains(n)); }
+    setAttribute(k, v) { this.attrs[k] = String(v); }
+    getAttribute(k) { return k in this.attrs ? this.attrs[k] : null; }
+    addEventListener(t, f) { (this.listeners[t] ||= []).push(f); }
+    click() { for (const f of this.listeners.click || []) f(); }
+    querySelector(sel) { return this.children.find((c) => c.tagName === sel.toUpperCase()) || null; }
+    focus() {}
+  }
+  globalThis.document = { createElement: (t) => new El(t), activeElement: null };
+  const host = new El('section');
+  host.appendChild(new El('h2'));
+  const opened = [];
+  shelf.mountShelf(host, { wantMoment: (id) => opened.push(id) });
+  const grid = host.children.find((c) => /sr-momentgrid/.test(c.className));
+  const more = host.children.find((c) => c.tagName === 'BUTTON');
+  const words = COPY.momentShelf;
+  const all = shelf.SHELF.filter((s) => words.cards[s.id]);
+  check(shelf.MOMENTS_SHOWN === 4 && all.length > 4, `the shelf shows ${shelf.MOMENTS_SHOWN} of ${all.length} stories (the trips show 4)`);
+  check(!!grid && grid.children.length === 4, `closed, the shelf shows 4 cards, not ${grid && grid.children.length}`);
+  check(!!more && more.className === 'sr-more' && !more.hidden, 'the button is the trips\' .sr-more and is shown');
+  check(more && more.textContent === `All ${all.length} moments` && more.getAttribute('aria-expanded') === 'false', `closed, the button says "All ${all.length} moments" with aria-expanded=false (it says "${more && more.textContent}")`);
+  const cardIds = () => grid.children.map((c) => c.dataset.moment);
+  check(cardIds().join() === all.slice(0, 4).map((s) => s.id).join(), 'the first four are the first four of the shelf, in its order');
+  for (const c of grid.children) {
+    const pic = c.children[0];
+    check(pic && pic.tagName === 'IMG' && pic.className === 'sr-tripcard__pic' && pic.alt === '' && pic.getAttribute('aria-hidden') === 'true' && pic.dataset.src === `images/moments/${c.dataset.moment}.webp`, `${c.dataset.moment}: the card has its picture first, decorative, from images/moments/${c.dataset.moment}.webp`);
+    check(pic && !pic.getAttribute('src'), `${c.dataset.moment}: the picture is not fetched when the card is drawn (it waits for the gate and the screen)`);
+  }
+  more.click();
+  check(grid.children.length === all.length && cardIds().join() === all.map((s) => s.id).join(), `opened, the shelf shows all ${all.length} cards in the shelf's order`);
+  check(more.textContent === 'Fewer moments' && more.getAttribute('aria-expanded') === 'true', 'opened, the button says "Fewer moments" with aria-expanded=true');
+  check(grid.children.every((c) => c.children[0].tagName === 'IMG'), 'every opened card has its picture');
+  more.click();
+  check(grid.children.length === 4 && more.textContent === `All ${all.length} moments` && more.getAttribute('aria-expanded') === 'false', 'pressed again, the shelf is back to 4 and the button to "All n moments"');
+  grid.children[1].click();
+  check(opened.join() === all[1].id, 'a card still opens its Moment');
+  // THE WORDS: the copy carries the two lines, and the four translated files carry them too.
+  check(words.all === 'All {n} moments' && words.fewer === 'Fewer moments', 'COPY.momentShelf has all and fewer');
+  for (const code of ['es', 'fr', 'de', 'pt']) {
+    const lang = await mod(`copy/${code}.js`);
+    const w = lang.COPY.momentShelf;
+    check(w && /\{n\}/.test(w.all || '') && typeof w.fewer === 'string' && w.fewer.trim() !== '' && w.fewer !== words.fewer, `${code}: the shelf's "all {n} moments" and "fewer" are translated`);
+  }
+  delete globalThis.document;
 }
 if (problems.length) { for (const p of problems) console.error(`::error::${p}`); console.error(`${problems.length} problem(s)`); process.exit(1); }
 console.log('moment stories ok: Curiosity\'s entry (the JPL clock, 131 km and 5.9 km/s, the parachute at 11 km, the 7.6 m bridle, the landing on Bradbury Landing, the Martian Sun), New Horizons\' pass of Pluto (JPL\'s track, 12 500 km, the lit side, Charon 14 minutes later), then Vostok 1, Apollo 11 and Artemis II: event order and times, parts of their models, the landing on the Moon\'s ground, the flyby at 6 545 km, planned times said to be planned');
+console.log('moment stories ok: the first Falcon 9 landing (the clock, MECO at 75 km and 1.67 km/s, the landing on Landing Zone 1 at rest, the fins and legs), Hubble\'s deployment (the arm holds the telescope, the arrays, the orbit, the sun, the release at 19:38:00), Vostok 1, Apollo 11 and Artemis II: event order and times, parts of their models, the landing on the Moon\'s ground, the flyby at 6 545 km, planned times said to be planned');

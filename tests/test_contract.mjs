@@ -163,7 +163,7 @@ const CONTRACT = {
   'ui/golink.js': ['land', 'landingPlan', 'zoomAt', 'LAND_FROM', 'LAND_MS'],
   // Spec 0068: the trip cards' pictures, and the controls hint shown once (imported after the
   // first visit settles); their pure parts for tests/test_trip_pictures.mjs and test_keyhint.mjs.
-  'ui/trippics.js': ['tripPicture', 'tripPictureUrl', 'PICTURE_DELAY_MS'],
+  'ui/trippics.js': ['tripPicture', 'tripPictureUrl', 'momentPicture', 'momentPictureUrl', 'PICTURE_DELAY_MS'],
   'ui/offline.js': ['createOffline', 'swWanted', 'warmList', 'UPDATE_CHECK_MS'],
   'ui/keyhint.js': ['createKeyHint', 'decide', 'whyNot', 'readSeen', 'markSeen', 'hintMode', 'capForKey', 'allCaps', 'KEY_ROWS', 'CHROME_KEYS', 'TOUCH_ROWS', 'STORE_KEY', 'AUTO_HIDE_MS', 'MIN_SHOWN_MS', 'KEY_GRACE_MS'],
   // Spec 0045 req 10: Regular and Compact, chosen or automatic below 800 px of height.

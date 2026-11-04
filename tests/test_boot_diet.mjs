@@ -45,6 +45,8 @@ function graph(entry) {
 }
 const boot = new Set([...graph(join(JS, 'main.js'))].map(rel));
 const DEFERRED = {
+  'js/data/tilecloud.js': 'streamed point-cloud tiles (A1): a layer or a card fetches it the first time a tile set is asked for; main.js tells it the frame latch by a dynamic import',
+  'js/data/tracked.js': 'tracked debris and rocket bodies by their own elements (A9): the debris layer fetches it when it loads',
   'js/scene/fatline.js': 'the planets\' paths drawn some pixels wide: scene/orbitrings.js fetches it the first time a path is asked for',
   'js/ui/overlaykey.js': 'the key of an Earth data map in the sidebar: main.js fetches it the first time a map is asked for',
   'js/scene/handoff.js': 'the stage hand-off\'s maths: scene/climb.js imports it',

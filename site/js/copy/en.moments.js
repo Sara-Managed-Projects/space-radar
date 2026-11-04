@@ -52,8 +52,10 @@ Object.assign(COPY, {
   // Where a moment is offered (moments/shelf.js): the section of the Earth pane, and the card's one row.
   momentShelf: {
     title: 'Moments',
-    note: 'Missions replayed on one clock, with the real event times. Paths are reconstructed and say so.',
+    note: 'Missions replayed on one clock, with the real event times. Paths are reconstructed or illustrative and say so.',
     minutes: '{m} min',
+    all: 'All {n} moments',
+    fewer: 'Fewer moments',
     replay: 'Replay this moment',
     replayTitle: 'Replay {title} on the mission clock',
     replayNamed: 'Replay {title}',
@@ -63,6 +65,8 @@ Object.assign(COPY, {
       'artemis-ii': { title: 'Artemis II', when: '1 to 10 April 2026', blurb: 'Pad 39B to the Pacific off San Diego, round the far side of the Moon. What was flown is said to be, and what was planned.' },
       'sputnik-1': { title: 'Sputnik 1', when: '4 October 1957', blurb: 'Baikonur to a first lap of the Earth: the first artificial satellite, a polished sphere of 585 mm, and its beep.' },
       'voskhod-2': { title: 'Voskhod 2', when: '18 to 19 March 1965', blurb: 'Alexei Leonov steps out of an inflatable airlock into space for twelve minutes, and the crew land by hand in the taiga, far from their field.' },
+      'hubble-deployment': { title: 'Hubble\'s release', when: '25 April 1990', blurb: 'Discovery\'s arm lifts the Hubble Space Telescope out of the bay on STS-31, one solar array stops, and at 19:38 UTC the telescope is let go.' },
+      'falcon9-og2-2': { title: 'The first Falcon 9 landing', when: '21 December 2015', blurb: 'Falcon 9 flight 20 lifts 11 ORBCOMM satellites away from Cape Canaveral, and its first stage flies back and lands on Landing Zone 1: the first landing of an orbital rocket\'s first stage.' },
       'sts-1': { title: 'STS-1', when: '12 to 14 April 1981', blurb: 'The first Space Shuttle: Columbia from pad 39A, the boosters and the tank, 54 hours in orbit and a glide onto the Edwards lakebed.' },
       'curiosity-edl': { title: 'Curiosity landing', when: '6 August 2012', blurb: 'The seven minutes from the top of the Martian air to Gale crater: the heat shield, the parachute, the rocket backpack and the sky crane, on JPL\'s own clock.' },
       'new-horizons-pluto': { title: 'New Horizons at Pluto', when: '14 July 2015', blurb: 'The first visit to Pluto: from six hours out to the pass at 13.8 km/s on JPL\'s own track, Pluto and Charon as discs, the crescent left behind.' },

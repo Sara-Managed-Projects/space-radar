@@ -78,7 +78,7 @@ fi
 
 if [ "$HARVEST" = 1 ]; then
   echo "==> harvesting into $WORK"
-  HARVEST_ARGS=(--dest "$WORK")
+  HARVEST_ARGS=(--dest "$WORK" --with-slow-jobs)
   [ "$DRY" = 1 ] && HARVEST_ARGS+=(--dry-run)
   python3 - "$ROOTS" "${HARVEST_ARGS[@]}" <<'PY'
 import runpy, ssl, sys

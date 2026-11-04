@@ -47,6 +47,7 @@ tagged, and their dates are the day the last change in each landed.
 - **Both are on the shelf**, with "Replay this moment" on Gale crater's card (Curiosity), on Pluto's and Charon's and on New Horizons'; the card words are in
   es, fr, de and pt (machine-drafted) and in English in the six newer languages. The shelf's note no longer counts the stories.
 - Two look probes, `moments-curiosity` and `moments-newhorizons`.
+- **Their shelf pictures**: the sky crane lowering the rover (second 420) and the probe passing a lit Pluto (second -12), rendered by the app with `tools/moment-pictures.probe.js`.
 
 ### Changed
 
@@ -59,6 +60,110 @@ tagged, and their dates are the day the last change in each landed.
   just before touchdown). The parachute is a drawn canopy of 16 m on lines of 50 m, not NASA's colours or its gores' pattern.
 - **The 88 seconds** between Horizons' and NASA's times for New Horizons' closest approach are not explained here.
 - **Words**: the two stories' words are English until a translator has them; only the shelf's cards are translated.
+
+## [1.7.7] - 2026-11-03
+
+### Added
+
+- **Moments: Hubble's release from Discovery and the first Falcon 9 landing.** Two new stories on the Moments shelf, each on its own mission clock with the published times and every
+  other number marked as ours.
+  - *Hubble's release* (STS-31, 25 April 1990): Discovery in a 613 km orbit with its bay open; the Canadarm snares the telescope's grapple fixture, lifts it out of its berth, and the
+    arrays unroll (the first comes out whole; the second stops part-way, is freed hours later, and finishes), the antenna booms spring out, the arm swings the telescope upright over
+    the bay, and at 19:38 UTC the end effector lets go. Discovery's thruster pulses take it backwards. The release, and the launch it counts from, are the published clock (Jonathan's
+    Space Report no. 36, America Space, NASA's press kit and archive page); the clocks of the grapple, the lift, the unrolling, the stop and the freeing, where over the Earth the shuttle
+    is (chosen to be in sunlight) and the arm's joints are ours, and the Moment says so. The arm holds the telescope at every second (a test checks the end effector against the grapple
+    fixture to 0.2 m). New models built in code from published dimensions: the telescope as it was in 1990 (aperture door shut, the golden-yellow first arrays and the antenna booms as
+    parts), the Canadarm with the telescope's berth. Replay on the card of Launch Complex 39B and of the Hubble Space Telescope.
+  - *The first Falcon 9 landing* (flight 20, ORBCOMM OG2 Mission 2, lift-off 01:29:00 UTC on 22 December 2015): from Space Launch Complex 40 to Landing Zone 1, with the event times of
+    SpaceX's press kit and of the reconstruction of the webcast (main engine cut-off at T+2:23 at 75 km and 1.67 km/s, separation, the second stage and the fairing, the boostback from
+    T+3:47, the entry burn from T+8:01 to T+8:21, the landing burn from T+9:11, touchdown at T+9:44, 01:38:44 UTC). The first stage is flown between those by a point-mass simulation
+    (a boostback found by search, a landing burn that is a guidance to rest on the pad at the published second); its heights and speeds, the length of the boostback and the clocks of
+    the grid fins and landing legs are ours and said so. A night launch, so the rocket is drawn in a lamp of ours. New models: the first stage (nine engines, four legs and four grid
+    fins as parts) and the second stage with its two fairing halves. New places: SpaceX's pad (Space Launch Complex 40) and Landing Zone 1, each with the Replay row, and the zone drawn
+    as the 86 m round pad with its X.
+  - **The Falcon 9 replay is reusable** (internal #867): `tools/moments-build/falcon9-flight.mjs` makes a whole Falcon 9 launch and landing from a flight record (the pad, the landing
+    place, the published event times, MECO's height and speed); another flight is a record, its words and a test block (docs/MOMENTS.md, "A Falcon 9 flight").
+- **The Moments engine moves parts and riders.** A part event `pose` (keyframes that scale, turn and move a part about a point: arrays unrolling, an arm bending, grid fins and legs
+  swinging out), `rideOn.keys` (a rider moving about its host: the telescope on the arm), a shot's `lookAt` (a point in the vehicle's own axes) and a moment's `floodlit` (a lamp on the
+  vehicle at every height, a little lift on the ground, for a flight in the dark); site/js/moments/pose.js, tested without a browser. The ground can be a round landing pad
+  (`ground.pad: "landing"`).
+
+### Changed
+
+- **The Moments shelf looks and behaves like the trips.** A picture under every Moment card, the story's own frame at its most telling second (`site/images/moments/<id>.webp`, 640 x 360, within the
+  trip pictures' budget), fetched lazily and only after the first visit has settled, as the trips' are (`ui/trippics.js` now serves both; the card's hue is the fallback tint). The shelf shows four
+  Moments, then "All {n} moments" / "Fewer moments" on the same button as the trips (Spanish, French, German and Portuguese translated; the other languages show it in English). Each shelf
+  row names its picture second (`picture` in `site/js/moments/shelf.js`); a story added later is rendered by `tools/moment-pictures.probe.js` and `scripts/build_trip_thumbs.py --moments`,
+  and `build_trip_thumbs.py --check` refuses a shelf story without its picture.
+- The STS-1 Moment's open bay no longer shows the DFI pallet in every flight: it is a part of its own in `shuttle-orbiter.glb`, shown with STS-1's open doors and left out of STS-31's.
+- The shelf's note no longer counts the missions.
+## [1.7.6] - 2026-11-03
+
+### Added
+
+- **Debris and spent rocket bodies placed by their own element sets** (A9, internal #1069). The debris view drew every piece at a made-up
+  place along its orbit's real height and tilt, because SATCAT gives an orbit's shape and not where on it a piece is. CelesTrak does publish
+  element sets for most of them (`gp.php?NAME=DEB` and `NAME=R/B`: 10 245 and 2 192 answers on 2026-11-03), so 12 403 of the layer's
+  14 603 dots now sit where SGP4 puts them, as the active satellites do, `measured` within seven days of the element set's epoch and `inferred`
+  after it. The other 2 200 have no published element set and stay illustrative, and the view's lines say how many are which. The tiles are
+  built once a day by the harvester, 905 kB for the set (608 kB of tiles; gzip 580 kB with the pick index and the names) against the 6.8 MB
+  catalogue the view already reads, and are fetched only when the debris layer loads (`harvest/tracked.py`, `site/js/data/tracked.js`,
+  `tests/test_tracked.mjs`). The elements keep SGP4's own precision: 142 real element sets, propagated from CelesTrak's numbers and from the
+  tile's, agree to under 0.3 m for a week. Not here: the working payloads are drawn from the active catalogue as before, and the dead ones
+  have no public query that selects them by type, so "all 34 800" is not reached; decayed objects are not in any GP answer.
+- **A1 tiles: streamed point-cloud tile sets** (internal #1059), the base the asteroids, the events and the structure catalogues sit on. A set
+  is a catalogue cut by rank (brightness or size) into levels and by band or HEALPix cell into tiles of quantised columns, with a pick index
+  from catalogue id to tile and row and a names file (`harvest/tilepack.py`, `site/js/data/tilecloud.js`; the format is in the first lines of
+  the first). The page fetches `set.json` and then the tiles a view asks for, level 0 first; **under the frame latch only level 0 is drawn,
+  and on a connection that saves data none**. A tile carries its set's build stamp, so a CDN that still holds yesterday's tile costs one
+  refetch and never a wrong picture. `tests/test_tilecloud.py` and `tests/test_tilecloud.mjs` hold the two halves to the same bytes,
+  and the HEALPix cells to `sky/startiles.js`.
+- **The harvester's daily slow-job queue** (`harvest/slowjobs.py`). After the hourly sources, jobs that cut a catalogue into tiles run when
+  their set is a day old, oldest first, while the run has time (a job is not started without 100 s left); the last good set stays when a build
+  fails or has under 80 % of the last one's objects; `set.json` is written last. `python3 -m harvest --dest DIR --slow-only [ID]` runs it by
+  hand, `--with-slow-jobs` adds it to a run (the Lambda always does, and `scripts/refresh-snapshots.sh` asks for it; without the flag a run in
+  which nothing is due still touches no network). CelesTrak is asked once a day for each of the two queries, never retried
+  and not asked the second after a non-200 answer, as its usage policy asks (CREDITS.md 4.1).
+- A look probe, `r177-tracked`, and the `look` workflow's step that serves it the tracked set.
+
+### Changed
+
+- The debris view says how many of the dots are where their element sets put them, and its closing line says the places are illustrative
+  only for those that have none (the two lines are in all ten languages).
+
+### Not done
+
+- **A12 surface names** (internal #1072) is not started. The source is settled (the USGS Gazetteer's point files, public domain, with each
+  feature's centre, diameter and type: Mars 2 052 names, read 2026-11-03), and what is missing is a name overlay: `ui/labels.js` is capped at
+  eight names by the design rule, so a name-by-zoom layer needs a design of its own against the UI guide.
+- **A2 planetary nebulae** (internal #1060) stays at OpenNGC's 130. HASH, the source the issue names, is behind a registration and states no
+  licence for reuse (`scripts/build_deep_catalogue.py` records this), so it cannot be redistributed. Wikidata (CC0) has 10 793 items of the class
+  but most are bulk imports with no name, and no source was chosen for them.
+- Not touched: A7 asteroids, A10 events, A11 structure (all three can now be built on the tiles), pass brightness (#391), star radii (#412),
+  star-system orbits (#474), more star systems (P#556).
+## [1.7.5] - 2026-11-03
+
+### Added
+
+- **Four astronomy satellites have a model of their own: CHEOPS, Insight-HXMT, SVOM and the Einstein Probe.** Each was the generic
+  space telescope or the plain satellite shape; each is now built in code from published dimensions and from pictures read for the layout,
+  by NORAD number, and its card says "shape built from published dimensions and pictures; details simplified". No agency publishes a mesh
+  of any of them (NASA's 3D Resources and science.nasa.gov/3d-resources have none; ESA's terms forbid derivatives), so no mesh and no picture
+  is in a file. **CHEOPS** (`cheops.glb`, 114 kB): the hexagonal platform on its launcher ring, the 30 cm telescope behind its black baffle
+  with the copper cover, two star-tracker heads, the instrument radiators, and the three-panel Sun shield with its blue cells wrapped round the
+  back, at ESA's 1.55 by 1.49 by 1.4 m. **Insight-HXMT** (`hxmt.glb`, 158 kB): the gold platform, the 18 HE detector modules with their slat
+  collimators, the three LE and three ME boxes, the star trackers, the sun-shielding board and two three-panel wings. **SVOM** (`svom.glb`,
+  151 kB): the gold-blanketed body with ECLAIRs' coded mask, the MXT, the visible telescope, the three GRM heads tilted 30 degrees, the
+  adapter ring and two wings. **Einstein Probe** (`einstein-probe.glb`, 113 kB): the twelve lobster-eye WXT modules fanned round the two FXT
+  cylinders on the gold payload cabin, the bus and two three-panel wings. Each is 12 000 to 19 000 triangles, loaded only when its craft is selected.
+  The sources, what was cited and what was estimated are in `registry/models.yaml` and `CREDITS.md` §3q to §3t.
+
+### Not yet
+
+- **The solar arrays of Insight-HXMT, SVOM and the Einstein Probe are estimates** (no page opened gives their span), and every array's cell
+  grid is coarse (the bake keeps the colour of nothing smaller than about 10 cm on a craft this size); the rows say so. CHEOPS' telescope looks along
+  the Sun shield's normal, so in the app it looks sideways, not away from the Earth.
+- **The optical Earth-observation group** (Pleiades, SPOT, SkySat, BeiDou-3 MEO) is the next craft batch; the radar pair after it.
 
 ## [1.7.4] - 2026-11-03
 
