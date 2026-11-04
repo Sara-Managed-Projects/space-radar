@@ -317,20 +317,20 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     phases.push({ name: 'trip', ms: Date.now() - t2, detail: `${trip.phase}: ${trip.stopTitle}` });
   } catch (e) {
     console.error(`::error::nobuild boot failed: ${e.message}`);
-    await browser.close();
-    if (server) try { server.kill('SIGKILL'); } catch { /* */ }
-    process.exit(1);
   }
 
   await browser.close();
   if (server) try { server.kill('SIGKILL'); } catch { /* */ }
 
   const { findings } = judge(records, registry);
-  console.log(`nobuild boot on port ${port ?? '?'}: ${phases.map((p) => `${p.name} ${p.ms} ms (${p.detail})`).join('; ')}; total ${Date.now() - tAll} ms`);
+  if (phases.length) {
+    console.log(`nobuild boot on port ${port ?? '?'}: ${phases.map((p) => `${p.name} ${p.ms} ms (${p.detail})`).join('; ')}; total ${Date.now() - tAll} ms`);
+  }
   console.log(`off-origin hosts: ${records.hosts.length ? records.hosts.join(', ') : '(none)'}`);
+  for (const r of records.sameOrigin) console.log(`same-origin ${r.status}: ${r.url}`);
   for (const f of findings) console.error(`::error::${f}`);
-  if (findings.length) {
-    console.error(`nobuild boot FAILED: ${findings.length} finding(s)`);
+  if (phases.length < 3 || findings.length) {
+    console.error(`nobuild boot FAILED: ${phases.length}/3 phases, ${findings.length} finding(s)`);
     process.exit(1);
   }
   console.log('nobuild boot ok: map, ISS card and a trip on the README\'s server, no unlisted host or error');
