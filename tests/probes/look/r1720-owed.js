@@ -18,6 +18,7 @@
 //      ("Moved to Planets" and "Back to where you were"); the toast's box against the tab row's.
 //
 //   gh workflow run look.yml -f probe=r1720-owed -f ref=<branch> -f width=1600 -f height=900
+//   -f subject=spots_toast      only these sections, joined by an underscore (spots, saturn, events, darksky, names, toast)
 //   gh workflow run look.yml -f probe=r1720-owed -f ref=<branch> -f mobile=true
 look.probe = 'r1720-owed';
 const out = { problems: [] };
@@ -25,7 +26,8 @@ const doc = document;
 const text = (n) => (n ? (n.innerText || n.textContent || '').replace(/\s+/g, ' ').trim() : '');
 const box = (n) => { if (!n) return null; const r = n.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top), Math.round(r.right), Math.round(r.bottom)]; };
 const hit = (a, b) => !!(a && b && a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3]);
-const section = async (name, fn) => { const t = Date.now(); try { out[name] = await fn(); } catch (e) { out.problems.push(name + ': ' + (e && e.stack || e)); } (out.seconds = out.seconds || {})[name] = Math.round((Date.now() - t) / 1000); };
+const only = (new URLSearchParams(location.search).get('lookSubject') || '').split('_').filter(Boolean);
+const section = async (name, fn) => { if (only.length && !only.includes(name)) return; const t = Date.now(); try { out[name] = await fn(); } catch (e) { out.problems.push(name + ': ' + (e && e.stack || e)); } (out.seconds = out.seconds || {})[name] = Math.round((Date.now() - t) / 1000); };
 const labelNames = () => [...doc.querySelectorAll('#labels .label__text')].filter((n) => n.offsetParent !== null).map(text);
 const AT = Date.UTC(2026, 10, 3, 21, 30, 0);
 
