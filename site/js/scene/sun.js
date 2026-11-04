@@ -242,7 +242,7 @@ export const MAP_LUMA = 0.407;
  * dashes and nested coils). The code stays; nothing draws them while this is false. opts.loops overrides
  * it for tests only.
  */
-export const LOOPS_ON = false;
+export const LOOPS_ON = true;
 /**
  * The picture is drawn where SDO saw a place at least this share as squarely as the camera does (fading
  * between the two): over a pole the picture's edge-on strip would be stretched four times and more. Seen
