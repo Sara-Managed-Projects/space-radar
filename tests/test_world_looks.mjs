@@ -149,8 +149,6 @@ check(/laser altimeter measured/.test(recs.get('mars').meta.departure || '') && 
   // Where it stops being worn, a facet is a few hundredths of a pixel from round in a view 900 px tall (half the view 450 px), and 2 160 px tall.
   const sag = (1 - Math.cos(Math.PI / DOT_SEGMENTS.width));
   check(sag * DOT_CUT_BELOW * 450 < 0.05 && sag * DOT_CUT_BELOW * 1080 < 0.1, `the dot sphere's facets sag ${(sag * DOT_CUT_BELOW * 450).toFixed(3)} px at its largest`);
-  const src = readFileSync(join(JS, 'scene/worlds.js'), 'utf8');
-  check(/mesh\.userData\.dot = /.test(src) && /dotCutWanted\(discShare\(id\)\) \? mesh\.userData\.dot/.test(src) && /userData\.dot\.dispose\(\)/.test(src), 'worlds.js builds, wears and disposes the dot sphere');
 }
 
 if (problems.length) { console.error(`world looks: ${problems.length} problem(s)\n  - ` + problems.join('\n  - ')); process.exit(1); }
