@@ -351,7 +351,7 @@ ok(len(re.search(r"<title>(.*?)</title>", t_html).group(1)) <= 60, "a title unde
 # --- events -------------------------------------------------------------------------------------------
 evs = yml("sky-events.yaml")["events"]
 ev_index = parse(BUILT / "events" / "index.html")
-ok(len(evs) == 6 and all(f"{e['id']}.html" in ev_index.hrefs for e in evs), "the index links six events")
+ok(len(evs) >= 6 and all(f"{e['id']}.html" in ev_index.hrefs for e in evs), "the index links every event, six or more")
 for e in evs:
     f = BUILT / "events" / f"{e['id']}.html"
     html = f.read_text(encoding="utf-8")

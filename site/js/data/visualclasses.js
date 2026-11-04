@@ -561,6 +561,15 @@ export const VISUAL_CLASSES = [
 "kinetica-1",
 "kuaizhou-1a",
 "minotaur-i",
+"orbex-prime",
+"skyrora-xl",
+"rfa-one",
+"latitude-zephyr",
+"nebula-1",
+"maia",
+"miura-5",
+"epsilon-s",
+"sslv",
 "small-commercial-orbital"
 ],
 "layers": [
