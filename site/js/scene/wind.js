@@ -18,7 +18,7 @@
 // the picture is a texture of the flow, not parcels of air anybody tracked. With reduced motion
 // asked for nothing moves: each streak is drawn once, as a longer piece of the same flow line.
 //
-// It is one overlay among the others (Windy's rule, docs/inspirations.md: one at a time), on
+// It is one overlay among the others (as on Windy: one at a time), on
 // the Earth's own turning frame, hidden behind the globe by the Earth's depth.
 
 import * as THREE from '../../vendor/three.module.min.js';

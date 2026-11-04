@@ -343,6 +343,10 @@ export function createIdleGate(opts = {}) {
 
 const SLOW = new Set(['slow-2g', '2g', '3g']);
 
+/**
+ * Whether the browser's connection asks for less data: `saveData` is on, or the effective type is
+ * slow-2g, 2g or 3g (any case). No connection object means no.
+ */
 export function shouldSaveData(connection) {
   if (!connection) return false;
   if (connection.saveData === true) return true;

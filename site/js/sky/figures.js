@@ -39,6 +39,10 @@ export const CORNER_MAG_LIMIT = 6.6;
 export const DRAW_MS = 3600;
 export const STAGGER_MS = 900;
 
+/**
+ * The unit vector `[x, y, z]` of a point of the sky from its right ascension and declination, both
+ * in degrees, in equatorial axes: `dirOf(0, 0)` is `[1, 0, 0]`, `dirOf(0, 90)` is `[0, 0, 1]`.
+ */
 export function dirOf(raDeg, decDeg) {
   const ra = raDeg * DEG;
   const dec = decDeg * DEG;
@@ -59,6 +63,10 @@ export function eclToEq(v) {
   return [v[0], v[1] * COS_E - v[2] * SIN_E, v[1] * SIN_E + v[2] * COS_E];
 }
 
+/**
+ * The angle in radians between two unit vectors `[x, y, z]`. The dot product is clamped to -1..1 so
+ * that rounding cannot give NaN: `[1, 0, 0]` against `[-1, 0, 0]` is `Math.PI`.
+ */
 export function angleBetween(a, b) {
   const d = a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
   return Math.acos(Math.min(1, Math.max(-1, d)));

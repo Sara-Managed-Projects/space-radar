@@ -110,7 +110,7 @@ const SNAPSHOT_USABLE = new Set(['ok', 'not-modified', 'not-due']);
  * @property {string}  url
  * @property {number}  cadenceMs        never fetched again before this has passed
  * @property {number}  freshnessMaxMs   older than this and the app shows a stale stamp
- * @property {boolean} browser          MEASURED 2026-09-06, the CORS column of docs/data-sources.md:
+ * @property {boolean} browser          MEASURED 2026-09-06, each row's own `browser:` value in registry/sources.yaml:
  *                                      true when a page may read the host directly, which is what
  *                                      the app falls back to when our snapshot is missing
  * @property {string}  publisher        who to name in "read live from {publisher}"

@@ -4871,8 +4871,9 @@ def check_sites(sites_doc: dict, sites: list, world_ids: set) -> None:
                 fail(where, "a landing with no `source:` -- cite a `references:` key")
             elif source == SITE_UNCITED:
                 if sid not in UNCITED_SITES:
-                    fail(where, "`source: uncited` is reserved for the six rows that predate the "
-                                "rule. A new landing site cites a reference or does not ship")
+                    fail(where, "`source: uncited` is reserved for the rows in UNCITED_SITES, "
+                                "which predate the rule. A new landing site cites a reference "
+                                "or does not ship")
             elif source not in refs:
                 fail(where, f"source `{source}` is not a key of `references:`")
             else:
@@ -5050,7 +5051,7 @@ def main() -> int:
             fail(where, f"auth {auth!r} must be `none` or `secret:NAME`")
         # Whether a PAGE may read this host is what decides the app's fallback when our snapshot is
         # missing: a `true` row falls back to the upstream, a `false` row says "could not look".
-        # It is a measurement (the CORS column of docs/data-sources.md), so a row must state it;
+        # It is a measurement (each row's own `browser:` value, taken 2026-09-06), so a row must state it;
         # a missing flag defaulting to either answer would be a guess dressed as a fact.
         browser = s.get("browser")
         if browser is None:

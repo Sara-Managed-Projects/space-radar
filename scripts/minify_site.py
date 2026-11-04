@@ -39,7 +39,7 @@ WHY IT IS SAFE, IN ORDER OF HOW MUCH EACH IS WORTH
      wrongly is a broken site.
   2. `--node`: every output file is given to `node --check`. scripts/deploy.sh passes it (it needs
      node already, for the object pages) and refuses to deploy when a file fails.
-  3. tests/test_minify.mjs holds the scanner to the cases that break naive ones (a URL in a string,
+  3. tests/test_minify.py holds the scanner to the cases that break naive ones (a URL in a string,
      `//` inside a regular expression and a template, a regular expression after `)`, nested
      templates, a licence header) and runs the whole of site/js and site/css through it.
   4. When it was written, every file's output was parsed beside its source with a real parser

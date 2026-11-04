@@ -61,6 +61,11 @@ export const AIR = Object.freeze({
 });
 export const SKY_STEPS = 16;
 
+/**
+ * The Rayleigh phase function: how much light the air scatters at an angle whose cosine is `mu`,
+ * `3/(16 pi) * (1 + mu^2)`. It is smallest at right angles (mu 0) and twice as large straight on or
+ * straight back.
+ */
 export function phaseRayleigh(mu) {
   return (3 / (16 * Math.PI)) * (1 + mu * mu);
 }

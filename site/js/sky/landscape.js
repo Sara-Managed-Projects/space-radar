@@ -83,6 +83,10 @@ export function hash2(a, b) {
   return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
 }
 
+/**
+ * A whole number that names a place to 0.02 degrees, to seed the landscape's random generator: the
+ * same place always gives the same ground. Longitude is wrapped into 0 to 360, so -180 and 180 agree.
+ */
 export function seedOf(latDeg, lonDeg) {
   return (Math.round((latDeg + 90) * 50) * 36000 + Math.round((((lonDeg % 360) + 360) % 360) * 50)) | 0;
 }

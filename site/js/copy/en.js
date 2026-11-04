@@ -98,6 +98,10 @@ export const fmt = {
   },
 };
 
+/**
+ * `one` for a count of 1 (or -1), `many` for anything else, 0 and fractions included. Delegates to
+ * `fmt.plural`: `plural(1, 'minute', 'minutes')` is `'minute'`, `plural(0, ...)` is `'minutes'`.
+ */
 export function plural(n, one, many) {
   return fmt.plural(n, one, many);
 }

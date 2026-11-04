@@ -14,7 +14,7 @@ the change really was; with several files, the newest of them. Offline and deter
 history on disk is the only input. WHEN GIT HAS NOTHING (no repository, a shallow clone that holds
 one commit, a file that is not tracked yet) the fallback is the date of the commit the build is
 made from, then today, exactly as before: a shallow CI clone therefore dates every page alike, and
-the real dates come from a deploy on a full clone. tests/test_seo_dates.py builds a repository with
+the real dates come from a deploy on a full clone. tests/test_seo_growth.py builds a repository with
 known dates and holds all of this.
 
 A shared change (a template, the card's code, copy/en.js) is NOT counted into every page: it
@@ -33,7 +33,7 @@ ROOT = Path(__file__).resolve().parent.parent
 DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 # The records an object page is made from, by scripts/object_pages.mjs `group`. Every path must exist
-# (tests/test_seo_dates.py), so a renamed file cannot quietly turn a group into the fallback.
+# (tests/test_seo_growth.py), so a renamed file cannot quietly turn a group into the fallback.
 OBJECT_SOURCES = {
     "worlds": ["registry/worlds.yaml"],
     "craft": ["site/js/data/layers.js"],

@@ -21,7 +21,7 @@
 # 80+ for the Quadrantids, 110+ for the Perseids and 15+ for the Leonids ("can vary"); the plus is
 # dropped here. `peak` is still the maximum's date IN 2026: the 2027 table says its dates are
 # "accurate only for 2027" (4 January, 23 April, 13 August, 22 October, 18 November, 23 December
-# for the six that move), and the mailer (scripts/notify, tests/test_notify.py) sends this date as
+# for the six that move), and the mailer (notify/, tests/test_notify.py) sends this date as
 # written for the showers still to come this year. The site does not read it for the date:
 # site/js/sky/radiants.js works each year's out from `sol` (the same solar longitude falls about
 # six hours later each year and a day earlier after a leap day) and uses `peak` only to know

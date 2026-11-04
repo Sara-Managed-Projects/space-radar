@@ -36,10 +36,10 @@
 # fails any of them that would be drawn with the class default -- so the first surface row that
 # is a place rather than a machine will need a shape of its own before it ships.
 #
-# `source: uncited` is the reserved literal for the six rows that predate the rule and whose
+# `source: uncited` is the reserved literal for the rows that predate the rule and whose
 # numbers were not matched to a reference when it was written. It is not a new row's option:
-# check_registry.py holds the six ids in a frozen set, so citing nothing is a deliberate edit
-# there and never a silent default here.
+# check_registry.py holds their ids in a frozen set (UNCITED_SITES), so citing
+# nothing is a deliberate edit there and never a silent default here.
 #
 # THE CONVENTIONS, because a latitude is only a number once you know which one it is:
 #   * Moon: planetocentric latitude, east longitude 0-360, in the mean Earth/polar axis frame
