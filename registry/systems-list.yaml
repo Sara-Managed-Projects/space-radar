@@ -19,7 +19,7 @@
 version: 1
 hosts:
   - {host: Proxima Cen, display: Proxima Centauri, why: temperate}
-  - {host: LHS 1140, why: temperate}
+  - {host: LHS 1140, aliases: [Gliese 3053], why: temperate}
   - {host: Kepler-186, why: temperate}
   - {host: Kepler-452, aliases: [KOI-7016], why: temperate}
   - {host: Kepler-62, why: temperate}
@@ -27,15 +27,15 @@ hosts:
   - {host: Kepler-22, why: temperate}
   - {host: Kepler-69, why: temperate}
   - {host: TOI-700, why: temperate}
-  - {host: TOI-715, why: temperate}
+  - {host: TOI-715, aliases: [TIC 271971130], why: temperate}
   - {host: "Teegarden's Star", id: teegardens-star, why: temperate}
   - {host: Gliese 12, aliases: [GJ 12], why: temperate}
   - {host: K2-18, why: temperate}
   - {host: L 98-59, why: temperate}
   - {host: GJ 1132, aliases: [Gliese 1132], why: temperate}
   - {host: GJ 1214, aliases: [Gliese 1214], why: temperate}
-  - {host: Ross 128, why: temperate}
-  - {host: Wolf 1069, why: temperate}
+  - {host: Ross 128, aliases: [FI Vir, Gliese 447], why: temperate}
+  - {host: Wolf 1069, aliases: [Gliese 1253], why: temperate}
   - {host: GJ 667 C, aliases: [Gliese 667 C], why: temperate}
   - {host: 55 Cnc, display: 55 Cancri, aliases: [Copernicus], why: extreme}
   - {host: WASP-12, why: extreme}

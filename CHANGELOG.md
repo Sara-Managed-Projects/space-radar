@@ -11,6 +11,25 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [1.7.14] - 2026-11-04
+
+### Added
+
+- **Three more places a machine hit the Moon.** Hakuto-R Mission 1 (25 April 2023), Luna 25 (19 August 2023) and Hakuto-R Mission 2 (5 June 2025) join Beresheet as coordinates on the
+  Moon list, not records: position and UTC date from NASA's NSSDCA table, a sentence from the LROC or NASA page about each. The README now says twenty-four places on the Moon.
+- **Five links to the publisher's own pages.** The cards of Perseverance (Jezero), Curiosity (Gale), SOHO, Voyager 1 and Voyager 2 link to NASA's raw-image pages, SOHO's real-time
+  images and "Where are Voyager 1 and 2 now?". Each row says the day it was opened and what was on the page.
+- **More names that find things.** "North star" finds Polaris, "dog star" Sirius and "starlink train" the Starlink satellites; "Statio Cognitum" finds the Apollo 12 site, "Statio
+  Tianchuan" Chang'e 5, "Mons Latreille" Blue Ghost 1 and "Tidbinbilla" the Canberra dish DSS-43; "FI Vir", "Gliese 447", "Gliese 1253", "Gliese 3053" and "TIC 271971130" find
+  Ross 128, Wolf 1069, LHS 1140 and TOI-715. Each name was read on a public page that day.
+
+### Changed
+
+- **The /sources/ page says when eight sources' terms were last read** (Launch Library 2, the NASA Exoplanet Archive, DSN Now, GDACS, Wikidata and the two SWPC sources, 4 November 2026).
+  The Exoplanet Archive line now says what its acknowledgement page asks (a standard acknowledgement and a citation of Christiansen et al. 2025) and that 10.26133/NEA13 is the table's DOI.
+- **Open Notify's terms address works.** `https://open-notify.org/` still answers with a certificate for another host, so the row points at the project's GitHub repository, whose LICENSE
+  file is the GPL-3.0 for the code; the line still says no licence is stated for the data.
+
 ## [1.7.7] - 2026-11-03
 
 ### Added

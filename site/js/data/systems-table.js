@@ -92,7 +92,9 @@ export const SYSTEMS_TABLE = [
 "stage": "system-lhs-1140",
 "host": "LHS 1140",
 "display": "LHS 1140",
-"aliases": [],
+"aliases": [
+"Gliese 3053"
+],
 "hostId": "star-lhs-1140",
 "hostSky": {
 "raDeg": 11.248632,
@@ -752,7 +754,9 @@ export const SYSTEMS_TABLE = [
 "stage": "system-toi-715",
 "host": "TOI-715",
 "display": "TOI-715",
-"aliases": [],
+"aliases": [
+"TIC 271971130"
+],
 "hostId": "star-toi-715",
 "hostSky": {
 "raDeg": 113.8523276,
@@ -1263,7 +1267,10 @@ export const SYSTEMS_TABLE = [
 "stage": "system-ross-128",
 "host": "Ross 128",
 "display": "Ross 128",
-"aliases": [],
+"aliases": [
+"FI Vir",
+"Gliese 447"
+],
 "hostId": "star-ross-128",
 "hostSky": {
 "raDeg": 176.9376036,
@@ -1314,7 +1321,9 @@ export const SYSTEMS_TABLE = [
 "stage": "system-wolf-1069",
 "host": "Wolf 1069",
 "display": "Wolf 1069",
-"aliases": [],
+"aliases": [
+"Gliese 1253"
+],
 "hostId": "star-wolf-1069",
 "hostSky": {
 "raDeg": 306.5242477,

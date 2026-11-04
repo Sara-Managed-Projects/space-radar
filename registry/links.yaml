@@ -38,3 +38,38 @@ links:
     url: "https://www.spaceweather.gov/products/aurora-30-minute-forecast"
     checked: 2026-10-17
     saw: "Aurora - 30 Minute Forecast, NOAA / NWS Space Weather Prediction Center; OVATION-model short-term forecast maps of the aurora for the Northern and Southern Hemisphere"
+  - id: perseverance-raw
+    for: jezero
+    words: "Perseverance's photos"
+    publisher: NASA Mars Exploration
+    url: "https://mars.nasa.gov/mars2020/multimedia/raw-images/"
+    checked: 2026-11-04
+    saw: "Images from the Mars Perseverance Rover, NASA Mars; a Raw Image of the Week and a gallery of the newest raw pictures (231 new images that day, 1,070,369 in all)"
+  - id: curiosity-raw
+    for: gale
+    words: "Curiosity's photos"
+    publisher: NASA Mars Exploration
+    url: "https://mars.nasa.gov/msl/multimedia/raw-images/"
+    checked: 2026-11-04
+    saw: "Raw Images, Multimedia, NASA Mars Exploration; Mars Science Laboratory: Curiosity Raw Images, newest sol first (Sol 5063 that day, 789,346 images in all)"
+  - id: soho-latest
+    for: deep-soho
+    words: "SOHO's latest images"
+    publisher: NASA/ESA SOHO
+    url: "https://soho.nascom.nasa.gov/data/realtime-images.html"
+    checked: 2026-11-04
+    saw: "The Very Latest SOHO Images, dated 04 November 2026 (mission day 11296); the newest EIT 171, 195, 284 and 304, SDO/HMI and LASCO C2 and C3 pictures of the Sun"
+  - id: voyager-1-now
+    for: deep-voyager-1
+    words: "Where is Voyager 1 now?"
+    publisher: NASA Science
+    url: "https://science.nasa.gov/mission/voyager/where-are-voyager-1-and-voyager-2-now/"
+    checked: 2026-11-04
+    saw: "Where Are Voyager 1 and 2 Now?, NASA Science; a Current Position of Voyager 1 section that points to Eyes on the Solar System, and a count-down to 18 November 2026, when Voyager 1 is one light-day from Earth"
+  - id: voyager-2-now
+    for: deep-voyager-2
+    words: "Where is Voyager 2 now?"
+    publisher: NASA Science
+    url: "https://science.nasa.gov/mission/voyager/where-are-voyager-1-and-voyager-2-now/"
+    checked: 2026-11-04
+    saw: "Where Are Voyager 1 and 2 Now?, NASA Science; a Current Position of Voyager 2 section that points to Eyes on the Solar System to see where it is right now"
