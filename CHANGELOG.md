@@ -76,6 +76,39 @@ tagged, and their dates are the day the last change in each landed.
   mono AAC cut by `ffmpeg` from the 5.4-second MP3 and fetched only when the Moment reaches that second. Its credit is in `CREDITS.md` section 9,
   `registry/audio.yaml` and the Moment's own sources, in all ten languages. The 1202 alarms and the launch stay captions: Commons holds no
   recording of either, and the Apollo Flight Journal's audio files did not load.
+## [1.8.0] - 2026-11-04
+
+### Added
+
+- **Four more navigation satellites and the three Galileo In-Orbit Validation craft have a model of their own.** Each was the generic navigation box; each is now built in code
+  from published dimensions and from pictures read for the layout, by name, and its card says "shape built from published dimensions and pictures; details simplified". The
+  Cabinet Office of Japan's satellite-information documents give the Michibiki craft's wings, body, height, antenna-cover areas and the reflectors' angles; EUSPA's metadata gives
+  the Galileo box. **QZS-1R and QZS-6** (`qzs-1r.glb`, 72 kB): the Michibiki bus with a flat octagonal L-band antenna where QZS-2 and QZS-4 have a cone, 8.271 m wings and a
+  2.359 m body (QZS-6's three small extra antennas are not drawn). **QZS-3** (`qzs-3.glb`, 78 kB): the same bus with its 9.1 m2 oval reflector hung from the bottom of one face and
+  a 0.8 m2 one near the top of the other, 7.0 m deep (the Cabinet Office's drawing: 7.1 m). **QZS-7** (`qzs-7.glb`, 79 kB): two reflectors set by the document's own normals.
+  **Galileo IOV, GSAT0101 to GSAT0103** (`galileo-iov.glb`, 46 kB): a slab 2.611 by 1.149 by 1.149 m with a hexagonal array of cups on its largest face, the 84-cube
+  retroreflector at EUSPA's place, a lattice-framed dish and two 5.0 by 1.082 m arrays, 13 m tip to tip. Each is 7 400 to 17 400 triangles, loaded only when its craft is
+  selected. The sources, what was cited and what was estimated are in `registry/models.yaml` and `CREDITS.md` §3z. (Internal #751.)
+- **PAZ wears TerraSAR-X's model.** eoPortal says PAZ is built on TerraSAR-X's platform and DLR calls the three satellites almost identical; PAZ (NORAD 43215) now has the
+  six-sided body, the 4.8 m radar antenna and the boom of `terrasar-x.glb` and not the generic radar blade. (Internal #753.)
+- **The `model` look probe has an eighth place, on the side away from the Sun.** TerraSAR-X's radar antenna looks that way and the other seven places never saw it; the
+  eighth, and the close-up sheet's fifth picture, stand there under the craft's horizon with the card's lamp on for that picture only, and the picture's line says it is the
+  lamp that lights it. (Internal #753.)
+
+### Changed
+
+- **NavIC's first-generation wings are no longer an estimate.** URSC's page of IRNSS-1A gives one panel of 2.15 by 1.8 m a side and a 1.1 m dual-helix antenna; `irnss.glb`
+  is rebuilt with them (7.6 m tip to tip; the 0.9 m arm between body and panel is still ours). (Internal #751.)
+- **MetOp's wing is now cited.** ESA's page says eight hinged panels of 1 m by 5 m, which is what the file already drew from a NASA picture; the registry row now says so.
+  (Internal #753.)
+
+### Not yet
+
+- **How MetOp's 20 degree solar-array cant lies to its arm, and which way the body lies to its track, are on no page found**: the file does not draw the cant. NavIC's arm
+  between body and panel and NVS-01's bus are not found either.
+- **The reflectors of QZS-3 and QZS-7 are drawn solid and their sizes are read off the Cabinet Office's figures**; the real ones are a mesh. QZS-6's small extra antennas are not drawn.
+- **No model has been seen by a person who knows the craft**; the pictures in the pull request are the first look.
+
 ## [1.7.9] - 2026-11-03
 
 ### Added

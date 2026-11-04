@@ -71,7 +71,8 @@ for (const year of [2020, 2025]) {
   routes.push({ table: 'named', key: `starlink@${year}`, entry: realModelFor({ id: `sl-${year}`, name: 'STARLINK-1007', klass: 'satellite', layer: 'active', meta: { noradId: 99000, launchYear: year } }) });
 }
 // Batch six: the navigation rows pick a file from the record's launch year or name; each answer is a route here.
-for (const [name, year] of [['NAVSTAR 56 (USA 180)', 2004], ['NAVSTAR 71 (USA 256)', 2014], ['NAVSTAR 81 (USA 319)', 2021], ['GSAT0210 (GALILEO 13)', 2016], ['QZS-2 (MICHIBIKI-2)', 2017], ['IRNSS-1B', 2014]]) {
+for (const [name, year] of [['NAVSTAR 56 (USA 180)', 2004], ['NAVSTAR 71 (USA 256)', 2014], ['NAVSTAR 81 (USA 319)', 2021], ['GSAT0210 (GALILEO 13)', 2016], ['QZS-2 (MICHIBIKI-2)', 2017], ['IRNSS-1B', 2014],
+  ['QZS-1R (MICHIBIKI-1R)', 2021], ['QZS-3 (MICHIBIKI-3)', 2017], ['QZS-7 (MICHIBIKI-7)', 2026], ['GSAT0101 (GALILEO-PFM)', 2011]]) { // release 1.8.0: the files of internal #751
   routes.push({ table: 'named', key: `${name}@${year}`, entry: realModelFor({ id: `nav-${name}`, name, klass: 'satellite', layer: 'active', meta: { noradId: 99200, launchYear: year } }) });
 }
 check(routes.length > 150, `scene/realmodels.js routes were read (${routes.length})`);
@@ -238,20 +239,23 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     ['NAVSTAR 77 (USA 289)', 2018, 'gps-iii.glb', 'navigation-gps-iii', 'a GPS III navigation satellite'], ['NAVSTAR 86 (USA 585)', 2026, 'gps-iii.glb', 'navigation-gps-iii', 'a GPS III navigation satellite'],
     ['GSAT0201 (GALILEO 5)', 2014, 'galileo-foc.glb', 'navigation', 'a Galileo navigation satellite'], ['GSAT0234 (GALILEO 34)', 2025, 'galileo-foc.glb', 'navigation', 'a Galileo navigation satellite'],
     ['QZS-2 (MICHIBIKI-2)', 2017, 'michibiki.glb', 'navigation', 'a QZSS navigation satellite'], ['QZS-4 (MICHIBIKI-4)', 2017, 'michibiki.glb', 'navigation', 'a QZSS navigation satellite'],
+    // RELEASE 1.8.0 (internal #751): QZS-1R and QZS-6 wear qzs-1r.glb, QZS-3 qzs-3.glb, QZS-7 qzs-7.glb, and the three Galileo IOV craft galileo-iov.glb.
+    ['QZS-1R (MICHIBIKI-1R)', 2021, 'qzs-1r.glb', 'navigation', 'a QZSS navigation satellite'], ['QZS-6 (MICHIBIKI-6)', 2025, 'qzs-1r.glb', 'navigation', 'a QZSS navigation satellite'],
+    ['QZS-3 (MICHIBIKI-3)', 2017, 'qzs-3.glb', 'navigation', 'a QZSS navigation satellite'], ['QZS-7 (MICHIBIKI-7)', 2026, 'qzs-7.glb', 'navigation', 'a QZSS navigation satellite'],
+    ['GSAT0101 (GALILEO-PFM)', 2011, 'galileo-iov.glb', 'navigation', 'a Galileo navigation satellite'], ['GSAT0103 (GALILEO-FM3)', 2012, 'galileo-iov.glb', 'navigation', 'a Galileo navigation satellite'],
     ['IRNSS-1A', 2013, 'irnss.glb', 'navigation', 'an IRNSS navigation satellite'], ['IRNSS-1I', 2018, 'irnss.glb', 'navigation', 'an IRNSS navigation satellite']]) {
     const got = nav(name, year);
     check(got && got.file === file && got.build === build && got.name === called && got.generic === true && got.made === 'dimensions' && got.axes === 'app', `${name} (launched ${year}) wears ${file} over the build ${build}, as the kind of thing: ${JSON.stringify(got)}`);
   }
   // What no file was built for keeps the family box and wears NO file: another block, another maker's bus, another antenna.
   for (const [name, year] of [['NAVSTAR 38 (USA 135)', 1997], ['NAVSTAR 30 (USA 100)', 1996], ['NAVSTAR 90 (USA 999)', 2017], ['NAVSTAR 81 (USA 319)', undefined],
-    ['GSAT0101 (GALILEO-PFM)', 2011], ['GSAT0103 (GALILEO-FM3)', 2012], ['GSAT0301 (GALILEO 35)', 2027],
-    ['QZS-1R (MICHIBIKI-1R)', 2021], ['QZS-3 (MICHIBIKI-3)', 2017], ['QZS-6 (MICHIBIKI-6)', 2025], ['QZS-7 (MICHIBIKI-7)', 2026],
+    ['GSAT0301 (GALILEO 35)', 2027], ['QZS-5 (MICHIBIKI-5)', 2024],
     ['NVS-01 (IRNSS-1J)', 2023], ['IRNSS-1J', 2023], ['BEIDOU-3 M1', 2017], ['BEIDOU-2 G1', 2010]]) {
     const got = nav(name, year);
     check(got && String(got.build).startsWith('navigation') && !got.file && !got.made && !got.axes && got.generic === true, `${name} (launched ${year}) keeps a procedural navigation shape and wears no file: ${JSON.stringify(got)}`);
   }
   // One constellation's or block's file never reaches another's craft, debris, or a communications satellite that carries a navigation payload.
-  const sixth = ['gps-iir.glb', 'gps-iif.glb', 'gps-iii.glb', 'galileo-foc.glb', 'michibiki.glb', 'irnss.glb', 'saocom.glb'];
+  const sixth = ['gps-iir.glb', 'gps-iif.glb', 'gps-iii.glb', 'galileo-foc.glb', 'michibiki.glb', 'irnss.glb', 'saocom.glb', 'qzs-1r.glb', 'qzs-3.glb', 'qzs-7.glb', 'galileo-iov.glb'];
   for (const [name, year, klass, id] of [['NAVSTAR 56 (USA 180) DEB', 2004, 'debris'], ['GSAT0210 (GALILEO 13) DEB', 2016, 'debris'], ['IRNSS-1A DEB', 2013, 'debris'], ['QZS-2 DEB', 2017, 'debris'],
     ['GSAT-10', 2012, 'satellite'], ['GSAT-15', 2015, 'satellite'], ['GSAT0210', 2016, 'satellite'], ['COSMOS 2433 [GLONASS-M]', 2007, 'satellite', 32275], ['GLONASS 701K', 2011, 'satellite'],
     ['INMARSAT 4-F2', 2005, 'satellite'], ['SES-5', 2012, 'satellite'], ['QZS-20', 2030, 'satellite'], ['AQZS-2', 2017, 'satellite'],
@@ -460,6 +464,31 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
   // (The numbers 45344, 44204, 37763, 43005, 41549, 37846 and 41875 are from memory of the catalogue, not looked up: the lead confirms them or swaps in numbers it knows.)
   // The two existing checks that name 'BEIDOU-3 M1' (the `nav()` loop 'keeps a procedural navigation shape', and batch ten's 'does not reach') stay true: the first uses the
   // placeholder number 99300 (the name key still answers), the second only asks that no file of batch ten is worn.
+  // RELEASE 1.8.0 (internal #751): by NAME, as every navigation file is. The same names reach one file each, and no other craft's name does.
+  for (const [name, file] of [['QZS-1R (MICHIBIKI-1R)', 'qzs-1r.glb'], ['QZS-6 (MICHIBIKI-6)', 'qzs-1r.glb'], ['QZS-3 (MICHIBIKI-3)', 'qzs-3.glb'], ['QZS-7 (MICHIBIKI-7)', 'qzs-7.glb'],
+    ['QZS-2 (MICHIBIKI-2)', 'michibiki.glb'], ['QZS-4 (MICHIBIKI-4)', 'michibiki.glb'], ['GSAT0101 (GALILEO-PFM)', 'galileo-iov.glb'], ['GSAT0102 (GALILEO-FM2)', 'galileo-iov.glb'],
+    ['GSAT0103 (GALILEO-FM3)', 'galileo-iov.glb'], ['GSAT0201 (GALILEO 5)', 'galileo-foc.glb']]) {
+    const got = nav(name, 2020);
+    check(got && got.file === file && got.generic === true && got.made === 'dimensions' && got.axes === 'app', `${name} wears ${file} as the kind of thing: ${JSON.stringify(got)}`);
+  }
+  // It does not reach: QZS-5 (no file), a name that only starts like one, debris of one, a Galileo of the second generation, or a GSAT communications satellite.
+  for (const [name, klass] of [['QZS-5 (MICHIBIKI-5)', 'satellite'], ['QZS-10', 'satellite'], ['QZS-1R DEB', 'debris'], ['QZS-7 DEB', 'debris'], ['GSAT0101 DEB', 'debris'], ['GSAT0301 (GALILEO 35)', 'satellite'], ['GSAT-10', 'satellite'], ['GSAT0110', 'satellite']]) {
+    const got = nav(name, 2020, klass);
+    const iov = ['qzs-1r.glb', 'qzs-3.glb', 'qzs-7.glb', 'galileo-iov.glb'];
+    check(!got || !iov.includes(got.file), `${name} (${klass}) wears none of release 1.8.0's navigation files: ${JSON.stringify(got)}`);
+  }
+  // RELEASE 1.8.0 (internal #753): PAZ (CelesTrak `PAZ`, NORAD 43215, 2018-020A) wears terrasar-x.glb by number, as TerraSAR-X and TanDEM-X do (eoPortal: PAZ is built on TerraSAR-X's platform).
+  {
+    const got = sat(43215, 'PAZ');
+    check(got && got.file === 'terrasar-x.glb' && got.colour === 'satellite' && got.name === 'PAZ' && got.catalogue === 'PAZ' && !got.generic && got.made === 'dimensions' && got.axes === 'app', `PAZ (43215) wears terrasar-x.glb as itself: ${JSON.stringify(got)}`);
+    // A record with a placeholder number still reaches the name key and keeps the blade; a name that only contains the letters, or its debris, wears no file.
+    const byName = sat(90500, 'PAZ');
+    check(byName && !byName.file && byName.build === 'radar' && byName.generic === true, `PAZ with a placeholder number keeps the radar blade: ${JSON.stringify(byName)}`);
+    for (const [norad, name, klass] of [[99996, 'PAZ DEB', 'debris'], [90501, 'PAZ-1 TEST SATELLITE'], [32382, 'RADARSAT-2']]) {
+      const other = sat(norad, name, klass || 'satellite');
+      check(!other || other.file !== 'terrasar-x.glb', `${name} (${norad}) does not wear terrasar-x.glb: ${JSON.stringify(other)}`);
+    }
+  }
   // RELEASE 1.7.5, CRAFT PART A (public #963, #967, #971, #972): four astronomy satellites wear a file of their own as themselves, by NORAD number
   // (read in the live saved catalogue of 2026-11-03): none was a generic shape with a name, and HXMT, which was the generic space telescope, no longer is.
   for (const [norad, cat, name, file] of [[44874, 'CHEOPS', 'CHEOPS', 'cheops.glb'], [42758, 'HXMT (HUIYAN)', 'Insight-HXMT (Huiyan)', 'hxmt.glb'],

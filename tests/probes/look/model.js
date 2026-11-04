@@ -3,7 +3,7 @@
 // with `sr:model-upgraded`), move the clock into sunlight if the craft is in the Earth's shadow, then
 // photograph it as the app frames it and from five places on its SUNWARD side, at the same distance,
 // the camera never below the craft, and then once from BELOW it, from the Earth's side looking up at
-// its Earth face (see `walk`): seven views.
+// its Earth face (see `walk`), and once from the side AWAY from the Sun with the card's lamp on: eight views.
 // 0077 W1-a: begin
 // THEN THE CLOSE-UP SHEET (release 1.3.0, stage W1-a): four more, the model filling nine tenths of the
 // picture's short side through a lens for looking only (`lensOn`, `CLOSE`): right and left from the
@@ -303,6 +303,13 @@ const PLACES = [
   // The Earth face itself is in sunlight only when the Sun is below the craft's own horizon (low Sun,
   // or a high orbit); otherwise it wears the toon ramp's shade tone, and the view's line says which.
   ['7-from-below', [0.34, 0.5, 0.8], 'from the Earth\'s side, looking up at the Earth face', 'below'],
+  // THE EIGHTH, FROM THE SIDE AWAY FROM THE SUN (2026-11-04, release 1.8.0, internal #753). TerraSAR-X's radar
+  // antenna looks down and to the side AWAY from the Sun (a dawn-dusk orbit: the Sun is square to the track), so
+  // none of the seven places above ever saw it, and the Sun never lights it. This one stands on that side, under
+  // the craft's horizon, and turns the card's lamp on (scene/models.js setFloodLight, the lamp "Light it" on a
+  // card switches on) for this one picture, off again after. The picture's line says so: the colours are the
+  // file's, the light on them is the lamp's and not the Sun's.
+  ['8-far-side', [0.22, -0.62, 0.74], 'from the side away from the Sun and under the craft\'s horizon, the card\'s lamp on (the Sun does not light this side; a radar antenna that looks away from it shows here)', 'far'],
 ];
 // 0077 W1-a: begin
 // `opts` (2026-10-20, release 1.3.0 stage W1-a, internal spec 0077): `places` (default PLACES), `share` (the
@@ -332,10 +339,10 @@ const walk = async (tag, what, opts = {}) => {
     let d = unit(mix(mix(f.x, lx, f.y, ly), 1, f.z, lz));
     // The Sun below the craft's horizon (a craft lit over the night side): lean toward the light.
     let lit = d.x * f.s.x + d.y * f.s.y + d.z * f.s.z;
-    if (lit < 0.2) { d = unit(mix(d, 1, f.s, 0.6)); lit = d.x * f.s.x + d.y * f.s.y + d.z * f.s.z; }
+    if (lit < 0.2 && side !== 'far') { d = unit(mix(d, 1, f.s, 0.6)); lit = d.x * f.s.x + d.y * f.s.y + d.z * f.s.z; }
     const above = -(d.x * f.z.x + d.y * f.z.y + d.z * f.z.z);
-    if (side === 'below' && onGround) { look.warns.push('probe: ' + name + ' not taken for ' + record.id + ': a site on the ground has no underside'); continue; }
-    if (side === 'below') {
+    if ((side === 'below' || side === 'far') && onGround) { look.warns.push('probe: ' + name + ' not taken for ' + record.id + ': a site on the ground has no underside'); continue; }
+    if (side === 'below' || side === 'far') {
       // The lean toward the light may have lifted it: it stays at least 30 degrees under the craft's horizon.
       const under = d.x * f.z.x + d.y * f.z.y + d.z * f.z.z;
       if (under < 0.5) d = unit(mix(d, 1, f.z, 0.5 - under + 0.3));
@@ -369,7 +376,18 @@ const walk = async (tag, what, opts = {}) => {
       d = found;
       lit = d.x * f.s.x + d.y * f.s.y + d.z * f.s.z;
       rig.flyTo({ offset: d, distance: dist, ms: 0 });
-      await take(name, words + ', ' + underDeg + ' degrees under its horizon' + (dist < d0 ? ' and at ' + Math.round((dist / d0) * 100) + ' % of the framing distance (a low craft: no room under it)' : '')
+      const lowWords = ', ' + underDeg + ' degrees under its horizon' + (dist < d0 ? ' and at ' + Math.round((dist / d0) * 100) + ' % of the framing distance (a low craft: no room under it)' : '');
+      if (side === 'far') {
+        // The card's lamp for this picture only; whatever state it was in is put back.
+        let lampWas = false; let MMfar = null;
+        try { MMfar = await import(urlOf('./js/scene/models.js')); lampWas = MMfar.floodLightOn(); MMfar.setFloodLight(true); } catch { look.warns.push('probe: ' + name + ' is photographed without the card\'s lamp: an older ref has no setFloodLight'); }
+        try {
+          await take(name, words + lowWords + '; the Sun ' + deg(lit) + ' degrees from the line of sight, behind the craft; LIT BY THE CARD\'S LAMP, NOT BY THE SUN',
+            { sunAngleDeg: deg(lit), aboveHorizon: false, fromBelow: true, farSide: true, lamp: !!MMfar, underHorizonDeg: underDeg, distanceShare: dist / d0 });
+        } finally { if (MMfar && !lampWas) MMfar.setFloodLight(false); }
+        continue;
+      }
+      await take(name, words + lowWords
         + '; the Sun ' + deg(lit) + ' degrees from the line of sight; the Earth face is ' + (sunOnFace > 0.03 ? 'in sunlight (the Sun ' + (90 - deg(sunOnFace)) + ' degrees below the craft\'s horizon)' : 'in its own shade, the sunward flank lit'),
         { sunAngleDeg: deg(lit), aboveHorizon: false, fromBelow: true, earthFaceSunlit: sunOnFace > 0.03, underHorizonDeg: underDeg, distanceShare: dist / d0 });
       continue;
@@ -396,6 +414,7 @@ const CLOSE = [
   ['close-2-sunward-left', [-0.62, 0.66, -0.42], 'close up, from the sunward side, left and above'],
   ['close-3-sun-face', [0.14, 0.93, -0.34], 'close up, square onto the lit face'],
   ['close-4-earth-side', [0.34, 0.5, 0.8], 'close up, from the Earth\'s side, looking up at the Earth face', 'below'],
+  ['close-5-far-side', [0.22, -0.62, 0.74], 'close up, from the side away from the Sun and under the craft\'s horizon, the card\'s lamp on', 'far'], // 2026-11-04, internal #753: where TerraSAR-X's antenna is
 ];
 const fill = 0.9 * Math.min(innerWidth, innerHeight);
 const lensK = out.drawnPx > 0 ? Math.max(1, Math.min(4, fill / out.drawnPx)) : 2.5;
