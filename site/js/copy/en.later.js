@@ -1711,7 +1711,7 @@ Object.assign(COPY, {
   // ui/opening.js (public #287): over a first visit's opening shot. The buttons are welcome's.
   opening: {
     label: 'Opening',
-    from: 'From',
+    from: 'From {source}',
     wait: 'Getting the trip ready',
     skip: 'Any key or press skips this',
   },

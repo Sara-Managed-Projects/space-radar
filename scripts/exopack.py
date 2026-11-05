@@ -141,6 +141,9 @@ def pack(csv_path: Path, as_of: str | None = None) -> bytes:
 def main(argv: list[str]) -> int:
     src = Path(argv[0]) if argv else ROOT / "site/data/exoplanets.csv"
     dest = Path(argv[1]) if len(argv) > 1 else ROOT / "site/data/exoplanets.bin"
+    if not src.is_file():
+        print(f"exopack: no such file: {src}\nusage: python3 scripts/exopack.py [SRC.csv [DEST.bin]]", file=sys.stderr)
+        return 2
     data = pack(src)
     dest.write_bytes(data)
     import gzip
@@ -149,4 +152,7 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
+    from _cli import usage_if_asked
+
+    usage_if_asked(__doc__)
     sys.exit(main(sys.argv[1:]))

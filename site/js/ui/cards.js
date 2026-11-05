@@ -1384,7 +1384,7 @@ export function systemLine(record, stageId = stage.worldId) {
   if (!m || stageId !== m.system.stage) return null;
   if (m.system.zone !== undefined) return generatedLine(m.system);
   const guessed = m.system.planets.some((p) => !phaseIsMeasured(p));
-  const line = t(COPY.trip.systemLine, { phase: guessed ? COPY.trip.systemPhaseUnknown : '' });
+  const line = guessed ? COPY.trip.systemLineGuessed : COPY.trip.systemLine;
   // A planet drawn with a face (scene/exoface.js) says so first, in words made from its own row:
   // "Artist's impression. Measured: 1.1 Earth radii, a 6.1-day year. The surface is imagined."
   const face = faceLineOf(record.id);

@@ -70,12 +70,20 @@ SPECT_CORRECTIONS = {
     54061: ("K0IIIa", "Dubhe: SIMBAD, alpha UMa A; B-V 1.07"),
 }
 
+USAGE = "python3 scripts/build-stars3d.py path/to/hyg_v44.csv"
+
 
 def main(argv: list[str]) -> int:
+    if argv in (["--help"], ["-h"]):
+        print(f"usage: {USAGE}\n\n{__doc__}")
+        return 0
     if len(argv) != 1:
-        print(__doc__)
+        print(f"usage: {USAGE}\n\n{__doc__}")
         return 2
     src = Path(argv[0])
+    if not src.is_file():
+        print(f"build-stars3d: no such file: {src}\nusage: {USAGE}", file=sys.stderr)
+        return 2
     ce, se = math.cos(math.radians(OBLIQUITY_DEG)), math.sin(math.radians(OBLIQUITY_DEG))
     records = bytearray()
     names: list = []

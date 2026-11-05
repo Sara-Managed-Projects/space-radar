@@ -158,4 +158,7 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    from _cli import usage_if_asked
+
+    usage_if_asked(__doc__)
     sys.exit(main())

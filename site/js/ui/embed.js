@@ -45,6 +45,10 @@ export const EMBED_SIZE = { width: 600, height: 400 };
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const SAFE_VALUE = /^[A-Za-z0-9._:+\- ]{1,80}$/;
 
+/**
+ * Whether a location search string (`?embed=1&...`) asks for the embed: `embed=1` as a whole parameter.
+ * Anything else, including `embed=10`, `embed=0`, `#at=iss` and no string at all, is false.
+ */
 export function isEmbed(search) {
   return /[?&]embed=1(?:&|$)/.test(String(search || ''));
 }

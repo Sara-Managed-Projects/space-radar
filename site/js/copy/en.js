@@ -1917,7 +1917,8 @@ export const COPY = {
     // drawn. Generated (ui/cards.js drawingLine), never typed in the registry. {phase} is empty when
     // every planet's place on its orbit comes from a transit time (scene/systems.js
     // phaseIsMeasured), and systemPhaseUnknown when one of them is illustrative.
-    systemLine: 'Sizes and orbits from the NASA Exoplanet Archive; the colours{phase} and the tilt of the orbits are illustrative.',
+    systemLine: 'Sizes and orbits from the NASA Exoplanet Archive; the colours and the tilt of the orbits are illustrative.',
+    systemLineGuessed: 'Sizes and orbits from the NASA Exoplanet Archive; the colours, the planets’ places on their orbits and the tilt of the orbits are illustrative.',
     systemPhaseUnknown: ', the planets’ places on their orbits',
     rateWords: {
       10: 'ten times faster than life',

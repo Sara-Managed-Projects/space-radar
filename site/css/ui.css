@@ -7300,3 +7300,17 @@ button.sr-debris__oldname:hover { color: var(--sr-ember-light); }
   .sr-tonight-view__change { transition: none; }
 }
 /* 0077 W1-d: end */
+
+/* Windows high contrast (public #651). The keyboard mark above is gradient backgrounds on ::before and
+   ::after, and the focus ring is switched off, so a browser that forces colours (forced-colors: active)
+   showed no mark on a button, a link, an option or a summary (looked at in Chrome 156 with the media feature
+   emulated, 2026-11-05). The system's own highlight colour, as an outline, on the same selectors, on the
+   search box's row and on the search list's active option; the brackets stay where the author's colours are kept. */
+@media (forced-colors: active) {
+  :where(button, a[href], [role='option'], summary):focus-visible,
+  .sr-search__row:has(:focus-visible),
+  .sr-search__option.is-active {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}

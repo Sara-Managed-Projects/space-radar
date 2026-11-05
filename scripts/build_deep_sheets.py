@@ -773,6 +773,9 @@ def solve() -> int:
 
 
 if __name__ == "__main__":
+    from _cli import usage_if_asked
+
+    usage_if_asked(__doc__)
     if "--check" in sys.argv[1:]:
         sys.exit(check())
     if "--solve" in sys.argv[1:]:

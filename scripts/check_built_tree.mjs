@@ -116,6 +116,7 @@ export const TESTS = [
 ];
 
 const opt = { tests: false, discover: false, site: join(ROOT, 'site') };
+if (process.argv.includes('--help') || process.argv.includes('-h')) { console.log('usage: node scripts/check_built_tree.mjs --built DIR [--site DIR] [--tests] [--discover] [--quiet]'); process.exit(0); }
 for (let i = 2; i < process.argv.length; i++) {
   const a = process.argv[i];
   if (a === '--built') opt.built = resolve(process.argv[++i]);

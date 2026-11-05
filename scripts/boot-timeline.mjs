@@ -39,6 +39,7 @@ export function judge(t, limits) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
+  if (process.argv.includes('--help') || process.argv.includes('-h')) { console.log('usage: node scripts/boot-timeline.mjs --base=URL [--out=FILE.json] [--gate] [--mobile]'); process.exit(0); }
   const { chromium } = await import('playwright');
   const body = readFileSync(join(ROOT, 'tests/probes/boot-timeline.js'), 'utf8');
   const browser = await chromium.launch();

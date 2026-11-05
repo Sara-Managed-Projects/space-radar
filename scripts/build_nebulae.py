@@ -326,6 +326,9 @@ def solve() -> int:
 
 
 if __name__ == "__main__":
+    from _cli import usage_if_asked
+
+    usage_if_asked(__doc__)
     if "--check" in sys.argv:
         sys.exit(check())
     sys.exit(solve() if "--solve" in sys.argv else build())

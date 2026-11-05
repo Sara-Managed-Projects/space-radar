@@ -16,6 +16,8 @@ const get = async (url) => {
   if (!r.ok) throw new Error(`${r.status} ${url}`);
   return r.json();
 };
+if (process.argv.includes('--help') || process.argv.includes('-h')) { console.log('usage: node scripts/fetch-sbdb-rows.mjs OUT.json DESIGNATION [DESIGNATION ...]'); process.exit(0); }
+if (process.argv.length < 4) { console.error('fetch-sbdb-rows: needs OUT.json and at least one designation\nusage: node scripts/fetch-sbdb-rows.mjs OUT.json 21 2867 67P'); process.exit(2); }
 const out = {};
 for (const des of process.argv.slice(3)) {
   const isComet = /[A-Z]$/.test(des) && !/^\d+$/.test(des);
