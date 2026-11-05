@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Habitable Zone Slider | Space Radar Lab</title>
+<meta name="description" content="The zone where liquid water can sit on a planet moves in for a dim star and out for a bright one.">
+<meta name="sr-lab-category" content="Planets and moons">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b0e14">
+<link rel="stylesheet" href="../../css/fonts.css">
+<style>
+:root{--sr-space:#0b0e14;--sr-text:#e8ecf2;--sr-text-dim:#9aa4b2;--sr-ember:#ff9f43;--sr-ember-light:#ffc28a;--sr-ink:#14100a;--sr-line:rgba(232,236,242,.10);--sr-wash:rgba(232,236,242,.07);--sr-wash-hover:rgba(232,236,242,.12);--sr-radius:6px}
+html{background:var(--sr-space);color:var(--sr-text);font:400 15px/20px Inter,system-ui,-apple-system,sans-serif;-webkit-text-size-adjust:100%}
+body{margin:0}
+a{color:var(--sr-ember)}a:hover{color:var(--sr-ember-light)}
+a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--sr-ember);outline-offset:2px;border-radius:2px}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:0 20px;max-width:1160px;margin:0 auto;padding:4px 16px;border-bottom:1px solid var(--sr-line)}
+.top a{display:inline-flex;align-items:center;min-height:44px;color:var(--sr-text);text-decoration:none}
+.top .mark{font:600 20px/1 'Barlow Semi Condensed',system-ui,sans-serif;letter-spacing:.02em}
+.top .here{color:var(--sr-text-dim)}
+main{display:grid;grid-template-columns:minmax(0,1fr);max-width:1160px;margin:0 auto;padding:20px 16px 32px;gap:0 32px;align-content:start}
+main>*{min-width:0}
+.micro{margin:0 0 8px;font:600 13px/16px 'Barlow Semi Condensed',system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--sr-text-dim)}
+h1{margin:0 0 12px;font:600 30px/1.1 Inter,system-ui,sans-serif;letter-spacing:-.01em;overflow-wrap:anywhere}
+.lead{margin:0 0 20px;font-size:18px;line-height:26px;max-width:60ch}
+.stage{margin:0 0 16px;width:100%}
+canvas{display:block;width:100%;aspect-ratio:1080/1200;background:#05070d;border-radius:var(--sr-radius);border:1px solid var(--sr-line)}
+.line{margin:0 0 16px;font-size:16px;line-height:24px;max-width:60ch;min-height:48px}
+.controls{display:grid;gap:12px;margin:0 0 16px}
+.controls label{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;font-size:13px;line-height:18px;color:var(--sr-text-dim)}
+.controls label input{grid-column:1/-1;width:100%;min-height:44px;margin:0;accent-color:var(--sr-ember)}
+.controls output{font:500 13px/18px 'JetBrains Mono',ui-monospace,monospace;color:var(--sr-text);font-variant-numeric:tabular-nums}
+button{min-height:44px;padding:0 20px;border:0;border-radius:var(--sr-radius);background:var(--sr-ember);color:var(--sr-ink);font:600 15px/1 Inter,system-ui,sans-serif;cursor:pointer;justify-self:start}
+button:hover{background:var(--sr-ember-light)}
+.honest{margin:0 0 16px;padding:12px 14px;border-radius:var(--sr-radius);background:var(--sr-wash);color:var(--sr-text-dim);font-size:13px;line-height:18px;max-width:60ch}
+.honest b{color:var(--sr-text);font-weight:600}
+details{margin:0 0 16px;max-width:60ch;border-top:1px solid var(--sr-line)}
+summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font-weight:600}
+.srcl{margin:0 0 6px;font-size:13px;line-height:18px;color:var(--sr-text-dim);white-space:pre-wrap;overflow-wrap:anywhere}
+.more{display:flex;flex-wrap:wrap;gap:0 16px;margin:0;font-size:15px}
+.more a{display:inline-flex;align-items:center;min-height:44px}
+.ns{color:var(--sr-text-dim)}
+@media (min-width:900px){
+ main{grid-template-columns:minmax(0,1fr) 360px;padding-top:24px}
+ main>*{grid-column:2}
+ .stage{grid-column:1;grid-row:1/span 9;width:min(100%,calc((100svh - 130px)*.9));min-width:320px;align-self:start;position:sticky;top:12px;margin:0}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top"><a class="mark" href="../../index.html">Space Radar</a><a class="here" href="../index.html">Lab</a></header>
+<main>
+<p class="micro" id="cat"></p>
+<h1 id="h">Habitable Zone Slider</h1>
+<p class="lead" id="lesson">The zone where liquid water can sit on a planet moves in for a dim star and out for a bright one.</p>
+<div class="stage"><canvas id="c" role="img" aria-label="Habitable Zone Slider"></canvas></div>
+<p class="line" id="line"></p>
+<noscript><p class="ns">This simulator needs JavaScript. It is one small file, with no libraries and no network requests: read it with View source.</p></noscript>
+<div class="controls">
+<button type="button" id="pb">Pause</button>
+<label>Time <input type="range" id="ts" min="0" value="0" aria-label="Time through the animation"></label>
+<label id="pl">Value <output id="po"></output><input type="range" id="ps"></label>
+</div>
+<p class="honest"><b>What is and is not to scale.</b> <span id="honest"></span></p>
+<details><summary>How this was made and sources</summary>
+<p class="srcl">One HTML file: no libraries, no network requests. Every number below was read on the date shown, from the page named next to it.</p>
+<div id="src"></div>
+</details>
+<p class="more"><a href="../../index.html">Back to the live map</a><a href="../index.html">All simulators</a><a id="add" href="https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/ADD_A_SIMULATOR.md">Add your own simulator</a><a id="edit" href="https://github.com/Sara-Managed-Projects/space-radar/tree/main/site/lab">Fix a mistake on GitHub</a></p>
+</main>
+<!-- Sources
+Sources, read on 2026-11-05:
+ Wikipedia, "Circumstellar habitable zone" (https://en.wikipedia.org/wiki/Circumstellar_habitable_zone): Kopparapu et al. (2013) conservative edges for the Sun, 0.99 AU and 1.67 AU; the edge distance scales as sqrt(L / Lsun).
+ Wikipedia, "TRAPPIST-1" (https://en.wikipedia.org/wiki/TRAPPIST-1): luminosity (5.66 +- 0.22) x 10^-4 Lsun; semi-major axes b 0.01154, c 0.01580, d 0.02227, e 0.02925, f 0.03849, g 0.04683, h 0.06189 AU.
+ NASA Planetary Fact Sheet (https://nssdc.gsfc.nasa.gov/planetary/factsheet/), "Distance from Sun (10^6 km)": Venus 108.2, Earth 149.6, Mars 228.0, which is 0.723, 1.000 and 1.524 AU.
+ Check by hand: L = 5.66e-4 gives sqrt = 0.02379, so the zone is 0.99 x 0.02379 = 0.0236 to 1.67 x 0.02379 = 0.0397 AU. Planets e and f fall inside it; d and g fall outside.
+-->
+<script>
+// ============================================ 0. HELPERS (shared; do not edit) ====================================
+// Defined first, so a simulator may use them while it loads (top-level tables). Colours: EMBER for the point of the lesson, INK for text, DIM for the quiet.
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x)),seg=(t,a,b)=>clamp((t-a)/(b-a),0,1),ease=x=>{x=clamp(x,0,1);return x*x*(3-2*x)},lerp=(a,b,x)=>a+(b-a)*x;
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const EMBER='#ff9f43',INK='#e8ecf4',DIM='#a3adc0',FONT='Inter,system-ui,-apple-system,"Segoe UI",sans-serif',Y0=430,Y1=1440,MINPX=34;
+// ============================================ 1. THE SIMULATOR (yours) ============================================
+const IN=.99,OUT=1.67,LT=5.66e-4,LTQ=Math.log10(LT),YR=1010;       // the Sun's conservative zone edges (AU); TRAPPIST-1's power; the ruler's height
+const PL=[['VENUS',.723,'#e8c07a'],['EARTH',1,'#4f9bff'],['MARS',1.524,'#d9693f']];   // AU, from the fact sheet's 108.2, 149.6, 228.0 million km
+const TP=[['b',.01154],['c',.0158],['d',.02227],['e',.02925],['f',.03849],['g',.04683],['h',.06189]];   // TRAPPIST-1's planets, AU
+const X0=110,X1=1040,XA=a=>X0+Math.log10(a/.005)/Math.log10(4000)*(X1-X0);   // the log distance ruler: 0.005 to 20 AU
+const pw=q=>Math.abs(q-LTQ)<.04?LT:Math.pow(10,q);                 // the slider snaps to TRAPPIST-1 when it is close
+const fl=L=>L>=10?L.toFixed(0):L>=1?L.toFixed(1):L>=.01?L.toFixed(2):String(+L.toPrecision(3));
+const fa=v=>v<.1?v.toFixed(3):v<10?v.toFixed(2):v.toFixed(1);
+const SC=[[255,100,60],[255,236,196],[160,196,255]],tint=k=>{const i=k<.667?0:1,f=i?(k-.667)/.333:k/.667;return'rgb('+SC[i].map((v,j)=>Math.round(lerp(v,SC[i+1][j],f)))+')'};   // star colour: red dwarf, Sun-like, blue-white (drawn, not computed)
+const verdict=(a,i,o)=>a<i?'TOO HOT':a>o?'TOO COLD':'IN THE ZONE';
+const SIM={dur:8,reveal:4,hook:'THE GREEN BAND MOVES|WITH THE STAR\'S POWER',
+ honest:'A simple rule: the zone\'s distance scales with the square root of the star\'s power. Real edges also depend on its colour.',
+ param:{label:'star power (power of ten of the Sun\'s; 0 = Sun)',min:-4,max:2,step:.01,value:0},
+ line(q){const L=pw(q),i=IN*Math.sqrt(L),o=OUT*Math.sqrt(L),w=PL.map(p=>p[0][0]+p[0].slice(1).toLowerCase()+' is '+verdict(p[1],i,o).toLowerCase()).join(', '),
+   tp=L<.01?' Of the TRAPPIST-1 planets, '+(TP.filter(p=>p[1]>=i&&p[1]<=o).map(p=>p[0]).join(' and ')||'none')+' sit inside it.':'';
+  return`A star with ${fl(L)} times the Sun's power has its habitable zone from ${fa(i)} to ${fa(o)} AU (0.99 and 1.67 AU x the square root of the power). ${w}.${tp}`},
+ draw(c,t,q){
+  const L=pw(q),i=IN*Math.sqrt(L),o=OUT*Math.sqrt(L),xi=XA(i),xo=XA(o),k=(q+4)/6,col=tint(k);
+  stars(c,40);text('STAR POWER',60,470,34,DIM,600,'left');text(fl(L)+' x SUN',60,540,56,EMBER,800,'left');
+  if(L===LT)text('= TRAPPIST-1',1020,540,44,INK,800,'right');else if(q===0)text('= THE SUN',1020,540,44,INK,800,'right');
+  c.fillStyle='rgba(80,200,120,'+(.3+.06*Math.sin(t*2))+')';c.fillRect(xi,610,xo-xi,YR-610);
+  c.strokeStyle='#7fe0a0';c.lineWidth=3;for(const x of[xi,xo]){c.beginPath();c.moveTo(x,610);c.lineTo(x,YR);c.stroke()}
+  text(fa(i)+' to '+fa(o)+' AU',clamp((xi+xo)/2,200,880),590,40,'#7fe0a0',800);
+  glow(c,52,YR,lerp(60,150,k),col,.8);disc(c,52,YR,lerp(16,40,k),col);
+  c.strokeStyle='rgba(255,255,255,.5)';c.lineWidth=4;c.beginPath();c.moveTo(X0,YR);c.lineTo(X1,YR);c.stroke();c.lineWidth=2;
+  for(const e of[-2,-1,0,1])for(const m of[1,2,5]){const x=XA(m*Math.pow(10,e));if(x<X0||x>X1)continue;c.beginPath();c.moveTo(x,YR);c.lineTo(x,YR+(m==1?18:9));c.stroke();if(m==1)text(Math.pow(10,e)+' AU',x,YR+56,34,DIM,500)}
+  PL.forEach((p,n)=>{const x=XA(p[1]),y=YR+125+n*58,v=verdict(p[1],i,o),ok=v==='IN THE ZONE';
+   c.strokeStyle='rgba(255,255,255,.25)';c.beginPath();c.moveTo(x,YR);c.lineTo(x,y-38);c.stroke();
+   disc(c,x,YR,15,p[2]);if(ok){c.strokeStyle='#7fe0a0';c.lineWidth=4;c.beginPath();c.arc(x,YR,21,0,6.2832);c.stroke()}
+   text(p[0]+': '+v,x,y,34,ok?'#7fe0a0':INK,700)});
+  if(L<.01){text('TRAPPIST-1 PLANETS',540,670,34,DIM,600);
+   TP.forEach((p,n)=>{const x=XA(p[1]),ok=p[1]>=i&&p[1]<=o;disc(c,x,YR,7,ok?'#7fe0a0':INK);text(p[0],x,YR-(n%2?64:24),36,ok?'#7fe0a0':INK,800)})}
+  text('DISTANCE FROM THE STAR, LOG SCALE',540,1355,34,DIM,500);text('ZONE EDGES: 0.99 AND 1.67 AU x SQRT(POWER)',540,1420,36,EMBER,800)}};
+// ============================================ 2. THE PAGE (shared; rarely needs a change) =========================
+// The stage is 1080 units wide; the page shows the band y 270..1470 of it. Draw only inside it, and put no text under 34 units.
+// `draw(c, t, P)` gets the 2D context, the time t in seconds (it loops over SIM.dur) and the slider value P. `line(P, t)` is the caption under the picture.
+// SIM.reveal is the second at which the animation shows its point; with a slider (SIM.param) the picture follows the slider, so rev(t) is 1.
+function rev(t){return SIM.param?1:ease(seg(t,SIM.reveal-.3,SIM.reveal+.9))}
+let S=1,P=SIM.param?SIM.param.value:0,T=0;
+function text(s,x,y,size,col,w,al){cx.font=(w||600)+' '+Math.max(size,MINPX)+'px '+FONT;cx.fillStyle=col||INK;cx.textAlign=al||'center';cx.textBaseline='alphabetic';cx.fillText(s,x,y)}
+function wrap(s,x,y,size,col,maxW,lh,w,al){cx.font=(w||600)+' '+Math.max(size,MINPX)+'px '+FONT;let ln='';for(const wd of s.split(' ')){const tr=ln?ln+' '+wd:wd;if(cx.measureText(tr).width>maxW&&ln){text(ln,x,y,size,col,w,al);y+=lh;ln=wd}else ln=tr}text(ln,x,y,size,col,w,al);return y+lh}
+function glow(c,x,y,r,col,a){const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,col);g.addColorStop(1,'rgba(0,0,0,0)');c.globalAlpha=a==null?1:a;c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,6.2832);c.fill();c.globalAlpha=1}
+function disc(c,x,y,r,col){c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,6.2832);c.fill()}
+function stars(c,n){let s=7;const r=()=>(s=(s*16807)%2147483647)/2147483647;for(let i=0;i<(n||90);i++){c.globalAlpha=.25+.5*r();c.fillStyle='#fff';c.fillRect(r()*1080,r()*1920,2,2)}c.globalAlpha=1} // a fixed starfield
+function draw(t){cx.setTransform(1,0,0,1,0,0);cx.fillStyle='#05070d';cx.fillRect(0,0,cv.width,cv.height);
+  cx.setTransform(S,0,0,S,0,-270*S);cx.save();cx.beginPath();cx.rect(0,0,1080,1920);cx.clip();SIM.draw(cx,t,P);
+  const h=SIM.hook.split('|');text(h[0],540,330,60,EMBER,800);if(h[1])text(h[1],540,396,60,EMBER,800);cx.restore()}
+{
+  const byId=id=>document.getElementById(id),LOOP=SIM.dur,meta=n=>(document.querySelector('meta[name="'+n+'"]')||{}).content||'';
+  byId('cat').textContent=meta('sr-lab-category');byId('honest').textContent=SIM.honest;
+  cv.setAttribute('aria-label',byId('h').textContent+'. '+meta('description'));
+  // "How this was made": the comment that starts with "Sources" in this file, with its web addresses made into links.
+  const walk=document.createTreeWalker(document,NodeFilter.SHOW_COMMENT);let node,src='';
+  while((node=walk.nextNode()))if(/^\s*sources?\b/i.test(node.data)){src=node.data.trim();break}
+  for(const ln of src.split('\n')){if(!ln.trim())continue;const p=document.createElement('p');p.className='srcl';
+    ln.split(/(\w+:\/\/[^\s)]+)/).forEach((part,i)=>{let ok=false;if(i%2)try{ok=new URL(part).protocol==='https:'}catch(e){}
+      if(ok){const a=document.createElement('a');a.href=part;a.rel='noopener';a.textContent=part;p.append(a)}else p.append(part)});byId('src').append(p)}
+  // Where this file lives in the repository, for the "fix a mistake" link.
+  const parts=location.pathname.split('/').filter(Boolean);if(parts[parts.length-1]==='index.html')parts.pop();
+  const slug=parts[parts.length-1]||'',edit=byId('edit');if(slug&&slug!=='lab')edit.href=edit.href.replace('/tree/','/edit/')+'/'+slug+'/index.html';
+  const pb=byId('pb'),ts=byId('ts'),ps=byId('ps'),po=byId('po'),calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let play=!calm,t0=performance.now(),dirty=true,last='';
+  ts.max=LOOP;ts.step=.01;
+  if(calm){T=Math.min(SIM.reveal+1.2,LOOP-.1);ts.value=T;pb.textContent='Play'}
+  const p=SIM.param;
+  if(p){const dec=(String(p.step).split('.')[1]||'').length,fmt=v=>(+v).toLocaleString('en-US',{maximumFractionDigits:dec,minimumFractionDigits:dec});
+    ps.min=p.min;ps.max=p.max;ps.step=p.step;ps.value=p.value;ps.setAttribute('aria-label',p.label);byId('pl').firstChild.textContent=p.label+' ';po.textContent=fmt(P);
+    ps.oninput=()=>{P=+ps.value;po.textContent=fmt(P);dirty=true}}
+  else byId('pl').hidden=true;
+  pb.onclick=()=>{play=!play;pb.textContent=play?'Pause':'Play';t0=performance.now()-T*1000};
+  ts.oninput=()=>{play=false;pb.textContent='Play';T=+ts.value;dirty=true};
+  function fit(){const d=Math.min(devicePixelRatio||1,2);cv.width=Math.round(cv.clientWidth*d);cv.height=Math.round(cv.clientHeight*d);S=cv.width/1080;dirty=true}
+  new ResizeObserver(fit).observe(cv);fit();
+  (function frame(){if(play){T=((performance.now()-t0)/1000)%LOOP;ts.value=T;dirty=true}
+    if(dirty){dirty=false;draw(T);const l=SIM.line(P,T);if(l!==last){last=l;byId('line').textContent=l}}
+    requestAnimationFrame(frame)})();
+}
+</script>
+</body>
+</html>
