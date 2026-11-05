@@ -122,7 +122,7 @@ sources:
 
   - id: pds-small-bodies
     name: NASA Planetary Data System, Small Bodies Node (UMD and PSI archives)
-    match: ["https://pds-smallbodies.astro.umd.edu/", "https://sbnarchive.psi.edu/"]
+    match: ["https://pds-smallbodies.astro.umd.edu/", "https://sbnarchive.psi.edu/", "https://sbn.psi.edu/pds/shape-models/files/"]  # 0079 B2: the node's own OBJ copies of the Saturn small moons
     url: https://sbn.psi.edu/pds/shape-models/
     licence: NASA mission data, public (PDS)
     licence_read: ""

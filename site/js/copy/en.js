@@ -1720,6 +1720,10 @@ export const COPY = {
       comet: 'it turns about its measured pole at the rate measured in 2014, which the Sun has changed by minutes at each pass since; which side faces the Sun at this moment is not a prediction',
       still: 'it is drawn in the orientation of its radar model and does not turn here: the model does not state which way its spin axis lies',
       // 0079 B1: end
+      // 0079 B2: begin
+      moonSpin: 'it keeps one face toward Saturn, turning about the pole the IAU’s constants give it once a lap; which side of it faces the camera at this moment is that formula’s, not a prediction',
+      moonStill: 'it is drawn in the orientation of its model and does not turn here: no steady pole and rate are given for it in the constants this app reads',
+      // 0079 B2: end
     },
     // 0077 W3-d: end
     // 0079 B1: begin -- what of a small body was seen, said after its shape (ui/cards.js, realmodels.js `seen`), and the relief baked on it (`relief`)
@@ -1730,6 +1734,7 @@ export const COPY = {
       arrokoth: 'New Horizons’ pictures cover the side it flew past; the other side is inferred, not photographed, and the colour is its albedo map in a red tint',
       radar: 'the shape is built from radar echoes, not pictures: its outline is measured and its finest detail is not',
       comet: 'the shape is Rosetta’s, from more than 20 000 pictures over two years, and the whole surface is covered',
+      cassini: 'the shape is built from Cassini’s pictures and is typically uncertain by well under half a kilometre; any part of it Cassini did not see is the fit’s, not photographed', // 0079 B2
     },
     objectRelief: 'the model is simplified, and the fine relief on it is the full model’s own, baked into the surface',
     // 0079 B1: end

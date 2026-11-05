@@ -1729,6 +1729,35 @@ export const REAL_MODELS = {
       // The SHAP5 dataset RO-C-MULTI-5-67P-SHAPE-V2.0: pole RA 69.4, Dec +64.1 (+-0.2), 12.4041 h a turn before perihelion (the rate changed at every pass).
       spin: { poleRaDeg: 69.4, poleDecDeg: 64.1, w0Deg: 0, wDegPerDay: 696.5438847 } },
     // 0079 B1: end
+    // 0079 B2: begin -- SATURN'S SMALL MOONS IN THEIR CASSINI SHAPES (release 1.9.0, internal #1066). Each from the Planetary Data System's
+    // Saturn Small Moon Shape Models (Thomas, Joseph and Ansty 2018; registry/models.yaml, scripts/gen_smallmoon_shapes.mjs), klass-gated
+    // to the moons layer and a whole word like the rows above, so Pan is the moon and never a word inside another name. `tint` is the moon's own
+    // grey from the same lightness rule as the small bodies above, 0.5 * (geometric albedo / 0.21) ^ 0.55 held to 0.98 (their albedos, from
+    // Verbiscer et al., are at or near 1: they are drawn as the bright ice they are). `spin` is NAIF's pck00011 (the IAU's 2009 constants,
+    // BODY6nn_POLE_RA, _POLE_DEC, _PM), the pole and the prime meridian at J2000 and the rate a day: each of these keeps one face to Saturn,
+    // so the rate is the moon's lap of Saturn. The libration terms of Janus and Epimetheus and the precession of every pole are left out.
+    janus: { file: 'moon-janus.glb', colour: 'asteroid', tint: '#F9F9F9', world: true, name: 'Janus', klass: ['moon'], spinWords: 'moonSpin', seen: 'cassini',
+      spin: { poleRaDeg: 40.58, poleDecDeg: 83.52, w0Deg: 58.83, wDegPerDay: 518.2359876 } }, // BODY610
+    epimetheus: { file: 'moon-epimetheus.glb', colour: 'asteroid', tint: '#FAFAFA', world: true, name: 'Epimetheus', klass: ['moon'], spinWords: 'moonSpin', seen: 'cassini',
+      spin: { poleRaDeg: 40.58, poleDecDeg: 83.52, w0Deg: 293.87, wDegPerDay: 518.4907239 } }, // BODY611
+    helene: { file: 'moon-helene.glb', colour: 'asteroid', tint: '#FAFAFA', world: true, name: 'Helene', klass: ['moon'], spinWords: 'moonSpin', seen: 'cassini',
+      spin: { poleRaDeg: 40.85, poleDecDeg: 83.34, w0Deg: 245.12, wDegPerDay: 131.6174056 } }, // BODY612
+    telesto: { file: 'moon-telesto.glb', colour: 'asteroid', tint: '#FAFAFA', world: true, name: 'Telesto', klass: ['moon'], spinWords: 'moonSpin', seen: 'cassini',
+      spin: { poleRaDeg: 50.51, poleDecDeg: 84.06, w0Deg: 56.88, wDegPerDay: 190.6979332 } }, // BODY613
+    calypso: { file: 'moon-calypso.glb', colour: 'asteroid', tint: '#FAFAFA', world: true, name: 'Calypso', klass: ['moon'], spinWords: 'moonSpin', seen: 'cassini',
+      spin: { poleRaDeg: 36.41, poleDecDeg: 85.04, w0Deg: 153.51, wDegPerDay: 190.6742373 } }, // BODY614
+    atlas: { file: 'moon-atlas.glb', colour: 'asteroid', tint: '#FAFAFA', world: true, name: 'Atlas', klass: ['moon'], spinWords: 'moonSpin', seen: 'cassini',
+      spin: { poleRaDeg: 40.58, poleDecDeg: 83.53, w0Deg: 137.88, wDegPerDay: 598.306 } }, // BODY615
+    prometheus: { file: 'moon-prometheus.glb', colour: 'asteroid', tint: '#FAFAFA', world: true, name: 'Prometheus', klass: ['moon'], spinWords: 'moonSpin', seen: 'cassini',
+      spin: { poleRaDeg: 40.58, poleDecDeg: 83.53, w0Deg: 296.14, wDegPerDay: 587.289 } }, // BODY616
+    pandora: { file: 'moon-pandora.glb', colour: 'asteroid', tint: '#FAFAFA', world: true, name: 'Pandora', klass: ['moon'], spinWords: 'moonSpin', seen: 'cassini',
+      spin: { poleRaDeg: 40.58, poleDecDeg: 83.53, w0Deg: 162.92, wDegPerDay: 572.7891 } }, // BODY617
+    pan: { file: 'moon-pan.glb', colour: 'asteroid', tint: '#FAFAFA', world: true, name: 'Pan', klass: ['moon'], spinWords: 'moonSpin', seen: 'cassini',
+      spin: { poleRaDeg: 40.6, poleDecDeg: 83.5, w0Deg: 48.8, wDegPerDay: 626.044 } }, // BODY618
+    // Hyperion tumbles chaotically, so no pole and rate give its attitude; Daphnis is in no constants file this app reads. Both are drawn as their models come.
+    hyperion: { file: 'moon-hyperion.glb', colour: 'asteroid', tint: '#C0C0C0', world: true, name: 'Hyperion', klass: ['moon'], spinWords: 'moonStill', seen: 'cassini' },
+    daphnis: { file: 'moon-daphnis.glb', colour: 'asteroid', tint: '#FAFAFA', world: true, name: 'Daphnis', klass: ['moon'], spinWords: 'moonStill', seen: 'cassini' },
+    // 0079 B2: end
     // 2026-10-05: the Dawn team's shape model from the Planetary Data System, thinned from its own
     // grid by scripts/shape-to-glb.py. Ceres was a faceted icosahedron from the generic builder
     // (issue #420). Klass-gated like the three above: CERES is also a French satellite series.

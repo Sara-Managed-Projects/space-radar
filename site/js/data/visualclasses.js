@@ -120,6 +120,19 @@ export const VISUAL_CLASSES = [
 "umbriel",
 "titania",
 "oberon"
+],
+"real_models": [
+"moon-pan",
+"moon-daphnis",
+"moon-atlas",
+"moon-prometheus",
+"moon-pandora",
+"moon-epimetheus",
+"moon-janus",
+"moon-telesto",
+"moon-calypso",
+"moon-helene",
+"moon-hyperion"
 ]
 }
 },
@@ -379,6 +392,7 @@ export const VISUAL_CLASSES = [
 "viasat-3",
 "o3b",
 "globalstar-2",
+"oneweb",
 "o3b-mpower",
 "wgs",
 "aehf",
@@ -427,7 +441,12 @@ export const VISUAL_CLASSES = [
 "cheops",
 "hxmt",
 "svom",
-"einstein-probe"
+"einstein-probe",
+"radarsat-2",
+"rcm",
+"cosmo-skymed",
+"csg",
+"elektro-l"
 ],
 "model_kinds": [
 "satellite-iridium",

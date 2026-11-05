@@ -126,7 +126,7 @@ data, and every number on screen says where it came from.
 - **Use it on a phone.** The same map, one sheet, one thumb.
 
 Also: live clouds, storms, lightning and the aurora on the Earth · close-up map tiles of the Earth,
-the Moon and Mars · today's sunspot groups · eclipses computed for any date · more than 250 spacecraft and
+the Moon and Mars · today's sunspot groups · eclipses computed for any date · more than 270 spacecraft and
 shape models · fires, volcanoes and icebergs from NASA's EONET and the wind from NOAA's GFS ·
 "Point your phone" at the sky · a passport of places opened and one true sentence on the home ·
 reels that play on their own on a screen in a lobby (spec 0036) · artist's impressions, labelled
