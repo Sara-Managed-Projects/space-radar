@@ -704,5 +704,15 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
   }
 }
 
+// RELEASE 1.9.0 (public #1001): every ONEWEB wears oneweb.glb over the procedural OneWeb; its debris keeps the debris shape.
+{
+  const ir = (norad, name, klass = 'satellite') => realModelFor({ id: `sat-${norad}`, name, klass, layer: 'active', meta: { noradId: norad } });
+  for (const name of ['ONEWEB-0012', 'ONEWEB-0045', 'ONEWEB-0644']) {
+    const got = ir(70001, name);
+    check(got && got.file === 'oneweb.glb' && got.build === 'oneweb' && got.generic === true && got.made === 'dimensions' && got.axes === 'app', `${name} wears oneweb.glb over the procedural OneWeb, as the kind of thing: ${JSON.stringify(got)}`);
+  }
+  check(ir(70002, 'ONEWEB-0012 DEB', 'debris') === null, 'OneWeb debris keeps the debris shape');
+}
+
 if (problems.length) { console.error('real models FAILED:\n  ' + problems.slice(0, 40).join('\n  ') + (problems.length > 40 ? `\n  ... and ${problems.length - 40} more` : '')); process.exit(1); }
 console.log(`real models ok: ${rows.length} models on disc are binary glTF 2 with meshes (${triangles} triangles in all), each worn by a route (${rows.filter(waiting).map((r) => r.id).join(', ') || 'none'} waiting, and saying so) and each route's file a row; ${own} craft with a route of their own get it from realModelFor, none a generic shape (${generic} routes are a class's shape and say so)`);

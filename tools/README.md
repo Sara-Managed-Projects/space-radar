@@ -23,6 +23,9 @@ Things run by hand on a laptop. CI does not run them; each file's head comment s
 <!-- b190-probes: begin -->
 | `venera-builder/` | the Venera 9 and 10 landers of release 1.9.0 (batch E), in code on `vostok-builder/vlib.py`: `venera.py`, `GLTFKIT=<dir> tools/venera-builder/build.sh` |
 <!-- b190-probes: end -->
+<!-- 0080 b190-comms: begin -->
+| `comms-builder/` | the communications-satellite file of release 1.9.0 (`oneweb.glb`; `iridium.py` is a held draft, not shipped), in code on the part library of `stage-builder/lib.py`: `clib.py` (foil edges, dishes, hexagon-tiled antenna fields), `iridium.py`, `oneweb.py` (the published dimensions and what is read off pictures, as arguments and in each head comment), `run.py` (a six-view z-buffer picture of a module, no browser), `build.sh` (`GLTFKIT=<dir with node_modules> tools/comms-builder/build.sh [iridium oneweb]`, json to the shipped .glb through `stage-builder/write-glb.mjs`) |
+<!-- 0080 b190-comms: end -->
 | `look-playwright.mjs`, `look-summary.mjs` | the look workflow's Firefox and WebKit runner, and its summary and verdict (below) |
 
 Two of these in one command each. `cdp.mjs` runs a script inside a page: its `return` value is

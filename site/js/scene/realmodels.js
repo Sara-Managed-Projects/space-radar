@@ -1571,7 +1571,9 @@ export const REAL_MODELS = {
     // characterised the constellation photometrically declined to give any, noting only that the
     // bus has "a more complex prismatic shape" than a Starlink. What is NOT approximate is the
     // silhouette, which is the half that carries recognition and the half that was wrong.
-    oneweb: { build: 'oneweb', colour: 'satellite', name: 'a OneWeb broadband satellite', klass: ['satellite'], generic: true },
+    // A FILE since release 1.9.0 (public #1001): oneweb.glb, the first-generation Arrow box of eoPortal's 1 x 1 x 1.3 m with its two single-panel wings and its
+    // two gateway dishes (registry row `oneweb`, kind `built-from-dimensions`; the wings' size is ours). Every ONEWEB name wears it: all 651 in the issue's feed are first generation. A later bus under this name would need its own file.
+    oneweb: { build: 'oneweb', file: 'oneweb.glb', colour: 'satellite', name: 'a OneWeb broadband satellite', klass: ['satellite'], generic: true, made: 'dimensions', axes: 'app' },
     // A FILE FOR THE FIRST GENERATION since batch five (2026-10-13; public #1000), behind the SAME
     // launch-year gate, which is untouched: starlink-v1.glb, built in code from the bus and array
     // sizes of SpaceX's FCC filing of October 2022 as J. McDowell tabulates it (V1.5: 2.8 x 1.3 m
