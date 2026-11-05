@@ -23,7 +23,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | stars_notable | 55 | 55 |
 | catalogues | 4 | 110 191 |
 | other_light | 3 | 3 |
-| sites | 61 | 61 |
+| sites | 60 | 60 |
 | real_models | 291 | 291 |
 | model_kinds | 52 | 52 |
 | small_bodies | 22 | 22 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 39 | 39 |
-| **all** | **1175** | **111 362** |
+| **all** | **1174** | **111 361** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -52,7 +52,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [ARTIFICIAL_SATELLITE](#artificial_satellite) | 236 | `sgp4.js`, `glyphs.js`, `realmodels.js`, `models.js` | measured | - |
 | [LAUNCH_AND_ROCKET](#launch_and_rocket) | 84 | `models.js`, `ascent.js`, `realmodels.js` | illustrative | - |
 | [SPACE_PROBE](#space_probe) | 74 | `sampled.js`, `realmodels.js`, `models.js`, `glyphs.js` | measured | - |
-| [LANDING_SITE](#landing_site) | 77 | `models.js`, `realmodels.js`, `shadow.js` | measured | - |
+| [LANDING_SITE](#landing_site) | 76 | `models.js`, `realmodels.js`, `shadow.js` | measured | - |
 | [EXOPLANET](#exoplanet) | 185 | `systems.js`, `systemextras.js`, `exoface.js`, `exostage.js` | modelled | - |
 | [STAR](#star) | 64 | `stars3d.js`, `starfield.js`, `stardisc.js` | measured | - |
 | [BINARY_AND_MULTIPLE](#binary_and_multiple) | 2 | `systems.js` | modelled | - |
@@ -82,7 +82,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 1175 records: 374 measured, 436 modelled, 365 illustrative.
+Honesty over the 1174 records: 373 measured, 436 modelled, 365 illustrative.
 
 ## The classes
 
@@ -343,8 +343,8 @@ Honesty over the 1175 records: 374 measured, 436 modelled, 365 illustrative.
 - **Measured, modelled or reconstructed:** Measured: the coordinates, each with its uncertainty in metres where stated. The lander or rover is a procedural stand-in ('the kind of thing, not this exact one'), except NASA's lunar module.
 - **Rights:** NASA, LROC and PDS works public domain; papers cited.
 - **What is missing is tracked in:** #868 (terrain height, the Apollo 15 and 17 traverses, W2-a)
-- **Records (77):**
-  - sites (45): `apollo-11`, `apollo-14`, `apollo-16`, `apollo-17`, `change-4`, `beresheet`, `hakuto-r-1`, `luna-25`, `hakuto-r-2`, `luna-9`, `surveyor-1`, `luna-13`, `surveyor-3`, `surveyor-5`, `surveyor-6`, `surveyor-7`, `apollo-12`, `luna-16`, `lunokhod-1`, `apollo-15`, `luna-20`, `lunokhod-2`, `luna-23`, `luna-24`, `change-3`, `yutu`, `change-5`, `chandrayaan-3`, `slim`, `im-1`, `change-6`, `blue-ghost-1`, `jezero`, `ingenuity`, `gale`, `elysium`, `utopia`, `viking-1`, `viking-2`, `mars-pathfinder`, `spirit`, `opportunity`, `phoenix`, `mars-3`, `huygens`
+- **Records (76):**
+  - sites (44): `apollo-11`, `apollo-14`, `apollo-16`, `apollo-17`, `change-4`, `beresheet`, `hakuto-r-1`, `luna-25`, `hakuto-r-2`, `surveyor-1`, `luna-13`, `surveyor-3`, `surveyor-5`, `surveyor-6`, `surveyor-7`, `apollo-12`, `luna-16`, `lunokhod-1`, `apollo-15`, `luna-20`, `lunokhod-2`, `luna-23`, `luna-24`, `change-3`, `yutu`, `change-5`, `chandrayaan-3`, `slim`, `im-1`, `change-6`, `blue-ghost-1`, `jezero`, `ingenuity`, `gale`, `elysium`, `utopia`, `viking-1`, `viking-2`, `mars-pathfinder`, `spirit`, `opportunity`, `phoenix`, `mars-3`, `huygens`
   - real_models (29): `dsn70`, `lunar-module`, `apollo-csm`, `perseverance`, `pad`, `dsn34`, `mer`, `insight`, `viking-lander`, `ingenuity`, `curiosity`, `vikram`, `odysseus`, `blue-ghost`, `surveyor`, `surveyor-3`, `slim`, `zhurong`, `change-3`, `change-4`, `yutu`, `change-5`, `lunokhod-1`, `lunokhod-2`, `luna-16`, `mars-3`, `venera-9`, `phoenix`, `pathfinder`
   - model_kinds (3): `site-surveyor`, `rover-generic`, `lander-generic`
 

@@ -713,7 +713,6 @@ export const VISUAL_CLASSES = [
 "hakuto-r-1",
 "luna-25",
 "hakuto-r-2",
-"luna-9",
 "surveyor-1",
 "luna-13",
 "surveyor-3",
