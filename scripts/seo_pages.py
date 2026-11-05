@@ -285,8 +285,8 @@ def satellites_page(host: str, counts: dict, slugs: set) -> Page:
     n = counts["active"]
     day = date_words(counts["date"])
     approx = rounded_thousands(n)
-    short = f"Live 3D satellite map: {approx} objects"
-    desc = f"A live 3D map of {approx} satellites at their real positions, with the space station, Hubble, Tiangong and Starlink, free in a browser."
+    short = f"Free live 3D map of the ISS and {approx} satellites"
+    desc = f"Where the ISS and {approx} satellites are right now, on a free live 3D map in a browser: Hubble, Tiangong and Starlink at their real positions, no account."
     link = lambda slug, text: f'<li><a href="../o/{slug}.html">{text}</a></li>' if slug in slugs else ""  # noqa: E731
     body = (
         '<p class="eyebrow"><span class="dot" style="background:#9ec3ff"></span>Satellites</p>\n'

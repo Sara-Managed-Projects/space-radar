@@ -185,7 +185,7 @@ ok(all(h in sat.hrefs for h in ("../o/international-space-station.html", "../o/h
    "the hub links the ISS, Hubble, Tiangong and Starlink")
 import seo_pages as _sp  # noqa: E402
 ok(f"{facts['starlink_objects']:,}" in star.plain and _sp.date_words(str(facts["as_of"])) in star.plain, "a Starlink count with its date, from the registry's fallback when the build has no index")
-ok("about 17,000" in sat.plain and re.search(r"<title>Live 3D satellite map: about 17,000 objects</title>", sat_html), "the hub says about 17,000, derived from the count")
+ok("about 17,000" in sat.plain and re.search(r"<title>Free live 3D map of the ISS and about 17,000 satellites</title>", sat_html), "the hub says about 17,000, derived from the count")
 ok(all(re.search(r"Source: [^<]+, read \d+ \w+ \d{4}", h) for h in (star_html, sat_html)), "both carry a dated source line")
 ok(in_map("starlink/index.html") and in_map("satellites/index.html"), "both are in the sitemap")
 ok("../?from=starlink-page-map#at=starlink" in star.hrefs and "../?from=starlink-page-trip#trip=tonight-from-your-street" in star.hrefs,
