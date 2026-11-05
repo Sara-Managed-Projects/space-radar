@@ -1102,7 +1102,8 @@ tours:
           # soft lander by about 4 months", on 3 February 1966. NSSDCA table note f (Wagner et al.
           # 2017): the published coordinates are from the first Pravda report, LROC finds no lander
           # there, and the site "is probably at least 10 km away, direction unknown" -- which is
-          # why registry/sites.yaml has no Luna 9 row. NSSDCA 1966-045A: "Engines were turned off
+          # why Luna 9 has no hand-kept row in registry/sites.yaml (public #756, 2026-11-05): it stays
+          # the generated NSSDCA row, a coordinate and not a place to draw a lander. NSSDCA 1966-045A: "Engines were turned off
           # at a height of 3.4 m above the lunar surface and the spacecraft fell freely".
           body: >-
             It was not the first. The Soviet Luna 9 landed softly four months earlier, on 3
@@ -1117,16 +1118,17 @@ tours:
         chapter: "Chapter one: the race, 1966 to 1972"
         # read 2026-10-09, https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C:
         # after 21 hours, 36 minutes on the lunar surface ... traversed a total distance of about 250 meters, both ranging up to about 100 meters from the LM.
-        # (card figure = page figure: 21 hours 36 minutes = 21 hours, 36 minutes ; about 250 metres = about 250 meters ; about 100 m = up to about 100 meters from the LM)
+        # checked 2026-11-05 (public #553): the 100 m is NSSDCA's upper bound. NASA's own image page https://www.nasa.gov/image-article/lunar-module-tranquility-base/ says the rim of Little West Crater, where Armstrong took the picture, is "the furthest distance from the lunar module traveled by either astronaut", and LROC (ASU), https://lroc.im-ldi.com/images/484, measures on its images that the trail to that crater runs "around 50 meters (164 feet) to the east of the LM". So the card says about 50 m, the measured farthest point, and keeps 250 m (no second figure was found).
+        # (card figure = page figure: 21 hours 36 minutes = 21 hours, 36 minutes ; about 250 metres = about 250 meters ; about 50 m = "around 50 meters (164 feet) to the east of the LM" (LROC))
         card:
           title: "The first people"
           # NSSDCA 1969-059C (the Apollo 11 lunar module): the LM "lifted off from the Moon ...
           # after 21 hours, 36 minutes on the lunar surface"; "The astronauts traversed a total
           # distance of about 250 meters, both ranging up to about 100 meters from the LM"; and
-          # the CSM was "piloted by Michael Collins".
+          # the CSM was "piloted by Michael Collins". The farthest either went: see the check above.
           body: >-
             Neil Armstrong and Buzz Aldrin stayed 21 hours and 36 minutes. Their whole walk
-            covered about 250 metres, and neither went more than about 100 m from the lander.
+            covered about 250 metres, and neither went farther than about 50 m from the lander.
             Michael Collins waited for them in orbit.
 
       - id: apollo-12
@@ -1172,18 +1174,19 @@ tours:
         chapter: "Chapter one: the race, 1966 to 1972"
         # read 2026-10-09, https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1972-096A:
         # after 75 hours on the lunar surface ... covered 30 km using the Lunar Roving Vehicle ... Harrison H. Schmitt, the first scientist on the Moon
-        # (card figure = page figure: 75 hours = 75 hours (Apollo 17 page) ; 30 km = 30 km ; first scientist = "first scientist on the Moon" ; "robots landed three more times" = after Apollo 17 (11 Dec 1972) the table lists Luna 21 (15 Jan 1973), Luna 23 (6 Nov 1974), Luna 24 (18 Aug 1976) as landers = 3 (Lunokhod 2 is a rover riding Luna 21) ; 37 years = Luna 24 18 Aug 1976 to Chang'e 3 14 Dec 2013 = 37.3 years (table dates; the page states no span, computed))
+        # checked 2026-11-05 (public #553): the same NSSDCA page says "they covered 30 km", but NSSDCA's own page on the rover, https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo_lrv.html, says "On Apollo 17 the rover went 35.9 km in 4 hours 26 minutes total drive time. The longest traverse was 20.1 km", so the card says about 36 km.
+        # (card figure = page figure: 75 hours = 75 hours (Apollo 17 page) ; about 36 km = 35.9 km (NSSDCA, the rover) ; first scientist = "first scientist on the Moon" ; "robots landed three more times" = after Apollo 17 (11 Dec 1972) the table lists Luna 21 (15 Jan 1973), Luna 23 (6 Nov 1974), Luna 24 (18 Aug 1976) as landers = 3 (Lunokhod 2 is a rover riding Luna 21) ; 37 years = Luna 24 18 Aug 1976 to Chang'e 3 14 Dec 2013 = 37.3 years (table dates; the page states no span, computed))
         card:
           title: "Seventy-five hours, then a long quiet"
           # NSSDCA 1972-096C: "Schmitt was the first scientist-astronaut to walk on the Moon"; the
           # LM lifted off "after 75 hours on the lunar surface"; on three moonwalks "they covered
-          # 30 km", using the rover. The NSSDCA table's soft landings after 11 December 1972 are
+          # 30 km" (and the rover page, 35.9 km, see above). The NSSDCA table's soft landings after 11 December 1972 are
           # Luna 21 (1973), Luna 23 (1974) and Luna 24 (18 August 1976), and the next is Chang'e 3
           # on 14 December 2013: thirty-seven years and four months. Impacts in between (Hiten,
           # Lunar Prospector, SMART-1) are not landings, hence "landed softly".
           body: >-
             Gene Cernan and Harrison Schmitt, the first scientist to walk on the Moon, stayed 75
-            hours and covered 30 km with their rover. After them robots landed three more times,
+            hours and drove their rover about 36 km. After them robots landed three more times,
             and then nothing landed softly on the Moon for 37 years.
 
       - id: change-4
@@ -1288,19 +1291,23 @@ tours:
         chapter: "Epilogue: the whole Moon"
         # read 2026-10-09, https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_artifact_impacts.html:
         # Last Updated: 13 August 2025, DRW [table header]; the page states no total, it lists 6 rows typed "Crewed Landing" and 32 landing rows
-        # (card figure = page figure: last updated August 2025 = "Last Updated: 13 August 2025" ; six with people aboard = 6 rows typed "Crewed Landing" (Apollo 11, 12, 14, 15, 16, 17) ; 28 landings = my count of the table: 18 "Soft Landing" + 6 "Lander" + 6 "Crewed Landing" = 30, minus the two rover rows typed as soft landings (Yutu Rover, Yutu 2) = 28 landers; the two "Rover" rows (Lunokhod 1, 2) are separate from those 30 ; 19 on this map = site-computed, not checked, as instructed ; "Luna 9 ... nobody knows exactly where it is" = note f: "lander site is probably at least 10 km away, direction unknown")
+        # (card figure = page figure: last updated August 2025 = "Last Updated: 13 August 2025" ; six with people aboard = 6 rows typed "Crewed Landing" (Apollo 11, 12, 14, 15, 16, 17) ; 28 landings = my count of the table: 18 "Soft Landing" + 6 "Lander" + 6 "Crewed Landing" = 30, minus the two rover rows typed as soft landings (Yutu Rover, Yutu 2) = 28 landers; the two "Rover" rows (Lunokhod 1, 2) are separate from those 30 ; 26 on this map = site-computed (19 until 2026-11-05, before seven landing rows were added), held by tests/test_moon_trip.mjs ; "Luna 9 ... nobody knows exactly where it is" = note f: "lander site is probably at least 10 km away, direction unknown")
         card:
-          title: "Twenty-eight landings, nineteen on this map"
+          title: "Twenty-eight landings, twenty-six on this map"
           # The NSSDCA table, "Last Updated: 13 August 2025", counted 2026-09-22: 28 rows typed
           # Soft Landing, Crewed Landing or Lander, leaving out the two Yutu rovers it also types
           # Soft Landing; 6 of them Crewed Landing. The 19 is registry/sites.yaml's lunar rows
           # that are records -- two of them the rovers Luna 17 and Luna 21 carried, where they
           # stopped -- and tests/test_moon_trip.mjs holds this card to that count.
           # 0077 W3-c: Yutu has a row of its own since release 1.3.0 (public #1125), beside its lander's, so
-          # the map marks the same 19 landings and one rover more.
+          # the map marks the same landings and one rover more.
+          # Release 1.9.0 (public #758, #759, #761, #763, #765, #767, #769): Luna 13, Surveyor 5, 6 and 7, Luna 20, 23 and 24
+          # are rows now, so the map marks 26, not 19. Luna 9 is a row too but `record: false`, so it is still not one of them.
+          # Checked 2026-11-05 against the table as fetched that day: still "Last Updated: 13 August 2025"; 18 "Soft Landing" +
+          # 6 "Lander" + 6 "Crewed Landing" less the two Yutu rows = 28, 6 of them crewed.
           body: >-
             NASA's table of what lies on the Moon, last updated in August 2025, lists 28 landings,
-            six of them with people aboard. This map marks 19 of them, two by where their rovers
+            six of them with people aboard. This map marks 26 of them, two by where their rovers
             stopped, and Chang'e 3's rover Yutu beside its lander. Luna 9, the first of all, is not
             one: nobody knows exactly where it is.
 

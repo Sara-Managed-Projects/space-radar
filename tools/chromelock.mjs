@@ -102,6 +102,7 @@ export function createChromeLock(opts = {}) {
 // it straight back. Starts no Chrome. Exit 0 had it, 2 the wait ran out. For checking the lock
 // against whatever is running (internal #460).
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  if (process.argv.includes('--help') || process.argv.includes('-h')) { console.log('usage: node tools/chromelock.mjs [--wait=20]  (say who holds the Chrome lock, wait that long for it, give it back)'); process.exit(0); }
   const wait = Number((process.argv.find((a) => a.startsWith('--wait=')) || '--wait=20').slice(7)) * 1000;
   const lock = createChromeLock({ waitMs: wait, pollMs: 1000 });
   const before = readLock(lock.path);

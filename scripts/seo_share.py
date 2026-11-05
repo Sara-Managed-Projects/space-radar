@@ -350,6 +350,9 @@ def image_sitemap(host: str, rows: list[tuple[str, str, str]]) -> str:
 
 
 if __name__ == "__main__":
+    from _cli import usage_if_asked
+
+    usage_if_asked(__doc__)
     # A look at one picture: python3 scripts/seo_share.py out.png "Kepler-186 f" "1.17 x Earth"
     if len(sys.argv) < 2:
         print(__doc__)

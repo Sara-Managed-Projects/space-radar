@@ -53,7 +53,7 @@ def put(path, body):
 
 def main():
     if "-h" in sys.argv or "--help" in sys.argv:
-        print(__doc__)
+        print("usage: python3 save_offline_data.py [--site=DIR] [--from=URL]\n\n" + __doc__)
         return 0
     here = os.path.dirname(os.path.abspath(__file__))
     site = arg("site", os.path.join(here, "..", "site"))

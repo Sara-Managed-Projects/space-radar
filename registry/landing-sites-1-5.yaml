@@ -62,6 +62,7 @@ references:
            to orbit Phobos, the first to collect samples from its surface and the first to return to Earth from the Mars system."
 
 # kind:  landing | descent | impact | crash | lost | planned (a landing the mission has not made yet)
+# model: the id of a registry/models.yaml row that is drawn at the place (release 1.9.0). Without it a row is a mark and nothing else.
 sites:
   # --- Venus: seventeen places (Venera 4 to 14, VEGA 1 and 2, the four Pioneer Venus probes) -----------------------------------------
   - {id: venera-4, display: "Venera 4, end of descent", world: venus, lat: 19, lon: 38, kind: descent, date: 1967-10-18, approx_deg: 1, source: wikipedia-geodata, doing: "Sent the first measurements from inside the air of another planet, and went silent before it reached the ground."}
@@ -69,8 +70,8 @@ sites:
   - {id: venera-6, display: "Venera 6, end of descent", world: venus, lat: -5, lon: 23, kind: descent, date: 1969-05-17, approx_deg: 1, source: wikipedia-geodata, doing: "The twin of Venera 5, a day later: it too went silent before it reached the surface."}
   - {id: venera-7, display: "Venera 7 landing site", world: venus, lat: -5, lon: 351, kind: landing, date: 1970-12-15, approx_deg: 1, source: wikipedia-geodata, aliases: ["Venera 7"], doing: "The first soft landing on another planet, and the first data sent from the ground of one."}
   - {id: venera-8, display: "Venera 8 landing site", world: venus, lat: -10.7, lon: 335.25, kind: landing, date: 1972-07-22, source: wikipedia-geodata, aliases: ["Venera 8"], doing: "The second probe to land on Venus, and the first to land on its sunlit side."}
-  - {id: venera-9, display: "Venera 9 landing site", world: venus, lat: 31.01, lon: 291.64, kind: landing, date: 1975-10-22, source: wikipedia-geodata, aliases: ["Venera 9"], doing: "Sent the first picture from the ground of another planet, a slope strewn with rocks."}
-  - {id: venera-10, display: "Venera 10 landing site", world: venus, lat: 15.42, lon: 291.51, kind: landing, date: 1975-10-25, source: wikipedia-geodata, aliases: ["Venera 10"], doing: "Landed three days after its twin, Venera 9, and sent a picture of its own."}
+  - {id: venera-9, display: "Venera 9 landing site", world: venus, lat: 31.01, lon: 291.64, kind: landing, date: 1975-10-22, source: wikipedia-geodata, model: venera-9, aliases: ["Venera 9"], doing: "Sent the first picture from the ground of another planet, a slope strewn with rocks."}
+  - {id: venera-10, display: "Venera 10 landing site", world: venus, lat: 15.42, lon: 291.51, kind: landing, date: 1975-10-25, source: wikipedia-geodata, model: venera-9, aliases: ["Venera 10"], doing: "Landed three days after its twin, Venera 9, and sent a picture of its own."}
   - {id: venera-11, display: "Venera 11 landing site", world: venus, lat: -14, lon: 299, kind: landing, date: 1978-12-25, approx_deg: 1, source: wikipedia-geodata, aliases: ["Venera 11"], doing: "Landed and measured the air and the soil, but its camera caps did not come off, so there is no picture."}
   - {id: venera-12, display: "Venera 12 landing site", world: venus, lat: -7, lon: 294, kind: landing, date: 1978-12-21, approx_deg: 1, source: wikipedia-geodata, aliases: ["Venera 12"], doing: "Landed four days before Venera 11 and worked on the ground; its camera caps stayed on too."}
   - {id: venera-13, display: "Venera 13 landing site", world: venus, lat: -7.5, lon: 303, kind: landing, date: 1982-03-01, approx_deg: 1, source: wikipedia-geodata, aliases: ["Venera 13"], doing: "Sent the first colour pictures from the ground of another planet and analysed a sample it drilled."}

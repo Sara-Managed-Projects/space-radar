@@ -232,6 +232,17 @@ sites:
   # clock to their launch mornings. Coordinates read 2026-10-08 on Wikipedia's articles for the
   # two pads: 28 36 30 N, 80 36 16 W and 28 37 38 N, 80 37 15 W. Only Apollo 10's Saturn V left
   # from 39B (Wikipedia, Saturn V, read the same day), so twelve of the thirteen left from 39A.
+  # An agency reading, 2026-11-05 (public #644 and #646): the National Park Service's National Register
+  # registration forms "Launch Complex 39: Pad A" (NRIS 99001638, npgallery.nps.gov/GetAsset/ec079e7b-41c4-4f6d-91ea-a1bc2882e7cf)
+  # and "Launch Complex 39: Pad B" (NRIS 99001639, npgallery.nps.gov/GetAsset/704579a4-68fe-4401-8e66-8eef29d834a4) give each
+  # pad's boundary as ten UTM corners (the perimeter service road plus 100 ft). Pad A: easting 538240 to 539120, northing
+  # 3164030 to 3164860; Pad B: easting 536580 to 537500, northing 3166120 to 3166940. The zone is 17, the zone of this
+  # longitude (the scan's text does not carry the zone column), and the datum is not stated in either form. Converted, each
+  # row's point lies inside its pad's boundary, which is about 900 m across, and about 195 m north of that boundary's
+  # centre. That is no disagreement, because a boundary is a fence and not a point, but it is no agreement to 50 m either:
+  # the agency pages confirm the ground, and the point's digits stay Wikipedia's. No number was changed. NASA's pages
+  # "Launch Complex 39A" and "39B" (nasa.gov/reference/) and its image article on the two pads give no position, and no
+  # Space Force page was found that does.
   # `liftoffs:` IS THE GATE (scene/realmodels.js padVehicleShown): the vehicle is drawn from 24 hours
   # before a liftoff given to the minute until the end of that minute, or for the UTC day of one
   # given as a date, and at no other time. tests/test_pad_vehicles.mjs holds the list equal to the
@@ -286,6 +297,19 @@ sites:
     shape: lander
     source: lroc-2016
     doing: "The first American spacecraft to land softly on the Moon, in June 1966. It sent home more than 11 000 pictures."
+  # Luna 13 (public #758). NSSDCA's table gives the position without the LROC mark: its note c cites
+  # Siddiqi (2002, 2018) and Ulivi and Harland (2004), so the place is a published estimate, not a
+  # photographed lander. Region and sentence: https://en.wikipedia.org/wiki/Luna_13, read 2026-11-05.
+  - id: luna-13
+    display: "Luna 13, Oceanus Procellarum"
+    class: surface
+    world: moon
+    lat: 18.87
+    lon: 297.95
+    landed: 1966-12-24
+    shape: lander
+    source: nssdc-lunar
+    doing: "A Soviet lander between Krafft and Seleucus craters, December 1966. Its accelerometer measured how firm the soil was 20 to 30 centimetres down."
   - id: surveyor-3
     display: "Surveyor 3, Oceanus Procellarum"
     class: surface
@@ -297,6 +321,40 @@ sites:
     shape: lander
     source: lroc-2016
     doing: "Landed in April 1967. Two and a half years later the Apollo 12 crew walked over and took its camera home."
+  # Surveyor 5 (public #759). Region and sentence: NSSDCA, https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1967-084A, read 2026-11-05.
+  - id: surveyor-5
+    display: "Surveyor 5, Mare Tranquillitatis"
+    class: surface
+    world: moon
+    lat: 1.4551
+    lon: 23.1943
+    landed: 1967-09-11
+    shape: lander
+    source: nssdc-lunar
+    doing: "Landed in September 1967 and made the first measurement of what Moon soil is made of, on the Moon, with an alpha-scattering instrument."
+  # Surveyor 6 (public #761). Region and sentence: NSSDCA, https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1967-112A, read 2026-11-05.
+  - id: surveyor-6
+    display: "Surveyor 6, Sinus Medii"
+    class: surface
+    world: moon
+    lat: 0.4742
+    lon: 358.5725
+    landed: 1967-11-10
+    shape: lander
+    source: nssdc-lunar
+    doing: "The fourth Surveyor to land softly on the Moon, in November 1967, in Sinus Medii."
+  # Surveyor 7 (public #763). The highland landing of the series (NSSDCA, https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1968-001A) and the outer rim
+  # of Tycho (https://en.wikipedia.org/wiki/Surveyor_7), both read 2026-11-05.
+  - id: surveyor-7
+    display: "Surveyor 7, Tycho crater rim"
+    class: surface
+    world: moon
+    lat: -40.9812
+    lon: 348.4873
+    landed: 1968-01-10
+    shape: lander
+    source: nssdc-lunar
+    doing: "The last Surveyor to land, in January 1968, and the only one in the highlands, on the outer rim of the crater Tycho."
   # About 180 m from Surveyor 3 (NSSDCA's figure), so the two are drawn almost on top of each
   # other until the camera is close. Both are rows because both are places something landed.
   - id: apollo-12
@@ -347,6 +405,17 @@ sites:
     shape: lunar-module
     source: lroc-2016
     doing: "Hadley Rille, July 1971. The first car on the Moon drove here, and Dave Scott dropped a hammer and a feather to watch them land together."
+  # Luna 20 (public #765). Region and sentence: https://en.wikipedia.org/wiki/Luna_20, read 2026-11-05.
+  - id: luna-20
+    display: "Luna 20, Apollonius highlands"
+    class: surface
+    world: moon
+    lat: 3.7863
+    lon: 56.6242
+    landed: 1972-02-21
+    shape: lander
+    source: nssdc-lunar
+    doing: "The second Soviet robot to bring Moon rock home, in February 1972: 55 grams, from highlands 120 km from Luna 16."
   # Again the rover's last position, not Luna 21's. "At least 37 km" because NSSDCA says 37 and
   # NASA's July 2014 release, when Opportunity passed it, says 39: the smaller figure is the one
   # that is true under both.
@@ -362,6 +431,28 @@ sites:
     source: lroc-2016
     aliases: ["Luna 21"]
     doing: "A Soviet rover that landed in January 1973 and drove at least 37 km over hills and rilles in four months. It stopped here."
+  # Luna 23 (public #767). Region and sentence: https://en.wikipedia.org/wiki/Luna_23, read 2026-11-05.
+  - id: luna-23
+    display: "Luna 23, Mare Crisium"
+    class: surface
+    world: moon
+    lat: 12.6667
+    lon: 62.1511
+    landed: 1974-11-06
+    shape: lander
+    source: nssdc-lunar
+    doing: "Landed in the southern part of Mare Crisium in November 1974 and probably tipped over. Its drill was damaged, so it could not bring a sample home."
+  # Luna 24 (public #769). Region and sentence: https://en.wikipedia.org/wiki/Luna_24, read 2026-11-05.
+  - id: luna-24
+    display: "Luna 24, Mare Crisium"
+    class: surface
+    world: moon
+    lat: 12.7142
+    lon: 62.2129
+    landed: 1976-08-18
+    shape: lander
+    source: nssdc-lunar
+    doing: "The third Soviet robot to bring Moon soil home: 170.1 grams from Mare Crisium, back on Earth on 22 August 1976."
   - id: change-3
     display: "Chang'e 3, Mare Imbrium"
     class: surface

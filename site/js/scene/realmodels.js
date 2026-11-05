@@ -422,6 +422,16 @@ export const REAL_MODELS = {
     // FENGYUN 2G and 2H (spinning drums) are other craft and keep what they had.
     40267: { file: 'himawari.glb', colour: 'satellite', name: 'Himawari-8', catalogue: 'HIMAWARI-8', made: 'dimensions', axes: 'app' },
     41836: { file: 'himawari.glb', colour: 'satellite', name: 'Himawari-9', catalogue: 'HIMAWARI-9', made: 'dimensions', axes: 'app' },
+    // ELEKTRO-L 2 TO 5 (release 1.9.0, batch radarwx; public #997): NPO Lavochkin's geostationary weather satellites on the
+    // Navigator platform, built in code (registry/models.yaml row `elektro-l`): an eight-sided black body under a white Earth deck that
+    // carries the MSU-GS scanner (two black units), the data-collection helix and two dishes, and ONE solar wing of 8.17 m2 (ruwiki,
+    // 'одного фотоэлектрического генератора площадью 8,17 м2'), laid out after three photographs of a 1:5 model (CC BY-SA). They wore the
+    // geostationary bus. The series is one drawing as far as any page says; Elektro-L 1 (2011) is not in the live catalogue. `axes: 'app'`:
+    // the Earth deck on +Z, the wing along +X, its cells to +Y, as a geostationary craft flies (the wing turns once a day; the app does not draw that).
+    41105: { file: 'elektro-l.glb', colour: 'satellite', name: 'Elektro-L 2', catalogue: 'ELEKTRO-L 2', made: 'dimensions', axes: 'app' },
+    44903: { file: 'elektro-l.glb', colour: 'satellite', name: 'Elektro-L 3', catalogue: 'ELEKTRO-L 3', made: 'dimensions', axes: 'app' },
+    55506: { file: 'elektro-l.glb', colour: 'satellite', name: 'Elektro-L 4', catalogue: 'ELEKTRO-L 4', made: 'dimensions', axes: 'app' },
+    67756: { file: 'elektro-l.glb', colour: 'satellite', name: 'Elektro-L 5', catalogue: 'ELEKTRO-L 5', made: 'dimensions', axes: 'app' },
     // 0078 r14-m7: begin
     // BATCH r14-m7 (release 1.4.0; public #1102 to #1109 and #1093): science craft built in code from cited metres (registry/models.yaml rows `gcom-w`,
     // `gcom-c`, `dampe`, `cses`, `scisat`, `proba-3-csc`, `proba-3-osc`, `proba-v`, `formosat-7`, `oao-2`, `oao-3`), BY NUMBER from the live saved data of 2026-10-12.
@@ -663,7 +673,7 @@ export const REAL_MODELS = {
     // antenna, not the family blade. The id is dormant today: 23710 died in 2013 and is in none of
     // the element groups the app loads (registry/models.yaml says so on its row).
     23710: { file: 'radarsat1.glb', colour: 'satellite', name: 'RADARSAT-1', catalogue: 'RADARSAT-1' },
-    32382: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'RADARSAT-2', generic: true },
+    32382: { build: 'radar', file: 'radarsat-2.glb', colour: 'satellite', name: 'RADARSAT-2', catalogue: 'RADARSAT-2', made: 'dimensions', axes: 'app' },
     // TERRASAR-X AND TANDEM-X HAVE A FILE OF THEIR OWN since batch seven (2026-10-13; public #979):
     // terrasar-x.glb, built in code from DLR's numbers as eoPortal gives them (registry/models.yaml row
     // `terrasar-x`). WHAT THE FILE CORRECTS: these two are not a blade under a bus with two wings. The
@@ -682,13 +692,13 @@ export const REAL_MODELS = {
     // draws 0.8 m); DLR calls the three "almost identical". Airbus built it for Hisdesat and it flies in the TerraSAR-X orbit. By NUMBER (CelesTrak: `PAZ`, 2018-020A); a record with a
     // placeholder number still reaches the name key `paz` below and keeps the blade. Not `generic`: the file is this craft's own design (the registry row `terrasar-x` says so).
     43215: { build: 'radar', file: 'terrasar-x.glb', colour: 'satellite', name: 'PAZ', catalogue: 'PAZ', made: 'dimensions', axes: 'app' },
-    31598: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'COSMO-SKYMED 1', generic: true },
-    32376: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'COSMO-SKYMED 2', generic: true },
-    33412: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'COSMO-SKYMED 3', generic: true },
-    37216: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'COSMO-SKYMED 4', generic: true },
-    44873: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'CSG-1', generic: true },
-    51444: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'CSG-2', generic: true },
-    67304: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'CSG-3', generic: true },
+    31598: { build: 'radar', file: 'cosmo-skymed.glb', colour: 'satellite', name: 'COSMO-SkyMed 1', catalogue: 'COSMO-SKYMED 1', made: 'dimensions', axes: 'app' },
+    32376: { build: 'radar', file: 'cosmo-skymed.glb', colour: 'satellite', name: 'COSMO-SkyMed 2', catalogue: 'COSMO-SKYMED 2', made: 'dimensions', axes: 'app' },
+    33412: { build: 'radar', file: 'cosmo-skymed.glb', colour: 'satellite', name: 'COSMO-SkyMed 3', catalogue: 'COSMO-SKYMED 3', made: 'dimensions', axes: 'app' },
+    37216: { build: 'radar', file: 'cosmo-skymed.glb', colour: 'satellite', name: 'COSMO-SkyMed 4', catalogue: 'COSMO-SKYMED 4', made: 'dimensions', axes: 'app' },
+    44873: { build: 'radar', file: 'csg.glb', colour: 'satellite', name: 'CSG-1', catalogue: 'CSG-1', made: 'dimensions', axes: 'app' },
+    51444: { build: 'radar', file: 'csg.glb', colour: 'satellite', name: 'CSG-2', catalogue: 'CSG-2', made: 'dimensions', axes: 'app' },
+    67304: { build: 'radar', file: 'csg.glb', colour: 'satellite', name: 'CSG-3', catalogue: 'CSG-3', made: 'dimensions', axes: 'app' },
     28931: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ALOS (DAICHI)', generic: true },
     // ALOS-2 HAS A FILE OF ITS OWN since batch nine (2026-10-14; public #977): alos-2.glb, built in
     // code from JAXA's numbers as eoPortal gives them (registry/models.yaml row `alos-2`): PALSAR-2,
@@ -769,9 +779,9 @@ export const REAL_MODELS = {
     // `axes: 'app'` since batch three: the sensor module and its antennas are on the file's +Z, which
     // the app turns to the Earth, as the craft flew (the Agena's engine to the zenith).
     10967: { build: 'radar', file: 'seasat.glb', colour: 'satellite', name: 'Seasat', catalogue: 'SEASAT 1', made: 'render', axes: 'app' },
-    44322: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'RCM-1', generic: true },
-    44323: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'RCM-3', generic: true },
-    44324: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'RCM-2', generic: true },
+    44322: { build: 'radar', file: 'rcm.glb', colour: 'satellite', name: 'RCM-1', catalogue: 'RCM-1', made: 'dimensions', axes: 'app' },
+    44323: { build: 'radar', file: 'rcm.glb', colour: 'satellite', name: 'RCM-3', catalogue: 'RCM-3', made: 'dimensions', axes: 'app' },
+    44324: { build: 'radar', file: 'rcm.glb', colour: 'satellite', name: 'RCM-2', catalogue: 'RCM-2', made: 'dimensions', axes: 'app' },
     44233: { build: 'radar-mesh', colour: 'satellite', name: 'a radar imager with a mesh reflector', catalogue: 'RISAT-2B', generic: true },
     44857: { build: 'radar-mesh', colour: 'satellite', name: 'a radar imager with a mesh reflector', catalogue: 'RISAT-2BR1', generic: true },
     46905: { build: 'radar-mesh', colour: 'satellite', name: 'a radar imager with a mesh reflector', catalogue: 'RISAT-2BR2', generic: true },
@@ -1143,6 +1153,24 @@ export const REAL_MODELS = {
     59371: { file: 'resurs-p.glb', colour: 'satellite', name: 'Resurs-P 4', catalogue: 'RESURS-P 4', made: 'dimensions', axes: 'app' },
     62430: { file: 'resurs-p.glb', colour: 'satellite', name: 'Resurs-P 5', catalogue: 'RESURS-P 5', made: 'dimensions', axes: 'app' },
     // 0078 r14-m6: end
+    // b190-earthsci: begin (release 1.9.0)
+    // ASTROSAT HAS ITS OWN SHAPE since release 1.9.0 (public #970): astrosat.glb was BUILT HERE, in code, from ISRO's cited metres (the cuboid bus 1.96 x 1.75 x 1.30 m, two wings of two
+    // 1.4 x 1.8 m panels) and eoPortal's instrument sizes, and read off ISRO's CAD view and clean-room photographs (GODL-India, looked at; registry/models.yaml row `astrosat`,
+    // kind `built-from-dimensions`): the gold bus, the stack of two UVIT tubes, the SXT, three LAXPC, the CZTI and the SSM plates, the side hardware, the adapter and four
+    // panels. `axes: 'app'`: +X the array axis, the stack at -Z (the telescope rule: it looks away from the Earth), the cells toward +Y (the arrays turned 90 degrees about their
+    // drive from ISRO's flat deployed pose, as the real drive turns them to the Sun). Not `generic`: it is this craft.
+    40930: { file: 'astrosat.glb', colour: 'telescope', name: 'AstroSat', catalogue: 'ASTROSAT', made: 'dimensions', axes: 'app' },
+    // GOSAT (IBUKI) HAS ITS OWN SHAPE since release 1.9.0 (public #959): gosat.glb was BUILT HERE, in code, from JAXA's cited metres (3.7 x 1.8 x 2.0 m without the adapter, 13.7 m tip to tip)
+    // and read off JAXA's illustrations and the photographs of its Tsukuba exhibit (looked at; registry/models.yaml row `gosat`, kind `built-from-dimensions`): two gold boxes, the
+    // TANSO-FTS hood and the CAI on the Earth face, two three-section paddles on A-frame trusses. By NUMBER, so GOSAT-2 (43672) and GOSAT-GW (64694), later craft on other buses,
+    // keep what they had. `axes: 'app'`: +Z the Earth face, the 3.7 m along Y (the ring at -Y), +X the paddle axis, the cells toward +Y.
+    33492: { file: 'gosat.glb', colour: 'satellite', name: 'GOSAT (Ibuki)', catalogue: 'GOSAT (IBUKI)', made: 'dimensions', axes: 'app' },
+    // MICROCARB HAS ITS OWN SHAPE since release 1.9.0 (public #961): microcarb.glb was BUILT HERE, in code, from eoPortal's cited metres (0.6 x 0.8 x 1.0 m, the payload 0.4 m) and read off
+    // CNES's CAD drawings of its four faces and its artwork (looked at; registry/models.yaml row `microcarb`, kind `built-from-dimensions`): a gold Myriade platform with its antennas and
+    // ring, the silver optical housing with the oval baffle of the cryogenic radiator, the star tracker, a notched two-panel array (its size ESTIMATED: the page gives none).
+    // `axes: 'app'`: +Z the Earth wall (X-band), +X the array axis, the cells and the payload deck toward +Y, the PAS610 ring at -Y.
+    64899: { file: 'microcarb.glb', colour: 'satellite', name: 'MicroCarb', catalogue: 'MICROCARB', made: 'dimensions', axes: 'app' },
+    // b190-earthsci: end
   },
   horizons: {
     '-31': { file: 'voyager.glb', colour: 'probe', name: 'Voyager 1' },
@@ -1571,7 +1599,9 @@ export const REAL_MODELS = {
     // characterised the constellation photometrically declined to give any, noting only that the
     // bus has "a more complex prismatic shape" than a Starlink. What is NOT approximate is the
     // silhouette, which is the half that carries recognition and the half that was wrong.
-    oneweb: { build: 'oneweb', colour: 'satellite', name: 'a OneWeb broadband satellite', klass: ['satellite'], generic: true },
+    // A FILE since release 1.9.0 (public #1001): oneweb.glb, the first-generation Arrow box of eoPortal's 1 x 1 x 1.3 m with its two single-panel wings and its
+    // two gateway dishes (registry row `oneweb`, kind `built-from-dimensions`; the wings' size is ours). Every ONEWEB name wears it: all 651 in the issue's feed are first generation. A later bus under this name would need its own file.
+    oneweb: { build: 'oneweb', file: 'oneweb.glb', colour: 'satellite', name: 'a OneWeb broadband satellite', klass: ['satellite'], generic: true, made: 'dimensions', axes: 'app' },
     // A FILE FOR THE FIRST GENERATION since batch five (2026-10-13; public #1000), behind the SAME
     // launch-year gate, which is untouched: starlink-v1.glb, built in code from the bus and array
     // sizes of SpaceX's FCC filing of October 2022 as J. McDowell tabulates it (V1.5: 2.8 x 1.3 m
@@ -1717,6 +1747,35 @@ export const REAL_MODELS = {
       // The SHAP5 dataset RO-C-MULTI-5-67P-SHAPE-V2.0: pole RA 69.4, Dec +64.1 (+-0.2), 12.4041 h a turn before perihelion (the rate changed at every pass).
       spin: { poleRaDeg: 69.4, poleDecDeg: 64.1, w0Deg: 0, wDegPerDay: 696.5438847 } },
     // 0079 B1: end
+    // 0079 B2: begin -- SATURN'S SMALL MOONS IN THEIR CASSINI SHAPES (release 1.9.0, internal #1066). Each from the Planetary Data System's
+    // Saturn Small Moon Shape Models (Thomas, Joseph and Ansty 2018; registry/models.yaml, scripts/gen_smallmoon_shapes.mjs), klass-gated
+    // to the moons layer and a whole word like the rows above, so Pan is the moon and never a word inside another name. `tint` is the moon's own
+    // grey from the same lightness rule as the small bodies above, 0.5 * (geometric albedo / 0.21) ^ 0.55 held to 0.98 (their albedos, from
+    // Verbiscer et al., are at or near 1: they are drawn as the bright ice they are). `spin` is NAIF's pck00011 (the IAU's 2009 constants,
+    // BODY6nn_POLE_RA, _POLE_DEC, _PM), the pole and the prime meridian at J2000 and the rate a day: each of these keeps one face to Saturn,
+    // so the rate is the moon's lap of Saturn. The libration terms of Janus and Epimetheus and the precession of every pole are left out.
+    janus: { file: 'moon-janus.glb', colour: 'asteroid', tint: '#F9F9F9', world: true, name: 'Janus', klass: ['moon'], spinWords: 'moonSpin', seen: 'cassini',
+      spin: { poleRaDeg: 40.58, poleDecDeg: 83.52, w0Deg: 58.83, wDegPerDay: 518.2359876 } }, // BODY610
+    epimetheus: { file: 'moon-epimetheus.glb', colour: 'asteroid', tint: '#FAFAFA', world: true, name: 'Epimetheus', klass: ['moon'], spinWords: 'moonSpin', seen: 'cassini',
+      spin: { poleRaDeg: 40.58, poleDecDeg: 83.52, w0Deg: 293.87, wDegPerDay: 518.4907239 } }, // BODY611
+    helene: { file: 'moon-helene.glb', colour: 'asteroid', tint: '#FAFAFA', world: true, name: 'Helene', klass: ['moon'], spinWords: 'moonSpin', seen: 'cassini',
+      spin: { poleRaDeg: 40.85, poleDecDeg: 83.34, w0Deg: 245.12, wDegPerDay: 131.6174056 } }, // BODY612
+    telesto: { file: 'moon-telesto.glb', colour: 'asteroid', tint: '#FAFAFA', world: true, name: 'Telesto', klass: ['moon'], spinWords: 'moonSpin', seen: 'cassini',
+      spin: { poleRaDeg: 50.51, poleDecDeg: 84.06, w0Deg: 56.88, wDegPerDay: 190.6979332 } }, // BODY613
+    calypso: { file: 'moon-calypso.glb', colour: 'asteroid', tint: '#FAFAFA', world: true, name: 'Calypso', klass: ['moon'], spinWords: 'moonSpin', seen: 'cassini',
+      spin: { poleRaDeg: 36.41, poleDecDeg: 85.04, w0Deg: 153.51, wDegPerDay: 190.6742373 } }, // BODY614
+    atlas: { file: 'moon-atlas.glb', colour: 'asteroid', tint: '#FAFAFA', world: true, name: 'Atlas', klass: ['moon'], spinWords: 'moonSpin', seen: 'cassini',
+      spin: { poleRaDeg: 40.58, poleDecDeg: 83.53, w0Deg: 137.88, wDegPerDay: 598.306 } }, // BODY615
+    prometheus: { file: 'moon-prometheus.glb', colour: 'asteroid', tint: '#FAFAFA', world: true, name: 'Prometheus', klass: ['moon'], spinWords: 'moonSpin', seen: 'cassini',
+      spin: { poleRaDeg: 40.58, poleDecDeg: 83.53, w0Deg: 296.14, wDegPerDay: 587.289 } }, // BODY616
+    pandora: { file: 'moon-pandora.glb', colour: 'asteroid', tint: '#FAFAFA', world: true, name: 'Pandora', klass: ['moon'], spinWords: 'moonSpin', seen: 'cassini',
+      spin: { poleRaDeg: 40.58, poleDecDeg: 83.53, w0Deg: 162.92, wDegPerDay: 572.7891 } }, // BODY617
+    pan: { file: 'moon-pan.glb', colour: 'asteroid', tint: '#FAFAFA', world: true, name: 'Pan', klass: ['moon'], spinWords: 'moonSpin', seen: 'cassini',
+      spin: { poleRaDeg: 40.6, poleDecDeg: 83.5, w0Deg: 48.8, wDegPerDay: 626.044 } }, // BODY618
+    // Hyperion tumbles chaotically, so no pole and rate give its attitude; Daphnis is in no constants file this app reads. Both are drawn as their models come.
+    hyperion: { file: 'moon-hyperion.glb', colour: 'asteroid', tint: '#C0C0C0', world: true, name: 'Hyperion', klass: ['moon'], spinWords: 'moonStill', seen: 'cassini' },
+    daphnis: { file: 'moon-daphnis.glb', colour: 'asteroid', tint: '#FAFAFA', world: true, name: 'Daphnis', klass: ['moon'], spinWords: 'moonStill', seen: 'cassini' },
+    // 0079 B2: end
     // 2026-10-05: the Dawn team's shape model from the Planetary Data System, thinned from its own
     // grid by scripts/shape-to-glb.py. Ceres was a faceted icosahedron from the generic builder
     // (issue #420). Klass-gated like the three above: CERES is also a French satellite series.
@@ -1855,6 +1914,14 @@ export const REAL_MODELS = {
     phoenix: { build: 'lander', file: 'phoenix.glb', colour: 'site', name: 'Phoenix, both arrays open', displayName: 'Phoenix, Vastitas Borealis', made: 'dimensions' },
     'mars-3': { build: 'lander', file: 'mars-3.glb', colour: 'site', name: 'the Mars 3 landing capsule, its petals open', displayName: 'Mars 3, Ptolemaeus crater', made: 'dimensions' },
     // 0078 r14-m8: end
+    // b190-probes: begin
+    // THE VENERA 9 AND VENERA 10 LANDERS (internal #1076), one design built in code from the published sizes and the photographs of
+    // the 1:1 replica (registry/models.yaml row `venera-9`) and drawn as the replica stands, its landing ring whole. The two
+    // sites are rows of registry/landing-sites-1-5.yaml (`model: venera-9`), loaded with the landing-sites layer; every other Venus
+    // site stays a mark (nothing of the other landers was found in a photograph outside its shell).
+    'venera-9': { build: 'lander', file: 'venera-9.glb', colour: 'site', name: 'the Venera 9 lander', displayName: 'Venera 9 landing site', made: 'dimensions' },
+    'venera-10': { build: 'lander', file: 'venera-9.glb', colour: 'site', name: 'the Venera 10 lander, of Venera 9\'s design', displayName: 'Venera 10 landing site', made: 'dimensions' },
+    // b190-probes: end
     // THE TWO LAUNCH VEHICLES NASA PUBLISHES (public #427, 2026-10-08), each standing on the pad it
     // left from (registry/sites.yaml), which is the one place on this map a rocket of 1969 can be:
     // the launches layer draws what is about to fly. registry/missions.yaml moves the clock to the

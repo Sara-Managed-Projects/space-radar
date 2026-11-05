@@ -942,7 +942,9 @@ export const SYSTEMS_TABLE = [
 "stage": "system-k2-18",
 "host": "K2-18",
 "display": "K2-18",
-"aliases": [],
+"aliases": [
+"EPIC 201912552"
+],
 "hostId": "star-k2-18",
 "hostSky": {
 "raDeg": 172.560141,

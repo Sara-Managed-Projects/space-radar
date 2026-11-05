@@ -47,6 +47,7 @@ export function sort(problems, size, known = KNOWN) {
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  if (process.argv.includes('--help') || process.argv.includes('-h')) { console.log('usage: node scripts/check-ui.mjs [--base=URL] [--phone] [--out=FILE.json]  (walks the app in Playwright and measures every control)'); process.exit(0); }
   const { chromium } = await import('playwright'); // here, so tests/test_ui_gate.mjs can import sort() without a browser
   const probe = readFileSync(join(here, '..', 'tests', 'probes', 'ui_probe.js'), 'utf8');
   const browser = await chromium.launch();

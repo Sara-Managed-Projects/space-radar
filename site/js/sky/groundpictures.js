@@ -1,5 +1,5 @@
 // sky/groundpictures.js -- the nebulae and galaxies in the sky from the ground, as soft glows of their measured size
-// (internal #393 finding 6, #345; row 17 of the Stellarium table in docs/research; release 1.4.0 stage r14-neb-b).
+// (internal #393 finding 6, #345; row 17 of the Stellarium table; release 1.4.0 stage r14-neb-b).
 //
 // Contract: createGroundPictures(env) -> { update(frame, m9, limit), labels(out, m9, limit, fovDeg),
 //             pickEq(dirEq), frameOf(id), state(), held(), dispose() }

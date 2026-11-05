@@ -506,6 +506,26 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
       check(!got || !craftFiles.includes(got.file), `${cat} (${norad}) wears none of release 1.7.5's four telescope files: ${JSON.stringify(got)}`);
     }
   }
+  // BATCH RADARWX (release 1.9.0; public #980, #981, #997): the two radar pairs by number, COSMO-SkyMed and RADARSAT, each generation on its own file, and Elektro-L 2 to 5.
+  for (const [norad, cat, name, file, build] of [[31598, 'COSMO-SKYMED 1', 'COSMO-SkyMed 1', 'cosmo-skymed.glb', 'radar'], [32376, 'COSMO-SKYMED 2', 'COSMO-SkyMed 2', 'cosmo-skymed.glb', 'radar'],
+    [33412, 'COSMO-SKYMED 3', 'COSMO-SkyMed 3', 'cosmo-skymed.glb', 'radar'], [37216, 'COSMO-SKYMED 4', 'COSMO-SkyMed 4', 'cosmo-skymed.glb', 'radar'],
+    [44873, 'CSG-1', 'CSG-1', 'csg.glb', 'radar'], [51444, 'CSG-2', 'CSG-2', 'csg.glb', 'radar'], [67304, 'CSG-3', 'CSG-3', 'csg.glb', 'radar'],
+    [32382, 'RADARSAT-2', 'RADARSAT-2', 'radarsat-2.glb', 'radar'], [44322, 'RCM-1', 'RCM-1', 'rcm.glb', 'radar'], [44323, 'RCM-3', 'RCM-3', 'rcm.glb', 'radar'], [44324, 'RCM-2', 'RCM-2', 'rcm.glb', 'radar'],
+    [41105, 'ELEKTRO-L 2', 'Elektro-L 2', 'elektro-l.glb', undefined], [44903, 'ELEKTRO-L 3', 'Elektro-L 3', 'elektro-l.glb', undefined],
+    [55506, 'ELEKTRO-L 4', 'Elektro-L 4', 'elektro-l.glb', undefined], [67756, 'ELEKTRO-L 5', 'Elektro-L 5', 'elektro-l.glb', undefined]]) {
+    const got = sat(norad, cat);
+    check(got && got.file === file && got.build === build && got.name === name && !got.generic && got.made === 'dimensions' && got.axes === 'app', `${cat} (${norad}) wears ${file} as itself: ${JSON.stringify(got)}`);
+  }
+  // Each of the five files is its own craft's: the first generation is not the second, RADARSAT-2 is not the constellation, RADARSAT-1 keeps NASA's model, and no debris, rocket body or look-alike name takes one.
+  const radarwx = ['cosmo-skymed.glb', 'csg.glb', 'radarsat-2.glb', 'rcm.glb', 'elektro-l.glb'];
+  check(sat(31598, 'COSMO-SKYMED 1').file !== sat(44873, 'CSG-1').file, 'COSMO-SkyMed and its second generation do not share a file (public #980: "the second-generation bus separately")');
+  check(sat(32382, 'RADARSAT-2').file !== sat(44322, 'RCM-1').file, 'RADARSAT-2 and the RCM bus do not share a file (public #981: "the RCM bus separately")');
+  check(sat(23710, 'RADARSAT-1').file === 'radarsat1.glb', 'RADARSAT-1 keeps NASA\'s model');
+  for (const [name, year, klass, id] of [['COSMO-SKYMED 1 DEB', 2007, 'debris'], ['CSG-1 DEB', 2019, 'debris'], ['RADARSAT-2 DEB', 2007, 'debris'], ['RCM-1 DEB', 2019, 'debris'], ['DELTA 2 R/B', 2007, 'rocket-body'], ['FALCON 9 R/B', 2019, 'rocket-body'],
+    ['ELEKTRO-L 2 DEB', 2015, 'debris'], ['PROTON-M DM-03 R/B', 2019, 'rocket-body'], ['SAOCOM 1A', 2018, 'satellite', 43641], ['TERRASAR-X', 2007, 'satellite', 31698], ['FENGYUN 4A', 2016, 'satellite', 41882], ['ELEKTRO-L 1', 2011, 'satellite', 37372], ['ARKTIKA-M 1', 2021, 'satellite', 47719]]) {
+    const got = nav(name, year, klass, id);
+    check(!got || !radarwx.includes(got.file), `${name} (klass ${klass}, launched ${year}) wears none of batch radarwx's files: ${JSON.stringify(got)}`);
+  }
   // SWOT is JPL's OWN published model (public #952): its file, as itself, and NOT `made`: nobody here made it.
   {
     const swot = sat(54754, 'SWOT');
@@ -702,6 +722,16 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     const got = bd(norad, name, klass || 'satellite');
     check(!got || got.file !== 'beidou-3-igso.glb', `${name} (${norad}) does not wear beidou-3-igso.glb: ${JSON.stringify(got)}`);
   }
+}
+
+// RELEASE 1.9.0 (public #1001): every ONEWEB wears oneweb.glb over the procedural OneWeb; its debris keeps the debris shape.
+{
+  const ir = (norad, name, klass = 'satellite') => realModelFor({ id: `sat-${norad}`, name, klass, layer: 'active', meta: { noradId: norad } });
+  for (const name of ['ONEWEB-0012', 'ONEWEB-0045', 'ONEWEB-0644']) {
+    const got = ir(70001, name);
+    check(got && got.file === 'oneweb.glb' && got.build === 'oneweb' && got.generic === true && got.made === 'dimensions' && got.axes === 'app', `${name} wears oneweb.glb over the procedural OneWeb, as the kind of thing: ${JSON.stringify(got)}`);
+  }
+  check(ir(70002, 'ONEWEB-0012 DEB', 'debris') === null, 'OneWeb debris keeps the debris shape');
 }
 
 if (problems.length) { console.error('real models FAILED:\n  ' + problems.slice(0, 40).join('\n  ') + (problems.length > 40 ? `\n  ... and ${problems.length - 40} more` : '')); process.exit(1); }

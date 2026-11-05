@@ -318,13 +318,19 @@ def parse_distance(text: str):
         return (lo + hi) / 2, lo, hi
     return float(t), None, None
 
+USAGE = "python3 scripts/build-dso.py NGC.csv addendum.csv | --refresh | --check"
+
 
 def main(argv):
     if argv and argv[0] in ("--refresh", "--check"):
         return refresh(argv[0] == "--check")
     if len(argv) != 2:
-        print(__doc__)
+        print(f"usage: {USAGE}\n\n{__doc__}")
         return 2
+    for path in argv:
+        if not Path(path).is_file():
+            print(f"build-dso: no such file: {path}\nusage: {USAGE}", file=sys.stderr)
+            return 2
     ngc_rows = []
     for path in argv:
         with open(path, encoding="utf-8", newline="") as fh:
@@ -399,4 +405,7 @@ def main(argv):
 
 
 if __name__ == "__main__":
+    from _cli import usage_if_asked
+
+    usage_if_asked(__doc__)
     sys.exit(main(sys.argv[1:]))

@@ -90,7 +90,6 @@ const ROWS = [
   { id: 'sting-arrive', kind: 'sting', file: 'audio/sting-arrive.opus', twin: 'audio/sting-arrive.m4a', seconds: 1.5, kb: 12, loop: false, credit: 'C' },
 ];
 const opusYes = (type) => (type === OPUS_TYPE ? 'probably' : '');
-const flush = () => new Promise((r) => setTimeout(r, 0));
 
 function rig({ stored, fail, rows = ROWS } = {}) {
   const storage = memoryStorage(stored ? { [STORE_KEY]: JSON.stringify(stored) } : {});

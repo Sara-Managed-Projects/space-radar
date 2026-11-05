@@ -411,5 +411,23 @@ export const STARS_NOTABLE = [
     "name": "Mirfak",
     "why": "The brightest star in Perseus, outshining Algol. It lies in the midst of the Alpha Persei Cluster, which is easily visible in binoculars.",
     "source": "https://en.wikipedia.org/wiki/Alpha_Persei (read 2026-11-04)"
+  },
+  {
+    "hip": 72607,
+    "name": "Kochab",
+    "why": "The brightest star in the bowl of the Little Dipper. Around 2467 BCE the Egyptians found true north with a plumb line between it and Mizar.",
+    "source": "https://en.wikipedia.org/wiki/Kochab (read 2026-11-05)"
+  },
+  {
+    "hip": 86032,
+    "name": "Rasalhague",
+    "why": "The brightest star in Ophiuchus; its name means 'the head of the serpent collector'. It spins so fast that its equator bulges about 20% wider than its poles.",
+    "source": "https://en.wikipedia.org/wiki/Alpha_Ophiuchi (read 2026-11-05)"
+  },
+  {
+    "hip": 62956,
+    "name": "Alioth",
+    "why": "The star of the Big Dipper's handle nearest the bowl, once used to steer ships: one of the 57 navigational stars. Its spectrum varies in a 5.1-day cycle.",
+    "source": "https://en.wikipedia.org/wiki/Alioth (read 2026-11-05)"
   }
 ];

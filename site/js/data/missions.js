@@ -180,6 +180,18 @@ export const MISSIONS = [
         "world": "jupiter"
       },
       {
+        "id": "saturn-orbit",
+        "date": "2008-06-08",
+        "precision": "day",
+        "title": "Saturn's orbit",
+        "text": "On its way to Pluto it crosses the orbit of Saturn.",
+        "place": "path",
+        "source": {
+          "name": "NASA NSSDCA, New Horizons",
+          "url": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2006-001A"
+        }
+      },
+      {
         "id": "pluto",
         "date": "2015-07-14",
         "precision": "day",

@@ -30,7 +30,7 @@ hosts:
   - {host: TOI-715, aliases: [TIC 271971130], why: temperate}
   - {host: "Teegarden's Star", id: teegardens-star, why: temperate}
   - {host: Gliese 12, aliases: [GJ 12], why: temperate}
-  - {host: K2-18, why: temperate}
+  - {host: K2-18, aliases: [EPIC 201912552], why: temperate}
   - {host: L 98-59, why: temperate}
   - {host: GJ 1132, aliases: [Gliese 1132], why: temperate}
   - {host: GJ 1214, aliases: [Gliese 1214], why: temperate}

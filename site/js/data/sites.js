@@ -218,6 +218,16 @@ export const SITES = [
     "doing": "The first American spacecraft to land softly on the Moon, in June 1966. It sent home more than 11 000 pictures."
   },
   {
+    "id": "luna-13",
+    "display": "Luna 13, Oceanus Procellarum",
+    "class": "surface",
+    "world": "moon",
+    "lat": 18.87,
+    "lon": 297.95,
+    "shape": "lander",
+    "doing": "A Soviet lander between Krafft and Seleucus craters, December 1966. Its accelerometer measured how firm the soil was 20 to 30 centimetres down."
+  },
+  {
     "id": "surveyor-3",
     "display": "Surveyor 3, Oceanus Procellarum",
     "class": "surface",
@@ -226,6 +236,36 @@ export const SITES = [
     "lon": 336.582,
     "shape": "lander",
     "doing": "Landed in April 1967. Two and a half years later the Apollo 12 crew walked over and took its camera home."
+  },
+  {
+    "id": "surveyor-5",
+    "display": "Surveyor 5, Mare Tranquillitatis",
+    "class": "surface",
+    "world": "moon",
+    "lat": 1.4551,
+    "lon": 23.1943,
+    "shape": "lander",
+    "doing": "Landed in September 1967 and made the first measurement of what Moon soil is made of, on the Moon, with an alpha-scattering instrument."
+  },
+  {
+    "id": "surveyor-6",
+    "display": "Surveyor 6, Sinus Medii",
+    "class": "surface",
+    "world": "moon",
+    "lat": 0.4742,
+    "lon": 358.5725,
+    "shape": "lander",
+    "doing": "The fourth Surveyor to land softly on the Moon, in November 1967, in Sinus Medii."
+  },
+  {
+    "id": "surveyor-7",
+    "display": "Surveyor 7, Tycho crater rim",
+    "class": "surface",
+    "world": "moon",
+    "lat": -40.9812,
+    "lon": 348.4873,
+    "shape": "lander",
+    "doing": "The last Surveyor to land, in January 1968, and the only one in the highlands, on the outer rim of the crater Tycho."
   },
   {
     "id": "apollo-12",
@@ -274,6 +314,16 @@ export const SITES = [
     "doing": "Hadley Rille, July 1971. The first car on the Moon drove here, and Dave Scott dropped a hammer and a feather to watch them land together."
   },
   {
+    "id": "luna-20",
+    "display": "Luna 20, Apollonius highlands",
+    "class": "surface",
+    "world": "moon",
+    "lat": 3.7863,
+    "lon": 56.6242,
+    "shape": "lander",
+    "doing": "The second Soviet robot to bring Moon rock home, in February 1972: 55 grams, from highlands 120 km from Luna 16."
+  },
+  {
     "id": "lunokhod-2",
     "display": "Lunokhod 2, Le Monnier crater",
     "class": "surface",
@@ -285,6 +335,26 @@ export const SITES = [
       "Luna 21"
     ],
     "doing": "A Soviet rover that landed in January 1973 and drove at least 37 km over hills and rilles in four months. It stopped here."
+  },
+  {
+    "id": "luna-23",
+    "display": "Luna 23, Mare Crisium",
+    "class": "surface",
+    "world": "moon",
+    "lat": 12.6667,
+    "lon": 62.1511,
+    "shape": "lander",
+    "doing": "Landed in the southern part of Mare Crisium in November 1974 and probably tipped over. Its drill was damaged, so it could not bring a sample home."
+  },
+  {
+    "id": "luna-24",
+    "display": "Luna 24, Mare Crisium",
+    "class": "surface",
+    "world": "moon",
+    "lat": 12.7142,
+    "lon": 62.2129,
+    "shape": "lander",
+    "doing": "The third Soviet robot to bring Moon soil home: 170.1 grams from Mare Crisium, back on Earth on 22 August 1976."
   },
   {
     "id": "change-3",

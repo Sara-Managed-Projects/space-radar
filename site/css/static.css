@@ -61,7 +61,7 @@ ul.links a:hover{background:var(--sr-wash-hover);color:var(--sr-text)}
 ul.myths,.sky-list{padding-left:20px;margin:0 0 16px}
 ul.myths li{margin:0 0 12px}
 .sky-list li{margin:0 0 8px}
-ol.steps{padding-left:22px;margin:0 0 16px;max-width:65ch}
+ol.steps{padding-left:24px;margin:0 0 16px;max-width:65ch}
 ol.steps li{margin:0 0 10px}
 li::marker{color:var(--sr-atmosphere)}
 figure{margin:32px 0}

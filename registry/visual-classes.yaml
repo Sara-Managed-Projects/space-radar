@@ -271,6 +271,7 @@ classes:
       rights: "USGS, NASA/JPL-Caltech, LPI and JHUAPL/SwRI works, public domain."
     records:
       - {domain: worlds, ids: [europa, ganymede, callisto, enceladus, triton, charon, mimas, tethys, dione, rhea, iapetus, miranda, ariel, umbriel, titania, oberon]}
+      - {domain: real_models, where: {class: moon}}  # 0079 B2: Saturn's small moons, Cassini's shape models
 
   - id: TITAN
     title: Titan

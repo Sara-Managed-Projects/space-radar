@@ -32,7 +32,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const [url, scriptPath] = process.argv.slice(2).filter((a) => !a.startsWith('--'));
-if (!url || !scriptPath) { console.error('usage: node tools/cdp.mjs <url> <script.js> [--width=] [--height=] [--mobile] [--autoplay] [--shot=] [--shot-dir=] [--reduced-motion] [--cpuprofile=] [--block=host,...] [--bytes=] [--net=4g|3g] [--timezone=IANA] [--profile=dir] [--only-local] [--gl=gpu]'); process.exit(2); }
+if (!url || !scriptPath) { console.error('usage: node tools/cdp.mjs <url> <script.js> [--width=] [--height=] [--mobile] [--autoplay] [--shot=] [--shot-dir=] [--reduced-motion] [--forced-colors] [--cpuprofile=] [--block=host,...] [--bytes=] [--net=4g|3g] [--timezone=IANA] [--profile=dir] [--only-local] [--gl=gpu]'); process.exit(2); }
 const arg = (n, d) => { const h = process.argv.find((a) => a.startsWith('--' + n + '=')); return h ? h.slice(n.length + 3) : d; };
 const W = Number(arg('width', '1280'));
 const H = Number(arg('height', '800'));
@@ -58,6 +58,9 @@ const BLOCK = arg('block', '').split(',').map((h) => h.trim()).filter(Boolean);
 // app boots, so every matchMedia read the app makes agrees -- a probe that overrides matchMedia
 // itself reaches only the reads made after it ran.
 const REDUCED = process.argv.includes('--reduced-motion');
+// --forced-colors: the page sees `forced-colors: active` (Windows high contrast), set the same way, so a
+// probe can check what keyboard focus and a border look like when the browser replaces author colours.
+const FORCED_COLORS = process.argv.includes('--forced-colors');
 // --shot-dir=dir: the page may call `await window.cdpShot('name')` mid-script and a PNG of that
 // moment lands at dir/name.png. Added for spec 0034 (2026-09-23): the veil is 350 ms of black, and
 // the one --shot taken after the script returns cannot be aimed inside it. The promise resolves
@@ -301,6 +304,10 @@ try {
   if (REDUCED) {
     await send(ws, 'Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] }, sessionId);
     trace('prefers-reduced-motion: reduce');
+  }
+  if (FORCED_COLORS) {
+    await send(ws, 'Emulation.setEmulatedMedia', { features: [{ name: 'forced-colors', value: 'active' }] }, sessionId);
+    trace('forced-colors: active');
   }
   if (SHOT_DIR) {
     await send(ws, 'Runtime.addBinding', { name: 'cdpShotRaw' }, sessionId);

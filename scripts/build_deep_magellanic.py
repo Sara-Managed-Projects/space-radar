@@ -112,6 +112,9 @@ def check() -> int:
 
 
 if __name__ == "__main__":
+    from _cli import usage_if_asked
+
+    usage_if_asked(__doc__)
     if "--check" in sys.argv[1:]:
         sys.exit(check())
     f = next((Path(a.split("=", 1)[1]) for a in sys.argv[1:] if a.startswith("--fits=")), None)

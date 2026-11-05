@@ -120,6 +120,19 @@ export const VISUAL_CLASSES = [
 "umbriel",
 "titania",
 "oberon"
+],
+"real_models": [
+"moon-pan",
+"moon-daphnis",
+"moon-atlas",
+"moon-prometheus",
+"moon-pandora",
+"moon-epimetheus",
+"moon-janus",
+"moon-telesto",
+"moon-calypso",
+"moon-helene",
+"moon-hyperion"
 ]
 }
 },
@@ -379,6 +392,7 @@ export const VISUAL_CLASSES = [
 "viasat-3",
 "o3b",
 "globalstar-2",
+"oneweb",
 "o3b-mpower",
 "wgs",
 "aehf",
@@ -427,7 +441,15 @@ export const VISUAL_CLASSES = [
 "cheops",
 "hxmt",
 "svom",
-"einstein-probe"
+"einstein-probe",
+"radarsat-2",
+"rcm",
+"cosmo-skymed",
+"csg",
+"elektro-l",
+"astrosat",
+"gosat",
+"microcarb"
 ],
 "model_kinds": [
 "satellite-iridium",
@@ -578,6 +600,7 @@ export const VISUAL_CLASSES = [
 "miura-5",
 "epsilon-s",
 "sslv",
+"hyperbola-3",
 "small-commercial-orbital"
 ],
 "layers": [
@@ -691,12 +714,19 @@ export const VISUAL_CLASSES = [
 "luna-25",
 "hakuto-r-2",
 "surveyor-1",
+"luna-13",
 "surveyor-3",
+"surveyor-5",
+"surveyor-6",
+"surveyor-7",
 "apollo-12",
 "luna-16",
 "lunokhod-1",
 "apollo-15",
+"luna-20",
 "lunokhod-2",
+"luna-23",
+"luna-24",
 "change-3",
 "yutu",
 "change-5",
@@ -746,6 +776,7 @@ export const VISUAL_CLASSES = [
 "lunokhod-2",
 "luna-16",
 "mars-3",
+"venera-9",
 "phoenix",
 "pathfinder"
 ],
@@ -964,7 +995,9 @@ export const VISUAL_CLASSES = [
 "exotic-wd-j1330-6435",
 "exotic-betelgeuse",
 "exotic-vy-canis-majoris",
-"exotic-r136a1"
+"exotic-r136a1",
+"exotic-uy-scuti",
+"exotic-woh-g64"
 ],
 "stars_notable": [
 "hip-70890",
@@ -1018,7 +1051,10 @@ export const VISUAL_CLASSES = [
 "hip-46390",
 "hip-9884",
 "hip-85927",
-"hip-15863"
+"hip-15863",
+"hip-72607",
+"hip-86032",
+"hip-62956"
 ],
 "catalogues": [
 "stars3d"

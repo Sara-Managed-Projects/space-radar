@@ -3,7 +3,7 @@
 // landing and impact site, each from site/data/lists/ (scripts/gen_small_lists.py).
 //
 //   node tests/test_small_lists.mjs
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -95,7 +95,7 @@ const say = (r) => C.firstSentence(r, {}, m, null);
   const rows = doc.rows;
   const by = (w) => rows.filter((r) => r.world === w);
   check(by('venus').length === 17, `Venus: seventeen (${by('venus').length})`);
-  check(by('moon').length + 25 === 96, `the Moon: NSSDCA's 96 rows, 25 of them already in registry/sites.yaml (${by('moon').length} here)`);
+  check(by('moon').length + 33 === 96, `the Moon: NSSDCA's 96 rows, 33 of them already in registry/sites.yaml (Luna 18, which lies 1 km from Luna 20, is among them) (${by('moon').length} here)`);
   check(new Set(rows.map((r) => r.id)).size === rows.length, 'ids unique');
   for (const r of rows) {
     check(r.doing && r.kind && r.world, `${r.id}: a sentence, a kind and a world`);
@@ -111,6 +111,22 @@ const say = (r) => C.firstSentence(r, {}, m, null);
   const rec = S.landingRecords(doc);
   const v9 = rec.find((r) => r.id === 'venera-9');
   check(v9.frame === 'venus-fixed' && v9.propagator === 'fixed' && /first picture/.test(say(v9)), 'Venera 9 is fixed on Venus, and its card says what it did');
+  // 1.9.0 (b190-probes, internal #1076): the Venera 9 and 10 landers have a model of their own, so they are drawn and not only marked;
+  // every other Venus site stays a mark.
+  {
+    const { realModelFor } = await mod('scene/realmodels.js');
+    const { SITE_BODIES } = await mod('scene/worlds.js');
+    const v10 = rec.find((r) => r.id === 'venera-10');
+    for (const r of [v9, v10]) {
+      const e = realModelFor(r);
+      check(r.meta.drawn === true && r.meta.markOnly === false, `${r.id}: it has a model of its own, so it is drawn and not only marked`);
+      check(e && e.file === 'venera-9.glb' && e.made === 'dimensions' && !/a mark at its place/.test(say(r)), `${r.id}: routed to venera-9.glb, and its card does not say it is a mark`);
+    }
+    check(existsSync(join(ROOT, 'site/models/venera-9.glb')), 'site/models/venera-9.glb is in the tree');
+    check(rec.filter((r) => r.meta.drawn).map((r) => r.id).join() === 'venera-9,venera-10', 'only the two Venera landers with a model are drawn; the rest of the list is marks');
+    check(rec.filter((r) => r.meta.world === 'venus' && !r.meta.drawn).every((r) => r.meta.markOnly === true), 'every other Venus site is a mark');
+    check(SITE_BODIES.has('venus'), 'Venus is cut finely, so a lander stands on its ground');
+  }
   const p = propagate(v9, Date.UTC(2026, 9, 28));
   check(p && Math.abs(Math.hypot(p.x, p.y, p.z) - 6051.8) < 5, 'on its surface');
   const dart = rec.find((r) => r.id === 'dart-dimorphos');
@@ -139,4 +155,4 @@ const say = (r) => C.firstSentence(r, {}, m, null);
 }
 
 if (problems.length) { console.error('small lists FAILED:\n  ' + problems.slice(0, 40).join('\n  ')); process.exit(1); }
-console.log('small lists ok: 172 showers (8 are the registry\'s), 3 850 observatories (2 694 with an MPC code), 111 launch sites, 105 landing and impact sites (17 on Venus, 74 more on the Moon, 4 on Mars, 9 small-body events), none twice, each with its card');
+console.log('small lists ok: 172 showers (8 are the registry\'s), 3 850 observatories (2 694 with an MPC code), 111 launch sites, 93 landing and impact sites (17 on Venus, 62 more on the Moon, 4 on Mars, 9 small-body events, one planned landing), none twice, each with its card');

@@ -495,8 +495,10 @@ def pack(segments: list) -> bytes:
         out.append(struct.pack("<BBHIdd", CENTRES.index(s["centre"]), pos_type, 0, len(s["T"]), float(s["T"][0]), 0.0))
     for s in segments:
         off = s["T"] - s["T"][0]
-        if off.max() >= 2 ** 32 or (off != n.round(off)).any():
-            raise SystemExit("a segment's times do not fit whole seconds in a u32")
+        if off.max() >= 2 ** 32:
+            raise SystemExit(f"segment {s['centre']}: its largest time offset, {off.max():g} s, is at least 2**32 s and does not fit a u32")
+        if (off != n.round(off)).any():
+            raise SystemExit(f"segment {s['centre']}: its time offsets are not whole seconds, so they do not fit a u32")
         out.append(off.astype("<u4").tobytes())
         out.append(s["P"].astype("<f8" if s["centre"] == "sun" else "<f4").tobytes())
         out.append(s["V"].astype("<f4").tobytes())

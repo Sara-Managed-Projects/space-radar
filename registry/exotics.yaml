@@ -93,6 +93,7 @@ exotics:
     dist_ly: 7800
     mass_msun: 9
     why: "A black hole that flares: in 2015 it lit up brighter than anything else in the X-ray sky for two weeks, then went quiet again."
+    aliases: [GS 2023+338]
     source: "https://en.wikipedia.org/wiki/V404_Cygni (infobox, read 2026-09-08)"
 
   - id: ton-618
@@ -105,6 +106,7 @@ exotics:
     distance_note: "how far it is now (comoving distance), from its redshift of 2.219 in the Planck 2018 cosmology. Its light-travel time is 10.8 billion years: we see it as it was when the universe was 3 billion years old, not as it is"
     mass_msun: 40700000000
     why: "One of the heaviest black holes known, forty billion Suns, so far away that its light left before the Earth existed."
+    aliases: [Tonantzintla 618]
     source: "https://en.wikipedia.org/wiki/TON_618 (infobox; 2019 mass estimate, read 2026-09-08)"
 
   - id: crab-pulsar
@@ -329,3 +331,28 @@ exotics:
     why: "The most massive and luminous star known, a Wolf-Rayet star in the Tarantula Nebula of the Large Magellanic Cloud, at around 291 Suns."
     aliases: [RMC 136a1]
     source: "https://en.wikipedia.org/wiki/R136a1 (infobox: position, distance, mass and apparent magnitude 12.23; the opening paragraph for the mass, luminosity and cluster; the Distance section; read 2026-11-04)"
+
+  - id: uy-scuti
+    name: UY Scuti
+    kind: star
+    ra: 18h 27m 36.5334s
+    dec: -12° 27′ 58.866″
+    dist_ly: 5871             # +534 / -446, as the infobox prints it
+    vmag: 8.29                # the page's maximum brightness: it pulses between 8.29 and 10.56 and the page gives no mean, so this is the brightest it gets
+    distance_note: "5,871 light-years (1,800 parsecs) in the infobox, from a parallax of 0.5166 mas, with an error of +534 and -446 light-years; the article's opening paragraph rounds it to 5,900"
+    why: "One of the largest known stars, about 909 times the Sun's radius. In the Sun's place, its surface would reach past Mars or even the asteroid belt."
+    aliases: [UY Sct, BD-12 5055, IRC -10422]
+    source: "https://en.wikipedia.org/wiki/UY_Scuti (infobox: position, distance and the V magnitude range 8.29 to 10.56; the opening paragraph for the radius of 909 Suns, the maximum brightness and the Mars and asteroid-belt comparison; read 2026-11-05)"
+
+  - id: woh-g64
+    name: WOH G64
+    kind: star
+    ra: 04h 55m 10.5252s
+    dec: -68° 20′ 29.998″
+    dist_ly: 163000           # 50,000 pc, the Large Magellanic Cloud's
+    mass_msun: 20             # the infobox gives ~20 for the red supergiant, the star's component A
+    vmag: 17.7                # the infobox gives 17.7 to 18.8 and no mean; this is the brightest end
+    distance_note: "163,000 light-years (50,000 parsecs) in the infobox: the article puts the star roughly 50 kiloparsecs away, in the Large Magellanic Cloud"
+    why: "An extreme red supergiant in the Large Magellanic Cloud, about 1,540 times the Sun's radius. In the Sun's place, it would engulf the orbit of Jupiter."
+    aliases: [IRAS 04553-6825, LI-LMC 181, MSX LMC 1182]
+    source: "https://en.wikipedia.org/wiki/WOH_G64 (infobox: position, distance, V magnitude 17.7 to 18.8 and the mass of component A; the opening paragraph for the radius of 1,540 Suns and the Jupiter comparison; read 2026-11-05)"

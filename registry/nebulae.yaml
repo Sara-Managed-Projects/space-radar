@@ -10,7 +10,7 @@
 # to redistribute. The three archives below release their images under CC BY 4.0 on a terms page
 # anyone can read (`terms:`, read on `checked:`); the wording that matters is quoted beside each.
 # The Digitized Sky Survey (plates copyright Caltech/ROE/AAO, terms on request) and Mellinger's
-# panorama ("All rights reserved") are NOT allowed (docs/research/2026-10-wwt.md, finding 4), and
+# panorama ("All rights reserved") are NOT allowed, and
 # check_registry.py refuses a credit that names either: several archive pictures are DSS composites
 # with an observatory's name on the page, and the credit line is where that shows. The Finkbeiner
 # H-alpha map's licence was not settled, so nothing here uses it.

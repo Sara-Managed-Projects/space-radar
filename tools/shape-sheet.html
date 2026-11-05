@@ -19,6 +19,9 @@
   IT ADDS THE SAME TWO LIGHTS scene/worlds.js adds. A MeshToonMaterial in an unlit scene renders
   nearly black: the first version of this sheet had no lights, and the silhouettes were honest
   while every colour on it was a lie.
+
+  `rot=0,90,180,270` and `tilt=0,0,0,0` turn the Nth cell's model about the vertical and about the horizontal, in degrees, so one model can
+  be listed several times and read from four sides (release 1.9.0, `m=file:oneweb.glb,file:oneweb.glb,...`).
 -->
 <style>body{margin:0;background:#0b0e14}canvas{display:block}</style>
 <canvas id="c"></canvas>
@@ -82,6 +85,7 @@ const cam = new THREE.PerspectiveCamera(30, 1, 0.01, 100);
 cam.position.set(1.5, 1.05, 1.9);
 cam.lookAt(0, 0, 0);
 
+const ROT = (QS.get('rot') || '').split(',').map(Number), TILT = (QS.get('tilt') || '').split(',').map(Number);
 const SHADE_FROM = QS.has('shade') ? Number(QS.get('shade')) : Infinity;
 const FLOOD_FROM = QS.has('flood') ? Number(QS.get('flood')) : Infinity;
 const SUN = new THREE.Vector3(0.6, 0.5, 0.62).normalize();
@@ -89,6 +93,8 @@ const EARTH_R = 100; // model units; the model sits 6.3 % of a radius up, as the
 for (const o of scene.children) {
   if (o.userData.cell === undefined) continue;
   const i = o.userData.cell;
+  if (QS.get('rot') && ROT[i] === ROT[i]) o.rotation.y = (ROT[i] * Math.PI) / 180;
+  if (QS.get('tilt') && TILT[i] === TILT[i]) o.rotation.x = (TILT[i] * Math.PI) / 180;
   // The same sum as updateModelAttitude's last step, for a model the sheet has not turned.
   if (QS.get('aim') === '1' && o.userData.panelPivots) for (const p of o.userData.panelPivots) p.rotation.x = Math.atan2(SUN.z, SUN.y);
   if (i >= SHADE_FROM) {

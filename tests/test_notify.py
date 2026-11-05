@@ -56,6 +56,16 @@ class TokensTest(unittest.TestCase):
         self.assertIsNone(tokens.verify_token("not-a-token", SECRET))
         self.assertIsNone(tokens.verify_token("", SECRET))
 
+    def test_split_token(self):
+        token = tokens.make_token("a@b.co", "n0nce", SECRET)
+        email, nonce, sig = tokens.split_token(token)
+        self.assertEqual((email, nonce), ("a@b.co", "n0nce"))
+        self.assertEqual(len(sig), 64)  # the signature is 64 hex characters
+        self.assertIsNone(tokens.split_token("nodots"))
+        self.assertIsNone(tokens.split_token("YUBiLmNv.n"))  # only two parts
+        self.assertEqual(tokens.split_token("YUBiLmNv.n.s.extra"), ("a@b.co", "n", "s.extra"))  # the signature keeps everything after the second dot
+        self.assertIsNone(tokens.split_token("_w.n.s"))  # the first part decodes to bytes that are not UTF-8
+
 
 class SubscriptionsTest(unittest.TestCase):
     def test_subscribe_rejects_bad_input(self):

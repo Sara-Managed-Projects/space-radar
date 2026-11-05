@@ -133,6 +133,8 @@ export function landingRecords(doc) {
       aliases: row.aliases || [], bodyLabel: row.body || null, citeUrl: ref ? ref.url : null,
       clsLine: Number.isFinite(row.lat) && row.approx ? 'approxPlace' : null,
       cite: ref ? ref.label : null,
+      // 1.9.0: a row with a model of its own (registry/landing-sites-1-5.yaml `model`) is drawn, not only marked (scene/heroes.js, ui/cards.js)
+      ...(row.model ? { markOnly: false, drawn: true } : {}),
     };
     if (Number.isFinite(row.lat) && Number.isFinite(row.lon) && ['moon', 'venus', 'mars'].includes(row.world)) {
       out.push(siteRecord(row, 'landing-sites', 'landing-site', row.world, extra));

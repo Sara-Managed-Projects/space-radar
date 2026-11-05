@@ -23,7 +23,7 @@
 // Fetched by main.js only when the opening plays: never for a returning visitor, a link to
 // somewhere, an embed, reduced motion or an automated browser.
 
-import { COPY } from '../copy/en.js';
+import { COPY, t } from '../copy/en.js';
 import '../copy/en.later.js';
 import { loadCss } from './latercss.js';
 import { icon, iconFrom } from './icons.js';
@@ -106,7 +106,7 @@ export function createOpening(ctx, opts = {}) {
     line.hidden = !now;
     if (now && line.textContent !== now.text) {
       line.textContent = now.text;
-      line.title = now.source ? `${C.from} ${now.source}` : '';
+      line.title = now.source ? t(C.from, { source: now.source }) : '';
     }
   }
   loadCss('finishers', doc).then(() => { if (!gone) root.hidden = false; });

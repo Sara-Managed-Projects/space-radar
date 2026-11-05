@@ -183,6 +183,7 @@ export function worst(el, rows) {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await main();
 
 async function main() {
+if (process.argv.includes('--help') || process.argv.includes('-h')) { console.log('usage: node scripts/fit-moon-elements.mjs [--refit]  (prints the worst error of each shipped moon against Horizons; --refit refits the elements first)'); process.exit(0); }
 const refit = process.argv.includes('--refit');
 const km = (v) => (v < 10 ? v.toFixed(1) : String(Math.round(v)));
 for (const id of Object.keys(MOON_ELEMENTS)) {

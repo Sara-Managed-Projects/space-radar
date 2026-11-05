@@ -168,6 +168,19 @@ events:
     sources:
       - {words: "IMO Meteor Shower Calendar 2027, Geminids: maximum December 14, centred around 20h UT, the full Moon severely disturbs, ZHR 150", url: "https://www.imo.net/files/meteor-shower/cal2027.pdf", read: 2026-11-04}
 
+  - id: ursids-2027
+    kind: meteor-shower
+    name: "Ursids 2027"
+    short: "Ursids 2027: when and where to look"
+    summary: "The Ursids peak at about 04 hours UT on 23 December 2027, best from the north, where the radiant never sets: when to look, and a link into that sky."
+    shower: ursids
+    year: 2027
+    moon_at: 2027-12-23T04:00:00Z
+    link: {t: "2027-12-23T04:00:00Z", at: moon}
+    trip: comets-and-meteors
+    sources:
+      - {words: "IMO Meteor Shower Calendar 2027, Ursids: maximum December 23 at 04h UT, ZHR 10, radiant circumpolar from most northern sites and moon-free", url: "https://www.imo.net/files/meteor-shower/cal2027.pdf", read: 2026-11-05}
+
   - id: annular-eclipse-2027
     kind: eclipse
     name: "The annular solar eclipse of 6 February 2027"
