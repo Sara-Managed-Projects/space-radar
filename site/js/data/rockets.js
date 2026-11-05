@@ -1708,6 +1708,33 @@ export const ROCKETS = [
     "class": "inferred"
   },
   {
+    "id": "hyperbola-3",
+    "display": "Hyperbola-3",
+    "match": {
+      "full_name": [
+        "Hyperbola-3"
+      ]
+    },
+    "stands_for": "variant",
+    "height_m": 69.6,
+    "core_dia_m": 4.2,
+    "taper": "hammerhead",
+    "top": {
+      "kind": "fairing",
+      "dia_m": 5.2
+    },
+    "boosters": {
+      "shape": "none",
+      "count": 0
+    },
+    "engines": {
+      "count": 9,
+      "pattern": "unknown"
+    },
+    "livery": "unknown",
+    "class": "measured"
+  },
+  {
     "id": "small-commercial-orbital",
     "display": "a small commercial launcher",
     "match": {
