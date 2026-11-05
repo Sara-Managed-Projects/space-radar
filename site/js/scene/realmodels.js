@@ -1353,22 +1353,7 @@ export const REAL_MODELS = {
     // a bare `dragon` never catches anything else. A CC BY model is on Ivan's list (spec 0027).
     // Iridium: 66 NEXT satellites in service and the first generation's survivors, all one plan.
     // Klass satellite only, so IRIDIUM 33 DEB and the rest of that collision keep the debris shape.
-    // A FILE FOR THE NEXT SERIES since release 1.9.0 (public #991): IRIDIUM 100 and up are the 80 NEXT craft (Thales Alenia Space, 2017 to 2023); the
-    // numbers under 100 are the first generation's survivors, a different craft (three flat antennas on a triangular bus), and keep the build.
-    // iridium-next.glb is built from eoPortal's 3.1 x 2.4 x 1.5 m and 9.4 m span (registry row `iridium-next`, kind `built-from-dimensions`).
-    iridium: {
-      build: 'iridium',
-      colour: 'satellite',
-      name: 'an Iridium satellite',
-      klass: ['satellite'],
-      generic: true,
-      resolve: (record) => {
-        const n = /^iridium (\d+)\b/i.exec(String((record && record.name) || ''));
-        return n && Number(n[1]) >= 100
-          ? { file: 'iridium-next.glb', made: 'dimensions', axes: 'app', name: 'an Iridium NEXT satellite' }
-          : {};
-      },
-    },
+    iridium: { build: 'iridium', colour: 'satellite', name: 'an Iridium satellite', klass: ['satellite'], generic: true },
     // SIXTY-SEVEN MORE RADAR IMAGERS, by name, and three constellations deliberately left out.
     //
     // The twenty-two mapped by id are the big national ones. These are the commercial and small

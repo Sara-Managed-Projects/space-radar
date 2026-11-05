@@ -66,7 +66,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 <!-- 0078 r14-m2: begin -->
 | The shapes of Thuraya-2 and -3, Inmarsat-4, ViaSat-3, O3b, Globalstar second generation, O3b mPOWER | built by us in code from published dimensions | published numbers (McDowell's GCAT, CC BY 4.0, and the makers' and operators' own pages) and artists' renders looked at only; CC0 where a photograph of a model was used; ours | numbers are facts; no picture is in the file; no logo or lettering |
 <!-- 0078 r14-m2: end -->
-| The shapes of Iridium NEXT and OneWeb (first generation) | built by us in code from published dimensions | published numbers (eoPortal) and pictures looked at only; ours | [3b-b190-comms](#3b-b190-comms-release-190-two-broadband-and-mobile-phone-constellations-built-from-dimensions-iridium-next-and-oneweb-2026-11-05) | <!-- 0080 b190-comms -->
+| The shape of OneWeb (first generation) | built by us in code from published dimensions | published numbers (eoPortal) and pictures looked at only; ours | [3b-b190-comms](#3b-b190-comms-release-190-onewebs-first-generation-built-from-dimensions-2026-11-05) | <!-- 0080 b190-comms -->
 
 <!-- 0078 r14-m8: begin -->
 | The shapes of Luna 16's descent stage, Mars Pathfinder with Sojourner, Phoenix and the Mars 3 capsule | built by us in code from published dimensions | CC0, CC BY 2.0 or CC BY 4.0 or public domain where a picture was compared; ours | [3b-r14-m8](#3b-r14-m8-four-landers-built-from-dimensions--luna-16-mars-pathfinder-and-sojourner-phoenix-mars-3-2026-10-27) |
@@ -1057,7 +1057,7 @@ not shipped: in the app it was no better than the procedural shape.
 
 No logo and no lettering is on any of the three: the operators' names and marks are their
 trademarks. Starlink is SpaceX's, Umbra is Umbra Lab's and ICEYE is ICEYE's; none of them
-endorses Space Radar, and none of them made or approved these shapes.
+endorses Space Radar, and none of them made or approved this shape.
 
 
 ## 3b-8. Seven more built from dimensions — GPS by block, Galileo, Michibiki, NavIC, SAOCOM (2026-10-13)
@@ -1091,7 +1091,7 @@ details simplified".
 
 No logo, lettering, flag or insignia is on any of the seven. The US Space Force, Lockheed Martin,
 Boeing, the European Union, EUSPA, ESA, OHB, the Cabinet Office of Japan, ISRO, CONAE and INVAP
-do not endorse Space Radar, and none of them made or approved these shapes.
+do not endorse Space Radar, and none of them made or approved this shape.
 
 
 ## 3b-9. Four more built from dimensions — MetOp, XMM-Newton, TerraSAR-X, StriX (2026-10-13)
@@ -1120,7 +1120,7 @@ pictures; details simplified".
 `3D model: built by Space Radar from published dimensions and a photograph of Synspective's model of StriX by Blervis (CC0)`
 
 No logo, lettering, flag or insignia is on any of the four. EUMETSAT, ESA, Airbus, NASA, DLR and
-Synspective do not endorse Space Radar, and none of them made or approved these shapes.
+Synspective do not endorse Space Radar, and none of them made or approved this shape.
 
 ## 3b-10. Five European Earth-observation craft built from dimensions — Envisat, ERS-1, Sentinel-1, Sentinel-2, Sentinel-3 (2026-10-14)
 
@@ -1185,7 +1185,7 @@ say "shape built from published dimensions and pictures; details simplified".
 
 No logo, lettering, flag or insignia is on any of the four. ESA, the European Union, JAXA, Airbus,
 Thales Alenia Space, CNES, DLR and the National Museum of Nature and Science do not endorse Space
-Radar, and none of them made or approved these shapes.
+Radar, and none of them made or approved this shape.
 
 ## 3b-12. Four weather and navigation craft built from dimensions — GLONASS-M, GLONASS-K, Fengyun-3, Himawari (2026-10-14)
 
@@ -1217,7 +1217,7 @@ built from published dimensions and pictures; details simplified".
 
 No logo, lettering, flag or insignia is on any of the four. Roscosmos, ISS Reshetnev, the GLONASS
 information centre, CMA, SAST, JMA, JAXA, Mitsubishi Electric, the IGS and the museums named here do
-not endorse Space Radar, and none of them made or approved these shapes.
+not endorse Space Radar, and none of them made or approved this shape.
 
 
 
@@ -1390,7 +1390,7 @@ image-to-3D model was used. Their cards say "shape built from published dimensio
 `3D model: built by Space Radar from published dimensions (no free picture of the flight craft)`
 
 No logo, lettering, flag or insignia is on any of the four. NASA, JPL, ESA, DLR, JAXA, MBRSC, the UAE Space Agency, The Planetary
-Society and the pictures' authors do not endorse Space Radar, and none of them made or approved these shapes.
+Society and the pictures' authors do not endorse Space Radar, and none of them made or approved this shape.
 <!-- 0077 W1-b: end -->
 
 <!-- 0077 W1-c: begin -->
@@ -1514,7 +1514,7 @@ cards say "shape built from published dimensions and pictures; details simplifie
 `3D model: built by Space Radar from eoPortal's and ESA's published dimensions; compared with pictures by ESA (CC BY-SA 3.0 IGO) and Don-vip (CC BY-SA 4.0)`
 
 No logo, lettering, flag or insignia is on any of the four. ESA, JAXA, EUMETSAT, Airbus, the pictures' authors and eoPortal do
-not endorse Space Radar, and none of them made or approved these shapes.
+not endorse Space Radar, and none of them made or approved this shape.
 <!-- 0077 W3-b: end -->
 <!-- 0077 W3-c: begin -->
 ## 3b-16. China's landers and rovers and the Lunokhods built from dimensions — Zhurong, Chang'e 3 and 4, Yutu, Chang'e 5 and 6, Lunokhod 1 and 2 (2026-10-20)
@@ -1546,7 +1546,7 @@ simplified".
 `3D model: built by Space Radar from published dimensions and photographs of museum models (Stolbovsky, CC BY 4.0; Armael, CC0; Clemens Vasters, CC BY 2.0)`.
 
 CNSA, China News Service, the Chinese Academy of Sciences, Lavochkin, the museums and the pictures' authors do not endorse
-Space Radar, and none of them made or approved these shapes.
+Space Radar, and none of them made or approved this shape.
 
 <!-- 0077 W3-c: end -->
 <!-- 0078 r14-m8: begin -->
@@ -1577,7 +1577,7 @@ say "shape built from published dimensions and pictures; details simplified".
 `3D model: built by Space Radar from published dimensions and NASA/JPL photographs (public domain)`;
 `3D model: built by Space Radar from published dimensions and photographs of museum models (Armael, CC0; Museum of Cosmonautics, CC0; Stolbovsky, CC BY 4.0)`.
 
-NASA, JPL, Lavochkin, the museums and the pictures' authors do not endorse Space Radar, and none of them made or approved these shapes.
+NASA, JPL, Lavochkin, the museums and the pictures' authors do not endorse Space Radar, and none of them made or approved this shape.
 
 <!-- 0078 r14-m8: end -->
 <!-- 0077 W3-a: begin -->
@@ -1665,7 +1665,7 @@ in any file; no logo and no lettering is on any mesh. Their parts are named node
 
 Release 1.4.0, stage r14-m2 (public #1121, #1122, #1123, #1154, #1155, #1156). Every file is built in code by this project, from the
 published numbers of each craft and the layout read off artists' renders that were LOOKED AT ONLY; no mesh and no picture of anyone else's
-is in a file. `registry/models.yaml` has a row per file with every number, the sentence it was read from and what is ours. Their cards say
+is in a file. `registry/models.yaml` has a row with every number, the sentence it was read from and what is ours. Their cards say
 "shape built from published dimensions and pictures; details simplified". No free picture of any of these craft was found (Commons holds
 launch photographs and logos), which each row says.
 
@@ -1687,7 +1687,7 @@ launch photographs and logos), which each row says.
 `3D model: built by Space Radar from published dimensions (McDowell's GCAT, CC BY 4.0; no free picture of the craft)`
 
 No logo, lettering, flag or insignia is on any of the six. Thuraya, Inmarsat, Viasat, SES, Globalstar, Boeing, Airbus and Thales Alenia Space
-do not endorse Space Radar, and none of them made or approved these shapes.
+do not endorse Space Radar, and none of them made or approved this shape.
 <!-- 0078 r14-m2: end -->
 
 
@@ -1721,7 +1721,7 @@ Release 1.4.0, stage r14-m4 (public #1114, #1115, #1116, #1117, #1118, #1119, #1
 `3D model: built by Space Radar from eoPortal's and NSIDC's published dimensions; compared with NASA's picture (public domain)`;
 `3D model: built by Space Radar from eoPortal's published dimensions; compared with pictures by Vlsergey (CC BY-SA 3.0) and a line drawing (CC BY-SA 2.5)`
 
-No logo, lettering, flag or insignia is on any of the ten. ESA, EUMETSAT, ISRO, KARI, CMA, JAXA, NASA, Roscosmos, VNIIEM, TsSKB-Progress, the pictures' authors and eoPortal do not endorse Space Radar, and none of them made or approved these shapes.
+No logo, lettering, flag or insignia is on any of the ten. ESA, EUMETSAT, ISRO, KARI, CMA, JAXA, NASA, Roscosmos, VNIIEM, TsSKB-Progress, the pictures' authors and eoPortal do not endorse Space Radar, and none of them made or approved this shape.
 <!-- 0078 r14-m4: end -->
 
 <!-- 0078 r14-m5: begin -->
@@ -1752,7 +1752,7 @@ craft, the later HawkEye 360 blocks, GHGSat-C12 and C13 and Gaofen-1 02, 03 and 
 `3D model: built by Space Radar from eoPortal's published dimensions; compared with pictures by Satellogic USA INC, Gisesate and BugWarp (CC BY-SA 4.0)`
 
 No logo, lettering, flag or insignia is on any of the seven. Maxar, Ball, CAST, BlackSky, Satellogic, Planet, HawkEye 360, GHGSat, UTIAS/SFL, the
-pictures' authors and eoPortal do not endorse Space Radar, and none of them made or approved these shapes.
+pictures' authors and eoPortal do not endorse Space Radar, and none of them made or approved this shape.
 <!-- 0078 r14-m5: end -->
 
 <!-- 0078 r14-m6: begin -->
@@ -4323,22 +4323,20 @@ figures; JetBrains Mono drops `calt`, its programming ligatures. Barlow Semi Con
 Cyrillic, so it has no Cyrillic file. The upstream files' SHA-256 are in `scripts/build-fonts.py`.
 
 <!-- 0080 b190-comms: begin -->
-## 3b-b190-comms. Release 1.9.0: two broadband and mobile-phone constellations built from dimensions, Iridium NEXT and OneWeb (2026-11-05)
+## 3b-b190-comms. Release 1.9.0: OneWeb's first generation built from dimensions (2026-11-05)
 
-Release 1.9.0, batch comms (public #991, #1001). Both files are built in code by this project (`tools/comms-builder`, on the part library of
+Release 1.9.0, batch comms (public #1001). The file is built in code by this project (`tools/comms-builder`, on the part library of
 `tools/stage-builder`), from the numbers eoPortal prints and the layout read off the pictures that page carries. **The pictures were LOOKED AT ONLY**:
-no mesh, no texture and no picture of anyone else's is in a file. `registry/models.yaml` has a row per file with every number, the sentence it was read
-from, and what is ours. Their cards say "shape built from published dimensions and pictures; details simplified". The sizes of the wings, dishes and antennas that
-no page prints are ours, and the rows say which.
+no mesh, no texture and no picture of anyone else's is in the file. `registry/models.yaml` has a row with every number, the sentence it was read
+from, and what is ours. Its card says "shape built from published dimensions and pictures; details simplified". The sizes of the wings and dishes that
+no page prints are ours, and the row says which.
 
 | File | What | What it was drawn from or compared with | Terms |
 |---|---|---|---|
-| `iridium-next.glb` (80 KB) | Iridium NEXT (IRIDIUM 100 to 181): a foil-edged silver slab, a copper hexagon-tiled Main Mission Antenna on a silver module, a hosted-payload bay, two feeder and two cross-link dishes, two wings of two panels, 9.4 m tip to tip | eoPortal, 'Iridium NEXT', <https://www.eoportal.org/satellite-missions/iridium-next> (read 2026-11-05): launch configuration 3.1 x 2.4 x 1.5 m, deployed wingspan 9.4 m, the antennas and links. The layout: the artist's rendition by Thales Alenia Space and the photograph of the stack in the fairing by Iridium, both on that page, looked at only. The sizes of the antenna, dishes and panels are ours | numbers are facts; the pictures are looked at only and are not in the file; no logo or lettering |
 | `oneweb.glb` (41 KB) | OneWeb first generation (Airbus Arrow): a 1 x 1 x 1.3 m gold-foil box with pale radiator faces, a black deck with two Ka dishes and a bay of Ku horn arrays, a Hall thruster plate, two single-panel wings | eoPortal, 'OneWeb', <https://www.eoportal.org/satellite-missions/oneweb> (read 2026-11-05): 1 m x 1 m x 1.3 m, about 150 kg, 16 fixed Ku beams, two steerable Ka beams, two solar panels. The layout: Airbus's representation and the photographs of the satellites in Toulouse and on the payload adapter, on that page, looked at only. The wings' size (1.2 x 1.6 m) and the dishes' are ours: eoPortal prints none | numbers are facts; the pictures are looked at only and are not in the file; no logo or lettering |
 
-**Credit lines:**
-`3D model: built by Space Radar from published dimensions; layout read from pictures on eoPortal (Thales Alenia Space, Iridium)`;
+**Credit line:**
 `3D model: built by Space Radar from published dimensions; layout read from pictures on eoPortal (Airbus, OneWeb)`
 
-No logo, lettering, flag or insignia is on either. Iridium, Thales Alenia Space, OneWeb, Eutelsat and Airbus do not endorse Space Radar, and none of them made or approved these shapes.
+No logo, lettering, flag or insignia is on it. OneWeb, Eutelsat and Airbus do not endorse Space Radar, and none of them made or approved this shape.
 <!-- 0080 b190-comms: end -->
