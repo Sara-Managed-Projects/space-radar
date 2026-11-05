@@ -14,7 +14,7 @@ export const TOUR_WORDS = {
 "to-the-edge": "the sun from one light year proxima centauri sirius pleiades centre galaxy milky way andromeda far this trip goes edge",
 "roof-to-the-edge": "your roof tonight the earth moon orbit planets sun oort cloud distance nearest stars how far our radio has got milky way local group oldest light edge",
 "travel-to-exoplanets": "planets around other stars all sun the nearest one proxima seven worlds round small red star trappist inside mercury orbit",
-"moon-landings": "the first soft landing anyone can find surveyor people apollo visit older robot rover driven from earth lunokhod seventy five hours then long quiet side that never faces change near south pole chandrayaan private lander leaning eclipse seen moon blue ghost twenty eight landings nineteen this map whole",
+"moon-landings": "the first soft landing anyone can find surveyor people apollo visit older robot rover driven from earth lunokhod seventy five hours then long quiet side that never faces change near south pole chandrayaan private lander leaning eclipse seen moon blue ghost twenty eight landings six this map whole",
 "outer-solar-system": "the moon jupiter never lets rest europa and two ships their way saturn ring ten metres thick titan farthest have landed enceladus spraying its ocean into space triton going wrong round pluto charon each other sedna eris which made planet definition voyager everything behind",
 "a-year-in-a-minute": "everything inside mars going round inner sun the earth and moon mercury four laps our one jupiter which takes twelve years",
 "chasing-the-solar-eclipse": "the shadow arrives earth minute happens peak moon casting from ring not night lunar",

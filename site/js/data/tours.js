@@ -1113,7 +1113,7 @@ export const TOURS = [
 "chapter": "Chapter one: the race, 1966 to 1972",
 "card": {
 "title": "The first people",
-"body": "Neil Armstrong and Buzz Aldrin stayed 21 hours and 36 minutes. Their whole walk covered about 250 metres, and neither went more than about 100 m from the lander. Michael Collins waited for them in orbit."
+"body": "Neil Armstrong and Buzz Aldrin stayed 21 hours and 36 minutes. Their whole walk covered about 250 metres, and neither went farther than about 50 m from the lander. Michael Collins waited for them in orbit."
 },
 "frame_radii": 5.0,
 "drift_deg": 34,
@@ -1176,7 +1176,7 @@ export const TOURS = [
 "chapter": "Chapter one: the race, 1966 to 1972",
 "card": {
 "title": "Seventy-five hours, then a long quiet",
-"body": "Gene Cernan and Harrison Schmitt, the first scientist to walk on the Moon, stayed 75 hours and covered 30 km with their rover. After them robots landed three more times, and then nothing landed softly on the Moon for 37 years."
+"body": "Gene Cernan and Harrison Schmitt, the first scientist to walk on the Moon, stayed 75 hours and drove their rover about 36 km. After them robots landed three more times, and then nothing landed softly on the Moon for 37 years."
 },
 "frame_radii": 5.0,
 "drift_deg": 34,
@@ -1281,8 +1281,8 @@ export const TOURS = [
 "key_light_deg": 45,
 "chapter": "Epilogue: the whole Moon",
 "card": {
-"title": "Twenty-eight landings, nineteen on this map",
-"body": "NASA's table of what lies on the Moon, last updated in August 2025, lists 28 landings, six of them with people aboard. This map marks 19 of them, two by where their rovers stopped, and Chang'e 3's rover Yutu beside its lander. Luna 9, the first of all, is not one: nobody knows exactly where it is."
+"title": "Twenty-eight landings, twenty-six on this map",
+"body": "NASA's table of what lies on the Moon, last updated in August 2025, lists 28 landings, six of them with people aboard. This map marks 26 of them, two by where their rovers stopped, and Chang'e 3's rover Yutu beside its lander. Luna 9, the first of all, is not one: nobody knows exactly where it is."
 },
 "drift_rate_deg_s": 6,
 "drift": "toward-light",

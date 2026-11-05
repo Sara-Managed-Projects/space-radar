@@ -95,7 +95,7 @@ const say = (r) => C.firstSentence(r, {}, m, null);
   const rows = doc.rows;
   const by = (w) => rows.filter((r) => r.world === w);
   check(by('venus').length === 17, `Venus: seventeen (${by('venus').length})`);
-  check(by('moon').length + 25 === 96, `the Moon: NSSDCA's 96 rows, 25 of them already in registry/sites.yaml (${by('moon').length} here)`);
+  check(by('moon').length + 34 === 96, `the Moon: NSSDCA's 96 rows, 34 of them already in registry/sites.yaml (Luna 18, which lies 1 km from Luna 20, is among them) (${by('moon').length} here)`);
   check(new Set(rows.map((r) => r.id)).size === rows.length, 'ids unique');
   for (const r of rows) {
     check(r.doing && r.kind && r.world, `${r.id}: a sentence, a kind and a world`);
@@ -139,4 +139,4 @@ const say = (r) => C.firstSentence(r, {}, m, null);
 }
 
 if (problems.length) { console.error('small lists FAILED:\n  ' + problems.slice(0, 40).join('\n  ')); process.exit(1); }
-console.log('small lists ok: 172 showers (8 are the registry\'s), 3 850 observatories (2 694 with an MPC code), 111 launch sites, 105 landing and impact sites (17 on Venus, 74 more on the Moon, 4 on Mars, 9 small-body events), none twice, each with its card');
+console.log('small lists ok: 172 showers (8 are the registry\'s), 3 850 observatories (2 694 with an MPC code), 111 launch sites, 93 landing and impact sites (17 on Venus, 62 more on the Moon, 4 on Mars, 9 small-body events, one planned landing), none twice, each with its card');

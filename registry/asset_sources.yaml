@@ -148,18 +148,32 @@ sources:
     checked: 2026-10-29
   # 0079 B1: end
 
-  - id: noaa-ncei-stsci
-    name: NOAA NCEI (ETOPO) and STScI MAST (Hubble OPAL maps)
-    match: ["https://doi.org/10.25921/", "https://archive.stsci.edu/"]
-    url: https://archive.stsci.edu/hlsp/opal
-    licence: US-government data (NOAA), HLSP of a NASA archive (STScI)
+  # Split on 2026-11-05 (public #863): the one row held two publishers, and a row has one licence_read.
+  - id: noaa-ncei
+    name: NOAA NCEI (ETOPO)
+    match: ["https://doi.org/10.25921/"]
+    url: https://www.ncei.noaa.gov/products/etopo-global-relief-model
+    licence: US-government data (NOAA)
     licence_read: ""
     licence_url: https://www.ncei.noaa.gov/access/metadata/landing-page/bin/iso?id=gov.noaa.ngdc.mgg.dem:316
-    licence_note: "NCEI's page, read 2026-10-09, says only 'NOAA and NCEI cannot provide any warranty as to the accuracy, reliability, or completeness of furnished data'; MAST's page gave no licence sentence. The rows' own `licence:` fields are what the site relies on."
+    licence_note: "NCEI's page, read 2026-10-09, says only 'NOAA and NCEI cannot provide any warranty as to the accuracy, reliability, or completeness of furnished data'. The rows' own `licence:` fields are what the site relies on."
     account: none
     cost: none
     offline: shipped
     checked: 2026-10-09
+
+  - id: stsci-mast-opal
+    name: STScI MAST (Hubble OPAL maps)
+    match: ["https://archive.stsci.edu/"]
+    url: https://archive.stsci.edu/hlsp/opal
+    licence: CC BY 4.0 (HLSP of a NASA archive)
+    licence_read: "These HLSP data products are licensed for use under CC BY 4.0."
+    licence_url: https://archive.stsci.edu/hlsp/opal
+    licence_note: "The sentence is the note above the page's list of references, read 2026-11-05 (on 2026-10-09 the page carried none). The rows' own `licence:` fields also quote MAST's data-use page."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-05
 
   - id: d3-celestial
     name: d3-celestial star and constellation data (Olaf Frohn)

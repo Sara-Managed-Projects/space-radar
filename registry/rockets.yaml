@@ -947,6 +947,22 @@ rockets:
     source: "Wikipedia Small Satellite Launch Vehicle, read 2026-11-04: 34 m, 2 m, first stage (SS1) 22.5 m, three solid stages and a fourth velocity-trimming module; no strap-on boosters in the infobox"
     note: "inferred: the infobox names one first-stage motor, S85, and gives no count, so one solid motor is taken."
 
+  # ---- Release 1.9.0 (public #843), read 2026-11-05. No one page gives every number of this row (see its note).
+  - id: hyperbola-3
+    display: "Hyperbola-3"
+    match: {full_name: ["Hyperbola-3"]}
+    stands_for: variant
+    height_m: 69.6
+    core_dia_m: 4.2
+    taper: hammerhead
+    top: {kind: fairing, dia_m: 5.2}
+    boosters: {shape: none, count: 0}
+    engines: {count: 9, pattern: unknown}
+    livery: unknown
+    class: measured
+    source: "Launch Library 2 (ll.thespacedevs.com/2.3.0/launcher_configurations/543, the feed this list is built from): 69.6 m, 4.2 m, two stages; Next Spaceflight (nextspaceflight.com/rockets/309): 5.2 m fairing, 0 boosters; Wikipedia I-Space (Chinese company): nine Focus-2 methalox engines on a two-stage rocket"
+    note: "three pages, each read, because none gives all of it. The height is not agreed: Wikipedia says 69 m and Launch Library 2 and Next Spaceflight 69.6 m; the two that agree are used. The 5.2 m fairing is wider than the 4.2 m body, hence the hammerhead. The 3-core Hyperbola-3B that Wikipedia mentions is a separate planned vehicle and is not this row. The arrangement of the nine engines is not published in anything read."
+
   # ---- last resort before generic: a provider whose vehicles we cannot name ------------
   - id: small-commercial-orbital
     display: "a small commercial launcher"
