@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Star Colour Is Temperature | Space Radar Lab</title>
+<meta name="description" content="A hotter star glows bluer and a cooler one redder, and the colour tells you the temperature.">
+<meta name="sr-lab-category" content="Stars and galaxies">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b0e14">
+<link rel="stylesheet" href="../../css/fonts.css">
+<style>
+:root{--sr-space:#0b0e14;--sr-text:#e8ecf2;--sr-text-dim:#9aa4b2;--sr-ember:#ff9f43;--sr-ember-light:#ffc28a;--sr-ink:#14100a;--sr-line:rgba(232,236,242,.10);--sr-wash:rgba(232,236,242,.07);--sr-wash-hover:rgba(232,236,242,.12);--sr-radius:6px}
+html{background:var(--sr-space);color:var(--sr-text);font:400 15px/20px Inter,system-ui,-apple-system,sans-serif;-webkit-text-size-adjust:100%}
+body{margin:0}
+a{color:var(--sr-ember)}a:hover{color:var(--sr-ember-light)}
+a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--sr-ember);outline-offset:2px;border-radius:2px}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:0 20px;max-width:1160px;margin:0 auto;padding:4px 16px;border-bottom:1px solid var(--sr-line)}
+.top a{display:inline-flex;align-items:center;min-height:44px;color:var(--sr-text);text-decoration:none}
+.top .mark{font:600 20px/1 'Barlow Semi Condensed',system-ui,sans-serif;letter-spacing:.02em}
+.top .here{color:var(--sr-text-dim)}
+main{display:grid;grid-template-columns:minmax(0,1fr);max-width:1160px;margin:0 auto;padding:20px 16px 32px;gap:0 32px;align-content:start}
+main>*{min-width:0}
+.micro{margin:0 0 8px;font:600 13px/16px 'Barlow Semi Condensed',system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--sr-text-dim)}
+h1{margin:0 0 12px;font:600 30px/1.1 Inter,system-ui,sans-serif;letter-spacing:-.01em;overflow-wrap:anywhere}
+.lead{margin:0 0 20px;font-size:18px;line-height:26px;max-width:60ch}
+.stage{margin:0 0 16px;width:100%}
+canvas{display:block;width:100%;aspect-ratio:1080/1200;background:#05070d;border-radius:var(--sr-radius);border:1px solid var(--sr-line)}
+.line{margin:0 0 16px;font-size:16px;line-height:24px;max-width:60ch;min-height:48px}
+.controls{display:grid;gap:12px;margin:0 0 16px}
+.controls label{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;font-size:13px;line-height:18px;color:var(--sr-text-dim)}
+.controls label input{grid-column:1/-1;width:100%;min-height:44px;margin:0;accent-color:var(--sr-ember)}
+.controls output{font:500 13px/18px 'JetBrains Mono',ui-monospace,monospace;color:var(--sr-text);font-variant-numeric:tabular-nums}
+button{min-height:44px;padding:0 20px;border:0;border-radius:var(--sr-radius);background:var(--sr-ember);color:var(--sr-ink);font:600 15px/1 Inter,system-ui,sans-serif;cursor:pointer;justify-self:start}
+button:hover{background:var(--sr-ember-light)}
+.honest{margin:0 0 16px;padding:12px 14px;border-radius:var(--sr-radius);background:var(--sr-wash);color:var(--sr-text-dim);font-size:13px;line-height:18px;max-width:60ch}
+.honest b{color:var(--sr-text);font-weight:600}
+details{margin:0 0 16px;max-width:60ch;border-top:1px solid var(--sr-line)}
+summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font-weight:600}
+.srcl{margin:0 0 6px;font-size:13px;line-height:18px;color:var(--sr-text-dim);white-space:pre-wrap;overflow-wrap:anywhere}
+.more{display:flex;flex-wrap:wrap;gap:0 16px;margin:0;font-size:15px}
+.more a{display:inline-flex;align-items:center;min-height:44px}
+.ns{color:var(--sr-text-dim)}
+@media (min-width:900px){
+ main{grid-template-columns:minmax(0,1fr) 360px;padding-top:24px}
+ main>*{grid-column:2}
+ .stage{grid-column:1;grid-row:1/span 9;width:min(100%,calc((100svh - 130px)*.9));min-width:320px;align-self:start;position:sticky;top:12px;margin:0}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top"><a class="mark" href="../../index.html">Space Radar</a><a class="here" href="../index.html">Lab</a></header>
+<main>
+<p class="micro" id="cat"></p>
+<h1 id="h">Star Colour Is Temperature</h1>
+<p class="lead" id="lesson">A hotter star glows bluer and a cooler one redder, and the colour tells you the temperature.</p>
+<div class="stage"><canvas id="c" role="img" aria-label="Star Colour Is Temperature"></canvas></div>
+<p class="line" id="line"></p>
+<noscript><p class="ns">This simulator needs JavaScript. It is one small file, with no libraries and no network requests: read it with View source.</p></noscript>
+<div class="controls">
+<button type="button" id="pb">Pause</button>
+<label>Time <input type="range" id="ts" min="0" value="0" aria-label="Time through the animation"></label>
+<label id="pl">Value <output id="po"></output><input type="range" id="ps"></label>
+</div>
+<p class="honest"><b>What is and is not to scale.</b> <span id="honest"></span></p>
+<details><summary>How this was made and sources</summary>
+<p class="srcl">One HTML file: no libraries, no network requests. Every number below was read on the date shown, from the page named next to it.</p>
+<div id="src"></div>
+</details>
+<p class="more"><a href="../../index.html">Back to the live map</a><a href="../index.html">All simulators</a><a id="add" href="https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/ADD_A_SIMULATOR.md">Add your own simulator</a><a id="edit" href="https://github.com/Sara-Managed-Projects/space-radar/tree/main/site/lab">Fix a mistake on GitHub</a></p>
+</main>
+<!-- Sources
+Sources, read on 2026-11-05:
+ NIST (https://physics.nist.gov/cgi-bin/cuu/Value?bwien): Wien wavelength displacement law constant b = 2.897 771 955... x 10^-3 m K (exact).
+ Wikipedia, "Stellar classification" (https://en.wikipedia.org/wiki/Stellar_classification): O >= 33,000 K, B 10,000-33,000, A 7,300-10,000, F 6,000-7,300, G 5,300-6,000, K 3,900-5,300, M 2,300-3,900; the colour words (D65 reference) are that table's.
+ NASA Sun Fact Sheet (https://nssdc.gsfc.nasa.gov/planetary/factsheet/sunfact.html): "Effective temperature" 5772 K.
+ Wikipedia, "CIE 1931 color space" (https://en.wikipedia.org/wiki/CIE_1931_color_space), analytical approximation of Wyman, Sloan and Shirley (2013): xbar = 1.056 g(599.8; .0264, .0323) + 0.362 g(442.0; .0624, .0374) - 0.065 g(501.1; .0490, .0382); ybar = 0.821 g(568.8; .0213, .0247) + 0.286 g(530.9; .0613, .0322); zbar = 1.217 g(437.0; .0845, .0278) + 0.681 g(459.0; .0385, .0725), where g(l; m, a, b) = exp(-(a or b)^2 (l - m)^2 / 2), a below m and b above.
+ Wikipedia, "SRGB" (https://en.wikipedia.org/wiki/SRGB): XYZ (D65) to linear sRGB matrix 3.2406255 -1.5372080 -0.4986286 / -0.9689307 1.8757561 0.0415175 / 0.0557101 -0.2040211 1.0569959; transfer function 12.92 R below 0.0031308, else 1.055 R^(1/2.4) - 0.055.
+Colour method: Planck's law (c2 = 1.438777e-2 m K, from the same NIST constants) summed over 380 to 780 nm in 5 nm steps against the fit above, converted to sRGB, negative channels set to 0 and the brightest channel scaled to 1 (hue only, not brightness).
+Check by hand: peak wavelength = 2.897771955e-3 / 5772 = 502.04 nm (green light), class G (5,300-6,000 K). 3,000 K gives rgb 255 185 110, an orange; 30,000 K gives 162 187 255, a blue-white.
+-->
+<script>
+// ============================================ 0. HELPERS (shared; do not edit) ====================================
+// Defined first, so a simulator may use them while it loads (top-level tables). Colours: EMBER for the point of the lesson, INK for text, DIM for the quiet.
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x)),seg=(t,a,b)=>clamp((t-a)/(b-a),0,1),ease=x=>{x=clamp(x,0,1);return x*x*(3-2*x)},lerp=(a,b,x)=>a+(b-a)*x;
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const EMBER='#ff9f43',INK='#e8ecf4',DIM='#a3adc0',FONT='Inter,system-ui,-apple-system,"Segoe UI",sans-serif',Y0=430,Y1=1440,MINPX=34;
+// ============================================ 1. THE SIMULATOR (yours) ============================================
+const B=2.897771955e-3,C2=1.438777e-2,SUN=5772,TMIN=2300,TMAX=40000;                  // Wien constant and second radiation constant, m K
+const EDGE=[2300,3900,5300,6000,7300,10000,33000,40000];                                // class edges in K, from the Wikipedia table
+const CLS=[['M','orangish red'],['K','pale yellowish orange'],['G','yellowish white'],['F','white'],['A','bluish white'],['B','deep bluish white'],['O','blue']];
+const gs=(l,m,a,b)=>Math.exp(-.5*Math.pow((l<m?a:b)*(l-m),2));                        // piecewise Gaussian of the colour-matching fit
+const xb=l=>1.056*gs(l,599.8,.0264,.0323)+.362*gs(l,442,.0624,.0374)-.065*gs(l,501.1,.049,.0382),yb=l=>.821*gs(l,568.8,.0213,.0247)+.286*gs(l,530.9,.0613,.0322),zb=l=>1.217*gs(l,437,.0845,.0278)+.681*gs(l,459,.0385,.0725);
+function rgb(T){let X=0,Y=0,Z=0;for(let l=380;l<=780;l+=5){const n=l*1e-9,w=1/(Math.pow(n,5)*(Math.exp(C2/(n*T))-1));X+=w*xb(l);Y+=w*yb(l);Z+=w*zb(l)}
+ const v=[3.2406255*X-1.537208*Y-.4986286*Z,-.9689307*X+1.8757561*Y+.0415175*Z,.0557101*X-.2040211*Y+1.0569959*Z].map(q=>Math.max(q,0)),m=Math.max(...v);
+ return'rgb('+v.map(q=>{q/=m;return Math.round(255*(q<=.0031308?12.92*q:1.055*Math.pow(q,1/2.4)-.055))}).join(',')+')'}
+const BX=60,BW=960,BY=1215,NB=120,LG=Math.log(TMAX/TMIN),px=T=>BX+BW*Math.log(T/TMIN)/LG;   // the colour bar is a log scale of temperature
+const BAR=Array.from({length:NB},(_,i)=>rgb(TMIN*Math.exp(LG*(i+.5)/NB)));
+const cls=T=>CLS[EDGE.filter(e=>T>=e).length-1]||CLS[6],fk=n=>Math.round(n).toLocaleString('en-US'),nm=T=>B/T*1e9;
+const SIM={
+ dur:8,reveal:2,hook:'COLOUR TELLS|THE TEMPERATURE',
+ honest:'Colour is a blackbody model drawn in sRGB (an approximation). Real stars are not perfect blackbodies.',
+ param:{label:'surface temperature (K)',min:TMIN,max:TMAX,step:1,value:SUN},
+ line(T){const k=cls(T),w=nm(T);return`A star at ${fk(T)} K glows ${k[1]} (class ${k[0]}) and its light peaks at ${w.toFixed(0)} nm${w<380?', in the ultraviolet':w>750?', in the infrared':''}, because peak wavelength = 2.898×10⁻³ m K / temperature. The Sun, at ${fk(SUN)} K, peaks at ${nm(SUN).toFixed(0)} nm.`},
+ draw(c,t,T){
+  const col=rgb(T),k=cls(T),w=nm(T),pul=1+.03*Math.sin(t*2);stars(c,40);
+  glow(c,540,740,400*pul,col,.45);disc(c,540,740,220,col);
+  text(fk(T)+' K',60,1050,72,EMBER,800,'left');text('CLASS '+k[0],1020,1050,72,INK,800,'right');
+  text('PEAK '+w.toFixed(0)+' nm',60,1120,48,INK,700,'left');text(w<380?'ultraviolet':w>750?'infrared':'visible light',1020,1120,44,DIM,600,'right');
+  BAR.forEach((q,i)=>{c.fillStyle=q;c.fillRect(BX+i*BW/NB,BY,BW/NB+1,50)});
+  for(let i=0;i<7;i++){const x0=px(EDGE[i]),x1=px(EDGE[i+1]);c.fillStyle='#05070d';if(i)c.fillRect(x0-1,BY,2,50);text(CLS[i][0],(x0+x1)/2,BY+105,40,CLS[i]==k?EMBER:DIM,800)}
+  c.fillStyle=INK;c.fillRect(px(T)-3,BY-16,6,82);
+  c.fillStyle='#ffd27a';c.beginPath();c.moveTo(px(SUN)-14,BY-36);c.lineTo(px(SUN)+14,BY-36);c.lineTo(px(SUN),BY-6);c.fill();text('SUN',px(SUN),BY-48,34,'#ffd27a',800);
+  text('COOLER',BX,1420,34,DIM,600,'left');text('HOTTER',BX+BW,1420,34,DIM,600,'right');text('temperature, log scale',540,1420,34,DIM,600)}};
+// ============================================ 2. THE PAGE (shared; rarely needs a change) =========================
+// The stage is 1080 units wide; the page shows the band y 270..1470 of it. Draw only inside it, and put no text under 34 units.
+// `draw(c, t, P)` gets the 2D context, the time t in seconds (it loops over SIM.dur) and the slider value P. `line(P, t)` is the caption under the picture.
+// SIM.reveal is the second at which the animation shows its point; with a slider (SIM.param) the picture follows the slider, so rev(t) is 1.
+function rev(t){return SIM.param?1:ease(seg(t,SIM.reveal-.3,SIM.reveal+.9))}
+let S=1,P=SIM.param?SIM.param.value:0,T=0;
+function text(s,x,y,size,col,w,al){cx.font=(w||600)+' '+Math.max(size,MINPX)+'px '+FONT;cx.fillStyle=col||INK;cx.textAlign=al||'center';cx.textBaseline='alphabetic';cx.fillText(s,x,y)}
+function wrap(s,x,y,size,col,maxW,lh,w,al){cx.font=(w||600)+' '+Math.max(size,MINPX)+'px '+FONT;let ln='';for(const wd of s.split(' ')){const tr=ln?ln+' '+wd:wd;if(cx.measureText(tr).width>maxW&&ln){text(ln,x,y,size,col,w,al);y+=lh;ln=wd}else ln=tr}text(ln,x,y,size,col,w,al);return y+lh}
+function glow(c,x,y,r,col,a){const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,col);g.addColorStop(1,'rgba(0,0,0,0)');c.globalAlpha=a==null?1:a;c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,6.2832);c.fill();c.globalAlpha=1}
+function disc(c,x,y,r,col){c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,6.2832);c.fill()}
+function stars(c,n){let s=7;const r=()=>(s=(s*16807)%2147483647)/2147483647;for(let i=0;i<(n||90);i++){c.globalAlpha=.25+.5*r();c.fillStyle='#fff';c.fillRect(r()*1080,r()*1920,2,2)}c.globalAlpha=1} // a fixed starfield
+function draw(t){cx.setTransform(1,0,0,1,0,0);cx.fillStyle='#05070d';cx.fillRect(0,0,cv.width,cv.height);
+  cx.setTransform(S,0,0,S,0,-270*S);cx.save();cx.beginPath();cx.rect(0,0,1080,1920);cx.clip();SIM.draw(cx,t,P);
+  const h=SIM.hook.split('|');text(h[0],540,330,60,EMBER,800);if(h[1])text(h[1],540,396,60,EMBER,800);cx.restore()}
+{
+  const byId=id=>document.getElementById(id),LOOP=SIM.dur,meta=n=>(document.querySelector('meta[name="'+n+'"]')||{}).content||'';
+  byId('cat').textContent=meta('sr-lab-category');byId('honest').textContent=SIM.honest;
+  cv.setAttribute('aria-label',byId('h').textContent+'. '+meta('description'));
+  // "How this was made": the comment that starts with "Sources" in this file, with its web addresses made into links.
+  const walk=document.createTreeWalker(document,NodeFilter.SHOW_COMMENT);let node,src='';
+  while((node=walk.nextNode()))if(/^\s*sources?\b/i.test(node.data)){src=node.data.trim();break}
+  for(const ln of src.split('\n')){if(!ln.trim())continue;const p=document.createElement('p');p.className='srcl';
+    ln.split(/(\w+:\/\/[^\s)]+)/).forEach((part,i)=>{let ok=false;if(i%2)try{ok=new URL(part).protocol==='https:'}catch(e){}
+      if(ok){const a=document.createElement('a');a.href=part;a.rel='noopener';a.textContent=part;p.append(a)}else p.append(part)});byId('src').append(p)}
+  // Where this file lives in the repository, for the "fix a mistake" link.
+  const parts=location.pathname.split('/').filter(Boolean);if(parts[parts.length-1]==='index.html')parts.pop();
+  const slug=parts[parts.length-1]||'',edit=byId('edit');if(slug&&slug!=='lab')edit.href=edit.href.replace('/tree/','/edit/')+'/'+slug+'/index.html';
+  const pb=byId('pb'),ts=byId('ts'),ps=byId('ps'),po=byId('po'),calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let play=!calm,t0=performance.now(),dirty=true,last='';
+  ts.max=LOOP;ts.step=.01;
+  if(calm){T=Math.min(SIM.reveal+1.2,LOOP-.1);ts.value=T;pb.textContent='Play'}
+  const p=SIM.param;
+  if(p){const dec=(String(p.step).split('.')[1]||'').length,fmt=v=>(+v).toLocaleString('en-US',{maximumFractionDigits:dec,minimumFractionDigits:dec});
+    ps.min=p.min;ps.max=p.max;ps.step=p.step;ps.value=p.value;ps.setAttribute('aria-label',p.label);byId('pl').firstChild.textContent=p.label+' ';po.textContent=fmt(P);
+    ps.oninput=()=>{P=+ps.value;po.textContent=fmt(P);dirty=true}}
+  else byId('pl').hidden=true;
+  pb.onclick=()=>{play=!play;pb.textContent=play?'Pause':'Play';t0=performance.now()-T*1000};
+  ts.oninput=()=>{play=false;pb.textContent='Play';T=+ts.value;dirty=true};
+  function fit(){const d=Math.min(devicePixelRatio||1,2);cv.width=Math.round(cv.clientWidth*d);cv.height=Math.round(cv.clientHeight*d);S=cv.width/1080;dirty=true}
+  new ResizeObserver(fit).observe(cv);fit();
+  (function frame(){if(play){T=((performance.now()-t0)/1000)%LOOP;ts.value=T;dirty=true}
+    if(dirty){dirty=false;draw(T);const l=SIM.line(P,T);if(l!==last){last=l;byId('line').textContent=l}}
+    requestAnimationFrame(frame)})();
+}
+</script>
+</body>
+</html>
