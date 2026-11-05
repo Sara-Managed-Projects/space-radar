@@ -422,6 +422,16 @@ export const REAL_MODELS = {
     // FENGYUN 2G and 2H (spinning drums) are other craft and keep what they had.
     40267: { file: 'himawari.glb', colour: 'satellite', name: 'Himawari-8', catalogue: 'HIMAWARI-8', made: 'dimensions', axes: 'app' },
     41836: { file: 'himawari.glb', colour: 'satellite', name: 'Himawari-9', catalogue: 'HIMAWARI-9', made: 'dimensions', axes: 'app' },
+    // ELEKTRO-L 2 TO 5 (release 1.9.0, batch radarwx; public #997): NPO Lavochkin's geostationary weather satellites on the
+    // Navigator platform, built in code (registry/models.yaml row `elektro-l`): an eight-sided black body under a white Earth deck that
+    // carries the MSU-GS scanner (two black units), the data-collection helix and two dishes, and ONE solar wing of 8.17 m2 (ruwiki,
+    // 'одного фотоэлектрического генератора площадью 8,17 м2'), laid out after three photographs of a 1:5 model (CC BY-SA). They wore the
+    // geostationary bus. The series is one drawing as far as any page says; Elektro-L 1 (2011) is not in the live catalogue. `axes: 'app'`:
+    // the Earth deck on +Z, the wing along +X, its cells to +Y, as a geostationary craft flies (the wing turns once a day; the app does not draw that).
+    41105: { file: 'elektro-l.glb', colour: 'satellite', name: 'Elektro-L 2', catalogue: 'ELEKTRO-L 2', made: 'dimensions', axes: 'app' },
+    44903: { file: 'elektro-l.glb', colour: 'satellite', name: 'Elektro-L 3', catalogue: 'ELEKTRO-L 3', made: 'dimensions', axes: 'app' },
+    55506: { file: 'elektro-l.glb', colour: 'satellite', name: 'Elektro-L 4', catalogue: 'ELEKTRO-L 4', made: 'dimensions', axes: 'app' },
+    67756: { file: 'elektro-l.glb', colour: 'satellite', name: 'Elektro-L 5', catalogue: 'ELEKTRO-L 5', made: 'dimensions', axes: 'app' },
     // 0078 r14-m7: begin
     // BATCH r14-m7 (release 1.4.0; public #1102 to #1109 and #1093): science craft built in code from cited metres (registry/models.yaml rows `gcom-w`,
     // `gcom-c`, `dampe`, `cses`, `scisat`, `proba-3-csc`, `proba-3-osc`, `proba-v`, `formosat-7`, `oao-2`, `oao-3`), BY NUMBER from the live saved data of 2026-10-12.
@@ -663,7 +673,7 @@ export const REAL_MODELS = {
     // antenna, not the family blade. The id is dormant today: 23710 died in 2013 and is in none of
     // the element groups the app loads (registry/models.yaml says so on its row).
     23710: { file: 'radarsat1.glb', colour: 'satellite', name: 'RADARSAT-1', catalogue: 'RADARSAT-1' },
-    32382: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'RADARSAT-2', generic: true },
+    32382: { build: 'radar', file: 'radarsat-2.glb', colour: 'satellite', name: 'RADARSAT-2', catalogue: 'RADARSAT-2', made: 'dimensions', axes: 'app' },
     // TERRASAR-X AND TANDEM-X HAVE A FILE OF THEIR OWN since batch seven (2026-10-13; public #979):
     // terrasar-x.glb, built in code from DLR's numbers as eoPortal gives them (registry/models.yaml row
     // `terrasar-x`). WHAT THE FILE CORRECTS: these two are not a blade under a bus with two wings. The
@@ -682,13 +692,13 @@ export const REAL_MODELS = {
     // draws 0.8 m); DLR calls the three "almost identical". Airbus built it for Hisdesat and it flies in the TerraSAR-X orbit. By NUMBER (CelesTrak: `PAZ`, 2018-020A); a record with a
     // placeholder number still reaches the name key `paz` below and keeps the blade. Not `generic`: the file is this craft's own design (the registry row `terrasar-x` says so).
     43215: { build: 'radar', file: 'terrasar-x.glb', colour: 'satellite', name: 'PAZ', catalogue: 'PAZ', made: 'dimensions', axes: 'app' },
-    31598: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'COSMO-SKYMED 1', generic: true },
-    32376: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'COSMO-SKYMED 2', generic: true },
-    33412: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'COSMO-SKYMED 3', generic: true },
-    37216: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'COSMO-SKYMED 4', generic: true },
-    44873: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'CSG-1', generic: true },
-    51444: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'CSG-2', generic: true },
-    67304: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'CSG-3', generic: true },
+    31598: { build: 'radar', file: 'cosmo-skymed.glb', colour: 'satellite', name: 'COSMO-SkyMed 1', catalogue: 'COSMO-SKYMED 1', made: 'dimensions', axes: 'app' },
+    32376: { build: 'radar', file: 'cosmo-skymed.glb', colour: 'satellite', name: 'COSMO-SkyMed 2', catalogue: 'COSMO-SKYMED 2', made: 'dimensions', axes: 'app' },
+    33412: { build: 'radar', file: 'cosmo-skymed.glb', colour: 'satellite', name: 'COSMO-SkyMed 3', catalogue: 'COSMO-SKYMED 3', made: 'dimensions', axes: 'app' },
+    37216: { build: 'radar', file: 'cosmo-skymed.glb', colour: 'satellite', name: 'COSMO-SkyMed 4', catalogue: 'COSMO-SKYMED 4', made: 'dimensions', axes: 'app' },
+    44873: { build: 'radar', file: 'csg.glb', colour: 'satellite', name: 'CSG-1', catalogue: 'CSG-1', made: 'dimensions', axes: 'app' },
+    51444: { build: 'radar', file: 'csg.glb', colour: 'satellite', name: 'CSG-2', catalogue: 'CSG-2', made: 'dimensions', axes: 'app' },
+    67304: { build: 'radar', file: 'csg.glb', colour: 'satellite', name: 'CSG-3', catalogue: 'CSG-3', made: 'dimensions', axes: 'app' },
     28931: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ALOS (DAICHI)', generic: true },
     // ALOS-2 HAS A FILE OF ITS OWN since batch nine (2026-10-14; public #977): alos-2.glb, built in
     // code from JAXA's numbers as eoPortal gives them (registry/models.yaml row `alos-2`): PALSAR-2,
@@ -769,9 +779,9 @@ export const REAL_MODELS = {
     // `axes: 'app'` since batch three: the sensor module and its antennas are on the file's +Z, which
     // the app turns to the Earth, as the craft flew (the Agena's engine to the zenith).
     10967: { build: 'radar', file: 'seasat.glb', colour: 'satellite', name: 'Seasat', catalogue: 'SEASAT 1', made: 'render', axes: 'app' },
-    44322: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'RCM-1', generic: true },
-    44323: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'RCM-3', generic: true },
-    44324: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'RCM-2', generic: true },
+    44322: { build: 'radar', file: 'rcm.glb', colour: 'satellite', name: 'RCM-1', catalogue: 'RCM-1', made: 'dimensions', axes: 'app' },
+    44323: { build: 'radar', file: 'rcm.glb', colour: 'satellite', name: 'RCM-3', catalogue: 'RCM-3', made: 'dimensions', axes: 'app' },
+    44324: { build: 'radar', file: 'rcm.glb', colour: 'satellite', name: 'RCM-2', catalogue: 'RCM-2', made: 'dimensions', axes: 'app' },
     44233: { build: 'radar-mesh', colour: 'satellite', name: 'a radar imager with a mesh reflector', catalogue: 'RISAT-2B', generic: true },
     44857: { build: 'radar-mesh', colour: 'satellite', name: 'a radar imager with a mesh reflector', catalogue: 'RISAT-2BR1', generic: true },
     46905: { build: 'radar-mesh', colour: 'satellite', name: 'a radar imager with a mesh reflector', catalogue: 'RISAT-2BR2', generic: true },
