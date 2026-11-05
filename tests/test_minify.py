@@ -215,7 +215,8 @@ with tempfile.TemporaryDirectory() as tmp:
         done = subprocess.run([node, str(probe)], capture_output=True, text=True)
         check(done.returncode == 0, f"the stripped astronomy.js does not give the source's numbers: {done.stderr[:300]}")
     check(modules > 150, f"only {modules} modules were read: the test is looking at the wrong folder")
-    check(after < before * 0.7, f"the stripped site is {after} B of {before} B: comments are no longer being removed")
+    # 0.70 until 1.9.0, whose new copy strings and data rows have little to strip; a broken stripper gives close to 1.0
+    check(after < before * 0.75, f"the stripped site is {after} B of {before} B: comments are no longer being removed")
     check(shader_lines > 100, f"only {shader_lines} indented lines survived: the shaders' template literals are not being kept verbatim")
 
 if failures:
