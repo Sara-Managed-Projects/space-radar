@@ -184,19 +184,31 @@ def write_side(src: Path, as_of: str, sets_src: Path | None = None) -> None:
         SETS.write_text(sets_out, encoding="utf-8")
     print(f"star systems: {len(rows)} planets of {len(hosts)} hosts -> {SIDE.relative_to(ROOT)} ({SIDE.stat().st_size} B)")
 
+USAGE = "python3 scripts/build-exoplanets.py (path/to/pscomppars.csv | --pull [--keep FILE] | --systems-only) YYYY-MM-DD"
+
 
 def main(argv: list[str]) -> int:
     keep = None
     if "--keep" in argv:
         i = argv.index("--keep")
+        if i + 1 >= len(argv):
+            print(f"build-exoplanets: --keep needs a path\nusage: {USAGE}", file=sys.stderr)
+            return 2
         keep = Path(argv[i + 1])
         argv = argv[:i] + argv[i + 2:]
     if len(argv) != 2:
-        print(__doc__)
+        print(f"usage: {USAGE}\n\n{__doc__}")
         return 2
     as_of = argv[1]
     from datetime import date
-    date.fromisoformat(as_of)
+    try:
+        date.fromisoformat(as_of)
+    except ValueError:
+        print(f"build-exoplanets: not a date (YYYY-MM-DD): {as_of}\nusage: {USAGE}", file=sys.stderr)
+        return 2
+    if argv[0] not in ("--pull", "--systems-only") and not Path(argv[0]).is_file():
+        print(f"build-exoplanets: no such file: {argv[0]}\nusage: {USAGE}", file=sys.stderr)
+        return 2
     if argv[0] == "--systems-only":
         write_side(pull(keep, systems_only=True), as_of, pull_sets())
         return 0
@@ -240,4 +252,7 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
+    from _cli import usage_if_asked
+
+    usage_if_asked(__doc__)
     sys.exit(main(sys.argv[1:]))

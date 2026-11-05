@@ -222,7 +222,6 @@ const ALLOWED = {
   'scripts/apollo/build-saturn-v.mjs': ['shade', 'V'],
   'scripts/artemis-models/assemble.mjs': ['sc'],
   'scripts/repaint-array-face.mjs': ['N'],
-  'tests/test_audio.mjs': ['flush'],
   'tests/test_confidence.mjs': ['events'],
   'tests/test_hero_spiral.mjs': ['nb', 'nd', 'Rd'],
   'tests/test_localvolume.mjs': ['MLY_KM', 'ids'],

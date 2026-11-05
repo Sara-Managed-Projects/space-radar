@@ -1169,7 +1169,8 @@ export const COPY = {
     "eclipseColour": "La couleur est une illustration ; l’ombre est calculée.",
     "orbitsLine": "Planètes dessinées plus grosses qu’elles ne sont, en points ; leurs places et leurs trajectoires sont calculées.",
     "moonPathLine": "La Terre et la Lune sont dessinées plus grosses qu’elles ne sont, en points, chacune éclairée du côté qui fait face au Soleil. La place de la Lune et sa trajectoire sont calculées.",
-    "systemLine": "Tailles et orbites d’après la NASA Exoplanet Archive ; les couleurs{phase} et l’inclinaison des orbites sont illustratives.",
+    "systemLine": "Tailles et orbites d’après la NASA Exoplanet Archive ; les couleurs et l’inclinaison des orbites sont illustratives.",
+    "systemLineGuessed": "Tailles et orbites d’après la NASA Exoplanet Archive ; les couleurs, les places des planètes sur leurs orbites et l’inclinaison des orbites sont illustratives.",
     "systemPhaseUnknown": ", les places des planètes sur leurs orbites",
     "rateWords": {
       "10": "dix fois plus vite que la réalité",
@@ -3314,7 +3315,7 @@ export const COPY = {
   },
   "opening": {
     "label": "Ouverture",
-    "from": "Depuis",
+    "from": "Depuis {source}",
     "wait": "Préparation du voyage",
     "skip": "Appuie sur une touche pour passer"
   },

@@ -1165,7 +1165,8 @@ export const COPY = {
     "eclipseColour": "Die Farbe ist eine Illustration; der Schatten ist berechnet.",
     "orbitsLine": "Planeten größer als in Wirklichkeit gezeichnet, als Punkte; ihre Orte und Bahnen sind berechnet.",
     "moonPathLine": "Die Erde und der Mond sind größer als in Wirklichkeit gezeichnet, als Punkte, jeweils auf der Seite beleuchtet, die der Sonne zugewandt ist. Der Ort des Mondes und seine Bahn sind berechnet.",
-    "systemLine": "Größen und Bahnen aus dem NASA Exoplanet Archive; die Farben{phase} und die Neigung der Bahnen sind illustrativ.",
+    "systemLine": "Größen und Bahnen aus dem NASA Exoplanet Archive; die Farben und die Neigung der Bahnen sind illustrativ.",
+    "systemLineGuessed": "Größen und Bahnen aus dem NASA Exoplanet Archive; die Farben, die Orte der Planeten auf ihren Bahnen und die Neigung der Bahnen sind illustrativ.",
     "systemPhaseUnknown": ", die Orte der Planeten auf ihren Bahnen",
     "rateWords": {
       "10": "zehnmal schneller als das Leben",
@@ -3310,7 +3311,7 @@ export const COPY = {
   },
   "opening": {
     "label": "Eröffnung",
-    "from": "Von",
+    "from": "Von {source}",
     "wait": "Die Reise wird vorbereitet",
     "skip": "Eine beliebige Taste oder ein Druck überspringt das"
   },

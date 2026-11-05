@@ -1074,7 +1074,8 @@ export const COPY = {
     "eclipseColour": "颜色是示意的；影子是计算得出的。",
     "orbitsLine": "行星画成圆点，比实际大；它们的位置和轨道是计算得出的。",
     "moonPathLine": "地球和月球画成圆点，比实际大，各自朝向太阳的一面被照亮。月球的位置和轨道是计算得出的。",
-    "systemLine": "大小和轨道来自 NASA 系外行星档案；颜色{phase}和轨道的倾斜是示意的。",
+    "systemLine": "大小和轨道来自 NASA 系外行星档案；颜色和轨道的倾斜是示意的。",
+    "systemLineGuessed": "大小和轨道来自 NASA 系外行星档案；颜色、行星在轨道上的位置和轨道的倾斜是示意的。",
     "systemPhaseUnknown": "、行星在轨道上的位置",
     "rateWords": {
       "10": "比真实快十倍",
@@ -3248,7 +3249,7 @@ export const COPY = {
   },
   "opening": {
     "label": "开场",
-    "from": "出发地",
+    "from": "出发地 {source}",
     "wait": "正在准备旅程",
     "skip": "按任意键或点按可跳过"
   },

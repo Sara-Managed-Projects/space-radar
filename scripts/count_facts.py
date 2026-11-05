@@ -92,6 +92,9 @@ def spaced(n: int) -> str:
 
 
 if __name__ == "__main__":
+    from _cli import usage_if_asked
+
+    usage_if_asked(__doc__)
     data = facts()
     if "--json" in sys.argv[1:]:
         print(json.dumps(data, indent=1))

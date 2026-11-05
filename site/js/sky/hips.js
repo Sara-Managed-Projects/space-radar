@@ -1,5 +1,5 @@
 // sky/hips.js -- reading a HiPS sky: which tile is where, which tiles a view needs, and a cache
-// (internal #286; docs/research/2026-10-wwt.md finding 4).
+// (internal #286, finding 4).
 //
 // Contract (all pure, no three, no DOM, no fetch: tests/test_hips.mjs runs it under node):
 //   faceXyToDir(face, x, y) -> [x, y, z]        a point of a base tile, x and y in 0..1

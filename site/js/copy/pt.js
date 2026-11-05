@@ -1155,7 +1155,8 @@ export const COPY = {
     "eclipseColour": "A cor é uma ilustração; a sombra é calculada.",
     "orbitsLine": "Planetas desenhados maiores do que são, como pontos; os lugares e as trajetórias deles são calculados.",
     "moonPathLine": "A Terra e a Lua são desenhadas maiores do que são, como pontos, cada uma iluminada no lado voltado para o Sol. O lugar da Lua e a trajetória dela são calculados.",
-    "systemLine": "Tamanhos e órbitas do NASA Exoplanet Archive; as cores{phase} e a inclinação das órbitas são ilustrativas.",
+    "systemLine": "Tamanhos e órbitas do NASA Exoplanet Archive; as cores e a inclinação das órbitas são ilustrativas.",
+    "systemLineGuessed": "Tamanhos e órbitas do NASA Exoplanet Archive; as cores, os lugares dos planetas nas órbitas e a inclinação das órbitas são ilustrativas.",
     "systemPhaseUnknown": ", os lugares dos planetas nas órbitas",
     "rateWords": {
       "10": "dez vezes mais rápido que a vida real",
@@ -3300,7 +3301,7 @@ export const COPY = {
   },
   "opening": {
     "label": "Abertura",
-    "from": "De",
+    "from": "De {source}",
     "wait": "Preparando a viagem",
     "skip": "Qualquer tecla ou toque pula isto"
   },

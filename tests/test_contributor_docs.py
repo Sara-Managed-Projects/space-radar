@@ -250,6 +250,14 @@ check(run("release_thanks.py", "--since", "2027-01-01").stdout == "", "a range w
 sys.path.insert(0, str(ROOT / "scripts"))
 import gen_contributors  # noqa: E402
 
+kinds = gen_contributors.kinds_of
+check(kinds(["registry/sites.yaml"]) == ["Facts, sources and data"], "a registry file is facts, sources and data")
+check(kinds(["docs/FIRST_PR.md"]) == ["Words and documentation"], "a docs file is words and documentation")
+check(kinds(["tests/test_x.mjs", "site/js/ui/a.js"]) == ["Tests and checks", "Code"], "kinds come in the table's order, not the order of the paths")
+check(kinds(["site/js/data/sites.js"]) == [], "a generated mirror says nothing about what a person did")
+check(kinds(["site/t/moon.html"]) == [], "a generated page says nothing either")
+check(kinds([]) == [], "no paths, no kinds")
+
 gov = (ROOT / "GOVERNANCE.md").read_text(encoding="utf-8")
 pending = (ROOT / "scripts/pending_contributions.sh").read_text(encoding="utf-8")
 for m in gen_contributors.MAINTAINERS:
