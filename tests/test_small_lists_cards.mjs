@@ -42,7 +42,9 @@ for (const [id, re] of WANT) {
     check(re.test(first) || re.test(String(C.whyLine(r) || '')), `${id}: the card says ${re} ("${first}")`);
     check(first.length > 10 && first.length <= 170, `${id}: the first sentence fits the card (${first.length})`);
     const drawn = C.drawingLine(r, now);
-    check(/nothing stands there to draw|meteors seem to come from|not drawn/.test(drawn || ''), `${id}: and says how it is drawn ("${drawn}")`);
+    // 1.9.0: Venera 9 has a model of its own (registry/models.yaml `venera-9`), so its card says what is drawn and not that nothing is
+    const drawnRe = id === 'venera-9' ? /^drawn as the Venera 9 lander/ : /nothing stands there to draw|meteors seem to come from|not drawn/;
+    check(drawnRe.test(drawn || ''), `${id}: and says how it is drawn ("${drawn}")`);
     check(typeof F.honestyLine(r, m) === 'string' && F.honestyLine(r, m).length > 0, `${id}: an honesty line`);
     check(typeof C.sourceLine(r, ctx) === 'string' && typeof C.klassLabel(r) === 'string' && C.klassLabel(r).length > 0, `${id}: a source and a class label`);
     C.rightNowFor(r, ctx); F.tagLines(r, ctx, m);

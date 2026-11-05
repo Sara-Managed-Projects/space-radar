@@ -2002,7 +2002,7 @@ export async function boot({ setStatus } = {}) {
     // A model's bounding circle is drawn MODEL_SPAN times SELECTED_PX across: MEASURED 2026-10-02,
     // the ISS's reticle 356 px at 1440x900 and 351 at 390x844, which is the drawn diameter + 12
     // (ui/hud.js reticleBox). A thing with no model is its dot inside the reticle.
-    const subjectPx = layer && layer.noModel ? 40 : SELECTED_PX * MODEL_SPAN;
+    const subjectPx = layer && layer.noModel && !(record && record.meta && record.meta.drawn) ? 40 : SELECTED_PX * MODEL_SPAN;
     return limbFraming({ r, R, distance, fovDeg: camera.fov, heightPx: h, subjectPx, upDot, room: freeRoom(el) });
   }
 

@@ -735,7 +735,8 @@ export function createHeroes(scene, ctx) {
       // It stays because the next layer to arrive without geometry needs it on the day it lands,
       // and the alternative -- a satellite bus drawn on the Moon -- is what it prevented once.
       const own = ctx.layers.find((l) => l.id === record.layer);
-      if (own && own.noModel) return;
+      // 1.9.0: but a record that carries a model of its own (data/smalllists.js `drawn`: the Venera 9 and 10 landers) is drawn.
+      if (own && own.noModel && !(record.meta && record.meta.drawn)) return;
       // 0077 W3-d: and a named place on a world's ground (registry/sites.yaml `class: feature`) has nothing standing on it.
       if (record.meta && record.meta.siteKind === 'feature') return;
       const p = propagate(record, tMs);
