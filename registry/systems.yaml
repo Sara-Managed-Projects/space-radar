@@ -27,6 +27,16 @@
 # (a minute or so from JD, far below anything drawn). a^3/P^2 on the seven rows, measured the same
 # day: 0.08971 to 0.08987 against 0.0898, every one within 0.13 %.
 #
+# CHECKED 2026-11-05 (public #547): the ten rows of site/data/exoplanets.csv (as of 2026-10-28) for TRAPPIST-1 b to h,
+# Proxima Cen b and d, and Kepler-452 b, against the Archive's own pscomppars table, read live by
+#     https://exoplanetarchive.ipac.caltech.edu/TAP/sync?format=csv&query=select pl_name,hostname,ra,dec,sy_dist,pl_rade,
+#       pl_bmasse,pl_orbper,disc_year,discoverymethod,st_teff,st_rad,st_spectype from pscomppars
+#       where hostname in ('TRAPPIST-1','Proxima Cen','Kepler-452')
+# Every one of the 13 columns of the ten rows (130 values) equals the Archive's to the digits the file keeps (for example
+# TRAPPIST-1 b: 1.116 Earth radii, 1.374 Earth masses, 1.51083 days; Proxima Cen d: 0.692, 0.26, 5.12338 days, found
+# in 2025 by radial velocity; Kepler-452 b: 1.63, 3.29, 384.843 days, found in 2015 by transit). Nothing differed, so
+# nothing was changed and the file was not rebuilt.
+#
 # `transit_mid_jd` is optional. With it the planet's place on its orbit is real: at that instant it
 # was between its star and the Earth, and scene/systems.js runs it round from there at `period_days`.
 # Without it the phase is an illustration, the card says so, and a hash of the id keeps the picture
