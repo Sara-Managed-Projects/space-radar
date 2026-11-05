@@ -232,6 +232,17 @@ sites:
   # clock to their launch mornings. Coordinates read 2026-10-08 on Wikipedia's articles for the
   # two pads: 28 36 30 N, 80 36 16 W and 28 37 38 N, 80 37 15 W. Only Apollo 10's Saturn V left
   # from 39B (Wikipedia, Saturn V, read the same day), so twelve of the thirteen left from 39A.
+  # An agency reading, 2026-11-05 (public #644 and #646): the National Park Service's National Register
+  # registration forms "Launch Complex 39: Pad A" (NRIS 99001638, npgallery.nps.gov/GetAsset/ec079e7b-41c4-4f6d-91ea-a1bc2882e7cf)
+  # and "Launch Complex 39: Pad B" (NRIS 99001639, npgallery.nps.gov/GetAsset/704579a4-68fe-4401-8e66-8eef29d834a4) give each
+  # pad's boundary as ten UTM corners (the perimeter service road plus 100 ft). Pad A: easting 538240 to 539120, northing
+  # 3164030 to 3164860; Pad B: easting 536580 to 537500, northing 3166120 to 3166940. The zone is 17, the zone of this
+  # longitude (the scan's text does not carry the zone column), and the datum is not stated in either form. Converted, each
+  # row's point lies inside its pad's boundary, which is about 900 m across, and about 195 m north of that boundary's
+  # centre. That is no disagreement, because a boundary is a fence and not a point, but it is no agreement to 50 m either:
+  # the agency pages confirm the ground, and the point's digits stay Wikipedia's. No number was changed. NASA's pages
+  # "Launch Complex 39A" and "39B" (nasa.gov/reference/) and its image article on the two pads give no position, and no
+  # Space Force page was found that does.
   # `liftoffs:` IS THE GATE (scene/realmodels.js padVehicleShown): the vehicle is drawn from 24 hours
   # before a liftoff given to the minute until the end of that minute, or for the UTC day of one
   # given as a date, and at no other time. tests/test_pad_vehicles.mjs holds the list equal to the
