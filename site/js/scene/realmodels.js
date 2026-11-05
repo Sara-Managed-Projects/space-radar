@@ -1855,6 +1855,14 @@ export const REAL_MODELS = {
     phoenix: { build: 'lander', file: 'phoenix.glb', colour: 'site', name: 'Phoenix, both arrays open', displayName: 'Phoenix, Vastitas Borealis', made: 'dimensions' },
     'mars-3': { build: 'lander', file: 'mars-3.glb', colour: 'site', name: 'the Mars 3 landing capsule, its petals open', displayName: 'Mars 3, Ptolemaeus crater', made: 'dimensions' },
     // 0078 r14-m8: end
+    // b190-probes: begin
+    // THE VENERA 9 AND VENERA 10 LANDERS (internal #1076), one design built in code from the published sizes and the photographs of
+    // the 1:1 replica (registry/models.yaml row `venera-9`) and drawn as the replica stands, its landing ring whole. The two
+    // sites are rows of registry/landing-sites-1-5.yaml (`model: venera-9`), loaded with the landing-sites layer; every other Venus
+    // site stays a mark (nothing of the other landers was found in a photograph outside its shell).
+    'venera-9': { build: 'lander', file: 'venera-9.glb', colour: 'site', name: 'the Venera 9 lander', displayName: 'Venera 9 landing site', made: 'dimensions' },
+    'venera-10': { build: 'lander', file: 'venera-9.glb', colour: 'site', name: 'the Venera 10 lander, of Venera 9\'s design', displayName: 'Venera 10 landing site', made: 'dimensions' },
+    // b190-probes: end
     // THE TWO LAUNCH VEHICLES NASA PUBLISHES (public #427, 2026-10-08), each standing on the pad it
     // left from (registry/sites.yaml), which is the one place on this map a rocket of 1969 can be:
     // the launches layer draws what is about to fly. registry/missions.yaml moves the clock to the

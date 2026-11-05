@@ -20,6 +20,9 @@ Things run by hand on a laptop. CI does not run them; each file's head comment s
 | `msl-builder/` | the Mars Science Laboratory's aeroshell (`msl-entry`: heat shield, back shell) and descent stage (`msl-descent-stage`) of the Curiosity Moment (release 1.7.9), in code on `vostok-builder/vlib.py`: `msl.py`, `GLTFKIT=<dir> tools/msl-builder/build.sh [entry descent]` |
 | `vostok-builder/` | the parts-aware builder of release 1.5.0 (stage r15-c2): `vlib.py` (a tree of NAMED PART nodes, each with its own origin, on the stage builder's part library), `r7.py`, `vostok3ka.py`, `seat.py`, `chutes.py` (one module a model, the published dimensions as arguments), `write-glb-parts.mjs` (json to the shipped .glb, one node a part) and `render.py` (a numpy z-buffer picture of a json, without a browser); `GLTFKIT=<dir with node_modules> tools/vostok-builder/build.sh [r7 3ka seat chutes]` |
 <!-- 0079 c2: end -->
+<!-- b190-probes: begin -->
+| `venera-builder/` | the Venera 9 and 10 landers of release 1.9.0 (batch E), in code on `vostok-builder/vlib.py`: `venera.py`, `GLTFKIT=<dir> tools/venera-builder/build.sh` |
+<!-- b190-probes: end -->
 | `look-playwright.mjs`, `look-summary.mjs` | the look workflow's Firefox and WebKit runner, and its summary and verdict (below) |
 
 Two of these in one command each. `cdp.mjs` runs a script inside a page: its `return` value is

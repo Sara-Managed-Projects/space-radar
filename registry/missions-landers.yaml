@@ -23,8 +23,9 @@
 #  * `place: site` ONLY AT THE PLACE: a landing, a hop, a last signal from the ground. A launch is on Earth, an
 #    entry or a first picture taken on the way down is above the world: those are `place: none` with `world`, and
 #    the clock does not move. A balloon is not the lander: its end is `none` at the planet.
-#  * A VENUS LANDER IS A MARK. NSSDCA has no free photograph or drawing of a Venera lander that we could build a
-#    model from, so the sites on Venus say so on their cards: nothing is drawn there but a mark.
+#  * A VENUS LANDER IS A MARK, with two exceptions (release 1.9.0). NSSDCA has no free photograph or drawing of a Venera lander that we
+#    could build a model from, so the sites on Venus say so on their cards: nothing is drawn there but a mark. Venera 9 and 10 are drawn:
+#    Wikimedia Commons has photographs of the 1:1 replica of their design (registry/models.yaml, row `venera-9`).
 version: 1
 reviewed_on: 2026-11-03
 

@@ -70,6 +70,9 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 <!-- 0078 r14-m8: begin -->
 | The shapes of Luna 16's descent stage, Mars Pathfinder with Sojourner, Phoenix and the Mars 3 capsule | built by us in code from published dimensions | CC0, CC BY 2.0 or CC BY 4.0 or public domain where a picture was compared; ours | [3b-r14-m8](#3b-r14-m8-four-landers-built-from-dimensions--luna-16-mars-pathfinder-and-sojourner-phoenix-mars-3-2026-10-27) |
 <!-- 0078 r14-m8: end -->
+<!-- b190-probes: begin -->
+| The shape of the Venera 9 and 10 landers | built by us in code from published dimensions | CC BY 4.0 where a picture was compared, public domain for two more; ours | [3b-b190-probes](#3b-b190-probes-the-venera-9-and-10-landers-built-from-dimensions-2026-11-05) |
+<!-- b190-probes: end -->
 <!-- 0077 W3-a: begin -->
 | The shapes of IRIS, TIMED, TRACERS, SERT 2 on its Agena and ISIS 1, and Hubble rebuilt | built by us in code from published dimensions | public domain or CC0 where a picture was used, CC BY 4.0 for one paper's figures; ours | [3b-16](#3b-16-nasa-science-craft-built-from-dimensions--iris-timed-tracers-sert-2-isis-1-2026-10-20) |
 | The shapes of ten national Earth-observation craft (CBERS-4 and 4A, Amazonia-1, KOMPSAT-3, 3A and 5, Cartosat-2, Resourcesat-2, EOS-06, Kanopus-V, Resurs-P) | built by us in code from published dimensions | public domain, CC0, KOGL Type 1, GODL-India or INPE's attribution licence where a picture was used; ours | [3b-17](#3b-17-ten-national-earth-observation-craft-built-from-dimensions--cbers-4-and-4a-amazonia-1-kompsat-3-and-3a-kompsat-5-cartosat-2-resourcesat-2-and-2a-eos-06-kanopus-v-resurs-p-2026-10-27) | <!-- 0078 r14-m6 -->
@@ -1579,6 +1582,27 @@ say "shape built from published dimensions and pictures; details simplified".
 NASA, JPL, Lavochkin, the museums and the pictures' authors do not endorse Space Radar, and none of them made or approved these shapes.
 
 <!-- 0078 r14-m8: end -->
+<!-- b190-probes: begin -->
+## 3b-b190-probes. The Venera 9 and 10 landers built from dimensions (2026-11-05)
+
+Release 1.9.0, batch E (internal #1076). **No agency publishes a model of a Venera lander that is free to use**: NASA's 3D Resources on
+GitHub (1 199 files, read 2026-11-05) has no Venera, Vega, Mariner 10 or Ranger, and none of the Soviet or Russian agencies publishes one that
+was found. The file was built in code, part by part, from cited numbers and from the photographs of the 1:1 replica of the Venera 9 lander in
+the Tsiolkovsky Museum, Kaluga, and is drawn **as the replica stands**, its landing ring whole. It is routed to the Venera 9 and Venera 10
+sites (twins of one design); every other Venus site is still a mark. No image-to-3D model was used and no picture is in the file. No logo and
+no lettering is on the mesh. The photograph under a share-alike licence was looked at only: nothing was traced from it. The card says "shape
+built from published dimensions and pictures; details simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `venera-9.glb` (214 KB) | The Venera 9 and 10 lander: a polished steel ball about a metre across with its cream upper shell and instrument boxes, eighteen steel legs, the hollow landing ring, the 2.2 m drag plate and the cylinder with its spiral of band | Schroeder, Bayandor and Samareh's paper on Venera-type landers (NASA NTRS 20170002533) for the metre-wide ball, the 80 cm pressure vessel, the eighteen legs, the hollow ring and the 2.4 m shell; Wikipedia's "Venera 9" for the 660 kg and the parts; Stolbovsky's and DonSimon's photographs of the replica in Kaluga (CC BY 4.0); the U.S. Navy's photograph of the Venera 12 cut-away and the first picture from Venus (public domain) | this project's shape from facts; the pictures looked at, credited in the row |
+
+**Credit line:**
+`3D model: built by Space Radar from published dimensions and photographs of the replica in Kaluga (Stolbovsky, CC BY 4.0; DonSimon, CC BY 4.0)`.
+
+NASA, the Tsiolkovsky Museum and the pictures' authors do not endorse Space Radar, and none of them made or approved this shape.
+
+<!-- b190-probes: end -->
 <!-- 0077 W3-a: begin -->
 ## 3b-16. NASA science craft built from dimensions — IRIS, TIMED, TRACERS, SERT 2, ISIS 1 (2026-10-20)
 

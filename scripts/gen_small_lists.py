@@ -464,6 +464,8 @@ def build_landing_sites(refresh: bool) -> None:
             row["body"] = BODY[s["world"]]
         if s.get("aliases"):
             row["aliases"] = s["aliases"]
+        if s.get("model"):
+            row["model"] = s["model"]
         rows.append(row)
     for r in rows:
         if r.get("src") is None:
