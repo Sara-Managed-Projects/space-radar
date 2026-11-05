@@ -66,6 +66,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 <!-- 0078 r14-m2: begin -->
 | The shapes of Thuraya-2 and -3, Inmarsat-4, ViaSat-3, O3b, Globalstar second generation, O3b mPOWER | built by us in code from published dimensions | published numbers (McDowell's GCAT, CC BY 4.0, and the makers' and operators' own pages) and artists' renders looked at only; CC0 where a photograph of a model was used; ours | numbers are facts; no picture is in the file; no logo or lettering |
 <!-- 0078 r14-m2: end -->
+| The shapes of Iridium NEXT and OneWeb (first generation) | built by us in code from published dimensions | published numbers (eoPortal) and pictures looked at only; ours | [3b-b190-comms](#3b-b190-comms-release-190-two-broadband-and-mobile-phone-constellations-built-from-dimensions-iridium-next-and-oneweb-2026-11-05) | <!-- 0080 b190-comms -->
 
 <!-- 0078 r14-m8: begin -->
 | The shapes of Luna 16's descent stage, Mars Pathfinder with Sojourner, Phoenix and the Mars 3 capsule | built by us in code from published dimensions | CC0, CC BY 2.0 or CC BY 4.0 or public domain where a picture was compared; ours | [3b-r14-m8](#3b-r14-m8-four-landers-built-from-dimensions--luna-16-mars-pathfinder-and-sojourner-phoenix-mars-3-2026-10-27) |
@@ -4320,3 +4321,24 @@ Modified: each file is subset with fontTools to a Latin and (Inter, JetBrains Mo
 character range, hinting removed, and saved as WOFF2. Inter and Barlow keep `tnum`, the tabular
 figures; JetBrains Mono drops `calt`, its programming ligatures. Barlow Semi Condensed has no
 Cyrillic, so it has no Cyrillic file. The upstream files' SHA-256 are in `scripts/build-fonts.py`.
+
+<!-- 0080 b190-comms: begin -->
+## 3b-b190-comms. Release 1.9.0: two broadband and mobile-phone constellations built from dimensions, Iridium NEXT and OneWeb (2026-11-05)
+
+Release 1.9.0, batch comms (public #991, #1001). Both files are built in code by this project (`tools/comms-builder`, on the part library of
+`tools/stage-builder`), from the numbers eoPortal prints and the layout read off the pictures that page carries. **The pictures were LOOKED AT ONLY**:
+no mesh, no texture and no picture of anyone else's is in a file. `registry/models.yaml` has a row per file with every number, the sentence it was read
+from, and what is ours. Their cards say "shape built from published dimensions and pictures; details simplified". The sizes of the wings, dishes and antennas that
+no page prints are ours, and the rows say which.
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `iridium-next.glb` (80 KB) | Iridium NEXT (IRIDIUM 100 to 181): a foil-edged silver slab, a copper hexagon-tiled Main Mission Antenna on a silver module, a hosted-payload bay, two feeder and two cross-link dishes, two wings of two panels, 9.4 m tip to tip | eoPortal, 'Iridium NEXT', <https://www.eoportal.org/satellite-missions/iridium-next> (read 2026-11-05): launch configuration 3.1 x 2.4 x 1.5 m, deployed wingspan 9.4 m, the antennas and links. The layout: the artist's rendition by Thales Alenia Space and the photograph of the stack in the fairing by Iridium, both on that page, looked at only. The sizes of the antenna, dishes and panels are ours | numbers are facts; the pictures are looked at only and are not in the file; no logo or lettering |
+| `oneweb.glb` (41 KB) | OneWeb first generation (Airbus Arrow): a 1 x 1 x 1.3 m gold-foil box with pale radiator faces, a black deck with two Ka dishes and a bay of Ku horn arrays, a Hall thruster plate, two single-panel wings | eoPortal, 'OneWeb', <https://www.eoportal.org/satellite-missions/oneweb> (read 2026-11-05): 1 m x 1 m x 1.3 m, about 150 kg, 16 fixed Ku beams, two steerable Ka beams, two solar panels. The layout: Airbus's representation and the photographs of the satellites in Toulouse and on the payload adapter, on that page, looked at only. The wings' size (1.2 x 1.6 m) and the dishes' are ours: eoPortal prints none | numbers are facts; the pictures are looked at only and are not in the file; no logo or lettering |
+
+**Credit lines:**
+`3D model: built by Space Radar from published dimensions; layout read from pictures on eoPortal (Thales Alenia Space, Iridium)`;
+`3D model: built by Space Radar from published dimensions; layout read from pictures on eoPortal (Airbus, OneWeb)`
+
+No logo, lettering, flag or insignia is on either. Iridium, Thales Alenia Space, OneWeb, Eutelsat and Airbus do not endorse Space Radar, and none of them made or approved these shapes.
+<!-- 0080 b190-comms: end -->

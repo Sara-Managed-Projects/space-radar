@@ -1353,7 +1353,22 @@ export const REAL_MODELS = {
     // a bare `dragon` never catches anything else. A CC BY model is on Ivan's list (spec 0027).
     // Iridium: 66 NEXT satellites in service and the first generation's survivors, all one plan.
     // Klass satellite only, so IRIDIUM 33 DEB and the rest of that collision keep the debris shape.
-    iridium: { build: 'iridium', colour: 'satellite', name: 'an Iridium satellite', klass: ['satellite'], generic: true },
+    // A FILE FOR THE NEXT SERIES since release 1.9.0 (public #991): IRIDIUM 100 and up are the 80 NEXT craft (Thales Alenia Space, 2017 to 2023); the
+    // numbers under 100 are the first generation's survivors, a different craft (three flat antennas on a triangular bus), and keep the build.
+    // iridium-next.glb is built from eoPortal's 3.1 x 2.4 x 1.5 m and 9.4 m span (registry row `iridium-next`, kind `built-from-dimensions`).
+    iridium: {
+      build: 'iridium',
+      colour: 'satellite',
+      name: 'an Iridium satellite',
+      klass: ['satellite'],
+      generic: true,
+      resolve: (record) => {
+        const n = /^iridium (\d+)\b/i.exec(String((record && record.name) || ''));
+        return n && Number(n[1]) >= 100
+          ? { file: 'iridium-next.glb', made: 'dimensions', axes: 'app', name: 'an Iridium NEXT satellite' }
+          : {};
+      },
+    },
     // SIXTY-SEVEN MORE RADAR IMAGERS, by name, and three constellations deliberately left out.
     //
     // The twenty-two mapped by id are the big national ones. These are the commercial and small
@@ -1571,7 +1586,9 @@ export const REAL_MODELS = {
     // characterised the constellation photometrically declined to give any, noting only that the
     // bus has "a more complex prismatic shape" than a Starlink. What is NOT approximate is the
     // silhouette, which is the half that carries recognition and the half that was wrong.
-    oneweb: { build: 'oneweb', colour: 'satellite', name: 'a OneWeb broadband satellite', klass: ['satellite'], generic: true },
+    // A FILE since release 1.9.0 (public #1001): oneweb.glb, the first-generation Arrow box of eoPortal's 1 x 1 x 1.3 m with its two single-panel wings and its
+    // two gateway dishes (registry row `oneweb`, kind `built-from-dimensions`; the wings' size is ours). Every ONEWEB name wears it: all 651 in the issue's feed are first generation. A later bus under this name would need its own file.
+    oneweb: { build: 'oneweb', file: 'oneweb.glb', colour: 'satellite', name: 'a OneWeb broadband satellite', klass: ['satellite'], generic: true, made: 'dimensions', axes: 'app' },
     // A FILE FOR THE FIRST GENERATION since batch five (2026-10-13; public #1000), behind the SAME
     // launch-year gate, which is untouched: starlink-v1.glb, built in code from the bus and array
     // sizes of SpaceX's FCC filing of October 2022 as J. McDowell tabulates it (V1.5: 2.8 x 1.3 m

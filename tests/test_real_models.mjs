@@ -75,6 +75,8 @@ for (const [name, year] of [['NAVSTAR 56 (USA 180)', 2004], ['NAVSTAR 71 (USA 25
   ['QZS-1R (MICHIBIKI-1R)', 2021], ['QZS-3 (MICHIBIKI-3)', 2017], ['QZS-7 (MICHIBIKI-7)', 2026], ['GSAT0101 (GALILEO-PFM)', 2011]]) { // release 1.8.0: the files of internal #751
   routes.push({ table: 'named', key: `${name}@${year}`, entry: realModelFor({ id: `nav-${name}`, name, klass: 'satellite', layer: 'active', meta: { noradId: 99200, launchYear: year } }) });
 }
+// Release 1.9.0: Iridium picks its file from the number in the name (100 and up are the NEXT series).
+routes.push({ table: 'named', key: 'iridium-next', entry: realModelFor({ id: 'ir-next', name: 'IRIDIUM 106', klass: 'satellite', layer: 'active', meta: { noradId: 41917 } }) });
 check(routes.length > 150, `scene/realmodels.js routes were read (${routes.length})`);
 const routedFiles = new Set(routes.map((r) => r.entry && r.entry.file).filter(Boolean));
 
@@ -702,6 +704,25 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     const got = bd(norad, name, klass || 'satellite');
     check(!got || got.file !== 'beidou-3-igso.glb', `${name} (${norad}) does not wear beidou-3-igso.glb: ${JSON.stringify(got)}`);
   }
+}
+
+// RELEASE 1.9.0 (public #991, #1001): IRIDIUM 100 and up wear iridium-next.glb over the procedural Iridium; the first generation's numbers and the debris never do; every ONEWEB wears oneweb.glb.
+{
+  const ir = (norad, name, klass = 'satellite') => realModelFor({ id: `sat-${norad}`, name, klass, layer: 'active', meta: { noradId: norad } });
+  for (const [norad, name] of [[41917, 'IRIDIUM 106'], [42956, 'IRIDIUM 100'], [43070, 'IRIDIUM 135'], [43922, 'IRIDIUM 180'], [56726, 'IRIDIUM 181']]) {
+    const got = ir(norad, name);
+    check(got && got.file === 'iridium-next.glb' && got.build === 'iridium' && got.generic === true && got.made === 'dimensions' && got.axes === 'app' && got.name === 'an Iridium NEXT satellite', `${name} wears iridium-next.glb over the procedural Iridium, as the kind of thing: ${JSON.stringify(got)}`);
+  }
+  for (const [norad, name, klass] of [[25431, 'IRIDIUM 7'], [24796, 'IRIDIUM 8'], [25777, 'IRIDIUM 91'], [99990, 'IRIDIUM 99'], [24946, 'IRIDIUM 33 DEB', 'debris'], [99991, 'IRIDIUM 106 DEB', 'debris']]) {
+    const got = ir(norad, name, klass || 'satellite');
+    check(!got || got.file !== 'iridium-next.glb', `${name} (${norad}) does not wear iridium-next.glb: ${JSON.stringify(got)}`);
+  }
+  check(ir(25431, 'IRIDIUM 7')?.build === 'iridium', 'a first-generation Iridium keeps the procedural shape');
+  for (const name of ['ONEWEB-0012', 'ONEWEB-0045', 'ONEWEB-0644']) {
+    const got = ir(70001, name);
+    check(got && got.file === 'oneweb.glb' && got.build === 'oneweb' && got.generic === true && got.made === 'dimensions' && got.axes === 'app', `${name} wears oneweb.glb over the procedural OneWeb, as the kind of thing: ${JSON.stringify(got)}`);
+  }
+  check(ir(70002, 'ONEWEB-0012 DEB', 'debris') === null, 'OneWeb debris keeps the debris shape');
 }
 
 if (problems.length) { console.error('real models FAILED:\n  ' + problems.slice(0, 40).join('\n  ') + (problems.length > 40 ? `\n  ... and ${problems.length - 40} more` : '')); process.exit(1); }
