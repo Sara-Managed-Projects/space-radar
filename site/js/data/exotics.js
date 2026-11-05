@@ -96,6 +96,9 @@ export const EXOTICS = [
     "name": "V404 Cygni",
     "kind": "blackhole",
     "why": "A black hole that flares: in 2015 it lit up brighter than anything else in the X-ray sky for two weeks, then went quiet again.",
+    "aliases": [
+      "GS 2023+338"
+    ],
     "source": "https://en.wikipedia.org/wiki/V404_Cygni (infobox, read 2026-09-08)",
     "raDeg": 306.015917,
     "decDeg": 33.867222,
@@ -107,6 +110,9 @@ export const EXOTICS = [
     "name": "TON 618",
     "kind": "blackhole",
     "why": "One of the heaviest black holes known, forty billion Suns, so far away that its light left before the Earth existed.",
+    "aliases": [
+      "Tonantzintla 618"
+    ],
     "source": "https://en.wikipedia.org/wiki/TON_618 (infobox; 2019 mass estimate, read 2026-09-08)",
     "distance_note": "how far it is now (comoving distance), from its redshift of 2.219 in the Planck 2018 cosmology. Its light-travel time is 10.8 billion years: we see it as it was when the universe was 3 billion years old, not as it is",
     "redshift": 2.219,

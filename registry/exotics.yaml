@@ -93,6 +93,7 @@ exotics:
     dist_ly: 7800
     mass_msun: 9
     why: "A black hole that flares: in 2015 it lit up brighter than anything else in the X-ray sky for two weeks, then went quiet again."
+    aliases: [GS 2023+338]
     source: "https://en.wikipedia.org/wiki/V404_Cygni (infobox, read 2026-09-08)"
 
   - id: ton-618
@@ -105,6 +106,7 @@ exotics:
     distance_note: "how far it is now (comoving distance), from its redshift of 2.219 in the Planck 2018 cosmology. Its light-travel time is 10.8 billion years: we see it as it was when the universe was 3 billion years old, not as it is"
     mass_msun: 40700000000
     why: "One of the heaviest black holes known, forty billion Suns, so far away that its light left before the Earth existed."
+    aliases: [Tonantzintla 618]
     source: "https://en.wikipedia.org/wiki/TON_618 (infobox; 2019 mass estimate, read 2026-09-08)"
 
   - id: crab-pulsar

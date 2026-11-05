@@ -72,6 +72,8 @@ stage.setWorld('earth');
 const index = buildIndex(recs, LAYERS);
 check(findMatches(index, 'sagittarius a').hits[0]?.record.id === 'exotic-sgr-a-star', '"sagittarius a" finds Sgr A*');
 check(findMatches(index, 'powehi').hits[0]?.record.id === 'exotic-m87-star', '"powehi" finds M87* by alias');
+check(findMatches(index, 'gs 2023+338').hits[0]?.record.id === 'exotic-v404-cygni', '"gs 2023+338" finds V404 Cygni by alias');
+check(findMatches(index, 'tonantzintla 618').hits[0]?.record.id === 'exotic-ton-618', '"tonantzintla 618" finds TON 618 by alias');
 check(findMatches(index, 'lgm').hits[0]?.record.id === 'exotic-psr-b1919-21', '"lgm" finds the first pulsar');
 check(typeof drawingLine(sgrRec) === 'string' && drawingLine(sgrRec).includes('ring'), `an extreme object says it is drawn as a ring: ${drawingLine(sgrRec)}`);
 // Betelgeuse is a star a person can see: the card must not call it too faint (found live 2026-09-09)
