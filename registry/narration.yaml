@@ -283,10 +283,10 @@ clips:
   - {trip: "travel-to-exoplanets", stop: "h", hash: "35b2c85468ca55fa", seconds: 10.84, words: 30, lufs: -16.2, opus: 42127, m4a: 56783, vtt: 241, wer: 0.0, heard: "cf8ee79b31138c25", voice: 0}
   - {trip: "travel-to-exoplanets", stop: "mercury", hash: "6b6cec7dcfdd4dd2", seconds: 16.37, words: 47, lufs: -16.5, opus: 66433, m4a: 84819, vtt: 316, wer: 0.0, heard: "16c5d2a9e890dd58", voice: 0}
   - {trip: "moon-landings", stop: "surveyor-1", hash: "ad24c3ba77ad99a2", seconds: 23.98, words: 64, lufs: -16.5, opus: 96617, m4a: 123504, vtt: 416, wer: 0.0, heard: "ca46f4648a841d4a", voice: 0}
-  - {trip: "moon-landings", stop: "apollo-11", hash: "6e392ab68d80215e", seconds: 16.48, words: 43, lufs: -16.5, opus: 65499, m4a: 85471, vtt: 329, wer: 0.0, heard: "574491ab40a21660", voice: 0}
+  - {trip: "moon-landings", stop: "apollo-11", hash: "139e6b96a6721652", seconds: 16.35, words: 42, lufs: -16.4, opus: 64894, m4a: 84819, vtt: 331}
   - {trip: "moon-landings", stop: "apollo-12", hash: "9c47e764e97079c7", seconds: 16.96, words: 45, lufs: -16.5, opus: 67556, m4a: 87862, vtt: 317, wer: 0.0, heard: "1545de387947849b", voice: 0}
   - {trip: "moon-landings", stop: "lunokhod-1", hash: "c508d0fe16ccdc67", seconds: 17.65, words: 49, lufs: -16.4, opus: 70176, m4a: 91339, vtt: 345, wer: 0.0, heard: "52a8fb61781c3da7", voice: 0}
-  - {trip: "moon-landings", stop: "apollo-17", hash: "00034e943f3484ad", seconds: 19.67, words: 47, lufs: -16.5, opus: 78849, m4a: 101554, vtt: 348, wer: 0.0426, heard: "e5916e01e0fcc5a4", voice: 0}
+  - {trip: "moon-landings", stop: "apollo-17", hash: "6148ef1da4824760", seconds: 20.05, words: 47, lufs: -16.4, opus: 80277, m4a: 103510, vtt: 347}
   - {trip: "moon-landings", stop: "change-4", hash: "87d78575a96c36fb", seconds: 19.63, words: 53, lufs: -16.5, opus: 77876, m4a: 101336, vtt: 395, wer: 0.0566, heard: "2ae404c2c23f2176", voice: 0}
   - {trip: "moon-landings", stop: "chandrayaan-3", hash: "4c6538969d2bbf49", seconds: 21.14, words: 56, lufs: -16.4, opus: 85379, m4a: 109160, vtt: 340, wer: 0.0, heard: "dd81cb77e3e11ed5", voice: 0}
   - {trip: "moon-landings", stop: "im-1", hash: "7ce514adab7eed0d", seconds: 21.15, words: 55, lufs: -16.6, opus: 85036, m4a: 109160, vtt: 368, wer: 0.0192, heard: "f4b11ca0062162c1", voice: 0}
