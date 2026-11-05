@@ -93,7 +93,7 @@ const SIM={
  dur:14,reveal:7,hook:'FARTHER OUT,|SLOWER AROUND',
  honest:'Circular orbits, radii squeezed (square-root scale) so Neptune fits, time sped up. Periods and distances are from NASA and JPL.',
  param:{label:'time-lapse (years per second)',min:.2,max:12,step:.1,value:2},
- line(v){return`At ${v.toFixed(1)} years a second, Earth laps the Sun ${v.toFixed(1)} times a second and Neptune ${(v/yr(PL[7])).toFixed(3)}. Neptune's year is ${yr(PL[7]).toFixed(1)} Earth years (NASA); the rule P² = a³ with a = ${PL[7][1].toFixed(2)} au gives ${Math.pow(PL[7][1],1.5).toFixed(1)}.`},
+ line(v){return`At ${v.toFixed(1)} years a second, Earth laps the Sun ${v.toFixed(1)} times a second and Neptune ${(v/yr(PL[7])).toFixed(3)}. Neptune's year is ${yr(PL[7]).toFixed(1)} Earth years (NASA); the rule P² = a³ with a = ${PL[7][1].toFixed(2)} AU gives ${Math.pow(PL[7][1],1.5).toFixed(1)}.`},
  draw(c,t,v){
   const age=t*v;stars(c,50);glow(c,CX,CY,60,'#ffb347',.9);disc(c,CX,CY,16,'#ffd27a');
   c.lineWidth=2;
