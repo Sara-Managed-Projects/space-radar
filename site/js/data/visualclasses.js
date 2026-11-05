@@ -120,6 +120,19 @@ export const VISUAL_CLASSES = [
 "umbriel",
 "titania",
 "oberon"
+],
+"real_models": [
+"moon-pan",
+"moon-daphnis",
+"moon-atlas",
+"moon-prometheus",
+"moon-pandora",
+"moon-epimetheus",
+"moon-janus",
+"moon-telesto",
+"moon-calypso",
+"moon-helene",
+"moon-hyperion"
 ]
 }
 },

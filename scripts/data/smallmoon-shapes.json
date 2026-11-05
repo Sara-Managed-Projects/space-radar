@@ -1,0 +1,211 @@
+{
+ "atlas": {
+  "file": "moon-atlas.glb",
+  "bytes": 89052,
+  "tris": 16000,
+  "verts": 8002,
+  "source_tris": 26990,
+  "volume_km3": 13945.226498908038,
+  "source_volume_km3": 13948.4253520039,
+  "extent_km": [
+   47.539,
+   41.286,
+   19.471
+  ],
+  "source_extent_km": [
+   47.539,
+   41.286,
+   19.471
+  ]
+ },
+ "calypso": {
+  "file": "moon-calypso.glb",
+  "bytes": 91308,
+  "tris": 16000,
+  "verts": 8002,
+  "source_tris": 28276,
+  "volume_km3": 3618.2165312066695,
+  "source_volume_km3": 3618.9988725521653,
+  "extent_km": [
+   30.635,
+   19.353,
+   13.707
+  ],
+  "source_extent_km": [
+   30.635,
+   19.354,
+   13.707
+  ]
+ },
+ "daphnis": {
+  "file": "moon-daphnis.glb",
+  "bytes": 89468,
+  "tris": 16000,
+  "verts": 8002,
+  "source_tris": 26926,
+  "volume_km3": 247.1574438028159,
+  "source_volume_km3": 247.21270177448318,
+  "extent_km": [
+   11.179,
+   9.71,
+   5.884
+  ],
+  "source_extent_km": [
+   11.179,
+   9.71,
+   5.884
+  ]
+ },
+ "epimetheus": {
+  "file": "moon-epimetheus.glb",
+  "bytes": 92184,
+  "tris": 16000,
+  "verts": 8002,
+  "source_tris": 27826,
+  "volume_km3": 842223.6883023386,
+  "source_volume_km3": 842349.6502456517,
+  "extent_km": [
+   146.138,
+   112.81,
+   107.845
+  ],
+  "source_extent_km": [
+   146.138,
+   112.81,
+   107.845
+  ]
+ },
+ "helene": {
+  "file": "moon-helene.glb",
+  "bytes": 93808,
+  "tris": 16000,
+  "verts": 8002,
+  "source_tris": 26986,
+  "volume_km3": 24729.396525005403,
+  "source_volume_km3": 24731.72284930108,
+  "extent_km": [
+   40.974,
+   39.654,
+   31.514
+  ],
+  "source_extent_km": [
+   40.974,
+   39.654,
+   31.514
+  ]
+ },
+ "hyperion": {
+  "file": "moon-hyperion.glb",
+  "bytes": 93664,
+  "tris": 16000,
+  "verts": 8002,
+  "source_tris": 29268,
+  "volume_km3": 10594436.132114869,
+  "source_volume_km3": 10595577.264134144,
+  "extent_km": [
+   252.478,
+   267.113,
+   341.264
+  ],
+  "source_extent_km": [
+   252.478,
+   267.113,
+   341.264
+  ]
+ },
+ "janus": {
+  "file": "moon-janus.glb",
+  "bytes": 93076,
+  "tris": 16000,
+  "verts": 8002,
+  "source_tris": 26758,
+  "volume_km3": 2950773.783950103,
+  "source_volume_km3": 2951168.779145775,
+  "extent_km": [
+   206.705,
+   189.81,
+   153.238
+  ],
+  "source_extent_km": [
+   206.705,
+   189.81,
+   153.238
+  ]
+ },
+ "pan": {
+  "file": "moon-pan.glb",
+  "bytes": 90924,
+  "tris": 16000,
+  "verts": 8002,
+  "source_tris": 27468,
+  "volume_km3": 10757.986494632327,
+  "source_volume_km3": 10760.39956321686,
+  "extent_km": [
+   40.576,
+   31.461,
+   21.552
+  ],
+  "source_extent_km": [
+   40.576,
+   31.461,
+   21.552
+  ]
+ },
+ "pandora": {
+  "file": "moon-pandora.glb",
+  "bytes": 91352,
+  "tris": 16000,
+  "verts": 8002,
+  "source_tris": 27124,
+  "volume_km3": 268747.47064097243,
+  "source_volume_km3": 268786.0484979951,
+  "extent_km": [
+   112.365,
+   82.697,
+   66.047
+  ],
+  "source_extent_km": [
+   112.365,
+   82.721,
+   66.047
+  ]
+ },
+ "prometheus": {
+  "file": "moon-prometheus.glb",
+  "bytes": 91048,
+  "tris": 16000,
+  "verts": 8002,
+  "source_tris": 28362,
+  "volume_km3": 327532.2953518462,
+  "source_volume_km3": 327583.7202238467,
+  "extent_km": [
+   142.708,
+   83.446,
+   58.88
+  ],
+  "source_extent_km": [
+   142.708,
+   83.446,
+   58.89
+  ]
+ },
+ "telesto": {
+  "file": "moon-telesto.glb",
+  "bytes": 92284,
+  "tris": 16000,
+  "verts": 8002,
+  "source_tris": 27604,
+  "volume_km3": 7768.163868952465,
+  "source_volume_km3": 7769.408564584169,
+  "extent_km": [
+   32.579,
+   23.765,
+   19.527
+  ],
+  "source_extent_km": [
+   32.583,
+   23.765,
+   19.527
+  ]
+ }
+}

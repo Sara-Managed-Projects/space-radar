@@ -24,7 +24,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | catalogues | 4 | 110 191 |
 | other_light | 3 | 3 |
 | sites | 53 | 53 |
-| real_models | 270 | 270 |
+| real_models | 281 | 281 |
 | model_kinds | 52 | 52 |
 | small_bodies | 22 | 22 |
 | probes | 39 | 39 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 39 | 39 |
-| **all** | **1140** | **111 327** |
+| **all** | **1151** | **111 338** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -43,7 +43,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [ICE_GIANT](#ice_giant) | 7 | `worlds.js`, `worldweather.js` | measured | - |
 | [RINGS](#rings) | 1 | `worlds.js`, `ringgrains.js` | modelled | - |
 | [VOLCANIC_MOON](#volcanic_moon) | 1 | `worlds.js` | measured | - |
-| [ICY_MOON](#icy_moon) | 16 | `worlds.js` | measured | - |
+| [ICY_MOON](#icy_moon) | 27 | `worlds.js` | measured | - |
 | [TITAN](#titan) | 2 | `worlds.js`, `atmosphere.js` | measured | - |
 | [AIRLESS_MOON](#airless_moon) | 11 | `worlds.js`, `tiles.js`, `moonshape.js` | measured | - |
 | [DWARF_PLANET](#dwarf_planet) | 9 | `worlds.js`, `glyphs.js`, `models.js`, `dwarfs.js` | measured | - |
@@ -82,7 +82,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 1140 records: 350 measured, 426 modelled, 364 illustrative.
+Honesty over the 1151 records: 361 measured, 426 modelled, 364 illustrative.
 
 ## The classes
 
@@ -189,8 +189,9 @@ Honesty over the 1140 records: 350 measured, 426 modelled, 364 illustrative.
 - **Measured, modelled or reconstructed:** Measured: the maps. Black-and-white mosaics tinted with the flat colour (said in CREDITS.md section 2); nothing drawn where nobody has looked.
 - **Rights:** USGS, NASA/JPL-Caltech, LPI and JHUAPL/SwRI works, public domain.
 - **What is missing is tracked in:** #862 (Enceladus and Triton plumes, W2-c)
-- **Records (16):**
+- **Records (27):**
   - worlds (16): `europa`, `ganymede`, `callisto`, `enceladus`, `triton`, `charon`, `mimas`, `tethys`, `dione`, `rhea`, `iapetus`, `miranda`, `ariel`, `umbriel`, `titania`, `oberon`
+  - real_models (11): `moon-pan`, `moon-daphnis`, `moon-atlas`, `moon-prometheus`, `moon-pandora`, `moon-epimetheus`, `moon-janus`, `moon-telesto`, `moon-calypso`, `moon-helene`, `moon-hyperion`
 
 ### TITAN
 
