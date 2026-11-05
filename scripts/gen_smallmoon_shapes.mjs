@@ -82,11 +82,24 @@ export function volume({ v, f }) {
   return s / 6;
 }
 
-function outward(m) {
-  if (volume(m) >= 0) return m;
+/** Each of these bodies is star-shaped from its centre, so a triangle whose geometric normal points toward the centre is wound the wrong way and is
+ *  flipped; returns the mesh and how many were. (None of the eleven plate models has one: the 50 % of normals the contract test found facing
+ *  into their triangles was the writer's, which renumbered the triangles twice. This stays as the guard.) */
+function orient(m) {
+  const { v } = m;
+  const c = [0, 0, 0];
+  for (let i = 0; i < v.length; i += 3) for (let k = 0; k < 3; k++) c[k] += v[i + k] / (v.length / 3);
   const f = m.f.slice();
-  for (let t = 0; t < f.length; t += 3) { const x = f[t + 1]; f[t + 1] = f[t + 2]; f[t + 2] = x; }
-  return { v: m.v, f };
+  let flipped = 0;
+  for (let t = 0; t < f.length; t += 3) {
+    const a = 3 * f[t], b = 3 * f[t + 1], d = 3 * f[t + 2];
+    const ux = v[b] - v[a], uy = v[b + 1] - v[a + 1], uz = v[b + 2] - v[a + 2];
+    const wx = v[d] - v[a], wy = v[d + 1] - v[a + 1], wz = v[d + 2] - v[a + 2];
+    const nx = uy * wz - uz * wy, ny = uz * wx - ux * wz, nz = ux * wy - uy * wx;
+    const mx = (v[a] + v[b] + v[d]) / 3 - c[0], my = (v[a + 1] + v[b + 1] + v[d + 1]) / 3 - c[1], mz = (v[a + 2] + v[b + 2] + v[d + 2]) / 3 - c[2];
+    if (nx * mx + ny * my + nz * mz < 0) { const x = f[t + 1]; f[t + 1] = f[t + 2]; f[t + 2] = x; flipped++; }
+  }
+  return { m: { v, f }, flipped };
 }
 
 function extent(v) {
@@ -112,7 +125,7 @@ function smoothNormals({ v, f }) {
 }
 
 function writeGlb(E, path, name, { v, f }, n) {
-  // the vertex cache's order for the triangles (in place) and first-use order for the vertices (the remap)
+  // reorderMesh puts the triangles in the vertex cache's order AND renumbers them in place (`order`), and returns the remap the vertices take
   const order = Uint32Array.from(f);
   const [first, count] = E.reorderMesh(order, true, false);
   const { lo, hi } = extent(v);
@@ -127,7 +140,7 @@ function writeGlb(E, path, name, { v, f }, n) {
       nrm[4 * j + c] = Math.max(-127, Math.min(127, Math.round(n[3 * i + c] * 127)));
     }
   }
-  const idx = order.map((i) => first[i]);
+  const idx = order;
   const lo16 = [0, 1, 2].map((c) => Math.min(...Array.from({ length: count }, (_, j) => pos[4 * j + c])));
   const hi16 = [0, 1, 2].map((c) => Math.max(...Array.from({ length: count }, (_, j) => pos[4 * j + c])));
   const use32 = count > 65535;
@@ -196,12 +209,14 @@ async function main(argv) {
   const report = existsSync(dataFile) ? JSON.parse(readFileSync(dataFile, 'utf8')) : {};
   for (const [key, spec] of Object.entries(MOONS)) {
     if (only && !only.includes(key)) continue;
-    let m = outward(weld(readObj(join(src, key, spec.file))));
+    const oriented = orient(weld(readObj(join(src, key, spec.file))));
+    let m = oriented.m;
     const vol0 = volume(m), ext0 = extent(m.v), tris0 = m.f.length / 3;
     if (spec.tris && spec.tris < tris0) {
       const pos = Float32Array.from(m.v);
       const [idx] = MeshoptSimplifier.simplify(m.f, pos, 3, spec.tris * 3, 0.03);
-      m = outward(compact({ v: m.v, f: idx }));
+      m = compact({ v: m.v, f: idx });
+      m = orient(m).m;
     }
     const vol1 = volume(m), ext1 = extent(m.v);
     if (Math.abs(vol1 / vol0 - 1) > 0.01) throw new Error(`${key}: volume ${vol0} -> ${vol1}`);
@@ -209,7 +224,7 @@ async function main(argv) {
     const dims = (e) => e.hi.map((x, i) => +(x - e.lo[i]).toFixed(3));
     report[key] = { file: `${spec.out}.glb`, bytes: size, tris: m.f.length / 3, verts: m.v.length / 3, source_tris: tris0,
       volume_km3: vol1, source_volume_km3: vol0, extent_km: dims(ext1), source_extent_km: dims(ext0) };
-    console.log(`${key}: ${tris0} -> ${m.f.length / 3} triangles, ${m.v.length / 3} vertices, volume ${vol0.toPrecision(5)} -> ${vol1.toPrecision(5)} km3 `
+    console.log(`${key}: ${oriented.flipped} of ${tris0} flipped outward, ${tris0} -> ${m.f.length / 3} triangles, ${m.v.length / 3} vertices, volume ${vol0.toPrecision(5)} -> ${vol1.toPrecision(5)} km3 `
       + `(${(100 * (vol1 / vol0 - 1)).toFixed(2)} %), extent ${dims(ext1).join(' x ')} km (source ${dims(ext0).join(' x ')}), ${size} bytes`);
   }
   mkdirSync(dirname(dataFile), { recursive: true });
