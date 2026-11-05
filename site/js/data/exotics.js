@@ -406,5 +406,40 @@ export const EXOTICS = [
     "decDeg": -69.100806,
     "distLy": 163000,
     "massMsun": 291
+  },
+  {
+    "id": "uy-scuti",
+    "name": "UY Scuti",
+    "kind": "star",
+    "why": "One of the largest known stars, estimated at 909 times the Sun's radius. Put in the Sun's place, its surface would reach past the orbit of Mars or even the asteroid belt.",
+    "aliases": [
+      "UY Sct",
+      "BD-12 5055",
+      "IRC -10422"
+    ],
+    "source": "https://en.wikipedia.org/wiki/UY_Scuti (infobox: position, distance and the V magnitude range 8.29 to 10.56; the opening paragraph for the radius of 909 Suns, the maximum brightness and the Mars and asteroid-belt comparison; read 2026-11-05)",
+    "distance_note": "5,871 light-years (1,800 parsecs) in the infobox, from a parallax of 0.5166 mas, with an error of +534 and -446 light-years; the article's opening paragraph rounds it to 5,900",
+    "vmag": 8.29,
+    "raDeg": 276.902222,
+    "decDeg": -12.466352,
+    "distLy": 5871
+  },
+  {
+    "id": "woh-g64",
+    "name": "WOH G64",
+    "kind": "star",
+    "why": "An extreme red supergiant in the Large Magellanic Cloud, about 1,540 times the Sun's radius. Put in the Sun's place, its surface would engulf the orbit of Jupiter.",
+    "aliases": [
+      "IRAS 04553-6825",
+      "LI-LMC 181",
+      "MSX LMC 1182"
+    ],
+    "source": "https://en.wikipedia.org/wiki/WOH_G64 (infobox: position, distance, V magnitude 17.7 to 18.8 and the mass of component A; the opening paragraph for the radius of 1,540 Suns and the Jupiter comparison; read 2026-11-05)",
+    "distance_note": "163,000 light-years (50,000 parsecs) in the infobox: the article puts the star roughly 50 kiloparsecs away, in the Large Magellanic Cloud",
+    "vmag": 17.7,
+    "raDeg": 73.793855,
+    "decDeg": -68.341666,
+    "distLy": 163000,
+    "massMsun": 20
   }
 ];
