@@ -1153,6 +1153,24 @@ export const REAL_MODELS = {
     59371: { file: 'resurs-p.glb', colour: 'satellite', name: 'Resurs-P 4', catalogue: 'RESURS-P 4', made: 'dimensions', axes: 'app' },
     62430: { file: 'resurs-p.glb', colour: 'satellite', name: 'Resurs-P 5', catalogue: 'RESURS-P 5', made: 'dimensions', axes: 'app' },
     // 0078 r14-m6: end
+    // b190-earthsci: begin (release 1.9.0)
+    // ASTROSAT HAS ITS OWN SHAPE since release 1.9.0 (public #970): astrosat.glb was BUILT HERE, in code, from ISRO's cited metres (the cuboid bus 1.96 x 1.75 x 1.30 m, two wings of two
+    // 1.4 x 1.8 m panels) and eoPortal's instrument sizes, and read off ISRO's CAD view and clean-room photographs (GODL-India, looked at; registry/models.yaml row `astrosat`,
+    // kind `built-from-dimensions`): the gold bus, the stack of two UVIT tubes, the SXT, three LAXPC, the CZTI and the SSM plates, the side hardware, the adapter and four
+    // panels. `axes: 'app'`: +X the array axis, the stack at -Z (the telescope rule: it looks away from the Earth), the cells toward +Y (the arrays turned 90 degrees about their
+    // drive from ISRO's flat deployed pose, as the real drive turns them to the Sun). Not `generic`: it is this craft.
+    40930: { file: 'astrosat.glb', colour: 'telescope', name: 'AstroSat', catalogue: 'ASTROSAT', made: 'dimensions', axes: 'app' },
+    // GOSAT (IBUKI) HAS ITS OWN SHAPE since release 1.9.0 (public #959): gosat.glb was BUILT HERE, in code, from JAXA's cited metres (3.7 x 1.8 x 2.0 m without the adapter, 13.7 m tip to tip)
+    // and read off JAXA's illustrations and the photographs of its Tsukuba exhibit (looked at; registry/models.yaml row `gosat`, kind `built-from-dimensions`): two gold boxes, the
+    // TANSO-FTS hood and the CAI on the Earth face, two three-section paddles on A-frame trusses. By NUMBER, so GOSAT-2 (43672) and GOSAT-GW (64694), later craft on other buses,
+    // keep what they had. `axes: 'app'`: +Z the Earth face, the 3.7 m along Y (the ring at -Y), +X the paddle axis, the cells toward +Y.
+    33492: { file: 'gosat.glb', colour: 'satellite', name: 'GOSAT (Ibuki)', catalogue: 'GOSAT (IBUKI)', made: 'dimensions', axes: 'app' },
+    // MICROCARB HAS ITS OWN SHAPE since release 1.9.0 (public #961): microcarb.glb was BUILT HERE, in code, from eoPortal's cited metres (0.6 x 0.8 x 1.0 m, the payload 0.4 m) and read off
+    // CNES's CAD drawings of its four faces and its artwork (looked at; registry/models.yaml row `microcarb`, kind `built-from-dimensions`): a gold Myriade platform with its antennas and
+    // ring, the silver optical housing with the oval baffle of the cryogenic radiator, the star tracker, a notched two-panel array (its size ESTIMATED: the page gives none).
+    // `axes: 'app'`: +Z the Earth wall (X-band), +X the array axis, the cells and the payload deck toward +Y, the PAS610 ring at -Y.
+    64899: { file: 'microcarb.glb', colour: 'satellite', name: 'MicroCarb', catalogue: 'MICROCARB', made: 'dimensions', axes: 'app' },
+    // b190-earthsci: end
   },
   horizons: {
     '-31': { file: 'voyager.glb', colour: 'probe', name: 'Voyager 1' },
