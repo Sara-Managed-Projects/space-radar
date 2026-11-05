@@ -11,6 +11,291 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-11-05
+
+1.9.0 works through the issues that were still open when GitHub removed the project's issue tracker; they were recovered from local copies, and each part below names the issue it answers. Every model was compared, side by side, with photographs or agency drawings of the real craft before it was taken; the ones that did not pass are listed under "Not yet" with the reason.
+
+### Earth-science and astronomy satellites: AstroSat, GOSAT, MicroCarb
+
+#### Added
+
+- **AstroSat, GOSAT and MicroCarb have a model of their own.** Each was the generic satellite or the generic telescope tube; each is now built in code from published
+  dimensions and from pictures read for the layout, by name, and its card says "shape built from published dimensions and pictures; details simplified". **AstroSat**
+  (`astrosat.glb`, 118 kB, NORAD 40930): ISRO's page gives the cuboid bus (1.96 by 1.75 by 1.30 m) and the two wings of two 1.4 by 1.8 m panels, eoPortal the instruments' sizes;
+  the gold bus carries on its deck three LAXPC units, two gold UVIT tubes, the SXT tube with its vaned door, the CZTI slab and grid box and two upright SSM plates, with the
+  star-sensor hood, the angled instrument box, the radiator tiles, the adapter ring and thrusters, and four panels 8.5 m tip to tip. It is read off ISRO's CAD view and eleven
+  clean-room photographs, which Wikimedia Commons carries under GODL-India. **GOSAT (Ibuki)** (`gosat.glb`, 133 kB, NORAD 33492): JAXA's 3.7 by 1.8 by 2.0 m body without its
+  adapter and 13.7 m from paddle tip to tip; two gold boxes, the TANSO-FTS hood, the CAI, the radiators and antennas on the Earth face and two three-section paddles on A-frame
+  trusses, read off JAXA's illustrations and four photographs of its Tsukuba exhibit. **MicroCarb** (`microcarb.glb`, 159 kB, NORAD 64899): eoPortal's 0.6 by 0.8 by 1.0 m on a Myriade
+  Evolutions platform, with the PAS610 ring, the antennas, the silver optical housing with the oval baffle of the cold radiator, the star tracker and a notched two-panel array,
+  read off CNES's drawings of its four faces and its artwork. Each is 17 000 to 19 000 triangles, loaded only when its craft is selected. Routed by number: GOSAT-2 and
+  GOSAT-GW are other buses and keep what they had. The sources, what was cited and what was estimated are in `registry/models.yaml` and `CREDITS.md` §3aa. (Public #970, #959 and #961.)
+
+#### Changed
+
+- **AstroSat flies with its instruments looking away from the Earth and its cells toward the Sun**, as the other telescopes do: ISRO's CAD shows the panels flat beside the stack, and
+  here they are turned 90 degrees about their drive, as the real drive turns them. (Public #970.)
+
+#### Not yet
+
+- **CFOSAT (public #960), FLEX (public #962) and Capella's Acadia craft (public #982) are not built.** All three are in orbit and in the catalogue (CFOSAT 43662; FLEX 100689, launched
+  15 September 2026 on Vega-C with Sentinel-3C; Capella-11 and eight more, 57693 to 68485). CFOSAT: eoPortal's two pictures are CNES artist's views and a CAD drawing, its body is 1.4 by 1.4 by 1.2 m
+  on one page and 1.5 m a side on another, and no photograph of the craft was found, so the rotating SWIM and SCAT antennas could not be placed. FLEX: eoPortal gives 1.5 by 4.9 by 1.6 m
+  and 400 kg but not FLORIS's size or place, and the only pictures are ESA's and Thales Alenia Space's artist's views. Capella's Acadia: no page found gives the bus or the wrapped-rib reflector's
+  diameter (the FCC's 8 m2 is for the earlier design), and no picture was found. They stay held rather than guessed.
+- **No model has been seen by a person who knows the craft.** MicroCarb's array is an ESTIMATE (the page gives no size) and its deployed pose is not the CAD's stowed one; GOSAT's zenith
+  side and Sun-side end are guesses and the blanket of the three models is drawn as quilted patches, not crumpled foil; AstroSat's instruments' places on the deck are read off one CAD view.
+
+### Radar and weather satellites: RADARSAT-2, RCM, COSMO-SkyMed, Elektro-L
+
+#### Added
+
+- **RADARSAT-2 and the three RADARSAT Constellation Mission satellites each have a model of their own, and the two are separate files (public #981).** Each wore the generic radar
+  blade. RADARSAT-2 is now a gold bus 3.7 m high standing on the back of its 15 m antenna of four sub-array panels, with two three-panel wings along the antenna's axis on open triangular
+  yokes and stays running from the bus to the antenna. The RCM is a box bus standing on the 6.88 m antenna's two deployed halves, with struts to each half, four AIS whips, one solar array that
+  leans from the side of the bus and the small keep-alive array. Both are built in code from eoPortal's numbers (the bus, the antenna, the arrays, the counts of fittings) and from MDA's and
+  the CSA's drawings, read for the layout; those pictures are not free and are not in the files. Where eoPortal gives two RCM antenna sizes (6.88 m by 1.375 m and 6.75 m by 1.38 m) the
+  file is built to the first; the bus's size is not given for the RCM and was read off the drawings.
+- **COSMO-SkyMed and its second generation each have a model of their own, and the two are separate files (public #980).** The four first-generation satellites and CSG-1, -2 and -3 wore
+  the radar blade. The first generation is a gold box bus with the 5.7 m by 1.4 m antenna of forty tiles on its Earth end and two four-panel arrays of 18.3 m2 in all; the second is a taller
+  bus with a payload module, a ring antenna, a bronze-faced antenna of ten macro-tiles and arrays on hexagon-cut frames. The antenna sizes, the tile counts and the 18.3 m2 are cited; no
+  page gives either bus, or the second generation's arrays, in metres, so those were read off ASI's and TAS-I's drawings by the cited 5.7 m, and the registry rows say so.
+- **Elektro-L 2 to 5 have a model of their own (public #997).** They wore the generic geostationary bus. The file is an eight-sided black body under a white Earth deck that carries the
+  two black scanner units, the data-collection helix, a white disc antenna and two black dishes, with the series' one solar wing of three panels. The one cited size is the wing's 8.17 m2
+  (Russian Wikipedia); every other size was read off three CC BY-SA photographs of a 1:5 model by the width of that wing, and the row says so.
+
+#### Changed
+
+- **Eleven radar satellites and four weather satellites no longer say "the kind of thing".** Their cards name the craft and say "shape built from published dimensions and pictures;
+  details simplified"; the blade and the geostationary bus remain what is drawn while a file loads.
+
+#### Not yet
+
+- **Fengyun-4 (public #996) is held.** A museum mock-up photograph (CC0), a CC BY 4.0 rendering and two CMA illustrations show its layout well, but no page opened (eoPortal, Gunter's page,
+  NSMC's FY-4B page, Chinese press) gives its size in metres, only its mass (about 5.3 t); a size from an aggregator with no source would be a guess. Fengyun-3 is already shipped as `fengyun-3.glb`.
+- **The RCM's bus, COSMO-SkyMed's bus, arms and wings, and the second generation's bus and arrays are read off drawings, not cited**, and Elektro-L's body, dishes and units are read
+  off photographs of a model by the cited array area. Elektro-L's infobox lengths (5.5 m by 2.5 m) are given for no stated axis and are not used.
+- **Each craft's antenna looks straight down as drawn.** The real radar craft look to one side (RADARSAT-2 by rolling the craft); the app does not draw that, and the geostationary wing turns once a day.
+
+### Broadband satellites: OneWeb
+
+#### Added
+
+- **OneWeb's first generation has a model of its own.** Every ONEWEB name (651 in the issue's feed) now wears `oneweb.glb` (41 kB, 3 492 triangles, 14 colours): eoPortal's 1 by 1 by 1.3 m
+  box in gold foil with a pale radiator panel on each side, a black Earth deck with a bay of two ribbed Ku horn arrays and two Ka gateway dishes on gimbal arms, the Hall thruster
+  plate and two star trackers on the back, and two single-panel wings on thin booms, laid out from Airbus's representation and the factory and payload-adapter photographs on
+  eoPortal (looked at only). No logo or lettering is drawn. (Public #1001.)
+- **`tools/comms-builder/`** builds the file in code (`GLTFKIT=<dir> tools/comms-builder/build.sh`), and `tools/shape-sheet.html` takes `rot=` and `tilt=` to read one file from four sides.
+
+#### Not yet
+
+- **The wings of OneWeb are an estimate.** eoPortal prints no array size; the single 1.2 by 1.6 m panel and its 0.85 m boom are read off Airbus's render against the 1 m bus, and so are the dishes (0.38 m).
+  The issue asked that a part with no primary number be left out; a OneWeb without wings is not one, so they are kept and the registry row says they are ours.
+- **Iridium NEXT (public #991) is held.** A model was built and taken out again: its body proportions do not match the craft (the real body is a long trapezoidal prism with a large flat L-band array face and the wings on long arms; the model was a short box),
+  and no clear photographs of the flight craft were found, only Thales Alenia Space's render and Iridium's picture of the stack in the fairing. The procedural Iridium stays, and `tools/comms-builder/iridium.py` is kept as a draft that ships nothing.
+- **Starlink V2 Mini (public #999) is held.** The sizes (a 4.1 m bus, two 4.1 by 12.8 m arrays) are McDowell's table of SpaceX's October 2022 filing; the filing itself was not opened. The only layout
+  found is a figure in Kandula et al. (arXiv 2506.19092) that shows the arrays held off the chassis on pantographs and off-pointed by 45 degrees, which is an operating attitude, not a design; SpaceX's own
+  photographs could not be fetched. The 2024 launches also include direct-to-cell craft with another antenna that the name only marks as [DTC], and 2023 flew both designs. The build stays.
+- **Amazon Kuiper (public #1002) is held**: no page opened gives the production satellite's size (the Wikipedia article, Gunter's page and the trackers give a mass, or numbers that disagree) and no photograph of it was found.
+- **AST SpaceMobile BlueBird (public #943) is held**: Block 1 (64 m2, about 1 500 kg) and Block 2 (223 m2, 6 100 kg) differ threefold, no page gives an array's width and length, the bus or where the solar cells are, and
+  the only picture found is a render of Block 1. SPACEMOBILE-001 to 005 are Block 1 and 006 onward Block 2; a file would need one for each.
+- **No model has been seen by a person who knows the craft**; the pictures in the pull request are the first look.
+
+### Historic probes: Venera 9 and 10
+
+#### Added
+
+- **The Venera 9 and Venera 10 landers have a model, and the two sites are drawn and not only marked.** Each was a mark on Venus with a card saying nothing stood there to draw.
+  `venera-9.glb` (214 kB, 24 936 triangles) is built in code (`tools/venera-builder`) for the twins' one design, as the 1:1 replica in the Tsiolkovsky Museum, Kaluga, stands:
+  a polished steel ball about a metre across in riveted panels with eighteen straps, its cream upper shell with the angular instrument boxes, the two round gauge eyes, the two
+  bent pipes, eighteen steel legs, the hollow landing ring with its rivets and holes, a 2.2 m drag plate with its two camera heads, and the cylinder with its copper-brown ribs
+  and spiral of cream band. **Cited:** the ball "roughly one meter" across with an 80 cm pressure vessel, eighteen legs, a hollow metal ring, the 2.4 m entry shell (Schroeder,
+  Bayandor and Samareh, NASA NTRS 20170002533) and the 660 kg (Wikipedia, "Venera 9"). **Estimated:** every other size, read off Stolbovsky's and DonSimon's photographs
+  (CC BY 4.0) with the ball's metre as the ruler and the 2.4 m shell as the check, to about ten per cent; the cylinder is drawn as the replicas show it, and what it was on the
+  real craft is not given by the pages read. The ring is drawn whole; the real one was partly crushed on touchdown. No lettering is drawn. The sites are rows of
+  `registry/landing-sites-1-5.yaml` with a new `model:` field, and the landing-sites layer now draws a record that has one (`scene/heroes.js`, `main.js`); Venus joins the
+  worlds cut finely enough for a lander to stand on its ground (`SITE_BODIES`). The other fifteen Venus sites stay marks. (Internal #1076.)
+
+#### Changed
+
+- **The landers' registry file says which Venus sites are drawn** (`registry/missions-landers.yaml` header, `tools/README.md`): "a Venus lander is a mark", with the two exceptions.
+
+#### Not yet
+
+- **Venera 11 to 14 and VEGA 1 and 2.** One photograph of the Venera 13 and VEGA lander's own shape was found (Emerezhko's of a replica, CC BY-SA); the NASM's VEGA is shown with its lander inside the entry shell. One picture is not enough to build from, so they stay marks.
+- **Magellan.** NASA's own model exists (3D Resources, `3D Models/Magellan`, public domain), but nothing in the app draws a craft in orbit at Venus: Horizons has no Magellan record, so there is no path and no mission card to carry it, and the orbit's plane is in no source we read. NAIF keeps a Magellan kernel area (`pub/naif/MGN/kernels/`); it was not opened. Held, not built.
+- **Giotto, Ranger, Mariner 4 and 10, Vega as a flyby, Luna 9 and 13.** Each has no path in Horizons or no place on a card, and none has several clear free photographs read this time. Mariner 2 and the Galileo probe shipped in 1.7.2.
+- **Tianwen-2 and MMX (internal #1077).** Their cards are places with no coordinate, so nothing can be drawn there. MMX has a Horizons record (-239); a live path for it is a harvest feature of its own and not a model. JAXA's printable 1:48 MMX model (STL, simplified, its terms are those of JAXA's usage policy, not read) is the one agency file; no dimensions or licensed photographs of Tianwen-2 were found.
+- **No model has been seen by a person who knows the craft**; the contact sheet (the builder's own renderer against the replica's photographs) is the first look. **No picture of the Venera 9 site in the app itself was taken**: the render queue did not reach it, so the drawing of the model on Venus (its scale on the ground, the fine cut of Venus's sphere) has been checked by the tests and not by eye. The cylinder's band is denser and the steel less bright than the replica's.
+- **The cream slats of the crown are drawn closer than on the replica**, which shows wider dark gaps and the copper bars behind them.
+
+### Eleven small moons of Saturn in their measured shapes
+
+#### Added
+
+- **Eleven of Saturn's small moons are drawn in their Cassini shapes.** Pan, Daphnis, Atlas, Prometheus, Pandora, Epimetheus, Janus, Telesto, Calypso, Helene and Hyperion were
+  dots and a generic rock; selected and near, each is now the plate model Thomas, Joseph and Ansty built from Cassini's pictures and delivered to the Planetary Data System
+  (Saturn Small Moon Shape Models V1.0, doi:10.26033/ewy3-jy61), thinned from 27 000 to 29 000 plates to 16 000 triangles (about 75 to 80 kB a file, loaded only when the moon is
+  selected, `moon-<name>.glb`). The volume of each is within 0.02 % of the source's and its extent within a few metres; the models' own uncertainty is, in the dataset's
+  words, typically well under half a kilometre, and the card says that any part Cassini did not see is the fit's. Each is matched by name on the moons layer (klass `moon`), so
+  Pan is the moon and nothing else with the word in its name. Nine turn about the pole and at the rate NAIF's `pck00011.tpc` (the IAU's 2009 constants) gives them, which
+  keeps one face to Saturn; the card says which side faces the camera at a moment is that formula's and not a prediction (the shape file does not say that its axes follow the
+  IAU's prime meridian, the libration terms of Janus and Epimetheus and the precession of the poles are left out). **Hyperion and Daphnis are not turned**: Hyperion tumbles
+  chaotically and neither is in the constants file, and the card says so. The grey of each is its geometric albedo (Verbiscer et al. 2007 and 2018, 0.44 for Hyperion and
+  0.71 to 1.67 for the others, which is white ice) through the rule the small bodies of 1.5.0 use, read from the moons' Wikipedia infoboxes on 2026-11-05 and not from
+  the papers. The sources, what was cited and what was estimated are in `registry/models.yaml` and `CREDITS.md`. (Internal #1066.)
+- **What the files hold, and what they do not.** Looked at beside Cassini photographs (`looks/smallbodies/moon-<name>.png`, each moon's photograph and the file from four sides in a
+  plain lit grey, drawn by `tools/moon-sheet.html`): Pan's equatorial ridge, Atlas's saucer, Prometheus's elongated body and Epimetheus's rounded one with its flat end are
+  recognisable. The sources are global shapes: the craters of Hyperion, Epimetheus and Janus are not in them, only the large hollows and swells. (A first version of the files drew streaks and half of its normals faced into
+  their triangles, `tests/test_contract.mjs`: the generator numbered the triangles twice; fixed, and the sheets re-made.) The sheets are not the app's frames: the app's page would not boot in a headless Chrome in 50 minutes on a machine at a load of 500 to 900, so **the app's
+  own picture of a moon was not looked at, and the probe below was written and never run.**
+- **A look probe for them, `r190-moons`,** and `scripts/gen_smallmoon_shapes.mjs` with `scripts/fetch-small-moon-sources.sh`, which make and fetch the files. The generator is
+  Node and uses meshoptimizer; the Python stack of `scripts/gen_smallbody_shapes.py` (xatlas) was not at hand, so these files carry no baked normal map. (Internal #1066.)
+
+#### Changed
+
+- **The registry now lists the Small Bodies Node's own OBJ copies** (`https://sbn.psi.edu/pds/shape-models/files/`) as a source beside the two archive hosts. (Internal #1066.)
+
+#### Not yet
+
+- **Halley, Gaspra, Ida with Dactyl, and Mathilde stay as they were** (internal #1065). Their shapes (Stooke's and Thomas's sets) are published only on sbnarchive.psi.edu, which
+  answers every request from the build machine with a Cloudflare bot challenge (HTTP 403, `cf-mitigated: challenge`); that is bot detection and it was not worked around. The
+  SBN's page of shape models and the University of Maryland mirror do not hold them, NASA 3D Resources has none of them, and DAMIT's models are convex, which would draw Ida
+  without its waist. Nothing was built from a guess.
+- **Dinkinesh and Selam stay as they were** (internal #1065). Lucy's SPICE bundle at NAIF holds only Donaldjohanson's shape kernel, and no published shape of either was found
+  (Preusker et al. 2024 describe one for Dinkinesh at a conference; it is not in the archives read).
+- **Amalthea, Thebe, Deimos, Proteus, Larissa and the Pluto system's small moons** (internal #1066): the Thomas models of the first five are on sbnarchive.psi.edu, as above;
+  Nix, Hydra, Kerberos and Styx have no published shape model. **Phoebe**: the Gaskell model is 123 MB on the Node's host and was not fetched for this batch.
+- **About 54 radar shapes** (internal #1065): five (Bacchus, Castalia, 1998 KY26, 1998 ML14, 2001 SN263) have OBJ copies on sbn.psi.edu and were not built here, since each needs a
+  record with elements held to JPL Horizons.
+- **Rings of Chariklo, Haumea and Quaoar** (internal #1066) were not started. Jupiter's, Uranus's and Neptune's rings are already drawn (release 1.3.0, W2-b); the ring renderer
+  (`scene/worlds.js`, `scene/ringgrains.js`) reads a `look.ring` row of `registry/worlds.yaml`, and none of these three is a row of `registry/worlds.yaml`, so there is no
+  renderer to feed without a new one.
+
+### Data rows: Moon landing sites, stars, rockets, events and search names
+
+#### Added
+
+- **Eight more places on the Moon.** NASA's NSSDCA table of what lies on the Moon (the `nssdc-lunar` reference, read again 2026-11-05) gives a date and a position for each: **Luna 9**
+  (3 February 1966), **Luna 13** (24 December 1966), **Surveyor 5** (11 September 1967, Mare Tranquillitatis), **Surveyor 6** (10 November 1967, Sinus Medii), **Surveyor 7**
+  (10 January 1968, on the rim of Tycho), **Luna 20** (21 February 1972, the Apollonius highlands), **Luna 23** (6 November 1974) and **Luna 24** (18 August 1976), both in Mare Crisium.
+  Positions are the table's own digits. Regions and sentences are from NSSDCA's Surveyor pages and Wikipedia's articles for the Luna missions (NSSDCA's pages for the Luna craft would
+  not load on the day), each address in a comment above its row. The generated list drops the eight NSSDCA rows they replace, and Luna 18's impact site with them, because it lies
+  1 km from Luna 20 (1.8.0's 2 km rule). The README says 32 places on the Moon. (Public #756, #758, #759, #761, #763, #765, #767, #769.)
+- **A rocket row for Hyperbola-3.** 69.6 m, a 4.2 m body under a 5.2 m fairing, two stages, no strap-ons, nine engines. No one page gives all of it, so the row cites three,
+  each read: Launch Library 2 (height, diameter), Next Spaceflight (fairing, boosters) and Wikipedia's i-Space article (the nine Focus-2 engines). The height is not agreed (Wikipedia
+  69 m, the other two 69.6 m) and the note on the row says so. (Public #843.)
+- **Two fact sheets, UY Scuti and WOH G64**, from their Wikipedia infoboxes (read 2026-11-05): position, distance with its error, the radius in the sentence (909 and 1 540 Suns),
+  and for WOH G64 its 20 Suns. Both stars vary and neither page gives a mean magnitude, so `vmag` is the brightest figure the page gives (8.29 and 17.7) and a comment on each row says
+  so. (Public #790, #793.)
+- **Three famous stars: Kochab, Rasalhague and Alioth**, each with one sentence from its Wikipedia page (read 2026-11-05). (Public #823, #825, #827.)
+- **Three search names.** "GS 2023+338" finds V404 Cygni, "Tonantzintla 618" finds TON 618 and "EPIC 201912552" finds the K2-18 system. (Public #784, #786, #801.)
+- **Two events.** New Horizons crossing the orbit of Saturn on 8 June 2008 is a stop on its timeline (NSSDCA's page for the mission). The Ursids 2027 have a sky-event page: maximum on
+  23 December at 04h UT, from the IMO Meteor Shower Calendar 2027. (Public #880, #883.)
+
+#### Changed
+
+- **The Hubble OPAL licence sentence is quoted.** MAST's page now says "These HLSP data products are licensed for use under CC BY 4.0." (read 2026-11-05). The asset-source row
+  that held NOAA and STScI together is split in two so each has its own `licence_read`; NOAA's row is as it was. (Public #863.)
+- **The ten exoplanet rows were compared with the NASA Exoplanet Archive**, live, on 2026-11-05: TRAPPIST-1 b to h, Proxima Cen b and d, Kepler-452 b, all 13 columns. Every value
+  equals the Archive's to the digits the file keeps; nothing was changed, and the read is recorded in `registry/systems.yaml`. (Public #547.)
+- **The Moon landings trip was read against its sources.** Two figures changed: **Apollo 17's rover drove about 36 km** (NSSDCA's own page on the rover says 35.9 km; the mission
+  page the card quoted says 30 km) and **neither Apollo 11 astronaut went farther than about 50 m from the lander** (NASA says the rim of Little West Crater was the farthest point;
+  LROC measures its trail at about 50 m east of the lander; NSSDCA's 100 m is an upper bound). The last card now says the map marks 26 of the 28 landings, not 19, because of the
+  seven new rows above; it is still not Luna 9, which is a row but not a place to draw a lander. The spoken clips of those three cards (`moon-landings/apollo-11`, `apollo-17`, `whole-moon`) say the old words until they are rendered again (`scripts/narrate.py`, then `scripts/listen_check.py --write`). (Public #553.)
+- **The positions of Launch Complex 39A and 39B have an agency reading beside them.** The National Park Service's National Register forms for the two pads give each one's boundary
+  in UTM; converted, each row's point lies inside its pad's boundary (about 900 m across), 195 m north of its centre. That confirms the ground, not the point to 50 m; no number was
+  changed. NASA's own pad pages give no position. (Public #644, #646.)
+
+#### Not yet
+
+- **Antares has no measured radius.** The papers read (Ohnaka et al. 2013, Montarges et al. 2017) give an angular diameter, or a radius (680 Suns) with no error bar; a radius
+  worked out from a diameter and a distance is not written down. (Public #635.)
+- **Gravity-2 has no row.** No page read gives the strap-on boosters' number or diameter, and the height is 60 m on one page and 70 m on others. (Public #845.)
+- **Regulus and Canopus already had their measured radii** (1.8.0: McAlister et al. 2005, Domiciano de Souza et al. 2021); nothing was added. (Public #828, #830.)
+- **Luna 9 is not drawn.** NASA's table says its position comes from a Soviet newspaper report and the lander is probably 10 km or more from it; the row is a coordinate only.
+  Wikipedia mentions a 2026 candidate site (7.03 N, 64.33 W); the paper was not read.
+- **Luna 13's position is a published estimate** (note c of the table: Siddiqi, Ulivi and Harland), not an LROC image of the lander.
+
+### The Lab: eight simulators
+
+#### Added
+
+- **Eight new Lab simulators**, each one HTML file under `site/lab/<name>/` with no library and no network request, a dated "Sources" comment, an honesty line, a Pause button and a time slider and a value slider that work by touch and keyboard (public #583 to #590). The Lab lists 84 simulators.
+  - **Kepler's Third Law Race** (`keplers-third-law-race`, public #583): the eight planets on circular orbits, radii on a square-root scale, each turning at its true relative speed under a time-lapse slider, with a table of a, P and P²/a³. Cited: JPL "Approximate Positions of the Planets" Table 1 (a) and the NASA Planetary Fact Sheet's "Orbital Period (days)" divided by 365.2. All eight ratios lie between 0.986 (Neptune, 163.7 yr against 164.9 from the rule) and 1.001, within the 1.5% the issue asks for.
+  - **Sunshine by Planet** (`sunshine-by-planet`, public #584): eight bars to scale, a slider picks a planet and the caption says how many times weaker (or stronger) its sunlight is than Earth's. Cited: NASA fact sheets for Earth 1361.0, Mercury 9082.7, Venus 2601.3, Mars 586.2 and Neptune 1.508 W/m². Computed by the inverse-square rule from the fact sheet's distances: Jupiter 50.3, Saturn 14.9 and Uranus 3.7 W/m². Earth over Neptune reads 902.5.
+  - **Escape Velocity Ladder** (`escape-velocity-ladder`, public #585): shots straight up at 8, 10, 11 and 11.2 km/s and one of the visitor's own, height on a log scale with the Moon's distance marked. Cited: GM 398600.436 km³/s² (JPL), radius 6378 km and the Moon's 384,400 km (NASA). 8 km/s peaks 13,070 km from Earth's centre (6,692 km up); 11.2 km/s is above the 11.18 km/s escape speed and the caption says the ball never returns.
+  - **Sun and Moon Look the Same Size** (`sun-and-moon-look-the-same-size`, public #586): both discs at their true angular sizes (Sun 0.2664°, Moon 0.2740° at perigee 363,300 km, 0.2455° at apogee 405,500 km), the Moon on top, a slider for its distance, and the caption names a total or an annular eclipse. The sizes match at 373,600 km. Cited: NASA Moon, Sun and Earth fact sheets.
+  - **Parallax Thumb Trick** (`parallax-thumb-trick`, public #587): a nearby star shifts between January and July against fixed far stars; a slider sets its distance in light-years and the caption gives the real angle. Proxima Centauri (4.2465 ly, 1.3020 pc) reads 0.768 arcsec, a shift of 1.54 arcsec. Cited: Wikipedia "Parsec", "Light-year" (63,241.077 au) and "Proxima Centauri". The angle in the picture is exaggerated, which the honesty line says.
+  - **Why GEO Stays Put** (`why-geo-stays-put`, public #588): Earth from above the pole at scale with a satellite whose altitude a slider sets (200 to 60,000 km) and a dot on the ground beneath it. At 35,786 km they stay together; at 400 km the period reads 1 h 33 min (92.6 min), 15.5 laps a day. Cited: Wikipedia "Geostationary orbit" (mu 398600.4418, one sidereal day 86164.09 s) and NASA's equatorial radius 6378.137 km.
+  - **Star Colour Is Temperature** (`star-colour-is-temperature`, public #589): a colour swatch and a temperature slider from 2,300 K to 40,000 K, with the peak wavelength by Wien's law (NIST constant; the Sun at 5772 K reads 502 nm), the spectral class and a marker for the Sun. The colour is Planck's law integrated against the Wyman, Sloan and Shirley fit of the CIE 1931 curves (Wikipedia), converted to sRGB; the honesty line says it is a blackbody model.
+  - **The Moon Drifts Away** (`the-moon-drifts-away`, public #590): Earth and the Moon at true relative distance with a slider from now to 1.4 billion years ahead; distance (409,100 km at 650 million years, 437,600 km at 1.4 billion), the Moon's width against the Sun's, and the length of the day (28.3 h and 33.3 h). Rates held constant (3.8 cm and 24 µs a year), as the honesty line says. Cited: Wikipedia "Orbit of the Moon" and "Solar eclipse".
+- **The Lab's list** (`site/lab/index.html`) is regenerated with the eight.
+
+#### Not yet
+
+- Estimated, not cited: the pace of the ball in the escape-velocity picture (eased, not to time), and the time-lapse rates of the orbit pictures.
+- The issues' own arithmetic differs from the pages' in three places, and the pages follow the arithmetic: Saturn's sunlight is 14.9 W/m², not 14.8; a 10 km/s shot peaks 31,900 km from the centre, not 31,896; an 11 km/s shot peaks 199,680 km, not 199,597 (shown to the nearest 10 km).
+- Lab pages stay English-only, as the existing 76 are; no string of the app changes.
+
+### The Lab: six more simulators
+
+#### Added
+
+- **Six new Lab simulators**, each one HTML file under `site/lab/<name>/` with no library and no network request, a dated "Sources" comment (read 2026-11-05), an honesty line, a Pause button, a time slider and a value slider that work by touch and keyboard (public #591 to #594, #596 and #597).
+  - **Twin Clock Time Dilation** (`twin-clock-time-dilation`, public #591): two clock faces, one at home and one on a ship, a slider for the ship's speed from 0 to 0.99 of light speed, and a caption saying how much older the home twin is. gamma = 1 / sqrt(1 - beta^2): 2.294 at 0.9, 7.089 at 0.99, so the ship's clock reads 1.00 year when the home clock reads 7.09. The home clock runs for gamma years (at least 3). Cited: Wikipedia "Time dilation" (the Lorentz factor) and NIST CODATA (c, which cancels). Acceleration and the turn-round are left out, as the honesty line says.
+  - **Big Stars Burn Fast** (`big-stars-burn-fast`, public #592): six fuel bars for 0.5, 1, 2, 5, 10 and 25 Suns on a logarithmic age axis, each emptying as a clock passes its lifetime: 3.2 million years, 31.6 million, 179 million, 1.77 billion, 10 billion and 56.6 billion. Cited: Wikipedia "Main sequence" (tau = 10^10 yr x (M/Msun)^-2.5) and "Stellar evolution" (about 10 billion years for a Sun-like star). The honesty line calls it a rough law.
+  - **Squeeze Earth Into a Marble** (`squeeze-earth-into-a-marble`, public #593): a slider squeezes the Earth by 10^x, a log-scale disc beside a true-scale disc (below 16 mm) and a log ruler from 1 mm to 6,371 km with the black-hole radius marked for Earth (8.87 mm, 17.7 mm across) and the Sun (2.95 km). The ratio reads 7.18 x 10^8. Cited: JPL "Astrodynamic Parameters" (GM of Earth and Sun, c) and the NASA Earth fact sheet (6371 km). The page says it is hypothetical and that 8.87 mm is a radius.
+  - **Habitable Zone Slider** (`habitable-zone-slider`, public #594): the star's power from 0.0001 to 100 times the Sun's on a log slider, the green zone on a log ruler, with Venus, Earth and Mars marked (too hot, in the zone, too cold) and, below 0.01 Sun, the seven TRAPPIST-1 planets. Edges 0.99 and 1.67 au x sqrt(power); at TRAPPIST-1's 5.66e-4 the zone is 0.024 to 0.040 au, with planets e and f inside and d and g outside. The slider snaps to TRAPPIST-1's power within 0.04 of a power of ten. Cited: Wikipedia "Circumstellar habitable zone" (Kopparapu et al. 2013) and "TRAPPIST-1", the NASA Planetary Fact Sheet. The honesty line states the simple rule.
+  - **Olympus Mons vs Everest** (`olympus-mons-vs-everest`, public #596): Olympus Mons (21.287 km), Everest (8.849 km) and Mauna Kea (4.207 km) on one vertical scale, a slider for a comparison line, the ratio 2.4. Cited: the three Wikipedia pages. The honesty line names the zero-level caveat (sea level against a datum) and that widths are not to scale.
+  - **Hohmann Transfer Hop** (`hohmann-transfer-hop`, public #597): the space station's orbit (6,771 km) to a target orbit set by a slider up to 42,164 km, the transfer ellipse drawn with Kepler's equation, two burn marks lighting in turn. At geostationary: 2.40 and 1.46 km/s (3.86 total) and 5.29 hours. Cited: NASA Earth fact sheet (GM 398,600; 6371 km), Wikipedia "International Space Station", "Geostationary orbit" and "Hohmann transfer orbit". The honesty line says the burns are instant.
+- **The Lab's list** (`site/lab/index.html`) is regenerated with the six; it will conflict with batch H1's and is regenerated at merge.
+
+#### Changed
+
+- The Olympus Mons lesson on the card reads "about 2.4 times as tall as Mount Everest", not "about two and a half times", so the card and the page's ratio agree (21.287 / 8.84886 = 2.406).
+
+#### Not yet
+
+- Estimated, not cited: the time-lapse pace of the clocks and the transfer, the mountains' outlines (widths are not to scale), the star's colour and size in the Habitable Zone picture, and the picture sizes of the squeezed Earth on the log scale.
+- The Habitable Zone issue says Mars falls outside the Sun's zone; its own edges (0.99 to 1.67 AU) put Mars (1.524 AU) inside, so the page follows the numbers and labels Mars "in the zone". The Lab page's distances are written AU.
+- Issue #595 is not part of this batch.
+- Lab pages stay English-only, as the existing ones are; no string of the app changes.
+
+### Small fixes: command-line help, copy templates, comments and tests
+
+#### Added
+
+- **Every command-line tool in `scripts/` and `tools/` now answers `--help` with a usage line and exits 0, and names a missing file instead of a traceback** (public #1230,
+  #754). Before, 32 Python and 6 node tools read their arguments by position or by flag and never said "usage": run with `--help`, a build tool simply started its work and wrote its
+  files. The Python tools call one shared function (`scripts/_cli.py`, `usage_if_asked`) first thing, which prints the tool's own docstring; the node tools print a usage line.
+  `scripts/build-stars3d.py` answers `--help` and `-h`, and a path that is not a file ends in `build-stars3d: no such file: <path>` and exit 2; `build-dso.py`,
+  `build-exoplanets.py` (also a missing `--keep` value and a date that is not a date), `exopack.py` and `fetch-sbdb-rows.mjs` do the same for their own arguments.
+  `tests/test_cli_usage.mjs` now runs every tool that calls `usage_if_asked` with `--help`, and `tests/cli_usage_gaps.txt` is empty.
+- **`tools/cdp.mjs --forced-colors`** makes the page see `forced-colors: active`, as `--reduced-motion` does for motion.
+- **Two tests.** `tests/test_notify.py` pins `split_token` (the round trip, the 64-character signature, a token with no dots or two parts, the extra dots kept in the signature,
+  an email part that is not UTF-8) and `tests/test_contributor_docs.py` pins `kinds_of` (a registry file, a docs file, the table's order, generated files, no paths)
+  (public #856, #862). Both files already had their `ci.yml` step.
+
+#### Changed
+
+- **Keyboard focus is visible in Windows high contrast** (public #651). With `forced-colors: active` emulated in Chrome 156, a focused button showed nothing: the four corner
+  brackets are gradient backgrounds that the browser replaces, and the focus ring is off. A `@media (forced-colors: active)` block at the end of `site/css/ui.css` gives the same
+  selectors, and the search list's active option, a 2 px `Highlight` outline.
+- **Two lines of copy are templates or whole sentences, in all eleven languages** (public #685, #686). The opening shot's tooltip is `From {source}` (was the word "From", a
+  space and a name); the star-system honesty line is two whole sentences, `systemLine` and `systemLineGuessed`, chosen in `ui/cards.js`, instead of one with a `{phase}` hole.
+  What a visitor reads is word for word what it was. The other languages' lines were made from the old ones by the same substitution, so they read as before too.
+  `systemPhaseUnknown` stays for the generated systems' line.
+- **The offline steps list's indent is 24 px, on the 4 px grid** (public #701); the sheet is now `site/css/static.css`.
+- **A failing `build_ephemerides.py` says which segment and why** (public #755): the segment's centre, and either the largest offset (at least 2**32 s) or offsets that are
+  not whole seconds.
+- **Comments only** (public #787, #791, #802): `isEmbed` has a JSDoc comment; three comments no longer point at `docs/research`, which was never in the repository; the unused
+  `flush` is gone from `tests/test_audio.mjs`.
+
+#### Not yet
+
+- Contributors' issues P#702, P#841, P#844 and P#860 are not touched here.
+
 ## [1.8.0] - 2026-11-04
 
 1.8.0 gathers fifteen batches that were planned as releases 1.7.10 to 1.7.24 and never shipped on their own, plus its own navigation-satellite models. Each part below is one batch.
