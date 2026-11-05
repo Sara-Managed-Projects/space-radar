@@ -95,7 +95,7 @@ const say = (r) => C.firstSentence(r, {}, m, null);
   const rows = doc.rows;
   const by = (w) => rows.filter((r) => r.world === w);
   check(by('venus').length === 17, `Venus: seventeen (${by('venus').length})`);
-  check(by('moon').length + 34 === 96, `the Moon: NSSDCA's 96 rows, 34 of them already in registry/sites.yaml (Luna 18, which lies 1 km from Luna 20, is among them) (${by('moon').length} here)`);
+  check(by('moon').length + 33 === 96, `the Moon: NSSDCA's 96 rows, 33 of them already in registry/sites.yaml (Luna 18, which lies 1 km from Luna 20, is among them) (${by('moon').length} here)`);
   check(new Set(rows.map((r) => r.id)).size === rows.length, 'ids unique');
   for (const r of rows) {
     check(r.doing && r.kind && r.world, `${r.id}: a sentence, a kind and a world`);

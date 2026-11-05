@@ -214,7 +214,7 @@ missions:
       - {id: lost, date: "1967-07-17T02:02:00Z", title: "The signal stops", text: "Radio signals cease 41 seconds after ignition, about 2.5 minutes before touchdown. Nobody knows whether it landed or crashed.", place: none, world: moon}
 
   - id: surveyor-5
-    record: moon-surveyor-5
+    record: surveyor-5
     display: Surveyor 5
     read: 2026-11-03
     source: {name: "NASA NSSDCA, Surveyor 5", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1967-084A"}
@@ -224,7 +224,7 @@ missions:
       - {id: erosion, date: "1967-09-13", precision: day, title: "The engines fire on the ground", text: "About 53 hours after landing the vernier engines fire for 0.55 s to show what they do to the surface.", place: site}
 
   - id: surveyor-6
-    record: moon-surveyor-6
+    record: surveyor-6
     display: Surveyor 6
     read: 2026-11-03
     source: {name: "NASA NSSDCA, Surveyor 6", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1967-112A"}
@@ -235,7 +235,7 @@ missions:
       - {id: last, date: "1967-12-14T19:14:00Z", title: "The last transmission", text: "After 29 952 pictures and a lunar night in hibernation, it is heard from one last time.", place: site}
 
   - id: surveyor-7
-    record: moon-surveyor-7
+    record: surveyor-7
     display: Surveyor 7
     read: 2026-11-03
     source: {name: "NASA NSSDCA, Surveyor 7", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1968-001A"}
@@ -256,7 +256,7 @@ missions:
       - {id: pictures, date: "1966-02-04T01:45:00Z", title: "The first pictures", text: "About seven hours later, when the Sun is 7 degrees up, it begins to send the first of nine images, five of them panoramas.", place: site}
 
   - id: luna-13
-    record: moon-luna-13
+    record: luna-13
     display: Luna 13
     read: 2026-11-03
     source: {name: "Wikipedia, Luna 13 (CC BY-SA 4.0)", url: "https://en.wikipedia.org/wiki/Luna_13"}
@@ -288,7 +288,7 @@ missions:
       - {id: ceased, date: "1971-10-04", precision: day, title: "Operations end", text: "On the anniversary of Sputnik 1 its operations officially cease, after more than 10.5 km driven.", place: site}
 
   - id: luna-20
-    record: moon-luna-20
+    record: luna-20
     display: Luna 20
     read: 2026-11-03
     source: {name: "Wikipedia, Luna 20 (CC BY-SA 4.0)", url: "https://en.wikipedia.org/wiki/Luna_20"}
@@ -309,7 +309,7 @@ missions:
       - {id: landing, date: "1973-01-15", precision: day, title: "Down in Le Monnier", text: "Luna 21 lands in Le Monnier crater, carrying Lunokhod 2.", place: site, source: *moontable}
 
   - id: luna-23
-    record: moon-luna-23
+    record: luna-23
     display: Luna 23
     read: 2026-11-03
     source: {name: "Wikipedia, Luna 23 (CC BY-SA 4.0)", url: "https://en.wikipedia.org/wiki/Luna_23"}
@@ -320,7 +320,7 @@ missions:
       - {id: contact, date: "1974-11-09", precision: day, title: "Contact ends", text: "Controllers keep contact with the spacecraft until 9 November.", place: site}
 
   - id: luna-24
-    record: moon-luna-24
+    record: luna-24
     display: Luna 24
     read: 2026-11-03
     source: {name: "Wikipedia, Luna 24 (CC BY-SA 4.0)", url: "https://en.wikipedia.org/wiki/Luna_24"}

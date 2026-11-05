@@ -628,7 +628,7 @@ export const LANDER_MISSIONS = [
   },
   {
     "id": "surveyor-5",
-    "record": "moon-surveyor-5",
+    "record": "surveyor-5",
     "display": "Surveyor 5",
     "read": "2026-11-03",
     "source": {
@@ -663,7 +663,7 @@ export const LANDER_MISSIONS = [
   },
   {
     "id": "surveyor-6",
-    "record": "moon-surveyor-6",
+    "record": "surveyor-6",
     "display": "Surveyor 6",
     "read": "2026-11-03",
     "source": {
@@ -704,7 +704,7 @@ export const LANDER_MISSIONS = [
   },
   {
     "id": "surveyor-7",
-    "record": "moon-surveyor-7",
+    "record": "surveyor-7",
     "display": "Surveyor 7",
     "read": "2026-11-03",
     "source": {
@@ -781,7 +781,7 @@ export const LANDER_MISSIONS = [
   },
   {
     "id": "luna-13",
-    "record": "moon-luna-13",
+    "record": "luna-13",
     "display": "Luna 13",
     "read": "2026-11-03",
     "source": {
@@ -921,7 +921,7 @@ export const LANDER_MISSIONS = [
   },
   {
     "id": "luna-20",
-    "record": "moon-luna-20",
+    "record": "luna-20",
     "display": "Luna 20",
     "read": "2026-11-03",
     "source": {
@@ -1020,7 +1020,7 @@ export const LANDER_MISSIONS = [
   },
   {
     "id": "luna-23",
-    "record": "moon-luna-23",
+    "record": "luna-23",
     "display": "Luna 23",
     "read": "2026-11-03",
     "source": {
@@ -1074,7 +1074,7 @@ export const LANDER_MISSIONS = [
   },
   {
     "id": "luna-24",
-    "record": "moon-luna-24",
+    "record": "luna-24",
     "display": "Luna 24",
     "read": "2026-11-03",
     "source": {

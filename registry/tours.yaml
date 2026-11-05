@@ -1102,8 +1102,8 @@ tours:
           # soft lander by about 4 months", on 3 February 1966. NSSDCA table note f (Wagner et al.
           # 2017): the published coordinates are from the first Pravda report, LROC finds no lander
           # there, and the site "is probably at least 10 km away, direction unknown" -- which is
-          # why registry/sites.yaml's Luna 9 row (added 2026-11-05, public #756) is `record: false`:
-          # a coordinate and not a place to draw a lander. NSSDCA 1966-045A: "Engines were turned off
+          # why Luna 9 has no hand-kept row in registry/sites.yaml (public #756, 2026-11-05): it stays
+          # the generated NSSDCA row, a coordinate and not a place to draw a lander. NSSDCA 1966-045A: "Engines were turned off
           # at a height of 3.4 m above the lunar surface and the spacecraft fell freely".
           body: >-
             It was not the first. The Soviet Luna 9 landed softly four months earlier, on 3

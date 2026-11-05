@@ -286,23 +286,6 @@ sites:
   # Added 2026-09-22: fourteen more places a machine came down on the Moon, each where LROC has
   # photographed the hardware. LROC's 2016 table for everything it covers, because it states an
   # uncertainty per object; NSSDCA's 2025 table for the six landings since.
-  # Luna 9 (public #756). Position and UTC date: NSSDCA's table (`nssdc-lunar`). The table gives these digits
-  # from the first Pravda report and its note f says LROC images show no lander there and the true site
-  # is probably at least 10 km away, direction unknown. So this is a coordinate and not a record
-  # (`record: false`): a lander drawn here would stand in the wrong place. Region, the IAU name
-  # Planitia Descensus and the sentence: https://en.wikipedia.org/wiki/Luna_9, read 2026-11-05. That page also reports a
-  # 2026 candidate for the true site (7.03 N, 64.33 W); its paper was not read, so it is not used.
-  - id: luna-9
-    display: "Luna 9 landing area, Oceanus Procellarum"
-    class: surface
-    world: moon
-    lat: 7.13
-    lon: 295.63
-    landed: 1966-02-03
-    record: false
-    source: nssdc-lunar
-    aliases: ["Planitia Descensus"]
-    doing: "The first spacecraft to land softly on the Moon, 3 February 1966. This is the Soviet report's position; NASA says the lander is probably 10 km or more away."
   - id: surveyor-1
     display: "Surveyor 1, Oceanus Procellarum"
     class: surface

@@ -208,19 +208,6 @@ export const SITES = [
     "doing": "Where ispace's Hakuto-R Mission 2 lander, Resilience, made a hard landing in June 2025, in its landing area in Mare Frigoris."
   },
   {
-    "id": "luna-9",
-    "display": "Luna 9 landing area, Oceanus Procellarum",
-    "class": "surface",
-    "world": "moon",
-    "lat": 7.13,
-    "lon": 295.63,
-    "record": false,
-    "aliases": [
-      "Planitia Descensus"
-    ],
-    "doing": "The first spacecraft to land softly on the Moon, 3 February 1966. This is the Soviet report's position; NASA says the lander is probably 10 km or more away."
-  },
-  {
     "id": "surveyor-1",
     "display": "Surveyor 1, Oceanus Procellarum",
     "class": "surface",

@@ -100,8 +100,8 @@ check(events >= 120, `a hundred and twenty events and more (${events})`);
 const must = [
   'venera-7', 'venera-8', 'venera-9', 'venera-10', 'venera-11', 'venera-12', 'venera-13', 'venera-14', 'vega-1', 'vega-2',
   'moon-ranger-7', 'moon-ranger-8', 'moon-ranger-9',
-  'surveyor-1', 'moon-surveyor-2', 'surveyor-3', 'moon-surveyor-4', 'moon-surveyor-5', 'moon-surveyor-6', 'moon-surveyor-7',
-  'moon-luna-9', 'moon-luna-13', 'luna-16', 'lunokhod-1', 'moon-luna-20', 'lunokhod-2', 'moon-luna-23', 'moon-luna-24',
+  'surveyor-1', 'moon-surveyor-2', 'surveyor-3', 'moon-surveyor-4', 'surveyor-5', 'surveyor-6', 'surveyor-7',
+  'moon-luna-9', 'luna-13', 'luna-16', 'lunokhod-1', 'luna-20', 'lunokhod-2', 'luna-23', 'luna-24',
   'change-3', 'change-4', 'change-5', 'change-6',
   'viking-1', 'viking-2', 'mars-pathfinder', 'spirit', 'opportunity', 'phoenix', 'elysium', 'utopia',
 ];

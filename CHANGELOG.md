@@ -176,12 +176,14 @@ tagged, and their dates are the day the last change in each landed.
 
 #### Added
 
-- **Eight more places on the Moon.** NASA's NSSDCA table of what lies on the Moon (the `nssdc-lunar` reference, read again 2026-11-05) gives a date and a position for each: **Luna 9**
-  (3 February 1966), **Luna 13** (24 December 1966), **Surveyor 5** (11 September 1967, Mare Tranquillitatis), **Surveyor 6** (10 November 1967, Sinus Medii), **Surveyor 7**
+- **Seven more places on the Moon.** NASA's NSSDCA table of what lies on the Moon (the `nssdc-lunar` reference, read again 2026-11-05) gives a date and a position for each:
+  **Luna 13** (24 December 1966), **Surveyor 5** (11 September 1967, Mare Tranquillitatis), **Surveyor 6** (10 November 1967, Sinus Medii), **Surveyor 7**
   (10 January 1968, on the rim of Tycho), **Luna 20** (21 February 1972, the Apollonius highlands), **Luna 23** (6 November 1974) and **Luna 24** (18 August 1976), both in Mare Crisium.
   Positions are the table's own digits. Regions and sentences are from NSSDCA's Surveyor pages and Wikipedia's articles for the Luna missions (NSSDCA's pages for the Luna craft would
-  not load on the day), each address in a comment above its row. The generated list drops the eight NSSDCA rows they replace, and Luna 18's impact site with them, because it lies
-  1 km from Luna 20 (1.8.0's 2 km rule). The README says 32 places on the Moon. (Public #756, #758, #759, #761, #763, #765, #767, #769.)
+  not load on the day), each address in a comment above its row. The generated list drops the seven NSSDCA rows they replace, and Luna 18's impact site with them, because it lies
+  1 km from Luna 20 (1.8.0's 2 km rule). The README says 31 places on the Moon. **Luna 9 keeps its generated row**: NASA says the lander is
+  probably 10 km or more from the reported position, so it gets no lander shape, and a hand-kept row without one would be drawn as a launch pad; the
+  generated row keeps its mission card and events as in 1.8.0. (Public #758, #759, #761, #763, #765, #767, #769; #756 stays as it was.)
 - **A rocket row for Hyperbola-3.** 69.6 m, a 4.2 m body under a 5.2 m fairing, two stages, no strap-ons, nine engines. No one page gives all of it, so the row cites three,
   each read: Launch Library 2 (height, diameter), Next Spaceflight (fairing, boosters) and Wikipedia's i-Space article (the nine Focus-2 engines). The height is not agreed (Wikipedia
   69 m, the other two 69.6 m) and the note on the row says so. (Public #843.)
