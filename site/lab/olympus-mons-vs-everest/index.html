@@ -87,7 +87,7 @@ const EMBER='#ff9f43',INK='#e8ecf4',DIM='#a3adc0',FONT='Inter,system-ui,-apple-s
 const KM=40,BASE=1410;                                            // pixels per km (heights to scale); the ground line
 const MT=[{n:'OLYMPUS MONS',h:21.287,x:300,w:220,col:'#b5562f',hi:'#ffb27a',sh:1},{n:'EVEREST',h:8.84886,x:700,w:120,col:'#6f7b88',hi:'#e3eaf2'},{n:'MAUNA KEA',h:4.2073,x:940,w:120,col:'#587a52',hi:'#c4ecb4',sh:1}];   // km: MOLA datum, sea level, sea level
 const RIDGE=[[-1,0],[-.55,.35],[-.3,.5],[-.12,.78],[0,1],[.15,.82],[.3,.6],[.6,.32],[1,0]];
-const shape=(c,m,g)=>{const y=BASE-m.h*KM*g,hh=BASE-y;c.beginPath();c.moveTo(m.x-m.w,BASE);
+const shape=(c,m)=>{const y=BASE-m.h*KM,hh=BASE-y;c.beginPath();c.moveTo(m.x-m.w,BASE);
  if(m.sh){c.quadraticCurveTo(m.x-m.w*.6,y+hh*.3,m.x-m.w*.1,y);c.lineTo(m.x+m.w*.1,y);c.quadraticCurveTo(m.x+m.w*.6,y+hh*.3,m.x+m.w,BASE)}
  else RIDGE.forEach(p=>c.lineTo(m.x+p[0]*m.w,BASE-p[1]*hh));c.closePath()};
 const SIM={dur:8,reveal:4,hook:'OLYMPUS MONS|TOWERS OVER EVEREST',
@@ -97,11 +97,11 @@ const SIM={dur:8,reveal:4,hook:'OLYMPUS MONS|TOWERS OVER EVEREST',
  draw(c,t,h){
   const yl=BASE-h*KM;stars(c,40);text('KM',56,470,34,DIM,600,'right');
   c.lineWidth=2;for(let k=5;k<=20;k+=5){const y=BASE-k*KM;c.strokeStyle='rgba(255,255,255,.12)';c.setLineDash([10,10]);c.beginPath();c.moveTo(70,y);c.lineTo(1080,y);c.stroke();c.setLineDash([]);text(''+k,56,y+12,34,DIM,500,'right')}
-  MT.forEach((m,k)=>{const g=ease(seg(t,.2+k*.3,2.4+k*.3));
-   shape(c,m,g);c.fillStyle=m.col;c.fill();c.save();c.beginPath();c.rect(0,0,1080,yl);c.clip();shape(c,m,g);c.fillStyle=m.hi;c.fill();c.restore();
-   text(m.h.toFixed(3)+' km',m.x,BASE-m.h*KM*g-16,40,EMBER,800);text(m.n,m.x,1455,34,INK,700)});
+  MT.forEach(m=>{
+   shape(c,m);c.fillStyle=m.col;c.fill();c.save();c.beginPath();c.rect(0,0,1080,yl);c.clip();shape(c,m);c.fillStyle=m.hi;c.fill();c.restore();
+   text(m.h.toFixed(3)+' km',m.x,BASE-m.h*KM-16,40,EMBER,800);text(m.n,m.x,1455,34,INK,700)});
   c.fillStyle='#2a2f3a';c.fillRect(0,BASE,1080,6);
-  c.strokeStyle=EMBER;c.lineWidth=5;c.setLineDash([16,10]);c.beginPath();c.moveTo(70,yl);c.lineTo(1080,yl);c.stroke();c.setLineDash([]);
+  c.strokeStyle=EMBER;c.lineWidth=5;c.setLineDash([16,10]);c.lineDashOffset=-t*30;c.beginPath();c.moveTo(70,yl);c.lineTo(1080,yl);c.stroke();c.setLineDash([]);c.lineDashOffset=0;
   c.fillStyle='rgba(5,7,13,.85)';c.fillRect(870,yl-52,200,44);text(h.toFixed(1)+' km',1060,yl-18,40,EMBER,800,'right');
   text((MT[0].h/MT[1].h).toFixed(1)+' ×',810,640,120,EMBER,800);text('OLYMPUS MONS / EVEREST',810,700,36,INK,700)}};
 // ============================================ 2. THE PAGE (shared; rarely needs a change) =========================
