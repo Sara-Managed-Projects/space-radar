@@ -446,7 +446,10 @@ export const VISUAL_CLASSES = [
 "rcm",
 "cosmo-skymed",
 "csg",
-"elektro-l"
+"elektro-l",
+"astrosat",
+"gosat",
+"microcarb"
 ],
 "model_kinds": [
 "satellite-iridium",
