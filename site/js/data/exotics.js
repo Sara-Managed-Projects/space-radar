@@ -417,7 +417,7 @@ export const EXOTICS = [
     "id": "uy-scuti",
     "name": "UY Scuti",
     "kind": "star",
-    "why": "One of the largest known stars, estimated at 909 times the Sun's radius. Put in the Sun's place, its surface would reach past the orbit of Mars or even the asteroid belt.",
+    "why": "One of the largest known stars, about 909 times the Sun's radius. In the Sun's place, its surface would reach past Mars or even the asteroid belt.",
     "aliases": [
       "UY Sct",
       "BD-12 5055",
@@ -434,7 +434,7 @@ export const EXOTICS = [
     "id": "woh-g64",
     "name": "WOH G64",
     "kind": "star",
-    "why": "An extreme red supergiant in the Large Magellanic Cloud, about 1,540 times the Sun's radius. Put in the Sun's place, its surface would engulf the orbit of Jupiter.",
+    "why": "An extreme red supergiant in the Large Magellanic Cloud, about 1,540 times the Sun's radius. In the Sun's place, it would engulf the orbit of Jupiter.",
     "aliases": [
       "IRAS 04553-6825",
       "LI-LMC 181",
