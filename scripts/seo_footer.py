@@ -14,12 +14,17 @@ page changes with it; check_seo.py refuses a page that lost a link.
 
 The accounts are the project's own and no others: YouTube, Instagram, LinkedIn, GitHub. A link
 to an account of ours is `rel="me noopener"` (a followed link that says it is us).
+
+`{{support}}` is the Support link to /support/, and only once registry/support.yaml names the fund
+(scripts/support.py); until then the line is dropped and the footer is what it was.
 """
 
 from __future__ import annotations
 
 import re
 from pathlib import Path
+
+from support import support_url
 
 ROOT = Path(__file__).resolve().parent.parent
 PARTIAL = ROOT / "templates" / "sitelinks.html"
@@ -38,7 +43,8 @@ REQUIRED_INTERNAL = [
 
 
 def sitelinks(root: str) -> str:
-    text = PARTIAL.read_text(encoding="utf-8").replace("{{root}}", root)
+    link = f'<li><a href="{{{{root}}}}support/index.html">Support</a></li>\n' if support_url() else ""
+    text = PARTIAL.read_text(encoding="utf-8").replace("{{support}}\n", link).replace("{{root}}", root)
     if re.search(r"\{\{\w+\}\}", text):
         raise SystemExit("seo_footer: templates/sitelinks.html has a placeholder other than {{root}}")
     return text.rstrip("\n")
