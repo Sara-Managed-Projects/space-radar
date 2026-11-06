@@ -318,6 +318,9 @@ jobs:
       # Public #293: the press page builds from the registry's own counts, with no personal data.
       - name: "The press page: five counted facts, the README's pictures, every link resolving"
         run: python3 tests/test_press.py
+      # Growth decision D-75: the money link is ONE value in registry/support.yaml; empty draws nothing anywhere.
+      - name: "The support link: nothing points at a fund until registry/support.yaml names one, then the footer, /support/, /teachers/, README and FUNDING.yml all do"
+        run: python3 tests/test_support.py
       # Growth pull request: the README's numbers are counted by scripts/count_facts.py, and a
       # thirty-first trip fails here until the README says so.
       - name: "The README's numbers are the registries' (trips, stops, systems, stars, moons, photographs, sites)"

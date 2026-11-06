@@ -1,0 +1,11 @@
+# Where money for Space Radar goes: ONE value (internal growth decision D-75, 2026-11-06).
+#
+# Empty, nothing on the site or in the README points anywhere: no footer link, no /support/ page,
+# no paragraph on /teachers/. Fill it with the collective's own page once it exists, e.g.
+#   open_collective: "https://opencollective.com/space-radar"
+# and the next build adds all three. scripts/support.py reads it and refuses anything that is not an
+# https://opencollective.com/<slug> page; tests/test_support.py then also asks for the same URL in
+# README.md's Support section and for .github/FUNDING.yml (`open_collective: <slug>`).
+#
+# The product stays free whatever is here: no paid tier, no tracker, no popup, no paywall.
+open_collective: ""

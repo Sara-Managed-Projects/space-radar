@@ -196,6 +196,15 @@ It is meant to be easy and fun.
 Releases come out about monthly; see the [changelog](CHANGELOG.md) and
 [how we release](docs/RELEASING.md).
 
+## Support
+
+Space Radar is free and open source, and it stays that way: no paid tier, no account, no adverts,
+no tracking. Any money given to the project will go to a public fund on Open Collective, where
+every payment and every expense can be read; schools and museums will be able to pay by invoice.
+The fund is not open yet. Until then the most useful support is a star, a
+[data-accuracy report](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=data-accuracy.yml)
+or a [first pull request](docs/FIRST_PR.md).
+
 ## Data and credits
 
 Space Radar stands on data and work that other people publish for free. Thank you.

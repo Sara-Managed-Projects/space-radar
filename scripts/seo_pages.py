@@ -8,6 +8,7 @@
     /about/, /sources/, /accuracy/                          the trust pages, from the registries
     /teachers/index.html                                    for the classroom
     /first-pull-request/index.html                          for a first contribution
+    /support/index.html                                     where money for the project goes (only once registry/support.yaml names the fund)
     /o/<system>.html                                        the 40 star systems (scripts/seo_systems.py)
 
 THE RULE OF EVERY PAGE HERE. The static HTML already answers: the question is the H1 (or the first
@@ -46,6 +47,7 @@ import seo_systems  # noqa: E402
 from seo_common import (ACCOUNTS, ACCURACY_FORM, CLASSROOM_FORM, GITHUB, ROOT, Ctx, Page, esc, footer_nav,  # noqa: E402
                         make_ctx, place_picker, render, url_of, webpage)
 from seo_share import Spec  # noqa: E402
+from support import support_url  # noqa: E402  (registry/support.yaml: "" draws no money link anywhere)
 import count_facts  # noqa: E402  (how many sources and feeds: ONE rule, count_facts.source_counts)
 
 REG = ROOT / "registry"
@@ -871,6 +873,7 @@ def teachers_page(host: str, tours: dict, reels: dict, url_keys: list[str]) -> P
         "<li>The words of every trip stop are on screen as captions, so a room does not need sound; the narrator can be turned off.</li>\n"
         "<li>Motion calms when the system asks for reduced motion (<code>prefers-reduced-motion</code>).</li>\n"
         "<li>The 3D scene is a canvas and is not described to a screen reader; the cards and trip words beside it are text. Say so to a student who relies on one, and tell us what would help.</li>\n</ul>\n"
+        f"{teachers_paying()}"
         "<h2>Tell us how it went</h2>\n"
         f'<p>A lesson, a museum screen, a club night: <a href="{CLASSROOM_FORM}">tell us how it went</a> on the project\'s GitHub (a short form: what you did, what worked, what did not). '
         "It is how this page gets better.</p>\n")
@@ -887,6 +890,51 @@ def teachers_page(host: str, tours: dict, reels: dict, url_keys: list[str]) -> P
     page.share = Spec(key="teachers/index", name="Space Radar in the classroom", number="free, offline, no account", caption="For teachers", kind="plain",
                       colour="#9ad1a5", alt="Rings and a dot, captioned Space Radar in the classroom.")
     return page
+
+
+def teachers_paying() -> str:
+    """The paragraph on /teachers/ for a school or a museum that wants to pay; nothing until the fund exists."""
+    if not support_url():
+        return ""
+    return ("<h2>If your school or museum wants to pay</h2>\n"
+            "<p>You never have to: Space Radar is free for every classroom and every screen, and nothing on this page needs a payment. "
+            "If your budget has a line for software you use, you can pay into the project's public fund and ask for an invoice there. "
+            f'Every payment and every expense is public. <a href="../support/index.html">How the money is held and spent</a>.</p>\n')
+
+
+# --- support -----------------------------------------------------------------------------------------------
+
+def support_page(host: str) -> list[Page]:
+    """Where money for the project goes (internal growth decision D-75): gifts from people, invoiced payments from
+    schools and museums, all public. No page at all until registry/support.yaml names the fund."""
+    url = support_url()
+    if not url:
+        return []
+    short = "Support Space Radar: a public fund, the map stays free"
+    desc = ("Space Radar is free and open source and stays that way. Gifts and invoiced payments go to a public "
+            "Open Collective fund where every payment and expense can be read.")
+    body = (
+        '<p class="micro">Support</p>\n<h1>Support Space Radar</h1>\n'
+        '<p class="lead">Space Radar is free and open source, and it stays that way: no paid tier, no account, no adverts, no tracking. '
+        "Money is never a condition for using any part of it.</p>\n"
+        f'<div class="cta"><a class="live" href="{esc(url)}" rel="noopener">Open the fund</a><p>On Open Collective, hosted by Open Source Collective.</p></div>\n'
+        "<h2>Where the money goes</h2>\n"
+        "<p>Into one public fund on Open Collective. Open Source Collective holds the money as the fiscal host; the project spends it by submitting expenses, "
+        "and every payment in and every expense out is listed on the fund's page for anyone to read.</p>\n"
+        "<h2>Two ways to pay</h2>\n"
+        "<ul>\n"
+        "<li><strong>A gift from you.</strong> Once or every month, any amount, on the fund's page.</li>\n"
+        "<li><strong>A school, a museum or a planetarium.</strong> If your budget pays for software you use, pay into the same fund and ask for an invoice there. "
+        'It buys nothing extra: the <a href="../teachers/index.html">classroom and kiosk set-up</a> is the same for everyone.</li>\n'
+        "</ul>\n"
+        "<h2>Help that is not money</h2>\n"
+        f'<p>A star on <a href="{GITHUB}">GitHub</a>, a <a href="{ACCURACY_FORM}">data-accuracy report</a> with a source, or a '
+        '<a href="../first-pull-request/index.html">first pull request</a> helps as much.</p>\n')
+    page = Page(path="support/index.html", title=short, description=desc, body=body, og_title=short)
+    page.jsonld = [webpage(host, page, [("Support", "")])]
+    page.share = Spec(key="support/index", name="Support Space Radar", number="free, with a public fund", caption="Support", kind="plain",
+                      colour="#ffd166", alt="Rings and a dot, captioned Support Space Radar.")
+    return [page]
 
 
 # --- the build ---------------------------------------------------------------------------------------------
@@ -914,6 +962,7 @@ def build_pages(host: str, objects: list[dict], today: str, snapshot_index: dict
     pages += [events_index(events, host)] + [event_page(e, host, tours) for e in events]
     pages += [about_page(host), sources_page(host, snapshot_index), accuracy_page(host),
               teachers_page(host, tours, yml("autopilot.yaml"), url_keys()), eyes_page(host), first_pr_page(host)]
+    pages += support_page(host)
     sysl = seo_systems.pages(host, by_slug, today)
     pages += sysl
     pages += seo_read.pages(host)
