@@ -199,7 +199,10 @@ const CUBESAT_OF = new Map(); // filled by sourcedTablesReady below
 export const sourcedTablesReady = Promise.all([import('../data/geobuses.js'), import('../data/cubesats.js')]).then(([geo, cube]) => {
   for (const [key, list] of Object.entries(geo.GEO_BUS_NORADS)) {
     const [bus, source] = key.split(':');
-    const entry = source ? { ...GEO_BUS, sourcedBus: { name: geo.GEO_BUS_LABELS[bus], by: GEO_SOURCE_NAMES[source] } } : GEO_SSL1300;
+    // b200-m4-buses: begin -- a family drawn by a file of ours (data/geobuses.js GEO_BUS_DRAWN: E3000, 702HP/MP, 702SP, A2100AX, Spacebus 4000B, GEOStar-2, DFH-4, I-3K, I-2K) wears it as
+    // the kind of thing, with its `made` (the card: built from the maker's renders, or from dimensions and pictures), at the app's axes; the route is also put in REAL_MODELS.geoBus, where the registry tests look. Its `stand_in` rows keep the stand-in above.
+    const entry = source ? { ...GEO_BUS, sourcedBus: { name: geo.GEO_BUS_LABELS[bus], by: GEO_SOURCE_NAMES[source] } } : REAL_MODELS.geoBus[bus] || (REAL_MODELS.geoBus[bus] = { ...GEO_SSL1300, axes: 'app', ...geo.GEO_BUS_DRAWN[bus] });
+    // b200-m4-buses: end
     for (const n of list) GEO_BUS_OF.set(n, entry);
   }
   for (const [form, list] of Object.entries(cube.CUBESAT_NORADS)) for (const n of list) CUBESAT_OF.set(n, CUBESATS[form]);
@@ -354,7 +357,7 @@ export const REAL_MODELS = {
     // XRISM's own shape since 2026-10-13 (public #968): xrism.glb, GENERATED from two frames of NASA
     // Goddard's turntable render and its two solar paddles then REPLACED by flat ones built in code
     // (registry/models.yaml row `xrism`). The build stays as what is drawn while the file is on its
-    // way. Not `generic` any more: it is this craft, and `made: 'render'` makes the card say the
+    // way. Not `generic` any more: it is this craft, and `made: 'renders'` makes the card say the
     // shape came from an artist's render. Hitomi (41337) above does not wear it: the same bus with a
     // six-metre optical bench, which since batch two is a file of its own (public #969).
     // `axes: 'app'` since batch three (2026-10-13): the file was built to the app's axes (mirrors at

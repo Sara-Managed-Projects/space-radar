@@ -3692,8 +3692,12 @@ MODEL_KINDS = {"derived-from-images", "built-from-dimensions"}
 MODEL_FROM_IMAGES_HONESTY = "shape built from photographs; proportions approximate"
 MODEL_FROM_RENDER_HONESTY = "shape built from an artist’s render; proportions approximate"
 MODEL_FROM_DIMENSIONS_HONESTY = "shape built from published dimensions and pictures; details simplified"
+# b200-m4-buses: begin -- a geostationary bus family built here from published sizes and the MAKER'S RENDERS, no free photograph of its deployed hardware existing (registry/geo-buses.yaml
+# `made: renders`): still built from dimensions, and its card says whose pictures they were (COPY.drawing.objectMade.renders)
+MODEL_FROM_RENDERS_HONESTY = "shape built from published dimensions and the maker’s renders; details estimated"
+# b200-m4-buses: end
 MODEL_HONESTY = {"derived-from-images": (MODEL_FROM_IMAGES_HONESTY, MODEL_FROM_RENDER_HONESTY),
-                 "built-from-dimensions": (MODEL_FROM_DIMENSIONS_HONESTY,)}
+                 "built-from-dimensions": (MODEL_FROM_DIMENSIONS_HONESTY, MODEL_FROM_RENDERS_HONESTY)}
 MODEL_FROM_IMAGES_FIELDS = ("references", "generator", "dimensions", "honesty")
 
 

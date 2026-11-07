@@ -4509,6 +4509,32 @@ Release 2.0.0, batch m3-mid (forge #174, #128). Of the 20 mid-size families of #
 No logo, lettering, flag or insignia is on either. Kinéis, Hemeria and iQPS do not endorse Space Radar, and none of them made or approved these shapes.
 <!-- b200-m3-mid: end -->
 
+<!-- b200-m4-buses: begin -->
+## 3c-b200-m4-buses. Release 2.0.0: nine geostationary bus families (2026-11-07)
+
+Release 2.0.0, batch m4-buses (forge #117). The bus families held in batch m2 were rebuilt one by one to their own layouts; nine ship, the Spacebus 4000C, the A2100A and LM 2100 and the DS2000 stay held (the changelog says why). Every file is built in code by this project (`tools/bus-builder`, on the part library of `tools/stage-builder`) from published sizes: McDowell's GCAT (CC BY 4.0), the Wikipedia infoboxes and articles of MEASAT-3B, Intelsat 10-02, Eutelsat 70B, JCSAT-3A, Spacebus and the INSAT satellite bus (CC BY-SA 4.0; numbers only), Boeing's 702SP figure as Gunter's Space Page quotes it.
+**The pictures were LOOKED AT ONLY**: the makers' renders as Gunter's Space Page prints them (copyright Airbus, Boeing, Lockheed Martin, Thales Alenia Space, Orbital and Northrop Grumman, CAST and CGWIC, ISRO); on Wikimedia Commons, NASA's render of SES-14 (public domain), the US Air Force's drawing of WGS ([Commons](https://commons.wikimedia.org/wiki/File:MC-2941_Wideband_Global_SATCOM_Satellite.png), public domain), the photograph of Morelos 3 in the clean room ([Commons](https://commons.wikimedia.org/wiki/File:Sat%C3%A9lite_Morelos_III.jpg), CC BY-SA 4.0), SpaceX's photograph of ABS-3A separating ([Commons](https://commons.wikimedia.org/wiki/File:ABS-EUTELSAT_Separation_(16788442562).jpg), CC0), the renders of Inmarsat GX5 ([Commons](https://commons.wikimedia.org/wiki/File:Satellite_Inmarsat_GX5.jpg)) and Belintersat-1 ([Commons](https://commons.wikimedia.org/wiki/File:Belintersat-1.jpg)) (CC BY-SA 4.0), and ISRO's clean-room photographs of GSAT-19, GSAT-30 and GSAT-31 (GODL-India; e.g. [GSAT-30](https://commons.wikimedia.org/wiki/File:GSAT-30_in_cleanroom_with_deployed_reflector.jpg), [GSAT-31](https://commons.wikimedia.org/wiki/File:GSAT-31_undergoing_CATF_test.jpg)). No mesh, no texture and no picture of anyone else's is in a file.
+Seven of the nine have no free photograph of their deployed hardware, so their card says "shape built from published dimensions and the maker's renders; details estimated"; the I-3K and I-2K, drawn from ISRO's photographs, say "shape built from published dimensions and pictures; details simplified". `registry/models.yaml` says which numbers are cited and which are ours.
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `bus-eurostar-e3000.glb` (139 KB) | Airbus Eurostar E3000: a 2.4 x 2.9 x 4.8 m gold-blanketed box, broad OSR radiators, two large deployed reflectors on each of the east and west walls, the deck tower, four-panel wings on long V yokes, 39.2 m | GCAT and Wikipedia (sizes); Airbus's renders and NASA's SES-14 render, looked at only | built by us; numbers are facts |
+| `bus-boeing-702.glb` (150 KB) | Boeing 702HP / 702MP: a 3.0 x 3.3 x 5.6 m black-blanketed box, silvered ribbed and deployed radiators, four reflectors in an X, six-panel wings each on one mast, 40.4 m | GCAT (sizes); the Morelos 3 photograph, the USAF WGS drawing and Boeing's renders, looked at only | built by us; numbers are facts |
+| `bus-boeing-702sp.glb` (116 KB) | Boeing 702SP: a 2.1 x 2.1 x 3.6 m black-and-silver box, four reflectors in an X on splayed arms, four ion thrusters, six-panel wings, 40.0 m | Boeing's figure (Gunter) and GCAT (sizes); SpaceX's separation photograph and Boeing's renders, looked at only | built by us; numbers are facts |
+| `bus-a2100ax.glb` (117 KB) | Lockheed Martin A2100AX: a 2.2 x 2.5 x 4.9 m box in crinkled silver blanket, silvered OSR radiators, one 3.0 m reflector a side and a deck tower, broad four-panel wings on stand-off yokes, 26.9 m | GCAT and Wikipedia (sizes); Lockheed Martin's renders, looked at only | built by us; numbers are facts |
+| `bus-spacebus-4000b.glb` (113 KB) | Thales Alenia Space Spacebus 4000B / 3000B: a narrow 1.8 x 1.8 x 3.4 m gold-and-copper box, wide blue-silver radiators, two reflectors a side, straight four-panel wings on long V yokes, 30.0 m | Wikipedia and GCAT (sizes); Thales Alenia Space's renders, looked at only | built by us; numbers are facts |
+| `bus-geostar-2.glb` (100 KB) | Northrop Grumman GEOStar-2: a small 1.8 x 2.3 x 3.2 m box in mottled silver and black blanket, two large shaped reflectors high beside the deck, three-panel wings with a pale end panel, 22.4 m | GCAT (sizes); Orbital's and Northrop Grumman's renders, looked at only | built by us; numbers are facts |
+| `bus-dfh-4.glb` (106 KB) | CAST DFH-4: a large 2.4 x 2.5 x 3.6 m gold box, white radiators, one 2.6 m reflector a side and a deck reflector, two big three-panel wings on crossing struts, 30.0 m | GCAT (sizes); CAST's and CGWIC's renders and the Belintersat-1 render, looked at only | built by us; numbers are facts |
+| `bus-i-3k.glb` (107 KB) | ISRO I-3K: a 1.8 x 2.0 x 3.1 m box in crinkled gold kapton, white radiators, dark carbon-fibre reflectors, three-panel wings with red strings, 20.0 m | GCAT (sizes); ISRO's clean-room photographs of GSAT-19 and GSAT-30 and ISRO's renders, looked at only | built by us; numbers are facts |
+| `bus-i-2k.glb` (84 KB) | ISRO I-2K: a 1.65 x 1.53 x 3.0 m box in crinkled gold kapton, white radiators, dark carbon-fibre reflectors, two-panel wings, 9.6 m | Wikipedia and GCAT (sizes); ISRO's clean-room photographs of GSAT-31 and ISRO's renders, looked at only | built by us; numbers are facts |
+
+**Credit lines:**
+`3D model: built by Space Radar from published dimensions (McDowell's GCAT, Wikipedia, the makers' figures); layout read from the makers' renders, looked at only`
+`3D model: built by Space Radar from published dimensions (McDowell's GCAT, Wikipedia); layout read from the makers' photographs and renders, looked at only`
+
+No logo, lettering, flag or insignia is on any of them. Airbus, Boeing, Lockheed Martin, Thales Alenia Space, Northrop Grumman, CAST, CGWIC and ISRO do not endorse Space Radar, and none of them made or approved these shapes.
+<!-- b200-m4-buses: end -->
+
 <!-- b200-f4-cards: begin -->
 ## 3f-wiki. The cards' Wikipedia block — Wikipedia (CC BY-SA 4.0), Commons, Wikidata (CC0) (2026-11-07)
 

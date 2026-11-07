@@ -948,7 +948,10 @@ export const COPY = {
     "objectMade": {
       "images": "外形根据照片建成；比例是近似的",
       "render": "外形根据艺术渲染图建成；比例是近似的",
-      "dimensions": "外形根据已公布的尺寸和图片建成；细节做了简化"
+      "dimensions": "外形根据已公布的尺寸和图片建成；细节做了简化",
+      // b200-m4-buses: begin -- a geostationary bus built here from published sizes and the maker's renders (registry/geo-buses.yaml `made: renders`), machine-drafted
+      "renders": "外形根据已公布的尺寸和制造商的渲染图建成；细节为估计"
+      // b200-m4-buses: end
     },
     "objectWas": {
       "hitomi": "画的是 2016 年 2 月发射时完整的样子；五周后它解体了，这里追踪的是它没有太阳能板的主体",

@@ -9,6 +9,8 @@
 //      = the bus's label and one of the sources the row cites.
 //   4. The NAME decides nothing: the same name on a number the registry does not list is the plain stand-in, and a number that is listed is its bus whatever it is called.
 //   5. The generated mirror site/js/data/geobuses.js holds exactly the registry's numbers (scripts/gen_geo_buses_js.py --check says the same).
+// b200-m4-buses: since batch m4-buses nine families are drawn by files of ours (Eurostar E3000, Boeing 702HP/MP, 702SP, A2100AX, Spacebus 4000B, GEOStar-2, DFH-4, I-3K, I-2K): their rows wear the file, except a
+// `stand_in` row (a satellite whose biggest part, a large reflector, a telescope or relay dishes, the family's file does not draw), which keeps the stand-in and names its bus as a held family's do.
 //   node tests/test_geo_buses.mjs
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -57,8 +59,16 @@ for (const b of buses) {
   }
 }
 for (const id of Object.keys(REAL_MODELS.geoBus)) check(drawn.has(id), `scene/realmodels.js has a bus ${id} that the registry does not draw`);
-check(drawn.size === 1 && drawn.has('ssl-1300'), `only NASA's SSL-1300 is drawn (${[...drawn.keys()].join(', ')})`);
-for (const f of readdirSync(join(ROOT, 'site/models'))) check(!/^bus-(?!ssl1300)/.test(f), `site/models/${f} is a held bus file and must not ship`);
+// b200-m4-buses: begin -- nine families are drawn by files of ours since batch m4-buses, each `made: 'renders'` (from the maker's renders) or `'dimensions'` (from photographs: the I-3K and I-2K); any other bus file in site/models is a held one and must not ship
+const OURS = ['eurostar-e3000', 'boeing-702', 'boeing-702sp', 'a2100ax', 'spacebus-4000b', 'geostar-2', 'dfh-4', 'i-3k', 'i-2k'];
+check(drawn.size === 1 + OURS.length && drawn.has('ssl-1300') && OURS.every((id) => drawn.has(id)), `the drawn families are NASA's SSL-1300 and ${OURS.join(', ')} (${[...drawn.keys()].join(', ')})`);
+const shipped = new Set([...drawn.values()].map((b) => b.file));
+for (const f of readdirSync(join(ROOT, 'site/models'))) check(!/^bus-/.test(f) || shipped.has(f), `site/models/${f} is a held bus file and must not ship`);
+for (const id of OURS) {
+  const e = REAL_MODELS.geoBus[id];
+  check(e && e.generic === true && ['renders', 'dimensions'].includes(e.made) && e.made === drawn.get(id).made && e.axes === 'app' && e.colour === 'satellite' && !e.sourcedBus, `bus ${id}: a family of ours is worn as the kind of thing, at the app's axes, and says how it was built (${JSON.stringify(e)})`);
+}
+// b200-m4-buses: end
 
 // 3
 const orbit = { meanMotion: 1.0027, eccentricity: 0.0002, inclinationDeg: 0.05 };
@@ -68,9 +78,14 @@ const busOf = new Map(buses.map((b) => [b.id, b]));
 let ssl = 0; let named = 0;
 for (const s of sats) {
   const got = realModelFor(rec(s.norad, s.name));
-  if (drawn.has(s.bus)) {
-    check(got && got.file === 'bus-ssl1300.glb' && got.generic === true && got.name === 'an SSL-1300 satellite' && !got.sourcedBus, `${s.name} (${s.norad}): an SSL-1300 wears ${got && got.file}`);
+  // b200-m4-buses: begin -- a drawn family's row wears its file (a `stand_in` row keeps the stand-in and names its bus, below)
+  if (drawn.has(s.bus) && !s.stand_in) {
+    const b = drawn.get(s.bus);
+    check(got && got.file === b.file && got.generic === true && got.name === b.name && !got.sourcedBus, `${s.name} (${s.norad}): a ${s.bus} wears ${got && got.file}, not ${b.file}`);
     ssl += 1;
+  } else if (drawn.has(s.bus) && s.bus === 'ssl-1300') {
+    check(false, `${s.name} (${s.norad}): an SSL-1300 may not be a stand_in row`);
+  // b200-m4-buses: end
   } else {
     const label = busOf.get(s.bus).label;
     const cited = s.cite.map((c) => BY[c.by]);
@@ -79,10 +94,10 @@ for (const s of sats) {
     named += 1;
   }
 }
-check(ssl >= 80 && named >= 200, `the table covers ${ssl} SSL-1300s and ${named} satellites of other buses`);
+check(ssl >= 240 && named >= 60, `the table covers ${ssl} satellites of drawn families and ${named} of other buses`); // b200-m4-buses: 94 SSL-1300s and the four families of ours
 
 // 4. the name decides nothing
-const listed = sats.find((s) => !drawn.has(s.bus));
+const listed = sats.find((s) => !drawn.has(s.bus) || s.stand_in);
 const renamed = realModelFor(rec(listed.norad, 'INTELSAT 14 (IS 14)'));
 check(renamed && renamed.sourcedBus && renamed.sourcedBus.name === busOf.get(listed.bus).label, 'a listed number is its bus whatever it is called');
 const unlisted = realModelFor(rec(99999, listed.name));
@@ -96,7 +111,7 @@ check(!notSat || (!notSat.sourcedBus && notSat.file !== 'bus-ssl1300.glb'), 'a d
 const fromRegistry = {};
 const PREF = ['gcat', 'gunter', 'wikipedia', 'wikidata'];
 for (const s of sats) {
-  const key = drawn.has(s.bus) ? s.bus : `${s.bus}:${PREF.find((p) => s.cite.some((c) => c.by === p))}`;
+  const key = drawn.has(s.bus) && !s.stand_in ? s.bus : `${s.bus}:${PREF.find((p) => s.cite.some((c) => c.by === p))}`; // b200-m4-buses: a stand_in row is keyed as held
   (fromRegistry[key] ||= []).push(s.norad);
 }
 for (const k of Object.keys(fromRegistry)) check(JSON.stringify([...fromRegistry[k]].sort((a, b) => a - b)) === JSON.stringify(GEO_BUS_NORADS[k]), `data/geobuses.js disagrees with the registry about ${k}`);
@@ -111,4 +126,4 @@ for (const lang of ['en', 'ar', 'de', 'es', 'fr', 'he', 'hi', 'pt', 'ru', 'uk', 
 check(/entry\.sourcedBus && T\.objectBus/.test(readFileSync(join(ROOT, 'site/js/ui/cards.js'), 'utf8')), 'ui/cards.js does not print the bus of a stand-in satellite');
 
 if (problems.length) { console.error('geo buses FAILED:\n  ' + problems.slice(0, 40).join('\n  ')); process.exit(1); }
-console.log(`geo buses ok: ${sats.length} satellites, each with a citation; ${ssl} wear NASA's SSL-1300 as their own bus, ${named} keep the stand-in and a card that names their bus and its source (${buses.length - drawn.size} held families); the name decides nothing`);
+console.log(`geo buses ok: ${sats.length} satellites, each with a citation; ${ssl} wear their own family's file (NASA's SSL-1300 or one of ours), ${named} keep the stand-in and a card that names their bus and its source (${buses.length - drawn.size} held families); the name decides nothing`);

@@ -20,6 +20,7 @@
   nearly black: the first version of this sheet had no lights, and the silhouettes were honest
   while every colour on it was a lie.
 
+  `look=pbr` draws real models in the physically based look the app uses at tier 1 and up (release 2.0.0, batch m4-buses).
   `rot=0,90,180,270` and `tilt=0,0,0,0` turn the Nth cell's model about the vertical and about the horizontal, in degrees, so one model can
   be listed several times and read from four sides (release 1.9.0, `m=file:oneweb.glb,file:oneweb.glb,...`).
 -->
@@ -32,6 +33,11 @@ import * as THREE from '../site/vendor/three.module.min.js';
 import { modelFor, setSunDirection, setPlanetShine, setFloodLight } from '../site/js/scene/models.js';
 import { sampleAsteroids } from '../site/js/data/sample.js';
 import { loadRealModel } from '../site/js/scene/realmodels.js';
+// b200-m4-buses: begin -- `look=pbr` draws a real model in its physically based look (scene/pbr.js: crinkled foil, metal, cells), as the app does at tier 1 and up; without it the
+// sheet keeps the toon look it always drew. Set before any model loads, because a part puts on the look wanted when it is loaded (pbr.js pairLooks).
+import { setModelLook } from '../site/js/scene/pbr.js';
+if (new URLSearchParams(location.search).get('look') === 'pbr') setModelLook('pbr');
+// b200-m4-buses: end
 
 // `asteroid#Eros` builds from the real bundled RECORD rather than a variant name, because an
 // asteroid's shape is drawn from its own measured diameter and there is no other way to ask for it.

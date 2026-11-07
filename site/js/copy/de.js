@@ -1054,7 +1054,10 @@ export const COPY = {
     "objectMade": {
       "images": "Form aus Fotos gebaut; Proportionen ungefähr",
       "render": "Form nach einer künstlerischen Darstellung gebaut; Proportionen ungefähr",
-      "dimensions": "Form aus veröffentlichten Maßen und Bildern gebaut; Einzelheiten vereinfacht"
+      "dimensions": "Form aus veröffentlichten Maßen und Bildern gebaut; Einzelheiten vereinfacht",
+      // b200-m4-buses: begin -- a geostationary bus built here from published sizes and the maker's renders (registry/geo-buses.yaml `made: renders`), machine-drafted
+      "renders": "Form aus veröffentlichten Maßen und Darstellungen des Herstellers gebaut; Einzelheiten geschätzt"
+      // b200-m4-buses: end
     },
     "objectWas": {
       "hitomi": "ganz gezeigt, so wie im Februar 2016 gestartet; fünf Wochen später brach es auseinander, und was hier verfolgt wird, ist sein Hauptkörper ohne die Solarflügel",

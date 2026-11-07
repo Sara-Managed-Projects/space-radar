@@ -276,3 +276,23 @@ def standard(m, sx, sy, sz, panels, reflectors, foil=GOLD, rad=OSR, yoke=1.0, sa
 def panel_len(span, sx, n, yoke=1.0, sada=0.5, gap=0.07):
     """The length of each of n panels so that the two wings span `span` tip to tip over a body `sx` wide."""
     return round(((span - sx) / 2 - sada - yoke - (n - 1) * gap) / n, 2)
+
+
+# b200-m4-buses: begin
+BROWN = "#7B6A55"         # a nozzle's bell (engine(), thrusters())
+
+
+def palette(m, mapping):
+    """Fold colours on purpose before export, so that the 14-colour cap (Model.export) never folds a large face into a stray tone: `mapping` = {(role or None, colour): colour}.
+    The rebuilt buses of batch m4-buses call it last with the merges their head note can stand behind (an inside structure box takes the grey of the struts, a waveguide the
+    rail silver, a panel's back the dark of carbon fibre)."""
+    out = []
+    for label, role, colour, mesh in m.parts:
+        c = mapping.get((role, colour.upper()), mapping.get((None, colour.upper()), colour))
+        out.append((label, role, c, mesh))
+    m.parts = out
+    return m
+
+
+COMMON_FOLDS = {(None, STRUCT): GREY, (None, SILVER): SILVER_D, (None, DISH_BACK): WHITE, (None, CELL_BACK): BLACK}  # a panel's back: dark carbon, as the clean-room photographs show
+# b200-m4-buses: end

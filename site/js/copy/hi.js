@@ -949,7 +949,10 @@ export const COPY = {
     "objectMade": {
       "images": "आकार तस्वीरों से बनाया गया; अनुपात लगभग",
       "render": "आकार कलाकार के बनाए चित्र से बनाया गया; अनुपात लगभग",
-      "dimensions": "आकार प्रकाशित माप और तस्वीरों से बनाया गया; ब्योरे सरल किए गए"
+      "dimensions": "आकार प्रकाशित माप और तस्वीरों से बनाया गया; ब्योरे सरल किए गए",
+      // b200-m4-buses: begin -- a geostationary bus built here from published sizes and the maker's renders (registry/geo-buses.yaml `made: renders`), machine-drafted
+      "renders": "आकार प्रकाशित माप और निर्माता के चित्रों से बनाया गया; ब्योरे अनुमानित"
+      // b200-m4-buses: end
     },
     "objectWas": {
       "hitomi": "पूरा दिखाया गया है, जैसा फ़रवरी 2016 में छोड़ा गया था; पाँच हफ़्ते बाद यह टूट गया, और यहाँ जिसे ट्रैक किया जा रहा है वह सोलर पैडल के बिना उसका मुख्य हिस्सा है",

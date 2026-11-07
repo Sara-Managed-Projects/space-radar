@@ -955,7 +955,10 @@ export const COPY = {
     "objectMade": {
       "images": "הצורה נבנתה מצילומים; היחסים בערך",
       "render": "הצורה נבנתה מהדמיית אמן; היחסים בערך",
-      "dimensions": "הצורה נבנתה ממידות ותמונות שפורסמו; הפרטים פושטו"
+      "dimensions": "הצורה נבנתה ממידות ותמונות שפורסמו; הפרטים פושטו",
+      // b200-m4-buses: begin -- a geostationary bus built here from published sizes and the maker's renders (registry/geo-buses.yaml `made: renders`), machine-drafted
+      "renders": "הצורה נבנתה ממידות שפורסמו ומהדמיות היצרן; הפרטים משוערים"
+      // b200-m4-buses: end
     },
     "objectWas": {
       "hitomi": "מוצג שלם, כפי ששוגר בפברואר 2016; הוא התפרק כעבור חמישה שבועות, ומה שנעקב כאן הוא הגוף הראשי שלו בלי לוחות השמש",
