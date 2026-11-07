@@ -114,6 +114,11 @@ for (const o of scene.children) {
   // b200-m2-buses: begin
   { const z = ZOOM[i] > 0 ? ZOOM[i] : 1; cam.position.set(1.5 / z, 1.05 / z, 1.9 / z); cam.lookAt(0, 0, 0); }
   // b200-m2-buses: end
+  // b200-m3-mid: begin -- `view=30,20;120,35;...` puts the Nth cell's camera at that azimuth (degrees about the vertical, 0 = from +Z) and elevation, so a model stood up with `tilt` can be read from
+  // the side a photograph was taken from; a cell without an entry keeps the default three-quarter view
+  { const v = (QS.get('view') || '').split(';')[i]; if (v) { const [az, el] = v.split(',').map(Number); const z = ZOOM[i] > 0 ? ZOOM[i] : 1, d = 2.64 / z, a = (az * Math.PI) / 180, e = (el * Math.PI) / 180;
+    cam.position.set(d * Math.cos(e) * Math.sin(a), d * Math.sin(e), d * Math.cos(e) * Math.cos(a)); cam.lookAt(0, 0, 0); } }
+  // b200-m3-mid: end
   renderer.setViewport(cx, cy, CELL, CELL);
   renderer.setScissor(cx, cy, CELL, CELL);
   for (const p of scene.children) if (p.userData.cell !== undefined) p.visible = (p === o);
