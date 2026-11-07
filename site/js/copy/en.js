@@ -1653,6 +1653,9 @@ export const COPY = {
       dawn: 'its surface is the Dawn spacecraft’s black-and-white mosaic, tinted in a grey we chose; the shadows in its craters are the ones Dawn photographed and do not move with the Sun here',
     },
     objectFamily: 'drawn as {name} — the kind of thing, not this exact one',
+    // b200-m2-buses: begin
+    objectBus: 'Bus: {bus} ({source}). Drawn with a stand-in bus.',
+    // b200-m2-buses: end
     // A file made here, worn by the craft it is of (scene/realmodels.js `made`, not `generic`):
     // not "a published model", which it is not; COPY.drawing.objectMade follows it.
     objectOwn: 'drawn as {name}',

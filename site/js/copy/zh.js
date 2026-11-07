@@ -941,6 +941,9 @@ export const COPY = {
       "dawn": "它的表面是 Dawn 拍的黑白镶嵌图，上了一层我们选的灰色；陨石坑里的阴影是 Dawn 拍到的，在这里不会随太阳移动"
     },
     "objectFamily": "画成了 {name}——是这一类东西的样子，并非这一个",
+    // b200-m2-buses: begin
+    "objectBus": "平台：{bus}（{source}）。画成了替代平台的样子。",
+    // b200-m2-buses: end
     "objectOwn": "画成了 {name}",
     "objectMade": {
       "images": "外形根据照片建成；比例是近似的",

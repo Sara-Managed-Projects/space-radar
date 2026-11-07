@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Mirror the catalogue numbers of registry/geo-buses.yaml's DRAWN families into site/js/data/geobuses.js.
+"""Mirror registry/geo-buses.yaml into site/js/data/geobuses.js: which bus each geostationary satellite flies, and who says so.
 
-Release 2.0.0 (batch m2-buses; forge #117). realModelFor() (scene/realmodels.js) draws a geostationary satellite as the bus the registry
-sources for it, when that bus has a file, and as the SSL-1300 stand-in otherwise. The browser never parses YAML, so this is the table it
-reads: `{bus id: [catalogue numbers]}`, grouped (a number is six characters, a satellite's name and its citations stay in the YAML). A family
-whose `file` is null is not here: its satellites keep the stand-in, and the registry says why.
+Release 2.0.0 (batch m2-buses; forge #117). realModelFor() (scene/realmodels.js) draws a geostationary satellite whose bus is the SSL-1300 as NASA's SSL-1300 model, and every
+other geostationary satellite as the SSL-1300 STAND-IN; a satellite whose row names another bus keeps the stand-in and its card says which bus it is and whose word that is
+("Bus: Eurostar E3000 (GCAT). Drawn with a stand-in bus."). The browser never parses YAML, so this is the table it reads: `GEO_BUS_NORADS` = `{key: [catalogue numbers]}` where
+the key is a DRAWN bus's id (a family with a `file`) or `<bus id>:<source>` for a held one, the source being the best of the row's citations (gcat, then gunter, wikipedia, wikidata),
+and `GEO_BUS_LABELS` = `{bus id: the name a card prints}`. A satellite's name never decides: the key is its catalogue number.
 
 Run:  python3 scripts/gen_geo_buses_js.py           # write it
       python3 scripts/gen_geo_buses_js.py --check   # exit 1 if the checked-in file is stale
@@ -17,23 +18,33 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _genmirror import Mirror  # noqa: E402
 
+PREFERENCE = ("gcat", "gunter", "wikipedia", "wikidata")
+
 
 def render(doc: dict) -> list:
-    drawn = {b["id"] for b in doc.get("buses") or [] if b.get("file")}
+    buses = {b["id"]: b for b in doc.get("buses") or []}
+    drawn = {i for i, b in buses.items() if b.get("file")}
     groups: dict = {}
-    seen: dict = {}
+    seen: set = set()
     for row in doc.get("satellites") or []:
         n = int(row["norad"])
         if n in seen:
             raise SystemExit(f"registry/geo-buses.yaml: {n} ({row.get('name')}) is listed twice")
-        seen[n] = row["bus"]
-        if row["bus"] not in {b["id"] for b in doc["buses"]}:
+        seen.add(n)
+        if row["bus"] not in buses:
             raise SystemExit(f"registry/geo-buses.yaml: {row.get('name')} names bus {row['bus']!r}, which is not in `buses`")
-        if not row.get("cite"):
+        cites = {c.get("by") for c in row.get("cite") or []}
+        if not cites:
             raise SystemExit(f"registry/geo-buses.yaml: {row.get('name')} ({n}) has no citation: a bus is never guessed")
-        if row["bus"] in drawn:
-            groups.setdefault(row["bus"], []).append(n)
-    return [("Catalogue numbers by the geostationary bus the registry sources for them, drawn families only (registry/geo-buses.yaml).", "GEO_BUS_NORADS", {k: sorted(v) for k, v in sorted(groups.items())})]
+        key = row["bus"] if row["bus"] in drawn else row["bus"] + ":" + next(s for s in PREFERENCE if s in cites)
+        groups.setdefault(key, []).append(n)
+    for i, b in buses.items():
+        if not b.get("label"):
+            raise SystemExit(f"registry/geo-buses.yaml: bus {i} has no `label`: a card must be able to name it")
+    return [
+        ("Catalogue numbers by bus, one key a drawn bus and `bus:source` for a held one (registry/geo-buses.yaml).", "GEO_BUS_NORADS", {k: sorted(v) for k, v in sorted(groups.items())}),
+        ("The name a card prints for each bus.", "GEO_BUS_LABELS", {i: b["label"] for i, b in buses.items()}),
+    ]
 
 
 HEADER = """// GENERATED from registry/geo-buses.yaml by scripts/gen_geo_buses_js.py. Do not edit.

@@ -922,6 +922,9 @@ export const COPY = {
       dawn: "su superficie es el mosaico en blanco y negro de la nave Dawn, teñido de un gris que hemos elegido nosotros; las sombras de sus cráteres son las que fotografió Dawn y aquí no se mueven con el Sol"
     },
     objectFamily: "se dibuja como {name}: el tipo de objeto, no este exacto",
+    // b200-m2-buses: begin
+    objectBus: "Plataforma: {bus} ({source}). Se dibuja con una plataforma de sustitución.",
+    // b200-m2-buses: end
     objectOwn: "se dibuja como {name}",
     objectMade: {
       images: "forma construida a partir de fotografías; proporciones aproximadas",

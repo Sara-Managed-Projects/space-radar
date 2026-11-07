@@ -4,9 +4,9 @@
 // reverted. A satellite is in this table only when a source names its bus (the YAML cites each one); every other geostationary satellite
 // keeps the SSL-1300 stand-in in scene/realmodels.js, and its card says the shape is a stand-in.
 
-/** Catalogue numbers by the geostationary bus the registry sources for them, drawn families only (registry/geo-buses.yaml). */
+/** Catalogue numbers by bus, one key a drawn bus and `bus:source` for a held one (registry/geo-buses.yaml). */
 export const GEO_BUS_NORADS = {
-"a2100": [
+"a2100:gcat": [
 25924,
 26554,
 26580,
@@ -27,7 +27,24 @@ export const GEO_BUS_NORADS = {
 44186,
 45245
 ],
-"boeing-702": [
+"alphabus:gcat": [
+39215
+],
+"amos:gcat": [
+32794,
+39237,
+64784
+],
+"boeing-601:gcat": [
+22787,
+23467,
+25967,
+27718,
+27954,
+28117,
+34941
+],
+"boeing-702:gcat": [
 27445,
 28378,
 32729,
@@ -56,7 +73,14 @@ export const GEO_BUS_NORADS = {
 53961,
 65588
 ],
-"dfh-4": [
+"dfh-3:gcat": [
+41034,
+41869,
+42662,
+49011,
+55239
+],
+"dfh-4:gcat": [
 37677,
 38014,
 38352,
@@ -72,13 +96,18 @@ export const GEO_BUS_NORADS = {
 46916,
 47321,
 53100,
-53813,
 59915,
 63361,
 63662,
 64470
 ],
-"ds2000": [
+"dfh-4:gunter": [
+53813
+],
+"dfh-5:gcat": [
+44910
+],
+"ds2000:gcat": [
 33274,
 37606,
 39522,
@@ -88,7 +117,35 @@ export const GEO_BUS_NORADS = {
 47202,
 61733
 ],
-"eurostar-e3000": [
+"ekspress-1000:gcat": [
+37951,
+38977,
+38978,
+39612,
+39613,
+39728,
+40895,
+45985,
+45986,
+50001,
+50002,
+54033
+],
+"ekspress-2000:gcat": [
+39487,
+40277,
+40345
+],
+"ekspress-2000:gunter": [
+42907,
+43432,
+43867,
+44457
+],
+"ekspress-other:gcat": [
+37749
+],
+"eurostar-e3000:gcat": [
 28358,
 28868,
 29270,
@@ -138,7 +195,26 @@ export const GEO_BUS_NORADS = {
 52904,
 57214
 ],
-"geostar-2": [
+"eurostar-neo:gcat": [
+54048,
+54225,
+56757,
+59346,
+62483,
+62852
+],
+"eurostar-other:gcat": [
+26107,
+27811,
+29526
+],
+"geostar-1:gcat": [
+41744,
+51280,
+51281,
+52940
+],
+"geostar-2:gcat": [
 29495,
 32253,
 32388,
@@ -163,11 +239,38 @@ export const GEO_BUS_NORADS = {
 39500,
 39616,
 40664,
-41552,
 44624,
 46114
 ],
-"i-3k": [
+"geostar-2:wikipedia": [
+41552
+],
+"geostar-3:gcat": [
+43272,
+44625,
+46113,
+55970,
+55971
+],
+"geostar-3:gunter": [
+43174
+],
+"i-1k:gcat": [
+47256
+],
+"i-2k:gcat": [
+37237,
+39498,
+40880,
+42695,
+43864,
+44035
+],
+"i-2k:gunter": [
+39234,
+100607
+],
+"i-3k:gcat": [
 37605,
 38779,
 40332,
@@ -179,7 +282,18 @@ export const GEO_BUS_NORADS = {
 45026,
 52903
 ],
-"spacebus-4000": [
+"i-4k:gcat": [
+66311
+],
+"i-6k:gcat": [
+43824
+],
+"smallgeo:gcat": [
+41942,
+44475,
+57213
+],
+"spacebus-4000:gcat": [
 28526,
 28924,
 31307,
@@ -206,12 +320,24 @@ export const GEO_BUS_NORADS = {
 42814,
 42984,
 43463,
-44307,
 44801,
 52817,
 52933,
 58995,
 61910
+],
+"spacebus-4000:wikipedia": [
+44307
+],
+"spacebus-neo:gcat": [
+45027,
+49332,
+49333,
+53765,
+54259,
+55508,
+57045,
+60086
 ],
 "ssl-1300": [
 26900,
@@ -309,4 +435,35 @@ export const GEO_BUS_NORADS = {
 68126,
 69728
 ]
+};
+
+/** The name a card prints for each bus. */
+export const GEO_BUS_LABELS = {
+"ssl-1300": "SSL-1300",
+"eurostar-e3000": "Airbus Eurostar E3000",
+"spacebus-4000": "Thales Alenia Space Spacebus 3000/4000",
+"boeing-702": "Boeing 702",
+"geostar-2": "Northrop Grumman GEOStar-2",
+"dfh-4": "CAST DFH-4",
+"a2100": "Lockheed Martin A2100",
+"ds2000": "Mitsubishi Electric DS2000",
+"i-3k": "ISRO I-3K",
+"i-2k": "ISRO I-2K",
+"ekspress-1000": "ISS Reshetnev Ekspress-1000",
+"ekspress-2000": "ISS Reshetnev Ekspress-2000",
+"spacebus-neo": "Thales Alenia Space Spacebus NEO",
+"eurostar-neo": "Airbus Eurostar Neo",
+"boeing-601": "Boeing 601",
+"geostar-3": "Northrop Grumman GEOStar-3",
+"dfh-3": "CAST DFH-3",
+"smallgeo": "OHB SmallGEO (Luxor)",
+"amos": "IAI AMOS",
+"alphabus": "Alphabus",
+"geostar-1": "GEOStar-1",
+"eurostar-other": "Airbus Eurostar (an earlier variant)",
+"ekspress-other": "ISS Reshetnev (Ekspress)",
+"i-1k": "ISRO I-1K",
+"i-4k": "ISRO I-4K",
+"i-6k": "ISRO I-6K",
+"dfh-5": "CAST DFH-5"
 };
