@@ -397,6 +397,10 @@ if [ "$WHAT" != "assets" ]; then
     fi
   fi
   python3 "$HERE/refresh_blog_feed.py" --if-online || true   # the "From the blog" lists; keeps the committed snapshot when offline
+  # b200-f6-learn: begin (print) -- the deploy's build also writes the paper models' PDFs into print/ (scripts/seo_print.py).
+  # Not in a dry run: thirty-four sheets are minutes of resampling, and the tests that dry-run this script would pay them.
+  [ "$DRY_RUN" = "1" ] || export SR_PRINT=1
+  # b200-f6-learn: end
   python3 "$HERE/build_seo.py" --out "$BUILT" ${SNAP[@]+"${SNAP[@]}"} || die "scripts/build_seo.py failed"
   python3 "$HERE/check_seo.py" --out "$BUILT" || die "scripts/check_seo.py refused the built pages"
   # THE LAB (site/lab/, docs/ADD_A_SIMULATOR.md): small stand-alone simulator pages, each ONE HTML file with no
@@ -424,6 +428,9 @@ if [ "$WHAT" != "assets" ]; then
   # these is stored compressed, by the rule at the top: a crawler or an unfurler reads them. HTML at /<dir>/index.html because the origin serves no index documents (scripts/build_seo.py).
   while IFS= read -r dir; do
     [ -n "$dir" ] || continue
+    # b200-f6-learn: begin (print) -- print/ holds PDFs beside its page: synced by its own block below
+    [ "$dir" = "print" ] && continue
+    # b200-f6-learn: end
     if [ "$dir" = "share" ]; then
       "${SYNC[@]}" "$BUILT/share" "s3://$BUCKET/share" --cache-control "$REVALIDATE" \
         --exclude "*" --include "*.png" --content-type "image/png" --delete
@@ -432,6 +439,16 @@ if [ "$WHAT" != "assets" ]; then
         --content-type "text/html; charset=utf-8" --delete
     fi
   done < "$BUILT/pages-dirs.txt"
+  # b200-f6-learn: begin (print) -- /print/ (forge #161): its page as HTML and the paper models as PDF, revalidated
+  # like the pages (a sheet is remade at every deploy from the maps), --delete so a map that leaves leaves its sheet.
+  # Invalidated with the rest of pages-dirs.txt below. A PDF is fetched only when a visitor clicks it.
+  if [ -d "$BUILT/print" ]; then
+    "${SYNC[@]}" "$BUILT/print" "s3://$BUCKET/print" --cache-control "$REVALIDATE" \
+      --exclude "*" --include "*.html" --content-type "text/html; charset=utf-8" --delete
+    "${SYNC[@]}" "$BUILT/print" "s3://$BUCKET/print" --cache-control "$REVALIDATE" \
+      --exclude "*" --include "*.pdf" --content-type "application/pdf" --delete
+  fi
+  # b200-f6-learn: end
   # The press page (public #293, scripts/build_press.py): the page, the README's screenshots and
   # the mark as SVG, built beside the object pages and not kept under site/. HTML no-cache like
   # the other pages; the pictures and the SVGs each by their own type, as the textures are.

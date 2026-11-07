@@ -47,6 +47,9 @@ import seo_systems  # noqa: E402
 # b200-f1-find: begin -- the country pages, /country/<iso>/ (forge #152)
 import seo_countries  # noqa: E402
 # b200-f1-find: end
+# b200-f6-learn: begin (print) -- the paper models' page, /print/, and its PDFs (forge #161)
+import seo_print  # noqa: E402
+# b200-f6-learn: end
 from seo_common import (ACCOUNTS, ACCURACY_FORM, CLASSROOM_FORM, GITHUB, ROOT, Ctx, Page, esc, footer_nav,  # noqa: E402
                         make_ctx, place_picker, render, url_of, webpage)
 from seo_share import Spec  # noqa: E402
@@ -898,6 +901,9 @@ def teachers_page(host: str, tours: dict, reels: dict, url_keys: list[str]) -> P
         "<h2>Tell us how it went</h2>\n"
         f'<p>A lesson, a museum screen, a club night: <a href="{CLASSROOM_FORM}">tell us how it went</a> on the project\'s GitHub (a short form: what you did, what worked, what did not). '
         "It is how this page gets better.</p>\n")
+    # b200-f6-learn: begin -- forge #159, #160, #161: the Lab by age, the paper models and the daily challenges
+    body = body.replace("<h2>Accessibility</h2>", f"{learn_sections()}<h2>Accessibility</h2>", 1)
+    # b200-f6-learn: end
     foot = f"<p>The keys and parameters on this page are read from the app's own link reader (tests/test_seo_pages.py holds them to it). Licence: {esc(licence_name())}.</p>\n"
     page = Page(path="teachers/index.html", title=short, description=desc, body=body, foot=foot, og_title=short)
     page.jsonld = [webpage(host, page, [("For teachers", "")], page_type="WebPage", extra={"about": {"@id": f"{host}/teachers/index.html#resource"}}),
@@ -911,6 +917,46 @@ def teachers_page(host: str, tours: dict, reels: dict, url_keys: list[str]) -> P
     page.share = Spec(key="teachers/index", name="Space Radar in the classroom", number="free, offline, no account", caption="For teachers", kind="plain",
                       colour="#9ad1a5", alt="Rings and a dot, captioned Space Radar in the classroom.")
     return page
+
+
+# b200-f6-learn: begin -- forge #159, #160, #161
+LAB_BANDS = [("7-11", "Ages 7 to 11 (US grades 2-5, KS2)"), ("11-14", "Ages 11 to 14 (grades 6-8, KS3, Years 7-9)"),
+             ("14-16", "Ages 14 to 16 (grades 9-10, GCSE, Years 10-11)"), ("16-18", "Ages 16 to 18 (A level, IB Diploma)"), ("18+", "University")]
+
+
+def learn_sections() -> str:
+    """/teachers/'s part for the Lab by age (registry/lab-levels.yaml), the paper models (/print/) and the daily challenges."""
+    import gen_lab_index  # the Lab's own reader of its simulators' heads
+
+    rows = (yml("lab-levels.yaml") or {}).get("labs") or {}
+    sims = {s["slug"]: s for s in gen_lab_index.simulators()}
+    bands = []
+    for band, label in LAB_BANDS:
+        mine = sorted((s for slug, s in sims.items() if band in [str(b) for b in (rows.get(slug) or {}).get("band") or []]), key=lambda s: s["title"].lower())
+        if not mine:
+            continue
+        links = ", ".join(f'<a href="../lab/{esc(s["slug"])}/index.html">{esc(s["title"])}</a>' for s in mine)
+        bands.append(f'<li><strong>{esc(label)}</strong>: {len(mine)} simulators (<a href="../lab/index.html#band={esc(band)}">the list for this age</a>). {links}.</li>')
+    games = "".join(f'<li><a href="../#play={g}">{t}</a>: {d}</li>' for g, t, d in [
+        ("find-earth", "Find Earth", "from the Local Group down to our planet in four steps of the real map, with ten picks"),
+        ("which-world", "Which world is this?", "a close-up of a real map, three rounds"),
+        ("guess-distance", "Guess the distance", "three deep-sky objects with measured distances, and where each number comes from")])
+    return ("<h2>The Lab by age and curriculum</h2>\n"
+            f"<p>{len(sims)} one-page simulators, each tagged with an age band and with the NGSS (US), England's KS3, GCSE physics (AQA 8463) and IB Physics "
+            "statements it shows. On <a href=\"../lab/index.html\">the Lab's list</a> choose an age or a code, for example "
+            "<a href=\"../lab/index.html#band=11-14&amp;q=gravity\">ages 11 to 14, gravity</a> or "
+            "<a href=\"../lab/index.html#code=gcse:4.8.1.3\">GCSE 4.8.1.3, orbital motion</a>. Every simulator links to the place in the 3D map where its idea "
+            "can be seen. A tag says a simulator shows an idea a statement asks for, not that it covers the statement.</p>\n"
+            f'<ul class="levels">{"".join(bands)}</ul>\n'
+            "<h2>Paper models to print</h2>\n"
+            "<p>A paper globe of every world the map has a real surface map for, a Moon-phase wheel and a distance-ladder strip, one page each, "
+            'with the map\'s credit and a code that opens that world in the 3D map: <a href="../print/index.html">the paper models</a>.</p>\n'
+            "<h2>A one-minute challenge to start a lesson</h2>\n"
+            "<p>The same three puzzles for everyone each day (the day is UTC), with no account; the score stays in the browser, and a pupil can paste "
+            f"a short grid of the result.</p>\n<ul>{games}</ul>\n")
+
+
+# b200-f6-learn: end
 
 
 def teachers_paying() -> str:
@@ -990,6 +1036,9 @@ def build_pages(host: str, objects: list[dict], today: str, snapshot_index: dict
     # b200-f1-find: begin
     pages += seo_countries.pages(host)
     # b200-f1-find: end
+    # b200-f6-learn: begin (print)
+    pages += seo_print.pages(host)
+    # b200-f6-learn: end
     return pages
 
 
@@ -1077,6 +1126,9 @@ def build_extra(out: Path, host: str, objects: list[dict], today: str, snapshot_
             dest = out / pg.path
             dest.write_text(seo_countries.relink(dest.read_text(encoding="utf-8")), encoding="utf-8")
     # b200-f1-find: end
+    # b200-f6-learn: begin (print) -- the sheets beside the page, when SR_PRINT=1 (the deploy; scripts/seo_print.py says why)
+    seo_print.write(out)
+    # b200-f6-learn: end
     (out / "pages-dirs.txt").write_text("\n".join(pages_dirs(pages) + (["share"] if drawn else [])) + "\n", encoding="utf-8")
     index: dict[str, str] = {}
     for s in seo_systems.systems():

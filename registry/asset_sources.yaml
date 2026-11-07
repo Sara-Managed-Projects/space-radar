@@ -630,3 +630,17 @@ sources:
     pins:
       - {file: site/data/starmotion.bin, sha256: 3615204ce950cc7db5ac2dd23143986f52d34bc4562b1963bc6b58eb4b4573da}
   # b200-f3-stars: end
+  # b200-f6-learn: begin -- forge #159: the real light curve inside site/lab/find-a-planet-in-kepler-data/
+  - id: stsci-mast-kepler
+    name: STScI MAST (Kepler mission light curves)
+    match: ["https://archive.stsci.edu/missions/kepler/"]
+    url: https://archive.stsci.edu/missions/kepler/lightcurves/0114/011446443/
+    licence: Public domain (NASA mission data at MAST); acknowledgement asked
+    licence_read: "Most data hosted at MAST are in the public domain (see: open data ), and therefore do not have restrictions on use ."
+    licence_url: https://archive.stsci.edu/publishing/data-use
+    licence_note: "Kepler is not one of the copyrighted collections the same page lists. The simulator's Sources comment carries MAST's Kepler acknowledgement (https://archive.stsci.edu/publishing/mission-acknowledgements). Used: kplr011446443-2009166043257_llc.fits (TrES-2, quarter 1), the first 612 cadences of PDCSAP_FLUX, normalised and rounded to 10 ppm, inline in one Lab page; the FITS file is not committed."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  # b200-f6-learn: end

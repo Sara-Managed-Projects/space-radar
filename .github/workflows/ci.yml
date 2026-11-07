@@ -1470,3 +1470,11 @@ jobs:
       - name: "The turning black hole's shadow: Bardeen's outline, the shader's fit and the card's spin line (forge #149)"
         run: node tests/test_kerrshadow.mjs
       # b200-f3-stars: end
+      # b200-f6-learn: begin
+      - name: "The Lab by age and curriculum: every simulator tagged, every NGSS, KS3, GCSE and IB code listed, every 3D-map link real (forge #159)"
+        run: python3 tests/test_lab_levels.py
+      - name: "The daily challenges: a UTC day, one seed for everyone, share text inside X's 280 in every language, kept off the first frame (forge #160)"
+        run: node tests/test_playcore.mjs
+      - name: "Paper models: the licence rule, the gores, the QR code against ISO 18004, the scale note and the sheets (forge #161)"
+        run: python3 tests/test_paper_models.py
+      # b200-f6-learn: end

@@ -1124,6 +1124,11 @@ export async function boot({ setStatus } = {}) {
   };
   if (window.__srLayersReady) findLater(); else window.addEventListener('sr:layers-ready', findLater, { once: true });
   // b200-f1-find: end
+  // b200-f6-learn: begin -- forge #160: a `#play=` link opens a daily challenge (ui/play.js), fetched for that link only
+  const playLink = () => { const k = readUrlKeys().play; if (k && !embed) import('./ui/play.js').then((m) => m.openPlay(ctx, k)).catch((e) => console.warn('play did not load', e)); };
+  playLink();
+  window.addEventListener('hashchange', playLink);
+  // b200-f6-learn: end
   // TODAY (internal #270, ui/today.js): the home's dated cards, generated from what is loaded,
   // and under them the way into the debris view (ui/debris.js). TODAY_MS after sr:layers-ready.
   const todayLater = () => afterFirstVisit(TODAY_MS, () => {

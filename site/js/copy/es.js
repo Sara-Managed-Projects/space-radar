@@ -4926,3 +4926,104 @@ Object.assign(COPY, {
   }
 });
 // b200-f3-stars: end
+// b200-f6-learn: begin -- the daily challenges (copy/en.play.js, forge #160), machine-drafted
+Object.assign(COPY, {
+  "play": {
+    "label": "Reto diario",
+    "close": "Cerrar",
+    "day": "El reto del {day} (UTC), el mismo para todos hoy.",
+    "games": {
+      "find-earth": {
+        "title": "Encuentra la Tierra",
+        "blurb": "Desde las galaxias hasta nuestro planeta, en los menos intentos posibles."
+      },
+      "which-world": {
+        "title": "¿Qué mundo es este?",
+        "blurb": "Un primer plano de un mapa real: elige el mundo entre cuatro."
+      },
+      "guess-distance": {
+        "title": "Adivina la distancia",
+        "blurb": "Desliza hasta los años luz a los que está."
+      }
+    },
+    "other": "Otros retos",
+    "loading": "El mapa aún se está cargando; el reto empieza cuando esté listo.",
+    "rung": "Paso {n} de {of}: {where}",
+    "rungs": {
+      "local-group": "el Grupo Local",
+      "galaxy": "la Vía Láctea",
+      "stellar": "el vecindario del Sol",
+      "sun": "el sistema solar"
+    },
+    "ask": {
+      "local-group": "¿Qué marca es nuestra galaxia, la Vía Láctea?",
+      "galaxy": "¿Qué marca es el Sol?",
+      "stellar": "¿Qué marca es el Sol?",
+      "sun": "¿Qué marca es la Tierra?"
+    },
+    "hints": {
+      "local-group": "La nuestra tiene dos pequeñas compañeras muy cerca, las Nubes de Magallanes.",
+      "galaxy": "El Sol está a unos 27 000 años luz del agujero negro del centro, en un brazo tranquilo.",
+      "stellar": "Las estrellas más cercanas al Sol son enanas rojas débiles y Alfa Centauri, a 4,4 años luz.",
+      "sun": "La Tierra es el tercer mundo contando desde el Sol."
+    },
+    "hint": "Pista (cuesta un intento)",
+    "mark": "Marca {letter}, {where}",
+    "places": {
+      "tl": "arriba a la izquierda",
+      "tc": "arriba",
+      "tr": "arriba a la derecha",
+      "ml": "izquierda",
+      "mc": "centro",
+      "mr": "derecha",
+      "bl": "abajo a la izquierda",
+      "bc": "abajo",
+      "br": "abajo a la derecha"
+    },
+    "milkyWay": "la Vía Láctea",
+    "sunName": "el Sol",
+    "tries": "Intento {n} de {max}",
+    "wrong": "Esa no: {letter} es {name}.",
+    "right": "Sí, {name}. Acercándonos.",
+    "found": "Encontraste la Tierra en {n} intentos.",
+    "lost": "Sin intentos. La Tierra era el tercer mundo desde el Sol.",
+    "honest": "Las marcas están donde el mapa dibuja cada objeto. En el paso del sistema solar los mundos se dibujan más cerca de lo que están, como en todo ese escenario.",
+    "round": "Ronda {n} de {of}",
+    "worldAsk": "¿De qué mundo es este primer plano?",
+    "more": "Ver más del mapa",
+    "worldRight": "Sí: {name}.",
+    "worldWrong": "No: era {name}.",
+    "credit": "Mapa: {credit}",
+    "worldPicture": "Un primer plano de un mapa real de un mundo del sistema solar",
+    "distAsk": "¿A qué distancia está {name}?",
+    "slider": "Distancia en años luz",
+    "guess": "Adivinar",
+    "reveal": "{name} está a {value}: acertaste {off}.",
+    "offs": {
+      "hit": "con menos de un cuarto de error",
+      "near": "dentro del doble",
+      "far": "dentro del quíntuple",
+      "miss": "con más de cinco veces de error"
+    },
+    "source": "Distancia: {source}",
+    "units": {
+      "ly": "{n} años luz",
+      "kly": "{n} mil años luz",
+      "mly": "{n} millones de años luz",
+      "bly": "{n} mil millones de años luz"
+    },
+    "next": "Siguiente",
+    "scores": {
+      "find-earth": "{n} de 10 intentos",
+      "which-world": "{n} de 3 mundos",
+      "guess-distance": "{n} de 3 dentro del doble"
+    },
+    "shareTitle": "Space Radar: {game}",
+    "share": "Compartir el resultado",
+    "copied": "Copiado. Pégalo donde quieras.",
+    "copyFailed": "No se pudo copiar: selecciona el texto de arriba.",
+    "played": "Listo por hoy. Uno nuevo llega a medianoche UTC.",
+    "streak": "{n} días seguidos"
+  }
+});
+// b200-f6-learn: end
