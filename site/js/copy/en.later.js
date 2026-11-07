@@ -2492,6 +2492,34 @@ Object.assign(COPY, {
   },
 });
 // b200-f2-worlds: end
+// b200-c1-culture: begin (forge #143) -- a sky figure's story (ui/skystory.js, the sky's tag in sky/groundsky.js) and
+// the pictures of the cultures beyond the western one (the Pictures toggle, ui/tonight.js).
+Object.assign(COPY, {
+  skyLore: {
+    // The tag of a tap on another people's sky names their figure: {culture} is COPY.tonight.skybar.cultures.
+    figure: 'a figure of the {culture} sky',
+    figureLabel: '{name}, a figure of the {culture} sky. Press for its story.',
+    openTitle: 'Press for its story',
+    sub: 'The {culture} sky',
+    close: 'Close the story',
+    loading: 'Fetching the story…',
+    failed: 'The story did not load. Try again in a moment.',
+    // {credit} is the data file's, in English (it names the licence): a credit is owed as its authors wrote it.
+    fromStellarium: 'From Stellarium’s description of this sky culture. {credit}.',
+    ours: 'In our own words, after: {cite}.',
+    honesty: 'Illustrative: one telling, as its source records it. Names and stories differ between peoples and tellers.',
+    none: 'No story of this figure is recorded in the sources we may share. These are living traditions, so we say so rather than guess.',
+    inEnglish: 'The story is in English, the language of its source: no licensed translation exists.',
+    // The Pictures toggle, for the cultures that have pictures beside the western one.
+    artTitles: {
+      maori: 'The Māori figures as drawings, from Stellarium’s Māori sky culture, CC BY-SA 4.0',
+      hawaiian: 'The Hawaiian star lines as drawings by Kealoha Kaneakua, for Stellarium, CC BY-SA 4.0',
+      boorong: 'The Boorong figures as drawings, from Stellarium’s Boorong sky culture, CC BY-SA 4.0',
+    },
+    artNone: 'No drawings of this sky under a licence we may share: its figures keep their lines.',
+  },
+});
+// b200-c1-culture: end
 // 0077 W1-e: begin
 // The sections this file added, in the visitor's language (copy/lang.js says how; public #524). 1.6.3: asked at the END of the file: wave 2's Compare,
 // passport and photograph sections are added above, and were never put into a language while this call sat before them.

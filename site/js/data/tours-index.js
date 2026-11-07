@@ -109,12 +109,12 @@ export const TOURS_INDEX = [
 {
 "id": "outer-solar-system",
 "title": "Out past Jupiter, to the farthest thing we sent",
-"blurb": "Ten stops through the cold outer worlds. Leaving brings you back to Earth.",
+"blurb": "Eleven stops through the cold outer worlds. Leaving brings you back to Earth.",
 "group": "solar-system",
 "next": "to-the-edge",
 "min_stops": 3,
-"count": 10,
-"estimate_ms": 211715
+"count": 11,
+"estimate_ms": 235065
 },
 {
 "id": "a-year-in-a-minute",

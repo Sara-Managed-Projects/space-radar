@@ -1587,6 +1587,17 @@ export const VISUAL_CLASSES = [
 }
 },
 {
+"id": "HELIOSPHERE",
+"title": "The heliosphere",
+"honesty": "modelled",
+"house": true,
+"members": {
+"catalogues": [
+"heliosphere"
+]
+}
+},
+{
 "id": "SPECTRAL_SKY",
 "title": "The sky in other light",
 "honesty": "measured",

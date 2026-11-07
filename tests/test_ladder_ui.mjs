@@ -24,9 +24,24 @@ for (const r of parseDso(JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'
 for (const l of LAYERS) if (typeof l.sample === 'function' && (l.id === 'exotics' || l.id === 'galaxy')) for (const r of l.sample()) ids.set(r.id, r);
 
 // Nine since 0076 W1-b: the edge rung (spec 0075 task 65), a place rather than a record.
-check(LADDER_RUNGS.length === 9, `nine rungs (${LADDER_RUNGS.length})`);
+// Ten since b200-c1-culture (forge #148): the heliosphere, a place between Neptune and Proxima.
+check(LADDER_RUNGS.length === 10, `ten rungs (${LADDER_RUNGS.length})`);
 let prev = 0;
 for (const rung of LADDER_RUNGS) {
+  // b200-c1-culture-helio: begin -- the heliosphere's distance is where Voyager 1 crossed the heliopause
+  // (scene/heliosphere.js HELIO.crossings), and the flight goes 300 AU out (ui/heliorung.js).
+  if (rung.target.place === 'heliosphere') {
+    const { HELIO, KM_PER_AU } = await import(join(JS, 'scene/heliosphere.js'));
+    const { HELIO_RUNG } = await import(join(JS, 'ui/heliorung.js'));
+    const v1 = HELIO.crossings.find((c) => c.craft === 'deep-voyager-1' && c.surface === 'hp');
+    const km = v1.au * KM_PER_AU;
+    check(km > prev, `the heliosphere is farther than the rung before it (${km} km)`);
+    check(rung.distance === `${Math.round(km / 1e9)} billion km`, `its distance is Voyager 1's crossing of the heliopause (${rung.distance})`);
+    check(HELIO_RUNG.au * KM_PER_AU > km && HELIO_RUNG.au * KM_PER_AU < 9460730472580.8, 'the flight stops outside the heliopause and short of a light-year');
+    prev = km;
+    continue;
+  }
+  // b200-c1-culture-helio: end
   if (rung.target.place) {
     const { horizonLy } = await import(join(JS, 'data/cosmology.js'));
     check(rung.target.place === 'horizon' && rung === LADDER_RUNGS[LADDER_RUNGS.length - 1], `the place rung is the horizon, and the last (${rung.id})`);
@@ -58,4 +73,4 @@ check(trip.stops[trip.stops.length - 1].card.body.includes('109 389') && trip.st
 check(trip.blurb.includes('back to Earth'), 'the blurb says leaving returns to Earth');
 
 if (problems.length) { console.error('ladder ui FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
-console.log('ladder ui ok: nine rungs, each farther than the last, each a real record or the horizon; the edge trip has eight resolvable stops on the stellar rung');
+console.log('ladder ui ok: ten rungs, each farther than the last, each a real record, the heliosphere or the horizon; the edge trip has eight resolvable stops on the stellar rung');

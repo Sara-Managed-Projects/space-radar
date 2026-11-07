@@ -48,7 +48,7 @@ git clone https://github.com/Sara-Managed-Projects/space-radar.git
 cd space-radar && python3 -m http.server 8177 --directory site      # then open http://localhost:8177
 ```
 
-33 narrated trips (247 stops), 109 389 stars in 3D, 51 star systems to fly into, about 17 000
+33 narrated trips (248 stops), 109 389 stars in 3D, 51 star systems to fly into, about 17 000
 satellites at their real positions, and every picture labelled as measured, modelled or an
 artist's impression. **Teach with it:** present mode and an autopilot screen for a classroom or a
 museum, and a [zip that runs offline](docs/RUN_LOCALLY.md).
@@ -105,7 +105,7 @@ data, and every number on screen says where it came from.
 | | |
 |---|---|
 | ![Saturn and its rings, backlit, at a stop of the trip out past Jupiter](assets/screenshots/saturn.webp) | ![The Apollo 11 lunar module on the Moon, a stop of the Moon landings trip](assets/screenshots/moon-landing.webp) |
-| **Take a guided trip.** Tonight from your street, why the Moon changes shape, the life of a star, black holes, back to the Moon with Artemis. 33 trips and 247 stops, read aloud, with captions and music. | **Stand where we have been.** 31 places on the Moon and twelve on Mars that spacecraft reached, each on its own ground, with the facts and their sources on the card. |
+| **Take a guided trip.** Tonight from your street, why the Moon changes shape, the life of a star, black holes, back to the Moon with Artemis. 33 trips and 248 stops, read aloud, with captions and music. | **Stand where we have been.** 31 places on the Moon and twelve on Mars that spacecraft reached, each on its own ground, with the facts and their sources on the card. |
 | ![The sky from the ground: constellations, the Milky Way and tonight's satellites over the southern horizon](assets/screenshots/sky-from-the-ground.webp) | ![The Earth coloured by the temperature of the sea, a stop of the trip The living Earth](assets/screenshots/living-earth.webp) |
 | **Look up from your own street.** The sky from the ground: figures, grids, tonight's best passes and planets, a city, town or dark sky, and a red night mode. | **Read the living Earth.** Seven maps of data measured from orbit, from NASA: sea temperature, sea ice, rain, plant life and more, each with its key and its source. |
 
@@ -260,6 +260,8 @@ what we changed. None of these organisations endorses Space Radar.
   NASA models (public domain), fonts (SIL OFL 1.1), music (CC0). Data fetched live or saved under
   `site/data/v1/` belongs to its publisher under the publisher's terms. [CREDITS.md](CREDITS.md)
   is the full list, including the few terms we have not been able to confirm.
+  <!-- b200-c1-culture: begin --> The Māori, Hawaiian and Boorong constellation pictures and every sky figure's story
+  are CC BY-SA 4.0, from Stellarium (`site/data/skyart/<culture>/LICENSE.txt`, `site/data/skystories/`). <!-- b200-c1-culture: end -->
 - The GitHub mark in the app is GitHub's trademark, used unmodified under GitHub's logo rules.
 
 <div align="center">

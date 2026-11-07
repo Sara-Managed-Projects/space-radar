@@ -6,8 +6,11 @@
 //   cultureFigures(doc)  -> { verts: number[], names: [{ name, dir }] } from data/skycultures/<id>.json
 //   cultureLabel(figure) -> the name drawn: the people's own word first
 //   artQuad(figure, n)   -> { positions, uvs, index, centre, radiusRad } for one picture
+//   figureHits(doc)      -> [{ key, label, ends }] each figure's line ends, for figureAt
+//   figureAt(hits, dirEq, maxDeg) -> { key, label, sepDeg } | null: the figure whose lines pass nearest
 //   createSkyArt(env)    -> { update(view), state(), dispose() }
-//     env:  { root, radius, eqToLocal, renderOrder, cap }
+//     env:  { root, radius, eqToLocal, renderOrder, cap, dir }  dir: '' for the western pictures,
+//           '<culture>/' for another people's (data/skyart/<culture>/, scripts/build-skylore.py)
 //     view: { on, dirEq, fovDeg, aspect, strength }
 // Loaded by sky/groundsky.js with a dynamic import, and only when a visitor asks for one of the
 // three: none of this, and none of the data, is fetched by a sky that shows the western lines.
@@ -18,6 +21,9 @@
 // reading each one is): documented reconstructions of living traditions, and the controls say so.
 // The pictures are Johan Meuris's, drawn for Stellarium (Free Art License 1.3, the notice is
 // data/skyart/LICENSE.txt): drawn, pinned to the sky by three stars each, as Stellarium pins them.
+// The Māori, Hawaiian and Boorong pictures (forge #143) are those cultures' own Stellarium
+// illustrations, CC BY-SA 4.0 as each culture's licence says (data/skyart/<id>/LICENSE.txt):
+// illustrative, pinned the same way. No other culture we draw has pictures under a licence we may ship.
 //
 // A picture is a square image and three stars: the pixel of each star in the image, and where that
 // star is. Three points fix the plane the image lies in; every other pixel is carried onto the sky
@@ -79,6 +85,52 @@ export function cultureFigures(doc) {
     if (label && Array.isArray(f.at)) names.push({ name: label, dir: radecDir(f.at[0], f.at[1]) });
   }
   return { verts, names };
+}
+
+/** Each figure of a culture's file as its line ends (unit vectors, J2000), keyed by the name its story is filed under. */
+export function figureHits(doc) {
+  const out = [];
+  for (const f of (doc && Array.isArray(doc.figures) ? doc.figures : [])) {
+    const ends = [];
+    for (const run of f.lines || []) {
+      for (let i = 0; i + 3 < run.length; i += 2) ends.push(radecDir(run[i], run[i + 1]), radecDir(run[i + 2], run[i + 3]));
+    }
+    if (ends.length && f.name) out.push({ key: f.name, label: cultureLabel(f), ends });
+  }
+  return out;
+}
+
+const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const angleOf = (a, b) => Math.acos(Math.max(-1, Math.min(1, dot(a, b))));
+
+/** The angle from p to the great-circle arc a-b, in radians: to the arc where p's foot lies on it, else to its nearer end. */
+export function arcDistance(p, a, b) {
+  const n = [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  const len = Math.hypot(n[0], n[1], n[2]);
+  if (len < 1e-12) return angleOf(p, a);
+  const u = [n[0] / len, n[1] / len, n[2] / len];
+  // The foot is between a and b when it is on a's side of b's meridian and b's side of a's.
+  const ap = [a[1] * p[2] - a[2] * p[1], a[2] * p[0] - a[0] * p[2], a[0] * p[1] - a[1] * p[0]];
+  const pb = [p[1] * b[2] - p[2] * b[1], p[2] * b[0] - p[0] * b[2], p[0] * b[1] - p[1] * b[0]];
+  if (dot(ap, u) >= 0 && dot(pb, u) >= 0) return Math.asin(Math.min(1, Math.abs(dot(p, u))));
+  return Math.min(angleOf(p, a), angleOf(p, b));
+}
+
+/**
+ * Which of another people's figures a tap on the sky means: the one whose lines pass nearest `dirEq`,
+ * within `maxDeg`. A tap inside a figure's outline but far from its lines is not a hit: these are line
+ * figures, with no area of their own to be inside. Pure.
+ */
+export function figureAt(hits, dirEq, maxDeg) {
+  let best = null;
+  const reach = maxDeg * DEG;
+  for (const h of hits || []) {
+    for (let i = 0; i + 1 < h.ends.length; i += 2) {
+      const d = arcDistance(dirEq, h.ends[i], h.ends[i + 1]);
+      if (d <= reach && (!best || d < best.d)) best = { d, h };
+    }
+  }
+  return best ? { key: best.h.key, label: best.h.label, sepDeg: best.d / DEG } : null;
 }
 
 function inverse3(m) {
@@ -176,6 +228,7 @@ export function nearestInView(items, cap) {
 
 export function createSkyArt(env) {
   const here = import.meta.url;
+  const dir = env.dir || '';
   const cap = Math.max(2, env.cap || 10);
   const tint = new THREE.Color(0x9fb6dc);
   let figures = null;   // [{ id, file, quad, mesh, state, shownAt, seenAt, texture }]
@@ -187,7 +240,7 @@ export function createSkyArt(env) {
   function ask() {
     if (asked) return;
     asked = true;
-    fetch(String(new URL('../../data/skyart/index.json', here)))
+    fetch(String(new URL(`../../data/skyart/${dir}index.json`, here)))
       .then((r) => { if (!r.ok) throw new Error(`skyart: HTTP ${r.status}`); return r.json(); })
       .then((doc) => {
         if (disposed) return;
@@ -207,7 +260,7 @@ export function createSkyArt(env) {
     let t = textures.get(file);
     if (t) return t.promise;
     t = { texture: null, bytes: 0, promise: null };
-    t.promise = fetch(String(new URL(`../../data/skyart/${file}`, here)))
+    t.promise = fetch(String(new URL(`../../data/skyart/${dir}${file}`, here)))
       .then((r) => { if (!r.ok) throw new Error(`${file}: HTTP ${r.status}`); return r.arrayBuffer(); })
       .then((buf) => new Promise((resolve, reject) => {
         // The type is said here, so the picture decodes whatever the server calls a .webp.

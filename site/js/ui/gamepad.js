@@ -150,6 +150,7 @@ export function goRung(ctx, index) {
   if (!rung) return '';
   const tg = rung.target || {};
   if (tg.place === 'horizon') climb('toEdge');
+  else if (tg.place === 'heliosphere') import('./heliorung.js').then((m) => m.goHeliosphere(ctx)).catch(() => {}); // b200-c1-culture-helio (forge #148)
   else {
     const rec = typeof ctx.recordById === 'function' ? ctx.recordById(tg.world || tg.record) : null;
     if (rec) {

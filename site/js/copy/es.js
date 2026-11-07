@@ -4929,6 +4929,30 @@ Object.assign(COPY, {
   }
 });
 // b200-f3-stars: end
+// b200-c1-culture: begin -- a sky figure's story and the other cultures' pictures (copy/en.later.js skyLore, forge #143), machine-drafted
+Object.assign(COPY, {
+  "skyLore": {
+    "figure": "una figura del cielo {culture}",
+    "figureLabel": "{name}, una figura del cielo {culture}. Pulsa para leer su historia.",
+    "openTitle": "Pulsa para leer su historia",
+    "sub": "El cielo {culture}",
+    "close": "Cerrar la historia",
+    "loading": "Cargando la historia…",
+    "failed": "La historia no se cargó. Inténtalo de nuevo en un momento.",
+    "fromStellarium": "De la descripción de esta cultura del cielo en Stellarium. {credit}.",
+    "ours": "Con nuestras propias palabras, según: {cite}.",
+    "honesty": "Ilustrativo: un relato, tal como lo recoge su fuente. Los nombres y las historias cambian entre pueblos y narradores.",
+    "none": "Ninguna de las fuentes que podemos compartir recoge una historia de esta figura. Son tradiciones vivas, así que lo decimos en lugar de adivinar.",
+    "inEnglish": "La historia está en inglés, el idioma de su fuente: no existe una traducción con licencia.",
+    "artTitles": {
+      "maori": "Las figuras maoríes en dibujos, de la cultura del cielo maorí de Stellarium, CC BY-SA 4.0",
+      "hawaiian": "Las líneas estelares hawaianas en dibujos de Kealoha Kaneakua, para Stellarium, CC BY-SA 4.0",
+      "boorong": "Las figuras boorong en dibujos, de la cultura del cielo boorong de Stellarium, CC BY-SA 4.0"
+    },
+    "artNone": "No hay dibujos de este cielo con una licencia que podamos compartir: sus figuras se quedan en líneas."
+  }
+});
+// b200-c1-culture: end
 // b200-f5-make: begin -- the flight editor, Record and Dome and 360 (copy/en.make.js, forge #155, #156, #157), machine-drafted
 Object.assign(COPY, {
   "make": {

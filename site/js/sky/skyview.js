@@ -1257,6 +1257,7 @@ export function createSkyView(ctx, options = {}) {
     if (lastTap && lastTap.key === key && ground.tagged()) {
       const again = lastTap.what;
       if (again.record) { openTagged(again); return true; }
+      if (again.lore) ground.openLore(again.lore); // a figure's story (forge #143, sky/groundsky.js)
       return true; // no card to open: the tag stays, and says all there is
     }
     what.record = recordOf(what);

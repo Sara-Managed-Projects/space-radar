@@ -5071,6 +5071,30 @@ Object.assign(COPY, {
   }
 });
 // b200-f3-stars: end
+// b200-c1-culture: begin -- a sky figure's story and the other cultures' pictures (copy/en.later.js skyLore, forge #143), machine-drafted
+Object.assign(COPY, {
+  "skyLore": {
+    "figure": "דמות בשמי {culture}",
+    "figureLabel": "{name}, דמות בשמי {culture}. לחצו לקריאת הסיפור שלה.",
+    "openTitle": "לחצו לקריאת הסיפור",
+    "sub": "השמיים: {culture}",
+    "close": "סגירת הסיפור",
+    "loading": "טוען את הסיפור…",
+    "failed": "הסיפור לא נטען. נסו שוב בעוד רגע.",
+    "fromStellarium": "מתוך התיאור של תרבות השמיים הזאת ב-Stellarium. {credit}.",
+    "ours": "במילים שלנו, על פי: {cite}.",
+    "honesty": "להמחשה: סיפור אחד, כפי שמקורו מתעד אותו. שמות וסיפורים משתנים בין עמים ומספרים.",
+    "none": "במקורות שמותר לנו לשתף לא נרשם סיפור לדמות הזאת. אלה מסורות חיות, ולכן אנחנו אומרים זאת במקום לנחש.",
+    "inEnglish": "הסיפור באנגלית, שפת המקור שלו: אין תרגום ברישיון.",
+    "artTitles": {
+      "maori": "דמויות המאורי כציורים, מתרבות השמיים המאורית ב-Stellarium, CC BY-SA 4.0",
+      "hawaiian": "קווי הכוכבים ההוואיים כציורים של Kealoha Kaneakua, עבור Stellarium, CC BY-SA 4.0",
+      "boorong": "דמויות הבורונג כציורים, מתרבות השמיים של הבורונג ב-Stellarium, CC BY-SA 4.0"
+    },
+    "artNone": "אין ציורים של השמיים האלה ברישיון שמותר לנו לשתף: הדמויות שלהם נשארות קווים."
+  }
+});
+// b200-c1-culture: end
 // b200-f5-make: begin -- the flight editor, Record and Dome and 360 (copy/en.make.js, forge #155, #156, #157), machine-drafted
 Object.assign(COPY, {
   "make": {

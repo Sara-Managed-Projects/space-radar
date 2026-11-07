@@ -33,6 +33,20 @@ rungs:
     distance_source: "30 au, mean orbital radius; NASA NSSDCA Neptune Fact Sheet, https://nssdc.gsfc.nasa.gov/planetary/factsheet/neptunefact.html (read 2026-10-11)"
     why: "Four light-hours. The last planet, and the edge of the map's true-scale Solar System."
 
+  # b200-c1-culture-helio: begin (forge #148) -- the heliosphere, a `place` like the edge: not a record or a
+  # world but a camera 300 AU from the Sun on the Sun's stage with the Deep space layer on, where
+  # scene/heliosphere.js draws the bubble whole (ui/heliorung.js goHeliosphere; the pad's and the
+  # headset's ladder step, and the Stars tab's far places). The DISTANCE is the place's, not the camera's:
+  # where Voyager 1 crossed the heliopause, the one measured point on the bubble the first craft out
+  # reached. The shape round it is modelled, and the drawing says so.
+  - id: heliosphere
+    label: The heliosphere
+    target: {place: heliosphere}
+    distance: "18 billion km"
+    distance_source: "Voyager 1 crossed the heliopause on 2012-08-25 (NASA, https://science.nasa.gov/mission/voyager/voyager-1/, read 2026-10-09); 121.6 AU that day from the JPL Horizons track site/data/eph/deep-voyager-1.bin, as scene/heliosphere.js HELIO.crossings; 121.6 x 149 597 871 km = 18.2 billion km"
+    why: "Seventeen light-hours. Where the Sun's wind meets the gas between the stars. Shape modelled."
+  # b200-c1-culture-helio: end
+
   - id: proxima
     label: Proxima Centauri
     target: {record: hip-70890}

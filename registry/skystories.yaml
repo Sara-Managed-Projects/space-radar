@@ -1,0 +1,87 @@
+# The stories on a sky figure's card, for every sky culture registry/skycultures.yaml lists (forge #143).
+#
+# WHERE THE WORDS COME FROM. scripts/build-skylore.py reads each culture's description.md in Stellarium's
+# repository at the commit below and takes, for every figure the sky can draw, the text Stellarium's
+# description gives it: a section of its own (western, samoan, hawaiian), a row of a table (boorong, tongan,
+# chinese, maori). Every one of those eight descriptions says "CC BY-SA 4.0" in its own License section
+# (read 2026-11-07; the modern culture's says "Text and data: CC BY-SA 4.0"), so the text is shipped as it
+# stands, attributed, under that licence: site/data/skystories/<id>.json carries the credit and the licence.
+# The cultures that are not here (navajo, egyptian: GPL; arabic_indigenous: CC BY-NC-ND; babylonian_mulapin:
+# CC BY-ND; lokono: no licence) are not drawn either, so nothing of theirs is needed.
+#
+# THIS FILE adds what the descriptions do not give a figure of its own:
+#   quote  sentences of the same description, quoted exactly (the script fails if one is not found there)
+#          when the figure is named only inside another figure's section;
+#   ours   a short summary in our own words, with the published source it rests on in `cite`. These are
+#          written for this project, briefly, from the sources cited, and not close to their wording.
+# A figure with neither, and no text of its own, says on its card that no story is recorded for it in the
+# sources we may share. That is said, not filled: these are living traditions, and a guess is not a story.
+#
+# LANGUAGE. Every source here is in English, and no licensed translation exists (Stellarium's own
+# translations of these descriptions are not under the descriptions' licence), so the stories are shipped in
+# English in every language, and the card says so in the visitor's own.
+version: 1
+read_on: 2026-11-07
+stellarium_commit: a8469197a65de582f6b0ebd82b85173145241b79
+
+cultures:
+  hawaiian:
+    quote:
+      "The Cat's Cradle": ["The lines are shaped as a canoe bailer which scoops Ka Hei-Hei o Na Keiki (Orion) and Makali’i (Pleiades) up into the night sky."]
+      "The Chief's Eyes": ["The lines are shaped as a canoe bailer which scoops Ka Hei-Hei o Na Keiki (Orion) and Makali’i (Pleiades) up into the night sky."]
+      "Voice of Joy": ["Next to Hikianalia is Me’e, a combination of four stars that create a box.", "Me’e connects down to Hanaiakamalama (Southern Cross) which is the southern pointer for Ka Iwikuamo’o."]
+      "The Seven": ["Hokupa’a connects down to Na Hiku (Big Dipper).", "Na Hiku translates to “The Seven” as there is seven stars in the Big Dipper."]
+      "Navigator's Triangle": ["The Navigator’s Triangle is made of three stars Hawaiki (Deneb), Keoe (Vega), and Humu (Altair).", "These stars also represent the Polynesian triangle: Hawai’i (Hawaiki), Rapanui (Keoe), and Aotearoa (Humu)."]
+      "Chief Frigate Bird": ["The star line starts with ‘Iwakeli’i, meaning Chief Frigate Bird (Fregata Minor).", "The shape of this constellation (which is Cassiopeia's W in the West) resembles the ‘iwa bird that is known for leading voyagers to land."]
+      "Cared for by Moon": ["Me’e connects down to Hanaiakamalama (Southern Cross) which is the southern pointer for Ka Iwikuamo’o."]
+
+  maori:
+    ours:
+      "Taki-o-Autahi":
+        text: "Drawn on the Southern Cross. Māori know the Cross as Māhutonga, and as the anchor, Te Punga, of Tama-rereti's canoe, the Milky Way; Autahi, in Stellarium's list of Māori names, is Canopus."
+        cite: "Wikipedia, “Crux” (Māori section), after Elsdon Best, The Astronomical Knowledge of the Maori (Dominion Museum Monograph 3, 1922); Stellarium's Māori sky culture"
+      "Te Taura-o-te-waka-o-tamarereti":
+        text: "The rope of Tama-rereti's canoe: the two Pointers, Alpha and Beta Centauri, that tie the anchor, the Southern Cross, to the canoe of the Milky Way."
+        cite: "Wikipedia, “Crux” and “Milky Way in mythology”, after Elsdon Best (1922)"
+      "Tau-toro":
+        text: "Orion's belt. Stellarium's list of Māori names gives Tau toro for the belt, among other names for parts of Orion (Hao-o-rua, Te Kakau)."
+        cite: "Stellarium's Māori sky culture (its table of names)"
+      "The Great Boat of Tama Rereti":
+        text: "The tail of Scorpius: the canoe whose length is the Milky Way. Caught far from home as night fell, before there were any stars, Tama-rereti steered up the river that runs into the heavens and flung bright stones from the lake's edge over the darkness. Ranginui, the sky, was pleased, and placed the canoe up there as well, as a reminder of how the stars began."
+        cite: "Wikipedia, “Milky Way in mythology” (Māori), after Elsdon Best (1922)"
+
+  norse:
+    ours:
+      "Aurvandil's Toe":
+        text: "In Snorri Sturluson's Prose Edda, Thor carries Aurvandill in a basket across the icy rivers Élivágar. One toe sticks out and freezes, and Thor breaks it off and throws it into the sky as a star. The Edda does not say which star: Sirius and Venus have both been guessed. Stellarium's Norse figures put it in Corona Borealis."
+        cite: "Snorri Sturluson, Skáldskaparmál (13th century), as summarised in Wikipedia, “Aurvandill”"
+      "Man's Cart":
+        text: "The Big Dipper as a wagon. In the North Germanic languages it is still the men's wagon (Karlavagnen in Swedish, Karlsvogna in Norwegian), and the Little Dipper is the women's; Norse pagans are also said to have called it Odin's wagon."
+        cite: "Wikipedia, “Big Dipper” (names in other languages)"
+      "Woman's Cart":
+        text: "The Little Dipper as a wagon: the women's wagon, beside the men's wagon of the Big Dipper, as the North Germanic languages still name the pair."
+        cite: "Wikipedia, “Big Dipper” (names in other languages)"
+
+  tongan:
+    ours:
+      "Southern Wild Duck":
+        text: "In Tonga the Cross is drawn as a duck flying south, one wing (Delta Crucis) hurt by a stone that the two men, Alpha and Beta Centauri, threw at it."
+        cite: "Wikipedia, “Crux” (Tonga), after E. E. V. Collocott, Tongan Astronomy and Calendar (Bishop Museum, 1922)"
+
+  boorong:
+    ours:
+      "Crow":
+        text: "War the crow is Canopus. His wife, Collowgulloric War, is the star beside him now known as Eta Carinae."
+        cite: "D. W. Hamacher and D. J. Frew, An Aboriginal Australian record of the Great Eruption of Eta Carinae, Journal of Astronomical History and Heritage 13, 220 (2010)"
+      "Female crow, wife of War":
+        text: "Hamacher and Frew argued in 2010 that this is Eta Carinae, and that the Boorong saw its great outburst of the 1840s, when it was for a while one of the brightest stars in the sky, and made it part of their tradition."
+        cite: "D. W. Hamacher and D. J. Frew, Journal of Astronomical History and Heritage 13, 220 (2010)"
+      "Meat ant":
+        text: "When Marpeankurrk, Arcturus, rose in the north at dusk, it was time to gather the larvae of the wood ant."
+        cite: "W. E. Stanbridge, On the astronomy and mythology of the Aborigines of Victoria, Transactions of the Philosophical Institute of Victoria 2, 137 (1857), as summarised in Wikipedia, “Wergaia”"
+      "Mallee fowl":
+        text: "When Neilloan, the mallee fowl in Lyra, set just after dusk in October, the mallee fowl's eggs were ready to be gathered on Earth."
+        cite: "W. E. Stanbridge (1857), as summarised in Wikipedia, “Wergaia” and “Australian Aboriginal astronomy”"
+      "Ring-tail possum":
+        text: "The Boorong see in the Southern Cross a possum in a tree; Bunya is its top star."
+        cite: "Wikipedia, “Australian Aboriginal astronomy”; Stellarium's Boorong sky culture"

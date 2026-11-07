@@ -2071,6 +2071,8 @@ files, the budgets and these lines together.
 | `site/data/skycultures/chinese.json` | the traditional Chinese asterisms: lines and names | Stellarium, `skycultures/chinese/` | `description.md`: "CC BY-SA 4.0" | Hipparcos numbers replaced by J2000 places (HYG v4.4); a line through a star HYG does not have is cut there (10 such ends); one name place per figure; no pictures |
 | `site/data/skycultures/maori.json` | six Māori figures: lines and names | Stellarium, `skycultures/maori/` | `description.md`: "CC BY-SA 4.0" | the same |
 | `site/data/skycultures/hawaiian.json` | the Hawaiian star lines: lines and names | Stellarium, `skycultures/hawaiian_starlines/` | `description.md`: "CC BY-SA 4.0" | the same |
+| `site/data/skystories/*.json` (8) | one story per figure the sky draws, for every culture above (474 figures) | Stellarium, each culture's `description.md` at the same commit, read 2026-11-07 by `scripts/build-skylore.py` | each `description.md`'s License section: "CC BY-SA 4.0" (modern: "Text and data: CC BY-SA 4.0") | the text a description gives a figure, as it stands (markup removed; the Chinese entries arranged from its list of xingguans); where it gives none, a short summary in our own words with its published source (`registry/skystories.yaml`, marked `ours` in the file), or a plain "no story recorded" for 6 figures | <!-- b200-c1-culture -->
+| `site/data/skyart/maori/`, `site/data/skyart/hawaiian/`, `site/data/skyart/boorong/` (38 pictures) | the Māori, Hawaiian and Boorong figures as drawings | Stellarium, `skycultures/{maori,hawaiian_starlines,boorong}/illustrations/`; the Hawaiian ones drawn by Kealoha Kaneakua; anchor stars' J2000 places from VizieR I/239 (Hipparcos) | each culture's `description.md`: "CC BY-SA 4.0", with no separate licence for its illustrations | greyed, put on black where transparent, resampled to 256 or 512 px squares, re-encoded as WebP; nothing redrawn or cropped; each folder's `LICENSE.txt` says so | <!-- b200-c1-culture -->
 
 **Credit lines to keep** (the controls show a short form of each beside the culture's name):
 
@@ -2083,6 +2085,8 @@ files, the budgets and these lines together.
 - Boorong sky culture: John Morieson and Alex Cherney, for Stellarium, CC BY-SA 4.0
 - Hawaiian star lines: after Nainoa Thompson, put into Stellarium by Darren Kamalu, Christopher Blake and the Celestial Navigation class at Kamehameha Schools Kapālama, CC BY-SA 4.0
 - Constellation borders: Davenhall and Leggett 1989, CDS catalogue VI/49
+- Constellation stories: the Stellarium contributors of each sky culture named above, CC BY-SA 4.0 <!-- b200-c1-culture -->
+- Hawaiian star-line pictures: Kealoha Kaneakua, for Stellarium, CC BY-SA 4.0 <!-- b200-c1-culture -->
 
 **The Free Art License and this repository.** The pictures are free works under a copyleft licence:
 they may be copied, distributed and modified provided the licence travels with them, the authors
@@ -4254,6 +4258,11 @@ Free Art License https://artlibre.org/licence/lal/en/
 
 Applies to `site/data/skyart/index.json`, `site/data/skycultures/chinese.json`,
 `site/data/skycultures/maori.json`, `site/data/skycultures/hawaiian.json`.
+<!-- b200-c1-culture: begin -->
+Also to `site/data/skystories/*.json` (the figures' stories, with our own marked summaries shared alike) and to
+`site/data/skyart/maori/`, `site/data/skyart/hawaiian/`, `site/data/skyart/boorong/` (the pictures, greyed and
+resampled, 2026-11-07), each folder with its own `LICENSE.txt`.
+<!-- b200-c1-culture: end -->
 
 ```
 Sky-culture data from Stellarium (https://github.com/Stellarium/stellarium, skycultures/), by the

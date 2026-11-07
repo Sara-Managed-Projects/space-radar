@@ -21,7 +21,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | systems | 51 | 51 |
 | planets | 134 | 134 |
 | stars_notable | 55 | 55 |
-| catalogues | 4 | 110 191 |
+| catalogues | 5 | 110 192 |
 | other_light | 3 | 3 |
 | sites | 60 | 60 |
 | real_models | 311 | 311 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 39 | 39 |
-| **all** | **1194** | **111 381** |
+| **all** | **1195** | **111 382** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -74,6 +74,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [GALAXY_CLUSTER](#galaxy_cluster) | 0 | `galclusters.js` | modelled | - |
 | [COSMIC_WEB](#cosmic_web) | 0 | none yet (1.3+ (internal #826, #828; spec 0075 tasks 23 and 24): the DESI DR1 wedge with its footprint) | illustrative | - |
 | [CMB_AND_HORIZON](#cmb_and_horizon) | 2 | `shells.js`, `cmb.js` | measured | - |
+| [HELIOSPHERE](#heliosphere) *house* | 1 | `heliosphere.js` | modelled | - |
 | [SPECTRAL_SKY](#spectral_sky) | 3 | `otherlight.js` | measured | - |
 | [EARTH_LIVE](#earth_live) *house* | 6 | `aurora.js`, `lightning.js`, `liveclouds.js`, `glyphs.js` | measured | - |
 | [GROUND_SITE](#ground_site) *house* | 6 | `models.js`, `glyphs.js` | measured | - |
@@ -82,7 +83,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 1194 records: 373 measured, 456 modelled, 365 illustrative.
+Honesty over the 1195 records: 373 measured, 457 modelled, 365 illustrative.
 
 ## The classes
 
@@ -690,6 +691,20 @@ Honesty over the 1194 records: 373 measured, 456 modelled, 365 illustrative.
 - **Rights:** NASA data, no copyright claimed; LAMBDA acknowledged as it asks.
 - **Records (2):**
   - catalogues (2): `cmb`, `edge`
+
+### HELIOSPHERE
+
+**The heliosphere** (a class of the house, not of the package)
+
+- **Drawn by:** `site/js/scene/heliosphere.js`
+- **Default honesty:** modelled
+- **On a weak device (T0, or after the frame latch):** The same translucent shells on every tier; the arrow held two pixels wide.
+- **Source:** Model shapes (Parker 1961, Wilkin 1996, after Izmodenov & Alexashov 2015 and Opher et al. 2015) scaled through the Voyagers' four crossings, read from the JPL Horizons tracks on NASA's dates; IBEX's interstellar wind (McComas et al. 2015) and ribbon (Funsten et al. 2013).
+- **Dates and filters:** Voyager 1 2004-12-16 and 2012-08-25, Voyager 2 2007-08-30 and 2018-11-05; IBEX 2009-2015.
+- **Measured, modelled or reconstructed:** Measured: the four crossings, the wind's direction and speed, the ribbon's circle on the sky. Modelled: the shapes between the crossings. Illustrative: the bow wave's distance and the ribbon's.
+- **Rights:** Facts and published numbers, cited; no file of anyone else's.
+- **Records (1):**
+  - catalogues (1): `heliosphere`
 
 ### SPECTRAL_SKY
 

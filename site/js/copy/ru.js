@@ -5079,6 +5079,30 @@ Object.assign(COPY, {
   }
 });
 // b200-f3-stars: end
+// b200-c1-culture: begin -- a sky figure's story and the other cultures' pictures (copy/en.later.js skyLore, forge #143), machine-drafted
+Object.assign(COPY, {
+  "skyLore": {
+    "figure": "фигура неба: {culture}",
+    "figureLabel": "{name}, фигура неба ({culture}). Нажмите, чтобы прочитать её историю.",
+    "openTitle": "Нажмите, чтобы прочитать историю",
+    "sub": "Небо: {culture}",
+    "close": "Закрыть историю",
+    "loading": "Загружаем историю…",
+    "failed": "История не загрузилась. Попробуйте ещё раз чуть позже.",
+    "fromStellarium": "Из описания этой небесной культуры в Stellarium. {credit}.",
+    "ours": "Нашими словами, по источнику: {cite}.",
+    "honesty": "Иллюстративно: один пересказ, как его записал источник. Имена и истории у разных народов и рассказчиков различаются.",
+    "none": "В источниках, которыми мы можем делиться, история этой фигуры не записана. Это живые традиции, поэтому мы говорим об этом, а не гадаем.",
+    "inEnglish": "История на английском, языке её источника: лицензированного перевода нет.",
+    "artTitles": {
+      "maori": "Фигуры маори в рисунках, из небесной культуры маори в Stellarium, CC BY-SA 4.0",
+      "hawaiian": "Гавайские звёздные линии в рисунках Кеалоха Канеакуа, для Stellarium, CC BY-SA 4.0",
+      "boorong": "Фигуры бурунг в рисунках, из небесной культуры бурунг в Stellarium, CC BY-SA 4.0"
+    },
+    "artNone": "Рисунков этого неба под лицензией, которой мы можем делиться, нет: его фигуры остаются линиями."
+  }
+});
+// b200-c1-culture: end
 // b200-f5-make: begin -- the flight editor, Record and Dome and 360 (copy/en.make.js, forge #155, #156, #157), machine-drafted
 Object.assign(COPY, {
   "make": {

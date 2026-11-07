@@ -781,8 +781,10 @@ export function renderTonight(host, ctx) {
       setText(cultureCredit, K.cultureCredits[culture] || '');
       // The pictures are drawn for the western figures: the button says so and waits.
       const artBtn = toggles.get('art');
-      artBtn.disabled = culture !== 'western';
-      artBtn.title = culture !== 'western' ? K.artWesternOnly : K.toggleTitles.art;
+      // b200-c1-culture (forge #143): the pictures follow the culture, for the cultures that have them.
+      const artTitle = culture === 'western' ? K.toggleTitles.art : COPY.skyLore.artTitles[culture];
+      artBtn.disabled = !artTitle;
+      artBtn.title = artTitle || COPY.skyLore.artNone;
       // How dark: the map's estimate while Auto is on, the visitor's own pick once they make one.
       const now = s && s.darkness ? s.darkness : { id: o.darkness, by: 'you' };
       press(darkAuto, o.darknessBy === 'place');

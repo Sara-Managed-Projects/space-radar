@@ -130,6 +130,9 @@ STOP_FIELDS = (
     # `fov`, `panel`: the stop stands on another world (scene/groundstage.js; forge #146, #147)
     "stand",
     # b200-f7-ground: end
+    # b200-c1-culture-helio (forge #148): `narrow_fit`: on a screen narrower than this, wide to tall, the stop
+    # stands back by that share (ui/trip.js narrowFitScale), so a wide subject still fits a phone held upright.
+    "narrow_fit",
     "card",
 )
 
