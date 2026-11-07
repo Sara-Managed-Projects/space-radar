@@ -16,7 +16,7 @@
 //   STANDARD, XR_BUTTONS, PAD_BUTTONS: the indices and the names, for the hint and the tests
 //
 // THE INTENT is one shape for both readers, so the 2D flight (ui/gamepad.js) and the headset (ui/headset.js) answer the
-// same buttons the same way: { lx, ly, rx, ry, lt, rt, a, b, x, y, up, down, menu, stop }, sticks -1..1 after the dead
+// same buttons the same way: { lx, ly, rx, ry, lt, rt, a, b, x, y, view, up, down, menu, stop }, sticks -1..1 after the dead
 // zone and the curve (up is negative, as the Gamepad API reports it), triggers 0..1, buttons true or false. The names are
 // Xbox's; on a PlayStation pad A is Cross, B Circle, X Square and Y Triangle, which is what the standard layout guarantees.
 //
@@ -41,7 +41,7 @@ export const STANDARD = Object.freeze({
 /** WebXR's xr-standard layout (https://immersive-web.github.io/webxr-gamepads-module/#xr-standard-gamepad-mapping). */
 export const XR_BUTTONS = Object.freeze({ trigger: 0, squeeze: 1, stick: 3, a: 4, b: 5 });
 /** The buttons an intent carries, in the order the hint lists them. */
-export const PAD_BUTTONS = Object.freeze(['a', 'x', 'b', 'y', 'up', 'down', 'menu', 'stop']);
+export const PAD_BUTTONS = Object.freeze(['a', 'x', 'b', 'y', 'view', 'up', 'down', 'menu', 'stop']);
 
 export const INNER_DEAD = 0.15;
 export const OUTER_DEAD = 0.95;
@@ -92,7 +92,7 @@ const val = (b) => (b && typeof b === 'object' ? num(b.value) || (b.pressed ? 1 
 
 /** The empty intent: what a pad at rest, or no pad, says. */
 export function restIntent() {
-  return { lx: 0, ly: 0, rx: 0, ry: 0, lt: 0, rt: 0, a: false, b: false, x: false, y: false, up: false, down: false, menu: false, stop: false, standard: true };
+  return { lx: 0, ly: 0, rx: 0, ry: 0, lt: 0, rt: 0, a: false, b: false, x: false, y: false, view: false, up: false, down: false, menu: false, stop: false, standard: true };
 }
 
 /** A Gamepad (or anything shaped like one) on the standard layout. A pad that is not gets its left stick only. */
@@ -115,6 +115,7 @@ export function readStandard(gp) {
   out.b = btn(b[STANDARD.b]);
   out.x = btn(b[STANDARD.x]);
   out.y = btn(b[STANDARD.y]);
+  out.view = btn(b[STANDARD.view]);
   out.up = btn(b[STANDARD.up]);
   out.down = btn(b[STANDARD.down]);
   out.menu = btn(b[STANDARD.menu]);

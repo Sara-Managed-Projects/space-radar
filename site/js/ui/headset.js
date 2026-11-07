@@ -1,12 +1,11 @@
 // ui/headset.js -- the headset mode (forge #158): the same scene in a WebXR `immersive-vr` session, for the Quest's
-// browser or a Vision Pro, with no PC and no app. The sky from the ground and the distance ladder first; the Moments are
-// not in it yet (they draw a scene of their own, moments/player.js).
+// browser or a Vision Pro, with no PC and no app: the sky from the ground, the distance ladder, and the inside of a Moment.
 //
 // Contract: mountHeadset(ctx, env?) -> headset (once per ctx; ctx.headset is it), and the rail's button and More's row
 //             headset = { get active(), enter(), exit(), get yawDeg() }
 //   Pure or mockable, for tests/test_headset.mjs: levelBasis(up, forward, yaw), unitsPerMetre({ ground, unitKm, distance }),
-//   xrNearFar(near, far, s), blockedBy(ctx), frameShim(win), wrapRender(renderer, camera, place),
-//   createHeadset(ctx, { xr, win })
+//   xrNearFar(near, far, s), blockedBy(ctx), frameShim(win), wrapRender(renderer, choose), momentCut(held, fwd, up, now),
+//   frameGovernor(state, dtMs), createHeadset(ctx, { xr, win })
 //
 // WHEN. NOT AT BOOT, AND NOT FOR EVERYONE. main.js asks navigator.xr.isSessionSupported('immersive-vr') once and imports
 // this module only when the answer is yes: a phone, Safari on a Mac and Chrome on a desktop with no headset runtime all
@@ -14,8 +13,8 @@
 //
 // ENTERING. The button opens a note first: comfort (jumps, not glides; turns in steps; the horizon level; sit down) and
 // the seizure warning, the controls, and that this has not been tried on a real headset. Its Enter is the user gesture
-// WebXR asks for. Refused while a Moment, an imagined world, Dome and 360 or a recording is up: each draws its own
-// picture with its own camera, and a second picture has no place in the headset (wrapRender below drops it).
+// WebXR asks for. Refused while an imagined world, Dome and 360 or a recording is up: each draws its own picture with
+// its own camera, and a second picture has no place in the headset (wrapRender below drops it).
 //
 // THE 2D VIEW IS NOT CHANGED. Nothing here runs until Enter is pressed. While the session lasts:
 //   - THE LOOP. A WebXR frame comes from the session, not from the window: main.js's loop calls the window's
@@ -37,8 +36,23 @@
 //     cut (scene/camera.js flyTo), which is the TELEPORT the comfort rules ask for, and every other motion the app makes
 //     is the reduced one. The visitor's own choice is put back after.
 //
+// INSIDE A MOMENT (moments/player.js draws its own stage, in metres, with its camera always at the stage's origin and
+// the world moved round it). The headset draws that stage through the same anchor, at a metre a metre, but the
+// director's camera path is never forced on the eyes: the anchor holds a pose (where the director stood, and its
+// heading laid flat) and takes the director's new one only as a CUT, every MOMENT_CUT_MS or as soon as the heading has
+// turned more than MOMENT_CUT_DEG (momentCut). Between cuts the viewer stands still while the vehicles move; the
+// horizon is the place's own up, level, as everywhere else. A or the right trigger plays and pauses, B goes back to the
+// map, the right stick snap-turns, Y shows the controls.
+//
+// FRAME TIME. The panel's last line is the frames' own time, smoothed (frameGovernor): the 72 a second the issue asks
+// for is not measured here (no headset), so the panel shows it to whoever wears one. When frames run long (over
+// LONG_FACTOR times the 72 Hz budget for LONG_RUN frames running) the headset draws less, in two steps: fixed
+// foveation from FOVEATION_START to full, then the frame latch (main.js ctx.latch.force: the stars' low detail, the
+// worlds' boot maps, no earthshine), and the panel says so.
+//
 // THE CONTROLLERS are ui/padmap.js readXR: the #164 mapping, so A chooses, X goes, B goes back and Y shows the controls,
-// as on a pad. Moves are steps, never glides (padmap.js flick: one step per push of a stick):
+// as on a pad (Y shows them there too; a Quest's left Menu button is the system's, not the page's). Moves are steps,
+// never glides (padmap.js flick: one step per push of a stick):
 //   right stick left / right   turn 30 degrees (a SNAP TURN: the anchor turns, the head does the rest)
 //   right stick up / down      step in to half the distance, or out to twice it (a cut)
 //   left stick left / right    step 30 degrees around what the view is on (a cut); from the ground, a snap turn
@@ -73,6 +87,14 @@ export const SEEMS_M = 20;
 export const NEAR_M = 0.05;
 /** The panel stays this long after it last changed, unless Y pinned it. */
 export const PANEL_MS = 8000;
+/** Inside a Moment the director's pose is taken as a cut this often at most, or when its heading turns this far. */
+export const MOMENT_CUT_MS = 3000;
+export const MOMENT_CUT_DEG = 30;
+/** 72 frames a second (Quest's default), and when a frame is "long". */
+export const FRAME_BUDGET_MS = 1000 / 72;
+export const LONG_FACTOR = 1.2;
+export const LONG_RUN = 90;
+export const FOVEATION_START = 0.5;
 const DEG = Math.PI / 180;
 
 // --- pure ---------------------------------------------------------------------------------------------------------
@@ -120,7 +142,6 @@ export function xrNearFar(near, far, s) {
 /** What would draw a picture of its own over the headset's, or null when entering is fine. */
 export function blockedBy(ctx) {
   if (!ctx) return null;
-  if (ctx.replay && ctx.replay.active) return 'moment';
   if (ctx.imagine && ctx.imagine.active) return 'imagine';
   if (ctx.projection && ctx.projection.active) return 'projection';
   if (ctx.recorder && ctx.recorder.active) return 'recording';
@@ -159,23 +180,52 @@ export function frameShim(win) {
 }
 
 /**
- * While the renderer presents to a headset, a draw with the 2D camera is drawn through place()'s stand-in, and a draw with
- * any other camera (a Moment's, Dome and 360's) is dropped. Otherwise every draw is as it was.
+ * While the renderer presents to a headset, every draw asks choose(scene, camera): a stand-in camera to draw it through
+ * (the 2D camera's frame, or a Moment's), or null to drop it (Dome and 360's, the map's while a Moment is up). Otherwise
+ * every draw is as it was.
  */
-export function wrapRender(renderer, camera, place) {
+export function wrapRender(renderer, choose) {
   const orig = renderer.render;
   let drawn = 0;
   renderer.render = function render(scene, cam) {
     if (!(renderer.xr && renderer.xr.isPresenting)) return orig.call(this, scene, cam);
-    if (cam !== camera) return undefined;
+    const through = choose(scene, cam);
+    if (!through) return undefined;
     drawn += 1;
-    return orig.call(this, scene, place());
+    return orig.call(this, scene, through);
   };
   return {
     get drawn() { return drawn; },
     reset() { drawn = 0; },
     restore() { renderer.render = orig; },
   };
+}
+
+/**
+ * Inside a Moment: whether the anchor takes the director's pose now. `held` is { fwd, up, at } or null; a cut when there is
+ * none, when it is MOMENT_CUT_MS old, when the heading (laid flat on the held up) has turned past MOMENT_CUT_DEG, or when
+ * the up itself has turned past 10 degrees (a shot from somewhere else).
+ */
+export function momentCut(held, fwd, up, now, maxMs = MOMENT_CUT_MS, maxDeg = MOMENT_CUT_DEG) {
+  if (!held) return true;
+  if (!(now - held.at < maxMs)) return true;
+  const ang = (a, b) => Math.acos(Math.max(-1, Math.min(1, dot(norm(a), norm(b))))) / DEG;
+  if (ang(held.up, up) > 10) return true;
+  return ang(levelBasis(held.up, held.fwd).z, levelBasis(held.up, fwd).z) > maxDeg;
+}
+
+/**
+ * The frames' time, smoothed, and when to draw less: `fire` is true when frames have run over LONG_FACTOR times the 72 Hz
+ * budget for LONG_RUN frames in a row, at most twice (`step` 1 and 2). A gap of a second or more (a pause, a menu) is not a
+ * frame and is not counted.
+ */
+export function frameGovernor(st, dtMs) {
+  const prev = st || { ema: 0, long: 0, step: 0 };
+  if (!(dtMs > 0 && dtMs < 1000)) return { ...prev, fire: false };
+  const ema = prev.ema ? prev.ema * 0.9 + dtMs * 0.1 : dtMs;
+  const long = ema > FRAME_BUDGET_MS * LONG_FACTOR ? prev.long + 1 : 0;
+  const fire = long >= LONG_RUN && prev.step < 2;
+  return { ema, long: fire ? 0 : long, step: prev.step + (fire ? 1 : 0), fire };
 }
 
 // --- the session ----------------------------------------------------------------------------------------------------
@@ -236,15 +286,16 @@ export function createHeadset(ctx, env = {}) {
   }
 
   // The panel: a canvas texture on a plane 1.2 m wide, fixed to the anchor (it turns with a snap turn, not with the head).
+  // Its last line is the frame time, redrawn at most twice a second.
   function makePanel() {
     if (typeof document === 'undefined') return null;
     const canvas = document.createElement('canvas');
     canvas.width = 1024;
-    canvas.height = 320;
+    canvas.height = 384;
     const tex = new THREE.CanvasTexture(canvas);
     tex.colorSpace = THREE.SRGBColorSpace;
     const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false, toneMapped: false });
-    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.375), mat);
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.45), mat);
     mesh.position.set(0, -0.5, -1.4);
     mesh.rotation.x = -0.34; // tipped back toward the eyes, which look down at it
     mesh.renderOrder = 10000;
@@ -253,6 +304,9 @@ export function createHeadset(ctx, env = {}) {
     let until = 0;
     let pinned = false;
     let status = '';
+    let help = C.panelHelp;
+    let frameLine = '';
+    let frameAt = 0;
     const draw = () => {
       const g = canvas.getContext('2d');
       if (!g) return;
@@ -261,52 +315,89 @@ export function createHeadset(ctx, env = {}) {
       g.beginPath();
       if (g.roundRect) g.roundRect(4, 4, canvas.width - 8, canvas.height - 8, 36); else g.rect(4, 4, canvas.width - 8, canvas.height - 8);
       g.fill();
+      const w = canvas.width - 88;
       g.fillStyle = '#e8ecf2';
       g.font = '600 46px system-ui, sans-serif';
-      g.fillText(status || C.panelHelp, 44, 92, canvas.width - 88);
+      g.fillText(status || help, 44, 92, w);
       g.fillStyle = '#9aa4b2';
       g.font = '400 34px system-ui, sans-serif';
-      if (status) g.fillText(C.panelHelp, 44, 160, canvas.width - 88);
-      g.fillText(C.panelMove, 44, status ? 220 : 160, canvas.width - 88);
+      let y = 160;
+      if (status) { g.fillText(help, 44, y, w); y += 60; }
+      if (help === C.panelHelp) { g.fillText(C.panelMove, 44, y, w); y += 60; }
       g.fillStyle = '#ff9f43';
-      g.fillText(C.panelLeave, 44, status ? 280 : 220, canvas.width - 88);
+      g.fillText(C.panelLeave, 44, y, w);
+      g.fillStyle = '#9aa4b2';
+      g.font = '400 30px ui-monospace, monospace';
+      if (frameLine) g.fillText(frameLine, 44, 344, w);
       tex.needsUpdate = true;
     };
     return {
       mesh,
       say(line, now) { status = line || ''; until = now + PANEL_MS; },
       pin(now) { pinned = !pinned; until = pinned ? Infinity : now; },
+      setHelp(line) { help = line; },
+      frameTime(line, now) { if (now - frameAt >= 500) { frameAt = now; frameLine = line; } },
       frame(now) {
-        const want = status + '|' + (pinned ? 1 : 0);
-        if (want !== shown) { shown = want; draw(); }
+        const want = `${status}|${help}|${frameLine}|${pinned ? 1 : 0}`;
         mesh.visible = pinned || now < until;
+        if (mesh.visible && want !== shown) { shown = want; draw(); }
       },
     };
   }
 
-  // The anchor at the 2D camera, level, turned by the snap turns; the stand-in camera's planes in its metres.
-  function place() {
-    const ground = !!(ctx.skyView && ctx.skyView.active);
-    _f.set(0, 0, -1).applyQuaternion(camera.quaternion);
-    const b = levelBasis([camera.up.x, camera.up.y, camera.up.z], [_f.x, _f.y, _f.z], yaw);
-    const rs = ctx.cameraRig && ctx.cameraRig.state;
-    const s = unitsPerMetre({ ground, unitKm: ctx.stage && ctx.stage.unitKm, distance: rs ? rs.cameraDistance || rs.distance : 0 });
-    const P = camera.position;
+  // INSIDE A MOMENT: the player's stage and camera, or null.
+  const momentView = () => (ctx.replay && ctx.replay.active && ctx.replay.view) || null;
+  let held = null;
+  let momentScene = null;
+  const _hp = new THREE.Vector3();
+
+  /** What each draw is drawn through while presenting (wrapRender): the map's frame, a Moment's, or nothing. */
+  function choose(sc, cam) {
+    const mv = momentView();
+    if (cam === camera) return mv ? null : place(sc, camera, null);
+    if (mv && cam === mv.camera) { momentScene = sc; return place(sc, cam, mv); }
+    return null;
+  }
+
+  // The anchor at the camera, level, turned by the snap turns; the stand-in camera's planes in its metres. Inside a Moment
+  // the pose is the held one (momentCut), in the stage's metres, relative to where the director stands now.
+  function place(sc, cam, mv) {
+    if (anchor.parent !== sc) sc.add(anchor);
+    _f.set(0, 0, -1).applyQuaternion(cam.quaternion);
+    let up = [cam.up.x, cam.up.y, cam.up.z];
+    let fwd = [_f.x, _f.y, _f.z];
+    let P = cam.position;
+    let s;
+    if (mv) {
+      const o = mv.origin || [0, 0, 0];
+      const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+      if (momentCut(held, fwd, up, now)) held = { fwd, up, origin: [o[0], o[1], o[2]], at: now };
+      up = held.up;
+      fwd = held.fwd;
+      P = _hp.set(held.origin[0] - o[0], held.origin[1] - o[1], held.origin[2] - o[2]);
+      s = 1; // the Moment's stage is in metres
+    } else {
+      held = null;
+      const ground = !!(ctx.skyView && ctx.skyView.active);
+      const rs = ctx.cameraRig && ctx.cameraRig.state;
+      s = unitsPerMetre({ ground, unitKm: ctx.stage && ctx.stage.unitKm, distance: rs ? rs.cameraDistance || rs.distance : 0 });
+    }
+    const b = levelBasis(up, fwd, yaw);
     _m.set(
       b.x[0] * s, b.y[0] * s, b.z[0] * s, P.x,
       b.x[1] * s, b.y[1] * s, b.z[1] * s, P.y,
       b.x[2] * s, b.y[2] * s, b.z[2] * s, P.z,
       0, 0, 0, 1,
     );
-    _inv.copy(scene.matrixWorld).invert();
+    _inv.copy(sc.matrixWorld).invert();
     anchor.matrix.multiplyMatrices(_inv, _m);
     anchor.matrixWorldNeedsUpdate = true;
     _rot.makeBasis(_x.fromArray(b.x), _y.fromArray(b.y), _z.fromArray(b.z));
     _q.setFromRotationMatrix(_rot);
-    const nf = xrNearFar(camera.near, camera.far, s);
+    const nf = xrNearFar(cam.near, cam.far, s);
     proxy.near = nf.near;
     proxy.far = nf.far;
-    proxy.layers.mask = camera.layers.mask;
+    proxy.layers.mask = cam.layers.mask;
     return proxy;
   }
 
@@ -340,39 +431,48 @@ export function createHeadset(ctx, env = {}) {
 
   function controls(time) {
     const intent = readXR(session.inputSources);
+    const mv = momentView();
     const ground = !!(ctx.skyView && ctx.skyView.active);
     const busy = tripOn(ctx);
+    // Inside a Moment the director has the camera: the sticks only turn the viewer, A plays and pauses, B goes back to the map.
+    const still = ground || busy || !!mv;
+    if (panel) panel.setHelp(mv ? C.momentHelp : C.panelHelp);
     let f = flick(flicks.rx, intent.rx);
     flicks.rx = f.state;
     if (f.fire) yaw -= f.fire * SNAP_DEG * DEG;
     f = flick(flicks.lx, intent.lx);
     flicks.lx = f.state;
-    if (f.fire) { if (ground || busy) yaw -= f.fire * SNAP_DEG * DEG; else cut(1, -f.fire * ORBIT_STEP_DEG * DEG); }
+    if (f.fire) { if (still) yaw -= f.fire * SNAP_DEG * DEG; else cut(1, -f.fire * ORBIT_STEP_DEG * DEG); }
     f = flick(flicks.ry, intent.ry);
     flicks.ry = f.state;
-    if (f.fire && !ground && !busy) cut(f.fire > 0 ? STEP_FACTOR : 1 / STEP_FACTOR, 0);
+    if (f.fire && !still) cut(f.fire > 0 ? STEP_FACTOR : 1 / STEP_FACTOR, 0);
     f = flick(flicks.ly, intent.ly);
     flicks.ly = f.state;
-    if (f.fire && !busy) {
+    if (f.fire && !busy && !mv) {
       rung = nextRung(rung, f.fire < 0 ? 1 : -1, LADDER_RUNGS.length);
       if (panel) panel.say(goRung(ctx, rung), time);
     }
-    const choose = () => {
+    const choose1 = () => {
+      if (mv) { if (mv.playing) ctx.replay.pause(); else ctx.replay.play(); return; }
       if (busy) return;
       const rec = gazeChoose();
       if (panel) panel.say(rec ? t(C.chosen, { name: rec.name }) : C.nothing, time);
     };
     for (const name of pressed(prev, intent)) {
-      if (name === 'a') choose();
-      else if (name === 'x' && !busy) { if (!goChosen(ctx) && panel) panel.say(COPY.pad.chooseFirst, time); }
+      if (name === 'a') choose1();
+      else if (name === 'x' && !busy && !mv) { if (!goChosen(ctx) && panel) panel.say(COPY.pad.chooseFirst, time); }
       else if (name === 'y' && panel) panel.pin(time);
       else if (name === 'b') bDown = time;
     }
     const rt = intent.rt > 0.6;
-    if (rt && !rtWas) choose();
+    if (rt && !rtWas) choose1();
     rtWas = rt;
     if (intent.b && bDown && time - bDown >= LEAVE_HOLD_MS) { bDown = 0; prev = intent; exit(); return; }
-    if (!intent.b && prev.b && bDown) { bDown = 0; if (!busy) goBack(ctx); }
+    if (!intent.b && prev.b && bDown) {
+      bDown = 0;
+      if (mv) ctx.replay.close();
+      else if (!busy) goBack(ctx);
+    }
     prev = intent;
     // The gaze ring, 1.5 m down the look of this frame's pose (the anchor's metres are the reference space's).
     const head = renderer.xr.getCamera();
@@ -380,17 +480,39 @@ export function createHeadset(ctx, env = {}) {
       _f.set(0, 0, -1).applyQuaternion(head.quaternion);
       ring.position.copy(head.position).addScaledVector(_f, 1.5);
       ring.quaternion.copy(head.quaternion);
+      ring.visible = !mv;
     }
     if (panel) panel.frame(time);
   }
 
+  // Frame time: the readout, and the two steps down when frames run long.
+  let gov = null;
+  let lastT = 0;
+  function frameTime(time) {
+    if (lastT) {
+      gov = frameGovernor(gov, time - lastT);
+      if (panel && gov.ema > 0) panel.frameTime(t(C.frame, { ms: gov.ema.toFixed(1), fps: Math.round(1000 / gov.ema) }), time);
+      if (gov.fire) {
+        if (gov.step === 1 && typeof renderer.xr.setFoveation === 'function') renderer.xr.setFoveation(1);
+        if (gov.step === 2 && ctx.latch && typeof ctx.latch.force === 'function') ctx.latch.force();
+        if (panel) panel.say(C.lighter, time);
+      }
+    }
+    lastT = time;
+  }
+
   function tick(time) {
     if (!session) return;
+    frameTime(time);
     try { controls(time); } catch (e) { console.warn('the headset controls failed', e); }
     if (!session) return; // left from the controls
     if (wrap) wrap.reset();
     if (shim) shim.run(time);
-    if (wrap && !wrap.drawn) renderer.render(scene, camera);
+    if (wrap && !wrap.drawn) {
+      // A frame the loop did not draw (the idle cap) is drawn all the same: a Moment's stage if one is up, else the map.
+      const mv = momentView();
+      if (mv && momentScene) renderer.render(momentScene, mv.camera); else renderer.render(scene, camera);
+    }
   }
 
   function motionOff() {
@@ -443,10 +565,13 @@ export function createHeadset(ctx, env = {}) {
       scene.add(anchor);
       yaw = 0;
       prev = restIntent();
-      wrap = wrapRender(renderer, camera, place);
+      wrap = wrapRender(renderer, choose);
+      gov = null;
+      lastT = 0;
+      held = null;
       renderer.xr.enabled = true;
       if (typeof renderer.xr.setReferenceSpaceType === 'function') renderer.xr.setReferenceSpaceType(REFERENCE_SPACE);
-      if (typeof renderer.xr.setFoveation === 'function') renderer.xr.setFoveation(1);
+      if (typeof renderer.xr.setFoveation === 'function') renderer.xr.setFoveation(FOVEATION_START);
       // Before the session: three stops its window loop when the session starts, and runs this from the session's frames.
       renderer.setAnimationLoop(tick);
       s.addEventListener('end', onEnd, { once: true });

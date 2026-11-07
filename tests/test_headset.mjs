@@ -47,8 +47,28 @@ check(H.unitsPerMetre({}) === 1, 'with nothing known, a unit a metre');
 const nf = H.xrNearFar(1e-5, 1e9, 1e-6);
 check(near(nf.near, H.NEAR_M) && near(nf.far, 1e15), 'the near plane is never past NEAR_M (the panel at 1.4 m) and the far is the camera\'s, in metres');
 check(near(H.xrNearFar(1e-9, 10, 1).near, 1e-9), 'a nearer 2D near plane is kept');
-check(H.blockedBy({}) === null && H.blockedBy({ replay: { active: true } }) === 'moment' && H.blockedBy({ projection: { active: true } }) === 'projection'
-  && H.blockedBy({ recorder: { active: true } }) === 'recording' && H.blockedBy({ imagine: { active: true } }) === 'imagine', 'a Moment, an imagined world, Dome and 360 or a recording keeps the headset out');
+check(H.blockedBy({}) === null && H.blockedBy({ replay: { active: true } }) === null && H.blockedBy({ projection: { active: true } }) === 'projection'
+  && H.blockedBy({ recorder: { active: true } }) === 'recording' && H.blockedBy({ imagine: { active: true } }) === 'imagine', 'an imagined world, Dome and 360 or a recording keeps the headset out; a Moment does not');
+
+// --- inside a Moment: cuts, never a forced turn ----------------------------------------------------------------------
+const UP = [0, 1, 0];
+check(H.momentCut(null, [0, 0, -1], UP, 0), 'the first frame of a Moment takes the director\'s pose');
+const held0 = { fwd: [0, 0, -1], up: UP, at: 1000 };
+check(!H.momentCut(held0, [Math.sin(0.3), 0, -Math.cos(0.3)], UP, 2000), 'a heading turned 17 degrees a second later is not followed: the viewer is not turned');
+check(H.momentCut(held0, [Math.sin(0.6), 0, -Math.cos(0.6)], UP, 2000), 'a heading turned past 30 degrees is a cut');
+check(H.momentCut(held0, [0, 0, -1], UP, 1000 + H.MOMENT_CUT_MS), 'and every MOMENT_CUT_MS the director\'s new place is a cut');
+check(!H.momentCut(held0, [0, -0.9, -0.4], UP, 2000), 'the director looking down is not a cut: the horizon stays level, only the heading counts');
+check(H.momentCut(held0, [0, 0, -1], [0.5, 0.86, 0], 2000), 'a shot with another up (somewhere else) is a cut');
+
+// --- frame time --------------------------------------------------------------------------------------------------------
+let g = null;
+for (let i = 0; i < 200; i += 1) g = H.frameGovernor(g, 1000 / 72);
+check(near(g.ema, 1000 / 72, 1e-6) && g.step === 0, 'frames at 72 a second read 13.9 ms and draw everything');
+let fires = 0;
+for (let i = 0; i < 400; i += 1) { g = H.frameGovernor(g, 25); if (g.fire) fires += 1; }
+check(fires === 2 && g.step === 2, 'frames at 40 a second step down twice, LONG_RUN frames apart, and no further');
+const g2 = H.frameGovernor({ ema: 14, long: 3, step: 0 }, 5000);
+check(!g2.fire && g2.ema === 14 && g2.long === 3, 'a gap of seconds (a pause, the system menu) is not a frame');
 
 // --- the frame shim ---------------------------------------------------------------------------------------------------------
 function fakeWindow() {
@@ -87,7 +107,7 @@ function fakeWindow() {
   const drawn = [];
   const renderer = { xr: { isPresenting: false }, render(scene, cam) { drawn.push(cam); } };
   const orig = renderer.render;
-  const w = H.wrapRender(renderer, main, () => proxy);
+  const w = H.wrapRender(renderer, (sc, cam) => (cam === main ? proxy : null));
   renderer.render({}, main);
   renderer.render({}, other);
   check(drawn[0] === main && drawn[1] === other && w.drawn === 0, 'not presenting, every draw is as it was');
@@ -153,7 +173,7 @@ const ctl = (handedness, axes, down = {}) => ({ handedness, gamepad: { mapping: 
   const ok = await hs.enter();
   check(ok && hs.active, 'Enter starts a session');
   check(xr.asked.length === 1 && xr.asked[0].mode === 'immersive-vr' && xr.asked[0].init === undefined, 'it asks for immersive-vr with nothing optional');
-  check(renderer.xr.enabled && renderer.xr.refSpace === 'local' && renderer.xr.foveation === 1, 'the renderer presents in the local space with fixed foveation');
+  check(renderer.xr.enabled && renderer.xr.refSpace === 'local' && renderer.xr.foveation === H.FOVEATION_START, 'the renderer presents in the local space with fixed foveation');
   check(renderer.loops.length === 1 && typeof renderer.loop === 'function', 'the loop is set before the session, so three runs it from the session\'s frames');
   check(scene.children.some((c) => c.name === 'sr-headset-anchor'), 'the anchor is in the scene');
   check(win.requestAnimationFrame !== win.origRaf, 'main.js\'s requestAnimationFrame now waits for the session');
@@ -213,8 +233,75 @@ const ctl = (handedness, axes, down = {}) => ({ handedness, gamepad: { mapping: 
   const ctx = { renderer, scene: new THREE.Scene(), camera: new THREE.PerspectiveCamera(), rendererApi: {} };
   const hs = H.createHeadset(ctx, { xr, win, say: (l) => said.push(l) });
   check((await hs.enter()) === false && !hs.active && !renderer.xr.enabled && win.requestAnimationFrame === win.origRaf && said.length === 1, 'a refused session leaves the page as it was, and says so');
-  const busy = H.createHeadset({ ...ctx, replay: { active: true } }, { xr: fakeXr(), win, say: (l) => said.push(l) });
-  check((await busy.enter()) === false && said.length === 2, 'with a Moment on screen Enter is refused before a session is asked for');
+  const busy = H.createHeadset({ ...ctx, imagine: { active: true } }, { xr: fakeXr(), win, say: (l) => said.push(l) });
+  check((await busy.enter()) === false && said.length === 2, 'with an imagined world on screen Enter is refused before a session is asked for');
+}
+
+// --- a Moment in the headset, against the same mocks ------------------------------------------------------------------
+{
+  const xr = fakeXr();
+  const renderer = fakeRenderer();
+  const win = fakeWindow();
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera();
+  const mScene = new THREE.Scene();
+  const mCam = new THREE.PerspectiveCamera(40, 1.6, 0.1, 1e12); // at the stage's origin, as moments/stage.js keeps it
+  mCam.lookAt(0, 0, -1);
+  const calls = [];
+  const view = { camera: mCam, origin: [100, 0, 0], playing: false };
+  let forced = 0;
+  const ctx = {
+    renderer, scene, camera, rendererApi: {}, latch: { force() { forced += 1; return true; } },
+    replay: { active: true, get view() { return view; }, play() { calls.push('play'); }, pause() { calls.push('pause'); }, close() { calls.push('close'); this.active = false; }, render() { renderer.render(mScene, mCam); } },
+  };
+  const hs = H.createHeadset(ctx, { xr, win, say: () => {} });
+  check(await hs.enter(), 'a Moment on screen can be entered');
+  check(renderer.xr.foveation === H.FOVEATION_START, 'the session starts at the lighter foveation, with room to step down');
+  const frame = () => { win.requestAnimationFrame(frame); renderer.render(scene, camera); ctx.replay.render(); };
+  win.requestAnimationFrame(frame);
+  // performance.now() is the Moment's clock for the cuts; the session's own time drives the frames.
+  const realNow = performance.now.bind(performance);
+  let clock = 50000;
+  performance.now = () => clock;
+  let T = 1000;
+  const step = (ms = 1000 / 72) => { T += ms; renderer.loop(T); };
+  step();
+  const drawnMoment = renderer.drawn.filter((c) => c !== camera);
+  check(renderer.drawn.length === 1 && drawnMoment.length === 1 && drawnMoment[0].parent.parent === mScene, 'the map\'s frame is dropped and the Moment\'s drawn through the anchor, now in the Moment\'s scene');
+  const anchorOf = () => renderer.drawn[renderer.drawn.length - 1].parent;
+  check(near(anchorOf().matrix.elements[12], 0) && near(Math.hypot(...anchorOf().matrix.elements.slice(0, 3)), 1), 'the viewer stands where the director stands, a metre a metre');
+  view.origin = [110, 0, 0]; // the director moved 10 m
+  mCam.lookAt(Math.sin(0.3), 0, -Math.cos(0.3)); // and turned 17 degrees
+  clock += 1000;
+  step();
+  check(near(anchorOf().matrix.elements[12], -10) && near(anchorOf().matrix.elements[8], 0, 1e-9), 'a second later the viewer has not been carried or turned: the director is 10 m on, the heading held');
+  clock += H.MOMENT_CUT_MS;
+  step();
+  check(near(anchorOf().matrix.elements[12], 0) && Math.abs(anchorOf().matrix.elements[8]) > 0.2, 'then a cut: the director\'s new place and heading at once');
+  // Controls inside a Moment: A plays, B (short) goes back to the map.
+  xr.session.inputSources = [ctl('right', [0, 0, 0, 0], { 4: 1 })];
+  step();
+  xr.session.inputSources = [ctl('right', [0, 0, 0, 0], { 5: 1 })];
+  step();
+  xr.session.inputSources = [ctl('right', [0, 0, 0, 0])];
+  step();
+  check(calls.join() === 'play,close' && hs.active, 'A plays the Moment, a short B closes it and the headset stays on');
+  // Long frames: two steps down, then no more.
+  for (let i = 0; i < 400; i += 1) step(25);
+  check(renderer.xr.foveation === 1 && forced === 1, 'frames running long raise the foveation, then trip the frame latch');
+  performance.now = realNow;
+  await xr.session.end();
+  check(!hs.active && !mScene.children.some((c) => c.name === 'sr-headset-anchor'), 'leaving takes the anchor out of the Moment\'s scene too');
+}
+
+// --- the pad and the headset agree on Y ----------------------------------------------------------------------------------
+{
+  const G = await mod('ui/gamepad.js');
+  const rows = G.hintRows(COPY.pad);
+  const y = rows.find((r) => r[0] === 'y');
+  check(y && y[2] === COPY.pad.controls && /\bY\b/.test(COPY.headset.how) && /\bY\b/.test(COPY.headset.panelHelp), 'Y shows the controls on a pad and in the headset alike');
+  const src = readFileSync(join(ROOT, 'site/js/ui/headset.js'), 'utf8');
+  check(/name === 'y' && panel\) panel\.pin/.test(src), 'the headset\'s Y pins its controls panel');
 }
 
 // --- the boot graph asks first --------------------------------------------------------------------------------------------

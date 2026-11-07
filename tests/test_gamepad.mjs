@@ -157,7 +157,9 @@ check(G.padName('054c-0ce6-DualSense Wireless Controller') === 'DualSense Wirele
 await mod('copy/en.xr.js');
 const rows = G.hintRows(COPY.pad);
 check(rows.length === 9 && rows.every((r) => r.length === 3 && r.every((s) => typeof s === 'string' && s.length > 0)), 'every row of the hint has a control and a sentence');
-for (const key of ['title', 'label', 'close', 'shipToggle', 'shipHow', 'notStandard', 'connected', 'disconnected', 'shipOn', 'shipOff', 'nothing', 'chooseFirst', 'rung', 'home', 'trip']) {
+check(rows.find((r) => r[0] === 'y')[2] === COPY.pad.controls && rows.find((r) => r[0] === 'view')[2] === COPY.pad.ship, 'Y shows the controls (as in the headset) and View switches the ship');
+check(P.readStandard(pad('standard', [0, 0, 0, 0], { [S.view]: 1 })).view && !P.readStandard(pad('standard', [0, 0, 0, 0], { [S.y]: 1 })).view, 'View is button 8 of the standard layout');
+for (const key of ['capView', 'controls', 'title', 'label', 'close', 'shipToggle', 'shipHow', 'notStandard', 'connected', 'disconnected', 'shipOn', 'shipOff', 'nothing', 'chooseFirst', 'rung', 'home', 'trip']) {
   check(typeof COPY.pad[key] === 'string' && COPY.pad[key].length > 0, `COPY.pad.${key} is written`);
 }
 

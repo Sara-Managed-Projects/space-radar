@@ -19,9 +19,10 @@
 //   A                choose what is in the ring (the reticle, drawn where the camera is looking)
 //   X                go to what is chosen
 //   B                back along the visitor's own path (ui/camundo.js), else the card closes, else home to the Earth
-//   Y                ship physics on or off, remembered
+//   Y (or Menu)      this module's hint: the controls. Y, not Menu, because the headset (ui/headset.js) has no Menu
+//                    button the page may use (a Quest's left one is the system's), so Y means the controls on both
+//   View             ship physics on or off, remembered (View on Xbox, Share or Create on PlayStation)
 //   D-pad up / down  one rung out or in along the distance ladder (data/ladder.js, the Stars tab's rungs)
-//   Menu             this module's hint
 // From the ground (the sky view) the left stick looks around and the right stick's up and down close or open the field.
 // During a trip the trip has the camera, as it has the keys (main.js keysEnabled): the sticks rest and one line says so.
 //
@@ -33,7 +34,7 @@
 // THE HINT, ONCE. The first time a pad connects on this browser the panel opens, and localStorage['sr:padhint'] says it
 // has (in a try/catch: Safari with site data blocked throws). A browser that refuses storage gets no panel by itself,
 // as ui/keyhint.js rules ("once" is a promise this page cannot keep there), but every connection says one line, which
-// names the Menu button that opens it. The panel is keyhint.css's glass and type, plus css/xr.css for its rows.
+// names the Y button that opens it. The panel is keyhint.css's glass and type, plus css/xr.css for its rows.
 //
 // THE SHIP. Off by default: the default stays easy. On, the sticks are thrust (padmap.js shipStep), the motion carries
 // on after they are let go and bleeds away over seconds; a stick pressed in stops it. The choice is
@@ -102,9 +103,9 @@ export function hintRows(C = COPY.pad) {
     ['a', C.capA, C.choose],
     ['x', C.capX, C.go],
     ['b', C.capB, C.back],
-    ['y', C.capY, C.ship],
+    ['y', C.capY, C.controls],
+    ['view', C.capView, C.ship],
     ['dpad', C.capDpad, C.ladder],
-    ['menu', C.capMenu, C.controls],
   ];
 }
 
@@ -275,7 +276,7 @@ export function wantPad(ctx, first = null) {
 
   // --- the buttons ----------------------------------------------------------------------------------------------------
   function act(name) {
-    if (name === 'menu') { api.toggleHint(); return; }
+    if (name === 'menu' || name === 'y') { api.toggleHint(); return; }
     if (tripOn(ctx)) { if (!tripSaid) { tripSaid = true; toast(C.trip, 3000); } return; }
     if (name === 'a') {
       const p = ringPoint();
@@ -284,7 +285,7 @@ export function wantPad(ctx, first = null) {
       if (!goChosen(ctx)) toast(C.chooseFirst, 3000);
     } else if (name === 'b') {
       goBack(ctx);
-    } else if (name === 'y') {
+    } else if (name === 'view') {
       api.setShip(!ship);
       toast(ship ? C.shipOn : C.shipOff, 3000);
     } else if (name === 'up' || name === 'down') {

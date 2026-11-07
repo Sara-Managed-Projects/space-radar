@@ -148,6 +148,9 @@ for (const f of files) {
     const scope = scopeFrom(src, m.index);
     const line = src.slice(0, m.index).split('\n').length;
     if (f === 'trajectory.js' || f === 'cardextras.js') continue; // charts with role=img and a name of their own (the second: the distance curve)
+    // b200-f8-xr: any svg that says it is a picture (role img) and names itself is a chart, not an icon: hiding it would take its
+    // only name from a reader, and its box is its data's. Find's system chart (ui/find.js, forge #150) is one.
+    if (/setAttribute\('role', 'img'\)/.test(scope) && /setAttribute\('aria-label'/.test(scope)) continue;
     check(/aria-hidden/.test(scope), `site/js/ui/${f}:${line}: an svg without aria-hidden: the button carries the name, the drawing is not read out`);
     // The HUD's marks and the tour's ink (a ring and an arrow in the viewport's own pixels) are drawings over the page, not icons.
     if (f !== 'hud.js' && f !== 'onboarding.js') check(/0 0 24 24/.test(scope), `site/js/ui/${f}:${line}: an icon outside the 24 box`);
