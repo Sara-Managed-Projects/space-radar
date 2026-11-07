@@ -4926,3 +4926,85 @@ Object.assign(COPY, {
   }
 });
 // b200-f3-stars: end
+// b200-f7-ground: begin -- standing on another world and its sky (copy/en.ground.js, forge #146, #147), machine-drafted
+Object.assign(COPY, {
+  "ground": {
+    "stageLabel": "De pie en otro mundo",
+    "tagGround": "En la superficie · {world}",
+    "tagSky": "El cielo desde {world}",
+    "placeAt": "{world}, {lat}°, {lon}° este",
+    "worlds": {
+      "moon": "la Luna",
+      "mars": "Marte",
+      "titan": "Titán",
+      "europa": "Europa",
+      "earth": "la Tierra"
+    },
+    "measuredGround": "Medido: las alturas son el modelo estereoscópico del terreno a escala real, y el suelo es la propia imagen del orbitador (sus sombras son las del día en que se tomó). No se ha inventado ninguna roca ni ningún cráter.",
+    "plainGround": "El suelo aquí no está dibujado a partir de mediciones: una llanura hasta el horizonte. El cielo está calculado.",
+    "modelLine": "En las coordenadas del aterrizaje: {what}. Hacia dónde mira no sale de una imagen.",
+    "timeLine": "{local} hora solar local · {utc} · el Sol a {sun}°",
+    "drive": "Conducir el rover",
+    "walk": "Caminar",
+    "driving": "Conduciendo, unas {x} veces más rápido de lo que puede ir el rover.",
+    "walking": "Caminando.",
+    "skyOpen": "El cielo",
+    "skyClose": "Ocultar el cielo",
+    "leave": "Salir",
+    "sources": "Fuentes y licencias",
+    "padLabel": "Caminar: empuja el pulgar hacia donde quieras ir",
+    "keys": "W A S D o las flechas para caminar, Q y E para girar, R y F para mirar arriba y abajo, Shift para correr, + y - para acercar o alejar, Esc para salir.",
+    "skyTitle": "Este cielo",
+    "poleStar": "Estrella polar: {name}, a {sep}° del polo (magnitud {mag}).",
+    "noPoleStar": "Ninguna estrella más brillante que la magnitud 4,5 a menos de 10° del polo de este mundo.",
+    "unnamedStar": "una estrella sin nombre común",
+    "poleLabel": "{name} (estrella polar)",
+    "rises": "{name} sale a las {local}, hora solar local ({utc}).",
+    "sets": "{name} se pone a las {local}, hora solar local ({utc}).",
+    "neverSets": "{name} ni sale ni se pone desde aquí: permanece en la misma parte del cielo.",
+    "notToday": "{name} ni sale ni se pone en el intervalo buscado.",
+    "transit": "{front} cruza el disco del Sol a las {local}, hora solar local ({utc}), durante {s} segundos.",
+    "noTransit": "Desde aquí, ni Fobos ni Deimos cruzan por delante del Sol en los próximos {days} soles.",
+    "working": "Calculando las salidas y puestas…",
+    "earthNow": "La Tierra: {alt}° de altura, rumbo {az}°, iluminada al {lit} %, magnitud {mag}.",
+    "airNotes": {
+      "mars": "Colores medidos: el cielo diurno, del panorama en color real de Spirit (PIA07882); la puesta de sol azul, de la de Curiosity en Gale (PIA19400).",
+      "moon": "Sin aire, el cielo es negro a mediodía. Un ojo real, deslumbrado por el suelo iluminado por el Sol, vería pocas de estas estrellas.",
+      "europa": "Sin aire, el cielo es negro a mediodía. Júpiter permanece inmóvil en el cielo de la cara que mira hacia él.",
+      "titan": "Color ilustrativo: la neblina anaranjada oculta a la vista las estrellas y Saturno; se dibujan tenues donde están.",
+      "earth": ""
+    },
+    "parentNote": "Esta luna muestra siempre la misma cara a su planeta, así que el planeta ni sale ni se pone.",
+    "discNote": "El Sol, la Tierra, Fobos y los demás cuerpos extensos son discos de su tamaño y fase reales en colores lisos, no sus mapas ni sus formas.",
+    "frameNote": "Rotación: el informe IAU WGCCRE 2015 (Archinal et al. 2018). Posiciones: las efemérides propias de la aplicación.",
+    "compass": {
+      "N": "N",
+      "E": "E",
+      "S": "S",
+      "W": "O"
+    },
+    "bodies": {
+      "sun": "El Sol",
+      "mercury": "Mercurio",
+      "venus": "Venus",
+      "earth": "La Tierra",
+      "moon": "La Luna",
+      "mars": "Marte",
+      "phobos": "Fobos",
+      "deimos": "Deimos",
+      "jupiter": "Júpiter",
+      "io": "Ío",
+      "europa": "Europa",
+      "ganymede": "Ganímedes",
+      "callisto": "Calisto",
+      "saturn": "Saturno",
+      "titan": "Titán",
+      "uranus": "Urano",
+      "neptune": "Neptuno"
+    },
+    "earthAndMoon": "La Tierra y la Luna",
+    "unknownGround": "Todavía no hay un modelo del terreno para ese lugar.",
+    "unknownSky": "Este mapa aún no permite estar de pie en ese lugar: solo en la Luna, Marte, Titán o Europa."
+  }
+});
+// b200-f7-ground: end

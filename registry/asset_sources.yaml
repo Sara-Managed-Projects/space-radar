@@ -630,3 +630,66 @@ sources:
     pins:
       - {file: site/data/starmotion.bin, sha256: 3615204ce950cc7db5ac2dd23143986f52d34bc4562b1963bc6b58eb4b4573da}
   # b200-f3-stars: end
+  # b200-f7-ground: begin -- the ground at the landing sites (forge #146): the stereo terrain models, their
+  # orthoimages and the global height models scripts/build-ground.py reads (registry/ground.yaml) into site/data/ground/
+  - id: lroc-pds-nac-dtm
+    name: LROC NAC stereo terrain models and orthoimages (LRO-L-LROC-5-RDR-V1.0), Arizona State University, served through NASA PDS
+    match: ["https://pds.mcp.nasa.gov/data/store/img/lunar_reconnaissance_orbiter/pds4/lroc/"]
+    url: https://data.lroc.im-ldi.com/lroc/rdr_product_select
+    licence: Public domain (LROC PDS products)
+    licence_read: "Data products available through the LROC Data Node of the PDS or through NASA PDS interfaces are in the public domain"
+    licence_url: https://www.lroc.im-ldi.com/about/terms
+    licence_note: "The same page asks for the credit NASA/GSFC/Arizona State University, and says the LROC website's own curated products (not used here) are copyrighted. pds.lroc.im-ldi.com redirects each product to pds.mcp.nasa.gov, the NASA PDS interface the files were read from. site/data/ground/apollo-11, apollo-15, apollo-17 and change-4."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  - id: hirise-pds-dtm
+    name: HiRISE stereo terrain models and orthoimages (MRO-M-HIRISE-5-DTM-V1.0), University of Arizona, PDS archive
+    match: ["https://hirise-pds.lpl.arizona.edu/PDS/DTM/"]
+    url: https://www.uahirise.org/dtm/
+    licence: Public domain (HiRISE image usage policy)
+    licence_read: "All of the images produced by HiRISE and accessible on this site are within the public domain: there are no restrictions on their usage by anyone in the public"
+    licence_url: https://www.uahirise.org/media/usage.php
+    licence_note: "The page asks for the credit line 'NASA/JPL/University of Arizona', which CREDITS.md and the stage's sources line carry. site/data/ground/gale, jezero and utopia."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  - id: usgs-sldem2015
+    name: SLDEM2015, the merged LOLA and SELENE Terrain Camera heights (USGS Astrogeology mosaic, 512 pixels a degree)
+    match: ["https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/LolaKaguya_Topo/"]
+    url: https://astrogeology.usgs.gov/search/map/moon_lro_lola_selene_kaguya_tc_dem_merge_60n60s_59m
+    licence: Public domain
+    licence_read: "Access Constraints public domain"
+    licence_url: https://astrogeology.usgs.gov/search/map/moon_lro_lola_selene_kaguya_tc_dem_merge_60n60s_59m
+    licence_note: "The page's 'Use Constraints' asks to cite the authors: Barker et al. 2016, Icarus 273, 346-355 (CREDITS.md). Only the rows round each lunar site are read, by range requests; the far ground of site/data/ground/<lunar site>/far-h.bin is resampled from them."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  - id: usgs-mola-463m
+    name: MOLA global heights, 463 m a pixel (USGS Astrogeology mosaic of the MGS MOLA MEGDR)
+    match: ["https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Mars_MGS_MOLA_DEM_mosaic_global_463m"]
+    url: https://astrogeology.usgs.gov/search/map/mars_mgs_mola_dem_463m
+    licence: CC0 (public domain)
+    licence_read: "Access Constraints CC0 (public domain)"
+    licence_url: https://astrogeology.usgs.gov/search/map/mars_mgs_mola_dem_463m
+    licence_note: "Only the rows round each Mars site are read, by range requests; the far ground of site/data/ground/<Mars site>/far-h.bin is resampled from them. The HRSC-MOLA blend (200 m) was not used: its HRSC part is CC BY-SA 3.0 IGO."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  - id: trek-far-ground
+    name: NASA Solar System Treks tiles of the LRO WAC global mosaic and the Viking MDIM 2.1 colour mosaic (the far ground's brightness beyond the stereo strips)
+    match: ["https://trek.nasa.gov/tiles/Moon/EQ/LRO_WAC_Mosaic_Global_303ppd_v02/", "https://trek.nasa.gov/tiles/Mars/EQ/Mars_Viking_MDIM21_ClrMosaic_global_232m/"]
+    url: https://trek.nasa.gov/tiles/apidoc/trekAPI.html
+    licence: Public domain (NASA media guidelines; USGS Astrogeology for MDIM 2.1)
+    licence_read: "Access Constraints Public domain"
+    licence_url: https://astrogeology.usgs.gov/search/map/mars_viking_colorized_global_mosaic_232m
+    licence_note: "The quote is the Viking MDIM 2.1 page's. The WAC mosaic is the row moon-lro-wac of registry/tilesets.yaml, whose licence line is NASA's media guidelines ('generally are not subject to copyright in the United States'). A few tiles round each site are fetched at build time and resampled to grey into site/data/ground/<site>/far-o.jpg."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  # b200-f7-ground: end

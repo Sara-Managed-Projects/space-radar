@@ -5061,3 +5061,85 @@ Object.assign(COPY, {
   }
 });
 // b200-f3-stars: end
+// b200-f7-ground: begin -- standing on another world and its sky (copy/en.ground.js, forge #146, #147), machine-drafted
+Object.assign(COPY, {
+  "ground": {
+    "stageLabel": "站在另一个世界上",
+    "tagGround": "地面 · {world}",
+    "tagSky": "从{world}看天空",
+    "placeAt": "{world}，{lat}°，东经 {lon}°",
+    "worlds": {
+      "moon": "月球",
+      "mars": "火星",
+      "titan": "土卫六",
+      "europa": "木卫二",
+      "earth": "地球"
+    },
+    "measuredGround": "实测：高度来自真实比例的立体地形模型，地面是轨道器自己拍摄的图像（阴影是拍摄当天的）。没有虚构任何巨石或陨石坑。",
+    "plainGround": "这里的地面并非根据测量绘制：一片平原延伸到地平线。天空是计算出来的。",
+    "modelLine": "着陆坐标处：{what}。其朝向并非来自图像。",
+    "timeLine": "当地太阳时 {local} · {utc} · 太阳高度 {sun}°",
+    "drive": "驾驶探测车",
+    "walk": "步行",
+    "driving": "驾驶中，速度约为探测车实际能力的 {x} 倍。",
+    "walking": "步行中。",
+    "skyOpen": "天空",
+    "skyClose": "隐藏天空",
+    "leave": "离开",
+    "sources": "来源与许可",
+    "padLabel": "步行：把摇杆推向要去的方向",
+    "keys": "W A S D 或方向键行走，Q 和 E 转身，R 和 F 抬头低头，Shift 奔跑，+ 和 - 缩放，Esc 离开。",
+    "skyTitle": "这片天空",
+    "poleStar": "极星：{name}，距天极 {sep}°（星等 {mag}）。",
+    "noPoleStar": "这个世界的天极 10° 以内没有亮于 4.5 等的恒星。",
+    "unnamedStar": "一颗没有通用名称的恒星",
+    "poleLabel": "{name}（极星）",
+    "rises": "{name}于当地太阳时 {local}（{utc}）升起。",
+    "sets": "{name}于当地太阳时 {local}（{utc}）落下。",
+    "neverSets": "从这里看，{name}既不升起也不落下：它始终悬在天空的同一处。",
+    "notToday": "在搜索的时间范围内，{name}既不升起也不落下。",
+    "transit": "{front}于当地太阳时 {local}（{utc}）从日面前经过，持续 {s} 秒。",
+    "noTransit": "未来 {days} 个火星日内，从这里看不到火卫一或火卫二从太阳前经过。",
+    "working": "正在计算升落时间…",
+    "earthNow": "地球：高度 {alt}°，方位 {az}°，{lit}% 被照亮，星等 {mag}。",
+    "airNotes": {
+      "mars": "实测颜色：白天的天空取自 Spirit 的真彩色全景图（PIA07882），蓝色日落取自 Curiosity 在盖尔撞击坑拍摄的图像（PIA19400）。",
+      "moon": "没有大气，所以正午的天空也是黑的。真实的眼睛会被阳光照亮的地面晃得眼花，只能看到其中少数星星。",
+      "europa": "没有大气，所以正午的天空也是黑的。在面向木星的一侧，木星静止地悬在天空中。",
+      "titan": "示意颜色：橙色雾霾使肉眼看不见恒星和土星；它们以暗淡的样子画在实际所在的位置。",
+      "earth": ""
+    },
+    "parentNote": "这颗卫星始终以同一面朝向它的行星，所以行星既不升起也不落下。",
+    "discNote": "太阳、地球、火卫一等有视面的天体都画成大小和相位真实的纯色圆盘，而不是它们的地图或形状。",
+    "frameNote": "自转：IAU WGCCRE 2015 报告（Archinal et al. 2018）。位置：本应用自己的星历。",
+    "compass": {
+      "N": "北",
+      "E": "东",
+      "S": "南",
+      "W": "西"
+    },
+    "bodies": {
+      "sun": "太阳",
+      "mercury": "水星",
+      "venus": "金星",
+      "earth": "地球",
+      "moon": "月球",
+      "mars": "火星",
+      "phobos": "火卫一",
+      "deimos": "火卫二",
+      "jupiter": "木星",
+      "io": "木卫一",
+      "europa": "木卫二",
+      "ganymede": "木卫三",
+      "callisto": "木卫四",
+      "saturn": "土星",
+      "titan": "土卫六",
+      "uranus": "天王星",
+      "neptune": "海王星"
+    },
+    "earthAndMoon": "地球和月球",
+    "unknownGround": "该地点还没有地形模型。",
+    "unknownSky": "这张地图还不能让你站在那个地方：目前只能站在月球、火星、土卫六或木卫二上。"
+  }
+});
+// b200-f7-ground: end

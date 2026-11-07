@@ -99,6 +99,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Satellites and their orbits | CelesTrak | free, with an enforced usage policy | [4.1](#41-celestrak--read-this-before-you-deploy-a-fork) |
 | Flags beside the owners of satellites (Find, By country) | Wikimedia Commons, 103 files | public domain, per file | [3f-flags](#3f-flags-flags-of-the-countries-that-own-satellites--wikimedia-commons-public-domain-2026-11-07) | <!-- b200-f1-find -->
 | The Wikipedia lead and photograph on a card with no words of its own | Wikipedia; Wikimedia Commons; Wikidata | CC BY-SA 4.0; each picture's own free licence; CC0 | [3f-wiki](#3f-wiki-the-cards-wikipedia-block--wikipedia-cc-by-sa-40-commons-wikidata-cc0-2026-11-07) | <!-- b200-f4-cards -->
+| The ground at seven landing sites, and the skies of other worlds | NASA/GSFC/Arizona State University (LROC); NASA/JPL/University of Arizona (HiRISE); LOLA and SELENE (SLDEM2015); MOLA; LRO WAC and Viking MDIM 2.1 through NASA Solar System Treks; NASA/JPL pictures PIA07882 and PIA19400 for the Martian sky's colours | public domain | [3c-3](#3c-3-the-ground-at-the-landing-sites-and-the-skies-of-other-worlds-release-200-forge-146-147) | <!-- b200-f7-ground -->
 | Launches | The Space Devs, Launch Library 2 | free to 15 requests an hour; no published licence | [4.2](#42-the-space-devs--launch-library-2) |
 | Deep-space positions, asteroids, comets, close approaches | NASA/JPL Horizons, Small-Body Database, CNEOS | see the section | [4.18](#418-the-sources-the-harvester-reads) |
 | Space weather and the aurora | NOAA SWPC | public domain | [4.4](#44-noaa-swpc) |
@@ -4541,3 +4542,42 @@ paper V, ApJL 875, L5; EHT 2022 paper V, ApJL 930, L16). No image or code of any
 "Star motions: HYG v4.4 (David Nash), from Hipparcos and Gaia" and
 "Variable stars: General Catalogue of Variable Stars (Samus et al. 2017)".
 <!-- b200-f3-stars: end -->
+
+<!-- b200-f7-ground: begin -->
+## 3c-3. The ground at the landing sites and the skies of other worlds (release 2.0.0, forge #146, #147)
+
+**The ground.** `site/data/ground/<site>/` holds, for Apollo 11, 15 and 17, Chang'e 4, Gale (Curiosity), Jezero
+(Perseverance) and Utopia Planitia (Zhurong), the heights and the orbital picture round the lander, resampled,
+quantised and tiled by `scripts/build-ground.py` from the products `registry/ground.yaml` names, each read in place by
+HTTP range requests on 2026-11-07. Nothing is added to them: no boulder, crater or rock is invented, and the stage says so.
+
+- **LROC NAC stereo terrain models and orthoimages** (LRO-L-LROC-5-RDR-V1.0; NAC_DTM_APOLLO11, APOLLO15, APOLLO17 and
+  CHANGE4), Arizona State University, served through NASA PDS. Public domain: "Data products available through the
+  LROC Data Node of the PDS or through NASA PDS interfaces are in the public domain" (<https://www.lroc.im-ldi.com/about/terms>).
+  Credit: NASA/GSFC/Arizona State University. Apollo 15's model: Henriksen et al. 2017, Icarus 283, 122-137.
+- **HiRISE stereo terrain models and orthoimages** (MRO-M-HIRISE-5-DTM-V1.0; DTEEC_010573_1755_010639_1755_U01 at
+  Gale, DTEEC_045994_1985_046060_1985_U01 at Jezero, DTEEC_069665_2055_069731_2055_A01 at Utopia), University of
+  Arizona. Public domain: "All of the images produced by HiRISE and accessible on this site are within the public
+  domain" (<https://www.uahirise.org/media/usage.php>). Credit: NASA/JPL/University of Arizona.
+- **SLDEM2015** (LOLA and SELENE Terrain Camera, Barker et al. 2016, Icarus 273, 346-355), USGS Astrogeology's mosaic:
+  "Access Constraints public domain". **MOLA**, 463 m (Smith et al. 2001, JGR 106, 23689), USGS Astrogeology's mosaic:
+  "Access Constraints CC0 (public domain)". The far ground beyond the stereo strips, moved by the median difference to
+  the strip where both are.
+- **LRO WAC global mosaic** (NASA/GSFC/Arizona State University) and **Viking MDIM 2.1** (NASA/JPL/USGS, "Access
+  Constraints Public domain"), as NASA Solar System Treks serves them: the far ground's brightness beyond the strips.
+- The models at the landers' coordinates are the files of §3b (the Lunar Module, NASA; Curiosity, NASA; Perseverance;
+  Zhurong and Chang'e 4, built here from their dimensions).
+
+**The skies.** Which way each world turns is the IAU WGCCRE 2015 report (Archinal et al. 2018, Celestial Mechanics and
+Dynamical Astronomy 130:22): Astronomy Engine's implementation for the Moon and Mars, the report's own elements for Titan
+and Europa (`site/js/sky/worldframe.js`). Magnitudes: Mallama and Hilton 2018 (Astronomy and Computing 25, 10-24). The
+Martian sky's colours are MEASURED from two NASA pictures (public domain, NASA media guidelines): the day sky from
+Spirit's approximately true-colour Lookout panorama (NASA/JPL/Cornell, PIA07882) and the sunset from Curiosity's
+first colour sunset in Gale (NASA/JPL-Caltech/MSSS/Texas A&M, PIA19400); the means are in `site/js/sky/worldair.js`.
+Titan's colour is illustrative. The stars are §3's `stars.bin` and `skystars.names.json`.
+
+| Item | Files | Licence | Credit line |
+|---|---|---|---|
+| The ground at the lunar sites (resampled) | `ground/apollo-11`, `apollo-15`, `apollo-17`, `change-4` | Public domain | NASA/GSFC/Arizona State University (LROC); SLDEM2015 (Barker et al. 2016); LRO WAC via NASA Solar System Treks |
+| The ground at the Mars sites (resampled) | `ground/gale`, `jezero`, `utopia` | Public domain | NASA/JPL/University of Arizona (HiRISE); MOLA (NASA/GSFC); Viking MDIM 2.1 (NASA/JPL/USGS) via NASA Solar System Treks |
+<!-- b200-f7-ground: end -->

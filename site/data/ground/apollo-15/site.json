@@ -1,0 +1,86 @@
+{
+ "id": "apollo-15",
+ "world": "moon",
+ "site": "apollo-15",
+ "latDeg": 26.13239,
+ "lonDeg": 3.6333,
+ "radiusKm": 1737.4,
+ "groundM": -1923.54,
+ "near": {
+  "size": 1024,
+  "stepM": 2.0,
+  "bands": 4,
+  "min": -31.4446,
+  "q": 0.005,
+  "files": [
+   "near-h-0.bin",
+   "near-h-1.bin",
+   "near-h-2.bin",
+   "near-h-3.bin"
+  ],
+  "empty": 0
+ },
+ "far": {
+  "size": 512,
+  "stepM": 120.0,
+  "min": -1305.648,
+  "q": 0.1,
+  "file": "far-h.bin",
+  "dtmShare": 0.033,
+  "globalShiftM": -0.0
+ },
+ "orthoNear": {
+  "px": 2048,
+  "files": [
+   "near-o-0.jpg",
+   "near-o-1.jpg",
+   "near-o-2.jpg",
+   "near-o-3.jpg"
+  ]
+ },
+ "orthoFar": {
+  "px": 1024,
+  "file": "far-o.jpg",
+  "imaged": 0.032
+ },
+ "model": {
+  "file": "lunar-module.glb",
+  "heading_deg": 0,
+  "size_m": 9.18,
+  "hide": [
+   "ascent-stage"
+  ],
+  "what": "the Lunar Module's descent stage (its ascent stage left)"
+ },
+ "tint": null,
+ "sources": [
+  {
+   "what": "LROC NAC stereo terrain model of the Apollo 15 site, 2 m a post",
+   "product": "NAC_DTM_APOLLO15_E261N0036",
+   "page": "https://data.lroc.im-ldi.com/lroc/view_rdr_product/NAC_DTM_APOLLO15_E261N0036",
+   "licence": "Public domain (NASA PDS archive product, LRO-L-LROC-5-RDR-V1.0)",
+   "credit": "NASA/GSFC/Arizona State University (LROC); Henriksen et al. 2017, Icarus 283, 122-137"
+  },
+  {
+   "what": "LROC NAC orthoimage M111571816, 0.5 m a pixel",
+   "product": "NAC_DTM_APOLLO15_M111571816_50CM",
+   "page": "https://data.lroc.im-ldi.com/lroc/view_rdr_product/NAC_DTM_APOLLO15_M111571816_50CM",
+   "licence": "Public domain (NASA PDS archive product, LRO-L-LROC-5-RDR-V1.0)",
+   "credit": "NASA/GSFC/Arizona State University (LROC)"
+  },
+  {
+   "what": "SLDEM2015, LOLA and SELENE Terrain Camera merged heights, 59 m a pixel",
+   "product": "Lunar_LRO_LOLAKaguya_DEMmerge_60N60S_512ppd",
+   "page": "https://astrogeology.usgs.gov/search/map/moon_lro_lola_selene_kaguya_tc_dem_merge_60n60s_59m",
+   "licence": "Public domain (USGS Astrogeology: 'Access Constraints public domain')",
+   "credit": "Barker et al. 2016, Icarus 273, 346-355 (LOLA, NASA/GSFC; SELENE TC, JAXA); USGS Astrogeology mosaic"
+  },
+  {
+   "what": "LRO WAC global mosaic, 100 m a pixel (the far ground beyond the stereo strip)",
+   "page": "https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=moon",
+   "licence": "NASA media guidelines: not subject to copyright in the United States (registry/tilesets.yaml moon-lro-wac)",
+   "credit": "NASA/GSFC/Arizona State University, from NASA Solar System Treks"
+  }
+ ],
+ "built": "2026-11-07"
+}

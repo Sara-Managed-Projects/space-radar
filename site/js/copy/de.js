@@ -5162,3 +5162,85 @@ Object.assign(COPY, {
   }
 });
 // b200-f3-stars: end
+// b200-f7-ground: begin -- standing on another world and its sky (copy/en.ground.js, forge #146, #147), machine-drafted
+Object.assign(COPY, {
+  "ground": {
+    "stageLabel": "Auf einer anderen Welt stehen",
+    "tagGround": "Auf dem Boden · {world}",
+    "tagSky": "Der Himmel · {world}",
+    "placeAt": "{world}, {lat}°, {lon}° Ost",
+    "worlds": {
+      "moon": "Mond",
+      "mars": "Mars",
+      "titan": "Titan",
+      "europa": "Europa",
+      "earth": "Erde"
+    },
+    "measuredGround": "Gemessen: Die Höhen stammen aus dem Stereo-Geländemodell in wahrem Maßstab, der Boden ist das eigene Bild des Orbiters (seine Schatten sind die vom Tag der Aufnahme). Kein Felsbrocken und kein Krater ist erfunden.",
+    "plainGround": "Der Boden hier ist nicht aus Messungen gezeichnet: eine Ebene bis zum Horizont. Der Himmel ist berechnet.",
+    "modelLine": "An den Landekoordinaten: {what}. Die Ausrichtung stammt nicht aus einem Bild.",
+    "timeLine": "{local} lokale Sonnenzeit · {utc} · Sonne {sun}° hoch",
+    "drive": "Den Rover fahren",
+    "walk": "Gehen",
+    "driving": "Fahren, etwa {x}-mal schneller, als der Rover fahren kann.",
+    "walking": "Zu Fuß.",
+    "skyOpen": "Der Himmel",
+    "skyClose": "Himmel ausblenden",
+    "leave": "Verlassen",
+    "sources": "Quellen und Lizenzen",
+    "padLabel": "Gehen: den Daumen in die gewünschte Richtung schieben",
+    "keys": "W A S D oder die Pfeiltasten zum Gehen, Q und E zum Drehen, R und F zum Auf- und Abblicken, Shift zum Laufen, + und - zum Zoomen, Esc zum Verlassen.",
+    "skyTitle": "Dieser Himmel",
+    "poleStar": "Polarstern: {name}, {sep}° vom Pol entfernt (Größenklasse {mag}).",
+    "noPoleStar": "Kein Stern heller als Größenklasse 4,5 innerhalb von 10° um den Pol dieser Welt.",
+    "unnamedStar": "ein Stern ohne gebräuchlichen Namen",
+    "poleLabel": "{name} (Polarstern)",
+    "rises": "{name} geht um {local} lokaler Sonnenzeit auf ({utc}).",
+    "sets": "{name} geht um {local} lokaler Sonnenzeit unter ({utc}).",
+    "neverSets": "{name} geht von hier aus weder auf noch unter, sondern steht immer im selben Teil des Himmels.",
+    "notToday": "{name} geht im durchsuchten Zeitraum weder auf noch unter.",
+    "transit": "{front} zieht um {local} lokaler Sonnenzeit ({utc}) {s} Sekunden lang vor der Sonnenscheibe vorbei.",
+    "noTransit": "Von hier aus zieht in den nächsten {days} Sols weder Phobos noch Deimos vor der Sonne vorbei.",
+    "working": "Auf- und Untergänge werden berechnet…",
+    "earthNow": "Die Erde: {alt}° hoch, Richtung {az}°, zu {lit} % beleuchtet, Größenklasse {mag}.",
+    "airNotes": {
+      "mars": "Gemessene Farben: der Taghimmel aus dem Echtfarbenpanorama von Spirit (PIA07882), der blaue Sonnenuntergang aus der Aufnahme von Curiosity im Gale-Krater (PIA19400).",
+      "moon": "Keine Luft, daher ist der Himmel auch mittags schwarz. Ein echtes Auge, geblendet vom sonnenbeschienenen Boden, sähe nur wenige dieser Sterne.",
+      "europa": "Keine Luft, daher ist der Himmel auch mittags schwarz. Jupiter steht reglos am Himmel der Seite, die ihm zugewandt ist.",
+      "titan": "Farbe zur Veranschaulichung: Der orange Dunst verbirgt die Sterne und Saturn vor dem Auge; sie sind schwach dort gezeichnet, wo sie stehen.",
+      "earth": ""
+    },
+    "parentNote": "Dieser Mond wendet seinem Planeten immer dieselbe Seite zu, deshalb geht der Planet weder auf noch unter.",
+    "discNote": "Die Sonne, die Erde, Phobos und die anderen ausgedehnten Körper sind Scheiben in ihrer wahren Größe und Phase, in schlichten Farben, nicht ihre Karten oder Formen.",
+    "frameNote": "Rotation: der Bericht IAU WGCCRE 2015 (Archinal et al. 2018). Positionen: die eigene Ephemeride der App.",
+    "compass": {
+      "N": "N",
+      "E": "O",
+      "S": "S",
+      "W": "W"
+    },
+    "bodies": {
+      "sun": "Die Sonne",
+      "mercury": "Merkur",
+      "venus": "Venus",
+      "earth": "Die Erde",
+      "moon": "Der Mond",
+      "mars": "Mars",
+      "phobos": "Phobos",
+      "deimos": "Deimos",
+      "jupiter": "Jupiter",
+      "io": "Io",
+      "europa": "Europa",
+      "ganymede": "Ganymed",
+      "callisto": "Kallisto",
+      "saturn": "Saturn",
+      "titan": "Titan",
+      "uranus": "Uranus",
+      "neptune": "Neptun"
+    },
+    "earthAndMoon": "Die Erde und der Mond",
+    "unknownGround": "Für diesen Ort gibt es noch kein Geländemodell.",
+    "unknownSky": "Auf diesem Ort kann man in dieser Karte noch nicht stehen. Möglich sind der Mond, der Mars, Titan und Europa."
+  }
+});
+// b200-f7-ground: end

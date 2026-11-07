@@ -5166,3 +5166,85 @@ Object.assign(COPY, {
   }
 });
 // b200-f3-stars: end
+// b200-f7-ground: begin -- standing on another world and its sky (copy/en.ground.js, forge #146, #147), machine-drafted
+Object.assign(COPY, {
+  "ground": {
+    "stageLabel": "Debout sur un autre monde",
+    "tagGround": "Au sol · {world}",
+    "tagSky": "Le ciel depuis {world}",
+    "placeAt": "{world}, {lat}°, {lon}° est",
+    "worlds": {
+      "moon": "la Lune",
+      "mars": "Mars",
+      "titan": "Titan",
+      "europa": "Europe",
+      "earth": "la Terre"
+    },
+    "measuredGround": "Mesuré : les reliefs sont le modèle de terrain stéréo à l’échelle réelle, le sol est l’image prise par l’orbiteur lui-même (ses ombres sont celles du jour de la prise de vue). Aucun rocher ni cratère n’est inventé.",
+    "plainGround": "Le sol ici n’est pas tiré de mesures : une plaine jusqu’à l’horizon. Le ciel est calculé.",
+    "modelLine": "Aux coordonnées d’atterrissage : {what}. Son orientation ne provient pas d’une image.",
+    "timeLine": "{local} heure solaire locale · {utc} · Soleil à {sun}°",
+    "drive": "Conduire le rover",
+    "walk": "Marcher",
+    "driving": "En conduite, environ {x} fois plus vite que le rover ne peut aller.",
+    "walking": "À pied.",
+    "skyOpen": "Le ciel",
+    "skyClose": "Masquer le ciel",
+    "leave": "Quitter",
+    "sources": "Sources et licences",
+    "padLabel": "Marcher : poussez le pouce dans la direction voulue",
+    "keys": "W A S D ou les flèches pour marcher, Q et E pour tourner, R et F pour regarder vers le haut et vers le bas, Shift pour courir, + et - pour zoomer, Esc pour quitter.",
+    "skyTitle": "Ce ciel",
+    "poleStar": "Étoile polaire : {name}, à {sep}° du pôle (magnitude {mag}).",
+    "noPoleStar": "Aucune étoile plus brillante que la magnitude 4,5 à moins de 10° du pôle de ce monde.",
+    "unnamedStar": "une étoile sans nom usuel",
+    "poleLabel": "{name} (étoile polaire)",
+    "rises": "{name} se lève à {local} heure solaire locale ({utc}).",
+    "sets": "{name} se couche à {local} heure solaire locale ({utc}).",
+    "neverSets": "{name}, depuis ici, ne se lève ni ne se couche et reste dans la même partie du ciel.",
+    "notToday": "{name} ne se lève ni ne se couche pendant la période examinée.",
+    "transit": "{front} passe devant le disque du Soleil à {local} heure solaire locale ({utc}), pendant {s} secondes.",
+    "noTransit": "Aucun passage de Phobos ou de Deimos devant le Soleil depuis ici dans les {days} prochains sols.",
+    "working": "Calcul des levers et des couchers…",
+    "earthNow": "La Terre : {alt}° de hauteur, azimut {az}°, éclairée à {lit} %, magnitude {mag}.",
+    "airNotes": {
+      "mars": "Couleurs mesurées : le ciel de jour vient du panorama en couleurs réelles de Spirit (PIA07882), le coucher de soleil bleu de celui de Curiosity dans Gale (PIA19400).",
+      "moon": "Pas d’air, donc le ciel est noir à midi. Un vrai œil, ébloui par le sol éclairé par le Soleil, ne verrait que peu de ces étoiles.",
+      "europa": "Pas d’air, donc le ciel est noir à midi. Jupiter reste immobile dans le ciel de la face tournée vers lui.",
+      "titan": "Couleur illustrative : la brume orange cache à l’œil les étoiles et Saturne ; ils sont dessinés pâles là où ils se trouvent.",
+      "earth": ""
+    },
+    "parentNote": "Cette lune présente toujours la même face à sa planète, donc la planète ne se lève ni ne se couche.",
+    "discNote": "Le Soleil, la Terre, Phobos et les autres corps étendus sont des disques de leur vraie taille et de leur vraie phase, en couleurs unies, et non leurs cartes ou leurs formes.",
+    "frameNote": "Rotation : le rapport IAU WGCCRE 2015 (Archinal et al. 2018). Positions : les éphémérides propres à l’application.",
+    "compass": {
+      "N": "N",
+      "E": "E",
+      "S": "S",
+      "W": "O"
+    },
+    "bodies": {
+      "sun": "Le Soleil",
+      "mercury": "Mercure",
+      "venus": "Vénus",
+      "earth": "La Terre",
+      "moon": "La Lune",
+      "mars": "Mars",
+      "phobos": "Phobos",
+      "deimos": "Deimos",
+      "jupiter": "Jupiter",
+      "io": "Io",
+      "europa": "Europe",
+      "ganymede": "Ganymède",
+      "callisto": "Callisto",
+      "saturn": "Saturne",
+      "titan": "Titan",
+      "uranus": "Uranus",
+      "neptune": "Neptune"
+    },
+    "earthAndMoon": "La Terre et la Lune",
+    "unknownGround": "Il n’y a pas encore de modèle de terrain pour ce site.",
+    "unknownSky": "Cette carte ne permet pas encore de se tenir à cet endroit : seulement sur la Lune, Mars, Titan ou Europe."
+  }
+});
+// b200-f7-ground: end

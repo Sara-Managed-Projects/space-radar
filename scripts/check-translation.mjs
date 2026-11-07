@@ -60,6 +60,9 @@ async function english() {
   // b200-f3-stars: begin -- the words of deep time, the variable stars and the turning holes (copy/en.stars.js)
   await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.stars.js')).href);
   // b200-f3-stars: end
+  // b200-f7-ground: begin -- the words of standing on another world and its sky (copy/en.ground.js)
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.ground.js')).href);
+  // b200-f7-ground: end
   return { COPY: base.COPY, GLOSSARY: base.GLOSSARY };
 }
 

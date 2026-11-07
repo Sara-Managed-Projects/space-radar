@@ -5152,3 +5152,85 @@ Object.assign(COPY, {
   }
 });
 // b200-f3-stars: end
+// b200-f7-ground: begin -- standing on another world and its sky (copy/en.ground.js, forge #146, #147), machine-drafted
+Object.assign(COPY, {
+  "ground": {
+    "stageLabel": "De pé em outro mundo",
+    "tagGround": "No solo · {world}",
+    "tagSky": "O céu · {world}",
+    "placeAt": "{world}, {lat}°, {lon}° leste",
+    "worlds": {
+      "moon": "Lua",
+      "mars": "Marte",
+      "titan": "Titã",
+      "europa": "Europa",
+      "earth": "Terra"
+    },
+    "measuredGround": "Medido: as alturas são o modelo estereoscópico do terreno em escala real, e o solo é a própria imagem do orbitador (as sombras são as do dia em que foi tirada). Nenhuma rocha ou cratera é inventada.",
+    "plainGround": "O solo aqui não é desenhado a partir de medições: uma planície até o horizonte. O céu é calculado.",
+    "modelLine": "Nas coordenadas do pouso: {what}. A direção para onde está virado não vem de uma imagem.",
+    "timeLine": "{local} hora solar local · {utc} · Sol a {sun}°",
+    "drive": "Dirigir o rover",
+    "walk": "Caminhar",
+    "driving": "Dirigindo, cerca de {x} vezes mais rápido do que o rover consegue ir.",
+    "walking": "Caminhando.",
+    "skyOpen": "O céu",
+    "skyClose": "Ocultar o céu",
+    "leave": "Sair",
+    "sources": "Fontes e licenças",
+    "padLabel": "Caminhar: empurre o polegar na direção desejada",
+    "keys": "W A S D ou as setas para caminhar, Q e E para girar, R e F para olhar para cima e para baixo, Shift para correr, + e - para aproximar e afastar, Esc para sair.",
+    "skyTitle": "Este céu",
+    "poleStar": "Estrela polar: {name}, a {sep}° do polo (magnitude {mag}).",
+    "noPoleStar": "Nenhuma estrela mais brilhante que a magnitude 4,5 a menos de 10° do polo deste mundo.",
+    "unnamedStar": "uma estrela sem nome comum",
+    "poleLabel": "{name} (estrela polar)",
+    "rises": "{name} nasce às {local}, hora solar local ({utc}).",
+    "sets": "{name} se põe às {local}, hora solar local ({utc}).",
+    "neverSets": "{name} não nasce nem se põe daqui: fica sempre na mesma parte do céu.",
+    "notToday": "{name} não nasce nem se põe no período pesquisado.",
+    "transit": "{front} passa diante do disco do Sol às {local}, hora solar local ({utc}), durante {s} segundos.",
+    "noTransit": "Nenhuma passagem de Fobos ou Deimos diante do Sol vista daqui nos próximos {days} sóis.",
+    "working": "Calculando o nascer e o pôr…",
+    "earthNow": "A Terra: {alt}° de altura, direção {az}°, {lit} % iluminada, magnitude {mag}.",
+    "airNotes": {
+      "mars": "Cores medidas: o céu diurno vem do panorama em cores reais do Spirit (PIA07882), e o pôr do sol azul, do Curiosity em Gale (PIA19400).",
+      "moon": "Sem ar, o céu é negro ao meio-dia. Um olho de verdade, ofuscado pelo solo iluminado pelo Sol, veria poucas destas estrelas.",
+      "europa": "Sem ar, o céu é negro ao meio-dia. Júpiter fica parado no céu do lado voltado para ele.",
+      "titan": "Cor ilustrativa: a névoa laranja esconde do olho as estrelas e Saturno; eles são desenhados fracos onde estão.",
+      "earth": ""
+    },
+    "parentNote": "Esta lua mantém sempre a mesma face voltada para o seu planeta, por isso o planeta não nasce nem se põe.",
+    "discNote": "O Sol, a Terra, Fobos e os outros corpos extensos são discos do seu tamanho e fase reais em cores lisas, não seus mapas nem suas formas.",
+    "frameNote": "Rotação: o relatório IAU WGCCRE 2015 (Archinal et al. 2018). Posições: as efemérides do próprio aplicativo.",
+    "compass": {
+      "N": "N",
+      "E": "L",
+      "S": "S",
+      "W": "O"
+    },
+    "bodies": {
+      "sun": "O Sol",
+      "mercury": "Mercúrio",
+      "venus": "Vênus",
+      "earth": "A Terra",
+      "moon": "A Lua",
+      "mars": "Marte",
+      "phobos": "Fobos",
+      "deimos": "Deimos",
+      "jupiter": "Júpiter",
+      "io": "Io",
+      "europa": "Europa",
+      "ganymede": "Ganimedes",
+      "callisto": "Calisto",
+      "saturn": "Saturno",
+      "titan": "Titã",
+      "uranus": "Urano",
+      "neptune": "Netuno"
+    },
+    "earthAndMoon": "A Terra e a Lua",
+    "unknownGround": "Ainda não há modelo de terreno para esse local.",
+    "unknownSky": "Este mapa ainda não permite ficar de pé nesse lugar: só na Lua, em Marte, em Titã ou em Europa."
+  }
+});
+// b200-f7-ground: end
