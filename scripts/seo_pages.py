@@ -535,9 +535,9 @@ def about_page(host: str) -> Page:
         "Every position is worked out in the visitor's own browser from public data, for the instant on the clock: satellites from their orbital elements, planets "
         "and probes from ephemerides. The clock can be moved, and the sky moves with it.</p>\n"
         # b200-f4-cards: begin (forge #170: the one line the issue asks for, and what stands behind it)
-        "<p><strong>Works on a five-year-old phone, in any current browser.</strong> It draws with WebGL, which every current browser has, "
-        "and needs no WebGPU and no install. Its first load is measured on a slowed-down phone profile and held to a budget: "
-        f'1.9 MB on 7 November 2026 (<a href="{GITHUB}/blob/main/docs/FIRST_LOAD.md">how it is measured</a>).</p>\n'
+        "<p><strong>Built for phones first:</strong> on an emulated mid-range phone over slow 4G, the map draws its first frame in about 8 seconds, "
+        "after a first load of 1.9 MB (measured on 7 November 2026). It draws with WebGL, which every current browser has, and needs no WebGPU and no install "
+        f'(<a href="{GITHUB}/blob/main/docs/FIRST_LOAD.md">how it is measured</a>).</p>\n'
         # b200-f4-cards: end
         "<h2>Why it exists</h2>\n"
         "<p>Space is easy to see and hard to understand in the wrong picture. Most pictures of the Solar System are not to scale, most satellite maps are 2D, and "

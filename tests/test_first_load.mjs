@@ -99,9 +99,10 @@ for (const m of measured) {
 for (const o of others) assert.ok(doc.includes(o.name), `docs/FIRST_LOAD.md names ${o.name}`);
 assert.match(doc, /we do not claim otherwise/, 'where we do not lead (requests), the page says so');
 const about = readFileSync(join(ROOT, 'scripts/seo_pages.py'), 'utf8');
-assert.match(about, /Works on a five-year-old phone, in any current browser\./, 'the /about/ line forge #170 asks for');
+assert.match(about, /Built for phones first:<\/strong> on an emulated mid-range phone over slow 4G, the map draws its first frame in about (\d+) seconds/, 'the /about/ line forge #170 asks for, as measured: emulation, not a real old phone');
+assert.ok(about.includes(`first frame in about ${Math.round(live.first_frame_ms / 1000)} seconds`), 'the /about/ seconds are the live measure');
 assert.match(about, /docs\/FIRST_LOAD\.md">how it is measured/, 'and where it is measured');
-assert.ok(about.includes(`${(live.bytes / 1e6).toFixed(1)} MB on 7 November 2026`), 'the /about/ number is the live measure');
+assert.ok(about.includes(`first load of ${(live.bytes / 1e6).toFixed(1)} MB (measured on 7 November 2026)`), 'the /about/ number is the live measure');
 const aboutBlock = about.slice(about.indexOf('# b200-f4-cards: begin (forge #170'), about.indexOf('# b200-f4-cards: end', about.indexOf('# b200-f4-cards: begin (forge #170')));
 for (const o of others) assert.ok(!aboutBlock.includes(o.name), `the /about/ line names no competitor (${o.name})`);
 

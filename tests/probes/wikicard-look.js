@@ -59,6 +59,13 @@ async function look(key, find) {
     wide: document.documentElement.scrollWidth > innerWidth + 1,
   };
   await shot(`${phone ? 'phone' : 'desktop'}-${key}`);
+  // The name stays the card's first line: the shot above is scrolled down to About it, so a second one from the top.
+  const name = document.querySelector('.sr-card__name');
+  const box = document.querySelector('.sr-card__wiki');
+  out.cards[key].nameHeading = name ? name.textContent : null;
+  out.cards[key].nameBeforeBlock = !!(name && box && (name.compareDocumentPosition(box) & Node.DOCUMENT_POSITION_FOLLOWING));
+  if (name) { name.scrollIntoView({ block: 'start' }); await wait(600); }
+  await shot(`${phone ? 'phone' : 'desktop'}-${key}-top`);
 }
 // STARLINK-1007 (NORAD 44713) is no longer in CelesTrak's active list of 2026-11-07: its launch-mate STARLINK-1008 stands in.
 await look('starlink-1007', () => byName(/^STARLINK-1007$/));
