@@ -1502,3 +1502,9 @@ jobs:
       - name: "The real recordings' mirror matches the registry (forge #163)"
         run: python3 scripts/gen_realsounds_js.py --check
       # b200-f9-reach: end
+      # b200-f7-ground: begin
+      - name: "The sky from another world: the IAU frame of the Moon, Mars, Titan and Europa, Mars24's clock, pole stars, Phobos over the Sun and the measured Martian sky (forge #147)"
+        run: node tests/test_worldframe.mjs
+      - name: "Standing on a landing site: the ground's arithmetic, seven sites' terrain files at true scale with their licences, loaded only on `#ground=` (forge #146)"
+        run: node tests/test_ground.mjs
+      # b200-f7-ground: end

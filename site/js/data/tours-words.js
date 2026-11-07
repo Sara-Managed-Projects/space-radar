@@ -38,5 +38,7 @@ export const TOUR_WORDS = {
 "inside-a-neighbouring-galaxy": "galaxy you can see its photograph from home turned becomes model the tarantula inside cloud hollow blown young stars shell heaviest known r136 our and neighbour depart",
 "across-the-local-group": "our galaxy from outside milky way the large magellanic cloud lmc andromeda other giant triangulum third spiral local group among its neighbours sun",
 "out-to-the-edge": "start home our group galaxies local sun the volume ton 618 quasar where first are now microwave background oldest light end this map edge",
-"two-pads-at-kennedy": "the first crew leave for moon apollo four days tranquility base last people telescope goes shuttle sts from this pad 116"
+"two-pads-at-kennedy": "the first crew leave for moon apollo four days tranquility base last people telescope goes shuttle sts from this pad 116",
+"walk-the-landing-sites": "where the first people stood apollo hadley under mountains last landing far side change opportunity stopped gale crater jezero utopia planitia",
+"skies-of-other-worlds": "the earth from moon evening star mars gale phobos crosses sun over under titan haze jupiter overhead europa proxima trappist"
 };

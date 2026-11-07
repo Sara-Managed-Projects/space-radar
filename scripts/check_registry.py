@@ -878,6 +878,46 @@ def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: se
         for n, stop in enumerate(stops, start=1):
             check_tour_stop(tour, stop, n, seen_stops, defaults, unreachable,
                             layer_ids, world_ids, site_ids, glossary)
+            # b200-f7-ground: begin
+            if "stand" in stop:
+                check_stop_stand(stop, f"tours.yaml[{tour.get('id')}].stops[{n}]")
+            # b200-f7-ground: end
+
+
+# b200-f7-ground: begin
+STAND_SKY_WORLDS = {"moon", "mars", "titan", "europa", "proxima-b", "trappist-1e"}  # site/js/sky/worldframe.js SKY_WORLDS less the Earth
+
+
+def check_stop_stand(stop: dict, where: str) -> None:
+    """`stand:` (release 2.0.0, forge #146, #147): the stop stands on another world, through scene/groundstage.js. It must
+    name a place that stage can open -- a registry/ground.yaml row, or a world it has a frame for and a place on it --
+    and only where to look besides; and it may not also be a `look:` stop of the visitor's own sky."""
+    stand = stop.get("stand")
+    if not isinstance(stand, dict):
+        fail(where, "`stand:` must be a mapping")
+        return
+    kinds = [k for k in ("ground", "sky") if k in stand]
+    if len(kinds) != 1:
+        fail(where, "`stand:` names exactly one of `ground:` and `sky:`")
+        return
+    extra = set(stand) - {"ground", "sky", "yaw", "pitch", "fov", "panel"}
+    if extra:
+        fail(where, f"`stand:` has keys it does not use: {sorted(extra)}")
+    for k in ("yaw", "pitch", "fov"):
+        if k in stand and not is_number(stand[k]):
+            fail(where, f"`stand.{k}` must be a number of degrees")
+    if "look" in stop:
+        fail(where, "a stop stands on another world or looks at the visitor's own sky, not both")
+    if "ground" in stand:
+        grounds = {g.get("id") for g in ((yaml_load((REG / "ground.yaml").read_text(encoding="utf-8")) or {}).get("grounds") or [])}
+        if stand["ground"] not in grounds:
+            fail(where, f"`stand.ground: {stand['ground']}` is not a registry/ground.yaml row")
+    else:
+        text = str(stand["sky"])
+        world = text.split(":")[0]
+        if world not in STAND_SKY_WORLDS:
+            fail(where, f"`stand.sky: {text}` names no world the sky from another world can stand on")
+# b200-f7-ground: end
 
 
 def check_sky_stop(stop: dict, where: str, target: dict, flown_on) -> None:

@@ -2683,6 +2683,19 @@ export function createTrip(ctx) {
     state.ground = !!run.ground;
   }
 
+  // b200-f7-ground: begin -- the stage a `stand:` stop opens (scene/groundstage.js standFor), fetched for the first
+  // such stop; a stop without one, and leaving, closes it. True when the stop stands somewhere.
+  function standOn(entry) {
+    const stand = entry && entry.stop ? entry.stop.stand : null;
+    if (!stand) {
+      if (ctx.ground && ctx.ground.active) ctx.ground.close();
+      return false;
+    }
+    import('../scene/groundstage.js').then((m) => m.standFor(ctx, stand)).catch((e) => console.warn('the ground did not load', e));
+    return true;
+  }
+  // b200-f7-ground: end
+
   /** Turn the sky view to what the stop looks for; a thing under the horizon is faced where it will rise. */
   function aimGround(entry) {
     const place = placeOf();
@@ -2741,6 +2754,18 @@ export function createTrip(ctx) {
       groundStop(entry, index);
       return;
     }
+    // b200-f7-ground: begin -- a stop that stands on another world (`stand:`, forge #146, #147) has no flight either:
+    // scene/groundstage.js draws that ground or sky over the hidden map, and the stop arrives as a ground stop does.
+    if (standOn(entry)) {
+      state.phase = 'flight';
+      entry.shot = null;
+      stopExtrasLeaving(entry);
+      letGoOfTheLastSubject(entry);
+      notify();
+      schedule(() => arrived(index, 'done'));
+      return;
+    }
+    // b200-f7-ground: end
 
     const shot = composeShot(entry);
     if (!shot) {
@@ -3311,6 +3336,7 @@ export function createTrip(ctx) {
     dropClimb();
     // Up off the ground first: the sky view gives the camera back where the trip had it before.
     setGround(false);
+    standOn(null); // b200-f7-ground: and off another world's ground (forge #146, #147)
     if (ctx.labels && ctx.labels.clearEmphasis) ctx.labels.clearEmphasis();
     // BEFORE anything else, and before `run` is thrown away: leaving must leave the camera where
     // it is, and a flight nobody stopped goes on flying with the frame gone.

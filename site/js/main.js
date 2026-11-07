@@ -1090,6 +1090,10 @@ export async function boot({ setStatus } = {}) {
     .then((s) => { if (n && n !== '0') s.start(n); else s.stop(); return s; })
     .catch((e) => { imagine = null; document.documentElement.classList.remove('sr-imagine-on'); console.warn('the imagined world did not load', e); return null; });
   if (!embed && link && link.imagine && link.imagine !== '0') { document.documentElement.classList.add('sr-imagine-on'); ctx.wantImagine(link.imagine); }
+  // b200-f7-ground: begin (forge #146, #147) -- `#ground=` and `#sky=` fetch scene/groundstage.js, which does the rest.
+  const groundLink = () => /(ground|sky)=/.test(location.hash) && import('./scene/groundstage.js').then((m) => m.boot(ctx));
+  groundLink(); addEventListener('hashchange', groundLink);
+  // b200-f7-ground: end
   // 0079 C1: begin
   // A MOMENT (site/js/moments/, internal spec 0079): `#moment=<id>&t=<s>` replays a mission on a stage of its own, one
   // clock driving the vehicles, the camera and the captions. Fetched for that link, never at boot; while it is up the

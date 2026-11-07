@@ -174,6 +174,41 @@ data:
   - {id: starmotion, file: site/data/starmotion.bin, source: "https://codeberg.org/astronexus/hyg (hyg_v44.csv.gz: pmra, pmdec, rv, dist; repacked by scripts/build-starmotion.py, forge #141)", licence: "CC BY-SA 4.0", credit: "Star motions: HYG v4.4 (David Nash), from Hipparcos and Gaia"}
   - {id: variables, file: site/data/variables.json, source: "https://vizier.cds.unistra.fr/viz-bin/asu-tsv (B/gcvs/gcvs_cat, GCVS 5.1, Samus et al. 2017, read through the mirror vizier.cfa.harvard.edu; repacked by scripts/build-variables.py, forge #142)", licence: "VizieR: free for scientific use with the authors cited", credit: "Variable stars: General Catalogue of Variable Stars (Samus et al. 2017)"}
   # b200-f3-stars: end
+  # b200-f7-ground: begin -- the ground at seven landing sites (registry/ground.yaml, site/data/ground/<id>/; the row names the folder's manifest)
+  - {id: ground-apollo-15, file: site/data/ground/apollo-15/site.json, source: "https://pds.mcp.nasa.gov/data/store/img/lunar_reconnaissance_orbiter/pds4/lroc/lro-l-lroc-5-rdr/LROLRC_2001/DATA/SDP/NAC_DTM/APOLLO15/NAC_DTM_APOLLO15_E261N0036.IMG\
+  \ (NAC_DTM_APOLLO15_E261N0036), with the orthoimage NAC_DTM_APOLLO15_M111571816_50CM,\
+  \ Lunar_LRO_LOLAKaguya_DEMmerge_60N60S_512ppd and LRO WAC global mosaic, 100 m a\
+  \ pixel beyond it; resampled, quantised and tiled by scripts/build-ground.py, forge\
+  \ #146", licence: "Public domain (PDS archive products and USGS Astrogeology mosaics, registry/ground.yaml)", credit: "The ground at Apollo 15, Hadley-Apennine: NASA/GSFC/Arizona State University (LROC); Henriksen et al. 2017, Icarus 283, 122-137; Barker et al. 2016, Icarus 273, 346-355 (LOLA, NASA/GSFC"}
+  - {id: ground-gale, file: site/data/ground/gale/site.json, source: "https://hirise-pds.lpl.arizona.edu/PDS/DTM/PSP/ORB_010500_010599/PSP_010573_1755_PSP_010639_1755/DTEEC_010573_1755_010639_1755_U01.IMG\
+  \ (DTEEC_010573_1755_010639_1755_U01), with the orthoimage PSP_010573_1755_RED_C_01_ORTHO,\
+  \ Mars_MGS_MOLA_DEM_mosaic_global_463m and Viking MDIM 2.1 colour mosaic beyond\
+  \ it; resampled, quantised and tiled by scripts/build-ground.py, forge #146", licence: "Public domain (PDS archive products and USGS Astrogeology mosaics, registry/ground.yaml)", credit: "The ground at Curiosity, Gale crater: NASA/JPL/University of Arizona (HiRISE); MOLA Science Team, NASA/GSFC (Smith et al. 2001, JGR 106, 23689)"}
+  - {id: ground-jezero, file: site/data/ground/jezero/site.json, source: "https://hirise-pds.lpl.arizona.edu/PDS/DTM/ESP/ORB_045900_045999/ESP_045994_1985_ESP_046060_1985/DTEEC_045994_1985_046060_1985_U01.IMG\
+  \ (DTEEC_045994_1985_046060_1985_U01), with the orthoimage ESP_045994_1985_RED_C_01_ORTHO,\
+  \ Mars_MGS_MOLA_DEM_mosaic_global_463m and Viking MDIM 2.1 colour mosaic beyond\
+  \ it; resampled, quantised and tiled by scripts/build-ground.py, forge #146", licence: "Public domain (PDS archive products and USGS Astrogeology mosaics, registry/ground.yaml)", credit: "The ground at Perseverance, Jezero crater: NASA/JPL/University of Arizona (HiRISE); MOLA Science Team, NASA/GSFC (Smith et al. 2001, JGR 106, 23689)"}
+  - {id: ground-utopia, file: site/data/ground/utopia/site.json, source: "https://hirise-pds.lpl.arizona.edu/PDS/DTM/ESP/ORB_069600_069699/ESP_069665_2055_ESP_069731_2055/DTEEC_069665_2055_069731_2055_A01.IMG\
+  \ (DTEEC_069665_2055_069731_2055_A01), with the orthoimage ESP_069665_2055_RED_C_01_ORTHO,\
+  \ Mars_MGS_MOLA_DEM_mosaic_global_463m and Viking MDIM 2.1 colour mosaic beyond\
+  \ it; resampled, quantised and tiled by scripts/build-ground.py, forge #146", licence: "Public domain (PDS archive products and USGS Astrogeology mosaics, registry/ground.yaml)", credit: "The ground at Zhurong, Utopia Planitia: NASA/JPL/University of Arizona (HiRISE); MOLA Science Team, NASA/GSFC (Smith et al. 2001, JGR 106, 23689)"}
+  - {id: ground-apollo-11, file: site/data/ground/apollo-11/site.json, source: "https://pds.mcp.nasa.gov/data/store/img/lunar_reconnaissance_orbiter/pds4/lroc/lro-l-lroc-5-rdr/LROLRC_2001/DATA/SDP/NAC_DTM/APOLLO11/NAC_DTM_APOLLO11_E008N0234.IMG\
+  \ (NAC_DTM_APOLLO11_E008N0234), with the orthoimage NAC_DTM_APOLLO11_M150361817_50CM,\
+  \ Lunar_LRO_LOLAKaguya_DEMmerge_60N60S_512ppd and LRO WAC global mosaic, 100 m a\
+  \ pixel beyond it; resampled, quantised and tiled by scripts/build-ground.py, forge\
+  \ #146", licence: "Public domain (PDS archive products and USGS Astrogeology mosaics, registry/ground.yaml)", credit: "The ground at Apollo 11, Tranquility Base: NASA/GSFC/Arizona State University (LROC); Barker et al. 2016, Icarus 273, 346-355 (LOLA, NASA/GSFC"}
+  - {id: ground-apollo-17, file: site/data/ground/apollo-17/site.json, source: "https://pds.mcp.nasa.gov/data/store/img/lunar_reconnaissance_orbiter/pds4/lroc/lro-l-lroc-5-rdr/LROLRC_2001/DATA/SDP/NAC_DTM/APOLLO17/NAC_DTM_APOLLO17_E203N0308.IMG\
+  \ (NAC_DTM_APOLLO17_E203N0308), with the orthoimage NAC_DTM_APOLLO17_MOSAIC_120CM,\
+  \ Lunar_LRO_LOLAKaguya_DEMmerge_60N60S_512ppd and LRO WAC global mosaic, 100 m a\
+  \ pixel beyond it; resampled, quantised and tiled by scripts/build-ground.py, forge\
+  \ #146", licence: "Public domain (PDS archive products and USGS Astrogeology mosaics, registry/ground.yaml)", credit: "The ground at Apollo 17, Taurus-Littrow: NASA/GSFC/Arizona State University (LROC); Barker et al. 2016, Icarus 273, 346-355 (LOLA, NASA/GSFC"}
+  - {id: ground-change-4, file: site/data/ground/change-4/site.json, source: "https://pds.mcp.nasa.gov/data/store/img/lunar_reconnaissance_orbiter/pds4/lroc/lro-l-lroc-5-rdr/LROLRC_2001/DATA/SDP/NAC_DTM/CHANGE4/NAC_DTM_CHANGE4_E458S1775.IMG\
+  \ (NAC_DTM_CHANGE4_E458S1775), with the orthoimage NAC_DTM_CHANGE4_M1303619844_140CM,\
+  \ Lunar_LRO_LOLAKaguya_DEMmerge_60N60S_512ppd and LRO WAC global mosaic, 100 m a\
+  \ pixel beyond it; resampled, quantised and tiled by scripts/build-ground.py, forge\
+  \ #146", licence: "Public domain (PDS archive products and USGS Astrogeology mosaics, registry/ground.yaml)", credit: "The ground at Chang'e 4, von Karman crater: NASA/GSFC/Arizona State University (LROC); Barker et al. 2016, Icarus 273, 346-355 (LOLA, NASA/GSFC"}
+  - {id: ground-opportunity, file: site/data/ground/opportunity/site.json, source: "https://hirise-pds.lpl.arizona.edu/PDS/DTM/ESP/ORB_018700_018799/ESP_018701_1775_ESP_018846_1775/DTEEC_018701_1775_018846_1775_U01.IMG (DTEEC_018701_1775_018846_1775_U01), with the orthoimage ESP_018701_1775_RED_C_01_ORTHO, Mars_MGS_MOLA_DEM_mosaic_global_463m and Viking MDIM 2.1 colour mosaic beyond it; resampled, quantised and tiled by scripts/build-ground.py, forge #146", licence: "Public domain (PDS archive products and USGS Astrogeology mosaics, registry/ground.yaml)", credit: "The ground at Opportunity, Endeavour crater: NASA/JPL/University of Arizona (HiRISE); MOLA Science Team, NASA/GSFC (Smith et al. 2001, JGR 106, 23689)"}
+  # b200-f7-ground: end
 
 # THIRD-PARTY MARKS DRAWN IN THE UI, as opposed to in the scene.
 #

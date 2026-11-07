@@ -351,5 +351,25 @@ export const TOURS_INDEX = [
 "min_stops": 3,
 "count": 5,
 "estimate_ms": 87525
+},
+{
+"id": "walk-the-landing-sites",
+"title": "Walk the landing sites",
+"blurb": "Stand at eight landers, at true scale. Leaving brings you back to Earth.",
+"group": "solar-system",
+"next": "skies-of-other-worlds",
+"min_stops": 3,
+"count": 8,
+"estimate_ms": 136377
+},
+{
+"id": "skies-of-other-worlds",
+"title": "Skies of other worlds",
+"blurb": "The sky from the Moon, Mars, Titan, Europa and two other stars' planets.",
+"group": "beyond",
+"next": "walk-the-landing-sites",
+"min_stops": 3,
+"count": 7,
+"estimate_ms": 127530
 }
 ];

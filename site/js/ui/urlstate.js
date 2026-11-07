@@ -69,6 +69,11 @@ KEYS.splice(KEYS.indexOf('cam'), 0, 'path', 'proj');
 // b200-f6-learn: begin -- forge #160: `play` a daily challenge (`#play=find-earth`, `which-world`, `guess-distance`; `1` the list), ui/play.js
 KEYS.splice(KEYS.indexOf('cam'), 0, 'play');
 // b200-f6-learn: end
+// b200-f7-ground: begin (forge #146, #147) -- `ground` a landing site to stand on (`#ground=apollo-15`, a
+// registry/ground.yaml row) and `sky` a place on another world to look up from (`#sky=mars:jezero`, `#sky=titan`,
+// `#sky=europa:10,200`; sky/worldframe.js parseSkyLink). scene/groundstage.js writes them; before `cam`, which stays last.
+KEYS.splice(KEYS.indexOf('cam'), 0, 'ground', 'sky');
+// b200-f7-ground: end
 export const VERSION = '1';
 /** The release this code is (0076 W4-c). A release bumps it with CHANGELOG.md; tests/test_access.mjs holds its shape. */
 export const BUILD = '1.4.0';

@@ -1,0 +1,52 @@
+{
+ "grounds": [
+  {
+   "id": "apollo-15",
+   "world": "moon",
+   "site": "apollo-15",
+   "name": "Apollo 15, Hadley-Apennine"
+  },
+  {
+   "id": "gale",
+   "world": "mars",
+   "site": "gale",
+   "name": "Curiosity, Gale crater"
+  },
+  {
+   "id": "jezero",
+   "world": "mars",
+   "site": "jezero",
+   "name": "Perseverance, Jezero crater"
+  },
+  {
+   "id": "utopia",
+   "world": "mars",
+   "site": "utopia",
+   "name": "Zhurong, Utopia Planitia"
+  },
+  {
+   "id": "apollo-11",
+   "world": "moon",
+   "site": "apollo-11",
+   "name": "Apollo 11, Tranquility Base"
+  },
+  {
+   "id": "apollo-17",
+   "world": "moon",
+   "site": "apollo-17",
+   "name": "Apollo 17, Taurus-Littrow"
+  },
+  {
+   "id": "change-4",
+   "world": "moon",
+   "site": "change-4",
+   "name": "Chang'e 4, von Karman crater"
+  },
+  {
+   "id": "opportunity",
+   "world": "mars",
+   "site": "opportunity",
+   "name": "Opportunity, Endeavour crater"
+  }
+ ]
+}
