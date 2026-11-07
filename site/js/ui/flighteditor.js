@@ -292,7 +292,8 @@ export function createFlightEditor(ctx) {
     changed();
     const items = list.querySelectorAll('.sr-make__key');
     const last = items[items.length - 1];
-    if (last) last.querySelector('.sr-make__keyname').focus({ preventScroll: false });
+    // A keyboard keeps its place on the new key; on a phone the sheet stays where it is (a focus inside lifts it to full).
+    if (last && !isPhone()) last.querySelector('.sr-make__keyname').focus({ preventScroll: false });
     return key;
   }
 
