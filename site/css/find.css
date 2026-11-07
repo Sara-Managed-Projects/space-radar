@@ -39,7 +39,7 @@
 .sr-find__tablewrap { overflow-x: auto; overscroll-behavior-x: contain; margin: 0 -4px; }
 .sr-find__table { width: 100%; border-collapse: collapse; font-size: var(--sr-fs-sm); }
 .sr-find__table th, .sr-find__table td { padding: 6px 4px; text-align: right; white-space: nowrap; border-top: 1px solid var(--sr-line); font-variant-numeric: tabular-nums; }
-.sr-find__table thead th { border-top: 0; font-weight: 500; color: var(--sr-text-dim); }
+.sr-find__table thead th { border-top: 0; font-weight: 500; font-size: 12px; line-height: 1.25; color: var(--sr-text-dim); white-space: normal; vertical-align: bottom; }
 .sr-find__table th[scope="row"], .sr-find__table thead th:first-child { text-align: left; white-space: normal; }
 .sr-find__table tbody tr { cursor: pointer; }
 .sr-find__table tbody tr:hover { background: var(--sr-wash); }
@@ -160,4 +160,5 @@ html.sr-phone .sr-datejump { left: 8px; right: 8px; bottom: 8px; transform: none
 .sr-find__refine > summary { min-height: 40px; display: flex; align-items: center; cursor: pointer; padding: 0; }
 .sr-find__srclabel { margin-inline-end: 0.35em; }
 .sr-find__body.is-reference { fill: var(--sr-earth-ocean); fill-opacity: 1; stroke: var(--sr-atmosphere); stroke-width: 1; }
-.sr-find__table th[scope="row"] { min-width: 96px; overflow-wrap: normal; word-break: keep-all; }
+.sr-find__table th[scope="row"] { min-width: 88px; }
+.sr-find__table td { font-size: 12px; }
