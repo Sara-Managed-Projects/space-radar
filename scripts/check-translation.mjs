@@ -54,6 +54,9 @@ async function english() {
   // b200-f1-find: begin -- the words of Find, the owners, the clouds and the date field (copy/en.find.js), drafted in every language
   await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.find.js')).href);
   // b200-f1-find: end
+  // b200-f3-stars: begin -- the words of deep time, the variable stars and the turning holes (copy/en.stars.js)
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.stars.js')).href);
+  // b200-f3-stars: end
   return { COPY: base.COPY, GLOSSARY: base.GLOSSARY };
 }
 

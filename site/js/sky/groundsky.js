@@ -71,6 +71,9 @@ import { eclToEq, eclipticRing } from './figures.js';
 import { GLSL_SKY, exposureFor, twilightFloor } from './skyair.js';
 import { createLandscape, landscapeKind, sampleSea, seedOf, seaWords } from './landscape.js';
 import { horizonGlowStrength } from './skyview.js';
+// b200-f3-stars: begin -- the sky of another millennium (forge #141): sky/skyepoch.js is imported when the clock is far
+import { motionYears, isFar } from './starmotion.js';
+// b200-f3-stars: end
 
 const DEG = Math.PI / 180;
 const EXT_K = 0.2;
@@ -1468,6 +1471,41 @@ export function createGroundSky(ctx, env) {
     return stats;
   })();
 
+  // b200-f3-stars: begin -- the stars of another millennium (forge #141; sky/skyepoch.js)
+  let epoch = null;
+  let epochAsked = false;
+  function askEpoch() {
+    if (epochAsked || disposed) return;
+    epochAsked = true;
+    import('./skyepoch.js').then((m) => { const e = m.createSkyEpoch({ fetchBytes }); return e.ready.then(() => { if (!disposed) epoch = e; }); })
+      .catch((err) => { epochAsked = false; console.warn('ground sky: the star motions did not load', err); });
+  }
+  function updateEpoch(tMs) {
+    const years = motionYears(tMs, Date.now());
+    if (years && !epochAsked) askEpoch();
+    if (!epoch) return false;
+    const shown = [];
+    for (const c of cultures.values()) if (c.obj) shown.push(c.obj);
+    if (hereCon.obj) shown.push(hereCon.obj);
+    epoch.apply(years, { stars: stars && stars.points.geometry, lines: shown, names: starNames });
+    stats.epoch = epoch.state();
+    return epoch.hidesUnmoved(years);
+  }
+  // The famous variables at the clock's brightness (sky/skyvariables.js, forge #142), once the stars are up.
+  let vars = null;
+  let varsAsked = false;
+  function updateVariables(tMs) {
+    if (!varsAsked && stars && !disposed) {
+      varsAsked = true;
+      import('./skyvariables.js')
+        .then((m) => m.createSkyVariables({ root, fetchJson, material: () => pointMaterial(starUniforms), renderOrder: RO.stars + 0.01, radecDir }))
+        .then((v) => { if (disposed) v.dispose(); else vars = v; })
+        .catch((err) => { console.warn('ground sky: the variable stars did not load', err); });
+    }
+    if (vars) { vars.update(tMs, stars && stars.points.geometry); stats.variables = vars.state(); }
+  }
+  // b200-f3-stars: end
+
   // ---- per frame --------------------------------------------------------------------------------
   function update(frame) {
     if (disposed) return;
@@ -1492,6 +1530,8 @@ export function createGroundSky(ctx, env) {
       stars.points.geometry.setDrawRange(0, n);
       stats.drawn = n;
     }
+    const epochDeep = updateEpoch(frame.tMs); // b200-f3-stars
+    updateVariables(frame.tMs); // b200-f3-stars
     if (!tierAsked[0] && frame.fovDeg < 40) askTier(0);
     // The rest of the catalogue, once the sky is deep enough to show a star tier 1 does not have.
     if (tiers[0] && !tierAsked[1] && limit + 0.3 > tierFaintest(0)) askTier(1);
@@ -1499,7 +1539,7 @@ export function createGroundSky(ctx, env) {
     if (starTiles) {
       // The cone the screen's corners reach, and a degree for the air's lift.
       const half = Math.atan(Math.tan(frame.fovDeg / 2 * DEG) * Math.hypot(1, w / Math.max(1, h))) / DEG + 1;
-      stats.tileStars = starTiles.update(lookEq(frame.camera), half, limit);
+      stats.tileStars = starTiles.update(lookEq(frame.camera), half, epochDeep ? -9 : limit); // b200-f3-stars: today's faint stars, not moved
     }
     if (!picturesAsked && frame.fovDeg < 40) askPictures();
     lastPxPerDeg = pxPerDeg;
@@ -1539,7 +1579,7 @@ export function createGroundSky(ctx, env) {
     setLine(lines.bounds, options.bounds);
     setLine(lines.pole, options.grid || options.starGrid);
     // The pictures belong to the western figures; they leave as the field closes on one star.
-    const artOn = !!options.art && cultureShown === 'western';
+    const artOn = !!options.art && cultureShown === 'western' && !epochDeep; // b200-f3-stars: pinned to today's stars
     if (artOn && !artAsked) askArt();
     if (art) art.update({ on: artOn, dirEq: lookEq(frame.camera), fovDeg: frame.fovDeg, aspect: w / Math.max(1, h), strength: ART_GAIN * lineNight * Math.max(0, Math.min(1, (frame.fovDeg - 4) / 10)) });
     // Meteors: at the rate the naked eye would count under this sky, whatever the zoom.
@@ -1687,11 +1727,20 @@ export function createGroundSky(ctx, env) {
       labels.markDir = typeof dir === 'function' ? dir : () => dir;
       labels.markUntil = performance.now() + ms;
     },
+    // b200-f3-stars: begin -- a far clock's Sun for sky/skyview.js (modelled: sky/starmotion.js calendarSunEqj), and the epoch readout
+    farSun(tMs) {
+      if (!isFar(tMs)) return null;
+      const v = bodyView('sun', new Date(tMs), observerA);
+      return v ? { altDeg: v.altDeg + refractionDeg(v.altDeg), azDeg: v.azDeg } : null;
+    },
+    epoch: () => (stats.epoch ? { ...stats.epoch } : null),
+    // b200-f3-stars: end
     stats: () => ({ ...stats, tiles: starTiles ? starTiles.state() : null, culture: cultureShown, bounds: !!lines.bounds, art: art ? art.state() : null, meteors: meteors ? meteors.state() : null }),
     dispose() {
       disposed = true;
       if (pictures) { pictures.dispose(); pictures = null; }
       if (art) { art.dispose(); art = null; }
+      if (vars) { vars.dispose(); vars = null; } // b200-f3-stars
       if (meteors) { meteors.dispose(); meteors = null; }
       if (starTiles) { starTiles.dispose(); starTiles = null; }
       if (tag.node) tag.node.remove();

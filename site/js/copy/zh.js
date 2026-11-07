@@ -4819,7 +4819,7 @@ Object.assign(COPY, {
       "worlds": "太阳、月球和行星：1700 到 2200 年，计算得出（astronomy-engine）。",
       "satellites": "卫星：今天前后一周内准确；超过一个月就变淡。",
       "craft": "深空探测器：只在它们自己的 JPL 路径范围内。",
-      "stars": "恒星：在它们现在的位置；几百年间的运动没有画出。"
+      "stars": "恒星：在天空视图中，日期离今天超过 50 年时，按实测的运动移动。"
     },
     "quick": {
       "total": "下一次日全食",
@@ -4833,3 +4833,70 @@ Object.assign(COPY, {
   }
 });
 // b200-f1-find: end
+// b200-f3-stars: begin -- deep time, the variable stars and the turning black holes (copy/en.stars.js, forge #141, #142, #149), machine-drafted
+Object.assign(COPY, {
+  "deepTime": {
+    "title": "深时",
+    "back": "−{n} 年",
+    "on": "+{n} 年",
+    "backTitle": "后退 {n} 年，日期和时刻不变",
+    "onTitle": "前进 {n} 年，日期和时刻不变",
+    "presetsLabel": "其他北极星",
+    "presets": {
+      "thuban": "右枢，公元前 2800 年",
+      "vega": "织女星，公元 13 700 年",
+      "far": "公元 50 000 年"
+    },
+    "presetTitles": {
+      "thuban": "建造金字塔的时候，天龙座的右枢是北极星",
+      "vega": "约公元 13 700 年，天极离织女星不到 6.5°",
+      "far": "五万年后的天空"
+    },
+    "yearAd": "公元 {n} 年",
+    "yearBc": "公元前 {n} 年",
+    "moved": "{year}的天空：每颗恒星都按自己实测的运动移动了。",
+    "far": "离今天这么远，不画月亮和行星，太阳放在历法给出的位置。",
+    "pole": "北极星：{name}，离天极 {deg}°。",
+    "noPole": "天极附近没有亮星：最近的{name}离它 {deg}°。",
+    "unnamed": "一颗 {mag} 等星",
+    "honest": "运动是实测的（Hipparcos 和 Gaia，经 HYG）；把它们沿直线延伸几千年是模型。地轴的转动：Vondrák、Capitaine 和 Wallace 2011。"
+  },
+  "variables": {
+    "label": "它的光如何变化",
+    "types": {
+      "eclipse": "食双星：两颗星彼此从对方前面经过。",
+      "binary": "被拉成椭球形的密近双星，亮度从不停下。",
+      "pulse": "脉动星：它会膨胀和收缩。",
+      "sine": "一颗小而快速脉动的星。",
+      "sr": "半规则巨星：周期和变幅是实测的，但不知道它此刻处在周期的哪里，所以这条曲线只是示意。",
+      "irregular": "不规则变星：没有钟能说出它有多亮，所以天空保留星表的亮度。"
+    },
+    "periodDays": "周期 {n} 天。",
+    "periodYears": "周期 {n} 年。",
+    "aria": "{name}的光变曲线，从 {bright} 等到 {faint} 等；现在 {now}。",
+    "now": "现在",
+    "nowLine": "现在 {mag} 等（{band}）；变化范围 {bright} 到 {faint}。",
+    "range": "变化范围 {bright} 等到 {faint} 等（{band}）。",
+    "far": "曲线不延伸到离今天超过 {years} 年；变化范围 {bright} 等到 {faint} 等（{band}）。",
+    "nextMin": "下一次极小：{when}",
+    "measured": "实测：大暗化期间有日期的星等。要素：{cite}。",
+    "modelled": "模型：形状由星表的周期、历元和变幅画出（{cite}）。",
+    "notes": {
+      "alf-ori": "2019 和 2020 年它暗到 1.6 等，即“大暗化”：它抛出的一团尘埃遮住了它的一部分。",
+      "omi-cet": "蒭藁增二的极大从一个周期到下一个会早或晚几周，所以这些日期也可能差这么多。",
+      "bet-lyr": "它的周期每年增加 19 秒；曲线采用 Harmanec 和 Scholz（1993）的二次历表。",
+      "bet-per": "大陵五的食准到分钟：每 2.87 天变暗约十小时。",
+      "eps-aur": "每 27 年被伴星周围的暗盘遮掩近两年；上一次食从 2009 到 2011 年。",
+      "eta-car": "在 1840 年代的大爆发中，它成了全天第二亮的星。",
+      "t-crb": "再发新星：1866 年和 1946 年两次亮到 2 等。"
+    }
+  },
+  "blackHoleSpin": {
+    "spin": "画成转动的，自旋 a = {a}：阴影是转动黑洞投下的形状（Bardeen 1973），被推离朝我们转来的一侧。{why}周围的光仍按不转动的情形追踪，所以这个形状是模型。",
+    "spinWhy": {
+      "m87-star": "自旋是选定的：EHT 2019 第五篇论文中最吻合的模型以 0.94 转动。",
+      "sgr-a-star": "自旋是选定的：EHT 2022 第五篇论文倾向于 0.5 到 0.94。"
+    }
+  }
+});
+// b200-f3-stars: end

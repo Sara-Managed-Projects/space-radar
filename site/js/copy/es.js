@@ -4684,7 +4684,7 @@ Object.assign(COPY, {
       "worlds": "Sol, Luna y planetas: de 1700 a 2200, calculado (astronomy-engine).",
       "satellites": "Satélites: precisos a una semana de hoy; atenuados pasado un mes.",
       "craft": "Sondas espaciales: solo dentro de sus propias trayectorias del JPL.",
-      "stars": "Estrellas: donde están hoy; su movimiento a lo largo de siglos no se dibuja."
+      "stars": "Estrellas: en la vista del cielo, desplazadas por sus movimientos medidos cuando la fecha está a más de 50 años de hoy."
     },
     "quick": {
       "total": "Próximo eclipse total de Sol",
@@ -4698,3 +4698,70 @@ Object.assign(COPY, {
   }
 });
 // b200-f1-find: end
+// b200-f3-stars: begin -- deep time, the variable stars and the turning black holes (copy/en.stars.js, forge #141, #142, #149), machine-drafted
+Object.assign(COPY, {
+  "deepTime": {
+    "title": "Tiempo profundo",
+    "back": "−{n} años",
+    "on": "+{n} años",
+    "backTitle": "Retroceder {n} años, con la misma fecha y hora",
+    "onTitle": "Avanzar {n} años, con la misma fecha y hora",
+    "presetsLabel": "Otras estrellas polares",
+    "presets": {
+      "thuban": "Thuban, 2800 a. C.",
+      "vega": "Vega, 13 700 d. C.",
+      "far": "50 000 d. C."
+    },
+    "presetTitles": {
+      "thuban": "Cuando se construyeron las pirámides, Thuban, en el Dragón, era la estrella polar",
+      "vega": "Hacia el 13 700 d. C. el polo pasa a 6,5° de Vega",
+      "far": "El cielo dentro de cincuenta mil años"
+    },
+    "yearAd": "{n} d. C.",
+    "yearBc": "{n} a. C.",
+    "moved": "El cielo de {year}: cada estrella desplazada por su propio movimiento medido.",
+    "far": "Tan lejos de hoy no se dibujan la Luna ni los planetas, y el Sol está donde lo pone el calendario.",
+    "pole": "Estrella polar: {name}, a {deg}° del polo.",
+    "noPole": "Ninguna estrella brillante marca el polo: la más cercana, {name}, está a {deg}°.",
+    "unnamed": "una estrella de magnitud {mag}",
+    "honest": "Los movimientos están medidos (Hipparcos y Gaia, a través de HYG); prolongarlos en línea recta durante milenios es un modelo. El giro del eje de la Tierra: Vondrák, Capitaine y Wallace 2011."
+  },
+  "variables": {
+    "label": "Cómo cambia su luz",
+    "types": {
+      "eclipse": "Una pareja eclipsante: dos estrellas que pasan una delante de la otra.",
+      "binary": "Una pareja cercana deformada, cuya luz nunca está quieta.",
+      "pulse": "Una estrella pulsante: se hincha y se encoge.",
+      "sine": "Una estrella pequeña de pulsación rápida.",
+      "sr": "Una gigante semirregular: su período y su rango están medidos, pero no en qué punto del ciclo está, así que la curva es un esbozo.",
+      "irregular": "Una variable irregular: ningún reloj puede decir su brillo, así que el cielo mantiene el del catálogo."
+    },
+    "periodDays": "Período {n} días.",
+    "periodYears": "Período {n} años.",
+    "aria": "Curva de luz de {name}, de magnitud {bright} a {faint}; ahora {now}.",
+    "now": "ahora",
+    "nowLine": "Ahora magnitud {mag} ({band}); varía de {bright} a {faint}.",
+    "range": "Varía de magnitud {bright} a {faint} ({band}).",
+    "far": "Su curva no se prolonga más de {years} años desde hoy; varía de magnitud {bright} a {faint} ({band}).",
+    "nextMin": "Próximo mínimo: {when}",
+    "measured": "Medido: las magnitudes fechadas del Gran Oscurecimiento. Elementos: {cite}.",
+    "modelled": "Modelado: la forma se dibuja a partir del período, la época y el rango del catálogo ({cite}).",
+    "notes": {
+      "alf-ori": "En 2019 y 2020 bajó a magnitud 1,6, el Gran Oscurecimiento: una nube de polvo que había expulsado ocultó parte de ella.",
+      "omi-cet": "Los máximos de Mira llegan semanas antes o después de un ciclo a otro; estas fechas pueden desviarse otro tanto.",
+      "bet-lyr": "Su período crece 19 segundos al año; la curva sigue la efeméride cuadrática de Harmanec y Scholz (1993).",
+      "bet-per": "Los eclipses de Algol son puntuales al minuto: se debilita unas diez horas cada 2,87 días.",
+      "eps-aur": "Eclipsada casi dos años cada 27 por un disco oscuro alrededor de su compañera; el último eclipse fue de 2009 a 2011.",
+      "eta-car": "En su Gran Erupción de la década de 1840 llegó a ser la segunda estrella más brillante del cielo.",
+      "t-crb": "Una nova recurrente: llegó a magnitud 2 en 1866 y en 1946."
+    }
+  },
+  "blackHoleSpin": {
+    "spin": "Dibujado girando, con espín a = {a}: la sombra tiene la forma que proyecta un agujero que gira (Bardeen 1973), desplazada lejos del lado que viene hacia nosotros. {why} La luz a su alrededor se sigue trazando sin espín, así que la forma es un modelo.",
+    "spinWhy": {
+      "m87-star": "El espín es elegido: los modelos que mejor ajustan del artículo V del EHT 2019 giran a 0,94.",
+      "sgr-a-star": "El espín es elegido: el artículo V del EHT 2022 favorece de 0,5 a 0,94."
+    }
+  }
+});
+// b200-f3-stars: end

@@ -2947,6 +2947,20 @@ function render(record, ctx, opts = {}) {
   // task 3 for the deep sky; internal spec 0076 W3-d for moons, planets of other stars and stars).
   const where = whereBlock(record, ctx, m);
   if (where) body.appendChild(where);
+  // b200-f3-stars: begin -- a famous variable's light curve (ui/varcurve.js, forge #142), fetched with the first star card
+  if (klassOf(record) === 'star') {
+    const varBox = el('div', 'sr-card__varcurve');
+    varBox.hidden = true;
+    body.appendChild(varBox);
+    import('./varcurve.js').then((mod) => mod.mountVarCurve(varBox, record, ctx)).catch(() => { /* the card stands without it */ });
+  } else if (/^(exotic-)?(m87|sgr-a)-star$/.test(String(record.id || ''))) {
+    // The spin a turning hole is drawn with (ui/holespin.js, forge #149).
+    const spinBox = el('div', 'sr-card__varcurve');
+    spinBox.hidden = true;
+    body.appendChild(spinBox);
+    import('./holespin.js').then((mod) => mod.mountSpin(spinBox, record)).catch(() => { /* the card stands without it */ });
+  }
+  // b200-f3-stars: end
 
   // 3b. a mission's dated events, for the handful of records that have them (ui/missions.js,
   // registry/missions.yaml; public #452). The module is fetched the first time a card opens
