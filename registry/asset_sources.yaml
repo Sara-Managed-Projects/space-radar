@@ -614,3 +614,19 @@ sources:
     offline: shipped
     checked: 2026-11-07
   # b200-f4-cards: end
+  # b200-f3-stars: begin -- the star motions and the variable stars (forge #141, #142)
+  - id: hyg-database
+    name: HYG Stellar Database v4.4 (David Nash, astronexus), read by scripts/build-stars3d.py and scripts/build-starmotion.py
+    match: ["https://codeberg.org/astronexus/hyg"]
+    url: https://codeberg.org/astronexus/hyg
+    licence: CC BY-SA 4.0
+    licence_read: "This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License"
+    licence_url: https://codeberg.org/astronexus/hyg/raw/branch/main/data/hyg/CURRENT/LICENSE
+    licence_note: "The LICENSE file beside hyg_v44.csv.gz names CC BY-SA 4.0, the licence CREDITS.md already gives for stars3d.bin, which was rebuilt from the same file on 2026-11-07 byte for byte. starmotion.bin is a derivative (its proper motions, radial velocities and distances), shared alike under CC BY-SA 4.0. One row corrected from Gaia DR3 (CC BY-SA 3.0 IGO as Wikipedia quotes it): Barnard's Star, whose declination motion HYG's column clamps at 9 999.99 mas/yr."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+    pins:
+      - {file: site/data/starmotion.bin, sha256: 3615204ce950cc7db5ac2dd23143986f52d34bc4562b1963bc6b58eb4b4573da}
+  # b200-f3-stars: end

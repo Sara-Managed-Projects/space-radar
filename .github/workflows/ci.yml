@@ -1462,3 +1462,11 @@ jobs:
       - name: "The first load keeps phones in front: budget rows under every rival first load, WebGL and no WebGPU (forge #170)"
         run: node tests/test_first_load.mjs
       # b200-f4-cards: end
+      # b200-f3-stars: begin
+      - name: "The stars move: Vondrak 2011 precession, the pole stars of history, Barnard's Star in the year 12 000, the far sky's frame (forge #141)"
+        run: node tests/test_starmotion.mjs
+      - name: "Variable stars: the GCVS elements, Algol's eclipses, Betelgeuse's Great Dimming and the card's light curve (forge #142)"
+        run: node tests/test_variables.mjs
+      - name: "The turning black hole's shadow: Bardeen's outline, the shader's fit and the card's spin line (forge #149)"
+        run: node tests/test_kerrshadow.mjs
+      # b200-f3-stars: end

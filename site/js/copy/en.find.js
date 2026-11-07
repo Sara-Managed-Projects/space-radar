@@ -189,7 +189,7 @@ Object.assign(COPY, {
       worlds: 'Sun, Moon and planets: 1700 to 2200, worked out (astronomy-engine).',
       satellites: 'Satellites: good within a week of now; faded beyond a month.',
       craft: 'Deep-space craft: only inside their own JPL paths.',
-      stars: 'Stars: where they are now; their motion over centuries is not drawn.',
+      stars: 'Stars: in the sky view, moved by their measured motions once the date is more than 50 years from now.', // b200-f3-stars: the stars move now (forge #141)
     },
     quick: { total: 'Next total eclipse of the Sun', lunar: 'Next eclipse of the Moon' },
     missionsTitle: 'From our missions',

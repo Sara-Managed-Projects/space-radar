@@ -4506,3 +4506,38 @@ the artist and licence its Wikimedia Commons page gives, the licence linked to i
 - **Live**: any other card asks Wikipedia's REST API and the Commons API itself when its About it is opened, with no cookie
   and no referrer; the same credits are printed.
 <!-- b200-f4-cards: end -->
+
+<!-- b200-f3-stars: begin -->
+## 3c-2. How the stars move, the variable stars, the turning black holes (release 2.0.0, forge #141, #142, #149)
+
+**Star motions.** `site/data/starmotion.bin` is repacked from the **HYG Stellar Database v4.4** by David Nash
+(<https://codeberg.org/astronexus/hyg>, **CC BY-SA 4.0**, the same file §3c's `stars3d.bin` comes from, rebuilt from it
+byte for byte on 2026-11-07) by `scripts/build-starmotion.py`: for 17 207 stars (every one to magnitude 7.0, every one
+moving half an arcsecond a year or more, every one within 6.2 parsecs) the J2000 place, the distance and the space
+velocity from HYG's Hipparcos and Gaia proper motions and radial velocities. Shared alike under CC BY-SA 4.0. One row
+is corrected: Barnard's Star's motion in declination, which HYG's column clamps at 9 999.99 mas/yr, is Gaia DR3's
+10 362.394 mas/yr with its parallax and radial velocity (Gaia Collaboration, Vallenari et al. 2023, as Wikipedia's
+article quotes them, read 2026-11-07). The long-term precession is Vondrák, Capitaine & Wallace 2011 (A&A 534, A22),
+as the IAU SOFA library carries it (iauLtpequ, iauLtpecl); the coefficients are the paper's.
+
+**Variable stars.** `site/data/variables.json` holds 58 rows of the **General Catalogue of Variable Stars**, version 5.1
+(Samus N.N., Kazarovets E.V., Durlevich O.V., Kireeva N.N., Pastukhova E.N., Astronomy Reports 61, 80, 2017), asked of
+VizieR (catalogue B/gcvs) on 2026-11-07 through its mirror at vizier.cfa.harvard.edu, by `scripts/build-variables.py`.
+VizieR's terms: free of usage in a scientific context, with the original authors cited (registry/asset_sources.yaml,
+`cds-vizier-asu`); every star's card names the GCVS. Two stars carry more: beta Lyrae's quadratic ephemeris (Harmanec &
+Scholz 1993, A&A 279, 131), and Betelgeuse's Great Dimming of 2019–20 from the dates and magnitudes Wikipedia's article
+gives with their sources (Guinan et al., The Astronomer's Telegram 13439 and 13512; AAVSO).
+
+**Turning black holes.** The shadow's outline is Bardeen's (1973) closed formula, as in Chandrasekhar's *The
+Mathematical Theory of Black Holes* (1983) §63; the spins are chosen from the Event Horizon Telescope's papers (EHT 2019
+paper V, ApJL 875, L5; EHT 2022 paper V, ApJL 930, L16). No image or code of anyone else's is used.
+
+| Item | File | Licence | Credit line | Link |
+|---|---|---|---|---|
+| Star motions (repacked) | `starmotion.bin` | CC BY-SA 4.0 | Star motions from the HYG Stellar Database v4.4, © David Nash | <https://codeberg.org/astronexus/hyg> |
+| Variable stars' elements (extracted) | `variables.json` | VizieR terms, GCVS cited | General Catalogue of Variable Stars, Samus et al. 2017 | <https://vizier.cds.unistra.fr/viz-bin/VizieR?-source=B/gcvs> |
+
+`registry/models.yaml` (`data:`) carries the two in the short form the app prints:
+"Star motions: HYG v4.4 (David Nash), from Hipparcos and Gaia" and
+"Variable stars: General Catalogue of Variable Stars (Samus et al. 2017)".
+<!-- b200-f3-stars: end -->

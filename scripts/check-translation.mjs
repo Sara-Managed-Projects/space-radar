@@ -57,6 +57,9 @@ async function english() {
   // b200-f4-cards: begin -- the words of a card's Wikipedia block and Read aloud (copy/en.cards.js), drafted in every language
   await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.cards.js')).href);
   // b200-f4-cards: end
+  // b200-f3-stars: begin -- the words of deep time, the variable stars and the turning holes (copy/en.stars.js)
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.stars.js')).href);
+  // b200-f3-stars: end
   return { COPY: base.COPY, GLOSSARY: base.GLOSSARY };
 }
 

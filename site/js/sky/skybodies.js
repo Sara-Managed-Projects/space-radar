@@ -17,6 +17,9 @@
 // they are and the spot is not promised.
 
 import * as Astronomy from '../../vendor/astronomy.js';
+// b200-f3-stars: begin -- a far clock (forge #141): the long-term precession, the calendar's Sun, no Moon or planets
+import { isFar, farEqjToLocal, calendarSunEqj } from './starmotion.js';
+// b200-f3-stars: end
 
 const DEG = Math.PI / 180;
 const KM_PER_AU = 1.4959787069098932e8;
@@ -54,6 +57,9 @@ function unit(v) {
  * frame is x north, y west, z up.
  */
 export function eqjToLocal(date, observer) {
+  // b200-f3-stars: begin -- past a few thousand years the engine's IAU 2006 polynomials run away (sky/starmotion.js)
+  if (isFar(+date)) return farEqjToLocal(+date, observer.latitude, observer.longitude);
+  // b200-f3-stars: end
   const r = Astronomy.Rotation_EQJ_HOR(date, observer).rot;
   // out_k = sum_j rot[j][k] * v_j, so row k of the matrix is rot[0..2][k].
   return [
@@ -107,6 +113,17 @@ export function bodyFrame(axis) {
 export function bodyView(id, date, observer) {
   const row = BY_ID.get(id);
   if (!row || !observer) return null;
+  // b200-f3-stars: begin -- a far clock: the Sun where the calendar puts it (modelled), and no Moon or planet,
+  // whose places the engine cannot give that far out (sky/starmotion.js says why)
+  if (isFar(+date)) {
+    if (id !== 'sun') return null;
+    const dir = calendarSunEqj(+date);
+    const local = localOf(eqjToLocal(date, observer), dir);
+    let frame = null;
+    try { frame = bodyFrame(Astronomy.RotationAxis(row.body, date)); } catch { frame = { x: [1, 0, 0], y: [0, 1, 0], z: [0, 0, 1] }; }
+    return { id, dir, local, ...altAzOf(local), distAu: 1, diameterDeg: 0.533, mag: -26.74, phaseFraction: 1, phaseAngleDeg: 0, ringTiltDeg: null, toSun: dir, frame, modelled: true };
+  }
+  // b200-f3-stars: end
   try {
     const eq = Astronomy.Equator(row.body, date, observer, false, true);
     const dir = unit([eq.vec.x, eq.vec.y, eq.vec.z]);
@@ -140,6 +157,7 @@ export function bodyView(id, date, observer) {
  * is from Jupiter's centre in Jupiter radii and whether it is in front of or behind the disc.
  */
 export function jupiterMoons(date, observer) {
+  if (isFar(+date)) return []; // b200-f3-stars: no Jupiter on a far clock
   try {
     const jup = Astronomy.Equator('Jupiter', date, observer, false, true);
     const jm = Astronomy.JupiterMoons(date);

@@ -170,6 +170,10 @@ data:
   - {id: catalogue, file: site/data/deep/catalogue.bin, source: "https://github.com/mattiaverga/OpenNGC (NGC.csv, addendum.csv), https://physwww.mcmaster.ca/~harris/mwgc.dat, https://www.mrao.cam.ac.uk/surveys/snrs/, https://en.wikipedia.org/wiki/Caldwell_catalogue; repacked by scripts/build_deep_catalogue.py, release 1.5.0 stage A2", licence: "CC BY-SA 4.0 (OpenNGC, the Caldwell numbers); Harris's catalogue free of charge with the source named; Green's with a request to cite", credit: "Deep-sky catalogue: OpenNGC (Mattia Verga, CC BY-SA 4.0), Harris (1996, 2010 edition), Green (2024 October version), the Caldwell numbers from Wikipedia (CC BY-SA 4.0)"}
   - {id: catalogue-oc, file: site/data/deep/catalogue-oc.bin, source: "https://vizier.cds.unistra.fr/viz-bin/asu-tsv (J/A+A/673/A114/clusters, Hunt & Reffert 2023; repacked by scripts/build_deep_catalogue.py, release 1.5.0 stage A2)", licence: "Gaia DR3 derived: CC BY-NC 3.0 IGO (ESA/Gaia/DPAC); VizieR terms", credit: "Open clusters: Hunt & Reffert 2023 from Gaia DR3 (ESA/Gaia/DPAC, CC BY-NC 3.0 IGO), via VizieR, CDS"}
   # 0079 a2: end
+  # b200-f3-stars: begin
+  - {id: starmotion, file: site/data/starmotion.bin, source: "https://codeberg.org/astronexus/hyg (hyg_v44.csv.gz: pmra, pmdec, rv, dist; repacked by scripts/build-starmotion.py, forge #141)", licence: "CC BY-SA 4.0", credit: "Star motions: HYG v4.4 (David Nash), from Hipparcos and Gaia"}
+  - {id: variables, file: site/data/variables.json, source: "https://vizier.cds.unistra.fr/viz-bin/asu-tsv (B/gcvs/gcvs_cat, GCVS 5.1, Samus et al. 2017, read through the mirror vizier.cfa.harvard.edu; repacked by scripts/build-variables.py, forge #142)", licence: "VizieR: free for scientific use with the authors cited", credit: "Variable stars: General Catalogue of Variable Stars (Samus et al. 2017)"}
+  # b200-f3-stars: end
 
 # THIRD-PARTY MARKS DRAWN IN THE UI, as opposed to in the scene.
 #

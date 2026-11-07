@@ -5060,7 +5060,7 @@ Object.assign(COPY, {
       "worlds": "Sonne, Mond und Planeten: 1700 bis 2200, berechnet (astronomy-engine).",
       "satellites": "Satelliten: genau innerhalb einer Woche um heute; nach einem Monat verblasst.",
       "craft": "Raumsonden: nur innerhalb ihrer eigenen JPL-Bahnen.",
-      "stars": "Sterne: dort, wo sie heute stehen; ihre Bewegung über Jahrhunderte ist nicht gezeichnet."
+      "stars": "Sterne: in der Himmelsansicht um ihre gemessenen Bewegungen versetzt, sobald das Datum mehr als 50 Jahre von heute entfernt ist."
     },
     "quick": {
       "total": "Nächste totale Sonnenfinsternis",
@@ -5095,3 +5095,70 @@ Object.assign(COPY, {
   }
 });
 // b200-f4-cards: end
+// b200-f3-stars: begin -- deep time, the variable stars and the turning black holes (copy/en.stars.js, forge #141, #142, #149), machine-drafted
+Object.assign(COPY, {
+  "deepTime": {
+    "title": "Tiefe Zeit",
+    "back": "−{n} Jahre",
+    "on": "+{n} Jahre",
+    "backTitle": "{n} Jahre zurück, Datum und Uhrzeit bleiben",
+    "onTitle": "{n} Jahre voraus, Datum und Uhrzeit bleiben",
+    "presetsLabel": "Andere Polarsterne",
+    "presets": {
+      "thuban": "Thuban, 2800 v. Chr.",
+      "vega": "Wega, 13 700 n. Chr.",
+      "far": "50 000 n. Chr."
+    },
+    "presetTitles": {
+      "thuban": "Als die Pyramiden gebaut wurden, war Thuban im Drachen der Polarstern",
+      "vega": "Um 13 700 n. Chr. kommt der Pol der Wega bis auf 6,5° nahe",
+      "far": "Der Himmel in fünfzigtausend Jahren"
+    },
+    "yearAd": "{n} n. Chr.",
+    "yearBc": "{n} v. Chr.",
+    "moved": "Der Himmel von {year}: jeder Stern um seine eigene gemessene Bewegung versetzt.",
+    "far": "So weit von heute werden weder Mond noch Planeten gezeichnet, und die Sonne steht, wo der Kalender sie hinstellt.",
+    "pole": "Polarstern: {name}, {deg}° vom Pol.",
+    "noPole": "Kein heller Stern markiert den Pol: der nächste, {name}, ist {deg}° entfernt.",
+    "unnamed": "ein Stern der Größe {mag}",
+    "honest": "Die Bewegungen sind gemessen (Hipparcos und Gaia, über HYG); sie über Jahrtausende geradlinig fortzuschreiben, ist modelliert. Die Drehung der Erdachse: Vondrák, Capitaine und Wallace 2011."
+  },
+  "variables": {
+    "label": "Wie sich sein Licht ändert",
+    "types": {
+      "eclipse": "Ein Bedeckungspaar: zwei Sterne, die voreinander vorbeiziehen.",
+      "binary": "Ein enges Paar, aus der Kugelform gezogen, sodass sein Licht nie stillsteht.",
+      "pulse": "Ein pulsierender Stern: Er bläht sich auf und schrumpft.",
+      "sine": "Ein kleiner, schnell pulsierender Stern.",
+      "sr": "Ein halbregelmäßiger Riese: Periode und Spanne sind gemessen, nicht aber, wo im Zyklus er steht, darum ist die Kurve eine Skizze.",
+      "irregular": "Ein unregelmäßiger Veränderlicher: Keine Uhr kann sagen, wie hell er ist, darum behält der Himmel die Helligkeit des Katalogs."
+    },
+    "periodDays": "Periode {n} Tage.",
+    "periodYears": "Periode {n} Jahre.",
+    "aria": "Lichtkurve von {name}, von Größe {bright} bis {faint}; jetzt {now}.",
+    "now": "jetzt",
+    "nowLine": "Jetzt Größe {mag} ({band}); Spanne von {bright} bis {faint}.",
+    "range": "Spanne von Größe {bright} bis {faint} ({band}).",
+    "far": "Die Kurve wird nicht mehr als {years} Jahre von heute fortgeschrieben; Spanne von Größe {bright} bis {faint} ({band}).",
+    "nextMin": "Nächstes Minimum: {when}",
+    "measured": "Gemessen: die datierten Helligkeiten der Großen Verdunkelung. Elemente: {cite}.",
+    "modelled": "Modelliert: Die Form ist aus Periode, Epoche und Spanne des Katalogs gezeichnet ({cite}).",
+    "notes": {
+      "alf-ori": "2019 und 2020 verblasste er auf Größe 1,6, die Große Verdunkelung: Eine ausgestoßene Staubwolke verdeckte einen Teil von ihm.",
+      "omi-cet": "Miras Maxima kommen von Zyklus zu Zyklus Wochen zu früh oder zu spät, so weit können diese Daten danebenliegen.",
+      "bet-lyr": "Seine Periode wächst um 19 Sekunden im Jahr; die Kurve folgt der quadratischen Ephemeride von Harmanec und Scholz (1993).",
+      "bet-per": "Algols Bedeckungen halten die Minute: Alle 2,87 Tage wird er etwa zehn Stunden lang schwächer.",
+      "eps-aur": "Alle 27 Jahre fast zwei Jahre lang bedeckt, von einer dunklen Scheibe um seinen Begleiter; die letzte Bedeckung lief von 2009 bis 2011.",
+      "eta-car": "In seinem Großen Ausbruch der 1840er wurde er zum zweithellsten Stern am Himmel.",
+      "t-crb": "Eine wiederkehrende Nova: 1866 und 1946 flammte sie bis Größe 2 auf."
+    }
+  },
+  "blackHoleSpin": {
+    "spin": "Drehend gezeichnet, mit Spin a = {a}: Der Schatten hat die Form, die ein drehendes Loch wirft (Bardeen 1973), weggeschoben von der Seite, die auf uns zukommt. {why} Das Licht um ihn wird weiter ohne Spin verfolgt, darum ist die Form modelliert.",
+    "spinWhy": {
+      "m87-star": "Der Spin ist gewählt: Die am besten passenden Modelle von EHT 2019, Teil V, drehen mit 0,94.",
+      "sgr-a-star": "Der Spin ist gewählt: EHT 2022, Teil V, bevorzugt 0,5 bis 0,94."
+    }
+  }
+});
+// b200-f3-stars: end

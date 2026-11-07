@@ -244,3 +244,7 @@ budgets:
   - {id: deep_catalogue_bytes, value: 1300000, unit: B, since: 2026-10-28, reason: "spec 0079 A2 (the load line: one 0.5 MB file on demand): 321 184 B + 147 784 B of rows and 490 419 B + 140 687 B of manifests raw on 2026-10-28, 19539 objects, about 490 kB gzipped"}
   - {id: deep_catalogue_draw_calls, value: 2, unit: calls, since: 2026-10-28, reason: "spec 0075 requirement 18 (at most five draw calls per visible data class): the catalogue is one call of points, and one more while an inferred object's range of distance is shown"}
   # 0079 a2: end
+  # b200-f3-stars: begin -- the sky of another millennium and the variable stars (forge #141, #142)
+  - {id: star_motion_bytes, value: 290000, unit: bytes, since: 2026-11-07, reason: "site/data/starmotion.bin (scripts/build-starmotion.py): 17 207 stars at 16 bytes, 275 328 B measured 2026-11-07; fetched only when the sky's clock is more than 50 years from now"}
+  - {id: variable_stars_bytes, value: 20000, unit: bytes, since: 2026-11-07, reason: "site/data/variables.json (scripts/build-variables.py): 58 stars, 14 252 B measured 2026-11-07; fetched when the sky view's stars are up"}
+  # b200-f3-stars: end

@@ -5064,7 +5064,7 @@ Object.assign(COPY, {
       "worlds": "Soleil, Lune et planètes : de 1700 à 2200, calculés (astronomy-engine).",
       "satellites": "Satellites : précis à une semaine d’aujourd’hui ; estompés au-delà d’un mois.",
       "craft": "Sondes spatiales : seulement sur leurs propres trajectoires du JPL.",
-      "stars": "Étoiles : là où elles sont aujourd’hui ; leur mouvement sur des siècles n’est pas dessiné."
+      "stars": "Étoiles : dans la vue du ciel, déplacées par leurs mouvements mesurés dès que la date est à plus de 50 ans d’aujourd’hui."
     },
     "quick": {
       "total": "Prochaine éclipse totale de Soleil",
@@ -5099,3 +5099,70 @@ Object.assign(COPY, {
   }
 });
 // b200-f4-cards: end
+// b200-f3-stars: begin -- deep time, the variable stars and the turning black holes (copy/en.stars.js, forge #141, #142, #149), machine-drafted
+Object.assign(COPY, {
+  "deepTime": {
+    "title": "Temps profond",
+    "back": "−{n} ans",
+    "on": "+{n} ans",
+    "backTitle": "Reculer de {n} ans, même date et même heure",
+    "onTitle": "Avancer de {n} ans, même date et même heure",
+    "presetsLabel": "D’autres étoiles polaires",
+    "presets": {
+      "thuban": "Thuban, 2800 av. J.-C.",
+      "vega": "Véga, 13 700 apr. J.-C.",
+      "far": "50 000 apr. J.-C."
+    },
+    "presetTitles": {
+      "thuban": "Quand on bâtissait les pyramides, Thuban du Dragon était l’étoile polaire",
+      "vega": "Vers 13 700 apr. J.-C., le pôle passe à 6,5° de Véga",
+      "far": "Le ciel dans cinquante mille ans"
+    },
+    "yearAd": "{n} apr. J.-C.",
+    "yearBc": "{n} av. J.-C.",
+    "moved": "Le ciel de {year} : chaque étoile déplacée par son propre mouvement mesuré.",
+    "far": "Ni Lune ni planètes ne sont dessinées si loin d’aujourd’hui, et le Soleil est là où le calendrier le place.",
+    "pole": "Étoile polaire : {name}, à {deg}° du pôle.",
+    "noPole": "Aucune étoile brillante ne marque le pôle : la plus proche, {name}, est à {deg}°.",
+    "unnamed": "une étoile de magnitude {mag}",
+    "honest": "Les mouvements sont mesurés (Hipparcos et Gaia, via HYG) ; les prolonger en ligne droite pendant des millénaires est modélisé. Le basculement de l’axe de la Terre : Vondrák, Capitaine et Wallace 2011."
+  },
+  "variables": {
+    "label": "Comment sa lumière change",
+    "types": {
+      "eclipse": "Une paire à éclipses : deux étoiles qui passent l’une devant l’autre.",
+      "binary": "Une paire serrée, déformée, dont la lumière ne reste jamais fixe.",
+      "pulse": "Une étoile pulsante : elle enfle et se contracte.",
+      "sine": "Une petite étoile à pulsation rapide.",
+      "sr": "Une géante semi-régulière : sa période et son amplitude sont mesurées, mais pas l’endroit de son cycle où elle se trouve ; la courbe est une esquisse.",
+      "irregular": "Une variable irrégulière : aucune horloge ne dit son éclat, le ciel garde donc celui du catalogue."
+    },
+    "periodDays": "Période {n} jours.",
+    "periodYears": "Période {n} ans.",
+    "aria": "Courbe de lumière de {name}, de la magnitude {bright} à {faint} ; maintenant {now}.",
+    "now": "maintenant",
+    "nowLine": "Maintenant magnitude {mag} ({band}) ; elle va de {bright} à {faint}.",
+    "range": "Elle va de la magnitude {bright} à {faint} ({band}).",
+    "far": "Sa courbe n’est pas prolongée à plus de {years} ans d’aujourd’hui ; elle va de la magnitude {bright} à {faint} ({band}).",
+    "nextMin": "Prochain minimum : {when}",
+    "measured": "Mesuré : les magnitudes datées du Grand Assombrissement. Éléments : {cite}.",
+    "modelled": "Modélisé : la forme est tirée de la période, de l’époque et de l’amplitude du catalogue ({cite}).",
+    "notes": {
+      "alf-ori": "En 2019 et 2020, elle a faibli jusqu’à la magnitude 1,6, le Grand Assombrissement : un nuage de poussière qu’elle avait éjecté en cachait une partie.",
+      "omi-cet": "Les maxima de Mira arrivent des semaines en avance ou en retard d’un cycle à l’autre ; ces dates peuvent être décalées d’autant.",
+      "bet-lyr": "Sa période s’allonge de 19 secondes par an ; la courbe suit l’éphéméride quadratique de Harmanec et Scholz (1993).",
+      "bet-per": "Les éclipses d’Algol tiennent à la minute : elle faiblit une dizaine d’heures tous les 2,87 jours.",
+      "eps-aur": "Éclipsée près de deux ans tous les 27 ans par un disque sombre autour de sa compagne ; la dernière éclipse a duré de 2009 à 2011.",
+      "eta-car": "Lors de sa Grande Éruption des années 1840, elle est devenue la deuxième étoile la plus brillante du ciel.",
+      "t-crb": "Une nova récurrente : elle a atteint la magnitude 2 en 1866 et en 1946."
+    }
+  },
+  "blackHoleSpin": {
+    "spin": "Dessiné en rotation, avec un spin a = {a} : l’ombre a la forme que projette un trou qui tourne (Bardeen 1973), repoussée du côté qui vient vers nous. {why} La lumière autour est encore tracée sans spin : la forme est donc modélisée.",
+    "spinWhy": {
+      "m87-star": "Le spin est choisi : les modèles les mieux ajustés de l’article V de l’EHT 2019 tournent à 0,94.",
+      "sgr-a-star": "Le spin est choisi : l’article V de l’EHT 2022 privilégie 0,5 à 0,94."
+    }
+  }
+});
+// b200-f3-stars: end

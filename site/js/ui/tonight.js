@@ -36,6 +36,7 @@ import { passTrack } from '../sky/passes.js';
 import { FOV, DARKNESS_IDS, twilightPhase } from '../sky/skymath.js';
 import { NEBULAE } from '../data/nebulae.js';
 import { SCRUB_BACK_MS, SCRUB_FORWARD_MS } from './timepill.js';
+import { mountDeepTime } from './deeptime.js'; // b200-f3-stars
 
 const LAYERS = ['stations', 'visual'];
 const REFRESH_MS = 30 * 60e3;
@@ -657,6 +658,9 @@ export function renderTonight(host, ctx) {
     const farNote = el('p', 'sr-density__note', K.timeFar);
     farNote.hidden = true;
     node.appendChild(farNote);
+    // b200-f3-stars: begin -- a thousand years either way, and the pole star (ui/deeptime.js, forge #141)
+    const deep = mountDeepTime(node, ctx, { row, button, el });
+    // b200-f3-stars: end
     const fields = new Map();
     const fieldRow = row(K.field);
     for (const f of ['eye', 'binoculars', 'telescope']) {
@@ -763,6 +767,7 @@ export function renderTonight(host, ctx) {
       press(timeNow, ctx.clock.mode === 'live');
       paintTicks(nowMs);
       farNote.hidden = !(Math.abs(nowMs - Date.now()) > SAT_FAR_MS);
+      deep.paint(); // b200-f3-stars
       paintPoint();
       // The land: which of the three was drawn, and where the water map puts the sea.
       const g = s && typeof s.groundStats === 'function' ? s.groundStats() : null;
