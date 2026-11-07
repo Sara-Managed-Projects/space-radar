@@ -44,6 +44,9 @@ import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import seo_read  # noqa: E402  (the long reads: scripts/seo_read.py)
 import seo_systems  # noqa: E402
+# b200-f1-find: begin -- the country pages, /country/<iso>/ (forge #152)
+import seo_countries  # noqa: E402
+# b200-f1-find: end
 from seo_common import (ACCOUNTS, ACCURACY_FORM, CLASSROOM_FORM, GITHUB, ROOT, Ctx, Page, esc, footer_nav,  # noqa: E402
                         make_ctx, place_picker, render, url_of, webpage)
 from seo_share import Spec  # noqa: E402
@@ -966,6 +969,9 @@ def build_pages(host: str, objects: list[dict], today: str, snapshot_index: dict
     sysl = seo_systems.pages(host, by_slug, today)
     pages += sysl
     pages += seo_read.pages(host)
+    # b200-f1-find: begin
+    pages += seo_countries.pages(host)
+    # b200-f1-find: end
     return pages
 
 
@@ -1047,6 +1053,12 @@ def build_extra(out: Path, host: str, objects: list[dict], today: str, snapshot_
     shares = {k: s.rel for k, s in specs.items()} if drawn else {}
     ctx = make_ctx(host, shares)
     write_pages(pages, out, ctx)
+    # b200-f1-find: begin -- the country pages are two directories down (scripts/seo_countries.py relink says why)
+    for pg in pages:
+        if pg.path.startswith("country/") and pg.path.count("/") == 2:
+            dest = out / pg.path
+            dest.write_text(seo_countries.relink(dest.read_text(encoding="utf-8")), encoding="utf-8")
+    # b200-f1-find: end
     (out / "pages-dirs.txt").write_text("\n".join(pages_dirs(pages) + (["share"] if drawn else [])) + "\n", encoding="utf-8")
     index: dict[str, str] = {}
     for s in seo_systems.systems():

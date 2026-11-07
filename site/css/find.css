@@ -1,0 +1,164 @@
+/* css/find.css -- Find, the owners, the clouds and the date field (ui/find.js, ui/findmap.js, ui/datejump.js;
+   release 2.0.0 batch f1-find, forge #150, #152, #153, #154). Fetched with the module that draws them
+   (ui/latercss.js), never on a first visit. The rows, chips and tabs are ui.css's own (.sr-list, .sr-chip,
+   .sr-tabs): only what is new is here. */
+
+.sr-find { padding: 0 20px 20px; }
+.sr-find__head { position: sticky; top: 0; z-index: 1; margin: 0 -20px; padding: var(--sp-2) 20px; background: var(--sr-panel-solid); }
+.sr-find__head > .sr-micro { padding: var(--sp-1) 0 var(--sp-2); }
+.sr-find__tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.sr-find__pane[hidden] { display: none; }
+.sr-find__pane > .sr-micro, .sr-find__detail .sr-micro { padding: var(--sp-3) 0 var(--sp-1); }
+
+.sr-find__kinds, .sr-find__chips { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-2); }
+.sr-find__chips .sr-chip, .sr-find__kinds .sr-chip { height: auto; min-height: 36px; padding: 6px var(--sp-3); line-height: 1.3; text-align: left; }
+.sr-chip.is-on, .sr-chip[aria-pressed="true"], .sr-chip[aria-checked="true"] { color: var(--sr-text); background: var(--sr-ember-soft); border-color: var(--sr-ember); }
+
+.sr-find__form { display: grid; grid-template-columns: 1fr; gap: var(--sp-2); margin-top: var(--sp-3); }
+.sr-find__field { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); min-height: 44px; }
+.sr-find__label { font-size: var(--sr-fs-sm); color: var(--sr-text-soft); }
+.sr-find__pair { display: inline-flex; align-items: center; gap: 4px; }
+.sr-find__dash { color: var(--sr-text-dim); }
+.sr-find__num, .sr-find__select, .sr-datejump__input {
+  height: 36px;
+  min-width: 0;
+  padding: 0 var(--sp-2);
+  font: 400 var(--sr-fs-sm)/1 var(--sr-font-mono);
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius-sm);
+}
+.sr-find__num { width: 76px; }
+.sr-find__select { max-width: 190px; font-family: inherit; }
+.sr-find__num:focus-visible, .sr-find__select:focus-visible, .sr-datejump__input:focus-visible { outline: 2px solid var(--sr-ember); outline-offset: 1px; }
+.sr-find__box { display: flex; align-items: center; gap: var(--sp-2); min-height: 36px; font-size: var(--sr-fs-sm); cursor: pointer; }
+.sr-find__box input { width: 18px; height: 18px; accent-color: var(--sr-ember); }
+
+.sr-find__status, .sr-find__lead { margin: var(--sp-3) 0 var(--sp-2); font-size: var(--sr-fs-sm); color: var(--sr-text-soft); }
+.sr-find__tablewrap { overflow-x: auto; overscroll-behavior-x: contain; margin: 0 -4px; }
+.sr-find__table { width: 100%; border-collapse: collapse; font-size: var(--sr-fs-sm); }
+.sr-find__table th, .sr-find__table td { padding: 6px 4px; text-align: right; white-space: nowrap; border-top: 1px solid var(--sr-line); font-variant-numeric: tabular-nums; }
+.sr-find__table thead th { border-top: 0; font-weight: 500; font-size: 12px; line-height: 1.25; color: var(--sr-text-dim); white-space: normal; vertical-align: bottom; }
+.sr-find__table th[scope="row"], .sr-find__table thead th:first-child { text-align: left; white-space: normal; }
+.sr-find__table tbody tr { cursor: pointer; }
+.sr-find__table tbody tr:hover { background: var(--sr-wash); }
+.sr-find__table td { font-family: var(--sr-font-mono); color: var(--sr-text-soft); }
+.sr-find__sort, .sr-find__go, .sr-find__chartbtn {
+  min-height: 32px;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.sr-find__sort:hover, .sr-find__go:hover { color: var(--sr-ember); }
+.sr-find__table th[aria-sort="ascending"] .sr-find__sort::after { content: " ↑"; color: var(--sr-ember); }
+.sr-find__table th[aria-sort="descending"] .sr-find__sort::after { content: " ↓"; color: var(--sr-ember); }
+.sr-find__go { color: var(--sr-text); font-weight: 500; }
+.sr-find__chartbtn { display: block; min-height: 24px; font-size: 12px; color: var(--sr-text-dim); text-decoration: underline; text-underline-offset: 2px; }
+.sr-find__chartbtn:hover { color: var(--sr-ember); }
+.sr-find__honesty { margin-top: var(--sp-3); }
+.sr-find__link { margin-top: var(--sp-2); }
+
+.sr-find__chart { margin-top: var(--sp-3); padding: var(--sp-2) var(--sp-3) var(--sp-3); background: var(--sr-wash); border-radius: var(--sr-radius); }
+.sr-find__chart[hidden] { display: none; }
+.sr-find__charthead { display: flex; align-items: center; justify-content: space-between; }
+.sr-find__chartclose, .sr-datejump__close, .sr-findpill__clear {
+  width: 36px;
+  height: 36px;
+  font: 400 20px/1 var(--sr-font);
+  color: var(--sr-text-soft);
+  background: none;
+  border: 0;
+  border-radius: var(--sr-radius-pill);
+  cursor: pointer;
+}
+.sr-find__chartclose:hover, .sr-datejump__close:hover, .sr-findpill__clear:hover { color: var(--sr-text); background: var(--sr-wash-strong); }
+.sr-find__chartscroll { overflow-x: auto; }
+.sr-find__chartscroll svg { display: block; }
+.sr-find__body { fill: var(--sr-exoplanet); fill-opacity: 0.85; stroke: none; }
+.sr-find__body.is-guessed { fill: none; stroke: var(--sr-exoplanet); stroke-dasharray: 3 3; }
+.sr-find__body.is-focus { stroke: var(--sr-ember); stroke-width: 2; }
+.sr-find__bodyname { font: 500 11px var(--sr-font); fill: var(--sr-text); }
+.sr-find__bodysub { font: 400 10px var(--sr-font-mono); fill: var(--sr-text-dim); }
+
+.sr-find__ownerbtn { align-items: center; }
+.sr-find__flags { flex: none; display: inline-flex; gap: 3px; width: 45px; }
+.sr-find__flag { width: 21px; height: 14px; object-fit: cover; border-radius: 2px; box-shadow: 0 0 0 1px var(--sr-line); }
+.sr-find__noflag { display: inline-block; width: 21px; height: 14px; border-radius: 2px; border: 1px dashed var(--sr-line-strong); }
+.sr-find__rowtext { flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0; }
+.sr-find__rowsub { font-size: 12px; color: var(--sr-text-dim); }
+.sr-find__tag { margin-left: 6px; padding: 1px 6px; font-size: 11px; color: var(--sr-text-dim); border: 1px solid var(--sr-line); border-radius: var(--sr-radius-pill); }
+.sr-find__detail { margin-top: var(--sp-3); padding: var(--sp-3); background: var(--sr-wash); border-radius: var(--sr-radius); }
+.sr-find__detail[hidden] { display: none; }
+.sr-find__detailhead { display: flex; align-items: center; gap: var(--sp-2); }
+.sr-find__detailname, .sr-find__pointname { margin: 0; font-size: var(--sr-fs-body); font-weight: 600; }
+.sr-find__why, .sr-find__kinds2 { margin: var(--sp-2) 0 0; font-size: var(--sr-fs-sm); line-height: 1.45; }
+.sr-find__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); margin-top: var(--sp-2); }
+.sr-find__point { margin-top: var(--sp-3); }
+.sr-find__nopath .sr-list__static, .sr-find__nopath .sr-list__btn { min-height: 40px; padding: 6px 0; font-size: var(--sr-fs-sm); }
+
+/* The pill over the scene while a group is lit (ui/findmap.js). */
+.sr-findpill {
+  position: fixed;
+  top: var(--sr-inset, 20px);
+  left: calc(50% + var(--sr-scene-left, 0px) / 2);
+  transform: translateX(-50%);
+  z-index: var(--sr-z-pill);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: calc(100vw - 32px);
+  padding: 2px 2px 2px 14px;
+  font-size: var(--sr-fs-sm);
+  color: var(--sr-text);
+  background: var(--sr-glass);
+  border: 1px solid var(--sr-ember);
+  border-radius: var(--sr-radius-pill);
+  -webkit-backdrop-filter: var(--sr-blur);
+  backdrop-filter: var(--sr-blur);
+}
+.sr-findpill[hidden] { display: none; }
+.sr-findpill__words { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html.sr-phone .sr-findpill { top: calc(var(--sr-top-end, 88px) + 8px); left: 50%; }
+
+/* The date field (ui/datejump.js): over the time pill on a desktop, a bottom panel on a phone. */
+.sr-datejump {
+  top: auto;
+  right: auto;
+  bottom: calc(var(--sr-inset, 20px) + 120px);
+  left: calc(50% + var(--sr-scene-left, 0px) / 2);
+  transform: translateX(-50%);
+  width: 380px;
+  max-height: min(70vh, 620px);
+}
+.sr-datejump__head { display: flex; align-items: center; justify-content: space-between; margin: -8px -8px 4px 0; }
+.sr-datejump__form { display: grid; grid-template-columns: 1fr auto; gap: 6px var(--sp-2); align-items: center; }
+.sr-datejump__label { grid-column: 1 / -1; font-size: var(--sr-fs-sm); color: var(--sr-text-soft); }
+.sr-datejump__input { grid-column: 1; width: 100%; height: 40px; font-family: inherit; color-scheme: dark; }
+#sr-datejump-field { grid-column: 1 / -1; }
+.sr-datejump__go { grid-column: 2; grid-row: 4; height: 40px; }
+.sr-datejump__form .sr-sect__note, .sr-datejump__says { grid-column: 1 / -1; margin: 0; }
+.sr-datejump__says { min-height: 1.4em; font-size: var(--sr-fs-sm); color: var(--sr-text); }
+.sr-datejump__ranges { margin-top: var(--sp-3); }
+.sr-datejump__ranges summary, .sr-datejump__mission summary { min-height: 36px; display: flex; align-items: center; cursor: pointer; }
+.sr-datejump__rangelist { margin: 0; padding-left: 18px; font-size: var(--sr-fs-sm); color: var(--sr-text-soft); }
+.sr-datejump__presets > .sr-micro { padding: var(--sp-3) 0 0; }
+.sr-datejump__mission { border-top: 1px solid var(--sr-line); font-size: var(--sr-fs-sm); }
+.sr-datejump__mission .sr-find__chips { margin: 0 0 var(--sp-2); }
+.sr-datejump__chip { font-size: 12px; }
+html.sr-phone .sr-datejump { left: 8px; right: 8px; bottom: 8px; transform: none; width: auto; max-height: 72vh; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-find__table tbody tr, .sr-chip { transition: none; }
+}
+.sr-find__chips > [hidden], .sr-find__pane .sr-micro[hidden] { display: none; }
+.sr-find__refine { margin-top: var(--sp-3); border-top: 1px solid var(--sr-line); }
+.sr-find__refine > summary { min-height: 40px; display: flex; align-items: center; cursor: pointer; padding: 0; }
+.sr-find__srclabel { margin-inline-end: 0.35em; }
+.sr-find__body.is-reference { fill: var(--sr-earth-ocean); fill-opacity: 1; stroke: var(--sr-atmosphere); stroke-width: 1; }
+.sr-find__table th[scope="row"] { min-width: 88px; }
+.sr-find__table td { font-size: 12px; }

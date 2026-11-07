@@ -70,6 +70,9 @@ import { createSheet } from './sheet.js';
 
 export const SIDE_KEY = 'sr:side';
 export const VIEWS = ['home', 'card', 'sources', 'trip', 'passport'];
+// b200-f1-find: begin -- Find (ui/find.js, forge #150/#152/#153): a pushed view like the sources sheet
+VIEWS.push('find');
+// b200-f1-find: end
 /** The spec's line between the sidebar and the phone's sheet (0061 req 1 and 8). */
 export const DESKTOP_QUERY = '(min-width: 900px)';
 
@@ -87,6 +90,9 @@ const SHEET_SCROLL = '.sr-explore__body, .sr-side__cardslot, .sr-side__sourcesho
  */
 export function sheetFor(view, from) {
   if (view === from) return null;
+  // b200-f1-find: begin -- Find comes up at half: what it lights is on the globe above it
+  if (view === 'find') return 'half';
+  // b200-f1-find: end
   if (view === 'card' || view === 'trip') return 'half';
   if (view === 'sources' || view === 'passport') return 'full';
   if (view === 'home') return from === 'sources' || from === 'passport' ? 'half' : from ? 'peek' : null;
@@ -251,6 +257,15 @@ export function createShell(ctx, opts = {}) {
   const passportHost = el('div', 'sr-side__sourceshost');
   passport.appendChild(passportHost);
   views.set('passport', passport);
+
+  // b200-f1-find: begin -- the Find view (ui/find.js fills its host when it is first opened)
+  const findView = el('div', 'sr-side__view sr-side__find');
+  findView.dataset.view = 'find';
+  findView.appendChild(backRow(COPY.shell.back, () => { back(); landFocus(); }).row);
+  const findHost = el('div', 'sr-side__sourceshost sr-side__findhost');
+  findView.appendChild(findHost);
+  views.set('find', findView);
+  // b200-f1-find: end
 
   // The trip view: empty until ui/tripframe.js seats its sheet in it (host('trip')).
   const tripView = el('div', 'sr-side__view sr-side__trip');
@@ -483,6 +498,9 @@ export function createShell(ctx, opts = {}) {
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape' || e.defaultPrevented) return;
     if (stack.current() === 'sources' || stack.current() === 'passport') { back(); landFocus(); }
+    // b200-f1-find: begin
+    else if (stack.current() === 'find' && !(document.activeElement && document.activeElement.closest && document.activeElement.closest('.sr-datejump'))) { back(); landFocus(); }
+    // b200-f1-find: end
   });
 
   layout();
@@ -523,6 +541,10 @@ export function createShell(ctx, opts = {}) {
     /** Resolves once the sources sheet is built; for the phone's drawer and for probes. */
     ensureSources,
   };
+  // b200-f1-find: begin -- host('find'): the Find view's box
+  const hostBefore = api.host;
+  api.host = (view) => (view === 'find' ? findHost : hostBefore(view));
+  // b200-f1-find: end
   if (ctx) ctx.shell = api;
   return api;
 }

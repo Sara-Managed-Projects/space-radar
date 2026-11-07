@@ -574,3 +574,17 @@ sources:
     offline: shipped
     checked: 2026-10-29
   # 0079 c4: end
+  # b200-f1-find: begin
+  - id: wikimedia-commons-flags
+    name: Wikimedia Commons, national flags (the file each country's Wikidata item names, property P41)
+    match: ["https://commons.wikimedia.org/wiki/File:Flag_of_"]
+    url: https://commons.wikimedia.org/wiki/Category:SVG_flags_of_countries
+    licence: Public domain, per file (each file's own page); site/images/flags/sources.json lists the page and the licence of every one
+    licence_read: ""
+    licence_url: https://commons.wikimedia.org/w/api.php?action=query&prop=imageinfo&iiprop=extmetadata
+    licence_note: "Read 2026-11-07 through the Commons API, one call per forty files: every one of the 103 files gave LicenseShortName \"Public domain\". A flag is a national symbol: some countries restrict how it may be used (in advertising, defaced); a small flag beside a country's name in a list is not such a use. Minified here (metadata removed, coordinates rounded); sources.json says so."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  # b200-f1-find: end

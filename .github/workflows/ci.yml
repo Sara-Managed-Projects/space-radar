@@ -1426,3 +1426,15 @@ jobs:
       - name: "bodyFixedToSpherical is its inverse, with the round trip held (public #757)"
         run: node tests/test_frames_bodyfixed_to_spherical.mjs
       # 1.8.0 tests I: end
+      # b200-f1-find: begin
+      - name: "Find by property: the #find= value, the habitable zone against the generated systems, and the look run's question (forge #150)"
+        run: node tests/test_find.mjs
+      - name: "The SATCAT owner mapping, the flags, the operators, the balance points and the no-public-path reasons (forge #152)"
+        run: node tests/test_owners.mjs
+      - name: "The named debris clouds counted from a fixture catalogue, the constellations, and the modelled spread (forge #153)"
+        run: node tests/test_clouds.mjs
+      - name: "The date field's free-text forms, the 1700-2200 range and the eclipses (forge #154)"
+        run: node tests/test_whenparse.mjs
+      - name: "The /country/<iso>/ pages (forge #152)"
+        run: python3 tests/test_seo_countries.py
+      # b200-f1-find: end

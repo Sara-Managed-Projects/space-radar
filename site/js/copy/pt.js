@@ -4678,3 +4678,249 @@ export const GLOSSARY = {
   "totality": "Os minutos de um eclipse total em que o Sol fica totalmente coberto. O céu escurece o bastante para ver estrelas.",
   "annular": "Em forma de anel. Num eclipse anular a Lua está longe demais para cobrir o Sol inteiro, e sobra um anel brilhante em volta dela."
 };
+
+// b200-f1-find: begin -- Find, the owners, the clouds and the date field (copy/en.find.js, forge #150, #152, #153, #154), machine-drafted
+COPY.timePill.dateJump = "Ir para uma data (UTC)";
+Object.assign(COPY, {
+  "findEntry": {
+    "title": "Buscar",
+    "property": "Buscar por propriedade",
+    "countries": "Satélites por país",
+    "operators": "Por operador",
+    "clouds": "Nuvens de detritos",
+    "chartOurs": "Nossos planetas lado a lado"
+  },
+  "find": {
+    "title": "Buscar",
+    "label": "Buscar por propriedade, por país e por nuvem de detritos",
+    "tabs": {
+      "property": "Propriedades",
+      "country": "Por país",
+      "clouds": "Detritos e frotas"
+    },
+    "kindsLabel": "O que buscar",
+    "kinds": {
+      "stars": "Estrelas",
+      "exoplanets": "Planetas",
+      "satellites": "Satélites",
+      "comets": "Cometas"
+    },
+    "presetsLabel": "Perguntas",
+    "refine": "Refinar",
+    "presets": {
+      "rockyHz50": "Planetas rochosos na zona habitável a até 50 anos-luz",
+      "nearStars": "Estrelas a até 20 anos-luz",
+      "temperate": "Planetas mais ou menos tão quentes quanto a Terra",
+      "hotJupiters": "Gigantes quentes",
+      "cometsSoon": "Cometas no ponto mais próximo do Sol até 2030",
+      "geo": "Satélites ativos no anel geoestacionário",
+      "low": "Satélites ativos abaixo de 400 km"
+    },
+    "fields": {
+      "within": "A até (anos-luz)",
+      "fromHere": "Medido a partir da câmera, não do Sol",
+      "radius": "Raio (Terras)",
+      "mass": "Massa (Terras)",
+      "teq": "Temperatura (K)",
+      "insol": "Luz da estrela (Terra = 1)",
+      "height": "Altitude (km)",
+      "year": "Lançado (ano)",
+      "perihelion": "Mais perto do Sol (ano)",
+      "from": "de",
+      "to": "até",
+      "zone": "Na zona habitável",
+      "zoneWide": "Dentro dela ou na borda",
+      "rocky": "Rochoso",
+      "working": "Só ativos",
+      "owner": "Proprietário",
+      "operator": "Operador",
+      "any": "Qualquer",
+      "range": "{label}: {word}"
+    },
+    "columns": {
+      "name": "Nome",
+      "dist": "Distância (al)",
+      "radius": "Raio (Terras)",
+      "teq": "Temp. (K)",
+      "insol": "Luz",
+      "zone": "Zona",
+      "spect": "Tipo",
+      "mag": "Magnitude",
+      "owner": "Proprietário",
+      "height": "Altitude (km)",
+      "year": "Lançado",
+      "perihelion": "Periélio",
+      "qAu": "Mínima (ua)"
+    },
+    "zones": {
+      "inside": "dentro",
+      "edge": "borda",
+      "hotter": "quente demais",
+      "colder": "frio demais"
+    },
+    "sortTitle": "Ordenar por {col}",
+    "tableLabel": "O que corresponde, uma linha cada: toque numa linha para ir até lá",
+    "status": "{n} encontrados",
+    "statusSome": "{n} encontrados; os primeiros {shown} estão listados",
+    "none": "Nada corresponde. Amplie um intervalo ou desmarque uma caixa.",
+    "looking": "Buscando…",
+    "loading": "Carregando onde buscar…",
+    "failed": "A busca não rodou. Tente de novo daqui a pouco.",
+    "rowTitle": "Ir para {name}",
+    "noRecord": "Não está desenhado no mapa",
+    "modelled": "Calculado com uma massa estelar estimada: modelado",
+    "copyLink": "Copiar o link desta pergunta",
+    "copied": "Link copiado",
+    "honesty": {
+      "stars": "As estrelas com nome do HYG v4.4, 3 390 delas, em suas distâncias medidas. Medido.",
+      "exoplanets": "Raio, massa, período e estrela: medidos, NASA Exoplanet Archive. Tamanho da órbita, luz recebida, temperatura e zona: calculados; marcados com * onde a massa da estrela é estimada pela sua luz, modelado. Rochoso: 1,6 raio terrestre ou menos, ou 3 massas terrestres sem raio medido (Rogers 2015).",
+      "satellites": "Catálogo da CelesTrak, lido em {date}. A altitude é a média dos pontos mais alto e mais baixo da órbita. Medido.",
+      "comets": "Datas de periélio da Small-Body Database do JPL. Calculadas a partir de órbitas medidas."
+    },
+    "chart": {
+      "open": "Lado a lado",
+      "openTitle": "Os planetas de {host} lado a lado, em escala",
+      "title": "{host}, em escala",
+      "ours": "O Sistema Solar",
+      "label": "Os planetas de {host} desenhados lado a lado em seu tamanho real, em ordem a partir da estrela",
+      "note": "Uma escala para todos os planetas; os espaços não são distâncias. Um planeta sem raio medido é desenhado tracejado, no tamanho mediano.",
+      "close": "Fechar o gráfico"
+    },
+    "pill": "{name}: {n} em destaque",
+    "pillClear": "Tirar o destaque"
+  },
+  "owners": {
+    "modesLabel": "Agrupar por",
+    "modes": {
+      "countries": "Países",
+      "operators": "Operadores",
+      "points": "Pontos de Lagrange",
+      "nopath": "Sem trajetória pública"
+    },
+    "reading": "Lendo o catálogo da CelesTrak (7 MB)…",
+    "failed": "O catálogo não carregou.",
+    "retry": "Tentar de novo",
+    "lead": "{n} proprietários têm algo em órbita: {total} objetos rastreados.",
+    "row": "{n} em órbita",
+    "rowSub": "{working} ativos · {debris} detritos",
+    "rowTitle": "Destacar o que {name} tem em órbita",
+    "joint": "{a} e {b}",
+    "ussr": "O catálogo conta a União Soviética e a Rússia como um único proprietário.",
+    "unknown": "Ainda desconhecido",
+    "byName": "pelo nome",
+    "byNameTitle": "Contado pelos nomes que seus satélites têm no catálogo",
+    "kinds": "{working} ativos, {dead} que não funcionam mais, {rocket} corpos de foguete, {debris} pedaços de detritos.",
+    "lit": "{n} deles estão desenhados e destacados no mapa.",
+    "litNone": "Nenhum deles está desenhado no mapa.",
+    "show": "Destacá-los",
+    "clear": "Limpar",
+    "page": "Página de {name}",
+    "noPathTitle": "Sem trajetória pública: {n}",
+    "noPathNone": "Todas as suas cargas úteis em órbita têm trajetória pública.",
+    "why": {
+      "no-elements": "Sem órbita pública: o catálogo o lista, mas nenhum conjunto de elementos é publicado",
+      "deep-space": "Além da órbita da Terra, e sem trajetória para ele aqui",
+      "deep-drawn": "Além da órbita da Terra: desenhado pela sua trajetória do JPL"
+    },
+    "points": {
+      "sel1": "Sol–Terra L1",
+      "sel2": "Sol–Terra L2",
+      "eml2": "Terra–Lua L2",
+      "sel1Why": "A 1,5 milhão de km em direção ao Sol: uma vista do Sol que nunca se põe.",
+      "sel2Why": "A 1,5 milhão de km longe do Sol: frio e escuro, para telescópios.",
+      "eml2Why": "Além do lado oculto da Lua: um retransmissor que vê o lado oculto e a Terra ao mesmo tempo.",
+      "empty": "Nada listado aqui agora."
+    },
+    "nopathLead": "{n} cargas úteis em órbita não têm trajetória pública. As mais novas primeiro:",
+    "source": "Catálogo de satélites da CelesTrak, lido em {date}: medido. Bandeiras: Wikimedia Commons, domínio público."
+  },
+  "breakups": {
+    "cloudsTitle": "Nuvens de detritos",
+    "fleetsTitle": "Constelações",
+    "names": {
+      "fy1c": "Fengyun-1C",
+      "cosmos1408": "Cosmos 1408",
+      "iridium33": "Iridium 33",
+      "cosmos2251": "Cosmos 2251"
+    },
+    "why": {
+      "fy1c": "Um satélite meteorológico chinês, destruído por um míssil antissatélite chinês a 865 km em 11 de janeiro de 2007: a maior nuvem já criada.",
+      "cosmos1408": "Um satélite soviético inativo, destruído por um míssil antissatélite russo a cerca de 480 km em 15 de novembro de 2021.",
+      "iridium33": "Um satélite de telefonia ativo, atingido pelo Cosmos 2251 inativo a 789 km sobre a Sibéria em 10 de fevereiro de 2009: a primeira colisão entre dois satélites inteiros.",
+      "cosmos2251": "Um satélite russo inativo que atingiu o Iridium 33 a 789 km em 10 de fevereiro de 2009."
+    },
+    "counts": "{up} dos {catalogued} pedaços catalogados ainda estão em órbita.",
+    "lit": "{n} destacados no mapa.",
+    "spreadTitle": "Ver a nuvem se espalhar",
+    "steps": {
+      "event": "No momento do evento",
+      "week": "Uma semana depois",
+      "year": "Um ano depois",
+      "today": "Hoje"
+    },
+    "play": "Reproduzir a partir do evento",
+    "stop": "Parar",
+    "places": "Voltar às posições de hoje",
+    "spreadNote": "Modelado: cada pedaço parte de um mesmo ponto, na órbita que tem hoje, e deriva à medida que o achatamento da Terra gira seu plano. Pedaços que já caíram não são desenhados.",
+    "source": "Fonte:",
+    "fleets": {
+      "starlink": "Starlink",
+      "oneweb": "OneWeb",
+      "kuiper": "Kuiper",
+      "qianfan": "Qianfan",
+      "gps": "GPS",
+      "glonass": "GLONASS",
+      "galileo": "Galileo",
+      "beidou": "BeiDou",
+      "iridium": "Iridium"
+    },
+    "fleetLit": "{n} destacados no mapa.",
+    "fleetNote": "Reconhecidos pelos nomes que seus operadores lhes dão no catálogo.",
+    "loadingActive": "Carregando antes todos os satélites ativos (7 MB)…",
+    "loadingDebris": "Carregando antes todos os detritos rastreados (7 MB)…",
+    "moment": "2007: Fengyun-1C",
+    "momentTitle": "Ir ao minuto em que o Fengyun-1C foi destruído e destacar a sua nuvem"
+  },
+  "dateJump": {
+    "title": "Ir para uma data",
+    "field": "Data e hora (UTC)",
+    "text": "Ou digite",
+    "placeholder": "1969-07-20 20:17, next total eclipse",
+    "go": "Ir",
+    "hint": "Qualquer momento de 1700 a 2200, em UTC.",
+    "errors": {
+      "unknown": "Não entendo essa data. Tente 1969-07-20 20:17, 20 July 1969 ou next total eclipse.",
+      "range": "Fora de 1700 a 2200.",
+      "empty": "Digite uma data primeiro.",
+      "eclipse": "Nenhum eclipse assim entre 1700 e 2200."
+    },
+    "searching": "Buscando…",
+    "gone": "Agora {when}.",
+    "eclipse": "{what}, {when}.",
+    "eclipses": {
+      "sunTotal": "Eclipse total do Sol",
+      "sunAnnular": "Eclipse anular do Sol",
+      "sunPartial": "Eclipse parcial do Sol",
+      "moonTotal": "Eclipse total da Lua",
+      "moonPartial": "Eclipse parcial da Lua",
+      "moonPenumbral": "Eclipse penumbral da Lua"
+    },
+    "rangesTitle": "Com que precisão, e quando",
+    "ranges": {
+      "worlds": "Sol, Lua e planetas: de 1700 a 2200, calculados (astronomy-engine).",
+      "satellites": "Satélites: precisos a uma semana de hoje; esmaecidos depois de um mês.",
+      "craft": "Sondas espaciais: só dentro das próprias trajetórias do JPL.",
+      "stars": "Estrelas: onde estão hoje; o movimento delas ao longo de séculos não é desenhado."
+    },
+    "quick": {
+      "total": "Próximo eclipse total do Sol",
+      "lunar": "Próximo eclipse da Lua"
+    },
+    "missionsTitle": "Das nossas missões",
+    "momentsTitle": "Momentos",
+    "presetsLabel": "Datas para visitar",
+    "faded": "Satélites esmaecidos: as órbitas deles são medidas para hoje, não para {year}.",
+    "close": "Fechar"
+  }
+});
+// b200-f1-find: end

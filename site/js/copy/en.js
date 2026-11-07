@@ -756,6 +756,9 @@ export const COPY = {
     nextTitle: 'Forward in time',
     backToLive: 'Live',
     backToLiveTitle: 'Back to the real time, now',
+    // b200-f1-find: begin -- the calendar button of the pill (ui/datejump.js, forge #154)
+    dateJump: 'Go to a date (UTC)',
+    // b200-f1-find: end
     rate: '{n}×',
     rateTitle: 'Speed {n}×. Press for {next}×',
     hold: 'Click to hold time still, drag to move through it',

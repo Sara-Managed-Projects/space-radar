@@ -168,6 +168,28 @@ export function createTimePill(ctx, host) {
   tapeRow.append(prev, tapeHost, next);
   const row = el('div', 'sr-time__row');
   row.append(read, unitBtn, rateBtn, live);
+  // b200-f1-find: begin -- the date field (forge #154, ui/datejump.js): a calendar button after the speed, its dialog
+  // fetched on the first press. Lucide `calendar` (ISC), drawn on the 24-unit box as the rail's icons are.
+  const dateBtn = button('sr-time__date', '', T.dateJump);
+  dateBtn.setAttribute('aria-haspopup', 'dialog');
+  dateBtn.setAttribute('aria-expanded', 'false');
+  dateBtn.setAttribute('aria-controls', 'sr-datejump');
+  {
+    const NS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(NS, 'svg');
+    for (const [k, v] of [['viewBox', '0 0 24 24'], ['width', '18'], ['height', '18'], ['aria-hidden', 'true'], ['focusable', 'false'], ['fill', 'none'], ['stroke', 'currentColor'], ['stroke-width', '1.75'], ['stroke-linecap', 'round'], ['stroke-linejoin', 'round']]) svg.setAttribute(k, v);
+    for (const d of ['M8 2v4', 'M16 2v4', 'M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z', 'M3 10h18']) {
+      const path = document.createElementNS(NS, 'path');
+      path.setAttribute('d', d);
+      svg.appendChild(path);
+    }
+    dateBtn.appendChild(svg);
+  }
+  row.insertBefore(dateBtn, live);
+  dateBtn.addEventListener('click', () => {
+    import('./datejump.js').then((m) => m.openDateJump(ctx, dateBtn)).catch((e) => console.warn('the date field did not load', e));
+  });
+  // b200-f1-find: end
   root.append(tapeRow, row, say);
   (host || document.body).appendChild(root);
 

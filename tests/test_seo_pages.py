@@ -403,7 +403,8 @@ for f in pages + [BUILT / "404.html"]:
         dirty.append(f.name)
 ok(not dirty, f"no bare #NNN, no Facebook, nothing from the plan on any page ({dirty[:3]})")
 ok(not re.search(r"\{\{|\bTODO\b|\blorem\b", "".join(f.read_text(encoding="utf-8") for f in pages)), "no placeholder left")
-ok((BUILT / "pages-dirs.txt").read_text(encoding="utf-8").split() == sorted({"about", "accuracy", "events", "first-pull-request", "iss", "nasa-eyes-alternative", "planets-tonight", "read", "satellites", "sources", "starlink", "teachers"}),
+# b200-f1-find: "country" is the /country/<iso>/ pages (scripts/seo_countries.py, forge #152)
+ok((BUILT / "pages-dirs.txt").read_text(encoding="utf-8").split() == sorted({"about", "accuracy", "country", "events", "first-pull-request", "iss", "nasa-eyes-alternative", "planets-tonight", "read", "satellites", "sources", "starlink", "teachers"}),
    "pages-dirs.txt lists the directories deploy.sh must ship")
 
 # --- the share pictures ----------------------------------------------------------------------------------

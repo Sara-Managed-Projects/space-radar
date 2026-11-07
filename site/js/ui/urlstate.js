@@ -51,6 +51,11 @@ export const HASH_KEY = 'm';
 // `moment` (0079 C1, site/js/moments/): a mission replayed, `#moment=demo-saturn&t=162`; beside it `t` is the moment's
 // mission second, not the map's clock (bootLink and laterLink below leave the map's clock alone for it).
 export const KEYS = ['m', 'v', 'build', 'drift', 'ambient', 'autopilot', 'shuffle', 'sound', 'voice', 'captions', 'pace', 'trip', 'stop', 'present', 'at', 'go', 'event', 't', 'rate', 'stage', 'exp', 'drawn', 'p', 'imagine', 'moment', 'cam']; // 0079 C1: moment
+// b200-f1-find: begin -- forge #150/#152/#153: a Find question (`find=exo_ly50_hz_rocky`, ui/findcore.js parseFind), a
+// catalogue owner (`owner=IND`, data/owners.js), an operator (`operator=spacex`), a debris cloud (`debris=fy1c`) and a
+// constellation (`constellation=kuiper`, data/clouds.js). ui/find.js writes them; main.js opens Find when a link has one.
+KEYS.push('find', 'owner', 'operator', 'debris', 'constellation');
+// b200-f1-find: end
 export const VERSION = '1';
 /** The release this code is (0076 W4-c). A release bumps it with CHANGELOG.md; tests/test_access.mjs holds its shape. */
 export const BUILD = '1.4.0';

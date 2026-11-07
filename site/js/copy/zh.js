@@ -4587,3 +4587,249 @@ export const GLOSSARY = {
   "totality": "日全食中太阳被完全遮住的那几分钟。天空暗到可以看见星星。",
   "annular": "环形的。日环食时月球离得太远，遮不住整个太阳，周围留下一圈明亮的光环。"
 };
+
+// b200-f1-find: begin -- Find, the owners, the clouds and the date field (copy/en.find.js, forge #150, #152, #153, #154), machine-drafted
+COPY.timePill.dateJump = "跳到某个日期（UTC）";
+Object.assign(COPY, {
+  "findEntry": {
+    "title": "查找",
+    "property": "按属性查找",
+    "countries": "按国家看卫星",
+    "operators": "按运营方",
+    "clouds": "碎片云",
+    "chartOurs": "并排看我们的行星"
+  },
+  "find": {
+    "title": "查找",
+    "label": "按属性、按国家和按碎片云查找",
+    "tabs": {
+      "property": "按属性",
+      "country": "按国家",
+      "clouds": "碎片与星座"
+    },
+    "kindsLabel": "找什么",
+    "kinds": {
+      "stars": "恒星",
+      "exoplanets": "行星",
+      "satellites": "卫星",
+      "comets": "彗星"
+    },
+    "presetsLabel": "问题",
+    "refine": "细化",
+    "presets": {
+      "rockyHz50": "50 光年内宜居带中的岩质行星",
+      "nearStars": "20 光年内的恒星",
+      "temperate": "和地球差不多温暖的行星",
+      "hotJupiters": "炽热巨行星",
+      "cometsSoon": "2030 年前到达近日点的彗星",
+      "geo": "地球静止轨道上仍在工作的卫星",
+      "low": "400 公里以下仍在工作的卫星"
+    },
+    "fields": {
+      "within": "距离以内（光年）",
+      "fromHere": "从相机量起，而不是从太阳",
+      "radius": "半径（地球为 1）",
+      "mass": "质量（地球为 1）",
+      "teq": "温度（K）",
+      "insol": "所受星光（地球 = 1）",
+      "height": "高度（公里）",
+      "year": "发射（年）",
+      "perihelion": "离太阳最近（年）",
+      "from": "从",
+      "to": "到",
+      "zone": "在宜居带内",
+      "zoneWide": "在带内或带边",
+      "rocky": "岩质",
+      "working": "只看在工作的",
+      "owner": "所属",
+      "operator": "运营方",
+      "any": "任意",
+      "range": "{label}：{word}"
+    },
+    "columns": {
+      "name": "名称",
+      "dist": "距离（光年）",
+      "radius": "半径（地球）",
+      "teq": "温度（K）",
+      "insol": "光照",
+      "zone": "宜居带",
+      "spect": "光谱型",
+      "mag": "星等",
+      "owner": "所属",
+      "height": "高度（公里）",
+      "year": "发射",
+      "perihelion": "近日点",
+      "qAu": "最近（天文单位）"
+    },
+    "zones": {
+      "inside": "带内",
+      "edge": "带边",
+      "hotter": "太热",
+      "colder": "太冷"
+    },
+    "sortTitle": "按{col}排序",
+    "tableLabel": "符合条件的天体，每行一个：点一行就飞过去",
+    "status": "找到 {n} 个",
+    "statusSome": "找到 {n} 个；列出前 {shown} 个",
+    "none": "没有符合的。放宽某个范围，或取消一个勾选。",
+    "looking": "正在查找…",
+    "loading": "正在载入要查的数据…",
+    "failed": "查找没有完成。请稍后再试。",
+    "rowTitle": "前往 {name}",
+    "noRecord": "地图上没有画出",
+    "modelled": "用估算的恒星质量算出：模型",
+    "copyLink": "复制这个问题的链接",
+    "copied": "链接已复制",
+    "honesty": {
+      "stars": "HYG v4.4 中有名字的 3 390 颗恒星，位于实测距离处。实测。",
+      "exoplanets": "半径、质量、周期和恒星：实测，来自 NASA Exoplanet Archive。轨道大小、所受星光、温度和宜居带：计算得出；标 * 的表示恒星质量由其光度估算，属于模型。岩质：半径不超过 1.6 个地球半径，或无半径数据时质量不超过 3 个地球质量（Rogers 2015）。",
+      "satellites": "CelesTrak 目录，读取于 {date}。高度取轨道最高点和最低点的平均。实测。",
+      "comets": "近日点日期来自 JPL 小天体数据库，由实测轨道算出。"
+    },
+    "chart": {
+      "open": "并排",
+      "openTitle": "{host} 的行星并排，按比例",
+      "title": "{host}，按比例",
+      "ours": "太阳系",
+      "label": "{host} 的行星按真实大小并排画出，从恒星往外排",
+      "note": "所有行星用同一比例；间隔不代表距离。没有实测半径的行星用虚线、按中等大小画出。",
+      "close": "关闭图"
+    },
+    "pill": "{name}：已点亮 {n} 个",
+    "pillClear": "取消高亮"
+  },
+  "owners": {
+    "modesLabel": "分组方式",
+    "modes": {
+      "countries": "国家",
+      "operators": "运营方",
+      "points": "拉格朗日点",
+      "nopath": "没有公开轨道"
+    },
+    "reading": "正在读取 CelesTrak 目录（7 MB）…",
+    "failed": "目录没有载入。",
+    "retry": "重试",
+    "lead": "{n} 个所属方在轨道上有东西：共追踪 {total} 个天体。",
+    "row": "在轨 {n}",
+    "rowSub": "{working} 个在工作 · {debris} 块碎片",
+    "rowTitle": "点亮 {name} 在轨道上的东西",
+    "joint": "{a}和{b}",
+    "ussr": "目录把苏联和俄罗斯算作同一个所属方。",
+    "unknown": "尚不清楚",
+    "byName": "按名称",
+    "byNameTitle": "按目录中其卫星的名称统计",
+    "kinds": "{working} 个在工作，{dead} 个已停止工作，{rocket} 个火箭箭体，{debris} 块碎片。",
+    "lit": "其中 {n} 个已在地图上画出并点亮。",
+    "litNone": "其中没有一个画在地图上。",
+    "show": "点亮它们",
+    "clear": "清除",
+    "page": "{name} 的页面",
+    "noPathTitle": "没有公开轨道：{n}",
+    "noPathNone": "它在轨道上的每个航天器都有公开轨道。",
+    "why": {
+      "no-elements": "没有公开轨道：目录里有它，但没有发布轨道根数",
+      "deep-space": "在地球轨道之外，这里没有它的路径",
+      "deep-drawn": "在地球轨道之外：按 JPL 路径画出"
+    },
+    "points": {
+      "sel1": "日地 L1",
+      "sel2": "日地 L2",
+      "eml2": "地月 L2",
+      "sel1Why": "朝太阳方向 150 万公里：在这里看太阳，太阳永不落下。",
+      "sel2Why": "背离太阳 150 万公里：又冷又暗，适合望远镜。",
+      "eml2Why": "在月球背面之外：一颗中继星，能同时看到月球背面和地球。",
+      "empty": "这里目前没有记录。"
+    },
+    "nopathLead": "{n} 个在轨航天器没有公开轨道。最新的排在前面：",
+    "source": "CelesTrak 卫星目录，读取于 {date}：实测。国旗：Wikimedia Commons，公有领域。"
+  },
+  "breakups": {
+    "cloudsTitle": "碎片云",
+    "fleetsTitle": "卫星星座",
+    "names": {
+      "fy1c": "Fengyun-1C",
+      "cosmos1408": "Cosmos 1408",
+      "iridium33": "Iridium 33",
+      "cosmos2251": "Cosmos 2251"
+    },
+    "why": {
+      "fy1c": "一颗中国气象卫星，2007 年 1 月 11 日在 865 公里高度被中国反卫星导弹摧毁：有史以来最大的碎片云。",
+      "cosmos1408": "一颗已失效的苏联卫星，2021 年 11 月 15 日在约 480 公里高度被俄罗斯反卫星导弹摧毁。",
+      "iridium33": "一颗在用的通信卫星，2009 年 2 月 10 日在西伯利亚上空 789 公里处被已失效的宇宙 2251 号撞上：首次两颗完整卫星相撞。",
+      "cosmos2251": "一颗已失效的俄罗斯卫星，2009 年 2 月 10 日在 789 公里高度撞上铱星 33。"
+    },
+    "counts": "编入目录的 {catalogued} 块碎片中，仍有 {up} 块在轨。",
+    "lit": "地图上点亮 {n} 个。",
+    "spreadTitle": "看它如何散开",
+    "steps": {
+      "event": "事发时",
+      "week": "一周后",
+      "year": "一年后",
+      "today": "今天"
+    },
+    "play": "从事发时播放",
+    "stop": "停止",
+    "places": "回到今天的位置",
+    "spreadNote": "模型：每块碎片都从同一点出发，沿它今天的轨道运行，并随地球赤道隆起使轨道面转动而漂移。已经坠落的碎片不画出。",
+    "source": "来源：",
+    "fleets": {
+      "starlink": "Starlink",
+      "oneweb": "OneWeb",
+      "kuiper": "Kuiper",
+      "qianfan": "Qianfan",
+      "gps": "GPS",
+      "glonass": "GLONASS",
+      "galileo": "Galileo",
+      "beidou": "BeiDou",
+      "iridium": "Iridium"
+    },
+    "fleetLit": "地图上点亮 {n} 个。",
+    "fleetNote": "按运营方在目录中给它们起的名字识别。",
+    "loadingActive": "先载入所有在工作的卫星（7 MB）…",
+    "loadingDebris": "先载入所有被追踪的碎片（7 MB）…",
+    "moment": "2007: Fengyun-1C",
+    "momentTitle": "跳到风云一号 C 被摧毁的那一分钟，并点亮它的碎片云"
+  },
+  "dateJump": {
+    "title": "跳到某个日期",
+    "field": "日期和时间（UTC）",
+    "text": "或直接输入",
+    "placeholder": "1969-07-20 20:17, next total eclipse",
+    "go": "前往",
+    "hint": "1700 到 2200 年之间的任意时刻，UTC。",
+    "errors": {
+      "unknown": "看不懂这个日期。试试 1969-07-20 20:17、20 July 1969 或 next total eclipse。",
+      "range": "超出 1700 到 2200 年。",
+      "empty": "请先输入日期。",
+      "eclipse": "1700 到 2200 年之间没有这样的食。"
+    },
+    "searching": "正在查找…",
+    "gone": "现在是 {when}。",
+    "eclipse": "{what}，{when}。",
+    "eclipses": {
+      "sunTotal": "日全食",
+      "sunAnnular": "日环食",
+      "sunPartial": "日偏食",
+      "moonTotal": "月全食",
+      "moonPartial": "月偏食",
+      "moonPenumbral": "半影月食"
+    },
+    "rangesTitle": "精度如何，适用于何时",
+    "ranges": {
+      "worlds": "太阳、月球和行星：1700 到 2200 年，计算得出（astronomy-engine）。",
+      "satellites": "卫星：今天前后一周内准确；超过一个月就变淡。",
+      "craft": "深空探测器：只在它们自己的 JPL 路径范围内。",
+      "stars": "恒星：在它们现在的位置；几百年间的运动没有画出。"
+    },
+    "quick": {
+      "total": "下一次日全食",
+      "lunar": "下一次月食"
+    },
+    "missionsTitle": "来自我们的任务",
+    "momentsTitle": "精彩时刻",
+    "presetsLabel": "可跳转的日期",
+    "faded": "卫星已变淡：它们的轨道是为现在测量的，不是为 {year} 年。",
+    "close": "关闭"
+  }
+});
+// b200-f1-find: end

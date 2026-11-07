@@ -1106,6 +1106,24 @@ export async function boot({ setStatus } = {}) {
   ctx.wantPassport = () => passport || (passport = import('./ui/passport.js')
     .then((m) => m.createPassport(ctx))
     .catch((e) => { passport = null; console.warn('the passport did not load', e); return null; }));
+  // b200-f1-find: begin -- Find (ui/find.js, forge #150/#152/#153) and its doors on the explore tabs (ui/findentry.js); the
+  // satellites' fade far from now (ui/datejump.js installFade, forge #154); and a link that names a Find key opens it.
+  let findP = null;
+  ctx.wantFind = () => findP || (findP = import('./ui/find.js')
+    .then((m) => m.createFind(ctx, shell.host('find')))
+    .catch((e) => { findP = null; console.warn('find did not load', e); return null; }));
+  const findFade = () => import('./ui/datejump.js').then((m) => m.installFade(ctx)).catch((e) => console.warn('the satellite fade did not load', e));
+  const findLater = () => {
+    if (clock.mode !== 'live') findFade(); // a link into 1969 fades the satellites at once
+    afterFirstVisit(TODAY_MS, () => {
+      import('./ui/findentry.js').then((m) => m.mountFindEntry(ctx)).catch((e) => console.warn('the find rows did not load', e));
+      if (clock.mode === 'live') findFade();
+    });
+    const k = readUrlKeys();
+    if (!embed && (k.find || k.owner || k.operator || k.debris || k.constellation)) ctx.wantFind().then((f) => f && f.openLink(k));
+  };
+  if (window.__srLayersReady) findLater(); else window.addEventListener('sr:layers-ready', findLater, { once: true });
+  // b200-f1-find: end
   // TODAY (internal #270, ui/today.js): the home's dated cards, generated from what is loaded,
   // and under them the way into the debris view (ui/debris.js). TODAY_MS after sr:layers-ready.
   const todayLater = () => afterFirstVisit(TODAY_MS, () => {

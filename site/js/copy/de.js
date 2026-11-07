@@ -4688,3 +4688,249 @@ export const GLOSSARY = {
   "totality": "Die Minuten einer totalen Finsternis, in denen die Sonne ganz bedeckt ist. Der Himmel wird so dunkel, dass man Sterne sieht.",
   "annular": "Ringförmig. Bei einer ringförmigen Finsternis ist der Mond zu weit entfernt, um die ganze Sonne zu bedecken, und um ihn bleibt ein heller Ring."
 };
+
+// b200-f1-find: begin -- Find, the owners, the clouds and the date field (copy/en.find.js, forge #150, #152, #153, #154), machine-drafted
+COPY.timePill.dateJump = "Zu einem Datum (UTC)";
+Object.assign(COPY, {
+  "findEntry": {
+    "title": "Finden",
+    "property": "Nach Eigenschaften finden",
+    "countries": "Satelliten nach Land",
+    "operators": "Nach Betreiber",
+    "clouds": "Trümmerwolken",
+    "chartOurs": "Unsere Planeten nebeneinander"
+  },
+  "find": {
+    "title": "Finden",
+    "label": "Nach Eigenschaften, nach Land und nach Trümmerwolke finden",
+    "tabs": {
+      "property": "Eigenschaften",
+      "country": "Nach Land",
+      "clouds": "Trümmer und Flotten"
+    },
+    "kindsLabel": "Was du suchst",
+    "kinds": {
+      "stars": "Sterne",
+      "exoplanets": "Planeten",
+      "satellites": "Satelliten",
+      "comets": "Kometen"
+    },
+    "presetsLabel": "Fragen",
+    "refine": "Verfeinern",
+    "presets": {
+      "rockyHz50": "Gesteinsplaneten in der habitablen Zone, bis 50 Lichtjahre entfernt",
+      "nearStars": "Sterne bis 20 Lichtjahre entfernt",
+      "temperate": "Planeten, etwa so warm wie die Erde",
+      "hotJupiters": "Heiße Riesen",
+      "cometsSoon": "Kometen, die der Sonne bis 2030 am nächsten kommen",
+      "geo": "Aktive Satelliten im geostationären Ring",
+      "low": "Aktive Satelliten unter 400 km"
+    },
+    "fields": {
+      "within": "Bis (Lichtjahre)",
+      "fromHere": "Von der Kamera aus gemessen, nicht von der Sonne",
+      "radius": "Radius (Erden)",
+      "mass": "Masse (Erden)",
+      "teq": "Temperatur (K)",
+      "insol": "Sternenlicht (Erde = 1)",
+      "height": "Höhe (km)",
+      "year": "Gestartet (Jahr)",
+      "perihelion": "Sonnennächster Punkt (Jahr)",
+      "from": "von",
+      "to": "bis",
+      "zone": "In der habitablen Zone",
+      "zoneWide": "Darin oder an ihrem Rand",
+      "rocky": "Gesteinsplanet",
+      "working": "Nur aktive",
+      "owner": "Eigentümer",
+      "operator": "Betreiber",
+      "any": "Alle",
+      "range": "{label}: {word}"
+    },
+    "columns": {
+      "name": "Name",
+      "dist": "Entfernung (Lj)",
+      "radius": "Radius (Erden)",
+      "teq": "Temp. (K)",
+      "insol": "Licht",
+      "zone": "Zone",
+      "spect": "Typ",
+      "mag": "Helligkeit",
+      "owner": "Eigentümer",
+      "height": "Höhe (km)",
+      "year": "Start",
+      "perihelion": "Perihel",
+      "qAu": "Nächster (AE)"
+    },
+    "zones": {
+      "inside": "innen",
+      "edge": "Rand",
+      "hotter": "zu heiß",
+      "colder": "zu kalt"
+    },
+    "sortTitle": "Nach {col} sortieren",
+    "tableLabel": "Was passt, eine Zeile pro Treffer: Tippe auf eine Zeile, um hinzufliegen",
+    "status": "{n} gefunden",
+    "statusSome": "{n} gefunden; die ersten {shown} stehen hier",
+    "none": "Nichts passt. Erweitere einen Bereich oder nimm ein Häkchen weg.",
+    "looking": "Suche…",
+    "loading": "Lade, was durchsucht wird…",
+    "failed": "Die Suche ist nicht gelaufen. Versuch es gleich noch einmal.",
+    "rowTitle": "Zu {name}",
+    "noRecord": "Nicht auf der Karte gezeichnet",
+    "modelled": "Über eine geschätzte Sternmasse berechnet: modelliert",
+    "copyLink": "Link zu dieser Frage kopieren",
+    "copied": "Link kopiert",
+    "honesty": {
+      "stars": "Die benannten Sterne aus HYG v4.4, 3 390 Stück, in ihren gemessenen Entfernungen. Gemessen.",
+      "exoplanets": "Radius, Masse, Umlaufzeit und Stern: gemessen, NASA Exoplanet Archive. Bahngröße, Sternenlicht, Temperatur und Zone: berechnet; mit * markiert, wo die Masse des Sterns aus seinem Licht geschätzt ist, modelliert. Gesteinsplanet: höchstens 1,6 Erdradien, oder 3 Erdmassen, wenn kein Radius bekannt ist (Rogers 2015).",
+      "satellites": "Katalog von CelesTrak, gelesen am {date}. Die Höhe ist das Mittel aus höchstem und tiefstem Bahnpunkt. Gemessen.",
+      "comets": "Perihel-Daten aus der Small-Body Database des JPL. Aus gemessenen Bahnen berechnet."
+    },
+    "chart": {
+      "open": "Nebeneinander",
+      "openTitle": "Die Planeten von {host} nebeneinander, maßstabsgetreu",
+      "title": "{host}, maßstabsgetreu",
+      "ours": "Das Sonnensystem",
+      "label": "Die Planeten von {host} nebeneinander in ihrer wahren Größe, geordnet vom Stern aus",
+      "note": "Ein Maßstab für alle Planeten; die Lücken sind keine Entfernungen. Ein Planet ohne gemessenen Radius ist gestrichelt in mittlerer Größe gezeichnet.",
+      "close": "Diagramm schließen"
+    },
+    "pill": "{name}: {n} hervorgehoben",
+    "pillClear": "Hervorhebung aufheben"
+  },
+  "owners": {
+    "modesLabel": "Gruppieren nach",
+    "modes": {
+      "countries": "Länder",
+      "operators": "Betreiber",
+      "points": "Lagrange-Punkte",
+      "nopath": "Ohne öffentliche Bahn"
+    },
+    "reading": "Lese den Katalog von CelesTrak (7 MB)…",
+    "failed": "Der Katalog wurde nicht geladen.",
+    "retry": "Noch einmal versuchen",
+    "lead": "{n} Eigentümer haben etwas im Orbit: {total} verfolgte Objekte.",
+    "row": "{n} oben",
+    "rowSub": "{working} aktiv · {debris} Trümmer",
+    "rowTitle": "Hervorheben, was {name} im Orbit hat",
+    "joint": "{a} und {b}",
+    "ussr": "Der Katalog zählt die Sowjetunion und Russland als einen Eigentümer.",
+    "unknown": "Noch unbekannt",
+    "byName": "nach Name",
+    "byNameTitle": "Gezählt nach den Namen, die seine Satelliten im Katalog tragen",
+    "kinds": "{working} aktiv, {dead} außer Betrieb, {rocket} Raketenstufen, {debris} Trümmerteile.",
+    "lit": "{n} davon sind auf der Karte gezeichnet und hervorgehoben.",
+    "litNone": "Keines davon ist auf der Karte gezeichnet.",
+    "show": "Hervorheben",
+    "clear": "Aufheben",
+    "page": "Seite zu {name}",
+    "noPathTitle": "Ohne öffentliche Bahn: {n}",
+    "noPathNone": "Jede seiner Nutzlasten im Orbit hat eine öffentliche Bahn.",
+    "why": {
+      "no-elements": "Keine öffentliche Bahn: Der Katalog führt es, aber es werden keine Bahnelemente veröffentlicht",
+      "deep-space": "Jenseits der Erdumlaufbahn, und hier gibt es keine Bahn dafür",
+      "deep-drawn": "Jenseits der Erdumlaufbahn: nach seiner JPL-Bahn gezeichnet"
+    },
+    "points": {
+      "sel1": "Sonne–Erde L1",
+      "sel2": "Sonne–Erde L2",
+      "eml2": "Erde–Mond L2",
+      "sel1Why": "1,5 Millionen km zur Sonne hin: ein Blick auf die Sonne, die nie untergeht.",
+      "sel2Why": "1,5 Millionen km von der Sonne weg: kalt und dunkel, für Teleskope.",
+      "eml2Why": "Hinter der Rückseite des Mondes: ein Relais, das die Rückseite und die Erde zugleich sieht.",
+      "empty": "Hier ist derzeit nichts verzeichnet."
+    },
+    "nopathLead": "{n} Nutzlasten im Orbit haben keine öffentliche Bahn. Die neuesten zuerst:",
+    "source": "Satellitenkatalog von CelesTrak, gelesen am {date}: gemessen. Flaggen: Wikimedia Commons, gemeinfrei."
+  },
+  "breakups": {
+    "cloudsTitle": "Trümmerwolken",
+    "fleetsTitle": "Konstellationen",
+    "names": {
+      "fy1c": "Fengyun-1C",
+      "cosmos1408": "Cosmos 1408",
+      "iridium33": "Iridium 33",
+      "cosmos2251": "Cosmos 2251"
+    },
+    "why": {
+      "fy1c": "Ein chinesischer Wettersatellit, am 11. Januar 2007 in 865 km Höhe von einer chinesischen Antisatellitenrakete zerstört: die größte Wolke, die je entstanden ist.",
+      "cosmos1408": "Ein toter sowjetischer Satellit, am 15. November 2021 in etwa 480 km Höhe von einer russischen Antisatellitenrakete zerstört.",
+      "iridium33": "Ein aktiver Telefonsatellit, am 10. Februar 2009 in 789 km Höhe über Sibirien vom toten Kosmos 2251 getroffen: der erste Zusammenstoß zweier ganzer Satelliten.",
+      "cosmos2251": "Ein toter russischer Satellit, der am 10. Februar 2009 in 789 km Höhe Iridium 33 traf."
+    },
+    "counts": "{up} der {catalogued} katalogisierten Teile sind noch im Orbit.",
+    "lit": "{n} auf der Karte hervorgehoben.",
+    "spreadTitle": "Zusehen, wie sie sich ausbreitet",
+    "steps": {
+      "event": "Beim Ereignis",
+      "week": "Eine Woche später",
+      "year": "Ein Jahr später",
+      "today": "Heute"
+    },
+    "play": "Ab dem Ereignis abspielen",
+    "stop": "Anhalten",
+    "places": "Zurück zu den heutigen Orten",
+    "spreadNote": "Modelliert: Jedes Teil startet an einem Punkt, auf der Bahn, die es heute hat, und driftet, während der Äquatorwulst der Erde seine Bahnebene dreht. Teile, die abgestürzt sind, werden nicht gezeichnet.",
+    "source": "Quelle:",
+    "fleets": {
+      "starlink": "Starlink",
+      "oneweb": "OneWeb",
+      "kuiper": "Kuiper",
+      "qianfan": "Qianfan",
+      "gps": "GPS",
+      "glonass": "GLONASS",
+      "galileo": "Galileo",
+      "beidou": "BeiDou",
+      "iridium": "Iridium"
+    },
+    "fleetLit": "{n} auf der Karte hervorgehoben.",
+    "fleetNote": "Erkannt an den Namen, die ihre Betreiber ihnen im Katalog geben.",
+    "loadingActive": "Lade zuerst alle aktiven Satelliten (7 MB)…",
+    "loadingDebris": "Lade zuerst alle verfolgten Trümmerteile (7 MB)…",
+    "moment": "2007: Fengyun-1C",
+    "momentTitle": "Zur Minute, in der Fengyun-1C zerstört wurde, und seine Wolke hervorheben"
+  },
+  "dateJump": {
+    "title": "Zu einem Datum",
+    "field": "Datum und Uhrzeit (UTC)",
+    "text": "Oder tippe es ein",
+    "placeholder": "1969-07-20 20:17, next total eclipse",
+    "go": "Los",
+    "hint": "Jeder Zeitpunkt von 1700 bis 2200, in UTC.",
+    "errors": {
+      "unknown": "Dieses Datum verstehe ich nicht. Versuch 1969-07-20 20:17, 20 July 1969 oder next total eclipse.",
+      "range": "Außerhalb von 1700 bis 2200.",
+      "empty": "Gib zuerst ein Datum ein.",
+      "eclipse": "Keine solche Finsternis zwischen 1700 und 2200."
+    },
+    "searching": "Suche…",
+    "gone": "Jetzt {when}.",
+    "eclipse": "{what}, {when}.",
+    "eclipses": {
+      "sunTotal": "Totale Sonnenfinsternis",
+      "sunAnnular": "Ringförmige Sonnenfinsternis",
+      "sunPartial": "Partielle Sonnenfinsternis",
+      "moonTotal": "Totale Mondfinsternis",
+      "moonPartial": "Partielle Mondfinsternis",
+      "moonPenumbral": "Halbschatten-Mondfinsternis"
+    },
+    "rangesTitle": "Wie genau, und wann",
+    "ranges": {
+      "worlds": "Sonne, Mond und Planeten: 1700 bis 2200, berechnet (astronomy-engine).",
+      "satellites": "Satelliten: genau innerhalb einer Woche um heute; nach einem Monat verblasst.",
+      "craft": "Raumsonden: nur innerhalb ihrer eigenen JPL-Bahnen.",
+      "stars": "Sterne: dort, wo sie heute stehen; ihre Bewegung über Jahrhunderte ist nicht gezeichnet."
+    },
+    "quick": {
+      "total": "Nächste totale Sonnenfinsternis",
+      "lunar": "Nächste Mondfinsternis"
+    },
+    "missionsTitle": "Aus unseren Missionen",
+    "momentsTitle": "Momente",
+    "presetsLabel": "Daten zum Hinspringen",
+    "faded": "Satelliten verblasst: Ihre Bahnen sind für heute gemessen, nicht für {year}.",
+    "close": "Schließen"
+  }
+});
+// b200-f1-find: end
