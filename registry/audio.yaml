@@ -203,14 +203,14 @@ audio:
     credit: "Sputnik's radio beep, recorded and published by NASA (1957), public domain"
     original: {url: "https://upload.wikimedia.org/wikipedia/commons/c/c6/Sputnik_beep.ogg", sha256: 9276b15eab6a1308ee866d3badf76f8fa0099ad644acd06e112c5dc34ac082cf, bytes: 53073}
     make: {original: "Sputnik_beep.ogg (Vorbis, stereo, 48 kHz, 4.4 s)", from: 0, seconds: 4.4, tool: "ffmpeg -ar 22050 -ac 1 -c:a aac -b:a 32k"}
-  # b200-f9-reach: begin -- REAL RECORDINGS, HEARD WHERE THEY WERE MADE (forge #163). Five recordings NASA published, each
+  # b200-f9-reach: begin -- REAL RECORDINGS, HEARD WHERE THEY WERE MADE (forge #163). Six recordings NASA published, each
   # offered by the score (site/js/audio/score.js) at the stages in `heard:` while sound is on, and fetched only when the
   # visitor presses its button. `how:` is what the app tells them: `sonified` -- radio, plasma or seismic data turned
   # into sound, which no ear could hear there -- or `microphone`, sound itself. `clip` rows, one AAC file each, cut by
   # scripts/build-real-sounds.py from `make:` (afconvert: there is no Opus encoder on the machine, as for the Moments'
   # clips); the browser reads them through site/js/data/realsounds.js (scripts/gen_realsounds_js.py), never at boot.
-  # InSight's Martian WIND is not here: NASA publishes it only inside a 269 MB video (read 2026-11-07); its meteoroid
-  # strike is. All five pages credit NASA with the universities and agencies that built the instrument; the files are
+  # InSight's Martian WIND is the audio track of NASA's 26 MB video of its air pressure sensor (no standalone audio file is
+  # published on science.nasa.gov, jpl.nasa.gov or mars.nasa.gov, read 2026-11-07), read with afconvert. All six pages credit NASA with the universities and agencies that built the instrument; the files are
   # public domain as works of NASA (the three on Wikimedia Commons are tagged so, read 2026-11-07).
   - id: real-voyager-plasma
     kind: clip
@@ -268,6 +268,20 @@ audio:
     credit: "A meteoroid strike on Mars, 24 December 2021, heard by InSight's seismometer: NASA/JPL-Caltech/CNES/Imperial College London, public domain"
     original: {url: "https://assets.science.nasa.gov/content/dam/science/psd/photojournal/pia/pia25/pia25582/PIA25582.wav", sha256: 06b284194622eee99c6f92d877e59f6b20c390345cfd2381bb9abd50aaea228c, bytes: 5391020}
     make: {original: PIA25582.wav, from: 3, seconds: 20, tool: "scripts/build-real-sounds.py: afconvert to 22 050 Hz mono, cut, levelled, faded; afconvert -d aac -b 32000"}
+  - id: real-insight-wind
+    kind: clip
+    file: site/audio/real-insight-wind.m4a
+    twin: site/audio/real-insight-wind.m4a
+    seconds: 16
+    kb: 60.0
+    loop: false
+    heard: [mars]
+    how: sonified
+    licence: "Public domain (NASA media usage guidelines: NASA content \"generally are not subject to copyright in the United States\"); NASA Science resource \"Sounds from InSight's Pressure Sensor on Mars\""
+    source: "https://science.nasa.gov/resource/sounds-from-insights-pressure-sensor-on-mars/ (read 2026-11-07)"
+    credit: "Martian wind blowing past InSight, 1 December 2018, heard by its air pressure sensor: NASA/JPL-Caltech/CNES/Cornell, public domain"
+    original: {url: "https://assets.science.nasa.gov/content/dam/science/psd/mars/downloadable_items/4/42303_aps.mp4", sha256: 85d4bbeca52aa498b5fb4c159ee267e084b832054c950666e163c9d27dfd45ca, bytes: 26487987}
+    make: {original: 42303_aps.mp4, from: 1, seconds: 16, tool: "scripts/build-real-sounds.py: afconvert reads the video's audio track to 22 050 Hz mono, cut, levelled, faded; afconvert -d aac -b 32000"}
   - id: real-perseverance-dust-devil
     kind: clip
     file: site/audio/real-perseverance-dust-devil.m4a

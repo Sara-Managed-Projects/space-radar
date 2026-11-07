@@ -5323,6 +5323,7 @@ Object.assign(COPY, {
       "real-juno-ganymede": "ג'ונו חולפת ליד גנימד",
       "real-cassini-saturn": "שידורי הרדיו של שבתאי",
       "real-insight-impact": "מטאורואיד פוגע במאדים",
+      "real-insight-wind": "הרוח על מאדים",
       "real-perseverance-dust-devil": "שד אבק על מאדים"
     }
   }

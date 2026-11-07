@@ -5316,6 +5316,7 @@ Object.assign(COPY, {
       "real-juno-ganymede": "جونو وهي تمر بجانب غانيميد",
       "real-cassini-saturn": "إشارات زحل الراديوية",
       "real-insight-impact": "نيزك يرتطم بالمريخ",
+      "real-insight-wind": "الرياح على المريخ",
       "real-perseverance-dust-devil": "دوامة غبار على المريخ"
     }
   }

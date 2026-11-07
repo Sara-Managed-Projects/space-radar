@@ -1049,7 +1049,7 @@ def build_pages(host: str, objects: list[dict], today: str, snapshot_index: dict
     pages += seo_print.pages(host)
     # b200-f6-learn: end
     # b200-f9-reach: begin
-    pages += seo_reach.pages(host)
+    pages += seo_reach.pages(host, counts)
     # b200-f9-reach: end
     return pages
 

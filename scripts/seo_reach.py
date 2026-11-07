@@ -270,10 +270,31 @@ COSMO_SAT = "https://cosmoscope.space/live-satellite-tracker"
 COSMOSMAP = "https://cosmosmap.org/"
 
 
-def us() -> dict:
+def first_load() -> str:
+    """The live site's first load as registry/first-load.yaml measured it (forge #170, docs/FIRST_LOAD.md), with its day."""
+    rows = {r["id"]: r for r in _yml("first-load.yaml").get("measurements") or []}
+    live = rows.get("live")
+    if not live:
+        raise SystemExit("seo_reach: registry/first-load.yaml has no `live` measurement to quote")
+    day = str(live["day"])
+    y, m, d = (int(x) for x in day.split("-"))
+    months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    return f"about {live['bytes'] / 1e6:.1f} MB (measured {d} {months[m - 1]} {y})"
+
+
+def satellites(counts: dict | None = None) -> str:
+    """"about 17,000", rounded from the saved catalogue's count: the harvester's index at deploy, else registry/seo-facts.yaml.
+
+    `counts` is scripts/seo_pages.py satellite_counts(), which reads both; without it (a test) the registry's fallback."""
+    n = (counts or {}).get("active") or _yml("seo-facts.yaml")["satellite_counts"]["active_objects"]
+    return f"about {round(n / 1000) * 1000:,}"
+
+
+def us(counts: dict | None = None) -> dict:
+    """Every count of ours these pages state, read at build time: never typed here, because other batches add trips."""
     f = count_facts.facts()
     return {"trips": f["trips"], "stops": f["stops"], "systems": f["star_systems"], "layers": f["layers"], "sources": f["sources"],
-            "languages": languages()}
+            "languages": languages(), "satellites": satellites(counts), "first": first_load()}
 
 
 def table(head: tuple[str, str], rows: list[tuple[str, str, str]]) -> str:
@@ -313,18 +334,26 @@ COMPARISONS = ("spaceengine-alternative-mac", "spaceengine-in-the-browser", "spa
                "solar-system-scope-alternative", "live-satellite-tracker-3d")
 
 
-def comparison_pages(host: str) -> list[Page]:
-    """Every claim about another product below is in the competitor review (SPEC) or on the page each `checked` links."""
-    n = us()
+def comparison_pages(host: str, counts: dict | None = None) -> list[Page]:
+    """Every claim about another product below is in the competitor review (SPEC) or on the page each `checked` links.
+
+    Release 2.0.0 itself brought gamepad flight, a headset mode, video, dome and 360 output, spinning-hole shadows,
+    landing sites to stand at and paper globes, so none of those is listed as another product's alone: what is listed
+    is what it still does that Space Radar does not, or does more deeply (the coordinator's fairness review)."""
+    n = us(counts)
     open_src = f'Open source (<a href="{GITHUB}">GitHub</a>, MIT)'
-    first = "about 1.9 MB (measured 7 November 2026)"
-    se_does = ("What SpaceEngine does that Space Radar does not", [
-        "Procedural planets you can fly down to and land on anywhere, in a whole universe filled in where the catalogues end.",
-        "A spaceship to fly with a gamepad, VR on a PC, video recording and, in its PRO edition, dome and 360-degree output.",
-        "Spinning black holes with Doppler-shifted disks.",
-        "A long-running community, about 16,000 Steam reviews and a Discord of about 13,400, and 18 languages."])
+    first = n["first"]
+    sats = n["satellites"]
+    se_does = ("What SpaceEngine does that Space Radar does not, or does more deeply", [
+        "Landing anywhere on procedural worlds, across a whole universe filled in where the catalogues end.",
+        "Newtonian spaceship flight, with docking.",
+        "VR through SteamVR, drawn by a PC's graphics card.",
+        "Ray-traced black holes with volumetric disks; Space Radar's spinning holes are an approximation, labelled modelled.",
+        "18 languages, and a large community: about 16,000 Steam reviews and a Discord of about 13,400.",
+        "The other side of it: SpaceEngine draws all this on a Windows PC with a dedicated graphics card; Space Radar does less, in a browser, "
+        "on whatever device is to hand."])
     se_ours = ("What Space Radar does that SpaceEngine does not", [
-        "Live satellites: about 17,000 tracked objects placed from their orbital elements for the moment on the clock. SpaceEngine has none built in.",
+        f"Live satellites: {sats} tracked objects placed from their orbital elements for the moment on the clock. SpaceEngine has none built in.",
         "Sky events from where you stand: eclipses with their shadow paths, meteor showers, conjunctions, rise and set times.",
         f"{n['trips']} narrated guided trips ({n['stops']} stops) with captions.",
         "No invented worlds: everything drawn is a real object, labelled measured, modelled or illustrative, with its source.",
@@ -370,9 +399,9 @@ def comparison_pages(host: str) -> list[Page]:
              ("CosmosMap", "WebGPU only, which many Android phones lack; an iPad app", f'<a href="{COSMOSMAP}">cosmosmap.org</a>'),
              ("Space Radar", f"In the phone's browser with WebGL and touch; first load {first}; can be added to the home screen", "This project")],
             ("What the others do that Space Radar does not", [
-                "Solar System Scope's apps are in 19 languages, with paper models of the planets and a VR app.",
+                "Solar System Scope's apps are in 19 languages, with a VR app.",
                 "Cosmoscope draws millions of stars in 3D and the asteroid belt at catalogue scale.",
-                "CosmosMap has a lab of 184 science simulations and walks on planetary surfaces.",
+                "CosmosMap has a lab of 184 science simulations, and wider sets of planetary terrain to walk on than Space Radar's landing sites.",
                 "SpaceEngine, on a PC, lets you land anywhere on procedural worlds."]),
             ("What Space Radar does on a phone", [
                 "Live satellites and the space station, with the passes over your place.",
@@ -392,14 +421,14 @@ def comparison_pages(host: str) -> list[Page]:
             [("Who makes it", "INOVE", f'An open-source project on <a href="{GITHUB}">GitHub</a>'),
              ("Where it runs", "Apps for iOS and Android; the web version is for desktops", "Any current browser, phones included"),
              ("Price", "Web free; $5.99 in the app to remove ads; desktop $9.80", "Free; no advertising"),
-             ("Satellites", "Three spacecraft", "About 17,000 tracked objects, live"),
+             ("Satellites", "Three spacecraft", f"{sats.capitalize()} tracked objects, live"),
              ("Languages", "19", f"{n['languages']} (machine-drafted, under review)")],
             ("What Solar System Scope does that Space Radar does not", [
                 "Native apps for iOS and Android, used by millions (10 million+ installs and 4.4 stars on Google Play).",
-                "Nineteen languages, paper models of the planets, and a VR app.",
+                "Nineteen languages, and a VR app.",
                 "CC BY 4.0 planet textures that much of the web uses, Space Radar included."]),
             ("What Space Radar does that Solar System Scope does not", [
-                "Live satellites, launches and the space station, placed for the moment on the clock: about 17,000 objects against three craft.",
+                f"Live satellites, launches and the space station, placed for the moment on the clock: {sats} objects against three craft.",
                 "Sky events from your place, with the times.",
                 f"{n['trips']} narrated trips and {n['systems']} exoplanet systems to fly into.",
                 "Open source, with every number's source."]),
@@ -407,20 +436,20 @@ def comparison_pages(host: str) -> list[Page]:
             "Solar System Scope", "Space Radar and Solar System Scope"),
         compare_page(
             host, COMPARISONS[4], "Live satellite tracker in 3D, free, in the browser",
-            "Track about 17,000 satellites live in 3D in your browser, with the passes over your place. How it compares with Cosmoscope's 3D tracker.",
+            f"Track {sats} satellites live in 3D in your browser, with the passes over your place. How it compares with Cosmoscope's 3D tracker.",
             "A live satellite tracker in 3D",
-            "Space Radar places about 17,000 tracked satellites and pieces of debris in 3D for the moment on the clock, from public orbital elements, "
+            f"Space Radar places {sats} tracked satellites and pieces of debris in 3D for the moment on the clock, from public orbital elements, "
             "and ranks which will pass over you, with Starlink trains, a debris census and re-entries. Cosmoscope also draws about 16,900 live "
             "satellites in 3D. Here is what each does.",
             ("Cosmoscope", "Space Radar"),
-            [("Satellites drawn", "About 16,900", "About 17,000, each with a card and its source"),
+            [("Satellites drawn", "About 16,900", f"{sats.capitalize()}, each with a card and its source"),
              ("Sky events", "Five fixed presets", "Eclipses, meteor showers, conjunctions, rise and set, from your place"),
              ("First load", "About 36 MB", first),
              ("Languages", "English", f"{n['languages']} (machine-drafted, under review)")],
             ("What Cosmoscope does that Space Radar does not", [
                 "Millions of stars in 3D (2.4 million from ATHYG, 7.8 million from Gaia).",
                 "The asteroid belt, the Trojans and the outer bodies at catalogue scale, on a true-scale map out to the Virgo cluster.",
-                "Standing on real terrain on Mars and the Moon."]),
+                "Descending to the ground anywhere on Mars, where Space Radar stands only at its landing sites."]),
             ("What Space Radar does that Cosmoscope does not", [
                 "Sky events computed for your place, against Cosmoscope's five presets.",
                 f"{n['trips']} guided trips read aloud, with captions.",
@@ -432,8 +461,9 @@ def comparison_pages(host: str) -> list[Page]:
 
 # --- the door seo_pages.py uses ---------------------------------------------------------------------------------
 
-def pages(host: str) -> list[Page]:
-    return [assets_page(host), creators_page(host)] + comparison_pages(host)
+def pages(host: str, counts: dict | None = None) -> list[Page]:
+    """`counts`: scripts/seo_pages.py satellite_counts(), so the comparisons quote the saved catalogue the deploy read."""
+    return [assets_page(host), creators_page(host)] + comparison_pages(host, counts)
 
 
 def write(out: Path) -> None:

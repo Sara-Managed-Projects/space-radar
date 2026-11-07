@@ -5407,6 +5407,7 @@ Object.assign(COPY, {
       "real-juno-ganymede": "a Juno a passar por Ganimedes",
       "real-cassini-saturn": "o rádio de Saturno",
       "real-insight-impact": "um meteoroide a atingir Marte",
+      "real-insight-wind": "o vento em Marte",
       "real-perseverance-dust-devil": "um redemoinho de poeira em Marte"
     }
   }

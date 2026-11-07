@@ -5331,6 +5331,7 @@ Object.assign(COPY, {
       "real-juno-ganymede": "«Юнона» у Ганимеда",
       "real-cassini-saturn": "радиоизлучение Сатурна",
       "real-insight-impact": "падение метеороида на Марс",
+      "real-insight-wind": "ветер на Марсе",
       "real-perseverance-dust-devil": "пылевой вихрь на Марсе"
     }
   }

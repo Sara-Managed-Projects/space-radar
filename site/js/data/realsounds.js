@@ -52,6 +52,17 @@ export const REAL_SOUNDS = [
     "credit": "A meteoroid strike on Mars, 24 December 2021, heard by InSight's seismometer: NASA/JPL-Caltech/CNES/Imperial College London, public domain"
   },
   {
+    "id": "real-insight-wind",
+    "file": "audio/real-insight-wind.m4a",
+    "twin": "audio/real-insight-wind.m4a",
+    "seconds": 16,
+    "heard": [
+      "mars"
+    ],
+    "how": "sonified",
+    "credit": "Martian wind blowing past InSight, 1 December 2018, heard by its air pressure sensor: NASA/JPL-Caltech/CNES/Cornell, public domain"
+  },
+  {
     "id": "real-perseverance-dust-devil",
     "file": "audio/real-perseverance-dust-devil.m4a",
     "twin": "audio/real-perseverance-dust-devil.m4a",

@@ -3,16 +3,17 @@
 
     python3 scripts/build-real-sounds.py --originals DIR [--only ID]
 
-WHAT THEY ARE. Five recordings NASA published, each heard where it was made: Voyager 1's plasma-wave instrument in
+WHAT THEY ARE. Six recordings NASA published, each heard where it was made: Voyager 1's plasma-wave instrument in
 interstellar space, Juno's radio receiver passing Ganymede, Cassini's radio receiver at Saturn, InSight's seismometer
-hearing a meteoroid strike, and Perseverance's microphone hearing a dust devil. Four are radio, plasma or seismic data
+hearing a meteoroid strike and its pressure sensor hearing the wind, and Perseverance's microphone hearing a dust devil.
+Five are radio, plasma, seismic or pressure data
 turned into sound (`how: sonified`), one is sound itself (`how: microphone`); the app says which, every time.
 
 WHY A SCRIPT, as for the beds (scripts/build-audio.py): a cut that lives in a terminal's scrollback is a cut nobody
 can repeat. Each row's `make:` says which file, from which second and for how long; this turns that into bytes.
 
 THE TOOLS ARE THE MAC'S OWN. There is no ffmpeg or Opus encoder on the machine these were made on, so this uses
-`afconvert` (macOS) to decode and to encode AAC, and Python's `wave` for the cut, the fades and the level. That is
+`afconvert` (macOS) to decode (a video's audio track included) and to encode AAC, and Python's `wave` for the cut, the fades and the level. That is
 why each row is a `clip` with one .m4a (the Moments' recordings are the same): AAC-LC, mono, 22 050 Hz, 32 kbps,
 which every browser decodes. The originals are 5 kHz to 48 kHz; nothing above 11 kHz was in the data.
 

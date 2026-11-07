@@ -37,14 +37,14 @@ check(voiceOf('edge').hz < voiceOf('galaxies').hz && voiceOf('galaxies').hz < vo
 
 // --- the recordings in the mirror -------------------------------------------------------------------
 const stages = new Set(['sun', 'stellar', 'jupiter', 'ganymede', 'saturn', 'mars']);
-check(REAL_SOUNDS.length === 5, `five real recordings: ${REAL_SOUNDS.length}`);
+check(REAL_SOUNDS.length === 6, `six real recordings: ${REAL_SOUNDS.length}`);
 for (const r of REAL_SOUNDS) {
   check(r.heard.every((s) => stages.has(s)), `${r.id}: heard at a stage the app has`);
   check(r.how === 'sonified' || r.how === 'microphone', `${r.id}: says how it was made`);
   check(/public domain$/.test(r.credit) && /^audio\/real-.*\.m4a$/.test(r.file), `${r.id}: credit and file`);
   check(typeof COPY.realSound === 'object' && COPY.realSound.names[r.id], `${r.id}: has a name in copy/en.sound.js`);
 }
-check(heardAt('mars').length === 2 && heardAt('saturn').length === 1 && heardAt('earth').length === 0, 'what is heard where');
+check(heardAt('mars').length === 3 && heardAt('saturn').length === 1 && heardAt('earth').length === 0, 'what is heard where');
 
 // --- the stubs ---------------------------------------------------------------------------------
 class Param {

@@ -5316,6 +5316,7 @@ Object.assign(COPY, {
       "real-juno-ganymede": "朱诺号飞掠木卫三",
       "real-cassini-saturn": "土星的射电",
       "real-insight-impact": "流星体撞击火星",
+      "real-insight-wind": "火星上的风",
       "real-perseverance-dust-devil": "火星上的尘卷风"
     }
   }

@@ -109,7 +109,7 @@ for path in seo_reach.COMPARISONS:
         continue
     t = plain(p.body)
     check(len(p.title) <= 60 and 70 <= len(p.description) <= 160, f"{path}: title {len(p.title)}, description {len(p.description)}")
-    check(re.search(r"<h2>What (SpaceEngine|Solar System Scope|Cosmoscope|the others) (?:does|do) that Space Radar does not</h2>", p.body) is not None,
+    check(re.search(r"<h2>What (SpaceEngine|Solar System Scope|Cosmoscope|the others) (?:does|do) that Space Radar does not(, or does more deeply)?</h2>", p.body) is not None,
           f"{path}: says what the other does that Space Radar does not")
     check(f"read on {seo_reach.READ}" in t and seo_reach.SPEC in p.body, f"{path}: dated, and its sources linked")
     check(not re.search(r"\b(best|better|worse|worst)\b", t, re.I), f"{path}: no ranking word")
@@ -117,6 +117,25 @@ for path in seo_reach.COMPARISONS:
     check(p.in_sitemap and p.share is not None, f"{path}: in the sitemap, with a share picture")
     html = render(p, make_ctx(HOST, {}))
     check(html.count("<h1") == 1, f"{path}: one H1")
+
+# Our own counts are read at build time, never typed (the coordinator's review): a different saved catalogue, a
+# different number on the page; the first load is registry/first-load.yaml's live measurement, with its day.
+moved = {p.path: p for p in seo_reach.comparison_pages(HOST, {"active": 23456})}
+check(all("about 23,000" in plain(moved[f"{c}/index.html"].body).lower() for c in ("spaceengine-alternative-mac", "live-satellite-tracker-3d", "solar-system-scope-alternative")),
+      "the satellite count comes from the saved catalogue's index")
+check(seo_reach.first_load() in pages["spaceengine-in-the-browser/index.html"].body and "MB (measured " in seo_reach.first_load(), "the first load is the registry's measurement")
+src = (ROOT / "scripts/seo_reach.py").read_text(encoding="utf-8")
+check(not re.search(r"\b17,000\b|\b1\.9 MB\b|\b31 trips\b|\b51 exoplanet", src.split("def first_load")[1].split("def pages")[0].replace('"about 17,000", rounded', "")),
+      "no count of ours typed into the comparisons")
+# What 2.0.0 itself ships is not listed as another product's alone.
+se = pages["spaceengine-alternative-mac/index.html"].body
+theirs = se.split("does more deeply</h2>")[1].split("</ul>")[0] if "does more deeply</h2>" in se else ""
+check(theirs and not re.search(r"gamepad|video|dome|360|Doppler", theirs, re.I) and "SteamVR" in theirs and "Newtonian" in theirs, "SpaceEngine's list: what it still does that 2.0.0 does not")
+check("Windows PC with a dedicated graphics card" in theirs and "in a browser" in theirs, "with the counterpoint")
+for path in ("space-simulator-on-phone", "solar-system-scope-alternative"):
+    check("paper model" not in pages[f"{path}/index.html"].body, f"{path}: paper models are no longer theirs alone")
+check("Standing on real terrain" not in pages["live-satellite-tracker-3d/index.html"].body and "anywhere on Mars" in pages["live-satellite-tracker-3d/index.html"].body,
+      "Cosmoscope: anywhere on Mars, against our landing sites")
 
 # --- the release job -----------------------------------------------------------------------------------------------
 jobs = creator_clips.plan([{"id": "moon-phases", "title": "Moon phases"}], "1920x1080", "x")

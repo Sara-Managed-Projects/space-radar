@@ -21,6 +21,7 @@ Object.assign(COPY, {
       'real-juno-ganymede': 'Juno passing Ganymede',
       'real-cassini-saturn': 'Saturn’s radio',
       'real-insight-impact': 'a meteoroid striking Mars',
+      'real-insight-wind': 'the wind on Mars',
       'real-perseverance-dust-devil': 'a dust devil on Mars',
     },
   },

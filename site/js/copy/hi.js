@@ -5317,6 +5317,7 @@ Object.assign(COPY, {
       "real-juno-ganymede": "गैनिमीड के पास से गुज़रता जूनो",
       "real-cassini-saturn": "शनि का रेडियो",
       "real-insight-impact": "मंगल से टकराता एक उल्कापिंड",
+      "real-insight-wind": "मंगल पर हवा",
       "real-perseverance-dust-devil": "मंगल पर एक धूल का बवंडर"
     }
   }
