@@ -1100,11 +1100,17 @@ function buildOneWeb() {
  */
 const STARLINK = {
   // [along the span, along the hinge]. THE ARRAY HANGS OFF THE LONG EDGE: SpaceX's v2 Mini figures
-  // only close that way -- (30 - 2.7) / 2 = 13.65 m of array, and 13.65 x 3.85 m is the 52.5 m^2
-  // Spaceflight Now quotes for each. Drawn off the short edge, as this was, the array came out
+  // only close that way -- (30 - 2.7) / 2 = 13.65 m of array with its stand-off, 52.5 m^2 of cells
+  // each (Spaceflight Now; the filing's sizes are below). Drawn off the short edge, as this was, the array came out
   // 4.2 m wide on a 2.7 m edge and 54 m^2. v1.5's numbers are still this project's own (above).
   v1: { span: 9, chassis: [1.4, 2.8], arrays: 1, arrayWidth: 2.6, panels: 12 },
-  v2: { span: 30, chassis: [2.7, 4.1], arrays: 2, arrayWidth: 3.85, panels: 10 },
+  // b200-m1-mega: the v2 array is 4.1 m wide, as long as the chassis edge it hangs from. Two
+  // numbers in the literature agree on it: SpaceX's FCC filing (quoted as "two solar arrays 12.8 meters
+  // long") and the areas Mallama et al. (arXiv 2306.06657) print from it, 11.07 m^2 for the antenna panel
+  // and 104.96 m^2 for the two arrays: 4.1 x 2.7 = 11.07 and 2 x 4.1 x 12.8 = 104.96, to the hundredth.
+  // segWing's yoke (6% of the length, 0.82 m here) is the stand-off the arrays fly at on their pantographs,
+  // so the cells run 12.83 m: the filing's 12.8. The width was 3.85 (derived from the press's 52.5 m^2).
+  v2: { span: 30, chassis: [2.7, 4.1], arrays: 2, arrayWidth: 4.1, panels: 10 },
 };
 // THE ARRAY LENGTH IS DERIVED FROM THE SPAN, not written beside it: (span - chassis) / arrays.
 for (const s of Object.values(STARLINK)) s.array = [(s.span - s.chassis[0]) / s.arrays, s.arrayWidth];
