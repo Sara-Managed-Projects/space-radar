@@ -1,0 +1,215 @@
+# What is inside each world the cutaway opens (forge #144, scene/cutaway.js, ui/cutaway.js).
+#
+# scripts/gen_interiors_js.py mirrors this into site/js/data/interiors.js (the browser cannot read
+# YAML), refuses a stale mirror with --check, and refuses a file that breaks the rules below.
+#
+# ONE ROW PER WORLD, ONE ROW PER LAYER, TOP DOWN. A layer is a shell between two depths below the
+# mean surface, in km. The first starts at 0, each starts where the one above it ends, and the last
+# ends at the centre (`radius_km`, the mean radius scene/worlds.js draws the world at). The cutaway
+# draws the layers at exactly these depths; only their colours are a choice (ui/cutaway.js KIND_COLOUR,
+# illustrative, and the panel says so).
+#
+# EVERY LAYER SAYS HOW ITS DEPTH IS KNOWN, in the map's own three words (docs/design-language.md):
+#   measured    seen directly: a seismic discontinuity, a reflection, a measured libration or tide
+#   modelled    a model fitted to measurements (gravity, moment of inertia, oscillation frequencies)
+#               puts it there; other fits move it
+#   inferred    the layer is required by something measured (a magnetic induction signal, a tidal
+#               Love number, a gravity field), but its depth is an estimate
+# and its source, which the panel shows on hover and focus.
+#
+# THE PROBE'S NUMBERS. Each layer carries pressure (GPa), temperature (K) and density (g/cm3) at its
+# top and its bottom, as [top, bottom], to one or two significant figures from the world's `model`.
+# ui/cutaway.js probeAt() reads between the two: straight in depth for temperature and density,
+# geometrically for pressure and any value that spans more than a factor of ten (the Sun). `values`
+# says how each quantity is known for that world; temperatures inside planets are never measured.
+# Where a source gives a range, the middle of it is written and the range is in a comment.
+version: 1
+
+worlds:
+  - id: earth
+    radius_km: 6371
+    model: "PREM, the Preliminary Reference Earth Model"
+    source: {name: "Dziewonski & Anderson 1981, Phys. Earth Planet. Inter. 25, 297", url: "https://doi.org/10.1016/0031-9201(81)90046-7"}
+    values: {pressure: modelled, density: modelled, temperature: inferred}
+    # Temperatures: Anzellini et al. 2013 (Science 340, 464) melt iron at 6230 +- 500 K at the
+    # inner-core boundary's 330 GPa; the core-mantle boundary is written 4000 K (3500-4500 in reviews).
+    layers:
+      - {id: crust, kind: crust, top_km: 0, bottom_km: 24.4, cls: measured, source: "PREM: the Mohorovičić discontinuity, a global average (5-70 km in places)", p_gpa: [0, 0.6], t_k: [288, 900], rho: [2.6, 2.9]}
+      - {id: upper-mantle, kind: upper-mantle, top_km: 24.4, bottom_km: 670, cls: measured, source: "PREM: the 670 km seismic discontinuity", p_gpa: [0.6, 23.8], t_k: [900, 1900], rho: [3.38, 3.99]}
+      - {id: lower-mantle, kind: lower-mantle, top_km: 670, bottom_km: 2891, cls: measured, source: "PREM: the core-mantle boundary, from core-reflected seismic waves", p_gpa: [23.8, 135.8], t_k: [1900, 4000], rho: [4.38, 5.57]}
+      - {id: outer-core, kind: outer-core, top_km: 2891, bottom_km: 5150, cls: measured, source: "PREM: liquid, because it carries no shear waves", p_gpa: [135.8, 328.9], t_k: [4000, 6000], rho: [9.90, 12.17]}
+      - {id: inner-core, kind: inner-core, top_km: 5150, bottom_km: 6371, cls: measured, source: "PREM: the inner-core boundary (Lehmann 1936), solid from its shear-wave phases", p_gpa: [328.9, 363.9], t_k: [6000, 6200], rho: [12.76, 13.09]}
+
+  - id: mars
+    radius_km: 3389.5
+    model: "InSight seismology: a liquid core under a molten silicate layer"
+    source: {name: "Samuel et al. 2023, Nature 622, 712; Khan et al. 2023, Nature 622, 718", url: "https://doi.org/10.1038/s41586-023-06601-8"}
+    values: {pressure: modelled, density: modelled, temperature: inferred}
+    # Stähler et al. 2021 (Science 373, 443) first put the core's edge at 1830 +- 40 km radius; the
+    # 2023 papers found a molten silicate layer above it, which the 2021 reflection had been, and a
+    # core of 1650 +- 20 km (Samuel) or 1675 +- 30 km (Khan). The core's density is Irving et al. 2023
+    # (PNAS 120, e2217090120), from waves that crossed it.
+    layers:
+      - {id: crust, kind: crust, top_km: 0, bottom_km: 50, cls: inferred, source: "Wieczorek et al. 2022, JGR Planets 127: 42-56 km on average, from InSight's 24-72 km under the lander and gravity", p_gpa: [0.0006, 0.6], t_k: [210, 800], rho: [2.6, 2.9]}
+      - {id: mantle, kind: mantle, top_km: 50, bottom_km: 1540, cls: measured, source: "Khan et al. 2021, Science 373, 434: InSight's seismic velocities", p_gpa: [0.6, 19], t_k: [800, 1900], rho: [3.3, 4.0]}
+      - {id: molten-layer, kind: molten-silicate, top_km: 1540, bottom_km: 1740, cls: modelled, source: "Samuel et al. 2023; Khan et al. 2023: about 150-200 km of molten silicate at the mantle's base", p_gpa: [19, 21], t_k: [1900, 2000], rho: [4.1, 4.2]}
+      - {id: core, kind: liquid-core, top_km: 1740, bottom_km: 3389.5, cls: measured, source: "Samuel et al. 2023: radius 1650 +- 20 km; Irving et al. 2023: liquid iron alloy, from core-crossing waves", p_gpa: [21, 40], t_k: [2000, 2300], rho: [6.2, 6.6]}
+
+  - id: moon
+    radius_km: 1737.4
+    model: "GRAIL gravity and the Apollo seismic network, re-read"
+    source: {name: "Wieczorek et al. 2013, Science 339, 671; Weber et al. 2011, Science 331, 309; Briaud et al. 2023, Nature 617, 743", url: "https://doi.org/10.1126/science.1231530"}
+    values: {pressure: modelled, density: modelled, temperature: inferred}
+    layers:
+      - {id: crust, kind: crust, top_km: 0, bottom_km: 40, cls: measured, source: "Wieczorek et al. 2013 (GRAIL): 34-43 km on average, 2550 kg/m3", p_gpa: [0, 0.2], t_k: [250, 600], rho: [2.55, 2.55]}
+      - {id: mantle, kind: mantle, top_km: 40, bottom_km: 1257, cls: measured, source: "Weber et al. 2011: Apollo seismograms, stacked", p_gpa: [0.2, 4.5], t_k: [600, 1600], rho: [3.3, 3.4]}
+      - {id: partial-melt, kind: partial-melt, top_km: 1257, bottom_km: 1407, cls: modelled, source: "Weber et al. 2011: a partially molten layer, 480 km in radius at its top", p_gpa: [4.5, 4.8], t_k: [1600, 1650], rho: [3.4, 3.4]}
+      - {id: outer-core, kind: outer-core, top_km: 1407, bottom_km: 1479, cls: modelled, source: "Weber et al. 2011: a fluid outer core, 330 km in radius", p_gpa: [4.8, 5.0], t_k: [1650, 1700], rho: [5.1, 5.1]}
+      - {id: inner-core, kind: inner-core, top_km: 1479, bottom_km: 1737.4, cls: inferred, source: "Briaud et al. 2023: a solid inner core 258 +- 40 km in radius, 7800 kg/m3", p_gpa: [5.0, 5.2], t_k: [1700, 1750], rho: [7.8, 7.8]}
+
+  - id: mercury
+    radius_km: 2439.7
+    model: "MESSENGER gravity, spin state and topography"
+    source: {name: "Hauck et al. 2013, JGR Planets 118, 1204; Genova et al. 2019, GRL 46, 3625", url: "https://doi.org/10.1002/jgre.20091"}
+    values: {pressure: modelled, density: modelled, temperature: inferred}
+    layers:
+      - {id: crust, kind: crust, top_km: 0, bottom_km: 35, cls: modelled, source: "Padovan et al. 2015, GRL 42, 1029: 35 +- 18 km", p_gpa: [0, 0.4], t_k: [440, 800], rho: [2.9, 2.9]}
+      - {id: mantle, kind: mantle, top_km: 35, bottom_km: 420, cls: modelled, source: "Hauck et al. 2013: the core's edge at 2020 +- 30 km radius", p_gpa: [0.4, 5.5], t_k: [800, 1900], rho: [3.2, 3.4]}
+      - {id: outer-core, kind: outer-core, top_km: 420, bottom_km: 1440, cls: inferred, source: "Margot et al. 2012, JGR 117: liquid, from the measured libration", p_gpa: [5.5, 30], t_k: [1900, 2100], rho: [6.9, 7.6]}
+      - {id: inner-core, kind: inner-core, top_km: 1440, bottom_km: 2439.7, cls: inferred, source: "Genova et al. 2019: a solid inner core about 1000 km in radius", p_gpa: [30, 40], t_k: [2100, 2200], rho: [8.5, 9.0]}
+
+  - id: venus
+    radius_km: 6051.8
+    model: "an Earth-like model fitted to Venus's mass, radius and tidal Love number"
+    source: {name: "Aitta 2012, Icarus 218, 967; Konopliv & Yoder 1996, GRL 23, 1857", url: "https://doi.org/10.1016/j.icarus.2012.01.007"}
+    values: {pressure: modelled, density: modelled, temperature: inferred}
+    # No seismometer has worked on Venus. The tidal Love number k2 = 0.295 (Konopliv & Yoder 1996,
+    # Magellan and Pioneer Venus) says the core is at least partly liquid; every depth is a model's.
+    layers:
+      - {id: crust, kind: crust, top_km: 0, bottom_km: 30, cls: inferred, source: "Aitta 2012: about 30 km, by analogy with Earth and from topography", p_gpa: [0.0092, 0.8], t_k: [737, 1000], rho: [2.9, 2.9]}
+      - {id: mantle, kind: mantle, top_km: 30, bottom_km: 2940, cls: inferred, source: "Aitta 2012: the core's edge near 3110 km radius", p_gpa: [0.8, 125], t_k: [1000, 3500], rho: [3.4, 5.5]}
+      - {id: core, kind: liquid-core, top_km: 2940, bottom_km: 6051.8, cls: inferred, source: "Konopliv & Yoder 1996: at least partly liquid, from k2", p_gpa: [125, 280], t_k: [3500, 5000], rho: [9.5, 12.5]}
+
+  - id: jupiter
+    radius_km: 69911
+    model: "Juno's gravity field: a dilute core, heavy elements mixed far up into the hydrogen"
+    source: {name: "Wahl et al. 2017, GRL 44, 4649; Militzer et al. 2022, Planet. Sci. J. 3, 185", url: "https://doi.org/10.1002/2017GL073160"}
+    values: {pressure: modelled, density: modelled, temperature: modelled}
+    # Depths are fractions of the mean radius. The dilute core's edge is written at 0.6 R (Militzer
+    # et al. 2022 fit it at about 0.6-0.7 R); the turn from molecular to metallic hydrogen at 0.83 R
+    # (about 150 GPa in the same models). Every number is approximate.
+    layers:
+      - {id: molecular, kind: molecular, top_km: 0, bottom_km: 11900, cls: modelled, source: "Militzer et al. 2022: molecular hydrogen and helium down to about 0.83 R", p_gpa: [0.0001, 150], t_k: [165, 6000], rho: [0.0002, 0.6]}
+      - {id: metallic, kind: metallic, top_km: 11900, bottom_km: 27960, cls: modelled, source: "Militzer et al. 2022: liquid metallic hydrogen", p_gpa: [150, 1500], t_k: [6000, 15000], rho: [0.6, 3.0]}
+      - {id: dilute-core, kind: dilute-core, top_km: 27960, bottom_km: 69911, cls: inferred, source: "Wahl et al. 2017; Militzer et al. 2022: a dilute core, required by Juno's measured gravity", p_gpa: [1500, 4000], t_k: [15000, 20000], rho: [3.0, 5.0]}
+
+  - id: saturn
+    radius_km: 58232
+    model: "Cassini's Grand Finale gravity and the waves Saturn's oscillations raise in its rings"
+    source: {name: "Iess et al. 2019, Science 364, eaat2965; Mankovich & Fuller 2021, Nature Astronomy 5, 1103", url: "https://doi.org/10.1038/s41550-021-01448-3"}
+    values: {pressure: modelled, density: modelled, temperature: modelled}
+    # Mankovich & Fuller 2021 read a stably stratified, diffuse core of about 17 Earth masses,
+    # reaching some 60 % of the radius, from the ring waves Cassini measured. Every number is approximate.
+    layers:
+      - {id: molecular, kind: molecular, top_km: 0, bottom_km: 23290, cls: modelled, source: "Iess et al. 2019: molecular hydrogen and helium, with helium rain near its base", p_gpa: [0.0001, 150], t_k: [134, 7000], rho: [0.0002, 1.0]}
+      - {id: dilute-core, kind: dilute-core, top_km: 23290, bottom_km: 58232, cls: inferred, source: "Mankovich & Fuller 2021: a diffuse core to about 0.6 R, from ring seismology", p_gpa: [150, 1000], t_k: [7000, 12000], rho: [1.0, 5.0]}
+
+  - id: uranus
+    radius_km: 25362
+    model: "three-layer models fitted to Voyager 2's gravity harmonics"
+    source: {name: "Nettelmann et al. 2013, Planet. Space Sci. 77, 143; Helled et al. 2010, Icarus 210, 446", url: "https://doi.org/10.1016/j.pss.2012.06.019"}
+    values: {pressure: modelled, density: modelled, temperature: modelled}
+    # Only J2 and J4 are measured, and many interiors fit them: the boundaries are one family's.
+    layers:
+      - {id: envelope, kind: molecular, top_km: 0, bottom_km: 5070, cls: modelled, source: "Nettelmann et al. 2013: a hydrogen-helium envelope to about 0.8 R", p_gpa: [0.0001, 20], t_k: [76, 2500], rho: [0.0004, 0.5]}
+      - {id: ice-mantle, kind: ice-mantle, top_km: 5070, bottom_km: 20290, cls: modelled, source: "Nettelmann et al. 2013: a hot dense fluid of water, ammonia and methane", p_gpa: [20, 600], t_k: [2500, 5000], rho: [1.0, 3.0]}
+      - {id: rock-core, kind: rock-core, top_km: 20290, bottom_km: 25362, cls: modelled, source: "Nettelmann et al. 2013: rock and iron, about 0.2 R", p_gpa: [600, 800], t_k: [5000, 5500], rho: [4.0, 9.0]}
+
+  - id: neptune
+    radius_km: 24622
+    model: "three-layer models fitted to Voyager 2's gravity harmonics"
+    source: {name: "Nettelmann et al. 2013, Planet. Space Sci. 77, 143; Helled et al. 2010, Icarus 210, 446", url: "https://doi.org/10.1016/j.pss.2012.06.019"}
+    values: {pressure: modelled, density: modelled, temperature: modelled}
+    layers:
+      - {id: envelope, kind: molecular, top_km: 0, bottom_km: 3690, cls: modelled, source: "Nettelmann et al. 2013: a hydrogen-helium envelope to about 0.85 R", p_gpa: [0.0001, 20], t_k: [72, 2500], rho: [0.0004, 0.5]}
+      - {id: ice-mantle, kind: ice-mantle, top_km: 3690, bottom_km: 18470, cls: modelled, source: "Nettelmann et al. 2013: a hot dense fluid of water, ammonia and methane", p_gpa: [20, 600], t_k: [2500, 5400], rho: [1.0, 3.0]}
+      - {id: rock-core, kind: rock-core, top_km: 18470, bottom_km: 24622, cls: modelled, source: "Nettelmann et al. 2013: rock and iron, about 0.25 R", p_gpa: [600, 800], t_k: [5400, 6000], rho: [4.0, 9.0]}
+
+  - id: pluto
+    radius_km: 1188.3
+    model: "New Horizons: Sputnik Planitia's place and the lack of compression features"
+    source: {name: "Nimmo et al. 2016, Nature 540, 94; McKinnon et al. 2017, Icarus 287, 2", url: "https://doi.org/10.1038/nature20148"}
+    values: {pressure: modelled, density: modelled, temperature: inferred}
+    layers:
+      - {id: ice-shell, kind: ice-shell, top_km: 0, bottom_km: 200, cls: inferred, source: "Nimmo et al. 2016: a water-ice shell of the order of 100-300 km", p_gpa: [0, 0.12], t_k: [40, 260], rho: [0.95, 0.95]}
+      - {id: ocean, kind: ocean, top_km: 200, bottom_km: 300, cls: inferred, source: "Nimmo et al. 2016: an ocean about 100 km deep, required by Sputnik Planitia's place", p_gpa: [0.12, 0.18], t_k: [260, 270], rho: [1.05, 1.05]}
+      - {id: rock-core, kind: rock-core, top_km: 300, bottom_km: 1188.3, cls: modelled, source: "McKinnon et al. 2017: a rocky core near 850-900 km radius, from the mean density 1.854 g/cm3", p_gpa: [0.18, 1.0], t_k: [270, 600], rho: [2.8, 3.0]}
+
+  - id: io
+    radius_km: 1821.5
+    model: "Galileo's gravity field and Juno's measured tides"
+    source: {name: "Anderson et al. 2001, JGR 106, 32963; Park et al. 2025, Nature 638, 69", url: "https://doi.org/10.1029/2000JE001367"}
+    values: {pressure: modelled, density: modelled, temperature: inferred}
+    # Park et al. (Juno and Galileo tides) found no shallow global magma ocean: the mantle is partly
+    # molten, not an ocean. Anderson et al. 2001 put the core between 650 and 950 km in radius.
+    layers:
+      - {id: lithosphere, kind: crust, top_km: 0, bottom_km: 40, cls: inferred, source: "Anderson et al. 2001: a rigid outer shell some tens of km thick", p_gpa: [0, 0.2], t_k: [110, 1400], rho: [3.0, 3.0]}
+      - {id: mantle, kind: mantle, top_km: 40, bottom_km: 920, cls: modelled, source: "Park et al. 2025: a partly molten silicate mantle, no shallow magma ocean", p_gpa: [0.2, 5], t_k: [1400, 1700], rho: [3.3, 3.5]}
+      - {id: core, kind: liquid-core, top_km: 920, bottom_km: 1821.5, cls: modelled, source: "Anderson et al. 2001: iron and iron sulphide, about 900 km in radius", p_gpa: [5, 7], t_k: [1700, 1900], rho: [5.2, 5.4]}
+
+  - id: europa
+    radius_km: 1560.8
+    model: "Galileo's gravity field and the magnetic field Jupiter induces in a salty ocean"
+    source: {name: "Anderson et al. 1998, Science 281, 2019; Kivelson et al. 2000, Science 289, 1340", url: "https://doi.org/10.1126/science.289.5483.1340"}
+    values: {pressure: modelled, density: modelled, temperature: inferred}
+    layers:
+      - {id: ice-shell, kind: ice-shell, top_km: 0, bottom_km: 25, cls: inferred, source: "estimates from a few km to over 30 km; 25 km written", p_gpa: [0, 0.03], t_k: [100, 270], rho: [0.92, 0.92]}
+      - {id: ocean, kind: ocean, top_km: 25, bottom_km: 125, cls: inferred, source: "Kivelson et al. 2000: a salty ocean, required by the induced magnetic field; water layer 80-170 km (Anderson et al. 1998)", p_gpa: [0.03, 0.15], t_k: [270, 275], rho: [1.03, 1.05]}
+      - {id: rock-mantle, kind: rock-mantle, top_km: 125, bottom_km: 960, cls: modelled, source: "Anderson et al. 1998: a rocky mantle", p_gpa: [0.15, 3], t_k: [275, 1500], rho: [3.0, 3.5]}
+      - {id: core, kind: iron-core, top_km: 960, bottom_km: 1560.8, cls: modelled, source: "Anderson et al. 1998: an iron core about 600 km in radius", p_gpa: [3, 5], t_k: [1500, 1700], rho: [5.5, 6.0]}
+
+  - id: ganymede
+    radius_km: 2631.2
+    model: "Galileo's gravity field, its own magnetic field and Hubble's view of its aurorae"
+    source: {name: "Anderson et al. 1996, Nature 384, 541; Saur et al. 2015, JGR Space Physics 120, 1715", url: "https://doi.org/10.1002/2014JA020778"}
+    values: {pressure: modelled, density: modelled, temperature: inferred}
+    layers:
+      - {id: ice-shell, kind: ice-shell, top_km: 0, bottom_km: 150, cls: inferred, source: "Saur et al. 2015: about 150 km of ice above the ocean", p_gpa: [0, 0.2], t_k: [110, 270], rho: [0.93, 0.93]}
+      - {id: ocean, kind: ocean, top_km: 150, bottom_km: 250, cls: inferred, source: "Saur et al. 2015: a salty ocean, from the rocking of its aurorae", p_gpa: [0.2, 0.35], t_k: [270, 275], rho: [1.1, 1.1]}
+      - {id: hp-ice, kind: hp-ice, top_km: 250, bottom_km: 800, cls: modelled, source: "models of Galileo's gravity: ice under pressure", p_gpa: [0.35, 1.5], t_k: [275, 300], rho: [1.2, 1.4]}
+      - {id: rock-mantle, kind: rock-mantle, top_km: 800, bottom_km: 1930, cls: modelled, source: "Anderson et al. 1996: a rocky mantle", p_gpa: [1.5, 5], t_k: [300, 1500], rho: [3.0, 3.5]}
+      - {id: core, kind: iron-core, top_km: 1930, bottom_km: 2631.2, cls: modelled, source: "Anderson et al. 1996: an iron core of 400-1300 km radius; Kivelson et al. 1996: its own magnetic field says it is partly liquid", p_gpa: [5, 8], t_k: [1500, 1800], rho: [5.5, 8.0]}
+
+  - id: enceladus
+    radius_km: 252.1
+    model: "Cassini's gravity field and Enceladus's measured libration"
+    source: {name: "Thomas et al. 2016, Icarus 264, 37; Čadek et al. 2016, GRL 43, 5653", url: "https://doi.org/10.1002/2016GL068634"}
+    values: {pressure: modelled, density: modelled, temperature: inferred}
+    layers:
+      - {id: ice-shell, kind: ice-shell, top_km: 0, bottom_km: 20, cls: inferred, source: "Čadek et al. 2016: 18-22 km on average, under 5 km at the south pole", p_gpa: [0, 0.0025], t_k: [75, 273], rho: [0.93, 0.93]}
+      - {id: ocean, kind: ocean, top_km: 20, bottom_km: 48, cls: inferred, source: "Thomas et al. 2016: global, required by the libration; Čadek et al. 2016: 26-31 km deep", p_gpa: [0.0025, 0.006], t_k: [273, 273], rho: [1.03, 1.03]}
+      - {id: rock-core, kind: rock-core, top_km: 48, bottom_km: 252.1, cls: modelled, source: "Čadek et al. 2016: a porous rock core about 185-205 km in radius", p_gpa: [0.006, 0.05], t_k: [273, 400], rho: [2.4, 2.5]}
+
+  - id: titan
+    radius_km: 2574.76
+    model: "Cassini's gravity field and the tides Saturn raises in Titan"
+    source: {name: "Iess et al. 2010, Science 327, 1367; Iess et al. 2012, Science 337, 457", url: "https://doi.org/10.1126/science.1219631"}
+    values: {pressure: modelled, density: modelled, temperature: inferred}
+    layers:
+      - {id: ice-shell, kind: ice-shell, top_km: 0, bottom_km: 100, cls: inferred, source: "estimates of 50-200 km; 100 km written", p_gpa: [0.00015, 0.13], t_k: [94, 260], rho: [0.93, 0.93]}
+      - {id: ocean, kind: ocean, top_km: 100, bottom_km: 300, cls: inferred, source: "Iess et al. 2012: a global ocean, required by the measured tidal Love number k2 = 0.59", p_gpa: [0.13, 0.4], t_k: [260, 270], rho: [1.15, 1.2]}
+      - {id: hp-ice, kind: hp-ice, top_km: 300, bottom_km: 560, cls: modelled, source: "models of Cassini's gravity: ice under pressure", p_gpa: [0.4, 1.0], t_k: [270, 300], rho: [1.3, 1.4]}
+      - {id: rock-core, kind: hydrated-core, top_km: 560, bottom_km: 2574.76, cls: modelled, source: "Iess et al. 2010: moment of inertia 0.34, so only partly separated: hydrated rock mixed with ice", p_gpa: [1.0, 4.5], t_k: [300, 1000], rho: [2.5, 2.7]}
+
+  - id: sun
+    radius_km: 695700
+    model: "helioseismology and the standard solar model (Model S)"
+    source: {name: "Christensen-Dalsgaard et al. 1991, ApJ 378, 413; Basu & Antia 1997, MNRAS 287, 189; Christensen-Dalsgaard et al. 1996, Science 272, 1286", url: "https://doi.org/10.1126/science.272.5266.1286"}
+    values: {pressure: modelled, density: modelled, temperature: modelled}
+    # The convection zone's base is measured from the Sun's oscillation frequencies at 0.713 R
+    # (Basu & Antia 1997: 0.713 +- 0.001). The core's edge, 0.25 R, is where Model S makes 99 % of
+    # the power; it is a model's line, not a boundary anything reflects from. Values approximate.
+    layers:
+      - {id: convective, kind: convective, top_km: 0, bottom_km: 199700, cls: measured, source: "Basu & Antia 1997: the base of the convection zone at 0.713 R, from oscillation frequencies", p_gpa: [0.00001, 5800], t_k: [5772, 2200000], rho: [0.0000002, 0.2]}
+      - {id: radiative, kind: radiative, top_km: 199700, bottom_km: 521800, cls: modelled, source: "Christensen-Dalsgaard et al. 1996 (Model S): energy carried by light", p_gpa: [5800, 2800000], t_k: [2200000, 8000000], rho: [0.2, 30]}
+      - {id: core, kind: solar-core, top_km: 521800, bottom_km: 695700, cls: modelled, source: "Christensen-Dalsgaard et al. 1996 (Model S): hydrogen fused to helium inside 0.25 R", p_gpa: [2800000, 25000000], t_k: [8000000, 15700000], rho: [30, 150]}

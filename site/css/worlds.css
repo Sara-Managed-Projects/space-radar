@@ -1,0 +1,320 @@
+/* css/worlds.css -- the Size and Distance sliders (ui/orrery.js), the cutaway panel (ui/cutaway.js) and the
+   heliosphere's labels and legend (scene/heliosphere.js), forge #144, #145, #148. Linked by those modules on
+   their first use (ui/latercss.js), never by index.html: none of it is a first visit's bytes. Tokens only
+   (css/ui.css): the type ladder, the spacing, the glass, the one interactive colour. */
+
+/* --- the sliders, in the Planets tab (and so in the phone's sheet) ------------------------------------ */
+.sr-orrery__row {
+  margin: var(--sp-2) 0 0;
+}
+
+.sr-orrery__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.sr-orrery__label {
+  font-size: var(--sr-fs-label);
+  color: var(--sr-text);
+}
+
+.sr-orrery__value {
+  font-size: var(--sr-fs-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+}
+
+/* 44 px tall to the touch (the guide's target), the track drawn thin inside it. */
+.sr-orrery__range,
+.sr-cutaway__range {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+  accent-color: var(--sr-ember);
+  touch-action: pan-y;
+  cursor: pointer;
+}
+
+.sr-orrery__range:disabled { opacity: 0.45; cursor: default; }
+
+.sr-orrery__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin: var(--sp-2) 0 0;
+}
+
+.sr-orrery__preset {
+  min-height: 44px;
+}
+
+/* --- the scale badge's second line, when the sliders draw the view ---------------------------------- */
+.sr-scalebadge:has(.sr-scalebadge__sub:not([hidden])) {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: var(--sp-1);
+  padding-bottom: var(--sp-1);
+}
+
+.sr-scalebadge__sub {
+  font-size: var(--sr-fs-sm);
+  line-height: 16px;
+  color: var(--sr-text-dim);
+  white-space: nowrap;
+}
+
+.sr-scalebadge__sub[hidden] { display: none; }
+
+/* --- the cutaway's panel ------------------------------------------------------------------------------ */
+.sr-cutaway {
+  position: fixed;
+  top: calc(var(--sr-inset) + env(safe-area-inset-top, 0px) + 56px);
+  right: calc(var(--sr-inset) + env(safe-area-inset-right, 0px));
+  z-index: var(--sr-z-controls);
+  display: block;
+  width: 320px;
+  max-height: calc(100vh - 2 * var(--sr-inset) - 112px);
+  padding: var(--sp-3);
+  overflow: auto;
+  color: var(--sr-text);
+  background: var(--sr-glass-strong);
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius);
+}
+
+.sr-cutaway:focus { outline: none; }
+
+.sr-cutaway__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.sr-cutaway__title {
+  margin: 0;
+  font-size: var(--sr-fs-body);
+  font-weight: 600;
+}
+
+.sr-cutaway__close {
+  min-width: 44px;
+  min-height: 44px;
+  font-size: var(--sr-fs-glyph);
+  line-height: 1;
+}
+
+.sr-cutaway__model {
+  margin: var(--sp-1) 0 var(--sp-2);
+  font-size: var(--sr-fs-sm);
+  line-height: 18px;
+  color: var(--sr-text-dim);
+}
+
+.sr-cutaway__src { color: var(--sr-text); }
+
+.sr-cutaway__layers {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sr-cutaway__layerbtn {
+  display: grid;
+  grid-template-columns: 14px 1fr auto;
+  grid-template-rows: auto auto;
+  column-gap: var(--sp-2);
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding: var(--sp-1) var(--sp-2);
+  font: inherit;
+  text-align: left;
+  color: var(--sr-text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+}
+
+.sr-cutaway__layerbtn.is-probed { border-color: var(--sr-line-strong); background: var(--sr-ember-soft); }
+
+@media (hover: hover) {
+  .sr-cutaway__layerbtn:hover { border-color: var(--sr-line-strong); }
+}
+
+.sr-cutaway__swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  grid-row: span 2;
+}
+
+.sr-cutaway__name { font-size: var(--sr-fs-label); }
+
+.sr-cutaway__range,
+.sr-cutaway__cls {
+  font-size: var(--sr-fs-sm);
+  color: var(--sr-text-dim);
+}
+
+.sr-cutaway__layerbtn .sr-cutaway__range { grid-column: 2; min-height: 0; font-variant-numeric: tabular-nums; }
+
+.sr-cutaway__cls { grid-row: 1; grid-column: 3; text-align: right; }
+
+.sr-cutaway__probe { margin: var(--sp-3) 0 0; }
+
+.sr-cutaway__probelabel { font-size: var(--sr-fs-label); }
+
+.sr-cutaway__read {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px var(--sp-3);
+  margin: var(--sp-1) 0 0;
+  font-size: var(--sr-fs-sm);
+  line-height: 18px;
+}
+
+.sr-cutaway__read dt { color: var(--sr-text-dim); }
+
+.sr-cutaway__read dd { margin: 0; font-variant-numeric: tabular-nums; }
+
+/* On a phone: under the top bar, the full width less the gutter, its list scrolling inside a fixed height
+   so the opened world stays in the band between it and the sheet. */
+html.sr-phone .sr-cutaway {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2));
+  right: max(var(--sp-4), env(safe-area-inset-right, 0px));
+  left: max(var(--sp-4), env(safe-area-inset-left, 0px));
+  width: auto;
+  max-height: 36vh;
+}
+
+html.sr-phone .sr-cutaway__layers {
+  max-height: 120px;
+  overflow: auto;
+}
+
+html.sr-clean .sr-cutaway,
+html.sr-trip-mode .sr-cutaway,
+html.sr-sharing .sr-cutaway { display: none; }
+
+/* --- the heliosphere: labels in the scene, one chip, its legend ----------------------------------------- */
+.sr-helio-labels {
+  position: fixed;
+  inset: 0;
+  z-index: var(--sr-z-labels);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.sr-helio-labels[hidden] { display: none; }
+
+.sr-helio-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: var(--sr-fs-sm);
+  line-height: 18px;
+  color: var(--sr-text);
+  white-space: nowrap;
+  text-shadow: 0 0 3px #000, 0 0 6px #000;
+}
+
+.sr-helio-label[hidden] { display: none; }
+
+.sr-helio-label.is-motion { color: #9fd8ff; }
+
+.sr-helio-chip {
+  position: fixed;
+  right: calc(var(--sr-inset) + env(safe-area-inset-right, 0px));
+  bottom: calc(var(--sr-inset) + env(safe-area-inset-bottom, 0px) + 56px);
+  z-index: var(--sr-z-controls);
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  color: var(--sr-text);
+  background: var(--sr-glass-strong);
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+}
+
+.sr-helio-chip[hidden] { display: none; }
+
+.sr-helio-chip[aria-expanded='true'] { border-color: var(--sr-ember); }
+
+.sr-helio-legend {
+  position: fixed;
+  right: calc(var(--sr-inset) + env(safe-area-inset-right, 0px));
+  bottom: calc(var(--sr-inset) + env(safe-area-inset-bottom, 0px) + 108px);
+  z-index: var(--sr-z-controls);
+  width: 340px;
+  max-height: 60vh;
+  padding: var(--sp-3);
+  overflow: auto;
+  color: var(--sr-text);
+  background: var(--sr-glass-strong);
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius);
+}
+
+.sr-helio-legend[hidden] { display: none; }
+
+.sr-helio-legend__rows { margin: 0; padding: 0; list-style: none; }
+
+.sr-helio-legend__row {
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  gap: var(--sp-2);
+  margin: var(--sp-2) 0 0;
+  font-size: var(--sr-fs-sm);
+  line-height: 18px;
+}
+
+.sr-helio-legend__row .sr-cutaway__swatch { margin-top: 2px; grid-row: auto; }
+
+/* On a phone the chip and its legend sit under the top bar, clear of the sheet. */
+html.sr-phone .sr-helio-chip {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 128px);
+  bottom: auto;
+  right: max(var(--sp-4), env(safe-area-inset-right, 0px));
+}
+
+html.sr-phone .sr-helio-legend {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 180px);
+  bottom: auto;
+  left: max(var(--sp-4), env(safe-area-inset-left, 0px));
+  right: max(var(--sp-4), env(safe-area-inset-right, 0px));
+  width: auto;
+  max-height: 44vh;
+}
+
+html.sr-clean .sr-helio-chip,
+html.sr-trip-mode .sr-helio-chip,
+html.sr-sharing .sr-helio-chip,
+html.sr-ambient .sr-helio-chip,
+html.sr-clean .sr-helio-legend,
+html.sr-sharing .sr-helio-legend { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-cutaway, .sr-helio-legend { transition: none; }
+}
+
+.sr-helio-label.is-surface { color: var(--sr-text-dim); }
+
+.sr-cutaway__layersrc {
+  margin: var(--sp-1) 0 0;
+  font-size: var(--sr-fs-sm);
+  line-height: 18px;
+  color: var(--sr-text-dim);
+}
+
+/* The phone's sheet at full height is a page: nothing of the scene's floats over it. */
+html.sr-phone[data-sheet='full'] .sr-helio-chip,
+html.sr-phone[data-sheet='full'] .sr-helio-legend,
+html.sr-phone[data-sheet='full'] .sr-cutaway { display: none; }

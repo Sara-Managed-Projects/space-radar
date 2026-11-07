@@ -1426,3 +1426,11 @@ jobs:
       - name: "bodyFixedToSpherical is its inverse, with the round trip held (public #757)"
         run: node tests/test_frames_bodyfixed_to_spherical.mjs
       # 1.8.0 tests I: end
+      # b200-f2-worlds: begin
+      - name: "the Size and Distance sliders: x1 to x2 000, true to logarithmic, moons outside their planets, the badge pinned at three positions (forge #145)"
+        run: node tests/test_orrery.mjs
+      - name: "Look inside: interiors.yaml sourced and gap-free, the depth probe's numbers, one cutaway shader for every world (forge #144)"
+        run: node tests/test_cutaway.mjs
+      - name: "the heliosphere: the Voyagers' crossings on JPL's tracks, both surfaces through them, labelled modelled (forge #148)"
+        run: node tests/test_heliosphere.mjs
+      # b200-f2-worlds: end

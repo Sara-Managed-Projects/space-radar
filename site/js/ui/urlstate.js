@@ -51,6 +51,11 @@ export const HASH_KEY = 'm';
 // `moment` (0079 C1, site/js/moments/): a mission replayed, `#moment=demo-saturn&t=162`; beside it `t` is the moment's
 // mission second, not the map's clock (bootLink and laterLink below leave the map's clock alone for it).
 export const KEYS = ['m', 'v', 'build', 'drift', 'ambient', 'autopilot', 'shuffle', 'sound', 'voice', 'captions', 'pace', 'trip', 'stop', 'present', 'at', 'go', 'event', 't', 'rate', 'stage', 'exp', 'drawn', 'p', 'imagine', 'moment', 'cam']; // 0079 C1: moment
+// b200-f2-worlds: begin (forge #144, #145) -- `cut` a world opened to its layers (`#cut=mars`, ui/cutaway.js);
+// `size` and `dist` the Planets tab's sliders (`#size=2000&dist=log`, scene/orrery.js parseSize, parseDist).
+// Written before `cam`, which stays the last key (tests/test_urlstate.mjs: a pose ends the link).
+KEYS.splice(KEYS.indexOf('cam'), 0, 'cut', 'size', 'dist');
+// b200-f2-worlds: end
 export const VERSION = '1';
 /** The release this code is (0076 W4-c). A release bumps it with CHANGELOG.md; tests/test_access.mjs holds its shape. */
 export const BUILD = '1.4.0';
