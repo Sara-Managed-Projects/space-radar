@@ -25,6 +25,7 @@ const H = await import(join(JS, 'scene/heliosphere.js'));
 const R = await import(join(JS, 'ui/heliorung.js'));
 const { stage } = await import(join(JS, 'scene/stage.js'));
 const { LADDER_RUNGS } = await import(join(JS, 'data/ladder.js'));
+const { TOURS } = await import(join(JS, 'data/tours.js'));
 
 // --- the place --------------------------------------------------------------------------------------------
 const nose = H.eclDir(H.HELIO.nose.lonDeg, H.HELIO.nose.latDeg);
@@ -99,6 +100,16 @@ const read = (rel) => readFileSync(join(JS, rel), 'utf8');
 check(/tg\.place === 'heliosphere'\) import\('\.\/heliorung\.js'\)/.test(read('ui/gamepad.js')), 'the pad\'s ladder step fetches the flight on the press');
 check(/import\('\.\/heliorung\.js'\)/.test(read('ui/explore.js')) && !/^import .*heliorung/m.test(read('ui/explore.js')), 'the Stars tab\'s row fetches it on the press, never at boot');
 check(!/^import .*heliorung/m.test(read('main.js')), 'main.js does not import it');
+
+// --- the trip stop: `narrow_fit` stands it back on an upright phone as the rung does ----------------------------
+{
+  const { narrowFitScale } = await import(join(JS, 'ui/trip.js'));
+  check(narrowFitScale(1.3, 1.6) === 1 && narrowFitScale(1.3, 1.3) === 1, 'a landscape screen keeps the stop\'s distance');
+  check(Math.abs(narrowFitScale(1.3, 390 / 844) * 300 - R.rungAu(390 / 844)) < 1e-6, 'an upright phone stands the stop back exactly as far as the rung');
+  check(narrowFitScale(1.3, 0.1) === 4 && narrowFitScale(1.3, NaN) === 1, 'never more than four times; no aspect, no change');
+  const stop = TOURS.find((x) => x.id === 'outer-solar-system').stops.find((x) => x.id === 'heliosphere');
+  check(stop && stop.narrow_fit === R.HELIO_RUNG.aspectFull, 'the heliosphere stop carries the rung\'s aspect');
+}
 
 if (problems.length) { console.error('heliosphere rung FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`heliosphere rung ok: 300 AU out, square to the nose and ${R.HELIO_RUNG.upDeg} degrees up, outside the heliopause (${hp.toFixed(0)} AU) and inside the bow wave (${bow.toFixed(0)} AU); one climb and one turn; fetched on the press`);

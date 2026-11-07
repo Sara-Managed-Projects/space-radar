@@ -1529,6 +1529,7 @@ export const TOURS = [
 "drift_deg": 0,
 "chapter": "Epilogue: looking back",
 "seen_from": "neptune",
+"narrow_fit": 1.3,
 "card": {
 "title": "The bubble the Sun blows round itself",
 "body": "From three hundred times the Earth's distance, the shells are the edges of the bubble the Sun's wind blows in the gas between the stars. Voyager 1 left it in 2012 and Voyager 2 in 2018, and the four marks are where they crossed its two inner edges. Those four places are measured. The shapes between them are a model, and the outer shell is a guess."

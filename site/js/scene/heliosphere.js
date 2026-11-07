@@ -56,6 +56,7 @@ import * as THREE from '../../vendor/three.module.min.js';
 import { COPY, t, fmt } from '../copy/en.js';
 import '../copy/en.later.js';
 import { loadCss } from '../ui/latercss.js';
+import { keepClearOf } from '../ui/labels.js'; // b200-c1-culture-helio: the app's label rule
 import { stage, SUN_INERTIAL } from './stage.js';
 
 export const KM_PER_AU = 1.495978707e8;
@@ -106,6 +107,18 @@ export function bowShape(psi) {
 }
 const SHAPE = { ts: tsShape, hp: hpShape };
 const NOSE = eclDir(HELIO.nose.lonDeg, HELIO.nose.latDeg);
+// b200-c1-culture-helio: where each shell's name goes, degrees round the screen from its right, anticlockwise.
+// Seen side on with the nose to the left (the rung, the trip stop): the heliopause over the top, the termination
+// shock low on the tail side, the bow wave just under the nose: away from the Voyagers' four crossings, which
+// all sit 35 degrees either side of the nose. A name whose direction falls where its shell is not drawn
+// (SHELL_PSI_MAX) is not shown, and one that would print over another name or a panel waits (keepClearOf).
+const SHELL_ANGLES = { ts: 300, hp: 90, bow: 200 };
+const SHELL_PSI_MAX = { ts: 180, hp: 115, bow: 80 };
+const _cam = new THREE.Vector3();
+const _view = new THREE.Vector3();
+const _right = new THREE.Vector3();
+const _up2 = new THREE.Vector3();
+const _dir = new THREE.Vector3();
 
 /** For a fitted surface: each crossing's direction and its scale, measured distance over unit model. Pure. */
 export function fits(kind) {
@@ -342,14 +355,20 @@ export function createHeliosphere(ctx, opts = {}) {
     node: el(doc, 'span', 'sr-helio-label', t(H.crossing, { craft: H.craft[c.craft], surface: H.surface[c.surface], au: fmt.num(c.au, 1), date: dateWords(c.date) })),
   }));
   marks.push({ at: new THREE.Vector3(...noseScene).multiplyScalar(arrowAu), node: el(doc, 'span', 'sr-helio-label is-motion', t(H.motion, { v: fmt.num(HELIO.nose.speedKmS, 1) })) });
-  // Each surface named on its flank, a quarter turn from the nose (so the three names never stack), with its class.
+  // Each surface named on its own shell, at its own angle ACROSS THE SCREEN (b200-c1-culture-helio, forge #148).
+  // WHY ACROSS THE SCREEN. All three were named a quarter turn round the nose in the ecliptic, on one line out
+  // from the Sun: seen side on (the rung, the trip stop) that line points nearly at the camera, and the three
+  // names printed on top of one another. Fixed points elsewhere on the shells fall off the screen from 300 AU,
+  // where the bubble overfills it. So each name is put, every frame, where its shell meets a direction in the
+  // plane through the Sun square to the view, at its own angle (update(), SHELL_ANGLES): near its own edge as
+  // seen, apart from the other two whichever side the camera is on.
+  const shellMarks = [];
+  for (const kind of ['ts', 'hp', 'bow']) {
+    const m = { at: new THREE.Vector3(), kind, node: el(doc, 'span', 'sr-helio-label is-surface', H.surfaceLabel[kind]) };
+    marks.push(m);
+    shellMarks.push(m);
+  }
   {
-    // In the ecliptic, beside the nose: the Voyagers' crossings are 35 degrees north and south of it.
-    const [side] = basis(NOSE);
-    for (const kind of ['ts', 'hp', 'bow']) {
-      const d = side;
-      marks.push({ at: new THREE.Vector3(...toScene(d.map((x) => x * surfaceAu(kind, d)))), node: el(doc, 'span', 'sr-helio-label is-surface', H.surfaceLabel[kind]) });
-    }
     const R = HELIO.ribbon;
     const c = eclDir(R.lonDeg, R.latDeg);
     const [r1] = basis(c);
@@ -399,6 +418,8 @@ export function createHeliosphere(ctx, opts = {}) {
   const _p = new THREE.Vector3();
   let shown = false;
   let camUnits = 0;
+  let blocked = [];   // the scene's own labels' boxes, read four times a second
+  let blockedAt = -Infinity;
 
   function update(camera, tMs) {
     const layerOn = typeof ctx.isLayerOn === 'function' ? ctx.isLayerOn('deep-space') : true;
@@ -430,15 +451,58 @@ export function createHeliosphere(ctx, opts = {}) {
     shaft.scale.set(shaftK, 1, shaftK);
     head.scale.set(headK, 1, headK);
     group.updateMatrixWorld();
-    // The labels: each point projected, hidden behind the camera or off the screen.
+    // The labels. The fixed points first (the crossings, the arrow, the ribbon): each projected, hidden behind
+    // the camera or off the screen, and kept by the app's own rule (ui/labels.js keepClearOf) only where it
+    // prints over no other name, no planet's or body's label and no panel. The scene's labels and the panels
+    // are read four times a second, not every frame, so the layout is not asked for sixty times a second.
     const w = win.innerWidth; const h = win.innerHeight;
-    for (const m of marks) {
-      _p.copy(m.at).applyMatrix4(group.matrixWorld).project(camera);
-      const on = _p.z < 1 && Math.abs(_p.x) < 1.1 && Math.abs(_p.y) < 1.1;
-      m.node.hidden = !on;
-      if (!on) continue;
-      m.node.style.transform = `translate(${Math.round((_p.x * 0.5 + 0.5) * w + 8)}px, ${Math.round((-_p.y * 0.5 + 0.5) * h - 9)}px)`;
+    const now = win.performance ? win.performance.now() : Date.now();
+    if (!(now - blockedAt < 250)) {
+      blockedAt = now;
+      blocked = [...doc.querySelectorAll('#labels .label, #sr-side, #sr-rail, #sr-time, #sr-top, .sr-card, .sr-tripsheet, .sr-trip__top, .sr-trip__toolbar')].filter((n) => !n.hidden && n.getClientRects().length > 0).map((n) => n.getBoundingClientRect()); // a fixed panel has no offsetParent
+    }
+    const kept = blocked.slice();
+    const boxAt = (m, at) => {
+      _p.copy(at).applyMatrix4(group.matrixWorld).project(camera);
+      if (!(_p.z < 1 && Math.abs(_p.x) < 0.98 && Math.abs(_p.y) < 0.98)) return null;
+      if (!m.w) { m.node.hidden = false; m.w = m.node.offsetWidth || 120; m.h = m.node.offsetHeight || 18; }
+      const x = Math.round((_p.x * 0.5 + 0.5) * w + 8);
+      const y = Math.round((-_p.y * 0.5 + 0.5) * h - 9);
+      const b = { left: x, top: y, right: x + m.w, bottom: y + m.h };
+      return b.right <= w && b.bottom <= h && keepClearOf([b], 4, kept)[0] ? b : null;
+    };
+    const place = (m, b) => {
+      m.node.hidden = !b;
+      if (!b) return;
+      kept.push(b);
+      m.node.style.transform = `translate(${b.left}px, ${b.top}px)`;
       m.node.style.opacity = String(fade);
+    };
+    for (const m of marks) if (!shellMarks.includes(m)) place(m, boxAt(m, m.at));
+    // Then the shells' names (above): each where its shell meets a direction across the screen in the plane
+    // through the Sun square to the view, its own angle first (SHELL_ANGLES) and then, 15 degrees at a time
+    // either way, the first angle where its shell is drawn, the point is on the screen and the name is clear.
+    _cam.copy(camera.position);
+    group.worldToLocal(_cam);
+    _view.copy(_cam).negate().normalize();
+    _right.crossVectors(_view, camera.up).normalize();
+    _up2.crossVectors(_right, _view);
+    // A shell whose edge is off the screen all round (the bow wave, with the camera inside it) is tried again on
+    // its far side, 50 degrees back from that plane, which the eye sees through it nearer the middle.
+    for (const m of shellMarks) {
+      let b = null;
+      for (let k = 0; k < 48 && !b; k += 1) {
+        const a = (SHELL_ANGLES[m.kind] + ((k % 24) % 2 ? 1 : -1) * Math.ceil((k % 24) / 2) * 15) * DEG;
+        const back = k < 24 ? 0 : 50 * DEG;
+        _dir.copy(_right).multiplyScalar(Math.cos(a) * Math.cos(back)).addScaledVector(_up2, Math.sin(a) * Math.cos(back)).addScaledVector(_view, Math.sin(back));
+        const ecl = [_dir.x, -_dir.z, _dir.y]; // scene axes back to the ecliptic's (toScene inverted)
+        if (angle(ecl, NOSE) / DEG > SHELL_PSI_MAX[m.kind]) continue;
+        const r = surfaceAu(m.kind, ecl);
+        if (!(Number.isFinite(r) && r > 0)) continue;
+        m.at.copy(_dir).multiplyScalar(r);
+        b = boxAt(m, m.at);
+      }
+      place(m, b);
     }
   }
 

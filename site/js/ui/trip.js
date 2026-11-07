@@ -313,6 +313,12 @@ function worldOfFrame(frame) {
   return worldById.has(head) ? head : 'earth';
 }
 
+// b200-c1-culture-helio (forge #148): how far farther a `narrow_fit` stop stands on a screen of `aspect` (wide over tall).
+export function narrowFitScale(fit, aspect) {
+  const a = Number.isFinite(aspect) && aspect > 0 ? aspect : fit;
+  return Math.min(4, Math.max(1, fit / a));
+}
+
 export function createTrip(ctx) {
   const rig = ctx.cameraRig;
 
@@ -1212,6 +1218,9 @@ export function createTrip(ctx) {
     // A star system's overview (spec 0040) is never closer than the whole of it fits on THIS screen:
     // a phone held upright is a third as wide as a desktop, and the outer orbit would be cut off.
     if (isNum(stop.distance_km) && typeof subject.fitKm === 'function') return Math.max(stop.distance_km, subject.fitKm(stop));
+    // b200-c1-culture-helio (forge #148): `narrow_fit` stands a wide subject back on a screen narrower than that,
+    // wide to tall, by that share (at most four times), as the heliosphere's rung does (ui/heliorung.js rungAu).
+    if (isNum(stop.distance_km) && isNum(stop.narrow_fit)) return stop.distance_km * narrowFitScale(stop.narrow_fit, ctx.camera && ctx.camera.aspect);
     if (isNum(stop.distance_km)) return stop.distance_km;
     if (isNum(subject.radiusKm) && subject.radiusKm > 0) {
       return Math.max(stop.frame_radii * subject.radiusKm, subject.radiusKm * 1.02);

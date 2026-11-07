@@ -126,6 +126,9 @@ STOP_FIELDS = (
     # away and the frame prints how wide the widest really is on this screen.
     "framing",
     "true_size",
+    # b200-c1-culture-helio (forge #148): `narrow_fit`: on a screen narrower than this, wide to tall, the stop
+    # stands back by that share (ui/trip.js narrowFitScale), so a wide subject still fits a phone held upright.
+    "narrow_fit",
     "card",
 )
 
