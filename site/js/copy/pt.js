@@ -5064,3 +5064,24 @@ Object.assign(COPY, {
   }
 });
 // b200-f1-find: end
+// b200-f4-cards: begin -- a card's Wikipedia block and Read aloud (copy/en.cards.js, forge #151), machine-drafted
+Object.assign(COPY, {
+  "wikiCard": {
+    "label": "Da Wikipédia",
+    "quotedLive": "Citado da Wikipédia como está hoje, não conferido por nós.",
+    "quotedBaked": "Citado da Wikipédia como estava em {date}, não conferido por nós.",
+    "textCredit": "Texto: colaboradores da Wikipédia, CC BY-SA 4.0.",
+    "readArticle": "Ler o artigo inteiro",
+    "inEnglish": "Ainda não há artigo neste idioma, então este é o em inglês.",
+    "family": "Sobre {fleet} como um todo: não há artigo para este satélite em particular.",
+    "photo": "Foto: {artist}, {licence}, via Wikimedia Commons.",
+    "photoNoArtist": "Foto: {licence}, via Wikimedia Commons.",
+    "photoAlt": "A imagem do topo do artigo da Wikipédia {title}",
+    "loading": "Consultando a Wikipédia…",
+    "read": "Ler em voz alta",
+    "readTitle": "Lê este cartão em voz alta com a voz do seu aparelho",
+    "stop": "Parar a leitura",
+    "reading": "Lendo em voz alta"
+  }
+});
+// b200-f4-cards: end

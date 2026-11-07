@@ -212,6 +212,14 @@ jobs:
               node tests/test_first_visit_bytes.mjs --base=http://127.0.0.1:8178 --embed=25544 --out=.ci-screens/first-visit-embed-25544.json
               node tests/test_first_visit_bytes.mjs --base=http://127.0.0.1:8177 --info --out=.ci-screens/first-visit-source.json'
 
+      # b200-f4-cards: begin
+      # FORGE #170: the same boot's request count against `first_visit_requests` (registry/budgets.yaml), read from the
+      # first-visit.json the step above wrote. The time to the first frame is not held here: this runner draws in software.
+      - name: A first visit stays inside its request budget (forge #170)
+        if: steps.page.outputs.found == '1'
+        run: node scripts/first-load.mjs --ci=.ci-screens/first-visit.json
+      # b200-f4-cards: end
+
       # THE BOOT AS A TIMELINE (internal #528): first paint, the main module, the layers, every long task and
       # the total blocking time of the same boot, on the tree a deploy uploads, as a desktop window and then
       # as a 390 by 844 phone (`--mobile`). REPORT ONLY: the numbers are in this step's log and in

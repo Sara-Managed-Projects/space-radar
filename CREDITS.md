@@ -98,6 +98,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 <!-- 0079 a3: end -->
 | Satellites and their orbits | CelesTrak | free, with an enforced usage policy | [4.1](#41-celestrak--read-this-before-you-deploy-a-fork) |
 | Flags beside the owners of satellites (Find, By country) | Wikimedia Commons, 103 files | public domain, per file | [3f-flags](#3f-flags-flags-of-the-countries-that-own-satellites--wikimedia-commons-public-domain-2026-11-07) | <!-- b200-f1-find -->
+| The Wikipedia lead and photograph on a card with no words of its own | Wikipedia; Wikimedia Commons; Wikidata | CC BY-SA 4.0; each picture's own free licence; CC0 | [3f-wiki](#3f-wiki-the-cards-wikipedia-block--wikipedia-cc-by-sa-40-commons-wikidata-cc0-2026-11-07) | <!-- b200-f4-cards -->
 | Launches | The Space Devs, Launch Library 2 | free to 15 requests an hour; no published licence | [4.2](#42-the-space-devs--launch-library-2) |
 | Deep-space positions, asteroids, comets, close approaches | NASA/JPL Horizons, Small-Body Database, CNEOS | see the section | [4.18](#418-the-sources-the-harvester-reads) |
 | Space weather and the aurora | NOAA SWPC | public domain | [4.4](#44-noaa-swpc) |
@@ -4485,3 +4486,23 @@ Release 2.0.0, batch m3-mid (forge #174, #128). Of the 20 mid-size families of #
 
 No logo, lettering, flag or insignia is on either. Kinéis, Hemeria and iQPS do not endorse Space Radar, and none of them made or approved these shapes.
 <!-- b200-m3-mid: end -->
+
+<!-- b200-f4-cards: begin -->
+## 3f-wiki. The cards' Wikipedia block — Wikipedia (CC BY-SA 4.0), Commons, Wikidata (CC0) (2026-11-07)
+
+A card whose object has no hand-written line of ours shows the lead of its Wikipedia article and the article's lead
+picture (forge #151, `site/js/ui/wikicard.js`). Every such block says "From Wikipedia", that it is quoted and not checked by
+us, the day it was read, "Text: Wikipedia contributors, CC BY-SA 4.0" and a link to the article; the picture's caption is
+the artist and licence its Wikimedia Commons page gives, the licence linked to its deed and the file to its page.
+
+- **Baked** (`site/data/wikicards/<lang>.json`, `scripts/build-wikicards.mjs`, read 2026-11-07): the lead of 99 articles in
+  English and of 45 to 91 in each of the other ten languages (where Wikipedia has the article), at most 600 characters
+  of whole sentences each. Text: Wikipedia contributors, CC BY-SA 4.0. Not changed, only cut at a sentence.
+- **Pictures** are not copied: the card loads Commons' 640 px copy when it opens. Only Commons files with a free
+  LicenseShortName (CC0, public domain, CC BY, CC BY-SA) are shown; on 2026-11-07 the 95 baked English pictures were 40
+  public domain, 15 CC0, 25 CC BY (2.0 to 4.0) and 15 CC BY-SA (2.0 to 4.0, two ported).
+- **NORAD numbers to articles** (`site/data/wikicards/norad.json`): Wikidata's items with property P377 and an English
+  article, 3 166 of them, CC0 1.0.
+- **Live**: any other card asks Wikipedia's REST API and the Commons API itself when its About it is opened, with no cookie
+  and no referrer; the same credits are printed.
+<!-- b200-f4-cards: end -->

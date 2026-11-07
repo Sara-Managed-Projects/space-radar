@@ -588,3 +588,29 @@ sources:
     offline: shipped
     checked: 2026-11-07
   # b200-f1-find: end
+  # b200-f4-cards: begin
+  - id: wikipedia-cards
+    name: Wikipedia (the REST page summary of each article) and Wikimedia Commons (the lead picture's credit), for the cards' Wikipedia block
+    match: ["https://en.wikipedia.org/api/rest_v1/page/summary/", "https://commons.wikimedia.org/w/api.php"]
+    url: https://www.mediawiki.org/wiki/Wikimedia_REST_API
+    licence: "Text CC BY-SA 4.0 (Wikipedia contributors); each picture under its own free licence, as its Commons page says (CC0, public domain, CC BY, CC BY-SA only)"
+    licence_read: "Text is available under the Creative Commons Attribution-ShareAlike 4.0 License; additional terms may apply."
+    licence_url: https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License
+    licence_note: "site/data/wikicards/<lang>.json (scripts/build-wikicards.mjs, 2026-11-07) keeps the lead of 99 articles in English and up to 91 in each other language, quoted, with each article's address; the pictures are not copied, only their Commons address, artist and licence, and the card prints that credit under each. A Commons file whose LicenseShortName is not free, and any picture kept by a single Wikipedia (often fair use), is left out by ui/wikicardcore.js freeLicence and commonsFile."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  - id: wikidata-norad
+    name: Wikidata, satellite catalog number (P377) of every item with an English Wikipedia article
+    match: ["https://query.wikidata.org/sparql"]
+    url: https://www.wikidata.org/wiki/Property:P377
+    licence: CC0 1.0
+    licence_read: "All structured data from the main, Property, Lexeme, and EntitySchema namespace is available under the Creative Commons CC0 License"
+    licence_url: https://www.wikidata.org/wiki/Wikidata:Licensing
+    licence_note: "site/data/wikicards/norad.json, 3 166 numbers, each with its English article's title (scripts/build-wikicards.mjs, 2026-11-07)."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  # b200-f4-cards: end

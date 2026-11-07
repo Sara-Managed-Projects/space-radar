@@ -2551,6 +2551,10 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
   const why = whyLine(record);
   const aboutNodes = [el('p', 'sr-card__sentence', namedAbove ? withoutLeadingName(sentence, name) : sentence)];
   if (why) aboutNodes.push(el('p', 'sr-card__why', why));
+  // b200-f4-cards: begin (forge #151: Read aloud, and the Wikipedia lead and photograph where the card has no words of its own; ui/wikicard.js fills it when About it is open)
+  const wikiBox = el('div', 'sr-card__wiki');
+  aboutNodes.push(wikiBox);
+  // b200-f4-cards: end
   // THE PHOTOGRAPH, where the registry has one. Two of the twenty exotics have been
   // photographed -- M87* in 2019 and Sgr A* in 2022 -- and spec 0028 asked for their pictures on
   // the card. The credit rides WITH the picture, visible, because that is what CC BY 4.0 asks for:
@@ -2789,6 +2793,11 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
   }).catch(() => { /* no page: no link */ });
   if (aboutHead && aboutHead.getAttribute('aria-expanded') === 'true') findPage();
   else if (aboutHead) aboutHead.addEventListener('click', findPage, { once: true });
+  // b200-f4-cards: begin
+  const mountWiki = () => import('./wikicard.js').then((w) => w.mountWikiCard(wikiBox, record, { name, sentence, why })).catch(() => { /* the card is whole without it */ });
+  if (aboutHead && aboutHead.getAttribute('aria-expanded') === 'true') mountWiki();
+  else if (aboutHead) aboutHead.addEventListener('click', mountWiki, { once: true });
+  // b200-f4-cards: end
 
   // Sources for this record: what the drawn shape is, and where the numbers were read.
   const drawn = drawingLine(record, m && m.tMs);

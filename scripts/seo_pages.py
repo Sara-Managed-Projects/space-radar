@@ -534,6 +534,11 @@ def about_page(host: str) -> Page:
         f"<p>It draws {n['layers']} layers and reads {n['feeds']} feeds from {n['sources']} public sources to do it, and offers {n['trips']} guided trips that fly the camera from stop to stop. "
         "Every position is worked out in the visitor's own browser from public data, for the instant on the clock: satellites from their orbital elements, planets "
         "and probes from ephemerides. The clock can be moved, and the sky moves with it.</p>\n"
+        # b200-f4-cards: begin (forge #170: the one line the issue asks for, and what stands behind it)
+        "<p><strong>Built for phones first:</strong> on an emulated mid-range phone over slow 4G, the map draws its first frame in about 8 seconds, "
+        "after a first load of 1.9 MB (measured on 7 November 2026). It draws with WebGL, which every current browser has, and needs no WebGPU and no install "
+        f'(<a href="{GITHUB}/blob/main/docs/FIRST_LOAD.md">how it is measured</a>).</p>\n'
+        # b200-f4-cards: end
         "<h2>Why it exists</h2>\n"
         "<p>Space is easy to see and hard to understand in the wrong picture. Most pictures of the Solar System are not to scale, most satellite maps are 2D, and "
         "almost none say what is measured and what is imagined. This one is built to be honest about that first, and beautiful second.</p>\n"
@@ -746,6 +751,19 @@ def sources_page(host: str, snapshot_index: dict | None) -> Page:
         '<p class="dim">"Saved copy last read" is the day this site\'s harvester last fetched the source, taken from the saved copy\'s index when the page opens; '
         "it is not the day the terms were read. Where a licence says \"no licence stated\", that is the answer, and the project treats it as no permission to redistribute beyond what the credits say.</p>\n"
         f"{not_in_use}"
+        # b200-f4-cards: begin (forge #151: the one place a visitor's browser asks a third party for words, and what it sends)
+        "<h2>Asked by your browser when you open a card</h2>\n"
+        "<p>A card whose object has no words of ours shows the opening of its Wikipedia article and the article's picture, marked "
+        "<strong>From Wikipedia</strong>, quoted and not checked by us. For about a hundred well-known objects that text is our own copy, made when the "
+        "site was built. For any other card, opening its <em>About it</em> asks Wikipedia (<code>wikipedia.org</code>, in your language when an article "
+        "exists, else in English, and the card says so) and Wikimedia Commons (<code>commons.wikimedia.org</code>, <code>thumb.wikimedia.org</code>) "
+        "for that one article and its picture. Nothing else is asked, and only then: no request is made before you open the section. "
+        "The requests carry no cookie in either direction and no referrer, so Wikipedia is told which article was asked for, as for any visitor, "
+        "but not by which page; your address reaches the Wikimedia Foundation as it would on their own site "
+        '(<a href="https://foundation.wikimedia.org/wiki/Policy:Privacy_policy" rel="nofollow">their privacy policy</a>). '
+        "Answers are kept in your browser for the visit. Text: Wikipedia contributors, CC BY-SA 4.0; each picture under the licence its Commons page gives, "
+        "printed under it. <strong>Read aloud</strong> on a card uses your device's own voice: nothing is recorded and nothing is sent.</p>\n"
+        # b200-f4-cards: end
         "<h2>Everything else</h2>\n"
         f'<p>The libraries, textures, 3D models, photographs, sounds and fonts, each with its licence, are in <a href="{GITHUB}/blob/main/CREDITS.md">CREDITS.md</a>, '
         "which a test holds to the registries line by line.</p>\n")

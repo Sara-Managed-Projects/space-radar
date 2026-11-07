@@ -75,7 +75,9 @@ import '../copy/en.w3e.js'; // the words of the two rows
 // 0077 W3-e: end
 
 export { objectPageUrl, PAGES_INDEX };
-import { WIKI_TITLES } from '../data/wikititles.js';
+// The record's article moved to data/wikititles.js (forge #151): the card's Wikipedia block reads it too, without this sheet.
+import { wikiTitleOf } from '../data/wikititles.js';
+export { wikiTitleOf };
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const WIKI_REST = 'https://en.wikipedia.org/api/rest_v1/page/summary/';
@@ -202,36 +204,6 @@ export function excerptOf(extract, max = EXCERPT_MAX) {
   }
   if (best > 0) return s.slice(0, best);
   return clip(s, max, (x) => x.length);
-}
-
-/** The article named in a source line, `https://en.wikipedia.org/wiki/<title>`, or null. */
-function titleFromUrl(text) {
-  const m = /https?:\/\/en\.wikipedia\.org\/wiki\/([^\s,;]+)/.exec(String(text || ''));
-  if (!m) return null;
-  let title = m[1];
-  // "(read 2026-09-22)" follows the URL; a title's own brackets are balanced, a trailing one is not.
-  while (title.endsWith(')') && (title.match(/\(/g) || []).length < (title.match(/\)/g) || []).length) title = title.slice(0, -1);
-  try { title = decodeURIComponent(title); } catch { /* already plain */ }
-  title = title.replace(/ /g, '_').replace(/#.*$/, '');
-  // A list is a source for a number, not an article about the thing ("List_of_Messier_objects").
-  return title && !/^List_of_/i.test(title) ? title : null;
-}
-
-/**
- * The record's English Wikipedia article: the hand table (data/wikititles.js) first, then the
- * record's own source lines, the ones scripts/object_pages.mjs reads for its sameAs. Null when it
- * names none: the sheet then has no excerpt, rather than a guess from the name.
- */
-export function wikiTitleOf(record) {
-  if (!record) return null;
-  const id = String(record.id || '');
-  if (Object.prototype.hasOwnProperty.call(WIKI_TITLES, id)) return WIKI_TITLES[id];
-  const md = record.meta || {};
-  for (const key of ['wikipedia', 'wiki', 'whySource', 'source', 'cite']) {
-    const title = titleFromUrl(md[key]);
-    if (title) return title;
-  }
-  return null;
 }
 
 /** A network's public share page for this post. No SDK, no tracking parameter. */

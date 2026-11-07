@@ -4973,3 +4973,24 @@ Object.assign(COPY, {
   }
 });
 // b200-f1-find: end
+// b200-f4-cards: begin -- a card's Wikipedia block and Read aloud (copy/en.cards.js, forge #151), machine-drafted
+Object.assign(COPY, {
+  "wikiCard": {
+    "label": "من ويكيبيديا",
+    "quotedLive": "مقتبس من ويكيبيديا كما هو اليوم، ولم نتحقق منه.",
+    "quotedBaked": "مقتبس من ويكيبيديا كما كان في {date}، ولم نتحقق منه.",
+    "textCredit": "النص: مساهمو ويكيبيديا، CC BY-SA 4.0.",
+    "readArticle": "اقرأ المقالة كاملة",
+    "inEnglish": "لا توجد مقالة بهذه اللغة بعد، لذا هذه هي المقالة الإنجليزية.",
+    "family": "عن {fleet} ككل: لا توجد مقالة عن هذا القمر الصناعي بعينه.",
+    "photo": "الصورة: {artist}، {licence}، عبر Wikimedia Commons.",
+    "photoNoArtist": "الصورة: {licence}، عبر Wikimedia Commons.",
+    "photoAlt": "الصورة في أعلى مقالة ويكيبيديا {title}",
+    "loading": "نسأل ويكيبيديا…",
+    "read": "اقرأ بصوت عالٍ",
+    "readTitle": "اقرأ هذه البطاقة بصوت جهازك",
+    "stop": "أوقف القراءة",
+    "reading": "تجري القراءة"
+  }
+});
+// b200-f4-cards: end

@@ -54,6 +54,9 @@ async function english() {
   // b200-f1-find: begin -- the words of Find, the owners, the clouds and the date field (copy/en.find.js), drafted in every language
   await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.find.js')).href);
   // b200-f1-find: end
+  // b200-f4-cards: begin -- the words of a card's Wikipedia block and Read aloud (copy/en.cards.js), drafted in every language
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.cards.js')).href);
+  // b200-f4-cards: end
   return { COPY: base.COPY, GLOSSARY: base.GLOSSARY };
 }
 

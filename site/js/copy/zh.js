@@ -4973,3 +4973,24 @@ Object.assign(COPY, {
   }
 });
 // b200-f1-find: end
+// b200-f4-cards: begin -- a card's Wikipedia block and Read aloud (copy/en.cards.js, forge #151), machine-drafted
+Object.assign(COPY, {
+  "wikiCard": {
+    "label": "来自维基百科",
+    "quotedLive": "引自维基百科今天的版本，未经我们核实。",
+    "quotedBaked": "引自维基百科 {date} 的版本，未经我们核实。",
+    "textCredit": "文字：维基百科贡献者，CC BY-SA 4.0。",
+    "readArticle": "阅读完整条目",
+    "inEnglish": "这种语言还没有相关条目，所以这里是英文条目。",
+    "family": "关于 {fleet} 整体：这颗卫星本身没有单独的条目。",
+    "photo": "照片：{artist}，{licence}，来自 Wikimedia Commons。",
+    "photoNoArtist": "照片：{licence}，来自 Wikimedia Commons。",
+    "photoAlt": "维基百科条目 {title} 顶部的图片",
+    "loading": "正在询问维基百科…",
+    "read": "朗读",
+    "readTitle": "用你设备自带的语音朗读这张卡片",
+    "stop": "停止朗读",
+    "reading": "正在朗读"
+  }
+});
+// b200-f4-cards: end

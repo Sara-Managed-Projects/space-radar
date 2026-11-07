@@ -1456,3 +1456,9 @@ jobs:
       - name: "SL-3 R/B wears the Vostok Blok E file and the held stages keep the generic stage (forge #60)"
         run: node tests/test_vostok_blok_e.mjs
       # b200-m2-buses: end
+      # b200-f4-cards: begin
+      - name: "A card's Wikipedia block: where the article comes from, our own words win, free Commons pictures only, every language (forge #151)"
+        run: node tests/test_wikicard.mjs
+      - name: "The first load keeps phones in front: budget rows under every rival first load, WebGL and no WebGPU (forge #170)"
+        run: node tests/test_first_load.mjs
+      # b200-f4-cards: end
