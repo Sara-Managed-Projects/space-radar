@@ -5290,3 +5290,61 @@ Object.assign(COPY, {
   }
 });
 // b200-f5-make: end
+// b200-f8-xr: begin -- the gamepad and the headset (copy/en.xr.js, forge #164, #158), machine-drafted
+Object.assign(COPY, {
+  "pad": {
+    "title": "Controle",
+    "label": "Comandos do controle",
+    "close": "Fechar os comandos do controle",
+    "capStickL": "Analógico esquerdo",
+    "capStickR": "Analógico direito",
+    "capTriggers": "RT · LT",
+    "capA": "A · Xis",
+    "capX": "X · Quadrado",
+    "capB": "B · Círculo",
+    "capY": "Y · Triângulo",
+    "capDpad": "Direcional ↑ ↓",
+    "capMenu": "Menu · Options",
+    "turn": "Girar em volta",
+    "fly": "Aproximar e afastar, deslizar para o lado",
+    "speed": "Mais rápido, mais devagar",
+    "choose": "Escolher o que está no anel",
+    "go": "Ir até lá",
+    "back": "Voltar",
+    "ship": "Física de nave ligada ou desligada",
+    "ladder": "Subir e descer a escada de distâncias",
+    "controls": "Estes comandos",
+    "shipToggle": "Física de nave",
+    "shipHow": "Você continua à deriva ao soltar. Pressione um analógico para parar.",
+    "notStandard": "Este controle não informa onde ficam seus botões: o analógico esquerdo gira a vista, os botões não são usados.",
+    "connected": "Controle conectado. Pressione Menu para ver os comandos.",
+    "disconnected": "Controle desconectado.",
+    "shipOn": "Física de nave ligada: você continua à deriva ao soltar.",
+    "shipOff": "Física de nave desligada.",
+    "nothing": "Nada no anel para escolher.",
+    "chooseFirst": "Escolha algo primeiro: A pega o que está no anel.",
+    "rung": "{label}, {distance}",
+    "home": "A Terra",
+    "trip": "Uma viagem está com a câmera. Os botões dela estão na tela."
+  },
+  "headset": {
+    "enter": "Entrar no headset",
+    "enterTitle": "Ficar sob o céu ou percorrer a escada de distâncias em um headset de realidade virtual",
+    "noteTitle": "Antes de colocar",
+    "comfort": "Os movimentos são saltos, não deslizes, e os giros são passos de 30 graus, então o horizonte fica reto. Sente-se ou libere o espaço ao seu redor.",
+    "seizure": "Um pequeno número de pessoas tem convulsões causadas por luzes ou padrões piscantes. Se sentir tontura ou enjoo, ou vir algo estranho, pare e tire o headset.",
+    "how": "Olhe para algo e pressione A ou o gatilho direito para escolher. X vai até lá, B volta, Y mostra os comandos. Segure B por um segundo para sair.",
+    "untried": "Novo, e ainda não testado em um headset de verdade: conte-nos o que você vê.",
+    "go": "Entrar",
+    "cancel": "Agora não",
+    "busy": "Feche primeiro o Momento, o mundo imaginado, Cúpula e 360 ou a gravação: cada um desenha sua própria imagem.",
+    "failed": "O headset não iniciou.",
+    "left": "De volta à tela.",
+    "panelHelp": "A escolher   X ir   B voltar   Y comandos",
+    "panelMove": "Analógico esquerdo: em volta, e pela escada   Analógico direito: girar, aproximar e afastar",
+    "panelLeave": "Segure B para sair",
+    "chosen": "Escolhido: {name}",
+    "nothing": "Nada bem à frente"
+  }
+});
+// b200-f8-xr: end

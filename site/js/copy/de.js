@@ -5300,3 +5300,61 @@ Object.assign(COPY, {
   }
 });
 // b200-f5-make: end
+// b200-f8-xr: begin -- the gamepad and the headset (copy/en.xr.js, forge #164, #158), machine-drafted
+Object.assign(COPY, {
+  "pad": {
+    "title": "Gamepad",
+    "label": "Gamepad-Steuerung",
+    "close": "Gamepad-Steuerung schließen",
+    "capStickL": "Linker Stick",
+    "capStickR": "Rechter Stick",
+    "capTriggers": "RT · LT",
+    "capA": "A · Kreuz",
+    "capX": "X · Quadrat",
+    "capB": "B · Kreis",
+    "capY": "Y · Dreieck",
+    "capDpad": "Steuerkreuz ↑ ↓",
+    "capMenu": "Menü · Options",
+    "turn": "Umsehen",
+    "fly": "Hinein- und hinausfliegen, seitwärts gleiten",
+    "speed": "Schneller, langsamer",
+    "choose": "Wählen, was im Ring ist",
+    "go": "Dorthin fliegen",
+    "back": "Zurück",
+    "ship": "Schiffsphysik an oder aus",
+    "ladder": "Auf der Entfernungsleiter hinaus und hinein",
+    "controls": "Diese Steuerung",
+    "shipToggle": "Schiffsphysik",
+    "shipHow": "Sie treiben weiter, wenn Sie loslassen. Drücken Sie einen Stick, um anzuhalten.",
+    "notStandard": "Dieses Gamepad sagt nicht, wo seine Tasten sind: Der linke Stick dreht die Ansicht, die Tasten werden nicht genutzt.",
+    "connected": "Gamepad verbunden. Drücken Sie Menü für die Steuerung.",
+    "disconnected": "Gamepad getrennt.",
+    "shipOn": "Schiffsphysik an: Sie treiben weiter, wenn Sie loslassen.",
+    "shipOff": "Schiffsphysik aus.",
+    "nothing": "Im Ring ist nichts zum Auswählen.",
+    "chooseFirst": "Wählen Sie zuerst etwas: A nimmt, was im Ring ist.",
+    "rung": "{label}, {distance}",
+    "home": "Die Erde",
+    "trip": "Eine Reise steuert die Kamera. Ihre eigenen Tasten sind auf dem Bildschirm."
+  },
+  "headset": {
+    "enter": "Headset starten",
+    "enterTitle": "Unter dem Himmel stehen oder die Entfernungsleiter hinauffahren, in einem VR-Headset",
+    "noteTitle": "Bevor Sie es aufsetzen",
+    "comfort": "Bewegungen sind Sprünge, kein Gleiten, und Drehungen sind Schritte von 30 Grad, damit der Horizont gerade bleibt. Setzen Sie sich oder räumen Sie den Platz um sich frei.",
+    "seizure": "Einige wenige Menschen bekommen durch blinkende Lichter oder Muster Anfälle. Wenn Ihnen schwindlig oder übel wird oder Sie etwas Seltsames sehen, hören Sie auf und nehmen Sie das Headset ab.",
+    "how": "Schauen Sie etwas an und drücken Sie A oder den rechten Trigger, um es zu wählen. X fliegt dorthin, B geht zurück, Y zeigt die Steuerung. Halten Sie B eine Sekunde, um zu verlassen.",
+    "untried": "Neu und noch nicht auf einem echten Headset ausprobiert: Sagen Sie uns, was Sie sehen.",
+    "go": "Starten",
+    "cancel": "Jetzt nicht",
+    "busy": "Schließen Sie zuerst den Moment, die erdachte Welt, Kuppel und 360 oder die Aufnahme: Jedes zeichnet sein eigenes Bild.",
+    "failed": "Das Headset ist nicht gestartet.",
+    "left": "Zurück auf dem Bildschirm.",
+    "panelHelp": "A wählen   X hin   B zurück   Y Steuerung",
+    "panelMove": "Linker Stick: herum und die Leiter entlang   Rechter Stick: drehen, hinein und hinaus",
+    "panelLeave": "B halten zum Verlassen",
+    "chosen": "Gewählt: {name}",
+    "nothing": "Nichts direkt voraus"
+  }
+});
+// b200-f8-xr: end

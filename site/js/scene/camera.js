@@ -1255,6 +1255,18 @@ export function createCameraRig(camera, domElement, options = {}) {
     return true;
   }
 
+  // b200-f8-xr: begin -- a gamepad's sticks (ui/gamepad.js, forge #164), fed as the held keys are: radians of turn, log
+  // distance and pixels of slide for this frame, into the same damping a drag feeds. `kind`, on the first frame of a push,
+  // is the hand on the controls: a flight ends where it is and the listeners hear it, once, as they hear a key.
+  function nudge(az, pol, logDist, panX, kind) {
+    if (kind) { interrupt(); emitUserInput(kind); }
+    dAz += az || 0;
+    dPolar += pol || 0;
+    if (logDist) dollyBy(logDist);
+    if (panX) panBy(panX, 0);
+  }
+  // b200-f8-xr: end
+
   /** Point the rig at a new target, keeping the camera where it is. */
   function setTarget(v) {
     if (!toVector3(v, target)) return;
@@ -1337,6 +1349,7 @@ export function createCameraRig(camera, domElement, options = {}) {
     saveState,
     restoreState,
     dispose,
+    nudge, // b200-f8-xr
   };
 }
 

@@ -1279,6 +1279,15 @@ export async function boot({ setStatus } = {}) {
   if (film || window.__srLayersReady) f5(); else window.addEventListener('sr:layers-ready', f5, { once: true });
   window.addEventListener('hashchange', f5);
   // b200-f5-make: end
+  // b200-f8-xr: begin (forge #164, #158) -- a pad's first press fetches ui/gamepad.js; a browser that can open an
+  // immersive-vr session gets the headset's button (ui/headset.js). The boot graph holds these lines and nothing more.
+  ctx.decisionAt = decisionAt;
+  if (!embed) {
+    addEventListener('gamepadconnected', (e) => import('./ui/gamepad.js').then((m) => m.wantPad(ctx, e.gamepad)), { once: true });
+    const xr = navigator.xr;
+    if (xr) xr.isSessionSupported('immersive-vr').then((ok) => ok && import('./ui/headset.js').then((m) => m.mountHeadset(ctx)), () => {});
+  }
+  // b200-f8-xr: end
   ctx.openAt = (id) => openAt(ctx, id);
   // Names over the scene (spec 0026 req 5): the selection, its train, the nearest notable things.
   const labels = createLabels(ctx, document.getElementById('labels'));

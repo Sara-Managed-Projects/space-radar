@@ -5199,3 +5199,61 @@ Object.assign(COPY, {
   }
 });
 // b200-f5-make: end
+// b200-f8-xr: begin -- the gamepad and the headset (copy/en.xr.js, forge #164, #158), machine-drafted
+Object.assign(COPY, {
+  "pad": {
+    "title": "手柄",
+    "label": "手柄操作",
+    "close": "关闭手柄操作",
+    "capStickL": "左摇杆",
+    "capStickR": "右摇杆",
+    "capTriggers": "RT · LT",
+    "capA": "A · 叉",
+    "capX": "X · 方块",
+    "capB": "B · 圆圈",
+    "capY": "Y · 三角",
+    "capDpad": "方向键 ↑ ↓",
+    "capMenu": "菜单 · Options",
+    "turn": "环顾四周",
+    "fly": "前进后退，侧向平移",
+    "speed": "更快，更慢",
+    "choose": "选择圆环中的目标",
+    "go": "飞过去",
+    "back": "返回",
+    "ship": "飞船物理：开或关",
+    "ladder": "沿距离阶梯向外或向内",
+    "controls": "这些操作",
+    "shipToggle": "飞船物理",
+    "shipHow": "松开后会继续漂移。按下摇杆即可停止。",
+    "notStandard": "这个手柄没有说明按键位置：左摇杆转动视图，按键不使用。",
+    "connected": "手柄已连接。按菜单键查看操作。",
+    "disconnected": "手柄已断开。",
+    "shipOn": "飞船物理已开启：松开后会继续漂移。",
+    "shipOff": "飞船物理已关闭。",
+    "nothing": "圆环中没有可选的目标。",
+    "chooseFirst": "请先选择目标：按 A 选取圆环中的目标。",
+    "rung": "{label}，{distance}",
+    "home": "地球",
+    "trip": "旅程正在控制镜头。它的按钮在屏幕上。"
+  },
+  "headset": {
+    "enter": "进入头显",
+    "enterTitle": "在 VR 头显中站在星空下，或沿距离阶梯前行",
+    "noteTitle": "戴上之前",
+    "comfort": "移动是跳跃而不是滑行，转向每次 30 度，地平线始终保持水平。请坐下，或清空身边的空间。",
+    "seizure": "少数人会因闪烁的光线或图案而癫痫发作。如果感到头晕、恶心或看到异常情况，请停止并摘下头显。",
+    "how": "看向一个目标，按 A 或右扳机选择它。X 飞过去，B 返回，Y 显示操作。按住 B 一秒即可退出。",
+    "untried": "新功能，尚未在真实头显上试过：请告诉我们你看到了什么。",
+    "go": "进入",
+    "cancel": "暂不",
+    "busy": "请先关闭“时刻”、想象的世界、“球幕与 360”或录制：它们各自绘制自己的画面。",
+    "failed": "头显未能启动。",
+    "left": "已回到屏幕。",
+    "panelHelp": "A 选择   X 前往   B 返回   Y 操作",
+    "panelMove": "左摇杆：环绕，并沿阶梯移动   右摇杆：转向，前进后退",
+    "panelLeave": "按住 B 退出",
+    "chosen": "已选择：{name}",
+    "nothing": "正前方没有目标"
+  }
+});
+// b200-f8-xr: end

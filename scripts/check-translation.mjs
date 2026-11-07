@@ -63,6 +63,9 @@ async function english() {
   // b200-f5-make: begin -- the words of the flight editor, Record and Dome and 360 (copy/en.make.js), drafted in every language
   await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.make.js')).href);
   // b200-f5-make: end
+  // b200-f8-xr: begin -- the words of the gamepad and the headset (copy/en.xr.js), drafted in every language
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.xr.js')).href);
+  // b200-f8-xr: end
   return { COPY: base.COPY, GLOSSARY: base.GLOSSARY };
 }
 
