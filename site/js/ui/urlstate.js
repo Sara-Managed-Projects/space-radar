@@ -61,6 +61,11 @@ KEYS.splice(KEYS.indexOf('cam'), 0, 'find', 'owner', 'operator', 'debris', 'cons
 // Written before `cam`, which stays the last key (tests/test_urlstate.mjs: a pose ends the link).
 KEYS.splice(KEYS.indexOf('cam'), 0, 'cut', 'size', 'dist');
 // b200-f2-worlds: end
+// b200-f5-make: begin (forge #155, #157) -- `path` a flight made in the editor, the whole path in the link (ui/flightpath.js
+// encodePath: `#path=z...`, deflated); `proj` the picture's projection, `dome` (a 180-degree fisheye, `dome,30` tilted 30
+// degrees) or `360` (equirectangular), scene/projection.js parseProj. Before `cam`, which stays last.
+KEYS.splice(KEYS.indexOf('cam'), 0, 'path', 'proj');
+// b200-f5-make: end
 export const VERSION = '1';
 /** The release this code is (0076 W4-c). A release bumps it with CHANGELOG.md; tests/test_access.mjs holds its shape. */
 export const BUILD = '1.4.0';

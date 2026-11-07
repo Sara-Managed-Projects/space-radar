@@ -4,7 +4,7 @@
 //   node tools/render-trip.mjs <trip> [--res=1920x1080] [--fps=30] [--out=out]
 //        [--captions|--captions=big] [--skip=<stop id>,<stop id>] [--stops=N] [--gl=gpu|swiftshader] [--format=jpeg|png] [--crf=18]
 //        [--at=<ISO time>] [--thumb-stop=<stop id>] [--ui-scale=1.5] [--base=http://127.0.0.1:8830] [--port=8830] [--live]
-//        [--fresh] [--frames-only] [--keep-frames]
+//        [--fresh] [--frames-only] [--keep-frames] [--proj=dome|dome,30|360]
 //
 //   out/<trip>.mp4               H.264 yuv420p + AAC, -14 LUFS
 //   out/<trip>.srt, .vtt         the narration's captions on the film's clock
@@ -97,7 +97,12 @@ const THUMB_STOP = arg('thumb-stop', (closest || tour.stops[0]).id);
 const UI_SCALE = Number(arg('ui-scale', '1.5')) || 1;
 const CSS_W = Math.round(W / UI_SCALE);
 const CSS_H = Math.round(H / UI_SCALE);
-const variant = `${tripId}-${W}x${H}-${FPS}${UI_SCALE !== 1.5 ? '-x' + UI_SCALE : ''}${CAPTIONS ? '-cc' : ''}${BIG ? '-big' : ''}${SKIP.length ? '-no-' + SKIP.join('-') : ''}${STOPS ? '-s' + STOPS : ''}`;
+// b200-f5-make: begin -- `--proj=dome`, `dome,30` or `360` (forge #157): the trip filmed as a planetarium's dome master or
+// a 360-degree frame, through the page's own `#proj=` (site/js/scene/projection.js). Give it a square `--res` for a dome,
+// 2:1 for 360 (docs/PLANETARIUMS.md); it is part of the frames' cache key, so a dome is never resumed from a flat film.
+const PROJ = /^(dome(,\d{1,2})?|360)$/.test(arg('proj', '')) ? arg('proj', '') : '';
+// b200-f5-make: end
+const variant = `${tripId}-${W}x${H}-${FPS}${UI_SCALE !== 1.5 ? '-x' + UI_SCALE : ''}${CAPTIONS ? '-cc' : ''}${BIG ? '-big' : ''}${SKIP.length ? '-no-' + SKIP.join('-') : ''}${STOPS ? '-s' + STOPS : ''}${PROJ ? '-' + PROJ.replace(',', 't') : ''}`; // b200-f5-make: the projection in the key
 const CACHE = join(OUT, '.cache', variant);
 const log = (m) => process.stderr.write(`[render ${new Date().toISOString().slice(11, 19)}] ${m}\n`);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -205,7 +210,7 @@ async function render() {
 
     // `tier=2`: the sharpest maps, which headless Chrome would otherwise not be given (main.js).
     const q = `render=1&fps=${FPS}&at=${epochMs}&tier=2${CAPTIONS ? '&captions=' + (BIG ? 'big' : '1') : ''}${SKIP.length ? '&skip=' + SKIP.join(',') : ''}${STOPS ? '&stops=' + STOPS : ''}`;
-    const url = `${base}/?${q}#trip=${tripId}`;
+    const url = `${base}/?${q}#trip=${tripId}${PROJ ? '&proj=' + PROJ : ''}`; // b200-f5-make: and its projection
     log(`opening ${url}`);
     await send('Page.navigate', { url });
     // The module is imported by boot(); until it is, there is nothing to await.

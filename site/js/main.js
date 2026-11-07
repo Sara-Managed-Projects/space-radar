@@ -1272,6 +1272,13 @@ export async function boot({ setStatus } = {}) {
   });
   // The film's cue sheet and its lower third hear the trip from here on (window.__srRender).
   if (film) film.attach(ctx);
+  // b200-f5-make: begin (forge #155, #156, #157) -- the flight editor, Record, Dome and 360: their wiring is ui/makers.js, fetched
+  // only for the share sheet's buttons, a `#path=` or `#proj=` link, or a film's `record=` (the boot graph's budget).
+  ctx.wantMakers = () => import('./ui/makers.js').then((m) => m.installMakers(ctx, { renderer, scene, camera, embed, film }));
+  const f5 = () => { if (/[#&](path|proj)=|[?&]record=/.test(location.href) || ctx.projection) ctx.wantMakers().then((m) => m.link()); };
+  if (film || window.__srLayersReady) f5(); else window.addEventListener('sr:layers-ready', f5, { once: true });
+  window.addEventListener('hashchange', f5);
+  // b200-f5-make: end
   ctx.openAt = (id) => openAt(ctx, id);
   // Names over the scene (spec 0026 req 5): the selection, its train, the nearest notable things.
   const labels = createLabels(ctx, document.getElementById('labels'));
@@ -3102,6 +3109,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // it is up (scene/exostage.js), so that render() above clears and draws nothing.
     if (ctx.imagine && ctx.imagine.active) ctx.imagine.render(t);
     if (ctx.replay && ctx.replay.active) ctx.replay.render(nowReal); // 0079 C1
+    if (ctx.makeFrame) ctx.makeFrame(t); // b200-f5-make: a dome or 360 frame over this one, and a recording's copy of it
     // After render(), because render() is what brings the camera's matrices up to this frame: placed
     // before it, the brackets trailed the station by one frame of camera motion.
     // The hand-off between two stages, straight after the frame it copies was drawn (scene/climb.js).

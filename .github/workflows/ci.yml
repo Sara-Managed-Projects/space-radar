@@ -1470,3 +1470,13 @@ jobs:
       - name: "The turning black hole's shadow: Bardeen's outline, the shader's fit and the card's spin line (forge #149)"
         run: node tests/test_kerrshadow.mjs
       # b200-f3-stars: end
+      # b200-f5-make: begin
+      - name: "the flight editor's path: the easing maths, the timeline, the clock along it, the #path= link round-trip and the draft trip (forge #155)"
+        run: node tests/test_flightpath.mjs
+      - name: "the flight editor's draft trip is a trip scripts/check_registry.py accepts (forge #155)"
+        run: python3 tests/test_flight_draft.py
+      - name: "Record: the crops, the format chosen per browser, the corner and the end card, the film address, the WebM read back (forge #156)"
+        run: node tests/test_recorder.mjs
+      - name: "Dome and 360: the fisheye, the equirectangular frame and the cube faces against the shader, the #proj= link, the device sizes (forge #157)"
+        run: node tests/test_projection.mjs
+      # b200-f5-make: end
