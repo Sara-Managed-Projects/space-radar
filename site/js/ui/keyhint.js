@@ -139,7 +139,7 @@ export function markSeen(storage) {
 
 /**
  * Why not to show it now, or null to show it. Pure.
- * @param {{seen: boolean|null, tripRunning?: boolean, deepLink?: boolean, clean?: boolean}} s
+ * @param {{seen: boolean|null, tripRunning?: boolean, deepLink?: boolean, clean?: boolean, playing?: boolean}} s
  */
 export function whyNot(s) {
   if (s.seen === null) return 'no-memory';
@@ -147,6 +147,7 @@ export function whyNot(s) {
   if (s.deepLink) return 'deep-link';
   if (s.tripRunning) return 'trip';
   if (s.clean) return 'clean';
+  if (s.playing) return 'play'; // b200-f6-learn: a daily challenge (ui/play.js) has the screen; the hint waits for a later visit
   return null;
 }
 
@@ -440,6 +441,7 @@ export function createKeyHint(ctx, opts = {}) {
       deepLink: !!opts.deepLink,
       tripRunning: !!(ctx && ctx.trip && ctx.trip.state && ctx.trip.state.phase !== 'idle') || html.classList.contains('sr-trip-mode'),
       clean: html.classList.contains('sr-clean'),
+      playing: html.classList.contains('sr-play-on'), // b200-f6-learn: set by main.js for a #play= link, cleared by ui/play.js on close
     });
     if (reason) return reason;
     await show();

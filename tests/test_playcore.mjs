@@ -81,7 +81,9 @@ ok(streak(s, '2026-11-07') === 2 && streak(s, '2026-11-05') === 0, `streak: ${st
 // off the first frame: the boot graph sees the key and the import, never the module, its words or its styles
 const main = readFileSync(join(ROOT, 'site/js/main.js'), 'utf8');
 ok(/import\('\.\/ui\/play\.js'\)/.test(main) && !/^import[^\n]*ui\/play(core)?\.js/m.test(main), 'main.js must reach ui/play.js only through a dynamic import');
+ok(/classList\.add\('sr-play-on'\)/.test(main) && /sr-play-on/.test(readFileSync(join(ROOT, 'site/js/ui/keyhint.js'), 'utf8')), 'a #play= link must set sr-play-on at boot, and ui/keyhint.js must stay away while it is set');
 const play = readFileSync(join(ROOT, 'site/js/ui/play.js'), 'utf8');
+ok(/classList\.remove\('sr-play-on'\)/.test(play), 'ui/play.js must clear sr-play-on when the challenge closes');
 ok(/import '\.\.\/copy\/en\.play\.js'/.test(play) && /loadCss\('play'\)/.test(play), 'ui/play.js must bring its own words and stylesheet');
 ok(!/play\.css/.test(readFileSync(join(ROOT, 'site/index.html'), 'utf8')), 'site/index.html must not link css/play.css');
 const url = readFileSync(join(ROOT, 'site/js/ui/urlstate.js'), 'utf8');

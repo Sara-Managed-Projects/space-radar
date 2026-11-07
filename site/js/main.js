@@ -1124,8 +1124,9 @@ export async function boot({ setStatus } = {}) {
   };
   if (window.__srLayersReady) findLater(); else window.addEventListener('sr:layers-ready', findLater, { once: true });
   // b200-f1-find: end
-  // b200-f6-learn: begin -- forge #160: a `#play=` link opens a daily challenge (ui/play.js), fetched for that link only
-  const playLink = () => { const k = readUrlKeys().play; if (k && !embed) import('./ui/play.js').then((m) => m.openPlay(ctx, k)).catch((e) => console.warn('play did not load', e)); };
+  // b200-f6-learn: begin -- forge #160: a `#play=` link opens a daily challenge (ui/play.js), fetched for that link only;
+  // `sr-play-on` at once keeps the first visit's controls hint off the card (ui/keyhint.js whyNot)
+  const playLink = () => { const k = readUrlKeys().play; if (!k || embed) return; document.documentElement.classList.add('sr-play-on'); import('./ui/play.js').then((m) => m.openPlay(ctx, k)).catch((e) => { document.documentElement.classList.remove('sr-play-on'); console.warn('play did not load', e); }); };
   playLink();
   window.addEventListener('hashchange', playLink);
   // b200-f6-learn: end

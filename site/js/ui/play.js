@@ -138,6 +138,7 @@ export function openPlay(ctx, key) {
     gen++;
     stopMarks();
     card.remove();
+    document.documentElement.classList.remove('sr-play-on');
     clearUrl(['play']);
     document.removeEventListener('keydown', onKey);
   }
@@ -154,6 +155,7 @@ export function openPlay(ctx, key) {
     gen++;
     stopMarks();
     if (!card.isConnected) { document.body.append(card); document.addEventListener('keydown', onKey); }
+    document.documentElement.classList.add('sr-play-on'); // the first visit's controls hint stays away (ui/keyhint.js)
     dayLine.textContent = t(COPY.play.day, { day: day() });
     say.textContent = '';
     const game = GAMES.includes(k) ? k : null;

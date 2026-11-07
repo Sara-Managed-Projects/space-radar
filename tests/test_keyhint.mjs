@@ -59,6 +59,8 @@ for (const [state, why] of [[{ deepLink: true }, 'deep-link'], [{ tripRunning: t
   check(hint.decide(s, {}) === null, `${why}: and the next ordinary visit does`);
 }
 check(hint.whyNot({ seen: true, deepLink: true }) === 'seen', 'seen outranks the rest');
+// b200-f6-learn: a daily challenge (ui/play.js, forge #160) has the screen on a first visit
+check(hint.whyNot({ seen: false, playing: true }) === 'play' && hint.whyNot({ seen: false, playing: false }) === null, 'a challenge keeps the hint away, and only while it is open');
 
 // --- touch or keys ------------------------------------------------------------------------------
 const mm = (matches) => ({ matchMedia: (q) => ({ matches: matches && /hover: none/.test(q) && /pointer: coarse/.test(q) }) });

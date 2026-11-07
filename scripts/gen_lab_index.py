@@ -120,14 +120,14 @@ def filter_form(codes: dict) -> str:
             '<p class="lcount" id="lcount" role="status" aria-live="polite"></p></form>')
 
 
-# One small script, no library: hides the cards (and the empty topics) that do not match, and keeps the choice in the
+# One small script, no library: hides the cards (and the empty topics) that do not match, counts the topic chips again, and keeps the choice in the
 # address (#band=11-14&code=gcse:4.8.1.3) so /teachers/ can link to one level. Nothing is fetched.
 FILTER_JS = """(function(){var f=document.getElementById('lfilter');if(!f)return;var cards=[].slice.call(document.querySelectorAll('.grid>li'));
 function read(){var h={};location.hash.slice(1).split('&').forEach(function(p){var i=p.indexOf('=');if(i>0)h[p.slice(0,i)]=decodeURIComponent(p.slice(i+1))});
 ['band','code','q'].forEach(function(k){if(h[k]!=null&&f.elements[k])f.elements[k].value=h[k]})}
 function run(write){var b=f.elements.band.value,c=f.elements.code.value,q=f.elements.q.value.trim().toLowerCase(),n=0;
 cards.forEach(function(li){var a=li.firstElementChild,ok=(!b||(' '+a.dataset.band+' ').indexOf(' '+b+' ')>=0)&&(!c||(' '+a.dataset.code+' ').indexOf(' '+c+' ')>=0)&&(!q||a.textContent.toLowerCase().indexOf(q)>=0);li.hidden=!ok;if(ok)n++});
-[].forEach.call(document.querySelectorAll('h2.cat'),function(h){var ul=h.nextElementSibling,any=[].some.call(ul.children,function(li){return!li.hidden});h.hidden=ul.hidden=!any});
+[].forEach.call(document.querySelectorAll('h2.cat'),function(h){var ul=h.nextElementSibling,k=[].filter.call(ul.children,function(li){return!li.hidden}).length,chip=document.querySelector('.topics a[href="#'+h.id+'"]');h.hidden=ul.hidden=!k;if(chip){chip.textContent=chip.dataset.name+' ('+k+')';chip.parentNode.hidden=!k}});
 var all=!b&&!c&&!q;document.getElementById('lcount').textContent=all?'':(n===1?'1 simulator matches':n+' simulators match');
 if(write){var p=[];if(b)p.push('band='+encodeURIComponent(b));if(c)p.push('code='+encodeURIComponent(c));if(q)p.push('q='+encodeURIComponent(q));history.replaceState(null,'',p.length?'#'+p.join('&'):location.pathname)}}
 f.addEventListener('input',function(){run(true)});f.addEventListener('submit',function(e){e.preventDefault()});read();run(false)})();"""
@@ -182,7 +182,7 @@ def build() -> str:
             continue
         cards = "\n".join(card(s, lv["labs"].get(s["slug"])) for s in mine)
         sections.append(f'<h2 class="cat" id="{anchor(cat)}">{esc(cat)}</h2>\n<ul class="grid">\n{cards}\n</ul>')
-        chips.append(f'<li><a href="#{anchor(cat)}">{esc(cat)} ({len(mine)})</a></li>')
+        chips.append(f'<li><a href="#{anchor(cat)}" data-name="{esc(cat)}">{esc(cat)} ({len(mine)})</a></li>')
     icon = ("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12.5' fill='%230B0E14'/>"
             "<circle cx='32' cy='32' r='14.38' fill='%232E6FB8'/></svg>")
     return f"""<!doctype html>
