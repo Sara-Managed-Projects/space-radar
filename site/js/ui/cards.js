@@ -1303,6 +1303,9 @@ function derivedDrawingLine(record, T, tMs) {
     // catalogue tracks is no longer that: Hitomi, intact on the screen and a wreck in orbit.
     const was = entry.was && T.objectWas ? T.objectWas[entry.was] : null;
     const said = (line) => [line, made, was].filter(Boolean).join(COPY.punctuation.separator);
+    // b200-m2-buses: begin -- a geostationary satellite whose bus a source names but whose shape is the stand-in (realmodels.js `sourcedBus`): the card names the bus and whose word it is
+    if (entry.sourcedBus && T.objectBus) return said(t(T.objectBus, { bus: String(entry.sourcedBus.name), source: String(entry.sourcedBus.by) }));
+    // b200-m2-buses: end
     if (entry.generic) return said(t(T.objectFamily, { name: String(entry.name) }));
     // A `file:` entry is somebody's model, loaded; a `build:` entry is scene/models.js working
     // from published metres. Both were printing "drawn from published dimensions", which is true

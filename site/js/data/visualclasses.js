@@ -449,7 +449,15 @@ export const VISUAL_CLASSES = [
 "elektro-l",
 "astrosat",
 "gosat",
-"microcarb"
+"microcarb",
+"cubesat-1u",
+"cubesat-2u",
+"cubesat-3u",
+"cubesat-3u-wings",
+"cubesat-6u",
+"cubesat-6u-wings",
+"cubesat-12u",
+"cubesat-12u-wings"
 ],
 "model_kinds": [
 "satellite-iridium",
@@ -535,7 +543,8 @@ export const VISUAL_CLASSES = [
 "pslv-ps4",
 "kosmos3m-stage2",
 "r7-8k72k",
-"sls-block1"
+"sls-block1",
+"vostok-blok-e"
 ],
 "model_kinds": [
 "rocket-upper-stage",

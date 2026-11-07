@@ -26,6 +26,11 @@ Things run by hand on a laptop. CI does not run them; each file's head comment s
 <!-- 0080 b190-comms: begin -->
 | `comms-builder/` | the communications-satellite file of release 1.9.0 (`oneweb.glb`; `iridium.py` is a held draft, not shipped), in code on the part library of `stage-builder/lib.py`: `clib.py` (foil edges, dishes, hexagon-tiled antenna fields), `iridium.py`, `oneweb.py` (the published dimensions and what is read off pictures, as arguments and in each head comment), `run.py` (a six-view z-buffer picture of a module, no browser), `build.sh` (`GLTFKIT=<dir with node_modules> tools/comms-builder/build.sh [iridium oneweb]`, json to the shipped .glb through `stage-builder/write-glb.mjs`) |
 <!-- 0080 b190-comms: end -->
+<!-- b200-m2-buses: begin -->
+| `bus-builder/` | eight geostationary-bus drafts of release 2.0.0 (forge #117), HELD: nothing ships from it, and its README says why. `glib.py` on `stage-builder/lib.py`, one module a bus; `python3 tools/bus-builder/run.py <module>` for a quick picture |
+| `cubesat-builder/` | the CubeSat files of release 2.0.0 (forge #118): `cube.py` (1U, 2U, 3U, 6U, 12U at the CubeSat Design Specification's sizes, stowed or with two deployed wings), `GLTFKIT=<dir> tools/cubesat-builder/build.sh [3u 3u-wings ...]` |
+| `vostok-builder/blok_e_stage.py` | the spent Vostok third stage (Blok E, SL-3 R/B) as its own file: `r7.build_blok_e()` on its own (forge #60) |
+<!-- b200-m2-buses: end -->
 | `look-playwright.mjs`, `look-summary.mjs` | the look workflow's Firefox and WebKit runner, and its summary and verdict (below) |
 
 Two of these in one command each. `cdp.mjs` runs a script inside a page: its `return` value is

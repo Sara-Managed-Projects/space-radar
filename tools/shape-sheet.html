@@ -66,8 +66,11 @@ for (let i = 0; i < WHICH.length; i++) {
     // `file:hubble.glb@telescope` names the class colour a file WOULD be painted if it carried no
     // colours of its own, which is the half of the before/after a recolour is judged by.
     const [file, colour = 'asteroid'] = variant.split('@');
-    const obj = await loadRealModel({ file, colour });
-    if (!obj) throw new Error(`could not load ${variant}`);
+    // b200-m2-buses: begin -- the loader hands back ONE object a file (it is cached), so the same file listed four times (four angles) was one object in the last cell; each cell gets its own clone
+    const loaded = await loadRealModel({ file, colour });
+    if (!loaded) throw new Error(`could not load ${variant}`);
+    const obj = loaded.clone(true);
+    // b200-m2-buses: end
     obj.userData.cell = i;
     scene.add(obj);
     labels.push(WHICH[i]);
@@ -86,6 +89,9 @@ cam.position.set(1.5, 1.05, 1.9);
 cam.lookAt(0, 0, 0);
 
 const ROT = (QS.get('rot') || '').split(',').map(Number), TILT = (QS.get('tilt') || '').split(',').map(Number);
+// b200-m2-buses: begin -- `zoom=1,1,3.5,3.5` draws the Nth cell that many times closer (a 39 m satellite is a thin line at zoom 1; its body is read at 3 or 4)
+const ZOOM = (QS.get('zoom') || '').split(',').map(Number);
+// b200-m2-buses: end
 const SHADE_FROM = QS.has('shade') ? Number(QS.get('shade')) : Infinity;
 const FLOOD_FROM = QS.has('flood') ? Number(QS.get('flood')) : Infinity;
 const SUN = new THREE.Vector3(0.6, 0.5, 0.62).normalize();
@@ -105,6 +111,9 @@ for (const o of scene.children) {
   }
   setFloodLight(i >= FLOOD_FROM);
   const cx = (i % COLS) * CELL, cy = (ROWS - 1 - Math.floor(i / COLS)) * CELL;
+  // b200-m2-buses: begin
+  { const z = ZOOM[i] > 0 ? ZOOM[i] : 1; cam.position.set(1.5 / z, 1.05 / z, 1.9 / z); cam.lookAt(0, 0, 0); }
+  // b200-m2-buses: end
   renderer.setViewport(cx, cy, CELL, CELL);
   renderer.setScissor(cx, cy, CELL, CELL);
   for (const p of scene.children) if (p.userData.cell !== undefined) p.visible = (p === o);

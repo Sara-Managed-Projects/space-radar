@@ -1047,6 +1047,9 @@ export const COPY = {
       "dawn": "seine Oberfläche ist das Schwarz-Weiß-Mosaik der Raumsonde Dawn, in einem von uns gewählten Grau getönt; die Schatten in seinen Kratern sind die, die Dawn fotografiert hat, und wandern hier nicht mit der Sonne"
     },
     "objectFamily": "gezeichnet als {name} – die Art von Ding, nicht genau dieses",
+    // b200-m2-buses: begin
+    "objectBus": "Bus: {bus} ({source}). Mit einem Ersatz-Bus gezeichnet.",
+    // b200-m2-buses: end
     "objectOwn": "gezeichnet als {name}",
     "objectMade": {
       "images": "Form aus Fotos gebaut; Proportionen ungefähr",

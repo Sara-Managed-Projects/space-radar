@@ -69,6 +69,10 @@ function loadKit() {
 }
 import { CLASS_COLOURS } from './glyphatlas.js';
 import { isGeostationary } from '../data/parsers.js';
+// b200-m2-buses: begin
+import { GEO_BUS_NORADS, GEO_BUS_LABELS } from '../data/geobuses.js';
+import { CUBESAT_NORADS } from '../data/cubesats.js';
+// b200-m2-buses: end
 
 const BASE = new URL('../../models/', import.meta.url);
 const TEXTURES = new URL('../../textures/', import.meta.url);
@@ -163,6 +167,47 @@ function gpsBlock(record) {
 
 const GEO_BUS = { file: 'bus-ssl1300.glb', colour: 'satellite', name: 'a geostationary satellite', generic: true };
 
+// b200-m2-buses: begin
+// WHICH BUS A GEOSTATIONARY SATELLITE FLIES (release 2.0.0; forge #117). GEO_BUS above is the stand-in for a geostationary satellite whose bus nobody has named. A satellite whose bus a source
+// names (registry/geo-buses.yaml cites each: Wikidata's `spacecraft bus`, the Wikipedia infobox, Gunter's Space Page, McDowell's GCAT; mirrored into data/geobuses.js by
+// scripts/gen_geo_buses_js.py) is routed by CATALOGUE NUMBER, never by name (INTELSAT, ASTRA, JCSAT and GALAXY each fly several makers' buses):
+//   - an SSL-1300 wears NASA's own SSL-1300 model, `generic` (a class's shape) and with no `made`: it is the right bus, not a stand-in;
+//   - every other sourced bus KEEPS THE STAND-IN, and the entry carries `sourcedBus: { name, by }` so that the card says which bus it is and whose word that is
+//     ("Bus: Eurostar E3000 (GCAT). Drawn with a stand-in bus."). Eight families were built in tools/bus-builder and HELD (registry/geo-buses.yaml `note`): side by side with the
+//     makers' renders they were one template recoloured, and a family needs clean-room drawings or flight photographs before it replaces the stand-in.
+const GEO_SSL1300 = { file: 'bus-ssl1300.glb', colour: 'satellite', name: 'an SSL-1300 satellite', generic: true };
+const GEO_SOURCE_NAMES = { gcat: 'GCAT', gunter: 'Gunter\u2019s Space Page', wikipedia: 'Wikipedia', wikidata: 'Wikidata' };
+const GEO_BUS_OF = new Map();
+for (const [key, list] of Object.entries(GEO_BUS_NORADS)) {
+  const [bus, source] = key.split(':');
+  const entry = source ? { ...GEO_BUS, sourcedBus: { name: GEO_BUS_LABELS[bus], by: GEO_SOURCE_NAMES[source] } } : GEO_SSL1300;
+  for (const n of list) GEO_BUS_OF.set(n, entry);
+}
+// CUBESATS (forge #118): a catalogued CubeSat is drawn as the form factor McDowell's GCAT names for it (registry/cubesats.yaml, mirrored into data/cubesats.js by
+// scripts/gen_cubesats_js.py), at the CubeSat Design Specification's own size (tools/cubesat-builder/cube.py), with two deployed wings where GCAT's `Shape` says two panels.
+// `generic`: it is the FORM, not that satellite's own parts, and the card says so. A number GCAT does not name keeps whatever it wore before. `build` is the procedural shape drawn while
+// the file is on its way (the nearest of the three builders in scene/models.js: a 12U borrows the 6U).
+const CUBE_FAMILY = { colour: 'satellite', generic: true, made: 'dimensions', axes: 'app' };
+const CUBESATS = {
+  '1u': { ...CUBE_FAMILY, build: 'cubesat-1u', file: 'cubesat-1u.glb', name: 'a standard 1U CubeSat form' },
+  '2u': { ...CUBE_FAMILY, build: 'cubesat-2u', file: 'cubesat-2u.glb', name: 'a standard 2U CubeSat form' },
+  '3u': { ...CUBE_FAMILY, build: 'cubesat', file: 'cubesat-3u.glb', name: 'a standard 3U CubeSat form' },
+  '3u-wings': { ...CUBE_FAMILY, build: 'cubesat', file: 'cubesat-3u-wings.glb', name: 'a standard 3U CubeSat form with two deployed panels' },
+  '6u': { ...CUBE_FAMILY, build: 'cubesat-6u', file: 'cubesat-6u.glb', name: 'a standard 6U CubeSat form' },
+  '6u-wings': { ...CUBE_FAMILY, build: 'cubesat-6u', file: 'cubesat-6u-wings.glb', name: 'a standard 6U CubeSat form with two deployed panels' },
+  '12u': { ...CUBE_FAMILY, build: 'cubesat-6u', file: 'cubesat-12u.glb', name: 'a standard 12U CubeSat form' },
+  '12u-wings': { ...CUBE_FAMILY, build: 'cubesat-6u', file: 'cubesat-12u-wings.glb', name: 'a standard 12U CubeSat form with two deployed panels' },
+};
+const CUBESAT_OF = new Map();
+for (const [form, list] of Object.entries(CUBESAT_NORADS)) for (const n of list) CUBESAT_OF.set(n, CUBESATS[form]);
+/** The sourced CubeSat entry for a record, for the name routes below (Flock, Lemur, Starling) to prefer over their 3U build, or {} to leave them as they were. */
+const cubeResolve = (record) => {
+  const meta = record && record.meta ? record.meta : {};
+  const n = Number(meta.noradId ?? meta.catalogueNumber);
+  return CUBESAT_OF.get(n) || {};
+};
+// b200-m2-buses: end
+
 // 0078 r14-m2: begin
 // Six communications craft by catalogue number (public #1121 to #1123, #1154 to #1156), written compactly because `realmodels.js` is read at boot and every route is the same six
 // fields: the catalogue name is `cat` + the suffix, as CelesTrak calls the number (the test lists them one by one), and the card says `name` + the suffix.
@@ -186,6 +231,11 @@ for (const [file, name, made, pre, rows] of [
 ]) for (const [n, c] of rows) M3_ROUTES[n] = { file, colour: 'satellite', name, catalogue: pre + c, ...(made && { made }), axes: 'app' };
 // 0078 r14-m3: end
 export const REAL_MODELS = {
+  // b200-m2-buses: begin -- the two tables of sourced families (scene/realmodels.js GEO_BUSES and CUBESATS above), listed here so that every file has a route that the registry
+  // tests (tests/test_real_models.mjs) and scripts/check-model-reach.py can see; realModelFor() reads them through GEO_BUS_OF and CUBESAT_OF, by catalogue number, never by name.
+  geoBus: { 'ssl-1300': GEO_SSL1300 },
+  cubeForm: CUBESATS,
+  // b200-m2-buses: end
   /**
    * By catalogue number. `catalogue` is the name CelesTrak returns for that number and is not
    * decoration: `scripts/check-model-ids.sh` fetches each one and fails if the live name does not
@@ -1322,6 +1372,13 @@ export const REAL_MODELS = {
     // it tumbles. `generic: true` is what makes the card say
     // "drawn as a spent rocket stage -- the kind of thing, not this exact one". parsers.js
     // classifies R/B, ROCKET BODY, AKM, PKM and UPPER STAGE as klass `rocket`, and only those.
+    // b200-m2-buses: begin -- THE VOSTOK THIRD STAGE (release 2.0.0; forge #60). `sl-3 r/b` is CelesTrak's name for Blok E, the third stage of the Vostok launcher (the 8K72K and its
+    // 8A92 successors): 11 in the copy of 2026-11-05. The file is `blok-e`, the part of the 1.5.0 Vostok launcher (`r7-8k72k.glb`), taken out on its own and drawn as it stays in
+    // orbit (no truss, no shroud). It sits ABOVE `r/b` because the first key that matches wins, and is gated to klass `rocket` like its neighbours. The other stages of the
+    // issue list (Zenit-2, Tsyklon-3, Long March 4B/4C and 2C, Ariane 40's H10, Blok DM, Breeze-M) are HELD: no photograph of their flight hardware under a free licence, and
+    // where sources disagree on sizes, the registry and the changelog of this batch say which.
+    'sl-3 r/b': { file: 'vostok-blok-e.glb', build: 'stage', colour: 'rocket', name: 'a Vostok Blok E third stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
+    // b200-m2-buses: end
     'r/b': { build: 'stage', colour: 'rocket', name: 'a spent rocket stage', klass: ['rocket'], generic: true },
     'rocket body': { build: 'stage', colour: 'rocket', name: 'a spent rocket stage', klass: ['rocket'], generic: true },
     'upper stage': { build: 'stage', colour: 'rocket', name: 'a spent rocket stage', klass: ['rocket'], generic: true },
@@ -1635,11 +1692,11 @@ export const REAL_MODELS = {
           : { build: 'starlink-v2', name: 'a Starlink V2 Mini' };
       },
     },
-    flock: { build: 'cubesat', colour: 'satellite', name: 'a Dove, a 3U CubeSat', klass: ['satellite'], generic: true },
-    lemur: { build: 'cubesat', colour: 'satellite', name: 'a Lemur, a 3U CubeSat', klass: ['satellite'], generic: true },
+    flock: { build: 'cubesat', colour: 'satellite', name: 'a Dove, a 3U CubeSat', klass: ['satellite'], generic: true, resolve: cubeResolve }, // b200-m2-buses: resolve
+    lemur: { build: 'cubesat', colour: 'satellite', name: 'a Lemur, a 3U CubeSat', klass: ['satellite'], generic: true, resolve: cubeResolve }, // b200-m2-buses: resolve (about half the Lemurs are not 3U)
     // NASA's Starling: four 6U CubeSats flying as a swarm since 2023 (nasa.gov/smallspacecraft/starling).
     // The one 6U route, because it is the one constellation whose size its operator states plainly.
-    starling: { build: 'cubesat-6u', colour: 'satellite', name: 'a Starling, a 6U CubeSat', klass: ['satellite'], generic: true },
+    starling: { build: 'cubesat-6u', colour: 'satellite', name: 'a Starling, a 6U CubeSat', klass: ['satellite'], generic: true, resolve: cubeResolve }, // b200-m2-buses: resolve
     // AST SpaceMobile's BlueBirds: nine of them on the `visual` layer as of 2026-09-12, which is
     // more objects than any other unshaped thing on it, and they are among the brightest things
     // in the sky because the array is a sheet the size of a studio apartment. The catalogue calls
@@ -2065,6 +2122,13 @@ export function realModelFor(record) {
   //
   // Klass-gated: a spent stage or a fragment in the ring keeps the shape of what it is. Every
   // route above still wins, so GOES and TDRS keep their own models.
+  // b200-m2-buses: begin -- a sourced CubeSat form (see CUBESATS), then a sourced bus (see GEO_BUS_OF)
+  if (record.klass === 'satellite' && norad != null && CUBESAT_OF.has(Number(norad))) return CUBESAT_OF.get(Number(norad));
+  if (record.klass === 'satellite' && norad != null && GEO_BUS_OF.has(Number(norad))) {
+    const geo = GEO_BUS_OF.get(Number(norad));
+    if (!geo.sourcedBus || isGeostationary(record)) return geo; // a stand-in is only for the ring, as before
+  }
+  // b200-m2-buses: end
   if (record.klass === 'satellite' && isGeostationary(record)) return GEO_BUS;
   // Last: a default for the whole layer, so an unnamed member of a known population still gets
   // geometry that looks like what it is. The ring is above; this stays for any layer that gets a

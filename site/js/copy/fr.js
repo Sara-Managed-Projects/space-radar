@@ -1051,6 +1051,9 @@ export const COPY = {
       "dawn": "sa surface est la mosaïque en noir et blanc de la sonde Dawn, teintée d’un gris que nous avons choisi ; les ombres dans ses cratères sont celles que Dawn a photographiées et ne bougent pas ici avec le Soleil"
     },
     "objectFamily": "dessiné comme {name} — le genre d’objet, pas celui-ci exactement",
+    // b200-m2-buses: begin
+    "objectBus": "Plateforme : {bus} ({source}). Dessiné avec une plateforme de remplacement.",
+    // b200-m2-buses: end
     "objectOwn": "dessiné comme {name}",
     "objectMade": {
       "images": "forme construite à partir de photographies ; proportions approximatives",
