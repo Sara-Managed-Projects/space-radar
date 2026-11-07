@@ -4467,3 +4467,21 @@ Which satellite wears which CubeSat file is `registry/cubesats.yaml`: each row c
 McDowell's catalogue is used under its CC BY 4.0 licence: the catalogue numbers, bus names, forms and sizes it lists are cited, and its columns are not republished beyond the registry rows that cite them. Gunter's Space Page, Wikipedia and Wikidata are cited by page for a fact each; none of their text or pictures is in the repository.
 No logo, lettering, flag or insignia is on any of them. Planet and Spire do not endorse Space Radar, and none of them made or approved these shapes.
 <!-- b200-m2-buses: end -->
+
+<!-- b200-m3-mid: begin -->
+## 3c-b200-m3-mid. Release 2.0.0: Kinéis and QPS-SAR (2026-11-07)
+
+Release 2.0.0, batch m3-mid (forge #174, #128). Of the 20 mid-size families of #174, two have a model of their own; the others were looked at and held, and the reasons are in the changelog. Both files are built in code by this project (`tools/nanosat-builder`, on the part library of `tools/stage-builder`) from published numbers.
+**The pictures were LOOKED AT ONLY**: three photographs of 1:1 models and one of flight units of Kinéis (Wikimedia Commons, CC BY-SA 4.0), and iQPS's photograph of a QPS-SAR with its antenna deployed and its rendition of QPS-SAR 3, as eoPortal prints them (copyright iQPS). No mesh, no texture and no picture of anyone else's is in a file.
+`registry/models.yaml` has a row with every number, the sentence it was read from and what is ours; each card says "shape built from published dimensions and pictures; details simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `kineis.glb` (85 KB) | A Kinéis nanosatellite: a 450 x 260 x 240 mm gold-foil body with a 12-lobed ring and square plate, six hinged panels (1.6 m across), a four-strand twisted UHF helix on nine ring spacers with the S-band tube on its tip, and a fan of six VHF rods | the operator's FCC orbital-debris filing and press releases (sizes); four photographs of the 1:1 models and flight units (CC BY-SA 4.0, Wikimedia Commons), looked at only | built by us; numbers are facts |
+| `qps-sar.glb` (122 KB) | A QPS-SAR of unit 5 or later: a 0.8 m cube bus with black cells in gold frames under a 3.6 m by 1.0 m mesh dish of 36 gores on curved ribs with a double rim hoop, a three-legged stand with the feed saucer, the spray of wires between bowl and bus | iQPS's investor presentations and eoPortal's article (sizes); iQPS's photograph and rendition on eoPortal, looked at only | built by us; numbers are facts |
+
+**Credit line:**
+`3D model: built by Space Radar from published dimensions (Kinéis's FCC filing and press releases; iQPS's investor presentations and eoPortal); layout read from photographs that were looked at only (Wikimedia Commons, CC BY-SA 4.0; iQPS as printed by eoPortal)`
+
+No logo, lettering, flag or insignia is on either. Kinéis, Hemeria and iQPS do not endorse Space Radar, and none of them made or approved these shapes.
+<!-- b200-m3-mid: end -->

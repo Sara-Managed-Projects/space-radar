@@ -457,7 +457,9 @@ export const VISUAL_CLASSES = [
 "cubesat-6u",
 "cubesat-6u-wings",
 "cubesat-12u",
-"cubesat-12u-wings"
+"cubesat-12u-wings",
+"kineis",
+"qps-sar"
 ],
 "model_kinds": [
 "satellite-iridium",

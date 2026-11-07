@@ -249,6 +249,51 @@ export const REAL_MODELS = {
    * assumed not to need one because an id is exact. The id was exact. It was also wrong.
    */
   norad: {
+    // b200-m3-mid: begin
+    // FAMILIES THAT HAVE A MODEL OF THEIR OWN IN BATCH m3-mid (release 2.0.0; forge #174, #128), BY CATALOGUE NUMBER with the name CelesTrak gives each, never by name word: a name is how a
+    // constellation is called and says nothing of which launch's hardware it is. Written out one number a line (not through a helper) so that scripts/check-model-reach.py, which reads this table
+    // as text, sees every route. Each file is built in code by this project from published sizes and photographs that were looked at only (tools/nanosat-builder; the rows in
+    // registry/models.yaml say what is cited and what is ours); `generic` is off: each is that craft's own design. A family that was looked at and held keeps what it wore (see the changelog).
+    // Kinéis: the 25 nanosatellites of the five launches (2024-114, 2024-172, 2024-219, 2025-028, 2025-056), all of one Hemeria design
+    60079: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-1B', made: 'dimensions', axes: 'app' }, // 2024-114A
+    60081: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-1C', made: 'dimensions', axes: 'app' }, // 2024-114C
+    60082: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-1D', made: 'dimensions', axes: 'app' }, // 2024-114D
+    60083: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-1E', made: 'dimensions', axes: 'app' }, // 2024-114E
+    60084: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-1A', made: 'dimensions', axes: 'app' }, // 2024-114F
+    61220: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-3C', made: 'dimensions', axes: 'app' }, // 2024-172A
+    61221: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-3D', made: 'dimensions', axes: 'app' }, // 2024-172B
+    61222: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-3E', made: 'dimensions', axes: 'app' }, // 2024-172C
+    61223: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-3A', made: 'dimensions', axes: 'app' }, // 2024-172D
+    61224: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-3B', made: 'dimensions', axes: 'app' }, // 2024-172E
+    62081: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-5C', made: 'dimensions', axes: 'app' }, // 2024-219A
+    62082: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-5D', made: 'dimensions', axes: 'app' }, // 2024-219B
+    62083: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-5E', made: 'dimensions', axes: 'app' }, // 2024-219C
+    62084: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-5A', made: 'dimensions', axes: 'app' }, // 2024-219D
+    62085: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-5B', made: 'dimensions', axes: 'app' }, // 2024-219E
+    62929: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-2C', made: 'dimensions', axes: 'app' }, // 2025-028B
+    62930: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-2D', made: 'dimensions', axes: 'app' }, // 2025-028C
+    62931: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-2E', made: 'dimensions', axes: 'app' }, // 2025-028D
+    62932: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-2A', made: 'dimensions', axes: 'app' }, // 2025-028E
+    62934: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-2B', made: 'dimensions', axes: 'app' }, // 2025-028G
+    63300: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-4E', made: 'dimensions', axes: 'app' }, // 2025-056A
+    63301: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-4C', made: 'dimensions', axes: 'app' }, // 2025-056B
+    63302: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-4D', made: 'dimensions', axes: 'app' }, // 2025-056C
+    63303: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-4A', made: 'dimensions', axes: 'app' }, // 2025-056D
+    63304: { file: 'kineis.glb', colour: 'satellite', name: 'Kinéis', catalogue: 'KINEIS-4B', made: 'dimensions', axes: 'app' }, // 2025-056E
+    // QPS-SAR: units 5 and later, every one with the 3.6 m deployable mesh dish
+    58578: { file: 'qps-sar.glb', colour: 'satellite', name: 'QPS-SAR', catalogue: 'QPS-SAR-5 (TSUKUYOMI-I)', made: 'dimensions', axes: 'app' }, // 2023-196A
+    59447: { file: 'qps-sar.glb', colour: 'satellite', name: 'QPS-SAR', catalogue: 'QPS-SAR-7 (TSUKUYOMI-II)', made: 'dimensions', axes: 'app' }, // 2024-066F
+    60542: { file: 'qps-sar.glb', colour: 'satellite', name: 'QPS-SAR', catalogue: 'QPS-SAR-8 (AMATERU-IV)', made: 'dimensions', axes: 'app' }, // 2024-149CC
+    63205: { file: 'qps-sar.glb', colour: 'satellite', name: 'QPS-SAR', catalogue: 'QPS-SAR-9 (SUSANOO-I)', made: 'dimensions', axes: 'app' }, // 2025-050A
+    64055: { file: 'qps-sar.glb', colour: 'satellite', name: 'QPS-SAR', catalogue: 'QPS-SAR-10 (WADATSUMI-I)', made: 'dimensions', axes: 'app' }, // 2025-104A
+    64340: { file: 'qps-sar.glb', colour: 'satellite', name: 'QPS-SAR', catalogue: 'QPS-SAR-11 (YAMATSUMI-I)', made: 'dimensions', axes: 'app' }, // 2025-125A
+    65116: { file: 'qps-sar.glb', colour: 'satellite', name: 'QPS-SAR', catalogue: 'QPS-SAR-12 (KUSHINADA-I)', made: 'dimensions', axes: 'app' }, // 2025-169A
+    66316: { file: 'qps-sar.glb', colour: 'satellite', name: 'QPS-SAR', catalogue: 'QPS-SAR-14 (YACHIHOKO-I)', made: 'dimensions', axes: 'app' }, // 2025-252A
+    67228: { file: 'qps-sar.glb', colour: 'satellite', name: 'QPS-SAR', catalogue: 'QPS-SAR-15 (SUKUNAMI-I)', made: 'dimensions', axes: 'app' }, // 2025-307A
+    100243: { file: 'qps-sar.glb', colour: 'satellite', name: 'QPS-SAR', catalogue: 'QPS-SAR-13 (MIKURA-I)', made: 'dimensions', axes: 'app' }, // 2026-180A
+    100401: { file: 'qps-sar.glb', colour: 'satellite', name: 'QPS-SAR', catalogue: 'QPS-SAR-18 (SUSANOO-II)', made: 'dimensions', axes: 'app' }, // 2026-191A
+    101257: { file: 'qps-sar.glb', colour: 'satellite', name: 'QPS-SAR', catalogue: 'QPS-SAR-20 (WADATSUMI-II)', made: 'dimensions', axes: 'app' }, // 2026-247A
+    // b200-m3-mid: end
     // 0078 r14-m2: begin
     // thuraya (public #1123): 2 craft by number, from the issue's own table of the live saved data of 2026-10-12
     ...R14M2('thuraya.glb', 'THURAYA', 'Thuraya', [[27825, '-2'], [32404, '-3']]),
