@@ -68,5 +68,7 @@ export const BUDGETS = {
   "deep_galclusters_bytes": 150000,
   "deep_galclusters_draw_calls": 6,
   "deep_catalogue_bytes": 1300000,
-  "deep_catalogue_draw_calls": 2
+  "deep_catalogue_draw_calls": 2,
+  "star_motion_bytes": 290000,
+  "variable_stars_bytes": 20000
 };
