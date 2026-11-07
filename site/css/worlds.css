@@ -318,3 +318,10 @@ html.sr-sharing .sr-helio-legend { display: none; }
 html.sr-phone[data-sheet='full'] .sr-helio-chip,
 html.sr-phone[data-sheet='full'] .sr-helio-legend,
 html.sr-phone[data-sheet='full'] .sr-cutaway { display: none; }
+
+/* On a phone the probe and its readings come first, under the title: they are what the panel is for, and
+   the layer list scrolls under them. */
+html.sr-phone .sr-cutaway { display: flex; flex-direction: column; }
+html.sr-phone .sr-cutaway > * { flex-shrink: 0; }
+html.sr-phone .sr-cutaway__head { order: -2; }
+html.sr-phone .sr-cutaway__probe { order: -1; margin: 0 0 var(--sp-2); }
