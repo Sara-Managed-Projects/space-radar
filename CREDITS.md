@@ -4488,6 +4488,26 @@ Release 2.0.0, batch m3-mid (forge #174, #128). Of the 20 mid-size families of #
 No logo, lettering, flag or insignia is on either. Kinéis, Hemeria and iQPS do not endorse Space Radar, and none of them made or approved these shapes.
 <!-- b200-m3-mid: end -->
 
+<!-- b200-m4-buses: begin -->
+## 3c-b200-m4-buses. Release 2.0.0: four geostationary bus families (2026-11-07)
+
+Release 2.0.0, batch m4-buses (forge #117). The bus families held in batch m2 were rebuilt one by one to their own layouts; four ship, the rest stay held (the changelog says why). All four files are built in code by this project (`tools/bus-builder`, on the part library of `tools/stage-builder`) from published sizes: McDowell's GCAT (CC BY 4.0), the Wikipedia infoboxes of MEASAT-3B, Intelsat 10-02, Eutelsat 70B and JCSAT-3A (CC BY-SA 4.0; numbers only), Boeing's 702SP figure as Gunter's Space Page quotes it.
+**The pictures were LOOKED AT ONLY**: the makers' renders as Gunter's Space Page prints them (copyright Airbus, Boeing, Lockheed Martin); NASA's render of SES-14 (public domain); the US Air Force's drawing of WGS, a 702HP ([Commons](https://commons.wikimedia.org/wiki/File:MC-2941_Wideband_Global_SATCOM_Satellite.png), public domain); the photograph of Morelos 3 in the clean room ([Commons](https://commons.wikimedia.org/wiki/File:Sat%C3%A9lite_Morelos_III.jpg), CC BY-SA 4.0); SpaceX's photograph of ABS-3A separating ([Commons](https://commons.wikimedia.org/wiki/File:ABS-EUTELSAT_Separation_(16788442562).jpg), CC0). No mesh, no texture and no picture of anyone else's is in a file.
+No photograph of any of these families deployed in orbit exists under a free licence, so each card says "shape built from published dimensions and the maker's renders; details estimated", and `registry/models.yaml` says which numbers are cited and which are ours.
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `bus-eurostar-e3000.glb` (139 KB) | Airbus Eurostar E3000: a 2.4 x 2.9 x 4.8 m gold-blanketed box, broad OSR radiators, two deployed reflectors on each of the east and west walls, the deck tower, four-panel wings on long V yokes, 39.2 m | GCAT and Wikipedia (sizes); Airbus's renders (Gunter's Space Page) and NASA's SES-14 render, looked at only | built by us; numbers are facts |
+| `bus-boeing-702.glb` (149 KB) | Boeing 702HP / 702MP: a 3.0 x 3.3 x 5.6 m black-blanketed box, ribbed and deployed radiators, four reflectors in an X, six-panel wings each on one mast, 40.4 m | GCAT (sizes); the Morelos 3 photograph, the USAF WGS drawing and Boeing's renders, looked at only | built by us; numbers are facts |
+| `bus-boeing-702sp.glb` (114 KB) | Boeing 702SP: a 2.1 x 2.1 x 3.6 m silver box, four reflectors in an X on splayed arms, four ion thrusters, six-panel wings, 40.0 m | Boeing's figure (Gunter) and GCAT (sizes); SpaceX's separation photograph and Boeing's renders, looked at only | built by us; numbers are facts |
+| `bus-a2100ax.glb` (117 KB) | Lockheed Martin A2100AX: a 2.2 x 2.5 x 4.9 m silver box, dark OSR radiators, one 3.0 m reflector a side and a deck tower, broad four-panel wings on stand-off yokes, 26.9 m | GCAT and Wikipedia (sizes); Lockheed Martin's renders (Gunter's Space Page), looked at only | built by us; numbers are facts |
+
+**Credit line:**
+`3D model: built by Space Radar from published dimensions (McDowell's GCAT, Wikipedia, the makers' figures); layout read from the makers' renders, looked at only`
+
+No logo, lettering, flag or insignia is on any of them. Airbus, Boeing and Lockheed Martin do not endorse Space Radar, and none of them made or approved these shapes.
+<!-- b200-m4-buses: end -->
+
 <!-- b200-f4-cards: begin -->
 ## 3f-wiki. The cards' Wikipedia block — Wikipedia (CC BY-SA 4.0), Commons, Wikidata (CC0) (2026-11-07)
 

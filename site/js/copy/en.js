@@ -1674,6 +1674,9 @@ export const COPY = {
       images: 'shape built from photographs; proportions approximate',
       render: 'shape built from an artist’s render; proportions approximate',
       dimensions: 'shape built from published dimensions and pictures; details simplified',
+      // b200-m4-buses: begin -- a geostationary bus built here from published sizes and the maker's renders (registry/geo-buses.yaml `made: renders`)
+      renders: 'shape built from published dimensions and the maker’s renders; details estimated',
+      // b200-m4-buses: end
     },
     // 2026-10-13 (public #969): a craft drawn as it was, not as it is (scene/realmodels.js `was`).
     // Hitomi spun itself apart on 26 March 2016; catalogue object 41337 is its main body, and JAXA

@@ -237,6 +237,24 @@ def main():
         if n == 0:
             zero.append(shape)
 
+    # b200-m4-buses: begin -- the sourced geostationary-bus families (data/geobuses.js, mirrored from registry/geo-buses.yaml) are routed by catalogue number from a
+    # table realmodels.js loads after the boot graph, so they are not in the `norad:` block above: each DRAWN family (a key without `:source`) is measured here by its numbers.
+    # A number counts when it is in the catalogue copy and no `norad:` route above takes it first (realModelFor() orders them so).
+    geo_src = (ROOT / "site/js/data/geobuses.js").read_text(encoding="utf-8")
+    drawn = dict(re.findall(r'^"([a-z0-9-]+)": \{\n"file": "([^"]+)"', geo_src, re.M))
+    drawn["ssl-1300"] = "bus-ssl1300.glb"
+    table = geo_src[geo_src.index("GEO_BUS_NORADS") : geo_src.index("GEO_BUS_LABELS")]
+    print(f"\n{'geostationary bus family (by number)':<40}{'objects':>9}{'rows':>7}")
+    for key, body in re.findall(r'^"([a-z0-9:-]+)": \[([^\]]*)\]', table, re.M):
+        if ":" in key:
+            continue
+        nums = [int(x) for x in re.findall(r"\d+", body)]
+        n = sum(1 for x in nums if x in objects and x not in by_id)
+        print(f"  {key + ' -> ' + drawn.get(key, '?'):<38}{n:>9}{len(nums):>7}{'   <-- reaches nothing' if n == 0 else ''}")
+        if n == 0:
+            zero.append(drawn.get(key, key))
+    # b200-m4-buses: end
+
     if unmeasurable:
         print("\nnot measurable from a CelesTrak group file -- these rows are gated to a klass")
         print("that comes from JPL, the MPC or registry/sites.yaml, so their reach is not a zero:")

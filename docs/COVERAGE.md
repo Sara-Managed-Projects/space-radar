@@ -24,7 +24,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | catalogues | 4 | 110 191 |
 | other_light | 3 | 3 |
 | sites | 60 | 60 |
-| real_models | 302 | 302 |
+| real_models | 306 | 306 |
 | model_kinds | 52 | 52 |
 | small_bodies | 22 | 22 |
 | probes | 39 | 39 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 39 | 39 |
-| **all** | **1185** | **111 372** |
+| **all** | **1189** | **111 376** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -49,7 +49,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [DWARF_PLANET](#dwarf_planet) | 9 | `worlds.js`, `glyphs.js`, `models.js`, `dwarfs.js` | measured | - |
 | [ASTEROID](#asteroid) | 31 | `models.js`, `realmodels.js`, `glyphs.js`, `kepler.js`, `moonshape.js` | modelled | - |
 | [COMET](#comet) | 5 | `models.js`, `glyphs.js`, `kepler.js` | modelled | - |
-| [ARTIFICIAL_SATELLITE](#artificial_satellite) | 246 | `sgp4.js`, `glyphs.js`, `realmodels.js`, `models.js` | measured | - |
+| [ARTIFICIAL_SATELLITE](#artificial_satellite) | 250 | `sgp4.js`, `glyphs.js`, `realmodels.js`, `models.js` | measured | - |
 | [LAUNCH_AND_ROCKET](#launch_and_rocket) | 85 | `models.js`, `ascent.js`, `realmodels.js` | illustrative | - |
 | [SPACE_PROBE](#space_probe) | 74 | `sampled.js`, `realmodels.js`, `models.js`, `glyphs.js` | measured | - |
 | [LANDING_SITE](#landing_site) | 76 | `models.js`, `realmodels.js`, `shadow.js` | measured | - |
@@ -82,7 +82,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 1185 records: 373 measured, 447 modelled, 365 illustrative.
+Honesty over the 1189 records: 373 measured, 451 modelled, 365 illustrative.
 
 ## The classes
 
@@ -289,8 +289,8 @@ Honesty over the 1185 records: 373 measured, 447 modelled, 365 illustrative.
 - **Measured, modelled or reconstructed:** Measured: orbits and positions. Models: NASA's own meshes are the craft; built-from-dimensions shapes are simplified and say so; a procedural stand-in says it is the kind of thing, not this one.
 - **Rights:** CelesTrak data with its usage policy; NASA models free and without copyright; built shapes MIT (this project).
 - **What is missing is tracked in:** public #267 (the art pass)
-- **Records (246):**
-  - real_models (197): `poes`, `sentinel6`, `icesat2`, `jason`, `oco2`, `cloudsat`, `calipso`, `tselina2`, `seastar`, `cygnss`, `icon`, `hinode`, `gpm`, `fermi`, `tdrs`, `soho`, `iss`, `landsat`, `bus-ssl1300`, `dscovr`, `mms`, `sdo`, `suomi`, `tess`, `hubble`, `chandra`, `swift`, `goes`, `terra`, `aqua`, `aura`, `grace`, `jwst`, `landsat8`, `spitzer`, `kepler`, `roman`, `hubble-sts31`, `msl-entry`, `msl-descent-stage`, `radarsat1`, `cygnus`, `nustar`, `xrism`, `noaa21`, `seasat`, `hitomi`, `lageos`, `ajisai`, `soyuz-ms`, `progress-ms`, `dragon-crew`, `dragon-cargo`, `shenzhou`, `tianzhou`, `starlette`, `lares`, `lares2`, `etalon`, `westpac`, `swot`, `nisar`, `ixpe`, `pace`, `starlink-v1`, `umbra`, `iceye`, `gps-iir`, `gps-iif`, `gps-iii`, `galileo-foc`, `galileo-iov`, `michibiki`, `qzs-1r`, `qzs-3`, `qzs-7`, `irnss`, `saocom`, `strix`, `terrasar-x`, `xmm-newton`, `metop`, `envisat`, `ers-1`, `sentinel-1`, `sentinel-2`, `sentinel-3`, `sentinel-5p`, `cryosat-2`, `smos`, `alos-2`, `glonass-m`, `glonass-k`, `fengyun-3`, `himawari`, `gcom-w`, `gcom-c`, `dampe`, `cses`, `scisat`, `proba-3-csc`, `proba-3-osc`, `proba-v`, `formosat-7`, `oao-2`, `oao-3`, `smap`, `jason-3`, `sorce`, `themis`, `tiangong`, `wentian`, `mengtian`, `shenzhou-orbital`, `gaia`, `earthcare`, `biomass`, `swarm`, `metop-sg-a`, `iris`, `timed`, `sert-2`, `isis-1`, `tracers`, `thuraya`, `inmarsat-4`, `viasat-3`, `o3b`, `globalstar-2`, `oneweb`, `o3b-mpower`, `wgs`, `aehf`, `muos`, `sbirs-geo`, `ao-7`, `swas`, `meteosat-msg`, `fengyun-2`, `mtg-i`, `mtg-s`, `insat-3d`, `gk2a`, `gk2b`, `meteor-m2`, `midori-2`, `resurs-dk1`, `worldview-3`, `blacksky-gen2`, `satellogic-newsat`, `planet-pelican`, `hawkeye360-block1`, `ghgsat-c`, `gaofen-1`, `cbers-4`, `cbers-4a`, `amazonia-1`, `kompsat-3`, `kompsat-5`, `cartosat-2`, `resourcesat-2`, `eos-06`, `kanopus-v`, `resurs-p`, `vostok-3ka`, `vostok-seat`, `vostok-chutes`, `voskhod-3kd`, `leonov-eva`, `sputnik-1`, `pleiades`, `spot-6-7`, `skysat`, `beidou-3-meo`, `beidou-3-igso`, `cheops`, `hxmt`, `svom`, `einstein-probe`, `radarsat-2`, `rcm`, `cosmo-skymed`, `csg`, `elektro-l`, `astrosat`, `gosat`, `microcarb`, `cubesat-1u`, `cubesat-2u`, `cubesat-3u`, `cubesat-3u-wings`, `cubesat-6u`, `cubesat-6u-wings`, `cubesat-12u`, `cubesat-12u-wings`, `kineis`, `qps-sar`
+- **Records (250):**
+  - real_models (201): `poes`, `sentinel6`, `icesat2`, `jason`, `oco2`, `cloudsat`, `calipso`, `tselina2`, `seastar`, `cygnss`, `icon`, `hinode`, `gpm`, `fermi`, `tdrs`, `soho`, `iss`, `landsat`, `bus-ssl1300`, `dscovr`, `mms`, `sdo`, `suomi`, `tess`, `hubble`, `chandra`, `swift`, `goes`, `terra`, `aqua`, `aura`, `grace`, `jwst`, `landsat8`, `spitzer`, `kepler`, `roman`, `hubble-sts31`, `msl-entry`, `msl-descent-stage`, `radarsat1`, `cygnus`, `nustar`, `xrism`, `noaa21`, `seasat`, `hitomi`, `lageos`, `ajisai`, `soyuz-ms`, `progress-ms`, `dragon-crew`, `dragon-cargo`, `shenzhou`, `tianzhou`, `starlette`, `lares`, `lares2`, `etalon`, `westpac`, `swot`, `nisar`, `ixpe`, `pace`, `starlink-v1`, `umbra`, `iceye`, `gps-iir`, `gps-iif`, `gps-iii`, `galileo-foc`, `galileo-iov`, `michibiki`, `qzs-1r`, `qzs-3`, `qzs-7`, `irnss`, `saocom`, `strix`, `terrasar-x`, `xmm-newton`, `metop`, `envisat`, `ers-1`, `sentinel-1`, `sentinel-2`, `sentinel-3`, `sentinel-5p`, `cryosat-2`, `smos`, `alos-2`, `glonass-m`, `glonass-k`, `fengyun-3`, `himawari`, `gcom-w`, `gcom-c`, `dampe`, `cses`, `scisat`, `proba-3-csc`, `proba-3-osc`, `proba-v`, `formosat-7`, `oao-2`, `oao-3`, `smap`, `jason-3`, `sorce`, `themis`, `tiangong`, `wentian`, `mengtian`, `shenzhou-orbital`, `gaia`, `earthcare`, `biomass`, `swarm`, `metop-sg-a`, `iris`, `timed`, `sert-2`, `isis-1`, `tracers`, `thuraya`, `inmarsat-4`, `viasat-3`, `o3b`, `globalstar-2`, `oneweb`, `o3b-mpower`, `wgs`, `aehf`, `muos`, `sbirs-geo`, `ao-7`, `swas`, `meteosat-msg`, `fengyun-2`, `mtg-i`, `mtg-s`, `insat-3d`, `gk2a`, `gk2b`, `meteor-m2`, `midori-2`, `resurs-dk1`, `worldview-3`, `blacksky-gen2`, `satellogic-newsat`, `planet-pelican`, `hawkeye360-block1`, `ghgsat-c`, `gaofen-1`, `cbers-4`, `cbers-4a`, `amazonia-1`, `kompsat-3`, `kompsat-5`, `cartosat-2`, `resourcesat-2`, `eos-06`, `kanopus-v`, `resurs-p`, `vostok-3ka`, `vostok-seat`, `vostok-chutes`, `voskhod-3kd`, `leonov-eva`, `sputnik-1`, `pleiades`, `spot-6-7`, `skysat`, `beidou-3-meo`, `beidou-3-igso`, `cheops`, `hxmt`, `svom`, `einstein-probe`, `radarsat-2`, `rcm`, `cosmo-skymed`, `csg`, `elektro-l`, `astrosat`, `gosat`, `microcarb`, `cubesat-1u`, `cubesat-2u`, `cubesat-3u`, `cubesat-3u-wings`, `cubesat-6u`, `cubesat-6u-wings`, `cubesat-12u`, `cubesat-12u-wings`, `kineis`, `qps-sar`, `bus-eurostar-e3000`, `bus-boeing-702`, `bus-boeing-702sp`, `bus-a2100ax`
   - model_kinds (36): `satellite-iridium`, `satellite-spacemobile`, `satellite-solarsail`, `satellite-sphere`, `satellite-navigation`, `satellite-cubesat`, `satellite-cubesat-6u`, `satellite-cubesat-1u`, `satellite-cubesat-2u`, `satellite-navigation-gps-iif`, `satellite-navigation-gps-iii`, `satellite-navigation-glonass-m`, `satellite-navigation-glonass-k`, `satellite-navigation-beidou-meo`, `satellite-oneweb`, `satellite-starlink-v1`, `satellite-starlink-v2`, `satellite-radar`, `satellite-radar-mesh`, `satellite-generic`, `satellite-comms`, `station-soyuz`, `station-progress`, `station-cygnus`, `station-tiangong`, `station-tiangong-module`, `station-shenzhou`, `station-tianzhou`, `station-dragon`, `station-dragon-cargo`, `station-generic`, `debris-shard`, `telescope-gaia`, `telescope-generic`, `telescope-jwst`, `satellite-space-telescope`
   - reentries (3): `reentry-tiangong-1`, `reentry-cz-5b-y2`, `reentry-skylab`
   - layers (10): `stations`, `notable`, `starlink-trains`, `just-launched`, `active`, `geo-ring`, `debris-notable`, `debris-field`, `visual`, `reentries`

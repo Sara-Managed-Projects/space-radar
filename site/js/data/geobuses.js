@@ -8,6 +8,15 @@
 export const GEO_BUS_NORADS = {
 "a2100:gcat": [
 25924,
+32767,
+37207,
+37776,
+38332,
+44034,
+44186,
+45245
+],
+"a2100ax": [
 26554,
 26580,
 27632,
@@ -17,15 +26,8 @@ export const GEO_BUS_NORADS = {
 29272,
 31306,
 32299,
-32767,
 35755,
-37207,
-37776,
-38331,
-38332,
-44034,
-44186,
-45245
+38331
 ],
 "alphabus:gcat": [
 39215
@@ -44,34 +46,38 @@ export const GEO_BUS_NORADS = {
 28117,
 34941
 ],
-"boeing-702:gcat": [
+"boeing-702": [
 27445,
 28378,
 32729,
 36131,
-37218,
 38098,
 38749,
 39476,
 40384,
-40424,
-40425,
 40882,
-40946,
 41380,
-41588,
-41589,
 42698,
-42709,
 42740,
 42818,
 42950,
 43633,
 44479,
 44868,
-53960,
-53961,
 65588
+],
+"boeing-702:gcat": [
+37218,
+40946
+],
+"boeing-702sp": [
+40424,
+40425,
+41588,
+41589,
+42709,
+53960,
+53961
 ],
 "dfh-3:gcat": [
 41034,
@@ -145,7 +151,7 @@ export const GEO_BUS_NORADS = {
 "ekspress-other:gcat": [
 37749
 ],
-"eurostar-e3000:gcat": [
+"eurostar-e3000": [
 28358,
 28868,
 29270,
@@ -191,9 +197,11 @@ export const GEO_BUS_NORADS = {
 45920,
 47306,
 50212,
-50319,
 52904,
 57214
+],
+"eurostar-e3000:gcat": [
+50319
 ],
 "eurostar-neo:gcat": [
 54048,
@@ -443,6 +451,8 @@ export const GEO_BUS_LABELS = {
 "eurostar-e3000": "Airbus Eurostar E3000",
 "spacebus-4000": "Thales Alenia Space Spacebus 3000/4000",
 "boeing-702": "Boeing 702",
+"boeing-702sp": "Boeing 702SP",
+"a2100ax": "Lockheed Martin A2100AX",
 "geostar-2": "Northrop Grumman GEOStar-2",
 "dfh-4": "CAST DFH-4",
 "a2100": "Lockheed Martin A2100",
@@ -466,4 +476,28 @@ export const GEO_BUS_LABELS = {
 "i-4k": "ISRO I-4K",
 "i-6k": "ISRO I-6K",
 "dfh-5": "CAST DFH-5"
+};
+
+/** Each drawn family's file, name and `made` (scene/realmodels.js adds the rest of the route). */
+export const GEO_BUS_DRAWN = {
+"eurostar-e3000": {
+"file": "bus-eurostar-e3000.glb",
+"name": "an Airbus Eurostar E3000 satellite",
+"made": "renders"
+},
+"boeing-702": {
+"file": "bus-boeing-702.glb",
+"name": "a Boeing 702HP or 702MP satellite",
+"made": "renders"
+},
+"boeing-702sp": {
+"file": "bus-boeing-702sp.glb",
+"name": "a Boeing 702SP satellite",
+"made": "renders"
+},
+"a2100ax": {
+"file": "bus-a2100ax.glb",
+"name": "a Lockheed Martin A2100AX satellite",
+"made": "renders"
+}
 };

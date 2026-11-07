@@ -36,7 +36,11 @@ def render(doc: dict) -> list:
         cites = {c.get("by") for c in row.get("cite") or []}
         if not cites:
             raise SystemExit(f"registry/geo-buses.yaml: {row.get('name')} ({n}) has no citation: a bus is never guessed")
-        key = row["bus"] if row["bus"] in drawn else row["bus"] + ":" + next(s for s in PREFERENCE if s in cites)
+        # b200-m4-buses: begin -- a `stand_in` row keeps the stand-in although its family is drawn (its biggest part is not in the family's file)
+        if row.get("stand_in") is not None and (row["bus"] not in drawn or len(str(row["stand_in"])) < 10):
+            raise SystemExit(f"registry/geo-buses.yaml: {row.get('name')} has `stand_in` without a drawn family or a reason")
+        key = row["bus"] if row["bus"] in drawn and not row.get("stand_in") else row["bus"] + ":" + next(s for s in PREFERENCE if s in cites)
+        # b200-m4-buses: end
         groups.setdefault(key, []).append(n)
     for i, b in buses.items():
         if not b.get("label"):
@@ -44,6 +48,10 @@ def render(doc: dict) -> list:
     return [
         ("Catalogue numbers by bus, one key a drawn bus and `bus:source` for a held one (registry/geo-buses.yaml).", "GEO_BUS_NORADS", {k: sorted(v) for k, v in sorted(groups.items())}),
         ("The name a card prints for each bus.", "GEO_BUS_LABELS", {i: b["label"] for i, b in buses.items()}),
+        # b200-m4-buses: begin -- each family drawn by a file of this project's (all but NASA's SSL-1300): the file, the card's name and how the shape was made
+        ("Each drawn family's file, name and `made` (scene/realmodels.js adds the rest of the route).", "GEO_BUS_DRAWN",
+         {i: {"file": b["file"], "name": b["name"], "made": b["made"]} for i, b in buses.items() if b.get("file") and i != "ssl-1300"}),
+        # b200-m4-buses: end
     ]
 
 

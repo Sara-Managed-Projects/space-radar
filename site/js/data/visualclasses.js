@@ -459,7 +459,11 @@ export const VISUAL_CLASSES = [
 "cubesat-12u",
 "cubesat-12u-wings",
 "kineis",
-"qps-sar"
+"qps-sar",
+"bus-eurostar-e3000",
+"bus-boeing-702",
+"bus-boeing-702sp",
+"bus-a2100ax"
 ],
 "model_kinds": [
 "satellite-iridium",

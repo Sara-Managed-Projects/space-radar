@@ -948,7 +948,10 @@ export const COPY = {
     "objectMade": {
       "images": "الشكل مبني من صور فوتوغرافية؛ والنسب تقريبية",
       "render": "الشكل مبني من رسم فني؛ والنسب تقريبية",
-      "dimensions": "الشكل مبني من أبعاد منشورة وصور؛ والتفاصيل مبسّطة"
+      "dimensions": "الشكل مبني من أبعاد منشورة وصور؛ والتفاصيل مبسّطة",
+      // b200-m4-buses: begin -- a geostationary bus built here from published sizes and the maker's renders (registry/geo-buses.yaml `made: renders`), machine-drafted
+      "renders": "الشكل مبني من أبعاد منشورة ورسوم الشركة المصنّعة؛ والتفاصيل تقديرية"
+      // b200-m4-buses: end
     },
     "objectWas": {
       "hitomi": "معروض سليمًا، كما أُطلق في فبراير 2016؛ وانكسر بعد خمسة أسابيع، وما يُتتبع هنا هو جسمه الرئيسي دون الألواح الشمسية",
