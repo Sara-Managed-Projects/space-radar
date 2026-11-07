@@ -353,14 +353,41 @@ export function createMomentPlayer(ctx, opts = {}) {
     if (tr) parts.push(fill(W().truthLine, { truth: W().truthWords[tr.truth] || tr.truth, path: say(tr.say) || tr.source }));
     const v = vehicles.get(lead && lead.id);
     if (v && v.v && v.v.split === 'cuts') parts.push(W().cutNote);
-    parts.push(W().drawnNote);
+    // b200-c3-learn: a moment that draws no flame, steam, chute or entry names what it does draw (`drawn`, a words key; forge #153)
+    parts.push(m.drawn && words[m.drawn] ? say(m.drawn) : W().drawnNote);
     // Each piece is a sentence of its own.
     if (m.place && m.place.ground) parts.push(m.world === 'mars' && W().groundNoteMars ? W().groundNoteMars : W().groundNote);
     // b200-c3-learn: begin -- a breakup's cloud says how it is drawn (the story's words: modelled spread, measured counts)
     for (const fx of m.tracks.effects || []) if (fx.effect === 'debris-cloud' && fx.say) parts.push(say(fx.say));
     // b200-c3-learn: end
+    // b200-c3-learn: begin -- `footFold: true` folds a long foot line on a narrow screen to its first sentence and a More button (forge #153)
+    if (m.footFold && words.footMore) { foldFoot(parts); return; }
+    ui.foot.classList.remove('sr-moment__truth--fold');
+    // b200-c3-learn: end
     ui.foot.textContent = parts.join(' ');
   }
+
+  // b200-c3-learn: begin -- the folded foot line: the first sentence, the rest behind More (shown whole on a wide screen, css/moments.css)
+  function foldFoot(parts) {
+    const foot = ui.foot;
+    foot.textContent = '';
+    foot.classList.add('sr-moment__truth--fold');
+    foot.classList.remove('is-open');
+    const rest = el(doc, 'span', 'sr-moment__truthrest', ` ${parts.slice(1).join(' ')}`);
+    rest.id = 'sr-moment-truthrest';
+    const more = el(doc, 'button', 'sr-moment__truthmore', say('footMore'));
+    more.type = 'button';
+    more.setAttribute('aria-expanded', 'false');
+    more.setAttribute('aria-controls', rest.id);
+    more.addEventListener('click', () => {
+      const open = !foot.classList.contains('is-open');
+      foot.classList.toggle('is-open', open);
+      more.setAttribute('aria-expanded', open ? 'true' : 'false');
+      more.textContent = say(open ? 'footLess' : 'footMore');
+    });
+    foot.append(el(doc, 'span', 'sr-moment__truthlead', parts[0] || ''), rest, more);
+  }
+  // b200-c3-learn: end
 
   // --- loading -----------------------------------------------------------------------------------------------------
 

@@ -200,6 +200,8 @@ def build(index: dict, voices: dict) -> dict:
                          "colour": "#ff8a5c", "sizePx": 2.5}],
         },
         "chapters": [{"t": c["t"], "say": CHAPTERS[i]} for i, c in enumerate(clips)],
+        "drawn": "drawnNote",
+        "footFold": True,
         "sources": [
             {"say": "srcOdqn07", "url": "https://orbitaldebris.jsc.nasa.gov/quarterly-news/pdfs/odqnv11i2.pdf"},
             {"say": "srcOdqn08", "url": "https://orbitaldebris.jsc.nasa.gov/quarterly-news/pdfs/odqnv12i1.pdf"},

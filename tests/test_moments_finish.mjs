@@ -101,7 +101,7 @@ for (const code of ['es', 'fr', 'de', 'pt']) {
     }
     for (const [path] of have) if (!leaves(en, `${section}.`).some(([p]) => p === path)) check(false, `${code}: ${path} has no English`);
   }
-  check(n === 474, `${code}: all 474 strings of the Moments are covered (${n})`); // b200-c3-learn: 440 + the Fengyun-1C card (3) and story (31)
+  check(n === 477, `${code}: all 477 strings of the Moments are covered (${n})`); // b200-c3-learn: 440 + the Fengyun-1C card (3) and story (34)
 }
 // The stories hand their words to the language hook once they are in COPY; the lines said in the recordings stay in their own language.
 for (const f of ['vostok', 'apollo11', 'artemis2', 'apollo13', 'sputnik', 'voskhod', 'sts1', 'hubble', 'falcon9']) {

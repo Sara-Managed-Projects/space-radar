@@ -325,3 +325,23 @@ html.sr-moment-on :is(#sr-side, #sr-rail, #sr-time, .sr-top, .sr-toast, .sr-scen
     transition: opacity var(--sr-fast) linear !important;
   }
 }
+
+/* b200-c3-learn: begin -- a long foot line folded on a narrow screen (a moment's `footFold`, forge #153): the first sentence and a
+   More button, so the scene stays in view; on a wide screen the whole line shows and the button is not there. */
+.sr-moment__truthmore {
+  display: none;
+  min-height: 44px;
+  padding: 0 var(--sp-1);
+  border: 0;
+  background: none;
+  color: var(--sr-ember);
+  font: 600 var(--sr-fs-sm)/1.4 var(--sr-font);
+  text-decoration: underline;
+  cursor: pointer;
+}
+@media (max-width: 720px) {
+  .sr-moment__truth--fold .sr-moment__truthrest { display: none; }
+  .sr-moment__truth--fold.is-open .sr-moment__truthrest { display: inline; }
+  .sr-moment__truth--fold .sr-moment__truthmore { display: inline-block; }
+}
+/* b200-c3-learn: end */

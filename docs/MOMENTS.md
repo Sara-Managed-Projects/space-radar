@@ -169,6 +169,9 @@ of today, over almost twenty years. Three additions:
   pressed Play in the middle of a chapter, it is heard from the middle; paused, scrubbed or closed, it stops. English only, with sound and the
   trips' Voice choice on; in another language the captions are that language's and no voice is played. The builder puts each caption at the
   second its sentence starts in the clip and makes the pace so that every chapter plays at least as long as its clip.
+- `drawn` (a words key) replaces the foot line's "flames, steam, parachutes and the glow of an entry are drawn" for a story that draws
+  none of them, with what it does draw as illustration; `footFold: true` shows a long foot line on a narrow screen (720 px or less) as
+  its first sentence and a More button. Past 30 days the mission clock reads in years and days (`T+3 y 339 d`), not thousands of hours.
 
 <!-- b200-c3-learn: end -->
 ## Tracks

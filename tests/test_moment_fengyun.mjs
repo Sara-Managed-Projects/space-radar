@@ -100,6 +100,11 @@ check(F.validateMoment(broken, { words }).some((s) => /model null/.test(s)), 'a 
 const noFile = JSON.parse(JSON.stringify(moment));
 delete noFile.tracks.effects[0].file;
 check(F.validateMoment(noFile, { words }).some((s) => /debris-cloud/.test(s)), 'a debris-cloud with no file is refused');
+check(F.formatMet(124000000) === 'T+3 y 339 d' && F.formatMet(45 * 86400 + 3600) === 'T+45 d' && F.formatMet(102 * 3600 + 45 * 60 + 40) === 'T+102:45:40', `the clock counts years and days past 30 days (${F.formatMet(124000000)})`);
+check(moment.drawn === 'drawnNote' && !/flame|parachute|entry/i.test(words.drawnNote) && moment.footFold === true && words.footMore && words.footLess, 'the foot line says only what this story draws, and folds on a phone');
+const noDrawn = JSON.parse(JSON.stringify(moment));
+noDrawn.drawn = 'nope';
+check(F.validateMoment(noDrawn, { words }).some((s) => /drawn/.test(s)), 'a drawn note with no words is refused');
 check(COPY.momentShelf.cards['fengyun-1c'] && /3 531/.test(COPY.momentShelf.cards['fengyun-1c'].blurb), 'the shelf card has its words');
 
 // --- the words: every count is its source's ---------------------------------------------------------------------------

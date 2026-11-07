@@ -95,6 +95,11 @@ export function formatMet(t) {
   const v = Number(t) || 0;
   const sign = v < 0 ? '−' : '+';
   let s = Math.floor(Math.abs(v) + 1e-6);
+  // b200-c3-learn: a story of months or years (Fengyun-1C runs almost twenty) counts in years and days past 30 days, not thousands of hours
+  if (s >= 30 * 86400) {
+    const d = Math.floor(s / 86400), y = Math.floor(d / 365.25), dd = Math.floor(d - y * 365.25);
+    return y ? `T${sign}${y} y ${dd} d` : `T${sign}${d} d`;
+  }
   const h = Math.floor(s / 3600); s -= h * 3600;
   const m = Math.floor(s / 60); s -= m * 60;
   const two = (n) => String(n).padStart(2, '0');
@@ -313,6 +318,8 @@ export function validateMoment(m, opts = {}) {
     if (!(isNum(fx.until) && fx.until > fx.t)) say(`effect at ${fx.t}: a debris-cloud needs until after t`);
     if (fx.say !== undefined) need(fx.say, `effect at ${fx.t}`);
   }
+  if (m.drawn !== undefined) need(m.drawn, 'drawn');
+  if (m.footFold !== undefined && typeof m.footFold !== 'boolean') say('footFold is true or false');
   for (const a of tracks.audio || []) if (a.voice && !(a.s > 0)) say(`audio at ${a.t}: a voice says how long it lasts (s, play seconds)`);
   // b200-c3-learn: end
   const chapters = Array.isArray(m.chapters) ? m.chapters : [];
