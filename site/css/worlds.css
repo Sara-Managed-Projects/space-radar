@@ -73,11 +73,13 @@
 .sr-cutaway {
   position: fixed;
   top: calc(var(--sr-inset) + env(safe-area-inset-top, 0px) + 56px);
-  right: calc(var(--sr-inset) + env(safe-area-inset-right, 0px));
+  /* Left of the tools rail, where the rail's popover opens (css/ui.css .sr-pop): 48 px of rail and 12 of gap. */
+  right: calc(var(--sr-inset) + env(safe-area-inset-right, 0px) + 48px + 12px);
   z-index: var(--sr-z-controls);
   display: block;
   width: 320px;
-  max-height: calc(100vh - 2 * var(--sr-inset) - 112px);
+  /* Clear of the time pill at the foot of the scene (two rows, about 100 px, and its gap). */
+  max-height: calc(100vh - 2 * var(--sr-inset) - 56px - 140px);
   padding: var(--sp-3);
   overflow: auto;
   color: var(--sr-text);
@@ -254,6 +256,7 @@ html.sr-sharing .sr-cutaway { display: none; }
   bottom: calc(var(--sr-inset) + env(safe-area-inset-bottom, 0px) + 108px);
   z-index: var(--sr-z-controls);
   width: 340px;
+  margin-right: calc(48px + 12px); /* clear of the tools rail when it is tall enough to reach the rail */
   max-height: 60vh;
   padding: var(--sp-3);
   overflow: auto;

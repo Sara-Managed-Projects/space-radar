@@ -63,6 +63,12 @@ for (const d of [0.25, 0.5, 0.75, 1]) {
   check(ok, `at d = ${d} the map keeps every body in its order from the Sun`);
 }
 
+for (const d of [0, 0.3, 1]) for (const r of [0.39, 1, 5.2, 30, 32, 49.9, 120]) {
+  const back = O.trueRadialKm(O.radialKm(r * AU, d), d) / AU;
+  check(Math.abs(back - r) < 1e-6 * r, `trueRadialKm undoes radialKm at d = ${d}, ${r} AU (${back})`);
+}
+check(Math.abs(O.trueRadialKm(46 * AU, 1) / AU - 32) < 1, 'a camera drawn 46 AU out in the logarithmic picture is about 32 AU out in truth');
+
 // --- the Sun ------------------------------------------------------------------------------------
 for (const [k, d] of [[1, 0], [10, 0], [2000, 0], [2000, 0.5], [2000, 1], [30, 1]]) {
   const s = O.sunSize(k, d);

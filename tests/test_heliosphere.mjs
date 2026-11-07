@@ -71,6 +71,8 @@ check(H.HELIO.nose.lonDeg === 255.7 && H.HELIO.nose.latDeg === 5.1 && H.HELIO.no
 check(Math.abs(H.travelAu(25.4, 20) - 107.2) < 0.2, `twenty years at 25.4 km/s is 107 AU (${H.travelAu(25.4, 20).toFixed(1)})`);
 check(H.HELIO.ribbon.halfDeg === 74.5 && H.HELIO.ribbon.lonDeg === 219.2 && H.HELIO.ribbon.latDeg === 39.9, 'the ribbon is Funsten et al. 2013\'s circle');
 check(H.fadeFor(30) === 0 && H.fadeFor(40) === 0 && H.fadeFor(60) === 1 && H.fadeFor(300) === 1 && H.fadeFor(50) > 0.4 && H.fadeFor(50) < 0.6, 'it shows from about 50 AU out');
+check(/view\.trueKm\(drawnKm\)/.test(readFileSync(join(JS, 'scene/heliosphere.js'), 'utf8')), 'the 50 AU rule reads the camera\'s TRUE distance when the Distance slider squeezes the picture');
+check(H.ARROW_PX.shaft <= 3 && H.ARROW_PX.head <= 12, 'the Sun\'s arrow is a thin arrow on the screen, never a beam');
 check(H.toScene([1, 2, 3]).join() === '1,3,-2', 'ecliptic to scene axes as stage.js maps them');
 
 // --- the words ------------------------------------------------------------------------------------------

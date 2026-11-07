@@ -43,8 +43,11 @@
 //     the heliopause's nose, where the secondary-neutral explanation puts its source.
 // The legend (ui chip, below) says each of these in words.
 //
-// WHEN. On the Sun's stage, with the Deep space layer on (the Voyagers' own), once the camera is farther
-// than about 50 AU from the Sun (FADE_AU: in from 40, whole by 60) -- from nearer the bubble is all
+// WHEN. On the Sun's stage, with the Deep space layer on (the Voyagers' own), once the camera is TRULY farther
+// than about 50 AU from the Sun (FADE_AU: in from 40, whole by 60) -- with the Distance slider off the truth the
+// camera's drawn distance is turned back into a true one (scene/orrery.js trueRadialKm), so a camera 46 AU out in
+// a logarithmic picture is 32 AU out and the bubble stays away. The Sun's arrow is held at ARROW_PX wide on the
+// screen, so it is a thin arrow on a phone and never a beam -- from nearer the bubble is all
 // round the camera and says nothing. Never at boot: main.js fetches this module the first time the
 // camera passes 40 AU on the Sun's stage. Additive, translucent, depth-tested and writing no depth, so
 // it never hides a planet or a craft.
@@ -76,6 +79,8 @@ export const RIBBON_AU = 160;
 export const ARROW_YEARS = 20;
 /** The camera's distance from the Sun at which the bubble starts to show, and is whole, AU. */
 export const FADE_AU = [40, 60];
+/** The arrow's shaft and head, CSS pixels across on the screen, whatever the camera's distance. */
+export const ARROW_PX = { shaft: 2, head: 9 };
 
 /** A unit vector from ecliptic longitude and latitude, in ecliptic axes (x to the equinox, z north). Pure. */
 export function eclDir(lonDeg, latDeg) {
@@ -393,6 +398,7 @@ export function createHeliosphere(ctx, opts = {}) {
   const _sun = new THREE.Vector3();
   const _p = new THREE.Vector3();
   let shown = false;
+  let camUnits = 0;
 
   function update(camera, tMs) {
     const layerOn = typeof ctx.isLayerOn === 'function' ? ctx.isLayerOn('deep-space') : true;
@@ -400,8 +406,11 @@ export function createHeliosphere(ctx, opts = {}) {
     const quiet = cls.contains('sr-clean') || cls.contains('sr-sharing');
     let fade = 0;
     if (stage.worldId === 'sun' && layerOn && camera && stage.toSceneInto({ x: 0, y: 0, z: 0 }, SUN_INERTIAL, _sun, tMs)) {
-      const camAu = (camera.position.distanceTo(_sun) * stage.unitKm) / KM_PER_AU;
-      fade = fadeFor(camAu);
+      const drawnKm = camera.position.distanceTo(_sun) * stage.unitKm;
+      const view = ctx.orrery && typeof ctx.orrery.view === 'function' ? ctx.orrery.view() : null;
+      const camKm = view && typeof view.trueKm === 'function' ? view.trueKm(drawnKm) : drawnKm;
+      fade = fadeFor(camKm / KM_PER_AU);
+      camUnits = camera.position.distanceTo(_sun);
     }
     shown = fade > 0.001;
     group.visible = shown;
@@ -414,6 +423,12 @@ export function createHeliosphere(ctx, opts = {}) {
     for (const p of parts) p.mesh.material.uniforms.uAlpha.value = fade;
     ptsMat.opacity = fade;
     arrowMat.opacity = 0.85 * fade;
+    // ARROW_PX on the screen: AU per CSS pixel at the camera's distance from the Sun, through the lens.
+    const auPerPx = (camUnits * stage.unitKm / KM_PER_AU) * 2 * Math.tan(((camera.fov || 45) * Math.PI) / 360) / Math.max(1, win.innerHeight);
+    const shaftK = (ARROW_PX.shaft * auPerPx) / 2 / 0.25; // the geometry's shaft is 0.25 AU in radius
+    const headK = (ARROW_PX.head * auPerPx) / 2 / 1.4;
+    shaft.scale.set(shaftK, 1, shaftK);
+    head.scale.set(headK, 1, headK);
     group.updateMatrixWorld();
     // The labels: each point projected, hidden behind the camera or off the screen.
     const w = win.innerWidth; const h = win.innerHeight;

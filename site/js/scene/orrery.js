@@ -6,6 +6,7 @@
 //   sizeFromU(u) -> k, an integer from 1 to SIZE_MAX;  uFromSize(k) -> u in [0, 1]
 //   logKm(rKm) -> the logarithmic map's distance from the Sun, km
 //   radialKm(rKm, d) -> the drawn distance from the Sun, km, for a Distance slider at d in [0, 1]
+//   trueRadialKm(drawnKm, d) -> and back: the true distance a drawn one stands for (bisection; the map is monotonic)
 //   sunSize(k, d) -> how many times larger the Sun is drawn (never more than k, never under 1)
 //   moonOffsetKm(dKm, envKm, rKm, k) -> a moon's drawn distance from its planet's centre, km
 //   parseSize(text), parseDist(text) -> the slider value a URL key names, or null
@@ -110,6 +111,23 @@ export function radialKm(rKm, d) {
   return Math.exp((1 - u) * Math.log(rKm) + u * Math.log(logKm(rKm)));
 }
 
+/**
+ * The true distance from the Sun that a drawn distance stands for: radialKm's inverse, by bisection (the
+ * map is monotonic and has no closed inverse between its two ends). scene/heliosphere.js asks it where the
+ * camera TRULY is, so the 50 AU rule holds in any distance mode.
+ */
+export function trueRadialKm(drawnKm, d) {
+  const u = clamp01(d);
+  if (!(drawnKm > 0)) return 0;
+  if (u === 0 || drawnKm >= DIST_LOG.fixKm) return drawnKm;
+  let lo = 0; let hi = DIST_LOG.fixKm;
+  for (let i = 0; i < 60; i++) {
+    const mid = (lo + hi) / 2;
+    if (radialKm(mid, u) < drawnKm) lo = mid; else hi = mid;
+  }
+  return (lo + hi) / 2;
+}
+
 /** How many times larger the Sun is drawn: k, held to SUN_ROOM of the way to Mercury's drawn perihelion. */
 export function sunSize(k, d) {
   if (!(k > 1)) return 1;
@@ -175,6 +193,7 @@ export function viewOf({ size = 1, dist = 0 } = {}) {
     sunK: sunSize(k, d),
     dist: d,
     radialKm: (rKm) => radialKm(rKm, d),
+    trueKm: (drawnKm) => trueRadialKm(drawnKm, d),
     moonOffsetKm: (dKm, envKm, rKm) => moonOffsetKm(dKm, envKm, rKm, k),
   };
 }
