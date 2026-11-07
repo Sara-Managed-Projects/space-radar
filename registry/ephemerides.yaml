@@ -17,7 +17,11 @@
 #             the drawn planet; and a float32 holds a planet-centred position to under a
 #             kilometre. A window is asked of Horizons with CENTER='500@<world>'.
 #   rough     what Horizons' own header says about the trajectory where it is not a
-#             reconstruction, and until when. The card prints it while the clock is in that part.
+#             reconstruction: `until` a time (an early fit) or `after` one (a prediction or a plan
+#             at the end). The card prints it while the clock is in that part.
+#   ended     the day the mission (or the stretch this row draws) ended, for a row whose span is
+#             final. A row without it is operating, and build_ephemerides.py --check fails when
+#             its span ends less than 60 days from the day it runs (forge #87): rerun --fetch.
 #   max_bytes this craft's file may be this big; 150 000 unless the row says why not.
 #
 # The times are UTC (Horizons TIME_TYPE='UT'), not TDB read as UTC: that mistake is 69 seconds,
@@ -81,17 +85,24 @@ craft:
       - {centre: jupiter, from: "2007-02-03T00:00:00Z", to: "2007-03-25T00:00:00Z"}
       - {centre: pluto, from: "2015-07-04T00:00:00Z", to: "2015-07-24T00:00:00Z"}
 
-  # prior to 2011-AUG-05 17:18:06 UT: nothing. The header: reconstructed to 2026-Aug-24, a
-  # prediction after it, so the file stops there and the map's own stand-in takes over.
+  # prior to 2011-AUG-05 17:18:06 UT: nothing. The header of 2026-Nov-03 (forge #87): the navigation
+  # team's reconstruction `spk_rec_110805_*_260824` to 2026-Sep-26 15:04 TDB, then `juno_pred_orbit`
+  # to 2027-Jan-20 23:15 TDB, and "The trajectory after 2026-Oct-27 is a planning prediction". The
+  # file runs to the end of that prediction and the card says so from 27 October (`rough.after`).
+  # Until 2026-11-08 the file stopped at the reconstruction (2026-Aug-24), and the map had no
+  # path for Juno for weeks; tests/test_ephemerides.py now fails 60 days before a span runs out.
   - id: deep-juno
     name: Juno
     command: "-61"
     from: "2011-08-05T17:19:00Z"
-    to: "2026-08-24T00:00:00Z"
+    to: "2027-01-20T23:00:00Z"
     windows:
       - {centre: earth, from: "2011-08-05T17:19:00Z", to: "2011-08-09T00:00:00Z"}
       - {centre: earth, from: "2013-10-05T00:00:00Z", to: "2013-10-14T00:00:00Z"}
-      - {centre: jupiter, from: "2016-06-05T00:00:00Z", to: "2026-08-24T00:00:00Z", tol_km: 60}
+      - {centre: jupiter, from: "2016-06-05T00:00:00Z", to: "2027-01-20T23:00:00Z", tol_km: 60}
+    rough:
+      after: "2026-10-27T00:00:00Z"
+      text: "JPL's navigation team calls Juno's path after 27 October 2026 a planning prediction, redrawn as the tracking comes in."
 
   # prior to 1997-OCT-15 09:26:08 UT, after 2017-SEP-15 11:56:50 UT: nothing. The file stops at
   # 10:30 UT on the last day, a minute before NASA's "atmospheric entry begins".
@@ -100,6 +111,7 @@ craft:
     command: "-82"
     from: "1997-10-15T09:27:00Z"
     to: "2017-09-15T10:30:00Z"
+    ended: "2017-09-15"
     max_bytes: 300000
     max_bytes_why: "Thirteen years of laps round Saturn, each with a close pass and many with a moon flyby; at 150 kB the curve strays 400 km, wider than the gap the Grand Finale dived through."
     windows:
@@ -117,6 +129,7 @@ craft:
     command: "-77"
     from: "1989-10-19T01:29:00Z"
     to: "2003-09-21T18:00:00Z"
+    ended: "2003-09-21"
     windows:
       - {centre: earth, from: "1989-10-19T01:29:00Z", to: "1989-10-23T00:00:00Z"}
       - {centre: venus, from: "1990-02-07T00:00:00Z", to: "1990-02-14T00:00:00Z"}
@@ -137,6 +150,7 @@ craft:
     command: "-2"
     from: "1962-08-27T07:21:00Z"
     to: "1962-12-31T23:59:00Z"
+    ended: "1963-01-03"
     windows:
       - {centre: earth, from: "1962-08-27T07:21:00Z", to: "1962-08-30T00:00:00Z"}
       - {centre: venus, from: "1962-12-12T00:00:00Z", to: "1962-12-17T00:00:00Z"}
@@ -153,6 +167,7 @@ craft:
     command: "-344"
     from: "1995-07-13T05:31:00Z"
     to: "1995-12-07T22:05:00Z"
+    ended: "1995-12-07"
     windows:
       - {centre: jupiter, from: "1995-11-20T00:00:00Z", to: "1995-12-07T22:05:00Z", tol_km: 5}
 
@@ -185,15 +200,23 @@ craft:
 
   # prior to 2021-DEC-25 13:00:00 UT: nothing, and at 13:00:00 itself Horizons refuses (its first
   # state is 13:01:09 TDB, a hair after). The header (revised 2026-Sep-30): as flown to
-  # 2026-Sep-28, a 28-day prediction to 2026-Oct-26, a five-year schedule after it. The file
-  # stops with the 28-day prediction. All of it is kept relative to the Earth: it never leaves.
+  # 2026-Sep-28, a 28-day prediction to 2026-Oct-26, a five-year schedule after it. Until
+  # 2026-11-08 the file stopped with the 28-day prediction, so for weeks the map had no path
+  # (forge #87). The header of 2026-Nov-03: Goddard's definitive ephemeris to 2026-Nov-02, the
+  # 28-day prediction `28D_NOBURN_PREDICT_SK_2026306000000_07U` to 2026-Nov-30, then the five-year
+  # schedule `5Y_SCHEDULE_2026306000000_07U.V0.1` to 2031-Nov-01 23:59 TDB. The file now runs to
+  # the end of the schedule, and from 30 November the card says it is a plan (`rough.after`).
+  # All of it is kept relative to the Earth: it never leaves.
   - id: deep-jwst
     name: James Webb Space Telescope
     command: "-170"
     from: "2021-12-25T13:01:00Z"
-    to: "2026-10-26T00:00:00Z"
+    to: "2031-11-01T23:58:00Z"
     windows:
-      - {centre: earth, from: "2021-12-25T13:01:00Z", to: "2026-10-26T00:00:00Z", tol_km: 10}
+      - {centre: earth, from: "2021-12-25T13:01:00Z", to: "2031-11-01T23:58:00Z", tol_km: 10}
+    rough:
+      after: "2026-11-30T00:00:00Z"
+      text: "Goddard's flight team gives Webb's path after 30 November 2026 as a five-year plan, not a record; each station-keeping burn redraws it."
 
   # Mars 2020's cruise: the spacecraft that carried Perseverance, a record of its own
   # (data/sample.js PAST_CRAFT), because the Jezero site is a place on Mars and its card is a
@@ -204,6 +227,7 @@ craft:
     command: "-168"
     from: "2020-07-30T12:52:00Z"
     to: "2021-02-18T20:30:00Z"
+    ended: "2021-02-18"
     windows:
       - {centre: earth, from: "2020-07-30T12:52:00Z", to: "2020-08-03T00:00:00Z"}
       - {centre: mars, from: "2021-02-12T00:00:00Z", to: "2021-02-18T20:30:00Z"}
@@ -220,6 +244,7 @@ craft:
     command: "-203"
     from: "2007-09-27T12:40:00Z"
     to: "2018-10-31T00:00:00Z"
+    ended: "2018-10-31"
     tol_km: 1000
     windows:
       - {centre: earth, from: "2007-09-27T12:40:00Z", to: "2007-10-01T00:00:00Z"}
@@ -239,6 +264,7 @@ craft:
     command: "-226"
     from: "2004-03-02T09:26:00Z"
     to: "2016-09-30T10:39:00Z"
+    ended: "2016-09-30"
     tol_km: 1000
     windows:
       - {centre: earth, from: "2004-03-02T09:26:00Z", to: "2004-03-06T00:00:00Z"}
@@ -252,6 +278,7 @@ craft:
     command: "-93"
     from: "1996-02-19T01:59:00Z"
     to: "2001-02-12T19:44:00Z"
+    ended: "2001-02-12"
     tol_km: 1000
     windows:
       - {centre: earth, from: "1998-01-21T00:00:00Z", to: "1998-01-25T00:00:00Z"}
@@ -266,6 +293,7 @@ craft:
     command: "-29"
     from: "1999-02-07T21:32:00Z"
     to: "2011-03-12T23:58:00Z"
+    ended: "2011-03-25"
     windows:
       - {centre: earth, from: "1999-02-07T21:32:00Z", to: "1999-02-11T00:00:00Z"}
       - {centre: earth, from: "2006-01-13T00:00:00Z", to: "2006-01-17T00:00:00Z"}
@@ -281,6 +309,7 @@ craft:
     command: "-140"
     from: "2005-01-12T19:23:00Z"
     to: "2013-09-19T00:00:00Z"
+    ended: "2013-09-19"
     windows:
       - {centre: earth, from: "2005-01-12T19:23:00Z", to: "2005-01-16T00:00:00Z"}
 

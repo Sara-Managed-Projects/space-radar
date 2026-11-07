@@ -126,8 +126,11 @@ check(total <= 2e6, `the files are ${total} bytes in all, over 2 MB`);
   const far = propagate(v1, at('2040-01-01T00:00:00Z'));
   check(far && !far.eph && far.cls === 'sample', 'beyond the file the stand-in answers, as before');
   const juno = rec('deep-juno');
-  const now = propagate(juno, at('2026-10-06T00:00:00Z'));
-  check(now && !now.eph && now.frame === 'jupiter-inertial', 'Juno after its file ends (24 August 2026) is the map\'s own stand-in');
+  // forge #87: the file now runs to 20 January 2027 (JPL's planning prediction); after that the stand-in
+  const now = propagate(juno, at('2027-03-01T00:00:00Z'));
+  check(now && !now.eph && now.frame === 'jupiter-inertial', 'Juno after its file ends (20 January 2027) is the map\'s own stand-in');
+  const inFile = propagate(juno, at('2026-11-08T00:00:00Z'));
+  check(inFile && inFile.eph === true, 'Juno today (8 November 2026) is drawn from its file');
   const then = propagate(juno, at('2016-07-05T03:53:00Z'));
   check(then && then.eph && then.frame === 'jupiter-inertial', 'and on its arrival day it is the file\'s');
   // round the Earth the answer is in the Earth's own inertial frame (TEME), the same length
@@ -243,6 +246,11 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   check(M.pathWords('deep-voyager-1', at('2040-01-01T00:00:00Z')) === null && M.pathWords('nobody', jupiter1979) === null, 'outside the file, or with no file, the card says nothing of it');
   const wa = M.pathWords('asteroid-99942', at('2029-04-13T21:46:00Z'));
   check(wa && /prediction/.test(wa[1]), 'Apophis in 2029 is said to be a prediction');
+  // forge #87: a plan at the END of a span (`rough.after`): JWST's five-year schedule, Juno's planning prediction
+  const wj = M.pathWords('deep-jwst', at('2028-06-01T00:00:00Z'));
+  check(wj && wj.length === 2 && /five-year plan/.test(wj[1]), `JWST in 2028 is said to be on a planned path (${wj && wj.join(' | ')})`);
+  const wj0 = M.pathWords('deep-jwst', at('2026-11-10T00:00:00Z'));
+  check(wj0 && wj0.length === 1, 'JWST before the plan begins: only the first sentence');
   check(COPY.ephemeris && !/!| -- |→/.test(Object.values(COPY.ephemeris).join(' ')), 'the words are plain');
 }
 // 0077 W1-d: begin (public #493) the days a path covers, and the way to the nearest

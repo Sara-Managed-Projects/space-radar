@@ -34,7 +34,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import asset_pack  # noqa: E402
 import creator_clips  # noqa: E402
 import count_facts  # noqa: E402
-from seo_common import ACCURACY_FORM, GITHUB, ROOT, Page, esc, webpage  # noqa: E402
+from seo_common import ACCURACY_FORM, GITHUB, ON_GITHUB, ROOT, Page, esc, webpage  # noqa: E402
 from seo_share import Spec  # noqa: E402
 
 REG = ROOT / "registry"
@@ -128,7 +128,7 @@ def assets_page(host: str, plan: dict | None = None, dates: dict[str, str] | Non
         + (f"<h2>Left out, and why</h2>\n<ul>{refused}</ul>\n" if refused else "")
         + "<h2>How this page is made</h2>\n"
         f'<p>It is generated on every deploy from the project\'s registries by <a href="{GITHUB}/blob/main/scripts/asset_pack.py">scripts/asset_pack.py</a>, '
-        f'so it lists exactly what ships. A wrong credit or licence? <a href="{ACCURACY_FORM}">Tell us</a>.</p>\n')
+        f'so it lists exactly what ships. A wrong credit or licence? <a href="{ACCURACY_FORM}">Tell us</a> {ON_GITHUB}.</p>\n')
     page = Page(path="assets/index.html", title=short, description=desc, body=body, og_title=short)
     page.jsonld = [webpage(host, page, [("Asset pack", "")], page_type="CollectionPage")]
     page.share = Spec(key="assets/index", name="Free 3D spacecraft models", number=f"{n_m} glTF files, CC BY 4.0", caption="Asset pack", kind="plain",
@@ -248,7 +248,7 @@ def creators_page(host: str) -> Page:
         f"<p>The {len(moments)} Moments (Apollo 11, Sputnik 1 and the others) are not trips and are not filmed by the job; record them with "
         "the Record button, which films them live.</p>\n"
         "<h2>Questions</h2>\n"
-        f'<p>Ask on <a href="{GITHUB}/discussions">GitHub Discussions</a>. A credit that is wrong? <a href="{ACCURACY_FORM}">Tell us</a>.</p>\n')
+        f'<p>Ask on <a href="{GITHUB}/discussions">GitHub Discussions</a>. A credit that is wrong? <a href="{ACCURACY_FORM}">Tell us</a> {ON_GITHUB}.</p>\n')
     page = Page(path="creators/index.html", title=short, description=desc, body=body, og_title=short)
     page.jsonld = [webpage(host, page, [("For creators", "")])]
     page.share = Spec(key="creators/index", name="Use Space Radar footage", number="free, with credit", caption="For creators", kind="plain",
@@ -308,7 +308,7 @@ def checked(sources: list[tuple[str, str]], who: str) -> str:
     return ("<h2>How this page was checked</h2>\n"
             f"<p>What it says about {esc(who)} was read on {READ} from {links}, in the project's "
             f'<a href="{SPEC}">competitor review</a>. Products change: if something here is out of date, '
-            f'<a href="{ACCURACY_FORM}">tell us</a> and it will be corrected. Space Radar is not connected with {esc(who)}, '
+            f'<a href="{ACCURACY_FORM}">tell us</a> {ON_GITHUB} and it will be corrected. Space Radar is not connected with {esc(who)}, '
             "and the names are their makers' trademarks.</p>\n")
 
 

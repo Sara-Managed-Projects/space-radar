@@ -93,5 +93,36 @@ const wrong = U.bootLink({ goTo() { problems.push('a made-up key moved the clock
 check(wrong.when === undefined, 'a key the app does not read is dropped (so a typo in a registry link would fail above)');
 delete globalThis.location;
 
+// forge #90: each year's shower peak. A computed year is the map's own arithmetic to the day; an IMO
+// year is within a day of it (the IMO's maximum is a few hours off the solar longitude's in places).
+const showersDoc = JSON.parse(execFileSync('python3', ['-c', "import yaml, json, sys; json.dump(yaml.safe_load(open('registry/showers.yaml')), sys.stdout, default=str)"], { cwd: ROOT, encoding: 'utf8' }));
+const { SHOWERS } = await import(join(ROOT, 'site/js/data/showers.js'));
+const { peakInstant } = await import(join(ROOT, 'site/js/sky/radiants.js'));
+const years = Object.keys(showersDoc.peaks_from || {}).sort();
+for (const row of showersDoc.showers) {
+  const sh = SHOWERS.find((x) => x.id === row.id);
+  for (const y of years) {
+    const typed = row.peaks && row.peaks[y];
+    check(typeof typed === 'string', `${row.id}: no peak for ${y}, though peaks_from has the year`);
+    if (!typed) continue;
+    const ms = peakInstant(sh, Number(y));
+    const day = Date.UTC(Number(y), Number(typed.slice(0, 2)) - 1, Number(typed.slice(3)));
+    const off = Math.abs(Date.UTC(Number(y), new Date(ms).getUTCMonth(), new Date(ms).getUTCDate()) - day) / 86400e3;
+    if (/^computed/.test(showersDoc.peaks_from[y])) check(off === 0, `${row.id} ${y}: marked computed, but ${typed} is not the solar longitude's date (${new Date(ms).toISOString().slice(0, 10)})`);
+    else check(off <= 1, `${row.id} ${y}: the IMO's ${typed} is ${off} days from the solar longitude's date`);
+  }
+}
+// THE HORIZON (forge #90): nine months before the calendar runs out, say so. A warning, not a failure:
+// the monthly job (forge #94) reads it and opens the work of adding the next year.
+const NINE_MONTHS = 274 * 86400e3;
+const lastEvent = Math.max(...computed.map((c) => c.instantMs));
+const lastPeakYear = Number(years[years.length - 1]);
+const horizon = Date.now() + NINE_MONTHS;
+const short = [];
+if (lastEvent < horizon) short.push(`the last sky event (${new Date(lastEvent).toISOString().slice(0, 10)}) is less than nine months away: add the next year's rows to registry/sky-events.yaml`);
+if (Date.UTC(lastPeakYear, 11, 31) < horizon) short.push(`registry/showers.yaml has peaks only to ${lastPeakYear}: add the next year (IMO calendar, or computed from sol)`);
+for (const w of short) console.warn(`sky events WARNING: ${w}`);
+check(lastEvent > Date.parse('2028-12-01T00:00:00Z') && lastPeakYear >= 2028, 'the calendar reaches December 2028');
+
 if (problems.length) { console.error('sky events FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
-console.log(`sky events ok: ${rows.length} events recomputed with Astronomy Engine, every stated date inside the computed one, the Moon's words agree, and each #t= link sets the clock and opens its world through the app's own parser`);
+console.log(`sky events ok: ${rows.length} events recomputed with Astronomy Engine, every stated date inside the computed one, the Moon's words agree, and each #t= link sets the clock and opens its world through the app's own parser; shower peaks for ${years.join(', ')} agree with the solar longitude; ${short.length ? 'horizon WARNED' : 'over nine months of calendar left'}`);

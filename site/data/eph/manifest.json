@@ -8,7 +8,7 @@
   "credit": "NASA/JPL-Caltech, Solar System Dynamics Group, Horizons On-Line Ephemeris System"
  },
  "frame": "ecliptic J2000 axes (Horizons REF_PLANE=ECLIPTIC, REF_SYSTEM=ICRF), relative to each segment's centre; km and km/s; times UTC (TIME_TYPE=UT)",
- "retrieved": "2026-11-03",
+ "retrieved": "2026-11-07",
  "craft": [
   {
    "id": "deep-voyager-1",
@@ -546,19 +546,19 @@
    "name": "Juno",
    "command": "-61",
    "file": "deep-juno.bin",
-   "bytes": 134096,
-   "sha256": "71d1e44232b8e9fd3a420c442def015d2c3b2c60e0b5ba546b0cee0ae2de3ff8",
+   "bytes": 140144,
+   "sha256": "bd71ed0a592f7e2d30a74999aaa7304499226e9f754ec0974816c5aa834ebf7e",
    "span": [
     "2011-08-05T17:19:00Z",
-    "2026-08-24T00:00:00Z"
+    "2027-01-20T23:00:00Z"
    ],
-   "samples": 4656,
+   "samples": 4872,
    "solution": "Juno_merged",
-   "header_revised": "Sep 30, 2026",
-   "retrieved": "2026-10-06",
+   "header_revised": "Nov 03, 2026",
+   "retrieved": "2026-11-07",
    "fit_max_km": 59.998,
    "heldout": {
-    "n": 301,
+    "n": 316,
     "max_km": 64.309
    },
    "good_to_km": 100.0,
@@ -650,27 +650,31 @@
     {
      "centre": "jupiter",
      "from": "2016-06-05T00:00:00Z",
-     "to": "2026-08-24T00:00:00Z",
-     "samples": 4293,
+     "to": "2027-01-20T23:00:00Z",
+     "samples": 4509,
      "tol_km": 60.0,
      "fit_max_km": 59.998,
-     "fetched": 95392,
+     "fetched": 99319,
      "step_min_s": 900.0,
      "step_max_s": 489600.0,
      "steps": {
-      "10 min to 1 h": 841,
-      "1 h to 6 h": 927,
-      "6 h to 1 d": 893,
-      "1 d to 10 d": 1631
+      "10 min to 1 h": 887,
+      "1 h to 6 h": 980,
+      "6 h to 1 d": 945,
+      "1 d to 10 d": 1696
      },
      "closest": {
       "at": "2025-06-08T20:30:00Z",
       "km": 71378.8
      },
-     "passes": 87,
+     "passes": 92,
      "centre_source": "Juno_merged"
     }
-   ]
+   ],
+   "rough": {
+    "after": "2026-10-27T00:00:00Z",
+    "text": "JPL's navigation team calls Juno's path after 27 October 2026 a planning prediction, redrawn as the tracking comes in."
+   }
   },
   {
    "id": "deep-cassini",
@@ -1576,38 +1580,39 @@
    "name": "James Webb Space Telescope",
    "command": "-170",
    "file": "deep-jwst.bin",
-   "bytes": 12688,
-   "sha256": "bf10b22519722f47dd60ab3c78d5da7a48bf728e3910af02383c12d017daa2e1",
+   "bytes": 25176,
+   "sha256": "953a761a2428615992c1d97164a7e95d2b45cee519afa6f892c0cab3c559b437",
    "span": [
     "2021-12-25T13:01:00Z",
-    "2026-10-26T00:00:00Z"
+    "2031-11-01T23:58:00Z"
    ],
-   "samples": 452,
+   "samples": 898,
    "solution": "JWST_merged",
-   "header_revised": "Sep 30, 2026",
-   "retrieved": "2026-10-06",
+   "header_revised": "Nov 03, 2026",
+   "retrieved": "2026-11-07",
    "fit_max_km": 9.999,
    "heldout": {
     "n": 48,
-    "max_km": 9.905
+    "max_km": 9.76
    },
    "good_to_km": 20.0,
    "segments": [
     {
      "centre": "earth",
      "from": "2021-12-25T13:01:00Z",
-     "to": "2026-10-26T00:00:00Z",
-     "samples": 452,
+     "to": "2031-11-01T23:58:00Z",
+     "samples": 898,
      "tol_km": 10.0,
      "fit_max_km": 9.999,
-     "fetched": 42410,
-     "step_min_s": 1200.0,
+     "fetched": 86439,
+     "step_min_s": 60.0,
      "step_max_s": 493200.0,
      "steps": {
+      "under 10 min": 1,
       "10 min to 1 h": 3,
       "1 h to 6 h": 6,
       "6 h to 1 d": 7,
-      "1 d to 10 d": 435
+      "1 d to 10 d": 880
      },
      "closest": {
       "at": "2021-12-25T13:01:00Z",
@@ -1616,7 +1621,11 @@
      "passes": 1,
      "centre_source": "DE441"
     }
-   ]
+   ],
+   "rough": {
+    "after": "2026-11-30T00:00:00Z",
+    "text": "Goddard's flight team gives Webb's path after 30 November 2026 as a five-year plan, not a record; each station-keeping burn redraws it."
+   }
   },
   {
    "id": "deep-mars-2020",

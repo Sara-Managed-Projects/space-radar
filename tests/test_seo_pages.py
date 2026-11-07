@@ -183,7 +183,8 @@ facts = yml("seo-facts.yaml")["satellite_counts"]
 ok("../satellites/index.html" in star.hrefs and "../starlink/index.html" in sat.hrefs, "the two pages link each other")
 ok(all(h in sat.hrefs for h in ("../o/international-space-station.html", "../o/hubble-space-telescope.html", "../o/tiangong-space-station.html", "../starlink/index.html")),
    "the hub links the ISS, Hubble, Tiangong and Starlink")
-ok(f"{facts['starlink_objects']:,}" in star.plain and "22 September 2026" in star.plain, "a Starlink count with its date, from the registry's fallback when the build has no index")
+import seo_pages as _sp  # noqa: E402
+ok(f"{facts['starlink_objects']:,}" in star.plain and _sp.date_words(str(facts["as_of"])) in star.plain, "a Starlink count with its date, from the registry's fallback when the build has no index")
 ok("about 17,000" in sat.plain and re.search(r"<title>Live 3D satellite map: about 17,000 objects</title>", sat_html), "the hub says about 17,000, derived from the count")
 ok(all(re.search(r"Source: [^<]+, read \d+ \w+ \d{4}", h) for h in (star_html, sat_html)), "both carry a dated source line")
 ok(in_map("starlink/index.html") and in_map("satellites/index.html"), "both are in the sitemap")

@@ -44,4 +44,4 @@ Open [Sagittarius A*](https://www.spaceradar.ai/#go=exotic-sgr-a-star) and drag 
 
 ## Pictures and sources
 
-Screenshots of Space Radar 1.4.0 (MIT licence) from the project's `look` workflow, probe `r14-mwbh`, cropped. The black holes were built by Sara-Agent, the project's agent, in [pull request 1293](https://github.com/Sara-Managed-Projects/space-radar/pull/1293). Sources: the Event Horizon Telescope Collaboration, 2019 and 2022; Walker and others, 2018; Perlman and others, 2011; Brocksopp and others, 1999; Miller-Jones and others, 2021. The full list is in `CREDITS.md`, section 3m.
+Screenshots of Space Radar 1.4.0 (MIT licence) from the project's `look` workflow, probe `r14-mwbh`, cropped. The black holes were built by Sara-Agent, the project's agent, for [release 1.4.0](https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.4.0). Sources: the Event Horizon Telescope Collaboration, 2019 and 2022; Walker and others, 2018; Perlman and others, 2011; Brocksopp and others, 1999; Miller-Jones and others, 2021. The full list is in `CREDITS.md`, section 3m.

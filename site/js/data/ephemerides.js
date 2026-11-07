@@ -19,7 +19,7 @@ export const EPHEMERIDES = {
     "goodToKm": 10.0,
     "horizonsId": "-31",
     "solution": "Voyager_1_ST+refit2022_m",
-    "retrieved": "2026-11-03",
+    "retrieved": "2026-11-07",
     "rough": {
       "until": "1981-01-01T00:00:00Z",
       "text": "JPL calls its Voyager 1 path before 1981 a mission-design trajectory of rough accuracy, fitted to the encounters; from 1981 it is a refit of the tracking data."
@@ -34,7 +34,7 @@ export const EPHEMERIDES = {
     "goodToKm": 10.0,
     "horizonsId": "-32",
     "solution": "Voyager_2_ST+refit2022_m",
-    "retrieved": "2026-11-03",
+    "retrieved": "2026-11-07",
     "rough": {
       "until": "1989-08-29T00:00:00Z",
       "text": "JPL calls its Voyager 2 path before 29 August 1989 a mission-design trajectory of rough accuracy, fitted to the encounters; after it, a refit of the tracking data."
@@ -49,18 +49,22 @@ export const EPHEMERIDES = {
     "goodToKm": 10.0,
     "horizonsId": "-98",
     "solution": "NH_merged",
-    "retrieved": "2026-11-03"
+    "retrieved": "2026-11-07"
   },
   "deep-juno": {
     "file": "deep-juno.bin",
-    "bytes": 134096,
+    "bytes": 140144,
     "name": "Juno",
     "from": "2011-08-05T17:19:00Z",
-    "to": "2026-08-24T00:00:00Z",
+    "to": "2027-01-20T23:00:00Z",
     "goodToKm": 100.0,
     "horizonsId": "-61",
     "solution": "Juno_merged",
-    "retrieved": "2026-11-03"
+    "retrieved": "2026-11-07",
+    "rough": {
+      "after": "2026-10-27T00:00:00Z",
+      "text": "JPL's navigation team calls Juno's path after 27 October 2026 a planning prediction, redrawn as the tracking comes in."
+    }
   },
   "deep-cassini": {
     "file": "deep-cassini.bin",
@@ -71,7 +75,7 @@ export const EPHEMERIDES = {
     "goodToKm": 100.0,
     "horizonsId": "-82",
     "solution": "cassini_merge",
-    "retrieved": "2026-11-03"
+    "retrieved": "2026-11-07"
   },
   "deep-galileo": {
     "file": "deep-galileo.bin",
@@ -82,7 +86,7 @@ export const EPHEMERIDES = {
     "goodToKm": 200.0,
     "horizonsId": "-77",
     "solution": "galileo_merged",
-    "retrieved": "2026-11-03"
+    "retrieved": "2026-11-07"
   },
   "deep-mariner-2": {
     "file": "deep-mariner-2.bin",
@@ -93,7 +97,7 @@ export const EPHEMERIDES = {
     "goodToKm": 10.0,
     "horizonsId": "-2",
     "solution": "mariner2_m2_620827_62123",
-    "retrieved": "2026-11-03",
+    "retrieved": "2026-11-07",
     "rough": {
       "until": "1962-12-31T23:59:00Z",
       "text": "JPL calls its Mariner 2 path a reconstruction from a fit to the Doppler data of 1962, good for general historical purposes and to be used cautiously for precision."
@@ -108,7 +112,7 @@ export const EPHEMERIDES = {
     "goodToKm": 10.0,
     "horizonsId": "-344",
     "solution": "galileo_probe",
-    "retrieved": "2026-11-03"
+    "retrieved": "2026-11-07"
   },
   "deep-pioneer-10": {
     "file": "deep-pioneer-10.bin",
@@ -119,7 +123,7 @@ export const EPHEMERIDES = {
     "goodToKm": 10.0,
     "horizonsId": "-23",
     "solution": "pioneer_10_merged",
-    "retrieved": "2026-11-03",
+    "retrieved": "2026-11-07",
     "rough": {
       "until": "2031-01-01T00:00:00Z",
       "text": "JPL says of this Pioneer 10 trajectory that it is suitable for general historical purposes; it was built on the planetary ephemeris of the 1970s."
@@ -134,7 +138,7 @@ export const EPHEMERIDES = {
     "goodToKm": 10.0,
     "horizonsId": "-24",
     "solution": "pioneer_11_merged",
-    "retrieved": "2026-11-03",
+    "retrieved": "2026-11-07",
     "rough": {
       "until": "2031-01-01T00:00:00Z",
       "text": "JPL says of this Pioneer 11 trajectory that it is suitable for general historical purposes; it was built on the planetary ephemeris of the 1970s."
@@ -142,14 +146,18 @@ export const EPHEMERIDES = {
   },
   "deep-jwst": {
     "file": "deep-jwst.bin",
-    "bytes": 12688,
+    "bytes": 25176,
     "name": "James Webb Space Telescope",
     "from": "2021-12-25T13:01:00Z",
-    "to": "2026-10-26T00:00:00Z",
+    "to": "2031-11-01T23:58:00Z",
     "goodToKm": 20.0,
     "horizonsId": "-170",
     "solution": "JWST_merged",
-    "retrieved": "2026-11-03"
+    "retrieved": "2026-11-07",
+    "rough": {
+      "after": "2026-11-30T00:00:00Z",
+      "text": "Goddard's flight team gives Webb's path after 30 November 2026 as a five-year plan, not a record; each station-keeping burn redraws it."
+    }
   },
   "deep-mars-2020": {
     "file": "deep-mars-2020.bin",
@@ -160,7 +168,7 @@ export const EPHEMERIDES = {
     "goodToKm": 10.0,
     "horizonsId": "-168",
     "solution": "Mars2020_merged",
-    "retrieved": "2026-11-03"
+    "retrieved": "2026-11-07"
   },
   "deep-dawn": {
     "file": "deep-dawn.bin",
@@ -171,7 +179,7 @@ export const EPHEMERIDES = {
     "goodToKm": 2000.0,
     "horizonsId": "-203",
     "solution": "dawn_final",
-    "retrieved": "2026-11-03"
+    "retrieved": "2026-11-07"
   },
   "deep-rosetta": {
     "file": "deep-rosetta.bin",
@@ -182,7 +190,7 @@ export const EPHEMERIDES = {
     "goodToKm": 2000.0,
     "horizonsId": "-226",
     "solution": "rosetta_merged",
-    "retrieved": "2026-11-03"
+    "retrieved": "2026-11-07"
   },
   "deep-near": {
     "file": "deep-near.bin",
@@ -193,7 +201,7 @@ export const EPHEMERIDES = {
     "goodToKm": 2000.0,
     "horizonsId": "-93",
     "solution": "NEAR_merged",
-    "retrieved": "2026-11-03"
+    "retrieved": "2026-11-07"
   },
   "deep-stardust": {
     "file": "deep-stardust.bin",
@@ -204,7 +212,7 @@ export const EPHEMERIDES = {
     "goodToKm": 10.0,
     "horizonsId": "-29",
     "solution": "stardust",
-    "retrieved": "2026-11-03"
+    "retrieved": "2026-11-07"
   },
   "deep-deep-impact": {
     "file": "deep-deep-impact.bin",
@@ -215,7 +223,7 @@ export const EPHEMERIDES = {
     "goodToKm": 10.0,
     "horizonsId": "-140",
     "solution": "epoxi_merged",
-    "retrieved": "2026-11-03"
+    "retrieved": "2026-11-07"
   },
   "asteroid-99942": {
     "file": "asteroid-99942.bin",
@@ -226,7 +234,7 @@ export const EPHEMERIDES = {
     "goodToKm": 10.0,
     "horizonsId": "99942;",
     "solution": "JPL#220",
-    "retrieved": "2026-11-03",
+    "retrieved": "2026-11-07",
     "rough": {
       "until": "2029-12-31T00:00:00Z",
       "text": "This is a prediction from JPL's orbit solution for Apophis, not a record of what happened."
@@ -241,7 +249,7 @@ export const EPHEMERIDES = {
     "goodToKm": 10.0,
     "horizonsId": "-64",
     "solution": "ORX_merged",
-    "retrieved": "2026-11-03",
+    "retrieved": "2026-11-07",
     "rough": {
       "until": "2030-03-01T00:00:00Z",
       "text": "This is the mission's planned trajectory as JPL holds it, not a record of what happened."
