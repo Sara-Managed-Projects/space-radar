@@ -5361,3 +5361,25 @@ Object.assign(COPY, {
   }
 });
 // b200-f8-xr: end
+// b200-f9-reach: begin -- the real recordings' panel (copy/en.sound.js, forge #163), machine-drafted
+Object.assign(COPY, {
+  "realSound": {
+    "region": "تسجيلات حقيقية من هنا",
+    "play": "استمع إلى {name}",
+    "stop": "إيقاف",
+    "hide": "إخفاء التسجيلات هنا",
+    "sonified": "بيانات حقيقية حُوّلت إلى صوت",
+    "microphone": "صوت حقيقي من ميكروفون",
+    "playing": "قيد التشغيل: {name}. {how}.",
+    "failed": "لم يُحمَّل هذا التسجيل.",
+    "names": {
+      "real-voyager-plasma": "فوييجر 1 في الفضاء بين النجمي",
+      "real-juno-ganymede": "جونو وهي تمر بجانب غانيميد",
+      "real-cassini-saturn": "إشارات زحل الراديوية",
+      "real-insight-impact": "نيزك يرتطم بالمريخ",
+      "real-insight-wind": "الرياح على المريخ",
+      "real-perseverance-dust-devil": "دوامة غبار على المريخ"
+    }
+  }
+});
+// b200-f9-reach: end

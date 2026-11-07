@@ -1494,3 +1494,11 @@ jobs:
       - name: "Headset: the level anchor, the scale, the frame shim and the session against a mocked navigator.xr; imported only when immersive-vr is supported (forge #158)"
         run: node tests/test_headset.mjs
       # b200-f8-xr: end
+      # b200-f9-reach: begin
+      - name: "The asset pack, the creators' page and five fair comparisons: licences from the inputs, exceptions from the registries, no ranking word (forge #165, #166, #168)"
+        run: python3 tests/test_seo_reach.py
+      - name: "The score of the climb and the real recordings: six rooms from four beds, fetched only when pressed, off the first visit (forge #163)"
+        run: node tests/test_score.mjs
+      - name: "The real recordings' mirror matches the registry (forge #163)"
+        run: python3 scripts/gen_realsounds_js.py --check
+      # b200-f9-reach: end

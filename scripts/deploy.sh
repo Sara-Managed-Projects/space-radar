@@ -431,6 +431,9 @@ if [ "$WHAT" != "assets" ]; then
     # b200-f6-learn: begin (print) -- print/ holds PDFs beside its page: synced by its own block below
     [ "$dir" = "print" ] && continue
     # b200-f6-learn: end
+    # b200-f9-reach: begin -- assets/ and creators/ hold JSON and pictures beside their pages: synced by their own block below
+    case "$dir" in assets|creators) continue ;; esac
+    # b200-f9-reach: end
     if [ "$dir" = "share" ]; then
       "${SYNC[@]}" "$BUILT/share" "s3://$BUCKET/share" --cache-control "$REVALIDATE" \
         --exclude "*" --include "*.png" --content-type "image/png" --delete
@@ -449,6 +452,19 @@ if [ "$WHAT" != "assets" ]; then
       --exclude "*" --include "*.pdf" --content-type "application/pdf" --delete
   fi
   # b200-f6-learn: end
+  # b200-f9-reach: begin -- /assets/ (forge #165): its page and pack.json, the list a script reads; /creators/ (forge #166): its
+  # page and the sample stills. Revalidated like the pages, --delete, invalidated with the rest of pages-dirs.txt below.
+  # The models and maps the pack lists are NOT here: they are served from models/ and textures/, where the app loads them.
+  for dir in assets creators; do
+    [ -d "$BUILT/$dir" ] || continue
+    "${SYNC[@]}" "$BUILT/$dir" "s3://$BUCKET/$dir" --cache-control "$REVALIDATE" \
+      --exclude "*" --include "*.html" --content-type "text/html; charset=utf-8" --delete
+    "${SYNC[@]}" "$BUILT/$dir" "s3://$BUCKET/$dir" --cache-control "$REVALIDATE" \
+      --exclude "*" --include "*.json" --content-type "application/json; charset=utf-8" --delete
+    "${SYNC[@]}" "$BUILT/$dir" "s3://$BUCKET/$dir" --cache-control "$REVALIDATE" \
+      --exclude "*" --include "*.webp" --content-type "image/webp" --delete
+  done
+  # b200-f9-reach: end
   # The press page (public #293, scripts/build_press.py): the page, the README's screenshots and
   # the mark as SVG, built beside the object pages and not kept under site/. HTML no-cache like
   # the other pages; the pictures and the SVGs each by their own type, as the textures are.

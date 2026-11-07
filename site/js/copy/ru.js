@@ -5376,3 +5376,25 @@ Object.assign(COPY, {
   }
 });
 // b200-f8-xr: end
+// b200-f9-reach: begin -- the real recordings' panel (copy/en.sound.js, forge #163), machine-drafted
+Object.assign(COPY, {
+  "realSound": {
+    "region": "Настоящие записи отсюда",
+    "play": "Послушать: {name}",
+    "stop": "Стоп",
+    "hide": "Скрыть записи здесь",
+    "sonified": "Настоящие данные, превращённые в звук",
+    "microphone": "Настоящий звук, записанный микрофоном",
+    "playing": "Звучит: {name}. {how}.",
+    "failed": "Эта запись не загрузилась.",
+    "names": {
+      "real-voyager-plasma": "«Вояджер-1» в межзвёздном пространстве",
+      "real-juno-ganymede": "«Юнона» у Ганимеда",
+      "real-cassini-saturn": "радиоизлучение Сатурна",
+      "real-insight-impact": "падение метеороида на Марс",
+      "real-insight-wind": "ветер на Марсе",
+      "real-perseverance-dust-devil": "пылевой вихрь на Марсе"
+    }
+  }
+});
+// b200-f9-reach: end

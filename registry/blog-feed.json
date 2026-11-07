@@ -3,6 +3,22 @@
  "title": "Space Radar Journal",
  "items": [
   {
+   "title": "Eight nebulae as walls of glowing gas, dust and stars",
+   "url": "https://blog.spaceradar.ai/eight-nebulae-walls-of-glowing-gas/",
+   "date": "2026-11-07",
+   "summary": "Release 1.4.0 draws the Lagoon, Trifid, Eagle, Omega, Rosette and three more nebulae in 3D. The light is measured, the shape reconstructed.",
+   "image": "https://blog.spaceradar.ai/media/eight-nebulae-walls-of-glowing-gas/share.jpg",
+   "tags": [
+    "Stars & Galaxies",
+    "nebulae",
+    "Lagoon Nebula",
+    "Eagle Nebula",
+    "Rosette Nebula",
+    "3D models",
+    "release 1.4"
+   ]
+  },
+  {
    "title": "New Horizons at Pluto: When Was Closest Approach, and How Close?",
    "url": "https://blog.spaceradar.ai/new-horizons-pluto-flyby-closest-approach/",
    "date": "2026-11-05",

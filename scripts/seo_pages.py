@@ -50,6 +50,9 @@ import seo_countries  # noqa: E402
 # b200-f6-learn: begin (print) -- the paper models' page, /print/, and its PDFs (forge #161)
 import seo_print  # noqa: E402
 # b200-f6-learn: end
+# b200-f9-reach: begin -- /assets/, /creators/ and five comparisons (forge #165, #166, #168)
+import seo_reach  # noqa: E402
+# b200-f9-reach: end
 from seo_common import (ACCOUNTS, ACCURACY_FORM, CLASSROOM_FORM, GITHUB, ROOT, Ctx, Page, esc, footer_nav,  # noqa: E402
                         make_ctx, place_picker, render, url_of, webpage)
 from seo_share import Spec  # noqa: E402
@@ -560,6 +563,12 @@ def about_page(host: str) -> Page:
         '<ul class="links"><li><a href="../accuracy/index.html">How accurate it is</a></li><li><a href="../sources/index.html">Where every number comes from</a></li>'
         '<li><a href="../read/index.html">Long reads: what each release added, and how it is known</a></li>'
         '<li><a href="../nasa-eyes-alternative/index.html">How it compares with NASA\'s Eyes on the Solar System</a></li>'
+        # b200-f9-reach: begin
+        '<li><a href="../solar-system-scope-alternative/index.html">How it compares with Solar System Scope</a>, '
+        '<a href="../spaceengine-alternative-mac/index.html">SpaceEngine</a> and '
+        '<a href="../live-satellite-tracker-3d/index.html">Cosmoscope</a></li>'
+        '<li><a href="../creators/index.html">For creators: using footage, and the free 3D models</a></li>'
+        # b200-f9-reach: end
         '<li><a href="../first-pull-request/index.html">Your first pull request: good first issues in three.js and beyond</a></li>'
         f'<li><a href="{GITHUB}/blob/main/CREDITS.md">Credits and licences</a></li></ul>\n'
         f'<h2>Find us</h2>\n<ul class="links">{me}</ul>\n')
@@ -1039,6 +1048,9 @@ def build_pages(host: str, objects: list[dict], today: str, snapshot_index: dict
     # b200-f6-learn: begin (print)
     pages += seo_print.pages(host)
     # b200-f6-learn: end
+    # b200-f9-reach: begin
+    pages += seo_reach.pages(host, counts)
+    # b200-f9-reach: end
     return pages
 
 
@@ -1129,6 +1141,9 @@ def build_extra(out: Path, host: str, objects: list[dict], today: str, snapshot_
     # b200-f6-learn: begin (print) -- the sheets beside the page, when SR_PRINT=1 (the deploy; scripts/seo_print.py says why)
     seo_print.write(out)
     # b200-f6-learn: end
+    # b200-f9-reach: begin -- the pack's JSON list and the sample stills, beside their pages
+    seo_reach.write(out)
+    # b200-f9-reach: end
     (out / "pages-dirs.txt").write_text("\n".join(pages_dirs(pages) + (["share"] if drawn else [])) + "\n", encoding="utf-8")
     index: dict[str, str] = {}
     for s in seo_systems.systems():

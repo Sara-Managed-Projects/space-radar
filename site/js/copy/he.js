@@ -5368,3 +5368,25 @@ Object.assign(COPY, {
   }
 });
 // b200-f8-xr: end
+// b200-f9-reach: begin -- the real recordings' panel (copy/en.sound.js, forge #163), machine-drafted
+Object.assign(COPY, {
+  "realSound": {
+    "region": "הקלטות אמיתיות מכאן",
+    "play": "להאזין ל{name}",
+    "stop": "עצירה",
+    "hide": "להסתיר את ההקלטות כאן",
+    "sonified": "נתונים אמיתיים שהפכו לצליל",
+    "microphone": "צליל אמיתי, ממיקרופון",
+    "playing": "מתנגן: {name}. {how}.",
+    "failed": "ההקלטה לא נטענה.",
+    "names": {
+      "real-voyager-plasma": "וויאג'ר 1 בחלל הבין-כוכבי",
+      "real-juno-ganymede": "ג'ונו חולפת ליד גנימד",
+      "real-cassini-saturn": "שידורי הרדיו של שבתאי",
+      "real-insight-impact": "מטאורואיד פוגע במאדים",
+      "real-insight-wind": "הרוח על מאדים",
+      "real-perseverance-dust-devil": "שד אבק על מאדים"
+    }
+  }
+});
+// b200-f9-reach: end
