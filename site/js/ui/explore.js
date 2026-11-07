@@ -614,8 +614,11 @@ export function createExplore(ctx, host) {
     return { key, r };
   });
   for (const rung of LADDER_RUNGS) {
-    if (!rung.target || !rung.target.record) continue; // the worlds are the Planets tab's
+    // b200-c1-culture-helio (forge #148): the heliosphere is a place, a flight fetched on the press (ui/heliorung.js).
+    const helio = !!rung.target && rung.target.place === 'heliosphere';
+    if (!rung.target || !(rung.target.record || helio)) continue; // the worlds are the Planets tab's
     const r = rowButton(rung.label, rung.distance, () => {
+      if (helio) { import('./heliorung.js').then((m) => m.goHeliosphere(ctx)).catch(() => {}); return; }
       const rec = ctx.recordById(rung.target.record);
       if (!rec) return;
       if (rec.layer && typeof ctx.isLayerOn === 'function' && !ctx.isLayerOn(rec.layer) && typeof ctx.setLayerOn === 'function') ctx.setLayerOn(rec.layer, true);
@@ -971,7 +974,7 @@ export function createExplore(ctx, host) {
       r.b.title = ok ? COPY.ladder[`${key}Title`] : COPY.ladder.flightOff;
     }
     for (const { rung, r } of farRows) {
-      const ok = !!(typeof ctx.recordById === 'function' && ctx.recordById(rung.target.record));
+      const ok = rung.target.place ? typeof ctx.wantClimb === 'function' : !!(typeof ctx.recordById === 'function' && ctx.recordById(rung.target.record)); // b200-c1-culture-helio
       r.b.disabled = !ok;
       r.b.setAttribute('aria-label', t(ok ? COPY.ladder.rowName : COPY.ladder.rowNameLoading, { label: rung.label, distance: rung.distance }));
     }

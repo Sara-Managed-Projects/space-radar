@@ -1,0 +1,14 @@
+Sky-culture pictures in this folder (*.webp)
+============================================
+
+Originals: https://github.com/Stellarium/stellarium/tree/a8469197a65de582f6b0ebd82b85173145241b79/skycultures/maori/illustrations
+           Drawn by the Stellarium contributors of the Māori sky culture (Dan Smale). The sky culture's own description says, under License: "CC BY-SA 4.0".
+Modified by: the Space Radar contributors, 2026-11-07. What was changed: each picture was turned to grey, put
+           on black where it was transparent, resampled to a power-of-two square and re-encoded as WebP
+           (scripts/build-skylore.py). Nothing was redrawn or cropped. index.json beside them repeats the
+           three anchor stars Stellarium's index.json gives each picture, as sky coordinates.
+
+Licence: Creative Commons Attribution-ShareAlike 4.0 International,
+         https://creativecommons.org/licenses/by-sa/4.0/
+These files, and anything made from them, stay under CC BY-SA 4.0. The MIT licence of Space Radar's code
+does not apply to them.

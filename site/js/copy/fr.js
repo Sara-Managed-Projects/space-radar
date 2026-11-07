@@ -5166,6 +5166,30 @@ Object.assign(COPY, {
   }
 });
 // b200-f3-stars: end
+// b200-c1-culture: begin -- a sky figure's story and the other cultures' pictures (copy/en.later.js skyLore, forge #143), machine-drafted
+Object.assign(COPY, {
+  "skyLore": {
+    "figure": "une figure du ciel {culture}",
+    "figureLabel": "{name}, une figure du ciel {culture}. Appuyez pour lire son histoire.",
+    "openTitle": "Appuyez pour lire son histoire",
+    "sub": "Le ciel {culture}",
+    "close": "Fermer l’histoire",
+    "loading": "Chargement de l’histoire…",
+    "failed": "L’histoire ne s’est pas chargée. Réessayez dans un instant.",
+    "fromStellarium": "D’après la description de cette culture du ciel dans Stellarium. {credit}.",
+    "ours": "Dans nos propres mots, d’après : {cite}.",
+    "honesty": "Illustratif : un récit, tel que sa source le rapporte. Les noms et les histoires varient selon les peuples et les conteurs.",
+    "none": "Aucune des sources que nous pouvons partager ne rapporte d’histoire pour cette figure. Ce sont des traditions vivantes : nous le disons plutôt que de deviner.",
+    "inEnglish": "L’histoire est en anglais, la langue de sa source : il n’en existe aucune traduction sous licence.",
+    "artTitles": {
+      "maori": "Les figures maories en dessins, tirées de la culture du ciel maorie de Stellarium, CC BY-SA 4.0",
+      "hawaiian": "Les lignes d’étoiles hawaïennes en dessins de Kealoha Kaneakua, pour Stellarium, CC BY-SA 4.0",
+      "boorong": "Les figures boorong en dessins, tirées de la culture du ciel boorong de Stellarium, CC BY-SA 4.0"
+    },
+    "artNone": "Aucun dessin de ce ciel sous une licence que nous pouvons partager : ses figures restent des lignes."
+  }
+});
+// b200-c1-culture: end
 // b200-f5-make: begin -- the flight editor, Record and Dome and 360 (copy/en.make.js, forge #155, #156, #157), machine-drafted
 Object.assign(COPY, {
   "make": {

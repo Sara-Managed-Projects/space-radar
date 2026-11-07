@@ -80,6 +80,10 @@ const EXT_K = 0.2;
 const RO = { dome: -100, milkyway: -99, otherLight: -98.8, art: -98.6, pictures: -98.5, stars: -98, lines: -97, points: -96, discs: -95, meteors: -94, arc: 99 };
 // The constellation pictures: how strong at night in a wide field, and the fields they fade out over.
 const ART_GAIN = 0.42;
+// b200-c1-culture: begin -- the cultures with pictures (forge #143): the western ones in data/skyart/, the others'
+// in data/skyart/<id>/ (scripts/build-skylore.py). The rest keep their lines: no drawings under a licence we may ship.
+export const ART_CULTURES = ['western', 'maori', 'hawaiian', 'boorong'];
+// b200-c1-culture: end
 // The figures' lines: under the stars they join, not over them (internal #447; it was 0.34).
 const FIGURE_LINE = 0.16;
 const TAG_MS = 9000;
@@ -847,7 +851,7 @@ export function createGroundSky(ctx, env) {
     Promise.all([withCulture(), fetchJson(`../../data/skycultures/${id}.json`)]).then(([m, doc]) => {
       if (disposed) return;
       const f = m.cultureFigures(doc);
-      cultures.set(id, { obj: lineObject(`sky-figures-${id}`, f.verts, 0x9aa4b2, FIGURE_LINE, true), names: f.names });
+      cultures.set(id, { obj: lineObject(`sky-figures-${id}`, f.verts, 0x9aa4b2, FIGURE_LINE, true), names: f.names, hits: m.figureHits(doc) });
       labels.at = -Infinity;
     }).catch((e) => { cultureAsked.delete(id); cultureModAsked = cultureMod ? cultureModAsked : null; console.warn('ground sky: that sky culture did not load', e); });
   }
@@ -861,16 +865,22 @@ export function createGroundSky(ctx, env) {
       lines.bounds = lineObject('sky-bounds', m.parseBounds(buf), 0xaab6d8, 0.2, true);
     }).catch((e) => { boundsAsked = false; cultureModAsked = cultureMod ? cultureModAsked : null; console.warn('ground sky: the borders did not load', e); });
   }
-  let art = null;
-  let artAsked = false;
-  function askArt() {
-    if (artAsked || disposed || typeof document === 'undefined') return;
-    artAsked = true;
+  // One set of pictures per culture that has them, made when that culture's pictures are first asked for.
+  const arts = new Map();
+  const artAsked = new Set();
+  function askArt(id) {
+    if (artAsked.has(id) || disposed || typeof document === 'undefined') return;
+    artAsked.add(id);
     withCulture().then((m) => {
       if (disposed) return;
       // A phone holds fewer: a 512 px picture with its mipmaps is 1.4 MiB of GPU memory.
-      art = m.createSkyArt({ root, radius: R * 0.987, eqToLocal, renderOrder: RO.art, cap: groundPictureCaps(ctx.quality && ctx.quality.tier, typeof innerWidth === 'number' ? innerWidth : NaN).art });
-    }).catch((e) => { artAsked = false; cultureModAsked = null; console.warn('ground sky: the constellation pictures did not load', e); });
+      arts.set(id, m.createSkyArt({ root, radius: R * 0.987, eqToLocal, renderOrder: RO.art, cap: groundPictureCaps(ctx.quality && ctx.quality.tier, typeof innerWidth === 'number' ? innerWidth : NaN).art, dir: id === 'western' ? '' : `${id}/` }));
+    }).catch((e) => { artAsked.delete(id); cultureModAsked = null; console.warn('ground sky: the constellation pictures did not load', e); });
+  }
+  // A figure's story (forge #143): its card, ui/skystory.js, is fetched on the first press and never before.
+  function openLore(lore) {
+    if (!lore || disposed) return;
+    import('../ui/skystory.js').then((m) => m.openSkyStory(lore)).catch((e) => console.warn('ground sky: the story did not open', e));
   }
 
   // ---- meteors (sky/meteors.js): only once a shower is active, never under reduced motion --------
@@ -1408,15 +1418,28 @@ export function createGroundSky(ctx, env) {
     }
     const con = conMod ? conMod.constellationAt(best ? best.what.dirEq : eq) : null;
     const conName = con ? (conNames.get(con) || con) : '';
+    // b200-c1-culture (forge #143): the figure the tap means, for its story (what.lore, ui/skystory.js). In
+    // another people's sky it is their figure whose lines pass nearest, else the IAU constellation.
+    const L = COPY.skyLore;
+    const shown = cultureShown !== 'western' && options.figures ? cultures.get(cultureShown) : null;
+    const fig = shown && shown.hits && cultureMod ? cultureMod.figureAt(shown.hits, best ? best.what.dirEq : eq, Math.max(2.5, reach * 2)) : null;
+    const culture = COPY.tonight.skybar.cultures[fig ? cultureShown : 'western'] || cultureShown;
+    const lore = fig ? { culture: cultureShown, key: fig.key, name: fig.label, cultureName: culture }
+      : con ? { culture: 'western', key: con, name: conName, cultureName: culture } : null;
     if (!best) {
-      // Nothing within reach: the tap still fell in a constellation, and the tag says which.
+      // Nothing within reach: the tap still fell in a constellation, and the tag says which, or in
+      // another people's sky the figure, and either tag opens its story.
+      if (fig) return { kind: 'sky', id: `${cultureShown}:${fig.key}`, name: fig.label, mag: NaN, dirEq: eq, con, conName, lore, words: { name: fig.label, sub: t(L.figure, { culture }), label: t(L.figureLabel, { name: fig.label, culture }), title: L.openTitle } };
       if (!con) return null;
       const C = COPY.tonight.skybar.con;
-      return { kind: 'sky', id: con, name: conName, mag: NaN, dirEq: eq, con, conName, words: { name: conName, sub: C.kind, label: t(C.label, { name: conName }), title: '' } };
+      return { kind: 'sky', id: con, name: conName, mag: NaN, dirEq: eq, con, conName, lore, words: { name: conName, sub: C.kind, label: `${t(C.label, { name: conName })} ${L.openTitle}.`, title: L.openTitle } };
     }
     const what = best.what;
     what.con = con;
     what.conName = conName;
+    // A star with no card of its own (most of them) opens the story of the figure it is in instead (forge #143).
+    what.lore = lore;
+    if (fig) what.figName = fig.label;
     if (what.kind === 'star') {
       // A proper name, when the star has one (the 549 of skystars.names.json).
       for (const s of starNames) {
@@ -1578,10 +1601,13 @@ export function createGroundSky(ctx, env) {
     if (options.bounds && !boundsAsked) askBounds();
     setLine(lines.bounds, options.bounds);
     setLine(lines.pole, options.grid || options.starGrid);
-    // The pictures belong to the western figures; they leave as the field closes on one star.
-    const artOn = !!options.art && cultureShown === 'western' && !epochDeep; // b200-f3-stars: pinned to today's stars
-    if (artOn && !artAsked) askArt();
-    if (art) art.update({ on: artOn, dirEq: lookEq(frame.camera), fovDeg: frame.fovDeg, aspect: w / Math.max(1, h), strength: ART_GAIN * lineNight * Math.max(0, Math.min(1, (frame.fovDeg - 4) / 10)) });
+    // The pictures belong to the figures they are drawn for, so they follow the culture chosen, and only
+    // the cultures with pictures have them; they leave as the field closes on one star.
+    const artCulture = ART_CULTURES.includes(cultureShown) ? cultureShown : null;
+    const artOn = !!options.art && !!artCulture && !epochDeep; // b200-f3-stars: pinned to today's stars
+    if (artOn && !artAsked.has(artCulture)) askArt(artCulture);
+    const artView = { dirEq: lookEq(frame.camera), fovDeg: frame.fovDeg, aspect: w / Math.max(1, h), strength: ART_GAIN * lineNight * Math.max(0, Math.min(1, (frame.fovDeg - 4) / 10)) };
+    for (const [id, a] of arts) a.update({ ...artView, on: artOn && id === artCulture });
     // Meteors: at the rate the naked eye would count under this sky, whatever the zoom.
     // Every source the IMO lists as active tonight, at tonight's rate (sky/meteors.js sourcesAt);
     // a trip stop's own shower (frame.showers, held whatever the date) at its peak rate.
@@ -1678,20 +1704,24 @@ export function createGroundSky(ctx, env) {
     showTag(what, text, onOpen) {
       if (!tag.node || !what) return;
       tag.what = what;
-      tag.onOpen = onOpen || null;
+      tag.onOpen = what.lore && !what.record ? () => openLore(what.lore) : onOpen || null;
       tag.dir = what.kind === 'body'
         ? () => { const d = discs.get(what.id); return d && d.apparent ? d.apparent.local : null; }
         : () => lift(localOf(m9, what.dirEq));
       tag.until = performance.now() + TAG_MS;
       // "You are in Orion": the constellation the thing is in, after what it is.
-      const inCon = what.kind !== 'sky' && what.conName ? t(COPY.tonight.skybar.con.inside, { name: what.conName }) : '';
+      const inName = what.figName || what.conName; // b200-c1-culture: another people's figure, when their sky is shown
+      const inCon = what.kind !== 'sky' && inName ? t(COPY.tonight.skybar.con.inside, { name: inName }) : '';
+      const story = what.kind !== 'sky' && what.lore && !what.record ? COPY.skyLore.openTitle : ''; // b200-c1-culture
       tag.name.textContent = text.name;
       tag.sub.textContent = inCon ? `${text.sub} · ${inCon}` : text.sub;
-      tag.node.setAttribute('aria-label', inCon ? `${text.label} ${inCon}.` : text.label);
-      tag.node.title = text.title || '';
+      tag.node.setAttribute('aria-label', `${inCon ? `${text.label} ${inCon}.` : text.label}${story ? ` ${story}.` : ''}`);
+      tag.node.title = text.title || story;
       tag.node.hidden = true; // paintLabels() shows it where the thing is, on the next frame
     },
     hideTag,
+    /** Open the story card of a figure a tap named (forge #143): what.lore of whatAt. */
+    openLore,
     /** What the tag is naming now, or null. */
     tagged: () => tag.what,
     /** One meteor now, from the first active shower: for the probe and a trip stop. Null when none can be drawn. */
@@ -1735,11 +1765,12 @@ export function createGroundSky(ctx, env) {
     },
     epoch: () => (stats.epoch ? { ...stats.epoch } : null),
     // b200-f3-stars: end
-    stats: () => ({ ...stats, tiles: starTiles ? starTiles.state() : null, culture: cultureShown, bounds: !!lines.bounds, art: art ? art.state() : null, meteors: meteors ? meteors.state() : null }),
+    stats: () => ({ ...stats, tiles: starTiles ? starTiles.state() : null, culture: cultureShown, bounds: !!lines.bounds, art: arts.has(cultureShown) ? arts.get(cultureShown).state() : null, meteors: meteors ? meteors.state() : null }),
     dispose() {
       disposed = true;
       if (pictures) { pictures.dispose(); pictures = null; }
-      if (art) { art.dispose(); art = null; }
+      for (const a of arts.values()) a.dispose();
+      arts.clear();
       if (vars) { vars.dispose(); vars = null; } // b200-f3-stars
       if (meteors) { meteors.dispose(); meteors = null; }
       if (starTiles) { starTiles.dispose(); starTiles = null; }

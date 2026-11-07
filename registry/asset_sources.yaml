@@ -644,3 +644,17 @@ sources:
     offline: shipped
     checked: 2026-11-07
   # b200-f6-learn: end
+  # b200-c1-culture: begin -- forge #143: the figures' stories and the Māori, Hawaiian and Boorong pictures
+  - id: stellarium-skycultures
+    name: Stellarium sky cultures (description.md, index.json and illustrations), read by scripts/build-skylore.py
+    match: ["https://raw.githubusercontent.com/Stellarium/stellarium/a8469197a65de582f6b0ebd82b85173145241b79/skycultures/"]
+    url: https://github.com/Stellarium/stellarium/tree/a8469197a65de582f6b0ebd82b85173145241b79/skycultures
+    licence: CC BY-SA 4.0 (each culture's own License section); Free Art License for the modern pictures only
+    licence_read: "License: CC BY-SA 4.0 (maori, hawaiian_starlines, samoan, tongan, norse, boorong, chinese); Text and data: CC BY-SA 4.0, Illustrations: Free Art License (modern)"
+    licence_url: https://creativecommons.org/licenses/by-sa/4.0/
+    licence_note: "Read 2026-11-07 at the commit registry/skycultures.yaml pins. site/data/skystories/ (one JSON per culture, 474 figures) carries each description's text for its figures as it stands, with the culture's credit and CC BY-SA 4.0, and our own short summaries (marked, each with its published source) where a description gives a figure no text; registry/skystories.yaml says which. site/data/skyart/maori/, site/data/skyart/hawaiian/ and site/data/skyart/boorong/ (38 pictures, about 248 kB) are those cultures' illustrations, CC BY-SA 4.0 by their culture's licence section (the Hawaiian ones drawn by Kealoha Kaneakua), greyed and resampled to power-of-two squares, each folder with its LICENSE.txt. The anchor stars' J2000 places are from VizieR I/239 (cds-vizier). Not read for shipping: navajo and egyptian (GNU GPL v2.0), arabic_indigenous (CC BY-NC-ND 4.0), babylonian_mulapin (CC BY-ND 4.0), lokono (no licence)."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  # b200-c1-culture: end

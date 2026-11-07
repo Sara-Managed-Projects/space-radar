@@ -5062,6 +5062,30 @@ Object.assign(COPY, {
   }
 });
 // b200-f3-stars: end
+// b200-c1-culture: begin -- a sky figure's story and the other cultures' pictures (copy/en.later.js skyLore, forge #143), machine-drafted
+Object.assign(COPY, {
+  "skyLore": {
+    "figure": "{culture} आकाश की एक आकृति",
+    "figureLabel": "{name}, {culture} आकाश की एक आकृति। इसकी कहानी के लिए दबाएँ।",
+    "openTitle": "इसकी कहानी के लिए दबाएँ",
+    "sub": "{culture} आकाश",
+    "close": "कहानी बंद करें",
+    "loading": "कहानी लाई जा रही है…",
+    "failed": "कहानी लोड नहीं हुई। थोड़ी देर में फिर कोशिश करें।",
+    "fromStellarium": "Stellarium में इस आकाश-संस्कृति के विवरण से। {credit}।",
+    "ours": "हमारे अपने शब्दों में, इस आधार पर: {cite}।",
+    "honesty": "उदाहरणात्मक: एक कथन, जैसा उसका स्रोत दर्ज करता है। नाम और कहानियाँ लोगों और कहने वालों के बीच बदलती हैं।",
+    "none": "जिन स्रोतों को हम साझा कर सकते हैं, उनमें इस आकृति की कोई कहानी दर्ज नहीं है। ये जीवित परंपराएँ हैं, इसलिए हम अनुमान लगाने के बजाय यही कहते हैं।",
+    "inEnglish": "कहानी अंग्रेज़ी में है, जो इसके स्रोत की भाषा है: कोई लाइसेंस-प्राप्त अनुवाद नहीं है।",
+    "artTitles": {
+      "maori": "माओरी आकृतियाँ चित्रों के रूप में, Stellarium की माओरी आकाश-संस्कृति से, CC BY-SA 4.0",
+      "hawaiian": "हवाई तारा-रेखाएँ, Kealoha Kaneakua के चित्र, Stellarium के लिए, CC BY-SA 4.0",
+      "boorong": "बूरोंग आकृतियाँ चित्रों के रूप में, Stellarium की बूरोंग आकाश-संस्कृति से, CC BY-SA 4.0"
+    },
+    "artNone": "इस आकाश के ऐसे कोई चित्र नहीं हैं जिनका लाइसेंस हमें साझा करने दे: इसकी आकृतियाँ रेखाएँ ही रहती हैं।"
+  }
+});
+// b200-c1-culture: end
 // b200-f5-make: begin -- the flight editor, Record and Dome and 360 (copy/en.make.js, forge #155, #156, #157), machine-drafted
 Object.assign(COPY, {
   "make": {

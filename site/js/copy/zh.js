@@ -5061,6 +5061,30 @@ Object.assign(COPY, {
   }
 });
 // b200-f3-stars: end
+// b200-c1-culture: begin -- a sky figure's story and the other cultures' pictures (copy/en.later.js skyLore, forge #143), machine-drafted
+Object.assign(COPY, {
+  "skyLore": {
+    "figure": "{culture}星空中的一个图形",
+    "figureLabel": "{name}，{culture}星空中的一个图形。按下查看它的故事。",
+    "openTitle": "按下查看它的故事",
+    "sub": "{culture}星空",
+    "close": "关闭故事",
+    "loading": "正在获取故事…",
+    "failed": "故事没有加载出来，请稍后再试。",
+    "fromStellarium": "出自 Stellarium 对这一星空文化的描述。{credit}。",
+    "ours": "以我们自己的话概述，依据：{cite}。",
+    "honesty": "示意：这只是来源所记录的一种讲法。不同民族、不同讲述者的名称和故事各不相同。",
+    "none": "我们可以分享的资料中没有记录这个图形的故事。这些是仍在传承的传统，所以我们照实说明，而不去猜测。",
+    "inEnglish": "故事为英文，即其来源的语言：没有获得许可的译本。",
+    "artTitles": {
+      "maori": "毛利图形的插画，出自 Stellarium 的毛利星空文化，CC BY-SA 4.0",
+      "hawaiian": "夏威夷星线的插画，由 Kealoha Kaneakua 为 Stellarium 绘制，CC BY-SA 4.0",
+      "boorong": "布隆图形的插画，出自 Stellarium 的布隆星空文化，CC BY-SA 4.0"
+    },
+    "artNone": "这片星空没有可按许可分享的插画：它的图形仍以连线显示。"
+  }
+});
+// b200-c1-culture: end
 // b200-f5-make: begin -- the flight editor, Record and Dome and 360 (copy/en.make.js, forge #155, #156, #157), machine-drafted
 Object.assign(COPY, {
   "make": {

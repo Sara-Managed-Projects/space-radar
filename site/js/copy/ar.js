@@ -5061,6 +5061,30 @@ Object.assign(COPY, {
   }
 });
 // b200-f3-stars: end
+// b200-c1-culture: begin -- a sky figure's story and the other cultures' pictures (copy/en.later.js skyLore, forge #143), machine-drafted
+Object.assign(COPY, {
+  "skyLore": {
+    "figure": "شكل من سماء {culture}",
+    "figureLabel": "{name}، شكل من سماء {culture}. اضغط لقراءة قصته.",
+    "openTitle": "اضغط لقراءة قصته",
+    "sub": "سماء {culture}",
+    "close": "إغلاق القصة",
+    "loading": "جارٍ جلب القصة…",
+    "failed": "لم تُحمَّل القصة. حاول مرة أخرى بعد قليل.",
+    "fromStellarium": "من وصف Stellarium لثقافة السماء هذه. {credit}.",
+    "ours": "بكلماتنا نحن، استنادًا إلى: {cite}.",
+    "honesty": "توضيحي: رواية واحدة كما يسجلها مصدرها. تختلف الأسماء والقصص بين الشعوب والرواة.",
+    "none": "لا تسجّل المصادر التي يحق لنا مشاركتها قصةً لهذا الشكل. هذه تقاليد حية، لذا نقول ذلك بدل التخمين.",
+    "inEnglish": "القصة بالإنجليزية، لغة مصدرها: لا توجد ترجمة مرخّصة.",
+    "artTitles": {
+      "maori": "أشكال الماوري رسومًا، من ثقافة سماء الماوري في Stellarium، CC BY-SA 4.0",
+      "hawaiian": "خطوط النجوم الهاوائية رسومًا بريشة Kealoha Kaneakua، لـ Stellarium، CC BY-SA 4.0",
+      "boorong": "أشكال البورونغ رسومًا، من ثقافة سماء البورونغ في Stellarium، CC BY-SA 4.0"
+    },
+    "artNone": "لا رسوم لهذه السماء بترخيص يحق لنا مشاركته: تبقى أشكالها خطوطًا."
+  }
+});
+// b200-c1-culture: end
 // b200-f5-make: begin -- the flight editor, Record and Dome and 360 (copy/en.make.js, forge #155, #156, #157), machine-drafted
 Object.assign(COPY, {
   "make": {

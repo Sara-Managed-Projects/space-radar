@@ -5162,6 +5162,30 @@ Object.assign(COPY, {
   }
 });
 // b200-f3-stars: end
+// b200-c1-culture: begin -- a sky figure's story and the other cultures' pictures (copy/en.later.js skyLore, forge #143), machine-drafted
+Object.assign(COPY, {
+  "skyLore": {
+    "figure": "eine Figur des {culture} Himmels",
+    "figureLabel": "{name}, eine Figur des {culture} Himmels. Drücken für ihre Geschichte.",
+    "openTitle": "Drücken für die Geschichte",
+    "sub": "Der {culture} Himmel",
+    "close": "Geschichte schließen",
+    "loading": "Die Geschichte wird geladen…",
+    "failed": "Die Geschichte wurde nicht geladen. Bitte gleich noch einmal versuchen.",
+    "fromStellarium": "Aus Stellariums Beschreibung dieser Himmelskultur. {credit}.",
+    "ours": "In unseren eigenen Worten, nach: {cite}.",
+    "honesty": "Illustrativ: eine Erzählung, wie ihre Quelle sie festhält. Namen und Geschichten unterscheiden sich zwischen Völkern und Erzählenden.",
+    "none": "Zu dieser Figur ist in den Quellen, die wir weitergeben dürfen, keine Geschichte überliefert. Es sind lebendige Traditionen; darum sagen wir das, statt zu raten.",
+    "inEnglish": "Die Geschichte steht auf Englisch, der Sprache ihrer Quelle: Eine lizenzierte Übersetzung gibt es nicht.",
+    "artTitles": {
+      "maori": "Die Māori-Figuren als Zeichnungen, aus Stellariums Māori-Himmelskultur, CC BY-SA 4.0",
+      "hawaiian": "Die hawaiischen Sternlinien als Zeichnungen von Kealoha Kaneakua, für Stellarium, CC BY-SA 4.0",
+      "boorong": "Die Boorong-Figuren als Zeichnungen, aus Stellariums Boorong-Himmelskultur, CC BY-SA 4.0"
+    },
+    "artNone": "Keine Zeichnungen dieses Himmels unter einer Lizenz, die wir weitergeben dürfen: Seine Figuren bleiben Linien."
+  }
+});
+// b200-c1-culture: end
 // b200-f5-make: begin -- the flight editor, Record and Dome and 360 (copy/en.make.js, forge #155, #156, #157), machine-drafted
 Object.assign(COPY, {
   "make": {

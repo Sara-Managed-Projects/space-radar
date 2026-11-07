@@ -1296,7 +1296,7 @@ export const TOURS = [
 {
 "id": "outer-solar-system",
 "title": "Out past Jupiter, to the farthest thing we sent",
-"blurb": "Ten stops through the cold outer worlds. Leaving brings you back to Earth.",
+"blurb": "Eleven stops through the cold outer worlds. Leaving brings you back to Earth.",
 "requires": [
 "worlds",
 "deep-space",
@@ -1517,9 +1517,32 @@ export const TOURS = [
 "ease": "auto",
 "on_unresolved": "drop",
 "dwell_ms": 18484
+},
+{
+"id": "heliosphere",
+"target": {
+"world": "sun"
+},
+"stage": "sun",
+"needs_layer": "deep-space",
+"distance_km": 44879361210,
+"drift_deg": 0,
+"chapter": "Epilogue: looking back",
+"seen_from": "neptune",
+"card": {
+"title": "The bubble the Sun blows round itself",
+"body": "From three hundred times the Earth's distance, the shells are the edges of the bubble the Sun's wind blows in the gas between the stars. Voyager 1 left it in 2012 and Voyager 2 in 2018, and the four marks are where they crossed its two inner edges. Those four places are measured. The shapes between them are a model, and the outer shell is a guess."
+},
+"frame_radii": 5.0,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 20000
 }
 ],
-"estimate_ms": 211715
+"estimate_ms": 235065
 },
 {
 "id": "a-year-in-a-minute",

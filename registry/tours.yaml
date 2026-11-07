@@ -1334,7 +1334,8 @@ tours:
   # =============================================================================================
   - id: outer-solar-system
     title: "Out past Jupiter, to the farthest thing we sent"
-    blurb: "Ten stops through the cold outer worlds. Leaving brings you back to Earth."
+    # b200-c1-culture-helio: eleven stops with the heliosphere (forge #148)
+    blurb: "Eleven stops through the cold outer worlds. Leaving brings you back to Earth."
     group: solar-system
     next: to-the-edge
     requires: [worlds, deep-space, far-bodies]
@@ -1611,6 +1612,38 @@ tours:
             It passed Jupiter in March 1979 and Saturn in November 1980, and it has been leaving
             ever since, more than 170 times the Earth's distance from the Sun. In 1990 it turned
             round and photographed the planets it had left. Earth came out 0.12 of a pixel wide.
+
+      # b200-c1-culture-helio: begin (forge #148) -- the bubble Voyager 1 is outside of, from 300 AU.
+      # THE SUBJECT IS THE SUN, 300 AU away: the heliosphere is not a record, and scene/heliosphere.js draws it
+      # round the Sun on the Sun's stage with the Deep space layer on, whole once the camera is past 60 AU.
+      # 300 AU is outside the two fitted surfaces on every side but the tail (the heliopause is drawn to
+      # 240) and inside the illustrative bow wave, the distance ui/heliorung.js (the ladder's rung) flies to.
+      # `seen_from: neptune` IS A DIRECTION, NOT A STORY: the camera goes on the line from the Sun through
+      # Neptune, which from 2026 to the late 2030s lies 105 to 130 degrees round from IBEX's nose (ecliptic
+      # 255.7; Neptune near 0 to 25), so the bubble is seen side on, nose to one side and tail to the other,
+      # level with the planets, the way its model is drawn in the papers. No other key names a side for a
+      # stop about the Sun (the key light has nothing to light); `drift_deg: 0` because seen_from re-aims
+      # every frame.
+      - id: heliosphere
+        target: {world: sun}
+        needs_layer: deep-space
+        stage: sun
+        seen_from: neptune
+        distance_km: 44879361210
+        drift_deg: 0
+        chapter: "Epilogue: looking back"
+        # read 2026-11-07, https://science.nasa.gov/mission/voyager/voyager-1/: "On Aug. 25, 2012, the spacecraft became the first to exit the heliosphere"; "On Dec. 16, 2004, Voyager 1 reached the termination shock"
+        # read 2026-11-07, https://science.nasa.gov/mission/voyager/voyager-2/: "On Aug. 30, 2007, Voyager 2 passed the termination shock" (its key dates say interstellar space on Nov 25, 2018 and its introduction Dec. 10; registry/missions.yaml has NASA's 5 November 2018 release: the card says only the year)
+        # (card figure = page figure: 2012 and 2018 = the pages' years ; three hundred times = distance_km 44 879 361 210 / 149 597 870.7 = 300.0 AU ; four marks = scene/heliosphere.js HELIO.crossings, two per craft ; "the outer shell is a guess" = the bow wave's distance is illustrative, heliosphere.js after McComas et al. 2012)
+        card:
+          title: "The bubble the Sun blows round itself"
+          body: >-
+            From three hundred times the Earth's distance, the shells are the edges of the bubble
+            the Sun's wind blows in the gas between the stars. Voyager 1 left it in 2012 and
+            Voyager 2 in 2018, and the four marks are where they crossed its two inner edges. Those
+            four places are measured. The shapes between them are a model, and the outer shell is
+            a guess.
+      # b200-c1-culture-helio: end
 
   # =============================================================================================
   # A YEAR IN A MINUTE (spec 0030). The first trip that moves the clock, and the cheapest one in

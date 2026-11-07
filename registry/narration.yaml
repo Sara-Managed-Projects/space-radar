@@ -302,6 +302,7 @@ clips:
   - {trip: "outer-solar-system", stop: "sedna", hash: "3a7ccb4e0f3a52b2", seconds: 24.68, words: 71, lufs: -16.4, opus: 99041, m4a: 127199, vtt: 459, wer: 0.0, heard: "739b6ac7c4785871", voice: 0}
   - {trip: "outer-solar-system", stop: "eris", hash: "ca20cad406c0142f", seconds: 24.55, words: 69, lufs: -16.5, opus: 98425, m4a: 126547, vtt: 430, wer: 0.0, heard: "30b879b5385fbb72", voice: 0}
   - {trip: "outer-solar-system", stop: "voyager-1", hash: "ce150653ef589b24", seconds: 23.14, words: 63, lufs: -16.5, opus: 92815, m4a: 119375, vtt: 399, wer: 0.0, heard: "d0d9e40e9c2a09f1", voice: 0}
+  - {trip: "outer-solar-system", stop: "heliosphere", hash: "c320ee4a07dc1f47", seconds: 24.8, words: 76, lufs: -16.3, opus: 99470, m4a: 127851, vtt: 521, wer: 0.0, heard: "b13fa281b0118db3", voice: 0}
   - {trip: "a-year-in-a-minute", stop: "inner", hash: "1fe4f13a7636156a", seconds: 15.76, words: 43, lufs: -16.4, opus: 62495, m4a: 81776, vtt: 307, wer: 0.0, heard: "4c9380b0a2be10a6", voice: 0}
   - {trip: "a-year-in-a-minute", stop: "earth", hash: "2cc3882a2e364626", seconds: 17.07, words: 50, lufs: -16.3, opus: 72042, m4a: 88514, vtt: 335, wer: 0.0, heard: "7ea62972783ab09a", voice: 0}
   - {trip: "a-year-in-a-minute", stop: "mercury", hash: "0b72c5bb2a3fb6a1", seconds: 15.88, words: 42, lufs: -16.5, opus: 63005, m4a: 82428, vtt: 291, wer: 0.0, heard: "9021670c9b238042", voice: 0}

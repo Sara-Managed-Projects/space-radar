@@ -2818,6 +2818,10 @@ def check_stars_notable(exotics: list) -> list:
 # 0076 W1-b: the places a ladder rung can name that are neither a world nor a record: the horizon,
 # which scene/climb.js toEdge() flies to and scene/shells.js draws.
 LADDER_PLACES = {"horizon"}
+# b200-c1-culture-helio: begin (forge #148) -- and the heliosphere, which ui/heliorung.js flies to: 300 AU from
+# the Sun on its stage, where scene/heliosphere.js draws the bubble whole.
+LADDER_PLACES.add("heliosphere")
+# b200-c1-culture-helio: end
 
 
 def check_ladder(world_ids: set, layer_ids: set) -> list:

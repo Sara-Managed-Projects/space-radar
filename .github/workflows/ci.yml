@@ -1502,3 +1502,11 @@ jobs:
       - name: "The real recordings' mirror matches the registry (forge #163)"
         run: python3 scripts/gen_realsounds_js.py --check
       # b200-f9-reach: end
+      # b200-c1-culture-helio: begin
+      - name: "the heliosphere's ladder rung: 300 AU out, square to the nose, outside the heliopause, one climb and one turn, fetched on the press (forge #148)"
+        run: node tests/test_heliorung.mjs
+      # b200-c1-culture-helio: end
+      # b200-c1-culture: begin
+      - name: "a story for every figure of every sky culture, and the Maori, Hawaiian and Boorong pictures, licensed and pinned (forge #143)"
+        run: node tests/test_skylore.mjs
+      # b200-c1-culture: end
