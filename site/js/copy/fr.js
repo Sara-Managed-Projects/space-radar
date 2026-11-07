@@ -5172,18 +5172,24 @@ Object.assign(COPY, {
     "stageLabel": "Debout sur un autre monde",
     "tagGround": "Au sol · {world}",
     "tagSky": "Le ciel depuis {world}",
+    "kindMeasured": "sol mesuré",
+    "kindPlain": "sol non mesuré",
+    "kindModelled": "modélisé",
     "placeAt": "{world}, {lat}°, {lon}° est",
     "worlds": {
       "moon": "la Lune",
       "mars": "Mars",
       "titan": "Titan",
       "europa": "Europe",
-      "earth": "la Terre"
+      "earth": "la Terre",
+      "proxima-b": "Proxima Centauri b",
+      "trappist-1e": "TRAPPIST-1 e"
     },
     "measuredGround": "Mesuré : les reliefs sont le modèle de terrain stéréo à l’échelle réelle, le sol est l’image prise par l’orbiteur lui-même (ses ombres sont celles du jour de la prise de vue). Aucun rocher ni cratère n’est inventé.",
     "plainGround": "Le sol ici n’est pas tiré de mesures : une plaine jusqu’à l’horizon. Le ciel est calculé.",
     "modelLine": "Aux coordonnées d’atterrissage : {what}. Son orientation ne provient pas d’une image.",
     "timeLine": "{local} heure solaire locale · {utc} · Soleil à {sun}°",
+    "timeLineStar": "{utc} · {star} à {sun}° de hauteur, toujours au même endroit",
     "drive": "Conduire le rover",
     "walk": "Marcher",
     "driving": "En conduite, environ {x} fois plus vite que le rover ne peut aller.",
@@ -5212,9 +5218,12 @@ Object.assign(COPY, {
       "moon": "Pas d’air, donc le ciel est noir à midi. Un vrai œil, ébloui par le sol éclairé par le Soleil, ne verrait que peu de ces étoiles.",
       "europa": "Pas d’air, donc le ciel est noir à midi. Jupiter reste immobile dans le ciel de la face tournée vers lui.",
       "titan": "Couleur illustrative : la brume orange cache à l’œil les étoiles et Saturne ; ils sont dessinés pâles là où ils se trouvent.",
-      "earth": ""
+      "earth": "",
+      "proxima-b": "Modélisé : on suppose que Proxima b présente toujours la même face à son étoile, comme l’attendent ses découvreurs (Anglada-Escudé et al. 2016) ; l’inclinaison de son orbite et la position de Proxima b et de Proxima d sur leurs orbites ne sont pas connues, elles sont donc supposées. La couleur du ciel est illustrative : personne ne sait s’il y a de l’air. Alpha Centauri A et B sont à leur vraie place ; les autres étoiles sont dessinées comme le Soleil les voit.",
+      "trappist-1e": "Modélisé : on suppose que TRAPPIST-1 e présente toujours la même face à son étoile (Gillon et al. 2017) ; ses planètes sœurs sont là où les placent leurs instants de transit mesurés, sur des orbites circulaires dans un même plan, tourné d’une manière supposée autour de notre ligne de visée. La couleur du ciel est illustrative : personne ne sait s’il y a de l’air. Les autres étoiles sont dessinées comme le Soleil les voit."
     },
     "parentNote": "Cette lune présente toujours la même face à sa planète, donc la planète ne se lève ni ne se couche.",
+    "starNote": "On suppose que cette planète présente toujours la même face à son étoile, donc l’étoile ne se lève ni ne se couche.",
     "discNote": "Le Soleil, la Terre, Phobos et les autres corps étendus sont des disques de leur vraie taille et de leur vraie phase, en couleurs unies, et non leurs cartes ou leurs formes.",
     "frameNote": "Rotation : le rapport IAU WGCCRE 2015 (Archinal et al. 2018). Positions : les éphémérides propres à l’application.",
     "compass": {
@@ -5240,11 +5249,22 @@ Object.assign(COPY, {
       "saturn": "Saturne",
       "titan": "Titan",
       "uranus": "Uranus",
-      "neptune": "Neptune"
+      "neptune": "Neptune",
+      "proxima": "Proxima Centauri",
+      "proxima-d": "Proxima d",
+      "alpha-cen-a": "Alpha Centauri A",
+      "alpha-cen-b": "Alpha Centauri B",
+      "trappist-1": "TRAPPIST-1",
+      "trappist-1b": "TRAPPIST-1 b",
+      "trappist-1c": "TRAPPIST-1 c",
+      "trappist-1d": "TRAPPIST-1 d",
+      "trappist-1f": "TRAPPIST-1 f",
+      "trappist-1g": "TRAPPIST-1 g",
+      "trappist-1h": "TRAPPIST-1 h"
     },
     "earthAndMoon": "La Terre et la Lune",
     "unknownGround": "Il n’y a pas encore de modèle de terrain pour ce site.",
-    "unknownSky": "Cette carte ne permet pas encore de se tenir à cet endroit : seulement sur la Lune, Mars, Titan ou Europe."
+    "unknownSky": "Cette carte ne permet pas encore de se tenir à cet endroit : seulement sur la Lune, Mars, Titan, Europe, Proxima b ou TRAPPIST-1 e."
   }
 });
 // b200-f7-ground: end

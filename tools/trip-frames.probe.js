@@ -141,6 +141,9 @@ for (let n = 0; n < list.length; n += 1) {
     }, 45000);
     if (!arrived) throw new Error(`never arrived (${seen.join(' ')})`);
     sr.trip.pause('probe');
+    // b200-f7-ground: begin -- a stop that stands on another world (`stand:`) draws once its ground and lander are in
+    await until(() => !stop.stand || (sr.ground && sr.ground.active && !sr.ground.state().opening && (sr.ground.state().model || !sr.ground.state().ground)), 30000);
+    // b200-f7-ground: end
     // The textures, the photograph or the day's map of what it arrived at.
     await sleep(3200);
     const row = { trip: pair.trip, stop: stop.id, number: tour.stops.indexOf(stop) + 1, zoom: pair.zoom, shownAt: new Date(sr.clock.now()).toISOString(), t: Math.round(elapsed()) };

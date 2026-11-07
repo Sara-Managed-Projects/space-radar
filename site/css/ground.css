@@ -58,6 +58,38 @@ html.sr-ground-on :is(#sr-side, #sr-rail, .sr-top, .sr-scenenote, .sr-keyhint, #
   font: 600 var(--sr-fs-name-sm)/1.2 var(--sr-font);
 }
 
+/* The card's and the sky list's titles are their folds (a phone starts with both folded). */
+.sr-ground__fold {
+  all: unset;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.sr-ground__fold::after {
+  content: " \25BE";
+  font-size: 0.7em;
+  color: var(--sr-text-dim);
+}
+
+.sr-ground__fold[aria-expanded="false"]::after {
+  content: " \25B8";
+}
+
+.sr-ground__fold:focus-visible {
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 2px;
+}
+
+.sr-ground__body[hidden] {
+  display: none;
+}
+
+/* A trip's own card speaks for a stop on the ground: the stage's card and buttons step aside (ui/trip.js). */
+html.sr-trip-mode :is(.sr-ground__card, .sr-ground__bar, .sr-ground__panel, .sr-ground__keys, .sr-ground__shield, .sr-ground__pad) {
+  display: none;
+}
+
 .sr-ground__line {
   margin: 0 0 var(--sp-1);
   font: 400 var(--sr-fs-sm)/1.4 var(--sr-font);
@@ -210,9 +242,18 @@ html.sr-ground-on :is(#sr-side, #sr-rail, .sr-top, .sr-scenenote, .sr-keyhint, #
   }
 
   .sr-ground__panel {
-    top: auto;
-    bottom: calc(var(--sp-4) + 330px);
-    max-height: 34%;
+    top: calc(var(--sp-4) + 132px);
+    max-height: 40%;
+    padding: var(--sp-2) var(--sp-3);
+  }
+
+  .sr-ground__name {
+    font-size: 17px;
+    margin: 0;
+  }
+
+  .sr-ground__ptitle {
+    margin: 0;
   }
 
   .sr-ground__card {

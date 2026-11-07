@@ -5067,18 +5067,24 @@ Object.assign(COPY, {
     "stageLabel": "站在另一个世界上",
     "tagGround": "地面 · {world}",
     "tagSky": "从{world}看天空",
+    "kindMeasured": "实测地面",
+    "kindPlain": "地面未经测量",
+    "kindModelled": "模型推算",
     "placeAt": "{world}，{lat}°，东经 {lon}°",
     "worlds": {
       "moon": "月球",
       "mars": "火星",
       "titan": "土卫六",
       "europa": "木卫二",
-      "earth": "地球"
+      "earth": "地球",
+      "proxima-b": "Proxima Centauri b",
+      "trappist-1e": "TRAPPIST-1 e"
     },
     "measuredGround": "实测：高度来自真实比例的立体地形模型，地面是轨道器自己拍摄的图像（阴影是拍摄当天的）。没有虚构任何巨石或陨石坑。",
     "plainGround": "这里的地面并非根据测量绘制：一片平原延伸到地平线。天空是计算出来的。",
     "modelLine": "着陆坐标处：{what}。其朝向并非来自图像。",
     "timeLine": "当地太阳时 {local} · {utc} · 太阳高度 {sun}°",
+    "timeLineStar": "{utc} · {star}高度 {sun}°，始终在同一位置",
     "drive": "驾驶探测车",
     "walk": "步行",
     "driving": "驾驶中，速度约为探测车实际能力的 {x} 倍。",
@@ -5107,9 +5113,12 @@ Object.assign(COPY, {
       "moon": "没有大气，所以正午的天空也是黑的。真实的眼睛会被阳光照亮的地面晃得眼花，只能看到其中少数星星。",
       "europa": "没有大气，所以正午的天空也是黑的。在面向木星的一侧，木星静止地悬在天空中。",
       "titan": "示意颜色：橙色雾霾使肉眼看不见恒星和土星；它们以暗淡的样子画在实际所在的位置。",
-      "earth": ""
+      "earth": "",
+      "proxima-b": "模型推算：假定 Proxima b 始终以同一面朝向它的恒星，这也是其发现者的预期（Anglada-Escudé et al. 2016）；它的轨道倾角，以及它和 Proxima d 在各自轨道上的位置都是未知的，因此采用了假定值。天空的颜色是示意的：没有人知道那里是否有大气。Alpha Centauri A 和 B 位于它们的真实位置；其他恒星按从太阳看到的样子绘制。",
+      "trappist-1e": "模型推算：假定 TRAPPIST-1 e 始终以同一面朝向它的恒星（Gillon et al. 2017）；它的姊妹行星位于实测凌星时刻所给出的位置，在同一平面内的圆轨道上，该平面绕我们的视线按假定的方向旋转。天空的颜色是示意的：没有人知道那里是否有大气。其他恒星按从太阳看到的样子绘制。"
     },
     "parentNote": "这颗卫星始终以同一面朝向它的行星，所以行星既不升起也不落下。",
+    "starNote": "假定这颗行星始终以同一面朝向它的恒星，所以恒星既不升起也不落下。",
     "discNote": "太阳、地球、火卫一等有视面的天体都画成大小和相位真实的纯色圆盘，而不是它们的地图或形状。",
     "frameNote": "自转：IAU WGCCRE 2015 报告（Archinal et al. 2018）。位置：本应用自己的星历。",
     "compass": {
@@ -5135,11 +5144,22 @@ Object.assign(COPY, {
       "saturn": "土星",
       "titan": "土卫六",
       "uranus": "天王星",
-      "neptune": "海王星"
+      "neptune": "海王星",
+      "proxima": "Proxima Centauri",
+      "proxima-d": "Proxima d",
+      "alpha-cen-a": "Alpha Centauri A",
+      "alpha-cen-b": "Alpha Centauri B",
+      "trappist-1": "TRAPPIST-1",
+      "trappist-1b": "TRAPPIST-1 b",
+      "trappist-1c": "TRAPPIST-1 c",
+      "trappist-1d": "TRAPPIST-1 d",
+      "trappist-1f": "TRAPPIST-1 f",
+      "trappist-1g": "TRAPPIST-1 g",
+      "trappist-1h": "TRAPPIST-1 h"
     },
     "earthAndMoon": "地球和月球",
     "unknownGround": "该地点还没有地形模型。",
-    "unknownSky": "这张地图还不能让你站在那个地方：目前只能站在月球、火星、土卫六或木卫二上。"
+    "unknownSky": "这张地图还不能让你站在那个地方：目前只能站在月球、火星、土卫六、木卫二、Proxima b 或 TRAPPIST-1 e 上。"
   }
 });
 // b200-f7-ground: end

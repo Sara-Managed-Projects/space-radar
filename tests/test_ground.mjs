@@ -18,6 +18,12 @@
 //   LAZY: main.js imports scene/groundstage.js only dynamically, and no boot module imports the stage, the math or
 //     the frame; ui/urlstate.js carries `ground` and `sky` before `cam`.
 //   THE WORDS: every COPY.ground key the stage reads is in copy/en.ground.js.
+//   EIGHT SITES, AND OPPORTUNITY SAYS WHERE IT IS: Opportunity's ground stands at the last point of its traverse
+//     (registry/traverses/opportunity.json), not at its landing row, and its model line says so on screen.
+//   THE TRIPS (forge #146, #147): "Walk the landing sites" stands on all eight grounds and "Skies of other worlds" under
+//     seven skies, every `stand:` naming a ground the index has or a world sky/worldframe.js knows; ui/trip.js opens
+//     them through scene/groundstage.js standFor (a dynamic import), closes them on leave, and nothing of it is static.
+//   THE BOOT LINE: main.js's whole wiring is one dynamic import in one block.
 //
 //   node tests/test_ground.mjs
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -149,8 +155,46 @@ if (reliefFar.utopia) {
   for (const k of used) check(COPY.ground && COPY.ground[k] !== undefined, `COPY.ground.${k} is written`);
 }
 
+// --- eight sites, Opportunity --------------------------------------------------------------------------------
+{
+  check(index.grounds.length === 8, `eight sites are built (${index.grounds.length})`);
+  const m = JSON.parse(readFileSync(join(GROUND, 'opportunity', 'site.json'), 'utf8'));
+  const trav = JSON.parse(readFileSync(join(ROOT, 'registry/traverses/opportunity.json'), 'utf8'));
+  const last = trav.paths[trav.paths.length - 1].slice(-1)[0];
+  check(Math.abs(m.latDeg - last[1]) < 1e-6 && Math.abs(m.lonDeg - last[0]) < 1e-6, `Opportunity stands at its traverse's last point (${m.latDeg}, ${m.lonDeg})`);
+  check(/Not where it landed/.test(m.model.what) && /Eagle crater/.test(m.model.what), 'Opportunity\'s line on screen says it is not the landing site, and why');
+}
+
+// --- the trips ------------------------------------------------------------------------------------------------
+{
+  const { TOURS } = await mod('data/tours.js');
+  const W = await mod('sky/worldframe.js');
+  const ids = new Set(index.grounds.map((g) => g.id));
+  const walk = TOURS.find((t) => t.id === 'walk-the-landing-sites');
+  const skies = TOURS.find((t) => t.id === 'skies-of-other-worlds');
+  check(walk && walk.stops.length === 8 && walk.stops.every((s) => s.stand && ids.has(s.stand.ground)), 'Walk the landing sites stands on the eight grounds');
+  check(skies && skies.stops.length >= 7 && skies.stops.every((s) => s.stand && s.stand.sky && W.parseSkyLink(s.stand.sky)), 'Skies of other worlds stands under seven skies the frame can parse');
+  check(skies && ['proxima-b', 'trappist-1e', 'titan', 'europa'].every((w) => skies.stops.some((s) => s.stand.sky.startsWith(w))), 'Skies of other worlds visits Titan, Europa, Proxima b and TRAPPIST-1 e');
+  const trip = readFileSync(join(JS, 'ui/trip.js'), 'utf8');
+  check(/import\('\.\.\/scene\/groundstage\.js'\)\.then\(\(m\) => m\.standFor\(ctx, stand\)\)/.test(trip), 'ui/trip.js opens a `stand:` stop through standFor, fetched when needed');
+  check(/standOn\(null\)/.test(trip), 'leaving a trip closes the stage');
+  check(!/^import[^;]+groundstage/m.test(trip), 'ui/trip.js does not import the stage statically');
+  const stage = await mod('scene/groundstage.js');
+  check(typeof stage.standFor === 'function' && typeof stage.boot === 'function', 'scene/groundstage.js exports boot and standFor');
+  for (const f of ['site/og/walk-the-landing-sites.png', 'site/og/skies-of-other-worlds.png', 'site/images/trips/walk-the-landing-sites.webp', 'site/images/trips/skies-of-other-worlds.webp']) check(existsSync(join(ROOT, f)), `${f} is made`);
+}
+
+// --- the boot line ----------------------------------------------------------------------------------------------
+{
+  const main = readFileSync(join(JS, 'main.js'), 'utf8');
+  const block = main.slice(main.indexOf('// b200-f7-ground: begin'), main.indexOf('// b200-f7-ground: end'));
+  const code = block.split('\n').filter((l) => l.trim() && !l.trim().startsWith('//'));
+  check(code.length <= 2 && !/ctx\.ground\b/.test(block), `main.js's wiring is one lazy line (${code.length} lines of code)`);
+  check(main.split('b200-f7-ground: begin').length === 2, 'main.js has one block of this batch');
+}
+
 if (problems.length) {
   console.error(`test_ground: ${problems.length} problem(s)\n  ${problems.join('\n  ')}`);
   process.exit(1);
 }
-console.log(`test_ground: ok (the arithmetic, ${index.grounds.length} sites' files, the sources, lazy loading, the words)`);
+console.log(`test_ground: ok (the arithmetic, ${index.grounds.length} sites' files, the sources, lazy loading, the words, Opportunity, the two trips, the boot line)`);

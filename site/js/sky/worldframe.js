@@ -8,6 +8,8 @@
 //           localSolarHours(world, lonDeg, tMs) -> 0..24, solarDayHours(world),
 //           crossings(fn, t0, t1, stepMs) -> [{tMs, kind}], nextRiseSet(id, place, tMs) -> {rise, set},
 //           transits(front, back, place, t0, t1) -> [{tMs, sepDeg}], parseSkyLink(text) -> {world, site|lat,lon} | null
+// Proxima Centauri b and TRAPPIST-1 e are worlds here too, every number about them MODELLED (sky/exoskies.js says what
+// is measured and what is assumed); their star is their `light` and their `parent`.
 // Pure given Astronomy Engine and propagate/: no DOM, no three. scene/groundstage.js draws from these and
 // tests/test_worldframe.mjs holds them to the numbers below.
 //
@@ -47,6 +49,7 @@
 
 import * as Astronomy from '../../vendor/astronomy.js';
 import { worldHelioEclKm, eclipticToEquatorial, WORLD_RADIUS_KM, KM_PER_AU, moonOffsetKm, moonParent } from '../propagate/frames.js';
+import { EXO_WORLDS, EXO_BODIES, isExoWorld, isExoBody, exoAxes, exoPositionEqjKm, exoMagnitude, exoPlanetMagnitude } from './exoskies.js';
 
 const DEG = Math.PI / 180;
 const J2000_MS = Date.UTC(2000, 0, 1, 12);
@@ -63,6 +66,10 @@ export const SKY_WORLDS = {
   mars: { radiusKm: 3389.5, day: 24.6597, air: true },
   titan: { radiusKm: 2574.7, day: 382.69, air: true, parent: 'saturn' },
   europa: { radiusKm: 1560.8, day: 85.23, air: false, parent: 'jupiter' },
+  // Two planets of other stars (sky/exoskies.js: all modelled). Assumed locked, so the star is their `parent` (it
+  // hangs still), their `light` (it lights the ground and colours the sky), and their solar day is their year.
+  'proxima-b': { radiusKm: EXO_WORLDS['proxima-b'].radiusKm, day: 11.18465 * 24, air: true, parent: 'proxima', light: 'proxima', exo: true },
+  'trappist-1e': { radiusKm: EXO_WORLDS['trappist-1e'].radiusKm, day: 6.101013 * 24, air: true, parent: 'trappist-1', light: 'trappist-1', exo: true },
 };
 
 /** What a body is called on the `{id}` the app uses (propagate/frames.js world ids) and how big it is. */
@@ -94,6 +101,8 @@ const NEIGHBOURS = {
   mars: ['phobos', 'deimos', 'moon'],
   titan: [],
   europa: ['io', 'ganymede', 'callisto'],
+  'proxima-b': ['proxima', 'proxima-d', 'alpha-cen-a', 'alpha-cen-b'],
+  'trappist-1e': ['trappist-1', 'trappist-1b', 'trappist-1c', 'trappist-1d', 'trappist-1f', 'trappist-1g', 'trappist-1h'],
 };
 
 function unit(v) {
@@ -145,18 +154,23 @@ function fixedAxes(ax) {
   return { x, y, z };
 }
 
+/** A world's body-fixed axes in J2000: the IAU's for the Solar System, the locked model's for a planet of another star. */
+function axesOf(world, tMs) {
+  if (isExoWorld(world)) return exoAxes(world, tMs);
+  const ax = worldAxes(world, tMs);
+  return ax ? fixedAxes(ax) : null;
+}
+
 /** The world's north pole as a J2000 unit vector (the IAU's north: the pole on the north side of the invariable plane). */
 export function poleOf(world, tMs) {
-  const ax = worldAxes(world, tMs);
-  if (!ax) return null;
-  return fixedAxes(ax).z;
+  const F = axesOf(world, tMs);
+  return F ? F.z : null;
 }
 
 /** East, up and north at a place, as J2000 unit vectors. */
 function placeAxes(world, latDeg, lonDeg, tMs) {
-  const ax = worldAxes(world, tMs);
-  if (!ax || !Number.isFinite(latDeg) || !Number.isFinite(lonDeg)) return null;
-  const F = fixedAxes(ax);
+  const F = axesOf(world, tMs);
+  if (!F || !Number.isFinite(latDeg) || !Number.isFinite(lonDeg)) return null;
   const p = latDeg * DEG, l = lonDeg * DEG;
   const cp = Math.cos(p), sp = Math.sin(p), cl = Math.cos(l), sl = Math.sin(l);
   const mix = (a, b, c) => [0, 1, 2].map((i) => a * F.x[i] + b * F.y[i] + c * F.z[i]);
@@ -191,6 +205,7 @@ export function altAz(l) {
 }
 
 function helioEqjKm(id, tMs) {
+  if (isExoBody(id)) return exoPositionEqjKm(id, tMs);
   const e = worldHelioEclKm(id, tMs);
   return e ? eclipticToEquatorial(e) : null;
 }
@@ -208,7 +223,8 @@ export function observerHelioEqjKm(world, latDeg, lonDeg, tMs) {
 export function skyTargets(world) {
   const w = SKY_WORLDS[world];
   if (!w) return [];
-  const out = ['sun', ...PLANETS.filter((p) => p !== world), ...(NEIGHBOURS[world] || [])];
+  // From another star the Solar System's planets are far too faint to see; the Sun is a star among the rest.
+  const out = w.exo ? ['sun', ...NEIGHBOURS[world].filter((id) => id !== world)] : ['sun', ...PLANETS.filter((p) => p !== world), ...(NEIGHBOURS[world] || [])];
   return out.filter((id, i) => out.indexOf(id) === i);
 }
 
@@ -223,7 +239,7 @@ function earthPhaseMag(alphaDeg) {
  * `place` is { world, latDeg, lonDeg }. Null for an id the world's sky does not have, or outside the ephemeris.
  */
 export function worldBodyView(id, tMs, place, cache) {
-  const row = TARGET[id];
+  const row = TARGET[id] || (isExoBody(id) ? EXO_BODIES[id] : null);
   if (!row || !place || id === place.world) return null;
   const obs = (cache && cache.obs) || observerHelioEqjKm(place.world, place.latDeg, place.lonDeg, tMs);
   const m = (cache && cache.m) || worldEqjToLocal(place.world, place.latDeg, place.lonDeg, tMs);
@@ -252,13 +268,19 @@ export function worldBodyView(id, tMs, place, cache) {
     const au = distKm / KM_PER_AU;
     return { id, dir, local, altDeg, azDeg, distAu: au, diameterDeg, mag: -26.74 + 5 * Math.log10(au), phaseFraction: 1, phaseAngleDeg: 0, toSun: dir };
   }
-  const rSun = Math.hypot(tgt.x, tgt.y, tgt.z);
-  const toSun = unit([-tgt.x, -tgt.y, -tgt.z]);
+  if (isExoBody(id) && row.kind === 'star') {
+    // A star of another system: no phase; its brightness from sky/exoskies.js (modelled).
+    return { id, dir, local, altDeg, azDeg, distAu: distKm / KM_PER_AU, diameterDeg, mag: exoMagnitude(id, obs), phaseFraction: 1, phaseAngleDeg: 0, toSun: dir, star: true, teffK: row.teffK };
+  }
+  // What lights it: the Sun, or a planet of another star's own star.
+  const lamp = isExoBody(id) ? helioEqjKm(row.system, tMs) : { x: 0, y: 0, z: 0 };
+  const rSun = Math.hypot(tgt.x - lamp.x, tgt.y - lamp.y, tgt.z - lamp.z);
+  const toSun = unit([lamp.x - tgt.x, lamp.y - tgt.y, lamp.z - tgt.z]);
   const toObs = unit([-v[0], -v[1], -v[2]]);
   const cosA = Math.max(-1, Math.min(1, toSun[0] * toObs[0] + toSun[1] * toObs[1] + toSun[2] * toObs[2]));
   const alpha = Math.acos(cosA) / DEG;
-  const phase = row.earth ? earthPhaseMag(Math.min(alpha, 140)) : row.k * alpha;
-  const mag = row.v10 + 5 * Math.log10((rSun / KM_PER_AU) * (distKm / KM_PER_AU)) + phase;
+  const phase = row.earth ? earthPhaseMag(Math.min(alpha, 140)) : (row.k || 0) * alpha;
+  const mag = isExoBody(id) ? exoPlanetMagnitude(id, tMs, obs) : row.v10 + 5 * Math.log10((rSun / KM_PER_AU) * (distKm / KM_PER_AU)) + phase;
   return { id, dir, local, altDeg, azDeg, distAu: distKm / KM_PER_AU, diameterDeg, mag, phaseFraction: (1 + cosA) / 2, phaseAngleDeg: alpha, toSun };
 }
 
@@ -298,11 +320,11 @@ export function solarDayHours(world) {
  * how the rovers' teams keep time): 12 when the Sun crosses the meridian.
  */
 export function localSolarHours(world, lonDeg, tMs) {
-  const ax = worldAxes(world, tMs);
+  const F = axesOf(world, tMs);
   const c = helioEqjKm(world, tMs);
-  if (!ax || !c) return null;
-  const F = fixedAxes(ax);
-  const s = unit([-c.x, -c.y, -c.z]);
+  if (!F || !c) return null;
+  const light = SKY_WORLDS[world] && SKY_WORLDS[world].light ? helioEqjKm(SKY_WORLDS[world].light, tMs) : { x: 0, y: 0, z: 0 };
+  const s = unit([light.x - c.x, light.y - c.y, light.z - c.z]);
   const sx = s[0] * F.x[0] + s[1] * F.x[1] + s[2] * F.x[2];
   const sy = s[0] * F.y[0] + s[1] * F.y[1] + s[2] * F.y[2];
   const subsolar = Math.atan2(sy, sx) / DEG;
@@ -424,7 +446,7 @@ export function parseSkyLink(text) {
   if (!s) return null;
   const [world, rest] = s.split(':');
   if (!Object.prototype.hasOwnProperty.call(SKY_WORLDS, world) || world === 'earth') return null;
-  if (!rest) return { world, latDeg: 0, lonDeg: 0 };
+  if (!rest) return { world, latDeg: 0, lonDeg: isExoWorld(world) ? EXO_WORLDS[world].defaultLon : 0 };
   const m = /^(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)$/.exec(rest);
   if (m) {
     const latDeg = Number(m[1]), lonDeg = Number(m[2]);

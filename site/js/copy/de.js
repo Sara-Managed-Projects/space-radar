@@ -5168,18 +5168,24 @@ Object.assign(COPY, {
     "stageLabel": "Auf einer anderen Welt stehen",
     "tagGround": "Auf dem Boden · {world}",
     "tagSky": "Der Himmel · {world}",
+    "kindMeasured": "gemessener Boden",
+    "kindPlain": "Boden nicht gemessen",
+    "kindModelled": "modelliert",
     "placeAt": "{world}, {lat}°, {lon}° Ost",
     "worlds": {
       "moon": "Mond",
       "mars": "Mars",
       "titan": "Titan",
       "europa": "Europa",
-      "earth": "Erde"
+      "earth": "Erde",
+      "proxima-b": "Proxima Centauri b",
+      "trappist-1e": "TRAPPIST-1 e"
     },
     "measuredGround": "Gemessen: Die Höhen stammen aus dem Stereo-Geländemodell in wahrem Maßstab, der Boden ist das eigene Bild des Orbiters (seine Schatten sind die vom Tag der Aufnahme). Kein Felsbrocken und kein Krater ist erfunden.",
     "plainGround": "Der Boden hier ist nicht aus Messungen gezeichnet: eine Ebene bis zum Horizont. Der Himmel ist berechnet.",
     "modelLine": "An den Landekoordinaten: {what}. Die Ausrichtung stammt nicht aus einem Bild.",
     "timeLine": "{local} lokale Sonnenzeit · {utc} · Sonne {sun}° hoch",
+    "timeLineStar": "{utc} · {star} {sun}° hoch, immer an derselben Stelle",
     "drive": "Den Rover fahren",
     "walk": "Gehen",
     "driving": "Fahren, etwa {x}-mal schneller, als der Rover fahren kann.",
@@ -5208,9 +5214,12 @@ Object.assign(COPY, {
       "moon": "Keine Luft, daher ist der Himmel auch mittags schwarz. Ein echtes Auge, geblendet vom sonnenbeschienenen Boden, sähe nur wenige dieser Sterne.",
       "europa": "Keine Luft, daher ist der Himmel auch mittags schwarz. Jupiter steht reglos am Himmel der Seite, die ihm zugewandt ist.",
       "titan": "Farbe zur Veranschaulichung: Der orange Dunst verbirgt die Sterne und Saturn vor dem Auge; sie sind schwach dort gezeichnet, wo sie stehen.",
-      "earth": ""
+      "earth": "",
+      "proxima-b": "Modelliert: Für Proxima b wird angenommen, dass er seinem Stern immer dieselbe Seite zuwendet, wie seine Entdecker erwarten (Anglada-Escudé et al. 2016); die Neigung seiner Bahn und wo er und Proxima d auf ihren Bahnen stehen, sind nicht bekannt und daher angenommen. Die Farbe des Himmels dient der Veranschaulichung: Niemand weiß, ob es dort Luft gibt. Alpha Centauri A und B stehen an ihren wirklichen Orten; die übrigen Sterne sind so gezeichnet, wie die Sonne sie sieht.",
+      "trappist-1e": "Modelliert: Für TRAPPIST-1 e wird angenommen, dass er seinem Stern immer dieselbe Seite zuwendet (Gillon et al. 2017); seine Schwesterplaneten stehen dort, wo ihre gemessenen Transitzeiten sie hinsetzen, auf Kreisbahnen in einer Ebene, die auf eine angenommene Weise um unsere Sichtlinie gedreht ist. Die Farbe des Himmels dient der Veranschaulichung: Niemand weiß, ob es dort Luft gibt. Die übrigen Sterne sind so gezeichnet, wie die Sonne sie sieht."
     },
     "parentNote": "Dieser Mond wendet seinem Planeten immer dieselbe Seite zu, deshalb geht der Planet weder auf noch unter.",
+    "starNote": "Für diesen Planeten wird angenommen, dass er seinem Stern immer dieselbe Seite zuwendet, deshalb geht der Stern weder auf noch unter.",
     "discNote": "Die Sonne, die Erde, Phobos und die anderen ausgedehnten Körper sind Scheiben in ihrer wahren Größe und Phase, in schlichten Farben, nicht ihre Karten oder Formen.",
     "frameNote": "Rotation: der Bericht IAU WGCCRE 2015 (Archinal et al. 2018). Positionen: die eigene Ephemeride der App.",
     "compass": {
@@ -5236,11 +5245,22 @@ Object.assign(COPY, {
       "saturn": "Saturn",
       "titan": "Titan",
       "uranus": "Uranus",
-      "neptune": "Neptun"
+      "neptune": "Neptun",
+      "proxima": "Proxima Centauri",
+      "proxima-d": "Proxima d",
+      "alpha-cen-a": "Alpha Centauri A",
+      "alpha-cen-b": "Alpha Centauri B",
+      "trappist-1": "TRAPPIST-1",
+      "trappist-1b": "TRAPPIST-1 b",
+      "trappist-1c": "TRAPPIST-1 c",
+      "trappist-1d": "TRAPPIST-1 d",
+      "trappist-1f": "TRAPPIST-1 f",
+      "trappist-1g": "TRAPPIST-1 g",
+      "trappist-1h": "TRAPPIST-1 h"
     },
     "earthAndMoon": "Die Erde und der Mond",
     "unknownGround": "Für diesen Ort gibt es noch kein Geländemodell.",
-    "unknownSky": "Auf diesem Ort kann man in dieser Karte noch nicht stehen. Möglich sind der Mond, der Mars, Titan und Europa."
+    "unknownSky": "Auf diesem Ort kann man in dieser Karte noch nicht stehen. Möglich sind der Mond, der Mars, Titan, Europa, Proxima b und TRAPPIST-1 e."
   }
 });
 // b200-f7-ground: end

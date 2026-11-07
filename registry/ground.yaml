@@ -245,3 +245,33 @@ grounds:
       post_m: 5.0
     trek: *wac
     global: *sldem
+  - id: opportunity
+    name: "Opportunity, Endeavour crater"
+    world: mars
+    site: opportunity
+    # NOT THE LANDING SITE. Opportunity landed in Eagle crater (the registry/sites.yaml row), which no HiRISE terrain
+    # model covers; it stopped for good on 2018-06-10 in Perseverance Valley on Endeavour crater's western rim, 25 km
+    # away, where this strip does. `at:` is the last point of its traverse as the Opportunity Analyst's Notebook maps it
+    # (registry/traverses/opportunity.json, PDS Geosciences Node), and the stage says all of this on screen.
+    at: {lat: -2.33153, lon: 354.6509, source: "registry/traverses/opportunity.json, its last point"}
+    radius_km: 3396.19
+    tint: [118, 72, 40]
+    model: {file: mer.glb, heading_deg: 0, size_m: 2.3, what: "Opportunity where it stopped in June 2018, in Perseverance Valley on Endeavour crater's rim (the last point of its traverse map). Not where it landed: Eagle crater, 25 km away, has no HiRISE terrain model"}
+    dtm:
+      what: "HiRISE stereo terrain model of Endeavour crater's western rim, 1 m a post"
+      product: DTEEC_018701_1775_018846_1775_U01
+      url: "https://hirise-pds.lpl.arizona.edu/PDS/DTM/ESP/ORB_018700_018799/ESP_018701_1775_ESP_018846_1775/DTEEC_018701_1775_018846_1775_U01.IMG"
+      page: "https://www.uahirise.org/dtm/dtm.php?ID=ESP_018701_1775"
+      post_m: 1.01
+      licence: "Public domain (NASA PDS archive product, MRO-M-HIRISE-5-DTM-V1.0)"
+      credit: "NASA/JPL/University of Arizona (HiRISE)"
+    ortho:
+      what: "HiRISE orthoimage ESP_018701_1775 (red), 1 m a pixel"
+      product: ESP_018701_1775_RED_C_01_ORTHO
+      url: "https://hirise-pds.lpl.arizona.edu/PDS/DTM/ESP/ORB_018700_018799/ESP_018701_1775_ESP_018846_1775/ESP_018701_1775_RED_C_01_ORTHO.JP2"
+      label_url: "https://hirise-pds.lpl.arizona.edu/PDS/DTM/ESP/ORB_018700_018799/ESP_018701_1775_ESP_018846_1775/ESP_018701_1775_RED_C_01_ORTHO.LBL"
+      post_m: 1.01
+      licence: "Public domain (NASA PDS archive product, MRO-M-HIRISE-5-DTM-V1.0)"
+      credit: "NASA/JPL/University of Arizona (HiRISE)"
+    trek: *mdim
+    global: *mola

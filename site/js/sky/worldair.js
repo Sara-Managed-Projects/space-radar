@@ -26,6 +26,7 @@
 //   al. 2005, Nature 438, 765: the Huygens probe's DISR); the colour below is chosen to look like that, and the stars
 //   and Saturn are not visible through the haze (the stage draws them faint and says so).
 // THE EARTH: a plain blue day sky (illustrative): sky/skyair.js draws the real one in the ground sky.
+// PROXIMA B AND TRAPPIST-1 E (illustrative): an assumed thin air under a red dwarf's light, below.
 
 /** The anchors, sRGB 0..255. */
 export const AIR = {
@@ -34,6 +35,11 @@ export const AIR = {
   earth: { day: [96, 150, 220], sunsetGlow: [255, 170, 110], sunsetAway: [70, 90, 140], kind: 'illustrative' },
   moon: { kind: 'modelled' },
   europa: { kind: 'modelled' },
+  // ILLUSTRATIVE: nobody knows whether these planets have air. If they have a thin one like the Earth's, a red dwarf's
+  // light (2 900 K, 2 566 K) would leave a paler, warmer sky than ours; these colours are chosen to say so, and the
+  // stage labels them illustrative.
+  'proxima-b': { day: [176, 146, 134], sunsetGlow: [228, 150, 112], sunsetAway: [78, 68, 78], kind: 'illustrative' },
+  'trappist-1e': { day: [168, 134, 124], sunsetGlow: [222, 138, 100], sunsetAway: [72, 60, 70], kind: 'illustrative' },
 };
 
 const BLACK = [0, 0, 0];

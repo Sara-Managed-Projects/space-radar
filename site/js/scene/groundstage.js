@@ -1,13 +1,15 @@
 // scene/groundstage.js -- standing on another world: the ground at a landing site and the sky above it
 // (release 2.0.0 batch f7-ground, forge #146 and #147).
 //
-// Contract: createGroundStage(ctx, { scene, clock, write, note }) -> { open(spec), close(), render(tMs), fromLink(keys),
-//             active, state(), dispose() }
+// Contract: boot(ctx) -> stage (main.js's whole wiring: one line fetches this module on a `ground=` or `sky=` link)
+//           createGroundStage(ctx, { scene, clock, write, note }) -> { open(spec), close(), render(tMs), fromLink(keys, o),
+//             look(v), active, state(), dispose() }
 //   spec: { ground: 'apollo-15' } (stand and walk at a site with a terrain model) or { sky: 'mars:jezero' } (stand
 //         anywhere on the Moon, Mars, Titan or Europa and look up; a site with a terrain model stands on it).
-//   write(patch) is ui/urlstate.js write (the stage keeps `ground` and `sky` in the address); note(line, deadKeys) is
-//   main.js's link note, for a link that names no place this stage knows. main.js passes both, so the boot graph
-//   carries one line for this stage and none of its logic.
+//   write(patch) is ui/urlstate.js write (the stage keeps `ground` and `sky` in the address); note(line, deadKeys) the
+//   scene note for a link that names no place this stage knows. boot() wires both, listens to the address itself, and
+//   draws the stage from the map scene's onAfterRender while it is up, so the boot graph carries one line for all of it
+//   (main.js) and the two URL keys (ui/urlstate.js), and none of its logic.
 //
 // `#ground=apollo-15` and `#sky=mars:jezero` open it; ui/urlstate.js carries both keys. Fetched by main.js on one of
 // those links (or a trip stop that asks for one), never at boot; css/ground.css is linked here.
@@ -40,6 +42,7 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { COPY, t as say } from '../copy/en.js';
+import { read as readUrlKeys, write as writeUrlKeys, clear as clearUrlKeys } from '../ui/urlstate.js';
 import '../copy/en.ground.js';
 import { SITES } from '../data/sites.js';
 import { bvToKelvin, kelvinToRgb } from './starfield.js';
@@ -60,6 +63,10 @@ const DISC_COLOURS = {
   earth: [0.32, 0.45, 0.78], moon: [0.55, 0.55, 0.55], phobos: [0.26, 0.23, 0.21], deimos: [0.3, 0.27, 0.24],
   jupiter: [0.86, 0.76, 0.6], saturn: [0.86, 0.79, 0.62], io: [0.85, 0.8, 0.45], ganymede: [0.6, 0.57, 0.52], callisto: [0.4, 0.37, 0.33],
   sun: [1, 0.98, 0.94],
+};
+/** Catalogue stars a sky draws itself, by world: the J2000 direction from the Sun and a radius (degrees). */
+const HIDE_FROM = {
+  'proxima-b': { dir: [Math.cos(-60.834 * Math.PI / 180) * Math.cos(219.902 * Math.PI / 180), Math.cos(-60.834 * Math.PI / 180) * Math.sin(219.902 * Math.PI / 180), Math.sin(-60.834 * Math.PI / 180)], deg: 0.3 },
 };
 /** A body is a disc once it is this wide (degrees); smaller, a point of its magnitude. */
 const DISC_FROM_DEG = 0.05;
@@ -140,11 +147,13 @@ attribute float mag;
 attribute vec3 tint;
 uniform float limit;
 uniform float pxScale;
+uniform vec3 hideDir;   // a catalogue star this sky draws itself (Alpha Centauri, from Proxima): not drawn twice
+uniform float hideCos;
 varying vec3 vTint;
 varying float vAlpha;
 void main() {
   float b = pow(10.0, -0.4 * (mag - limit));
-  vAlpha = clamp(b, 0.0, 1.0);
+  vAlpha = dot(normalize(position), hideDir) > hideCos ? 0.0 : clamp(b, 0.0, 1.0);
   vTint = tint;
   gl_PointSize = clamp(1.4 + 2.2 * log(1.0 + b) , 1.0, 9.0) * pxScale;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
@@ -218,6 +227,9 @@ export function createGroundStage(ctx, opts = {}) {
   let savedShadow = null;
   let disposed = false;
   let panelOpen = false;
+  const folds = { card: false, panel: false };
+  let pending = null; // { want, p }: an opening under way
+  let writing = true; // a trip's stop opens the stage without touching the address (ui/trip.js)
   let events = null;
   const input = { keys: new Set(), stick: { x: 0, y: 0 }, look: { dx: 0, dy: 0 } };
 
@@ -233,11 +245,14 @@ export function createGroundStage(ctx, opts = {}) {
   scene.add(dome);
   const starMat = new THREE.ShaderMaterial({
     vertexShader: STAR_VERT, fragmentShader: STAR_FRAG, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending,
-    uniforms: { limit: { value: 6.0 }, pxScale: { value: 1 }, visible: { value: 1 } },
+    uniforms: { limit: { value: 6.0 }, pxScale: { value: 1 }, visible: { value: 1 }, hideDir: { value: new THREE.Vector3(0, 0, 1) }, hideCos: { value: 2 } },
   });
   let stars = null;
   const planetGeo = new THREE.BufferGeometry();
-  const planetPoints = new THREE.Points(planetGeo, starMat);
+  // The bodies' points share the stars' shader and look, not their hidden star (they are in the local frame).
+  const planetMat = starMat.clone();
+  planetMat.uniforms = { ...starMat.uniforms, hideCos: { value: 2 }, hideDir: { value: new THREE.Vector3(0, 0, 1) } };
+  const planetPoints = new THREE.Points(planetGeo, planetMat);
   planetPoints.renderOrder = -18;
   planetPoints.frustumCulled = false;
   scene.add(planetPoints);
@@ -533,8 +548,11 @@ export function createGroundStage(ctx, opts = {}) {
     const idx = await groundIndex();
     const row = siteId && (idx.grounds || []).find((g) => g.site === siteId);
     const manifest = row ? await fetch(dataUrl(`ground/${row.id}/site.json`)).then((r) => r.json()).catch(() => null) : null;
+    // A site whose ground stands somewhere else than its landing row (Opportunity, at the end of its traverse): the
+    // sky is the ground's, so the two cannot disagree.
+    if (manifest) { latDeg = manifest.latDeg; lonDeg = manifest.lonDeg; name = row.name; }
     const text = p.site ? `${p.world}:${p.site}` : `${p.world}:${Math.round(latDeg * 100) / 100},${Math.round(lonDeg * 100) / 100}`;
-    return { world: p.world, latDeg, lonDeg, name, groundId: manifest ? row.id : null, manifest, link: { sky: text }, sky: true };
+    return { world: p.world, latDeg, lonDeg, name, groundId: manifest ? row.id : null, manifest, link: { sky: text }, sky: true, exo: !!SKY_WORLDS[p.world].exo };
   }
 
   async function open(spec = {}) {
@@ -562,10 +580,11 @@ export function createGroundStage(ctx, opts = {}) {
       }
       plainGround(!next.manifest);
       paintUi();
-      if (typeof opts.write === 'function') opts.write({ ground: next.link.ground || null, sky: next.link.sky || null });
+      if (writing && typeof opts.write === 'function') opts.write({ ground: next.link.ground || null, sky: next.link.sky || null });
       return true;
     })();
     opening = job;
+    job.then(() => { if (opening === job) opening = null; }, () => { if (opening === job) opening = null; });
     return job.catch((e) => { console.warn('the ground did not open', e); return false; });
   }
 
@@ -579,9 +598,15 @@ export function createGroundStage(ctx, opts = {}) {
     if (plain) { if (on) scene.add(plain); else scene.remove(plain); }
   }
 
+  // The stage is drawn right after the map's own render (which, with the map's scene hidden, only clears): from the
+  // scene's onAfterRender, so the loop in main.js needs no line for it. three.js supports a render inside it.
+  const sceneAfter = opts.scene ? opts.scene.onAfterRender : null;
   function setActive(on) {
     active = on;
-    if (opts.scene) opts.scene.visible = !on;
+    if (opts.scene) {
+      opts.scene.visible = !on;
+      opts.scene.onAfterRender = on ? () => render(now()) : sceneAfter;
+    }
     if (doc) doc.documentElement.classList.toggle('sr-ground-on', on);
     if (ui) ui.root.hidden = !on;
     if (on) {
@@ -604,15 +629,22 @@ export function createGroundStage(ctx, opts = {}) {
     clearGround();
     plainGround(false);
     place = null;
-    if (typeof opts.write === 'function') opts.write({ ground: null, sky: null });
+    if (writing && typeof opts.write === 'function') opts.write({ ground: null, sky: null });
   }
 
   /** A link's keys: `ground` or `sky` opens that place (and a note says so when it names none this stage knows); neither closes. */
-  async function fromLink(keys = {}) {
+  async function fromLink(keys = {}, { quiet = false } = {}) {
+    writing = !quiet;
     if (!keys.ground && !keys.sky) { if (active) close(); return false; }
-    // The same place again (the address written back, or only its clock changed): nothing to rebuild.
+    // The same place again (the address written back, or only its clock changed): nothing to rebuild. And the same
+    // place twice before the first has opened (main.js's line and this stage's own listener both hear a pasted link).
     if (active && place && ((keys.ground && place.link.ground === keys.ground) || (keys.sky && place.link.sky === keys.sky))) return true;
-    const ok = await open(keys.ground ? { ground: keys.ground } : { sky: keys.sky });
+    const want = keys.ground ? `g:${keys.ground}` : `s:${keys.sky}`;
+    if (pending && pending.want === want) return pending.p;
+    const p = open(keys.ground ? { ground: keys.ground } : { sky: keys.sky });
+    pending = { want, p };
+    const ok = await p;
+    if (pending && pending.p === p) pending = null;
     if (!ok && typeof opts.note === 'function') opts.note(L()[keys.ground ? 'unknownGround' : 'unknownSky'], [keys.ground ? 'ground' : 'sky']);
     return ok;
   }
@@ -633,7 +665,15 @@ export function createGroundStage(ctx, opts = {}) {
     const shield = el(doc, 'div', 'sr-ground__shield');
     const card = el(doc, 'div', 'sr-ground__card sr-float');
     const tag = el(doc, 'p', 'sr-ground__tag');
+    // The name is the card's fold: on a phone the card starts as this one line, the sky above it (internal review of
+    // 2026-11-07: the card and the sky's list together covered the Earth over Gale at dusk).
     const name = el(doc, 'h2', 'sr-ground__name');
+    const fold = el(doc, 'button', 'sr-ground__fold');
+    fold.type = 'button';
+    fold.setAttribute('aria-controls', 'sr-ground-card-body');
+    name.appendChild(fold);
+    const body = el(doc, 'div', 'sr-ground__body');
+    body.id = 'sr-ground-card-body';
     const time = el(doc, 'p', 'sr-ground__line sr-num');
     const l1 = el(doc, 'p', 'sr-ground__line');
     const l2 = el(doc, 'p', 'sr-ground__line sr-ground__line--model');
@@ -641,7 +681,8 @@ export function createGroundStage(ctx, opts = {}) {
     const moreSum = el(doc, 'summary', null, T.sources);
     const src = el(doc, 'p', 'sr-ground__src');
     more.append(moreSum, src);
-    card.append(tag, name, time, l1, l2, more);
+    body.append(time, l1, l2, more);
+    card.append(tag, name, body);
     const bar = el(doc, 'div', 'sr-ground__bar');
     const drive = el(doc, 'button', 'sr-btn', T.drive);
     const skyBtn = el(doc, 'button', 'sr-btn', T.skyOpen);
@@ -654,10 +695,23 @@ export function createGroundStage(ctx, opts = {}) {
     panel.hidden = true;
     panel.id = 'sr-ground-sky';
     skyBtn.setAttribute('aria-controls', panel.id);
-    const panelTitle = el(doc, 'h3', 'sr-ground__ptitle', T.skyTitle);
+    const panelTitle = el(doc, 'h3', 'sr-ground__ptitle');
+    const pfold = el(doc, 'button', 'sr-ground__fold', T.skyTitle);
+    pfold.type = 'button';
+    pfold.setAttribute('aria-controls', 'sr-ground-sky-body');
+    panelTitle.appendChild(pfold);
+    const pbody = el(doc, 'div', 'sr-ground__body');
+    pbody.id = 'sr-ground-sky-body';
     const list = el(doc, 'ul', 'sr-ground__list');
     const skyNote = el(doc, 'p', 'sr-ground__src');
-    panel.append(panelTitle, list, skyNote);
+    pbody.append(list, skyNote);
+    panel.append(panelTitle, pbody);
+    // Folded on a narrow screen to begin with; a tap on either title opens it.
+    const narrow = typeof matchMedia === 'function' && matchMedia('(max-width: 640px)').matches;
+    folds.card = narrow;
+    folds.panel = narrow;
+    fold.addEventListener('click', () => { folds.card = !folds.card; paintUi(); });
+    pfold.addEventListener('click', () => { folds.panel = !folds.panel; paintUi(); });
     const pad = el(doc, 'div', 'sr-ground__pad');
     pad.setAttribute('role', 'application');
     pad.setAttribute('aria-label', T.padLabel);
@@ -719,7 +773,7 @@ export function createGroundStage(ctx, opts = {}) {
     pad.addEventListener('pointerup', release);
     pad.addEventListener('pointercancel', release);
 
-    ui = { root, tag, name, time, l1, l2, src, more, drive, skyBtn, panel, list, skyNote, labels, live, labelPool: [] };
+    ui = { root, tag, name, fold, body, pfold, pbody, time, l1, l2, src, more, drive, skyBtn, panel, list, skyNote, labels, live, labelPool: [] };
   }
 
   function onKey(e, down) {
@@ -768,8 +822,14 @@ export function createGroundStage(ctx, opts = {}) {
     if (!ui || !place) return;
     const T = L();
     const W = T.worlds[place.world] || place.world;
-    ui.tag.textContent = place.groundId ? say(T.tagGround, { world: W }) : say(T.tagSky, { world: W });
-    ui.name.textContent = place.name || say(T.placeAt, { world: W, lat: place.latDeg.toFixed(2), lon: place.lonDeg.toFixed(2) });
+    // The tag keeps the one word of honesty a folded card still shows: whether the ground is measured.
+    const kind = place.exo ? T.kindModelled : place.groundId ? T.kindMeasured : T.kindPlain;
+    ui.tag.textContent = `${place.groundId ? say(T.tagGround, { world: W }) : say(T.tagSky, { world: W })} · ${kind}`;
+    ui.fold.textContent = place.name || say(T.placeAt, { world: W, lat: place.latDeg.toFixed(2), lon: place.lonDeg.toFixed(2) });
+    ui.fold.setAttribute('aria-expanded', folds.card ? 'false' : 'true');
+    ui.body.hidden = folds.card;
+    ui.pfold.setAttribute('aria-expanded', folds.panel ? 'false' : 'true');
+    ui.pbody.hidden = folds.panel;
     if (place.manifest) {
       const m = place.manifest;
       ui.l1.textContent = T.measuredGround;
@@ -818,7 +878,7 @@ export function createGroundStage(ctx, opts = {}) {
     const earth = bodies.find((b) => b.id === 'earth');
     if (earth && place.world !== 'earth') items.push(say(T.earthNow, { alt: earth.altDeg.toFixed(1), az: earth.azDeg.toFixed(0), lit: Math.round(earth.phaseFraction * 100), mag: earth.mag.toFixed(1) }));
     ui.list.replaceChildren(...items.map((s) => el(doc, 'li', null, s)));
-    ui.skyNote.textContent = `${T.airNotes[place.world] || ''} ${sky && sky.parent ? T.parentNote : ''} ${T.discNote} ${T.frameNote}`.trim();
+    ui.skyNote.textContent = `${T.airNotes[place.world] || ''} ${sky && sky.parent ? (sky.exo ? T.starNote : T.parentNote) : ''} ${T.discNote} ${T.frameNote}`.trim();
   }
 
   /** The events of this sky, worked out after the first frame and in small pieces, so the stage never stalls. */
@@ -827,7 +887,7 @@ export function createGroundStage(ctx, opts = {}) {
     const here = place;
     const t0 = now();
     const pl = { world: here.world, latDeg: here.latDeg, lonDeg: here.lonDeg };
-    const ids = ['sun', ...(here.world === 'mars' ? ['earth', 'phobos', 'deimos'] : []), ...(here.world === 'moon' ? ['earth'] : []), ...(SKY_WORLDS[here.world].parent ? [SKY_WORLDS[here.world].parent] : [])];
+    const ids = [...(SKY_WORLDS[here.world].exo ? [] : ['sun']), ...(here.world === 'mars' ? ['earth', 'phobos', 'deimos'] : []), ...(here.world === 'moon' ? ['earth'] : []), ...(SKY_WORLDS[here.world].parent ? [SKY_WORLDS[here.world].parent] : [])];
     const out = { riseSet: [], transits: [], transitsSearched: 0 };
     const queue = ids.map((id) => () => {
       const r = nextRiseSet(id, pl, t0);
@@ -863,6 +923,13 @@ export function createGroundStage(ctx, opts = {}) {
 
   // --- each frame -----------------------------------------------------------------------------------------------
   let sunNow = null;
+  /** What lights this world: the Sun, or its own star. */
+  function lightOf() { return (place && SKY_WORLDS[place.world] && SKY_WORLDS[place.world].light) || 'sun'; }
+  /** A disc's plain colour: a star's from its temperature (scene/starfield.js), a body's from DISC_COLOURS. */
+  function discColour(b) {
+    if (b.star && Number.isFinite(b.teffK)) { const c = new THREE.Color(); const k = kelvinToRgb(b.teffK); c.setRGB(k[0], k[1], k[2], THREE.SRGBColorSpace); return [c.r, c.g, c.b]; }
+    return DISC_COLOURS[b.id] || [0.8, 0.8, 0.8];
+  }
   function sunAlt() { return sunNow ? sunNow.altDeg : -90; }
 
   function solveBodies(t) {
@@ -874,20 +941,22 @@ export function createGroundStage(ctx, opts = {}) {
       const v = worldBodyView(id, t, pl, cache);
       if (v) bodies.push(v);
     }
-    sunNow = bodies.find((b) => b.id === 'sun') || null;
+    // The light: the Sun, or a planet of another star's own star (sky/worldframe.js SKY_WORLDS `light`).
+    const lampId = lightOf();
+    sunNow = bodies.find((b) => b.id === lampId) || null;
     // Points for the small ones (the planets, most of the time), discs for the wide ones.
-    const pts = bodies.filter((b) => b.id !== 'sun' && b.diameterDeg < DISC_FROM_DEG);
+    const pts = bodies.filter((b) => b.id !== lampId && b.diameterDeg < DISC_FROM_DEG);
     const pos = new Float32Array(pts.length * 3), mag = new Float32Array(pts.length), tint = new Float32Array(pts.length * 3);
     pts.forEach((b, i) => {
       pos[i * 3] = b.local[0] * SKY_R; pos[i * 3 + 1] = b.local[1] * SKY_R; pos[i * 3 + 2] = b.local[2] * SKY_R;
       mag[i] = b.mag;
-      const c = DISC_COLOURS[b.id] || [1, 0.95, 0.85];
+      const c = b.star ? discColour(b) : DISC_COLOURS[b.id] || [1, 0.95, 0.85];
       tint[i * 3] = Math.min(1, c[0] * 1.3); tint[i * 3 + 1] = Math.min(1, c[1] * 1.3); tint[i * 3 + 2] = Math.min(1, c[2] * 1.3);
     });
     planetGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     planetGeo.setAttribute('mag', new THREE.BufferAttribute(mag, 1));
     planetGeo.setAttribute('tint', new THREE.BufferAttribute(tint, 3));
-    const wide = bodies.filter((b) => b.id === 'sun' || b.diameterDeg >= DISC_FROM_DEG);
+    const wide = bodies.filter((b) => b.id === lampId || b.diameterDeg >= DISC_FROM_DEG);
     const keep = new Set(wide.map((b) => b.id));
     for (const [id, mesh] of discs) if (!keep.has(id)) { scene.remove(mesh); mesh.geometry.dispose(); mesh.material.dispose(); discs.delete(id); }
     for (const b of wide) {
@@ -895,10 +964,10 @@ export function createGroundStage(ctx, opts = {}) {
       if (!mesh) {
         const mat = new THREE.ShaderMaterial({
           vertexShader: DISC_VERT, fragmentShader: DISC_FRAG, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending,
-          uniforms: { colour: { value: new THREE.Vector3(...(DISC_COLOURS[b.id] || [0.8, 0.8, 0.8])) }, lightView: { value: new THREE.Vector3(0, 0, 1) }, glowK: { value: b.id === 'sun' ? 1 : 0 }, alpha: { value: 1 } },
+          uniforms: { colour: { value: new THREE.Vector3(...discColour(b)) }, lightView: { value: new THREE.Vector3(0, 0, 1) }, glowK: { value: b.id === lampId ? 1 : 0 }, alpha: { value: 1 } },
         });
         mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat);
-        mesh.renderOrder = b.id === 'sun' ? -17 : -16;
+        mesh.renderOrder = b.id === lampId ? -17 : -16;
         mesh.frustumCulled = false;
         discs.set(b.id, mesh);
         scene.add(mesh);
@@ -916,13 +985,14 @@ export function createGroundStage(ctx, opts = {}) {
       const b = mesh.userData.view;
       if (!b) continue;
       // The Sun's quad is twice its disc, for the glow round it; a body's quad is its disc.
-      const d = id === 'sun' ? b.diameterDeg * 2 : b.diameterDeg;
+      const lamp = id === lightOf();
+      const d = lamp ? b.diameterDeg * 2 : b.diameterDeg;
       const R = SKY_R * 0.9;
       const w = 2 * R * Math.tan((d * DEG) / 2);
       mesh.position.set(camera.position.x + b.local[0] * R, camera.position.y + b.local[1] * R, camera.position.z + b.local[2] * R);
       mesh.quaternion.copy(camera.quaternion);
       mesh.scale.setScalar(w);
-      if (id !== 'sun') {
+      if (!lamp) {
         // The Sun's direction from the body, in the disc's frame (the camera's axes): which side is lit.
         const m = worldEqjToLocal(place.world, place.latDeg, place.lonDeg, lastClock);
         if (m) {
@@ -950,6 +1020,10 @@ export function createGroundStage(ctx, opts = {}) {
     // only Venus, Jupiter or the Earth stand out of a Martian dusk), as sky/skymath.js limitingMagnitude does at home.
     starMat.uniforms.visible.value = look.stars > 0.02 ? 1 : 0.35;
     starMat.uniforms.limit.value = -1 + 7 * look.stars;
+    // From Proxima b, Alpha Centauri A and B are drawn as the two stars they are there; the catalogue's one point
+    // for the pair, where the Sun sees it, is not.
+    const hide = HIDE_FROM[place.world];
+    if (hide) { starMat.uniforms.hideDir.value.set(...hide.dir); starMat.uniforms.hideCos.value = Math.cos(hide.deg * DEG); } else starMat.uniforms.hideCos.value = 2;
     starMat.uniforms.pxScale.value = renderer.getPixelRatio();
     dome.position.copy(camera.position);
     skyGroup.position.copy(camera.position);
@@ -967,7 +1041,7 @@ export function createGroundStage(ctx, opts = {}) {
       const s = sunNow.local;
       const skyline = ground && ground.profile ? horizonAt(ground.profile, sunNow.azDeg) : 0;
       const share = sunlitShare(sunNow.altDeg, Math.max(skyline, ground ? -2 : 0), sunNow.diameterDeg / 2);
-      const strength = place.world === 'titan' ? 0.35 : place.world === 'mars' ? 2.6 : 3.2;
+      const strength = place.world === 'titan' ? 0.35 : place.world === 'mars' ? 2.6 : SKY_WORLDS[place.world].exo ? 2.8 : 3.2;
       sun.intensity = strength * share;
       sun.visible = share > 0.001;
       const at = [walker.x, walker.z];
@@ -983,7 +1057,7 @@ export function createGroundStage(ctx, opts = {}) {
       haze.far = HAZE_KM[place.world] * 1000;
     } else scene.fog = null;
     // The sky's own light on the ground: on Mars the dust scatters a good share of the day into the shadows.
-    const fillK = place.world === 'mars' ? 0.9 * look.light + 0.03 : place.world === 'titan' ? 0.5 * look.light + 0.02 : 0.015;
+    const fillK = place.world === 'mars' ? 0.9 * look.light + 0.03 : place.world === 'titan' ? 0.5 * look.light + 0.02 : SKY_WORLDS[place.world].exo ? 0.6 * look.light + 0.02 : 0.015;
     fill.color.setRGB((look.horizon[0] + 0.02) * fillK * 3, (look.horizon[1] + 0.02) * fillK * 3, (look.horizon[2] + 0.02) * fillK * 3);
     fill.groundColor.setRGB(0.02 * fillK, 0.015 * fillK, 0.01 * fillK);
     // On the Moon the Earth lights the night side: a hundredth of the day at most, enough to see the ground by.
@@ -996,6 +1070,9 @@ export function createGroundStage(ctx, opts = {}) {
 
   function placeCamera() {
     renderer.getSize(size);
+    // A picture drawn into a target (ui/postcard.js, the trips' pictures: renderer.renderTo) takes the target's shape.
+    const rt = renderer.getRenderTarget();
+    if (rt) size.set(rt.width, rt.height);
     camera.aspect = size.x / Math.max(size.y, 1);
     camera.fov = fovDeg;
     camera.updateProjectionMatrix();
@@ -1045,7 +1122,7 @@ export function createGroundStage(ctx, opts = {}) {
     const moon = bodies.find((b) => b.id === 'moon');
     const pair = !!(earth && moon && earth.dir[0] * moon.dir[0] + earth.dir[1] * moon.dir[1] + earth.dir[2] * moon.dir[2] > Math.cos(1.5 * DEG));
     for (const b of [...bodies].sort((x, y) => x.mag - y.mag)) {
-      if (b.id === 'sun' || (pair && b.id === 'moon')) continue;
+      if (b.id === lightOf() || (pair && b.id === 'moon')) continue;
       if (b.diameterDeg < DISC_FROM_DEG && b.mag > Math.min(3.5, limit)) continue;
       want.push({ text: pair && b.id === 'earth' ? T.earthAndMoon : T.bodies[b.id] || b.id, local: b.local });
     }
@@ -1062,7 +1139,8 @@ export function createGroundStage(ctx, opts = {}) {
       _v.set(camera.position.x + it.local[0] * 1000, camera.position.y + it.local[1] * 1000, camera.position.z + it.local[2] * 1000).project(camera);
       const behind = _v.z > 1 || _v.z < -1;
       const { altDeg, azDeg } = altAz(it.local);
-      const hidden = behind || (ground && ground.profile && it.cls !== 'is-compass' && altDeg < horizonAt(ground.profile, azDeg) - 0.3);
+      const skyline = ground && ground.profile ? horizonAt(ground.profile, azDeg) - 0.3 : 0;
+      const hidden = behind || (it.cls !== 'is-compass' && altDeg < skyline);
       const px = (_v.x * 0.5 + 0.5) * w, py = (-_v.y * 0.5 + 0.5) * hpx;
       // Two names closer than a short word are one too many: the first (the brighter body, or a compass point) wins.
       const crowded = placed.some(([qx, qy]) => Math.abs(qx - px) < 70 && Math.abs(qy - py) < 16);
@@ -1079,7 +1157,11 @@ export function createGroundStage(ctx, opts = {}) {
     if (!ui || !place) return;
     const lst = localSolarHours(place.world, place.lonDeg, t);
     const T = L();
-    const text = say(T.timeLine, { local: hhmm(lst), utc: utcWords(t), sun: sunNow ? sunNow.altDeg.toFixed(1) : '?' });
+    const alt = sunNow ? sunNow.altDeg.toFixed(1) : '?';
+    // Under a star that never moves there is no time of day to tell, only where the star stands.
+    const text = SKY_WORLDS[place.world].exo
+      ? say(T.timeLineStar, { utc: utcWords(t), star: T.bodies[lightOf()] || lightOf(), sun: alt })
+      : say(T.timeLine, { local: hhmm(lst), utc: utcWords(t), sun: alt });
     if (ui.time.textContent !== text) ui.time.textContent = text;
   }
 
@@ -1150,4 +1232,43 @@ export function createGroundStage(ctx, opts = {}) {
     open, close, render, fromLink, look, state, dispose,
     get active() { return active; },
   };
+}
+
+/**
+ * main.js's one line: on a `ground=` or `sky=` link (at boot or pasted later), make the stage once and open that place.
+ * Never in an embed (a frame under someone else's page keeps to the map). The stage listens to the address from then
+ * on, so a link without either key closes it.
+ */
+export function boot(ctx) {
+  if (/[?&]embed=1(?:&|$)/.test(location.search)) return null;
+  stageOf(ctx);
+  ctx.ground.fromLink(readUrlKeys());
+  return ctx.ground;
+}
+
+/**
+ * ui/trip.js's `stand:` stop: `{ground: 'apollo-15'}` or `{sky: 'mars:jezero'}`, with `yaw`, `pitch` and `fov` (degrees)
+ * for where to look and `panel: true` to open the sky's list. Opened without writing the address (the trip owns it).
+ */
+export function standFor(ctx, stand) {
+  const g = stageOf(ctx);
+  const keys = stand.ground ? { ground: stand.ground } : { sky: stand.sky };
+  return g.fromLink(keys, { quiet: true }).then((ok) => {
+    if (ok) g.look({ yawDeg: stand.yaw, pitchDeg: stand.pitch, fovDeg: stand.fov, panel: stand.panel === true ? true : undefined });
+    return ok;
+  });
+}
+
+function stageOf(ctx) {
+  if (!ctx.ground) {
+    ctx.ground = createGroundStage(ctx, {
+      scene: ctx.scene,
+      clock: ctx.clock,
+      write: writeUrlKeys,
+      note: (line, dead) => { if (ctx.sceneNote && typeof ctx.sceneNote.say === 'function') ctx.sceneNote.say(line); clearUrlKeys(dead); },
+    });
+    // The address from then on: a link without `ground` or `sky` closes the stage, unless a trip opened it.
+    window.addEventListener('hashchange', () => { const k = readUrlKeys(); if (k.ground || k.sky || !document.documentElement.classList.contains('sr-trip-mode')) ctx.ground.fromLink(k); });
+  }
+  return ctx.ground;
 }

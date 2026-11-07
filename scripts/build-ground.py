@@ -423,7 +423,9 @@ def trek_sample(src: dict, lat, lon, cache: Path | None):
 def build_site(row: dict, sites: dict, cache: Path | None, log=print) -> dict[str, bytes]:
     import numpy as np
 
-    anchor = sites[row["site"]]
+    # The lander's coordinates: its registry/sites.yaml row, or the row's own `at:` where the rover is not where it
+    # landed (Opportunity, at the end of its traverse).
+    anchor = row.get("at") or sites[row["site"]]
     lat0, lon0 = float(anchor["lat"]), float(anchor["lon"]) % 360.0
     R = float(row["radius_km"]) * 1000.0
     dtm = open_source(row["dtm"], cache)
@@ -440,21 +442,6 @@ def build_site(row: dict, sites: dict, cache: Path | None, log=print) -> dict[st
     def lift(h, cos_t):
         # Up from the lander's ground, curvature included: (R + h) cos(theta) - (R + h0).
         return (R + h) * cos_t - (R + h0)
-
-    # Near.
-    e, n = grid(NEAR_SIZE, NEAR_STEP_M)
-    lat, lon, cos_t = tangent_latlon(lat0, lon0, e, n, R)
-    box = max(1, int(round(NEAR_STEP_M / float(row["dtm"].get("post_m", NEAR_STEP_M)))))
-    hn = sample(dtm, lat, lon, box=box)
-    near_holes = int(np.isnan(hn).sum())
-    un = lift(hn, cos_t)
-    near_step = 0.005
-    bands = 4
-    rows_per = NEAR_SIZE // bands
-    lo_all = float(np.nanmin(un))
-    for b in range(bands):
-        files[f"near-h-{b}.bin"], _ = pack_heights(un[b * rows_per:(b + 1) * rows_per], near_step, lo_all)
-    log(f"  near: {NEAR_SIZE}^2 at {NEAR_STEP_M} m, {near_holes} empty posts, relief {np.nanmax(un) - np.nanmin(un):.1f} m")
 
     # Far: the DTM averaged where it reaches, the global model elsewhere, aligned and blended.
     e, n = grid(FAR_SIZE, FAR_STEP_M)
@@ -479,6 +466,25 @@ def build_site(row: dict, sites: dict, cache: Path | None, log=print) -> dict[st
     data, far_min = pack_heights(uf, far_step)
     files["far-h.bin"] = data
     log(f"  far: {FAR_SIZE}^2 at {FAR_STEP_M} m, DTM covers {inside.mean() * 100:.0f} %, global moved {shift:+.1f} m, relief {np.nanmax(uf) - np.nanmin(uf):.0f} m")
+
+    # Near.
+    e, n = grid(NEAR_SIZE, NEAR_STEP_M)
+    lat, lon, cos_t = tangent_latlon(lat0, lon0, e, n, R)
+    box = max(1, int(round(NEAR_STEP_M / float(row["dtm"].get("post_m", NEAR_STEP_M)))))
+    hn = sample(dtm, lat, lon, box=box)
+    near_holes = int(np.isnan(hn).sum())
+    if near_holes:
+        # A post the stereo model has no height for (the strip's edge within the kilometre) takes the global model's,
+        # moved as the far ground's is: counted in site.json `near.filled`, never invented.
+        hn = np.where(np.isfinite(hn), hn, sample(glob, lat, lon) + shift)
+    un = lift(hn, cos_t)
+    near_step = 0.005
+    bands = 4
+    rows_per = NEAR_SIZE // bands
+    lo_all = float(np.nanmin(un))
+    for b in range(bands):
+        files[f"near-h-{b}.bin"], _ = pack_heights(un[b * rows_per:(b + 1) * rows_per], near_step, lo_all)
+    log(f"  near: {NEAR_SIZE}^2 at {NEAR_STEP_M} m, {near_holes} posts filled from the global model, relief {np.nanmax(un) - np.nanmin(un):.1f} m")
 
     # Orthoimages: one stretch for both, from the near ground's own percentiles.
     e, n = grid(ORTHO_NEAR_PX, NEAR_SIZE * NEAR_STEP_M / ORTHO_NEAR_PX)
@@ -529,7 +535,7 @@ def build_site(row: dict, sites: dict, cache: Path | None, log=print) -> dict[st
         "lonDeg": lon0,
         "radiusKm": float(row["radius_km"]),
         "groundM": round(h0, 2),
-        "near": {"size": NEAR_SIZE, "stepM": NEAR_STEP_M, "bands": bands, "min": round(lo_all, 4), "q": near_step, "files": [f"near-h-{b}.bin" for b in range(bands)], "empty": near_holes},
+        "near": {"size": NEAR_SIZE, "stepM": NEAR_STEP_M, "bands": bands, "min": round(lo_all, 4), "q": near_step, "files": [f"near-h-{b}.bin" for b in range(bands)], "filled": near_holes},
         "far": {"size": FAR_SIZE, "stepM": FAR_STEP_M, "min": round(far_min, 3), "q": far_step, "file": "far-h.bin", "dtmShare": round(float(inside.mean()), 3), "globalShiftM": round(shift, 1)},
         "orthoNear": {"px": ORTHO_NEAR_PX, "files": [f"near-o-{k}.jpg" for k in range(4)]},
         "orthoFar": {"px": ORTHO_FAR_PX, "file": "far-o.jpg", "imaged": round(far_cover, 3)},

@@ -17,6 +17,11 @@
 //   THE COLOURS: Mars's day sky is the measured butterscotch, its sunset glow is blue (more blue than red), its
 //     night has stars; the Moon's and Europa's skies are black at noon; Titan hides its stars.
 //   THE LINK: `#sky=` parses a site, coordinates and a bare world, and refuses the rest.
+//   TWO OTHER STARS' PLANETS (modelled, sky/exoskies.js): from Proxima b's and TRAPPIST-1 e's sub-star point the star
+//     stands overhead and never moves; Proxima is 1.5 to 1.6 degrees wide from b; Alpha Centauri A and B are two bright
+//     stars (A about -6.8, B about -5.5) a fraction of a degree apart; the Sun is a star of about +0.4 from Proxima and
+//     +5.3 from TRAPPIST-1; at a transit time of a sister planet it stands between TRAPPIST-1 and the Sun's direction;
+//     every sister lies on the same great circle of e's sky; their sky colours are labelled illustrative.
 //
 //   node tests/test_worldframe.mjs
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -176,8 +181,41 @@ for (const [w, parent] of [['titan', 'saturn'], ['europa', 'jupiter']]) {
   for (const bad of ['earth:london', 'pluto', 'mars:<b>', 'mars:95,10', '']) check(W.parseSkyLink(bad) === null, `\`${bad}\` is refused`);
 }
 
+// --- two other stars' planets --------------------------------------------------------------------------------
+{
+  const E = await mod('sky/exoskies.js');
+  for (const [w, star] of [['proxima-b', 'proxima'], ['trappist-1e', 'trappist-1']]) {
+    const sub = { world: w, latDeg: 0, lonDeg: 0 };
+    const v = W.worldBodyView(star, T, sub);
+    const later = W.worldBodyView(star, T + 3 * 86400e3, sub);
+    check(v && v.altDeg > 89.9 && later.altDeg > 89.9, `${w}: its star stands overhead at the sub-star point and stays there (${v && v.altDeg.toFixed(3)}, ${later && later.altDeg.toFixed(3)})`);
+    check(A.skyLook(w, 30).kind === 'illustrative', `${w}: the sky colour is labelled illustrative`);
+    const def = W.parseSkyLink(w);
+    check(def && def.lonDeg === 60, `${w}: a bare link stands where the star is 30 degrees up`);
+  }
+  const pb = { world: 'proxima-b', latDeg: 0, lonDeg: 60 };
+  const px = W.worldBodyView('proxima', T, pb);
+  check(px.diameterDeg > 1.5 && px.diameterDeg < 1.6, `Proxima from b is 1.5 to 1.6 degrees wide (${px.diameterDeg.toFixed(3)})`);
+  const a = W.worldBodyView('alpha-cen-a', T, pb), b = W.worldBodyView('alpha-cen-b', T, pb);
+  check(Math.abs(a.mag + 6.8) < 0.3 && Math.abs(b.mag + 5.45) < 0.3, `Alpha Centauri A and B from Proxima b (${a.mag.toFixed(2)}, ${b.mag.toFixed(2)})`);
+  const sep = Math.acos(Math.min(1, a.dir[0] * b.dir[0] + a.dir[1] * b.dir[1] + a.dir[2] * b.dir[2])) / (Math.PI / 180);
+  check(sep < 1, `A and B are a fraction of a degree apart (${sep.toFixed(3)})`);
+  const sunP = W.worldBodyView('sun', T, pb), sunT = W.worldBodyView('sun', T, { world: 'trappist-1e', latDeg: 0, lonDeg: 60 });
+  check(Math.abs(sunP.mag - 0.39) < 0.1 && Math.abs(sunT.mag - 5.3) < 0.1, `the Sun is a star from there (${sunP.mag.toFixed(2)}, ${sunT.mag.toFixed(2)})`);
+  // At f's measured transit, f stands on the line from TRAPPIST-1 to the Sun.
+  const t0 = (2457671.3737299 - 2440587.5) * 86400e3;
+  const fp = E.exoPositionEqjKm('trappist-1f', t0), st = E.exoPositionEqjKm('trappist-1', t0);
+  const off = [fp.x - st.x, fp.y - st.y, fp.z - st.z], toSun = [-st.x, -st.y, -st.z];
+  const cosA = (off[0] * toSun[0] + off[1] * toSun[1] + off[2] * toSun[2]) / (Math.hypot(...off) * Math.hypot(...toSun));
+  check(cosA > 0.9999, `TRAPPIST-1 f transits at its measured time (${cosA.toFixed(6)})`);
+  // Coplanar orbits: from the equator of e every sister is on the meridian through east and west.
+  const eq = { world: 'trappist-1e', latDeg: 0, lonDeg: 60 };
+  const off90 = ['trappist-1b', 'trappist-1c', 'trappist-1d', 'trappist-1f', 'trappist-1g', 'trappist-1h'].map((id) => W.worldBodyView(id, T, eq)).map((x) => Math.abs(x.local[2]));
+  check(off90.every((z) => z < 1e-3), `the sisters lie on one great circle of e's sky (${off90.map((z) => z.toExponential(1)).join(' ')})`);
+}
+
 if (problems.length) {
   console.error(`test_worldframe: ${problems.length} problem(s)\n  ${problems.join('\n  ')}`);
   process.exit(1);
 }
-console.log('test_worldframe: ok (the frame, Mars24, locked moons, the Earth from the Moon, pole stars, Phobos, rises and sets, colours, the link)');
+console.log('test_worldframe: ok (the frame, Mars24, locked moons, the Earth from the Moon, pole stars, Phobos, rises and sets, colours, the link, Proxima b and TRAPPIST-1 e)');

@@ -1090,12 +1090,9 @@ export async function boot({ setStatus } = {}) {
     .then((s) => { if (n && n !== '0') s.start(n); else s.stop(); return s; })
     .catch((e) => { imagine = null; document.documentElement.classList.remove('sr-imagine-on'); console.warn('the imagined world did not load', e); return null; });
   if (!embed && link && link.imagine && link.imagine !== '0') { document.documentElement.classList.add('sr-imagine-on'); ctx.wantImagine(link.imagine); }
-  // b200-f7-ground: begin (forge #146, #147) -- standing on a landing site (`#ground=apollo-15`) and the sky from another
-  // world (`#sky=mars:jezero`), scene/groundstage.js: a stage of its own like the one above, fetched for those links only.
-  let groundP = null;
-  ctx.wantGround = (keys) => (groundP || (groundP = import('./scene/groundstage.js').then((m) => (ctx.ground = m.createGroundStage(ctx, { scene, clock, write: writeUrlState, note: (l, k) => linkNote(ctx, l, k) })))))
-    .then((g) => g.fromLink(keys)).catch((e) => { groundP = null; console.warn('the ground did not load', e); });
-  if (!embed && link && (link.ground || link.sky)) ctx.wantGround(link);
+  // b200-f7-ground: begin (forge #146, #147) -- `#ground=` and `#sky=` fetch scene/groundstage.js, which does the rest.
+  const groundLink = () => /(ground|sky)=/.test(location.hash) && import('./scene/groundstage.js').then((m) => m.boot(ctx));
+  groundLink(); addEventListener('hashchange', groundLink);
   // b200-f7-ground: end
   // 0079 C1: begin
   // A MOMENT (site/js/moments/, internal spec 0079): `#moment=<id>&t=<s>` replays a mission on a stage of its own, one
@@ -2345,10 +2342,6 @@ export async function boot({ setStatus } = {}) {
     // `#imagine=N` pasted over a running page opens that world; taken out of it, closes it.
     const world = !!(keys.imagine && keys.imagine !== '0');
     if (world || (ctx.imagine && ctx.imagine.active)) { ctx.wantImagine(keys.imagine); if (world) return; }
-    // b200-f7-ground: begin -- `#ground=` or `#sky=` pasted over a running page opens that place (the clock below still
-    // reads the link's `t`: the light on the ground is the clock's); taken out, closes it.
-    if (keys.ground || keys.sky || (ctx.ground && ctx.ground.active)) ctx.wantGround(keys);
-    // b200-f7-ground: end
     const current = typeof ctx.selected === 'function' ? ctx.selected() : null;
     const running = ctx.trip && ctx.trip.state && ctx.trip.state.phase !== 'idle' ? ctx.trip.state : null;
     const plan = linkChange(keys, { at: current ? current.id : null, trip: running ? running.tourId : null, live: clock.mode === 'live', stage: stage.worldId });
@@ -3112,7 +3105,6 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // A drawn world on its plain stage is drawn over the frame; the map's own scene is hidden while
     // it is up (scene/exostage.js), so that render() above clears and draws nothing.
     if (ctx.imagine && ctx.imagine.active) ctx.imagine.render(t);
-    if (ctx.ground && ctx.ground.active) ctx.ground.render(t); // b200-f7-ground: the ground's own stage, drawn like the one above
     if (ctx.replay && ctx.replay.active) ctx.replay.render(nowReal); // 0079 C1
     // After render(), because render() is what brings the camera's matrices up to this frame: placed
     // before it, the brackets trailed the station by one frame of camera motion.

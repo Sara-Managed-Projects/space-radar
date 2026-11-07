@@ -126,6 +126,10 @@ STOP_FIELDS = (
     # away and the frame prints how wide the widest really is on this screen.
     "framing",
     "true_size",
+    # b200-f7-ground: begin -- `stand: {ground: <registry/ground.yaml id>} | {sky: "<world>:<place>"}`, with `yaw`, `pitch`,
+    # `fov`, `panel`: the stop stands on another world (scene/groundstage.js; forge #146, #147)
+    "stand",
+    # b200-f7-ground: end
     "card",
 )
 

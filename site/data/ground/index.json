@@ -41,6 +41,12 @@
    "world": "moon",
    "site": "change-4",
    "name": "Chang'e 4, von Karman crater"
+  },
+  {
+   "id": "opportunity",
+   "world": "mars",
+   "site": "opportunity",
+   "name": "Opportunity, Endeavour crater"
   }
  ]
 }

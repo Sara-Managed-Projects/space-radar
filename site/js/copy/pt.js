@@ -5158,18 +5158,24 @@ Object.assign(COPY, {
     "stageLabel": "De pé em outro mundo",
     "tagGround": "No solo · {world}",
     "tagSky": "O céu · {world}",
+    "kindMeasured": "solo medido",
+    "kindPlain": "solo não medido",
+    "kindModelled": "modelado",
     "placeAt": "{world}, {lat}°, {lon}° leste",
     "worlds": {
       "moon": "Lua",
       "mars": "Marte",
       "titan": "Titã",
       "europa": "Europa",
-      "earth": "Terra"
+      "earth": "Terra",
+      "proxima-b": "Proxima Centauri b",
+      "trappist-1e": "TRAPPIST-1 e"
     },
     "measuredGround": "Medido: as alturas são o modelo estereoscópico do terreno em escala real, e o solo é a própria imagem do orbitador (as sombras são as do dia em que foi tirada). Nenhuma rocha ou cratera é inventada.",
     "plainGround": "O solo aqui não é desenhado a partir de medições: uma planície até o horizonte. O céu é calculado.",
     "modelLine": "Nas coordenadas do pouso: {what}. A direção para onde está virado não vem de uma imagem.",
     "timeLine": "{local} hora solar local · {utc} · Sol a {sun}°",
+    "timeLineStar": "{utc} · {star} a {sun}° de altura, onde está sempre",
     "drive": "Dirigir o rover",
     "walk": "Caminhar",
     "driving": "Dirigindo, cerca de {x} vezes mais rápido do que o rover consegue ir.",
@@ -5198,9 +5204,12 @@ Object.assign(COPY, {
       "moon": "Sem ar, o céu é negro ao meio-dia. Um olho de verdade, ofuscado pelo solo iluminado pelo Sol, veria poucas destas estrelas.",
       "europa": "Sem ar, o céu é negro ao meio-dia. Júpiter fica parado no céu do lado voltado para ele.",
       "titan": "Cor ilustrativa: a névoa laranja esconde do olho as estrelas e Saturno; eles são desenhados fracos onde estão.",
-      "earth": ""
+      "earth": "",
+      "proxima-b": "Modelado: supõe-se que Proxima b mantém sempre a mesma face voltada para a sua estrela, como esperam os seus descobridores (Anglada-Escudé et al. 2016); a inclinação da sua órbita e a posição de Proxima b e de Proxima d nas suas órbitas não são conhecidas, por isso são supostas. A cor do céu é ilustrativa: ninguém sabe se o planeta tem ar. Alfa Centauri A e B estão nas suas posições reais; as outras estrelas são desenhadas como o Sol as vê.",
+      "trappist-1e": "Modelado: supõe-se que TRAPPIST-1 e mantém sempre a mesma face voltada para a sua estrela (Gillon et al. 2017); os seus planetas irmãos estão onde os seus tempos de trânsito medidos os colocam, em órbitas circulares num mesmo plano, girado de um modo suposto em torno da nossa linha de visada. A cor do céu é ilustrativa: ninguém sabe se o planeta tem ar. As outras estrelas são desenhadas como o Sol as vê."
     },
     "parentNote": "Esta lua mantém sempre a mesma face voltada para o seu planeta, por isso o planeta não nasce nem se põe.",
+    "starNote": "Supõe-se que este planeta mantém sempre a mesma face voltada para a sua estrela, por isso a estrela não nasce nem se põe.",
     "discNote": "O Sol, a Terra, Fobos e os outros corpos extensos são discos do seu tamanho e fase reais em cores lisas, não seus mapas nem suas formas.",
     "frameNote": "Rotação: o relatório IAU WGCCRE 2015 (Archinal et al. 2018). Posições: as efemérides do próprio aplicativo.",
     "compass": {
@@ -5226,11 +5235,22 @@ Object.assign(COPY, {
       "saturn": "Saturno",
       "titan": "Titã",
       "uranus": "Urano",
-      "neptune": "Netuno"
+      "neptune": "Netuno",
+      "proxima": "Proxima Centauri",
+      "proxima-d": "Proxima d",
+      "alpha-cen-a": "Alfa Centauri A",
+      "alpha-cen-b": "Alfa Centauri B",
+      "trappist-1": "TRAPPIST-1",
+      "trappist-1b": "TRAPPIST-1 b",
+      "trappist-1c": "TRAPPIST-1 c",
+      "trappist-1d": "TRAPPIST-1 d",
+      "trappist-1f": "TRAPPIST-1 f",
+      "trappist-1g": "TRAPPIST-1 g",
+      "trappist-1h": "TRAPPIST-1 h"
     },
     "earthAndMoon": "A Terra e a Lua",
     "unknownGround": "Ainda não há modelo de terreno para esse local.",
-    "unknownSky": "Este mapa ainda não permite ficar de pé nesse lugar: só na Lua, em Marte, em Titã ou em Europa."
+    "unknownSky": "Este mapa ainda não permite ficar de pé nesse lugar: só na Lua, em Marte, em Titã, em Europa, em Proxima b ou em TRAPPIST-1 e."
   }
 });
 // b200-f7-ground: end
