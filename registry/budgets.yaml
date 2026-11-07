@@ -248,3 +248,6 @@ budgets:
   - {id: star_motion_bytes, value: 290000, unit: bytes, since: 2026-11-07, reason: "site/data/starmotion.bin (scripts/build-starmotion.py): 17 207 stars at 16 bytes, 275 328 B measured 2026-11-07; fetched only when the sky's clock is more than 50 years from now"}
   - {id: variable_stars_bytes, value: 20000, unit: bytes, since: 2026-11-07, reason: "site/data/variables.json (scripts/build-variables.py): 58 stars, 14 252 B measured 2026-11-07; fetched when the sky view's stars are up"}
   # b200-f3-stars: end
+  # b200-c3-learn: begin -- the Fengyun-1C Moment's voice (forge #153)
+  - {id: moment_voice_total_kb, value: 1400, unit: kB, since: 2026-11-07, reason: "forge #153: everything under site/audio/moments/ (scripts/narrate-moments.py --check): the seven Fengyun-1C clips, 1 240 kB with the AAC twins, the captions and the index, measured 2026-11-07; nothing of it is fetched before sound is on, and then one clip at a time"}
+  # b200-c3-learn: end

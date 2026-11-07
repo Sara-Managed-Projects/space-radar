@@ -52,16 +52,16 @@ def pages(host: str) -> list[Page]:
     extras = "".join(f'<li><h3><a href="{slug}.pdf">{esc(title)}</a></h3></li>' for slug, (title, _) in paper_models.EXTRAS.items())
     rows = "".join(globe_row(g) for g in gl)
     title = f"Printable paper planets: {n} globes for the classroom" if n else "Printable paper models for the classroom"
-    desc = (f"Free paper globes of {n} worlds from real spacecraft maps, a Moon-phase wheel and a distance-ladder strip: "
+    desc = (f"Free paper globes of {n} worlds from real spacecraft maps, a Moon-phase wheel, a distance-ladder strip and a fold-up JWST: "
             "one A4 or Letter page each, to print.") if n else (
-            "A free Moon-phase wheel and distance-ladder strip to print for the classroom, one A4 or Letter page each.")
+            "A free Moon-phase wheel, distance-ladder strip and fold-up JWST to print for the classroom, one A4 or Letter page each.")
     refused = paper_models.plan()[1]
     left_out = "".join(f"<li>{esc(r['world'].title())}: {esc(r['why'])}.</li>" for r in refused)
     body = (
         '<p class="micro">Print and make</p>\n'
         f"<h1>Paper planets and models to print</h1>\n"
         f'<p class="lead">{f"A paper globe of every world Space Radar has a real map of, {worlds} of them{twice}, " if n else ""}'
-        "a Moon-phase wheel and a distance-ladder strip. Each is one page of PDF, free, with no account, made by a script from the "
+        "a Moon-phase wheel, a distance-ladder strip and a fold-up James Webb Space Telescope. Each is one page of PDF, free, with no account, made by a script from the "
         "same maps and numbers the live map uses, so a sheet never disagrees with the app.</p>\n"
         '<div class="cta"><a class="live" href="../">Open the live map</a><p>Every globe has a QR code that opens its world there.</p></div>\n'
         "<h2>How to print</h2>\n"
@@ -74,11 +74,11 @@ def pages(host: str) -> list[Page]:
            f'<ul class="cards">{rows}</ul>\n' if n else "")
         + f'<h2>Models</h2>\n<ul class="cards">{extras}</ul>\n'
         "<p>The Moon wheel's phases are computed (the lit share of the disc for each angle from the Sun) and the strip's distances are "
-        "the ones the map's scale ladder shows, each with its source printed on the sheet.</p>\n"
+        "the ones the map's scale ladder shows, each with its source printed on the sheet. Webb is at 1 : 250 from NASA's published sizes (the 18 "
+        "mirror segments, the secondary, the sunshield); the parts NASA gives no size for are estimated from NASA's own 3D model, and the sheet says which.</p>\n"
         "<h2>Not here, and why</h2>\n<ul>\n"
         f"{left_out}"
-        "<li>A fold-up James Webb Space Telescope: not yet. A model that folds like the real one needs drawings made from its published "
-        "dimensions and checked against photographs, and a rough one would teach the wrong shape.</li>\n</ul>\n"
+        "</ul>\n"
         '<p><a href="../teachers/index.html">Space Radar in the classroom</a> · '
         f'<a href="{GITHUB}/blob/main/scripts/paper_models.py">The script that makes the sheets</a></p>\n')
     page = Page(path="print/index.html", title=title, description=desc, body=body,

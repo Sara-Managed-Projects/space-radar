@@ -34,6 +34,11 @@ import { createStage, eciToThree } from './stage.js';
 import { loadVehicle, disposeVehicle } from './vehicles.js';
 import { partPoseAt, carrierAt, quatColumns, poseKeys } from './pose.js';
 import { createTether, createExhaustCloud } from './effects.js';
+// b200-c3-learn: begin -- forge #153: a breakup's pieces (`debris-cloud`) and a told story's voice
+import { readPieces, fillCloud, createDebrisCloud } from './debriscloud.js';
+import { cloudById } from '../data/clouds.js';
+import { createMomentVoice } from './voice.js';
+// b200-c3-learn: end
 
 const DATA = new URL('../../data/moments/', import.meta.url);
 const W = () => COPY.momentPlayer;
@@ -119,6 +124,10 @@ export function createMomentPlayer(ctx, opts = {}) {
   let vehicles = new Map();// id -> { spec, v (loaded), events: Map(part -> list) }
   let clouds = [];
   let tethers = [];
+  // b200-c3-learn: begin -- the `debris-cloud` effects of the moment, and its voice (moments/voice.js)
+  let debris = [];
+  let voice = null;
+  // b200-c3-learn: end
   let t = 0, p = 0, playing = false, lastNow = 0;
   let free = null;         // a visitor's own camera { az, el, dist }
   let ui = null;
@@ -344,11 +353,41 @@ export function createMomentPlayer(ctx, opts = {}) {
     if (tr) parts.push(fill(W().truthLine, { truth: W().truthWords[tr.truth] || tr.truth, path: say(tr.say) || tr.source }));
     const v = vehicles.get(lead && lead.id);
     if (v && v.v && v.v.split === 'cuts') parts.push(W().cutNote);
-    parts.push(W().drawnNote);
+    // b200-c3-learn: a moment that draws no flame, steam, chute or entry names what it does draw (`drawn`, a words key; forge #153)
+    parts.push(m.drawn && words[m.drawn] ? say(m.drawn) : W().drawnNote);
     // Each piece is a sentence of its own.
     if (m.place && m.place.ground) parts.push(m.world === 'mars' && W().groundNoteMars ? W().groundNoteMars : W().groundNote);
+    // b200-c3-learn: begin -- a breakup's cloud says how it is drawn (the story's words: modelled spread, measured counts)
+    for (const fx of m.tracks.effects || []) if (fx.effect === 'debris-cloud' && fx.say) parts.push(say(fx.say));
+    // b200-c3-learn: end
+    // b200-c3-learn: begin -- `footFold: true` folds a long foot line on a narrow screen to its first sentence and a More button (forge #153)
+    if (m.footFold && words.footMore) { foldFoot(parts); return; }
+    ui.foot.classList.remove('sr-moment__truth--fold');
+    // b200-c3-learn: end
     ui.foot.textContent = parts.join(' ');
   }
+
+  // b200-c3-learn: begin -- the folded foot line: the first sentence, the rest behind More (shown whole on a wide screen, css/moments.css)
+  function foldFoot(parts) {
+    const foot = ui.foot;
+    foot.textContent = '';
+    foot.classList.add('sr-moment__truth--fold');
+    foot.classList.remove('is-open');
+    const rest = el(doc, 'span', 'sr-moment__truthrest', ` ${parts.slice(1).join(' ')}`);
+    rest.id = 'sr-moment-truthrest';
+    const more = el(doc, 'button', 'sr-moment__truthmore', say('footMore'));
+    more.type = 'button';
+    more.setAttribute('aria-expanded', 'false');
+    more.setAttribute('aria-controls', rest.id);
+    more.addEventListener('click', () => {
+      const open = !foot.classList.contains('is-open');
+      foot.classList.toggle('is-open', open);
+      more.setAttribute('aria-expanded', open ? 'true' : 'false');
+      more.textContent = say(open ? 'footLess' : 'footMore');
+    });
+    foot.append(el(doc, 'span', 'sr-moment__truthlead', parts[0] || ''), rest, more);
+  }
+  // b200-c3-learn: end
 
   // --- loading -----------------------------------------------------------------------------------------------------
 
@@ -412,6 +451,20 @@ export function createMomentPlayer(ctx, opts = {}) {
       stage.scene.add(tf.group);
       tethers.push({ fx: tf, spec: fx });
     }
+    // b200-c3-learn: begin -- the pieces of a named breakup (data/clouds.js), drawn where its modelled spread puts them
+    for (const fx of m.tracks.effects || []) {
+      const cloud = fx.effect === 'debris-cloud' ? cloudById(fx.cloud) : null;
+      if (!cloud || typeof fx.file !== 'string') continue;
+      try {
+        const res = await fetch(new URL(fx.file, DATA).href);
+        const pieces = readPieces(await res.json());
+        const c = createDebrisCloud({ count: pieces.length, colour: fx.colour, sizePx: fx.sizePx, pixelRatio: renderer.getPixelRatio ? renderer.getPixelRatio() : 1 });
+        stage.scene.add(c.points);
+        debris.push({ fx: c, spec: fx, cloud, pieces });
+      } catch (err) { console.warn(`moment ${id}: the cloud ${fx.cloud} did not load`, err && err.message); }
+    }
+    if (!voice) voice = createMomentVoice(ctx.audio);
+    // b200-c3-learn: end
     title();
     buildChapters();
     ui.scrub.max = String(table.total);
@@ -787,6 +840,12 @@ export function createMomentPlayer(ctx, opts = {}) {
       const rel = (ps, p) => { const w = add(ps.pos, fromBasis(ps.basis, p)); return [w[0] - origin[0], w[1] - origin[1], w[2] - origin[2]]; };
       th.fx.set(th.spec.from.at.map((p) => rel(a, p)), th.spec.to.at.map((p) => rel(b, p)));
     }
+    // b200-c3-learn: begin -- each piece of a breakup where the modelled spread puts it at this second, about the floating origin
+    for (const d of debris) {
+      const on = t >= d.spec.t && t <= d.spec.until;
+      d.fx.set(on ? fillCloud(d.fx.positions, d.pieces, d.cloud, epochMs + t * 1000, origin) : 0);
+    }
+    // b200-c3-learn: end
     // The steam at the pad, in the place's own axes.
     if (clouds.length) {
       const sunLocal = [sunDir[0] * placeNow.e[0] + sunDir[1] * placeNow.e[1] + sunDir[2] * placeNow.e[2], sunDir[0] * placeNow.u[0] + sunDir[1] * placeNow.u[1] + sunDir[2] * placeNow.u[2], sunDir[0] * placeNow.s[0] + sunDir[1] * placeNow.s[1] + sunDir[2] * placeNow.s[2]];
@@ -863,10 +922,11 @@ export function createMomentPlayer(ctx, opts = {}) {
       const t0 = t;
       p = Math.min(table.total, p + dt);
       t = missionOf(table, p);
-      for (const a of crossed(m.tracks.audio, t0, t)) cue(a);
+      for (const a of crossed(m.tracks.audio, t0, t)) if (!a.voice) cue(a);
       if (p >= table.total - 1e-6) { playing = false; writeTime(); }
       paintChrome();
     }
+    if (voice) voice.sync(m.tracks.audio, p, table, playing); // b200-c3-learn: a told story's voice follows the clock (moments/voice.js)
     drawFrame();
   }
 
@@ -902,6 +962,11 @@ export function createMomentPlayer(ctx, opts = {}) {
     for (const c of clouds) c.fx.dispose();
     for (const th of tethers) th.fx.dispose();
     tethers = [];
+    // b200-c3-learn: begin
+    for (const d of debris) d.fx.dispose();
+    debris = [];
+    if (voice) voice.stop();
+    // b200-c3-learn: end
     clouds = [];
     setWorld('earth');
     if (stage) stage.dispose();

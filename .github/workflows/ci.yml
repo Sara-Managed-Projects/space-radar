@@ -1516,3 +1516,7 @@ jobs:
       - name: "a story for every figure of every sky culture, and the Maori, Hawaiian and Boorong pictures, licensed and pinned (forge #143)"
         run: node tests/test_skylore.mjs
       # b200-c1-culture: end
+      # b200-c3-learn: begin
+      - name: "The Fengyun-1C Moment: the cloud born at one point and spread round the Earth, the voice inside each chapter, every count its source's, the clips heard (forge #153)"
+        run: node tests/test_moment_fengyun.mjs
+      # b200-c3-learn: end

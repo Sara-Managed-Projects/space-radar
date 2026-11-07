@@ -95,6 +95,11 @@ export function formatMet(t) {
   const v = Number(t) || 0;
   const sign = v < 0 ? '−' : '+';
   let s = Math.floor(Math.abs(v) + 1e-6);
+  // b200-c3-learn: a story of months or years (Fengyun-1C runs almost twenty) counts in years and days past 30 days, not thousands of hours
+  if (s >= 30 * 86400) {
+    const d = Math.floor(s / 86400), y = Math.floor(d / 365.25), dd = Math.floor(d - y * 365.25);
+    return y ? `T${sign}${y} y ${dd} d` : `T${sign}${d} d`;
+  }
   const h = Math.floor(s / 3600); s -= h * 3600;
   const m = Math.floor(s / 60); s -= m * 60;
   const two = (n) => String(n).padStart(2, '0');
@@ -246,7 +251,9 @@ export function validateMoment(m, opts = {}) {
   const parts = new Map();
   for (const v of vehicles) {
     if (!isMomentId(v.id)) say(`vehicle ${JSON.stringify(v.id)}: id`);
-    if (opts.models && !opts.models.includes(v.model)) say(`vehicle ${v.id}: model ${v.model} is not a row of registry/models.yaml`);
+    // b200-c3-learn: `model: null` with `marker: true` is a craft there is no model of, drawn as the ringed mark only (forge #153)
+    if (v.model === null && v.marker !== true) say(`vehicle ${v.id}: model null is only for a vehicle drawn as its mark (marker: true)`);
+    else if (v.model !== null && opts.models && !opts.models.includes(v.model)) say(`vehicle ${v.id}: model ${v.model} is not a row of registry/models.yaml`);
     if (!(v.lengthM > 0)) say(`vehicle ${v.id}: lengthM, its real length in metres`);
     if (v.path && !trajs[v.path]) say(`vehicle ${v.id}: path ${v.path} is not a trajectory`);
     if (v.window !== undefined && !(isVec(v.window, 2) && v.window[1] > v.window[0])) say(`vehicle ${v.id}: window is [from, to] mission seconds`);
@@ -304,6 +311,17 @@ export function validateMoment(m, opts = {}) {
   for (const a of tracks.audio || []) {
     if (!a.sting && !(typeof a.src === 'string' && /^audio\/[\w/.-]+\.(opus|m4a|mp3)$/.test(a.src))) say(`audio at ${a.t}: a sting or a file under audio/`);
   }
+  // b200-c3-learn: begin -- forge #153: a breakup's pieces, and a voice that follows the clock (docs/MOMENTS.md, release 2.0.0)
+  for (const fx of tracks.effects || []) {
+    if (fx.effect !== 'debris-cloud') continue;
+    if (typeof fx.cloud !== 'string' || typeof fx.file !== 'string' || !/^paths\/[\w.-]+\.json$/.test(fx.file)) say(`effect at ${fx.t}: a debris-cloud names its cloud (data/clouds.js) and its file under paths/`);
+    if (!(isNum(fx.until) && fx.until > fx.t)) say(`effect at ${fx.t}: a debris-cloud needs until after t`);
+    if (fx.say !== undefined) need(fx.say, `effect at ${fx.t}`);
+  }
+  if (m.drawn !== undefined) need(m.drawn, 'drawn');
+  if (m.footFold !== undefined && typeof m.footFold !== 'boolean') say('footFold is true or false');
+  for (const a of tracks.audio || []) if (a.voice && !(a.s > 0)) say(`audio at ${a.t}: a voice says how long it lasts (s, play seconds)`);
+  // b200-c3-learn: end
   const chapters = Array.isArray(m.chapters) ? m.chapters : [];
   if (!chapters.length) say('no chapters');
   if (!sorted(chapters)) say('chapters must be in time order');
