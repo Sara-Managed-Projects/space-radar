@@ -4548,6 +4548,143 @@ export const COPY = {
   }
 };
 
+// b200-f2-worlds: begin (forge #144, #145, #148) -- the Size and Distance sliders, the cutaways and the heliosphere (copy/en.later.js orrery, cutaway, helio). Machine-drafted like the rest of this file, not read by a native speaker.
+Object.assign(COPY, {
+  "orrery": {
+    "title": "大小和距离",
+    "size": "大小",
+    "sizeTrue": "真实",
+    "sizeValue": "×{n}",
+    "sizeTitle": "天体画得比实际大多少倍，从真实大小到 ×{max}",
+    "dist": "距离",
+    "distTrue": "真实",
+    "distLog": "对数",
+    "distSome": "向对数靠拢了 {p}%",
+    "distTitle": "到太阳的距离压缩了多少，从真实到对数。方向始终是实测的。",
+    "presets": "现成视图",
+    "presetTrue": "真实比例",
+    "presetTrueTitle": "每个天体都按真实大小、放在真实距离上",
+    "presetClass": "课堂",
+    "presetClassTitle": "天体 ×{n}，距离取对数，像太阳系仪一样",
+    "held": "导览旅程中一切都按真实比例绘制。旅程结束后滑块会回来。",
+    "note": "每个天体在天空中的位置始终是实测的。徽标会告诉你它被画大了多少。",
+    "noteSize": "{name} 被大小滑块画成实际的 ×{n}。",
+    "noteDist": "它画在离太阳 {drawn} AU 的地方，实际在 {au} AU，方向是真实的（距离滑块）。",
+    "noteMoon": "它离 {parent} 的距离画成实际的 {n} 倍，方向是真实的，这样它就不会落进放大的行星里。",
+    "noteSun": "太阳被大小滑块画成实际的 ×{n}，并且不会盖住水星。",
+    "badgeSun": "太阳 ×{n}",
+    "badgeLog": "对数距离",
+    "badgeSome": "距离 {p}% 对数",
+    "badgeJoin": " · ",
+    "badgeTitle": "这个视图由“行星”标签页里的大小和距离滑块决定。"
+  },
+  "cutaway": {
+    "button": "看看内部",
+    "buttonTitle": "把 {name} 剖开看各层，深度来自测量数据",
+    "title": "{name} 的内部",
+    "close": "关闭剖面图",
+    "model": "分层依据 {model}。",
+    "source": "来源",
+    "layers": "各层，从表面往下",
+    "depthRange": "{top}–{bottom} 公里",
+    "toCentre": "{top} 公里到中心",
+    "cls": {
+      "measured": "实测",
+      "modelled": "模拟",
+      "inferred": "推断"
+    },
+    "clsTitle": "{cls}：{source}",
+    "probe": "深度",
+    "probeTitle": "从表面往下滑到中心",
+    "depth": "深 {km} 公里",
+    "atCentre": "中心",
+    "layer": "层",
+    "pressure": "压力",
+    "temperature": "温度",
+    "density": "密度",
+    "valueCls": "{value}（{cls}）",
+    "note": "深度来自资料来源；颜色是选定的。在一层的顶部和底部之间，探针读出的是介于两者之间的数值。",
+    "unknown": "这个天体还没有剖面图。",
+    "units": {
+      "gpa": "{n} GPa",
+      "mpa": "{n} MPa",
+      "kpa": "{n} kPa",
+      "millionGpa": "{n} 百万 GPa",
+      "k": "{n} K",
+      "millionK": "{n} 百万 K",
+      "rho": "{n} g/cm³"
+    },
+    "kinds": {
+      "crust": "壳层",
+      "mantle": "幔层",
+      "upper-mantle": "上幔",
+      "lower-mantle": "下幔",
+      "outer-core": "液态外核",
+      "inner-core": "固态内核",
+      "liquid-core": "液态核",
+      "iron-core": "铁核",
+      "molten-silicate": "熔融岩石层",
+      "partial-melt": "部分熔融层",
+      "ice-shell": "冰壳",
+      "ocean": "海洋",
+      "hp-ice": "高压冰",
+      "rock-mantle": "岩石幔",
+      "rock-core": "岩石核",
+      "hydrated-core": "岩石与冰的核",
+      "molecular": "氢和氦",
+      "metallic": "金属氢",
+      "dilute-core": "稀释核",
+      "ice-mantle": "水、氨和甲烷",
+      "convective": "对流区",
+      "radiative": "辐射区",
+      "solar-core": "核心"
+    }
+  },
+  "helio": {
+    "chip": "日球层 · 模拟",
+    "chipTitle": "包围太阳系的这个气泡是根据什么画的",
+    "legendTitle": "日球层",
+    "rowTs": "终端激波：太阳风在这里减速到声速以下。模拟的形状穿过两个穿越点：Voyager 1 在 {a} AU，Voyager 2 在 {b} AU（实测）。",
+    "rowHp": "日球层顶：太阳风在这里遇上星际气体。模拟的形状（Parker 1961）穿过两个穿越点：Voyager 1 在 {a} AU，Voyager 2 在 {b} AU（实测）。",
+    "rowBow": "弓形波：星际气体在前方堆积的地方。示意：日球层顶距离的两倍（McComas 等人，2012）。",
+    "rowRibbon": "IBEX 带：IBEX 在天空中测到的一条亮带（Funsten 等人，2013）。它的距离没有测过：画在 {au} AU 处。",
+    "rowMotion": "太阳穿过本地星际气体的路线，{v} 公里/秒（IBEX，McComas 等人，2015）。箭头代表 {years} 年的路程，{au} AU。",
+    "sources": "穿越位置来自 JPL Horizons 中 Voyager 的轨迹，取 NASA 公布的穿越日期。形状：Parker 1961、Wilkin 1996，参考 Izmodenov & Alexashov 2015 和 Opher 等人 2015。",
+    "crossing": "{craft}：{surface}，{au} AU，{date}",
+    "motion": "太阳的路线，{v} 公里/秒",
+    "craft": {
+      "deep-voyager-1": "Voyager 1",
+      "deep-voyager-2": "Voyager 2"
+    },
+    "surface": {
+      "ts": "终端激波",
+      "hp": "日球层顶"
+    },
+    "surfaceLabel": {
+      "ts": "终端激波（模拟）",
+      "hp": "日球层顶（模拟）",
+      "bow": "弓形波（示意）",
+      "ribbon": "IBEX 带（在天空中实测）"
+    },
+    "date": "{y}年{m}{d}日",
+    "months": [
+      "1月",
+      "2月",
+      "3月",
+      "4月",
+      "5月",
+      "6月",
+      "7月",
+      "8月",
+      "9月",
+      "10月",
+      "11月",
+      "12月"
+    ]
+  }
+});
+// b200-f2-worlds: end
+
 export const GLOSSARY = {
   "orbit": "在引力作用下绕着某个天体运行的路径。横向速度足够快，你就会一直从地球旁边落过去，而不是落到地球上。",
   "low Earth orbit": "离地大约 200 到 2000 公里的一层，非常繁忙。空间站、大多数卫星和大多数碎片都在这里。",

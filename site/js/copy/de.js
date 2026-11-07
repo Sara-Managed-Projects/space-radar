@@ -4649,6 +4649,143 @@ Object.assign(COPY, {
 }
 // 1.6.3: end
 
+// b200-f2-worlds: begin (forge #144, #145, #148) -- the Size and Distance sliders, the cutaways and the heliosphere (copy/en.later.js orrery, cutaway, helio). Machine-drafted like the rest of this file, not read by a native speaker.
+Object.assign(COPY, {
+  "orrery": {
+    "title": "Größe und Abstand",
+    "size": "Größe",
+    "sizeTrue": "echt",
+    "sizeValue": "×{n}",
+    "sizeTitle": "Wie viel größer als in Wirklichkeit die Welten gezeichnet sind, von echt bis ×{max}",
+    "dist": "Abstand",
+    "distTrue": "echt",
+    "distLog": "logarithmisch",
+    "distSome": "{p} % des Wegs zu logarithmisch",
+    "distTitle": "Wie stark die Abstände zur Sonne zusammengestaucht werden, von echt bis logarithmisch. Die Richtungen bleiben gemessen.",
+    "presets": "Fertige Ansichten",
+    "presetTrue": "Echter Maßstab",
+    "presetTrueTitle": "Jede Welt in ihrer echten Größe und in ihrem echten Abstand",
+    "presetClass": "Klassenzimmer",
+    "presetClassTitle": "Welten ×{n} und logarithmische Abstände, wie bei einem Planetenmodell",
+    "held": "Eine Reise zeichnet alles echt. Die Regler kommen zurück, wenn sie zu Ende ist.",
+    "note": "Wo jede Welt am Himmel steht, ist immer gemessen. Die Plakette sagt, wie viel größer sie gezeichnet ist.",
+    "noteSize": "{name}: ×{n} größer gezeichnet als in Wirklichkeit (Regler „Größe“).",
+    "noteDist": "Gezeichnet {drawn} AE von der Sonne entfernt, in Wirklichkeit sind es {au} AE, in der echten Richtung (Regler „Abstand“).",
+    "noteMoon": "Abstand zu {parent}: {n}-mal so weit gezeichnet wie in Wirklichkeit, in der echten Richtung, damit der Mond außerhalb des vergrößerten Planeten bleibt.",
+    "noteSun": "Die Sonne ist ×{n} größer gezeichnet, als sie ist (Regler „Größe“), und hält Abstand zu Merkur.",
+    "badgeSun": "Sonne ×{n}",
+    "badgeLog": "log. Abstände",
+    "badgeSome": "Abstände {p} % zu log.",
+    "badgeJoin": " · ",
+    "badgeTitle": "Die Regler „Größe“ und „Abstand“ im Bereich Planeten zeichnen diese Ansicht."
+  },
+  "cutaway": {
+    "button": "Hineinschauen",
+    "buttonTitle": "Ins Innere schauen: {name}, Schicht für Schicht, in den Tiefen, die die Messungen ergeben",
+    "title": "Im Inneren: {name}",
+    "close": "Schnitt schließen",
+    "model": "Schichten nach {model}.",
+    "source": "Quelle",
+    "layers": "Schichten, von der Oberfläche nach unten",
+    "depthRange": "{top}–{bottom} km",
+    "toCentre": "{top} km bis zum Mittelpunkt",
+    "cls": {
+      "measured": "gemessen",
+      "modelled": "modelliert",
+      "inferred": "erschlossen"
+    },
+    "clsTitle": "{cls}: {source}",
+    "probe": "Tiefe",
+    "probeTitle": "Schiebe von der Oberfläche hinunter bis zum Mittelpunkt",
+    "depth": "{km} km tief",
+    "atCentre": "der Mittelpunkt",
+    "layer": "Schicht",
+    "pressure": "Druck",
+    "temperature": "Temperatur",
+    "density": "Dichte",
+    "valueCls": "{value} ({cls})",
+    "note": "Die Tiefen stammen aus den Quellen, die Farben sind ausgesucht. Zwischen Ober- und Unterkante einer Schicht zeigt die Sonde Zwischenwerte.",
+    "unknown": "Von dieser Welt gibt es noch keinen Schnitt.",
+    "units": {
+      "gpa": "{n} GPa",
+      "mpa": "{n} MPa",
+      "kpa": "{n} kPa",
+      "millionGpa": "{n} Millionen GPa",
+      "k": "{n} K",
+      "millionK": "{n} Millionen K",
+      "rho": "{n} g/cm³"
+    },
+    "kinds": {
+      "crust": "Kruste",
+      "mantle": "Mantel",
+      "upper-mantle": "Oberer Mantel",
+      "lower-mantle": "Unterer Mantel",
+      "outer-core": "Flüssiger äußerer Kern",
+      "inner-core": "Fester innerer Kern",
+      "liquid-core": "Flüssiger Kern",
+      "iron-core": "Eisenkern",
+      "molten-silicate": "Schicht aus geschmolzenem Gestein",
+      "partial-melt": "Teilweise geschmolzene Schicht",
+      "ice-shell": "Eispanzer",
+      "ocean": "Ozean",
+      "hp-ice": "Hochdruckeis",
+      "rock-mantle": "Gesteinsmantel",
+      "rock-core": "Gesteinskern",
+      "hydrated-core": "Kern aus Gestein und Eis",
+      "molecular": "Wasserstoff und Helium",
+      "metallic": "Metallischer Wasserstoff",
+      "dilute-core": "Verdünnter Kern",
+      "ice-mantle": "Wasser, Ammoniak und Methan",
+      "convective": "Konvektionszone",
+      "radiative": "Strahlungszone",
+      "solar-core": "Kern"
+    }
+  },
+  "helio": {
+    "chip": "Heliosphäre · modelliert",
+    "chipTitle": "Woraus die Blase um das Sonnensystem gezeichnet ist",
+    "legendTitle": "Die Heliosphäre",
+    "rowTs": "Terminationsschock: Hier wird der Sonnenwind langsamer als der Schall. Modellierte Form durch die beiden Durchgänge: Voyager 1 bei {a} AE, Voyager 2 bei {b} AE (gemessen).",
+    "rowHp": "Heliopause: Hier trifft der Wind der Sonne auf das interstellare Gas. Modellierte Form (Parker 1961) durch die Durchgänge: Voyager 1 bei {a} AE, Voyager 2 bei {b} AE (gemessen).",
+    "rowBow": "Bugwelle: Hier staut sich das interstellare Gas vorne auf. Illustrativ: doppelt so weit wie die Heliopause (McComas et al. 2012).",
+    "rowRibbon": "IBEX-Band: ein helles Band, das IBEX am Himmel gemessen hat (Funsten et al. 2013). Seine Entfernung ist nicht gemessen: Es ist in {au} AE gezeichnet.",
+    "rowMotion": "Der Weg der Sonne durch das lokale interstellare Gas, {v} km/s (IBEX, McComas et al. 2015). Der Pfeil zeigt {years} Jahre davon, {au} AE.",
+    "sources": "Orte der Durchgänge aus den Bahnen der Voyager-Sonden in JPL Horizons, an den Daten, die die NASA für die Durchgänge nennt. Formen: Parker 1961, Wilkin 1996, nach Izmodenov & Alexashov 2015 und Opher et al. 2015.",
+    "crossing": "{craft}: {surface}, {au} AE, {date}",
+    "motion": "Weg der Sonne, {v} km/s",
+    "craft": {
+      "deep-voyager-1": "Voyager 1",
+      "deep-voyager-2": "Voyager 2"
+    },
+    "surface": {
+      "ts": "Terminationsschock",
+      "hp": "Heliopause"
+    },
+    "surfaceLabel": {
+      "ts": "Terminationsschock (modelliert)",
+      "hp": "Heliopause (modelliert)",
+      "bow": "Bugwelle (illustrativ)",
+      "ribbon": "IBEX-Band (am Himmel gemessen)"
+    },
+    "date": "{d}. {m} {y}",
+    "months": [
+      "Jan.",
+      "Feb.",
+      "März",
+      "Apr.",
+      "Mai",
+      "Juni",
+      "Juli",
+      "Aug.",
+      "Sept.",
+      "Okt.",
+      "Nov.",
+      "Dez."
+    ]
+  }
+});
+// b200-f2-worlds: end
+
 export const GLOSSARY = {
   "orbit": "Ein Weg um etwas herum, von der Schwerkraft gehalten. Wer seitlich schnell genug ist, fällt immer wieder an der Erde vorbei, statt auf sie.",
   "low Earth orbit": "Die belebte Schale in etwa 200 bis 2 000 km Höhe. Die Station, die meisten Satelliten und die meisten Trümmer sind hier.",

@@ -4639,6 +4639,143 @@ Object.assign(COPY, {
 }
 // 1.6.3: end
 
+// b200-f2-worlds: begin (forge #144, #145, #148) -- the Size and Distance sliders, the cutaways and the heliosphere (copy/en.later.js orrery, cutaway, helio). Machine-drafted like the rest of this file, not read by a native speaker.
+Object.assign(COPY, {
+  "orrery": {
+    "title": "Tamanho e distância",
+    "size": "Tamanho",
+    "sizeTrue": "real",
+    "sizeValue": "×{n}",
+    "sizeTitle": "Quanto maiores do que na realidade os mundos são desenhados, de real até ×{max}",
+    "dist": "Distância",
+    "distTrue": "real",
+    "distLog": "logarítmica",
+    "distSome": "{p}% do caminho até logarítmica",
+    "distTitle": "Quanto as distâncias até o Sol são comprimidas, de real até logarítmica. As direções continuam medidas.",
+    "presets": "Vistas prontas",
+    "presetTrue": "Escala real",
+    "presetTrueTitle": "Cada mundo no tamanho real e na distância real",
+    "presetClass": "Sala de aula",
+    "presetClassTitle": "Mundos ×{n} e distâncias logarítmicas, como um planetário mecânico",
+    "held": "Uma viagem desenha tudo em escala real. Os controles voltam quando ela termina.",
+    "note": "Onde cada mundo está no céu é sempre medido. O selo diz quanto maior ele foi desenhado.",
+    "noteSize": "{name}: desenho ×{n} maior do que o real (controle Tamanho).",
+    "noteDist": "Distância desenhada até o Sol: {drawn} UA; a real é {au} UA, na direção real (controle Distância).",
+    "noteMoon": "Distância até {parent} desenhada {n} vezes maior do que a real, na direção real, para ficar fora do planeta ampliado.",
+    "noteSun": "O Sol está desenhado ×{n} maior do que é, pelo controle Tamanho, e afastado de Mercúrio.",
+    "badgeSun": "Sol ×{n}",
+    "badgeLog": "distâncias log.",
+    "badgeSome": "distâncias a {p}% do log",
+    "badgeJoin": " · ",
+    "badgeTitle": "Os controles Tamanho e Distância da aba Planetas desenham esta vista."
+  },
+  "cutaway": {
+    "button": "Ver por dentro",
+    "buttonTitle": "Abrir {name} até as camadas, nas profundidades que as medições dão",
+    "title": "Por dentro: {name}",
+    "close": "Fechar o corte",
+    "model": "Camadas segundo {model}.",
+    "source": "Fonte",
+    "layers": "Camadas, da superfície para baixo",
+    "depthRange": "{top}–{bottom} km",
+    "toCentre": "{top} km até o centro",
+    "cls": {
+      "measured": "medido",
+      "modelled": "modelado",
+      "inferred": "deduzido"
+    },
+    "clsTitle": "{cls}: {source}",
+    "probe": "Profundidade",
+    "probeTitle": "Deslize da superfície até o centro",
+    "depth": "{km} km de profundidade",
+    "atCentre": "o centro",
+    "layer": "Camada",
+    "pressure": "Pressão",
+    "temperature": "Temperatura",
+    "density": "Densidade",
+    "valueCls": "{value} ({cls})",
+    "note": "As profundidades são das fontes; as cores foram escolhidas. Entre o topo e a base de uma camada, a sonda mostra valores intermediários.",
+    "unknown": "Ainda não há um corte desse mundo.",
+    "units": {
+      "gpa": "{n} GPa",
+      "mpa": "{n} MPa",
+      "kpa": "{n} kPa",
+      "millionGpa": "{n} milhões de GPa",
+      "k": "{n} K",
+      "millionK": "{n} milhões de K",
+      "rho": "{n} g/cm³"
+    },
+    "kinds": {
+      "crust": "Crosta",
+      "mantle": "Manto",
+      "upper-mantle": "Manto superior",
+      "lower-mantle": "Manto inferior",
+      "outer-core": "Núcleo externo líquido",
+      "inner-core": "Núcleo interno sólido",
+      "liquid-core": "Núcleo líquido",
+      "iron-core": "Núcleo de ferro",
+      "molten-silicate": "Camada de rocha derretida",
+      "partial-melt": "Camada parcialmente derretida",
+      "ice-shell": "Casca de gelo",
+      "ocean": "Oceano",
+      "hp-ice": "Gelo de alta pressão",
+      "rock-mantle": "Manto rochoso",
+      "rock-core": "Núcleo rochoso",
+      "hydrated-core": "Núcleo de rocha e gelo",
+      "molecular": "Hidrogênio e hélio",
+      "metallic": "Hidrogênio metálico",
+      "dilute-core": "Núcleo diluído",
+      "ice-mantle": "Água, amônia e metano",
+      "convective": "Zona de convecção",
+      "radiative": "Zona radiativa",
+      "solar-core": "Núcleo"
+    }
+  },
+  "helio": {
+    "chip": "Heliosfera · modelada",
+    "chipTitle": "De onde vem o desenho da bolha ao redor do Sistema Solar",
+    "legendTitle": "A heliosfera",
+    "rowTs": "Choque de terminação, onde o vento solar fica mais lento que a velocidade do som. Forma modelada que passa pelos dois cruzamentos: Voyager 1 a {a} UA, Voyager 2 a {b} UA (medidos).",
+    "rowHp": "Heliopausa, onde o vento do Sol encontra o gás interestelar. Forma modelada (Parker 1961) que passa pelos cruzamentos: Voyager 1 a {a} UA, Voyager 2 a {b} UA (medidos).",
+    "rowBow": "Onda de proa, onde o gás interestelar se acumula à frente. Ilustrativa: o dobro da distância da heliopausa (McComas et al. 2012).",
+    "rowRibbon": "Faixa do IBEX, uma faixa brilhante que o IBEX mediu no céu (Funsten et al. 2013). A distância dela não é medida: está desenhada a {au} UA.",
+    "rowMotion": "O caminho do Sol pelo gás interestelar local, {v} km/s (IBEX, McComas et al. 2015). A seta mostra {years} anos desse caminho, {au} UA.",
+    "sources": "Locais dos cruzamentos a partir das trajetórias das Voyager no JPL Horizons, nas datas de cruzamento da NASA. Formas: Parker 1961, Wilkin 1996, seguindo Izmodenov & Alexashov 2015 e Opher et al. 2015.",
+    "crossing": "{craft}: {surface}, {au} UA, {date}",
+    "motion": "O caminho do Sol, {v} km/s",
+    "craft": {
+      "deep-voyager-1": "Voyager 1",
+      "deep-voyager-2": "Voyager 2"
+    },
+    "surface": {
+      "ts": "choque de terminação",
+      "hp": "heliopausa"
+    },
+    "surfaceLabel": {
+      "ts": "Choque de terminação (modelado)",
+      "hp": "Heliopausa (modelada)",
+      "bow": "Onda de proa (ilustrativa)",
+      "ribbon": "Faixa do IBEX (medida no céu)"
+    },
+    "date": "{d} {m} {y}",
+    "months": [
+      "jan",
+      "fev",
+      "mar",
+      "abr",
+      "mai",
+      "jun",
+      "jul",
+      "ago",
+      "set",
+      "out",
+      "nov",
+      "dez"
+    ]
+  }
+});
+// b200-f2-worlds: end
+
 export const GLOSSARY = {
   "orbit": "Um caminho ao redor de algo, mantido pela gravidade. Se você for rápido o bastante para o lado, continua caindo ao largo da Terra, em vez de cair nela.",
   "low Earth orbit": "A camada movimentada de cerca de 200 a 2 000 km de altura. A estação, a maioria dos satélites e a maior parte dos detritos estão aqui.",

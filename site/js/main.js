@@ -1208,6 +1208,16 @@ export async function boot({ setStatus } = {}) {
   };
   window.addEventListener('sr:stage', wantScaleBadge);
   wantScaleBadge();
+  // b200-f2-worlds: begin (forge #144, #145, #148) -- the cutaways (ui/cutaway.js), the Size and Distance
+  // sliders (ui/orrery.js) and the heliosphere (scene/heliosphere.js). Each is fetched when first wanted:
+  // the Planets tab or a `size=`/`dist=` link, a card's Look inside or a `cut=` link, and the Sun's stage
+  // with the camera past HELIO_FROM_KM. None is in the boot graph (tests/test_orrery.mjs holds it).
+  const f2 = {};
+  const f2Want = (key, load) => () => f2[key] || (f2[key] = load().catch((e) => { f2[key] = null; console.warn(`the ${key} did not load`, e); return null; }));
+  ctx.wantOrrery = f2Want('sliders', () => import('./ui/orrery.js').then((m) => (ctx.orrery = m.createOrrery(ctx))));
+  ctx.wantCutaway = f2Want('cutaway', () => import('./ui/cutaway.js').then((m) => (ctx.cutaway = m.createCutaway(ctx, { scene }))));
+  ctx.wantHeliosphere = f2Want('heliosphere', () => import('./scene/heliosphere.js').then((m) => (ctx.heliosphere = m.createHeliosphere(ctx, { scene }))));
+  // b200-f2-worlds: end
   // OFFLINE (site/sw.js, ui/offline.js; issues #290, #453): the service worker is registered
   // OFFLINE_MS after sr:layers-ready, past the keys hint, so nothing it does is a first visit's cost.
   // NEVER IN AN EMBED (public #439): a frame under someone else's headline keeps nothing on the
@@ -3043,6 +3053,12 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     }
     if (ctx.galaxy) ctx.galaxy.update(ctx.camera, ctx.renderer);
     if (ctx.shells) ctx.shells.update(ctx.camera, t);
+    // b200-f2-worlds: begin -- 40 AU: the heliosphere is fetched a little before scene/heliosphere.js fades it in
+    if (ctx.orrery) ctx.orrery.frame();
+    if (ctx.cutaway) ctx.cutaway.frame(t);
+    if (ctx.heliosphere) ctx.heliosphere.update(ctx.camera, t);
+    else if (ctx.wantHeliosphere && !ctx.embed && stage.worldId === 'sun' && ctx.camera.position.length() * stage.unitKm > 40 * 1.495978707e8) ctx.wantHeliosphere();
+    // b200-f2-worlds: end
     if (ctx.dsoGlow) ctx.dsoGlow.update(ctx.camera, ctx.renderer, ctx.isLayerDrawable(layerRec('deep-sky')) && !ctx.deepGlowOff);
     if (ctx.deep) ctx.deep.frame({ camera: ctx.camera, renderer: ctx.renderer, nowMs: nowReal, dtMs: frameMs, frameMs, visible: ctx.isLayerDrawable(layerRec('deep-sky')) });
     // 0078 r14-neb-b: the only photograph in the scene is the one the card's slider draws (scene/nebulae.js).
@@ -3382,6 +3398,12 @@ function applyUrlState(ctx, st) {
     if (STAGES[st.stage]) ctx.setStage(st.stage);
     else linkNote(ctx, COPY.link.unknownStage, ['stage']);
   }
+  // b200-f2-worlds: begin -- `size=` and `dist=` (the sliders, on the Sun's stage) and `cut=` (a world opened)
+  if ((st.size !== undefined || st.dist !== undefined) && ctx.wantOrrery) {
+    ctx.wantOrrery().then((o) => { if (o) o.fromLink(st); });
+  }
+  if (st.cut !== undefined && ctx.wantCutaway) ctx.wantCutaway().then((c) => { if (c) c.fromLink(st.cut); });
+  // b200-f2-worlds: end
   // A trip that is not on this map is ignored like any other unknown key: `at` still applies.
   if (st.trip && openTrip(ctx, st)) return;
   // A mission's event (ui/missions.js): it selects its own record, so `at` beside it is not read.

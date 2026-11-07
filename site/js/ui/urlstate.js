@@ -54,8 +54,13 @@ export const KEYS = ['m', 'v', 'build', 'drift', 'ambient', 'autopilot', 'shuffl
 // b200-f1-find: begin -- forge #150/#152/#153: a Find question (`find=exo_ly50_hz_rocky`, ui/findcore.js parseFind), a
 // catalogue owner (`owner=IND`, data/owners.js), an operator (`operator=spacex`), a debris cloud (`debris=fy1c`) and a
 // constellation (`constellation=kuiper`, data/clouds.js). ui/find.js writes them; main.js opens Find when a link has one.
-KEYS.push('find', 'owner', 'operator', 'debris', 'constellation');
+KEYS.splice(KEYS.indexOf('cam'), 0, 'find', 'owner', 'operator', 'debris', 'constellation'); // before `cam`, which stays last
 // b200-f1-find: end
+// b200-f2-worlds: begin (forge #144, #145) -- `cut` a world opened to its layers (`#cut=mars`, ui/cutaway.js);
+// `size` and `dist` the Planets tab's sliders (`#size=2000&dist=log`, scene/orrery.js parseSize, parseDist).
+// Written before `cam`, which stays the last key (tests/test_urlstate.mjs: a pose ends the link).
+KEYS.splice(KEYS.indexOf('cam'), 0, 'cut', 'size', 'dist');
+// b200-f2-worlds: end
 export const VERSION = '1';
 /** The release this code is (0076 W4-c). A release bumps it with CHANGELOG.md; tests/test_access.mjs holds its shape. */
 export const BUILD = '1.4.0';

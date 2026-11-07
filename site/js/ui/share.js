@@ -46,6 +46,7 @@ export function shareUrl(st, base = appBase()) {
   if (!s.trip) put('stage', s.stage); // a trip picks its own stage at every stop
   if (s.exp === 'eye' || s.exp === 'deep') put('exp', s.exp); // the shutter (#460)
   if (s.drawn === 'measured') put('drawn', s.drawn);
+  if (!s.trip) { put('cut', s.cut); put('size', s.size); put('dist', s.dist); } // b200-f2-worlds (forge #144, #145)
   if (!keys.length) return root;
   // 0076 W4-c (internal #906): the format and the release ride in every link that names a view, after `m`
   // (the order urlstate.js KEYS gives). A link that says nothing is still the root.

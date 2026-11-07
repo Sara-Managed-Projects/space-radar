@@ -4653,6 +4653,143 @@ Object.assign(COPY, {
 }
 // 1.6.3: end
 
+// b200-f2-worlds: begin (forge #144, #145, #148) -- the Size and Distance sliders, the cutaways and the heliosphere (copy/en.later.js orrery, cutaway, helio). Machine-drafted like the rest of this file, not read by a native speaker.
+Object.assign(COPY, {
+  "orrery": {
+    "title": "Taille et distance",
+    "size": "Taille",
+    "sizeTrue": "réelle",
+    "sizeValue": "×{n}",
+    "sizeTitle": "De combien les mondes sont dessinés plus grands que nature, de réelle à ×{max}",
+    "dist": "Distance",
+    "distTrue": "réelle",
+    "distLog": "logarithmique",
+    "distSome": "{p} % du chemin vers logarithmique",
+    "distTitle": "À quel point les distances au Soleil sont resserrées, de réelles à logarithmiques. Les directions restent mesurées.",
+    "presets": "Vues toutes prêtes",
+    "presetTrue": "Échelle réelle",
+    "presetTrueTitle": "Chaque monde à sa taille réelle et à sa distance réelle",
+    "presetClass": "En classe",
+    "presetClassTitle": "Mondes ×{n} et distances logarithmiques, comme un planétaire",
+    "held": "Un voyage dessine tout à l’échelle réelle. Les curseurs reviennent quand il se termine.",
+    "note": "La position de chaque monde dans le ciel est toujours mesurée. Le badge indique de combien il est dessiné plus grand.",
+    "noteSize": "{name} : taille dessinée ×{n} par rapport à la réalité (curseur Taille).",
+    "noteDist": "Distance dessinée au Soleil : {drawn} UA, pour {au} UA en réalité, dans sa vraie direction (curseur Distance).",
+    "noteMoon": "Écart avec {parent} : dessiné {n} fois plus grand qu’en réalité, dans sa vraie direction, pour rester hors de la planète agrandie.",
+    "noteSun": "Le Soleil est dessiné ×{n} plus grand qu’en réalité, par le curseur Taille, et tenu à l’écart de Mercure.",
+    "badgeSun": "Soleil ×{n}",
+    "badgeLog": "distances log.",
+    "badgeSome": "distances à {p} % du log.",
+    "badgeJoin": " · ",
+    "badgeTitle": "Les curseurs Taille et Distance de l’onglet Planètes dessinent cette vue."
+  },
+  "cutaway": {
+    "button": "Voir l’intérieur",
+    "buttonTitle": "Ouvrir {name} jusqu’à ses couches, aux profondeurs que donnent les mesures",
+    "title": "Intérieur : {name}",
+    "close": "Fermer la coupe",
+    "model": "Couches d’après {model}.",
+    "source": "Source",
+    "layers": "Couches, de la surface vers le bas",
+    "depthRange": "{top}–{bottom} km",
+    "toCentre": "{top} km jusqu’au centre",
+    "cls": {
+      "measured": "mesuré",
+      "modelled": "modélisé",
+      "inferred": "déduit"
+    },
+    "clsTitle": "{cls} : {source}",
+    "probe": "Profondeur",
+    "probeTitle": "Glisse de la surface jusqu’au centre",
+    "depth": "{km} km de profondeur",
+    "atCentre": "le centre",
+    "layer": "Couche",
+    "pressure": "Pression",
+    "temperature": "Température",
+    "density": "Densité",
+    "valueCls": "{value} ({cls})",
+    "note": "Les profondeurs sont celles des sources ; les couleurs sont choisies. Entre le haut et le bas d’une couche, la sonde donne une valeur intermédiaire.",
+    "unknown": "Il n’y a pas encore de coupe de ce monde.",
+    "units": {
+      "gpa": "{n} GPa",
+      "mpa": "{n} MPa",
+      "kpa": "{n} kPa",
+      "millionGpa": "{n} millions de GPa",
+      "k": "{n} K",
+      "millionK": "{n} millions de K",
+      "rho": "{n} g/cm³"
+    },
+    "kinds": {
+      "crust": "Croûte",
+      "mantle": "Manteau",
+      "upper-mantle": "Manteau supérieur",
+      "lower-mantle": "Manteau inférieur",
+      "outer-core": "Noyau externe liquide",
+      "inner-core": "Noyau interne solide",
+      "liquid-core": "Noyau liquide",
+      "iron-core": "Noyau de fer",
+      "molten-silicate": "Couche de roche fondue",
+      "partial-melt": "Couche partiellement fondue",
+      "ice-shell": "Carapace de glace",
+      "ocean": "Océan",
+      "hp-ice": "Glace haute pression",
+      "rock-mantle": "Manteau rocheux",
+      "rock-core": "Noyau rocheux",
+      "hydrated-core": "Noyau de roche et de glace",
+      "molecular": "Hydrogène et hélium",
+      "metallic": "Hydrogène métallique",
+      "dilute-core": "Noyau dilué",
+      "ice-mantle": "Eau, ammoniac et méthane",
+      "convective": "Zone convective",
+      "radiative": "Zone radiative",
+      "solar-core": "Cœur"
+    }
+  },
+  "helio": {
+    "chip": "Héliosphère · modélisée",
+    "chipTitle": "D’où vient le dessin de la bulle autour du Système solaire",
+    "legendTitle": "L’héliosphère",
+    "rowTs": "Choc terminal, là où le vent solaire ralentit sous la vitesse du son. Forme modélisée passant par les deux traversées : Voyager 1 à {a} UA, Voyager 2 à {b} UA (mesurées).",
+    "rowHp": "Héliopause, là où le vent du Soleil rencontre le gaz interstellaire. Forme modélisée (Parker 1961) passant par les traversées : Voyager 1 à {a} UA, Voyager 2 à {b} UA (mesurées).",
+    "rowBow": "Vague d’étrave, là où le gaz interstellaire s’entasse devant. Dessin illustratif : deux fois la distance de l’héliopause (McComas et al. 2012).",
+    "rowRibbon": "Ruban d’IBEX, une bande brillante qu’IBEX a mesurée sur le ciel (Funsten et al. 2013). Sa distance n’est pas mesurée : il est dessiné à {au} UA.",
+    "rowMotion": "Le chemin du Soleil à travers le gaz interstellaire local, {v} km/s (IBEX, McComas et al. 2015). La flèche représente {years} ans de ce chemin, {au} UA.",
+    "sources": "Lieux des traversées d’après les trajectoires des Voyager dans JPL Horizons, aux dates de traversée de la NASA. Formes : Parker 1961, Wilkin 1996, d’après Izmodenov & Alexashov 2015 et Opher et al. 2015.",
+    "crossing": "{craft} : {surface}, {au} UA, {date}",
+    "motion": "Le chemin du Soleil, {v} km/s",
+    "craft": {
+      "deep-voyager-1": "Voyager 1",
+      "deep-voyager-2": "Voyager 2"
+    },
+    "surface": {
+      "ts": "choc terminal",
+      "hp": "héliopause"
+    },
+    "surfaceLabel": {
+      "ts": "Choc terminal (modélisé)",
+      "hp": "Héliopause (modélisée)",
+      "bow": "Vague d’étrave (illustrative)",
+      "ribbon": "Ruban d’IBEX (mesuré sur le ciel)"
+    },
+    "date": "{d} {m} {y}",
+    "months": [
+      "janv.",
+      "févr.",
+      "mars",
+      "avr.",
+      "mai",
+      "juin",
+      "juil.",
+      "août",
+      "sept.",
+      "oct.",
+      "nov.",
+      "déc."
+    ]
+  }
+});
+// b200-f2-worlds: end
+
 export const GLOSSARY = {
   "orbit": "Un trajet autour de quelque chose, retenu par la gravité. Va assez vite sur le côté, et tu continues de tomber à côté de la Terre au lieu de tomber dessus.",
   "low Earth orbit": "La couche très fréquentée d’environ 200 à 2 000 km d’altitude. La station, la plupart des satellites et la plupart des débris sont ici.",

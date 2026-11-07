@@ -92,6 +92,7 @@ export {
   belowWords, TAG_READOUTS, TAG_HONESTY_MAX, shortHonesty, splitReadout, tagLines, classLine,
   NEAR_EARTH_KM, nearEarthOnEllipse, honestyClause, honestyLine,
 } from './cardfacts.js';
+import { INTERIOR_IDS } from '../data/interiorids.js'; // b200-f2-worlds: the worlds Look inside can open (forge #144)
 
 const MAX_FIRST_SENTENCE = 160; // spec 0013 requirement 10, enforced by check_copy.py
 const MAX_COMPARISONS = 3; // spec 0013 requirement 2
@@ -2932,6 +2933,19 @@ function render(record, ctx, opts = {}) {
     go.addEventListener('click', () => ctx.wantMoment(story.id, null));
     body.appendChild(go);
   }
+
+  // b200-f2-worlds: begin -- LOOK INSIDE (forge #144): a world with a measured or modelled interior opens to its
+  // layers (ui/cutaway.js, fetched on the first press), on its own stage. One quiet row, as the moment's is.
+  if (record.layer === 'worlds' && INTERIOR_IDS.includes(record.id) && typeof ctx.wantCutaway === 'function') {
+    const K = COPY.cutaway;
+    const look = el('button', 'sr-btn sr-btn--quiet sr-card__inline', K.button);
+    look.type = 'button';
+    look.dataset.focus = 'look-inside';
+    look.title = t(K.buttonTitle, { name: record.name || record.id });
+    look.addEventListener('click', () => ctx.wantCutaway().then((c) => { if (c) c.open(record.id); }));
+    body.appendChild(look);
+  }
+  // b200-f2-worlds: end
 
   // 3a. the quiet row, straight under the four (Ivan, 2026-10-14: "Light it" and "Seen it" were two
   // outlined buttons stacked at the left edge, under the time bar, in a style of their own). One

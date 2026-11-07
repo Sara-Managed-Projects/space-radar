@@ -74,6 +74,7 @@ export function pillCovers(rect, w, centreX) {
 // middle of the band BETWEEN the top bar and the sheet, not merely above the sheet, or a half
 // sheet puts it under the search box.
 const TOP_SELECTORS = ['html.sr-phone #sr-top', 'html.sr-phone #sr-trip .sr-trip__top'];
+TOP_SELECTORS.push('html.sr-phone .sr-cutaway'); // b200-f2-worlds: the cutaway's panel docks under the top bar on a phone (forge #144)
 const TOP_REACH = 0.25; // a bar must start in the top quarter to count as docked there
 
 // THE DESKTOP SIDEBAR (spec 0061 req 1). A 360 px column 20 px in from the left covers a quarter of

@@ -577,6 +577,10 @@ export function createExplore(ctx, host) {
   worldsSect.appendChild(worldsList);
   worldsSect.appendChild(el('p', 'sr-sect__note', COPY.explore.worldsDrawn));
   planets.appendChild(worldsSect);
+  // b200-f2-worlds: begin -- the Size and Distance sliders (forge #145, ui/orrery.js), fetched the first time this tab is painted
+  const orreryHost = el('div', 'sr-orrery-host');
+  planets.appendChild(orreryHost);
+  // b200-f2-worlds: end
   planets.appendChild(tripHosts.get('planets').s);
   const worldRows = new Map();
   for (const id of PLANET_IDS) {
@@ -996,6 +1000,7 @@ export function createExplore(ctx, host) {
     if (mounts.has(id)) mounts.get(id)();
     if (id === 'earth') paintNow();
     if (id === 'planets') paintWorlds();
+    if (id === 'planets' && typeof ctx.wantOrrery === 'function') ctx.wantOrrery().then((o) => { if (o) o.mount(orreryHost); }); // b200-f2-worlds
     if (id === 'stars') paintStars();
     paintTrips(id);
   }
