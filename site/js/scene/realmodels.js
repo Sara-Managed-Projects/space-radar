@@ -70,8 +70,6 @@ function loadKit() {
 import { CLASS_COLOURS } from './glyphatlas.js';
 import { isGeostationary } from '../data/parsers.js';
 // b200-m2-buses: begin
-import { GEO_BUS_NORADS, GEO_BUS_LABELS } from '../data/geobuses.js';
-import { CUBESAT_NORADS } from '../data/cubesats.js';
 // b200-m2-buses: end
 
 const BASE = new URL('../../models/', import.meta.url);
@@ -177,12 +175,7 @@ const GEO_BUS = { file: 'bus-ssl1300.glb', colour: 'satellite', name: 'a geostat
 //     makers' renders they were one template recoloured, and a family needs clean-room drawings or flight photographs before it replaces the stand-in.
 const GEO_SSL1300 = { file: 'bus-ssl1300.glb', colour: 'satellite', name: 'an SSL-1300 satellite', generic: true };
 const GEO_SOURCE_NAMES = { gcat: 'GCAT', gunter: 'Gunter\u2019s Space Page', wikipedia: 'Wikipedia', wikidata: 'Wikidata' };
-const GEO_BUS_OF = new Map();
-for (const [key, list] of Object.entries(GEO_BUS_NORADS)) {
-  const [bus, source] = key.split(':');
-  const entry = source ? { ...GEO_BUS, sourcedBus: { name: GEO_BUS_LABELS[bus], by: GEO_SOURCE_NAMES[source] } } : GEO_SSL1300;
-  for (const n of list) GEO_BUS_OF.set(n, entry);
-}
+const GEO_BUS_OF = new Map(); // filled by sourcedTablesReady below
 // CUBESATS (forge #118): a catalogued CubeSat is drawn as the form factor McDowell's GCAT names for it (registry/cubesats.yaml, mirrored into data/cubesats.js by
 // scripts/gen_cubesats_js.py), at the CubeSat Design Specification's own size (tools/cubesat-builder/cube.py), with two deployed wings where GCAT's `Shape` says two panels.
 // `generic`: it is the FORM, not that satellite's own parts, and the card says so. A number GCAT does not name keeps whatever it wore before. `build` is the procedural shape drawn while
@@ -198,8 +191,19 @@ const CUBESATS = {
   '12u': { ...CUBE_FAMILY, build: 'cubesat-6u', file: 'cubesat-12u.glb', name: 'a standard 12U CubeSat form' },
   '12u-wings': { ...CUBE_FAMILY, build: 'cubesat-6u', file: 'cubesat-12u-wings.glb', name: 'a standard 12U CubeSat form with two deployed panels' },
 };
-const CUBESAT_OF = new Map();
-for (const [form, list] of Object.entries(CUBESAT_NORADS)) for (const n of list) CUBESAT_OF.set(n, CUBESATS[form]);
+const CUBESAT_OF = new Map(); // filled by sourcedTablesReady below
+// THE TWO TABLES LOAD AFTER THE BOOT GRAPH (release 2.0.0): data/geobuses.js and data/cubesats.js are about 7 kB of catalogue numbers, and the deployed boot graph has a
+// byte budget (registry/budgets.yaml deployed_boot_js_bytes, scripts/check_built_tree.mjs). A dynamic import is not part of the boot graph and does not hold the first frame;
+// both tables arrive within moments of it. Until they do, a sourced CubeSat or bus falls through to the routes below, exactly as an unsourced one does. Node callers that
+// need the sourced routes (tests, scripts/check-model-reach.py) `await sourcedTablesReady` first.
+export const sourcedTablesReady = Promise.all([import('../data/geobuses.js'), import('../data/cubesats.js')]).then(([geo, cube]) => {
+  for (const [key, list] of Object.entries(geo.GEO_BUS_NORADS)) {
+    const [bus, source] = key.split(':');
+    const entry = source ? { ...GEO_BUS, sourcedBus: { name: geo.GEO_BUS_LABELS[bus], by: GEO_SOURCE_NAMES[source] } } : GEO_SSL1300;
+    for (const n of list) GEO_BUS_OF.set(n, entry);
+  }
+  for (const [form, list] of Object.entries(cube.CUBESAT_NORADS)) for (const n of list) CUBESAT_OF.set(n, CUBESATS[form]);
+}, () => {});
 /** The sourced CubeSat entry for a record, for the name routes below (Flock, Lemur, Starling) to prefer over their 3U build, or {} to leave them as they were. */
 const cubeResolve = (record) => {
   const meta = record && record.meta ? record.meta : {};

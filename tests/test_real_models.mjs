@@ -24,7 +24,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
-const { REAL_MODELS, realModelFor } = await import(pathToFileURL(join(ROOT, 'site/js/scene/realmodels.js')).href);
+const { REAL_MODELS, realModelFor, sourcedTablesReady } = await import(pathToFileURL(join(ROOT, 'site/js/scene/realmodels.js')).href);
+await sourcedTablesReady; // the CubeSat and bus tables load after the boot graph (scene/realmodels.js)
 
 // --- the registry's rows ---------------------------------------------------------------------------
 const yaml = readFileSync(join(ROOT, 'registry/models.yaml'), 'utf8');
