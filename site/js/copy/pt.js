@@ -5391,3 +5391,24 @@ Object.assign(COPY, {
   }
 });
 // b200-f6-learn: end
+// b200-f9-reach: begin -- the real recordings' panel (copy/en.sound.js, forge #163), machine-drafted
+Object.assign(COPY, {
+  "realSound": {
+    "region": "Gravações reais daqui",
+    "play": "Ouvir {name}",
+    "stop": "Parar",
+    "hide": "Ocultar as gravações daqui",
+    "sonified": "Dados reais transformados em som",
+    "microphone": "Som real, de um microfone",
+    "playing": "A tocar: {name}. {how}.",
+    "failed": "Essa gravação não carregou.",
+    "names": {
+      "real-voyager-plasma": "a Voyager 1 no espaço interestelar",
+      "real-juno-ganymede": "a Juno a passar por Ganimedes",
+      "real-cassini-saturn": "o rádio de Saturno",
+      "real-insight-impact": "um meteoroide a atingir Marte",
+      "real-perseverance-dust-devil": "um redemoinho de poeira em Marte"
+    }
+  }
+});
+// b200-f9-reach: end

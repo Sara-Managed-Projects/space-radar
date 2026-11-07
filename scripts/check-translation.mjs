@@ -66,6 +66,9 @@ async function english() {
   // b200-f6-learn: begin -- the words of the daily challenges (copy/en.play.js, forge #160), drafted in every language
   await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.play.js')).href);
   // b200-f6-learn: end
+  // b200-f9-reach: begin -- the words of the real recordings' panel (copy/en.sound.js, forge #163), drafted in every language
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.sound.js')).href);
+  // b200-f9-reach: end
   return { COPY: base.COPY, GLOSSARY: base.GLOSSARY };
 }
 

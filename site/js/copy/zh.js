@@ -5300,3 +5300,24 @@ Object.assign(COPY, {
   }
 });
 // b200-f6-learn: end
+// b200-f9-reach: begin -- the real recordings' panel (copy/en.sound.js, forge #163), machine-drafted
+Object.assign(COPY, {
+  "realSound": {
+    "region": "此处的真实录音",
+    "play": "收听{name}",
+    "stop": "停止",
+    "hide": "隐藏此处的录音",
+    "sonified": "真实数据，转换为声音",
+    "microphone": "真实声音，来自麦克风",
+    "playing": "正在播放：{name}。{how}。",
+    "failed": "该录音未能加载。",
+    "names": {
+      "real-voyager-plasma": "星际空间中的旅行者1号",
+      "real-juno-ganymede": "朱诺号飞掠木卫三",
+      "real-cassini-saturn": "土星的射电",
+      "real-insight-impact": "流星体撞击火星",
+      "real-perseverance-dust-devil": "火星上的尘卷风"
+    }
+  }
+});
+// b200-f9-reach: end

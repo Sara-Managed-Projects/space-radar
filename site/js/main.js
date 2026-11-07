@@ -3362,6 +3362,9 @@ function wireSound(ctx) {
   // Turned off: the engine ramps the master down and suspends; the bed is kept for next time.
   audio.onChange((on) => { if (on) audio.beds.enter(here()); });
   window.addEventListener('sr:stage', () => audio.beds.enter(here()));
+  // b200-f9-reach: begin -- the score of the climb and the real recordings (audio/score.js, forge #163), on first sound
+  audio.onChange((on) => { if (on && !audio.score) import('./audio/score.js').then((m) => m.installScore(audio, ctx, { isLadder: isLadderStage })).catch((e) => console.warn('the score did not load', e)); });
+  // b200-f9-reach: end
   // The stage sting lands in the black, where the change of room is (spec 0034's veil).
   document.addEventListener('sr:veil', (e) => {
     if (e && e.detail && e.detail.phase === 'covered') audio.stings.play('stage');

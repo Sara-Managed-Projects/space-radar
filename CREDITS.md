@@ -4342,6 +4342,25 @@ resolves), re-encoded from MP3 to AAC with `ffmpeg` and changed in nothing else.
 recording of either, and the Apollo Flight Journal's audio files did not load when this was looked for (2026-11-04). No other recording is used:
 the radio exchange of Vostok 1 is shown as captions because no Soviet-era recording with a clear licence was found.
 
+<!-- b200-f9-reach: begin -->
+### Real recordings, heard where they were made (forge #163, 2026-11-07)
+
+Played only when a visitor with sound on presses the button for one, at the stage where it was recorded. Four are radio, plasma or
+seismic data turned into sound, and the app says so; the dust devil is sound itself, from a microphone on Mars. Each is a cut of
+the file NASA's Photojournal publishes, levelled and faded and re-encoded to mono AAC at 32 kbps by `scripts/build-real-sounds.py`
+(macOS `afconvert`), and changed in nothing else. Public domain as works of NASA; the pages credit the universities and agencies
+that built each instrument, and so does the credit line. InSight's recording of Martian wind is not used: NASA publishes it only
+inside a 269 MB video (read 2026-11-07).
+
+| File | Used for | Licence | Credit line | Source |
+|---|---|---|---|---|
+| `real-voyager-plasma.m4a` | Voyager 1's plasma-wave instrument in interstellar space, offered at the Sun and on the nearest stars' rung | Public domain (NASA) | Voyager 1's plasma waves in interstellar space, October to November 2012: NASA/JPL-Caltech/University of Iowa, public domain | <https://photojournal.jpl.nasa.gov/catalog/PIA17045> |
+| `real-juno-ganymede.m4a` | Juno's radio receiver passing Ganymede, offered at Ganymede and Jupiter | Public domain (NASA) | Juno's radio receiver passing Ganymede, 7 June 2021: NASA/JPL-Caltech/SwRI/University of Iowa, public domain | <https://photojournal.jpl.nasa.gov/catalog/PIA25030> |
+| `real-cassini-saturn.m4a` | Cassini's radio and plasma wave instrument at Saturn, offered at Saturn | Public domain (NASA) | Saturn's radio emissions, heard by Cassini's radio and plasma wave instrument: NASA/JPL/University of Iowa, public domain | <https://photojournal.jpl.nasa.gov/catalog/PIA07966> |
+| `real-insight-impact.m4a` | InSight's seismometer hearing a meteoroid strike, offered at Mars | Public domain (NASA) | A meteoroid strike on Mars, 24 December 2021, heard by InSight's seismometer: NASA/JPL-Caltech/CNES/Imperial College London, public domain | <https://photojournal.jpl.nasa.gov/catalog/PIA25582> |
+| `real-perseverance-dust-devil.m4a` | Perseverance's SuperCam microphone under a dust devil, offered at Mars | Public domain (NASA) | A dust devil passing over Perseverance, 27 September 2021, recorded by SuperCam's microphone: NASA/JPL-Caltech/LANL/CNES/CNRS/INTA-CSIC/Space Science Institute/ISAE-Supaero, public domain | <https://photojournal.jpl.nasa.gov/catalog/PIA25657> |
+<!-- b200-f9-reach: end -->
+
 ## 9b. Audio — the trips' narration (a synthetic voice)
 
 Spec 0069 (2026-10-03). Each stop of a guided trip can be read aloud. **The voice is synthetic**:

@@ -405,7 +405,10 @@ ok(not dirty, f"no bare #NNN, no Facebook, nothing from the plan on any page ({d
 ok(not re.search(r"\{\{|\bTODO\b|\blorem\b", "".join(f.read_text(encoding="utf-8") for f in pages)), "no placeholder left")
 # b200-f1-find: "country" is the /country/<iso>/ pages (scripts/seo_countries.py, forge #152)
 # b200-f6-learn: "print" is /print/, the paper models (scripts/seo_print.py, forge #161)
-ok((BUILT / "pages-dirs.txt").read_text(encoding="utf-8").split() == sorted({"about", "accuracy", "country", "events", "first-pull-request", "iss", "nasa-eyes-alternative", "planets-tonight", "print", "read", "satellites", "sources", "starlink", "teachers"}),
+# b200-f9-reach: "assets", "creators" and the five comparisons (scripts/seo_reach.py, forge #165, #166, #168)
+import seo_reach  # noqa: E402
+ok((BUILT / "pages-dirs.txt").read_text(encoding="utf-8").split() == sorted({"about", "accuracy", "country", "events", "first-pull-request", "iss", "nasa-eyes-alternative", "planets-tonight", "print", "read", "satellites", "sources", "starlink", "teachers"}
+                                                                             | {"assets", "creators", *seo_reach.COMPARISONS}),
    "pages-dirs.txt lists the directories deploy.sh must ship")
 
 # --- the share pictures ----------------------------------------------------------------------------------

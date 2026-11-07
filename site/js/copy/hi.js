@@ -5301,3 +5301,24 @@ Object.assign(COPY, {
   }
 });
 // b200-f6-learn: end
+// b200-f9-reach: begin -- the real recordings' panel (copy/en.sound.js, forge #163), machine-drafted
+Object.assign(COPY, {
+  "realSound": {
+    "region": "यहाँ की असली रिकॉर्डिंग",
+    "play": "{name} सुनें",
+    "stop": "रोकें",
+    "hide": "यहाँ की रिकॉर्डिंग छिपाएँ",
+    "sonified": "असली आँकड़े, ध्वनि में बदले गए",
+    "microphone": "असली ध्वनि, एक माइक्रोफ़ोन से",
+    "playing": "चल रहा है: {name}। {how}।",
+    "failed": "वह रिकॉर्डिंग लोड नहीं हुई।",
+    "names": {
+      "real-voyager-plasma": "अंतरतारकीय अंतरिक्ष में वॉयेजर 1",
+      "real-juno-ganymede": "गैनिमीड के पास से गुज़रता जूनो",
+      "real-cassini-saturn": "शनि का रेडियो",
+      "real-insight-impact": "मंगल से टकराता एक उल्कापिंड",
+      "real-perseverance-dust-devil": "मंगल पर एक धूल का बवंडर"
+    }
+  }
+});
+// b200-f9-reach: end
