@@ -979,5 +979,10 @@ export function createMomentPlayer(ctx, opts = {}) {
     get active() { return active; },
     /** Tools only: the director's pose and the vehicles' poses at this second. */
     debug: () => ({ pose: lastPose, poses: Object.fromEntries(poses) }),
+    // b200-f8-xr: begin -- the headset (ui/headset.js, forge #158) draws this stage through its own anchor and holds the
+    // viewer still between cuts: the stage's camera, where the director stood (stage metres: the floating origin), and
+    // whether it plays (A plays and pauses there, B closes).
+    get view() { return stage ? { camera: stage.camera, origin: lastPose ? lastPose.pos : null, playing } : null; },
+    // b200-f8-xr: end
   };
 }

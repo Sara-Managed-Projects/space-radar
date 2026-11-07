@@ -66,6 +66,9 @@ async function english() {
   // b200-f6-learn: begin -- the words of the daily challenges (copy/en.play.js, forge #160), drafted in every language
   await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.play.js')).href);
   // b200-f6-learn: end
+  // b200-f8-xr: begin -- the words of the gamepad and the headset (copy/en.xr.js), drafted in every language
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.xr.js')).href);
+  // b200-f8-xr: end
   return { COPY: base.COPY, GLOSSARY: base.GLOSSARY };
 }
 

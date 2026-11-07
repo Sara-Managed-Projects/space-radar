@@ -208,6 +208,12 @@ const DEFERRED = {
   'js/moments/effects.js': 'flames, steam, parachutes and plasma: with the player',
   'js/copy/en.moments.js': 'a moment\'s words: with the player',
   // 0079 C1: end
+  // b200-f8-xr: begin
+  'js/ui/gamepad.js': 'free flight with a gamepad (forge #164): main.js fetches it on the first `gamepadconnected`',
+  'js/ui/padmap.js': 'the gamepad\'s mapping: with ui/gamepad.js or ui/headset.js',
+  'js/ui/headset.js': 'the headset mode (forge #158): main.js fetches it only when navigator.xr supports immersive-vr',
+  'js/copy/en.xr.js': 'the gamepad\'s and the headset\'s words: with their modules',
+  // b200-f8-xr: end
 };
 // The light embed (js/embedlite.js) has no star systems at all: neither file can reach it.
 {

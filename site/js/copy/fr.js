@@ -5405,3 +5405,64 @@ Object.assign(COPY, {
   }
 });
 // b200-f6-learn: end
+// b200-f8-xr: begin -- the gamepad and the headset (copy/en.xr.js, forge #164, #158), machine-drafted
+Object.assign(COPY, {
+  "pad": {
+    "title": "Manette",
+    "label": "Commandes de la manette",
+    "close": "Fermer les commandes de la manette",
+    "capStickL": "Stick gauche",
+    "capStickR": "Stick droit",
+    "capTriggers": "RT · LT",
+    "capA": "A · Croix",
+    "capX": "X · Carré",
+    "capB": "B · Rond",
+    "capY": "Y · Triangle",
+    "capDpad": "Croix ↑ ↓",
+    "capView": "Affichage · Share",
+    "turn": "Tourner autour",
+    "fly": "Avancer et reculer, glisser de côté",
+    "speed": "Plus vite, plus lentement",
+    "choose": "Choisir ce qui est dans l’anneau",
+    "go": "Y aller",
+    "back": "Retour",
+    "ship": "Physique de vaisseau activée ou non",
+    "ladder": "Monter et descendre l’échelle des distances",
+    "controls": "Ces commandes (Menu aussi)",
+    "shipToggle": "Physique de vaisseau",
+    "shipHow": "Vous continuez à dériver quand vous lâchez. Enfoncez un stick pour vous arrêter.",
+    "notStandard": "Cette manette ne dit pas où sont ses boutons : son stick gauche tourne la vue, ses boutons ne servent pas.",
+    "connected": "Manette connectée. Appuyez sur Y pour ses commandes.",
+    "disconnected": "Manette déconnectée.",
+    "shipOn": "Physique de vaisseau activée : vous continuez à dériver quand vous lâchez.",
+    "shipOff": "Physique de vaisseau désactivée.",
+    "nothing": "Rien à choisir dans l’anneau.",
+    "chooseFirst": "Choisissez d’abord quelque chose : A prend ce qui est dans l’anneau.",
+    "rung": "{label}, {distance}",
+    "home": "La Terre",
+    "trip": "Un voyage a la caméra. Ses propres boutons sont à l’écran."
+  },
+  "headset": {
+    "enter": "Passer au casque",
+    "enterTitle": "Se tenir sous le ciel ou parcourir l’échelle des distances dans un casque de réalité virtuelle",
+    "noteTitle": "Avant de le mettre",
+    "comfort": "Les déplacements sont des sauts, pas des glissements, et les rotations se font par pas de 30 degrés : l’horizon reste droit. Asseyez-vous ou dégagez l’espace autour de vous.",
+    "seizure": "Un petit nombre de personnes font des crises à cause de lumières ou de motifs clignotants. Si vous avez le vertige, la nausée ou voyez quelque chose d’étrange, arrêtez et retirez le casque.",
+    "how": "Regardez quelque chose et appuyez sur A ou sur la gâchette droite pour le choisir. X y va, B revient, Y montre les commandes, comme sur une manette. Dans un Moment, A lance et met en pause, B ramène à la carte. Maintenez B une seconde pour sortir.",
+    "untried": "Nouveau, et pas encore essayé sur un vrai casque : dites-nous ce que vous voyez.",
+    "go": "Entrer",
+    "cancel": "Pas maintenant",
+    "busy": "Fermez d’abord le monde imaginé, Dôme et 360 ou l’enregistrement : chacun dessine sa propre image.",
+    "failed": "Le casque n’a pas démarré.",
+    "left": "De retour à l’écran.",
+    "panelHelp": "A choisir   X aller   B retour   Y commandes",
+    "panelMove": "Stick gauche : autour, et le long de l’échelle   Stick droit : tourner, avancer et reculer",
+    "panelLeave": "Maintenir B pour sortir",
+    "chosen": "Choisi : {name}",
+    "nothing": "Rien droit devant",
+    "momentHelp": "A lecture ou pause   B retour à la carte   Y commandes",
+    "frame": "Image {ms} ms, {fps} par seconde (objectif : 72)",
+    "lighter": "Les images duraient trop : le dessin est allégé."
+  }
+});
+// b200-f8-xr: end

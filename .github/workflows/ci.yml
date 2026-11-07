@@ -1488,3 +1488,9 @@ jobs:
       - name: "Paper models: the licence rule, the gores, the QR code against ISO 18004, the scale note and the sheets (forge #161)"
         run: python3 tests/test_paper_models.py
       # b200-f6-learn: end
+      # b200-f8-xr: begin
+      - name: "Gamepad: the dead zones and curve, the standard and XR layouts, the keys' directions and rates, the ship, the hint once, and only a listener at boot (forge #164)"
+        run: node tests/test_gamepad.mjs
+      - name: "Headset: the level anchor, the scale, the frame shim and the session against a mocked navigator.xr; imported only when immersive-vr is supported (forge #158)"
+        run: node tests/test_headset.mjs
+      # b200-f8-xr: end

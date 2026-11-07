@@ -5165,3 +5165,64 @@ Object.assign(COPY, {
   }
 });
 // b200-f6-learn: end
+// b200-f8-xr: begin -- the gamepad and the headset (copy/en.xr.js, forge #164, #158), machine-drafted
+Object.assign(COPY, {
+  "pad": {
+    "title": "Mando",
+    "label": "Controles del mando",
+    "close": "Cerrar los controles del mando",
+    "capStickL": "Stick izquierdo",
+    "capStickR": "Stick derecho",
+    "capTriggers": "RT · LT",
+    "capA": "A · Equis",
+    "capX": "X · Cuadrado",
+    "capB": "B · Círculo",
+    "capY": "Y · Triángulo",
+    "capDpad": "Cruceta ↑ ↓",
+    "capView": "Vista · Share",
+    "turn": "Girar alrededor",
+    "fly": "Acercarse y alejarse, deslizarse de lado",
+    "speed": "Más rápido, más lento",
+    "choose": "Elegir lo que está en el anillo",
+    "go": "Ir allí",
+    "back": "Volver",
+    "ship": "Física de nave sí o no",
+    "ladder": "Subir y bajar por la escalera de distancias",
+    "controls": "Estos controles (también Menú)",
+    "shipToggle": "Física de nave",
+    "shipHow": "Sigue a la deriva cuando suelta. Pulse un stick para detenerse.",
+    "notStandard": "Este mando no dice dónde están sus botones: su stick izquierdo gira la vista, sus botones no se usan.",
+    "connected": "Mando conectado. Pulse Y para ver sus controles.",
+    "disconnected": "Mando desconectado.",
+    "shipOn": "Física de nave activada: sigue a la deriva cuando suelta.",
+    "shipOff": "Física de nave desactivada.",
+    "nothing": "No hay nada en el anillo para elegir.",
+    "chooseFirst": "Elija algo primero: A toma lo que está en el anillo.",
+    "rung": "{label}, {distance}",
+    "home": "La Tierra",
+    "trip": "Un viaje tiene la cámara. Sus propios botones están en pantalla."
+  },
+  "headset": {
+    "enter": "Entrar en el visor",
+    "enterTitle": "Estar bajo el cielo o recorrer la escalera de distancias con un visor de realidad virtual",
+    "noteTitle": "Antes de ponérselo",
+    "comfort": "Los movimientos son saltos, no deslizamientos, y los giros son pasos de 30 grados, así el horizonte queda recto. Siéntese o despeje el espacio a su alrededor.",
+    "seizure": "Un pequeño número de personas sufre convulsiones por luces o patrones intermitentes. Si se marea, siente náuseas o ve algo extraño, pare y quítese el visor.",
+    "how": "Mire algo y pulse A o el gatillo derecho para elegirlo. X va allí, B vuelve, Y muestra los controles, como en un mando. Dentro de un Momento, A reproduce y pausa y B vuelve al mapa. Mantenga B un segundo para salir.",
+    "untried": "Nuevo, y aún no probado en un visor real: cuéntenos lo que ve.",
+    "go": "Entrar",
+    "cancel": "Ahora no",
+    "busy": "Cierre primero el mundo imaginado, Cúpula y 360 o la grabación: cada uno dibuja su propia imagen.",
+    "failed": "El visor no se inició.",
+    "left": "De vuelta en la pantalla.",
+    "panelHelp": "A elegir   X ir   B volver   Y controles",
+    "panelMove": "Stick izquierdo: alrededor, y por la escalera   Stick derecho: girar, acercarse y alejarse",
+    "panelLeave": "Mantenga B para salir",
+    "chosen": "Elegido: {name}",
+    "nothing": "Nada justo delante",
+    "momentHelp": "A reproducir o pausar   B volver al mapa   Y controles",
+    "frame": "Fotograma {ms} ms, {fps} por segundo (meta: 72)",
+    "lighter": "Los fotogramas tardaban demasiado: se dibuja menos."
+  }
+});
+// b200-f8-xr: end
