@@ -13,6 +13,7 @@ control: the tree itself must be accepted, or the first run proves nothing.
 """
 from __future__ import annotations
 
+import re
 import shutil
 import subprocess
 import sys
@@ -47,12 +48,17 @@ def tree(work: Path) -> None:
     tr.link(ROOT / "site" / "js" / "copy" / "en.js", work / "site" / "js" / "copy" / "en.js")
     shutil.copytree(ROOT / "harvest", work / "harvest", ignore=shutil.ignore_patterns("__pycache__"), copy_function=tr.link)
     tr.textures_into(work)
+    # A file registry/asset_sources.yaml pins by its hash is linked, not touched: an empty stand-in fails the pin.
+    pinned = set(re.findall(r"file: (site/[^,}\s]+)", (ROOT / "registry" / "asset_sources.yaml").read_text(encoding="utf-8")))
     for src in ("site/models", "site/data"):
         d = work / src
         d.mkdir(parents=True, exist_ok=True)
         for f in (ROOT / src).glob("*"):
             if f.is_file():
-                (d / f.name).touch()
+                if f"{src}/{f.name}" in pinned:
+                    tr.link(f, d / f.name)
+                else:
+                    (d / f.name).touch()
 
 
 def main() -> int:
