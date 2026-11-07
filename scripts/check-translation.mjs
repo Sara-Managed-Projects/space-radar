@@ -75,6 +75,9 @@ async function english() {
   // b200-f7-ground: begin -- the words of standing on another world and its sky (copy/en.ground.js)
   await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.ground.js')).href);
   // b200-f7-ground: end
+  // b200-c3-learn: begin -- the Fengyun-1C Moment's words (copy/en.moments.fengyun.js, forge #153), drafted in every language
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.moments.fengyun.js')).href);
+  // b200-c3-learn: end
   return { COPY: base.COPY, GLOSSARY: base.GLOSSARY };
 }
 

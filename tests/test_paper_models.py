@@ -117,6 +117,7 @@ if sys.platform == "darwin" and shutil.which("swift"):
                          ' let d = CIDetector(ofType: CIDetectorTypeQRCode, context: nil, options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])!\n'
                          ' print(d.features(in: i).compactMap { ($0 as? CIQRCodeFeature)?.messageString }.first ?? "NONE") }\n')
         texts_ = [("https://www.spaceradar.ai/#at=enceladus", k) for k in range(8)] + [("x" * 100, None)]
+        texts_ += [(f"{pm.HOST}/#at={pm.JWST_APP}", None)]  # b200-c3-learn: the code the fold-up JWST prints
         paths = []
         for i, (t, mask) in enumerate(texts_):
             g = qr.qr_matrix(t, mask)
@@ -170,6 +171,55 @@ if pm.have_pillow():
     well_formed(data, "the Charon globe")
     check(data.count(b"/DCTDecode") == 1 and len(data) < 2_000_000, f"the Charon globe: one JPEG, under 2 MB ({len(data)} B)")
     check(b"Charon map: NASA" in data or b"/Title (Charon" in data, "the Charon globe names its map")
+
+# b200-c3-learn: begin -- the fold-up JWST (forge #161)
+# The mirror is NASA's 18 segments, 1.32 m flat to flat, in the real two-ring layout with the middle open: neighbours'
+# centres are one flat-to-flat apart, the whole is 6.10 m point to point across and 6.60 m tall (NASA: "6.5 m"),
+# the wings are the two outer columns of three.
+cs = pm.jwst_segment_centres()
+check(len(cs) == 18 and (0.0, 0.0) not in cs, f"18 segments round an open middle, got {len(cs)}")
+near = min(math.dist(a, b) for i, a in enumerate(cs) for b in cs[i + 1:])
+check(abs(near - 1.32) < 1e-9, f"neighbouring segments 1.32 m apart, got {near}")
+side = 1.32 / math.sqrt(3)
+across = max(x for x, _ in cs) - min(x for x, _ in cs) + 2 * side
+tall = max(y for _, y in cs) - min(y for _, y in cs) + 1.32
+check(abs(across - 6.10) < 0.01 and abs(tall - 6.60) < 1e-9,
+      f"the mirror is 6.10 m across and 6.60 m tall, got {across:.3f} x {tall:.3f}")
+check(sum(1 for x, _ in cs if abs(abs(x) - 3 * side) < 1e-9) == 6, "the two wings are columns of three")
+hx = pm.hexagon(0, 0, 1.32)
+check(abs(max(y for _, y in hx) - min(y for _, y in hx) - 1.32) < 1e-9, "a hexagon is 1.32 flat to flat, flat sides up")
+# The sunshield: NASA's 21.197 x 14.162 m at 1 : 250, five layers, each smaller than the one below, none overlapping.
+lay = pm.shield_layout(0, 0)
+o = lay[0]["outline"]
+check(abs(max(y for _, y in o) - min(y for _, y in o) - 21.197 * 4) < 1e-9 and abs(max(x for x, _ in o) - min(x for x, _ in o) - 14.162 * 4) < 1e-9,
+      "layer 1 is 21.197 x 14.162 m at 1 : 250")
+check([r["layer"] for r in lay] == [1, 2, 3, 4, 5] and all(a["scale"] > b["scale"] for a, b in zip(lay, lay[1:])), "layer 1 is the largest, 5 the smallest")
+check(max(x for r in lay for x, _ in r["outline"]) < 199 and max(y for r in lay for _, y in r["outline"]) < 134,
+      "the five layers fit left of the parts column (199 mm in) and above the steps (134 mm down)")
+
+
+def overlap(p, q):   # two convex polygons overlap unless one of their edges separates them
+    for poly in (p, q):
+        for i in range(len(poly)):
+            (ax, ay), (bx, by) = poly[i], poly[(i + 1) % len(poly)]
+            nx, ny = by - ay, ax - bx
+            if max(nx * x + ny * y for x, y in p) < min(nx * x + ny * y for x, y in q) or max(nx * x + ny * y for x, y in q) < min(nx * x + ny * y for x, y in p):
+                return False
+    return True
+
+
+check(not any(overlap(a["outline"], b["outline"]) for i, a in enumerate(lay) for b in lay[i + 1:]), "no two layers overlap on the sheet")
+net = pm.box_net(0, 0, 3, 2, 1)
+area = sum(abs(sum(f[i][0] * f[(i + 1) % 4][1] - f[(i + 1) % 4][0] * f[i][1] for i in range(4))) / 2 for f in net["faces"])
+check(abs(area - 2 * (3 * 2 + 3 * 1 + 2 * 1)) < 1e-9 and len(net["tabs"]) == 1, f"a 3 x 2 x 1 box's net is its six faces, 22, got {area}")
+st = pm.jwst_struts()
+check(len(st) == 3 and all(7.2 < length < 8.5 for _, length in st), f"three struts from the mirror's edge to 7.2 m ahead: {st}")
+jw = pm.jwst_sheet()
+well_formed(jw, "the fold-up JWST")
+check(b"/DCTDecode" not in jw and "jwst-fold-up" in pm.EXTRAS and pm.JWST_APP == "deep-jwst", "the JWST sheet is vector only, listed, and links #at=deep-jwst")
+missions = (ROOT / "registry/missions.yaml").read_text(encoding="utf-8")
+check("record: deep-jwst" in missions, "deep-jwst is the app's record of Webb (registry/missions.yaml)")
+# b200-c3-learn: end
 
 # --- the deploy ships them -------------------------------------------------------------------------------------
 deploy = (ROOT / "scripts/deploy.sh").read_text(encoding="utf-8")

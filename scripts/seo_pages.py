@@ -992,7 +992,7 @@ def learn_sections() -> str:
             "can be seen. A tag says a simulator shows an idea a statement asks for, not that it covers the statement.</p>\n"
             f'<ul class="levels">{"".join(bands)}</ul>\n'
             "<h2>Paper models to print</h2>\n"
-            "<p>A paper globe of every world the map has a real surface map for, a Moon-phase wheel and a distance-ladder strip, one page each, "
+            "<p>A paper globe of every world the map has a real surface map for, a Moon-phase wheel, a distance-ladder strip and a fold-up James Webb Space Telescope, one page each, "
             'with the map\'s credit and a code that opens that world in the 3D map: <a href="../print/index.html">the paper models</a>.</p>\n'
             "<h2>A one-minute challenge to start a lesson</h2>\n"
             "<p>The same three puzzles for everyone each day (the day is UTC), with no account; the score stays in the browser, and a pupil can paste "

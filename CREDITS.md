@@ -100,6 +100,8 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Flags beside the owners of satellites (Find, By country) | Wikimedia Commons, 103 files | public domain, per file | [3f-flags](#3f-flags-flags-of-the-countries-that-own-satellites--wikimedia-commons-public-domain-2026-11-07) | <!-- b200-f1-find -->
 | The Wikipedia lead and photograph on a card with no words of its own | Wikipedia; Wikimedia Commons; Wikidata | CC BY-SA 4.0; each picture's own free licence; CC0 | [3f-wiki](#3f-wiki-the-cards-wikipedia-block--wikipedia-cc-by-sa-40-commons-wikidata-cc0-2026-11-07) | <!-- b200-f4-cards -->
 | Twelve days of a star's light in the Lab (Find a Planet in Kepler Data) | NASA Kepler mission, through STScI MAST | public domain; MAST's acknowledgement carried | [3f-kepler](#3f-kepler-a-real-kepler-light-curve-in-the-lab--nasa-kepler-mission-through-mast-public-domain-2026-11-07) | <!-- b200-f6-learn -->
+| Supernovae, the microwave background's spectrum and a star's wobble in the Lab | JLA (Betoule et al. 2014) and Keck HIRES (Butler et al. 2017) through CDS VizieR; COBE FIRAS through NASA LAMBDA | a catalogue, cited; NASA data, LAMBDA's acknowledgement carried | [3f-labdata](#3f-labdata-real-supernovae-the-cmb-spectrum-and-51-pegasi-in-the-lab--vizier-and-nasa-lambda-2026-11-07) | <!-- b200-c3-learn -->
+| The fold-up JWST (/print/) | NASA (webb.nasa.gov) and STScI JWST User Documentation; NASA's 3D model of Webb as a size check | facts, cited; public domain | [3f-labdata](#3f-labdata-real-supernovae-the-cmb-spectrum-and-51-pegasi-in-the-lab--vizier-and-nasa-lambda-2026-11-07) | <!-- b200-c3-learn -->
 | The ground at eight landing sites, and the skies of other worlds | NASA/GSFC/Arizona State University (LROC); NASA/JPL/University of Arizona (HiRISE); LOLA and SELENE (SLDEM2015); MOLA; LRO WAC and Viking MDIM 2.1 through NASA Solar System Treks; NASA/JPL pictures PIA07882 and PIA19400 for the Martian sky's colours | public domain | [3c-3](#3c-3-the-ground-at-the-landing-sites-and-the-skies-of-other-worlds-release-200-forge-146-147) | <!-- b200-f7-ground -->
 | Launches | The Space Devs, Launch Library 2 | free to 15 requests an hour; no published licence | [4.2](#42-the-space-devs--launch-library-2) |
 | Deep-space positions, asteroids, comets, close approaches | NASA/JPL Horizons, Small-Body Database, CNEOS | see the section | [4.18](#418-the-sources-the-harvester-reads) |
@@ -4403,6 +4405,13 @@ Why this model and not another: the spec ordered the choice by licence. XTTS-v2 
 Licence) and F5-TTS (CC BY-NC) forbid commercial use and were refused; Piper (MIT code, per-voice
 licences) was the fallback and was not needed.
 
+<!-- b200-c3-learn: begin -->
+**The Fengyun-1C Moment's voice (forge #153).** The seven clips under `site/audio/moments/fengyun-1c/` are the same synthetic voice
+(Kokoro-82M, `af_heart`, Apache-2.0), made by `scripts/narrate-moments.py`, which imports `scripts/narrate.py` and uses its settings,
+from the story's own English captions (`site/js/copy/en.moments.fengyun.js`, our words; `registry/moment-voices.yaml` says which). No
+person recorded them, and a recogniser has heard each one (its word error is in the clips' `index.json`).
+<!-- b200-c3-learn: end -->
+
 ## 10. Fonts
 
 Spec 0045 (2026-09-28). Three families, self-hosted in `site/fonts/`, all under the SIL Open Font
@@ -4614,6 +4623,39 @@ Institute (STScI). Funding to US Institutions for the Kepler mission was provide
 STScI is operated by the Association of Universities for Research in Astronomy, Inc., under NASA contract NAS5-26555."
 The planet's catalogue values beside it (period, radius, the star's radius) are the NASA Exoplanet Archive's (section 4.7).
 <!-- b200-f6-learn: end -->
+<!-- b200-c3-learn: begin -->
+## 3f-labdata. Real supernovae, the CMB spectrum and 51 Pegasi in the Lab — VizieR and NASA LAMBDA (2026-11-07)
+
+`site/lab/hubble-diagram-from-supernovae/index.html` carries, inline, the 740 type Ia supernovae of the JLA sample
+(M. Betoule et al. 2014, A&A 568, A22, table F.3), read from VizieR's Harvard-Smithsonian mirror
+(https://vizier.cfa.harvard.edu/) on 2026-11-07. What was changed: each supernova's distance modulus worked out with the
+paper's own Eq. 4 and 5 and its Table 10 values (alpha 0.141, beta 3.101, M_B −19.05, ΔM −0.070, for H0 70 km/s/Mpc),
+rounded to 0.01 mag, the redshift to 0.001, sorted by redshift. The raw table is not in the repository. The CDS terms
+(https://cds.unistra.fr/vizier-org/licences_vizier.html): "free of usage in a scientific context", with the authors and
+publication cited, as the page does. Space Radar is free and non-commercial.
+
+`site/lab/find-a-planet-by-its-wobble/index.html` carries the 43 Keck HIRES velocities of 51 Pegasi (HD 217014) from
+R. P. Butler et al. 2017, AJ 153, 208, table 1 (J/AJ/153/208, read from the same mirror on 2026-11-07): BJD − 2450000 to
+0.0001 day, velocity and error as written. The later correction by Tal-Or et al. 2019 (a few m/s) is not applied, and the
+page says so. The terms are as above. The planet's catalogue values beside it are the NASA Exoplanet Archive's (section 4.7).
+
+`site/lab/the-afterglow-is-a-perfect-blackbody/index.html` carries all 43 rows of the COBE FIRAS monopole spectrum
+(D. J. Fixsen et al. 1996, ApJ 473, 576, Table 4; LAMBDA file `firas_monopole_spec_v1.txt`, v1 May 2005, from
+https://lambda.gsfc.nasa.gov/) as written there. These are NASA data, not subject to copyright in the United States. The
+page quotes the acknowledgement LAMBDA asks for: "We acknowledge the use of the Legacy Archive for Microwave Background Data
+Analysis (LAMBDA), part of the High Energy Astrophysics Science Archive Center (HEASARC). HEASARC/LAMBDA is a service of the
+Astrophysics Science Division at the NASA Goddard Space Flight Center."
+
+`site/lab/hr-diagram-of-our-neighbours/index.html` carries the 2 362 HYG v4.4 rows within 25 pc that have a colour and an
+absolute magnitude (rounded to 0.03 and 0.25): Star data from the HYG Stellar Database v4.4, © David Nash
+(https://codeberg.org/astronexus/hyg), CC BY-SA 4.0, shared alike as in section 3c.
+
+The fold-up JWST on /print/ (`scripts/paper_models.py`) is drawn at 1 : 250 from NASA's published sizes (webb.nasa.gov:
+the 6.5 m primary of 18 segments 1.32 m flat to flat, the 0.74 m secondary, the 21.197 x 14.162 m five-layer sunshield) and
+STScI's JWST User Documentation (https://jwst-docs.stsci.edu/), read 2026-11-07; the parts NASA gives no size for (the
+bus, the solar array, the dish, the instrument box, the tower) are estimated from NASA's own 3D model of Webb (`jwst.glb`,
+public domain, section 6 row `jwst`), which is used only to measure: nothing of it is printed.
+<!-- b200-c3-learn: end -->
 <!-- b200-f7-ground: begin -->
 ## 3c-3. The ground at the landing sites and the skies of other worlds (release 2.0.0, forge #146, #147)
 

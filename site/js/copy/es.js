@@ -5377,3 +5377,46 @@ Object.assign(COPY, {
   }
 });
 // b200-f7-ground: end
+// b200-c3-learn: begin -- the Fengyun-1C Moment (copy/en.moments.fengyun.js and its shelf card, forge #153), machine-drafted
+COPY.momentShelf.cards['fengyun-1c'] = {
+  "title": "2007: Fengyun-1C",
+  "when": "11 de enero de 2007 hasta hoy",
+  "blurb": "Un misil chino destruye un viejo satélite meteorológico a 865 km de altura, y sus 3 531 fragmentos catalogados se extienden desde un punto hasta formar una capa alrededor de la Tierra, contado por una voz."
+};
+COPY.momentStories['fengyun-1c'] = {
+  "title": "2007: Fengyun-1C",
+  "blurb": "Un misil chino destruye un viejo satélite meteorológico a 865 km de altura, y sus fragmentos se extienden desde un punto hasta formar una capa alrededor de la Tierra que sigue ahí.",
+  "chBefore": "Fengyun-1C",
+  "chHit": "La prueba",
+  "chRing": "Un anillo",
+  "chMonths": "Dos meses",
+  "chYear": "El primer año",
+  "chShell": "Una capa",
+  "chToday": "Hoy",
+  "v1a": "La tarde del 11 de enero de 2007. Fengyun-1C, un satélite meteorológico chino retirado de 960 kg, da vueltas a la Tierra sobre los polos, a entre 845 y 865 km de altura.",
+  "v1b": "Un misil lanzado cerca de Xichang sube a su encuentro. Su trayectoria nunca se publicó, así que no está dibujada.",
+  "v2a": "22:26 UTC: el interceptor golpea el satélite de frente, acercándose a unos 8 km/s, y lo rompe en miles de pedazos.",
+  "v2b": "Cada pedazo sigue un poco más rápido o más lento que los demás, así que cada uno queda en su propia órbita.",
+  "v3a": "Una órbita más alta tarda más en dar la vuelta. Vuelta tras vuelta, los pedazos se estiran a lo largo de la vieja órbita y en pocos días se cierran en un anillo.",
+  "v4a": "El abultamiento de la Tierra hace girar el plano de cada órbita, un poco más rápido o más lento según la altura y la inclinación, y el anillo empieza a abrirse en abanico.",
+  "v4b": "Dos meses después de la prueba se habían catalogado más de 1 200 pedazos y se seguían casi 400 más, informó el Orbital Debris Quarterly News de la NASA.",
+  "v5a": "A finales de 2007 el catálogo tenía 2 317 pedazos, y solo 22 habían caído. La NASA estimó al menos 150 000 pedazos de un centímetro o más, demasiado pequeños para seguirlos.",
+  "v6a": "Año tras año los planos se reparten por todo el contorno. En enero de 2013 la nube es una capa alrededor de la Tierra: 3 378 pedazos catalogados, 3 076 aún en órbita.",
+  "v6b": "Los satélites tienen que esquivarlos. La Estación Espacial Internacional se apartó de uno en enero de 2012.",
+  "v7a": "Hoy el catálogo tiene 3 531 pedazos de Fengyun-1C, y 2 310 siguen arriba, casi veinte años después. El 10 de noviembre de 2021 la estación volvió a apartarse de uno.",
+  "v7b": "Las cifras están medidas. La imagen es un modelo: los supervivientes de hoy en sus órbitas de hoy, llevados de vuelta al momento de la prueba.",
+  "pathSat": "la órbita de Fengyun-1C, de 845 por 865 km a 98,6 grados (NASA ODQN, abril de 2007), como una cónica; dónde fue golpeado el satélite en ella es ilustrativo",
+  "cloudNote": "Los pedazos son los 2 310 que el catálogo aún conserva, en las órbitas que da hoy, repartidos desde un punto por un modelo (movimiento de dos cuerpos y la deriva que causa el abultamiento de la Tierra); los pedazos que cayeron no se dibujan, y las cifras de los subtítulos están medidas. En el impacto, cada pieza parte de su punto más bajo de hoy, así que la nube empieza como una línea bajo el satélite y no como un punto: el rozamiento del aire ha bajado muchas órbitas desde 2007.",
+  "drawnNote": "Ilustrativo: Fengyun-1C es una marca con anillo y cada pieza un punto del mismo tamaño, nada a escala; el impacto en sí no se dibuja.",
+  "footMore": "Más",
+  "footLess": "Menos",
+  "srcOdqn07": "NASA Orbital Debris Quarterly News 11(2), abril de 2007: el satélite, su órbita, las primeras cifras",
+  "srcOdqn08": "NASA Orbital Debris Quarterly News 12(1), enero de 2008: la cifra a finales de 2007",
+  "srcOdqn13": "NASA Orbital Debris Quarterly News 17(1), enero de 2013: catalogados, caídos y aún en órbita",
+  "srcOdqn14": "NASA Orbital Debris Quarterly News 18(1), enero de 2014: la maniobra de la estación de enero de 2012",
+  "srcOdqn22": "NASA Orbital Debris Quarterly News 26(1), marzo de 2022: la maniobra de la estación del 10 de noviembre de 2021",
+  "srcCelestrak": "CelesTrak, Chinese ASAT test: la hora más probable del suceso, 22:26:10 UTC",
+  "srcSatcat": "Catálogo de satélites de CelesTrak (SATCAT), leído el 2026-11-07: la cifra de hoy y la órbita de cada pedazo",
+  "srcWiki": "Wikipedia, 2007 Chinese anti-satellite missile test: la velocidad de acercamiento"
+};
+// b200-c3-learn: end

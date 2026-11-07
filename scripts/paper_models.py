@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Paper models for a classroom: a paper globe of every world with a real map, a Moon-phase wheel and a
-distance-ladder strip, each one A4 page of PDF (forge #161).
+"""Paper models for a classroom: a paper globe of every world with a real map, a Moon-phase wheel, a
+distance-ladder strip and a fold-up James Webb Space Telescope (THE FOLD-UP JWST, below), each one A4 page of PDF (forge #161).
 
     python3 scripts/paper_models.py --out DIR             write DIR/print/<sheet>.pdf for every sheet
     python3 scripts/paper_models.py --out DIR --only pluto,moon-phase-wheel
@@ -672,6 +672,219 @@ def ladder_sheet() -> bytes:
 # --- every sheet ------------------------------------------------------------------------------------------------
 
 EXTRAS = {"moon-phase-wheel": ("The Moon-phase wheel", moon_wheel_sheet), "distance-ladder": ("The distance-ladder strip", ladder_sheet)}
+
+
+# b200-c3-learn: begin -- forge #161: the fold-up James Webb Space Telescope
+# THE FOLD-UP JWST. One page of parts at 1 : 250 (a metre is 4 mm), so the sunshield's five layers fit side by side and
+# the whole model is 85 mm long. Every size NASA publishes is used as NASA gives it, read on 2026-11-07:
+#   webb.nasa.gov/content/about/faqs/facts.html             "Diameter of Primary Mirror 6.5 m", "Number of Primary Mirror
+#                                                           Segments 18", "Size of Sun Shield 21.197 m x 14.162 m"
+#   webb.nasa.gov/content/observatory/ote/mirrors/index.html  each segment "1.32 meters (4.3 feet) in diameter, flat to
+#                                                           flat"; "Webb's circular secondary mirror is 0.74 meters in diameter"
+#   webb.nasa.gov/content/observatory/sunshield.html         five Kapton layers; "Layer 5 (just under the primary mirror) is
+#                                                           smallest and Layer 1 is largest"; "as close as an inch or two to
+#                                                           each other at the center and around 10" apart ... at the edges"
+#   jwst-docs.stsci.edu/jwst-observatory-hardware/jwst-telescope  18 hexagonal segments, the 0.74 m secondary and its
+#                                                           "support struts" (three, one above and two below, as NASA's pictures show)
+# The layout of the 18 segments is the real one: a hexagonal grid two rings deep with the middle cell left open, the
+# hexagons' flat sides up, so the two side columns of three are the wings that fold for launch. That gives 6.10 m point
+# to point across and 6.60 m flat to flat top to bottom, which NASA rounds to "6.5 m"; NASA's own 3D model of Webb
+# (registry/models.yaml `jwst`, public domain) is 6.08 m across its gold, a cross-check and nothing more: no texture,
+# colour or geometry of it is printed. What NASA's pages do not give is ESTIMATED from that model and the sheet says so:
+# the sunshield's blunt ends (2.0 m across; its sides meet at the middle), the secondary mirror 7.2 m in front of the
+# primary, the bus (3.4 x 2.5 x 1.7 m), the solar array (5.8 x 2.2 m), the high-gain dish (0.6 m), the instrument box
+# behind the mirror (2.2 x 2.2 x 1.6 m) and the 0.6 m the telescope stands above the top layer. SIMPLIFIED: the layers
+# are flat (the real ones curve and fan apart towards their edges), the steps in size from layer 1 to layer 5 are ours
+# (NASA says only which is largest), the boxes are plain, and the struts' feet are on the mirror's edge. Colours are the
+# real ones as photographs show them: gold segments, silver Kapton, violet on layer 1's Sun-facing side.
+JWST_SCALE = 250                    # 1 : 250
+JWST_MM = 1000.0 / JWST_SCALE       # mm on paper per metre of Webb
+JWST_SEGMENT_FLAT_M = 1.32          # NASA, mirrors page
+JWST_SECONDARY_D_M = 0.74           # NASA, mirrors page; STScI JDox
+JWST_SHIELD_M = (21.197, 14.162)    # NASA, facts page: length (Sun line) x width
+JWST_SHIELD_END_M = 2.0             # estimated from NASA's 3D model: the width of each blunt end
+JWST_LAYER_STEP = 0.025             # ours: each layer 2.5 % smaller than the one below it (NASA: layer 1 largest, 5 smallest)
+JWST_SECONDARY_AHEAD_M = 7.2        # estimated from NASA's 3D model
+JWST_BUS_M = (3.4, 2.5, 1.7)        # estimated from NASA's 3D model: across, along, tall
+JWST_ISIM_M = (2.2, 2.2, 1.6)       # estimated: the box behind the primary, across, tall, deep
+JWST_ARRAY_M = (5.8, 2.2)           # estimated: the solar array, long x wide
+JWST_DISH_M = 0.6                   # estimated: the high-gain antenna
+JWST_TOWER_M = 0.6                  # estimated: the telescope's foot above the top layer
+JWST_APP = "deep-jwst"              # the app's record of Webb (registry/missions.yaml `record`), so #at=deep-jwst
+JWST_GOLD, JWST_SILVER, JWST_VIOLET = (0.886, 0.729, 0.306), (0.765, 0.773, 0.8), (0.702, 0.569, 0.69)
+JWST_BLACK, JWST_FOIL, JWST_CELLS, JWST_EDGE = (0.165, 0.161, 0.18), (0.627, 0.557, 0.627), (0.118, 0.165, 0.275), (0.604, 0.522, 0.314)
+
+
+def jwst_segment_centres(flat_m: float = JWST_SEGMENT_FLAT_M) -> list[tuple[float, float]]:
+    """The 18 primary segments' centres in metres, x across and y up from the mirror's middle: every cell of a hexagonal
+    grid (flat sides up) within two steps of the middle, but the middle itself, which is the hole the light leaves by."""
+    side = flat_m / math.sqrt(3)
+    out = []
+    for q in range(-2, 3):
+        for r in range(-2, 3):
+            s = -q - r
+            if max(abs(q), abs(r), abs(s)) > 2 or (q == 0 and r == 0):
+                continue
+            out.append((1.5 * side * q, flat_m * (r + q / 2)))
+    return out
+
+
+def hexagon(cx: float, cy: float, flat: float) -> list[tuple[float, float]]:
+    """A hexagon with its flat sides up and down, `flat` from flat to flat, centred on (cx, cy)."""
+    side = flat / math.sqrt(3)
+    return [(cx + side * math.cos(math.radians(60 * k)), cy + side * math.sin(math.radians(60 * k))) for k in range(6)]
+
+
+def shield_outline(cx: float, cy: float, length: float, width: float, end: float) -> list[tuple[float, float]]:
+    """The sunshield seen from above, long axis up the page: blunt ends `end` across, the sides meeting at the middle."""
+    hl, hw, he = length / 2, width / 2, end / 2
+    return [(cx - he, cy - hl), (cx + he, cy - hl), (cx + hw, cy), (cx + he, cy + hl), (cx - he, cy + hl), (cx - hw, cy)]
+
+
+def shield_layout(x: float, y: float, gap: float = 1.5) -> list[dict]:
+    """The five layers on the page at JWST_SCALE: {layer, scale, cx, cy, outline}. They zigzag, odd layers half a length
+    lower, so each one's slanting side runs beside its neighbour's: (width + end) / 2 apart, plus a cutting gap."""
+    length, width, end = (v * JWST_MM for v in (*JWST_SHIELD_M, JWST_SHIELD_END_M))
+    step = (width + end) / 2 + gap
+    rows = []
+    for k in range(5):
+        f = 1 - JWST_LAYER_STEP * k
+        cx, cy = x + width / 2 + k * step, y + length / 2 + (k % 2) * (length / 2 + gap)
+        rows.append({"layer": k + 1, "scale": f, "cx": cx, "cy": cy, "outline": shield_outline(cx, cy, length * f, width * f, end * f)})
+    return rows
+
+
+def box_net(x: float, y: float, w: float, d: float, h: float, tab: float = 2.5) -> dict:
+    """A box's net, `w` across, `d` deep and `h` tall (mm): four sides in a row (front w, side d, back w, side d), a lid and
+    a floor on the front face, and a glue tab on the last side. {faces, tabs, folds, size}."""
+    xs = [x, x + w, x + w + d, x + 2 * w + d, x + 2 * w + 2 * d]
+    faces = [[(xs[i], y + d), (xs[i + 1], y + d), (xs[i + 1], y + d + h), (xs[i], y + d + h)] for i in range(4)]
+    faces += [[(x, y), (x + w, y), (x + w, y + d), (x, y + d)], [(x, y + d + h), (x + w, y + d + h), (x + w, y + 2 * d + h), (x, y + 2 * d + h)]]
+    t = min(tab, h / 3)
+    tabs = [[(xs[4], y + d), (xs[4] + tab, y + d + t), (xs[4] + tab, y + d + h - t), (xs[4], y + d + h)]]
+    folds = [[(xs[i], y + d), (xs[i], y + d + h)] for i in range(1, 5)] + [[(x, y + d), (x + w, y + d)], [(x, y + d + h), (x + w, y + d + h)]]
+    return {"faces": faces, "tabs": tabs, "folds": folds, "size": (2 * w + 2 * d + tab, 2 * d + h)}
+
+
+def jwst_struts(flat_m: float = JWST_SEGMENT_FLAT_M, ahead_m: float = JWST_SECONDARY_AHEAD_M) -> list[tuple[str, float]]:
+    """(foot, length in metres) of the three struts from the primary's edge to the secondary straight ahead of its middle:
+    one from the top of the middle column, two from the outer lower corners of the columns either side of it."""
+    side = flat_m / math.sqrt(3)
+    top = (0.0, 2.5 * flat_m)
+    low = (1.5 * side + side / 2, -2.0 * flat_m)       # the q = 1 column's lowest cell, its outer lower corner
+    return [("top", math.hypot(math.hypot(*top), ahead_m)), ("lower left", math.hypot(math.hypot(*low), ahead_m)),
+            ("lower right", math.hypot(math.hypot(*low), ahead_m))]
+
+
+def _parts_label(s: Sheet, x: float, y: float, text: str) -> None:
+    s.text(x, y, text, 5.6, bold=True, colour=INK)
+
+
+def _net(s: Sheet, net: dict, fill) -> None:
+    for f in net["faces"]:
+        s.poly(f, fill=fill, stroke=INK, lw=0.2)
+    for t in net["tabs"]:
+        s.poly(t, fill=(0.9, 0.9, 0.9), stroke=INK, lw=0.2)
+    for a, b in net["folds"]:
+        s.poly([a, b], close=False, stroke=(1, 1, 1), lw=0.25, dash=(0.6, 0.6))
+
+
+def jwst_sheet() -> bytes:
+    x0, y0, w, h = SAFE
+    s = Sheet("Fold-up James Webb Space Telescope (Space Radar)")
+    s.text(x0, y0 + 8, "The fold-up James Webb Space Telescope", 18, bold=True, colour=INK)
+    s.para(x0, y0 + 14, f"Every part at 1 : {JWST_SCALE}: one metre of Webb is {JWST_MM:.0f} mm here, so the sunshield, which NASA calls the size "
+           "of a tennis court, is 85 mm long and the gold mirror 26 mm tall. Cut on the solid lines, fold on the dashed ones, glue the grey tabs.", 7.5, w - 30)
+    url = f"{HOST}/#at={JWST_APP}"
+    qr_mm = 22.0
+    s.qr(x0 + w - qr_mm, y0 - 1, qr_mm, url)
+    s.text(x0 + w - qr_mm - 2, y0 + 5, "Find Webb at L2 in the live 3D map:", 6.5, colour=DIM, align="right")
+    s.text(x0 + w - qr_mm - 2, y0 + 8.5, url.replace("https://", ""), 6.5, bold=True, colour=INK, align="right")
+    ys = y0 + 27
+    # The five layers of the sunshield.
+    for row in shield_layout(x0, ys):
+        first = row["layer"] == 1
+        s.poly(row["outline"], fill=JWST_VIOLET if first else JWST_SILVER, stroke=INK, lw=0.25)
+        s.circle(row["cx"], row["cy"], 3.0, stroke=GREY, lw=0.2, dash=(0.6, 0.6))
+        s.text(row["cx"], row["cy"] - 6, f"Layer {row['layer']}", 7, bold=True, colour=INK, align="center")
+        sub = "the Sun's side: printed side DOWN" if first else ("the smallest, under the mirror" if row["layer"] == 5 else f"{row['scale'] * 100:.1f} % of layer 1")
+        s.text(row["cx"], row["cy"] + 7, sub, 5, colour=INK, align="center")
+        s.text(row["cx"], row["cy"] + 1, "glue", 4.5, colour=GREY, align="center")
+        s.text(row["cx"], row["outline"][0][1] + 3.5, "telescope end", 4.2, colour=DIM, align="center")
+    # The right-hand column: the telescope and the spacecraft.
+    xr = x0 + 199
+    seg = JWST_SEGMENT_FLAT_M * JWST_MM
+    mx, my = xr + 13, ys + 17
+    _parts_label(s, xr, ys + 1, "Primary mirror: 18 segments")
+    for cx, cy in jwst_segment_centres():   # the beryllium edge under each segment: its outline is the line to cut round
+        s.poly(hexagon(mx + cx * JWST_MM, my - cy * JWST_MM, seg), fill=(0.48, 0.49, 0.52), stroke=None)
+    for cx, cy in jwst_segment_centres():
+        s.poly(hexagon(mx + cx * JWST_MM, my - cy * JWST_MM, seg * 0.9), fill=JWST_GOLD, stroke=None)
+    s.poly(hexagon(mx, my, seg * 0.9), fill=JWST_BLACK, stroke=None)
+    for k, line in enumerate(["Cut round the", "outer edge. The", "black middle is", "the hole light", "leaves by."]):
+        s.text(mx + 15, my - 9 + 2.4 * k, line, 4.8, colour=DIM)
+    sx, sy = mx + 30, my + 9
+    s.circle(sx, sy, JWST_SECONDARY_D_M * JWST_MM / 2 + 0.6, fill=JWST_GOLD, stroke=INK, lw=0.2)
+    s.text(sx + 3, sy + 1, "secondary 0.74 m", 4.8, colour=DIM)
+    y = ys + 37
+    _parts_label(s, xr, y, "Three struts (black): feet on the mirror's edge")
+    for k, (foot, length) in enumerate(jwst_struts()):
+        L, yy = length * JWST_MM, y + 2.5 + 4.2 * k
+        s.rect(xr, yy, L, 2.4, fill=JWST_BLACK, stroke=INK, lw=0.2)
+        s.poly([(xr + L, yy), (xr + L + 2.5, yy + 0.4), (xr + L + 2.5, yy + 2.0), (xr + L, yy + 2.4)], fill=(0.9, 0.9, 0.9), stroke=INK, lw=0.2)
+        s.text(xr + L + 4, yy + 2, f"{foot}, {length:.1f} m", 4.8, colour=DIM)
+    y = ys + 55
+    isim = box_net(xr, y + 2, *(v * JWST_MM for v in (JWST_ISIM_M[0], JWST_ISIM_M[2], JWST_ISIM_M[1])))
+    _parts_label(s, xr, y, "Instrument box (behind the mirror)")
+    _net(s, isim, JWST_BLACK)
+    tw, th = 3.0, JWST_TOWER_M * JWST_MM
+    tx = xr + isim["size"][0] + 4
+    tower = box_net(tx, y + 2 - tw, tw, tw, th, tab=2.0)
+    tower["faces"], tower["folds"] = tower["faces"][:4], tower["folds"][:4]   # a tube: no lid, no floor
+    _net(s, tower, JWST_BLACK)
+    s.text(tx, y + 2 + th + 3, "Tower: fold it into", 4.6, colour=DIM)
+    s.text(tx, y + 2 + th + 5.1, "a 3 mm square tube", 4.6, colour=DIM)
+    y = ys + 83
+    bus = box_net(xr, y + 2, *(v * JWST_MM for v in (JWST_BUS_M[0], JWST_BUS_M[1], JWST_BUS_M[2])))
+    _parts_label(s, xr, y, "Spacecraft bus")
+    _net(s, bus, JWST_FOIL)
+    y = ys + 115
+    _parts_label(s, xr, y, "Solar array and high-gain dish")
+    aw, ah = JWST_ARRAY_M[0] * JWST_MM, JWST_ARRAY_M[1] * JWST_MM
+    s.rect(xr, y + 2, aw, ah, fill=JWST_CELLS, stroke=INK, lw=0.2)
+    for k in range(1, 6):
+        s.poly([(xr + aw * k / 6, y + 2), (xr + aw * k / 6, y + 2 + ah)], close=False, stroke=JWST_EDGE, lw=0.15)
+    s.poly([(xr, y + 2), (xr - 2.5, y + 2.6), (xr - 2.5, y + 1.4 + ah), (xr, y + 2 + ah)], fill=(0.9, 0.9, 0.9), stroke=INK, lw=0.2)
+    s.circle(xr + aw + 5, y + 2 + ah / 2, JWST_DISH_M * JWST_MM / 2, fill=(0.95, 0.95, 0.95), stroke=INK, lw=0.2)
+    s.text(xr + aw + 8.5, y + 2 + ah / 2 + 1, "dish", 4.8, colour=DIM)
+    # How to make it.
+    yb = ys + 134
+    col = (w - 8) / 3
+    steps = [
+        ("1. The sunshield.", "Cut out the five layers. Lay layer 1 printed side down (on Webb its Sun side is violet), then 2, 3, 4 and 5 on top, "
+         "every 'telescope end' the same way. Glue them at the middle circle only, so the edges stay a little apart: on Webb the layers are "
+         "1 to 2 inches apart at the middle and about 10 inches at the edges."),
+        ("2. The spacecraft.", "Fold the bus into a box and glue it under the middle of layer 1. Glue the solar array to the bus's face "
+         "that looks away from the telescope end, sticking out under the shield, and the dish dot under the bus."),
+        ("3. The telescope.", "Fold the tower and stand it on the middle of layer 5. Fold the instrument box, glue it on the tower, and glue the "
+         "mirror upright on its face looking towards the telescope end. Glue the struts' feet on the mirror's edge (one at the top, two low at "
+         "either side) and their tabs together in front of the hole, with the secondary on them."),
+    ]
+    for k, (head, body) in enumerate(steps):
+        x = x0 + k * (col + 4)
+        s.text(x, yb, head, 6.5, bold=True, colour=INK)
+        s.para(x, yb + 3.2, body, 5.6, col, colour=DIM)
+    s.para(x0, y0 + h - 7.5, "To scale, from NASA (webb.nasa.gov facts, mirrors and sunshield pages; STScI JWST User Documentation, read 2026-11-07): "
+           "the 18 segments, 1.32 m flat to flat, in their real layout (6.5 m across), the 0.74 m secondary, and the sunshield's 21.197 x 14.162 m. "
+           "Estimated from NASA's own 3D model of Webb, as NASA's pages do not give them: the shield's blunt ends, the bus, the solar array, the dish, "
+           "the instrument box, the tower and the secondary's 7.2 m from the primary. Simplified: flat layers (the real ones curve and fan apart at "
+           "their edges), our own steps in size from layer 1 to 5, plain boxes, no booms, cables or radiators.", 5.2, w, colour=DIM)
+    footer(s, "Fold-up James Webb Space Telescope")
+    return s.bytes()
+
+
+EXTRAS["jwst-fold-up"] = ("The fold-up James Webb Space Telescope", jwst_sheet)
+# b200-c3-learn: end
 
 
 def have_pillow() -> bool:

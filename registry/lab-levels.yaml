@@ -183,3 +183,14 @@ labs:
   spacetime-diagram-simultaneity: {band: [16-18, 18+], ngss: [], ks3: [], gcse: [], ib: [A.5], app: "#at=iss"}
   orbits-near-a-black-hole: {band: [16-18, 18+], ngss: [HS-ESS1-4], ks3: [], gcse: [], ib: [D.1], app: "#at=exotic-sgr-a-star"}
   find-a-planet-in-kepler-data: {band: [11-14, 14-16, 16-18], ngss: [HS-ESS1-4], ks3: [space-stars], gcse: [], ib: [], app: "#at=exo-tres-2-b"}
+  # b200-c3-learn: begin -- the other nine new simulators of 2.0.0 (forge #159)
+  frame-dragging-near-a-spinning-black-hole: {band: [16-18, 18+], ngss: [], ks3: [], gcse: [], ib: [D.1], app: "#at=exotic-cygnus-x-1"}
+  starlight-bends-past-the-sun: {band: [14-16, 16-18, 18+], ngss: [HS-PS2-4], ks3: [light-waves], gcse: [], ib: [D.1], app: "#at=sun"}
+  the-shadow-of-m87s-black-hole: {band: [14-16, 16-18, 18+], ngss: [HS-PS2-4], ks3: [], gcse: [], ib: [D.1], app: "#at=exotic-m87-star"}
+  hubble-diagram-from-supernovae: {band: [16-18, 18+], ngss: [HS-ESS1-2], ks3: [], gcse: ["4.8.2"], ib: [], app: "#trip=out-to-the-edge"}
+  the-afterglow-is-a-perfect-blackbody: {band: [16-18, 18+], ngss: [HS-ESS1-2], ks3: [], gcse: ["4.6.3"], ib: [B.1], app: "#trip=roof-to-the-edge"}
+  find-a-planet-by-its-wobble: {band: [14-16, 16-18], ngss: [HS-PS4-1], ks3: [space-stars], gcse: ["4.8.2"], ib: [C.5], app: "#at=exo-51-peg-b"}
+  hr-diagram-of-our-neighbours: {band: [11-14, 14-16, 16-18], ngss: [5-ESS1-1], ks3: [space-stars], gcse: ["4.8.1.2"], ib: [E.5], app: "#stage=stellar"}
+  the-pulsar-pair-that-spirals-in: {band: [16-18, 18+], ngss: [HS-ESS1-4], ks3: [], gcse: [], ib: [D.1], app: "#at=exotic-hulse-taylor"}
+  orbit-and-escape-on-other-worlds: {band: [11-14, 14-16, 16-18], ngss: [MS-PS2-4, HS-PS2-4], ks3: [space-gravity], gcse: ["4.8.1.3"], ib: [D.1], app: "#at=phobos"}
+  # b200-c3-learn: end

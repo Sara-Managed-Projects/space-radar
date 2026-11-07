@@ -5617,3 +5617,46 @@ Object.assign(COPY, {
   }
 });
 // b200-f7-ground: end
+// b200-c3-learn: begin -- the Fengyun-1C Moment (copy/en.moments.fengyun.js and its shelf card, forge #153), machine-drafted
+COPY.momentShelf.cards['fengyun-1c'] = {
+  "title": "2007 : Fengyun-1C",
+  "when": "du 11 janvier 2007 à aujourd’hui",
+  "blurb": "Un missile chinois détruit un vieux satellite météo à 865 km d’altitude, et ses 3 531 débris catalogués s’étalent d’un point en une coquille autour de la Terre, racontés par une voix."
+};
+COPY.momentStories['fengyun-1c'] = {
+  "title": "2007 : Fengyun-1C",
+  "blurb": "Un missile chinois détruit un vieux satellite météo à 865 km d’altitude, et ses débris s’étalent d’un point en une coquille autour de la Terre, toujours là aujourd’hui.",
+  "chBefore": "Fengyun-1C",
+  "chHit": "Le test",
+  "chRing": "Un anneau",
+  "chMonths": "Deux mois",
+  "chYear": "La première année",
+  "chShell": "Une coquille",
+  "chToday": "Aujourd’hui",
+  "v1a": "Le soir du 11 janvier 2007. Fengyun-1C, un satellite météo chinois retiré du service, de 960 kg, tourne autour de la Terre en passant par les pôles, entre 845 et 865 km d’altitude.",
+  "v1b": "Un missile lancé près de Xichang monte à sa rencontre. Sa trajectoire n’a jamais été publiée, elle n’est donc pas dessinée.",
+  "v2a": "22 h 26 UTC : l’intercepteur frappe le satellite de face, à environ 8 km/s de vitesse relative, et le brise en milliers de morceaux.",
+  "v2b": "Chaque morceau repart un peu plus vite ou plus lentement que les autres, donc chacun sur son orbite.",
+  "v3a": "Une orbite plus haute met plus longtemps à faire le tour. Tour après tour, les morceaux s’étirent le long de l’ancienne orbite et, en quelques jours, se referment en anneau.",
+  "v4a": "Le renflement de la Terre fait tourner le plan de chaque orbite, un peu plus vite ou plus lentement selon l’altitude et l’inclinaison, et l’anneau commence à s’ouvrir en éventail.",
+  "v4b": "Deux mois après le test, plus de 1 200 morceaux étaient catalogués et près de 400 autres étaient suivis, selon l’Orbital Debris Quarterly News de la NASA.",
+  "v5a": "Fin 2007, le catalogue comptait 2 317 morceaux, et seuls 22 étaient retombés. La NASA estimait au moins 150 000 morceaux d’un centimètre ou plus, trop petits pour être suivis.",
+  "v6a": "Année après année, les plans se répartissent tout autour. En janvier 2013, le nuage est une coquille autour de la Terre : 3 378 morceaux catalogués, 3 076 encore en orbite.",
+  "v6b": "Les satellites doivent les éviter. La Station spatiale internationale s’est écartée de l’un d’eux en janvier 2012.",
+  "v7a": "Aujourd’hui le catalogue compte 3 531 morceaux de Fengyun-1C, et 2 310 sont encore là-haut, près de vingt ans plus tard. Le 10 novembre 2021, la station s’est de nouveau écartée de l’un d’eux.",
+  "v7b": "Les chiffres sont mesurés. L’image est un modèle : les survivants d’aujourd’hui sur leurs orbites d’aujourd’hui, ramenés à l’instant du test.",
+  "pathSat": "l’orbite de Fengyun-1C, 845 sur 865 km à 98,6 degrés (NASA ODQN, avril 2007), en conique ; l’endroit de l’orbite où le satellite a été frappé est illustratif",
+  "cloudNote": "Les morceaux sont les 2 310 que le catalogue garde encore, sur les orbites qu’il donne aujourd’hui, étalés depuis un point par un modèle (mouvement à deux corps et dérive due au renflement de la Terre) ; les morceaux retombés ne sont pas dessinés, et les chiffres des légendes sont mesurés. Au moment de l'impact, chaque débris part de son point le plus bas d'aujourd'hui : le nuage commence donc par une ligne sous le satellite, pas par un point, car le frottement de l'air a abaissé bien des orbites depuis 2007.",
+  "drawnNote": "Illustratif : Fengyun-1C est une marque cerclée et chaque débris un point de même taille, rien à l’échelle ; l’impact lui-même n’est pas dessiné.",
+  "footMore": "Plus",
+  "footLess": "Moins",
+  "srcOdqn07": "NASA Orbital Debris Quarterly News 11(2), avril 2007 : le satellite, son orbite, les premiers chiffres",
+  "srcOdqn08": "NASA Orbital Debris Quarterly News 12(1), janvier 2008 : le compte à la fin de 2007",
+  "srcOdqn13": "NASA Orbital Debris Quarterly News 17(1), janvier 2013 : catalogués, retombés et encore en orbite",
+  "srcOdqn14": "NASA Orbital Debris Quarterly News 18(1), janvier 2014 : la manœuvre de la station en janvier 2012",
+  "srcOdqn22": "NASA Orbital Debris Quarterly News 26(1), mars 2022 : la manœuvre de la station du 10 novembre 2021",
+  "srcCelestrak": "CelesTrak, Chinese ASAT test : l’heure la plus probable de l’événement, 22:26:10 UTC",
+  "srcSatcat": "Catalogue de satellites de CelesTrak (SATCAT), lu le 2026-11-07 : le compte d’aujourd’hui et l’orbite de chaque morceau",
+  "srcWiki": "Wikipédia, 2007 Chinese anti-satellite missile test : la vitesse de rapprochement"
+};
+// b200-c3-learn: end
