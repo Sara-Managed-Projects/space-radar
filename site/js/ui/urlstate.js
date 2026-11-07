@@ -66,6 +66,9 @@ KEYS.splice(KEYS.indexOf('cam'), 0, 'cut', 'size', 'dist');
 // degrees) or `360` (equirectangular), scene/projection.js parseProj. Before `cam`, which stays last.
 KEYS.splice(KEYS.indexOf('cam'), 0, 'path', 'proj');
 // b200-f5-make: end
+// b200-f6-learn: begin -- forge #160: `play` a daily challenge (`#play=find-earth`, `which-world`, `guess-distance`; `1` the list), ui/play.js
+KEYS.splice(KEYS.indexOf('cam'), 0, 'play');
+// b200-f6-learn: end
 export const VERSION = '1';
 /** The release this code is (0076 W4-c). A release bumps it with CHANGELOG.md; tests/test_access.mjs holds its shape. */
 export const BUILD = '1.4.0';

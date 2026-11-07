@@ -5300,3 +5300,104 @@ Object.assign(COPY, {
   }
 });
 // b200-f5-make: end
+// b200-f6-learn: begin -- the daily challenges (copy/en.play.js, forge #160), machine-drafted
+Object.assign(COPY, {
+  "play": {
+    "label": "Tägliche Herausforderung",
+    "close": "Schließen",
+    "day": "Das Rätsel vom {day} (UTC), heute für alle dasselbe.",
+    "games": {
+      "find-earth": {
+        "title": "Finde die Erde",
+        "blurb": "Von den Galaxien hinunter zu unserem Planeten, mit so wenigen Tipps wie möglich."
+      },
+      "which-world": {
+        "title": "Welche Welt ist das?",
+        "blurb": "Ein Ausschnitt einer echten Karte: Wähle die Welt aus vier."
+      },
+      "guess-distance": {
+        "title": "Schätze die Entfernung",
+        "blurb": "Schiebe auf die Zahl der Lichtjahre bis dorthin."
+      }
+    },
+    "other": "Weitere Herausforderungen",
+    "loading": "Die Karte lädt noch; die Herausforderung beginnt, sobald sie bereit ist.",
+    "rung": "Schritt {n} von {of}: {where}",
+    "rungs": {
+      "local-group": "die Lokale Gruppe",
+      "galaxy": "die Milchstraße",
+      "stellar": "die Nachbarschaft der Sonne",
+      "sun": "das Sonnensystem"
+    },
+    "ask": {
+      "local-group": "Welche Markierung ist unsere Galaxie, die Milchstraße?",
+      "galaxy": "Welche Markierung ist die Sonne?",
+      "stellar": "Welche Markierung ist die Sonne?",
+      "sun": "Welche Markierung ist die Erde?"
+    },
+    "hints": {
+      "local-group": "Unsere hat zwei kleine Begleiter dicht neben sich, die Magellanschen Wolken.",
+      "galaxy": "Die Sonne ist etwa 27.000 Lichtjahre vom Schwarzen Loch im Zentrum entfernt, draußen in einem ruhigen Arm.",
+      "stellar": "Die nächsten Sterne der Sonne sind lichtschwache Rote Zwerge und Alpha Centauri, 4,4 Lichtjahre entfernt.",
+      "sun": "Die Erde ist die dritte Welt von der Sonne aus."
+    },
+    "hint": "Hinweis (kostet einen Versuch)",
+    "mark": "Markierung {letter}, {where}",
+    "places": {
+      "tl": "oben links",
+      "tc": "oben",
+      "tr": "oben rechts",
+      "ml": "links",
+      "mc": "Mitte",
+      "mr": "rechts",
+      "bl": "unten links",
+      "bc": "unten",
+      "br": "unten rechts"
+    },
+    "milkyWay": "die Milchstraße",
+    "sunName": "die Sonne",
+    "tries": "Tipp {n} von {max}",
+    "wrong": "Nicht diese: {letter} ist {name}.",
+    "right": "Ja: {name}. Es geht näher heran.",
+    "found": "Du hast die Erde mit {n} Tipps gefunden.",
+    "lost": "Keine Tipps mehr. Die Erde war die dritte Welt von der Sonne aus.",
+    "honest": "Die Markierungen sitzen dort, wo die Karte jedes Objekt zeichnet. Im Schritt Sonnensystem sind die Welten näher gezeichnet, als sie sind, wie überall auf dieser Ebene.",
+    "round": "Runde {n} von {of}",
+    "worldAsk": "Von welcher Welt ist dieser Ausschnitt?",
+    "more": "Mehr von der Karte zeigen",
+    "worldRight": "Ja: {name}.",
+    "worldWrong": "Nein: Es war {name}.",
+    "credit": "Karte: {credit}",
+    "worldPicture": "Ein Ausschnitt einer echten Karte einer Welt im Sonnensystem",
+    "distAsk": "Wie weit ist {name} entfernt?",
+    "slider": "Entfernung in Lichtjahren",
+    "guess": "Schätzen",
+    "reveal": "{name} ist {value} entfernt: Du lagst {off}.",
+    "offs": {
+      "hit": "innerhalb eines Viertels",
+      "near": "innerhalb des Zweifachen",
+      "far": "innerhalb des Fünffachen",
+      "miss": "mehr als fünffach daneben"
+    },
+    "source": "Entfernung: {source}",
+    "units": {
+      "ly": "{n} Lichtjahre",
+      "kly": "{n} Tausend Lichtjahre",
+      "mly": "{n} Millionen Lichtjahre",
+      "bly": "{n} Milliarden Lichtjahre"
+    },
+    "next": "Weiter",
+    "scores": {
+      "find-earth": "{n} von 10 Tipps",
+      "which-world": "{n} von 3 Welten",
+      "guess-distance": "{n} von 3 innerhalb des Zweifachen"
+    },
+    "shareTitle": "Space Radar: {game}",
+    "share": "Ergebnis teilen",
+    "copied": "Kopiert. Füge es irgendwo ein.",
+    "copyFailed": "Kopieren ging nicht: Markiere den Text oben.",
+    "played": "Für heute fertig. Um Mitternacht UTC kommt ein neues.",
+    "streak": "{n} Tage in Folge"
+  }
+});
+// b200-f6-learn: end

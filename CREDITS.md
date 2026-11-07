@@ -99,6 +99,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Satellites and their orbits | CelesTrak | free, with an enforced usage policy | [4.1](#41-celestrak--read-this-before-you-deploy-a-fork) |
 | Flags beside the owners of satellites (Find, By country) | Wikimedia Commons, 103 files | public domain, per file | [3f-flags](#3f-flags-flags-of-the-countries-that-own-satellites--wikimedia-commons-public-domain-2026-11-07) | <!-- b200-f1-find -->
 | The Wikipedia lead and photograph on a card with no words of its own | Wikipedia; Wikimedia Commons; Wikidata | CC BY-SA 4.0; each picture's own free licence; CC0 | [3f-wiki](#3f-wiki-the-cards-wikipedia-block--wikipedia-cc-by-sa-40-commons-wikidata-cc0-2026-11-07) | <!-- b200-f4-cards -->
+| Twelve days of a star's light in the Lab (Find a Planet in Kepler Data) | NASA Kepler mission, through STScI MAST | public domain; MAST's acknowledgement carried | [3f-kepler](#3f-kepler-a-real-kepler-light-curve-in-the-lab--nasa-kepler-mission-through-mast-public-domain-2026-11-07) | <!-- b200-f6-learn -->
 | Launches | The Space Devs, Launch Library 2 | free to 15 requests an hour; no published licence | [4.2](#42-the-space-devs--launch-library-2) |
 | Deep-space positions, asteroids, comets, close approaches | NASA/JPL Horizons, Small-Body Database, CNEOS | see the section | [4.18](#418-the-sources-the-harvester-reads) |
 | Space weather and the aurora | NOAA SWPC | public domain | [4.4](#44-noaa-swpc) |
@@ -4541,3 +4542,19 @@ paper V, ApJL 875, L5; EHT 2022 paper V, ApJL 930, L16). No image or code of any
 "Star motions: HYG v4.4 (David Nash), from Hipparcos and Gaia" and
 "Variable stars: General Catalogue of Variable Stars (Samus et al. 2017)".
 <!-- b200-f3-stars: end -->
+
+<!-- b200-f6-learn: begin -->
+## 3f-kepler. A real Kepler light curve in the Lab — NASA Kepler mission, through MAST, public domain (2026-11-07)
+
+`site/lab/find-a-planet-in-kepler-data/index.html` carries, inline, the first 612 long cadences (12.5 days from 2009-05-13)
+of the PDCSAP_FLUX column of `kplr011446443-2009166043257_llc.fits`: the star TrES-2 (KIC 11446443) in Kepler's quarter 1,
+data release 25, read from https://archive.stsci.edu/missions/kepler/lightcurves/0114/011446443/ on 2026-11-07. What was
+changed: flagged cadences (SAP_QUALITY not 0) left blank, the rest divided by their median outside the transits, minus 1,
+and rounded to 10 parts per million; the FITS file itself is not in the repository. MAST's data use policy
+(https://archive.stsci.edu/publishing/data-use): "Most data hosted at MAST are in the public domain". The page carries the
+acknowledgement MAST asks for Kepler data (https://archive.stsci.edu/publishing/mission-acknowledgements): "This paper
+includes data collected by the Kepler mission and obtained from the MAST data archive at the Space Telescope Science
+Institute (STScI). Funding to US Institutions for the Kepler mission was provided by the NASA Science Mission Directorate.
+STScI is operated by the Association of Universities for Research in Astronomy, Inc., under NASA contract NAS5-26555."
+The planet's catalogue values beside it (period, radius, the star's radius) are the NASA Exoplanet Archive's (section 4.7).
+<!-- b200-f6-learn: end -->

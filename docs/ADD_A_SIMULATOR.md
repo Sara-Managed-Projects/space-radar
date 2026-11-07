@@ -70,11 +70,20 @@ python3 scripts/gen_lab_index.py        # rewrites site/lab/index.html; commit i
 
 The category is one of the names at the top of that script (add one in the same pull request if yours is new).
 
+### Its age, its curriculum and its place in the 3D map
+
+Add one line for your simulator to [`registry/lab-levels.yaml`](../registry/lab-levels.yaml): the ages it suits, the NGSS, KS3,
+GCSE and IB codes it shows (only codes already listed at the top of that file; leave a list empty if none fits), and `app`, a link
+into the map where its idea can be seen (`"#at=moon"`, `"#trip=moon-phases"`, `"#stage=galaxy"`). The script above then puts the tags
+on your card and sets your page's "See this in the 3D map" link. Not sure of the codes? Write `ngss: []` and so on and say so in the
+pull request; a teacher will fill them in.
+
 ## The checks to run
 
 ```bash
 node tests/test_lab.mjs                  # your file obeys the rules above; it also RUNS draw() on a recording canvas
 python3 scripts/gen_lab_index.py --check # the list is current
+python3 tests/test_lab_levels.py         # your row in registry/lab-levels.yaml: known codes, a link the map can open
 ```
 
 Both are in CI. `test_lab.mjs` tells you which rule and which line of thought failed, in plain words. Then open the page at a

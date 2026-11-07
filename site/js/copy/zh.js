@@ -5199,3 +5199,104 @@ Object.assign(COPY, {
   }
 });
 // b200-f5-make: end
+// b200-f6-learn: begin -- the daily challenges (copy/en.play.js, forge #160), machine-drafted
+Object.assign(COPY, {
+  "play": {
+    "label": "每日挑战",
+    "close": "关闭",
+    "day": "{day}(UTC)的谜题,今天所有人都一样。",
+    "games": {
+      "find-earth": {
+        "title": "找到地球",
+        "blurb": "从星系一路找到我们的星球,用尽量少的选择。"
+      },
+      "which-world": {
+        "title": "这是哪个世界?",
+        "blurb": "一张真实地图的特写:从四个世界中选出它。"
+      },
+      "guess-distance": {
+        "title": "猜距离",
+        "blurb": "把滑块拖到它有多少光年远。"
+      }
+    },
+    "other": "其他挑战",
+    "loading": "地图还在加载;准备好后挑战就会开始。",
+    "rung": "第 {n} 步,共 {of} 步:{where}",
+    "rungs": {
+      "local-group": "本星系群",
+      "galaxy": "银河系",
+      "stellar": "太阳附近",
+      "sun": "太阳系"
+    },
+    "ask": {
+      "local-group": "哪个标记是我们的星系——银河系?",
+      "galaxy": "哪个标记是太阳?",
+      "stellar": "哪个标记是太阳?",
+      "sun": "哪个标记是地球?"
+    },
+    "hints": {
+      "local-group": "我们的星系旁边紧挨着两个小伴星系:麦哲伦云。",
+      "galaxy": "太阳距中心的黑洞约 27 000 光年,位于一条安静的旋臂上。",
+      "stellar": "离太阳最近的恒星是暗淡的红矮星,以及 4.4 光年外的半人马座α。",
+      "sun": "地球是从太阳往外数的第三个世界。"
+    },
+    "hint": "提示(消耗一次机会)",
+    "mark": "标记 {letter},{where}",
+    "places": {
+      "tl": "左上",
+      "tc": "上方",
+      "tr": "右上",
+      "ml": "左侧",
+      "mc": "中间",
+      "mr": "右侧",
+      "bl": "左下",
+      "bc": "下方",
+      "br": "右下"
+    },
+    "milkyWay": "银河系",
+    "sunName": "太阳",
+    "tries": "第 {n} 次选择,共 {max} 次",
+    "wrong": "不是这个:{letter} 是{name}。",
+    "right": "对,是{name}。正在拉近。",
+    "found": "你用 {n} 次选择找到了地球。",
+    "lost": "机会用完了。地球是从太阳往外数的第三个世界。",
+    "honest": "标记位于地图绘制每个天体的位置。在太阳系这一步,世界被画得比实际更近,和这个场景其他地方一样。",
+    "round": "第 {n} 轮,共 {of} 轮",
+    "worldAsk": "这是哪个世界的特写?",
+    "more": "显示更多地图",
+    "worldRight": "对:{name}。",
+    "worldWrong": "不对:是{name}。",
+    "credit": "地图:{credit}",
+    "worldPicture": "太阳系中某个世界的真实地图特写",
+    "distAsk": "{name}有多远?",
+    "slider": "距离(光年)",
+    "guess": "猜",
+    "reveal": "{name}距离 {value}:你{off}。",
+    "offs": {
+      "hit": "误差在四分之一以内",
+      "near": "误差在两倍以内",
+      "far": "误差在五倍以内",
+      "miss": "误差超过五倍"
+    },
+    "source": "距离:{source}",
+    "units": {
+      "ly": "{n} 光年",
+      "kly": "{n} 千光年",
+      "mly": "{n} 百万光年",
+      "bly": "{n} 十亿光年"
+    },
+    "next": "下一个",
+    "scores": {
+      "find-earth": "10 次中用了 {n} 次",
+      "which-world": "3 个世界中答对 {n} 个",
+      "guess-distance": "3 个中有 {n} 个在两倍以内"
+    },
+    "shareTitle": "Space Radar:{game}",
+    "share": "分享结果",
+    "copied": "已复制。粘贴到任何地方。",
+    "copyFailed": "无法复制:请选中上面的文字。",
+    "played": "今天完成了。新的挑战在 UTC 午夜到来。",
+    "streak": "连续 {n} 天"
+  }
+});
+// b200-f6-learn: end

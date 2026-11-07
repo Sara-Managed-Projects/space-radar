@@ -63,6 +63,9 @@ async function english() {
   // b200-f5-make: begin -- the words of the flight editor, Record and Dome and 360 (copy/en.make.js), drafted in every language
   await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.make.js')).href);
   // b200-f5-make: end
+  // b200-f6-learn: begin -- the words of the daily challenges (copy/en.play.js, forge #160), drafted in every language
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.play.js')).href);
+  // b200-f6-learn: end
   return { COPY: base.COPY, GLOSSARY: base.GLOSSARY };
 }
 

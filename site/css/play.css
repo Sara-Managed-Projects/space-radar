@@ -1,0 +1,84 @@
+/* css/play.css -- the daily challenges (ui/play.js; release 2.0.0 batch f6-learn, forge #160). Fetched with the
+   module (ui/latercss.js), never on a first visit. The card stands over the explore panel on a wide screen (the scene
+   is framed right of that panel already, scene/viewshift.js) and low across a phone, where Find Earth frames its marks
+   above it (ui/play.js PHONE_LIFT). */
+
+.sr-play {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: var(--sr-z-card);
+  width: min(360px, calc(100vw - 40px));
+  max-height: calc(100vh - var(--sr-time-h) - 40px);
+  overflow: auto;
+  padding: 16px 18px 18px;
+  color: var(--sr-text);
+  font: 400 var(--sr-fs-body) / 1.45 var(--sr-font);
+  background: var(--sr-panel-solid);
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius-shell, 16px);
+  box-shadow: 0 18px 50px -20px rgba(0, 0, 0, 0.7);
+}
+.sr-play__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.sr-play__head h2 { margin: 0; font: 600 20px / 1.2 var(--sr-font); }
+.sr-play__head h2:focus { outline: none; } /* focused on open so a screen reader starts here; not a control */
+.sr-play__x { flex: none; width: 44px; height: 44px; border: 0; border-radius: 50%; background: transparent; color: var(--sr-text-dim); font-size: 22px; cursor: pointer; }
+.sr-play__x:hover { background: var(--sr-wash); color: var(--sr-text); }
+.sr-play__day, .sr-play__note { margin: 4px 0 10px; font-size: var(--sr-fs-sm); color: var(--sr-text-dim); }
+.sr-play__ask { margin: 8px 0; font-weight: 600; }
+.sr-play__say { min-height: 1.45em; margin: 8px 0; color: var(--sr-text-soft); }
+.sr-play__row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.sr-play button.sr-play__btn {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--sr-line-strong);
+  border-radius: var(--sr-radius);
+  background: var(--sr-wash);
+  color: var(--sr-text);
+  font: 500 var(--sr-fs-sm) / 1.2 var(--sr-font);
+  cursor: pointer;
+}
+.sr-play button.sr-play__btn:hover { background: var(--sr-wash-strong); }
+.sr-play button.sr-play__btn.is-main { border-color: var(--sr-ember); background: var(--sr-ember); color: #14100a; font-weight: 600; }
+.sr-play button.sr-play__btn[disabled] { opacity: 0.45; cursor: default; }
+.sr-play button.sr-play__btn.is-wrong { text-decoration: line-through; opacity: 0.55; }
+.sr-play button.sr-play__btn.is-right { border-color: #4ade80; }
+.sr-play__opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0; }
+.sr-play__menu { display: grid; gap: 8px; margin: 8px 0 0; padding: 0; list-style: none; }
+.sr-play__menu button { width: 100%; text-align: left; padding: 10px 14px; height: auto; }
+.sr-play__menu small { display: block; margin-top: 2px; color: var(--sr-text-dim); font-weight: 400; }
+.sr-play__crop { display: block; width: 100%; max-width: 280px; aspect-ratio: 1; margin: 8px auto; border-radius: var(--sr-radius); background: #000; }
+.sr-play__credit { font-size: 12px; color: var(--sr-text-dim); }
+.sr-play__slider { display: grid; gap: 4px; margin: 8px 0; font-size: var(--sr-fs-sm); color: var(--sr-text-dim); }
+.sr-play__slider input { width: 100%; min-height: 44px; margin: 0; accent-color: var(--sr-ember); }
+.sr-play__slider output { font: 500 var(--sr-fs-body) / 1.3 var(--sr-font-mono); color: var(--sr-text); }
+.sr-play__share { width: 100%; box-sizing: border-box; min-height: 96px; margin: 8px 0; padding: 8px 10px; color: var(--sr-text); background: var(--sr-wash); border: 1px solid var(--sr-line); border-radius: var(--sr-radius); font: 400 15px / 1.4 var(--sr-font-mono); resize: none; }
+
+/* Find Earth's marks: one button per candidate, over the scene where the map draws it. */
+.sr-play-marks { position: fixed; inset: 0; z-index: var(--sr-z-hud); pointer-events: none; }
+.sr-play-mark {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  padding: 0;
+  border: 2px solid var(--sr-ember);
+  border-radius: 50%;
+  background: rgba(11, 14, 20, 0.35);
+  color: var(--sr-text);
+  font: 700 16px / 40px var(--sr-font);
+  pointer-events: auto;
+  cursor: pointer;
+}
+.sr-play-mark:hover, .sr-play-mark:focus-visible { background: rgba(255, 159, 67, 0.3); outline: 2px solid var(--sr-text); outline-offset: 2px; }
+.sr-play-mark.is-wrong { border-color: var(--sr-text-dim); color: var(--sr-text-dim); text-decoration: line-through; }
+.sr-play-mark[hidden] { display: none; }
+/* While the marks are up, the map's own names would give the answer away. */
+.sr-play-marking #labels { visibility: hidden; }
+
+@media (max-width: 767px) {
+  .sr-play { top: auto; bottom: 8px; left: 8px; right: 8px; width: auto; max-height: 42vh; padding: 12px 14px 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sr-play, .sr-play * { transition: none !important; animation: none !important; }
+}

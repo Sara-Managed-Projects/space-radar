@@ -5304,3 +5304,104 @@ Object.assign(COPY, {
   }
 });
 // b200-f5-make: end
+// b200-f6-learn: begin -- the daily challenges (copy/en.play.js, forge #160), machine-drafted
+Object.assign(COPY, {
+  "play": {
+    "label": "Défi du jour",
+    "close": "Fermer",
+    "day": "L’énigme du {day} (UTC), la même pour tout le monde aujourd’hui.",
+    "games": {
+      "find-earth": {
+        "title": "Trouve la Terre",
+        "blurb": "Des galaxies jusqu’à notre planète, en aussi peu de choix que possible."
+      },
+      "which-world": {
+        "title": "Quel est ce monde ?",
+        "blurb": "Un gros plan d’une vraie carte : choisis le monde parmi quatre."
+      },
+      "guess-distance": {
+        "title": "Devine la distance",
+        "blurb": "Fais glisser jusqu’au bon nombre d’années-lumière."
+      }
+    },
+    "other": "Autres défis",
+    "loading": "La carte se charge encore ; le défi commence dès qu’elle est prête.",
+    "rung": "Étape {n} sur {of} : {where}",
+    "rungs": {
+      "local-group": "le Groupe local",
+      "galaxy": "la Voie lactée",
+      "stellar": "le voisinage du Soleil",
+      "sun": "le Système solaire"
+    },
+    "ask": {
+      "local-group": "Quelle marque est notre galaxie, la Voie lactée ?",
+      "galaxy": "Quelle marque est le Soleil ?",
+      "stellar": "Quelle marque est le Soleil ?",
+      "sun": "Quelle marque est la Terre ?"
+    },
+    "hints": {
+      "local-group": "La nôtre a deux petites compagnes tout près, les Nuages de Magellan.",
+      "galaxy": "Le Soleil est à environ 27 000 années-lumière du trou noir central, dans un bras tranquille.",
+      "stellar": "Les étoiles les plus proches du Soleil sont de faibles naines rouges et Alpha du Centaure, à 4,4 années-lumière.",
+      "sun": "La Terre est le troisième monde à partir du Soleil."
+    },
+    "hint": "Indice (coûte un essai)",
+    "mark": "Marque {letter}, {where}",
+    "places": {
+      "tl": "en haut à gauche",
+      "tc": "en haut",
+      "tr": "en haut à droite",
+      "ml": "à gauche",
+      "mc": "au centre",
+      "mr": "à droite",
+      "bl": "en bas à gauche",
+      "bc": "en bas",
+      "br": "en bas à droite"
+    },
+    "milkyWay": "la Voie lactée",
+    "sunName": "le Soleil",
+    "tries": "Choix {n} sur {max}",
+    "wrong": "Pas celle-là : {letter} est {name}.",
+    "right": "Oui : {name}. On se rapproche.",
+    "found": "Tu as trouvé la Terre en {n} choix.",
+    "lost": "Plus de choix. La Terre était le troisième monde à partir du Soleil.",
+    "honest": "Les marques sont là où la carte dessine chaque objet. À l’étape du Système solaire, les mondes sont dessinés plus près qu’ils ne le sont, comme partout sur cette scène.",
+    "round": "Manche {n} sur {of}",
+    "worldAsk": "De quel monde est ce gros plan ?",
+    "more": "Voir plus de la carte",
+    "worldRight": "Oui : {name}.",
+    "worldWrong": "Non : c’était {name}.",
+    "credit": "Carte : {credit}",
+    "worldPicture": "Un gros plan d’une vraie carte d’un monde du Système solaire",
+    "distAsk": "À quelle distance est {name} ?",
+    "slider": "Distance en années-lumière",
+    "guess": "Deviner",
+    "reveal": "{name} est à {value} : tu étais {off}.",
+    "offs": {
+      "hit": "à moins d’un quart près",
+      "near": "à moins du double",
+      "far": "à moins du quintuple",
+      "miss": "à plus de cinq fois"
+    },
+    "source": "Distance : {source}",
+    "units": {
+      "ly": "{n} années-lumière",
+      "kly": "{n} milliers d’années-lumière",
+      "mly": "{n} millions d’années-lumière",
+      "bly": "{n} milliards d’années-lumière"
+    },
+    "next": "Suivant",
+    "scores": {
+      "find-earth": "{n} choix sur 10",
+      "which-world": "{n} mondes sur 3",
+      "guess-distance": "{n} sur 3 à moins du double"
+    },
+    "shareTitle": "Space Radar : {game}",
+    "share": "Partager le résultat",
+    "copied": "Copié. Colle-le où tu veux.",
+    "copyFailed": "Copie impossible : sélectionne le texte ci-dessus.",
+    "played": "C’est fini pour aujourd’hui. Un nouveau arrive à minuit UTC.",
+    "streak": "{n} jours d’affilée"
+  }
+});
+// b200-f6-learn: end
