@@ -4651,7 +4651,7 @@ through vizier.cfa.harvard.edu) for eight stars: Algol, lambda Tauri, delta Libr
 Alphecca and W Ursae Majoris. VizieR's terms: free in a scientific context with the authors cited; every such row of
 `site/data/variables.json` cites the paper.
 
-**The cards read aloud.** `site/audio/cards/en/` holds the leads of the baked English cards (`site/data/wikicards/en.json`)
+**The cards read aloud.** `site/audio/cards/en/` holds, so far, the leads of 13 of the 99 baked English cards (`site/data/wikicards/en.json`)
 said by the trips' synthetic voice, **Kokoro-82M (af_heart), Apache-2.0** (§9b), made offline by
 `scripts/narrate-cards.py` with the trips' own engine, pauses, levelling and encoding. The words are Wikipedia's
 (**Wikipedia contributors, CC BY-SA 4.0**), so each clip is an adaptation of the quoted text and is shared alike under

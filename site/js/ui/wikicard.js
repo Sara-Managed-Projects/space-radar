@@ -307,7 +307,9 @@ function readButton(box, getParts, getClip = () => null) {
     credit.hidden = false;
     watch = setInterval(() => { if (!box.isConnected && reading && reading.box === box) reading.stop(); }, 500);
     audio.src = first;
-    audio.play().catch(() => { /* the error event says why */ });
+    // A file that will not load says so by its error event; a play the browser refuses (no gesture it trusts) only
+    // rejects: then the device reads it, as it would have.
+    audio.play().catch(() => { if (!stopped && audio.paused && audio.error === null) { reading = null; credit.hidden = true; speakDevice(); } });
   };
   btn.addEventListener('click', () => {
     if (reading && reading.box === box) { reading.stop(); return; }
