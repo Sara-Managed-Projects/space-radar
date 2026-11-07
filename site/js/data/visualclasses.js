@@ -463,7 +463,12 @@ export const VISUAL_CLASSES = [
 "bus-eurostar-e3000",
 "bus-boeing-702",
 "bus-boeing-702sp",
-"bus-a2100ax"
+"bus-a2100ax",
+"bus-spacebus-4000b",
+"bus-geostar-2",
+"bus-dfh-4",
+"bus-i-3k",
+"bus-i-2k"
 ],
 "model_kinds": [
 "satellite-iridium",

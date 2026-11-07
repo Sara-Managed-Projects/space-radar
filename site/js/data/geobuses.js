@@ -86,29 +86,29 @@ export const GEO_BUS_NORADS = {
 49011,
 55239
 ],
-"dfh-4:gcat": [
+"dfh-4": [
 37677,
 38014,
 38352,
 39481,
 40982,
-41194,
 41238,
-41725,
 43039,
 43450,
 44067,
 45863,
+53813,
+59915,
+64470
+],
+"dfh-4:gcat": [
+41194,
+41725,
 46916,
 47321,
 53100,
-59915,
 63361,
-63662,
-64470
-],
-"dfh-4:gunter": [
-53813
+63662
 ],
 "dfh-5:gcat": [
 44910
@@ -222,7 +222,7 @@ export const GEO_BUS_NORADS = {
 51281,
 52940
 ],
-"geostar-2:gcat": [
+"geostar-2": [
 29495,
 32253,
 32388,
@@ -247,11 +247,9 @@ export const GEO_BUS_NORADS = {
 39500,
 39616,
 40664,
+41552,
 44624,
 46114
-],
-"geostar-2:wikipedia": [
-41552
 ],
 "geostar-3:gcat": [
 43272,
@@ -266,19 +264,21 @@ export const GEO_BUS_NORADS = {
 "i-1k:gcat": [
 47256
 ],
-"i-2k:gcat": [
+"i-2k": [
 37237,
+39234,
 39498,
-40880,
 42695,
 43864,
 44035
 ],
+"i-2k:gcat": [
+40880
+],
 "i-2k:gunter": [
-39234,
 100607
 ],
-"i-3k:gcat": [
+"i-3k": [
 37605,
 38779,
 40332,
@@ -304,28 +304,33 @@ export const GEO_BUS_NORADS = {
 "spacebus-4000:gcat": [
 28526,
 28924,
-31307,
-32768,
-33056,
-35943,
-36033,
 36101,
-36582,
-36830,
-36831,
 37836,
 38107,
 38992,
 39017,
 39022,
 39163,
-39509,
 40617,
 40875,
+42692,
+42814
+],
+"spacebus-4000:wikipedia": [
+44307
+],
+"spacebus-4000b": [
+31307,
+32768,
+33056,
+35943,
+36033,
+36582,
+36830,
+36831,
+39509,
 41944,
 42691,
-42692,
-42814,
 42984,
 43463,
 44801,
@@ -333,9 +338,6 @@ export const GEO_BUS_NORADS = {
 52933,
 58995,
 61910
-],
-"spacebus-4000:wikipedia": [
-44307
 ],
 "spacebus-neo:gcat": [
 45027,
@@ -450,6 +452,7 @@ export const GEO_BUS_LABELS = {
 "ssl-1300": "SSL-1300",
 "eurostar-e3000": "Airbus Eurostar E3000",
 "spacebus-4000": "Thales Alenia Space Spacebus 3000/4000",
+"spacebus-4000b": "Thales Alenia Space Spacebus 4000B / 3000B",
 "boeing-702": "Boeing 702",
 "boeing-702sp": "Boeing 702SP",
 "a2100ax": "Lockheed Martin A2100AX",
@@ -485,6 +488,11 @@ export const GEO_BUS_DRAWN = {
 "name": "an Airbus Eurostar E3000 satellite",
 "made": "renders"
 },
+"spacebus-4000b": {
+"file": "bus-spacebus-4000b.glb",
+"name": "a Thales Alenia Space Spacebus 4000B satellite",
+"made": "renders"
+},
 "boeing-702": {
 "file": "bus-boeing-702.glb",
 "name": "a Boeing 702HP or 702MP satellite",
@@ -499,5 +507,25 @@ export const GEO_BUS_DRAWN = {
 "file": "bus-a2100ax.glb",
 "name": "a Lockheed Martin A2100AX satellite",
 "made": "renders"
+},
+"geostar-2": {
+"file": "bus-geostar-2.glb",
+"name": "a GEOStar-2 satellite",
+"made": "renders"
+},
+"dfh-4": {
+"file": "bus-dfh-4.glb",
+"name": "a CAST DFH-4 satellite",
+"made": "renders"
+},
+"i-3k": {
+"file": "bus-i-3k.glb",
+"name": "an ISRO I-3K satellite",
+"made": "dimensions"
+},
+"i-2k": {
+"file": "bus-i-2k.glb",
+"name": "an ISRO I-2K satellite",
+"made": "dimensions"
 }
 };

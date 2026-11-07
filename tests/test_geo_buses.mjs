@@ -9,8 +9,8 @@
 //      = the bus's label and one of the sources the row cites.
 //   4. The NAME decides nothing: the same name on a number the registry does not list is the plain stand-in, and a number that is listed is its bus whatever it is called.
 //   5. The generated mirror site/js/data/geobuses.js holds exactly the registry's numbers (scripts/gen_geo_buses_js.py --check says the same).
-// b200-m4-buses: since batch m4-buses four families are drawn by files of ours (Eurostar E3000, Boeing 702HP/MP, 702SP, A2100AX), `made: 'renders'`: their rows wear the file, except a
-// `stand_in` row (a satellite whose biggest part, a 9 m or 22 m reflector, the family's file does not draw), which keeps the stand-in and names its bus as a held family's do.
+// b200-m4-buses: since batch m4-buses nine families are drawn by files of ours (Eurostar E3000, Boeing 702HP/MP, 702SP, A2100AX, Spacebus 4000B, GEOStar-2, DFH-4, I-3K, I-2K): their rows wear the file, except a
+// `stand_in` row (a satellite whose biggest part, a large reflector, a telescope or relay dishes, the family's file does not draw), which keeps the stand-in and names its bus as a held family's do.
 //   node tests/test_geo_buses.mjs
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -59,14 +59,14 @@ for (const b of buses) {
   }
 }
 for (const id of Object.keys(REAL_MODELS.geoBus)) check(drawn.has(id), `scene/realmodels.js has a bus ${id} that the registry does not draw`);
-// b200-m4-buses: begin -- four families are drawn by files of ours since batch m4-buses, each `made: 'renders'`; any other bus file in site/models is a held one and must not ship
-const OURS = ['eurostar-e3000', 'boeing-702', 'boeing-702sp', 'a2100ax'];
+// b200-m4-buses: begin -- nine families are drawn by files of ours since batch m4-buses, each `made: 'renders'` (from the maker's renders) or `'dimensions'` (from photographs: the I-3K and I-2K); any other bus file in site/models is a held one and must not ship
+const OURS = ['eurostar-e3000', 'boeing-702', 'boeing-702sp', 'a2100ax', 'spacebus-4000b', 'geostar-2', 'dfh-4', 'i-3k', 'i-2k'];
 check(drawn.size === 1 + OURS.length && drawn.has('ssl-1300') && OURS.every((id) => drawn.has(id)), `the drawn families are NASA's SSL-1300 and ${OURS.join(', ')} (${[...drawn.keys()].join(', ')})`);
 const shipped = new Set([...drawn.values()].map((b) => b.file));
 for (const f of readdirSync(join(ROOT, 'site/models'))) check(!/^bus-/.test(f) || shipped.has(f), `site/models/${f} is a held bus file and must not ship`);
 for (const id of OURS) {
   const e = REAL_MODELS.geoBus[id];
-  check(e && e.generic === true && e.made === 'renders' && e.axes === 'app' && e.colour === 'satellite' && !e.sourcedBus && drawn.get(id).made === 'renders', `bus ${id}: a family of ours is worn as the kind of thing, built from renders, at the app's axes (${JSON.stringify(e)})`);
+  check(e && e.generic === true && ['renders', 'dimensions'].includes(e.made) && e.made === drawn.get(id).made && e.axes === 'app' && e.colour === 'satellite' && !e.sourcedBus, `bus ${id}: a family of ours is worn as the kind of thing, at the app's axes, and says how it was built (${JSON.stringify(e)})`);
 }
 // b200-m4-buses: end
 
@@ -94,7 +94,7 @@ for (const s of sats) {
     named += 1;
   }
 }
-check(ssl >= 170 && named >= 100, `the table covers ${ssl} satellites of drawn families and ${named} of other buses`); // b200-m4-buses: 94 SSL-1300s and the four families of ours
+check(ssl >= 240 && named >= 60, `the table covers ${ssl} satellites of drawn families and ${named} of other buses`); // b200-m4-buses: 94 SSL-1300s and the four families of ours
 
 // 4. the name decides nothing
 const listed = sats.find((s) => !drawn.has(s.bus) || s.stand_in);

@@ -8,7 +8,7 @@ WHAT IS PUBLISHED, AND USED AS THE SIZE: McDowell's GCAT (CC BY 4.0, satcat.tsv 
 2026-11-07): the central propellant tank and the LEROS apogee engine. Drawn: a body 2.2 (north-south) x 2.5 (east-west) x 4.9 m, 6.0 m with the deck tower; 26.9 m over the
 wings; 8.9 m across the deployed reflectors.
 WHAT IS READ OFF PICTURES: Lockheed Martin's renders on Gunter's Space Page (AMC-15, Astra 1KR, Astra 1L, GE-1A; looked at only), which agree with one another: a tall box in
-crinkled SILVER blanket; on the north and south faces broad, dark, mirror-like OSR radiator panels standing out from the box; one large deployed reflector on each of the east
+crinkled SILVER blanket; on the north and south faces broad silvered OSR radiator panels (mirrors: dark in the renders, where they show black space; drawn as the silver metal they are) standing out from the box; one large deployed reflector on each of the east
 and west walls, swung out on its arm from the Earth end, and a dual reflector on a tower on the Earth deck; BROAD wings of four near-square panels, each wing standing off the
 body on a long triangular yoke of struts (the stand-off the m2 draft left out). There is no photograph of a flown commercial A2100 under a free licence (Commons, NASA, searched
 2026-11-07): the card says the shape is drawn from the maker's renders.
@@ -25,8 +25,8 @@ FILE_ID = "bus-a2100ax"
 SX, SY, SZ = 2.2, 2.5, 4.9
 SPAN, NP, PW = 26.9, 4, 2.6
 YOKE, SADA = 2.2, 0.4
-OSR_DARK = "#4C5068"      # the renders' dark, mirror-like radiators (they show the black of space)
-OSR_DARK_SEAM = "#7A7F99"
+OSR_DARK = "#A3A9B6"      # silvered OSR radiators, metal (they show the black of space in the renders, as a mirror does)
+OSR_DARK_SEAM = "#767C88"
 SILVER_BLANKET = "#C8CCD2"
 
 

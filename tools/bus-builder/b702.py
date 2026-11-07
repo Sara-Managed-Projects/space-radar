@@ -32,7 +32,9 @@ SPAN, NP, PW = 40.4, 6, 2.35
 MAST, SADA = 3.2, 0.4
 BLANKET = "#2B2E35"      # the black Kapton the Morelos 3 photograph shows
 BLANKET_L = "#4A4E57"
-RED_LINE = "#9A3B2E"     # the hinge and harness lines the renders draw red on the cells
+RED_LINE = "#9A3B2E"
+RAD_SILVER = "#9EA4AE"   # silvered OSR radiator, metal: the WGS drawing's grey ribbed panels, not white paint
+RAD_RIB = "#767C86"     # the hinge and harness lines the renders draw red on the cells
 
 
 def dark_body(m, sx, sy, sz, seed=5):
@@ -45,8 +47,11 @@ def dark_body(m, sx, sy, sz, seed=5):
         m.add("blanket-seam", "body", BLANKET_L, lib.seams_on_face((0, y + sgn * 0.03, 0), (0, sgn, 0), (1, 0, 0), sx * 0.96, sz * 0.96, 3, 5, width=0.02, lift=0.0))
         for col, mesh in lib.patches_on_face((0, y + sgn * 0.04, 0), (0, sgn, 0), (1, 0, 0), sx, sz, 5, 0.45, [BLANKET_L, SILVER_FOIL], seed + 30 + sgn, lift=0.0, amp=0.02):
             m.add("blanket-patch", "foil", col, mesh)
+    # north and south: the fixed ribbed radiator over the Earth-end 60 % of the face (the payload's), black blanket below it over the bus module
     for sgn in (-1, 1):
-        ribbed_radiator(m, (sgn * (sx / 2 + 0.03), 0, 0), (sgn, 0, 0), (0, 1, 0), sy * 0.98, sz * 0.98, 16)
+        ribbed_radiator(m, (sgn * (sx / 2 + 0.03), 0, sz * 0.2), (sgn, 0, 0), (0, 1, 0), sy * 0.98, sz * 0.58, 16)
+        m.add("blanket", "foil", BLANKET, lib.grid((sgn * (sx / 2 + 0.02), 0, -sz * 0.3), (0, 1, 0) if sgn > 0 else (0, 0, 1), (0, 0, 1) if sgn > 0 else (0, 1, 0),
+                                                  sy * 0.98 if sgn > 0 else sz * 0.38, sz * 0.38 if sgn > 0 else sy * 0.98, 9 if sgn > 0 else 6, 6 if sgn > 0 else 9, crinkle=0.035, seed=40 + sgn))
     za = -sz / 2
     m.add("aft-blanket", "foil", BLANKET, lib.grid((0, 0, za - 0.01), (0, 1, 0), (1, 0, 0), sy * 0.98, sx * 0.98, 6, 6, crinkle=0.03, seed=seed + 9))
     m.add("adapter-cone", "body", SILVER_D, lib.frustum((0, 0, za), (0, 0, za - 0.4), min(sx, sy) * 0.4, 0.6, 28, caps=False))
@@ -56,15 +61,15 @@ def dark_body(m, sx, sy, sz, seed=5):
             m.add("rail", "body", SILVER_D, lib.box((ex * (sx / 2 + 0.01), ey * (sy / 2 + 0.01), 0), (0.06, 0.06, sz)))
 
 
-def ribbed_radiator(m, c, n, u, su, sv, ribs, frame=True):
+def ribbed_radiator(m, c, n, u, su, sv, ribs, frame=True, face=RAD_SILVER, rib=RAD_RIB):
     """A radiator panel: silver OSR face with `ribs` heat-pipe ribs running along v (n x u), a grey edge frame. Centred on c, facing n."""
     c, n, u = V(c), unit(V(n)), unit(V(u))
     v = np.cross(n, u)
     R = np.column_stack([u, v, n])
-    m.add("radiator-face", "body", OSR, lib.box(c, (su, sv, 0.04), R))
+    m.add("radiator-face", "body", face, lib.box(c, (su, sv, 0.04), R))
     for k in range(ribs):
         x = -su / 2 + su * (k + 0.5) / ribs
-        m.add("radiator-rib", "body", OSR_D, lib.box(c + u * x + n * 0.035, (0.035, sv * 0.97, 0.03), R))
+        m.add("radiator-rib", "body", rib, lib.box(c + u * x + n * 0.035, (0.035, sv * 0.97, 0.03), R))
     if frame:
         for s in (-1, 1):
             m.add("radiator-frame", "body", SILVER_D, lib.box(c + u * s * su / 2 + n * 0.02, (0.05, sv, 0.06), R))
@@ -119,8 +124,8 @@ def build(wings=True):
     zf = SZ / 2
     dark_body(m, SX, SY, SZ)
     deployed_radiators(m, SX, SY, SZ)
-    # the Earth deck: silver blanket, a horn tower and two steerable spot dishes, TT&C omnis
-    m.add("earth-deck", "foil", SILVER_FOIL, lib.grid((0, 0, zf + 0.01), (1, 0, 0), (0, 1, 0), SX * 0.98, SY * 0.98, 8, 8, crinkle=0.025, seed=3))
+    # the Earth deck: black blanket (Morelos 3), a horn tower and two steerable spot dishes, TT&C omnis
+    m.add("earth-deck", "foil", BLANKET, lib.grid((0, 0, zf + 0.01), (1, 0, 0), (0, 1, 0), SX * 0.98, SY * 0.98, 8, 8, crinkle=0.03, seed=3))
     m.add("deck-tower", "foil", BLANKET, lib.box((0, 0, zf + 0.35), (1.4, 1.2, 0.7), crinkle=0.02, seed=8, div=0.3))
     horn_array(m, "deck-horns", (0, 0, zf + 0.71), (0, 0, 1), (1, 0, 0), 3, 3, 0.26, 0.11, 0.3)
     for xx, yy, tilt in ((-1.0, -1.0, 0.25), (1.0, 1.0, -0.25)):

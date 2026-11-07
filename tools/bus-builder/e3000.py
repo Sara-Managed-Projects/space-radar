@@ -6,7 +6,7 @@ WHAT IS PUBLISHED, AND USED AS THE SIZE:
   - the stowed body: MEASAT-3B 6.6 x 2.8 x 2.3 m (Wikipedia 'MEASAT-3b', read 2026-11-07), Intelsat 10-02 7.5 x 2.9 x 2.4 m (Wikipedia infobox, read 2026-11-07); the
     stowed height takes in the Earth-deck antenna tower and the stowed reflectors. Drawn: a box 2.4 (north-south) x 2.9 (east-west) x 4.8 m, 6.9 m with the tower.
   - the span: MEASAT-3B 39.4 m, GCAT's median of the 48 mapped satellites 39 m (30 to 47; McDowell, CC BY 4.0, read 2026-11-07). Drawn 39.2 m.
-  - the width over the antennas: Eutelsat 70B 'is 7 m high with a width of 8 m due to the antennas' (Wikipedia, read 2026-11-07). Drawn 8.1 m: two deployed reflectors of 2.6 m a side.
+  - the width over the antennas: Eutelsat 70B 'is 7 m high with a width of 8 m due to the antennas' (Wikipedia, read 2026-11-07). Drawn 8.7 m: the renders' reflectors are nearly the wall's height, so they are drawn 2.9 and 2.7 m, larger than 70B's width alone would give.
 WHAT IS READ OFF PICTURES (Airbus's own renders, on Gunter's Space Page, LOOKED AT ONLY: Arabsat 5A, 5B, 5C, Astra 1M, 1N, 2E, 3B, 5B, Eutelsat 3B, 9B, 172B, W5A, Hot Bird 8,
 Amazonas 2, Anasis-2, Ekspress-AM7, AMU1, DirecTV-15, SES-11; NASA's render of SES-14 with GOLD; the UK MOD's of Skynet 5D). The twenty-odd renders agree on one layout, and that is
 what is drawn: a tall box in gold blanket; the north and south faces wholly radiator, broad silver OSR panels standing proud of the box and longer than it; on each of the east and west
@@ -15,7 +15,7 @@ feed clusters low on the same wall; an Earth-deck tower carrying a smaller dual 
 V-shaped yoke from the drive at mid-height of the radiator face; the apogee engine and thruster pods on the aft end.
 THERE IS NO PHOTOGRAPH of a flown E3000 under a free licence (none on Wikimedia Commons, none in NASA's or ESA's open libraries, searched 2026-11-07), so this is drawn from the
 maker's renders, which are consistent with each other, and the card and registry/models.yaml say so.
-WHAT IS OURS (ESTIMATED), because no page opened gives it: the reflectors' 2.6 m and 2.3 m diameters (from the 8 m width), their positions and tilts; the deck reflector's 1.6 m; the
+WHAT IS OURS (ESTIMATED), because no page opened gives it: the reflectors' 2.9 m and 2.7 m diameters (the renders show them nearly the wall's height; 8.7 m over them, against Eutelsat 70B's 8 m), their positions and tilts; the deck reflector's 1.6 m; the
 panel size (3.9 x 2.5 m, four a wing, from the span and the renders' proportions); the yoke's 2.8 m; the horn and feed clusters; the radiator tile pattern. A satellite's own payload
 (how many reflectors, which feeds) differs from one to the next: this file draws the family's common layout, not any one satellite's antennas.
 """
@@ -76,11 +76,11 @@ def build(wings=True):
     # the two big deployed reflectors a side: hinge arms from the top of the wall
     for sgn in (-1, 1):
         y0 = sgn * SY / 2
-        # high: 2.6 m, above the deck and outboard
-        reflector(m, "reflector-high", (0.45, y0 + sgn * 1.55, zf + 0.75), (0, -sgn * 0.26, 0.966), 1.3, 1.3, 0.3, up=(1, 0, 0),
+        # high: 2.9 m, above the deck and outboard (Astra 2E, Eutelsat 9B: nearly the height of the wall)
+        reflector(m, "reflector-high", (0.45, y0 + sgn * 1.7, zf + 0.85), (0, -sgn * 0.26, 0.966), 1.45, 1.45, 0.33, up=(1, 0, 0),
                   arm_from=(0.45, y0 + sgn * 0.05, zf - 0.15), feed=False, ribs=10)
-        # low: 2.3 m, lower and further out
-        reflector(m, "reflector-low", (-0.5, y0 + sgn * 1.45, zf - 1.75), (0, -sgn * 0.2, 0.98), 1.15, 1.15, 0.27, up=(1, 0, 0),
+        # low: 2.7 m, lower and further out
+        reflector(m, "reflector-low", (-0.5, y0 + sgn * 1.6, zf - 1.85), (0, -sgn * 0.2, 0.98), 1.35, 1.35, 0.3, up=(1, 0, 0),
                   arm_from=(-0.5, y0 + sgn * 0.05, zf - 0.35), feed=False, ribs=10)
         # the second arm of each, a brace from lower on the wall
         m.add("reflector-brace", "body", GREY, lib.rod((0.45, y0 + sgn * 0.05, zf - 1.1), (0.45, y0 + sgn * 1.2, zf + 0.55), 0.025, 5))

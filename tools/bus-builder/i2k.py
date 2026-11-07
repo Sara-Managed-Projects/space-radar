@@ -1,27 +1,46 @@
-"""HELD, NOT SHIPPED (no file, no route; registry/geo-buses.yaml says why): the renders of the I-2K's satellites show a long boom with a gold solar-sail trim tab and wings of three panels, and this draft draws neither.
+"""ISRO I-2K (I-2000): the GSATs and Hylas 1 of the catalogue whose bus the sources name. Rebuilt in batch m4-buses (release 2.0.0) after the m2 hold (whose reason, the INSAT-2 and -3
+trim-sail boom, belongs to satellites that are not in today's rows). GSAT-6 (a 6 m unfurlable S-band reflector) and EOS-05 (GISAT-1A, an imaging telescope) fly the bus under a
+payload this file does not draw: they are `stand_in` rows in registry/geo-buses.yaml.
 
-ISRO I-2K (I-2000): the 8 geostationary satellites of the catalogue whose bus the sources name.
+Metres, the app's axes: +Z the Earth deck, +X the wing axis (north-south), +Y east-west (the side the cells face).
 
-Metres, the app's axes: +Z the Earth deck, +X the wing axis, +Y the side the cells face.
-
-WHAT IS PUBLISHED. McDowell's GCAT (CC BY 4.0, read 2026-11-07), the 8 mapped satellites: median 'Length' 3.6 m, 'Diameter' 2.0 m, 'Span' 9.5 m (9 to 12), mass 2 250 kg, shape 'Box + 2 Pan'. Gunter's Space Page bus page 'I-2K (I-2000) Bus' lists 26 satellites.
-WHAT IS READ OFF PICTURES, AGAINST THOSE METRES: a small box in gold and white with a short wing of two panels each side and a deployed reflector on one face (renders of INSAT-2A, 2C, 2E, 3A, 3B, 3C, 3D, 3DR).
-Looked at only: the makers' renders on Gunter's Space Page, which are renders and not photographs of flight hardware (craft that fly 36 000 km out are not photographed
-from outside). WHAT IS OURS, because no page opened gives it: the body's sizes (1.8 x 1.8 x 2.8 m), the panel width (1.4 m), the reflector. One file stands for the family at the median size of the satellites mapped to it.
+WHAT IS PUBLISHED, AND USED AS THE SIZE: Wikipedia 'INSAT Satellite bus' (read 2026-11-07), I-2K: 'Dimensions: 1.65 * 1.53m in plan & 3.0m in height', launch mass 2 000 to 2 300 kg.
+McDowell's GCAT (CC BY 4.0, satcat.tsv of 2026-11-07): 'Span' 9.0 to 12 m (median 9.5). Drawn: a box 1.65 (north-south) x 1.53 (east-west) x 3.0 m; 9.6 m over the wings.
+WHAT IS READ OFF PICTURES, AND THESE ARE PHOTOGRAPHS: ISRO's clean-room photographs of GSAT-31 on Wikimedia Commons (GODL-India; LOOKED AT ONLY): in the compact antenna test facility, at
+the reflector deployment test and at the north solar-array deployment test. They show the box in crinkled GOLD kapton, a WHITE radiator face, a large DARK carbon-fibre reflector off
+one wall, dark cells with red-orange strings. ISRO's renders on Gunter's Space Page (GSAT-7, 7A, 9, 14, 31, Hylas; looked at only) agree on the box, the dark reflectors and wings of
+two panels on GCAT's spans; GSAT-31's photographs show a longer wing than its GCAT span, and the file draws GCAT's.
+WHAT IS OURS (ESTIMATED): the reflectors' 2.0 m and 1.4 m and their arms and tilts; two panels of 1.5 x 1.55 m a wing; the yoke; the feeds and horns.
 """
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from glib import *  # noqa: F401,F403,E402
+from geoparts import *  # noqa: F401,F403,E402
 
-FILE_ID = "bus-i2k"
-SX, SY, SZ = 1.8, 1.8, 2.8
-SPAN, NP = 9.5, 2
+FILE_ID = "bus-i-2k"
+SX, SY, SZ = 1.65, 1.53, 3.0
+SPAN, NP, PW = 9.6, 2, 1.5
+YOKE, SADA = 0.55, 0.3
+DARK_CELL = "#23252E"
 
 
 def build(wings=True):
     m = Model(FILE_ID)
-    standard(m, SX, SY, SZ, (NP, panel_len(SPAN, SX, NP, 0.3, 0.3), 1.4, (6, 8)),
-             [("reflector-main", 0.9, 0.3, 0.85, 0.75, 0.25, 30, -0.3)], yoke=0.3, sada=0.3, engine_r=(0.07, 0.22, 0.4), horns=((0.4, 2, 2),), wings=wings)
-    return m
+    zf = SZ / 2
+    blanket_box(m, SX, SY, SZ, GOLD, patch=(GOLD_L, GOLD_D), seed=51, seams=(2, 4), crinkle=0.05)
+    radiators(m, SX, SY, SZ, tiles=(4, 8))
+    earth_deck(m, SX, SY, SZ, GOLD, horns=((0.0, -0.35, 2, 2),), omnis=((-0.55, 0.55), (0.55, 0.55)), sensor=(0.45, -0.45))
+    # one large reflector on the east wall and a smaller one on the west, as GSAT-31 and the renders show
+    side_reflector(m, "reflector", 1, SY, SZ, 0.0, 1.25, zf - 0.4, 2.0, 22, front=GRAPHITE, back=GRAPHITE_BACK, feed=(2, 2))
+    side_reflector(m, "reflector-small", -1, SY, SZ, 0.0, 0.95, zf - 0.25, 1.4, 22, front=GRAPHITE, back=GRAPHITE_BACK, feed=(2, 2))
+    for sgn in (-1, 1):
+        m.add("wall-unit", "foil", GOLD_L, lib.box((0.25, sgn * (SY / 2 + 0.1), -0.5), (0.7, 0.18, 0.4), crinkle=0.025, seed=90 + sgn, div=0.2))
+    aft(m, SX, SY, SZ, foil=GOLD, engine_r=(0.06, 0.24, 0.55), ring=0.45)
+    if wings:
+        pl = round(((SPAN - SX) / 2 - 0.05 - SADA - YOKE - (NP - 1) * 0.07) / NP, 2)
+        for sgn in (-1, 1):
+            x0 = sgn * (SX / 2 + 0.05)
+            wing(m, sgn, x0, NP, pl, PW, (7, 7), yoke_len=YOKE, sada_len=SADA, z=0.0, sada_r=0.13)
+            strings(m, sgn, x0, NP, pl, PW, SADA, YOKE)
+    return palette(m, {**COMMON_FOLDS, ("solar-panel", CELL): DARK_CELL})

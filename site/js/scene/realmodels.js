@@ -199,8 +199,8 @@ const CUBESAT_OF = new Map(); // filled by sourcedTablesReady below
 export const sourcedTablesReady = Promise.all([import('../data/geobuses.js'), import('../data/cubesats.js')]).then(([geo, cube]) => {
   for (const [key, list] of Object.entries(geo.GEO_BUS_NORADS)) {
     const [bus, source] = key.split(':');
-    // b200-m4-buses: begin -- a family drawn by a file of ours (data/geobuses.js GEO_BUS_DRAWN: E3000, 702HP/MP, 702SP, A2100AX) wears it as the kind of thing, `made: 'renders'`
-    // (the card: built from renders), at the app's axes; the route is also put in REAL_MODELS.geoBus, where the registry tests look. Its `stand_in` rows keep the stand-in above.
+    // b200-m4-buses: begin -- a family drawn by a file of ours (data/geobuses.js GEO_BUS_DRAWN: E3000, 702HP/MP, 702SP, A2100AX, Spacebus 4000B, GEOStar-2, DFH-4, I-3K, I-2K) wears it as
+    // the kind of thing, with its `made` (the card: built from the maker's renders, or from dimensions and pictures), at the app's axes; the route is also put in REAL_MODELS.geoBus, where the registry tests look. Its `stand_in` rows keep the stand-in above.
     const entry = source ? { ...GEO_BUS, sourcedBus: { name: geo.GEO_BUS_LABELS[bus], by: GEO_SOURCE_NAMES[source] } } : REAL_MODELS.geoBus[bus] || (REAL_MODELS.geoBus[bus] = { ...GEO_SSL1300, axes: 'app', ...geo.GEO_BUS_DRAWN[bus] });
     // b200-m4-buses: end
     for (const n of list) GEO_BUS_OF.set(n, entry);

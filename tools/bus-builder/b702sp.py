@@ -29,14 +29,14 @@ MAST, SADA = 1.6, 0.35
 def build(wings=True):
     m = Model(FILE_ID)
     zf = SZ / 2
-    # the box: silver blanket on east and west (the separation photograph), ribbed radiators north and south
+    # the box: black blanket with silver panels on east and west (the renders; the separation frame shows the silver), silvered ribbed radiators north and south
     m.add("structure", "body", STRUCT, lib.box((0, 0, 0), (SX - 0.02, SY - 0.02, SZ - 0.02)))
     for sgn in (-1, 1):
         y = sgn * (SY / 2 + 0.02)
-        m.add("blanket", "foil", SILVER_FOIL, lib.grid((0, y, 0), (0, 0, 1) if sgn > 0 else (1, 0, 0), (1, 0, 0) if sgn > 0 else (0, 0, 1), SZ * 0.99 if sgn > 0 else SX * 0.99, SX * 0.99 if sgn > 0 else SZ * 0.99,
+        m.add("blanket", "foil", BLANKET, lib.grid((0, y, 0), (0, 0, 1) if sgn > 0 else (1, 0, 0), (1, 0, 0) if sgn > 0 else (0, 0, 1), SZ * 0.99 if sgn > 0 else SX * 0.99, SX * 0.99 if sgn > 0 else SZ * 0.99,
                                                        12 if sgn > 0 else 7, 7 if sgn > 0 else 12, crinkle=0.03, seed=20 + sgn))
         m.add("blanket-seam", "body", SILVER_D, lib.seams_on_face((0, y + sgn * 0.03, 0), (0, sgn, 0), (1, 0, 0), SX * 0.96, SZ * 0.96, 2, 4, width=0.02, lift=0.0))
-        for col, mesh in lib.patches_on_face((0, y + sgn * 0.04, 0), (0, sgn, 0), (1, 0, 0), SX, SZ, 4, 0.35, [BLANKET, GOLD_D], 50 + sgn, lift=0.0, amp=0.015):
+        for col, mesh in lib.patches_on_face((0, y + sgn * 0.04, 0), (0, sgn, 0), (1, 0, 0), SX, SZ, 7, 0.6, [SILVER_FOIL, SILVER_FOIL, GOLD_D], 50 + sgn, lift=0.0, amp=0.02):
             m.add("blanket-patch", "foil", col, mesh)
         ribbed_radiator(m, (sgn * (SX / 2 + 0.03), 0, 0), (sgn, 0, 0), (0, 1, 0), SY * 0.98, SZ * 0.98, 12)
         for ey in (-1, 1):
