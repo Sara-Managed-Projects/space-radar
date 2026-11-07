@@ -1,0 +1,44 @@
+/* css/wikicard.css -- a card's Wikipedia block and its Read aloud row (ui/wikicard.js; release 2.0.0 batch f4-cards,
+   forge #151). Fetched with the module (ui/latercss.js), never on a first visit. The photograph and its credit are
+   ui.css's own (.sr-card__figure, .sr-card__photo, .sr-card__photo-credit) and the microlabel is .sr-card__label:
+   only what is new is here. The quoted lead is set apart by a rule, as a quotation, so it never reads as our words. */
+
+.sr-wiki__read { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); margin: 0 0 var(--sp-3); }
+.sr-wiki__read .sr-card__inline { min-height: 44px; }
+.sr-wiki__caption {
+  flex: 1 1 100%;
+  margin: 0;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--sr-fs-body);
+  line-height: 22px;
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border-radius: var(--sr-radius-sm);
+}
+.sr-wiki__caption[hidden], .sr-wiki__figure[hidden] { display: none; }
+
+.sr-wiki { margin: 0 0 var(--sp-4); }
+.sr-wiki__loading, .sr-wiki__note {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--sr-fs-sm);
+  line-height: 18px;
+  color: var(--sr-text-dim);
+}
+.sr-wiki .sr-card__photo { aspect-ratio: auto; max-height: 260px; object-fit: cover; }
+.sr-wiki__text {
+  margin: 0 0 var(--sp-2);
+  padding: 0 0 0 var(--sp-3);
+  border-left: 2px solid var(--sr-line-strong);
+  font-size: var(--sr-fs-body);
+  line-height: 22px;
+  color: var(--sr-text-soft);
+}
+.sr-wiki__text[dir="rtl"] { padding: 0 var(--sp-3) 0 0; border-left: 0; border-right: 2px solid var(--sr-line-strong); }
+.sr-wiki__credit {
+  margin: 0;
+  font-size: var(--sr-fs-sm);
+  line-height: 18px;
+  color: var(--sr-text-dim);
+}
+.sr-wiki__credit a, .sr-wiki .sr-card__photo-credit a { color: var(--sr-text-soft); text-decoration: underline; text-underline-offset: 2px; }
+.sr-wiki__credit a:focus-visible, .sr-wiki .sr-card__photo-credit a:focus-visible { outline: 2px solid var(--sr-ember); outline-offset: 2px; }

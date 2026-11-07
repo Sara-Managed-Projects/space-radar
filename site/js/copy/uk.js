@@ -4842,3 +4842,24 @@ Object.assign(COPY, {
   }
 });
 // b200-f1-find: end
+// b200-f4-cards: begin -- a card's Wikipedia block and Read aloud (copy/en.cards.js, forge #151), machine-drafted
+Object.assign(COPY, {
+  "wikiCard": {
+    "label": "З Вікіпедії",
+    "quotedLive": "Цитата з Вікіпедії в сьогоднішньому вигляді, нами не перевірена.",
+    "quotedBaked": "Цитата з Вікіпедії в тому вигляді, як була {date}, нами не перевірена.",
+    "textCredit": "Текст: дописувачі Вікіпедії, CC BY-SA 4.0.",
+    "readArticle": "Читати статтю повністю",
+    "inEnglish": "Цією мовою статті ще немає, тому тут англійська.",
+    "family": "Про {fleet} загалом: окремої статті про цей супутник немає.",
+    "photo": "Фото: {artist}, {licence}, через Wikimedia Commons.",
+    "photoNoArtist": "Фото: {licence}, через Wikimedia Commons.",
+    "photoAlt": "Зображення на початку статті Вікіпедії {title}",
+    "loading": "Питаємо Вікіпедію…",
+    "read": "Прочитати вголос",
+    "readTitle": "Прочитати цю картку вголос голосом вашого пристрою",
+    "stop": "Зупинити читання",
+    "reading": "Читаю вголос"
+  }
+});
+// b200-f4-cards: end

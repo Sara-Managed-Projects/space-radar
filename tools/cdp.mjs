@@ -32,7 +32,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const [url, scriptPath] = process.argv.slice(2).filter((a) => !a.startsWith('--'));
-if (!url || !scriptPath) { console.error('usage: node tools/cdp.mjs <url> <script.js> [--width=] [--height=] [--mobile] [--autoplay] [--shot=] [--shot-dir=] [--reduced-motion] [--forced-colors] [--cpuprofile=] [--block=host,...] [--bytes=] [--net=4g|3g] [--timezone=IANA] [--profile=dir] [--only-local] [--gl=gpu]'); process.exit(2); }
+if (!url || !scriptPath) { console.error('usage: node tools/cdp.mjs <url> <script.js> [--width=] [--height=] [--mobile] [--autoplay] [--shot=] [--shot-dir=] [--reduced-motion] [--forced-colors] [--cpuprofile=] [--block=host,...] [--bytes=] [--net=4g|3g|slow4g] [--cpu=4] [--timezone=IANA] [--profile=dir] [--only-local] [--gl=gpu]'); process.exit(2); }
 const arg = (n, d) => { const h = process.argv.find((a) => a.startsWith('--' + n + '=')); return h ? h.slice(n.length + 3) : d; };
 const W = Number(arg('width', '1280'));
 const H = Number(arg('height', '800'));
@@ -93,6 +93,13 @@ const requests = new Map();
 // device tiers, the phone's 2k maps on a desktop). DevTools throttling sets the estimate, so the
 // app reads 4g (or 3g) from its first line. 4g is 100 Mbit/s at 10 ms, so it slows nothing here.
 const NET = arg('net', '');
+// b200-f4-cards: begin (forge #170: a mid-range phone, slowed as Lighthouse's mobile profile slows it)
+// --net=slow4g: Lighthouse's "Slow 4G" (150 ms round trip, 1.6 Mbit/s down, 750 kbit/s up), the connection its mobile
+// score is measured on. --cpu=4: the page's main thread four times slower (Emulation.setCPUThrottlingRate), Lighthouse's
+// stand-in for a mid-range Android phone on a laptop's CPU. Both are DevTools emulation, not a phone: a number they give
+// is "on this machine, slowed", and docs/FIRST_LOAD.md says so wherever one is quoted.
+const CPU = Number(arg('cpu', '0'));
+// b200-f4-cards: end
 // --timezone=America/Chicago: the page's clock and Intl answer as if the device were there, set
 // before the app boots (spec 0051: the Tonight card guesses a place from the time zone, and its
 // acceptance screenshots are taken from Chicago without leaving this machine's own zone).
@@ -287,16 +294,25 @@ try {
   }
   if (NET) {
     const fast = NET === '4g';
+    // b200-f4-cards: begin
+    const slow4g = NET === 'slow4g';
+    // b200-f4-cards: end
     await send(ws, 'Network.enable', {}, sessionId);
     await send(ws, 'Network.emulateNetworkConditions', {
       offline: false,
-      latency: fast ? 10 : 300,
-      downloadThroughput: fast ? 12.5e6 : 50e3,
-      uploadThroughput: fast ? 5e6 : 25e3,
-      connectionType: fast ? 'wifi' : 'cellular3g',
+      latency: fast ? 10 : slow4g ? 150 : 300,
+      downloadThroughput: fast ? 12.5e6 : slow4g ? 1.6e6 / 8 : 50e3,
+      uploadThroughput: fast ? 5e6 : slow4g ? 750e3 / 8 : 25e3,
+      connectionType: fast ? 'wifi' : slow4g ? 'cellular4g' : 'cellular3g',
     }, sessionId);
     trace('network ' + NET);
   }
+  // b200-f4-cards: begin
+  if (CPU > 1) {
+    await send(ws, 'Emulation.setCPUThrottlingRate', { rate: CPU }, sessionId);
+    trace('cpu slowed ' + CPU + 'x');
+  }
+  // b200-f4-cards: end
   if (TIMEZONE) {
     await send(ws, 'Emulation.setTimezoneOverride', { timezoneId: TIMEZONE }, sessionId);
     trace('timezone ' + TIMEZONE);

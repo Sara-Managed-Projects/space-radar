@@ -4840,3 +4840,24 @@ Object.assign(COPY, {
   }
 });
 // b200-f1-find: end
+// b200-f4-cards: begin -- a card's Wikipedia block and Read aloud (copy/en.cards.js, forge #151), machine-drafted
+Object.assign(COPY, {
+  "wikiCard": {
+    "label": "מוויקיפדיה",
+    "quotedLive": "מצוטט מוויקיפדיה כפי שהיא כתובה היום, לא נבדק על ידינו.",
+    "quotedBaked": "מצוטט מוויקיפדיה כפי שהיה כתוב ב־{date}, לא נבדק על ידינו.",
+    "textCredit": "טקסט: תורמי ויקיפדיה, CC BY-SA 4.0.",
+    "readArticle": "לקריאת הערך המלא",
+    "inEnglish": "עדיין אין ערך בשפה הזאת, לכן זה הערך באנגלית.",
+    "family": "על {fleet} כולו: אין ערך על הלוויין הבודד הזה.",
+    "photo": "צילום: {artist}, {licence}, דרך Wikimedia Commons.",
+    "photoNoArtist": "צילום: {licence}, דרך Wikimedia Commons.",
+    "photoAlt": "התמונה בראש ערך הוויקיפדיה {title}",
+    "loading": "שואלים את ויקיפדיה…",
+    "read": "הקראה",
+    "readTitle": "הקראת הכרטיס בקול של המכשיר שלך",
+    "stop": "עצירת ההקראה",
+    "reading": "מקריא"
+  }
+});
+// b200-f4-cards: end
