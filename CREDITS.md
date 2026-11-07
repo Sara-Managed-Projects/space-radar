@@ -97,6 +97,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Every moon, the moons of asteroids and far worlds, dwarf-planet candidates | NASA/JPL Solar System Dynamics, Horizons and Small-Body Database; the papers named on each card, read through Wikipedia | JPL: no licence text, NASA content generally not copyrighted in the United States; Wikipedia CC BY-SA 4.0; Johnston's Archive NOT used | [3o](#3o-every-moon--nasajpl-solar-system-dynamics-horizons-and-the-small-body-database-release-150) |
 <!-- 0079 a3: end -->
 | Satellites and their orbits | CelesTrak | free, with an enforced usage policy | [4.1](#41-celestrak--read-this-before-you-deploy-a-fork) |
+| Flags beside the owners of satellites (Find, By country) | Wikimedia Commons, 103 files | public domain, per file | [3f-flags](#3f-flags-flags-of-the-countries-that-own-satellites--wikimedia-commons-public-domain-2026-11-07) | <!-- b200-f1-find -->
 | Launches | The Space Devs, Launch Library 2 | free to 15 requests an hour; no published licence | [4.2](#42-the-space-devs--launch-library-2) |
 | Deep-space positions, asteroids, comets, close approaches | NASA/JPL Horizons, Small-Body Database, CNEOS | see the section | [4.18](#418-the-sources-the-harvester-reads) |
 | Space weather and the aurora | NOAA SWPC | public domain | [4.4](#44-noaa-swpc) |
@@ -4416,3 +4417,19 @@ NORAD 40930 (AstroSat, ISRO), 33492 (GOSAT / Ibuki, JAXA) and 64899 (MicroCarb, 
 | `astrosat.glb` (118 KB) | AstroSat: a gold-blanketed cuboid bus 1.96 m by 1.75 m by 1.30 m, on its top deck three LAXPC units, two gold UVIT tubes, the SXT tube with its vaned door, the CZTI slab and grid box and two upright SSM plates; side hardware, a launch adapter with thrusters; two wings of two 1.4 m by 1.8 m panels | ISRO, "AstroSat - Spacecraft" (<https://www.isro.gov.in/AstroSat-Spacecraft.html>) and eoPortal, "AstroSat" (<https://www.eoportal.org/satellite-missions/astrosat>), for the metres; ISRO's CAD view and eleven clean-room photographs on Wikimedia Commons (GODL-India, <https://commons.wikimedia.org/wiki/Category:AstroSat>), looked at | Built by Space Radar from published numbers (facts); no picture is in the file. Credit: "3D model: built by Space Radar from ISRO's published dimensions of AstroSat and from ISRO's CAD view and clean-room photographs of it (GODL-India), looked at, not used". The places of the instruments, the arms and the adapter are estimates |
 | `gosat.glb` (133 KB) | GOSAT (Ibuki): two gold boxes 1.8 m by 2.0 m and 3.7 m high in all, the TANSO-FTS hood and the CAI on the Earth face, radiators, antennas, a ring with four thrusters, two three-section paddles on A-frame trusses, 13.7 m tip to tip | JAXA, "GOSAT Ibuki" (<https://global.jaxa.jp/projects/sat/gosat/>) and JAXA EORC (<https://www.eorc.jaxa.jp/GOSAT/mission_instrument.html>), for the metres; eoPortal, "GOSAT" (<https://www.eoportal.org/satellite-missions/gosat>), JAXA's figures looked at only; four photographs of JAXA's GOSAT exhibit on Wikimedia Commons (CC BY-SA 3.0 and 4.0, CC0), looked at | Built by Space Radar from published numbers (facts); no picture is in the file. Credit: "3D model: built by Space Radar from the dimensions JAXA publishes for GOSAT and from JAXA's illustrations and photographs of the craft (looked at, not used)". The paddle panels' size, the Earth face's depths and the zenith side are estimates |
 | `microcarb.glb` (159 KB) | MicroCarb: a gold Myriade platform 0.8 m by 0.6 m with antennas, sun sensors, thrusters and the PAS610 ring, a silver optical housing with the oval baffle of the cryogenic radiator and the star tracker on the deck, a notched two-panel array | eoPortal, "MicroCarb" (<https://www.eoportal.org/satellite-missions/microcarb>) for the metres (0.6 x 0.8 x 1.0 m); CNES's and Airbus DS's CAD drawings, artwork and photographs looked at only; a scale-model photograph on Wikimedia Commons (CC BY-SA 4.0), looked at | Built by Space Radar from published numbers (facts); no picture is in the file. Credit: "3D model: built by Space Radar from the dimensions eoPortal and CNES publish for MicroCarb and from CNES's and Airbus DS's drawings, artwork and photographs of it (looked at, not used)". THE ARRAY'S SIZE IS AN ESTIMATE (the page gives none) |
+
+<!-- b200-f1-find: begin -->
+## 3f-flags. Flags of the countries that own satellites — Wikimedia Commons, public domain (2026-11-07)
+
+`site/images/flags/<iso>.svg`, 103 files, one per ISO 3166 country that CelesTrak's satellite catalogue names as an owner
+(`site/js/data/owners.js`; the owner codes are CelesTrak's, from https://celestrak.org/satcat/sources.php, read 2026-11-07).
+Each is the flag image that country's Wikidata item names (property P41), fetched from Wikimedia Commons on 2026-11-07;
+the Commons API gave every one of them the licence "Public domain". `site/images/flags/sources.json` lists each file's
+Commons page, its licence and its original size. What was changed: comments, metadata and editor attributes removed, and
+coordinates rounded to about a thousandth of the flag's width (they are drawn 21 px wide). Organisations (ESA, Intelsat,
+NATO, ...) are shown without a mark: their emblems are trademarks, not public symbols.
+
+The counts beside them are CelesTrak's catalogue (section 4.1), and the operators' names in `owners.js` are matched by the
+names those operators give their satellites in it; the debris clouds' dates and heights are NASA's Orbital Debris
+Quarterly News, linked from each (`site/js/data/clouds.js`).
+<!-- b200-f1-find: end -->

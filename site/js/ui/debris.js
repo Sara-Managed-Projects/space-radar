@@ -29,6 +29,10 @@ import { load } from '../data/sources.js';
 import { parseSatcat, decayedRows, census, stories, KINDS, rememberLaunches, oldestRows, FIELD_STATS } from '../data/satcat.js';
 import { OLDEST_NOTES } from '../data/oldestnotes.js';
 import { satId } from '../data/catnum.js';
+// b200-f1-find: begin -- the named clouds as chips, each opening Find's Debris and fleets tab with that cloud lit (forge #153)
+import '../copy/en.find.js';
+import { CLOUDS } from '../data/clouds.js';
+// b200-f1-find: end
 
 const LAYER = 'debris-field';
 const DAY_MS = 86400e3;
@@ -258,6 +262,20 @@ export function createDebris(ctx, host, opts = {}) {
       for (const line of lines) list.appendChild(el('li', 'sr-debris__story', line));
       root.appendChild(list);
     }
+    // b200-f1-find: begin -- one tap per named breakup: its pieces lit, its story, its spread (ui/find.js)
+    if (typeof ctx.wantFind === 'function') {
+      root.appendChild(el('h3', 'sr-micro', COPY.findEntry.clouds));
+      const chips = el('div', 'sr-find__chips sr-debris__clouds');
+      for (const c of CLOUDS) {
+        const b = el('button', 'sr-chip', COPY.breakups.names[c.id]);
+        b.type = 'button';
+        b.title = COPY.breakups.why[c.id];
+        b.addEventListener('click', () => ctx.wantFind().then((f) => f && f.open('clouds', { debris: c.id })));
+        chips.appendChild(b);
+      }
+      root.appendChild(chips);
+    }
+    // b200-f1-find: end
     // Up the longest (spec 0050 requirement 7): the ten oldest payloads and rocket bodies still in
     // orbit, the years computed from the catalogue's launch date, a sourced line where the
     // registry has one. A row whose dot is on the map opens its card.

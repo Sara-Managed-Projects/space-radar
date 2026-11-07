@@ -7314,3 +7314,24 @@ button.sr-debris__oldname:hover { color: var(--sr-ember-light); }
     outline-offset: 2px;
   }
 }
+
+/* b200-f1-find: begin -- the time pill's calendar button (ui/timepill.js, ui/datejump.js; forge #154): the unit button's
+   shape, an icon instead of a word. Its dialog's rules are css/find.css, fetched with the dialog. */
+.sr-time__date {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border: 0;
+  border-radius: var(--sr-radius-pill);
+  cursor: pointer;
+}
+.sr-time__date:hover { background: var(--sr-wash-strong); }
+.sr-time__date[aria-expanded="true"] { background: var(--sr-wash-strong); color: var(--sr-ember); }
+.sr-time__faded { margin: 4px 0 0; font: 400 var(--sr-fs-sm)/1.3 var(--sr-font); white-space: normal; color: var(--sr-stale); text-align: center; }
+.sr-time__faded[hidden] { display: none; }
+/* b200-f1-find: end */

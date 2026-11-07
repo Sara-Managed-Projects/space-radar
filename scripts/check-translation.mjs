@@ -51,6 +51,9 @@ async function english() {
   await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.later.js')).href); // adds its sections to base.COPY
   // 1.6.2: the Moments' words (momentPlayer, momentShelf, momentStories) and the three stories' words, each added to base.COPY; 1.7.2: Apollo 13, Sputnik 1, Voskhod 2 and STS-1 too (Spanish #525, Portuguese Brazil #526, French #527, German #528, Russian #533 and Ukrainian #534 have Voskhod 2 and STS-1 drafted; zh, hi, he and ar keep the English until a translator has them); 1.7.7: Hubble's deployment and the first Falcon 9 landing too
   for (const f of ['en.moments.js', 'en.moments.vostok.js', 'en.moments.apollo11.js', 'en.moments.artemis2.js', 'en.moments.apollo13.js', 'en.moments.sputnik.js', 'en.moments.voskhod.js', 'en.moments.sts1.js', 'en.moments.hubble.js', 'en.moments.falcon9.js']) await import(pathToFileURL(resolve(HERE, '../site/js/copy/' + f)).href);
+  // b200-f1-find: begin -- the words of Find, the owners, the clouds and the date field (copy/en.find.js), drafted in every language
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.find.js')).href);
+  // b200-f1-find: end
   return { COPY: base.COPY, GLOSSARY: base.GLOSSARY };
 }
 

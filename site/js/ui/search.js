@@ -906,6 +906,15 @@ export function createSearch(ctx, host) {
     const kinds = state.more && typeof state.more.answer === 'function' ? state.more : null;
     const result = kinds ? kinds.answer(state.index, q, state.only, { find: findMatches, limit: MAX_RESULTS, exact: NAME_EXACT, word: WORD_PREFIX, again: () => { if (state.open && norm(input.value) === q) run(input.value); }, catalogue: () => (ctx.wantDeep ? ctx.wantDeep().then((d) => (d && d.loadCatalogue ? d.loadCatalogue() : null)) : null) /* 0079 a2 */ })
       : findMatches(state.index, q, MAX_RESULTS);
+    // b200-f1-find: begin -- a family (forge #150): a world's own name lists its moons under it, as "moons of saturn" does;
+    // the world first, then its moons grouped as ui/searchrows.js groups a kind (Cosmoscope lists the planet alone).
+    const lead = result.hits && result.hits[0];
+    if (kinds && !result.kind && lead && lead.record && lead.record.klass === 'world' && lead.score >= NAME_EXACT) {
+      const fam = kinds.answer(state.index, `moons of ${q}`, state.only, { find: findMatches, limit: MAX_RESULTS - 1, exact: NAME_EXACT, word: WORD_PREFIX, again: () => { if (state.open && norm(input.value) === q) run(input.value); } });
+      const kids = fam && fam.kind ? (fam.hits || []).filter((h) => h.record && h.record.id !== lead.record.id) : [];
+      if (kids.length) { result.hits = [lead, ...kids]; result.total = 1 + Math.max(kids.length, fam.total || 0); }
+    }
+    // b200-f1-find: end
     const kind = result.kind;
     state.hits = result.hits;
     state.total = result.total;
