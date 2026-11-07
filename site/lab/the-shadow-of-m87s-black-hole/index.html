@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Shadow of M87's Black Hole | Space Radar Lab</title>
+<meta name="description" content="A black hole's shadow is about 2.6 times as wide as its horizon, so its size in a telescope weighs the hole, and the 2019 picture of M87* matched 6.5 billion Suns.">
+<meta name="sr-lab-category" content="Cosmology and black holes">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b0e14">
+<link rel="stylesheet" href="../../css/fonts.css">
+<style>
+:root{--sr-space:#0b0e14;--sr-text:#e8ecf2;--sr-text-dim:#9aa4b2;--sr-ember:#ff9f43;--sr-ember-light:#ffc28a;--sr-ink:#14100a;--sr-line:rgba(232,236,242,.10);--sr-wash:rgba(232,236,242,.07);--sr-wash-hover:rgba(232,236,242,.12);--sr-radius:6px}
+html{background:var(--sr-space);color:var(--sr-text);font:400 15px/20px Inter,system-ui,-apple-system,sans-serif;-webkit-text-size-adjust:100%}
+body{margin:0}
+a{color:var(--sr-ember)}a:hover{color:var(--sr-ember-light)}
+a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--sr-ember);outline-offset:2px;border-radius:2px}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:0 20px;max-width:1160px;margin:0 auto;padding:4px 16px;border-bottom:1px solid var(--sr-line)}
+.top a{display:inline-flex;align-items:center;min-height:44px;color:var(--sr-text);text-decoration:none}
+.top .mark{font:600 20px/1 'Barlow Semi Condensed',system-ui,sans-serif;letter-spacing:.02em}
+.top .here{color:var(--sr-text-dim)}
+main{display:grid;grid-template-columns:minmax(0,1fr);max-width:1160px;margin:0 auto;padding:20px 16px 32px;gap:0 32px;align-content:start}
+main>*{min-width:0}
+.micro{margin:0 0 8px;font:600 13px/16px 'Barlow Semi Condensed',system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--sr-text-dim)}
+h1{margin:0 0 12px;font:600 30px/1.1 Inter,system-ui,sans-serif;letter-spacing:-.01em;overflow-wrap:anywhere}
+.lead{margin:0 0 20px;font-size:18px;line-height:26px;max-width:60ch}
+.stage{margin:0 0 16px;width:100%}
+canvas{display:block;width:100%;aspect-ratio:1080/1200;background:#05070d;border-radius:var(--sr-radius);border:1px solid var(--sr-line)}
+.line{margin:0 0 16px;font-size:16px;line-height:24px;max-width:60ch;min-height:48px}
+.controls{display:grid;gap:12px;margin:0 0 16px}
+.controls label{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;font-size:13px;line-height:18px;color:var(--sr-text-dim)}
+.controls label input{grid-column:1/-1;width:100%;min-height:44px;margin:0;accent-color:var(--sr-ember)}
+.controls output{font:500 13px/18px 'JetBrains Mono',ui-monospace,monospace;color:var(--sr-text);font-variant-numeric:tabular-nums}
+button{min-height:44px;padding:0 20px;border:0;border-radius:var(--sr-radius);background:var(--sr-ember);color:var(--sr-ink);font:600 15px/1 Inter,system-ui,sans-serif;cursor:pointer;justify-self:start}
+button:hover{background:var(--sr-ember-light)}
+.honest{margin:0 0 16px;padding:12px 14px;border-radius:var(--sr-radius);background:var(--sr-wash);color:var(--sr-text-dim);font-size:13px;line-height:18px;max-width:60ch}
+.honest b{color:var(--sr-text);font-weight:600}
+details{margin:0 0 16px;max-width:60ch;border-top:1px solid var(--sr-line)}
+summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font-weight:600}
+.srcl{margin:0 0 6px;font-size:13px;line-height:18px;color:var(--sr-text-dim);white-space:pre-wrap;overflow-wrap:anywhere}
+.more{display:flex;flex-wrap:wrap;gap:0 16px;margin:0;font-size:15px}
+.more a{display:inline-flex;align-items:center;min-height:44px}
+.ns{color:var(--sr-text-dim)}
+@media (min-width:900px){
+ main{grid-template-columns:minmax(0,1fr) 360px;padding-top:24px}
+ main>*{grid-column:2}
+ .stage{grid-column:1;grid-row:1/span 9;width:min(100%,calc((100svh - 130px)*.9));min-width:320px;align-self:start;position:sticky;top:12px;margin:0}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top"><a class="mark" href="../../index.html">Space Radar</a><a class="here" href="../index.html">Lab</a></header>
+<main>
+<p class="micro" id="cat"></p>
+<h1 id="h">The Shadow of M87's Black Hole</h1>
+<p class="lead" id="lesson">A black hole's shadow is about 2.6 times as wide as its horizon, so its size in a telescope weighs the hole, and the 2019 picture of M87* matched 6.5 billion Suns.</p>
+<div class="stage"><canvas id="c" role="img" aria-label="The Shadow of M87's Black Hole"></canvas></div>
+<p class="line" id="line"></p>
+<noscript><p class="ns">This simulator needs JavaScript. It is one small file, with no libraries and no network requests: read it with View source.</p></noscript>
+<div class="controls">
+<button type="button" id="pb">Pause</button>
+<label>Time <input type="range" id="ts" min="0" value="0" aria-label="Time through the animation"></label>
+<label id="pl">Value <output id="po"></output><input type="range" id="ps"></label>
+</div>
+<p class="honest"><b>What is and is not to scale.</b> <span id="honest"></span></p>
+<details><summary>How this was made and sources</summary>
+<p class="srcl">One HTML file: no libraries, no network requests. Every number below was read on the date shown, from the page named next to it.</p>
+<div id="src"></div>
+</details>
+<p class="more"><a id="sr-app" href="../../index.html#at=exotic-m87-star">See this in the 3D map</a><a href="../index.html">All simulators</a><a id="add" href="https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/ADD_A_SIMULATOR.md">Add your own simulator</a><a id="edit" href="https://github.com/Sara-Managed-Projects/space-radar/tree/main/site/lab">Fix a mistake on GitHub</a></p>
+</main>
+<!-- Sources
+Sources, read on 2026-11-07:
+ Event Horizon Telescope Collaboration 2019, Paper I, ApJL 875, L1 (https://arxiv.org/abs/1906.11238): "an asymmetric bright emission ring with a diameter of 42+/-3 micro-as"; the asymmetry "can be explained in terms of relativistic beaming"; "M = (6.5+/-0.7) x 10^9 Msun".
+ EHT Collaboration 2019, Paper VI, ApJL 875, L6 (https://arxiv.org/abs/1906.11243): "an angular gravitational radius of GM/Dc2 = 3.8+/- 0.4 micro-as. Folding in a distance measurement of 16.8(+0.8,-0.7) Mpc gives a black hole mass of M = 6.5 +/- 0.2(stat) +/-0.7(sys) 10^9 Msun". So their ring is 42 / 3.8 = 11.05 gravitational radii across; this page draws the predicted ring at that ratio.
+ The shadow of a non-spinning hole: light on the photon sphere (r = 3 GM/c^2) is seen at an impact parameter of sqrt(27) GM/c^2, so the shadow is 2 sqrt(27) GM/(c^2 D) across (Wikipedia, "Photon sphere", https://en.wikipedia.org/wiki/Photon_sphere). The horizon of that hole is 4 GM/c^2 across, so the shadow is sqrt(27)/2 = 2.6 times as wide. A spin changes the shadow by a few percent; not drawn.
+ Sagittarius A*: EHT Collaboration 2022, ApJL 930, L12 (https://arxiv.org/abs/2311.08680): "a bright, thick ring with a diameter of 51.8 +/- 2.3 micro-as"; the image size is "within ~10% of the Kerr predictions" (https://arxiv.org/abs/2311.09484). Its mass, 4.297 million Suns, and distance, 8 277 pc, are the app's (GRAVITY Collaboration 2023, as https://en.wikipedia.org/wiki/Sagittarius_A* gives them).
+ Constants: GM_sun = 1.3271244e20 m^3 s^-2 (IAU 2015 nominal), so GM_sun/c^2 = 1 476.6 m; 1 pc = 3.0857e16 m. The Moon's mean distance, 384 400 km (NASA NSSDCA Moon Fact Sheet, https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html); the orange of 8 cm is ours.
+ Check (node): 6.5e9 x 1 476.6 m / (16.8e6 x 3.0857e16 m) = 1.852e-11 rad = 3.82 micro-arcsec (the paper's 3.8); the shadow 2 sqrt(27) x 3.82 = 39.7, the ring 11.05 x 3.82 = 42.2 (measured 42 +/- 3). Sgr A*: 5.12 micro-arcsec, a shadow of 53.3 (ring measured 51.8). An 8 cm orange at 384 400 km: 2.08e-10 rad = 42.9 micro-arcsec.
+Drawn: to scale in micro-arcseconds, 10 picture units each. The orange band is the measured ring's width of error (39 to 45), brighter at the bottom as the EHT's image is; it is not their image. The dots on the dashed edge are light circling the photon sphere, their pace illustrative.
+-->
+<script>
+// ============================================ 0. HELPERS (shared; do not edit) ====================================
+// Defined first, so a simulator may use them while it loads (top-level tables). Colours: EMBER for the point of the lesson, INK for text, DIM for the quiet.
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x)),seg=(t,a,b)=>clamp((t-a)/(b-a),0,1),ease=x=>{x=clamp(x,0,1);return x*x*(3-2*x)},lerp=(a,b,x)=>a+(b-a)*x;
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const EMBER='#ff9f43',INK='#e8ecf4',DIM='#a3adc0',FONT='Inter,system-ui,-apple-system,"Segoe UI",sans-serif',Y0=430,Y1=1440,MINPX=34;
+// ============================================ 1. THE SIMULATOR (yours) ============================================
+// Angles in micro-arcseconds; every constant is in the Sources comment.
+const GMC2=1.3271244e20/299792458**2,PCM=3.0857e16,UAS=180/Math.PI*3600e6,RING=42/3.8,CX=540,CY=930,PXU=10;
+const thetaG=(msun,pc)=>msun*GMC2/(pc*PCM)*UAS;
+const shadow=(msun,pc)=>2*Math.sqrt(27)*thetaG(msun,pc);
+const SGR=shadow(4.297e6,8277);
+const SIM={
+ dur:12,reveal:6,
+ hook:'WEIGH A BLACK HOLE|BY ITS SHADOW',
+ honest:'To scale in micro-arcseconds: the orange band is the measured ring with its error, not the EHT\'s image; the hole\'s spin is left out.',
+ param:{label:'mass of M87* (billion Suns)',min:2,max:10,step:.1,value:6.5},
+ line(P){const sh=shadow(P*1e9,16.8e6),ring=RING*thetaG(P*1e9,16.8e6);
+  return`For ${P.toFixed(1)} billion Suns 16.8 megaparsecs away, light circling the hole outlines a shadow 2√27 GM/(c²D) = ${sh.toFixed(1)} µas across, and the bright ring round it (11 GM/(c²D) by the EHT's own scale) comes to ${ring.toFixed(1)} µas. The ring measured in April 2017 was 42 ± 3 µas: ${Math.abs(ring-42)<=3?'a fit':'too '+(ring>42?'big':'small')}, where 6.5 billion fits best. Sgr A*, our galaxy's hole: a shadow of ${SGR.toFixed(1)} µas, a ring measured at 51.8 ± 2.3. 42 µas is an 8 cm orange on the Moon.`},
+ draw(c,t,P){
+  stars(c,40);const g=thetaG(P*1e9,16.8e6),sh=shadow(P*1e9,16.8e6),ring=RING*g,rs=sh/2*PXU,rr=ring/2*PXU,spin=t*.9;
+  for(let i=0;i<72;i++){const a0=i/72*6.2832,a1=(i+1)/72*6.2832,b=.45+.55*Math.max(0,Math.sin(a0+.3));
+   c.globalAlpha=.25+.55*b;c.fillStyle=EMBER;c.beginPath();c.arc(CX,CY,22.5*PXU,a0,a1+.01);c.arc(CX,CY,19.5*PXU,a1+.01,a0,true);c.fill()}
+  c.globalAlpha=1;disc(c,CX,CY,rs,'#000');
+  c.strokeStyle=INK;c.lineWidth=3;c.setLineDash([10,10]);c.beginPath();c.arc(CX,CY,rs,0,6.2832);c.stroke();c.setLineDash([]);
+  c.strokeStyle='#ffd98a';c.lineWidth=4;c.beginPath();c.arc(CX,CY,rr,0,6.2832);c.stroke();
+  for(let k=0;k<5;k++){const a=spin+k*1.2566;glow(c,CX+rs*Math.cos(a),CY+rs*Math.sin(a),18,'#fff',.8);disc(c,CX+rs*Math.cos(a),CY+rs*Math.sin(a),5,'#fff')}
+  if(rs>90)text('SHADOW',CX,CY+12,34,DIM,700);
+  text('PREDICTED RING',60,470,34,DIM,600,'left');text(ring.toFixed(1)+' µas',60,530,52,'#ffd98a',800,'left');
+  text('MEASURED RING',1020,470,34,DIM,600,'right');text('42 ± 3 µas',1020,530,52,EMBER,800,'right');
+  text('SHADOW '+sh.toFixed(1)+' µas · '+P.toFixed(1)+' BILLION SUNS',540,1395,36,INK,700);
+  text('10 µas',176,1442,34,DIM,600,'left');c.strokeStyle=DIM;c.lineWidth=3;c.beginPath();c.moveTo(60,1430);c.lineTo(60+10*PXU,1430);c.stroke();
+  text('M87* · 16.8 MPC',1020,1442,34,DIM,600,'right')}};
+// ============================================ 2. THE PAGE (shared; rarely needs a change) =========================
+// The stage is 1080 units wide; the page shows the band y 270..1470 of it. Draw only inside it, and put no text under 34 units.
+// `draw(c, t, P)` gets the 2D context, the time t in seconds (it loops over SIM.dur) and the slider value P. `line(P, t)` is the caption under the picture.
+// SIM.reveal is the second at which the animation shows its point; with a slider (SIM.param) the picture follows the slider, so rev(t) is 1.
+function rev(t){return SIM.param?1:ease(seg(t,SIM.reveal-.3,SIM.reveal+.9))}
+let S=1,P=SIM.param?SIM.param.value:0,T=0;
+function text(s,x,y,size,col,w,al){cx.font=(w||600)+' '+Math.max(size,MINPX)+'px '+FONT;cx.fillStyle=col||INK;cx.textAlign=al||'center';cx.textBaseline='alphabetic';cx.fillText(s,x,y)}
+function wrap(s,x,y,size,col,maxW,lh,w,al){cx.font=(w||600)+' '+Math.max(size,MINPX)+'px '+FONT;let ln='';for(const wd of s.split(' ')){const tr=ln?ln+' '+wd:wd;if(cx.measureText(tr).width>maxW&&ln){text(ln,x,y,size,col,w,al);y+=lh;ln=wd}else ln=tr}text(ln,x,y,size,col,w,al);return y+lh}
+function glow(c,x,y,r,col,a){const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,col);g.addColorStop(1,'rgba(0,0,0,0)');c.globalAlpha=a==null?1:a;c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,6.2832);c.fill();c.globalAlpha=1}
+function disc(c,x,y,r,col){c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,6.2832);c.fill()}
+function stars(c,n){let s=7;const r=()=>(s=(s*16807)%2147483647)/2147483647;for(let i=0;i<(n||90);i++){c.globalAlpha=.25+.5*r();c.fillStyle='#fff';c.fillRect(r()*1080,r()*1920,2,2)}c.globalAlpha=1} // a fixed starfield
+function draw(t){cx.setTransform(1,0,0,1,0,0);cx.fillStyle='#05070d';cx.fillRect(0,0,cv.width,cv.height);
+  cx.setTransform(S,0,0,S,0,-270*S);cx.save();cx.beginPath();cx.rect(0,0,1080,1920);cx.clip();SIM.draw(cx,t,P);
+  const h=SIM.hook.split('|');text(h[0],540,330,60,EMBER,800);if(h[1])text(h[1],540,396,60,EMBER,800);cx.restore()}
+{
+  const byId=id=>document.getElementById(id),LOOP=SIM.dur,meta=n=>(document.querySelector('meta[name="'+n+'"]')||{}).content||'';
+  byId('cat').textContent=meta('sr-lab-category');byId('honest').textContent=SIM.honest;
+  cv.setAttribute('aria-label',byId('h').textContent+'. '+meta('description'));
+  // "How this was made": the comment that starts with "Sources" in this file, with its web addresses made into links.
+  const walk=document.createTreeWalker(document,NodeFilter.SHOW_COMMENT);let node,src='';
+  while((node=walk.nextNode()))if(/^\s*sources?\b/i.test(node.data)){src=node.data.trim();break}
+  for(const ln of src.split('\n')){if(!ln.trim())continue;const p=document.createElement('p');p.className='srcl';
+    ln.split(/(\w+:\/\/[^\s)]+)/).forEach((part,i)=>{let ok=false;if(i%2)try{ok=new URL(part).protocol==='https:'}catch(e){}
+      if(ok){const a=document.createElement('a');a.href=part;a.rel='noopener';a.textContent=part;p.append(a)}else p.append(part)});byId('src').append(p)}
+  // Where this file lives in the repository, for the "fix a mistake" link.
+  const parts=location.pathname.split('/').filter(Boolean);if(parts[parts.length-1]==='index.html')parts.pop();
+  const slug=parts[parts.length-1]||'',edit=byId('edit');if(slug&&slug!=='lab')edit.href=edit.href.replace('/tree/','/edit/')+'/'+slug+'/index.html';
+  const pb=byId('pb'),ts=byId('ts'),ps=byId('ps'),po=byId('po'),calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let play=!calm,t0=performance.now(),dirty=true,last='';
+  ts.max=LOOP;ts.step=.01;
+  if(calm){T=Math.min(SIM.reveal+1.2,LOOP-.1);ts.value=T;pb.textContent='Play'}
+  const p=SIM.param;
+  if(p){const dec=(String(p.step).split('.')[1]||'').length,fmt=v=>(+v).toLocaleString('en-US',{maximumFractionDigits:dec,minimumFractionDigits:dec});
+    ps.min=p.min;ps.max=p.max;ps.step=p.step;ps.value=p.value;ps.setAttribute('aria-label',p.label);byId('pl').firstChild.textContent=p.label+' ';po.textContent=fmt(P);
+    ps.oninput=()=>{P=+ps.value;po.textContent=fmt(P);dirty=true}}
+  else byId('pl').hidden=true;
+  pb.onclick=()=>{play=!play;pb.textContent=play?'Pause':'Play';t0=performance.now()-T*1000};
+  ts.oninput=()=>{play=false;pb.textContent='Play';T=+ts.value;dirty=true};
+  function fit(){const d=Math.min(devicePixelRatio||1,2);cv.width=Math.round(cv.clientWidth*d);cv.height=Math.round(cv.clientHeight*d);S=cv.width/1080;dirty=true}
+  new ResizeObserver(fit).observe(cv);fit();
+  (function frame(){if(play){T=((performance.now()-t0)/1000)%LOOP;ts.value=T;dirty=true}
+    if(dirty){dirty=false;draw(T);const l=SIM.line(P,T);if(l!==last){last=l;byId('line').textContent=l}}
+    requestAnimationFrame(frame)})();
+}
+</script>
+</body>
+</html>

@@ -5488,3 +5488,43 @@ Object.assign(COPY, {
   }
 });
 // b200-f7-ground: end
+// b200-c3-learn: begin -- the Fengyun-1C Moment (copy/en.moments.fengyun.js and its shelf card, forge #153), machine-drafted
+COPY.momentShelf.cards['fengyun-1c'] = {
+  "title": "2007：风云一号C",
+  "when": "2007年1月11日至今",
+  "blurb": "一枚中国导弹在 865 km 高处摧毁一颗旧气象卫星，它已编目的 3 531 块碎片从一个点扩散成环绕地球的一层壳，由语音讲述。"
+};
+COPY.momentStories['fengyun-1c'] = {
+  "title": "2007：风云一号C",
+  "blurb": "一枚中国导弹在 865 km 高处摧毁一颗旧气象卫星，它的碎片从一个点扩散成环绕地球的一层壳，至今仍在。",
+  "chBefore": "风云一号C",
+  "chHit": "试验",
+  "chRing": "一个环",
+  "chMonths": "两个月",
+  "chYear": "第一年",
+  "chShell": "一层壳",
+  "chToday": "今天",
+  "v1a": "2007年1月11日傍晚。风云一号C是一颗已退役的中国气象卫星，重 960 kg，经过两极绕地球运行，高度 845 至 865 km。",
+  "v1b": "一枚从西昌附近发射的导弹正向它爬升。它的轨迹从未公布，所以这里没有画出。",
+  "v2a": "22:26 UTC：拦截器迎面撞上卫星，接近速度约 8 km/s，把它撞成数千块碎片。",
+  "v2b": "每块碎片飞出时都比其余的快一点或慢一点，所以各自走在自己的轨道上。",
+  "v3a": "轨道越高，绕一圈的时间越长。一圈又一圈，碎片沿着原来的轨道拉开，几天之内就合成一个环。",
+  "v4a": "地球的扁率使每条轨道的平面转动，高度和倾角不同，转得快慢也不同，于是这个环开始像扇子一样散开。",
+  "v4b": "试验两个月后，已有超过 1 200 块碎片被编目，另有近 400 块正在跟踪，NASA 的《Orbital Debris Quarterly News》报道。",
+  "v5a": "到2007年底，目录中有 2 317 块碎片，只有 22 块落回地球。NASA 估计一厘米及以上的碎片至少有 150 000 块，小到无法跟踪。",
+  "v6a": "年复一年，轨道平面一直散开到绕满一圈。到2013年1月，这团碎片云已是环绕地球的一层壳：编目 3 378 块，仍在轨道上 3 076 块。",
+  "v6b": "卫星不得不躲避它们。国际空间站在2012年1月曾为其中一块让路。",
+  "v7a": "今天目录中有风云一号C的 3 531 块碎片，其中 2 310 块仍在天上，已近二十年。2021年11月10日，空间站又一次躲避了其中一块。",
+  "v7b": "数目是测量的。画面是模型：今天幸存的碎片在今天的轨道上，回推到试验的那一刻再散开。",
+  "pathSat": "风云一号C的轨道，845 × 865 km，倾角 98.6 度（NASA ODQN，2007年4月），按圆锥曲线绘制；卫星在轨道上被击中的位置是示意的",
+  "cloudNote": "这些碎片是目录中仍有的 2 310 块，用目录今天给出的轨道，由模型从一个点散开（二体运动加上地球扁率造成的漂移）；已落下的碎片没有画出，字幕中的数目是测量的。撞击时，每块碎片都从它今天的最低点出发，所以碎片云一开始是卫星下方的一条线，而不是一个点：自 2007 年以来，大气阻力已使许多轨道降低。",
+  "srcOdqn07": "NASA Orbital Debris Quarterly News 11(2)，2007年4月：卫星、它的轨道、最初的计数",
+  "srcOdqn08": "NASA Orbital Debris Quarterly News 12(1)，2008年1月：2007年底的计数",
+  "srcOdqn13": "NASA Orbital Debris Quarterly News 17(1)，2013年1月：已编目、已陨落和仍在轨道上的数目",
+  "srcOdqn14": "NASA Orbital Debris Quarterly News 18(1)，2014年1月：空间站2012年1月的规避机动",
+  "srcOdqn22": "NASA Orbital Debris Quarterly News 26(1)，2022年3月：空间站2021年11月10日的规避机动",
+  "srcCelestrak": "CelesTrak，Chinese ASAT test：事件最可能的时刻，22:26:10 UTC",
+  "srcSatcat": "CelesTrak 卫星目录（SATCAT），读取于 2026-11-07：今天的计数和每块碎片的轨道",
+  "srcWiki": "维基百科，2007 Chinese anti-satellite missile test：接近速度"
+};
+// b200-c3-learn: end

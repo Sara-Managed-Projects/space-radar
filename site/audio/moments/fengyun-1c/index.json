@@ -1,0 +1,98 @@
+{
+ "schema": 1,
+ "builtBy": "scripts/narrate-moments.py",
+ "engine": "kokoro-82m-v1.0/onnx-fp32/misaki-0.9.4/passes-2",
+ "voice": "af_heart",
+ "credit": "Narration: a synthetic voice, Kokoro-82M (af_heart), Apache-2.0",
+ "clips": {
+  "before": {
+   "k": "c55d9a950d0d11c7",
+   "s": 23.75,
+   "starts": {
+    "v1a": 0.15,
+    "v1b": 16.81
+   },
+   "lufs": -16.4,
+   "opus": 95685,
+   "m4a": 122418,
+   "vtt": 361,
+   "wer": 0.0
+  },
+  "months": {
+   "k": "cc636ed0fefd086d",
+   "s": 19.64,
+   "starts": {
+    "v4a": 0.15,
+    "v4b": 8.51
+   },
+   "lufs": -16.5,
+   "opus": 80356,
+   "m4a": 101554,
+   "vtt": 342,
+   "wer": 0.0204
+  },
+  "ring": {
+   "k": "04f2d57ed8a0e964",
+   "s": 8.99,
+   "starts": {
+    "v3a": 0.15
+   },
+   "lufs": -16.5,
+   "opus": 36253,
+   "m4a": 47220,
+   "vtt": 195,
+   "wer": 0.0
+  },
+  "shell": {
+   "k": "1c2dd4f49a8f4e4c",
+   "s": 22.26,
+   "starts": {
+    "v6a": 0.15,
+    "v6b": 14.71
+   },
+   "lufs": -16.5,
+   "opus": 89710,
+   "m4a": 114811,
+   "vtt": 366,
+   "wer": 0.0213
+  },
+  "test": {
+   "k": "12c2403b9aa6fd45",
+   "s": 17.18,
+   "starts": {
+    "v2a": 0.15,
+    "v2b": 10.9
+   },
+   "lufs": -16.4,
+   "opus": 69821,
+   "m4a": 88948,
+   "vtt": 273,
+   "wer": 0.0
+  },
+  "today": {
+   "k": "1fcbd1158dc0548c",
+   "s": 23.07,
+   "starts": {
+    "v7a": 0.15,
+    "v7b": 15.48
+   },
+   "lufs": -16.5,
+   "opus": 93271,
+   "m4a": 118940,
+   "vtt": 392,
+   "wer": 0.0577
+  },
+  "year": {
+   "k": "90277096b420d4b4",
+   "s": 16.42,
+   "starts": {
+    "v5a": 0.15
+   },
+   "lufs": -16.5,
+   "opus": 66982,
+   "m4a": 85036,
+   "vtt": 222,
+   "wer": 0.0
+  }
+ }
+}

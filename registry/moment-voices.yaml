@@ -1,0 +1,29 @@
+version: 1
+# The voice of a Moment (forge #153, release 2.0.0): which of a story's captions are said, in which clip, from which
+# mission second. scripts/narrate-moments.py renders each clip with the trips' own pipeline (scripts/narrate.py and
+# registry/narration.yaml: the same model, voice, pauses, levelling and encoding, so a Moment sounds like a trip), and
+# writes site/audio/moments/<id>/<clip>.{opus,m4a,vtt} and an index.json with each sentence's start in the clip;
+# scripts/build_moment_fengyun1c.py then puts a caption at the mission second each sentence starts and the clip on the
+# moment's audio track, so the caption and the voice never drift apart.
+#
+#   words   the English words file the keys are in (the captions shown are COPY.momentStories[id][key])
+#   lexicon names the G2P says wrongly, in its phonemes, for these clips only (registry/narration.yaml's lexicon is
+#           applied too; a word added there would change other clips' hashes, so a Moment's own names live here)
+#   clips   id, the mission second it starts at (`t`), and the caption keys it says, in order
+#
+# The clip starts when the playhead crosses `t` while the story plays, and picks up in the middle when Play is pressed
+# inside it; pausing, scrubbing or closing stops it (moments/voice.js). English only, as the trips' voice is.
+moments:
+  fengyun-1c:
+    words: site/js/copy/en.moments.fengyun.js
+    lexicon:
+      Fengyun: "fˈʌŋjˈun"
+      Xichang: "ʃˈiʧˈɑŋ"
+    clips:
+      - {id: before, t: -600, says: [v1a, v1b]}
+      - {id: test, t: 0, says: [v2a, v2b]}
+      - {id: ring, t: 1500, says: [v3a]}
+      - {id: months, t: 86400, says: [v4a, v4b]}
+      - {id: year, t: 5184000, says: [v5a]}
+      - {id: shell, t: 31536000, says: [v6a, v6b]}
+      - {id: today, t: 189302400, says: [v7a, v7b]}

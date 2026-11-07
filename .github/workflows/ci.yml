@@ -1508,3 +1508,7 @@ jobs:
       - name: "Standing on a landing site: the ground's arithmetic, seven sites' terrain files at true scale with their licences, loaded only on `#ground=` (forge #146)"
         run: node tests/test_ground.mjs
       # b200-f7-ground: end
+      # b200-c3-learn: begin
+      - name: "The Fengyun-1C Moment: the cloud born at one point and spread round the Earth, the voice inside each chapter, every count its source's, the clips heard (forge #153)"
+        run: node tests/test_moment_fengyun.mjs
+      # b200-c3-learn: end

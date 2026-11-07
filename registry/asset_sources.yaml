@@ -623,6 +623,7 @@ sources:
     licence_read: "This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License"
     licence_url: https://codeberg.org/astronexus/hyg/raw/branch/main/data/hyg/CURRENT/LICENSE
     licence_note: "The LICENSE file beside hyg_v44.csv.gz names CC BY-SA 4.0, the licence CREDITS.md already gives for stars3d.bin, which was rebuilt from the same file on 2026-11-07 byte for byte. starmotion.bin is a derivative (its proper motions, radial velocities and distances), shared alike under CC BY-SA 4.0. One row corrected from Gaia DR3 (CC BY-SA 3.0 IGO as Wikipedia quotes it): Barnard's Star, whose declination motion HYG's column clamps at 9 999.99 mas/yr."
+    # b200-c3-learn: also inline in site/lab/hr-diagram-of-our-neighbours/index.html: the 2 362 rows within 25 pc that have a colour and an absolute magnitude (rounded), shared alike under CC BY-SA 4.0 (forge #159).
     account: none
     cost: none
     offline: shipped
@@ -644,6 +645,32 @@ sources:
     offline: shipped
     checked: 2026-11-07
   # b200-f6-learn: end
+  # b200-c3-learn: begin -- forge #159: the real data inside three more Lab simulators
+  - id: cds-vizier-cfa-lab
+    name: CDS VizieR through its Harvard-Smithsonian mirror (JLA supernovae, J/A+A/568/A22; Keck HIRES velocities, J/AJ/153/208), inline in two Lab pages
+    match: ["https://vizier.cfa.harvard.edu/viz-bin/"]
+    url: https://vizier.cfa.harvard.edu/
+    licence: Free of usage in a scientific context, with the original authors and publication cited
+    licence_read: "The data retrieved with VizieR are free of usage in a scientific context; however, as it is the usage in scientific publication, the original authors and publication references including the publisher have to be explicitely cited"
+    licence_url: https://cds.unistra.fr/vizier-org/licences_vizier.html
+    licence_note: "Space Radar is free and non-commercial; both pages cite the authors and journals. Used: Betoule et al. 2014, A&A 568, A22, table F.3 (740 SNe: zcmb, mB, X1, C, log M*), turned into distance moduli by the paper's Eq. 4-5 and Table 10 (JLA stat+sys), rounded to 0.01 mag, inline in site/lab/hubble-diagram-from-supernovae/; Butler et al. 2017, AJ 153, 208, table 1, the 43 rows of HD217014 (BJD, RV, error), inline in site/lab/find-a-planet-by-its-wobble/. Read through the mirror because vizier.cds.unistra.fr did not resolve here; the raw files are not committed."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  - id: nasa-lambda-firas
+    name: LAMBDA, COBE FIRAS monopole spectrum (firas_monopole_spec_v1.txt), inline in one Lab page
+    match: ["https://lambda.gsfc.nasa.gov/data/cobe/firas/"]
+    url: https://lambda.gsfc.nasa.gov/product/cobe/firas_monopole_get.html
+    licence: NASA data, no copyright claimed (NASA media usage guidelines); LAMBDA's acknowledgement carried
+    licence_read: "NASA content - images, audio, video, and media files used in the rendition of 3-dimensional models, such as texture maps and polygon data in any format - generally are not subject to copyright in the United States."
+    licence_url: https://www.nasa.gov/nasa-brand-center/images-and-media/
+    licence_note: "LAMBDA (https://lambda.gsfc.nasa.gov/contact/): 'There is no cost involved in the use of LAMBDA', and it asks for its acknowledgement, which the page's Sources comment quotes. Used: all 43 rows (frequency, spectrum, 1-sigma error) of Fixsen et al. 1996, ApJ 473, 576, Table 4, as LAMBDA's v1 file (May 2005) writes them, inline in site/lab/the-afterglow-is-a-perfect-blackbody/."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  # b200-c3-learn: end
   # b200-f7-ground: begin -- the ground at the landing sites (forge #146): the stereo terrain models, their
   # orthoimages and the global height models scripts/build-ground.py reads (registry/ground.yaml) into site/data/ground/
   - id: lroc-pds-nac-dtm

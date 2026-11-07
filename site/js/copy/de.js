@@ -5589,3 +5589,43 @@ Object.assign(COPY, {
   }
 });
 // b200-f7-ground: end
+// b200-c3-learn: begin -- the Fengyun-1C Moment (copy/en.moments.fengyun.js and its shelf card, forge #153), machine-drafted
+COPY.momentShelf.cards['fengyun-1c'] = {
+  "title": "2007: Fengyun-1C",
+  "when": "11. Januar 2007 bis heute",
+  "blurb": "Eine chinesische Rakete zerstört einen alten Wettersatelliten in 865 km Höhe, und seine 3 531 katalogisierten Trümmer breiten sich von einem Punkt zu einer Schale um die Erde aus, erzählt von einer Stimme."
+};
+COPY.momentStories['fengyun-1c'] = {
+  "title": "2007: Fengyun-1C",
+  "blurb": "Eine chinesische Rakete zerstört einen alten Wettersatelliten in 865 km Höhe, und seine Trümmer breiten sich von einem Punkt zu einer Schale um die Erde aus, die bis heute da ist.",
+  "chBefore": "Fengyun-1C",
+  "chHit": "Der Test",
+  "chRing": "Ein Ring",
+  "chMonths": "Zwei Monate",
+  "chYear": "Das erste Jahr",
+  "chShell": "Eine Schale",
+  "chToday": "Heute",
+  "v1a": "Der Abend des 11. Januar 2007. Fengyun-1C, ein ausgemusterter chinesischer Wettersatellit von 960 kg, umkreist die Erde über die Pole, 845 bis 865 km hoch.",
+  "v1b": "Eine Rakete, gestartet bei Xichang, steigt ihm entgegen. Ihre Bahn wurde nie veröffentlicht, darum ist sie nicht gezeichnet.",
+  "v2a": "22:26 UTC: Der Abfangkörper trifft den Satelliten frontal, mit etwa 8 km/s Annäherung, und zerbricht ihn in Tausende Teile.",
+  "v2b": "Jedes Teil fliegt etwas schneller oder langsamer weiter als die anderen, also jedes auf einer eigenen Bahn.",
+  "v3a": "Eine höhere Bahn braucht länger für eine Runde. Runde um Runde ziehen sich die Teile entlang der alten Bahn auseinander, und nach Tagen schließen sie sich zu einem Ring.",
+  "v4a": "Die Abplattung der Erde dreht die Ebene jeder Bahn, für jede Höhe und Neigung etwas schneller oder langsamer, und so fächert sich der Ring auf.",
+  "v4b": "Zwei Monate nach dem Test waren mehr als 1 200 Teile katalogisiert, und fast 400 weitere wurden verfolgt, berichteten die Orbital Debris Quarterly News der NASA.",
+  "v5a": "Ende 2007 enthielt der Katalog 2 317 Teile, und erst 22 waren zurückgefallen. Die NASA schätzte mindestens 150 000 Teile von einem Zentimeter oder mehr, zu klein, um sie zu verfolgen.",
+  "v6a": "Jahr für Jahr verteilen sich die Ebenen ganz herum. Im Januar 2013 ist die Wolke eine Schale um die Erde: 3 378 Teile katalogisiert, 3 076 noch im Orbit.",
+  "v6b": "Satelliten müssen ihnen ausweichen. Die Internationale Raumstation wich im Januar 2012 einem davon aus.",
+  "v7a": "Heute enthält der Katalog 3 531 Teile von Fengyun-1C, und 2 310 sind noch oben, fast zwanzig Jahre danach. Am 10. November 2021 wich die Station erneut einem aus.",
+  "v7b": "Die Zahlen sind gemessen. Das Bild ist ein Modell: die heutigen Überlebenden auf ihren heutigen Bahnen, zurückverteilt auf den Augenblick des Tests.",
+  "pathSat": "die Bahn von Fengyun-1C, 845 mal 865 km bei 98,6 Grad (NASA ODQN, April 2007), als Kegelschnitt; wo auf ihr der Satellit getroffen wurde, ist illustrativ",
+  "cloudNote": "Die Teile sind die 2 310, die der Katalog noch führt, auf den Bahnen, die er heute angibt, von einem Punkt aus durch ein Modell verteilt (Zweikörperbewegung und die Drift durch die Abplattung der Erde); herabgefallene Teile sind nicht gezeichnet, und die Zahlen in den Untertiteln sind gemessen. Beim Test beginnt jedes Stück an seinem heutigen tiefsten Punkt, deshalb beginnt die Wolke als Linie unter dem Satelliten und nicht als Punkt: Die Luftreibung hat seit 2007 viele Bahnen abgesenkt.",
+  "srcOdqn07": "NASA Orbital Debris Quarterly News 11(2), April 2007: der Satellit, seine Bahn, die ersten Zahlen",
+  "srcOdqn08": "NASA Orbital Debris Quarterly News 12(1), Januar 2008: die Zahl Ende 2007",
+  "srcOdqn13": "NASA Orbital Debris Quarterly News 17(1), Januar 2013: katalogisiert, verglüht und noch im Orbit",
+  "srcOdqn14": "NASA Orbital Debris Quarterly News 18(1), Januar 2014: das Ausweichmanöver der Station im Januar 2012",
+  "srcOdqn22": "NASA Orbital Debris Quarterly News 26(1), März 2022: das Ausweichmanöver der Station am 10. November 2021",
+  "srcCelestrak": "CelesTrak, Chinese ASAT test: der wahrscheinlichste Zeitpunkt des Ereignisses, 22:26:10 UTC",
+  "srcSatcat": "CelesTrak-Satellitenkatalog (SATCAT), gelesen am 2026-11-07: die heutige Zahl und die Bahn jedes Teils",
+  "srcWiki": "Wikipedia, 2007 Chinese anti-satellite missile test: die Annäherungsgeschwindigkeit"
+};
+// b200-c3-learn: end
