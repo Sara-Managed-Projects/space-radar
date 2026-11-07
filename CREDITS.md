@@ -4621,4 +4621,15 @@ trips' (registry/narration.yaml).
 |---|---|---|---|
 | The ground at the lunar sites (resampled) | `ground/apollo-11`, `apollo-15`, `apollo-17`, `change-4` | Public domain | NASA/GSFC/Arizona State University (LROC); SLDEM2015 (Barker et al. 2016); LRO WAC via NASA Solar System Treks |
 | The ground at the Mars sites (resampled) | `ground/gale`, `jezero`, `utopia`, `opportunity` | Public domain | NASA/JPL/University of Arizona (HiRISE); MOLA (NASA/GSFC); Viking MDIM 2.1 (NASA/JPL/USGS) via NASA Solar System Treks |
+
+**Credit lines, one per site** (registry/models.yaml `credit`, as each stage shows it):
+
+- The ground at Apollo 11, Tranquility Base: NASA/GSFC/Arizona State University (LROC); Barker et al. 2016, Icarus 273, 346-355 (LOLA, NASA/GSFC; SELENE TC, JAXA)
+- The ground at Apollo 15, Hadley-Apennine: NASA/GSFC/Arizona State University (LROC); Henriksen et al. 2017, Icarus 283, 122-137; Barker et al. 2016, Icarus 273, 346-355 (LOLA, NASA/GSFC; SELENE TC, JAXA)
+- The ground at Apollo 17, Taurus-Littrow: NASA/GSFC/Arizona State University (LROC); Barker et al. 2016, Icarus 273, 346-355 (LOLA, NASA/GSFC; SELENE TC, JAXA)
+- The ground at Chang'e 4, von Karman crater: NASA/GSFC/Arizona State University (LROC); Barker et al. 2016, Icarus 273, 346-355 (LOLA, NASA/GSFC; SELENE TC, JAXA)
+- The ground at Curiosity, Gale crater: NASA/JPL/University of Arizona (HiRISE); MOLA Science Team, NASA/GSFC (Smith et al. 2001, JGR 106, 23689)
+- The ground at Opportunity, Endeavour crater: NASA/JPL/University of Arizona (HiRISE); MOLA Science Team, NASA/GSFC (Smith et al. 2001, JGR 106, 23689)
+- The ground at Perseverance, Jezero crater: NASA/JPL/University of Arizona (HiRISE); MOLA Science Team, NASA/GSFC (Smith et al. 2001, JGR 106, 23689)
+- The ground at Zhurong, Utopia Planitia: NASA/JPL/University of Arizona (HiRISE); MOLA Science Team, NASA/GSFC (Smith et al. 2001, JGR 106, 23689)
 <!-- b200-f7-ground: end -->
