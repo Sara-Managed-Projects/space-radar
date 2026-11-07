@@ -1426,3 +1426,13 @@ jobs:
       - name: "bodyFixedToSpherical is its inverse, with the round trip held (public #757)"
         run: node tests/test_frames_bodyfixed_to_spherical.mjs
       # 1.8.0 tests I: end
+      # b200-m2-buses: begin
+      - name: "registry/geo-buses.yaml and registry/cubesats.yaml and the browser's mirrors of their drawn families agree (forge #117, #118)"
+        run: python3 scripts/gen_geo_buses_js.py --check && python3 scripts/gen_cubesats_js.py --check
+      - name: "a geostationary satellite wears the bus a source names for it and no other: every row cited, the name deciding nothing (forge #117)"
+        run: node tests/test_geo_buses.mjs
+      - name: "a catalogued CubeSat is drawn as the form factor GCAT names for it, at the standard's own size, and the name routes keep their build where none is sourced (forge #118)"
+        run: node tests/test_cubesat_forms.mjs
+      - name: "SL-3 R/B wears the Vostok Blok E file and the held stages keep the generic stage (forge #60)"
+        run: node tests/test_vostok_blok_e.mjs
+      # b200-m2-buses: end
