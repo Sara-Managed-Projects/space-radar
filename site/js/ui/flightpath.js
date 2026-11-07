@@ -296,13 +296,14 @@ export function tripDraft(path, opts = {}) {
   const id = /^[a-z0-9-]{3,60}$/.test(opts.id || '') ? opts.id : 'draft-flight';
   const stage = keys.length ? keys[0].stage : 'earth';
   const easeOf = (k) => RIG_EASE[k.ease] || 'inout';
+  const label = (k) => (k ? String(names[k.at] || k.at.charAt(0).toUpperCase() + k.at.slice(1)).replace(/[\r\n"]+/g, ' ') : 'here');
   const lines = [
     `  # DRAFT from the flight editor (forge #155), ${opts.today || isoOf(Date.now()).slice(0, 10)}. Not a trip yet: write the`,
-    '  # title, the blurb and every card, choose the group, then run `python3 scripts/check_registry.py` and',
+    '  # title, the blurb and every card (what each stop shows, in words a visitor can check), choose the group, then run `python3 scripts/check_registry.py` and',
     '  # `python3 scripts/gen_tours_js.py`. A trip needs three stops at least (min_stops).',
     `  - id: ${id}`,
-    '    title: "TODO: what a visitor reads on the row, 60 characters at most"',
-    '    blurb: "TODO: one sentence under the title."',
+    `    title: ${quoted(`From ${label(keys.find((k) => k.at))} to ${label([...keys].reverse().find((k) => k.at))}`)}  # what a visitor reads on the row, 60 characters at most`,
+    '    blurb: "A flight made in the flight editor."  # one sentence under the title',
     '    group: solar-system  # or earth-orbit, beyond, events (the `groups:` table above)',
     `    stage: ${stage}`,
     '    clock: as-found',
@@ -326,7 +327,7 @@ export function tripDraft(path, opts = {}) {
     if (i > 0) lines.push(`        ease: ${easeOf(k)}  # the editor flew into this key in ${k.ms / 1000} s; a trip times its own flights`);
     if (k.t !== null) lines.push(`        time: ${quoted(isoOf(k.t))}`);
     if (k.rate !== 1) lines.push(`        rate: ${k.rate}`);
-    lines.push('        card:', '          title: "TODO"', '          body: >-', '            TODO: what this stop shows, in words a visitor can check.');
+    lines.push('        card:', `          title: ${quoted(label(k))}`, '          body: >-', `            The flight editor's view of ${label(k)}.`);
   });
   if (!n) lines.push('      []  # no key looks at a thing');
   return `${lines.join('\n')}\n`;

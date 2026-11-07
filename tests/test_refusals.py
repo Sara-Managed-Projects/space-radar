@@ -1384,12 +1384,17 @@ def check_tour_refusals() -> int:
         # validator already rejects for missing model files. Names, not bytes: the question is
         # whether a row is refused, not whether a GLB parses.
         textures_into(work)
+        # A file registry/asset_sources.yaml pins by its hash is linked, not touched: an empty stand-in fails the pin.
+        pinned = set(re.findall(r"file: (site/[^,}\s]+)", (ROOT / "registry" / "asset_sources.yaml").read_text(encoding="utf-8")))
         for src in ("site/models", "site/data"):
             d = work / src
             d.mkdir(parents=True, exist_ok=True)
             for f in (ROOT / src).glob("*"):
                 if f.is_file():
-                    (d / f.name).touch()
+                    if f"{src}/{f.name}" in pinned:
+                        link(f, d / f.name)
+                    else:
+                        (d / f.name).touch()
 
         path = work / "registry" / "tours.yaml"
         want_refused = bool(find)

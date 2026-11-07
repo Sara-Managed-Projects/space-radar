@@ -203,7 +203,7 @@ function block(found) {
   if (card.u) quote.cite = card.u;
   wrap.appendChild(quote);
   const foot = el('p', 'sr-wiki__credit');
-  foot.appendChild(document.createTextNode(`${found.baked ? t(W.quotedBaked, { date: DATE_FMT(found.baked) }) : W.quotedLive} ${W.textCredit} `));
+  foot.append(found.baked ? t(W.quotedBaked, { date: DATE_FMT(found.baked) }) : W.quotedLive, ' ', W.textCredit, ' ');
   if (card.u) foot.appendChild(link(card.u, W.readArticle));
   wrap.appendChild(foot);
   return wrap;

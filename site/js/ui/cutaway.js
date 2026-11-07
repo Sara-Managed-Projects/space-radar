@@ -221,7 +221,7 @@ export function createCutaway(ctx, opts = {}) {
     head.append(h, x);
     panel.appendChild(head);
     const model = el(doc, 'p', 'sr-cutaway__model');
-    model.appendChild(doc.createTextNode(`${t(C.model, { model: world.model })} `));
+    model.append(t(C.model, { model: world.model }), ' ');
     const a = el(doc, 'a', 'sr-cutaway__src', C.source);
     a.href = world.source.url;
     a.target = '_blank';

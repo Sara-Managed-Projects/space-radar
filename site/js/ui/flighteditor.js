@@ -74,6 +74,9 @@ function select(label, options, value) {
 }
 
 /** "0:04" for 4 s, "1:02" for 62 s. Pure. */
+/** "0:08 / 0:12": where the scrub is and how long the path runs, as numbers only (no words to translate). */
+const timePair = (at, total) => `${clockText(at)} / ${clockText(total)}`;
+
 export function clockText(ms) {
   const s = Math.max(0, Math.round(Number(ms) / 1000) || 0);
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
@@ -114,7 +117,7 @@ export function createFlightEditor(ctx) {
   scrub.min = '0';
   scrub.step = '50';
   scrub.setAttribute('aria-label', M.scrub);
-  const timeOut = el('output', 'sr-make__time', '0:00 / 0:00');
+  const timeOut = el('output', 'sr-make__time', timePair(0, 0));
   transport.append(playBtn, scrub, timeOut);
   head.append(title, closeBtn, transport);
 
@@ -365,7 +368,7 @@ export function createFlightEditor(ctx) {
     scrub.max = String(total);
     scrub.value = String(Math.min(at, total));
     scrub.disabled = keys.length < 2;
-    timeOut.textContent = `${clockText(at)} / ${clockText(total)}`;
+    timeOut.textContent = timePair(at, total);
     scrub.setAttribute('aria-valuetext', t(M.scrubAt, { at: clockText(at), total: clockText(total) }));
   }
 
