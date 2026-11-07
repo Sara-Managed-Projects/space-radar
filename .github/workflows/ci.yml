@@ -1508,3 +1508,13 @@ jobs:
       - name: "Standing on a landing site: the ground's arithmetic, seven sites' terrain files at true scale with their licences, loaded only on `#ground=` (forge #146)"
         run: node tests/test_ground.mjs
       # b200-f7-ground: end
+      # b200-c2-deep: begin
+      - name: "The 3D and orbital stars over deep time on the GPU: the patched shaders, Barnard's Star by the same formula as the ground sky's (forge #141, #142)"
+        run: node tests/test_stardeep.mjs
+      - name: "Variable stars worth going out for: Kreiner's minima, Algol at minimum from London, Coming up's and Tonight's rows (forge #142)"
+        run: node tests/test_varevents.mjs
+      - name: "The black holes against the EHT's pictures: from Earth with north up, the pictures' licences, the bright sides, the tier fallback (forge #149)"
+        run: node tests/test_holecompare.mjs
+      - name: "The baked cards read aloud in the trips' voice: one hash, every clip heard and current, small and only on press (forge #151)"
+        run: node tests/test_cardvoice.mjs
+      # b200-c2-deep: end

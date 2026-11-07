@@ -630,6 +630,47 @@ sources:
     pins:
       - {file: site/data/starmotion.bin, sha256: 3615204ce950cc7db5ac2dd23143986f52d34bc4562b1963bc6b58eb4b4573da}
   # b200-f3-stars: end
+  # b200-c2-deep: begin -- forge #149, #142, #151: the EHT's 2018 picture of M87*, the eclipsing stars' up-to-date
+  # elements, and the cards read aloud in the trips' voice
+  - id: eht-m87-2018
+    name: Event Horizon Telescope Collaboration, the 2018 image of M87* (A&A 681, A79, 2024), as the EHT's release of 2024-01-18 gives it
+    match: ["https://doi.org/10.1051/0004-6361/202347932", "https://perimeterinstitute.ca/sites/default/files/2024-01/"]
+    url: https://doi.org/10.1051/0004-6361/202347932
+    licence: CC BY 4.0 (EHT Collaboration)
+    licence_read: ""
+    licence_url: https://eventhorizontelescope.org/
+    licence_note: "The EHT Collaboration releases its images under CC BY 4.0, as its 2017 pictures carry through ESO (eso1907a, the esa row's terms) and Commons (File:Black hole - Messier 87 crop max res.jpg, LicenseShortName CC BY 4.0, read 2026-11-07). The 2018 release page (eventhorizontelescope.org/M87-one-year-later-proof-of-a-persistent-black-hole-shadow) answered 403 to every request on 2026-11-07, so no sentence of it is quoted; the file was taken from the Perimeter Institute's copy of the same release (credit there: \"EHT Collaboration\"), 2018M87_PR_normTrue_afmhot_us_dateTrue_label_lightdays.jpeg, 5524 x 2812. Changed: the 2018 panel cropped to the ring (1900 x 1900 px from x 3070, y 420, leaving out its date and the scale bar) and scaled to 512 px; the card says it is the EHT's and links the paper."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+    pins:
+      - {file: site/images/eht-m87-2018.jpg, sha256: 390759811dbe0af505ffdb7b2c3e8045669b760853aa124eb7658f6b438b8aa4}
+  - id: vizier-kreiner-2004
+    name: Kreiner 2004, up-to-date linear elements of eclipsing binaries (Acta Astron. 54, 207), VizieR J/AcA/54/207, read by hand into scripts/build-variables.py
+    match: ["https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=J/AcA/54/207"]
+    url: https://vizier.cfa.harvard.edu/viz-bin/VizieR?-source=J/AcA/54/207
+    licence: Free of usage in a scientific context, with the original authors and publication cited
+    licence_read: "The data retrieved with VizieR are free of usage in a scientific context ; however, as it is the usage in scientific publication, the original authors and publication references including the publisher have to be explicitely cited"
+    licence_url: https://cds.unistra.fr/vizier-org/licences_vizier.html
+    licence_note: "Eight stars' epoch and period (two numbers each, facts), cited on every row of site/data/variables.json that carries them (`linear.cite`) and in CREDITS.md 3c-4."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  - id: card-voice-kokoro
+    name: The baked cards' Wikipedia leads read by Kokoro-82M (af_heart), offline, by scripts/narrate-cards.py into site/audio/cards/en/
+    match: ["https://huggingface.co/hexgrad/Kokoro-82M"]
+    url: https://huggingface.co/hexgrad/Kokoro-82M
+    licence: "The voice's model Apache-2.0; the words Wikipedia's, CC BY-SA 4.0, so each clip is an adaptation shared alike under CC BY-SA 4.0"
+    licence_read: ""
+    licence_url: https://huggingface.co/hexgrad/Kokoro-82M
+    licence_note: "The model's licence is the trips' (registry/narration.yaml engine, CREDITS.md 9b). The text is the wikipedia-cards row's quoted leads (CC BY-SA 4.0, Wikipedia contributors); site/audio/cards/en/index.json names both, and the card shows the credit while a clip plays."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  # b200-c2-deep: end
   # b200-f6-learn: begin -- forge #159: the real light curve inside site/lab/find-a-planet-in-kepler-data/
   - id: stsci-mast-kepler
     name: STScI MAST (Kepler mission light curves)

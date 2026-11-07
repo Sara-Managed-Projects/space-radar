@@ -2984,7 +2984,7 @@ function render(record, ctx, opts = {}) {
     const spinBox = el('div', 'sr-card__varcurve');
     spinBox.hidden = true;
     body.appendChild(spinBox);
-    import('./holespin.js').then((mod) => mod.mountSpin(spinBox, record)).catch(() => { /* the card stands without it */ });
+    import('./holespin.js').then((mod) => mod.mountSpin(spinBox, record, ctx)).catch(() => { /* the card stands without it */ });
   }
   // b200-f3-stars: end
 

@@ -126,7 +126,7 @@ export function buildNextItems(records, nowMs, opts = {}) {
   // From the visitor's own place (internal #359): worked out in a worker, handed in whole.
   if (Array.isArray(opts.fromPlace)) {
     for (const f of opts.fromPlace) {
-      if (f && f.kind === 'conjunction' && f.tMs > nowMs && f.tMs - nowMs < horizonMs) items.push(f);
+      if (f && f.kind && f.tMs > nowMs && f.tMs - nowMs < horizonMs) items.push(f); // pairs, and the variable stars (b200-c2-deep)
     }
   }
   // Perihelia stay here: the record walk's third branch, for what is neither a launch nor an approach.
@@ -177,7 +177,7 @@ export function balance(items) {
   // A pair from the visitor's own place comes next: a month has one or none, and at the end of this
   // line a full list never showed it (seen 2026-10-09: three passes, a launch, two eclipses, an
   // approach and a perihelion made eight, and Mars beside Jupiter had no row).
-  for (const kind of ['aurora', 'launch', 'solar-eclipse', 'lunar-eclipse', 'conjunction', 'approach', 'perihelion', 'shower']) {
+  for (const kind of ['aurora', 'launch', 'solar-eclipse', 'lunar-eclipse', 'conjunction', 'variable', 'approach', 'perihelion', 'shower']) {
     const first = events.find((e) => e.kind === kind);
     if (first) take(first);
   }
@@ -343,7 +343,7 @@ export function classText(item, wallMs = Date.now()) {
     case 'lunar-eclipse': return C.eclipse;
     case 'season': return C.season;
     case 'conjunction': return C.conjunction;
-    default: return null;
+    default: return item.classWords || null; // b200-c2-deep
   }
 }
 
@@ -396,7 +396,7 @@ export function rowParts(item, nowMs) {
     case 'conjunction':
       return { title: t(R.conjunctionTitle, { a: item.a, b: item.b }), detail: t(R.conjunction, { when, sep: fmt.num(item.sepDeg, 1), ...whereWords(item) }), value: t(R.conjunctionValue, { sep: fmt.num(item.sepDeg, 1) }) };
     default:
-      return { title: name, detail: when };
+      return { title: name, detail: item.line ? `${when}. ${item.line}` : when }; // b200-c2-deep: a variable star's line (sky/findclient.js)
   }
 }
 

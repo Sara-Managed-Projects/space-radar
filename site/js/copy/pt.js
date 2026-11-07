@@ -5576,3 +5576,41 @@ Object.assign(COPY, {
   }
 });
 // b200-f7-ground: end
+// b200-c2-deep: begin -- the 3D stars over deep time, the variable stars worth going out for, the black holes against the EHT's pictures and the cards in the trips' voice (copy/en.deep.js, forge #141, #142, #149, #151), machine-drafted
+Object.assign(COPY, {
+  "starDeep": {
+    "moved": "As estrelas de {year}: cada uma deslocada pelo seu próprio movimento medido (Hipparcos e Gaia, via HYG); prolongá-los em linha reta por tanto tempo é modelado.",
+    "hidden": "Estrelas sem movimento medido não são desenhadas tão longe de hoje."
+  },
+  "varEvents": {
+    "min": "{name} no mínimo",
+    "max": "{name} perto do seu brilho máximo",
+    "minLine": "Até a magnitude {mag}, a {alt}° de altura no {dir}.",
+    "maxLine": "Cerca de magnitude {mag}, a {alt}° de altura no {dir}.",
+    "minClass": "Calculado a partir dos seus mínimos medidos (Kreiner 2004), prolongados pelo seu período: certo a um quarto de hora, mais ou menos.",
+    "maxClass": "Modelado a partir do período e da época do catálogo: os máximos de uma Mira chegam semanas antes ou depois.",
+    "aria": "{title}, {when}. {line}"
+  },
+  "holeCompare": {
+    "fromEarth": "Visto da Terra",
+    "fromEarthTitle": "Ficar na linha do buraco até a Terra, norte em cima e leste à esquerda, como as imagens do EHT são impressas",
+    "compare": "Comparar com a imagem do EHT",
+    "compareTitle": "Mostrar a imagem do Event Horizon Telescope ao lado do buraco desenhado, ambos vistos da Terra com o norte em cima",
+    "hide": "Ocultar a imagem do EHT",
+    "caption": "EHT, {date}",
+    "orient": "Norte em cima, leste à esquerda, como o buraco está desenhado agora.",
+    "credit": "Imagens: EHT Collaboration, CC BY 4.0.",
+    "source": "Fonte",
+    "alt": "A imagem de {name} pelo Event Horizon Telescope, {date}: um anel de luz laranja em volta de um centro escuro.",
+    "brightest": "Visto da Terra com o norte em cima, o anel desenhado é mais brilhante num ângulo de posição de cerca de {ours}° (medido no desenho); a imagem do EHT de {date} é mais brilhante perto de {theirs}°.",
+    "approx": {
+      "m87-star": "Ajustado: a inclinação (17° da nossa linha de visada) e o ângulo do jato no céu (288°) são medidos (Walker et al. 2018), e com o fluxo girando no sentido horário (EHT 2019, artigo V) o lado que se aproxima, mais brilhante, fica ao sul. Aproximado: a luz é traçada como em volta de um buraco que não gira e o gás é um disco fino, não o fluxo quente e espesso dos modelos do EHT, por isso o nosso lado brilhante é cerca de uma vez e meia mais brilhante que o fraco, e o deles cerca de quatro (2017) a seis vezes (2018); e a nossa imagem é nítida, a deles borrada a 20 µas por um telescópio do tamanho da Terra. A mancha brilhante deles moveu-se cerca de 30° num ano; a nossa não se move.",
+      "sgr-a-star": "Ajustado: visto a 30° do seu eixo, como os modelos que melhor se ajustam do artigo V do EHT 2022, girando no sentido horário como as erupções vistas pelo GRAVITY. Escolhido: para onde o eixo aponta no céu, o que ninguém mediu; está girado para que o lado mais brilhante caia onde a imagem do EHT é mais brilhante. Aproximado: a luz é traçada em volta de um buraco que não gira, em volta de um disco fino; a imagem do EHT é uma média de uma noite de um fluxo que muda em minutos, e os seus três nós brilhantes não são todos reais, dizem os seus autores."
+    }
+  },
+  "cardVoice": {
+    "readTitle": "Ler este cartão em voz alta: o texto citado da Wikipédia na voz sintética das viagens",
+    "credit": "Voz: Kokoro-82M (af_heart), uma voz sintética, Apache-2.0; as palavras são da Wikipédia (CC BY-SA 4.0)."
+  }
+});
+// b200-c2-deep: end

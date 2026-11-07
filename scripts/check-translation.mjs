@@ -75,6 +75,9 @@ async function english() {
   // b200-f7-ground: begin -- the words of standing on another world and its sky (copy/en.ground.js)
   await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.ground.js')).href);
   // b200-f7-ground: end
+  // b200-c2-deep: begin -- the words of the 3D stars over deep time, the variable stars' rows, the EHT comparison and the cards' voice (copy/en.deep.js)
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.deep.js')).href);
+  // b200-c2-deep: end
   return { COPY: base.COPY, GLOSSARY: base.GLOSSARY };
 }
 
