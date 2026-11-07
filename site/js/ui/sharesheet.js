@@ -73,6 +73,7 @@ import { objectPages, objectPageUrl, PAGES_INDEX } from './objectpage.js';
 import { PRESET_IDS, presetOf, applyPhotoPreset } from './photopresets.js';
 import '../copy/en.w3e.js'; // the words of the two rows
 // 0077 W3-e: end
+import '../copy/en.make.js'; // b200-f5-make: the words of Flight path, Record, Dome and 360
 
 export { objectPageUrl, PAGES_INDEX };
 import { WIKI_TITLES } from '../data/wikititles.js';
@@ -328,6 +329,11 @@ const ICONS = {
   code: ['m16 18 6-6-6-6', 'm8 6-6 6 6 6'],
   'chevron-down': ['m6 9 6 6 6-6'],
 };
+// b200-f5-make: begin -- the three makers' icons (Lucide's route, video and aperture, as paths)
+ICONS.route = ['M3 19a3 3 0 1 0 6 0a3 3 0 1 0-6 0', 'M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15', 'M15 5a3 3 0 1 0 6 0a3 3 0 1 0-6 0'];
+ICONS.video = ['m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5', 'M4 6h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z'];
+ICONS.dome = ['M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20', 'M2 12h20', 'M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'];
+// b200-f5-make: end
 
 function icon(name) {
   const svg = document.createElementNS(SVG_NS, 'svg');
@@ -468,6 +474,24 @@ export function createShareSheet(ctx) {
   const photoBtn = button('sr-share__btn', S.photo, S.photoTitle, 'crop');
   const embedBtn = button('sr-share__btn', S.embed, S.embedTitle, 'code');
   acts.append(nativeBtn, copyBtn, mailA, jpegBtn, pdfBtn, photoBtn, embedBtn);
+  // b200-f5-make: begin (forge #155, #156, #157) -- three more actions, last: a flight path, a video, a dome or 360 picture.
+  // Each closes the sheet and opens its own panel, fetched on that press (ui/makers.js, through main.js ctx.wantMakers).
+  const MK = COPY.make;
+  const makeBtns = [['flight', MK.flight, MK.flightTitle, 'route', 'wantFlight'], ['record', MK.record, MK.recordTitle, 'video', 'wantRecorder'],
+    ['dome', MK.dome, MK.domeTitle, 'dome', 'wantProjection']].map(([id, label, tip, glyph, want]) => {
+    const b = button('sr-share__btn', label, tip, glyph);
+    b.dataset.make = id;
+    b.addEventListener('click', async () => {
+      const opener = cur && cur.opener;
+      close();
+      const makers = ctx && typeof ctx.wantMakers === 'function' ? await ctx.wantMakers().catch(() => null) : null;
+      const panel = makers ? await makers[want]() : null;
+      if (panel) panel.open({ opener }); else fail(MK.failed);
+    });
+    return b;
+  });
+  acts.append(...makeBtns);
+  // b200-f5-make: end
   const mailNote = el('p', 'sr-share__note', S.emailNote);
 
   // 0077 W3-e: begin. TWO ROWS THAT OPEN IN PLACE, shut at first, so the sheet still fits a 1440 x 900 window with no scroll: Photo presets

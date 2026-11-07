@@ -1,0 +1,270 @@
+/* css/make.css -- the flight editor (ui/flighteditor.js), Record (ui/recorder.js) and Dome and 360
+   (ui/projectpanel.js), forge #155, #156, #157. Linked by those modules on their first use (ui/latercss.js),
+   never by index.html: none of it is a first visit's bytes. Tokens only (css/ui.css): the type ladder, the
+   spacing, the glass, the one interactive colour. Every control is 44 px to the touch. */
+
+.sr-make {
+  position: fixed;
+  top: var(--sr-inset);
+  right: calc(var(--sr-inset) + 48px + 12px);
+  z-index: var(--sr-z-modal);
+  display: flex;
+  flex-direction: column;
+  width: var(--sr-side-w);
+  max-height: calc(100vh - 2 * var(--sr-inset));
+  overflow: hidden;
+  border-radius: var(--sr-radius-shell);
+  font: 400 var(--sr-fs-label)/20px var(--sr-font);
+  color: var(--sr-text);
+}
+.sr-make[hidden] { display: none; }
+.sr-make * { box-sizing: border-box; }
+.sr-make--small { max-height: min(640px, calc(100vh - 2 * var(--sr-inset))); }
+
+.sr-make__head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-3) var(--sp-2) var(--sp-4);
+  border-bottom: 1px solid var(--sr-line);
+}
+.sr-make__title {
+  margin: 0;
+  font: 600 var(--sr-fs-body)/24px var(--sr-font);
+  outline: none;
+}
+.sr-make__close {
+  width: 44px;
+  height: 44px;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--sr-text-dim);
+  background: transparent;
+  border: 0;
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+}
+.sr-make__close:hover, .sr-make__close:focus-visible { color: var(--sr-text); background: var(--sr-wash); }
+
+.sr-make__transport {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.sr-make__play {
+  min-width: 72px;
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  font: 600 var(--sr-fs-sm)/16px var(--sr-font);
+  color: var(--sr-ink);
+  background: var(--sr-ember);
+  border: 0;
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+}
+.sr-make__play:disabled { opacity: 0.45; cursor: default; }
+.sr-make__scrub {
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+  accent-color: var(--sr-ember);
+  touch-action: pan-y;
+  cursor: pointer;
+}
+.sr-make__time {
+  font-size: var(--sr-fs-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+}
+
+.sr-make__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--sp-3) var(--sp-4) var(--sp-4);
+}
+.sr-make__hint, .sr-make__note, .sr-make__status {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--sr-fs-sm);
+  line-height: 18px;
+  color: var(--sr-text-dim);
+}
+.sr-make__status { color: var(--sr-text); }
+.sr-make__status:empty { display: none; }
+
+.sr-make__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
+  color: var(--sr-text);
+  text-decoration: none;
+  background: var(--sr-wash);
+  border: 0;
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+}
+.sr-make__btn[hidden] { display: none; }
+.sr-make__btn:disabled { opacity: 0.45; cursor: default; }
+.sr-make__btn--primary { font-weight: 600; color: var(--sr-ink); background: var(--sr-ember); }
+.sr-make__btn:focus-visible, .sr-make__play:focus-visible, .sr-make__mini:focus-visible, .sr-make__keyname:focus-visible {
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 2px;
+}
+.sr-make__body > .sr-make__btn--primary { width: 100%; margin: 0 0 var(--sp-3); }
+
+.sr-make__acts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-2);
+  margin: 0 0 var(--sp-3);
+}
+@media (max-width: 359px) { .sr-make__acts { grid-template-columns: 1fr; } }
+
+.sr-make__keys {
+  margin: 0 0 var(--sp-3);
+  padding: 0;
+  list-style: none;
+}
+.sr-make__key {
+  padding: var(--sp-2) 0;
+  border-top: 1px solid var(--sr-line);
+}
+.sr-make__keytop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+.sr-make__keyname {
+  min-height: 44px;
+  padding: 0;
+  font: 600 var(--sr-fs-label)/20px var(--sr-font);
+  text-align: start;
+  color: var(--sr-text);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sr-make__keywhen {
+  flex: none;
+  font-size: var(--sr-fs-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+}
+.sr-make__keyrow {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: var(--sp-2);
+}
+.sr-make__field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  margin: 0 0 var(--sp-2);
+}
+.sr-make__field[hidden] { display: none; }
+.sr-make__fieldname {
+  font-size: var(--sr-fs-sm);
+  color: var(--sr-text-dim);
+}
+.sr-make__select {
+  min-height: 44px;
+  width: 100%;
+  padding: 0 var(--sp-2);
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius);
+}
+.sr-make__keytools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+.sr-make__mini {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--sp-2);
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
+  color: var(--sr-text);
+  background: transparent;
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+}
+.sr-make__mini:disabled { opacity: 0.35; cursor: default; }
+
+.sr-make__choices {
+  display: flex;
+  flex-direction: column;
+  margin: 0 0 var(--sp-3);
+}
+.sr-make__choice, .sr-make__check {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 44px;
+  cursor: pointer;
+}
+.sr-make__choice input, .sr-make__check input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--sr-ember);
+}
+.sr-make__choice:has(input:disabled) { opacity: 0.45; cursor: default; }
+
+/* The film's progress, the one thing over the scene while a recording is made frame by frame. */
+.sr-make--film {
+  top: auto;
+  bottom: var(--sr-inset);
+  left: 50%;
+  right: auto;
+  width: min(360px, calc(100vw - 32px));
+  padding: var(--sp-3) var(--sp-4);
+  gap: var(--sp-2);
+  transform: translateX(-50%);
+}
+.sr-make--film .sr-make__title { font-size: var(--sr-fs-label); }
+.sr-make--film .sr-make__status { margin: 0; }
+html.sr-filming body > *:not(.sr-scene):not(.sr-make--film):not(script):not(style) { visibility: hidden; }
+
+/* A dome or a 360 frame is not the ordinary camera's picture: names, brackets and tags laid out for it would
+   point at the wrong places (scene/projection.js). */
+html.sr-proj-on #labels, html.sr-proj-on #sr-hud { visibility: hidden; }
+
+/* The phone: each panel is the phone's one bottom sheet (ui/sheet.js), as the share sheet is. */
+html.sr-phone .sr-make:not(.sr-make--film) {
+  top: calc(env(safe-area-inset-top, 0px) + var(--sr-sheet-gap));
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: auto;
+  max-height: none;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--sr-glass-strong);
+  border-width: 1px 0 0;
+  border-radius: var(--sr-radius-shell) var(--sr-radius-shell) 0 0;
+  transform: translateY(var(--sr-sheet-y, 0px));
+  transition: transform var(--sr-slow) var(--sr-ease);
+}
+html.sr-phone .sr-make.is-dragging { transition: none; }
+html.sr-phone .sr-make__head { padding-top: 0; }
+/* Under 16 px iOS Safari zooms the page when a field takes focus. */
+html.sr-phone .sr-make__select { font-size: var(--sr-fs-input); }
+
+@media (prefers-reduced-motion: reduce) {
+  html.sr-phone .sr-make { transition: none; }
+}

@@ -54,6 +54,9 @@ async function english() {
   // b200-f1-find: begin -- the words of Find, the owners, the clouds and the date field (copy/en.find.js), drafted in every language
   await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.find.js')).href);
   // b200-f1-find: end
+  // b200-f5-make: begin -- the words of the flight editor, Record and Dome and 360 (copy/en.make.js), drafted in every language
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.make.js')).href);
+  // b200-f5-make: end
   return { COPY: base.COPY, GLOSSARY: base.GLOSSARY };
 }
 
