@@ -11,7 +11,7 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
-## [2.0.0] - 2026-11-09
+## [2.0.0] - 2026-11-08
 
 2.0.0 is the release of the competitor review. On 7 November 2026 four products were read side by side with Space Radar (SpaceEngine, Solar System Scope, Cosmoscope and CosmosMap), and each place where one of them did something better, or something we did not do at all, became an issue on the project's own forge (#140 to #170). Twenty-eight of those features are built here: millions of stars, the inside of the worlds, the ground at eight landing sites, the sky from six other worlds, spinning black holes against the EHT's pictures, stars that move over deep time and stars that vary, stories for every sky culture, a flight editor, video, a dome and a headset, a gamepad, the Lab by age and curriculum, daily challenges, paper models, an asset pack and a page for creators. Beside them, the 3D models that were already started are finished or held for a stated reason, and the small fixes on the forge are done. The issues live on the forge now, not on GitHub, so each item names its issue as "(forge #N)"; this release has no pull-request links. New strings are machine-drafted in the ten other languages, as before.
 
@@ -395,7 +395,37 @@ Not in 2.0.0: narration in other languages (forge #162) waits for a native speak
 - **An issue form without a GitHub account** needs a mailbox or a public tracker the project does not have. (forge #91)
 - **The ISS reel's end card** is in the internal repository, and **the night lights at 900 km** were seen only in headless Chrome. (forge #13)
 - **The boot's long tasks** need a CPU-profile pass of their own. (forge #14)
-- **On a 390 px phone the time pill's clock is cut** ("07:02…"), and the launch chip and Zhurong's card distance run off the edge. Seen in the look runs, not fixed.
+- **Zhurong's card distance and the launch chip run off the edge on a 390 px phone.** Seen in the look runs, not fixed.
+- **"Offline" can take 6 to 12 seconds to show** on a slow device, because it waits for the first free moment after the app starts (it took 25 seconds or more before).
+
+### Found in the final look run
+
+The whole app was looked at on a desktop and a phone-sized window before release, in English, German and Arabic, with the network on and off. These were fixed:
+
+#### Fixed
+
+- **Cards in German, French, Portuguese, Russian and Ukrainian showed wrong numbers.** Jupiter's card said "5 von der Sonne" for 5,32 AE: the card, the tag readout and the
+  check that decides when a tag speaks again read only "." as a decimal point and cut the rest at the comma. All three read either now, and a test runs Jupiter's card in every language.
+- **The time pill is whole on a phone.** Up to 480 px its words take two lines, and away from now the readout has its own row, so the date, the time, "UTC" and "in 3 days" all show,
+  in Arabic too. The buttons stay 44 px.
+- **The ground and a world's sky show only the ground's own overlays.** Going down from the Planets tab had left the scale rail, the size badge and "Heliopause (modelled)" over Mars,
+  Titan and the Moon. A test now checks every floating overlay the code makes against the list the ground hides or keeps.
+- **The deep-time note is readable**, on solid glass above the labels; on a phone it is three lines under Back, and a tap shows the rest. **Upcoming launches leave the globe** when
+  the clock is more than a year from now.
+- **The app says "Offline" when it starts with no network.** The service worker took an answer from the browser's own cache as proof of a network and said "online"; it now asks the
+  server itself, and the page asks the worker at start. The release's offline probe called an audio method that does not exist, so its trip ran silent; it calls the right one.
+- **Arabic in the spaced monospace styles is joined again**: letters the mono font lacks use the sans font, and nothing is letter-spaced in Arabic.
+- **The last English in German and Arabic is translated**: the 74 mission event titles in "Go to a date", "Sun" in the card breadcrumb and the note on a planet drawn in its true
+  direction, machine-drafted in all ten languages.
+- **"2007: Fengyun-1C" is listed once** in "Go to a date", not twice.
+- **With another culture's sky chosen, a tap where it draws no figure says so** and offers the nearest of its figures, instead of quietly opening the Western one.
+- **Titan's sky opens on Saturn**, and its rises and sets are worked out when the place is opened with the panel already showing; a step that fails no longer stalls the list.
+- **Barnard's Star gives the same card by either path.** Reached by flying to its system it was the Exoplanet Archive's host record (5.96 ly, no magnitude, a position 165″ off);
+  it is now matched to the catalogue star, so the card and the deep-time distance line agree.
+- **Smaller:** the flight editor ends above the time pill; the date dialog is a bottom sheet on a phone; an hour label gives way to "now" on the time tape; Leave and the keys hint on
+  the ground sit on glass; the heliosphere legend and Find's country chip step clear of other controls; Tonight's buttons and the Algol line wrap instead of clipping; Look inside opens
+  below the line under the search on a phone; a storm reads "Tropical Cyclone 02", not GDACS's season id; the comparison pages count active satellites; a failed load of the deep-time
+  stars is tried once more.
 
 ## [1.9.0] - 2026-11-05
 
