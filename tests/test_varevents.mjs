@@ -82,5 +82,13 @@ check(N.classText(item) === item.classWords, 'and says how it was worked out');
 const listed = N.buildNextItems([], from, { fromPlace: [item], horizonMs: 30 * DAY });
 check(listed.some((x) => x.kind === 'variable'), 'Coming up keeps a variable star\'s row from the place\'s finds');
 
+// 2.0.0 look finding 13: in Tonight the row's sentence was cut at "76° up in the…"; it wraps.
+{
+  const tonight = readFileSync(join(ROOT, 'site/js/ui/tonight.js'), 'utf8');
+  const css = readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8');
+  check(/rowNode\(\{ title: r\.label, line, side: '', wrap: true,/.test(tonight) && /words\.wrap \? ' is-sentence' : ''/.test(tonight), 'Tonight marks a variable star\'s line as a sentence');
+  check(/\.sr-tonight-view__rowdetail\.is-sentence \{ white-space: normal; \}/.test(css), 'and css/ui.css lets that line wrap');
+}
+
 if (problems.length) { console.error(`varevents: ${problems.length} problem(s)\n  ${problems.join('\n  ')}`); process.exit(1); }
 console.log(`varevents ok: ${worth.length} stars worth a row; from London, ${al ? `Algol at minimum ${new Date(al.tMs).toISOString().slice(0, 16)}Z, ${al.altDeg} degrees up` : ''}; GCVS ${shiftH.toFixed(1)} h off`);

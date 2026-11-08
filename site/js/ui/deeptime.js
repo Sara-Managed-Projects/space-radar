@@ -77,11 +77,13 @@ export function mountDeepTime(node, ctx, { row, button, el }) {
     paint();
   };
   const steps = row(K.title, true);
+  steps.classList.add('sr-deeptime__pairs'); // two to a row: "−10 000 years" wrapped in a third of it (2.0.0 look finding 13)
   for (const n of STEPS) {
     const b = button(steps, t(n < 0 ? K.back : K.on, { n: fmt.int(Math.abs(n)) }), t(n < 0 ? K.backTitle : K.onTitle, { n: fmt.int(Math.abs(n)) }), () => goYears(n));
     b.removeAttribute('aria-pressed');
   }
   const presets = row(K.presetsLabel, true);
+  presets.classList.add('sr-deeptime__pairs'); // and "Vega, AD 13 700" broke inside its year
   for (const p of PRESETS) {
     const b = button(presets, K.presets[p.id], K.presetTitles[p.id], () => goYears(p.year - yearOf(ctx.clock.now())));
     b.removeAttribute('aria-pressed');

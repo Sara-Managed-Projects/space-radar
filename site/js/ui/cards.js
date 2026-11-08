@@ -1799,11 +1799,13 @@ function parentOf(record, ctx, m = null) {
   const byId = (id) => (id && ctx && typeof ctx.recordById === 'function' ? ctx.recordById(String(id)) || null : null);
   const milkyWay = () => ({ record: byId(MILKY_WAY_ID), name: C.milkyWay, root: true });
   const outside = () => ({ record: null, name: C.outside, root: true });
-  // A world by its card's own name ("Sun", "Jupiter"); without a record, the copy's ("the Sun") without its article.
+  // A world by the sky's bare name in the visitor's language (COPY.sky.bodies: "Sonne", not the record's English "Sun", 2.0.0
+  // look finding 8); else by its card's own name ("Pluto"); without a record, the copy's ("the Sun") without its article.
   const world = (id) => {
     const rec = byId(id);
     const said = worldName(id);
-    return { record: rec, name: bareWorld(rec ? displayName(rec) : said || String(id)), root: id === 'sun' };
+    const bare = COPY.sky && COPY.sky.bodies && COPY.sky.bodies[id];
+    return { record: rec, name: bare || bareWorld(rec ? displayName(rec) : said || String(id)), root: id === 'sun' };
   };
   if (!record) return null;
   const md = meta(record);
@@ -2116,11 +2118,16 @@ function rowKeyOf(label, m) {
   return null;
 }
 
-const NUMBER = /[−-]?\d[\d ]*(?:\.\d+)?/;
+// The decimal sign is a point or a comma: copy/en.js num() writes RULES.decimal, a comma in de, fr,
+// pt, ru and uk. A point-only pattern cut German "5,32 AE" to "5" and a unit ",32 AE", which the
+// comma rule below then emptied (2.0.0 look finding 1). The groups are narrow no-break spaces, never
+// a comma, so a comma between digits is always a decimal comma.
+const NUMBER = /[−-]?\d[\d ]*(?:[.,]\d+)?/;
 /**
  * A row's value as one number and its unit: "27 556 km/h" -> {num: '27 556', unit: 'km/h'},
- * "magnitude −1.44" -> {num: '−1.44', unit: 'magnitude'}. A range ("1 324 to 1 364 light-years")
- * and a value with no number are not one number: null. Exported for the test.
+ * "magnitude −1.44" -> {num: '−1.44', unit: 'magnitude'}, "5,32 AE" -> {num: '5,32', unit: 'AE'}.
+ * A range ("1 324 to 1 364 light-years", "to" in the language's own word: "bis") and a value with
+ * no number are not one number: null. Exported for the test.
  */
 export function heroSplit(value) {
   const s = String(value == null ? '' : value);
@@ -2128,7 +2135,8 @@ export function heroSplit(value) {
   if (!hit) return null;
   const before = s.slice(0, hit.index).trim();
   const after = s.slice(hit.index + hit[0].length).trim();
-  if (/^(?:to|–)\s*[−-]?\d/.test(after)) return null;
+  const to = (/\{lo\}\s*(.*?)\s*\{hi\}/.exec(COPY.card.values.lightYearsRange || '') || [])[1];
+  if (/^(?:to|–)\s*[−-]?\d/.test(after) || (to && after.startsWith(to) && /^\s*[−-]?\d/.test(after.slice(to.length)))) return null;
   return { num: hit[0].trim(), unit: (after || before).replace(/,.*$/, '').trim() };
 }
 

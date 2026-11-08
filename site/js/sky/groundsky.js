@@ -1429,8 +1429,14 @@ export function createGroundSky(ctx, env) {
     const shown = cultureShown !== 'western' && options.figures ? cultures.get(cultureShown) : null;
     const fig = shown && shown.hits && cultureMod ? cultureMod.figureAt(shown.hits, best ? best.what.dirEq : eq, Math.max(2.5, reach * 2)) : null;
     const culture = COPY.tonight.skybar.cultures[fig ? cultureShown : 'western'] || cultureShown;
-    const lore = fig ? { culture: cultureShown, key: fig.key, name: fig.label, cultureName: culture }
-      : con ? { culture: 'western', key: con, name: conName, cultureName: culture } : null;
+    // Where none of their figures is in reach, their sky says so and offers its nearest, never the western story (sky/skyculture.js tapLore).
+    // A people's sky chosen whose figures have not landed yet draws none of them, and says that, not the western story either.
+    const chosen = !shown && options.figures && options.culture !== 'western' && /^[a-z]{2,24}$/.test(options.culture || '') ? options.culture : null;
+    const lore = shown && cultureMod
+      ? cultureMod.tapLore({ culture: cultureShown, cultureName: COPY.tonight.skybar.cultures[cultureShown] || cultureShown, westernName: culture,
+        hits: shown.hits, dirEq: best ? best.what.dirEq : eq, reachDeg: Math.max(2.5, reach * 2), con, conName })
+      : chosen ? { culture: chosen, key: null, name: '', cultureName: COPY.tonight.skybar.cultures[chosen] || chosen, away: { key: null, name: '', deg: NaN } }
+        : con ? { culture: 'western', key: con, name: conName, cultureName: culture } : null;
     if (!best) {
       // Nothing within reach: the tap still fell in a constellation, and the tag says which, or in
       // another people's sky the figure, and either tag opens its story.

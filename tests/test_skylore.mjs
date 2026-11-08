@@ -19,7 +19,7 @@ const DEG = Math.PI / 180;
 const dir = (ra, dec) => [Math.cos(dec * DEG) * Math.cos(ra * DEG), Math.cos(dec * DEG) * Math.sin(ra * DEG), Math.sin(dec * DEG)];
 const sep = (a, b) => Math.acos(Math.max(-1, Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2]))) / DEG;
 
-const { figureHits, figureAt, arcDistance, artQuad } = await import(join(ROOT, 'site/js/sky/skyculture.js'));
+const { figureHits, figureAt, arcDistance, artQuad, tapLore } = await import(join(ROOT, 'site/js/sky/skyculture.js'));
 const { storyFor, sourceLines } = await import(join(ROOT, 'site/js/ui/skystory.js'));
 const { COPY } = await import(join(ROOT, 'site/js/copy/en.js'));
 const { CULTURE_IDS } = await import(join(ROOT, 'site/js/sky/skymath.js'));
@@ -42,6 +42,29 @@ check(nearBelt && nearBelt.key === 'Belt' && nearBelt.sepDeg < 1, `a tap beside 
 check(figureAt(hits, dir(120, 30), 3) === null, 'a tap far from every line names none');
 check(figureAt(hits, dir(187.2, -60), 3).key === 'Cross', 'a tap on the cross names the cross');
 check(figureAt([], dir(0, 0), 3) === null && figureAt(null, dir(0, 0), 3) === null, 'no figures, no hit');
+
+// ---- tapLore: the story a tap means (2.0.0 look finding 10) --------------------------------------------
+// The Boorong sky chosen, a tap in Orion far from their lines opened the Greek hunter's story. In another people's sky a tap
+// their figures do not reach says so and offers the nearest of theirs; the western story is only the western sky's.
+{
+  const tap = { culture: 'boorong', cultureName: 'Boorong', westernName: 'Western', hits, reachDeg: 3, con: 'Ori', conName: 'Orion' };
+  const inReach = tapLore({ ...tap, dirEq: dir(84.0, -0.5) });
+  check(inReach && inReach.culture === 'boorong' && inReach.key === 'Belt' && inReach.name === 'Tau-toro' && !inReach.away, `a tap on their figure is their figure's story (${JSON.stringify(inReach)})`);
+  const far = tapLore({ ...tap, dirEq: dir(95, 10) });
+  check(far && far.culture === 'boorong' && far.key === null && far.away && far.away.key === 'Belt' && far.away.name === 'Tau-toro' && far.away.deg > 5 && far.away.deg < 20,
+    `a tap none of their figures reaches is not Orion's western story: it says so and offers their nearest (${JSON.stringify(far)})`);
+  const none = tapLore({ ...tap, hits: [], dirEq: dir(95, 10) });
+  check(none && none.culture === 'boorong' && none.away && none.away.key === null, 'a sky with no figure at all says so, and offers none');
+  const west = tapLore({ ...tap, culture: 'western', cultureName: 'Western', dirEq: dir(95, 10) });
+  check(west && west.culture === 'western' && west.key === 'Ori' && west.name === 'Orion' && !west.away, 'the western sky opens the IAU constellation\'s story');
+  check(tapLore({ ...tap, culture: 'western', con: null, dirEq: dir(95, 10) }) === null, 'and nothing where the tap is in no constellation');
+  const gs = readFileSync(join(ROOT, 'site/js/sky/groundsky.js'), 'utf8');
+  check(/cultureMod\.tapLore\(\{ culture: cultureShown,/.test(gs), 'sky/groundsky.js asks tapLore for the story of a tap in another people\'s sky');
+  check(/: chosen \? \{ culture: chosen, key: null, name: '', cultureName: [^}]+, away: \{ key: null/.test(gs), 'and a people\'s sky chosen whose figures have not landed yet says none is drawn, not the western story');
+  const ss = readFileSync(join(ROOT, 'site/js/ui/skystory.js'), 'utf8');
+  check(/const away = lore\.away;/.test(ss) && /W\.notHereTitle/.test(ss) && /W\.nearest/.test(ss) && /if \(away\) return;/.test(ss), 'ui/skystory.js says so plainly, offers the nearest figure\'s story, and fetches no story for the spot');
+  for (const k of ['notHereTitle', 'notHere', 'notHereNone', 'nearest']) check(typeof COPY.skyLore[k] === 'string', `copy/en.later.js skyLore.${k} is written`);
+}
 
 // ---- the story files: one entry per figure the sky draws, for every culture ---------------------------
 let told = 0;

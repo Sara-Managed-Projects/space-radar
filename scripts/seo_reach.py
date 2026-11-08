@@ -285,6 +285,9 @@ def first_load() -> str:
 def satellites(counts: dict | None = None) -> str:
     """"about 17,000", rounded from the saved catalogue's count: the harvester's index at deploy, else registry/seo-facts.yaml.
 
+    It counts the ACTIVE satellites (CelesTrak's active group), so the pages say "active satellites": "tracked objects" read as
+    every catalogued thing in orbit, which Find counts with the debris, about twice as many (2.0.0 look finding 15).
+
     `counts` is scripts/seo_pages.py satellite_counts(), which reads both; without it (a test) the registry's fallback."""
     n = (counts or {}).get("active") or _yml("seo-facts.yaml")["satellite_counts"]["active_objects"]
     return f"about {round(n / 1000) * 1000:,}"
@@ -353,7 +356,7 @@ def comparison_pages(host: str, counts: dict | None = None) -> list[Page]:
         "The other side of it: SpaceEngine draws all this on a Windows PC with a dedicated graphics card; Space Radar does less, in a browser, "
         "on whatever device is to hand."])
     se_ours = ("What Space Radar does that SpaceEngine does not", [
-        f"Live satellites: {sats} tracked objects placed from their orbital elements for the moment on the clock. SpaceEngine has none built in.",
+        f"Live satellites: {sats} active satellites placed from their orbital elements for the moment on the clock. SpaceEngine has none built in.",
         "Sky events from where you stand: eclipses with their shadow paths, meteor showers, conjunctions, rise and set times.",
         f"{n['trips']} narrated guided trips ({n['stops']} stops) with captions.",
         "No invented worlds: everything drawn is a real object, labelled measured, modelled or illustrative, with its source.",
@@ -421,14 +424,14 @@ def comparison_pages(host: str, counts: dict | None = None) -> list[Page]:
             [("Who makes it", "INOVE", f'An open-source project on <a href="{GITHUB}">GitHub</a>'),
              ("Where it runs", "Apps for iOS and Android; the web version is for desktops", "Any current browser, phones included"),
              ("Price", "Web free; $5.99 in the app to remove ads; desktop $9.80", "Free; no advertising"),
-             ("Satellites", "Three spacecraft", f"{sats.capitalize()} tracked objects, live"),
+             ("Satellites", "Three spacecraft", f"{sats.capitalize()} active satellites, live"),
              ("Languages", "19", f"{n['languages']} (machine-drafted, under review)")],
             ("What Solar System Scope does that Space Radar does not", [
                 "Native apps for iOS and Android, used by millions (10 million+ installs and 4.4 stars on Google Play).",
                 "Nineteen languages, and a VR app.",
                 "CC BY 4.0 planet textures that much of the web uses, Space Radar included."]),
             ("What Space Radar does that Solar System Scope does not", [
-                f"Live satellites, launches and the space station, placed for the moment on the clock: {sats} objects against three craft.",
+                f"Live satellites, launches and the space station, placed for the moment on the clock: {sats} active satellites against three craft.",
                 "Sky events from your place, with the times.",
                 f"{n['trips']} narrated trips and {n['systems']} exoplanet systems to fly into.",
                 "Open source, with every number's source."]),
@@ -438,11 +441,11 @@ def comparison_pages(host: str, counts: dict | None = None) -> list[Page]:
             host, COMPARISONS[4], "Live satellite tracker in 3D, free, in the browser",
             f"Track {sats} satellites live in 3D in your browser, with the passes over your place. How it compares with Cosmoscope's 3D tracker.",
             "A live satellite tracker in 3D",
-            f"Space Radar places {sats} tracked satellites and pieces of debris in 3D for the moment on the clock, from public orbital elements, "
+            f"Space Radar places {sats} active satellites in 3D for the moment on the clock, from public orbital elements, "
             "and ranks which will pass over you, with Starlink trains, a debris census and re-entries. Cosmoscope also draws about 16,900 live "
             "satellites in 3D. Here is what each does.",
             ("Cosmoscope", "Space Radar"),
-            [("Satellites drawn", "About 16,900", f"{sats.capitalize()}, each with a card and its source"),
+            [("Satellites drawn", "About 16,900", f"{sats.capitalize()} active ones, each with a card and its source"),
              ("Sky events", "Five fixed presets", "Eclipses, meteor showers, conjunctions, rise and set, from your place"),
              ("First load", "About 36 MB", first),
              ("Languages", "English", f"{n['languages']} (machine-drafted, under review)")],

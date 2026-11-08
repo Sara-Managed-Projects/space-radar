@@ -2,7 +2,7 @@
 //
 // Contract: storyFor(doc, key)               -> { text, more, cite, from } | null    pure
 //           sourceLines(doc, story, words)   -> [string]                             pure: what the card says it rests on
-//           openSkyStory(lore)               opens the card for { culture, key, name, cultureName }
+//           openSkyStory(lore)               opens the card for { culture, key, name, cultureName, away? }
 //           closeSkyStory()                  closes it, and gives the focus back to where it was
 // Imported by sky/groundsky.js the first time a figure's tag is pressed (or the figure tapped twice):
 // neither this, nor css/skystory.css, nor data/skystories/<culture>.json is fetched before.
@@ -118,10 +118,24 @@ export async function openSkyStory(lore) {
   const sub = el('p', 'sr-skystory__sub', t(W.sub, { culture: lore.cultureName || lore.culture }));
   const text = el('p', 'sr-skystory__text', W.loading);
   box.append(head, sub, text);
+  // A tap no figure of this sky reaches (sky/skyculture.js tapLore, 2.0.0 look finding 10): said plainly, with the nearest
+  // figure's story one press away, never another people's story in its place.
+  const away = lore.away;
+  if (away) {
+    title.textContent = t(W.notHereTitle, { culture: lore.cultureName || lore.culture });
+    text.textContent = away.key ? t(W.notHere, { culture: lore.cultureName || lore.culture, name: away.name, deg: String(Math.round(away.deg)) }) : t(W.notHereNone, { culture: lore.cultureName || lore.culture });
+    if (away.key) {
+      const go = el('button', 'sr-btn sr-skystory__nearest', t(W.nearest, { name: away.name }));
+      go.type = 'button';
+      go.addEventListener('click', () => openSkyStory({ culture: lore.culture, key: away.key, name: away.name, cultureName: lore.cultureName }));
+      box.append(go);
+    }
+  }
   document.body.appendChild(box); // above the panels: the scene labels' layer is under them
   card = box;
   document.addEventListener('keydown', onKey, true);
   close.focus();
+  if (away) return;
   let doc;
   try {
     doc = await docFor(lore.culture);

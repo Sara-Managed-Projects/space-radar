@@ -3203,9 +3203,8 @@ export function createWorlds(scene, opts = {}) {
       heldBackBy: neighbour ? neighbour.id : null,
       nearestNeighbourRad: heldBackBy ? heldBackBy.rad : Infinity,
       cls: exaggerated ? 'illustrative' : 'measured',
-      note: aroundNote || (exaggerated
-        ? `${w.display} is drawn in its true direction, but nearer and larger than it really is, so you can find it.${crowdedNote}`
-        : `${w.display} is drawn where it is, at the size it is.`),
+      // In the visitor's language (2.0.0 look finding 8: it was English typed here).
+      note: aroundNote || (exaggerated ? t(COPY.worldView.nearer, { name: w.display }) + crowdedNote : t(COPY.worldView.asIs, { name: w.display })),
     };
   }
 

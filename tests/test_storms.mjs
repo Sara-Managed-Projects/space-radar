@@ -57,6 +57,7 @@ check(byName.get('Fay').meta.status === 'depression', 'Fay: a tropical depressio
 check(byName.get('Surigae').meta.basinWord === 'typhoon' && byName.get('Surigae').meta.agency === 'JTWC', 'Surigae, at 133.2 E: a typhoon, advised by JTWC');
 check(byName.get('Nolo').meta.basinWord === 'hurricane', 'Nolo, in the central Pacific: a hurricane');
 check(P.stormName('BANG-LANG-26') === 'Bang-Lang' && P.stormName('TWO-C-26') === 'Two-C' && P.stormName('NOLO-26') === 'Nolo', 'names as people write them');
+check(P.stormName('02-20262027') === 'Tropical Cyclone 02' && P.stormName('11-20262027-26') === 'Tropical Cyclone 11', 'a system GDACS knows only by its number in the season is not shown as the raw id "02-20262027" (2.0.0 look finding 15)');
 check(P.saffirSimpson(118) === 0 && P.saffirSimpson(119) === 1 && P.saffirSimpson(153) === 1 && P.saffirSimpson(154) === 2
   && P.saffirSimpson(178) === 3 && P.saffirSimpson(209) === 4 && P.saffirSimpson(252) === 5, 'the Saffir-Simpson km/h thresholds, NHC\'s table');
 check(P.basinWord(15, -60) === 'hurricane' && P.basinWord(15, 130) === 'typhoon' && P.basinWord(15, 88) === 'cyclone' && P.basinWord(-15, 130) === 'cyclone',

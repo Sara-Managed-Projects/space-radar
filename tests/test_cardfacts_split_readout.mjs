@@ -12,6 +12,8 @@ check(split('27 580 km/h', '27 580', 'km/h'), 'a grouped number keeps its gr
 check(split('408 km', '408', 'km'), 'a plain number and a unit');
 check(split('−12 km', '−12', 'km'), 'a true minus sign (U+2212) is part of the number');
 check(split('3.5 AU', '3.5', 'AU'), 'a decimal');
+check(split('5,32 AE', '5,32', 'AE') && split('9,92 h', '9,92', 'h'), 'a decimal comma (de, es, fr, pt, ru, uk) keeps both sides of it (2.0.0 look finding 1)');
+check(split('1969, 20 July', '1969', ', 20 July') === false, 'a comma with no digit after it is not a decimal');
 check(split('27 580 km/h', '27', '580 km/h'), 'with an ordinary space the split is early: this is why the groups use U+202F');
 check(splitReadout('could not work this out') === null, 'text that does not start with a number is null');
 check(splitReadout('408') === null, 'no unit is null');

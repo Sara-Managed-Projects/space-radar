@@ -8,6 +8,7 @@
 //   artQuad(figure, n)   -> { positions, uvs, index, centre, radiusRad } for one picture
 //   figureHits(doc)      -> [{ key, label, ends }] each figure's line ends, for figureAt
 //   figureAt(hits, dirEq, maxDeg) -> { key, label, sepDeg } | null: the figure whose lines pass nearest
+//   tapLore(tap)         -> the story a tap means, { culture, key, name, cultureName, away? } | null (2.0.0 look finding 10)
 //   createSkyArt(env)    -> { update(view), state(), dispose() }
 //     env:  { root, radius, eqToLocal, renderOrder, cap, dir }  dir: '' for the western pictures,
 //           '<culture>/' for another people's (data/skyart/<culture>/, scripts/build-skylore.py)
@@ -131,6 +132,22 @@ export function figureAt(hits, dirEq, maxDeg) {
     }
   }
   return best ? { key: best.h.key, label: best.h.label, sepDeg: best.d / DEG } : null;
+}
+
+/**
+ * The story a tap on the sky means (forge #143). `tap`: { culture, cultureName, westernName, hits, dirEq, reachDeg, con, conName }.
+ * In the western sky, the IAU constellation the tap fell in. In another people's sky, their figure whose lines pass within
+ * `reachDeg`; and where none does, NOT the western story in its place (2.0.0 look finding 10: Boorong chosen, a tap in Orion
+ * opened the Greek hunter): the lore says that no figure of theirs is drawn there (`away`) and names the nearest one, which
+ * ui/skystory.js offers. `away.key` is null for a sky with no figure at all. Pure.
+ */
+export function tapLore(tap) {
+  const { culture, cultureName, westernName, hits, dirEq, reachDeg, con, conName } = tap;
+  if (culture === 'western' || !hits) return con ? { culture: 'western', key: con, name: conName, cultureName: westernName } : null;
+  const fig = figureAt(hits, dirEq, reachDeg);
+  if (fig) return { culture, key: fig.key, name: fig.label, cultureName };
+  const near = figureAt(hits, dirEq, 180);
+  return { culture, key: null, name: '', cultureName, away: near ? { key: near.key, name: near.label, deg: near.sepDeg } : { key: null, name: '', deg: NaN } };
 }
 
 function inverse3(m) {

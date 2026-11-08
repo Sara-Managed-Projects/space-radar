@@ -4,7 +4,8 @@
 //           groundHeight(near, far, x, z), groundNormal(near, far, x, z) -> [x, y, z],
 //           tangentXZ(latDeg, lonDeg, lat0, lon0, radiusKm) -> [x, z], joystick(dx, dy, radiusPx) -> {x, y},
 //           stepWalker(state, input, dtS, opts) -> state, horizonProfile(far, x, z, eyeM, bins) -> Float32Array (degrees),
-//           horizonAt(profile, azDeg), sunlitShare(sunAltDeg, horizonDeg, sunRadiusDeg) -> 0..1, parseGroundLink(text)
+//           horizonAt(profile, azDeg), sunlitShare(sunAltDeg, horizonDeg, sunRadiusDeg) -> 0..1, parseGroundLink(text),
+//           underBox(px, py, box) -> whether a sky label placed at (px, py) would lie on a box of the page (the time pill)
 // Pure: no DOM, no three. scene/groundstage.js draws with these; tests/test_ground.mjs holds each one.
 //
 // THE FRAME is scripts/build-ground.py's: a plane tangent to the world at the lander, x EAST and z SOUTH in metres
@@ -170,6 +171,17 @@ export function sunlitShare(sunAltDeg, horizonDeg, sunRadiusDeg) {
   const r = Math.max(1e-3, sunRadiusDeg);
   const t = Math.min(1, Math.max(0, (sunAltDeg - horizonDeg + r) / (2 * r)));
   return t * t * (3 - 2 * t);
+}
+
+/**
+ * Whether a label of the sky, its anchor at (px, py) in page pixels, would be drawn on `box` ({left, top, right, bottom},
+ * a getBoundingClientRect): a name runs right of its anchor by up to a long word and sits a line below it, a compass
+ * letter a line above (css/ground.css .sr-ground__label), so the box is widened by that much. No box, never. 2.0.0 look
+ * finding 11: the compass "N" was drawn on the time pill.
+ */
+export function underBox(px, py, box) {
+  if (!box) return false;
+  return px >= box.left - 120 && px <= box.right && py >= box.top - 22 && py <= box.bottom + 18;
 }
 
 /** `#ground=` read: a site id (`apollo-15`), or null. */

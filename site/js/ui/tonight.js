@@ -374,7 +374,7 @@ export function renderTonight(host, ctx) {
     head.appendChild(el('span', 'sr-tonight-view__rowname', words.title));
     if (words.side) head.appendChild(el('span', 'sr-tonight-view__rowside sr-num', words.side));
     b.appendChild(head);
-    b.appendChild(el('span', 'sr-tonight-view__rowdetail sr-num', words.line));
+    b.appendChild(el('span', `sr-tonight-view__rowdetail sr-num${words.wrap ? ' is-sentence' : ''}`, words.line));
     b.addEventListener('click', onPress);
     li.appendChild(b);
     // A pass keeps its small arc on hover and focus (req 9), drawn once.
@@ -495,7 +495,8 @@ export function renderTonight(host, ctx) {
     for (const r of rows.map(varKit.fc.variableWords)) {
       const time = timeText.hhmm(r.tMs);
       const line = `${time}. ${r.line}`;
-      bestList.appendChild(rowNode({ title: r.label, line, side: '', aria: t(COPY.varEvents.aria, { title: r.label, when: time, line: `${r.line} ${r.classWords}` }) }, () => showStar(r)));
+      // A sentence, not a figure line: it wraps rather than being cut at "76° up in the…" (2.0.0 look finding 13).
+      bestList.appendChild(rowNode({ title: r.label, line, side: '', wrap: true, aria: t(COPY.varEvents.aria, { title: r.label, when: time, line: `${r.line} ${r.classWords}` }) }, () => showStar(r)));
       bestEmpty.hidden = true;
     }
   }

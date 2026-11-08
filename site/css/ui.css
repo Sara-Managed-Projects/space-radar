@@ -6200,6 +6200,8 @@ html.sr-phone .sr-tonight-view__num { font-size: var(--sr-fs-num-sm); }
 
 .sr-tonight-view__rowname { font: 400 var(--sr-fs-body)/20px var(--sr-font); }
 .sr-tonight-view__rowdetail { font: 400 var(--sr-fs-sm)/18px var(--sr-font-mono); color: var(--sr-text-dim); }
+/* A variable star's row says a sentence ("Down to magnitude 3.4, 76° up in the north-east."): it wraps, never cut. */
+.sr-tonight-view__rowdetail.is-sentence { white-space: normal; }
 
 @media (hover: hover) {
   .sr-tonight-view__rowbtn:hover .sr-tonight-view__rowname { color: var(--sr-ember-light); }
@@ -6367,6 +6369,8 @@ html.sr-night-red::after {
 /* The phone's row where there is no sensor, and "Undo line-up" with nothing to undo. */
 .sr-skybar .sr-density__choices[hidden], .sr-skybar .sr-density__btn[hidden] { display: none; }
 .sr-skybar__wrap .sr-density__btn { flex: 1 1 30%; }
+/* Deep time's steps and pole stars two to a row: "−10 000 years" does not fit a third of it (ui/deeptime.js). */
+.sr-deeptime__pairs .sr-density__btn { flex-basis: 40%; }
 @media (pointer: coarse) {
   .sr-skybar .sr-density__btn { min-height: 44px; }
 }

@@ -892,11 +892,12 @@ export function shortHonesty(record, m) {
 /**
  * "27 580 km/h" -> {num: '27 580', unit: 'km/h'}: the card's value, split where the number ends so
  * the tag can set the digits in fixed columns and the unit dim. The groups inside a number are
- * narrow no-break spaces (copy/en.js), so the first ordinary space is where the unit starts. A value
- * that does not start with a number ("could not work this out") is not a readout.
+ * narrow no-break spaces (copy/en.js), so the first ordinary space is where the unit starts; the
+ * decimal sign is the language's, a point or a comma ("5,32 AE"). A value that does not start with
+ * a number ("could not work this out") is not a readout.
  */
 export function splitReadout(value) {
-  const m = /^([−-]?[\d\u202F.]+) (.+)$/.exec(String(value || ''));
+  const m = /^([−-]?[\d\u202F]+(?:[.,]\d+)?) (.+)$/.exec(String(value || ''));
   return m ? { num: m[1], unit: m[2] } : null;
 }
 
