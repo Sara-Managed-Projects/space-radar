@@ -11,6 +11,25 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-11-09
+
+A patch for three things found while 2.0.0 was being deployed and its zip checked. No shared link, saved data copy or registry row changes.
+
+### Fixed
+
+- **Probes and telescopes are drawn from JPL's vectors again, not their stand-ins.** The harvester saves JPL Horizons' replies as one object,
+  each craft's Horizons id mapped to its reply's text, and the parser reads exactly that; but `site/js/data/sources.js` declared the source as
+  plain text, so `wrongShape()` refused every saved copy as "no text in it", and the "Probes and telescopes" layer showed its 39 bundled
+  stand-ins only. This had been so since 1.9.0 at least. The source is now `kind: 'json'`, and `tests/test_read_order.mjs` reads the saved copy
+  through the real module and parser (Voyager 1 comes out **measured**) and holds every saved-copy fixture to its own source's kind.
+- **The heard card clips and the Fengyun-1C Moment's sounds are deployed with their indexes.** `scripts/deploy.sh` uploaded the clips under
+  `audio/` by type (Opus, AAC, captions) and never the two `index.json` files beside them, `audio/cards/en/index.json` (the list
+  `ui/wikicard.js` reads before it plays a clip) and `audio/moments/fengyun-1c/index.json`. On 2.0.0's deploy they were uploaded by hand.
+  They now go up with the app, as JSON with the app's revalidate header, and each is invalidated by name; an `--assets-only` deploy still
+  stores nothing the edge keeps for a year. `tests/test_edge_cache.mjs` counts twenty-three revalidated uploads and checks both files.
+- **The release zip's size, as it is.** `docs/RELEASING.md` said about 100 MB, 40 MB of it narration and music; the 2.0.0 zip is 173 MB, and
+  241 MB unpacked, of which about 66 MB is narration, card voices and music and 33 MB the 3D star layer's stars.
+
 ## [2.0.0] - 2026-11-08
 
 2.0.0 is the release of the competitor review. On 7 November 2026 four products were read side by side with Space Radar (SpaceEngine, Solar System Scope, Cosmoscope and CosmosMap), and each place where one of them did something better, or something we did not do at all, became an issue on the project's own forge (#140 to #170). Twenty-eight of those features are built here: millions of stars, the inside of the worlds, the ground at eight landing sites, the sky from six other worlds, spinning black holes against the EHT's pictures, stars that move over deep time and stars that vary, stories for every sky culture, a flight editor, video, a dome and a headset, a gamepad, the Lab by age and curriculum, daily challenges, paper models, an asset pack and a page for creators. Beside them, the 3D models that were already started are finished or held for a stated reason, and the small fixes on the forge are done. The issues live on the forge now, not on GitHub, so each item names its issue as "(forge #N)"; this release has no pull-request links. New strings are machine-drafted in the ten other languages, as before.
@@ -2340,7 +2359,8 @@ The first public map.
 - A registry of YAML files as the architecture, with generated mirrors and a validator in CI.
 - No server, no database, no build step.
 
-[Unreleased]: https://github.com/Sara-Managed-Projects/space-radar/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/Sara-Managed-Projects/space-radar/compare/v2.0.1...HEAD
+[2.0.1]: https://github.com/Sara-Managed-Projects/space-radar/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/Sara-Managed-Projects/space-radar/compare/v1.9.0...v2.0.0
 [1.9.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.9.0
 [1.8.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.8.0

@@ -94,6 +94,7 @@ script can use without an account or a key, and none is created for this.
 In: `site/` as served, with `site/sw.js` stamped (so the copy works offline after one visit) and
 `site/data/v1/` as saved on release day; `LICENSE`, `CREDITS.md`, `CHANGELOG.md`,
 `START-HERE.txt`, `docs/RUN_LOCALLY.md` and `scripts/save_offline_data.py`. Not in: tests,
-registries, the other scripts and tools (clone the repository for those). The zip is about 100 MB,
-40 MB of it narration and music. The saved data is other publishers' data under their own terms;
+registries, the other scripts and tools (clone the repository for those). The 2.0.0 zip is 173 MB,
+241 MB unpacked; of that, about 66 MB is narration, card voices and music (`site/audio/`) and 33 MB the
+stars of the 3D star layer (`site/data/stars3d-athyg/`). The saved data is other publishers' data under their own terms;
 [CREDITS.md](../CREDITS.md) §4 says whose, and which of them have not been cleared in writing.

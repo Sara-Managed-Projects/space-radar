@@ -465,6 +465,16 @@ if [ "$WHAT" != "assets" ]; then
       --exclude "*" --include "*.webp" --content-type "image/webp" --delete
   done
   # b200-f9-reach: end
+  # THE SOUNDS' INDEXES (2.0.1): audio/cards/<lang>/index.json, the list of heard card clips that
+  # ui/wikicard.js reads before it plays one, and audio/moments/<id>/index.json. The audio block above
+  # syncs the clips by type and never sent these, so 2.0.0 went live without them (uploaded by hand on
+  # 2026-11-08). They are not clips: a new clip is a new line in its index under the same name, so they
+  # are stored like the app, here in its block, and each is invalidated by name below. --delete is
+  # scoped by the filter, so this sync and the clips' syncs never delete each other's files.
+  if [ -d "$SITE/audio" ]; then
+    "${SYNC[@]}" "$SITE/audio" "s3://$BUCKET/audio" --cache-control "$REVALIDATE" \
+      --exclude "*" --include "*.json" --content-type "application/json; charset=utf-8" --delete
+  fi
   # The press page (public #293, scripts/build_press.py): the page, the README's screenshots and
   # the mark as SVG, built beside the object pages and not kept under site/. HTML no-cache like
   # the other pages; the pictures and the SVGs each by their own type, as the textures are.
@@ -528,6 +538,10 @@ if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
     while IFS= read -r dir; do [ -n "$dir" ] && PATHS+=("/$dir/*"); done < "$BUILT/pages-dirs.txt"
   fi
   [ -n "${KEYFILE:-}" ] && PATHS+=("/$KEYFILE")
+  # The sounds' indexes, by name (not "/audio/*": the clips are long-lived and keep their edge copies).
+  if [ -d "$SITE/audio" ]; then
+    while IFS= read -r f; do PATHS+=("/audio/${f#"$SITE/audio/"}"); done < <(find "$SITE/audio" -name "*.json" | sort)
+  fi
   if [ "$WHAT" != "app" ]; then
     # The data files were just pushed and keep their names: expire the edge copies now.
     PATHS+=("/data/*")
