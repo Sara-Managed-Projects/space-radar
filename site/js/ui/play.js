@@ -38,6 +38,7 @@ import { NORTH_GALACTIC_POLE } from '../scene/galaxy.js';
 import { SUN_INERTIAL } from '../scene/stage.js';
 import { loadCss } from './latercss.js';
 import { write as writeUrl, clear as clearUrl } from './urlstate.js';
+import { isTypingIn } from './explore.js';
 import {
   GAMES, MAX_TRIES, SLIDER, utcDay, seedOf, rng, pick, distanceTile, sliderLy, lyToSlider, shareText, readStore, writeStore, streak,
 } from './playcore.js';
@@ -143,9 +144,12 @@ export function openPlay(ctx, key) {
     clearUrl(['play']);
     document.removeEventListener('keydown', onKey);
   }
+  // The card listens on the document, so a key typed into a field anywhere else (the search, say) reaches it:
+  // that key is the field's (forge #615). Escape still closes from the card's own slider and share box.
   function onKey(e) {
-    if (e.key === 'Escape') { close(); return; }
-    if (keyPick && !e.metaKey && !e.ctrlKey && !e.altKey && !/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) {
+    const typing = isTypingIn(e.target);
+    if (e.key === 'Escape') { if (!typing || card.contains(e.target)) close(); return; }
+    if (keyPick && !e.metaKey && !e.ctrlKey && !e.altKey && !typing) {
       const i = 'abcd'.indexOf(e.key.toLowerCase()) >= 0 ? 'abcd'.indexOf(e.key.toLowerCase()) : '1234'.indexOf(e.key);
       if (i >= 0 && keyPick(i)) e.preventDefault();
     }

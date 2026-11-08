@@ -7337,6 +7337,9 @@ button.sr-debris__oldname:hover { color: var(--sr-ember-light); }
 .sr-time__faded { margin: 4px 0 0; font: 400 var(--sr-fs-sm)/1.3 var(--sr-font); white-space: normal; color: var(--sr-stale); text-align: center; }
 .sr-time__faded[hidden] { display: none; }
 /* b200-f1-find: end */
+/* b200-s2-guards: begin -- 44 px on a phone, as every part of the pill is; the row is 44 tall there already */
+html.sr-phone .sr-time__date { width: 44px; height: 44px; }
+/* b200-s2-guards: end */
 /* b200-f3-stars: begin -- a variable star's light curve on its card (ui/varcurve.js, forge #142) */
 .sr-varcurve__dot { fill: var(--sr-ember); stroke: none; }
 .sr-card__varcurve[hidden] { display: none; }
