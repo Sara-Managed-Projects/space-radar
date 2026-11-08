@@ -62,6 +62,8 @@ SCHEMA = 1
 CARD_RULES = "cards-1"
 # A clip a recogniser heard worse than this is not shipped; the card keeps the device's speech.
 MAX_WER = 0.08
+# The reasons listen() writes: a card skipped for one of them is not rendered again by a plain render.
+HEARD_OUT = re.compile(r"^(a recogniser heard|the recogniser blamed)")
 
 
 def card_hash(text: str) -> str:
@@ -246,6 +248,9 @@ def render(args) -> int:
     cards = load_cards()
     doc = read_index()
     clips = dict(doc.get("clips") or {})
+    # A card a recogniser already refused stays refused: rendering it again gives the same clip, sample for sample.
+    # Only --force tries again (after a change of its text, the voice or the rules, run with --force --only KEY).
+    heard_out = {k: v for k, v in (doc.get("skipped") or {}).items() if HEARD_OUT.match(str(v))}
     skipped = {}
     ff = args.ffmpeg
     encoders = subprocess.run([ff, "-hide_banner", "-encoders"], capture_output=True, text=True).stdout
@@ -263,6 +268,9 @@ def render(args) -> int:
             clips.pop(key, None)
             continue
         k = clip_key(key, card["x"], cfg)
+        if key in heard_out and not args.force and key not in clips:
+            skipped[key] = heard_out[key]
+            continue
         p = paths(key)
         fresh = clips.get(key, {}).get("k") == k and all(f.exists() for f in p.values())
         if args.force or not fresh:
