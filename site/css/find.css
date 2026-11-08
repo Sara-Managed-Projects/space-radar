@@ -184,3 +184,27 @@ html.sr-phone .sr-find__sort::before, html.sr-phone .sr-find__go::after { conten
 html.sr-phone .sr-find__chartbtn { min-height: 44px; }
 html.sr-phone .sr-find__nopath .sr-list__btn { min-height: 44px; }
 /* b200-s2-guards: end */
+/* b200-s4b-look: begin -- the date field on a phone is a bottom sheet over the pill and the tab sheet, from under the search
+   row to the screen's foot. It dropped from the search row as the other popovers do and stopped at 72 % of the screen,
+   which on a 844 px phone is the middle of the time pill: its foot cut the pill in two (2.0.0 final look, finding 12). The
+   dialog says the time it is at ("Now 20 JUL 1969 20:17 UTC"), so the pill is not missed while it is up. */
+html.sr-phone .sr-datejump {
+  top: auto;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: calc(100dvh - var(--sr-top-end));
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  border-width: 1px 0 0;
+  border-radius: var(--sr-radius-shell) var(--sr-radius-shell) 0 0;
+}
+/* b200-s4b-look: end */
+/* b200-s4b-look: begin -- the lit group's chip on a phone, clear of what comes and goes at the top (finding 12: "India: 79
+   lit" on the sheet's handle). At full the sheet's top is 60 px down and its handle band reaches 108, where the chip sat
+   (88 px): the sheet is the screen then, Find's own panel says what is lit, and the chip waits, as the time pill does.
+   With the line under the search up (a launch day, a card) the chip stands under that line, not across it. */
+html.sr-phone[data-sheet='full'] .sr-findpill { visibility: hidden; pointer-events: none; }
+html.sr-phone:is(.sr-launchday, .sr-card-open):not([data-sheet='full']) .sr-findpill {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 44px + var(--sp-2));
+}
+/* b200-s4b-look: end */

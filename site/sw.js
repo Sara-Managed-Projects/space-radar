@@ -143,11 +143,31 @@ async function tell(message) {
 
 // Whether the last same-origin read reached the server. Said to the page only when it changes.
 let offline = null;
-function sawNetwork(ok) {
+function setNet(ok) {
   if (offline === !ok) return;
   offline = !ok;
   tell({ type: 'sr-net', offline });
 }
+// b200-s4b-look: begin -- 2.0.0 final look, finding 5: started with the server down, the page heard offline, then ONLINE,
+// then offline, and said "2 could not be read" for 25 s. A fetch(event.request) answered by the browser's own HTTP cache
+// resolves with no network at all, and the first such answer said "online". So an answer is not proof: while the worker
+// does not already know it is online, it asks the server itself, once, past every cache (a HEAD of its own folder with
+// no-store), and that answer decides. A failed read is proof enough of offline. A page that asks at its start
+// (`sr-version`, main.js) before any read has been made is answered after the same question.
+let asking = null;
+function askServer() {
+  if (!asking) {
+    asking = fetch(scope(), { method: 'HEAD', cache: 'no-store', credentials: 'same-origin' })
+      .then(() => true, () => false)
+      .then((ok) => { asking = null; setNet(ok); return ok; });
+  }
+  return asking;
+}
+function sawNetwork(ok) {
+  if (!ok) setNet(false);
+  else if (offline !== false) askServer();
+}
+// b200-s4b-look: end
 
 /**
  * Every file of a build's shell, each one checked against the stamp: from an earlier build's
@@ -268,7 +288,9 @@ self.addEventListener('message', (event) => {
   // What the first visit loaded before this worker existed: keep it too.
   if (data.type === 'sr-warm' && Array.isArray(data.urls)) event.waitUntil(warm(data.urls));
   if (data.type === 'sr-version' && event.source) {
-    event.source.postMessage({ type: 'sr-version', version: BUILD.version, stamped: stamped(BUILD), offline: offline === true });
+    const answer = () => event.source.postMessage({ type: 'sr-version', version: BUILD.version, stamped: stamped(BUILD), offline: offline === true });
+    if (offline === null) event.waitUntil(askServer().then(answer)); // b200-s4b-look: not known yet: asked first
+    else answer();
   }
 });
 

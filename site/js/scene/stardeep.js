@@ -42,6 +42,7 @@ import { magAt, VAR_YEARS } from '../sky/variables.js';
 import { yearOf, yearWords } from '../ui/deeptime.js';
 import { magToSize, magToAlpha } from './starfield.js';
 import { loadCss } from '../ui/latercss.js';
+import { starTwin } from '../ui/startwin.js'; // b200-s4b-look
 
 export const SHELL_UNITS = 1e8; // scene/stars3d.js SHELL_UNITS
 const LY_KM = 9460730472580.8;
@@ -392,7 +393,13 @@ export function attachStarDeep(ctx, clock) {
   // straight line in space the points move along (MODELLED): Barnard's Star 3.77 light-years in AD 11 800, not 5.96.
   let selected = null;
   const motionOf = new WeakMap(); // record -> its motion record, or -1
-  window.addEventListener('sr:select', (e) => { selected = e && e.detail && e.detail.klass === 'star' ? e.detail : null; st.lineText = null; });
+  // b200-s4b-look: a system's host star is measured as its twin on the stars rung (ui/startwin.js): the host record's place is
+  // the exoplanet archive's, at another epoch, too far off the motion file's for the match (2.0.0 final look, finding 14).
+  window.addEventListener('sr:select', (e) => {
+    const d = e && e.detail && e.detail.klass === 'star' ? e.detail : null;
+    selected = d && starTwin(d, typeof ctx.recordsFor === 'function' ? ctx.recordsFor('stars') : null) || d;
+    st.lineText = null;
+  });
   function selectedDistance() {
     if (!selected || !selected.pos || !st.motion) return null;
     const { m } = st.motion;
@@ -419,8 +426,11 @@ export function attachStarDeep(ctx, clock) {
     if (!st.line && text) {
       loadCss('deep');
       st.line = document.createElement('p');
-      st.line.className = 'sr-stardeep';
+      st.line.className = 'sr-stardeep sr-float';
       st.line.setAttribute('role', 'status');
+      // On a phone css/deep.css shows three lines of it under Back; a tap shows the rest (the whole is read aloud
+      // either way). It was nine lines over the top half of the picture (2.0.0 final look, finding 4).
+      st.line.addEventListener('click', () => st.line.classList.toggle('is-open'));
       document.body.appendChild(st.line);
     }
     if (st.line) { st.line.textContent = text; st.line.hidden = !text; }
