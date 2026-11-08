@@ -5478,3 +5478,32 @@ RULES.typeWords = (text) => {
   return hit ? hit + tail : String(text || '');
 };
 // b200-s1-fixes: end
+// b200-f10-stars3d: begin -- the 3D star map's AT-HYG tier (copy/en.startiers.js, forge #140), machine-drafted
+Object.assign(COPY, {
+  "starTiers": {
+    "unnamed": "Una estrella sin nombre (AT-HYG {n})",
+    "cite": "AT-HYG v4.0 (CC BY-SA 4.0, David Nash): posición y brillo de Tycho-2, distancia de {dist}",
+    "from": {
+      "gaia-dr3": "Gaia DR3",
+      "gaia-dr2": "Gaia DR2",
+      "hipparcos": "Hipparcos",
+      "gliese": "el catálogo de Gliese",
+      "other": "un catálogo más antiguo"
+    },
+    "error": "Distancia precisa a ±{pct} % aproximadamente (paralaje entre su error, unos {poe}): modelado a partir del error típico de la misión con este brillo ({mas} milisegundos de arco), porque AT-HYG no incluye el error propio de esta estrella",
+    "noError": "AT-HYG no da ningún error para esta distancia",
+    "guess": "Esta distancia es una suposición: más allá de 3 kpc (unos 10 000 años luz) una paralaje mide pocas décimas de milisegundo de arco, y el error propio de la estrella no está en AT-HYG, que solo guarda una paralaje mayor que su error",
+    "lineHyg": "Estrellas en 3D: las 109 389 de HYG.",
+    "lineAthyg": "Estrellas en 3D: las 109 389 de HYG y {n} millones de AT-HYG, cargadas alrededor de la cámara en un peldaño de la escalera (hasta {k} millones a la vez) y dibujadas hasta la magnitud {lim} vista desde la cámara, más débiles de lo que ve un ojo, desvaneciéndose al final.",
+    "shell": "En el escenario de un mundo las estrellas en 3D son solo las de HYG: {n} estrellas de AT-HYG de magnitud 7,5 o más brillantes vistas desde el Sol no se dibujan allí.",
+    "why": {
+      "low": "La calidad baja dibuja solo HYG.",
+      "latched": "La frecuencia de imagen era baja: solo HYG.",
+      "saver": "Ahorro de datos: solo HYG.",
+      "none": ""
+    },
+    "gaiaHeld": "Gaia DR3 no es un nivel: la ESA licencia los datos de su archivo solo para uso no comercial (CC BY-NC 3.0 IGO).",
+    "farTime": "Las estrellas de AT-HYG se dibujan solo en la fecha de hoy: la vista del tiempo lejano usa solo HYG."
+  }
+});
+// b200-f10-stars3d: end

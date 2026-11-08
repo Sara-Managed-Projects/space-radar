@@ -449,7 +449,7 @@ classes:
     honesty: measured
     fallback: Points sized by magnitude; the disc of a near star only past 1.5 px.
     note:
-      source: "HYG v4.4 (David Nash) for 109 389 stars in 3D; AT-HYG v4.0 for fainter ones from the ground; d3-celestial for the starfield; Boyajian et al. 2012 for four measured radii; the Wikipedia article each notable star names."
+      source: "HYG v4.4 (David Nash) for 109 389 stars in 3D; AT-HYG v4.0 for fainter ones from the ground and, on a rung of the ladder, 2.4 million more in 3D round the camera (b200-f10-stars3d, forge #140); d3-celestial for the starfield; Boyajian et al. 2012 for four measured radii; the Wikipedia article each notable star names."
       dates: "Hipparcos (1997) positions and Gaia DR3 distances through AT-HYG; the line on each card read on the day its row says."
       drawn: "Measured: positions, magnitudes, colours from B-V. Modelled: the limb-darkened disc of a near star. Red stars' radii are estimates where no interferometry exists."
       rights: "HYG and AT-HYG CC BY-SA 4.0; d3-celestial BSD-3-Clause; facts cited."

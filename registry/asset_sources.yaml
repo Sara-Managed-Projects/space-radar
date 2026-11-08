@@ -789,3 +789,24 @@ sources:
     offline: shipped
     checked: 2026-11-07
   # b200-c1-culture: end
+  # b200-f10-stars3d: begin -- forge #140: AT-HYG's 2.4 million stars in 3D, and why Gaia DR3 is not a tier
+  # GAIA DR3 WAS NOT DOWNLOADED. The issue asked for the archive's licence to be confirmed as CC BY-SA 3.0 IGO before use.
+  # Read 2026-11-08: https://www.cosmos.esa.int/web/gaia-users/license says "Gaia data are distributed under the CC BY-NC
+  # 3.0 IGO license.", and ESA's archive terms (https://www.cosmos.esa.int/web/esdc/terms-and-conditions) say "Data hosted
+  # in the ESA Space Science Archives are distributed under the CC BY-NC 3.0 IGO licence." A non-commercial cut cannot be
+  # mixed into a CC BY-SA file, so the 3D map has no Gaia DR3 tier; the row esa-gaia above already carries that licence.
+  - id: athyg-database
+    name: AT-HYG v4.0 (David Nash, astronexus), the full catalogue data/athyg_40.csv.gz, read by scripts/build-stars3d-tiles.py
+    match: ["https://codeberg.org/astronexus/athyg"]
+    url: https://codeberg.org/astronexus/athyg
+    licence: CC BY-SA 4.0
+    licence_read: "This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License"
+    licence_url: https://codeberg.org/astronexus/athyg/raw/branch/main/LICENSE
+    licence_note: "The LICENSE file and the README (\"This license applies to versions v3.0 and later\"), read 2026-11-08. data/athyg_40.csv.gz is 199 688 001 B, sha256 69ad04dd33d7c7bb4f5e1b4682798075811547ea9fb8d0e802e5b319c46818a6 (the repository's LFS pointer says the same). site/data/stars3d-athyg/ is a derivative (positions, magnitudes, colours and Tycho-2 numbers of the stars HYG does not have), shared alike under CC BY-SA 4.0. Its distances are Gaia DR3's (and a few Gaia DR2's and Hipparcos's) as AT-HYG carries them, under AT-HYG's own licence. scripts/build-startiles.py reads a subset of the same catalogue (CREDITS.md 3c)."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-08
+    pins:
+      - {file: site/data/stars3d-athyg/set.json, sha256: e87f05c1b64c35caedb80918a1f41d7fe62d991b6051bced737ee574f652add7}
+  # b200-f10-stars3d: end

@@ -103,6 +103,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Supernovae, the microwave background's spectrum and a star's wobble in the Lab | JLA (Betoule et al. 2014) and Keck HIRES (Butler et al. 2017) through CDS VizieR; COBE FIRAS through NASA LAMBDA | a catalogue, cited; NASA data, LAMBDA's acknowledgement carried | [3f-labdata](#3f-labdata-real-supernovae-the-cmb-spectrum-and-51-pegasi-in-the-lab--vizier-and-nasa-lambda-2026-11-07) | <!-- b200-c3-learn -->
 | The fold-up JWST (/print/) | NASA (webb.nasa.gov) and STScI JWST User Documentation; NASA's 3D model of Webb as a size check | facts, cited; public domain | [3f-labdata](#3f-labdata-real-supernovae-the-cmb-spectrum-and-51-pegasi-in-the-lab--vizier-and-nasa-lambda-2026-11-07) | <!-- b200-c3-learn -->
 | The ground at eight landing sites, and the skies of other worlds | NASA/GSFC/Arizona State University (LROC); NASA/JPL/University of Arizona (HiRISE); LOLA and SELENE (SLDEM2015); MOLA; LRO WAC and Viking MDIM 2.1 through NASA Solar System Treks; NASA/JPL pictures PIA07882 and PIA19400 for the Martian sky's colours | public domain | [3c-3](#3c-3-the-ground-at-the-landing-sites-and-the-skies-of-other-worlds-release-200-forge-146-147) | <!-- b200-f7-ground -->
+| Stars in 3D beyond HYG: 2.4 million, fetched round the camera | AT-HYG v4.0 (David Nash), from Tycho-2, Hipparcos and Gaia DR3 | CC BY-SA 4.0 | [3c-5](#3c-5-millions-of-stars-in-3d--at-hyg-v40-cc-by-sa-40-release-200-forge-140) | <!-- b200-f10-stars3d -->
 | Launches | The Space Devs, Launch Library 2 | free to 15 requests an hour; no published licence | [4.2](#42-the-space-devs--launch-library-2) |
 | Deep-space positions, asteroids, comets, close approaches | NASA/JPL Horizons, Small-Body Database, CNEOS | see the section | [4.18](#418-the-sources-the-harvester-reads) |
 | Space weather and the aurora | NOAA SWPC | public domain | [4.4](#44-noaa-swpc) |
@@ -4739,7 +4740,7 @@ through vizier.cfa.harvard.edu) for eight stars: Algol, lambda Tauri, delta Libr
 Alphecca and W Ursae Majoris. VizieR's terms: free in a scientific context with the authors cited; every such row of
 `site/data/variables.json` cites the paper.
 
-**The cards read aloud.** `site/audio/cards/en/` holds, so far, the leads of 34 of the 99 baked English cards (each heard by a recogniser; the rest are read by the device) (`site/data/wikicards/en.json`)
+**The cards read aloud.** `site/audio/cards/en/` holds the leads of 68 of the 99 baked English cards (each heard by a recogniser; the rest are read by the device) (`site/data/wikicards/en.json`)
 said by the trips' synthetic voice, **Kokoro-82M (af_heart), Apache-2.0** (§9b), made offline by
 `scripts/narrate-cards.py` with the trips' own engine, pauses, levelling and encoding. The words are Wikipedia's
 (**Wikipedia contributors, CC BY-SA 4.0**), so each clip is an adaptation of the quoted text and is shared alike under
@@ -4749,3 +4750,32 @@ said by the trips' synthetic voice, **Kokoro-82M (af_heart), Apache-2.0** (§9b)
 |---|---|---|---|
 | The baked cards' leads, spoken | `site/audio/cards/en/*.opus`, `*.m4a`, `*.vtt` | CC BY-SA 4.0 (the text); Apache-2.0 (the voice's model) | Voice: Kokoro-82M (af_heart), a synthetic voice; text: Wikipedia contributors |
 <!-- b200-c2-deep: end -->
+<!-- b200-f10-stars3d: begin -->
+## 3c-5. Millions of stars in 3D — AT-HYG v4.0, CC BY-SA 4.0 (release 2.0.0, forge #140)
+
+**Stars in 3D beyond HYG: AT-HYG v4.0 (David Nash), from Tycho-2, Hipparcos and Gaia DR3.** `site/data/stars3d-athyg/`
+holds the 2 411 200 stars of **AT-HYG v4.0**, "Augmented Tycho - HYG", by **David Nash** (astronexus,
+<https://codeberg.org/astronexus/athyg>), that HYG (§3c) does not already draw: the full catalogue `data/athyg_40.csv.gz`
+(199 688 001 B, sha256 `69ad04dd…46818a6`, read 2026-11-08), cut by `scripts/build-stars3d-tiles.py` into an octree of
+tiles in the A1 format (`harvest/tilepack.py`), which the 3D map fetches by node round the camera on a rung of the
+ladder (`site/js/scene/stars3dtiles.js`). Licence: the repository's LICENSE and README, "This work is licensed under a
+Creative Commons Attribution-ShareAlike 4.0 International License" (v3.0 and later), so the tiles are a derivative
+shared alike under **CC BY-SA 4.0**. AT-HYG's own sources, from its `ACKNOWLEDGMENTS.md`: the Hipparcos and Tycho-2
+catalogues (ESA 1997, SP-1200), Gaia DR3 (ESA/Gaia/DPAC), the Yale Bright Star Catalogue and the Gliese-Jahreiss
+catalogue; its distances are Gaia DR3's for nearly every star, under AT-HYG's licence.
+
+| file | what | licence | how it was made |
+|---|---|---|---|
+| `site/data/stars3d-athyg/set.json`, `L*/*.bin` | each star's place (its direction from the Sun to 13″ and its distance to 0.02 %, ecliptic J2000), absolute V magnitude, B-V, where its distance came from, and its Tycho-2 number: 13 bytes a star | CC BY-SA 4.0 | the stars with a HYG id left out (HYG draws them), every star within 20″ and 1.5 magnitudes of one of HYG's (1 994: the same star under two numbers, as `scripts/build-startiles.py` decides it), and those with no distance; Tycho's VT and BT-VT turned into V and B-V by the Hipparcos catalogue's relations (ESA 1997, vol. 1, section 1.3); nodes of 8 192, the brightest of their cube |
+
+**What is cited and what is modelled.** The places, magnitudes and colours are AT-HYG's (**measured**). AT-HYG carries no
+parallax error, so the card's distance error is **modelled** from each mission's typical error at these brightnesses:
+Gaia DR3 0.03 mas (Gaia Collaboration, Brown et al. 2021, A&A 649, A1: "0.02–0.03 mas for G < 15"), Gaia DR2 0.04 mas
+(Lindegren et al. 2018, A&A 616, A2), Hipparcos about 0.5 mas (van Leeuwen 2007, A&A 474, 653); past 3 kpc the card says the distance is a guess.
+
+**Gaia DR3 was not used.** The issue asked for a Gaia DR3 subset as a third tier once its licence was confirmed as
+CC BY-SA 3.0 IGO. ESA's page, read 2026-11-08, says "Gaia data are distributed under the CC BY-NC 3.0 IGO license."
+(<https://www.cosmos.esa.int/web/gaia-users/license>), and its archive terms say the same of every ESA space science
+archive (<https://www.cosmos.esa.int/web/esdc/terms-and-conditions>). A non-commercial cut cannot be mixed into a
+CC BY-SA file, so nothing was downloaded from the archive for this and the 3D map has no Gaia DR3 tier.
+<!-- b200-f10-stars3d: end -->

@@ -209,6 +209,9 @@ data:
   \ #146", licence: "Public domain (PDS archive products and USGS Astrogeology mosaics, registry/ground.yaml)", credit: "The ground at Chang'e 4, von Karman crater: NASA/GSFC/Arizona State University (LROC); Barker et al. 2016, Icarus 273, 346-355 (LOLA, NASA/GSFC; SELENE TC, JAXA)"}
   - {id: ground-opportunity, file: site/data/ground/opportunity/site.json, source: "https://hirise-pds.lpl.arizona.edu/PDS/DTM/ESP/ORB_018700_018799/ESP_018701_1775_ESP_018846_1775/DTEEC_018701_1775_018846_1775_U01.IMG (DTEEC_018701_1775_018846_1775_U01), with the orthoimage ESP_018701_1775_RED_C_01_ORTHO, Mars_MGS_MOLA_DEM_mosaic_global_463m and Viking MDIM 2.1 colour mosaic beyond it; resampled, quantised and tiled by scripts/build-ground.py, forge #146", licence: "Public domain (PDS archive products and USGS Astrogeology mosaics, registry/ground.yaml)", credit: "The ground at Opportunity, Endeavour crater: NASA/JPL/University of Arizona (HiRISE); MOLA Science Team, NASA/GSFC (Smith et al. 2001, JGR 106, 23689)"}
   # b200-f7-ground: end
+  # b200-f10-stars3d: begin -- AT-HYG in 3D, by octree node (forge #140); the row names the set's index, the tiles are site/data/stars3d-athyg/L*/*.bin
+  - {id: stars3d-athyg, file: site/data/stars3d-athyg/set.json, source: "https://codeberg.org/astronexus/athyg (data/athyg_40.csv.gz, AT-HYG v4.0; the stars HYG does not have, cut into octree tiles by scripts/build-stars3d-tiles.py, forge #140)", licence: "CC BY-SA 4.0", credit: "Stars in 3D beyond HYG: AT-HYG v4.0 (David Nash), from Tycho-2, Hipparcos and Gaia DR3"}
+  # b200-f10-stars3d: end
 
 # THIRD-PARTY MARKS DRAWN IN THE UI, as opposed to in the scene.
 #

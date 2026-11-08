@@ -262,6 +262,8 @@ what we changed. None of these organisations endorses Space Radar.
   is the full list, including the few terms we have not been able to confirm.
   <!-- b200-c1-culture: begin --> The Māori, Hawaiian and Boorong constellation pictures and every sky figure's story
   are CC BY-SA 4.0, from Stellarium (`site/data/skyart/<culture>/LICENSE.txt`, `site/data/skystories/`). <!-- b200-c1-culture: end -->
+  <!-- b200-f10-stars3d: begin --> The 3D map's 2.4 million AT-HYG stars (`site/data/stars3d-athyg/`) are CC BY-SA 4.0, from
+  AT-HYG v4.0 by David Nash. <!-- b200-f10-stars3d: end -->
 - The GitHub mark in the app is GitHub's trademark, used unmodified under GitHub's logo rules.
 
 <div align="center">

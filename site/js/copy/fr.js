@@ -5707,3 +5707,32 @@ COPY.momentPlayer.metDays = "{d} j";
 COPY.truth.exoPacked = "notre copie compacte du {date}"; // forge #88: which list an exoplanet came from
 COPY.truth.exoLive = "la liste de l’Archive, lue le {date}";
 // b200-s1-fixes: end
+// b200-f10-stars3d: begin -- the 3D star map's AT-HYG tier (copy/en.startiers.js, forge #140), machine-drafted
+Object.assign(COPY, {
+  "starTiers": {
+    "unnamed": "Une étoile sans nom (AT-HYG {n})",
+    "cite": "AT-HYG v4.0 (CC BY-SA 4.0, David Nash) : position et éclat de Tycho-2, distance de {dist}",
+    "from": {
+      "gaia-dr3": "Gaia DR3",
+      "gaia-dr2": "Gaia DR2",
+      "hipparcos": "Hipparcos",
+      "gliese": "du catalogue de Gliese",
+      "other": "d’un catalogue plus ancien"
+    },
+    "error": "Distance juste à environ ±{pct} % (parallaxe sur son erreur, environ {poe}) : modélisée d’après l’erreur typique de la mission à cet éclat ({mas} milliseconde d’arc), car AT-HYG ne donne pas l’erreur propre de cette étoile",
+    "noError": "AT-HYG ne donne aucune erreur pour cette distance",
+    "guess": "Cette distance est une estimation : au-delà de 3 kpc (environ 10 000 années-lumière), une parallaxe ne fait que quelques dixièmes de milliseconde d’arc, et l’erreur propre de l’étoile n’est pas dans AT-HYG, qui ne garde qu’une parallaxe plus grande que son erreur",
+    "lineHyg": "Étoiles en 3D : les 109 389 de HYG.",
+    "lineAthyg": "Étoiles en 3D : les 109 389 de HYG et {n} millions d’AT-HYG, chargées autour de la caméra sur un barreau de l’échelle (jusqu’à {k} millions à la fois) et dessinées jusqu’à la magnitude {lim} vue de la caméra, plus faibles que ce que voit un œil, en s’estompant.",
+    "shell": "Sur la scène d’un monde, les étoiles en 3D sont celles de HYG seules : {n} étoiles d’AT-HYG de magnitude 7,5 ou plus brillantes vues du Soleil n’y sont pas dessinées.",
+    "why": {
+      "low": "La qualité basse ne dessine que HYG.",
+      "latched": "La cadence d’images était basse : HYG seulement.",
+      "saver": "Économie de données : HYG seulement.",
+      "none": ""
+    },
+    "gaiaHeld": "Gaia DR3 n’est pas un niveau : l’ESA ne licencie les données de son archive que pour un usage non commercial (CC BY-NC 3.0 IGO).",
+    "farTime": "Les étoiles d’AT-HYG ne sont dessinées qu’à la date d’aujourd’hui : la vue des temps lointains n’utilise que HYG."
+  }
+});
+// b200-f10-stars3d: end

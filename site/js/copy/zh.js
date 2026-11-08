@@ -5613,3 +5613,32 @@ RULES.typeWords = (text) => {
   return hit ? hit + tail : String(text || '');
 };
 // b200-s1-fixes: end
+// b200-f10-stars3d: begin -- the 3D star map's AT-HYG tier (copy/en.startiers.js, forge #140), machine-drafted
+Object.assign(COPY, {
+  "starTiers": {
+    "unnamed": "一颗未命名的恒星（AT-HYG {n}）",
+    "cite": "AT-HYG v4.0（CC BY-SA 4.0，David Nash）：位置与亮度来自 Tycho-2，距离来自 {dist}",
+    "from": {
+      "gaia-dr3": "Gaia DR3",
+      "gaia-dr2": "Gaia DR2",
+      "hipparcos": "依巴谷",
+      "gliese": "格利泽星表",
+      "other": "一份较早的星表"
+    },
+    "error": "距离精确到约 ±{pct} %（视差与其误差之比约 {poe}）：按该任务在这一亮度的典型误差（{mas} 毫角秒）建模，因为 AT-HYG 不包含这颗星自己的误差",
+    "noError": "AT-HYG 没有给出这个距离的误差",
+    "guess": "这个距离只是猜测：在 3 kpc（约 1 万光年）以外，视差只有零点几毫角秒，而 AT-HYG 不含这颗星自己的误差，它只保留大于自身误差的视差",
+    "lineHyg": "三维恒星：HYG 的 109 389 颗。",
+    "lineAthyg": "三维恒星：HYG 的 109 389 颗，加上 AT-HYG 的 {n} 百万颗，在阶梯的一级上围绕相机加载（一次最多 {k} 百万颗），并绘制到从相机看去的 {lim} 星等，比肉眼所见更暗，逐渐淡出。",
+    "shell": "在某个天体的场景中，三维恒星只用 HYG：从太阳看亮于 7.5 等的 {n} 颗 AT-HYG 恒星在那里不绘制。",
+    "why": {
+      "low": "低画质只绘制 HYG。",
+      "latched": "帧率过低：只用 HYG。",
+      "saver": "省流量模式：只用 HYG。",
+      "none": ""
+    },
+    "gaiaHeld": "Gaia DR3 不是一个档位：ESA 只许可其档案数据用于非商业用途（CC BY-NC 3.0 IGO）。",
+    "farTime": "AT-HYG 的恒星只按今天的日期绘制：遥远时代的视图只用 HYG。"
+  }
+});
+// b200-f10-stars3d: end

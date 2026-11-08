@@ -330,6 +330,9 @@ export async function boot({ setStatus } = {}) {
   // b200-c2-deep: begin -- the 3D and orbital stars over deep time, and their variables (scene/stardeep.js, forge #141, #142)
   afterFirstVisit(WORLDLIGHTS_IMPORT_MS, () => import('./scene/stardeep.js').then((m) => { ctx.starDeep = m.attachStarDeep(ctx, clock); }).catch((e) => console.warn('stardeep', e)));
   // b200-c2-deep: end
+  // b200-f10-stars3d: begin -- AT-HYG's 2.4 million stars by octree node round the camera, on a rung (scene/stars3dtiles.js, forge #140)
+  afterFirstVisit(WORLDLIGHTS_IMPORT_MS, () => import('./scene/stars3dtiles.js').then((m) => { ctx.starTiers = m.attachStarTiers(ctx); }).catch((e) => console.warn('stars3d tiers', e)));
+  // b200-f10-stars3d: end
   const galaxy = createGalaxy(scene);
   ctx.galaxy = galaxy;
   // Deep-sky objects as big as they are, when that is bigger than their dot (scene/dsoglow.js).
