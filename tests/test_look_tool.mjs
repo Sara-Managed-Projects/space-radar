@@ -41,7 +41,9 @@ ok(/const looking = lookHeld\(\{ search: location\.search \}\);/.test(main), 'ma
 const uses = main.split('\n').filter((l) => /\blooking\b/.test(l) && !/^\s*(\/\/|\*)/.test(l));
 // The read, the two branches that feed the governor and the latch, and ctx.latch.held for a probe.
 ok(uses.length === 4, `main.js uses \`looking\` on ${uses.length} lines, not 4: the switch must do only what it says\n    ${uses.join('\n    ')}`);
-ok(uses.some((l) => /if \(!looking && !document\.hidden && !ctx\.renderMode && !capped && !latch\.latched\) \{/.test(l)), 'the branch that feeds the governor and the latch is closed by the switch');
+// Since 2.0.0 (forge #14, b200-s1-fixes) the branch also waits out boot's own long frames (`quietUntil`): a second
+// guard after the switch, which the switch still closes first.
+ok(uses.some((l) => /if \(!looking && (?:quietUntil && nowReal > quietUntil && )?!document\.hidden && !ctx\.renderMode && !capped && !latch\.latched\) \{/.test(l)), 'the branch that feeds the governor and the latch is closed by the switch');
 ok(uses.some((l) => /\} else if \(!looking && capped && !document\.hidden && !ctx\.renderMode && !latch\.latched && scaler\.rest\(nowReal\)\) \{/.test(l)), 'the resting step of the governor is closed by the switch');
 // The loaders stay behind the page being visible, and nothing else.
 ok(/if \(ctx\.quality && !document\.hidden\) \{\n\s+if \(!capped\) ctx\.quality\.frame\(frameMs, nowReal, latch\.latched\);/.test(main), 'the tier and its loaders (ctx.quality.frame, tick) must not ask the switch');

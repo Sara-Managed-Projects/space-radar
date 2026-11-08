@@ -141,10 +141,12 @@ features:
   - id: search
     name: Every dot is a thing with a name; the search
     files: [site/js/ui/search.js, site/js/ui/explore.js]
+    surfaces: ["want:wantFind"] # b200-s3-suite: Find (forge #150), by property, country and cloud: its doors sit on the explore tabs beside the search
     step: find
   - id: card
     name: The object card and its actions (Fly to it, Follow, Ride along)
     files: [site/js/ui/cards.js, site/js/ui/cardgate.js]
+    surfaces: ["want:wantCutaway"] # b200-s3-suite: Look inside (forge #144) is a row on a world's card, which this step rings
     step: card
   - id: time
     name: The time pill, the timeline and Live
@@ -153,7 +155,7 @@ features:
   - id: views
     name: The four views (Earth, Planets, Stars, Tonight)
     files: [site/js/ui/explore.js, site/js/ui/tonight.js]
-    surfaces: ["tab:earth", "tab:planets", "tab:stars", "tab:tonight"]
+    surfaces: ["tab:earth", "tab:planets", "tab:stars", "tab:tonight", "want:wantOrrery"] # b200-s3-suite: the Size and Distance sliders (forge #145) are in the Planets tab
     step: places
   - id: layers
     name: What to show (the layers, colour by, sound, density)
@@ -163,7 +165,7 @@ features:
   - id: share
     name: Share (the link, the postcard, photo mode, the embed)
     files: [site/js/ui/share.js, site/js/ui/sharesheet.js]
-    surfaces: ["rail:share", "rail:more"]
+    surfaces: ["rail:share", "rail:more", "want:wantMakers"] # b200-s3-suite: the flight editor, Record, Dome and 360 (forge #155-#157) are the share sheet's buttons
     step: share
   - id: trips
     name: Guided trips
@@ -222,7 +224,7 @@ features:
   - id: climb
     name: The continuous flight up the scale ladder
     files: [site/js/scene/climb.js]
-    surfaces: ["want:wantClimb"]
+    surfaces: ["want:wantClimb", "want:wantHeliosphere"] # b200-s3-suite: the heliosphere (forge #148) is drawn by itself on the way out past the planets, a rung of this flight
     not: "It happens by itself on a long zoom out; step one's scroll leads to it."
   - id: imagined-worlds
     name: An imagined world on a plain star stage
@@ -302,3 +304,10 @@ features:
     surfaces: ["want:wantMoment"]
     not: "A shelf of three missions under the trips on the Earth pane, and a Replay this moment row on the card of each pad, landing site and craft a story flies (Baikonur Site 1, LC-39A and 39B, the Apollo 11 and Vostok 1 landing sites, the SLS, the Saturn V, Orion): somewhere to go after the first two minutes the nine steps are about, found on the cards a visitor has already opened."
   # 0079 C1: end
+  # b200-s3-suite: begin
+  - id: headset
+    name: The headset mode, the scene in a WebXR headset (forge #158)
+    files: [site/js/ui/headset.js]
+    surfaces: ["rail:headset"]
+    not: "Its button is there only in a browser with a headset runtime, a Quest or a Vision Pro, and opens a note on comfort first; no first visit on a phone or a desktop has it."
+  # b200-s3-suite: end

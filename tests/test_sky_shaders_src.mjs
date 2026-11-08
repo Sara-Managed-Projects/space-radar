@@ -12,7 +12,10 @@ const frag = src.slice(src.indexOf('const MW_FRAG'), src.indexOf('// One body as
 check(/uniform vec2 uTexel;/.test(frag), 'the Milky Way fragment shader declares uTexel');
 check(/if \(uTexel\.x > 0\.0\) \{/.test(frag), 'and opens the panorama only when it is set (the star-free 4k map is left as it is)');
 check(/c = min\(c, 0\.25 \* \(cl \+ cr \+ cu \+ cd\) \+ 0\.015\);/.test(frag), 'a spike is cut to the mean of four neighbours plus 0.015');
-check(/texture2D\(uMap, vUv \+ vec2\(0\.0, 3\.0 \* uTexel\.y\)\)/.test(frag) && /texture2D\(uMap, vUv - vec2\(3\.0 \* uTexel\.x, 0\.0\)\)/.test(frag), 'three texels either way, both axes');
+// Since 2.0.0 (forge #14, b200-s1-fixes) each sample is read through mapValue(), which puts the sRGB sampler's linear
+// value back into the map's own values before the cut; it must still be the map, read in that one helper.
+check(/vec3 mapValue\(vec2 uv\) \{ return pow\(texture2D\(uMap, uv\)\.rgb, vec3\(1\.0 \/ 2\.2\)\); \}/.test(frag), 'the samples are the map in its own values (mapValue)');
+check(/mapValue\(vUv \+ vec2\(0\.0, 3\.0 \* uTexel\.y\)\)/.test(frag) && /mapValue\(vUv - vec2\(3\.0 \* uTexel\.x, 0\.0\)\)/.test(frag), 'three texels either way, both axes');
 check(/max\(c - 0\.012, 0\.0\)/.test(frag), 'the floor is taken off after the opening, as before');
 check(!/\b(half|input|output|sample|filter)\b\s*[=;(]/.test(frag.replace(/\/\/.*$/gm, '')), 'no reserved GLSL word is used as a name');
 check(/uTexel: \{ value: new THREE\.Vector2\(0, 0\) \}/.test(src) && /openingTexel\(img && img\.width, img && img\.height\)/.test(src), 'the uniform is made and set each frame from the map in use');
