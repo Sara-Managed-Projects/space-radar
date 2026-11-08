@@ -19,8 +19,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const problems = [];
 const check = (ok, what) => { if (!ok) problems.push(what); };
-const { realModelFor, REAL_MODELS, sourcedTablesReady } = await import(pathToFileURL(join(ROOT, 'site/js/scene/realmodels.js')).href);
-await sourcedTablesReady; // the CubeSat and bus tables load after the boot graph (scene/realmodels.js)
+const { realModelFor, REAL_MODELS } = await import(pathToFileURL(join(ROOT, 'site/js/scene/realmodels.js')).href);
+await import(pathToFileURL(join(ROOT, 'site/js/scene/sourcedtables.js')).href); // the CubeSat and bus tables come with the card and the shapes, not the boot (scene/sourcedtables.js)
 const { GEO_BUS_NORADS, GEO_BUS_LABELS } = await import(pathToFileURL(join(ROOT, 'site/js/data/geobuses.js')).href);
 
 // the registry's rows are one JSON mapping a line, after the dash

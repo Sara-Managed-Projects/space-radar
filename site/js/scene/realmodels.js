@@ -175,7 +175,7 @@ const GEO_BUS = { file: 'bus-ssl1300.glb', colour: 'satellite', name: 'a geostat
 //     makers' renders they were one template recoloured, and a family needs clean-room drawings or flight photographs before it replaces the stand-in.
 const GEO_SSL1300 = { file: 'bus-ssl1300.glb', colour: 'satellite', name: 'an SSL-1300 satellite', generic: true };
 const GEO_SOURCE_NAMES = { gcat: 'GCAT', gunter: 'Gunter\u2019s Space Page', wikipedia: 'Wikipedia', wikidata: 'Wikidata' };
-const GEO_BUS_OF = new Map(); // filled by sourcedTablesReady below
+const GEO_BUS_OF = new Map(); // filled by fillSourcedTables below
 // CUBESATS (forge #118): a catalogued CubeSat is drawn as the form factor McDowell's GCAT names for it (registry/cubesats.yaml, mirrored into data/cubesats.js by
 // scripts/gen_cubesats_js.py), at the CubeSat Design Specification's own size (tools/cubesat-builder/cube.py), with two deployed wings where GCAT's `Shape` says two panels.
 // `generic`: it is the FORM, not that satellite's own parts, and the card says so. A number GCAT does not name keeps whatever it wore before. `build` is the procedural shape drawn while
@@ -191,12 +191,16 @@ const CUBESATS = {
   '12u': { ...CUBE_FAMILY, build: 'cubesat-6u', file: 'cubesat-12u.glb', name: 'a standard 12U CubeSat form' },
   '12u-wings': { ...CUBE_FAMILY, build: 'cubesat-6u', file: 'cubesat-12u-wings.glb', name: 'a standard 12U CubeSat form with two deployed panels' },
 };
-const CUBESAT_OF = new Map(); // filled by sourcedTablesReady below
+const CUBESAT_OF = new Map(); // filled by fillSourcedTables below
 // THE TWO TABLES LOAD AFTER THE BOOT GRAPH (release 2.0.0): data/geobuses.js and data/cubesats.js are about 7 kB of catalogue numbers, and the deployed boot graph has a
-// byte budget (registry/budgets.yaml deployed_boot_js_bytes, scripts/check_built_tree.mjs). A dynamic import is not part of the boot graph and does not hold the first frame;
-// both tables arrive within moments of it. Until they do, a sourced CubeSat or bus falls through to the routes below, exactly as an unsourced one does. Node callers that
-// need the sourced routes (tests, scripts/check-model-reach.py) `await sourcedTablesReady` first.
-export const sourcedTablesReady = Promise.all([import('../data/geobuses.js'), import('../data/cubesats.js')]).then(([geo, cube]) => {
+// byte budget (registry/budgets.yaml deployed_boot_js_bytes, scripts/check_built_tree.mjs). Until they are in, a sourced CubeSat or bus falls through to the routes below,
+// exactly as an unsourced one does.
+// b200-s5-ci: begin -- AND AFTER THE FIRST VISIT. A dynamic import here, at this module's top level, ran at boot: 8.8 kB and two requests inside the first visit
+// (registry/budgets.yaml first_visit_bytes), for a card or a model shape that no first screen shows. The tables now come with the two modules that read them:
+// scene/sourcedtables.js imports both statically and fills them, and ui/cards.js (the card) and scene/models.js (the shapes a hero is built from) import it, so neither
+// a card nor a hero is ever drawn before they are in. Node callers that need the sourced routes (tests) import scene/sourcedtables.js first.
+/** Fill the bus and CubeSat routes from the modules data/geobuses.js and data/cubesats.js. A second call changes nothing. */
+export function fillSourcedTables(geo, cube) {
   for (const [key, list] of Object.entries(geo.GEO_BUS_NORADS)) {
     const [bus, source] = key.split(':');
     // b200-m4-buses: begin -- a family drawn by a file of ours (data/geobuses.js GEO_BUS_DRAWN: E3000, 702HP/MP, 702SP, A2100AX, Spacebus 4000B, GEOStar-2, DFH-4, I-3K, I-2K) wears it as
@@ -206,7 +210,8 @@ export const sourcedTablesReady = Promise.all([import('../data/geobuses.js'), im
     for (const n of list) GEO_BUS_OF.set(n, entry);
   }
   for (const [form, list] of Object.entries(cube.CUBESAT_NORADS)) for (const n of list) CUBESAT_OF.set(n, CUBESATS[form]);
-}, () => {});
+}
+// b200-s5-ci: end
 /** The sourced CubeSat entry for a record, for the name routes below (Flock, Lemur, Starling) to prefer over their 3U build, or {} to leave them as they were. */
 const cubeResolve = (record) => {
   const meta = record && record.meta ? record.meta : {};

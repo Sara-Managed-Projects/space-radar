@@ -330,11 +330,15 @@ export async function boot({ setStatus } = {}) {
   // b200-c2-deep: begin -- the 3D and orbital stars over deep time, and their variables (scene/stardeep.js, forge #141, #142)
   // b200-s4b-look: a failed fetch is tried once more, five seconds on, before the stars stay unmoved (2.0.0 final look, 15)
   const starDeep = (again) => import('./scene/stardeep.js').then((m) => { ctx.starDeep = m.attachStarDeep(ctx, clock); }).catch((e) => (again ? console.warn('stardeep', e) : setTimeout(starDeep, 5000, 1)));
-  afterFirstVisit(WORLDLIGHTS_IMPORT_MS, starDeep);
   // b200-c2-deep: end
-  // b200-f10-stars3d: begin -- AT-HYG's 2.4 million stars by octree node round the camera, on a rung (scene/stars3dtiles.js, forge #140)
-  afterFirstVisit(WORLDLIGHTS_IMPORT_MS, () => import('./scene/stars3dtiles.js').then((m) => { ctx.starTiers = m.attachStarTiers(ctx); }).catch((e) => console.warn('stars3d tiers', e)));
-  // b200-f10-stars3d: end
+  // b200-s5-ci: begin -- both modules wait for sr:layers-ready, as everything else afterFirstVisit runs does. Their timer started
+  // here at boot fired before the layers on a slow boot: it wrote window.__srFirstVisitOver early, so the byte gate left out
+  // part of the real first visit, and it fetched these modules and their data inside it. sr:layers-ready comes later in boot().
+  window.addEventListener('sr:layers-ready', () => afterFirstVisit(WORLDLIGHTS_IMPORT_MS, () => {
+    starDeep();
+    import('./scene/stars3dtiles.js').then((m) => { ctx.starTiers = m.attachStarTiers(ctx); }).catch((e) => console.warn('stars3d tiers', e)); // b200-f10-stars3d: AT-HYG's stars by octree node round the camera (scene/stars3dtiles.js, forge #140)
+  }), { once: true });
+  // b200-s5-ci: end
   const galaxy = createGalaxy(scene);
   ctx.galaxy = galaxy;
   // Deep-sky objects as big as they are, when that is bigger than their dot (scene/dsoglow.js).

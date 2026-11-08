@@ -47,6 +47,7 @@ import {
 import '../copy/en.later.js';
 import { sizeClause, lapClause } from './moonfacts.js'; // 0079 a3
 import { realModelFor, padVehicleShown } from '../scene/realmodels.js';
+import '../scene/sourcedtables.js'; // b200-s5-ci: the sourced bus and CubeSat routes, before the first card
 import { periodMsOf, wholePathKind } from '../scene/orbitline.js';
 import {
   toStage,

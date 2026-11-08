@@ -68,11 +68,20 @@ check(next(g for g in globes if g["slug"] == "ceres")["at"] == "dwarf-ceres", "C
 
 # --- the gores -----------------------------------------------------------------------------------------------
 R, N = pm.GLOBE_R_MM, pm.GORES
-for lat in (-80, -45, -10, 0, 10, 33, 60, 85):
-    for lon in (-179, -151, -100, -1, 0.5, 14.9, 44, 119, 179):  # not on a gore's edge, where either gore may claim it
-        x, y = pm.gore_xy(lat, lon)
-        la, lo, inside = pm.gore_latlon(__import__("numpy").array([x]), __import__("numpy").array([y]))
-        check(bool(inside[0]) and abs(la[0] - lat) < 1e-6 and abs(lo[0] - lon) < 1e-6, f"gore inverse of ({lat}, {lon}) gave ({la[0]}, {lo[0]})")
+# b200-s5-ci: begin -- the inverse works on numpy arrays (it is what samples a map), and CI's rails job installs only pyyaml:
+# without numpy the round trip is skipped with a note, as the Pillow sheet below and tests/test_stars3d_tiles.py's octree are.
+try:
+    import numpy as np
+except ImportError:
+    np = None
+    print("test_paper_models: numpy is not importable, so the gores' inverse is not checked (the forward projection still is)")
+if np is not None:
+    for lat in (-80, -45, -10, 0, 10, 33, 60, 85):
+        for lon in (-179, -151, -100, -1, 0.5, 14.9, 44, 119, 179):  # not on a gore's edge, where either gore may claim it
+            x, y = pm.gore_xy(lat, lon)
+            la, lo, inside = pm.gore_latlon(np.array([x]), np.array([y]))
+            check(bool(inside[0]) and abs(la[0] - lat) < 1e-6 and abs(lo[0] - lon) < 1e-6, f"gore inverse of ({lat}, {lon}) gave ({la[0]}, {lo[0]})")
+# b200-s5-ci: end
 x0, y0 = pm.gore_xy(0, -180)
 x1, _ = pm.gore_xy(0, 180 - 1e-9)
 check(abs(x0) < 1e-9 and abs(y0 - math.pi * R / 2) < 1e-9 and abs(x1 - 2 * math.pi * R) < 1e-6, "the equator runs the full 2 pi R")

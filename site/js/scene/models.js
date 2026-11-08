@@ -35,6 +35,7 @@ import { dwarfLook, buildDwarf } from './dwarfs.js'; // 0077 W1-f: each far dwar
 // registry/rockets.yaml. Same direction glyphatlas.js is already imported in.
 import { ROCKET_BY_ID, GENERIC_ROCKET } from '../data/rocketmatch.js';
 import { attachedOdditiesFor } from '../data/attached.js';
+import './sourcedtables.js'; // b200-s5-ci: the sourced bus and CubeSat routes, before the first hero is built
 // 0076 W2-a: the red of the penumbra (scene/airtint.js AIR_REDDENING), on the Earth's shadow side only.
 import { AIR_TINT_GLSL, AIR_REDDENING, EARTH_RADIUS_KM, airReddeningOn } from './airtint.js';
 

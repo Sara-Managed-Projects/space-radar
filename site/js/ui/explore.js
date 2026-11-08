@@ -39,7 +39,7 @@ import { SYSTEMS } from '../data/systems.js';
 import { load } from '../data/sources.js';
 import { parseAstros } from '../data/parsers.js';
 import { groupTrips, eventSubtitle } from './trippicker.js';
-import { tripPicture } from './trippics.js';
+import { tripPicture, PICTURE_DELAY_MS } from './trippics.js';
 import { createSearch } from './search.js';
 import { createNext, auroraItem } from './next.js';
 import { tagLines } from './cardgate.js';
@@ -559,7 +559,9 @@ export function createExplore(ctx, host) {
   earth.appendChild(momentsHost);
   const mountMoments = () => {
     const go = () => import('../moments/shelf.js').then((m) => m.mountShelf(momentsHost, ctx)).catch((err) => console.warn('the moments shelf did not load', err));
-    if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(go, { timeout: 8000 }); else setTimeout(go, 3000);
+    // b200-s5-ci: the idle moment came at once on an idle machine, inside the first visit's window (23 kB of shelf, words and
+    // format); now PICTURE_DELAY_MS after the layers first, as the trips' pictures above wait (ui/trippics.js).
+    setTimeout(() => (typeof window.requestIdleCallback === 'function' ? window.requestIdleCallback(go, { timeout: 8000 }) : go()), PICTURE_DELAY_MS);
   };
   window.addEventListener('sr:layers-ready', mountMoments, { once: true });
   if (window.__srLayersReady) mountMoments();

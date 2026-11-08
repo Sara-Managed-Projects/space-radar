@@ -10,8 +10,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const problems = [];
 const check = (ok, what) => { if (!ok) problems.push(what); };
-const { realModelFor, sourcedTablesReady } = await import(pathToFileURL(join(ROOT, 'site/js/scene/realmodels.js')).href);
-await sourcedTablesReady; // the CubeSat and bus tables load after the boot graph (scene/realmodels.js)
+const { realModelFor } = await import(pathToFileURL(join(ROOT, 'site/js/scene/realmodels.js')).href);
+await import(pathToFileURL(join(ROOT, 'site/js/scene/sourcedtables.js')).href); // the CubeSat and bus tables come with the card and the shapes, not the boot (scene/sourcedtables.js)
 const rec = (name, klass) => ({ id: `x-${name}`, name, klass, layer: 'active', meta: {} });
 
 const e = realModelFor(rec('SL-3 R/B', 'rocket'));
