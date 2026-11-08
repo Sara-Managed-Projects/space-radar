@@ -21,6 +21,8 @@ check(!refusedEverywhere(null, none), 'nothing known, no note');
   const css = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'site/css/finishers.css'), 'utf8');
   check(/html\.sr-phone:has\(\.sr-scalerail:not\(\[hidden\]\)\) \.sr-scenenote \{\s*top: calc\(var\(--sr-top-y\) \+ var\(--sr-top-bar\) \+ var\(--sp-2\) \+ 44px \+ var\(--sp-2\)\);/.test(css), 'on a phone the note starts below the rail (64 px + 44 px + 8 px)');
   check(/html\.sr-phone\.sr-card-open \.sr-scenenote \{\s*visibility: hidden;/.test(css), 'and waits while a card is up, off the selection\'s tag');
+  const ui = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'site/css/ui.css'), 'utf8');
+  check(/html\.sr-phone\.sr-launchday \.sr-scenenote \{ top: calc\(var\(--sr-top-y\) \+ var\(--sr-top-bar\) \+ 2 \* var\(--sp-2\) \+ 44px\); \}/.test(ui), 'on a launch day it starts below the countdown chip');
 }
 if (problems.length) { console.error('scene note FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('scene note ok: shown only when every CelesTrak file was refused and no satellite is on the map');

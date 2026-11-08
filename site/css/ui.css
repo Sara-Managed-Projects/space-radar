@@ -6000,6 +6000,8 @@ html.sr-phone .sr-scenenote {
   top: var(--sr-top-end);
   max-width: calc(100vw - 2 * var(--sp-4));
 }
+/* b200-s1-fixes: on a launch day the countdown chip sits where the note was (64 to 108 px): the note goes under it. */
+html.sr-phone.sr-launchday .sr-scenenote { top: calc(var(--sr-top-y) + var(--sr-top-bar) + 2 * var(--sp-2) + 44px); }
 
 /* At full the sheet is the page, and its top is 60 px down: the note (88 to 134) lay across the
    sheet's handle and the "Explore" back row, leaving 27 and 31 px of each under a finger
