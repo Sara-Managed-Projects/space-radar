@@ -30,6 +30,7 @@ const { parseCelestrakGP } = await import(join(JS, 'data/parsers.js'));
 const { parseSatcat } = await import(join(JS, 'data/satcat.js'));
 const { decodeColumns } = await import(join(JS, 'data/columnar.js'));
 const { shareUrl } = await import(join(JS, 'ui/share.js'));
+const { BUILD } = await import(join(JS, 'ui/urlstate.js'));
 const { read } = await import(join(JS, 'ui/urlstate.js'));
 
 const problems = [];
@@ -123,7 +124,7 @@ check(analyst && analyst.meta.provisional === true && analyst.id === 'celestrak-
 // --- 3. a share link round trip -------------------------------------------------------------------
 const byId = new Map(recs.map((r) => [r.id, r]));
 const url = shareUrl({ at: s3c.id }, 'https://www.spaceradar.ai/');
-eq(url, 'https://www.spaceradar.ai/#v=1&build=1.4.0&at=sat-100690', 'the share link names the number');
+eq(url, `https://www.spaceradar.ai/#v=1&build=${BUILD}&at=sat-100690`, 'the share link names the number');
 globalThis.location = { hash: new URL(url).hash };
 const back = read();
 check(byId.get(back.at) === s3c, `the link reads back to Sentinel-3C (${back.at})`);
