@@ -12,6 +12,21 @@
 // LOADED LATE. The layer is in main.js's LATER_LAYERS: it is asked for after the first screen,
 // never at boot, so nothing here is in the first visit's bytes (tests/test_boot_diet.mjs).
 import { skyToSunInertialKm } from './parsers.js';
+import { snapshotAvailable } from './sources.js';
+
+/**
+ * b200-s1-fixes (forge #88): the packed copy's planets, or [] when the harvester's snapshot of `sourceId` is newer than
+ * the packed copy (`layer.bundledAsOf`) by a day or more, or the file cannot be read. The packed copy was read whenever it
+ * existed, so a planet the Archive added after 2026-10-28 never reached a visitor. Sets `layer.snapshotAsOf` (the
+ * snapshot's day, YYYY-MM-DD, or null), which data/layers.js stamps on the snapshot's planets for the card.
+ */
+export async function readPacked(layer, sourceId) {
+  const snapAt = sourceId ? await snapshotAvailable(sourceId) : 0;
+  layer.snapshotAsOf = snapAt ? new Date(snapAt).toISOString().slice(0, 10) : null;
+  if (snapAt > Date.parse(layer.bundledAsOf) + 864e5) return [];
+  const r = await fetch(layer.packedUrl, { cache: 'no-cache' });
+  return r.ok ? decodeExoplanets(await r.arrayBuffer()) : [];
+}
 
 const LY_PER_PC = 3.2615637771674333;
 const NONE16 = 0xffff;

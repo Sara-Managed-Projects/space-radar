@@ -27,7 +27,7 @@ check(/\.sr-scalebadge\s*\{[^}]*top:\s*calc\(var\(--sr-top-y\)\s*\+\s*var\(--sr-
 // The notable names pass through labels.js's tooFarForFrame (internal #546). Moved here from tests/test_labels.mjs,
 // which also runs against the minified tree (scripts/check_built_tree.mjs TESTS), where the text is other text.
 const labels = read('site/js/ui/labels.js');
-check(/tooFarForFrame\(pr\.dist, frameDist, r\)/.test(labels) && /stage\.worldId !== 'sun'/.test(labels), 'the notable names pass through tooFarForFrame, on a world stage in a trip only (#546)');
+check(/tooFarForFrame\(pr\.dist, frameDist, r\)/.test(labels) && /stage\.worldId !== 'sun'/.test(labels) && !/const frameDist = inTrip/.test(labels), 'the notable names pass through tooFarForFrame on a world stage, in a trip or not (#546; forge #13)');
 
 // Offline (#564): the texture tiers and the planet tiles ask the same question, and neither asks the network then.
 const mainJs = read('site/js/main.js');

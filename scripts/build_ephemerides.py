@@ -144,7 +144,7 @@ def load_registry(path: Path = REGISTRY) -> dict:
         if cid in seen:
             raise Refusal(f"{at}: listed twice")
         seen.add(cid)
-        unknown = set(row) - {"id", "name", "command", "from", "to", "tol_km", "windows", "rough", "max_bytes", "max_bytes_why"}
+        unknown = set(row) - {"id", "name", "command", "from", "to", "ended", "tol_km", "windows", "rough", "max_bytes", "max_bytes_why"}
         if unknown:
             raise Refusal(f"{at}: unknown field {sorted(unknown)[0]!r}")
         if not row.get("name") or not row.get("command"):
@@ -180,14 +180,20 @@ def load_registry(path: Path = REGISTRY) -> dict:
             last = wb
         rough = row.get("rough")
         if rough is not None:
-            if not isinstance(rough, dict) or not rough.get("text") or not rough.get("until"):
-                raise Refusal(f"{at}: rough needs `until` and `text`")
+            # `until`: rough before a time (an early fit); `after`: rough from a time on (a
+            # prediction or a plan at the end of the span, forge #87). One of them, not both.
+            when = [k for k in ("until", "after") if rough.get(k)] if isinstance(rough, dict) else []
+            if not isinstance(rough, dict) or not rough.get("text") or len(when) != 1:
+                raise Refusal(f"{at}: rough needs `text` and one of `until` or `after`")
             try:
-                parse_iso(rough["until"])
+                parse_iso(rough[when[0]])
             except ValueError as e:
-                raise Refusal(f"{at}: rough.until: {e}")
+                raise Refusal(f"{at}: rough.{when[0]}: {e}")
             if len(rough["text"]) > 200 or not rough["text"].endswith("."):
                 raise Refusal(f"{at}: rough.text is one sentence of 200 characters at most, ending in a full stop")
+        ended = row.get("ended")
+        if ended is not None and not re.fullmatch(r"\d{4}-\d\d-\d\d", str(ended)):
+            raise Refusal(f"{at}: ended is a day, YYYY-MM-DD (quoted)")
         # the segments: the windows, and the Sun between them
         segments = []
         cursor = a
@@ -202,7 +208,7 @@ def load_registry(path: Path = REGISTRY) -> dict:
             raise Refusal(f"{at}: more than 255 segments")
         craft.append({
             "id": cid, "name": row["name"], "command": str(row["command"]), "from": a, "to": b,
-            "segments": segments, "rough": rough, "max_bytes": max_bytes,
+            "segments": segments, "rough": rough, "max_bytes": max_bytes, "ended": ended,
         })
     if not craft:
         raise Refusal(f"{where}: no craft")
@@ -623,7 +629,8 @@ def mirror_text(manifest: dict) -> str:
             "solution": c["solution"], "retrieved": manifest["retrieved"],
         }
         if c.get("rough"):
-            row["rough"] = {"until": c["rough"]["until"], "text": c["rough"]["text"]}
+            when = "after" if c["rough"].get("after") else "until"
+            row["rough"] = {when: c["rough"][when], "text": c["rough"]["text"]}
         rows[c["id"]] = row
     body = json.dumps(rows, indent=2, ensure_ascii=False)
     centres = json.dumps(CENTRES)
@@ -701,7 +708,26 @@ def cmd_fetch(args) -> int:
     return cmd_check(args)
 
 
-def check(root: Path = ROOT) -> list:
+# An operating craft's file must not run out unnoticed (forge #87: JWST's stopped on 2026-10-26 and
+# Juno's on 2026-08-24, and nothing said so for weeks). Sixty days is two months of warning, longer
+# than any gap between releases.
+HORIZON_DAYS = 60
+
+
+def horizon_problems(reg: dict, today: dt.date) -> list:
+    """Each operating row (no `ended:`) whose span ends less than HORIZON_DAYS after `today`."""
+    out = []
+    limit = dt.datetime.combine(today, dt.time(), dt.timezone.utc).timestamp() + HORIZON_DAYS * 86400
+    for c in reg["craft"]:
+        if c.get("ended") is None and c["to"] < limit:
+            out.append(f"registry/ephemerides.yaml: craft {c['id']!r} is operating (no `ended:`) and its path ends "
+                       f"{iso(c['to'])}, less than {HORIZON_DAYS} days after {today.isoformat()}: read Horizons' header "
+                       f"for how far its trajectory now runs, move `to:` there, then run "
+                       f"scripts/build_ephemerides.py --fetch --only {c['id']}")
+    return out
+
+
+def check(root: Path = ROOT, today: dt.date | None = None) -> list:
     """Every disagreement between the registry, the manifest, the files and the mirror. No network."""
     problems = []
     reg_path, out_dir = root / "registry" / "ephemerides.yaml", root / "site" / "data" / "eph"
@@ -713,6 +739,7 @@ def check(root: Path = ROOT) -> list:
     if not man_path.exists():
         return [f"{man_path.relative_to(root)} is missing: run scripts/build_ephemerides.py --fetch"]
     manifest = json.loads(man_path.read_text(encoding="utf-8"))
+    problems += horizon_problems(reg, today or dt.datetime.now(dt.timezone.utc).date())
     if (manifest.get("source") or {}) != reg["source"]:
         problems.append("manifest.json: its source is not the registry's")
     if not re.fullmatch(r"\d{4}-\d\d-\d\d", str(manifest.get("retrieved"))):

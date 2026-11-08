@@ -101,6 +101,14 @@ const noFile = JSON.parse(JSON.stringify(moment));
 delete noFile.tracks.effects[0].file;
 check(F.validateMoment(noFile, { words }).some((s) => /debris-cloud/.test(s)), 'a debris-cloud with no file is refused');
 check(F.formatMet(124000000) === 'T+3 y 339 d' && F.formatMet(45 * 86400 + 3600) === 'T+45 d' && F.formatMet(102 * 3600 + 45 * 60 + 40) === 'T+102:45:40', `the clock counts years and days past 30 days (${F.formatMet(124000000)})`);
+// b200-s1-fixes: begin -- the long clock's units come from the copy files, in all eleven languages
+for (const lang of ['ar', 'de', 'es', 'fr', 'he', 'hi', 'pt', 'ru', 'uk', 'zh']) {
+  const L = (await mod(`copy/${lang}.js`)).COPY.momentPlayer || {};
+  check(/\{y\}/.test(L.metYears || '') && /\{d\}/.test(L.metYears || '') && /\{d\}/.test(L.metDays || '') && !/(^|\s)y(\s|$)/.test(L.metYears || ''), `${lang}: the long clock's units are translated (${L.metYears} / ${L.metDays})`);
+}
+const ZH = (await mod('copy/zh.js')).COPY.momentPlayer;
+check(F.formatMet(124000000, ZH) === 'T+3年339天' && F.formatMet(45 * 86400, ZH) === 'T+45天' && F.formatMet(161.7, ZH) === 'T+00:02:41', `the clock takes its units from the language (${F.formatMet(124000000, ZH)})`);
+// b200-s1-fixes: end
 check(moment.drawn === 'drawnNote' && !/flame|parachute|entry/i.test(words.drawnNote) && moment.footFold === true && words.footMore && words.footLess, 'the foot line says only what this story draws, and folds on a phone');
 const noDrawn = JSON.parse(JSON.stringify(moment));
 noDrawn.drawn = 'nope';

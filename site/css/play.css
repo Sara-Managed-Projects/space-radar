@@ -82,3 +82,11 @@
 @media (prefers-reduced-motion: reduce) {
   .sr-play, .sr-play * { transition: none !important; animation: none !important; }
 }
+
+/* b200-s1-fixes: begin -- "Which world is this?" asks about a square of a world's map while the scene behind showed
+   whatever the camera was on, the Earth at first, which gave the answer away when it was the Earth (polish list of the
+   2.0.0 merges). The scene and its names are hidden while that challenge is up; the controls stay. A trip started
+   over it (a link pasted while the card is open) is drawn: the trip is what the visitor asked for then. */
+html.sr-play-veil:not(.sr-trip-mode) #stage,
+html.sr-play-veil:not(.sr-trip-mode) #labels { visibility: hidden; }
+/* b200-s1-fixes: end */

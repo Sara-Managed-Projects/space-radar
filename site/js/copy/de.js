@@ -5696,3 +5696,10 @@ Object.assign(COPY, {
   }
 });
 // b200-c2-deep: end
+
+// b200-s1-fixes: begin -- the long mission clock's units (copy/en.moments.js momentPlayer metYears, metDays), machine-drafted
+COPY.momentPlayer.metYears = "{y} J. {d} T.";
+COPY.momentPlayer.metDays = "{d} T.";
+COPY.truth.exoPacked = "unsere gepackte Kopie vom {date}"; // forge #88: which list an exoplanet came from
+COPY.truth.exoLive = "die Liste des Archivs, gelesen am {date}";
+// b200-s1-fixes: end

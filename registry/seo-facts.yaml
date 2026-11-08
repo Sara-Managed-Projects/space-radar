@@ -4,12 +4,14 @@
 # browser replaces that number with the one in data/v1/index.json when it opens the page, and a
 # deploy replaces it too when scripts/deploy.sh can read that index (scripts/build_seo.py
 # --snapshot-index). This file is the fallback for a build that can read neither: a number with
-# its day, never a bare one. Move both together, and say where they were read.
+# its day, never a bare one. Nobody types it: scripts/seo_counts.py --write rewrites the block from
+# the harvester's index, and --check (tests/test_seo_counts.py) refuses one it did not write or one
+# more than 45 days old (forge #89).
 #
 # check_registry.py holds the shape: positive whole numbers, a date, a source line.
 version: 1
 satellite_counts:
-  as_of: 2026-09-22
-  source: "the object counts recorded for CelesTrak's active catalogue and its Starlink supplemental file in site/js/data/sources.js, measured on 2026-09-22"
-  active_objects: 16587
-  starlink_objects: 11129
+  as_of: 2026-11-07
+  source: "CelesTrak's active catalogue and Starlink supplemental file as the harvester saved them, written by scripts/seo_counts.py from the harvester's index of 2026-11-07"
+  active_objects: 16872
+  starlink_objects: 11204

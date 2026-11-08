@@ -277,6 +277,7 @@ check(JSON.stringify(findMatches(index, 'starlink').hits.map((h) => h.record.id)
     'ui/shell.js': 'Escape only, and only for a view of its own (Sources, Passport)',
     'ui/cards.js': 'Escape only: closes the card',
     'ui/sharesheet.js': 'Escape and Tab only, while the share sheet is open and holds the focus',
+    'ui/whattoshow.js': 'Tab only, on its own panel, and only at the panel\'s first and last control (b200-s1-fixes, forge #49): a field inside keeps every key',
     'ui/chooser.js': 'Escape only, while the pick list is open',
     'ui/camundo.js': 'on the toast node itself, Escape only: heard only while a person has moved focus into the toast',
     'ui/scrubber.js': 'on the timeline\'s own slider',

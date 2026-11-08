@@ -299,7 +299,7 @@ export function createMomentPlayer(ctx, opts = {}) {
       const li = el(doc, 'li');
       const b = el(doc, 'button', 'sr-moment__row');
       b.type = 'button';
-      b.append(el(doc, 'span', 'sr-moment__rowtime', formatMet(c.t)), el(doc, 'span', 'sr-moment__rowname', say(c.say)));
+      b.append(el(doc, 'span', 'sr-moment__rowtime', formatMet(c.t, W())), el(doc, 'span', 'sr-moment__rowname', say(c.say)));
       b.addEventListener('click', () => { seek(c.t); writeTime(); ui.list.hidden = true; ui.chaptersBtn.setAttribute('aria-expanded', 'false'); ui.chaptersBtn.focus(); });
       li.append(b);
       ui.list.append(li);
@@ -313,7 +313,7 @@ export function createMomentPlayer(ctx, opts = {}) {
 
   function paintChrome() {
     if (!ui || !table) return;
-    ui.met.textContent = formatMet(t);
+    ui.met.textContent = formatMet(t, W());
     const r = rateAt(table, t);
     const text = compressionText(r);
     if (ui.rate.textContent !== text) {
@@ -331,7 +331,7 @@ export function createMomentPlayer(ctx, opts = {}) {
     ui.caption.hidden = !cap;
     if (doc.activeElement !== ui.scrub) ui.scrub.value = String(p);
     if (m.vehicles.length > 1 && leadAt(t).id !== truthLead) paintTruth();
-    ui.scrub.setAttribute('aria-valuetext', `${formatMet(t)}, ${chText}`);
+    ui.scrub.setAttribute('aria-valuetext', `${formatMet(t, W())}, ${chText}`);
     const end = p >= table.total - 1e-6;
     const label = playing ? W().pause : end ? W().replay : W().play;
     if (ui.playBtn.dataset.state !== label) {

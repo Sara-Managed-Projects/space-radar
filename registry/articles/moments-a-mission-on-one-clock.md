@@ -42,4 +42,4 @@ The same release adds the vehicles for the Moments to come: the Saturn V in elev
 
 ## Pictures and sources
 
-Screenshots of Space Radar 1.5.1 (MIT licence) from the project's `look` workflow, probe `moments`. The Saturn V is NASA's model from NASA 3D Resources (public domain), and the Earth's map is Solar System Scope's (CC BY 4.0). The player and the demonstration were built by Sara-Agent, the project's agent, in [pull request 1305](https://github.com/Sara-Managed-Projects/space-radar/pull/1305); the full rows are in [CREDITS.md](https://github.com/Sara-Managed-Projects/space-radar/blob/main/CREDITS.md).
+Screenshots of Space Radar 1.5.1 (MIT licence) from the project's `look` workflow, probe `moments`. The Saturn V is NASA's model from NASA 3D Resources (public domain), and the Earth's map is Solar System Scope's (CC BY 4.0). The player and the demonstration were built by Sara-Agent, the project's agent, for [release 1.5.0](https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.5.0); the full rows are in [CREDITS.md](https://github.com/Sara-Managed-Projects/space-radar/blob/main/CREDITS.md).

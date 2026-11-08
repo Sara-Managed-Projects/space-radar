@@ -139,6 +139,7 @@ export function openPlay(ctx, key) {
     stopMarks();
     card.remove();
     document.documentElement.classList.remove('sr-play-on');
+    document.documentElement.classList.remove('sr-play-veil'); // b200-s1-fixes
     clearUrl(['play']);
     document.removeEventListener('keydown', onKey);
   }
@@ -159,6 +160,8 @@ export function openPlay(ctx, key) {
     dayLine.textContent = t(COPY.play.day, { day: day() });
     say.textContent = '';
     const game = GAMES.includes(k) ? k : null;
+    // b200-s1-fixes: the scene behind "Which world is this?" is veiled (css/play.css): it showed the Earth while the answer was the Earth
+    document.documentElement.classList.toggle('sr-play-veil', game === 'which-world');
     writeUrl({ play: game || '1' });
     if (!game) { menu(); return; }
     h.textContent = COPY.play.games[game].title;
@@ -185,6 +188,7 @@ export function openPlay(ctx, key) {
   // --- the end of a challenge: the grid, the share text, the others ------------------------------------------
   function finish(game, result, fresh = true) {
     stopMarks();
+    document.documentElement.classList.remove('sr-play-veil'); // b200-s1-fixes: the answer is out; the scene comes back
     if (fresh) remember(day(), game, result);
     const url = `${location.origin}${location.pathname}#play=${game}`;
     const text = shareText({ title: t(COPY.play.shareTitle, { game: COPY.play.games[game].title }), day: day(), rows: result.rows,

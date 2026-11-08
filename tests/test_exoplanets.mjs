@@ -65,5 +65,39 @@ check(findMatches(index, 'trappist-1 e').hits[0]?.record.name === 'TRAPPIST-1 e'
 check(findMatches(index, 'kepler-452').hits.some((h) => h.record.name === 'Kepler-452 b'), '"kepler-452" finds Kepler-452 b by its host');
 check(typeof drawingLine(proxB) === 'string' && drawingLine(proxB).includes('at its star'), `an exoplanet says it is drawn at its star: ${drawingLine(proxB)}`);
 
+// 4. b200-s1-fixes (forge #88): the newer of the packed copy and the harvester's snapshot. The packed copy is of
+// 2026-10-28 (bundledAsOf); a snapshot a day or more newer is read instead, and its planets say so on the card.
+{
+  const { loadLayerDetailed } = await import(join(JS, 'data/layers.js'));
+  const S = await import(join(JS, 'data/sources.js'));
+  const layer = LAYERS.find((l) => l.id === 'exoplanets');
+  const store = new Map();
+  globalThis.localStorage = { get length() { return store.size; }, key: (i) => [...store.keys()][i] ?? null, getItem: (k) => store.get(k) ?? null, removeItem: (k) => { store.delete(k); }, setItem: (k, v) => { store.set(k, String(v)); } };
+  const run = async (fetchedAt) => {
+    store.clear();
+    S.forgetIndex();
+    S.forget('nasa-exoplanet-archive');
+    const calls = [];
+    globalThis.fetch = async (url) => {
+      url = String(url);
+      if (url.endsWith('data/v1/index.json')) return new Response(JSON.stringify({ schema: 1, generated_at: fetchedAt, run: {}, snapshots: { 'nasa-exoplanet-archive': { status: 'ok', fetched_at: fetchedAt, valid_until: '2030-01-01T00:00:00Z', items: 12 } } }), { status: 200 });
+      if (url.includes('data/v1/')) { calls.push('snapshot'); return new Response(JSON.stringify({ schema: 1, source: 'nasa-exoplanet-archive', fetched_at: fetchedAt, valid_until: '2030-01-01T00:00:00Z', items: 12, body: fixture }), { status: 200 }); }
+      if (url.endsWith('exoplanets.bin')) { calls.push('bin'); return new Response('no', { status: 404 }); }
+      if (url.endsWith('exoplanets.csv')) { calls.push('csv'); return new Response(bundled, { status: 200 }); }
+      calls.push('other:' + url);
+      return new Response('no', { status: 404 });
+    };
+    const got = await loadLayerDetailed(layer, Date.now());
+    return { calls, got };
+  };
+  const newer = await run('2026-11-04T18:38:04Z');
+  check(!newer.calls.includes('bin') && newer.calls.includes('snapshot') && newer.got.records.length === 12, `a snapshot newer than the packed copy is read and the packed copy is not (${newer.calls}, ${newer.got.records.length})`);
+  const rec = newer.got.records[0];
+  check(rec && rec.meta.liveAsOf === '2026-11-04', `its planets say they come from the snapshot of 4 November (${rec && rec.meta.liveAsOf})`);
+  const older = await run('2026-10-28T09:00:00Z');
+  check(older.calls[0] === 'bin', `a snapshot no newer than the packed copy: the packed copy is asked first (${older.calls})`);
+  check(older.got.records.length === 12 && older.got.records.every((r) => r.meta.liveAsOf === '2026-10-28'), 'the packed copy missing, the snapshot it falls back to says it is the snapshot, of its own day');
+}
+
 if (problems.length) { console.error('exoplanets FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`exoplanets ok: ${all.length} planets from the dated copy, the 12-row fixture parses, Proxima b sits on Proxima Centauri, search finds them by name and host`);

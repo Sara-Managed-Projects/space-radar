@@ -15,7 +15,7 @@
 // copy/en.facts.js (the four sections of the words it reads; not all of en.later.js) and sky/passes.js. tests/test_boot_diet.mjs
 // holds it out.
 
-import { COPY, t, fmt, timeText, fistsWords, inWords, ageInWords, UNITS } from '../copy/en.js';
+import { COPY, t, fmt, timeText, fistsWords, inWords, ageInWords, UNITS, typeWords } from '../copy/en.js';
 import { propagate, EPHEMERIS_OF } from '../propagate/index.js';
 import { launchLabel } from './labels.js';
 import { realModelFor } from '../scene/realmodels.js';
@@ -665,7 +665,11 @@ export function rightNowRows(record, m, passInfo) {
     const caveats = md.heroCopy && COPY[md.heroCopy] && COPY[md.heroCopy].rows ? COPY[md.heroCopy].rows[record.id] : null;
     if (Array.isArray(caveats)) for (const [k, v] of caveats) rows.push([k, v]);
     const type = pick(md, 'typeText');
-    if (type) rows.push([R.objectType, String(type) + (pick(md, 'hubble') ? ` (${pick(md, 'hubble')})` : '')]);
+    // b200-s1-fixes: in the visitor's language where the language's table has the phrase (copy/<lang>.js RULES.typeWords);
+    // the German card said "Globular cluster" in this row while its lead said "Kugelsternhaufen". English keeps the data's own case.
+    const here = type ? typeWords(String(type)) : '';
+    const typeShown = here && here.toLowerCase() !== String(type).toLowerCase() ? here.charAt(0).toUpperCase() + here.slice(1) : type;
+    if (type) rows.push([R.objectType, String(typeShown) + (pick(md, 'hubble') ? ` (${pick(md, 'hubble')})` : '')]);
     const sizeLy = pickNumber(md, 'sizeLy');
     // (0076 W3-b) under a light-year, one decimal (the Ring at Gaia's distance is 0.95 ly): a real value, never a dash.
     if (sizeLy !== null && sizeLy >= 1) rows.push([R.across, t(V.lightYears, { n: fmt.int(roughly(sizeLy)) })]);
@@ -697,7 +701,9 @@ export function rightNowRows(record, m, passInfo) {
     const method = pick(md, 'method');
     if (year !== null) rows.push([R.found, method ? t(V.yearByMethod, { year: String(Math.round(year)), method: String(method) }) : String(Math.round(year))]);
     const asOf = pick(md, 'asOf');
-    if (asOf) rows.push([R.catalogueCopy, t(V.asOf, { date: String(asOf) })]);
+    // b200-s1-fixes (forge #88): which list the planet came from, the packed copy or the harvester's snapshot of the Archive
+    const live = pick(md, 'liveAsOf');
+    if (asOf || live) rows.push([R.catalogueCopy, t(live ? COPY.truth.exoLive : COPY.truth.exoPacked, { date: String(live || asOf) })]);
     if (facts) rows.push(...facts.rows);
   } else if (klassOf(record) === 'star') {
     // Light-years, not astronomical units: 268 000 au for Proxima is a number nobody can hold.

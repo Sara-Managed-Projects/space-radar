@@ -18,6 +18,7 @@ directory scripts/build_seo.py built (not committed: the object pages, 404.html,
   a noindex page is not in the sitemap.
   JSON-LD      every block parses, and says it is schema.org.
   links        every relative .html link on a built page reaches a file.
+               No page links a GitHub pull request (forge #91: hidden since 2026-11-04).
 
 THE GROWTH PAGES (scripts/seo_pages.py, scripts/seo_share.py), held to the same rules plus:
   every built page  has one <h1>, links the About, Sources and Accuracy pages in its footer, and
@@ -58,6 +59,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import indexnow  # noqa: E402
 from seo_footer import REQUIRED_EXTERNAL, REQUIRED_INTERNAL  # noqa: E402
+
+PULL_LINK = re.compile(r"github\.com/[^/\s]+/[^/\s]+/pull/\d")
 
 HOST = "https://www.spaceradar.ai"
 BLOG_HOST = "https://blog.spaceradar.ai"
@@ -369,6 +372,12 @@ def check(root: Path, built: Path, require_share: bool = False) -> list[str]:
                     say(f"{rel}: the footer does not link {want[3:]}")
         if url not in in_sitemap:
             say(f"{rel} is an indexable page and the sitemap does not list it")
+
+        # forge #91: a pull request of the agent's account answers 404 since 2026-11-04 (GitHub hid
+        # them); link a release (releases/tag/vX.Y.Z) or the changelog instead.
+        for href in h.hrefs:
+            if PULL_LINK.search(html.unescape(href)):
+                say(f"{rel}: links a pull request, which GitHub no longer shows ({href}); link the release page instead")
 
         if growth_page:
             here = f.parent.relative_to(built).as_posix()

@@ -5604,3 +5604,21 @@ Object.assign(COPY, {
   }
 });
 // b200-c2-deep: end
+
+// b200-s1-fixes: begin -- the long mission clock's units (copy/en.moments.js momentPlayer metYears, metDays), machine-drafted
+COPY.momentPlayer.metYears = "{y} р. {d} дн.";
+COPY.momentPlayer.metDays = "{d} дн.";
+COPY.truth.exoPacked = "наша стиснута копія від {date}"; // forge #88: which list an exoplanet came from
+COPY.truth.exoLive = "список Архіву, прочитаний {date}";
+// The deep-sky catalogue's type phrases (data/dso.json `typeText`), lowercased, in this language: the card's lead and its
+// "What it is" row read them through RULES.typeWords; a phrase not here stays English, which is data.
+const S1_TYPES = {"globular cluster": "кулясте скупчення", "open cluster": "розсіяне скупчення", "dwarf spheroidal galaxy": "карликова сфероїдальна галактика", "spiral galaxy": "спіральна галактика", "emission nebula": "емісійна туманність", "planetary nebula": "планетарна туманність", "dwarf irregular galaxy": "карликова неправильна галактика", "barred spiral galaxy": "спіральна галактика з перемичкою", "elliptical galaxy": "еліптична галактика", "lenticular galaxy": "лінзоподібна галактика", "h ii region nebula with cluster": "область H II зі скупченням", "dwarf elliptical galaxy": "карликова еліптична галактика", "h ii region nebula": "область H II", "barred irregular galaxy": "неправильна галактика з перемичкою", "ultra-faint dwarf galaxy": "надтьмяна карликова галактика", "dark nebula": "темна туманність", "young open cluster in an emission nebula": "молоде розсіяне скупчення в емісійній туманності", "supernova remnant": "залишок наднової", "nebula with cluster": "туманність зі скупченням", "milky way star cloud": "зоряна хмара Чумацького Шляху", "optical double": "оптична подвійна", "asterism": "астеризм", "diffuse nebula": "дифузна туманність", "starburst galaxy": "галактика зі спалахом зореутворення", "dwarf irregular starburst galaxy": "карликова неправильна галактика зі спалахом зореутворення", "transition dwarf galaxy, part irregular, part spheroidal": "перехідна карликова галактика, частково неправильна, частково сфероїдальна", "barred irregular galaxy, seen edge-on": "неправильна галактика з перемичкою, видима з ребра", "ultra-faint dwarf galaxy, or perhaps a star cluster": "надтьмяна карликова галактика або, можливо, зоряне скупчення", "transition dwarf galaxy, part spheroidal, part irregular": "перехідна карликова галактика, частково сфероїдальна, частково неправильна", "spiral galaxy, seen nearly edge-on and bursting with new stars": "спіральна галактика, видима майже з ребра, повна нових зір", "peculiar galaxy with a giant black hole firing radio jets": "пекулярна галактика з гігантською чорною дірою, що викидає радіострумені", "pair of open clusters": "пара розсіяних скупчень", "spiral galaxy seen exactly edge-on": "спіральна галактика, видима точно з ребра", "reflection nebula": "відбивна туманність", "reflection and emission nebula": "відбивна й емісійна туманність", "spiral galaxy seen edge-on": "спіральна галактика, видима з ребра", "barred spiral galaxy seen edge-on": "спіральна галактика з перемичкою, видима з ребра", "spiral galaxy seen face-on": "спіральна галактика, видима пласко", "barred spiral galaxy seen nearly edge-on": "спіральна галактика з перемичкою, видима майже з ребра", "pair of colliding galaxies": "пара галактик, що зіштовхуються"};
+const S1_PLACES = [[" in the large magellanic cloud", " у Великій Магеллановій Хмарі"], [" in the small magellanic cloud", " у Малій Магеллановій Хмарі"], [" in the milky way", " у Чумацькому Шляху"], [" in the local group", " у Місцевій групі"]];
+RULES.typeWords = (text) => {
+  let base = String(text || '').trim();
+  let tail = '';
+  for (const [en, here] of S1_PLACES) if (base.toLowerCase().endsWith(en)) { tail = here; base = base.slice(0, base.length - en.length); break; }
+  const hit = S1_TYPES[base.toLowerCase()];
+  return hit ? hit + tail : String(text || '');
+};
+// b200-s1-fixes: end

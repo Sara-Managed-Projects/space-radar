@@ -613,9 +613,10 @@ export function createLabels(ctx, host) {
     const ladder = isLadderStage(stage.worldId);
     lastAllPlanets = stage.worldId === 'sun';
     const deepRule = ctx.deep && typeof ctx.deep.nameRule === 'function' ? ctx.deep.nameRule : null;
-    // A trip's stop on a world's stage (not the Sun's, where every planet is the picture, and not the
-    // ladder): how far the camera stands from what it frames, for tooFarForFrame.
-    const frameDist = inTrip && !ladder && stage.worldId !== 'sun' && ctx.cameraRig && ctx.cameraRig.state ? ctx.cameraRig.state.distance : 0;
+    // A world's stage (not the Sun's, where every planet is the picture, and not the ladder): how far the
+    // camera stands from what it frames, for tooFarForFrame. b200-s1-fixes (forge #13): the plain map too, not
+    // only a trip's stop: outside a trip the Earth view printed Uranus, Titania and Umbriel along its top edge.
+    const frameDist = !ladder && stage.worldId !== 'sun' && ctx.cameraRig && ctx.cameraRig.state ? ctx.cameraRig.state.distance : 0;
     const isGround = (r) => r.klass === 'world' && r.id === stage.worldId;
     // The tracked object's tag (ui/hud.js, spec 0047) names the selection beside its brackets; a
     // label as well would be the same name twice, 30 px apart.

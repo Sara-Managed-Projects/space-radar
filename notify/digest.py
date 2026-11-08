@@ -62,11 +62,25 @@ def next_shower_peak(peak_mmdd: str, now: datetime) -> date:
     return candidate
 
 
+def next_shower_peak_of(row: dict, now: datetime) -> date:
+    """A shower's next maximum on/after `now`'s date, from the year's own date in `peaks` (forge #90)
+    when the table has that year, else the nominal `peak`. This year's first; if it has passed, next
+    year's, again from `peaks` when it has it."""
+    today = now.date() if isinstance(now, datetime) else now
+    peaks = row.get("peaks") or {}
+    for year in (today.year, today.year + 1):
+        mmdd = peaks.get(str(year)) or row["peak"]
+        month, day = (int(p) for p in mmdd.split("-"))
+        if date(year, month, day) >= today:
+            return date(year, month, day)
+    return next_shower_peak(row["peak"], now)
+
+
 def next_shower_peaks(showers: list[dict], now: datetime) -> list[dict]:
     """One entry per shower, its next peak date, sorted soonest first."""
     out = []
     for row in showers:
-        peak = next_shower_peak(row["peak"], now)
+        peak = next_shower_peak_of(row, now)
         out.append(
             {
                 "id": row["id"],

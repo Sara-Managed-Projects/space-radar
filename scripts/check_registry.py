@@ -3025,8 +3025,8 @@ def check_sky_events(world_ids: set, tour_ids: set) -> list:
             fail(where, "duplicate id")
         seen.add(eid)
         kind = e.get("kind")
-        if kind not in ("meteor-shower", "mission", "eclipse"):
-            fail(where, f"`kind:` {kind!r} is not meteor-shower, mission or eclipse")
+        if kind not in ("meteor-shower", "mission", "eclipse", "season"):  # season: a solstice (b200-s1-fixes, forge #90)
+            fail(where, f"`kind:` {kind!r} is not meteor-shower, mission, eclipse or season")
         if not str(e.get("name") or "").strip():
             fail(where, "no `name:`")
         short = str(e.get("short") or "")
@@ -3047,6 +3047,9 @@ def check_sky_events(world_ids: set, tour_ids: set) -> list:
                 fail(where, "no `mission:`")
             if not isinstance(e.get("happens"), datetime.date):
                 fail(where, "`happens:` must be the date the agency gives (YYYY-MM-DD)")
+        elif kind == "season":  # b200-s1-fixes
+            if e.get("season") not in ("june-solstice", "december-solstice") or not isinstance(e.get("year"), int):
+                fail(where, "`season:` must be june-solstice or december-solstice, with a whole-number `year:`")
         elif kind == "eclipse":
             if e.get("eclipse") not in ("annular", "total"):
                 fail(where, "`eclipse:` must be annular or total")
@@ -5669,6 +5672,14 @@ def main() -> int:
             fail(where, f"peak {peak!r} must be `MM-DD`")
         if not s.get("note"):
             fail(where, "no note -- the ZHR is not the useful sentence")
+        # b200-s1-fixes: begin -- each year's own date, and where it came from (forge #90)
+        peaks = s.get("peaks")
+        if not isinstance(peaks, dict) or not peaks or any(
+                not (isinstance(y, str) and len(y) == 4 and isinstance(v, str) and len(v) == 5 and v[2] == "-") for y, v in peaks.items()):
+            fail(where, "peaks must map a year (\"2027\") to that year's `MM-DD`")
+        elif any(y not in (showers_doc.get("peaks_from") or {}) for y in peaks):
+            fail(where, "a year in `peaks` has no line in `peaks_from` saying where its date came from")
+        # b200-s1-fixes: end
     if not showers_doc.get("reviewed_against"):
         fail("showers.yaml", "must say which calendar it was last checked against")
 

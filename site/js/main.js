@@ -2756,6 +2756,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
   // The frame-rate latch (spec 0026 req 18): twenty-frame median over 33 ms for three seconds ->
   // one device pixel per CSS pixel and no Milky Way picture, once, said in the panel.
   const latch = createFrameLatch();
+  let quietUntil = 0; // b200-s1-fixes: the frame ladder and the latch are fed from here on (forge #14)
   // `?look=1` (scene/quality.js lookHeld), read once: a tool is looking, and neither the latch nor the
   // governor below is fed. Nothing else asks: the loaders, the tier and the clock run as for a visitor.
   const looking = lookHeld({ search: location.search });
@@ -2906,7 +2907,10 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // Not while filming: a film's frames are all one step long (33 ms at 30 fps), which the latch
     // would read as a slow device and answer by throwing the picture's quality away.
     if (!capped) freeFrameMs = frameMs;
-    if (!looking && !document.hidden && !ctx.renderMode && !capped && !latch.latched) {
+    // b200-s1-fixes (forge #14): boot's own long frames (the layers landing, the first uploads) are not the device's pace;
+    // they stepped a loaded laptop down the ladder and tripped the latch for good. Fed from 5 s after the layers land.
+    quietUntil ||= window.__srLayersReady && nowReal + 5000;
+    if (!looking && quietUntil && nowReal > quietUntil && !document.hidden && !ctx.renderMode && !capped && !latch.latched) {
       const st = ctx.trip && ctx.trip.state;
       const shown = !!(st && st.phase !== 'idle') || !!(ctx.autopilot && ctx.autopilot.engaged) || !!(ctx.climb && ctx.climb.state && (ctx.climb.state.active || ctx.climb.state.fading));
       const calm = !shown && !cameraMovedLast;

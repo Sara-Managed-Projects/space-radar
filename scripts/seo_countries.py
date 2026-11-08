@@ -32,6 +32,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from seo_common import ROOT, Page, esc, webpage  # noqa: E402
+from seo_share import Spec  # noqa: E402
 
 OWNERS_JS = ROOT / "site/js/data/owners.js"
 SNAPSHOT = ROOT / "site/data/v1/celestrak-satcat.json"
@@ -172,6 +173,9 @@ def country_page(host: str, r: dict, as_of: str) -> Page:
                 og_title=title, lastmod=as_of)
     page.jsonld = [webpage(host, page, [("Satellites by country", "country/index.html"), (name, "")],
                            extra={"about": {"@type": "Country", "name": name, "identifier": r["iso"]}})]
+    # b200-s1-fixes: a share picture of its own, as every other built page has (scripts/check_seo.py)
+    page.share = Spec(key=f"country/{slug}/index", name=name, number=f"{groups(r['up'])} in orbit", caption="Satellites by country",
+                      kind="plain", colour="#9ec3ff", alt=f"Rings and a dot, captioned {name}.")
     return page
 
 
@@ -187,6 +191,9 @@ def index_page(host: str, rows: list[dict], as_of: str) -> Page:
                 description=f"How many satellites, rocket bodies and pieces of debris each of {len(rows)} countries has in orbit, from CelesTrak's catalogue.",
                 body=body, foot=f"<p>Source: CelesTrak's satellite catalogue, read {esc(day)}.</p>\n", lastmod=as_of)
     page.jsonld = [webpage(host, page, [("Satellites by country", "")])]
+    # b200-s1-fixes: check_seo.py found this page wearing the default og:image while every other page has its own
+    page.share = Spec(key="country/index", name="Satellites by country", number=f"{len(rows)} countries", caption="Space Radar",
+                      kind="plain", colour="#9ec3ff", alt="Rings and a dot, captioned Satellites by country.")
     return page
 
 

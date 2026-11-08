@@ -94,6 +94,17 @@ function missionEvent(ev) {
   return { instant: ev.happens, instantMs: noon, mercury, moonAtNoon: moonAt(noon) };
 }
 
+/** A solstice (forge #90): the instant from Astronomy Engine's Seasons, and where the Sun stands overhead at noon then. */
+function seasonEvent(ev) {
+  const s = Astronomy.Seasons(ev.year);
+  const at = ev.season === 'june-solstice' ? s.jun_solstice : ev.season === 'december-solstice' ? s.dec_solstice : null;
+  if (!at) throw new Error(`${ev.id}: season ${ev.season} is not june-solstice or december-solstice`);
+  const ms = at.date.getTime();
+  // the Sun's declination then: the latitude where it stands overhead at noon (the tropic of that year)
+  const eq = Astronomy.Equator('Sun', at.date, new Astronomy.Observer(0, 0, 0), true, true);
+  return { instant: iso(ms), instantMs: ms, season: ev.season, sunDecDeg: Math.round(eq.dec * 100) / 100 };
+}
+
 function alsoEvent(a, around) {
   if (a.what === 'greatest-western-elongation' || a.what === 'greatest-eastern-elongation') {
     const want = a.what.includes('western') ? 'morning' : 'evening';
@@ -116,6 +127,7 @@ function events(rows) {
     if (ev.kind === 'meteor-shower') facts = showerEvent(ev);
     else if (ev.kind === 'eclipse') facts = eclipseEvent(ev);
     else if (ev.kind === 'mission') facts = missionEvent(ev);
+    else if (ev.kind === 'season') facts = seasonEvent(ev);
     else throw new Error(`${ev.id}: kind ${ev.kind}`);
     facts.id = ev.id;
     facts.also = (ev.also || []).map((a) => alsoEvent(a, facts.instantMs));

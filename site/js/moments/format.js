@@ -89,16 +89,20 @@ export function compressionText(rate) {
 
 /**
  * Mission elapsed time as a mission clock prints it: "T−00:00:08", "T+00:02:41", "T+102:45:40" (hours run on past a
- * day, as Apollo's ground elapsed time did). A real minus sign, never a hyphen.
+ * day, as Apollo's ground elapsed time did). A real minus sign, never a hyphen. Past 30 days, years and days, in the units of
+ * `words` ({metYears: '{y} y {d} d', metDays: '{d} d'}, COPY.momentPlayer's), English when it is not given.
  */
-export function formatMet(t) {
+export function formatMet(t, words) {
   const v = Number(t) || 0;
   const sign = v < 0 ? '−' : '+';
   let s = Math.floor(Math.abs(v) + 1e-6);
   // b200-c3-learn: a story of months or years (Fengyun-1C runs almost twenty) counts in years and days past 30 days, not thousands of hours
   if (s >= 30 * 86400) {
     const d = Math.floor(s / 86400), y = Math.floor(d / 365.25), dd = Math.floor(d - y * 365.25);
-    return y ? `T${sign}${y} y ${dd} d` : `T${sign}${d} d`;
+    // b200-s1-fixes: the units in the visitor's language (COPY.momentPlayer metYears / metDays), English without them
+    const w = words || {};
+    const fill = (tpl, o) => tpl.replace(/\{(\w+)\}/g, (_, k) => String(o[k]));
+    return `T${sign}${y ? fill(w.metYears || '{y} y {d} d', { y, d: dd }) : fill(w.metDays || '{d} d', { d })}`;
   }
   const h = Math.floor(s / 3600); s -= h * 3600;
   const m = Math.floor(s / 60); s -= m * 60;

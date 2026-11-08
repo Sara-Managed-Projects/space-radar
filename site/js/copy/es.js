@@ -5460,3 +5460,21 @@ Object.assign(COPY, {
   }
 });
 // b200-c2-deep: end
+
+// b200-s1-fixes: begin -- the long mission clock's units (copy/en.moments.js momentPlayer metYears, metDays), machine-drafted
+COPY.momentPlayer.metYears = "{y} a {d} d";
+COPY.momentPlayer.metDays = "{d} d";
+COPY.truth.exoPacked = "nuestra copia comprimida del {date}"; // forge #88: which list an exoplanet came from
+COPY.truth.exoLive = "la lista del Archivo, leída el {date}";
+// The deep-sky catalogue's type phrases (data/dso.json `typeText`), lowercased, in this language: the card's lead and its
+// "What it is" row read them through RULES.typeWords; a phrase not here stays English, which is data.
+const S1_TYPES = {"globular cluster": "cúmulo globular", "open cluster": "cúmulo abierto", "dwarf spheroidal galaxy": "galaxia esferoidal enana", "spiral galaxy": "galaxia espiral", "emission nebula": "nebulosa de emisión", "planetary nebula": "nebulosa planetaria", "dwarf irregular galaxy": "galaxia irregular enana", "barred spiral galaxy": "galaxia espiral barrada", "elliptical galaxy": "galaxia elíptica", "lenticular galaxy": "galaxia lenticular", "h ii region nebula with cluster": "región H II con cúmulo", "dwarf elliptical galaxy": "galaxia elíptica enana", "h ii region nebula": "región H II", "barred irregular galaxy": "galaxia irregular barrada", "ultra-faint dwarf galaxy": "galaxia enana ultradébil", "dark nebula": "nebulosa oscura", "young open cluster in an emission nebula": "cúmulo abierto joven dentro de una nebulosa de emisión", "supernova remnant": "remanente de supernova", "nebula with cluster": "nebulosa con cúmulo", "milky way star cloud": "nube estelar de la Vía Láctea", "optical double": "doble óptica", "asterism": "asterismo", "diffuse nebula": "nebulosa difusa", "starburst galaxy": "galaxia con brote estelar", "dwarf irregular starburst galaxy": "galaxia irregular enana con brote estelar", "transition dwarf galaxy, part irregular, part spheroidal": "galaxia enana de transición, en parte irregular, en parte esferoidal", "barred irregular galaxy, seen edge-on": "galaxia irregular barrada, vista de canto", "ultra-faint dwarf galaxy, or perhaps a star cluster": "galaxia enana ultradébil, o quizá un cúmulo estelar", "transition dwarf galaxy, part spheroidal, part irregular": "galaxia enana de transición, en parte esferoidal, en parte irregular", "spiral galaxy, seen nearly edge-on and bursting with new stars": "galaxia espiral, vista casi de canto y llena de estrellas nuevas", "peculiar galaxy with a giant black hole firing radio jets": "galaxia peculiar con un agujero negro gigante que lanza chorros de radio", "pair of open clusters": "par de cúmulos abiertos", "spiral galaxy seen exactly edge-on": "galaxia espiral vista exactamente de canto", "reflection nebula": "nebulosa de reflexión", "reflection and emission nebula": "nebulosa de reflexión y de emisión", "spiral galaxy seen edge-on": "galaxia espiral vista de canto", "barred spiral galaxy seen edge-on": "galaxia espiral barrada vista de canto", "spiral galaxy seen face-on": "galaxia espiral vista de frente", "barred spiral galaxy seen nearly edge-on": "galaxia espiral barrada vista casi de canto", "pair of colliding galaxies": "par de galaxias en colisión"};
+const S1_PLACES = [[" in the large magellanic cloud", " en la Gran Nube de Magallanes"], [" in the small magellanic cloud", " en la Pequeña Nube de Magallanes"], [" in the milky way", " en la Vía Láctea"], [" in the local group", " en el Grupo Local"]];
+RULES.typeWords = (text) => {
+  let base = String(text || '').trim();
+  let tail = '';
+  for (const [en, here] of S1_PLACES) if (base.toLowerCase().endsWith(en)) { tail = here; base = base.slice(0, base.length - en.length); break; }
+  const hit = S1_TYPES[base.toLowerCase()];
+  return hit ? hit + tail : String(text || '');
+};
+// b200-s1-fixes: end

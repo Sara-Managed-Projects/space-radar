@@ -496,9 +496,17 @@ class ShowersMirrorTest(unittest.TestCase):
         import yaml
 
         doc = yaml.safe_load((ROOT / "registry" / "showers.yaml").read_text(encoding="utf-8"))
-        registry_rows = [(r["id"], r["display"], r["peak"]) for r in doc["showers"]]
-        mirror_rows = [(r["id"], r["display"], r["peak"]) for r in shw.SHOWERS]
+        registry_rows = [(r["id"], r["display"], r["peak"], r["peaks"]) for r in doc["showers"]]
+        mirror_rows = [(r["id"], r["display"], r["peak"], r["peaks"]) for r in shw.SHOWERS]
         self.assertEqual(mirror_rows, registry_rows)
+
+    def test_the_years_own_date(self):
+        # forge #90: in 2027 the Perseids peak on 13 August (IMO 2027), not 12 August (the 2026 date)
+        perseids = next(r for r in shw.SHOWERS if r["id"] == "perseids")
+        self.assertEqual(dig.next_shower_peak_of(perseids, dt("2027-08-01T00:00:00Z")).isoformat(), "2027-08-13")
+        self.assertEqual(dig.next_shower_peak_of(perseids, dt("2027-08-14T00:00:00Z")).isoformat(), "2028-08-12")
+        # a year the table has not reached: the nominal date
+        self.assertEqual(dig.next_shower_peak_of(perseids, dt("2031-01-01T00:00:00Z")).isoformat(), "2031-08-12")
 
 
 def main() -> int:

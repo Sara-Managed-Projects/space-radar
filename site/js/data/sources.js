@@ -1112,7 +1112,7 @@ export function forgetIndex() {
  *                    skipped:number,other:number,good:number,total:number}}}
  */
 /**
- * Does the harvester's manifest hold a usable snapshot for this source right now? One index
+ * Does the harvester's manifest hold a usable snapshot for this source right now? Its fetched_at (ms), or 0. One index
  * fetch, cached, shared with load(). main.js uses it to start snapshot-backed layers at once
  * instead of queueing them behind upstream hosts that may be slow.
  */
@@ -1122,7 +1122,8 @@ export async function snapshotAvailable(id) {
   const view = await ensureIndex();
   const rid = src.registryId || src.id;
   const row = view.data && view.data.snapshots ? view.data.snapshots[rid] : null;
-  return !!(row && SNAPSHOT_USABLE.has(row.status) && row.fetched_at);
+  // b200-s1-fixes: the snapshot's time (truthy) rather than true, so the exoplanets can take the newer of it and their packed copy (forge #88)
+  return row && SNAPSHOT_USABLE.has(row.status) && Date.parse(row.fetched_at) || 0;
 }
 
 export function harvestStatus() {

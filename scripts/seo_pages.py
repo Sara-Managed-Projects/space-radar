@@ -53,7 +53,7 @@ import seo_print  # noqa: E402
 # b200-f9-reach: begin -- /assets/, /creators/ and five comparisons (forge #165, #166, #168)
 import seo_reach  # noqa: E402
 # b200-f9-reach: end
-from seo_common import (ACCOUNTS, ACCURACY_FORM, CLASSROOM_FORM, GITHUB, ROOT, Ctx, Page, esc, footer_nav,  # noqa: E402
+from seo_common import (ACCOUNTS, ACCURACY_FORM, CLASSROOM_FORM, GITHUB, ON_GITHUB, ROOT, Ctx, Page, esc, footer_nav,  # noqa: E402
                         make_ctx, place_picker, render, url_of, webpage)
 from seo_share import Spec  # noqa: E402
 from support import support_url  # noqa: E402  (registry/support.yaml: "" draws no money link anywhere)
@@ -393,6 +393,12 @@ def event_sentence(ev: dict) -> str:
                 else "the Moon covers the Sun completely for those inside its narrow path")
         return (f"On {date_words(f['instant'])} {what}: greatest eclipse at {instant_words(f['instant'])}, at {abs(f['latDeg']):g}° {'S' if f['latDeg'] < 0 else 'N'}, "
                 f"{abs(f['lonDeg']):g}° {'W' if f['lonDeg'] < 0 else 'E'}. Computed with Astronomy Engine, checked {date_words(ev['checked_on'])}.")
+    if ev["kind"] == "season":  # forge #90
+        june = f["season"] == "june-solstice"
+        return (f"The {'June' if june else 'December'} solstice falls at {instant_words(f['instant'])}, the same instant everywhere: the Sun stands "
+                f"overhead at noon on the Tropic of {'Cancer' if june else 'Capricorn'}, {abs(f['sunDecDeg']):g}° {'north' if june else 'south'}, as far "
+                f"{'north' if june else 'south'} as it goes. It is the longest day of the year {'north' if june else 'south'} of the equator and the shortest "
+                f"{'south' if june else 'north'} of it.")
     return ""
 
 
@@ -447,6 +453,15 @@ def event_page(ev: dict, host: str, trips: dict) -> Page:
                      + "<h2>Look safely</h2>\n"
                        "<p>Never look at the Sun without eclipse glasses that meet the ISO 12312-2 standard, or a certified solar filter on a telescope or binoculars. "
                        "That holds for an annular eclipse, which has no safe moment of totality, and for every partial phase of a total one.</p>\n")
+    elif ev["kind"] == "season":  # forge #90
+        june = f["season"] == "june-solstice"
+        rows += [("Solstice, computed", instant_words(f["instant"])),
+                 ("Sun overhead at noon", f"{abs(f['sunDecDeg']):g}° {'N' if june else 'S'}, the Tropic of {'Cancer' if june else 'Capricorn'}")]
+        sections += ("<h2>What happens</h2>\n"
+                     "<p>The Earth's axis is tilted 23.4° to its orbit. At a solstice the pole of one hemisphere leans most towards the Sun: there the Sun climbs "
+                     "highest at noon and stays up longest, and inside the polar circle it does not set at all, while the other hemisphere has its shortest day "
+                     "and, inside its polar circle, a day the Sun does not rise. After it the days begin to shorten again on one side and lengthen on the other.</p>\n")
+        where_static = "A solstice is one instant for the whole Earth; the map's Tonight view gives your own sunrise and sunset for that day."
     dl = "".join(f"<div><dt>{esc(a)}</dt><dd>{esc(b)}</dd></div>" for a, b in rows)
     trip = ev.get("trip")
     trip_link = (f'<p><a href="../#trip={esc(trip)}">Take the trip: {esc(trips[trip])}</a></p>\n' if trip else "")
@@ -460,14 +475,16 @@ def event_page(ev: dict, host: str, trips: dict) -> Page:
         f"{trip_link}"
         "<h2>The facts</h2>\n"
         f"<dl>{dl}</dl>\n"
-        "<h2>Where to look from your place</h2>\n"
-        + place_picker()
-        + f'<p data-slot="event-local" hidden></p>\n<p class="dim">{esc(where_static)}</p>\n'
+        + ("<h2>Where to look from your place</h2>\n" + place_picker() + '<p data-slot="event-local" hidden></p>\n'
+           if ev["kind"] != "season" else "<h2>From your place</h2>\n")  # a solstice has nothing to compute per place
+        + f'<p class="dim">{esc(where_static)}</p>\n'
         + sections
-        + f'<script type="application/json" id="event-data">{json.dumps({"kind": ev["kind"], "instant": f["instant"], "shower": ({"raH": f["shower"]["raH"], "decDeg": f["shower"]["decDeg"]} if "shower" in f else None), "also": f["also"]}, separators=(",", ":"))}</script>\n'
+        + (f'<script type="application/json" id="event-data">{json.dumps({"kind": ev["kind"], "instant": f["instant"], "shower": ({"raH": f["shower"]["raH"], "decDeg": f["shower"]["decDeg"]} if "shower" in f else None), "also": f["also"]}, separators=(",", ":"))}</script>\n' if ev["kind"] != "season" else "")  # a solstice page has no per-place script
         + '<h2>Sources</h2>\n<ul>' + srcs + "</ul>\n"
         '<div class="note"><p><strong>Measured or computed?</strong> '
-        + ("Dates of the showers and of the eclipses are computed with Astronomy Engine, the same library the map uses, "
+        + ("The instant of the solstice is computed with Astronomy Engine, the same library the map uses. Nothing on this page is typed in."
+           if ev["kind"] == "season" else
+           "Dates of the showers and of the eclipses are computed with Astronomy Engine, the same library the map uses, "
            f"and were read by a person on {esc(date_words(ev['checked_on']))}. The Moon's percentage is computed. Rates are the IMO's and are not predictions of what you will count."
            if ev["kind"] != "mission" else
            "The date is ESA's, read on the day given; a spacecraft's date can move, and this page is rebuilt from the registry when it does. The planet's position is computed.")
@@ -493,10 +510,27 @@ def event_page(ev: dict, host: str, trips: dict) -> Page:
     return page
 
 
+KIND_WORDS = {"meteor-shower": ("meteor shower", "meteor showers"), "eclipse": ("solar eclipse", "solar eclipses"),
+              "season": ("solstice", "solstices"), "mission": ("mission event", "mission events")}
+
+
+def events_index_description(ordered: list[dict]) -> str:
+    """The index's description from the rows themselves (forge #90: it said "to August 2027" while the rows ran to December)."""
+    first, last = ordered[0]["facts"]["instant"][:10], ordered[-1]["facts"]["instant"][:10]
+    month = lambda d: date_words(d).split(" ", 1)[1]  # noqa: E731 ("16 November 2026" -> "November 2026")
+    counts = []
+    for kind, (one, many) in KIND_WORDS.items():
+        n = sum(1 for e in ordered if e["kind"] == kind)
+        if n:
+            counts.append(f"{n} {one if n == 1 else many}")
+    listed = ", ".join(counts[:-1]) + f" and {counts[-1]}" if len(counts) > 1 else counts[0]
+    return f"{len(ordered)} dated sky events from {month(first)} to {month(last)}: {listed}, each with a map link."
+
+
 def events_index(events: list[dict], host: str) -> Page:
-    short = "Sky events: meteor showers, Mercury and eclipses"
-    desc = "Dated sky events from November 2026 to August 2027: showers, BepiColombo at Mercury, Venus and two solar eclipses, each with a map link."
+    short = "Sky events: meteor showers, eclipses and solstices"
     ordered = sorted(events, key=lambda e: e["facts"]["instant"])
+    desc = events_index_description(ordered)
     items = "".join(
         f'<li><h3><a href="{esc(e["id"])}.html">{esc(e["name"])}</a></h3><p>{esc(date_words(e["facts"]["instant"][:10]))}</p><p>{esc(e["summary"])}</p></li>' for e in ordered)
     body = ('<p class="micro">Sky events</p>\n<h1>Sky events, with a link into the map at each moment</h1>\n'
@@ -628,7 +662,7 @@ def eyes_page(host: str) -> Page:
         "<h2>How this page was checked</h2>\n"
         f'<p>What it says about NASA\'s Eyes was read on {EYES_READ} from <a href="{EYES_FAQ}">NASA\'s Eyes FAQ</a> and '
         f'<a href="{EYES_NEWS}">JPL\'s announcement of the browser version</a> (2 September 2022). If it is out of date, '
-        f'<a href="{ACCURACY_FORM}">tell us</a> and it will be corrected. Space Radar is not part of, and not endorsed by, NASA or JPL.</p>\n')
+        f'<a href="{ACCURACY_FORM}">tell us</a> {ON_GITHUB} and it will be corrected. Space Radar is not part of, and not endorsed by, NASA or JPL.</p>\n')
     page = Page(path="nasa-eyes-alternative/index.html", title=short, description=desc, body=body, og_title=short)
     page.jsonld = [webpage(host, page, [("Space Radar and NASA's Eyes", "")])]
     page.share = Spec(key="nasa-eyes-alternative/index", name="Space Radar and NASA's Eyes", number="both free, one open source", caption="Compare", kind="plain",
@@ -809,7 +843,7 @@ def accuracy_page(host: str) -> Page:
         "<li>Distances and sizes are sometimes changed so that a thing can be seen at all (satellites are drawn larger than life); the card or the picture says so.</li>\n"
         "<li>Where we could not look, the card says \"could not look\" or leaves the line out. A guess is never shown as a reading.</li>\n</ul>\n"
         "<h2>When we get it wrong</h2>\n"
-        f'<p>Tell us with <a href="{ACCURACY_FORM}">the form for a wrong number, name or position</a>. Getting it right matters more to this project than anything else. '
+        f'<p>Tell us with <a href="{ACCURACY_FORM}">the form for a wrong number, name or position</a> {ON_GITHUB}. Getting it right matters more to this project than anything else. '
         "<strong>There is no separate corrections log yet.</strong> What exists is the project's public history: "
         f'<a href="{GITHUB}/blob/main/CHANGELOG.md">the changelog</a>, which records changes of facts under its fixes, and every commit and issue on '
         f'<a href="{GITHUB}">GitHub</a>. A page that lists each correction, with its date, is a task for the project, not something to pretend we already have.</p>\n'
@@ -908,7 +942,7 @@ def teachers_page(host: str, tours: dict, reels: dict, url_keys: list[str]) -> P
         "<li>The 3D scene is a canvas and is not described to a screen reader; the cards and trip words beside it are text. Say so to a student who relies on one, and tell us what would help.</li>\n</ul>\n"
         f"{teachers_paying()}"
         "<h2>Tell us how it went</h2>\n"
-        f'<p>A lesson, a museum screen, a club night: <a href="{CLASSROOM_FORM}">tell us how it went</a> on the project\'s GitHub (a short form: what you did, what worked, what did not). '
+        f'<p>A lesson, a museum screen, a club night: <a href="{CLASSROOM_FORM}">tell us how it went</a> {ON_GITHUB}: a short form, what you did, what worked, what did not. '
         "It is how this page gets better.</p>\n")
     # b200-f6-learn: begin -- forge #159, #160, #161: the Lab by age, the paper models and the daily challenges
     body = body.replace("<h2>Accessibility</h2>", f"{learn_sections()}<h2>Accessibility</h2>", 1)
@@ -1004,7 +1038,7 @@ def support_page(host: str) -> list[Page]:
         'It buys nothing extra: the <a href="../teachers/index.html">classroom and kiosk set-up</a> is the same for everyone.</li>\n'
         "</ul>\n"
         "<h2>Help that is not money</h2>\n"
-        f'<p>A star on <a href="{GITHUB}">GitHub</a>, a <a href="{ACCURACY_FORM}">data-accuracy report</a> with a source, or a '
+        f'<p>A star on <a href="{GITHUB}">GitHub</a>, a <a href="{ACCURACY_FORM}">data-accuracy report</a> {ON_GITHUB} with a source, or a '
         '<a href="../first-pull-request/index.html">first pull request</a> helps as much.</p>\n')
     page = Page(path="support/index.html", title=short, description=desc, body=body, og_title=short)
     page.jsonld = [webpage(host, page, [("Support", "")])]
