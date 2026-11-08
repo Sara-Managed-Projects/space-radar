@@ -70,5 +70,10 @@ export const BUDGETS = {
   "deep_catalogue_bytes": 1300000,
   "deep_catalogue_draw_calls": 2,
   "star_motion_bytes": 290000,
-  "variable_stars_bytes": 20000
+  "variable_stars_bytes": 20000,
+  "moment_voice_total_kb": 1400,
+  "card_voice_total_kb": 34000,
+  "stars3d_athyg_total_bytes": 40000000,
+  "stars3d_athyg_node_bytes": 110000,
+  "stars3d_tiers_boot_bytes": 300
 };
