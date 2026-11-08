@@ -1520,3 +1520,9 @@ jobs:
       - name: "The Fengyun-1C Moment: the cloud born at one point and spread round the Earth, the voice inside each chapter, every count its source's, the clips heard (forge #153)"
         run: node tests/test_moment_fengyun.mjs
       # b200-c3-learn: end
+      # b200-s1-fixes: begin
+      - name: "The satellite pages' fallback counts are written from the harvester's index, never typed, and refused past 45 days (forge #89)"
+        run: python3 tests/test_seo_counts.py
+      - name: "Every deep-sky type phrase of the catalogue is translated in ten languages, and the card's row uses it (2.0.0 polish)"
+        run: node tests/test_type_words_langs.mjs
+      # b200-s1-fixes: end

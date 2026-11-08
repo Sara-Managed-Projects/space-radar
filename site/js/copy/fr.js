@@ -5660,3 +5660,10 @@ COPY.momentStories['fengyun-1c'] = {
   "srcWiki": "Wikipédia, 2007 Chinese anti-satellite missile test : la vitesse de rapprochement"
 };
 // b200-c3-learn: end
+
+// b200-s1-fixes: begin -- the long mission clock's units (copy/en.moments.js momentPlayer metYears, metDays), machine-drafted
+COPY.momentPlayer.metYears = "{y} a {d} j";
+COPY.momentPlayer.metDays = "{d} j";
+COPY.truth.exoPacked = "notre copie compacte du {date}"; // forge #88: which list an exoplanet came from
+COPY.truth.exoLive = "la liste de l’Archive, lue le {date}";
+// b200-s1-fixes: end

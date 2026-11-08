@@ -5562,3 +5562,21 @@ COPY.momentStories['fengyun-1c'] = {
   "srcWiki": "ויקיפדיה, 2007 Chinese anti-satellite missile test: מהירות ההתקרבות"
 };
 // b200-c3-learn: end
+
+// b200-s1-fixes: begin -- the long mission clock's units (copy/en.moments.js momentPlayer metYears, metDays), machine-drafted
+COPY.momentPlayer.metYears = "{y} שנ׳ {d} ימ׳";
+COPY.momentPlayer.metDays = "{d} ימ׳";
+COPY.truth.exoPacked = "העותק הדחוס שלנו מ־{date}"; // forge #88: which list an exoplanet came from
+COPY.truth.exoLive = "הרשימה של הארכיון, נקראה ב־{date}";
+// The deep-sky catalogue's type phrases (data/dso.json `typeText`), lowercased, in this language: the card's lead and its
+// "What it is" row read them through RULES.typeWords; a phrase not here stays English, which is data.
+const S1_TYPES = {"globular cluster": "צביר כדורי", "open cluster": "צביר פתוח", "dwarf spheroidal galaxy": "גלקסיה ננסית ספרואידלית", "spiral galaxy": "גלקסיה ספירלית", "emission nebula": "ערפילית פליטה", "planetary nebula": "ערפילית פלנטרית", "dwarf irregular galaxy": "גלקסיה ננסית אי־סדירה", "barred spiral galaxy": "גלקסיה ספירלית מוטה", "elliptical galaxy": "גלקסיה אליפטית", "lenticular galaxy": "גלקסיה עדשתית", "h ii region nebula with cluster": "אזור H II עם צביר", "dwarf elliptical galaxy": "גלקסיה ננסית אליפטית", "h ii region nebula": "אזור H II", "barred irregular galaxy": "גלקסיה אי־סדירה מוטה", "ultra-faint dwarf galaxy": "גלקסיה ננסית חיוורת במיוחד", "dark nebula": "ערפילית אפלה", "young open cluster in an emission nebula": "צביר פתוח צעיר בתוך ערפילית פליטה", "supernova remnant": "שארית סופרנובה", "nebula with cluster": "ערפילית עם צביר", "milky way star cloud": "ענן כוכבים של שביל החלב", "optical double": "כפולה אופטית", "asterism": "אסטריזם", "diffuse nebula": "ערפילית מפוזרת", "starburst galaxy": "גלקסיית התפרצות כוכבים", "dwarf irregular starburst galaxy": "גלקסיה ננסית אי־סדירה עם התפרצות כוכבים", "transition dwarf galaxy, part irregular, part spheroidal": "גלקסיה ננסית מעבר, חלקה אי־סדירה וחלקה ספרואידלית", "barred irregular galaxy, seen edge-on": "גלקסיה אי־סדירה מוטה, נראית מהצד", "ultra-faint dwarf galaxy, or perhaps a star cluster": "גלקסיה ננסית חיוורת במיוחד, ואולי צביר כוכבים", "transition dwarf galaxy, part spheroidal, part irregular": "גלקסיה ננסית מעבר, חלקה ספרואידלית וחלקה אי־סדירה", "spiral galaxy, seen nearly edge-on and bursting with new stars": "גלקסיה ספירלית, נראית כמעט מהצד ומלאה בכוכבים חדשים", "peculiar galaxy with a giant black hole firing radio jets": "גלקסיה חריגה עם חור שחור ענק שיורה סילוני רדיו", "pair of open clusters": "זוג צבירים פתוחים", "spiral galaxy seen exactly edge-on": "גלקסיה ספירלית הנראית בדיוק מהצד", "reflection nebula": "ערפילית החזרה", "reflection and emission nebula": "ערפילית החזרה ופליטה", "spiral galaxy seen edge-on": "גלקסיה ספירלית הנראית מהצד", "barred spiral galaxy seen edge-on": "גלקסיה ספירלית מוטה הנראית מהצד", "spiral galaxy seen face-on": "גלקסיה ספירלית הנראית מלפנים", "barred spiral galaxy seen nearly edge-on": "גלקסיה ספירלית מוטה הנראית כמעט מהצד", "pair of colliding galaxies": "זוג גלקסיות מתנגשות"};
+const S1_PLACES = [[" in the large magellanic cloud", " בענן מגלן הגדול"], [" in the small magellanic cloud", " בענן מגלן הקטן"], [" in the milky way", " בשביל החלב"], [" in the local group", " בקבוצה המקומית"]];
+RULES.typeWords = (text) => {
+  let base = String(text || '').trim();
+  let tail = '';
+  for (const [en, here] of S1_PLACES) if (base.toLowerCase().endsWith(en)) { tail = here; base = base.slice(0, base.length - en.length); break; }
+  const hit = S1_TYPES[base.toLowerCase()];
+  return hit ? hit + tail : String(text || '');
+};
+// b200-s1-fixes: end

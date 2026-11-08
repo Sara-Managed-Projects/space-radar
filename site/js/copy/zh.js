@@ -5555,3 +5555,21 @@ COPY.momentStories['fengyun-1c'] = {
   "srcWiki": "维基百科，2007 Chinese anti-satellite missile test：接近速度"
 };
 // b200-c3-learn: end
+
+// b200-s1-fixes: begin -- the long mission clock's units (copy/en.moments.js momentPlayer metYears, metDays), machine-drafted
+COPY.momentPlayer.metYears = "{y}年{d}天";
+COPY.momentPlayer.metDays = "{d}天";
+COPY.truth.exoPacked = "我们 {date} 的压缩副本"; // forge #88: which list an exoplanet came from
+COPY.truth.exoLive = "档案馆的列表，读取于 {date}";
+// The deep-sky catalogue's type phrases (data/dso.json `typeText`), lowercased, in this language: the card's lead and its
+// "What it is" row read them through RULES.typeWords; a phrase not here stays English, which is data.
+const S1_TYPES = {"globular cluster": "球状星团", "open cluster": "疏散星团", "dwarf spheroidal galaxy": "矮椭球星系", "spiral galaxy": "旋涡星系", "emission nebula": "发射星云", "planetary nebula": "行星状星云", "dwarf irregular galaxy": "矮不规则星系", "barred spiral galaxy": "棒旋星系", "elliptical galaxy": "椭圆星系", "lenticular galaxy": "透镜状星系", "h ii region nebula with cluster": "带星团的电离氢区", "dwarf elliptical galaxy": "矮椭圆星系", "h ii region nebula": "电离氢区", "barred irregular galaxy": "棒状不规则星系", "ultra-faint dwarf galaxy": "超暗弱矮星系", "dark nebula": "暗星云", "young open cluster in an emission nebula": "发射星云中的年轻疏散星团", "supernova remnant": "超新星遗迹", "nebula with cluster": "带星团的星云", "milky way star cloud": "银河星云", "optical double": "光学双星", "asterism": "星群", "diffuse nebula": "弥漫星云", "starburst galaxy": "星暴星系", "dwarf irregular starburst galaxy": "矮不规则星暴星系", "transition dwarf galaxy, part irregular, part spheroidal": "过渡型矮星系，部分不规则、部分椭球", "barred irregular galaxy, seen edge-on": "棒状不规则星系，侧向可见", "ultra-faint dwarf galaxy, or perhaps a star cluster": "超暗弱矮星系，也可能是星团", "transition dwarf galaxy, part spheroidal, part irregular": "过渡型矮星系，部分椭球、部分不规则", "spiral galaxy, seen nearly edge-on and bursting with new stars": "旋涡星系，近乎侧向可见，充满新生恒星", "peculiar galaxy with a giant black hole firing radio jets": "特殊星系，中心巨型黑洞喷出射电喷流", "pair of open clusters": "一对疏散星团", "spiral galaxy seen exactly edge-on": "完全侧向的旋涡星系", "reflection nebula": "反射星云", "reflection and emission nebula": "反射兼发射星云", "spiral galaxy seen edge-on": "侧向的旋涡星系", "barred spiral galaxy seen edge-on": "侧向的棒旋星系", "spiral galaxy seen face-on": "正向的旋涡星系", "barred spiral galaxy seen nearly edge-on": "近乎侧向的棒旋星系", "pair of colliding galaxies": "一对正在碰撞的星系"};
+const S1_PLACES = [[" in the large magellanic cloud", "（位于大麦哲伦云）"], [" in the small magellanic cloud", "（位于小麦哲伦云）"], [" in the milky way", "（位于银河系）"], [" in the local group", "（位于本星系群）"]];
+RULES.typeWords = (text) => {
+  let base = String(text || '').trim();
+  let tail = '';
+  for (const [en, here] of S1_PLACES) if (base.toLowerCase().endsWith(en)) { tail = here; base = base.slice(0, base.length - en.length); break; }
+  const hit = S1_TYPES[base.toLowerCase()];
+  return hit ? hit + tail : String(text || '');
+};
+// b200-s1-fixes: end

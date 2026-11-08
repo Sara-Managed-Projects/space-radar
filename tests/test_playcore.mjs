@@ -89,5 +89,13 @@ ok(!/play\.css/.test(readFileSync(join(ROOT, 'site/index.html'), 'utf8')), 'site
 const url = readFileSync(join(ROOT, 'site/js/ui/urlstate.js'), 'utf8');
 ok(/KEYS\.splice\(KEYS\.indexOf\('cam'\), 0, 'play'\)/.test(url), 'urlstate.js must add `play` before `cam`');
 
+// b200-s1-fixes: "Which world is this?" veils the scene (it showed the Earth when the answer was the Earth), and lifts it after
+{
+  const playSrc = readFileSync(join(ROOT, 'site/js/ui/play.js'), 'utf8');
+  const playCss = readFileSync(join(ROOT, 'site/css/play.css'), 'utf8');
+  ok(/classList\.toggle\('sr-play-veil', game === 'which-world'\)/.test(playSrc), 'the world challenge sets the veil, and only it');
+  ok(/function finish[^]*?classList\.remove\('sr-play-veil'\)/.test(playSrc) && (playSrc.match(/classList\.remove\('sr-play-veil'\)/g) || []).length >= 2, 'the veil is lifted at the end and on close');
+  ok(/html\.sr-play-veil:not\(\.sr-trip-mode\) #stage,\s*html\.sr-play-veil:not\(\.sr-trip-mode\) #labels \{ visibility: hidden; \}/.test(playCss), 'under the veil the scene canvas and its names are hidden');
+}
 if (problems.length) { console.error(`playcore FAILED (${problems.length}):\n  ${problems.join('\n  ')}`); process.exit(1); }
 console.log(`playcore ok: the day is UTC, one seed per day and game, the share text at most ${longest} of X's ${SHARE_LIMITS.x} in ${langs.length} languages with no formatting characters, the store forgets after 60 days, and the feature is a dynamic import`);

@@ -289,8 +289,13 @@ uniform float uGain;
 uniform vec2 uTexel;
 varying vec2 vUv;
 varying float vY;
+// b200-s1-fixes (forge #14): the cut and the floor below are numbers of the map's own values, as
+// tests/test_milkyway_opening.py measures them; the map is sRGB, so the sampler hands back LINEAR values, in
+// which a floor of 0.012 is a level of 28 in 255 and took almost the whole faint band with it (1.4 levels left at
+// the galactic centre, 0.05 in Cygnus). So the samples are put back into the map's values first, and out after.
+vec3 mapValue(vec2 uv) { return pow(texture2D(uMap, uv).rgb, vec3(1.0 / 2.2)); }
 void main() {
-  vec3 c = texture2D(uMap, vUv).rgb;
+  vec3 c = mapValue(vUv);
   // THE 2k PANORAMA HAS THE STARS BAKED IN (internal #547, 2026-10-10): Sirius, Mirzam and the rest are
   // two or three texels of light, which at a 14 degree field are soft tilted squares beside the true
   // stars. A spike is cut to what its four neighbours three texels away say, plus a little (a plain
@@ -298,14 +303,14 @@ void main() {
   // narrower than six texels and brighter than its surroundings by more than a hair is not the Milky
   // Way. uTexel is zero for the 4k map, which NASA made without the stars.
   if (uTexel.x > 0.0) {
-    vec3 cl = texture2D(uMap, vUv - vec2(3.0 * uTexel.x, 0.0)).rgb;
-    vec3 cr = texture2D(uMap, vUv + vec2(3.0 * uTexel.x, 0.0)).rgb;
-    vec3 cu = texture2D(uMap, vUv + vec2(0.0, 3.0 * uTexel.y)).rgb;
-    vec3 cd = texture2D(uMap, vUv - vec2(0.0, 3.0 * uTexel.y)).rgb;
+    vec3 cl = mapValue(vUv - vec2(3.0 * uTexel.x, 0.0));
+    vec3 cr = mapValue(vUv + vec2(3.0 * uTexel.x, 0.0));
+    vec3 cu = mapValue(vUv + vec2(0.0, 3.0 * uTexel.y));
+    vec3 cd = mapValue(vUv - vec2(0.0, 3.0 * uTexel.y));
     c = min(c, 0.25 * (cl + cr + cu + cd) + 0.015);
   }
   // The panorama's floor is a dim brown everywhere; only what stands above it is the Milky Way.
-  c = max(c - 0.012, 0.0);
+  c = pow(max(c - 0.012, 0.0), vec3(2.2)); // b200-s1-fixes: back to linear for the gain and the output
   // The air: nothing of it survives the last few degrees above the horizon.
   float air = smoothstep(0.0, 0.3, vY);
   gl_FragColor = vec4(c * uGain * air, 1.0);

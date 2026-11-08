@@ -1414,7 +1414,7 @@ export function skyToSunInertialKm(raDeg, decDeg, distPc) {
  * leading `#` line saying its date) parse here; columns are read by header name.
  *
  * @param {string} text
- * @param {{asOf?: string}} [opts]  the bundled copy's date, stamped on every record
+ * @param {{asOf?: string, live?: string}} [opts]  the bundled copy's date, stamped on every record; or the snapshot's day
  */
 export function parseExoplanets(text, opts = {}) {
   if (typeof text !== 'string') return [];
@@ -1462,6 +1462,7 @@ export function parseExoplanets(text, opts = {}) {
         aliases: host ? [host] : [],
         asOf,
         drawnAtStar: true,
+        liveAsOf: opts.live, // b200-s1-fixes (forge #88): the harvester's snapshot of that day, not the packed copy
         cite: asOf ? `NASA Exoplanet Archive (pscomppars), copy as of ${asOf}` : 'NASA Exoplanet Archive (pscomppars)',
       },
     });

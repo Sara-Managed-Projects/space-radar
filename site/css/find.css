@@ -6,6 +6,12 @@
 .sr-find { padding: 0 20px 20px; }
 .sr-find__head { position: sticky; top: 0; z-index: 1; margin: 0 -20px; padding: var(--sp-2) 20px; background: var(--sr-panel-solid); }
 .sr-find__head > .sr-micro { padding: var(--sp-1) 0 var(--sp-2); }
+/* b200-s1-fixes: begin -- a row brought into view (a link's owner, Tab down the list, the detail) stopped at the top of
+   the scroller, under the sticky head, so the country list seemed to scroll under its tab bar (polish list of the
+   2.0.0 merges). The head is about 84 px (the title and the tabs); the scroller keeps that much clear above what it
+   scrolls to. */
+.sr-side__findhost { scroll-padding-top: 96px; }
+/* b200-s1-fixes: end */
 .sr-find__tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .sr-find__pane[hidden] { display: none; }
 .sr-find__pane > .sr-micro, .sr-find__detail .sr-micro { padding: var(--sp-3) 0 var(--sp-1); }

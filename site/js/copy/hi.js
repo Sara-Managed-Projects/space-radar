@@ -5556,3 +5556,21 @@ COPY.momentStories['fengyun-1c'] = {
   "srcWiki": "विकिपीडिया, 2007 Chinese anti-satellite missile test: नज़दीकी रफ़्तार"
 };
 // b200-c3-learn: end
+
+// b200-s1-fixes: begin -- the long mission clock's units (copy/en.moments.js momentPlayer metYears, metDays), machine-drafted
+COPY.momentPlayer.metYears = "{y} वर्ष {d} दिन";
+COPY.momentPlayer.metDays = "{d} दिन";
+COPY.truth.exoPacked = "{date} की हमारी संक्षिप्त प्रति"; // forge #88: which list an exoplanet came from
+COPY.truth.exoLive = "संग्रह की सूची, {date} को पढ़ी गई";
+// The deep-sky catalogue's type phrases (data/dso.json `typeText`), lowercased, in this language: the card's lead and its
+// "What it is" row read them through RULES.typeWords; a phrase not here stays English, which is data.
+const S1_TYPES = {"globular cluster": "गोलाकार तारागुच्छ", "open cluster": "खुला तारागुच्छ", "dwarf spheroidal galaxy": "बौनी गोलाभ आकाशगंगा", "spiral galaxy": "सर्पिल आकाशगंगा", "emission nebula": "उत्सर्जन नीहारिका", "planetary nebula": "ग्रहीय नीहारिका", "dwarf irregular galaxy": "बौनी अनियमित आकाशगंगा", "barred spiral galaxy": "दंडयुक्त सर्पिल आकाशगंगा", "elliptical galaxy": "दीर्घवृत्ताकार आकाशगंगा", "lenticular galaxy": "लेंसाकार आकाशगंगा", "h ii region nebula with cluster": "तारागुच्छ सहित H II क्षेत्र", "dwarf elliptical galaxy": "बौनी दीर्घवृत्ताकार आकाशगंगा", "h ii region nebula": "H II क्षेत्र", "barred irregular galaxy": "दंडयुक्त अनियमित आकाशगंगा", "ultra-faint dwarf galaxy": "अत्यंत धुंधली बौनी आकाशगंगा", "dark nebula": "काली नीहारिका", "young open cluster in an emission nebula": "उत्सर्जन नीहारिका में युवा खुला तारागुच्छ", "supernova remnant": "सुपरनोवा अवशेष", "nebula with cluster": "तारागुच्छ सहित नीहारिका", "milky way star cloud": "आकाशगंगा (मिल्की वे) का तारा-बादल", "optical double": "प्रकाशीय युग्म", "asterism": "तारामंडल-आकृति (एस्टरिज़्म)", "diffuse nebula": "विसरित नीहारिका", "starburst galaxy": "तारा-विस्फोट आकाशगंगा", "dwarf irregular starburst galaxy": "तारा-विस्फोट वाली बौनी अनियमित आकाशगंगा", "transition dwarf galaxy, part irregular, part spheroidal": "संक्रमणशील बौनी आकाशगंगा, कुछ अनियमित, कुछ गोलाभ", "barred irregular galaxy, seen edge-on": "दंडयुक्त अनियमित आकाशगंगा, किनारे से दिखती", "ultra-faint dwarf galaxy, or perhaps a star cluster": "अत्यंत धुंधली बौनी आकाशगंगा, या शायद एक तारागुच्छ", "transition dwarf galaxy, part spheroidal, part irregular": "संक्रमणशील बौनी आकाशगंगा, कुछ गोलाभ, कुछ अनियमित", "spiral galaxy, seen nearly edge-on and bursting with new stars": "सर्पिल आकाशगंगा, लगभग किनारे से दिखती और नए तारों से भरी", "peculiar galaxy with a giant black hole firing radio jets": "विचित्र आकाशगंगा, जिसका विशाल ब्लैक होल रेडियो जेट छोड़ता है", "pair of open clusters": "खुले तारागुच्छों की जोड़ी", "spiral galaxy seen exactly edge-on": "ठीक किनारे से दिखती सर्पिल आकाशगंगा", "reflection nebula": "परावर्तन नीहारिका", "reflection and emission nebula": "परावर्तन और उत्सर्जन नीहारिका", "spiral galaxy seen edge-on": "किनारे से दिखती सर्पिल आकाशगंगा", "barred spiral galaxy seen edge-on": "किनारे से दिखती दंडयुक्त सर्पिल आकाशगंगा", "spiral galaxy seen face-on": "सामने से दिखती सर्पिल आकाशगंगा", "barred spiral galaxy seen nearly edge-on": "लगभग किनारे से दिखती दंडयुक्त सर्पिल आकाशगंगा", "pair of colliding galaxies": "टकराती आकाशगंगाओं की जोड़ी"};
+const S1_PLACES = [[" in the large magellanic cloud", " बड़े मैगेलानी बादल में"], [" in the small magellanic cloud", " छोटे मैगेलानी बादल में"], [" in the milky way", " आकाशगंगा (मिल्की वे) में"], [" in the local group", " स्थानीय समूह में"]];
+RULES.typeWords = (text) => {
+  let base = String(text || '').trim();
+  let tail = '';
+  for (const [en, here] of S1_PLACES) if (base.toLowerCase().endsWith(en)) { tail = here; base = base.slice(0, base.length - en.length); break; }
+  const hit = S1_TYPES[base.toLowerCase()];
+  return hit ? hit + tail : String(text || '');
+};
+// b200-s1-fixes: end

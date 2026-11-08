@@ -5555,3 +5555,21 @@ COPY.momentStories['fengyun-1c'] = {
   "srcWiki": "ويكيبيديا، 2007 Chinese anti-satellite missile test: سرعة الاقتراب"
 };
 // b200-c3-learn: end
+
+// b200-s1-fixes: begin -- the long mission clock's units (copy/en.moments.js momentPlayer metYears, metDays), machine-drafted
+COPY.momentPlayer.metYears = "{y} سنة {d} يوم";
+COPY.momentPlayer.metDays = "{d} يوم";
+COPY.truth.exoPacked = "نسختنا المضغوطة بتاريخ {date}"; // forge #88: which list an exoplanet came from
+COPY.truth.exoLive = "قائمة الأرشيف، قُرئت في {date}";
+// The deep-sky catalogue's type phrases (data/dso.json `typeText`), lowercased, in this language: the card's lead and its
+// "What it is" row read them through RULES.typeWords; a phrase not here stays English, which is data.
+const S1_TYPES = {"globular cluster": "عنقود كروي", "open cluster": "عنقود مفتوح", "dwarf spheroidal galaxy": "مجرة قزمة شبه كروية", "spiral galaxy": "مجرة حلزونية", "emission nebula": "سديم انبعاث", "planetary nebula": "سديم كوكبي", "dwarf irregular galaxy": "مجرة قزمة غير منتظمة", "barred spiral galaxy": "مجرة حلزونية ذات قضيب", "elliptical galaxy": "مجرة إهليلجية", "lenticular galaxy": "مجرة عدسية", "h ii region nebula with cluster": "منطقة هيدروجين متأين مع عنقود", "dwarf elliptical galaxy": "مجرة قزمة إهليلجية", "h ii region nebula": "منطقة هيدروجين متأين", "barred irregular galaxy": "مجرة غير منتظمة ذات قضيب", "ultra-faint dwarf galaxy": "مجرة قزمة شديدة الخفوت", "dark nebula": "سديم مظلم", "young open cluster in an emission nebula": "عنقود مفتوح فتي داخل سديم انبعاث", "supernova remnant": "بقايا مستعر أعظم", "nebula with cluster": "سديم مع عنقود", "milky way star cloud": "سحابة نجمية في درب التبانة", "optical double": "نجم مزدوج بصري", "asterism": "كوكبة نجمية صغيرة", "diffuse nebula": "سديم منتشر", "starburst galaxy": "مجرة انفجار نجمي", "dwarf irregular starburst galaxy": "مجرة قزمة غير منتظمة بانفجار نجمي", "transition dwarf galaxy, part irregular, part spheroidal": "مجرة قزمة انتقالية، غير منتظمة جزئيًا وشبه كروية جزئيًا", "barred irregular galaxy, seen edge-on": "مجرة غير منتظمة ذات قضيب، تُرى من الحافة", "ultra-faint dwarf galaxy, or perhaps a star cluster": "مجرة قزمة شديدة الخفوت، أو ربما عنقود نجمي", "transition dwarf galaxy, part spheroidal, part irregular": "مجرة قزمة انتقالية، شبه كروية جزئيًا وغير منتظمة جزئيًا", "spiral galaxy, seen nearly edge-on and bursting with new stars": "مجرة حلزونية تُرى من الحافة تقريبًا وتعج بنجوم جديدة", "peculiar galaxy with a giant black hole firing radio jets": "مجرة شاذة فيها ثقب أسود عملاق يطلق نفاثات راديوية", "pair of open clusters": "زوج من العناقيد المفتوحة", "spiral galaxy seen exactly edge-on": "مجرة حلزونية تُرى من الحافة تمامًا", "reflection nebula": "سديم انعكاس", "reflection and emission nebula": "سديم انعكاس وانبعاث", "spiral galaxy seen edge-on": "مجرة حلزونية تُرى من الحافة", "barred spiral galaxy seen edge-on": "مجرة حلزونية ذات قضيب تُرى من الحافة", "spiral galaxy seen face-on": "مجرة حلزونية تُرى من الأمام", "barred spiral galaxy seen nearly edge-on": "مجرة حلزونية ذات قضيب تُرى من الحافة تقريبًا", "pair of colliding galaxies": "زوج من المجرات المتصادمة"};
+const S1_PLACES = [[" in the large magellanic cloud", " في سحابة ماجلان الكبرى"], [" in the small magellanic cloud", " في سحابة ماجلان الصغرى"], [" in the milky way", " في درب التبانة"], [" in the local group", " في المجموعة المحلية"]];
+RULES.typeWords = (text) => {
+  let base = String(text || '').trim();
+  let tail = '';
+  for (const [en, here] of S1_PLACES) if (base.toLowerCase().endsWith(en)) { tail = here; base = base.slice(0, base.length - en.length); break; }
+  const hit = S1_TYPES[base.toLowerCase()];
+  return hit ? hit + tail : String(text || '');
+};
+// b200-s1-fixes: end

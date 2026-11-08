@@ -431,6 +431,24 @@ html.sr-phone.sr-card-open .sr-scalerail__back { padding-right: 0; border-right:
 html.sr-phone.sr-card-open .sr-scalerail:not(:has(.sr-scalerail__back:not([hidden]))) { display: none; }
 html.sr-phone[data-sheet='full'] .sr-scalerail { display: none; }
 
+/* b200-s1-fixes: begin -- the "Satellites could not be read" note under the rail on a phone, not over it. The
+   note sat at --sr-top-end (88 px) and the rail at 64 to 108 px, so the note covered the lower half of the rung
+   and of Back (polish list of the 2.0.0 merges). This file comes with the rail, so the rule is here. */
+html.sr-phone:has(.sr-scalerail:not([hidden])) .sr-scenenote {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 44px + var(--sp-2));
+}
+html.sr-phone.sr-launchday:not([data-sheet='full']):has(.sr-scalerail:not([hidden])) .sr-scenenote {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 2 * (44px + var(--sp-2)));
+}
+/* With a card up, the band of scene above the sheet is the selection's: its tag sits beside Back, where the note
+   would land (seen at 390 x 844 on Zhurong's card, 2026-11-08). The note is about the scene, so it waits, as it
+   does at full; closing the card brings it back. */
+html.sr-phone.sr-card-open .sr-scenenote {
+  visibility: hidden;
+  pointer-events: none;
+}
+/* b200-s1-fixes: end */
+
 /* The badge, on the Sun's stage, one step down under the rail while it is up (--sr-rail-h: its height and 8 px). */
 html.sr-rail-on .sr-scalebadge {
   top: calc(var(--sr-inset) + env(safe-area-inset-top, 0px) + var(--sr-rail-h, 0px));

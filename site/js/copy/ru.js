@@ -5570,3 +5570,21 @@ COPY.momentStories['fengyun-1c'] = {
   "srcWiki": "Википедия, 2007 Chinese anti-satellite missile test: скорость сближения"
 };
 // b200-c3-learn: end
+
+// b200-s1-fixes: begin -- the long mission clock's units (copy/en.moments.js momentPlayer metYears, metDays), machine-drafted
+COPY.momentPlayer.metYears = "{y} г. {d} дн.";
+COPY.momentPlayer.metDays = "{d} дн.";
+COPY.truth.exoPacked = "наша сжатая копия от {date}"; // forge #88: which list an exoplanet came from
+COPY.truth.exoLive = "список Архива, прочитанный {date}";
+// The deep-sky catalogue's type phrases (data/dso.json `typeText`), lowercased, in this language: the card's lead and its
+// "What it is" row read them through RULES.typeWords; a phrase not here stays English, which is data.
+const S1_TYPES = {"globular cluster": "шаровое скопление", "open cluster": "рассеянное скопление", "dwarf spheroidal galaxy": "карликовая сфероидальная галактика", "spiral galaxy": "спиральная галактика", "emission nebula": "эмиссионная туманность", "planetary nebula": "планетарная туманность", "dwarf irregular galaxy": "карликовая неправильная галактика", "barred spiral galaxy": "спиральная галактика с перемычкой", "elliptical galaxy": "эллиптическая галактика", "lenticular galaxy": "линзообразная галактика", "h ii region nebula with cluster": "область H II со скоплением", "dwarf elliptical galaxy": "карликовая эллиптическая галактика", "h ii region nebula": "область H II", "barred irregular galaxy": "неправильная галактика с перемычкой", "ultra-faint dwarf galaxy": "сверхтусклая карликовая галактика", "dark nebula": "тёмная туманность", "young open cluster in an emission nebula": "молодое рассеянное скопление в эмиссионной туманности", "supernova remnant": "остаток сверхновой", "nebula with cluster": "туманность со скоплением", "milky way star cloud": "звёздное облако Млечного Пути", "optical double": "оптическая двойная", "asterism": "астеризм", "diffuse nebula": "диффузная туманность", "starburst galaxy": "галактика со вспышкой звездообразования", "dwarf irregular starburst galaxy": "карликовая неправильная галактика со вспышкой звездообразования", "transition dwarf galaxy, part irregular, part spheroidal": "переходная карликовая галактика, отчасти неправильная, отчасти сфероидальная", "barred irregular galaxy, seen edge-on": "неправильная галактика с перемычкой, видимая с ребра", "ultra-faint dwarf galaxy, or perhaps a star cluster": "сверхтусклая карликовая галактика или, возможно, звёздное скопление", "transition dwarf galaxy, part spheroidal, part irregular": "переходная карликовая галактика, отчасти сфероидальная, отчасти неправильная", "spiral galaxy, seen nearly edge-on and bursting with new stars": "спиральная галактика, видимая почти с ребра, полная новых звёзд", "peculiar galaxy with a giant black hole firing radio jets": "пекулярная галактика с гигантской чёрной дырой, выбрасывающей радиоджеты", "pair of open clusters": "пара рассеянных скоплений", "spiral galaxy seen exactly edge-on": "спиральная галактика, видимая точно с ребра", "reflection nebula": "отражательная туманность", "reflection and emission nebula": "отражательная и эмиссионная туманность", "spiral galaxy seen edge-on": "спиральная галактика, видимая с ребра", "barred spiral galaxy seen edge-on": "спиральная галактика с перемычкой, видимая с ребра", "spiral galaxy seen face-on": "спиральная галактика, видимая плашмя", "barred spiral galaxy seen nearly edge-on": "спиральная галактика с перемычкой, видимая почти с ребра", "pair of colliding galaxies": "пара сталкивающихся галактик"};
+const S1_PLACES = [[" in the large magellanic cloud", " в Большом Магеллановом Облаке"], [" in the small magellanic cloud", " в Малом Магеллановом Облаке"], [" in the milky way", " в Млечном Пути"], [" in the local group", " в Местной группе"]];
+RULES.typeWords = (text) => {
+  let base = String(text || '').trim();
+  let tail = '';
+  for (const [en, here] of S1_PLACES) if (base.toLowerCase().endsWith(en)) { tail = here; base = base.slice(0, base.length - en.length); break; }
+  const hit = S1_TYPES[base.toLowerCase()];
+  return hit ? hit + tail : String(text || '');
+};
+// b200-s1-fixes: end

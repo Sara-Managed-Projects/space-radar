@@ -282,6 +282,13 @@ check(/^groups: \[/m.test(yaml), 'layers.yaml lists its groups');
   check(W.rovingTarget(5, 2, 'Home') === 0 && W.rovingTarget(5, 2, 'End') === 4, 'Home and End jump');
   check(W.rovingTarget(5, 2, 'Tab') === null && W.rovingTarget(5, 2, 'a') === null && W.rovingTarget(0, 0, 'ArrowDown') === null, 'any other key, and an empty list, are not ours');
   check(W.rovingTarget(5, -1, 'ArrowDown') === 1 && W.rovingTarget(5, 99, 'ArrowUp') === 0, 'a lost index starts from the first');
+  // b200-s1-fixes (forge #49): the panel in the rail's Tab order, and a filter that finds nothing is said aloud
+  const a1 = {}, a2 = {}, a3 = {};
+  check(W.edgeTab([a1, a2, a3], a1, true) === 'back' && W.edgeTab([a1, a2, a3], a3, false) === 'out', 'Shift+Tab off the first control goes back to the button; Tab off the last leaves for the rail');
+  check(W.edgeTab([a1, a2, a3], a2, false) === null && W.edgeTab([a1, a2, a3], a1, false) === null && W.edgeTab([], a1, true) === null, 'inside the panel Tab is the browser\'s');
+  const src49 = readFileSync(join(JS, 'ui/whattoshow.js'), 'utf8');
+  check(/noMatch\.setAttribute\('role', 'status'\)/.test(src49), '"No layer by that name." is a status, so a screen reader says it');
+  check(/setAttribute\('aria-controls', pop\.id\)/.test(src49), 'the What to show button names the panel it opens (aria-controls)');
 
   const store = { getItem: () => null, setItem() {} };
   const show = W.createWhatToShow(makeCtx(firstOn).ctx, { storage: store });

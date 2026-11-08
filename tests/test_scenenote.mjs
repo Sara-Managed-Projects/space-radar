@@ -15,5 +15,12 @@ check(!refusedEverywhere(refused, new Map([['stations', 6], ['visual', 0]])), 's
 check(!refusedEverywhere([{ id: 'swpc-kp', state: 'could-not-look' }], none), 'no CelesTrak rows at all is not "refused"');
 check(!refusedEverywhere(null, none), 'nothing known, no note');
 
+// b200-s1-fixes: on a phone the note sits under the scale rail (it covered the rung and Back), and waits while a card is up
+{
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'site/css/finishers.css'), 'utf8');
+  check(/html\.sr-phone:has\(\.sr-scalerail:not\(\[hidden\]\)\) \.sr-scenenote \{\s*top: calc\(var\(--sr-top-y\) \+ var\(--sr-top-bar\) \+ var\(--sp-2\) \+ 44px \+ var\(--sp-2\)\);/.test(css), 'on a phone the note starts below the rail (64 px + 44 px + 8 px)');
+  check(/html\.sr-phone\.sr-card-open \.sr-scenenote \{\s*visibility: hidden;/.test(css), 'and waits while a card is up, off the selection\'s tag');
+}
 if (problems.length) { console.error('scene note FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('scene note ok: shown only when every CelesTrak file was refused and no satellite is on the map');

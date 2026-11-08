@@ -163,5 +163,11 @@ check(shouldSaveData(undefined) === false && shouldSaveData(null) === false, 'no
   check(f.scale === 1.5, 'frozen: rest does not climb either');
 }
 
+// b200-s1-fixes (forge #14): boot's own long frames do not feed the ladder or the latch: they are fed from 5 s after the layers land
+{
+  const { readFileSync: rf } = await import('node:fs');
+  const mainSrc = rf(new URL('../site/js/main.js', import.meta.url), 'utf8');
+  check(/quietUntil \|\|= window\.__srLayersReady && nowReal \+ 5000;/.test(mainSrc) && /if \(!looking && quietUntil && nowReal > quietUntil && !document\.hidden/.test(mainSrc), 'the frame ladder and the latch wait for the layers to land, and five seconds more');
+}
 if (problems.length) { console.error('quality FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('quality ok: the latch trips once after three slow seconds and never on stutters; the resolution scale steps 2, 1.5, 1.25, 1 before the latch and comes back; data-saver follows the connection');
