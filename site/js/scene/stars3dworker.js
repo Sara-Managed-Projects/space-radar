@@ -4,7 +4,7 @@
 //   in  { type: 'open', url }                    set.json's address; the worker reads it once
 //   in  { type: 'view', cam: [x, y, z], limit, nodes }   the camera in light-years (ecliptic J2000, the Sun at 0)
 //   in  { type: 'reset' }                        the page made its buffers again: everything is to be sent afresh
-//   out { type: 'set', count, tiles, bytes }     once, when set.json has been read
+//   out { type: 'set', count, tiles, bytes, bright }   once, when set.json has been read
 //   out { type: 'want', keys }                   the nodes this view holds (scene/stars3dtree.js selectNodes), most needed first
 //   out { type: 'node', key, posLy, absMag, bv, ref, src }   one node's stars, the arrays transferred
 //   out { type: 'error', what }                  set.json did not load: the map keeps HYG
@@ -33,7 +33,7 @@ async function open(url) {
   const doc = parseSet(await r.json());
   index = doc ? indexSet(doc) : null;
   if (!index) throw new Error('set.json is not an octree set this page can read');
-  postMessage({ type: 'set', count: doc.count, tiles: doc.tiles.length, bytes: doc.tiles.reduce((n, t) => n + t.bytes, 0) });
+  postMessage({ type: 'set', count: doc.count, tiles: doc.tiles.length, bytes: doc.tiles.reduce((n, t) => n + t.bytes, 0), bright: doc.bright_from_sun });
 }
 
 async function fetchNode(i) {

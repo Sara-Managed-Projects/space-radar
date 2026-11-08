@@ -5712,7 +5712,8 @@ Object.assign(COPY, {
     "noError": "AT-HYG nennt für diese Entfernung keinen Fehler",
     "guess": "Diese Entfernung ist eine Schätzung: Jenseits von 3 kpc (etwa 10 000 Lichtjahre) ist eine Parallaxe nur wenige Zehntel Millibogensekunden groß, und der eigene Fehler des Sterns fehlt in AT-HYG, das nur Parallaxen behält, die größer als ihr Fehler sind",
     "lineHyg": "Sterne in 3D: die 109 389 von HYG.",
-    "lineAthyg": "Sterne in 3D: die 109 389 von HYG und {n} Millionen von AT-HYG, auf einer Sprosse der Leiter rund um die Kamera geladen (bis zu {k} Millionen auf einmal).",
+    "lineAthyg": "Sterne in 3D: die 109 389 von HYG und {n} Millionen von AT-HYG, auf einer Sprosse der Leiter rund um die Kamera geladen (bis zu {k} Millionen auf einmal) und bis zur Größe {lim} von der Kamera aus gezeichnet, schwächer als ein Auge sieht, zum Ende hin verblassend.",
+    "shell": "Auf der Bühne einer Welt sind die 3D-Sterne nur die von HYG: {n} AT-HYG-Sterne der Größe 7,5 oder heller, von der Sonne aus gesehen, werden dort nicht gezeichnet.",
     "why": {
       "low": "Niedrige Qualität zeichnet nur HYG.",
       "latched": "Die Bildrate war niedrig: nur HYG.",

@@ -4,9 +4,11 @@
   1. A Tycho-2 number packs into the u32 the page reads back (scene/stars3dtree.js refName), and what Tycho-2 could not
      have written is refused.
   2. Tycho's VT and BT-VT become Johnson V and B-V by ESA 1997's relations; no colour leaves VT as it is.
+  2b. A star within 20 arcseconds and 1.5 magnitudes of one of HYG's (stars3d.bin) is that star, left out.
   3. The octree: a node keeps at most CAPACITY stars, the brightest (absolute) of its cube; every star of a child is fainter
      than every star of its parent and inside the child's cube; every star is in exactly one node.
-  4. A node's quantised rows are inside their types and decode, through harvest/tilepack.py, to within half a quantum.
+  4. A node's quantised rows are inside their types and decode, through harvest/tilepack.py, to within half a quantum:
+     the direction to 13 arcseconds at worst, the distance to 0.01 %.
   5. The committed set passes the script's own --check.
 
 Run: python3 tests/test_stars3d_tiles.py
@@ -83,6 +85,20 @@ class Stars3dTiles(unittest.TestCase):
         self.assertGreater(len(nodes), 8)
 
     @unittest.skipIf(np is None, "NumPy is not installed")
+    def test_twins(self):
+        def at(ra_arcsec):
+            a = np.radians(ra_arcsec / 3600)
+            return [np.cos(a), np.sin(a), 0.0]
+        hyg = np.array([at(0), [0.0, 0.0, 1.0]])
+        mine = np.array([at(10), at(30), at(10), [0.0, 0.0, 1.0]])
+        got = B.twins(hyg, np.array([8.0, 5.0]), mine, np.array([8.5, 8.0, 10.5, 5.2]))
+        self.assertEqual(got.tolist(), [True, False, False, True])
+        self.assertEqual(B.twins(hyg, np.array([8.0, 5.0]), np.zeros((0, 3)), np.zeros(0)).tolist(), [])
+        d, m = B.hyg_stars()
+        self.assertEqual(len(d), 109389)
+        self.assertTrue(np.allclose(np.linalg.norm(d, axis=1), 1))
+
+    @unittest.skipIf(np is None, "NumPy is not installed")
     def test_quantise(self):
         cols = cloud(300)
         node = {"key": "r", "level": 0, "c": (0.0, 0.0, 0.0), "h": B.ROOT_HALF_LY, "idx": np.arange(300)}
@@ -91,9 +107,13 @@ class Stars3dTiles(unittest.TestCase):
         data = tilepack.encode_tile(B.SCHEMA, rows, 0, 1)
         got = tilepack.decode_tile(B.SCHEMA, data)
         self.assertEqual(len(data), 16 + 300 * 4 + 3 * 300 * 2 + 3 * 300)
-        quantum = 2 * B.ROOT_HALF_LY / 65535
-        x = -B.ROOT_HALF_LY + np.array(got["cols"]["x"]) * quantum
-        self.assertTrue(np.all(np.abs(x - cols["x"]) <= quantum / 2 + 1e-9))
+        ux, uy, uz = B.oct_decode(np.array(got["cols"]["u"]) / 65535 * 2 - 1, np.array(got["cols"]["v"]) / 65535 * 2 - 1)
+        d = B.DIST0_LY * (B.DIST1_LY / B.DIST0_LY) ** (np.array(got["cols"]["r"]) / 65535)
+        true = np.stack([cols["x"], cols["y"], cols["z"]], 1)
+        dist = np.linalg.norm(true, axis=1)
+        self.assertTrue(np.all(np.abs(d / dist - 1) < 1e-4), "a distance off by more than half a step")
+        cosang = (ux * true[:, 0] + uy * true[:, 1] + uz * true[:, 2]) / dist
+        self.assertTrue(np.all(np.degrees(np.arccos(np.clip(cosang, -1, 1))) * 3600 < 14), "a direction off by more than 14 arcseconds (13 at worst)")
         am = B.ABS0 + np.array(got["cols"]["absmag"]) * B.ABS_STEP
         self.assertTrue(np.all(np.abs(am - cols["absmag"]) <= B.ABS_STEP / 2 + 1e-9))
         bv = np.array(got["cols"]["bv"])

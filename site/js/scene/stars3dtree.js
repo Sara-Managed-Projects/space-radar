@@ -10,9 +10,11 @@
 //   boxDistanceLy(tile, cam) -> light-years  from the camera to the node's cube (0 inside)
 //   selectNodes(index, cam, opts) -> tile indices, the most needed first   opts { limit, nodes }
 //   decodeNode(doc, tile, cols) -> { count, posLy, absMag, bv, ref, src }  a decoded tile (data/tilecloud.js) as stars
+//   octDecode(u, v, out, o) -> out           an octahedral direction back to a unit vector
 //   sceneToLy(A, p) -> [x, y, z]             a scene point back to light-years (ecliptic J2000, the Sun at 0): stage.affineFrom's inverse
 //   refName(ref) -> 'TYC 4669-731-1' | null  a Tycho-2 number, or null for a star AT-HYG numbers itself
 //   distanceNote(distLy, src) -> { from, sigmaMas, poe, pct, guess } | null   the modelled error of a distance
+//   faintVert(src) -> src | null             scene/stars3d.js's vertex shader drawing FAINT_PAST magnitudes past its limit
 //
 // WHY THE TIERS ARE THE QUALITY'S. Cosmoscope draws HYG, AT-HYG and Gaia DR3 by its graphics setting; here the same
 // device tiers that pick the maps (scene/quality.js) pick the stars, in WebGL on every one of them:
@@ -41,12 +43,22 @@
 // of the formal errors against magnitude). Past GUESS_PC (3 kpc, a parallax of a third of a milliarcsecond, ten times
 // Gaia's own systematic zero-point error of about 0.02 mas, Lindegren et al. 2021, A&A 649, A4) the card says plainly
 // that the distance is a guess, whatever the model says.
+//
+// A FULLER SKY. HYG's stars stop at the exposure's limit (7.5 at most: what an eye with a little help sees), and from a
+// rung of the ladder that is all the 3D map drew. AT-HYG's layer draws on FAINT_PAST magnitudes past it (to 11.5 from
+// the camera), each star at the very light HYG's would have down to the limit, then falling smoothly to 40 % of it by the
+// end and out over the last half magnitude, its sprite half as wide again (the same peak, softer), so the many faint ones read as the soft field a long exposure shows and not
+// as noise or a cliff. HYG's own look is untouched
+// (its shader is not this one), and on the shell nothing changes (uShell: the limit stays the eye's).
 
 export const LY_PER_PC = 3.2615637771674333;
 export const CAPACITY = 8192;
 /** Nodes of CAPACITY stars a tier may hold at once (GPU: 19 bytes a star; tier 0 is 6.2 MB). */
 export const NODES = [40, 128, 256];
 export const GUESS_PC = 3000;
+export const FAINT_PAST = 4;
+const ALPHA_LINE = 'vAlpha = ( m > uMagLimit ) ? 0.0 : ( 0.35 + 0.65 * tt ) * uGain;';
+const SIZE_LINE = 'float sizePx = size * uPixelRatio * uScale;';
 export const SIGMA_MAS = { 0: 0.03, 1: 0.04, 2: 0.5 }; // src bits 0-2: Gaia DR3, Gaia DR2, Hipparcos (above)
 const FROM = ['gaia-dr3', 'gaia-dr2', 'hipparcos', 'gliese', 'other'];
 
@@ -115,20 +127,35 @@ export function selectNodes(index, cam, opts = {}) {
   return open.slice(0, most);
 }
 
-/** A tile data/tilecloud.js decodeTile() read, as stars: positions in light-years, magnitudes and colours as numbers. */
+/** The octahedron's square (u, v each -1..1) back to a unit vector, into `out` at `o`: scripts/build-stars3d-tiles.py oct_encode undone. */
+export function octDecode(u, v, out, o) {
+  let x = u, y = v;
+  const z = 1 - Math.abs(u) - Math.abs(v);
+  if (z < 0) { x = (1 - Math.abs(v)) * (u >= 0 ? 1 : -1); y = (1 - Math.abs(u)) * (v >= 0 ? 1 : -1); }
+  const n = Math.hypot(x, y, z);
+  out[o] = x / n; out[o + 1] = y / n; out[o + 2] = z / n;
+  return out;
+}
+
+/**
+ * A tile data/tilecloud.js decodeTile() read, as stars: positions in light-years (ecliptic J2000, the Sun at 0), each a
+ * direction from the Sun (octahedral, 13" at worst) and a logarithmic distance (0.018 % a step), magnitudes and colours.
+ */
 export function decodeNode(doc, tile, cols) {
   const f = Object.fromEntries(doc.schema.map((s) => [s.name, s]));
   const n = cols.ref.length;
   const posLy = new Float32Array(n * 3);
   const absMag = new Float32Array(n);
   const bv = new Float32Array(n);
-  const span = (2 * tile.h) / 65535;
-  const x0 = tile.c[0] - tile.h, y0 = tile.c[1] - tile.h, z0 = tile.c[2] - tile.h;
+  const d0 = doc.partition.dist0_ly, k = Math.log(doc.partition.dist1_ly / d0) / 65535;
   const a0 = f.absmag.offset || 0, as = f.absmag.scale || 1, b0 = f.bv.offset || 0, bs = f.bv.scale || 1;
+  const dir = [0, 0, 0];
   for (let i = 0; i < n; i += 1) {
-    posLy[i * 3] = x0 + cols.x[i] * span;
-    posLy[i * 3 + 1] = y0 + cols.y[i] * span;
-    posLy[i * 3 + 2] = z0 + cols.z[i] * span;
+    octDecode(cols.u[i] / 65535 * 2 - 1, cols.v[i] / 65535 * 2 - 1, dir, 0);
+    const d = d0 * Math.exp(cols.r[i] * k);
+    posLy[i * 3] = dir[0] * d;
+    posLy[i * 3 + 1] = dir[1] * d;
+    posLy[i * 3 + 2] = dir[2] * d;
     absMag[i] = a0 + cols.absmag[i] * as;
     bv[i] = cols.bv[i] === 255 ? NaN : b0 + cols.bv[i] * bs;
   }
@@ -162,4 +189,19 @@ export function distanceNote(distLy, src) {
   const parallaxMas = 1000 / pc;
   const poe = parallaxMas / sigmaMas;
   return { from, sigmaMas, poe, pct: 100 / poe, guess: pc > GUESS_PC };
+}
+
+/** scene/stars3d.js's VERT with the faint field (A FULLER SKY above), or null when the line it changes is not there. */
+export function faintVert(src) {
+  if (typeof src !== 'string' || !src.includes(ALPHA_LINE) || !src.includes(SIZE_LINE)) return null;
+  // past the limit a star's sprite widens by half over its first magnitude: the same peak spread softer, so a field of
+  // them reads as a glow of points on a phone's dense screen and not as single device pixels
+  const size = 'float sizePx = size * uPixelRatio * uScale * ( uShell > 0.5 ? 1.0 : 1.0 + 0.5 * smoothstep( uMagLimit, uMagLimit + 1.0, m ) );';
+  return 'uniform float uFaintPast;\n' + src.replace(SIZE_LINE, size).replace(ALPHA_LINE, [
+    'float srLim = uShell > 0.5 ? uMagLimit : uMagLimit + uFaintPast;',
+    // from HYG's light at the limit down to 40 % of it at the end, and out over the last half magnitude: a field, not a cliff
+    '  float srX = clamp( ( m - uMagLimit ) / max( 1e-3, uFaintPast ), 0.0, 1.0 );',
+    '  float srFade = m <= uMagLimit ? 1.0 : ( 1.0 - 0.6 * srX ) * smoothstep( srLim, srLim - 0.5, m );',
+    '  vAlpha = ( m > srLim ) ? 0.0 : ( 0.35 + 0.65 * tt ) * srFade * uGain;',
+  ].join('\n'));
 }

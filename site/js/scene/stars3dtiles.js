@@ -35,7 +35,7 @@ import { STARS3D_VERT, STARS3D_FRAG, starPhysical, LY_KM } from './stars3d.js';
 import { starTint } from './starfield.js';
 import { createPickIndex } from './pickindex.js';
 import { isSaveData } from '../data/tilecloud.js';
-import { CAPACITY, starTierFor, sceneToLy, refName, distanceNote, LY_PER_PC } from './stars3dtree.js';
+import { CAPACITY, FAINT_PAST, starTierFor, sceneToLy, refName, distanceNote, faintVert, LY_PER_PC } from './stars3dtree.js';
 
 const SUN_INERTIAL = 'sun-inertial';
 const POLL_MS = 500;
@@ -43,6 +43,8 @@ const PICK_PX = 24;
 const OUT_OF_REACH = 99;
 const SET_URL = new URL('../../data/stars3d-athyg/set.json', import.meta.url).href;
 const MOVE_LY = 0.25;
+// AT-HYG's stars of magnitude 7.5 or brighter from the Sun (set.json `bright_from_sun`), said before set.json is read.
+const BRIGHT_FROM_SUN = 1177;
 
 export function attachStarTiers(ctx) {
   const st = {
@@ -70,7 +72,8 @@ export function attachStarTiers(ctx) {
     geo.setDrawRange(0, 0);
     geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1e9);
     const mat = new THREE.ShaderMaterial({
-      vertexShader: STARS3D_VERT, fragmentShader: STARS3D_FRAG, uniforms: st.base.material.uniforms,
+      // stars3d.js's uniform OBJECTS, shared (a change to one is a change to both), and one of this layer's own
+      vertexShader: faintVert(STARS3D_VERT), fragmentShader: STARS3D_FRAG, uniforms: { ...st.base.material.uniforms, uFaintPast: { value: FAINT_PAST } },
       transparent: false, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false,
     });
     st.points = new THREE.Points(geo, mat);
@@ -118,7 +121,7 @@ export function attachStarTiers(ctx) {
 
   function onMessage(e) {
     const m = e.data || {};
-    if (m.type === 'set') st.set = { count: m.count, tiles: m.tiles, bytes: m.bytes };
+    if (m.type === 'set') st.set = { count: m.count, tiles: m.tiles, bytes: m.bytes, bright: m.bright };
     else if (m.type === 'error') { if (!m.key) st.error = m.what; else console.warn('stars3d tiers:', m.what); }
     else if (m.type === 'want') { const keep = new Set(m.keys); for (const k of [...st.nodes.keys()]) if (!keep.has(k)) drop(k); }
     else if (m.type === 'node' && st.geo && !st.nodes.has(m.key) && st.free.length) {
@@ -169,7 +172,7 @@ export function attachStarTiers(ctx) {
     const moved = !st.lastCam || Math.hypot(cam[0] - st.lastCam[0], cam[1] - st.lastCam[1], cam[2] - st.lastCam[2]) > MOVE_LY;
     if (!moved || !st.worker) return;
     st.lastCam = cam;
-    const limit = Math.min(7.5, Number(st.base.material.uniforms.uMagLimit.value) || 7.5);
+    const limit = Math.min(7.5, Number(st.base.material.uniforms.uMagLimit.value) || 7.5) + FAINT_PAST;
     st.worker.postMessage({ type: 'view', cam, limit, nodes: st.plan.nodes });
   }
 
@@ -210,7 +213,7 @@ export function attachStarTiers(ctx) {
     const e = new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse).multiply(st.points.matrixWorld).elements;
     const pos = st.geo.getAttribute('position');
     const mag = st.geo.getAttribute('aAbsMag').array;
-    const cp = camera.position, upp = u.uUnitsPerPc.value, lim = u.uMagLimit.value;
+    const cp = camera.position, upp = u.uUnitsPerPc.value, lim = u.uMagLimit.value + FAINT_PAST;
     const out = [];
     index.query(e, pos.array, pos.version, st.geo.drawRange.count, viewport.w * 0.5, viewport.h * 0.5, ndcX, ndcY, reachPx, (i, px, sx, sy, depth) => {
       if (mag[i] >= OUT_OF_REACH) return;
@@ -243,7 +246,10 @@ export function attachStarTiers(ctx) {
     const p = st.plan;
     if (p.tier !== 'athyg') return [T.lineHyg, T.why[p.why] || '', T.gaiaHeld].filter(Boolean).join(' ');
     const n = st.set ? st.set.count : 2.4e6;
-    return [t(T.lineAthyg, { n: fmt.smart(n / 1e6), k: fmt.smart(p.nodes * CAPACITY / 1e6) }), T.gaiaHeld].join(' ');
+    const onRung = ctx.stars3d && ctx.stars3d.mode() === 'true';
+    const lim = Math.min(7.5, Number(st.base ? st.base.material.uniforms.uMagLimit.value : 7.5) || 7.5) + FAINT_PAST;
+    return [t(T.lineAthyg, { n: fmt.smart(n / 1e6), k: fmt.smart(p.nodes * CAPACITY / 1e6), lim: fmt.smart(lim) }),
+      onRung ? '' : t(T.shell, { n: fmt.int(st.set && st.set.bright ? st.set.bright : BRIGHT_FROM_SUN) }), T.gaiaHeld].filter(Boolean).join(' ');
   }
   /** For scene/stardeep.js's line: said only when the clock is what keeps these stars off. */
   function farLine() {
@@ -270,6 +276,7 @@ export function attachStarTiers(ctx) {
       plan: st.plan, active: st.active, far: st.far, set: st.set, error: st.error, slots: st.slots,
       nodes: st.nodes.size, stars: [...st.nodes.values()].reduce((n, v) => n + v.count, 0), drawn: st.geo ? st.geo.drawRange.count : 0,
       camLy: st.lastCam ? st.lastCam.map((v) => Math.round(v * 10) / 10) : null,
+      magLimit: st.base ? st.base.material.uniforms.uMagLimit.value : null, faintPast: FAINT_PAST,
     }),
     line,
     farLine,

@@ -16,6 +16,7 @@
 //   6. THE SET: set.json is an octree this page reads; its tiles exist at the sizes it says; the total and the largest
 //      node are inside registry/budgets.yaml (stars3d_athyg_total_bytes, stars3d_athyg_node_bytes); a camera near Orion
 //      1 000 ly out finds nodes to hold, and no more than the tier allows.
+//   5b. THE FAINT FIELD: faintVert patches stars3d.js's own VERT, past the limit only off the shell.
 //   7. THE FIRST FRAME DOES NOT GROW: none of the new modules and no path to the tiles is in the boot graph from main.js,
 //      and what this batch added to boot-graph files is inside stars3d_tiers_boot_bytes.
 import { readFileSync, statSync, existsSync } from 'node:fs';
@@ -95,13 +96,24 @@ for (const t of [doc.tiles[0], doc.tiles[Math.floor(doc.tiles.length / 2)], doc.
   check(s.count === t.count, `${t.key}: ${s.count} stars, set.json says ${t.count}`);
   let inside = true, mags = true;
   for (let i = 0; i < s.count; i += 1) {
-    for (let k = 0; k < 3; k += 1) if (Math.abs(s.posLy[i * 3 + k] - t.c[k]) > t.h * 1.0001) inside = false;
+    const dq = Math.hypot(s.posLy[i * 3], s.posLy[i * 3 + 1], s.posLy[i * 3 + 2]) * 2e-4 + 1e-3; // a 16-bit direction and log distance
+    for (let k = 0; k < 3; k += 1) if (Math.abs(s.posLy[i * 3 + k] - t.c[k]) > t.h + dq) inside = false;
     if (s.absMag[i] < t.mMin - 0.13 || s.absMag[i] > t.mMax + 0.13) mags = false;
   }
   check(inside, `${t.key}: every star inside its cube`);
   check(mags, `${t.key}: every magnitude within mMin..mMax`);
 }
 check(S.refName((0x80000000 | 4669 << 17 | 731 << 3 | 1) >>> 0) === 'TYC 4669-731-1', 'a Tycho-2 number reads back as scripts/build-stars3d-tiles.py tyc_ref packs it');
+{
+  const o = [0, 0, 0];
+  for (const v of [[1, 0, 0], [0, 0, -1], [0.6, -0.48, -0.64], [-0.36, 0.48, 0.8]]) {
+    const n = Math.abs(v[0]) + Math.abs(v[1]) + Math.abs(v[2]);
+    let u = v[0] / n, w = v[1] / n;
+    if (v[2] < 0) { const uu = (1 - Math.abs(w)) * Math.sign(u || 1); w = (1 - Math.abs(u)) * Math.sign(w || 1); u = uu; }
+    S.octDecode(u, w, o, 0);
+    check(Math.hypot(o[0] - v[0], o[1] - v[1], o[2] - v[2]) < 1e-12, `octDecode undoes the octahedral map for ${v}`);
+  }
+}
 check(S.refName(123456) === null, 'an AT-HYG number is not a Tycho-2 number');
 
 // --- 4. the axes --------------------------------------------------------------------------------------------------
@@ -136,6 +148,18 @@ check(S.distanceNote(0, 0) === null, 'no distance, no note');
     const sel = S.selectNodes(index, camOrion, { limit: 7.5, nodes });
     check(sel.length > 0 && sel.length <= nodes, `near Orion at 1 000 ly the walk holds ${sel.length} of at most ${nodes} nodes`);
   }
+}
+
+// --- 5b. the faint field: stars3d.js's own shader, drawing past its limit only off the shell ---------------------------
+{
+  const S3 = await import(join(JS, 'scene/stars3d.js'));
+  const v = S.faintVert(S3.STARS3D_VERT);
+  check(v && v.includes('uniform float uFaintPast;') && v.includes('uMagLimit + uFaintPast') && !v.includes('vAlpha = ( m > uMagLimit ) ? 0.0'), 'faintVert draws FAINT_PAST magnitudes past the limit (stars3d.js VERT still has the line it changes)');
+  check(v && v.includes('uShell > 0.5 ? uMagLimit'), 'on the shell the limit stays the eye\'s');
+  check(v && /m <= uMagLimit \? 1\.0/.test(v), 'down to the limit a star is the light HYG\'s would be');
+  check(v && v.includes('1.0 + 0.5 * smoothstep( uMagLimit, uMagLimit + 1.0, m )'), 'past the limit the sprite widens smoothly, never on the shell');
+  check(S.faintVert('void main() {}') === null, 'a shader without the line is refused, not drawn unchanged');
+  check(S.FAINT_PAST === 4, 'the field goes four magnitudes past the eye: 11.5 at most');
 }
 
 // --- 7. the first frame does not grow -----------------------------------------------------------------------------

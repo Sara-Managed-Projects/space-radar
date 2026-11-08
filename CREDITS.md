@@ -4754,7 +4754,7 @@ said by the trips' synthetic voice, **Kokoro-82M (af_heart), Apache-2.0** (§9b)
 ## 3c-5. Millions of stars in 3D — AT-HYG v4.0, CC BY-SA 4.0 (release 2.0.0, forge #140)
 
 **Stars in 3D beyond HYG: AT-HYG v4.0 (David Nash), from Tycho-2, Hipparcos and Gaia DR3.** `site/data/stars3d-athyg/`
-holds the 2.4 million stars of **AT-HYG v4.0**, "Augmented Tycho - HYG", by **David Nash** (astronexus,
+holds the 2 411 200 stars of **AT-HYG v4.0**, "Augmented Tycho - HYG", by **David Nash** (astronexus,
 <https://codeberg.org/astronexus/athyg>), that HYG (§3c) does not already draw: the full catalogue `data/athyg_40.csv.gz`
 (199 688 001 B, sha256 `69ad04dd…46818a6`, read 2026-11-08), cut by `scripts/build-stars3d-tiles.py` into an octree of
 tiles in the A1 format (`harvest/tilepack.py`), which the 3D map fetches by node round the camera on a rung of the
@@ -4766,7 +4766,7 @@ catalogue; its distances are Gaia DR3's for nearly every star, under AT-HYG's li
 
 | file | what | licence | how it was made |
 |---|---|---|---|
-| `site/data/stars3d-athyg/set.json`, `L*/*.bin` | each star's place (light-years, ecliptic J2000, 16 bits a coordinate inside its node's cube), absolute V magnitude, B-V, where its distance came from, and its Tycho-2 number: 13 bytes a star | CC BY-SA 4.0 | the stars with a HYG id left out (HYG draws them), and those with no distance; Tycho's VT and BT-VT turned into V and B-V by the Hipparcos catalogue's relations (ESA 1997, vol. 1, section 1.3); nodes of 8 192, the brightest of their cube |
+| `site/data/stars3d-athyg/set.json`, `L*/*.bin` | each star's place (its direction from the Sun to 13″ and its distance to 0.02 %, ecliptic J2000), absolute V magnitude, B-V, where its distance came from, and its Tycho-2 number: 13 bytes a star | CC BY-SA 4.0 | the stars with a HYG id left out (HYG draws them), every star within 20″ and 1.5 magnitudes of one of HYG's (1 994: the same star under two numbers, as `scripts/build-startiles.py` decides it), and those with no distance; Tycho's VT and BT-VT turned into V and B-V by the Hipparcos catalogue's relations (ESA 1997, vol. 1, section 1.3); nodes of 8 192, the brightest of their cube |
 
 **What is cited and what is modelled.** The places, magnitudes and colours are AT-HYG's (**measured**). AT-HYG carries no
 parallax error, so the card's distance error is **modelled** from each mission's typical error at these brightnesses:

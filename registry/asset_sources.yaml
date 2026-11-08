@@ -808,5 +808,5 @@ sources:
     offline: shipped
     checked: 2026-11-08
     pins:
-      - {file: site/data/stars3d-athyg/set.json, sha256: 8f765068c8f8c1fa99e16146d748b31f49ecbf69fdf1292b31e94c650cf59cd7}
+      - {file: site/data/stars3d-athyg/set.json, sha256: e87f05c1b64c35caedb80918a1f41d7fe62d991b6051bced737ee574f652add7}
   # b200-f10-stars3d: end

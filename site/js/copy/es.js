@@ -5476,7 +5476,8 @@ Object.assign(COPY, {
     "noError": "AT-HYG no da ningún error para esta distancia",
     "guess": "Esta distancia es una suposición: más allá de 3 kpc (unos 10 000 años luz) una paralaje mide pocas décimas de milisegundo de arco, y el error propio de la estrella no está en AT-HYG, que solo guarda una paralaje mayor que su error",
     "lineHyg": "Estrellas en 3D: las 109 389 de HYG.",
-    "lineAthyg": "Estrellas en 3D: las 109 389 de HYG y {n} millones de AT-HYG, cargadas alrededor de la cámara en un peldaño de la escalera (hasta {k} millones a la vez).",
+    "lineAthyg": "Estrellas en 3D: las 109 389 de HYG y {n} millones de AT-HYG, cargadas alrededor de la cámara en un peldaño de la escalera (hasta {k} millones a la vez) y dibujadas hasta la magnitud {lim} vista desde la cámara, más débiles de lo que ve un ojo, desvaneciéndose al final.",
+    "shell": "En el escenario de un mundo las estrellas en 3D son solo las de HYG: {n} estrellas de AT-HYG de magnitud 7,5 o más brillantes vistas desde el Sol no se dibujan allí.",
     "why": {
       "low": "La calidad baja dibuja solo HYG.",
       "latched": "La frecuencia de imagen era baja: solo HYG.",

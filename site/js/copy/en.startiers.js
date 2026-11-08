@@ -24,7 +24,9 @@ Object.assign(COPY, {
     guess: 'This distance is a guess: past 3 kpc (about 10 000 light-years) a parallax is a few tenths of a milliarcsecond, and the star’s own error is not in AT-HYG, which only keeps a parallax larger than its error',
     // What to show, under the device's tier line.
     lineHyg: 'Stars in 3D: HYG’s 109 389.',
-    lineAthyg: 'Stars in 3D: HYG’s 109 389 and AT-HYG’s {n} million, fetched round the camera on a rung of the ladder (up to {k} million at once).',
+    lineAthyg: 'Stars in 3D: HYG’s 109 389 and AT-HYG’s {n} million, fetched round the camera on a rung of the ladder (up to {k} million at once) and drawn down to magnitude {lim} from the camera, fainter than an eye sees, fading as they go.',
+    // ... and on a world stage (the shell), what is not drawn there.
+    shell: 'On a world stage the 3D stars are HYG’s alone: {n} AT-HYG stars of magnitude 7.5 or brighter from the Sun are not drawn there.',
     why: { low: 'Low quality draws HYG only.', latched: 'The frame rate was low: HYG only.', saver: 'Data saver: HYG only.', none: '' },
     gaiaHeld: 'Gaia DR3 is not a tier: ESA licenses its archive’s data for non-commercial use only (CC BY-NC 3.0 IGO).',
     // The line under the time bar while the stars are moved (scene/stardeep.js).

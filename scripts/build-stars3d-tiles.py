@@ -12,7 +12,10 @@ shared alike under CC BY-SA 4.0. It is not kept in this repository; download it 
 
 WHAT IS WRITTEN, AND WHAT IS LEFT OUT
 - Every row with a HYG id is left out: scene/stars3d.js already draws HYG's 109 389 (site/data/stars3d.bin), and a
-  star drawn twice is twice as bright. So is the Sun.
+  star drawn twice is twice as bright. So is the Sun. So is every row within TWIN_ARCSEC of a star of stars3d.bin and
+  within TWIN_MAG of its brightness from the Sun (`twins`, the rule scripts/build-startiles.py uses for the ground's
+  tiles): 1 466 of them in v4.0, the same star under two numbers (often with two distances, so it would be drawn twice
+  in two places) or a companion HYG already draws as one light.
 - A row with no distance is left out and counted. AT-HYG has already emptied the distance of every star whose Gaia
   parallax was smaller than its own error (version-info.md, v2.4): what is left has a parallax at least as large as
   its error, which is NOT the same as a good distance, and the card says so (scene/stars3dtree.js distanceNote).
@@ -32,7 +35,11 @@ a field, and read by site/js/data/tilecloud.js decodeTile.
 
 TILE COLUMNS (13 bytes a star; tilepack's alignment rule puts the u32 first)
   ref    u32  TYC1 << 17 | TYC2 << 3 | TYC3, with bit 31 set, for a Tycho-2 star; else AT-HYG's own id
-  x y z  u16  the star in its node's cube: centre - half + q * (2 half / 65535), light-years, ecliptic J2000
+  u v    u16  the star's direction from the Sun, octahedral (oct_encode): q / 65535 * 2 - 1 on each axis, 13" at worst
+  r      u16  its distance: DIST0_LY * (DIST1_LY / DIST0_LY) ** (q / 65535), light-years (0.018 % a step)
+             WHY FROM THE SUN AND NOT IN THE NODE'S CUBE: 16 bits across the root's 131 072 ly are 2 ly, which for a
+             bright star 70 ly out (the root keeps the brightest wherever they are) is most of a degree; a direction
+             and a logarithmic distance hold every star to 13" and to 0.02 % of its distance, far inside its own error.
   absmag u8   ABS0 + q * ABS_STEP (Johnson V); a star outside the range is clamped and counted
   bv     u8   BV0 + q * BV_STEP; 255 = no colour index
   src    u8   bits 0-2 where the distance comes from (DIST_SRC), bits 3-4 where the magnitude comes from (MAG_SRC)
@@ -66,15 +73,19 @@ UNKNOWN_PC = 100000.0
 CAPACITY = 8192
 ROOT_HALF_LY = 65536.0  # +-20 kpc; a star further out is left out and counted (none in v4.0: --src prints the farthest)
 MAX_DEPTH = 14
+DIST0_LY, DIST1_LY = 1.0, 131072.0
+TWIN_ARCSEC, TWIN_MAG = 20.0, 1.5
+TWIN_CELL = 2000.0  # unit vectors times this, rounded: cells of 1.7 arcminutes
+HYG_BIN = ROOT / "site/data/stars3d.bin"
 ABS0, ABS_STEP = -12.0, 0.12  # u8: -12.0 to +18.6
 BV0, BV_STEP = -0.5, 0.01  # u8: -0.50 to +2.04
 DIST_SRC = {"GAIA_DR3": 0, "G_R3": 0, "GAIA_DR2": 1, "G_R2": 1, "HIP": 2, "GJ": 3}  # anything else: 4
 MAG_SRC = {"T": 0, "HIP": 1}  # anything else: 2
 SCHEMA = [
     {"name": "ref", "type": "u32", "note": "bit 31 set: TYC1 << 17 | TYC2 << 3 | TYC3; else the AT-HYG id"},
-    {"name": "x", "type": "u16", "note": "in the node's cube, 0 to 65535 across it"},
-    {"name": "y", "type": "u16"},
-    {"name": "z", "type": "u16"},
+    {"name": "u", "type": "u16", "note": "direction from the Sun, octahedral: q / 65535 * 2 - 1"},
+    {"name": "v", "type": "u16"},
+    {"name": "r", "type": "u16", "note": "distance: dist0_ly * (dist1_ly / dist0_ly) ** (q / 65535)"},
     {"name": "absmag", "type": "u8", "scale": ABS_STEP, "offset": ABS0},
     {"name": "bv", "type": "u8", "scale": BV_STEP, "offset": BV0, "note": "255: no colour index"},
     {"name": "src", "type": "u8", "note": "bits 0-2 distance source, bits 3-4 magnitude source"},
@@ -148,6 +159,60 @@ def read_rows(src: Path) -> dict:
     }
 
 
+def hyg_stars(path: Path = HYG_BIN) -> tuple:
+    """stars3d.bin's directions (unit vectors, the same ecliptic axes) and apparent magnitudes."""
+    data = path.read_bytes()
+    n = int(np.frombuffer(data, dtype="<u4", count=1, offset=8)[0])
+    rec = np.frombuffer(data, dtype=np.dtype([("x", "<f4"), ("y", "<f4"), ("z", "<f4"), ("M", "<f4"), ("m", "<f4"),
+                                              ("ci", "<i2"), ("nr", "<u2")]), count=n, offset=16)
+    p = np.stack([rec["x"], rec["y"], rec["z"]], 1).astype(float)
+    return p / np.linalg.norm(p, axis=1)[:, None], rec["m"].astype(float)
+
+
+def twins(hyg_dirs, hyg_mag, dirs, mags) -> "np.ndarray":
+    """True for each star of `dirs` within TWIN_ARCSEC and TWIN_MAG of a star of `hyg_dirs`: one drawn already.
+
+    A grid of cells TWIN_CELL across on the unit cube, searched in the 27 cells round each HYG star: a twin is at most
+    20 arcseconds off, far inside one cell.
+    """
+    out = np.zeros(len(dirs), dtype=bool)
+    if not len(dirs) or not len(hyg_dirs):
+        return out
+    base = 1 << 12
+
+    def key(q):
+        return ((q[:, 0] + base) * (2 * base) + (q[:, 1] + base)) * (2 * base) + (q[:, 2] + base)
+
+    keys = key(np.rint(dirs * TWIN_CELL).astype(np.int64))
+    order = np.argsort(keys, kind="stable")
+    sk = keys[order]
+    hq = np.rint(hyg_dirs * TWIN_CELL).astype(np.int64)
+    tol = math.cos(math.radians(TWIN_ARCSEC / 3600))
+    for dx in (-1, 0, 1):
+        for dy in (-1, 0, 1):
+            for dz in (-1, 0, 1):
+                q = key(hq + np.array([dx, dy, dz]))
+                lo, hi = np.searchsorted(sk, q, "left"), np.searchsorted(sk, q, "right")
+                for h in np.nonzero(hi > lo)[0]:
+                    cand = order[lo[h]:hi[h]]
+                    ok = (dirs[cand] @ hyg_dirs[h] >= tol) & (np.abs(mags[cand] - hyg_mag[h]) < TWIN_MAG)
+                    out[cand[ok]] = True
+    return out
+
+
+def drop_twins(cols: dict) -> dict:
+    """The columns without the stars HYG already draws (`twins`), and how many they were in cols['left']."""
+    p = np.stack([cols["x"], cols["y"], cols["z"]], 1)
+    dirs = p / np.linalg.norm(p, axis=1)[:, None]
+    app = cols["absmag"] + 5 * np.log10(cols["dly"] / LY_PER_PC / 10)
+    hd, hm = hyg_stars()
+    gone = twins(hd, hm, dirs, app)
+    keep = ~gone
+    out = {k: (v[keep] if isinstance(v, np.ndarray) else v) for k, v in cols.items()}
+    out["left"] = {**cols["left"], "hyg_twin": int(gone.sum())}
+    return out
+
+
 def build_octree(cols: dict) -> list[dict]:
     """Nodes, root first: {key, level, c, h, idx}; idx are rows, brightest (absolute) first."""
     order = np.lexsort((cols["ref"], cols["absmag"]))  # brightest first, then by ref: the same bytes every run
@@ -172,13 +237,36 @@ def build_octree(cols: dict) -> list[dict]:
     return nodes
 
 
+def _sign(a):
+    return np.where(a >= 0, 1.0, -1.0)
+
+
+def oct_encode(x, y, z):
+    """Unit vectors to the octahedron's square, each axis -1..1 (the page's scene/stars3dtree.js octDecode undoes it)."""
+    n = np.abs(x) + np.abs(y) + np.abs(z)
+    u, v = x / n, y / n
+    fu, fv = (1 - np.abs(v)) * _sign(u), (1 - np.abs(u)) * _sign(v)
+    return np.where(z < 0, fu, u), np.where(z < 0, fv, v)
+
+
+def oct_decode(u, v):
+    """The inverse, for the tests and --check: unit vectors."""
+    z = 1 - np.abs(u) - np.abs(v)
+    fu, fv = (1 - np.abs(v)) * _sign(u), (1 - np.abs(u)) * _sign(v)
+    x, y = np.where(z < 0, fu, u), np.where(z < 0, fv, v)
+    n = np.sqrt(x * x + y * y + z * z)
+    return x / n, y / n, z / n
+
+
 def quantise_node(cols: dict, node: dict) -> tuple[list[dict], dict]:
     """The node's rows as tilepack wants them (every value already in range), and what was clamped."""
-    idx, (cx, cy, cz), h = node["idx"], node["c"], node["h"]
-    span = 2 * h
-    qx = np.clip(np.rint((cols["x"][idx] - (cx - h)) / span * 65535), 0, 65535).astype(int)
-    qy = np.clip(np.rint((cols["y"][idx] - (cy - h)) / span * 65535), 0, 65535).astype(int)
-    qz = np.clip(np.rint((cols["z"][idx] - (cz - h)) / span * 65535), 0, 65535).astype(int)
+    idx = node["idx"]
+    x, y, z = cols["x"][idx], cols["y"][idx], cols["z"][idx]
+    d = np.sqrt(x * x + y * y + z * z)
+    u, v = oct_encode(x / d, y / d, z / d)
+    qu = np.clip(np.rint((u + 1) / 2 * 65535), 0, 65535).astype(int)
+    qv = np.clip(np.rint((v + 1) / 2 * 65535), 0, 65535).astype(int)
+    qr = np.clip(np.rint(np.log(d / DIST0_LY) / math.log(DIST1_LY / DIST0_LY) * 65535), 0, 65535).astype(int)
     am = cols["absmag"][idx]
     clamped = int(np.sum((am < ABS0) | (am > ABS0 + 255 * ABS_STEP)))
     am = np.clip(am, ABS0, ABS0 + 255 * ABS_STEP)
@@ -187,7 +275,7 @@ def quantise_node(cols: dict, node: dict) -> tuple[list[dict], dict]:
     bvv = np.where(np.isnan(bvs), BV0 + 255 * BV_STEP, np.clip(np.nan_to_num(bvs), BV0, BV0 + 254 * BV_STEP))
     rows = []
     for i in range(len(idx)):
-        rows.append({"ref": int(cols["ref"][idx[i]]), "x": int(qx[i]), "y": int(qy[i]), "z": int(qz[i]),
+        rows.append({"ref": int(cols["ref"][idx[i]]), "u": int(qu[i]), "v": int(qv[i]), "r": int(qr[i]),
                      "absmag": float(am[i]), "bv": float(bvv[i]), "src": int(cols["src"][idx[i]])})
     return rows, {"clamped": clamped}
 
@@ -197,7 +285,7 @@ def write_set(src: Path, built_at: datetime) -> int:
         print("build-stars3d-tiles: the build needs NumPy (--check does not)", file=sys.stderr)
         return 2
     sha = hashlib.sha256(src.read_bytes()).hexdigest()
-    cols = read_rows(src)
+    cols = drop_twins(read_rows(src))
     n = len(cols["ref"])
     nodes = build_octree(cols)
     build = tilepack.build_stamp(built_at)
@@ -223,15 +311,17 @@ def write_set(src: Path, built_at: datetime) -> int:
         })
     depth = max(t["level"] for t in tiles)
     levels = [{"level": lv, "count": sum(t["count"] for t in tiles if t["level"] == lv),
-               "bytes": sum(t["bytes"] for t in tiles if t["level"] == lv),
-               "quantum_ly": round(2 * ROOT_HALF_LY / 2 ** lv / 65535, 5)} for lv in range(depth + 1)]
+               "bytes": sum(t["bytes"] for t in tiles if t["level"] == lv)} for lv in range(depth + 1)]
     doc = {
         "format": tilepack.FORMAT, "id": SET_ID, "title": "AT-HYG v4.0 in 3D, by octree node",
         "build": build, "built_at": built_at.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "count": n, "id_field": "ref",
         "left_out": cols["left"], "clamped_absmag": clamped, "farthest_ly": round(cols["farthest_ly"]),
+        # drawn only on a rung of the ladder: the 3D map's shell on a world stage is HYG's, and its line says how many these are
+        "bright_from_sun": int(np.sum(cols["absmag"] + 5 * np.log10(cols["dly"] / LY_PER_PC / 10) <= 7.5)),
         "schema": SCHEMA,
         "partition": {"kind": "octree", "frame": "ecliptic J2000, light-years, the Sun at 0", "root_half_ly": ROOT_HALF_LY,
+                      "dist0_ly": DIST0_LY, "dist1_ly": DIST1_LY,
                       "capacity": CAPACITY, "rule": "a node keeps the brightest (absolute V) of its cube; its children the rest"},
         "levels": levels, "tiles": tiles,
         "source": "AT-HYG v4.0, data/athyg_40.csv.gz, https://codeberg.org/astronexus/athyg (sha256 " + sha + ")",

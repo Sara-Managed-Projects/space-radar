@@ -5716,7 +5716,8 @@ Object.assign(COPY, {
     "noError": "AT-HYG ne donne aucune erreur pour cette distance",
     "guess": "Cette distance est une estimation : au-delà de 3 kpc (environ 10 000 années-lumière), une parallaxe ne fait que quelques dixièmes de milliseconde d’arc, et l’erreur propre de l’étoile n’est pas dans AT-HYG, qui ne garde qu’une parallaxe plus grande que son erreur",
     "lineHyg": "Étoiles en 3D : les 109 389 de HYG.",
-    "lineAthyg": "Étoiles en 3D : les 109 389 de HYG et {n} millions d’AT-HYG, chargées autour de la caméra sur un barreau de l’échelle (jusqu’à {k} millions à la fois).",
+    "lineAthyg": "Étoiles en 3D : les 109 389 de HYG et {n} millions d’AT-HYG, chargées autour de la caméra sur un barreau de l’échelle (jusqu’à {k} millions à la fois) et dessinées jusqu’à la magnitude {lim} vue de la caméra, plus faibles que ce que voit un œil, en s’estompant.",
+    "shell": "Sur la scène d’un monde, les étoiles en 3D sont celles de HYG seules : {n} étoiles d’AT-HYG de magnitude 7,5 ou plus brillantes vues du Soleil n’y sont pas dessinées.",
     "why": {
       "low": "La qualité basse ne dessine que HYG.",
       "latched": "La cadence d’images était basse : HYG seulement.",
