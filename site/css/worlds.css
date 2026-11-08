@@ -328,3 +328,14 @@ html.sr-phone .sr-cutaway { display: flex; flex-direction: column; }
 html.sr-phone .sr-cutaway > * { flex-shrink: 0; }
 html.sr-phone .sr-cutaway__head { order: -2; }
 html.sr-phone .sr-cutaway__probe { order: -1; margin: 0 0 var(--sp-2); }
+
+/* b200-s4b-look: begin -- with the line under the search up (a launch day, a card), the scale badge and the rail step down
+   one row (css/finishers.css) and the badge, two lines on the Planets tab, ran under "Heliosphere · modelled" (2.0.0 final
+   look, finding 12, at 390 x 844). The chip and its legend step down the same row. */
+html.sr-phone:is(.sr-launchday, .sr-card-open):not([data-sheet='full']) .sr-helio-chip {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 128px + 44px + var(--sp-2));
+}
+html.sr-phone:is(.sr-launchday, .sr-card-open):not([data-sheet='full']) .sr-helio-legend {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 180px + 44px + var(--sp-2));
+}
+/* b200-s4b-look: end */

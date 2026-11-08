@@ -328,7 +328,9 @@ export async function boot({ setStatus } = {}) {
   // flight (spec 0034), and the two must never disagree during the lod crossfade between them.
   ctx.starfield = starfield;
   // b200-c2-deep: begin -- the 3D and orbital stars over deep time, and their variables (scene/stardeep.js, forge #141, #142)
-  afterFirstVisit(WORLDLIGHTS_IMPORT_MS, () => import('./scene/stardeep.js').then((m) => { ctx.starDeep = m.attachStarDeep(ctx, clock); }).catch((e) => console.warn('stardeep', e)));
+  // b200-s4b-look: a failed fetch is tried once more, five seconds on, before the stars stay unmoved (2.0.0 final look, 15)
+  const starDeep = (again) => import('./scene/stardeep.js').then((m) => { ctx.starDeep = m.attachStarDeep(ctx, clock); }).catch((e) => (again ? console.warn('stardeep', e) : setTimeout(starDeep, 5000, 1)));
+  afterFirstVisit(WORLDLIGHTS_IMPORT_MS, starDeep);
   // b200-c2-deep: end
   // b200-f10-stars3d: begin -- AT-HYG's 2.4 million stars by octree node round the camera, on a rung (scene/stars3dtiles.js, forge #140)
   afterFirstVisit(WORLDLIGHTS_IMPORT_MS, () => import('./scene/stars3dtiles.js').then((m) => { ctx.starTiers = m.attachStarTiers(ctx); }).catch((e) => console.warn('stars3d tiers', e)));
@@ -1251,6 +1253,19 @@ export async function boot({ setStatus } = {}) {
   if (embed) { /* nothing is warmed */ }
   else if (window.__srLayersReady) warmLater();
   else window.addEventListener('sr:layers-ready', warmLater, { once: true });
+  // b200-s4b-look: begin -- a page a worker already serves asks it at once whether our server answers, so a start with
+  // no network says "Offline" in a moment and not once ui/offline.js has come, OFFLINE_MS past the layers (2.0.0 final
+  // look, finding 5: 25 s of "2 could not be read"). ui/offline.js takes ctx.net over from what this heard.
+  const swc = !embed && navigator.serviceWorker;
+  if (swc && swc.controller) {
+    const net = ctx.net = { offline: false, worker: 'register' };
+    swc.addEventListener('message', (e) => {
+      const d = e.data || {};
+      if (ctx.net === net && /^sr-(net|version)$/.test(d.type)) { net.offline = d.offline === true; window.dispatchEvent(new Event('sr:net')); } // ui/explore.js paints the status line from ctx.net
+    });
+    swc.controller.postMessage({ type: 'sr-version' });
+  }
+  // b200-s4b-look: end
   const offlineLater = () => afterFirstVisit(OFFLINE_MS, () => {
     import('./ui/offline.js').then((m) => m.createOffline(ctx)).catch((e) => console.warn('the offline module did not load', e));
   });
