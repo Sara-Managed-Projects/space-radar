@@ -104,6 +104,19 @@ check(KEYS.includes('cut'), '#cut= is a URL key');
 const main = read('site/js/main.js');
 check(/import\('\.\/ui\/cutaway\.js'\)/.test(main) && /st\.cut/.test(main), 'main.js fetches the cutaway lazily and opens a cut= link');
 
+// 2.0.0 look finding 6: on a phone the panel's title and close sat under the line below the bar (the live line and the
+// launch chip), which is up whenever a card is open, so whenever the panel is. The panel drops below that line too.
+{
+  const css = read('site/css/worlds.css');
+  const rule = /html\.sr-phone:is\(([^)]+)\):not\(\[data-sheet='full'\]\) \.sr-cutaway \{\s*top: calc\(([^;]+)\);/.exec(css);
+  const when = rule ? rule[1].split(',').map((s) => s.trim()) : [];
+  for (const c of ['.sr-card-open', '.sr-launchday', '.sr-overlay-keyed']) check(when.includes(c), `on a phone the cutaway drops under the bar's line when ${c} puts it up`);
+  check(rule && /var\(--sr-top-bar\)/.test(rule[2]) && /44px/.test(rule[2]), 'by the bar and the 44 px of the launch chip, the tallest thing on the line');
+  for (const [file, cls] of [['site/css/ui.css', 'sr-card-open'], ['site/css/finishers.css', 'sr-launchday'], ['site/css/finishers.css', 'sr-overlay-keyed']]) {
+    check(new RegExp(`html\\.sr-phone[.:\\w()-]*\\.${cls}:not\\(\\[data-sheet='full'\\]\\) \\.sr-top__line`).test(read(file)), `${file} still shows the line for .${cls} (this test's list follows it)`);
+  }
+}
+
 if (problems.length) {
   console.error('cutaway FAILED:\n  ' + problems.join('\n  '));
   process.exit(1);

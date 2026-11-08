@@ -2520,6 +2520,15 @@ Object.assign(COPY, {
   },
 });
 // b200-c1-culture: end
+// b200-s4a-look: begin -- 2.0.0 look finding 10: a tap that no figure of another people's sky reaches says so and offers the
+// nearest of theirs (sky/skyculture.js tapLore, ui/skystory.js), instead of opening the western story in its place.
+Object.assign(COPY.skyLore, {
+  notHereTitle: 'No {culture} figure here',
+  notHere: 'No figure of the {culture} sky is drawn where you pressed. The nearest is {name}, {deg}° away.',
+  notHereNone: 'No figure of the {culture} sky is drawn where you pressed.',
+  nearest: 'The story of {name}',
+});
+// b200-s4a-look: end
 // 0077 W1-e: begin
 // The sections this file added, in the visitor's language (copy/lang.js says how; public #524). 1.6.3: asked at the END of the file: wave 2's Compare,
 // passport and photograph sections are added above, and were never put into a language while this call sat before them.

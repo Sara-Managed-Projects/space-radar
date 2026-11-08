@@ -8,6 +8,7 @@
 //           localSolarHours(world, lonDeg, tMs) -> 0..24, solarDayHours(world),
 //           crossings(fn, t0, t1, stepMs) -> [{tMs, kind}], nextRiseSet(id, place, tMs) -> {rise, set},
 //           transits(front, back, place, t0, t1) -> [{tMs, sepDeg}], parseSkyLink(text) -> {world, site|lat,lon} | null
+//           openingLook(place, tMs, fovDeg) -> {yawDeg, pitchDeg} | null: where a bare sky first looks (its planet, when up)
 // Proxima Centauri b and TRAPPIST-1 e are worlds here too, every number about them MODELLED (sky/exoskies.js says what
 // is measured and what is assumed); their star is their `light` and their `parent`.
 // Pure given Astronomy Engine and propagate/: no DOM, no three. scene/groundstage.js draws from these and
@@ -434,6 +435,21 @@ export function transits(front, back, place, t0, t1, { stepMs = 120e3 } = {}) {
 export function sunAltitude(place, tMs) {
   const v = worldBodyView('sun', tMs, place);
   return v ? v.altDeg : NaN;
+}
+
+/**
+ * Where the sky of a moon with nothing measured to stand on first looks: at the planet it goes round, when that planet is
+ * above the horizon, set a quarter of the view below the frame's top so the planet sits high in it. Null otherwise, and
+ * the caller keeps its own look. WHY (2.0.0 look finding 11): `#sky=titan` stands at the sub-Saturn point, where Saturn
+ * is overhead; the default look, 28 degrees up, framed only Titan's haze, which hides every star, so the page opened black.
+ * Yaw is the azimuth (from north, clockwise), pitch the altitude, as scene/groundmath.js stepWalker keeps them; the pitch
+ * stays inside its 85 degrees.
+ */
+export function openingLook(place, tMs, fovDeg = 62) {
+  const parent = place && SKY_WORLDS[place.world] && SKY_WORLDS[place.world].parent;
+  const v = parent && !SKY_WORLDS[place.world].exo ? worldBodyView(parent, tMs, place) : null;
+  if (!v || !(v.altDeg > 0)) return null;
+  return { yawDeg: Math.round(v.azDeg * 10) / 10, pitchDeg: Math.round(Math.max(5, Math.min(85, v.altDeg - fovDeg / 4)) * 10) / 10 };
 }
 
 /**

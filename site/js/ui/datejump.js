@@ -173,12 +173,16 @@ function build(ctx) {
     for (const s of (shelf && shelf.SHELF) || []) {
       const card = cards[s.id];
       if (!card) continue;
-      moments.appendChild(chip(card.title, card.when, () => { if (typeof ctx.wantMoment === 'function') { closeIt(false); ctx.wantMoment(s.id); } }));
+      moments.appendChild(chip(card.title, card.when, () => { if (typeof ctx.wantMoment === 'function') { closeIt(false); ctx.wantMoment(s.id); } })).dataset.moment = s.id;
     }
-    moments.appendChild(chip(COPY.breakups.moment, COPY.breakups.momentTitle, () => {
-      closeIt(false);
-      if (typeof ctx.wantFind === 'function') ctx.wantFind().then((f) => f && f.open('clouds', { debris: 'fy1c', atEvent: true }));
-    }));
+    // The cloud's own chip only while the shelf has no Fengyun-1C Moment: since b200-c3-learn it has, and the two chips both read
+    // "2007: Fengyun-1C" (2.0.0 look finding 9). The Moment is the story told; the cloud is one tap from its end.
+    if (!moments.querySelector('[data-moment="fengyun-1c"]')) {
+      moments.appendChild(chip(COPY.breakups.moment, COPY.breakups.momentTitle, () => {
+        closeIt(false);
+        if (typeof ctx.wantFind === 'function') ctx.wantFind().then((f) => f && f.open('clouds', { debris: 'fy1c', atEvent: true }));
+      }));
+    }
     presets.append(momentsHead, moments);
     // Every dated event of every mission, one list a mission, folded.
     presets.appendChild(el('h3', 'sr-micro', D.missionsTitle));
@@ -189,7 +193,8 @@ function build(ctx) {
       for (const e of m.events) {
         const ms = Date.parse(e.date.length <= 10 ? `${e.date}T12:00:00Z` : e.date);
         if (!Number.isFinite(ms)) continue;
-        list.appendChild(chip(e.title, timeText.utcLong(ms), () => {
+        // The title in the visitor's language (copy/en.find.js eventTitles, keyed by the registry's English; 2.0.0 look finding 8).
+        list.appendChild(chip((D.eventTitles && D.eventTitles[e.title]) || e.title, timeText.utcLong(ms), () => {
           closeIt(false);
           if (typeof ctx.wantMissions === 'function') ctx.wantMissions().then((mod) => (mod ? mod.openEventWhenReady(ctx, `${m.id}.${e.id}`) : jumpTo(ms)));
           else jumpTo(ms);

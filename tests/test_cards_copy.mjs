@@ -464,6 +464,29 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   // One number, not a range or a sentence.
   check(C.heroSplit('27 556 km/h').num === '27 556' && C.heroSplit('magnitude −1.44').num === '−1.44', 'a value splits into its number and unit, a magnitude included');
   check(C.heroSplit('1 324 to 1 364 light-years') === null && C.heroSplit(COPY.card.couldNotLook) === null, 'a range or "could not work this out" is not one number');
+  // 2.0.0 look finding 1: the German card of Jupiter said "5 von der Sonne", "9 pro Drehung" for 5,32 AE and 9,92 h; the
+  // number pattern took a point only. Every language, each with its own decimal sign (a comma in de, fr, pt, ru and uk; es
+  // keeps the app's point by choice, copy/es.js) and its own word for a range's "to".
+  {
+    const { RULES, t } = await import(join(JS, 'copy/en.js'));
+    const keep = [RULES.decimal, COPY.card.values.lightYearsRange];
+    const comma = [];
+    for (const lang of ['ar', 'de', 'es', 'fr', 'he', 'hi', 'pt', 'ru', 'uk', 'zh']) {
+      const L = await import(join(JS, `copy/${lang}.js`));
+      const sign = (L.RULES && L.RULES.decimal) || '.';
+      if (sign === ',') comma.push(lang);
+      RULES.decimal = sign;
+      COPY.card.values.lightYearsRange = L.COPY.card.values.lightYearsRange;
+      const jup = three(W('jupiter'));
+      const [sun, spin] = jup.heroes;
+      check(new RegExp(`^5\\${sign}\\d\\d$`).test(sun.num) && new RegExp(`^9\\${sign}\\d\\d$`).test(spin.num) && !sun.missing && sun.caption !== t(COPY.card.hero.captions.distanceFromSun, { u: '' }).trim(),
+        `${lang}: Jupiter's card keeps both sides of the decimal comma, and the unit in its caption: ${JSON.stringify(jup.heroes)}`);
+      check(C.heroSplit(t(L.COPY.card.values.lightYearsRange, { lo: '1 324', hi: '1 364' })) === null, `${lang}: a range in the language's own words is not one number`);
+    }
+    check(comma.join() === 'de,fr,pt,ru,uk', `the languages that write a decimal comma were all tried: ${comma}`);
+    [RULES.decimal, COPY.card.values.lightYearsRange] = keep;
+    if (keep[0] === undefined) delete RULES.decimal;
+  }
   // The microlabel: what and where, four words at most, worked out rather than typed.
   const iss = C.microLabel(issGp, { ...m0(issGp), altKm: 420 });
   check(iss === `${COPY.klass.station} · ${COPY.card.regime.leo}`, `the ISS's microlabel is "${COPY.klass.station} · ${COPY.card.regime.leo}": ${iss}`);

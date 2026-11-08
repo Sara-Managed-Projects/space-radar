@@ -144,6 +144,15 @@ const w2 = D.deepWords({ epoch: 2026, pole: { name: null, mag: 3.6, sepDeg: 10.9
 check(/^No bright/.test(w2.pole) && /magnitude 3/.test(sp(w2.pole)) && !/Moon/.test(w2.line), `no pole star: ${w2.pole}`);
 check(D.deepWords(null, false, K) === null, 'no readout for today');
 
+// 2.0.0 look finding 13: "−10 000 years" wrapped in a third of the row and was clipped: the four steps go two to a row.
+{
+  const css = readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8');
+  const dt = readFileSync(join(ROOT, 'site/js/ui/deeptime.js'), 'utf8');
+  check(/steps\.classList\.add\('sr-deeptime__pairs'\)/.test(dt) && /presets\.classList\.add\('sr-deeptime__pairs'\)/.test(dt) && /\.sr-deeptime__pairs \.sr-density__btn \{ flex-basis: 40%; \}/.test(css) && D.STEPS.length === 4,
+    'deep time\'s four steps and its pole stars sit two to a row');
+  check(css.indexOf('.sr-deeptime__pairs .sr-density__btn') > css.indexOf('.sr-skybar__wrap .sr-density__btn { flex: 1 1 30%; }'), 'after the wrapping row\'s third, so they win');
+}
+
 if (problems.length) {
   console.error(`starmotion FAILED (${problems.length}):\n  ` + problems.slice(0, 30).join('\n  '));
   process.exit(1);

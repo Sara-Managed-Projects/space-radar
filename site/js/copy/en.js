@@ -2671,6 +2671,14 @@ export const CITIES = [
   { name: 'Yangon', country: 'Myanmar', latDeg: 16.8409, lonDeg: 96.1735, zone: 'Asia/Yangon' },
 ];
 
+// b200-s4a-look: begin -- 2.0.0 look finding 8: how a world is drawn (scene/worlds.js viewScale(id).note, on its card) was
+// English typed in code in every language, and a card's breadcrumb said "Sun" (ui/cards.js parentOf): it names a world by the
+// sky's bare name (COPY.sky.bodies), which gains the Earth for it. Here, not in copy/en.later.js: scene/worlds.js is boot code.
+COPY.worldView.nearer = '{name} is drawn in its true direction, but nearer and larger than it really is, so you can find it.';
+COPY.worldView.asIs = '{name} is drawn where it is, at the size it is.';
+COPY.sky.bodies.earth = 'Earth';
+// b200-s4a-look: end
+
 // 0077 W1-e: begin
 // The language (public #524). If index.html prepared one (copy/lang.js says how), its words go over these IN PLACE, a key at a
 // time, now: this file ends before any module that imports it has run, so every one of them is evaluated with the words already

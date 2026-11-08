@@ -196,6 +196,13 @@ html.sr-phone .sr-cutaway {
   max-height: 36vh;
 }
 
+/* ...and under the line below the bar whenever that line is up (a card open, a launch inside a day, a data map's key:
+   css/ui.css ONE CLOCK ON SCREEN and css/finishers.css). The panel opens from a card, so the line is nearly always there,
+   and at the bar's foot the live line and the 44 px launch chip lay over its title and its close (2.0.0 look finding 6). */
+html.sr-phone:is(.sr-card-open, .sr-launchday, .sr-overlay-keyed):not([data-sheet='full']) .sr-cutaway {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 44px + var(--sp-2));
+}
+
 html.sr-phone .sr-cutaway__layers {
   max-height: 120px;
   overflow: auto;

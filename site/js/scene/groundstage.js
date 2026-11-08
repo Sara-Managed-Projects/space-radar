@@ -48,11 +48,11 @@ import { SITES } from '../data/sites.js';
 import { bvToKelvin, kelvinToRgb } from './starfield.js';
 import {
   decodeHeights, groundHeight, groundNormal, tangentXZ, joystick, stepWalker, horizonProfile, horizonAt, sunlitShare,
-  parseGroundLink, EYE_M, SPEEDS, ROVER_TOP_MS,
+  parseGroundLink, EYE_M, SPEEDS, ROVER_TOP_MS, underBox,
 } from './groundmath.js';
 import {
   SKY_WORLDS, worldEqjToLocal, worldBodyView, observerHelioEqjKm, skyTargets, poleStar, localSolarHours, nextRiseSet,
-  transits, parseSkyLink, toLocal, altAz,
+  transits, parseSkyLink, toLocal, altAz, openingLook,
 } from '../sky/worldframe.js';
 import { skyLook, srgbToLinear } from '../sky/worldair.js';
 import { isTypingIn } from '../ui/explore.js';
@@ -566,11 +566,17 @@ export function createGroundStage(ctx, opts = {}) {
       mode = next.sky ? 'sky' : 'walk';
       // A few paces south-west of the lander, facing it: the lander in the middle of the view, the ground beyond it.
       walker = next.groundId ? { x: -14, z: 22, yawDeg: 32.5, pitchDeg: next.sky ? 28 : -5 } : { x: 0, z: 0, yawDeg: 0, pitchDeg: 28 };
+      // A moon's bare sky opens on its planet, when it is up (2.0.0 look finding 11: Titan's opened on haze, Saturn overhead).
+      const first = next.groundId ? null : openingLook(next, now(), fovDeg);
+      if (first) Object.assign(walker, first);
       bodies = [];
       events = null;
       lastBodies = -Infinity;
       setActive(true);
       paintUi();
+      // The panel may be open already (a look() before this place resolved, or the sky before it): its list is this place's
+      // now. Without this it said "Working out the rises and sets…" until the clock jumped (2.0.0 look finding 11).
+      if (panelOpen) refreshEvents();
       loadStars().then((s) => { if (s && place === next) { pole = poleWithName(poleStar(next.world, now(), s), s); paintUi(); } });
       if (next.manifest) {
         ground = await buildGround(next.manifest);
@@ -914,7 +920,8 @@ export function createGroundStage(ctx, opts = {}) {
     // A timer, not requestIdleCallback: a page that draws every frame (this one, while walking) may never be idle.
     const next = () => {
       if (place !== here || !queue.length) return;
-      queue.shift()();
+      // One piece that throws loses its line, not the rest of the list (the panel said "Working out…" for ever).
+      try { queue.shift()(); } catch (e) { console.warn('ground sky: an event was not worked out', e); }
       events = { ...out, transits: out.transits.slice(0, 3) };
       paintPanel();
       setTimeout(next, 30);
@@ -1132,6 +1139,10 @@ export function createGroundStage(ctx, opts = {}) {
     if (pole && pole.dirLocal && pole.mag < limit) want.push({ text: say(T.poleLabel, { name: pole.name || T.unnamedStar }), local: pole.dirLocal, cls: 'is-pole' });
     const pool = labelPool(want.length);
     const w = size.x, hpx = size.y;
+    // The time pill stays up over the stage: a name under it is hidden, not drawn through it (2.0.0 look finding 11, the
+    // compass "N" on the pill). Read once a frame, before any label is moved.
+    const pill = doc.querySelector('.sr-time');
+    const box = pill && !pill.hidden ? pill.getBoundingClientRect() : null;
     const placed = [];
     for (let i = 0; i < pool.length; i += 1) {
       const node = pool[i];
@@ -1145,7 +1156,7 @@ export function createGroundStage(ctx, opts = {}) {
       const px = (_v.x * 0.5 + 0.5) * w, py = (-_v.y * 0.5 + 0.5) * hpx;
       // Two names closer than a short word are one too many: the first (the brighter body, or a compass point) wins.
       const crowded = placed.some(([qx, qy]) => Math.abs(qx - px) < 70 && Math.abs(qy - py) < 16);
-      if (hidden || crowded) { node.hidden = true; continue; }
+      if (hidden || crowded || underBox(px, py, box)) { node.hidden = true; continue; }
       placed.push([px, py]);
       node.hidden = false;
       node.className = `sr-ground__label ${it.cls || ''}`.trim();

@@ -237,6 +237,12 @@ assert.ok(/css\/rtl\.css/.test(indexSrc) && /dir !== 'rtl'/.test(indexSrc), 'cop
 assert.ok(!/rtl\.css/.test(page), 'index.html does not link it: a first visit in any left-to-right language fetches none of it');
 const langSrc = readFileSync(join(JS, 'copy/lang.js'), 'utf8');
 assert.ok(/const RTL = \['he', 'ar'\]/.test(langSrc), 'Hebrew and Arabic are the right-to-left languages');
+// 2.0.0 look finding 7: Arabic is joined writing. In the mono styles it fell to Courier New's one-letter cells and to the
+// labels' letter-spacing, and came apart ("م ب ا ش ر"). css/rtl.css draws its letters in the sans stack and spaces none.
+const rtlCss = readFileSync(join(ROOT, 'site/css/rtl.css'), 'utf8');
+assert.ok(NEW.ar.tag === 'ar', '<html lang> is "ar" for Arabic, which the rules below select on');
+assert.match(rtlCss, /html\[lang='ar'\] \{\s*--sr-font-mono: 'JetBrains Mono', var\(--sr-font\);\s*\}/, 'in Arabic a letter JetBrains Mono lacks is drawn by the sans stack, never Courier New');
+assert.match(rtlCss, /html\[lang='ar'\] \* \{\s*letter-spacing: 0 !important;\s*\}/, 'and no Arabic text is letter-spaced');
 // Chinese: Simplified now, Traditional readable later without touching the loader.
 const tw = { en: { reviewed: true }, zh: { reviewed: false }, 'zh-Hant': { reviewed: false } };
 assert.equal(pickLanguage('?lang=zh-TW', [], tw), 'zh-Hant', 'zh-TW is the traditional file once one is registered');

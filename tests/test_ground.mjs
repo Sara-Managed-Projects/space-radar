@@ -146,6 +146,55 @@ if (reliefFar.utopia) {
   check(KEYS.includes('ground') && KEYS.includes('sky') && KEYS[KEYS.length - 1] === 'cam', 'ui/urlstate.js carries `ground` and `sky`, and `cam` stays last');
 }
 
+// --- #sky=titan (2.0.0 look finding 11) --------------------------------------------------------------------------
+// It opened black: Saturn overhead and out of the frame, Titan's haze hiding every star; the panel said "Working out the
+// rises and sets…" for 25 s and more; and the compass "N" was drawn on the time pill.
+{
+  const WF = await mod('sky/worldframe.js');
+  const t0 = Date.UTC(2026, 10, 8, 10, 52);
+  const titan = WF.openingLook({ world: 'titan', latDeg: 0, lonDeg: 0 }, t0, 62);
+  const sat = WF.worldBodyView('saturn', t0, { world: 'titan', latDeg: 0, lonDeg: 0 });
+  check(sat && sat.altDeg > 80 && titan && titan.pitchDeg >= 55 && titan.pitchDeg <= 85, `Titan's bare sky opens looking up at Saturn (${sat && sat.altDeg.toFixed(1)}° up; look ${JSON.stringify(titan)})`);
+  check(sat && sat.altDeg - titan.pitchDeg < 62 / 2, 'and Saturn is inside the frame');
+  check(WF.openingLook({ world: 'mars', latDeg: 18, lonDeg: 77 }, t0, 62) === null && WF.openingLook({ world: 'moon', latDeg: 0, lonDeg: 0 }, t0, 62) === null, 'a world with no planet overhead keeps the usual look');
+  check(WF.openingLook({ world: 'titan', latDeg: 0, lonDeg: 180 }, t0, 62) === null, 'and so does the far side of Titan, where Saturn never rises');
+  // The rises and sets are not slow (measured here): the list waited because nothing asked for it.
+  const a = performance.now();
+  for (const id of ['sun', 'saturn']) WF.nextRiseSet(id, { world: 'titan', latDeg: 0, lonDeg: 0 }, t0);
+  const ms = performance.now() - a;
+  check(ms < 1000, `Titan's rises and sets take ${ms.toFixed(0)} ms, not seconds`);
+  const src = readFileSync(join(JS, 'scene/groundstage.js'), 'utf8');
+  check(/const first = next\.groundId \? null : openingLook\(next, now\(\), fovDeg\);/.test(src), 'the stage opens a bare sky with openingLook');
+  check(/paintUi\(\);\n(?:\s*\/\/[^\n]*\n)*\s*if \(panelOpen\) refreshEvents\(\);/.test(src), 'a place opened with the panel already up works out its rises and sets');
+  check(/try \{ queue\.shift\(\)\(\); \} catch/.test(src), 'a piece that throws does not stop the list');
+  const box = { left: 630, top: 778, right: 1190, bottom: 876 };
+  check(G.underBox(719, 834, box) && G.underBox(560, 800, box) && !G.underBox(719, 700, box) && !G.underBox(1250, 834, box) && !G.underBox(719, 834, null), 'a sky label on the time pill is hidden, one clear of it is not');
+  check(/underBox\(px, py, box\)/.test(src), 'the stage hides a label that would lie on the time pill');
+}
+
+// --- the map's chrome goes while the stage is up (2.0.0 look finding 3) ---------------------------------------
+// From the Planets tab the scale rail, the size badge and the heliosphere's names and legend stayed on the sky of Mars,
+// Titan and the Moon. Every floating overlay the code makes (`sr-… sr-float`, and the heliosphere's name layer) is
+// either hidden by css/ground.css's rule or one of the few that belong to the ground too.
+{
+  const { readdirSync } = await import('node:fs');
+  const css = readFileSync(join(ROOT, 'site/css/ground.css'), 'utf8');
+  const rule = /html\.sr-ground-on :is\(([^)]+)\)\s*\{\s*display: none;/.exec(css);
+  const hidden = new Set(rule ? rule[1].split(',').map((s) => s.trim()) : []);
+  const STAYS = new Set(['.sr-time', '.sr-liveline', '.sr-skystory', '.sr-skytag', '.sr-xrnote']); // the clock, the ground sky's own, the headset's note
+  const made = new Set(['.sr-helio-labels']);
+  const walk = (dir) => readdirSync(dir, { withFileTypes: true }).forEach((d) => {
+    const p = join(dir, d.name);
+    if (d.isDirectory()) { if (d.name !== 'vendor' && d.name !== 'copy') walk(p); return; }
+    if (d.name.endsWith('.js')) for (const m of readFileSync(p, 'utf8').matchAll(/['"](sr-[a-z-]+) sr-float['"]/g)) made.add(`.${m[1]}`);
+  });
+  walk(JS);
+  check(made.size > 12, `the floating overlays were read (${made.size})`);
+  for (const c of made) check(hidden.has(c) || hidden.has(`#${c.slice(1)}`) || STAYS.has(c),
+    `${c} floats over the map and css/ground.css does not hide it on the ground (or say it stays)`);
+  for (const c of ['.sr-scalerail', '.sr-scalebadge', '.sr-helio-labels', '.sr-helio-legend', '.sr-helio-chip']) check(hidden.has(c), `css/ground.css hides ${c} on the ground`);
+}
+
 // --- the words ------------------------------------------------------------------------------------------------
 {
   const { COPY } = await mod('copy/en.js');

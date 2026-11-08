@@ -5,7 +5,12 @@
  * pill stays, because the light on the ground follows the clock and a visitor may want to move it.
  */
 
-html.sr-ground-on :is(#sr-side, #sr-rail, .sr-top, .sr-scenenote, .sr-keyhint, #labels, #sr-hud, .sr-card) {
+/* Every floating thing of the map goes with it (2.0.0 look finding 3: from the Planets tab the scale rail, the size badge
+ * and the heliosphere's names and legend stayed, "Heliopause (modelled)" over the sky of Mars, Titan and the Moon). Kept:
+ * the time pill and its live line, and the ground sky's own story card and tag. tests/test_ground.mjs holds the list to
+ * every `sr-float` the code makes, so a new one is either named here or named there as one that stays. */
+html.sr-ground-on :is(#sr-side, #sr-rail, .sr-top, .sr-scenenote, .sr-keyhint, #labels, #sr-hud, .sr-card,
+  .sr-scalerail, .sr-scalebadge, .sr-helio-labels, .sr-helio-chip, .sr-helio-legend, .sr-findpill, .sr-cutaway, .sr-pop) {
   display: none;
 }
 

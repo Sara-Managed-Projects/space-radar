@@ -127,6 +127,12 @@ check(seo_reach.first_load() in pages["spaceengine-in-the-browser/index.html"].b
 src = (ROOT / "scripts/seo_reach.py").read_text(encoding="utf-8")
 check(not re.search(r"\b17,000\b|\b1\.9 MB\b|\b31 trips\b|\b51 exoplanet", src.split("def first_load")[1].split("def pages")[0].replace('"about 17,000", rounded', "")),
       "no count of ours typed into the comparisons")
+# The count is the active satellites (CelesTrak's active group): "tracked objects" read as all of them, which Find counts with
+# the debris, twice as many (2.0.0 look finding 15).
+for c in ("spaceengine-alternative-mac", "live-satellite-tracker-3d", "solar-system-scope-alternative"):
+    t = plain(pages[f"{c}/index.html"].body)
+    check("active satellites" in t or "active ones" in t, f"{c}: the satellite count is called active satellites")
+    check("tracked objects" not in t and "pieces of debris in 3D" not in t, f"{c}: and not tracked objects, or debris it does not count")
 # What 2.0.0 itself ships is not listed as another product's alone.
 se = pages["spaceengine-alternative-mac/index.html"].body
 theirs = se.split("does more deeply</h2>")[1].split("</ul>")[0] if "does more deeply</h2>" in se else ""

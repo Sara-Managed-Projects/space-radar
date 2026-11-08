@@ -1679,9 +1679,13 @@ export function stormStatus(text) {
   return null;
 }
 
-/** "NOLO-26" -> "Nolo", "BANG-LANG-26" -> "Bang-Lang", "TWO-C-26" -> "Two-C". */
+/**
+ * "NOLO-26" -> "Nolo", "BANG-LANG-26" -> "Bang-Lang", "TWO-C-26" -> "Two-C". A system not yet named is GDACS's number in its
+ * season, "02-20262027" (the 2026-27 south-west Indian Ocean season's second): "Tropical Cyclone 02", as the advisories
+ * write it, never the raw id on the globe (2.0.0 look finding 15).
+ */
 export function stormName(eventname) {
-  const base = String(eventname || '').trim().replace(/-\d{2}$/, '');
+  const base = String(eventname || '').trim().replace(/-\d{2}$/, '').replace(/^(\d\d?)-\d{8}$/, 'Tropical Cyclone $1');
   if (!base) return null;
   return base.toLowerCase().replace(/(^|[-\s])([a-z])/g, (_, sep, c) => sep + c.toUpperCase());
 }
