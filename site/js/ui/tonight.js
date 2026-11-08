@@ -483,8 +483,8 @@ export function renderTonight(host, ctx) {
       if (!varAsked) {
         varAsked = true;
         Promise.all([import('../sky/varevents.js'), import('../sky/findclient.js'),
-          fetch(new URL('../../data/variables.json', import.meta.url)).then((r) => (r.ok ? r.json() : null))])
-          .then(([ev, fc, doc]) => { varKit = { ev, fc, rows: (doc && doc.rows) || [] }; renderBest(); })
+          import('../data/variablerows.js').then((m) => m.variableRows())]) // b200-s3-suite: one load, shared with Coming up
+          .then(([ev, fc, rows]) => { varKit = { ev, fc, rows }; renderBest(); })
           .catch(() => { /* the list stands without them */ });
       }
       return;

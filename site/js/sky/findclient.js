@@ -1,6 +1,7 @@
 // sky/findclient.js -- the page's side of sky/findworker.js (internal #359). Lazy, off the main
-// thread, no fetch. Where module workers are missing nothing is searched (an 8 second walk on the
-// main thread is worse than a missing row).
+// thread, no fetch of its own: the variable stars' rows are data/variablerows.js's, the one load Tonight
+// and the light curve share. Where module workers are missing nothing is searched (an 8 second walk on
+// the main thread is worse than a missing row).
 //
 // Contract: findFromPlace({latDeg, lonDeg, altKm}, fromMs) -> Promise<row[]>
 //           variableWords(row) -> row     (b200-c2-deep) a variable star's row given its words: label, line, classWords
@@ -36,13 +37,16 @@ function open() {
 }
 
 export function findFromPlace(observer, fromMs, days = 30) {
-  return new Promise((resolve) => {
+  // b200-s3-suite: the variable stars' rows are the page's one load of data/variables.json (data/variablerows.js), so
+  // the worker fetches nothing; a failed load asks for the pairs alone.
+  const vars = import('../data/variablerows.js').then((m) => m.variableRows()).catch(() => []);
+  return vars.then((variables) => new Promise((resolve) => {
     try {
       const id = ++seq;
       waiting.set(id, resolve);
-      open().postMessage({ id, fromMs, days, observer });
+      open().postMessage({ id, fromMs, days, observer, variables });
     } catch {
       resolve([]);
     }
-  });
+  }));
 }

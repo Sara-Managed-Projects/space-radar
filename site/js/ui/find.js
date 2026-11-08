@@ -566,7 +566,7 @@ export function createFind(ctx, host) {
       sub.setAttribute('y', String(base + maxR + 30));
       sub.setAttribute('text-anchor', 'middle');
       sub.setAttribute('class', 'sr-find__bodysub');
-      sub.textContent = b.aAu > 0 ? `${fmt.smart(b.aAu)} au` : '';
+      sub.textContent = b.aAu > 0 ? t(COPY.card.values.au, { n: fmt.smart(b.aAu) }) : '';
       svg.appendChild(sub);
     });
     scroll.appendChild(svg);

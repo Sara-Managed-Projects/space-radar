@@ -168,6 +168,9 @@ check(Q.tierLine({ tier: 0, choice: 'low', reasons: ['max-texture 16384'] }, COP
   const wts = readFileSync(join(JS, 'ui/whattoshow.js'), 'utf8');
   check(/qualityPanel\(ctx\)/.test(wts) && /lookPanel\(ctx\.drawn\)/.test(wts), 'both rows are mounted in What to show');
   check(!/qualitypanel|lookPanel/.test(main), 'and neither is in main.js: they load with the popover');
+  // b200-s1-fixes (forge #14), moved here from tests/test_quality.mjs by b200-s3-suite (that one runs against the minified tree):
+  // boot's own long frames do not feed the ladder or the latch; they are fed from 5 s after the layers land.
+  check(/quietUntil \|\|= window\.__srLayersReady && nowReal \+ 5000;/.test(main) && /if \(!looking && quietUntil && nowReal > quietUntil && !document\.hidden/.test(main), 'the frame ladder and the latch wait for the layers to land, and five seconds more');
 }
 
 if (problems.length) { console.error('quality setting FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }

@@ -19,7 +19,6 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 const W = 320;
 const H = 64;
 const YEAR_MS = 365.25 * 86400e3;
-let rowsAsked = null;
 
 /** The row of data/variables.json for a star's record: its Hipparcos number, or its name. */
 export function variableFor(rows, record) {
@@ -57,11 +56,8 @@ function svgNode(tag, attrs) {
 }
 
 export function mountVarCurve(box, record, ctx) {
-  if (!rowsAsked) {
-    rowsAsked = fetch(new URL('../../data/variables.json', import.meta.url)).then((r) => (r.ok ? r.json() : null)).then((d) => (d && d.rows) || [])
-      .catch(() => { rowsAsked = null; return []; });
-  }
-  rowsAsked.then((rows) => {
+  // b200-s3-suite: data/variablerows.js keeps the one load per page (and asks again after a failed one).
+  import('../data/variablerows.js').then((m) => m.variableRows()).catch(() => []).then((rows) => {
     const row = variableFor(rows, record);
     if (!row || !box.isConnected) return;
     paint(box, row, ctx && ctx.clock ? ctx.clock.now() : Date.now(), ctx);

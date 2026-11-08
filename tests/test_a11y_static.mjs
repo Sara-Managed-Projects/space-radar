@@ -285,6 +285,12 @@ check(iconOnly >= 8, `only ${iconOnly} icon-only buttons found: the rail, the tr
   // 7e. A one-letter name is not a name (internal #375): the X link says "Post to X".
   const sheet = code(read('sharesheet.js'));
   check(/a\.setAttribute\('aria-label', t\(S\.networkLabel, \{ network: S\.networks\[n\] \}\)\)/.test(sheet) && /\{network\}/.test(COPY.share.networkLabel || ''), 'each network link has a spoken name from the copy ("Post to X"), not its one letter');
+
+  // 7f. b200-s1-fixes (forge #49), moved here from tests/test_whattoshow.mjs by b200-s3-suite (that one runs against the
+  // minified tree, whose text is not the source): a filter that finds nothing is said aloud, and the button names its panel.
+  const src49 = read('whattoshow.js');
+  check(/noMatch\.setAttribute\('role', 'status'\)/.test(src49), '"No layer by that name." is a status, so a screen reader says it');
+  check(/setAttribute\('aria-controls', pop\.id\)/.test(src49), 'the What to show button names the panel it opens (aria-controls)');
 }
 
 if (problems.length) { console.error('a11y static FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }

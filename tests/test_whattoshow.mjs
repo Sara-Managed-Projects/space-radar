@@ -286,9 +286,8 @@ check(/^groups: \[/m.test(yaml), 'layers.yaml lists its groups');
   const a1 = {}, a2 = {}, a3 = {};
   check(W.edgeTab([a1, a2, a3], a1, true) === 'back' && W.edgeTab([a1, a2, a3], a3, false) === 'out', 'Shift+Tab off the first control goes back to the button; Tab off the last leaves for the rail');
   check(W.edgeTab([a1, a2, a3], a2, false) === null && W.edgeTab([a1, a2, a3], a1, false) === null && W.edgeTab([], a1, true) === null, 'inside the panel Tab is the browser\'s');
-  const src49 = readFileSync(join(JS, 'ui/whattoshow.js'), 'utf8');
-  check(/noMatch\.setAttribute\('role', 'status'\)/.test(src49), '"No layer by that name." is a status, so a screen reader says it');
-  check(/setAttribute\('aria-controls', pop\.id\)/.test(src49), 'the What to show button names the panel it opens (aria-controls)');
+  // The status role and aria-controls are read from whattoshow.js as TEXT, so they are checked in tests/test_a11y_static.mjs:
+  // this file is one of scripts/check_built_tree.mjs TESTS and runs against the minified tree too (b200-s3-suite).
 
   const store = { getItem: () => null, setItem() {} };
   const show = W.createWhatToShow(makeCtx(firstOn).ctx, { storage: store });
