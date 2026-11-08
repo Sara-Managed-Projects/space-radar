@@ -13,9 +13,29 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [2.0.1] - 2026-11-09
 
-A patch for three things found while 2.0.0 was being deployed and its zip checked. No shared link, saved data copy or registry row changes.
+A patch for seven things: four that a visitor of the live 2.0.0 found, and three found while it was being deployed and its zip checked. No shared link, saved data copy or registry row changes.
 
 ### Fixed
+
+- **The trips on other worlds have their card again, and end with a way home.** On a stop that stands on the ground or under another
+  world's sky ("Walk the landing sites", "Skies of other worlds", forge #146 and #147) `css/ground.css` hid the sidebar and the card with
+  the rest of the map's chrome, so a stop showed only the player bar, and the end of the trip left a bare sky: the end card (Keep flying,
+  Replay, Share) lives in the sidebar too. In a trip they now stay; outside one they still step aside for the ground's own card.
+- **"Replay this moment" and "Light it" are one row of the card's own tiles.** A landing site's card (Curiosity's, among others) had
+  an outlined half-width "Replay this moment" between the four actions and a full-width grey "Light it" under it. Both, and "Look
+  inside" on a world's card, are now tiles of the quiet row straight under the four actions, in their wash and height (docs/ui-guide.md
+  §3.10 5a); a row of more than three tiles is two to a line.
+- **Artemis II's rocket is one stack.** The Moment drew Orion at 22.1 m, 11 % larger than its file (NASA's own model, 19.88 m from the
+  engine bell to the abort tower's tip), and stood the bell, not the service module's base, on the adapter: the capsule and its tower
+  floated 1.4 m above the upper stage. Orion is now at the file's scale, the same as the Space Launch System's, with its base on the
+  Orion stage adapter; its engine's flame starts at the bell and its parachutes and re-entry glow moved with it.
+  `tests/test_moment_stories.mjs` reads both models' heights from the files and holds the stack to them. This was so since 1.6.0.
+- **How to drive a rover is said where it can be seen.** A landing site with measured ground opened only from a link or a trip, so its
+  card now has the door: "Stand here", and at Curiosity, Perseverance, Zhurong and Opportunity "Stand here and drive". Driving starts
+  with a short how-to in the middle of the screen (the keys with a mouse, the round pad on a touch screen, which drives as it walks),
+  the keys line and the pad's label say driving while driving, the ground's card says the rover can be driven, and a trip's stop at a
+  rover has a "Drive the rover" button that leaves the trip there and drives. The Lunokhods and Yutu cannot be driven (their ground is
+  not measured in the app), and their cards now say so and name the four that can. In all eleven languages, machine-drafted as before.
 
 - **Probes and telescopes are drawn from JPL's vectors again, not their stand-ins.** The harvester saves JPL Horizons' replies as one object,
   each craft's Horizons id mapped to its reply's text, and the parser reads exactly that; but `site/js/data/sources.js` declared the source as

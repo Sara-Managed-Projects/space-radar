@@ -21,7 +21,7 @@ await mod('copy/en.moments.js');
 
 const registry = readFileSync(join(ROOT, 'registry/models.yaml'), 'utf8');
 
-/** A binary glTF's height, metres along +Y: its POSITION accessors' bounds through the node transforms (no decoder). */
+/** A binary glTF's box, metres: its POSITION accessors' bounds through the node transforms (no decoder). `lo`/`hi` are Y. */
 function yExtent(path) {
   const b = readFileSync(path);
   const g = JSON.parse(b.slice(20, 20 + b.readUInt32LE(12)).toString('utf8'));
@@ -34,6 +34,7 @@ function yExtent(path) {
   };
   const Q = { 5120: 127, 5121: 255, 5122: 32767, 5123: 65535 };
   let lo = Infinity, hi = -Infinity;
+  const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
   const walk = (i, M) => {
     const n = g.nodes[i];
     const W = mul(M, local(n));
@@ -41,14 +42,17 @@ function yExtent(path) {
       const a = g.accessors[p.attributes.POSITION];
       const q = a.normalized ? Q[a.componentType] : 1;
       for (const x of [a.min[0], a.max[0]]) for (const y of [a.min[1], a.max[1]]) for (const z of [a.min[2], a.max[2]]) {
-        const wy = (W[1][0] * x + W[1][1] * y + W[1][2] * z) / q + W[1][3];
-        lo = Math.min(lo, wy); hi = Math.max(hi, wy);
+        for (let i = 0; i < 3; i++) {
+          const w = (W[i][0] * x + W[i][1] * y + W[i][2] * z) / q + W[i][3];
+          min[i] = Math.min(min[i], w); max[i] = Math.max(max[i], w);
+        }
+        lo = min[1]; hi = max[1];
       }
     }
     for (const c of n.children || []) walk(c, W);
   };
   for (const r of g.scenes[g.scene || 0].nodes) walk(r, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]);
-  return { lo, hi };
+  return { lo, hi, centreX: (min[0] + max[0]) / 2, centreZ: (min[2] + max[2]) / 2 };
 }
 const partsOf = (id) => {
   const line = registry.split('\n').find((l) => l.startsWith(`  - {id: ${id},`)) || '';
@@ -199,6 +203,11 @@ for (const id of ['vostok-1', 'apollo-11', 'artemis-ii']) {
   check(Math.abs(aft - top) < 0.05, `Artemis II: the service module's aft plane sits on the adapter's top (${aft.toFixed(3)} m on ${top.toFixed(3)} m)`);
   const free = m.vehicles.find((v) => v.id === 'orion');
   check(free.lengthM === up.lengthM && Math.abs(free.engines.esm[0][1] - 0) < 0.05, 'Artemis II: Orion keeps its size when it leaves the stack, and its engine burns at the bell\'s exit');
+  // And on ONE AXIS: a stray piece of the left booster's mesh reaches 17 m out, so the file's box is centred 6 m off the
+  // rocket's axis, and standInMetres (which centres the box) put Orion beside the stack. SLS stands by its file's own axis.
+  const offAxis = Math.hypot(sls.centreX, sls.centreZ);
+  for (const v of m.vehicles.filter((x) => x.model === 'sls-block1')) check(offAxis < 0.25 || v.keepXZ === true, `Artemis II: ${v.id} stands on the file's axis, not its box's centre (${offAxis.toFixed(2)} m apart)`);
+  check(Math.hypot(orion.centreX, orion.centreZ) < 0.25 && !up.keepXZ, 'Artemis II: Orion\'s box is centred on its axis, so it rides the stack\'s axis');
 }
 // --- Curiosity's entry, descent and landing (release 1.7.9): the published clock, the heights and speeds, the place on Mars
 {

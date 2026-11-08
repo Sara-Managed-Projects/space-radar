@@ -31,6 +31,12 @@ html.sr-ground-on:not(.sr-trip-mode) :is(#sr-side, .sr-card) {
   outline: none;
 }
 
+/* In a trip the stage's layer goes under the sidebar and the trip's bars (2.0.1): its sky names were drawn over the end
+ * card on a phone. It is still over the scene, and the one button it keeps there is clear of the sidebar. */
+html.sr-trip-mode .sr-ground {
+  z-index: var(--sr-z-labels);
+}
+
 .sr-ground[hidden] {
   display: none;
 }
@@ -212,6 +218,9 @@ html.sr-trip-mode .sr-ground__tripdrive:not([hidden]) {
   position: absolute;
   right: var(--sp-4);
   top: calc(var(--sp-4) + 60px);
+  min-height: 44px;
+  color: var(--sr-text);
+  font-weight: 600;
   pointer-events: auto;
 }
 

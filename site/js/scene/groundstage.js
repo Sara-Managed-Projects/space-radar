@@ -739,7 +739,7 @@ export function createGroundStage(ctx, opts = {}) {
     howto.hidden = true;
     // In a trip the stage's own bar steps aside (the trip's card speaks), so a stop at a rover has this one button: it
     // leaves the trip there, keeps this ground and drives.
-    const tripDrive = el(doc, 'button', 'sr-btn sr-ground__tripdrive', T.drive);
+    const tripDrive = el(doc, 'button', 'sr-btn sr-float sr-ground__tripdrive', T.drive);
     tripDrive.type = 'button';
     tripDrive.title = T.tripDriveTitle;
     tripDrive.hidden = true;
