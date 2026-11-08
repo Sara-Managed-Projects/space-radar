@@ -302,6 +302,7 @@ clips:
   - {trip: "outer-solar-system", stop: "sedna", hash: "3a7ccb4e0f3a52b2", seconds: 24.68, words: 71, lufs: -16.4, opus: 99041, m4a: 127199, vtt: 459, wer: 0.0, heard: "739b6ac7c4785871", voice: 0}
   - {trip: "outer-solar-system", stop: "eris", hash: "ca20cad406c0142f", seconds: 24.55, words: 69, lufs: -16.5, opus: 98425, m4a: 126547, vtt: 430, wer: 0.0, heard: "30b879b5385fbb72", voice: 0}
   - {trip: "outer-solar-system", stop: "voyager-1", hash: "ce150653ef589b24", seconds: 23.14, words: 63, lufs: -16.5, opus: 92815, m4a: 119375, vtt: 399, wer: 0.0, heard: "d0d9e40e9c2a09f1", voice: 0}
+  - {trip: "outer-solar-system", stop: "heliosphere", hash: "c320ee4a07dc1f47", seconds: 24.8, words: 76, lufs: -16.3, opus: 99470, m4a: 127851, vtt: 521, wer: 0.0, heard: "b13fa281b0118db3", voice: 0}
   - {trip: "a-year-in-a-minute", stop: "inner", hash: "1fe4f13a7636156a", seconds: 15.76, words: 43, lufs: -16.4, opus: 62495, m4a: 81776, vtt: 307, wer: 0.0, heard: "4c9380b0a2be10a6", voice: 0}
   - {trip: "a-year-in-a-minute", stop: "earth", hash: "2cc3882a2e364626", seconds: 17.07, words: 50, lufs: -16.3, opus: 72042, m4a: 88514, vtt: 335, wer: 0.0, heard: "7ea62972783ab09a", voice: 0}
   - {trip: "a-year-in-a-minute", stop: "mercury", hash: "0b72c5bb2a3fb6a1", seconds: 15.88, words: 42, lufs: -16.5, opus: 63005, m4a: 82428, vtt: 291, wer: 0.0, heard: "9021670c9b238042", voice: 0}
@@ -471,6 +472,21 @@ clips:
   - {trip: "two-pads-at-kennedy", stop: "apollo-17", hash: "e13ada2a89b78fb1", seconds: 14.67, words: 45, lufs: -16.5, opus: 58367, m4a: 76126, vtt: 304, wer: 0.0, heard: "418c01ae1a619683", voice: 0}
   - {trip: "two-pads-at-kennedy", stop: "sts-31", hash: "231e64c73935b682", seconds: 18.03, words: 48, lufs: -16.4, opus: 71961, m4a: 93295, vtt: 314, wer: 0.0, heard: "e9bb2c09855a6f8c", voice: 0}
   - {trip: "two-pads-at-kennedy", stop: "sts-116", hash: "0d7e1ece56c58f69", seconds: 15.62, words: 42, lufs: -16.3, opus: 61382, m4a: 81124, vtt: 310, wer: 0.0, heard: "683791ab6a70a78e", voice: 0}
+  - {trip: "walk-the-landing-sites", stop: "apollo-11", hash: "7f5d29f2ab8c37ee", seconds: 15.07, words: 41, lufs: -16.4, opus: 59649, m4a: 78299, vtt: 322, wer: 0.0, heard: "f27945a996717a79", voice: 0}
+  - {trip: "walk-the-landing-sites", stop: "apollo-15", hash: "f2f6d76e81dba3f5", seconds: 14.86, words: 36, lufs: -16.5, opus: 58179, m4a: 77212, vtt: 325, wer: 0.0, heard: "a287c83b9fa2d968", voice: 0}
+  - {trip: "walk-the-landing-sites", stop: "apollo-17", hash: "bebc13ad727f4bde", seconds: 13.62, words: 41, lufs: -16.5, opus: 53579, m4a: 70910, vtt: 295, wer: 0.0, heard: "23e38a30b7cf72b8", voice: 0}
+  - {trip: "walk-the-landing-sites", stop: "change-4", hash: "406880e7b96c4556", seconds: 12.88, words: 40, lufs: -16.4, opus: 49866, m4a: 66998, vtt: 302, wer: 0.025, heard: "ac16070c2fdb5a60", voice: 0}
+  - {trip: "walk-the-landing-sites", stop: "opportunity", hash: "8750bd2efd60a71e", seconds: 14.33, words: 36, lufs: -16.4, opus: 56880, m4a: 74387, vtt: 296, wer: 0.0, heard: "8b5251e65ec01beb", voice: 0}
+  - {trip: "walk-the-landing-sites", stop: "gale", hash: "c086180ed0c1b9e1", seconds: 12.19, words: 33, lufs: -16.4, opus: 46982, m4a: 63520, vtt: 283, wer: 0.0, heard: "425ad423395a985f", voice: 0}
+  - {trip: "walk-the-landing-sites", stop: "jezero", hash: "a6223e4ee2c2f217", seconds: 12.5, words: 35, lufs: -16.4, opus: 49070, m4a: 65042, vtt: 266, wer: 0.0286, heard: "ebe83d3d54508da7", voice: 0}
+  - {trip: "walk-the-landing-sites", stop: "utopia", hash: "f9df8a83a5213977", seconds: 12.29, words: 31, lufs: -16.4, opus: 48328, m4a: 63955, vtt: 257, wer: 0.0645, heard: "0466b38d622ab323", voice: 0}
+  - {trip: "skies-of-other-worlds", stop: "earth-from-the-moon", hash: "4eac69e319735fcf", seconds: 13.89, words: 44, lufs: -16.4, opus: 54619, m4a: 72214, vtt: 293, wer: 0.0, heard: "98a10fe4fc7dc42d", voice: 0}
+  - {trip: "skies-of-other-worlds", stop: "earth-from-gale", hash: "e440b2050b6dd666", seconds: 14.39, words: 41, lufs: -16.3, opus: 56681, m4a: 74822, vtt: 295, wer: 0.0, heard: "ff3c02186e918089", voice: 0}
+  - {trip: "skies-of-other-worlds", stop: "phobos-over-the-sun", hash: "92bb5c5db444c940", seconds: 15.81, words: 43, lufs: -16.4, opus: 62424, m4a: 81994, vtt: 306, wer: 0.0233, heard: "a0fcd36e90d7d09e", voice: 0}
+  - {trip: "skies-of-other-worlds", stop: "titan", hash: "2d9645f12b91e79d", seconds: 14.26, words: 41, lufs: -16.4, opus: 55503, m4a: 74170, vtt: 327, wer: 0.0, heard: "e87ae22c4ea10855", voice: 0}
+  - {trip: "skies-of-other-worlds", stop: "europa", hash: "f60b8d3be4b113ca", seconds: 14.78, words: 41, lufs: -16.4, opus: 58547, m4a: 76778, vtt: 294, wer: 0.0, heard: "7a7d776200a76ff5", voice: 0}
+  - {trip: "skies-of-other-worlds", stop: "proxima-b", hash: "5a6d72b7d76f4c71", seconds: 15.33, words: 39, lufs: -16.3, opus: 59689, m4a: 79603, vtt: 312, wer: 0.0, heard: "1a8902af7c449225", voice: 0}
+  - {trip: "skies-of-other-worlds", stop: "trappist-1e", hash: "580cb78c2cb5dfb2", seconds: 12.88, words: 35, lufs: -16.4, opus: 50100, m4a: 66998, vtt: 270, wer: 0.0, heard: "277b65ce2c4e4242", voice: 0}
   - {trip: "onboarding", stop: "move", hash: "cd8319e1352dbc30", seconds: 6.72, words: 20, lufs: -16.3, opus: 25882, m4a: 35702, vtt: 183, wer: 0.0, heard: "3022a96bb2ebbc6b", voice: 0}
   - {trip: "onboarding", stop: "find", hash: "5e6b109dd872fb4a", seconds: 6.15, words: 22, lufs: -16.4, opus: 24002, m4a: 32876, vtt: 153, wer: 0.0, heard: "62ed02af288f2515", voice: 0}
   - {trip: "onboarding", stop: "card", hash: "86da3981052d2b0a", seconds: 6.06, words: 21, lufs: -16.2, opus: 23890, m4a: 32442, vtt: 152, wer: 0.0, heard: "28f4591d3249e2dd", voice: 0}

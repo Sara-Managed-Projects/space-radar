@@ -1,0 +1,86 @@
+{
+ "id": "jezero",
+ "world": "mars",
+ "site": "jezero",
+ "latDeg": 18.4446,
+ "lonDeg": 77.4509,
+ "radiusKm": 3396.19,
+ "groundM": -2569.22,
+ "near": {
+  "size": 1024,
+  "stepM": 2.0,
+  "bands": 4,
+  "min": -44.8257,
+  "q": 0.005,
+  "files": [
+   "near-h-0.bin",
+   "near-h-1.bin",
+   "near-h-2.bin",
+   "near-h-3.bin"
+  ],
+  "filled": 0
+ },
+ "far": {
+  "size": 512,
+  "stepM": 120.0,
+  "min": -439.296,
+  "q": 0.1,
+  "file": "far-h.bin",
+  "dtmShare": 0.019,
+  "globalShiftM": -6.5
+ },
+ "orthoNear": {
+  "px": 2048,
+  "files": [
+   "near-o-0.jpg",
+   "near-o-1.jpg",
+   "near-o-2.jpg",
+   "near-o-3.jpg"
+  ]
+ },
+ "orthoFar": {
+  "px": 1024,
+  "file": "far-o.jpg",
+  "imaged": 0.019
+ },
+ "model": {
+  "file": "perseverance.glb",
+  "heading_deg": 0,
+  "size_m": 3.0,
+  "what": "Perseverance, where it landed"
+ },
+ "tint": [
+  118,
+  72,
+  40
+ ],
+ "sources": [
+  {
+   "what": "HiRISE stereo terrain model of the Mars 2020 candidate site in Jezero, 1 m a post",
+   "product": "DTEEC_045994_1985_046060_1985_U01",
+   "page": "https://www.uahirise.org/dtm/dtm.php?ID=ESP_045994_1985",
+   "licence": "Public domain (NASA PDS archive product, MRO-M-HIRISE-5-DTM-V1.0)",
+   "credit": "NASA/JPL/University of Arizona (HiRISE)"
+  },
+  {
+   "what": "HiRISE orthoimage ESP_045994_1985 (red), 1 m a pixel",
+   "product": "ESP_045994_1985_RED_C_01_ORTHO",
+   "licence": "Public domain (NASA PDS archive product, MRO-M-HIRISE-5-DTM-V1.0)",
+   "credit": "NASA/JPL/University of Arizona (HiRISE)"
+  },
+  {
+   "what": "MOLA global heights, 463 m a pixel",
+   "product": "Mars_MGS_MOLA_DEM_mosaic_global_463m",
+   "page": "https://astrogeology.usgs.gov/search/map/mars_mgs_mola_dem_463m",
+   "licence": "Public domain (MOLA, NASA PDS; USGS Astrogeology mosaic)",
+   "credit": "MOLA Science Team, NASA/GSFC (Smith et al. 2001, JGR 106, 23689); USGS Astrogeology mosaic"
+  },
+  {
+   "what": "Viking MDIM 2.1 colour mosaic (232 m a pixel; its 325 m tiles), its grey (the far ground beyond the stereo strip)",
+   "page": "https://astrogeology.usgs.gov/search/map/mars_viking_colorized_global_mosaic_232m",
+   "licence": "Public domain (USGS Astrogeology: 'Access Constraints Public domain')",
+   "credit": "NASA/JPL/USGS (Viking Orbiter MDIM 2.1), from NASA Solar System Treks"
+  }
+ ],
+ "built": "2026-11-07"
+}

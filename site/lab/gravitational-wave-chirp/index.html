@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gravitational Wave Chirp | Space Radar Lab</title>
+<meta name="description" content="Two black holes spiralling together shake space itself, and the wave they send out rises in pitch and strength until they merge.">
+<meta name="sr-lab-category" content="Cosmology and black holes">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b0e14">
+<link rel="stylesheet" href="../../css/fonts.css">
+<style>
+:root{--sr-space:#0b0e14;--sr-text:#e8ecf2;--sr-text-dim:#9aa4b2;--sr-ember:#ff9f43;--sr-ember-light:#ffc28a;--sr-ink:#14100a;--sr-line:rgba(232,236,242,.10);--sr-wash:rgba(232,236,242,.07);--sr-wash-hover:rgba(232,236,242,.12);--sr-radius:6px}
+html{background:var(--sr-space);color:var(--sr-text);font:400 15px/20px Inter,system-ui,-apple-system,sans-serif;-webkit-text-size-adjust:100%}
+body{margin:0}
+a{color:var(--sr-ember)}a:hover{color:var(--sr-ember-light)}
+a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--sr-ember);outline-offset:2px;border-radius:2px}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:0 20px;max-width:1160px;margin:0 auto;padding:4px 16px;border-bottom:1px solid var(--sr-line)}
+.top a{display:inline-flex;align-items:center;min-height:44px;color:var(--sr-text);text-decoration:none}
+.top .mark{font:600 20px/1 'Barlow Semi Condensed',system-ui,sans-serif;letter-spacing:.02em}
+.top .here{color:var(--sr-text-dim)}
+main{display:grid;grid-template-columns:minmax(0,1fr);max-width:1160px;margin:0 auto;padding:20px 16px 32px;gap:0 32px;align-content:start}
+main>*{min-width:0}
+.micro{margin:0 0 8px;font:600 13px/16px 'Barlow Semi Condensed',system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--sr-text-dim)}
+h1{margin:0 0 12px;font:600 30px/1.1 Inter,system-ui,sans-serif;letter-spacing:-.01em;overflow-wrap:anywhere}
+.lead{margin:0 0 20px;font-size:18px;line-height:26px;max-width:60ch}
+.stage{margin:0 0 16px;width:100%}
+canvas{display:block;width:100%;aspect-ratio:1080/1200;background:#05070d;border-radius:var(--sr-radius);border:1px solid var(--sr-line)}
+.line{margin:0 0 16px;font-size:16px;line-height:24px;max-width:60ch;min-height:48px}
+.controls{display:grid;gap:12px;margin:0 0 16px}
+.controls label{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;font-size:13px;line-height:18px;color:var(--sr-text-dim)}
+.controls label input{grid-column:1/-1;width:100%;min-height:44px;margin:0;accent-color:var(--sr-ember)}
+.controls output{font:500 13px/18px 'JetBrains Mono',ui-monospace,monospace;color:var(--sr-text);font-variant-numeric:tabular-nums}
+button{min-height:44px;padding:0 20px;border:0;border-radius:var(--sr-radius);background:var(--sr-ember);color:var(--sr-ink);font:600 15px/1 Inter,system-ui,sans-serif;cursor:pointer;justify-self:start}
+button:hover{background:var(--sr-ember-light)}
+.honest{margin:0 0 16px;padding:12px 14px;border-radius:var(--sr-radius);background:var(--sr-wash);color:var(--sr-text-dim);font-size:13px;line-height:18px;max-width:60ch}
+.honest b{color:var(--sr-text);font-weight:600}
+details{margin:0 0 16px;max-width:60ch;border-top:1px solid var(--sr-line)}
+summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font-weight:600}
+.srcl{margin:0 0 6px;font-size:13px;line-height:18px;color:var(--sr-text-dim);white-space:pre-wrap;overflow-wrap:anywhere}
+.more{display:flex;flex-wrap:wrap;gap:0 16px;margin:0;font-size:15px}
+.more a{display:inline-flex;align-items:center;min-height:44px}
+.ns{color:var(--sr-text-dim)}
+@media (min-width:900px){
+ main{grid-template-columns:minmax(0,1fr) 360px;padding-top:24px}
+ main>*{grid-column:2}
+ .stage{grid-column:1;grid-row:1/span 9;width:min(100%,calc((100svh - 130px)*.9));min-width:320px;align-self:start;position:sticky;top:12px;margin:0}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top"><a class="mark" href="../../index.html">Space Radar</a><a class="here" href="../index.html">Lab</a></header>
+<main>
+<p class="micro" id="cat"></p>
+<h1 id="h">Gravitational Wave Chirp</h1>
+<p class="lead" id="lesson">Two black holes spiralling together shake space itself, and the wave they send out rises in pitch and strength until they merge.</p>
+<div class="stage"><canvas id="c" role="img" aria-label="Gravitational Wave Chirp"></canvas></div>
+<p class="line" id="line"></p>
+<noscript><p class="ns">This simulator needs JavaScript. It is one small file, with no libraries and no network requests: read it with View source.</p></noscript>
+<div class="controls">
+<button type="button" id="pb">Pause</button>
+<label>Time <input type="range" id="ts" min="0" value="0" aria-label="Time through the animation"></label>
+<label id="pl">Value <output id="po"></output><input type="range" id="ps"></label>
+</div>
+<p class="honest"><b>What is and is not to scale.</b> <span id="honest"></span></p>
+<details><summary>How this was made and sources</summary>
+<p class="srcl">One HTML file: no libraries, no network requests. Every number below was read on the date shown, from the page named next to it.</p>
+<div id="src"></div>
+</details>
+<p class="more"><a id="sr-app" href="../../index.html#at=exotic-hulse-taylor">See this in the 3D map</a><a href="../index.html">All simulators</a><a id="add" href="https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/ADD_A_SIMULATOR.md">Add your own simulator</a><a id="edit" href="https://github.com/Sara-Managed-Projects/space-radar/tree/main/site/lab">Fix a mistake on GitHub</a></p>
+</main>
+<!-- Sources
+Sources, read on 2026-11-07:
+ LIGO Scientific and Virgo Collaborations, "Observation of Gravitational Waves from a Binary Black Hole Merger", Phys. Rev. Lett. 116, 061102 (2016) (https://doi.org/10.1103/PhysRevLett.116.061102): GW150914 on 2015-09-14; masses 36 and 29 Suns, final 62; luminosity distance 410 Mpc; peak strain 1.0e-21; "in about 8 cycles from 35 to 150 Hz, where the amplitude reaches a maximum"; chirp mass about 30 Suns; arm-length difference dL = h L with L = 4 km.
+ Wikipedia, "First observation of gravitational waves" (https://en.wikipedia.org/wiki/First_observation_of_gravitational_waves): the chirp lasted over 0.2 s, from 35 Hz to 250 Hz through merger and ringdown; later analyses give 35 and 30 Suns at 440 Mpc (the page uses the 2016 paper's values).
+ CODATA 2018 (https://physics.nist.gov/cgi-bin/cuu/Value?rp): proton charge radius 0.8414 fm, so a width of 1.68e-15 m. IAU 2015 nominal G Msun / c^3 = 4.925491e-6 s (https://www.iau.org/static/resolutions/IAU2015_English.pdf).
+ Physics (leading order, Maggiore, Gravitational Waves vol. 1, eq. 4.21 and 4.30): time to merger tau = (5/256) (pi f)^(-8/3) (G Mc/c^3)^(-5/3); phase = -2 (tau / (5 G Mc/c^3))^(5/8); amplitude grows as f^(2/3); the orbit's frequency is half the wave's, separation a = (G M / (pi f)^2)^(1/3).
+ Check by hand: Mc = 30 x 4.925e-6 s = 1.478e-4 s; tau(35 Hz) = 0.170 s, tau(150 Hz) = 0.0035 s, so 0.167 s and (phase difference)/(2 pi) = 8.7 cycles, the paper's "about 8". Separation 894 km at 35 Hz and 339 km at 150 Hz (M = 65 Suns); Schwarzschild radii 2 G M / c^2 = 106 km and 86 km.
+ Strain from another distance: h falls as 1/d, so 1.0e-21 x 410 / d. At 410 Mpc dL = 1.0e-21 x 4000 m = 4.0e-18 m, 1.68e-15 / 4.0e-18 = 420 times smaller than a proton.
+Drawn: the motion is slowed 60 times; black holes and orbit share one scale (0.33 px per km); merger and ringdown are sketched, not computed.
+-->
+<script>
+// ============================================ 0. HELPERS (shared; do not edit) ====================================
+// Defined first, so a simulator may use them while it loads (top-level tables). Colours: EMBER for the point of the lesson, INK for text, DIM for the quiet.
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x)),seg=(t,a,b)=>clamp((t-a)/(b-a),0,1),ease=x=>{x=clamp(x,0,1);return x*x*(3-2*x)},lerp=(a,b,x)=>a+(b-a)*x;
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const EMBER='#ff9f43',INK='#e8ecf4',DIM='#a3adc0',FONT='Inter,system-ui,-apple-system,"Segoe UI",sans-serif',Y0=430,Y1=1440,MINPX=34;
+// ============================================ 1. THE SIMULATOR (yours) ============================================
+// Every number is from the Sources comment. GW150914: the last 0.17 s before two black holes merged, slowed 60 times.
+const MS=4.925491e-6,MC=30*MS,F0=35,F1=150,SLOW=60,TI=.6,KM=.33,CX=540,CY=720,YW=1140,X0=70,XW=940,RD=.02; // MS = G Msun/c^3 (s); KM = px per km; RD = ringdown seconds shown
+const M1=36,M2=29,GM=(M1+M2)*1.32712440018e20,RS1=2*M1*1.4766,RS2=2*M2*1.4766,RSF=2*62*1.4766;        // RS = 2 G M / c^2, km
+const tau=f=>5/256*Math.pow(Math.PI*f,-8/3)*Math.pow(MC,-5/3),fOf=s=>Math.pow(5/256/s,3/8)*Math.pow(MC,-5/8)/Math.PI,phase=s=>-2*Math.pow(s/(5*MC),5/8);
+const T0=tau(F0),T1=tau(F1),TM=TI+(T0-T1)*SLOW,sep=f=>Math.cbrt(GM/(Math.PI*f)**2)/1e3;              // TM: the animation second of the merger
+const before=t=>t>=TM?0:T0-clamp(t-TI,0,1e9)/SLOW;                 // real seconds left before merger (tau), held at 35 Hz before TI
+const wave=r=>{if(r<T1){const d=T1-r;return Math.exp(-d/.004)*Math.cos(phase(T1)+2*Math.PI*250*d)}return Math.pow(fOf(r)/F1,2/3)*Math.cos(phase(r))}; // r: real s before T1 (merger at T1)
+const peak=d=>1.0e-21*410/d,SUP='⁰¹²³⁴⁵⁶⁷⁸⁹',sci=x=>{const e=Math.floor(Math.log10(x));return(x/10**e).toFixed(1)+'×10'+String(e).replace('-','⁻').replace(/\d/g,d=>SUP[d])};
+const SIM={
+ dur:13,reveal:TM,
+ hook:'BLACK HOLES MERGE,|SPACE ITSELF CHIRPS',
+ honest:'Masses, chirp and strain are GW150914\'s. Motion slowed 60 times, holes and orbit drawn to one scale; merger and ringdown are sketched.',
+ param:{label:'distance (megaparsecs)',min:200,max:2000,step:10,value:410},
+ line(d,t){const s=before(t),f=fOf(Math.max(s,T1)),h=peak(d),dl=h*4000;
+  return`GW150914, 2015: black holes of 36 and 29 Suns ${t<TM?`are ${Math.round(sep(f))} km apart and the wave is at ${Math.round(f)} Hz`:'have merged into one of 62 Suns'}. In the last 0.17 s the wave rose from 35 to 150 Hz in about 9 cycles. From ${Math.round(d)} Mpc the peak strain is ${sci(h)}: LIGO's 4 km arms change by ${sci(dl)} m, ${Math.round(1.68e-15/dl)} times less than a proton is wide.`},
+ draw(c,t,d){
+  stars(c,50);const s=before(t),merged=t>=TM,f=fOf(Math.max(s,T1)),amp=peak(d)/1e-21*68;
+  if(!merged){const a=sep(f)*KM,o=phase(s)/2,r1=a*M2/(M1+M2),r2=a*M1/(M1+M2);
+   c.strokeStyle='rgba(232,236,244,.18)';c.lineWidth=2;c.beginPath();c.ellipse(CX,CY,r1,r1*.55,0,0,6.2832);c.stroke();c.beginPath();c.ellipse(CX,CY,r2,r2*.55,0,0,6.2832);c.stroke();
+   for(const[r,R,an]of[[r1,RS1,o],[r2,RS2,o+Math.PI]]){const x=CX+r*Math.cos(an),y=CY+r*Math.sin(an)*.55;glow(c,x,y,R*KM*2.2,EMBER,.55);disc(c,x,y,R*KM,'#000')}
+   text(Math.round(f)+' Hz',60,470,48,EMBER,800,'left');text(Math.round(sep(f))+' km apart',1020,470,44,INK,700,'right')}
+  else{const k=seg(t,TM,TM+.6);glow(c,CX,CY,RSF*KM*(2.2+3*(1-k)),EMBER,.4+.4*(1-k));disc(c,CX,CY,RSF*KM,'#000');text('MERGED: 62 SUNS',60,470,44,EMBER,800,'left');text('3 SUNS → WAVES',1020,470,44,INK,700,'right')}
+  c.strokeStyle='rgba(232,236,244,.25)';c.lineWidth=2;c.beginPath();c.moveTo(X0,YW);c.lineTo(X0+XW,YW);c.stroke();
+  const span=T0-T1+RD,now=merged?T1-Math.min((t-TM)/SLOW,RD):Math.max(s,T1),n=700;c.strokeStyle=EMBER;c.lineWidth=4;c.beginPath();
+  for(let i=0;i<=n;i++){const r=T0-i/n*span;if(r<now)break;const x=X0+i/n*XW,y=YW-amp*wave(r);i?c.lineTo(x,y):c.moveTo(x,y)}c.stroke();
+  text('strain ×10⁻²¹: '+(peak(d)/1e-21).toFixed(2)+' at peak',X0,YW-170,34,DIM,600,'left');
+  text('0.17 s',X0,YW+200,34,DIM,600,'left');text('merger',X0+XW*(T0-T1)/span,YW+200,34,DIM,600,'center');
+  text(merged?'35 → 150 Hz IN 0.17 s, THEN ONE BLACK HOLE':'THE CHIRP: FASTER AND STRONGER',540,1420,38,merged?EMBER:INK,800)}};
+// ============================================ 2. THE PAGE (shared; rarely needs a change) =========================
+// The stage is 1080 units wide; the page shows the band y 270..1470 of it. Draw only inside it, and put no text under 34 units.
+// `draw(c, t, P)` gets the 2D context, the time t in seconds (it loops over SIM.dur) and the slider value P. `line(P, t)` is the caption under the picture.
+// SIM.reveal is the second at which the animation shows its point; with a slider (SIM.param) the picture follows the slider, so rev(t) is 1.
+function rev(t){return SIM.param?1:ease(seg(t,SIM.reveal-.3,SIM.reveal+.9))}
+let S=1,P=SIM.param?SIM.param.value:0,T=0;
+function text(s,x,y,size,col,w,al){cx.font=(w||600)+' '+Math.max(size,MINPX)+'px '+FONT;cx.fillStyle=col||INK;cx.textAlign=al||'center';cx.textBaseline='alphabetic';cx.fillText(s,x,y)}
+function wrap(s,x,y,size,col,maxW,lh,w,al){cx.font=(w||600)+' '+Math.max(size,MINPX)+'px '+FONT;let ln='';for(const wd of s.split(' ')){const tr=ln?ln+' '+wd:wd;if(cx.measureText(tr).width>maxW&&ln){text(ln,x,y,size,col,w,al);y+=lh;ln=wd}else ln=tr}text(ln,x,y,size,col,w,al);return y+lh}
+function glow(c,x,y,r,col,a){const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,col);g.addColorStop(1,'rgba(0,0,0,0)');c.globalAlpha=a==null?1:a;c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,6.2832);c.fill();c.globalAlpha=1}
+function disc(c,x,y,r,col){c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,6.2832);c.fill()}
+function stars(c,n){let s=7;const r=()=>(s=(s*16807)%2147483647)/2147483647;for(let i=0;i<(n||90);i++){c.globalAlpha=.25+.5*r();c.fillStyle='#fff';c.fillRect(r()*1080,r()*1920,2,2)}c.globalAlpha=1} // a fixed starfield
+function draw(t){cx.setTransform(1,0,0,1,0,0);cx.fillStyle='#05070d';cx.fillRect(0,0,cv.width,cv.height);
+  cx.setTransform(S,0,0,S,0,-270*S);cx.save();cx.beginPath();cx.rect(0,0,1080,1920);cx.clip();SIM.draw(cx,t,P);
+  const h=SIM.hook.split('|');text(h[0],540,330,60,EMBER,800);if(h[1])text(h[1],540,396,60,EMBER,800);cx.restore()}
+{
+  const byId=id=>document.getElementById(id),LOOP=SIM.dur,meta=n=>(document.querySelector('meta[name="'+n+'"]')||{}).content||'';
+  byId('cat').textContent=meta('sr-lab-category');byId('honest').textContent=SIM.honest;
+  cv.setAttribute('aria-label',byId('h').textContent+'. '+meta('description'));
+  // "How this was made": the comment that starts with "Sources" in this file, with its web addresses made into links.
+  const walk=document.createTreeWalker(document,NodeFilter.SHOW_COMMENT);let node,src='';
+  while((node=walk.nextNode()))if(/^\s*sources?\b/i.test(node.data)){src=node.data.trim();break}
+  for(const ln of src.split('\n')){if(!ln.trim())continue;const p=document.createElement('p');p.className='srcl';
+    ln.split(/(\w+:\/\/[^\s)]+)/).forEach((part,i)=>{let ok=false;if(i%2)try{ok=new URL(part).protocol==='https:'}catch(e){}
+      if(ok){const a=document.createElement('a');a.href=part;a.rel='noopener';a.textContent=part;p.append(a)}else p.append(part)});byId('src').append(p)}
+  // Where this file lives in the repository, for the "fix a mistake" link.
+  const parts=location.pathname.split('/').filter(Boolean);if(parts[parts.length-1]==='index.html')parts.pop();
+  const slug=parts[parts.length-1]||'',edit=byId('edit');if(slug&&slug!=='lab')edit.href=edit.href.replace('/tree/','/edit/')+'/'+slug+'/index.html';
+  const pb=byId('pb'),ts=byId('ts'),ps=byId('ps'),po=byId('po'),calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let play=!calm,t0=performance.now(),dirty=true,last='';
+  ts.max=LOOP;ts.step=.01;
+  if(calm){T=Math.min(SIM.reveal+1.2,LOOP-.1);ts.value=T;pb.textContent='Play'}
+  const p=SIM.param;
+  if(p){const dec=(String(p.step).split('.')[1]||'').length,fmt=v=>(+v).toLocaleString('en-US',{maximumFractionDigits:dec,minimumFractionDigits:dec});
+    ps.min=p.min;ps.max=p.max;ps.step=p.step;ps.value=p.value;ps.setAttribute('aria-label',p.label);byId('pl').firstChild.textContent=p.label+' ';po.textContent=fmt(P);
+    ps.oninput=()=>{P=+ps.value;po.textContent=fmt(P);dirty=true}}
+  else byId('pl').hidden=true;
+  pb.onclick=()=>{play=!play;pb.textContent=play?'Pause':'Play';t0=performance.now()-T*1000};
+  ts.oninput=()=>{play=false;pb.textContent='Play';T=+ts.value;dirty=true};
+  function fit(){const d=Math.min(devicePixelRatio||1,2);cv.width=Math.round(cv.clientWidth*d);cv.height=Math.round(cv.clientHeight*d);S=cv.width/1080;dirty=true}
+  new ResizeObserver(fit).observe(cv);fit();
+  (function frame(){if(play){T=((performance.now()-t0)/1000)%LOOP;ts.value=T;dirty=true}
+    if(dirty){dirty=false;draw(T);const l=SIM.line(P,T);if(l!==last){last=l;byId('line').textContent=l}}
+    requestAnimationFrame(frame)})();
+}
+</script>
+</body>
+</html>

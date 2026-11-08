@@ -2327,6 +2327,15 @@ export function createWorlds(scene, opts = {}) {
   const crowd = [];
   const crowdSlot = [];
   const nearest = new Map();
+  // b200-f2-worlds: begin (forge #145) -- the Planets tab's Size and Distance sliders. ui/orrery.js hands over a
+  // placer (scene/orreryplace.js, fetched with it: the arithmetic and the reasons are there and in scene/orrery.js),
+  // and on the Sun's stage it places each world and squeezes everything else; null is every world as it always was.
+  // While update() places the worlds, the squeeze viewAdjust() gives everything else stands aside.
+  let orrery = null;
+  let orreryPlacing = false;
+  function setOrrery(placer) { orrery = placer && typeof placer.place === 'function' ? placer : null; }
+  const orreryKit = { meshes, viewState, trueCentres, describe, byId: (id) => BY_ID.get(id), pos: () => _pos };
+  // b200-f2-worlds: end
 
   /**
    * Place a moon around its planet's DRAWN disc (the block at the top of this file). `_pos` holds
@@ -2482,6 +2491,10 @@ export function createWorlds(scene, opts = {}) {
 
     // 3. Every world.
     stageKm.clear();
+    // b200-f2-worlds: begin
+    const orr = orrery && stage.worldId === 'sun' && !onSystem ? orrery : null;
+    orreryPlacing = !!orr;
+    // b200-f2-worlds: end
     for (const w of WORLDS) {
       const mesh = meshes.get(w.id);
       if (!mesh) continue;
@@ -2507,6 +2520,9 @@ export function createWorlds(scene, opts = {}) {
         mesh.position.set(0, 0, 0);
         mesh.scale.setScalar(trueRadiusUnits);
         viewState.set(w.id, describe(w, 0, 0));
+        // b200-f2-worlds: begin -- the Sun, at the centre of its own stage, takes the sliders' own factor
+        if (orr) orr.placeStage(orreryKit, w, mesh, trueRadiusUnits);
+        // b200-f2-worlds: end
       } else {
         // A null here is stage.js refusing a frame it cannot convert. Drawing the world at the
         // last position it happened to have is exactly the silent lie this refusal exists for.
@@ -2542,6 +2558,8 @@ export function createWorlds(scene, opts = {}) {
           mesh.position.copy(_pos);
           mesh.scale.setScalar((drawnRadiusKm * (meshRadiusKm / w.radiusKm)) / stage.unitKm);
           viewState.set(w.id, describe(w, trueDistKm, drawnKm, drawnRadiusKm, null, crowded ? near : null));
+        } else if (orr && orr.place(orreryKit, w, mesh, trueDistKm, trueRadiusUnits)) { // b200-f2-worlds
+          // placed by the Size and Distance sliders (scene/orrery.js)
         } else {
           mesh.position.copy(_pos);
           mesh.scale.setScalar(trueRadiusUnits);
@@ -2643,6 +2661,7 @@ export function createWorlds(scene, opts = {}) {
         if (!(dist > 0) || mesh.scale.x / dist / tanHalfFov >= TEXTURE_AT_HALF_VIEW) fetchShape(w.id);
       }
     }
+    orreryPlacing = false; // b200-f2-worlds
     // 5b. The two finely cut worlds (the Moon and Mars, for their ground sites) wear the fine sphere only when
     //     they are a disc on screen. Found by CI's trips walk on 2026-10-10: 61 000 triangles a frame for two
     //     dots, at every stop of every trip, and nine star-stage stops over triangles_per_stop.
@@ -3045,7 +3064,7 @@ export function createWorlds(scene, opts = {}) {
   function viewAdjust(out, frame) {
     const name = String(frame || '');
     const cut = name.lastIndexOf('-');
-    if (cut < 0 || name.slice(cut + 1) !== 'fixed') return out;
+    if (cut < 0 || name.slice(cut + 1) !== 'fixed') return orrery && !orreryPlacing ? orrery.remap(out) : out; // b200-f2-worlds: the sliders' squeeze
     const id = name.slice(0, cut);
     if (id === stage.worldId) return out;
     const st = viewState.get(id);
@@ -3132,6 +3151,7 @@ export function createWorlds(scene, opts = {}) {
     setLatched,
     earthshine,
     drawnPositionOf,
+    setOrrery, // b200-f2-worlds (forge #145)
     /** This frame's TRUE position (update()'s own answer, not a second ephemeris): scene/worldlights.js. */
     truePositionOf: (id) => truePos.get(id) || null,
     drawnRadiusUnits,
@@ -3183,9 +3203,8 @@ export function createWorlds(scene, opts = {}) {
       heldBackBy: neighbour ? neighbour.id : null,
       nearestNeighbourRad: heldBackBy ? heldBackBy.rad : Infinity,
       cls: exaggerated ? 'illustrative' : 'measured',
-      note: aroundNote || (exaggerated
-        ? `${w.display} is drawn in its true direction, but nearer and larger than it really is, so you can find it.${crowdedNote}`
-        : `${w.display} is drawn where it is, at the size it is.`),
+      // In the visitor's language (2.0.0 look finding 8: it was English typed here).
+      note: aroundNote || (exaggerated ? t(COPY.worldView.nearer, { name: w.display }) + crowdedNote : t(COPY.worldView.asIs, { name: w.display })),
     };
   }
 
@@ -3273,6 +3292,8 @@ export function positionOf(id, tMs) {
     return { x: teme.x, y: teme.y, z: teme.z, frame: EARTH_INERTIAL, cls: 'measured' };
   }
 
+  // b200-c2-deep (forge #141): Pluto only inside astronomy-engine's table, years 0 to 4000 (propagate/frames.js says why).
+  if (w.body === 'Pluto' && !(Math.abs(date.getUTCFullYear() - 2000) < 2000)) return null;
   const v = Astronomy.HelioVector(Astronomy.Body[w.body], date); // EQJ, au
   const e = Astronomy.RotateVector(Astronomy.Rotation_EQJ_ECL(), v);
   return {

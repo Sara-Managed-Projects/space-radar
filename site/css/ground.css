@@ -1,0 +1,277 @@
+/* css/ground.css -- standing on another world (scene/groundstage.js, `#ground=` and `#sky=`, forge #146 and #147).
+ *
+ * Linked by scene/groundstage.js the first time the stage opens, never at boot. Tokens only. While the stage is up the
+ * map's chrome is hidden (the rule below, here and not in css/ui.css, so the first visit does not carry it); the time
+ * pill stays, because the light on the ground follows the clock and a visitor may want to move it.
+ */
+
+/* Every floating thing of the map goes with it (2.0.0 look finding 3: from the Planets tab the scale rail, the size badge
+ * and the heliosphere's names and legend stayed, "Heliopause (modelled)" over the sky of Mars, Titan and the Moon). Kept:
+ * the time pill with its live line and deep-time note, and the ground sky's own story card and tag. tests/test_ground.mjs
+ * holds the list to every `sr-float` the code makes, so a new one is either named here or named there as one that stays. */
+html.sr-ground-on :is(#sr-side, #sr-rail, .sr-top, .sr-scenenote, .sr-keyhint, #labels, #sr-hud, .sr-card,
+  .sr-scalerail, .sr-scalebadge, .sr-helio-labels, .sr-helio-chip, .sr-helio-legend, .sr-findpill, .sr-cutaway, .sr-pop) {
+  display: none;
+}
+
+.sr-ground {
+  position: fixed;
+  inset: 0;
+  z-index: var(--sr-z-trip);
+  color: var(--sr-text);
+  font-family: var(--sr-font);
+  pointer-events: none;
+  outline: none;
+}
+
+.sr-ground[hidden] {
+  display: none;
+}
+
+.sr-ground__shield {
+  position: absolute;
+  inset: 0;
+  cursor: grab;
+  touch-action: none;
+  pointer-events: auto;
+}
+
+.sr-ground__shield:active {
+  cursor: grabbing;
+}
+
+.sr-ground__card {
+  position: absolute;
+  left: var(--sp-4);
+  top: var(--sp-4);
+  box-sizing: border-box;
+  max-width: min(440px, calc(100% - 2 * var(--sp-4)));
+  padding: var(--sp-3) var(--sp-4);
+  pointer-events: auto;
+}
+
+.sr-ground__tag {
+  margin: 0 0 var(--sp-1);
+  font: 600 var(--sr-fs-sm)/1.3 var(--sr-font-hud);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sr-text-dim);
+}
+
+.sr-ground__name {
+  margin: 0 0 var(--sp-1);
+  font: 600 var(--sr-fs-name-sm)/1.2 var(--sr-font);
+}
+
+/* The card's and the sky list's titles are their folds (a phone starts with both folded). */
+.sr-ground__fold {
+  all: unset;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.sr-ground__fold::after {
+  content: " \25BE";
+  font-size: 0.7em;
+  color: var(--sr-text-dim);
+}
+
+.sr-ground__fold[aria-expanded="false"]::after {
+  content: " \25B8";
+}
+
+.sr-ground__fold:focus-visible {
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 2px;
+}
+
+.sr-ground__body[hidden] {
+  display: none;
+}
+
+/* A trip's own card speaks for a stop on the ground: the stage's card and buttons step aside (ui/trip.js). */
+html.sr-trip-mode :is(.sr-ground__card, .sr-ground__bar, .sr-ground__panel, .sr-ground__keys, .sr-ground__shield, .sr-ground__pad) {
+  display: none;
+}
+
+.sr-ground__line {
+  margin: 0 0 var(--sp-1);
+  font: 400 var(--sr-fs-sm)/1.4 var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-ground__more {
+  margin: var(--sp-1) 0 0;
+  font: 500 var(--sr-fs-sm)/1.4 var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-ground__more > summary {
+  cursor: pointer;
+}
+
+.sr-ground__src {
+  margin: var(--sp-1) 0 0;
+  font: 400 11px/1.35 var(--sr-font);
+  color: var(--sr-text-dim);
+  opacity: 0.85;
+}
+
+.sr-ground__bar {
+  position: absolute;
+  right: var(--sp-4);
+  top: var(--sp-4);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+  max-width: calc(100% - 2 * var(--sp-4));
+  pointer-events: auto;
+}
+
+.sr-ground__panel {
+  position: absolute;
+  right: var(--sp-4);
+  top: calc(var(--sp-4) + 104px);
+  box-sizing: border-box;
+  width: min(380px, calc(100% - 2 * var(--sp-4)));
+  max-height: calc(100% - 200px);
+  overflow: auto;
+  padding: var(--sp-3) var(--sp-4);
+  pointer-events: auto;
+}
+
+.sr-ground__ptitle {
+  margin: 0 0 var(--sp-2);
+  font: 600 var(--sr-fs-body)/1.3 var(--sr-font);
+}
+
+.sr-ground__list {
+  margin: 0;
+  padding: 0 0 0 var(--sp-4);
+  font: 400 var(--sr-fs-sm)/1.45 var(--sr-font);
+}
+
+.sr-ground__pad {
+  position: absolute;
+  left: var(--sp-5);
+  bottom: calc(var(--sp-5) + 64px);
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--sr-text) 35%, transparent);
+  background: color-mix(in srgb, var(--sr-space) 45%, transparent);
+  touch-action: none;
+  pointer-events: auto;
+}
+
+.sr-ground__thumb {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 48px;
+  height: 48px;
+  margin: -24px 0 0 -24px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--sr-ember) 70%, transparent);
+}
+
+.sr-ground__keys {
+  position: absolute;
+  right: var(--sp-4);
+  top: calc(var(--sp-4) + 52px);
+  margin: 0;
+  max-width: 420px;
+  font: 400 11px/1.4 var(--sr-font);
+  color: var(--sr-text-dim);
+  text-align: right;
+}
+
+.sr-ground__labels {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.sr-ground__label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 6px 0 0 8px;
+  font: 500 12px/1.2 var(--sr-font);
+  color: var(--sr-text);
+  text-shadow: 0 0 3px var(--sr-space-edge);
+  white-space: nowrap;
+}
+
+.sr-ground__label.is-compass {
+  margin: -16px 0 0 -4px;
+  font: 600 13px/1 var(--sr-font-hud);
+  color: var(--sr-ember);
+}
+
+.sr-ground__label.is-pole {
+  color: var(--sr-star);
+}
+
+.sr-ground__live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+@media (pointer: fine) {
+  .sr-ground__pad {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .sr-ground__keys {
+    display: none;
+  }
+
+  .sr-ground__card {
+    max-width: calc(100% - 2 * var(--sp-4));
+    top: calc(var(--sp-4) + 44px);
+  }
+
+  .sr-ground__pad {
+    left: var(--sp-4);
+    bottom: calc(var(--sp-4) + 196px);
+    width: 112px;
+    height: 112px;
+  }
+
+  .sr-ground__panel {
+    top: calc(var(--sp-4) + 132px);
+    max-height: 40%;
+    padding: var(--sp-2) var(--sp-3);
+  }
+
+  .sr-ground__name {
+    font-size: 17px;
+    margin: 0;
+  }
+
+  .sr-ground__ptitle {
+    margin: 0;
+  }
+
+  .sr-ground__card {
+    padding: var(--sp-2) var(--sp-3);
+  }
+
+  .sr-ground__line {
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  /* The model's line waits in the sources on a phone; the honesty line about the ground stays on screen. */
+  .sr-ground__line--model {
+    display: none;
+  }
+}

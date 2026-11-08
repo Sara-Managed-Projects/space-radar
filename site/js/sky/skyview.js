@@ -822,6 +822,10 @@ export function createSkyView(ctx, options = {}) {
     if (!observerA) return;
     if (Math.abs(tMs - sunSolvedAtMs) < SUN_REFRESH_MS) return;
     sunSolvedAtMs = tMs;
+    // b200-f3-stars: begin -- a far clock (forge #141): the engine's Sun runs away there; the calendar's (sky/starmotion.js)
+    const far = ground && typeof ground.farSun === 'function' ? ground.farSun(tMs) : null;
+    if (far) { sunElDeg = far.altDeg; sunAzDeg = far.azDeg; return; }
+    // b200-f3-stars: end
     const date = new Date(tMs);
     // astronomy-engine, not a low-precision series: the whole gradient hangs off this number.
     const eq = Astronomy.Equator(Astronomy.Body.Sun, date, observerA, true, true);
@@ -836,6 +840,9 @@ export function createSkyView(ctx, options = {}) {
     if (!observerA) return;
     if (Math.abs(tMs - moonSolvedAtMs) < SUN_REFRESH_MS) return;
     moonSolvedAtMs = tMs;
+    // b200-f3-stars: begin -- no Moon on a far clock: its place that far out is not known (sky/starmotion.js)
+    if (ground && typeof ground.farSun === 'function' && ground.farSun(tMs)) { moonElDeg = -90; moonIllumFrac = 0; return; }
+    // b200-f3-stars: end
     const date = new Date(tMs);
     const eq = Astronomy.Equator(Astronomy.Body.Moon, date, observerA, true, true);
     const hor = Astronomy.Horizon(date, observerA, eq.ra, eq.dec, 'normal');
@@ -1150,7 +1157,9 @@ export function createSkyView(ctx, options = {}) {
         } catch { return null; }
       };
       const read = () => (ground && typeof ground.apparentOfEq === 'function' ? ground.apparentOfEq(d) : now());
-      where = now() || read();
+      // b200-f3-stars: on a far clock the engine's frame runs away; the ground sky's long-term one first (forge #141)
+      const far = ground && typeof ground.farSun === 'function' && ground.farSun(ctx.clock?.now?.() ?? Date.now());
+      where = (far ? read() : null) || now() || read();
       if (!where || where.altDeg < 0) return false;
       dirOf = () => { const w = read() || where; const v = new THREE.Vector3(); localDir(w.azDeg * DEG2RAD, w.altDeg * DEG2RAD, v); return [v.x, v.y, v.z]; };
     } else if (Number.isFinite(target.azDeg) && Number.isFinite(target.altDeg)) {
@@ -1248,6 +1257,7 @@ export function createSkyView(ctx, options = {}) {
     if (lastTap && lastTap.key === key && ground.tagged()) {
       const again = lastTap.what;
       if (again.record) { openTagged(again); return true; }
+      if (again.lore) ground.openLore(again.lore); // a figure's story (forge #143, sky/groundsky.js)
       return true; // no card to open: the tag stays, and says all there is
     }
     what.record = recordOf(what);

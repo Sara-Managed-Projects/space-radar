@@ -327,6 +327,18 @@ export async function boot({ setStatus } = {}) {
   // The naked-eye sky, on ctx for one reader: ui/trip.js stretches both star draws on a ladder
   // flight (spec 0034), and the two must never disagree during the lod crossfade between them.
   ctx.starfield = starfield;
+  // b200-c2-deep: begin -- the 3D and orbital stars over deep time, and their variables (scene/stardeep.js, forge #141, #142)
+  // b200-s4b-look: a failed fetch is tried once more, five seconds on, before the stars stay unmoved (2.0.0 final look, 15)
+  const starDeep = (again) => import('./scene/stardeep.js').then((m) => { ctx.starDeep = m.attachStarDeep(ctx, clock); }).catch((e) => (again ? console.warn('stardeep', e) : setTimeout(starDeep, 5000, 1)));
+  // b200-c2-deep: end
+  // b200-s5-ci: begin -- both modules wait for sr:layers-ready, as everything else afterFirstVisit runs does. Their timer started
+  // here at boot fired before the layers on a slow boot: it wrote window.__srFirstVisitOver early, so the byte gate left out
+  // part of the real first visit, and it fetched these modules and their data inside it. sr:layers-ready comes later in boot().
+  window.addEventListener('sr:layers-ready', () => afterFirstVisit(WORLDLIGHTS_IMPORT_MS, () => {
+    starDeep();
+    import('./scene/stars3dtiles.js').then((m) => { ctx.starTiers = m.attachStarTiers(ctx); }).catch((e) => console.warn('stars3d tiers', e)); // b200-f10-stars3d: AT-HYG's stars by octree node round the camera (scene/stars3dtiles.js, forge #140)
+  }), { once: true });
+  // b200-s5-ci: end
   const galaxy = createGalaxy(scene);
   ctx.galaxy = galaxy;
   // Deep-sky objects as big as they are, when that is bigger than their dot (scene/dsoglow.js).
@@ -1090,6 +1102,10 @@ export async function boot({ setStatus } = {}) {
     .then((s) => { if (n && n !== '0') s.start(n); else s.stop(); return s; })
     .catch((e) => { imagine = null; document.documentElement.classList.remove('sr-imagine-on'); console.warn('the imagined world did not load', e); return null; });
   if (!embed && link && link.imagine && link.imagine !== '0') { document.documentElement.classList.add('sr-imagine-on'); ctx.wantImagine(link.imagine); }
+  // b200-f7-ground: begin (forge #146, #147) -- `#ground=` and `#sky=` fetch scene/groundstage.js, which does the rest.
+  const groundLink = () => /(ground|sky)=/.test(location.hash) && import('./scene/groundstage.js').then((m) => m.boot(ctx));
+  groundLink(); addEventListener('hashchange', groundLink);
+  // b200-f7-ground: end
   // 0079 C1: begin
   // A MOMENT (site/js/moments/, internal spec 0079): `#moment=<id>&t=<s>` replays a mission on a stage of its own, one
   // clock driving the vehicles, the camera and the captions. Fetched for that link, never at boot; while it is up the
@@ -1106,6 +1122,30 @@ export async function boot({ setStatus } = {}) {
   ctx.wantPassport = () => passport || (passport = import('./ui/passport.js')
     .then((m) => m.createPassport(ctx))
     .catch((e) => { passport = null; console.warn('the passport did not load', e); return null; }));
+  // b200-f1-find: begin -- Find (ui/find.js, forge #150/#152/#153) and its doors on the explore tabs (ui/findentry.js); the
+  // satellites' fade far from now (ui/datejump.js installFade, forge #154); and a link that names a Find key opens it.
+  let findP = null;
+  ctx.wantFind = () => findP || (findP = import('./ui/find.js')
+    .then((m) => m.createFind(ctx, shell.host('find')))
+    .catch((e) => { findP = null; console.warn('find did not load', e); return null; }));
+  const findFade = () => import('./ui/datejump.js').then((m) => m.installFade(ctx)).catch((e) => console.warn('the satellite fade did not load', e));
+  const findLater = () => {
+    if (clock.mode !== 'live') findFade(); // a link into 1969 fades the satellites at once
+    afterFirstVisit(TODAY_MS, () => {
+      import('./ui/findentry.js').then((m) => m.mountFindEntry(ctx)).catch((e) => console.warn('the find rows did not load', e));
+      if (clock.mode === 'live') findFade();
+    });
+    const k = readUrlKeys();
+    if (!embed && (k.find || k.owner || k.operator || k.debris || k.constellation)) ctx.wantFind().then((f) => f && f.openLink(k));
+  };
+  if (window.__srLayersReady) findLater(); else window.addEventListener('sr:layers-ready', findLater, { once: true });
+  // b200-f1-find: end
+  // b200-f6-learn: begin -- forge #160: a `#play=` link opens a daily challenge (ui/play.js), fetched for that link only;
+  // `sr-play-on` at once keeps the first visit's controls hint off the card (ui/keyhint.js whyNot)
+  const playLink = () => { const k = readUrlKeys().play; if (!k || embed) return; document.documentElement.classList.add('sr-play-on'); import('./ui/play.js').then((m) => m.openPlay(ctx, k)).catch((e) => { document.documentElement.classList.remove('sr-play-on'); console.warn('play did not load', e); }); };
+  playLink();
+  window.addEventListener('hashchange', playLink);
+  // b200-f6-learn: end
   // TODAY (internal #270, ui/today.js): the home's dated cards, generated from what is loaded,
   // and under them the way into the debris view (ui/debris.js). TODAY_MS after sr:layers-ready.
   const todayLater = () => afterFirstVisit(TODAY_MS, () => {
@@ -1190,6 +1230,16 @@ export async function boot({ setStatus } = {}) {
   };
   window.addEventListener('sr:stage', wantScaleBadge);
   wantScaleBadge();
+  // b200-f2-worlds: begin (forge #144, #145, #148) -- the cutaways (ui/cutaway.js), the Size and Distance
+  // sliders (ui/orrery.js) and the heliosphere (scene/heliosphere.js). Each is fetched when first wanted:
+  // the Planets tab or a `size=`/`dist=` link, a card's Look inside or a `cut=` link, and the Sun's stage
+  // with the camera past HELIO_FROM_KM. None is in the boot graph (tests/test_orrery.mjs holds it).
+  const f2 = {};
+  const f2Want = (key, load) => () => f2[key] || (f2[key] = load().catch((e) => { f2[key] = null; console.warn(`the ${key} did not load`, e); return null; }));
+  ctx.wantOrrery = f2Want('sliders', () => import('./ui/orrery.js').then((m) => (ctx.orrery = m.createOrrery(ctx))));
+  ctx.wantCutaway = f2Want('cutaway', () => import('./ui/cutaway.js').then((m) => (ctx.cutaway = m.createCutaway(ctx, { scene }))));
+  ctx.wantHeliosphere = f2Want('heliosphere', () => import('./scene/heliosphere.js').then((m) => (ctx.heliosphere = m.createHeliosphere(ctx, { scene }))));
+  // b200-f2-worlds: end
   // OFFLINE (site/sw.js, ui/offline.js; issues #290, #453): the service worker is registered
   // OFFLINE_MS after sr:layers-ready, past the keys hint, so nothing it does is a first visit's cost.
   // NEVER IN AN EMBED (public #439): a frame under someone else's headline keeps nothing on the
@@ -1207,6 +1257,19 @@ export async function boot({ setStatus } = {}) {
   if (embed) { /* nothing is warmed */ }
   else if (window.__srLayersReady) warmLater();
   else window.addEventListener('sr:layers-ready', warmLater, { once: true });
+  // b200-s4b-look: begin -- a page a worker already serves asks it at once whether our server answers, so a start with
+  // no network says "Offline" in a moment and not once ui/offline.js has come, OFFLINE_MS past the layers (2.0.0 final
+  // look, finding 5: 25 s of "2 could not be read"). ui/offline.js takes ctx.net over from what this heard.
+  const swc = !embed && navigator.serviceWorker;
+  if (swc && swc.controller) {
+    const net = ctx.net = { offline: false, worker: 'register' };
+    swc.addEventListener('message', (e) => {
+      const d = e.data || {};
+      if (ctx.net === net && /^sr-(net|version)$/.test(d.type)) { net.offline = d.offline === true; window.dispatchEvent(new Event('sr:net')); } // ui/explore.js paints the status line from ctx.net
+    });
+    swc.controller.postMessage({ type: 'sr-version' });
+  }
+  // b200-s4b-look: end
   const offlineLater = () => afterFirstVisit(OFFLINE_MS, () => {
     import('./ui/offline.js').then((m) => m.createOffline(ctx)).catch((e) => console.warn('the offline module did not load', e));
   });
@@ -1244,6 +1307,22 @@ export async function boot({ setStatus } = {}) {
   });
   // The film's cue sheet and its lower third hear the trip from here on (window.__srRender).
   if (film) film.attach(ctx);
+  // b200-f5-make: begin (forge #155, #156, #157) -- the flight editor, Record, Dome and 360: their wiring is ui/makers.js, fetched
+  // only for the share sheet's buttons, a `#path=` or `#proj=` link, or a film's `record=` (the boot graph's budget).
+  ctx.wantMakers = () => import('./ui/makers.js').then((m) => m.installMakers(ctx, { renderer, scene, camera, embed, film }));
+  const f5 = () => { if (/[#&](path|proj)=|[?&]record=/.test(location.href) || ctx.projection) ctx.wantMakers().then((m) => m.link()); };
+  if (film || window.__srLayersReady) f5(); else window.addEventListener('sr:layers-ready', f5, { once: true });
+  window.addEventListener('hashchange', f5);
+  // b200-f5-make: end
+  // b200-f8-xr: begin (forge #164, #158) -- a pad's first press fetches ui/gamepad.js; a browser that can open an
+  // immersive-vr session gets the headset's button (ui/headset.js). The boot graph holds these lines and nothing more.
+  ctx.decisionAt = decisionAt;
+  if (!embed) {
+    addEventListener('gamepadconnected', (e) => import('./ui/gamepad.js').then((m) => m.wantPad(ctx, e.gamepad)), { once: true });
+    const xr = navigator.xr;
+    if (xr) xr.isSessionSupported('immersive-vr').then((ok) => ok && import('./ui/headset.js').then((m) => m.mountHeadset(ctx)), () => {});
+  }
+  // b200-f8-xr: end
   ctx.openAt = (id) => openAt(ctx, id);
   // Names over the scene (spec 0026 req 5): the selection, its train, the nearest notable things.
   const labels = createLabels(ctx, document.getElementById('labels'));
@@ -2699,6 +2778,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
   // The frame-rate latch (spec 0026 req 18): twenty-frame median over 33 ms for three seconds ->
   // one device pixel per CSS pixel and no Milky Way picture, once, said in the panel.
   const latch = createFrameLatch();
+  let quietUntil = 0; // b200-s1-fixes: the frame ladder and the latch are fed from here on (forge #14)
   // `?look=1` (scene/quality.js lookHeld), read once: a tool is looking, and neither the latch nor the
   // governor below is fed. Nothing else asks: the loaders, the tier and the clock run as for a visitor.
   const looking = lookHeld({ search: location.search });
@@ -2849,7 +2929,10 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // Not while filming: a film's frames are all one step long (33 ms at 30 fps), which the latch
     // would read as a slow device and answer by throwing the picture's quality away.
     if (!capped) freeFrameMs = frameMs;
-    if (!looking && !document.hidden && !ctx.renderMode && !capped && !latch.latched) {
+    // b200-s1-fixes (forge #14): boot's own long frames (the layers landing, the first uploads) are not the device's pace;
+    // they stepped a loaded laptop down the ladder and tripped the latch for good. Fed from 5 s after the layers land.
+    quietUntil ||= window.__srLayersReady && nowReal + 5000;
+    if (!looking && quietUntil && nowReal > quietUntil && !document.hidden && !ctx.renderMode && !capped && !latch.latched) {
       const st = ctx.trip && ctx.trip.state;
       const shown = !!(st && st.phase !== 'idle') || !!(ctx.autopilot && ctx.autopilot.engaged) || !!(ctx.climb && ctx.climb.state && (ctx.climb.state.active || ctx.climb.state.fading));
       const calm = !shown && !cameraMovedLast;
@@ -3025,6 +3108,12 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     }
     if (ctx.galaxy) ctx.galaxy.update(ctx.camera, ctx.renderer);
     if (ctx.shells) ctx.shells.update(ctx.camera, t);
+    // b200-f2-worlds: begin -- 40 AU: the heliosphere is fetched a little before scene/heliosphere.js fades it in
+    if (ctx.orrery) ctx.orrery.frame();
+    if (ctx.cutaway) ctx.cutaway.frame(t);
+    if (ctx.heliosphere) ctx.heliosphere.update(ctx.camera, t);
+    else if (ctx.wantHeliosphere && !ctx.embed && stage.worldId === 'sun' && ctx.camera.position.length() * stage.unitKm > 40 * 1.495978707e8) ctx.wantHeliosphere();
+    // b200-f2-worlds: end
     if (ctx.dsoGlow) ctx.dsoGlow.update(ctx.camera, ctx.renderer, ctx.isLayerDrawable(layerRec('deep-sky')) && !ctx.deepGlowOff);
     if (ctx.deep) ctx.deep.frame({ camera: ctx.camera, renderer: ctx.renderer, nowMs: nowReal, dtMs: frameMs, frameMs, visible: ctx.isLayerDrawable(layerRec('deep-sky')) });
     // 0078 r14-neb-b: the only photograph in the scene is the one the card's slider draws (scene/nebulae.js).
@@ -3068,6 +3157,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // it is up (scene/exostage.js), so that render() above clears and draws nothing.
     if (ctx.imagine && ctx.imagine.active) ctx.imagine.render(t);
     if (ctx.replay && ctx.replay.active) ctx.replay.render(nowReal); // 0079 C1
+    if (ctx.makeFrame) ctx.makeFrame(t); // b200-f5-make: a dome or 360 frame over this one, and a recording's copy of it
     // After render(), because render() is what brings the camera's matrices up to this frame: placed
     // before it, the brackets trailed the station by one frame of camera motion.
     // The hand-off between two stages, straight after the frame it copies was drawn (scene/climb.js).
@@ -3314,6 +3404,9 @@ function wireSound(ctx) {
   // Turned off: the engine ramps the master down and suspends; the bed is kept for next time.
   audio.onChange((on) => { if (on) audio.beds.enter(here()); });
   window.addEventListener('sr:stage', () => audio.beds.enter(here()));
+  // b200-f9-reach: begin -- the score of the climb and the real recordings (audio/score.js, forge #163), on first sound
+  audio.onChange((on) => { if (on && !audio.score) import('./audio/score.js').then((m) => m.installScore(audio, ctx, { isLadder: isLadderStage })).catch((e) => console.warn('the score did not load', e)); });
+  // b200-f9-reach: end
   // The stage sting lands in the black, where the change of room is (spec 0034's veil).
   document.addEventListener('sr:veil', (e) => {
     if (e && e.detail && e.detail.phase === 'covered') audio.stings.play('stage');
@@ -3364,6 +3457,12 @@ function applyUrlState(ctx, st) {
     if (STAGES[st.stage]) ctx.setStage(st.stage);
     else linkNote(ctx, COPY.link.unknownStage, ['stage']);
   }
+  // b200-f2-worlds: begin -- `size=` and `dist=` (the sliders, on the Sun's stage) and `cut=` (a world opened)
+  if ((st.size !== undefined || st.dist !== undefined) && ctx.wantOrrery) {
+    ctx.wantOrrery().then((o) => { if (o) o.fromLink(st); });
+  }
+  if (st.cut !== undefined && ctx.wantCutaway) ctx.wantCutaway().then((c) => { if (c) c.fromLink(st.cut); });
+  // b200-f2-worlds: end
   // A trip that is not on this map is ignored like any other unknown key: `at` still applies.
   if (st.trip && openTrip(ctx, st)) return;
   // A mission's event (ui/missions.js): it selects its own record, so `at` beside it is not read.

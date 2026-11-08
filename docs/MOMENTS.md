@@ -153,6 +153,27 @@ What it draws: the two models `falcon9-stage1` (nine engines, four legs and four
 the pad's flame trench and steam, a round Landing Zone (`ground.pad: "landing"`: a pad 86 m across with a painted ring and X) and, because a night launch is dark, `floodlit: true`
 (a lamp on the vehicle at every height and a little lift on the ground, said in the path's sentence on the foot line).
 
+<!-- b200-c3-learn: begin -->
+**Release 2.0.0 notes: a story that is told (forge #153).** "2007: Fengyun-1C" (`fengyun-1c.json`, written by `scripts/build_moment_fengyun1c.py`)
+is a Moment with no flight to fly: China's anti-satellite test of 11 January 2007 and the cloud it made, from ten minutes before to the catalogue
+of today, over almost twenty years. Three additions:
+
+- A vehicle may say `model: null` with `marker: true`: a craft there is no model of, drawn as the ringed mark only (Fengyun-1C itself). The
+  validator refuses `model: null` without `marker: true`.
+- The effect `debris-cloud`: `{t, until, effect: "debris-cloud", cloud, file, say?, colour?, sizePx?}`, the pieces of a breakup of
+  `data/clouds.js` (`cloud` is its id, `fy1c`) where `spreadAt()` puts them at each second (the map's own modelled spread: each piece at its own perigee of today, on one line at the
+  event, two-body motion and the J2 drift after it), one point of `sizePx` CSS pixels each. `file` is a pieces file under `paths/`
+  (`moments/debriscloud.js` says its shape); `say` is a words key the foot line adds, to say what is modelled.
+- An `audio` row with `voice: true` and `s` (its length in play seconds) is narration: the trips' voice, rendered by
+  `scripts/narrate-moments.py` from the captions `registry/moment-voices.yaml` names. It is kept in step with the clock (`moments/voice.js`):
+  pressed Play in the middle of a chapter, it is heard from the middle; paused, scrubbed or closed, it stops. English only, with sound and the
+  trips' Voice choice on; in another language the captions are that language's and no voice is played. The builder puts each caption at the
+  second its sentence starts in the clip and makes the pace so that every chapter plays at least as long as its clip.
+- `drawn` (a words key) replaces the foot line's "flames, steam, parachutes and the glow of an entry are drawn" for a story that draws
+  none of them, with what it does draw as illustration; `footFold: true` shows a long foot line on a narrow screen (720 px or less) as
+  its first sentence and a More button. Past 30 days the mission clock reads in years and days (`T+3 y 339 d`), not thousands of hours.
+
+<!-- b200-c3-learn: end -->
 ## Tracks
 
 **`parts`**: `{t, part, action, vehicle?}`: at second `t`, the part named `part` does `action`. `vehicle` defaults to the lead. The actions:

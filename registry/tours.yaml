@@ -1334,7 +1334,8 @@ tours:
   # =============================================================================================
   - id: outer-solar-system
     title: "Out past Jupiter, to the farthest thing we sent"
-    blurb: "Ten stops through the cold outer worlds. Leaving brings you back to Earth."
+    # b200-c1-culture-helio: eleven stops with the heliosphere (forge #148)
+    blurb: "Eleven stops through the cold outer worlds. Leaving brings you back to Earth."
     group: solar-system
     next: to-the-edge
     requires: [worlds, deep-space, far-bodies]
@@ -1611,6 +1612,41 @@ tours:
             It passed Jupiter in March 1979 and Saturn in November 1980, and it has been leaving
             ever since, more than 170 times the Earth's distance from the Sun. In 1990 it turned
             round and photographed the planets it had left. Earth came out 0.12 of a pixel wide.
+
+      # b200-c1-culture-helio: begin (forge #148) -- the bubble Voyager 1 is outside of, from 300 AU.
+      # THE SUBJECT IS THE SUN, 300 AU away: the heliosphere is not a record, and scene/heliosphere.js draws it
+      # round the Sun on the Sun's stage with the Deep space layer on, whole once the camera is past 60 AU.
+      # 300 AU is outside the two fitted surfaces on every side but the tail (the heliopause is drawn to
+      # 240) and inside the illustrative bow wave, the distance ui/heliorung.js (the ladder's rung) flies to.
+      # `seen_from: neptune` IS A DIRECTION, NOT A STORY: the camera goes on the line from the Sun through
+      # Neptune, which from 2026 to the late 2030s lies 105 to 130 degrees round from IBEX's nose (ecliptic
+      # 255.7; Neptune near 0 to 25), so the bubble is seen side on, nose to one side and tail to the other,
+      # level with the planets, the way its model is drawn in the papers. No other key names a side for a
+      # stop about the Sun (the key light has nothing to light); `drift_deg: 0` because seen_from re-aims
+      # every frame.
+      - id: heliosphere
+        target: {world: sun}
+        needs_layer: deep-space
+        stage: sun
+        seen_from: neptune
+        distance_km: 44879361210
+        # On an upright phone the bubble, wider than tall, would overflow: stand back by 1.3 over the aspect
+        # (844 AU at 390 x 844), as the rung does (ui/heliorung.js HELIO_RUNG.aspectFull).
+        narrow_fit: 1.3
+        drift_deg: 0
+        chapter: "Epilogue: looking back"
+        # read 2026-11-07, https://science.nasa.gov/mission/voyager/voyager-1/: "On Aug. 25, 2012, the spacecraft became the first to exit the heliosphere"; "On Dec. 16, 2004, Voyager 1 reached the termination shock"
+        # read 2026-11-07, https://science.nasa.gov/mission/voyager/voyager-2/: "On Aug. 30, 2007, Voyager 2 passed the termination shock" (its key dates say interstellar space on Nov 25, 2018 and its introduction Dec. 10; registry/missions.yaml has NASA's 5 November 2018 release: the card says only the year)
+        # (card figure = page figure: 2012 and 2018 = the pages' years ; three hundred times = distance_km 44 879 361 210 / 149 597 870.7 = 300.0 AU ; four marks = scene/heliosphere.js HELIO.crossings, two per craft ; "the outer shell is a guess" = the bow wave's distance is illustrative, heliosphere.js after McComas et al. 2012)
+        card:
+          title: "The bubble the Sun blows round itself"
+          body: >-
+            From three hundred times the Earth's distance, the shells are the edges of the bubble
+            the Sun's wind blows in the gas between the stars. Voyager 1 left it in 2012 and
+            Voyager 2 in 2018, and the four marks are where they crossed its two inner edges. Those
+            four places are measured. The shapes between them are a model, and the outer shell is
+            a guess.
+      # b200-c1-culture-helio: end
 
   # =============================================================================================
   # A YEAR IN A MINUTE (spec 0030). The first trip that moves the clock, and the cheapest one in
@@ -5217,3 +5253,225 @@ tours:
           body: >-
             Pad 39B saw 53 Space Shuttle launches. The last, STS-116, left in the dark with a crew
             of seven for the International Space Station. Discovery was the Shuttle on the pad.
+
+  # b200-f7-ground: begin -- the two trips of forge #146 and #147: every stop stands on another world through
+  # scene/groundstage.js (`stand:`), the map behind it hidden. The places are registry/ground.yaml's rows and
+  # sky/worldframe.js's worlds; what each card says is on the stage's own lines and in its sources.
+  - id: walk-the-landing-sites
+    title: "Walk the landing sites"
+    blurb: "Stand at eight landers, at true scale. Leaving brings you back to Earth."
+    group: solar-system
+    next: skies-of-other-worlds
+    requires: [hand-kept-sites, worlds]
+    stage: moon
+    clock: as-found
+    og_stop: 2
+    stops:
+      - id: apollo-11
+        target: {site: apollo-11}
+        distance_km: 900
+        time: daylight
+        stand: {ground: apollo-11, yaw: 32.5, pitch: -5, fov: 62}
+        chapter: "On the Moon"
+        # read 2026-11-07, https://www.lroc.im-ldi.com/about/terms: "Data products available through the LROC Data
+        # Node of the PDS or through NASA PDS interfaces are in the public domain" (the stereo model the ground is from)
+        card:
+          title: "Where the first people stood"
+          body: >-
+            You are standing at Tranquility Base, where people first walked on another world. The ground is the shape a camera in
+            orbit measured, at its true height, and the descent stage stands where it was photographed.
+
+      - id: apollo-15
+        target: {site: apollo-15}
+        distance_km: 900
+        time: daylight
+        stand: {ground: apollo-15, yaw: 32.5, pitch: -5, fov: 62}
+        chapter: "On the Moon"
+        # read 2026-11-07, https://data.lroc.im-ldi.com/lroc/view_rdr_product/NAC_DTM_APOLLO15_E261N0036: "DTM Scale:
+        # 2.00 m/px" (the card says the ground is measured, and the stage says how finely)
+        card:
+          title: "Hadley, under the mountains"
+          body: >-
+            The mountain behind the lander rises several kilometres above the flat ground. Turn round to find
+            the long winding channel the astronauts drove to. The gold line is the rover's real track.
+
+      - id: apollo-17
+        target: {site: apollo-17}
+        distance_km: 900
+        time: daylight
+        stand: {ground: apollo-17, yaw: 32.5, pitch: -5, fov: 62}
+        chapter: "On the Moon"
+        card:
+          title: "The last landing"
+          body: >-
+            A valley between high hills, where the last people to stand on the Moon spent three days. The
+            hills you see are the measured hills, and the Earth hangs in the sky where it always does from here.
+
+      - id: change-4
+        target: {site: change-4}
+        distance_km: 900
+        time: daylight
+        stand: {ground: change-4, yaw: 32.5, pitch: -5, fov: 62}
+        chapter: "On the Moon"
+        card:
+          title: "The far side"
+          body: >-
+            The first landing on the side of the Moon that never faces us. From here the Earth is never in
+            the sky. The small rover that came with it has driven away; only the lander is drawn.
+
+      - id: opportunity
+        target: {site: opportunity}
+        stage: mars
+        distance_km: 900
+        time: daylight
+        stand: {ground: opportunity, yaw: 32.5, pitch: -5, fov: 62}
+        chapter: "On Mars"
+        # read 2026-11-07, registry/traverses/opportunity.json (the Opportunity Analyst's Notebook's traverse, PDS
+        # Geosciences Node): its last point, -2.33153, 354.6509, is where the rover stands here, 25 km from Eagle crater
+        card:
+          title: "Where Opportunity stopped"
+          body: >-
+            This is not where Opportunity landed, but where its long drive ended, on the rim of a crater
+            called Endeavour. No measured ground model covers its landing site, so we stand here instead.
+
+      - id: gale
+        target: {site: gale}
+        stage: mars
+        distance_km: 900
+        time: daylight
+        stand: {ground: gale, yaw: 32.5, pitch: -5, fov: 62}
+        chapter: "On Mars"
+        card:
+          title: "Gale crater"
+          body: >-
+            Curiosity, where it landed. The great mound to the south is Mount Sharp, which it has been
+            climbing ever since. The haze is the dust that is always in Mars's air.
+
+      - id: jezero
+        target: {site: jezero}
+        stage: mars
+        distance_km: 900
+        time: daylight
+        stand: {ground: jezero, yaw: 32.5, pitch: -5, fov: 62}
+        chapter: "On Mars"
+        card:
+          title: "Jezero crater"
+          body: >-
+            Perseverance landed on the floor of a crater that once held a lake. Press "Drive the rover" when
+            the trip is over and you can drive it, much faster than it really goes.
+
+      - id: utopia
+        target: {site: utopia}
+        stage: mars
+        distance_km: 900
+        time: daylight
+        stand: {ground: utopia, yaw: 32.5, pitch: -5, fov: 62}
+        chapter: "On Mars"
+        card:
+          title: "Utopia Planitia"
+          body: >-
+            China's rover Zhurong came down on this wide, flat plain. The orbital picture under your feet is
+            the very one that shows the lander and the rover from above.
+
+  - id: skies-of-other-worlds
+    title: "Skies of other worlds"
+    blurb: "The sky from the Moon, Mars, Titan, Europa and two other stars' planets."
+    group: beyond
+    next: walk-the-landing-sites
+    requires: [hand-kept-sites, worlds, stars, exoplanets, systems]
+    stage: moon
+    clock: as-found
+    og_stop: 3
+    stops:
+      - id: earth-from-the-moon
+        target: {site: apollo-15}
+        distance_km: 900
+        stand: {sky: "moon:apollo-15", yaw: 201, pitch: 40, fov: 75, panel: true}
+        chapter: "Our neighbours"
+        card:
+          title: "The Earth from the Moon"
+          body: >-
+            From the near side of the Moon the Earth never rises or sets: it hangs in one place while its
+            phases come and go. The sky is black at noon, because there is no air to scatter the light.
+
+      - id: earth-from-gale
+        target: {site: gale}
+        stage: mars
+        distance_km: 900
+        time: "2026-11-08T16:55:00Z"
+        stand: {sky: "mars:gale", yaw: 297, pitch: 14, fov: 75, panel: true}
+        chapter: "Our neighbours"
+        # read 2026-11-07, https://images.nasa.gov/details/PIA19400: Curiosity's sunset in Gale, "Dust in the Martian
+        # atmosphere has fine particles that permit blue light to penetrate the atmosphere more efficiently"
+        card:
+          title: "The evening star of Mars"
+          body: >-
+            Just after sunset at Gale, the brightest point in the west is the Earth, with the Moon beside it.
+            The blue glow over the hills is a Martian sunset: the dust lets blue light through best.
+
+      - id: phobos-over-the-sun
+        target: {site: jezero}
+        stage: mars
+        distance_km: 900
+        time: "2022-04-02T10:54:45Z"
+        stand: {sky: "mars:jezero", yaw: 117.7, pitch: 37.7, fov: 2.5, panel: true}
+        chapter: "Our neighbours"
+        # read 2026-11-07, https://images.nasa.gov/details/PIA25179: "NASA's Perseverance Mars rover used its Mastcam-Z
+        # camera system to shoot video of Phobos, one of Mars' two moons, eclipsing the Sun" (released 2022-04-20)
+        card:
+          title: "Phobos crosses the Sun"
+          body: >-
+            Mars's larger moon is too small to cover the Sun, so it crosses it as a dark disc in under a
+            minute. Perseverance filmed one from here; the clock is set to the crossing the sky's own reckoning finds.
+
+      - id: titan
+        target: {world: titan}
+        stage: titan
+        frame_radii: 5
+        stand: {sky: "titan:huygens", yaw: 0, pitch: 35, fov: 80, panel: true}
+        chapter: "Further out"
+        card:
+          title: "Under Titan's haze"
+          body: >-
+            Saturn never moves in Titan's sky, but you could not see it: the orange haze hides the stars and
+            the planet. They are drawn faintly where they are. The colour is a picture of words, not a photograph.
+
+      - id: europa
+        target: {world: europa}
+        stage: europa
+        frame_radii: 5
+        stand: {sky: "europa", yaw: 0, pitch: 82, fov: 100, panel: true}
+        chapter: "Further out"
+        card:
+          title: "Jupiter overhead"
+          body: >-
+            On the side of Europa that faces Jupiter, the giant planet fills a patch of sky twenty times as
+            wide as the Moon looks to us, and it never moves. Its sister moons cross the black sky beside it.
+
+      - id: proxima-b
+        target: {record: exo-proxima-cen-b}
+        stage: stellar
+        distance_km: 4730365236290.4       # half a light-year
+        stand: {sky: "proxima-b", yaw: 270, pitch: 22, fov: 80, panel: true}
+        chapter: "Other stars"
+        card:
+          title: "Proxima b"
+          body: >-
+            The nearest planet of another star. Its red sun is three times as wide as ours looks to us, and two
+            dazzling stars, Alpha Centauri A and B, shine in its sky. Almost everything here is modelled.
+
+      - id: trappist-1e
+        target: {record: exo-trappist-1-e}
+        stage: system-trappist-1
+        frame_radii: 8
+        stand: {sky: "trappist-1e", yaw: 270, pitch: 25, fov: 90, panel: true}
+        chapter: "Other stars"
+        # read 2026-09-23, https://exoplanetarchive.ipac.caltech.edu/overview/TRAPPIST-1 (registry/systems.yaml's rows):
+        # e at 0.02925 au, d at 0.02227 au and 0.788 Earth radii, so d is about as wide as our Moon from e at its closest
+        # (the travel-to-exoplanets trip works the same figure out); the transit times place each planet on its orbit
+        card:
+          title: "TRAPPIST-1 e"
+          body: >-
+            Its sister planets line up along one arc of the sky, some as wide as our Moon, where their
+            measured transits put them. The planet's turning and the sky's colour are assumed.
+  # b200-f7-ground: end

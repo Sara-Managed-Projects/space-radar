@@ -1296,7 +1296,7 @@ export const TOURS = [
 {
 "id": "outer-solar-system",
 "title": "Out past Jupiter, to the farthest thing we sent",
-"blurb": "Ten stops through the cold outer worlds. Leaving brings you back to Earth.",
+"blurb": "Eleven stops through the cold outer worlds. Leaving brings you back to Earth.",
 "requires": [
 "worlds",
 "deep-space",
@@ -1517,9 +1517,33 @@ export const TOURS = [
 "ease": "auto",
 "on_unresolved": "drop",
 "dwell_ms": 18484
+},
+{
+"id": "heliosphere",
+"target": {
+"world": "sun"
+},
+"stage": "sun",
+"needs_layer": "deep-space",
+"distance_km": 44879361210,
+"drift_deg": 0,
+"chapter": "Epilogue: looking back",
+"seen_from": "neptune",
+"narrow_fit": 1.3,
+"card": {
+"title": "The bubble the Sun blows round itself",
+"body": "From three hundred times the Earth's distance, the shells are the edges of the bubble the Sun's wind blows in the gas between the stars. Voyager 1 left it in 2012 and Voyager 2 in 2018, and the four marks are where they crossed its two inner edges. Those four places are measured. The shapes between them are a model, and the outer shell is a guess."
+},
+"frame_radii": 5.0,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 20000
 }
 ],
-"estimate_ms": 211715
+"estimate_ms": 235065
 },
 {
 "id": "a-year-in-a-minute",
@@ -5907,5 +5931,460 @@ export const TOURS = [
 }
 ],
 "estimate_ms": 87525
+},
+{
+"id": "walk-the-landing-sites",
+"title": "Walk the landing sites",
+"blurb": "Stand at eight landers, at true scale. Leaving brings you back to Earth.",
+"requires": [
+"hand-kept-sites",
+"worlds"
+],
+"stage": "moon",
+"clock": "as-found",
+"group": "solar-system",
+"next": "skies-of-other-worlds",
+"og_stop": 2,
+"pacing": "auto",
+"min_stops": 3,
+"stops": [
+{
+"id": "apollo-11",
+"target": {
+"site": "apollo-11"
+},
+"distance_km": 900,
+"time": "daylight",
+"chapter": "On the Moon",
+"stand": {
+"ground": "apollo-11",
+"yaw": 32.5,
+"pitch": -5,
+"fov": 62
+},
+"card": {
+"title": "Where the first people stood",
+"body": "You are standing at Tranquility Base, where people first walked on another world. The ground is the shape a camera in orbit measured, at its true height, and the descent stage stands where it was photographed."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 14488
+},
+{
+"id": "apollo-15",
+"target": {
+"site": "apollo-15"
+},
+"distance_km": 900,
+"time": "daylight",
+"chapter": "On the Moon",
+"stand": {
+"ground": "apollo-15",
+"yaw": 32.5,
+"pitch": -5,
+"fov": 62
+},
+"card": {
+"title": "Hadley, under the mountains",
+"body": "The mountain behind the lander rises several kilometres above the flat ground. Turn round to find the long winding channel the astronauts drove to. The gold line is the rover's real track."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 13156
+},
+{
+"id": "apollo-17",
+"target": {
+"site": "apollo-17"
+},
+"distance_km": 900,
+"time": "daylight",
+"chapter": "On the Moon",
+"stand": {
+"ground": "apollo-17",
+"yaw": 32.5,
+"pitch": -5,
+"fov": 62
+},
+"card": {
+"title": "The last landing",
+"body": "A valley between high hills, where the last people to stand on the Moon spent three days. The hills you see are the measured hills, and the Earth hangs in the sky where it always does from here."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 15154
+},
+{
+"id": "change-4",
+"target": {
+"site": "change-4"
+},
+"distance_km": 900,
+"time": "daylight",
+"chapter": "On the Moon",
+"stand": {
+"ground": "change-4",
+"yaw": 32.5,
+"pitch": -5,
+"fov": 62
+},
+"card": {
+"title": "The far side",
+"body": "The first landing on the side of the Moon that never faces us. From here the Earth is never in the sky. The small rover that came with it has driven away; only the lander is drawn."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 14821
+},
+{
+"id": "opportunity",
+"target": {
+"site": "opportunity"
+},
+"stage": "mars",
+"distance_km": 900,
+"time": "daylight",
+"chapter": "On Mars",
+"stand": {
+"ground": "opportunity",
+"yaw": 32.5,
+"pitch": -5,
+"fov": 62
+},
+"card": {
+"title": "Where Opportunity stopped",
+"body": "This is not where Opportunity landed, but where its long drive ended, on the rim of a crater called Endeavour. No measured ground model covers its landing site, so we stand here instead."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 13489
+},
+{
+"id": "gale",
+"target": {
+"site": "gale"
+},
+"stage": "mars",
+"distance_km": 900,
+"time": "daylight",
+"chapter": "On Mars",
+"stand": {
+"ground": "gale",
+"yaw": 32.5,
+"pitch": -5,
+"fov": 62
+},
+"card": {
+"title": "Gale crater",
+"body": "Curiosity, where it landed. The great mound to the south is Mount Sharp, which it has been climbing ever since. The haze is the dust that is always in Mars's air."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 12823
+},
+{
+"id": "jezero",
+"target": {
+"site": "jezero"
+},
+"stage": "mars",
+"distance_km": 900,
+"time": "daylight",
+"chapter": "On Mars",
+"stand": {
+"ground": "jezero",
+"yaw": 32.5,
+"pitch": -5,
+"fov": 62
+},
+"card": {
+"title": "Jezero crater",
+"body": "Perseverance landed on the floor of a crater that once held a lake. Press \"Drive the rover\" when the trip is over and you can drive it, much faster than it really goes."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 13489
+},
+{
+"id": "utopia",
+"target": {
+"site": "utopia"
+},
+"stage": "mars",
+"distance_km": 900,
+"time": "daylight",
+"chapter": "On Mars",
+"stand": {
+"ground": "utopia",
+"yaw": 32.5,
+"pitch": -5,
+"fov": 62
+},
+"card": {
+"title": "Utopia Planitia",
+"body": "China's rover Zhurong came down on this wide, flat plain. The orbital picture under your feet is the very one that shows the lander and the rover from above."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 12157
+}
+],
+"estimate_ms": 136377
+},
+{
+"id": "skies-of-other-worlds",
+"title": "Skies of other worlds",
+"blurb": "The sky from the Moon, Mars, Titan, Europa and two other stars' planets.",
+"requires": [
+"hand-kept-sites",
+"worlds",
+"stars",
+"exoplanets",
+"systems"
+],
+"stage": "moon",
+"clock": "as-found",
+"group": "beyond",
+"next": "walk-the-landing-sites",
+"og_stop": 3,
+"pacing": "auto",
+"min_stops": 3,
+"stops": [
+{
+"id": "earth-from-the-moon",
+"target": {
+"site": "apollo-15"
+},
+"distance_km": 900,
+"chapter": "Our neighbours",
+"stand": {
+"sky": "moon:apollo-15",
+"yaw": 201,
+"pitch": 40,
+"fov": 75,
+"panel": true
+},
+"card": {
+"title": "The Earth from the Moon",
+"body": "From the near side of the Moon the Earth never rises or sets: it hangs in one place while its phases come and go. The sky is black at noon, because there is no air to scatter the light."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 15487
+},
+{
+"id": "earth-from-gale",
+"target": {
+"site": "gale"
+},
+"stage": "mars",
+"distance_km": 900,
+"time": "2026-11-08T16:55:00Z",
+"chapter": "Our neighbours",
+"stand": {
+"sky": "mars:gale",
+"yaw": 297,
+"pitch": 14,
+"fov": 75,
+"panel": true
+},
+"card": {
+"title": "The evening star of Mars",
+"body": "Just after sunset at Gale, the brightest point in the west is the Earth, with the Moon beside it. The blue glow over the hills is a Martian sunset: the dust lets blue light through best."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 14488
+},
+{
+"id": "phobos-over-the-sun",
+"target": {
+"site": "jezero"
+},
+"stage": "mars",
+"distance_km": 900,
+"time": "2022-04-02T10:54:45Z",
+"chapter": "Our neighbours",
+"stand": {
+"sky": "mars:jezero",
+"yaw": 117.7,
+"pitch": 37.7,
+"fov": 2.5,
+"panel": true
+},
+"card": {
+"title": "Phobos crosses the Sun",
+"body": "Mars's larger moon is too small to cover the Sun, so it crosses it as a dark disc in under a minute. Perseverance filmed one from here; the clock is set to the crossing the sky's own reckoning finds."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 15487
+},
+{
+"id": "titan",
+"target": {
+"world": "titan"
+},
+"stage": "titan",
+"frame_radii": 5,
+"chapter": "Further out",
+"stand": {
+"sky": "titan:huygens",
+"yaw": 0,
+"pitch": 35,
+"fov": 80,
+"panel": true
+},
+"card": {
+"title": "Under Titan's haze",
+"body": "Saturn never moves in Titan's sky, but you could not see it: the orange haze hides the stars and the planet. They are drawn faintly where they are. The colour is a picture of words, not a photograph."
+},
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 15154
+},
+{
+"id": "europa",
+"target": {
+"world": "europa"
+},
+"stage": "europa",
+"frame_radii": 5,
+"chapter": "Further out",
+"stand": {
+"sky": "europa",
+"yaw": 0,
+"pitch": 82,
+"fov": 100,
+"panel": true
+},
+"card": {
+"title": "Jupiter overhead",
+"body": "On the side of Europa that faces Jupiter, the giant planet fills a patch of sky twenty times as wide as the Moon looks to us, and it never moves. Its sister moons cross the black sky beside it."
+},
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 15487
+},
+{
+"id": "proxima-b",
+"target": {
+"record": "exo-proxima-cen-b"
+},
+"stage": "stellar",
+"distance_km": 4730365236290.4,
+"chapter": "Other stars",
+"stand": {
+"sky": "proxima-b",
+"yaw": 270,
+"pitch": 22,
+"fov": 80,
+"panel": true
+},
+"card": {
+"title": "Proxima b",
+"body": "The nearest planet of another star. Its red sun is three times as wide as ours looks to us, and two dazzling stars, Alpha Centauri A and B, shine in its sky. Almost everything here is modelled."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 14821
+},
+{
+"id": "trappist-1e",
+"target": {
+"record": "exo-trappist-1-e"
+},
+"stage": "system-trappist-1",
+"frame_radii": 8,
+"chapter": "Other stars",
+"stand": {
+"sky": "trappist-1e",
+"yaw": 270,
+"pitch": 25,
+"fov": 90,
+"panel": true
+},
+"card": {
+"title": "TRAPPIST-1 e",
+"body": "Its sister planets line up along one arc of the sky, some as wide as our Moon, where their measured transits put them. The planet's turning and the sky's colour are assumed."
+},
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 13156
+}
+],
+"estimate_ms": 127530
 }
 ];

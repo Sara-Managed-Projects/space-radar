@@ -163,5 +163,8 @@ check(shouldSaveData(undefined) === false && shouldSaveData(null) === false, 'no
   check(f.scale === 1.5, 'frozen: rest does not climb either');
 }
 
+// b200-s1-fixes (forge #14): that boot's own long frames do not feed the ladder or the latch is read from main.js as TEXT,
+// so it is checked in tests/test_quality_setting.mjs: this file is one of scripts/check_built_tree.mjs TESTS and runs
+// against the minified tree too, whose text is not main.js as written (b200-s3-suite).
 if (problems.length) { console.error('quality FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('quality ok: the latch trips once after three slow seconds and never on stutters; the resolution scale steps 2, 1.5, 1.25, 1 before the latch and comes back; data-saver follows the connection');

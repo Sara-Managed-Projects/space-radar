@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Find a Planet by Its Wobble | Space Radar Lab</title>
+<meta name="description" content="A planet tugs its star to and fro, and real measurements of the star&#x27;s speed, folded at the right period, reveal the planet and its mass.">
+<meta name="sr-lab-category" content="Stars and their lives">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b0e14">
+<link rel="stylesheet" href="../../css/fonts.css">
+<style>
+:root{--sr-space:#0b0e14;--sr-text:#e8ecf2;--sr-text-dim:#9aa4b2;--sr-ember:#ff9f43;--sr-ember-light:#ffc28a;--sr-ink:#14100a;--sr-line:rgba(232,236,242,.10);--sr-wash:rgba(232,236,242,.07);--sr-wash-hover:rgba(232,236,242,.12);--sr-radius:6px}
+html{background:var(--sr-space);color:var(--sr-text);font:400 15px/20px Inter,system-ui,-apple-system,sans-serif;-webkit-text-size-adjust:100%}
+body{margin:0}
+a{color:var(--sr-ember)}a:hover{color:var(--sr-ember-light)}
+a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--sr-ember);outline-offset:2px;border-radius:2px}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:0 20px;max-width:1160px;margin:0 auto;padding:4px 16px;border-bottom:1px solid var(--sr-line)}
+.top a{display:inline-flex;align-items:center;min-height:44px;color:var(--sr-text);text-decoration:none}
+.top .mark{font:600 20px/1 'Barlow Semi Condensed',system-ui,sans-serif;letter-spacing:.02em}
+.top .here{color:var(--sr-text-dim)}
+main{display:grid;grid-template-columns:minmax(0,1fr);max-width:1160px;margin:0 auto;padding:20px 16px 32px;gap:0 32px;align-content:start}
+main>*{min-width:0}
+.micro{margin:0 0 8px;font:600 13px/16px 'Barlow Semi Condensed',system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--sr-text-dim)}
+h1{margin:0 0 12px;font:600 30px/1.1 Inter,system-ui,sans-serif;letter-spacing:-.01em;overflow-wrap:anywhere}
+.lead{margin:0 0 20px;font-size:18px;line-height:26px;max-width:60ch}
+.stage{margin:0 0 16px;width:100%}
+canvas{display:block;width:100%;aspect-ratio:1080/1200;background:#05070d;border-radius:var(--sr-radius);border:1px solid var(--sr-line)}
+.line{margin:0 0 16px;font-size:16px;line-height:24px;max-width:60ch;min-height:48px}
+.controls{display:grid;gap:12px;margin:0 0 16px}
+.controls label{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;font-size:13px;line-height:18px;color:var(--sr-text-dim)}
+.controls label input{grid-column:1/-1;width:100%;min-height:44px;margin:0;accent-color:var(--sr-ember)}
+.controls output{font:500 13px/18px 'JetBrains Mono',ui-monospace,monospace;color:var(--sr-text);font-variant-numeric:tabular-nums}
+button{min-height:44px;padding:0 20px;border:0;border-radius:var(--sr-radius);background:var(--sr-ember);color:var(--sr-ink);font:600 15px/1 Inter,system-ui,sans-serif;cursor:pointer;justify-self:start}
+button:hover{background:var(--sr-ember-light)}
+.honest{margin:0 0 16px;padding:12px 14px;border-radius:var(--sr-radius);background:var(--sr-wash);color:var(--sr-text-dim);font-size:13px;line-height:18px;max-width:60ch}
+.honest b{color:var(--sr-text);font-weight:600}
+details{margin:0 0 16px;max-width:60ch;border-top:1px solid var(--sr-line)}
+summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font-weight:600}
+.srcl{margin:0 0 6px;font-size:13px;line-height:18px;color:var(--sr-text-dim);white-space:pre-wrap;overflow-wrap:anywhere}
+.more{display:flex;flex-wrap:wrap;gap:0 16px;margin:0;font-size:15px}
+.more a{display:inline-flex;align-items:center;min-height:44px}
+.ns{color:var(--sr-text-dim)}
+@media (min-width:900px){
+ main{grid-template-columns:minmax(0,1fr) 360px;padding-top:24px}
+ main>*{grid-column:2}
+ .stage{grid-column:1;grid-row:1/span 9;width:min(100%,calc((100svh - 130px)*.9));min-width:320px;align-self:start;position:sticky;top:12px;margin:0}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top"><a class="mark" href="../../index.html">Space Radar</a><a class="here" href="../index.html">Lab</a></header>
+<main>
+<p class="micro" id="cat"></p>
+<h1 id="h">Find a Planet by Its Wobble</h1>
+<p class="lead" id="lesson">A planet tugs its star to and fro, and real measurements of the star&#x27;s speed, folded at the right period, reveal the planet and its mass.</p>
+<div class="stage"><canvas id="c" role="img" aria-label="Find a Planet by Its Wobble"></canvas></div>
+<p class="line" id="line"></p>
+<noscript><p class="ns">This simulator needs JavaScript. It is one small file, with no libraries and no network requests: read it with View source.</p></noscript>
+<div class="controls">
+<button type="button" id="pb">Pause</button>
+<label>Time <input type="range" id="ts" min="0" value="0" aria-label="Time through the animation"></label>
+<label id="pl">Value <output id="po"></output><input type="range" id="ps"></label>
+</div>
+<p class="honest"><b>What is and is not to scale.</b> <span id="honest"></span></p>
+<details><summary>How this was made and sources</summary>
+<p class="srcl">One HTML file: no libraries, no network requests. Every number below was read on the date shown, from the page named next to it.</p>
+<div id="src"></div>
+</details>
+<p class="more"><a id="sr-app" href="../../index.html#at=exo-51-peg-b">See this in the 3D map</a><a href="../index.html">All simulators</a><a id="add" href="https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/ADD_A_SIMULATOR.md">Add your own simulator</a><a id="edit" href="https://github.com/Sara-Managed-Projects/space-radar/tree/main/site/lab">Fix a mistake on GitHub</a></p>
+</main>
+<!-- Sources
+Sources, read on 2026-11-07:
+ The data: R. P. Butler et al. 2017, "The LCES HIRES/Keck Precision Radial Velocity Exoplanet Survey", AJ 153, 208, table 1 as VizieR serves it, J/AJ/153/208/table1 (https://vizier.cfa.harvard.edu/viz-bin/VizieR?-source=J/AJ/153/208, the Harvard-Smithsonian mirror of the CDS), every row for HD217014 (51 Pegasi): 43 measurements of the star's speed towards or away from us with the Keck telescope's HIRES spectrograph, 2006-07-15 to 2014-01-14. Inline below: BJD - 2450000 (to 0.0001 day), the velocity and its 1-sigma error (m/s), as written there. VizieR's title for the table notes that Tal-Or et al. 2019 corrected these velocities; the correction is a few m/s, under a tenth of this star's swing, and is not applied.
+ Licence: CDS, "The data retrieved with VizieR are free of usage in a scientific context; however, as it is the usage in scientific publication, the original authors and publication references including the publisher have to be explicitely cited" (https://cds.unistra.fr/vizier-org/licences_vizier.html). Space Radar is free and not commercial; the authors and the journal are cited above.
+ The same paper's table 2 (J/AJ/153/208/table2), HD217014: one signal, period 4.23077 +/- 0.00005 days, K = 56.05 +/- 0.60 m/s, "Published".
+ NASA Exoplanet Archive, Planetary Systems table (https://exoplanetarchive.ipac.caltech.edu/), 51 Peg b: the default parameter set, period 4.2307966 days, K 55.77 m/s, star mass 1.07 Suns (Cont et al. 2026); Rosenthal et al. 2021: K 55.73 m/s, m sin i 0.464 Jupiters. Mayor & Queloz 1995 (Nature 378, 355), the discovery: period 4.2293 days, K 59 m/s.
+ NASA NSSDCA fact sheets: the Sun's GM 132 712 x 10^6 km^3/s^2 (https://nssdc.gsfc.nasa.gov/planetary/factsheet/sunfact.html), Jupiter's 126.687 x 10^6 km^3/s^2 (https://nssdc.gsfc.nasa.gov/planetary/factsheet/jupiterfact.html).
+ Physics: for each trial period P the page fits v = a cos(2 pi t / P) + b sin(2 pi t / P) + c by least squares, weighted by 1 / error^2; the swing is K = sqrt(a^2 + b^2) and the miss the root mean square of what is left. A circular orbit and a planet much lighter than its star: G m sin i = K (P / 2 pi)^(1/3) (G M_star)^(2/3), with M_star = 1.07 Suns.
+ Check (python, these 43 rows): at 4.2308 days K = 56.65 m/s and the miss is 2.5 m/s (it is about 40 m/s at a wrong period, 4.2 or 4.25 days); m sin i = 56.65 x (4.2308 x 86 400 / 2 pi)^(1/3) x (1.07 x 1.32712e20)^(2/3) / 1.26687e17 = 0.47 Jupiters, against 0.464 (Rosenthal et al. 2021). 56.65 m/s is 204 km/h.
+Drawn: every dot is one real measurement (its error bar is smaller than the dot); the strip tries every period of the slider's range; i, the tilt of the orbit, is unknown, so the mass is the least it can be.
+-->
+<script>
+// ============================================ 0. HELPERS (shared; do not edit) ====================================
+// Defined first, so a simulator may use them while it loads (top-level tables). Colours: EMBER for the point of the lesson, INK for text, DIM for the quiet.
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x)),seg=(t,a,b)=>clamp((t-a)/(b-a),0,1),ease=x=>{x=clamp(x,0,1);return x*x*(3-2*x)},lerp=(a,b,x)=>a+(b-a)*x;
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const EMBER='#ff9f43',INK='#e8ecf4',DIM='#a3adc0',FONT='Inter,system-ui,-apple-system,"Segoe UI",sans-serif',Y0=430,Y1=1440,MINPX=34;
+// ============================================ 1. THE SIMULATOR (yours) ============================================
+// The velocities below are real (Sources comment): Keck HIRES, 51 Pegasi, rows of BJD - 2450000, velocity and error (m/s).
+const RV='3927.0504,40.54,0.97;3927.0512,43.65,0.96;3927.0519,44.63,0.94;3982.8476,2.21,0.94;3982.8484,1.17,1.04;3982.8491,1.02,1.12;4085.7954,-72.53,1.1;4085.7975,-71.59,1.11;4085.7984,-74.79,1.03;4337.0924,31.91,1.17;4398.8573,-73.58,1.19;4806.7693,33.55,1.17;4838.7328,-75.22,1.28;4964.1309,21.52,1.16;4984.1000,16.37,1.16;4985.1182,33.46,1.04;5015.0520,10.16,1.06;5016.0661,-59.96,1.04;5019.0193,31.43,1.11;5041.9260,-67.48,1.21;5078.0773,33.52,1.23;5106.7597,13.81,1.3;5135.7227,-31.37,1.28;5189.6893,-73.86,1.15;5190.6936,-38.07,1.25;5192.6881,10.64,1.21;5379.0947,-2.82,1.02;5404.9266,-43.54,1.13;5435.0421,-66.83,1.18;5704.0826,37.47,1.11;5722.1083,-28.39,1.04;5729.1100,37.32,1.03;5732.0267,-51.46,0.99;5732.0299,-51.14,1.05;5753.0713,-61,1.13;5782.8560,-48.62,1.28;5841.7777,-65.39,1.15;6077.1305,0,1.11;6477.1026,-13.16,1.28;6529.8802,-3.16,1.18;6584.7361,6.53,1.3;6639.6818,9.25,1.13;6676.7450,35.8,1.2'.split(';').map(r=>r.split(',').map(Number));
+const PMIN=4,PMAX=4.5,MSTAR=1.07,GMS=1.32712e20,GMJ=1.26687e17,T0=RV[0][0],T1=RV[RV.length-1][0];
+const FITS={};
+function sineFit(P){const k=P.toFixed(4);if(FITS[k])return FITS[k];const S=[0,0,0,0,0,0],v=[0,0,0];   // weighted least squares for a cos + b sin + c
+ for(const [t,r,e] of RV){const w=1/(e*e),ph=6.283185307*(t-T0)/P,f=[Math.cos(ph),Math.sin(ph),1];v[0]+=w*f[0]*r;v[1]+=w*f[1]*r;v[2]+=w*r;S[0]+=w*f[0]*f[0];S[1]+=w*f[0]*f[1];S[2]+=w*f[0];S[3]+=w*f[1]*f[1];S[4]+=w*f[1];S[5]+=w}
+ const A=[[S[0],S[1],S[2]],[S[1],S[3],S[4]],[S[2],S[4],S[5]]],det=m=>m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1])-m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0])+m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
+ const d=det(A),x=[0,1,2].map(j=>det(A.map((row,i)=>row.map((q,c)=>c===j?v[i]:q)))/d);   // Cramer's rule
+ const m=(t)=>{const ph=6.283185307*(t-T0)/P;return x[0]*Math.cos(ph)+x[1]*Math.sin(ph)+x[2]};
+ const rms=Math.sqrt(RV.reduce((s,[t,r])=>s+(r-m(t))**2,0)/RV.length),K=Math.hypot(x[0],x[1]);
+ return FITS[k]={K,rms,x,msini:K*Math.cbrt(P*86400/6.283185307)*Math.cbrt(MSTAR*GMS)**2/GMJ}}
+// The miss at every 0.00025 day of the range (a dip is about P^2 / 2750 days = 0.0065 day wide), then the best to the slider's 0.0001.
+const GRID=[];let BESTP=PMIN;for(let i=0;i<=2000;i++){const P=PMIN+i*25e-5,f=sineFit(P);GRID.push(f.rms);if(f.rms<sineFit(BESTP).rms)BESTP=P}
+for(let i=-3,B0=BESTP;i<=3;i++){const P=B0+i*1e-4;if(sineFit(P).rms<sineFit(BESTP).rms)BESTP=P}
+const X0=110,XW=900,YRAW=595,PRAW=1.4,YS=880,YF=1125,PF=2,BLUE='#9fb8ff',lined=P=>sineFit(P).rms<8;
+const phase=(t,P)=>{const x=(t-T0)/P;return x-Math.floor(x)};
+const SIM={
+ dur:12,reveal:5,
+ hook:'REAL STAR, REAL WOBBLE:|FIND THE PLANET',
+ honest:'Real Keck measurements of 51 Pegasi, 2006 to 2014. The orbit is taken as a circle and its tilt is unknown, so the mass is the least it can be.',
+ param:{label:'trial period (days)',min:PMIN,max:PMAX,step:.0001,value:4.1},
+ line(P){const f=sineFit(P);return`Trial period ${P.toFixed(4)} days: ${lined(P)?'the 43 speeds line up on one wave':'the speeds scatter, so the fold smears them'}, missing a sine by ${f.rms.toFixed(1)} m/s${lined(P)?'. Its swing is '+f.K.toFixed(1)+' m/s, so a planet of at least '+f.msini.toFixed(2)+' Jupiters (star: '+MSTAR+' Suns)':': no clean wave, so no planet at this period'}. The best fold here is ${BESTP.toFixed(4)} days, giving ${sineFit(BESTP).K.toFixed(1)} m/s and ${sineFit(BESTP).msini.toFixed(2)} Jupiters; the catalogue says 4.2308 days and 0.46. The animated Wobbling Star simulator shows why a star moves.`},
+ draw(c,t,P){
+  stars(c,30);const f=sineFit(P),L=lined(P),k=ease(seg(t,1,4)),q=clamp((t-.2)/1.2,0,1);
+  c.strokeStyle='rgba(232,236,244,.2)';c.lineWidth=2;c.strokeRect(X0,YRAW-115,XW,230);c.strokeRect(X0,YS-90,XW,90);c.strokeRect(X0,YF-170,XW,340);
+  c.strokeStyle='rgba(232,236,244,.3)';c.beginPath();c.moveTo(X0,YRAW);c.lineTo(X0+XW,YRAW);c.moveTo(X0,YF);c.lineTo(X0+XW,YF);c.stroke();
+  c.strokeStyle=BLUE;c.lineWidth=3;c.beginPath();GRID.forEach((r,i)=>{const x=X0+i/2000*XW,y=YS-clamp(r/45,0,1)*86;i?c.lineTo(x,y):c.moveTo(x,y)});c.stroke();   // the miss at every trial period
+  const xs=X0+(P-PMIN)/(PMAX-PMIN)*XW;c.strokeStyle=EMBER;c.lineWidth=4;c.beginPath();c.moveTo(xs,YS-90);c.lineTo(xs,YS);c.stroke();
+  c.strokeStyle=L?EMBER:'rgba(232,236,244,.5)';c.lineWidth=L?5:3;c.beginPath();for(let i=0;i<=120;i++){const ph=i/120,y=YF-(f.x[0]*Math.cos(6.283185307*ph)+f.x[1]*Math.sin(6.283185307*ph)+f.x[2])*PF;i?c.lineTo(X0+ph*XW,y):c.moveTo(X0+ph*XW,y)}c.stroke();
+  RV.forEach(([tt,r],i)=>{if(i/RV.length>q)return;const xa=X0+(tt-T0)/(T1-T0)*XW,ya=YRAW-r*PRAW;disc(c,xa,ya,7,INK);
+   const xb=X0+phase(tt,P)*XW,yb=YF-r*PF;disc(c,lerp(xa,xb,k),lerp(ya,yb,k),9,L?EMBER:BLUE)});
+  text('SPEED OF 51 PEGASI, 2006 TO 2014',X0,455,34,DIM,600,'left');text('±80 m/s',X0+XW,455,34,DIM,600,'right');
+  text('MISS AT EVERY PERIOD, '+PMIN+' TO '+PMAX+' DAYS',X0,770,34,DIM,600,'left');
+  text('FOLDED EVERY '+P.toFixed(4)+' DAYS',X0,935,34,DIM,600,'left');text('swing '+f.K.toFixed(1)+' m/s',X0+XW,935,34,L?EMBER:INK,700,'right');
+  text(L?'THE POINTS LINE UP':'NOT YET: MOVE THE SLIDER',540,1345,40,L?EMBER:INK,800);
+  text(L?'planet ≥ '+f.msini.toFixed(2)+' Jupiters':'miss '+f.rms.toFixed(1)+' m/s: no clean wave',540,1400,40,L?EMBER:INK,700);
+  text('Keck HIRES · Butler et al. 2017',540,1450,34,DIM,600)}};
+// ============================================ 2. THE PAGE (shared; rarely needs a change) =========================
+// The stage is 1080 units wide; the page shows the band y 270..1470 of it. Draw only inside it, and put no text under 34 units.
+// `draw(c, t, P)` gets the 2D context, the time t in seconds (it loops over SIM.dur) and the slider value P. `line(P, t)` is the caption under the picture.
+// SIM.reveal is the second at which the animation shows its point; with a slider (SIM.param) the picture follows the slider, so rev(t) is 1.
+function rev(t){return SIM.param?1:ease(seg(t,SIM.reveal-.3,SIM.reveal+.9))}
+let S=1,P=SIM.param?SIM.param.value:0,T=0;
+function text(s,x,y,size,col,w,al){cx.font=(w||600)+' '+Math.max(size,MINPX)+'px '+FONT;cx.fillStyle=col||INK;cx.textAlign=al||'center';cx.textBaseline='alphabetic';cx.fillText(s,x,y)}
+function wrap(s,x,y,size,col,maxW,lh,w,al){cx.font=(w||600)+' '+Math.max(size,MINPX)+'px '+FONT;let ln='';for(const wd of s.split(' ')){const tr=ln?ln+' '+wd:wd;if(cx.measureText(tr).width>maxW&&ln){text(ln,x,y,size,col,w,al);y+=lh;ln=wd}else ln=tr}text(ln,x,y,size,col,w,al);return y+lh}
+function glow(c,x,y,r,col,a){const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,col);g.addColorStop(1,'rgba(0,0,0,0)');c.globalAlpha=a==null?1:a;c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,6.2832);c.fill();c.globalAlpha=1}
+function disc(c,x,y,r,col){c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,6.2832);c.fill()}
+function stars(c,n){let s=7;const r=()=>(s=(s*16807)%2147483647)/2147483647;for(let i=0;i<(n||90);i++){c.globalAlpha=.25+.5*r();c.fillStyle='#fff';c.fillRect(r()*1080,r()*1920,2,2)}c.globalAlpha=1} // a fixed starfield
+function draw(t){cx.setTransform(1,0,0,1,0,0);cx.fillStyle='#05070d';cx.fillRect(0,0,cv.width,cv.height);
+  cx.setTransform(S,0,0,S,0,-270*S);cx.save();cx.beginPath();cx.rect(0,0,1080,1920);cx.clip();SIM.draw(cx,t,P);
+  const h=SIM.hook.split('|');text(h[0],540,330,60,EMBER,800);if(h[1])text(h[1],540,396,60,EMBER,800);cx.restore()}
+{
+  const byId=id=>document.getElementById(id),LOOP=SIM.dur,meta=n=>(document.querySelector('meta[name="'+n+'"]')||{}).content||'';
+  byId('cat').textContent=meta('sr-lab-category');byId('honest').textContent=SIM.honest;
+  cv.setAttribute('aria-label',byId('h').textContent+'. '+meta('description'));
+  // "How this was made": the comment that starts with "Sources" in this file, with its web addresses made into links.
+  const walk=document.createTreeWalker(document,NodeFilter.SHOW_COMMENT);let node,src='';
+  while((node=walk.nextNode()))if(/^\s*sources?\b/i.test(node.data)){src=node.data.trim();break}
+  for(const ln of src.split('\n')){if(!ln.trim())continue;const p=document.createElement('p');p.className='srcl';
+    ln.split(/(\w+:\/\/[^\s)]+)/).forEach((part,i)=>{let ok=false;if(i%2)try{ok=new URL(part).protocol==='https:'}catch(e){}
+      if(ok){const a=document.createElement('a');a.href=part;a.rel='noopener';a.textContent=part;p.append(a)}else p.append(part)});byId('src').append(p)}
+  // Where this file lives in the repository, for the "fix a mistake" link.
+  const parts=location.pathname.split('/').filter(Boolean);if(parts[parts.length-1]==='index.html')parts.pop();
+  const slug=parts[parts.length-1]||'',edit=byId('edit');if(slug&&slug!=='lab')edit.href=edit.href.replace('/tree/','/edit/')+'/'+slug+'/index.html';
+  const pb=byId('pb'),ts=byId('ts'),ps=byId('ps'),po=byId('po'),calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let play=!calm,t0=performance.now(),dirty=true,last='';
+  ts.max=LOOP;ts.step=.01;
+  if(calm){T=Math.min(SIM.reveal+1.2,LOOP-.1);ts.value=T;pb.textContent='Play'}
+  const p=SIM.param;
+  if(p){const dec=(String(p.step).split('.')[1]||'').length,fmt=v=>(+v).toLocaleString('en-US',{maximumFractionDigits:dec,minimumFractionDigits:dec});
+    ps.min=p.min;ps.max=p.max;ps.step=p.step;ps.value=p.value;ps.setAttribute('aria-label',p.label);byId('pl').firstChild.textContent=p.label+' ';po.textContent=fmt(P);
+    ps.oninput=()=>{P=+ps.value;po.textContent=fmt(P);dirty=true}}
+  else byId('pl').hidden=true;
+  pb.onclick=()=>{play=!play;pb.textContent=play?'Pause':'Play';t0=performance.now()-T*1000};
+  ts.oninput=()=>{play=false;pb.textContent='Play';T=+ts.value;dirty=true};
+  function fit(){const d=Math.min(devicePixelRatio||1,2);cv.width=Math.round(cv.clientWidth*d);cv.height=Math.round(cv.clientHeight*d);S=cv.width/1080;dirty=true}
+  new ResizeObserver(fit).observe(cv);fit();
+  (function frame(){if(play){T=((performance.now()-t0)/1000)%LOOP;ts.value=T;dirty=true}
+    if(dirty){dirty=false;draw(T);const l=SIM.line(P,T);if(l!==last){last=l;byId('line').textContent=l}}
+    requestAnimationFrame(frame)})();
+}
+</script>
+</body>
+</html>

@@ -41,7 +41,7 @@ is not wasted: the loader reads exactly the file you write.
    Keep each key as it is (`"low Earth orbit"`): the card finds a term by its key, so a translated
    explanation shows on a card whose own text contains that English key; matching terms in your language is
    a separate piece of work.
-3. **The trips** (`registry/tours.yaml`): 31 trips, about 11 000 words of titles, blurbs and cards.
+3. **The trips** (`registry/tours.yaml`): 33 trips, about 11 000 words of titles, blurbs and cards.
    Each stop's words are what the voice reads. Do these after 1 and 2, one trip at a time.
 4. **The pages a search engine reads and the press page**: later, from the same text.
 

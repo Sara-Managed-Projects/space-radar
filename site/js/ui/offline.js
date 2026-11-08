@@ -71,11 +71,14 @@ async function forget() {
 
 /** @returns {Promise<{state:string, registration?:ServiceWorkerRegistration}>} */
 export async function createOffline(ctx) {
-  const net = { offline: typeof navigator !== 'undefined' && navigator.onLine === false, worker: 'none', version: null };
+  // b200-s4b-look: what main.js already heard from the worker at the start (a page it serves asks at once), kept.
+  const heard = !!(ctx && ctx.net && ctx.net.offline);
+  const browserAtStart = typeof navigator !== 'undefined' && navigator.onLine === false;
+  const net = { offline: browserAtStart || heard, worker: 'none', version: null };
   if (ctx) ctx.net = net;
   const said = () => window.dispatchEvent(new CustomEvent('sr:net', { detail: { offline: net.offline } }));
-  let browserOffline = net.offline;
-  let workerOffline = false;
+  let browserOffline = browserAtStart;
+  let workerOffline = heard;
   const settle = () => {
     const now = browserOffline || workerOffline;
     if (now !== net.offline) { net.offline = now; said(); }

@@ -25,6 +25,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 const { REAL_MODELS, realModelFor } = await import(pathToFileURL(join(ROOT, 'site/js/scene/realmodels.js')).href);
+await import(pathToFileURL(join(ROOT, 'site/js/scene/sourcedtables.js')).href); // the CubeSat and bus tables come with the card and the shapes, not the boot (scene/sourcedtables.js)
 
 // --- the registry's rows ---------------------------------------------------------------------------
 const yaml = readFileSync(join(ROOT, 'registry/models.yaml'), 'utf8');
@@ -151,7 +152,7 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     for (const r of worn) {
       const how = r.entry.made;
       check(typeof how === 'string' && sentences[how] === row.honesty, `${row.id}: ${r.table}[${r.key}] says made: ${JSON.stringify(how)}, whose card sentence is ${JSON.stringify(sentences[how])}, and the row's honesty line is ${JSON.stringify(row.honesty)}`);
-      check((how === 'dimensions') === (row.kind === 'built-from-dimensions'), `${row.id}: made: '${how}' on a row of kind ${row.kind}`);
+      check((how === 'dimensions' || how === 'renders') === (row.kind === 'built-from-dimensions'), `${row.id}: made: '${how}' on a row of kind ${row.kind}`); // b200-m4-buses: `renders`, a bus built from sizes and the maker's renders
     }
   }
   for (const r of routes) if (r.entry && r.entry.made) check(made.some((row) => row.file === r.entry.file), `${r.table}[${r.key}] says made: '${r.entry.made}' and ${r.entry.file} has no row of a made kind`);

@@ -11,6 +11,422 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-11-08
+
+2.0.0 is the release of the competitor review. On 7 November 2026 four products were read side by side with Space Radar (SpaceEngine, Solar System Scope, Cosmoscope and CosmosMap), and each place where one of them did something better, or something we did not do at all, became an issue on the project's own forge (#140 to #170). Twenty-eight of those features are built here: millions of stars, the inside of the worlds, the ground at eight landing sites, the sky from six other worlds, spinning black holes against the EHT's pictures, stars that move over deep time and stars that vary, stories for every sky culture, a flight editor, video, a dome and a headset, a gamepad, the Lab by age and curriculum, daily challenges, paper models, an asset pack and a page for creators. Beside them, the 3D models that were already started are finished or held for a stated reason, and the small fixes on the forge are done. The issues live on the forge now, not on GitHub, so each item names its issue as "(forge #N)"; this release has no pull-request links. New strings are machine-drafted in the ten other languages, as before.
+
+**Why 2.0.0.** [docs/RELEASING.md](docs/RELEASING.md) keeps MAJOR for an old shared link, an old saved data copy or an existing registry row that stops working, so each was checked against 1.9.0 (main 7e4f2ace). **Shared links: nothing breaks.** The format is still `v=1`; thirteen URL keys are added (`find`, `owner`, `operator`, `debris`, `constellation`, `cut`, `size`, `dist`, `path`, `proj`, `play`, `ground`, `sky`), all before `cam`, which stays last, and none was read before; no key was removed or renamed. Every 1.9.0 trip keeps its stops in the same order, so `#trip=…&stop=N` lands where it did: two trips are new, and Out past Jupiter's eleventh stop comes after its tenth. **Saved data copies: nothing breaks.** `/data/v1/`, `schema: 1`, `scripts/save_offline_data.py` and the harvester are unchanged. **Registry rows: two row formats became stricter, and a 1.9.0 row of either kind is refused by its check.** A shower in `registry/showers.yaml` must now carry `peaks`, its peak date year by year, with a `peaks_from` line for each year (forge #90); a 1.9.0 row without it fails `scripts/check_registry.py` ("peaks must map a year ("2027") to that year's `MM-DD`"). A craft in `registry/ephemerides.yaml` whose path ends less than 60 days after the day of the check must say `ended:` (forge #87); a 1.9.0 row for a finished mission, Cassini's as it stood, fails `scripts/build_ephemerides.py --check` and so `tests/test_ephemerides.py`. The app still reads both old rows as before; only the checks refuse them. So by the project's own rule this is a major release for those two files, and for nothing a visitor or a teacher's copy holds: every 1.x link and every saved copy of the data still works. A fork with showers or finished missions of its own adds `peaks:` and `peaks_from:`, or `ended:`, to them. The release is also the largest so far, but the number is not only for its size.
+
+Not in 2.0.0: narration in other languages (forge #162) waits for a native speaker's review; app stores (forge #167) and a public ideas board (forge #169) are the maintainer's decisions; the 3D models nobody had started go to 2.1.0.
+
+### Find
+
+#### Added
+
+- **Find: ask by property, get a sortable table.** A new sidebar view (the phone's sheet, at half) asks for stars within N light-years; planets by radius, mass, temperature,
+  starlight, the habitable zone and "rocky"; satellites by owner, operator, height and launch year; comets by perihelion year. "Rocky planets in the habitable zone within 50
+  light-years" finds 11. Every column sorts, a row flies there, and `#find=exo_ly50_hz_rocky` keeps the question. Radius, mass, period and star are the NASA Exoplanet Archive's
+  (**measured**); outside the 50 generated systems a planet's orbit comes through a star mass estimated from its light, marked * and **modelled**; the zone is Kopparapu et al. 2014
+  and "rocky" 1.6 Earth radii or less (Rogers 2015). "Side by side" draws a system's bodies at their true relative sizes, and search returns families ("Saturn" lists its moons).
+  (forge #150)
+- **Spacecraft by country and by operator, with flags.** Find's By country tab counts what each owner in CelesTrak's satellite catalogue has in orbit (106 on 2026-11-05); a tap
+  lights its satellites on the globe and lists its payloads with no public path and why. `#owner=IND` and `#operator=spacex` are the links. Owners are CelesTrak's documented codes
+  (`CIS` is the Soviet Union and Russia, and the row says so); operators are the catalogue's organisation codes plus companies matched by satellite names, marked "by name". 103
+  public-domain flags from Wikimedia Commons, each source in `site/images/flags/sources.json`. The Sun–Earth L1 and L2 points and Earth–Moon L2 are places too, and
+  `/country/<iso>/` is a page per country (101 and an index). (forge #152)
+- **One tap per named breakup, and the cloud spreading.** Fengyun-1C, Cosmos 1408, Iridium 33 and Cosmos 2251 are chips in Find; each lights its fragments, says when and why from
+  NASA's Orbital Debris Quarterly News, and counts what is still up (Fengyun-1C: 2 310 of 3 531). "At the event" to "Today" draws the pieces where a **modelled** spread puts them:
+  each starts at one point on today's orbit and moves under two-body motion and J2's drift. Nine constellations light up by their operators' names (`#constellation=kuiper`).
+  (forge #153)
+- **"2007: Fengyun-1C" is a narrated Moment** (`#moment=fengyun-1c`): four minutes from before the test to today's catalogue, the strike at 22:26:10 UTC (CelesTrak's analysis), the
+  surviving pieces stringing into a ring within days and a shell by 2013. Seven chapters in the trips' voice, heard by the trips' recogniser at 0 to 5.8 % word error; every count
+  said is measured and names its ODQN issue or the catalogue of 2026-11-07. (forge #153)
+- **Type a date and go there.** A calendar button in the time pill opens a dialog: the browser's date field (UTC) and a line that reads "20 July 1969", "JD 2440423.5", "in 3 days"
+  or "next total eclipse", from 1700 to 2200, with how good each layer is at that date and the dated events of 21 missions. Focus stays in the dialog and Escape returns it. Past a
+  week from now satellites fade, and the pill says their orbits are measured for now, not for 1969. (forge #154)
+
+#### Changed
+
+- **The Earth, Planets and Stars tabs carry a short Find section**, loaded after the first visit; Find's chart writes AU as the rest of the map does. (forge #150, #152)
+
+#### Fixed
+
+- **A row brought into view in By country no longer stops under the sticky tabs** on a desktop (84 px under them before). (forge #152)
+
+#### Not yet
+
+- **Find searches the 3 390 named stars**, not HYG's or AT-HYG's unnamed ones; while a group is lit, the map's few fixed labels stay; the free-text date line knows English words
+  only. (forge #150, #152, #154)
+- **The Fengyun-1C cloud is today's survivors on today's orbits**: the 1 221 fallen pieces are not drawn, drag since 2007 is not modelled, the plane's angle at the event is
+  illustrative, and the voice is English only; the foot line says so. (forge #153)
+
+### Other worlds' skies and the orrery
+
+#### Added
+
+- **Size and Distance sliders in the Planets tab, from true scale to a classroom orrery.** Size runs from ×1 to ×2 000 and Distance from true to logarithmic, by touch, keyboard and
+  screen reader. The arithmetic is one tested module (`scene/orrery.js`): the log map is fixed at 50 AU, so nothing past Pluto moves; no world passes another; **moons stay outside
+  their planets at every setting** (`tests/test_orrery.mjs`). The badge's factor is computed from what is drawn. `#size=2000&dist=log` is the classroom view; a trip draws
+  everything true. (forge #145)
+- **The sky from the Moon, Mars, Titan, Europa, Proxima b and TRAPPIST-1 e.** `#sky=mars:jezero`, `#sky=europa:10,200` or `#sky=titan` stands the visitor there and looks up,
+  through the IAU WGCCRE 2015 elements (Archinal et al. 2018); local solar time at Gale and Jezero agrees with Mars24 to 8 seconds from 2012 to 2030. Each sky has its own pole
+  star, the Sun at true size, the planets at their magnitudes (Mallama and Hilton 2018, **modelled**), the Earth with its phase from the Moon, Saturn hanging still over Titan.
+  Mars's colours are **measured** from Spirit's and Curiosity's pictures; Titan's orange is **illustrative**. Proxima b and TRAPPIST-1 e are **modelled**: tidally locked, on
+  circular orbits whose orientation is assumed. The list gives rise and set and the next crossings of the Sun by Phobos or Deimos: from Jezero in April 2022, when Perseverance
+  filmed one (PIA25179), it finds crossings of 34 to 35 seconds. (forge #147)
+- **A trip, "Skies of other worlds"**, seven stops from the Earth over Hadley to TRAPPIST-1 e. A stop can say `stand: {sky: …}`, and `scripts/check_registry.py` refuses one that
+  names no world it can stand on. (forge #147)
+
+#### Not yet
+
+- **Craft orbiting a planet are not moved out with it when sizes are enlarged**: at ×2 000 a craft in low orbit is inside the enlarged disc. Moons are placed; craft are not.
+  (forge #145)
+- **The other 49 systems' skies, the Earth's map on its disc and Titan's refraction are not drawn**, and the stage opens from links and trips only. (forge #147)
+
+### Stars over deep time and variable stars
+
+#### Added
+
+- **The stars move when the clock goes far, and the Earth's axis turns.** The sky view's Deep time row takes the clock 100 000 years either way. Past 50 years from now every star
+  to magnitude 7, every fast star and every star within 6.2 pc is carried along its space motion in a straight line: the Plough bends, and Barnard's Star passes 3.77 light-years
+  from the Sun about the year 11 700 (literature: 3.75, about 11 800). The motions are **measured** (HYG v4.4's Hipparcos and Gaia proper motions, radial velocities and distances);
+  carrying them for millennia is **modelled**, and the readout says so. Past 2 500 years the sky uses the long-term precession of Vondrák, Capitaine & Wallace 2011, and the pole
+  star is named (Thuban 0.10° from the pole in 2800 BC). (forge #141)
+- **The 3D map and the orbital view's stars move too**, on the GPU: each star carries its motion a year once, and the shader draws it at `position + motion × years`. When the clock
+  stands still the moved places are written back, so a tap finds a star where it is drawn. For a selected star the line under the time bar gives its **modelled** distance then, and
+  that its card gives today's. (forge #141)
+- **Fifty-eight famous variable stars change brightness with the clock**, in the sky view, the 3D map and the orbital sky: Algol dims for ten hours every 2.87 days, Mira swings
+  from 2 to 10 over 332 days, Betelgeuse on 2020-02-15 is at 1.6. The elements are the GCVS 5.1 (Samus et al. 2017), and for eight eclipsing stars Kreiner's linear elements (2004),
+  because the GCVS's put Algol's 2026 minima 2.8 hours early. Betelgeuse's dimming is dated magnitudes (**measured**); the other curves' shapes are **modelled** from period, epoch,
+  range and rise time. Each card has a light curve with the clock's point on it. Nothing flickers. (forge #142)
+- **"Algol at minimum" in Coming up and in Tonight**, for the bright eclipsing stars (Algol, lambda Tauri, delta Librae, V Puppis) when the Sun is 12° down and the star 15° up, and
+  the bright Miras near maximum. A minimum is measured minima carried forward, right to about a quarter of an hour; a Mira's maximum is modelled and can be weeks out; each row says
+  which. (forge #142)
+
+#### Fixed
+
+- **The map no longer stops at AD 50 000.** Outside its table (years 0 to 4000) Astronomy Engine reaches Pluto by stepping a simulation on every call, and the map asked every
+  frame: 115 000 steps a call at AD 50 000, where no frame ended. Outside those years Pluto and its moons are not drawn, and the time bar says why; `tests/test_farclock.mjs` times
+  every other world there. (forge #141)
+- **The finder in Coming up fetches nothing again**: the variable stars' rows are loaded once by the page and handed to the worker. (forge #142)
+
+#### Not yet
+
+- **Pluto is hidden outside the years 0 to 4000.** Beyond ±1 000 years the faint stars that cannot be moved, the star tiles, the constellation pictures, the Moon and the planets
+  are not drawn in the far sky. (forge #141)
+- **AT-HYG's 2.4 million stars are not moved over deep time**: the far-time view is HYG's alone, and says so. A selected star's label and disc stay at today's place, and a star's
+  brightness far from now is the catalogue's. (forge #140, #141, #142)
+
+### Black holes against the EHT
+
+#### Added
+
+- **M87\* and Sagittarius A\* are drawn spinning.** The shadow has the outline a spinning hole casts (Bardeen 1973, `scene/kerrshadow.js`), recomputed for the angle the camera
+  sees; the traced picture is bent to fit it, which is **modelled**, since the light round it is still traced without spin. The spins are **chosen**: 0.94 for M87\* and 0.5 for
+  Sagittarius A\*, from the ranges EHT 2019 and 2022 paper V favour. (forge #149)
+- **Seen from Earth, and Compare with the EHT picture.** One button stands the camera on the line from the hole to the Sun, north up and east to the left, as an EHT picture is
+  printed; the other also shows the EHT's pictures in the card (M87\* of 2017 and of 2018 April 21, EHT Collaboration 2024, CC BY 4.0; Sagittarius A\* of 2017), with credit and a
+  paragraph on what is matched and what is approximated. (forge #149)
+- **The disks turned to match, and measured.** Where each ring is brightest and how lopsided it is were **measured** in linear brightness on both pictures. M87\*: our brightest
+  point is at about 206°, inside the EHT's 173° (2017) to 216° (2018); our bright side is 2.45 times the faint one (2.1 blurred to the EHT's 20 µas beam), just under the EHT's 2.7
+  (2017) to 4.2 (2018), and closest to 2017. It keeps its measured 17° tilt and jet angle (Walker et al. 2018). Sagittarius A\* is now seen 30° from its axis (EHT 2022's best-bet
+  models; it was 48°), turning clockwise as GRAVITY's flares do; where its axis points is **chosen** so its bright side falls where the EHT's does, and the card says so. A quality
+  fallback steps the trace down a tier when frames run over 34 ms. (forge #149)
+
+#### Not yet
+
+- **Sagittarius A\* is drawn too lopsided**: about 5 times brighter on one side (4.5 at the EHT's blur) against their 1.7, because at 30° circular orbits beam the near side far
+  more than the EHT's night-long average shows. The card says so. (forge #149)
+- **The light is traced round a thin disc and a hole that does not spin**, not the EHT's hot, thick flow; M87\*'s jet does not turn with the 2018 ring and our bright spot does not
+  wander. No phone frame time was measured: the laptop's load measured the machine, not the trace. (forge #149)
+
+### Cards: look inside, Wikipedia, read aloud
+
+#### Added
+
+- **Look inside: sixteen worlds open to their layers.** A button on the card of the planets, the Moon, Pluto, Io, Europa, Ganymede, Enceladus, Titan and the Sun takes a quarter of
+  the world away and draws its layers at the depths a published model gives, with a panel of each layer, how it is known (measured, modelled or inferred) and its source, and a
+  depth probe for pressure, temperature and density. Cited row by row in `registry/interiors.yaml`: PREM for the Earth, InSight with the 2023 revision for Mars, GRAIL and Apollo
+  seismometers for the Moon, Juno's dilute core, Cassini's gravity and ring seismology, helioseismology, and the missions' gravity for the moons. **Estimated:** Venus, Uranus and
+  Neptune, and every temperature, which the panel says. `#cut=mars` opens a world from a link. (forge #144)
+- **A Wikipedia lead and photograph on cards without words of our own**, set as a quotation: "From Wikipedia", "quoted, not checked by us", the day read, its CC BY-SA 4.0 credit
+  and a link. Pictures only from Commons under a free licence. **Our own words win**: a card with a written line or registry photograph gets none. The article is found by curated
+  sources and Wikidata, never guessed from a name; 99 English articles and 45 to 91 per other language are baked, and any other card asks Wikipedia only when opened, with no cookie
+  or referrer. (forge #151)
+- **Read aloud**: a button reads the card one sentence at a time, with the sentence shown, in the device's own voice; nothing is recorded or sent. (forge #151)
+- **68 of the 99 baked English cards are read in the trips' own voice**, rendered offline by the trips' pipeline (`scripts/narrate-cards.py`: Kokoro `af_heart`, −16 LUFS, captions)
+  and heard by its recogniser (mean word error 1.3 %, worst 5.7 %). A clip plays only when its text hashes to the lead shown; else the device reads. CC BY-SA 4.0 like the text, 19
+  144 kB, under a new budget. (forge #151)
+
+#### Not yet
+
+- **31 of the 99 baked cards keep the device's voice**: the listening check refused them (4 over 8 % word error, 27 with a word blamed on the voice). Nobody but a machine has heard
+  the 68 clips, and the ten other languages keep device speech. The baked articles are refreshed by hand, not by the harvester. (forge #151)
+- **The cutaway's wedge turns about the world's own axis**, so from over a pole it is a notch, and the layers are spherical shells. (forge #144)
+
+### Make your own: flight paths, video, the dome and paper models
+
+#### Added
+
+- **Plan a camera flight and share it as a link.** Share → Flight path keeps views (the selection, the camera's pose, the clock and its rate), each flight 1 to 60 s with an ease; a
+  slider scrubs it, Play flies it, and reduced motion cuts. Copy link puts the path in `#path=`, deflated (152 characters for three keys); Save trip draft writes a
+  `registry/tours.yaml` entry the validator accepts. The flights between keys are **modelled** camera moves, and the panel says so. (forge #155)
+- **Record a video of any view, flight path or trip**: 16:9, square or 9:16 at 1080 px (720 on a phone), with credit, the instant in UTC and an end card linking the exact view.
+  Live with MediaRecorder and the trip's sound, or frame by frame with WebCodecs into a WebM written by hand (`ui/webm.js`). Measured in headless Chrome: 150 frames of VP9, 885 558
+  B, read back at 1080 × 1080. (forge #156)
+- **Dome, 360 and skybox.** `#proj=dome`, `#proj=dome,30` and `#proj=360` on any link, or Share → Dome and 360: a 180-degree dome master or a 2:1 equirectangular frame, saved up to
+  8192 px, or a six-face skybox. `tools/render-trip.mjs --proj=dome,30` films a trip for a dome; `docs/PLANETARIUMS.md` says how. (forge #157)
+- **Paper models to print, at `/print/`**: a twelve-gore paper globe of every world with a real map (31, plus Venus under its clouds), each with the map's credit word for word, the
+  true scale, the share of the world mapped and a QR code to it in the 3D map (our own encoder, read back by macOS's reader); every licence checked first, and non-commercial,
+  no-derivatives and share-alike maps refused. Phobos and Vesta are wrapped on a sphere (**modelled**), and say so. A Moon-phase wheel, a distance-ladder strip, and **a fold-up
+  James Webb Space Telescope** at 1 : 250, cited to NASA's and STScI's pages, with the shield's ends, the secondary's distance and the bus **estimated** off NASA's public-domain 3D
+  model, as the sheet says. (forge #161)
+
+#### Not yet
+
+- **No phone, Safari or Firefox was used**, only headless Chrome. **WebM is recorded first**: in headless Chrome MediaRecorder took MP4 and returned empty files, so MP4 is used
+  only where WebM is not offered (Safari), and an empty clip says so. Frame by frame is silent. (forge #156)
+- **`render-trip.mjs --proj` was not run end to end** (no ffmpeg here), no 360 metadata is written, and no planetarium has tried it. (forge #157)
+
+### The Lab and daily challenges
+
+#### Added
+
+- **Every Lab simulator tagged by age and curriculum.** `registry/lab-levels.yaml` gives each an age band and the statements it shows in NGSS, England's KS3, GCSE physics (AQA
+  8463) and the IB Physics guide for 2025, each code with its statement and the document read on 2026-11-07; a tag says a simulator shows an idea, not that it covers a statement.
+  `/lab/` filters by age, code and words and keeps the choice in the address (`/lab/#band=11-14&q=gravity`). Each simulator links to where its idea is in the 3D map, held by
+  `tests/test_lab_levels.py`. /teachers/ lists the Lab by age. (forge #159)
+- **Fifteen new simulators; the Lab has 105.** Gravitational Wave Chirp (GW150914), Sound Waves in the Baby Universe (Planck 2018's sound horizon, 144.3 against 144.4 Mpc), Every
+  Galaxy Moves Away, a Spacetime Diagram, Orbits Near a Black Hole, Frame Dragging by a Spinning Black Hole, Starlight Bends Past the Sun, The Shadow of M87's Black Hole (42.2 µas
+  against 42 ± 3) and Orbit and Escape on Other Worlds, the Hulse–Taylor pulsar's decay; and five on real data: Kepler's light curve of TrES-2, 740 JLA supernovae on a Hubble
+  diagram, COBE FIRAS's 43 points (least χ² at 2.725 K), Keck velocities of 51 Pegasi and 2 362 HYG stars within 25 pc. Each carries its sources with the day read, a worked check
+  and an honesty line; new source rows in `registry/asset_sources.yaml` and CREDITS.md. (forge #159)
+- **Three one-minute daily challenges on the real map**: `#play=find-earth`, `#play=which-world` and `#play=guess-distance`. The UTC day seeds every pick, so everyone has the same
+  puzzle; the result is a plain-text grid that fits X's 280 characters in all 11 languages; the last 60 days and a streak stay in `localStorage`. Keys A-D, a dialog with a live
+  region, and cuts under reduced motion. (forge #160)
+
+#### Fixed
+
+- **"Which world is this?" no longer shows the answer behind it**: the scene is hidden while that challenge is up. (forge #160)
+
+#### Not yet
+
+- **Find Earth for a screen-reader player** is the clue and the answers; the scene is not described. The Lab's pages are English. (forge #159, #160)
+
+### Standing on the Moon and Mars
+
+#### Added
+
+- **Stand and walk at eight landing sites, on the ground as it was measured.** `#ground=apollo-11`, `apollo-15`, `apollo-17`, `change-4`, `gale`, `jezero`, `utopia` and
+  `opportunity`: the visitor stands 1.7 m up near the lander and walks by touch joystick or keys. The heights are stereo terrain models, **measured**, at true vertical scale: LROC
+  NAC DTMs on the Moon (2 or 5 m a post) and HiRISE DTMs on Mars (1 m), 2 km round the lander, then SLDEM2015 or MOLA out to 30 km. The ground's brightness is the orbiter's own
+  picture, on Mars times the ground's measured colour from Spirit's panorama. **No boulder or crater is invented**, and the stage says so. Each site is under 2 MB, fetched on
+  arrival; every source is public domain, with a licence row. (forge #146)
+- **The lander or rover at its imaged coordinates, and a rover to drive.** The LM descent stage, Chang'e 4, Curiosity, Perseverance and Zhurong stand at their coordinates (which
+  way each faces is **illustrative**, and said); "Drive the rover" runs at about 95 times real speed, which the stage says. The Sun follows the app's clock, with shadows, a far
+  skyline and Mars's dust as a **modelled** haze. (forge #146)
+- **A trip, "Walk the landing sites"**, one stop on each ground; a stop can say `stand: {ground: …}`. Phones get folded panels and a lighter mesh, and everything loads only on a
+  `#ground=` or `#sky=` link. (forge #146)
+
+#### Not yet
+
+- **Opportunity stands where it stopped in 2018**, on Endeavour's rim, not at Eagle crater, which has no HiRISE model; the stage says so. The orthoimages keep the orbiter's
+  shadows; no frame rate was measured on a real phone. (forge #146)
+
+### VR and the gamepad
+
+#### Added
+
+- **Fly with a gamepad.** An Xbox or PlayStation pad on the W3C standard layout: the sticks turn, fly and slide, the triggers set the speed, A chooses, X goes, B goes back, Y shows
+  the controls, and the D-pad steps along the distance ladder. A test reads the keyboard's rates out of `scene/camera.js`, so pad and keys cannot drift apart. Ship physics, off by
+  default, uses chosen numbers. (forge #164)
+- **Headset mode (WebXR `immersive-vr`), no PC and no app.** Only where the browser can open an immersive session, a headset button opens a comfort note first (jumps, 30° turns, a
+  level horizon, sit down, the seizure warning) and then draws the ground sky, the ladder and the Moments; every move is a cut, and the director's camera is taken only as a cut.
+  Head movement is a true metre on the ground and a twentieth of the target's distance in space (**illustrative**). Over the 72 Hz budget the headset draws less, twice at most, and
+  says so. Nothing of it loads before it is needed. (forge #158)
+
+#### Not yet
+
+- **Not run on a real headset or pad.** The session is tested against a mocked `navigator.xr`, the 72 fps target on Quest 3 is unmeasured, and the pad pictures drive a fake pad in
+  headless Chrome. In the headset the card's facts are not drawn. (forge #158, #164)
+
+### Reach: the asset pack, creators, comparisons, ambient sound and the first load
+
+#### Added
+
+- **A free pack of what Space Radar made itself, at /assets/**: 203 glTF spacecraft models and 10 baked maps (counted by `scripts/asset_pack.py`), each with its size, credit line,
+  how it was made and a link to where the app serves it. **The licence follows the inputs**: a model is CC BY 4.0 only when its row says the shape is ours and no picture is in the
+  file, a map CC0 only when every input is; a non-commercial, no-derivatives or share-alike input refuses the file. Other makers' files are listed by maker, never as ours.
+  (forge #165)
+- **/creators/: use the footage, commercial work included, with the credit "Space Radar (spaceradar.ai)"**, and the exceptions read from every licence line of the registries (Gaia
+  DR3's CC BY-NC 3.0 IGO, four VizieR catalogues for scientific use, SDO's non-commercial terms), with a media kit and a clip job for release day (`scripts/creator_clips.py`).
+  (forge #166)
+- **Five fair comparisons**: /spaceengine-alternative-mac/, /spaceengine-in-the-browser/, /space-simulator-on-phone/, /solar-system-scope-alternative/ and
+  /live-satellite-tracker-3d/. Each first says **what the other product does that Space Radar does not, or does more deeply**, takes every claim about it from the competitor review
+  and its own pages, linked and dated, and reads our counts at build time. No logo or screenshot of theirs, and no "best", "better" or "worse" (a test refuses them). (forge #168)
+- **The score follows the climb, and six real recordings are heard where they were made.** With sound on, the four CC0 beds already licensed become six rooms up the ladder. At
+  Saturn, Jupiter, Mars, the Sun and the stars a panel offers Cassini's radio, Juno at Ganymede, Voyager 1's plasma waves, InSight's meteoroid strike and wind, and Perseverance
+  under a dust devil, each saying "Real data, turned into sound" or "Real sound, from a microphone" with its NASA credit (public domain); nothing plays or loads before a press.
+  (forge #163)
+- **The first load, measured and written down** (`docs/FIRST_LOAD.md`, `registry/first-load.yaml`): a 390 × 844 phone on emulated Slow 4G with a 4× slower CPU, **measured**
+  2026-11-07: the live site 1 922 875 B in 157 requests, first frame 8.4 s. Cosmoscope's about 36 MB and Solar System Scope's about 24 MB are **cited**, not measured again; the
+  page says we make more requests than Cosmoscope. New budgets for requests and the phone's first frame, each 10 % above the measure. (forge #170)
+
+#### Changed
+
+- **The first frame stayed inside its budget**: every feature above loads on first use, and the deployed boot graph (`scripts/check_built_tree.mjs`) was 1 959 072 B of 1 960 000 at
+  the last feature merge. (forge #170)
+
+#### Not yet
+
+- **The 4K clips are not made** (the job is written, not run), the pack's maps are the shipped 2K or 1K files, and the sound was checked in headless Chrome, not listened to.
+  (forge #163, #165, #166)
+
+### Sky cultures and the heliosphere
+
+#### Added
+
+- **Every figure of every sky culture has its story.** Tap the sky from the ground and the tag names the constellation, or another people's figure whose lines pass nearest; press
+  it for the story. 474 figures in eight cultures, 468 told. **Cited:** each culture's own Stellarium description at the pinned commit (CC BY-SA 4.0 by its licence section),
+  shipped as it stands with its credit; where a description says nothing of a figure, `registry/skystories.yaml` quotes it or adds **a short summary in our own words, marked as
+  ours, with its source** (Elsdon Best 1922, the Prose Edda, Collocott 1922, Stanbridge 1857). Every card says the story is **illustrative**. Cultures whose licence does not allow
+  it are not drawn. (forge #143)
+- **Pictures for three more skies**: 38 Māori, Hawaiian and Boorong illustrations from Stellarium (the Hawaiian ones by Kealoha Kaneakua), CC BY-SA 4.0, 248 kB in all; the Pictures
+  toggle follows the culture. (forge #143)
+- **The heliosphere, from 50 AU out.** The termination shock, heliopause and bow wave as translucent shells, the IBEX ribbon, the four Voyager crossings with their dates, and the
+  Sun's way through the local gas. **Modelled**: published shapes (Parker 1961, Wilkin 1996) about IBEX's upwind direction (McComas et al. 2015), scaled through the **measured**
+  crossings (Voyager 1 at 94.0 and 121.6 AU, Voyager 2 at 83.7 and 119.0 AU, from the JPL Horizons tracks); the ribbon's 160 AU and the bow wave's distance are **illustrative**. A
+  ladder rung between Neptune and Proxima flies there, and Out past Jupiter gains an eleventh stop, the Sun from 300 AU. (forge #148)
+
+#### Not yet
+
+- **Six figures say no story is recorded** rather than being given one; Chinese, Samoan, Tongan and Norse keep their lines without pictures; the stories stay in English, with no
+  licensed translation. (forge #143)
+- **The heliopause is drawn to 120° from the nose and faded**, not answering whether it is long or split; on a phone at the trip stop the bow wave's name is often left out.
+  (forge #148)
+
+### Millions of stars
+
+#### Added
+
+- **2.4 million more stars on the 3D map, fetched round the camera.** Beside HYG's 109 389, the **2 411 200 stars of AT-HYG v4.0** (David Nash, CC BY-SA 4.0; Tycho-2's places and
+  brightnesses, Gaia DR3's distances) that HYG does not have, less 1 994 that are HYG's stars under another number. `scripts/build-stars3d-tiles.py` cuts them into an octree of 1
+  089 nodes in forge #36's tile format, 13 bytes a star (direction to 13″, distance to 0.02 %); 24.6 MB gzipped, loaded after the first frame by node in a worker, into one draw
+  call with HYG's own shader, so a star of one magnitude is the same light in either catalogue. (forge #140)
+- **The quality tier picks the star tier, in WebGL everywhere**: HYG only on Low, the frame latch and data-saver; a phone up to 40 nodes (about 330 000 stars); 128 or 256 above.
+  **Measured** on a laptop GPU, phone profile: 2.6 → 4.2 ms a frame; the frame latch falls back to HYG where frames slow. (forge #140)
+- **A fuller sky to magnitude 11.5.** AT-HYG draws four magnitudes past the eye's limit, as a soft field, so from out on the ladder the Milky Way's band is there. A tapped star's
+  card gives its Tycho-2 number, whose distance it carries, and an error that is **modelled** from each mission's typical one, and past 3 kpc says the distance is a guess.
+  (forge #140)
+
+#### Not yet
+
+- **No Gaia DR3 tier.** ESA's page, read 2026-11-08, gives Gaia data's licence as CC BY-NC 3.0 IGO; a non-commercial cut cannot go into a share-alike file, so nothing was
+  downloaded and the tier is held. (forge #140)
+- **AT-HYG is drawn at today's date only**, not moved over deep time, and not on a world stage; the screen says both. 73 AT-HYG stars still lie within 20″ of a HYG star.
+  (forge #140, #141)
+
+### 3D models
+
+#### Added
+
+- **A geostationary satellite's card names its true bus, and nine bus families have models of their own.** `registry/geo-buses.yaml` names the bus of 363 of the 466 geostationary
+  satellites that all wore one SSL-1300, by catalogue number, each cited to Wikidata, Wikipedia, Gunter's Space Page or McDowell's GCAT; 94 are SSL-1300s and keep NASA's model.
+  Drawn, each to its own layout in `tools/bus-builder/`: Eurostar E3000 (47), Boeing 702HP/MP (18), 702SP (7), A2100AX (11), Spacebus 4000B (18), GEOStar-2 (27), DFH-4 (13), ISRO
+  I-3K (10) and I-2K (6). The two ISRO buses are **drawn from ISRO's clean-room photographs**; **the other seven are built from published dimensions and the makers' renders**, with
+  no free photograph of their flight hardware, and their card says "shape built from published dimensions and the maker’s renders; details estimated". (forge #117)
+- **CubeSats are drawn as the form a source names, at the standard's size**: 576 catalogue numbers from GCAT as 1U to 12U, with or without panels, from `tools/cubesat-builder/`;
+  the card says "the kind of thing, not this exact one". (forge #118)
+- **Vostok's Blok E, Kinéis and QPS-SAR have models of their own.** Blok E (11 objects) from the Russian cutaway drawing and museum photographs (forge #60); Kinéis (25) from the
+  operator's FCC filing and CC BY-SA photographs of the 1:1 models (forge #128, #174); QPS-SAR (12) from iQPS's presentations and eoPortal (forge #174). Each registry row says what
+  is ours.
+
+#### Changed
+
+- **The Starlink V2 Mini class shape has the filing's 4.1 m array width** (it was 3.85 m). (forge #74, #129)
+- **Satellites with a model of their own, by the app's `realModelFor()` over the CelesTrak copy of 2026-11-05 (17 001 objects), counting only files of the object's real type: 3 419
+  (20.1 %) before, 4 294 (25.3 %) after.** The registry holds 311 real models.
+
+#### Not yet
+
+- **Held, each for a stated reason, and moved to 2.1.0**: Starlink V2 Mini (forge #74, #129), Amazon Kuiper (#75), Qianfan (#58), Iridium NEXT (#72) and Guowang (#173), with no
+  size and photograph of the craft; the DS2000, the Spacebus 4000C and the A2100A (#117), whose renders disagree; Flock's and Lemur's panels (#118); seven spent stages (#59, #61 to
+  #64 and two more), with no free photograph; ORBCOMM OG2 (#57), BlueBird (#68), the later HawkEye 360 and Jilin-1 (#128) and the other mid-size families of #174.
+- **Seven bus families come from the makers' renders, not photographs.** **No model has been seen by a person who knows the craft**; the contact sheets are the first look.
+
+### Small fixes and accessibility
+
+#### Added
+
+- **The sky calendar runs to December 2028**, with the 2028 showers and eclipses and five solstice pages; each shower's peak is given year by year, from the IMO calendars for 2026
+  and 2027 and **computed** from solar longitude for 2028, whose calendar was not published on 2026-11-08. The mailer now sends each year's own date. (forge #90)
+- **The tests fail 60 days before an operating craft's path ends**, and every finished mission says `ended:`. (forge #87)
+
+#### Changed
+
+- **JWST's and Juno's paths run on again** (they had stopped in October and August): JPL Horizons, read 2026-11-07, takes JWST to 2031-11-01 and Juno to 2027-01-20, and the card
+  says which part is a plan. (forge #87)
+- **The exoplanets take the newer of the packed copy and the harvester's snapshot**, and the card says which. (forge #88)
+- **The satellite pages' fallback counts are written from the harvester's index**, not typed, and refused when over 45 days old. (forge #89)
+- **No page links a pull request GitHub no longer shows**, and every page says an issue form needs "a free GitHub account". (forge #91)
+- **The readable page lists all 33 trips**, and the tour registry covers the new features.
+
+#### Fixed
+
+- **What to show, read by a screen reader**: Shift+Tab from its first control returns to the button, Tab from its last closes it and moves on, the button names the panel
+  (`aria-controls`), and "No layer by that name." is announced. This was a pass of the code in headless Chrome, **not a test with a person using a screen reader**. (forge #49)
+- **Global key listeners leave text fields alone.** `ui/play.js`, `ui/skystory.js` and `scene/groundstage.js` now ask the search's `isTypingIn` before taking a key, so Escape in
+  the search no longer closes a challenge or vanishes into the sky story.
+- **Phone tap targets are 44 px**: the time pill's calendar button (it was 36 px), Find's sort headings, rows and links, and three small close buttons (`css/find.css`,
+  `css/ui.css`).
+- **On a phone the "Satellites could not be read" note no longer covers the scale rail or the countdown chip.** German and seven other languages translate the catalogue's type
+  words, and the Moment clock's units are translated.
+- **The Earth view no longer prints Uranus and its moons along its top**; the ground sky's Milky Way keeps its band (the shader cut it with linear values on an sRGB map); boot's
+  own long frames no longer trip the frame latch for good. (forge #13, #14)
+- **Zhurong has its phone pictures**, and the country index has a share picture. (forge #32)
+- **`BUILD` in `site/js/ui/urlstate.js` says 2.0.0.** It had said 1.4.0 since that release, because 1.5.0 to 1.9.0 did not bump it, so their shared links carry `build=1.4.0`; the
+  app reads none of it.
+- **Correction to the 1.9.0 notes: Haumea's ring is drawn**, and has been since 1.3.0. 1.9.0 said the rings of Chariklo, Haumea and Quaoar "were not started"; `scene/dwarfs.js`
+  draws Haumea's at 2 287 km, 70 km wide (Ortiz et al. 2017), held by `tests/test_outer_worlds.mjs`. Quaoar's two rings are named on its card and not drawn, and Chariklo is not on
+  the map. (forge #116)
+
+#### Not yet
+
+- **An issue form without a GitHub account** needs a mailbox or a public tracker the project does not have. (forge #91)
+- **The ISS reel's end card** is in the internal repository, and **the night lights at 900 km** were seen only in headless Chrome. (forge #13)
+- **The boot's long tasks** need a CPU-profile pass of their own. (forge #14)
+- **Zhurong's card distance and the launch chip run off the edge on a 390 px phone.** Seen in the look runs, not fixed.
+- **"Offline" can take 6 to 12 seconds to show** on a slow device, because it waits for the first free moment after the app starts (it took 25 seconds or more before).
+
+### Found in the final look run
+
+The whole app was looked at on a desktop and a phone-sized window before release, in English, German and Arabic, with the network on and off. These were fixed:
+
+#### Fixed
+
+- **Cards in German, French, Portuguese, Russian and Ukrainian showed wrong numbers.** Jupiter's card said "5 von der Sonne" for 5,32 AE: the card, the tag readout and the
+  check that decides when a tag speaks again read only "." as a decimal point and cut the rest at the comma. All three read either now, and a test runs Jupiter's card in every language.
+- **The time pill is whole on a phone.** Up to 480 px its words take two lines, and away from now the readout has its own row, so the date, the time, "UTC" and "in 3 days" all show,
+  in Arabic too. The buttons stay 44 px.
+- **The ground and a world's sky show only the ground's own overlays.** Going down from the Planets tab had left the scale rail, the size badge and "Heliopause (modelled)" over Mars,
+  Titan and the Moon. A test now checks every floating overlay the code makes against the list the ground hides or keeps.
+- **The deep-time note is readable**, on solid glass above the labels; on a phone it is three lines under Back, and a tap shows the rest. **Upcoming launches leave the globe** when
+  the clock is more than a year from now.
+- **The app says "Offline" when it starts with no network.** The service worker took an answer from the browser's own cache as proof of a network and said "online"; it now asks the
+  server itself, and the page asks the worker at start. The release's offline probe called an audio method that does not exist, so its trip ran silent; it calls the right one.
+- **Arabic in the spaced monospace styles is joined again**: letters the mono font lacks use the sans font, and nothing is letter-spaced in Arabic.
+- **The last English in German and Arabic is translated**: the 74 mission event titles in "Go to a date", "Sun" in the card breadcrumb and the note on a planet drawn in its true
+  direction, machine-drafted in all ten languages.
+- **"2007: Fengyun-1C" is listed once** in "Go to a date", not twice.
+- **With another culture's sky chosen, a tap where it draws no figure says so** and offers the nearest of its figures, instead of quietly opening the Western one.
+- **Titan's sky opens on Saturn**, and its rises and sets are worked out when the place is opened with the panel already showing; a step that fails no longer stalls the list.
+- **Barnard's Star gives the same card by either path.** Reached by flying to its system it was the Exoplanet Archive's host record (5.96 ly, no magnitude, a position 165″ off);
+  it is now matched to the catalogue star, so the card and the deep-time distance line agree.
+- **Smaller:** the flight editor ends above the time pill; the date dialog is a bottom sheet on a phone; an hour label gives way to "now" on the time tape; Leave and the keys hint on
+  the ground sit on glass; the heliosphere legend and Find's country chip step clear of other controls; Tonight's buttons and the Algol line wrap instead of clipping; Look inside opens
+  below the line under the search on a phone; a storm reads "Tropical Cyclone 02", not GDACS's season id; the comparison pages count active satellites; a failed load of the deep-time
+  stars is tried once more.
+
 ## [1.9.0] - 2026-11-05
 
 1.9.0 works through the issues that were still open when GitHub removed the project's issue tracker; they were recovered from local copies, and each part below names the issue it answers. Every model was compared, side by side, with photographs or agency drawings of the real craft before it was taken; the ones that did not pass are listed under "Not yet" with the reason.
@@ -1924,7 +2340,24 @@ The first public map.
 - A registry of YAML files as the architecture, with generated mirrors and a validator in CI.
 - No server, no database, no build step.
 
-[Unreleased]: https://github.com/Sara-Managed-Projects/space-radar/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/Sara-Managed-Projects/space-radar/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/Sara-Managed-Projects/space-radar/compare/v1.9.0...v2.0.0
+[1.9.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.9.0
+[1.8.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.8.0
+[1.7.9]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.7.9
+[1.7.8]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.7.8
+[1.7.7]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.7.7
+[1.7.6]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.7.6
+[1.7.5]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.7.5
+[1.7.4]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.7.4
+[1.7.3]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.7.3
+[1.7.2]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.7.2
+[1.7.1]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.7.1
+[1.7.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.7.0
+[1.6.3]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.6.3
+[1.6.2]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.6.2
+[1.6.1]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.6.1
+[1.6.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.6.0
 [1.5.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.5.0
 [1.4.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.4.0
 [1.3.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.3.0

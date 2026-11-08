@@ -48,14 +48,23 @@ check(old.seconds === 0, 'and plain no-cache, the header of before, gave the edg
 // --- 2. what carries it is what is invalidated ----------------------------------------------------
 const uses = [...code.matchAll(/"s3:\/\/\$BUCKET\/([\w/]+)"[^\n]*(?:\\\n[^\n]*)*?--cache-control "\$(\w+)"/g)].map((m) => [m[1], m[2]]);
 const revalidated = [...new Set(uses.filter(([, v]) => v === 'REVALIDATE').map(([p]) => p))].sort();
-check(JSON.stringify(revalidated) === JSON.stringify(['_gz/css', '_gz/js', 'css', 'embed', 'js', 'lab', 'o', 'press', 'share', 't', 'vendor']), `the folders stored for revalidation are the app's and the pages' (${revalidated})`);
+// print/ since 2.0.0 (forge #161, b200-f6-learn): the paper models' page and its PDFs, synced by a block of its own.
+check(JSON.stringify(revalidated) === JSON.stringify(['_gz/css', '_gz/js', 'css', 'embed', 'js', 'lab', 'o', 'press', 'print', 'share', 't', 'vendor']), `the folders stored for revalidation are the app's and the pages' (${revalidated})`);
 // The growth pages (scripts/seo_pages.py) are synced by a loop over pages-dirs.txt, share/ among them: the same list is invalidated.
 check(/"s3:\/\/\$BUCKET\/\$dir" --cache-control "\$REVALIDATE"/.test(code) && /PATHS\+=\("\/\$dir\/\*"\)/.test(code), 'every directory in pages-dirs.txt carries it and is invalidated by the same list');
-check(!/--cache-control "no-cache"/.test(code) && (code.match(/--cache-control "\$REVALIDATE"/g) || []).length === 17, 'no upload still says a literal no-cache: all seventeen read $REVALIDATE');
+// Seventeen until 2.0.0, then twenty-two: print/'s page and PDFs (b200-f6-learn), and assets/ and creators/ as HTML,
+// JSON and pictures (b200-f9-reach, one loop of three uploads). A new upload changes the count here on purpose.
+check(!/--cache-control "no-cache"/.test(code) && (code.match(/--cache-control "\$REVALIDATE"/g) || []).length === 22, 'no upload still says a literal no-cache: all twenty-two read $REVALIDATE');
 check(/aws s3 cp "\$path" "s3:\/\/\$BUCKET\/\$name" --region "\$REGION" \\\n\s+--cache-control "\$REVALIDATE"/.test(code), 'the root files (index.html, sw.js, the manifest, the sitemap) carry it too');
 const paths = (/PATHS=\(([^)]*)\)/.exec(code) || [])[1] || '';
 const invalidated = [...paths.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
-for (const p of revalidated.filter((x) => !x.startsWith('_gz/') && x !== 'share')) check(invalidated.includes(`/${p}/*`), `/${p}/* is invalidated on every deploy`);
+// A page directory that the pages-dirs.txt loop hands to a block of its own (`[ "$dir" = "print" ] && continue`, because it
+// holds PDFs beside its page) is still in pages-dirs.txt, so the loop below the list adds it: /print/* is invalidated
+// by that line, not by the fixed list, and naming it twice would spend a second of CloudFront's fifteen wildcards.
+const pageDirs = new Set([...code.matchAll(/\[ "\$dir" = "([\w-]+)" \] && continue/g)].map((m) => m[1]));
+const byPagesDirs = /while IFS= read -r dir; do \[ -n "\$dir" \] && PATHS\+=\("\/\$dir\/\*"\); done < "\$BUILT\/pages-dirs\.txt"/.test(code);
+for (const p of revalidated.filter((x) => !x.startsWith('_gz/') && x !== 'share')) check(invalidated.includes(`/${p}/*`) || (pageDirs.has(p) && byPagesDirs), `/${p}/* is invalidated on every deploy`);
+check(pageDirs.has('print') && /path="print\/index\.html"/.test(readFileSync(join(ROOT, 'scripts/seo_print.py'), 'utf8')), 'print/ is a page of pages-dirs.txt (scripts/seo_print.py), which is why it is invalidated with them');
 check(/PATHS\+=\("\/_gz\/\*"\)/.test(code), '/_gz/* is invalidated with it');
 const rootFiles = [...(/for f in ([\s\S]*?); do/.exec(code) || [, ''])[1].matchAll(/\/([\w.-]+):/g)].map((m) => m[1]);
 check(/PATHS\+=\("\/\$KEYFILE"\)/.test(code), 'the IndexNow key file is invalidated by name');

@@ -39,7 +39,7 @@ import { SYSTEMS } from '../data/systems.js';
 import { load } from '../data/sources.js';
 import { parseAstros } from '../data/parsers.js';
 import { groupTrips, eventSubtitle } from './trippicker.js';
-import { tripPicture } from './trippics.js';
+import { tripPicture, PICTURE_DELAY_MS } from './trippics.js';
 import { createSearch } from './search.js';
 import { createNext, auroraItem } from './next.js';
 import { tagLines } from './cardgate.js';
@@ -559,7 +559,9 @@ export function createExplore(ctx, host) {
   earth.appendChild(momentsHost);
   const mountMoments = () => {
     const go = () => import('../moments/shelf.js').then((m) => m.mountShelf(momentsHost, ctx)).catch((err) => console.warn('the moments shelf did not load', err));
-    if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(go, { timeout: 8000 }); else setTimeout(go, 3000);
+    // b200-s5-ci: the idle moment came at once on an idle machine, inside the first visit's window (23 kB of shelf, words and
+    // format); now PICTURE_DELAY_MS after the layers first, as the trips' pictures above wait (ui/trippics.js).
+    setTimeout(() => (typeof window.requestIdleCallback === 'function' ? window.requestIdleCallback(go, { timeout: 8000 }) : go()), PICTURE_DELAY_MS);
   };
   window.addEventListener('sr:layers-ready', mountMoments, { once: true });
   if (window.__srLayersReady) mountMoments();
@@ -577,6 +579,10 @@ export function createExplore(ctx, host) {
   worldsSect.appendChild(worldsList);
   worldsSect.appendChild(el('p', 'sr-sect__note', COPY.explore.worldsDrawn));
   planets.appendChild(worldsSect);
+  // b200-f2-worlds: begin -- the Size and Distance sliders (forge #145, ui/orrery.js), fetched the first time this tab is painted
+  const orreryHost = el('div', 'sr-orrery-host');
+  planets.appendChild(orreryHost);
+  // b200-f2-worlds: end
   planets.appendChild(tripHosts.get('planets').s);
   const worldRows = new Map();
   for (const id of PLANET_IDS) {
@@ -610,8 +616,11 @@ export function createExplore(ctx, host) {
     return { key, r };
   });
   for (const rung of LADDER_RUNGS) {
-    if (!rung.target || !rung.target.record) continue; // the worlds are the Planets tab's
+    // b200-c1-culture-helio (forge #148): the heliosphere is a place, a flight fetched on the press (ui/heliorung.js).
+    const helio = !!rung.target && rung.target.place === 'heliosphere';
+    if (!rung.target || !(rung.target.record || helio)) continue; // the worlds are the Planets tab's
     const r = rowButton(rung.label, rung.distance, () => {
+      if (helio) { import('./heliorung.js').then((m) => m.goHeliosphere(ctx)).catch(() => {}); return; }
       const rec = ctx.recordById(rung.target.record);
       if (!rec) return;
       if (rec.layer && typeof ctx.isLayerOn === 'function' && !ctx.isLayerOn(rec.layer) && typeof ctx.setLayerOn === 'function') ctx.setLayerOn(rec.layer, true);
@@ -967,7 +976,7 @@ export function createExplore(ctx, host) {
       r.b.title = ok ? COPY.ladder[`${key}Title`] : COPY.ladder.flightOff;
     }
     for (const { rung, r } of farRows) {
-      const ok = !!(typeof ctx.recordById === 'function' && ctx.recordById(rung.target.record));
+      const ok = rung.target.place ? typeof ctx.wantClimb === 'function' : !!(typeof ctx.recordById === 'function' && ctx.recordById(rung.target.record)); // b200-c1-culture-helio
       r.b.disabled = !ok;
       r.b.setAttribute('aria-label', t(ok ? COPY.ladder.rowName : COPY.ladder.rowNameLoading, { label: rung.label, distance: rung.distance }));
     }
@@ -996,6 +1005,7 @@ export function createExplore(ctx, host) {
     if (mounts.has(id)) mounts.get(id)();
     if (id === 'earth') paintNow();
     if (id === 'planets') paintWorlds();
+    if (id === 'planets' && typeof ctx.wantOrrery === 'function') ctx.wantOrrery().then((o) => { if (o) o.mount(orreryHost); }); // b200-f2-worlds
     if (id === 'stars') paintStars();
     paintTrips(id);
   }

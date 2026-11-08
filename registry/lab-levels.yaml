@@ -1,0 +1,196 @@
+version: 1
+# The Lab's simulators by age and by curriculum (forge #159, 2026-11-07): one row per site/lab/<slug>/,
+# so a teacher can ask for "ages 11-14, gravity" or "GCSE 4.8.1.3" on /lab/ and on /teachers/.
+#
+# WHY A REGISTRY ROW AND NOT A <meta> IN EACH SIMULATOR. A contributor adds a simulator as one file and
+# is not asked to know four curricula (docs/ADD_A_SIMULATOR.md). The tags are a teacher's reading of the
+# page, reviewed in one place, and a simulator without a row is still listed: it is simply not in a
+# filtered view until somebody tags it. tests/test_lab_levels.py refuses a row for a folder that does
+# not exist, a code that is not in the lists below, and an `app` link that names nothing on the map;
+# scripts/gen_lab_index.py writes the tags into /lab/'s cards and each simulator's "See it in the 3D map"
+# link from here.
+#
+# THESE ARE MAPPINGS, NOT CLAIMS OF COVERAGE. A tag says the simulator shows an idea a statement asks
+# for, not that it teaches the whole statement or meets an assessment. Read on 2026-11-07:
+#   band  the ages it is pitched at (a row may have several): 7-11 (US grades 2-5, England KS2),
+#         11-14 (grades 6-8, KS3, Years 7-9), 14-16 (grades 9-10, KS4/GCSE, Years 10-11),
+#         16-18 (grades 11-12, A level, IB Diploma), 18+ (university).
+#   ngss  NGSS Lead States (2013), Next Generation Science Standards, performance expectations by code:
+#         https://www.nextgenscience.org/search-standards
+#   ks3   England's national curriculum, Science programmes of study: key stage 3 (DfE, DFE-00185-2013),
+#         "Physics" and "Chemistry: Earth and atmosphere". The document has no codes, so the ids below
+#         are ours and each names the statement it stands for:
+#         https://www.gov.uk/government/publications/national-curriculum-in-england-science-programmes-of-study
+#   gcse  KS4: the DfE's GCSE physics subject content (DFE-00194-2015), as numbered in the most taken
+#         specification, AQA GCSE Physics 8463 (version 1.1); "4.8" is the physics-only Space physics:
+#         https://www.gov.uk/government/publications/gcse-single-science
+#         https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification
+#   ib    IB Diploma Programme Physics guide, first assessment 2025, by topic (A.1 ... E.5):
+#         https://www.ibo.org/programmes/diploma-programme/curriculum/sciences/physics/
+#   app   where the idea is visible in the 3D map, as a link the app's own reader knows
+#         (site/js/ui/urlstate.js KEYS: `at`, `trip`, `stage`).
+codes:
+  ks3:
+    space-gravity: "gravity force, weight = mass x gravitational field strength (g); g differs on other planets and stars; gravity between Earth and Moon, and Earth and Sun"
+    space-stars: "our Sun as a star, other stars in our galaxy, other galaxies"
+    space-seasons: "the seasons and the Earth's tilt, day length at different times of year, in different hemispheres"
+    space-light-year: "the light year as a unit of astronomical distance"
+    light-waves: "light waves travelling through a vacuum; the speed of light; light transferring energy from source to absorber"
+    sound-waves: "frequencies of sound waves, measured in hertz; waves on water as undulations which travel through water"
+    motion-speed: "speed and the quantitative relationship between average speed, distance and time"
+    forces-balance: "forces as pushes or pulls; forces being needed to cause objects to stop or start moving, or to change their speed or direction"
+    energy-changes: "energy changes on deformation; changes in systems; comparing energy values"
+    earth-atmosphere: "the composition of the atmosphere; the production of carbon dioxide by human activity and the impact on climate"
+  gcse:
+    "4.1.1": "Energy changes in a system, and the ways energy is stored (kinetic energy = 0.5 m v^2)"
+    "4.5.1.3": "Mass and weight (W = m g)"
+    "4.5.6": "Forces and motion (speed, velocity, circular motion, Newton's laws)"
+    "4.5.7": "Momentum (HT)"
+    "4.6.1.2": "Properties of waves (wave speed = frequency x wavelength)"
+    "4.6.2": "Electromagnetic waves"
+    "4.6.3": "Black body radiation (physics only)"
+    "4.8.1.1": "Our solar system"
+    "4.8.1.2": "The life cycle of a star"
+    "4.8.1.3": "Orbital motion, natural and artificial satellites"
+    "4.8.2": "Red-shift"
+  ib: {A.1: Kinematics, A.2: Forces and momentum, A.3: "Work, energy and power", A.5: Galilean and special relativity, B.1: Thermal energy transfers, B.2: Greenhouse effect, C.2: Wave model, C.3: Wave phenomena, C.5: Doppler effect, D.1: Gravitational fields, E.5: Fusion and stars}
+  ngss:
+    1-ESS1-1: "Use observations of the sun, moon, and stars to describe patterns that can be predicted"
+    5-PS2-1: "The gravitational force exerted by Earth on objects is directed down"
+    5-ESS1-1: "The apparent brightness of the sun compared to other stars is due to their relative distances from Earth"
+    5-ESS1-2: "Patterns of daily changes in length and direction of shadows, day and night, and the seasonal appearance of some stars"
+    MS-PS2-2: "The change in an object's motion depends on the sum of the forces on it and its mass"
+    MS-PS2-4: "Gravitational interactions are attractive and depend on the masses of interacting objects"
+    MS-PS3-1: "Relationships of kinetic energy to the mass of an object and to its speed"
+    MS-PS4-1: "A simple model for waves that includes how the amplitude of a wave is related to its energy"
+    MS-ESS1-1: "An Earth-sun-moon model of the cyclic patterns of lunar phases, eclipses of the sun and moon, and seasons"
+    MS-ESS1-2: "The role of gravity in the motions within galaxies and the solar system"
+    MS-ESS1-3: "Scale properties of objects in the solar system"
+    HS-PS2-1: "Newton's second law: the mathematical relationship among force, mass and acceleration"
+    HS-PS2-4: "Newton's Law of Gravitation to describe and predict the gravitational forces between objects"
+    HS-PS3-1: "Calculate the change in the energy of one component in a system"
+    HS-PS4-1: "Mathematical relationships among the frequency, wavelength, and speed of waves"
+    HS-ESS1-1: "The life span of the sun and the role of nuclear fusion in its core"
+    HS-ESS1-2: "The Big Bang theory, from light spectra, the motion of distant galaxies and the composition of matter"
+    HS-ESS1-3: "The way stars, over their life cycle, produce elements"
+    HS-ESS1-4: "Mathematical or computational representations to predict the motion of orbiting objects in the solar system"
+    HS-ESS2-4: "Variations in the flow of energy into and out of Earth's systems result in changes in climate"
+labs:
+  # Orbits and gravity
+  binary-dance-barycentre: {band: [14-16, 16-18], ngss: [HS-PS2-4], ks3: [], gcse: ["4.8.1.3"], ib: [D.1], app: "#at=charon"}
+  comet-tail-compass: {band: [11-14, 14-16], ngss: [MS-ESS1-2], ks3: [space-stars], gcse: ["4.8.1.1"], ib: [], app: "#trip=comets-and-meteors"}
+  escape-velocity-ladder: {band: [14-16, 16-18], ngss: [HS-PS2-4], ks3: [], gcse: ["4.8.1.3"], ib: [D.1], app: "#at=moon"}
+  five-parking-spots-lagrange-points: {band: [16-18, 18+], ngss: [HS-PS2-4], ks3: [], gcse: [], ib: [D.1], app: "#at=jupiter"}
+  gravity-slingshot-steal: {band: [14-16, 16-18], ngss: [HS-PS2-4], ks3: [], gcse: ["4.5.7"], ib: [A.2, D.1], app: "#at=voyager-1"}
+  gravity-well-rubber-sheet: {band: [11-14, 14-16], ngss: [MS-PS2-4], ks3: [space-gravity], gcse: [], ib: [], app: "#trip=black-holes"}
+  hohmann-transfer-hop: {band: [14-16, 16-18], ngss: [HS-ESS1-4], ks3: [], gcse: ["4.8.1.3"], ib: [D.1], app: "#at=mars"}
+  janus-and-epimetheus-the-horseshoe-swap: {band: [16-18, 18+], ngss: [HS-ESS1-4], ks3: [], gcse: [], ib: [D.1], app: "#at=saturn"}
+  kepler-equal-areas: {band: [14-16, 16-18], ngss: [HS-ESS1-4], ks3: [], gcse: ["4.8.1.3"], ib: [D.1], app: "#trip=a-year-in-a-minute"}
+  keplers-third-law-race: {band: [14-16, 16-18], ngss: [HS-ESS1-4], ks3: [], gcse: ["4.8.1.3"], ib: [D.1], app: "#trip=a-year-in-a-minute"}
+  mercurys-rosette: {band: [16-18, 18+], ngss: [HS-ESS1-4], ks3: [], gcse: [], ib: [D.1], app: "#at=mercury"}
+  moons-in-step: {band: [14-16, 16-18], ngss: [HS-ESS1-4], ks3: [], gcse: ["4.8.1.3"], ib: [D.1], app: "#at=io"}
+  one-launch-four-orbit-shapes: {band: [14-16, 16-18], ngss: [HS-ESS1-4], ks3: [], gcse: ["4.8.1.3"], ib: [D.1], app: "#trip=comets-and-meteors"}
+  orbit-painter: {band: [11-14, 14-16], ngss: [MS-ESS1-2], ks3: [space-gravity], gcse: ["4.8.1.3"], ib: [D.1], app: "#trip=a-year-in-a-minute"}
+  orbit-zoo-height-sets-the-lap-time: {band: [11-14, 14-16], ngss: [MS-ESS1-2], ks3: [space-gravity], gcse: ["4.8.1.3"], ib: [D.1], app: "#trip=satellites-and-junk"}
+  the-iss-always-falls: {band: [11-14, 14-16], ngss: [MS-PS2-2], ks3: [space-gravity, forces-balance], gcse: ["4.8.1.3"], ib: [], app: "#at=iss"}
+  the-moon-spins-to-match: {band: [11-14, 14-16], ngss: [MS-ESS1-1], ks3: [space-gravity], gcse: [], ib: [], app: "#at=moon"}
+  three-bodies-on-a-figure-eight: {band: [16-18, 18+], ngss: [HS-PS2-4], ks3: [], gcse: [], ib: [D.1], app: "#at=exotic-hulse-taylor"}
+  throw-it-faster: {band: [11-14, 14-16], ngss: [MS-PS2-4], ks3: [space-gravity], gcse: ["4.8.1.3"], ib: [D.1], app: "#at=iss"}
+  why-geo-stays-put: {band: [14-16, 16-18], ngss: [HS-ESS1-4], ks3: [], gcse: ["4.8.1.3"], ib: [D.1], app: "#trip=satellites-and-junk"}
+  # Planets and moons
+  greenhouse-dial-why-venus-is-hot: {band: [11-14, 14-16, 16-18], ngss: [HS-ESS2-4], ks3: [earth-atmosphere], gcse: ["4.6.3"], ib: [B.2], app: "#at=venus"}
+  habitable-zone-slider: {band: [11-14, 14-16], ngss: [MS-ESS1-3], ks3: [space-stars], gcse: [], ib: [B.1], app: "#trip=travel-to-exoplanets"}
+  io-the-squeezed-moon: {band: [11-14, 14-16], ngss: [MS-ESS1-2], ks3: [space-gravity], gcse: [], ib: [], app: "#at=io"}
+  mercurys-double-sunrise: {band: [14-16, 16-18], ngss: [HS-ESS1-4], ks3: [], gcse: [], ib: [], app: "#at=mercury"}
+  olympus-mons-vs-everest: {band: [7-11, 11-14], ngss: [MS-ESS1-3], ks3: [], gcse: [], ib: [], app: "#at=mars"}
+  roche-limit-shredder: {band: [16-18, 18+], ngss: [HS-PS2-4], ks3: [], gcse: [], ib: [D.1], app: "#at=saturn"}
+  saturns-rings-are-paper-thin: {band: [7-11, 11-14], ngss: [MS-ESS1-3], ks3: [], gcse: ["4.8.1.1"], ib: [], app: "#at=saturn"}
+  tilt-makes-the-seasons: {band: [7-11, 11-14], ngss: [5-ESS1-2, MS-ESS1-1], ks3: [space-seasons], gcse: [], ib: [], app: "#at=earth"}
+  two-tides-not-one: {band: [11-14, 14-16], ngss: [MS-ESS1-2], ks3: [space-gravity], gcse: [], ib: [D.1], app: "#at=moon"}
+  venus-day-race: {band: [7-11, 11-14], ngss: [MS-ESS1-3], ks3: [], gcse: ["4.8.1.1"], ib: [], app: "#at=venus"}
+  # Scale and distance
+  asteroid-belt-is-not-crowded: {band: [7-11, 11-14], ngss: [MS-ESS1-3], ks3: [], gcse: ["4.8.1.1"], ib: [], app: "#trip=asteroids-that-come-close"}
+  earth-from-the-sun-shrinking: {band: [7-11, 11-14], ngss: [MS-ESS1-3], ks3: [], gcse: [], ib: [], app: "#trip=outer-solar-system"}
+  earths-in-jupiter: {band: [7-11, 11-14], ngss: [MS-ESS1-3], ks3: [], gcse: ["4.8.1.1"], ib: [], app: "#at=jupiter"}
+  from-ground-to-space-in-100-km: {band: [7-11, 11-14], ngss: [MS-ESS1-3], ks3: [], gcse: [], ib: [], app: "#at=iss"}
+  milky-way-address: {band: [11-14, 14-16], ngss: [MS-ESS1-2], ks3: [space-stars], gcse: [], ib: [], app: "#stage=galaxy"}
+  nearest-star-by-voyager: {band: [11-14, 14-16], ngss: [MS-ESS1-3], ks3: [space-light-year, motion-speed], gcse: [], ib: [], app: "#at=star-proxima-cen"}
+  planets-fit-moon-gap: {band: [7-11, 11-14], ngss: [MS-ESS1-3], ks3: [], gcse: [], ib: [], app: "#at=moon"}
+  powers-of-ten-zoom-out: {band: [7-11, 11-14, 14-16], ngss: [MS-ESS1-3], ks3: [space-stars, space-light-year], gcse: [], ib: [], app: "#trip=out-to-the-edge"}
+  the-solar-system-is-mostly-empty: {band: [7-11, 11-14], ngss: [MS-ESS1-3], ks3: [], gcse: ["4.8.1.1"], ib: [], app: "#trip=outer-solar-system"}
+  the-sun-as-a-marble: {band: [7-11, 11-14], ngss: [MS-ESS1-3], ks3: [], gcse: [], ib: [], app: "#at=sun"}
+  voyagers-odometer: {band: [11-14, 14-16], ngss: [MS-ESS1-3], ks3: [motion-speed], gcse: [], ib: [], app: "#at=voyager-1"}
+  walk-the-solar-system: {band: [7-11, 11-14], ngss: [MS-ESS1-3], ks3: [], gcse: ["4.8.1.1"], ib: [], app: "#trip=outer-solar-system"}
+  your-closest-stars: {band: [11-14, 14-16], ngss: [5-ESS1-1, MS-ESS1-3], ks3: [space-stars, space-light-year], gcse: [], ib: [E.5], app: "#stage=stellar"}
+  # Light and time
+  crossing-the-galaxy-at-light-speed: {band: [11-14, 14-16], ngss: [MS-ESS1-3], ks3: [space-light-year], gcse: [], ib: [], app: "#stage=galaxy"}
+  doppler-siren-waves: {band: [14-16, 16-18], ngss: [HS-PS4-1], ks3: [sound-waves], gcse: ["4.6.1.2", "4.8.2"], ib: [C.5], app: "#at=exotic-ss-433"}
+  inverse-square-flashlight: {band: [14-16, 16-18], ngss: [5-ESS1-1], ks3: [light-waves], gcse: [], ib: [B.1], app: "#trip=outer-solar-system"}
+  light-speed-road-trip: {band: [7-11, 11-14], ngss: [MS-ESS1-3], ks3: [light-waves, space-light-year], gcse: [], ib: [], app: "#at=neptune"}
+  radio-ping-pong-with-mars: {band: [11-14, 14-16], ngss: [MS-ESS1-3], ks3: [light-waves, motion-speed], gcse: ["4.6.2"], ib: [], app: "#trip=mars-where-we-have-driven"}
+  redshift-stripes: {band: [14-16, 16-18], ngss: [HS-ESS1-2], ks3: [], gcse: ["4.8.2"], ib: [C.5], app: "#stage=local-group"}
+  stars-bunch-up-ahead: {band: [16-18, 18+], ngss: [], ks3: [], gcse: [], ib: [A.5], app: "#stage=stellar"}
+  sunshine-by-planet: {band: [11-14, 14-16], ngss: [5-ESS1-1], ks3: [light-waves], gcse: [], ib: [B.1], app: "#trip=outer-solar-system"}
+  the-sun-vanishes-eight-minutes-later: {band: [11-14, 14-16], ngss: [MS-ESS1-2], ks3: [light-waves, space-gravity], gcse: [], ib: [], app: "#at=sun"}
+  twin-clock-time-dilation: {band: [16-18, 18+], ngss: [], ks3: [], gcse: [], ib: [A.5], app: "#at=iss"}
+  # Rockets and spaceflight
+  aerobraking-dip: {band: [14-16, 16-18], ngss: [HS-PS3-1], ks3: [], gcse: ["4.1.1"], ib: [A.3], app: "#at=mars"}
+  delta-v-subway-map: {band: [14-16, 16-18], ngss: [HS-ESS1-4], ks3: [], gcse: [], ib: [D.1], app: "#trip=back-to-the-moon"}
+  free-return-loop-to-the-moon: {band: [14-16, 16-18], ngss: [HS-ESS1-4], ks3: [], gcse: ["4.8.1.3"], ib: [D.1], app: "#trip=moon-landings"}
+  ion-drive-vs-chemical-rocket: {band: [14-16, 16-18], ngss: [HS-PS2-1], ks3: [], gcse: ["4.5.7"], ib: [A.2], app: "#trip=asteroids-that-come-close"}
+  mars-launch-window: {band: [14-16, 16-18], ngss: [HS-ESS1-4], ks3: [], gcse: [], ib: [D.1], app: "#trip=mars-where-we-have-driven"}
+  reentry-heat-speed-squared: {band: [11-14, 14-16], ngss: [MS-PS3-1], ks3: [energy-changes], gcse: ["4.1.1"], ib: [A.3], app: "#at=iss"}
+  rocket-equation: {band: [16-18, 18+], ngss: [HS-PS2-1], ks3: [], gcse: ["4.5.7"], ib: [A.2], app: "#trip=people-in-space"}
+  solar-sail-surf: {band: [14-16, 16-18], ngss: [HS-PS2-1], ks3: [forces-balance], gcse: ["4.5.6"], ib: [A.2], app: "#at=sun"}
+  staging-drop-the-dead-weight: {band: [14-16, 16-18], ngss: [HS-PS2-1], ks3: [], gcse: ["4.5.7"], ib: [A.2], app: "#trip=two-pads-at-kennedy"}
+  to-catch-up-slow-down: {band: [14-16, 16-18], ngss: [HS-ESS1-4], ks3: [], gcse: ["4.8.1.3"], ib: [D.1], app: "#trip=journey-to-the-station"}
+  # Stars and their lives
+  cepheid-cosmic-yardstick: {band: [14-16, 16-18], ngss: [HS-ESS1-2], ks3: [space-stars], gcse: [], ib: [E.5], app: "#stage=local-group"}
+  element-factory-onion-shells: {band: [14-16, 16-18], ngss: [HS-ESS1-3], ks3: [], gcse: ["4.8.1.2"], ib: [E.5], app: "#trip=life-of-a-star"}
+  planet-shadow-transit-light-curve: {band: [11-14, 14-16], ngss: [MS-ESS1-3], ks3: [space-stars], gcse: [], ib: [], app: "#trip=travel-to-exoplanets"}
+  pulsar-lighthouse: {band: [14-16, 16-18], ngss: [HS-ESS1-3], ks3: [], gcse: ["4.8.1.2"], ib: [E.5], app: "#at=exotic-crab-pulsar"}
+  sunspot-cycle-counter: {band: [11-14, 14-16], ngss: [HS-ESS1-1], ks3: [space-stars], gcse: [], ib: [], app: "#trip=the-sun-today"}
+  supernova-shockwave: {band: [14-16, 16-18], ngss: [HS-ESS1-3], ks3: [], gcse: ["4.8.1.2"], ib: [E.5], app: "#at=exotic-crab-pulsar"}
+  what-happens-to-our-sun: {band: [11-14, 14-16, 16-18], ngss: [HS-ESS1-1], ks3: [space-stars], gcse: ["4.8.1.2"], ib: [E.5], app: "#trip=life-of-a-star"}
+  wobbling-star: {band: [14-16, 16-18], ngss: [HS-PS4-1], ks3: [], gcse: ["4.8.2"], ib: [C.5], app: "#trip=travel-to-exoplanets"}
+  # Sky from Earth
+  mars-loop-in-the-sky: {band: [11-14, 14-16], ngss: [MS-ESS1-2], ks3: [], gcse: [], ib: [], app: "#trip=planets-tonight"}
+  meteor-shower-radiant: {band: [11-14, 14-16], ngss: [1-ESS1-1, MS-ESS1-2], ks3: [], gcse: [], ib: [], app: "#trip=comets-and-meteors"}
+  midnight-sun: {band: [7-11, 11-14], ngss: [5-ESS1-2, MS-ESS1-1], ks3: [space-seasons], gcse: [], ib: [], app: "#at=earth"}
+  moon-phases-from-above: {band: [7-11, 11-14], ngss: [1-ESS1-1, MS-ESS1-1], ks3: [], gcse: [], ib: [], app: "#trip=moon-phases"}
+  star-trails-by-latitude: {band: [11-14, 14-16], ngss: [5-ESS1-2], ks3: [], gcse: [], ib: [], app: "#trip=tonight-from-your-street"}
+  two-eclipses-one-geometry: {band: [7-11, 11-14], ngss: [MS-ESS1-1], ks3: [], gcse: [], ib: [], app: "#trip=chasing-the-solar-eclipse"}
+  venus-phases-galileos-proof: {band: [11-14, 14-16], ngss: [MS-ESS1-2], ks3: [], gcse: ["4.8.1.1"], ib: [], app: "#at=venus"}
+  # Cosmology and black holes
+  black-hole-lens-in-2d: {band: [16-18, 18+], ngss: [], ks3: [], gcse: [], ib: [], app: "#at=exotic-sgr-a-star"}
+  dark-matter-rotation-curve: {band: [16-18, 18+], ngss: [HS-PS2-4], ks3: [], gcse: [], ib: [D.1], app: "#stage=galaxy"}
+  galaxy-merger-dance: {band: [11-14, 14-16], ngss: [MS-ESS1-2], ks3: [space-stars], gcse: [], ib: [], app: "#at=dso-m31"}
+  spaghettification: {band: [14-16, 16-18], ngss: [HS-PS2-4], ks3: [], gcse: [], ib: [D.1], app: "#trip=black-holes"}
+  time-freezes-at-the-horizon: {band: [16-18, 18+], ngss: [], ks3: [], gcse: [], ib: [A.5], app: "#trip=black-holes"}
+  universe-timeline-scrub: {band: [11-14, 14-16], ngss: [HS-ESS1-2], ks3: [space-stars], gcse: ["4.8.2"], ib: [], app: "#trip=out-to-the-edge"}
+  # Stars and galaxies
+  big-stars-burn-fast: {band: [14-16, 16-18], ngss: [HS-ESS1-1], ks3: [], gcse: ["4.8.1.2"], ib: [E.5], app: "#trip=life-of-a-star"}
+  parallax-thumb-trick: {band: [14-16, 16-18], ngss: [MS-ESS1-3], ks3: [space-light-year], gcse: [], ib: [E.5], app: "#stage=stellar"}
+  squeeze-earth-into-a-marble: {band: [14-16, 16-18], ngss: [HS-PS2-4], ks3: [], gcse: [], ib: [D.1], app: "#trip=black-holes"}
+  star-colour-is-temperature: {band: [14-16, 16-18], ngss: [HS-ESS1-1], ks3: [space-stars], gcse: ["4.6.3"], ib: [B.1, E.5], app: "#at=exotic-betelgeuse"}
+  # Earth, Moon and Sun
+  sun-and-moon-look-the-same-size: {band: [7-11, 11-14], ngss: [MS-ESS1-1, MS-ESS1-3], ks3: [], gcse: [], ib: [], app: "#trip=chasing-the-solar-eclipse"}
+  the-moon-drifts-away: {band: [11-14, 14-16], ngss: [MS-ESS1-2], ks3: [space-gravity], gcse: [], ib: [], app: "#at=moon"}
+  # The six new simulators of 2.0.0 (forge #159)
+  gravitational-wave-chirp: {band: [16-18, 18+], ngss: [HS-PS4-1], ks3: [], gcse: [], ib: [C.2], app: "#at=exotic-hulse-taylor"}
+  cmb-sound-waves: {band: [16-18, 18+], ngss: [HS-ESS1-2], ks3: [], gcse: ["4.8.2"], ib: [], app: "#trip=out-to-the-edge"}
+  every-galaxy-moves-away: {band: [14-16, 16-18], ngss: [HS-ESS1-2], ks3: [], gcse: ["4.8.2"], ib: [C.5], app: "#stage=local-group"}
+  spacetime-diagram-simultaneity: {band: [16-18, 18+], ngss: [], ks3: [], gcse: [], ib: [A.5], app: "#at=iss"}
+  orbits-near-a-black-hole: {band: [16-18, 18+], ngss: [HS-ESS1-4], ks3: [], gcse: [], ib: [D.1], app: "#at=exotic-sgr-a-star"}
+  find-a-planet-in-kepler-data: {band: [11-14, 14-16, 16-18], ngss: [HS-ESS1-4], ks3: [space-stars], gcse: [], ib: [], app: "#at=exo-tres-2-b"}
+  # b200-c3-learn: begin -- the other nine new simulators of 2.0.0 (forge #159)
+  frame-dragging-near-a-spinning-black-hole: {band: [16-18, 18+], ngss: [], ks3: [], gcse: [], ib: [D.1], app: "#at=exotic-cygnus-x-1"}
+  starlight-bends-past-the-sun: {band: [14-16, 16-18, 18+], ngss: [HS-PS2-4], ks3: [light-waves], gcse: [], ib: [D.1], app: "#at=sun"}
+  the-shadow-of-m87s-black-hole: {band: [14-16, 16-18, 18+], ngss: [HS-PS2-4], ks3: [], gcse: [], ib: [D.1], app: "#at=exotic-m87-star"}
+  hubble-diagram-from-supernovae: {band: [16-18, 18+], ngss: [HS-ESS1-2], ks3: [], gcse: ["4.8.2"], ib: [], app: "#trip=out-to-the-edge"}
+  the-afterglow-is-a-perfect-blackbody: {band: [16-18, 18+], ngss: [HS-ESS1-2], ks3: [], gcse: ["4.6.3"], ib: [B.1], app: "#trip=roof-to-the-edge"}
+  find-a-planet-by-its-wobble: {band: [14-16, 16-18], ngss: [HS-PS4-1], ks3: [space-stars], gcse: ["4.8.2"], ib: [C.5], app: "#at=exo-51-peg-b"}
+  hr-diagram-of-our-neighbours: {band: [11-14, 14-16, 16-18], ngss: [5-ESS1-1], ks3: [space-stars], gcse: ["4.8.1.2"], ib: [E.5], app: "#stage=stellar"}
+  the-pulsar-pair-that-spirals-in: {band: [16-18, 18+], ngss: [HS-ESS1-4], ks3: [], gcse: [], ib: [D.1], app: "#at=exotic-hulse-taylor"}
+  orbit-and-escape-on-other-worlds: {band: [11-14, 14-16, 16-18], ngss: [MS-PS2-4, HS-PS2-4], ks3: [space-gravity], gcse: ["4.8.1.3"], ib: [D.1], app: "#at=phobos"}
+  # b200-c3-learn: end

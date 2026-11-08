@@ -1,6 +1,8 @@
 // data/wikititles.js -- the English Wikipedia article for the things people share most.
 //
-// Read by ui/sharesheet.js only, on the first Share: never at boot.
+// Read by ui/sharesheet.js on the first Share and by ui/wikicard.js when a card's About it opens: never at boot.
+//
+// Contract: WIKI_TITLES {record id: title}; wikiTitleOf(record) -> the English article's title, or null.
 //
 // WHY A TABLE. The share sheet quotes a short "About it" from the record's Wikipedia summary
 // (spec 0061 task 8), and only a record that names its article can have one. The stars, the
@@ -177,3 +179,33 @@ export const WIKI_TITLES = {
   'dso-m93': 'Messier_93',
   'dso-m101': 'Pinwheel_Galaxy',
 };
+
+/** The article named in a source line, `https://en.wikipedia.org/wiki/<title>`, or null. */
+function titleFromUrl(text) {
+  const m = /https?:\/\/en\.wikipedia\.org\/wiki\/([^\s,;]+)/.exec(String(text || ''));
+  if (!m) return null;
+  let title = m[1];
+  // "(read 2026-09-22)" follows the URL; a title's own brackets are balanced, a trailing one is not.
+  while (title.endsWith(')') && (title.match(/\(/g) || []).length < (title.match(/\)/g) || []).length) title = title.slice(0, -1);
+  try { title = decodeURIComponent(title); } catch { /* already plain */ }
+  title = title.replace(/ /g, '_').replace(/#.*$/, '');
+  // A list is a source for a number, not an article about the thing ("List_of_Messier_objects").
+  return title && !/^List_of_/i.test(title) ? title : null;
+}
+
+/**
+ * The record's English Wikipedia article: the hand table above first, then the
+ * record's own source lines, the ones scripts/object_pages.mjs reads for its sameAs. Null when it
+ * names none: the sheet then has no excerpt and the card no block, rather than a guess from the name.
+ */
+export function wikiTitleOf(record) {
+  if (!record) return null;
+  const id = String(record.id || '');
+  if (Object.prototype.hasOwnProperty.call(WIKI_TITLES, id)) return WIKI_TITLES[id];
+  const md = record.meta || {};
+  for (const key of ['wikipedia', 'wiki', 'whySource', 'source', 'cite']) {
+    const title = titleFromUrl(md[key]);
+    if (title) return title;
+  }
+  return null;
+}

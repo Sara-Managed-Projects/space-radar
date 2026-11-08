@@ -1,0 +1,277 @@
+version: 1
+# THE GROUND AT THE LANDING SITES (release 2.0.0 batch f7-ground, forge #146). One row per site a visitor can stand
+# on (`#ground=<id>`); scripts/build-ground.py reads each row's three sources by HTTP range requests and writes
+# site/data/ground/<id>/ (scene/groundstage.js draws it). The lander's coordinates are its registry/sites.yaml row's
+# (`site:`), which is where the stage puts the lander's model.
+#
+#   dtm      the stereo terrain model: the heights within a kilometre of the lander, and within 30 km where its
+#            strip reaches. `post_m` is its post spacing.
+#   ortho    the orthoimage made with it, on the same grid: the ground's brightness. One camera band, grey.
+#   global   the world's global height model, for the far ground the strip does not reach. `edge: false`: the
+#            USGS mosaics' PDS3 labels put the projection offset at a pixel's centre (build-ground.py says why).
+#   tint     the colour a grey orthoimage is multiplied by (sRGB), or none. Mars's is MEASURED: the mean of the
+#            ground in Spirit's approximately true-colour Lookout panorama (NASA/JPL/Cornell, PIA07882, read
+#            2026-11-07 at images-assets.nasa.gov), (118, 72, 40); the Moon's orthoimages are drawn grey.
+#   model    the model at the lander's coordinates (site/models/), and how it stands: `heading_deg` is ILLUSTRATIVE
+#            (no image here gives it); `metres_per_unit` 1 for a file in metres (Curiosity's, NASA's own; Zhurong's
+#            and Chang'e 4's, built from their published dimensions), or `size_m`, the file's longest side in metres
+#            where it is not (the LM: 9.18 m between its footpads' ends, registry/models.yaml's own scale of 1.43 m a
+#            unit; Perseverance: 3.0 m long, NASA's mission page); `hide` the parts no longer there (the LM's ascent
+#            stage left the Moon).
+#
+# Licences: every DTM and orthoimage here is a NASA mission's data archived in the PDS ("Data sets archived in the
+# PDS are in the public domain", PDS Geosciences Node FAQ; LROC's and HiRISE's RDRs are PDS archive products);
+# SLDEM2015 and MOLA are USGS Astrogeology mosaics of PDS data whose pages say "Access Constraints public domain"
+# (SLDEM2015) and CC0 (MOLA, in the HRSC-MOLA blend's page: "MOLA (CC0)"). registry/asset_sources.yaml has a row each.
+grounds:
+  - id: apollo-15
+    name: "Apollo 15, Hadley-Apennine"
+    world: moon
+    site: apollo-15
+    radius_km: 1737.4
+    model: {file: lunar-module.glb, heading_deg: 0, size_m: 9.18, hide: [ascent-stage], what: "the Lunar Module's descent stage (its ascent stage left)"}
+    dtm:
+      what: "LROC NAC stereo terrain model of the Apollo 15 site, 2 m a post"
+      product: NAC_DTM_APOLLO15_E261N0036
+      url: "https://pds.mcp.nasa.gov/data/store/img/lunar_reconnaissance_orbiter/pds4/lroc/lro-l-lroc-5-rdr/LROLRC_2001/DATA/SDP/NAC_DTM/APOLLO15/NAC_DTM_APOLLO15_E261N0036.IMG"
+      page: "https://data.lroc.im-ldi.com/lroc/view_rdr_product/NAC_DTM_APOLLO15_E261N0036"
+      post_m: 2.0
+      licence: "Public domain (NASA PDS archive product, LRO-L-LROC-5-RDR-V1.0)"
+      credit: "NASA/GSFC/Arizona State University (LROC); Henriksen et al. 2017, Icarus 283, 122-137"
+    ortho:
+      what: "LROC NAC orthoimage M111571816, 0.5 m a pixel"
+      product: NAC_DTM_APOLLO15_M111571816_50CM
+      url: "https://pds.mcp.nasa.gov/data/store/img/lunar_reconnaissance_orbiter/pds4/lroc/lro-l-lroc-5-rdr/LROLRC_2001/DATA/SDP/NAC_DTM/APOLLO15/NAC_DTM_APOLLO15_M111571816_50CM.IMG"
+      page: "https://data.lroc.im-ldi.com/lroc/view_rdr_product/NAC_DTM_APOLLO15_M111571816_50CM"
+      post_m: 0.5
+      licence: "Public domain (NASA PDS archive product, LRO-L-LROC-5-RDR-V1.0)"
+      credit: "NASA/GSFC/Arizona State University (LROC)"
+    trek: &wac
+      what: "LRO WAC global mosaic, 100 m a pixel (the far ground beyond the stereo strip)"
+      url: "https://trek.nasa.gov/tiles/Moon/EQ/LRO_WAC_Mosaic_Global_303ppd_v02/1.0.0/default/default028mm/{z}/{y}/{x}.jpg"
+      page: "https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=moon"
+      level: 8
+      licence: "NASA media guidelines: not subject to copyright in the United States (registry/tilesets.yaml moon-lro-wac)"
+      credit: "NASA/GSFC/Arizona State University, from NASA Solar System Treks"
+    global: &sldem
+      what: "SLDEM2015, LOLA and SELENE Terrain Camera merged heights, 59 m a pixel"
+      product: Lunar_LRO_LOLAKaguya_DEMmerge_60N60S_512ppd
+      url: "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/LolaKaguya_Topo/Lunar_LRO_LOLAKaguya_DEMmerge_60N60S_512ppd.tif"
+      label_url: "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/LolaKaguya_Topo/Lunar_LRO_LOLAKaguya_DEMmerge_60N60S_512ppd_pds3.lbl"
+      page: "https://astrogeology.usgs.gov/search/map/moon_lro_lola_selene_kaguya_tc_dem_merge_60n60s_59m"
+      edge: false
+      scale: 0.5
+      licence: "Public domain (USGS Astrogeology: 'Access Constraints public domain')"
+      credit: "Barker et al. 2016, Icarus 273, 346-355 (LOLA, NASA/GSFC; SELENE TC, JAXA); USGS Astrogeology mosaic"
+    ortho_far:
+      what: "the same LROC NAC orthoimage at 2 m a pixel, for the far ground"
+      product: NAC_DTM_APOLLO15_M111571816_2M
+      url: "https://pds.mcp.nasa.gov/data/store/img/lunar_reconnaissance_orbiter/pds4/lroc/lro-l-lroc-5-rdr/LROLRC_2001/DATA/SDP/NAC_DTM/APOLLO15/NAC_DTM_APOLLO15_M111571816_2M.IMG"
+      post_m: 2.0
+  - id: gale
+    name: "Curiosity, Gale crater"
+    world: mars
+    site: gale
+    radius_km: 3396.19
+    tint: [118, 72, 40]
+    model: {file: curiosity.glb, heading_deg: 0, metres_per_unit: 1, what: "Curiosity, where it landed (it has since driven more than 35 km)"}
+    dtm:
+      what: "HiRISE stereo terrain model of a candidate MSL landing site in Gale, 1 m a post (the strip that holds Bradbury Landing whole; the team's own 'MSL landing site' model, DTEEC_023957_1755_024023_1755_U01, has no heights for most of the ground within a kilometre of it)"
+      product: DTEEC_010573_1755_010639_1755_U01
+      url: "https://hirise-pds.lpl.arizona.edu/PDS/DTM/PSP/ORB_010500_010599/PSP_010573_1755_PSP_010639_1755/DTEEC_010573_1755_010639_1755_U01.IMG"
+      page: "https://www.uahirise.org/dtm/dtm.php?ID=PSP_010573_1755"
+      post_m: 1.01
+      licence: "Public domain (NASA PDS archive product, MRO-M-HIRISE-5-DTM-V1.0)"
+      credit: "NASA/JPL/University of Arizona (HiRISE)"
+    ortho:
+      what: "HiRISE orthoimage PSP_010573_1755 (red), 1 m a pixel"
+      product: PSP_010573_1755_RED_C_01_ORTHO
+      url: "https://hirise-pds.lpl.arizona.edu/PDS/DTM/PSP/ORB_010500_010599/PSP_010573_1755_PSP_010639_1755/PSP_010573_1755_RED_C_01_ORTHO.JP2"
+      label_url: "https://hirise-pds.lpl.arizona.edu/PDS/DTM/PSP/ORB_010500_010599/PSP_010573_1755_PSP_010639_1755/PSP_010573_1755_RED_C_01_ORTHO.LBL"
+      post_m: 1.01
+      licence: "Public domain (NASA PDS archive product, MRO-M-HIRISE-5-DTM-V1.0)"
+      credit: "NASA/JPL/University of Arizona (HiRISE)"
+    trek: &mdim
+      what: "Viking MDIM 2.1 colour mosaic (232 m a pixel; its 325 m tiles), its grey (the far ground beyond the stereo strip)"
+      url: "https://trek.nasa.gov/tiles/Mars/EQ/Mars_Viking_MDIM21_ClrMosaic_global_232m/1.0.0/default/default028mm/{z}/{y}/{x}.jpg"
+      page: "https://astrogeology.usgs.gov/search/map/mars_viking_colorized_global_mosaic_232m"
+      level: 7
+      licence: "Public domain (USGS Astrogeology: 'Access Constraints Public domain')"
+      credit: "NASA/JPL/USGS (Viking Orbiter MDIM 2.1), from NASA Solar System Treks"
+    global: &mola
+      what: "MOLA global heights, 463 m a pixel"
+      product: Mars_MGS_MOLA_DEM_mosaic_global_463m
+      url: "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Mars_MGS_MOLA_DEM_mosaic_global_463m.tif"
+      label_url: "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Mars_MGS_MOLA_DEM_mosaic_global_463m_pds3.lbl"
+      page: "https://astrogeology.usgs.gov/search/map/mars_mgs_mola_dem_463m"
+      edge: false
+      scale: 1.0
+      licence: "Public domain (MOLA, NASA PDS; USGS Astrogeology mosaic)"
+      credit: "MOLA Science Team, NASA/GSFC (Smith et al. 2001, JGR 106, 23689); USGS Astrogeology mosaic"
+  - id: jezero
+    name: "Perseverance, Jezero crater"
+    world: mars
+    site: jezero
+    radius_km: 3396.19
+    tint: [118, 72, 40]
+    model: {file: perseverance.glb, heading_deg: 0, size_m: 3.0, what: "Perseverance, where it landed"}
+    dtm:
+      what: "HiRISE stereo terrain model of the Mars 2020 candidate site in Jezero, 1 m a post"
+      product: DTEEC_045994_1985_046060_1985_U01
+      url: "https://hirise-pds.lpl.arizona.edu/PDS/DTM/ESP/ORB_045900_045999/ESP_045994_1985_ESP_046060_1985/DTEEC_045994_1985_046060_1985_U01.IMG"
+      page: "https://www.uahirise.org/dtm/dtm.php?ID=ESP_045994_1985"
+      post_m: 1.01
+      licence: "Public domain (NASA PDS archive product, MRO-M-HIRISE-5-DTM-V1.0)"
+      credit: "NASA/JPL/University of Arizona (HiRISE)"
+    ortho:
+      what: "HiRISE orthoimage ESP_045994_1985 (red), 1 m a pixel"
+      product: ESP_045994_1985_RED_C_01_ORTHO
+      url: "https://hirise-pds.lpl.arizona.edu/PDS/DTM/ESP/ORB_045900_045999/ESP_045994_1985_ESP_046060_1985/ESP_045994_1985_RED_C_01_ORTHO.JP2"
+      label_url: "https://hirise-pds.lpl.arizona.edu/PDS/DTM/ESP/ORB_045900_045999/ESP_045994_1985_ESP_046060_1985/ESP_045994_1985_RED_C_01_ORTHO.LBL"
+      post_m: 1.01
+      licence: "Public domain (NASA PDS archive product, MRO-M-HIRISE-5-DTM-V1.0)"
+      credit: "NASA/JPL/University of Arizona (HiRISE)"
+    trek: *mdim
+    global: *mola
+  - id: utopia
+    name: "Zhurong, Utopia Planitia"
+    world: mars
+    site: utopia
+    radius_km: 3396.19
+    tint: [118, 72, 40]
+    model: {file: zhurong.glb, heading_deg: 0, metres_per_unit: 1, what: "Zhurong, at its landing site's coordinates"}
+    dtm:
+      what: "HiRISE stereo terrain model of Zhurong's landing site, 1 m a post"
+      product: DTEEC_069665_2055_069731_2055_A01
+      url: "https://hirise-pds.lpl.arizona.edu/PDS/DTM/ESP/ORB_069600_069699/ESP_069665_2055_ESP_069731_2055/DTEEC_069665_2055_069731_2055_A01.IMG"
+      page: "https://www.uahirise.org/dtm/dtm.php?ID=ESP_069665_2055"
+      post_m: 1.01
+      licence: "Public domain (NASA PDS archive product, MRO-M-HIRISE-5-DTM-V1.0)"
+      credit: "NASA/JPL/University of Arizona (HiRISE)"
+    ortho:
+      what: "HiRISE orthoimage ESP_069665_2055 (red), 1 m a pixel: the image that shows the lander and the rover from orbit"
+      product: ESP_069665_2055_RED_C_01_ORTHO
+      url: "https://hirise-pds.lpl.arizona.edu/PDS/DTM/ESP/ORB_069600_069699/ESP_069665_2055_ESP_069731_2055/ESP_069665_2055_RED_C_01_ORTHO.JP2"
+      label_url: "https://hirise-pds.lpl.arizona.edu/PDS/DTM/ESP/ORB_069600_069699/ESP_069665_2055_ESP_069731_2055/ESP_069665_2055_RED_C_01_ORTHO.LBL"
+      post_m: 1.01
+      licence: "Public domain (NASA PDS archive product, MRO-M-HIRISE-5-DTM-V1.0)"
+      credit: "NASA/JPL/University of Arizona (HiRISE)"
+    trek: *mdim
+    global: *mola
+  - id: apollo-11
+    name: "Apollo 11, Tranquility Base"
+    world: moon
+    site: apollo-11
+    radius_km: 1737.4
+    model: {file: lunar-module.glb, heading_deg: 0, size_m: 9.18, hide: [ascent-stage], what: "the Lunar Module's descent stage (its ascent stage left)"}
+    dtm:
+      what: "LROC NAC stereo terrain model of the Apollo 11 site, 2 m a post"
+      product: NAC_DTM_APOLLO11_E008N0234
+      url: "https://pds.mcp.nasa.gov/data/store/img/lunar_reconnaissance_orbiter/pds4/lroc/lro-l-lroc-5-rdr/LROLRC_2001/DATA/SDP/NAC_DTM/APOLLO11/NAC_DTM_APOLLO11_E008N0234.IMG"
+      page: "https://data.lroc.im-ldi.com/lroc/view_rdr_product/NAC_DTM_APOLLO11_E008N0234"
+      post_m: 2.0
+      licence: "Public domain (NASA PDS archive product, LRO-L-LROC-5-RDR-V1.0)"
+      credit: "NASA/GSFC/Arizona State University (LROC)"
+    ortho:
+      what: "LROC NAC orthoimage M150361817, 0.5 m a pixel"
+      product: NAC_DTM_APOLLO11_M150361817_50CM
+      url: "https://pds.mcp.nasa.gov/data/store/img/lunar_reconnaissance_orbiter/pds4/lroc/lro-l-lroc-5-rdr/LROLRC_2001/DATA/SDP/NAC_DTM/APOLLO11/NAC_DTM_APOLLO11_M150361817_50CM.IMG"
+      page: "https://data.lroc.im-ldi.com/lroc/view_rdr_product/NAC_DTM_APOLLO11_M150361817_50CM"
+      post_m: 0.5
+      licence: "Public domain (NASA PDS archive product, LRO-L-LROC-5-RDR-V1.0)"
+      credit: "NASA/GSFC/Arizona State University (LROC)"
+    ortho_far:
+      what: "the same orthoimage at 2 m a pixel, for the far ground"
+      product: NAC_DTM_APOLLO11_M150361817_2M
+      url: "https://pds.mcp.nasa.gov/data/store/img/lunar_reconnaissance_orbiter/pds4/lroc/lro-l-lroc-5-rdr/LROLRC_2001/DATA/SDP/NAC_DTM/APOLLO11/NAC_DTM_APOLLO11_M150361817_2M.IMG"
+      post_m: 2.0
+    trek: *wac
+    global: *sldem
+  - id: apollo-17
+    name: "Apollo 17, Taurus-Littrow"
+    world: moon
+    site: apollo-17
+    radius_km: 1737.4
+    model: {file: lunar-module.glb, heading_deg: 0, size_m: 9.18, hide: [ascent-stage], what: "the Lunar Module's descent stage (its ascent stage left)"}
+    dtm:
+      what: "LROC NAC stereo terrain model of the Taurus-Littrow valley, 5 m a post"
+      product: NAC_DTM_APOLLO17_E203N0308
+      url: "https://pds.mcp.nasa.gov/data/store/img/lunar_reconnaissance_orbiter/pds4/lroc/lro-l-lroc-5-rdr/LROLRC_2001/DATA/SDP/NAC_DTM/APOLLO17/NAC_DTM_APOLLO17_E203N0308.IMG"
+      page: "https://data.lroc.im-ldi.com/lroc/view_rdr_product/NAC_DTM_APOLLO17_E203N0308"
+      post_m: 5.0
+      licence: "Public domain (NASA PDS archive product, LRO-L-LROC-5-RDR-V1.0)"
+      credit: "NASA/GSFC/Arizona State University (LROC)"
+    ortho:
+      what: "LROC NAC orthoimage mosaic, 1.2 m a pixel"
+      product: NAC_DTM_APOLLO17_MOSAIC_120CM
+      url: "https://pds.mcp.nasa.gov/data/store/img/lunar_reconnaissance_orbiter/pds4/lroc/lro-l-lroc-5-rdr/LROLRC_2001/DATA/SDP/NAC_DTM/APOLLO17/NAC_DTM_APOLLO17_MOSAIC_120CM.IMG"
+      page: "https://data.lroc.im-ldi.com/lroc/view_rdr_product/NAC_DTM_APOLLO17_MOSAIC_120CM"
+      post_m: 1.2
+      licence: "Public domain (NASA PDS archive product, LRO-L-LROC-5-RDR-V1.0)"
+      credit: "NASA/GSFC/Arizona State University (LROC)"
+    ortho_far:
+      what: "the same orthoimage at 5 m a pixel, for the far ground"
+      product: NAC_DTM_APOLLO17_MOSAIC_5M
+      url: "https://pds.mcp.nasa.gov/data/store/img/lunar_reconnaissance_orbiter/pds4/lroc/lro-l-lroc-5-rdr/LROLRC_2001/DATA/SDP/NAC_DTM/APOLLO17/NAC_DTM_APOLLO17_MOSAIC_5M.IMG"
+      post_m: 5.0
+    trek: *wac
+    global: *sldem
+  - id: change-4
+    name: "Chang'e 4, von Karman crater"
+    world: moon
+    site: change-4
+    radius_km: 1737.4
+    model: {file: change-4.glb, heading_deg: 0, metres_per_unit: 1, what: "the Chang'e 4 lander (Yutu-2 has driven on; it is not drawn)"}
+    dtm:
+      what: "LROC NAC stereo terrain model of the Chang'e 4 site, 5 m a post"
+      product: NAC_DTM_CHANGE4_E458S1775
+      url: "https://pds.mcp.nasa.gov/data/store/img/lunar_reconnaissance_orbiter/pds4/lroc/lro-l-lroc-5-rdr/LROLRC_2001/DATA/SDP/NAC_DTM/CHANGE4/NAC_DTM_CHANGE4_E458S1775.IMG"
+      page: "https://data.lroc.im-ldi.com/lroc/view_rdr_product/NAC_DTM_CHANGE4_E458S1775"
+      post_m: 5.0
+      licence: "Public domain (NASA PDS archive product, LRO-L-LROC-5-RDR-V1.0)"
+      credit: "NASA/GSFC/Arizona State University (LROC)"
+    ortho:
+      what: "LROC NAC orthoimage M1303619844, 1.4 m a pixel"
+      product: NAC_DTM_CHANGE4_M1303619844_140CM
+      url: "https://pds.mcp.nasa.gov/data/store/img/lunar_reconnaissance_orbiter/pds4/lroc/lro-l-lroc-5-rdr/LROLRC_2001/DATA/SDP/NAC_DTM/CHANGE4/NAC_DTM_CHANGE4_M1303619844_140CM.IMG"
+      page: "https://data.lroc.im-ldi.com/lroc/view_rdr_product/NAC_DTM_CHANGE4_M1303619844_140CM"
+      post_m: 1.4
+      licence: "Public domain (NASA PDS archive product, LRO-L-LROC-5-RDR-V1.0)"
+      credit: "NASA/GSFC/Arizona State University (LROC)"
+    ortho_far:
+      what: "the same orthoimage at 5 m a pixel, for the far ground"
+      product: NAC_DTM_CHANGE4_M1303619844_5M
+      url: "https://pds.mcp.nasa.gov/data/store/img/lunar_reconnaissance_orbiter/pds4/lroc/lro-l-lroc-5-rdr/LROLRC_2001/DATA/SDP/NAC_DTM/CHANGE4/NAC_DTM_CHANGE4_M1303619844_5M.IMG"
+      post_m: 5.0
+    trek: *wac
+    global: *sldem
+  - id: opportunity
+    name: "Opportunity, Endeavour crater"
+    world: mars
+    site: opportunity
+    # NOT THE LANDING SITE. Opportunity landed in Eagle crater (the registry/sites.yaml row), which no HiRISE terrain
+    # model covers; it stopped for good on 2018-06-10 in Perseverance Valley on Endeavour crater's western rim, 25 km
+    # away, where this strip does. `at:` is the last point of its traverse as the Opportunity Analyst's Notebook maps it
+    # (registry/traverses/opportunity.json, PDS Geosciences Node), and the stage says all of this on screen.
+    at: {lat: -2.33153, lon: 354.6509, source: "registry/traverses/opportunity.json, its last point"}
+    radius_km: 3396.19
+    tint: [118, 72, 40]
+    model: {file: mer.glb, heading_deg: 0, size_m: 2.3, what: "Opportunity where it stopped in June 2018, in Perseverance Valley on Endeavour crater's rim (the last point of its traverse map). Not where it landed: Eagle crater, 25 km away, has no HiRISE terrain model"}
+    dtm:
+      what: "HiRISE stereo terrain model of Endeavour crater's western rim, 1 m a post"
+      product: DTEEC_018701_1775_018846_1775_U01
+      url: "https://hirise-pds.lpl.arizona.edu/PDS/DTM/ESP/ORB_018700_018799/ESP_018701_1775_ESP_018846_1775/DTEEC_018701_1775_018846_1775_U01.IMG"
+      page: "https://www.uahirise.org/dtm/dtm.php?ID=ESP_018701_1775"
+      post_m: 1.01
+      licence: "Public domain (NASA PDS archive product, MRO-M-HIRISE-5-DTM-V1.0)"
+      credit: "NASA/JPL/University of Arizona (HiRISE)"
+    ortho:
+      what: "HiRISE orthoimage ESP_018701_1775 (red), 1 m a pixel"
+      product: ESP_018701_1775_RED_C_01_ORTHO
+      url: "https://hirise-pds.lpl.arizona.edu/PDS/DTM/ESP/ORB_018700_018799/ESP_018701_1775_ESP_018846_1775/ESP_018701_1775_RED_C_01_ORTHO.JP2"
+      label_url: "https://hirise-pds.lpl.arizona.edu/PDS/DTM/ESP/ORB_018700_018799/ESP_018701_1775_ESP_018846_1775/ESP_018701_1775_RED_C_01_ORTHO.LBL"
+      post_m: 1.01
+      licence: "Public domain (NASA PDS archive product, MRO-M-HIRISE-5-DTM-V1.0)"
+      credit: "NASA/JPL/University of Arizona (HiRISE)"
+    trek: *mdim
+    global: *mola

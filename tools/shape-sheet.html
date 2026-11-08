@@ -20,6 +20,7 @@
   nearly black: the first version of this sheet had no lights, and the silhouettes were honest
   while every colour on it was a lie.
 
+  `look=pbr` draws real models in the physically based look the app uses at tier 1 and up (release 2.0.0, batch m4-buses).
   `rot=0,90,180,270` and `tilt=0,0,0,0` turn the Nth cell's model about the vertical and about the horizontal, in degrees, so one model can
   be listed several times and read from four sides (release 1.9.0, `m=file:oneweb.glb,file:oneweb.glb,...`).
 -->
@@ -32,6 +33,11 @@ import * as THREE from '../site/vendor/three.module.min.js';
 import { modelFor, setSunDirection, setPlanetShine, setFloodLight } from '../site/js/scene/models.js';
 import { sampleAsteroids } from '../site/js/data/sample.js';
 import { loadRealModel } from '../site/js/scene/realmodels.js';
+// b200-m4-buses: begin -- `look=pbr` draws a real model in its physically based look (scene/pbr.js: crinkled foil, metal, cells), as the app does at tier 1 and up; without it the
+// sheet keeps the toon look it always drew. Set before any model loads, because a part puts on the look wanted when it is loaded (pbr.js pairLooks).
+import { setModelLook } from '../site/js/scene/pbr.js';
+if (new URLSearchParams(location.search).get('look') === 'pbr') setModelLook('pbr');
+// b200-m4-buses: end
 
 // `asteroid#Eros` builds from the real bundled RECORD rather than a variant name, because an
 // asteroid's shape is drawn from its own measured diameter and there is no other way to ask for it.
@@ -66,8 +72,11 @@ for (let i = 0; i < WHICH.length; i++) {
     // `file:hubble.glb@telescope` names the class colour a file WOULD be painted if it carried no
     // colours of its own, which is the half of the before/after a recolour is judged by.
     const [file, colour = 'asteroid'] = variant.split('@');
-    const obj = await loadRealModel({ file, colour });
-    if (!obj) throw new Error(`could not load ${variant}`);
+    // b200-m2-buses: begin -- the loader hands back ONE object a file (it is cached), so the same file listed four times (four angles) was one object in the last cell; each cell gets its own clone
+    const loaded = await loadRealModel({ file, colour });
+    if (!loaded) throw new Error(`could not load ${variant}`);
+    const obj = loaded.clone(true);
+    // b200-m2-buses: end
     obj.userData.cell = i;
     scene.add(obj);
     labels.push(WHICH[i]);
@@ -86,6 +95,9 @@ cam.position.set(1.5, 1.05, 1.9);
 cam.lookAt(0, 0, 0);
 
 const ROT = (QS.get('rot') || '').split(',').map(Number), TILT = (QS.get('tilt') || '').split(',').map(Number);
+// b200-m2-buses: begin -- `zoom=1,1,3.5,3.5` draws the Nth cell that many times closer (a 39 m satellite is a thin line at zoom 1; its body is read at 3 or 4)
+const ZOOM = (QS.get('zoom') || '').split(',').map(Number);
+// b200-m2-buses: end
 const SHADE_FROM = QS.has('shade') ? Number(QS.get('shade')) : Infinity;
 const FLOOD_FROM = QS.has('flood') ? Number(QS.get('flood')) : Infinity;
 const SUN = new THREE.Vector3(0.6, 0.5, 0.62).normalize();
@@ -105,6 +117,14 @@ for (const o of scene.children) {
   }
   setFloodLight(i >= FLOOD_FROM);
   const cx = (i % COLS) * CELL, cy = (ROWS - 1 - Math.floor(i / COLS)) * CELL;
+  // b200-m2-buses: begin
+  { const z = ZOOM[i] > 0 ? ZOOM[i] : 1; cam.position.set(1.5 / z, 1.05 / z, 1.9 / z); cam.lookAt(0, 0, 0); }
+  // b200-m2-buses: end
+  // b200-m3-mid: begin -- `view=30,20;120,35;...` puts the Nth cell's camera at that azimuth (degrees about the vertical, 0 = from +Z) and elevation, so a model stood up with `tilt` can be read from
+  // the side a photograph was taken from; a cell without an entry keeps the default three-quarter view
+  { const v = (QS.get('view') || '').split(';')[i]; if (v) { const [az, el] = v.split(',').map(Number); const z = ZOOM[i] > 0 ? ZOOM[i] : 1, d = 2.64 / z, a = (az * Math.PI) / 180, e = (el * Math.PI) / 180;
+    cam.position.set(d * Math.cos(e) * Math.sin(a), d * Math.sin(e), d * Math.cos(e) * Math.cos(a)); cam.lookAt(0, 0, 0); } }
+  // b200-m3-mid: end
   renderer.setViewport(cx, cy, CELL, CELL);
   renderer.setScissor(cx, cy, CELL, CELL);
   for (const p of scene.children) if (p.userData.cell !== undefined) p.visible = (p === o);

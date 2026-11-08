@@ -1414,7 +1414,7 @@ export function skyToSunInertialKm(raDeg, decDeg, distPc) {
  * leading `#` line saying its date) parse here; columns are read by header name.
  *
  * @param {string} text
- * @param {{asOf?: string}} [opts]  the bundled copy's date, stamped on every record
+ * @param {{asOf?: string, live?: string}} [opts]  the bundled copy's date, stamped on every record; or the snapshot's day
  */
 export function parseExoplanets(text, opts = {}) {
   if (typeof text !== 'string') return [];
@@ -1462,6 +1462,7 @@ export function parseExoplanets(text, opts = {}) {
         aliases: host ? [host] : [],
         asOf,
         drawnAtStar: true,
+        liveAsOf: opts.live, // b200-s1-fixes (forge #88): the harvester's snapshot of that day, not the packed copy
         cite: asOf ? `NASA Exoplanet Archive (pscomppars), copy as of ${asOf}` : 'NASA Exoplanet Archive (pscomppars)',
       },
     });
@@ -1678,9 +1679,13 @@ export function stormStatus(text) {
   return null;
 }
 
-/** "NOLO-26" -> "Nolo", "BANG-LANG-26" -> "Bang-Lang", "TWO-C-26" -> "Two-C". */
+/**
+ * "NOLO-26" -> "Nolo", "BANG-LANG-26" -> "Bang-Lang", "TWO-C-26" -> "Two-C". A system not yet named is GDACS's number in its
+ * season, "02-20262027" (the 2026-27 south-west Indian Ocean season's second): "Tropical Cyclone 02", as the advisories
+ * write it, never the raw id on the globe (2.0.0 look finding 15).
+ */
 export function stormName(eventname) {
-  const base = String(eventname || '').trim().replace(/-\d{2}$/, '');
+  const base = String(eventname || '').trim().replace(/-\d{2}$/, '').replace(/^(\d\d?)-\d{8}$/, 'Tropical Cyclone $1');
   if (!base) return null;
   return base.toLowerCase().replace(/(^|[-\s])([a-z])/g, (_, sep, c) => sep + c.toUpperCase());
 }

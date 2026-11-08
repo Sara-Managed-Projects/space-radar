@@ -34,6 +34,17 @@ def generated_orbit_mutation() -> tuple[str, str]:
     return before, before[:before.rfind("a_au:")] + f"a_au: {float(match.group(1)) * 2}"
 
 
+def seo_counts_day_line() -> str:
+    """The `as_of:` line of registry/seo-facts.yaml as it is today. scripts/seo_counts.py --write rewrites that block
+    from the harvester's index (forge #89), so a date written into the case went stale at the first refresh and the
+    case mutated nothing (2.0.0: "the string it mutates is not in seo-facts.yaml")."""
+    text = (ROOT / "registry/seo-facts.yaml").read_text(encoding="utf-8")
+    match = re.search(r"^  as_of: [^\n]+\n", text, flags=re.M)
+    if match is None:
+        raise AssertionError("seo-facts.yaml has no `as_of:` line under satellite_counts")
+    return match.group(0)
+
+
 def link(src, dst):
     """A hard link where the filesystem allows, a copy where it does not."""
     try:
@@ -72,6 +83,24 @@ def media_into(work: Path) -> None:
     whole_dir(ROOT / "site" / "images", work / "site" / "images")
     if (ROOT / "site" / "audio").is_dir():
         whole_dir(ROOT / "site" / "audio", work / "site" / "audio")
+
+
+def asset_names_into(work: Path, copy=link) -> None:
+    """site/models/ and site/data/ by NAME (empty files): the validator asks whether each file a row names is
+    there, not whether a GLB parses. Except a file registry/asset_sources.yaml pins by its SHA-256: that one comes
+    with its bytes (`copy`, a link by default), because an empty stand-in fails the pin and the tree is refused for
+    a reason that has nothing to do with the case (site/data/starmotion.bin, 2.0.0). Shared by the tour cases
+    below, tests/test_flight_draft.py and tests/test_growth.py, so a new pin is handled in one place."""
+    pinned = set(re.findall(r"file: (site/[^,}\s]+)", (ROOT / "registry" / "asset_sources.yaml").read_text(encoding="utf-8")))
+    for src in ("site/models", "site/data"):
+        d = work / src
+        d.mkdir(parents=True, exist_ok=True)
+        for f in (ROOT / src).glob("*"):
+            if f.is_file():
+                if f"{src}/{f.name}" in pinned:
+                    copy(f, d / f.name)
+                else:
+                    (d / f.name).touch()
 
 
 def mutate(path: Path, text: str) -> None:
@@ -143,7 +172,7 @@ CASES: list[tuple[str, str, str, str]] = [
     ("a sky event with no source", "sky-events.yaml", '    sources:\n      - {words: "Computed here with Astronomy Engine (the Moon\'s shadow on the Earth)", url: "https://github.com/cosinekitty/astronomy", read: 2026-10-09}\n\n  - id: total-eclipse-2027', '    sources: []\n\n  - id: total-eclipse-2027'),
     ("a sky event whose trip is not a trip", "sky-events.yaml", "trip: comets-and-meteors", "trip: comets-and-meteorites"),
     ("a sky event with no day it was checked", "sky-events.yaml", "checked_on: 2026-10-09\nchecked_with", "checked_with"),
-    ("satellite counts with no day", "seo-facts.yaml", "  as_of: 2026-09-22\n", ""),
+    ("satellite counts with no day", "seo-facts.yaml", seo_counts_day_line(), ""),
     ("a line about an old satellite that cites no page",
      "oldest-notes.yaml", '    source: "https://en.wikipedia.org/wiki/Vanguard_1"\n', ""),
     ("a line about an old satellite with no day it was read",
@@ -1384,12 +1413,7 @@ def check_tour_refusals() -> int:
         # validator already rejects for missing model files. Names, not bytes: the question is
         # whether a row is refused, not whether a GLB parses.
         textures_into(work)
-        for src in ("site/models", "site/data"):
-            d = work / src
-            d.mkdir(parents=True, exist_ok=True)
-            for f in (ROOT / src).glob("*"):
-                if f.is_file():
-                    (d / f.name).touch()
+        asset_names_into(work)
 
         path = work / "registry" / "tours.yaml"
         want_refused = bool(find)

@@ -24,6 +24,15 @@ return (async () => {
   };
   const out = { url: location.href, controlledAtStart: !!(navigator.serviceWorker && navigator.serviceWorker.controller) };
   const t0 = performance.now();
+  // How soon the status line says "Offline", in ms from the navigation (2.0.0 final look, finding 5: it took 25 s and
+  // more), and what the worker said about the network on the way, in order (it said offline, online, offline).
+  out.workerSaid = [];
+  if (navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', (e) => { const d = e.data || {}; if (d.type === 'sr-net' || d.type === 'sr-version') out.workerSaid.push(`${d.type}:${d.offline ? 'offline' : 'online'}@${Math.round(performance.now())}`); });
+  out.offlineSaidMs = null;
+  const watchOffline = setInterval(() => {
+    const line = document.querySelector('.sr-statusline__text');
+    if (line && /offline/i.test(line.textContent || '')) { out.offlineSaidMs = Math.round(performance.now()); clearInterval(watchOffline); }
+  }, 100);
   out.server = await fetch('robots.txt?probe=' + Date.now(), { cache: 'no-store' }).then((r) => (r.ok ? 'up' : 'answered ' + r.status), () => 'gone');
 
   out.booted = !!(await until(() => window.spaceRadar && window.spaceRadar.trip, 120_000));
@@ -49,7 +58,8 @@ return (async () => {
     out.trip.offerable = !!(plan && plan.offerable);
     // The plan's stop count is `count` (ui/trip.js plannedShape); `stops` was never a field of it (internal #415 item 9).
     out.trip.stops = plan && Number.isFinite(plan.count) ? plan.count : plan && plan.stops ? plan.stops.length : null;
-    if (ctx.audio && ctx.audio.setEnabled) { try { await ctx.audio.setEnabled(true); } catch { /* no sound API here */ } }
+    // The sound is switched on by audio/engine.js enable() (there was never a setEnabled: the voice clips went unasked).
+    if (ctx.audio && ctx.audio.enable) { try { await ctx.audio.enable(); } catch { /* no sound API here */ } }
     await trip.start(out.trip.id);
     await sleep(300);
     trip.play();
@@ -87,6 +97,7 @@ return (async () => {
   }
 
   out.statusLine = (document.querySelector('.sr-statusline__text') || {}).textContent || null;
+  clearInterval(watchOffline);
   out.satellites = ctx.recordsFor ? ['stations', 'active', 'starlink', 'gps'].map((l) => { try { return [l, ctx.recordsFor(l).length]; } catch { return [l, null]; } }) : null;
   out.sources = ctx.sources && ctx.sources.status ? ctx.sources.status().filter((r) => r.attempted || r.fetchedAt).map((r) => `${r.id}:${r.via || 'none'}:${r.state}`) : null;
   // Give the worker time to keep what this visit used, then count.

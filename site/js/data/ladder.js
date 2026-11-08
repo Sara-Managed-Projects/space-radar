@@ -33,6 +33,15 @@ export const LADDER_RUNGS = [
     "why": "Four light-hours. The last planet, and the edge of the map's true-scale Solar System."
   },
   {
+    "id": "heliosphere",
+    "label": "The heliosphere",
+    "target": {
+      "place": "heliosphere"
+    },
+    "distance": "18 billion km",
+    "why": "Seventeen light-hours. Where the Sun's wind meets the gas between the stars. Shape modelled."
+  },
+  {
     "id": "proxima",
     "label": "Proxima Centauri",
     "target": {

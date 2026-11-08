@@ -1051,11 +1051,17 @@ export const COPY = {
       "dawn": "sa surface est la mosaïque en noir et blanc de la sonde Dawn, teintée d’un gris que nous avons choisi ; les ombres dans ses cratères sont celles que Dawn a photographiées et ne bougent pas ici avec le Soleil"
     },
     "objectFamily": "dessiné comme {name} — le genre d’objet, pas celui-ci exactement",
+    // b200-m2-buses: begin
+    "objectBus": "Plateforme : {bus} ({source}). Dessiné avec une plateforme de remplacement.",
+    // b200-m2-buses: end
     "objectOwn": "dessiné comme {name}",
     "objectMade": {
       "images": "forme construite à partir de photographies ; proportions approximatives",
       "render": "forme construite d’après une vue d’artiste ; proportions approximatives",
-      "dimensions": "forme construite à partir de dimensions et d’images publiées ; détails simplifiés"
+      "dimensions": "forme construite à partir de dimensions et d’images publiées ; détails simplifiés",
+      // b200-m4-buses: begin -- a geostationary bus built here from published sizes and the maker's renders (registry/geo-buses.yaml `made: renders`), machine-drafted
+      "renders": "forme construite à partir de dimensions publiées et de vues du constructeur ; détails estimés"
+      // b200-m4-buses: end
     },
     "objectWas": {
       "hitomi": "montré entier, tel qu’il a été lancé en février 2016 ; il s’est brisé cinq semaines plus tard, et ce qui est suivi ici est son corps principal sans les panneaux solaires",
@@ -4653,6 +4659,143 @@ Object.assign(COPY, {
 }
 // 1.6.3: end
 
+// b200-f2-worlds: begin (forge #144, #145, #148) -- the Size and Distance sliders, the cutaways and the heliosphere (copy/en.later.js orrery, cutaway, helio). Machine-drafted like the rest of this file, not read by a native speaker.
+Object.assign(COPY, {
+  "orrery": {
+    "title": "Taille et distance",
+    "size": "Taille",
+    "sizeTrue": "réelle",
+    "sizeValue": "×{n}",
+    "sizeTitle": "De combien les mondes sont dessinés plus grands que nature, de réelle à ×{max}",
+    "dist": "Distance",
+    "distTrue": "réelle",
+    "distLog": "logarithmique",
+    "distSome": "{p} % du chemin vers logarithmique",
+    "distTitle": "À quel point les distances au Soleil sont resserrées, de réelles à logarithmiques. Les directions restent mesurées.",
+    "presets": "Vues toutes prêtes",
+    "presetTrue": "Échelle réelle",
+    "presetTrueTitle": "Chaque monde à sa taille réelle et à sa distance réelle",
+    "presetClass": "En classe",
+    "presetClassTitle": "Mondes ×{n} et distances logarithmiques, comme un planétaire",
+    "held": "Un voyage dessine tout à l’échelle réelle. Les curseurs reviennent quand il se termine.",
+    "note": "La position de chaque monde dans le ciel est toujours mesurée. Le badge indique de combien il est dessiné plus grand.",
+    "noteSize": "{name} : taille dessinée ×{n} par rapport à la réalité (curseur Taille).",
+    "noteDist": "Distance dessinée au Soleil : {drawn} UA, pour {au} UA en réalité, dans sa vraie direction (curseur Distance).",
+    "noteMoon": "Écart avec {parent} : dessiné {n} fois plus grand qu’en réalité, dans sa vraie direction, pour rester hors de la planète agrandie.",
+    "noteSun": "Le Soleil est dessiné ×{n} plus grand qu’en réalité, par le curseur Taille, et tenu à l’écart de Mercure.",
+    "badgeSun": "Soleil ×{n}",
+    "badgeLog": "distances log.",
+    "badgeSome": "distances à {p} % du log.",
+    "badgeJoin": " · ",
+    "badgeTitle": "Les curseurs Taille et Distance de l’onglet Planètes dessinent cette vue."
+  },
+  "cutaway": {
+    "button": "Voir l’intérieur",
+    "buttonTitle": "Ouvrir {name} jusqu’à ses couches, aux profondeurs que donnent les mesures",
+    "title": "Intérieur : {name}",
+    "close": "Fermer la coupe",
+    "model": "Couches d’après {model}.",
+    "source": "Source",
+    "layers": "Couches, de la surface vers le bas",
+    "depthRange": "{top}–{bottom} km",
+    "toCentre": "{top} km jusqu’au centre",
+    "cls": {
+      "measured": "mesuré",
+      "modelled": "modélisé",
+      "inferred": "déduit"
+    },
+    "clsTitle": "{cls} : {source}",
+    "probe": "Profondeur",
+    "probeTitle": "Glisse de la surface jusqu’au centre",
+    "depth": "{km} km de profondeur",
+    "atCentre": "le centre",
+    "layer": "Couche",
+    "pressure": "Pression",
+    "temperature": "Température",
+    "density": "Densité",
+    "valueCls": "{value} ({cls})",
+    "note": "Les profondeurs sont celles des sources ; les couleurs sont choisies. Entre le haut et le bas d’une couche, la sonde donne une valeur intermédiaire.",
+    "unknown": "Il n’y a pas encore de coupe de ce monde.",
+    "units": {
+      "gpa": "{n} GPa",
+      "mpa": "{n} MPa",
+      "kpa": "{n} kPa",
+      "millionGpa": "{n} millions de GPa",
+      "k": "{n} K",
+      "millionK": "{n} millions de K",
+      "rho": "{n} g/cm³"
+    },
+    "kinds": {
+      "crust": "Croûte",
+      "mantle": "Manteau",
+      "upper-mantle": "Manteau supérieur",
+      "lower-mantle": "Manteau inférieur",
+      "outer-core": "Noyau externe liquide",
+      "inner-core": "Noyau interne solide",
+      "liquid-core": "Noyau liquide",
+      "iron-core": "Noyau de fer",
+      "molten-silicate": "Couche de roche fondue",
+      "partial-melt": "Couche partiellement fondue",
+      "ice-shell": "Carapace de glace",
+      "ocean": "Océan",
+      "hp-ice": "Glace haute pression",
+      "rock-mantle": "Manteau rocheux",
+      "rock-core": "Noyau rocheux",
+      "hydrated-core": "Noyau de roche et de glace",
+      "molecular": "Hydrogène et hélium",
+      "metallic": "Hydrogène métallique",
+      "dilute-core": "Noyau dilué",
+      "ice-mantle": "Eau, ammoniac et méthane",
+      "convective": "Zone convective",
+      "radiative": "Zone radiative",
+      "solar-core": "Cœur"
+    }
+  },
+  "helio": {
+    "chip": "Héliosphère · modélisée",
+    "chipTitle": "D’où vient le dessin de la bulle autour du Système solaire",
+    "legendTitle": "L’héliosphère",
+    "rowTs": "Choc terminal, là où le vent solaire ralentit sous la vitesse du son. Forme modélisée passant par les deux traversées : Voyager 1 à {a} UA, Voyager 2 à {b} UA (mesurées).",
+    "rowHp": "Héliopause, là où le vent du Soleil rencontre le gaz interstellaire. Forme modélisée (Parker 1961) passant par les traversées : Voyager 1 à {a} UA, Voyager 2 à {b} UA (mesurées).",
+    "rowBow": "Vague d’étrave, là où le gaz interstellaire s’entasse devant. Dessin illustratif : deux fois la distance de l’héliopause (McComas et al. 2012).",
+    "rowRibbon": "Ruban d’IBEX, une bande brillante qu’IBEX a mesurée sur le ciel (Funsten et al. 2013). Sa distance n’est pas mesurée : il est dessiné à {au} UA.",
+    "rowMotion": "Le chemin du Soleil à travers le gaz interstellaire local, {v} km/s (IBEX, McComas et al. 2015). La flèche représente {years} ans de ce chemin, {au} UA.",
+    "sources": "Lieux des traversées d’après les trajectoires des Voyager dans JPL Horizons, aux dates de traversée de la NASA. Formes : Parker 1961, Wilkin 1996, d’après Izmodenov & Alexashov 2015 et Opher et al. 2015.",
+    "crossing": "{craft} : {surface}, {au} UA, {date}",
+    "motion": "Le chemin du Soleil, {v} km/s",
+    "craft": {
+      "deep-voyager-1": "Voyager 1",
+      "deep-voyager-2": "Voyager 2"
+    },
+    "surface": {
+      "ts": "choc terminal",
+      "hp": "héliopause"
+    },
+    "surfaceLabel": {
+      "ts": "Choc terminal (modélisé)",
+      "hp": "Héliopause (modélisée)",
+      "bow": "Vague d’étrave (illustrative)",
+      "ribbon": "Ruban d’IBEX (mesuré sur le ciel)"
+    },
+    "date": "{d} {m} {y}",
+    "months": [
+      "janv.",
+      "févr.",
+      "mars",
+      "avr.",
+      "mai",
+      "juin",
+      "juil.",
+      "août",
+      "sept.",
+      "oct.",
+      "nov.",
+      "déc."
+    ]
+  }
+});
+// b200-f2-worlds: end
+
 export const GLOSSARY = {
   "orbit": "Un trajet autour de quelque chose, retenu par la gravité. Va assez vite sur le côté, et tu continues de tomber à côté de la Terre au lieu de tomber dessus.",
   "low Earth orbit": "La couche très fréquentée d’environ 200 à 2 000 km d’altitude. La station, la plupart des satellites et la plupart des débris sont ici.",
@@ -4692,3 +4835,990 @@ export const GLOSSARY = {
   "totality": "Les minutes d’une éclipse totale pendant lesquelles le Soleil est entièrement caché. Le ciel devient assez sombre pour voir des étoiles.",
   "annular": "En forme d’anneau. Lors d’une éclipse annulaire, la Lune est trop loin pour couvrir tout le Soleil, et un anneau brillant reste autour d’elle."
 };
+
+// b200-f1-find: begin -- Find, the owners, the clouds and the date field (copy/en.find.js, forge #150, #152, #153, #154), machine-drafted
+COPY.timePill.dateJump = "Aller à une date (UTC)";
+Object.assign(COPY, {
+  "findEntry": {
+    "title": "Chercher",
+    "property": "Chercher par propriété",
+    "countries": "Satellites par pays",
+    "operators": "Par opérateur",
+    "clouds": "Nuages de débris",
+    "chartOurs": "Nos planètes côte à côte"
+  },
+  "find": {
+    "title": "Chercher",
+    "label": "Chercher par propriété, par pays et par nuage de débris",
+    "tabs": {
+      "property": "Propriétés",
+      "country": "Par pays",
+      "clouds": "Débris et flottes"
+    },
+    "kindsLabel": "Quoi chercher",
+    "kinds": {
+      "stars": "Étoiles",
+      "exoplanets": "Planètes",
+      "satellites": "Satellites",
+      "comets": "Comètes"
+    },
+    "presetsLabel": "Questions",
+    "refine": "Affiner",
+    "presets": {
+      "rockyHz50": "Planètes rocheuses dans la zone habitable à moins de 50 années-lumière",
+      "nearStars": "Étoiles à moins de 20 années-lumière",
+      "temperate": "Planètes à peu près aussi chaudes que la Terre",
+      "hotJupiters": "Géantes chaudes",
+      "cometsSoon": "Comètes au plus près du Soleil d’ici 2030",
+      "geo": "Satellites actifs sur l’anneau géostationnaire",
+      "low": "Satellites actifs sous 400 km"
+    },
+    "fields": {
+      "within": "À moins de (années-lumière)",
+      "fromHere": "Mesuré depuis la caméra, pas depuis le Soleil",
+      "radius": "Rayon (Terres)",
+      "mass": "Masse (Terres)",
+      "teq": "Température (K)",
+      "insol": "Lumière stellaire (Terre = 1)",
+      "height": "Altitude (km)",
+      "year": "Lancé (année)",
+      "perihelion": "Au plus près du Soleil (année)",
+      "from": "de",
+      "to": "à",
+      "zone": "Dans la zone habitable",
+      "zoneWide": "Dedans ou à sa limite",
+      "rocky": "Rocheuse",
+      "working": "Actifs seulement",
+      "owner": "Propriétaire",
+      "operator": "Opérateur",
+      "any": "Tous",
+      "range": "{label} : {word}"
+    },
+    "columns": {
+      "name": "Nom",
+      "dist": "Distance (al)",
+      "radius": "Rayon (Terres)",
+      "teq": "Temp. (K)",
+      "insol": "Lumière",
+      "zone": "Zone",
+      "spect": "Type",
+      "mag": "Magnitude",
+      "owner": "Propriétaire",
+      "height": "Altitude (km)",
+      "year": "Lancé",
+      "perihelion": "Périhélie",
+      "qAu": "Au plus près (ua)"
+    },
+    "zones": {
+      "inside": "dedans",
+      "edge": "limite",
+      "hotter": "trop chaude",
+      "colder": "trop froide"
+    },
+    "sortTitle": "Trier par {col}",
+    "tableLabel": "Ce qui correspond, une ligne chacun : appuie sur une ligne pour y aller",
+    "status": "{n} trouvés",
+    "statusSome": "{n} trouvés ; les {shown} premiers sont listés",
+    "none": "Rien ne correspond. Élargis une plage ou décoche une case.",
+    "looking": "Recherche…",
+    "loading": "Chargement des données à parcourir…",
+    "failed": "La recherche n’a pas abouti. Réessaie dans un instant.",
+    "rowTitle": "Aller à {name}",
+    "noRecord": "Pas dessiné sur la carte",
+    "modelled": "Calculé avec une masse d’étoile estimée : modélisé",
+    "copyLink": "Copier le lien vers cette question",
+    "copied": "Lien copié",
+    "honesty": {
+      "stars": "Les étoiles nommées de HYG v4.4, 3 390 en tout, à leurs distances mesurées. Mesuré.",
+      "exoplanets": "Rayon, masse, période et étoile : mesurés, NASA Exoplanet Archive. Taille de l’orbite, lumière reçue, température et zone : calculées ; marquées * là où la masse de l’étoile est estimée d’après sa lumière, modélisé. Rocheuse : 1,6 rayon terrestre ou moins, ou 3 masses terrestres sans rayon connu (Rogers 2015).",
+      "satellites": "Catalogue de CelesTrak, lu le {date}. L’altitude est la moyenne des points le plus haut et le plus bas de l’orbite. Mesuré.",
+      "comets": "Dates de périhélie de la Small-Body Database du JPL. Calculées à partir d’orbites mesurées."
+    },
+    "chart": {
+      "open": "Côte à côte",
+      "openTitle": "Les planètes de {host} côte à côte, à l’échelle",
+      "title": "{host}, à l’échelle",
+      "ours": "Le Système solaire",
+      "label": "Les planètes de {host} dessinées côte à côte à leur vraie taille, dans l’ordre depuis l’étoile",
+      "note": "Une seule échelle pour toutes les planètes ; les écarts ne sont pas des distances. Une planète sans rayon mesuré est dessinée en pointillé, à la taille médiane.",
+      "close": "Fermer le schéma"
+    },
+    "pill": "{name} : {n} en surbrillance",
+    "pillClear": "Enlever la surbrillance"
+  },
+  "owners": {
+    "modesLabel": "Grouper par",
+    "modes": {
+      "countries": "Pays",
+      "operators": "Opérateurs",
+      "points": "Points de Lagrange",
+      "nopath": "Sans trajectoire publique"
+    },
+    "reading": "Lecture du catalogue de CelesTrak (7 Mo)…",
+    "failed": "Le catalogue ne s’est pas chargé.",
+    "retry": "Réessayer",
+    "lead": "{n} propriétaires ont quelque chose en orbite : {total} objets suivis.",
+    "row": "{n} en orbite",
+    "rowSub": "{working} actifs · {debris} débris",
+    "rowTitle": "Mettre en surbrillance ce que {name} a en orbite",
+    "joint": "{a} et {b}",
+    "ussr": "Le catalogue compte l’Union soviétique et la Russie comme un seul propriétaire.",
+    "unknown": "Pas encore connu",
+    "byName": "par nom",
+    "byNameTitle": "Compté d’après les noms que portent ses satellites dans le catalogue",
+    "kinds": "{working} actifs, {dead} hors service, {rocket} étages de fusée, {debris} débris.",
+    "lit": "{n} d’entre eux sont dessinés et en surbrillance sur la carte.",
+    "litNone": "Aucun n’est dessiné sur la carte.",
+    "show": "Les mettre en surbrillance",
+    "clear": "Effacer",
+    "page": "Page de {name}",
+    "noPathTitle": "Sans trajectoire publique : {n}",
+    "noPathNone": "Toutes ses charges utiles en orbite ont une trajectoire publique.",
+    "why": {
+      "no-elements": "Pas d’orbite publique : le catalogue le liste, mais aucun jeu d’éléments n’est publié",
+      "deep-space": "Au-delà de l’orbite terrestre, et pas de trajectoire ici",
+      "deep-drawn": "Au-delà de l’orbite terrestre : dessiné d’après sa trajectoire du JPL"
+    },
+    "points": {
+      "sel1": "Soleil–Terre L1",
+      "sel2": "Soleil–Terre L2",
+      "eml2": "Terre–Lune L2",
+      "sel1Why": "À 1,5 million de km vers le Soleil : une vue du Soleil qui ne se couche jamais.",
+      "sel2Why": "À 1,5 million de km à l’opposé du Soleil : froid et sombre, pour les télescopes.",
+      "eml2Why": "Au-delà de la face cachée de la Lune : un relais qui voit à la fois la face cachée et la Terre.",
+      "empty": "Rien d’inscrit ici pour l’instant."
+    },
+    "nopathLead": "{n} charges utiles en orbite n’ont pas de trajectoire publique. Les plus récentes d’abord :",
+    "source": "Catalogue de satellites de CelesTrak, lu le {date} : mesuré. Drapeaux : Wikimedia Commons, domaine public."
+  },
+  "breakups": {
+    "cloudsTitle": "Nuages de débris",
+    "fleetsTitle": "Constellations",
+    "names": {
+      "fy1c": "Fengyun-1C",
+      "cosmos1408": "Cosmos 1408",
+      "iridium33": "Iridium 33",
+      "cosmos2251": "Cosmos 2251"
+    },
+    "why": {
+      "fy1c": "Un satellite météo chinois, détruit par un missile antisatellite chinois à 865 km le 11 janvier 2007 : le plus grand nuage jamais créé.",
+      "cosmos1408": "Un satellite soviétique hors service, détruit par un missile antisatellite russe à environ 480 km le 15 novembre 2021.",
+      "iridium33": "Un satellite téléphonique actif, percuté par Cosmos 2251, hors service, à 789 km au-dessus de la Sibérie le 10 février 2009 : la première collision entre deux satellites entiers.",
+      "cosmos2251": "Un satellite russe hors service qui a percuté Iridium 33 à 789 km le 10 février 2009."
+    },
+    "counts": "{up} des {catalogued} fragments catalogués sont encore en orbite.",
+    "lit": "{n} en surbrillance sur la carte.",
+    "spreadTitle": "Le voir s’étaler",
+    "steps": {
+      "event": "Au moment de l’événement",
+      "week": "Une semaine plus tard",
+      "year": "Un an plus tard",
+      "today": "Aujourd’hui"
+    },
+    "play": "Lire depuis l’événement",
+    "stop": "Arrêter",
+    "places": "Revenir aux positions d’aujourd’hui",
+    "spreadNote": "Modélisé : chaque fragment part d’un même point, sur l’orbite qu’il a aujourd’hui, et dérive à mesure que le renflement de la Terre fait tourner son plan. Les fragments retombés ne sont pas dessinés.",
+    "source": "Source :",
+    "fleets": {
+      "starlink": "Starlink",
+      "oneweb": "OneWeb",
+      "kuiper": "Kuiper",
+      "qianfan": "Qianfan",
+      "gps": "GPS",
+      "glonass": "GLONASS",
+      "galileo": "Galileo",
+      "beidou": "BeiDou",
+      "iridium": "Iridium"
+    },
+    "fleetLit": "{n} en surbrillance sur la carte.",
+    "fleetNote": "Reconnus aux noms que leurs opérateurs leur donnent dans le catalogue.",
+    "loadingActive": "Chargement de tous les satellites actifs d’abord (7 Mo)…",
+    "loadingDebris": "Chargement de tous les débris suivis d’abord (7 Mo)…",
+    "moment": "2007: Fengyun-1C",
+    "momentTitle": "Aller à la minute où Fengyun-1C a été détruit et mettre son nuage en surbrillance"
+  },
+  "dateJump": {
+    "title": "Aller à une date",
+    "field": "Date et heure (UTC)",
+    "text": "Ou tape-la",
+    "placeholder": "1969-07-20 20:17, next total eclipse",
+    "go": "Aller",
+    "hint": "N’importe quel moment de 1700 à 2200, en UTC.",
+    "errors": {
+      "unknown": "Je ne comprends pas cette date. Essaie 1969-07-20 20:17, 20 July 1969 ou next total eclipse.",
+      "range": "Hors de 1700 à 2200.",
+      "empty": "Tape d’abord une date.",
+      "eclipse": "Pas d’éclipse de ce genre entre 1700 et 2200."
+    },
+    "searching": "Recherche…",
+    "gone": "Maintenant {when}.",
+    "eclipse": "{what}, {when}.",
+    "eclipses": {
+      "sunTotal": "Éclipse totale de Soleil",
+      "sunAnnular": "Éclipse annulaire de Soleil",
+      "sunPartial": "Éclipse partielle de Soleil",
+      "moonTotal": "Éclipse totale de Lune",
+      "moonPartial": "Éclipse partielle de Lune",
+      "moonPenumbral": "Éclipse pénombrale de Lune"
+    },
+    "rangesTitle": "Avec quelle précision, et quand",
+    "ranges": {
+      "worlds": "Soleil, Lune et planètes : de 1700 à 2200, calculés (astronomy-engine).",
+      "satellites": "Satellites : précis à une semaine d’aujourd’hui ; estompés au-delà d’un mois.",
+      "craft": "Sondes spatiales : seulement sur leurs propres trajectoires du JPL.",
+      "stars": "Étoiles : dans la vue du ciel, déplacées par leurs mouvements mesurés dès que la date est à plus de 50 ans d’aujourd’hui."
+    },
+    "quick": {
+      "total": "Prochaine éclipse totale de Soleil",
+      "lunar": "Prochaine éclipse de Lune"
+    },
+    "missionsTitle": "Tirées de nos missions",
+    "momentsTitle": "Moments",
+    "presetsLabel": "Dates où aller",
+    "faded": "Satellites estompés : leurs orbites sont mesurées pour aujourd’hui, pas pour {year}.",
+    "close": "Fermer"
+  }
+});
+// b200-f1-find: end
+// b200-f4-cards: begin -- a card's Wikipedia block and Read aloud (copy/en.cards.js, forge #151), machine-drafted
+Object.assign(COPY, {
+  "wikiCard": {
+    "label": "Selon Wikipédia",
+    "quotedLive": "Cité de Wikipédia tel qu'il se lit aujourd'hui, non vérifié par nous.",
+    "quotedBaked": "Cité de Wikipédia tel qu'il se lisait le {date}, non vérifié par nous.",
+    "textCredit": "Texte : contributeurs de Wikipédia, CC BY-SA 4.0.",
+    "readArticle": "Lire l'article complet",
+    "inEnglish": "Il n'existe pas encore d'article dans cette langue : voici l'article anglais.",
+    "family": "À propos de {fleet} dans son ensemble : il n'y a pas d'article pour ce satellite en particulier.",
+    "photo": "Photo : {artist}, {licence}, via Wikimedia Commons.",
+    "photoNoArtist": "Photo : {licence}, via Wikimedia Commons.",
+    "photoAlt": "L'image en tête de l'article Wikipédia {title}",
+    "loading": "Interrogation de Wikipédia…",
+    "read": "Lire à voix haute",
+    "readTitle": "Lit cette fiche à voix haute avec la voix de ton appareil",
+    "stop": "Arrêter la lecture",
+    "reading": "Lecture à voix haute"
+  }
+});
+// b200-f4-cards: end
+// b200-f3-stars: begin -- deep time, the variable stars and the turning black holes (copy/en.stars.js, forge #141, #142, #149), machine-drafted
+Object.assign(COPY, {
+  "deepTime": {
+    "title": "Temps profond",
+    "back": "−{n} ans",
+    "on": "+{n} ans",
+    "backTitle": "Reculer de {n} ans, même date et même heure",
+    "onTitle": "Avancer de {n} ans, même date et même heure",
+    "presetsLabel": "D’autres étoiles polaires",
+    "presets": {
+      "thuban": "Thuban, 2800 av. J.-C.",
+      "vega": "Véga, 13 700 apr. J.-C.",
+      "far": "50 000 apr. J.-C."
+    },
+    "presetTitles": {
+      "thuban": "Quand on bâtissait les pyramides, Thuban du Dragon était l’étoile polaire",
+      "vega": "Vers 13 700 apr. J.-C., le pôle passe à 6,5° de Véga",
+      "far": "Le ciel dans cinquante mille ans"
+    },
+    "yearAd": "{n} apr. J.-C.",
+    "yearBc": "{n} av. J.-C.",
+    "moved": "Le ciel de {year} : chaque étoile déplacée par son propre mouvement mesuré.",
+    "far": "Ni Lune ni planètes ne sont dessinées si loin d’aujourd’hui, et le Soleil est là où le calendrier le place.",
+    "pole": "Étoile polaire : {name}, à {deg}° du pôle.",
+    "noPole": "Aucune étoile brillante ne marque le pôle : la plus proche, {name}, est à {deg}°.",
+    "unnamed": "une étoile de magnitude {mag}",
+    "honest": "Les mouvements sont mesurés (Hipparcos et Gaia, via HYG) ; les prolonger en ligne droite pendant des millénaires est modélisé. Le basculement de l’axe de la Terre : Vondrák, Capitaine et Wallace 2011."
+  },
+  "variables": {
+    "label": "Comment sa lumière change",
+    "types": {
+      "eclipse": "Une paire à éclipses : deux étoiles qui passent l’une devant l’autre.",
+      "binary": "Une paire serrée, déformée, dont la lumière ne reste jamais fixe.",
+      "pulse": "Une étoile pulsante : elle enfle et se contracte.",
+      "sine": "Une petite étoile à pulsation rapide.",
+      "sr": "Une géante semi-régulière : sa période et son amplitude sont mesurées, mais pas l’endroit de son cycle où elle se trouve ; la courbe est une esquisse.",
+      "irregular": "Une variable irrégulière : aucune horloge ne dit son éclat, le ciel garde donc celui du catalogue."
+    },
+    "periodDays": "Période {n} jours.",
+    "periodYears": "Période {n} ans.",
+    "aria": "Courbe de lumière de {name}, de la magnitude {bright} à {faint} ; maintenant {now}.",
+    "now": "maintenant",
+    "nowLine": "Maintenant magnitude {mag} ({band}) ; elle va de {bright} à {faint}.",
+    "range": "Elle va de la magnitude {bright} à {faint} ({band}).",
+    "far": "Sa courbe n’est pas prolongée à plus de {years} ans d’aujourd’hui ; elle va de la magnitude {bright} à {faint} ({band}).",
+    "nextMin": "Prochain minimum : {when}",
+    "measured": "Mesuré : les magnitudes datées du Grand Assombrissement. Éléments : {cite}.",
+    "modelled": "Modélisé : la forme est tirée de la période, de l’époque et de l’amplitude du catalogue ({cite}).",
+    "notes": {
+      "alf-ori": "En 2019 et 2020, elle a faibli jusqu’à la magnitude 1,6, le Grand Assombrissement : un nuage de poussière qu’elle avait éjecté en cachait une partie.",
+      "omi-cet": "Les maxima de Mira arrivent des semaines en avance ou en retard d’un cycle à l’autre ; ces dates peuvent être décalées d’autant.",
+      "bet-lyr": "Sa période s’allonge de 19 secondes par an ; la courbe suit l’éphéméride quadratique de Harmanec et Scholz (1993).",
+      "bet-per": "Les éclipses d’Algol tiennent à la minute : elle faiblit une dizaine d’heures tous les 2,87 jours.",
+      "eps-aur": "Éclipsée près de deux ans tous les 27 ans par un disque sombre autour de sa compagne ; la dernière éclipse a duré de 2009 à 2011.",
+      "eta-car": "Lors de sa Grande Éruption des années 1840, elle est devenue la deuxième étoile la plus brillante du ciel.",
+      "t-crb": "Une nova récurrente : elle a atteint la magnitude 2 en 1866 et en 1946."
+    }
+  },
+  "blackHoleSpin": {
+    "spin": "Dessiné en rotation, avec un spin a = {a} : l’ombre a la forme que projette un trou qui tourne (Bardeen 1973), repoussée du côté qui vient vers nous. {why} La lumière autour est encore tracée sans spin : la forme est donc modélisée.",
+    "spinWhy": {
+      "m87-star": "Le spin est choisi : les modèles les mieux ajustés de l’article V de l’EHT 2019 tournent à 0,94.",
+      "sgr-a-star": "Le spin est choisi : l’article V de l’EHT 2022 privilégie 0,5 à 0,94."
+    }
+  }
+});
+// b200-f3-stars: end
+// b200-c1-culture: begin -- a sky figure's story and the other cultures' pictures (copy/en.later.js skyLore, forge #143), machine-drafted
+Object.assign(COPY, {
+  "skyLore": {
+    "figure": "une figure du ciel {culture}",
+    "figureLabel": "{name}, une figure du ciel {culture}. Appuyez pour lire son histoire.",
+    "openTitle": "Appuyez pour lire son histoire",
+    "sub": "Le ciel {culture}",
+    "close": "Fermer l’histoire",
+    "loading": "Chargement de l’histoire…",
+    "failed": "L’histoire ne s’est pas chargée. Réessayez dans un instant.",
+    "fromStellarium": "D’après la description de cette culture du ciel dans Stellarium. {credit}.",
+    "ours": "Dans nos propres mots, d’après : {cite}.",
+    "honesty": "Illustratif : un récit, tel que sa source le rapporte. Les noms et les histoires varient selon les peuples et les conteurs.",
+    "none": "Aucune des sources que nous pouvons partager ne rapporte d’histoire pour cette figure. Ce sont des traditions vivantes : nous le disons plutôt que de deviner.",
+    "inEnglish": "L’histoire est en anglais, la langue de sa source : il n’en existe aucune traduction sous licence.",
+    "artTitles": {
+      "maori": "Les figures maories en dessins, tirées de la culture du ciel maorie de Stellarium, CC BY-SA 4.0",
+      "hawaiian": "Les lignes d’étoiles hawaïennes en dessins de Kealoha Kaneakua, pour Stellarium, CC BY-SA 4.0",
+      "boorong": "Les figures boorong en dessins, tirées de la culture du ciel boorong de Stellarium, CC BY-SA 4.0"
+    },
+    "artNone": "Aucun dessin de ce ciel sous une licence que nous pouvons partager : ses figures restent des lignes."
+  }
+});
+// b200-c1-culture: end
+// b200-f5-make: begin -- the flight editor, Record and Dome and 360 (copy/en.make.js, forge #155, #156, #157), machine-drafted
+Object.assign(COPY, {
+  "make": {
+    "flight": "Trajectoire",
+    "flightTitle": "Préparer un trajet de caméra entre des vues, le prévisualiser et le partager par un lien",
+    "record": "Enregistrer",
+    "recordTitle": "Enregistrer cette vue, une trajectoire ou un voyage en vidéo",
+    "dome": "Dôme et 360",
+    "domeTitle": "Montrer le ciel en dôme de planétarium ou en image à 360 degrés",
+    "failed": "Le chargement a échoué. Réessayez dans un instant."
+  },
+  "flight": {
+    "title": "Trajectoire",
+    "sheet": "Trajectoire : faites glisser pour redimensionner",
+    "close": "Fermer la trajectoire",
+    "play": "Lire",
+    "playTitle": "Parcourir la trajectoire depuis la position du curseur",
+    "stop": "Arrêter",
+    "stopTitle": "Arrêter le vol ici",
+    "scrub": "Position sur la trajectoire",
+    "scrubAt": "{at} sur {total}",
+    "hint": "Amenez la carte sur une vue qui vous plaît, puis appuyez sur Ajouter cette vue. Deux vues font une trajectoire.",
+    "hintOne": "Une vue. Allez ailleurs et ajoutez-en une autre.",
+    "hintMany": "{n} vues. Appuyez sur Lire, ou faites glisser le curseur pour regarder le long de la trajectoire.",
+    "add": "Ajouter cette vue",
+    "addTitle": "Garder où est la caméra, ce qu’elle regarde, et l’horloge",
+    "keysLabel": "Les vues de la trajectoire, dans l’ordre",
+    "keyName": "{n}. {name}",
+    "goTitle": "Aller à cette vue",
+    "keyLive": "l’horloge telle qu’elle tourne",
+    "point": "Un point de l’espace",
+    "duration": "Vol",
+    "seconds": "{n} s",
+    "ease": "Courbe",
+    "eases": {
+      "smooth": "Départ et arrêt en douceur",
+      "cruise": "Croisière",
+      "constant": "Vitesse constante"
+    },
+    "rate": "Horloge",
+    "rateLive": "Temps réel",
+    "up": "↑",
+    "upLabel": "Avancer la vue {n}",
+    "down": "↓",
+    "downLabel": "Reculer la vue {n}",
+    "replace": "Prendre cette vue",
+    "replaceLabel": "Remplacer la vue {n} par la vue actuelle",
+    "remove": "Retirer",
+    "removeLabel": "Retirer la vue {n}",
+    "copyLink": "Copier le lien",
+    "copyLinkTitle": "Toute la trajectoire dans un lien : rien n’est stocké nulle part",
+    "linkCopied": "Lien copié ({n} caractères). Qui l’ouvre voit ce vol.",
+    "linkInBar": "Le lien est dans la barre d’adresse : copiez-le là.",
+    "draft": "Enregistrer un brouillon de voyage",
+    "draftTitle": "Un brouillon de fichier de voyage pour les voyages de la carte, à terminer par une personne",
+    "draftSaved": "Brouillon enregistré. Les cartes sont à vous d’écrire.",
+    "record": "Enregistrer ce vol",
+    "recordTitle": "Enregistrer le vol en vidéo",
+    "clear": "Vider",
+    "clearTitle": "Retirer toutes les vues",
+    "needTwo": "Une trajectoire demande au moins deux vues.",
+    "full": "Une trajectoire compte au plus {n} vues.",
+    "noView": "Cette vue ne peut pas être gardée : regardez d’abord quelque chose.",
+    "badLink": "Ce lien de vol n’a pas pu être lu.",
+    "honesty": "Chaque vue montre les choses là où elles sont à l’heure de son horloge. Les vols entre les vues sont des mouvements de caméra que nous dessinons, pas la route d’un engin spatial."
+  },
+  "record": {
+    "title": "Enregistrer",
+    "sheet": "Enregistrer : faites glisser pour redimensionner",
+    "close": "Fermer Enregistrer",
+    "whatLabel": "Quoi enregistrer",
+    "sourceView": "Cette vue",
+    "sourcePath": "La trajectoire",
+    "sourceTrip": "Le voyage, jusqu’à la fin",
+    "length": "Durée",
+    "seconds": "{n} secondes",
+    "shapeLabel": "Format",
+    "crops": {
+      "wide": "16:9 (YouTube)",
+      "square": "Carré",
+      "tall": "Vertical 9:16 (Reels, TikTok, Shorts)"
+    },
+    "smooth": "Image par image (fluide sur tout appareil)",
+    "smoothNote": "La page recharge cette vue sur sa propre horloge et dessine chaque image avant de la prendre : un appareil lent enregistre lentement, mais jamais par saccades.",
+    "silent": "L’image par image n’enregistre pas le son.",
+    "withSound": "Le son que vous entendez est enregistré aussi.",
+    "noSound": "Le son est coupé, la vidéo sera muette. Activez le son d’abord pour garder la voix et la musique du voyage.",
+    "start": "Lancer l’enregistrement",
+    "stop": "Arrêter",
+    "save": "Enregistrer la vidéo",
+    "share": "Partager la vidéo",
+    "saved": "Vidéo enregistrée.",
+    "cannot": "Ce navigateur ne peut pas enregistrer de vidéo. Les versions récentes de Chrome, Edge, Safari et Firefox le peuvent.",
+    "rolling": "Enregistrement : {at} s",
+    "made": "Terminé : {mb} Mo. Enregistrez-la ou partagez-la.",
+    "empty": "Le navigateur n’a rien enregistré. Réessayez, ou cochez Image par image.",
+    "date": "{when} UTC",
+    "credit": "spaceradar.ai · cartes et données : NASA, ESA, Solar System Scope et d’autres",
+    "endTitle": "Voyez par vous-même",
+    "endLine": "Space Radar : gratuit, dans votre navigateur.",
+    "endCredit": "Cartes et données : NASA, ESA, USGS, Solar System Scope, HYG et d’autres, sous leurs propres licences (CC BY, CC BY-SA). Crédits sur spaceradar.ai.",
+    "filmTitle": "Enregistrement image par image",
+    "filmWarming": "Préparation de la vue…",
+    "filmFrame": "Image {n} sur {total}",
+    "filmDone": "Terminé : {mb} Mo, {s} secondes. Le fichier est enregistré.",
+    "filmFailed": "L’enregistrement s’est arrêté : {why}",
+    "back": "Retour à la carte"
+  },
+  "dome": {
+    "title": "Dôme et 360",
+    "sheet": "Dôme et 360 : faites glisser pour redimensionner",
+    "close": "Fermer Dôme et 360",
+    "kindLabel": "Comment le ciel est dessiné",
+    "normal": "Normal",
+    "dome": "Dôme, 180 degrés (planétarium)",
+    "wide": "360 degrés (YouTube 360)",
+    "tilt": "Inclinaison du dôme",
+    "tiltDeg": "{n}°",
+    "size": "Taille",
+    "px": "{n} px",
+    "pxSquare": "{n} × {n} px",
+    "pxWide": "{w} × {h} px",
+    "saveFrame": "Enregistrer cette image",
+    "skySize": "Face de la skybox",
+    "saveSky": "Enregistrer une skybox",
+    "saved": "Enregistré : {w} × {h} px.",
+    "saveFailed": "L’image n’a pas pu être dessinée.",
+    "intro": "Une image de dôme ou à 360 degrés de ce que voit la caméra, en direct. Les noms sont masqués tant qu’elle est active.",
+    "live": "En direct, {n} px par face.",
+    "livePhone": "En direct à {n} px par face : sur un téléphone, c’est un aperçu. Enregistrez une image pour en avoir une nette.",
+    "noGpu": "Le processeur graphique de cet appareil ne peut pas le dessiner.",
+    "busy": "Fermez d’abord le monde imaginé ou le Moment : il dessine sa propre image.",
+    "off": "Retour à l’image normale.",
+    "credit": "Libre d’usage avec ce crédit : Space Radar, spaceradar.ai. Cartes et données : NASA, ESA, USGS, Solar System Scope, HYG et d’autres ; le panneau Sources donne la licence de chacun.",
+    "how": "Pour un dôme, ajoutez #proj=dome,30 au lien d’un voyage et ouvrez-le en plein écran. docs/PLANETARIUMS.md donne les étapes."
+  }
+});
+// b200-f5-make: end
+// b200-f6-learn: begin -- the daily challenges (copy/en.play.js, forge #160), machine-drafted
+Object.assign(COPY, {
+  "play": {
+    "label": "Défi du jour",
+    "close": "Fermer",
+    "day": "L’énigme du {day} (UTC), la même pour tout le monde aujourd’hui.",
+    "games": {
+      "find-earth": {
+        "title": "Trouve la Terre",
+        "blurb": "Des galaxies jusqu’à notre planète, en aussi peu de choix que possible."
+      },
+      "which-world": {
+        "title": "Quel est ce monde ?",
+        "blurb": "Un gros plan d’une vraie carte : choisis le monde parmi quatre."
+      },
+      "guess-distance": {
+        "title": "Devine la distance",
+        "blurb": "Fais glisser jusqu’au bon nombre d’années-lumière."
+      }
+    },
+    "other": "Autres défis",
+    "loading": "La carte se charge encore ; le défi commence dès qu’elle est prête.",
+    "rung": "Étape {n} sur {of} : {where}",
+    "rungs": {
+      "local-group": "le Groupe local",
+      "galaxy": "la Voie lactée",
+      "stellar": "le voisinage du Soleil",
+      "sun": "le Système solaire"
+    },
+    "ask": {
+      "local-group": "Quelle marque est notre galaxie, la Voie lactée ?",
+      "galaxy": "Quelle marque est le Soleil ?",
+      "stellar": "Quelle marque est le Soleil ?",
+      "sun": "Quelle marque est la Terre ?"
+    },
+    "hints": {
+      "local-group": "La nôtre a deux petites compagnes tout près, les Nuages de Magellan.",
+      "galaxy": "Le Soleil est à environ 27 000 années-lumière du trou noir central, dans un bras tranquille.",
+      "stellar": "Les étoiles les plus proches du Soleil sont de faibles naines rouges et Alpha du Centaure, à 4,4 années-lumière.",
+      "sun": "La Terre est le troisième monde à partir du Soleil."
+    },
+    "hint": "Indice (coûte un essai)",
+    "mark": "Marque {letter}, {where}",
+    "places": {
+      "tl": "en haut à gauche",
+      "tc": "en haut",
+      "tr": "en haut à droite",
+      "ml": "à gauche",
+      "mc": "au centre",
+      "mr": "à droite",
+      "bl": "en bas à gauche",
+      "bc": "en bas",
+      "br": "en bas à droite"
+    },
+    "milkyWay": "la Voie lactée",
+    "sunName": "le Soleil",
+    "tries": "Choix {n} sur {max}",
+    "wrong": "Pas celle-là : {letter} est {name}.",
+    "right": "Oui : {name}. On se rapproche.",
+    "found": "Tu as trouvé la Terre en {n} choix.",
+    "lost": "Plus de choix. La Terre était le troisième monde à partir du Soleil.",
+    "honest": "Les marques sont là où la carte dessine chaque objet. À l’étape du Système solaire, les mondes sont dessinés plus près qu’ils ne le sont, comme partout sur cette scène.",
+    "round": "Manche {n} sur {of}",
+    "worldAsk": "De quel monde est ce gros plan ?",
+    "more": "Voir plus de la carte",
+    "worldRight": "Oui : {name}.",
+    "worldWrong": "Non : c’était {name}.",
+    "credit": "Carte : {credit}",
+    "worldPicture": "Un gros plan d’une vraie carte d’un monde du Système solaire",
+    "distAsk": "À quelle distance est {name} ?",
+    "slider": "Distance en années-lumière",
+    "guess": "Deviner",
+    "reveal": "{name} est à {value} : tu étais {off}.",
+    "offs": {
+      "hit": "à moins d’un quart près",
+      "near": "à moins du double",
+      "far": "à moins du quintuple",
+      "miss": "à plus de cinq fois"
+    },
+    "source": "Distance : {source}",
+    "units": {
+      "ly": "{n} années-lumière",
+      "kly": "{n} milliers d’années-lumière",
+      "mly": "{n} millions d’années-lumière",
+      "bly": "{n} milliards d’années-lumière"
+    },
+    "next": "Suivant",
+    "scores": {
+      "find-earth": "{n} choix sur 10",
+      "which-world": "{n} mondes sur 3",
+      "guess-distance": "{n} sur 3 à moins du double"
+    },
+    "shareTitle": "Space Radar : {game}",
+    "share": "Partager le résultat",
+    "copied": "Copié. Colle-le où tu veux.",
+    "copyFailed": "Copie impossible : sélectionne le texte ci-dessus.",
+    "played": "C’est fini pour aujourd’hui. Un nouveau arrive à minuit UTC.",
+    "streak": "{n} jours d’affilée"
+  }
+});
+// b200-f6-learn: end
+// b200-f8-xr: begin -- the gamepad and the headset (copy/en.xr.js, forge #164, #158), machine-drafted
+Object.assign(COPY, {
+  "pad": {
+    "title": "Manette",
+    "label": "Commandes de la manette",
+    "close": "Fermer les commandes de la manette",
+    "capStickL": "Stick gauche",
+    "capStickR": "Stick droit",
+    "capTriggers": "RT · LT",
+    "capA": "A · Croix",
+    "capX": "X · Carré",
+    "capB": "B · Rond",
+    "capY": "Y · Triangle",
+    "capDpad": "Croix ↑ ↓",
+    "capView": "Affichage · Share",
+    "turn": "Tourner autour",
+    "fly": "Avancer et reculer, glisser de côté",
+    "speed": "Plus vite, plus lentement",
+    "choose": "Choisir ce qui est dans l’anneau",
+    "go": "Y aller",
+    "back": "Retour",
+    "ship": "Physique de vaisseau activée ou non",
+    "ladder": "Monter et descendre l’échelle des distances",
+    "controls": "Ces commandes (Menu aussi)",
+    "shipToggle": "Physique de vaisseau",
+    "shipHow": "Vous continuez à dériver quand vous lâchez. Enfoncez un stick pour vous arrêter.",
+    "notStandard": "Cette manette ne dit pas où sont ses boutons : son stick gauche tourne la vue, ses boutons ne servent pas.",
+    "connected": "Manette connectée. Appuyez sur Y pour ses commandes.",
+    "disconnected": "Manette déconnectée.",
+    "shipOn": "Physique de vaisseau activée : vous continuez à dériver quand vous lâchez.",
+    "shipOff": "Physique de vaisseau désactivée.",
+    "nothing": "Rien à choisir dans l’anneau.",
+    "chooseFirst": "Choisissez d’abord quelque chose : A prend ce qui est dans l’anneau.",
+    "rung": "{label}, {distance}",
+    "home": "La Terre",
+    "trip": "Un voyage a la caméra. Ses propres boutons sont à l’écran."
+  },
+  "headset": {
+    "enter": "Passer au casque",
+    "enterTitle": "Se tenir sous le ciel ou parcourir l’échelle des distances dans un casque de réalité virtuelle",
+    "noteTitle": "Avant de le mettre",
+    "comfort": "Les déplacements sont des sauts, pas des glissements, et les rotations se font par pas de 30 degrés : l’horizon reste droit. Asseyez-vous ou dégagez l’espace autour de vous.",
+    "seizure": "Un petit nombre de personnes font des crises à cause de lumières ou de motifs clignotants. Si vous avez le vertige, la nausée ou voyez quelque chose d’étrange, arrêtez et retirez le casque.",
+    "how": "Regardez quelque chose et appuyez sur A ou sur la gâchette droite pour le choisir. X y va, B revient, Y montre les commandes, comme sur une manette. Dans un Moment, A lance et met en pause, B ramène à la carte. Maintenez B une seconde pour sortir.",
+    "untried": "Nouveau, et pas encore essayé sur un vrai casque : dites-nous ce que vous voyez.",
+    "go": "Entrer",
+    "cancel": "Pas maintenant",
+    "busy": "Fermez d’abord le monde imaginé, Dôme et 360 ou l’enregistrement : chacun dessine sa propre image.",
+    "failed": "Le casque n’a pas démarré.",
+    "left": "De retour à l’écran.",
+    "panelHelp": "A choisir   X aller   B retour   Y commandes",
+    "panelMove": "Stick gauche : autour, et le long de l’échelle   Stick droit : tourner, avancer et reculer",
+    "panelLeave": "Maintenir B pour sortir",
+    "chosen": "Choisi : {name}",
+    "nothing": "Rien droit devant",
+    "momentHelp": "A lecture ou pause   B retour à la carte   Y commandes",
+    "frame": "Image {ms} ms, {fps} par seconde (objectif : 72)",
+    "lighter": "Les images duraient trop : le dessin est allégé."
+  }
+});
+// b200-f8-xr: end
+// b200-f9-reach: begin -- the real recordings' panel (copy/en.sound.js, forge #163), machine-drafted
+Object.assign(COPY, {
+  "realSound": {
+    "region": "Enregistrements réels d’ici",
+    "play": "Écouter {name}",
+    "stop": "Arrêter",
+    "hide": "Masquer les enregistrements d’ici",
+    "sonified": "De vraies données, transformées en son",
+    "microphone": "Un vrai son, capté par un micro",
+    "playing": "Lecture : {name}. {how}.",
+    "failed": "Cet enregistrement ne s’est pas chargé.",
+    "names": {
+      "real-voyager-plasma": "Voyager 1 dans l’espace interstellaire",
+      "real-juno-ganymede": "Juno au passage de Ganymède",
+      "real-cassini-saturn": "la radio de Saturne",
+      "real-insight-impact": "un météoroïde frappant Mars",
+      "real-insight-wind": "le vent sur Mars",
+      "real-perseverance-dust-devil": "un tourbillon de poussière sur Mars"
+    }
+  }
+});
+// b200-f9-reach: end
+// b200-f7-ground: begin -- standing on another world and its sky (copy/en.ground.js, forge #146, #147), machine-drafted
+Object.assign(COPY, {
+  "ground": {
+    "stageLabel": "Debout sur un autre monde",
+    "tagGround": "Au sol · {world}",
+    "tagSky": "Le ciel depuis {world}",
+    "kindMeasured": "sol mesuré",
+    "kindPlain": "sol non mesuré",
+    "kindModelled": "modélisé",
+    "placeAt": "{world}, {lat}°, {lon}° est",
+    "worlds": {
+      "moon": "la Lune",
+      "mars": "Mars",
+      "titan": "Titan",
+      "europa": "Europe",
+      "earth": "la Terre",
+      "proxima-b": "Proxima Centauri b",
+      "trappist-1e": "TRAPPIST-1 e"
+    },
+    "measuredGround": "Mesuré : les reliefs sont le modèle de terrain stéréo à l’échelle réelle, le sol est l’image prise par l’orbiteur lui-même (ses ombres sont celles du jour de la prise de vue). Aucun rocher ni cratère n’est inventé.",
+    "plainGround": "Le sol ici n’est pas tiré de mesures : une plaine jusqu’à l’horizon. Le ciel est calculé.",
+    "modelLine": "Aux coordonnées d’atterrissage : {what}. Son orientation ne provient pas d’une image.",
+    "timeLine": "{local} heure solaire locale · {utc} · Soleil à {sun}°",
+    "timeLineStar": "{utc} · {star} à {sun}° de hauteur, toujours au même endroit",
+    "drive": "Conduire le rover",
+    "walk": "Marcher",
+    "driving": "En conduite, environ {x} fois plus vite que le rover ne peut aller.",
+    "walking": "À pied.",
+    "skyOpen": "Le ciel",
+    "skyClose": "Masquer le ciel",
+    "leave": "Quitter",
+    "sources": "Sources et licences",
+    "padLabel": "Marcher : poussez le pouce dans la direction voulue",
+    "keys": "W A S D ou les flèches pour marcher, Q et E pour tourner, R et F pour regarder vers le haut et vers le bas, Shift pour courir, + et - pour zoomer, Esc pour quitter.",
+    "skyTitle": "Ce ciel",
+    "poleStar": "Étoile polaire : {name}, à {sep}° du pôle (magnitude {mag}).",
+    "noPoleStar": "Aucune étoile plus brillante que la magnitude 4,5 à moins de 10° du pôle de ce monde.",
+    "unnamedStar": "une étoile sans nom usuel",
+    "poleLabel": "{name} (étoile polaire)",
+    "rises": "{name} se lève à {local} heure solaire locale ({utc}).",
+    "sets": "{name} se couche à {local} heure solaire locale ({utc}).",
+    "neverSets": "{name}, depuis ici, ne se lève ni ne se couche et reste dans la même partie du ciel.",
+    "notToday": "{name} ne se lève ni ne se couche pendant la période examinée.",
+    "transit": "{front} passe devant le disque du Soleil à {local} heure solaire locale ({utc}), pendant {s} secondes.",
+    "noTransit": "Aucun passage de Phobos ou de Deimos devant le Soleil depuis ici dans les {days} prochains sols.",
+    "working": "Calcul des levers et des couchers…",
+    "earthNow": "La Terre : {alt}° de hauteur, azimut {az}°, éclairée à {lit} %, magnitude {mag}.",
+    "airNotes": {
+      "mars": "Couleurs mesurées : le ciel de jour vient du panorama en couleurs réelles de Spirit (PIA07882), le coucher de soleil bleu de celui de Curiosity dans Gale (PIA19400).",
+      "moon": "Pas d’air, donc le ciel est noir à midi. Un vrai œil, ébloui par le sol éclairé par le Soleil, ne verrait que peu de ces étoiles.",
+      "europa": "Pas d’air, donc le ciel est noir à midi. Jupiter reste immobile dans le ciel de la face tournée vers lui.",
+      "titan": "Couleur illustrative : la brume orange cache à l’œil les étoiles et Saturne ; ils sont dessinés pâles là où ils se trouvent.",
+      "earth": "",
+      "proxima-b": "Modélisé : on suppose que Proxima b présente toujours la même face à son étoile, comme l’attendent ses découvreurs (Anglada-Escudé et al. 2016) ; l’inclinaison de son orbite et la position de Proxima b et de Proxima d sur leurs orbites ne sont pas connues, elles sont donc supposées. La couleur du ciel est illustrative : personne ne sait s’il y a de l’air. Alpha Centauri A et B sont à leur vraie place ; les autres étoiles sont dessinées comme le Soleil les voit.",
+      "trappist-1e": "Modélisé : on suppose que TRAPPIST-1 e présente toujours la même face à son étoile (Gillon et al. 2017) ; ses planètes sœurs sont là où les placent leurs instants de transit mesurés, sur des orbites circulaires dans un même plan, tourné d’une manière supposée autour de notre ligne de visée. La couleur du ciel est illustrative : personne ne sait s’il y a de l’air. Les autres étoiles sont dessinées comme le Soleil les voit."
+    },
+    "parentNote": "Cette lune présente toujours la même face à sa planète, donc la planète ne se lève ni ne se couche.",
+    "starNote": "On suppose que cette planète présente toujours la même face à son étoile, donc l’étoile ne se lève ni ne se couche.",
+    "discNote": "Le Soleil, la Terre, Phobos et les autres corps étendus sont des disques de leur vraie taille et de leur vraie phase, en couleurs unies, et non leurs cartes ou leurs formes.",
+    "frameNote": "Rotation : le rapport IAU WGCCRE 2015 (Archinal et al. 2018). Positions : les éphémérides propres à l’application.",
+    "compass": {
+      "N": "N",
+      "E": "E",
+      "S": "S",
+      "W": "O"
+    },
+    "bodies": {
+      "sun": "Le Soleil",
+      "mercury": "Mercure",
+      "venus": "Vénus",
+      "earth": "La Terre",
+      "moon": "La Lune",
+      "mars": "Mars",
+      "phobos": "Phobos",
+      "deimos": "Deimos",
+      "jupiter": "Jupiter",
+      "io": "Io",
+      "europa": "Europe",
+      "ganymede": "Ganymède",
+      "callisto": "Callisto",
+      "saturn": "Saturne",
+      "titan": "Titan",
+      "uranus": "Uranus",
+      "neptune": "Neptune",
+      "proxima": "Proxima Centauri",
+      "proxima-d": "Proxima d",
+      "alpha-cen-a": "Alpha Centauri A",
+      "alpha-cen-b": "Alpha Centauri B",
+      "trappist-1": "TRAPPIST-1",
+      "trappist-1b": "TRAPPIST-1 b",
+      "trappist-1c": "TRAPPIST-1 c",
+      "trappist-1d": "TRAPPIST-1 d",
+      "trappist-1f": "TRAPPIST-1 f",
+      "trappist-1g": "TRAPPIST-1 g",
+      "trappist-1h": "TRAPPIST-1 h"
+    },
+    "earthAndMoon": "La Terre et la Lune",
+    "unknownGround": "Il n’y a pas encore de modèle de terrain pour ce site.",
+    "unknownSky": "Cette carte ne permet pas encore de se tenir à cet endroit : seulement sur la Lune, Mars, Titan, Europe, Proxima b ou TRAPPIST-1 e."
+  }
+});
+// b200-f7-ground: end
+// b200-c3-learn: begin -- the Fengyun-1C Moment (copy/en.moments.fengyun.js and its shelf card, forge #153), machine-drafted
+COPY.momentShelf.cards['fengyun-1c'] = {
+  "title": "2007 : Fengyun-1C",
+  "when": "du 11 janvier 2007 à aujourd’hui",
+  "blurb": "Un missile chinois détruit un vieux satellite météo à 865 km d’altitude, et ses 3 531 débris catalogués s’étalent d’un point en une coquille autour de la Terre, racontés par une voix."
+};
+COPY.momentStories['fengyun-1c'] = {
+  "title": "2007 : Fengyun-1C",
+  "blurb": "Un missile chinois détruit un vieux satellite météo à 865 km d’altitude, et ses débris s’étalent d’un point en une coquille autour de la Terre, toujours là aujourd’hui.",
+  "chBefore": "Fengyun-1C",
+  "chHit": "Le test",
+  "chRing": "Un anneau",
+  "chMonths": "Deux mois",
+  "chYear": "La première année",
+  "chShell": "Une coquille",
+  "chToday": "Aujourd’hui",
+  "v1a": "Le soir du 11 janvier 2007. Fengyun-1C, un satellite météo chinois retiré du service, de 960 kg, tourne autour de la Terre en passant par les pôles, entre 845 et 865 km d’altitude.",
+  "v1b": "Un missile lancé près de Xichang monte à sa rencontre. Sa trajectoire n’a jamais été publiée, elle n’est donc pas dessinée.",
+  "v2a": "22 h 26 UTC : l’intercepteur frappe le satellite de face, à environ 8 km/s de vitesse relative, et le brise en milliers de morceaux.",
+  "v2b": "Chaque morceau repart un peu plus vite ou plus lentement que les autres, donc chacun sur son orbite.",
+  "v3a": "Une orbite plus haute met plus longtemps à faire le tour. Tour après tour, les morceaux s’étirent le long de l’ancienne orbite et, en quelques jours, se referment en anneau.",
+  "v4a": "Le renflement de la Terre fait tourner le plan de chaque orbite, un peu plus vite ou plus lentement selon l’altitude et l’inclinaison, et l’anneau commence à s’ouvrir en éventail.",
+  "v4b": "Deux mois après le test, plus de 1 200 morceaux étaient catalogués et près de 400 autres étaient suivis, selon l’Orbital Debris Quarterly News de la NASA.",
+  "v5a": "Fin 2007, le catalogue comptait 2 317 morceaux, et seuls 22 étaient retombés. La NASA estimait au moins 150 000 morceaux d’un centimètre ou plus, trop petits pour être suivis.",
+  "v6a": "Année après année, les plans se répartissent tout autour. En janvier 2013, le nuage est une coquille autour de la Terre : 3 378 morceaux catalogués, 3 076 encore en orbite.",
+  "v6b": "Les satellites doivent les éviter. La Station spatiale internationale s’est écartée de l’un d’eux en janvier 2012.",
+  "v7a": "Aujourd’hui le catalogue compte 3 531 morceaux de Fengyun-1C, et 2 310 sont encore là-haut, près de vingt ans plus tard. Le 10 novembre 2021, la station s’est de nouveau écartée de l’un d’eux.",
+  "v7b": "Les chiffres sont mesurés. L’image est un modèle : les survivants d’aujourd’hui sur leurs orbites d’aujourd’hui, ramenés à l’instant du test.",
+  "pathSat": "l’orbite de Fengyun-1C, 845 sur 865 km à 98,6 degrés (NASA ODQN, avril 2007), en conique ; l’endroit de l’orbite où le satellite a été frappé est illustratif",
+  "cloudNote": "Les morceaux sont les 2 310 que le catalogue garde encore, sur les orbites qu’il donne aujourd’hui, étalés depuis un point par un modèle (mouvement à deux corps et dérive due au renflement de la Terre) ; les morceaux retombés ne sont pas dessinés, et les chiffres des légendes sont mesurés. Au moment de l'impact, chaque débris part de son point le plus bas d'aujourd'hui : le nuage commence donc par une ligne sous le satellite, pas par un point, car le frottement de l'air a abaissé bien des orbites depuis 2007.",
+  "drawnNote": "Illustratif : Fengyun-1C est une marque cerclée et chaque débris un point de même taille, rien à l’échelle ; l’impact lui-même n’est pas dessiné.",
+  "footMore": "Plus",
+  "footLess": "Moins",
+  "srcOdqn07": "NASA Orbital Debris Quarterly News 11(2), avril 2007 : le satellite, son orbite, les premiers chiffres",
+  "srcOdqn08": "NASA Orbital Debris Quarterly News 12(1), janvier 2008 : le compte à la fin de 2007",
+  "srcOdqn13": "NASA Orbital Debris Quarterly News 17(1), janvier 2013 : catalogués, retombés et encore en orbite",
+  "srcOdqn14": "NASA Orbital Debris Quarterly News 18(1), janvier 2014 : la manœuvre de la station en janvier 2012",
+  "srcOdqn22": "NASA Orbital Debris Quarterly News 26(1), mars 2022 : la manœuvre de la station du 10 novembre 2021",
+  "srcCelestrak": "CelesTrak, Chinese ASAT test : l’heure la plus probable de l’événement, 22:26:10 UTC",
+  "srcSatcat": "Catalogue de satellites de CelesTrak (SATCAT), lu le 2026-11-07 : le compte d’aujourd’hui et l’orbite de chaque morceau",
+  "srcWiki": "Wikipédia, 2007 Chinese anti-satellite missile test : la vitesse de rapprochement"
+};
+// b200-c3-learn: end
+// b200-c2-deep: begin -- the 3D stars over deep time, the variable stars worth going out for, the black holes against the EHT's pictures and the cards in the trips' voice (copy/en.deep.js, forge #141, #142, #149, #151), machine-drafted
+Object.assign(COPY, {
+  "starDeep": {
+    "moved": "Les étoiles de {year} : chacune déplacée de son propre mouvement mesuré (Hipparcos et Gaia, via HYG) ; les prolonger en ligne droite aussi longtemps est modélisé.",
+    "hidden": "Les étoiles sans mouvement mesuré ne sont pas dessinées aussi loin d’aujourd’hui.",
+    "noPluto": "Pluton et ses lunes ne sont pas dessinés aussi loin d’aujourd’hui : leur éphéméride (astronomy-engine) n’a de table que pour les années 0 à 4000.",
+    "selected": "{name} est alors à {d} années-lumière du Soleil (modélisé) ; sa fiche et son étiquette donnent la distance d’aujourd’hui, {today}."
+  },
+  "varEvents": {
+    "min": "{name} au minimum",
+    "max": "{name} près de son plus grand éclat",
+    "minLine": "Jusqu’à la magnitude {mag}, à {alt}° de hauteur vers le {dir}.",
+    "maxLine": "Vers la magnitude {mag}, à {alt}° de hauteur vers le {dir}.",
+    "minClass": "Daté d’après ses minima mesurés (Kreiner 2004), prolongés par sa période : juste au quart d’heure près environ.",
+    "maxClass": "Modélisé d’après la période et l’époque du catalogue : les maxima d’une Mira arrivent des semaines en avance ou en retard.",
+    "aria": "{title}, {when}. {line}"
+  },
+  "holeCompare": {
+    "fromEarth": "Vu de la Terre",
+    "fromEarthTitle": "Se placer sur la ligne du trou à la Terre, nord en haut et est à gauche, comme on imprime les images de l’EHT",
+    "compare": "Comparer avec l’image de l’EHT",
+    "compareTitle": "Afficher l’image de l’Event Horizon Telescope à côté du trou dessiné, tous deux vus de la Terre, nord en haut",
+    "hide": "Masquer l’image de l’EHT",
+    "caption": "EHT, {date}",
+    "orient": "Nord en haut, est à gauche, comme le trou est dessiné maintenant.",
+    "credit": "Images : EHT Collaboration, CC BY 4.0.",
+    "source": "Source",
+    "alt": "L’image de {name} par l’Event Horizon Telescope, {date} : un anneau de lumière orange autour d’un centre sombre.",
+    "brightest": "Vu de la Terre, nord en haut, l’anneau dessiné est le plus brillant vers un angle de position d’environ {ours}° (mesuré sur le dessin) ; l’image de l’EHT du {date} l’est vers {theirs}°.",
+    "approx": {
+      "m87-star": "Ajusté : l’inclinaison (17° de notre ligne de visée) et l’angle du jet sur le ciel (288°) sont mesurés (Walker et al. 2018), et le flot tournant dans le sens horaire (EHT 2019, article V), le côté qui s’approche, avivé par son mouvement, tombe au sud. Mesuré en luminosité linéaire autour de l’anneau, notre côté brillant vaut environ 2,5 fois le côté faible (2,1 flouté aux 20 µas de l’EHT) ; le leur 2,7 en 2017 et 4,2 en 2018 : le nôtre correspond donc à 2017. Approché : la lumière est tracée comme autour d’un trou qui ne tourne pas, et le gaz est un disque mince en orbites circulaires, non le flot chaud et épais des modèles de l’EHT. Leur tache brillante s’est déplacée d’environ 30° en un an ; la nôtre ne bouge pas.",
+      "sgr-a-star": "Ajusté : vu à 30° de son axe, comme les modèles les mieux ajustés de l’article V d’EHT 2022, tournant dans le sens horaire comme les sursauts vus par GRAVITY. Choisi : la direction de l’axe sur le ciel, que personne n’a mesurée ; il est tourné pour que le côté brillant tombe là où l’image de l’EHT est la plus brillante. Approché : la lumière est tracée autour d’un trou qui ne tourne pas, autour d’un disque mince ; l’image de l’EHT est une moyenne sur une nuit d’un flot qui change en quelques minutes, et ses trois nœuds brillants ne sont pas tous réels, disent ses auteurs. Notre côté brillant vaut environ cinq fois le côté faible (4,5 flouté aux 20 µas de l’EHT), le leur 1,7 : à 30°, les orbites circulaires avivent le côté proche bien plus que ne le montre la moyenne d’une nuit de l’EHT."
+    }
+  },
+  "cardVoice": {
+    "readTitle": "Lire cette fiche à voix haute : le texte cité de Wikipédia, avec la voix de synthèse des voyages",
+    "credit": "Voix : Kokoro-82M (af_heart), une voix de synthèse, Apache-2.0 ; les mots sont ceux de Wikipédia (CC BY-SA 4.0)."
+  }
+});
+// b200-c2-deep: end
+
+// b200-s1-fixes: begin -- the long mission clock's units (copy/en.moments.js momentPlayer metYears, metDays), machine-drafted
+COPY.momentPlayer.metYears = "{y} a {d} j";
+COPY.momentPlayer.metDays = "{d} j";
+COPY.truth.exoPacked = "notre copie compacte du {date}"; // forge #88: which list an exoplanet came from
+COPY.truth.exoLive = "la liste de l’Archive, lue le {date}";
+// b200-s1-fixes: end
+// b200-f10-stars3d: begin -- the 3D star map's AT-HYG tier (copy/en.startiers.js, forge #140), machine-drafted
+Object.assign(COPY, {
+  "starTiers": {
+    "unnamed": "Une étoile sans nom (AT-HYG {n})",
+    "cite": "AT-HYG v4.0 (CC BY-SA 4.0, David Nash) : position et éclat de Tycho-2, distance de {dist}",
+    "from": {
+      "gaia-dr3": "Gaia DR3",
+      "gaia-dr2": "Gaia DR2",
+      "hipparcos": "Hipparcos",
+      "gliese": "du catalogue de Gliese",
+      "other": "d’un catalogue plus ancien"
+    },
+    "error": "Distance juste à environ ±{pct} % (parallaxe sur son erreur, environ {poe}) : modélisée d’après l’erreur typique de la mission à cet éclat ({mas} milliseconde d’arc), car AT-HYG ne donne pas l’erreur propre de cette étoile",
+    "noError": "AT-HYG ne donne aucune erreur pour cette distance",
+    "guess": "Cette distance est une estimation : au-delà de 3 kpc (environ 10 000 années-lumière), une parallaxe ne fait que quelques dixièmes de milliseconde d’arc, et l’erreur propre de l’étoile n’est pas dans AT-HYG, qui ne garde qu’une parallaxe plus grande que son erreur",
+    "lineHyg": "Étoiles en 3D : les 109 389 de HYG.",
+    "lineAthyg": "Étoiles en 3D : les 109 389 de HYG et {n} millions d’AT-HYG, chargées autour de la caméra sur un barreau de l’échelle (jusqu’à {k} millions à la fois) et dessinées jusqu’à la magnitude {lim} vue de la caméra, plus faibles que ce que voit un œil, en s’estompant.",
+    "shell": "Sur la scène d’un monde, les étoiles en 3D sont celles de HYG seules : {n} étoiles d’AT-HYG de magnitude 7,5 ou plus brillantes vues du Soleil n’y sont pas dessinées.",
+    "why": {
+      "low": "La qualité basse ne dessine que HYG.",
+      "latched": "La cadence d’images était basse : HYG seulement.",
+      "saver": "Économie de données : HYG seulement.",
+      "none": ""
+    },
+    "gaiaHeld": "Gaia DR3 n’est pas un niveau : l’ESA ne licencie les données de son archive que pour un usage non commercial (CC BY-NC 3.0 IGO).",
+    "farTime": "Les étoiles d’AT-HYG ne sont dessinées qu’à la date d’aujourd’hui : la vue des temps lointains n’utilise que HYG."
+  }
+});
+// b200-f10-stars3d: end
+// b200-s4a-look: begin -- how a world is drawn (its card's note), the Earth in a card's breadcrumb and our missions' event titles in the date field (copy/en.js worldView, sky.bodies; copy/en.find.js dateJump.eventTitles; 2.0.0 look finding 8) and what a tap no figure of another sky reaches says (copy/en.later.js skyLore; finding 10), machine-drafted
+COPY.worldView.nearer = "La direction de {name} est la vraie, mais l’astre est dessiné plus près et plus grand qu’en réalité, pour que tu le trouves.";
+COPY.worldView.asIs = "{name} est dessiné là où il est, à sa vraie taille.";
+COPY.sky.bodies.earth = "Terre";
+COPY.dateJump.eventTitles = {
+  "Launch": "Lancement",
+  "Closest to Jupiter": "Au plus près de Jupiter",
+  "Closest to Saturn": "Au plus près de Saturne",
+  "The Pale Blue Dot": "Le point bleu pâle",
+  "The most distant thing we made": "L’objet le plus lointain que nous ayons fabriqué",
+  "The termination shock": "Le choc terminal",
+  "Into interstellar space": "Dans l’espace interstellaire",
+  "Closest to Uranus": "Au plus près d’Uranus",
+  "Closest to Neptune": "Au plus près de Neptune",
+  "Jupiter's push": "L’élan de Jupiter",
+  "Saturn's orbit": "L’orbite de Saturne",
+  "Closest to Pluto": "Au plus près de Pluton",
+  "Arrokoth": "Arrokoth",
+  "Back past Earth": "De nouveau près de la Terre",
+  "Into orbit round Jupiter": "En orbite autour de Jupiter",
+  "Past Venus": "Près de Vénus",
+  "Past Venus again": "De nouveau près de Vénus",
+  "Past Jupiter": "Près de Jupiter",
+  "Arrival at Saturn": "Arrivée à Saturne",
+  "Huygens let go": "Huygens se détache",
+  "Huygens lands on Titan": "Huygens se pose sur Titan",
+  "Earth, seen from Saturn": "La Terre vue de Saturne",
+  "The Grand Finale begins": "Le Grand Final commence",
+  "Into Saturn": "Dans Saturne",
+  "Out of the shuttle": "Hors de la navette",
+  "The first asteroid visit": "La première visite d’un astéroïde",
+  "Past Earth a second time": "Près de la Terre une deuxième fois",
+  "Ida and its moon": "Ida et sa lune",
+  "Into Jupiter": "Dans Jupiter",
+  "Past Mars": "Près de Mars",
+  "Into orbit round Vesta": "En orbite autour de Vesta",
+  "Leaving Vesta": "Départ de Vesta",
+  "Into orbit round Ceres": "En orbite autour de Cérès",
+  "The last contact": "Le dernier contact",
+  "Into the asteroid belt": "Dans la ceinture d’astéroïdes",
+  "Past the farthest planet": "Au-delà de la planète la plus lointaine",
+  "The last signal": "Le dernier signal",
+  "The first craft at Saturn": "Le premier engin à Saturne",
+  "Past the orbit of Neptune": "Au-delà de l’orbite de Neptune",
+  "Arrival at L2": "Arrivée en L2",
+  "The first pictures": "Les premières images",
+  "Into orbit round the Moon": "En orbite autour de la Lune",
+  "The Eagle has landed": "L’Aigle s’est posé",
+  "One small step": "Un petit pas",
+  "Leaving the Moon": "Départ de la Lune",
+  "Splashdown": "Amerrissage",
+  "Apollo 8 leaves for the Moon": "Apollo 8 part pour la Lune",
+  "Apollo 11 leaves for the Moon": "Apollo 11 part pour la Lune",
+  "Apollo 17, at night": "Apollo 17, de nuit",
+  "Flying again": "De nouveau en vol",
+  "Hubble goes up": "Hubble monte",
+  "The last Shuttle from 39B": "La dernière navette depuis 39B",
+  "Past Mathilde": "Près de Mathilde",
+  "A first pass of Eros": "Un premier passage près d’Éros",
+  "Into orbit round Eros": "En orbite autour d’Éros",
+  "Down on Eros": "Posé sur Éros",
+  "Through the coma of Wild 2": "À travers la chevelure de Wild 2",
+  "The capsule lands": "La capsule atterrit",
+  "Past Tempel 1": "Près de Tempel 1",
+  "The impact": "L’impact",
+  "Earth and Moon flyby": "Survol de la Terre et de la Lune",
+  "Past Hartley 2": "Près de Hartley 2",
+  "The course correction": "La correction de trajectoire",
+  "Let go": "Largage",
+  "Europa and Io, on the way in": "Europe et Io, à l’approche",
+  "Into Jupiter’s air": "Dans l’atmosphère de Jupiter",
+  "Landing in Jezero": "Atterrissage dans Jezero",
+  "The first flight": "Le premier vol",
+  "The first rock core": "La première carotte de roche",
+  "Two become one": "Deux ne font plus qu’un",
+  "People move in": "Les premiers occupants",
+  "The last shuttle sets off": "La dernière navette s’envole",
+  "Discovered": "Découverte",
+  "Past Earth": "Près de la Terre",
+};
+// 2.0.0 look finding 10: a tap no figure of another people's sky reaches (copy/en.later.js skyLore)
+COPY.skyLore.notHereTitle = "Aucune figure du ciel {culture} ici";
+COPY.skyLore.notHere = "Aucune figure du ciel {culture} n’est dessinée là où tu as appuyé. La plus proche est {name}, à {deg}°.";
+COPY.skyLore.notHereNone = "Aucune figure du ciel {culture} n’est dessinée là où tu as appuyé.";
+COPY.skyLore.nearest = "L’histoire de {name}";
+// b200-s4a-look: end

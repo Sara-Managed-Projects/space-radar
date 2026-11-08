@@ -47,6 +47,7 @@ import {
 import '../copy/en.later.js';
 import { sizeClause, lapClause } from './moonfacts.js'; // 0079 a3
 import { realModelFor, padVehicleShown } from '../scene/realmodels.js';
+import '../scene/sourcedtables.js'; // b200-s5-ci: the sourced bus and CubeSat routes, before the first card
 import { periodMsOf, wholePathKind } from '../scene/orbitline.js';
 import {
   toStage,
@@ -92,6 +93,8 @@ export {
   belowWords, TAG_READOUTS, TAG_HONESTY_MAX, shortHonesty, splitReadout, tagLines, classLine,
   NEAR_EARTH_KM, nearEarthOnEllipse, honestyClause, honestyLine,
 } from './cardfacts.js';
+import { INTERIOR_IDS } from '../data/interiorids.js'; // b200-f2-worlds: the worlds Look inside can open (forge #144)
+import { starTwin, adoptTwin } from './startwin.js'; // b200-s4b-look: a system's host star shows the catalogue's facts
 
 const MAX_FIRST_SENTENCE = 160; // spec 0013 requirement 10, enforced by check_copy.py
 const MAX_COMPARISONS = 3; // spec 0013 requirement 2
@@ -1302,6 +1305,9 @@ function derivedDrawingLine(record, T, tMs) {
     // catalogue tracks is no longer that: Hitomi, intact on the screen and a wreck in orbit.
     const was = entry.was && T.objectWas ? T.objectWas[entry.was] : null;
     const said = (line) => [line, made, was].filter(Boolean).join(COPY.punctuation.separator);
+    // b200-m2-buses: begin -- a geostationary satellite whose bus a source names but whose shape is the stand-in (realmodels.js `sourcedBus`): the card names the bus and whose word it is
+    if (entry.sourcedBus && T.objectBus) return said(t(T.objectBus, { bus: String(entry.sourcedBus.name), source: String(entry.sourcedBus.by) }));
+    // b200-m2-buses: end
     if (entry.generic) return said(t(T.objectFamily, { name: String(entry.name) }));
     // A `file:` entry is somebody's model, loaded; a `build:` entry is scene/models.js working
     // from published metres. Both were printing "drawn from published dimensions", which is true
@@ -1794,11 +1800,13 @@ function parentOf(record, ctx, m = null) {
   const byId = (id) => (id && ctx && typeof ctx.recordById === 'function' ? ctx.recordById(String(id)) || null : null);
   const milkyWay = () => ({ record: byId(MILKY_WAY_ID), name: C.milkyWay, root: true });
   const outside = () => ({ record: null, name: C.outside, root: true });
-  // A world by its card's own name ("Sun", "Jupiter"); without a record, the copy's ("the Sun") without its article.
+  // A world by the sky's bare name in the visitor's language (COPY.sky.bodies: "Sonne", not the record's English "Sun", 2.0.0
+  // look finding 8); else by its card's own name ("Pluto"); without a record, the copy's ("the Sun") without its article.
   const world = (id) => {
     const rec = byId(id);
     const said = worldName(id);
-    return { record: rec, name: bareWorld(rec ? displayName(rec) : said || String(id)), root: id === 'sun' };
+    const bare = COPY.sky && COPY.sky.bodies && COPY.sky.bodies[id];
+    return { record: rec, name: bare || bareWorld(rec ? displayName(rec) : said || String(id)), root: id === 'sun' };
   };
   if (!record) return null;
   const md = meta(record);
@@ -2111,11 +2119,16 @@ function rowKeyOf(label, m) {
   return null;
 }
 
-const NUMBER = /[−-]?\d[\d ]*(?:\.\d+)?/;
+// The decimal sign is a point or a comma: copy/en.js num() writes RULES.decimal, a comma in de, fr,
+// pt, ru and uk. A point-only pattern cut German "5,32 AE" to "5" and a unit ",32 AE", which the
+// comma rule below then emptied (2.0.0 look finding 1). The groups are narrow no-break spaces, never
+// a comma, so a comma between digits is always a decimal comma.
+const NUMBER = /[−-]?\d[\d ]*(?:[.,]\d+)?/;
 /**
  * A row's value as one number and its unit: "27 556 km/h" -> {num: '27 556', unit: 'km/h'},
- * "magnitude −1.44" -> {num: '−1.44', unit: 'magnitude'}. A range ("1 324 to 1 364 light-years")
- * and a value with no number are not one number: null. Exported for the test.
+ * "magnitude −1.44" -> {num: '−1.44', unit: 'magnitude'}, "5,32 AE" -> {num: '5,32', unit: 'AE'}.
+ * A range ("1 324 to 1 364 light-years", "to" in the language's own word: "bis") and a value with
+ * no number are not one number: null. Exported for the test.
  */
 export function heroSplit(value) {
   const s = String(value == null ? '' : value);
@@ -2123,7 +2136,8 @@ export function heroSplit(value) {
   if (!hit) return null;
   const before = s.slice(0, hit.index).trim();
   const after = s.slice(hit.index + hit[0].length).trim();
-  if (/^(?:to|–)\s*[−-]?\d/.test(after)) return null;
+  const to = (/\{lo\}\s*(.*?)\s*\{hi\}/.exec(COPY.card.values.lightYearsRange || '') || [])[1];
+  if (/^(?:to|–)\s*[−-]?\d/.test(after) || (to && after.startsWith(to) && /^\s*[−-]?\d/.test(after.slice(to.length)))) return null;
   return { num: hit[0].trim(), unit: (after || before).replace(/,.*$/, '').trim() };
 }
 
@@ -2547,6 +2561,10 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
   const why = whyLine(record);
   const aboutNodes = [el('p', 'sr-card__sentence', namedAbove ? withoutLeadingName(sentence, name) : sentence)];
   if (why) aboutNodes.push(el('p', 'sr-card__why', why));
+  // b200-f4-cards: begin (forge #151: Read aloud, and the Wikipedia lead and photograph where the card has no words of its own; ui/wikicard.js fills it when About it is open)
+  const wikiBox = el('div', 'sr-card__wiki');
+  aboutNodes.push(wikiBox);
+  // b200-f4-cards: end
   // THE PHOTOGRAPH, where the registry has one. Two of the twenty exotics have been
   // photographed -- M87* in 2019 and Sgr A* in 2022 -- and spec 0028 asked for their pictures on
   // the card. The credit rides WITH the picture, visible, because that is what CC BY 4.0 asks for:
@@ -2785,6 +2803,11 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
   }).catch(() => { /* no page: no link */ });
   if (aboutHead && aboutHead.getAttribute('aria-expanded') === 'true') findPage();
   else if (aboutHead) aboutHead.addEventListener('click', findPage, { once: true });
+  // b200-f4-cards: begin
+  const mountWiki = () => import('./wikicard.js').then((w) => w.mountWikiCard(wikiBox, record, { name, sentence, why })).catch(() => { /* the card is whole without it */ });
+  if (aboutHead && aboutHead.getAttribute('aria-expanded') === 'true') mountWiki();
+  else if (aboutHead) aboutHead.addEventListener('click', mountWiki, { once: true });
+  // b200-f4-cards: end
 
   // Sources for this record: what the drawn shape is, and where the numbers were read.
   const drawn = drawingLine(record, m && m.tMs);
@@ -2933,6 +2956,19 @@ function render(record, ctx, opts = {}) {
     body.appendChild(go);
   }
 
+  // b200-f2-worlds: begin -- LOOK INSIDE (forge #144): a world with a measured or modelled interior opens to its
+  // layers (ui/cutaway.js, fetched on the first press), on its own stage. One quiet row, as the moment's is.
+  if (record.layer === 'worlds' && INTERIOR_IDS.includes(record.id) && typeof ctx.wantCutaway === 'function') {
+    const K = COPY.cutaway;
+    const look = el('button', 'sr-btn sr-btn--quiet sr-card__inline', K.button);
+    look.type = 'button';
+    look.dataset.focus = 'look-inside';
+    look.title = t(K.buttonTitle, { name: record.name || record.id });
+    look.addEventListener('click', () => ctx.wantCutaway().then((c) => { if (c) c.open(record.id); }));
+    body.appendChild(look);
+  }
+  // b200-f2-worlds: end
+
   // 3a. the quiet row, straight under the four (Ivan, 2026-10-14: "Light it" and "Seen it" were two
   // outlined buttons stacked at the left edge, under the time bar, in a style of their own). One
   // row of equal tiles in the actions' own wash: the flood light (internal #272), a reminder for
@@ -2947,6 +2983,20 @@ function render(record, ctx, opts = {}) {
   // task 3 for the deep sky; internal spec 0076 W3-d for moons, planets of other stars and stars).
   const where = whereBlock(record, ctx, m);
   if (where) body.appendChild(where);
+  // b200-f3-stars: begin -- a famous variable's light curve (ui/varcurve.js, forge #142), fetched with the first star card
+  if (klassOf(record) === 'star') {
+    const varBox = el('div', 'sr-card__varcurve');
+    varBox.hidden = true;
+    body.appendChild(varBox);
+    import('./varcurve.js').then((mod) => mod.mountVarCurve(varBox, record, ctx)).catch(() => { /* the card stands without it */ });
+  } else if (/^(exotic-)?(m87|sgr-a)-star$/.test(String(record.id || ''))) {
+    // The spin a turning hole is drawn with (ui/holespin.js, forge #149).
+    const spinBox = el('div', 'sr-card__varcurve');
+    spinBox.hidden = true;
+    body.appendChild(spinBox);
+    import('./holespin.js').then((mod) => mod.mountSpin(spinBox, record, ctx)).catch(() => { /* the card stands without it */ });
+  }
+  // b200-f3-stars: end
 
   // 3b. a mission's dated events, for the handful of records that have them (ui/missions.js,
   // registry/missions.yaml; public #452). The module is fetched the first time a card opens
@@ -3248,6 +3298,10 @@ export function showCard(record, ctx, opts = {}) {
     noteSelection(record, ctx, displayName);
     wantRail(ctx);
   }
+  // b200-s4b-look: begin -- a system's host star, reached by flying to its system, is the same star as on the stars rung:
+  // the same distance, magnitude and class on its card (ui/startwin.js; 2.0.0 final look, finding 14).
+  if (record && record.layer === 'systems') adoptTwin(record, starTwin(record, ctx && typeof ctx.recordsFor === 'function' ? ctx.recordsFor('stars') : []));
+  // b200-s4b-look: end
   current = { record, ctx, opts };
   subscribe(ctx);
   render(record, ctx, opts);

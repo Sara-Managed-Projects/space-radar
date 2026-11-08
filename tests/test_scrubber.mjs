@@ -198,6 +198,13 @@ check(typeof COPY.timePill.roughTitle === 'string' && /week/.test(COPY.timePill.
   for (const sel of ['\n.sr-tape {', '\n.sr-today__grid {', '\n.sr-debris {', '\n.sr-mission {']) check(at(sel) === 0, `${sel.trim()} is a top-level rule, not inside a media query`);
 }
 
+// b200-s4b-look: begin -- a tick's label gives way to the "now" word (2.0.0 final look: "now" across "12:00")
+{
+  const { clearOfNow } = await import(join(JS, 'ui/scrubber.js'));
+  check(!clearOfNow(180, 44, 172, 44) && !clearOfNow(150, 44, 172, 44), 'a label under "now", from either side, gives way');
+  check(clearOfNow(100, 44, 172, 44) && clearOfNow(216, 44, 172, 44) && clearOfNow(128, 44, 172, 44), 'a label beside it, even touching, stays');
+}
+// b200-s4b-look: end
 // Two marks never cover each other's box, and the glyph goes back to its time (axe target-size, #472).
 {
   const { spreadMarks } = await import(join(JS, 'ui/scrubber.js'));

@@ -156,8 +156,29 @@ case("an event on a path for a record with no file",
      lambda w: edit(w, "registry/missions.yaml", "record: deep-voyager-1", "record: deep-voyager-9"),
      "voyager-1.", "has no file in registry/ephemerides.yaml")
 
+
+# --- an operating craft's path must not run out unnoticed (forge #87) -----------------------------
+# The check runs against today's date (above, on the committed tree), so the suite goes red 60
+# days before an operating craft's file ends. Here: the same rule at fixed dates.
+import datetime as _dt  # noqa: E402
+jwst = next(c for c in reg["craft"] if c["id"] == "deep-jwst")
+end = _dt.datetime.fromtimestamp(jwst["to"], _dt.timezone.utc).date()
+late = B.horizon_problems(reg, end - _dt.timedelta(days=B.HORIZON_DAYS - 1))
+if not any("'deep-jwst'" in x and "--fetch --only deep-jwst" in x for x in late):
+    problems.append(f"59 days before JWST's path ends, the horizon check does not name it and the command to run: {late[:1]}")
+if any("'deep-jwst'" in x for x in B.horizon_problems(reg, end - _dt.timedelta(days=B.HORIZON_DAYS + 1))):
+    problems.append("61 days before JWST's path ends, the horizon check already complains")
+if any("'deep-cassini'" in x for x in B.horizon_problems(reg, _dt.date(2030, 1, 1))):
+    problems.append("an ended mission (Cassini, `ended:`) is held to the horizon")
+case("an operating craft whose path ends within 60 days",
+     lambda w: edit(w, "registry/ephemerides.yaml", '    ended: "2017-09-15"\n', ""), "'deep-cassini'", "--fetch --only deep-cassini")
+case("rough with both until and after",
+     lambda w: edit(w, "registry/ephemerides.yaml", '      after: "2026-11-30T00:00:00Z"\n', '      after: "2026-11-30T00:00:00Z"\n      until: "2027-01-01T00:00:00Z"\n'),
+     "one of `until` or `after`")
+
 if problems:
     print("ephemerides FAILED:\n  " + "\n  ".join(problems))
     sys.exit(1)
 print(f"ephemerides ok: {len(manifest['craft'])} craft in {total} bytes are the files their manifest rows describe; "
-      f"18 ways of breaking the registry, the manifest, a file or an event are each refused by name")
+      f"20 ways of breaking the registry, the manifest, a file or an event are each refused by name; "
+      f"an operating craft is refused {B.HORIZON_DAYS} days before its path ends")

@@ -408,8 +408,12 @@ export function createOrbitRings(scene, { renderer, camera } = {}) {
     if (scene) scene.remove(group);
   }
 
+  // b200-f2-worlds: begin (forge #145) -- the Distance slider moved every path: build each again next frame.
+  function invalidate() { for (const r of rings.values()) r.builtAt = NaN; }
+  // b200-f2-worlds: end
   return {
     update, setDotScale, setLineScale, dispose, group,
+    invalidate, // b200-f2-worlds
     visible: () => group.visible,
     planets: () => planets.map((w) => w.id),
     /** What draws each path now: 'wide' once scene/fatline.js has landed, 'line' before. */

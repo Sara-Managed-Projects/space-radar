@@ -878,6 +878,46 @@ def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: se
         for n, stop in enumerate(stops, start=1):
             check_tour_stop(tour, stop, n, seen_stops, defaults, unreachable,
                             layer_ids, world_ids, site_ids, glossary)
+            # b200-f7-ground: begin
+            if "stand" in stop:
+                check_stop_stand(stop, f"tours.yaml[{tour.get('id')}].stops[{n}]")
+            # b200-f7-ground: end
+
+
+# b200-f7-ground: begin
+STAND_SKY_WORLDS = {"moon", "mars", "titan", "europa", "proxima-b", "trappist-1e"}  # site/js/sky/worldframe.js SKY_WORLDS less the Earth
+
+
+def check_stop_stand(stop: dict, where: str) -> None:
+    """`stand:` (release 2.0.0, forge #146, #147): the stop stands on another world, through scene/groundstage.js. It must
+    name a place that stage can open -- a registry/ground.yaml row, or a world it has a frame for and a place on it --
+    and only where to look besides; and it may not also be a `look:` stop of the visitor's own sky."""
+    stand = stop.get("stand")
+    if not isinstance(stand, dict):
+        fail(where, "`stand:` must be a mapping")
+        return
+    kinds = [k for k in ("ground", "sky") if k in stand]
+    if len(kinds) != 1:
+        fail(where, "`stand:` names exactly one of `ground:` and `sky:`")
+        return
+    extra = set(stand) - {"ground", "sky", "yaw", "pitch", "fov", "panel"}
+    if extra:
+        fail(where, f"`stand:` has keys it does not use: {sorted(extra)}")
+    for k in ("yaw", "pitch", "fov"):
+        if k in stand and not is_number(stand[k]):
+            fail(where, f"`stand.{k}` must be a number of degrees")
+    if "look" in stop:
+        fail(where, "a stop stands on another world or looks at the visitor's own sky, not both")
+    if "ground" in stand:
+        grounds = {g.get("id") for g in ((yaml_load((REG / "ground.yaml").read_text(encoding="utf-8")) or {}).get("grounds") or [])}
+        if stand["ground"] not in grounds:
+            fail(where, f"`stand.ground: {stand['ground']}` is not a registry/ground.yaml row")
+    else:
+        text = str(stand["sky"])
+        world = text.split(":")[0]
+        if world not in STAND_SKY_WORLDS:
+            fail(where, f"`stand.sky: {text}` names no world the sky from another world can stand on")
+# b200-f7-ground: end
 
 
 def check_sky_stop(stop: dict, where: str, target: dict, flown_on) -> None:
@@ -2818,6 +2858,10 @@ def check_stars_notable(exotics: list) -> list:
 # 0076 W1-b: the places a ladder rung can name that are neither a world nor a record: the horizon,
 # which scene/climb.js toEdge() flies to and scene/shells.js draws.
 LADDER_PLACES = {"horizon"}
+# b200-c1-culture-helio: begin (forge #148) -- and the heliosphere, which ui/heliorung.js flies to: 300 AU from
+# the Sun on its stage, where scene/heliosphere.js draws the bubble whole.
+LADDER_PLACES.add("heliosphere")
+# b200-c1-culture-helio: end
 
 
 def check_ladder(world_ids: set, layer_ids: set) -> list:
@@ -2981,8 +3025,8 @@ def check_sky_events(world_ids: set, tour_ids: set) -> list:
             fail(where, "duplicate id")
         seen.add(eid)
         kind = e.get("kind")
-        if kind not in ("meteor-shower", "mission", "eclipse"):
-            fail(where, f"`kind:` {kind!r} is not meteor-shower, mission or eclipse")
+        if kind not in ("meteor-shower", "mission", "eclipse", "season"):  # season: a solstice (b200-s1-fixes, forge #90)
+            fail(where, f"`kind:` {kind!r} is not meteor-shower, mission, eclipse or season")
         if not str(e.get("name") or "").strip():
             fail(where, "no `name:`")
         short = str(e.get("short") or "")
@@ -3003,6 +3047,9 @@ def check_sky_events(world_ids: set, tour_ids: set) -> list:
                 fail(where, "no `mission:`")
             if not isinstance(e.get("happens"), datetime.date):
                 fail(where, "`happens:` must be the date the agency gives (YYYY-MM-DD)")
+        elif kind == "season":  # b200-s1-fixes
+            if e.get("season") not in ("june-solstice", "december-solstice") or not isinstance(e.get("year"), int):
+                fail(where, "`season:` must be june-solstice or december-solstice, with a whole-number `year:`")
         elif kind == "eclipse":
             if e.get("eclipse") not in ("annular", "total"):
                 fail(where, "`eclipse:` must be annular or total")
@@ -3652,8 +3699,12 @@ MODEL_KINDS = {"derived-from-images", "built-from-dimensions"}
 MODEL_FROM_IMAGES_HONESTY = "shape built from photographs; proportions approximate"
 MODEL_FROM_RENDER_HONESTY = "shape built from an artist’s render; proportions approximate"
 MODEL_FROM_DIMENSIONS_HONESTY = "shape built from published dimensions and pictures; details simplified"
+# b200-m4-buses: begin -- a geostationary bus family built here from published sizes and the MAKER'S RENDERS, no free photograph of its deployed hardware existing (registry/geo-buses.yaml
+# `made: renders`): still built from dimensions, and its card says whose pictures they were (COPY.drawing.objectMade.renders)
+MODEL_FROM_RENDERS_HONESTY = "shape built from published dimensions and the maker’s renders; details estimated"
+# b200-m4-buses: end
 MODEL_HONESTY = {"derived-from-images": (MODEL_FROM_IMAGES_HONESTY, MODEL_FROM_RENDER_HONESTY),
-                 "built-from-dimensions": (MODEL_FROM_DIMENSIONS_HONESTY,)}
+                 "built-from-dimensions": (MODEL_FROM_DIMENSIONS_HONESTY, MODEL_FROM_RENDERS_HONESTY)}
 MODEL_FROM_IMAGES_FIELDS = ("references", "generator", "dimensions", "honesty")
 
 
@@ -5621,6 +5672,14 @@ def main() -> int:
             fail(where, f"peak {peak!r} must be `MM-DD`")
         if not s.get("note"):
             fail(where, "no note -- the ZHR is not the useful sentence")
+        # b200-s1-fixes: begin -- each year's own date, and where it came from (forge #90)
+        peaks = s.get("peaks")
+        if not isinstance(peaks, dict) or not peaks or any(
+                not (isinstance(y, str) and len(y) == 4 and isinstance(v, str) and len(v) == 5 and v[2] == "-") for y, v in peaks.items()):
+            fail(where, "peaks must map a year (\"2027\") to that year's `MM-DD`")
+        elif any(y not in (showers_doc.get("peaks_from") or {}) for y in peaks):
+            fail(where, "a year in `peaks` has no line in `peaks_from` saying where its date came from")
+        # b200-s1-fixes: end
     if not showers_doc.get("reviewed_against"):
         fail("showers.yaml", "must say which calendar it was last checked against")
 

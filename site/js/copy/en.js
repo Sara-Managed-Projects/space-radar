@@ -756,6 +756,9 @@ export const COPY = {
     nextTitle: 'Forward in time',
     backToLive: 'Live',
     backToLiveTitle: 'Back to the real time, now',
+    // b200-f1-find: begin -- the calendar button of the pill (ui/datejump.js, forge #154)
+    dateJump: 'Go to a date (UTC)',
+    // b200-f1-find: end
     rate: '{n}×',
     rateTitle: 'Speed {n}×. Press for {next}×',
     hold: 'Click to hold time still, drag to move through it',
@@ -1653,6 +1656,9 @@ export const COPY = {
       dawn: 'its surface is the Dawn spacecraft’s black-and-white mosaic, tinted in a grey we chose; the shadows in its craters are the ones Dawn photographed and do not move with the Sun here',
     },
     objectFamily: 'drawn as {name} — the kind of thing, not this exact one',
+    // b200-m2-buses: begin
+    objectBus: 'Bus: {bus} ({source}). Drawn with a stand-in bus.',
+    // b200-m2-buses: end
     // A file made here, worn by the craft it is of (scene/realmodels.js `made`, not `generic`):
     // not "a published model", which it is not; COPY.drawing.objectMade follows it.
     objectOwn: 'drawn as {name}',
@@ -1668,6 +1674,9 @@ export const COPY = {
       images: 'shape built from photographs; proportions approximate',
       render: 'shape built from an artist’s render; proportions approximate',
       dimensions: 'shape built from published dimensions and pictures; details simplified',
+      // b200-m4-buses: begin -- a geostationary bus built here from published sizes and the maker's renders (registry/geo-buses.yaml `made: renders`)
+      renders: 'shape built from published dimensions and the maker’s renders; details estimated',
+      // b200-m4-buses: end
     },
     // 2026-10-13 (public #969): a craft drawn as it was, not as it is (scene/realmodels.js `was`).
     // Hitomi spun itself apart on 26 March 2016; catalogue object 41337 is its main body, and JAXA
@@ -2661,6 +2670,14 @@ export const CITIES = [
   { name: 'Warsaw', country: 'Poland', latDeg: 52.2297, lonDeg: 21.0122, zone: 'Europe/Warsaw' },
   { name: 'Yangon', country: 'Myanmar', latDeg: 16.8409, lonDeg: 96.1735, zone: 'Asia/Yangon' },
 ];
+
+// b200-s4a-look: begin -- 2.0.0 look finding 8: how a world is drawn (scene/worlds.js viewScale(id).note, on its card) was
+// English typed in code in every language, and a card's breadcrumb said "Sun" (ui/cards.js parentOf): it names a world by the
+// sky's bare name (COPY.sky.bodies), which gains the Earth for it. Here, not in copy/en.later.js: scene/worlds.js is boot code.
+COPY.worldView.nearer = '{name} is drawn in its true direction, but nearer and larger than it really is, so you can find it.';
+COPY.worldView.asIs = '{name} is drawn where it is, at the size it is.';
+COPY.sky.bodies.earth = 'Earth';
+// b200-s4a-look: end
 
 // 0077 W1-e: begin
 // The language (public #524). If index.html prepared one (copy/lang.js says how), its words go over these IN PLACE, a key at a

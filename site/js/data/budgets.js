@@ -5,12 +5,14 @@
 
 /** Every gate CI reads, by id (spec 0044). A raised value needs a dated reason in the YAML. */
 export const BUDGETS = {
-  "first_visit_bytes": 2939300,
+  "first_visit_bytes": 2950000,
+  "first_visit_requests": 167,
+  "phone_first_frame_ms": 15900,
   "boot_longest_task_ms": 3000,
   "boot_blocking_ms": 6000,
   "deployed_boot_js_bytes": 1960000,
   "after_first_visit_bytes": 1945000,
-  "embed_first_visit_bytes": 2078000,
+  "embed_first_visit_bytes": 2080300,
   "audio_at_boot_bytes": 0,
   "og_at_boot_bytes": 0,
   "fonts_at_boot_bytes": 90000,
@@ -66,5 +68,12 @@ export const BUDGETS = {
   "deep_galclusters_bytes": 150000,
   "deep_galclusters_draw_calls": 6,
   "deep_catalogue_bytes": 1300000,
-  "deep_catalogue_draw_calls": 2
+  "deep_catalogue_draw_calls": 2,
+  "star_motion_bytes": 290000,
+  "variable_stars_bytes": 20000,
+  "moment_voice_total_kb": 1400,
+  "card_voice_total_kb": 34000,
+  "stars3d_athyg_total_bytes": 40000000,
+  "stars3d_athyg_node_bytes": 110000,
+  "stars3d_tiers_boot_bytes": 300
 };

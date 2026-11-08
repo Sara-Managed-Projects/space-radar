@@ -1,0 +1,42 @@
+/* css/deep.css -- release 2.0.0 batch c2-deep: a black hole's card held against the EHT's pictures (ui/holespin.js,
+   forge #149) and the line under the time bar while the 3D stars are moved (scene/stardeep.js, forge #141). Fetched
+   with those modules (ui/latercss.js), never on a first visit. Buttons and notes are ui.css's own classes. */
+
+.sr-holecmp__row { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: var(--sp-2) 0; }
+.sr-holecmp__row .sr-btn { min-height: 44px; }
+.sr-holecmp__figs { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: var(--sp-2) 0 0; }
+.sr-holecmp__figs[hidden] { display: none; }
+.sr-holecmp__fig { flex: 1 1 140px; max-width: 220px; margin: 0; }
+.sr-holecmp__fig img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--sr-radius-sm); background: #000; }
+.sr-holecmp__fig figcaption, .sr-holecmp__note { margin: var(--sp-1) 0 0; font-size: var(--sr-fs-sm); line-height: 18px; color: var(--sr-text-dim); }
+.sr-holecmp__note a { color: inherit; }
+
+.sr-stardeep {
+  position: fixed; left: calc(50% + var(--sr-scene-left, 0px) / 2); bottom: calc(var(--sr-time-h, 102px) + 64px + env(safe-area-inset-bottom, 0px)); /* above the time bar and its "Satellites faded" line */
+  transform: translateX(-50%);
+  max-width: min(560px, calc(100vw - var(--sr-scene-left, 0px) - 32px)); margin: 0; padding: var(--sp-2) var(--sp-3);
+  font-size: var(--sr-fs-sm); line-height: 18px; color: var(--sr-text);
+  border-radius: var(--sr-radius-sm); pointer-events: none;
+  /* b200-s4b-look: over the labels (they drew through it, 2.0.0 final look finding 4), on the glass the pill has (.sr-float),
+     under every control. */
+  z-index: var(--sr-z-status); background: var(--sr-glass-strong);
+}
+.sr-stardeep[hidden] { display: none; }
+/* b200-s4b-look: begin -- on a phone the time bar rides on the sheet, so the line goes under the search row and the scale
+   rail (Back), lower again while the line under the search is up (a launch day, a card); three lines of it, the rest
+   behind a tap (scene/stardeep.js). Before, nine lines lay under Back and over the top half of the picture. */
+html.sr-phone .sr-stardeep {
+  bottom: auto; left: 50%; width: calc(100vw - 2 * var(--sp-4)); max-width: none;
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 44px + var(--sp-2));
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden;
+  pointer-events: auto; cursor: pointer;
+  /* The bottom inset is border, not padding: a clamped box clips at its padding edge, so padding showed the top of a
+     fourth line. The glass is drawn under a border as under padding. */
+  padding-bottom: 0; border-bottom: var(--sp-2) solid transparent;
+}
+html.sr-phone:is(.sr-launchday, .sr-card-open):not([data-sheet='full']) .sr-stardeep {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 2 * (44px + var(--sp-2)));
+}
+html.sr-phone .sr-stardeep.is-open { display: block; max-height: 50vh; overflow: auto; padding-bottom: var(--sp-2); border-bottom: 1px solid var(--sr-line); }
+html.sr-phone[data-sheet='full'] .sr-stardeep { display: none; }
+/* b200-s4b-look: end */

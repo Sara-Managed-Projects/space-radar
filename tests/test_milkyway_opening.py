@@ -43,6 +43,12 @@ flat = (before > 0.02) & ((mx - mn) < 0.04)
 kept = after[flat].mean() / before[flat].mean()
 if flat.sum() < 1000 or kept < 0.9:
     bad.append(f"the smooth glow is not kept: {kept:.2f} over {flat.sum()} texels")
+# b200-s1-fixes (forge #14): the numbers above are the map's own (sRGB) values, and so must the shader's be: the
+# sampler hands back linear values, and a floor of 0.012 taken from those cut the faint band away.
+frag = (ROOT / "site/js/sky/groundsky.js").read_text(encoding="utf-8").split("const MW_FRAG", 1)[1].split("`;", 1)[0]
+if "pow(texture2D(uMap, uv).rgb, vec3(1.0 / 2.2))" not in frag or "c = pow(max(c - 0.012, 0.0), vec3(2.2));" not in frag \
+        or frag.count("mapValue(") != 6:
+    bad.append("MW_FRAG does not cut and floor in the map's own values (mapValue in, pow 2.2 out)")
 if bad:
     print("milky way opening FAILED:\n  " + "\n  ".join(bad))
     sys.exit(1)

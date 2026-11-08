@@ -31,6 +31,10 @@ DEFAULT_HOST = "https://www.spaceradar.ai"
 GITHUB = "https://github.com/Sara-Managed-Projects/space-radar"
 CLASSROOM_FORM = f"{GITHUB}/issues/new?template=classroom.yml"
 ACCURACY_FORM = f"{GITHUB}/issues/new?template=data-accuracy.yml"
+# forge #91: the forms work, but only for a visitor signed in to GitHub (asked 2026-11-08: the form
+# answers 302 to github.com/login). The project has no mail address and no public tracker of its own
+# yet, so a page says so beside every form link instead of promising more than it gives.
+ON_GITHUB = "on GitHub (it needs a free GitHub account)"
 ACCOUNTS = [
     ("YouTube", "https://www.youtube.com/@SpaceRadar_ai"),
     ("Instagram", "https://www.instagram.com/spaceradar.ai/"),

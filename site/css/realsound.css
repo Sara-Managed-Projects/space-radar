@@ -1,0 +1,67 @@
+/* css/realsound.css -- the real recordings' panel (audio/score.js, forge #163). Linked by that module the first time
+   it shows (ui/latercss.js), never by index.html: none of it is a first visit's bytes. Tokens only (css/ui.css).
+   Desktop: top right, beside the rail, clear of the card on the left and the breadcrumb in the middle. Phone: top
+   right, under the live clock and above the sheet; compact, because the scene is the point. Every control is 44 px to the touch. */
+
+.sr-realsound {
+  position: fixed;
+  top: var(--sr-inset);
+  right: calc(var(--sr-inset) + 48px + 12px);
+  z-index: var(--sr-z-pill);
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  max-width: 230px;
+  padding: 6px 6px 6px 10px;
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius);
+  background: var(--sr-glass);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  color: var(--sr-text);
+}
+.sr-realsound[hidden] { display: none; }
+.sr-realsound__list { order: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1; }
+.sr-realsound__close {
+  order: 2;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  margin: -6px -6px 0 0;
+  border: 0;
+  background: none;
+  color: var(--sr-text-dim);
+  font-size: var(--sr-fs-glyph);
+  cursor: pointer;
+}
+.sr-realsound__play {
+  display: block;
+  min-height: 44px;
+  padding: 6px 4px;
+  border: 0;
+  background: none;
+  color: var(--sr-ember);
+  font: 600 var(--sr-fs-label)/20px var(--sr-font);
+  text-align: left;
+  cursor: pointer;
+}
+.sr-realsound__play[aria-pressed='true'] { color: var(--sr-text); }
+.sr-realsound__how, .sr-realsound__credit { margin: -6px 0 0; padding: 0 4px; color: var(--sr-text-dim); }
+.sr-realsound__credit { margin-top: 4px; font-size: var(--sr-fs-unit); line-height: 15px; }
+.sr-realsound__live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.sr-realsound__close:focus-visible, .sr-realsound__play:focus-visible { outline: 2px solid var(--sr-ember); outline-offset: 2px; }
+
+@media (max-width: 899px) {
+  .sr-realsound {
+    top: calc(env(safe-area-inset-top, 0px) + 96px);
+    right: 12px;
+    max-width: min(168px, 44vw);
+    padding: 2px 2px 4px 6px;
+    font-size: var(--sr-fs-unit);
+    line-height: 14px;
+  }
+  .sr-realsound__list { gap: 2px; }
+  .sr-realsound__play { font-size: var(--sr-fs-sm); line-height: 16px; }
+  .sr-realsound__how { margin-top: -4px; }
+}

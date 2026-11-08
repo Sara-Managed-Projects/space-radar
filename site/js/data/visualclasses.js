@@ -449,7 +449,26 @@ export const VISUAL_CLASSES = [
 "elektro-l",
 "astrosat",
 "gosat",
-"microcarb"
+"microcarb",
+"cubesat-1u",
+"cubesat-2u",
+"cubesat-3u",
+"cubesat-3u-wings",
+"cubesat-6u",
+"cubesat-6u-wings",
+"cubesat-12u",
+"cubesat-12u-wings",
+"kineis",
+"qps-sar",
+"bus-eurostar-e3000",
+"bus-boeing-702",
+"bus-boeing-702sp",
+"bus-a2100ax",
+"bus-spacebus-4000b",
+"bus-geostar-2",
+"bus-dfh-4",
+"bus-i-3k",
+"bus-i-2k"
 ],
 "model_kinds": [
 "satellite-iridium",
@@ -535,7 +554,8 @@ export const VISUAL_CLASSES = [
 "pslv-ps4",
 "kosmos3m-stage2",
 "r7-8k72k",
-"sls-block1"
+"sls-block1",
+"vostok-blok-e"
 ],
 "model_kinds": [
 "rocket-upper-stage",
@@ -1563,6 +1583,17 @@ export const VISUAL_CLASSES = [
 "catalogues": [
 "cmb",
 "edge"
+]
+}
+},
+{
+"id": "HELIOSPHERE",
+"title": "The heliosphere",
+"honesty": "modelled",
+"house": true,
+"members": {
+"catalogues": [
+"heliosphere"
 ]
 }
 },

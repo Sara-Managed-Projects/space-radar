@@ -941,11 +941,17 @@ export const COPY = {
       "dawn": "它的表面是 Dawn 拍的黑白镶嵌图，上了一层我们选的灰色；陨石坑里的阴影是 Dawn 拍到的，在这里不会随太阳移动"
     },
     "objectFamily": "画成了 {name}——是这一类东西的样子，并非这一个",
+    // b200-m2-buses: begin
+    "objectBus": "平台：{bus}（{source}）。画成了替代平台的样子。",
+    // b200-m2-buses: end
     "objectOwn": "画成了 {name}",
     "objectMade": {
       "images": "外形根据照片建成；比例是近似的",
       "render": "外形根据艺术渲染图建成；比例是近似的",
-      "dimensions": "外形根据已公布的尺寸和图片建成；细节做了简化"
+      "dimensions": "外形根据已公布的尺寸和图片建成；细节做了简化",
+      // b200-m4-buses: begin -- a geostationary bus built here from published sizes and the maker's renders (registry/geo-buses.yaml `made: renders`), machine-drafted
+      "renders": "外形根据已公布的尺寸和制造商的渲染图建成；细节为估计"
+      // b200-m4-buses: end
     },
     "objectWas": {
       "hitomi": "画的是 2016 年 2 月发射时完整的样子；五周后它解体了，这里追踪的是它没有太阳能板的主体",
@@ -4548,6 +4554,143 @@ export const COPY = {
   }
 };
 
+// b200-f2-worlds: begin (forge #144, #145, #148) -- the Size and Distance sliders, the cutaways and the heliosphere (copy/en.later.js orrery, cutaway, helio). Machine-drafted like the rest of this file, not read by a native speaker.
+Object.assign(COPY, {
+  "orrery": {
+    "title": "大小和距离",
+    "size": "大小",
+    "sizeTrue": "真实",
+    "sizeValue": "×{n}",
+    "sizeTitle": "天体画得比实际大多少倍，从真实大小到 ×{max}",
+    "dist": "距离",
+    "distTrue": "真实",
+    "distLog": "对数",
+    "distSome": "向对数靠拢了 {p}%",
+    "distTitle": "到太阳的距离压缩了多少，从真实到对数。方向始终是实测的。",
+    "presets": "现成视图",
+    "presetTrue": "真实比例",
+    "presetTrueTitle": "每个天体都按真实大小、放在真实距离上",
+    "presetClass": "课堂",
+    "presetClassTitle": "天体 ×{n}，距离取对数，像太阳系仪一样",
+    "held": "导览旅程中一切都按真实比例绘制。旅程结束后滑块会回来。",
+    "note": "每个天体在天空中的位置始终是实测的。徽标会告诉你它被画大了多少。",
+    "noteSize": "{name} 被大小滑块画成实际的 ×{n}。",
+    "noteDist": "它画在离太阳 {drawn} AU 的地方，实际在 {au} AU，方向是真实的（距离滑块）。",
+    "noteMoon": "它离 {parent} 的距离画成实际的 {n} 倍，方向是真实的，这样它就不会落进放大的行星里。",
+    "noteSun": "太阳被大小滑块画成实际的 ×{n}，并且不会盖住水星。",
+    "badgeSun": "太阳 ×{n}",
+    "badgeLog": "对数距离",
+    "badgeSome": "距离 {p}% 对数",
+    "badgeJoin": " · ",
+    "badgeTitle": "这个视图由“行星”标签页里的大小和距离滑块决定。"
+  },
+  "cutaway": {
+    "button": "看看内部",
+    "buttonTitle": "把 {name} 剖开看各层，深度来自测量数据",
+    "title": "{name} 的内部",
+    "close": "关闭剖面图",
+    "model": "分层依据 {model}。",
+    "source": "来源",
+    "layers": "各层，从表面往下",
+    "depthRange": "{top}–{bottom} 公里",
+    "toCentre": "{top} 公里到中心",
+    "cls": {
+      "measured": "实测",
+      "modelled": "模拟",
+      "inferred": "推断"
+    },
+    "clsTitle": "{cls}：{source}",
+    "probe": "深度",
+    "probeTitle": "从表面往下滑到中心",
+    "depth": "深 {km} 公里",
+    "atCentre": "中心",
+    "layer": "层",
+    "pressure": "压力",
+    "temperature": "温度",
+    "density": "密度",
+    "valueCls": "{value}（{cls}）",
+    "note": "深度来自资料来源；颜色是选定的。在一层的顶部和底部之间，探针读出的是介于两者之间的数值。",
+    "unknown": "这个天体还没有剖面图。",
+    "units": {
+      "gpa": "{n} GPa",
+      "mpa": "{n} MPa",
+      "kpa": "{n} kPa",
+      "millionGpa": "{n} 百万 GPa",
+      "k": "{n} K",
+      "millionK": "{n} 百万 K",
+      "rho": "{n} g/cm³"
+    },
+    "kinds": {
+      "crust": "壳层",
+      "mantle": "幔层",
+      "upper-mantle": "上幔",
+      "lower-mantle": "下幔",
+      "outer-core": "液态外核",
+      "inner-core": "固态内核",
+      "liquid-core": "液态核",
+      "iron-core": "铁核",
+      "molten-silicate": "熔融岩石层",
+      "partial-melt": "部分熔融层",
+      "ice-shell": "冰壳",
+      "ocean": "海洋",
+      "hp-ice": "高压冰",
+      "rock-mantle": "岩石幔",
+      "rock-core": "岩石核",
+      "hydrated-core": "岩石与冰的核",
+      "molecular": "氢和氦",
+      "metallic": "金属氢",
+      "dilute-core": "稀释核",
+      "ice-mantle": "水、氨和甲烷",
+      "convective": "对流区",
+      "radiative": "辐射区",
+      "solar-core": "核心"
+    }
+  },
+  "helio": {
+    "chip": "日球层 · 模拟",
+    "chipTitle": "包围太阳系的这个气泡是根据什么画的",
+    "legendTitle": "日球层",
+    "rowTs": "终端激波：太阳风在这里减速到声速以下。模拟的形状穿过两个穿越点：Voyager 1 在 {a} AU，Voyager 2 在 {b} AU（实测）。",
+    "rowHp": "日球层顶：太阳风在这里遇上星际气体。模拟的形状（Parker 1961）穿过两个穿越点：Voyager 1 在 {a} AU，Voyager 2 在 {b} AU（实测）。",
+    "rowBow": "弓形波：星际气体在前方堆积的地方。示意：日球层顶距离的两倍（McComas 等人，2012）。",
+    "rowRibbon": "IBEX 带：IBEX 在天空中测到的一条亮带（Funsten 等人，2013）。它的距离没有测过：画在 {au} AU 处。",
+    "rowMotion": "太阳穿过本地星际气体的路线，{v} 公里/秒（IBEX，McComas 等人，2015）。箭头代表 {years} 年的路程，{au} AU。",
+    "sources": "穿越位置来自 JPL Horizons 中 Voyager 的轨迹，取 NASA 公布的穿越日期。形状：Parker 1961、Wilkin 1996，参考 Izmodenov & Alexashov 2015 和 Opher 等人 2015。",
+    "crossing": "{craft}：{surface}，{au} AU，{date}",
+    "motion": "太阳的路线，{v} 公里/秒",
+    "craft": {
+      "deep-voyager-1": "Voyager 1",
+      "deep-voyager-2": "Voyager 2"
+    },
+    "surface": {
+      "ts": "终端激波",
+      "hp": "日球层顶"
+    },
+    "surfaceLabel": {
+      "ts": "终端激波（模拟）",
+      "hp": "日球层顶（模拟）",
+      "bow": "弓形波（示意）",
+      "ribbon": "IBEX 带（在天空中实测）"
+    },
+    "date": "{y}年{m}{d}日",
+    "months": [
+      "1月",
+      "2月",
+      "3月",
+      "4月",
+      "5月",
+      "6月",
+      "7月",
+      "8月",
+      "9月",
+      "10月",
+      "11月",
+      "12月"
+    ]
+  }
+});
+// b200-f2-worlds: end
+
 export const GLOSSARY = {
   "orbit": "在引力作用下绕着某个天体运行的路径。横向速度足够快，你就会一直从地球旁边落过去，而不是落到地球上。",
   "low Earth orbit": "离地大约 200 到 2000 公里的一层，非常繁忙。空间站、大多数卫星和大多数碎片都在这里。",
@@ -4587,3 +4730,1001 @@ export const GLOSSARY = {
   "totality": "日全食中太阳被完全遮住的那几分钟。天空暗到可以看见星星。",
   "annular": "环形的。日环食时月球离得太远，遮不住整个太阳，周围留下一圈明亮的光环。"
 };
+
+// b200-f1-find: begin -- Find, the owners, the clouds and the date field (copy/en.find.js, forge #150, #152, #153, #154), machine-drafted
+COPY.timePill.dateJump = "跳到某个日期（UTC）";
+Object.assign(COPY, {
+  "findEntry": {
+    "title": "查找",
+    "property": "按属性查找",
+    "countries": "按国家看卫星",
+    "operators": "按运营方",
+    "clouds": "碎片云",
+    "chartOurs": "并排看我们的行星"
+  },
+  "find": {
+    "title": "查找",
+    "label": "按属性、按国家和按碎片云查找",
+    "tabs": {
+      "property": "按属性",
+      "country": "按国家",
+      "clouds": "碎片与星座"
+    },
+    "kindsLabel": "找什么",
+    "kinds": {
+      "stars": "恒星",
+      "exoplanets": "行星",
+      "satellites": "卫星",
+      "comets": "彗星"
+    },
+    "presetsLabel": "问题",
+    "refine": "细化",
+    "presets": {
+      "rockyHz50": "50 光年内宜居带中的岩质行星",
+      "nearStars": "20 光年内的恒星",
+      "temperate": "和地球差不多温暖的行星",
+      "hotJupiters": "炽热巨行星",
+      "cometsSoon": "2030 年前到达近日点的彗星",
+      "geo": "地球静止轨道上仍在工作的卫星",
+      "low": "400 公里以下仍在工作的卫星"
+    },
+    "fields": {
+      "within": "距离以内（光年）",
+      "fromHere": "从相机量起，而不是从太阳",
+      "radius": "半径（地球为 1）",
+      "mass": "质量（地球为 1）",
+      "teq": "温度（K）",
+      "insol": "所受星光（地球 = 1）",
+      "height": "高度（公里）",
+      "year": "发射（年）",
+      "perihelion": "离太阳最近（年）",
+      "from": "从",
+      "to": "到",
+      "zone": "在宜居带内",
+      "zoneWide": "在带内或带边",
+      "rocky": "岩质",
+      "working": "只看在工作的",
+      "owner": "所属",
+      "operator": "运营方",
+      "any": "任意",
+      "range": "{label}：{word}"
+    },
+    "columns": {
+      "name": "名称",
+      "dist": "距离（光年）",
+      "radius": "半径（地球）",
+      "teq": "温度（K）",
+      "insol": "光照",
+      "zone": "宜居带",
+      "spect": "光谱型",
+      "mag": "星等",
+      "owner": "所属",
+      "height": "高度（公里）",
+      "year": "发射",
+      "perihelion": "近日点",
+      "qAu": "最近（天文单位）"
+    },
+    "zones": {
+      "inside": "带内",
+      "edge": "带边",
+      "hotter": "太热",
+      "colder": "太冷"
+    },
+    "sortTitle": "按{col}排序",
+    "tableLabel": "符合条件的天体，每行一个：点一行就飞过去",
+    "status": "找到 {n} 个",
+    "statusSome": "找到 {n} 个；列出前 {shown} 个",
+    "none": "没有符合的。放宽某个范围，或取消一个勾选。",
+    "looking": "正在查找…",
+    "loading": "正在载入要查的数据…",
+    "failed": "查找没有完成。请稍后再试。",
+    "rowTitle": "前往 {name}",
+    "noRecord": "地图上没有画出",
+    "modelled": "用估算的恒星质量算出：模型",
+    "copyLink": "复制这个问题的链接",
+    "copied": "链接已复制",
+    "honesty": {
+      "stars": "HYG v4.4 中有名字的 3 390 颗恒星，位于实测距离处。实测。",
+      "exoplanets": "半径、质量、周期和恒星：实测，来自 NASA Exoplanet Archive。轨道大小、所受星光、温度和宜居带：计算得出；标 * 的表示恒星质量由其光度估算，属于模型。岩质：半径不超过 1.6 个地球半径，或无半径数据时质量不超过 3 个地球质量（Rogers 2015）。",
+      "satellites": "CelesTrak 目录，读取于 {date}。高度取轨道最高点和最低点的平均。实测。",
+      "comets": "近日点日期来自 JPL 小天体数据库，由实测轨道算出。"
+    },
+    "chart": {
+      "open": "并排",
+      "openTitle": "{host} 的行星并排，按比例",
+      "title": "{host}，按比例",
+      "ours": "太阳系",
+      "label": "{host} 的行星按真实大小并排画出，从恒星往外排",
+      "note": "所有行星用同一比例；间隔不代表距离。没有实测半径的行星用虚线、按中等大小画出。",
+      "close": "关闭图"
+    },
+    "pill": "{name}：已点亮 {n} 个",
+    "pillClear": "取消高亮"
+  },
+  "owners": {
+    "modesLabel": "分组方式",
+    "modes": {
+      "countries": "国家",
+      "operators": "运营方",
+      "points": "拉格朗日点",
+      "nopath": "没有公开轨道"
+    },
+    "reading": "正在读取 CelesTrak 目录（7 MB）…",
+    "failed": "目录没有载入。",
+    "retry": "重试",
+    "lead": "{n} 个所属方在轨道上有东西：共追踪 {total} 个天体。",
+    "row": "在轨 {n}",
+    "rowSub": "{working} 个在工作 · {debris} 块碎片",
+    "rowTitle": "点亮 {name} 在轨道上的东西",
+    "joint": "{a}和{b}",
+    "ussr": "目录把苏联和俄罗斯算作同一个所属方。",
+    "unknown": "尚不清楚",
+    "byName": "按名称",
+    "byNameTitle": "按目录中其卫星的名称统计",
+    "kinds": "{working} 个在工作，{dead} 个已停止工作，{rocket} 个火箭箭体，{debris} 块碎片。",
+    "lit": "其中 {n} 个已在地图上画出并点亮。",
+    "litNone": "其中没有一个画在地图上。",
+    "show": "点亮它们",
+    "clear": "清除",
+    "page": "{name} 的页面",
+    "noPathTitle": "没有公开轨道：{n}",
+    "noPathNone": "它在轨道上的每个航天器都有公开轨道。",
+    "why": {
+      "no-elements": "没有公开轨道：目录里有它，但没有发布轨道根数",
+      "deep-space": "在地球轨道之外，这里没有它的路径",
+      "deep-drawn": "在地球轨道之外：按 JPL 路径画出"
+    },
+    "points": {
+      "sel1": "日地 L1",
+      "sel2": "日地 L2",
+      "eml2": "地月 L2",
+      "sel1Why": "朝太阳方向 150 万公里：在这里看太阳，太阳永不落下。",
+      "sel2Why": "背离太阳 150 万公里：又冷又暗，适合望远镜。",
+      "eml2Why": "在月球背面之外：一颗中继星，能同时看到月球背面和地球。",
+      "empty": "这里目前没有记录。"
+    },
+    "nopathLead": "{n} 个在轨航天器没有公开轨道。最新的排在前面：",
+    "source": "CelesTrak 卫星目录，读取于 {date}：实测。国旗：Wikimedia Commons，公有领域。"
+  },
+  "breakups": {
+    "cloudsTitle": "碎片云",
+    "fleetsTitle": "卫星星座",
+    "names": {
+      "fy1c": "Fengyun-1C",
+      "cosmos1408": "Cosmos 1408",
+      "iridium33": "Iridium 33",
+      "cosmos2251": "Cosmos 2251"
+    },
+    "why": {
+      "fy1c": "一颗中国气象卫星，2007 年 1 月 11 日在 865 公里高度被中国反卫星导弹摧毁：有史以来最大的碎片云。",
+      "cosmos1408": "一颗已失效的苏联卫星，2021 年 11 月 15 日在约 480 公里高度被俄罗斯反卫星导弹摧毁。",
+      "iridium33": "一颗在用的通信卫星，2009 年 2 月 10 日在西伯利亚上空 789 公里处被已失效的宇宙 2251 号撞上：首次两颗完整卫星相撞。",
+      "cosmos2251": "一颗已失效的俄罗斯卫星，2009 年 2 月 10 日在 789 公里高度撞上铱星 33。"
+    },
+    "counts": "编入目录的 {catalogued} 块碎片中，仍有 {up} 块在轨。",
+    "lit": "地图上点亮 {n} 个。",
+    "spreadTitle": "看它如何散开",
+    "steps": {
+      "event": "事发时",
+      "week": "一周后",
+      "year": "一年后",
+      "today": "今天"
+    },
+    "play": "从事发时播放",
+    "stop": "停止",
+    "places": "回到今天的位置",
+    "spreadNote": "模型：每块碎片都从同一点出发，沿它今天的轨道运行，并随地球赤道隆起使轨道面转动而漂移。已经坠落的碎片不画出。",
+    "source": "来源：",
+    "fleets": {
+      "starlink": "Starlink",
+      "oneweb": "OneWeb",
+      "kuiper": "Kuiper",
+      "qianfan": "Qianfan",
+      "gps": "GPS",
+      "glonass": "GLONASS",
+      "galileo": "Galileo",
+      "beidou": "BeiDou",
+      "iridium": "Iridium"
+    },
+    "fleetLit": "地图上点亮 {n} 个。",
+    "fleetNote": "按运营方在目录中给它们起的名字识别。",
+    "loadingActive": "先载入所有在工作的卫星（7 MB）…",
+    "loadingDebris": "先载入所有被追踪的碎片（7 MB）…",
+    "moment": "2007: Fengyun-1C",
+    "momentTitle": "跳到风云一号 C 被摧毁的那一分钟，并点亮它的碎片云"
+  },
+  "dateJump": {
+    "title": "跳到某个日期",
+    "field": "日期和时间（UTC）",
+    "text": "或直接输入",
+    "placeholder": "1969-07-20 20:17, next total eclipse",
+    "go": "前往",
+    "hint": "1700 到 2200 年之间的任意时刻，UTC。",
+    "errors": {
+      "unknown": "看不懂这个日期。试试 1969-07-20 20:17、20 July 1969 或 next total eclipse。",
+      "range": "超出 1700 到 2200 年。",
+      "empty": "请先输入日期。",
+      "eclipse": "1700 到 2200 年之间没有这样的食。"
+    },
+    "searching": "正在查找…",
+    "gone": "现在是 {when}。",
+    "eclipse": "{what}，{when}。",
+    "eclipses": {
+      "sunTotal": "日全食",
+      "sunAnnular": "日环食",
+      "sunPartial": "日偏食",
+      "moonTotal": "月全食",
+      "moonPartial": "月偏食",
+      "moonPenumbral": "半影月食"
+    },
+    "rangesTitle": "精度如何，适用于何时",
+    "ranges": {
+      "worlds": "太阳、月球和行星：1700 到 2200 年，计算得出（astronomy-engine）。",
+      "satellites": "卫星：今天前后一周内准确；超过一个月就变淡。",
+      "craft": "深空探测器：只在它们自己的 JPL 路径范围内。",
+      "stars": "恒星：在天空视图中，日期离今天超过 50 年时，按实测的运动移动。"
+    },
+    "quick": {
+      "total": "下一次日全食",
+      "lunar": "下一次月食"
+    },
+    "missionsTitle": "来自我们的任务",
+    "momentsTitle": "精彩时刻",
+    "presetsLabel": "可跳转的日期",
+    "faded": "卫星已变淡：它们的轨道是为现在测量的，不是为 {year} 年。",
+    "close": "关闭"
+  }
+});
+// b200-f1-find: end
+// b200-f4-cards: begin -- a card's Wikipedia block and Read aloud (copy/en.cards.js, forge #151), machine-drafted
+Object.assign(COPY, {
+  "wikiCard": {
+    "label": "来自维基百科",
+    "quotedLive": "引自维基百科今天的版本，未经我们核实。",
+    "quotedBaked": "引自维基百科 {date} 的版本，未经我们核实。",
+    "textCredit": "文字：维基百科贡献者，CC BY-SA 4.0。",
+    "readArticle": "阅读完整条目",
+    "inEnglish": "这种语言还没有相关条目，所以这里是英文条目。",
+    "family": "关于 {fleet} 整体：这颗卫星本身没有单独的条目。",
+    "photo": "照片：{artist}，{licence}，来自 Wikimedia Commons。",
+    "photoNoArtist": "照片：{licence}，来自 Wikimedia Commons。",
+    "photoAlt": "维基百科条目 {title} 顶部的图片",
+    "loading": "正在询问维基百科…",
+    "read": "朗读",
+    "readTitle": "用你设备自带的语音朗读这张卡片",
+    "stop": "停止朗读",
+    "reading": "正在朗读"
+  }
+});
+// b200-f4-cards: end
+// b200-f3-stars: begin -- deep time, the variable stars and the turning black holes (copy/en.stars.js, forge #141, #142, #149), machine-drafted
+Object.assign(COPY, {
+  "deepTime": {
+    "title": "深时",
+    "back": "−{n} 年",
+    "on": "+{n} 年",
+    "backTitle": "后退 {n} 年，日期和时刻不变",
+    "onTitle": "前进 {n} 年，日期和时刻不变",
+    "presetsLabel": "其他北极星",
+    "presets": {
+      "thuban": "右枢，公元前 2800 年",
+      "vega": "织女星，公元 13 700 年",
+      "far": "公元 50 000 年"
+    },
+    "presetTitles": {
+      "thuban": "建造金字塔的时候，天龙座的右枢是北极星",
+      "vega": "约公元 13 700 年，天极离织女星不到 6.5°",
+      "far": "五万年后的天空"
+    },
+    "yearAd": "公元 {n} 年",
+    "yearBc": "公元前 {n} 年",
+    "moved": "{year}的天空：每颗恒星都按自己实测的运动移动了。",
+    "far": "离今天这么远，不画月亮和行星，太阳放在历法给出的位置。",
+    "pole": "北极星：{name}，离天极 {deg}°。",
+    "noPole": "天极附近没有亮星：最近的{name}离它 {deg}°。",
+    "unnamed": "一颗 {mag} 等星",
+    "honest": "运动是实测的（Hipparcos 和 Gaia，经 HYG）；把它们沿直线延伸几千年是模型。地轴的转动：Vondrák、Capitaine 和 Wallace 2011。"
+  },
+  "variables": {
+    "label": "它的光如何变化",
+    "types": {
+      "eclipse": "食双星：两颗星彼此从对方前面经过。",
+      "binary": "被拉成椭球形的密近双星，亮度从不停下。",
+      "pulse": "脉动星：它会膨胀和收缩。",
+      "sine": "一颗小而快速脉动的星。",
+      "sr": "半规则巨星：周期和变幅是实测的，但不知道它此刻处在周期的哪里，所以这条曲线只是示意。",
+      "irregular": "不规则变星：没有钟能说出它有多亮，所以天空保留星表的亮度。"
+    },
+    "periodDays": "周期 {n} 天。",
+    "periodYears": "周期 {n} 年。",
+    "aria": "{name}的光变曲线，从 {bright} 等到 {faint} 等；现在 {now}。",
+    "now": "现在",
+    "nowLine": "现在 {mag} 等（{band}）；变化范围 {bright} 到 {faint}。",
+    "range": "变化范围 {bright} 等到 {faint} 等（{band}）。",
+    "far": "曲线不延伸到离今天超过 {years} 年；变化范围 {bright} 等到 {faint} 等（{band}）。",
+    "nextMin": "下一次极小：{when}",
+    "measured": "实测：大暗化期间有日期的星等。要素：{cite}。",
+    "modelled": "模型：形状由星表的周期、历元和变幅画出（{cite}）。",
+    "notes": {
+      "alf-ori": "2019 和 2020 年它暗到 1.6 等，即“大暗化”：它抛出的一团尘埃遮住了它的一部分。",
+      "omi-cet": "蒭藁增二的极大从一个周期到下一个会早或晚几周，所以这些日期也可能差这么多。",
+      "bet-lyr": "它的周期每年增加 19 秒；曲线采用 Harmanec 和 Scholz（1993）的二次历表。",
+      "bet-per": "大陵五的食准到分钟：每 2.87 天变暗约十小时。",
+      "eps-aur": "每 27 年被伴星周围的暗盘遮掩近两年；上一次食从 2009 到 2011 年。",
+      "eta-car": "在 1840 年代的大爆发中，它成了全天第二亮的星。",
+      "t-crb": "再发新星：1866 年和 1946 年两次亮到 2 等。"
+    }
+  },
+  "blackHoleSpin": {
+    "spin": "画成转动的，自旋 a = {a}：阴影是转动黑洞投下的形状（Bardeen 1973），被推离朝我们转来的一侧。{why}周围的光仍按不转动的情形追踪，所以这个形状是模型。",
+    "spinWhy": {
+      "m87-star": "自旋是选定的：EHT 2019 第五篇论文中最吻合的模型以 0.94 转动。",
+      "sgr-a-star": "自旋是选定的：EHT 2022 第五篇论文倾向于 0.5 到 0.94。"
+    }
+  }
+});
+// b200-f3-stars: end
+// b200-c1-culture: begin -- a sky figure's story and the other cultures' pictures (copy/en.later.js skyLore, forge #143), machine-drafted
+Object.assign(COPY, {
+  "skyLore": {
+    "figure": "{culture}星空中的一个图形",
+    "figureLabel": "{name}，{culture}星空中的一个图形。按下查看它的故事。",
+    "openTitle": "按下查看它的故事",
+    "sub": "{culture}星空",
+    "close": "关闭故事",
+    "loading": "正在获取故事…",
+    "failed": "故事没有加载出来，请稍后再试。",
+    "fromStellarium": "出自 Stellarium 对这一星空文化的描述。{credit}。",
+    "ours": "以我们自己的话概述，依据：{cite}。",
+    "honesty": "示意：这只是来源所记录的一种讲法。不同民族、不同讲述者的名称和故事各不相同。",
+    "none": "我们可以分享的资料中没有记录这个图形的故事。这些是仍在传承的传统，所以我们照实说明，而不去猜测。",
+    "inEnglish": "故事为英文，即其来源的语言：没有获得许可的译本。",
+    "artTitles": {
+      "maori": "毛利图形的插画，出自 Stellarium 的毛利星空文化，CC BY-SA 4.0",
+      "hawaiian": "夏威夷星线的插画，由 Kealoha Kaneakua 为 Stellarium 绘制，CC BY-SA 4.0",
+      "boorong": "布隆图形的插画，出自 Stellarium 的布隆星空文化，CC BY-SA 4.0"
+    },
+    "artNone": "这片星空没有可按许可分享的插画：它的图形仍以连线显示。"
+  }
+});
+// b200-c1-culture: end
+// b200-f5-make: begin -- the flight editor, Record and Dome and 360 (copy/en.make.js, forge #155, #156, #157), machine-drafted
+Object.assign(COPY, {
+  "make": {
+    "flight": "飞行路径",
+    "flightTitle": "在视角之间规划镜头路径，预览并以链接分享",
+    "record": "录制",
+    "recordTitle": "把当前视角、飞行路径或旅程录成视频",
+    "dome": "球幕与 360",
+    "domeTitle": "以天象馆球幕或 360 度画面显示天空",
+    "failed": "没有加载成功，请稍后再试。"
+  },
+  "flight": {
+    "title": "飞行路径",
+    "sheet": "飞行路径：拖动以调整大小",
+    "close": "关闭飞行路径",
+    "play": "播放",
+    "playTitle": "从滑块所在位置开始飞行",
+    "stop": "停止",
+    "stopTitle": "在当前位置停止飞行",
+    "scrub": "路径上的位置",
+    "scrubAt": "{at} / {total}",
+    "hint": "把地图飞到你喜欢的视角，然后按“添加此视角”。两个视角就构成一条路径。",
+    "hintOne": "一个视角。飞到别处再添加一个。",
+    "hintMany": "{n} 个视角。按“播放”，或拖动滑块沿路径查看。",
+    "add": "添加此视角",
+    "addTitle": "记下镜头的位置、所看的对象和时钟",
+    "keysLabel": "路径上的视角，按顺序",
+    "keyName": "{n}. {name}",
+    "goTitle": "转到此视角",
+    "keyLive": "时钟照常运行",
+    "point": "空间中的一点",
+    "duration": "飞行",
+    "seconds": "{n} 秒",
+    "ease": "缓动",
+    "eases": {
+      "smooth": "平滑起停",
+      "cruise": "巡航",
+      "constant": "匀速"
+    },
+    "rate": "时钟",
+    "rateLive": "实时",
+    "up": "↑",
+    "upLabel": "把视角 {n} 前移",
+    "down": "↓",
+    "downLabel": "把视角 {n} 后移",
+    "replace": "用当前视角",
+    "replaceLabel": "用当前视角替换视角 {n}",
+    "remove": "移除",
+    "removeLabel": "移除视角 {n}",
+    "copyLink": "复制链接",
+    "copyLinkTitle": "整条路径在一个链接里：任何地方都不保存",
+    "linkCopied": "链接已复制（{n} 个字符）。打开它的人会看到这段飞行。",
+    "linkInBar": "链接在地址栏中：请从那里复制。",
+    "draft": "保存旅程草稿",
+    "draftTitle": "供地图旅程使用的旅程文件草稿，需由人完成",
+    "draftSaved": "旅程草稿已保存。卡片由你来写。",
+    "record": "录制这段飞行",
+    "recordTitle": "把飞行录成视频",
+    "clear": "清空",
+    "clearTitle": "移除所有视角",
+    "needTwo": "一条路径至少需要两个视角。",
+    "full": "一条路径最多 {n} 个视角。",
+    "noView": "无法记下此视角：请先看向某个对象。",
+    "badLink": "无法读取这个飞行链接。",
+    "honesty": "每个视角都显示其时钟时刻各物体所在的位置。视角之间的飞行是我们绘制的镜头运动，不是航天器的轨迹。"
+  },
+  "record": {
+    "title": "录制",
+    "sheet": "录制：拖动以调整大小",
+    "close": "关闭录制",
+    "whatLabel": "录制内容",
+    "sourceView": "当前视角",
+    "sourcePath": "飞行路径",
+    "sourceTrip": "旅程，直到结束",
+    "length": "时长",
+    "seconds": "{n} 秒",
+    "shapeLabel": "画幅",
+    "crops": {
+      "wide": "16:9（YouTube）",
+      "square": "方形",
+      "tall": "竖屏 9:16（Reels、TikTok、Shorts）"
+    },
+    "smooth": "逐帧录制（任何设备都流畅）",
+    "smoothNote": "页面会用自己的时钟重新载入此视角，并在拍下每一帧之前把它画完：慢的设备录得慢，但绝不卡顿。",
+    "silent": "逐帧录制不录声音。",
+    "withSound": "你听到的声音也会被录下。",
+    "noSound": "声音已关闭，视频将没有声音。若要保留旅程的解说和音乐，请先打开声音。",
+    "start": "开始录制",
+    "stop": "停止",
+    "save": "保存视频",
+    "share": "分享视频",
+    "saved": "视频已保存。",
+    "cannot": "此浏览器无法录制视频。较新的 Chrome、Edge、Safari 和 Firefox 可以。",
+    "rolling": "正在录制：{at} 秒",
+    "made": "完成：{mb} MB。保存或分享。",
+    "empty": "浏览器什么也没录下。请再试一次，或勾选“逐帧录制”。",
+    "date": "{when} UTC",
+    "credit": "spaceradar.ai · 地图与数据：NASA、ESA、Solar System Scope 等",
+    "endTitle": "亲眼看看",
+    "endLine": "Space Radar：免费，在浏览器中。",
+    "endCredit": "地图与数据：NASA、ESA、USGS、Solar System Scope、HYG 等，依各自许可（CC BY、CC BY-SA）。致谢见 spaceradar.ai。",
+    "filmTitle": "正在逐帧录制",
+    "filmWarming": "正在准备视角…",
+    "filmFrame": "第 {n} 帧，共 {total} 帧",
+    "filmDone": "完成：{mb} MB，{s} 秒。文件已保存。",
+    "filmFailed": "录制已停止：{why}",
+    "back": "回到地图"
+  },
+  "dome": {
+    "title": "球幕与 360",
+    "sheet": "球幕与 360：拖动以调整大小",
+    "close": "关闭球幕与 360",
+    "kindLabel": "天空的绘制方式",
+    "normal": "普通",
+    "dome": "球幕，180 度（天象馆）",
+    "wide": "360 度（YouTube 360）",
+    "tilt": "球幕倾角",
+    "tiltDeg": "{n}°",
+    "size": "尺寸",
+    "px": "{n} px",
+    "pxSquare": "{n} × {n} px",
+    "pxWide": "{w} × {h} px",
+    "saveFrame": "保存这一帧",
+    "skySize": "天空盒面",
+    "saveSky": "保存天空盒",
+    "saved": "已保存：{w} × {h} px。",
+    "saveFailed": "无法绘制该图像。",
+    "intro": "镜头所见的球幕母版或 360 度画面，实时显示。开启时名称会隐藏。",
+    "live": "实时，每面 {n} px。",
+    "livePhone": "实时，每面 {n} px：在手机上这只是预览。保存一帧可得到清晰的画面。",
+    "noGpu": "此设备的图形处理器无法绘制。",
+    "busy": "请先关闭想象的世界或“时刻”：它会绘制自己的画面。",
+    "off": "已回到普通画面。",
+    "credit": "可自由使用，请注明：Space Radar，spaceradar.ai。地图与数据：NASA、ESA、USGS、Solar System Scope、HYG 等；“来源”面板列出各自的许可。",
+    "how": "用于球幕时，在旅程链接后加上 #proj=dome,30 并全屏打开。步骤见 docs/PLANETARIUMS.md。"
+  }
+});
+// b200-f5-make: end
+// b200-f6-learn: begin -- the daily challenges (copy/en.play.js, forge #160), machine-drafted
+Object.assign(COPY, {
+  "play": {
+    "label": "每日挑战",
+    "close": "关闭",
+    "day": "{day}(UTC)的谜题,今天所有人都一样。",
+    "games": {
+      "find-earth": {
+        "title": "找到地球",
+        "blurb": "从星系一路找到我们的星球,用尽量少的选择。"
+      },
+      "which-world": {
+        "title": "这是哪个世界?",
+        "blurb": "一张真实地图的特写:从四个世界中选出它。"
+      },
+      "guess-distance": {
+        "title": "猜距离",
+        "blurb": "把滑块拖到它有多少光年远。"
+      }
+    },
+    "other": "其他挑战",
+    "loading": "地图还在加载;准备好后挑战就会开始。",
+    "rung": "第 {n} 步,共 {of} 步:{where}",
+    "rungs": {
+      "local-group": "本星系群",
+      "galaxy": "银河系",
+      "stellar": "太阳附近",
+      "sun": "太阳系"
+    },
+    "ask": {
+      "local-group": "哪个标记是我们的星系——银河系?",
+      "galaxy": "哪个标记是太阳?",
+      "stellar": "哪个标记是太阳?",
+      "sun": "哪个标记是地球?"
+    },
+    "hints": {
+      "local-group": "我们的星系旁边紧挨着两个小伴星系:麦哲伦云。",
+      "galaxy": "太阳距中心的黑洞约 27 000 光年,位于一条安静的旋臂上。",
+      "stellar": "离太阳最近的恒星是暗淡的红矮星,以及 4.4 光年外的半人马座α。",
+      "sun": "地球是从太阳往外数的第三个世界。"
+    },
+    "hint": "提示(消耗一次机会)",
+    "mark": "标记 {letter},{where}",
+    "places": {
+      "tl": "左上",
+      "tc": "上方",
+      "tr": "右上",
+      "ml": "左侧",
+      "mc": "中间",
+      "mr": "右侧",
+      "bl": "左下",
+      "bc": "下方",
+      "br": "右下"
+    },
+    "milkyWay": "银河系",
+    "sunName": "太阳",
+    "tries": "第 {n} 次选择,共 {max} 次",
+    "wrong": "不是这个:{letter} 是{name}。",
+    "right": "对,是{name}。正在拉近。",
+    "found": "你用 {n} 次选择找到了地球。",
+    "lost": "机会用完了。地球是从太阳往外数的第三个世界。",
+    "honest": "标记位于地图绘制每个天体的位置。在太阳系这一步,世界被画得比实际更近,和这个场景其他地方一样。",
+    "round": "第 {n} 轮,共 {of} 轮",
+    "worldAsk": "这是哪个世界的特写?",
+    "more": "显示更多地图",
+    "worldRight": "对:{name}。",
+    "worldWrong": "不对:是{name}。",
+    "credit": "地图:{credit}",
+    "worldPicture": "太阳系中某个世界的真实地图特写",
+    "distAsk": "{name}有多远?",
+    "slider": "距离(光年)",
+    "guess": "猜",
+    "reveal": "{name}距离 {value}:你{off}。",
+    "offs": {
+      "hit": "误差在四分之一以内",
+      "near": "误差在两倍以内",
+      "far": "误差在五倍以内",
+      "miss": "误差超过五倍"
+    },
+    "source": "距离:{source}",
+    "units": {
+      "ly": "{n} 光年",
+      "kly": "{n} 千光年",
+      "mly": "{n} 百万光年",
+      "bly": "{n} 十亿光年"
+    },
+    "next": "下一个",
+    "scores": {
+      "find-earth": "10 次中用了 {n} 次",
+      "which-world": "3 个世界中答对 {n} 个",
+      "guess-distance": "3 个中有 {n} 个在两倍以内"
+    },
+    "shareTitle": "Space Radar:{game}",
+    "share": "分享结果",
+    "copied": "已复制。粘贴到任何地方。",
+    "copyFailed": "无法复制:请选中上面的文字。",
+    "played": "今天完成了。新的挑战在 UTC 午夜到来。",
+    "streak": "连续 {n} 天"
+  }
+});
+// b200-f6-learn: end
+// b200-f8-xr: begin -- the gamepad and the headset (copy/en.xr.js, forge #164, #158), machine-drafted
+Object.assign(COPY, {
+  "pad": {
+    "title": "手柄",
+    "label": "手柄操作",
+    "close": "关闭手柄操作",
+    "capStickL": "左摇杆",
+    "capStickR": "右摇杆",
+    "capTriggers": "RT · LT",
+    "capA": "A · 叉",
+    "capX": "X · 方块",
+    "capB": "B · 圆圈",
+    "capY": "Y · 三角",
+    "capDpad": "方向键 ↑ ↓",
+    "capView": "视图 · Share",
+    "turn": "环顾四周",
+    "fly": "前进后退，侧向平移",
+    "speed": "更快，更慢",
+    "choose": "选择圆环中的目标",
+    "go": "飞过去",
+    "back": "返回",
+    "ship": "飞船物理：开或关",
+    "ladder": "沿距离阶梯向外或向内",
+    "controls": "这些操作（菜单键也可）",
+    "shipToggle": "飞船物理",
+    "shipHow": "松开后会继续漂移。按下摇杆即可停止。",
+    "notStandard": "这个手柄没有说明按键位置：左摇杆转动视图，按键不使用。",
+    "connected": "手柄已连接。按 Y 查看操作。",
+    "disconnected": "手柄已断开。",
+    "shipOn": "飞船物理已开启：松开后会继续漂移。",
+    "shipOff": "飞船物理已关闭。",
+    "nothing": "圆环中没有可选的目标。",
+    "chooseFirst": "请先选择目标：按 A 选取圆环中的目标。",
+    "rung": "{label}，{distance}",
+    "home": "地球",
+    "trip": "旅程正在控制镜头。它的按钮在屏幕上。"
+  },
+  "headset": {
+    "enter": "进入头显",
+    "enterTitle": "在 VR 头显中站在星空下，或沿距离阶梯前行",
+    "noteTitle": "戴上之前",
+    "comfort": "移动是跳跃而不是滑行，转向每次 30 度，地平线始终保持水平。请坐下，或清空身边的空间。",
+    "seizure": "少数人会因闪烁的光线或图案而癫痫发作。如果感到头晕、恶心或看到异常情况，请停止并摘下头显。",
+    "how": "看向一个目标，按 A 或右扳机选择它。X 飞过去，B 返回，Y 显示操作，与手柄相同。在“时刻”中，A 播放或暂停，B 返回地图。按住 B 一秒即可退出。",
+    "untried": "新功能，尚未在真实头显上试过：请告诉我们你看到了什么。",
+    "go": "进入",
+    "cancel": "暂不",
+    "busy": "请先关闭想象的世界、“球幕与 360”或录制：它们各自绘制自己的画面。",
+    "failed": "头显未能启动。",
+    "left": "已回到屏幕。",
+    "panelHelp": "A 选择   X 前往   B 返回   Y 操作",
+    "panelMove": "左摇杆：环绕，并沿阶梯移动   右摇杆：转向，前进后退",
+    "panelLeave": "按住 B 退出",
+    "chosen": "已选择：{name}",
+    "nothing": "正前方没有目标",
+    "momentHelp": "A 播放或暂停   B 返回地图   Y 操作",
+    "frame": "每帧 {ms} 毫秒，每秒 {fps} 帧（目标 72）",
+    "lighter": "帧耗时过长：减少绘制以跟上。"
+  }
+});
+// b200-f8-xr: end
+// b200-f9-reach: begin -- the real recordings' panel (copy/en.sound.js, forge #163), machine-drafted
+Object.assign(COPY, {
+  "realSound": {
+    "region": "此处的真实录音",
+    "play": "收听{name}",
+    "stop": "停止",
+    "hide": "隐藏此处的录音",
+    "sonified": "真实数据，转换为声音",
+    "microphone": "真实声音，来自麦克风",
+    "playing": "正在播放：{name}。{how}。",
+    "failed": "该录音未能加载。",
+    "names": {
+      "real-voyager-plasma": "星际空间中的旅行者1号",
+      "real-juno-ganymede": "朱诺号飞掠木卫三",
+      "real-cassini-saturn": "土星的射电",
+      "real-insight-impact": "流星体撞击火星",
+      "real-insight-wind": "火星上的风",
+      "real-perseverance-dust-devil": "火星上的尘卷风"
+    }
+  }
+});
+// b200-f9-reach: end
+// b200-f7-ground: begin -- standing on another world and its sky (copy/en.ground.js, forge #146, #147), machine-drafted
+Object.assign(COPY, {
+  "ground": {
+    "stageLabel": "站在另一个世界上",
+    "tagGround": "地面 · {world}",
+    "tagSky": "从{world}看天空",
+    "kindMeasured": "实测地面",
+    "kindPlain": "地面未经测量",
+    "kindModelled": "模型推算",
+    "placeAt": "{world}，{lat}°，东经 {lon}°",
+    "worlds": {
+      "moon": "月球",
+      "mars": "火星",
+      "titan": "土卫六",
+      "europa": "木卫二",
+      "earth": "地球",
+      "proxima-b": "Proxima Centauri b",
+      "trappist-1e": "TRAPPIST-1 e"
+    },
+    "measuredGround": "实测：高度来自真实比例的立体地形模型，地面是轨道器自己拍摄的图像（阴影是拍摄当天的）。没有虚构任何巨石或陨石坑。",
+    "plainGround": "这里的地面并非根据测量绘制：一片平原延伸到地平线。天空是计算出来的。",
+    "modelLine": "着陆坐标处：{what}。其朝向并非来自图像。",
+    "timeLine": "当地太阳时 {local} · {utc} · 太阳高度 {sun}°",
+    "timeLineStar": "{utc} · {star}高度 {sun}°，始终在同一位置",
+    "drive": "驾驶探测车",
+    "walk": "步行",
+    "driving": "驾驶中，速度约为探测车实际能力的 {x} 倍。",
+    "walking": "步行中。",
+    "skyOpen": "天空",
+    "skyClose": "隐藏天空",
+    "leave": "离开",
+    "sources": "来源与许可",
+    "padLabel": "步行：把摇杆推向要去的方向",
+    "keys": "W A S D 或方向键行走，Q 和 E 转身，R 和 F 抬头低头，Shift 奔跑，+ 和 - 缩放，Esc 离开。",
+    "skyTitle": "这片天空",
+    "poleStar": "极星：{name}，距天极 {sep}°（星等 {mag}）。",
+    "noPoleStar": "这个世界的天极 10° 以内没有亮于 4.5 等的恒星。",
+    "unnamedStar": "一颗没有通用名称的恒星",
+    "poleLabel": "{name}（极星）",
+    "rises": "{name}于当地太阳时 {local}（{utc}）升起。",
+    "sets": "{name}于当地太阳时 {local}（{utc}）落下。",
+    "neverSets": "从这里看，{name}既不升起也不落下：它始终悬在天空的同一处。",
+    "notToday": "在搜索的时间范围内，{name}既不升起也不落下。",
+    "transit": "{front}于当地太阳时 {local}（{utc}）从日面前经过，持续 {s} 秒。",
+    "noTransit": "未来 {days} 个火星日内，从这里看不到火卫一或火卫二从太阳前经过。",
+    "working": "正在计算升落时间…",
+    "earthNow": "地球：高度 {alt}°，方位 {az}°，{lit}% 被照亮，星等 {mag}。",
+    "airNotes": {
+      "mars": "实测颜色：白天的天空取自 Spirit 的真彩色全景图（PIA07882），蓝色日落取自 Curiosity 在盖尔撞击坑拍摄的图像（PIA19400）。",
+      "moon": "没有大气，所以正午的天空也是黑的。真实的眼睛会被阳光照亮的地面晃得眼花，只能看到其中少数星星。",
+      "europa": "没有大气，所以正午的天空也是黑的。在面向木星的一侧，木星静止地悬在天空中。",
+      "titan": "示意颜色：橙色雾霾使肉眼看不见恒星和土星；它们以暗淡的样子画在实际所在的位置。",
+      "earth": "",
+      "proxima-b": "模型推算：假定 Proxima b 始终以同一面朝向它的恒星，这也是其发现者的预期（Anglada-Escudé et al. 2016）；它的轨道倾角，以及它和 Proxima d 在各自轨道上的位置都是未知的，因此采用了假定值。天空的颜色是示意的：没有人知道那里是否有大气。Alpha Centauri A 和 B 位于它们的真实位置；其他恒星按从太阳看到的样子绘制。",
+      "trappist-1e": "模型推算：假定 TRAPPIST-1 e 始终以同一面朝向它的恒星（Gillon et al. 2017）；它的姊妹行星位于实测凌星时刻所给出的位置，在同一平面内的圆轨道上，该平面绕我们的视线按假定的方向旋转。天空的颜色是示意的：没有人知道那里是否有大气。其他恒星按从太阳看到的样子绘制。"
+    },
+    "parentNote": "这颗卫星始终以同一面朝向它的行星，所以行星既不升起也不落下。",
+    "starNote": "假定这颗行星始终以同一面朝向它的恒星，所以恒星既不升起也不落下。",
+    "discNote": "太阳、地球、火卫一等有视面的天体都画成大小和相位真实的纯色圆盘，而不是它们的地图或形状。",
+    "frameNote": "自转：IAU WGCCRE 2015 报告（Archinal et al. 2018）。位置：本应用自己的星历。",
+    "compass": {
+      "N": "北",
+      "E": "东",
+      "S": "南",
+      "W": "西"
+    },
+    "bodies": {
+      "sun": "太阳",
+      "mercury": "水星",
+      "venus": "金星",
+      "earth": "地球",
+      "moon": "月球",
+      "mars": "火星",
+      "phobos": "火卫一",
+      "deimos": "火卫二",
+      "jupiter": "木星",
+      "io": "木卫一",
+      "europa": "木卫二",
+      "ganymede": "木卫三",
+      "callisto": "木卫四",
+      "saturn": "土星",
+      "titan": "土卫六",
+      "uranus": "天王星",
+      "neptune": "海王星",
+      "proxima": "Proxima Centauri",
+      "proxima-d": "Proxima d",
+      "alpha-cen-a": "Alpha Centauri A",
+      "alpha-cen-b": "Alpha Centauri B",
+      "trappist-1": "TRAPPIST-1",
+      "trappist-1b": "TRAPPIST-1 b",
+      "trappist-1c": "TRAPPIST-1 c",
+      "trappist-1d": "TRAPPIST-1 d",
+      "trappist-1f": "TRAPPIST-1 f",
+      "trappist-1g": "TRAPPIST-1 g",
+      "trappist-1h": "TRAPPIST-1 h"
+    },
+    "earthAndMoon": "地球和月球",
+    "unknownGround": "该地点还没有地形模型。",
+    "unknownSky": "这张地图还不能让你站在那个地方：目前只能站在月球、火星、土卫六、木卫二、Proxima b 或 TRAPPIST-1 e 上。"
+  }
+});
+// b200-f7-ground: end
+// b200-c3-learn: begin -- the Fengyun-1C Moment (copy/en.moments.fengyun.js and its shelf card, forge #153), machine-drafted
+COPY.momentShelf.cards['fengyun-1c'] = {
+  "title": "2007：风云一号C",
+  "when": "2007年1月11日至今",
+  "blurb": "一枚中国导弹在 865 km 高处摧毁一颗旧气象卫星，它已编目的 3 531 块碎片从一个点扩散成环绕地球的一层壳，由语音讲述。"
+};
+COPY.momentStories['fengyun-1c'] = {
+  "title": "2007：风云一号C",
+  "blurb": "一枚中国导弹在 865 km 高处摧毁一颗旧气象卫星，它的碎片从一个点扩散成环绕地球的一层壳，至今仍在。",
+  "chBefore": "风云一号C",
+  "chHit": "试验",
+  "chRing": "一个环",
+  "chMonths": "两个月",
+  "chYear": "第一年",
+  "chShell": "一层壳",
+  "chToday": "今天",
+  "v1a": "2007年1月11日傍晚。风云一号C是一颗已退役的中国气象卫星，重 960 kg，经过两极绕地球运行，高度 845 至 865 km。",
+  "v1b": "一枚从西昌附近发射的导弹正向它爬升。它的轨迹从未公布，所以这里没有画出。",
+  "v2a": "22:26 UTC：拦截器迎面撞上卫星，接近速度约 8 km/s，把它撞成数千块碎片。",
+  "v2b": "每块碎片飞出时都比其余的快一点或慢一点，所以各自走在自己的轨道上。",
+  "v3a": "轨道越高，绕一圈的时间越长。一圈又一圈，碎片沿着原来的轨道拉开，几天之内就合成一个环。",
+  "v4a": "地球的扁率使每条轨道的平面转动，高度和倾角不同，转得快慢也不同，于是这个环开始像扇子一样散开。",
+  "v4b": "试验两个月后，已有超过 1 200 块碎片被编目，另有近 400 块正在跟踪，NASA 的《Orbital Debris Quarterly News》报道。",
+  "v5a": "到2007年底，目录中有 2 317 块碎片，只有 22 块落回地球。NASA 估计一厘米及以上的碎片至少有 150 000 块，小到无法跟踪。",
+  "v6a": "年复一年，轨道平面一直散开到绕满一圈。到2013年1月，这团碎片云已是环绕地球的一层壳：编目 3 378 块，仍在轨道上 3 076 块。",
+  "v6b": "卫星不得不躲避它们。国际空间站在2012年1月曾为其中一块让路。",
+  "v7a": "今天目录中有风云一号C的 3 531 块碎片，其中 2 310 块仍在天上，已近二十年。2021年11月10日，空间站又一次躲避了其中一块。",
+  "v7b": "数目是测量的。画面是模型：今天幸存的碎片在今天的轨道上，回推到试验的那一刻再散开。",
+  "pathSat": "风云一号C的轨道，845 × 865 km，倾角 98.6 度（NASA ODQN，2007年4月），按圆锥曲线绘制；卫星在轨道上被击中的位置是示意的",
+  "cloudNote": "这些碎片是目录中仍有的 2 310 块，用目录今天给出的轨道，由模型从一个点散开（二体运动加上地球扁率造成的漂移）；已落下的碎片没有画出，字幕中的数目是测量的。撞击时，每块碎片都从它今天的最低点出发，所以碎片云一开始是卫星下方的一条线，而不是一个点：自 2007 年以来，大气阻力已使许多轨道降低。",
+  "drawnNote": "示意：风云一号C 画成带环的标记，每块碎片画成同样大小的点，都不按比例；撞击本身没有画出。",
+  "footMore": "更多",
+  "footLess": "收起",
+  "srcOdqn07": "NASA Orbital Debris Quarterly News 11(2)，2007年4月：卫星、它的轨道、最初的计数",
+  "srcOdqn08": "NASA Orbital Debris Quarterly News 12(1)，2008年1月：2007年底的计数",
+  "srcOdqn13": "NASA Orbital Debris Quarterly News 17(1)，2013年1月：已编目、已陨落和仍在轨道上的数目",
+  "srcOdqn14": "NASA Orbital Debris Quarterly News 18(1)，2014年1月：空间站2012年1月的规避机动",
+  "srcOdqn22": "NASA Orbital Debris Quarterly News 26(1)，2022年3月：空间站2021年11月10日的规避机动",
+  "srcCelestrak": "CelesTrak，Chinese ASAT test：事件最可能的时刻，22:26:10 UTC",
+  "srcSatcat": "CelesTrak 卫星目录（SATCAT），读取于 2026-11-07：今天的计数和每块碎片的轨道",
+  "srcWiki": "维基百科，2007 Chinese anti-satellite missile test：接近速度"
+};
+// b200-c3-learn: end
+// b200-c2-deep: begin -- the 3D stars over deep time, the variable stars worth going out for, the black holes against the EHT's pictures and the cards in the trips' voice (copy/en.deep.js, forge #141, #142, #149, #151), machine-drafted
+Object.assign(COPY, {
+  "starDeep": {
+    "moved": "{year} 的星空：每颗星都按其实测的自行移动（依巴谷与盖亚，经 HYG）；沿直线外推这么久是模型。",
+    "hidden": "离今天这么远时，没有实测运动的恒星不再绘制。",
+    "noPluto": "离今天这么远时不绘制冥王星及其卫星：它们的星历（astronomy-engine）只有 0 至 4000 年的表。",
+    "selected": "那时 {name} 距太阳 {d} 光年（模型）；卡片和标签给出的是今天的距离 {today}。"
+  },
+  "varEvents": {
+    "min": "{name} 处于极小",
+    "max": "{name} 接近最亮",
+    "minLine": "暗至 {mag} 等，{dir}方向，高 {alt}°。",
+    "maxLine": "约 {mag} 等，{dir}方向，高 {alt}°。",
+    "minClass": "由实测极小时刻（Kreiner 2004）按周期外推：大约准到一刻钟。",
+    "maxClass": "由星表的周期和历元推算的模型：米拉变星的极大会提前或推迟数周。",
+    "aria": "{title}，{when}。{line}"
+  },
+  "holeCompare": {
+    "fromEarth": "从地球看",
+    "fromEarthTitle": "站到黑洞与地球的连线上，北在上、东在左，与 EHT 图像的印法相同",
+    "compare": "与 EHT 图像对比",
+    "compareTitle": "在所画黑洞旁显示事件视界望远镜的图像，两者都从地球看、北在上",
+    "hide": "隐藏 EHT 图像",
+    "caption": "EHT，{date}",
+    "orient": "北在上，东在左，与此刻黑洞的画法一致。",
+    "credit": "图像：EHT Collaboration，CC BY 4.0。",
+    "source": "来源",
+    "alt": "事件视界望远镜拍摄的 {name}，{date}：暗色中心周围的一圈橙色光环。",
+    "brightest": "从地球看、北在上时，所画的光环在位置角约 {ours}° 处最亮（在画面上测得）；{date} 的 EHT 图像在约 {theirs}° 处最亮。",
+    "approx": {
+      "m87-star": "已对齐：倾角（与视线成 17°）和喷流在天空中的方向（288°）是实测的（Walker 等 2018），气流按顺时针旋转（EHT 2019 第五篇），所以迎面而来、因运动而增亮的一侧落在南边。按线性亮度沿光环测量，我们的亮侧约为暗侧的 2.5 倍（模糊到 EHT 的 20 微角秒时为 2.1）；他们的在 2017 年为 2.7，2018 年为 4.2，因此我们的与 2017 年相符。近似之处：光线按不自转的黑洞追踪，气体是沿圆轨道运动的薄盘，而不是 EHT 模型中又热又厚的吸积流。他们的亮斑一年内移动了约 30°；我们的不动。",
+      "sgr-a-star": "已对齐：从与自转轴成 30° 的方向看，与 EHT 2022 第五篇中最吻合的模型一致，并像 GRAVITY 看到的耀发一样顺时针旋转。人为选择：自转轴在天空中的指向，至今无人测得；我们把它转到使较亮一侧落在 EHT 图像最亮之处。近似之处：光线绕不自转的黑洞和薄盘追踪；EHT 图像是对几分钟内就会变化的气流整夜的平均，作者说其中三个亮结并非都是真实的。 我们的亮侧约为暗侧的五倍（模糊到 EHT 的 20 微角秒时为 4.5），他们的为 1.7：在 30° 下，圆轨道使近侧增亮的程度远超 EHT 整夜平均所显示的。"
+    }
+  },
+  "cardVoice": {
+    "readTitle": "朗读此卡片：用旅程的合成语音读出引用的维基百科文字",
+    "credit": "语音：Kokoro-82M（af_heart），合成语音，Apache-2.0；文字来自维基百科（CC BY-SA 4.0）。"
+  }
+});
+// b200-c2-deep: end
+
+// b200-s1-fixes: begin -- the long mission clock's units (copy/en.moments.js momentPlayer metYears, metDays), machine-drafted
+COPY.momentPlayer.metYears = "{y}年{d}天";
+COPY.momentPlayer.metDays = "{d}天";
+COPY.truth.exoPacked = "我们 {date} 的压缩副本"; // forge #88: which list an exoplanet came from
+COPY.truth.exoLive = "档案馆的列表，读取于 {date}";
+// The deep-sky catalogue's type phrases (data/dso.json `typeText`), lowercased, in this language: the card's lead and its
+// "What it is" row read them through RULES.typeWords; a phrase not here stays English, which is data.
+const S1_TYPES = {"globular cluster": "球状星团", "open cluster": "疏散星团", "dwarf spheroidal galaxy": "矮椭球星系", "spiral galaxy": "旋涡星系", "emission nebula": "发射星云", "planetary nebula": "行星状星云", "dwarf irregular galaxy": "矮不规则星系", "barred spiral galaxy": "棒旋星系", "elliptical galaxy": "椭圆星系", "lenticular galaxy": "透镜状星系", "h ii region nebula with cluster": "带星团的电离氢区", "dwarf elliptical galaxy": "矮椭圆星系", "h ii region nebula": "电离氢区", "barred irregular galaxy": "棒状不规则星系", "ultra-faint dwarf galaxy": "超暗弱矮星系", "dark nebula": "暗星云", "young open cluster in an emission nebula": "发射星云中的年轻疏散星团", "supernova remnant": "超新星遗迹", "nebula with cluster": "带星团的星云", "milky way star cloud": "银河星云", "optical double": "光学双星", "asterism": "星群", "diffuse nebula": "弥漫星云", "starburst galaxy": "星暴星系", "dwarf irregular starburst galaxy": "矮不规则星暴星系", "transition dwarf galaxy, part irregular, part spheroidal": "过渡型矮星系，部分不规则、部分椭球", "barred irregular galaxy, seen edge-on": "棒状不规则星系，侧向可见", "ultra-faint dwarf galaxy, or perhaps a star cluster": "超暗弱矮星系，也可能是星团", "transition dwarf galaxy, part spheroidal, part irregular": "过渡型矮星系，部分椭球、部分不规则", "spiral galaxy, seen nearly edge-on and bursting with new stars": "旋涡星系，近乎侧向可见，充满新生恒星", "peculiar galaxy with a giant black hole firing radio jets": "特殊星系，中心巨型黑洞喷出射电喷流", "pair of open clusters": "一对疏散星团", "spiral galaxy seen exactly edge-on": "完全侧向的旋涡星系", "reflection nebula": "反射星云", "reflection and emission nebula": "反射兼发射星云", "spiral galaxy seen edge-on": "侧向的旋涡星系", "barred spiral galaxy seen edge-on": "侧向的棒旋星系", "spiral galaxy seen face-on": "正向的旋涡星系", "barred spiral galaxy seen nearly edge-on": "近乎侧向的棒旋星系", "pair of colliding galaxies": "一对正在碰撞的星系"};
+const S1_PLACES = [[" in the large magellanic cloud", "（位于大麦哲伦云）"], [" in the small magellanic cloud", "（位于小麦哲伦云）"], [" in the milky way", "（位于银河系）"], [" in the local group", "（位于本星系群）"]];
+RULES.typeWords = (text) => {
+  let base = String(text || '').trim();
+  let tail = '';
+  for (const [en, here] of S1_PLACES) if (base.toLowerCase().endsWith(en)) { tail = here; base = base.slice(0, base.length - en.length); break; }
+  const hit = S1_TYPES[base.toLowerCase()];
+  return hit ? hit + tail : String(text || '');
+};
+// b200-s1-fixes: end
+// b200-f10-stars3d: begin -- the 3D star map's AT-HYG tier (copy/en.startiers.js, forge #140), machine-drafted
+Object.assign(COPY, {
+  "starTiers": {
+    "unnamed": "一颗未命名的恒星（AT-HYG {n}）",
+    "cite": "AT-HYG v4.0（CC BY-SA 4.0，David Nash）：位置与亮度来自 Tycho-2，距离来自 {dist}",
+    "from": {
+      "gaia-dr3": "Gaia DR3",
+      "gaia-dr2": "Gaia DR2",
+      "hipparcos": "依巴谷",
+      "gliese": "格利泽星表",
+      "other": "一份较早的星表"
+    },
+    "error": "距离精确到约 ±{pct} %（视差与其误差之比约 {poe}）：按该任务在这一亮度的典型误差（{mas} 毫角秒）建模，因为 AT-HYG 不包含这颗星自己的误差",
+    "noError": "AT-HYG 没有给出这个距离的误差",
+    "guess": "这个距离只是猜测：在 3 kpc（约 1 万光年）以外，视差只有零点几毫角秒，而 AT-HYG 不含这颗星自己的误差，它只保留大于自身误差的视差",
+    "lineHyg": "三维恒星：HYG 的 109 389 颗。",
+    "lineAthyg": "三维恒星：HYG 的 109 389 颗，加上 AT-HYG 的 {n} 百万颗，在阶梯的一级上围绕相机加载（一次最多 {k} 百万颗），并绘制到从相机看去的 {lim} 星等，比肉眼所见更暗，逐渐淡出。",
+    "shell": "在某个天体的场景中，三维恒星只用 HYG：从太阳看亮于 7.5 等的 {n} 颗 AT-HYG 恒星在那里不绘制。",
+    "why": {
+      "low": "低画质只绘制 HYG。",
+      "latched": "帧率过低：只用 HYG。",
+      "saver": "省流量模式：只用 HYG。",
+      "none": ""
+    },
+    "gaiaHeld": "Gaia DR3 不是一个档位：ESA 只许可其档案数据用于非商业用途（CC BY-NC 3.0 IGO）。",
+    "farTime": "AT-HYG 的恒星只按今天的日期绘制：遥远时代的视图只用 HYG。"
+  }
+});
+// b200-f10-stars3d: end
+// b200-s4a-look: begin -- how a world is drawn (its card's note), the Earth in a card's breadcrumb and our missions' event titles in the date field (copy/en.js worldView, sky.bodies; copy/en.find.js dateJump.eventTitles; 2.0.0 look finding 8) and what a tap no figure of another sky reaches says (copy/en.later.js skyLore; finding 10), machine-drafted
+COPY.worldView.nearer = "{name} 画在它真实的方向上，但比实际更近、更大，方便你找到它。";
+COPY.worldView.asIs = "{name} 画在它真实的位置，大小也是真实的。";
+COPY.sky.bodies.earth = "地球";
+COPY.dateJump.eventTitles = {
+  "Launch": "发射",
+  "Closest to Jupiter": "最接近木星",
+  "Closest to Saturn": "最接近土星",
+  "The Pale Blue Dot": "暗淡蓝点",
+  "The most distant thing we made": "我们造过的最远之物",
+  "The termination shock": "终端激波",
+  "Into interstellar space": "进入星际空间",
+  "Closest to Uranus": "最接近天王星",
+  "Closest to Neptune": "最接近海王星",
+  "Jupiter's push": "木星的助推",
+  "Saturn's orbit": "土星轨道",
+  "Closest to Pluto": "最接近冥王星",
+  "Arrokoth": "阿罗科斯",
+  "Back past Earth": "再次飞掠地球",
+  "Into orbit round Jupiter": "进入环绕木星的轨道",
+  "Past Venus": "飞掠金星",
+  "Past Venus again": "再次飞掠金星",
+  "Past Jupiter": "飞掠木星",
+  "Arrival at Saturn": "抵达土星",
+  "Huygens let go": "惠更斯号分离",
+  "Huygens lands on Titan": "惠更斯号登陆土卫六",
+  "Earth, seen from Saturn": "从土星看地球",
+  "The Grand Finale begins": "大结局开始",
+  "Into Saturn": "坠入土星",
+  "Out of the shuttle": "离开航天飞机",
+  "The first asteroid visit": "第一次造访小行星",
+  "Past Earth a second time": "第二次飞掠地球",
+  "Ida and its moon": "艾达和它的卫星",
+  "Into Jupiter": "坠入木星",
+  "Past Mars": "飞掠火星",
+  "Into orbit round Vesta": "进入环绕灶神星的轨道",
+  "Leaving Vesta": "离开灶神星",
+  "Into orbit round Ceres": "进入环绕谷神星的轨道",
+  "The last contact": "最后一次联系",
+  "Into the asteroid belt": "进入小行星带",
+  "Past the farthest planet": "越过最远的行星",
+  "The last signal": "最后的信号",
+  "The first craft at Saturn": "第一艘抵达土星的探测器",
+  "Past the orbit of Neptune": "越过海王星轨道",
+  "Arrival at L2": "抵达 L2",
+  "The first pictures": "第一批图像",
+  "Into orbit round the Moon": "进入环月轨道",
+  "The Eagle has landed": "鹰已着陆",
+  "One small step": "一小步",
+  "Leaving the Moon": "离开月球",
+  "Splashdown": "溅落",
+  "Apollo 8 leaves for the Moon": "阿波罗 8 号飞向月球",
+  "Apollo 11 leaves for the Moon": "阿波罗 11 号飞向月球",
+  "Apollo 17, at night": "阿波罗 17 号，夜间",
+  "Flying again": "重返太空",
+  "Hubble goes up": "哈勃升空",
+  "The last Shuttle from 39B": "39B 的最后一次航天飞机发射",
+  "Past Mathilde": "飞掠玛蒂尔德",
+  "A first pass of Eros": "第一次飞掠爱神星",
+  "Into orbit round Eros": "进入环绕爱神星的轨道",
+  "Down on Eros": "降落在爱神星",
+  "Through the coma of Wild 2": "穿过怀尔德 2 号的彗发",
+  "The capsule lands": "返回舱着陆",
+  "Past Tempel 1": "飞掠坦普尔 1 号",
+  "The impact": "撞击",
+  "Earth and Moon flyby": "飞掠地球和月球",
+  "Past Hartley 2": "飞掠哈特利 2 号",
+  "The course correction": "航向修正",
+  "Let go": "分离",
+  "Europa and Io, on the way in": "途经木卫二和木卫一",
+  "Into Jupiter’s air": "进入木星大气",
+  "Landing in Jezero": "在耶泽罗着陆",
+  "The first flight": "第一次飞行",
+  "The first rock core": "第一根岩芯",
+  "Two become one": "合二为一",
+  "People move in": "人们入住",
+  "The last shuttle sets off": "最后一架航天飞机出发",
+  "Discovered": "被发现",
+  "Past Earth": "飞掠地球",
+};
+// 2.0.0 look finding 10: a tap no figure of another people's sky reaches (copy/en.later.js skyLore)
+COPY.skyLore.notHereTitle = "这里没有{culture}星空的图形";
+COPY.skyLore.notHere = "你点按的地方没有画出{culture}星空的任何图形。最近的是{name}，相距 {deg}°。";
+COPY.skyLore.notHereNone = "你点按的地方没有画出{culture}星空的任何图形。";
+COPY.skyLore.nearest = "{name}的故事";
+// b200-s4a-look: end

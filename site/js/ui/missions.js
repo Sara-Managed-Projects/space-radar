@@ -359,7 +359,7 @@ export function pathWords(recordId, tMs) {
   const row = indexOf(recordId);
   if (!row || !loaded(recordId) || !covers(recordId, tMs)) return null;
   const out = [t(COPY.ephemeris.drawn, { km: fmt.int(row.goodToKm) })];
-  if (row.rough && tMs < Date.parse(row.rough.until)) out.push(row.rough.text);
+  if (row.rough && (row.rough.after ? tMs >= Date.parse(row.rough.after) : tMs < Date.parse(row.rough.until))) out.push(row.rough.text); // `after`: a plan at the end (forge #87)
   return out;
 }
 

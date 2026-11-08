@@ -40,6 +40,9 @@
 // length in the galaxy M87, where a visitor framing M87 sees it.
 
 import * as THREE from '../../vendor/three.module.min.js';
+// b200-f3-stars: begin -- the turning hole's shadow (scene/kerrshadow.js, forge #149)
+import { SPINS, shadowFourier } from './kerrshadow.js';
+// b200-f3-stars: end
 
 /** GM/c² for one solar mass, km (IAU 2015 nominal GM_sun / c²). */
 export const KM_PER_MSUN = 1.4766250385;
@@ -64,9 +67,11 @@ export const UNDER_MEASURED = { hole: 'same', streaks: 'same', jet: 'same' };
  */
 export const PROFILES = {
   'sgr-a-star': {
-    incl: 48, pa: 60, turn: -1, rOut: 18, t: 5000, frame: 13,
+    // b200-c2-deep (forge #149): seen 30 degrees from its axis, EHT 2022 paper V's best-bet models (it was 48, the most
+    // that fit allowed); the axis on the sky is still chosen, now so the bright side lands where the EHT picture's does.
+    incl: 30, pa: 60, turn: -1, rOut: 18, t: 5000, frame: 13,
     cls: { mass: 'measured', size: 'measured', place: 'measured', disc: 'modelled', orientation: 'modelled' },
-    why: 'EHT 2022 (ApJL 930, L12): a ring 51.8 µas across, best fitted seen within 50 degrees of face-on (48 is taken, the most the fit allows, so the far side of the disc shows over the shadow); GRAVITY 2018 saw flares circle clockwise. The axis on the sky is not measured: 60 degrees is chosen.',
+    why: 'EHT 2022 (ApJL 930, L12): a ring 51.8 µas across. Paper V (ApJL 930, L16) rules out views more than 50 degrees from the axis and its best-bet models are seen from 30 degrees, which is drawn; GRAVITY saw flares circle clockwise on an orbit tilted 157 ± 5 degrees, the same tilt seen from below (A&A 677, L10, 2023). The axis on the sky is not measured: 60 degrees is chosen, which puts the approaching, brighter side in the north-west, where the EHT picture is brightest.',
   },
   'm87-star': {
     incl: 17, pa: 288, turn: -1, rOut: 18, t: 5000, frame: 13, host: 'dso-m87',
@@ -285,6 +290,8 @@ uniform float uQuiet;
 uniform float uRing;      // how bright the photon ring is
 uniform float uGlow;      // the soft glow round it
 uniform float uOpacity;
+uniform vec4 uKerr;       // b200-f3-stars: the Kerr shadow's radius about the centre, R(psi) = sum c_k cos(k psi), M (scene/kerrshadow.js)
+uniform float uKerrOn;    // b200-f3-stars: 1 for a hole given a spin
 varying vec3 vLocal;
 ${BB_GLSL}
 // The disc's grain: filaments of hotter and cooler gas drawn out along the orbits (the look of the simulations; the real
@@ -328,6 +335,23 @@ void shade( vec3 p, float lz, inout vec3 col, inout float A ) {
 void main() {
   vec3 d = normalize( vLocal / uCamDist - uCamDir );
   vec3 q = uCamDist < 4.0 * uSize ? uCam : vLocal - d * ( 2.0 * uSize );
+  // b200-f3-stars: begin -- a turning hole (MODELLED): the picture is bent so the shadow's edge lands on the Kerr outline
+  // (Bardeen 1973, scene/kerrshadow.js): each ray is moved parallel to itself, its closest point to the hole scaled by
+  // sqrt(27) / R(psi), fully inside 1.3 shadow radii and not at all past 3.5, so the far disc and the jet are as traced.
+  // psi is measured from the side of the sky that turns towards us, where the shadow is flattened.
+  if ( uKerrOn > 0.5 ) {
+    vec3 cc0 = q - dot( q, d ) * d;
+    float b0 = length( cc0 );
+    vec3 ex = -uTurn * cross( d, vec3( 0.0, 0.0, 1.0 ) );
+    float exl = length( ex );
+    if ( exl > 1e-4 && b0 > 1e-4 ) {
+      float c = dot( cc0, ex / exl ) / b0;
+      float R = uKerr.x + uKerr.y * c + uKerr.z * ( 2.0 * c * c - 1.0 ) + uKerr.w * ( 4.0 * c * c * c - 3.0 * c );
+      float w = 1.0 - smoothstep( 1.3 * 5.196152, 3.5 * 5.196152, b0 );
+      q += cc0 * ( mix( 1.0, 5.196152 / max( 1.0, R ), w ) - 1.0 );
+    }
+  }
+  // b200-f3-stars: end
   float lz = -( q.x * d.y - q.y * d.x );
   vec3 col = vec3( 0.0 );
   float A = 0.0;
@@ -529,7 +553,10 @@ export function createBlackHole(record, opts = {}) {
     uTpeak: { value: p.t || 6000 }, uBright: { value: p.companion ? 1.5 : 3.0 }, uStretch: { value: p.companion ? 0.05 : 1.5 },
     uQuiet: { value: p.quiet ? 1 : 0 }, uOpacity: { value: 0 },
     uRing: { value: p.quiet ? 0.8 : 2.2 }, uGlow: { value: p.quiet ? 0 : p.companion ? 0.04 : 0.1 },
+    // b200-f3-stars: the spin's shadow, worked out again when the view's angle to the axis changes (update below)
+    uKerr: { value: new THREE.Vector4(Math.sqrt(27), 0, 0, 0) }, uKerrOn: { value: SPINS[p.id] ? 1 : 0 },
   };
+  let kerrIncl = NaN; // b200-f3-stars
   const holeMat = () => new THREE.ShaderMaterial({
     vertexShader: HOLE_VERT, fragmentShader: HOLE_FRAG, uniforms: huniforms,
     defines: { BH_STEPS: TIER_STEPS[tier][0], BH_H: TIER_STEPS[tier][1].toFixed(3) },
@@ -676,6 +703,16 @@ export function createBlackHole(record, opts = {}) {
     const cd = cl.length();
     huniforms.uCamDist.value = cd;
     huniforms.uCamDir.value.copy(cl).divideScalar(cd || 1);
+    // b200-f3-stars: begin -- the Kerr outline for the angle the camera sees the spin axis at (0 to 90: a mirror is the same)
+    if (SPINS[p.id]) {
+      const incl = Math.acos(Math.min(1, Math.abs(huniforms.uCamDir.value.z))) * 180 / Math.PI;
+      if (!(Math.abs(incl - kerrIncl) < 1)) {
+        kerrIncl = incl;
+        const c = shadowFourier(SPINS[p.id], incl);
+        huniforms.uKerr.value.set(c[0], c[1], c[2], c[3]);
+      }
+    }
+    // b200-f3-stars: end
     huniforms.uCam.value.copy(cl);
     // the square: facing the camera, big enough for the disc and the bent light round it
     const size = p.rOut && p.rOut > RLENS ? p.rOut * 1.05 + 4 : Math.max(34, (p.rOut || 0) * 1.6);
@@ -727,7 +764,7 @@ export function createBlackHole(record, opts = {}) {
     magnification: () => magnification,
     stats: () => ({
       id: p.id, msun: p.msun, mKm: +p.mKm.toFixed(1), shadowKm: +(2 * SHADOW_M * p.mKm).toFixed(0), magnification: +magnification.toPrecision(3),
-      opacity: +opacity.toFixed(3), jets: jets.length, companion: !!star, sepM: sep ? +sep.toFixed(0) : null, steps: TIER_STEPS[tier][0],
+      opacity: +opacity.toFixed(3), jets: jets.length, companion: !!star, sepM: sep ? +sep.toFixed(0) : null, steps: TIER_STEPS[tier][0], tier, // b200-c2-deep: tier, for scene/portraits.js's fallback
       camM: +huniforms.uCamDist.value.toPrecision(4),
     }),
     dispose() {

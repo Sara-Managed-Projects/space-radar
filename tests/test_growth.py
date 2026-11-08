@@ -31,6 +31,9 @@ from pathlib import Path
 
 import yaml
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import test_refusals as tr  # noqa: E402  (the work-tree helpers; its checks run only under __main__)
+
 ROOT = Path(__file__).resolve().parent.parent
 ALLOWED_PREFIXES = ("registry/", "harvest/lists/", "harvest/queries/")
 # The one file outside registry/ that adding a rocket is allowed to change, because a browser
@@ -169,12 +172,9 @@ def main() -> int:
         # The textures come with their bytes: registry/textures.yaml states each file's size and
         # pixels, and the validator reads both from the file itself (10 MB, a copy is quick).
         shutil.copytree(ROOT / "site" / "textures", work / "site" / "textures")
-        for src in ("site/models", "site/data"):
-            d = work / src
-            d.mkdir(parents=True, exist_ok=True)
-            for f in (ROOT / src).glob("*"):
-                if f.is_file():
-                    (d / f.name).touch()
+        # A file registry/asset_sources.yaml pins by its SHA-256 (site/data/starmotion.bin, 2.0.0) comes with its
+        # bytes, copied like the rest of this tree: an empty stand-in fails the pin (tests/test_refusals.py says why).
+        tr.asset_names_into(work, copy=shutil.copy2)
         # Real bytes for the exoplanet table (spec 0040): the trips mirror counts its rows into the
         # `{exoplanet_count}` card, so a placeholder would regenerate a different tours.js.
         shutil.copy2(ROOT / "site/data/exoplanets.csv", work / "site/data/exoplanets.csv")

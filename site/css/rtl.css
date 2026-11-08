@@ -84,3 +84,19 @@ html[dir='rtl'] :is(.sr-time, .sr-time__read, .sr-time__words, .sr-tape, .sr-sky
   direction: ltr;
   unicode-bidi: isolate;
 }
+
+/* --- Arabic is joined writing ----------------------------------------------------------------------------------- */
+
+/* 2.0.0 look finding 7: in the mono styles Arabic came apart into single letters ("مباشر" on the pill, "داخله" and
+   "في المدار" in Find's tables). Two causes. The mono stack's next face after JetBrains Mono (which has no Arabic) is
+   Courier New, whose Arabic sits one letter to a fixed cell; and a letter-spacing pulls joined letters apart, which no
+   Arabic text is ever set with. So in Arabic a letter the mono face lacks is drawn by the sans stack (the figures and
+   the Latin stay in JetBrains Mono, tabular), and no text is spaced. `!important` because the spacing is set in some
+   thirty rules of every weight, and this one rule must beat each of them. Hebrew is not joined: it keeps both. */
+html[lang='ar'] {
+  --sr-font-mono: 'JetBrains Mono', var(--sr-font);
+}
+
+html[lang='ar'] * {
+  letter-spacing: 0 !important;
+}

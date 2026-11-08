@@ -105,7 +105,8 @@ export async function loadVehicle(spec, events = [], { tier = 1 } = {}) {
   const root = new THREE.Group();
   root.name = `moment-vehicle:${spec.id}`;
   const parts = new Map();
-  const src = await loadRealModel({ file: `${spec.model}.glb`, colour: spec.colour || 'rocket' });
+  // b200-c3-learn: `model: null` is a craft there is no model of, drawn as the player's ringed mark only (forge #153: Fengyun-1C)
+  const src = spec.model === null ? null : await loadRealModel({ file: `${spec.model}.glb`, colour: spec.colour || 'rocket' });
   let split = 'none';
   if (src) {
     const holder = new THREE.Group();
@@ -190,7 +191,7 @@ export async function loadVehicle(spec, events = [], { tier = 1 } = {}) {
     plasma.fx.group.matrixAutoUpdate = false;
     root.add(plasma.fx.group);
   }
-  return { ok: !!src, root, parts, flames, puffs, chutes, plasma, split };
+  return { ok: !!src || spec.model === null, root, parts, flames, puffs, chutes, plasma, split };
 }
 
 /** Free what loadVehicle made (the file's own geometry and materials are the loader's, and stay cached). */

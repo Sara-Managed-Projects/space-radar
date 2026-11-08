@@ -1,0 +1,80 @@
+/* skystory.css -- a sky figure's story card (ui/skystory.js, forge #143).
+ *
+ * Linked by ui/skystory.js when a story is first opened, never at boot: a first visit carries none
+ * of it. Tokens only, all from css/ui.css :root, as css/keyhint.css.
+ *
+ * Phone: a sheet along the bottom, as a card is (css/ui.css .sr-card), at most half the screen tall
+ * and scrolling inside, the close button a 44 px target. From 900 px: the top-right corner, beside
+ * the rail, above the panels (the card layer), glass-strong (a paragraph of text over the stars,
+ * docs/ui-guide.md §2.4 level 2), the shell's corners. It does not move in or out: it is there or it is not, so reduced
+ * motion has nothing to stop.
+ */
+
+.sr-skystory {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--sr-z-card);
+  box-sizing: border-box;
+  max-height: 50vh;
+  overflow-y: auto;
+  padding: var(--sp-3) var(--sp-4) calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
+  font: 400 var(--sr-fs-sm)/20px var(--sr-font);
+  color: var(--sr-text);
+  border-radius: var(--sr-radius-shell) var(--sr-radius-shell) 0 0;
+}
+
+@media (min-width: 900px) {
+  .sr-skystory {
+    top: var(--sr-inset);
+    right: calc(var(--sr-inset) + 64px);
+    bottom: auto;
+    left: auto;
+    width: 360px;
+    max-height: 60vh;
+    border-radius: var(--sr-radius-shell);
+  }
+}
+
+.sr-skystory.sr-float {
+  background: var(--sr-glass-strong);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .sr-skystory.sr-float { background: var(--sr-glass-solid); }
+}
+
+.sr-skystory__head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+}
+
+.sr-skystory__title {
+  flex: 1;
+  margin: 0;
+  font: 600 var(--sr-fs-body)/24px var(--sr-font);
+}
+
+.sr-skystory__sub,
+.sr-skystory__note {
+  margin: var(--sp-1) 0 0;
+  color: var(--sr-text-dim);
+}
+
+.sr-skystory__text {
+  margin: var(--sp-3) 0 0;
+}
+
+.sr-skystory__close {
+  min-width: 44px;
+  min-height: 44px;
+  margin: calc(-1 * var(--sp-2)) calc(-1 * var(--sp-2)) 0 0;
+  border: 0;
+  border-radius: var(--sr-radius-sm);
+  background: transparent;
+  color: var(--sr-text);
+  font: inherit;
+  cursor: pointer;
+}

@@ -1,0 +1,522 @@
+{
+ "source": "Wikimedia Commons, each file's page below; the flag image each country's Wikidata item names (property P41), read 2026-11-07",
+ "licence": "Public domain (every file's own Commons page, LicenseShortName, read 2026-11-07)",
+ "processed": "comments, metadata and editor attributes removed, and coordinates rounded to about a thousandth of the flag's width (a 21 px flag cannot show finer), release 2.0.0",
+ "files": {
+  "ae.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_the_United_Arab_Emirates.svg",
+   "licence": "Public domain",
+   "original_bytes": 323
+  },
+  "am.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Armenia.svg",
+   "licence": "Public domain",
+   "original_bytes": 201
+  },
+  "ao.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Angola.svg",
+   "licence": "Public domain",
+   "original_bytes": 2227
+  },
+  "ar.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Argentina.svg",
+   "licence": "Public domain",
+   "original_bytes": 4994
+  },
+  "at.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Austria.svg",
+   "licence": "Public domain",
+   "original_bytes": 218
+  },
+  "au.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Australia_(converted).svg",
+   "licence": "Public domain",
+   "original_bytes": 1592
+  },
+  "az.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Azerbaijan.svg",
+   "licence": "Public domain",
+   "original_bytes": 588
+  },
+  "bd.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Bangladesh.svg",
+   "licence": "Public domain",
+   "original_bytes": 156
+  },
+  "be.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Belgium.svg",
+   "licence": "Public domain",
+   "original_bytes": 182
+  },
+  "bg.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Bulgaria.svg",
+   "licence": "Public domain",
+   "original_bytes": 288
+  },
+  "bh.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Bahrain.svg",
+   "licence": "Public domain",
+   "original_bytes": 298
+  },
+  "bm.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Bermuda.svg",
+   "licence": "Public domain",
+   "original_bytes": 33442
+  },
+  "bo.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Bolivia.svg",
+   "licence": "Public domain",
+   "original_bytes": 264
+  },
+  "br.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Brazil.svg",
+   "licence": "Public domain",
+   "original_bytes": 4243
+  },
+  "bt.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Bhutan.svg",
+   "licence": "Public domain",
+   "original_bytes": 36864
+  },
+  "bw.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Botswana.svg",
+   "licence": "Public domain",
+   "original_bytes": 268
+  },
+  "by.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Belarus.svg",
+   "licence": "Public domain",
+   "original_bytes": 2040
+  },
+  "ca.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Canada_(Pantone).svg",
+   "licence": "Public domain",
+   "original_bytes": 720
+  },
+  "ch.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Switzerland.svg",
+   "licence": "Public domain",
+   "original_bytes": 213
+  },
+  "cl.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Chile.svg",
+   "licence": "Public domain",
+   "original_bytes": 592
+  },
+  "cn.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_the_People%27s_Republic_of_China.svg",
+   "licence": "Public domain",
+   "original_bytes": 563
+  },
+  "co.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Colombia.svg",
+   "licence": "Public domain",
+   "original_bytes": 255
+  },
+  "cr.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Costa_Rica.svg",
+   "licence": "Public domain",
+   "original_bytes": 266
+  },
+  "cz.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_the_Czech_Republic.svg",
+   "licence": "Public domain",
+   "original_bytes": 275
+  },
+  "de.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Germany.svg",
+   "licence": "Public domain",
+   "original_bytes": 502
+  },
+  "dj.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Djibouti.svg",
+   "licence": "Public domain",
+   "original_bytes": 371
+  },
+  "dk.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Denmark.svg",
+   "licence": "Public domain",
+   "original_bytes": 186
+  },
+  "dz.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Algeria.svg",
+   "licence": "Public domain",
+   "original_bytes": 311
+  },
+  "ec.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Ecuador.svg",
+   "licence": "Public domain",
+   "original_bytes": 279145
+  },
+  "ee.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Estonia.svg",
+   "licence": "Public domain",
+   "original_bytes": 183
+  },
+  "eg.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Egypt.svg",
+   "licence": "Public domain",
+   "original_bytes": 18440
+  },
+  "es.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Spain.svg",
+   "licence": "Public domain",
+   "original_bytes": 155900
+  },
+  "et.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Ethiopia.svg",
+   "licence": "Public domain",
+   "original_bytes": 864
+  },
+  "fi.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Finland.svg",
+   "licence": "Public domain",
+   "original_bytes": 241
+  },
+  "fr.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_France.svg",
+   "licence": "Public domain",
+   "original_bytes": 193
+  },
+  "gb.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_the_United_Kingdom_(3-5).svg",
+   "licence": "Public domain",
+   "original_bytes": 477
+  },
+  "gh.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Ghana.svg",
+   "licence": "Public domain",
+   "original_bytes": 255
+  },
+  "gr.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Greece.svg",
+   "licence": "Public domain",
+   "original_bytes": 284
+  },
+  "gt.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Guatemala.svg",
+   "licence": "Public domain",
+   "original_bytes": 55848
+  },
+  "hr.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Croatia.svg",
+   "licence": "Public domain",
+   "original_bytes": 68547
+  },
+  "hu.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Hungary.svg",
+   "licence": "Public domain",
+   "original_bytes": 197
+  },
+  "id.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Indonesia.svg",
+   "licence": "Public domain",
+   "original_bytes": 148
+  },
+  "ie.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Ireland.svg",
+   "licence": "Public domain",
+   "original_bytes": 282
+  },
+  "il.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Israel.svg",
+   "licence": "Public domain",
+   "original_bytes": 398
+  },
+  "in.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_India.svg",
+   "licence": "Public domain",
+   "original_bytes": 848
+  },
+  "iq.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Iraq.svg",
+   "licence": "Public domain",
+   "original_bytes": 1204
+  },
+  "ir.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Iran.svg",
+   "licence": "Public domain",
+   "original_bytes": 2218
+  },
+  "it.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Italy.svg",
+   "licence": "Public domain",
+   "original_bytes": 273
+  },
+  "jp.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Japan.svg",
+   "licence": "Public domain",
+   "original_bytes": 209
+  },
+  "ke.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Kenya.svg",
+   "licence": "Public domain",
+   "original_bytes": 1033
+  },
+  "kp.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_North_Korea.svg",
+   "licence": "Public domain",
+   "original_bytes": 407
+  },
+  "kr.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_South_Korea.svg",
+   "licence": "Public domain",
+   "original_bytes": 589
+  },
+  "kz.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Kazakhstan.svg",
+   "licence": "Public domain",
+   "original_bytes": 9668
+  },
+  "la.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Laos.svg",
+   "licence": "Public domain",
+   "original_bytes": 233
+  },
+  "lk.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Sri_Lanka.svg",
+   "licence": "Public domain",
+   "original_bytes": 19062
+  },
+  "lt.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Lithuania.svg",
+   "licence": "Public domain",
+   "original_bytes": 201
+  },
+  "lu.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Luxembourg.svg",
+   "licence": "Public domain",
+   "original_bytes": 213
+  },
+  "ma.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Morocco.svg",
+   "licence": "Public domain",
+   "original_bytes": 264
+  },
+  "mc.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Monaco.svg",
+   "licence": "Public domain",
+   "original_bytes": 197
+  },
+  "md.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Moldova.svg",
+   "licence": "Public domain",
+   "original_bytes": 34587
+  },
+  "me.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Montenegro.svg",
+   "licence": "Public domain",
+   "original_bytes": 123773
+  },
+  "mm.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Myanmar.svg",
+   "licence": "Public domain",
+   "original_bytes": 636
+  },
+  "mn.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Mongolia.svg",
+   "licence": "Public domain",
+   "original_bytes": 1526
+  },
+  "mu.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Mauritius.svg",
+   "licence": "Public domain",
+   "original_bytes": 678
+  },
+  "mx.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Mexico.svg",
+   "licence": "Public domain",
+   "original_bytes": 117180
+  },
+  "my.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Malaysia.svg",
+   "licence": "Public domain",
+   "original_bytes": 683
+  },
+  "ng.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Nigeria.svg",
+   "licence": "Public domain",
+   "original_bytes": 201
+  },
+  "nl.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_the_Netherlands.svg",
+   "licence": "Public domain",
+   "original_bytes": 223
+  },
+  "no.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Norway.svg",
+   "licence": "Public domain",
+   "original_bytes": 319
+  },
+  "np.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Nepal.svg",
+   "licence": "Public domain",
+   "original_bytes": 1523
+  },
+  "nz.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_New_Zealand.svg",
+   "licence": "Public domain",
+   "original_bytes": 2406
+  },
+  "pe.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Peru.svg",
+   "licence": "Public domain",
+   "original_bytes": 381
+  },
+  "ph.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_the_Philippines.svg",
+   "licence": "Public domain",
+   "original_bytes": 892
+  },
+  "pk.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Pakistan.svg",
+   "licence": "Public domain",
+   "original_bytes": 707
+  },
+  "pl.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Poland.svg",
+   "licence": "Public domain",
+   "original_bytes": 199
+  },
+  "pt.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Portugal_(official).svg",
+   "licence": "Public domain",
+   "original_bytes": 14865
+  },
+  "py.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Paraguay.svg",
+   "licence": "Public domain",
+   "original_bytes": 23523
+  },
+  "qa.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Qatar.svg",
+   "licence": "Public domain",
+   "original_bytes": 310
+  },
+  "ro.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Romania.svg",
+   "licence": "Public domain",
+   "original_bytes": 297
+  },
+  "ru.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Russia.svg",
+   "licence": "Public domain",
+   "original_bytes": 200
+  },
+  "rw.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Rwanda.svg",
+   "licence": "Public domain",
+   "original_bytes": 939
+  },
+  "sa.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Saudi_Arabia.svg",
+   "licence": "Public domain",
+   "original_bytes": 28593
+  },
+  "sb.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_the_Solomon_Islands.svg",
+   "licence": "Public domain",
+   "original_bytes": 1013
+  },
+  "sd.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Sudan.svg",
+   "licence": "Public domain",
+   "original_bytes": 229
+  },
+  "se.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Sweden.svg",
+   "licence": "Public domain",
+   "original_bytes": 193
+  },
+  "sg.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Singapore.svg",
+   "licence": "Public domain",
+   "original_bytes": 591
+  },
+  "si.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Slovenia.svg",
+   "licence": "Public domain",
+   "original_bytes": 1617
+  },
+  "sk.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Slovakia.svg",
+   "licence": "Public domain",
+   "original_bytes": 1574
+  },
+  "sn.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Senegal.svg",
+   "licence": "Public domain",
+   "original_bytes": 255
+  },
+  "th.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Thailand.svg",
+   "licence": "Public domain",
+   "original_bytes": 259
+  },
+  "tm.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Turkmenistan.svg",
+   "licence": "Public domain",
+   "original_bytes": 75449
+  },
+  "tn.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Tunisia.svg",
+   "licence": "Public domain",
+   "original_bytes": 278
+  },
+  "tr.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Turkey.svg",
+   "licence": "Public domain",
+   "original_bytes": 324
+  },
+  "tw.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_the_Republic_of_China.svg",
+   "licence": "Public domain",
+   "original_bytes": 416
+  },
+  "ua.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Ukraine.svg",
+   "licence": "Public domain",
+   "original_bytes": 182
+  },
+  "ug.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Uganda.svg",
+   "licence": "Public domain",
+   "original_bytes": 6572
+  },
+  "us.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_the_United_States_(DDD-F-416E_specifications).svg",
+   "licence": "Public domain",
+   "original_bytes": 823
+  },
+  "uy.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Uruguay.svg",
+   "licence": "Public domain",
+   "original_bytes": 5562
+  },
+  "va.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Vatican_City_(2023%E2%80%93present).svg",
+   "licence": "Public domain",
+   "original_bytes": 142914
+  },
+  "ve.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Venezuela.svg",
+   "licence": "Public domain",
+   "original_bytes": 1886
+  },
+  "vn.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Vietnam.svg",
+   "licence": "Public domain",
+   "original_bytes": 283
+  },
+  "za.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_South_Africa.svg",
+   "licence": "Public domain",
+   "original_bytes": 630
+  },
+  "zw.svg": {
+   "commons": "https://commons.wikimedia.org/wiki/File:Flag_of_Zimbabwe.svg",
+   "licence": "Public domain",
+   "original_bytes": 1801
+  }
+ }
+}

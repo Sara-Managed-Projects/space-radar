@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Find a Planet in Kepler Data | Space Radar Lab</title>
+<meta name="description" content="Twelve days of real Kepler measurements of the star TrES-2 dip every few days, and folding them at the right period stacks the dips into one clean planet transit.">
+<meta name="sr-lab-category" content="Stars and their lives">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b0e14">
+<link rel="stylesheet" href="../../css/fonts.css">
+<style>
+:root{--sr-space:#0b0e14;--sr-text:#e8ecf2;--sr-text-dim:#9aa4b2;--sr-ember:#ff9f43;--sr-ember-light:#ffc28a;--sr-ink:#14100a;--sr-line:rgba(232,236,242,.10);--sr-wash:rgba(232,236,242,.07);--sr-wash-hover:rgba(232,236,242,.12);--sr-radius:6px}
+html{background:var(--sr-space);color:var(--sr-text);font:400 15px/20px Inter,system-ui,-apple-system,sans-serif;-webkit-text-size-adjust:100%}
+body{margin:0}
+a{color:var(--sr-ember)}a:hover{color:var(--sr-ember-light)}
+a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--sr-ember);outline-offset:2px;border-radius:2px}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:0 20px;max-width:1160px;margin:0 auto;padding:4px 16px;border-bottom:1px solid var(--sr-line)}
+.top a{display:inline-flex;align-items:center;min-height:44px;color:var(--sr-text);text-decoration:none}
+.top .mark{font:600 20px/1 'Barlow Semi Condensed',system-ui,sans-serif;letter-spacing:.02em}
+.top .here{color:var(--sr-text-dim)}
+main{display:grid;grid-template-columns:minmax(0,1fr);max-width:1160px;margin:0 auto;padding:20px 16px 32px;gap:0 32px;align-content:start}
+main>*{min-width:0}
+.micro{margin:0 0 8px;font:600 13px/16px 'Barlow Semi Condensed',system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--sr-text-dim)}
+h1{margin:0 0 12px;font:600 30px/1.1 Inter,system-ui,sans-serif;letter-spacing:-.01em;overflow-wrap:anywhere}
+.lead{margin:0 0 20px;font-size:18px;line-height:26px;max-width:60ch}
+.stage{margin:0 0 16px;width:100%}
+canvas{display:block;width:100%;aspect-ratio:1080/1200;background:#05070d;border-radius:var(--sr-radius);border:1px solid var(--sr-line)}
+.line{margin:0 0 16px;font-size:16px;line-height:24px;max-width:60ch;min-height:48px}
+.controls{display:grid;gap:12px;margin:0 0 16px}
+.controls label{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;font-size:13px;line-height:18px;color:var(--sr-text-dim)}
+.controls label input{grid-column:1/-1;width:100%;min-height:44px;margin:0;accent-color:var(--sr-ember)}
+.controls output{font:500 13px/18px 'JetBrains Mono',ui-monospace,monospace;color:var(--sr-text);font-variant-numeric:tabular-nums}
+button{min-height:44px;padding:0 20px;border:0;border-radius:var(--sr-radius);background:var(--sr-ember);color:var(--sr-ink);font:600 15px/1 Inter,system-ui,sans-serif;cursor:pointer;justify-self:start}
+button:hover{background:var(--sr-ember-light)}
+.honest{margin:0 0 16px;padding:12px 14px;border-radius:var(--sr-radius);background:var(--sr-wash);color:var(--sr-text-dim);font-size:13px;line-height:18px;max-width:60ch}
+.honest b{color:var(--sr-text);font-weight:600}
+details{margin:0 0 16px;max-width:60ch;border-top:1px solid var(--sr-line)}
+summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font-weight:600}
+.srcl{margin:0 0 6px;font-size:13px;line-height:18px;color:var(--sr-text-dim);white-space:pre-wrap;overflow-wrap:anywhere}
+.more{display:flex;flex-wrap:wrap;gap:0 16px;margin:0;font-size:15px}
+.more a{display:inline-flex;align-items:center;min-height:44px}
+.ns{color:var(--sr-text-dim)}
+@media (min-width:900px){
+ main{grid-template-columns:minmax(0,1fr) 360px;padding-top:24px}
+ main>*{grid-column:2}
+ .stage{grid-column:1;grid-row:1/span 9;width:min(100%,calc((100svh - 130px)*.9));min-width:320px;align-self:start;position:sticky;top:12px;margin:0}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top"><a class="mark" href="../../index.html">Space Radar</a><a class="here" href="../index.html">Lab</a></header>
+<main>
+<p class="micro" id="cat"></p>
+<h1 id="h">Find a Planet in Kepler Data</h1>
+<p class="lead" id="lesson">Twelve days of real Kepler measurements of the star TrES-2 dip every few days, and folding them at the right period stacks the dips into one clean planet transit.</p>
+<div class="stage"><canvas id="c" role="img" aria-label="Find a Planet in Kepler Data"></canvas></div>
+<p class="line" id="line"></p>
+<noscript><p class="ns">This simulator needs JavaScript. It is one small file, with no libraries and no network requests: read it with View source.</p></noscript>
+<div class="controls">
+<button type="button" id="pb">Pause</button>
+<label>Time <input type="range" id="ts" min="0" value="0" aria-label="Time through the animation"></label>
+<label id="pl">Value <output id="po"></output><input type="range" id="ps"></label>
+</div>
+<p class="honest"><b>What is and is not to scale.</b> <span id="honest"></span></p>
+<details><summary>How this was made and sources</summary>
+<p class="srcl">One HTML file: no libraries, no network requests. Every number below was read on the date shown, from the page named next to it.</p>
+<div id="src"></div>
+</details>
+<p class="more"><a id="sr-app" href="../../index.html#at=exo-tres-2-b">See this in the 3D map</a><a href="../index.html">All simulators</a><a id="add" href="https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/ADD_A_SIMULATOR.md">Add your own simulator</a><a id="edit" href="https://github.com/Sara-Managed-Projects/space-radar/tree/main/site/lab">Fix a mistake on GitHub</a></p>
+</main>
+<!-- Sources
+Sources, read on 2026-11-07:
+ The data: NASA Kepler mission, long-cadence light curve of KIC 11446443 (TrES-2), quarter 1, file kplr011446443-2009166043257_llc.fits, data release 25, from the Mikulski Archive for Space Telescopes (https://archive.stsci.edu/missions/kepler/lightcurves/0114/011446443/). Column PDCSAP_FLUX, the first 612 cadences (12.5 days from 2009-05-13, BJD 2454964.512), cadence 0.0204336 d; cadences with SAP_QUALITY not 0 left blank; divided by the median outside the dips (phase more than 0.08 d from mid-transit), minus 1, in units of 10 ppm. Scatter outside the dips: 52 ppm.
+ Licence: MAST's data use policy (https://archive.stsci.edu/publishing/data-use): "Most data hosted at MAST are in the public domain"; Kepler data are NASA mission data. Acknowledgement MAST asks for (https://archive.stsci.edu/publishing/mission-acknowledgements): "This paper includes data collected by the Kepler mission and obtained from the MAST data archive at the Space Telescope Science Institute (STScI). Funding to US Institutions for the Kepler mission was provided by the NASA Science Mission Directorate. STScI is operated by the Association of Universities for Research in Astronomy, Inc., under NASA contract NAS5-26555."
+ NASA Exoplanet Archive, Planetary Systems Composite Parameters (https://exoplanetarchive.ipac.caltech.edu/), TrES-2 b: period 2.47063 days; radius 15.24 Earths (1.36 Jupiters); star radius 1.12 Suns (Stassun et al. 2017, AJ 153, 136).
+ IAU 2015 nominal values (https://www.iau.org/static/resolutions/IAU2015_English.pdf): Sun 695 700 km; Earth 6 371 km mean (NASA Earth Fact Sheet, https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html), so 109.2 Earths per Sun.
+ Physics: the dip's depth is the share of the star's disc the planet covers, depth = (Rp / Rs)^2, so Rp = sqrt(depth) x Rs. Folding: a point at time t lands at phase ((t - T_mid) / P) mod 1; the first dip's lowest cadence, BJD 2454965.636, is T_mid.
+ Check by hand: the folded centre at 2.4706 d is about 1.34% deep; sqrt(0.0134) = 0.116; 0.116 x 1.12 x 109.2 = 14.2 Earths, against the catalogue's 15.2: the path is near-grazing and the star's edge darker (limb darkening), so the simple rule comes out small.
+Drawn: every point is a real cadence; the fold's depth is the lowest mean of 0.02-day bins holding three points or more; the folded panel shows 0.6 days either side of mid-transit.
+-->
+<script>
+// ============================================ 0. HELPERS (shared; do not edit) ====================================
+// Defined first, so a simulator may use them while it loads (top-level tables). Colours: EMBER for the point of the lesson, INK for text, DIM for the quiet.
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x)),seg=(t,a,b)=>clamp((t-a)/(b-a),0,1),ease=x=>{x=clamp(x,0,1);return x*x*(3-2*x)},lerp=(a,b,x)=>a+(b-a)*x;
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const EMBER='#ff9f43',INK='#e8ecf4',DIM='#a3adc0',FONT='Inter,system-ui,-apple-system,"Segoe UI",sans-serif',Y0=430,Y1=1440,MINPX=34;
+// ============================================ 1. THE SIMULATOR (yours) ============================================
+// The light curve below is real (Sources comment): Kepler's PDCSAP flux of TrES-2, minus 1, in units of 10 ppm, one value per 29.4-minute cadence; blank = flagged.
+const LC='3,2,-2,-2,-1,8,1,-7,7,3,-2,-4,5,,-11,-1,1,0,-5,-2,-1,-6,1,11,1,4,-1,-5,1,,0,-5,2,4,8,9,4,-6,1,-2,-6,-12,-5,-2,7,-3,,6,-5,5,2,-1,0,,-413,-1358,-1322,-336,10,1,3,-2,12,5,-4,2,1,-8,7,3,7,-6,-3,-8,5,3,-7,7,4,0,,10,9,0,-1,11,-3,-2,5,0,-1,-9,-4,7,7,-1,,2,7,0,8,10,5,-6,6,-6,-2,0,-1,9,,-2,6,-3,7,-1,-1,2,,7,9,11,,-3,-2,7,-7,7,-1,-8,-3,-1,-1,3,-1,-1,9,-2,4,4,7,,6,,-1,0,-7,4,,2,6,3,2,5,6,-1,-5,1,2,-3,14,-1,8,,7,0,3,-2,0,2,0,8,2,,6,-510,-1385,-1276,-249,4,2,1,2,-3,,1,6,-2,-3,-9,-2,,-2,1,6,3,2,3,-2,-4,7,6,,5,4,,10,-1,1,-1,,1,10,15,4,0,-6,2,3,-4,-3,8,-3,5,-5,1,-3,6,3,9,5,9,-2,0,2,4,-1,-3,9,-2,1,2,5,9,1,0,1,-8,5,-4,7,-1,-1,,5,4,8,7,1,-1,12,0,7,5,,2,-4,-5,5,-1,-5,10,2,5,6,,-10,,2,3,0,2,-7,3,,8,2,,-6,4,7,,-5,-16,-2,,-615,-1411,-1210,-181,-1,2,-11,-3,3,-1,-5,-1,-1,4,-10,1,-4,10,-2,-1,5,1,-2,-4,-4,8,0,0,-1,-1,-11,-4,-5,-4,2,8,-5,0,-7,4,-6,,-1,3,7,1,5,9,4,3,-6,-7,-14,-5,-4,3,-3,-6,-8,,-4,-9,-8,5,0,1,4,-6,,1,-2,6,5,-3,-6,6,4,-10,-9,-9,-6,-4,-9,2,1,-3,-2,1,-13,-3,1,-7,-4,-1,-6,2,-1,2,-1,-3,1,4,1,-10,8,4,8,-8,0,-4,6,-3,0,-6,-6,-8,-3,1,2,-3,,-740,-1416,-1138,-126,13,2,5,-3,1,-5,-4,-2,-3,-8,-7,-6,,1,4,0,2,1,-5,4,-10,-2,8,-1,1,-6,4,-1,4,6,-6,-3,-12,7,-7,-11,-3,-7,,5,-6,-5,-3,2,0,2,6,1,4,,0,4,-3,-3,2,4,-1,-2,-7,-1,3,5,-6,2,2,-5,3,4,-8,8,3,4,3,-8,7,-4,0,-1,,-1,-8,-2,-8,,-1,-6,5,3,1,0,1,5,5,4,-3,-8,-10,2,-4,-4,-8,10,-9,-4,1,10,-5,-3,-1,-4,3,-5,6,-5,5,-1,-15,-851,-1428,-1057,-85,-11,,-8,-13,-4,-8,-6,0,-4,-7,7,-1,-4,,-1,2,5,7,2,-1,4,,-3,7,,8,-8,,-8,1,-3,0,-6,-5,3,12,-4,,-8,0,8,5,-5,,-1,-8,-5,,-10,-4,-4,-4,1,-3,3,-4,4,5,4,-5,4,-6,2,-8,-3,-1,-3,-2,-3,-4';
+const D=LC.split(',').map(s=>s===''?null:+s*1e-5),DT=.0204336,TMID=1.1239,DAYS=D.length*DT,PTRUE=2.47063,RSUN=1.12,RE=109.2;   // times in days from the first cadence
+const X0=60,XW=960,YR=600,YF=950,PPC=120,BIN=.02,MINN=3,WIN=.6;     // PPC: px per 1% of the light; WIN: the fold panel shows +/- 0.6 d
+const phaseD=(i,P)=>{const x=((i*DT-TMID)/P+.5)%1;return(x<0?x+1:x)*P-P/2};  // days from the folded mid-transit
+const CACHE={};
+function fold(P){if(CACHE.p===P)return CACHE;const nb=Math.ceil(P/BIN),s=new Array(nb).fill(0),n=new Array(nb).fill(0);
+ D.forEach((f,i)=>{if(f==null)return;const b=Math.min(nb-1,Math.floor((phaseD(i,P)+P/2)/BIN));s[b]+=f;n[b]++});
+ let dip=0;for(let b=0;b<nb;b++)if(n[b]>=MINN)dip=Math.max(dip,-s[b]/n[b]);return Object.assign(CACHE,{p:P,dip})}
+const prog=t=>clamp((t-.4)/8,0,1),lined=P=>Math.abs(P-PTRUE)<.003;
+const SIM={
+ dur:12,reveal:9,
+ hook:'REAL KEPLER DATA:|FIND THE PLANET',
+ honest:'Real Kepler data, 12.5 days of 2009. The plain square-root rule ignores the grazing path, the star\'s darker edge and 30-minute exposures.',
+ param:{label:'trial period (days)',min:2,max:3,step:.001,value:2.3},
+ line(P){const d=fold(P).dip,k=Math.sqrt(d),rp=k*RSUN*RE;return`Trial period ${P.toFixed(3)} days: ${lined(P)?'the five dips stack into one':'the dips land in different places, so the fold smears them'}. The folded dip is ${(d*100).toFixed(2)}% deep, so the planet covers √${d.toFixed(4)} = ${k.toFixed(3)} of the star's width: ${rp.toFixed(1)} Earths across for TrES-2's ${RSUN} Suns (catalogue: 15.2 Earths, period 2.47063 days).`},
+ draw(c,t,P){
+  const q=prog(t),cut=Math.floor(q*D.length),L=lined(P),fd=fold(P).dip;
+  c.strokeStyle='rgba(232,236,244,.2)';c.lineWidth=2;c.strokeRect(X0,YR-60,XW,250);c.strokeRect(X0,YF-60,XW,280);
+  c.beginPath();c.moveTo(X0+q*XW,YR-60);c.lineTo(X0+q*XW,YR+190);c.strokeStyle='rgba(255,159,67,.6)';c.stroke();
+  D.forEach((f,i)=>{if(f==null)return;const on=i<=cut;c.fillStyle=on?INK:'#4a5162';c.fillRect(X0+i*DT/DAYS*XW-2,YR-f*100*PPC-2,4,4);
+   const ph=phaseD(i,P);if(on&&Math.abs(ph)<WIN){c.fillStyle=L?EMBER:'#9fb8ff';c.fillRect(X0+(ph+WIN)/(2*WIN)*XW-3,YF-f*100*PPC-3,6,6)}});
+  c.strokeStyle='rgba(232,236,244,.18)';c.setLineDash([8,8]);c.beginPath();c.moveTo(X0,YF+PPC);c.lineTo(X0+XW,YF+PPC);c.stroke();c.setLineDash([]);
+  text('12.5 DAYS OF TrES-2, AS KEPLER SAW IT',X0,YR-80,34,DIM,600,'left');text('day '+(q*DAYS).toFixed(1),X0+XW,YR-80,34,EMBER,700,'right');
+  text('FOLDED EVERY '+P.toFixed(3)+' DAYS',X0,YF-80,34,DIM,600,'left');text('±0.6 d',X0+XW,YF-80,34,DIM,600,'right');text('−1%',X0+10,YF+PPC+12,34,DIM,600,'left');
+  text(L?'THE DIPS LINE UP':'NOT YET: MOVE THE SLIDER',540,1300,40,L?EMBER:INK,800);
+  text('dip '+(fd*100).toFixed(2)+'%',60,1380,40,INK,700,'left');text('planet ≈ '+(Math.sqrt(fd)*RSUN*RE).toFixed(1)+' Earths wide',1020,1380,40,L?EMBER:INK,700,'right');
+  text('NASA Kepler data via MAST, public',540,1440,34,DIM,600)}};
+// ============================================ 2. THE PAGE (shared; rarely needs a change) =========================
+// The stage is 1080 units wide; the page shows the band y 270..1470 of it. Draw only inside it, and put no text under 34 units.
+// `draw(c, t, P)` gets the 2D context, the time t in seconds (it loops over SIM.dur) and the slider value P. `line(P, t)` is the caption under the picture.
+// SIM.reveal is the second at which the animation shows its point; with a slider (SIM.param) the picture follows the slider, so rev(t) is 1.
+function rev(t){return SIM.param?1:ease(seg(t,SIM.reveal-.3,SIM.reveal+.9))}
+let S=1,P=SIM.param?SIM.param.value:0,T=0;
+function text(s,x,y,size,col,w,al){cx.font=(w||600)+' '+Math.max(size,MINPX)+'px '+FONT;cx.fillStyle=col||INK;cx.textAlign=al||'center';cx.textBaseline='alphabetic';cx.fillText(s,x,y)}
+function wrap(s,x,y,size,col,maxW,lh,w,al){cx.font=(w||600)+' '+Math.max(size,MINPX)+'px '+FONT;let ln='';for(const wd of s.split(' ')){const tr=ln?ln+' '+wd:wd;if(cx.measureText(tr).width>maxW&&ln){text(ln,x,y,size,col,w,al);y+=lh;ln=wd}else ln=tr}text(ln,x,y,size,col,w,al);return y+lh}
+function glow(c,x,y,r,col,a){const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,col);g.addColorStop(1,'rgba(0,0,0,0)');c.globalAlpha=a==null?1:a;c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,6.2832);c.fill();c.globalAlpha=1}
+function disc(c,x,y,r,col){c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,6.2832);c.fill()}
+function stars(c,n){let s=7;const r=()=>(s=(s*16807)%2147483647)/2147483647;for(let i=0;i<(n||90);i++){c.globalAlpha=.25+.5*r();c.fillStyle='#fff';c.fillRect(r()*1080,r()*1920,2,2)}c.globalAlpha=1} // a fixed starfield
+function draw(t){cx.setTransform(1,0,0,1,0,0);cx.fillStyle='#05070d';cx.fillRect(0,0,cv.width,cv.height);
+  cx.setTransform(S,0,0,S,0,-270*S);cx.save();cx.beginPath();cx.rect(0,0,1080,1920);cx.clip();SIM.draw(cx,t,P);
+  const h=SIM.hook.split('|');text(h[0],540,330,60,EMBER,800);if(h[1])text(h[1],540,396,60,EMBER,800);cx.restore()}
+{
+  const byId=id=>document.getElementById(id),LOOP=SIM.dur,meta=n=>(document.querySelector('meta[name="'+n+'"]')||{}).content||'';
+  byId('cat').textContent=meta('sr-lab-category');byId('honest').textContent=SIM.honest;
+  cv.setAttribute('aria-label',byId('h').textContent+'. '+meta('description'));
+  // "How this was made": the comment that starts with "Sources" in this file, with its web addresses made into links.
+  const walk=document.createTreeWalker(document,NodeFilter.SHOW_COMMENT);let node,src='';
+  while((node=walk.nextNode()))if(/^\s*sources?\b/i.test(node.data)){src=node.data.trim();break}
+  for(const ln of src.split('\n')){if(!ln.trim())continue;const p=document.createElement('p');p.className='srcl';
+    ln.split(/(\w+:\/\/[^\s)]+)/).forEach((part,i)=>{let ok=false;if(i%2)try{ok=new URL(part).protocol==='https:'}catch(e){}
+      if(ok){const a=document.createElement('a');a.href=part;a.rel='noopener';a.textContent=part;p.append(a)}else p.append(part)});byId('src').append(p)}
+  // Where this file lives in the repository, for the "fix a mistake" link.
+  const parts=location.pathname.split('/').filter(Boolean);if(parts[parts.length-1]==='index.html')parts.pop();
+  const slug=parts[parts.length-1]||'',edit=byId('edit');if(slug&&slug!=='lab')edit.href=edit.href.replace('/tree/','/edit/')+'/'+slug+'/index.html';
+  const pb=byId('pb'),ts=byId('ts'),ps=byId('ps'),po=byId('po'),calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let play=!calm,t0=performance.now(),dirty=true,last='';
+  ts.max=LOOP;ts.step=.01;
+  if(calm){T=Math.min(SIM.reveal+1.2,LOOP-.1);ts.value=T;pb.textContent='Play'}
+  const p=SIM.param;
+  if(p){const dec=(String(p.step).split('.')[1]||'').length,fmt=v=>(+v).toLocaleString('en-US',{maximumFractionDigits:dec,minimumFractionDigits:dec});
+    ps.min=p.min;ps.max=p.max;ps.step=p.step;ps.value=p.value;ps.setAttribute('aria-label',p.label);byId('pl').firstChild.textContent=p.label+' ';po.textContent=fmt(P);
+    ps.oninput=()=>{P=+ps.value;po.textContent=fmt(P);dirty=true}}
+  else byId('pl').hidden=true;
+  pb.onclick=()=>{play=!play;pb.textContent=play?'Pause':'Play';t0=performance.now()-T*1000};
+  ts.oninput=()=>{play=false;pb.textContent='Play';T=+ts.value;dirty=true};
+  function fit(){const d=Math.min(devicePixelRatio||1,2);cv.width=Math.round(cv.clientWidth*d);cv.height=Math.round(cv.clientHeight*d);S=cv.width/1080;dirty=true}
+  new ResizeObserver(fit).observe(cv);fit();
+  (function frame(){if(play){T=((performance.now()-t0)/1000)%LOOP;ts.value=T;dirty=true}
+    if(dirty){dirty=false;draw(T);const l=SIM.line(P,T);if(l!==last){last=l;byId('line').textContent=l}}
+    requestAnimationFrame(frame)})();
+}
+</script>
+</body>
+</html>

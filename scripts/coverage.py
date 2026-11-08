@@ -239,8 +239,9 @@ def load_catalogues(_d):
     out.append(_rec("catalogues", "cmb", name="The microwave background", fields={"kind": "cmb"},
                     source=src.get("page") or src.get("url"), credit=src.get("credit"), honesty="measured"))
     for r in _yaml("ladder.yaml").get("rungs") or []:
+        # b200-c1-culture-helio: the kind is the place's own id (horizon, heliosphere), so each finds its class.
         if (r.get("target") or {}).get("place"):
-            out.append(_rec("catalogues", r["id"], name=r.get("label"), fields={"kind": "horizon"},
+            out.append(_rec("catalogues", r["id"], name=r.get("label"), fields={"kind": r["target"]["place"]},
                             source=r.get("distance_source"), honesty="modelled", words=[r.get("label")]))
     return out
 

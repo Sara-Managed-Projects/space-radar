@@ -44,7 +44,16 @@ import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import seo_read  # noqa: E402  (the long reads: scripts/seo_read.py)
 import seo_systems  # noqa: E402
-from seo_common import (ACCOUNTS, ACCURACY_FORM, CLASSROOM_FORM, GITHUB, ROOT, Ctx, Page, esc, footer_nav,  # noqa: E402
+# b200-f1-find: begin -- the country pages, /country/<iso>/ (forge #152)
+import seo_countries  # noqa: E402
+# b200-f1-find: end
+# b200-f6-learn: begin (print) -- the paper models' page, /print/, and its PDFs (forge #161)
+import seo_print  # noqa: E402
+# b200-f6-learn: end
+# b200-f9-reach: begin -- /assets/, /creators/ and five comparisons (forge #165, #166, #168)
+import seo_reach  # noqa: E402
+# b200-f9-reach: end
+from seo_common import (ACCOUNTS, ACCURACY_FORM, CLASSROOM_FORM, GITHUB, ON_GITHUB, ROOT, Ctx, Page, esc, footer_nav,  # noqa: E402
                         make_ctx, place_picker, render, url_of, webpage)
 from seo_share import Spec  # noqa: E402
 from support import support_url  # noqa: E402  (registry/support.yaml: "" draws no money link anywhere)
@@ -384,6 +393,12 @@ def event_sentence(ev: dict) -> str:
                 else "the Moon covers the Sun completely for those inside its narrow path")
         return (f"On {date_words(f['instant'])} {what}: greatest eclipse at {instant_words(f['instant'])}, at {abs(f['latDeg']):g}° {'S' if f['latDeg'] < 0 else 'N'}, "
                 f"{abs(f['lonDeg']):g}° {'W' if f['lonDeg'] < 0 else 'E'}. Computed with Astronomy Engine, checked {date_words(ev['checked_on'])}.")
+    if ev["kind"] == "season":  # forge #90
+        june = f["season"] == "june-solstice"
+        return (f"The {'June' if june else 'December'} solstice falls at {instant_words(f['instant'])}, the same instant everywhere: the Sun stands "
+                f"overhead at noon on the Tropic of {'Cancer' if june else 'Capricorn'}, {abs(f['sunDecDeg']):g}° {'north' if june else 'south'}, as far "
+                f"{'north' if june else 'south'} as it goes. It is the longest day of the year {'north' if june else 'south'} of the equator and the shortest "
+                f"{'south' if june else 'north'} of it.")
     return ""
 
 
@@ -438,6 +453,15 @@ def event_page(ev: dict, host: str, trips: dict) -> Page:
                      + "<h2>Look safely</h2>\n"
                        "<p>Never look at the Sun without eclipse glasses that meet the ISO 12312-2 standard, or a certified solar filter on a telescope or binoculars. "
                        "That holds for an annular eclipse, which has no safe moment of totality, and for every partial phase of a total one.</p>\n")
+    elif ev["kind"] == "season":  # forge #90
+        june = f["season"] == "june-solstice"
+        rows += [("Solstice, computed", instant_words(f["instant"])),
+                 ("Sun overhead at noon", f"{abs(f['sunDecDeg']):g}° {'N' if june else 'S'}, the Tropic of {'Cancer' if june else 'Capricorn'}")]
+        sections += ("<h2>What happens</h2>\n"
+                     "<p>The Earth's axis is tilted 23.4° to its orbit. At a solstice the pole of one hemisphere leans most towards the Sun: there the Sun climbs "
+                     "highest at noon and stays up longest, and inside the polar circle it does not set at all, while the other hemisphere has its shortest day "
+                     "and, inside its polar circle, a day the Sun does not rise. After it the days begin to shorten again on one side and lengthen on the other.</p>\n")
+        where_static = "A solstice is one instant for the whole Earth; the map's Tonight view gives your own sunrise and sunset for that day."
     dl = "".join(f"<div><dt>{esc(a)}</dt><dd>{esc(b)}</dd></div>" for a, b in rows)
     trip = ev.get("trip")
     trip_link = (f'<p><a href="../#trip={esc(trip)}">Take the trip: {esc(trips[trip])}</a></p>\n' if trip else "")
@@ -451,14 +475,16 @@ def event_page(ev: dict, host: str, trips: dict) -> Page:
         f"{trip_link}"
         "<h2>The facts</h2>\n"
         f"<dl>{dl}</dl>\n"
-        "<h2>Where to look from your place</h2>\n"
-        + place_picker()
-        + f'<p data-slot="event-local" hidden></p>\n<p class="dim">{esc(where_static)}</p>\n'
+        + ("<h2>Where to look from your place</h2>\n" + place_picker() + '<p data-slot="event-local" hidden></p>\n'
+           if ev["kind"] != "season" else "<h2>From your place</h2>\n")  # a solstice has nothing to compute per place
+        + f'<p class="dim">{esc(where_static)}</p>\n'
         + sections
-        + f'<script type="application/json" id="event-data">{json.dumps({"kind": ev["kind"], "instant": f["instant"], "shower": ({"raH": f["shower"]["raH"], "decDeg": f["shower"]["decDeg"]} if "shower" in f else None), "also": f["also"]}, separators=(",", ":"))}</script>\n'
+        + (f'<script type="application/json" id="event-data">{json.dumps({"kind": ev["kind"], "instant": f["instant"], "shower": ({"raH": f["shower"]["raH"], "decDeg": f["shower"]["decDeg"]} if "shower" in f else None), "also": f["also"]}, separators=(",", ":"))}</script>\n' if ev["kind"] != "season" else "")  # a solstice page has no per-place script
         + '<h2>Sources</h2>\n<ul>' + srcs + "</ul>\n"
         '<div class="note"><p><strong>Measured or computed?</strong> '
-        + ("Dates of the showers and of the eclipses are computed with Astronomy Engine, the same library the map uses, "
+        + ("The instant of the solstice is computed with Astronomy Engine, the same library the map uses. Nothing on this page is typed in."
+           if ev["kind"] == "season" else
+           "Dates of the showers and of the eclipses are computed with Astronomy Engine, the same library the map uses, "
            f"and were read by a person on {esc(date_words(ev['checked_on']))}. The Moon's percentage is computed. Rates are the IMO's and are not predictions of what you will count."
            if ev["kind"] != "mission" else
            "The date is ESA's, read on the day given; a spacecraft's date can move, and this page is rebuilt from the registry when it does. The planet's position is computed.")
@@ -484,10 +510,27 @@ def event_page(ev: dict, host: str, trips: dict) -> Page:
     return page
 
 
+KIND_WORDS = {"meteor-shower": ("meteor shower", "meteor showers"), "eclipse": ("solar eclipse", "solar eclipses"),
+              "season": ("solstice", "solstices"), "mission": ("mission event", "mission events")}
+
+
+def events_index_description(ordered: list[dict]) -> str:
+    """The index's description from the rows themselves (forge #90: it said "to August 2027" while the rows ran to December)."""
+    first, last = ordered[0]["facts"]["instant"][:10], ordered[-1]["facts"]["instant"][:10]
+    month = lambda d: date_words(d).split(" ", 1)[1]  # noqa: E731 ("16 November 2026" -> "November 2026")
+    counts = []
+    for kind, (one, many) in KIND_WORDS.items():
+        n = sum(1 for e in ordered if e["kind"] == kind)
+        if n:
+            counts.append(f"{n} {one if n == 1 else many}")
+    listed = ", ".join(counts[:-1]) + f" and {counts[-1]}" if len(counts) > 1 else counts[0]
+    return f"{len(ordered)} dated sky events from {month(first)} to {month(last)}: {listed}, each with a map link."
+
+
 def events_index(events: list[dict], host: str) -> Page:
-    short = "Sky events: meteor showers, Mercury and eclipses"
-    desc = "Dated sky events from November 2026 to August 2027: showers, BepiColombo at Mercury, Venus and two solar eclipses, each with a map link."
+    short = "Sky events: meteor showers, eclipses and solstices"
     ordered = sorted(events, key=lambda e: e["facts"]["instant"])
+    desc = events_index_description(ordered)
     items = "".join(
         f'<li><h3><a href="{esc(e["id"])}.html">{esc(e["name"])}</a></h3><p>{esc(date_words(e["facts"]["instant"][:10]))}</p><p>{esc(e["summary"])}</p></li>' for e in ordered)
     body = ('<p class="micro">Sky events</p>\n<h1>Sky events, with a link into the map at each moment</h1>\n'
@@ -531,6 +574,11 @@ def about_page(host: str) -> Page:
         f"<p>It draws {n['layers']} layers and reads {n['feeds']} feeds from {n['sources']} public sources to do it, and offers {n['trips']} guided trips that fly the camera from stop to stop. "
         "Every position is worked out in the visitor's own browser from public data, for the instant on the clock: satellites from their orbital elements, planets "
         "and probes from ephemerides. The clock can be moved, and the sky moves with it.</p>\n"
+        # b200-f4-cards: begin (forge #170: the one line the issue asks for, and what stands behind it)
+        "<p><strong>Built for phones first:</strong> on an emulated mid-range phone over slow 4G, the map draws its first frame in about 8 seconds, "
+        "after a first load of 1.9 MB (measured on 7 November 2026). It draws with WebGL, which every current browser has, and needs no WebGPU and no install "
+        f'(<a href="{GITHUB}/blob/main/docs/FIRST_LOAD.md">how it is measured</a>).</p>\n'
+        # b200-f4-cards: end
         "<h2>Why it exists</h2>\n"
         "<p>Space is easy to see and hard to understand in the wrong picture. Most pictures of the Solar System are not to scale, most satellite maps are 2D, and "
         "almost none say what is measured and what is imagined. This one is built to be honest about that first, and beautiful second.</p>\n"
@@ -549,6 +597,12 @@ def about_page(host: str) -> Page:
         '<ul class="links"><li><a href="../accuracy/index.html">How accurate it is</a></li><li><a href="../sources/index.html">Where every number comes from</a></li>'
         '<li><a href="../read/index.html">Long reads: what each release added, and how it is known</a></li>'
         '<li><a href="../nasa-eyes-alternative/index.html">How it compares with NASA\'s Eyes on the Solar System</a></li>'
+        # b200-f9-reach: begin
+        '<li><a href="../solar-system-scope-alternative/index.html">How it compares with Solar System Scope</a>, '
+        '<a href="../spaceengine-alternative-mac/index.html">SpaceEngine</a> and '
+        '<a href="../live-satellite-tracker-3d/index.html">Cosmoscope</a></li>'
+        '<li><a href="../creators/index.html">For creators: using footage, and the free 3D models</a></li>'
+        # b200-f9-reach: end
         '<li><a href="../first-pull-request/index.html">Your first pull request: good first issues in three.js and beyond</a></li>'
         f'<li><a href="{GITHUB}/blob/main/CREDITS.md">Credits and licences</a></li></ul>\n'
         f'<h2>Find us</h2>\n<ul class="links">{me}</ul>\n')
@@ -608,7 +662,7 @@ def eyes_page(host: str) -> Page:
         "<h2>How this page was checked</h2>\n"
         f'<p>What it says about NASA\'s Eyes was read on {EYES_READ} from <a href="{EYES_FAQ}">NASA\'s Eyes FAQ</a> and '
         f'<a href="{EYES_NEWS}">JPL\'s announcement of the browser version</a> (2 September 2022). If it is out of date, '
-        f'<a href="{ACCURACY_FORM}">tell us</a> and it will be corrected. Space Radar is not part of, and not endorsed by, NASA or JPL.</p>\n')
+        f'<a href="{ACCURACY_FORM}">tell us</a> {ON_GITHUB} and it will be corrected. Space Radar is not part of, and not endorsed by, NASA or JPL.</p>\n')
     page = Page(path="nasa-eyes-alternative/index.html", title=short, description=desc, body=body, og_title=short)
     page.jsonld = [webpage(host, page, [("Space Radar and NASA's Eyes", "")])]
     page.share = Spec(key="nasa-eyes-alternative/index", name="Space Radar and NASA's Eyes", number="both free, one open source", caption="Compare", kind="plain",
@@ -743,6 +797,19 @@ def sources_page(host: str, snapshot_index: dict | None) -> Page:
         '<p class="dim">"Saved copy last read" is the day this site\'s harvester last fetched the source, taken from the saved copy\'s index when the page opens; '
         "it is not the day the terms were read. Where a licence says \"no licence stated\", that is the answer, and the project treats it as no permission to redistribute beyond what the credits say.</p>\n"
         f"{not_in_use}"
+        # b200-f4-cards: begin (forge #151: the one place a visitor's browser asks a third party for words, and what it sends)
+        "<h2>Asked by your browser when you open a card</h2>\n"
+        "<p>A card whose object has no words of ours shows the opening of its Wikipedia article and the article's picture, marked "
+        "<strong>From Wikipedia</strong>, quoted and not checked by us. For about a hundred well-known objects that text is our own copy, made when the "
+        "site was built. For any other card, opening its <em>About it</em> asks Wikipedia (<code>wikipedia.org</code>, in your language when an article "
+        "exists, else in English, and the card says so) and Wikimedia Commons (<code>commons.wikimedia.org</code>, <code>thumb.wikimedia.org</code>) "
+        "for that one article and its picture. Nothing else is asked, and only then: no request is made before you open the section. "
+        "The requests carry no cookie in either direction and no referrer, so Wikipedia is told which article was asked for, as for any visitor, "
+        "but not by which page; your address reaches the Wikimedia Foundation as it would on their own site "
+        '(<a href="https://foundation.wikimedia.org/wiki/Policy:Privacy_policy" rel="nofollow">their privacy policy</a>). '
+        "Answers are kept in your browser for the visit. Text: Wikipedia contributors, CC BY-SA 4.0; each picture under the licence its Commons page gives, "
+        "printed under it. <strong>Read aloud</strong> on a card uses your device's own voice: nothing is recorded and nothing is sent.</p>\n"
+        # b200-f4-cards: end
         "<h2>Everything else</h2>\n"
         f'<p>The libraries, textures, 3D models, photographs, sounds and fonts, each with its licence, are in <a href="{GITHUB}/blob/main/CREDITS.md">CREDITS.md</a>, '
         "which a test holds to the registries line by line.</p>\n")
@@ -776,7 +843,7 @@ def accuracy_page(host: str) -> Page:
         "<li>Distances and sizes are sometimes changed so that a thing can be seen at all (satellites are drawn larger than life); the card or the picture says so.</li>\n"
         "<li>Where we could not look, the card says \"could not look\" or leaves the line out. A guess is never shown as a reading.</li>\n</ul>\n"
         "<h2>When we get it wrong</h2>\n"
-        f'<p>Tell us with <a href="{ACCURACY_FORM}">the form for a wrong number, name or position</a>. Getting it right matters more to this project than anything else. '
+        f'<p>Tell us with <a href="{ACCURACY_FORM}">the form for a wrong number, name or position</a> {ON_GITHUB}. Getting it right matters more to this project than anything else. '
         "<strong>There is no separate corrections log yet.</strong> What exists is the project's public history: "
         f'<a href="{GITHUB}/blob/main/CHANGELOG.md">the changelog</a>, which records changes of facts under its fixes, and every commit and issue on '
         f'<a href="{GITHUB}">GitHub</a>. A page that lists each correction, with its date, is a task for the project, not something to pretend we already have.</p>\n'
@@ -875,8 +942,11 @@ def teachers_page(host: str, tours: dict, reels: dict, url_keys: list[str]) -> P
         "<li>The 3D scene is a canvas and is not described to a screen reader; the cards and trip words beside it are text. Say so to a student who relies on one, and tell us what would help.</li>\n</ul>\n"
         f"{teachers_paying()}"
         "<h2>Tell us how it went</h2>\n"
-        f'<p>A lesson, a museum screen, a club night: <a href="{CLASSROOM_FORM}">tell us how it went</a> on the project\'s GitHub (a short form: what you did, what worked, what did not). '
+        f'<p>A lesson, a museum screen, a club night: <a href="{CLASSROOM_FORM}">tell us how it went</a> {ON_GITHUB}: a short form, what you did, what worked, what did not. '
         "It is how this page gets better.</p>\n")
+    # b200-f6-learn: begin -- forge #159, #160, #161: the Lab by age, the paper models and the daily challenges
+    body = body.replace("<h2>Accessibility</h2>", f"{learn_sections()}<h2>Accessibility</h2>", 1)
+    # b200-f6-learn: end
     foot = f"<p>The keys and parameters on this page are read from the app's own link reader (tests/test_seo_pages.py holds them to it). Licence: {esc(licence_name())}.</p>\n"
     page = Page(path="teachers/index.html", title=short, description=desc, body=body, foot=foot, og_title=short)
     page.jsonld = [webpage(host, page, [("For teachers", "")], page_type="WebPage", extra={"about": {"@id": f"{host}/teachers/index.html#resource"}}),
@@ -890,6 +960,46 @@ def teachers_page(host: str, tours: dict, reels: dict, url_keys: list[str]) -> P
     page.share = Spec(key="teachers/index", name="Space Radar in the classroom", number="free, offline, no account", caption="For teachers", kind="plain",
                       colour="#9ad1a5", alt="Rings and a dot, captioned Space Radar in the classroom.")
     return page
+
+
+# b200-f6-learn: begin -- forge #159, #160, #161
+LAB_BANDS = [("7-11", "Ages 7 to 11 (US grades 2-5, KS2)"), ("11-14", "Ages 11 to 14 (grades 6-8, KS3, Years 7-9)"),
+             ("14-16", "Ages 14 to 16 (grades 9-10, GCSE, Years 10-11)"), ("16-18", "Ages 16 to 18 (A level, IB Diploma)"), ("18+", "University")]
+
+
+def learn_sections() -> str:
+    """/teachers/'s part for the Lab by age (registry/lab-levels.yaml), the paper models (/print/) and the daily challenges."""
+    import gen_lab_index  # the Lab's own reader of its simulators' heads
+
+    rows = (yml("lab-levels.yaml") or {}).get("labs") or {}
+    sims = {s["slug"]: s for s in gen_lab_index.simulators()}
+    bands = []
+    for band, label in LAB_BANDS:
+        mine = sorted((s for slug, s in sims.items() if band in [str(b) for b in (rows.get(slug) or {}).get("band") or []]), key=lambda s: s["title"].lower())
+        if not mine:
+            continue
+        links = ", ".join(f'<a href="../lab/{esc(s["slug"])}/index.html">{esc(s["title"])}</a>' for s in mine)
+        bands.append(f'<li><strong>{esc(label)}</strong>: {len(mine)} simulators (<a href="../lab/index.html#band={esc(band)}">the list for this age</a>). {links}.</li>')
+    games = "".join(f'<li><a href="../#play={g}">{t}</a>: {d}</li>' for g, t, d in [
+        ("find-earth", "Find Earth", "from the Local Group down to our planet in four steps of the real map, with ten picks"),
+        ("which-world", "Which world is this?", "a close-up of a real map, three rounds"),
+        ("guess-distance", "Guess the distance", "three deep-sky objects with measured distances, and where each number comes from")])
+    return ("<h2>The Lab by age and curriculum</h2>\n"
+            f"<p>{len(sims)} one-page simulators, each tagged with an age band and with the NGSS (US), England's KS3, GCSE physics (AQA 8463) and IB Physics "
+            "statements it shows. On <a href=\"../lab/index.html\">the Lab's list</a> choose an age or a code, for example "
+            "<a href=\"../lab/index.html#band=11-14&amp;q=gravity\">ages 11 to 14, gravity</a> or "
+            "<a href=\"../lab/index.html#code=gcse:4.8.1.3\">GCSE 4.8.1.3, orbital motion</a>. Every simulator links to the place in the 3D map where its idea "
+            "can be seen. A tag says a simulator shows an idea a statement asks for, not that it covers the statement.</p>\n"
+            f'<ul class="levels">{"".join(bands)}</ul>\n'
+            "<h2>Paper models to print</h2>\n"
+            "<p>A paper globe of every world the map has a real surface map for, a Moon-phase wheel, a distance-ladder strip and a fold-up James Webb Space Telescope, one page each, "
+            'with the map\'s credit and a code that opens that world in the 3D map: <a href="../print/index.html">the paper models</a>.</p>\n'
+            "<h2>A one-minute challenge to start a lesson</h2>\n"
+            "<p>The same three puzzles for everyone each day (the day is UTC), with no account; the score stays in the browser, and a pupil can paste "
+            f"a short grid of the result.</p>\n<ul>{games}</ul>\n")
+
+
+# b200-f6-learn: end
 
 
 def teachers_paying() -> str:
@@ -928,7 +1038,7 @@ def support_page(host: str) -> list[Page]:
         'It buys nothing extra: the <a href="../teachers/index.html">classroom and kiosk set-up</a> is the same for everyone.</li>\n'
         "</ul>\n"
         "<h2>Help that is not money</h2>\n"
-        f'<p>A star on <a href="{GITHUB}">GitHub</a>, a <a href="{ACCURACY_FORM}">data-accuracy report</a> with a source, or a '
+        f'<p>A star on <a href="{GITHUB}">GitHub</a>, a <a href="{ACCURACY_FORM}">data-accuracy report</a> {ON_GITHUB} with a source, or a '
         '<a href="../first-pull-request/index.html">first pull request</a> helps as much.</p>\n')
     page = Page(path="support/index.html", title=short, description=desc, body=body, og_title=short)
     page.jsonld = [webpage(host, page, [("Support", "")])]
@@ -966,6 +1076,15 @@ def build_pages(host: str, objects: list[dict], today: str, snapshot_index: dict
     sysl = seo_systems.pages(host, by_slug, today)
     pages += sysl
     pages += seo_read.pages(host)
+    # b200-f1-find: begin
+    pages += seo_countries.pages(host)
+    # b200-f1-find: end
+    # b200-f6-learn: begin (print)
+    pages += seo_print.pages(host)
+    # b200-f6-learn: end
+    # b200-f9-reach: begin
+    pages += seo_reach.pages(host, counts)
+    # b200-f9-reach: end
     return pages
 
 
@@ -1047,6 +1166,18 @@ def build_extra(out: Path, host: str, objects: list[dict], today: str, snapshot_
     shares = {k: s.rel for k, s in specs.items()} if drawn else {}
     ctx = make_ctx(host, shares)
     write_pages(pages, out, ctx)
+    # b200-f1-find: begin -- the country pages are two directories down (scripts/seo_countries.py relink says why)
+    for pg in pages:
+        if pg.path.startswith("country/") and pg.path.count("/") == 2:
+            dest = out / pg.path
+            dest.write_text(seo_countries.relink(dest.read_text(encoding="utf-8")), encoding="utf-8")
+    # b200-f1-find: end
+    # b200-f6-learn: begin (print) -- the sheets beside the page, when SR_PRINT=1 (the deploy; scripts/seo_print.py says why)
+    seo_print.write(out)
+    # b200-f6-learn: end
+    # b200-f9-reach: begin -- the pack's JSON list and the sample stills, beside their pages
+    seo_reach.write(out)
+    # b200-f9-reach: end
     (out / "pages-dirs.txt").write_text("\n".join(pages_dirs(pages) + (["share"] if drawn else [])) + "\n", encoding="utf-8")
     index: dict[str, str] = {}
     for s in seo_systems.systems():

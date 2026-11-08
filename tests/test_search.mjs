@@ -277,6 +277,7 @@ check(JSON.stringify(findMatches(index, 'starlink').hits.map((h) => h.record.id)
     'ui/shell.js': 'Escape only, and only for a view of its own (Sources, Passport)',
     'ui/cards.js': 'Escape only: closes the card',
     'ui/sharesheet.js': 'Escape and Tab only, while the share sheet is open and holds the focus',
+    'ui/whattoshow.js': 'Tab only, on its own panel, and only at the panel\'s first and last control (b200-s1-fixes, forge #49): a field inside keeps every key',
     'ui/chooser.js': 'Escape only, while the pick list is open',
     'ui/camundo.js': 'on the toast node itself, Escape only: heard only while a person has moved focus into the toast',
     'ui/scrubber.js': 'on the timeline\'s own slider',
@@ -284,8 +285,18 @@ check(JSON.stringify(findMatches(index, 'starlink').hits.map((h) => h.record.id)
     'ui/autopilot.js': 'a mode, not a prompt: while a reel plays any key hands the screen back, which is its whole contract',
     'scene/exostage.js': 'on its own panel',
     'moments/player.js': 'guarded inline: while a moment is open, Space, arrows and chapter keys leave an input that is not the player\'s own scrubber',
+    // b200-s2-guards: begin
+    'scene/groundstage.js': 'guarded: isTypingIn (explore.js), on its own layer: the walk keys leave a field alone',
+    'ui/play.js': 'guarded: isTypingIn (explore.js); on the document, so A-D and Escape leave a field outside the card alone',
+    'ui/skystory.js': 'guarded: isTypingIn (explore.js); Escape only, heard first, and never taken from a field',
+    'ui/datejump.js': 'Escape and Tab only, on its own popover: Escape closes it from its own date fields, Tab wraps at its ends',
+    'ui/flighteditor.js': 'Escape only, on its own sheet: closes the flight editor',
+    'ui/gamepad.js': 'Escape only, on the controller hint itself: hides the hint',
+    'ui/projectpanel.js': 'Escape only, on its own sheet: closes the projection panel',
+    'ui/recorder.js': 'Escape only, on its own sheet: closes the recorder',
+    // b200-s2-guards: end
   };
-  const guards = { 'ui/onboarding.js': /INPUT\|TEXTAREA\|SELECT/, 'ui/drift.js': /tag === 'INPUT'/, 'ui/keyhint.js': /tag === 'INPUT'/, 'sky/skyview.js': /tag === 'INPUT'/, 'scene/camera.js': /tag === 'input'/, 'moments/player.js': /tag === 'INPUT'/ };
+  const guards = { 'ui/onboarding.js': /INPUT\|TEXTAREA\|SELECT/, 'ui/drift.js': /tag === 'INPUT'/, 'ui/keyhint.js': /tag === 'INPUT'/, 'sky/skyview.js': /tag === 'INPUT'/, 'scene/camera.js': /tag === 'input'/, 'moments/player.js': /tag === 'INPUT'/, 'scene/groundstage.js': /isTypingIn\(e\.target\)/, 'ui/play.js': /isTypingIn\(e\.target\)/, 'ui/skystory.js': /isTypingIn\(e\.target\)/ }; // b200-s2-guards: the last three
   const walkJs = (dir) => readdirSync(dir).flatMap((f) => { const full = join(dir, f); return statSync(full).isDirectory() ? walkJs(full) : full.endsWith('.js') ? [full] : []; });
   const found = [];
   for (const file of walkJs(ROOTJS)) {
@@ -297,7 +308,7 @@ check(JSON.stringify(findMatches(index, 'starlink').hits.map((h) => h.record.id)
   for (const rel of Object.keys(CLASSES)) check(found.includes(rel), `${rel} is classified but no longer listens for keys: take it off the list`);
   for (const [rel, re] of Object.entries(guards)) check(re.test(src(rel)), `${rel} no longer checks for a focused field (${re})`);
   // an Escape-only listener must not look at any other key
-  for (const rel of ['ui/shell.js', 'ui/cards.js', 'ui/chooser.js']) {
+  for (const rel of ['ui/shell.js', 'ui/cards.js', 'ui/chooser.js', 'ui/flighteditor.js', 'ui/gamepad.js', 'ui/projectpanel.js', 'ui/recorder.js', 'ui/skystory.js']) { // b200-s2-guards: the last five
     const body = strip(src(rel));
     const handlers = [...body.matchAll(/addEventListener\(\s*'keydown',\s*(?:\(\w*\)\s*=>|function\s*\(\w*\)|\(\w*,?\s*\w*\)\s*=>|onKey)[\s\S]{0,260}/g)].map((m) => m[0]);
     check(handlers.length > 0 && handlers.every((h) => /key (?:!==|===) 'Escape'/.test(h) || /onKey/.test(h)), `${rel}: its key listener is for Escape and nothing else`);

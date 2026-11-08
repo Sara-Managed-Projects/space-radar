@@ -616,6 +616,10 @@ export function worldHelioEclKm(worldId, tMs) {
   const parent = moonParent(key);
   const body = parent ? bodyForWorld(parent) : bodyForWorld(key);
   if (!body) return null;
+  // b200-c2-deep (forge #141): Pluto, and its moons, only inside astronomy-engine's table (years 0 to 4000). Outside it
+  // the engine crawls from the table's end in 146-day steps of a four-planet simulation, every call: at AD 50 000 that is
+  // 115 000 steps a call, and the map's frame never ended. There it is not drawn, and scene/stardeep.js's line says so.
+  if (body === Astronomy.Body.Pluto && !(Math.abs(date.getUTCFullYear() - 2000) < 2000)) return null;
   try {
     let eqj;
     if (parent) {

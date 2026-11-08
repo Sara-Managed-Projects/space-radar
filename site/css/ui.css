@@ -6000,6 +6000,8 @@ html.sr-phone .sr-scenenote {
   top: var(--sr-top-end);
   max-width: calc(100vw - 2 * var(--sp-4));
 }
+/* b200-s1-fixes: on a launch day the countdown chip sits where the note was (64 to 108 px): the note goes under it. */
+html.sr-phone.sr-launchday .sr-scenenote { top: calc(var(--sr-top-y) + var(--sr-top-bar) + 2 * var(--sp-2) + 44px); }
 
 /* At full the sheet is the page, and its top is 60 px down: the note (88 to 134) lay across the
    sheet's handle and the "Explore" back row, leaving 27 and 31 px of each under a finger
@@ -6198,6 +6200,8 @@ html.sr-phone .sr-tonight-view__num { font-size: var(--sr-fs-num-sm); }
 
 .sr-tonight-view__rowname { font: 400 var(--sr-fs-body)/20px var(--sr-font); }
 .sr-tonight-view__rowdetail { font: 400 var(--sr-fs-sm)/18px var(--sr-font-mono); color: var(--sr-text-dim); }
+/* A variable star's row says a sentence ("Down to magnitude 3.4, 76° up in the north-east."): it wraps, never cut. */
+.sr-tonight-view__rowdetail.is-sentence { white-space: normal; }
 
 @media (hover: hover) {
   .sr-tonight-view__rowbtn:hover .sr-tonight-view__rowname { color: var(--sr-ember-light); }
@@ -6365,6 +6369,8 @@ html.sr-night-red::after {
 /* The phone's row where there is no sensor, and "Undo line-up" with nothing to undo. */
 .sr-skybar .sr-density__choices[hidden], .sr-skybar .sr-density__btn[hidden] { display: none; }
 .sr-skybar__wrap .sr-density__btn { flex: 1 1 30%; }
+/* Deep time's steps and pole stars two to a row: "−10 000 years" does not fit a third of it (ui/deeptime.js). */
+.sr-deeptime__pairs .sr-density__btn { flex-basis: 40%; }
 @media (pointer: coarse) {
   .sr-skybar .sr-density__btn { min-height: 44px; }
 }
@@ -7314,3 +7320,49 @@ button.sr-debris__oldname:hover { color: var(--sr-ember-light); }
     outline-offset: 2px;
   }
 }
+
+/* b200-f1-find: begin -- the time pill's calendar button (ui/timepill.js, ui/datejump.js; forge #154): the unit button's
+   shape, an icon instead of a word. Its dialog's rules are css/find.css, fetched with the dialog. */
+.sr-time__date {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border: 0;
+  border-radius: var(--sr-radius-pill);
+  cursor: pointer;
+}
+.sr-time__date:hover { background: var(--sr-wash-strong); }
+.sr-time__date[aria-expanded="true"] { background: var(--sr-wash-strong); color: var(--sr-ember); }
+.sr-time__faded { margin: 4px 0 0; font: 400 var(--sr-fs-sm)/1.3 var(--sr-font); white-space: normal; color: var(--sr-stale); text-align: center; }
+.sr-time__faded[hidden] { display: none; }
+/* b200-f1-find: end */
+/* b200-s2-guards: begin -- 44 px on a phone, as every part of the pill is; the row is 44 tall there already */
+html.sr-phone .sr-time__date { width: 44px; height: 44px; }
+/* b200-s2-guards: end */
+/* b200-f3-stars: begin -- a variable star's light curve on its card (ui/varcurve.js, forge #142) */
+.sr-varcurve__dot { fill: var(--sr-ember); stroke: none; }
+.sr-card__varcurve[hidden] { display: none; }
+/* b200-f3-stars: end */
+/* b200-s4b-look: begin -- the pill's readout whole on a phone (2.0.0 final look, finding 2). At 390 px the row's four
+   44 px buttons left the words 157 px live and 103 px away, so "UTC" was cut live and "20 JUL 19…" away, mid-word in
+   Arabic. The words may now take two lines, and away from now (Live is a fifth button) the readout takes the row's whole
+   width and the buttons go under it: the buttons keep their 44 px and the pill grows by one row, only while it is not
+   live. --sr-time-h follows, so what stands above the pill still clears it. */
+@media (max-width: 480px) {
+  html.sr-phone .sr-time__row { flex-wrap: wrap; justify-content: flex-end; row-gap: var(--sp-1); }
+  html.sr-phone .sr-time__read { flex: 1 1 0; height: auto; min-height: 44px; } /* from nothing: the words wrap, the buttons stay on the row */
+  html.sr-phone .sr-time__words { line-height: 1.3; white-space: normal; overflow-wrap: anywhere; }
+  html.sr-phone .sr-time.is-away .sr-time__read { flex: 1 0 100%; }
+  html.sr-phone:has(.sr-time.is-away) { --sr-time-h: 150px; }
+}
+/* The ground's Leave and its keys over a daylit sky (finding 12): glass behind both, as the buttons beside Leave have.
+   Here and not in css/ground.css, one class deeper so it holds whichever file loads last. */
+.sr-ground .sr-ground__bar .sr-btn { background: var(--sr-glass-strong); -webkit-backdrop-filter: var(--sr-blur); backdrop-filter: var(--sr-blur); }
+.sr-ground .sr-ground__bar .sr-btn--quiet { color: var(--sr-text); }
+.sr-ground .sr-ground__keys { padding: var(--sp-1) var(--sp-2); color: var(--sr-text); background: var(--sr-glass-strong); border-radius: var(--sr-radius-sm); }
+/* b200-s4b-look: end */

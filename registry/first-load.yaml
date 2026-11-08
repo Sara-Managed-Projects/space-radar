@@ -1,0 +1,24 @@
+version: 1
+# THE FIRST LOAD, MEASURED, AND WHAT THE OTHERS PUBLISH OR WERE SEEN TO DO (forge #170). docs/FIRST_LOAD.md is the
+# method in words; tests/test_first_load.mjs holds this file to registry/budgets.yaml and to that page.
+#
+# measurements   one row per boot: what was booted, how, and the numbers scripts/first-load.mjs printed.
+#   bytes        every request's bytes as they crossed the wire, before the app's end-of-first-visit mark
+#   ours         the bytes from the page's own host (the rest are NOAA's, GDACS's and the other live feeds the boot reads)
+#   requests     how many requests
+#   first_frame_ms   navigation start to the scene's first drawn frame (tests/probes/first-load.js)
+#   compressed   whether the server compressed (the live site does; tools/serve.py does not)
+#
+# others         what the competitor review of 2026-11-07 (spec 0081, in the private repository, and forge #170's body) found. Only
+#                what it states is here, in its words; nothing was measured again by us, and a figure that is not like
+#                ours (one file, not a first load) says so in `comparable`. Bytes are written as the review wrote them,
+#                in MB, and as bytes (10^6) for the test.
+measurements:
+  - {id: base-local, day: 2026-11-07, tree: "ffce4cad (release-2.0.0 before this batch), minify_site.py --tree with esbuild 0.25.9", server: "tools/serve.py, 127.0.0.1", compressed: false, profile: "390 x 844 phone, dpr 3, touch, Android user agent; Slow 4G (150 ms, 1.6 Mbit/s); CPU 4x slower; CelesTrak and Launch Library refused", bytes: 2968722, ours: 2937675, requests: 151, first_frame_ms: 14384, first_contentful_paint_ms: 2816, webgl: 2}
+  - {id: branch-local, day: 2026-11-07, tree: "b200-f4-cards (this batch), same build", server: "tools/serve.py, 127.0.0.1", compressed: false, profile: "as base-local", bytes: 2968695, ours: 2937675, requests: 151, first_frame_ms: 14418, first_contentful_paint_ms: 2684, webgl: 2}
+  - {id: live, day: 2026-11-07, tree: "https://www.spaceradar.ai/ as deployed that day", server: "the live site", compressed: true, profile: "as base-local", bytes: 1922875, ours: 1921826, requests: 157, first_frame_ms: 8449, first_contentful_paint_ms: 4276, webgl: 2}
+others:
+  - {id: cosmoscope, name: Cosmoscope, said: "about 36 MB in 93 requests before the first interaction", bytes: 36000000, requests: 93, runs_on: "WebGL2", comparable: "a first load, like ours", source: "https://cosmoscope.space/ (forge #170; spec 0081, read 2026-11-07)"}
+  - {id: solar-system-scope, name: Solar System Scope, said: "about 24 MB plus a wasm runtime, and desktop only", bytes: 24000000, requests: null, runs_on: "the web version on desktop only (Unity)", comparable: "a first load, like ours, without the wasm runtime", source: "https://www.solarsystemscope.com/ (forge #170; spec 0081, read 2026-11-07)"}
+  - {id: cosmosmap, name: CosmosMap, said: "WebGPU-only (no Firefox, older Safari, many Android phones) with a 1.47 MB main bundle plus a backend", bytes: null, requests: null, runs_on: "WebGPU only", comparable: "no: one file, not a first load, and not said whether compressed", source: "https://cosmosmap.org/ (forge #170; spec 0081, read 2026-11-07)"}
+  - {id: spaceengine, name: SpaceEngine, said: "needs a GTX 1050 Ti and up to 50 GB", bytes: null, requests: null, runs_on: "Windows PC with a GTX 1050 Ti or better", comparable: "no: a desktop install, not a web page", source: "https://store.steampowered.com/app/314650/SpaceEngine/ (forge #170; spec 0081, read 2026-11-07)"}

@@ -36,6 +36,7 @@ import { passTrack } from '../sky/passes.js';
 import { FOV, DARKNESS_IDS, twilightPhase } from '../sky/skymath.js';
 import { NEBULAE } from '../data/nebulae.js';
 import { SCRUB_BACK_MS, SCRUB_FORWARD_MS } from './timepill.js';
+import { mountDeepTime } from './deeptime.js'; // b200-f3-stars
 
 const LAYERS = ['stations', 'visual'];
 const REFRESH_MS = 30 * 60e3;
@@ -373,7 +374,7 @@ export function renderTonight(host, ctx) {
     head.appendChild(el('span', 'sr-tonight-view__rowname', words.title));
     if (words.side) head.appendChild(el('span', 'sr-tonight-view__rowside sr-num', words.side));
     b.appendChild(head);
-    b.appendChild(el('span', 'sr-tonight-view__rowdetail sr-num', words.line));
+    b.appendChild(el('span', `sr-tonight-view__rowdetail sr-num${words.wrap ? ' is-sentence' : ''}`, words.line));
     b.addEventListener('click', onPress);
     li.appendChild(b);
     // A pass keeps its small arc on hover and focus (req 9), drawn once.
@@ -471,6 +472,46 @@ export function renderTonight(host, ctx) {
     }
   }
 
+  // b200-c2-deep: begin -- the variable stars worth going out for tonight (sky/varevents.js, forge #142): Algol at
+  // minimum, a Mira near its brightest. The module and data/variables.json (15 kB) come with the first paint that has a
+  // place; the rows are worked out for the next 24 hours of the clock and join the best list, each a press to the star.
+  let varKit = null;
+  let varAsked = false;
+  function paintVariables(o) {
+    if (!o) return;
+    if (!varKit) {
+      if (!varAsked) {
+        varAsked = true;
+        Promise.all([import('../sky/varevents.js'), import('../sky/findclient.js'),
+          import('../data/variablerows.js').then((m) => m.variableRows())]) // b200-s3-suite: one load, shared with Coming up
+          .then(([ev, fc, rows]) => { varKit = { ev, fc, rows }; renderBest(); })
+          .catch(() => { /* the list stands without them */ });
+      }
+      return;
+    }
+    const now = ctx.clock.now();
+    const deg = 180 / Math.PI;
+    const rows = varKit.ev.variableEvents(varKit.rows, { fromMs: now, toMs: now + 24 * 3600e3, observer: { latDeg: o.latRad * deg, lonDeg: o.lonRad * deg, altKm: o.altKm } });
+    for (const r of rows.map(varKit.fc.variableWords)) {
+      const time = timeText.hhmm(r.tMs);
+      const line = `${time}. ${r.line}`;
+      // A sentence, not a figure line: it wraps rather than being cut at "76° up in the…" (2.0.0 look finding 13).
+      bestList.appendChild(rowNode({ title: r.label, line, side: '', wrap: true, aria: t(COPY.varEvents.aria, { title: r.label, when: time, line: `${r.line} ${r.classWords}` }) }, () => showStar(r)));
+      bestEmpty.hidden = true;
+    }
+  }
+  /** A variable star on the sky at its time, framed for the eye. */
+  function showStar(r) {
+    try {
+      if (ctx.setMoment) ctx.setMoment(COPY.moments.now.id);
+      if (ctx.clock && typeof ctx.clock.goTo === 'function') ctx.clock.goTo(r.tMs);
+      const sky = ctx.skyView;
+      if (sky && typeof sky.showPass === 'function') sky.showPass(null);
+      if (sky && typeof sky.pointAt === 'function') sky.pointAt({ raDeg: r.raDeg, decDeg: r.decDeg }, { fovDeg: FOV.eye });
+    } catch { /* the moment doors are the fallback */ }
+  }
+  // b200-c2-deep: end
+
   function renderBest() {
     st.bestAt = performance.now();
     st.bestClock = ctx.clock.now();
@@ -490,6 +531,7 @@ export function renderTonight(host, ctx) {
     }
     bestTitle.hidden = !o;
     bestEmpty.hidden = !o || rows.length > 0;
+    paintVariables(o); // b200-c2-deep
     setText(bestDark, best ? darkWords(best) : '');
     bestDark.hidden = !best;
     bestNote.hidden = !o;
@@ -657,6 +699,9 @@ export function renderTonight(host, ctx) {
     const farNote = el('p', 'sr-density__note', K.timeFar);
     farNote.hidden = true;
     node.appendChild(farNote);
+    // b200-f3-stars: begin -- a thousand years either way, and the pole star (ui/deeptime.js, forge #141)
+    const deep = mountDeepTime(node, ctx, { row, button, el });
+    // b200-f3-stars: end
     const fields = new Map();
     const fieldRow = row(K.field);
     for (const f of ['eye', 'binoculars', 'telescope']) {
@@ -763,6 +808,7 @@ export function renderTonight(host, ctx) {
       press(timeNow, ctx.clock.mode === 'live');
       paintTicks(nowMs);
       farNote.hidden = !(Math.abs(nowMs - Date.now()) > SAT_FAR_MS);
+      deep.paint(); // b200-f3-stars
       paintPoint();
       // The land: which of the three was drawn, and where the water map puts the sea.
       const g = s && typeof s.groundStats === 'function' ? s.groundStats() : null;
@@ -776,8 +822,10 @@ export function renderTonight(host, ctx) {
       setText(cultureCredit, K.cultureCredits[culture] || '');
       // The pictures are drawn for the western figures: the button says so and waits.
       const artBtn = toggles.get('art');
-      artBtn.disabled = culture !== 'western';
-      artBtn.title = culture !== 'western' ? K.artWesternOnly : K.toggleTitles.art;
+      // b200-c1-culture (forge #143): the pictures follow the culture, for the cultures that have them.
+      const artTitle = culture === 'western' ? K.toggleTitles.art : COPY.skyLore.artTitles[culture];
+      artBtn.disabled = !artTitle;
+      artBtn.title = artTitle || COPY.skyLore.artNone;
       // How dark: the map's estimate while Auto is on, the visitor's own pick once they make one.
       const now = s && s.darkness ? s.darkness : { id: o.darkness, by: 'you' };
       press(darkAuto, o.darknessBy === 'place');

@@ -198,6 +198,10 @@ Object.assign(COPY, {
   },
 });
 
+// b200-s1-fixes: begin -- forge #88: an exoplanet card says which list it came from
+COPY.truth.exoPacked = 'our packed copy of {date}';
+COPY.truth.exoLive = 'the Archive’s list, read on {date}';
+// b200-s1-fixes: end
 // 0077 W1-e: begin
 // The sections this file added, in the visitor's language (copy/lang.js says how; public #524).
 if (HOOK.localise) HOOK.localise({ COPY }, Object.keys(COPY).filter((k) => !KEYS_BEFORE.has(k)));

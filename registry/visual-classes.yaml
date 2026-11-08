@@ -110,6 +110,9 @@ domains:
     credits:
       stars3d: {credit: "Star data from the HYG Stellar Database v4.4, © David Nash"}
       edge: {credit: "**The cosmology** (`site/js/data/cosmology.js`): Planck Collaboration"}
+      # b200-c1-culture-helio: begin (forge #148; CREDITS.md section 3ab carries the line word for word)
+      heliosphere: {credit: "Interiors and heliosphere: Space Radar, from published measurements and models (registry/interiors.yaml; scene/heliosphere.js)"}
+      # b200-c1-culture-helio: end
   - id: other_light
     from: "registry/otherlight.yaml `bands`"
   - id: sites
@@ -446,7 +449,7 @@ classes:
     honesty: measured
     fallback: Points sized by magnitude; the disc of a near star only past 1.5 px.
     note:
-      source: "HYG v4.4 (David Nash) for 109 389 stars in 3D; AT-HYG v4.0 for fainter ones from the ground; d3-celestial for the starfield; Boyajian et al. 2012 for four measured radii; the Wikipedia article each notable star names."
+      source: "HYG v4.4 (David Nash) for 109 389 stars in 3D; AT-HYG v4.0 for fainter ones from the ground and, on a rung of the ladder, 2.4 million more in 3D round the camera (b200-f10-stars3d, forge #140); d3-celestial for the starfield; Boyajian et al. 2012 for four measured radii; the Wikipedia article each notable star names."
       dates: "Hipparcos (1997) positions and Gaia DR3 distances through AT-HYG; the line on each card read on the day its row says."
       drawn: "Measured: positions, magnitudes, colours from B-V. Modelled: the limb-darkened disc of a near star. Red stars' radii are estimates where no interferometry exists."
       rights: "HYG and AT-HYG CC BY-SA 4.0; d3-celestial BSD-3-Clause; facts cited."
@@ -750,6 +753,23 @@ classes:
       rights: "NASA data, no copyright claimed; LAMBDA acknowledged as it asks."
     records:
       - {domain: catalogues, where: {kind: [cmb, horizon]}}
+
+  # b200-c1-culture-helio: begin (forge #148) -- the heliosphere, which the ladder's `heliosphere` rung names
+  # (registry/ladder.yaml, a place): it had no row here until it had a rung.
+  - id: HELIOSPHERE
+    title: The heliosphere
+    house: true
+    renderer: [site/js/scene/heliosphere.js]
+    honesty: modelled
+    fallback: The same translucent shells on every tier; the arrow held two pixels wide.
+    note:
+      source: "Model shapes (Parker 1961, Wilkin 1996, after Izmodenov & Alexashov 2015 and Opher et al. 2015) scaled through the Voyagers' four crossings, read from the JPL Horizons tracks on NASA's dates; IBEX's interstellar wind (McComas et al. 2015) and ribbon (Funsten et al. 2013)."
+      dates: "Voyager 1 2004-12-16 and 2012-08-25, Voyager 2 2007-08-30 and 2018-11-05; IBEX 2009-2015."
+      drawn: "Measured: the four crossings, the wind's direction and speed, the ribbon's circle on the sky. Modelled: the shapes between the crossings. Illustrative: the bow wave's distance and the ribbon's."
+      rights: "Facts and published numbers, cited; no file of anyone else's."
+    records:
+      - {domain: catalogues, where: {kind: [heliosphere]}}
+  # b200-c1-culture-helio: end
 
   - id: SPECTRAL_SKY
     title: The sky in other light

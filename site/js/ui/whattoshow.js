@@ -254,6 +254,25 @@ export function rovingTarget(count, index, key) {
   return null;
 }
 
+// b200-s1-fixes: begin -- forge #49, the screen-reader pass of this panel. The pop-up is appended at the end of <body>
+// (ui/rail.js), so in the page's own order it came after everything: Tab from its last control went on to whatever
+// followed in <body>, and Shift+Tab from its first went back there too, never to the button that opened it. Now the
+// panel sits in the rail's order: Shift+Tab from the first control goes back to the "What to show" button, Tab from
+// the last closes the panel and goes on to the rail's next button. Pure: which way focus leaves, or null to stay.
+/**
+ * @param {Element[]} tabbables the panel's controls that take Tab, in order
+ * @param {Element} active the focused one
+ * @param {boolean} shift Shift held
+ * @returns {'back'|'out'|null}
+ */
+export function edgeTab(tabbables, active, shift) {
+  if (!tabbables.length) return null;
+  if (shift && active === tabbables[0]) return 'back';
+  if (!shift && active === tabbables[tabbables.length - 1]) return 'out';
+  return null;
+}
+// b200-s1-fixes: end
+
 function isTouch() {
   try { return !!(typeof matchMedia === 'function' && matchMedia('(hover: none) and (pointer: coarse)').matches); } catch { return false; }
 }
@@ -497,6 +516,30 @@ export function createWhatToShow(ctx, opts = {}) {
   });
   list.setAttribute('role', 'group');
   list.setAttribute('aria-label', C.layersKeys);
+  // b200-s1-fixes (forge #49): "No layer by that name." is said when the filter finds nothing, not only shown.
+  noMatch.setAttribute('role', 'status');
+  // b200-s1-fixes (forge #49): the panel in the rail's Tab order (edgeTab above); the button names what it opens.
+  root.addEventListener('keydown', (e) => {
+    if (e.key !== 'Tab' || e.ctrlKey || e.metaKey || e.altKey) return;
+    const pop = typeof root.closest === 'function' ? root.closest('[role="dialog"]') : null;
+    const rail = ctx && ctx.rail && ctx.rail.root;
+    const btn = rail && rail.querySelector('[aria-haspopup="dialog"][aria-expanded="true"]');
+    if (!pop || !btn) return;
+    const tabbables = [...pop.querySelectorAll('button, input, select, a[href], [tabindex]')].filter((n) => n.tabIndex >= 0 && !n.disabled && n.getClientRects().length);
+    const way = edgeTab(tabbables, document.activeElement, e.shiftKey);
+    if (!way) return;
+    e.preventDefault();
+    if (way === 'back') { btn.focus(); return; }
+    const after = [...rail.querySelectorAll('button, a[href]')].filter((n) => n.getClientRects().length);
+    const next = after[after.indexOf(btn) + 1];
+    ctx.rail.closeShow();
+    if (next) next.focus(); else btn.focus();
+  });
+  queueMicrotask(() => {
+    const pop = typeof root.closest === 'function' ? root.closest('[role="dialog"]') : null;
+    const btn = pop && pop.id && document.querySelector('[aria-haspopup="dialog"].sr-rail__btn--show');
+    if (btn) btn.setAttribute('aria-controls', pop.id);
+  });
 
   if (filter) filter.addEventListener('input', () => { layout(); syncRoving(); });
   layout();
@@ -508,6 +551,7 @@ export function createWhatToShow(ctx, opts = {}) {
   const tier = el('p', 'sr-show__note');
   tier.hidden = true;
   root.append(quality, tier);
+  if (ctx) ctx.tierNoteEl = tier; // b200-f10-stars3d: scene/stars3dtiles.js writes the 3D stars' tier under it (forge #140)
   const onQuality = (e) => {
     const d = e && e.detail;
     if (!d) return;

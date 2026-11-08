@@ -208,9 +208,9 @@ export function chevronAnchor(at, chip, vw, vh, margin = EDGE_PX, area = null) {
   return { x: clamp(at.x - ax * w, a.left + margin, a.right - margin - w), y: clamp(at.y - ay * h, a.top + margin, a.bottom - margin - h) };
 }
 
-/** "27 580" -> "4|2": the order of magnitude and the first significant digit. */
+/** "27 580" -> "4|2": the order of magnitude and the first significant digit. A decimal comma (de, ru) is a point: "5,32" is 0|5, not 532. */
 export function leadingDigit(text) {
-  const n = Math.abs(Number(String(text === undefined || text === null ? '' : text).replace(/[^\d.]/g, '')));
+  const n = Math.abs(Number(String(text === undefined || text === null ? '' : text).replace(/[^\d.,]/g, '').replace(',', '.')));
   if (!Number.isFinite(n) || n === 0) return '0|0';
   const e = Math.floor(Math.log10(n) + 1e-12);
   return `${e}|${Math.floor(n / 10 ** e + 1e-9)}`;

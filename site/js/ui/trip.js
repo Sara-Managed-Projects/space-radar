@@ -313,6 +313,12 @@ function worldOfFrame(frame) {
   return worldById.has(head) ? head : 'earth';
 }
 
+// b200-c1-culture-helio (forge #148): how far farther a `narrow_fit` stop stands on a screen of `aspect` (wide over tall).
+export function narrowFitScale(fit, aspect) {
+  const a = Number.isFinite(aspect) && aspect > 0 ? aspect : fit;
+  return Math.min(4, Math.max(1, fit / a));
+}
+
 export function createTrip(ctx) {
   const rig = ctx.cameraRig;
 
@@ -1212,6 +1218,9 @@ export function createTrip(ctx) {
     // A star system's overview (spec 0040) is never closer than the whole of it fits on THIS screen:
     // a phone held upright is a third as wide as a desktop, and the outer orbit would be cut off.
     if (isNum(stop.distance_km) && typeof subject.fitKm === 'function') return Math.max(stop.distance_km, subject.fitKm(stop));
+    // b200-c1-culture-helio (forge #148): `narrow_fit` stands a wide subject back on a screen narrower than that,
+    // wide to tall, by that share (at most four times), as the heliosphere's rung does (ui/heliorung.js rungAu).
+    if (isNum(stop.distance_km) && isNum(stop.narrow_fit)) return stop.distance_km * narrowFitScale(stop.narrow_fit, ctx.camera && ctx.camera.aspect);
     if (isNum(stop.distance_km)) return stop.distance_km;
     if (isNum(subject.radiusKm) && subject.radiusKm > 0) {
       return Math.max(stop.frame_radii * subject.radiusKm, subject.radiusKm * 1.02);
@@ -2683,6 +2692,19 @@ export function createTrip(ctx) {
     state.ground = !!run.ground;
   }
 
+  // b200-f7-ground: begin -- the stage a `stand:` stop opens (scene/groundstage.js standFor), fetched for the first
+  // such stop; a stop without one, and leaving, closes it. True when the stop stands somewhere.
+  function standOn(entry) {
+    const stand = entry && entry.stop ? entry.stop.stand : null;
+    if (!stand) {
+      if (ctx.ground && ctx.ground.active) ctx.ground.close();
+      return false;
+    }
+    import('../scene/groundstage.js').then((m) => m.standFor(ctx, stand)).catch((e) => console.warn('the ground did not load', e));
+    return true;
+  }
+  // b200-f7-ground: end
+
   /** Turn the sky view to what the stop looks for; a thing under the horizon is faced where it will rise. */
   function aimGround(entry) {
     const place = placeOf();
@@ -2741,6 +2763,18 @@ export function createTrip(ctx) {
       groundStop(entry, index);
       return;
     }
+    // b200-f7-ground: begin -- a stop that stands on another world (`stand:`, forge #146, #147) has no flight either:
+    // scene/groundstage.js draws that ground or sky over the hidden map, and the stop arrives as a ground stop does.
+    if (standOn(entry)) {
+      state.phase = 'flight';
+      entry.shot = null;
+      stopExtrasLeaving(entry);
+      letGoOfTheLastSubject(entry);
+      notify();
+      schedule(() => arrived(index, 'done'));
+      return;
+    }
+    // b200-f7-ground: end
 
     const shot = composeShot(entry);
     if (!shot) {
@@ -3311,6 +3345,7 @@ export function createTrip(ctx) {
     dropClimb();
     // Up off the ground first: the sky view gives the camera back where the trip had it before.
     setGround(false);
+    standOn(null); // b200-f7-ground: and off another world's ground (forge #146, #147)
     if (ctx.labels && ctx.labels.clearEmphasis) ctx.labels.clearEmphasis();
     // BEFORE anything else, and before `run` is thrown away: leaving must leave the camera where
     // it is, and a flight nobody stopped goes on flying with the frame gone.

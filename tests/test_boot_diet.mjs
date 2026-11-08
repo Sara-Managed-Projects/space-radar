@@ -68,6 +68,11 @@ const DEFERRED = {
   'js/ui/onboardingplan.js': 'the tour\'s arithmetic: with ui/onboarding.js',
   'js/data/onboarding.js': 'the tour\'s steps: with ui/onboarding.js',
   'js/scene/models.js': 'the model shapes: scene/heroes.js fetches them when a record wants geometry',
+  // b200-s5-ci: begin
+  'js/scene/sourcedtables.js': 'the sourced bus and CubeSat routes: ui/cards.js and scene/models.js import it',
+  'js/data/geobuses.js': 'which bus a geostationary satellite flies: with scene/sourcedtables.js',
+  'js/data/cubesats.js': 'which CubeSat form a catalogue number is: with scene/sourcedtables.js',
+  // b200-s5-ci: end
   'js/scene/exoface.js': 'a drawn face for a planet nobody has seen: scene/systems.js fetches it when a system\'s stage is entered',
   'js/scene/exostage.js': 'the plain star stage of an imagined world: main.js fetches it for `#imagine=`',
   'vendor/GLTFLoader.js': 'the glTF loader: scene/realmodels.js fetches it inside loadRealModel()',
@@ -208,6 +213,18 @@ const DEFERRED = {
   'js/moments/effects.js': 'flames, steam, parachutes and plasma: with the player',
   'js/copy/en.moments.js': 'a moment\'s words: with the player',
   // 0079 C1: end
+  // b200-f8-xr: begin
+  'js/ui/gamepad.js': 'free flight with a gamepad (forge #164): main.js fetches it on the first `gamepadconnected`',
+  'js/ui/padmap.js': 'the gamepad\'s mapping: with ui/gamepad.js or ui/headset.js',
+  'js/ui/headset.js': 'the headset mode (forge #158): main.js fetches it only when navigator.xr supports immersive-vr',
+  'js/copy/en.xr.js': 'the gamepad\'s and the headset\'s words: with their modules',
+  // b200-f8-xr: end
+  // b200-f10-stars3d: begin
+  'js/scene/stars3dtiles.js': 'AT-HYG\'s stars by octree node (forge #140): main.js fetches it after the first visit, and it fetches nothing until a rung of the ladder',
+  'js/scene/stars3dtree.js': 'the octree\'s arithmetic: with scene/stars3dtiles.js and its worker',
+  'js/scene/stars3dworker.js': 'the octree\'s fetching: a worker scene/stars3dtiles.js starts on a rung of the ladder',
+  'js/copy/en.startiers.js': 'the AT-HYG tier\'s words: with scene/stars3dtiles.js',
+  // b200-f10-stars3d: end
 };
 // The light embed (js/embedlite.js) has no star systems at all: neither file can reach it.
 {
@@ -355,6 +372,13 @@ const { idleTripState } = await import(join(JS, 'ui/tripstate.js'));
   // The warm-up is past the two seconds tests/test_first_visit_bytes.mjs waits after sr:layers-ready.
   const warm = /const WARM_MS = (\d+);/.exec(main);
   check(warm && Number(warm[1]) >= 3000, 'main.js warms the deferred modules at least 3 s after sr:layers-ready');
+  // b200-s5-ci: begin -- three ways 2.0.0 put bytes back in the first visit without a static import (the release's CI, screens.yml):
+  // a dynamic import at a boot module's top level runs at boot; a timer started before sr:layers-ready can fire inside it (and
+  // write window.__srFirstVisitOver early, so the gate undercounts); an idle callback at sr:layers-ready comes at once.
+  check(!/import\('\.\.\/data\/(geobuses|cubesats)\.js'\)/.test(readFileSync(join(JS, 'scene/realmodels.js'), 'utf8')), 'scene/realmodels.js fetches the bus and CubeSat tables itself (at boot): they come with scene/sourcedtables.js');
+  check(/addEventListener\('sr:layers-ready', \(\) => afterFirstVisit\(WORLDLIGHTS_IMPORT_MS, \(\) => \{\s*starDeep\(\);/.test(main), 'main.js starts the deep-time stars\' timer at sr:layers-ready, not at boot');
+  check(/requestIdleCallback\(go[^\n]*\), PICTURE_DELAY_MS\);/.test(readFileSync(join(JS, 'ui/explore.js'), 'utf8')), 'ui/explore.js waits PICTURE_DELAY_MS after sr:layers-ready before the moments shelf');
+  // b200-s5-ci: end
 }
 
 // 7. THE TAG'S MODULE (ui/cardfacts.js, what the light embed loads for its tag lines) reaches

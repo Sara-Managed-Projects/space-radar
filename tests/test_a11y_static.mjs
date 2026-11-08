@@ -148,6 +148,9 @@ for (const f of files) {
     const scope = scopeFrom(src, m.index);
     const line = src.slice(0, m.index).split('\n').length;
     if (f === 'trajectory.js' || f === 'cardextras.js') continue; // charts with role=img and a name of their own (the second: the distance curve)
+    // b200-f8-xr: any svg that says it is a picture (role img) and names itself is a chart, not an icon: hiding it would take its
+    // only name from a reader, and its box is its data's. Find's system chart (ui/find.js, forge #150) is one.
+    if (/setAttribute\('role', 'img'\)/.test(scope) && /setAttribute\('aria-label'/.test(scope)) continue;
     check(/aria-hidden/.test(scope), `site/js/ui/${f}:${line}: an svg without aria-hidden: the button carries the name, the drawing is not read out`);
     // The HUD's marks and the tour's ink (a ring and an arrow in the viewport's own pixels) are drawings over the page, not icons.
     if (f !== 'hud.js' && f !== 'onboarding.js') check(/0 0 24 24/.test(scope), `site/js/ui/${f}:${line}: an icon outside the 24 box`);
@@ -282,6 +285,12 @@ check(iconOnly >= 8, `only ${iconOnly} icon-only buttons found: the rail, the tr
   // 7e. A one-letter name is not a name (internal #375): the X link says "Post to X".
   const sheet = code(read('sharesheet.js'));
   check(/a\.setAttribute\('aria-label', t\(S\.networkLabel, \{ network: S\.networks\[n\] \}\)\)/.test(sheet) && /\{network\}/.test(COPY.share.networkLabel || ''), 'each network link has a spoken name from the copy ("Post to X"), not its one letter');
+
+  // 7f. b200-s1-fixes (forge #49), moved here from tests/test_whattoshow.mjs by b200-s3-suite (that one runs against the
+  // minified tree, whose text is not the source): a filter that finds nothing is said aloud, and the button names its panel.
+  const src49 = read('whattoshow.js');
+  check(/noMatch\.setAttribute\('role', 'status'\)/.test(src49), '"No layer by that name." is a status, so a screen reader says it');
+  check(/setAttribute\('aria-controls', pop\.id\)/.test(src49), 'the What to show button names the panel it opens (aria-controls)');
 }
 
 if (problems.length) { console.error('a11y static FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }

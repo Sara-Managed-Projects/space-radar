@@ -97,6 +97,13 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Every moon, the moons of asteroids and far worlds, dwarf-planet candidates | NASA/JPL Solar System Dynamics, Horizons and Small-Body Database; the papers named on each card, read through Wikipedia | JPL: no licence text, NASA content generally not copyrighted in the United States; Wikipedia CC BY-SA 4.0; Johnston's Archive NOT used | [3o](#3o-every-moon--nasajpl-solar-system-dynamics-horizons-and-the-small-body-database-release-150) |
 <!-- 0079 a3: end -->
 | Satellites and their orbits | CelesTrak | free, with an enforced usage policy | [4.1](#41-celestrak--read-this-before-you-deploy-a-fork) |
+| Flags beside the owners of satellites (Find, By country) | Wikimedia Commons, 103 files | public domain, per file | [3f-flags](#3f-flags-flags-of-the-countries-that-own-satellites--wikimedia-commons-public-domain-2026-11-07) | <!-- b200-f1-find -->
+| The Wikipedia lead and photograph on a card with no words of its own | Wikipedia; Wikimedia Commons; Wikidata | CC BY-SA 4.0; each picture's own free licence; CC0 | [3f-wiki](#3f-wiki-the-cards-wikipedia-block--wikipedia-cc-by-sa-40-commons-wikidata-cc0-2026-11-07) | <!-- b200-f4-cards -->
+| Twelve days of a star's light in the Lab (Find a Planet in Kepler Data) | NASA Kepler mission, through STScI MAST | public domain; MAST's acknowledgement carried | [3f-kepler](#3f-kepler-a-real-kepler-light-curve-in-the-lab--nasa-kepler-mission-through-mast-public-domain-2026-11-07) | <!-- b200-f6-learn -->
+| Supernovae, the microwave background's spectrum and a star's wobble in the Lab | JLA (Betoule et al. 2014) and Keck HIRES (Butler et al. 2017) through CDS VizieR; COBE FIRAS through NASA LAMBDA | a catalogue, cited; NASA data, LAMBDA's acknowledgement carried | [3f-labdata](#3f-labdata-real-supernovae-the-cmb-spectrum-and-51-pegasi-in-the-lab--vizier-and-nasa-lambda-2026-11-07) | <!-- b200-c3-learn -->
+| The fold-up JWST (/print/) | NASA (webb.nasa.gov) and STScI JWST User Documentation; NASA's 3D model of Webb as a size check | facts, cited; public domain | [3f-labdata](#3f-labdata-real-supernovae-the-cmb-spectrum-and-51-pegasi-in-the-lab--vizier-and-nasa-lambda-2026-11-07) | <!-- b200-c3-learn -->
+| The ground at eight landing sites, and the skies of other worlds | NASA/GSFC/Arizona State University (LROC); NASA/JPL/University of Arizona (HiRISE); LOLA and SELENE (SLDEM2015); MOLA; LRO WAC and Viking MDIM 2.1 through NASA Solar System Treks; NASA/JPL pictures PIA07882 and PIA19400 for the Martian sky's colours | public domain | [3c-3](#3c-3-the-ground-at-the-landing-sites-and-the-skies-of-other-worlds-release-200-forge-146-147) | <!-- b200-f7-ground -->
+| Stars in 3D beyond HYG: 2.4 million, fetched round the camera | AT-HYG v4.0 (David Nash), from Tycho-2, Hipparcos and Gaia DR3 | CC BY-SA 4.0 | [3c-5](#3c-5-millions-of-stars-in-3d--at-hyg-v40-cc-by-sa-40-release-200-forge-140) | <!-- b200-f10-stars3d -->
 | Launches | The Space Devs, Launch Library 2 | free to 15 requests an hour; no published licence | [4.2](#42-the-space-devs--launch-library-2) |
 | Deep-space positions, asteroids, comets, close approaches | NASA/JPL Horizons, Small-Body Database, CNEOS | see the section | [4.18](#418-the-sources-the-harvester-reads) |
 | Space weather and the aurora | NOAA SWPC | public domain | [4.4](#44-noaa-swpc) |
@@ -2067,6 +2074,8 @@ files, the budgets and these lines together.
 | `site/data/skycultures/chinese.json` | the traditional Chinese asterisms: lines and names | Stellarium, `skycultures/chinese/` | `description.md`: "CC BY-SA 4.0" | Hipparcos numbers replaced by J2000 places (HYG v4.4); a line through a star HYG does not have is cut there (10 such ends); one name place per figure; no pictures |
 | `site/data/skycultures/maori.json` | six Māori figures: lines and names | Stellarium, `skycultures/maori/` | `description.md`: "CC BY-SA 4.0" | the same |
 | `site/data/skycultures/hawaiian.json` | the Hawaiian star lines: lines and names | Stellarium, `skycultures/hawaiian_starlines/` | `description.md`: "CC BY-SA 4.0" | the same |
+| `site/data/skystories/*.json` (8) | one story per figure the sky draws, for every culture above (474 figures) | Stellarium, each culture's `description.md` at the same commit, read 2026-11-07 by `scripts/build-skylore.py` | each `description.md`'s License section: "CC BY-SA 4.0" (modern: "Text and data: CC BY-SA 4.0") | the text a description gives a figure, as it stands (markup removed; the Chinese entries arranged from its list of xingguans); where it gives none, a short summary in our own words with its published source (`registry/skystories.yaml`, marked `ours` in the file), or a plain "no story recorded" for 6 figures | <!-- b200-c1-culture -->
+| `site/data/skyart/maori/`, `site/data/skyart/hawaiian/`, `site/data/skyart/boorong/` (38 pictures) | the Māori, Hawaiian and Boorong figures as drawings | Stellarium, `skycultures/{maori,hawaiian_starlines,boorong}/illustrations/`; the Hawaiian ones drawn by Kealoha Kaneakua; anchor stars' J2000 places from VizieR I/239 (Hipparcos) | each culture's `description.md`: "CC BY-SA 4.0", with no separate licence for its illustrations | greyed, put on black where transparent, resampled to 256 or 512 px squares, re-encoded as WebP; nothing redrawn or cropped; each folder's `LICENSE.txt` says so | <!-- b200-c1-culture -->
 
 **Credit lines to keep** (the controls show a short form of each beside the culture's name):
 
@@ -2079,6 +2088,8 @@ files, the budgets and these lines together.
 - Boorong sky culture: John Morieson and Alex Cherney, for Stellarium, CC BY-SA 4.0
 - Hawaiian star lines: after Nainoa Thompson, put into Stellarium by Darren Kamalu, Christopher Blake and the Celestial Navigation class at Kamehameha Schools Kapālama, CC BY-SA 4.0
 - Constellation borders: Davenhall and Leggett 1989, CDS catalogue VI/49
+- Constellation stories: the Stellarium contributors of each sky culture named above, CC BY-SA 4.0 <!-- b200-c1-culture -->
+- Hawaiian star-line pictures: Kealoha Kaneakua, for Stellarium, CC BY-SA 4.0 <!-- b200-c1-culture -->
 
 **The Free Art License and this repository.** The pictures are free works under a copyleft licence:
 they may be copied, distributed and modified provided the licence travels with them, the authors
@@ -4250,6 +4261,11 @@ Free Art License https://artlibre.org/licence/lal/en/
 
 Applies to `site/data/skyart/index.json`, `site/data/skycultures/chinese.json`,
 `site/data/skycultures/maori.json`, `site/data/skycultures/hawaiian.json`.
+<!-- b200-c1-culture: begin -->
+Also to `site/data/skystories/*.json` (the figures' stories, with our own marked summaries shared alike) and to
+`site/data/skyart/maori/`, `site/data/skyart/hawaiian/`, `site/data/skyart/boorong/` (the pictures, greyed and
+resampled, 2026-11-07), each folder with its own `LICENSE.txt`.
+<!-- b200-c1-culture: end -->
 
 ```
 Sky-culture data from Stellarium (https://github.com/Stellarium/stellarium, skycultures/), by the
@@ -4339,6 +4355,26 @@ resolves), re-encoded from MP3 to AAC with `ffmpeg` and changed in nothing else.
 recording of either, and the Apollo Flight Journal's audio files did not load when this was looked for (2026-11-04). No other recording is used:
 the radio exchange of Vostok 1 is shown as captions because no Soviet-era recording with a clear licence was found.
 
+<!-- b200-f9-reach: begin -->
+### Real recordings, heard where they were made (forge #163, 2026-11-07)
+
+Played only when a visitor with sound on presses the button for one, at the stage where it was recorded. Five are radio, plasma or
+seismic data turned into sound, and the app says so; the dust devil is sound itself, from a microphone on Mars. Each is a cut of
+the file NASA's Photojournal publishes, levelled and faded and re-encoded to mono AAC at 32 kbps by `scripts/build-real-sounds.py`
+(macOS `afconvert`), and changed in nothing else. Public domain as works of NASA; the pages credit the universities and agencies
+that built each instrument, and so does the credit line. InSight's Martian wind has no standalone audio file on NASA's sites
+(read 2026-11-07): it is the audio track of NASA's 26 MB video "Sounds from InSight's Pressure Sensor on Mars", read with `afconvert`.
+
+| File | Used for | Licence | Credit line | Source |
+|---|---|---|---|---|
+| `real-voyager-plasma.m4a` | Voyager 1's plasma-wave instrument in interstellar space, offered at the Sun and on the nearest stars' rung | Public domain (NASA) | Voyager 1's plasma waves in interstellar space, October to November 2012: NASA/JPL-Caltech/University of Iowa, public domain | <https://photojournal.jpl.nasa.gov/catalog/PIA17045> |
+| `real-juno-ganymede.m4a` | Juno's radio receiver passing Ganymede, offered at Ganymede and Jupiter | Public domain (NASA) | Juno's radio receiver passing Ganymede, 7 June 2021: NASA/JPL-Caltech/SwRI/University of Iowa, public domain | <https://photojournal.jpl.nasa.gov/catalog/PIA25030> |
+| `real-cassini-saturn.m4a` | Cassini's radio and plasma wave instrument at Saturn, offered at Saturn | Public domain (NASA) | Saturn's radio emissions, heard by Cassini's radio and plasma wave instrument: NASA/JPL/University of Iowa, public domain | <https://photojournal.jpl.nasa.gov/catalog/PIA07966> |
+| `real-insight-impact.m4a` | InSight's seismometer hearing a meteoroid strike, offered at Mars | Public domain (NASA) | A meteoroid strike on Mars, 24 December 2021, heard by InSight's seismometer: NASA/JPL-Caltech/CNES/Imperial College London, public domain | <https://photojournal.jpl.nasa.gov/catalog/PIA25582> |
+| `real-insight-wind.m4a` | InSight's air pressure sensor hearing the wind, offered at Mars | Public domain (NASA) | Martian wind blowing past InSight, 1 December 2018, heard by its air pressure sensor: NASA/JPL-Caltech/CNES/Cornell, public domain | <https://science.nasa.gov/resource/sounds-from-insights-pressure-sensor-on-mars/> |
+| `real-perseverance-dust-devil.m4a` | Perseverance's SuperCam microphone under a dust devil, offered at Mars | Public domain (NASA) | A dust devil passing over Perseverance, 27 September 2021, recorded by SuperCam's microphone: NASA/JPL-Caltech/LANL/CNES/CNRS/INTA-CSIC/Space Science Institute/ISAE-Supaero, public domain | <https://photojournal.jpl.nasa.gov/catalog/PIA25657> |
+<!-- b200-f9-reach: end -->
+
 ## 9b. Audio — the trips' narration (a synthetic voice)
 
 Spec 0069 (2026-10-03). Each stop of a guided trip can be read aloud. **The voice is synthetic**:
@@ -4369,6 +4405,13 @@ was measured before and after, and that a machine chose the setting.
 Why this model and not another: the spec ordered the choice by licence. XTTS-v2 (Coqui Public Model
 Licence) and F5-TTS (CC BY-NC) forbid commercial use and were refused; Piper (MIT code, per-voice
 licences) was the fallback and was not needed.
+
+<!-- b200-c3-learn: begin -->
+**The Fengyun-1C Moment's voice (forge #153).** The seven clips under `site/audio/moments/fengyun-1c/` are the same synthetic voice
+(Kokoro-82M, `af_heart`, Apache-2.0), made by `scripts/narrate-moments.py`, which imports `scripts/narrate.py` and uses its settings,
+from the story's own English captions (`site/js/copy/en.moments.fengyun.js`, our words; `registry/moment-voices.yaml` says which). No
+person recorded them, and a recogniser has heard each one (its word error is in the clips' `index.json`).
+<!-- b200-c3-learn: end -->
 
 ## 10. Fonts
 
@@ -4416,3 +4459,323 @@ NORAD 40930 (AstroSat, ISRO), 33492 (GOSAT / Ibuki, JAXA) and 64899 (MicroCarb, 
 | `astrosat.glb` (118 KB) | AstroSat: a gold-blanketed cuboid bus 1.96 m by 1.75 m by 1.30 m, on its top deck three LAXPC units, two gold UVIT tubes, the SXT tube with its vaned door, the CZTI slab and grid box and two upright SSM plates; side hardware, a launch adapter with thrusters; two wings of two 1.4 m by 1.8 m panels | ISRO, "AstroSat - Spacecraft" (<https://www.isro.gov.in/AstroSat-Spacecraft.html>) and eoPortal, "AstroSat" (<https://www.eoportal.org/satellite-missions/astrosat>), for the metres; ISRO's CAD view and eleven clean-room photographs on Wikimedia Commons (GODL-India, <https://commons.wikimedia.org/wiki/Category:AstroSat>), looked at | Built by Space Radar from published numbers (facts); no picture is in the file. Credit: "3D model: built by Space Radar from ISRO's published dimensions of AstroSat and from ISRO's CAD view and clean-room photographs of it (GODL-India), looked at, not used". The places of the instruments, the arms and the adapter are estimates |
 | `gosat.glb` (133 KB) | GOSAT (Ibuki): two gold boxes 1.8 m by 2.0 m and 3.7 m high in all, the TANSO-FTS hood and the CAI on the Earth face, radiators, antennas, a ring with four thrusters, two three-section paddles on A-frame trusses, 13.7 m tip to tip | JAXA, "GOSAT Ibuki" (<https://global.jaxa.jp/projects/sat/gosat/>) and JAXA EORC (<https://www.eorc.jaxa.jp/GOSAT/mission_instrument.html>), for the metres; eoPortal, "GOSAT" (<https://www.eoportal.org/satellite-missions/gosat>), JAXA's figures looked at only; four photographs of JAXA's GOSAT exhibit on Wikimedia Commons (CC BY-SA 3.0 and 4.0, CC0), looked at | Built by Space Radar from published numbers (facts); no picture is in the file. Credit: "3D model: built by Space Radar from the dimensions JAXA publishes for GOSAT and from JAXA's illustrations and photographs of the craft (looked at, not used)". The paddle panels' size, the Earth face's depths and the zenith side are estimates |
 | `microcarb.glb` (159 KB) | MicroCarb: a gold Myriade platform 0.8 m by 0.6 m with antennas, sun sensors, thrusters and the PAS610 ring, a silver optical housing with the oval baffle of the cryogenic radiator and the star tracker on the deck, a notched two-panel array | eoPortal, "MicroCarb" (<https://www.eoportal.org/satellite-missions/microcarb>) for the metres (0.6 x 0.8 x 1.0 m); CNES's and Airbus DS's CAD drawings, artwork and photographs looked at only; a scale-model photograph on Wikimedia Commons (CC BY-SA 4.0), looked at | Built by Space Radar from published numbers (facts); no picture is in the file. Credit: "3D model: built by Space Radar from the dimensions eoPortal and CNES publish for MicroCarb and from CNES's and Airbus DS's drawings, artwork and photographs of it (looked at, not used)". THE ARRAY'S SIZE IS AN ESTIMATE (the page gives none) |
+
+<!-- b200-f1-find: begin -->
+## 3f-flags. Flags of the countries that own satellites — Wikimedia Commons, public domain (2026-11-07)
+
+`site/images/flags/<iso>.svg`, 103 files, one per ISO 3166 country that CelesTrak's satellite catalogue names as an owner
+(`site/js/data/owners.js`; the owner codes are CelesTrak's, from https://celestrak.org/satcat/sources.php, read 2026-11-07).
+Each is the flag image that country's Wikidata item names (property P41), fetched from Wikimedia Commons on 2026-11-07;
+the Commons API gave every one of them the licence "Public domain". `site/images/flags/sources.json` lists each file's
+Commons page, its licence and its original size. What was changed: comments, metadata and editor attributes removed, and
+coordinates rounded to about a thousandth of the flag's width (they are drawn 21 px wide). Organisations (ESA, Intelsat,
+NATO, ...) are shown without a mark: their emblems are trademarks, not public symbols.
+
+The counts beside them are CelesTrak's catalogue (section 4.1), and the operators' names in `owners.js` are matched by the
+names those operators give their satellites in it; the debris clouds' dates and heights are NASA's Orbital Debris
+Quarterly News, linked from each (`site/js/data/clouds.js`).
+<!-- b200-f1-find: end -->
+<!-- b200-f2-worlds: begin -->
+## 3ab. Inside the worlds, and the heliosphere — published measurements and models, as numbers (release 2.0.0)
+
+No file of anyone else's is shipped for either. The cutaways (forge #144) draw each layer at the depth a published model gives, and the depth probe reads the pressure, temperature and density the same model gives at each layer's top and bottom; `registry/interiors.yaml` cites each one, row by row, and says whether each depth is measured, modelled or inferred. The colours of the layers are chosen here. The main sources: PREM (Dziewonski & Anderson 1981) for the Earth; InSight (Khan et al. 2021, Samuel et al. 2023, Khan et al. 2023, Irving et al. 2023) for Mars; GRAIL and the Apollo seismometers (Wieczorek et al. 2013, Weber et al. 2011, Briaud et al. 2023) for the Moon; MESSENGER (Hauck et al. 2013, Genova et al. 2019) for Mercury; Aitta 2012 and Konopliv & Yoder 1996 for Venus; Juno (Wahl et al. 2017, Militzer et al. 2022) for Jupiter; Cassini (Iess et al. 2019, Mankovich & Fuller 2021) for Saturn; Nettelmann et al. 2013 and Helled et al. 2010 for Uranus and Neptune; New Horizons (Nimmo et al. 2016, McKinnon et al. 2017) for Pluto; Galileo and Juno (Anderson et al. 1996, 1998, 2001, Kivelson et al. 2000, Saur et al. 2015, Park et al. 2025) for Io, Europa and Ganymede; Cassini (Iess et al. 2010, 2012, Thomas et al. 2016, Čadek et al. 2016) for Titan and Enceladus; helioseismology and Model S (Christensen-Dalsgaard et al. 1991, 1996, Basu & Antia 1997) for the Sun.
+
+The heliosphere (forge #148, `site/js/scene/heliosphere.js`) is drawn from model shapes (Parker 1961, Wilkin 1996, after Izmodenov & Alexashov 2015 and Opher et al. 2015) scaled through the four places the Voyagers crossed its two inner surfaces, which are read from the JPL Horizons tracks this map already ships for both craft (`site/data/eph/`, credited under "Mission paths") on NASA's crossing dates; the interstellar wind's direction and speed are IBEX's (McComas et al. 2015), the ribbon's circle is Funsten et al. 2013's, and the bow wave follows McComas et al. 2012. Credit line: `Interiors and heliosphere: Space Radar, from published measurements and models (registry/interiors.yaml; scene/heliosphere.js)`.
+<!-- b200-f2-worlds: end -->
+<!-- b200-m2-buses: begin -->
+## 3c-b200-m2-buses. Release 2.0.0: the CubeSat forms and the Vostok third stage (2026-11-07)
+
+Release 2.0.0, batch m2-buses (forge #118, #60). The geostationary bus files built in the same batch were held and are not shipped. Every file is built in code by this project (`tools/cubesat-builder`, `tools/vostok-builder/blok_e_stage.py`, on the part library of `tools/stage-builder`) from
+published numbers: McDowell's General Catalog of Artificial Space Objects (GCAT, CC BY 4.0), the CubeSat Design Specification's sizes, and the Russian cutaway drawing of the Vostok launcher (public domain). **The pictures were LOOKED AT ONLY**: 
+NASA's public-domain flight photographs of Planet's Doves (the CubeSat wings) and the museum photographs of the Vostok launcher (CC BY, CC BY-SA); no mesh, no texture and no picture of anyone else's is in a file.
+`registry/models.yaml` has a row with every number, the sentence it was read from and what is ours; each card says "shape built from published dimensions and pictures; details simplified" and, for a family file, that it is the kind of thing and not that exact craft.
+Which satellite wears which CubeSat file is `registry/cubesats.yaml`: each row cites McDowell's GCAT by the object's JCAT number.
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `cubesat-1u.glb` (20 KB) | A 1U CubeSat, 100 x 100 x 113.5 mm: four rails, end plates with their fittings, cells on the long faces, a whip antenna | the CubeSat Design Specification's sizes; NASA's public-domain flight photographs of Planet Doves, looked at only | built by us; numbers are the standard's (facts) and GCAT's (CC BY 4.0) |
+| `cubesat-2u.glb` (20 KB) | A 2U CubeSat, 100 x 100 x 227 mm: four rails, end plates with their fittings, cells on the long faces, a whip antenna | the CubeSat Design Specification's sizes; NASA's public-domain flight photographs of Planet Doves, looked at only | built by us; numbers are the standard's (facts) and GCAT's (CC BY 4.0) |
+| `cubesat-3u.glb` (19 KB) | A 3U CubeSat, 100 x 100 x 340.5 mm: four rails, end plates with their fittings, cells on the long faces, a whip antenna | the CubeSat Design Specification's sizes; NASA's public-domain flight photographs of Planet Doves, looked at only | built by us; numbers are the standard's (facts) and GCAT's (CC BY 4.0) |
+| `cubesat-3u-wings.glb` (24 KB) | A 3U CubeSat with two deployed three-panel wings, 100 x 100 x 340.5 mm: four rails, end plates with their fittings, cells on the long faces, a whip antenna, two wings of three hinged panels | the CubeSat Design Specification's sizes; NASA's public-domain flight photographs of Planet Doves, looked at only | built by us; numbers are the standard's (facts) and GCAT's (CC BY 4.0) |
+| `cubesat-6u.glb` (20 KB) | A 6U CubeSat, 226.3 x 100 x 366 mm: four rails, end plates with their fittings, cells on the long faces, a whip antenna | the CubeSat Design Specification's sizes; NASA's public-domain flight photographs of Planet Doves, looked at only | built by us; numbers are the standard's (facts) and GCAT's (CC BY 4.0) |
+| `cubesat-6u-wings.glb` (24 KB) | A 6U CubeSat with two deployed three-panel wings, 226.3 x 100 x 366 mm: four rails, end plates with their fittings, cells on the long faces, a whip antenna, two wings of three hinged panels | the CubeSat Design Specification's sizes; NASA's public-domain flight photographs of Planet Doves, looked at only | built by us; numbers are the standard's (facts) and GCAT's (CC BY 4.0) |
+| `cubesat-12u.glb` (21 KB) | A 12U CubeSat, 226.3 x 226.3 x 366 mm: four rails, end plates with their fittings, cells on the long faces, a whip antenna | the CubeSat Design Specification's sizes; NASA's public-domain flight photographs of Planet Doves, looked at only | built by us; numbers are the standard's (facts) and GCAT's (CC BY 4.0) |
+| `cubesat-12u-wings.glb` (25 KB) | A 12U CubeSat with two deployed three-panel wings, 226.3 x 226.3 x 366 mm: four rails, end plates with their fittings, cells on the long faces, a whip antenna, two wings of three hinged panels | the CubeSat Design Specification's sizes; NASA's public-domain flight photographs of Planet Doves, looked at only | built by us; numbers are the standard's (facts) and GCAT's (CC BY 4.0) |
+| `vostok-blok-e.glb` (39 KB) | The Vostok third stage, Blok E, as it stays in orbit: a 2.56 m hull in four bands with weld rings, hatches and ports, the RD-0109 bell, four verniers, the payload adapter cone | the Russian cutaway drawing 'R-7 vostok.jpg' (public domain), Astronautix, ru.wikipedia, the museum photographs at VDNKh and Kaluga (CC BY, CC BY-SA), looked at only | built by us from published numbers (facts); the share-alike pictures are credited all the same |
+
+**Credit line:**
+`3D model: built by Space Radar from published dimensions (McDowell's GCAT, CC BY 4.0; the CubeSat Design Specification; a public-domain Russian drawing); layout read from pictures that were looked at only (NASA's public-domain photographs, CC BY and CC BY-SA museum photographs)`
+
+McDowell's catalogue is used under its CC BY 4.0 licence: the catalogue numbers, bus names, forms and sizes it lists are cited, and its columns are not republished beyond the registry rows that cite them. Gunter's Space Page, Wikipedia and Wikidata are cited by page for a fact each; none of their text or pictures is in the repository.
+No logo, lettering, flag or insignia is on any of them. Planet and Spire do not endorse Space Radar, and none of them made or approved these shapes.
+<!-- b200-m2-buses: end -->
+
+<!-- b200-m3-mid: begin -->
+## 3c-b200-m3-mid. Release 2.0.0: Kinéis and QPS-SAR (2026-11-07)
+
+Release 2.0.0, batch m3-mid (forge #174, #128). Of the 20 mid-size families of #174, two have a model of their own; the others were looked at and held, and the reasons are in the changelog. Both files are built in code by this project (`tools/nanosat-builder`, on the part library of `tools/stage-builder`) from published numbers.
+**The pictures were LOOKED AT ONLY**: three photographs of 1:1 models and one of flight units of Kinéis (Wikimedia Commons, CC BY-SA 4.0), and iQPS's photograph of a QPS-SAR with its antenna deployed and its rendition of QPS-SAR 3, as eoPortal prints them (copyright iQPS). No mesh, no texture and no picture of anyone else's is in a file.
+`registry/models.yaml` has a row with every number, the sentence it was read from and what is ours; each card says "shape built from published dimensions and pictures; details simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `kineis.glb` (85 KB) | A Kinéis nanosatellite: a 450 x 260 x 240 mm gold-foil body with a 12-lobed ring and square plate, six hinged panels (1.6 m across), a four-strand twisted UHF helix on nine ring spacers with the S-band tube on its tip, and a fan of six VHF rods | the operator's FCC orbital-debris filing and press releases (sizes); four photographs of the 1:1 models and flight units (CC BY-SA 4.0, Wikimedia Commons), looked at only | built by us; numbers are facts |
+| `qps-sar.glb` (122 KB) | A QPS-SAR of unit 5 or later: a 0.8 m cube bus with black cells in gold frames under a 3.6 m by 1.0 m mesh dish of 36 gores on curved ribs with a double rim hoop, a three-legged stand with the feed saucer, the spray of wires between bowl and bus | iQPS's investor presentations and eoPortal's article (sizes); iQPS's photograph and rendition on eoPortal, looked at only | built by us; numbers are facts |
+
+**Credit line:**
+`3D model: built by Space Radar from published dimensions (Kinéis's FCC filing and press releases; iQPS's investor presentations and eoPortal); layout read from photographs that were looked at only (Wikimedia Commons, CC BY-SA 4.0; iQPS as printed by eoPortal)`
+
+No logo, lettering, flag or insignia is on either. Kinéis, Hemeria and iQPS do not endorse Space Radar, and none of them made or approved these shapes.
+<!-- b200-m3-mid: end -->
+
+<!-- b200-m4-buses: begin -->
+## 3c-b200-m4-buses. Release 2.0.0: nine geostationary bus families (2026-11-07)
+
+Release 2.0.0, batch m4-buses (forge #117). The bus families held in batch m2 were rebuilt one by one to their own layouts; nine ship, the Spacebus 4000C, the A2100A and LM 2100 and the DS2000 stay held (the changelog says why). Every file is built in code by this project (`tools/bus-builder`, on the part library of `tools/stage-builder`) from published sizes: McDowell's GCAT (CC BY 4.0), the Wikipedia infoboxes and articles of MEASAT-3B, Intelsat 10-02, Eutelsat 70B, JCSAT-3A, Spacebus and the INSAT satellite bus (CC BY-SA 4.0; numbers only), Boeing's 702SP figure as Gunter's Space Page quotes it.
+**The pictures were LOOKED AT ONLY**: the makers' renders as Gunter's Space Page prints them (copyright Airbus, Boeing, Lockheed Martin, Thales Alenia Space, Orbital and Northrop Grumman, CAST and CGWIC, ISRO); on Wikimedia Commons, NASA's render of SES-14 (public domain), the US Air Force's drawing of WGS ([Commons](https://commons.wikimedia.org/wiki/File:MC-2941_Wideband_Global_SATCOM_Satellite.png), public domain), the photograph of Morelos 3 in the clean room ([Commons](https://commons.wikimedia.org/wiki/File:Sat%C3%A9lite_Morelos_III.jpg), CC BY-SA 4.0), SpaceX's photograph of ABS-3A separating ([Commons](https://commons.wikimedia.org/wiki/File:ABS-EUTELSAT_Separation_(16788442562).jpg), CC0), the renders of Inmarsat GX5 ([Commons](https://commons.wikimedia.org/wiki/File:Satellite_Inmarsat_GX5.jpg)) and Belintersat-1 ([Commons](https://commons.wikimedia.org/wiki/File:Belintersat-1.jpg)) (CC BY-SA 4.0), and ISRO's clean-room photographs of GSAT-19, GSAT-30 and GSAT-31 (GODL-India; e.g. [GSAT-30](https://commons.wikimedia.org/wiki/File:GSAT-30_in_cleanroom_with_deployed_reflector.jpg), [GSAT-31](https://commons.wikimedia.org/wiki/File:GSAT-31_undergoing_CATF_test.jpg)). No mesh, no texture and no picture of anyone else's is in a file.
+Seven of the nine have no free photograph of their deployed hardware, so their card says "shape built from published dimensions and the maker's renders; details estimated"; the I-3K and I-2K, drawn from ISRO's photographs, say "shape built from published dimensions and pictures; details simplified". `registry/models.yaml` says which numbers are cited and which are ours.
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `bus-eurostar-e3000.glb` (139 KB) | Airbus Eurostar E3000: a 2.4 x 2.9 x 4.8 m gold-blanketed box, broad OSR radiators, two large deployed reflectors on each of the east and west walls, the deck tower, four-panel wings on long V yokes, 39.2 m | GCAT and Wikipedia (sizes); Airbus's renders and NASA's SES-14 render, looked at only | built by us; numbers are facts |
+| `bus-boeing-702.glb` (150 KB) | Boeing 702HP / 702MP: a 3.0 x 3.3 x 5.6 m black-blanketed box, silvered ribbed and deployed radiators, four reflectors in an X, six-panel wings each on one mast, 40.4 m | GCAT (sizes); the Morelos 3 photograph, the USAF WGS drawing and Boeing's renders, looked at only | built by us; numbers are facts |
+| `bus-boeing-702sp.glb` (116 KB) | Boeing 702SP: a 2.1 x 2.1 x 3.6 m black-and-silver box, four reflectors in an X on splayed arms, four ion thrusters, six-panel wings, 40.0 m | Boeing's figure (Gunter) and GCAT (sizes); SpaceX's separation photograph and Boeing's renders, looked at only | built by us; numbers are facts |
+| `bus-a2100ax.glb` (117 KB) | Lockheed Martin A2100AX: a 2.2 x 2.5 x 4.9 m box in crinkled silver blanket, silvered OSR radiators, one 3.0 m reflector a side and a deck tower, broad four-panel wings on stand-off yokes, 26.9 m | GCAT and Wikipedia (sizes); Lockheed Martin's renders, looked at only | built by us; numbers are facts |
+| `bus-spacebus-4000b.glb` (113 KB) | Thales Alenia Space Spacebus 4000B / 3000B: a narrow 1.8 x 1.8 x 3.4 m gold-and-copper box, wide blue-silver radiators, two reflectors a side, straight four-panel wings on long V yokes, 30.0 m | Wikipedia and GCAT (sizes); Thales Alenia Space's renders, looked at only | built by us; numbers are facts |
+| `bus-geostar-2.glb` (100 KB) | Northrop Grumman GEOStar-2: a small 1.8 x 2.3 x 3.2 m box in mottled silver and black blanket, two large shaped reflectors high beside the deck, three-panel wings with a pale end panel, 22.4 m | GCAT (sizes); Orbital's and Northrop Grumman's renders, looked at only | built by us; numbers are facts |
+| `bus-dfh-4.glb` (106 KB) | CAST DFH-4: a large 2.4 x 2.5 x 3.6 m gold box, white radiators, one 2.6 m reflector a side and a deck reflector, two big three-panel wings on crossing struts, 30.0 m | GCAT (sizes); CAST's and CGWIC's renders and the Belintersat-1 render, looked at only | built by us; numbers are facts |
+| `bus-i-3k.glb` (107 KB) | ISRO I-3K: a 1.8 x 2.0 x 3.1 m box in crinkled gold kapton, white radiators, dark carbon-fibre reflectors, three-panel wings with red strings, 20.0 m | GCAT (sizes); ISRO's clean-room photographs of GSAT-19 and GSAT-30 and ISRO's renders, looked at only | built by us; numbers are facts |
+| `bus-i-2k.glb` (84 KB) | ISRO I-2K: a 1.65 x 1.53 x 3.0 m box in crinkled gold kapton, white radiators, dark carbon-fibre reflectors, two-panel wings, 9.6 m | Wikipedia and GCAT (sizes); ISRO's clean-room photographs of GSAT-31 and ISRO's renders, looked at only | built by us; numbers are facts |
+
+**Credit lines:**
+`3D model: built by Space Radar from published dimensions (McDowell's GCAT, Wikipedia, the makers' figures); layout read from the makers' renders, looked at only`
+`3D model: built by Space Radar from published dimensions (McDowell's GCAT, Wikipedia); layout read from the makers' photographs and renders, looked at only`
+
+No logo, lettering, flag or insignia is on any of them. Airbus, Boeing, Lockheed Martin, Thales Alenia Space, Northrop Grumman, CAST, CGWIC and ISRO do not endorse Space Radar, and none of them made or approved these shapes.
+<!-- b200-m4-buses: end -->
+
+<!-- b200-f4-cards: begin -->
+## 3f-wiki. The cards' Wikipedia block — Wikipedia (CC BY-SA 4.0), Commons, Wikidata (CC0) (2026-11-07)
+
+A card whose object has no hand-written line of ours shows the lead of its Wikipedia article and the article's lead
+picture (forge #151, `site/js/ui/wikicard.js`). Every such block says "From Wikipedia", that it is quoted and not checked by
+us, the day it was read, "Text: Wikipedia contributors, CC BY-SA 4.0" and a link to the article; the picture's caption is
+the artist and licence its Wikimedia Commons page gives, the licence linked to its deed and the file to its page.
+
+- **Baked** (`site/data/wikicards/<lang>.json`, `scripts/build-wikicards.mjs`, read 2026-11-07): the lead of 99 articles in
+  English and of 45 to 91 in each of the other ten languages (where Wikipedia has the article), at most 600 characters
+  of whole sentences each. Text: Wikipedia contributors, CC BY-SA 4.0. Not changed, only cut at a sentence.
+- **Pictures** are not copied: the card loads Commons' 640 px copy when it opens. Only Commons files with a free
+  LicenseShortName (CC0, public domain, CC BY, CC BY-SA) are shown; on 2026-11-07 the 95 baked English pictures were 40
+  public domain, 15 CC0, 25 CC BY (2.0 to 4.0) and 15 CC BY-SA (2.0 to 4.0, two ported).
+- **NORAD numbers to articles** (`site/data/wikicards/norad.json`): Wikidata's items with property P377 and an English
+  article, 3 166 of them, CC0 1.0.
+- **Live**: any other card asks Wikipedia's REST API and the Commons API itself when its About it is opened, with no cookie
+  and no referrer; the same credits are printed.
+<!-- b200-f4-cards: end -->
+
+<!-- b200-f3-stars: begin -->
+## 3c-2. How the stars move, the variable stars, the turning black holes (release 2.0.0, forge #141, #142, #149)
+
+**Star motions.** `site/data/starmotion.bin` is repacked from the **HYG Stellar Database v4.4** by David Nash
+(<https://codeberg.org/astronexus/hyg>, **CC BY-SA 4.0**, the same file §3c's `stars3d.bin` comes from, rebuilt from it
+byte for byte on 2026-11-07) by `scripts/build-starmotion.py`: for 17 207 stars (every one to magnitude 7.0, every one
+moving half an arcsecond a year or more, every one within 6.2 parsecs) the J2000 place, the distance and the space
+velocity from HYG's Hipparcos and Gaia proper motions and radial velocities. Shared alike under CC BY-SA 4.0. One row
+is corrected: Barnard's Star's motion in declination, which HYG's column clamps at 9 999.99 mas/yr, is Gaia DR3's
+10 362.394 mas/yr with its parallax and radial velocity (Gaia Collaboration, Vallenari et al. 2023, as Wikipedia's
+article quotes them, read 2026-11-07). The long-term precession is Vondrák, Capitaine & Wallace 2011 (A&A 534, A22),
+as the IAU SOFA library carries it (iauLtpequ, iauLtpecl); the coefficients are the paper's.
+
+**Variable stars.** `site/data/variables.json` holds 58 rows of the **General Catalogue of Variable Stars**, version 5.1
+(Samus N.N., Kazarovets E.V., Durlevich O.V., Kireeva N.N., Pastukhova E.N., Astronomy Reports 61, 80, 2017), asked of
+VizieR (catalogue B/gcvs) on 2026-11-07 through its mirror at vizier.cfa.harvard.edu, by `scripts/build-variables.py`.
+VizieR's terms: free of usage in a scientific context, with the original authors cited (registry/asset_sources.yaml,
+`cds-vizier-asu`); every star's card names the GCVS. Two stars carry more: beta Lyrae's quadratic ephemeris (Harmanec &
+Scholz 1993, A&A 279, 131), and Betelgeuse's Great Dimming of 2019–20 from the dates and magnitudes Wikipedia's article
+gives with their sources (Guinan et al., The Astronomer's Telegram 13439 and 13512; AAVSO).
+
+**Turning black holes.** The shadow's outline is Bardeen's (1973) closed formula, as in Chandrasekhar's *The
+Mathematical Theory of Black Holes* (1983) §63; the spins are chosen from the Event Horizon Telescope's papers (EHT 2019
+paper V, ApJL 875, L5; EHT 2022 paper V, ApJL 930, L16). No image or code of anyone else's is used.
+
+| Item | File | Licence | Credit line | Link |
+|---|---|---|---|---|
+| Star motions (repacked) | `starmotion.bin` | CC BY-SA 4.0 | Star motions from the HYG Stellar Database v4.4, © David Nash | <https://codeberg.org/astronexus/hyg> |
+| Variable stars' elements (extracted) | `variables.json` | VizieR terms, GCVS cited | General Catalogue of Variable Stars, Samus et al. 2017 | <https://vizier.cds.unistra.fr/viz-bin/VizieR?-source=B/gcvs> |
+
+`registry/models.yaml` (`data:`) carries the two in the short form the app prints:
+"Star motions: HYG v4.4 (David Nash), from Hipparcos and Gaia" and
+"Variable stars: General Catalogue of Variable Stars (Samus et al. 2017)".
+<!-- b200-f3-stars: end -->
+
+<!-- b200-f6-learn: begin -->
+## 3f-kepler. A real Kepler light curve in the Lab — NASA Kepler mission, through MAST, public domain (2026-11-07)
+
+`site/lab/find-a-planet-in-kepler-data/index.html` carries, inline, the first 612 long cadences (12.5 days from 2009-05-13)
+of the PDCSAP_FLUX column of `kplr011446443-2009166043257_llc.fits`: the star TrES-2 (KIC 11446443) in Kepler's quarter 1,
+data release 25, read from https://archive.stsci.edu/missions/kepler/lightcurves/0114/011446443/ on 2026-11-07. What was
+changed: flagged cadences (SAP_QUALITY not 0) left blank, the rest divided by their median outside the transits, minus 1,
+and rounded to 10 parts per million; the FITS file itself is not in the repository. MAST's data use policy
+(https://archive.stsci.edu/publishing/data-use): "Most data hosted at MAST are in the public domain". The page carries the
+acknowledgement MAST asks for Kepler data (https://archive.stsci.edu/publishing/mission-acknowledgements): "This paper
+includes data collected by the Kepler mission and obtained from the MAST data archive at the Space Telescope Science
+Institute (STScI). Funding to US Institutions for the Kepler mission was provided by the NASA Science Mission Directorate.
+STScI is operated by the Association of Universities for Research in Astronomy, Inc., under NASA contract NAS5-26555."
+The planet's catalogue values beside it (period, radius, the star's radius) are the NASA Exoplanet Archive's (section 4.7).
+<!-- b200-f6-learn: end -->
+<!-- b200-c3-learn: begin -->
+## 3f-labdata. Real supernovae, the CMB spectrum and 51 Pegasi in the Lab — VizieR and NASA LAMBDA (2026-11-07)
+
+`site/lab/hubble-diagram-from-supernovae/index.html` carries, inline, the 740 type Ia supernovae of the JLA sample
+(M. Betoule et al. 2014, A&A 568, A22, table F.3), read from VizieR's Harvard-Smithsonian mirror
+(https://vizier.cfa.harvard.edu/) on 2026-11-07. What was changed: each supernova's distance modulus worked out with the
+paper's own Eq. 4 and 5 and its Table 10 values (alpha 0.141, beta 3.101, M_B −19.05, ΔM −0.070, for H0 70 km/s/Mpc),
+rounded to 0.01 mag, the redshift to 0.001, sorted by redshift. The raw table is not in the repository. The CDS terms
+(https://cds.unistra.fr/vizier-org/licences_vizier.html): "free of usage in a scientific context", with the authors and
+publication cited, as the page does. Space Radar is free and non-commercial.
+
+`site/lab/find-a-planet-by-its-wobble/index.html` carries the 43 Keck HIRES velocities of 51 Pegasi (HD 217014) from
+R. P. Butler et al. 2017, AJ 153, 208, table 1 (J/AJ/153/208, read from the same mirror on 2026-11-07): BJD − 2450000 to
+0.0001 day, velocity and error as written. The later correction by Tal-Or et al. 2019 (a few m/s) is not applied, and the
+page says so. The terms are as above. The planet's catalogue values beside it are the NASA Exoplanet Archive's (section 4.7).
+
+`site/lab/the-afterglow-is-a-perfect-blackbody/index.html` carries all 43 rows of the COBE FIRAS monopole spectrum
+(D. J. Fixsen et al. 1996, ApJ 473, 576, Table 4; LAMBDA file `firas_monopole_spec_v1.txt`, v1 May 2005, from
+https://lambda.gsfc.nasa.gov/) as written there. These are NASA data, not subject to copyright in the United States. The
+page quotes the acknowledgement LAMBDA asks for: "We acknowledge the use of the Legacy Archive for Microwave Background Data
+Analysis (LAMBDA), part of the High Energy Astrophysics Science Archive Center (HEASARC). HEASARC/LAMBDA is a service of the
+Astrophysics Science Division at the NASA Goddard Space Flight Center."
+
+`site/lab/hr-diagram-of-our-neighbours/index.html` carries the 2 362 HYG v4.4 rows within 25 pc that have a colour and an
+absolute magnitude (rounded to 0.03 and 0.25): Star data from the HYG Stellar Database v4.4, © David Nash
+(https://codeberg.org/astronexus/hyg), CC BY-SA 4.0, shared alike as in section 3c.
+
+The fold-up JWST on /print/ (`scripts/paper_models.py`) is drawn at 1 : 250 from NASA's published sizes (webb.nasa.gov:
+the 6.5 m primary of 18 segments 1.32 m flat to flat, the 0.74 m secondary, the 21.197 x 14.162 m five-layer sunshield) and
+STScI's JWST User Documentation (https://jwst-docs.stsci.edu/), read 2026-11-07; the parts NASA gives no size for (the
+bus, the solar array, the dish, the instrument box, the tower) are estimated from NASA's own 3D model of Webb (`jwst.glb`,
+public domain, section 6 row `jwst`), which is used only to measure: nothing of it is printed.
+<!-- b200-c3-learn: end -->
+<!-- b200-f7-ground: begin -->
+## 3c-3. The ground at the landing sites and the skies of other worlds (release 2.0.0, forge #146, #147)
+
+**The ground.** `site/data/ground/<site>/` holds, for Apollo 11, 15 and 17, Chang'e 4, Gale (Curiosity), Jezero
+(Perseverance), Utopia Planitia (Zhurong) and Endeavour crater (Opportunity, where it stopped), the heights and the orbital picture round the lander, resampled,
+quantised and tiled by `scripts/build-ground.py` from the products `registry/ground.yaml` names, each read in place by
+HTTP range requests on 2026-11-07. Nothing is added to them: no boulder, crater or rock is invented, and the stage says so.
+
+- **LROC NAC stereo terrain models and orthoimages** (LRO-L-LROC-5-RDR-V1.0; NAC_DTM_APOLLO11, APOLLO15, APOLLO17 and
+  CHANGE4), Arizona State University, served through NASA PDS. Public domain: "Data products available through the
+  LROC Data Node of the PDS or through NASA PDS interfaces are in the public domain" (<https://www.lroc.im-ldi.com/about/terms>).
+  Credit: NASA/GSFC/Arizona State University. Apollo 15's model: Henriksen et al. 2017, Icarus 283, 122-137.
+- **HiRISE stereo terrain models and orthoimages** (MRO-M-HIRISE-5-DTM-V1.0; DTEEC_010573_1755_010639_1755_U01 at
+  Gale, DTEEC_045994_1985_046060_1985_U01 at Jezero, DTEEC_069665_2055_069731_2055_A01 at Utopia,
+  DTEEC_018701_1775_018846_1775_U01 on Endeavour's western rim), University of
+  Arizona. Public domain: "All of the images produced by HiRISE and accessible on this site are within the public
+  domain" (<https://www.uahirise.org/media/usage.php>). Credit: NASA/JPL/University of Arizona.
+- **SLDEM2015** (LOLA and SELENE Terrain Camera, Barker et al. 2016, Icarus 273, 346-355), USGS Astrogeology's mosaic:
+  "Access Constraints public domain". **MOLA**, 463 m (Smith et al. 2001, JGR 106, 23689), USGS Astrogeology's mosaic:
+  "Access Constraints CC0 (public domain)". The far ground beyond the stereo strips, moved by the median difference to
+  the strip where both are.
+- **LRO WAC global mosaic** (NASA/GSFC/Arizona State University) and **Viking MDIM 2.1** (NASA/JPL/USGS, "Access
+  Constraints Public domain"), as NASA Solar System Treks serves them: the far ground's brightness beyond the strips.
+- The models at the landers' coordinates are the files of §3b (the Lunar Module, NASA; Curiosity, NASA; Perseverance;
+  Zhurong and Chang'e 4, built here from their dimensions).
+
+**The skies.** Which way each world turns is the IAU WGCCRE 2015 report (Archinal et al. 2018, Celestial Mechanics and
+Dynamical Astronomy 130:22): Astronomy Engine's implementation for the Moon and Mars, the report's own elements for Titan
+and Europa (`site/js/sky/worldframe.js`). Magnitudes: Mallama and Hilton 2018 (Astronomy and Computing 25, 10-24). The
+Martian sky's colours are MEASURED from two NASA pictures (public domain, NASA media guidelines): the day sky from
+Spirit's approximately true-colour Lookout panorama (NASA/JPL/Cornell, PIA07882) and the sunset from Curiosity's
+first colour sunset in Gale (NASA/JPL-Caltech/MSSS/Texas A&M, PIA19400); the means are in `site/js/sky/worldair.js`.
+Titan's colour is illustrative. The stars are §3's `stars.bin` and `skystars.names.json`. Proxima Centauri b and
+TRAPPIST-1 e (`site/js/sky/exoskies.js`) are modelled from the positions in §3c's HYG v4.4 file (Proxima, Alpha
+Centauri A and B, CC BY-SA 4.0) and the NASA Exoplanet Archive's rows in registry/systems.yaml; their sky colours are
+illustrative. The narration of the two trips (Walk the landing sites, Skies of other worlds) is made like the other
+trips' (registry/narration.yaml).
+
+| Item | Files | Licence | Credit line |
+|---|---|---|---|
+| The ground at the lunar sites (resampled) | `ground/apollo-11`, `apollo-15`, `apollo-17`, `change-4` | Public domain | NASA/GSFC/Arizona State University (LROC); SLDEM2015 (Barker et al. 2016); LRO WAC via NASA Solar System Treks |
+| The ground at the Mars sites (resampled) | `ground/gale`, `jezero`, `utopia`, `opportunity` | Public domain | NASA/JPL/University of Arizona (HiRISE); MOLA (NASA/GSFC); Viking MDIM 2.1 (NASA/JPL/USGS) via NASA Solar System Treks |
+
+**Credit lines, one per site** (registry/models.yaml `credit`, as each stage shows it):
+
+- The ground at Apollo 11, Tranquility Base: NASA/GSFC/Arizona State University (LROC); Barker et al. 2016, Icarus 273, 346-355 (LOLA, NASA/GSFC; SELENE TC, JAXA)
+- The ground at Apollo 15, Hadley-Apennine: NASA/GSFC/Arizona State University (LROC); Henriksen et al. 2017, Icarus 283, 122-137; Barker et al. 2016, Icarus 273, 346-355 (LOLA, NASA/GSFC; SELENE TC, JAXA)
+- The ground at Apollo 17, Taurus-Littrow: NASA/GSFC/Arizona State University (LROC); Barker et al. 2016, Icarus 273, 346-355 (LOLA, NASA/GSFC; SELENE TC, JAXA)
+- The ground at Chang'e 4, von Karman crater: NASA/GSFC/Arizona State University (LROC); Barker et al. 2016, Icarus 273, 346-355 (LOLA, NASA/GSFC; SELENE TC, JAXA)
+- The ground at Curiosity, Gale crater: NASA/JPL/University of Arizona (HiRISE); MOLA Science Team, NASA/GSFC (Smith et al. 2001, JGR 106, 23689)
+- The ground at Opportunity, Endeavour crater: NASA/JPL/University of Arizona (HiRISE); MOLA Science Team, NASA/GSFC (Smith et al. 2001, JGR 106, 23689)
+- The ground at Perseverance, Jezero crater: NASA/JPL/University of Arizona (HiRISE); MOLA Science Team, NASA/GSFC (Smith et al. 2001, JGR 106, 23689)
+- The ground at Zhurong, Utopia Planitia: NASA/JPL/University of Arizona (HiRISE); MOLA Science Team, NASA/GSFC (Smith et al. 2001, JGR 106, 23689)
+<!-- b200-f7-ground: end -->
+
+<!-- b200-c2-deep: begin -->
+## 3c-4. The black holes against the EHT's pictures, the eclipsing stars' minima, and the cards read aloud (release 2.0.0, forge #149, #142, #151)
+
+**M87\* in 2018.** `site/images/eht-m87-2018.jpg` is the **Event Horizon Telescope Collaboration**'s image of M87\* from
+the observations of 21 April 2018 (EHT Collaboration 2024, "The persistent shadow of the supermassive black hole of
+M87. I", A&A 681, A79, <https://doi.org/10.1051/0004-6361/202347932>), released on 2024-01-18 under **CC BY 4.0**, the
+licence the EHT gives its images (the 2017 pictures in §3f carry it through ESO). The file is the Perimeter Institute's
+copy of the release's two-panel picture (credit there: "EHT Collaboration"; the EHT's own page refused every request on
+2026-11-07): the 2018 panel cropped to the ring, without its date and scale bar, and scaled to 512 × 512. A black hole's
+card shows it, and §3f's two, under "Compare with the EHT picture", with the credit **EHT Collaboration** and the
+licence printed under them and a link to each source.
+
+| file | object | credit | licence | source |
+|---|---|---|---|---|
+| `eht-m87-2018.jpg` | M87\*, 2018 April 21 | **EHT Collaboration** | CC BY 4.0 | [A&A 681, A79](https://doi.org/10.1051/0004-6361/202347932); the release's picture as the Perimeter Institute serves it, cropped and scaled |
+
+The drawn holes are turned to match (`site/js/scene/blackhole.js` PROFILES): M87\* seen 17° from its jet, the jet at
+288° (Walker et al. 2018, ApJ 855, 128), the flow clockwise (EHT 2019 paper V, ApJL 875, L5), so its brighter side is
+in the south; Sagittarius A\* seen 30° from its axis, the best-bet models of EHT 2022 paper V (ApJL 930, L16), clockwise
+as GRAVITY's flares (A&A 677, L10, 2023: 157 ± 5°), its axis on the sky chosen. Where each picture is brightest was
+measured on these files (a brightness-weighted mean round the ring; `site/js/ui/holespin.js` EHT_PICTURES).
+
+**Eclipsing stars' minima.** The clock and "Algol at minimum" use the linear elements of **Kreiner 2004** (J.M. Kreiner,
+"Up-to-date linear elements of eclipsing binaries", Acta Astronomica 54, 207; VizieR J/AcA/54/207, read 2026-11-07
+through vizier.cfa.harvard.edu) for eight stars: Algol, lambda Tauri, delta Librae, RZ Cassiopeiae, U Cephei, V Puppis,
+Alphecca and W Ursae Majoris. VizieR's terms: free in a scientific context with the authors cited; every such row of
+`site/data/variables.json` cites the paper.
+
+**The cards read aloud.** `site/audio/cards/en/` holds the leads of 68 of the 99 baked English cards (each heard by a recogniser; the rest are read by the device) (`site/data/wikicards/en.json`)
+said by the trips' synthetic voice, **Kokoro-82M (af_heart), Apache-2.0** (§9b), made offline by
+`scripts/narrate-cards.py` with the trips' own engine, pauses, levelling and encoding. The words are Wikipedia's
+(**Wikipedia contributors, CC BY-SA 4.0**), so each clip is an adaptation of the quoted text and is shared alike under
+**CC BY-SA 4.0**; the card prints the voice's and the text's credit while a clip plays, and `index.json` names both.
+
+| Item | Files | Licence | Credit line |
+|---|---|---|---|
+| The baked cards' leads, spoken | `site/audio/cards/en/*.opus`, `*.m4a`, `*.vtt` | CC BY-SA 4.0 (the text); Apache-2.0 (the voice's model) | Voice: Kokoro-82M (af_heart), a synthetic voice; text: Wikipedia contributors |
+<!-- b200-c2-deep: end -->
+<!-- b200-f10-stars3d: begin -->
+## 3c-5. Millions of stars in 3D — AT-HYG v4.0, CC BY-SA 4.0 (release 2.0.0, forge #140)
+
+**Stars in 3D beyond HYG: AT-HYG v4.0 (David Nash), from Tycho-2, Hipparcos and Gaia DR3.** `site/data/stars3d-athyg/`
+holds the 2 411 200 stars of **AT-HYG v4.0**, "Augmented Tycho - HYG", by **David Nash** (astronexus,
+<https://codeberg.org/astronexus/athyg>), that HYG (§3c) does not already draw: the full catalogue `data/athyg_40.csv.gz`
+(199 688 001 B, sha256 `69ad04dd…46818a6`, read 2026-11-08), cut by `scripts/build-stars3d-tiles.py` into an octree of
+tiles in the A1 format (`harvest/tilepack.py`), which the 3D map fetches by node round the camera on a rung of the
+ladder (`site/js/scene/stars3dtiles.js`). Licence: the repository's LICENSE and README, "This work is licensed under a
+Creative Commons Attribution-ShareAlike 4.0 International License" (v3.0 and later), so the tiles are a derivative
+shared alike under **CC BY-SA 4.0**. AT-HYG's own sources, from its `ACKNOWLEDGMENTS.md`: the Hipparcos and Tycho-2
+catalogues (ESA 1997, SP-1200), Gaia DR3 (ESA/Gaia/DPAC), the Yale Bright Star Catalogue and the Gliese-Jahreiss
+catalogue; its distances are Gaia DR3's for nearly every star, under AT-HYG's licence.
+
+| file | what | licence | how it was made |
+|---|---|---|---|
+| `site/data/stars3d-athyg/set.json`, `L*/*.bin` | each star's place (its direction from the Sun to 13″ and its distance to 0.02 %, ecliptic J2000), absolute V magnitude, B-V, where its distance came from, and its Tycho-2 number: 13 bytes a star | CC BY-SA 4.0 | the stars with a HYG id left out (HYG draws them), every star within 20″ and 1.5 magnitudes of one of HYG's (1 994: the same star under two numbers, as `scripts/build-startiles.py` decides it), and those with no distance; Tycho's VT and BT-VT turned into V and B-V by the Hipparcos catalogue's relations (ESA 1997, vol. 1, section 1.3); nodes of 8 192, the brightest of their cube |
+
+**What is cited and what is modelled.** The places, magnitudes and colours are AT-HYG's (**measured**). AT-HYG carries no
+parallax error, so the card's distance error is **modelled** from each mission's typical error at these brightnesses:
+Gaia DR3 0.03 mas (Gaia Collaboration, Brown et al. 2021, A&A 649, A1: "0.02–0.03 mas for G < 15"), Gaia DR2 0.04 mas
+(Lindegren et al. 2018, A&A 616, A2), Hipparcos about 0.5 mas (van Leeuwen 2007, A&A 474, 653); past 3 kpc the card says the distance is a guess.
+
+**Gaia DR3 was not used.** The issue asked for a Gaia DR3 subset as a third tier once its licence was confirmed as
+CC BY-SA 3.0 IGO. ESA's page, read 2026-11-08, says "Gaia data are distributed under the CC BY-NC 3.0 IGO license."
+(<https://www.cosmos.esa.int/web/gaia-users/license>), and its archive terms say the same of every ESA space science
+archive (<https://www.cosmos.esa.int/web/esdc/terms-and-conditions>). A non-commercial cut cannot be mixed into a
+CC BY-SA file, so nothing was downloaded from the archive for this and the 3D map has no Gaia DR3 tier.
+<!-- b200-f10-stars3d: end -->

@@ -574,3 +574,239 @@ sources:
     offline: shipped
     checked: 2026-10-29
   # 0079 c4: end
+  # b200-f1-find: begin
+  - id: wikimedia-commons-flags
+    name: Wikimedia Commons, national flags (the file each country's Wikidata item names, property P41)
+    match: ["https://commons.wikimedia.org/wiki/File:Flag_of_"]
+    url: https://commons.wikimedia.org/wiki/Category:SVG_flags_of_countries
+    licence: Public domain, per file (each file's own page); site/images/flags/sources.json lists the page and the licence of every one
+    licence_read: ""
+    licence_url: https://commons.wikimedia.org/w/api.php?action=query&prop=imageinfo&iiprop=extmetadata
+    licence_note: "Read 2026-11-07 through the Commons API, one call per forty files: every one of the 103 files gave LicenseShortName \"Public domain\". A flag is a national symbol: some countries restrict how it may be used (in advertising, defaced); a small flag beside a country's name in a list is not such a use. Minified here (metadata removed, coordinates rounded); sources.json says so."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  # b200-f1-find: end
+  # b200-f4-cards: begin
+  - id: wikipedia-cards
+    name: Wikipedia (the REST page summary of each article) and Wikimedia Commons (the lead picture's credit), for the cards' Wikipedia block
+    match: ["https://en.wikipedia.org/api/rest_v1/page/summary/", "https://commons.wikimedia.org/w/api.php"]
+    url: https://www.mediawiki.org/wiki/Wikimedia_REST_API
+    licence: "Text CC BY-SA 4.0 (Wikipedia contributors); each picture under its own free licence, as its Commons page says (CC0, public domain, CC BY, CC BY-SA only)"
+    licence_read: "Text is available under the Creative Commons Attribution-ShareAlike 4.0 License; additional terms may apply."
+    licence_url: https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License
+    licence_note: "site/data/wikicards/<lang>.json (scripts/build-wikicards.mjs, 2026-11-07) keeps the lead of 99 articles in English and up to 91 in each other language, quoted, with each article's address; the pictures are not copied, only their Commons address, artist and licence, and the card prints that credit under each. A Commons file whose LicenseShortName is not free, and any picture kept by a single Wikipedia (often fair use), is left out by ui/wikicardcore.js freeLicence and commonsFile."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  - id: wikidata-norad
+    name: Wikidata, satellite catalog number (P377) of every item with an English Wikipedia article
+    match: ["https://query.wikidata.org/sparql"]
+    url: https://www.wikidata.org/wiki/Property:P377
+    licence: CC0 1.0
+    licence_read: "All structured data from the main, Property, Lexeme, and EntitySchema namespace is available under the Creative Commons CC0 License"
+    licence_url: https://www.wikidata.org/wiki/Wikidata:Licensing
+    licence_note: "site/data/wikicards/norad.json, 3 166 numbers, each with its English article's title (scripts/build-wikicards.mjs, 2026-11-07)."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  # b200-f4-cards: end
+  # b200-f3-stars: begin -- the star motions and the variable stars (forge #141, #142)
+  - id: hyg-database
+    name: HYG Stellar Database v4.4 (David Nash, astronexus), read by scripts/build-stars3d.py and scripts/build-starmotion.py
+    match: ["https://codeberg.org/astronexus/hyg"]
+    url: https://codeberg.org/astronexus/hyg
+    licence: CC BY-SA 4.0
+    licence_read: "This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License"
+    licence_url: https://codeberg.org/astronexus/hyg/raw/branch/main/data/hyg/CURRENT/LICENSE
+    licence_note: "The LICENSE file beside hyg_v44.csv.gz names CC BY-SA 4.0, the licence CREDITS.md already gives for stars3d.bin, which was rebuilt from the same file on 2026-11-07 byte for byte. starmotion.bin is a derivative (its proper motions, radial velocities and distances), shared alike under CC BY-SA 4.0. One row corrected from Gaia DR3 (CC BY-SA 3.0 IGO as Wikipedia quotes it): Barnard's Star, whose declination motion HYG's column clamps at 9 999.99 mas/yr."
+    # b200-c3-learn: also inline in site/lab/hr-diagram-of-our-neighbours/index.html: the 2 362 rows within 25 pc that have a colour and an absolute magnitude (rounded), shared alike under CC BY-SA 4.0 (forge #159).
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+    pins:
+      - {file: site/data/starmotion.bin, sha256: 3615204ce950cc7db5ac2dd23143986f52d34bc4562b1963bc6b58eb4b4573da}
+  # b200-f3-stars: end
+  # b200-c2-deep: begin -- forge #149, #142, #151: the EHT's 2018 picture of M87*, the eclipsing stars' up-to-date
+  # elements, and the cards read aloud in the trips' voice
+  - id: eht-m87-2018
+    name: Event Horizon Telescope Collaboration, the 2018 image of M87* (A&A 681, A79, 2024), as the EHT's release of 2024-01-18 gives it
+    match: ["https://doi.org/10.1051/0004-6361/202347932", "https://perimeterinstitute.ca/sites/default/files/2024-01/"]
+    url: https://doi.org/10.1051/0004-6361/202347932
+    licence: CC BY 4.0 (EHT Collaboration)
+    licence_read: ""
+    licence_url: https://eventhorizontelescope.org/
+    licence_note: "The EHT Collaboration releases its images under CC BY 4.0, as its 2017 pictures carry through ESO (eso1907a, the esa row's terms) and Commons (File:Black hole - Messier 87 crop max res.jpg, LicenseShortName CC BY 4.0, read 2026-11-07). The 2018 release page (eventhorizontelescope.org/M87-one-year-later-proof-of-a-persistent-black-hole-shadow) answered 403 to every request on 2026-11-07, so no sentence of it is quoted; the file was taken from the Perimeter Institute's copy of the same release (credit there: \"EHT Collaboration\"), 2018M87_PR_normTrue_afmhot_us_dateTrue_label_lightdays.jpeg, 5524 x 2812. Changed: the 2018 panel cropped to the ring (1900 x 1900 px from x 3070, y 420, leaving out its date and the scale bar) and scaled to 512 px; the card says it is the EHT's and links the paper."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+    pins:
+      - {file: site/images/eht-m87-2018.jpg, sha256: 390759811dbe0af505ffdb7b2c3e8045669b760853aa124eb7658f6b438b8aa4}
+  - id: vizier-kreiner-2004
+    name: Kreiner 2004, up-to-date linear elements of eclipsing binaries (Acta Astron. 54, 207), VizieR J/AcA/54/207, read by hand into scripts/build-variables.py
+    match: ["https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=J/AcA/54/207"]
+    url: https://vizier.cfa.harvard.edu/viz-bin/VizieR?-source=J/AcA/54/207
+    licence: Free of usage in a scientific context, with the original authors and publication cited
+    licence_read: "The data retrieved with VizieR are free of usage in a scientific context ; however, as it is the usage in scientific publication, the original authors and publication references including the publisher have to be explicitely cited"
+    licence_url: https://cds.unistra.fr/vizier-org/licences_vizier.html
+    licence_note: "Eight stars' epoch and period (two numbers each, facts), cited on every row of site/data/variables.json that carries them (`linear.cite`) and in CREDITS.md 3c-4."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  - id: card-voice-kokoro
+    name: The baked cards' Wikipedia leads read by Kokoro-82M (af_heart), offline, by scripts/narrate-cards.py into site/audio/cards/en/
+    match: ["https://huggingface.co/hexgrad/Kokoro-82M"]
+    url: https://huggingface.co/hexgrad/Kokoro-82M
+    licence: "The voice's model Apache-2.0; the words Wikipedia's, CC BY-SA 4.0, so each clip is an adaptation shared alike under CC BY-SA 4.0"
+    licence_read: ""
+    licence_url: https://huggingface.co/hexgrad/Kokoro-82M
+    licence_note: "The model's licence is the trips' (registry/narration.yaml engine, CREDITS.md 9b). The text is the wikipedia-cards row's quoted leads (CC BY-SA 4.0, Wikipedia contributors); site/audio/cards/en/index.json names both, and the card shows the credit while a clip plays."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  # b200-c2-deep: end
+  # b200-f6-learn: begin -- forge #159: the real light curve inside site/lab/find-a-planet-in-kepler-data/
+  - id: stsci-mast-kepler
+    name: STScI MAST (Kepler mission light curves)
+    match: ["https://archive.stsci.edu/missions/kepler/"]
+    url: https://archive.stsci.edu/missions/kepler/lightcurves/0114/011446443/
+    licence: Public domain (NASA mission data at MAST); acknowledgement asked
+    licence_read: "Most data hosted at MAST are in the public domain (see: open data ), and therefore do not have restrictions on use ."
+    licence_url: https://archive.stsci.edu/publishing/data-use
+    licence_note: "Kepler is not one of the copyrighted collections the same page lists. The simulator's Sources comment carries MAST's Kepler acknowledgement (https://archive.stsci.edu/publishing/mission-acknowledgements). Used: kplr011446443-2009166043257_llc.fits (TrES-2, quarter 1), the first 612 cadences of PDCSAP_FLUX, normalised and rounded to 10 ppm, inline in one Lab page; the FITS file is not committed."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  # b200-f6-learn: end
+  # b200-c3-learn: begin -- forge #159: the real data inside three more Lab simulators
+  - id: cds-vizier-cfa-lab
+    name: CDS VizieR through its Harvard-Smithsonian mirror (JLA supernovae, J/A+A/568/A22; Keck HIRES velocities, J/AJ/153/208), inline in two Lab pages
+    match: ["https://vizier.cfa.harvard.edu/viz-bin/"]
+    url: https://vizier.cfa.harvard.edu/
+    licence: Free of usage in a scientific context, with the original authors and publication cited
+    licence_read: "The data retrieved with VizieR are free of usage in a scientific context; however, as it is the usage in scientific publication, the original authors and publication references including the publisher have to be explicitely cited"
+    licence_url: https://cds.unistra.fr/vizier-org/licences_vizier.html
+    licence_note: "Space Radar is free and non-commercial; both pages cite the authors and journals. Used: Betoule et al. 2014, A&A 568, A22, table F.3 (740 SNe: zcmb, mB, X1, C, log M*), turned into distance moduli by the paper's Eq. 4-5 and Table 10 (JLA stat+sys), rounded to 0.01 mag, inline in site/lab/hubble-diagram-from-supernovae/; Butler et al. 2017, AJ 153, 208, table 1, the 43 rows of HD217014 (BJD, RV, error), inline in site/lab/find-a-planet-by-its-wobble/. Read through the mirror because vizier.cds.unistra.fr did not resolve here; the raw files are not committed."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  - id: nasa-lambda-firas
+    name: LAMBDA, COBE FIRAS monopole spectrum (firas_monopole_spec_v1.txt), inline in one Lab page
+    match: ["https://lambda.gsfc.nasa.gov/data/cobe/firas/"]
+    url: https://lambda.gsfc.nasa.gov/product/cobe/firas_monopole_get.html
+    licence: NASA data, no copyright claimed (NASA media usage guidelines); LAMBDA's acknowledgement carried
+    licence_read: "NASA content - images, audio, video, and media files used in the rendition of 3-dimensional models, such as texture maps and polygon data in any format - generally are not subject to copyright in the United States."
+    licence_url: https://www.nasa.gov/nasa-brand-center/images-and-media/
+    licence_note: "LAMBDA (https://lambda.gsfc.nasa.gov/contact/): 'There is no cost involved in the use of LAMBDA', and it asks for its acknowledgement, which the page's Sources comment quotes. Used: all 43 rows (frequency, spectrum, 1-sigma error) of Fixsen et al. 1996, ApJ 473, 576, Table 4, as LAMBDA's v1 file (May 2005) writes them, inline in site/lab/the-afterglow-is-a-perfect-blackbody/."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  # b200-c3-learn: end
+  # b200-f7-ground: begin -- the ground at the landing sites (forge #146): the stereo terrain models, their
+  # orthoimages and the global height models scripts/build-ground.py reads (registry/ground.yaml) into site/data/ground/
+  - id: lroc-pds-nac-dtm
+    name: LROC NAC stereo terrain models and orthoimages (LRO-L-LROC-5-RDR-V1.0), Arizona State University, served through NASA PDS
+    match: ["https://pds.mcp.nasa.gov/data/store/img/lunar_reconnaissance_orbiter/pds4/lroc/"]
+    url: https://data.lroc.im-ldi.com/lroc/rdr_product_select
+    licence: Public domain (LROC PDS products)
+    licence_read: "Data products available through the LROC Data Node of the PDS or through NASA PDS interfaces are in the public domain"
+    licence_url: https://www.lroc.im-ldi.com/about/terms
+    licence_note: "The same page asks for the credit NASA/GSFC/Arizona State University, and says the LROC website's own curated products (not used here) are copyrighted. pds.lroc.im-ldi.com redirects each product to pds.mcp.nasa.gov, the NASA PDS interface the files were read from. site/data/ground/apollo-11, apollo-15, apollo-17 and change-4."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  - id: hirise-pds-dtm
+    name: HiRISE stereo terrain models and orthoimages (MRO-M-HIRISE-5-DTM-V1.0), University of Arizona, PDS archive
+    match: ["https://hirise-pds.lpl.arizona.edu/PDS/DTM/"]
+    url: https://www.uahirise.org/dtm/
+    licence: Public domain (HiRISE image usage policy)
+    licence_read: "All of the images produced by HiRISE and accessible on this site are within the public domain: there are no restrictions on their usage by anyone in the public"
+    licence_url: https://www.uahirise.org/media/usage.php
+    licence_note: "The page asks for the credit line 'NASA/JPL/University of Arizona', which CREDITS.md and the stage's sources line carry. site/data/ground/gale, jezero and utopia."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  - id: usgs-sldem2015
+    name: SLDEM2015, the merged LOLA and SELENE Terrain Camera heights (USGS Astrogeology mosaic, 512 pixels a degree)
+    match: ["https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/LolaKaguya_Topo/"]
+    url: https://astrogeology.usgs.gov/search/map/moon_lro_lola_selene_kaguya_tc_dem_merge_60n60s_59m
+    licence: Public domain
+    licence_read: "Access Constraints public domain"
+    licence_url: https://astrogeology.usgs.gov/search/map/moon_lro_lola_selene_kaguya_tc_dem_merge_60n60s_59m
+    licence_note: "The page's 'Use Constraints' asks to cite the authors: Barker et al. 2016, Icarus 273, 346-355 (CREDITS.md). Only the rows round each lunar site are read, by range requests; the far ground of site/data/ground/<lunar site>/far-h.bin is resampled from them."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  - id: usgs-mola-463m
+    name: MOLA global heights, 463 m a pixel (USGS Astrogeology mosaic of the MGS MOLA MEGDR)
+    match: ["https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Mars_MGS_MOLA_DEM_mosaic_global_463m"]
+    url: https://astrogeology.usgs.gov/search/map/mars_mgs_mola_dem_463m
+    licence: CC0 (public domain)
+    licence_read: "Access Constraints CC0 (public domain)"
+    licence_url: https://astrogeology.usgs.gov/search/map/mars_mgs_mola_dem_463m
+    licence_note: "Only the rows round each Mars site are read, by range requests; the far ground of site/data/ground/<Mars site>/far-h.bin is resampled from them. The HRSC-MOLA blend (200 m) was not used: its HRSC part is CC BY-SA 3.0 IGO."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  - id: trek-far-ground
+    name: NASA Solar System Treks tiles of the LRO WAC global mosaic and the Viking MDIM 2.1 colour mosaic (the far ground's brightness beyond the stereo strips)
+    match: ["https://trek.nasa.gov/tiles/Moon/EQ/LRO_WAC_Mosaic_Global_303ppd_v02/", "https://trek.nasa.gov/tiles/Mars/EQ/Mars_Viking_MDIM21_ClrMosaic_global_232m/"]
+    url: https://trek.nasa.gov/tiles/apidoc/trekAPI.html
+    licence: Public domain (NASA media guidelines; USGS Astrogeology for MDIM 2.1)
+    licence_read: "Access Constraints Public domain"
+    licence_url: https://astrogeology.usgs.gov/search/map/mars_viking_colorized_global_mosaic_232m
+    licence_note: "The quote is the Viking MDIM 2.1 page's. The WAC mosaic is the row moon-lro-wac of registry/tilesets.yaml, whose licence line is NASA's media guidelines ('generally are not subject to copyright in the United States'). A few tiles round each site are fetched at build time and resampled to grey into site/data/ground/<site>/far-o.jpg."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  # b200-f7-ground: end
+  # b200-c1-culture: begin -- forge #143: the figures' stories and the Māori, Hawaiian and Boorong pictures
+  - id: stellarium-skycultures
+    name: Stellarium sky cultures (description.md, index.json and illustrations), read by scripts/build-skylore.py
+    match: ["https://raw.githubusercontent.com/Stellarium/stellarium/a8469197a65de582f6b0ebd82b85173145241b79/skycultures/"]
+    url: https://github.com/Stellarium/stellarium/tree/a8469197a65de582f6b0ebd82b85173145241b79/skycultures
+    licence: CC BY-SA 4.0 (each culture's own License section); Free Art License for the modern pictures only
+    licence_read: "License: CC BY-SA 4.0 (maori, hawaiian_starlines, samoan, tongan, norse, boorong, chinese); Text and data: CC BY-SA 4.0, Illustrations: Free Art License (modern)"
+    licence_url: https://creativecommons.org/licenses/by-sa/4.0/
+    licence_note: "Read 2026-11-07 at the commit registry/skycultures.yaml pins. site/data/skystories/ (one JSON per culture, 474 figures) carries each description's text for its figures as it stands, with the culture's credit and CC BY-SA 4.0, and our own short summaries (marked, each with its published source) where a description gives a figure no text; registry/skystories.yaml says which. site/data/skyart/maori/, site/data/skyart/hawaiian/ and site/data/skyart/boorong/ (38 pictures, about 248 kB) are those cultures' illustrations, CC BY-SA 4.0 by their culture's licence section (the Hawaiian ones drawn by Kealoha Kaneakua), greyed and resampled to power-of-two squares, each folder with its LICENSE.txt. The anchor stars' J2000 places are from VizieR I/239 (cds-vizier). Not read for shipping: navajo and egyptian (GNU GPL v2.0), arabic_indigenous (CC BY-NC-ND 4.0), babylonian_mulapin (CC BY-ND 4.0), lokono (no licence)."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-07
+  # b200-c1-culture: end
+  # b200-f10-stars3d: begin -- forge #140: AT-HYG's 2.4 million stars in 3D, and why Gaia DR3 is not a tier
+  # GAIA DR3 WAS NOT DOWNLOADED. The issue asked for the archive's licence to be confirmed as CC BY-SA 3.0 IGO before use.
+  # Read 2026-11-08: https://www.cosmos.esa.int/web/gaia-users/license says "Gaia data are distributed under the CC BY-NC
+  # 3.0 IGO license.", and ESA's archive terms (https://www.cosmos.esa.int/web/esdc/terms-and-conditions) say "Data hosted
+  # in the ESA Space Science Archives are distributed under the CC BY-NC 3.0 IGO licence." A non-commercial cut cannot be
+  # mixed into a CC BY-SA file, so the 3D map has no Gaia DR3 tier; the row esa-gaia above already carries that licence.
+  - id: athyg-database
+    name: AT-HYG v4.0 (David Nash, astronexus), the full catalogue data/athyg_40.csv.gz, read by scripts/build-stars3d-tiles.py
+    match: ["https://codeberg.org/astronexus/athyg"]
+    url: https://codeberg.org/astronexus/athyg
+    licence: CC BY-SA 4.0
+    licence_read: "This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License"
+    licence_url: https://codeberg.org/astronexus/athyg/raw/branch/main/LICENSE
+    licence_note: "The LICENSE file and the README (\"This license applies to versions v3.0 and later\"), read 2026-11-08. data/athyg_40.csv.gz is 199 688 001 B, sha256 69ad04dd33d7c7bb4f5e1b4682798075811547ea9fb8d0e802e5b319c46818a6 (the repository's LFS pointer says the same). site/data/stars3d-athyg/ is a derivative (positions, magnitudes, colours and Tycho-2 numbers of the stars HYG does not have), shared alike under CC BY-SA 4.0. Its distances are Gaia DR3's (and a few Gaia DR2's and Hipparcos's) as AT-HYG carries them, under AT-HYG's own licence. scripts/build-startiles.py reads a subset of the same catalogue (CREDITS.md 3c)."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-08
+    pins:
+      - {file: site/data/stars3d-athyg/set.json, sha256: e87f05c1b64c35caedb80918a1f41d7fe62d991b6051bced737ee574f652add7}
+  # b200-f10-stars3d: end

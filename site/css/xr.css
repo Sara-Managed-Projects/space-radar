@@ -1,0 +1,159 @@
+/* css/xr.css -- the gamepad's hint and ring (ui/gamepad.js, forge #164) and the headset's button and note (ui/headset.js,
+   forge #158). Linked by those modules on their first use (ui/latercss.js), never by index.html: none of it is a first
+   visit's bytes. The hint wears css/keyhint.css's glass, head and keycaps; this file adds its rows and the ship switch.
+   Tokens only (css/ui.css). Every control is 44 px to the touch. */
+
+/* --- the gamepad's hint ------------------------------------------------------------------------ */
+
+.sr-padhint.sr-keyhint { width: 340px; }
+
+.sr-padhint__list {
+  display: grid;
+  gap: var(--sp-1);
+  margin: 0;
+}
+
+.sr-padhint__row {
+  display: grid;
+  grid-template-columns: 128px minmax(0, 1fr);
+  gap: var(--sp-3);
+  align-items: center;
+  min-height: 32px;
+}
+
+.sr-padhint__key,
+.sr-padhint__does { margin: 0; }
+
+.sr-padhint__cap {
+  height: auto;
+  min-height: 28px;
+  padding: var(--sp-1) var(--sp-2);
+  line-height: 16px;
+  text-align: center;
+}
+
+.sr-padhint__does { color: var(--sr-text); }
+
+.sr-padhint__note {
+  margin: var(--sp-2) 0 0;
+  color: var(--sr-text-dim);
+}
+
+.sr-padhint__note[hidden] { display: none; }
+
+.sr-padhint__ship {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: var(--sp-2);
+  align-items: start;
+  min-height: 44px;
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  cursor: pointer;
+  border-top: 1px solid var(--sr-line);
+}
+
+.sr-padhint__ship input {
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+  accent-color: var(--sr-ember);
+}
+
+.sr-padhint__ship input:focus-visible {
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 2px;
+}
+
+.sr-padhint__shipwords {
+  display: flex;
+  flex-direction: column;
+}
+
+.sr-padhint__shipname { color: var(--sr-text); font-weight: 600; }
+
+.sr-padhint__shiphow { color: var(--sr-text-dim); }
+
+/* --- the ring: what A chooses ------------------------------------------------------------------ */
+
+.sr-padring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: var(--sr-z-card);
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+  pointer-events: none;
+  border: 2px solid var(--sr-ember);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--sr-glass-strong);
+}
+
+.sr-padring[hidden] { display: none; }
+
+/* --- the headset's note ------------------------------------------------------------------------ */
+
+.sr-xrnote {
+  box-sizing: border-box;
+  width: min(460px, calc(100vw - 2 * var(--sp-4)));
+  padding: var(--sp-5);
+  font: 400 var(--sr-fs-body)/22px var(--sr-font);
+  color: var(--sr-text);
+  background: var(--sr-glass-strong);
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius-shell);
+  box-shadow: var(--sr-shadow);
+}
+
+.sr-xrnote::backdrop { background: var(--sr-glass-strong); }
+
+@media (prefers-reduced-transparency: reduce) {
+  .sr-xrnote { background: var(--sr-glass-solid); }
+}
+
+.sr-xrnote__title {
+  margin: 0 0 var(--sp-3);
+  font: 600 var(--sr-fs-lead)/26px var(--sr-font);
+}
+
+.sr-xrnote__p { margin: 0 0 var(--sp-3); }
+
+.sr-xrnote__p--warn {
+  padding-left: var(--sp-3);
+  border-left: 2px solid var(--sr-ember);
+}
+
+.sr-xrnote__p--dim {
+  font-size: var(--sr-fs-sm);
+  line-height: 18px;
+  color: var(--sr-text-dim);
+}
+
+.sr-xrnote__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  justify-content: flex-end;
+  margin-top: var(--sp-4);
+}
+
+.sr-xrnote__btn { min-height: 44px; min-width: 96px; }
+
+.sr-xrnote__btn:focus-visible {
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 2px;
+}
+
+/* --- a phone: the headset is a row of More, as the tour and the journal are -------------------- */
+
+html.sr-phone .sr-rail__btn--headset { display: none; }
+
+html.sr-phone .sr-padhint.sr-keyhint { width: auto; }
+
+/* The hint covers most of a phone's scene: the ring would sit on its words, so it steps aside while the hint is open. */
+html.sr-phone:has(.sr-padhint:not([hidden])) .sr-padring { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-padring { transition: none; }
+}

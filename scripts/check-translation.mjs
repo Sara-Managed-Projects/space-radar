@@ -51,6 +51,39 @@ async function english() {
   await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.later.js')).href); // adds its sections to base.COPY
   // 1.6.2: the Moments' words (momentPlayer, momentShelf, momentStories) and the three stories' words, each added to base.COPY; 1.7.2: Apollo 13, Sputnik 1, Voskhod 2 and STS-1 too (Spanish #525, Portuguese Brazil #526, French #527, German #528, Russian #533 and Ukrainian #534 have Voskhod 2 and STS-1 drafted; zh, hi, he and ar keep the English until a translator has them); 1.7.7: Hubble's deployment and the first Falcon 9 landing too
   for (const f of ['en.moments.js', 'en.moments.vostok.js', 'en.moments.apollo11.js', 'en.moments.artemis2.js', 'en.moments.apollo13.js', 'en.moments.sputnik.js', 'en.moments.voskhod.js', 'en.moments.sts1.js', 'en.moments.hubble.js', 'en.moments.falcon9.js']) await import(pathToFileURL(resolve(HERE, '../site/js/copy/' + f)).href);
+  // b200-f1-find: begin -- the words of Find, the owners, the clouds and the date field (copy/en.find.js), drafted in every language
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.find.js')).href);
+  // b200-f1-find: end
+  // b200-f4-cards: begin -- the words of a card's Wikipedia block and Read aloud (copy/en.cards.js), drafted in every language
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.cards.js')).href);
+  // b200-f4-cards: end
+  // b200-f3-stars: begin -- the words of deep time, the variable stars and the turning holes (copy/en.stars.js)
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.stars.js')).href);
+  // b200-f3-stars: end
+  // b200-f5-make: begin -- the words of the flight editor, Record and Dome and 360 (copy/en.make.js), drafted in every language
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.make.js')).href);
+  // b200-f5-make: end
+  // b200-f6-learn: begin -- the words of the daily challenges (copy/en.play.js, forge #160), drafted in every language
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.play.js')).href);
+  // b200-f6-learn: end
+  // b200-f8-xr: begin -- the words of the gamepad and the headset (copy/en.xr.js), drafted in every language
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.xr.js')).href);
+  // b200-f8-xr: end
+  // b200-f9-reach: begin -- the words of the real recordings' panel (copy/en.sound.js, forge #163), drafted in every language
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.sound.js')).href);
+  // b200-f9-reach: end
+  // b200-f7-ground: begin -- the words of standing on another world and its sky (copy/en.ground.js)
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.ground.js')).href);
+  // b200-f7-ground: end
+  // b200-c3-learn: begin -- the Fengyun-1C Moment's words (copy/en.moments.fengyun.js, forge #153), drafted in every language
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.moments.fengyun.js')).href);
+  // b200-c3-learn: end
+  // b200-c2-deep: begin -- the words of the 3D stars over deep time, the variable stars' rows, the EHT comparison and the cards' voice (copy/en.deep.js)
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.deep.js')).href);
+  // b200-c2-deep: end
+  // b200-f10-stars3d: begin -- the words of the 3D star map's AT-HYG tier (copy/en.startiers.js, forge #140)
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.startiers.js')).href);
+  // b200-f10-stars3d: end
   return { COPY: base.COPY, GLOSSARY: base.GLOSSARY };
 }
 

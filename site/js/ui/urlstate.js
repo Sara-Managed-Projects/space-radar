@@ -51,9 +51,32 @@ export const HASH_KEY = 'm';
 // `moment` (0079 C1, site/js/moments/): a mission replayed, `#moment=demo-saturn&t=162`; beside it `t` is the moment's
 // mission second, not the map's clock (bootLink and laterLink below leave the map's clock alone for it).
 export const KEYS = ['m', 'v', 'build', 'drift', 'ambient', 'autopilot', 'shuffle', 'sound', 'voice', 'captions', 'pace', 'trip', 'stop', 'present', 'at', 'go', 'event', 't', 'rate', 'stage', 'exp', 'drawn', 'p', 'imagine', 'moment', 'cam']; // 0079 C1: moment
+// b200-f1-find: begin -- forge #150/#152/#153: a Find question (`find=exo_ly50_hz_rocky`, ui/findcore.js parseFind), a
+// catalogue owner (`owner=IND`, data/owners.js), an operator (`operator=spacex`), a debris cloud (`debris=fy1c`) and a
+// constellation (`constellation=kuiper`, data/clouds.js). ui/find.js writes them; main.js opens Find when a link has one.
+KEYS.splice(KEYS.indexOf('cam'), 0, 'find', 'owner', 'operator', 'debris', 'constellation'); // before `cam`, which stays last
+// b200-f1-find: end
+// b200-f2-worlds: begin (forge #144, #145) -- `cut` a world opened to its layers (`#cut=mars`, ui/cutaway.js);
+// `size` and `dist` the Planets tab's sliders (`#size=2000&dist=log`, scene/orrery.js parseSize, parseDist).
+// Written before `cam`, which stays the last key (tests/test_urlstate.mjs: a pose ends the link).
+KEYS.splice(KEYS.indexOf('cam'), 0, 'cut', 'size', 'dist');
+// b200-f2-worlds: end
+// b200-f5-make: begin (forge #155, #157) -- `path` a flight made in the editor, the whole path in the link (ui/flightpath.js
+// encodePath: `#path=z...`, deflated); `proj` the picture's projection, `dome` (a 180-degree fisheye, `dome,30` tilted 30
+// degrees) or `360` (equirectangular), scene/projection.js parseProj. Before `cam`, which stays last.
+KEYS.splice(KEYS.indexOf('cam'), 0, 'path', 'proj');
+// b200-f5-make: end
+// b200-f6-learn: begin -- forge #160: `play` a daily challenge (`#play=find-earth`, `which-world`, `guess-distance`; `1` the list), ui/play.js
+KEYS.splice(KEYS.indexOf('cam'), 0, 'play');
+// b200-f6-learn: end
+// b200-f7-ground: begin (forge #146, #147) -- `ground` a landing site to stand on (`#ground=apollo-15`, a
+// registry/ground.yaml row) and `sky` a place on another world to look up from (`#sky=mars:jezero`, `#sky=titan`,
+// `#sky=europa:10,200`; sky/worldframe.js parseSkyLink). scene/groundstage.js writes them; before `cam`, which stays last.
+KEYS.splice(KEYS.indexOf('cam'), 0, 'ground', 'sky');
+// b200-f7-ground: end
 export const VERSION = '1';
 /** The release this code is (0076 W4-c). A release bumps it with CHANGELOG.md; tests/test_access.mjs holds its shape. */
-export const BUILD = '1.4.0';
+export const BUILD = '2.0.0';
 /** The map's centre on a first visit, which an address with no keys at all means. */
 export const DEFAULT_STAGE = 'earth';
 

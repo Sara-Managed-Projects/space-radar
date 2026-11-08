@@ -73,9 +73,12 @@ import { objectPages, objectPageUrl, PAGES_INDEX } from './objectpage.js';
 import { PRESET_IDS, presetOf, applyPhotoPreset } from './photopresets.js';
 import '../copy/en.w3e.js'; // the words of the two rows
 // 0077 W3-e: end
+import '../copy/en.make.js'; // b200-f5-make: the words of Flight path, Record, Dome and 360
 
 export { objectPageUrl, PAGES_INDEX };
-import { WIKI_TITLES } from '../data/wikititles.js';
+// The record's article moved to data/wikititles.js (forge #151): the card's Wikipedia block reads it too, without this sheet.
+import { wikiTitleOf } from '../data/wikititles.js';
+export { wikiTitleOf };
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const WIKI_REST = 'https://en.wikipedia.org/api/rest_v1/page/summary/';
@@ -204,36 +207,6 @@ export function excerptOf(extract, max = EXCERPT_MAX) {
   return clip(s, max, (x) => x.length);
 }
 
-/** The article named in a source line, `https://en.wikipedia.org/wiki/<title>`, or null. */
-function titleFromUrl(text) {
-  const m = /https?:\/\/en\.wikipedia\.org\/wiki\/([^\s,;]+)/.exec(String(text || ''));
-  if (!m) return null;
-  let title = m[1];
-  // "(read 2026-09-22)" follows the URL; a title's own brackets are balanced, a trailing one is not.
-  while (title.endsWith(')') && (title.match(/\(/g) || []).length < (title.match(/\)/g) || []).length) title = title.slice(0, -1);
-  try { title = decodeURIComponent(title); } catch { /* already plain */ }
-  title = title.replace(/ /g, '_').replace(/#.*$/, '');
-  // A list is a source for a number, not an article about the thing ("List_of_Messier_objects").
-  return title && !/^List_of_/i.test(title) ? title : null;
-}
-
-/**
- * The record's English Wikipedia article: the hand table (data/wikititles.js) first, then the
- * record's own source lines, the ones scripts/object_pages.mjs reads for its sameAs. Null when it
- * names none: the sheet then has no excerpt, rather than a guess from the name.
- */
-export function wikiTitleOf(record) {
-  if (!record) return null;
-  const id = String(record.id || '');
-  if (Object.prototype.hasOwnProperty.call(WIKI_TITLES, id)) return WIKI_TITLES[id];
-  const md = record.meta || {};
-  for (const key of ['wikipedia', 'wiki', 'whySource', 'source', 'cite']) {
-    const title = titleFromUrl(md[key]);
-    if (title) return title;
-  }
-  return null;
-}
-
 /** A network's public share page for this post. No SDK, no tracking parameter. */
 export function networkUrl(network, parts) {
   const e = encodeURIComponent;
@@ -328,6 +301,11 @@ const ICONS = {
   code: ['m16 18 6-6-6-6', 'm8 6-6 6 6 6'],
   'chevron-down': ['m6 9 6 6 6-6'],
 };
+// b200-f5-make: begin -- the three makers' icons (Lucide's route, video and aperture, as paths)
+ICONS.route = ['M3 19a3 3 0 1 0 6 0a3 3 0 1 0-6 0', 'M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15', 'M15 5a3 3 0 1 0 6 0a3 3 0 1 0-6 0'];
+ICONS.video = ['m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5', 'M4 6h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z'];
+ICONS.dome = ['M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20', 'M2 12h20', 'M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'];
+// b200-f5-make: end
 
 function icon(name) {
   const svg = document.createElementNS(SVG_NS, 'svg');
@@ -468,6 +446,24 @@ export function createShareSheet(ctx) {
   const photoBtn = button('sr-share__btn', S.photo, S.photoTitle, 'crop');
   const embedBtn = button('sr-share__btn', S.embed, S.embedTitle, 'code');
   acts.append(nativeBtn, copyBtn, mailA, jpegBtn, pdfBtn, photoBtn, embedBtn);
+  // b200-f5-make: begin (forge #155, #156, #157) -- three more actions, last: a flight path, a video, a dome or 360 picture.
+  // Each closes the sheet and opens its own panel, fetched on that press (ui/makers.js, through main.js ctx.wantMakers).
+  const MK = COPY.make;
+  const makeBtns = [['flight', MK.flight, MK.flightTitle, 'route', 'wantFlight'], ['record', MK.record, MK.recordTitle, 'video', 'wantRecorder'],
+    ['dome', MK.dome, MK.domeTitle, 'dome', 'wantProjection']].map(([id, label, tip, glyph, want]) => {
+    const b = button('sr-share__btn', label, tip, glyph);
+    b.dataset.make = id;
+    b.addEventListener('click', async () => {
+      const opener = cur && cur.opener;
+      close();
+      const makers = ctx && typeof ctx.wantMakers === 'function' ? await ctx.wantMakers().catch(() => null) : null;
+      const panel = makers ? await makers[want]() : null;
+      if (panel) panel.open({ opener }); else fail(MK.failed);
+    });
+    return b;
+  });
+  acts.append(...makeBtns);
+  // b200-f5-make: end
   const mailNote = el('p', 'sr-share__note', S.emailNote);
 
   // 0077 W3-e: begin. TWO ROWS THAT OPEN IN PLACE, shut at first, so the sheet still fits a 1440 x 900 window with no scroll: Photo presets

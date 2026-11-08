@@ -36,6 +36,9 @@ export const SHELF = [
   { id: 'hubble-deployment', minutes: 7, picture: 111909, records: ['shuttle-lc-39b', 'sat-20580'], hue: '40, 56, 96', models: ['hubble-sts31', 'shuttle-orbiter', 'shuttle-rms'] },
   { id: 'falcon9-og2-2', minutes: 3, picture: 592, pictureTop: 0.45, records: ['spacex-slc-40', 'falcon-lz-1'], hue: '30, 36, 60', models: ['falcon9-stage1', 'falcon9-upper'] },
   { id: 'voskhod-2', minutes: 15, picture: 5900, pictureTop: 0.25, records: ['baikonur-site-1', 'voskhod-2-landing'], hue: '24, 40, 70', models: ['r7-8k72k', 'voskhod-3kd', 'leonov-eva'] },
+  // b200-c3-learn: begin -- forge #153: a told story, no vehicle model (the satellite is the ringed mark, its pieces the cloud)
+  { id: 'fengyun-1c', minutes: 4, picture: 250000000, pictureTop: 0.5, records: ['sat-25730'], hue: '14, 58, 52', models: [] },
+  // b200-c3-learn: end
 ];
 
 /** The story a card for record `id` can replay, or null (the first, when several are about it: see `momentsFor`). */
@@ -69,6 +72,8 @@ const VEHICLES = [
   { id: 'new-horizons-pluto', rocket: /(?!)/, craft: /^new horizons\b/i },
   { id: 'artemis-ii', rocket: /^(space launch system|sls)\b/i, craft: /^orion\b/i },
 ];
+// b200-c3-learn: the satellite's own card (FENGYUN 1C, 1999-025A) offers its story; its pieces are FENGYUN 1C DEB and are not offered it
+VEHICLES.push({ id: 'fengyun-1c', rocket: /(?!)/, craft: /^fengyun[ -]?1c$/i });
 const CRAFT_LAYERS = new Set(['launches', 'stations', 'notable', 'active', 'deep-space', 'just-launched']);
 
 /**

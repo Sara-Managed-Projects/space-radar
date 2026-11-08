@@ -6,7 +6,8 @@
 //   dotFactor(markerPx, truePx) -> how many times wider than true the dot is (1 when the disc wins)
 //   roundFactor(n) -> two significant figures, never under 1
 //   scaleState({ worlds, markerPx, fovDeg, viewportH, selectedId }) -> null | { least, selected, largest }
-//   badgeWords(state, trueOn, C) -> { text, title };  pxText(px) -> one significant figure
+//   badgeWords(state, trueOn, C, view) -> { text, title, sub };  pxText(px) -> one significant figure
+//   viewWords(view, C) -> the second line the Size and Distance sliders add, '' when they are at the truth
 //
 // WHY. On the Planets tab (the Sun's stage) every planet is drawn as a dot MARKER_PX across,
 // because at true size from there every one of them is a fraction of a pixel
@@ -29,6 +30,13 @@
 // what is left is what is there, the paths and the names. The line then says what was lost: the
 // widest planet's true width in pixels, computed the same way. Nothing is remembered: a
 // reload draws the dots again, as a first visit does.
+//
+// THE SLIDERS (forge #145, ui/orrery.js, scene/orrery.js). With Size above ×1 every planet's disc is
+// drawn k times its radius, so a row's width on the screen is the wider of its dot and k times its true
+// disc, and the factor is that over the true disc: the number stays computed, at every position of the
+// slider. A second, smaller line says what the planets' factor does not: the Sun's own factor (it is
+// held back from Mercury, scene/orrery.js sunSize), and how far the distances are squeezed. True size is the Size slider at
+// ×1 with the dots put away, so pressing it puts the slider there too; nothing can be both.
 //
 // Only on the Sun's stage, outside a trip (the trip frame prints its own orbits line) and not
 // over a clear screen. Fetched the first time the Sun's stage is entered (main.js), never at boot.
@@ -71,7 +79,9 @@ export function scaleState({ worlds = [], markerPx, fovDeg, viewportH, selectedI
   for (const w of Array.isArray(worlds) ? worlds : []) {
     if (!w || !w.id) continue;
     const truePx = trueDiscPx({ radiusKm: w.radiusKm, distKm: w.distKm, fovDeg, viewportH });
-    const factor = dotFactor(markerPx, truePx);
+    // b200-f2-worlds: the disc as the Size slider draws it (`grow`, 1 when it is at the truth)
+    const grow = w.grow > 1 ? w.grow : 1;
+    const factor = dotFactor(Math.max(markerPx, truePx * grow), truePx);
     if (Number.isFinite(factor)) rows.push({ id: w.id, name: w.name || w.id, truePx, factor });
   }
   const enlarged = rows.filter((r) => r.factor > 1);
@@ -94,17 +104,31 @@ export function pxText(px) {
   return fmt.num(one, digits);
 }
 
-/** The button's words and its tooltip. Pure. `C` is COPY.scale. */
-export function badgeWords(state, trueOn, C = COPY.scale) {
-  if (!state) return { text: '', title: '' };
+// b200-f2-worlds: begin (forge #145)
+/** The sliders' line: the Sun's factor and the distance word. Pure. `O` is COPY.orrery. */
+export function viewWords(view, O = COPY.orrery) {
+  if (!view || !O) return '';
+  const parts = [];
+  if (view.sunK > 1) parts.push(t(O.badgeSun, { n: fmt.int(view.sunK) }));
+  if (view.dist >= 1) parts.push(O.badgeLog);
+  else if (view.dist > 0) parts.push(t(O.badgeSome, { p: fmt.int(Math.round(view.dist * 100)) }));
+  return parts.join(O.badgeJoin);
+}
+// b200-f2-worlds: end
+
+/** The button's words and its tooltip. Pure. `C` is COPY.scale; `view` the sliders' (null at the truth). */
+export function badgeWords(state, trueOn, C = COPY.scale, view = null) {
+  const sub = viewWords(view); // b200-f2-worlds
+  if (!state) return { text: sub, title: sub ? COPY.orrery.badgeTitle : '', sub: '' };
   if (trueOn) {
-    return { text: t(C.trueLine, { name: state.largest.name, px: pxText(state.largest.truePx) }), title: C.trueTitle };
+    return { text: t(C.trueLine, { name: state.largest.name, px: pxText(state.largest.truePx) }), title: C.trueTitle, sub };
   }
   const row = state.selected || state.least;
   const n = fmt.int(roundFactor(row.factor));
   return {
     text: state.selected ? t(C.one, { name: row.name, n }) : t(C.least, { n }),
     title: C.title,
+    sub,
   };
 }
 
@@ -133,6 +157,11 @@ export function createScaleBadge(ctx, opts = {}) {
   const label = doc.createElement('span');
   label.className = 'sr-scalebadge__text';
   root.appendChild(label);
+  // b200-f2-worlds: the sliders' line, under the first (css/worlds.css, which comes with ui/orrery.js)
+  const subLine = doc.createElement('span');
+  subLine.className = 'sr-scalebadge__sub';
+  subLine.hidden = true;
+  root.appendChild(subLine);
   doc.body.appendChild(root);
 
   let trueOn = false;
@@ -154,11 +183,12 @@ export function createScaleBadge(ctx, opts = {}) {
       const w = worldRow(id);
       const p = ctx.worlds.drawnPositionOf(id);
       if (!w || !p) continue;
-      out.push({ id, name: w.display || id, radiusKm: w.radiusKm, distKm: p.distanceTo(cam.position) * unitKm });
+      out.push({ id, name: w.display || id, radiusKm: w.radiusKm, distKm: p.distanceTo(cam.position) * unitKm, grow: view() ? view().sizeK : 1 });
     }
     return out;
   }
 
+  const view = () => (ctx.orrery && typeof ctx.orrery.view === 'function' ? ctx.orrery.view() : null); // b200-f2-worlds
   const here = () => {
     const cls = doc.documentElement.classList;
     return !!ctx.stage && ctx.stage.worldId === 'sun' && !cls.contains('sr-trip-mode') && !cls.contains('sr-clean') && !cls.contains('sr-ambient');
@@ -175,9 +205,11 @@ export function createScaleBadge(ctx, opts = {}) {
     const state = scaleState({
       worlds: measure(), markerPx, fovDeg: ctx.camera.fov, viewportH: win.innerHeight, selectedId: sel ? sel.id : null,
     });
-    const words = badgeWords(state, trueOn, C);
+    const words = badgeWords(state, trueOn, C, view());
     root.hidden = !words.text || !styled;
     if (label.textContent !== words.text) label.textContent = words.text;
+    if (subLine.textContent !== words.sub) subLine.textContent = words.sub; // b200-f2-worlds
+    subLine.hidden = !words.sub;
     if (root.title !== words.title) root.title = words.title;
   }
 
@@ -188,6 +220,8 @@ export function createScaleBadge(ctx, opts = {}) {
 
   function setTrue(on, { cut = false } = {}) {
     trueOn = !!on;
+    // b200-f2-worlds: True size is the Size slider at ×1 as well (the header says why)
+    if (trueOn && ctx.orrery && typeof ctx.orrery.setSize === 'function') ctx.orrery.setSize(1);
     root.setAttribute('aria-pressed', trueOn ? 'true' : 'false');
     root.classList.toggle('is-true', trueOn);
     const to = trueOn ? 0 : 1;

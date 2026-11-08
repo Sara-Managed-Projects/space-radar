@@ -514,7 +514,7 @@ export const LAYERS = [
     sample: () => [],
     bundledText: 'data/exoplanets.csv',
     bundledAsOf: '2026-10-28', // 0079 a13
-    packedUrl: 'data/exoplanets.bin', // 0079 a13: the quantised copy (data/exopack.js) is read before the snapshot or the CSV
+    packedUrl: 'data/exoplanets.bin', // 0079 a13: the quantised copy (data/exopack.js); b200-s1-fixes: only while the snapshot is not newer (forge #88)
     propagator: 'static',
     frame: 'sun-inertial',
     moments: { wonder: true, now: false, next: false },
@@ -1500,14 +1500,12 @@ export async function loadLayerDetailed(layer, nowMs) {
       // A failure is silent: the snapshot, then the CSV, then the stand-in, as before.
       if (layer.packedUrl) {
         try {
-          const r = await fetch(layer.packedUrl, { cache: 'no-cache' });
-          if (r.ok) {
-            const m = await import('./exopack.js');
-            parsed = m.decodeExoplanets(await r.arrayBuffer());
-            if (parsed.length) {
-              layer.lastBodyWasBundled = true;
-              result = { id: 'bundled', data: true, error: null, bundled: true, fetchedAt: layer.bundledAsOf ? Date.parse(layer.bundledAsOf) : null };
-            }
+          // b200-s1-fixes (forge #88): data/exopack.js readPacked() reads the packed copy only while the harvester's
+          // snapshot is not newer by a day; else nothing, and the snapshot below is read.
+          parsed = await (await import('./exopack.js')).readPacked(layer, ids[0]);
+          if (parsed.length) {
+            layer.lastBodyWasBundled = true;
+            result = { id: 'bundled', data: true, error: null, bundled: true, fetchedAt: layer.bundledAsOf ? Date.parse(layer.bundledAsOf) : null };
           }
         } catch { parsed = []; }
       }
@@ -1615,7 +1613,7 @@ function parseFor(layer, data) {
     case 'dso':
       return parseDso(typeof data === 'string' ? JSON.parse(data) : data);
     case 'exoplanets':
-      return parseExoplanets(data, { asOf: layer.bundledAsOf && layer.lastBodyWasBundled ? layer.bundledAsOf : undefined });
+      return parseExoplanets(data, { asOf: layer.bundledAsOf && layer.lastBodyWasBundled ? layer.bundledAsOf : undefined, live: !layer.lastBodyWasBundled && layer.snapshotAsOf });
     case 'gdacs-tc':
       return parseGdacsCyclones(data, { nowMs: Date.now() });
     case 'neo-approaches':

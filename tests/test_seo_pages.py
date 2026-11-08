@@ -183,7 +183,8 @@ facts = yml("seo-facts.yaml")["satellite_counts"]
 ok("../satellites/index.html" in star.hrefs and "../starlink/index.html" in sat.hrefs, "the two pages link each other")
 ok(all(h in sat.hrefs for h in ("../o/international-space-station.html", "../o/hubble-space-telescope.html", "../o/tiangong-space-station.html", "../starlink/index.html")),
    "the hub links the ISS, Hubble, Tiangong and Starlink")
-ok(f"{facts['starlink_objects']:,}" in star.plain and "22 September 2026" in star.plain, "a Starlink count with its date, from the registry's fallback when the build has no index")
+import seo_pages as _sp  # noqa: E402
+ok(f"{facts['starlink_objects']:,}" in star.plain and _sp.date_words(str(facts["as_of"])) in star.plain, "a Starlink count with its date, from the registry's fallback when the build has no index")
 ok("about 17,000" in sat.plain and re.search(r"<title>Live 3D satellite map: about 17,000 objects</title>", sat_html), "the hub says about 17,000, derived from the count")
 ok(all(re.search(r"Source: [^<]+, read \d+ \w+ \d{4}", h) for h in (star_html, sat_html)), "both carry a dated source line")
 ok(in_map("starlink/index.html") and in_map("satellites/index.html"), "both are in the sitemap")
@@ -403,7 +404,12 @@ for f in pages + [BUILT / "404.html"]:
         dirty.append(f.name)
 ok(not dirty, f"no bare #NNN, no Facebook, nothing from the plan on any page ({dirty[:3]})")
 ok(not re.search(r"\{\{|\bTODO\b|\blorem\b", "".join(f.read_text(encoding="utf-8") for f in pages)), "no placeholder left")
-ok((BUILT / "pages-dirs.txt").read_text(encoding="utf-8").split() == sorted({"about", "accuracy", "events", "first-pull-request", "iss", "nasa-eyes-alternative", "planets-tonight", "read", "satellites", "sources", "starlink", "teachers"}),
+# b200-f1-find: "country" is the /country/<iso>/ pages (scripts/seo_countries.py, forge #152)
+# b200-f6-learn: "print" is /print/, the paper models (scripts/seo_print.py, forge #161)
+# b200-f9-reach: "assets", "creators" and the five comparisons (scripts/seo_reach.py, forge #165, #166, #168)
+import seo_reach  # noqa: E402
+ok((BUILT / "pages-dirs.txt").read_text(encoding="utf-8").split() == sorted({"about", "accuracy", "country", "events", "first-pull-request", "iss", "nasa-eyes-alternative", "planets-tonight", "print", "read", "satellites", "sources", "starlink", "teachers"}
+                                                                             | {"assets", "creators", *seo_reach.COMPARISONS}),
    "pages-dirs.txt lists the directories deploy.sh must ship")
 
 # --- the share pictures ----------------------------------------------------------------------------------

@@ -40,4 +40,4 @@ Open [the Lagoon Nebula](https://www.spaceradar.ai/#go=dso-m8), wait for the fli
 
 ## Pictures and sources
 
-Screenshots of Space Radar 1.4.0 (MIT licence) from the project's `look` workflow, probe `heroes`, cropped. The light comes from photographs by ESO, the Rubin Observatory and NOIRLab, with each credit on its card and in `CREDITS.md`. The nebulae were built by Sara-Agent, the project's agent, in [pull request 1288](https://github.com/Sara-Managed-Projects/space-radar/pull/1288), and the photographs were taken out of the scene in [pull request 1298](https://github.com/Sara-Managed-Projects/space-radar/pull/1298).
+Screenshots of Space Radar 1.4.0 (MIT licence) from the project's `look` workflow, probe `heroes`, cropped. The light comes from photographs by ESO, the Rubin Observatory and NOIRLab, with each credit on its card and in `CREDITS.md`. The nebulae were built by Sara-Agent, the project's agent, for [release 1.4.0](https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.4.0), and the photographs were taken out of the scene in the same release.

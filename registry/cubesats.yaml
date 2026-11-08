@@ -1,0 +1,591 @@
+# CUBESAT FORM FACTORS, SOURCED (release 2.0.0, batch m2-buses; forge #118).
+#
+# Which CubeSat each catalogued object is, by catalogue number, so scene/realmodels.js draws a 1U as a 1U, a 3U as a 3U and a 12U as a 12U at the standard's own size
+# (the CubeSat Design Specification rev. 14.1: 1U 100 x 100 x 113.5 mm, 2U 227.0, 3U 340.5, 6U 100 x 226.3 x 366, 12U 226.3 x 226.3 x 366 mm) instead of every name that
+# looks like a CubeSat wearing one 3U with wings. The source is ONE column pair of McDowell's General Catalog of Artificial Space Objects (GCAT, planet4589.org/space/gcat,
+# satcat.tsv of 2026-11-06, CC BY 4.0), found by catalogue number: `Bus` ('Cubesat 3U') for the form, and `Shape` for whether two deployed panels are drawn ('Box + 2 pan' against
+# 'Box'). Read on 2026-11-07 for the 17 001 objects of the CelesTrak copy of 2026-11-05 (active, visual, stations).
+# A row is here only when `Bus` is exactly one of the five forms the standard defines and drawn here (1U, 2U, 3U, 6U, 12U; McDowell's own `?` is doubt and does not count), and `Shape` is
+# exactly 'Box' (the body alone) or 'Box + 2 pan' on a 3U, 6U or 12U (the body with two deployed wings). NOT DRAWN, and kept as they were: the 16U family (58 objects, 65 with its variants; the form is
+# not in the specification, and the sources disagree on its size: 226.3 x 226.3 x 488 mm in one package, 200 x 200 x 400 in another), 8U (46), 4U, 1.5U, 0.5U, 6UXL, 12UXL (none is in the
+# specification), the uncertain forms (`3U?` 41, `6U?` 10, `12U?` 3, `1U?` 2) and the shapes with a sail, a boom, three or four panels or an antenna that are not drawn.
+# The wings are ours (three hinged panels a side, 0.095 m out by the body's length, read off a public-domain NASA photograph of a Planet Dove with its wings open, ISS-49,
+# looked at only): GCAT says the craft has two panels, not how big, and the registry row for the file says so.
+version: 1
+satellites:
+  - {"norad": 27844, "name": "CUTE-1 (CO-55)", "jcat": "S27844", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 27848, "name": "CUBESAT XI-IV (CO-57)", "jcat": "S27848", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 28895, "name": "CUBESAT XI-V", "jcat": "S28895", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 32785, "name": "CUTE-1.7+APD II (CO-65)", "jcat": "S32785", "form": "2u", "wings": false, "shape": "Box"}
+  - {"norad": 32791, "name": "SEEDS II (CO-66)", "jcat": "S32791", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 35932, "name": "SWISSCUBE", "jcat": "S35932", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 35933, "name": "BEESAT-1", "jcat": "S35933", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 35935, "name": "ITUPSAT1", "jcat": "S35935", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 37224, "name": "O/OREOS (USA 219)", "jcat": "S37224", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 37839, "name": "JUGNU", "jcat": "S37839", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 38759, "name": "SMDC ONE 1.2", "jcat": "S38759", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 39090, "name": "STRAND-1", "jcat": "S39090", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 39417, "name": "ZACUBE-1 (TSHEPISOSAT)", "jcat": "S39417", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 39420, "name": "OPTOS", "jcat": "S39420", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 39427, "name": "TRITON-1", "jcat": "S39427", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 39430, "name": "GOMX-1", "jcat": "S39430", "form": "2u", "wings": false, "shape": "Box"}
+  - {"norad": 39440, "name": "CUBEBUG-2 (LO-74)", "jcat": "S39440", "form": "2u", "wings": false, "shape": "Box"}
+  - {"norad": 39444, "name": "FUNCUBE-1 (AO-73)", "jcat": "S39444", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 39446, "name": "UWE-3", "jcat": "S39446", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 39469, "name": "SMDC ONE 2.4", "jcat": "S39469", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 40024, "name": "NANOSATC-BR1", "jcat": "S40024", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 40025, "name": "QB50P1", "jcat": "S40025", "form": "2u", "wings": false, "shape": "Box"}
+  - {"norad": 40030, "name": "DTUSAT-2", "jcat": "S40030", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 40032, "name": "QB50P2", "jcat": "S40032", "form": "2u", "wings": false, "shape": "Box"}
+  - {"norad": 40037, "name": "PERSEUS-M2", "jcat": "S40037", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 40039, "name": "PERSEUS-M1", "jcat": "S40039", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 40042, "name": "POLYITAN-1", "jcat": "S40042", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 40043, "name": "TIGRISAT", "jcat": "S40043", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 40044, "name": "LEMUR-1", "jcat": "S40044", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 40967, "name": "FOX-1A (AO-85)", "jcat": "S40967", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 40968, "name": "SINOD-D 1", "jcat": "S40968", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 40971, "name": "LMRST-SAT", "jcat": "S40971", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 40973, "name": "PROPCUBE 3", "jcat": "S40973", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 40974, "name": "BISONSAT", "jcat": "S40974", "form": "2u", "wings": false, "shape": "Box"}
+  - {"norad": 40976, "name": "PROPCUBE 1 (FLORA)", "jcat": "S40976", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 40977, "name": "SINOD-D 3", "jcat": "S40977", "form": "2u", "wings": false, "shape": "Box"}
+  - {"norad": 41849, "name": "RAVAN", "jcat": "S41849", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 41850, "name": "CELTEE 1", "jcat": "S41850", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 41851, "name": "OPTICUBE 04", "jcat": "S41851", "form": "2u", "wings": false, "shape": "Box"}
+  - {"norad": 42837, "name": "LEMUR-2-GREENBERG", "jcat": "S42837", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 42838, "name": "LEMUR-2-ANDIS", "jcat": "S42838", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 42839, "name": "LEMUR-2-MONSON", "jcat": "S42839", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 42840, "name": "LEMUR-2-FURIAUS", "jcat": "S42840", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 42841, "name": "LEMUR-2-PETERG", "jcat": "S42841", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 42842, "name": "LEMUR-2-DEMBITZ", "jcat": "S42842", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 42844, "name": "NANOACE", "jcat": "S42844", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 42845, "name": "LEMUR-2-ZACHARY", "jcat": "S42845", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 42846, "name": "CORVUS BC2", "jcat": "S42846", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 42847, "name": "CORVUS BC1", "jcat": "S42847", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 43016, "name": "MAKERSAT 0", "jcat": "S43016", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 43017, "name": "RADFXSAT (FOX-1B)", "jcat": "S43017", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 43679, "name": "STARS-AO", "jcat": "S43679", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 43681, "name": "AUTCUBE 2", "jcat": "S43681", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 43759, "name": "SIRION PATHFINDER-2", "jcat": "S43759", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 43766, "name": "SPAWAR-CAL-O", "jcat": "S43766", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 43767, "name": "CORVUS BC4", "jcat": "S43767", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 43770, "name": "FOX-1CLIFF (AO-95)", "jcat": "S43770", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 43776, "name": "SPAWAR-CAL-R", "jcat": "S43776", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 43778, "name": "SPAWAR-CAL-OR", "jcat": "S43778", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 43782, "name": "SNUSAT-2", "jcat": "S43782", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 43786, "name": "ITASAT", "jcat": "S43786", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 43790, "name": "EAGLET-I", "jcat": "S43790", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 43796, "name": "THEA", "jcat": "S43796", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 43798, "name": "ASTROCAST 0.1", "jcat": "S43798", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 43803, "name": "JY1SAT (JO-97)", "jcat": "S43803", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 43804, "name": "SUOMI-100", "jcat": "S43804", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 43809, "name": "CENTAURI-1", "jcat": "S43809", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 43880, "name": "UWE-4", "jcat": "S43880", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 44859, "name": "IHOPSAT-TD", "jcat": "S44859", "form": "12u", "wings": false, "shape": "Box"}
+  - {"norad": 44885, "name": "FLORIPASAT-1", "jcat": "S44885", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 45726, "name": "ANDESITE", "jcat": "S45726", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 45727, "name": "M2 PATHFINDER", "jcat": "S45727", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 46493, "name": "DEKART", "jcat": "S46493", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 46494, "name": "NORBI", "jcat": "S46494", "form": "6u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 46504, "name": "NETSAT-4", "jcat": "S46504", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 46505, "name": "NETSAT-3", "jcat": "S46505", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 46506, "name": "NETSAT-1", "jcat": "S46506", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 46507, "name": "NETSAT-2", "jcat": "S46507", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 46906, "name": "KSM1-C", "jcat": "S46906", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 46907, "name": "KSM1-D", "jcat": "S46907", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 46912, "name": "KSM1-A", "jcat": "S46912", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 46913, "name": "R2", "jcat": "S46913", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 46914, "name": "KSM1-B", "jcat": "S46914", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 46955, "name": "DRAGRACER 2 (AUGURY)", "jcat": "S46955", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 47230, "name": "COSMOS 2548", "jcat": "S47230", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 47448, "name": "CUBEL", "jcat": "S47448", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 48269, "name": "LEMUR-2-AMANDA-SVANTE", "jcat": "S48269", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 48270, "name": "AII-BRAVO", "jcat": "S48270", "form": "6u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 48606, "name": "TYVAK-0130", "jcat": "S48606", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 48892, "name": "TYVAK-0173", "jcat": "S48892", "form": "12u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 49264, "name": "CUPID", "jcat": "S49264", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 49402, "name": "KOSEN-1", "jcat": "S49402", "form": "2u", "wings": false, "shape": "Box"}
+  - {"norad": 51061, "name": "BRO-5", "jcat": "S51061", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 51287, "name": "ASCENT", "jcat": "S51287", "form": "12u", "wings": false, "shape": "Box"}
+  - {"norad": 52157, "name": "OMNI-L1", "jcat": "S52157", "form": "12u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 52161, "name": "ARCSAT-1", "jcat": "S52161", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 52422, "name": "BRO-6", "jcat": "S52422", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 52771, "name": "OMNI-L2", "jcat": "S52771", "form": "12u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 52897, "name": "STEP CUBE LAB-II", "jcat": "S52897", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 52898, "name": "RANDEV", "jcat": "S52898", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 52900, "name": "MIMAN", "jcat": "S52900", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 55009, "name": "STAR VIBE", "jcat": "S55009", "form": "6u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 55010, "name": "MENUT", "jcat": "S55010", "form": "6u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 55011, "name": "BRO-8", "jcat": "S55011", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 55012, "name": "CONNECTA T1.2", "jcat": "S55012", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 55015, "name": "BIRKELAND", "jcat": "S55015", "form": "6u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 55093, "name": "HUYGENS", "jcat": "S55093", "form": "6u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 55103, "name": "KUWAITSAT-1", "jcat": "S55103", "form": "2u", "wings": false, "shape": "Box"}
+  - {"norad": 55104, "name": "SHARJAHSAT-1", "jcat": "S55104", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 55107, "name": "AAC-AIS-SAT1", "jcat": "S55107", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 55109, "name": "ASTROCAST-0402", "jcat": "S55109", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 55110, "name": "ASTROCAST-0401", "jcat": "S55110", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 55111, "name": "ASTROCAST-0403", "jcat": "S55111", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 55112, "name": "ASTROCAST-0404", "jcat": "S55112", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 55246, "name": "LINUSS1", "jcat": "S55246", "form": "12u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 55247, "name": "LINUSS2", "jcat": "S55247", "form": "12u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 56225, "name": "AAC-HSI-SAT1", "jcat": "S56225", "form": "6u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 56309, "name": "LUMELITE-4", "jcat": "S56309", "form": "12u", "wings": false, "shape": "Box"}
+  - {"norad": 56744, "name": "SNIPE 4", "jcat": "S56744", "form": "6u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 56745, "name": "SNIPE 2", "jcat": "S56745", "form": "6u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 56970, "name": "LEMUR-2-EMBRIONOVIS", "jcat": "S56970", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 56995, "name": "AAC-HSI-SAT2", "jcat": "S56995", "form": "6u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 56996, "name": "AAC-AIS-SAT2", "jcat": "S56996", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 57175, "name": "CUBEBEL 2 (EU11S)", "jcat": "S57175", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 57177, "name": "ZORKIY-2M 1", "jcat": "S57177", "form": "12u", "wings": false, "shape": "Box"}
+  - {"norad": 57178, "name": "CUBESX-HSE 3 (RS42S)", "jcat": "S57178", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 57180, "name": "MONITOR-3 (RS58S)", "jcat": "S57180", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 57182, "name": "MONITOR-4 (RS57S)", "jcat": "S57182", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 57184, "name": "MONITOR-2 (RS39S)", "jcat": "S57184", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 57186, "name": "CSTP 1.2 (STC 1.2)", "jcat": "S57186", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 57187, "name": "SVYATOBOR 1 (RS60S)", "jcat": "S57187", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 57189, "name": "VIZARD-METEO (RS38S)", "jcat": "S57189", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 57191, "name": "POLYTECH-UNIVERSE 3 (RS46S)", "jcat": "S57191", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 57195, "name": "AVION KALUGA 650", "jcat": "S57195", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 57197, "name": "A-SEANSAT-PG1", "jcat": "S57197", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 57202, "name": "CSTP 1.1 (STC 1.1)", "jcat": "S57202", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 57203, "name": "UTMN 2 (RS27S)", "jcat": "S57203", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 57217, "name": "KUZGTU 1 (RS47S)", "jcat": "S57217", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 57386, "name": "STARLING 4", "jcat": "S57386", "form": "6u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 57387, "name": "STARLING 2", "jcat": "S57387", "form": "6u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 57388, "name": "STARLING 1", "jcat": "S57388", "form": "6u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 57389, "name": "STARLING 3", "jcat": "S57389", "form": "6u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 57391, "name": "LEMUR-2-DEVERILL-M-T", "jcat": "S57391", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 58018, "name": "ANSER FOLLOWER 2", "jcat": "S58018", "form": "3u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 58019, "name": "ANSER FOLLOWER 1", "jcat": "S58019", "form": "3u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 58023, "name": "PRETTY", "jcat": "S58023", "form": "3u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 58024, "name": "MACSAT (FINCH 1)", "jcat": "S58024", "form": "6u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 58258, "name": "ORBASTRO-PC-1", "jcat": "S58258", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 58262, "name": "PLATERO", "jcat": "S58262", "form": "6u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 58264, "name": "BRO-11", "jcat": "S58264", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 58271, "name": "FLOCK 4Q-16", "jcat": "S58271", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 58276, "name": "GENMAT-1", "jcat": "S58276", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 58320, "name": "FLOCK 4Q-2", "jcat": "S58320", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 58322, "name": "FLOCK 4Q-9", "jcat": "S58322", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 58327, "name": "FLOCK 4Q-4", "jcat": "S58327", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 58328, "name": "FLOCK 4Q-13", "jcat": "S58328", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 58334, "name": "OUTPOST MISSION 2", "jcat": "S58334", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 58562, "name": "ALISIO-1", "jcat": "S58562", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 58755, "name": "NANOFF B", "jcat": "S58755", "form": "2u", "wings": false, "shape": "Box"}
+  - {"norad": 58810, "name": "NANOFF A", "jcat": "S58810", "form": "2u", "wings": false, "shape": "Box"}
+  - {"norad": 58848, "name": "AAC-HSI-SAT3", "jcat": "S58848", "form": "6u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 58899, "name": "LEMUR-2-NIMBUS2000", "jcat": "S58899", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 58900, "name": "LEMUR-2-VALHALLA", "jcat": "S58900", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 58903, "name": "LEMUR-2-CAEL", "jcat": "S58903", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 58997, "name": "AAC-AIS-SAT3", "jcat": "S58997", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 59104, "name": "PE2_FLT2  (TYVAK-0262)", "jcat": "S59104", "form": "12u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 59105, "name": "PE2_FLT1 (TYVAK-0261)", "jcat": "S59105", "form": "12u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 59106, "name": "RROCI-2", "jcat": "S59106", "form": "12u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 59112, "name": "SONATE-2", "jcat": "S59112", "form": "6u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 59120, "name": "TIGER-8", "jcat": "S59120", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 59141, "name": "TIGER-7", "jcat": "S59141", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 59148, "name": "HAMMER", "jcat": "S59148", "form": "6u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 59451, "name": "CENTAURI-6", "jcat": "S59451", "form": "12u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 59774, "name": "2024-092B", "jcat": "S59774", "form": "12u", "wings": false, "shape": "Box"}
+  - {"norad": 59775, "name": "2024-092C", "jcat": "S59775", "form": "12u", "wings": false, "shape": "Box"}
+  - {"norad": 60206, "name": "R5-S4", "jcat": "S60206", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 60207, "name": "R5-S2", "jcat": "S60207", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 60209, "name": "MESAT1", "jcat": "S60209", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 60237, "name": "GRBBETA", "jcat": "S60237", "form": "2u", "wings": false, "shape": "Box"}
+  - {"norad": 60238, "name": "ISTSAT-1", "jcat": "S60238", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 60242, "name": "CURIUM ONE", "jcat": "S60242", "form": "12u", "wings": false, "shape": "Box"}
+  - {"norad": 60469, "name": "WARATAH SEED-1", "jcat": "S60469", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 60470, "name": "PHISAT 2", "jcat": "S60470", "form": "6u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 60472, "name": "CONNECTA IOT-1", "jcat": "S60472", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 60475, "name": "CONNECTA IOT-3", "jcat": "S60475", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 60476, "name": "QUBE", "jcat": "S60476", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 60478, "name": "WREN-1", "jcat": "S60478", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60479, "name": "TOMORROW-S1", "jcat": "S60479", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60480, "name": "FLOCK 4BE-18", "jcat": "S60480", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60481, "name": "FLOCK 4BE-7", "jcat": "S60481", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60485, "name": "TOMORROW-S2", "jcat": "S60485", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60486, "name": "FLOCK 4BE-36", "jcat": "S60486", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60487, "name": "FLOCK 4BE-25", "jcat": "S60487", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60488, "name": "FLOCK 4BE-31", "jcat": "S60488", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60489, "name": "FLOCK 4BE-20", "jcat": "S60489", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60490, "name": "FLOCK 4BE-23", "jcat": "S60490", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60492, "name": "FLOCK 4BE-17", "jcat": "S60492", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60494, "name": "FLOCK 4BE-22", "jcat": "S60494", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60495, "name": "FLOCK 4BE-34", "jcat": "S60495", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60497, "name": "FLOCK 4BE-32", "jcat": "S60497", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60501, "name": "FLOCK 4BE-11", "jcat": "S60501", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60505, "name": "FLOCK 4BE-24", "jcat": "S60505", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60509, "name": "FLOCK 4BE-29", "jcat": "S60509", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60512, "name": "FLOCK 4BE-13", "jcat": "S60512", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60513, "name": "FLOCK 4BE-27", "jcat": "S60513", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60514, "name": "FLOCK 4BE-9", "jcat": "S60514", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60516, "name": "FLOCK 4BE-6", "jcat": "S60516", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60517, "name": "FLOCK 4BE-14", "jcat": "S60517", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60518, "name": "FLOCK 4BE-1", "jcat": "S60518", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60519, "name": "FLOCK 4BE-28", "jcat": "S60519", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60522, "name": "CONNECTA IOT-2", "jcat": "S60522", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 60524, "name": "CONNECTA IOT-4", "jcat": "S60524", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 60527, "name": "CUAVA-2", "jcat": "S60527", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 60530, "name": "TORO", "jcat": "S60530", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 60531, "name": "HYPSO-2", "jcat": "S60531", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60532, "name": "LEMU NGE", "jcat": "S60532", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60533, "name": "LEMUR-2-STELLA", "jcat": "S60533", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 60534, "name": "SATELIOT_2", "jcat": "S60534", "form": "6u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 60535, "name": "NIGHTJAR", "jcat": "S60535", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 60536, "name": "LEMUR-2-MARHISYAM", "jcat": "S60536", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 60537, "name": "SATELIOT_4", "jcat": "S60537", "form": "6u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 60550, "name": "SATELIOT_1", "jcat": "S60550", "form": "6u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 60552, "name": "SATELIOT_3", "jcat": "S60552", "form": "6u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 60554, "name": "UM5-RIBAT", "jcat": "S60554", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 60555, "name": "UM5-EOSAT", "jcat": "S60555", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 60556, "name": "KANYINI", "jcat": "S60556", "form": "6u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 60559, "name": "FLOCK 4BE-5", "jcat": "S60559", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60561, "name": "FLOCK 4BE-3", "jcat": "S60561", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60562, "name": "HYPERFIELD-1A", "jcat": "S60562", "form": "6u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 60563, "name": "FLOCK 4BE-19", "jcat": "S60563", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60565, "name": "PTD-4 (LISA-T)", "jcat": "S60565", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 60576, "name": "LEMUR-2-AHMED-ASRAR", "jcat": "S60576", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 60577, "name": "LEMUR-2-LLOYD", "jcat": "S60577", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 60578, "name": "LEMUR-2-SQUIRRELCOMM", "jcat": "S60578", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 60579, "name": "LEMUR-2-SIERRINI", "jcat": "S60579", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 60580, "name": "SEDNA-1", "jcat": "S60580", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 61745, "name": "POLYTECH UNIVERSE-5", "jcat": "S61745", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 61746, "name": "COLIBRI-S (RS67S)", "jcat": "S61746", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 61747, "name": "POLYTECH UNIVERSE-4", "jcat": "S61747", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 61749, "name": "VIZARD-ION (RS68S)", "jcat": "S61749", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 61753, "name": "HORS 3 (RS81S)", "jcat": "S61753", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 61754, "name": "HORS 4 (RS82S)", "jcat": "S61754", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 61763, "name": "SIT-HSE", "jcat": "S61763", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 61764, "name": "SIT-2086", "jcat": "S61764", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 61779, "name": "ALTAIR (RS65S)", "jcat": "S61779", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 61781, "name": "ASRTU-1 (AO-123)", "jcat": "S61781", "form": "12u", "wings": false, "shape": "Box"}
+  - {"norad": 61784, "name": "SAMSAT-IONOSPHERE (RS75S)", "jcat": "S61784", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 61785, "name": "RTU MIREA 1 (RS51S)", "jcat": "S61785", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 62386, "name": "TOMORROW-S4", "jcat": "S62386", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62391, "name": "LASARSAT", "jcat": "S62391", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 62392, "name": "TOMORROW-S3", "jcat": "S62392", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62394, "name": "CROCUBE", "jcat": "S62394", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 62400, "name": "XCUBE-1", "jcat": "S62400", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62402, "name": "DJIBOUTI-1B", "jcat": "S62402", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 62609, "name": "BUZZER-1", "jcat": "S62609", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62613, "name": "FLOCK 4G-8", "jcat": "S62613", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62616, "name": "INNOCUBE (TUBSAT-31)", "jcat": "S62616", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 62617, "name": "SCOT-1 (SCOT)", "jcat": "S62617", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62619, "name": "IRIS-F3", "jcat": "S62619", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 62622, "name": "FLOCK 4G-9", "jcat": "S62622", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62623, "name": "OTTER", "jcat": "S62623", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62624, "name": "FLOCK 4G-7", "jcat": "S62624", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62625, "name": "FLOCK 4G-12", "jcat": "S62625", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62629, "name": "FLOCK 4G-11", "jcat": "S62629", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62633, "name": "FLOCK 4G-26", "jcat": "S62633", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62634, "name": "FLOCK 4G-28", "jcat": "S62634", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62637, "name": "FLOCK 4G-24", "jcat": "S62637", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62639, "name": "FLOCK 4G-3", "jcat": "S62639", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62641, "name": "FLOCK 4G-27", "jcat": "S62641", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62642, "name": "FLOCK 4G-29", "jcat": "S62642", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62644, "name": "ANSER LEADER-S", "jcat": "S62644", "form": "3u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 62645, "name": "FLOCK 4G-22", "jcat": "S62645", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62646, "name": "FLOCK 4G-25", "jcat": "S62646", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62647, "name": "FLOCK 4G-23", "jcat": "S62647", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62648, "name": "LIME", "jcat": "S62648", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62649, "name": "AE1C", "jcat": "S62649", "form": "6u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 62650, "name": "FLOCK 4G-34", "jcat": "S62650", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62651, "name": "FLOCK 4G-21", "jcat": "S62651", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62652, "name": "FLOCK 4G-31", "jcat": "S62652", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62658, "name": "TROLL", "jcat": "S62658", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62659, "name": "FLOCK 4G-4", "jcat": "S62659", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62660, "name": "FLOCK 4G-6", "jcat": "S62660", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62661, "name": "FLOCK 4G-2", "jcat": "S62661", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62663, "name": "FLOCK 4G-5", "jcat": "S62663", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62666, "name": "FLOCK 4G-1", "jcat": "S62666", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62667, "name": "FLOCK 4G-14", "jcat": "S62667", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62670, "name": "FLOCK 4G-10", "jcat": "S62670", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62675, "name": "FLOCK 4G-36", "jcat": "S62675", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62676, "name": "FOSSASAT-2E19 (TAT-E)", "jcat": "S62676", "form": "3u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 62677, "name": "ELEVATION-1", "jcat": "S62677", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62678, "name": "FLOCK 4G-15", "jcat": "S62678", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62679, "name": "FLOCK 4G-30", "jcat": "S62679", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62680, "name": "FLOCK 4G-18", "jcat": "S62680", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62681, "name": "FLOCK 4G-17", "jcat": "S62681", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62684, "name": "IRIS-F2", "jcat": "S62684", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 62685, "name": "FLOCK 4G-33", "jcat": "S62685", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62686, "name": "FOSSASAT-2E18 (TAT-A)", "jcat": "S62686", "form": "3u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 62694, "name": "LEMUR-2-WILSON", "jcat": "S62694", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 62695, "name": "CONNECTA IOT-8", "jcat": "S62695", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 62696, "name": "LEMUR-2-STAR-FOX", "jcat": "S62696", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 62699, "name": "LEMUR-2-ARIANNA", "jcat": "S62699", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 62703, "name": "CONNECTA IOT-5", "jcat": "S62703", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 62706, "name": "LEMUR-2-ALISIA", "jcat": "S62706", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 62708, "name": "CENTAURI-7", "jcat": "S62708", "form": "12u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62709, "name": "CONNECTA IOT-6", "jcat": "S62709", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 62711, "name": "LEMUR-2-ROUNDTRIPPER", "jcat": "S62711", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 62712, "name": "LEMUR-2-MYNAMEISJEFF", "jcat": "S62712", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 62713, "name": "SATGUS", "jcat": "S62713", "form": "12u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 62714, "name": "CENTAURI-8", "jcat": "S62714", "form": "12u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 62715, "name": "CONNECTA IOT-7", "jcat": "S62715", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 63003, "name": "FOSSASAT-2E20 (TAT-O)", "jcat": "S63003", "form": "3u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 63210, "name": "JINJUSAT-1B", "jcat": "S63210", "form": "2u", "wings": false, "shape": "Box"}
+  - {"norad": 63211, "name": "NUSHSAT1", "jcat": "S63211", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 63213, "name": "TEVEL2-4", "jcat": "S63213", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 63214, "name": "TEVEL2-5", "jcat": "S63214", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 63215, "name": "TEVEL2-6", "jcat": "S63215", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 63217, "name": "TEVEL2-1", "jcat": "S63217", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 63218, "name": "TEVEL2-3", "jcat": "S63218", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 63219, "name": "TEVEL2-2", "jcat": "S63219", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 63220, "name": "AEROCUBE 18A", "jcat": "S63220", "form": "6u", "wings": true, "shape": "Box +  2 pan"}
+  - {"norad": 63222, "name": "AEROCUBE 18B", "jcat": "S63222", "form": "6u", "wings": true, "shape": "Box +  2 pan"}
+  - {"norad": 63225, "name": "TOMORROW-S6", "jcat": "S63225", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 63234, "name": "TOMORROW-S5", "jcat": "S63234", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 63236, "name": "ORBASTRO-TR5", "jcat": "S63236", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 63237, "name": "TEVEL2-9", "jcat": "S63237", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 63238, "name": "TEVEL2-7", "jcat": "S63238", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 63239, "name": "TEVEL2-8", "jcat": "S63239", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 63242, "name": "HERMES-1", "jcat": "S63242", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 63243, "name": "HERMES-2", "jcat": "S63243", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 63244, "name": "PANDORE", "jcat": "S63244", "form": "12u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 63246, "name": "LEMUR-2-LEIA-PHILIP", "jcat": "S63246", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 63247, "name": "EZIE-A", "jcat": "S63247", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 63248, "name": "LEMUR-2-LIA-MARTIN", "jcat": "S63248", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 63249, "name": "EZIE-C", "jcat": "S63249", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 63250, "name": "EZIE-B", "jcat": "S63250", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 63251, "name": "UVSQ-SAT NG", "jcat": "S63251", "form": "6u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 63259, "name": "LEMUR-2-DELOITTE-1", "jcat": "S63259", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 63261, "name": "LEMUR-2-EMERSONROSE", "jcat": "S63261", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 63262, "name": "LEMUR-2-MARACHE-FRAN", "jcat": "S63262", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 63263, "name": "SOAP", "jcat": "S63263", "form": "12u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 63264, "name": "LEMUR-2-THEFALCONER", "jcat": "S63264", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 63395, "name": "LEMUR-2-BALTO", "jcat": "S63395", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 63488, "name": "POSAT-2", "jcat": "S63488", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 63489, "name": "HERMES-6", "jcat": "S63489", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 63631, "name": "TOMORROW-S7", "jcat": "S63631", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 63833, "name": "HERMES-4", "jcat": "S63833", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 63834, "name": "HERMES-5", "jcat": "S63834", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 63835, "name": "HERMES-3", "jcat": "S63835", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 64528, "name": "GOOD ANCESTOR KILAKILA", "jcat": "S64528", "form": "2u", "wings": false, "shape": "Box"}
+  - {"norad": 64530, "name": "DUTHSAT-2", "jcat": "S64530", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 64533, "name": "TPA-1", "jcat": "S64533", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 64534, "name": "CONNECTA IOT-9", "jcat": "S64534", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 64535, "name": "ROADS 1", "jcat": "S64535", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 64536, "name": "FOSSASAT-2E21", "jcat": "S64536", "form": "3u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 64540, "name": "ARCSTONE", "jcat": "S64540", "form": "6u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 64549, "name": "ROADS 2", "jcat": "S64549", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 64551, "name": "SATMAR", "jcat": "S64551", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 64552, "name": "HYPERFIELD-1B", "jcat": "S64552", "form": "6u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 64553, "name": "CONNECTA IOT-12", "jcat": "S64553", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 64555, "name": "CONNECTA IOT-10", "jcat": "S64555", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 64557, "name": "CONNECTA IOT-11", "jcat": "S64557", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 64561, "name": "LEMUR-2-KRISH", "jcat": "S64561", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 64563, "name": "AE3VA", "jcat": "S64563", "form": "6u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 64586, "name": "LEMUR-2-SEJONG-2", "jcat": "S64586", "form": "6u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 64589, "name": "SATORO-T3", "jcat": "S64589", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 64591, "name": "AE2A", "jcat": "S64591", "form": "6u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 64869, "name": "LIDE", "jcat": "S64869", "form": "12u", "wings": false, "shape": "Box"}
+  - {"norad": 64875, "name": "REAL", "jcat": "S64875", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 64879, "name": "GEOSCAN 6 (RS92S6)", "jcat": "S64879", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 64880, "name": "GEOSCAN 1 (RS92S1)", "jcat": "S64880", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 64881, "name": "239ALFEROV (RS61S)", "jcat": "S64881", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 64890, "name": "GEOSCAN 2 (RS92S2)", "jcat": "S64890", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 64891, "name": "GEOSCAN 5 (RS92S5)", "jcat": "S64891", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 64892, "name": "GEOSCAN 4 (RS92S4)", "jcat": "S64892", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 64893, "name": "GEOSCAN 3 (RS92S3)", "jcat": "S64893", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 64894, "name": "INNOSAT 3 (RS92S0)", "jcat": "S64894", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 66295, "name": "LEMUR-2-AFFIE-WAUWIE", "jcat": "S66295", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 66308, "name": "TOMORROW-S8", "jcat": "S66308", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66309, "name": "TOMORROW-S9", "jcat": "S66309", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66653, "name": "INHA-ROSAT", "jcat": "S66653", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66654, "name": "JACK E", "jcat": "S66654", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 66657, "name": "SPIRONE", "jcat": "S66657", "form": "2u", "wings": false, "shape": "Box"}
+  - {"norad": 66658, "name": "COSMIC", "jcat": "S66658", "form": "3u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 66659, "name": "JACK K", "jcat": "S66659", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 66661, "name": "SNUGLITE-III", "jcat": "S66661", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 66662, "name": "E3T-1 (E3TESTER-1)", "jcat": "S66662", "form": "12u", "wings": false, "shape": "Box"}
+  - {"norad": 66673, "name": "PHASMA-LAMARR", "jcat": "S66673", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 66675, "name": "VEERY-0G", "jcat": "S66675", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 66677, "name": "AE5RC", "jcat": "S66677", "form": "6u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 66678, "name": "OTTER SDM", "jcat": "S66678", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 66679, "name": "LILIUM-2", "jcat": "S66679", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 66680, "name": "LEMUR-2-DEANANDMAEVE", "jcat": "S66680", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 66681, "name": "PHASMA-DIRAC", "jcat": "S66681", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 66683, "name": "6GSTARLAB", "jcat": "S66683", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66684, "name": "MICE-1", "jcat": "S66684", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 66685, "name": "AE5RA", "jcat": "S66685", "form": "6u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 66686, "name": "LEMUR-2-STAS-GORBUK", "jcat": "S66686", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 66688, "name": "WISDOM A", "jcat": "S66688", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 66693, "name": "AE5RB", "jcat": "S66693", "form": "6u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 66704, "name": "FLOCK 4H-1", "jcat": "S66704", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66705, "name": "FLOCK 4H-2", "jcat": "S66705", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66706, "name": "FLOCK 4H-3", "jcat": "S66706", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66707, "name": "FLOCK 4H-4", "jcat": "S66707", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66708, "name": "FLOCK 4H-5", "jcat": "S66708", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66709, "name": "FLOCK 4H-6", "jcat": "S66709", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66710, "name": "FLOCK 4H-7", "jcat": "S66710", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66711, "name": "FLOCK 4H-8", "jcat": "S66711", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66712, "name": "FLOCK 4H-9", "jcat": "S66712", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66713, "name": "FLOCK 4H-10", "jcat": "S66713", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66715, "name": "FLOCK 4H-12", "jcat": "S66715", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66716, "name": "FLOCK 4H-13", "jcat": "S66716", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66717, "name": "FLOCK 4H-14", "jcat": "S66717", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66718, "name": "FLOCK 4H-15", "jcat": "S66718", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66719, "name": "FLOCK 4H-16", "jcat": "S66719", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66721, "name": "FLOCK 4H-18", "jcat": "S66721", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66722, "name": "FLOCK 4H-19", "jcat": "S66722", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66723, "name": "FLOCK 4H-20", "jcat": "S66723", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66724, "name": "FLOCK 4H-21", "jcat": "S66724", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66725, "name": "FLOCK 4H-22", "jcat": "S66725", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66726, "name": "FLOCK 4H-23", "jcat": "S66726", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66727, "name": "FLOCK 4H-24", "jcat": "S66727", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66728, "name": "FLOCK 4H-25", "jcat": "S66728", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66729, "name": "FLOCK 4H-26", "jcat": "S66729", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66730, "name": "FLOCK 4H-27", "jcat": "S66730", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66732, "name": "FLOCK 4H-29", "jcat": "S66732", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66733, "name": "FLOCK 4H-30", "jcat": "S66733", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66734, "name": "FLOCK 4H-31", "jcat": "S66734", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66735, "name": "FLOCK 4H-32", "jcat": "S66735", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66736, "name": "FLOCK 4H-33", "jcat": "S66736", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66737, "name": "FLOCK 4H-34", "jcat": "S66737", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66738, "name": "FLOCK 4H-35", "jcat": "S66738", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66739, "name": "FLOCK 4H-36", "jcat": "S66739", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66749, "name": "PIAST-S1", "jcat": "S66749", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 66757, "name": "PIAST-S2", "jcat": "S66757", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 66758, "name": "PIAST-M", "jcat": "S66758", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 66767, "name": "ACCENTURE-1", "jcat": "S66767", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 66768, "name": "LEMUR-2-TEODOR", "jcat": "S66768", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 66769, "name": "SPEQTRE", "jcat": "S66769", "form": "12u", "wings": false, "shape": "Box"}
+  - {"norad": 66770, "name": "LILIUM-3", "jcat": "S66770", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 66772, "name": "IHI-SAT2", "jcat": "S66772", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 66774, "name": "GENA-OT", "jcat": "S66774", "form": "12u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 66775, "name": "PHI 1", "jcat": "S66775", "form": "12u", "wings": false, "shape": "Box"}
+  - {"norad": 66776, "name": "LEMUR-2-LAILA", "jcat": "S66776", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 66778, "name": "FORESAIL-1 PRIME", "jcat": "S66778", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 66779, "name": "FOSSASAT-2E22", "jcat": "S66779", "form": "3u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 66780, "name": "FOSSASAT-2E24", "jcat": "S66780", "form": "3u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 66783, "name": "LEMUR-2-STARLIGHT", "jcat": "S66783", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 66784, "name": "LEMUR-2-TARTIFLETTE", "jcat": "S66784", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 66786, "name": "LEMUR-2-HOTSPUR-TOM", "jcat": "S66786", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 66788, "name": "FOSSASA-2E23", "jcat": "S66788", "form": "3u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 66906, "name": "DUPLEX", "jcat": "S66906", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 67252, "name": "ZORKIY-2M-VPE", "jcat": "S67252", "form": "12u", "wings": false, "shape": "Box"}
+  - {"norad": 67256, "name": "SITRO-AIS-57", "jcat": "S67256", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 67257, "name": "SITRO-AIS-59", "jcat": "S67257", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 67258, "name": "SITRO-AIS-58", "jcat": "S67258", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 67260, "name": "SITRO-AIS-60", "jcat": "S67260", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 67265, "name": "SITRO-TD-4", "jcat": "S67265", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 67266, "name": "SITRO-AIS-65", "jcat": "S67266", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 67268, "name": "ZORKY-2M 7", "jcat": "S67268", "form": "12u", "wings": false, "shape": "Box"}
+  - {"norad": 67270, "name": "SITRO-TD-3", "jcat": "S67270", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 67279, "name": "GALAPAGOS-UTE-SWSU", "jcat": "S67279", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 67285, "name": "NASBSAT-2", "jcat": "S67285", "form": "12u", "wings": false, "shape": "Box"}
+  - {"norad": 67286, "name": "MULE 4T", "jcat": "S67286", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 67287, "name": "LUCA (RS90S)", "jcat": "S67287", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 67289, "name": "NASBSAT-1", "jcat": "S67289", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 67290, "name": "SAKHACUBE-CHOLBON (RS18S)", "jcat": "S67290", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 67291, "name": "QMR-KWT-2 (RS95S)", "jcat": "S67291", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 67292, "name": "SITRO-AIS-64", "jcat": "S67292", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 67294, "name": "SITRO-AIS-63", "jcat": "S67294", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 67295, "name": "ZORKIY-2M-5", "jcat": "S67295", "form": "12u", "wings": false, "shape": "Box"}
+  - {"norad": 67296, "name": "SITRO-AIS-62", "jcat": "S67296", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 67297, "name": "SITRO-AIS-61", "jcat": "S67297", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 67363, "name": "LEMUR-2 FIKRETDENGIZ", "jcat": "S67363", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 67365, "name": "LEMUR-2-MARIO-SOUSA", "jcat": "S67365", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 67366, "name": "LEMUR-2 CALLUM-K-J", "jcat": "S67366", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 67367, "name": "LEMUR-2-SONNENBLUME", "jcat": "S67367", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 67368, "name": "LEMUR-2-WOBLER", "jcat": "S67368", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 67369, "name": "BLACKCAT", "jcat": "S67369", "form": "6u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 67370, "name": "LEMUR-2-GRAM-E-SUE", "jcat": "S67370", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 67386, "name": "TWILIGHT-1 OBJECT Z", "jcat": "S67386", "form": "6u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 67387, "name": "LEMUR-2-KATIE", "jcat": "S67387", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 67388, "name": "LEMUR-2-HCS-BAZUS", "jcat": "S67388", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 67390, "name": "CONNECTA IOT-16", "jcat": "S67390", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 67398, "name": "TOMORROW-S10", "jcat": "S67398", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 67399, "name": "TOMORROW-S11", "jcat": "S67399", "form": "6u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 67400, "name": "CONNECTA IOT-13", "jcat": "S67400", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 67401, "name": "CONNECTA IOT-14", "jcat": "S67401", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 67402, "name": "CONNECTA IOT-15", "jcat": "S67402", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 67683, "name": "KNACKSAT-2", "jcat": "S67683", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 67685, "name": "GXIBA-1", "jcat": "S67685", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 67688, "name": "HMU-SAT2", "jcat": "S67688", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 68261, "name": "TEN-KOH 2", "jcat": "S68261", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 68416, "name": "PEAKSAT", "jcat": "S68416", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 68417, "name": "JACK-002", "jcat": "S68417", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 68418, "name": "OPTISAT", "jcat": "S68418", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 68420, "name": "ERMIS-2", "jcat": "S68420", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 68423, "name": "SPOQC", "jcat": "S68423", "form": "12u", "wings": false, "shape": "Box"}
+  - {"norad": 68425, "name": "ERMIS-3", "jcat": "S68425", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 68427, "name": "EMISAR", "jcat": "S68427", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 68431, "name": "DISCO-2", "jcat": "S68431", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 68433, "name": "T.MICROSAT-2", "jcat": "S68433", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 68437, "name": "AIGLONSAT-1", "jcat": "S68437", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 68444, "name": "SHARJAH-SAT-2", "jcat": "S68444", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 68454, "name": "AISSAT 4", "jcat": "S68454", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 68456, "name": "PARUS-6U1", "jcat": "S68456", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 68458, "name": "SAL-E", "jcat": "S68458", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 68468, "name": "ERMIS-1", "jcat": "S68468", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 68471, "name": "LEMUR-2-DELOITTE-3", "jcat": "S68471", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 68476, "name": "LEMUR-2-JULIA-JOEL", "jcat": "S68476", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 68478, "name": "FOSSASAT-2E25", "jcat": "S68478", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 68479, "name": "LEMUR-2-PEGGY-2004", "jcat": "S68479", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 68480, "name": "LEMUR-2-IRINA", "jcat": "S68480", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 68482, "name": "LEMUR-2-SEJONG-3", "jcat": "S68482", "form": "6u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 68483, "name": "LEMUR-2-CLARA", "jcat": "S68483", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 68487, "name": "AE1A", "jcat": "S68487", "form": "6u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 68489, "name": "LEMUR-2-CARROLLEMO", "jcat": "S68489", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 68491, "name": "LEMUR-2-DELOITTE-2", "jcat": "S68491", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 68492, "name": "LEMUR-2-EMARCHIA", "jcat": "S68492", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 68493, "name": "LEMUR-2-POLO-11", "jcat": "S68493", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 68501, "name": "N1-ATLAS", "jcat": "S68501", "form": "6u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 68505, "name": "GEMS2-AMETHYST", "jcat": "S68505", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 68506, "name": "AEPEX", "jcat": "S68506", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 68627, "name": "STP-S29A OBJECT A", "jcat": "S68627", "form": "3u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 68634, "name": "AGGIESAT6 (AGS6)", "jcat": "S68634", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 68792, "name": "FSI-SAT2", "jcat": "S68792", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 68796, "name": "ARICA-2", "jcat": "S68796", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 68798, "name": "MAGNARO-II", "jcat": "S68798", "form": "2u", "wings": false, "shape": "Box"}
+  - {"norad": 68799, "name": "KAKUSHIN RISING OBJECT H", "jcat": "S68799", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 68830, "name": "MARS-1", "jcat": "S68830", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 68989, "name": "BUSANSAT", "jcat": "S68989", "form": "12u", "wings": false, "shape": "Box"}
+  - {"norad": 68994, "name": "NULINK-2", "jcat": "S68994", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 69000, "name": "GEMINI-POLLUX", "jcat": "S69000", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 69002, "name": "NULINK-1", "jcat": "S69002", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 69006, "name": "JEN-1", "jcat": "S69006", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 69014, "name": "SNAPPY", "jcat": "S69014", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 69015, "name": "FRONTIERSAT", "jcat": "S69015", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 69016, "name": "RAVEN", "jcat": "S69016", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 69023, "name": "QUBE-II", "jcat": "S69023", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 69506, "name": "VERTECS", "jcat": "S69506", "form": "6u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 69648, "name": "HOKUSHIN-1", "jcat": "S69648", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 69794, "name": "HUCSAT", "jcat": "S69794", "form": "2u", "wings": false, "shape": "Box"}
+  - {"norad": 69795, "name": "PROVES-ELECTRA", "jcat": "S69795", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 69796, "name": "ISS OBJECT YM", "jcat": "S69796", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 69797, "name": "ISS OBJECT YN", "jcat": "S69797", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 69798, "name": "ISS OBJECT YP", "jcat": "S69798", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 69799, "name": "ISS OBJECT YQ", "jcat": "S69799", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 69872, "name": "TOM-1", "jcat": "S69872", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 69880, "name": "SCION-X (INSPIRESAT 6)", "jcat": "S69880", "form": "12u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 69882, "name": "LEMUR-2-DELOITTE-6", "jcat": "S69882", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 69888, "name": "SPEAR-1B", "jcat": "S69888", "form": "6u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 69897, "name": "SPEAR-1C", "jcat": "S69897", "form": "6u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 69899, "name": "FOSSASAT-2E26", "jcat": "S69899", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 69900, "name": "SPEAR-1A", "jcat": "S69900", "form": "6u", "wings": true, "shape": "Box + 2 pan"}
+  - {"norad": 69901, "name": "R5-S9", "jcat": "S69901", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 69905, "name": "LEMUR-2-ALEX-FULTON", "jcat": "S69905", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 69906, "name": "TOM-3", "jcat": "S69906", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 69910, "name": "LEMUR-2-DELOITTE-5", "jcat": "S69910", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 69912, "name": "MARMOTSAT", "jcat": "S69912", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 69913, "name": "IPOS-TDSM", "jcat": "S69913", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 69914, "name": "TOM-2", "jcat": "S69914", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 69916, "name": "KOYO", "jcat": "S69916", "form": "3u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 69917, "name": "BOHR", "jcat": "S69917", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 69920, "name": "MARINA", "jcat": "S69920", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 69923, "name": "RAFS", "jcat": "S69923", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 69924, "name": "CENTAURI-9", "jcat": "S69924", "form": "12u", "wings": true, "shape": "Box+2 pan"}
+  - {"norad": 69926, "name": "LEMUR-2-JESS-R", "jcat": "S69926", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 69928, "name": "LEMUR-2-ALYX", "jcat": "S69928", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 69929, "name": "N2-P-BODY", "jcat": "S69929", "form": "6u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 69930, "name": "LEMUR-2-SOPHILUNA-X1", "jcat": "S69930", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 69933, "name": "LEMUR-2-CRIMBOREALIS", "jcat": "S69933", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 69934, "name": "LEMUR-2-DELOITTE-4", "jcat": "S69934", "form": "6u", "wings": false, "shape": "Box"}
+  - {"norad": 69935, "name": "KOSTKA", "jcat": "S69935", "form": "1u", "wings": false, "shape": "Box"}
+  - {"norad": 69936, "name": "OASIS ALPHA", "jcat": "S69936", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 69937, "name": "LEONAV-1", "jcat": "S69937", "form": "12u", "wings": true, "shape": "Box+ 2 pan"}
+  - {"norad": 69938, "name": "CYBERCUBE", "jcat": "S69938", "form": "3u", "wings": false, "shape": "Box"}
+  - {"norad": 69939, "name": "CLOUDCT-PRECURSOR", "jcat": "S69939", "form": "3u", "wings": false, "shape": "Box"}

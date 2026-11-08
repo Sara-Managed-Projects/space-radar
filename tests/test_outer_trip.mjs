@@ -1,5 +1,6 @@
 // tests/test_outer_trip.mjs -- "Out past Jupiter": ten stops, each on the stage where its subject
-// is drawn where it really is.
+// is drawn where it really is, and since b200-c1-culture (forge #148) an eleventh: the heliosphere, the
+// Sun from 300 AU on its own stage, checked on its own below (HELIO_STOP).
 //
 // Four things a validator reading registry/tours.yaml cannot see:
 //
@@ -55,14 +56,23 @@ const byId = new Map(records.map((r) => [r.id, r]));
 const rowOf = (id) => WORLDS.find((w) => w.id === id);
 
 // ------------------------------------------------------- 1. every stop is a record that exists
-check(trip.stops.length >= 8 && trip.stops.length <= 10, `${trip.stops.length} stops; the brief is eight to ten`);
+// b200-c1-culture-helio: begin -- ten records, then the heliosphere: the one stop that is not a record.
+const HELIO_STOP = 'heliosphere';
+const helioStop = trip.stops.find((s) => s.id === HELIO_STOP);
+check(!!helioStop && trip.stops[trip.stops.length - 1] === helioStop, 'the heliosphere is the last stop, after Voyager 1');
+check(helioStop && helioStop.target.world === 'sun' && helioStop.stage === 'sun' && helioStop.needs_layer === 'deep-space',
+  'the heliosphere stop is the Sun on its own stage with the Deep space layer, where scene/heliosphere.js draws the bubble');
+const recordStops = trip.stops.filter((s) => s !== helioStop);
+check(recordStops.length >= 8 && recordStops.length <= 10, `${recordStops.length} record stops; the brief is eight to ten`);
+check(/^Eleven stops/.test(trip.blurb) && trip.stops.length === 11, `the blurb counts the stops (${trip.stops.length})`);
+// b200-c1-culture-helio: end
 check(trip.stage === 'jupiter', `the trip starts on Jupiter's stage, not ${trip.stage}`);
 check(/back to Earth/.test(trip.blurb), 'a trip that changes stage moves the camera on leave, and the blurb must say so');
 for (const layer of ['worlds', 'deep-space', 'far-bodies']) {
   check((trip.requires || []).includes(layer), `the trip must require the ${layer} layer, or a stop stands on nothing`);
   check(LAYERS.some((l) => l.id === layer), `${layer} is a real layer`);
 }
-for (const stop of trip.stops) {
+for (const stop of recordStops) {
   const target = stop.target || {};
   check(target.record !== undefined, `${stop.id}: names its subject with ${Object.keys(target)}; every stop here is a \`record:\``);
   const record = byId.get(target.record);
@@ -79,7 +89,7 @@ for (const stop of trip.stops) {
 {
   const t = Date.parse('2026-09-22T12:00:00Z');
   let last = 0;
-  for (const stop of trip.stops) {
+  for (const stop of recordStops) {
     const p = propagate(byId.get(stop.target.record), t);
     const au = p ? Math.hypot(p.x, p.y, p.z) / KM_PER_AU : 0;
     // A moon is its planet's distance to within a tenth of a percent (Titan is 0.09 % of Saturn's
@@ -240,6 +250,23 @@ for (let q = 0; q < 4; q += 1) {
 
     const wanted = stop.stage || trip.stage;
     check(stage.worldId === wanted, `${where}: the map is centred on ${stage.worldId}, not ${wanted}`);
+    // b200-c1-culture-helio: begin -- the bubble: the camera 300 AU from the Sun, aimed at it, past 60 AU
+    // (heliosphere.js FADE_AU, whole) and seen from the side, 50 to 140 degrees round from IBEX's nose.
+    if (stop === helioStop) {
+      const sun = worlds.drawnPositionOf('sun');
+      const km = camera.position.distanceTo(sun) * stage.unitKm;
+      check(Math.abs(km / KM_PER_AU - 300) < 1, `${where}: the camera is ${(km / KM_PER_AU).toFixed(1)} AU from the Sun, not 300`);
+      check(rig.state.target.distanceTo(sun) * stage.unitKm < 1e6, `${where}: the camera is not aimed at the Sun`);
+      const { HELIO, eclDir, toScene } = await import(join(JS, 'scene/heliosphere.js'));
+      const nose = new THREE.Vector3(...toScene(eclDir(HELIO.nose.lonDeg, HELIO.nose.latDeg)));
+      const side = (new THREE.Vector3().subVectors(camera.position, sun).normalize().angleTo(nose) * 180) / Math.PI;
+      check(side > 50 && side < 140, `${where}: the bubble is seen ${side.toFixed(0)} degrees from its nose, not from the side`);
+      notes.push(`${day}: the heliosphere from ${side.toFixed(0)} degrees off its nose`);
+      poses += 1;
+      if (i < trip.stops.length - 1) { machine.next(); pump(2); }
+      continue;
+    }
+    // b200-c1-culture-helio: end
 
     const record = byId.get(stop.target.record);
     const world = rowOf(record.id);
@@ -326,4 +353,4 @@ if (problems.length) {
   console.error('outer trip FAILED:\n  ' + problems.join('\n  '));
   process.exit(1);
 }
-console.log(`outer trip ok: ${trip.stops.length} stops, each a bundled record, each centred where it is drawn true, at four dates (${notes.join('; ')})`);
+console.log(`outer trip ok: ${trip.stops.length} stops, the records each centred where they are drawn true and the heliosphere from its side, at four dates (${notes.join('; ')})`);
