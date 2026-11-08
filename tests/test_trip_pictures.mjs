@@ -61,7 +61,7 @@ if (existsSync(dir)) for (const f of readdirSync(dir)) check(TOURS.some((t) => `
 const explore = read('site/js/ui/explore.js');
 const frame = read('site/js/ui/tripframe.js');
 const src = read('site/js/ui/trippics.js');
-check(/import \{ tripPicture \} from '\.\/trippics\.js';/.test(explore) && /card\.appendChild\(tripPicture\(row\.id, 'sr-tripcard__pic'\)\)/.test(explore), 'the sidebar trip cards draw their pictures');
+check(/import \{ tripPicture(?:, [A-Z_]+)* \} from '\.\/trippics\.js';/.test(explore) && /card\.appendChild\(tripPicture\(row\.id, 'sr-tripcard__pic'\)\)/.test(explore), 'the sidebar trip cards draw their pictures');
 check(/import \{ tripPicture \} from '\.\/trippics\.js';/.test(frame), 'the trip frame imports the pictures');
 check(/p\.appendChild\(tripPicture\(st\.tourId, 'sr-tripsheet__pic'\)\)/.test(frame), 'the intro sheet wears the picture as its header');
 check(/card\.appendChild\(tripPicture\(tour\.id, 'sr-tripcard__pic'\)\)/.test(frame), 'the end card\'s next trip has its picture too');
