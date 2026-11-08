@@ -13,7 +13,7 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [2.0.1] - 2026-11-09
 
-A patch for seven things: four that a visitor of the live 2.0.0 found, and three found while it was being deployed and its zip checked. No shared link, saved data copy or registry row changes.
+A patch for eight things: four that a visitor of the live 2.0.0 found, three found while it was being deployed and its zip checked, and one the release's own checks found. No shared link, saved data copy or registry row changes.
 
 ### Fixed
 
@@ -42,6 +42,8 @@ A patch for seven things: four that a visitor of the live 2.0.0 found, and three
   plain text, so `wrongShape()` refused every saved copy as "no text in it", and the "Probes and telescopes" layer showed its 39 bundled
   stand-ins only. This had been so since 1.9.0 at least. The source is now `kind: 'json'`, and `tests/test_read_order.mjs` reads the saved copy
   through the real module and parser (Voyager 1 comes out **measured**) and holds every saved-copy fixture to its own source's kind.
+- **The time pill takes no tap while the share sheet is open.** The sheet is modal, but a mark on the time tape could peek out
+  beside it as a 17 px target (on 9 November, the new Moon's): the pill is now inert while the sheet is up, and as it was after.
 - **The heard card clips and the Fengyun-1C Moment's sounds are deployed with their indexes.** `scripts/deploy.sh` uploaded the clips under
   `audio/` by type (Opus, AAC, captions) and never the two `index.json` files beside them, `audio/cards/en/index.json` (the list
   `ui/wikicard.js` reads before it plays a clip) and `audio/moments/fengyun-1c/index.json`. On 2.0.0's deploy they were uploaded by hand.

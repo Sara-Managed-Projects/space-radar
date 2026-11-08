@@ -74,7 +74,8 @@ check(/DTSTART:20261008T231400Z/.test(ics), 'at the pass\'s own minute, in UTC')
 const extras = read('site/js/ui/cardextras.js');
 check(/m\.saveCalendar\(item, nowMs\)/.test(extras) && /export async function saveCalendar/.test(read('site/js/ui/next.js')), 'the card\'s button hands the row to the Coming up list\'s own calendar writer');
 check(!/fetch\(/.test(read('site/js/data/ics.js')), 'which builds the file in the browser and sends nothing');
-check(/for \(const n of skyControls\(record, ctx, lamp\)\) body\.appendChild\(n\);/.test(read('site/js/ui/cards.js')), 'the card draws both, in the one quiet row its flood light leads');
+// 2.0.1: the row's lead is a list (the ground's door, a moment's replay, Look inside, then the lamp), all tiles of one row.
+check(/if \(lamp\) lead\.push\(lamp\);\s*for \(const n of skyControls\(record, ctx, lead\)\) body\.appendChild\(n\);/.test(read('site/js/ui/cards.js')), 'the card draws both, in the one quiet row its flood light and the other tiles lead');
 const C = COPY.passport;
 for (const k of ['seenIt', 'remind']) check(C[k].split(' ').length <= 2, `"${C[k]}" is a button of at most two words`);
 for (const k of ['seenTitle', 'noSeen', 'seenTitleOff', 'seenTitleOn', 'seenNotKept']) check([...C[k]].length <= 60 && !/!/.test(C[k]), `passport.${k} is a calm line of at most 60 characters (${[...C[k]].length})`);
