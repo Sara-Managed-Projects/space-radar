@@ -317,7 +317,7 @@ def listen(args) -> int:
     print(f"{len(todo)} of {len(clips)} card clips to listen to", flush=True)
     for n, key in enumerate(todo, 1):
         if ear is None:
-            ear = L.Ear(args.model, Path(args.models), 0)
+            ear = L.Ear(args.model, Path(args.models), int(os.environ.get("NARRATE_THREADS") or 0))  # 2 on a busy machine
         samples = L.decode(args.ffmpeg, paths(key)["opus"])
         ref = " ".join(for_voice(x) for x in narrate.sentences(cards[key]["x"]))
         res = L.judge(ref, ear.hear(samples), names)
