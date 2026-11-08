@@ -1897,6 +1897,13 @@ export const COPY = {
     "pending": "Prüfe deine E-Mails, um zu bestätigen.",
     "couldNotReach": "Der Abo-Dienst war nicht erreichbar."
   },
+  "groundDoor": {
+    "stand": "Hier stehen",
+    "drive": "Hier stehen und fahren",
+    "standTitle": "Auf dem vermessenen Boden bei {name} stehen",
+    "driveTitle": "Auf dem vermessenen Boden bei {name} stehen und den Rover fahren",
+    "noDrive": "Dieser Rover kann hier nicht gefahren werden: Sein Boden ist in der App noch nicht vermessen. Curiosity, Perseverance, Zhurong und Opportunity schon, von ihren eigenen Karten aus."
+  },
   "flood": {
     "on": "Anleuchten",
     "off": "Echtes Licht",
@@ -5545,6 +5552,12 @@ Object.assign(COPY, {
     "sources": "Quellen und Lizenzen",
     "padLabel": "Gehen: den Daumen in die gewünschte Richtung schieben",
     "keys": "W A S D oder die Pfeiltasten zum Gehen, Q und E zum Drehen, R und F zum Auf- und Abblicken, Shift zum Laufen, + und - zum Zoomen, Esc zum Verlassen.",
+    "padDrive": "Fahren: den Knopf nach oben schieben zum Fahren, nach unten zum Zurücksetzen, zur Seite zum Lenken",
+    "keysDrive": "W oder Pfeil hoch zum Fahren, S oder runter zum Zurücksetzen, A und D oder die seitlichen Pfeile zum Lenken, R und F zum Auf- und Abblicken, Shift für Tempo, Esc zum Verlassen.",
+    "howtoKeys": "Du fährst. W oder ↑ vorwärts, S oder ↓ zurück, A und D oder ← und → lenken. Ziehen, um dich umzusehen.",
+    "howtoTouch": "Du fährst. Das runde Feld nach oben schieben zum Fahren, nach unten zurück, zur Seite zum Lenken. Den Himmel ziehen, um dich umzusehen.",
+    "driveHint": "Dieser Rover lässt sich fahren: „Den Rover fahren“ drücken.",
+    "tripDriveTitle": "Die Tour hier verlassen und diesen Rover fahren",
     "skyTitle": "Dieser Himmel",
     "poleStar": "Polarstern: {name}, {sep}° vom Pol entfernt (Größenklasse {mag}).",
     "noPoleStar": "Kein Stern heller als Größenklasse 4,5 innerhalb von 10° um den Pol dieser Welt.",

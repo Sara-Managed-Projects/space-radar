@@ -9,8 +9,15 @@
  * and the heliosphere's names and legend stayed, "Heliopause (modelled)" over the sky of Mars, Titan and the Moon). Kept:
  * the time pill with its live line and deep-time note, and the ground sky's own story card and tag. tests/test_ground.mjs
  * holds the list to every `sr-float` the code makes, so a new one is either named here or named there as one that stays. */
-html.sr-ground-on :is(#sr-side, #sr-rail, .sr-top, .sr-scenenote, .sr-keyhint, #labels, #sr-hud, .sr-card,
+html.sr-ground-on :is(#sr-rail, .sr-top, .sr-scenenote, .sr-keyhint, #labels, #sr-hud,
   .sr-scalerail, .sr-scalebadge, .sr-helio-labels, .sr-helio-chip, .sr-helio-legend, .sr-findpill, .sr-cutaway, .sr-pop) {
+  display: none;
+}
+
+/* The sidebar and the card go too, except in a trip (2.0.1): there they ARE the trip, the stop's card and, at the end,
+ * the end card with its way home (ui/tripframe.js seats both in the sidebar). Hidden with the rest, a trip on the ground
+ * had no card, and its end left the sky with nothing on it. The ground's own card steps aside for it (below). */
+html.sr-ground-on:not(.sr-trip-mode) :is(#sr-side, .sr-card) {
   display: none;
 }
 
@@ -175,6 +182,41 @@ html.sr-trip-mode :is(.sr-ground__card, .sr-ground__bar, .sr-ground__panel, .sr-
   margin: -24px 0 0 -24px;
   border-radius: 50%;
   background: color-mix(in srgb, var(--sr-ember) 70%, transparent);
+}
+
+/* How to drive (2.0.1): in the middle of the screen when driving starts, on the glass, and gone at the first push. */
+.sr-ground__howto {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(460px, calc(100% - 2 * var(--sp-4)));
+  margin: 0;
+  padding: var(--sp-3) var(--sp-4);
+  font: 500 var(--sr-fs-lead)/1.45 var(--sr-font);
+  color: var(--sr-text);
+  text-align: center;
+  pointer-events: none;
+}
+
+.sr-ground__howto[hidden],
+.sr-ground__tripdrive {
+  display: none;
+}
+
+/* A trip's stop at a rover: the one stage button that stays, under the trip's top bar on the right. */
+html.sr-trip-mode .sr-ground__tripdrive:not([hidden]) {
+  display: inline-flex;
+  position: absolute;
+  right: var(--sp-4);
+  top: calc(var(--sp-4) + 60px);
+  pointer-events: auto;
+}
+
+.sr-ground__drivehint {
+  color: var(--sr-text);
 }
 
 .sr-ground__keys {

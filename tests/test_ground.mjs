@@ -179,8 +179,13 @@ if (reliefFar.utopia) {
 {
   const { readdirSync } = await import('node:fs');
   const css = readFileSync(join(ROOT, 'site/css/ground.css'), 'utf8');
-  const rule = /html\.sr-ground-on :is\(([^)]+)\)\s*\{\s*display: none;/.exec(css);
-  const hidden = new Set(rule ? rule[1].split(',').map((s) => s.trim()) : []);
+  const rules = [...css.matchAll(/html\.sr-ground-on(:not\(\.sr-trip-mode\))? :is\(([^)]+)\)\s*\{\s*display: none;/g)];
+  const hidden = new Set(rules.flatMap((r) => r[2].split(',').map((s) => s.trim())));
+  // 2.0.1: the sidebar and the card are hidden on the ground only outside a trip, where they hold the stop's card and the
+  // end card (the trips of forge #146 and #147 had neither, and ended on a bare sky).
+  const outsideTrips = new Set(rules.filter((r) => r[1]).flatMap((r) => r[2].split(',').map((s) => s.trim())));
+  check(outsideTrips.has('#sr-side') && outsideTrips.has('.sr-card') && rules.filter((r) => !r[1]).every((r) => !/#sr-side|\.sr-card\b/.test(r[2])),
+    'the sidebar and the card are hidden on the ground outside a trip, and kept in one');
   // The clock, the ground sky's own, the headset's note, and the deep-time note on the pill's glass (scene/stardeep.js, b200-s4b-look),
   // which follows the clock and keeps its own rules.
   const STAYS = new Set(['.sr-time', '.sr-liveline', '.sr-skystory', '.sr-skytag', '.sr-xrnote', '.sr-stardeep']);
@@ -204,6 +209,32 @@ if (reliefFar.utopia) {
   const src = readFileSync(join(JS, 'scene/groundstage.js'), 'utf8');
   const used = new Set([...src.matchAll(/\bT\.([a-zA-Z]+)/g)].map((m) => m[1]));
   for (const k of used) check(COPY.ground && COPY.ground[k] !== undefined, `COPY.ground.${k} is written`);
+}
+
+// --- driving, findable (2.0.1: Ivan could not find how to drive) ----------------------------------------------
+// A landing site's card is a door to its ground, the rovers on Mars say "and drive", the Moon's rovers say they cannot be;
+// driving starts with a how-to in the middle of the screen; a trip's stop at a rover can be left there to drive.
+{
+  const { COPY } = await mod('copy/en.js');
+  await mod('copy/en.later.js');
+  await mod('copy/en.ground.js');
+  const cardsSrc = readFileSync(join(JS, 'ui/cards.js'), 'utf8');
+  const lists = Object.fromEntries([...cardsSrc.matchAll(/export const (GROUND_SITES|DRIVE_SITES) = \[([^\]]*)\]/g)].map((m) => [m[1], m[2].split(',').map((x) => x.trim().replace(/'/g, '')).filter(Boolean)]));
+  const ids = index.grounds.map((g) => g.id).sort();
+  check(JSON.stringify((lists.GROUND_SITES || []).slice().sort()) === JSON.stringify(ids), `the card's doors are the ground's eight sites (${lists.GROUND_SITES})`);
+  const drivable = index.grounds.filter((g) => g.world === 'mars' && JSON.parse(readFileSync(join(GROUND, g.id, 'site.json'), 'utf8')).model).map((g) => g.id).sort();
+  check(JSON.stringify((lists.DRIVE_SITES || []).slice().sort()) === JSON.stringify(drivable), `"and drive" is on the rovers the stage drives, the ones on Mars (${lists.DRIVE_SITES})`);
+  check(/m\.openGround\(ctx, site, \{ drive \}\)/.test(cardsSrc) && /COPY\.groundDoor\.noDrive/.test(cardsSrc), 'the door opens the ground (and the seat), and the Moon\'s rovers say they cannot be driven');
+  for (const k of ['stand', 'drive', 'standTitle', 'driveTitle', 'noDrive']) check(typeof COPY.groundDoor?.[k] === 'string' && COPY.groundDoor[k].length > 0, `COPY.groundDoor.${k} is written`);
+  for (const k of ['howtoKeys', 'howtoTouch', 'keysDrive', 'padDrive', 'driveHint', 'tripDriveTitle']) check(typeof COPY.ground[k] === 'string' && COPY.ground[k].length > 0, `COPY.ground.${k} is written`);
+  check(/^\s*W\b/.test(COPY.ground.keysDrive) && /pad/.test(COPY.ground.howtoTouch) && /W or ↑/.test(COPY.ground.howtoKeys), 'the how-to names the keys on a desktop and the pad on a touch screen');
+  const stage = readFileSync(join(JS, 'scene/groundstage.js'), 'utf8');
+  check(/showHowto\(mode === 'drive'\)/.test(stage) && /matchMedia\('\(pointer: coarse\)'\)/.test(stage), 'driving starts with the how-to, by the kind of pointer');
+  check(/ctx\.trip\.stop\('drive', \{ stay: true, keepGround: true \}\)/.test(stage), "a trip's stop at a rover can be left to drive it");
+  const trip = readFileSync(join(JS, 'ui/trip.js'), 'utf8');
+  check(/if \(!\(opts && opts\.keepGround\)\) standOn\(null\);/.test(trip), 'and leaving that way keeps the ground');
+  const css = readFileSync(join(ROOT, 'site/css/ground.css'), 'utf8');
+  check(/html\.sr-trip-mode \.sr-ground__tripdrive:not\(\[hidden\]\)/.test(css) && /@media \(pointer: fine\)\s*\{\s*\.sr-ground__pad \{\s*display: none;/.test(css), 'the trip\'s button shows only in a trip, and the pad on a touch screen');
 }
 
 // --- eight sites, Opportunity --------------------------------------------------------------------------------

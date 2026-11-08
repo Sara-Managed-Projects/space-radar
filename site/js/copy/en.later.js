@@ -177,6 +177,16 @@ Object.assign(COPY, {
     couldNotReach: 'Could not reach the subscription service.',
   },
 
+  // A landing site's door to its measured ground (ui/cards.js, scene/groundstage.js openGround; 2.0.1). `noDrive` is on
+  // the cards of the rovers on the Moon, which have no measured ground here.
+  groundDoor: {
+    stand: 'Stand here',
+    drive: 'Stand here and drive',
+    standTitle: 'Stand on the measured ground at {name}',
+    driveTitle: 'Stand on the measured ground at {name} and drive the rover',
+    noDrive: 'This rover cannot be driven here: its ground is not measured in the app yet. Curiosity, Perseverance, Zhurong and Opportunity can, from their own cards.',
+  },
+
   // The flood light on a model's card (ui/cards.js floodControls, scene/models.js setFloodLight;
   // internal #272). `note` is the honesty line and is on screen for as long as the lamp is.
   flood: {
