@@ -181,7 +181,9 @@ if (reliefFar.utopia) {
   const css = readFileSync(join(ROOT, 'site/css/ground.css'), 'utf8');
   const rule = /html\.sr-ground-on :is\(([^)]+)\)\s*\{\s*display: none;/.exec(css);
   const hidden = new Set(rule ? rule[1].split(',').map((s) => s.trim()) : []);
-  const STAYS = new Set(['.sr-time', '.sr-liveline', '.sr-skystory', '.sr-skytag', '.sr-xrnote']); // the clock, the ground sky's own, the headset's note
+  // The clock, the ground sky's own, the headset's note, and the deep-time note on the pill's glass (scene/stardeep.js, b200-s4b-look),
+  // which follows the clock and keeps its own rules.
+  const STAYS = new Set(['.sr-time', '.sr-liveline', '.sr-skystory', '.sr-skytag', '.sr-xrnote', '.sr-stardeep']);
   const made = new Set(['.sr-helio-labels']);
   const walk = (dir) => readdirSync(dir, { withFileTypes: true }).forEach((d) => {
     const p = join(dir, d.name);
