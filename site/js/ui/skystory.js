@@ -19,6 +19,7 @@
 
 import { COPY, t } from '../copy/en.js';
 import '../copy/en.later.js';
+import { isTypingIn } from './explore.js';
 
 const docs = new Map(); // culture -> Promise<doc>
 let card = null;
@@ -77,8 +78,10 @@ function el(tag, className, text) {
   return n;
 }
 
+// Heard in the capture phase, before the field: an Escape typed into the search while a story is up is the
+// search's (forge #615), and the card has no field of its own.
 function onKey(e) {
-  if (e.key === 'Escape' && card) { e.stopPropagation(); closeSkyStory(); }
+  if (e.key === 'Escape' && card && !isTypingIn(e.target)) { e.stopPropagation(); closeSkyStory(); }
 }
 
 export function closeSkyStory() {

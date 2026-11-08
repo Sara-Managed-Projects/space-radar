@@ -32,6 +32,13 @@ const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
 // ---- the stylesheets, as rules ------------------------------------------------------------------
 const FILES = ['site/css/site.css', 'site/css/ui.css', 'site/css/share.css', 'site/css/keyhint.css', 'site/css/embed.css', 'site/css/autopilot.css', 'site/css/drift.css', 'site/css/onboarding.css', 'site/css/finishers.css', 'site/css/searchkinds.css', 'site/css/compare.css']; // 0077 W2-d
+// b200-s2-guards: begin -- the stylesheets that come with their module (ui/latercss.js) hold the boxes of that module's
+// controls: unread, the flight editor's 44 px buttons were "no rule", and the Find table's 32 px ones were never measured.
+FILES.push(...['deep', 'exoface', 'find', 'ground', 'make', 'moments', 'play', 'realsound', 'skystory', 'wikicard', 'worlds', 'xr'].map((n) => `site/css/${n}.css`));
+for (const f of readdirSync(join(ROOT, 'site/js'), { recursive: true }).filter((n) => n.endsWith('.js'))) {
+  for (const m of readFileSync(join(ROOT, 'site/js', f), 'utf8').matchAll(/loadCss\('([\w-]+)'\)/g)) check(FILES.includes(`site/css/${m[1]}.css`), `site/js/${f} loads css/${m[1]}.css, which this test does not read`);
+}
+// b200-s2-guards: end
 const strip = (css) => css.replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' '));
 function rules(file) {
   const css = strip(readFileSync(join(ROOT, file), 'utf8'));

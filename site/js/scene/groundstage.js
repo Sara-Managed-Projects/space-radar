@@ -55,6 +55,7 @@ import {
   transits, parseSkyLink, toLocal, altAz,
 } from '../sky/worldframe.js';
 import { skyLook, srgbToLinear } from '../sky/worldair.js';
+import { isTypingIn } from '../ui/explore.js';
 
 const DEG = Math.PI / 180;
 const SKY_R = 150000; // metres: the dome and the stars, inside the camera's far plane
@@ -777,7 +778,7 @@ export function createGroundStage(ctx, opts = {}) {
   }
 
   function onKey(e, down) {
-    if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if (isTypingIn(e.target)) return; // a field's keys are the field's, an editable region's too (forge #615)
     const k = e.key;
     if (down && k === 'Escape') { e.preventDefault(); close(); return; }
     if (down && (k === '+' || k === '=')) { fovDeg = Math.max(8, fovDeg / 1.19); e.preventDefault(); return; }

@@ -168,3 +168,19 @@ html.sr-phone .sr-datejump { left: 8px; right: 8px; bottom: 8px; transform: none
 .sr-find__body.is-reference { fill: var(--sr-earth-ocean); fill-opacity: 1; stroke: var(--sr-atmosphere); stroke-width: 1; }
 .sr-find__table th[scope="row"] { min-width: 88px; }
 .sr-find__table td { font-size: 12px; }
+
+/* b200-s2-guards: begin -- a finger's target is 44 px on a phone (docs/ui-guide.md principle 9; tests/test_touch_targets.mjs
+   reads this file). Where the box can grow without moving anything it grows, else only the hit area does:
+   - the three 36 px closes keep their disc and get a 44 px hit area round it (inset -4px), as the card's close does;
+   - a sort heading and a row's name are 32 px inside their cell's 6 px padding: the hit area fills the cell, so it
+     reaches 44 and stays in its own row (::before for the sort, whose ::after is the arrow);
+   - the size chart link sits under the name, with no room round it: it is 44 tall, and an exoplanet row with a
+     chart is that much taller on a phone; positioned, so it is drawn over the name's hit area, not under it;
+   - the no-path list's rows were 40, and are 44 like every other list row. */
+html.sr-phone .sr-find__chartclose, html.sr-phone .sr-datejump__close, html.sr-phone .sr-findpill__clear,
+html.sr-phone .sr-find__sort, html.sr-phone .sr-find__go, html.sr-phone .sr-find__chartbtn { position: relative; }
+html.sr-phone .sr-find__chartclose::after, html.sr-phone .sr-datejump__close::after, html.sr-phone .sr-findpill__clear::after { content: ""; position: absolute; inset: -4px; }
+html.sr-phone .sr-find__sort::before, html.sr-phone .sr-find__go::after { content: ""; position: absolute; inset: -6px -4px; }
+html.sr-phone .sr-find__chartbtn { min-height: 44px; }
+html.sr-phone .sr-find__nopath .sr-list__btn { min-height: 44px; }
+/* b200-s2-guards: end */
