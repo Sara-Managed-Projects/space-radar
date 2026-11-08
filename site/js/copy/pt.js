@@ -5646,3 +5646,43 @@ COPY.momentStories['fengyun-1c'] = {
   "srcWiki": "Wikipédia, 2007 Chinese anti-satellite missile test: a velocidade de aproximação"
 };
 // b200-c3-learn: end
+// b200-c2-deep: begin -- the 3D stars over deep time, the variable stars worth going out for, the black holes against the EHT's pictures and the cards in the trips' voice (copy/en.deep.js, forge #141, #142, #149, #151), machine-drafted
+Object.assign(COPY, {
+  "starDeep": {
+    "moved": "As estrelas de {year}: cada uma deslocada pelo seu próprio movimento medido (Hipparcos e Gaia, via HYG); prolongá-los em linha reta por tanto tempo é modelado.",
+    "hidden": "Estrelas sem movimento medido não são desenhadas tão longe de hoje.",
+    "noPluto": "Plutão e suas luas não são desenhados tão longe de hoje: a efeméride deles (astronomy-engine) só tem tabela para os anos 0 a 4000.",
+    "selected": "{name} está então a {d} anos-luz do Sol (modelado); o cartão e o rótulo dão a distância de hoje, {today}."
+  },
+  "varEvents": {
+    "min": "{name} no mínimo",
+    "max": "{name} perto do seu brilho máximo",
+    "minLine": "Até a magnitude {mag}, a {alt}° de altura no {dir}.",
+    "maxLine": "Cerca de magnitude {mag}, a {alt}° de altura no {dir}.",
+    "minClass": "Calculado a partir dos seus mínimos medidos (Kreiner 2004), prolongados pelo seu período: certo a um quarto de hora, mais ou menos.",
+    "maxClass": "Modelado a partir do período e da época do catálogo: os máximos de uma Mira chegam semanas antes ou depois.",
+    "aria": "{title}, {when}. {line}"
+  },
+  "holeCompare": {
+    "fromEarth": "Visto da Terra",
+    "fromEarthTitle": "Ficar na linha do buraco até a Terra, norte em cima e leste à esquerda, como as imagens do EHT são impressas",
+    "compare": "Comparar com a imagem do EHT",
+    "compareTitle": "Mostrar a imagem do Event Horizon Telescope ao lado do buraco desenhado, ambos vistos da Terra com o norte em cima",
+    "hide": "Ocultar a imagem do EHT",
+    "caption": "EHT, {date}",
+    "orient": "Norte em cima, leste à esquerda, como o buraco está desenhado agora.",
+    "credit": "Imagens: EHT Collaboration, CC BY 4.0.",
+    "source": "Fonte",
+    "alt": "A imagem de {name} pelo Event Horizon Telescope, {date}: um anel de luz laranja em volta de um centro escuro.",
+    "brightest": "Visto da Terra com o norte em cima, o anel desenhado é mais brilhante num ângulo de posição de cerca de {ours}° (medido no desenho); a imagem do EHT de {date} é mais brilhante perto de {theirs}°.",
+    "approx": {
+      "m87-star": "Ajustado: a inclinação (17° da nossa linha de visada) e o ângulo do jato no céu (288°) são medidos (Walker et al. 2018), e com o fluxo girando no sentido horário (EHT 2019, artigo V) o lado que se aproxima, avivado pelo seu movimento, fica ao sul. Medido em brilho linear ao redor do anel, o nosso lado brilhante é cerca de 2,5 vezes o fraco (2,1 borrado aos 20 µas do EHT); o deles, 2,7 em 2017 e 4,2 em 2018, então o nosso corresponde ao de 2017. Aproximado: a luz é traçada como em volta de um buraco que não gira e o gás é um disco fino em órbitas circulares, não o fluxo quente e espesso dos modelos do EHT. A mancha brilhante deles moveu-se cerca de 30° num ano; a nossa não se move.",
+      "sgr-a-star": "Ajustado: visto a 30° do seu eixo, como os modelos que melhor se ajustam do artigo V do EHT 2022, girando no sentido horário como as erupções vistas pelo GRAVITY. Escolhido: para onde o eixo aponta no céu, o que ninguém mediu; está girado para que o lado mais brilhante caia onde a imagem do EHT é mais brilhante. Aproximado: a luz é traçada em volta de um buraco que não gira, em volta de um disco fino; a imagem do EHT é uma média de uma noite de um fluxo que muda em minutos, e os seus três nós brilhantes não são todos reais, dizem os seus autores. O nosso lado brilhante é cerca de cinco vezes o fraco (4,5 borrado aos 20 µas do EHT), o deles 1,7: a 30°, as órbitas circulares avivam o lado próximo muito mais do que mostra a média de uma noite do EHT."
+    }
+  },
+  "cardVoice": {
+    "readTitle": "Ler este cartão em voz alta: o texto citado da Wikipédia na voz sintética das viagens",
+    "credit": "Voz: Kokoro-82M (af_heart), uma voz sintética, Apache-2.0; as palavras são da Wikipédia (CC BY-SA 4.0)."
+  }
+});
+// b200-c2-deep: end

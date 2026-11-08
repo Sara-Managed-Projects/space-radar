@@ -2,7 +2,8 @@
 // Horizon Telescope's photograph on a sprite).
 //
 // Contract: createPortraits(scene, opts) -> { show(record), clear(), update(camera, tMs, frameMs), shown(),
-//   state(), dispose(), root }
+//   state(), setTier(n), dispose(), root }
+//   stepDown(frames, tier) -> tier one lower when the frames are too slow, else `tier` (pure; b200-c2-deep)
 // Pure, for tests/test_remaining_trips.mjs and tests/test_blackhole.mjs: portraitScale(share, fovDeg),
 //   PORTRAIT_SHARE, isBlackHole(record)
 //
@@ -45,6 +46,21 @@ export function portraitScale(share, fovDeg) {
 export function isBlackHole(record) {
   return !!(record && record.klass === 'exotic' && record.meta && record.meta.kind === 'blackhole');
 }
+
+// b200-c2-deep: begin -- THE QUALITY FALLBACK (forge #149: "a phone keeps 30 fps on the medium tier"). The tier a hole is
+// made with is the device's (ctx.quality), chosen before any hole was drawn; the trace is the heaviest thing a frame may
+// hold (scene/blackhole.js TIER_STEPS: 72, 120 or 170 steps a pixel). So while one is on screen its frames are watched:
+// when the median of the last FALLBACK_FRAMES is over FALLBACK_MS (under 30 frames a second), the hole steps down a
+// tier, and again if that is still too slow, to the 72-step trace the phone tier starts at. It never steps up: a frame
+// rate that recovers because the trace is cheaper would only step down again.
+export const FALLBACK_MS = 34;
+export const FALLBACK_FRAMES = 45;
+export function stepDown(frames, tier) {
+  if (!(tier > 0) || !Array.isArray(frames) || frames.length < FALLBACK_FRAMES) return tier;
+  const s = frames.slice(-FALLBACK_FRAMES).sort((a, b) => a - b);
+  return s[Math.floor(s.length / 2)] > FALLBACK_MS ? tier - 1 : tier;
+}
+// b200-c2-deep: end
 
 export function createPortraits(scene, opts = {}) {
   const root = new THREE.Group();
@@ -107,6 +123,15 @@ export function createPortraits(scene, opts = {}) {
     if (!current) { if (status === 'shown') status = 'off'; return; }
     step(current, frameMs);
     current.hole.update({ camera, share: PORTRAIT_SHARE, tMs });
+    // b200-c2-deep: the frames while it is fully drawn, and a step down when they are too slow (stepDown above)
+    if (current.opacity >= 1 && frameMs > 0) {
+      const f = current.frames || (current.frames = []);
+      f.push(frameMs);
+      const t = current.hole.stats().tier;
+      const next = stepDown(f, t);
+      if (next !== t) { current.hole.setTier(next); f.length = 0; current.steppedDown = (current.steppedDown || 0) + 1; }
+      else if (f.length > 2 * FALLBACK_FRAMES) f.splice(0, FALLBACK_FRAMES);
+    }
   }
 
   return {
@@ -117,7 +142,10 @@ export function createPortraits(scene, opts = {}) {
     state: () => ({
       id: current ? current.record.id : null, status, opacity: current ? +current.opacity.toFixed(3) : 0,
       drawn: current ? current.hole.stats() : null,
+      steppedDown: current ? current.steppedDown || 0 : 0, // b200-c2-deep
     }),
+    /** b200-c2-deep: draw the shown hole at tier `n` (0 to 2): the frame-time probe and the latch. */
+    setTier(n) { if (current) { current.hole.setTier(n); current.frames = []; } },
     /** How many times larger than life the shown hole is drawn (1 = its true size). */
     magnification: () => (current ? current.hole.magnification() : 1),
     dispose() {

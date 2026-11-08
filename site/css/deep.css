@@ -1,0 +1,24 @@
+/* css/deep.css -- release 2.0.0 batch c2-deep: a black hole's card held against the EHT's pictures (ui/holespin.js,
+   forge #149) and the line under the time bar while the 3D stars are moved (scene/stardeep.js, forge #141). Fetched
+   with those modules (ui/latercss.js), never on a first visit. Buttons and notes are ui.css's own classes. */
+
+.sr-holecmp__row { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: var(--sp-2) 0; }
+.sr-holecmp__row .sr-btn { min-height: 44px; }
+.sr-holecmp__figs { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: var(--sp-2) 0 0; }
+.sr-holecmp__figs[hidden] { display: none; }
+.sr-holecmp__fig { flex: 1 1 140px; max-width: 220px; margin: 0; }
+.sr-holecmp__fig img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--sr-radius-sm); background: #000; }
+.sr-holecmp__fig figcaption, .sr-holecmp__note { margin: var(--sp-1) 0 0; font-size: var(--sr-fs-sm); line-height: 18px; color: var(--sr-text-dim); }
+.sr-holecmp__note a { color: inherit; }
+
+.sr-stardeep {
+  position: fixed; left: 50%; bottom: calc(150px + env(safe-area-inset-bottom, 0px)); /* above the time bar */ transform: translateX(-50%);
+  max-width: min(560px, calc(100vw - 32px)); margin: 0; padding: var(--sp-2) var(--sp-3);
+  font-size: var(--sr-fs-sm); line-height: 18px; color: var(--sr-text); background: var(--sr-wash);
+  border-radius: var(--sr-radius-sm); pointer-events: none; z-index: 5;
+}
+.sr-stardeep[hidden] { display: none; }
+/* On a phone the time bar rides on the sheet, higher than on a desktop: the line goes under the search row instead. */
+@media (max-width: 767px) {
+  .sr-stardeep { bottom: auto; top: calc(140px + env(safe-area-inset-top, 0px)); width: calc(100vw - 32px); }
+}

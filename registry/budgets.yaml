@@ -251,3 +251,6 @@ budgets:
   # b200-c3-learn: begin -- the Fengyun-1C Moment's voice (forge #153)
   - {id: moment_voice_total_kb, value: 1400, unit: kB, since: 2026-11-07, reason: "forge #153: everything under site/audio/moments/ (scripts/narrate-moments.py --check): the seven Fengyun-1C clips, 1 240 kB with the AAC twins, the captions and the index, measured 2026-11-07; nothing of it is fetched before sound is on, and then one clip at a time"}
   # b200-c3-learn: end
+  # b200-c2-deep: begin -- the baked cards read aloud in the trips' voice (forge #151)
+  - {id: card_voice_total_kb, value: 34000, unit: kB, since: 2026-11-07, reason: "everything under site/audio/cards/ (scripts/narrate-cards.py --check, tests/test_cardvoice.mjs): the Wikipedia leads of the 99 baked English cards in the trips' voice, Opus 32 kbps with the AAC twin and the captions as narration_total_kb's clips, about 310 kB a card measured 2026-11-07 on the first 24, with room for a few more cards. Nothing of it is fetched before a visitor presses Read aloud on a card, and then one clip (about 130 kB of Opus)"}
+  # b200-c2-deep: end

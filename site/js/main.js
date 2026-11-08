@@ -327,6 +327,9 @@ export async function boot({ setStatus } = {}) {
   // The naked-eye sky, on ctx for one reader: ui/trip.js stretches both star draws on a ladder
   // flight (spec 0034), and the two must never disagree during the lod crossfade between them.
   ctx.starfield = starfield;
+  // b200-c2-deep: begin -- the 3D and orbital stars over deep time, and their variables (scene/stardeep.js, forge #141, #142)
+  afterFirstVisit(WORLDLIGHTS_IMPORT_MS, () => import('./scene/stardeep.js').then((m) => { ctx.starDeep = m.attachStarDeep(ctx, clock); }).catch((e) => console.warn('stardeep', e)));
+  // b200-c2-deep: end
   const galaxy = createGalaxy(scene);
   ctx.galaxy = galaxy;
   // Deep-sky objects as big as they are, when that is bigger than their dot (scene/dsoglow.js).

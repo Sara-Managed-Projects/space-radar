@@ -4710,3 +4710,42 @@ trips' (registry/narration.yaml).
 - The ground at Perseverance, Jezero crater: NASA/JPL/University of Arizona (HiRISE); MOLA Science Team, NASA/GSFC (Smith et al. 2001, JGR 106, 23689)
 - The ground at Zhurong, Utopia Planitia: NASA/JPL/University of Arizona (HiRISE); MOLA Science Team, NASA/GSFC (Smith et al. 2001, JGR 106, 23689)
 <!-- b200-f7-ground: end -->
+
+<!-- b200-c2-deep: begin -->
+## 3c-4. The black holes against the EHT's pictures, the eclipsing stars' minima, and the cards read aloud (release 2.0.0, forge #149, #142, #151)
+
+**M87\* in 2018.** `site/images/eht-m87-2018.jpg` is the **Event Horizon Telescope Collaboration**'s image of M87\* from
+the observations of 21 April 2018 (EHT Collaboration 2024, "The persistent shadow of the supermassive black hole of
+M87. I", A&A 681, A79, <https://doi.org/10.1051/0004-6361/202347932>), released on 2024-01-18 under **CC BY 4.0**, the
+licence the EHT gives its images (the 2017 pictures in §3f carry it through ESO). The file is the Perimeter Institute's
+copy of the release's two-panel picture (credit there: "EHT Collaboration"; the EHT's own page refused every request on
+2026-11-07): the 2018 panel cropped to the ring, without its date and scale bar, and scaled to 512 × 512. A black hole's
+card shows it, and §3f's two, under "Compare with the EHT picture", with the credit **EHT Collaboration** and the
+licence printed under them and a link to each source.
+
+| file | object | credit | licence | source |
+|---|---|---|---|---|
+| `eht-m87-2018.jpg` | M87\*, 2018 April 21 | **EHT Collaboration** | CC BY 4.0 | [A&A 681, A79](https://doi.org/10.1051/0004-6361/202347932); the release's picture as the Perimeter Institute serves it, cropped and scaled |
+
+The drawn holes are turned to match (`site/js/scene/blackhole.js` PROFILES): M87\* seen 17° from its jet, the jet at
+288° (Walker et al. 2018, ApJ 855, 128), the flow clockwise (EHT 2019 paper V, ApJL 875, L5), so its brighter side is
+in the south; Sagittarius A\* seen 30° from its axis, the best-bet models of EHT 2022 paper V (ApJL 930, L16), clockwise
+as GRAVITY's flares (A&A 677, L10, 2023: 157 ± 5°), its axis on the sky chosen. Where each picture is brightest was
+measured on these files (a brightness-weighted mean round the ring; `site/js/ui/holespin.js` EHT_PICTURES).
+
+**Eclipsing stars' minima.** The clock and "Algol at minimum" use the linear elements of **Kreiner 2004** (J.M. Kreiner,
+"Up-to-date linear elements of eclipsing binaries", Acta Astronomica 54, 207; VizieR J/AcA/54/207, read 2026-11-07
+through vizier.cfa.harvard.edu) for eight stars: Algol, lambda Tauri, delta Librae, RZ Cassiopeiae, U Cephei, V Puppis,
+Alphecca and W Ursae Majoris. VizieR's terms: free in a scientific context with the authors cited; every such row of
+`site/data/variables.json` cites the paper.
+
+**The cards read aloud.** `site/audio/cards/en/` holds, so far, the leads of 13 of the 99 baked English cards (`site/data/wikicards/en.json`)
+said by the trips' synthetic voice, **Kokoro-82M (af_heart), Apache-2.0** (§9b), made offline by
+`scripts/narrate-cards.py` with the trips' own engine, pauses, levelling and encoding. The words are Wikipedia's
+(**Wikipedia contributors, CC BY-SA 4.0**), so each clip is an adaptation of the quoted text and is shared alike under
+**CC BY-SA 4.0**; the card prints the voice's and the text's credit while a clip plays, and `index.json` names both.
+
+| Item | Files | Licence | Credit line |
+|---|---|---|---|
+| The baked cards' leads, spoken | `site/audio/cards/en/*.opus`, `*.m4a`, `*.vtt` | CC BY-SA 4.0 (the text); Apache-2.0 (the voice's model) | Voice: Kokoro-82M (af_heart), a synthetic voice; text: Wikipedia contributors |
+<!-- b200-c2-deep: end -->

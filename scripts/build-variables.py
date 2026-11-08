@@ -54,6 +54,19 @@ COMMON = {
 GREEK = {"alf": "α", "bet": "β", "gam": "γ", "del": "δ", "eps": "ε", "zet": "ζ", "eta": "η", "the": "θ", "iot": "ι", "kap": "κ",
          "lam": "λ", "mu.": "μ", "nu.": "ν", "xi.": "ξ", "omi": "ο", "pi.": "π", "rho": "ρ", "sig": "σ", "tau": "τ", "ups": "υ",
          "phi": "φ", "khi": "χ", "psi": "ψ", "ome": "ω"}
+# b200-c2-deep: begin -- up-to-date linear elements of the bright eclipsing stars (forge #142: "Algol at minimum tonight")
+# The GCVS epochs are decades old and a small error in the period grows with every cycle since: Algol's GCVS elements put
+# its minima of 2026 2.8 hours early, much of an eclipse that lasts ten. Kreiner (2004, Acta Astron.
+# 54, 207; VizieR J/AcA/54/207, read 2026-11-07 through vizier.cfa.harvard.edu) fitted each star's minima of the last
+# decades: a heliocentric minimum (HJD, within 8 minutes of JD for these stars) and a period. These win over the GCVS's
+# for the clock (sky/variables.js phaseAt); the GCVS's stay in the row, cited.
+LINEAR = {
+    "bet Per": (2452500.1500, 2.867328), "lam Tau": (2452501.9460, 3.952952), "del Lib": (2452500.5520, 2.327357),
+    "RZ Cas": (2452500.5672, 1.1952578), "U Cep": (2452502.0318, 2.4930977), "V Pup": (2452500.4340, 1.45449),
+    "alf CrB": (2452501.9700, 17.3599), "W UMa": (2452500.1690, 0.33363491),
+}
+LINEAR_CITE = "Kreiner 2004, Acta Astron. 54, 207 (VizieR J/AcA/54/207)"
+# b200-c2-deep: end
 QUADRATIC = {"bet Lyr": {"t0": 2408247.966, "p0": 12.913780, "q": 3.87196e-6, "cite": "Harmanec & Scholz 1993, A&A 279, 131"}}
 MEASURED = {"alf Ori": {
     "points": [["2019-10-01", 0.5], ["2020-01-15", 1.5], ["2020-02-10", 1.614], ["2020-02-20", 1.6], ["2020-04-20", 0.4]],
@@ -149,13 +162,15 @@ def build(tsv: Path, hyg: Path) -> str:
             "epochJd": round(2400000 + epoch, 5) if epoch is not None else None,
             "periodD": period, "frac": round(frac / 100, 3) if frac is not None else None,
         }
+        if g in LINEAR:  # b200-c2-deep
+            row["linear"] = {"epochJd": LINEAR[g][0], "periodD": LINEAR[g][1], "cite": LINEAR_CITE}
         if g in QUADRATIC:
             row["quadratic"] = QUADRATIC[g]
         if g in MEASURED:
             row["measured"] = MEASURED[g]
         rows.append(row)
     doc = {
-        "source": "GCVS 5.1 (Samus et al. 2017, Astron. Rep. 61, 80) via VizieR B/gcvs, read 2026-11-07; Hipparcos numbers from HYG v4.4 (CC BY-SA 4.0); bet Lyr: Harmanec & Scholz 1993; alf Ori 2019-20: Wikipedia (ATel 13439, 13512; AAVSO)",
+        "source": "GCVS 5.1 (Samus et al. 2017, Astron. Rep. 61, 80) via VizieR B/gcvs, read 2026-11-07; Hipparcos numbers from HYG v4.4 (CC BY-SA 4.0); bet Lyr: Harmanec & Scholz 1993; eclipsing minima: Kreiner 2004; alf Ori 2019-20: Wikipedia (ATel 13439, 13512; AAVSO)",
         "rows": rows,
     }
     return json.dumps(doc, ensure_ascii=False, separators=(",", ":")) + "\n"

@@ -5555,3 +5555,43 @@ COPY.momentStories['fengyun-1c'] = {
   "srcWiki": "维基百科，2007 Chinese anti-satellite missile test：接近速度"
 };
 // b200-c3-learn: end
+// b200-c2-deep: begin -- the 3D stars over deep time, the variable stars worth going out for, the black holes against the EHT's pictures and the cards in the trips' voice (copy/en.deep.js, forge #141, #142, #149, #151), machine-drafted
+Object.assign(COPY, {
+  "starDeep": {
+    "moved": "{year} 的星空：每颗星都按其实测的自行移动（依巴谷与盖亚，经 HYG）；沿直线外推这么久是模型。",
+    "hidden": "离今天这么远时，没有实测运动的恒星不再绘制。",
+    "noPluto": "离今天这么远时不绘制冥王星及其卫星：它们的星历（astronomy-engine）只有 0 至 4000 年的表。",
+    "selected": "那时 {name} 距太阳 {d} 光年（模型）；卡片和标签给出的是今天的距离 {today}。"
+  },
+  "varEvents": {
+    "min": "{name} 处于极小",
+    "max": "{name} 接近最亮",
+    "minLine": "暗至 {mag} 等，{dir}方向，高 {alt}°。",
+    "maxLine": "约 {mag} 等，{dir}方向，高 {alt}°。",
+    "minClass": "由实测极小时刻（Kreiner 2004）按周期外推：大约准到一刻钟。",
+    "maxClass": "由星表的周期和历元推算的模型：米拉变星的极大会提前或推迟数周。",
+    "aria": "{title}，{when}。{line}"
+  },
+  "holeCompare": {
+    "fromEarth": "从地球看",
+    "fromEarthTitle": "站到黑洞与地球的连线上，北在上、东在左，与 EHT 图像的印法相同",
+    "compare": "与 EHT 图像对比",
+    "compareTitle": "在所画黑洞旁显示事件视界望远镜的图像，两者都从地球看、北在上",
+    "hide": "隐藏 EHT 图像",
+    "caption": "EHT，{date}",
+    "orient": "北在上，东在左，与此刻黑洞的画法一致。",
+    "credit": "图像：EHT Collaboration，CC BY 4.0。",
+    "source": "来源",
+    "alt": "事件视界望远镜拍摄的 {name}，{date}：暗色中心周围的一圈橙色光环。",
+    "brightest": "从地球看、北在上时，所画的光环在位置角约 {ours}° 处最亮（在画面上测得）；{date} 的 EHT 图像在约 {theirs}° 处最亮。",
+    "approx": {
+      "m87-star": "已对齐：倾角（与视线成 17°）和喷流在天空中的方向（288°）是实测的（Walker 等 2018），气流按顺时针旋转（EHT 2019 第五篇），所以迎面而来、因运动而增亮的一侧落在南边。按线性亮度沿光环测量，我们的亮侧约为暗侧的 2.5 倍（模糊到 EHT 的 20 微角秒时为 2.1）；他们的在 2017 年为 2.7，2018 年为 4.2，因此我们的与 2017 年相符。近似之处：光线按不自转的黑洞追踪，气体是沿圆轨道运动的薄盘，而不是 EHT 模型中又热又厚的吸积流。他们的亮斑一年内移动了约 30°；我们的不动。",
+      "sgr-a-star": "已对齐：从与自转轴成 30° 的方向看，与 EHT 2022 第五篇中最吻合的模型一致，并像 GRAVITY 看到的耀发一样顺时针旋转。人为选择：自转轴在天空中的指向，至今无人测得；我们把它转到使较亮一侧落在 EHT 图像最亮之处。近似之处：光线绕不自转的黑洞和薄盘追踪；EHT 图像是对几分钟内就会变化的气流整夜的平均，作者说其中三个亮结并非都是真实的。 我们的亮侧约为暗侧的五倍（模糊到 EHT 的 20 微角秒时为 4.5），他们的为 1.7：在 30° 下，圆轨道使近侧增亮的程度远超 EHT 整夜平均所显示的。"
+    }
+  },
+  "cardVoice": {
+    "readTitle": "朗读此卡片：用旅程的合成语音读出引用的维基百科文字",
+    "credit": "语音：Kokoro-82M（af_heart），合成语音，Apache-2.0；文字来自维基百科（CC BY-SA 4.0）。"
+  }
+});
+// b200-c2-deep: end

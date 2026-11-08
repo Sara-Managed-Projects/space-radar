@@ -472,6 +472,45 @@ export function renderTonight(host, ctx) {
     }
   }
 
+  // b200-c2-deep: begin -- the variable stars worth going out for tonight (sky/varevents.js, forge #142): Algol at
+  // minimum, a Mira near its brightest. The module and data/variables.json (15 kB) come with the first paint that has a
+  // place; the rows are worked out for the next 24 hours of the clock and join the best list, each a press to the star.
+  let varKit = null;
+  let varAsked = false;
+  function paintVariables(o) {
+    if (!o) return;
+    if (!varKit) {
+      if (!varAsked) {
+        varAsked = true;
+        Promise.all([import('../sky/varevents.js'), import('../sky/findclient.js'),
+          fetch(new URL('../../data/variables.json', import.meta.url)).then((r) => (r.ok ? r.json() : null))])
+          .then(([ev, fc, doc]) => { varKit = { ev, fc, rows: (doc && doc.rows) || [] }; renderBest(); })
+          .catch(() => { /* the list stands without them */ });
+      }
+      return;
+    }
+    const now = ctx.clock.now();
+    const deg = 180 / Math.PI;
+    const rows = varKit.ev.variableEvents(varKit.rows, { fromMs: now, toMs: now + 24 * 3600e3, observer: { latDeg: o.latRad * deg, lonDeg: o.lonRad * deg, altKm: o.altKm } });
+    for (const r of rows.map(varKit.fc.variableWords)) {
+      const time = timeText.hhmm(r.tMs);
+      const line = `${time}. ${r.line}`;
+      bestList.appendChild(rowNode({ title: r.label, line, side: '', aria: t(COPY.varEvents.aria, { title: r.label, when: time, line: `${r.line} ${r.classWords}` }) }, () => showStar(r)));
+      bestEmpty.hidden = true;
+    }
+  }
+  /** A variable star on the sky at its time, framed for the eye. */
+  function showStar(r) {
+    try {
+      if (ctx.setMoment) ctx.setMoment(COPY.moments.now.id);
+      if (ctx.clock && typeof ctx.clock.goTo === 'function') ctx.clock.goTo(r.tMs);
+      const sky = ctx.skyView;
+      if (sky && typeof sky.showPass === 'function') sky.showPass(null);
+      if (sky && typeof sky.pointAt === 'function') sky.pointAt({ raDeg: r.raDeg, decDeg: r.decDeg }, { fovDeg: FOV.eye });
+    } catch { /* the moment doors are the fallback */ }
+  }
+  // b200-c2-deep: end
+
   function renderBest() {
     st.bestAt = performance.now();
     st.bestClock = ctx.clock.now();
@@ -491,6 +530,7 @@ export function renderTonight(host, ctx) {
     }
     bestTitle.hidden = !o;
     bestEmpty.hidden = !o || rows.length > 0;
+    paintVariables(o); // b200-c2-deep
     setText(bestDark, best ? darkWords(best) : '');
     bestDark.hidden = !best;
     bestNote.hidden = !o;

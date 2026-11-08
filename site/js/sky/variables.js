@@ -6,7 +6,7 @@
 //   phaseAt(row, ms) -> 0..1 | null            from the row's epoch: 0 is a maximum (pulsating) or a primary minimum (eclipsing)
 //   magAt(row, ms) -> magnitude | null         null: not predictable (an irregular star), draw the catalogue's
 //   curve(row, ms, n) -> { points: [[ms, mag]...], fromMs, toMs, now: mag | null, faint, bright }
-//   nextMinimum(row, fromMs) -> ms | null      an eclipsing star's next primary minimum
+//   nextMinimum(row, fromMs) -> ms | null      an eclipsing star's next primary minimum (row.linear's elements when it has them)
 //   honesty(row) -> 'measured' | 'modelled'    what the drawn value is
 // Rows are data/variables.json's (scripts/build-variables.py: GCVS 5.1 elements, two stars with more).
 //
@@ -46,10 +46,12 @@ export function phaseAt(row, ms) {
     const e = (-q.p0 + Math.sqrt(q.p0 * q.p0 - 4 * q.q * c)) / (2 * q.q);
     return frac(e);
   }
-  if (!(row.periodD > 0)) return null;
+  // b200-c2-deep: Kreiner's up-to-date elements for the bright eclipsing stars (scripts/build-variables.py LINEAR)
+  const L = row.linear && row.linear.periodD > 0 ? row.linear : row;
+  if (!(L.periodD > 0)) return null;
   // A semi-regular star has no epoch in the catalogue: J2000 stands in, and the card says the phase is not known.
-  const epoch = Number.isFinite(row.epochJd) ? row.epochJd : 2451545.0;
-  return frac((jd - epoch) / row.periodD);
+  const epoch = Number.isFinite(L.epochJd) ? L.epochJd : 2451545.0;
+  return frac((jd - epoch) / L.periodD);
 }
 
 function eclipseDip(phase, depth, width) {
@@ -151,6 +153,6 @@ export function nextMinimum(row, fromMs) {
   if (!row || (row.shape !== 'eclipse' && row.shape !== 'binary')) return null;
   const phase = phaseAt(row, fromMs);
   if (phase === null) return null;
-  const p = row.quadratic ? row.quadratic.p0 + 2 * row.quadratic.q * ((jdOf(fromMs) - row.quadratic.t0) / row.quadratic.p0) : row.periodD;
+  const p = row.quadratic ? row.quadratic.p0 + 2 * row.quadratic.q * ((jdOf(fromMs) - row.quadratic.t0) / row.quadratic.p0) : (row.linear || row).periodD; // b200-c2-deep
   return fromMs + (phase === 0 ? 0 : (1 - phase) * p * DAY_MS);
 }

@@ -67,9 +67,11 @@ export const UNDER_MEASURED = { hole: 'same', streaks: 'same', jet: 'same' };
  */
 export const PROFILES = {
   'sgr-a-star': {
-    incl: 48, pa: 60, turn: -1, rOut: 18, t: 5000, frame: 13,
+    // b200-c2-deep (forge #149): seen 30 degrees from its axis, EHT 2022 paper V's best-bet models (it was 48, the most
+    // that fit allowed); the axis on the sky is still chosen, now so the bright side lands where the EHT picture's does.
+    incl: 30, pa: 60, turn: -1, rOut: 18, t: 5000, frame: 13,
     cls: { mass: 'measured', size: 'measured', place: 'measured', disc: 'modelled', orientation: 'modelled' },
-    why: 'EHT 2022 (ApJL 930, L12): a ring 51.8 µas across, best fitted seen within 50 degrees of face-on (48 is taken, the most the fit allows, so the far side of the disc shows over the shadow); GRAVITY 2018 saw flares circle clockwise. The axis on the sky is not measured: 60 degrees is chosen.',
+    why: 'EHT 2022 (ApJL 930, L12): a ring 51.8 µas across. Paper V (ApJL 930, L16) rules out views more than 50 degrees from the axis and its best-bet models are seen from 30 degrees, which is drawn; GRAVITY saw flares circle clockwise on an orbit tilted 157 ± 5 degrees, the same tilt seen from below (A&A 677, L10, 2023). The axis on the sky is not measured: 60 degrees is chosen, which puts the approaching, brighter side in the north-west, where the EHT picture is brightest.',
   },
   'm87-star': {
     incl: 17, pa: 288, turn: -1, rOut: 18, t: 5000, frame: 13, host: 'dso-m87',
@@ -762,7 +764,7 @@ export function createBlackHole(record, opts = {}) {
     magnification: () => magnification,
     stats: () => ({
       id: p.id, msun: p.msun, mKm: +p.mKm.toFixed(1), shadowKm: +(2 * SHADOW_M * p.mKm).toFixed(0), magnification: +magnification.toPrecision(3),
-      opacity: +opacity.toFixed(3), jets: jets.length, companion: !!star, sepM: sep ? +sep.toFixed(0) : null, steps: TIER_STEPS[tier][0],
+      opacity: +opacity.toFixed(3), jets: jets.length, companion: !!star, sepM: sep ? +sep.toFixed(0) : null, steps: TIER_STEPS[tier][0], tier, // b200-c2-deep: tier, for scene/portraits.js's fallback
       camM: +huniforms.uCamDist.value.toPrecision(4),
     }),
     dispose() {

@@ -5656,3 +5656,43 @@ COPY.momentStories['fengyun-1c'] = {
   "srcWiki": "Wikipedia, 2007 Chinese anti-satellite missile test: die Annäherungsgeschwindigkeit"
 };
 // b200-c3-learn: end
+// b200-c2-deep: begin -- the 3D stars over deep time, the variable stars worth going out for, the black holes against the EHT's pictures and the cards in the trips' voice (copy/en.deep.js, forge #141, #142, #149, #151), machine-drafted
+Object.assign(COPY, {
+  "starDeep": {
+    "moved": "Die Sterne von {year}: jeder um seine eigene gemessene Bewegung versetzt (Hipparcos und Gaia, über HYG); sie so lange geradlinig fortzuschreiben, ist modelliert.",
+    "hidden": "Sterne ohne gemessene Bewegung werden so weit von heute nicht gezeichnet.",
+    "noPluto": "Pluto und seine Monde werden so weit von heute nicht gezeichnet: Ihre Ephemeride (astronomy-engine) hat nur für die Jahre 0 bis 4000 eine Tabelle.",
+    "selected": "{name} ist dann {d} Lichtjahre von der Sonne entfernt (modelliert); Karte und Beschriftung nennen den heutigen Wert, {today}."
+  },
+  "varEvents": {
+    "min": "{name} im Minimum",
+    "max": "{name} nahe seiner größten Helligkeit",
+    "minLine": "Bis Größe {mag}, {alt}° hoch im {dir}.",
+    "maxLine": "Etwa Größe {mag}, {alt}° hoch im {dir}.",
+    "minClass": "Aus seinen gemessenen Minima (Kreiner 2004) mit seiner Periode fortgeschrieben: etwa auf die Viertelstunde genau.",
+    "maxClass": "Modelliert aus Periode und Epoche des Katalogs: Die Maxima eines Mira-Sterns kommen Wochen zu früh oder zu spät.",
+    "aria": "{title}, {when}. {line}"
+  },
+  "holeCompare": {
+    "fromEarth": "Von der Erde aus",
+    "fromEarthTitle": "Auf die Linie vom Loch zur Erde stellen, Norden oben und Osten links, wie die EHT-Bilder gedruckt werden",
+    "compare": "Mit dem EHT-Bild vergleichen",
+    "compareTitle": "Das Bild des Event Horizon Telescope neben dem gezeichneten Loch zeigen, beide von der Erde aus mit Norden oben",
+    "hide": "EHT-Bild ausblenden",
+    "caption": "EHT, {date}",
+    "orient": "Norden oben, Osten links, wie das Loch jetzt gezeichnet ist.",
+    "credit": "Bilder: EHT Collaboration, CC BY 4.0.",
+    "source": "Quelle",
+    "alt": "Das Bild des Event Horizon Telescope von {name}, {date}: ein oranger Lichtring um ein dunkles Zentrum.",
+    "brightest": "Von der Erde aus mit Norden oben ist der gezeichnete Ring bei einem Positionswinkel von etwa {ours}° am hellsten (an der Zeichnung gemessen); das EHT-Bild vom {date} ist bei etwa {theirs}° am hellsten.",
+    "approx": {
+      "m87-star": "Abgestimmt: Die Neigung (17° zu unserer Sichtlinie) und der Winkel des Jets am Himmel (288°) sind gemessen (Walker et al. 2018), und da der Fluss im Uhrzeigersinn dreht (EHT 2019, Teil V), liegt die herankommende, durch ihre Bewegung aufgehellte Seite im Süden. In linearer Helligkeit um den Ring gemessen ist unsere helle Seite etwa 2,5-mal so hell wie die schwache (2,1, auf die 20 µas des EHT verwaschen); ihre 2,7 im Jahr 2017 und 4,2 im Jahr 2018, unsere passt also zu 2017. Genähert: Das Licht wird wie um ein nicht rotierendes Loch verfolgt, und das Gas ist eine dünne Scheibe auf Kreisbahnen statt des heißen, dicken Flusses der EHT-Modelle. Ihr heller Fleck wanderte in einem Jahr um etwa 30°; unserer wandert nicht.",
+      "sgr-a-star": "Abgestimmt: aus 30° zu seiner Achse gesehen, wie die am besten passenden Modelle von EHT 2022, Teil V, im Uhrzeigersinn drehend wie die GRAVITY-Flares. Gewählt: wohin die Achse am Himmel zeigt, was niemand gemessen hat; sie ist so gedreht, dass die hellere Seite dort liegt, wo das EHT-Bild am hellsten ist. Genähert: Das Licht wird um ein nicht rotierendes Loch und eine dünne Scheibe verfolgt; das EHT-Bild ist ein Mittel über eine Nacht eines Flusses, der sich binnen Minuten ändert, und seine drei hellen Knoten sind nicht alle echt, sagen seine Macher. Unsere helle Seite ist etwa fünfmal so hell wie die schwache (4,5 auf die 20 µas des EHT verwaschen), ihre 1,7: Bei 30° hellen die Kreisbahnen die nahe Seite viel stärker auf, als das nächtliche Mittel des EHT zeigt."
+    }
+  },
+  "cardVoice": {
+    "readTitle": "Diese Karte vorlesen: der zitierte Wikipedia-Text in der synthetischen Stimme der Reisen",
+    "credit": "Stimme: Kokoro-82M (af_heart), eine synthetische Stimme, Apache-2.0; die Worte sind die der Wikipedia (CC BY-SA 4.0)."
+  }
+});
+// b200-c2-deep: end

@@ -3293,6 +3293,8 @@ export function positionOf(id, tMs) {
     return { x: teme.x, y: teme.y, z: teme.z, frame: EARTH_INERTIAL, cls: 'measured' };
   }
 
+  // b200-c2-deep (forge #141): Pluto only inside astronomy-engine's table, years 0 to 4000 (propagate/frames.js says why).
+  if (w.body === 'Pluto' && !(Math.abs(date.getUTCFullYear() - 2000) < 2000)) return null;
   const v = Astronomy.HelioVector(Astronomy.Body[w.body], date); // EQJ, au
   const e = Astronomy.RotateVector(Astronomy.Rotation_EQJ_ECL(), v);
   return {

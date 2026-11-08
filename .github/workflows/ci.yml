@@ -1520,3 +1520,15 @@ jobs:
       - name: "The Fengyun-1C Moment: the cloud born at one point and spread round the Earth, the voice inside each chapter, every count its source's, the clips heard (forge #153)"
         run: node tests/test_moment_fengyun.mjs
       # b200-c3-learn: end
+      # b200-c2-deep: begin
+      - name: "The 3D and orbital stars over deep time on the GPU: the patched shaders, Barnard's Star by the same formula as the ground sky's (forge #141, #142)"
+        run: node tests/test_stardeep.mjs
+      - name: "Variable stars worth going out for: Kreiner's minima, Algol at minimum from London, Coming up's and Tonight's rows (forge #142)"
+        run: node tests/test_varevents.mjs
+      - name: "The black holes against the EHT's pictures: from Earth with north up, the pictures' licences, the bright sides, the tier fallback (forge #149)"
+        run: node tests/test_holecompare.mjs
+      - name: "The baked cards read aloud in the trips' voice: one hash, every clip heard and current, small and only on press (forge #151)"
+        run: node tests/test_cardvoice.mjs
+      - name: "The map on a far clock: Pluto only inside its ephemeris's table, every other world answers at AD 50 000 at once (forge #141)"
+        run: node tests/test_farclock.mjs
+      # b200-c2-deep: end

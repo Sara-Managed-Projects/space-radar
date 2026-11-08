@@ -7,6 +7,7 @@
 //             `words` is {name, sentence, why}: what the card already says (ui/cards.js firstSentence, cardfacts.js whyLine).
 //           articleFor(record, lang, deps?) -> Promise<{card, lang, baked, fallback, family} | null>   (exported for the test)
 //           stopReading()   ends any reading in progress (a card that closes, a second card)
+//           cardHash(text), clipFor(index, key, text)   (b200-c2-deep) which baked card has a Kokoro clip, pure
 //
 // OUR OWN WORDS WIN. A card with a hand-written line (`why` or `note`, cardfacts.js whyLine) or a registry photograph
 // gets no Wikipedia block at all: those lines were written by looking and are sourced, and a quoted paragraph under them
@@ -30,6 +31,13 @@
 // spoken at a time and shown under the button as it is said (the captions), in a live region a screen reader does not
 // repeat (aria-live off: the reader is already speaking). It stops when the card closes or another card is read.
 // Nothing moves on screen while it reads, so prefers-reduced-motion has nothing to hold back.
+//
+// b200-c2-deep (forge #151): IN THE TRIPS' VOICE WHERE THERE IS A CLIP. The baked English cards' leads are rendered
+// offline in the trips' Kokoro voice (scripts/narrate-cards.py, site/audio/cards/en/). On a press, and only then, the
+// clips' index is fetched (2 kB); a card whose baked English lead has a clip of exactly that text (cardHash) plays it,
+// Opus or its AAC twin (audio/pick.js), with the clip's own captions under the button and the voice's credit; any
+// other card, or a clip that will not play, is read by the device as before. The clip is the quoted lead only, which
+// begins with the thing's name; the other languages have no voice in the pipeline and keep the device's.
 
 import { COPY, t } from '../copy/en.js';
 import '../copy/en.later.js';
@@ -38,6 +46,11 @@ import { LANG, LOCALE } from '../copy/lang.js';
 import { whyLine, meta, pick } from './cardfacts.js';
 import { wikiTitleOf } from '../data/wikititles.js';
 import { loadCss } from './latercss.js';
+// b200-c2-deep: begin
+import '../copy/en.deep.js';
+import { pickFormat } from '../audio/pick.js';
+import { parseVtt, cueAt } from '../audio/narration.js';
+// b200-c2-deep: end
 import {
   wikiLang, restSummaryUrl, langLinksUrl, commonsInfoUrl, summaryOf, creditOf, cleanUrl, langLinkOf,
   dsoTitle, mentions, familyOf, noradOf, readingParts,
@@ -219,7 +232,29 @@ export function stopReading() {
 
 const canSpeak = () => typeof speechSynthesis !== 'undefined' && typeof SpeechSynthesisUtterance === 'function';
 
-function readButton(box, getParts) {
+// b200-c2-deep: begin -- the trips' voice for the baked cards (forge #151)
+const VOICE = new URL('../../audio/cards/en/', import.meta.url).href;
+let voiceIndex = null;
+const voiceIndexOf = () => voiceIndex || (voiceIndex = fetch(`${VOICE}index.json`, { credentials: 'same-origin' })
+  .then((r) => (r.ok ? r.json() : null)).catch(() => null));
+const canPlayClips = () => typeof Audio === 'function';
+
+/** 32-bit FNV-1a over the text's UTF-16 code units, in hex: scripts/narrate-cards.py card_hash() is the same. */
+export function cardHash(text) {
+  let h = 0x811c9dc5;
+  const s = String(text);
+  for (let i = 0; i < s.length; i += 1) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+  return h.toString(16).padStart(8, '0');
+}
+
+/** The index's row for card `key` when its clip says exactly `text`, else null. */
+export function clipFor(index, key, text) {
+  const row = index && index.clips ? index.clips[key] : null;
+  return row && row.h === cardHash(text) ? row : null;
+}
+// b200-c2-deep: end
+
+function readButton(box, getParts, getClip = () => null) {
   const W = COPY.wikiCard;
   const row = el('div', 'sr-wiki__read');
   const btn = el('button', 'sr-btn sr-btn--quiet sr-card__inline', W.read);
@@ -243,9 +278,52 @@ function readButton(box, getParts) {
     caption.textContent = '';
     if (reading && reading.box === box) reading = null;
   };
+  // b200-c2-deep: begin -- a clip when the card has one, the device's voice otherwise
+  const credit = el('p', 'sr-wiki__note');
+  credit.hidden = true;
+  row.appendChild(credit);
+  const playClip = (key) => {
+    const audio = new Audio();
+    const [first, twin] = pickFormat({ file: `${VOICE}${key}.opus`, twin: `${VOICE}${key}.m4a` }, (type) => audio.canPlayType(type));
+    let cues = [];
+    let stopped = false;
+    fetch(`${VOICE}${key}.vtt`, { credentials: 'same-origin' }).then((r) => (r.ok ? r.text() : '')).then((v) => { cues = parseVtt(v); }).catch(() => {});
+    const finish = () => { credit.hidden = true; end(); };
+    audio.addEventListener('timeupdate', () => {
+      const text = cueAt(cues, audio.currentTime);
+      if (text && caption.textContent !== text) { caption.hidden = false; caption.textContent = text; caption.lang = 'en'; }
+    });
+    audio.addEventListener('ended', finish);
+    audio.addEventListener('error', () => {
+      if (stopped) return;
+      if (twin && audio.src !== twin) { audio.src = twin; audio.play().catch(() => {}); return; }
+      // Neither file plays here: the device reads it after all.
+      reading = null; credit.hidden = true; speakDevice();
+    });
+    reading = { box, stop() { stopped = true; audio.pause(); audio.removeAttribute('src'); finish(); } };
+    btn.textContent = W.stop;
+    btn.setAttribute('aria-pressed', 'true');
+    credit.textContent = COPY.cardVoice.credit;
+    credit.hidden = false;
+    watch = setInterval(() => { if (!box.isConnected && reading && reading.box === box) reading.stop(); }, 500);
+    audio.src = first;
+    // A file that will not load says so by its error event; a play the browser refuses (no gesture it trusts) only
+    // rejects: then the device reads it, as it would have.
+    audio.play().catch(() => { if (!stopped && audio.paused && audio.error === null) { reading = null; credit.hidden = true; speakDevice(); } });
+  };
   btn.addEventListener('click', () => {
     if (reading && reading.box === box) { reading.stop(); return; }
     stopReading();
+    const clip = canPlayClips() ? getClip() : null;
+    if (!clip) { speakDevice(); return; }
+    voiceIndexOf().then((index) => {
+      if (reading) return; // pressed again, or another card, while the index came
+      if (clipFor(index, clip.key, clip.text)) playClip(clip.key); else speakDevice();
+    });
+  });
+  // b200-c2-deep: end
+  function speakDevice() {
+    if (!canSpeak()) return;
     const parts = getParts();
     if (!parts.length) return;
     const voices = speechSynthesis.getVoices ? speechSynthesis.getVoices() : [];
@@ -271,7 +349,7 @@ function readButton(box, getParts) {
     watch = setInterval(() => { if (!box.isConnected && reading && reading.box === box) reading.stop(); }, 500);
     try { speechSynthesis.cancel(); } catch { /* a fresh queue */ }
     next();
-  });
+  }
   return row;
 }
 
@@ -282,16 +360,20 @@ export async function mountWikiCard(box, record, words = {}) {
   loadCss('wikicard');
   let found = null;
   const pageLang = LOCALE || LANG;
-  if (canSpeak()) {
-    box.appendChild(readButton(box, () => readingParts({
+  if (canSpeak() || canPlayClips()) { // b200-c2-deep: or a clip
+    const btnRow = readButton(box, () => readingParts({
       name: words.name, sentence: words.sentence, why: words.why,
       wiki: found ? { extract: found.card.x, lang: found.lang } : null, pageLang,
-    })));
+    }), () => (found && found.baked && found.lang === 'en' && !words.why ? { key: String(record.id || ''), text: found.card.x } : null)); // b200-c2-deep
+    box.appendChild(btnRow);
   }
   if (hasOwnWords(record)) return;
   const wait = el('p', 'sr-wiki__loading', COPY.wikiCard.loading);
   box.appendChild(wait);
   try { found = await articleFor(record, LANG); } catch { found = null; }
+  // b200-c2-deep: a baked English lead is read in the trips' voice (scripts/narrate-cards.py made a clip of every one it could say)
+  const readBtn = box.querySelector('[data-focus="read-aloud"]');
+  if (readBtn && found && found.baked && found.lang === 'en' && canPlayClips()) readBtn.title = COPY.cardVoice.readTitle;
   wait.remove();
   if (found && box.isConnected !== false) box.appendChild(block(found));
 }

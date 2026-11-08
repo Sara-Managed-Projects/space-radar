@@ -78,6 +78,9 @@ async function english() {
   // b200-c3-learn: begin -- the Fengyun-1C Moment's words (copy/en.moments.fengyun.js, forge #153), drafted in every language
   await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.moments.fengyun.js')).href);
   // b200-c3-learn: end
+  // b200-c2-deep: begin -- the words of the 3D stars over deep time, the variable stars' rows, the EHT comparison and the cards' voice (copy/en.deep.js)
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.deep.js')).href);
+  // b200-c2-deep: end
   return { COPY: base.COPY, GLOSSARY: base.GLOSSARY };
 }
 

@@ -5420,3 +5420,43 @@ COPY.momentStories['fengyun-1c'] = {
   "srcWiki": "Wikipedia, 2007 Chinese anti-satellite missile test: la velocidad de acercamiento"
 };
 // b200-c3-learn: end
+// b200-c2-deep: begin -- the 3D stars over deep time, the variable stars worth going out for, the black holes against the EHT's pictures and the cards in the trips' voice (copy/en.deep.js, forge #141, #142, #149, #151), machine-drafted
+Object.assign(COPY, {
+  "starDeep": {
+    "moved": "Las estrellas de {year}: cada una movida por su propio movimiento medido (Hipparcos y Gaia, a través de HYG); prolongarlos en línea recta tanto tiempo es modelado.",
+    "hidden": "Las estrellas sin movimiento medido no se dibujan tan lejos de hoy.",
+    "noPluto": "Plutón y sus lunas no se dibujan tan lejos de hoy: su efeméride (astronomy-engine) solo tiene tabla para los años 0 a 4000.",
+    "selected": "{name} está entonces a {d} años luz del Sol (modelado); su ficha y su etiqueta dan la distancia de hoy, {today}."
+  },
+  "varEvents": {
+    "min": "{name} en su mínimo",
+    "max": "{name} cerca de su máximo brillo",
+    "minLine": "Hasta magnitud {mag}, a {alt}° de altura hacia el {dir}.",
+    "maxLine": "Magnitud {mag} aproximadamente, a {alt}° de altura hacia el {dir}.",
+    "minClass": "Calculado a partir de sus mínimos medidos (Kreiner 2004) y prolongado con su período: acertado a un cuarto de hora, más o menos.",
+    "maxClass": "Modelado a partir del período y la época del catálogo: los máximos de una Mira llegan semanas antes o después.",
+    "aria": "{title}, {when}. {line}"
+  },
+  "holeCompare": {
+    "fromEarth": "Visto desde la Tierra",
+    "fromEarthTitle": "Ponerse en la línea del agujero a la Tierra, con el norte arriba y el este a la izquierda, como se imprimen las imágenes del EHT",
+    "compare": "Comparar con la imagen del EHT",
+    "compareTitle": "Mostrar la imagen del Event Horizon Telescope junto al agujero dibujado, ambos vistos desde la Tierra con el norte arriba",
+    "hide": "Ocultar la imagen del EHT",
+    "caption": "EHT, {date}",
+    "orient": "Norte arriba, este a la izquierda, como está dibujado ahora el agujero.",
+    "credit": "Imágenes: EHT Collaboration, CC BY 4.0.",
+    "source": "Fuente",
+    "alt": "La imagen del Event Horizon Telescope de {name}, {date}: un anillo de luz naranja alrededor de un centro oscuro.",
+    "brightest": "Visto desde la Tierra con el norte arriba, el anillo dibujado es más brillante en un ángulo de posición de unos {ours}° (medido en el dibujo); la imagen del EHT del {date} es más brillante hacia los {theirs}°.",
+    "approx": {
+      "m87-star": "Ajustado: la inclinación (17° respecto a nuestra línea de visión) y el ángulo del chorro en el cielo (288°) están medidos (Walker et al. 2018), y con el flujo girando en sentido horario (EHT 2019, artículo V) el lado que se acerca, avivado por su movimiento, queda al sur. Medido en brillo lineal alrededor del anillo, nuestro lado brillante es unas 2,5 veces el débil (2,1 difuminado a los 20 µas del EHT); el suyo, 2,7 en 2017 y 4,2 en 2018, así que el nuestro coincide con el de 2017. Aproximado: la luz se traza como alrededor de un agujero que no gira y el gas es un disco delgado en órbitas circulares, no el flujo caliente y grueso de los modelos del EHT. Su mancha brillante se movió unos 30° en un año; la nuestra no se mueve.",
+      "sgr-a-star": "Ajustado: visto a 30° de su eje, como los modelos que mejor encajan del artículo V de EHT 2022, girando en sentido horario como las fulguraciones de GRAVITY. Elegido: hacia dónde apunta el eje en el cielo, que nadie ha medido; está girado para que el lado más brillante caiga donde la imagen del EHT es más brillante. Aproximado: la luz se traza alrededor de un agujero que no gira y de un disco delgado; la imagen del EHT es un promedio de una noche de un flujo que cambia en minutos, y sus tres nudos brillantes no son todos reales, dicen sus autores. Nuestro lado brillante es unas cinco veces el débil (4,5 difuminado a los 20 µas del EHT); el suyo, 1,7: a 30°, las órbitas circulares avivan el lado cercano mucho más de lo que muestra el promedio de una noche del EHT."
+    }
+  },
+  "cardVoice": {
+    "readTitle": "Leer esta ficha en voz alta: el texto citado de Wikipedia con la voz sintética de los viajes",
+    "credit": "Voz: Kokoro-82M (af_heart), una voz sintética, Apache-2.0; las palabras son de Wikipedia (CC BY-SA 4.0)."
+  }
+});
+// b200-c2-deep: end
