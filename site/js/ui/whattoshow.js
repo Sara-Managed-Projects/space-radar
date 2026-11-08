@@ -508,6 +508,7 @@ export function createWhatToShow(ctx, opts = {}) {
   const tier = el('p', 'sr-show__note');
   tier.hidden = true;
   root.append(quality, tier);
+  if (ctx) ctx.tierNoteEl = tier; // b200-f10-stars3d: scene/stars3dtiles.js writes the 3D stars' tier under it (forge #140)
   const onQuality = (e) => {
     const d = e && e.detail;
     if (!d) return;

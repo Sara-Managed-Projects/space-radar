@@ -412,7 +412,8 @@ export function attachStarDeep(ctx, clock) {
     const near = show ? selectedDistance() : null;
     const text = show ? [t(COPY.starDeep.moved, { year: yearWords(yearOf(tMs), COPY.deepTime) }), st.hide ? COPY.starDeep.hidden : '',
       Math.abs(yearOf(tMs) - 2000) < 2000 ? '' : COPY.starDeep.noPluto,
-      near ? t(COPY.starDeep.selected, { name: near.name, d: fmt.smart(near.thenLy), today: fmt.smart(near.todayLy) }) : ''].filter(Boolean).join(' ') : '';
+      near ? t(COPY.starDeep.selected, { name: near.name, d: fmt.smart(near.thenLy), today: fmt.smart(near.todayLy) }) : '',
+      ctx.starTiers ? ctx.starTiers.farLine() : ''].filter(Boolean).join(' ') : ''; // b200-f10-stars3d: the AT-HYG tier is today's only (scene/stars3dtiles.js)
     if (text === st.lineText) return;
     st.lineText = text;
     if (!st.line && text) {

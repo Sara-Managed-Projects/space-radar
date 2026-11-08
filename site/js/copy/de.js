@@ -5696,3 +5696,31 @@ Object.assign(COPY, {
   }
 });
 // b200-c2-deep: end
+// b200-f10-stars3d: begin -- the 3D star map's AT-HYG tier (copy/en.startiers.js, forge #140), machine-drafted
+Object.assign(COPY, {
+  "starTiers": {
+    "unnamed": "Ein unbenannter Stern (AT-HYG {n})",
+    "cite": "AT-HYG v4.0 (CC BY-SA 4.0, David Nash): Ort und Helligkeit aus Tycho-2, Entfernung aus {dist}",
+    "from": {
+      "gaia-dr3": "Gaia DR3",
+      "gaia-dr2": "Gaia DR2",
+      "hipparcos": "Hipparcos",
+      "gliese": "dem Gliese-Katalog",
+      "other": "einem älteren Katalog"
+    },
+    "error": "Entfernung auf etwa ±{pct} % genau (Parallaxe durch ihren Fehler etwa {poe}): modelliert aus dem typischen Fehler der Mission bei dieser Helligkeit ({mas} Millibogensekunden), weil AT-HYG den eigenen Fehler dieses Sterns nicht enthält",
+    "noError": "AT-HYG nennt für diese Entfernung keinen Fehler",
+    "guess": "Diese Entfernung ist eine Schätzung: Jenseits von 3 kpc (etwa 10 000 Lichtjahre) ist eine Parallaxe nur wenige Zehntel Millibogensekunden groß, und der eigene Fehler des Sterns fehlt in AT-HYG, das nur Parallaxen behält, die größer als ihr Fehler sind",
+    "lineHyg": "Sterne in 3D: die 109 389 von HYG.",
+    "lineAthyg": "Sterne in 3D: die 109 389 von HYG und {n} Millionen von AT-HYG, auf einer Sprosse der Leiter rund um die Kamera geladen (bis zu {k} Millionen auf einmal).",
+    "why": {
+      "low": "Niedrige Qualität zeichnet nur HYG.",
+      "latched": "Die Bildrate war niedrig: nur HYG.",
+      "saver": "Datensparmodus: nur HYG.",
+      "none": ""
+    },
+    "gaiaHeld": "Gaia DR3 ist keine Stufe: Die ESA gibt die Daten ihres Archivs nur für nichtkommerzielle Nutzung frei (CC BY-NC 3.0 IGO).",
+    "farTime": "Die AT-HYG-Sterne werden nur zum heutigen Datum gezeichnet: Die Ansicht ferner Zeiten nutzt nur HYG."
+  }
+});
+// b200-f10-stars3d: end

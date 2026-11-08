@@ -1229,6 +1229,10 @@ export function honestyClause(record, m) {
   // measurement (data/sample.js PLANET_ORBITERS).
   const orbitKnown = pick(md, 'orbitKnown');
   if (orbitKnown) return String(orbitKnown);
+  // b200-f10-stars3d: begin -- an AT-HYG star's distance and how good it is, modelled (scene/stars3dtiles.js, forge #140)
+  const distNote = pick(md, 'distNote');
+  if (distNote) return String(distNote);
+  // b200-f10-stars3d: end
   return null;
 }
 

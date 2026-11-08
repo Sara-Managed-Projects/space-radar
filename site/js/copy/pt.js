@@ -5686,3 +5686,31 @@ Object.assign(COPY, {
   }
 });
 // b200-c2-deep: end
+// b200-f10-stars3d: begin -- the 3D star map's AT-HYG tier (copy/en.startiers.js, forge #140), machine-drafted
+Object.assign(COPY, {
+  "starTiers": {
+    "unnamed": "Uma estrela sem nome (AT-HYG {n})",
+    "cite": "AT-HYG v4.0 (CC BY-SA 4.0, David Nash): posição e brilho do Tycho-2, distância do {dist}",
+    "from": {
+      "gaia-dr3": "Gaia DR3",
+      "gaia-dr2": "Gaia DR2",
+      "hipparcos": "Hipparcos",
+      "gliese": "catálogo de Gliese",
+      "other": "um catálogo mais antigo"
+    },
+    "error": "Distância precisa a cerca de ±{pct} % (paralaxe sobre seu erro, cerca de {poe}): modelada a partir do erro típico da missão neste brilho ({mas} milissegundos de arco), porque o AT-HYG não traz o erro próprio desta estrela",
+    "noError": "O AT-HYG não dá erro para esta distância",
+    "guess": "Esta distância é um palpite: além de 3 kpc (cerca de 10 000 anos-luz) uma paralaxe tem poucos décimos de milissegundo de arco, e o erro próprio da estrela não está no AT-HYG, que só guarda uma paralaxe maior que seu erro",
+    "lineHyg": "Estrelas em 3D: as 109 389 do HYG.",
+    "lineAthyg": "Estrelas em 3D: as 109 389 do HYG e {n} milhões do AT-HYG, carregadas ao redor da câmera num degrau da escada (até {k} milhões de uma vez).",
+    "why": {
+      "low": "A qualidade baixa desenha só o HYG.",
+      "latched": "A taxa de quadros estava baixa: só o HYG.",
+      "saver": "Economia de dados: só o HYG.",
+      "none": ""
+    },
+    "gaiaHeld": "O Gaia DR3 não é um nível: a ESA licencia os dados do seu arquivo só para uso não comercial (CC BY-NC 3.0 IGO).",
+    "farTime": "As estrelas do AT-HYG são desenhadas só na data de hoje: a vista do tempo distante usa só o HYG."
+  }
+});
+// b200-f10-stars3d: end

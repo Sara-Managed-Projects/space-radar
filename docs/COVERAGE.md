@@ -373,7 +373,7 @@ Honesty over the 1195 records: 373 measured, 457 modelled, 365 illustrative.
 - **Drawn by:** `site/js/scene/stars3d.js`, `site/js/scene/starfield.js`, `site/js/scene/stardisc.js`
 - **Default honesty:** measured
 - **On a weak device (T0, or after the frame latch):** Points sized by magnitude; the disc of a near star only past 1.5 px.
-- **Source:** HYG v4.4 (David Nash) for 109 389 stars in 3D; AT-HYG v4.0 for fainter ones from the ground; d3-celestial for the starfield; Boyajian et al. 2012 for four measured radii; the Wikipedia article each notable star names.
+- **Source:** HYG v4.4 (David Nash) for 109 389 stars in 3D; AT-HYG v4.0 for fainter ones from the ground and, on a rung of the ladder, 2.4 million more in 3D round the camera (b200-f10-stars3d, forge #140); d3-celestial for the starfield; Boyajian et al. 2012 for four measured radii; the Wikipedia article each notable star names.
 - **Dates and filters:** Hipparcos (1997) positions and Gaia DR3 distances through AT-HYG; the line on each card read on the day its row says.
 - **Measured, modelled or reconstructed:** Measured: positions, magnitudes, colours from B-V. Modelled: the limb-darkened disc of a near star. Red stars' radii are estimates where no interferometry exists.
 - **Rights:** HYG and AT-HYG CC BY-SA 4.0; d3-celestial BSD-3-Clause; facts cited.

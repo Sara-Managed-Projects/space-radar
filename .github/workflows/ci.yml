@@ -1532,3 +1532,9 @@ jobs:
       - name: "The map on a far clock: Pluto only inside its ephemeris's table, every other world answers at AD 50 000 at once (forge #141)"
         run: node tests/test_farclock.mjs
       # b200-c2-deep: end
+      # b200-f10-stars3d: begin
+      - name: "AT-HYG's 2.4 million stars in 3D by octree node: the tiers, the walk round the camera, the committed tiles and their sizes, a first frame that does not grow (forge #140)"
+        run: node tests/test_stars3dtiles.mjs
+      - name: "The AT-HYG octree's build script: Tycho-2 numbers, Tycho to Johnson, brightest-first nodes, quantised rows, the committed set's --check (forge #140)"
+        run: python3 tests/test_stars3d_tiles.py
+      # b200-f10-stars3d: end
