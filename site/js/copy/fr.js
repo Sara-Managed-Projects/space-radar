@@ -5594,7 +5594,9 @@ Object.assign(COPY, {
 Object.assign(COPY, {
   "starDeep": {
     "moved": "Les étoiles de {year} : chacune déplacée de son propre mouvement mesuré (Hipparcos et Gaia, via HYG) ; les prolonger en ligne droite aussi longtemps est modélisé.",
-    "hidden": "Les étoiles sans mouvement mesuré ne sont pas dessinées aussi loin d’aujourd’hui."
+    "hidden": "Les étoiles sans mouvement mesuré ne sont pas dessinées aussi loin d’aujourd’hui.",
+    "noPluto": "Pluton et ses lunes ne sont pas dessinés aussi loin d’aujourd’hui : leur éphéméride (astronomy-engine) n’a de table que pour les années 0 à 4000.",
+    "selected": "{name} est alors à {d} années-lumière du Soleil (modélisé) ; sa fiche et son étiquette donnent la distance d’aujourd’hui, {today}."
   },
   "varEvents": {
     "min": "{name} au minimum",
@@ -5618,8 +5620,8 @@ Object.assign(COPY, {
     "alt": "L’image de {name} par l’Event Horizon Telescope, {date} : un anneau de lumière orange autour d’un centre sombre.",
     "brightest": "Vu de la Terre, nord en haut, l’anneau dessiné est le plus brillant vers un angle de position d’environ {ours}° (mesuré sur le dessin) ; l’image de l’EHT du {date} l’est vers {theirs}°.",
     "approx": {
-      "m87-star": "Ajusté : l’inclinaison (17° de notre ligne de visée) et l’angle du jet sur le ciel (288°) sont mesurés (Walker et al. 2018), et le flot tournant dans le sens horaire (EHT 2019, article V), le côté qui s’approche, plus brillant, tombe au sud. Approché : la lumière est tracée comme autour d’un trou qui ne tourne pas et le gaz est un disque mince, non le flot chaud et épais des modèles de l’EHT ; notre côté brillant l’est donc environ une fois et demie plus que le côté faible, le leur environ quatre (2017) à six fois (2018) ; et notre image est nette quand la leur est floutée à 20 µas par un télescope de la taille de la Terre. Leur tache brillante s’est déplacée d’environ 30° en un an ; la nôtre ne bouge pas.",
-      "sgr-a-star": "Ajusté : vu à 30° de son axe, comme les modèles les mieux ajustés de l’article V d’EHT 2022, tournant dans le sens horaire comme les sursauts vus par GRAVITY. Choisi : la direction de l’axe sur le ciel, que personne n’a mesurée ; il est tourné pour que le côté brillant tombe là où l’image de l’EHT est la plus brillante. Approché : la lumière est tracée autour d’un trou qui ne tourne pas, autour d’un disque mince ; l’image de l’EHT est une moyenne sur une nuit d’un flot qui change en quelques minutes, et ses trois nœuds brillants ne sont pas tous réels, disent ses auteurs."
+      "m87-star": "Ajusté : l’inclinaison (17° de notre ligne de visée) et l’angle du jet sur le ciel (288°) sont mesurés (Walker et al. 2018), et le flot tournant dans le sens horaire (EHT 2019, article V), le côté qui s’approche, avivé par son mouvement, tombe au sud. Mesuré en luminosité linéaire autour de l’anneau, notre côté brillant vaut environ 2,5 fois le côté faible (2,1 flouté aux 20 µas de l’EHT) ; le leur 2,7 en 2017 et 4,2 en 2018 : le nôtre correspond donc à 2017. Approché : la lumière est tracée comme autour d’un trou qui ne tourne pas, et le gaz est un disque mince en orbites circulaires, non le flot chaud et épais des modèles de l’EHT. Leur tache brillante s’est déplacée d’environ 30° en un an ; la nôtre ne bouge pas.",
+      "sgr-a-star": "Ajusté : vu à 30° de son axe, comme les modèles les mieux ajustés de l’article V d’EHT 2022, tournant dans le sens horaire comme les sursauts vus par GRAVITY. Choisi : la direction de l’axe sur le ciel, que personne n’a mesurée ; il est tourné pour que le côté brillant tombe là où l’image de l’EHT est la plus brillante. Approché : la lumière est tracée autour d’un trou qui ne tourne pas, autour d’un disque mince ; l’image de l’EHT est une moyenne sur une nuit d’un flot qui change en quelques minutes, et ses trois nœuds brillants ne sont pas tous réels, disent ses auteurs. Notre côté brillant vaut environ cinq fois le côté faible (4,5 flouté aux 20 µas de l’EHT), le leur 1,7 : à 30°, les orbites circulaires avivent le côté proche bien plus que ne le montre la moyenne d’une nuit de l’EHT."
     }
   },
   "cardVoice": {

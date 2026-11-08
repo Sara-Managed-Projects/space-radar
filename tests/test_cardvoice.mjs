@@ -54,7 +54,7 @@ for (const [key, row] of Object.entries(index.clips)) {
     total += Math.max(0, size);
   }
   largest = Math.max(largest, row.opus);
-  check(Number.isFinite(row.wer) && row.wer <= 0.08, `${key}: heard by a recogniser, word error ${row.wer}`);
+  check(Number.isFinite(row.wer) && row.wer <= 0.08 && !row.voice, `${key}: heard by a recogniser, word error ${row.wer}, ${row.voice} voice finding(s)`);
   const vtt = readFileSync(join(DIR, `${key}.vtt`), 'utf8');
   check(vtt.startsWith('WEBVTT') && (vtt.match(/-->/g) || []).length >= 1, `${key}: captions`);
 }

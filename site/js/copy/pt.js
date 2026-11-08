@@ -5580,7 +5580,9 @@ Object.assign(COPY, {
 Object.assign(COPY, {
   "starDeep": {
     "moved": "As estrelas de {year}: cada uma deslocada pelo seu próprio movimento medido (Hipparcos e Gaia, via HYG); prolongá-los em linha reta por tanto tempo é modelado.",
-    "hidden": "Estrelas sem movimento medido não são desenhadas tão longe de hoje."
+    "hidden": "Estrelas sem movimento medido não são desenhadas tão longe de hoje.",
+    "noPluto": "Plutão e suas luas não são desenhados tão longe de hoje: a efeméride deles (astronomy-engine) só tem tabela para os anos 0 a 4000.",
+    "selected": "{name} está então a {d} anos-luz do Sol (modelado); o cartão e o rótulo dão a distância de hoje, {today}."
   },
   "varEvents": {
     "min": "{name} no mínimo",
@@ -5604,8 +5606,8 @@ Object.assign(COPY, {
     "alt": "A imagem de {name} pelo Event Horizon Telescope, {date}: um anel de luz laranja em volta de um centro escuro.",
     "brightest": "Visto da Terra com o norte em cima, o anel desenhado é mais brilhante num ângulo de posição de cerca de {ours}° (medido no desenho); a imagem do EHT de {date} é mais brilhante perto de {theirs}°.",
     "approx": {
-      "m87-star": "Ajustado: a inclinação (17° da nossa linha de visada) e o ângulo do jato no céu (288°) são medidos (Walker et al. 2018), e com o fluxo girando no sentido horário (EHT 2019, artigo V) o lado que se aproxima, mais brilhante, fica ao sul. Aproximado: a luz é traçada como em volta de um buraco que não gira e o gás é um disco fino, não o fluxo quente e espesso dos modelos do EHT, por isso o nosso lado brilhante é cerca de uma vez e meia mais brilhante que o fraco, e o deles cerca de quatro (2017) a seis vezes (2018); e a nossa imagem é nítida, a deles borrada a 20 µas por um telescópio do tamanho da Terra. A mancha brilhante deles moveu-se cerca de 30° num ano; a nossa não se move.",
-      "sgr-a-star": "Ajustado: visto a 30° do seu eixo, como os modelos que melhor se ajustam do artigo V do EHT 2022, girando no sentido horário como as erupções vistas pelo GRAVITY. Escolhido: para onde o eixo aponta no céu, o que ninguém mediu; está girado para que o lado mais brilhante caia onde a imagem do EHT é mais brilhante. Aproximado: a luz é traçada em volta de um buraco que não gira, em volta de um disco fino; a imagem do EHT é uma média de uma noite de um fluxo que muda em minutos, e os seus três nós brilhantes não são todos reais, dizem os seus autores."
+      "m87-star": "Ajustado: a inclinação (17° da nossa linha de visada) e o ângulo do jato no céu (288°) são medidos (Walker et al. 2018), e com o fluxo girando no sentido horário (EHT 2019, artigo V) o lado que se aproxima, avivado pelo seu movimento, fica ao sul. Medido em brilho linear ao redor do anel, o nosso lado brilhante é cerca de 2,5 vezes o fraco (2,1 borrado aos 20 µas do EHT); o deles, 2,7 em 2017 e 4,2 em 2018, então o nosso corresponde ao de 2017. Aproximado: a luz é traçada como em volta de um buraco que não gira e o gás é um disco fino em órbitas circulares, não o fluxo quente e espesso dos modelos do EHT. A mancha brilhante deles moveu-se cerca de 30° num ano; a nossa não se move.",
+      "sgr-a-star": "Ajustado: visto a 30° do seu eixo, como os modelos que melhor se ajustam do artigo V do EHT 2022, girando no sentido horário como as erupções vistas pelo GRAVITY. Escolhido: para onde o eixo aponta no céu, o que ninguém mediu; está girado para que o lado mais brilhante caia onde a imagem do EHT é mais brilhante. Aproximado: a luz é traçada em volta de um buraco que não gira, em volta de um disco fino; a imagem do EHT é uma média de uma noite de um fluxo que muda em minutos, e os seus três nós brilhantes não são todos reais, dizem os seus autores. O nosso lado brilhante é cerca de cinco vezes o fraco (4,5 borrado aos 20 µas do EHT), o deles 1,7: a 30°, as órbitas circulares avivam o lado próximo muito mais do que mostra a média de uma noite do EHT."
     }
   },
   "cardVoice": {

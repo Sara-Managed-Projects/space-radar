@@ -32,7 +32,8 @@ index, then one clip).
 
 IDEMPOTENT BY HASH, as narrate.py: a card whose hash, the voice and the engine are unchanged and whose files are there
 is left alone. --check fails when a baked card's text changed and its clip did not, when a file is not the size the
-index says, when a clip has not been heard (--listen), or when the clips pass `card_voice_total_kb`.
+index says, when a clip has not been heard (--listen) or was heard with a finding blamed on the voice, or when the clips
+pass `card_voice_total_kb`.
 """
 from __future__ import annotations
 
@@ -201,6 +202,10 @@ def check() -> int:
             errors.append(f"{key}: no recogniser has heard this clip (--listen)")
         elif row["wer"] > MAX_WER:
             errors.append(f"{key}: heard with {row['wer']:.1%} word error, over {MAX_WER:.0%}")
+        elif row.get("voice"):
+            # The trips' rule (registry/narration.yaml listen): a finding blamed on the voice needs a person's accept
+            # line, and the cards have no such list, so such a clip does not ship.
+            errors.append(f"{key}: {row['voice']} finding(s) the recogniser blames on the voice")
     for key in cards:
         if key not in clips and key not in skipped:
             errors.append(f"{key}: a baked card with neither a clip nor a reason it has none")
@@ -298,7 +303,8 @@ def render(args) -> int:
 
 def listen(args) -> int:
     """Every clip through the trips' recogniser (scripts/listen_check.py's Ear and judge()); a clip heard worse than
-    MAX_WER loses its files and joins `skipped`, so the card keeps the device's speech."""
+    MAX_WER, or with any finding blamed on the voice (the trips' rule, with no accept list here), loses its files and joins
+    `skipped`, so the card keeps the device's speech."""
     import listen_check as L
     _, cfg = narrate.load_config()
     cards = load_cards()
@@ -322,11 +328,12 @@ def listen(args) -> int:
         clips[key]["voice"] = len(voice_faults)
         print(f"{'wer  ' if res['wer'] > MAX_WER else 'ok   '}{n}/{len(todo)} {key}: wer {res['wer']:.1%}, "
               f"{len(voice_faults)} voice: {'; '.join(f['why'] for f in voice_faults)[:200]}", flush=True)
-        if res["wer"] > MAX_WER:
+        if res["wer"] > MAX_WER or voice_faults:
             for f in paths(key).values():
                 if f.exists():
                     f.unlink()
-            skipped[key] = f"a recogniser heard {res['wer']:.0%} of its words wrong"
+            skipped[key] = (f"a recogniser heard {res['wer']:.0%} of its words wrong" if res["wer"] > MAX_WER else
+                            f"the recogniser blamed {len(voice_faults)} word(s) on the voice ({voice_faults[0]['why']})")
             del clips[key]
         write_index(clips, skipped, cfg)
     return 0

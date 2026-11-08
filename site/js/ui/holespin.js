@@ -52,7 +52,7 @@ export const EHT_PICTURES = {
   'sgr-a-star': [{ file: 'eht-sgr-a.jpg', date: '2017-04', pa: 322, source: 'https://www.eso.org/public/images/eso2208-eht-mwa/' }],
 };
 /** Where the drawn ring is brightest seen from Earth, north up: measured the same way on the look run's pictures. */
-export const DRAWN_BRIGHTEST_PA = { 'm87-star': 205, 'sgr-a-star': 332 };
+export const DRAWN_BRIGHTEST_PA = { 'm87-star': 206, 'sgr-a-star': 334 };
 
 const keyOf = (record) => String((record && record.id) || '').replace(/^exotic-/, '');
 const stillMotion = () => (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)

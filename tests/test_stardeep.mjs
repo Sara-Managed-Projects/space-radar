@@ -54,6 +54,7 @@ const c = M.moveOne(m, barnard, years);
 const sepAs = Math.acos(Math.min(1, (g[0] * c[0] + g[1] * c[1] + g[2] * c[2]) / gl)) * 206264.8;
 check(sepAs < 0.01, `the shell's formula is moveOne's: ${sepAs.toFixed(4)}" apart`);
 const placeLy = Math.hypot(...[0, 1, 2].map((k) => m.dir[barnard * 3 + k] * m.dist[barnard] + m.vel[barnard * 3 + k] * (11800 - 2000)));
+check(Math.abs(D.distanceAt(m, barnard, 11800 - 2000) - placeLy) < 1e-9 && Math.abs(D.distanceAt(m, barnard, 0) - m.dist[barnard]) < 1e-5, 'distanceAt is the same straight line (the line under the time bar for a selected star)');
 check(Math.abs(placeLy - 3.77) < 0.1, `the fastest nearby star (Barnard's) passes at ${placeLy.toFixed(2)} ly about AD 11 800`);
 
 // 2b. the match

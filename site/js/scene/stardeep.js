@@ -7,6 +7,7 @@
 //   eqToEcl(v), eclToEq(v) -> [x, y, z]      J2000, the obliquity scene/blackhole.js and frames.js use
 //   driftOf(m, k, out) -> out                 star k's space velocity over its distance, a year (equatorial): the shell's motion
 //   matchStars(dirs, n, motion, m, tolDeg) -> Int32Array   each drawn star's motion record, or -1
+//   distanceAt(m, k, years) -> light-years   star k's distance from the Sun then (modelled)
 //   SHELL_UNITS                               scene/stars3d.js's shell radius
 //
 // ON THE GPU. The ground sky moves its stars on the CPU (sky/skyepoch.js), a few thousand points. The 3D map is 109 389
@@ -32,7 +33,7 @@
 // irregular star, the catalogue's own. Nothing animates by itself: reduced motion has nothing to stop.
 
 import * as THREE from '../../vendor/three.module.min.js';
-import { COPY, t } from '../copy/en.js';
+import { COPY, t, fmt } from '../copy/en.js';
 import '../copy/en.stars.js';
 import '../copy/en.deep.js';
 import { motionYears, parseMotion } from '../sky/starmotion.js';
@@ -53,6 +54,11 @@ const YEAR_MS = 365.25 * 86400e3;
 
 export const eqToEcl = (v) => [v[0], v[1] * Math.cos(OBL) + v[2] * Math.sin(OBL), -v[1] * Math.sin(OBL) + v[2] * Math.cos(OBL)];
 export const eclToEq = (v) => [v[0], v[1] * Math.cos(OBL) - v[2] * Math.sin(OBL), v[1] * Math.sin(OBL) + v[2] * Math.cos(OBL)];
+
+/** Star k's distance from the Sun, light-years, `years` after J2000 along its straight line in space. Pure. */
+export function distanceAt(m, k, years) {
+  return Math.hypot(m.dir[k * 3] * m.dist[k] + m.vel[k * 3] * years, m.dir[k * 3 + 1] * m.dist[k] + m.vel[k * 3 + 1] * years, m.dir[k * 3 + 2] * m.dist[k] + m.vel[k * 3 + 2] * years);
+}
 
 /** Star k's velocity over its distance (a year, equatorial, unitless): direction(y) = normalize(dir + y * this). */
 export function driftOf(m, k, out = [0, 0, 0]) {
@@ -381,9 +387,32 @@ export function attachStarDeep(ctx, clock) {
     paintLine(tMs);
   }
 
+  // THE SELECTED STAR'S DISTANCE THEN. A card, its label and its tag give the catalogue's distance (today's), and the
+  // star's disc stays at its catalogue place; the line says so, and gives the distance at the clock's date from the same
+  // straight line in space the points move along (MODELLED): Barnard's Star 3.77 light-years in AD 11 800, not 5.96.
+  let selected = null;
+  const motionOf = new WeakMap(); // record -> its motion record, or -1
+  window.addEventListener('sr:select', (e) => { selected = e && e.detail && e.detail.klass === 'star' ? e.detail : null; st.lineText = null; });
+  function selectedDistance() {
+    if (!selected || !selected.pos || !st.motion) return null;
+    const { m } = st.motion;
+    if (!motionOf.has(selected)) {
+      const p = selected.pos;
+      const q = eclToEq([p.x, p.y, p.z]);
+      const l = Math.hypot(q[0], q[1], q[2]) || 1;
+      motionOf.set(selected, matchStars(new Float32Array([q[0] / l, q[1] / l, q[2] / l]), 1, m.dir, m.count, MATCH_TOL_DEG)[0]);
+    }
+    const j = motionOf.get(selected);
+    if (!(j >= 0)) return null;
+    return { name: selected.name, thenLy: distanceAt(m, j, st.years), todayLy: Number(selected.meta && selected.meta.distLy) || m.dist[j] };
+  }
+
   function paintLine(tMs) {
     const show = !!st.years && !!st.motion && !(ctx.skyView && ctx.skyView.active);
-    const text = show ? [t(COPY.starDeep.moved, { year: yearWords(yearOf(tMs), COPY.deepTime) }), st.hide ? COPY.starDeep.hidden : ''].filter(Boolean).join(' ') : '';
+    const near = show ? selectedDistance() : null;
+    const text = show ? [t(COPY.starDeep.moved, { year: yearWords(yearOf(tMs), COPY.deepTime) }), st.hide ? COPY.starDeep.hidden : '',
+      Math.abs(yearOf(tMs) - 2000) < 2000 ? '' : COPY.starDeep.noPluto,
+      near ? t(COPY.starDeep.selected, { name: near.name, d: fmt.smart(near.thenLy), today: fmt.smart(near.todayLy) }) : ''].filter(Boolean).join(' ') : '';
     if (text === st.lineText) return;
     st.lineText = text;
     if (!st.line && text) {

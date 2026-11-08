@@ -5354,7 +5354,9 @@ Object.assign(COPY, {
 Object.assign(COPY, {
   "starDeep": {
     "moved": "Las estrellas de {year}: cada una movida por su propio movimiento medido (Hipparcos y Gaia, a través de HYG); prolongarlos en línea recta tanto tiempo es modelado.",
-    "hidden": "Las estrellas sin movimiento medido no se dibujan tan lejos de hoy."
+    "hidden": "Las estrellas sin movimiento medido no se dibujan tan lejos de hoy.",
+    "noPluto": "Plutón y sus lunas no se dibujan tan lejos de hoy: su efeméride (astronomy-engine) solo tiene tabla para los años 0 a 4000.",
+    "selected": "{name} está entonces a {d} años luz del Sol (modelado); su ficha y su etiqueta dan la distancia de hoy, {today}."
   },
   "varEvents": {
     "min": "{name} en su mínimo",
@@ -5378,8 +5380,8 @@ Object.assign(COPY, {
     "alt": "La imagen del Event Horizon Telescope de {name}, {date}: un anillo de luz naranja alrededor de un centro oscuro.",
     "brightest": "Visto desde la Tierra con el norte arriba, el anillo dibujado es más brillante en un ángulo de posición de unos {ours}° (medido en el dibujo); la imagen del EHT del {date} es más brillante hacia los {theirs}°.",
     "approx": {
-      "m87-star": "Ajustado: la inclinación (17° respecto a nuestra línea de visión) y el ángulo del chorro en el cielo (288°) están medidos (Walker et al. 2018), y con el flujo girando en sentido horario (EHT 2019, artículo V) el lado que se acerca, más brillante, queda al sur. Aproximado: la luz se traza como alrededor de un agujero que no gira y el gas es un disco delgado, no el flujo caliente y grueso de los modelos del EHT, así que nuestro lado brillante es una vez y media más brillante que el débil, mientras que el suyo lo es unas cuatro (2017) a seis veces (2018); y nuestra imagen es nítida, mientras que la suya está difuminada a 20 µas por un telescopio del tamaño de la Tierra. Su mancha brillante se movió unos 30° en un año; la nuestra no se mueve.",
-      "sgr-a-star": "Ajustado: visto a 30° de su eje, como los modelos que mejor encajan del artículo V de EHT 2022, girando en sentido horario como las fulguraciones de GRAVITY. Elegido: hacia dónde apunta el eje en el cielo, que nadie ha medido; está girado para que el lado más brillante caiga donde la imagen del EHT es más brillante. Aproximado: la luz se traza alrededor de un agujero que no gira y de un disco delgado; la imagen del EHT es un promedio de una noche de un flujo que cambia en minutos, y sus tres nudos brillantes no son todos reales, dicen sus autores."
+      "m87-star": "Ajustado: la inclinación (17° respecto a nuestra línea de visión) y el ángulo del chorro en el cielo (288°) están medidos (Walker et al. 2018), y con el flujo girando en sentido horario (EHT 2019, artículo V) el lado que se acerca, avivado por su movimiento, queda al sur. Medido en brillo lineal alrededor del anillo, nuestro lado brillante es unas 2,5 veces el débil (2,1 difuminado a los 20 µas del EHT); el suyo, 2,7 en 2017 y 4,2 en 2018, así que el nuestro coincide con el de 2017. Aproximado: la luz se traza como alrededor de un agujero que no gira y el gas es un disco delgado en órbitas circulares, no el flujo caliente y grueso de los modelos del EHT. Su mancha brillante se movió unos 30° en un año; la nuestra no se mueve.",
+      "sgr-a-star": "Ajustado: visto a 30° de su eje, como los modelos que mejor encajan del artículo V de EHT 2022, girando en sentido horario como las fulguraciones de GRAVITY. Elegido: hacia dónde apunta el eje en el cielo, que nadie ha medido; está girado para que el lado más brillante caiga donde la imagen del EHT es más brillante. Aproximado: la luz se traza alrededor de un agujero que no gira y de un disco delgado; la imagen del EHT es un promedio de una noche de un flujo que cambia en minutos, y sus tres nudos brillantes no son todos reales, dicen sus autores. Nuestro lado brillante es unas cinco veces el débil (4,5 difuminado a los 20 µas del EHT); el suyo, 1,7: a 30°, las órbitas circulares avivan el lado cercano mucho más de lo que muestra el promedio de una noche del EHT."
     }
   },
   "cardVoice": {

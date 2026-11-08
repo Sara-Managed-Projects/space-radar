@@ -1517,4 +1517,6 @@ jobs:
         run: node tests/test_holecompare.mjs
       - name: "The baked cards read aloud in the trips' voice: one hash, every clip heard and current, small and only on press (forge #151)"
         run: node tests/test_cardvoice.mjs
+      - name: "The map on a far clock: Pluto only inside its ephemeris's table, every other world answers at AD 50 000 at once (forge #141)"
+        run: node tests/test_farclock.mjs
       # b200-c2-deep: end

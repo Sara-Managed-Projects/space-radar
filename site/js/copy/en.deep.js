@@ -12,6 +12,8 @@ Object.assign(COPY, {
   starDeep: {
     moved: 'The stars of {year}: each moved by its own measured motion (Hipparcos and Gaia, through HYG); carrying them in straight lines for so long is modelled.',
     hidden: 'Stars with no measured motion are not drawn this far from now.',
+    noPluto: 'Pluto and its moons are not drawn this far from now: their ephemeris (astronomy-engine) has a table only for the years 0 to 4000.',
+    selected: '{name} is then {d} light-years from the Sun (modelled); its card and label give today’s {today}.',
   },
 
   // sky/varevents.js rows, in Coming up and in Tonight.
@@ -39,8 +41,8 @@ Object.assign(COPY, {
     alt: 'The Event Horizon Telescope’s picture of {name}, {date}: an orange ring of light round a dark centre.',
     brightest: 'Seen from Earth with north up, the drawn ring is brightest at a position angle of about {ours}° (measured on the drawing); the EHT’s picture of {date} is brightest at about {theirs}°.',
     approx: {
-      'm87-star': 'Matched: the tilt (17° from our line of sight) and the jet’s angle on the sky (288°) are measured (Walker et al. 2018), and with the flow turning clockwise (EHT 2019, paper V) the approaching, brighter side falls in the south. Approximated: the light is traced as round a hole that does not spin and the gas is a thin disc, not the hot, thick flow of the EHT’s models, so our bright side is about one and a half times as bright as the faint one where theirs is about four times (2017) to six times (2018); and our picture is sharp where theirs is blurred to 20 µas by a telescope the size of the Earth. Their bright spot moved about 30° in a year; ours does not move.',
-      'sgr-a-star': 'Matched: seen 30° from its axis, as the best-fitting models of EHT 2022 paper V are, turning clockwise as the GRAVITY flares do. Chosen: where the axis points on the sky, which nobody has measured; it is turned so the brighter side lands where the EHT picture is brightest. Approximated: the light is traced round a hole that does not spin, round a thin disc; the EHT picture is an average over a night of a flow that changes within minutes, and its three bright knots are not all real, its makers say.',
+      'm87-star': 'Matched: the tilt (17° from our line of sight) and the jet’s angle on the sky (288°) are measured (Walker et al. 2018), and with the flow turning clockwise (EHT 2019, paper V) the approaching side, brightened by its motion, falls in the south. Measured in linear brightness round the ring, our bright side is about 2.5 times the faint one (2.1 when blurred to the EHT’s 20 µas); theirs is 2.7 in 2017 and 4.2 in 2018, so ours matches 2017’s. Approximated: the light is traced as round a hole that does not spin, and the gas is a thin disc in circular orbits, not the hot, thick flow of the EHT’s models. Their bright spot moved about 30° in a year; ours does not move.',
+      'sgr-a-star': 'Matched: seen 30° from its axis, as the best-fitting models of EHT 2022 paper V are, turning clockwise as the GRAVITY flares do. Chosen: where the axis points on the sky, which nobody has measured; it is turned so the brighter side lands where the EHT picture is brightest. Approximated: the light is traced round a hole that does not spin, round a thin disc; the EHT picture is an average over a night of a flow that changes within minutes, and its three bright knots are not all real, its makers say. Our bright side is about five times the faint one (4.5 blurred to the EHT’s 20 µas), theirs 1.7: at 30° the circular orbits brighten the near side far more than the EHT’s night-long average shows.',
     },
   },
 
