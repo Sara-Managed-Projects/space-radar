@@ -1538,3 +1538,9 @@ jobs:
       - name: "Every deep-sky type phrase of the catalogue is translated in ten languages, and the card's row uses it (2.0.0 polish)"
         run: node tests/test_type_words_langs.mjs
       # b200-s1-fixes: end
+      # b200-f10-stars3d: begin
+      - name: "AT-HYG's 2.4 million stars in 3D by octree node: the tiers, the walk round the camera, the committed tiles and their sizes, a first frame that does not grow (forge #140)"
+        run: node tests/test_stars3dtiles.mjs
+      - name: "The AT-HYG octree's build script: Tycho-2 numbers, Tycho to Johnson, brightest-first nodes, quantised rows, the committed set's --check (forge #140)"
+        run: python3 tests/test_stars3d_tiles.py
+      # b200-f10-stars3d: end

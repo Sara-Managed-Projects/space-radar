@@ -214,6 +214,12 @@ const DEFERRED = {
   'js/ui/headset.js': 'the headset mode (forge #158): main.js fetches it only when navigator.xr supports immersive-vr',
   'js/copy/en.xr.js': 'the gamepad\'s and the headset\'s words: with their modules',
   // b200-f8-xr: end
+  // b200-f10-stars3d: begin
+  'js/scene/stars3dtiles.js': 'AT-HYG\'s stars by octree node (forge #140): main.js fetches it after the first visit, and it fetches nothing until a rung of the ladder',
+  'js/scene/stars3dtree.js': 'the octree\'s arithmetic: with scene/stars3dtiles.js and its worker',
+  'js/scene/stars3dworker.js': 'the octree\'s fetching: a worker scene/stars3dtiles.js starts on a rung of the ladder',
+  'js/copy/en.startiers.js': 'the AT-HYG tier\'s words: with scene/stars3dtiles.js',
+  // b200-f10-stars3d: end
 };
 // The light embed (js/embedlite.js) has no star systems at all: neither file can reach it.
 {
