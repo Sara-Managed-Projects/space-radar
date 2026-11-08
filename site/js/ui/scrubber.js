@@ -6,7 +6,8 @@
 //   tickPlan(centreMs, unit, width) -> {stepPx, offsetPx, labels: [{x, text, day}]},
 //   markOf(item, nowMs) -> {id, tMs, kind, what, record} | null, mergeMarks(known, items, nowMs, window),
 //   nearestMark(marks, x, centreMs, unit, width, reachPx), roughSpans(centreMs, anchorMs, unit, width),
-//   stepMark(marks, tMs, dir) -> the mark before or after | null, moonMarks(nowMs) -> items
+//   stepMark(marks, tMs, dir) -> the mark before or after | null, moonMarks(nowMs) -> items,
+//   clearOfNow(labelX, labelW, nowX, nowW) -> whether a tick's label stands clear of the "now" word
 //
 // WHY A TAPE AND NOT A THUMB. The window is a month back and a year on (ui/timepill.js says why),
 // and the things worth scrubbing to are a pass in forty minutes and an eclipse in ten months. On
@@ -70,6 +71,14 @@ const MARK_REACH_PX = 22;
 const MARK_EDGE_PX = 22;
 const MARKS_KEPT = 40;
 const DAY_MS = 86400e3;
+
+// b200-s4b-look: begin -- "now" and a tick's label are both written at the top of the tape, and "now" sat across "12:00"
+// (2.0.0 final look, finding 12). The label gives way: it says less than "now" does, and the next one is 96 px on.
+/** Whether a label at `labelX`, `labelW` wide, stands clear of the "now" word at `nowX`, `nowW` wide (px). Pure. */
+export function clearOfNow(labelX, labelW, nowX, nowW) {
+  return labelX + labelW <= nowX || labelX >= nowX + nowW;
+}
+// b200-s4b-look: end
 
 /**
  * Where each mark's BUTTON stands so that no two overlap (internal #472: axe `target-size` on a
@@ -387,10 +396,15 @@ export function createScrubber(ctx, pill) {
     const plan = tickPlan(tMs, unit, width);
     ticks.style.backgroundSize = `${plan.stepPx}px 100%`;
     ticks.style.backgroundPositionX = `${plan.offsetPx}px`;
+    // b200-s4b-look: where "now" is, before the labels, so a label under it gives way (clearOfNow)
+    const nowX = tapeX(anchor, tMs, unit, width);
+    const nowShown = !isLive() && nowX >= 0 && nowX <= width;
+    const nowW = Math.max(44, nowBtn.offsetWidth || 0);
     while (labelPool.length < plan.labels.length) { const s = el('span', 'sr-tape__label'); labels.appendChild(s); labelPool.push(s); }
     labelPool.forEach((node, i) => {
       const l = plan.labels[i];
-      node.hidden = !l;
+      // A label's width from its text (mono, about 8 px a character, and its 4 px inset): read before it is shown.
+      node.hidden = !l || (nowShown && !clearOfNow(l.x, 4 + 8 * String(l.text).length, nowX, nowW));
       if (!l) return;
       if (node.textContent !== l.text) node.textContent = l.text;
       node.classList.toggle('is-day', !!l.day);
@@ -401,8 +415,6 @@ export function createScrubber(ctx, pill) {
     place(roughR, spans.right);
     place(endL, spans.endLeft);
     place(endR, spans.endRight);
-    const nowX = tapeX(anchor, tMs, unit, width);
-    const nowShown = !isLive() && nowX >= 0 && nowX <= width;
     nowBtn.hidden = !nowShown;
     if (nowShown) nowBtn.style.transform = `translateX(${nowX}px)`;
     root.classList.toggle('is-live', isLive());

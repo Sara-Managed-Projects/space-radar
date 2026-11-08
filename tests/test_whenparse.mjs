@@ -87,6 +87,10 @@ check(W.findEclipse(A, { body: 'sun', type: 'total', dir: 1 }, Date.UTC(2200, 11
 // The fade of satellites far from now.
 check(W.fadeFor(0) === 0 && W.fadeFor(6 * 86400e3) === 0 && W.fadeFor(-40 * 86400e3) === 0.8, 'fadeFor ends');
 check(W.fadeFor(18.5 * 86400e3) > 0.3 && W.fadeFor(18.5 * 86400e3) < 0.5, 'fadeFor in between');
+// b200-s4b-look: begin -- the coming launches are put away past a year from now, either way, and not before
+check(!W.launchesHidden(0) && !W.launchesHidden(300 * 86400e3) && !W.launchesHidden(-W.LAUNCH_HIDE_MS), 'launches stay inside a year');
+check(W.launchesHidden(W.LAUNCH_HIDE_MS + 1) && W.launchesHidden(-2 * W.LAUNCH_HIDE_MS) && W.launchesHidden(Date.UTC(1969, 6, 20) - Date.UTC(2026, 10, 8)), 'launches put away past a year (1969 from 2026)');
+// b200-s4b-look: end
 
 if (problems.length) {
   console.error(`test_whenparse: ${problems.length} problem(s)\n  - ${problems.join('\n  - ')}`);

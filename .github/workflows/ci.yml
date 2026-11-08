@@ -1544,6 +1544,10 @@ jobs:
       - name: "The AT-HYG octree's build script: Tycho-2 numbers, Tycho to Johnson, brightest-first nodes, quantised rows, the committed set's --check (forge #140)"
         run: python3 tests/test_stars3d_tiles.py
       # b200-f10-stars3d: end
+      # b200-s4b-look: begin
+      - name: "A drawn system's host star is the stars rung's star: the same card and the same far-time distance line (2.0.0 final look)"
+        run: node tests/test_startwin.mjs
+      # b200-s4b-look: end
       # b200-s4a-look: begin
       - name: "The date field's mission chips in the visitor's language, one Fengyun-1C chip, and a world's scene note and breadcrumb from the copy (2.0.0 look findings 8 and 9)"
         run: node tests/test_datejump_words.mjs

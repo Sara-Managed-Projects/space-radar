@@ -29,7 +29,7 @@ import { COPY, t, timeText } from '../copy/en.js';
 import '../copy/en.find.js';
 import '../copy/en.moments.js';
 import { loadCss } from './latercss.js';
-import { parseWhen, findEclipse, fadeFor, toInputValue, fromInputValue, MIN_YEAR, MAX_YEAR } from './whenparse.js';
+import { parseWhen, findEclipse, fadeFor, launchesHidden, toInputValue, fromInputValue, MIN_YEAR, MAX_YEAR } from './whenparse.js';
 
 let api = null;
 const ORBIT_KLASSES = new Set(['satellite', 'station']);
@@ -254,9 +254,17 @@ export function installFade(ctx) {
     // main.js loadAllLayers gives every layer this yield to its 3D model; the fade is composed with it.
     gl.setModelOpacity((rid) => Math.max(ctx.heroes ? ctx.heroes.drawnOpacity(rid) : 0, k));
   }
+  // b200-s4b-look: begin -- the coming launches are not drawn a year or more from now (whenparse.js launchesHidden). Composed
+  // with main.js isLayerDrawable, which the frame loop, the labels and the picks all ask, so a hidden launch is not tapped.
+  let farOff = false;
+  const drawable = ctx.isLayerDrawable;
+  if (typeof drawable === 'function') ctx.isLayerDrawable = (layer) => drawable(layer) && !(farOff && layer && layer.id === 'launches');
+  // b200-s4b-look: end
   function paint() {
     const now = ctx.clock.now();
     const away = now - present(ctx);
+    const far = ctx.clock.mode !== 'live' && launchesHidden(away); // b200-s4b-look
+    if (far !== farOff) { farOff = far; ctx.marksStale = true; } // b200-s4b-look
     const next = ctx.clock.mode === 'live' ? 0 : fadeFor(away);
     if (next !== k) { k = next; ctx.marksStale = true; }
     const show = k >= 0.4;

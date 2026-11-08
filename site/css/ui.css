@@ -7348,3 +7348,21 @@ html.sr-phone .sr-time__date { width: 44px; height: 44px; }
 .sr-varcurve__dot { fill: var(--sr-ember); stroke: none; }
 .sr-card__varcurve[hidden] { display: none; }
 /* b200-f3-stars: end */
+/* b200-s4b-look: begin -- the pill's readout whole on a phone (2.0.0 final look, finding 2). At 390 px the row's four
+   44 px buttons left the words 157 px live and 103 px away, so "UTC" was cut live and "20 JUL 19…" away, mid-word in
+   Arabic. The words may now take two lines, and away from now (Live is a fifth button) the readout takes the row's whole
+   width and the buttons go under it: the buttons keep their 44 px and the pill grows by one row, only while it is not
+   live. --sr-time-h follows, so what stands above the pill still clears it. */
+@media (max-width: 480px) {
+  html.sr-phone .sr-time__row { flex-wrap: wrap; justify-content: flex-end; row-gap: var(--sp-1); }
+  html.sr-phone .sr-time__read { flex: 1 1 0; height: auto; min-height: 44px; } /* from nothing: the words wrap, the buttons stay on the row */
+  html.sr-phone .sr-time__words { line-height: 1.3; white-space: normal; overflow-wrap: anywhere; }
+  html.sr-phone .sr-time.is-away .sr-time__read { flex: 1 0 100%; }
+  html.sr-phone:has(.sr-time.is-away) { --sr-time-h: 150px; }
+}
+/* The ground's Leave and its keys over a daylit sky (finding 12): glass behind both, as the buttons beside Leave have.
+   Here and not in css/ground.css, one class deeper so it holds whichever file loads last. */
+.sr-ground .sr-ground__bar .sr-btn { background: var(--sr-glass-strong); -webkit-backdrop-filter: var(--sr-blur); backdrop-filter: var(--sr-blur); }
+.sr-ground .sr-ground__bar .sr-btn--quiet { color: var(--sr-text); }
+.sr-ground .sr-ground__keys { padding: var(--sp-1) var(--sp-2); color: var(--sr-text); background: var(--sr-glass-strong); border-radius: var(--sr-radius-sm); }
+/* b200-s4b-look: end */

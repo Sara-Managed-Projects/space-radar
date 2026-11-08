@@ -12,6 +12,7 @@
 //   fromInputValue(text)               that back to ms, as UTC; null if it is not one
 //   findEclipse(Astronomy, want, fromMs) -> {ms, kind} | null   the eclipse a parsed {kind: 'eclipse'} asks for
 //   fadeFor(awayMs)                    how far a satellite's dot fades when the clock is that far from now (0..0.8)
+//   launchesHidden(awayMs)             whether the coming launches are put away: past LAUNCH_HIDE_MS from now
 //
 // WHAT IS UNDERSTOOD. Every time is UTC, and the field says so.
 //   1969-07-20 20:17    1969-07-20T20:17:40Z    1969-07-20    1969-07    1969     ISO forms, a space or a T
@@ -211,3 +212,13 @@ export function fadeFor(awayMs) {
   if (d >= month) return 0.8;
   return 0.8 * ((d - week) / (month - week));
 }
+
+// b200-s4b-look: begin -- the coming launches far from now (2.0.0 final look, finding 4: "Falcon 9 · USSF-627" stood on
+// the globe in 1969 and in AD 50 000). A launch is a plan for the next weeks, drawn as an ascent from its pad; a year away
+// it says nothing about that date, so ui/datejump.js installFade stops drawing the layer (its dots and its labels).
+export const LAUNCH_HIDE_MS = 365.25 * DAY_MS;
+/** Whether the coming launches are put away when the clock is `awayMs` from now. Pure. */
+export function launchesHidden(awayMs) {
+  return Math.abs(Number(awayMs) || 0) > LAUNCH_HIDE_MS;
+}
+// b200-s4b-look: end

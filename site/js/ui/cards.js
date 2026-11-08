@@ -93,6 +93,7 @@ export {
   NEAR_EARTH_KM, nearEarthOnEllipse, honestyClause, honestyLine,
 } from './cardfacts.js';
 import { INTERIOR_IDS } from '../data/interiorids.js'; // b200-f2-worlds: the worlds Look inside can open (forge #144)
+import { starTwin, adoptTwin } from './startwin.js'; // b200-s4b-look: a system's host star shows the catalogue's facts
 
 const MAX_FIRST_SENTENCE = 160; // spec 0013 requirement 10, enforced by check_copy.py
 const MAX_COMPARISONS = 3; // spec 0013 requirement 2
@@ -3296,6 +3297,10 @@ export function showCard(record, ctx, opts = {}) {
     noteSelection(record, ctx, displayName);
     wantRail(ctx);
   }
+  // b200-s4b-look: begin -- a system's host star, reached by flying to its system, is the same star as on the stars rung:
+  // the same distance, magnitude and class on its card (ui/startwin.js; 2.0.0 final look, finding 14).
+  if (record && record.layer === 'systems') adoptTwin(record, starTwin(record, ctx && typeof ctx.recordsFor === 'function' ? ctx.recordsFor('stars') : []));
+  // b200-s4b-look: end
   current = { record, ctx, opts };
   subscribe(ctx);
   render(record, ctx, opts);

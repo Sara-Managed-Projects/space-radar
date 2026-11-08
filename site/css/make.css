@@ -268,3 +268,13 @@ html.sr-phone .sr-make__select { font-size: var(--sr-fs-input); }
 @media (prefers-reduced-motion: reduce) {
   html.sr-phone .sr-make { transition: none; }
 }
+
+/* b200-s4b-look: begin -- on a wide screen the panels end above the time pill: at 1440 px the flight editor, full height
+   at the right, lay over the pill's right end and its Live (2.0.0 final look, finding 12). They scroll inside instead. */
+html:not(.sr-phone) .sr-make:not(.sr-make--film) {
+  max-height: calc(100vh - 2 * var(--sr-inset) - var(--sr-time-h) - var(--sp-3));
+}
+html:not(.sr-phone) .sr-make--small {
+  max-height: min(640px, calc(100vh - 2 * var(--sr-inset) - var(--sr-time-h) - var(--sp-3)));
+}
+/* b200-s4b-look: end */
