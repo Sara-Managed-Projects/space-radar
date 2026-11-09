@@ -5428,7 +5428,9 @@ tours:
         target: {world: titan}
         stage: titan
         frame_radii: 5
-        stand: {sky: "titan:huygens", yaw: 0, pitch: 35, fov: 80, panel: true}
+        # pitch 10 (2.0.1): the horizon and the plain in the frame's lower third; at 35 it was all haze, a frame of one
+        # colour (screens.yml trips job, its first walk of this trip). Huygens is on the side away from Saturn.
+        stand: {sky: "titan:huygens", yaw: 0, pitch: 10, fov: 80, panel: true}
         chapter: "Further out"
         card:
           title: "Under Titan's haze"

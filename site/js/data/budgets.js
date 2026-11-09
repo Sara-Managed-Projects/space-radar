@@ -18,6 +18,7 @@ export const BUDGETS = {
   "fonts_at_boot_bytes": 90000,
   "draw_calls_per_stop": 120,
   "triangles_per_stop": 100000,
+  "triangles_per_ground_stop": 455000,
   "bed_kb": 600,
   "audio_total_kb": 3000,
   "narration_trip_kb": 1200,

@@ -13,7 +13,7 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [2.0.1] - 2026-11-09
 
-A patch for eight things: four that a visitor of the live 2.0.0 found, three found while it was being deployed and its zip checked, and one the release's own checks found. No shared link, saved data copy or registry row changes.
+A patch for nine things: four that a visitor of the live 2.0.0 found, three found while it was being deployed and its zip checked, and two the release's own checks found. No shared link, saved data copy or registry row changes.
 
 ### Fixed
 
@@ -51,6 +51,23 @@ A patch for eight things: four that a visitor of the live 2.0.0 found, three fou
   stores nothing the edge keeps for a year. `tests/test_edge_cache.mjs` counts twenty-three revalidated uploads and checks both files.
 - **The release zip's size, as it is.** `docs/RELEASING.md` said about 100 MB, 40 MB of it narration and music; the 2.0.0 zip is 173 MB, and
   241 MB unpacked, of which about 66 MB is narration, card voices and music and 33 MB the 3D star layer's stars.
+- **"Under Titan's haze" shows the horizon.** The stop looked 35 degrees up into the haze, a frame of one colour; it now looks 10 degrees
+  up, with the plain and the horizon in the lower part. Its words are unchanged and still true (the haze hides the stars and Saturn,
+  which is below the horizon at Huygens anyway).
+
+### Changed
+
+- **A budget of its own for a stop on another world's ground.** Those stops draw one measured terrain model at true scale, up to
+  412 689 triangles a frame (Hadley); the map's `triangles_per_stop` is 100 000. 2.0.0 shipped them unmeasured, because its pull
+  request's trips walk (screens.yml) was skipped. `registry/budgets.yaml` now has `triangles_per_ground_stop` (455 000, about 10 % over
+  the most measured), and `tools/trips-cost.probe.js` and `tools/walk.probe.js` hold such a stop to it.
+
+### Not yet
+
+- The ground stops' terrain is to be decimated or given levels of detail, under 100 000 triangles on a phone and at tier 0, and then
+  the ground's row comes down to the map's: forge #193 (milestone 2.1.0).
+- A stray piece of NASA's left-booster mesh in `site/models/sls-block1.glb` reaches 17 m out and shows as a small dash beside the
+  boosters on Artemis II's pad; the stack itself no longer depends on it (above). The file is to be baked again without it.
 
 ## [2.0.0] - 2026-11-08
 

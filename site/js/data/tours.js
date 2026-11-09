@@ -6286,7 +6286,7 @@ export const TOURS = [
 "stand": {
 "sky": "titan:huygens",
 "yaw": 0,
-"pitch": 35,
+"pitch": 10,
 "fov": 80,
 "panel": true
 },
