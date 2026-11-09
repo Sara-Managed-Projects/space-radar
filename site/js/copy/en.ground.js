@@ -31,6 +31,13 @@ Object.assign(COPY, {
     sources: 'Sources and licences',
     padLabel: 'Walk: push the thumb the way to go',
     keys: 'W A S D or the arrows to walk, Q and E to turn, R and F to look up and down, Shift to run, + and - to zoom, Esc to leave.',
+    // 2.0.1: driving said where it can be seen.
+    padDrive: 'Drive: push the thumb up to go, down to back up, to the side to steer',
+    keysDrive: 'W or the up arrow to drive, S or down to back up, A and D or the side arrows to steer, R and F to look up and down, Shift for speed, Esc to leave.',
+    howtoKeys: 'You are driving. W or ↑ to go, S or ↓ to back up, A and D or ← and → to steer. Drag to look around.',
+    howtoTouch: 'You are driving. Push the round pad up to go, down to back up, to the side to steer. Drag the sky to look around.',
+    driveHint: 'This rover can be driven: press Drive the rover.',
+    tripDriveTitle: 'Leave the trip here and drive this rover',
     skyTitle: 'This sky',
     poleStar: 'Pole star: {name}, {sep}° from the pole (magnitude {mag}).',
     noPoleStar: 'No star brighter than magnitude 4.5 within 10° of this world\'s pole.',

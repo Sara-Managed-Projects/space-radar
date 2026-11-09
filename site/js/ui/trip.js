@@ -3345,7 +3345,9 @@ export function createTrip(ctx) {
     dropClimb();
     // Up off the ground first: the sky view gives the camera back where the trip had it before.
     setGround(false);
-    standOn(null); // b200-f7-ground: and off another world's ground (forge #146, #147)
+    // b200-f7-ground: and off another world's ground (forge #146, #147) -- unless the visitor is staying on it to drive the
+    // rover there (2.0.1, scene/groundstage.js: the trip's "Drive the rover" at a rover's stop).
+    if (!(opts && opts.keepGround)) standOn(null);
     if (ctx.labels && ctx.labels.clearEmphasis) ctx.labels.clearEmphasis();
     // BEFORE anything else, and before `run` is thrown away: leaving must leave the camera where
     // it is, and a flight nobody stopped goes on flying with the frame gone.

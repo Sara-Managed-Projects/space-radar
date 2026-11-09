@@ -5428,7 +5428,12 @@ tours:
         target: {world: titan}
         stage: titan
         frame_radii: 5
-        stand: {sky: "titan:huygens", yaw: 0, pitch: 35, fov: 80, panel: true}
+        # 2.0.1: A TIME OF ITS OWN. Without one the stop kept the last stop's clock (Phobos over Jezero, 2 April 2022), when
+        # it is night at Huygens: a black sky over a black plain, a frame of one colour (screens.yml trips job, its first walk
+        # of this trip). At this instant the stage's own Sun stands about 69 degrees up there (Titan's day is 16 of ours).
+        time: "2026-11-09T00:30:00Z"
+        # pitch 10 (2.0.1, was 35): the horizon and the plain in the frame's lower part. Huygens is on the side away from Saturn.
+        stand: {sky: "titan:huygens", yaw: 0, pitch: 10, fov: 80, panel: true}
         chapter: "Further out"
         card:
           title: "Under Titan's haze"

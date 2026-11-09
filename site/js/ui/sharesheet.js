@@ -660,6 +660,11 @@ export function createShareSheet(ctx) {
     wikiLine.hidden = true;
     jpegBtn.disabled = pdfBtn.disabled = true;
     render();
+    // 2.0.1: the sheet is modal (aria-modal), so the time pill under it takes no tap or Tab while it is up: a mark on the
+    // tape peeking out beside it was a 17 px target (tests/probes/ui_probe.js, on the day the new Moon fell there). What
+    // it was before is kept, because a trip makes the pill inert too.
+    const pill = document.getElementById('sr-time');
+    if (root.hidden && pill) { pillWasInert = pill.inert; pill.inert = true; }
     root.hidden = false;
     document.documentElement.classList.add('sr-sharing');
     seatSheet();
@@ -780,9 +785,12 @@ export function createShareSheet(ctx) {
     }
   }
 
+  let pillWasInert = false;
   function close() {
     if (root.hidden) return;
     root.hidden = true;
+    const pill = document.getElementById('sr-time');
+    if (pill) pill.inert = pillWasInert;
     document.documentElement.classList.remove('sr-sharing');
     token += 1;
     const back = cur && cur.opener;

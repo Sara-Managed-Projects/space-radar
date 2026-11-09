@@ -76,7 +76,7 @@ KEYS.splice(KEYS.indexOf('cam'), 0, 'ground', 'sky');
 // b200-f7-ground: end
 export const VERSION = '1';
 /** The release this code is (0076 W4-c). A release bumps it with CHANGELOG.md; tests/test_access.mjs holds its shape. */
-export const BUILD = '2.0.0';
+export const BUILD = '2.0.1';
 /** The map's centre on a first visit, which an address with no keys at all means. */
 export const DEFAULT_STAGE = 'earth';
 

@@ -252,7 +252,10 @@ async function stopCost(id) {
   try { d = await drawn(); } catch { d = null; }
   if (!d || !BUDGETS) return {};
   if (d.calls > BUDGETS.draw_calls_per_stop) dead.push(`trips: ${id} "${ctx.trip.state.stopTitle}" takes ${d.calls} draw calls a frame, over draw_calls_per_stop (${BUDGETS.draw_calls_per_stop})`);
-  if (d.triangles > BUDGETS.triangles_per_stop) dead.push(`trips: ${id} "${ctx.trip.state.stopTitle}" draws ${d.triangles} triangles a frame, over triangles_per_stop (${BUDGETS.triangles_per_stop})`);
+  // 2.0.1: a stop on another world's ground is held to triangles_per_ground_stop (its measured terrain), not the map's row.
+  const onGround = !!(ctx.ground && ctx.ground.active) && Number.isFinite(BUDGETS.triangles_per_ground_stop);
+  if (onGround && d.triangles > BUDGETS.triangles_per_ground_stop) dead.push(`trips: ${id} "${ctx.trip.state.stopTitle}" draws ${d.triangles} triangles a frame on the ground, over triangles_per_ground_stop (${BUDGETS.triangles_per_ground_stop})`);
+  if (!onGround && d.triangles > BUDGETS.triangles_per_stop) dead.push(`trips: ${id} "${ctx.trip.state.stopTitle}" draws ${d.triangles} triangles a frame, over triangles_per_stop (${BUDGETS.triangles_per_stop})`);
   return d;
 }
 const step = async (name, fn) => { try { await fn(); } catch (e) { dead.push(`${name}: the walk broke here: ${e && e.message}`); } };

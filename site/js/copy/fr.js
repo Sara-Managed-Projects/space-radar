@@ -1901,6 +1901,13 @@ export const COPY = {
     "pending": "Vérifie ton e-mail pour confirmer.",
     "couldNotReach": "Impossible de joindre le service d’abonnement."
   },
+  "groundDoor": {
+    "stand": "Se tenir ici",
+    "drive": "Se tenir ici et conduire",
+    "standTitle": "Se tenir sur le sol mesuré à {name}",
+    "driveTitle": "Se tenir sur le sol mesuré à {name} et conduire le rover",
+    "noDrive": "Ce rover ne peut pas être conduit ici : son sol n’est pas encore mesuré dans l’application. Curiosity, Perseverance, Zhurong et Opportunity le peuvent, depuis leurs propres fiches."
+  },
   "flood": {
     "on": "L’éclairer",
     "off": "Vraie lumière",
@@ -5549,6 +5556,12 @@ Object.assign(COPY, {
     "sources": "Sources et licences",
     "padLabel": "Marcher : poussez le pouce dans la direction voulue",
     "keys": "W A S D ou les flèches pour marcher, Q et E pour tourner, R et F pour regarder vers le haut et vers le bas, Shift pour courir, + et - pour zoomer, Esc pour quitter.",
+    "padDrive": "Conduire : poussez le bouton vers le haut pour avancer, vers le bas pour reculer, sur le côté pour tourner",
+    "keysDrive": "W ou la flèche du haut pour avancer, S ou le bas pour reculer, A et D ou les flèches latérales pour tourner, R et F pour regarder en haut et en bas, Maj pour aller plus vite, Échap pour quitter.",
+    "howtoKeys": "Vous conduisez. W ou ↑ pour avancer, S ou ↓ pour reculer, A et D ou ← et → pour tourner. Faites glisser pour regarder autour.",
+    "howtoTouch": "Vous conduisez. Poussez le cercle vers le haut pour avancer, vers le bas pour reculer, sur le côté pour tourner. Faites glisser le ciel pour regarder autour.",
+    "driveHint": "Ce rover peut être conduit : appuyez sur « Conduire le rover ».",
+    "tripDriveTitle": "Quitter le voyage ici et conduire ce rover",
     "skyTitle": "Ce ciel",
     "poleStar": "Étoile polaire : {name}, à {sep}° du pôle (magnitude {mag}).",
     "noPoleStar": "Aucune étoile plus brillante que la magnitude 4,5 à moins de 10° du pôle de ce monde.",

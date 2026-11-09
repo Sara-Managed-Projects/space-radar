@@ -11,7 +11,7 @@
 // bucket, a fake publisher and a fake localStorage, recording the order of the requests.
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const problems = [];
@@ -188,6 +188,40 @@ const N = Date.now();
     held: { data: [omm(1), omm(2), omm(3), omm(4)], fetchedAt: N - 2 * HOUR, attemptedAt: N - 4 * HOUR, via: 'live' } });
   const r = await w.mod.load('celestrak-visual', { await: true });
   check(r.data.length === 4 && r.via === 'live', `an older snapshot does not replace a newer copy the browser read itself (${r.data && r.data.length}, ${r.via})`);
+}
+// i. 2.0.1: the deep-space craft's saved copy is read. The harvester saves one Horizons reply per craft, an object
+// {"<Horizons id>": "<reply text>"}; the source said kind 'text', so wrongShape() refused every copy and the layer drew
+// its 39 stand-ins only (1.9.0 and 2.0.0). Read here through the real module, then through the real parser.
+{
+  const fx = JSON.parse(readFileSync(join(ROOT, 'tests/fixtures/snapshots/horizons-deep-space.json'), 'utf8'));
+  const saved = { ...fx, fetched_at: iso(N - HOUR), valid_until: iso(N + 2 * HOUR) };
+  const w = await world({ id: 'horizons-deep-space', rows: { 'horizons-deep-space': row(N - HOUR, N + 2 * HOUR, fx.items) }, files: { 'horizons-deep-space.json': saved } });
+  const r = await w.mod.load('horizons-deep-space', { await: true });
+  await settle();
+  check(r.via === 'snapshot' && r.data && typeof r.data === 'object' && typeof r.data['-31'] === 'string', `the Horizons saved copy is drawn as the object it is (${r.via}, ${r.snapshot}, ${typeof r.data})`);
+  check(!w.calls.includes('publisher'), `and JPL, which no browser may ask, is not asked (${w.calls})`);
+  const { sampleDeepSpace } = await import(join(ROOT, 'site/js/data/sample.js'));
+  const { parseHorizonsVectors } = await import(join(ROOT, 'site/js/data/parsers.js'));
+  const drawn = parseHorizonsVectors(r.data, sampleDeepSpace());
+  const v1 = drawn.find((x) => x.meta && String(x.meta.horizonsId) === '-31');
+  check(v1 && v1.cls === 'measured' && v1.meta.construction === 'horizons', `Voyager 1 is drawn from JPL's vectors, not its stand-in (${v1 && v1.cls}, ${v1 && v1.meta.construction})`);
+}
+// j. every saved-copy fixture passes wrongShape() for its own source's kind: a source whose kind does not match what the
+// harvester writes is refused on every page load, silently, and its layer falls back to what is bundled.
+{
+  const { SOURCES, wrongShape } = await import(join(ROOT, 'site/js/data/sources.js'));
+  let held = 0;
+  for (const name of readdirSync(join(ROOT, 'tests/fixtures/snapshots')).filter((f) => f.endsWith('.json'))) {
+    const fx = JSON.parse(readFileSync(join(ROOT, 'tests/fixtures/snapshots', name), 'utf8'));
+    if (!fx || fx.schema !== 1 || !('body' in fx)) continue; // a cut of a body, not a saved copy
+    for (const src of Object.values(SOURCES).filter((x) => (x.registryId || x.id) === fx.source)) {
+      held += 1;
+      const body = src.kind === 'json' && typeof fx.body === 'string' ? JSON.parse(fx.body) : fx.body;
+      const why = wrongShape(src, body);
+      check(why === null, `${name}: the saved copy is refused by ${src.id} (kind '${src.kind}'): ${why}`);
+    }
+  }
+  check(held >= 4, `the saved-copy fixtures were all held to their sources (${held})`);
 }
 
 // ---- 3. the code says it too ---------------------------------------------------------------------------------

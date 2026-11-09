@@ -1700,6 +1700,14 @@ function trackControls(record, ctx, m) {
 // on; the card never imports it (tests/test_boot_diet.mjs).
 const FLOOD_KEY = 'sr.flood';
 const FLOOD_KLASSES = new Set(['station', 'satellite', 'probe', 'telescope', 'rocket', 'debris']);
+
+// THE GROUND'S DOOR (2.0.1): the landing sites scene/groundstage.js stands on (site/data/ground/index.json, forge #146),
+// and of those the rovers it lets the visitor drive (a model on Mars). Until 2.0.1 the ground opened only from a link or a
+// trip, and Ivan could not find how to drive. The rovers on the Moon have no measured ground here, and say so.
+// tests/test_ground.mjs holds both lists to the ground's index.
+export const GROUND_SITES = ['apollo-11', 'apollo-15', 'apollo-17', 'change-4', 'gale', 'jezero', 'opportunity', 'utopia'];
+export const DRIVE_SITES = ['gale', 'jezero', 'opportunity', 'utopia'];
+const MOON_ROVERS = ['lunokhod-1', 'lunokhod-2', 'yutu'];
 let floodWanted = null;
 
 /** Is the lamp wanted this session? Exported for the test. */
@@ -2943,29 +2951,43 @@ function render(record, ctx, opts = {}) {
   }
   body.appendChild(actions);
 
-  // 3'. A MOMENT this place or craft was part of (internal spec 0079 C8): one quiet row, which opens the replay.
+  // 3'. A MOMENT this place or craft was part of (internal spec 0079 C8): a tile of the quiet row below, which opens the
+  // replay. 2.0.1: it was an outlined button of its own between the four and the row, half the width, with "Light it"
+  // a full-width bar under it (Ivan: "out of design"); now the two are tiles of one row, the first ones in it.
+  const lead = [];
+  const site = record.layer === 'hand-kept-sites' ? record.id : null;
+  if (GROUND_SITES.includes(site)) {
+    const G = COPY.groundDoor;
+    const drive = DRIVE_SITES.includes(site);
+    const go = el('button', 'sr-card__tool', drive ? G.drive : G.stand);
+    go.type = 'button';
+    go.dataset.focus = 'ground-door';
+    go.title = t(drive ? G.driveTitle : G.standTitle, { name: record.name || site });
+    go.addEventListener('click', () => import('../scene/groundstage.js').then((m) => m.openGround(ctx, site, { drive })).catch((e) => console.warn('the ground did not load', e)));
+    lead.push(go);
+  }
   const stories = typeof ctx.wantMoment === 'function' ? momentsForRecord(record) : [];
   for (const story of stories) {
     const W = COPY.momentShelf;
-    const go = el('button', 'sr-btn sr-btn--quiet sr-card__inline', stories.length > 1 ? t(W.replayNamed, { title: W.cards[story.id].title }) : W.replay);
+    const go = el('button', 'sr-card__tool', stories.length > 1 ? t(W.replayNamed, { title: W.cards[story.id].title }) : W.replay);
     go.type = 'button';
     go.dataset.focus = stories.length > 1 ? `replay-moment-${story.id}` : 'replay-moment';
     go.dataset.moment = story.id;
     go.title = t(W.replayTitle, { title: W.cards[story.id].title });
     go.addEventListener('click', () => ctx.wantMoment(story.id, null));
-    body.appendChild(go);
+    lead.push(go);
   }
 
   // b200-f2-worlds: begin -- LOOK INSIDE (forge #144): a world with a measured or modelled interior opens to its
-  // layers (ui/cutaway.js, fetched on the first press), on its own stage. One quiet row, as the moment's is.
+  // layers (ui/cutaway.js, fetched on the first press), on its own stage. A tile of the quiet row, as the moment's is.
   if (record.layer === 'worlds' && INTERIOR_IDS.includes(record.id) && typeof ctx.wantCutaway === 'function') {
     const K = COPY.cutaway;
-    const look = el('button', 'sr-btn sr-btn--quiet sr-card__inline', K.button);
+    const look = el('button', 'sr-card__tool', K.button);
     look.type = 'button';
     look.dataset.focus = 'look-inside';
     look.title = t(K.buttonTitle, { name: record.name || record.id });
     look.addEventListener('click', () => ctx.wantCutaway().then((c) => { if (c) c.open(record.id); }));
-    body.appendChild(look);
+    lead.push(look);
   }
   // b200-f2-worlds: end
 
@@ -2975,8 +2997,10 @@ function render(record, ctx, opts = {}) {
   // its next dated event and the visitor's own "seen it" tick (public #395). The lamp's note sits
   // under the row for as long as the lamp is on.
   const [lamp, lampNote] = floodControls(record, ctx);
-  for (const n of skyControls(record, ctx, lamp)) body.appendChild(n);
+  if (lamp) lead.push(lamp);
+  for (const n of skyControls(record, ctx, lead)) body.appendChild(n);
   if (lampNote) body.appendChild(lampNote);
+  if (MOON_ROVERS.includes(site)) body.appendChild(el('p', 'sr-card__note', COPY.groundDoor.noDrive));
 
   // 3a'. where it is, under the quiet row (which stays straight under the actions, docs/ui-guide.md
   // §3.10 5a): the chain out to the Sun or the Milky Way and the way back out to its parent (spec 0075

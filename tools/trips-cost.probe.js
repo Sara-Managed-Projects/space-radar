@@ -42,6 +42,8 @@ let BUDGETS = null;
 try { BUDGETS = (await import(new URL('js/data/budgets.js', document.baseURI).href)).BUDGETS; } catch { BUDGETS = null; }
 const MAX_CALLS = BUDGETS ? BUDGETS.draw_calls_per_stop : null;
 const MAX_TRIS = BUDGETS ? BUDGETS.triangles_per_stop : null;
+// 2.0.1: a stop that stands on another world draws a measured terrain, not the map: its own row (registry/budgets.yaml).
+const MAX_GROUND_TRIS = BUDGETS ? BUDGETS.triangles_per_ground_stop : null;
 const ONE_COLOUR_MAX = 0.9998;
 
 const raf = () => new Promise((r) => requestAnimationFrame(r));
@@ -120,13 +122,29 @@ for (const id of ids) {
     for (let i = 0; i < count; i += 1) {
       if (trip.state.index !== i) { trip.jumpTo(i); await wait(400); await arrive(); }
       await wait(SETTLE);
+      // 2.0.1: a stop on another world's ground is measured once its place has opened (the terrain loads after the stop
+      // arrives): measured in the gap, the frame was the stage's sky alone, an "empty frame" by chance of timing.
+      const tour = trip.tours().find((t) => t.id === id);
+      const here = tour && Array.isArray(tour.stops) ? tour.stops.find((s) => s.id === trip.state.stopId) : null;
+      const stand = here && here.stand ? here.stand.ground || here.stand.sky : null;
+      if (stand) {
+        // A ground by its id; a sky by its world (the link may carry the place after the colon). At most 10 s: a stop's
+        // dwell runs meanwhile, and the walk must still be on it when it measures.
+        const world = (x) => String(x || '').split(':')[0];
+        await until(() => { const st = ctx.ground && ctx.ground.state(); return st && st.link && !st.opening && (here.stand.ground ? st.link.ground === stand : world(st.link.sky) === world(stand)); }, 10000);
+        await wait(500);
+      }
       const d = (await drawn()) || {};
       const flat = await oneColour();
       const row = { trip: id, n: i + 1, of: count, stop: trip.state.stopTitle, at: trip.state.index + 1, calls: d.calls, triangles: d.triangles, oneColour: flat };
       rows.push(row); mine.push([row.n, row.calls, row.triangles, row.oneColour]);
       if (trip.state.index !== i) problems.push(`${id} stop ${i + 1}: jumpTo did not arrive (at ${trip.state.index + 1})`);
       if (MAX_CALLS != null && d.calls > MAX_CALLS) problems.push(`${id} stop ${i + 1} "${row.stop}": ${d.calls} draw calls a frame, over draw_calls_per_stop (${MAX_CALLS})`);
-      if (MAX_TRIS != null && d.triangles > MAX_TRIS) problems.push(`${id} stop ${i + 1} "${row.stop}": ${d.triangles} triangles a frame, over triangles_per_stop (${MAX_TRIS})`);
+      const standing = !!(ctx.ground && ctx.ground.active);
+      row.ground = standing;
+      if (standing && MAX_GROUND_TRIS != null) {
+        if (d.triangles > MAX_GROUND_TRIS) problems.push(`${id} stop ${i + 1} "${row.stop}": ${d.triangles} triangles a frame on the ground, over triangles_per_ground_stop (${MAX_GROUND_TRIS})`);
+      } else if (MAX_TRIS != null && d.triangles > MAX_TRIS) problems.push(`${id} stop ${i + 1} "${row.stop}": ${d.triangles} triangles a frame, over triangles_per_stop (${MAX_TRIS})`);
       if (flat != null && flat > ONE_COLOUR_MAX) problems.push(`${id} stop ${i + 1} "${row.stop}": an empty frame (${(flat * 100).toFixed(3)} % of it is one colour)`);
     }
     trip.stop();
@@ -143,7 +161,7 @@ return {
   ok: problems.length === 0 && notReached.length === 0,
   viewport: [innerWidth, innerHeight], dpr: devicePixelRatio, seconds: Math.round((Date.now() - t0) / 1000),
   trips: walked, of: ids.length, stops: rows.length, notReached, skipped,
-  budgets: { draw_calls_per_stop: MAX_CALLS, triangles_per_stop: MAX_TRIS, one_colour: ONE_COLOUR_MAX },
+  budgets: { draw_calls_per_stop: MAX_CALLS, triangles_per_stop: MAX_TRIS, triangles_per_ground_stop: MAX_GROUND_TRIS, one_colour: ONE_COLOUR_MAX },
   calls: { median: q(calls, 0.5), p95: q(calls, 0.95), max: calls[calls.length - 1] ?? null, worst: worst('calls') },
   triangles: { median: q(tris, 0.5), p95: q(tris, 0.95), max: tris[tris.length - 1] ?? null, worst: worst('triangles') },
   oneColour: { max: Math.max(0, ...rows.map((r) => r.oneColour || 0)), worst: worst('oneColour') },

@@ -11,6 +11,65 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-11-09
+
+A patch for nine things: four that a visitor of the live 2.0.0 found, three found while it was being deployed and its zip checked, and two the release's own checks found. No shared link, saved data copy or registry row changes.
+
+### Fixed
+
+- **The trips on other worlds have their card again, and end with a way home.** On a stop that stands on the ground or under another
+  world's sky ("Walk the landing sites", "Skies of other worlds", forge #146 and #147) `css/ground.css` hid the sidebar and the card with
+  the rest of the map's chrome, so a stop showed only the player bar, and the end of the trip left a bare sky: the end card (Keep flying,
+  Replay, Share) lives in the sidebar too. In a trip they now stay; outside one they still step aside for the ground's own card.
+- **"Replay this moment" and "Light it" are one row of the card's own tiles.** A landing site's card (Curiosity's, among others) had
+  an outlined half-width "Replay this moment" between the four actions and a full-width grey "Light it" under it. Both, and "Look
+  inside" on a world's card, are now tiles of the quiet row straight under the four actions, in their wash and height (docs/ui-guide.md
+  §3.10 5a); a row of more than three tiles is two to a line.
+- **Artemis II's rocket is one stack.** The Moment drew Orion at 22.1 m, 11 % larger than its file (NASA's own model, 19.88 m from the
+  engine bell to the abort tower's tip), and stood the bell, not the service module's base, on the adapter: the capsule and its tower
+  floated 1.4 m above the upper stage. Orion is now at the file's scale, the same as the Space Launch System's, with its base on the
+  Orion stage adapter; its engine's flame starts at the bell and its parachutes and re-entry glow moved with it.
+  `tests/test_moment_stories.mjs` reads both models' heights from the files and holds the stack to them. This was so since 1.6.0.
+- **How to drive a rover is said where it can be seen.** A landing site with measured ground opened only from a link or a trip, so its
+  card now has the door: "Stand here", and at Curiosity, Perseverance, Zhurong and Opportunity "Stand here and drive". Driving starts
+  with a short how-to in the middle of the screen (the keys with a mouse, the round pad on a touch screen, which drives as it walks),
+  the keys line and the pad's label say driving while driving, the ground's card says the rover can be driven, and a trip's stop at a
+  rover has a "Drive the rover" button that leaves the trip there and drives. The Lunokhods and Yutu cannot be driven (their ground is
+  not measured in the app), and their cards now say so and name the four that can. In all eleven languages, machine-drafted as before.
+
+- **Probes and telescopes are drawn from JPL's vectors again, not their stand-ins.** The harvester saves JPL Horizons' replies as one object,
+  each craft's Horizons id mapped to its reply's text, and the parser reads exactly that; but `site/js/data/sources.js` declared the source as
+  plain text, so `wrongShape()` refused every saved copy as "no text in it", and the "Probes and telescopes" layer showed its 39 bundled
+  stand-ins only. This had been so since 1.9.0 at least. The source is now `kind: 'json'`, and `tests/test_read_order.mjs` reads the saved copy
+  through the real module and parser (Voyager 1 comes out **measured**) and holds every saved-copy fixture to its own source's kind.
+- **The time pill takes no tap while the share sheet is open.** The sheet is modal, but a mark on the time tape could peek out
+  beside it as a 17 px target (on 9 November, the new Moon's): the pill is now inert while the sheet is up, and as it was after.
+- **The heard card clips and the Fengyun-1C Moment's sounds are deployed with their indexes.** `scripts/deploy.sh` uploaded the clips under
+  `audio/` by type (Opus, AAC, captions) and never the two `index.json` files beside them, `audio/cards/en/index.json` (the list
+  `ui/wikicard.js` reads before it plays a clip) and `audio/moments/fengyun-1c/index.json`. On 2.0.0's deploy they were uploaded by hand.
+  They now go up with the app, as JSON with the app's revalidate header, and each is invalidated by name; an `--assets-only` deploy still
+  stores nothing the edge keeps for a year. `tests/test_edge_cache.mjs` counts twenty-three revalidated uploads and checks both files.
+- **The release zip's size, as it is.** `docs/RELEASING.md` said about 100 MB, 40 MB of it narration and music; the 2.0.0 zip is 173 MB, and
+  241 MB unpacked, of which about 66 MB is narration, card voices and music and 33 MB the 3D star layer's stars.
+- **"Under Titan's haze" is day, with the horizon in view.** The stop had no time of its own, so it kept the last stop's clock (Phobos
+  over Jezero, 2 April 2022), when it is night at Huygens: a black sky over a black plain. It now has its own instant, with the Sun
+  about 69 degrees up there, and looks 10 degrees up instead of 35, so the plain and the horizon are in the frame. Its words are
+  unchanged and still true (the haze hides the stars and Saturn, which is below the horizon at Huygens anyway).
+
+### Changed
+
+- **A budget of its own for a stop on another world's ground.** Those stops draw one measured terrain model at true scale, up to
+  412 689 triangles a frame (Hadley); the map's `triangles_per_stop` is 100 000. 2.0.0 shipped them unmeasured, because its pull
+  request's trips walk (screens.yml) was skipped. `registry/budgets.yaml` now has `triangles_per_ground_stop` (455 000, about 10 % over
+  the most measured), and `tools/trips-cost.probe.js` and `tools/walk.probe.js` hold such a stop to it.
+
+### Not yet
+
+- The ground stops' terrain is to be decimated or given levels of detail, under 100 000 triangles on a phone and at tier 0, and then
+  the ground's row comes down to the map's: forge #193 (milestone 2.1.0).
+- A stray piece of NASA's left-booster mesh in `site/models/sls-block1.glb` reaches 17 m out and shows as a small dash beside the
+  boosters on Artemis II's pad; the stack itself no longer depends on it (above). The file is to be baked again without it.
+
 ## [2.0.0] - 2026-11-08
 
 2.0.0 is the release of the competitor review. On 7 November 2026 four products were read side by side with Space Radar (SpaceEngine, Solar System Scope, Cosmoscope and CosmosMap), and each place where one of them did something better, or something we did not do at all, became an issue on the project's own forge (#140 to #170). Twenty-eight of those features are built here: millions of stars, the inside of the worlds, the ground at eight landing sites, the sky from six other worlds, spinning black holes against the EHT's pictures, stars that move over deep time and stars that vary, stories for every sky culture, a flight editor, video, a dome and a headset, a gamepad, the Lab by age and curriculum, daily challenges, paper models, an asset pack and a page for creators. Beside them, the 3D models that were already started are finished or held for a stated reason, and the small fixes on the forge are done. The issues live on the forge now, not on GitHub, so each item names its issue as "(forge #N)"; this release has no pull-request links. New strings are machine-drafted in the ten other languages, as before.
@@ -2340,7 +2399,8 @@ The first public map.
 - A registry of YAML files as the architecture, with generated mirrors and a validator in CI.
 - No server, no database, no build step.
 
-[Unreleased]: https://github.com/Sara-Managed-Projects/space-radar/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/Sara-Managed-Projects/space-radar/compare/v2.0.1...HEAD
+[2.0.1]: https://github.com/Sara-Managed-Projects/space-radar/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/Sara-Managed-Projects/space-radar/compare/v1.9.0...v2.0.0
 [1.9.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.9.0
 [1.8.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.8.0

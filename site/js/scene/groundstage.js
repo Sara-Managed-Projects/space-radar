@@ -688,7 +688,10 @@ export function createGroundStage(ctx, opts = {}) {
     const moreSum = el(doc, 'summary', null, T.sources);
     const src = el(doc, 'p', 'sr-ground__src');
     more.append(moreSum, src);
-    body.append(time, l1, l2, more);
+    // 2.0.1: a rover's ground says it can be driven (Ivan could not find how), on the card that is open by default.
+    const driveHint = el(doc, 'p', 'sr-ground__line sr-ground__drivehint');
+    driveHint.hidden = true;
+    body.append(time, l1, l2, driveHint, more);
     card.append(tag, name, body);
     const bar = el(doc, 'div', 'sr-ground__bar');
     const drive = el(doc, 'button', 'sr-btn', T.drive);
@@ -729,10 +732,29 @@ export function createGroundStage(ctx, opts = {}) {
     const live = el(doc, 'p', 'sr-ground__live');
     live.setAttribute('aria-live', 'polite');
     const keys = el(doc, 'p', 'sr-ground__keys', T.keys);
-    root.append(shield, labels, card, bar, panel, pad, keys, live);
+    // 2.0.1: HOW TO DRIVE, in the middle of the screen when driving starts (the keys line above, small in a corner, was
+    // all there was): the keys on a screen with a mouse, the pad on a touch screen. It goes at the first push, or after 9 s.
+    const howto = el(doc, 'div', 'sr-ground__howto sr-float');
+    howto.setAttribute('role', 'status');
+    howto.hidden = true;
+    // In a trip the stage's own bar steps aside (the trip's card speaks), so a stop at a rover has this one button: it
+    // leaves the trip there, keeps this ground and drives.
+    const tripDrive = el(doc, 'button', 'sr-btn sr-float sr-ground__tripdrive', T.drive);
+    tripDrive.type = 'button';
+    tripDrive.title = T.tripDriveTitle;
+    tripDrive.hidden = true;
+    root.append(shield, labels, card, bar, panel, pad, keys, howto, tripDrive, live);
     doc.body.appendChild(root);
 
     leave.addEventListener('click', () => close());
+    tripDrive.addEventListener('click', () => {
+      const link = place && place.link;
+      if (ctx && ctx.trip && typeof ctx.trip.stop === 'function') ctx.trip.stop('drive', { stay: true, keepGround: true });
+      // The trip opened this ground without the address; from here it is the visitor's, and a link to it.
+      writing = true;
+      if (link && typeof opts.write === 'function') opts.write({ ground: link.ground || null, sky: link.sky || null });
+      setMode('drive');
+    });
     drive.addEventListener('click', () => setMode(mode === 'drive' ? 'walk' : 'drive'));
     skyBtn.addEventListener('click', () => { panelOpen = !panelOpen; paintUi(); if (panelOpen) refreshEvents(); });
     root.addEventListener('keydown', (e) => onKey(e, true));
@@ -774,13 +796,13 @@ export function createGroundStage(ctx, opts = {}) {
       const dx = Math.max(-rad, Math.min(rad, e.clientX - cx)), dy = Math.max(-rad, Math.min(rad, e.clientY - cy));
       thumb.style.transform = `translate(${dx}px, ${dy}px)`;
     };
-    pad.addEventListener('pointerdown', (e) => { stickId = e.pointerId; pad.setPointerCapture(e.pointerId); moveStick(e); });
+    pad.addEventListener('pointerdown', (e) => { stickId = e.pointerId; pad.setPointerCapture(e.pointerId); moveStick(e); pushed(); });
     pad.addEventListener('pointermove', (e) => { if (e.pointerId === stickId) moveStick(e); });
     const release = (e) => { if (e.pointerId !== stickId) return; stickId = null; input.stick = { x: 0, y: 0 }; thumb.style.transform = ''; };
     pad.addEventListener('pointerup', release);
     pad.addEventListener('pointercancel', release);
 
-    ui = { root, tag, name, fold, body, pfold, pbody, time, l1, l2, src, more, drive, skyBtn, panel, list, skyNote, labels, live, labelPool: [] };
+    ui = { root, tag, name, fold, body, pfold, pbody, time, l1, l2, driveHint, src, more, drive, skyBtn, panel, list, skyNote, labels, live, keys, pad, howto, tripDrive, labelPool: [] };
   }
 
   function onKey(e, down) {
@@ -798,7 +820,7 @@ export function createGroundStage(ctx, opts = {}) {
       walker.yawDeg = (((walker.yawDeg + (key === 'e' ? 15 : -15)) % 360) + 360) % 360;
       return;
     }
-    if (down) input.keys.add(key); else input.keys.delete(key);
+    if (down) { input.keys.add(key); pushed(); } else input.keys.delete(key);
     if (key === 'Shift') { if (down) input.keys.add('Shift'); else input.keys.delete('Shift'); }
   }
 
@@ -823,6 +845,22 @@ export function createGroundStage(ctx, opts = {}) {
     if (mode === 'walk' && ground) { walker.z += 6; walker.pitchDeg = -4; }
     paintUi();
     if (ui) ui.live.textContent = mode === 'drive' ? say(L().driving, { x: Math.round(SPEEDS.drive / ROVER_TOP_MS) }) : L().walking;
+    showHowto(mode === 'drive');
+  }
+
+  // The how-to (2.0.1): up when driving starts, gone at the first push after a moment to read it, or after 9 s.
+  let howtoAt = 0, howtoTimer = null;
+  function showHowto(on) {
+    if (!ui) return;
+    clearTimeout(howtoTimer);
+    const touch = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
+    ui.howto.textContent = touch ? L().howtoTouch : L().howtoKeys;
+    ui.howto.hidden = !on;
+    howtoAt = on ? Date.now() : 0;
+    if (on) howtoTimer = setTimeout(() => showHowto(false), 9000);
+  }
+  function pushed() {
+    if (howtoAt && Date.now() - howtoAt > 1500) showHowto(false);
   }
 
   function paintUi() {
@@ -853,6 +891,11 @@ export function createGroundStage(ctx, opts = {}) {
     ui.drive.hidden = !isRover;
     ui.drive.setAttribute('aria-pressed', mode === 'drive' ? 'true' : 'false');
     ui.drive.textContent = mode === 'drive' ? T.walk : T.drive;
+    ui.driveHint.hidden = !isRover;
+    ui.driveHint.textContent = T.driveHint;
+    ui.tripDrive.hidden = !isRover;
+    ui.keys.textContent = mode === 'drive' ? T.keysDrive : T.keys;
+    ui.pad.setAttribute('aria-label', mode === 'drive' ? T.padDrive : T.padLabel);
     ui.skyBtn.setAttribute('aria-expanded', panelOpen ? 'true' : 'false');
     ui.skyBtn.textContent = panelOpen ? T.skyClose : T.skyOpen;
     ui.panel.hidden = !panelOpen;
@@ -1212,6 +1255,8 @@ export function createGroundStage(ctx, opts = {}) {
 
   function state() {
     return {
+      // 2.0.1: which place, by the keys of its link: the trips walk waits for the stop's own place to have opened.
+      link: place ? place.link : null,
       active, mode, world: place ? place.world : null, latDeg: place ? place.latDeg : null, lonDeg: place ? place.lonDeg : null,
       ground: place ? place.groundId : null, walker: { ...walker }, fovDeg,
       sun: sunNow ? { altDeg: sunNow.altDeg, azDeg: sunNow.azDeg } : null,
@@ -1242,6 +1287,8 @@ export function createGroundStage(ctx, opts = {}) {
 
   return {
     open, close, render, fromLink, look, state, dispose,
+    // 2.0.1: the card's "Stand here and drive" (ui/cards.js): straight into the rover's seat, the how-to with it.
+    drive: () => setMode('drive'),
     get active() { return active; },
   };
 }
@@ -1269,6 +1316,15 @@ export function standFor(ctx, stand) {
     if (ok) g.look({ yawDeg: stand.yaw, pitchDeg: stand.pitch, fovDeg: stand.fov, panel: stand.panel === true ? true : undefined });
     return ok;
   });
+}
+
+/**
+ * The door on a landing site's card (ui/cards.js, 2.0.1): open that ground and write it into the address, as a link would;
+ * `drive` puts the visitor in the rover's seat once it has opened. Until 2.0.1 a ground opened only from a link or a trip.
+ */
+export function openGround(ctx, id, { drive = false } = {}) {
+  const g = stageOf(ctx);
+  return g.fromLink({ ground: id }).then((ok) => { if (ok && drive) g.drive(); return ok; });
 }
 
 function stageOf(ctx) {

@@ -591,7 +591,11 @@ export const SOURCES = {
     cadenceMs: 24 * HOUR,
     freshnessMaxMs: 168 * HOUR,
     browser: false,
-    kind: 'text',
+    // JSON (2.0.1): the harvester saves one Horizons reply per craft, as an object keyed by Horizons id whose values
+    // are the replies' text ({"-31": "...$$SOE..."}), and data/parsers.js parseHorizonsVectors() reads exactly that.
+    // As 'text' until 2.0.1, wrongShape() refused every saved copy (an object is not text) and the layer drew its
+    // stand-ins only; tests/test_read_order.mjs holds every saved-copy fixture to its source's kind.
+    kind: 'json',
     attribution: 'Ephemerides: JPL Horizons',
     note: NO_CORS_REASON + ' See data/sample.js sampleDeepSpace().',
   },

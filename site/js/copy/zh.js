@@ -1816,6 +1816,13 @@ export const COPY = {
     "pending": "请查看邮箱并确认。",
     "couldNotReach": "无法连接订阅服务。"
   },
+  "groundDoor": {
+    "stand": "站在这里",
+    "drive": "站在这里并驾驶",
+    "standTitle": "站上{name}的实测地面",
+    "driveTitle": "站上{name}的实测地面并驾驶探测车",
+    "noDrive": "这辆探测车不能在这里驾驶：应用中还没有它所在地面的实测数据。好奇号、毅力号、祝融号和机遇号可以，从它们各自的卡片进入。"
+  },
   "flood": {
     "on": "补光",
     "off": "真实光照",
@@ -5444,6 +5451,12 @@ Object.assign(COPY, {
     "sources": "来源与许可",
     "padLabel": "步行：把摇杆推向要去的方向",
     "keys": "W A S D 或方向键行走，Q 和 E 转身，R 和 F 抬头低头，Shift 奔跑，+ 和 - 缩放，Esc 离开。",
+    "padDrive": "驾驶：把圆钮向上推前进，向下推后退，向两侧推转向",
+    "keysDrive": "W 或上箭头前进，S 或下箭头后退，A 和 D 或左右箭头转向，R 和 F 上下看，Shift 加速，Esc 离开。",
+    "howtoKeys": "你正在驾驶。W 或 ↑ 前进，S 或 ↓ 后退，A 和 D 或 ← 和 → 转向。拖动可环顾四周。",
+    "howtoTouch": "你正在驾驶。把圆形控制板向上推前进，向下推后退，向两侧推转向。拖动天空可环顾四周。",
+    "driveHint": "这辆探测车可以驾驶：按“驾驶探测车”。",
+    "tripDriveTitle": "在这里离开旅程并驾驶这辆探测车",
     "skyTitle": "这片天空",
     "poleStar": "极星：{name}，距天极 {sep}°（星等 {mag}）。",
     "noPoleStar": "这个世界的天极 10° 以内没有亮于 4.5 等的恒星。",

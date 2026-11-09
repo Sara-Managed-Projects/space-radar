@@ -1887,6 +1887,13 @@ export const COPY = {
     "pending": "Confira seu e-mail para confirmar.",
     "couldNotReach": "Não foi possível acessar o serviço de assinatura."
   },
+  "groundDoor": {
+    "stand": "Ficar aqui",
+    "drive": "Ficar aqui e dirigir",
+    "standTitle": "Pisar o solo medido em {name}",
+    "driveTitle": "Pisar o solo medido em {name} e dirigir o rover",
+    "noDrive": "Este rover não pode ser dirigido aqui: o seu solo ainda não está medido no app. Curiosity, Perseverance, Zhurong e Opportunity podem, a partir dos seus próprios cartões."
+  },
   "flood": {
     "on": "Iluminar",
     "off": "Luz real",
@@ -5535,6 +5542,12 @@ Object.assign(COPY, {
     "sources": "Fontes e licenças",
     "padLabel": "Caminhar: empurre o polegar na direção desejada",
     "keys": "W A S D ou as setas para caminhar, Q e E para girar, R e F para olhar para cima e para baixo, Shift para correr, + e - para aproximar e afastar, Esc para sair.",
+    "padDrive": "Dirigir: empurre o botão para cima para avançar, para baixo para recuar, para o lado para virar",
+    "keysDrive": "W ou a seta para cima para avançar, S ou para baixo para recuar, A e D ou as setas laterais para virar, R e F para olhar para cima e para baixo, Shift para ir mais rápido, Esc para sair.",
+    "howtoKeys": "Você está dirigindo. W ou ↑ para avançar, S ou ↓ para recuar, A e D ou ← e → para virar. Arraste para olhar em volta.",
+    "howtoTouch": "Você está dirigindo. Empurre o círculo para cima para avançar, para baixo para recuar, para o lado para virar. Arraste o céu para olhar em volta.",
+    "driveHint": "Este rover pode ser dirigido: toque em “Dirigir o rover”.",
+    "tripDriveTitle": "Sair da viagem aqui e dirigir este rover",
     "skyTitle": "Este céu",
     "poleStar": "Estrela polar: {name}, a {sep}° do polo (magnitude {mag}).",
     "noPoleStar": "Nenhuma estrela mais brilhante que a magnitude 4,5 a menos de 10° do polo deste mundo.",

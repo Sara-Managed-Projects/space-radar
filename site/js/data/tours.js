@@ -6282,11 +6282,12 @@ export const TOURS = [
 },
 "stage": "titan",
 "frame_radii": 5,
+"time": "2026-11-09T00:30:00Z",
 "chapter": "Further out",
 "stand": {
 "sky": "titan:huygens",
 "yaw": 0,
-"pitch": 35,
+"pitch": 10,
 "fov": 80,
 "panel": true
 },
