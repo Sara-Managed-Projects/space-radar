@@ -66,6 +66,8 @@ function fakeWindow() {
   check(leaveOut(trips, 't', ['a', 'h']).length === 0 && trips[0].stops.length === 2 && leaveOut(trips, 'x', ['a']).length === 0, 'never the whole trip, never another trip');
   const d = renderOptions('?render=1&fps=17');
   check(d && d.fps === 30 && d.epochMs === null && d.captions === false && d.maxStops === 0, 'defaults: 30 fps, now, no captions, the whole trip');
+  check(renderOptions('?render=1&at=-4088280000').epochMs === -4088280000 && renderOptions('?render=1&at=0').epochMs === 0, 'an instant before 1970 is filmed, not swapped for now');
+  check(renderOptions('?render=1&at=').epochMs === null && renderOptions('?render=1&at=soon').epochMs === null, 'an empty or unreadable at is now');
 
   const run = () => {
     const g = fakeWindow();
