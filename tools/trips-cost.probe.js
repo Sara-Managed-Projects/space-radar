@@ -122,6 +122,18 @@ for (const id of ids) {
     for (let i = 0; i < count; i += 1) {
       if (trip.state.index !== i) { trip.jumpTo(i); await wait(400); await arrive(); }
       await wait(SETTLE);
+      // 2.0.1: a stop on another world's ground is measured once its place has opened (the terrain loads after the stop
+      // arrives): measured in the gap, the frame was the stage's sky alone, an "empty frame" by chance of timing.
+      const tour = trip.tours().find((t) => t.id === id);
+      const here = tour && Array.isArray(tour.stops) ? tour.stops.find((s) => s.id === trip.state.stopId) : null;
+      const stand = here && here.stand ? here.stand.ground || here.stand.sky : null;
+      if (stand) {
+        // A ground by its id; a sky by its world (the link may carry the place after the colon). At most 10 s: a stop's
+        // dwell runs meanwhile, and the walk must still be on it when it measures.
+        const world = (x) => String(x || '').split(':')[0];
+        await until(() => { const st = ctx.ground && ctx.ground.state(); return st && st.link && !st.opening && (here.stand.ground ? st.link.ground === stand : world(st.link.sky) === world(stand)); }, 10000);
+        await wait(500);
+      }
       const d = (await drawn()) || {};
       const flat = await oneColour();
       const row = { trip: id, n: i + 1, of: count, stop: trip.state.stopTitle, at: trip.state.index + 1, calls: d.calls, triangles: d.triangles, oneColour: flat };

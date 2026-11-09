@@ -1255,6 +1255,8 @@ export function createGroundStage(ctx, opts = {}) {
 
   function state() {
     return {
+      // 2.0.1: which place, by the keys of its link: the trips walk waits for the stop's own place to have opened.
+      link: place ? place.link : null,
       active, mode, world: place ? place.world : null, latDeg: place ? place.latDeg : null, lonDeg: place ? place.lonDeg : null,
       ground: place ? place.groundId : null, walker: { ...walker }, fovDeg,
       sun: sunNow ? { altDeg: sunNow.altDeg, azDeg: sunNow.azDeg } : null,
@@ -1309,9 +1311,6 @@ export function boot(ctx) {
  */
 export function standFor(ctx, stand) {
   const g = stageOf(ctx);
-  // 2.0.1: the stop's field of view at once, not when its place has opened: until then the last stop's held (2.5 degrees
-  // on the Sun at Jezero), and Titan's first second was that narrow view of its haze, one colour (screens.yml trips walk).
-  if (Number.isFinite(stand.fov)) g.look({ fovDeg: stand.fov });
   const keys = stand.ground ? { ground: stand.ground } : { sky: stand.sky };
   return g.fromLink(keys, { quiet: true }).then((ok) => {
     if (ok) g.look({ yawDeg: stand.yaw, pitchDeg: stand.pitch, fovDeg: stand.fov, panel: stand.panel === true ? true : undefined });
