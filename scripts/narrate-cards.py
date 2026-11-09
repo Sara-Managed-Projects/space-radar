@@ -34,6 +34,10 @@ IDEMPOTENT BY HASH, as narrate.py: a card whose hash, the voice and the engine a
 is left alone. --check fails when a baked card's text changed and its clip did not, when a file is not the size the
 index says, when a clip has not been heard (--listen) or was heard with a finding blamed on the voice, or when the clips
 pass `card_voice_total_kb`.
+
+A RUN THAT SPEAKS OR LISTENS IS REFUSED BY DAY (07:00-23:00 Asia/Jerusalem) unless --allow-day; --check and
+--script are not. Start one as `bin/day-ban.sh && bin/cap.sh 90 <command>` (growth-kit), so it is also stopped
+by its own cap: a --listen chain started by day held the Mac's heavy lock all night on 2026-11-07.
 """
 from __future__ import annotations
 
@@ -368,6 +372,8 @@ def defer_rest(reason: str) -> int:
 
 
 def main(argv: list) -> int:
+    from _cli import day_ban
+
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--check", action="store_true", help="verify the index, the files and the budget; no TTS")
     ap.add_argument("--script", action="store_true", help="print what the voice is given for every card; no TTS")
@@ -379,16 +385,17 @@ def main(argv: list) -> int:
     ap.add_argument("--force", action="store_true", help="render (or listen to) even what is current")
     ap.add_argument("--limit", type=int, default=0, help="render at most this many clips this run")
     ap.add_argument("--defer-rest", metavar="WHY", help="record every card without a clip as skipped, with this reason")
+    ap.add_argument("--allow-day", action="store_true", help="speak or listen between 07:00 and 23:00 Israel time")
     args = ap.parse_args(argv)
     if args.check:
         return check()
     if args.script:
         return script()
     if args.listen:
-        return listen(args)
+        return day_ban(args.allow_day, "narrate-cards.py --listen (STT)") or listen(args)
     if args.defer_rest:
         return defer_rest(args.defer_rest)
-    return render(args)
+    return day_ban(args.allow_day, "narrate-cards.py (TTS)") or render(args)
 
 
 if __name__ == "__main__":
