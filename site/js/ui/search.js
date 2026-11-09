@@ -791,7 +791,7 @@ export function createSearch(ctx, host) {
       item.addEventListener('pointerdown', (event) => event.preventDefault());
       // MEASURED 2026-09-08 on the mobile layout: a touch on an option BLURS the input (an <li> is not
       // focusable), focusout closed the list, and the tap's click then landed on nothing -- "I cannot
-      // select the Milky Way from the dropdown on my phone" (Ivan). So the pick happens on pointerup,
+      // select the Milky Way from the dropdown on my phone" (the maintainer). So the pick happens on pointerup,
       // before any blur can close the list; the click below stays for keyboards and old browsers and
       // is a no-op when pointerup already picked.
       item.addEventListener('pointerup', (event) => {

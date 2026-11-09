@@ -2834,7 +2834,7 @@ export function createTrip(ctx) {
    *     arrival's select snapped it across in one frame.
    *   - SELECTED_PX. scene/heroes.js draws a selection 260 px tall whatever the distance, because
    *     it is the thing you came to look at. Pulled back for the next stop and still centred, the
-   *     subject being left filled the middle of the screen at a size nothing around it shares. Ivan
+   *     subject being left filled the middle of the screen at a size nothing around it shares. The maintainer
    *     reported it on 2026-10-01 from the strangest-things trip: the Beresheet lander drawn across
    *     half the screen, over the Moon's own markers, under a title about Voyager's record. The same
    *     happened to whatever the visitor had selected before pressing Start (the ISS from `#at`,

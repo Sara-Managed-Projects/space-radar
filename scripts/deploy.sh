@@ -487,7 +487,7 @@ if [ "$WHAT" != "assets" ]; then
   # The root files, each with its own type: the CLI guesses from the extension, and a sitemap
   # served as binary/octet-stream is one a crawler may refuse. No-cache like index.html, so a new
   # page is in the sitemap the moment it is deployed. 404.html is what CloudFront answers for a
-  # missing path once its error response names it (Ivan's setting, in the SEO pull request).
+  # missing path once its error response names it (the maintainer's setting, in the SEO pull request).
   # object-pages.json is the share sheet's map from a record to its page (ui/sharesheet.js).
   # THE SERVICE WORKER, LAST, AND THE ORDER IS THE POINT (site/sw.js, scripts/stamp_sw.py). The
   # copy uploaded is stamped with this build: the SHA-256 of every file of the app as it is in

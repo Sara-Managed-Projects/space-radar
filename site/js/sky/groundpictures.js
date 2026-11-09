@@ -10,7 +10,7 @@
 // Loaded by sky/groundsky.js when the browser is idle after the sky view has opened: none of this
 // is on a first visit, and none of it is needed for the first sky.
 //
-// NO PHOTOGRAPHS (Ivan, 2026-10-26: "no photos only realistic 3ds"). Until release 1.4.0 each of the 30
+// NO PHOTOGRAPHS (the maintainer, 2026-10-26: "no photos only realistic 3ds"). Until release 1.4.0 each of the 30
 // objects of registry/nebulae.yaml was its photograph here, laid on the ground sky's sphere. From the ground
 // a 3D model at hundreds of light-years is a point, so each is now what scene/dsoglow.js draws in space: a
 // soft glow as long and as wide as the catalogue says, turned as it says, coloured by what the thing is

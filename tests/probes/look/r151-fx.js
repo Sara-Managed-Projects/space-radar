@@ -1,5 +1,5 @@
 // r151-fx: the layers of release 1.5.0 that looked wrong, after the fix (release 1.5.1, stage fx-layers). ONE walk, the clock paused at
-// 2026-10-29 12:00 UTC (the day of Ivan's pictures):
+// 2026-10-29 12:00 UTC (the day of the maintainer's pictures):
 //   A. the comets (scene/cometfield.js) on the Sun's stage: the Sun from the side from 2.5 au (1.5.0: a bright band through its disc), the
 //      Solar System from 40 au and from 120 au (1.5.0: cyan lines everywhere and a white beam from the Sun to a cluster of points), then
 //      Halley selected, with its own orbit and the few famous ones;

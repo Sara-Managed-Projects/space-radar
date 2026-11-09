@@ -14,7 +14,7 @@
 //   networkUrl(network, parts), mailtoUrl(subject, body), NETWORKS, LIMITS
 //   wholeRowHeight(feet, opts)       the phone sheet's half: a height that ends on a whole row
 //
-// WHY. Ivan, 2026-10-01: "share the jpeg image postcard in social medias (with the link to object
+// WHY. The maintainer, 2026-10-01: "share the jpeg image postcard in social medias (with the link to object
 // if selected) and text (wiki information of object) - so full post, postcard, link and full text
 // nicely formatted, also option to send by email". So the sheet shows the three things a post is
 // made of and lets each go wherever the visitor wants:

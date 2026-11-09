@@ -1,6 +1,6 @@
 // tests/test_trip_pictures.mjs -- the trip cards' pictures (spec 0068 task 1, ui/trippics.js).
 //
-// Ivan, 2026-10-02: "tour cards should have in background picture for this tour ... should gradual
+// The maintainer, 2026-10-02: "tour cards should have in background picture for this tour ... should gradual
 // image on the grid square". Asserted, with no browser:
 //
 //   THE FILES: every trip in data/tours.js has site/images/trips/<id>.webp, a real WebP of

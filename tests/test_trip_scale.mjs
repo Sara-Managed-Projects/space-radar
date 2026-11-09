@@ -1,6 +1,6 @@
 // tests/test_trip_scale.mjs -- a trip's flight lets go of the stop it is leaving.
 //
-// Ivan, 2026-10-01, with a screenshot: when something is selected and a trip starts, and again every
+// The maintainer, 2026-10-01, with a screenshot: when something is selected and a trip starts, and again every
 // time the trip moves from stop to stop, the object's model is drawn hugely enlarged -- a lander
 // across half the screen, the Moon's own markers scattered round it, under the next stop's title.
 //

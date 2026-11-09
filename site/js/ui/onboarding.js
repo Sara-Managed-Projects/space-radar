@@ -6,7 +6,7 @@
 //     maybeInvite(), invite(), dismissInvite(), isInviting(), setVoice(on), voiceOn() }
 //   opts: { deepLink, embed, automated, storage, win, now, steps, voice }   the last five for a test
 //
-// Ivan, 2026-10-14: "these nice animated onboardings in many apps, where arrows and handwritten
+// The maintainer, 2026-10-14: "these nice animated onboardings in many apps, where arrows and handwritten
 // arrows highlight things asking to click, so it is a tour of all the most important features of
 // our project where the user should click on them and go to next."
 //

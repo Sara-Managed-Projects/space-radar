@@ -430,7 +430,7 @@ oddities:
     note: "In Roman myth Juno saw through the clouds Jupiter drew around himself; the figurine
            holds a magnifying glass because that is exactly what the spacecraft does. THE LEGO
            MINIFIGURE SHAPE IS A REGISTERED TRADEMARK in the EU, independent of any model's
-           copyright. Ivan's call before a builder draws one: keep it cartoon and low-detail,
+           copyright. The maintainer's call before a builder draws one: keep it cartoon and low-detail,
            never use the wordmark. STILL OPEN, and this row now DOES draw a shape -- `minifigures`
            in site/js/scene/models.js since c0066a3, with a cylindrical head, a stud on top of it
            and ring hands, which are the three features the mark is registered on. No wordmark is

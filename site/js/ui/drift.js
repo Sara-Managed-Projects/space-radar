@@ -7,7 +7,7 @@
 //          DARK_BELOW, PEEK_MS, SMALL_PX, HURRY_MOST.
 //
 // `#drift=1` in the address (or words: `#drift=worlds,stars,calm`, ui/driftplan.js readOptions), or
-// the Drift row at the top of Just watch. Ivan, 2026-10-12: "kind of screensaver, when everything
+// the Drift row at the top of Just watch. The maintainer, 2026-10-12: "kind of screensaver, when everything
 // closes and camera infinitely nicely and smoothly moves through all objects ... generic movement
 // of course, not like tours predefined, and of course random".
 //
@@ -25,7 +25,7 @@
 // the reticle's tag is the "panel on top of the object", in the card's own words. One small bar,
 // bottom centre, shows while the pointer moves and goes three seconds after it stops.
 //
-// ONLY SPACE (Ivan, 2026-10-14: "an option to hide everything: all planet texts, title
+// ONLY SPACE (the maintainer, 2026-10-14: "an option to hide everything: all planet texts, title
 // descriptions, dots/icons of objects, so it will be really only space, no solar system lines or
 // whatever, space and objects only"). The clear screen takes the panels, the names and the timeline;
 // this option also takes what is drawn in the scene and is not the sky or a body: every layer's

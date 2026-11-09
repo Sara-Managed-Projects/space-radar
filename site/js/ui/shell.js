@@ -7,7 +7,7 @@
 //   createViewStack(root)          push / pop / remove over the four views
 //   readCollapsed(storage), writeCollapsed(storage, on)
 //
-// WHY. Ivan, 2026-09-29: "now it is ugly and not structured, very bad experience". The first screen
+// WHY. The maintainer, 2026-09-29: "now it is ugly and not structured, very bad experience". The first screen
 // was two stacked prose panels on the left, a card as a third panel on the right, and five loose
 // icons in the corners; nothing said which of them was the place to start. Row D of the design
 // canvas ("Space Radar redesign directions") is the answer this builds: the structure of a map app
@@ -47,7 +47,7 @@
 // by half its right edge (row D draws the Earth 150 px right of the window's middle at 1440); the
 // pill is centred on the same band by --sr-scene-left (ui.css): 380 px open, 0 collapsed or phone.
 //
-// A GUIDED TRIP IS A VIEW (spec 0061 task 7). Ivan, 2026-10-01: the trips were the one place the old
+// A GUIDED TRIP IS A VIEW (spec 0061 task 7). The maintainer, 2026-10-01: the trips were the one place the old
 // design survived -- a card floating mid-scene and two black bars. On a desktop the sidebar now
 // stays up during a trip and shows its `trip` view, pushed over whatever was there and popped when
 // the trip ends; a sidebar the visitor had collapsed opens for the trip without the choice being

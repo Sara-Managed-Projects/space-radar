@@ -118,7 +118,7 @@ async function twoVisits({ withCaches }) {
 // A source's cadence is how long a GOOD copy may stand: three hours for most CelesTrak groups, six
 // for `active`. Applying it to a source with NO data meant a visitor who arrived while CelesTrak's
 // two-hour window was closed for their address saw an empty layer and the app refused to look again
-// for three hours -- long after the window reopened. Ivan, 2026-09-20: "keep it until next success
+// for three hours -- long after the window reopened. The maintainer, 2026-09-20: "keep it until next success
 // retrieval - if failed - we take cached one ... so it will help us always have all objects online."
 {
   const MIN = 60 * 1000;

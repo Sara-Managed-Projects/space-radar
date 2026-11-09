@@ -5,7 +5,7 @@
 //                                         context, master }
 //                  STORE_KEY, readFlag(storage), writeFlag(storage, on), VOLUME
 //
-// THE FIRST SOUND A VISITOR HEARS IS A CHOICE, NEVER AN AMBUSH (Ivan asked for "music" on
+// THE FIRST SOUND A VISITOR HEARS IS A CHOICE, NEVER AN AMBUSH (the maintainer asked for "music" on
 // 2026-09-22; the spec's whole contract is requirement 1). So:
 //
 //   * Nothing here runs at boot but reading one localStorage key. No AudioContext exists until

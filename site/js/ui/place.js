@@ -104,7 +104,7 @@ export function createPlace(ctx) {
     option.label = city.country;
     datalist.appendChild(option);
   }
-  // The city box and "Use my location" are ONE line (Ivan, 2026-10-14: the box ran the full width
+  // The city box and "Use my location" are ONE line (the maintainer, 2026-10-14: the box ran the full width
   // with the button as a pill of another style under it): the box takes the room, the button
   // stands beside it at the box's own height, fill and radius (ui.css .sr-place__row).
   const useMine = button('sr-place__mine', COPY.controls.locationUseMine, COPY.controls.locationUseMineTitle);

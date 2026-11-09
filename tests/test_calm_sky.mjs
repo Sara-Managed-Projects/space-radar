@@ -20,7 +20,7 @@ const SF = await mod('scene/starfield.js');
 
 // --- off by default, in every moment; everything else in the group as it was -----------------------
 const exo = LAYERS.find((l) => l.id === 'exoplanets');
-// 0079 a13: ON in the opening moment since release 1.5.0 (Ivan's decision 2, 2026-10-28); still after the first screen and ladder-only.
+// 0079 a13: ON in the opening moment since release 1.5.0 (the maintainer's decision 2, 2026-10-28); still after the first screen and ladder-only.
 check(exo && exo.moments && exo.moments.wonder === true && !exo.moments.now && !exo.moments.next, 'the exoplanet marks are on in the opening moment only');
 check(exo && exo.enabled !== false, 'the layer itself is still there: it loads, it is searched, a link opens it');
 for (const id of ['stars', 'deep-sky', 'systems', 'galaxy']) {

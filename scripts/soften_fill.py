@@ -7,7 +7,7 @@
 WHY. Pluto's far south was in its winter night when New Horizons passed, and scripts/build-textures.py
 fills it with the map's own mean colour: "left plain, not guessed" (copy/en.js). But the fill met the
 data along the ragged edge of the last lit strip, a hard line in one flat grey, and on the globe that
-read as a broken texture (Ivan, 2026-10-12). This keeps the promise and loses the line:
+read as a broken texture (the maintainer, 2026-10-12). This keeps the promise and loses the line:
 
   - the fill region is found as it was made: pixels of the fill's exact colour, joined to the
     bottom (or top) row;

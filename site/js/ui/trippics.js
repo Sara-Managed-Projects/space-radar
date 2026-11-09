@@ -2,7 +2,7 @@
 // card on the Moments shelf (release 1.7.7: the same lazy, gated picture, from site/images/moments/<id>.webp,
 // rendered by tools/moment-pictures.probe.js).
 //
-// Ivan, 2026-10-02: "tour cards should have in background picture for this tour (showing
+// The maintainer, 2026-10-02: "tour cards should have in background picture for this tour (showing
 // explanation not only with text but image itself, should gradual image on the grid square)". One
 // WebP per trip, site/images/trips/<id>.webp, 640 x 360 and at most `trip_picture_bytes`
 // (registry/budgets.yaml), rendered by the app at the trip's own picture stop

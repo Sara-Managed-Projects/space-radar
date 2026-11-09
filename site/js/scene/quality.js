@@ -358,7 +358,7 @@ export function shouldSaveData(connection) {
 //   chooseTier(device) -> { tier, ceiling, reasons }
 //   createTierPromoter({ tier, ceiling }) -> { push(frameMs, nowMs, latched) -> number|null, tier, promoted }
 //
-// Ivan, 2026-09-28: "the most realistic on capable devices ... high quality everywhere". Before this
+// The maintainer, 2026-09-28: "the most realistic on capable devices ... high quality everywhere". Before this
 // every device got the same 2k maps, so a desktop drew the Earth at the resolution a phone can afford.
 // Three tiers, each a GPU budget first (docs/toolkit.md) and a picture second:
 //   T0  phones, data-saver, small GPUs: the 2k maps every visitor boots with. <= 150 MB of textures.

@@ -211,7 +211,7 @@ if (reliefFar.utopia) {
   for (const k of used) check(COPY.ground && COPY.ground[k] !== undefined, `COPY.ground.${k} is written`);
 }
 
-// --- driving, findable (2.0.1: Ivan could not find how to drive) ----------------------------------------------
+// --- driving, findable (2.0.1: the maintainer could not find how to drive) ----------------------------------------------
 // A landing site's card is a door to its ground, the rovers on Mars say "and drive", the Moon's rovers say they cannot be;
 // driving starts with a how-to in the middle of the screen; a trip's stop at a rover can be left there to drive.
 {

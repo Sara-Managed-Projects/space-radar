@@ -37,7 +37,7 @@ export function createGitHubMark(host, opts = {}) {
 
   const a = document.createElement('a');
   a.id = HOST_ID;
-  // opts.className: the tool rail seats the mark as its fourth button (Ivan, 2026-10-02: "missed
+  // opts.className: the tool rail seats the mark as its fourth button (the maintainer, 2026-10-02: "missed
   // GitHub button we had before, I think it could be next icon after an eye").
   a.className = opts.className || (host ? 'sr-mark sr-mark--foot' : 'sr-mark');
   a.href = COPY.mark.href;

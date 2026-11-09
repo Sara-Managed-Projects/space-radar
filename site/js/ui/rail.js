@@ -7,10 +7,10 @@
 //   [share]    Share: the one share sheet (ui/share.js ctx.share.open, ui/sharesheet.js), with the
 //              postcard, the link and the text (spec 0061 task 8; it was the camera until then)
 //   [eye]      Hide everything: ui/cleanview.js (H)
-//   [tour]     The tour (ui/onboarding.js, internal spec 0074; Ivan, 2026-10-14: "on the right should
+//   [tour]     The tour (ui/onboarding.js, internal spec 0074; the maintainer, 2026-10-14: "on the right should
 //              appear another icon of onboarding"): fetched on the first press, a row of More on a phone
-//   [blog]     The journal at blog.spaceradar.ai (Ivan, 2026-11-02), a link in a new tab, a row of More on a phone
-//   [github]   The repository, the mark from ui/github.js (Ivan, 2026-10-02: the next icon after the eye)
+//   [blog]     The journal at blog.spaceradar.ai (the maintainer, 2026-11-02), a link in a new tab, a row of More on a phone
+//   [github]   The repository, the mark from ui/github.js (the maintainer, 2026-10-02: the next icon after the eye)
 //   [more]     The phone only: Share, Hide and the repository, folded into one menu (below)
 //
 // WHY. Three loose icons sat in the top right corner at three different offsets, which moved again
@@ -18,7 +18,7 @@
 // GitHub mark beside them. The card now lives in the sidebar, so the right edge is always free and
 // the tools can be one object: one column, one glass, hairlines between the buttons, as row D draws
 // it. The GitHub mark is the rail's last button (it spent 2026-09-30 to 10-02 in the sources footer,
-// where Ivan missed it).
+// where the maintainer missed it).
 //
 // KEYS. L opens What to show, P the share sheet, ? every key (ui/keyhint.js); H is ui/cleanview.js's own. Not S for share:
 // S is held to move the camera back (scene/camera.js CAMERA_KEYS), and P was the postcard's key,

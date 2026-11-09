@@ -5,7 +5,7 @@
     python3 scripts/get_esbuild.py --check    # the pins are well formed; fetches nothing
 
 WHY THIS AND NOT `npm install` (internal #515, 2026-10-09). The site has no build step and no
-package.json, and a deploy machine may have node and no npm (Ivan's Mac has exactly that). The
+package.json, and a deploy machine may have node and no npm (the maintainer's Mac has exactly that). The
 minifier a deploy runs is one static binary; this fetches that one file from the npm registry,
 refuses it unless the archive's SHA-512 is the one npm published for this exact version (the
 `integrity` field, copied below on 2026-10-09) and the binary inside has the SHA-256 recorded

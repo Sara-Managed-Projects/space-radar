@@ -9,7 +9,8 @@ also in [CREDITS.md](CREDITS.md), and each release's notes thank the people in i
 
 ## Maintainers
 
-[@ionesu](https://github.com/ionesu), [@Sara-Agent](https://github.com/Sara-Agent). See [GOVERNANCE.md](GOVERNANCE.md).
+[@ionesu](https://github.com/ionesu). The project's own automation account is no longer active.
+See [GOVERNANCE.md](GOVERNANCE.md).
 
 ## Facts, sources and data
 

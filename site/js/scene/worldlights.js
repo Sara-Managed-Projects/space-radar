@@ -7,7 +7,7 @@
 //           apparentMagnitude(id, geometry), starSprite(m, magLimit), discFade(px), discCover(...)
 //           GEOMETRIC_ALBEDO, LIGHT_FADE_PX, SUN_APPARENT_MAG, WORLDLIGHT_VERT, WORLDLIGHT_FRAG
 //
-// WHY. Ivan, 2026-10-12: "maybe stars, planets, whatever should shine a bit brighter if it is
+// WHY. The maintainer, 2026-10-12: "maybe stars, planets, whatever should shine a bit brighter if it is
 // realistic". A star brighter than magnitude 2.5 has a glow and one past -1.5 a glare
 // (scene/stars3d.js), while a planet was a small lit disc and nothing else: Sirius had a glow and
 // Venus, which outshines it by three magnitudes, had none. So a world whose drawn disc is small on

@@ -1,6 +1,6 @@
 // deepspace: the deep-space baseline (internal spec 0075, stage 0). It photographs, as far as the app
 // reaches today, the capture list of the deep-space package of 2026-10-14 (its section 3 and 12):
-// Ivan's frame (the Helix in front, the Large Magellanic Cloud and the Tarantula behind it, as in his
+// The maintainer's frame (the Helix in front, the Large Magellanic Cloud and the Tarantula behind it, as in their
 // screenshot), the Helix at the app's own framing, closer and turned 45 degrees, the LMC at arrival,
 // wide, close and turned, the Tarantula selected and then pulled back to show where it sits in the
 // LMC, Andromeda at arrival, turned and close, the Milky Way from outside (above its plane and edge
@@ -87,7 +87,7 @@ const drawnNow = () => {
 };
 
 /** A picture with its facts: settle, measure, write down, photograph. */
-const NAMED = new Set(['04-ivan-frame-helix-selected', '05-ivan-frame', '10-tarantula-selected', '11-tarantula-in-lmc']);
+const NAMED = new Set(['04-maintainer-frame-helix-selected', '05-maintainer-frame', '10-tarantula-selected', '11-tarantula-in-lmc']);
 const snap = async (name, note, settleMs = 5000) => {
   await sleep(settleMs);
   const readyAt = Date.now();
@@ -112,7 +112,7 @@ const snap = async (name, note, settleMs = 5000) => {
     ...f,
   };
   out.scenes.push(row);
-  // Zero overlapping names in Ivan's frame and the Tarantula's scenes (spec 0075 task 5).
+  // Zero overlapping names in the maintainer's frame and the Tarantula's scenes (spec 0075 task 5).
   if (NAMED.has(name) && lab.overlaps.length) out.problems.push(`${name}: ${lab.overlaps.length} overlapping names (${JSON.stringify(lab.overlaps)})`);
   await shot(name, `${note} | ${row.stage}, ${row.distanceLy} ly from the target, ${lab.boxes.length} names (${lab.overlaps.length} overlapping), ${row.cost ? row.cost.calls : '?'} calls, median ${f.medianMs} ms`);
   return row;
@@ -151,8 +151,8 @@ try { if (sr.wantDeep) await sr.wantDeep(); else look.warns.push('no sr.wantDeep
 
 /** Back to the stellar rung with nothing selected: where every group that is run alone starts. */
 const fresh = async () => { sr.deselect(); if (sr.stage.worldId !== 'stellar') await stage('stellar', 9000); };
-/** Ivan's frame: the Helix in front, the LMC and the Tarantula behind it, the camera 120 ly from the Helix. */
-const ivanFrame = () => {
+/** The maintainer's frame: the Helix in front, the LMC and the Tarantula behind it, the camera 120 ly from the Helix. */
+const maintainerFrame = () => {
   const H = pos('dso-helix-nebula'), L = pos('dso-lmc');
   if (!H || !L) { out.problems.push('no position for the Helix or the LMC'); return false; }
   const toL = unit(sub(L, H));
@@ -163,7 +163,7 @@ const ivanFrame = () => {
 };
 
 const GROUPS = {
-  // 1. The Helix: the app's own framing, closer, and turned 45 degrees; then Ivan's frame.
+  // 1. The Helix: the app's own framing, closer, and turned 45 degrees; then the maintainer's frame.
   helix: async () => {
     if (!(await need('dso-helix-nebula'))) return;
     await snap('01-helix-arrival', 'the Helix as the app frames it on arrival');
@@ -171,16 +171,16 @@ const GROUPS = {
     await snap('02-helix-close', 'the Helix, a third of the arrival distance');
     turn(Math.PI / 4);
     await snap('03-helix-turned45', 'the Helix, close, turned 45 degrees round it');
-    if (!ivanFrame()) return;
-    await snap('04-ivan-frame-helix-selected', "Ivan's frame: the Helix 120 ly away and selected, the LMC and the Tarantula behind it");
+    if (!maintainerFrame()) return;
+    await snap('04-maintainer-frame-helix-selected', "The maintainer's frame: the Helix 120 ly away and selected, the LMC and the Tarantula behind it");
     sr.deselect();
-    await snap('05-ivan-frame', "Ivan's frame with nothing selected, as in his screenshot", 3000);
+    await snap('05-maintainer-frame', "The maintainer's frame with nothing selected, as in the maintainer's screenshot", 3000);
   },
-  // 2. (stage a) From Ivan's frame the Tarantula is chosen: the flight goes through the LMC (spec 0075
+  // 2. (stage a) From the maintainer's frame the Tarantula is chosen: the flight goes through the LMC (spec 0075
   //    task 3), photographed on the way. Never a lone dot.
   flight: async () => {
     if (!sr.selected || sr.selected() || !pos('dso-helix-nebula')) { await need('dso-helix-nebula', 6000); sr.deselect(); }
-    if (!ivanFrame()) return;
+    if (!maintainerFrame()) return;
     await sleep(2500);
     const r = sr.recordById('dso-tarantula-nebula');
     if (!r) { out.problems.push('missing record dso-tarantula-nebula'); return; }
@@ -189,7 +189,7 @@ const GROUPS = {
     sr.select(r, { fly: true, undo: false });
     await sleep(1400);
     out.flight = { at1: { ms: Date.now() - t0, ly: Math.round(rig.state.distance * sr.stage.unitKm / LY_KM), flying: !!rig.state.flying } };
-    await shot('10f1-flight-through-lmc', 'choosing the Tarantula from Ivan\'s frame: early in the flight');
+    await shot('10f1-flight-through-lmc', 'choosing the Tarantula from the maintainer\'s frame: early in the flight');
     await sleep(900);
     out.flight.at2 = { ms: Date.now() - t0, ly: Math.round(rig.state.distance * sr.stage.unitKm / LY_KM), flying: !!rig.state.flying };
     await shot('10f2-flight-lmc-fills', 'the LMC fills the view on the way to the Tarantula');

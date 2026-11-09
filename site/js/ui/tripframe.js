@@ -16,7 +16,7 @@
 // screen -- which is how it was.
 //
 // ---------------------------------------------------------------------------------------------
-// WHY IT LOOKS LIKE THIS (spec 0061 task 7, docs/ui-guide.md). Ivan, 2026-10-01, with screenshots
+// WHY IT LOOKS LIKE THIS (spec 0061 task 7, docs/ui-guide.md). The maintainer, 2026-10-01, with screenshots
 // of the live trip: "you did great redesign but not everywhere". The trip was the old design whole:
 // two black letterbox bars, a row of seven text buttons across the bottom one, a prose card
 // floating in the middle of the scene with a second header row under its text, and a centred

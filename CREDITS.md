@@ -3713,7 +3713,7 @@ GitHub, which is the use GitHub's brand guidelines permit.
 * **LEGO** is a trademark of the LEGO Group, and in the EU the *minifigure shape itself* is a
   registered three-dimensional mark, independent of any copyright in a model. The `oddities` layer
   draws three aluminium minifigures riding Juno, low-detail and in the project's own toon material.
-  **The decision to draw that silhouette at all is Ivan's and has not been recorded**; the note on
+  **The decision to draw that silhouette at all is the maintainer's and has not been recorded**; the note on
   the `juno-lego-figures` row in `registry/oddities.yaml` says the same thing, and blunting the
   head-stud and the ring hands is one builder and one row if the answer is no.
 * **Star Wars**, **Return of the Jedi** and the lightsaber hilt design are trademarks of

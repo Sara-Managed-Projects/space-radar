@@ -2,7 +2,7 @@
 //
 //   node tests/test_tripframe.mjs
 //
-// Ivan, 2026-10-01: the trips were the one place the old design survived -- two letterbox bars, a
+// The maintainer, 2026-10-01: the trips were the one place the old design survived -- two letterbox bars, a
 // row of seven text buttons, a prose card floating mid-scene. What this holds, without a browser:
 //   - THE TOOLBAR: one glass group, first in the frame's DOM (the APG puts Pause first), icon
 //     buttons in the order play, previous, the counter, next, replay, share, hide card, sound; each

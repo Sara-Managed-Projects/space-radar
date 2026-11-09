@@ -21,7 +21,7 @@
 //      myths, the train, the trajectory, the drawing and source lines -- moved, not rewritten.
 //   6. the honesty line, small, at the foot (spec 0001 principle 2).
 //
-// WHY. Ivan, 2026-09-29: the old card was "ugly and not structured" -- a sentence, sentence-long
+// WHY. The maintainer, 2026-09-29: the old card was "ugly and not structured" -- a sentence, sentence-long
 // pills, eleven rows and a button bar, all at once, 1 500 px tall. A card now leads with the three
 // numbers, says the rest when asked, and every number it ever printed is still one tap away.
 //
@@ -1703,7 +1703,7 @@ const FLOOD_KLASSES = new Set(['station', 'satellite', 'probe', 'telescope', 'ro
 
 // THE GROUND'S DOOR (2.0.1): the landing sites scene/groundstage.js stands on (site/data/ground/index.json, forge #146),
 // and of those the rovers it lets the visitor drive (a model on Mars). Until 2.0.1 the ground opened only from a link or a
-// trip, and Ivan could not find how to drive. The rovers on the Moon have no measured ground here, and say so.
+// trip, and the maintainer could not find how to drive. The rovers on the Moon have no measured ground here, and say so.
 // tests/test_ground.mjs holds both lists to the ground's index.
 export const GROUND_SITES = ['apollo-11', 'apollo-15', 'apollo-17', 'change-4', 'gale', 'jezero', 'opportunity', 'utopia'];
 export const DRIVE_SITES = ['gale', 'jezero', 'opportunity', 'utopia'];
@@ -2377,7 +2377,7 @@ function keepFrameLines(node) {
  * card uses, so the two can never disagree; the stop's words as ONE paragraph and the line the
  * trip generates under them; the rows that open in place; the honesty line at the foot.
  *
- * WHY. Ivan, 2026-10-01, with a screenshot of the live trip: the stop was a paragraph floating
+ * WHY. The maintainer, 2026-10-01, with a screenshot of the live trip: the stop was a paragraph floating
  * mid-scene, then a second header row (dot, class chip, Close) under the text, then the object's
  * whole card again below it. One card, one anatomy, in the place the card lives.
  *
@@ -2953,7 +2953,7 @@ function render(record, ctx, opts = {}) {
 
   // 3'. A MOMENT this place or craft was part of (internal spec 0079 C8): a tile of the quiet row below, which opens the
   // replay. 2.0.1: it was an outlined button of its own between the four and the row, half the width, with "Light it"
-  // a full-width bar under it (Ivan: "out of design"); now the two are tiles of one row, the first ones in it.
+  // a full-width bar under it (the maintainer: "out of design"); now the two are tiles of one row, the first ones in it.
   const lead = [];
   const site = record.layer === 'hand-kept-sites' ? record.id : null;
   if (GROUND_SITES.includes(site)) {
@@ -2991,7 +2991,7 @@ function render(record, ctx, opts = {}) {
   }
   // b200-f2-worlds: end
 
-  // 3a. the quiet row, straight under the four (Ivan, 2026-10-14: "Light it" and "Seen it" were two
+  // 3a. the quiet row, straight under the four (the maintainer, 2026-10-14: "Light it" and "Seen it" were two
   // outlined buttons stacked at the left edge, under the time bar, in a style of their own). One
   // row of equal tiles in the actions' own wash: the flood light (internal #272), a reminder for
   // its next dated event and the visitor's own "seen it" tick (public #395). The lamp's note sits

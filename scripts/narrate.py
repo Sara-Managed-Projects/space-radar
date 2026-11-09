@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Render every trip stop's words to speech, offline, and refuse when the files have drifted.
 
-Spec 0069 (2026-10-03). Ivan: "Speech for trips (like in planetarium ...), we will need the best
+Spec 0069 (2026-10-03). The maintainer: "Speech for trips (like in planetarium ...), we will need the best
 free speech generator, we will regenerate all speeches and download them." So the voice is made
 HERE, once, by a model whose licence lets the files ship (registry/narration.yaml says which and
 why), and the browser only ever plays a file: nothing is synthesised on a visitor's device and

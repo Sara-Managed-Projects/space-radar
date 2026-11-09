@@ -843,7 +843,7 @@ tours:
 
   # =============================================================================================
   # PLANETS AROUND OTHER STARS, THEN ONE SYSTEM OF THEM UP CLOSE (spec 0040, 2026-09-23): the
-  # Miami kiosk's "5005 exoplanets" and "Take a tour of TRAPPIST-1", which Ivan asked for.
+  # Miami kiosk's "5005 exoplanets" and "Take a tour of TRAPPIST-1", which the maintainer asked for.
   #
   # TWO SCALES. The first two stops are on the stellar rung, one unit a light-year, where every
   # planet is a mark at its star (spec 0028 step 4). The rest are on TRAPPIST-1's own stage
@@ -1872,7 +1872,7 @@ tours:
             eyes.
 
   # =============================================================================================
-  # THE CONSTELLATIONS (2026-10-05). Ivan: "a cool planetarium trip about all popular
+  # THE CONSTELLATIONS (2026-10-05). The maintainer: "a cool planetarium trip about all popular
   # constellations with cool animation, so it will be like a cool movie", and of Stellarium: "I
   # want to be better than they are when we are looking on the sky from earth".
   #
@@ -2114,7 +2114,7 @@ tours:
             thirteen, and the one left out is here: Ophiuchus, the serpent bearer.
 
   # =============================================================================================
-  # THE LIVING EARTH (2026-10-05). Ivan: "a trip about earth and its weather ... how other planets
+  # THE LIVING EARTH (2026-10-05). The maintainer: "a trip about earth and its weather ... how other planets
   # and space affect it, how water flows affect it, how nature affects it ... pollution, plankton,
   # cycles of the world ... real storms with lightning, real northern lights".
   #
@@ -3090,7 +3090,7 @@ tours:
             frost, and every spring it blows away again. Under the frost is a cap of water ice.
 
   # =============================================================================================
-  # THE SHOWS A PLANETARIUM RUNS AND WE STILL LACKED (2026-10-06). Ivan: "I want make sure we have
+  # THE SHOWS A PLANETARIUM RUNS AND WE STILL LACKED (2026-10-06). The maintainer: "I want make sure we have
   # all required planetarium trips for today." Eight trips: the life of a star, black holes, the
   # sky as telescopes see it, a dark sky, asteroids, satellites and junk, comets and meteor
   # showers, the birth of the Solar System. Written for the ear, 20 to 62 words a stop.
@@ -4536,7 +4536,7 @@ tours:
 
   # =============================================================================================
   # THE TWO DEEP-SPACE JOURNEYS (internal spec 0075 stage f, internal #791; DS-E07 #838, DS-E08
-  # #839). Ivan's package of 2026-10-14, section 9C: "Into the Helix" (90 s: approach the small
+  # #839). The maintainer's package of 2026-10-14, section 9C: "Into the Helix" (90 s: approach the small
   # nebula, compare the telescope photograph with the 3D model, orbit round the shell, find the dying
   # star) and "Inside a neighbouring galaxy" (2.5 min: the Milky Way, the LMC, the Tarantula, R136,
   # and away with the scale said). Its section 9A is the shape of every stop below:

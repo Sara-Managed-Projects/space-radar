@@ -434,7 +434,7 @@ for (const file of allFiles) {
     if (!existsSync(path)) { problems.push(`MODEL    ${rel} has a registry row and does not ship`); continue; }
     if (!budget) { problems.push(`MODEL    ${id} has no budget_tris; a model nobody measures is a guess`); continue; }
     // 0077 W1-a: begin
-    // A FLAGSHIP may claim up to 60 000 (release 1.3.0, Ivan 2026-10-20: "the quality of models should be very
+    // A FLAGSHIP may claim up to 60 000 (release 1.3.0, the maintainer 2026-10-20: "the quality of models should be very
     // high"; ~/space-radar-handoff/AGENT_BRIEF.md "Model quality bar"). The row says `flagship: true`, so the
     // larger claim is a deliberate word on the row and not a number that crept up.
     const cap = /flagship: true/.test(row) ? FLAGSHIP_CAP : CAP;
@@ -1218,7 +1218,7 @@ for (const file of allFiles) {
 //
 // 3e3b. A HERO MAY NOT BE DRAWN INSIDE THE WORLD IT ORBITS.
 //
-// Ivan, on the stations tour: "dont like in the tour with stations stations inside the earth."
+// The maintainer, on the stations tour: "dont like in the tour with stations stations inside the earth."
 // He was right, and the first fix was aimed at the wrong thing -- it hid the other LAYERS while a
 // trip stood still (public #125), which did not fire at the stop he was describing and did fire at
 // two stops that were fine, so the next report was "i dont see many objects now at all".
@@ -2376,7 +2376,7 @@ for (const file of allFiles) {
       if (seen.join() !== 'reduced-motion') failed(`a refused drift reported [${seen}]`);
       // --- THE ARROW KEYS FLY IT ----------------------------------------------------------
       //
-      // Ivan asked for "controle with arrows (like in space video games so user will be able to
+      // The maintainer asked for "controle with arrows (like in space video games so user will be able to
       // travel with arrows)". Held, not tapped -- so what is tested is that holding moves the
       // camera for as long as it is held, at a rate per second, and that letting go stops it.
       //
@@ -3046,11 +3046,11 @@ for (const file of allFiles) {
     }
   }
   // The deep sky computes its gas inside its own meshes (spec 0075 design section 7): no render target
-  // and no screen-covering quad anywhere under scene/deep/ (Ivan's decision D1, internal #769, pending).
+  // and no screen-covering quad anywhere under scene/deep/ (the maintainer's decision D1, internal #769, pending).
   for (const f of sceneFiles.filter((n) => n.startsWith('deep/'))) {
     const src = readFileSync(join(sceneDir, f), 'utf8');
     for (const re of [/WebGLRenderTarget/, /FullScreenQuad/, /OrthographicCamera/, /gl_Position\s*=\s*vec4\(\s*position\.xy/]) {
-      if (re.test(src)) problems.push(`CINEMA   scene/${f} has ${re.source}: deep-sky gas is marched inside its own mesh, never in a pass (spec 0075; D1 is Ivan's to decide)`);
+      if (re.test(src)) problems.push(`CINEMA   scene/${f} has ${re.source}: deep-sky gas is marched inside its own mesh, never in a pass (spec 0075; D1 is the maintainer's to decide)`);
     }
   }
   notes.push(`cinema: ${sceneFiles.length} files under scene/ (its folders too) name no pass, and scene/deep/ has no render target`);

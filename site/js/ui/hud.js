@@ -7,7 +7,7 @@
 // Also exported, pure, for tests/test_hud.mjs: reticleBox, tagPlacement, showTick, chevronAt,
 // chevronAnchor, firstDigitChanged, leadingDigit, projectedDiameterPx, distanceWords.
 //
-// WHY. Ivan, 2026-09-28, after orbitalradar.com: "track this object". Theirs is a yellow dot in
+// WHY. The maintainer, 2026-09-28, after orbitalradar.com: "track this object". Theirs is a yellow dot in
 // gold corner brackets with the camera locked on. Ours selected, flew, followed and turned the dot
 // ember, and said everything else on a card at the edge of the screen; the selection itself carried
 // nothing, and when the camera was turned away nothing on screen pointed back at it.

@@ -192,7 +192,7 @@ for (const id of ['vostok-1', 'apollo-11', 'artemis-ii']) {
   for (const k of ['liftoff', 'srb', 'closest', 'far', 'splash']) check(/Flown/.test(words[k]), `Artemis II: "${k}" says it was flown`);
   // 2.0.1: ONE STACK. moments/vehicles.js standInMetres stands a file's box on y = 0 at `lengthM` tall, and Orion's box starts
   // at its engine bell, 1.232 m under its origin (the service module's aft plane). At 22.1 m on the adapter's top, Orion was
-  // drawn 11 % large and stood 1.37 m off the stack: the gap Ivan saw above the ICPS. Read from the two files themselves.
+  // drawn 11 % large and stood 1.37 m off the stack: the gap the maintainer saw above the ICPS. Read from the two files themselves.
   const sls = yExtent(join(ROOT, 'site/models/sls-block1.glb'));
   const orion = yExtent(join(ROOT, 'site/models/orion-esm.glb'));
   const up = m.vehicles.find((v) => v.id === 'orion-up');

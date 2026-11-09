@@ -108,7 +108,7 @@ check(r.returncode == 0, f"social preview: {r.stdout.strip()}")
 # --- nothing internal in a public file
 PUBLIC = ["README.md", "CONTRIBUTING.md", "ROADMAP.md", "CITATION.cff", "docs/TRANSLATING.md", "SUPPORT.md"] + \
          [str(p.relative_to(ROOT)) for p in (ROOT / ".github" / "ISSUE_TEMPLATE").glob("*.yml")]
-BANNED = re.compile(r"space-radar-internal|marketing plan|marketing-plan|show hn|product hunt|hacker news|decision-ivan|launch plan|facebook", re.I)
+BANNED = re.compile(r"space-radar-internal|marketing plan|marketing-plan|show hn|product hunt|hacker news|launch plan|facebook", re.I)
 for name in PUBLIC:
     p = ROOT / name
     if p.is_file():

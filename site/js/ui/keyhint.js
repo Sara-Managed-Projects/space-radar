@@ -1,6 +1,6 @@
 // ui/keyhint.js -- the controls hint, shown once (spec 0068 task 2).
 //
-// Ivan, 2026-10-02: "add info how to control with buttons, I think it should appear once in the
+// The maintainer, 2026-10-02: "add info how to control with buttons, I think it should appear once in the
 // right bottom corner (arrows buttons and w s buttons) it should be nicely designed in general
 // styles buttons with some nice animation". A small glass panel in the bottom-right corner: the
 // keys that move the camera drawn as keycaps that press themselves once, in order, and the four

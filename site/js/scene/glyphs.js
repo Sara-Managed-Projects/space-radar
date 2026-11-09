@@ -657,7 +657,7 @@ export function createGlyphLayer(scene, layer = {}) {
   }
 
   /**
-   * THE SELECTION'S DOT, PLACED AGAIN ON A FRAME BETWEEN TWO TICKS (Ivan, 2026-10-14: "sometimes
+   * THE SELECTION'S DOT, PLACED AGAIN ON A FRAME BETWEEN TWO TICKS (the maintainer, 2026-10-14: "sometimes
    * when an object is selected it is shaking on the screen"). At the live clock main.js calls
    * update() ten times a second, which is enough for a dot nobody is watching. The selection is
    * watched: the camera follows it and the brackets (ui/hud.js) are placed on it EVERY frame, from

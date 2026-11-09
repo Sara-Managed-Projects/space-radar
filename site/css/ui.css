@@ -156,7 +156,7 @@
     monospace;
   /* Panel titles and, later, HUD units. No Cyrillic in Barlow: Inter draws it. */
   --sr-font-hud: 'Barlow Semi Condensed', 'Barlow Semi Condensed Fallback', 'Inter', 'Inter Fallback', system-ui, sans-serif;
-  /* No serif: Ivan rejected Instrument Serif on names on 2026-10-03 and spec 0061 task 6 removed the
+  /* No serif: the maintainer rejected Instrument Serif on names on 2026-10-03 and spec 0061 task 6 removed the
      face. Names and titles are Inter 600, the wordmark Barlow 600 (docs/ui-guide.md section 2.2). */
 
   /* Old names, kept for one release so no rule breaks in the change */
@@ -868,7 +868,7 @@ html.sr-compact .sr-status {
   border-radius: var(--sr-radius);
 }
 
-/* The card's quiet row (Ivan, 2026-10-14): "Light it", "Remind me" and "Seen it" as one row of
+/* The card's quiet row (the maintainer, 2026-10-14): "Light it", "Remind me" and "Seen it" as one row of
    equal tiles straight under the four actions, in the actions' own wash and radius, 44 px high.
    They were outlined buttons of their own style, stacked at the left edge. The row is 8 px under
    the four (where :has is not known it is the actions' own 16 px), and closes the block as the
@@ -1480,8 +1480,8 @@ button.sr-card__crumb:hover, button.sr-card__crumb:focus-visible { color: var(--
 }
 
 /* ------------------------------------------------------------------------------------ */
-/* Clean view (ui/cleanview.js): every panel off, the scene alone. Ivan, 2026-09-28: "should   */
-/* have possibility to hide each panel so fully see the space only".                          */
+/* Clean view (ui/cleanview.js): every panel off, the scene alone. The maintainer,            */
+/* 2026-09-28: "should have possibility to hide each panel so fully see the space only".      */
 /* ------------------------------------------------------------------------------------ */
 
 /* Everything on <body> except the scene, the stage-change veil and what is marked `.sr-over-clean`
@@ -1797,10 +1797,10 @@ html.sr-phone .sr-search__option--rich {
 /* `html[data-trip-phase]` carries the phase, so the few things that differ between a      */
 /* flight and a dwell are one selector each rather than a branch in JS.                    */
 /*                                                                                        */
-/* NO LETTERBOX ANY MORE. Ivan, 2026-10-01: the trip was the one place the old design      */
-/* survived. The scene keeps the whole window; the controls are ONE glass toolbar where   */
-/* the time pill sits; the top bar is the trip's title and Leave; the intro, the stop card */
-/* and the end are the sidebar's trip view on a desktop and a sheet on a phone.           */
+/* NO LETTERBOX ANY MORE. The maintainer, 2026-10-01: the trip was the one place the old  */
+/* design survived. The scene keeps the whole window; the controls are ONE glass toolbar  */
+/* where the time pill sits; the top bar is the trip's title and Leave; the intro, the    */
+/* stop card and the end are the sidebar's trip view on a desktop and a sheet on a phone. */
 /* ------------------------------------------------------------------------------------ */
 
 :root {
@@ -4001,7 +4001,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 
 /* Trips as cards: two columns, a wash of the trip's group colour falling to near-black (row D), and
    since spec 0068 the trip's own picture over that wash, fading into the card's glass under the
-   title (Ivan, 2026-10-02: "gradual image on the grid square"). The wash is what shows until the
+   title (the maintainer, 2026-10-02: "gradual image on the grid square"). The wash is what shows until the
    picture has arrived (ui/trippics.js: after the first visit settles, and only on screen), and
    what stays if it never does. Three layers, local stacking only: the picture (0), the fade (1),
    the words (2). The fade reaches --sr-glass-strong where the title starts, so the title and the
@@ -4413,7 +4413,7 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 @media (pointer: coarse) { .sr-field { font-size: var(--sr-fs-input); } }
 .sr-field::placeholder { color: var(--sr-text-soft); }
 
-/* The city box and "Use my location" on one line (Ivan, 2026-10-14): the box grows, the button
+/* The city box and "Use my location" on one line (the maintainer, 2026-10-14): the box grows, the button
    keeps its words and stands at the box's height, fill and radius, so the two read as one control.
    At 320 px the box is still 150 px wide, room for a city's name. */
 .sr-place__row {
@@ -6396,7 +6396,7 @@ html.sr-phone.sr-launchday:not([data-sheet='full']) .sr-skyfov {
   top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 44px + var(--sp-2));
 }
 
-/* Ivan, 2026-10-03: the serif on names read worse than the sans it replaced, so the five roles are
+/* The maintainer, 2026-10-03: the serif on names read worse than the sans it replaced, so the five roles are
    back on their old faces (and task 6 removed the face). And the card's name is a
    heading that takes focus for screen readers, not a field: no ring around it. */
 .sr-card__name:focus { outline: none; }

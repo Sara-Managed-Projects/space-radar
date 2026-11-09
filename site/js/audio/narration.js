@@ -9,7 +9,7 @@
 //                  clipKey(tourId, stopId), clipRow(base, key), holdFor(seconds, at),
 //                  parseVtt(text), cueAt(cues, t)
 //
-// Ivan, 2026-10-02: "Speech for trips (like in planetarium ...)". The files are made offline by
+// The maintainer, 2026-10-02: "Speech for trips (like in planetarium ...)". The files are made offline by
 // scripts/narrate.py -- a synthetic voice, and the app says so -- and this plays them:
 //
 //   * AFTER THE CAMERA ARRIVES. follow() hears the trip's own phases (ui/tripframe.js hands it

@@ -6,7 +6,7 @@
 # `space-radar-clouds`, whose only permission is s3:PutObject and s3:DeleteObject on that one prefix
 # (docs/ops-2026-10-09-clouds-role.md in the private repo has both policies and the three `aws iam` commands).
 #
-# WHY IT IS DISPATCH-ONLY. The role does not exist (creating it is a person's change, Ivan's) and the job
+# WHY IT IS DISPATCH-ONLY. The role does not exist (creating it is a person's change, the maintainer's) and the job
 # is not written. The hourly `schedule:` below stays commented until both are true; the first step stops the
 # run with the reason while either is not. tests/test_clouds_workflow.py holds the rest: the permissions
 # stay minimal, no step names a path outside live/, and no step touches CloudFront or data/v1/.

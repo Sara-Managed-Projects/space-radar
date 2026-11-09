@@ -17,7 +17,7 @@
 //   pdfFromJpeg(jpegBytes, pxW, pxH, ptW, ptH) -> Uint8Array,
 //   tagText(lines, behind), printTag(lines, at, size, measure) (spec 0047 task 3)
 //
-// WHY. Ivan, 2026-09-28: "postcards of space on click, where current screen will be as postcard
+// WHY. The maintainer, 2026-09-28: "postcards of space on click, where current screen will be as postcard
 // which is possible to print then (could be downloaded in PDF or JPEG)". Spec 0033's "Save a
 // picture" is a 1080 x 1350 card about ONE object, made for a phone's share sheet. This is the
 // other thing: whatever is on screen, at print resolution, full bleed, in the orientation of the

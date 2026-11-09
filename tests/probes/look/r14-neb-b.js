@@ -1,4 +1,4 @@
-// r14-neb-b: NO PHOTOGRAPHS IN THE SCENE (release 1.4.0 stage r14-neb-b; Ivan, 2026-10-26: "no photos only realistic 3ds").
+// r14-neb-b: NO PHOTOGRAPHS IN THE SCENE (release 1.4.0 stage r14-neb-b; the maintainer, 2026-10-26: "no photos only realistic 3ds").
 // ONE walk, the clock paused at 2026-10-15 12:00 UTC. For each object that was only a photograph and now has a 3D hero
 // (the Pleiades' nebulosity, M27, the Southern Ring, Centaurus A, M83, NGC 1300) and for the two revised galaxies (the
 // Sombrero, the Antennae):

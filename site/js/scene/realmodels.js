@@ -754,7 +754,7 @@ export const REAL_MODELS = {
     // Sentinel-1's published C-SAR, 12.3 m x 0.821 m.
     //
     // THIS ALSO ANSWERS TASK 9g, which found nothing free for Sentinel-1A, Sentinel-1B and the
-    // rest of the European set and concluded they "stay generic unless Ivan finds a licensed
+    // rest of the European set and concluded they "stay generic unless the maintainer finds a licensed
     // source". A licence was never the obstacle for a shape this constrained: nobody had drawn it.
     //
     // ERS-1 and Envisat carried far more than a radar and were here because the blade was still the
@@ -1488,7 +1488,7 @@ export const REAL_MODELS = {
     'css (mengtian': { build: 'tiangong-module', file: 'mengtian.glb', colour: 'station', name: 'Mengtian, a Tiangong laboratory module', displayName: 'Mengtian, a Tiangong module', klass: ['station'], made: 'dimensions', axes: 'app' },
     // 0077 W1-a: end
     // Shenzhou and Tianzhou: the Soyuz plan at Chinese proportions, white-grey, wings on both ends
-    // of a Shenzhou. CC BY models exist for both (spec 0027, Ivan's list); procedural until then.
+    // of a Shenzhou. CC BY models exist for both (spec 0027, the maintainer's list); procedural until then.
     // FILES AS WELL since batch three (2026-10-13; public #941, #942), each hull ONE LATHE as the
     // Soyuz's, built in code from the published metres (registry rows `shenzhou`, `tianzhou`, kind
     // `built-from-dimensions`). shenzhou.glb is the generation that flies now: ONE pair of wings, on
@@ -1498,7 +1498,7 @@ export const REAL_MODELS = {
     shenzhou: { build: 'shenzhou', file: 'shenzhou.glb', colour: 'station', name: 'a Shenzhou spacecraft', klass: ['station', 'satellite'], generic: true, made: 'dimensions', axes: 'app' },
     tianzhou: { build: 'tianzhou', file: 'tianzhou.glb', colour: 'station', name: 'a Tianzhou cargo ship', klass: ['station', 'satellite'], generic: true, made: 'dimensions', axes: 'app' },
     // Dragon 2, crew or cargo: CelesTrak names them CREW DRAGON n and DRAGON CRS-n. Both keys, so
-    // a bare `dragon` never catches anything else. A CC BY model is on Ivan's list (spec 0027).
+    // a bare `dragon` never catches anything else. A CC BY model is on the maintainer's list (spec 0027).
     // Iridium: 66 NEXT satellites in service and the first generation's survivors, all one plan.
     // Klass satellite only, so IRIDIUM 33 DEB and the rest of that collision keep the debris shape.
     iridium: { build: 'iridium', colour: 'satellite', name: 'an Iridium satellite', klass: ['satellite'], generic: true },
@@ -1691,7 +1691,7 @@ export const REAL_MODELS = {
     //
     // SPEC 0027 PUT THIS OUT OF SCOPE for a reason that turned out to apply to half the problem:
     // "the only model found is CC BY on Sketchfab behind a login and is the one-wing v1 ... it
-    // needs Ivan's download and a launch-date gate". The download was only ever needed for REAL
+    // needs the maintainer's download and a launch-date gate". The download was only ever needed for REAL
     // GEOMETRY. A Starlink is a flat rectangle with a solar array hinged to it; drawing that
     // procedurally needs nobody's licence. The gate is the other half, and it is here.
     //

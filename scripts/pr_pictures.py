@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Does this pull request owe a picture, and does its description have one?
 
-THE RULE (Ivan, 2026-10-12): a pull request that adds or changes something a visitor SEES DRAWN, a
+THE RULE (the maintainer, 2026-10-12): a pull request that adds or changes something a visitor SEES DRAWN, a
 model, a map, a world, a shader, shows it. At least one picture in the description, taken from the
 app, before the pull request is ready. Five features were merged that day that no GPU had drawn;
 the first look at them found a torn Pluto, an invisible coronal mass ejection and a Sun of

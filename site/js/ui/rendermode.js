@@ -8,7 +8,7 @@
 //                   truthLine(tour, epochMs), tripUrl(id), cardOpacity(...), lowerThird(...)
 //                   TITLE_S, END_S, FADE_S, WARM_S
 //
-// Ivan, 2026-10-02: "generate videos of trips with speech for YouTube". A screen recording of the
+// The maintainer, 2026-10-02: "generate videos of trips with speech for YouTube". A screen recording of the
 // live app drops frames whenever the machine is slow, and the machine that renders is a headless
 // Chrome that may be drawing in software. So nothing here is recorded in real time:
 //

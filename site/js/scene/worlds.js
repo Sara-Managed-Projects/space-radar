@@ -966,7 +966,7 @@ varying vec3 vSunL;
 varying vec3 vEastW;  // the direction of east on the ground, in the world: the relief's slopes are east and north
 void main() {
   vUv = uv;
-  // CAMERA-RELATIVE, NOT THROUGH THE WORLD (release 1.5.1, Ivan's Pluto). modelMatrix and viewMatrix
+  // CAMERA-RELATIVE, NOT THROUGH THE WORLD (release 1.5.1, the maintainer's Pluto). modelMatrix and viewMatrix
   // each carry the world's place, thousands of units from the stage's origin on the Sun's stage (Pluto
   // is 5 300 units of 1 000 000 km out), and a float cannot hold 5 300.0005: one step there is 490 km,
   // and Pluto is 1 188 km in radius, Charon 606. Multiplied one after the other on the GPU, the

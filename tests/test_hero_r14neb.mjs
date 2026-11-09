@@ -1,5 +1,5 @@
 // tests/test_hero_r14neb.mjs -- the nebula heroes of release 1.4.0 stage r14-neb-b, which replace the last photographs
-// laid on the sky for them (Ivan, 2026-10-26: "no photos only realistic 3ds"): the Dumbbell (M27) and the Southern Ring
+// laid on the sky for them (the maintainer, 2026-10-26: "no photos only realistic 3ds"): the Dumbbell (M27) and the Southern Ring
 // (NGC 3132) on scene/deep/ring.js, and the Pleiades' reflection nebula (M45) on scene/deep/reflection.js. Held: each
 // profile's sources, review and credits; the light maps are their bakes and small; the published geometry; FROM OUR
 // SIDE EACH MODEL IS ITS PHOTOGRAPH (the column on our line carries the picture's light whatever the steps); turned it

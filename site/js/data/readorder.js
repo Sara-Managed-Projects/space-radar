@@ -1,6 +1,6 @@
 // data/readorder.js -- the one order every feed is read in, written once so it can be tested once.
 //
-// Ivan, 2026-10-26: "have data cached on my s3 bucket ... the collected data should be used rather than
+// The maintainer, 2026-10-26: "have data cached on my s3 bucket ... the collected data should be used rather than
 // original APIs; original APIs could still be used as fallback; if the lambda failed fetching we use
 // previous saved data until updated. Keep caches in browser as fallback when both endpoints don't work."
 //

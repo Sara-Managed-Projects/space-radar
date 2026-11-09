@@ -1,5 +1,5 @@
 version: 1
-# Spec 0069: the voice that reads a trip's stops. Ivan, 2026-10-02: "Speech for trips (like in
+# Spec 0069: the voice that reads a trip's stops. The maintainer, 2026-10-02: "Speech for trips (like in
 # planetarium we want to have a nice speech for tour where each step will be speeches, we will need
 # the best free speech generator, we will regenerate all speeches and download them)."
 #
@@ -16,7 +16,7 @@ version: 1
 #   Parler-TTS   Apache-2.0, describable voices; a 2 GB model that wants a GPU. Not tried.
 #   XTTS-v2, F5-TTS   refused: Coqui Public Model Licence and CC BY-NC, both non-commercial.
 #
-# THE VOICE: `af_heart`, American English, since 2026-10-12. Ivan: "I want you to rewrite all
+# THE VOICE: `af_heart`, American English, since 2026-10-12. The maintainer: "I want you to rewrite all
 # audios smartly with kokoro voice af_heart. Smartly means it should NOT be just a monotonic voice,
 # it should sound really good, as a person doing a trip." It is the voice the model's makers grade
 # highest (A; VOICES.md in the model's repository, read 2026-10-12: no licence of its own, so the
@@ -53,7 +53,7 @@ version: 1
 # third of a second falls by 2.6 semitones (4.7 in the old voice); the model does not lift it.
 # A MACHINE CHOSE THIS: four settings were rendered beside the live clips on five stops
 # (~/space-radar-handoff/narration-heart/audition/, README there) and the numbers picked.
-# Numbers do not hear warmth. NO PERSON HAS HEARD IT YET; Ivan's ears have the last word.
+# Numbers do not hear warmth. NO PERSON HAS HEARD IT YET; the maintainer's ears have the last word.
 # Nothing was added that is not the text: no music, no breaths, no hesitation, no second voice.
 #
 #   engine.id      part of every clip's hash. Change it when the model, the G2P or anything else

@@ -241,10 +241,13 @@ check("@caroline" in section("Trips") and "@caroline" in section("Words and docu
 check("@early-bird" in section("Models, maps and pictures"), "a model file is under models")
 check("dependabot" not in out and "evil.example" not in out, "bots and things that are not logins must be left out")
 for kind in ("Trips", "Code", "Facts, sources and data"):
-    check("ionesu" not in section(kind) and "Sara-Agent" not in section(kind), f"maintainers must not be listed under {kind}")
+    check("ionesu" not in section(kind), f"maintainers must not be listed under {kind}")
+    # The fixture's #2 is the project's own automation account, no longer active: its pull requests are not outside work.
+    check("Sara-Agent" not in section(kind), f"the retired automation account must not be listed under {kind}")
+check("Sara-Agent" not in section("Maintainers") and "automation account is no longer active" in out, "the retired automation account is not a maintainer any more, and the file says so")
 thanks = run("release_thanks.py", "--since", "2026-10-01").stdout
 check(thanks.startswith("## Thanks") and "@ada" in thanks and "#3, #4" in thanks and "@caroline" in thanks, "the thanks section should name ada with #3 and #4, and caroline")
-check("early-bird" not in thanks and "ionesu" not in thanks and "evil" not in thanks, "the thanks section holds only outside people merged in the range")
+check("early-bird" not in thanks and "ionesu" not in thanks and "Sara-Agent" not in thanks and "evil" not in thanks, "the thanks section holds only outside people merged in the range")
 check(run("release_thanks.py", "--since", "2027-01-01").stdout == "", "a range with nobody from outside prints nothing")
 
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -263,6 +266,9 @@ pending = (ROOT / "scripts/pending_contributions.sh").read_text(encoding="utf-8"
 for m in gen_contributors.MAINTAINERS:
     check(f"@{m}" in gov, f"GOVERNANCE.md does not name the maintainer @{m}")
     check(m in pending, f"scripts/pending_contributions.sh does not know the maintainer {m}")
+for m in gen_contributors.RETIRED:
+    check(f"@{m}" not in gov and m not in pending, f"{m} is no longer active: GOVERNANCE.md and pending_contributions.sh must not list it as a maintainer")
+check("automation account" in gov and "no longer active" in gov, "GOVERNANCE.md must say the project's own automation account is no longer active")
 check(subprocess.run(["bash", "-n", str(ROOT / "scripts/pending_contributions.sh")]).returncode == 0, "scripts/pending_contributions.sh does not parse")
 check((ROOT / "CONTRIBUTORS.md").read_text(encoding="utf-8").startswith("# Contributors"), "CONTRIBUTORS.md is not the generated file")
 

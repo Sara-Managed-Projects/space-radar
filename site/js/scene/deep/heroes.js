@@ -65,7 +65,7 @@ export const HEROES = [
   // half its 25.7'; both then sit at about 45 % of the view's height.
   // `stub.extent`: how much wider the hero draws its object than the catalogue's size (M27 with its arcs, 14.7' of 6.7'), so its
   // level of detail follows what is drawn (scene/deep/deepsky.js).
-  // No photographs in the scene (Ivan, 2026-10-26): the objects that were only a photograph get a 3D hero, read lazily as
+  // No photographs in the scene (the maintainer, 2026-10-26): the objects that were only a photograph get a 3D hero, read lazily as
   // W3-c's lines are. M27 and the Southern Ring on ring.js (M57's technique, each with its own profile), the Pleiades'
   // nebulosity on reflection.js (dust in front of the cluster lit by its stars; the stars themselves are stars3d.js's).
   { id: 'm27', record: 'dso-m27', stage: 'r14-neb-b', stub: { shipped: true, drawn: ['reconstruction'], children: [], arrive: 2.5, extent: 2.2 }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./ring.js'), import('../../data/hero-m27.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },

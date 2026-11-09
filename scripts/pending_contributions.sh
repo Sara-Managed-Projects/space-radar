@@ -14,8 +14,9 @@
 # anything is waiting, so a script can use it as a gate.
 set -u
 REPO="${REPO:-Sara-Managed-Projects/space-radar}"
-# The accounts GOVERNANCE.md names. Override with MAINTAINERS="a b c" for a fork.
-MAINTAINERS="${MAINTAINERS:-ionesu Sara-Agent}"
+# The account GOVERNANCE.md names (the project's own automation account is no longer active, so it
+# answers nothing). Override with MAINTAINERS="a b c" for a fork.
+MAINTAINERS="${MAINTAINERS:-ionesu}"
 command -v gh >/dev/null 2>&1 || { echo "the GitHub CLI is not on PATH: https://cli.github.com"; exit 2; }
 # A jq array literal, built here because `gh --jq` takes no --arg and jq itself may not be installed.
 M_JSON="[$(printf '"%s",' $MAINTAINERS | sed 's/,$//')]"
