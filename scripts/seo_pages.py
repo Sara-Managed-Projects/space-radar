@@ -1139,6 +1139,38 @@ def accuracy_page(host: str) -> Page:
 
 # --- teachers ---------------------------------------------------------------------------------------------
 
+# PhET and Solar System Scope as each one's own pages said on this day; the section below names the day.
+OTHERS_READ = "9 November 2026"
+PHET_ABOUT = "https://phet.colorado.edu/en/about"
+PHET_SIMS = [("gravity-and-orbits", "Gravity and Orbits"), ("keplers-laws", "Kepler's Laws"), ("my-solar-system", "My Solar System")]
+SSS_HOME = "https://www.solarsystemscope.com/"
+SSS_EMBED = "https://www.solarsystemscope.com/embed"
+
+
+def teachers_compare() -> str:
+    """/teachers/'s part that answers the two classroom questions in their own words, beside PhET and Solar System Scope, from their own pages."""
+    links = [f'<a href="https://phet.colorado.edu/en/simulations/{slug}">{esc(name)}</a>' for slug, name in PHET_SIMS]
+    phet_sims = ", ".join(links[:-1]) + " and " + links[-1]
+    return (
+        "<h2>Next to PhET and Solar System Scope</h2>\n"
+        "<p>Two questions teachers ask, in their own words. The usual answers are PhET and Solar System Scope, and both are good: here is what each does, so you can pick.</p>\n"
+        "<h3>A 3D solar system model for the classroom that works offline, with no login and no install</h3>\n"
+        f'<p><a href="{SSS_HOME}">Solar System Scope</a> is a 3D model of the Solar System. Its site says the online version is free and runs in the browser on a desktop computer with WebGL, '
+        f'that it can be <a href="{SSS_EMBED}">embedded in your own web page</a> with an iframe, and that the version that works offline is a paid desktop download (USD 9.80) or a mobile app.</p>\n'
+        "<p>Space Radar is free and open source, needs no account, and runs offline from the zip above: nothing is installed except Python 3 to serve the folder, which most Macs and Linux machines already have. "
+        'It shows where things are for the moment on the clock: the planets, <a href="../satellites/index.html">the satellites and the space station</a>, the nearest stars, '
+        "and narrated trips you can run in present mode. It can be embedded too: press Share, then Embed, for the <code>&lt;iframe&gt;</code> "
+        f'(<a href="{GITHUB}/blob/main/docs/EMBEDDING.md">docs/EMBEDDING.md</a>).</p>\n'
+        "<h3>Interactive space simulators in the browser to teach moon phases, tides and orbits</h3>\n"
+        f'<p><a href="{PHET_ABOUT}">PhET</a>, from the University of Colorado, makes free simulations that it says are research-based and tested with students in interviews and classrooms, '
+        f"and its site offers them in dozens of languages, to run online or download. For orbits and the law of gravity behind them, {phet_sims} are the ones to know. "
+        "Space Radar's simulators are newer, in English, and have not been tested with students the way PhET's are.</p>\n"
+        '<p>What <a href="../lab/index.html">Space Radar\'s Lab</a> adds is one small simulator per idea, in one page each, including '
+        '<a href="../lab/moon-phases-from-above/index.html">the Moon\'s phases seen from above</a>, <a href="../lab/two-tides-not-one/index.html">why there are two tides, not one</a> and '
+        '<a href="../lab/kepler-equal-areas/index.html">Kepler\'s equal areas</a>, and every one of them sits beside the live 3D map and the trips.</p>\n'
+        f'<p>What this section says about PhET and Solar System Scope was read on {OTHERS_READ} from their own pages, linked above. If it is out of date, '
+        f'<a href="{ACCURACY_FORM}">tell us</a> {ON_GITHUB} and it will be corrected. Space Radar is not part of, and not endorsed by, either.</p>\n')
+
 LESSONS = [
     ("moon-phases", "Why the Moon changes shape",
      "Ask: where do you think the shadow on the Moon comes from? Then fly the trip and watch the Moon's month from space, then from your street. "
@@ -1223,6 +1255,7 @@ def teachers_page(host: str, tours: dict, reels: dict, url_keys: list[str]) -> P
         "<li>The words of every trip stop are on screen as captions, so a room does not need sound; the narrator can be turned off.</li>\n"
         "<li>Motion calms when the system asks for reduced motion (<code>prefers-reduced-motion</code>).</li>\n"
         "<li>The 3D scene is a canvas and is not described to a screen reader; the cards and trip words beside it are text. Say so to a student who relies on one, and tell us what would help.</li>\n</ul>\n"
+        f"{teachers_compare()}"
         f"{teachers_paying()}"
         + subscribe_form("../", f"{host}/teachers/index.html", form_id="updates", title="New trips and simulators, by email", variant="card",
                          text="News of the map's new trips, simulators and features, and the sky's coming events, worth a lesson. "
