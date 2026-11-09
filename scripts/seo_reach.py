@@ -41,7 +41,7 @@ REG = ROOT / "registry"
 SAMPLES = ROOT / "assets" / "creators"     # the sample stills, kept once in git (as assets/screenshots/ is for /press/)
 CREDIT = "Space Radar (spaceradar.ai)"
 READ = "7 November 2026"                    # the day the competitor review read every page cited below
-SPEC = f"{GITHUB}/blob/main/specs/0081-competitors/README.md"
+SPEC = f"{GITHUB}/blob/main/CHANGELOG.md#200---2026-11-08"   # the review is summed up in the 2.0.0 notes; the spec itself is not public
 
 
 def _yml(name: str) -> dict:

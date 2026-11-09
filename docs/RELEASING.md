@@ -84,7 +84,7 @@ script can use without an account or a key, and none is created for this.
 2. Open [the Rich Results Test](https://search.google.com/test/rich-results) and [the Schema Markup Validator](https://validator.schema.org/),
    choose "URL", paste an address, and run it. If either asks you to sign in, stop there and say so on the issue.
 3. Write down, per address, the types found and every error or warning with its message, and put the list on
-   [issue #555](https://github.com/Sara-Managed-Projects/space-radar/issues/555). Errors are fixed in
+   issue #555. Errors are fixed in
    `scripts/seo_common.py`, `scripts/seo_pages.py`, `scripts/build_seo.py` or `scripts/gen_trip_pages.py` (the pages are generated, never
    edited by hand), together with a check in `tests/test_structured_data.py` that would have caught it. A warning for a field
    Google lists as optional (a price, a review) is left alone and noted.

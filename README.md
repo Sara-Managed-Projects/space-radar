@@ -82,7 +82,7 @@ Space Radar is a living 3D map of space. It draws the Earth with today's clouds,
 satellites where they are this minute, the space stations and who is aboard, rockets about to
 launch, probes on their way out, every planet and 21 moons (20 of them with a real map), the stars
 in three dimensions, nebulae and galaxies as 3D models built from published measurements, and the Milky Way from outside. Step
-down to the ground and it is tonight's sky from your own street. Thirty-one guided trips, read
+down to the ground and it is tonight's sky from your own street. Thirty-three guided trips, read
 aloud, fly the camera for you; forty nearby star systems have a stage you can fly into. It is a static website: the physics runs in your browser, on public
 data, and every number on screen says where it came from.
 
