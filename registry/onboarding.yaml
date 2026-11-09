@@ -1,5 +1,5 @@
 version: 1
-# THE TOUR (internal spec 0074). Ivan, 2026-10-14: "a tour of all the most important features of
+# THE TOUR (internal spec 0074). The maintainer, 2026-10-14: "a tour of all the most important features of
 # our project where the user should click on them and go to next ... it should be well documented
 # somewhere that every new big feature added might need to be highlighted in onboarding, or vice
 # versa if some feature moves or is even completely deleted."
@@ -234,7 +234,7 @@ features:
   - id: sky-from-the-ground
     name: The sky from your place
     files: [site/js/sky/skyview.js]
-    not: "Inside Tonight and the card's See it; its buttons are being redrawn (Ivan, 2026-10-14, item 2). A step for it is the first one to add."
+    not: "Inside Tonight and the card's See it; its buttons are being redrawn (the maintainer, 2026-10-14, item 2). A step for it is the first one to add."
   # 0076 W1-c
   - id: truth-legend
     name: How we know, the legend of the honesty words inside every card

@@ -4,7 +4,7 @@
 // Also exported, pure, for the test: wantsToggle(event, activeElement) -> 'toggle' | 'leave' | null,
 //   nextScreen(state, key, prev) -> 'full' | 'hud' | 'clear' | null, SCREENS, EYE_IDLE_MS
 //
-// WHY. Ivan, 2026-09-28: "should have possibility to hide each panel so fully see the space only".
+// WHY. The maintainer, 2026-09-28: "should have possibility to hide each panel so fully see the space only".
 // Every panel had its own Close, and nothing cleared the screen: the panel, the sources strip, the
 // card, the labels, the tab bar and the GitHub mark all stayed, so no view of the scene was ever
 // just the scene -- not for looking, and not for a screenshot or a postcard. EVE Online's "hide

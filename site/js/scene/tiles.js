@@ -2,7 +2,7 @@
 //
 // Contract: createPlanetTiles(opts) -> { frame(nowMs), setTier(n), setQuality(n, stripped), latch(), state(), credits(), dispose() }
 //
-// Ivan, 2026-10-02: "maybe we can load better planet quality on zooming in". A world wears one map,
+// The maintainer, 2026-10-02: "maybe we can load better planet quality on zooming in". A world wears one map,
 // 4096 pixels round the equator on a laptop: 2.7 km a texel on the Moon, 5.2 km on Mars. From a few
 // hundred kilometres up a screen pixel is a few hundred METRES of ground, and the map is a blur.
 // NASA's Solar System Treks serves the missions' own mosaics as map tiles, with CORS open (measured

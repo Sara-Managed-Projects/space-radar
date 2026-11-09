@@ -2,7 +2,7 @@
 //
 //   node tests/test_follow_steady.mjs
 //
-// Ivan, 2026-10-14: "Sometimes when an object is selected it is shaking on the screen." Four things
+// The maintainer, 2026-10-14: "Sometimes when an object is selected it is shaking on the screen." Four things
 // were placed at four different moments, or in the wrong arithmetic, and each one is played here
 // over 180 frames of uneven length with the app's own glyph layer, camera rig, stage and SGP4:
 //

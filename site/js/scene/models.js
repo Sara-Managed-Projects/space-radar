@@ -1077,7 +1077,7 @@ function buildOneWeb() {
  * per cent of everything in it, and until now every one of them was a box with a parabolic dish.
  *
  * SPEC 0027 PUT THIS OUT OF SCOPE and gave a reason: "the only model found is CC BY on Sketchfab
- * behind a login and is the one-wing v1; 7 059 active are two-wing v2 Mini ... it needs Ivan's
+ * behind a login and is the one-wing v1; 7 059 active are two-wing v2 Mini ... it needs the maintainer's
  * download and a launch-date gate." The download was only ever needed for REAL GEOMETRY. A Starlink
  * is a flat rectangle and a solar array; drawing it procedurally needs nobody's licence, and the
  * launch-date gate is the other half, which is below.
@@ -2461,7 +2461,7 @@ function buildProbe() {
 /**
  * JWST, DRAWN SO IT READS AS JWST.
  *
- * Ivan, 2026-09-20: "isnt james web to big? garbage model could be better?" -- and he was right
+ * The maintainer, 2026-09-20: "isnt james web to big? garbage model could be better?" -- and that was right
  * about the model. NASA's own file was shipped decimated to 13 000 triangles, and beside Hubble it
  * was a brown lump: no kite, no segmented mirror, no tower.
  *

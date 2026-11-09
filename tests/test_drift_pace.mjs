@@ -1,7 +1,7 @@
 // tests/test_drift_pace.mjs -- the drift's long flights are easy on the eyes (ui/driftplan.js
 // planFlight, scene/camera.js flyTo `path`).
 //
-// Ivan, 2026-10-14: "speed of camera movements should be calculated based on distances between
+// The maintainer, 2026-10-14: "speed of camera movements should be calculated based on distances between
 // objects, because if it is 2 satellites on the Earth it goes smoothly, but then it travels far to
 // Mars or even more and it is super fast for this distance, so eyes are tired".
 //

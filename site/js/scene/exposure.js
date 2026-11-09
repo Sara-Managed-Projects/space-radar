@@ -7,7 +7,7 @@
 //           DRAWN, DEFAULT_DRAWN, DRAWN_KEY, MEASURED_RULES, drawnUnder(look, rule), stillUnder(look, rule)
 //           createDrawn({ storage, initial }) -> { mode(), set(mode, keep = true), onChange(f) }     Measured or Film (below)
 //
-// WHY. Ivan, 2026-10-02: "usually on pictures we see this nice clouds of gases when space is shown,
+// WHY. The maintainer, 2026-10-02: "usually on pictures we see this nice clouds of gases when space is shown,
 // is it real or not?" It is real and it is faint. A nebula's colour in a photograph is minutes or
 // hours of collected light; to an eye at a telescope most of them are grey smudges, because the
 // retina's night cells see no colour. Drawing the photographs at full strength with no way back

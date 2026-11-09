@@ -688,7 +688,7 @@ export function createGroundStage(ctx, opts = {}) {
     const moreSum = el(doc, 'summary', null, T.sources);
     const src = el(doc, 'p', 'sr-ground__src');
     more.append(moreSum, src);
-    // 2.0.1: a rover's ground says it can be driven (Ivan could not find how), on the card that is open by default.
+    // 2.0.1: a rover's ground says it can be driven (the maintainer could not find how), on the card that is open by default.
     const driveHint = el(doc, 'p', 'sr-ground__line sr-ground__drivehint');
     driveHint.hidden = true;
     body.append(time, l1, l2, driveHint, more);

@@ -12,7 +12,7 @@ generated from the registries, so it cannot drift from what ships:
   * /creators/ reads every licence line in registry/asset_sources.yaml, sources.yaml, models.yaml (`data`) and
     textures.yaml and names each one with a non-commercial or science-only term (limits()), so the exceptions are the
     registry's and a new catalogue with such a term appears on the page the day it is added.
-  * The comparisons say nothing about another product that is not in specs/0081-competitors/README.md (the review of
+  * The comparisons say nothing about another product that is not in the internal competitor review (spec 0081, of
     7 November 2026) or on that product's own pages, each with its link and the day it was read; each page says
     plainly what the other product does that Space Radar does not. No logo, no screenshot of theirs, and no ranking
     word: tests/test_seo_reach.py refuses "best", "better" and "worse" in their text.
@@ -41,7 +41,7 @@ REG = ROOT / "registry"
 SAMPLES = ROOT / "assets" / "creators"     # the sample stills, kept once in git (as assets/screenshots/ is for /press/)
 CREDIT = "Space Radar (spaceradar.ai)"
 READ = "7 November 2026"                    # the day the competitor review read every page cited below
-SPEC = f"{GITHUB}/blob/main/specs/0081-competitors/README.md"
+SPEC = f"{GITHUB}/blob/main/CHANGELOG.md#200---2026-11-08"   # the review is summed up in the 2.0.0 notes; the spec itself is not public
 
 
 def _yml(name: str) -> dict:

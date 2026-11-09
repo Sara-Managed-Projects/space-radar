@@ -101,7 +101,7 @@ function heroPixels(record, selected, selectedPx = SELECTED_PX) {
  *
  * The constant-angular-size rule above buys readability with world size: a model's drawn radius is
  * `px * d / (h * f)`, which grows LINEARLY with how far away the camera is. Near the object that is
- * the whole point. Far from it the number runs away, and on 2026-09-17 Ivan reported what that
+ * the whole point. Far from it the number runs away, and on 2026-09-17 the maintainer reported what that
  * looks like -- "in the tour with stations, stations inside the earth".
  *
  * He was looking at the opening stop of `people-in-space`, which parks 32 000 km back so that "the
@@ -214,7 +214,7 @@ function heroScale(px, d, h, f, pos, reach, nearAltitude = Infinity) {
 
 /**
  * THE ALTITUDE CAP, AGAINST A WORLD THAT IS NOT THE STAGE'S. The cap above measures from the origin,
- * which is the stage world. REPORTED by Ivan on 2026-10-03 with a screenshot of the solar system's
+ * which is the stage world. REPORTED by the maintainer on 2026-10-03 with a screenshot of the solar system's
  * stage (the Sun at the origin) zoomed on Mars: Mars was 250 px across and the Mars Reconnaissance
  * Orbiter beside it 100 px, a spacecraft a third the size of a planet, with Mars Express the same
  * below. Both are 84 px "whatever it is", and nothing compared them with the world they orbit
@@ -286,7 +286,7 @@ export function closeUpDistance(pos, h, f, reach = ARRIVAL_REACH, px = SELECTED_
 /**
  * HOW MANY MODELS MAY EXIST AT ONCE -- a floor, and a ceiling the device earns.
  *
- * Ivan, 2026-09-20: "if user PC or mobile is fast enough, render more 3d objects, and render more
+ * The maintainer, 2026-09-20: "if user PC or mobile is fast enough, render more 3d objects, and render more
  * gradually if it not moving, not much to not kill the visibility and show garbage, but more and
  * better to load real models and not cubes, the idea is to show more 3D."
  *
@@ -771,7 +771,7 @@ export function createHeroes(scene, ctx) {
 
     // THE EXTRA SLOTS PREFER A REAL MODEL. The first POOL are the nearest, which is the honest
     // ordering and the one a person expects: what you have flown to is what gets geometry. Above
-    // that the pool is a bonus the device has earned, and Ivan asked for it to be spent well --
+    // that the pool is a bonus the device has earned, and the maintainer asked for it to be spent well --
     // "more and better to load real models and not cubes". So among the candidates beyond the
     // floor, the ones with a file of their own come first, and distance breaks the tie.
     if (out.length > POOL) {
@@ -1021,7 +1021,7 @@ export function createHeroes(scene, ctx) {
      * there, as its dot otherwise. 0 when there is no model, when it is docked inside a neighbour
      * and hidden, when the whole hero layer is off, and rising with the fade-in rather than
      * snapping -- a dot that vanishes before the model has arrived is an object that blinks.
-     * Ivan, 2026-09-20: "we shouldn't repeat the dot with 3d object if 3d object rendered on
+     * The maintainer, 2026-09-20: "we shouldn't repeat the dot with 3d object if 3d object rendered on
      * screen, if not - dot".
      */
     drawnOpacity(id) {

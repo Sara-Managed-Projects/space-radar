@@ -18,8 +18,8 @@ limits listed honestly [below](#3-run-it-with-no-internet).
 - A computer from the last eight years or so, with Chrome, Edge, Firefox or Safari.
 - [Python 3](https://www.python.org/downloads/) (3.8 or newer). macOS and most Linux systems already
   have it. On Windows, install it from python.org and tick "Add python.exe to PATH".
-- About 110 MB of disk space (the app is 83 MB, 40 MB of it the trips' narration and music; the
-  saved data copy is about 24 MB).
+- About 250 MB of disk space (the 2.0.0 zip is 173 MB and 241 MB unpacked; 65 MB of that is the
+  narration, music and card voices, and the saved data copy is about 24 MB).
 
 ---
 

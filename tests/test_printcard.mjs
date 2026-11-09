@@ -1,7 +1,7 @@
 // tests/test_printcard.mjs -- the screen as a printable postcard (ui/printcompose.js; spec 0061 task 8
 // shows it in the share sheet and saves it from there and from the card's Postcard).
 //
-// Ivan, 2026-09-28: "postcards of space on click, where current screen will be as postcard which is
+// The maintainer, 2026-09-28: "postcards of space on click, where current screen will be as postcard which is
 // possible to print then (could be downloaded in PDF or JPEG)". Asserted: the print size is the
 // 6 x 4 in postcard at 300 dpi in the screen's orientation; the caption names the selection, else the
 // trip, else the app, and always the instant; and the hand-written PDF is well formed -- every xref

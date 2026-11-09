@@ -3,7 +3,7 @@
 // give nothing, and never over a newer snapshot.
 //   node tests/test_read_order.mjs
 //
-// Ivan, 2026-10-26: "have data cached on my s3 bucket ... the collected data should be used rather than original
+// The maintainer, 2026-10-26: "have data cached on my s3 bucket ... the collected data should be used rather than original
 // APIs; original APIs could still be used as fallback; if the lambda failed fetching we use previous saved data
 // until updated. Keep caches in browser as fallback when both endpoints don't work."
 //

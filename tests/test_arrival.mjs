@@ -62,7 +62,7 @@ check(closeUpDistance(at(400), 0, f) === Infinity, 'no viewport, no constraint')
   check(worldFramingDistance(R, 45, 0) === R * 3.5, 'no aspect yet, the old framing');
 }
 
-// A WORLD THAT IS NOT THE STAGE'S (Ivan, 2026-10-03: on the Sun's stage, zoomed on Mars, two orbiters
+// A WORLD THAT IS NOT THE STAGE'S (the maintainer, 2026-10-03: on the Sun's stage, zoomed on Mars, two orbiters
 // were drawn a third the size of the planet). A model is no bigger than its clearance above the
 // nearest other world as drawn.
 {

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The trip cards' pictures (spec 0068 task 1): one small WebP per trip, site/images/trips/<id>.webp.
 
-Ivan, 2026-10-02: "tour cards should have in background picture for this tour ... gradual image on
+The maintainer, 2026-10-02: "tour cards should have in background picture for this tour ... gradual image on
 the grid square". The card (ui/trippics.js, ui.css .sr-tripcard) lays the picture under its glass
 and fades it out under the title; the trip's intro sheet uses the same file as its header.
 

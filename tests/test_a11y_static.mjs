@@ -1,7 +1,7 @@
 // tests/test_a11y_static.mjs -- every control has a name, and every icon is from the one family
 // (docs/ui-guide.md sections 3, 3.16 and 7; spec 0061 task 6).
 //
-// Ivan, 2026-09-30: "put important info to some md so feature agents won't make it shitty again."
+// The maintainer, 2026-09-30: "put important info to some md so feature agents won't make it shitty again."
 // The md is docs/ui-guide.md; this is the part of it a machine can hold without a browser. It reads
 // site/js/ui/*.js as text and follows every button and link a builder makes to the end of the
 // block that made it:

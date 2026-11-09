@@ -549,7 +549,7 @@ export function createCameraRig(camera, domElement, options = {}) {
 
   // ---------------------------------------------------------------- the keyboard
   //
-  // Ivan: "add controle with arrows (like in space video games so user will be able to travel with
+  // The maintainer: "add controle with arrows (like in space video games so user will be able to travel with
   // arrows)". The keys feed the SAME dAz / dPolar / dLogDist the pointer feeds, so they inherit the
   // damping and the coast, and a flight is interrupted by a key exactly as it is by a drag.
   //
@@ -1006,7 +1006,7 @@ export function createCameraRig(camera, domElement, options = {}) {
   }
 
   /**
-   * The followed thing AGAIN, after the scene has moved this frame (Ivan, 2026-10-14: a selected
+   * The followed thing AGAIN, after the scene has moved this frame (the maintainer, 2026-10-14: a selected
    * object shook). update() runs first in a frame, so a follow that reads something the frame
    * moves later -- a world's drawn disc, placed by worlds.update() -- aimed at where it was a
    * frame ago: the Moon followed at an hour a second stood 60 km, eleven pixels, off the middle,

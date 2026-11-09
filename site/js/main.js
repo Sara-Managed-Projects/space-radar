@@ -351,7 +351,7 @@ export async function boot({ setStatus } = {}) {
   });
   // THE SHUTTER (spec 0067, scene/exposure.js): Eye, Camera or Deep, remembered. The Milky Way wears
   // it from the first frame, and so do the deep-sky glows and heroes. 0078 r14-neb-b: no photograph is drawn in
-  // the scene (Ivan, 2026-10-26); scene/nebulae.js is fetched only by the card's "Compare with the photograph".
+  // the scene (the maintainer, 2026-10-26); scene/nebulae.js is fetched only by the card's "Compare with the photograph".
   // A shared link carries the shutter it was made at (`exp`, public #460): the picture in the post
   // and the sky the link opens are the same exposure. For this page only: a friend's link does not
   // overwrite the visitor's own remembered choice.
@@ -1913,7 +1913,7 @@ export async function boot({ setStatus } = {}) {
     // Deliberately NOT asking the glyph layer: it owns a packed position buffer for drawing, and
     // exposing a per-record lookup would make the camera depend on a layer being visible. The
     // contract's propagate + stage.toScene answers this for any record, drawn or not.
-    // ONE INSTANT A FRAME (Ivan, 2026-10-14: a selected object shook). The live clock is the wall
+    // ONE INSTANT A FRAME (the maintainer, 2026-10-14: a selected object shook). The live clock is the wall
     // clock, read anew by every clock.now(): the camera's follow read it at the top of a frame,
     // the dot and the model were placed at the frame's own `t`, and the brackets asked again after
     // the frame was drawn, a whole render later. 16 ms of a low orbit is 120 m and on a slow phone
@@ -2151,7 +2151,7 @@ export async function boot({ setStatus } = {}) {
    */
   // A TRIP NO LONGER HIDES THE LAYERS AROUND ITS SUBJECT, and the reason is worth keeping.
   //
-  // Ivan reported "stations inside the earth" in the stations tour, and asked for the crowd to be
+  // The maintainer reported "stations inside the earth" in the stations tour, and asked for the crowd to be
   // hidden while a stop is zoomed in. That was shipped here on 2026-09-17 (public #125) as: while
   // a trip holds still inside the subject's own layer nearKm, draw only the subject's layer.
   //
@@ -2159,7 +2159,7 @@ export async function boot({ setStatus } = {}) {
   // distance at which scene/heroes.js starts giving a record REAL GEOMETRY -- 20 000 km for the
   // stations layer, deliberately generous so the model exists before you arrive. It is not a
   // statement about framing. So the rule:
-  //   - did not fire at the stop Ivan was describing (`far`, 32 000 km, outside the 20 000);
+  //   - did not fire at the stop the maintainer was describing (`far`, 32 000 km, outside the 20 000);
   //   - did fire at `iss` and `tiangong` (3 000 km), which were never the problem,
   // and the result was the next thing he reported: "i dont see many objects now at all".
   //
@@ -2333,7 +2333,7 @@ export async function boot({ setStatus } = {}) {
   }
 
   /**
-   * THE GROUND IS THE EARTH'S, SO ITS STAGE IS (Ivan, 2026-10-14: "sometimes when an object is
+   * THE GROUND IS THE EARTH'S, SO ITS STAGE IS (the maintainer, 2026-10-14: "sometimes when an object is
    * selected it is shaking on the screen"). "See it" on a planet's card opened the sky from the
    * Sun's stage, where a unit is a million kilometres and the Earth is 150 units from the origin.
    * The eye is then 150 units out and a satellite a few thousandths of a unit from it, and the dots
@@ -2352,7 +2352,7 @@ export async function boot({ setStatus } = {}) {
   }
 
   /**
-   * "Fly to it", "Follow" and "Ride along" pressed from the ground (Ivan, 2026-10-14: they did
+   * "Fly to it", "Follow" and "Ride along" pressed from the ground (the maintainer, 2026-10-14: they did
    * nothing there). They did fly: the rig flew, and the sky view put the camera back on the ground
    * every frame. The honest thing is what the words say, so the ground is left first, through the
    * moment's own door (the tab follows), and one line says so. False when there was no ground to leave.

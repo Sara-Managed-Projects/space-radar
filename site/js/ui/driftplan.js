@@ -17,7 +17,7 @@
 // ui/drift.js is the only reader in the app: it owns the timers, the document and the camera.
 // tests/test_drift.mjs holds every function here.
 //
-// WHY A WALK AND NOT A SHUFFLE. Ivan, 2026-10-12: "it shouldn't be heavy mechanism, but on the
+// WHY A WALK AND NOT A SHUFFLE. The maintainer, 2026-10-12: "it shouldn't be heavy mechanism, but on the
 // other side smart ... not to fly directly from earth to 50 million light years somewhere". A
 // shuffle of everything on the map does exactly that: the station, then a galaxy, then a rover.
 // The map already has an order, by distance from the Sun (HOODS below, the scale ladder's own
@@ -274,7 +274,7 @@ export function flightMs(from, to, pace = 'steady') {
 }
 
 /**
- * A LONG FLIGHT IS PACED BY WHAT THE EYE SEES, NOT BY THE CLOCK. Ivan, 2026-10-14: "if it is 2
+ * A LONG FLIGHT IS PACED BY WHAT THE EYE SEES, NOT BY THE CLOCK. The maintainer, 2026-10-14: "if it is 2
  * satellites on the Earth it goes smoothly, but then it travels far to Mars or even more and it is
  * super fast for this distance, so eyes are tired".
  *

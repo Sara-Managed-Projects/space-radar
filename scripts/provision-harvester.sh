@@ -27,7 +27,7 @@
 #
 # WHO RUNS THIS
 # Creating an IAM role is a permission change, so this is run by the account owner, once, after
-# reading the --dry-run (specs/0003 amendment 1 s.6). The harness that wrote it refused to.
+# reading the --dry-run (internal spec 0003, amendment 1 s.6). The harness that wrote it refused to.
 #
 # LEAST PRIVILEGE, STATED ONCE
 # The role trusts lambda.amazonaws.com -- and only this one function, via aws:SourceArn. Its one

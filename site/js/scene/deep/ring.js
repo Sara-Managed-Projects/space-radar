@@ -51,7 +51,7 @@
 // ring's own radii in its plane, not the apparent ones) and `disc.window: point` (the ring's window is read at each
 // point's own radius in the disc's plane, not where our line crosses its middle plane: edge on, our line runs along
 // the plane). The halo carries light when its weight is above 0 (the Southern Ring's molecular halo), in a third
-// loop. And since the photographs are no longer drawn on the sky (Ivan, 2026-10-26: "no photos only realistic 3ds"),
+// loop. And since the photographs are no longer drawn on the sky (the maintainer, 2026-10-26: "no photos only realistic 3ds"),
 // T0 draws the model too (one step a layer at its middle), unless a profile sets `frame.min_tier`.
 // 0078 r14-neb-b: end
 //

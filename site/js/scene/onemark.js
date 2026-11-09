@@ -1,5 +1,5 @@
 // One mark per object. An object with a 3D model on screen is drawn as that model; without one,
-// as its dot. Ivan, 2026-09-20: "we shouldn't repeat the dot with 3d object if 3d object rendered
+// as its dot. The maintainer, 2026-09-20: "we shouldn't repeat the dot with 3d object if 3d object rendered
 // on screen, if not - dot". Pure functions, so the rule can be tested without a GPU.
 
 /**

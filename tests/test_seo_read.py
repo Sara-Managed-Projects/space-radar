@@ -10,7 +10,7 @@ case that fails when the thing it guards is broken:
   every article    one page per row; one H1; a title of at most 60 characters; a description of 70 to 160; in the sitemap
                    with the row's date; Article JSON-LD with its headline, date and image; a canonical of its own
   the body         600 to 1 000 words; a heading that starts "Measured"; a link into the map (https://www.spaceradar.ai/#...);
-                   no attribution of a tool or a model (Ivan, 2026-10-14); no em dash
+                   no attribution of a tool or a model (the maintainer, 2026-10-14); no em dash
   the pictures     every <img> has alt text and a caption, its file is in site/images/read/<slug>/ and under 300 kB,
                    and every file of that folder is used by its article (no picture nobody shows)
   the renderer     a raw < in a body is shown as text, a figure whose file is missing is refused, a link to another

@@ -522,7 +522,7 @@ sources:
 
   # 0078 r14-data: begin
   # The two picture feeds that were fetched by each visitor's browser from NASA and NOAA and so had no saved
-  # copy (internal spec 0078, Ivan 2026-10-26: "have data cached on my s3 bucket, all resources we use today
+  # copy (internal spec 0078, the maintainer 2026-10-26: "have data cached on my s3 bucket, all resources we use today
   # through the APIs"). Both publishers answer `Access-Control-Allow-Origin: *` (MEASURED 2026-09-28 and
   # 2026-10-03), so `browser: true`: the page draws our copy at once and asks the publisher behind it when the
   # copy is past valid_until (site/js/data/readorder.js). Each parser FETCHES for itself (two requests and a

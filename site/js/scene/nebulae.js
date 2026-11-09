@@ -8,7 +8,7 @@
 //   pictureHalfExtent(row), eqToEcl(v), eclToEq(v), viewFade(cos), nearFade(distOverWidth), PICTURE_FOR,
 //   ellipseInPicture(row, raDeg, decDeg, majArcmin, minArcmin, paDeg)
 //
-// NO PHOTOGRAPHS IN THE SCENE (Ivan, 2026-10-26, for release 1.4.0: "remove all photos of clouds and galaxies and
+// NO PHOTOGRAPHS IN THE SCENE (the maintainer, 2026-10-26, for release 1.4.0: "remove all photos of clouds and galaxies and
 // replace them with realistic 3ds ... no photos only realistic 3ds"). Until 1.4.0 this file laid 30 licensed
 // photographs (registry/nebulae.yaml) on the sky of every world and stood them at their objects' places on the
 // ladder, drawn whole along our line of sight. That layer is gone: a deep-sky object is drawn by its 3D hero

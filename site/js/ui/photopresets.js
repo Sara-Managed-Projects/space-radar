@@ -12,7 +12,7 @@ import { EXPOSURES, DRAWN } from '../scene/exposure.js';
 // A named way to set up one kind of picture: the frame's shape, the lens, the shutter, the look and whether the
 // object's tag is on it. Each is a handful of the settings photo mode already has (ui/photomode.js: shape, lens,
 // caption, the tag) and the two scene/exposure.js owns (Eye, Camera, Deep; Measured or Film). Nothing is a new effect:
-// "a cinematic grade with bloom" is Ivan's decision D2 (public #261) and the design contract refuses a post
+// "a cinematic grade with bloom" is the maintainer's decision D2 (public #261) and the design contract refuses a post
 // pass (tests/test_contract.mjs), so the cinematic frame is a wide frame, a long lens and the Deep shutter, and
 // the caption still says it is a drawing, as every picture's does.
 //

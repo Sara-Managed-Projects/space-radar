@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """What the Lambda publishes, and the rule it must never break: a failing source never overwrites good data.
 
-Internal spec 0078, stage r14-data (Ivan, 2026-10-26: "if the lambda failed fetching we use previous saved data
+Internal spec 0078, stage r14-data (the maintainer, 2026-10-26: "if the lambda failed fetching we use previous saved data
 until updated"). Everything the old scripts/refresh-snapshots.sh made now comes out of harvest/ (publish.py), so
 the Lambda and a laptop run one code path. Held here, with no network and no AWS:
 

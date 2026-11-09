@@ -6,8 +6,8 @@ work, and what is not ready yet. Where a step needs a tool you do not have, say 
 we will do that step for you.
 
 **Status, honestly.** The site can speak ten other languages: `?lang=es`, `fr`, `de`, `pt` (Brazilian), `ru`, `uk`, `zh` (Simplified),
-`hi`, `he` and `ar` (public [#525](https://github.com/Sara-Managed-Projects/space-radar/issues/525) to
-[#534](https://github.com/Sara-Managed-Projects/space-radar/issues/534)). Every one was drafted by a program from the English and
+`hi`, `he` and `ar` (public #525 to
+#534). Every one was drafted by a program from the English and
 **no native speaker has read any of them yet**: the table below says so, and until two people have, the page offers a language only to a
 visitor who asks for it (see "Review"); there is no language picker yet. Each file has every string of the interface, the cards, the glossary,
 the trips' stops that are in `en.js` and the Moments. What is not translated: the 30 trips' longer texts in `registry/tours.yaml`, the spoken

@@ -17,7 +17,7 @@ For anyone who can read a source carefully. This is the most valuable kind of ch
 | **Files** | `registry/sites.yaml` (landing sites, pads, dishes), `registry/stars-notable.yaml`, `registry/missions.yaml`, `registry/oddities.yaml`, `registry/showers.yaml`, `registry/systems.yaml` |
 | **What a change looks like** | Correct the number in the row, and put the source in the same row or in the file's `references:` list: the URL, the date you read it, and what the page says. |
 | **Then run** | The file's generator, for example `python3 scripts/gen_sites_js.py`, and commit the generated file too. |
-| **Example** | [#557](https://github.com/Sara-Managed-Projects/space-radar/pull/557): the InSight landing site cited to Golombek et al. (2020). Two files changed. |
+| **Example** | #557: the InSight landing site cited to Golombek et al. (2020). Two files changed. |
 | **The check** | `Registries validate` (`scripts/check_registry.py`) refuses a fact without a source. `The sites mirror matches the registry` refuses a stale generated file. |
 | **Issues** | [area:space-accuracy](https://github.com/Sara-Managed-Projects/space-radar/labels/area%3Aspace-accuracy), [track:data](https://github.com/Sara-Managed-Projects/space-radar/labels/track%3Adata), [track:astronomers](https://github.com/Sara-Managed-Projects/space-radar/labels/track%3Aastronomers) |
 
@@ -29,7 +29,7 @@ with a link to the source is enough. Someone else will make the change and credi
 For anyone who writes well in two languages.
 
 **State today, plainly:** the site can show a language file: `?lang=es` at the end of the address
-([#524](https://github.com/Sara-Managed-Projects/space-radar/issues/524)). Spanish is the first, drafted
+(#524). Spanish is the first, drafted
 by a program and not yet read by a native speaker, so it is shown only to a visitor who asks for it.
 A language from the browser's own settings waits for a second native speaker (the review rule in
 [docs/TRANSLATING.md](TRANSLATING.md)). Yours could be the next, or the reader that makes Spanish the first
@@ -41,7 +41,7 @@ the page offers by itself.
 | **Start** | `node scripts/check-translation.mjs --skeleton fr > site/js/copy/fr.js`, then replace the values. If you cannot run that, ask in your language's issue and a maintainer sends you the file. |
 | **The check** | `node scripts/check-translation.mjs site/js/copy/fr.js` lists missing keys, extra keys and lost `{slots}`. |
 | **Guide** | [docs/TRANSLATING.md](TRANSLATING.md) |
-| **Issues** | One per language under [translation](https://github.com/Sara-Managed-Projects/space-radar/labels/translation); the epic is [#551](https://github.com/Sara-Managed-Projects/space-radar/issues/551). Say you are working on it there, so nobody does the same work twice. |
+| **Issues** | One per language under [translation](https://github.com/Sara-Managed-Projects/space-radar/labels/translation); the epic is #551. Say you are working on it there, so nobody does the same work twice. |
 
 A partial translation is welcome. Say which sections are done.
 
@@ -54,7 +54,7 @@ For anyone who knows a subject: a tradition's sky, a mission, a spacecraft.
 | **Files** | `registry/skycultures.yaml`; the figures in `site/data/skycultures/` | `registry/tours.yaml` | `registry/models.yaml`, `CREDITS.md` |
 | **What a change looks like** | A row with the culture's source, licence and credit line. Only CC BY-SA or freer: the file's header lists the ones left out for their licence. | A stop with one `target:`, a card of plain words, and every fact listed in the `# FACTS, read <date>: <url>` comment above the trip. | The row's `source:` and licence corrected, and the same line in `CREDITS.md`. |
 | **Then run** | Ask a maintainer to run `scripts/build-skycultures.py`: it needs Stellarium's files and a star catalogue. | `python3 scripts/gen_tours_js.py && python3 scripts/gen_trip_pages.py` | nothing to generate |
-| **Example** | none from outside yet | [#581](https://github.com/Sara-Managed-Projects/space-radar/pull/581): one word on the Eris card | none from outside yet |
+| **Example** | none from outside yet | #581: one word on the Eris card | none from outside yet |
 | **The check** | `Registries validate` | `Registries validate`, `The tours mirror matches the registry`. The narration check goes red when a card's words change: leave it, and a maintainer renders the voice. | `Every data source and model the registries name is credited in CREDITS.md` (`tests/test_credits.py`) |
 | **Issues** | [track:astronomers](https://github.com/Sara-Managed-Projects/space-radar/labels/track%3Aastronomers) | [track:trips](https://github.com/Sara-Managed-Projects/space-radar/labels/track%3Atrips) | [track:models](https://github.com/Sara-Managed-Projects/space-radar/labels/track%3Amodels) |
 
@@ -68,7 +68,7 @@ For anyone who writes JavaScript or Python. Plain ES modules, no framework, no b
 | | |
 |---|---|
 | **Files** | `site/js/` for the app, `tests/` for its tests, `scripts/` for generators and checks. [docs/ARCHITECTURE.md](ARCHITECTURE.md) is the map. |
-| **Example** | [#558](https://github.com/Sara-Managed-Projects/space-radar/pull/558): the Tonight time strip tells a screen reader its value. One module and its test. |
+| **Example** | #558: the Tonight time strip tells a screen reader its value. One module and its test. |
 | **The check** | The `contract` job: `node tests/test_contract.mjs` and the test for the module you touched. `scripts/test.sh <word>` runs every test whose name contains the word. |
 | **Issues** | [good first issue](https://github.com/Sara-Managed-Projects/space-radar/labels/good%20first%20issue), then [help wanted](https://github.com/Sara-Managed-Projects/space-radar/labels/help%20wanted), which is sorted into tracks: [accessibility](https://github.com/Sara-Managed-Projects/space-radar/labels/track%3Aaccessibility), [shaders](https://github.com/Sara-Managed-Projects/space-radar/labels/track%3Ashaders), [models](https://github.com/Sara-Managed-Projects/space-radar/labels/track%3Amodels), [teaching](https://github.com/Sara-Managed-Projects/space-radar/labels/track%3Ateaching) |
 

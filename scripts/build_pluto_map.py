@@ -15,7 +15,7 @@
     uv run --with pillow --with numpy --with scipy --with tifffile python scripts/build_pluto_map.py \\
         --originals DIR [--fit] [--only pluto,charon,pluto-relief]
 
-WHY (2026-10-26, Ivan: "it is disaster what happened to Pluto"). The map of 2026-10-12 was NASA's
+WHY (2026-10-26, the maintainer: "it is disaster what happened to Pluto"). The map of 2026-10-12 was NASA's
 ENHANCED colour map (PIA11707) taken by a gain of 1.77 to the flat colour's brightness: the heart and
 the north clipped to near-white, Cthulhu was a strip of dark red under a bleached disc, and the
 unimaged south was a plain brown that, seen from below, cut across the disc as a dark crescent.

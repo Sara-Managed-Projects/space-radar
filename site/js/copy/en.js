@@ -2469,7 +2469,7 @@ export const COPY = {
   // The GitHub mark in the top corner. `href` is here rather than in ui/github.js for the same
   // reason the words are: it is the one line a human edits when the repository moves, and it
   // should not be hunted for inside a module.
-  // ui/printcompose.js: the screen as a printable postcard (Ivan, 2026-09-28), 6 x 4 in at 300 dpi.
+  // ui/printcompose.js: the screen as a printable postcard (the maintainer, 2026-09-28), 6 x 4 in at 300 dpi.
   // The card's Postcard saves it; the share sheet shows it and saves it as a JPEG or a PDF.
   print: {
     title: 'Save this view as a 6 by 4 inch postcard (JPEG)',

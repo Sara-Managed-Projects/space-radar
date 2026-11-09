@@ -8,7 +8,7 @@
 //     opener  where focus returns on close (default: the focused element)
 // Also: appBase, shareUrl, shareState, tripWords (pure), toast, openShare, savePostcard, shareButton.
 //
-// WHY ONE ENTRY. There were three. Ivan, 2026-10-01: "full post, postcard, link and full text".
+// WHY ONE ENTRY. There were three. The maintainer, 2026-10-01: "full post, postcard, link and full text".
 // This loads with every card, so it is the link rules and the door only: ui/sharesheet.js is
 // imported on the first open.
 

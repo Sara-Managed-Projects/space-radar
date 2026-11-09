@@ -208,7 +208,7 @@ jobs:
           node-version: "22"
       - name: The validator actually refuses, and every card sentence is held to 160 characters (#915)
         run: python3 tests/test_refusals.py
-      # A pull request that changes what is drawn shows a picture (Ivan, 2026-10-12, after five
+      # A pull request that changes what is drawn shows a picture (the maintainer, 2026-10-12, after five
       # features were merged unseen). The rule is one small script; this holds it and the documents
       # that state it. The check itself is .github/workflows/pictures.yml.
       - name: A drawn change owes a picture, and the rule says what counts as one
@@ -239,8 +239,8 @@ jobs:
         run: python3 tests/test_clouds_workflow.py
       - name: No merge conflict markers, and every tool script parses (internal #472)
         run: python3 tests/test_no_conflict_markers.py
-      # The harvester's zip is built on every pull request with no AWS in sight (specs/0003
-      # amendment 1): a parser change is proven to package before it is ever deployed, and the
+      # The harvester's zip is built on every pull request with no AWS in sight (internal spec
+      # 0003, amendment 1): a parser change is proven to package before it is ever deployed, and the
       # placeholder path is exercised until harvest/ lands. Deterministic, so the hash is a fact.
       - name: The harvester packages without AWS
         run: scripts/package-harvester.sh --out /tmp/h.zip
@@ -534,7 +534,7 @@ jobs:
       # never lands cannot strand it, and a hand on the map gets everything back as it was.
       - name: "The drift: the link, the walk, the timings, the controller on a stub map (spec 0071)"
         run: node tests/test_drift.mjs
-      # Ivan, 2026-10-14: a long hop was "super fast for this distance, so eyes are tired". The real
+      # The maintainer, 2026-10-14: a long hop was "super fast for this distance, so eyes are tired". The real
       # camera rig is flown between framed places and read: how fast the picture turns, how fast a
       # body crosses it, how fast its scale changes. Short hops as they were; the rest inside bounds.
       - name: "The drift's long flights on the real rig: turn, sweep and scale inside the comfort bounds (spec 0071)"
@@ -792,7 +792,7 @@ jobs:
       # 0077 w1d: end
       # Each stop's subject stayed selected through the flight to the next: `follow` held the camera
       # on it and heroes.js drew it at 260 px, a lander filling the screen under the next stop's
-      # title (Ivan, 2026-10-01). Flown frame by frame through the Moon and station trips.
+      # title (the maintainer, 2026-10-01). Flown frame by frame through the Moon and station trips.
       - name: a trip's flight lets go of the stop it leaves and lands on its own subject
         run: node tests/test_trip_scale.mjs
       # The URL is the state (spec 0017's rule, spec 0032's keys): one module owns every key of
@@ -1126,7 +1126,7 @@ jobs:
         run: node tests/test_edge_cache.mjs
       - name: "a glyph layer uploads only the attributes whose values changed, and a stand-in GPU never holds a stale one (internal #519)"
         run: node tests/test_glyph_uploads.mjs
-      - name: "a selected object stands still: its dot, the camera that follows it and its brackets are one instant a frame, a followed world is aimed at after it is placed, and the ground is on the Earth's stage (Ivan, 2026-10-14)"
+      - name: "a selected object stands still: its dot, the camera that follows it and its brackets are one instant a frame, a followed world is aimed at after it is placed, and the ground is on the Earth's stage (the maintainer, 2026-10-14)"
         run: node tests/test_follow_steady.mjs
       - name: "a saved catalogue published as columns decodes to the verbatim rows, and the browser falls back to the verbatim file on any doubt (internal #523)"
         run: node tests/test_columnar.mjs

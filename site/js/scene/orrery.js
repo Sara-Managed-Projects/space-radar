@@ -18,7 +18,7 @@
 // round the Sun (scene/orbitrings.js measured it). The dots and the honest badge (ui/scalebadge.js)
 // say how much larger than life the dots are; nothing let a visitor CHOOSE how much, and nothing could
 // spread the inner planets out. Solar System Scope's two "schematic to realistic" sliders are the best
-// liked control of any competitor (specs/0081-competitors). These are those two, with the rule this
+// liked control of any competitor (internal spec 0081). These are those two, with the rule this
 // map has always kept: SIZE AND DISTANCE MAY BE EXAGGERATED IF THE PICTURE SAYS SO; DIRECTION NEVER.
 //
 // SIZE. k from 1 (true) to 2 000, exponential in the slider so each tenth of its travel is the same

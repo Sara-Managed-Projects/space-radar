@@ -5,11 +5,11 @@ are not up for a vote.
 
 ## Who decides
 
-- **Maintainers** have write access. Today they are [@ionesu](https://github.com/ionesu) (Ivan
-  Sushkov, who started the project and has the final word) and
-  [@Sara-Agent](https://github.com/Sara-Agent), an account operated by AI coding agents under
-  Ivan's direction. Most commits come from that account, and it is held to the same tests and
-  sources as everyone else.
+- **Maintainers** have write access. Today that is [@ionesu](https://github.com/ionesu), the
+  project's maintainer, who started the project and has the final word. The project's own
+  automation account, operated by AI coding agents under the maintainer's direction, made most of
+  the commits until November 2026; it is no longer active. Its work was held to the same tests and
+  sources as everyone else's.
 - **Reviewers** are contributors who are asked to look at pull requests in an area they know.
   Their approval counts; a maintainer still merges. There are none yet. You could be the first.
 - **Contributors** are everyone who has had a pull request merged, a fact corrected, or a report
@@ -20,8 +20,8 @@ are not up for a vote.
 - A small change is decided in its pull request. If the checks are green and it is not a draft,
   it is merged automatically.
 - A change to what the product does, a new dependency, a new data publisher or a new licence is
-  discussed in an issue first. Anyone may argue a case there. Where people disagree, Ivan decides
-  and writes the reason in the issue.
+  discussed in an issue first. Anyone may argue a case there. Where people disagree, the
+  maintainer decides and writes the reason in the issue.
 - The direction is in [ROADMAP.md](ROADMAP.md), with a "Not doing" list. To change it, open an
   issue.
 

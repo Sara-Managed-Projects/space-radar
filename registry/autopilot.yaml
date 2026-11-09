@@ -8,7 +8,7 @@ version: 1
 # docs/RUN_LOCALLY.md ("A screen in a corridor") is what a school reads.
 #
 # Spec 0036 as designed on 2026-09-22 drew a reel as wordless waypoints. By the time it was built
-# there were 26 narrated trips with a present mode, and Ivan asked for those to play back to back
+# there were 26 narrated trips with a present mode, and the maintainer asked for those to play back to back
 # (2026-10-07); the spec's design.md carries the change.
 #
 # A row:

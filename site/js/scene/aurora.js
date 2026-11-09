@@ -16,7 +16,7 @@
 //   auroraLine(state, clockMs, wallMs)   pure: the card's sentence
 //   and the JS twins of the shader's functions, for tests/test_aurora.mjs.
 //
-// Built 2026-09-30 (spec 0053 task 3). Ivan: "why isn't the aurora part of the live weather?"
+// Built 2026-09-30 (spec 0053 task 3). The maintainer: "why isn't the aurora part of the live weather?"
 //
 // WHAT IT IS. NOAA SWPC's OVATION Prime forecast (data/ovation.js): a 1 x 1 degree grid of the
 // probability of visible aurora for the next 30 to 90 minutes. It is a MODEL driven by the solar

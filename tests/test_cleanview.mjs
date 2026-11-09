@@ -1,6 +1,6 @@
 // tests/test_cleanview.mjs -- the one control that clears the screen (ui/cleanview.js).
 //
-// Ivan, 2026-09-28: "should have possibility to hide each panel so fully see the space only".
+// The maintainer, 2026-09-28: "should have possibility to hide each panel so fully see the space only".
 // Asserted: H toggles, not while typing and not with a modifier; Escape leaves only when the
 // screen is clear; and the CSS hides every direct child of <body> except the scene, the veil and
 // the toggle, with `visibility` so the phone's view shift gives the scene the whole screen.

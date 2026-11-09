@@ -28,7 +28,7 @@
 # WHO RUNS THIS
 # Creating an IAM role and an SES-sending identity are permission and reputation changes, so this
 # is run by the account owner, once, after reading the --dry-run -- the same discipline
-# provision-harvester.sh states for itself (specs/0003 amendment 1 s.6). The harness that wrote
+# provision-harvester.sh states for itself (internal spec 0003, amendment 1 s.6). The harness that wrote
 # this script does not run it for real, create any resource it describes, or send a real email.
 #
 # BEFORE IT CAN MAIL ANYONE

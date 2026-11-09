@@ -40,7 +40,7 @@ const FULL_WIDTH = 0.8; // a panel this wide or wider spans the canvas
 // the width, which the FULL_WIDTH rule leaves out, and the sheet is in the sidebar), and the share
 // sheet, which is a bottom sheet on a phone (spec 0061 task 8). Panels were left out of this list
 // twice and each time the Earth sat behind one while the free part of the screen showed empty sky
-// (Ivan's screenshot, 2026-09-22): a new bottom sheet is a row here. Only the PHONE's sidebar: on a
+// (the maintainer's screenshot, 2026-09-22): a new bottom sheet is a row here. Only the PHONE's sidebar: on a
 // desktop it is a column down the left, which is the horizontal case below.
 const SELECTORS = [
   'html.sr-phone #sr-side',

@@ -6,7 +6,7 @@
 // at a time and reads those three off the camera itself, so a test can hold them
 // (tests/test_drift_pace.mjs) and a pull request can print them (`--table`).
 //
-// HOPS are the classes Ivan named on 2026-10-14 ("2 satellites on the Earth it goes smoothly, but
+// HOPS are the classes the maintainer named on 2026-10-14 ("2 satellites on the Earth it goes smoothly, but
 // then it travels far to Mars or even more and it is super fast"), laid out as the app lays them
 // out: the Earth's stage at 1 000 km a unit, a craft met from the distance scene/heroes.js
 // closeUpDistance gives it, the Moon where it is, and the planets where scene/worlds.js draws them

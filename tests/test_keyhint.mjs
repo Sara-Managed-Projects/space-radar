@@ -1,6 +1,6 @@
 // tests/test_keyhint.mjs -- the controls hint, shown once (spec 0068 task 2, ui/keyhint.js).
 //
-// Ivan, 2026-10-02: "add info how to control with buttons ... it should appear once in the right
+// The maintainer, 2026-10-02: "add info how to control with buttons ... it should appear once in the right
 // bottom corner (arrows buttons and w s buttons)". Asserted, with no browser:
 //
 //   ONCE: the first decision shows it and remembers; the second does not. A storage that throws,

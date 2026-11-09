@@ -18,7 +18,7 @@ number that ticks. All SIL OFL 1.1, none declaring a Reserved Font Name, so a su
 name. Bricolage Grotesque is not loaded.
 
 NO SERIF. Spec 0061 task 5 added Instrument Serif 400 for the wordmark, a card's name, a trip's
-titles and the first Right-now line; Ivan rejected it on 2026-10-03 (it read worse than the sans it
+titles and the first Right-now line; the maintainer rejected it on 2026-10-03 (it read worse than the sans it
 replaced), the roles went back to Inter and Barlow, and task 6 removed the face, its file, its
 licence text and its budget row. tests/test_tokens.mjs holds the faces to these three.
 

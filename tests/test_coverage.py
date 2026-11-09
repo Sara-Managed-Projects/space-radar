@@ -26,7 +26,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import count_facts  # noqa: E402
 import coverage  # noqa: E402
 
-# The package's 38 renderer ids (internal specs/0076-release-1-2/package-2026-10-15/04_OBJECT_TYPE_SPECS/).
+# The package's 38 renderer ids (internal spec 0076, its 04_OBJECT_TYPE_SPECS section).
 PACKAGE_CLASSES = {
     "AGN_QUASAR", "AIRLESS_MOON", "ARTIFICIAL_SATELLITE", "ASTEROID", "BINARY_AND_MULTIPLE", "BLACK_HOLE",
     "CMB_AND_HORIZON", "COMET", "COMPACT_REMNANT", "COSMIC_WEB", "DARK_NEBULA", "DWARF_PLANET",

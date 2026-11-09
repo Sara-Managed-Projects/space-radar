@@ -1,7 +1,7 @@
 // The adaptive hero pool (scene/heroes.js nextHeroCap): how many models a device has earned.
 //   node tests/test_quality_pool.mjs
 //
-// Ivan, 2026-09-20: "if user PC or mobile is fast enough, render more 3d objects, and render more
+// The maintainer, 2026-09-20: "if user PC or mobile is fast enough, render more 3d objects, and render more
 // gradually if it not moving ... but more and better to load real models and not cubes."
 //
 // Eight was a fixed budget every device paid. The rule below spends headroom and takes it back, and

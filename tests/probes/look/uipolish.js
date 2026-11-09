@@ -1,4 +1,4 @@
-// uipolish: Ivan's four of 2026-10-14, looked at and measured in the app.
+// uipolish: the maintainer's four of 2026-10-14, looked at and measured in the app.
 //   0. an object's card: the quiet row ("Light it", "Seen it") under the four actions, at rest and pressed
 //   1. Explore > Tonight > Change place: the city box and "Use my location"
 //   2. "Follow", "Ride along" and "Fly to it" pressed from the ground: is the ground left, and does the rig fly

@@ -1,6 +1,6 @@
 """The harvester's stand-in, packaged ONLY while the real `harvest/` package does not exist.
 
-It writes the heartbeat manifest from specs/0003 amendment 1 and nothing else -- no upstream is
+It writes the heartbeat manifest from internal spec 0003, amendment 1, and nothing else -- no upstream is
 fetched, no snapshot is written. Its job is to prove the wiring end to end (role, schedule,
 bucket, CloudFront TTL) before the writer lands, and to be unmistakable while it does:
 `run.placeholder` is true and `snapshots` is empty, so the browser's reader sees "no snapshots"

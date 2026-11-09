@@ -1,5 +1,5 @@
 version: 1
-# EARTH DATA OVERLAYS (2026-10-05). Ivan: "a trip about earth and its weather ... how water flows
+# EARTH DATA OVERLAYS (2026-10-05). The maintainer: "a trip about earth and its weather ... how water flows
 # affect it, how nature affects it ... pollution, plankton, cycles of the world". The pictures of
 # those things exist and are measured daily: NASA GIBS serves them as maps. A row here is one such
 # map that a trip stop (`overlay:` in registry/tours.yaml) or What to show can lay over the globe.

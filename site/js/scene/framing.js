@@ -268,7 +268,7 @@ export function litOffset(sun, up, phase = ARRIVAL_PHASE, prefer = null) {
 
 // 0078 r14-pluto: begin
 /**
- * THE FACE A WORLD IS KNOWN BY, CENTRED (release 1.4.0; Ivan, 2026-10-26: "it is disaster what happened
+ * THE FACE A WORLD IS KNOWN BY, CENTRED (release 1.4.0; the maintainer, 2026-10-26: "it is disaster what happened
  * to Pluto", and the lead: the first thing a visitor sees on opening Pluto must be the heart, centred
  * and lit). litOffset's rule (the Sun's direction turned ARRIVAL_PHASE round the camera's up, the face
  * only a tie-break) met Pluto in October 2026 with the camera at 50 N, because the Sun stands 60

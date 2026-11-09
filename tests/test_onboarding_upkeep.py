@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The tour is kept up with the map: registry/onboarding.yaml against the source (internal spec 0074).
 
-Ivan, 2026-10-14: "it should be well documented somewhere that every new big feature added might
+The maintainer, 2026-10-14: "it should be well documented somewhere that every new big feature added might
 need to be highlighted in onboarding, or vice versa if some feature moves or is even completely
 deleted: this should be covered in the onboarding process."
 

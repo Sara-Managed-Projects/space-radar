@@ -1,4 +1,4 @@
-// r14-pluto: Pluto and Charon in natural colour (release 1.4.0 stage r14-pluto; Ivan, 2026-10-26: "Please
+// r14-pluto: Pluto and Charon in natural colour (release 1.4.0 stage r14-pluto; the maintainer, 2026-10-26: "Please
 // fix the Pluto, it is disaster what happened to Pluto").
 //
 // EVERY PLACE TWICE, IN ONE RUN: as this branch draws it, then with main's two maps put back (fetched from

@@ -1,6 +1,6 @@
 // tests/test_tokens.mjs -- the look of the instrument, as a contract (spec 0045).
 //
-// Ivan, 2026-09-28: "high quality everywhere", and orbitalradar.com, EVE Online and Prosperous
+// The maintainer, 2026-09-28: "high quality everywhere", and orbitalradar.com, EVE Online and Prosperous
 // Universe as the references. The design-language amendment of that day turned them into numbers:
 // glass at 0.82, a 1 px lit top edge, 6 px corners, ember corner brackets for what is selected or
 // focused. This reads site/css/site.css and site/css/ui.css as text (no browser) and holds them to
@@ -474,7 +474,7 @@ for (const f of FILES) {
 }
 
 // --- 10. faces: exactly the three, self-hosted (design-language amendment 2026-09-28) ------------
-// Spec 0061 task 5 added Instrument Serif for names; Ivan rejected it on 2026-10-03 and task 6 took
+// Spec 0061 task 5 added Instrument Serif for names; the maintainer rejected it on 2026-10-03 and task 6 took
 // the face, its file, its preload and its token out. A fourth family is a design decision: it fails
 // here first, and so does a font file nobody declares (it would ship, and a preload would fetch it).
 const fontsCss = readFileSync(join(ROOT, 'site/css/fonts.css'), 'utf8');
@@ -500,7 +500,7 @@ check(/^'Inter', 'Inter Fallback',/.test(token('--sr-font') || ''), `--sr-font s
 check(/^'JetBrains Mono', 'JetBrains Mono Fallback',/.test(token('--sr-font-mono') || ''), `--sr-font-mono starts with JetBrains Mono (${token('--sr-font-mono')})`);
 check(/^'Barlow Semi Condensed', 'Barlow Semi Condensed Fallback',/.test(token('--sr-font-hud') || ''), `--sr-font-hud starts with Barlow Semi Condensed (${token('--sr-font-hud')})`);
 // No serif anywhere: not a token, not a family in a rule or a builder, not a file, not a preload.
-check(!tokens.has('--sr-font-serif'), '--sr-font-serif is defined; names and titles are sans (Ivan, 2026-10-03)');
+check(!tokens.has('--sr-font-serif'), '--sr-font-serif is defined; names and titles are sans (the maintainer, 2026-10-03)');
 {
   const { readdirSync } = await import('node:fs');
   const declared = new Set(faces.map((b) => (/url\(['"]?\.\.\/fonts\/([^'")]+)/.exec(b) || [])[1]).filter(Boolean));

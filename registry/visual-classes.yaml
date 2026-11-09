@@ -3,7 +3,7 @@ version: 1
 # from (internal spec 0076 stage W2-e; internal #859 for SR-PLAN-102, -104, -174 and the 38 class source notes,
 # #921 for SR-PLAN-183).
 #
-# The package of 2026-10-15 (internal specs/0076-release-1-2/package-2026-10-15/04_OBJECT_TYPE_SPECS/) names 38
+# The package of 2026-10-15 (internal spec 0076, its 04_OBJECT_TYPE_SPECS section) names 38
 # classes of thing, from SUN to SPECTRAL_SKY. This file maps each onto the modules of this repository that draw
 # it today; it does not invent a renderer, and a class nothing draws says where one is planned. Four classes of
 # the house (`house: true`) hold what the package has no class for: the Earth's live data, ground stations,

@@ -19,3 +19,6 @@ dist/
 
 # tools/render-trip.mjs writes its videos and its frame cache here (spec 0070); never committed.
 out/
+.ci-screens/
+*.orig
+*.rej

@@ -26,8 +26,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 REPO = "Sara-Managed-Projects/space-radar"
-# The same two accounts GOVERNANCE.md names; tests/test_contributor_docs.py holds the two together.
-MAINTAINERS = ("ionesu", "Sara-Agent")
+# The account GOVERNANCE.md names; tests/test_contributor_docs.py holds the two together.
+MAINTAINERS = ("ionesu",)
+# The project's own automation account, no longer active. Its merged pull requests were the
+# project's own work, not contributions from outside, so they stay out of the groups.
+RETIRED = ("Sara-Agent",)
 LOGIN = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$")
 
 # First match wins, per path. Order matters: a trip is a registry file, a translation is a copy file.
@@ -88,7 +91,7 @@ def outside(prs):
     """The pull requests that count: a real login, not a bot, not a maintainer."""
     for pr in prs:
         login = pr.get("login") or ""
-        if pr.get("bot") or login in MAINTAINERS or login.endswith("[bot]") or not LOGIN.match(login):
+        if pr.get("bot") or login in MAINTAINERS or login in RETIRED or login.endswith("[bot]") or not LOGIN.match(login):
             continue
         yield pr
 
@@ -114,7 +117,8 @@ def render(prs):
         "",
         "## Maintainers",
         "",
-        ", ".join(link(m) for m in MAINTAINERS) + ". See [GOVERNANCE.md](GOVERNANCE.md).",
+        ", ".join(link(m) for m in MAINTAINERS) + ". The project's own automation account is no longer active.",
+        "See [GOVERNANCE.md](GOVERNANCE.md).",
         "",
     ]
     everyone = set()

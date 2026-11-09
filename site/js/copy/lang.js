@@ -24,7 +24,7 @@ export const LANGUAGES = {
   pt: { locale: 'pt-BR', pill: 'pt-BR', reviewed: false }, // Brazil; ?lang=pt-BR is read as pt
   // 0077 W2-f: end
   // 1.6.3 (public #529 to #534): machine-drafted, hidden: reached by ?lang= alone (reviewed stays false until a native reader signs off) and
-  // listed by no picker. zh is Simplified (Ivan has not chosen yet); `tag` is what <html lang> says when it is not the code. For Traditional
+  // listed by no picker. zh is Simplified (the maintainer has not chosen yet); `tag` is what <html lang> says when it is not the code. For Traditional
   // add `'zh-Hant': { locale: 'zh-TW', pill: 'zh-TW', tag: 'zh-Hant', reviewed: false }` and a copy/zh-Hant.js: pickLanguage already reads
   // zh-TW, zh-HK, zh-MO and zh-Hant as that entry once it exists, and zh-CN, zh-SG and zh-Hans as zh.
   // 1.6.3: begin

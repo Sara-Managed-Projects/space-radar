@@ -10,7 +10,7 @@ PATHS. Every page built here is one directory below the site's root (`starlink/i
 site and under the `/site/` prefix every local check uses. A directory URL (`/starlink/`) is NOT
 served by the origin (S3's REST endpoint has no index documents: scripts/build_seo.py says why), so
 pages link to each other by `…/index.html`, as the press page does. Making `/starlink/` answer is a
-CloudFront setting (a function that appends `index.html`), Ivan's, and nothing here depends on it.
+CloudFront setting (a function that appends `index.html`), the maintainer's, and nothing here depends on it.
 """
 
 from __future__ import annotations
