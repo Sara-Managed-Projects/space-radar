@@ -63,11 +63,13 @@ export function renderOptions(search) {
   const q = new URLSearchParams(String(search || ''));
   if (q.get('render') !== '1') return null;
   const fps = Number(q.get('fps'));
-  const at = Number(q.get('at'));
+  // Any finite instant, before 1970 too (Apollo 12 is -4088280000); an absent or empty `at` is now.
+  const atRaw = String(q.get('at') ?? '').trim();
+  const at = atRaw === '' ? NaN : Number(atRaw);
   const stops = Number(q.get('stops'));
   return {
     fps: fps === 60 || fps === 30 || fps === 24 || fps === 25 ? fps : 30,
-    epochMs: Number.isFinite(at) && at > 0 ? at : null,
+    epochMs: Number.isFinite(at) ? at : null,
     captions: q.get('captions') === '1' || q.get('captions') === 'big',
     // `&captions=big`: captions a phone can read (4.3 % of the height, on two lines at most of
     // 84 % of the width), with the lower third lifted clear of them. For a film cut from trips.
@@ -288,7 +290,7 @@ export function createFilmClock(opts, g = window) {
   const stepMs = 1000 / fps;
   // To the second: the truth line says the minute, and a render resumed after a crash is handed
   // this back (`at=`), so every frame of the two halves is computed for the same instants.
-  const epochMs = opts.epochMs || Math.floor(g.Date.now() / 1000) * 1000;
+  const epochMs = Number.isFinite(opts.epochMs) ? opts.epochMs : Math.floor(g.Date.now() / 1000) * 1000;
   const time = createVirtualTime(g, { epochMs, startMs: g.performance.now() });
   const realTick = () => new Promise((r) => time.real.setTimeout(r, 0));
   const realWait = (ms) => new Promise((r) => time.real.setTimeout(r, ms));
