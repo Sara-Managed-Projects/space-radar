@@ -51,9 +51,10 @@ A patch for nine things: four that a visitor of the live 2.0.0 found, three foun
   stores nothing the edge keeps for a year. `tests/test_edge_cache.mjs` counts twenty-three revalidated uploads and checks both files.
 - **The release zip's size, as it is.** `docs/RELEASING.md` said about 100 MB, 40 MB of it narration and music; the 2.0.0 zip is 173 MB, and
   241 MB unpacked, of which about 66 MB is narration, card voices and music and 33 MB the 3D star layer's stars.
-- **"Under Titan's haze" shows the horizon.** The stop looked 35 degrees up into the haze, a frame of one colour; it now looks 10 degrees
-  up, with the plain and the horizon in the lower part. Its words are unchanged and still true (the haze hides the stars and Saturn,
-  which is below the horizon at Huygens anyway).
+- **"Under Titan's haze" is day, with the horizon in view.** The stop had no time of its own, so it kept the last stop's clock (Phobos
+  over Jezero, 2 April 2022), when it is night at Huygens: a black sky over a black plain. It now has its own instant, with the Sun
+  about 69 degrees up there, and looks 10 degrees up instead of 35, so the plain and the horizon are in the frame. Its words are
+  unchanged and still true (the haze hides the stars and Saturn, which is below the horizon at Huygens anyway).
 
 ### Changed
 
