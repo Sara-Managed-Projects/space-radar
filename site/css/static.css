@@ -116,7 +116,9 @@ figcaption{font-size:.86rem;line-height:1.5;color:var(--dim);margin-top:.7rem}.c
 .dim{color:var(--dim);font-size:.93rem;line-height:1.55}
 .facts-line{font:400 .8rem/1.5 var(--mono);color:var(--dim)}
 .cta{display:flex;flex-wrap:wrap;align-items:center;gap:.8rem 1.2rem;margin:1.8rem 0 1.4rem}.cta p{margin:0!important;color:var(--dim);font-size:.93rem;line-height:1.5}
-.cta .btn--map,.opentrip .btn--map{min-height:52px;padding:.9rem 1.5rem;font-size:1rem}
+.cta .btn--map{min-height:52px;padding:.9rem 1.5rem;font-size:1rem}
+/* A trip page's one action: a bare link (tests/test_contract.mjs reads <a href="../#trip=…"> for no script), drawn as the kit's .btn.btn--map. */
+.opentrip a{display:inline-flex;align-items:center;min-height:52px;padding:.9rem 1.5rem;border-radius:999px;background:var(--ember);color:#1b0f02;font:600 1rem/1 var(--sans);text-decoration:none;transition:filter .2s,translate .2s}.opentrip a:hover{filter:brightness(1.1);translate:0 -1px}
 .ph .cta{margin:1.2rem 0 0}.ph .cta p{max-width:44rem}
 /* The fact grid: label over value, the value in the numbers' face. */
 .doc dl{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,12rem),1fr));gap:1.1rem 1.5rem;margin:0 0 1.8rem;padding:1.2rem 1.3rem;border-radius:18px;background:linear-gradient(180deg,#ffffff0b,#ffffff04);box-shadow:0 0 0 1px #ffffff17}

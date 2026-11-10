@@ -121,7 +121,7 @@ PAGE = """<!doctype html>
 <p class="eyebrow">Guided trip</p>
 <h1>{title}</h1>
 <p class="lead">{blurb}</p>
-<p class="cta opentrip"><a href="../#trip={id}" class="btn btn--map">Open the trip: {title}</a></p>
+<p class="cta opentrip"><a href="../#trip={id}">Open the trip: {title}</a></p>
 </div></header>
 <div class="doc">
 {stops}<p>{truth}</p>
