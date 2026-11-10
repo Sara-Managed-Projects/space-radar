@@ -16,6 +16,7 @@
 .sr-subpop__x:hover{color:var(--tx);background:#ffffff12}
 .sr-subpop .sub{gap:.85rem}.sr-subpop .sub__x{margin:0!important;font-size:.9rem;color:#c5cdda}
 .sr-subpop .sub__l label{font-size:.88rem}
+.sr-subpop .sub__l input:focus-visible{outline:none;--sr-bracket-out:0}  /* the pill around it draws the ring (.sub__l label:has(input:focus-visible)) */
 .sr-subpop .sub__e{flex-basis:100%}.sr-subpop .sub__b{flex:1 0 100%;justify-content:center}
 .sr-subpop .sub__p{font-size:.78rem}
 /* subscribe: begin (the same rules as css/subscribe.css, which the map's popover loads; tests/test_subscribe_form.mjs holds the two equal) */
