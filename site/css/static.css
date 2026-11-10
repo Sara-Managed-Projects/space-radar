@@ -150,6 +150,7 @@ ol.steps li{margin:0 0 .8rem}
 .pagenote{margin-top:2.5rem;padding-top:1.2rem;border-top:1px solid var(--line)}.pagenote p{color:var(--dim);font-size:.9rem;line-height:1.55}
 /* The subscribe card in a page (About, Teachers). */
 .doc>.sub--card{grid-column:wide;margin:3rem 0 1rem}
+.doc .sub__t>*,.doc .sub p{margin:0}.doc .sub .sub__x{margin-top:.45rem}.doc .sub__h{font-size:clamp(1.4rem,2.6vw,1.9rem)}
 /* The footer: the brand and the page's words, then the site's links in four columns (scripts/seo_footer.py). */
 .brand--f{margin-bottom:1rem}
 @media(min-width:800px){.foot__in{grid-template-columns:minmax(0,1.25fr) minmax(0,3fr);padding-bottom:3rem}}
