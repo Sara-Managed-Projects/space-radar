@@ -407,8 +407,9 @@ ok(not re.search(r"\{\{|\bTODO\b|\blorem\b", "".join(f.read_text(encoding="utf-8
 # b200-f1-find: "country" is the /country/<iso>/ pages (scripts/seo_countries.py, forge #152)
 # b200-f6-learn: "print" is /print/, the paper models (scripts/seo_print.py, forge #161)
 # b200-f9-reach: "assets", "creators" and the five comparisons (scripts/seo_reach.py, forge #165, #166, #168)
+# 2026-11-10: "privacy" is /privacy/, what the email updates keep (scripts/seo_pages.py privacy_page)
 import seo_reach  # noqa: E402
-ok((BUILT / "pages-dirs.txt").read_text(encoding="utf-8").split() == sorted({"about", "accuracy", "country", "events", "first-pull-request", "iss", "nasa-eyes-alternative", "planets-tonight", "print", "read", "satellites", "sources", "starlink", "teachers"}
+ok((BUILT / "pages-dirs.txt").read_text(encoding="utf-8").split() == sorted({"about", "accuracy", "country", "events", "first-pull-request", "iss", "nasa-eyes-alternative", "planets-tonight", "print", "privacy", "read", "satellites", "sources", "starlink", "teachers"}
                                                                              | {"assets", "creators", *seo_reach.COMPARISONS}),
    "pages-dirs.txt lists the directories deploy.sh must ship")
 
