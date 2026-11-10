@@ -86,7 +86,8 @@
 /* --- these pages' own rules, on the kit's tokens --------------------------------------------------------------- */
 /* The header: the map's own button says "Open the 3D map"; on a narrow phone only "3D map", and Subscribe is its envelope. */
 @media(max-width:520px){.top .btn--sub span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}.btn--sub{padding:.6rem}}
-@media(max-width:400px){.top .btn--map .xs{display:none}}
+.top .btn--map,.top .btn--ghost{gap:.26rem}
+@media(max-width:400px){.top .btn--map .xs,.top .btn--ghost .xs{display:none}}
 /* The page head (the journal's listing head, .ch): the eyebrow, the h1 at the page-title scale, the lead, the one action. */
 main{display:block}
 .ph{position:relative;padding:clamp(2.5rem,7vw,5rem) 0 1.5rem;background:radial-gradient(70% 120% at 85% 0,color-mix(in oklab,var(--a) 26%,transparent),transparent 70%)}
@@ -107,6 +108,7 @@ main{display:block}
 .doc code{font:.88em var(--mono);background:#ffffff14;padding:.12em .38em;border-radius:6px}
 .doc pre{margin:0 0 1.5rem;padding:1.1rem 1.2rem;overflow-x:auto;background:var(--bg2);border-radius:14px;box-shadow:0 0 0 1px var(--line);font:.88rem/1.6 var(--mono)}.doc pre code{background:none;padding:0;font-size:inherit}
 .doc strong{color:var(--tx);font-weight:600}
+.doc a{text-underline-offset:.18em;text-decoration-thickness:1px;text-decoration-color:color-mix(in oklab,var(--atm) 50%,transparent)}.doc a:hover{text-decoration-color:currentColor}
 .doc .tbl__s{margin:0 0 1.8rem}.doc table{font-size:.95rem}.doc td:not(:first-child){font-variant-numeric:tabular-nums}
 .doc figure{margin:2.3rem 0}.doc figure img{width:100%;border-radius:14px;background:var(--panel)}
 figcaption{font-size:.86rem;line-height:1.5;color:var(--dim);margin-top:.7rem}.credit::before{content:"· "}
@@ -138,6 +140,9 @@ ol.steps li{margin:0 0 .8rem}
 .place{display:flex;flex-wrap:wrap;gap:.6rem .9rem;align-items:center;margin:0 0 1rem}
 .place select,.place button{min-height:44px;border-radius:999px;border:0;box-shadow:inset 0 0 0 1px var(--line);background:var(--panel);color:var(--tx);font:400 1rem/1.2 var(--sans);padding:0 1rem}
 .place button:hover,.place select:hover{box-shadow:inset 0 0 0 1px var(--atm)}
+/* The creators' stills and the trips' list. */
+.shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,17rem),1fr));gap:1.25rem;margin:0 0 2rem}.doc .shots figure{margin:0}
+.doc ul.cols{columns:2 16rem;column-gap:2.5rem}.doc ul.cols li{break-inside:avoid;margin-top:0}
 /* A note of the page itself (what it is built from, its licence), at the end of the column. */
 .pagenote{margin-top:2.5rem;padding-top:1.2rem;border-top:1px solid var(--line)}.pagenote p{color:var(--dim);font-size:.9rem;line-height:1.55}
 /* The subscribe card in a page (About, Teachers). */

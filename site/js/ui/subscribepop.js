@@ -1,6 +1,7 @@
 // ui/subscribepop.js -- the email updates' popover, behind the tool rail's envelope (2026-11-10).
 //
-// Contract: createSubscribe(ctx, { close }) -> { root, focus() }
+// Contract: mountSubscribe(ctx, button, more) -> { open(from), close(returnFocus), toggle(from) }   (ui/rail.js)
+//           createSubscribe(ctx, { close }) -> { root, focus() }                                  (the form alone)
 // Also exported, pure, for tests/test_subscribe_form.mjs: answerFor(ok, body, email) -> { state, text },
 //   SUBSCRIBE_URL, LISTS
 //
@@ -10,6 +11,11 @@
 // web-kit/src/subscribe.mjs and js/subscribe.js), the one the static pages carry in their footers
 // (scripts/seo_subscribe.py, site/js/pages/subscribe.js), drawn with the same classes and the same states:
 // idle -> sending (the button disabled, aria-busy) -> check your inbox | error (the typed address stays).
+//
+// THE POPOVER IS BUILT HERE, NOT IN THE RAIL. ui/rail.js makes the envelope button and nothing else (the boot graph had
+// about 300 B of room): this module makes #sr-sub, the What to show popover's twin (.sr-pop, ui.css), and owns its
+// closing. Opening it closes What to show, More and the share sheet; Escape (in the capture phase, as the rail's own
+// popovers do, so the card underneath does not hear it), Close and a press outside close it.
 //
 // THE KIT'S RULES (web-kit/DESIGN.md section 3). It opens only on a click, never by itself. Four lists, none ticked,
 // one needed. "Already subscribed" looks exactly like "check your inbox": the service never says whether it knows an
@@ -172,4 +178,40 @@ export function createSubscribe(ctx, { close } = {}) {
   });
 
   return { root, focus: () => (f.getAttribute('data-state') === 'check' ? x : set.querySelector('input')).focus({ preventScroll: true }) };
+}
+
+/** The popover of the rail's envelope: built on the first press, then opened and closed in place. */
+export function mountSubscribe(ctx, button, more) {
+  const pop = el('div', 'sr-pop sr-subpop sr-float');
+  pop.id = 'sr-sub';
+  pop.setAttribute('role', 'dialog');
+  pop.setAttribute('aria-labelledby', 'sr-sub-h');
+  pop.hidden = true;
+  document.body.appendChild(pop);
+  let from = button;
+  const close = (returnFocus) => {
+    if (pop.hidden) return;
+    pop.hidden = true;
+    button.setAttribute('aria-expanded', 'false');
+    if (returnFocus && from) from.focus({ preventScroll: true });
+  };
+  const form = createSubscribe(ctx, { close });
+  pop.appendChild(form.root);
+  const open = (opener) => {
+    if (!pop.hidden) return;
+    const rail = ctx && ctx.rail;
+    if (rail) { rail.closeShow(); rail.closeMore(); }
+    if (ctx && ctx.share) ctx.share.close();
+    from = opener || button;
+    pop.hidden = false;
+    button.setAttribute('aria-expanded', 'true');
+    form.focus();
+  };
+  document.addEventListener('pointerdown', (e) => {
+    if (!pop.hidden && !pop.contains(e.target) && !button.contains(e.target) && !(more && more.contains(e.target))) close(false);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !pop.hidden) { e.preventDefault(); e.stopPropagation(); close(true); }
+  }, true);
+  return { open, close, toggle: (opener) => (pop.hidden ? open(opener) : close(false)) };
 }

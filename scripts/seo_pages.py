@@ -599,9 +599,9 @@ def about_page(host: str) -> Page:
         '<li><a href="../read/index.html">Long reads: what each release added, and how it is known</a></li>'
         '<li><a href="../nasa-eyes-alternative/index.html">How it compares with NASA\'s Eyes on the Solar System</a></li>'
         # b200-f9-reach: begin
-        '<li><a href="../solar-system-scope-alternative/index.html">How it compares with Solar System Scope</a>, '
-        '<a href="../spaceengine-alternative-mac/index.html">SpaceEngine</a> and '
-        '<a href="../live-satellite-tracker-3d/index.html">Cosmoscope</a></li>'
+        '<li><a href="../solar-system-scope-alternative/index.html">How it compares with Solar System Scope</a></li>'
+        '<li><a href="../spaceengine-alternative-mac/index.html">With SpaceEngine</a></li>'
+        '<li><a href="../live-satellite-tracker-3d/index.html">With Cosmoscope</a></li>'
         '<li><a href="../creators/index.html">For creators: using footage, and the free 3D models</a></li>'
         # b200-f9-reach: end
         '<li><a href="../first-pull-request/index.html">Your first pull request: good first issues in three.js and beyond</a></li>'

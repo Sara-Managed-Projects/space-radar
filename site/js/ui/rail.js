@@ -141,7 +141,7 @@ export function createRail(ctx, host) {
     // (internal #419 item 5).
     if (ctx && ctx.keyhint && typeof ctx.keyhint.hide === 'function') ctx.keyhint.hide('popover');
     if (!menu.hidden) closeMore(false);
-    closeSub(false);
+    closeSub();
     pop.hidden = false;
     showBtn.setAttribute('aria-expanded', 'true');
     root.classList.add('is-open');
@@ -179,7 +179,7 @@ export function createRail(ctx, host) {
   const toggleShare = () => {
     if (share.isOpen()) { share.close(); return; }
     closeShow(false);
-    closeSub(false);
+    closeSub();
     share.open({ opener: shareBtn });
   };
   shareBtn.addEventListener('click', toggleShare);
@@ -221,40 +221,13 @@ export function createRail(ctx, host) {
   subBtn.setAttribute('aria-expanded', 'false');
   subBtn.appendChild(icon(MAIL_PATH));
   root.appendChild(subBtn);
-  const subPop = document.createElement('div');
-  subPop.id = 'sr-sub';
-  subPop.className = 'sr-pop sr-subpop sr-float';
-  subPop.setAttribute('role', 'dialog');
-  subPop.setAttribute('aria-labelledby', 'sr-sub-h');
-  subPop.hidden = true;
-  document.body.appendChild(subPop);
+  // The popover, its closing (Escape, Close, a press outside) and its focus are the lazy module's: the boot graph holds
+  // the button alone. Opening it closes the other popovers (ui/subscribepop.js); opening one of them closes it (closeSub).
   let sub = null;
-  let subFrom = subBtn;
-  const loadSub = () => sub || (sub = import('./subscribepop.js').then((m) => {
-    const s = m.createSubscribe(ctx, { close: closeSub });
-    subPop.appendChild(s.root);
-    return s;
-  }).catch((e) => { sub = null; console.warn('Email updates did not load', e); }));
-  function openSub(from) {
-    if (!subPop.hidden) return;
-    closeShow(false);
-    closeMore(false);
-    if (ctx && ctx.share) ctx.share.close();
-    subFrom = from || subBtn;
-    subPop.hidden = false;
-    subBtn.setAttribute('aria-expanded', 'true');
-    loadSub().then((s) => { if (s && !subPop.hidden) s.focus(); });
-  }
-  function closeSub(returnFocus) {
-    if (subPop.hidden) return;
-    subPop.hidden = true;
-    subBtn.setAttribute('aria-expanded', 'false');
-    if (returnFocus) subFrom.focus({ preventScroll: true });
-  }
-  subBtn.addEventListener('click', () => (subPop.hidden ? openSub(subBtn) : closeSub(false)));
-  document.addEventListener('pointerdown', (e) => {
-    if (!subPop.hidden && !subPop.contains(e.target) && !subBtn.contains(e.target) && !moreBtn.contains(e.target)) closeSub(false);
-  });
+  const subscribe = () => sub || (sub = import('./subscribepop.js').then((m) => m.mountSubscribe(ctx, subBtn, moreBtn))
+    .catch((e) => { sub = null; console.warn('Email updates did not load', e); }));
+  const closeSub = () => { if (sub) sub.then((s) => s && s.close(false)); };
+  subBtn.addEventListener('click', () => subscribe().then((s) => s && s.toggle(subBtn)));
 
   // --- The repository: GitHub's own mark, after the eye ---------------------------------------------
   const gitHub = createGitHubMark(root, { className: 'sr-rail__btn sr-rail__btn--github' });
@@ -297,7 +270,7 @@ export function createRail(ctx, host) {
   menuRow('button', icon(SHARE_PATH), COPY.rail.menuShare, () => share.open({ opener: moreBtn }));
   menuRow('button', icon(HIDE_PATH), COPY.rail.menuHide, () => { if (ctx && ctx.cleanView) ctx.cleanView.set(true); });
   menuRow('button', icon(TOUR_PATH), COPY.rail.menuTour, toggleTour);
-  menuRow('button', icon(MAIL_PATH), COPY.rail.subscribe, () => openSub(moreBtn));
+  menuRow('button', icon(MAIL_PATH), COPY.rail.subscribe, () => subscribe().then((s) => s && s.open(moreBtn)));
   const blogRow = menuRow('a', icon(BLOG_PATH), COPY.rail.blog, () => {});
   blogRow.href = COPY.rail.blogHref;
   blogRow.target = '_blank';
@@ -315,7 +288,7 @@ export function createRail(ctx, host) {
   function openMore() {
     if (!menu.hidden) return;
     closeShow(false);
-    closeSub(false);
+    closeSub();
     if (ctx && ctx.share) ctx.share.close();
     menu.hidden = false;
     moreBtn.setAttribute('aria-expanded', 'true');
@@ -351,7 +324,6 @@ export function createRail(ctx, host) {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !pop.hidden) { e.preventDefault(); e.stopPropagation(); closeShow(true); return; }
     if (e.key === 'Escape' && !menu.hidden) { e.preventDefault(); e.stopPropagation(); closeMore(true); return; }
-    if (e.key === 'Escape' && !subPop.hidden) { e.preventDefault(); e.stopPropagation(); closeSub(true); return; }
     const what = railKey(e, document.activeElement);
     if (!what) return;
     if (document.documentElement.classList.contains('sr-trip-mode')) return; // the trip owns the screen
@@ -361,8 +333,7 @@ export function createRail(ctx, host) {
     else toggleShare();
   }, true);
 
-  const api = { root, openShow, closeShow: () => closeShow(false), closeMore: () => closeMore(false), toggleShow, ready: () => load(),
-    openSub, closeSub: () => closeSub(false) };
+  const api = { root, openShow, closeShow: () => closeShow(false), closeMore: () => closeMore(false), toggleShow, ready: () => load() };
   if (ctx) ctx.rail = api;
   return api;
 }
