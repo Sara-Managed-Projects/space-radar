@@ -3720,9 +3720,10 @@ html.sr-phone .sr-chevron {
   transition: color var(--sr-fast) var(--sr-ease), background var(--sr-fast) var(--sr-ease);
 }
 
-/* Games (ui/explore.js, the maintainer 2026-11-10): a pill beside the collapse chevron, and one in a phone's sheet.
-   Its glow breathes once every 3.2 s, transform and opacity only; still under reduced motion, paused wherever the
-   panel is out of sight (a clear screen, the HUD, a kiosk reel, a trip, a folded sidebar). */
+/* Games (ui/explore.js, the maintainer 2026-11-10: "add also game icon on left board ... with some gradual
+   animation"): a pill beside the collapse chevron, and one in a phone's sheet. Its glow breathes in and out over
+   3.2 s, transform and opacity only: the ONE loop in the chrome, named in tests/test_tokens.mjs. Still under reduced
+   motion, paused wherever the panel is out of sight (a clear screen, the HUD, a kiosk reel, a trip, a folded sidebar). */
 .sr-games {
   position: relative;
   display: inline-flex;
@@ -3731,12 +3732,12 @@ html.sr-phone .sr-chevron {
   min-height: 36px;
   margin: 0 var(--sp-2) 0 auto;
   padding: 0 var(--sp-3) 0 var(--sp-2);
-  font: 600 12px/1 var(--sr-font-hud);
+  font: 600 var(--sr-fs-sm)/1 var(--sr-font-hud);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--sr-text);
   text-decoration: none;
-  border-radius: 999px;
+  border-radius: var(--sr-radius-pill);
   box-shadow: inset 0 0 0 1px var(--sr-line);
 }
 .sr-games:hover { box-shadow: inset 0 0 0 1px var(--sr-ember); }
@@ -3748,20 +3749,22 @@ html.sr-phone .sr-chevron {
   width: 28px;
   height: 28px;
   content: '';
-  background: radial-gradient(closest-side, rgba(255, 159, 67, 0.55), rgba(255, 159, 67, 0));
+  background: var(--sr-ember-soft);
   border-radius: 50%;
-  opacity: 0.25;
+  opacity: 0.35;
   transform: scale(0.8);
-  animation: sr-games-glow 3.2s ease-in-out infinite;
+  animation: sr-games-breathe 3.2s var(--sr-ease) infinite alternate;
   pointer-events: none;
 }
-@keyframes sr-games-glow { 50% { opacity: 0.9; transform: scale(1.3); } }
+@keyframes sr-games-breathe { to { opacity: 1; transform: scale(1.3); } }
 html:is(.sr-clean, .sr-hud, .sr-ambient, .sr-imagine-on, .sr-trip-mode) .sr-games::before,
 .sr-side-collapsed .sr-games::before,
 #sr-side.is-collapsed .sr-games::before { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce) { .sr-games::before { animation: none; } }
 .sr-games--sheet { display: none; }
 html.sr-phone .sr-games--sheet { display: inline-flex; margin: var(--sp-3) var(--sp-4) var(--sp-1); }
+@media (pointer: coarse) { .sr-games { min-height: 44px; } }
+html.sr-phone .sr-games { min-height: 44px; }
 
 .sr-explore__collapse:hover {
   color: var(--sr-text);

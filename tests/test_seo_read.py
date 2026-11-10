@@ -55,7 +55,8 @@ class Page(HTMLParser):
         a = dict(attrs)
         if tag == "h1":
             self.h1 += 1
-        if tag == "img":
+        # The shared header's brand mark (templates/partials/header.html, alt="") is the site's, not the article's.
+        if tag == "img" and not a.get("src", "").endswith("images/icons/favicon.svg"):
             self.imgs.append(a)
         if tag == "figcaption":
             self.captions += 1
