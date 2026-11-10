@@ -211,6 +211,11 @@ features:
     files: [site/js/ui/rail.js]
     surfaces: ["rail:blog"]
     not: "A link out of the app to the journal, not a feature of the map."
+  - id: email-updates
+    name: Free email updates (the rail's envelope, 2026-11-10)
+    files: [site/js/ui/rail.js, site/js/ui/subscribepop.js]
+    surfaces: ["rail:sub"]
+    not: "An offer to write to the visitor, not a feature of the map; the tour does not ask anyone for an address."
   - id: repository
     name: The GitHub mark
     files: [site/js/ui/github.js]
