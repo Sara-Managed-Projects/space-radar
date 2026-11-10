@@ -108,6 +108,7 @@ main{display:block}
 .doc code{font:.88em var(--mono);background:#ffffff14;padding:.12em .38em;border-radius:6px}
 .doc pre{margin:0 0 1.5rem;padding:1.1rem 1.2rem;overflow-x:auto;background:var(--bg2);border-radius:14px;box-shadow:0 0 0 1px var(--line);font:.88rem/1.6 var(--mono)}.doc pre code{background:none;padding:0;font-size:inherit}
 .doc strong{color:var(--tx);font-weight:600}
+.doc .callout p{margin:0}.doc .callout p+p{margin-top:.6rem}.doc .callout{font-size:1rem;line-height:1.6}
 .doc a{text-underline-offset:.18em;text-decoration-thickness:1px;text-decoration-color:color-mix(in oklab,var(--atm) 50%,transparent)}.doc a:hover{text-decoration-color:currentColor}
 .doc .tbl__s{margin:0 0 1.8rem}.doc table{font-size:.95rem}.doc td:not(:first-child){font-variant-numeric:tabular-nums}
 .doc figure{margin:2.3rem 0}.doc figure img{width:100%;border-radius:14px;background:var(--panel)}
@@ -134,6 +135,8 @@ figcaption{font-size:.86rem;line-height:1.5;color:var(--dim);margin-top:.7rem}.c
 .cards .meta{margin-top:auto;padding-top:.3rem}
 .fromblog{margin-top:2rem}
 .doc .tagcloud{margin:0 0 1.8rem}.doc .tagcloud li{margin:0}
+.tagcloud>li:not(:has(a)){display:inline-flex;align-items:center;min-height:40px;padding:.3rem .9rem;border-radius:999px;background:#ffffff0a;font-size:.92rem;color:#c5cdda}
+.eyebrow img{display:inline-block;vertical-align:-.12em;margin-right:.55rem;border-radius:2px}
 /* Lists of the pages: the old page lists, a tag cloud with one link per pill. */
 .myths li,.sky-list li{margin:.6rem 0}
 ol.steps li{margin:0 0 .8rem}

@@ -58,7 +58,7 @@ GROUPS = [
     ("Explore", ("about/", "sources/", "accuracy/", "satellites/", "starlink/", "o/international-space-station",
                  "planets-tonight/", "events/")),
     ("Teach and share", ("teachers/", "press/", "embed/", "creators/", "support/", "privacy/")),
-    ("Space Radar sites", ("https://blog.spaceradar.ai/", "https://games.spaceradar.ai/", "lab/")),
+    ("Sites", ("https://blog.spaceradar.ai/", "https://games.spaceradar.ai/", "lab/")),
     ("Follow", ()),
 ]
 
