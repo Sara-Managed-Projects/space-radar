@@ -78,7 +78,8 @@ check(/PATHS\+=\("\/_gz\/\*"\)/.test(code), '/_gz/* is invalidated with it');
 const rootFiles = [...(/for f in ([\s\S]*?); do/.exec(code) || [, ''])[1].matchAll(/\/([\w.-]+):/g)].map((m) => m[1]);
 check(/PATHS\+=\("\/\$KEYFILE"\)/.test(code), 'the IndexNow key file is invalidated by name');
 // Nine since build.json (public #291, scripts/build_info.py): the edge would otherwise say last deploy's commit for a year.
-check(rootFiles.length === 9 && rootFiles.includes('build.json') && rootFiles.every((f) => invalidated.includes(`/${f}`)) && invalidated.includes('/'), `every root file is invalidated by name, and "/" itself (${rootFiles})`);
+// Eleven since llms.txt and llms-full.txt (2026-11-10, scripts/seo_llms.py): what a language model reads, rebuilt every deploy.
+check(rootFiles.length === 11 && rootFiles.includes('llms.txt') && rootFiles.includes('llms-full.txt') && rootFiles.includes('build.json') && rootFiles.every((f) => invalidated.includes(`/${f}`)) && invalidated.includes('/'), `every root file is invalidated by name, and "/" itself (${rootFiles})`);
 // vendor/ is the one folder with the long browser lifetime; the maps beside it revalidate.
 check(uses.some(([p, v]) => p === 'vendor' && v === 'LONG') && /LONG="public, max-age=2592000"/.test(code) && /DATA="public, max-age=3600"/.test(code), 'vendor/, the textures and the data keep the lifetimes they had');
 
