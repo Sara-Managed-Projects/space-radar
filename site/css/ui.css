@@ -3730,7 +3730,7 @@ html.sr-phone .sr-chevron {
   gap: var(--sp-2);
   min-height: 36px;
   margin: 0 var(--sp-2) 0 auto;
-  padding: 0 var(--sp-3) 0 10px;
+  padding: 0 var(--sp-3) 0 var(--sp-2);
   font: 600 12px/1 var(--sr-font-hud);
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -3743,10 +3743,10 @@ html.sr-phone .sr-chevron {
 .sr-games svg { position: relative; color: var(--sr-ember); }
 .sr-games::before {
   position: absolute;
-  top: 5px;
-  left: 5px;
-  width: 26px;
-  height: 26px;
+  top: var(--sp-1);
+  left: var(--sp-1);
+  width: 28px;
+  height: 28px;
   content: '';
   background: radial-gradient(closest-side, rgba(255, 159, 67, 0.55), rgba(255, 159, 67, 0));
   border-radius: 50%;
