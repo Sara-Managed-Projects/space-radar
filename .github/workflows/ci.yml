@@ -374,6 +374,11 @@ jobs:
         run: python3 tests/test_seo_growth.py
       - name: "The embed page: the generator writes the app's own snippet for every object and trip, and the list of embedders starts empty and honest"
         run: python3 tests/test_seo_embed.py
+      # The email updates (2026-11-10): the static pages' form works with no script and posts what the subscription
+      # service reads, with an empty honeypot and no list ticked; the pages, their script and the map's popover name
+      # one service and say the same sentences; the two stylesheets carry the same form rules.
+      - name: "The subscribe forms: the static pages' and the map's popover, one service, one look"
+        run: node tests/test_subscribe_form.mjs
       - name: "?from=ig is harmless: dropped from the address bar, read into nothing, in no share link or embed address"
         run: node tests/test_from_tag.mjs
 
