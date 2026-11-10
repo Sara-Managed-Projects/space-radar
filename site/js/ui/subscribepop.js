@@ -98,7 +98,8 @@ export function createSubscribe(ctx, { close, id = 'sr-sub', list = '', button =
   f.acceptCharset = 'utf-8';
   f.setAttribute('aria-labelledby', labelledBy || `${id}-h`);
   f.noValidate = false;
-  f.appendChild(el('p', 'sub__x', w.text));
+  // "Pick what you want" is the popover's line; a one-list form under its own heading has nothing to pick.
+  if (!list) f.appendChild(el('p', 'sub__x', w.text));
 
   // One list: a hidden field, nothing to tick. Several: boxes, none ticked, one needed (web-kit/DESIGN.md section 3).
   const set = el(list ? 'div' : 'fieldset', list ? '' : 'sub__l');
