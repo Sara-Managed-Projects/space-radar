@@ -1053,14 +1053,9 @@ export async function boot({ setStatus } = {}) {
   createRail(ctx, shell.railHost);
   // Issue #251: email alerts, a row that opens in place under Coming up (ui/subscribe.js says why
   // it is there and not over the scene). Imported once the layers have settled: the row is below
-  // the fold of the sidebar, and a first visit's bytes are the map's.
-  // NO ENDPOINT, NO ROW (2026-10-05). The notifier is not deployed: ui/subscribe.js notifyEndpoint()
-  // reads window.SPACE_RADAR_NOTIFY_URL, which nothing sets until a human runs
-  // scripts/provision-notifier.sh, and the row answered every address with "Could not reach the
-  // subscription service". A form that can only fail is not offered: without the URL the module is
-  // not even fetched. The code and its tests stay for the day the URL exists.
+  // the fold of the sidebar, and a first visit's bytes are the map's. Since 2026-11-10 it holds the
+  // email updates' form (ui/subscribepop.js) with the sky alerts list, posting to the deployed service.
   const subscribeLater = () => afterFirstVisit(SUBSCRIBE_MS, () => {
-    if (!window.SPACE_RADAR_NOTIFY_URL) return;
     import('./ui/subscribe.js').then((m) => m.createSubscribe({ parent: ctx.explore.subscribeHost })).catch((e) => console.warn('the subscribe row did not load', e));
   });
   if (embed) embed.attach(ctx);

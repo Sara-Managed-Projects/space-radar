@@ -63,50 +63,65 @@ function input(type, name, value) {
   return i;
 }
 
-export function createSubscribe(ctx, { close } = {}) {
+/**
+ * The form. With no options it is the popover's: a heading with Close, four lists to pick from. The row under Coming
+ * up (ui/subscribe.js) asks for one list, `list: 'sky'`, under its own heading (`labelledBy`): the kit's single-purpose
+ * form, no box to tick and the button naming the list (`button`). Same states, same words, same request.
+ * @param {object} [o] {close, id, list, button, source, labelledBy, fetchImpl}
+ */
+export function createSubscribe(ctx, { close, id = 'sr-sub', list = '', button = '', source = 'app:rail', labelledBy = '', fetchImpl } = {}) {
   const w = COPY.emailUpdates;
+  const send = fetchImpl || ((...args) => fetch(...args));
+  const label = button || w.button;
   loadCss('subscribe');
   const root = el('div', 'sr-subpop__in');
 
-  const top = el('div', 'sr-subpop__top');
-  const h = el('h2', 'sub__h', w.title);
-  h.id = 'sr-sub-h';
-  top.appendChild(h);
-  const x = el('button', 'sr-subpop__x');
-  x.type = 'button';
-  x.setAttribute('aria-label', w.close);
-  x.title = w.close;
-  x.appendChild(icon('x', 18));
-  x.addEventListener('click', () => { if (close) close(true); });
-  top.appendChild(x);
-  root.appendChild(top);
+  let x = null;
+  if (!labelledBy) {
+    const top = el('div', 'sr-subpop__top');
+    const h = el('h2', 'sub__h', w.title);
+    h.id = `${id}-h`;
+    top.appendChild(h);
+    x = el('button', 'sr-subpop__x');
+    x.type = 'button';
+    x.setAttribute('aria-label', w.close);
+    x.title = w.close;
+    x.appendChild(icon('x', 18));
+    x.addEventListener('click', () => { if (close) close(true); });
+    top.appendChild(x);
+    root.appendChild(top);
+  }
 
   const f = el('form', 'sub sub--pop');
   f.method = 'post';
   f.action = `${SUBSCRIBE_URL}subscribe`;
   f.acceptCharset = 'utf-8';
-  f.setAttribute('aria-labelledby', h.id);
+  f.setAttribute('aria-labelledby', labelledBy || `${id}-h`);
   f.noValidate = false;
   f.appendChild(el('p', 'sub__x', w.text));
 
-  const set = el('fieldset', 'sub__l');
-  set.appendChild(el('legend', null, w.pick));
-  for (const id of LISTS) {
-    const lab = el('label');
-    lab.appendChild(input('checkbox', 'lists', id));
-    lab.appendChild(el('span', null, w[id]));
-    set.appendChild(lab);
+  // One list: a hidden field, nothing to tick. Several: boxes, none ticked, one needed (web-kit/DESIGN.md section 3).
+  const set = el(list ? 'div' : 'fieldset', list ? '' : 'sub__l');
+  if (list) set.appendChild(input('hidden', 'lists', list));
+  else {
+    set.appendChild(el('legend', null, w.pick));
+    for (const name of LISTS) {
+      const lab = el('label');
+      lab.appendChild(input('checkbox', 'lists', name));
+      lab.appendChild(el('span', null, w[name]));
+      set.appendChild(lab);
+    }
   }
   f.appendChild(set);
-  f.appendChild(input('hidden', 'source', 'app:rail'));
+  f.appendChild(input('hidden', 'source', source));
 
   const row = el('div', 'sub__r');
   const lb = el('label', 'sub__lb', w.email);
-  lb.htmlFor = 'sr-sub-e';
+  lb.htmlFor = `${id}-e`;
   row.appendChild(lb);
   const e = input('email', 'email');
   e.className = 'sub__e';
-  e.id = 'sr-sub-e';
+  e.id = `${id}-e`;
   e.autocomplete = 'email';
   e.inputMode = 'email';
   e.required = true;
@@ -118,7 +133,7 @@ export function createSubscribe(ctx, { close } = {}) {
   const b = el('button', 'btn sub__b');
   b.type = 'submit';
   b.appendChild(iconFrom('mail', MAIL, 18));
-  const bl = el('span', null, w.button);
+  const bl = el('span', null, label);
   b.appendChild(bl);
   row.appendChild(b);
   f.appendChild(row);
@@ -127,10 +142,10 @@ export function createSubscribe(ctx, { close } = {}) {
   const hp = el('div', 'sub__hp');
   hp.setAttribute('aria-hidden', 'true');
   const hl = el('label', null, w.honeypot);
-  hl.htmlFor = 'sr-sub-w';
+  hl.htmlFor = `${id}-w`;
   hp.appendChild(hl);
   const web = input('text', 'website', '');
-  web.id = 'sr-sub-w';
+  web.id = `${id}-w`;
   web.tabIndex = -1;
   web.autocomplete = 'off';
   hp.appendChild(web);
@@ -155,19 +170,19 @@ export function createSubscribe(ctx, { close } = {}) {
     const busy = st === 'sending';
     b.disabled = busy;
     f.setAttribute('aria-busy', String(busy));
-    bl.textContent = busy ? w.sending : st === 'retry' ? w.retry : w.button;
+    bl.textContent = busy ? w.sending : st === 'retry' ? w.retry : label;
   };
   f.addEventListener('submit', (ev) => {
     ev.preventDefault();
     if (f.getAttribute('data-state') === 'sending') return;
-    const lists = [...set.querySelectorAll('input:checked')].map((i) => i.value);
+    const lists = list ? [list] : [...set.querySelectorAll('input:checked')].map((i) => i.value);
     if (!lists.length) { state('error', w.invalidLists); set.querySelector('input').focus(); return; }
     const email = e.value.trim();
     state('sending');
-    fetch(f.action, {
+    send(f.action, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ email, lists, source: 'app:rail', website: web.value }),
+      body: JSON.stringify({ email, lists, source, website: web.value }),
     })
       .then((r) => r.json().catch(() => ({})).then((o) => ({ r, o })))
       .then(({ r, o }) => {
@@ -177,7 +192,7 @@ export function createSubscribe(ctx, { close } = {}) {
       }, () => state('retry', w.unreachable));
   });
 
-  return { root, focus: () => (f.getAttribute('data-state') === 'check' ? x : set.querySelector('input')).focus({ preventScroll: true }) };
+  return { root, form: f, focus: () => ((f.getAttribute('data-state') === 'check' && x) || (list ? e : set.querySelector('input'))).focus({ preventScroll: true }) };
 }
 
 /** The popover of the rail's envelope: built on the first press, then opened and closed in place. */

@@ -1884,19 +1884,6 @@ export const COPY = {
   "shells": {
     "radio": "Funk von der Erde hat {n} Lichtjahre erreicht"
   },
-  "subscribe": {
-    "heading": "Was kommt, per E-Mail",
-    "emailLabel": "Deine E-Mail-Adresse",
-    "emailPlaceholder": "du@example.com",
-    "pickOne": "Hake mindestens eines an.",
-    "launchesLabel": "Kommende Starts",
-    "showersLabel": "Maxima von Meteorströmen",
-    "approachesLabel": "Nahe Vorbeiflüge",
-    "submit": "Abonnieren",
-    "sending": "Wird gesendet …",
-    "pending": "Prüfe deine E-Mails, um zu bestätigen.",
-    "couldNotReach": "Der Abo-Dienst war nicht erreichbar."
-  },
   "groundDoor": {
     "stand": "Hier stehen",
     "drive": "Hier stehen und fahren",
@@ -5833,7 +5820,8 @@ COPY.skyLore.nearest = "Die Geschichte von {name}";
 // b200-s4a-look: end
 
 // redesign 2026-11-10: begin -- machine-drafted: the Games link of the explore panel (copy/en.js games), the rail's
-// email updates (rail.subscribe) and their popover (copy/en.subscribe.js emailUpdates)
+// email updates (rail.subscribe), their popover and the row under Coming up (copy/en.subscribe.js emailUpdates;
+// comingUp is the old subscribe.heading, moved)
 COPY.rail.subscribe = "E-Mail-Neuigkeiten";
 COPY.games = {"label": "Spiele", "title": "Weltraumspiele des Space-Radar-Teams (öffnet in einem neuen Tab)", "href": "https://games.spaceradar.ai/"};
 COPY.emailUpdates = {
@@ -5860,6 +5848,8 @@ COPY.emailUpdates = {
   "privacy": "Wir speichern deine Adresse und die gewählten Listen, sonst nichts. Keine Tracking-Pixel, keine umgeschriebenen Links. Jede E-Mail hat eine Abmeldung mit einem Klick.",
   "privacyLink": "Datenschutz",
   "honeypot": "Dieses Feld leer lassen",
-  "close": "Schließen"
+  "close": "Schließen",
+  "comingUp": "Was kommt, per E-Mail",
+  "skyButton": "Himmelsalarme erhalten"
 };
 // redesign 2026-11-10: end

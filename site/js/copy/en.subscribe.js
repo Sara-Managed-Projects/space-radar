@@ -1,4 +1,5 @@
-// The words of the email updates' popover (ui/subscribepop.js, behind the rail's envelope; 2026-11-10).
+// The words of the email updates' popover (ui/subscribepop.js, behind the rail's envelope; 2026-11-10), and of the row
+// under Coming up that holds the same form with the sky alerts list (ui/subscribe.js).
 //
 // WHY A FILE OF ITS OWN. The popover is built on the first press of its button, and most visitors never press it:
 // its words are not a first visit's bytes, as copy/en.later.js's are not. ADDED TO THE SAME `COPY` OBJECT, imported by
@@ -35,6 +36,9 @@ Object.assign(COPY, {
     privacyLink: 'Privacy',
     honeypot: 'Leave this empty',
     close: 'Close',
+    // The row under Coming up (ui/subscribe.js): its heading, and its button, which names the one list it offers.
+    comingUp: 'Email me what\'s coming up',
+    skyButton: 'Get sky alerts',
   },
 });
 

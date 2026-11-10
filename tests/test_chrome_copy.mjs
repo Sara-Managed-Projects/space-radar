@@ -22,6 +22,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const { COPY, t } = await import(join(ROOT, 'site/js/copy/en.js'));
 // The sections only a module outside the first visit reads (internal #405): added to the same COPY.
 await import(join(ROOT, 'site/js/copy/en.later.js'));
+await import(join(ROOT, 'site/js/copy/en.subscribe.js')); // the email updates' words: the popover and the row under Coming up
 const { LAYER_ROWS } = await import(join(ROOT, 'site/js/data/layers.registry.js'));
 
 const problems = [];
@@ -134,10 +135,9 @@ const LINES = [
   ['sceneNote.refused', 13, INTER, 220],
   ['share.noWiki', 13, INTER, 320],
   ['share.emailNote', 13, INTER, 320],
-  ['subscribe.heading', 15, INTER, 260],
-  ['subscribe.couldNotReach', 13, INTER, SIDE],
-  ['subscribe.pending', 13, INTER, SIDE],
-  ['subscribe.pickOne', 13, INTER, SIDE],
+  ['emailUpdates.comingUp', 15, INTER, 260],
+  ['emailUpdates.unreachable', 13, INTER, SIDE],
+  ['emailUpdates.invalidLists', 13, INTER, SIDE],
 ];
 
 for (const [key, size, share, width, over] of LINES) {
@@ -161,7 +161,7 @@ for (const l of layers) {
 }
 
 // Labels: a button is at most two words, a tab one (docs/ui-guide.md section 4).
-for (const [key, max] of [['passport.forget', 2], ['passport.forgetConfirm', 2], ['passport.title', 1], ['tonight.showMe', 2], ['tonight.more', 2], ['tonight.fewer', 2], ['controls.layersFailedWhy', 2], ['subscribe.submit', 1], ['sceneNote.why', 1], ['search.fly', 3]]) {
+for (const [key, max] of [['passport.forget', 2], ['passport.forgetConfirm', 2], ['passport.title', 1], ['tonight.showMe', 2], ['tonight.more', 2], ['tonight.fewer', 2], ['controls.layersFailedWhy', 2], ['emailUpdates.button', 1], ['emailUpdates.skyButton', 3], ['sceneNote.why', 1], ['search.fly', 3]]) {
   const v = get(key);
   check(typeof v === 'string' && v.trim().split(/\s+/).length <= max, `COPY.${key} ("${v}") is over ${max} word(s)`);
 }
@@ -173,7 +173,7 @@ for (const [key, max] of [['passport.forget', 2], ['passport.forgetConfirm', 2],
 // placeholders at their longest, is held to the guide's cap: 60 characters for what is drawn, 90
 // for a tooltip or a reader's name (a `title` or an `aria-label` is not laid out in a column, and
 // names its key). No exclamation mark, no arrow, no double hyphen, no emoji, and no Title Case.
-const CHROME_SECTIONS = ['app', 'subscribe', 'shell', 'tabs', 'rightNow', 'statusLine', 'tripCard', 'explore', 'rail', 'timePill', 'undo',
+const CHROME_SECTIONS = ['app', 'shell', 'tabs', 'rightNow', 'statusLine', 'tripCard', 'explore', 'rail', 'timePill', 'undo',
   'moments', 'ladder', 'sceneNote', 'link', 'share', 'audio', 'density', 'nextList', 'colourKey', 'chooser', 'controls', 'search',
   'quality', 'time', 'sheet', 'print', 'hud', 'tonight', 'clean', 'keyHint', 'mark', 'sentence', 'wonder', 'happened', 'passport',
   'scale', 'launchChip', 'welcome', 'base'];

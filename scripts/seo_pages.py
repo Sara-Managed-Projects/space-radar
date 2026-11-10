@@ -631,8 +631,9 @@ def privacy_page(host: str) -> Page:
             "no tracking, no cookies, no analytics.")
     body = (
         '<p class="eyebrow">Privacy</p>\n<h1>Privacy</h1>\n'
-        '<p class="lead">Space Radar has no account, no advertising, no tracker, no cookie and no analytics. The only thing it keeps about '
-        "anyone is an email address, and only for a person who asks for the free email updates and confirms it.</p>\n"
+        '<p class="lead">Space Radar has no account, no advertising, no tracker, no cookie and no analytics. Beyond the hosting\'s '
+        "short-lived access logs (below), the only thing it keeps about anyone is an email address, and only for a person who asks for "
+        "the free email updates and confirms it.</p>\n"
         "<h2>The map and these pages</h2>\n"
         "<ul>\n"
         "<li>There is nothing to sign in to, and no page sets a cookie.</li>\n"
@@ -642,8 +643,9 @@ def privacy_page(host: str) -> Page:
         "They are not sent to us.</li>\n"
         "<li>Some layers of the map ask a public data service for fresh numbers, for example NASA's picture of today's clouds. Your browser "
         f'makes that request, as it would to open their page. Every source is on <a href="../sources/index.html">the Sources page</a>.</li>\n'
-        "<li>The pages are served by Amazon Web Services (Amazon S3 and CloudFront), which has to see your network (IP) address to send a page back, as every website's host does. "
-        "We build nothing from it.</li>\n"
+        "<li>The pages are served by Amazon CloudFront, which keeps standard access logs: for each request, the network (IP) address, "
+        "the page asked for, the time and the browser's name. They are kept for 30 days, privately, for security and to fix faults, "
+        "and then deleted. We do not use them to track or profile anyone, they hold no cookie, and nothing in them is linked to a subscription.</li>\n"
         "</ul>\n"
         "<h2>Email updates: what is kept</h2>\n"
         "<p>If you subscribe, one record is kept for your address. It holds:</p>\n"

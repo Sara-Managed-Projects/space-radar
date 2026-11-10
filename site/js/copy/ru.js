@@ -1818,19 +1818,6 @@ export const COPY = {
   "shells": {
     "radio": "Радио с Земли дошло на {n} св. лет"
   },
-  "subscribe": {
-    "heading": "Присылайте мне на почту, что будет",
-    "emailLabel": "Ваш адрес электронной почты",
-    "emailPlaceholder": "you@example.com",
-    "pickOne": "Отметьте хотя бы одно.",
-    "launchesLabel": "Будущие пуски",
-    "showersLabel": "Максимумы метеорных потоков",
-    "approachesLabel": "Близкие пролёты",
-    "submit": "Подписаться",
-    "sending": "Отправляем…",
-    "pending": "Проверьте почту и подтвердите подписку.",
-    "couldNotReach": "Не удалось связаться со службой подписки."
-  },
   "groundDoor": {
     "stand": "Встать здесь",
     "drive": "Встать здесь и вести",
@@ -5758,7 +5745,8 @@ COPY.skyLore.nearest = "История: {name}";
 // b200-s4a-look: end
 
 // redesign 2026-11-10: begin -- machine-drafted: the Games link of the explore panel (copy/en.js games), the rail's
-// email updates (rail.subscribe) and their popover (copy/en.subscribe.js emailUpdates)
+// email updates (rail.subscribe), their popover and the row under Coming up (copy/en.subscribe.js emailUpdates;
+// comingUp is the old subscribe.heading, moved)
 COPY.rail.subscribe = "Новости по почте";
 COPY.games = {"label": "Игры", "title": "Космические игры команды Space Radar (откроются в новой вкладке)", "href": "https://games.spaceradar.ai/"};
 COPY.emailUpdates = {
@@ -5785,6 +5773,8 @@ COPY.emailUpdates = {
   "privacy": "Мы храним ваш адрес и выбранные списки, больше ничего. Без следящих пикселей и подменённых ссылок. В каждом письме есть отписка в один клик.",
   "privacyLink": "Конфиденциальность",
   "honeypot": "Оставьте пустым",
-  "close": "Закрыть"
+  "close": "Закрыть",
+  "comingUp": "Присылайте мне на почту, что будет",
+  "skyButton": "Получать небесные события"
 };
 // redesign 2026-11-10: end

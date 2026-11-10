@@ -4346,8 +4346,9 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   color: var(--sr-text-dim);
 }
 
-/* Email alerts (ui/subscribe.js): a row under the list that opens in place, the card's disclosure
-   row; inside it a field as the search's well, the two boxes as What to show's, one quiet button. */
+/* Email alerts (ui/subscribe.js): a row under Coming up that opens in place, the card's disclosure row.
+   Inside it, the email updates' form (ui/subscribepop.js) with the sky alerts list; its rules arrive with it
+   (css/subscribe.css). */
 .sr-subscribe-host:empty {
   display: none;
 }
@@ -4369,62 +4370,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   .sr-subscribe__chev { transition: none; }
 }
 
-.sr-subscribe__form {
-  display: grid;
-  gap: var(--sp-2);
-}
-
 .sr-subscribe__form[hidden] {
-  display: none;
-}
-
-.sr-subscribe__email {
-  width: 100%;
-  height: 44px;
-  padding: 0 var(--sp-3);
-  font: 400 var(--sr-fs-body)/20px var(--sr-font);
-  color: var(--sr-text);
-  background: var(--sr-wash);
-  border: 1px solid transparent;
-  border-radius: var(--sr-radius);
-}
-
-.sr-subscribe__email::placeholder {
-  color: var(--sr-text-soft);
-}
-
-.sr-subscribe__email:focus-visible {
-  border-color: var(--sr-line-strong);
-  outline: 2px solid var(--sr-ember);
-  outline-offset: 2px;
-}
-
-html.sr-phone .sr-subscribe__email {
-  font-size: var(--sr-fs-input);
-}
-
-.sr-subscribe__row {
-  display: flex;
-  gap: var(--sp-3);
-  align-items: center;
-  min-height: 44px;
-  font: 400 var(--sr-fs-body)/20px var(--sr-font);
-  color: var(--sr-text);
-  cursor: pointer;
-}
-
-.sr-subscribe__submit {
-  justify-self: start;
-  min-height: 44px;
-}
-
-.sr-subscribe__status {
-  margin: 0;
-  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
-  color: var(--sr-text-dim);
-}
-
-.sr-subscribe__status[hidden] {
   display: none;
 }
 

@@ -49,7 +49,7 @@ const pop = await import(join(ROOT, 'site/js/ui/subscribepop.js'));
 check(pop.SUBSCRIBE_URL === endpoint, `the popover posts to the same service (${pop.SUBSCRIBE_URL})`);
 check(pop.LISTS.join() === 'news,journal,games,sky', 'the popover offers the same four lists');
 const popSrc = read('site/js/ui/subscribepop.js');
-check(/source: 'app:rail'/.test(popSrc) && !/location\.(href|hash)/.test(popSrc), 'the popover says it is the app (app:rail) and sends no page address or view');
+check(/source = 'app:rail'/.test(popSrc) && /JSON\.stringify\(\{ email, lists, source, website: web\.value \}\)/.test(popSrc) && !/location\.(href|hash)/.test(popSrc), 'the popover says it is the app (app:rail, or app:coming-up for the row) and sends no page address or view');
 check(/website: web\.value/.test(popSrc) && /tabIndex = -1/.test(popSrc), 'the popover carries the honeypot too');
 check(!/checked = true/.test(popSrc), 'no list starts ticked in the popover');
 

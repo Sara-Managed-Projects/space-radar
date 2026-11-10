@@ -1,19 +1,21 @@
-// ui/subscribe.js -- the smallest subscribe form: an email and three checkboxes, posting to the
-// notifier's Function URL (notify/lambda_handler.py's handler_subscribe, issue #251, close
-// approaches in #377).
+// ui/subscribe.js -- "Email me what's coming up": a row under Coming up that opens in place, holding the email updates'
+// form (ui/subscribepop.js) with the one list the row is about, sky alerts (issue #251, close approaches #377).
 //
-// WHERE IT SITS (spec 0061 task 5). It arrived as a form appended to <body> with no styles: a
-// grey browser button over the globe on every visit. The guide's second principle is that nothing
-// new docks: so it is a row that opens in place under Coming up, the list it is about
-// (docs/ui-guide.md section 3.5 and the card's disclosure rows), in the sidebar on a desktop and
-// in the sheet on a phone, never over the scene. Inside: the field as the search's well, the
-// boxes as What to show's, one quiet button, a one-line status. What it does is unchanged: the
-// same payload to the same endpoint, and with no endpoint (the default: a human runs
-// scripts/provision-notifier.sh) pressing Subscribe says it could not reach the service.
-// main.js imports this module once the layers have settled, so a first visit does not pay for it.
+// WHERE IT SITS (spec 0061 task 5). Nothing new docks: it is a row that opens in place under Coming up, the list it is
+// about (docs/ui-guide.md section 3.5 and the card's disclosure rows), in the sidebar on a desktop and in the sheet on a
+// phone, never over the scene.
+//
+// ONE FORM, NOT TWO (2026-11-10). Until then this row posted three categories to the notifier of notify/, which was
+// never deployed, so main.js did not even fetch it. Now it is the same form as the rail's envelope: the same states,
+// the same words (copy/en.subscribe.js), the same request to the subscription service, with `lists: ['sky']` (launches,
+// meteor showers and close approaches: what Coming up lists) and `source: 'app:coming-up'`. The kit's single-purpose
+// form: no box to tick, the button names the list. The form, its sheet (css/subscribe.css) and its words are built on
+// the row's first opening; main.js imports this module once the layers have settled, so a first visit pays for none of it.
+//
+// Contract: createSubscribe({ parent, fetchImpl? }) -> { root, open(), form() }
 
 import { COPY } from '../copy/en.js';
-import '../copy/en.later.js';
+import { createSubscribe as createForm } from './subscribepop.js';
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -22,26 +24,10 @@ function el(tag, className, text) {
   return node;
 }
 
-/** The notifier's Function URL. Empty by default: scripts/provision-notifier.sh documents how a
- * human deploys and points this at a real one; this build ships with nothing live, by design. */
-export function notifyEndpoint() {
-  return (typeof window !== 'undefined' && window.SPACE_RADAR_NOTIFY_URL) || '';
-}
-
-export function subscribePayload(email, wantLaunches, wantShowers, wantApproaches) {
-  const categories = [];
-  if (wantLaunches) categories.push('launches');
-  if (wantShowers) categories.push('meteor-showers');
-  if (wantApproaches) categories.push('close-approaches');
-  return { email: (email || '').trim(), categories };
-}
-
 let seq = 0;
 
 export function createSubscribe({ parent, fetchImpl } = {}) {
-  const sender = fetchImpl || (typeof fetch !== 'undefined' ? fetch : null);
   if (!parent) return null;
-  const T = COPY.subscribe;
   seq += 1;
   const id = `sr-subscribe-${seq}`;
 
@@ -51,69 +37,28 @@ export function createSubscribe({ parent, fetchImpl } = {}) {
   head.id = `${id}-head`;
   head.setAttribute('aria-expanded', 'false');
   head.setAttribute('aria-controls', id);
-  head.appendChild(el('span', 'sr-disc__label', T.heading));
+  head.appendChild(el('span', 'sr-disc__label', COPY.emailUpdates.comingUp));
   const chev = el('span', 'sr-subscribe__chev', COPY.shell.openChevron);
   chev.setAttribute('aria-hidden', 'true');
   head.appendChild(chev);
 
-  const form = el('form', 'sr-disc__panel sr-subscribe__form');
-  form.id = id;
-  form.setAttribute('aria-labelledby', head.id);
-  form.hidden = true;
-
-  const email = el('input', 'sr-subscribe__email');
-  email.type = 'email';
-  email.required = true;
-  email.autocomplete = 'email';
-  email.placeholder = T.emailPlaceholder;
-  email.setAttribute('aria-label', T.emailLabel);
-
-  const check = (text) => {
-    const box = el('input', 'sr-show__box');
-    box.type = 'checkbox';
-    box.checked = true;
-    const row = el('label', 'sr-subscribe__row');
-    row.append(box, el('span', '', text));
-    return { box, row };
-  };
-  const launches = check(T.launchesLabel);
-  const showers = check(T.showersLabel);
-  const approaches = check(T.approachesLabel);
-
-  const submit = el('button', 'sr-btn sr-subscribe__submit', T.submit);
-  submit.type = 'submit';
-
-  const status = el('p', 'sr-subscribe__status', '');
-  status.setAttribute('role', 'status');
-  status.hidden = true;
-  const say = (text) => { status.textContent = text; status.hidden = !text; };
-
-  form.append(email, launches.row, showers.row, approaches.row, submit, status);
-  root.append(head, form);
+  // The panel takes the popover's tokens (.sr-subpop, css/subscribe.css) so the form looks the same in both places.
+  const panel = el('div', 'sr-disc__panel sr-subscribe__form sr-subpop');
+  panel.id = id;
+  panel.hidden = true;
+  root.append(head, panel);
   parent.appendChild(root);
 
-  head.addEventListener('click', () => {
-    const on = head.getAttribute('aria-expanded') !== 'true';
+  let form = null;
+  const open = (on = true) => {
     head.setAttribute('aria-expanded', on ? 'true' : 'false');
-    form.hidden = !on;
-  });
+    panel.hidden = !on;
+    if (on && !form) {
+      form = createForm(null, { id, list: 'sky', button: COPY.emailUpdates.skyButton, source: 'app:coming-up', labelledBy: head.id, fetchImpl });
+      panel.appendChild(form.root);
+    }
+  };
+  head.addEventListener('click', () => open(head.getAttribute('aria-expanded') !== 'true'));
 
-  form.addEventListener('submit', (ev) => {
-    ev.preventDefault();
-    const payload = subscribePayload(email.value, launches.box.checked, showers.box.checked, approaches.box.checked);
-    if (!payload.email) return;
-    if (payload.categories.length === 0) { say(T.pickOne); return; }
-    const endpoint = notifyEndpoint();
-    if (!endpoint || !sender) { say(T.couldNotReach); return; }
-    say(T.sending);
-    sender(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-      .then((res) => say(res.ok ? T.pending : T.couldNotReach))
-      .catch(() => say(T.couldNotReach));
-  });
-
-  return { root, destroy: () => root.remove() };
+  return { root, open, form: () => form, destroy: () => root.remove() };
 }

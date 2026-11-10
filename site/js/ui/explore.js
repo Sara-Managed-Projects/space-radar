@@ -584,7 +584,7 @@ export function createExplore(ctx, host) {
   const next = createNext(ctx, { limit: COMING_UP_ROWS });
   next.root.classList.add('sr-sect');
   earth.appendChild(next.root);
-  // Where the email row sits when there is a notifier (ui/subscribe.js): under the list it is about.
+  // Where the email row sits (ui/subscribe.js, the sky alerts list): under the list it is about.
   const subscribeHost = el('div', 'sr-subscribe-host');
   next.root.appendChild(subscribeHost);
 
