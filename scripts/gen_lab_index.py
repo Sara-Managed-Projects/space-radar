@@ -31,7 +31,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from seo_footer import sitelinks  # noqa: E402
+from seo_chrome import footer, header, styles  # noqa: E402
+from seo_subscribe import script as subscribe_script  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 LAB = ROOT / "site" / "lab"
@@ -135,27 +136,23 @@ f.addEventListener('input',function(){run(true)});f.addEventListener('submit',fu
 
 
 LAB_CSS = """
-main,.top__in,.foot__in{width:min(100% - 2*var(--g),1160px)}
-.intro{display:flex;flex-wrap:wrap;align-items:center;gap:16px 24px;margin:0 0 24px}
-.intro p{margin:0}
-.grid{list-style:none;margin:0;padding:0;display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr))}
-.grid{gap:16px}
-.card{display:flex;flex-direction:column;gap:6px;height:100%;padding:18px 20px 20px;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.015));box-shadow:0 0 0 1px rgba(255,255,255,.09);color:var(--sr-text);text-decoration:none;transition:box-shadow .4s,translate .4s}
-.card:hover{color:var(--sr-text);box-shadow:0 0 0 1px rgba(255,159,67,.7),0 22px 50px -28px var(--sr-ember);translate:0 -3px}
-.card .micro{margin:0}
-.card h3{margin:0;font-size:1.25rem;line-height:1.2}
-.card p{margin:0;font-size:14.5px;line-height:1.5;color:#b9c2d0}
-.cat{margin:32px 0 12px;padding-top:0;border-top:0;scroll-margin-top:12px}
-.topics{margin:0 0 8px}
-.add{margin-top:40px;padding:20px;border:1px dashed var(--sr-line);border-radius:18px}
-.add h2{margin:0 0 8px;padding:0;border:0}
-.lfilter{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:end;margin:8px 0 16px}
-.lfilter label{display:grid;gap:4px;font-size:13px;color:var(--sr-text-dim);min-width:0;flex:1 1 200px;max-width:100%}
-.lfilter select,.lfilter input{box-sizing:border-box;width:100%;min-height:44px;max-width:100%;margin:0;border-radius:12px;border:1px solid var(--sr-line);background:var(--sr-wash);color:var(--sr-text);font:400 15px/20px Inter,system-ui,sans-serif;padding:0 12px}
+.lab .wrap>.topics{margin:0 0 .5rem}
+.lfilter{display:flex;flex-wrap:wrap;gap:.8rem 1rem;align-items:end;margin:0 0 1.4rem}
+.lfilter label{display:grid;gap:.5rem;font:600 .74rem/1 var(--cap);letter-spacing:.16em;text-transform:uppercase;color:var(--dim);min-width:0;flex:1 1 13rem;max-width:100%}
+.lfilter select,.lfilter input{width:100%;min-height:48px;max-width:100%;margin:0;border-radius:999px;border:0;box-shadow:inset 0 0 0 1px var(--line);background:var(--bg2);color:var(--tx);font:400 1rem/1.2 var(--sans);letter-spacing:0;text-transform:none;padding:0 1.1rem}
+.lfilter select option,.lfilter select optgroup{background:var(--bg);color:var(--tx)}
 .lfilter input{-webkit-appearance:none;appearance:none;background-image:none}
-.lcount{flex-basis:100%;margin:0;font-size:14px;color:var(--sr-text-dim);min-height:20px}
-.card .tags{font-size:12.5px;line-height:1.45;color:#8f9aab}
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.lcount{flex-basis:100%;margin:0;font-size:.9rem;color:var(--dim);min-height:1.3rem}
+.lab h2.cat{font:600 clamp(1.6rem,2.8vw,2.2rem)/1.08 var(--head);letter-spacing:-.012em;margin:2.8rem 0 1.1rem;scroll-margin-top:5.5rem}
+.lab ul.grid{list-style:none;margin:0;padding:0}
+.lab .grid>li{display:flex}
+.lab a.card{flex:1;gap:.6rem;padding:1.15rem 1.3rem 1.3rem;color:var(--tx);text-decoration:none}
+.lab a.card h3{margin:0;font:600 1.35rem/1.12 var(--head);letter-spacing:-.008em;text-wrap:balance}
+.lab a.card p{margin:0;color:#b9c2d0;font-size:.95rem;line-height:1.55}
+.lab a.card .tags{margin-top:auto;padding-top:.3rem;font:400 .76rem/1.5 var(--mono);color:#8f9aab}
+.add{margin-top:3.5rem;padding:clamp(1.3rem,3vw,2rem);border-radius:20px;background:radial-gradient(120% 140% at 100% 0,color-mix(in oklab,var(--a) 16%,transparent),transparent 60%),var(--panel);box-shadow:0 0 0 1px color-mix(in oklab,var(--a) 30%,var(--line))}
+.add h2{margin:0 0 .6rem;font:600 clamp(1.4rem,2.6vw,1.9rem)/1.1 var(--head)}
+.add p{color:#c5cdda;max-width:44rem}
 """
 
 
@@ -205,31 +202,33 @@ def build() -> str:
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="{HOST}/og/default.png">
 <link rel="icon" href="{icon}">
-<link rel="stylesheet" href="../css/fonts.css">
-<link rel="stylesheet" href="../css/static.css">
+{styles("../")}
 <style>
 {LAB_CSS}</style>
 </head>
 <body>
-<header class="top"><div class="top__in"><a class="mark" href="../index.html">Space Radar</a><nav aria-label="Site"><a href="https://blog.spaceradar.ai/">Blog</a></nav><a class="openmap" href="../index.html">Open the 3D map</a></div></header>
-<main>
-<p class="micro">Space Radar Lab</p>
+<a class="skip" href="#main">Skip to the content</a>
+{header("../", current="lab")}
+<main id="main" class="lab">
+<header class="ph"><div class="wrap ph__in">
+<p class="eyebrow">Space Radar Lab</p>
 <h1>Tiny space simulators</h1>
-<div class="intro"><p class="lead">{len(sims)} small pages, each teaching one idea about space. Every number is quoted from its source, and every page says what is and is not to scale. Open one and move the slider.</p></div>
+<p class="lead">{len(sims)} small pages, each teaching one idea about space. Every number is quoted from its source, and every page says what is and is not to scale. Open one and move the slider.</p>
+</div></header>
+<div class="wrap">
 {filter_form(lv["codes"])}
-<nav aria-label="Topics"><ul class="links topics">{"".join(chips)}</ul></nav>
+<nav aria-label="Topics"><ul class="tagcloud topics">{"".join(chips)}</ul></nav>
 {chr(10).join(sections)}
 <section class="add" aria-labelledby="add-h">
 <h2 id="add-h">Add your own simulator</h2>
 <p>One HTML file, no libraries, no network, about ten minutes. Copy the starter, change the numbers, quote your source, open a pull request.</p>
-<ul class="links"><li><a href="{GUIDE}">Read the guide</a></li><li><a href="{PROPOSE}">Propose or build a simulator</a></li><li><a href="https://github.com/Sara-Managed-Projects/space-radar/labels/track%3Alab">Open tasks</a></li></ul>
+<ul class="tagcloud"><li><a href="{GUIDE}">Read the guide</a></li><li><a href="{PROPOSE}">Propose or build a simulator</a></li><li><a href="https://github.com/Sara-Managed-Projects/space-radar/labels/track%3Alab">Open tasks</a></li></ul>
 </section>
+</div>
 </main>
-<footer><div class="foot__in">
-{sitelinks("../")}
-</div></footer>
+{footer("../", f"{HOST}/lab/index.html")}
 <script>{FILTER_JS}</script>
-</body>
+{subscribe_script("../")}</body>
 </html>
 """
 

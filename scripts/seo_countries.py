@@ -150,22 +150,22 @@ def country_page(host: str, r: dict, as_of: str) -> Page:
             f'{esc(j["name"])} ({groups(j["up"])} in orbit, <a href="../#owner={esc(j["code"])}">on the map</a>)' for j in r["joint"]) + ".</p>\n"
     newest = ""
     if r["newest"]:
-        newest = "<h2>The newest working satellites</h2>\n<ul class=\"links\">" + "".join(f"<li>{esc(n)} ({esc(y)})</li>" for n, y in r["newest"]) + "</ul>\n"
+        newest = "<h2>The newest working satellites</h2>\n<ul class=\"tagcloud\">" + "".join(f"<li>{esc(n)} ({esc(y)})</li>" for n, y in r["newest"]) + "</ul>\n"
     nopath = ""
     if r["no_path"]:
         nopath = (f"<p>{groups(r['no_path'])} of its payloads in orbit have no public path: the catalogue lists them, but no element set "
                   "is published for them, or they are beyond Earth orbit. The map lists them and says which.</p>\n")
     body = (
-        (f'<p class="micro"><img src="{flag}" alt="" width="21" height="14" style="vertical-align:-2px;margin-right:6px">Satellites by country</p>\n' if flag
-         else '<p class="micro">Satellites by country</p>\n')
+        (f'<p class="eyebrow"><img src="{flag}" alt="" width="21" height="14" style="vertical-align:-2px;margin-right:6px">Satellites by country</p>\n' if flag
+         else '<p class="eyebrow">Satellites by country</p>\n')
         + f"<h1>{esc(name)} has {groups(r['up'])} objects in orbit</h1>\n"
         + f'<p class="lead">CelesTrak\'s satellite catalogue, read {esc(day)}, lists {groups(r["up"])} objects in orbit owned by {esc(name)}: '
         f"<strong>{groups(r['working'])} working satellites</strong>, {groups(r['dead'])} that no longer work, {groups(r['rocket'])} rocket bodies "
         f"and {groups(r['debris'])} pieces of debris. {groups(r['ever'])} have been catalogued since its first launch.</p>\n"
         + note
-        + f'<div class="cta"><a class="live" href="../#owner={esc(code)}">See all of them on the live map</a><p>Free, with no account and no advertising.</p></div>\n'
+        + f'<div class="cta"><a class="btn btn--map" href="../#owner={esc(code)}">See all of them on the live map</a><p>Free, with no account and no advertising.</p></div>\n'
         + newest + nopath + joint
-        + '<div class="note"><p><strong>Measured.</strong> The counts are the catalogue\'s: what radar can track, about 10 cm and up, '
+        + '<div class="callout callout--note"><p><strong>Measured.</strong> The counts are the catalogue\'s: what radar can track, about 10 cm and up, '
         "on the day given. A satellite's place on the map is worked out from its published orbit.</p></div>\n"
         + '<p><a href="index.html">Every country</a> · <a href="../satellites/index.html">The live satellite map</a></p>\n')
     page = Page(path=f"country/{slug}/index.html", title=title, description=desc, body=body,
@@ -182,11 +182,11 @@ def country_page(host: str, r: dict, as_of: str) -> Page:
 def index_page(host: str, rows: list[dict], as_of: str) -> Page:
     day = day_words(as_of)
     items = "".join(f'<li><a href="{r["iso"].lower()}/index.html">{esc(r["name"])}</a> · {groups(r["up"])} in orbit</li>' for r in rows)
-    body = ("<p class=\"micro\">Satellites by country</p>\n"
+    body = ("<p class=\"eyebrow\">Satellites by country</p>\n"
             f"<h1>Satellites by country: {len(rows)} countries</h1>\n"
             f"<p class=\"lead\">Every country CelesTrak's satellite catalogue names as an owner, with how many objects each has in orbit (read {esc(day)}).</p>\n"
-            f'<ul class="links">{items}</ul>\n'
-            '<div class="cta"><a class="live" href="../">Open the live map</a><p>Find, then By country: every one lit on the globe.</p></div>\n')
+            f'<ul class="tagcloud">{items}</ul>\n'
+            '<div class="cta"><a class="btn btn--map" href="../">Open the live map</a><p>Find, then By country: every one lit on the globe.</p></div>\n')
     page = Page(path="country/index.html", title=f"Satellites by country: {len(rows)} countries",
                 description=f"How many satellites, rocket bodies and pieces of debris each of {len(rows)} countries has in orbit, from CelesTrak's catalogue.",
                 body=body, foot=f"<p>Source: CelesTrak's satellite catalogue, read {esc(day)}.</p>\n", lastmod=as_of)

@@ -1,0 +1,45 @@
+/* css/subscribe.css -- the email updates' popover of the map (ui/subscribepop.js, behind the rail's envelope), loaded with
+   the module on the first press (ui/latercss.js), so none of it is a first visit's bytes.
+
+   It is the design kit's subscribe form (internal web-kit/css/subscribe.css), the same rules the static pages carry in
+   css/static.css between the two "subscribe" markers (tests/test_subscribe_form.mjs holds the two copies equal). The
+   map does not load the kit's tokens.css, which styles a whole page; the tokens the form reads are set here on the
+   popover alone, with the kit's values, so it looks like the journal's form inside the map's glass
+   (web-kit/DESIGN.md, the app popover: 320 px, opened only by a click). */
+.sr-subpop{--bg:#0B0E14;--bg2:#05070A;--panel:#111723;--line:#ffffff1f;--tx:#E8ECF2;--dim:#9AA4B2;--atm:#6EC3FF;--ember:#FF9F43;--a:#6EC3FF;--sans:var(--sr-font);--cap:var(--sr-font-hud);--head:var(--sr-font-hud);font:400 15px/1.5 var(--sans);color:var(--tx)}
+.sr-subpop .btn{white-space:nowrap;display:inline-flex;align-items:center;gap:.4rem;padding:.72rem 1.15rem;min-height:44px;border-radius:999px;background:var(--atm);color:#06101a;font:600 .95rem/1 var(--sans);text-decoration:none;border:0;cursor:pointer;transition:filter .2s}
+.sr-subpop .btn:hover{filter:brightness(1.1)}
+.sr-subpop :focus-visible{outline:2px solid var(--atm);outline-offset:2px}
+.sr-subpop__top{display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;margin:0 0 .5rem}
+.sr-subpop__top .sub__h{margin:.3rem 0 0}
+.sr-subpop__x{flex:none;display:grid;place-items:center;width:44px;height:44px;margin:-10px -10px 0 0;padding:0;border:0;border-radius:50%;background:transparent;color:var(--dim);cursor:pointer}
+.sr-subpop__x:hover{color:var(--tx);background:#ffffff12}
+.sr-subpop .sub{gap:.85rem}.sr-subpop .sub__x{margin:0!important;font-size:.9rem;color:#c5cdda}
+.sr-subpop .sub__l label{font-size:.88rem}
+.sr-subpop .sub__e{flex-basis:100%}.sr-subpop .sub__b{flex:1 0 100%;justify-content:center}
+.sr-subpop .sub__p{font-size:.78rem}
+/* subscribe: begin (the same rules as css/subscribe.css, which the map's popover loads; tests/test_subscribe_form.mjs holds the two equal) */
+.sub{--sc:var(--a,var(--atm));display:grid;gap:1rem 2rem;align-items:start}
+.sub__t>*{margin:0}.sub__h{font:600 clamp(1.4rem,2.6vw,1.9rem)/1.1 var(--head);letter-spacing:-.01em;color:var(--tx);text-wrap:balance}
+.sub__x{color:#c5cdda;margin-top:.45rem!important;max-width:34rem}
+.sub__f{display:grid;gap:.7rem;min-width:0}
+.sub__l{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.5rem}.sub__l legend{font:600 .74rem/1 var(--cap);letter-spacing:.16em;text-transform:uppercase;color:var(--dim);padding:0;margin-bottom:.55rem}
+.sub__l label{display:inline-flex;align-items:center;gap:.5rem;min-height:40px;padding:.3rem .85rem .3rem .6rem;border-radius:999px;box-shadow:inset 0 0 0 1px var(--line);cursor:pointer;font-size:.92rem;color:var(--tx);transition:box-shadow .2s,background .2s}
+.sub__l label:hover{box-shadow:inset 0 0 0 1px color-mix(in oklab,var(--sc) 60%,transparent)}
+.sub__l input{width:18px;height:18px;margin:0;accent-color:var(--sc)}.sub__l label:has(input:checked){background:color-mix(in oklab,var(--sc) 14%,transparent);box-shadow:inset 0 0 0 1px var(--sc)}
+.sub__l label:has(input:focus-visible){outline:2px solid var(--atm);outline-offset:2px}
+.sub__r{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
+.sub__lb{flex:1 0 100%;font:600 .74rem/1 var(--cap);letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.sub__e{flex:1 1 14rem;min-width:0;min-height:48px;padding:.7rem 1.1rem;border-radius:999px;border:0;background:var(--bg2);color:var(--tx);font:400 1rem/1.2 var(--sans);box-shadow:inset 0 0 0 1px var(--line)}
+.sub__e::placeholder{color:#6b7584}.sub__e:focus-visible{outline:2px solid var(--atm);outline-offset:2px}
+.sub__b{min-height:48px}.sub__b svg{width:18px;height:18px;flex:none}.sub__b:disabled{opacity:.7;cursor:progress;filter:none;translate:none}
+.sub__hp{position:absolute!important;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
+.sub__s{margin:0;min-height:0;font-size:.95rem}.sub__s:empty{display:none}
+.sub[data-state=error] .sub__s,.sub[data-state=retry] .sub__s{color:#ffb3a1}.sub[data-state=error] .sub__s::before,.sub[data-state=retry] .sub__s::before{content:"! ";font-weight:600}
+.sub[data-state=check] .sub__s{color:var(--tx);padding:.8rem 1rem;border-radius:14px;background:color-mix(in oklab,#63E0A4 12%,transparent);box-shadow:inset 0 0 0 1px color-mix(in oklab,#63E0A4 45%,transparent)}.sub[data-state=check] .sub__s::before{content:"\2713  ";color:#63E0A4;font-weight:600}
+.sub[data-state=check] .sub__r,.sub[data-state=check] .sub__l{display:none}
+.sub__p{margin:0;font-size:.82rem;line-height:1.5;color:var(--dim);max-width:40rem}.sub__p a{color:var(--atm)}
+.sub--card{position:relative;padding:clamp(1.3rem,3vw,2rem);border-radius:20px;background:radial-gradient(120% 140% at 100% 0,color-mix(in oklab,var(--sc) 16%,transparent),transparent 60%),var(--panel);box-shadow:0 0 0 1px color-mix(in oklab,var(--sc) 30%,var(--line))}
+.foot>.sub--band{width:min(100% - 2*var(--g),var(--wrap));margin-inline:auto;padding:2.6rem 0 2.2rem;border-bottom:1px solid var(--line)}
+@media(min-width:900px){.sub--band{grid-template-columns:minmax(0,1fr) minmax(0,1.35fr)}.sub--card.sub--wide{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)}}
+/* subscribe: end */

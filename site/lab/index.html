@@ -18,41 +18,45 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://www.spaceradar.ai/og/default.png">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12.5' fill='%230B0E14'/><circle cx='32' cy='32' r='14.38' fill='%232E6FB8'/></svg>">
-<link rel="stylesheet" href="../css/fonts.css">
+<link rel="preload" href="../fonts/inter-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../fonts/barlow-semi-condensed-600-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/tokens.css">
 <link rel="stylesheet" href="../css/static.css">
 <style>
 
-main,.top__in,.foot__in{width:min(100% - 2*var(--g),1160px)}
-.intro{display:flex;flex-wrap:wrap;align-items:center;gap:16px 24px;margin:0 0 24px}
-.intro p{margin:0}
-.grid{list-style:none;margin:0;padding:0;display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr))}
-.grid{gap:16px}
-.card{display:flex;flex-direction:column;gap:6px;height:100%;padding:18px 20px 20px;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.015));box-shadow:0 0 0 1px rgba(255,255,255,.09);color:var(--sr-text);text-decoration:none;transition:box-shadow .4s,translate .4s}
-.card:hover{color:var(--sr-text);box-shadow:0 0 0 1px rgba(255,159,67,.7),0 22px 50px -28px var(--sr-ember);translate:0 -3px}
-.card .micro{margin:0}
-.card h3{margin:0;font-size:1.25rem;line-height:1.2}
-.card p{margin:0;font-size:14.5px;line-height:1.5;color:#b9c2d0}
-.cat{margin:32px 0 12px;padding-top:0;border-top:0;scroll-margin-top:12px}
-.topics{margin:0 0 8px}
-.add{margin-top:40px;padding:20px;border:1px dashed var(--sr-line);border-radius:18px}
-.add h2{margin:0 0 8px;padding:0;border:0}
-.lfilter{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:end;margin:8px 0 16px}
-.lfilter label{display:grid;gap:4px;font-size:13px;color:var(--sr-text-dim);min-width:0;flex:1 1 200px;max-width:100%}
-.lfilter select,.lfilter input{box-sizing:border-box;width:100%;min-height:44px;max-width:100%;margin:0;border-radius:12px;border:1px solid var(--sr-line);background:var(--sr-wash);color:var(--sr-text);font:400 15px/20px Inter,system-ui,sans-serif;padding:0 12px}
+.lab .wrap>.topics{margin:0 0 .5rem}
+.lfilter{display:flex;flex-wrap:wrap;gap:.8rem 1rem;align-items:end;margin:0 0 1.4rem}
+.lfilter label{display:grid;gap:.5rem;font:600 .74rem/1 var(--cap);letter-spacing:.16em;text-transform:uppercase;color:var(--dim);min-width:0;flex:1 1 13rem;max-width:100%}
+.lfilter select,.lfilter input{width:100%;min-height:48px;max-width:100%;margin:0;border-radius:999px;border:0;box-shadow:inset 0 0 0 1px var(--line);background:var(--bg2);color:var(--tx);font:400 1rem/1.2 var(--sans);letter-spacing:0;text-transform:none;padding:0 1.1rem}
+.lfilter select option,.lfilter select optgroup{background:var(--bg);color:var(--tx)}
 .lfilter input{-webkit-appearance:none;appearance:none;background-image:none}
-.lcount{flex-basis:100%;margin:0;font-size:14px;color:var(--sr-text-dim);min-height:20px}
-.card .tags{font-size:12.5px;line-height:1.45;color:#8f9aab}
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.lcount{flex-basis:100%;margin:0;font-size:.9rem;color:var(--dim);min-height:1.3rem}
+.lab h2.cat{font:600 clamp(1.6rem,2.8vw,2.2rem)/1.08 var(--head);letter-spacing:-.012em;margin:2.8rem 0 1.1rem;scroll-margin-top:5.5rem}
+.lab ul.grid{list-style:none;margin:0;padding:0}
+.lab .grid>li{display:flex}
+.lab a.card{flex:1;gap:.6rem;padding:1.15rem 1.3rem 1.3rem;color:var(--tx);text-decoration:none}
+.lab a.card h3{margin:0;font:600 1.35rem/1.12 var(--head);letter-spacing:-.008em;text-wrap:balance}
+.lab a.card p{margin:0;color:#b9c2d0;font-size:.95rem;line-height:1.55}
+.lab a.card .tags{margin-top:auto;padding-top:.3rem;font:400 .76rem/1.5 var(--mono);color:#8f9aab}
+.add{margin-top:3.5rem;padding:clamp(1.3rem,3vw,2rem);border-radius:20px;background:radial-gradient(120% 140% at 100% 0,color-mix(in oklab,var(--a) 16%,transparent),transparent 60%),var(--panel);box-shadow:0 0 0 1px color-mix(in oklab,var(--a) 30%,var(--line))}
+.add h2{margin:0 0 .6rem;font:600 clamp(1.4rem,2.6vw,1.9rem)/1.1 var(--head)}
+.add p{color:#c5cdda;max-width:44rem}
 </style>
 </head>
 <body>
-<header class="top"><div class="top__in"><a class="mark" href="../index.html">Space Radar</a><nav aria-label="Site"><a href="https://blog.spaceradar.ai/">Blog</a></nav><a class="openmap" href="../index.html">Open the 3D map</a></div></header>
-<main>
-<p class="micro">Space Radar Lab</p>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="top top--x"><div class="top__in"><a class="brand" href="../" aria-label="Space Radar, home"><span class="ring"><svg viewBox="0 0 48 48" width="40" height="40" aria-hidden="true"><circle class="ring__t" cx="24" cy="24" r="21" pathLength="1"/><circle class="ring__p" cx="24" cy="24" r="21" pathLength="1"/></svg><img src="../images/icons/favicon.svg" width="22" height="22" alt=""></span><span class="brand__t">Space Radar</span></a>
+<nav class="xnav" aria-label="Space Radar sites"><a href="../">Map</a><a href="https://blog.spaceradar.ai/">Journal</a><a href="https://games.spaceradar.ai/">Games</a><a href="../lab/index.html" aria-current="true">Lab</a></nav>
+<div class="top__r"><a class="btn btn--sub" href="#subscribe" aria-label="Subscribe to email updates"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M4 7.5l8 6 8-6"/></svg><span>Subscribe</span></a><a class="btn btn--map" href="../"><span class="xs">Open the</span>3D map</a></div></div></header>
+<main id="main" class="lab">
+<header class="ph"><div class="wrap ph__in">
+<p class="eyebrow">Space Radar Lab</p>
 <h1>Tiny space simulators</h1>
-<div class="intro"><p class="lead">105 small pages, each teaching one idea about space. Every number is quoted from its source, and every page says what is and is not to scale. Open one and move the slider.</p></div>
+<p class="lead">105 small pages, each teaching one idea about space. Every number is quoted from its source, and every page says what is and is not to scale. Open one and move the slider.</p>
+</div></header>
+<div class="wrap">
 <form class="lfilter" id="lfilter" role="search" aria-label="Filter the simulators"><label>Age <select name="band"><option value="">All ages</option><option value="7-11">Ages 7-11</option><option value="11-14">Ages 11-14</option><option value="14-16">Ages 14-16</option><option value="16-18">Ages 16-18</option><option value="18+">Ages 18+</option></select></label><label>Curriculum <select name="code"><option value="">Any curriculum</option><optgroup label="NGSS (US)"><option value="ngss:1-ESS1-1">1-ESS1-1: Use observations of the sun, moon, and stars to describe patterns that</option><option value="ngss:5-PS2-1">5-PS2-1: The gravitational force exerted by Earth on objects is directed down</option><option value="ngss:5-ESS1-1">5-ESS1-1: The apparent brightness of the sun compared to other stars is due to t</option><option value="ngss:5-ESS1-2">5-ESS1-2: Patterns of daily changes in length and direction of shadows, day and </option><option value="ngss:MS-PS2-2">MS-PS2-2: The change in an object&#x27;s motion depends on the sum of the forces</option><option value="ngss:MS-PS2-4">MS-PS2-4: Gravitational interactions are attractive and depend on the masses of </option><option value="ngss:MS-PS3-1">MS-PS3-1: Relationships of kinetic energy to the mass of an object and to its sp</option><option value="ngss:MS-PS4-1">MS-PS4-1: A simple model for waves that includes how the amplitude of a wave is </option><option value="ngss:MS-ESS1-1">MS-ESS1-1: An Earth-sun-moon model of the cyclic patterns of lunar phases, eclips</option><option value="ngss:MS-ESS1-2">MS-ESS1-2: The role of gravity in the motions within galaxies and the solar syste</option><option value="ngss:MS-ESS1-3">MS-ESS1-3: Scale properties of objects in the solar system</option><option value="ngss:HS-PS2-1">HS-PS2-1: Newton&#x27;s second law: the mathematical relationship among force, m</option><option value="ngss:HS-PS2-4">HS-PS2-4: Newton&#x27;s Law of Gravitation to describe and predict the gravitati</option><option value="ngss:HS-PS3-1">HS-PS3-1: Calculate the change in the energy of one component in a system</option><option value="ngss:HS-PS4-1">HS-PS4-1: Mathematical relationships among the frequency, wavelength, and speed </option><option value="ngss:HS-ESS1-1">HS-ESS1-1: The life span of the sun and the role of nuclear fusion in its core</option><option value="ngss:HS-ESS1-2">HS-ESS1-2: The Big Bang theory, from light spectra, the motion of distant galaxie</option><option value="ngss:HS-ESS1-3">HS-ESS1-3: The way stars, over their life cycle, produce elements</option><option value="ngss:HS-ESS1-4">HS-ESS1-4: Mathematical or computational representations to predict the motion of</option><option value="ngss:HS-ESS2-4">HS-ESS2-4: Variations in the flow of energy into and out of Earth&#x27;s systems </option></optgroup><optgroup label="England KS3"><option value="ks3:space-gravity">space-gravity: gravity force, weight = mass x gravitational field strength (g); g dif</option><option value="ks3:space-stars">space-stars: our Sun as a star, other stars in our galaxy, other galaxies</option><option value="ks3:space-seasons">space-seasons: the seasons and the Earth&#x27;s tilt, day length at different times o</option><option value="ks3:space-light-year">space-light-year: the light year as a unit of astronomical distance</option><option value="ks3:light-waves">light-waves: light waves travelling through a vacuum; the speed of light; light tra</option><option value="ks3:sound-waves">sound-waves: frequencies of sound waves, measured in hertz; waves on water as undul</option><option value="ks3:motion-speed">motion-speed: speed and the quantitative relationship between average speed, distanc</option><option value="ks3:forces-balance">forces-balance: forces as pushes or pulls; forces being needed to cause objects to sto</option><option value="ks3:energy-changes">energy-changes: energy changes on deformation; changes in systems; comparing energy va</option><option value="ks3:earth-atmosphere">earth-atmosphere: the composition of the atmosphere; the production of carbon dioxide by</option></optgroup><optgroup label="GCSE physics (AQA 8463)"><option value="gcse:4.1.1">4.1.1: Energy changes in a system, and the ways energy is stored (kinetic ene</option><option value="gcse:4.5.1.3">4.5.1.3: Mass and weight (W = m g)</option><option value="gcse:4.5.6">4.5.6: Forces and motion (speed, velocity, circular motion, Newton&#x27;s law</option><option value="gcse:4.5.7">4.5.7: Momentum (HT)</option><option value="gcse:4.6.1.2">4.6.1.2: Properties of waves (wave speed = frequency x wavelength)</option><option value="gcse:4.6.2">4.6.2: Electromagnetic waves</option><option value="gcse:4.6.3">4.6.3: Black body radiation (physics only)</option><option value="gcse:4.8.1.1">4.8.1.1: Our solar system</option><option value="gcse:4.8.1.2">4.8.1.2: The life cycle of a star</option><option value="gcse:4.8.1.3">4.8.1.3: Orbital motion, natural and artificial satellites</option><option value="gcse:4.8.2">4.8.2: Red-shift</option></optgroup><optgroup label="IB Physics (2025)"><option value="ib:A.1">A.1: Kinematics</option><option value="ib:A.2">A.2: Forces and momentum</option><option value="ib:A.3">A.3: Work, energy and power</option><option value="ib:A.5">A.5: Galilean and special relativity</option><option value="ib:B.1">B.1: Thermal energy transfers</option><option value="ib:B.2">B.2: Greenhouse effect</option><option value="ib:C.2">C.2: Wave model</option><option value="ib:C.3">C.3: Wave phenomena</option><option value="ib:C.5">C.5: Doppler effect</option><option value="ib:D.1">D.1: Gravitational fields</option><option value="ib:E.5">E.5: Fusion and stars</option></optgroup></select></label><label>Words <input type="search" name="q" placeholder="gravity, Moon, light"></label><p class="lcount" id="lcount" role="status" aria-live="polite"></p></form>
-<nav aria-label="Topics"><ul class="links topics"><li><a href="#cat-orbits-and-gravity" data-name="Orbits and gravity">Orbits and gravity (20)</a></li><li><a href="#cat-planets-and-moons" data-name="Planets and moons">Planets and moons (11)</a></li><li><a href="#cat-scale-and-distance" data-name="Scale and distance">Scale and distance (13)</a></li><li><a href="#cat-light-and-time" data-name="Light and time">Light and time (12)</a></li><li><a href="#cat-rockets-and-spaceflight" data-name="Rockets and spaceflight">Rockets and spaceflight (10)</a></li><li><a href="#cat-stars-and-their-lives" data-name="Stars and their lives">Stars and their lives (11)</a></li><li><a href="#cat-sky-from-earth" data-name="Sky from Earth">Sky from Earth (7)</a></li><li><a href="#cat-cosmology-and-black-holes" data-name="Cosmology and black holes">Cosmology and black holes (15)</a></li><li><a href="#cat-stars-and-galaxies" data-name="Stars and galaxies">Stars and galaxies (4)</a></li><li><a href="#cat-earth-moon-and-sun" data-name="Earth, Moon and Sun">Earth, Moon and Sun (2)</a></li></ul></nav>
+<nav aria-label="Topics"><ul class="tagcloud topics"><li><a href="#cat-orbits-and-gravity" data-name="Orbits and gravity">Orbits and gravity (20)</a></li><li><a href="#cat-planets-and-moons" data-name="Planets and moons">Planets and moons (11)</a></li><li><a href="#cat-scale-and-distance" data-name="Scale and distance">Scale and distance (13)</a></li><li><a href="#cat-light-and-time" data-name="Light and time">Light and time (12)</a></li><li><a href="#cat-rockets-and-spaceflight" data-name="Rockets and spaceflight">Rockets and spaceflight (10)</a></li><li><a href="#cat-stars-and-their-lives" data-name="Stars and their lives">Stars and their lives (11)</a></li><li><a href="#cat-sky-from-earth" data-name="Sky from Earth">Sky from Earth (7)</a></li><li><a href="#cat-cosmology-and-black-holes" data-name="Cosmology and black holes">Cosmology and black holes (15)</a></li><li><a href="#cat-stars-and-galaxies" data-name="Stars and galaxies">Stars and galaxies (4)</a></li><li><a href="#cat-earth-moon-and-sun" data-name="Earth, Moon and Sun">Earth, Moon and Sun (2)</a></li></ul></nav>
 <h2 class="cat" id="cat-orbits-and-gravity">Orbits and gravity</h2>
 <ul class="grid">
 <li><a class="card" href="binary-dance-barycentre/index.html" data-band="14-16 16-18" data-code="ngss:HS-PS2-4 gcse:4.8.1.3 ib:D.1"><h3>Binary Dance</h3><p>Two stars really orbit a point between them, closer to the heavier one.</p><p class="tags">Ages 14-16, 16-18 · NGSS HS-PS2-4 · GCSE 4.8.1.3 · IB D.1</p></a></li>
@@ -191,30 +195,43 @@ main,.top__in,.foot__in{width:min(100% - 2*var(--g),1160px)}
 <section class="add" aria-labelledby="add-h">
 <h2 id="add-h">Add your own simulator</h2>
 <p>One HTML file, no libraries, no network, about ten minutes. Copy the starter, change the numbers, quote your source, open a pull request.</p>
-<ul class="links"><li><a href="https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/ADD_A_SIMULATOR.md">Read the guide</a></li><li><a href="https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=simulator.yml">Propose or build a simulator</a></li><li><a href="https://github.com/Sara-Managed-Projects/space-radar/labels/track%3Alab">Open tasks</a></li></ul>
+<ul class="tagcloud"><li><a href="https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/ADD_A_SIMULATOR.md">Read the guide</a></li><li><a href="https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=simulator.yml">Propose or build a simulator</a></li><li><a href="https://github.com/Sara-Managed-Projects/space-radar/labels/track%3Alab">Open tasks</a></li></ul>
 </section>
+</div>
 </main>
-<footer><div class="foot__in">
-<nav class="sitelinks" aria-label="Space Radar on the web"><ul>
+<footer class="foot"><form class="sub sub--band" id="subscribe" method="post" action="https://xc6vgkqu32sjm6cu4wqgvzrmsa0ytybx.lambda-url.eu-north-1.on.aws/subscribe" accept-charset="utf-8" aria-labelledby="subscribe-h" data-sub data-multi><div class="sub__t"><h2 class="sub__h" id="subscribe-h">Free email updates from Space Radar</h2><p class="sub__x">News of the map, new journal posts, the space games and the sky&#x27;s coming events. Pick what you want; leave in one click.</p></div><div class="sub__f"><fieldset class="sub__l"><legend>Pick at least one</legend><label><input type="checkbox" name="lists" value="news"><span>Space Radar news</span></label><label><input type="checkbox" name="lists" value="journal"><span>The Journal</span></label><label><input type="checkbox" name="lists" value="games"><span>Space games</span></label><label><input type="checkbox" name="lists" value="sky"><span>Sky alerts</span></label></fieldset><input type="hidden" name="source" value="https://www.spaceradar.ai/lab/index.html"><div class="sub__r"><label class="sub__lb" for="subscribe-e">Email address</label><input class="sub__e" id="subscribe-e" type="email" name="email" autocomplete="email" inputmode="email" required spellcheck="false" autocapitalize="off" maxlength="254" placeholder="you@example.org"><button class="btn sub__b" type="submit"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M4 7.5l8 6 8-6"/></svg><span>Subscribe</span></button></div><div class="sub__hp" aria-hidden="true"><label for="subscribe-w">Leave this empty</label><input id="subscribe-w" type="text" name="website" tabindex="-1" autocomplete="off" value=""></div><p class="sub__s" role="status" aria-live="polite"></p><p class="sub__p">We keep your address and the lists you pick, nothing else. No tracking pixels, no rewritten links. Every email has a one-click unsubscribe. <a href="../privacy/index.html">Privacy</a>.</p></div></form><div class="foot__in"><div><a class="brand brand--f" href="../"><span class="brand__t">Space Radar</span></a><p>A free, open-source live 3D map of space: the satellites and the space station, launches, probes, planets, stars and galaxies, each drawn where it really is, with where the numbers come from.</p><p class="foot__n">No account, no advertising, no tracker and no cookie. MIT licence, <a href="https://github.com/Sara-Managed-Projects/space-radar">source on GitHub</a>.</p></div>
+<nav class="sitelinks" aria-label="Space Radar on the web">
+<div><p class="foot__h">Explore</p><ul>
 <li><a href="../about/index.html">About</a></li>
 <li><a href="../sources/index.html">Sources</a></li>
 <li><a href="../accuracy/index.html">Accuracy</a></li>
-<li><a href="../teachers/index.html">Teachers</a></li>
-<li><a href="../lab/index.html">Space simulators</a></li>
 <li><a href="../satellites/index.html">Satellites</a></li>
 <li><a href="../starlink/index.html">Starlink</a></li>
 <li><a href="../o/international-space-station.html">Where is the ISS?</a></li>
 <li><a href="../planets-tonight/index.html">Planets tonight</a></li>
 <li><a href="../events/index.html">Sky events</a></li>
+</ul></div>
+<div><p class="foot__h">Teach and share</p><ul>
+<li><a href="../teachers/index.html">Teachers</a></li>
 <li><a href="../press/index.html">Press</a></li>
 <li><a href="../embed/index.html">Embed</a></li>
 <li><a href="../creators/index.html">Creators</a></li>
+<li><a href="../privacy/index.html">Privacy</a></li>
+</ul></div>
+<div><p class="foot__h">Space Radar sites</p><ul>
+<li><a href="../">The 3D map</a></li>
+<li><a href="https://blog.spaceradar.ai/">Journal</a></li>
+<li><a href="https://games.spaceradar.ai/">Games</a></li>
+<li><a href="../lab/index.html">Space simulators</a></li>
+</ul></div>
+<div><p class="foot__h">Follow</p><ul>
 <li><a href="https://github.com/Sara-Managed-Projects/space-radar" rel="me noopener">GitHub</a></li>
 <li><a href="https://github.com/Sara-Managed-Projects/space-radar/discussions" rel="noopener">Discussions</a></li>
 <li><a href="https://www.instagram.com/spaceradar.ai/" rel="me noopener">Instagram</a></li>
 <li><a href="https://www.linkedin.com/company/spaceradar-ai" rel="me noopener">LinkedIn</a></li>
 <li><a href="https://www.youtube.com/@SpaceRadar_ai" rel="me noopener">YouTube</a></li>
-</ul></nav>
+</ul></div>
+</nav>
 </div></footer>
 <script>(function(){var f=document.getElementById('lfilter');if(!f)return;var cards=[].slice.call(document.querySelectorAll('.grid>li'));
 function read(){var h={};location.hash.slice(1).split('&').forEach(function(p){var i=p.indexOf('=');if(i>0)h[p.slice(0,i)]=decodeURIComponent(p.slice(i+1))});
@@ -225,5 +242,6 @@ cards.forEach(function(li){var a=li.firstElementChild,ok=(!b||(' '+a.dataset.ban
 var all=!b&&!c&&!q;document.getElementById('lcount').textContent=all?'':(n===1?'1 simulator matches':n+' simulators match');
 if(write){var p=[];if(b)p.push('band='+encodeURIComponent(b));if(c)p.push('code='+encodeURIComponent(c));if(q)p.push('q='+encodeURIComponent(q));history.replaceState(null,'',p.length?'#'+p.join('&'):location.pathname)}}
 f.addEventListener('input',function(){run(true)});f.addEventListener('submit',function(e){e.preventDefault()});read();run(false)})();</script>
+<script type="module" src="../js/pages/subscribe.js"></script>
 </body>
 </html>

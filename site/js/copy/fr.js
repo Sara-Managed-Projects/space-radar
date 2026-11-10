@@ -5835,3 +5835,35 @@ COPY.skyLore.notHere = "Aucune figure du ciel {culture} n’est dessinée là o�
 COPY.skyLore.notHereNone = "Aucune figure du ciel {culture} n’est dessinée là où tu as appuyé.";
 COPY.skyLore.nearest = "L’histoire de {name}";
 // b200-s4a-look: end
+
+// redesign 2026-11-10: begin -- machine-drafted: the Games link of the explore panel (copy/en.js games), the rail's
+// email updates (rail.subscribe) and their popover (copy/en.subscribe.js emailUpdates)
+COPY.rail.subscribe = "Nouvelles par e-mail";
+COPY.games = {"label": "Jeux", "title": "Jeux spatiaux de l'équipe Space Radar (s'ouvre dans un nouvel onglet)", "href": "https://games.spaceradar.ai/"};
+COPY.emailUpdates = {
+  "title": "Nouvelles gratuites par e-mail",
+  "text": "Choisissez ce qui vous intéresse. Rien n’est envoyé avant votre confirmation.",
+  "pick": "Choisissez-en au moins une",
+  "news": "Actualités de Space Radar",
+  "journal": "Le Journal",
+  "games": "Jeux spatiaux",
+  "sky": "Alertes du ciel",
+  "email": "Adresse e-mail",
+  "placeholder": "vous@example.org",
+  "button": "S'abonner",
+  "sending": "Envoi…",
+  "retry": "Réessayer",
+  "check": "Vérifiez votre boîte de réception : nous avons envoyé un lien à {email}. Rien n’est envoyé avant que vous cliquiez dessus.",
+  "invalidEmail": "Cette adresse ne semble pas correcte.",
+  "rateLimited": "Trop d’essais depuis ici. Réessayez dans quelques minutes.",
+  "busy": "Beaucoup d’inscriptions aujourd’hui. Réessayez demain.",
+  "sendFailed": "Nous n’avons pas pu envoyer l’e-mail. Réessayez plus tard.",
+  "invalidLists": "Choisissez au moins une liste.",
+  "other": "Un problème est survenu. Réessayez.",
+  "unreachable": "Impossible de joindre le serveur.",
+  "privacy": "Nous gardons votre adresse et les listes choisies, rien d’autre. Aucun pixel de suivi, aucun lien réécrit. Chaque e-mail permet de se désabonner en un clic.",
+  "privacyLink": "Confidentialité",
+  "honeypot": "Laissez ce champ vide",
+  "close": "Fermer"
+};
+// redesign 2026-11-10: end

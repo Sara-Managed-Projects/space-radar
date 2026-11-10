@@ -5742,3 +5742,35 @@ COPY.skyLore.notHere = "जहाँ आपने दबाया वहाँ {
 COPY.skyLore.notHereNone = "जहाँ आपने दबाया वहाँ {culture} आकाश की कोई आकृति नहीं बनी है।";
 COPY.skyLore.nearest = "{name} की कहानी";
 // b200-s4a-look: end
+
+// redesign 2026-11-10: begin -- machine-drafted: the Games link of the explore panel (copy/en.js games), the rail's
+// email updates (rail.subscribe) and their popover (copy/en.subscribe.js emailUpdates)
+COPY.rail.subscribe = "ईमेल अपडेट";
+COPY.games = {"label": "गेम", "title": "Space Radar टीम के अंतरिक्ष गेम (नए टैब में खुलते हैं)", "href": "https://games.spaceradar.ai/"};
+COPY.emailUpdates = {
+  "title": "मुफ़्त ईमेल अपडेट",
+  "text": "चुनें कि आप किस बारे में जानना चाहते हैं। पुष्टि करने तक कुछ नहीं भेजा जाता।",
+  "pick": "कम से कम एक चुनें",
+  "news": "Space Radar समाचार",
+  "journal": "जर्नल",
+  "games": "अंतरिक्ष गेम",
+  "sky": "आकाश की सूचनाएँ",
+  "email": "ईमेल पता",
+  "placeholder": "you@example.org",
+  "button": "सदस्यता लें",
+  "sending": "भेजा जा रहा है…",
+  "retry": "फिर से कोशिश करें",
+  "check": "अपना इनबॉक्स देखें: हमने {email} पर एक लिंक भेजा है। उस पर क्लिक करने तक कुछ नहीं भेजा जाता।",
+  "invalidEmail": "यह पता सही नहीं लगता।",
+  "rateLimited": "यहाँ से बहुत ज़्यादा कोशिशें हुईं। कुछ मिनट बाद फिर कोशिश करें।",
+  "busy": "आज बहुत सारे लोग जुड़ रहे हैं। कृपया कल फिर कोशिश करें।",
+  "sendFailed": "हम ईमेल नहीं भेज सके। कृपया बाद में फिर कोशिश करें।",
+  "invalidLists": "कम से कम एक सूची चुनें।",
+  "other": "कुछ गड़बड़ हो गई। कृपया फिर कोशिश करें।",
+  "unreachable": "सर्वर तक नहीं पहुँच सके।",
+  "privacy": "हम आपका पता और आपकी चुनी सूचियाँ रखते हैं, और कुछ नहीं। कोई ट्रैकिंग पिक्सेल नहीं, कोई बदला हुआ लिंक नहीं। हर ईमेल में एक क्लिक में सदस्यता छोड़ने का विकल्प है।",
+  "privacyLink": "गोपनीयता",
+  "honeypot": "इसे खाली छोड़ें",
+  "close": "बंद करें"
+};
+// redesign 2026-11-10: end

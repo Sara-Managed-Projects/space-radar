@@ -279,6 +279,8 @@ function button(className, text) {
   return b;
 }
 
+// Lucide `gamepad-2` (ISC), its lines and dots folded into one path: the Games link.
+const GAMEPAD = 'M6 11h4M8 9v4M15 12h.01M18 10h.01M17.32 5H6.68a4 4 0 0 0-3.978 3.59C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258A4 4 0 0 0 17.32 5z';
 function svgIcon(d, size = 18) {
   const svg = document.createElementNS(SVG_NS, 'svg');
   svg.setAttribute('viewBox', '0 0 24 24');
@@ -373,6 +375,20 @@ export function createExplore(ctx, host) {
   collapse.setAttribute('aria-label', COPY.shell.collapse);
   collapse.title = COPY.shell.collapse;
   collapse.addEventListener('click', () => { if (ctx.shell) ctx.shell.collapse(true); });
+  // GAMES (the maintainer, 2026-11-10): the team's space games, a link in a new tab as the rail's journal is, at the
+  // head of the panel. One more in the sheet's body on a phone, where the head has no wordmark row (ui.css shows
+  // one of the two). Its glow is ui.css's, transform and opacity only, still under reduced motion.
+  const gamesLink = (cls) => {
+    const a = el('a', `sr-games ${cls}`);
+    a.href = COPY.games.href;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.title = COPY.games.title;
+    a.appendChild(svgIcon(GAMEPAD, 16));
+    a.appendChild(el('span', null, COPY.games.label));
+    return a;
+  };
+  brand.appendChild(gamesLink('sr-games--head'));
   brand.appendChild(collapse);
   head.appendChild(brand);
 
@@ -449,6 +465,7 @@ export function createExplore(ctx, host) {
   if (ctx && ctx.shell && typeof ctx.shell.seatSearch === 'function') ctx.shell.seatSearch(searchHost);
 
   const body = el('div', 'sr-explore__body');
+  body.appendChild(gamesLink('sr-games--sheet'));
   root.appendChild(body);
   const panes = new Map();
   const tabButtons = new Map();

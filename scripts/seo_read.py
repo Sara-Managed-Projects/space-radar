@@ -147,11 +147,11 @@ def article_page(a: dict, host: str, others: list[dict]) -> Page:
     more = [o for o in others if o["slug"] != slug]
     related = "".join(f'<li><a href="{esc(o["slug"])}.html">{esc(o["title"])}</a> <span class="dim">(release {esc(o["release"])})</span></li>' for o in more)
     body = (
-        f'<p class="micro">What is new in {esc(a["release"])}</p>\n<h1>{esc(a["title"])}</h1>\n'
+        f'<p class="eyebrow">What is new in {esc(a["release"])}</p>\n<h1>{esc(a["title"])}</h1>\n'
         f'<p class="lead">{inline(a["lead"])}</p>\n'
         f'<p class="facts-line">Release {esc(a["release"])} · {esc(date_words(a["published"]))} · about {minutes} minutes</p>\n'
         + body_html
-        + '<div class="cta"><a class="live" href="' + esc(a["open"]) + '">' + esc(a["open_label"]) + "</a></div>\n"
+        + '<div class="cta"><a class="btn btn--map" href="' + esc(a["open"]) + '">' + esc(a["open_label"]) + "</a></div>\n"
         + (f"<h2>More long reads</h2>\n<ul>{related}<li><a href=\"index.html\">All the long reads</a></li></ul>\n" if related else "")
     )
     page = Page(path=f"read/{slug}.html", canonical=a.get("blog", ""), in_sitemap=not a.get("blog"), title=a["short"], description=a["description"], body=body, og_title=a["short"], og_type="article",
@@ -178,7 +178,7 @@ def index_page(rows: list[dict], host: str) -> Page:
         cards = "".join(
             f'<li><h3><a href="{esc(r["slug"])}.html">{esc(r["title"])}</a></h3><p>{esc(r["description"])}</p></li>' for r in rows if r["release"] == release)
         items += f"<h2>Release {esc(release)}</h2>\n<ul class=\"cards\">{cards}</ul>\n"
-    body = ('<p class="micro">Long reads</p>\n<h1>What is new in each release</h1>\n'
+    body = ('<p class="eyebrow">Long reads</p>\n<h1>What is new in each release</h1>\n'
             '<p class="lead">One release, a few articles: what was added, a picture of it from the map itself, and in every one what is measured, what is modelled and what is only an illustration.</p>\n'
             + items
             + '<p class="dim">Every picture is a screenshot of the live map, taken on a machine with a real browser; the sources and licences are in '

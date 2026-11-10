@@ -25,24 +25,25 @@
 <meta name="twitter:image" content="{{image}}">
 <meta name="twitter:image:alt" content="{{image_alt}}">
 <link rel="icon" href="{{icon}}">
-<link rel="preload" href="../fonts/inter-400-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="../fonts/barlow-semi-condensed-600-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../css/fonts.css">
-<link rel="stylesheet" href="../css/static.css">
+{{styles}}
 <script type="application/ld+json">{{jsonld}}</script>
 </head>
 <body>
-<header class="top"><div class="top__in"><a class="mark" href="../">Space Radar</a><nav aria-label="Site"><a href="https://blog.spaceradar.ai/">Blog</a></nav><a class="openmap" href="../">Open the 3D map</a></div></header>
-<main>
-<p class="micro"><span class="dot" style="background:{{colour}}"></span>{{klass}}</p>
+<a class="skip" href="#main">Skip to the content</a>
+{{header}}
+<main id="main" style="--a:{{colour}}">
+<header class="ph"><div class="wrap ph__in">
+<p class="eyebrow"><span class="dot" style="background:{{colour}}"></span>{{klass}}</p>
 <h1>{{name}}</h1>
 <p class="lead">{{lead}}</p>
-{{why}}<div class="cta"><a class="live" href="../#at={{id}}">See it live</a><p{{now_attrs}}>{{live_line}}</p></div>
-{{figure}}{{facts}}{{myths}}{{see}}{{drawn}}{{related}}</main>
-<footer><div class="foot__in">
+<div class="cta"><a class="btn btn--map" href="../#at={{id}}">See it live</a><p{{now_attrs}}>{{live_line}}</p></div>
+</div></header>
+<div class="doc">
+{{why}}{{figure}}{{facts}}{{myths}}{{see}}{{drawn}}{{related}}<div class="pagenote">
 {{sources}}<p>This page is built from the same records and words as the map's card, and carries no live numbers{{now_note}}.</p>
-<p><a href="../">Open the live map</a> · <a href="https://github.com/Sara-Managed-Projects/space-radar">Source code</a></p>
-{{sitelinks}}
-</div></footer>
-{{now_script}}</body>
+</div>
+</div>
+</main>
+{{footer}}
+{{now_script}}{{script}}</body>
 </html>

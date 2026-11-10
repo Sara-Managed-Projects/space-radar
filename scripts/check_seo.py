@@ -38,6 +38,8 @@ THE GROWTH PAGES (scripts/seo_pages.py, scripts/seo_share.py), held to the same 
                LinkedIn, YouTube, About, Sources, Accuracy, Teachers, Satellites, Starlink; our
                accounts as rel="me noopener", no Facebook.
   key file     the IndexNow <key>.txt is in the built tree and holds the key.
+  llms.txt     llms.txt and llms-full.txt are in the built tree (scripts/seo_llms.py): llms.txt opens with the
+               site's title and summary and names every page of the sitemap; llms-full.txt holds each one's text.
   A page of the embed gallery (embed/index.html) is judged like any indexable page above.
 
 Run:  python3 scripts/build_seo.py --out /tmp/seo && python3 scripts/check_seo.py --out /tmp/seo
@@ -240,6 +242,21 @@ def check(root: Path, built: Path, require_share: bool = False) -> list[str]:
         for u in dupes:
             say(f"sitemap.xml lists {u} more than once")
     in_sitemap = set(sitemap_urls)
+
+    # --- llms.txt and llms-full.txt: what a language model reads (scripts/seo_llms.py) ------------------
+    llms, full = built / "llms.txt", built / "llms-full.txt"
+    if not llms.is_file() or not full.is_file():
+        say("llms.txt or llms-full.txt is missing from the build (scripts/seo_llms.py)")
+    else:
+        lt, ft = llms.read_text(encoding="utf-8"), full.read_text(encoding="utf-8")
+        if not lt.startswith("# Space Radar\n\n> "):
+            say("llms.txt does not open with the site's title and a one-line summary (# Space Radar, then > ...)")
+        named = set(re.findall(r"\]\((https?://[^)\s]+)\)", lt))
+        for u in sitemap_urls:
+            if u not in named:
+                say(f"llms.txt does not name {u}, which the sitemap lists")
+            if f"Canonical: {u}\n" not in ft:
+                say(f"llms-full.txt has no text for {u}, which the sitemap lists")
 
     # --- the pages --------------------------------------------------------------------------
     growth = [f for d in sorted(built.iterdir()) if d.is_dir() and d.name not in NOT_GROWTH for f in sorted(d.glob("*.html"))]

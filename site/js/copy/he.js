@@ -5748,3 +5748,35 @@ COPY.skyLore.notHere = "במקום שבו לחצתם לא מצוירת אף דמ
 COPY.skyLore.notHereNone = "במקום שבו לחצתם לא מצוירת אף דמות משמי {culture}.";
 COPY.skyLore.nearest = "הסיפור של {name}";
 // b200-s4a-look: end
+
+// redesign 2026-11-10: begin -- machine-drafted: the Games link of the explore panel (copy/en.js games), the rail's
+// email updates (rail.subscribe) and their popover (copy/en.subscribe.js emailUpdates)
+COPY.rail.subscribe = "עדכונים במייל";
+COPY.games = {"label": "משחקים", "title": "משחקי חלל של צוות Space Radar (נפתח בכרטיסייה חדשה)", "href": "https://games.spaceradar.ai/"};
+COPY.emailUpdates = {
+  "title": "עדכונים בחינם במייל",
+  "text": "בחרו על מה תרצו לשמוע. דבר לא נשלח עד שתאשרו.",
+  "pick": "בחרו לפחות אחת",
+  "news": "חדשות Space Radar",
+  "journal": "היומן",
+  "games": "משחקי חלל",
+  "sky": "התראות שמיים",
+  "email": "כתובת מייל",
+  "placeholder": "you@example.org",
+  "button": "להרשמה",
+  "sending": "שולח…",
+  "retry": "לנסות שוב",
+  "check": "בדקו את תיבת הדואר: שלחנו קישור אל {email}. דבר לא נשלח עד שתלחצו עליו.",
+  "invalidEmail": "הכתובת הזו לא נראית תקינה.",
+  "rateLimited": "יותר מדי ניסיונות מכאן. נסו שוב בעוד כמה דקות.",
+  "busy": "הרבה הרשמות היום. נסו שוב מחר.",
+  "sendFailed": "לא הצלחנו לשלוח את המייל. נסו שוב מאוחר יותר.",
+  "invalidLists": "בחרו לפחות רשימה אחת.",
+  "other": "משהו השתבש. נסו שוב.",
+  "unreachable": "לא ניתן להגיע לשרת.",
+  "privacy": "אנחנו שומרים את הכתובת שלכם ואת הרשימות שבחרתם, ותו לא. בלי פיקסלי מעקב, בלי קישורים משוכתבים. בכל מייל יש הסרה בלחיצה אחת.",
+  "privacyLink": "פרטיות",
+  "honeypot": "השאירו ריק",
+  "close": "סגירה"
+};
+// redesign 2026-11-10: end

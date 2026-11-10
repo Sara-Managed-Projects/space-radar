@@ -30,7 +30,8 @@ from pathlib import Path
 
 import yaml
 
-from seo_footer import sitelinks
+from seo_chrome import footer, header, styles
+from seo_subscribe import script as subscribe_script
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -176,7 +177,8 @@ def build(out: Path, host: str) -> Path:
         "marks": "".join(marks),
         "licence": e(licence_name()),
         "built": datetime.date.today().isoformat(),
-        "sitelinks": sitelinks("../"),
+        "styles": styles("../"), "header": header("../", ember=False), "footer": footer("../", f"{host.rstrip('/')}/press/index.html"),
+        "script": subscribe_script("../"),
     })
     (press / "index.html").write_text(page, encoding="utf-8")
     return press

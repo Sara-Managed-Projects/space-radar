@@ -56,6 +56,7 @@ import seo_reach  # noqa: E402
 from seo_common import (ACCOUNTS, ACCURACY_FORM, CLASSROOM_FORM, GITHUB, ON_GITHUB, ROOT, Ctx, Page, esc, footer_nav,  # noqa: E402
                         make_ctx, place_picker, render, url_of, webpage)
 from seo_share import Spec  # noqa: E402
+from seo_subscribe import subscribe_form  # noqa: E402  (the kit's subscribe form: the footer's, and a card on /about/ and /teachers/)
 from support import support_url  # noqa: E402  (registry/support.yaml: "" draws no money link anywhere)
 import count_facts  # noqa: E402  (how many sources and feeds: ONE rule, count_facts.source_counts)
 
@@ -152,10 +153,10 @@ def iss_pages(p: dict, host: str, counts: dict, snapshot_index: dict | None) -> 
                    "who is aboard and when it passes you, on a live 3D map.")
     facts = "".join(f'<div><dt>{esc(f["label"])}</dt><dd>{esc(f["value"])}</dd></div>' for f in p["facts"])
     body = (
-        '<p class="micro"><span class="dot" style="background:#F2F4F7"></span>Space station</p>\n'
+        '<p class="eyebrow"><span class="dot" style="background:#F2F4F7"></span>Space station</p>\n'
         f"<h1>{esc(h1)}</h1>\n"
         f'<p class="lead" data-slot="iss-sentence">{esc(static_answer)}</p>\n'
-        '<div class="cta"><a class="live" href="../#at=sat-25544">See it live in 3D</a>'
+        '<div class="cta"><a class="btn btn--map" href="../#at=sat-25544">See it live in 3D</a>'
         '<p>Opens the map on the station, following it as it moves.</p></div>\n'
         '<div data-slot="iss-live" hidden>\n<h2>Where it is now</h2>\n<dl>'
         '<div><dt>Latitude</dt><dd data-slot="iss-lat">—</dd></div><div><dt>Longitude</dt><dd data-slot="iss-lon">—</dd></div>'
@@ -176,11 +177,11 @@ def iss_pages(p: dict, host: str, counts: dict, snapshot_index: dict | None) -> 
         "Passes repeat for a few days and then stop for a few, as its orbit and the Earth's turning drift apart.</p>\n"
         '<p><a href="../#trip=journey-to-the-station">Take the trip from your ground to the station</a> · '
         '<a href="../#trip=people-in-space">Where people are living in space</a></p>\n'
-        '<div class="note"><p><strong>Measured or computed?</strong> The orbital elements are published by CelesTrak from tracking '
+        '<div class="callout callout--note"><p><strong>Measured or computed?</strong> The orbital elements are published by CelesTrak from tracking '
         "and saved by this site; the position shown is computed from them (a model called SGP4). The older the elements, the less the position "
         "can be trusted: a few days is minutes of travel for a station that moves 7.7 km every second. The page says how old they are.</p></div>\n"
         + (f"<h2>Key facts</h2>\n<dl>{facts}</dl>\n" if facts else "")
-        + '<h2>See also</h2>\n<ul class="links"><li><a href="hubble-space-telescope.html">Hubble Space Telescope</a></li>'
+        + '<h2>See also</h2>\n<ul class="tagcloud"><li><a href="hubble-space-telescope.html">Hubble Space Telescope</a></li>'
         '<li><a href="tiangong-space-station.html">Tiangong space station</a></li>'
         '<li><a href="../satellites/index.html">Live satellite map</a></li><li><a href="../starlink/index.html">Starlink tonight</a></li></ul>\n'
     )
@@ -223,20 +224,20 @@ def starlink_page(host: str, counts: dict, slugs: set, today: str | None = None)
     f = STARLINK_FROM
     desc = "How to see Starlink satellites tonight: when a train is visible after a launch, the next Starlink launches, and a live 3D map of every satellite."
     body = (
-        '<p class="micro"><span class="dot" style="background:#9ec3ff"></span>Satellites</p>\n'
+        '<p class="eyebrow"><span class="dot" style="background:#9ec3ff"></span>Satellites</p>\n'
         "<h1>How can I see Starlink satellites tonight?</h1>\n"
-        f'<p class="micro">Tonight is <span data-slot="tonight-date">{esc(built)}</span>.</p>\n'
+        f'<p class="eyebrow">Tonight is <span data-slot="tonight-date">{esc(built)}</span>.</p>\n'
         '<p class="lead">A Starlink train is a line of satellites, launched together, that can be seen as a string of bright dots moving across '
         "the sky in the first days after a launch, before they spread out and climb to their working height.</p>\n"
         f'<p>Our saved element sets hold <strong><span data-slot="count-starlink">{groups(n)}</span> Starlink objects</strong> '
         f'(CelesTrak\'s supplemental file, saved <span data-slot="count-starlink-date">{esc(day)}</span>). That is every Starlink satellite they list, '
         "in orbit or on its way up, not the number you can see tonight: from one place on a clear night it is the few dozen in a fresh train, or none.</p>\n"
-        f'<div class="cta"><a class="live" href="../?from={f["cta"]}#at=starlink">Open the Starlink satellites on the map</a>'
+        f'<div class="cta"><a class="btn btn--map" href="../?from={f["cta"]}#at=starlink">Open the Starlink satellites on the map</a>'
         '<p>The map flies to a Starlink satellite and turns its layer on.</p></div>\n'
         f'<p><a href="../?from={f["trip"]}#trip=tonight-from-your-street">Your sky tonight</a>: the trip that starts from your own street and names what is worth looking for.</p>\n'
         "<h2>The next Starlink launches</h2>\n"
         "<p>A train is brightest in the first nights after its launch. The next Starlink launches, from Launch Library's schedule as saved by this site:</p>\n"
-        '<ul class="links" data-slot="starlink-launches"><li>The list is read from the saved schedule when the page opens; '
+        '<ul class="tagcloud" data-slot="starlink-launches"><li>The list is read from the saved schedule when the page opens; '
         f'with scripts off, the <a href="../?from={f["launches"]}#at=starlink">map</a> shows every planned launch.</li></ul>\n'
         '<p data-slot="starlink-launches-date" hidden></p>\n'
         "<h2>How a train forms</h2>\n"
@@ -248,10 +249,10 @@ def starlink_page(host: str, counts: dict, slugs: set, today: str | None = None)
         "<p>Only in the hours after dusk or before dawn, when the sky is dark where you are and the satellites, hundreds of kilometres up, are still lit by the Sun. "
         "Which night depends on the launch and on where you are, so this page prints no viewing timetable that would be wrong by tomorrow; "
         "the map computes where each satellite is for the instant on its clock and for your place.</p>\n"
-        '<div class="note"><p><strong>Measured or computed?</strong> The orbital elements are SpaceX\'s own, republished by CelesTrak, and are measurements. '
+        '<div class="callout callout--note"><p><strong>Measured or computed?</strong> The orbital elements are SpaceX\'s own, republished by CelesTrak, and are measurements. '
         "The positions are computed from them (SGP4) and get worse the older the elements are; the map says how old they are on every card. "
         "The number above is a count of objects listed, read on the date given.</p></div>\n"
-        '<h2>More</h2>\n<ul class="links"><li><a href="../satellites/index.html">Live satellite map</a></li>'
+        '<h2>More</h2>\n<ul class="tagcloud"><li><a href="../satellites/index.html">Live satellite map</a></li>'
         '<li><a href="../o/international-space-station.html">Where is the ISS?</a></li>'
         + '<li><a href="../t/satellites-and-junk.html">Trip: satellites and space junk</a></li></ul>\n')
     foot = (f"<p>Source: {esc(counts['source'])}, read {esc(day)}. Launches: Launch Library (The Space Devs), from this site's saved copy. "
@@ -275,16 +276,16 @@ def satellites_page(host: str, counts: dict, slugs: set) -> Page:
     desc = f"A live 3D map of {approx} satellites at their real positions, with the space station, Hubble, Tiangong and Starlink, free in a browser."
     link = lambda slug, text: f'<li><a href="../o/{slug}.html">{text}</a></li>' if slug in slugs else ""  # noqa: E731
     body = (
-        '<p class="micro"><span class="dot" style="background:#9ec3ff"></span>Satellites</p>\n'
+        '<p class="eyebrow"><span class="dot" style="background:#9ec3ff"></span>Satellites</p>\n'
         f"<h1>Live satellite map: {esc(approx)} objects at their real positions</h1>\n"
         f'<p class="lead">Space Radar draws the active satellites in orbit round the Earth, {esc(approx)} of them, each where its orbit says it is for this second, '
         "in 3D, in your browser, with no account.</p>\n"
         f'<p>Our saved element sets list <strong><span data-slot="count-active">{groups(n)}</span> active objects</strong> '
         f'(CelesTrak\'s active catalogue, saved <span data-slot="count-active-date">{esc(day)}</span>) and '
         f'<span data-slot="count-starlink">{groups(counts["starlink"])}</span> Starlink satellites, which are mostly the same ones counted again.</p>\n'
-        '<div class="cta"><a class="live" href="../">Open the live map</a><p>Free, with no account and no advertising.</p></div>\n'
+        '<div class="cta"><a class="btn btn--map" href="../">Open the live map</a><p>Free, with no account and no advertising.</p></div>\n'
         "<h2>Start with one</h2>\n"
-        '<ul class="links">'
+        '<ul class="tagcloud">'
         + link("international-space-station", "International Space Station")
         + link("hubble-space-telescope", "Hubble Space Telescope")
         + link("tiangong-space-station", "Tiangong space station")
@@ -295,7 +296,7 @@ def satellites_page(host: str, counts: dict, slugs: set) -> Page:
         "<p>Each satellite's orbital elements are published by CelesTrak, and the page of the map works out where the satellite is at the instant on its clock "
         "(a model called SGP4), so the clock can be moved to the past or the future and the satellites move with it. Satellites are drawn larger than life: "
         "at their true size they would be invisible.</p>\n"
-        '<div class="note"><p><strong>Measured or computed?</strong> The elements are measured by tracking and republished; the positions are computed from them, '
+        '<div class="callout callout--note"><p><strong>Measured or computed?</strong> The elements are measured by tracking and republished; the positions are computed from them, '
         "and the older the elements the less a position can be trusted. Every card says how old its elements are. The count above is of objects listed on the day given, "
         "not a count of working satellites.</p></div>\n"
         '<p><a href="../t/satellites-and-junk.html">Trip: satellites and space junk</a> · '
@@ -332,7 +333,7 @@ def planets_page(host: str, today: str) -> Page:
     desc = "Which planets you can see tonight, where to look and when, worked out for your place in your browser, with tonight's list for London."
     items = "".join(f"<li>{esc(p['name'])}, magnitude {p['mag']:g}: highest at {esc(p['bestUtc'][11:16])} UT, {p['altDeg']}° up in the {esc(p['compass'])}.</li>" for p in ups)
     body = (
-        '<p class="micro"><span class="dot" style="background:#ffc28a"></span>Sky tonight</p>\n'
+        '<p class="eyebrow"><span class="dot" style="background:#ffc28a"></span>Sky tonight</p>\n'
         "<h1>Which planets can you see tonight?</h1>\n"
         f'<p class="lead">{esc(sentence)}</p>\n'
         f'<p class="dim">Worked out when this page was built, for {esc(night)} and {esc(place)} only (the build knows no other place). '
@@ -342,13 +343,13 @@ def planets_page(host: str, today: str) -> Page:
         f'<h2>From {esc(place)} on {esc(night)}</h2>\n<ul class="sky-list">{items}</ul>\n<p>{esc(moon_line)}</p>\n'
         "<h2>Choose your place</h2>\n"
         + place_picker("This page starts from the place you set in the map, or a city guessed from your time zone. It does not ask your browser for a position unless you press the button.")
-        + '<div class="cta"><a class="live" href="../#trip=planets-tonight">See the sky from the ground</a>'
+        + '<div class="cta"><a class="btn btn--map" href="../#trip=planets-tonight">See the sky from the ground</a>'
         "<p>The trip that takes every planet in turn, then shows where to look from your street.</p></div>\n"
         "<h2>How to read it</h2>\n"
         "<p>A planet is listed when it climbs at least 10° (Mercury and Venus, which never stray far from the Sun, 5°) while the sky is dark: between the end of "
         "evening twilight and the start of morning twilight, with the Sun more than 6° below the horizon. Magnitude is brightness: the lower, the brighter; "
         "0 is a bright star, −2 is brighter than any star. Planets do not twinkle much and shine with a steady light.</p>\n"
-        '<div class="note"><p><strong>Measured or computed?</strong> The positions are computed from the planets\' own orbits (Astronomy Engine) for the instant and the place; '
+        '<div class="callout callout--note"><p><strong>Measured or computed?</strong> The positions are computed from the planets\' own orbits (Astronomy Engine) for the instant and the place; '
         "nothing is fetched. Brightness is a model of the planet's phase and distance.</p></div>\n"
         '<p><a href="../t/tonight-from-your-street.html">Tonight from your street</a> · <a href="../t/moon-phases.html">Why the Moon changes shape</a></p>\n')
     foot = f"<p>The sentence at the top was computed on {esc(night)} for {esc(place)}. It is rebuilt at every deploy; the live list is computed when you open the page.</p>\n"
@@ -467,10 +468,10 @@ def event_page(ev: dict, host: str, trips: dict) -> Page:
     trip_link = (f'<p><a href="../#trip={esc(trip)}">Take the trip: {esc(trips[trip])}</a></p>\n' if trip else "")
     srcs = "".join(f'<li><a href="{esc(s["url"])}" rel="nofollow">{esc(s["words"])}</a>, read {esc(date_words(s["read"]))}</li>' for s in ev["sources"])
     body = (
-        f'<p class="micro"><span class="dot" style="background:#ffc28a"></span>Sky event · {esc(date_words(f["instant"][:10]))}</p>\n'
+        f'<p class="eyebrow"><span class="dot" style="background:#ffc28a"></span>Sky event · {esc(date_words(f["instant"][:10]))}</p>\n'
         f"<h1>{esc(ev['name'])}</h1>\n"
         f'<p class="lead">{esc(sentence)}</p>\n'
-        f'<div class="cta"><a class="live" href="{esc(link_of(ev))}">Open the map at that moment</a>'
+        f'<div class="cta"><a class="btn btn--map" href="{esc(link_of(ev))}">Open the map at that moment</a>'
         f"<p>Sets the map's clock to {esc(instant_words(ev['link']['t']))} and flies to {esc(AT_WORDS.get(ev['link']['at'], ev['link']['at']))}.</p></div>\n"
         f"{trip_link}"
         "<h2>The facts</h2>\n"
@@ -481,7 +482,7 @@ def event_page(ev: dict, host: str, trips: dict) -> Page:
         + sections
         + (f'<script type="application/json" id="event-data">{json.dumps({"kind": ev["kind"], "instant": f["instant"], "shower": ({"raH": f["shower"]["raH"], "decDeg": f["shower"]["decDeg"]} if "shower" in f else None), "also": f["also"]}, separators=(",", ":"))}</script>\n' if ev["kind"] != "season" else "")  # a solstice page has no per-place script
         + '<h2>Sources</h2>\n<ul>' + srcs + "</ul>\n"
-        '<div class="note"><p><strong>Measured or computed?</strong> '
+        '<div class="callout callout--note"><p><strong>Measured or computed?</strong> '
         + ("The instant of the solstice is computed with Astronomy Engine, the same library the map uses. Nothing on this page is typed in."
            if ev["kind"] == "season" else
            "Dates of the showers and of the eclipses are computed with Astronomy Engine, the same library the map uses, "
@@ -533,7 +534,7 @@ def events_index(events: list[dict], host: str) -> Page:
     desc = events_index_description(ordered)
     items = "".join(
         f'<li><h3><a href="{esc(e["id"])}.html">{esc(e["name"])}</a></h3><p>{esc(date_words(e["facts"]["instant"][:10]))}</p><p>{esc(e["summary"])}</p></li>' for e in ordered)
-    body = ('<p class="micro">Sky events</p>\n<h1>Sky events, with a link into the map at each moment</h1>\n'
+    body = ('<p class="eyebrow">Sky events</p>\n<h1>Sky events, with a link into the map at each moment</h1>\n'
             '<p class="lead">Every event here has a date computed or taken from an agency, what the Moon will do, what your place will see, and a link that opens the map at that moment.</p>\n'
             f'<ul class="cards">{items}</ul>\n<p class="dim">Dates are computed with Astronomy Engine and checked by a person; a mission\'s date is its agency\'s. '
             "The sources are on each page.</p>\n")
@@ -567,7 +568,7 @@ def about_page(host: str) -> Page:
     desc = "What Space Radar is, why it exists, who makes it, why it stays free, and what the name does and does not mean."
     me = "".join(f'<li><a href="{esc(u)}" rel="me noopener">{esc(name)}</a></li>' for name, u in ACCOUNTS)
     body = (
-        '<p class="micro">About</p>\n<h1>About Space Radar</h1>\n'
+        '<p class="eyebrow">About</p>\n<h1>About Space Radar</h1>\n'
         '<p class="lead">Space Radar is a free 3D map of space in a web browser: the satellites and the space station, launches, probes, the planets, '
         "the nearest stars and the galaxies, each drawn where it really is, with where the numbers come from.</p>\n"
         "<h2>What it is</h2>\n"
@@ -594,7 +595,7 @@ def about_page(host: str) -> Page:
         "<p>\"Radar\" here means a sweep of what is up there, not a radio echo: nothing on this site is detected by us. Every position is computed from catalogues that others publish, "
         "and every card says which and how old. Space Radar is not part of, and not endorsed by, NASA, ESA, CelesTrak or any space agency or company, and other products use similar words.</p>\n"
         "<h2>How to trust it</h2>\n"
-        '<ul class="links"><li><a href="../accuracy/index.html">How accurate it is</a></li><li><a href="../sources/index.html">Where every number comes from</a></li>'
+        '<ul class="tagcloud"><li><a href="../accuracy/index.html">How accurate it is</a></li><li><a href="../sources/index.html">Where every number comes from</a></li>'
         '<li><a href="../read/index.html">Long reads: what each release added, and how it is known</a></li>'
         '<li><a href="../nasa-eyes-alternative/index.html">How it compares with NASA\'s Eyes on the Solar System</a></li>'
         # b200-f9-reach: begin
@@ -605,11 +606,92 @@ def about_page(host: str) -> Page:
         # b200-f9-reach: end
         '<li><a href="../first-pull-request/index.html">Your first pull request: good first issues in three.js and beyond</a></li>'
         f'<li><a href="{GITHUB}/blob/main/CREDITS.md">Credits and licences</a></li></ul>\n'
-        f'<h2>Find us</h2>\n<ul class="links">{me}</ul>\n')
+        f'<h2>Find us</h2>\n<ul class="tagcloud">{me}</ul>\n'
+        + subscribe_form("../", f"{host}/about/index.html", form_id="updates", title="Get Space Radar by email", variant="card",
+                         text="New features of the map, new journal posts, news of the space games and the sky's coming events: pick what you want, "
+                              "nothing more. Free, and you can leave in one click.") + "\n")
     page = Page(path="about/index.html", title=short, description=desc, body=body, og_title=short)
     page.jsonld = [webpage(host, page, [("About", "")], page_type="AboutPage")]
     page.share = Spec(key="about/index", name="About Space Radar", number=f"{n['layers']} layers, {n['sources']} sources", caption="Space Radar", kind="plain",
                       colour="#ff9f43", alt="Rings and a dot, captioned About Space Radar.")
+    return page
+
+
+# THE PRIVACY PAGE (2026-11-10): what the email updates keep, why, for how long, and how to leave; and the promise the
+# README makes for the rest of the site (no account, no tracker, no cookie, no analytics), which a subscription keeps:
+# it is opt-in, and its mails carry no pixel and no rewritten link. Every subscribe form links here
+# (scripts/seo_subscribe.py, the app's popover ui/subscribe.js). The facts are the subscription service's own
+# (internal infra/subscribe/README.md, "What is stored, and for how long"); POLICY is its PolicyVersion.
+POLICY = "2026-11-10"
+
+
+def privacy_page(host: str) -> Page:
+    short = "Privacy: what Space Radar keeps, and what it never does"
+    desc = ("What Space Radar's free email updates keep and why, how to leave in one click, and the rest of the promise: "
+            "no tracking, no cookies, no analytics.")
+    body = (
+        '<p class="eyebrow">Privacy</p>\n<h1>Privacy</h1>\n'
+        '<p class="lead">Space Radar has no account, no advertising, no tracker, no cookie and no analytics. The only thing it keeps about '
+        "anyone is an email address, and only for a person who asks for the free email updates and confirms it.</p>\n"
+        "<h2>The map and these pages</h2>\n"
+        "<ul>\n"
+        "<li>There is nothing to sign in to, and no page sets a cookie.</li>\n"
+        "<li>There is no analytics script, no advertising, no tracking pixel and no social-media widget. Nothing from another company loads "
+        "on these pages until you click it.</li>\n"
+        "<li>The map keeps your own choices, such as a city you picked or the layers you turned on, in your browser's storage on your device. "
+        "They are not sent to us.</li>\n"
+        "<li>Some layers of the map ask a public data service for fresh numbers, for example NASA's picture of today's clouds. Your browser "
+        f'makes that request, as it would to open their page. Every source is on <a href="../sources/index.html">the Sources page</a>.</li>\n'
+        "<li>The pages are served by Amazon Web Services (Amazon S3 and CloudFront), which has to handle your browser's address to send a page back. "
+        "We build nothing from it.</li>\n"
+        "</ul>\n"
+        "<h2>Email updates: what is kept</h2>\n"
+        "<p>If you subscribe, one record is kept for your address. It holds:</p>\n"
+        "<ul>\n"
+        "<li>your email address;</li>\n"
+        "<li>the lists you picked: Space Radar news, the Journal, space games, sky alerts;</li>\n"
+        "<li>your consent: when you asked, when you confirmed, the page you signed up on (its address without anything after a <code>?</code>) "
+        "and the version of this page you agreed to;</li>\n"
+        "<li>a short history of those steps (asked, confirmed, changed, left), so we can show that you asked;</li>\n"
+        "<li>a random number that makes the links in your mails work, and stops working when you leave.</li>\n"
+        "</ul>\n"
+        "<p>It holds no name, no IP address, no location, and nothing about whether you opened a mail or clicked a link. "
+        "We could not know: <strong>our mails have no tracking pixel and no image, and no link in them is rewritten</strong>.</p>\n"
+        "<h2>Why</h2>\n"
+        "<p>To send you what you asked for, and nothing else, and to be able to show that you asked. Nobody else gets the list: it is not sold, "
+        "shared or used for advertising.</p>\n"
+        "<h2>How it works, and how to leave</h2>\n"
+        "<ul>\n"
+        "<li><strong>Double opt-in.</strong> After you sign up we send one mail with a button. Nothing more is sent until you press it, and a request "
+        "that is not confirmed is deleted after 48 hours.</li>\n"
+        "<li><strong>One-click unsubscribe.</strong> Every mail has an Unsubscribe link, and the header mail apps use for their own Unsubscribe button. "
+        "No login, no survey, no \"are you sure\" page that asks twice.</li>\n"
+        "<li><strong>Preferences.</strong> Every mail links to a page where you change your lists; choosing none unsubscribes you.</li>\n"
+        "<li><strong>Erasure.</strong> That page also has an Erase button, which deletes your record at once.</li>\n"
+        "</ul>\n"
+        "<h2>How long it is kept</h2>\n"
+        "<ul>\n"
+        "<li>While you are subscribed, the record stays.</li>\n"
+        "<li>When you unsubscribe (or a mail to you bounces for good, or is marked as spam), your lists are emptied, every link in your old mails stops working, "
+        "and the record is deleted 30 days later.</li>\n"
+        "<li>When you erase it, it is deleted at once. The database's own backups age out within 35 days.</li>\n"
+        "<li>To stop abuse, the service counts sign-up attempts per network for an hour or a day. It keeps a one-way, keyed scramble of the address "
+        "(a hash it cannot turn back), never the address itself, and each count is deleted when its hour or day is over.</li>\n"
+        "</ul>\n"
+        "<h2>Who sends it, and who is responsible</h2>\n"
+        "<p>The mail is sent through <strong>Amazon SES</strong>, and the record is kept in Amazon DynamoDB, both in Amazon Web Services' "
+        "EU (Stockholm) region. Amazon processes them for us, as our service provider. Like every sender on SES, an address whose mail "
+        "bounces for good or is reported as spam is also kept on Amazon's own list of addresses not to mail.</p>\n"
+        "<p>The controller of this data is the maintainer of the Space Radar project. To ask what is kept about you, to have it corrected or deleted, "
+        f'or with any other question, reply to any mail we sent you, or <a href="{GITHUB}/issues/new">open an issue</a> {ON_GITHUB} '
+        "(do not put your address in a public issue). You can also complain to your country's data protection authority.</p>\n"
+        "<h2>Changes</h2>\n"
+        f"<p>This is version {POLICY} of this page. If what is kept ever changes, the version changes with it, and the new one is published here first. "
+        f'The code that does all of this is open: <a href="{GITHUB}">Sara-Managed-Projects/space-radar</a> for the map and these pages.</p>\n')
+    page = Page(path="privacy/index.html", title=short, description=desc, body=body, og_title=short)
+    page.jsonld = [webpage(host, page, [("Privacy", "")], extra={"dateModified": POLICY})]
+    page.share = Spec(key="privacy/index", name="Privacy", number="no tracking, no cookies", caption="Space Radar", kind="plain",
+                      colour="#6ec3ff", alt="Rings and a dot, captioned Privacy.")
     return page
 
 
@@ -639,13 +721,13 @@ def eyes_page(host: str) -> Page:
     ]
     table = "".join(f"<tr><th scope=\"row\">{a}</th><td>{b}</td><td>{c}</td></tr>" for a, b, c in rows)
     body = (
-        '<p class="micro">Compare</p>\n<h1>Space Radar and NASA\'s Eyes on the Solar System</h1>\n'
+        '<p class="eyebrow">Compare</p>\n<h1>Space Radar and NASA\'s Eyes on the Solar System</h1>\n'
         '<p class="lead">Both are free 3D maps of space that run in a web browser. NASA\'s Eyes is the deeper look at NASA\'s own spacecraft and missions. '
         "Space Radar is open source, centres on what is overhead right now, from satellites to the nearest stars, and runs with no internet from a copy. "
         "Many people will want both.</p>\n"
-        '<div class="cta"><a class="live" href="../">Open Space Radar</a><p>NASA\'s Eyes is at <a href="' + EYES_APP + '">eyes.nasa.gov</a>.</p></div>\n'
+        '<div class="cta"><a class="btn btn--map" href="../">Open Space Radar</a><p>NASA\'s Eyes is at <a href="' + EYES_APP + '">eyes.nasa.gov</a>.</p></div>\n'
         "<h2>Side by side</h2>\n"
-        '<div class="tablewrap"><table><thead><tr><th></th><th>NASA\'s Eyes on the Solar System</th><th>Space Radar</th></tr></thead>'
+        '<div class="tbl__s"><table><thead><tr><th></th><th>NASA\'s Eyes on the Solar System</th><th>Space Radar</th></tr></thead>'
         f"<tbody>{table}</tbody></table></div>\n"
         "<h2>When to use NASA's Eyes</h2>\n"
         "<p>To follow a NASA mission: where a spacecraft went, when, and what it looks like. NASA's Jet Propulsion Laboratory says it has renderings of 126 NASA spacecraft "
@@ -697,13 +779,13 @@ def first_pr_page(host: str) -> Page:
     rows = "".join(f'<tr><th scope="row"><a href="{esc(starter_link(t))}">{esc(what)}</a></th><td>{esc(eg)}</td><td>{esc(need)}</td></tr>'
                    for t, what, eg, need in STARTER_TRACKS)
     body = (
-        '<p class="micro">Contribute</p>\n<h1>A three.js space project for your first pull request</h1>\n'
+        '<p class="eyebrow">Contribute</p>\n<h1>A three.js space project for your first pull request</h1>\n'
         f'<p class="lead">Space Radar is an open-source 3D map of space, built with three.js and plain ES modules, with no build step. '
         f"On {STARTER_READ} it had {STARTER_COUNT} open good first issues that nobody had taken. "
         "Each one names the file, the change, the check to run and when it is done. Many need no three.js at all.</p>\n"
-        f'<div class="cta"><a class="live" href="{esc(starter_link())}">See the open issues</a><p>The list is GitHub\'s own, so it is always current.</p></div>\n'
+        f'<div class="cta"><a class="btn btn--map" href="{esc(starter_link())}">See the open issues</a><p>The list is GitHub\'s own, so it is always current.</p></div>\n'
         "<h2>Choose by what you like doing</h2>\n"
-        '<div class="tablewrap"><table><thead><tr><th>Track</th><th>A typical task</th><th>You need</th></tr></thead>'
+        '<div class="tbl__s"><table><thead><tr><th>Track</th><th>A typical task</th><th>You need</th></tr></thead>'
         f"<tbody>{rows}</tbody></table></div>\n"
         "<h2>What the code is like</h2>\n"
         "<ul>\n"
@@ -718,7 +800,7 @@ def first_pr_page(host: str) -> Page:
         "<p>Most commits come from an account operated by AI coding agents under the project's founder, and that account is held to the same tests and sources as everyone else. "
         f'The <a href="{GITHUB}/blob/main/GOVERNANCE.md">governance page</a> says who decides what, and there are no outside reviewers yet: you could be the first.</p>\n'
         "<h2>Start here</h2>\n"
-        '<ul class="links">'
+        '<ul class="tagcloud">'
         f'<li><a href="{GITHUB}/blob/main/docs/FIRST_PR.md">Your first pull request, in ten minutes</a></li>'
         f'<li><a href="{GITHUB}/blob/main/docs/ARCHITECTURE.md">A one-page map of the code</a></li>'
         f'<li><a href="{GITHUB}/blob/main/CONTRIBUTORS.md">Everyone whose pull request has been merged</a></li>'
@@ -776,9 +858,9 @@ def sources_page(host: str, snapshot_index: dict | None) -> Page:
             f"{'it' if len(off) == 1 else 'them'}, nothing of {'its' if len(off) == 1 else 'theirs'} is saved or served, and "
             f"{'it is' if len(off) == 1 else 'they are'} counted in neither number above. "
             f"{'It stays' if len(off) == 1 else 'They stay'} listed so that the reason stays readable in the registry.</p>\n"
-            f'<div class="tablewrap"><table>\n{head}\n<tbody>\n{chr(10).join(row_html(r, False) for r in off)}\n</tbody></table></div>\n')
+            f'<div class="tbl__s"><table>\n{head}\n<tbody>\n{chr(10).join(row_html(r, False) for r in off)}\n</tbody></table></div>\n')
     body = (
-        '<p class="micro">Sources</p>\n<h1>Where every number comes from</h1>\n'
+        '<p class="eyebrow">Sources</p>\n<h1>Where every number comes from</h1>\n'
         f'<p class="lead">Space Radar reads {plural(n["feeds"], "feed", "feeds")} from {n["sources"]} public sources. A source is a publisher; '
         "a feed is one address of theirs that is read. Each row below is a feed, a row of the registry this page is built from "
         "(<code>registry/sources.yaml</code>): the licence is the publisher's terms as the project recorded them, and the date is the day they were first written into "
@@ -792,7 +874,7 @@ def sources_page(host: str, snapshot_index: dict | None) -> Page:
         "from it, with its age, until a newer one arrives: a failed read never replaces good data with an error. If neither our copy nor the "
         "publisher can be reached, the browser shows the copy it kept from your last visit. A few publishers do not let a page on another site read them at all, "
         "or their terms say a visitor's browser must not; for those our copy is the only way, and without it the app says it could not look.</p>\n"
-        f'<div class="tablewrap"><table>\n{head}\n'
+        f'<div class="tbl__s"><table>\n{head}\n'
         f"<tbody>\n{chr(10).join(row_html(r, True) for r in in_use)}\n</tbody></table></div>\n"
         '<p class="dim">"Saved copy last read" is the day this site\'s harvester last fetched the source, taken from the saved copy\'s index when the page opens; '
         "it is not the day the terms were read. Where a licence says \"no licence stated\", that is the answer, and the project treats it as no permission to redistribute beyond what the credits say.</p>\n"
@@ -824,7 +906,7 @@ def accuracy_page(host: str) -> Page:
     short = "How accurate is Space Radar? Measured or modelled"
     desc = "Every drawing is measured, modelled or illustrative and says which. How a position is worked out, how old it is, and how exoplanets are labelled."
     body = (
-        '<p class="micro">Accuracy</p>\n<h1>How accurate is Space Radar?</h1>\n'
+        '<p class="eyebrow">Accuracy</p>\n<h1>How accurate is Space Radar?</h1>\n'
         '<p class="lead">Everything drawn is measured, modelled or illustrative, and says which. This page says what each word means and what we do when we are wrong.</p>\n'
         "<h2>The three words</h2>\n"
         '<p><span class="badge measured">measured</span> A position worked out from a publisher\'s data of a stated age: a satellite from its orbital elements, '
@@ -887,10 +969,10 @@ def teachers_page(host: str, tours: dict, reels: dict, url_keys: list[str]) -> P
         f"<tr><td><code>#ambient={esc(r['id'])}</code></td><td>{esc(r['title'])}: {esc(r['blurb'])}</td><td>about {r['minutes']} min, {len(r['trips'])} trips</td></tr>"
         for r in reels["reels"])
     body = (
-        '<p class="micro">For teachers</p>\n<h1>Space Radar in the classroom</h1>\n'
+        '<p class="eyebrow">For teachers</p>\n<h1>Space Radar in the classroom</h1>\n'
         '<p class="lead">A free 3D map of the Solar System, the satellites above you and the stars beyond, in a browser: no account to make, nothing to install, '
         "no tracking, and it works with no internet from a copy you download once.</p>\n"
-        '<div class="cta"><a class="live" href="../">Open it now</a><p>Or take it offline: three steps below.</p></div>\n'
+        '<div class="cta"><a class="btn btn--map" href="../">Open it now</a><p>Or take it offline: three steps below.</p></div>\n'
         "<h2>What it needs</h2>\n"
         "<p>A computer from the last eight years or so, with Chrome, Edge, Firefox or Safari. No login, no licence key, no personal data in any request: nobody is tracked. "
         "To run a copy offline, Python 3 (most Macs and Linux machines have it) to serve a folder.</p>\n"
@@ -905,7 +987,7 @@ def teachers_page(host: str, tours: dict, reels: dict, url_keys: list[str]) -> P
         "<p>One trip for a room: the panels go, each stop's words are set large enough to read from the back, and whoever holds the clicker decides when to go on. "
         "Add <code>&amp;present=1</code> to a trip's link, or press Present on the trip's first card; <code>present=auto</code> lets it move on by itself.</p>\n"
         "<pre><code>http://localhost:8177/#trip=moon-phases&amp;present=1\nhttp://localhost:8177/#trip=mars-where-we-have-driven&amp;present=auto</code></pre>\n"
-        '<div class="tablewrap"><table><thead><tr><th>Key</th><th>What it does</th></tr></thead><tbody>'
+        '<div class="tbl__s"><table><thead><tr><th>Key</th><th>What it does</th></tr></thead><tbody>'
         "<tr><td><code>→</code> <code>Page Down</code> <code>Space</code></td><td>Next stop (a presenter's clicker sends these)</td></tr>"
         "<tr><td><code>←</code> <code>Page Up</code></td><td>Previous stop</td></tr>"
         "<tr><td><code>F</code></td><td>Full screen, and out of it</td></tr>"
@@ -916,10 +998,10 @@ def teachers_page(host: str, tours: dict, reels: dict, url_keys: list[str]) -> P
         "<h2>A screen nobody is standing at: the kiosk</h2>\n"
         "<p>For a corridor, a lobby, a museum wall or an observatory's waiting room, add <code>#ambient=1</code> to the address and Space Radar plays its trips one after another, "
         "with the words of each stop as captions, until somebody takes the controls (any key or touch; two minutes after the last one it goes back to its reel).</p>\n"
-        f'<div class="tablewrap"><table><thead><tr><th>Address</th><th>What plays</th><th>One lap</th></tr></thead><tbody>{reel_rows}'
+        f'<div class="tbl__s"><table><thead><tr><th>Address</th><th>What plays</th><th>One lap</th></tr></thead><tbody>{reel_rows}'
         "<tr><td><code>#ambient=moon-landings,the-sun-today,black-holes</code></td><td>Your own list of trips, in your order</td><td></td></tr></tbody></table></div>\n"
         "<p>Add to the address (each key is read by the app's own link reader):</p>\n"
-        '<div class="tablewrap"><table><thead><tr><th>Parameter</th><th>What it does</th></tr></thead><tbody>'
+        '<div class="tbl__s"><table><thead><tr><th>Parameter</th><th>What it does</th></tr></thead><tbody>'
         "<tr><td><code>&amp;shuffle=1</code></td><td>A new order every lap</td></tr>"
         "<tr><td><code>&amp;sound=1</code></td><td>Ask for sound (a browser needs one key press); <code>&amp;sound=0</code> keeps it silent</td></tr>"
         "<tr><td><code>&amp;voice=0</code></td><td>Music only: no narrator</td></tr>"
@@ -941,6 +1023,9 @@ def teachers_page(host: str, tours: dict, reels: dict, url_keys: list[str]) -> P
         "<li>Motion calms when the system asks for reduced motion (<code>prefers-reduced-motion</code>).</li>\n"
         "<li>The 3D scene is a canvas and is not described to a screen reader; the cards and trip words beside it are text. Say so to a student who relies on one, and tell us what would help.</li>\n</ul>\n"
         f"{teachers_paying()}"
+        + subscribe_form("../", f"{host}/teachers/index.html", form_id="updates", title="New trips and simulators, by email", variant="card",
+                         text="News of the map's new trips, simulators and features, and the sky's coming events, worth a lesson. "
+                              "Pick the lists you want; leave in one click.") + "\n"
         "<h2>Tell us how it went</h2>\n"
         f'<p>A lesson, a museum screen, a club night: <a href="{CLASSROOM_FORM}">tell us how it went</a> {ON_GITHUB}: a short form, what you did, what worked, what did not. '
         "It is how this page gets better.</p>\n")
@@ -1024,10 +1109,10 @@ def support_page(host: str) -> list[Page]:
     desc = ("Space Radar is free and open source and stays that way. Gifts and invoiced payments go to a public "
             "Open Collective fund where every payment and expense can be read.")
     body = (
-        '<p class="micro">Support</p>\n<h1>Support Space Radar</h1>\n'
+        '<p class="eyebrow">Support</p>\n<h1>Support Space Radar</h1>\n'
         '<p class="lead">Space Radar is free and open source, and it stays that way: no paid tier, no account, no adverts, no tracking. '
         "Money is never a condition for using any part of it.</p>\n"
-        f'<div class="cta"><a class="live" href="{esc(url)}" rel="noopener">Open the fund</a><p>On Open Collective, hosted by Open Source Collective.</p></div>\n'
+        f'<div class="cta"><a class="btn btn--map" href="{esc(url)}" rel="noopener">Open the fund</a><p>On Open Collective, hosted by Open Source Collective.</p></div>\n'
         "<h2>Where the money goes</h2>\n"
         "<p>Into one public fund on Open Collective. Open Source Collective holds the money as the fiscal host; the project spends it by submitting expenses, "
         "and every payment in and every expense out is listed on the fund's page for anyone to read.</p>\n"
@@ -1071,7 +1156,8 @@ def build_pages(host: str, objects: list[dict], today: str, snapshot_index: dict
     pages += [starlink_page(host, counts, slugs, today), satellites_page(host, counts, slugs), planets_page(host, today)]
     pages += [events_index(events, host)] + [event_page(e, host, tours) for e in events]
     pages += [about_page(host), sources_page(host, snapshot_index), accuracy_page(host),
-              teachers_page(host, tours, yml("autopilot.yaml"), url_keys()), eyes_page(host), first_pr_page(host)]
+              teachers_page(host, tours, yml("autopilot.yaml"), url_keys()), eyes_page(host), first_pr_page(host),
+              privacy_page(host)]
     pages += support_page(host)
     sysl = seo_systems.pages(host, by_slug, today)
     pages += sysl

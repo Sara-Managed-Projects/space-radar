@@ -21,46 +21,41 @@
 <meta property="og:image:alt" content="The Earth from space with the satellites around it as points of light, captioned Space Radar.">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="{{icon}}">
-<link rel="preload" href="../fonts/inter-400-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../css/fonts.css">
-<link rel="stylesheet" href="../css/static.css">
+{{styles}}
 <style>
-[hidden]{display:none!important}
-ul.plain{padding-left:20px;margin:0 0 16px;max-width:65ch}
-ul.plain li{margin:0 0 8px}
-.gen{display:grid;gap:16px;margin:0}
-.gen fieldset{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px 16px}
-.gen legend{padding:0;margin:0 0 8px;font-size:13px;line-height:18px;color:var(--sr-text-dim)}
-.gen label{display:inline-flex;align-items:center;gap:8px;min-height:44px}
-.gen .field{display:grid;gap:4px;max-width:420px}
-.gen .field>span{font-size:13px;line-height:18px;color:var(--sr-text-dim)}
-.gen .sizes{display:flex;flex-wrap:wrap;gap:12px 16px}
-.gen .sizes .field{max-width:140px}
-.gen select,.gen input[type=text],.gen input[type=number]{box-sizing:border-box;width:100%;min-height:44px;padding:0 12px;border-radius:var(--sr-radius);border:1px solid var(--sr-line);background:var(--sr-wash);color:var(--sr-text);font:400 15px/20px Inter,system-ui,sans-serif}
-.gen select option,.gen select optgroup{background:var(--sr-space);color:var(--sr-text)}
-.gen input:focus-visible,.gen select:focus-visible,.gen textarea:focus-visible,.btn:focus-visible{outline:2px solid var(--sr-ember);outline-offset:2px}
-.gen textarea,pre.code{box-sizing:border-box;width:100%;padding:12px;border-radius:var(--sr-radius);border:1px solid var(--sr-line);background:var(--sr-wash);color:var(--sr-text);font:400 13px/18px 'JetBrains Mono',ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere}
+.gen{display:grid;gap:1rem;margin:0 0 1.5rem}
+.gen fieldset{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.5rem 1rem}
+.gen legend,.gen .field>span{padding:0;margin:0 0 .5rem;font:600 .74rem/1 var(--cap);letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.gen label{display:inline-flex;align-items:center;gap:.5rem;min-height:44px;font-size:1rem}
+.gen input[type=radio],.gen input[type=checkbox]{width:18px;height:18px;margin:0;accent-color:var(--atm)}
+.gen .field{display:grid;gap:.1rem;max-width:26rem}
+.gen .sizes{display:flex;flex-wrap:wrap;gap:.8rem 1rem}
+.gen .sizes .field{max-width:9rem}
+.gen select,.gen input[type=text],.gen input[type=number]{width:100%;min-height:48px;padding:0 1rem;border-radius:12px;border:0;box-shadow:inset 0 0 0 1px var(--line);background:var(--bg2);color:var(--tx);font:400 1rem/1.2 var(--sans)}
+.gen select option,.gen select optgroup{background:var(--bg);color:var(--tx)}
+.gen textarea,.doc pre.code{width:100%;padding:.9rem 1rem;border-radius:14px;border:0;box-shadow:inset 0 0 0 1px var(--line);background:var(--bg2);color:var(--tx);font:400 .82rem/1.55 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere}
 .gen textarea{min-height:120px;resize:vertical}
-pre.code{margin:0 0 16px}
-.btns{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
-.btn{display:inline-flex;align-items:center;min-height:44px;padding:0 20px;border-radius:var(--sr-radius);border:1px solid var(--sr-line);background:var(--sr-wash);color:var(--sr-text);font:600 15px/1 Inter,system-ui,sans-serif;cursor:pointer}
-.btn.main{background:var(--sr-ember);color:var(--sr-ink);border-color:var(--sr-ember)}
-.btn:hover{background:var(--sr-wash-hover)}
-.btn.main:hover{background:var(--sr-ember-light)}
-#gen-preview iframe{display:block;margin-top:16px}
-.hint{font-size:13px;line-height:18px;color:var(--sr-text-dim);max-width:65ch}
-.examples{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-.examples h3{margin:0 0 8px;font-size:15px;line-height:20px}
+.doc pre.code{margin:0 0 1rem}
+.btns{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem .8rem}
+.btns .btn{background:transparent;color:var(--tx);box-shadow:inset 0 0 0 1px var(--line)}
+.btns .btn.main{background:var(--ember);color:var(--ink-ember);box-shadow:none}
+#gen-preview iframe{display:block;margin-top:1rem;border-radius:14px}
+.hint{font-size:.9rem;line-height:1.5;color:var(--dim)}
+.examples{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,17rem),1fr));gap:1.25rem;margin:0 0 1.5rem}
+.doc .examples h3{margin:0 0 .6rem;font-size:1rem}
 </style>
 <script type="module" src="generate.js"></script>
 </head>
 <body>
-<header class="top"><div class="top__in"><a class="mark" href="../">Space Radar</a><nav aria-label="Site"><a href="https://blog.spaceradar.ai/">Blog</a></nav><a class="openmap" href="../">Open the 3D map</a></div></header>
-<main>
-<p class="micro">Embed</p>
+<a class="skip" href="#main">Skip to the content</a>
+{{header}}
+<main id="main">
+<header class="ph"><div class="wrap ph__in">
+<p class="eyebrow">Embed</p>
 <h1>Put Space Radar in your page</h1>
 <p class="lead">Copy one line of HTML and a live 3D view of an object, a guided trip or the whole map sits in your page. It is free, it needs no sign-up, and it stores nothing on your reader's device: no cookie, no tracker.</p>
-
+</div></header>
+<div class="doc">
 <h2>Make the code</h2>
 <form class="gen" id="gen" autocomplete="off">
 <fieldset><legend>What to show</legend>
@@ -93,7 +88,7 @@ pre.code{margin:0 0 16px}
 <noscript><p class="hint">The generator needs JavaScript. The three examples below are ready to copy without it.</p></noscript>
 
 <h2>Three to start from</h2>
-<div class="examples">
+<div class="examples wide">
 {{examples}}</div>
 
 <h2>Good to know</h2>
@@ -108,11 +103,9 @@ pre.code{margin:0 0 16px}
 
 <h2>Sites that embed it</h2>
 {{embedders}}
+<div class="pagenote"><p>Built from the project's registry and the app's own address rules; the code above is the code the app's Embed button writes.</p></div>
+</div>
 </main>
-<footer><div class="foot__in">
-<p>Built from the project's registry and the app's own address rules; the code above is the code the app's Embed button writes.</p>
-<p><a href="../">Open the live map</a> · <a href="https://github.com/Sara-Managed-Projects/space-radar">Source code</a></p>
-{{sitelinks}}
-</div></footer>
-</body>
+{{footer}}
+{{script}}</body>
 </html>

@@ -7,6 +7,7 @@ writes, under DIR:
     o/<slug>.html   one page per notable object, from templates/object.html
     404.html        from templates/404.html
     sitemap.xml     the home page, every trip page (site/t/), the Lab (site/lab/) and every object page
+    llms.txt        every page of the sitemap for a language model, and llms-full.txt with their text (scripts/seo_llms.py)
     object-pages.json  {record id: slug}, for the app's share sheet (spec 0061 task 8)
     + everything scripts/seo_pages.py adds (the question pages, the 40 star systems, /events/, /teachers/ ...)
       and one share picture per page under share/ (scripts/seo_share.py; needs Pillow, else the old pictures stay),
@@ -52,8 +53,10 @@ import seo_share  # noqa: E402
 import seo_dates  # noqa: E402
 import seo_embed  # noqa: E402
 import seo_lab  # noqa: E402
+import seo_llms  # noqa: E402  (llms.txt and llms-full.txt)
 import indexnow  # noqa: E402
-from seo_footer import sitelinks  # noqa: E402
+from seo_chrome import footer, header, styles  # noqa: E402
+from seo_subscribe import script as subscribe_script  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 SITE = ROOT / "site"
@@ -175,12 +178,13 @@ def object_page(p: dict, host: str, template: str, share: "seo_share.Spec | None
     related = ""
     if p["related"]:
         links = "".join(f'<li><a href="{esc(r["slug"])}.html">{esc(r["name"])}</a></li>' for r in p["related"])
-        related = section("related", f'<ul class="links">{links}</ul>')
+        related = section("related", f'<ul class="tagcloud">{links}</ul>')
 
     return fill(template, {
         "title": esc(p["title"]), "description": esc(p["description"]), "url": esc(url), "name": esc(p["name"]),
         "image": esc(image), "image_w": str(image_w), "image_h": str(image_h), "image_alt": esc(image_alt),
-        "icon": ICON, "sitelinks": sitelinks("../"),
+        "icon": ICON, "styles": styles("../"), "header": header("../", ember=False), "footer": footer("../", url),
+        "script": subscribe_script("../"),
         "jsonld": json.dumps(ld, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/"),
         "colour": esc(p.get("colour") or "#9aa4b2"), "klass": esc(p["klassLabel"]), "lead": esc(p["lead"]),
         "why": f'<p>{esc(p["why"])}</p>\n' if p.get("why") else "", "id": p["id"],
@@ -281,7 +285,8 @@ def build(out: Path, host: str, today: str | None = None, snapshot_index: dict |
     stale = keep - {f"{s}.html" for s in slugs}
     for name in stale:
         (o / name).unlink()
-    nf = fill((TEMPLATES / "404.html").read_text(encoding="utf-8"), {"icon": ICON, "sitelinks": sitelinks("/")})
+    nf = fill((TEMPLATES / "404.html").read_text(encoding="utf-8"), {"icon": ICON, "styles": styles("/"), "header": header("/", ember=False),
+                                                                      "footer": footer("/", f"{host}/404.html"), "script": subscribe_script("/")})
     (out / "404.html").write_text(nf, encoding="utf-8")
     # The embed gallery and its generator (scripts/seo_embed.py), and the IndexNow key file
     # (scripts/indexnow.py: public by design, written beside the pages so a deploy ships it).
@@ -295,6 +300,8 @@ def build(out: Path, host: str, today: str | None = None, snapshot_index: dict |
         ["templates/embed.html", "templates/embed/generate.js", "scripts/seo_embed.py", "registry/embedders.yaml"], ROOT, lastmod())
     (out / "sitemap.xml").write_text(sitemap(host, slugs, press=(out / "press" / "index.html").is_file(), dates=dates,
                                              extra=["embed/index.html"] + lab_pages(), growth=extra["sitemap"]), encoding="utf-8")
+    # llms.txt and llms-full.txt, from that sitemap and the pages it names (scripts/seo_llms.py).
+    seo_llms.write(out, host)
     # The share sheet links an object to its page (ui/sharesheet.js objectPageUrl), so that a link
     # preview shows the object's own title and picture. Which records have a page, and under which
     # slug, is decided here and nowhere else; the sheet fetches this when it opens and never guesses.
@@ -345,7 +352,7 @@ def main(argv: list[str]) -> int:
         print("build_seo: --out must be outside site/; the built pages are not kept in git", file=sys.stderr)
         return 2
     n = build(out, host, today, snap, share_mode)
-    print(f"built {n} pages, the embed page, 404.html, sitemap.xml, sitemap-images.xml and object-pages.json into {out}")
+    print(f"built {n} pages, the embed page, 404.html, sitemap.xml, sitemap-images.xml, llms.txt, llms-full.txt and object-pages.json into {out}")
     return 0
 
 

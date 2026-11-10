@@ -48,3 +48,37 @@ def sitelinks(root: str) -> str:
     if re.search(r"\{\{\w+\}\}", text):
         raise SystemExit("seo_footer: templates/sitelinks.html has a placeholder other than {{root}}")
     return text.rstrip("\n")
+
+
+# THE STATIC PAGES' FOOTER (the journal's design, internal web-kit footer()): the same partial, its lines grouped into
+# the kit's link columns. The home page keeps the one flat list above (ui/status.js moves it into the Sources sheet).
+# A line is placed by its address; one that no group names goes to the last, so a link added to the partial is never
+# lost. The lines are kept exactly as the partial writes them.
+GROUPS = [
+    ("Explore", ("about/", "sources/", "accuracy/", "satellites/", "starlink/", "o/international-space-station",
+                 "planets-tonight/", "events/")),
+    ("Teach and share", ("teachers/", "press/", "embed/", "creators/", "support/", "privacy/")),
+    ("Space Radar sites", ("https://blog.spaceradar.ai/", "https://games.spaceradar.ai/", "lab/")),
+    ("Follow", ()),
+]
+
+
+def footer_columns(root: str) -> str:
+    """The partial's lines in the kit's four columns, inside the one <nav class="sitelinks"> (check_seo.py reads the
+    footer's links, tests/test_seo_growth.py takes the nav out whole). The map itself heads the sites column."""
+    text = sitelinks(root)
+    head, _, rest = text.partition("<ul>\n")
+    lines = [ln for ln in rest.rsplit("</ul>", 1)[0].splitlines() if ln.strip()]
+    href = lambda ln: re.search(r'href="([^"]*)"', ln).group(1)  # noqa: E731
+    cols: list[list[str]] = [[] for _ in GROUPS]
+    cols[2].append(f'<li><a href="{root}">The 3D map</a></li>')
+    for ln in lines:
+        h = href(ln)
+        local = h[len(root):] if root and h.startswith(root) else h
+        at = next((i for i, (_, keys) in enumerate(GROUPS) if any(local.startswith(k) for k in keys)), len(GROUPS) - 1)
+        cols[at].append(ln)
+    # Each column in its group's order (the sites as the header has them: Map, Journal, Games, Lab).
+    rank = lambda i, ln: next((j for j, k in enumerate(GROUPS[i][1]) if (href(ln)[len(root):] if root and href(ln).startswith(root) else href(ln)).startswith(k)), -1)  # noqa: E731
+    cols = [sorted(c, key=lambda ln, i=i: rank(i, ln)) for i, c in enumerate(cols)]
+    body = "".join(f'<div><p class="foot__h">{name}</p><ul>\n' + "\n".join(c) + "\n</ul></div>\n" for (name, _), c in zip(GROUPS, cols) if c)
+    return f"{head}\n{body}</nav>"

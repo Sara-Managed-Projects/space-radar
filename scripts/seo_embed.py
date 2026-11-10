@@ -32,7 +32,8 @@ from pathlib import Path
 import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from seo_footer import sitelinks  # noqa: E402
+from seo_chrome import footer, header, styles  # noqa: E402
+from seo_subscribe import script as subscribe_script  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 TEMPLATES = ROOT / "templates"
@@ -148,7 +149,8 @@ def build(out: Path, host: str, pages: list[dict], icon: str) -> Path:
     page = (TEMPLATES / "embed.html").read_text(encoding="utf-8")
     values = {"url": esc(f"{host}/embed/index.html"), "host": esc(host), "icon": icon,
               "object_options": objs, "trip_options": tr, "examples": examples(pages),
-              "embedders": embedders_html(read_embedders()), "sitelinks": sitelinks("../"), "root": "../"}
+              "embedders": embedders_html(read_embedders()), "root": "../",
+              "styles": styles("../"), "header": header("../", ember=False), "footer": footer("../", f"{host}/embed/index.html"), "script": subscribe_script("../")}
     for key, value in values.items():
         page = page.replace("{{" + key + "}}", value)
     if re.search(r"\{\{\w+\}\}", page):

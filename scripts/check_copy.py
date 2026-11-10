@@ -175,7 +175,7 @@ def placeholders() -> list[str]:
 # PAGE_SENTENCE_FILES, the files whose sentences a node test pins (tests/test_pagelive.mjs for live.js).
 # A new page script that writes words must be added to that list in the same change as its test, which
 # is the moment a reviewer reads the sentences. The same refusal covers the dash-as-hyphen (` - `).
-PAGE_SENTENCE_FILES = {"live.js"}
+PAGE_SENTENCE_FILES = {"live.js", "subscribe.js"}  # subscribe.js: tests/test_subscribe_form.mjs pins its sentences
 PAGE_SINKS = [
     ("say('slot', text)", re.compile(r"(?<![\w.])say\(\s*['\"][\w-]+['\"]\s*,")),
     ("opt(value, text)", re.compile(r"(?<![\w.])opt\(\s*[^,()]*,")),

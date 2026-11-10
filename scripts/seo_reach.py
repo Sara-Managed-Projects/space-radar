@@ -67,7 +67,7 @@ def asset_row(x: dict, dates: dict[str, str]) -> str:
     app = f' · <a href="{esc(x["app"])}">See it in the app</a>' if x.get("app") else ""
     return (f'<li><h3><a href="{esc(x["url"])}">{esc(x["name"])}</a></h3>'
             f'<p>{esc(Path(x["file"]).suffix[1:])}, {size}{px}{tris} · <a href="{esc(x["licence_url"])}">{esc(x["licence"])}</a>{day}{app}</p>'
-            f'<p class="credit"><span class="micro">Credit to paste</span> <code>{esc(x["credit"])}</code></p>'
+            f'<p class="credit"><span class="eyebrow">Credit to paste</span> <code>{esc(x["credit"])}</code></p>'
             f'<p class="made">{esc(x["made"])}</p></li>')
 
 
@@ -96,11 +96,11 @@ def assets_page(host: str, plan: dict | None = None, dates: dict[str, str] | Non
     refused = "".join(f"<li>{esc(r['name'])}: {esc(r['why'])}.</li>" for r in p["refused"])
     proc = p["procedural"]
     body = (
-        '<p class="micro">Asset pack</p>\n<h1>Free 3D spacecraft models and planetary maps</h1>\n'
+        '<p class="eyebrow">Asset pack</p>\n<h1>Free 3D spacecraft models and planetary maps</h1>\n'
         f'<p class="lead">Everything here was made by Space Radar: {n_m} spacecraft models built from published dimensions and photographs, '
         f"and {n_t} relief and colour maps baked from public-domain spacecraft data. Download them, use them in a game, a film, a print or a "
         "lesson, commercial work included, with the credit line under each one.</p>\n"
-        '<div class="cta"><a class="live" href="pack.json">The whole list as JSON</a><p>Each file is served from where the app loads it; nothing is a second copy.</p></div>\n'
+        '<div class="cta"><a class="btn btn--map" href="pack.json">The whole list as JSON</a><p>Each file is served from where the app loads it; nothing is a second copy.</p></div>\n'
         "<h2>How the licences are chosen</h2>\n"
         "<ul>\n"
         "<li><strong>Models: CC BY 4.0.</strong> The shapes are this project's work. The photographs they were compared with were looked at, "
@@ -124,7 +124,7 @@ def assets_page(host: str, plan: dict | None = None, dates: dict[str, str] | Non
         + (f"<h2>New and changed</h2>\n<p>The files most recently changed, from the project's history.</p>\n<ul>{log}</ul>\n" if log else "")
         + "<h2>Not ours: get these from their makers</h2>\n"
         "<p>The app also uses maps and models that others made. They are theirs to license and are not offered here.</p>\n"
-        f'<ul class="links">{elsewhere}</ul>\n'
+        f'<ul class="tagcloud">{elsewhere}</ul>\n'
         + (f"<h2>Left out, and why</h2>\n<ul>{refused}</ul>\n" if refused else "")
         + "<h2>How this page is made</h2>\n"
         f'<p>It is generated on every deploy from the project\'s registries by <a href="{GITHUB}/blob/main/scripts/asset_pack.py">scripts/asset_pack.py</a>, '
@@ -209,12 +209,12 @@ def creators_page(host: str) -> Page:
     pics = "".join(f'<figure><a href="{esc(s.name)}"><img src="{esc(s.name)}" alt="{esc(s.stem.replace("-", " "))}, a still from Space Radar" '
                    f'loading="lazy" width="640" height="360"></a><figcaption>{esc(s.stem.replace("-", " ").capitalize())}</figcaption></figure>'
                    for s in samples())
-    clips = "".join(f'<li>{esc(j["title"])} <span class="micro">made at release</span></li>' for j in jobs)
+    clips = "".join(f'<li>{esc(j["title"])} <span class="eyebrow">made at release</span></li>' for j in jobs)
     body = (
-        '<p class="micro">For creators</p>\n<h1>Use Space Radar footage in your videos</h1>\n'
+        '<p class="eyebrow">For creators</p>\n<h1>Use Space Radar footage in your videos</h1>\n'
         f'<p class="lead">You may use any footage, still or recording from Space Radar in your videos, streams, posts, books, lessons and talks, '
         f'<strong>commercial ones included</strong>, with this credit: <code>{CREDIT}</code>. No account, no fee and no need to ask.</p>\n'
-        '<div class="cta"><a class="live" href="../">Open Space Radar</a><p>In the app: Share, then Record, to film a view, a flight path or a trip.</p></div>\n'
+        '<div class="cta"><a class="btn btn--map" href="../">Open Space Radar</a><p>In the app: Share, then Record, to film a view, a flight path or a trip.</p></div>\n'
         "<h2>The credit</h2>\n"
         f"<p>Put <code>{CREDIT}</code> on screen or in the description. Where planets, moons or stars fill the frame, add the makers of their maps "
         f"and catalogues, whose licences ask for it: {attrib}.</p>\n"
@@ -228,7 +228,7 @@ def creators_page(host: str) -> Page:
         'NASA media, which NASA does not copyright. Every source and its licence is in the <a href="../sources/index.html">sources</a> and in '
         f'<a href="{GITHUB}/blob/main/CREDITS.md">CREDITS.md</a>. This is how the project reads those licences, not legal advice.</p>\n'
         "<h2>Media kit</h2>\n"
-        '<ul class="links"><li><a href="../press/space-radar-mark.svg">The mark (SVG)</a></li>'
+        '<ul class="tagcloud"><li><a href="../press/space-radar-mark.svg">The mark (SVG)</a></li>'
         '<li><a href="../press/space-radar-wordmark.svg">The wordmark, for dark backgrounds (SVG)</a></li>'
         '<li><a href="../press/space-radar-wordmark-on-light.svg">The wordmark, for light backgrounds (SVG)</a></li>'
         '<li><a href="../press/index.html">Screenshots and the description to copy, on the press page</a></li>'
@@ -302,7 +302,7 @@ def us(counts: dict | None = None) -> dict:
 
 def table(head: tuple[str, str], rows: list[tuple[str, str, str]]) -> str:
     cells = "".join(f'<tr><th scope="row">{a}</th><td>{b}</td><td>{c}</td></tr>' for a, b, c in rows)
-    return (f'<div class="tablewrap"><table><thead><tr><th></th><th>{head[0]}</th><th>{head[1]}</th></tr></thead>'
+    return (f'<div class="tbl__s"><table><thead><tr><th></th><th>{head[0]}</th><th>{head[1]}</th></tr></thead>'
             f"<tbody>{cells}</tbody></table></div>\n")
 
 
@@ -319,8 +319,8 @@ def compare_page(host: str, path: str, short: str, desc: str, h1: str, lead: str
                  theirs: tuple[str, list[str]], ours: tuple[str, list[str]], sources: list[tuple[str, str]], who: str, share_name: str) -> Page:
     """One comparison. `theirs` and `ours` are (heading, items): what the other does that Space Radar does not comes first."""
     body = (
-        f'<p class="micro">Compare</p>\n<h1>{h1}</h1>\n<p class="lead">{lead}</p>\n'
-        '<div class="cta"><a class="live" href="../">Open Space Radar</a><p>Free, in the browser, no account.</p></div>\n'
+        f'<p class="eyebrow">Compare</p>\n<h1>{h1}</h1>\n<p class="lead">{lead}</p>\n'
+        '<div class="cta"><a class="btn btn--map" href="../">Open Space Radar</a><p>Free, in the browser, no account.</p></div>\n'
         "<h2>Side by side</h2>\n" + table(head, rows)
         + f"<h2>{theirs[0]}</h2>\n<ul>" + "".join(f"<li>{x}</li>" for x in theirs[1]) + "</ul>\n"
         + f"<h2>{ours[0]}</h2>\n<ul>" + "".join(f"<li>{x}</li>" for x in ours[1]) + "</ul>\n"

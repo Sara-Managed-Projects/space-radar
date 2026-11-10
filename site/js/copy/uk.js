@@ -5750,3 +5750,35 @@ COPY.skyLore.notHere = "Там, де ви натиснули, не намаль�
 COPY.skyLore.notHereNone = "Там, де ви натиснули, не намальовано жодної фігури неба ({culture}).";
 COPY.skyLore.nearest = "Історія: {name}";
 // b200-s4a-look: end
+
+// redesign 2026-11-10: begin -- machine-drafted: the Games link of the explore panel (copy/en.js games), the rail's
+// email updates (rail.subscribe) and their popover (copy/en.subscribe.js emailUpdates)
+COPY.rail.subscribe = "Новини поштою";
+COPY.games = {"label": "Ігри", "title": "Космічні ігри команди Space Radar (відкриються в новій вкладці)", "href": "https://games.spaceradar.ai/"};
+COPY.emailUpdates = {
+  "title": "Безкоштовні новини поштою",
+  "text": "Оберіть, про що хочете дізнаватися. Нічого не надійде, доки ви не підтвердите.",
+  "pick": "Оберіть хоча б одну",
+  "news": "Новини Space Radar",
+  "journal": "Журнал",
+  "games": "Космічні ігри",
+  "sky": "Небесні події",
+  "email": "Адреса пошти",
+  "placeholder": "you@example.org",
+  "button": "Підписатися",
+  "sending": "Надсилаємо…",
+  "retry": "Спробувати ще",
+  "check": "Перевірте пошту: ми надіслали посилання на {email}. Нічого не надійде, доки ви його не відкриєте.",
+  "invalidEmail": "Ця адреса виглядає неправильно.",
+  "rateLimited": "Забагато спроб звідси. Спробуйте за кілька хвилин.",
+  "busy": "Сьогодні дуже багато підписок. Спробуйте завтра.",
+  "sendFailed": "Не вдалося надіслати лист. Спробуйте пізніше.",
+  "invalidLists": "Оберіть хоча б один список.",
+  "other": "Щось пішло не так. Спробуйте ще.",
+  "unreachable": "Не вдалося зв’язатися з сервером.",
+  "privacy": "Ми зберігаємо вашу адресу й обрані списки, більше нічого. Без пікселів стеження і підмінених посилань. У кожному листі є відписка в один клік.",
+  "privacyLink": "Конфіденційність",
+  "honeypot": "Залиште порожнім",
+  "close": "Закрити"
+};
+// redesign 2026-11-10: end

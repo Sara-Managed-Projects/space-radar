@@ -22,7 +22,9 @@ import json
 import re
 from pathlib import Path
 
+from seo_chrome import footer, has_action, header, styles
 from seo_share import Spec
+from seo_subscribe import script as subscribe_script
 
 ROOT = Path(__file__).resolve().parent.parent
 TEMPLATES = ROOT / "templates"
@@ -70,9 +72,9 @@ def fill(template: str, values: dict[str, str]) -> str:
 
 
 def footer_nav() -> str:
-    """The one shared footer partial (templates/sitelinks.html, scripts/seo_footer.py); every page here is one level below the root."""
-    from seo_footer import sitelinks
-    return sitelinks("../")
+    """The one shared footer partial (templates/sitelinks.html, scripts/seo_footer.py) in the kit's columns; every page here is one level below the root."""
+    from seo_footer import footer_columns
+    return footer_columns("../")
 
 
 @dataclasses.dataclass
@@ -141,24 +143,41 @@ def webpage(host: str, page: Page, trail: list[tuple[str, str]], page_type: str 
     return node
 
 
+# THE PAGE HEAD (the journal's listing head, .ph): what a builder writes first, the eyebrow, the one H1, the lead and
+# the page's own action or dated line, is lifted into a head band over the reading column; the rest is the column
+# (.doc). Builders keep writing plain HTML in that order: this is the one place the layout is decided.
+HEAD = re.compile(r'\A\s*((?:<p class="eyebrow">.*?</p>\s*)?<h1>.*?</h1>\s*'
+                  r'(?:(?:<p class="lead">.*?</p>|<p class="facts-line">.*?</p>|<div class="cta">(?:(?!</div>).)*</div>)\s*)*)', re.S)
+
+
+def layout(body: str, foot: str = "") -> str:
+    """The body as the head band and the reading column, the page's own note at the column's end."""
+    m = HEAD.match(body)
+    head, rest = (m.group(1).strip(), body[m.end():]) if m else ("", body)
+    note = f'<div class="pagenote">{foot.strip()}</div>\n' if foot.strip() else ""
+    band = f'<header class="ph"><div class="wrap ph__in">\n{head}\n</div></header>\n' if head else ""
+    return f'{band}<div class="doc">\n{rest}{note}</div>\n'
+
+
 def render(page: Page, ctx: Ctx) -> str:
     rel, w, h, alt = ctx.image(page)
     url = url_of(ctx.host, page.path)
     canonical = page.canonical or url
     graph = {"@context": "https://schema.org", "@graph": page.jsonld}
-    footer = fill(ctx.footer, {"footer_before": page.foot, "footer_nav": footer_nav()})
+    body = page.body + blog_for(page)
     script = ""
     if page.live:
         script = '<script type="module" src="../js/pages/live.js"></script>\n'
+    script += subscribe_script("../")
     out = fill(ctx.template, {
         "title": esc(page.title), "description": esc(page.description),
         "robots": f'<meta name="robots" content="{esc(page.robots)}">\n' if page.robots else "",
         "canonical": esc(canonical), "og_type": page.og_type, "og_title": esc(page.og_title or page.title),
         "url": esc(url), "image": esc(f"{ctx.host}/{rel}"), "image_w": str(w), "image_h": str(h), "image_alt": esc(alt),
-        "icon": ICON,
+        "icon": ICON, "styles": styles("../"),
         "jsonld": json.dumps(graph, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/"),
-        "header": ctx.header, "live_attr": f' data-live="{esc(page.live)}"' if page.live else "",
-        "body": page.body + blog_for(page), "footer": footer, "script": script + page.extra_script,
+        "header": header("../", ember=not has_action(body)), "live_attr": f' data-live="{esc(page.live)}"' if page.live else "",
+        "body": layout(body, page.foot), "footer": footer("../", url), "script": script + page.extra_script,
     })
     return out
 
