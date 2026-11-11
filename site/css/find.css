@@ -37,7 +37,7 @@
 }
 .sr-find__num { width: 76px; }
 .sr-find__select { max-width: 190px; font-family: inherit; }
-.sr-find__num:focus-visible, .sr-find__select:focus-visible, .sr-datejump__input:focus-visible { outline: 2px solid var(--sr-ember); outline-offset: 1px; }
+.sr-find__num:focus-visible, .sr-find__select:focus-visible, .sr-datejump__input:focus-visible { outline: 2px solid var(--sr-atmosphere); outline-offset: 1px; }
 .sr-find__box { display: flex; align-items: center; gap: var(--sp-2); min-height: 36px; font-size: var(--sr-fs-sm); cursor: pointer; }
 .sr-find__box input { width: 18px; height: 18px; accent-color: var(--sr-ember); }
 

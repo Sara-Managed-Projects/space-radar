@@ -66,7 +66,7 @@ html:not(.sr-phone) .sr-search__list:has(.sr-search__head) {
 }
 
 .sr-search__only:focus-visible {
-  outline: 2px solid var(--sr-ember);
+  outline: 2px solid var(--sr-atmosphere);
   outline-offset: 2px;
 }
 

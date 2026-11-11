@@ -2627,7 +2627,7 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
       const box = el('div', 'sr-card__exposure');
       const wrap = el('section', 'sr-panel sr-density sr-exposure');
       wrap.appendChild(el('h2', 'sr-panel__title', O.title));
-      const row = el('div', 'sr-density__choices');
+      const row = el('div', 'ui-seg ui-seg--block');
       row.setAttribute('role', 'group');
       row.setAttribute('aria-label', O.title);
       const note = el('p', 'sr-density__note');
@@ -2637,14 +2637,13 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
         for (const b of buttons) {
           const on = !!now[b.dataset.overlay];
           b.setAttribute('aria-pressed', on ? 'true' : 'false');
-          b.classList.toggle('sr-bracketed', on);
         }
         const z = can.zone && now.zone;
         const o = can.orbits && now.orbits;
         note.textContent = O.note[z && o ? 'both' : z ? 'zone' : o ? 'orbits' : 'none'];
       };
       for (const part of parts) {
-        const b = el('button', 'sr-density__btn', O[part]);
+        const b = el('button', 'ui-seg__btn', O[part]);
         b.type = 'button';
         b.dataset.overlay = part;
         b.title = O[`${part}Title`];
@@ -2673,7 +2672,7 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
       const box = el('div', 'sr-card__exposure');
       const wrap = el('section', 'sr-panel sr-density sr-exposure');
       wrap.appendChild(el('h2', 'sr-panel__title', F.title));
-      const row = el('div', 'sr-density__choices');
+      const row = el('div', 'ui-seg ui-seg--block');
       row.setAttribute('role', 'group');
       row.setAttribute('aria-label', F.title);
       const note = el('p', 'sr-density__note');
@@ -2682,12 +2681,11 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
         const now = ctx.worlds.faceOf(record.id) || 'own';
         for (const b of buttons) {
           b.setAttribute('aria-pressed', b.dataset.face === now ? 'true' : 'false');
-          b.classList.toggle('sr-bracketed', b.dataset.face === now);
         }
         note.textContent = F.notes[now] || '';
       };
       for (const face of ['own', ...faces]) {
-        const b = el('button', 'sr-density__btn', F.modes[face] || face);
+        const b = el('button', 'ui-seg__btn', F.modes[face] || face);
         b.type = 'button';
         b.dataset.face = face;
         b.title = F.notes[face] || '';

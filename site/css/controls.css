@@ -1,0 +1,145 @@
+/* controls.css -- the Space Radar control set: every button, segmented choice, select, radio, checkbox, slider, close
+   button, popover, list row and chip on every Space Radar site. Built on the design kit's tokens (web-kit/css/tokens.css:
+   --bg --panel --panel2 --line --tx --dim --atm --ember --ink --ink-ember --sans --cap --mono). The same file is the
+   kit's control set (web-kit/css/components.css, "controls"), byte for byte. How and when to use each one, with
+   pictures: docs/UI_COMPONENTS.md.
+
+   The rules it keeps:
+   - ember (--ember) fills ONE thing per view, the main action (.ui-btn--primary); blue (--atm) is links, focus and
+     what is selected (aria-pressed, aria-checked, aria-selected, :checked);
+   - pills: buttons, segments, selects and chips are fully round; rows and popovers take the 12 and 20 px corners;
+   - a 4 px grid, 40 px controls (32 px small), 44 px on a touch screen (the small ones by a hit area that reaches it);
+   - a visible 2 px blue focus ring on everything, and nothing moves under prefers-reduced-motion;
+   - no class here names a page or a site: a page lays the controls out with its own rules, it never restyles them. */
+:root{--ui-h:40px;--ui-h-sm:32px;--ui-r:12px;--ui-r-lg:20px;--ui-r-pill:999px;--ui-fs:14px;--ui-fs-sm:13px;--ui-fs-body:15px;--ui-fs-title:16px;--ui-fs-field:14px;--ui-fast:140ms;--ui-ease:cubic-bezier(0.2,0.8,0.2,1);--ui-wash:color-mix(in srgb,var(--tx) 6%,transparent);--ui-wash-hover:color-mix(in srgb,var(--tx) 11%,transparent);--ui-edge:color-mix(in srgb,var(--tx) 24%,transparent);--ui-sel:color-mix(in srgb,var(--atm) 18%,transparent);--ui-sel-line:color-mix(in srgb,var(--atm) 60%,transparent)}
+@media (pointer: coarse){:root{--ui-fs-field:16px}}
+@media (prefers-reduced-motion: reduce){:root{--ui-fast:0ms;--ui-ease:linear}}
+
+/* hidden means hidden, whatever display a control has */
+:is(.ui-btn,.ui-seg,.ui-seg__btn,.ui-select,.ui-check,.ui-radio,.ui-opt,.ui-range,.ui-close,.ui-pop,.ui-row,.ui-chip)[hidden]{display:none}
+
+/* the focus ring, one for the whole set */
+:is(.ui-btn,.ui-seg__btn,.ui-select,.ui-check,.ui-radio,.ui-range,.ui-close,.ui-row,.ui-chip):focus-visible{outline:2px solid var(--atm);outline-offset:2px}
+
+/* .ui-btn: the button. Default is a quiet filled pill; --primary is the view's one ember action; --secondary is blue;
+   --ghost is an outline; --quiet is words only; --icon is a round icon button; --sm is 32 px. aria-pressed="true" is
+   the selected look. A link can wear it too (<a class="ui-btn">). */
+.ui-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:var(--ui-h);margin:0;padding:0 16px;font-family:var(--sans);font-size:var(--ui-fs);font-weight:600;line-height:1;letter-spacing:0;color:var(--tx);text-decoration:none;white-space:nowrap;background:var(--ui-wash);border:0;border-radius:var(--ui-r-pill);box-shadow:inset 0 0 0 1px var(--line);cursor:pointer;transition:background-color var(--ui-fast) var(--ui-ease),box-shadow var(--ui-fast) var(--ui-ease),color var(--ui-fast) var(--ui-ease)}
+.ui-btn svg{flex:none;width:20px;height:20px}
+.ui-btn:hover{background:var(--ui-wash-hover);box-shadow:inset 0 0 0 1px var(--ui-sel-line)}
+.ui-btn--primary{color:var(--ink-ember);background:var(--ember);box-shadow:none}
+.ui-btn--primary:hover{background:var(--ember);box-shadow:inset 0 0 0 40px color-mix(in srgb,var(--tx) 14%,transparent)}
+.ui-btn--secondary{background:var(--ui-sel);box-shadow:inset 0 0 0 1px var(--ui-sel-line)}
+.ui-btn--secondary:hover{background:color-mix(in srgb,var(--atm) 26%,transparent);box-shadow:inset 0 0 0 1px var(--atm)}
+.ui-btn--ghost{background:transparent}
+.ui-btn--quiet{color:var(--dim);background:transparent;box-shadow:none}
+.ui-btn--quiet:hover{color:var(--tx);background:var(--ui-wash);box-shadow:none}
+.ui-btn--icon{width:var(--ui-h);padding:0;border-radius:50%}
+.ui-btn--sm{min-height:var(--ui-h-sm);padding:0 12px;font-size:var(--ui-fs-sm);gap:4px}
+.ui-btn--sm svg{width:16px;height:16px}
+.ui-btn--sm.ui-btn--icon{width:var(--ui-h-sm);padding:0}
+.ui-btn--block{display:flex;width:100%}
+.ui-btn[aria-pressed='true']{color:var(--tx);background:var(--ui-sel);box-shadow:inset 0 0 0 1px var(--ui-sel-line)}
+.ui-btn:disabled,.ui-btn[aria-disabled='true']{opacity:0.45;cursor:not-allowed}
+.ui-btn:disabled:hover{background:var(--ui-wash);box-shadow:inset 0 0 0 1px var(--line)}
+.ui-btn--primary:disabled:hover{background:var(--ember);box-shadow:none}
+
+/* .ui-seg: segmented pills, one choice of a few (Eye / Camera / Deep, On / Off). The group is the track; each
+   .ui-seg__btn is a <button aria-pressed>, or role="radio" with aria-checked, or role="tab" with aria-selected.
+   --block spreads the choices across the row. */
+.ui-seg{display:inline-flex;flex-wrap:nowrap;gap:4px;max-width:100%;margin:0;padding:4px;background:var(--ui-wash);border-radius:var(--ui-r-pill);box-shadow:inset 0 0 0 1px var(--line)}
+.ui-seg--block{display:flex;width:100%}
+.ui-seg--block>.ui-seg__btn{flex:1 1 0;min-width:0}
+.ui-seg--wrap{flex-wrap:wrap;border-radius:var(--ui-r)}
+.ui-seg__btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:var(--ui-h-sm);margin:0;padding:0 12px;font-family:var(--sans);font-size:var(--ui-fs-sm);font-weight:600;line-height:1;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:transparent;border:0;border-radius:var(--ui-r-pill);cursor:pointer;transition:background-color var(--ui-fast) var(--ui-ease),color var(--ui-fast) var(--ui-ease)}
+.ui-seg__btn:hover{color:var(--tx)}
+.ui-seg__btn:is([aria-pressed='true'],[aria-checked='true'],[aria-selected='true']){color:var(--tx);background:var(--ui-sel);box-shadow:inset 0 0 0 1px var(--ui-sel-line)}
+.ui-seg__btn:disabled{opacity:0.45;cursor:not-allowed}
+
+/* .ui-select: a native <select>, drawn: the same pill, line and focus ring everywhere, a chevron, the options dark. */
+.ui-select{appearance:none;-webkit-appearance:none;display:inline-block;min-width:0;max-width:100%;min-height:var(--ui-h);margin:0;padding:0 40px 0 16px;font-family:var(--sans);font-size:var(--ui-fs-field);font-weight:400;line-height:1.2;color:var(--tx);text-overflow:ellipsis;background:var(--ui-wash) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239AA4B2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center/16px 16px;border:1px solid var(--ui-edge);border-radius:var(--ui-r-pill);cursor:pointer;transition:border-color var(--ui-fast) var(--ui-ease)}
+.ui-select:dir(rtl){padding:0 16px 0 40px;background-position:left 12px center}
+.ui-select:hover{border-color:var(--ui-sel-line)}
+.ui-select:disabled{opacity:0.45;cursor:not-allowed}
+.ui-select--sm{min-height:var(--ui-h-sm);padding-inline-start:12px;font-size:var(--ui-fs-sm)}
+.ui-select--block{display:block;width:100%}
+.ui-select option,.ui-select optgroup{color:var(--tx);background:var(--panel)}
+
+/* .ui-check and .ui-radio: native inputs, drawn. Keyboard and screen reader are the browser's own. Put the input and
+   its words in a <label class="ui-opt">, which is the target. */
+.ui-check,.ui-radio{appearance:none;-webkit-appearance:none;position:relative;display:inline-grid;place-content:center;flex:none;width:20px;height:20px;margin:0;background:transparent;border:2px solid var(--ui-edge);cursor:pointer;transition:background-color var(--ui-fast) var(--ui-ease),border-color var(--ui-fast) var(--ui-ease)}
+.ui-check{border-radius:6px}
+.ui-radio{border-radius:50%}
+.ui-check::before{content:'';width:6px;height:10px;border:solid var(--ink);border-width:0 2px 2px 0;opacity:0;transform:translateY(-1px) rotate(45deg)}
+.ui-radio::before{content:'';width:8px;height:8px;background:var(--ink);border-radius:50%;opacity:0}
+.ui-check:hover,.ui-radio:hover{border-color:var(--ui-sel-line)}
+.ui-check:checked,.ui-radio:checked{background:var(--atm);border-color:var(--atm)}
+.ui-check:checked::before,.ui-radio:checked::before{opacity:1}
+.ui-check:indeterminate{background:var(--atm);border-color:var(--atm)}
+.ui-check:indeterminate::before{width:10px;height:2px;background:var(--ink);border:0;opacity:1;transform:none}
+.ui-check:disabled,.ui-radio:disabled{opacity:0.45;cursor:not-allowed}
+.ui-opt{display:flex;align-items:center;gap:12px;min-height:var(--ui-h-sm);font-size:var(--ui-fs);color:var(--tx);cursor:pointer}
+
+/* .ui-range: a native <input type="range">, the track and the thumb drawn from the tokens. */
+.ui-range{appearance:none;-webkit-appearance:none;display:block;width:100%;min-width:0;height:24px;margin:0;background:transparent;cursor:pointer}
+.ui-range::-webkit-slider-runnable-track{height:4px;background:var(--ui-edge);border-radius:var(--ui-r-pill)}
+.ui-range::-moz-range-track{height:4px;background:var(--ui-edge);border-radius:var(--ui-r-pill)}
+.ui-range::-moz-range-progress{height:4px;background:var(--atm);border-radius:var(--ui-r-pill)}
+.ui-range::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;margin-top:-6px;background:var(--atm);border:2px solid var(--bg);border-radius:50%}
+.ui-range::-moz-range-thumb{width:16px;height:16px;background:var(--atm);border:2px solid var(--bg);border-radius:50%}
+.ui-range:disabled{opacity:0.45;cursor:not-allowed}
+
+/* .ui-close: the one close button, a round 32 px icon button holding the x of the icon set. */
+.ui-close{position:relative;display:inline-grid;place-items:center;flex:none;width:32px;height:32px;margin:0;padding:0;color:var(--dim);background:transparent;border:0;border-radius:50%;cursor:pointer;transition:background-color var(--ui-fast) var(--ui-ease),color var(--ui-fast) var(--ui-ease)}
+.ui-close svg{width:20px;height:20px}
+.ui-close:hover{color:var(--tx);background:var(--ui-wash-hover)}
+
+/* .ui-pop: a popover or a panel. __head holds the __title and the .ui-close; __body holds __sects, each led by an
+   __eyebrow; __foot holds the actions. The surface is the host's (a glass panel), or --surface for a plain one. */
+.ui-pop{display:flex;flex-direction:column;min-width:0;color:var(--tx)}
+.ui-pop--surface{background:var(--panel);border-radius:var(--ui-r-lg);box-shadow:inset 0 0 0 1px var(--line)}
+.ui-pop__head{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;padding:8px 8px 8px 16px}
+.ui-pop__title{margin:0;font-family:var(--cap);font-size:var(--ui-fs-title);font-weight:600;line-height:1.2;letter-spacing:0.02em;color:var(--tx)}
+.ui-pop__body{display:grid;gap:16px;min-width:0;padding:0 16px 16px}
+.ui-pop__sect{display:grid;gap:8px;min-width:0}
+.ui-pop__sect+.ui-pop__sect{padding-top:16px;border-top:1px solid var(--line)}
+.ui-pop__eyebrow{margin:0;font-family:var(--cap);font-size:var(--ui-fs-sm);font-weight:600;line-height:1;letter-spacing:0.14em;text-transform:uppercase;color:var(--dim)}
+.ui-pop__note{margin:0;font-size:var(--ui-fs-sm);line-height:1.4;color:var(--dim)}
+.ui-pop__foot{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;padding:0 16px 16px}
+
+/* .ui-row: a row of a list that goes somewhere, with a chevron (--plain: none). __t grows, __meta is the dim value. */
+.ui-row{position:relative;display:flex;align-items:center;gap:12px;width:100%;min-height:44px;margin:0;padding:8px 12px;font-family:var(--sans);font-size:var(--ui-fs-body);font-weight:400;line-height:1.3;color:var(--tx);text-align:start;text-decoration:none;background:transparent;border:0;border-radius:var(--ui-r);cursor:pointer;transition:background-color var(--ui-fast) var(--ui-ease)}
+.ui-row::after{content:'';flex:none;width:8px;height:8px;margin-inline-end:4px;border:solid var(--dim);border-width:2px 2px 0 0;transform:rotate(45deg)}
+.ui-row:dir(rtl)::after{transform:rotate(-135deg)}
+.ui-row--plain::after{display:none}
+.ui-row:hover{background:var(--ui-wash)}
+.ui-row:is([aria-current='true'],[aria-current='page'],[aria-selected='true']){background:var(--ui-sel)}
+.ui-row svg{flex:none;width:20px;height:20px;color:var(--dim)}
+.ui-row__t{flex:1 1 auto;min-width:0}
+.ui-row__meta{flex:none;font-size:var(--ui-fs-sm);color:var(--dim)}
+
+/* .ui-chip: a status or a tag. As a <button> or a link it is a filter you press (aria-pressed="true" when on);
+   --atm marks a live or chosen state, --accent tints with the thing's own --a. */
+.ui-chip{position:relative;display:inline-flex;align-items:center;gap:4px;min-height:24px;margin:0;padding:0 8px;font-family:var(--sans);font-size:var(--ui-fs-sm);font-weight:600;line-height:1;color:var(--tx);text-decoration:none;white-space:nowrap;background:var(--ui-wash);border:0;border-radius:var(--ui-r-pill);box-shadow:inset 0 0 0 1px var(--line)}
+.ui-chip svg{flex:none;width:16px;height:16px}
+.ui-chip--atm{background:var(--ui-sel);box-shadow:inset 0 0 0 1px var(--ui-sel-line)}
+.ui-chip--accent{background:color-mix(in srgb,var(--a) 14%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--a) 55%,transparent)}
+:is(button,a).ui-chip{min-height:var(--ui-h-sm);padding:0 12px;cursor:pointer;transition:box-shadow var(--ui-fast) var(--ui-ease),background-color var(--ui-fast) var(--ui-ease)}
+:is(button,a).ui-chip:hover{box-shadow:inset 0 0 0 1px var(--ui-sel-line)}
+.ui-chip[aria-pressed='true']{background:var(--ui-sel);box-shadow:inset 0 0 0 1px var(--ui-sel-line)}
+.ui-chip:disabled{opacity:0.45;cursor:not-allowed}
+
+/* a finger's target: 44 px on a touch screen. The 40 px ones grow; the small ones and the close button keep their
+   look and reach 44 with a hit area around them. */
+@media (pointer: coarse){
+.ui-btn,.ui-select,.ui-row{min-height:44px}
+.ui-btn--icon{width:44px}
+.ui-btn--sm,.ui-btn--sm.ui-btn--icon,.ui-select--sm{min-height:var(--ui-h-sm)}
+.ui-btn--sm.ui-btn--icon{width:var(--ui-h-sm)}
+.ui-btn--sm::after,.ui-close::after,:is(button,a).ui-chip::after{content:'';position:absolute;inset:-6px}
+.ui-seg{padding:2px;gap:0}
+.ui-seg__btn{min-height:40px}
+.ui-seg__btn::after{content:'';position:absolute;inset:-2px}
+.ui-opt{min-height:44px}
+.ui-range{height:44px}
+}

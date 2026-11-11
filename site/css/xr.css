@@ -61,7 +61,7 @@
 }
 
 .sr-padhint__ship input:focus-visible {
-  outline: 2px solid var(--sr-ember);
+  outline: 2px solid var(--sr-atmosphere);
   outline-offset: 2px;
 }
 
@@ -141,7 +141,7 @@
 .sr-xrnote__btn { min-height: 44px; min-width: 96px; }
 
 .sr-xrnote__btn:focus-visible {
-  outline: 2px solid var(--sr-ember);
+  outline: 2px solid var(--sr-atmosphere);
   outline-offset: 2px;
 }
 

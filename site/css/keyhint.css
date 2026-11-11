@@ -100,7 +100,7 @@
 .sr-keyhint__close:active { background: var(--sr-wash-strong); }
 
 .sr-keyhint__close:focus-visible {
-  outline: 2px solid var(--sr-ember);
+  outline: 2px solid var(--sr-atmosphere);
   outline-offset: 2px;
 }
 

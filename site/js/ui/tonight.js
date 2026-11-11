@@ -161,11 +161,11 @@ export function renderTonight(host, ctx) {
   const viewBox = el('div', 'sr-skybar');
   const viewButtons = [];
   const viewRow = (label, entries, key) => {
-    const r = el('div', 'sr-density__choices sr-skybar__wrap');
+    const r = el('div', 'ui-seg ui-seg--wrap sr-skybar__wrap');
     r.setAttribute('role', 'group');
     r.setAttribute('aria-label', label);
     for (const [value, text, title] of entries) {
-      const b = el('button', 'sr-density__btn', text);
+      const b = el('button', 'ui-seg__btn', text);
       b.type = 'button';
       if (title) b.title = title;
       b.addEventListener('click', () => {
@@ -520,7 +520,7 @@ export function renderTonight(host, ctx) {
     const kind = ctx.skyView && ctx.skyView.darkness ? ctx.skyView.darkness.id : undefined;
     const best = o ? tonightBest({ observer: o, nowMs: ctx.clock.now(), passes: st.ready ? st.passes : [], deepSky: deepObjects(), darkness: kind, facing: view.facing, minAltDeg: view.minAltDeg }) : null;
     const limited = view.facing !== 'any' || view.minAltDeg > 0;
-    for (const v of viewButtons) { const on = view[v.key] === v.value; v.b.setAttribute('aria-pressed', on ? 'true' : 'false'); v.b.classList.toggle('sr-bracketed', on); }
+    for (const v of viewButtons) { const on = view[v.key] === v.value; v.b.setAttribute('aria-pressed', on ? 'true' : 'false'); }
     viewBox.hidden = !o;
     setText(bestEmpty, limited ? T.best.viewNothing : T.best.nothing);
     st.best = best;
@@ -550,14 +550,14 @@ export function renderTonight(host, ctx) {
     title.id = 'sr-skybar-title';
     node.appendChild(title);
     const row = (label, wrap) => {
-      const r = el('div', 'sr-density__choices' + (wrap ? ' sr-skybar__wrap' : ''));
+      const r = el('div', 'ui-seg ' + (wrap ? 'ui-seg--wrap sr-skybar__wrap' : 'ui-seg--block'));
       r.setAttribute('role', 'group');
       r.setAttribute('aria-label', label);
       node.appendChild(r);
       return r;
     };
     const button = (parent, text, title2, onPress) => {
-      const b = el('button', 'sr-density__btn', text);
+      const b = el('button', 'ui-seg__btn', text);
       b.type = 'button';
       if (title2) b.title = title2;
       b.setAttribute('aria-pressed', 'false');
@@ -636,7 +636,7 @@ export function renderTonight(host, ctx) {
     button(timeRow, K.timeDusk, K.timeTitles.dusk, moment('dusk')).removeAttribute('aria-pressed');
     button(timeRow, K.timeMidnight, K.timeTitles.midnight, moment('midnight')).removeAttribute('aria-pressed');
     button(timeRow, K.timeDawn, K.timeTitles.dawn, moment('dawn')).removeAttribute('aria-pressed');
-    const strip = el('div', 'sr-density__btn sr-skytime');
+    const strip = el('div', 'sr-skytime');
     strip.tabIndex = 0;
     strip.setAttribute('role', 'slider');
     strip.setAttribute('aria-label', K.timeStripAria);
@@ -781,7 +781,6 @@ export function renderTonight(host, ctx) {
     node.appendChild(el('p', 'sr-tonight-view__caveat', K.honesty));
     const press = (b, on) => {
       b.setAttribute('aria-pressed', on ? 'true' : 'false');
-      b.classList.toggle('sr-bracketed', !!on);
     };
     let lastFollowed = null;
     const paintBar = () => {

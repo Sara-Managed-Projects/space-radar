@@ -290,13 +290,13 @@ export function motionPanel(doc = document, win = window) {
   wrap.appendChild(el('h2', 'sr-panel__title', C.panelTitle));
   const note = el('p', 'sr-quality__note', C.device);
   wrap.appendChild(note);
-  const row = el('div', 'sr-density__choices');
+  const row = el('div', 'ui-seg ui-seg--block');
   row.setAttribute('role', 'group');
   row.setAttribute('aria-label', C.panelTitle);
   wrap.appendChild(row);
   const buttons = {};
   for (const choice of ['on', 'off']) {
-    const b = el('button', 'sr-density__btn', C.choices[choice]);
+    const b = el('button', 'ui-seg__btn', C.choices[choice]);
     b.type = 'button';
     b.title = C.titles[choice];
     b.dataset.motion = choice;
@@ -317,7 +317,6 @@ export function motionPanel(doc = document, win = window) {
     for (const choice of ['on', 'off']) {
       const pressed = (choice === 'off') === off;
       buttons[choice].setAttribute('aria-pressed', pressed ? 'true' : 'false');
-      buttons[choice].classList.toggle('sr-bracketed', pressed);
     }
   }
   paint();

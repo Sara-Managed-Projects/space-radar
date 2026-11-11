@@ -39,7 +39,7 @@
 }
 
 .sr-vs__select:focus-visible {
-  outline: 2px solid var(--sr-ember);
+  outline: 2px solid var(--sr-atmosphere);
   outline-offset: 2px;
 }
 
@@ -328,7 +328,7 @@ html.sr-phone .sr-vs__select {
 }
 
 .sr-photocmp__field:focus-visible {
-  outline: 2px solid var(--sr-ember);
+  outline: 2px solid var(--sr-atmosphere);
   outline-offset: 2px;
 }
 

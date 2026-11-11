@@ -114,7 +114,7 @@
 .sr-make__btn:disabled { opacity: 0.45; cursor: default; }
 .sr-make__btn--primary { font-weight: 600; color: var(--sr-ink); background: var(--sr-ember); }
 .sr-make__btn:focus-visible, .sr-make__play:focus-visible, .sr-make__mini:focus-visible, .sr-make__keyname:focus-visible {
-  outline: 2px solid var(--sr-ember);
+  outline: 2px solid var(--sr-atmosphere);
   outline-offset: 2px;
 }
 .sr-make__body > .sr-make__btn--primary { width: 100%; margin: 0 0 var(--sp-3); }

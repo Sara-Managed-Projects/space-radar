@@ -161,6 +161,22 @@
 
   /* Old names, kept for one release so no rule breaks in the change */
   --sr-panel: var(--sr-glass-solid);
+
+  /* The design kit's names (web-kit/css/tokens.css), which css/controls.css, the control set every Space Radar site
+     shares, is written in. Here they are the map's own values; --ember and --mono are site.css's. */
+  --bg: var(--sr-space);
+  --bg2: var(--sr-space-edge);
+  --panel: var(--sr-space);
+  --panel2: var(--sr-space-edge);
+  --line: var(--sr-line-strong);
+  --tx: var(--sr-text);
+  --dim: var(--sr-text-dim);
+  --atm: var(--sr-atmosphere);
+  --a: var(--sr-atmosphere);
+  --ink: var(--sr-space);
+  --ink-ember: var(--sr-ink);
+  --sans: var(--sr-font);
+  --cap: var(--sr-font-hud);
 }
 
 /* Reduced motion, everywhere at once (spec 0061 req 12, docs/ui-guide.md section 2.5): the three
@@ -262,35 +278,27 @@ html.sr-compact .sr-status {
   }
 }
 
-/* Corner brackets (spec 0045 req 8): the selection and focus signature, four 8 px ember L-ticks
-   just outside the corners. CSS only: ::before draws the top two, ::after is the same picture
-   turned upside down. A row inside a scrolling list draws them inside its own corners instead
-   (--sr-bracket-out: 0px), where the list's edge cannot clip them. */
+/* Focus and selection (the maintainer, 2026-11-11: the journal's design in the app). The ember corner brackets that
+   marked what was selected or focused are gone: focus is a 2 px atmosphere-blue ring, what is selected wears the blue
+   wash of css/controls.css (aria-pressed, aria-checked, aria-selected), and ember is the one main action of a view.
+   The scene's reticle keeps its four ticks: it is a mark on the thing in space, not a control. */
 /* Zero specificity, so a control that is fixed or absolute keeps its own position. */
-:where(button, a[href], [role='option'], summary),
-.sr-bracketed {
+:where(button, a[href], [role='option'], summary) {
   position: relative;
 }
 
-:where(button, a[href], [role='option'], summary):focus-visible {
-  outline: none;
+:where(button, a[href], [role='option'], summary, input, select, textarea):focus-visible {
+  outline: 2px solid var(--sr-atmosphere);
+  outline-offset: 2px;
 }
 
-.sr-bracketed::before,
-.sr-bracketed::after,
-.sr-search__option.is-active::before,
-.sr-search__option.is-active::after,
 .sr-reticle__box::before,
 .sr-reticle__box::after,
 .sr-skyreticle::before,
-.sr-skyreticle::after,
-.sr-search__row:has(:focus-visible)::before,
-.sr-search__row:has(:focus-visible)::after,
-:where(button, a[href], [role='option'], summary):focus-visible::before,
-:where(button, a[href], [role='option'], summary):focus-visible::after {
+.sr-skyreticle::after {
   content: '';
   position: absolute;
-  inset: calc(-1 * var(--sr-bracket-out, 4px));
+  inset: 0;
   pointer-events: none;
   background:
     linear-gradient(var(--sr-ember) 0 0) top left / var(--sr-bracket) var(--sr-bracket-w) no-repeat,
@@ -299,19 +307,20 @@ html.sr-compact .sr-status {
     linear-gradient(var(--sr-ember) 0 0) top right / var(--sr-bracket-w) var(--sr-bracket) no-repeat;
 }
 
-.sr-bracketed::after,
-.sr-search__option.is-active::after,
 .sr-reticle__box::after,
-.sr-skyreticle::after,
-.sr-search__row:has(:focus-visible)::after,
-:where(button, a[href], [role='option'], summary):focus-visible::after {
+.sr-skyreticle::after {
   transform: scaleY(-1);
 }
 
-/* The search field's well wears the brackets while its input has the keyboard (0061 task 5): an
-   input has no pseudo-elements of its own, and the hairline it had was 1.8:1, under SC 2.4.13. */
+/* The search field's well wears the focus ring while its input has the keyboard (0061 task 5): the input itself
+   draws none, and the hairline it had was 1.8:1, under SC 2.4.13. */
 .sr-search__row {
   position: relative;
+}
+
+.sr-search__row:has(:focus-visible) {
+  outline: 2px solid var(--sr-atmosphere);
+  outline-offset: 2px;
 }
 
 .sr-card *,
@@ -1578,7 +1587,7 @@ html.sr-hud #sr-time {
 }
 
 .sr-search__input:focus-visible {
-  outline: 2px solid var(--sr-ember);
+  outline: 2px solid var(--sr-atmosphere);
   outline-offset: 1px;
 }
 
@@ -1709,11 +1718,9 @@ html.sr-phone .sr-search__option--rich {
 }
 
 .sr-search__option:hover,
-/* The selected row: the ember wash and the brackets, drawn inside the row's own corners because
-   the list scrolls and would clip them outside. */
+/* The selected row: the selection's blue wash (css/controls.css). */
 .sr-search__option.is-active {
-  --sr-bracket-out: 0px;
-  background: var(--sr-ember-soft);
+  background: var(--ui-sel);
 }
 
 .sr-search__option.is-active .sr-search__name {
@@ -3182,31 +3189,7 @@ html.sr-trip-mode .sr-scenenote { display: none; }
   color: var(--sr-text-dim);
 }
 
-/* Density (spec 0045 req 10): three choices in a row, the chosen one bracketed. */
-.sr-density__choices {
-  display: flex;
-  gap: var(--sp-2);
-}
-
-.sr-density__btn {
-  appearance: none;
-  flex: 1 1 0;
-  min-height: 36px;
-  padding: 0 var(--sp-2);
-  font: inherit;
-  font-size: var(--sr-fs-sm);
-  color: var(--sr-text-dim);
-  background: transparent;
-  border: 1px solid var(--sr-line);
-  border-radius: var(--sr-radius-sm);
-  cursor: pointer;
-}
-
-.sr-density__btn[aria-pressed='true'] {
-  color: var(--sr-text);
-  border-color: var(--sr-line-strong);
-}
-
+/* Density (spec 0045 req 10): three choices in a row, a segmented control (css/controls.css .ui-seg). */
 .sr-density__note {
   margin: var(--sp-2) 0 0;
   font-size: var(--sr-fs-sm);
@@ -3229,12 +3212,6 @@ html.sr-trip-mode .sr-scenenote { display: none; }
   text-decoration: underline;
 }
 
-/* A finger's target (docs/ui-guide.md principle 9): 44 px on a coarse pointer. */
-@media (pointer: coarse) {
-  .sr-exposure .sr-density__btn {
-    min-height: 44px;
-  }
-}
 .sr-sound__btn.is-on {
   color: var(--sr-ember);
   border-color: var(--sr-ember);
@@ -3273,14 +3250,12 @@ html.sr-phone .sr-sound__btn {
   will-change: transform;
 }
 
-/* The reticle is 0045's corner brackets, the same rule as a focused control (the list above), on a
-   box sized to the thing: max(40 px, its drawn diameter + 12 px). Inside its own corners, because
-   the box is already the margin. */
+/* The reticle is 0045's corner brackets (the rule at the head of this file), on a box sized to the thing:
+   max(40 px, its drawn diameter + 12 px). Inside its own corners, because the box is already the margin. */
 .sr-reticle__box {
   position: relative;
   width: 28px;
   height: 28px;
-  --sr-bracket-out: 0px;
   transform-origin: 50% 50%;
 }
 
@@ -4718,11 +4693,11 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 
 .sr-rail__btn[aria-expanded='true'],
 .sr-rail__btn[aria-pressed='true'] {
-  color: var(--sr-ember);
+  color: var(--sr-atmosphere);
 }
 
-/* The brackets would be clipped by the rail's rounded overflow; focus draws inside the button. */
-.sr-rail__btn:focus-visible { --sr-bracket-out: -4px; }
+/* The ring would be clipped by the rail's rounded overflow; focus draws inside the button. */
+.sr-rail__btn:focus-visible { outline-offset: -4px; }
 
 /* The popover opens to the rail's left, top-aligned with it; the share sheet (css/share.css)
    takes the same place. */
@@ -4770,7 +4745,7 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   border-radius: var(--sr-radius);
 }
 .sr-show__filter::placeholder { color: var(--sr-text-dim); }
-.sr-show__filter:focus-visible { outline: none; border-color: var(--sr-ember); }
+.sr-show__filter:focus-visible { outline: none; border-color: var(--sr-atmosphere); }
 
 .sr-show__group + .sr-show__group { border-top: 1px solid var(--sr-line); }
 .sr-show__group[hidden] { display: none; }
@@ -4914,7 +4889,7 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 /* The list is walked with the arrow keys (public #315): the box under the keys wears the guide's
    ring, not the browser's 1 px one, and its row lifts a step so the eye finds the name too. */
 .sr-show__box:focus-visible {
-  outline: 2px solid var(--sr-ember);
+  outline: 2px solid var(--sr-atmosphere);
   outline-offset: 2px;
 }
 
@@ -5057,12 +5032,11 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 
 .sr-show__toggle.is-on { color: var(--sr-ember); border-color: var(--sr-ember); }
 
-.sr-show__setting .sr-density__choices { display: flex; gap: 4px; }
 .sr-show__setting .sr-density__note { flex-basis: 100%; margin: 0; font-size: var(--sr-fs-sm); color: var(--sr-text-dim); }
 /* Quality (ui/qualitypanel.js, spec 0073 req 6): the title and a mono note of what Auto wears now on
    one line, then up to five choices across the row's whole width, one line, never wrapped. */
-.sr-quality .sr-density__choices { flex-basis: 100%; }
-.sr-quality .sr-density__btn { padding: 0 var(--sp-1); white-space: nowrap; }
+.sr-quality .ui-seg { flex-basis: 100%; }
+.sr-quality .ui-seg__btn { padding: 0 var(--sp-1); }
 .sr-quality__note {
   margin: 0;
   font: 400 var(--sr-fs-sm)/1.2 var(--sr-font-mono);
@@ -5070,18 +5044,12 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   color: var(--sr-text-dim);
 }
 .sr-quality__note[hidden] { display: none; }
-/* Look (ui/exposure.js lookPanel): "Film" is a short word, 43 px wide as a button. On a finger's screen
-   the row's buttons get more padding, which takes it past 44. Not a min-width: on a flex item with a
-   basis of nothing that replaces the automatic minimum, and "Measured" was then squeezed and cut
-   (seen in a look run, 2026-10-12). */
-@media (pointer: coarse) {
-  .sr-look .sr-density__btn { padding: 0 var(--sp-3); }
 }
 /* Other light (ui/otherlight.js): four choices take the row's whole width, under the title; then
    the one slider in the app, a native range between two words, and the survey's credit as a link
    that is underlined so colour alone does not say so. */
-.sr-otherlight .sr-density__choices { flex-basis: 100%; flex-wrap: wrap; }
-.sr-otherlight .sr-density__btn { flex: 1 1 40%; }
+.sr-otherlight .ui-seg { flex-basis: 100%; flex-wrap: wrap; border-radius: var(--ui-r); }
+.sr-otherlight .ui-seg__btn { flex: 1 1 40%; }
 .sr-otherlight__mix {
   flex-basis: 100%;
   display: flex;
@@ -5099,7 +5067,7 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   accent-color: var(--sr-text-soft);
   cursor: pointer;
 }
-.sr-otherlight__slider:focus-visible { outline: 2px solid var(--sr-ember); outline-offset: 2px; }
+.sr-otherlight__slider:focus-visible { outline: 2px solid var(--sr-atmosphere); outline-offset: 2px; }
 .sr-otherlight__credit a { color: var(--sr-text-soft); text-decoration: underline; }
 @media (pointer: coarse) {
   .sr-otherlight__slider { min-height: 44px; }
@@ -5267,7 +5235,7 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 /* Keyboard focus (public #676): the tape clips what is drawn outside it, so the ring is drawn inside the
    slider's box, as the guide's ring on the other sliders is. */
 .sr-tape__slider:focus-visible {
-  outline: 2px solid var(--sr-ember);
+  outline: 2px solid var(--sr-atmosphere);
   outline-offset: -2px;
 }
 
@@ -5745,7 +5713,7 @@ html.sr-phone .sr-pop.sr-more:not([hidden]) {
 }
 
 .sr-more__item:focus-visible {
-  --sr-bracket-out: 0px;
+  outline-offset: -2px;
 }
 
 @media (hover: hover) {
@@ -5811,7 +5779,7 @@ html.sr-phone #sr-side.is-dragging .sr-sheet__handle {
 }
 
 .sr-sheet__handle:focus-visible {
-  --sr-bracket-out: -4px;
+  outline-offset: -4px;
 }
 
 .sr-sheet__handle:focus-visible .sr-sheet__grabber {
@@ -6340,14 +6308,14 @@ html.sr-night-red::after {
 .sr-skybar { display: flex; flex-direction: column; gap: var(--sp-2); }
 .sr-skybar .sr-density__note { margin: 0; }
 .sr-skybar__wrap { flex-wrap: wrap; }
-/* The sky's own time: a strip to drag (ui/tonight.js), in the density button's look. */
-.sr-skytime { display: flex; flex: none; justify-content: space-between; align-items: center; cursor: ew-resize; touch-action: none; user-select: none; }
+/* The sky's own time: a strip to drag (ui/tonight.js), a well the width of its row. */
+.sr-skytime { display: flex; flex: 1 1 100%; justify-content: space-between; align-items: center; min-height: 44px; padding: 0 var(--sp-3); font-size: var(--sr-fs-sm); color: var(--sr-text-dim); background: var(--ui-wash); border-radius: var(--ui-r); box-shadow: inset 0 0 0 1px var(--line); cursor: ew-resize; touch-action: none; user-select: none; }
 .sr-skytime__at { color: var(--sr-text); }
 /* Where dusk, the middle of the night and dawn are on the strip: a hairline from the foot and a HUD
    unit beside it. The strip's middle is now. */
 .sr-skytime { position: relative; overflow: hidden; padding-bottom: var(--sp-4); }
 /* Keyboard focus (public #677): inside the strip, which clips what is drawn outside it. */
-.sr-skytime:focus-visible { outline: 2px solid var(--sr-ember); outline-offset: -2px; }
+.sr-skytime:focus-visible { outline: 2px solid var(--sr-atmosphere); outline-offset: -2px; }
 .sr-skytime__ticks { position: absolute; inset: 0; pointer-events: none; }
 .sr-skytime__tick { position: absolute; bottom: 0; width: 1px; height: var(--sp-3); background: var(--sr-line-strong); }
 .sr-skytime__tick[hidden] { display: none; }
@@ -6369,17 +6337,13 @@ html.sr-night-red::after {
   height: 40px;
   margin: -20px 0 0 -20px;
   pointer-events: none;
-  --sr-bracket-out: 0px;
 }
 .sr-skyreticle[hidden] { display: none; }
 /* The phone's row where there is no sensor, and "Undo line-up" with nothing to undo. */
-.sr-skybar .sr-density__choices[hidden], .sr-skybar .sr-density__btn[hidden] { display: none; }
-.sr-skybar__wrap .sr-density__btn { flex: 1 1 30%; }
+.sr-skybar__wrap { border-radius: var(--ui-r); }
+.sr-skybar__wrap .ui-seg__btn { flex: 1 1 30%; }
 /* Deep time's steps and pole stars two to a row: "−10 000 years" does not fit a third of it (ui/deeptime.js). */
-.sr-deeptime__pairs .sr-density__btn { flex-basis: 40%; }
-@media (pointer: coarse) {
-  .sr-skybar .sr-density__btn { min-height: 44px; }
-}
+.sr-deeptime__pairs .ui-seg__btn { flex-basis: 40%; }
 /* A row's name with its brightness at the right, in mono: the number a row is ranked by. */
 .sr-tonight-view__rowhead { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-2); }
 .sr-tonight-view__rowhead .sr-tonight-view__rowname { flex: 1 1 auto; min-width: 0; }
@@ -6931,7 +6895,6 @@ html.sr-present .sr-trip__count {
 /* Two small targets on a phone that were real (internal #419 item 9): "Sound: off" in What to show
    was 32 px tall, and Eye / Binoculars / Telescope 42 px wide. */
 html.sr-phone .sr-show__toggle { min-height: 44px; }
-html.sr-phone .sr-skybar__wrap .sr-density__btn { min-width: 44px; min-height: 44px; }
 
 /* A launch within a day (ui/countdown.js): the number in the mono face, its state beside it. */
 .sr-count {
@@ -7313,11 +7276,8 @@ button.sr-debris__oldname:hover { color: var(--sr-ember-light); }
 }
 /* 0077 W1-d: end */
 
-/* Windows high contrast (public #651). The keyboard mark above is gradient backgrounds on ::before and
-   ::after, and the focus ring is switched off, so a browser that forces colours (forced-colors: active)
-   showed no mark on a button, a link, an option or a summary (looked at in Chrome 156 with the media feature
-   emulated, 2026-11-05). The system's own highlight colour, as an outline, on the same selectors, on the
-   search box's row and on the search list's active option; the brackets stay where the author's colours are kept. */
+/* Windows high contrast (public #651): the system's own highlight colour as the outline, on the focusable things, the
+   search box's row and the search list's active option, whose blue wash a forced palette would drop. */
 @media (forced-colors: active) {
   :where(button, a[href], [role='option'], summary):focus-visible,
   .sr-search__row:has(:focus-visible),
