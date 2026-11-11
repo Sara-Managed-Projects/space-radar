@@ -38,6 +38,7 @@ import { createSheet } from './sheet.js';
 import { toast, appBase } from './share.js';
 import { write as writeUrl } from './urlstate.js';
 import { saveBlob } from './printcompose.js';
+import { icon } from './icons.js';
 import {
   EASINGS, RATES, MAX_KEYS, MIN_MS, MAX_MS, DEFAULT_MS,
   makeKey, startsOf, totalMs, poseAt, clockAt, clockTimes, encodePath, decodePath, tripDraft,
@@ -61,8 +62,8 @@ function button(className, label, title) {
 }
 function select(label, options, value) {
   const wrap = el('label', 'sr-make__field');
-  wrap.appendChild(el('span', 'sr-make__fieldname', label));
-  const s = el('select', 'sr-make__select');
+  wrap.appendChild(el('span', 'ui-pop__eyebrow', label));
+  const s = el('select', 'ui-select ui-select--block');
   for (const [v, text] of options) {
     const o = el('option', null, text);
     o.value = String(v);
@@ -100,19 +101,20 @@ export function createFlightEditor(ctx) {
   let run = null; // { raf, began, from, cut } while playing
   let opener = null;
 
-  const root = el('section', 'sr-make sr-float sr-over-clean');
+  const root = el('section', 'sr-make sr-float sr-over-clean ui-pop');
   root.id = 'sr-flight';
   root.setAttribute('aria-labelledby', 'sr-flight-title');
   root.hidden = true;
-  const head = el('div', 'sr-make__head');
-  const title = el('h2', 'sr-make__title', M.title);
+  const head = el('div', 'ui-pop__head');
+  const title = el('h2', 'ui-pop__title', M.title);
   title.id = 'sr-flight-title';
   title.tabIndex = -1;
-  const closeBtn = button('sr-make__close', '×', M.close);
+  const closeBtn = button('ui-close', '', M.close);
+  closeBtn.appendChild(icon('x'));
   closeBtn.setAttribute('aria-label', M.close);
   const transport = el('div', 'sr-make__transport');
-  const playBtn = button('sr-make__play', M.play, M.playTitle);
-  const scrub = el('input', 'sr-make__scrub');
+  const playBtn = button('ui-btn ui-btn--secondary sr-make__play', M.play, M.playTitle);
+  const scrub = el('input', 'ui-range');
   scrub.type = 'range';
   scrub.min = '0';
   scrub.step = '50';
@@ -123,14 +125,14 @@ export function createFlightEditor(ctx) {
 
   const body = el('div', 'sr-make__body');
   const hint = el('p', 'sr-make__hint', M.hint);
-  const addBtn = button('sr-make__btn sr-make__btn--primary', M.add, M.addTitle);
+  const addBtn = button('ui-btn ui-btn--primary', M.add, M.addTitle);
   const list = el('ol', 'sr-make__keys');
   list.setAttribute('aria-label', M.keysLabel);
   const acts = el('div', 'sr-make__acts');
-  const linkBtn = button('sr-make__btn', M.copyLink, M.copyLinkTitle);
-  const draftBtn = button('sr-make__btn', M.draft, M.draftTitle);
-  const recordBtn = button('sr-make__btn', M.record, M.recordTitle);
-  const clearBtn = button('sr-make__btn', M.clear, M.clearTitle);
+  const linkBtn = button('ui-btn', M.copyLink, M.copyLinkTitle);
+  const draftBtn = button('ui-btn', M.draft, M.draftTitle);
+  const recordBtn = button('ui-btn', M.record, M.recordTitle);
+  const clearBtn = button('ui-btn', M.clear, M.clearTitle);
   acts.append(linkBtn, draftBtn, recordBtn, clearBtn);
   const honest = el('p', 'sr-make__note', M.honesty);
   body.append(hint, addBtn, list, acts, honest);
@@ -338,7 +340,7 @@ export function createFlightEditor(ctx) {
     li.appendChild(row);
     const tools = el('div', 'sr-make__keytools');
     const mk = (label, aria, fn, off) => {
-      const b = button('sr-make__mini', label, t(aria, { n: i + 1 }));
+      const b = button('ui-btn ui-btn--sm ui-btn--ghost', label, t(aria, { n: i + 1 }));
       b.setAttribute('aria-label', t(aria, { n: i + 1 }));
       b.disabled = !!off;
       b.addEventListener('click', fn);
@@ -428,7 +430,7 @@ export function createFlightEditor(ctx) {
   const isPhone = () => doc.documentElement.classList.contains('sr-phone');
   function seat() {
     if (isPhone() && !sheet) {
-      sheet = createSheet(root, { detents: ['peek', 'half', 'full'], initial: 'half', grab: '.sr-make__title', scrollers: '.sr-make__body', label: M.sheet });
+      sheet = createSheet(root, { detents: ['peek', 'half', 'full'], initial: 'half', grab: '.ui-pop__title', scrollers: '.sr-make__body', label: M.sheet });
     } else if (!isPhone() && sheet) { sheet.destroy(); sheet = null; }
     if (sheet) sheet.set('half');
   }
