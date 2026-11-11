@@ -61,6 +61,22 @@ HAND_CHECKED = ("hubble", "hubble-sts31", "shuttle-rms", "msl-entry", "cygnus", 
 EXCLUDED: dict[str, str] = {}  # id -> why; none today (see the docstring)
 VERSION = 1
 
+# Names where the id spelled out would read wrong (asset_pack.name_of spells the rest from the id, and its own NAMES
+# table wins for the ids it knows).
+NAMES = {
+    "lageos": "LAGEOS", "lares": "LARES", "sentinel-1": "Sentinel-1", "sentinel-2": "Sentinel-2", "sentinel-3": "Sentinel-3",
+    "formosat-7": "FORMOSAT-7 (COSMIC-2)", "vikram": "Vikram (Chandrayaan-3 lander)", "odysseus": "Odysseus (Nova-C)",
+    "surveyor": "Surveyor 1", "yutu": "Yutu (Chang'e 3 rover)", "pathfinder": "Mars Pathfinder", "phoenix": "Phoenix Mars lander",
+    "bus-eurostar-e3000": "Eurostar E3000 satellite bus", "bus-boeing-702": "Boeing 702 satellite bus",
+    "bus-boeing-702sp": "Boeing 702SP satellite bus", "bus-a2100ax": "A2100AX satellite bus",
+    "bus-spacebus-4000b": "Spacebus 4000B satellite bus", "bus-geostar-2": "GEOStar-2 satellite bus",
+    "bus-dfh-4": "DFH-4 satellite bus", "bus-i-3k": "I-3K satellite bus", "bus-i-2k": "I-2K satellite bus",
+}
+
+
+def name_of(mid: str) -> str:
+    return asset_pack.NAMES.get(mid) or NAMES.get(mid) or asset_pack.name_of(mid)
+
 # What the model is FOR, for the site's filter: the first rule whose words appear in the id or `used_for` wins, then
 # the class's default. Words are matched whole; this is a reader's grouping, not a claim the registry makes.
 MISSIONS = (
@@ -236,28 +252,41 @@ def references_of(row: dict) -> list[dict]:
     return out
 
 
-def first_added(root: Path) -> dict[str, str]:
-    """{site/models/<file>: the day it was first added, YYYY-MM-DD}: `git log --diff-filter=A`, one call for all
-    files. {} where git is not there. In a shallow clone the boundary commit looks as if it added everything it
-    holds, so a file whose first add IS a boundary commit gets no date rather than the boundary's."""
+def git_days(root: Path) -> tuple[dict[str, str], dict[str, str]]:
+    """({site/models/<file>: the day it was first added}, {site/models/<file>: the day it last changed}), YYYY-MM-DD,
+    from `git log --diff-filter=A` and `git log`, one call each for all files. ({}, {}) where git is not there. In a
+    shallow clone the boundary commit looks as if it added everything it holds, so a day that comes from a boundary
+    commit is left out (no date rather than the boundary's)."""
+    def log(*extra: str) -> list[tuple[str, str, list[str]]]:
+        out = subprocess.run(["git", "-C", str(root), "log", *extra, "--no-renames", "--format=@%H %as", "--name-only",
+                              "--", "site/models"], capture_output=True, text=True, timeout=120, check=True).stdout
+        commits, cur = [], None
+        for line in out.splitlines():
+            if line.startswith("@"):
+                sha, _, d = line[1:].partition(" ")
+                cur = (sha, d, [])
+                commits.append(cur)
+            elif line and cur:
+                cur[2].append(line)
+        return commits
     try:
-        out = subprocess.run(["git", "-C", str(root), "log", "--diff-filter=A", "--no-renames", "--format=@%H %as",
-                              "--name-only", "--", "site/models"], capture_output=True, text=True, timeout=120,
-                             check=True).stdout
+        adds, changes = log("--diff-filter=A"), log()
         shallow_file = subprocess.run(["git", "-C", str(root), "rev-parse", "--git-path", "shallow"],
                                       capture_output=True, text=True, timeout=10, check=True).stdout.strip()
     except (OSError, subprocess.SubprocessError):
-        return {}
+        return {}, {}
     sf = Path(shallow_file) if Path(shallow_file).is_absolute() else root / shallow_file
     boundary = set(sf.read_text().split()) if sf.is_file() else set()
-    day, seen = "", {}
-    for line in out.splitlines():
-        if line.startswith("@"):
-            sha, _, d = line[1:].partition(" ")
-            day = "" if sha in boundary else d
-        elif line:
-            seen[line] = day  # newest first: the last day met is the first add
-    return seen
+    added: dict[str, str] = {}
+    for sha, d, paths in adds:  # newest first: the last day met is the first add
+        for p in paths:
+            added[p] = "" if sha in boundary else d
+    changed: dict[str, str] = {}
+    for sha, d, paths in changes:  # newest first: the first day met is the last change
+        for p in paths:
+            if p not in changed and sha not in boundary:
+                changed[p] = d
+    return added, changed
 
 
 def pictures_of(mid: str) -> dict:
@@ -267,14 +296,14 @@ def pictures_of(mid: str) -> dict:
             "angles": [f"{base}/angle-{i}.webp" for i in (1, 2, 3)], "share": f"{base}/share.jpg"}
 
 
-def entry(row: dict, root: Path, added: dict[str, str]) -> dict:
+def entry(row: dict, root: Path, added: dict[str, str], changed: dict[str, str] | None = None) -> dict:
     f = root / row["file"]
     fname = f.name
     data = f.read_bytes()
     norad = norad_ids(row.get("used_for"))
     dims = dimensions_of(row)
     size_m, band = size_of(dims)
-    name = asset_pack.name_of(row["id"])
+    name = name_of(row["id"])
     return {
         "id": row["id"],
         "name": name,
@@ -302,7 +331,8 @@ def entry(row: dict, root: Path, added: dict[str, str]) -> dict:
         "norad": norad,
         "live": live_link(row, norad),
         "added": added.get(row["file"], ""),
-        "modified": str(row.get("modified") or ""),
+        "modified": (changed or {}).get(row["file"], "") or added.get(row["file"], ""),
+        "changes": str(row.get("modified") or ""),
         "pictures": pictures_of(row["id"]),
         "viewer": f"{SITE}/model/?id={row['id']}",
         "page": f"{MODELS_SITE}/{row['id']}/",
@@ -317,8 +347,8 @@ def rows(doc: dict | None = None) -> list[dict]:
 
 
 def catalog(root: Path = ROOT, doc: dict | None = None, with_dates: bool = True) -> dict:
-    added = first_added(root) if with_dates else {}
-    models = [entry(r, root, added) for r in rows(doc)]
+    added, changed = git_days(root) if with_dates else ({}, {})
+    models = [entry(r, root, added, changed) for r in rows(doc)]
     models.sort(key=lambda m: m["id"])
     return {
         "version": VERSION,
