@@ -15,7 +15,7 @@ function row(text, onClick) {
   li.className = 'sr-list__row';
   const b = document.createElement('button');
   b.type = 'button';
-  b.className = 'sr-list__btn';
+  b.className = 'ui-row ui-row--plain';
   const name = document.createElement('span');
   name.className = 'sr-list__name';
   name.textContent = text;

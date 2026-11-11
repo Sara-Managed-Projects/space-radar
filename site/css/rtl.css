@@ -52,8 +52,8 @@ html[dir='rtl'] .sr-side[data-dir='pop'] .sr-side__view.is-current { animation-n
 
 /* --- text that was set to the left -------------------------------------------------------------------------- */
 
-html[dir='rtl'] :is(.sr-vs__labbtn, .sr-disc__head, .sr-card__aboardrow, .sr-tripsheet__stop, .sr-pick__btn, .sr-now__btn,
-  .sr-tripcard, .sr-list__btn, .sr-list__static, .sr-next .sr-next__body, .sr-statusline, .sr-show__head, .sr-show__keys,
+html[dir='rtl'] :is(.sr-vs__labbtn, .sr-disc__head, .sr-card__aboardrow, .sr-tripsheet__stop,
+  .sr-tripcard, .sr-list__static, .sr-next .sr-next__body, .sr-statusline, .sr-show__head, .sr-show__keys,
   .sr-more__item, .sr-tonight-view__rowbtn, .sr-tripsheet__send, .sr-today__card, .sr-mission__event, .sr-sentence,
   .sr-passport-open, .sr-passport__place, .sr-spark__go, .sr-debris__oldname, .sr-moment__row, .sr-share__row, .sr-share__preset) {
   text-align: right;

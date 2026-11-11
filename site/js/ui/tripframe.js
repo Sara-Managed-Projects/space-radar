@@ -1037,7 +1037,7 @@ export function createTripFrame(ctx) {
       b.type = 'button';
       b.title = title;
       b.appendChild(icon(iconName));
-      b.appendChild(el('span', 'sr-act__label', label));
+      b.appendChild(el('span', 'ui-btn__label', label));
       b.addEventListener('click', onClick);
       row.appendChild(b);
       return b;
@@ -1046,13 +1046,13 @@ export function createTripFrame(ctx) {
     // visitor carries on from there. After a trip that moved the map's centre that means staying on
     // the trip's world (ui/trip.js stop, `stay`), and the way home is its own button beside it; a
     // trip that never left this map has nothing to go back to, so it has the three it always had.
-    const explore = act('sr-act sr-act--primary', 'compass', T.endExplore,
+    const explore = act('ui-btn ui-btn--tile ui-btn--primary', 'compass', T.endExplore,
       st.stageChanged ? T.endStayTitleStage : T.endExploreTitle, st.stageChanged ? stay : leave);
-    if (st.stageChanged) act('sr-act', 'house', T.endHome, T.endExploreTitleStage, leave);
+    if (st.stageChanged) act('ui-btn ui-btn--tile', 'house', T.endHome, T.endExploreTitleStage, leave);
     // Four actions are two rows of two (ui.css): in one row the labels were cut short.
     row.classList.toggle('is-four', !!st.stageChanged);
-    act('sr-act', 'rotate-ccw', T.endReplay, T.endReplayTitle, () => trip.start(st.tourId));
-    act('sr-act', 'share', T.share, T.endShareTitle, () => onShare(false));
+    act('ui-btn ui-btn--tile', 'rotate-ccw', T.endReplay, T.endReplayTitle, () => trip.start(st.tourId));
+    act('ui-btn ui-btn--tile', 'share', T.share, T.endShareTitle, () => onShare(false));
     p.appendChild(row);
     // THE PICTURE TO SEND (public #444). The trip's own picture, the one its card and its page
     // carry, as a button: it opens the share sheet, whose postcard is the view the camera is

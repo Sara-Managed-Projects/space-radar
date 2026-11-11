@@ -267,7 +267,7 @@ export function createDebris(ctx, host, opts = {}) {
       root.appendChild(el('h3', 'sr-micro', COPY.findEntry.clouds));
       const chips = el('div', 'sr-find__chips sr-debris__clouds');
       for (const c of CLOUDS) {
-        const b = el('button', 'sr-chip', COPY.breakups.names[c.id]);
+        const b = el('button', 'ui-chip', COPY.breakups.names[c.id]);
         b.type = 'button';
         b.title = COPY.breakups.why[c.id];
         b.addEventListener('click', () => ctx.wantFind().then((f) => f && f.open('clouds', { debris: c.id })));

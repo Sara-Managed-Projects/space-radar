@@ -456,7 +456,7 @@ export function createPassport(ctx, opts = {}) {
         const record = typeof ctx.recordById === 'function' ? ctx.recordById(id) : null;
         if (!record) continue; // its layer has not loaded on this visit: the tick is kept, the row waits
         const li = el('li', 'sr-list__row');
-        const b = el('button', 'sr-list__btn');
+        const b = el('button', 'ui-row ui-row--plain');
         b.type = 'button';
         b.title = t(P.placeTitle, { name: record.name });
         b.appendChild(el('span', 'sr-list__name', record.name));

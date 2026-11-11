@@ -612,67 +612,19 @@ html.sr-compact .sr-status {
   padding: var(--sp-4) 0;
 }
 
-.sr-act {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-1);
-  min-width: 0;
-  height: 52px;
-  padding: 0 var(--sp-1);
-  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
-  color: var(--sr-text);
-  background: var(--sr-wash);
-  border: 0;
-  border-radius: var(--sr-radius);
-  cursor: pointer;
-  transition: background-color var(--sr-fast) var(--sr-ease);
-}
-
-.sr-act__label {
-  max-width: 100%;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
 /* Narrow (docs/ui-guide.md §5, under 360 px): icon and one word, where the action has a short one. */
-.sr-act__label--short {
+.sr-word--short {
   display: none;
 }
 
 @media (max-width: 359px) {
-  .sr-act__label--long {
+  .sr-word--long {
     display: none;
   }
 
-  .sr-act__label--short {
+  .sr-word--short {
     display: inline;
   }
-}
-
-.sr-act .sr-icon {
-  flex: 0 0 auto;
-}
-
-.sr-act--primary {
-  font-weight: 600;
-  color: var(--sr-ink);
-  background: var(--sr-ember);
-}
-
-.sr-act:active:not(:disabled) {
-  background: var(--sr-wash-strong);
-}
-
-.sr-act--primary:active:not(:disabled) {
-  background: var(--sr-ember-light);
-}
-
-.sr-act:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
 }
 
 /* 4. The next 90 minutes (spec 0048): the light now and the next change, a 6 px bar, the scale. */
@@ -805,14 +757,6 @@ html.sr-compact .sr-status {
 @media (hover: hover) {
   .sr-card__close:hover {
     background-color: var(--sr-wash-hover);
-  }
-
-  .sr-act:hover:not(:disabled) {
-    background: var(--sr-wash-hover);
-  }
-
-  .sr-act--primary:hover:not(:disabled) {
-    background: var(--sr-ember-light);
   }
 
   .sr-disc__head:hover {
@@ -1232,7 +1176,6 @@ button.sr-card__crumb:hover, button.sr-card__crumb:focus-visible { color: var(--
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sr-act,
   .sr-card__close,
   .sr-card__aboardrow,
   .sr-disc__head,
@@ -2456,9 +2399,6 @@ html.sr-present.sr-trip-mode:not([data-trip-names]) #labels .label:not(.is-subje
   grid-auto-flow: row;
 }
 
-.sr-side .sr-tripsheet .sr-act {
-  height: 56px;
-}
 
 .sr-tripsheet__nextcard {
   width: 100%;
@@ -2924,25 +2864,11 @@ html.sr-trip-mode.sr-phone[data-sheet='full'] .sr-toast {
 
 .sr-pick[hidden] { display: none; }
 
-.sr-pick__btn {
-  appearance: none;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
+.sr-pick .ui-row {
   min-height: 36px;
-  padding: 0 8px;
-  font: inherit;
-  color: var(--sr-text);
-  text-align: left;
-  background: transparent;
-  border: 0;
+  padding: 0 var(--sp-2);
   border-radius: var(--sr-radius-sm);
-  cursor: pointer;
 }
-
-.sr-pick__btn:hover,
-.sr-pick__btn:focus-visible { background: var(--sr-wash); }
 
 .sr-pick__name { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -3855,33 +3781,9 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   display: none;
 }
 
-/* The tabs: a segmented control, row D's 34 px segments in a 3 px well. */
-.sr-tabs {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  padding: 3px;
-  background: var(--sr-wash);
-  border-radius: var(--sr-radius);
-}
-
-.sr-tabs__tab {
-  height: 34px;
-  padding: 0;
-  font: inherit;
-  font-size: var(--sr-fs-sm);
-  color: var(--sr-text-soft);
-  background: transparent;
-  border: 0;
-  border-radius: var(--sr-radius-sm);
-  cursor: pointer;
-  transition: color var(--sr-fast) var(--sr-ease), background var(--sr-fast) var(--sr-ease);
-}
-
-.sr-tabs__tab:hover { color: var(--sr-text); }
-
-.sr-tabs__tab.is-on {
-  color: var(--sr-text);
-  background: var(--sr-wash-strong);
+/* The tabs: a segmented control (css/controls.css .ui-seg, the tab with aria-selected), four equal pills. */
+.sr-tabs > .ui-seg__btn {
+  padding: 0 var(--sp-1);
 }
 
 .sr-explore__body {
@@ -3929,32 +3831,23 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   list-style: none;
 }
 
-.sr-now__row + .sr-now__row .sr-now__btn {
+/* A row of a list in the panel (css/controls.css .ui-row, no chevron): the words line up with the section's title,
+   and the row's wash reaches past them on both sides. */
+.sr-now__row > .ui-row,
+.sr-list__row > .ui-row {
+  justify-content: space-between;
+  align-items: baseline;
+  width: calc(100% + 2 * var(--sp-3));
+  margin: 0 calc(-1 * var(--sp-3));
+  padding: var(--sp-3);
+}
+
+.sr-now__row + .sr-now__row > .ui-row {
   border-top: 1px solid var(--sr-line);
 }
 
-.sr-now__btn {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  width: 100%;
-  padding: 12px 0;
-  font: inherit;
-  font-size: var(--sr-fs-body);
-  line-height: 1.35;
-  text-align: left;
-  color: var(--sr-text);
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  transition: color var(--sr-fast) var(--sr-ease);
-}
-
-.sr-now__btn:hover .sr-now__text { color: var(--sr-ember-light); }
-
 /* The lead: Inter at 20 / 1.25, two lines at most (docs/ui-guide.md section 3.4). */
-.sr-now__row.is-lead .sr-now__btn {
+.sr-now__row.is-lead > .ui-row {
   padding-top: var(--sp-1);
   font-size: var(--sr-fs-lead);
   line-height: 1.25;
@@ -4136,7 +4029,6 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   border-top: 1px solid var(--sr-line);
 }
 
-.sr-list__btn,
 .sr-list__static {
   display: flex;
   align-items: baseline;
@@ -4154,9 +4046,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   border: 0;
 }
 
-.sr-list__btn { cursor: pointer; }
-.sr-list__btn:hover .sr-list__name { color: var(--sr-ember-light); }
-.sr-list__btn:disabled { cursor: default; color: var(--sr-text-dim); }
+.sr-list__row > .ui-row:disabled { cursor: default; color: var(--sr-text-dim); }
 
 .sr-list__value {
   flex: 0 0 auto;
@@ -4381,21 +4271,6 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   margin-top: var(--sp-2);
 }
 
-.sr-chip {
-  height: 36px;
-  padding: 0 var(--sp-3);
-  font: inherit;
-  font-size: var(--sr-fs-sm);
-  color: var(--sr-text);
-  background: var(--sr-wash);
-  border: 1px solid transparent;
-  border-radius: var(--sr-radius-pill);
-  cursor: pointer;
-}
-
-.sr-chip:hover:not(:disabled) { border-color: var(--sr-line-strong); }
-.sr-chip:disabled { color: var(--sr-text-dim); cursor: not-allowed; }
-.sr-chip--quiet { background: transparent; color: var(--sr-text-dim); }
 
 .sr-place__note {
   margin: var(--sp-2) 0 0;
@@ -4510,9 +4385,6 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   line-height: 26px;
 }
 
-.sr-card.is-docked .sr-act {
-  height: 56px;
-}
 
 /* --- the sources sheet, as a view ----------------------------------------------------- */
 .sr-side .sr-status {
@@ -5685,12 +5557,8 @@ html.sr-phone .sr-explore__head {
   padding: 0 var(--sp-4);
 }
 
-html.sr-phone .sr-tabs {
-  padding: 2px;
-}
-
-html.sr-phone .sr-tabs__tab {
-  height: 44px;
+html.sr-phone .sr-tabs > .ui-seg__btn {
+  min-height: 40px;
   font-size: var(--sr-fs-label);
 }
 
@@ -5734,9 +5602,6 @@ html.sr-phone .sr-card.is-docked .sr-hero__num {
   font-size: var(--sr-fs-num-sm);
 }
 
-html.sr-phone .sr-card.is-docked .sr-act {
-  height: 52px;
-}
 
 html.sr-phone .sr-side .sr-status {
   padding-right: var(--sp-4);
@@ -6228,11 +6093,8 @@ html.sr-phone.sr-launchday:not([data-sheet='full']) .sr-skyfov {
    and the place chips at 36, the card's back row at 36, "Show all" at 36, a button at 40, What to
    show's layer rows at 36, and the Right-now rows, which were 44 only by their padding. */
 @media (pointer: coarse) {
-  .sr-chip,
   .sr-more,
-  .sr-pick__btn,
   .sr-side__back,
-  .sr-now__btn,
   .sr-show__label,
   .sr-colourkey__select {
     min-height: 44px;
@@ -7103,17 +6965,6 @@ button.sr-debris__oldname:hover { color: var(--sr-ember-light); }
   .sr-tonight-view__change[aria-expanded='true']:hover:not(:disabled) { background: var(--sr-wash-strong); }
 }
 
-.sr-tonight-view .sr-place__chips .sr-chip {
-  min-height: 44px;
-  border-radius: var(--sr-radius);
-}
-
-@media (hover: hover) {
-  .sr-tonight-view .sr-place__chips .sr-chip--quiet:hover:not(:disabled) {
-    background: var(--sr-wash);
-    border-color: transparent;
-  }
-}
 
 /* The line and its button sit on one line; the line wraps as far as it needs and the button stays
    at the top of it, so a three-line guess does not float the button in the middle of the text. */

@@ -206,7 +206,7 @@ export function createWelcome(ctx, opts = {}) {
     const hadFocus = root.contains(doc.activeElement);
     root.remove();
     if (hadFocus) {
-      const tab = doc.querySelector('.sr-tabs__tab[aria-selected="true"]');
+      const tab = doc.querySelector('.sr-tabs [aria-selected="true"]');
       if (tab) tab.focus({ preventScroll: true });
     }
   }

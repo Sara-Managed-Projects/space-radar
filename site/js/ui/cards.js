@@ -1592,7 +1592,7 @@ export { icon };
 
 /** One of the row's four: a 20 px icon over a 13 px label, the whole 56 px button the target. */
 function actionButton(action, label, title, iconName, onClick, primary) {
-  const b = el('button', primary ? 'sr-act sr-act--primary' : 'sr-act');
+  const b = el('button', primary ? 'ui-btn ui-btn--tile ui-btn--primary' : 'ui-btn ui-btn--tile');
   b.type = 'button';
   b.title = title;
   b.dataset.action = action;
@@ -1602,12 +1602,12 @@ function actionButton(action, label, title, iconName, onClick, primary) {
   const short = COPY.card.actions[`${action}Short`];
   if (short && short !== label) {
     b.setAttribute('aria-label', label);
-    b.appendChild(el('span', 'sr-act__label sr-act__label--long', label));
-    const s = el('span', 'sr-act__label sr-act__label--short', short);
+    b.appendChild(el('span', 'ui-btn__label sr-word--long', label));
+    const s = el('span', 'ui-btn__label sr-word--short', short);
     s.setAttribute('aria-hidden', 'true');
     b.appendChild(s);
   } else {
-    b.appendChild(el('span', 'sr-act__label', label));
+    b.appendChild(el('span', 'ui-btn__label', label));
   }
   b.addEventListener('click', onClick);
   return b;

@@ -1,7 +1,7 @@
 /* css/find.css -- Find, the owners, the clouds and the date field (ui/find.js, ui/findmap.js, ui/datejump.js;
    release 2.0.0 batch f1-find, forge #150, #152, #153, #154). Fetched with the module that draws them
-   (ui/latercss.js), never on a first visit. The rows, chips and tabs are ui.css's own (.sr-list, .sr-chip,
-   .sr-tabs): only what is new is here. */
+   (ui/latercss.js), never on a first visit. The rows and tabs are ui.css's own, the chips css/controls.css's (.sr-list, .ui-chip,
+   .sr-tabs, on the shared .ui-seg): only what is new is here. */
 
 .sr-find { padding: 0 20px 20px; }
 .sr-find__head { position: sticky; top: 0; z-index: 1; margin: 0 -20px; padding: var(--sp-2) 20px; background: var(--sr-panel-solid); }
@@ -17,8 +17,7 @@
 .sr-find__pane > .sr-micro, .sr-find__detail .sr-micro { padding: var(--sp-3) 0 var(--sp-1); }
 
 .sr-find__kinds, .sr-find__chips { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-2); }
-.sr-find__chips .sr-chip, .sr-find__kinds .sr-chip { height: auto; min-height: 36px; padding: 6px var(--sp-3); line-height: 1.3; text-align: left; }
-.sr-chip.is-on, .sr-chip[aria-pressed="true"], .sr-chip[aria-checked="true"] { color: var(--sr-text); background: var(--sr-ember-soft); border-color: var(--sr-ember); }
+.sr-find__chips .ui-chip, .sr-find__kinds .ui-chip { padding: var(--sp-2) var(--sp-3); line-height: 1.3; white-space: normal; text-align: start; }
 
 .sr-find__form { display: grid; grid-template-columns: 1fr; gap: var(--sp-2); margin-top: var(--sp-3); }
 .sr-find__field { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); min-height: 44px; }
@@ -91,7 +90,6 @@
 .sr-find__bodyname { font: 500 11px var(--sr-font); fill: var(--sr-text); }
 .sr-find__bodysub { font: 400 10px var(--sr-font-mono); fill: var(--sr-text-dim); }
 
-.sr-find__ownerbtn { align-items: center; }
 .sr-find__flags { flex: none; display: inline-flex; gap: 3px; width: 45px; }
 .sr-find__flag { width: 21px; height: 14px; object-fit: cover; border-radius: 2px; box-shadow: 0 0 0 1px var(--sr-line); }
 .sr-find__noflag { display: inline-block; width: 21px; height: 14px; border-radius: 2px; border: 1px dashed var(--sr-line-strong); }
@@ -105,7 +103,7 @@
 .sr-find__why, .sr-find__kinds2 { margin: var(--sp-2) 0 0; font-size: var(--sr-fs-sm); line-height: 1.45; }
 .sr-find__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); margin-top: var(--sp-2); }
 .sr-find__point { margin-top: var(--sp-3); }
-.sr-find__nopath .sr-list__static, .sr-find__nopath .sr-list__btn { min-height: 40px; padding: 6px 0; font-size: var(--sr-fs-sm); }
+.sr-find__nopath .sr-list__static, .sr-find__nopath .ui-row { min-height: 40px; padding: 6px 0; font-size: var(--sr-fs-sm); }
 
 /* The pill over the scene while a group is lit (ui/findmap.js). */
 .sr-findpill {
@@ -159,7 +157,7 @@ html.sr-phone .sr-findpill { top: calc(var(--sr-top-end, 88px) + 8px); left: 50%
 html.sr-phone .sr-datejump { left: 8px; right: 8px; bottom: 8px; transform: none; width: auto; max-height: 72vh; }
 
 @media (prefers-reduced-motion: reduce) {
-  .sr-find__table tbody tr, .sr-chip { transition: none; }
+  .sr-find__table tbody tr { transition: none; }
 }
 .sr-find__chips > [hidden], .sr-find__pane .sr-micro[hidden] { display: none; }
 .sr-find__refine { margin-top: var(--sp-3); border-top: 1px solid var(--sr-line); }
@@ -182,7 +180,7 @@ html.sr-phone .sr-find__sort, html.sr-phone .sr-find__go, html.sr-phone .sr-find
 html.sr-phone .sr-find__chartclose::after, html.sr-phone .sr-datejump__close::after, html.sr-phone .sr-findpill__clear::after { content: ""; position: absolute; inset: -4px; }
 html.sr-phone .sr-find__sort::before, html.sr-phone .sr-find__go::after { content: ""; position: absolute; inset: -6px -4px; }
 html.sr-phone .sr-find__chartbtn { min-height: 44px; }
-html.sr-phone .sr-find__nopath .sr-list__btn { min-height: 44px; }
+html.sr-phone .sr-find__nopath .ui-row { min-height: 44px; }
 /* b200-s2-guards: end */
 /* b200-s4b-look: begin -- the date field on a phone is a bottom sheet over the pill and the tab sheet, from under the search
    row to the screen's foot. It dropped from the search row as the other popovers do and stopped at 72 % of the screen,

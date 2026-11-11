@@ -301,7 +301,7 @@ function svgIcon(d, size = 18) {
 /** A list row that is a button: a name on the left, a mono value on the right. */
 function rowButton(name, value, onClick) {
   const li = el('li', 'sr-list__row');
-  const b = button('sr-list__btn');
+  const b = button('ui-row ui-row--plain');
   b.appendChild(el('span', 'sr-list__name', name));
   const v = el('span', 'sr-list__value', value || '');
   b.appendChild(v);
@@ -452,7 +452,7 @@ export function createExplore(ctx, host) {
   // a visitor reaching for the search box wants them now, so the first focus asks for them.
   if (input) input.addEventListener('focus', () => { if (typeof ctx.loadAfterFirstVisit === 'function') ctx.loadAfterFirstVisit(); if (typeof ctx.loadMoreCatalogues === 'function') ctx.loadMoreCatalogues(); }); // 0079 r15-a45: the catalogues of stages A4 and A5 too
 
-  const tabs = el('div', 'sr-tabs');
+  const tabs = el('div', 'ui-seg ui-seg--block sr-tabs');
   tabs.setAttribute('role', 'tablist');
   tabs.dataset.tour = 'tabs';
   tabs.setAttribute('aria-label', COPY.tabs.label);
@@ -469,7 +469,7 @@ export function createExplore(ctx, host) {
   const panes = new Map();
   const tabButtons = new Map();
   for (const id of TABS) {
-    const b = button('sr-tabs__tab', COPY.tabs[id]);
+    const b = button('ui-seg__btn', COPY.tabs[id]);
     b.setAttribute('role', 'tab');
     b.id = `sr-tab-${id}`;
     b.setAttribute('aria-controls', `sr-pane-${id}`);
@@ -830,7 +830,7 @@ export function createExplore(ctx, host) {
     now.hidden = !lines.length;
     for (const line of lines) {
       const li = el('li', `sr-now__row${line.lead ? ' is-lead' : ''}`);
-      const b = button('sr-now__btn');
+      const b = button('ui-row ui-row--plain');
       b.appendChild(el('span', 'sr-now__text', line.text));
       if (line.value) b.appendChild(el('span', 'sr-now__value', line.value));
       if (line.id === 'aurora') {

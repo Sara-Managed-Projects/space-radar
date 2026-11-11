@@ -155,7 +155,7 @@ function build(ctx) {
     filled = true;
     const [{ MISSIONS }, shelf] = await Promise.all([import('../data/missions.js'), import('../moments/shelf.js').catch(() => null)]);
     const chip = (words, title, onClick) => {
-      const b = el('button', 'sr-chip sr-datejump__chip', words);
+      const b = el('button', 'ui-chip sr-datejump__chip', words);
       b.type = 'button';
       if (title) b.title = title;
       b.addEventListener('click', onClick);
