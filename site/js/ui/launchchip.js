@@ -145,10 +145,9 @@ export function createLaunchChip(ctx, opts = {}) {
     seat();
     const words = chipWords(hit.record, hit.state, C);
     if (clock.textContent !== words.text) clock.textContent = words.text;
-    if (root.title !== words.title) {
-      root.title = words.title;
-      root.setAttribute('aria-label', words.title);
-    }
+    // No native tooltip: it spilled over the search under the head (2026-11-11). The words are the chip's name, and
+    // pressing it opens the launch's card, which says all of it.
+    if (root.getAttribute('aria-label') !== words.title) root.setAttribute('aria-label', words.title);
     root.dataset.phase = hit.state.phase;
   }
 

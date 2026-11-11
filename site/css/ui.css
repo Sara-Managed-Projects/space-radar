@@ -3461,24 +3461,35 @@ html.sr-phone .sr-chevron {
   padding: 20px 20px var(--sp-3);
 }
 
+/* The head's first row: the wordmark, the launch chip when a launch is inside a day (ui/launchchip.js), and the collapse
+   chevron, which is pinned to the corner so a crowded row wraps the chip to a line of its own, never the wordmark. */
 .sr-explore__brand {
+  position: relative;
   display: flex;
-  align-items: flex-end;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
+  row-gap: var(--sp-2);
+  min-height: 32px;
+  padding-right: 40px;
 }
 
 /* The wordmark: Barlow Semi Condensed 600 at 27 px. */
 .sr-wordmark {
   margin: 0;
+  white-space: nowrap;
   font: 600 var(--sr-fs-mark)/1 var(--sr-font-hud);
   letter-spacing: 0;
   color: var(--sr-text);
 }
 
 .sr-explore__collapse {
+  position: absolute;
+  top: -4px;
+  right: -8px;
   width: 36px;
   height: 36px;
-  margin: -4px -8px 0 0;
+  margin: 0;
   padding: 0;
   font: 400 var(--sr-fs-glyph)/1 var(--sr-font);
   color: var(--sr-text-soft);
