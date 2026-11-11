@@ -581,6 +581,8 @@ jobs:
         run: node tests/test_a11y_static.mjs
       - name: "A finger's target is 44 px: every control class on the phone profile (spec 0061 task 6)"
         run: node tests/test_touch_targets.mjs
+      - name: "One control set: every select, radio, checkbox, slider and close button in site/js/ui is css/controls.css's, and no retired look is left (docs/UI_COMPONENTS.md)"
+        run: node tests/test_controls.mjs
       - name: "A year in a minute: four worlds on the Sun's stage, drawn true, at 525 600"
         run: node tests/test_year_trip.mjs
       - name: "An Earth data map's key is one line in a phone's top bar while the sheet is at its peek (internal #386)"

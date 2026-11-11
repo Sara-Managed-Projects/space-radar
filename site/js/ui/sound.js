@@ -71,7 +71,8 @@ export function volumeSlider(ctx, className) {
   const T = COPY.trip;
   const v = document.createElement('input');
   v.type = 'range';
-  v.className = className;
+  v.className = 'ui-range';
+  if (className) v.classList.add(className);
   v.min = '0';
   v.max = '100';
   v.step = '5';

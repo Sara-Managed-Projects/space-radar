@@ -584,7 +584,7 @@ export function createWhatToShow(ctx, opts = {}) {
   const sound = el('section', 'sr-show__section sr-show__setting');
   sound.appendChild(el('h2', 'sr-micro', COPY.audio.panelTitle));
   sound.appendChild(soundButton(ctx, 'ui-btn ui-btn--sm', 'toggle'));
-  const vol = volumeSlider(ctx, 'ui-range');
+  const vol = volumeSlider(ctx);
   if (vol) sound.appendChild(vol);
   root.appendChild(sound);
   // The shutter (spec 0067): Eye, Camera, Deep, in the same row shape as Density below it.
