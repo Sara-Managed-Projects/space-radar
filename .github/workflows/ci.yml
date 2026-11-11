@@ -166,6 +166,9 @@ jobs:
         run: python3 scripts/gen_sites_js.py --check
       - name: The harvester's source mirror matches the registry
         run: python3 scripts/gen_sources_json.py --check
+      # 2026-11-11, models.spaceradar.ai: the catalog of the models this project made, and the one-model viewer's index.
+      - name: The models catalog builds and the viewer's index is current
+        run: python3 scripts/models_catalog.py --check && python3 tests/test_models_catalog.py
       # 2026-09-28, the device tiers: the browser picks each map's file for its tier from this mirror,
       # so a stale one is a laptop fetching a 4k map that is not there, or never fetching one that is.
       - name: The texture-tier mirror matches the registry
