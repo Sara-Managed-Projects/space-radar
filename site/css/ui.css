@@ -4659,7 +4659,7 @@ html:is(.sr-clean, .sr-hud, .sr-ambient, .sr-imagine-on, .sr-trip-mode) .sr-rail
    the one slider in the app, a native range between two words, and the survey's credit as a link
    that is underlined so colour alone does not say so. */
 .sr-otherlight .ui-seg { flex-basis: 100%; flex-wrap: wrap; border-radius: var(--ui-r); }
-.sr-otherlight .ui-seg__btn { flex: 1 1 40%; }
+.sr-otherlight .ui-seg > .ui-seg__btn { flex: 1 1 40%; }
 .sr-otherlight__mix {
   flex-basis: 100%;
   display: flex;
@@ -5934,9 +5934,9 @@ html.sr-night-red::after {
 .sr-skyreticle[hidden] { display: none; }
 /* The phone's row where there is no sensor, and "Undo line-up" with nothing to undo. */
 .sr-skybar__wrap { border-radius: var(--ui-r); }
-.sr-skybar__wrap .ui-seg__btn { flex: 1 1 30%; }
+.sr-skybar__wrap.ui-seg > .ui-seg__btn { flex: 1 1 30%; }
 /* Deep time's steps and pole stars two to a row: "−10 000 years" does not fit a third of it (ui/deeptime.js). */
-.sr-deeptime__pairs .ui-seg__btn { flex-basis: 40%; }
+.sr-deeptime__pairs.ui-seg > .ui-seg__btn { flex-basis: 40%; }
 /* A row's name with its brightness at the right, in mono: the number a row is ranked by. */
 .sr-tonight-view__rowhead { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-2); }
 .sr-tonight-view__rowhead .sr-tonight-view__rowname { flex: 1 1 auto; min-width: 0; }
