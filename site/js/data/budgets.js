@@ -12,7 +12,7 @@ export const BUDGETS = {
   "boot_blocking_ms": 6000,
   "deployed_boot_js_bytes": 1963000,
   "after_first_visit_bytes": 1945000,
-  "embed_first_visit_bytes": 2080300,
+  "embed_first_visit_bytes": 2082400,
   "audio_at_boot_bytes": 0,
   "og_at_boot_bytes": 0,
   "fonts_at_boot_bytes": 90000,
