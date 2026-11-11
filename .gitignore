@@ -5,8 +5,9 @@ __pycache__/
 .DS_Store
 .ci-render/
 
-# local preview
-.claude/
+# local preview; the shared design skill is kept (an agent loads it before UI work)
+.claude/*
+!.claude/skills/
 
 # CI links the container's global playwright in here; never committed.
 node_modules/
