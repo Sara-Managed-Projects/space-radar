@@ -111,6 +111,15 @@ const WINDOW_NAMES = new Set('top name status parent self length location origin
 const NETWORK = [[/\bfetch\s*\(/, 'fetch()'], [/XMLHttpRequest/, 'XMLHttpRequest'], [/WebSocket|EventSource|sendBeacon|importScripts|serviceWorker/, 'a network or worker API'], [/\bimport\s*\(|^\s*import\s|\bexport\s/m, 'a module import/export'],
   [/<script[^>]*\ssrc\s*=/i, '<script src>'], [/<(iframe|object|embed|form|video|audio|source|base)\b/i, 'an <iframe>/<object>/<embed>/<form>/<video>/<audio>/<base> element'], [/@import|\burl\(\s*(?!["']?data:)/, 'a CSS @import or a url() that is not a data: URI'],
   [/\s(?:src|href|action|poster)\s*=\s*["']\s*\/\//i, 'a protocol-relative address'], [/<img\b[^>]*\ssrc\s*=\s*["'](?!data:)/i, 'an <img> that is not a data: URI'], [/\bnew\s+Worker\b|Image\s*\(/, 'new Worker / new Image']];
+const SHEETS = [/^<link rel="stylesheet" href="\.\.\/\.\.\/css\/(tokens|static|lab)\.css">$/, /^<link rel="preload" href="\.\.\/\.\.\/fonts\/[a-z0-9-]+\.woff2" as="font" type="font\/woff2" crossorigin>$/];
+{ // the shared sheet: every rule is under .sim, so it cannot reach the header, the footer or another page; it honours reduced motion
+  const lab = existsSync(join(ROOT, 'site', 'css', 'lab.css')) ? readFileSync(join(ROOT, 'site', 'css', 'lab.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '') : '';
+  if (!lab) bad('site/css/lab.css', 'is missing: the simulators link it');
+  else {
+    if (!/prefers-reduced-motion/.test(lab)) bad('site/css/lab.css', 'must honour prefers-reduced-motion');
+    for (const m of lab.matchAll(/(?:^|[};])\s*([^{}@;]+)\{/gm)) if (!m[1].split(',').every((x) => /^\s*(?:main)?\.sim\b/.test(x)) && !/^\s*(?:main\.sim|\.sim)/.test(m[1])) bad('site/css/lab.css', `the rule "${m[1].trim()}" is not under .sim`);
+  }
+}
 let n = 0;
 for (const slug of folders) {
   const dir = join(LAB, slug), where = `site/lab/${slug}`;
@@ -133,10 +142,12 @@ for (const slug of folders) {
   else if (decode(desc).split(/[.!?]\s+(?=[A-Z])/).length > 1) bad(where, 'the lesson (<meta name="description">) is more than one sentence');
   if (!cat) bad(where, '<meta name="sr-lab-category" content="..."> is missing');
   // the rules about requests: read with comments removed
-  const code = text.replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
-  for (const [re, what] of NETWORK) if (re.test(code)) bad(where, `uses ${what}: a simulator is one file that makes no request (the page's one allowed neighbour is ../../css/fonts.css)`);
+  // The site's header and footer (written by scripts/gen_lab_index.py between chrome: markers) are not the simulator's own code: left out here, as the comments are.
+  const code = text.replace(/<!-- chrome:(header|footer)[\s\S]*?<!-- \/chrome:\1 -->/g, '').replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  for (const [re, what] of NETWORK) if (re.test(code)) bad(where, `uses ${what}: a simulator is one file that makes no request (its only neighbours are the site's own faces and stylesheets, see SHEETS)`);
   const links = [...code.matchAll(/<link\b[^>]*>/gi)].map((m) => m[0]);
-  for (const l of links) if (!/rel="stylesheet"/.test(l) || !/href="(\.\.\/\.\.\/css\/fonts\.css)"/.test(l)) bad(where, `${l} : the only <link> allowed is the stylesheet ../../css/fonts.css (the site's own faces)`);
+  // Since the Lab moved onto the site's design (css/lab.css): the faces (two preloads) and the three stylesheets, nothing else.
+  for (const l of links) if (!SHEETS.some((re) => re.test(l))) bad(where, `${l} : the only <link>s allowed are the site's faces and the stylesheets css/tokens.css, css/static.css and css/lab.css (../../ from here)`);
   const urls = [...code.matchAll(/https?:\/\/[^\s"'<>)]+/g)].length, anchors = [...code.matchAll(/<a\b[^>]*\shref="https?:\/\//g)].length;
   if (urls !== anchors) bad(where, `${urls - anchors} web address(es) outside an <a href>: put sources in the "Sources" comment, not in code`);
   // the source comment: a URL and the date it was read
@@ -156,11 +167,14 @@ for (const slug of folders) {
   smoke(where, simSrc);
   // the page: controls by touch and keyboard, the way back, the way in
   if (!/<button\b/.test(text) || !/type="range"/.test(text)) bad(where, 'needs its controls: a <button> and range inputs (they work by touch and keyboard)');
-  if (!text.includes('href="../../index.html"')) bad(where, 'needs a link back to the map (href="../../index.html")');
+  if (!text.includes('href="../../index.html')) bad(where, 'needs a link back to the map (href="../../index.html", with or without a #hash)');
   if (!text.includes('href="../index.html"')) bad(where, 'needs a link to the list (href="../index.html")');
   if (!/Add your own simulator<\/a>/.test(text) || !text.includes('docs/ADD_A_SIMULATOR.md')) bad(where, 'needs the "Add your own simulator" link to docs/ADD_A_SIMULATOR.md');
   if (!/How this was made and sources/.test(text)) bad(where, 'needs the "How this was made and sources" panel');
   if (!/prefers-reduced-motion/.test(text)) bad(where, 'must honour prefers-reduced-motion');
+  // The look is css/lab.css; a simulator keeps a <style> only for a rule that is truly its own, and scopes it under .sim.
+  if (!/<main id="main" class="sim">/.test(text)) bad(where, 'needs <main id="main" class="sim"> (css/lab.css styles main.sim)');
+  for (const st of text.matchAll(/<style>([\s\S]*?)<\/style>/g)) for (const sel of st[1].replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/(?:^|})\s*([^{}@]+)\{/g)) if (!sel[1].split(',').every((x) => /^\s*(?:main)?\.sim\b/.test(x))) bad(where, `its own <style> must scope every rule under .sim (css/lab.css is the shared look): ${sel[1].trim()}`);
   // the index lists it
   if (!slug.startsWith('_')) {
     if (!index.includes(`href="${slug}/index.html"`)) bad(where, 'is not in site/lab/index.html: run python3 scripts/gen_lab_index.py');
