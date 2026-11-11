@@ -86,7 +86,6 @@
 /* --- these pages' own rules, on the kit's tokens --------------------------------------------------------------- */
 /* The header: the map's own button says "Open the 3D map"; on a narrow phone only "3D map", and Subscribe is its envelope. */
 @media(max-width:520px){.top .btn--sub span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}.btn--sub{padding:.6rem}}
-.top .btn--map,.top .btn--ghost{gap:.26rem}
 @media(max-width:400px){.top .btn--map .xs,.top .btn--ghost .xs{display:none}}
 /* The page head (the journal's listing head, .ch): the eyebrow, the h1 at the page-title scale, the lead, the one action. */
 main{display:block}
