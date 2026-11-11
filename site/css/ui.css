@@ -3670,7 +3670,10 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 
 /* The tabs: a segmented control (css/controls.css .ui-seg, the tab with aria-selected), four equal pills. */
 .sr-tabs > .ui-seg__btn {
-  padding: 0 var(--sp-1);
+  padding: var(--sp-1);
+  line-height: 1.15;
+  white-space: normal;
+  text-align: center;
 }
 
 .sr-explore__body {
