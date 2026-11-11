@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Control set specimen</title>
+<!-- The Space Radar control set (site/css/controls.css), every control in every state, on the design kit's tokens
+     (site/css/tokens.css). Not deployed: serve the repository and open it, then compare a new panel with it.
+       python3 tools/serve.py . 8190   ->   http://127.0.0.1:8190/tools/ui-specimen.html
+     The pictures in docs/images/ui/ are this page at 1440 x 900 and 390 x 844 (docs/UI_COMPONENTS.md). -->
+<link rel="stylesheet" href="../site/css/tokens.css">
+<link rel="stylesheet" href="../site/css/controls.css">
+<style>
+  body { padding: 32px var(--g) 64px; }
+  main { max-width: 1120px; margin: 0 auto; display: grid; gap: 24px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
+  h1 { grid-column: 1 / -1; margin: 0 0 8px; font: 600 2rem/1.1 var(--cap); }
+  h1 small { display: block; margin-top: 8px; font: 400 0.95rem/1.5 var(--sans); color: var(--dim); }
+  section.box { padding: 20px; background: var(--panel); border-radius: 20px; box-shadow: inset 0 0 0 1px var(--line); display: grid; gap: 12px; align-content: start; }
+  section.box > h2 { margin: 0; font: 600 0.78rem/1 var(--cap); letter-spacing: 0.2em; text-transform: uppercase; color: var(--atm); }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .label { margin: 0; font: 400 0.8rem/1.3 var(--mono); color: var(--dim); }
+  .ring { outline: 2px solid var(--atm); outline-offset: 2px; }
+  .wide { grid-column: 1 / -1; }
+  .stack { display: grid; gap: 4px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>The control set <small>site/css/controls.css on site/css/tokens.css. Ember is the one main action of a view; blue is links, focus and what is selected; everything else is a quiet pill. 40 px, 44 px on touch, on a 4 px grid.</small></h1>
+
+  <section class="box">
+    <h2>.ui-btn</h2>
+    <div class="row">
+      <button class="ui-btn ui-btn--primary" type="button">Start recording</button>
+      <button class="ui-btn" type="button">Save</button>
+    </div>
+    <p class="label">--primary (one per view) · default</p>
+    <div class="row">
+      <button class="ui-btn ui-btn--secondary" type="button">Back to where you were</button>
+      <button class="ui-btn ui-btn--ghost" type="button">All</button>
+      <button class="ui-btn ui-btn--quiet" type="button">Sources</button>
+    </div>
+    <p class="label">--secondary · --ghost · --quiet</p>
+    <div class="row">
+      <button class="ui-btn" type="button" aria-pressed="true">Sound: on</button>
+      <button class="ui-btn" type="button" disabled>Share</button>
+      <button class="ui-btn ui-btn--sm" type="button">Small</button>
+      <button class="ui-btn ui-btn--icon" type="button" aria-label="Share" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v13"/><path d="m16 6-4-4-4 4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg></button>
+      <button class="ui-btn ui-btn--sm ui-btn--icon" type="button" aria-label="Share" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v13"/><path d="m16 6-4-4-4 4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg></button>
+      <button class="ui-btn ring" type="button">Focused</button>
+    </div>
+    <p class="label">aria-pressed · disabled · --sm · --icon · the focus ring</p>
+    <div class="row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+      <button class="ui-btn ui-btn--tile ui-btn--primary" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg><span class="ui-btn__label">Fly to</span></button>
+      <button class="ui-btn ui-btn--tile" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M6 12h12"/></svg><span class="ui-btn__label">Follow</span></button>
+      <button class="ui-btn ui-btn--tile" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v13"/><path d="m16 6-4-4-4 4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg><span class="ui-btn__label">Share</span></button>
+      <button class="ui-btn ui-btn--tile" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"/><circle cx="12" cy="13" r="3"/></svg><span class="ui-btn__label">Photo</span></button>
+    </div>
+    <p class="label">--tile: a card's row of actions</p>
+  </section>
+
+  <section class="box">
+    <h2>.ui-seg</h2>
+    <div class="ui-seg" role="group" aria-label="Exposure">
+      <button class="ui-seg__btn" type="button" aria-pressed="true">Eye</button>
+      <button class="ui-seg__btn" type="button" aria-pressed="false">Camera</button>
+      <button class="ui-seg__btn" type="button" aria-pressed="false">Deep</button>
+    </div>
+    <p class="label">a group of &lt;button aria-pressed&gt;</p>
+    <div class="ui-seg ui-seg--block" role="group" aria-label="Motion">
+      <button class="ui-seg__btn" type="button" aria-pressed="false">On</button>
+      <button class="ui-seg__btn" type="button" aria-pressed="true">Off</button>
+    </div>
+    <p class="label">--block: the row's width, equal pills</p>
+    <div class="ui-seg ui-seg--block" role="tablist" aria-label="Explore">
+      <button class="ui-seg__btn" role="tab" type="button" aria-selected="true">Explore</button>
+      <button class="ui-seg__btn" role="tab" type="button" aria-selected="false">Tonight</button>
+      <button class="ui-seg__btn" role="tab" type="button" aria-selected="false">Trips</button>
+      <button class="ui-seg__btn" role="tab" type="button" aria-selected="false">Places</button>
+    </div>
+    <p class="label">tabs: role="tab", aria-selected</p>
+  </section>
+
+  <section class="box">
+    <h2>.ui-select</h2>
+    <select class="ui-select ui-select--block" aria-label="Length"><option>20 seconds</option><option>40 seconds</option><option>60 seconds</option></select>
+    <div class="row">
+      <select class="ui-select" aria-label="Colour by"><option>Kind</option><option>Height</option></select>
+      <select class="ui-select ui-select--sm" aria-label="Kind"><option>Any</option></select>
+      <select class="ui-select" aria-label="Off" disabled><option>Disabled</option></select>
+    </div>
+    <p class="label">--block · default · --sm · disabled</p>
+  </section>
+
+  <section class="box">
+    <h2>.ui-radio · .ui-check in .ui-opt</h2>
+    <div class="stack" role="radiogroup" aria-label="What to record">
+      <label class="ui-opt"><input class="ui-radio" type="radio" name="s" checked> This view</label>
+      <label class="ui-opt"><input class="ui-radio" type="radio" name="s"> The flight path</label>
+      <label class="ui-opt"><input class="ui-radio" type="radio" name="s" disabled> A trip (none running)</label>
+    </div>
+    <div class="stack">
+      <label class="ui-opt"><input class="ui-check" type="checkbox" checked> Smooth (frame by frame)</label>
+      <label class="ui-opt"><input class="ui-check" type="checkbox"> With the name tag</label>
+      <label class="ui-opt"><input class="ui-check" type="checkbox" id="mixed"> Some of the group</label>
+    </div>
+  </section>
+
+  <section class="box">
+    <h2>.ui-range · .ui-close · .ui-chip</h2>
+    <label class="ui-opt">Volume <input class="ui-range" type="range" min="0" max="100" value="60" aria-label="Volume"></label>
+    <div class="row">
+      <button class="ui-close" type="button" aria-label="Close" title="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+      <span class="ui-chip">Measured</span>
+      <span class="ui-chip ui-chip--atm">Live</span>
+      <button class="ui-chip" type="button" aria-pressed="false">Exoplanets</button>
+      <button class="ui-chip" type="button" aria-pressed="true">Stars</button>
+    </div>
+    <p class="label">the close · a status · a live state · a filter, off and on</p>
+  </section>
+
+  <section class="box" style="padding:0">
+    <div class="ui-pop ui-pop--surface">
+      <div class="ui-pop__head">
+        <h2 class="ui-pop__title">Record</h2>
+        <button class="ui-close" type="button" aria-label="Close Record" title="Close Record"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+      </div>
+      <div class="ui-pop__body">
+        <div class="ui-pop__sect">
+          <p class="ui-pop__eyebrow">Shape</p>
+          <div class="ui-seg ui-seg--block"><button class="ui-seg__btn" type="button" aria-pressed="true">16:9</button><button class="ui-seg__btn" type="button" aria-pressed="false">1:1</button><button class="ui-seg__btn" type="button" aria-pressed="false">9:16</button></div>
+        </div>
+        <div class="ui-pop__sect">
+          <p class="ui-pop__eyebrow">Length</p>
+          <select class="ui-select ui-select--block" aria-label="Length"><option>20 seconds</option></select>
+          <p class="ui-pop__note">The credit and the date go in the corner.</p>
+        </div>
+      </div>
+      <div class="ui-pop__foot"><button class="ui-btn ui-btn--ghost" type="button">Cancel</button><button class="ui-btn ui-btn--primary" type="button">Start recording</button></div>
+    </div>
+  </section>
+
+  <section class="box">
+    <h2>.ui-row</h2>
+    <div class="stack">
+      <button class="ui-row" type="button"><span class="ui-row__t">Keys</span></button>
+      <button class="ui-row" type="button"><span class="ui-row__t">International Space Station</span><span class="ui-row__meta">419 km</span></button>
+      <button class="ui-row" type="button" aria-selected="true"><span class="ui-row__t">Hubble</span><span class="ui-row__meta">selected</span></button>
+      <button class="ui-row ui-row--plain" type="button"><span class="ui-row__t">A row with no chevron</span><span class="ui-row__meta">--plain</span></button>
+    </div>
+  </section>
+</main>
+<script>document.getElementById('mixed').indeterminate = true;</script>
+</body>
+</html>

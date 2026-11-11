@@ -279,7 +279,11 @@ does not hide your edits; if a page ever looks stale, open it once with `?sw=0` 
   sentence written inside UI code. Plain words, sentence case, no exclamation marks.
 - **Numbers carry units and honest precision**: `27 576 km/h`, not `27576.3219`.
 - **UI changes follow [docs/DESIGN_PRINCIPLES.md](docs/DESIGN_PRINCIPLES.md)**: the scene comes
-  first, one accent colour, one place for everything.
+  first, one ember action per view, blue for links, focus and what is selected, one place for everything.
+- **Controls come from [docs/UI_COMPONENTS.md](docs/UI_COMPONENTS.md)**: every button, segmented choice,
+  select, radio, checkbox, slider, close button, popover, row and chip is a class of `site/css/controls.css`,
+  and `tests/test_controls.mjs` refuses a one-off. An agent working on any page, panel, control or CSS loads
+  the `space-radar-design` skill first (`.claude/skills/space-radar-design/SKILL.md`).
 - No new runtime dependency and no CDN without a conversation first. Everything is vendored.
 
 ## The honesty rules
