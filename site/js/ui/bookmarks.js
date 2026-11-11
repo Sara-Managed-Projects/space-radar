@@ -187,7 +187,7 @@ export function viewsPanel(ctx, opts = {}) {
   wrap.appendChild(list);
   const none = node('p', 'sr-share__note', V.none);
   wrap.appendChild(none);
-  const saveBtn = node('button', 'sr-share__btn sr-share__viewsave', V.save);
+  const saveBtn = node('button', 'ui-btn sr-share__viewsave', V.save);
   saveBtn.type = 'button';
   saveBtn.title = V.saveTitle;
   saveBtn.hidden = !record;

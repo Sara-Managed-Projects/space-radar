@@ -383,11 +383,11 @@ export function createShareSheet(ctx) {
   root.setAttribute('aria-labelledby', 'sr-share-title');
   root.hidden = true;
 
-  const head = el('div', 'sr-share__head');
-  const title = el('h2', 'sr-share__title', S.title);
+  const head = el('div', 'ui-pop__head');
+  const title = el('h2', 'ui-pop__title', S.title);
   title.id = 'sr-share-title';
   title.tabIndex = -1;
-  const closeBtn = button('sr-share__close', '', S.close, 'x');
+  const closeBtn = button('ui-close', '', S.close, 'x');
   closeBtn.setAttribute('aria-label', S.close);
   head.append(title, closeBtn);
 
@@ -402,8 +402,8 @@ export function createShareSheet(ctx) {
   const picNote = el('figcaption', 'sr-share__picnote', S.drawing);
   pic.append(img, picNote);
 
-  const tagRow = el('label', 'sr-share__tag');
-  const tagBox = el('input');
+  const tagRow = el('label', 'ui-opt');
+  const tagBox = el('input', 'ui-check');
   tagBox.type = 'checkbox';
   tagBox.checked = true;
   tagRow.append(tagBox, el('span', null, S.withTag));
@@ -413,7 +413,7 @@ export function createShareSheet(ctx) {
   const linkA = el('a', 'sr-share__link');
   linkA.target = '_blank';
   linkA.rel = 'noopener';
-  const copyLinkBtn = button('sr-share__iconbtn', '', S.copyLink, 'copy');
+  const copyLinkBtn = button('ui-btn ui-btn--icon ui-btn--quiet', '', S.copyLink, 'copy');
   copyLinkBtn.setAttribute('aria-label', S.copyLink);
   linkRow.append(linkA, copyLinkBtn);
 
@@ -435,23 +435,23 @@ export function createShareSheet(ctx) {
   wikiLine.hidden = true;
 
   const acts = el('div', 'sr-share__acts');
-  const nativeBtn = button('sr-share__btn', S.native, S.nativeTitle, 'share');
-  const copyBtn = button('sr-share__btn', S.copy, S.copyTitle, 'copy');
-  const jpegBtn = button('sr-share__btn', S.jpeg, S.jpegTitle, 'download');
-  const pdfBtn = button('sr-share__btn', S.pdf, S.pdfTitle, 'file');
-  const mailA = el('a', 'sr-share__btn');
+  const nativeBtn = button('ui-btn ui-btn--primary', S.native, S.nativeTitle, 'share');
+  const copyBtn = button('ui-btn', S.copy, S.copyTitle, 'copy');
+  const jpegBtn = button('ui-btn', S.jpeg, S.jpegTitle, 'download');
+  const pdfBtn = button('ui-btn', S.pdf, S.pdfTitle, 'file');
+  const mailA = el('a', 'ui-btn');
   mailA.appendChild(icon('mail'));
   mailA.appendChild(el('span', 'sr-share__label', S.email));
   mailA.title = S.emailTitle;
-  const photoBtn = button('sr-share__btn', S.photo, S.photoTitle, 'crop');
-  const embedBtn = button('sr-share__btn', S.embed, S.embedTitle, 'code');
+  const photoBtn = button('ui-btn', S.photo, S.photoTitle, 'crop');
+  const embedBtn = button('ui-btn', S.embed, S.embedTitle, 'code');
   acts.append(nativeBtn, copyBtn, mailA, jpegBtn, pdfBtn, photoBtn, embedBtn);
   // b200-f5-make: begin (forge #155, #156, #157) -- three more actions, last: a flight path, a video, a dome or 360 picture.
   // Each closes the sheet and opens its own panel, fetched on that press (ui/makers.js, through main.js ctx.wantMakers).
   const MK = COPY.make;
   const makeBtns = [['flight', MK.flight, MK.flightTitle, 'route', 'wantFlight'], ['record', MK.record, MK.recordTitle, 'video', 'wantRecorder'],
     ['dome', MK.dome, MK.domeTitle, 'dome', 'wantProjection']].map(([id, label, tip, glyph, want]) => {
-    const b = button('sr-share__btn', label, tip, glyph);
+    const b = button('ui-btn', label, tip, glyph);
     b.dataset.make = id;
     b.addEventListener('click', async () => {
       const opener = cur && cur.opener;
@@ -502,7 +502,7 @@ export function createShareSheet(ctx) {
   const nets = el('div', 'sr-share__nets');
   const netLinks = {};
   for (const n of NETWORKS) {
-    const a = el('a', 'sr-share__net', S.networks[n]);
+    const a = el('a', 'ui-btn sr-share__net', S.networks[n]);
     a.target = '_blank';
     a.rel = 'noopener noreferrer';
     a.referrerPolicy = 'no-referrer';
@@ -767,7 +767,7 @@ export function createShareSheet(ctx) {
         detents: ['half', 'full'],
         initial: 'half',
         heights: phoneHeights,
-        grab: '.sr-share__head',
+        grab: '.ui-pop__head',
         scrollers: '.sr-share__body',
         dismiss: () => close(),
       });

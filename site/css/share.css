@@ -38,39 +38,9 @@
   }
 }
 
-.sr-share__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-2);
-  padding: var(--sp-2) var(--sp-2) 0 20px;
-}
+.sr-share > .ui-pop__head { padding-left: 20px; }
 
-.sr-share__title {
-  margin: 0;
-  font: 600 var(--sr-fs-body)/20px var(--sr-font);
-  color: var(--sr-text);
-}
-
-.sr-share__title:focus { outline: none; }
-
-.sr-share__close,
-.sr-share__iconbtn {
-  display: grid;
-  flex: 0 0 auto;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  color: var(--sr-text-soft);
-  background: transparent;
-  border: 0;
-  border-radius: var(--sr-radius);
-  cursor: pointer;
-  transition: background-color var(--sr-fast) var(--sr-ease), color var(--sr-fast) var(--sr-ease);
-}
-
-.sr-share__iconbtn { background: var(--sr-wash); }
+.sr-share .ui-pop__title:focus { outline: none; }
 
 .sr-share__body {
   display: flex;
@@ -115,18 +85,6 @@
   color: var(--sr-text-soft);
 }
 
-.sr-share__tag {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  min-height: 24px;
-  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
-  color: var(--sr-text);
-  cursor: pointer;
-}
-
-.sr-share__tag[hidden] { display: none; }
-.sr-share__tag input { margin: 0; accent-color: var(--sr-ember); }
 
 .sr-share__micro { margin-bottom: calc(-1 * var(--sp-1)); }
 
@@ -225,32 +183,15 @@
   gap: var(--sp-2);
 }
 
-.sr-share__btn,
-.sr-share__net {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-2);
+.sr-share__acts > .ui-btn,
+.sr-share__nets > .ui-btn {
   min-width: 0;
-  min-height: 44px;
   padding: 0 var(--sp-2);
-  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
-  white-space: nowrap;
-  text-decoration: none;
-  color: var(--sr-text);
-  background: var(--sr-wash);
-  border: 0;
-  border-radius: var(--sr-radius);
-  cursor: pointer;
-  transition: background-color var(--sr-fast) var(--sr-ease);
 }
 
-.sr-share__btn:first-child {
+.sr-share__acts > :first-child {
   grid-column: 1 / -1;
-  font-weight: 600;
 }
-
-.sr-share__btn[hidden] { display: none; }
 
 /* At 320 px two columns are 140 px each and "Download JPEG" was cut to "Download JP…" (seen
    2026-10-08, internal #202): under 360 px the actions are one to a row, each with its whole name. */
@@ -270,29 +211,13 @@
 }
 
 @media (hover: hover) {
-  .sr-share__btn:hover:not(:disabled),
-  .sr-share__net:hover,
-  .sr-share__row:hover,
-  .sr-share__iconbtn:hover {
+  .sr-share__row:hover {
     background: var(--sr-wash-hover);
   }
-
-  .sr-share__close:hover {
-    color: var(--sr-text);
-    background: var(--sr-wash);
-  }
 }
 
-.sr-share__btn:active:not(:disabled),
-.sr-share__net:active,
-.sr-share__row:active,
-.sr-share__iconbtn:active {
+.sr-share__row:active {
   background: var(--sr-wash-strong);
-}
-
-.sr-share__btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
 }
 
 /* --- the phone: the one sheet, at half or full (ui/sheet.js, spec 0061 task 3) -------------- */
@@ -368,7 +293,7 @@ html.sr-phone .sr-share[data-detent='full'] .sr-share__body {
   touch-action: pan-y;
 }
 
-html.sr-phone .sr-share__head {
+html.sr-phone .sr-share > .ui-pop__head {
   padding-top: 0;
   padding-left: var(--sp-4);
   touch-action: none;
@@ -402,24 +327,11 @@ html.sr-phone .sr-share__head {
     transition: opacity 120ms linear;
   }
 
-  .sr-share__btn,
-  .sr-share__net,
-  .sr-share__row,
-  .sr-share__close,
-  .sr-share__iconbtn,
-  .sr-photo__seg,
-  .sr-photo__btn,
-  .sr-photo__close {
+  .sr-share__row {
     transition: opacity 120ms linear;
   }
 }
 
-/* The tag's checkbox row is a finger's target on a phone (measured 24 px, internal #346). */
-@media (pointer: coarse) {
-  .sr-share__tag {
-    min-height: 44px;
-  }
-}
 
 /* --- photo mode (ui/photomode.js, public #288) --------------------------------------------------
    The clear screen with a frame on it. Four mattes dim what the picture will not hold and pass
@@ -478,33 +390,8 @@ html.sr-phone .sr-share__head {
   pointer-events: auto;
 }
 
-.sr-photo__shapes {
-  display: flex;
-  gap: var(--sp-1);
-}
-
-.sr-photo__seg,
-.sr-photo__btn,
-.sr-photo__close {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-2);
-  min-width: 44px;
-  min-height: 44px;
-  padding: 0 var(--sp-3);
-  font: inherit;
-  white-space: nowrap;
-  color: var(--sr-text-soft);
-  background: var(--sr-wash);
-  border: 0;
-  border-radius: var(--sr-radius);
-  cursor: pointer;
-  transition: background-color var(--sr-fast) var(--sr-ease), color var(--sr-fast) var(--sr-ease);
-}
-
-.sr-photo__seg { font-family: var(--sr-font-mono); font-variant-numeric: tabular-nums; }
+.sr-photo__bar > * { flex: 0 0 auto; }
+.sr-photo__shapes .ui-seg__btn { font-family: var(--sr-font-mono); font-variant-numeric: tabular-nums; }
 
 /* The lens: a word, a slider and its value in degrees (ui/photomode.js LENS). */
 .sr-photo__lens {
@@ -522,52 +409,12 @@ html.sr-phone .sr-share__head {
 .sr-photo__time { display: flex; flex: 0 0 auto; align-items: center; gap: var(--sp-1); }
 .sr-photo__time[hidden] { display: none; }
 
-.sr-photo__range {
+.sr-photo__lens .ui-range {
   width: 96px;
-  height: 44px;
-  margin: 0;
-  accent-color: var(--sr-ember);
-  cursor: pointer;
 }
 
 .sr-photo__lensval { min-width: 32px; color: var(--sr-text); text-align: right; }
 
-.sr-photo__close {
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  background: transparent;
-}
-
-.sr-photo__seg[aria-pressed='true'],
-.sr-photo__btn[aria-pressed='true'] {
-  font-weight: 600;
-  color: var(--sr-text);
-  background: var(--sr-wash-strong);
-}
-
-/* Save picture: the one primary action on this screen (docs/ui-guide.md principle 3). */
-.sr-photo__save {
-  font-weight: 600;
-  color: var(--sr-ink);
-  background: var(--sr-ember);
-}
-
-.sr-photo__save:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-@media (hover: hover) {
-  .sr-photo__seg:hover,
-  .sr-photo__btn:not(.sr-photo__save):hover,
-  .sr-photo__close:hover {
-    color: var(--sr-text);
-    background: var(--sr-wash-hover);
-  }
-
-  .sr-photo__save:hover:not(:disabled) { background: var(--sr-ember-light); }
-}
 
 /* A phone: the shapes on a row of their own, four equal, then Caption, Save and leave. */
 html.sr-phone .sr-photo__bar {
@@ -579,10 +426,10 @@ html.sr-phone .sr-photo__bar {
 }
 
 html.sr-phone .sr-photo__shapes { flex: 1 0 100%; }
-html.sr-phone .sr-photo__seg { flex: 1 1 0; }
+html.sr-phone .sr-photo__shapes .ui-seg__btn { flex: 1 1 0; }
 html.sr-phone .sr-photo__save { flex: 1 1 auto; }
 html.sr-phone .sr-photo__lens { flex: 1 0 100%; }
-html.sr-phone .sr-photo__range { flex: 1 1 auto; width: auto; }
+html.sr-phone .sr-photo__lens .ui-range { flex: 1 1 auto; width: auto; }
 
 /* 0077 W3-e: begin. Photo presets and Arrival views: two more rows that open in place, under the actions (ui/sharesheet.js). */
 .sr-share__presets { gap: var(--sp-2); }
