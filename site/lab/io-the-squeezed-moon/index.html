@@ -8,50 +8,20 @@
 <meta name="sr-lab-category" content="Planets and moons">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#0b0e14">
-<link rel="stylesheet" href="../../css/fonts.css">
-<style>
-:root{--sr-space:#0b0e14;--sr-text:#e8ecf2;--sr-text-dim:#9aa4b2;--sr-ember:#ff9f43;--sr-ember-light:#ffc28a;--sr-ink:#14100a;--sr-line:rgba(232,236,242,.10);--sr-wash:rgba(232,236,242,.07);--sr-wash-hover:rgba(232,236,242,.12);--sr-radius:6px}
-html{background:var(--sr-space);color:var(--sr-text);font:400 15px/20px Inter,system-ui,-apple-system,sans-serif;-webkit-text-size-adjust:100%}
-body{margin:0}
-a{color:var(--sr-ember)}a:hover{color:var(--sr-ember-light)}
-a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--sr-ember);outline-offset:2px;border-radius:2px}
-.top{display:flex;flex-wrap:wrap;align-items:center;gap:0 20px;max-width:1160px;margin:0 auto;padding:4px 16px;border-bottom:1px solid var(--sr-line)}
-.top a{display:inline-flex;align-items:center;min-height:44px;color:var(--sr-text);text-decoration:none}
-.top .mark{font:600 20px/1 'Barlow Semi Condensed',system-ui,sans-serif;letter-spacing:.02em}
-.top .here{color:var(--sr-text-dim)}
-main{display:grid;grid-template-columns:minmax(0,1fr);max-width:1160px;margin:0 auto;padding:20px 16px 32px;gap:0 32px;align-content:start}
-main>*{min-width:0}
-.micro{margin:0 0 8px;font:600 13px/16px 'Barlow Semi Condensed',system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--sr-text-dim)}
-h1{margin:0 0 12px;font:600 30px/1.1 Inter,system-ui,sans-serif;letter-spacing:-.01em;overflow-wrap:anywhere}
-.lead{margin:0 0 20px;font-size:18px;line-height:26px;max-width:60ch}
-.stage{margin:0 0 16px;width:100%}
-canvas{display:block;width:100%;aspect-ratio:1080/1200;background:#05070d;border-radius:var(--sr-radius);border:1px solid var(--sr-line)}
-.line{margin:0 0 16px;font-size:16px;line-height:24px;max-width:60ch;min-height:48px}
-.controls{display:grid;gap:12px;margin:0 0 16px}
-.controls label{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;font-size:13px;line-height:18px;color:var(--sr-text-dim)}
-.controls label input{grid-column:1/-1;width:100%;min-height:44px;margin:0;accent-color:var(--sr-ember)}
-.controls output{font:500 13px/18px 'JetBrains Mono',ui-monospace,monospace;color:var(--sr-text);font-variant-numeric:tabular-nums}
-button{min-height:44px;padding:0 20px;border:0;border-radius:var(--sr-radius);background:var(--sr-ember);color:var(--sr-ink);font:600 15px/1 Inter,system-ui,sans-serif;cursor:pointer;justify-self:start}
-button:hover{background:var(--sr-ember-light)}
-.honest{margin:0 0 16px;padding:12px 14px;border-radius:var(--sr-radius);background:var(--sr-wash);color:var(--sr-text-dim);font-size:13px;line-height:18px;max-width:60ch}
-.honest b{color:var(--sr-text);font-weight:600}
-details{margin:0 0 16px;max-width:60ch;border-top:1px solid var(--sr-line)}
-summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font-weight:600}
-.srcl{margin:0 0 6px;font-size:13px;line-height:18px;color:var(--sr-text-dim);white-space:pre-wrap;overflow-wrap:anywhere}
-.more{display:flex;flex-wrap:wrap;gap:0 16px;margin:0;font-size:15px}
-.more a{display:inline-flex;align-items:center;min-height:44px}
-.ns{color:var(--sr-text-dim)}
-@media (min-width:900px){
- main{grid-template-columns:minmax(0,1fr) 360px;padding-top:24px}
- main>*{grid-column:2}
- .stage{grid-column:1;grid-row:1/span 9;width:min(100%,calc((100svh - 130px)*.9));min-width:320px;align-self:start;position:sticky;top:12px;margin:0}
-}
-@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
-</style>
+<link rel="preload" href="../../fonts/inter-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../../fonts/barlow-semi-condensed-600-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../css/tokens.css">
+<link rel="stylesheet" href="../../css/static.css">
+<link rel="stylesheet" href="../../css/lab.css">
 </head>
 <body>
-<header class="top"><a class="mark" href="../../index.html">Space Radar</a><a class="here" href="../index.html">Lab</a></header>
-<main>
+<a class="skip" href="#main">Skip to the content</a>
+<!-- chrome:header (written by scripts/gen_lab_index.py from templates/partials/header.html; do not edit) -->
+<header class="top top--x"><div class="top__in"><a class="brand" href="../../" aria-label="Space Radar, home"><span class="ring"><svg viewBox="0 0 48 48" width="40" height="40" aria-hidden="true"><circle class="ring__t" cx="24" cy="24" r="21" pathLength="1"/><circle class="ring__p" cx="24" cy="24" r="21" pathLength="1"/></svg><img src="../../images/icons/favicon.svg" width="22" height="22" alt=""></span><span class="brand__t">Space Radar</span></a>
+<nav class="xnav" aria-label="Space Radar sites"><a href="../../">Map</a><a href="https://blog.spaceradar.ai/">Journal</a><a href="https://games.spaceradar.ai/">Games</a><a href="../../lab/index.html" aria-current="true">Lab</a></nav>
+<div class="top__r"><a class="btn btn--sub" href="../index.html#subscribe" aria-label="Subscribe to email updates"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M4 7.5l8 6 8-6"/></svg><span>Subscribe</span></a><a class="btn btn--map" href="../../"><span><span class="xs">Open the </span>3D map</span></a></div></div></header>
+<!-- /chrome:header -->
+<main id="main" class="sim">
 <p class="micro" id="cat"></p>
 <h1 id="h">Io: The Squeezed Moon</h1>
 <p class="lead" id="lesson">Jupiter's tug squeezes Io like a stress ball, heating it enough to power hundreds of volcanoes.</p>
@@ -70,6 +40,14 @@ summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font-weig
 </details>
 <p class="more"><a id="sr-app" href="../../index.html#at=io">See this in the 3D map</a><a href="../index.html">All simulators</a><a id="add" href="https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/ADD_A_SIMULATOR.md">Add your own simulator</a><a id="edit" href="https://github.com/Sara-Managed-Projects/space-radar/tree/main/site/lab">Fix a mistake on GitHub</a></p>
 </main>
+<!-- chrome:footer (written by scripts/gen_lab_index.py from templates/partials/footer.html; do not edit) -->
+<footer class="foot"><div class="foot__in"><div><a class="brand brand--f" href="../../"><span class="brand__t">Space Radar</span></a><p>A free, open-source live 3D map of space: the satellites and the space station, launches, probes, planets, stars and galaxies, each drawn where it really is, with where the numbers come from.</p><p class="foot__n">No account, no advertising, no tracker and no cookie. MIT licence, <a href="https://github.com/Sara-Managed-Projects/space-radar">source on GitHub</a>.</p></div>
+<nav class="sitelinks" aria-label="Space Radar on the web">
+<div><p class="foot__h">Sites</p><ul><li><a href="../../">The 3D map</a></li><li><a href="https://blog.spaceradar.ai/">Journal</a></li><li><a href="https://games.spaceradar.ai/">Games</a></li><li><a href="../../lab/index.html">All simulators</a></li></ul></div>
+<div><p class="foot__h">More</p><ul><li><a href="../../about/index.html">About</a></li><li><a href="../../sources/index.html">Sources</a></li><li><a href="../../privacy/index.html">Privacy</a></li><li><a href="https://github.com/Sara-Managed-Projects/space-radar">GitHub</a></li></ul></div>
+</nav>
+</div></footer>
+<!-- /chrome:footer -->
 <!-- Sources
 Source: https://en.wikipedia.org/wiki/Io_(moon), read 2026-10-10: "With over 400 active volcanoes, Io is the most geologically active object in the Solar System."; orbital eccentricity "(0.0041)" and this forced eccentricity provides "the primary heating source for its geologic activity";
  orbital period "1.769 d (42.459 h)"; "at a distance of 421,700 km (262,000 mi) from Jupiter's center"; Io's internal heat comes from tidal dissipation, due to its "Laplace resonance with Europa and Ganymede";
