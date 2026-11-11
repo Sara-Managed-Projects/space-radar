@@ -11,7 +11,7 @@ const settle = (ms = 1500) => sleep(ms);
 const visible = (sel) => { const e = document.querySelector(sel); return !!e && !e.hidden && e.getClientRects().length > 0; };
 const esc = () => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
 const snap = async (name) => { await shot(name); out.took.push(name); };
-const scrollAll = (root, to) => { for (const e of root ? root.querySelectorAll('*') : []) if (e.scrollHeight > e.clientHeight + 4) e.scrollTop = to; };
+const scrollAll = (root, to) => { for (const e of root ? [root, ...root.querySelectorAll('*')] : []) if (e.scrollHeight > e.clientHeight + 4) e.scrollTop = to; };
 
 // a first visit's welcome is a place too; then out of the way
 if (document.querySelector('.sr-welcome')) { await settle(800); await snap('welcome'); }
