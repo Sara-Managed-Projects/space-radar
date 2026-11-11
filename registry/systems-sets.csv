@@ -1,4 +1,4 @@
-# NASA Exoplanet Archive ps (one row per paper), as of 2026-11-04; the rows with a distance, a period and a stellar mass, for the planets of registry/systems-columns.csv; written by scripts/build-exoplanets.py
+# NASA Exoplanet Archive ps (one row per paper), as of 2026-11-11; the rows with a distance, a period and a stellar mass, for the planets of registry/systems-columns.csv; written by scripts/build-exoplanets.py
 pl_name,default_flag,pl_orbsmax,pl_orbper,st_mass,pubdate,ref
 51 Eri b,0,14.0000000000,14965.00000000000,1.650000,2015-11,De Rosa et al. 2015
 51 Eri b,0,12.0000000000,11688.00000000000,1.650000,2019-04,Maire et al. 2019

@@ -7,14 +7,14 @@
 # of a radius from a mass or a mass from a radius; `mass_from: least` is a radial-velocity minimum
 # mass. A null is "not measured", and the card says so.
 version: 1
-as_of: '2026-11-04'
+as_of: '2026-11-11'
 albedo: 0.3
 systems:
 - id: proxima-cen
   host: Proxima Cen
   display: Proxima Centauri
   why: temperate
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 217.3934657
     dec_deg: -62.6761821
@@ -27,7 +27,7 @@ systems:
     mass_suns: 0.1221
     lum_suns: 0.00151
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Proxima%20Cen (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Proxima%20Cen (read 2026-11-11)
   habitable_zone:
     inner_au: 0.04051
     outer_au: 0.08096
@@ -51,7 +51,7 @@ systems:
     insolation_earths: 1.82
     equilibrium_k: 296
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Proxima%20Cen (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Proxima%20Cen (read 2026-11-11)
   - id: exo-proxima-cen-b
     period_days: 11.18465
     a_au: 0.04848
@@ -67,13 +67,13 @@ systems:
     insolation_earths: 0.642
     equilibrium_k: 228
     zone: inside
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Proxima%20Cen (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Proxima%20Cen (read 2026-11-11)
 - id: lhs-1140
   host: LHS 1140
   aliases:
   - Gliese 3053
   why: temperate
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 11.248632
     dec_deg: -15.2741085
@@ -86,7 +86,7 @@ systems:
     mass_suns: 0.1844
     lum_suns: 0.0038
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/LHS%201140 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/LHS%201140 (read 2026-11-11)
   habitable_zone:
     inner_au: 0.06414
     outer_au: 0.127
@@ -111,7 +111,7 @@ systems:
     insolation_earths: 5.21
     equilibrium_k: 385
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/LHS%201140 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/LHS%201140 (read 2026-11-11)
   - id: exo-lhs-1140-b
     period_days: 24.73723
     a_au: 0.0946
@@ -127,11 +127,11 @@ systems:
     insolation_earths: 0.425
     equilibrium_k: 206
     zone: inside
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/LHS%201140 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/LHS%201140 (read 2026-11-11)
 - id: kepler-186
   host: Kepler-186
   why: temperate
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 298.652736
     dec_deg: 43.9549884
@@ -144,7 +144,7 @@ systems:
     mass_suns: 0.478
     lum_suns: 0.04121
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-186 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-186 (read 2026-11-11)
   habitable_zone:
     inner_au: 0.2094
     outer_au: 0.401
@@ -171,7 +171,7 @@ systems:
     insolation_earths: 28.6
     equilibrium_k: 589
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-186 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-186 (read 2026-11-11)
   - id: exo-kepler-186-c
     period_days: 7.267302
     a_au: 0.05763
@@ -189,7 +189,7 @@ systems:
     insolation_earths: 12.4
     equilibrium_k: 478
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-186 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-186 (read 2026-11-11)
   - id: exo-kepler-186-d
     period_days: 13.342996
     a_au: 0.08642
@@ -207,7 +207,7 @@ systems:
     insolation_earths: 5.52
     equilibrium_k: 390
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-186 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-186 (read 2026-11-11)
   - id: exo-kepler-186-e
     period_days: 22.407704
     a_au: 0.1216
@@ -225,7 +225,7 @@ systems:
     insolation_earths: 2.79
     equilibrium_k: 329
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-186 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-186 (read 2026-11-11)
   - id: exo-kepler-186-f
     period_days: 129.9441
     a_au: 0.3926
@@ -243,13 +243,13 @@ systems:
     insolation_earths: 0.267
     equilibrium_k: 183
     zone: inside
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-186 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-186 (read 2026-11-11)
 - id: kepler-452
   host: Kepler-452
   aliases:
   - KOI-7016
   why: temperate
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 296.003752
     dec_deg: 44.2775861
@@ -262,7 +262,7 @@ systems:
     mass_suns: 1.037
     lum_suns: 1.215
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-452 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-452 (read 2026-11-11)
   habitable_zone:
     inner_au: 1.049
     outer_au: 1.851
@@ -287,11 +287,11 @@ systems:
     insolation_earths: 1.11
     equilibrium_k: 261
     zone: edge
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-452 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-452 (read 2026-11-11)
 - id: kepler-62
   host: Kepler-62
   why: temperate
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 283.2125621
     dec_deg: 45.3496992
@@ -304,7 +304,7 @@ systems:
     mass_suns: 0.69
     lum_suns: 0.2099
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-62 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-62 (read 2026-11-11)
   habitable_zone:
     inner_au: 0.4561
     outer_au: 0.828
@@ -329,7 +329,7 @@ systems:
     insolation_earths: 68.6
     equilibrium_k: 733
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-62 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-62 (read 2026-11-11)
   - id: exo-kepler-62-c
     period_days: 12.4417
     a_au: 0.0929
@@ -345,7 +345,7 @@ systems:
     insolation_earths: 24.3
     equilibrium_k: 565
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-62 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-62 (read 2026-11-11)
   - id: exo-kepler-62-d
     period_days: 18.16406
     a_au: 0.12
@@ -361,7 +361,7 @@ systems:
     insolation_earths: 14.6
     equilibrium_k: 497
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-62 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-62 (read 2026-11-11)
   - id: exo-kepler-62-e
     period_days: 122.3874
     a_au: 0.427
@@ -377,7 +377,7 @@ systems:
     insolation_earths: 1.15
     equilibrium_k: 264
     zone: edge
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-62 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-62 (read 2026-11-11)
   - id: exo-kepler-62-f
     period_days: 267.291
     a_au: 0.718
@@ -393,11 +393,11 @@ systems:
     insolation_earths: 0.407
     equilibrium_k: 203
     zone: inside
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-62 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-62 (read 2026-11-11)
 - id: kepler-442
   host: Kepler-442
   why: temperate
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 285.3666029
     dec_deg: 39.2800704
@@ -410,7 +410,7 @@ systems:
     mass_suns: 0.609
     lum_suns: 0.1169
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-442 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-442 (read 2026-11-11)
   habitable_zone:
     inner_au: 0.3475
     outer_au: 0.6455
@@ -437,11 +437,11 @@ systems:
     insolation_earths: 0.784
     equilibrium_k: 240
     zone: inside
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-442 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-442 (read 2026-11-11)
 - id: kepler-22
   host: Kepler-22
   why: temperate
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 289.2172051
     dec_deg: 47.8841427
@@ -454,7 +454,7 @@ systems:
     mass_suns: 0.857
     lum_suns: 0.6453
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-22 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-22 (read 2026-11-11)
   habitable_zone:
     inner_au: 0.7719
     outer_au: 1.368
@@ -479,11 +479,11 @@ systems:
     insolation_earths: 0.979
     equilibrium_k: 253
     zone: inside
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-22 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-22 (read 2026-11-11)
 - id: kepler-69
   host: Kepler-69
   why: temperate
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 293.2609013
     dec_deg: 44.8688656
@@ -496,7 +496,7 @@ systems:
     mass_suns: 0.866
     lum_suns: 0.7998
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-69 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-69 (read 2026-11-11)
     mass_ref: Fulton & Petigura 2018
     mass_default_suns: 0.81
   habitable_zone:
@@ -525,7 +525,7 @@ systems:
     insolation_earths: 69.9
     equilibrium_k: 736
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-69 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-69 (read 2026-11-11)
   - id: exo-kepler-69-c
     period_days: 242.4613
     a_au: 0.72555
@@ -543,11 +543,11 @@ systems:
     insolation_earths: 1.52
     equilibrium_k: 283
     zone: edge
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-69 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-69 (read 2026-11-11)
 - id: toi-700
   host: TOI-700
   why: temperate
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 97.0957165
     dec_deg: -65.5786149
@@ -560,7 +560,7 @@ systems:
     mass_suns: 0.417
     lum_suns: 0.0233
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/TOI-700 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/TOI-700 (read 2026-11-11)
   habitable_zone:
     inner_au: 0.1582
     outer_au: 0.3079
@@ -585,7 +585,7 @@ systems:
     insolation_earths: 5.07
     equilibrium_k: 382
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/TOI-700 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/TOI-700 (read 2026-11-11)
   - id: exo-toi-700-c
     period_days: 16.0511039
     a_au: 0.0931
@@ -601,7 +601,7 @@ systems:
     insolation_earths: 2.69
     equilibrium_k: 326
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/TOI-700 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/TOI-700 (read 2026-11-11)
   - id: exo-toi-700-e
     period_days: 27.810124
     a_au: 0.1336
@@ -617,7 +617,7 @@ systems:
     insolation_earths: 1.31
     equilibrium_k: 272
     zone: edge
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/TOI-700 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/TOI-700 (read 2026-11-11)
   - id: exo-toi-700-d
     period_days: 37.423457
     a_au: 0.1642
@@ -633,13 +633,13 @@ systems:
     insolation_earths: 0.864
     equilibrium_k: 245
     zone: inside
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/TOI-700 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/TOI-700 (read 2026-11-11)
 - id: toi-715
   host: TOI-715
   aliases:
   - TIC 271971130
   why: temperate
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 113.8523276
     dec_deg: -73.5774089
@@ -652,7 +652,7 @@ systems:
     mass_suns: 0.225
     lum_suns: 0.004909
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/TOI-715 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/TOI-715 (read 2026-11-11)
   habitable_zone:
     inner_au: 0.07291
     outer_au: 0.1445
@@ -678,11 +678,11 @@ systems:
     insolation_earths: 0.67
     equilibrium_k: 230
     zone: inside
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/TOI-715 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/TOI-715 (read 2026-11-11)
 - id: teegardens-star
   host: Teegarden's Star
   why: temperate
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 43.2691449
     dec_deg: 16.8649024
@@ -695,7 +695,7 @@ systems:
     mass_suns: 0.097
     lum_suns: 0.000722
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Teegarden%27s%20Star (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Teegarden%27s%20Star (read 2026-11-11)
   habitable_zone:
     inner_au: 0.02797
     outer_au: 0.05556
@@ -719,7 +719,7 @@ systems:
     insolation_earths: 1.08
     equilibrium_k: 259
     zone: edge
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Teegarden%27s%20Star (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Teegarden%27s%20Star (read 2026-11-11)
   - id: exo-teegarden-s-star-c
     period_days: 11.416
     a_au: 0.0455
@@ -734,7 +734,7 @@ systems:
     insolation_earths: 0.349
     equilibrium_k: 196
     zone: inside
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Teegarden%27s%20Star (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Teegarden%27s%20Star (read 2026-11-11)
   - id: exo-teegarden-s-star-d
     period_days: 26.13
     a_au: 0.0791
@@ -749,13 +749,13 @@ systems:
     insolation_earths: 0.115
     equilibrium_k: 148
     zone: colder
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Teegarden%27s%20Star (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Teegarden%27s%20Star (read 2026-11-11)
 - id: gliese-12
   host: Gliese 12
   aliases:
   - GJ 12
   why: temperate
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 3.9579137
     dec_deg: 13.5576175
@@ -768,7 +768,7 @@ systems:
     mass_suns: 0.255
     lum_suns: 0.00728
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Gliese%2012 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Gliese%2012 (read 2026-11-11)
   habitable_zone:
     inner_au: 0.08857
     outer_au: 0.1735
@@ -793,13 +793,13 @@ systems:
     insolation_earths: 1.62
     equilibrium_k: 287
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Gliese%2012 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Gliese%2012 (read 2026-11-11)
 - id: k2-18
   host: K2-18
   aliases:
   - EPIC 201912552
   why: temperate
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 172.560141
     dec_deg: 7.5878315
@@ -812,7 +812,7 @@ systems:
     mass_suns: 0.359
     lum_suns: 0.0253
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/K2-18 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/K2-18 (read 2026-11-11)
   habitable_zone:
     inner_au: 0.1649
     outer_au: 0.3209
@@ -836,7 +836,7 @@ systems:
     insolation_earths: 7.03
     equilibrium_k: 415
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/K2-18 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/K2-18 (read 2026-11-11)
   - id: exo-k2-18-b
     period_days: 32.939623
     a_au: 0.1429
@@ -852,11 +852,11 @@ systems:
     insolation_earths: 1.24
     equilibrium_k: 269
     zone: edge
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/K2-18 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/K2-18 (read 2026-11-11)
 - id: l-98-59
   host: L 98-59
   why: temperate
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 124.5328604
     dec_deg: -68.3144658
@@ -869,7 +869,7 @@ systems:
     mass_suns: 0.2923
     lum_suns: 0.0122
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/L%2098-59 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/L%2098-59 (read 2026-11-11)
   habitable_zone:
     inner_au: 0.1145
     outer_au: 0.2234
@@ -894,7 +894,7 @@ systems:
     insolation_earths: 24.5
     equilibrium_k: 567
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/L%2098-59 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/L%2098-59 (read 2026-11-11)
   - id: exo-l-98-59-c
     period_days: 3.6906764
     a_au: 0.0309
@@ -910,7 +910,7 @@ systems:
     insolation_earths: 12.8
     equilibrium_k: 481
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/L%2098-59 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/L%2098-59 (read 2026-11-11)
   - id: exo-l-98-59-d
     period_days: 7.450729
     a_au: 0.0494
@@ -926,7 +926,7 @@ systems:
     insolation_earths: 5.0
     equilibrium_k: 381
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/L%2098-59 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/L%2098-59 (read 2026-11-11)
   - id: exo-l-98-59-e
     period_days: 12.8278
     a_au: 0.0712
@@ -942,7 +942,7 @@ systems:
     insolation_earths: 2.41
     equilibrium_k: 317
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/L%2098-59 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/L%2098-59 (read 2026-11-11)
   - id: exo-l-98-59-f
     period_days: 23.064
     a_au: 0.1052
@@ -958,13 +958,13 @@ systems:
     insolation_earths: 1.1
     equilibrium_k: 261
     zone: edge
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/L%2098-59 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/L%2098-59 (read 2026-11-11)
 - id: gj-1132
   host: GJ 1132
   aliases:
   - Gliese 1132
   why: temperate
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 153.7090696
     dec_deg: -47.1549358
@@ -977,7 +977,7 @@ systems:
     mass_suns: 0.181
     lum_suns: 0.00477
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201132 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201132 (read 2026-11-11)
     mass_ref: Bonfils et al. 2018
     mass_default_suns: 0.1945
   habitable_zone:
@@ -1006,7 +1006,7 @@ systems:
     insolation_earths: 20.4
     equilibrium_k: 541
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201132 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201132 (read 2026-11-11)
   - id: exo-gj-1132-c
     period_days: 8.929
     a_au: 0.0476
@@ -1022,13 +1022,13 @@ systems:
     insolation_earths: 2.11
     equilibrium_k: 307
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201132 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201132 (read 2026-11-11)
 - id: gj-1214
   host: GJ 1214
   aliases:
   - Gliese 1214
   why: temperate
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 258.8313991
     dec_deg: 4.9606795
@@ -1041,7 +1041,7 @@ systems:
     mass_suns: 0.182
     lum_suns: 0.0039
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201214 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201214 (read 2026-11-11)
   habitable_zone:
     inner_au: 0.06497
     outer_au: 0.1287
@@ -1066,14 +1066,14 @@ systems:
     insolation_earths: 17.2
     equilibrium_k: 519
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201214 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201214 (read 2026-11-11)
 - id: ross-128
   host: Ross 128
   aliases:
   - FI Vir
   - Gliese 447
   why: temperate
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 176.9376036
     dec_deg: 0.7992898
@@ -1086,7 +1086,7 @@ systems:
     mass_suns: 0.168
     lum_suns: 0.00362
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Ross%20128 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Ross%20128 (read 2026-11-11)
   habitable_zone:
     inner_au: 0.06254
     outer_au: 0.1233
@@ -1110,13 +1110,13 @@ systems:
     insolation_earths: 1.47
     equilibrium_k: 280
     zone: edge
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Ross%20128 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Ross%20128 (read 2026-11-11)
 - id: wolf-1069
   host: Wolf 1069
   aliases:
   - Gliese 1253
   why: temperate
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 306.5242477
     dec_deg: 58.5753044
@@ -1129,7 +1129,7 @@ systems:
     mass_suns: 0.167
     lum_suns: 0.002944
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Wolf%201069 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Wolf%201069 (read 2026-11-11)
   habitable_zone:
     inner_au: 0.05642
     outer_au: 0.1114
@@ -1152,13 +1152,13 @@ systems:
     insolation_earths: 0.652
     equilibrium_k: 229
     zone: inside
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Wolf%201069 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Wolf%201069 (read 2026-11-11)
 - id: gj-667-c
   host: GJ 667 C
   aliases:
   - Gliese 667 C
   why: temperate
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 259.7510609
     dec_deg: -34.9977651
@@ -1171,7 +1171,7 @@ systems:
     mass_suns: 0.33
     lum_suns: 0.01371
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20667%20C (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20667%20C (read 2026-11-11)
   habitable_zone:
     inner_au: 0.1215
     outer_au: 0.2378
@@ -1195,7 +1195,7 @@ systems:
     insolation_earths: 5.39
     equilibrium_k: 388
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20667%20C (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20667%20C (read 2026-11-11)
   - id: exo-gj-667-c-c
     period_days: 28.14
     a_au: 0.125
@@ -1210,7 +1210,7 @@ systems:
     insolation_earths: 0.877
     equilibrium_k: 246
     zone: inside
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20667%20C (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20667%20C (read 2026-11-11)
   - id: exo-gj-667-c-f
     period_days: 39.026
     a_au: 0.156
@@ -1225,7 +1225,7 @@ systems:
     insolation_earths: 0.563
     equilibrium_k: 221
     zone: inside
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20667%20C (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20667%20C (read 2026-11-11)
   - id: exo-gj-667-c-e
     period_days: 62.24
     a_au: 0.213
@@ -1240,7 +1240,7 @@ systems:
     insolation_earths: 0.302
     equilibrium_k: 189
     zone: inside
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20667%20C (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20667%20C (read 2026-11-11)
   - id: exo-gj-667-c-g
     period_days: 256.2
     a_au: 0.549
@@ -1255,14 +1255,14 @@ systems:
     insolation_earths: 0.0455
     equilibrium_k: 118
     zone: colder
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20667%20C (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20667%20C (read 2026-11-11)
 - id: 55-cnc
   host: 55 Cnc
   display: 55 Cancri
   aliases:
   - Copernicus
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 133.1468373
     dec_deg: 28.3298154
@@ -1275,7 +1275,7 @@ systems:
     mass_suns: 1.015
     lum_suns: 0.6354
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/55%20Cnc (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/55%20Cnc (read 2026-11-11)
   habitable_zone:
     inner_au: 0.7831
     outer_au: 1.406
@@ -1302,7 +1302,7 @@ systems:
     insolation_earths: 2480.0
     equilibrium_k: 1797
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/55%20Cnc (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/55%20Cnc (read 2026-11-11)
   - id: exo-55-cnc-b
     period_days: 14.651552
     a_au: 0.118
@@ -1318,7 +1318,7 @@ systems:
     insolation_earths: 45.6
     equilibrium_k: 662
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/55%20Cnc (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/55%20Cnc (read 2026-11-11)
   - id: exo-55-cnc-c
     period_days: 44.3936
     a_au: 0.247
@@ -1334,7 +1334,7 @@ systems:
     insolation_earths: 10.4
     equilibrium_k: 457
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/55%20Cnc (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/55%20Cnc (read 2026-11-11)
   - id: exo-55-cnc-f
     period_days: 260.58
     a_au: 0.802
@@ -1350,7 +1350,7 @@ systems:
     insolation_earths: 0.988
     equilibrium_k: 254
     zone: inside
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/55%20Cnc (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/55%20Cnc (read 2026-11-11)
   - id: exo-55-cnc-d
     period_days: 4799.0
     a_au: 5.6
@@ -1366,11 +1366,11 @@ systems:
     insolation_earths: 0.0203
     equilibrium_k: 96
     zone: colder
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/55%20Cnc (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/55%20Cnc (read 2026-11-11)
 - id: wasp-12
   host: WASP-12
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 97.636645
     dec_deg: 29.6722662
@@ -1383,7 +1383,7 @@ systems:
     mass_suns: 1.325
     lum_suns: 3.955
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/WASP-12 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/WASP-12 (read 2026-11-11)
   habitable_zone:
     inner_au: 1.835
     outer_au: 3.201
@@ -1410,11 +1410,11 @@ systems:
     insolation_earths: 7400.0
     equilibrium_k: 2361
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/WASP-12 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/WASP-12 (read 2026-11-11)
 - id: wasp-121
   host: WASP-121
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 107.6002312
     dec_deg: -39.0972705
@@ -1427,7 +1427,7 @@ systems:
     mass_suns: 1.33
     lum_suns: 4.403
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/WASP-121 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/WASP-121 (read 2026-11-11)
   habitable_zone:
     inner_au: 1.896
     outer_au: 3.288
@@ -1452,11 +1452,11 @@ systems:
     insolation_earths: 6660.0
     equilibrium_k: 2300
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/WASP-121 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/WASP-121 (read 2026-11-11)
 - id: hd-189733
   host: HD 189733
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 300.1821223
     dec_deg: 22.7097759
@@ -1469,7 +1469,7 @@ systems:
     mass_suns: 0.79
     lum_suns: 0.3458
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/HD%20189733 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/HD%20189733 (read 2026-11-11)
   habitable_zone:
     inner_au: 0.5819
     outer_au: 1.051
@@ -1494,11 +1494,11 @@ systems:
     insolation_earths: 354.0
     equilibrium_k: 1104
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/HD%20189733 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/HD%20189733 (read 2026-11-11)
 - id: hd-209458
   host: HD 209458
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 330.7950219
     dec_deg: 18.8842419
@@ -1511,7 +1511,7 @@ systems:
     mass_suns: 1.069175
     lum_suns: 1.702
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/HD%20209458 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/HD%20209458 (read 2026-11-11)
     mass_ref: Rosenthal et al. 2021
     mass_default_suns: 1.23
   habitable_zone:
@@ -1538,14 +1538,14 @@ systems:
     insolation_earths: 768.0
     equilibrium_k: 1340
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/HD%20209458 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/HD%20209458 (read 2026-11-11)
 - id: 51-peg
   host: 51 Peg
   display: 51 Pegasi
   aliases:
   - Helvetios
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 344.3675399
     dec_deg: 20.7690958
@@ -1558,7 +1558,7 @@ systems:
     mass_suns: 1.07
     lum_suns: 1.369
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/51%20Peg (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/51%20Peg (read 2026-11-11)
   habitable_zone:
     inner_au: 1.113
     outer_au: 1.964
@@ -1583,11 +1583,11 @@ systems:
     insolation_earths: 506.0
     equilibrium_k: 1208
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/51%20Peg (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/51%20Peg (read 2026-11-11)
 - id: kepler-16
   host: Kepler-16
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 289.0758307
     dec_deg: 51.757229
@@ -1600,7 +1600,7 @@ systems:
     mass_suns: 0.6897
     lum_suns: 0.125
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-16 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-16 (read 2026-11-11)
   habitable_zone:
     inner_au: 0.3991
     outer_au: 0.7412
@@ -1670,11 +1670,11 @@ systems:
     transit_mid_jd: 2455212.12316
     method: Transit
     year: 2011
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-16 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-16 (read 2026-11-11)
 - id: kelt-9
   host: KELT-9
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 307.8598998
     dec_deg: 39.9389161
@@ -1687,7 +1687,7 @@ systems:
     mass_suns: 2.32
     lum_suns: 38.9
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/KELT-9 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/KELT-9 (read 2026-11-11)
   habitable_zone: null
   habitable_zone_missing: too-hot
   colour_note: illustrative
@@ -1706,11 +1706,11 @@ systems:
     year: 2017
     insolation_earths: 34300.0
     equilibrium_k: 3464
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/KELT-9 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/KELT-9 (read 2026-11-11)
 - id: toi-849
   host: TOI-849
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 28.7157956
     dec_deg: -29.4217086
@@ -1723,7 +1723,7 @@ systems:
     mass_suns: 0.97
     lum_suns: 0.6048
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/TOI-849 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/TOI-849 (read 2026-11-11)
   habitable_zone:
     inner_au: 0.7616
     outer_au: 1.365
@@ -1750,13 +1750,13 @@ systems:
     insolation_earths: 2370.0
     equilibrium_k: 1776
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/TOI-849 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/TOI-849 (read 2026-11-11)
 - id: psr-b1257-12
   host: PSR B1257+12
   aliases:
   - Lich
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 195.0149029
     dec_deg: 12.6823534
@@ -1769,7 +1769,7 @@ systems:
     mass_suns: 1.4
     lum_suns: null
     lum_from: null
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/PSR%20B1257%2B12 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/PSR%20B1257%2B12 (read 2026-11-11)
   habitable_zone: null
   habitable_zone_missing: no-temperature
   colour_note: illustrative
@@ -1785,7 +1785,7 @@ systems:
     eccentricity: 0.0
     method: Pulsar Timing
     year: 1994
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/PSR%20B1257%2B12 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/PSR%20B1257%2B12 (read 2026-11-11)
   - id: exo-psr-b1257-12-c
     period_days: 66.5419
     a_au: 0.36
@@ -1797,7 +1797,7 @@ systems:
     eccentricity: 0.0186
     method: Pulsar Timing
     year: 1992
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/PSR%20B1257%2B12 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/PSR%20B1257%2B12 (read 2026-11-11)
   - id: exo-psr-b1257-12-d
     period_days: 98.2114
     a_au: 0.46
@@ -1809,11 +1809,11 @@ systems:
     eccentricity: 0.0264
     method: Pulsar Timing
     year: 1992
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/PSR%20B1257%2B12 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/PSR%20B1257%2B12 (read 2026-11-11)
 - id: hr-8799
   host: HR 8799
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 346.8701486
     dec_deg: 21.1340376
@@ -1826,7 +1826,7 @@ systems:
     mass_suns: 1.5
     lum_suns: 4.92
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/HR%208799 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/HR%208799 (read 2026-11-11)
   habitable_zone: null
   habitable_zone_missing: too-hot
   colour_note: illustrative
@@ -1846,7 +1846,7 @@ systems:
     year: 2010
     insolation_earths: 0.017
     equilibrium_k: 92
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/HR%208799 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/HR%208799 (read 2026-11-11)
   - id: exo-hr-8799-d
     period_days: 37000.0
     a_au: 24.88
@@ -1862,7 +1862,7 @@ systems:
     year: 2008
     insolation_earths: 0.00795
     equilibrium_k: 76
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/HR%208799 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/HR%208799 (read 2026-11-11)
   - id: exo-hr-8799-c
     period_days: 69000.0
     a_au: 38.0
@@ -1876,7 +1876,7 @@ systems:
     year: 2008
     insolation_earths: 0.00341
     equilibrium_k: 62
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/HR%208799 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/HR%208799 (read 2026-11-11)
   - id: exo-hr-8799-b
     period_days: 170000.0
     a_au: 68.0
@@ -1889,14 +1889,14 @@ systems:
     year: 2008
     insolation_earths: 0.00106
     equilibrium_k: 46
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/HR%208799 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/HR%208799 (read 2026-11-11)
 - id: beta-pictoris
   host: bet Pic
   display: Beta Pictoris
   aliases:
   - bet Pic
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 86.8212337
     dec_deg: -51.066148
@@ -1909,7 +1909,7 @@ systems:
     mass_suns: 1.75
     lum_suns: 8.971
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/bet%20Pic (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/bet%20Pic (read 2026-11-11)
     mass_ref: Lagrange et al. 2019
     mass_default_suns: 1.789
   habitable_zone: null
@@ -1929,7 +1929,7 @@ systems:
     year: 2019
     insolation_earths: 1.23
     equilibrium_k: 268
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/bet%20Pic (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/bet%20Pic (read 2026-11-11)
   - id: exo-bet-pic-b
     period_days: 8682.0
     a_au: 10.07
@@ -1943,7 +1943,7 @@ systems:
     year: 2008
     insolation_earths: 0.0885
     equilibrium_k: 139
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/bet%20Pic (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/bet%20Pic (read 2026-11-11)
   - id: exo-bet-pic-d
     period_days: 33200.0
     a_au: 24.0
@@ -1959,14 +1959,14 @@ systems:
     year: 2026
     insolation_earths: 0.0156
     equilibrium_k: 90
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/bet%20Pic (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/bet%20Pic (read 2026-11-11)
 - id: kepler-90
   host: KOI-351
   display: Kepler-90
   aliases:
   - KOI-351
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 284.4334642
     dec_deg: 49.3051239
@@ -1979,7 +1979,7 @@ systems:
     mass_suns: 1.108
     lum_suns: 1.856
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-11-11)
     mass_ref: Weiss et al. 2024
     mass_default_suns: 1.2
   habitable_zone:
@@ -2006,7 +2006,7 @@ systems:
     insolation_earths: 339.0
     equilibrium_k: 1092
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-11-11)
   - id: exo-koi-351-c
     period_days: 8.719375
     a_au: 0.0857942931
@@ -2024,7 +2024,7 @@ systems:
     insolation_earths: 252.0
     equilibrium_k: 1014
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-11-11)
   - id: exo-kepler-90-i
     period_days: 14.44912
     a_au: 0.1201380843
@@ -2040,7 +2040,7 @@ systems:
     insolation_earths: 129.0
     equilibrium_k: 857
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-11-11)
   - id: exo-koi-351-d
     period_days: 59.73667
     a_au: 0.309467855
@@ -2058,7 +2058,7 @@ systems:
     insolation_earths: 19.4
     equilibrium_k: 534
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-11-11)
   - id: exo-koi-351-e
     period_days: 91.93913
     a_au: 0.412531915
@@ -2076,7 +2076,7 @@ systems:
     insolation_earths: 10.9
     equilibrium_k: 463
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-11-11)
   - id: exo-koi-351-f
     period_days: 124.9144
     a_au: 0.5060567991
@@ -2094,7 +2094,7 @@ systems:
     insolation_earths: 7.25
     equilibrium_k: 418
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-11-11)
   - id: exo-koi-351-g
     period_days: 210.73514
     a_au: 0.71704
@@ -2110,7 +2110,7 @@ systems:
     insolation_earths: 3.61
     equilibrium_k: 351
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-11-11)
   - id: exo-koi-351-h
     period_days: 331.60296
     a_au: 0.97062
@@ -2126,11 +2126,11 @@ systems:
     insolation_earths: 1.97
     equilibrium_k: 302
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-11-11)
 - id: k2-138
   host: K2-138
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 348.9490311
     dec_deg: -10.8497391
@@ -2143,7 +2143,7 @@ systems:
     mass_suns: 0.935
     lum_suns: 0.517
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/K2-138 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/K2-138 (read 2026-11-11)
   habitable_zone:
     inner_au: 0.7004
     outer_au: 1.251
@@ -2168,7 +2168,7 @@ systems:
     insolation_earths: 451.0
     equilibrium_k: 1173
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/K2-138 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/K2-138 (read 2026-11-11)
   - id: exo-k2-138-c
     period_days: 3.56004
     a_au: 0.04461
@@ -2184,7 +2184,7 @@ systems:
     insolation_earths: 260.0
     equilibrium_k: 1022
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/K2-138 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/K2-138 (read 2026-11-11)
   - id: exo-k2-138-d
     period_days: 5.40479
     a_au: 0.05893
@@ -2200,7 +2200,7 @@ systems:
     insolation_earths: 149.0
     equilibrium_k: 889
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/K2-138 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/K2-138 (read 2026-11-11)
   - id: exo-k2-138-e
     period_days: 8.26146
     a_au: 0.0782
@@ -2216,7 +2216,7 @@ systems:
     insolation_earths: 84.5
     equilibrium_k: 772
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/K2-138 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/K2-138 (read 2026-11-11)
   - id: exo-k2-138-f
     period_days: 12.75758
     a_au: 0.10447
@@ -2232,7 +2232,7 @@ systems:
     insolation_earths: 47.4
     equilibrium_k: 668
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/K2-138 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/K2-138 (read 2026-11-11)
   - id: exo-k2-138-g
     period_days: 41.96797
     a_au: 0.23109
@@ -2248,11 +2248,11 @@ systems:
     insolation_earths: 9.68
     equilibrium_k: 449
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/K2-138 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/K2-138 (read 2026-11-11)
 - id: kepler-11
   host: Kepler-11
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 297.1150949
     dec_deg: 41.9091092
@@ -2265,7 +2265,7 @@ systems:
     mass_suns: 0.961
     lum_suns: 1.319
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-11 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-11 (read 2026-11-11)
   habitable_zone:
     inner_au: 1.099
     outer_au: 1.945
@@ -2290,7 +2290,7 @@ systems:
     insolation_earths: 159.0
     equilibrium_k: 904
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-11 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-11 (read 2026-11-11)
   - id: exo-kepler-11-c
     period_days: 13.0241
     a_au: 0.107
@@ -2306,7 +2306,7 @@ systems:
     insolation_earths: 115.0
     equilibrium_k: 834
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-11 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-11 (read 2026-11-11)
   - id: exo-kepler-11-d
     period_days: 22.6845
     a_au: 0.155
@@ -2322,7 +2322,7 @@ systems:
     insolation_earths: 54.9
     equilibrium_k: 693
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-11 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-11 (read 2026-11-11)
   - id: exo-kepler-11-e
     period_days: 31.9996
     a_au: 0.195
@@ -2338,7 +2338,7 @@ systems:
     insolation_earths: 34.7
     equilibrium_k: 618
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-11 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-11 (read 2026-11-11)
   - id: exo-kepler-11-f
     period_days: 46.6888
     a_au: 0.25
@@ -2354,7 +2354,7 @@ systems:
     insolation_earths: 21.1
     equilibrium_k: 546
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-11 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-11 (read 2026-11-11)
   - id: exo-kepler-11-g
     period_days: 118.3807
     a_au: 0.466
@@ -2370,11 +2370,11 @@ systems:
     insolation_earths: 6.07
     equilibrium_k: 400
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-11 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-11 (read 2026-11-11)
 - id: hd-10180
   host: HD 10180
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 24.4731133
     dec_deg: -60.5114881
@@ -2387,7 +2387,7 @@ systems:
     mass_suns: 1.06
     lum_suns: 1.49
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/HD%2010180 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/HD%2010180 (read 2026-11-11)
   habitable_zone:
     inner_au: 1.151
     outer_au: 2.023
@@ -2411,7 +2411,7 @@ systems:
     insolation_earths: 362.0
     equilibrium_k: 1111
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/HD%2010180 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/HD%2010180 (read 2026-11-11)
   - id: exo-hd-10180-d
     period_days: 16.357
     a_au: 0.12859
@@ -2426,7 +2426,7 @@ systems:
     insolation_earths: 90.1
     equilibrium_k: 784
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/HD%2010180 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/HD%2010180 (read 2026-11-11)
   - id: exo-hd-10180-e
     period_days: 49.748
     a_au: 0.2699
@@ -2441,7 +2441,7 @@ systems:
     insolation_earths: 20.5
     equilibrium_k: 541
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/HD%2010180 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/HD%2010180 (read 2026-11-11)
   - id: exo-hd-10180-f
     period_days: 122.744
     a_au: 0.4929
@@ -2456,7 +2456,7 @@ systems:
     insolation_earths: 6.13
     equilibrium_k: 401
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/HD%2010180 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/HD%2010180 (read 2026-11-11)
   - id: exo-hd-10180-g
     period_days: 604.67
     a_au: 1.427
@@ -2471,7 +2471,7 @@ systems:
     insolation_earths: 0.732
     equilibrium_k: 235
     zone: inside
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/HD%2010180 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/HD%2010180 (read 2026-11-11)
   - id: exo-hd-10180-h
     period_days: 2205.0
     a_au: 3.381
@@ -2486,11 +2486,11 @@ systems:
     insolation_earths: 0.13
     equilibrium_k: 153
     zone: colder
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/HD%2010180 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/HD%2010180 (read 2026-11-11)
 - id: kepler-1649
   host: Kepler-1649
   why: temperate
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 292.5029676
     dec_deg: 41.8299933
@@ -2503,7 +2503,7 @@ systems:
     mass_suns: 0.1977
     lum_suns: 0.00516
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1649 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1649 (read 2026-11-11)
   habitable_zone:
     inner_au: 0.07463
     outer_au: 0.1468
@@ -2530,7 +2530,7 @@ systems:
     insolation_earths: 2.22
     equilibrium_k: 311
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1649 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1649 (read 2026-11-11)
   - id: exo-kepler-1649-c
     period_days: 19.53527
     a_au: 0.0827
@@ -2548,11 +2548,11 @@ systems:
     insolation_earths: 0.754
     equilibrium_k: 237
     zone: inside
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1649 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1649 (read 2026-11-11)
 - id: kepler-1647
   host: Kepler-1647
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 298.150057
     dec_deg: 40.6561751
@@ -2565,7 +2565,7 @@ systems:
     mass_suns: 1.2207
     lum_suns: 4.408
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1647 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1647 (read 2026-11-11)
   habitable_zone:
     inner_au: 2.127
     outer_au: 3.72
@@ -2624,11 +2624,11 @@ systems:
     transit_mid_jd: 2454998.4972
     method: Transit
     year: 2016
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1647 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1647 (read 2026-11-11)
 - id: wasp-17
   host: WASP-17
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 239.9622479
     dec_deg: -28.0617941
@@ -2641,7 +2641,7 @@ systems:
     mass_suns: 1.306
     lum_suns: 4.099
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/WASP-17 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/WASP-17 (read 2026-11-11)
     mass_ref: Bonomo et al. 2017
     mass_default_suns: 2.28
   habitable_zone:
@@ -2668,11 +2668,11 @@ systems:
     insolation_earths: 1550.0
     equilibrium_k: 1596
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/WASP-17 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/WASP-17 (read 2026-11-11)
 - id: wasp-39
   host: WASP-39
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 217.3266477
     dec_deg: -3.4444994
@@ -2685,7 +2685,7 @@ systems:
     mass_suns: 0.913
     lum_suns: 0.7449
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/WASP-39 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/WASP-39 (read 2026-11-11)
   habitable_zone:
     inner_au: 0.8346
     outer_au: 1.484
@@ -2710,14 +2710,14 @@ systems:
     insolation_earths: 320.0
     equilibrium_k: 1076
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/WASP-39 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/WASP-39 (read 2026-11-11)
 - id: 51-eri
   host: 51 Eri
   display: 51 Eridani
   aliases:
   - 51 Eri
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 69.4007424
     dec_deg: -2.4738245
@@ -2730,7 +2730,7 @@ systems:
     mass_suns: 1.75
     lum_suns: 5.72
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/51%20Eri (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/51%20Eri (read 2026-11-11)
   habitable_zone: null
   habitable_zone_missing: too-hot
   colour_note: illustrative
@@ -2748,11 +2748,11 @@ systems:
     year: 2015
     insolation_earths: 0.0529
     equilibrium_k: 122
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/51%20Eri (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/51%20Eri (read 2026-11-11)
 - id: pds-70
   host: PDS 70
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 212.0421402
     dec_deg: -41.3980405
@@ -2765,7 +2765,7 @@ systems:
     mass_suns: 0.76
     lum_suns: 0.35
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/PDS%2070 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/PDS%2070 (read 2026-11-11)
     mass_ref: Keppler et al. 2018
     mass_default_suns: 0.982
   habitable_zone:
@@ -2793,7 +2793,7 @@ systems:
     insolation_earths: 0.000723
     equilibrium_k: 42
     zone: colder
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/PDS%2070 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/PDS%2070 (read 2026-11-11)
   - id: exo-pds-70-c
     period_days: 84163.7
     a_au: 34.3
@@ -2809,14 +2809,14 @@ systems:
     insolation_earths: 0.000297
     equilibrium_k: 33
     zone: colder
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/PDS%2070 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/PDS%2070 (read 2026-11-11)
 - id: af-lep
   host: AF Lep
   display: AF Leporis
   aliases:
   - AF Lep
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 81.7699216
     dec_deg: -11.9011752
@@ -2829,7 +2829,7 @@ systems:
     mass_suns: 1.218
     lum_suns: 1.95
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/AF%20Lep (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/AF%20Lep (read 2026-11-11)
   habitable_zone:
     inner_au: 1.298
     outer_au: 2.27
@@ -2854,12 +2854,12 @@ systems:
     insolation_earths: 0.0241
     equilibrium_k: 100
     zone: colder
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/AF%20Lep (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/AF%20Lep (read 2026-11-11)
 - id: barnards-star
   host: Barnard's star
   display: Barnard's Star
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 269.4486144
     dec_deg: 4.7379808
@@ -2872,7 +2872,7 @@ systems:
     mass_suns: 0.162
     lum_suns: 0.00355
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Barnard%27s%20star (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Barnard%27s%20star (read 2026-11-11)
   habitable_zone:
     inner_au: 0.06193
     outer_au: 0.1221
@@ -2896,7 +2896,7 @@ systems:
     insolation_earths: 10.0
     equilibrium_k: 453
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Barnard%27s%20star (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Barnard%27s%20star (read 2026-11-11)
   - id: exo-barnard-b
     period_days: 3.1542
     a_au: 0.0229
@@ -2912,7 +2912,7 @@ systems:
     insolation_earths: 6.77
     equilibrium_k: 411
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Barnard%27s%20star (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Barnard%27s%20star (read 2026-11-11)
   - id: exo-barnard-c
     period_days: 4.1244
     a_au: 0.0274
@@ -2927,7 +2927,7 @@ systems:
     insolation_earths: 4.73
     equilibrium_k: 375
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Barnard%27s%20star (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Barnard%27s%20star (read 2026-11-11)
   - id: exo-barnard-e
     period_days: 6.7392
     a_au: 0.0381
@@ -2942,14 +2942,14 @@ systems:
     insolation_earths: 2.45
     equilibrium_k: 318
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/Barnard%27s%20star (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/Barnard%27s%20star (read 2026-11-11)
 - id: tau-ceti
   host: tau Cet
   display: Tau Ceti
   aliases:
   - tau Cet
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 26.0093029
     dec_deg: -15.9337987
@@ -2962,7 +2962,7 @@ systems:
     mass_suns: 0.783
     lum_suns: 0.495
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/tau%20Cet (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/tau%20Cet (read 2026-11-11)
   habitable_zone:
     inner_au: 0.687
     outer_au: 1.229
@@ -2986,7 +2986,7 @@ systems:
     insolation_earths: 28.0
     equilibrium_k: 586
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/tau%20Cet (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/tau%20Cet (read 2026-11-11)
   - id: exo-tau-cet-h
     period_days: 49.41
     a_au: 0.243
@@ -3001,7 +3001,7 @@ systems:
     insolation_earths: 8.38
     equilibrium_k: 433
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/tau%20Cet (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/tau%20Cet (read 2026-11-11)
   - id: exo-tau-cet-f
     period_days: 636.13
     a_au: 1.334
@@ -3016,14 +3016,14 @@ systems:
     insolation_earths: 0.278
     equilibrium_k: 185
     zone: colder
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/tau%20Cet (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/tau%20Cet (read 2026-11-11)
 - id: epsilon-eridani
   host: eps Eri
   display: Epsilon Eridani
   aliases:
   - eps Eri
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 53.2284306
     dec_deg: -9.4581715
@@ -3036,7 +3036,7 @@ systems:
     mass_suns: 0.82
     lum_suns: 0.3808
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/eps%20Eri (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/eps%20Eri (read 2026-11-11)
   habitable_zone:
     inner_au: 0.6116
     outer_au: 1.106
@@ -3061,14 +3061,14 @@ systems:
     insolation_earths: 0.0306
     equilibrium_k: 106
     zone: colder
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/eps%20Eri (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/eps%20Eri (read 2026-11-11)
 - id: gj-887
   host: GJ 887
   display: Gliese 887
   aliases:
   - Gliese 887
   why: temperate
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 346.5027573
     dec_deg: -35.8473489
@@ -3081,7 +3081,7 @@ systems:
     mass_suns: 0.495
     lum_suns: 0.0368
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20887 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20887 (read 2026-11-11)
   habitable_zone:
     inner_au: 0.1982
     outer_au: 0.3814
@@ -3105,7 +3105,7 @@ systems:
     insolation_earths: 21.2
     equilibrium_k: 546
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20887 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20887 (read 2026-11-11)
   - id: exo-gj-887-b
     period_days: 9.2619
     a_au: 0.0683
@@ -3121,7 +3121,7 @@ systems:
     insolation_earths: 7.89
     equilibrium_k: 427
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20887 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20887 (read 2026-11-11)
   - id: exo-gj-887-c
     period_days: 21.784
     a_au: 0.121
@@ -3137,7 +3137,7 @@ systems:
     insolation_earths: 2.51
     equilibrium_k: 321
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20887 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20887 (read 2026-11-11)
   - id: exo-gj-887-d
     period_days: 50.77
     a_au: 0.212
@@ -3152,14 +3152,14 @@ systems:
     insolation_earths: 0.819
     equilibrium_k: 242
     zone: inside
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20887 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20887 (read 2026-11-11)
 - id: gj-581
   host: GJ 581
   display: Gliese 581
   aliases:
   - Gliese 581
   why: extreme
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 229.8564725
     dec_deg: -7.7226935
@@ -3172,7 +3172,7 @@ systems:
     mass_suns: 0.295
     lum_suns: 0.01236
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20581 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20581 (read 2026-11-11)
   habitable_zone:
     inner_au: 0.1152
     outer_au: 0.2237
@@ -3196,7 +3196,7 @@ systems:
     insolation_earths: 15.8
     equilibrium_k: 507
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20581 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20581 (read 2026-11-11)
   - id: exo-gj-581-b
     period_days: 5.3686
     a_au: 0.0399
@@ -3212,7 +3212,7 @@ systems:
     insolation_earths: 7.76
     equilibrium_k: 425
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20581 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20581 (read 2026-11-11)
   - id: exo-gj-581-c
     period_days: 12.9211
     a_au: 0.0718
@@ -3228,14 +3228,14 @@ systems:
     insolation_earths: 2.4
     equilibrium_k: 317
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20581 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20581 (read 2026-11-11)
 - id: gj-876
   host: GJ 876
   display: Gliese 876
   aliases:
   - Gliese 876
   why: temperate
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 343.3239737
     dec_deg: -14.2665958
@@ -3248,7 +3248,7 @@ systems:
     mass_suns: 0.32
     lum_suns: 0.0124
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20876 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20876 (read 2026-11-11)
   habitable_zone:
     inner_au: 0.1156
     outer_au: 0.2269
@@ -3273,7 +3273,7 @@ systems:
     insolation_earths: 28.6
     equilibrium_k: 589
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20876 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20876 (read 2026-11-11)
   - id: exo-gj-876-c
     period_days: 30.0881
     a_au: 0.12959
@@ -3289,7 +3289,7 @@ systems:
     insolation_earths: 0.738
     equilibrium_k: 236
     zone: inside
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20876 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20876 (read 2026-11-11)
   - id: exo-gj-876-b
     period_days: 61.1166
     a_au: 0.208317
@@ -3305,7 +3305,7 @@ systems:
     insolation_earths: 0.286
     equilibrium_k: 186
     zone: inside
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20876 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20876 (read 2026-11-11)
   - id: exo-gj-876-e
     period_days: 124.26
     a_au: 0.3343
@@ -3320,14 +3320,14 @@ systems:
     insolation_earths: 0.111
     equilibrium_k: 147
     zone: colder
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20876 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20876 (read 2026-11-11)
 - id: gj-273
   host: GJ 273
   display: Luyten's Star
   aliases:
   - Gliese 273
   why: temperate
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 111.852091
     dec_deg: 5.225807
@@ -3340,7 +3340,7 @@ systems:
     mass_suns: 0.29
     lum_suns: 0.0088
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20273 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20273 (read 2026-11-11)
   habitable_zone:
     inner_au: 0.09732
     outer_au: 0.1901
@@ -3364,7 +3364,7 @@ systems:
     insolation_earths: 6.62
     equilibrium_k: 408
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20273 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20273 (read 2026-11-11)
   - id: exo-gj-273-b
     period_days: 18.6498
     a_au: 0.091101
@@ -3379,14 +3379,14 @@ systems:
     insolation_earths: 1.06
     equilibrium_k: 258
     zone: edge
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20273 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20273 (read 2026-11-11)
 - id: gj-1061
   host: GJ 1061
   display: GJ 1061
   aliases:
   - Gliese 1061
   why: temperate
-  as_of: '2026-11-04'
+  as_of: '2026-11-11'
   sky:
     ra_deg: 54.0032486
     dec_deg: -44.5143104
@@ -3399,7 +3399,7 @@ systems:
     mass_suns: 0.12
     lum_suns: 0.0017
     lum_from: table
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201061 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201061 (read 2026-11-11)
   habitable_zone:
     inner_au: 0.04296
     outer_au: 0.08565
@@ -3423,7 +3423,7 @@ systems:
     insolation_earths: 3.85
     equilibrium_k: 357
     zone: hotter
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201061 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201061 (read 2026-11-11)
   - id: exo-gj-1061-c
     period_days: 6.6821
     a_au: 0.0342
@@ -3438,7 +3438,7 @@ systems:
     insolation_earths: 1.45
     equilibrium_k: 280
     zone: edge
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201061 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201061 (read 2026-11-11)
   - id: exo-gj-1061-d
     period_days: 13.066
     a_au: 0.054
@@ -3453,4 +3453,4 @@ systems:
     insolation_earths: 0.583
     equilibrium_k: 222
     zone: inside
-    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201061 (read 2026-11-04)
+    source: https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201061 (read 2026-11-11)
