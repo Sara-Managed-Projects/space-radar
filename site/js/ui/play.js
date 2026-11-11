@@ -107,6 +107,7 @@ export function openPlay(ctx, key) {
   x.appendChild(icon('x'));
   x.type = 'button';
   x.setAttribute('aria-label', COPY.play.close);
+  x.title = COPY.play.close;
   head.append(h, x);
   const dayLine = el('p', 'sr-play__day');
   const body = el('div');

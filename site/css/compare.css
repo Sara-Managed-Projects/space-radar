@@ -270,7 +270,7 @@
 
 /* The shared thumb (css/controls.css .ui-range), centred on the 44 px track this one draws behind it. */
 .sr-photocmp__field::-webkit-slider-thumb {
-  margin-top: 14px;
+  margin-top: calc((44px - 16px) / 2);
 }
 
 .sr-photocmp__ends {

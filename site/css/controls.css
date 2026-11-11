@@ -11,7 +11,7 @@
    - a 4 px grid, 40 px controls (32 px small), 44 px on a touch screen (the small ones by a hit area that reaches it);
    - a visible 2 px blue focus ring on everything, and nothing moves under prefers-reduced-motion;
    - no class here names a page or a site: a page lays the controls out with its own rules, it never restyles them. */
-:root{--ui-h:40px;--ui-h-sm:32px;--ui-r:12px;--ui-r-lg:20px;--ui-r-pill:999px;--ui-fs:14px;--ui-fs-sm:13px;--ui-fs-body:15px;--ui-fs-title:16px;--ui-fs-field:14px;--ui-fast:140ms;--ui-ease:cubic-bezier(0.2,0.8,0.2,1);--ui-wash:color-mix(in srgb,var(--tx) 6%,transparent);--ui-wash-hover:color-mix(in srgb,var(--tx) 11%,transparent);--ui-edge:color-mix(in srgb,var(--tx) 24%,transparent);--ui-sel:color-mix(in srgb,var(--atm) 18%,transparent);--ui-sel-line:color-mix(in srgb,var(--atm) 60%,transparent)}
+:root{--ui-h:40px;--ui-h-sm:32px;--ui-r-sm:6px;--ui-r:12px;--ui-r-lg:20px;--ui-r-pill:999px;--ui-fs:14px;--ui-fs-sm:13px;--ui-fs-body:15px;--ui-fs-title:16px;--ui-fs-field:14px;--ui-fast:140ms;--ui-ease:cubic-bezier(0.2,0.8,0.2,1);--ui-wash:color-mix(in srgb,var(--tx) 6%,transparent);--ui-wash-hover:color-mix(in srgb,var(--tx) 11%,transparent);--ui-edge:color-mix(in srgb,var(--tx) 24%,transparent);--ui-sel:color-mix(in srgb,var(--atm) 18%,transparent);--ui-sel-line:color-mix(in srgb,var(--atm) 60%,transparent)}
 @media (pointer: coarse){:root{--ui-fs-field:16px}}
 @media (prefers-reduced-motion: reduce){:root{--ui-fast:0ms;--ui-ease:linear}}
 
@@ -72,7 +72,7 @@
 /* .ui-check and .ui-radio: native inputs, drawn. Keyboard and screen reader are the browser's own. Put the input and
    its words in a <label class="ui-opt">, which is the target. */
 .ui-check,.ui-radio{appearance:none;-webkit-appearance:none;position:relative;display:inline-grid;place-content:center;flex:none;width:20px;height:20px;margin:0;background:transparent;border:2px solid var(--ui-edge);cursor:pointer;transition:background-color var(--ui-fast) var(--ui-ease),border-color var(--ui-fast) var(--ui-ease)}
-.ui-check{border-radius:6px}
+.ui-check{border-radius:var(--ui-r-sm)}
 .ui-radio{border-radius:50%}
 .ui-check::before{content:'';width:6px;height:10px;border:solid var(--ink);border-width:0 2px 2px 0;opacity:0;transform:translateY(-1px) rotate(45deg)}
 .ui-radio::before{content:'';width:8px;height:8px;background:var(--ink);border-radius:50%;opacity:0}
@@ -89,7 +89,7 @@
 .ui-range::-webkit-slider-runnable-track{height:4px;background:var(--ui-edge);border-radius:var(--ui-r-pill)}
 .ui-range::-moz-range-track{height:4px;background:var(--ui-edge);border-radius:var(--ui-r-pill)}
 .ui-range::-moz-range-progress{height:4px;background:var(--atm);border-radius:var(--ui-r-pill)}
-.ui-range::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;margin-top:-6px;background:var(--atm);border:2px solid var(--bg);border-radius:50%}
+.ui-range::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;margin-top:calc((4px - 16px) / 2);background:var(--atm);border:2px solid var(--bg);border-radius:50%}
 .ui-range::-moz-range-thumb{width:16px;height:16px;background:var(--atm);border:2px solid var(--bg);border-radius:50%}
 .ui-range:disabled{opacity:0.45;cursor:not-allowed}
 
@@ -140,7 +140,7 @@
 .ui-btn--icon{width:44px}
 .ui-btn--sm,.ui-btn--sm.ui-btn--icon,.ui-select--sm{min-height:var(--ui-h-sm)}
 .ui-btn--sm.ui-btn--icon{width:var(--ui-h-sm)}
-.ui-btn--sm::after,.ui-close::after,:is(button,a).ui-chip::after{content:'';position:absolute;inset:-6px}
+.ui-btn--sm::after,.ui-close::after,:is(button,a).ui-chip::after{content:'';position:absolute;inset:-8px}
 .ui-seg{padding:2px;gap:0}
 .ui-seg__btn{min-height:40px}
 .ui-seg__btn::after{content:'';position:absolute;inset:-2px}

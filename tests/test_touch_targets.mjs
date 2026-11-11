@@ -31,7 +31,7 @@ const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
 // ---- the stylesheets, as rules ------------------------------------------------------------------
-const FILES = ['site/css/site.css', 'site/css/ui.css', 'site/css/share.css', 'site/css/keyhint.css', 'site/css/embed.css', 'site/css/autopilot.css', 'site/css/drift.css', 'site/css/onboarding.css', 'site/css/finishers.css', 'site/css/searchkinds.css', 'site/css/compare.css', 'site/css/subscribe.css']; // 0077 W2-d; subscribe.css: the email updates' popover (ui/subscribepop.js)
+const FILES = ['site/css/site.css', 'site/css/ui.css', 'site/css/share.css', 'site/css/keyhint.css', 'site/css/embed.css', 'site/css/autopilot.css', 'site/css/drift.css', 'site/css/onboarding.css', 'site/css/finishers.css', 'site/css/searchkinds.css', 'site/css/compare.css', 'site/css/subscribe.css', 'site/css/controls.css']; // 0077 W2-d; subscribe.css: the email updates' popover (ui/subscribepop.js)
 // b200-s2-guards: begin -- the stylesheets that come with their module (ui/latercss.js) hold the boxes of that module's
 // controls: unread, the flight editor's 44 px buttons were "no rule", and the Find table's 32 px ones were never measured.
 FILES.push(...['deep', 'exoface', 'find', 'ground', 'make', 'moments', 'play', 'realsound', 'skystory', 'wikicard', 'worlds', 'xr'].map((n) => `site/css/${n}.css`));
@@ -141,11 +141,11 @@ for (const f of readdirSync(UI).filter((n) => n.endsWith('.js')).sort()) {
   const helpers = [...src.matchAll(/function (\w+)\(([^)]*)\)\s*\{[^}]*?(?:el\('(?:button|a)'|createElement\('(?:button|a)'\))/g)].map((m) => m[1]).filter((n) => n !== 'el');
   const callee = ['el\\(\'(?:button|a)\',', ...helpers.map((h) => `\\b${h}\\(`)].join('|');
   const add = (index, text, iconOnly) => {
-    const classes = [...String(text).matchAll(/[\w-]+/g)].map((m) => m[0]).filter((c) => /^sr-|^label$/.test(c));
+    const classes = [...String(text).matchAll(/[\w-]+/g)].map((m) => m[0]).filter((c) => /^sr-|^ui-|^label$/.test(c)); // ui-*: the control set, css/controls.css (2026-11-11)
     if (classes.length) controls.push({ file: f, line: src.slice(0, index).split('\n').length, classes, iconOnly });
   };
   // el('button', 'a b', text) and helper('a b', ...): every quoted string in the class argument,
-  // so `primary ? 'sr-act sr-act--primary' : 'sr-act'` gives both.
+  // so `primary ? 'ui-btn ui-btn--primary' : 'ui-btn'` gives both.
   for (const m of src.matchAll(new RegExp(`(?:${callee})\\s*((?:[^,()]|\\([^()]*\\))*)`, 'g'))) {
     const arg = m[1];
     for (const q of arg.matchAll(/['`]([^'`]+)['`]/g)) add(m.index, q[1].replace(/\$\{[^}]*\}/g, ' '), false);
@@ -159,16 +159,15 @@ for (const f of readdirSync(UI).filter((n) => n.endsWith('.js')).sort()) {
 }
 // A labelled checkbox row, a select and a field are targets too, named here because no button
 // builder makes them (the probe measured the first three under 44 on 2026-10-05).
-for (const cls of ['sr-show__label', 'sr-share__tag', 'sr-colourkey__select', 'sr-show__filter', 'sr-field']) controls.push({ file: '(named)', line: 0, classes: [cls] });
+for (const cls of ['sr-show__label', 'ui-opt', 'ui-select', 'sr-show__filter', 'sr-field']) controls.push({ file: '(named)', line: 0, classes: [cls] });
 
 // Not a 44 px target, each with the reason a person can check in the page.
 const NOT_A_TARGET = new Map([
   ['sr-card__inline', 'a text button inside a sentence of the card (SC 2.5.8 inline exception): as tall as its line'],
   ['sr-search__fly', 'clipped to 1 px in the explore search: Enter and the row itself are the control (internal #346)'],
   ['sr-side__handle', 'the collapsed sidebar\'s handle: a desktop state (a phone has the sheet), filling its 64 x 48 box'],
-  ['sr-btn--quiet', 'a modifier: the base class carries the box'],
-  ['sr-btn--primary', 'a modifier: the base class carries the box'],
-  ['sr-act--primary', 'a modifier: the base class carries the box'],
+  ['ui-btn--quiet', 'a modifier: the base class (css/controls.css .ui-btn) carries the box'],
+  ['ui-btn--primary', 'a modifier: the base class (css/controls.css .ui-btn) carries the box'],
 ]);
 
 let held = 0;
