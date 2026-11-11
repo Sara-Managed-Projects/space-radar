@@ -4655,7 +4655,6 @@ html:is(.sr-clean, .sr-hud, .sr-ambient, .sr-imagine-on, .sr-trip-mode) .sr-rail
   color: var(--sr-text-dim);
 }
 .sr-quality__note[hidden] { display: none; }
-}
 /* Other light (ui/otherlight.js): four choices take the row's whole width, under the title; then
    the one slider in the app, a native range between two words, and the survey's credit as a link
    that is underlined so colour alone does not say so. */
