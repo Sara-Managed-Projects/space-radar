@@ -11,6 +11,28 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+### Added
+
+- **Free email updates.** An envelope button on the map's rail opens a short form; every page's footer, the about and
+  teachers pages, and the row under Coming up carry the same form. Pick any of Space Radar news, the Journal, Space games
+  and Sky alerts (none is ticked for you). Nothing is sent until the address is confirmed. Every email has a one-click
+  unsubscribe. There are no tracking pixels and no rewritten links.
+- **A privacy page** (`/privacy/`). It says what the email updates keep, how to leave, and what the hosting's access logs
+  hold (kept 30 days, private, never linked to a subscription). There are no cookies and no analytics.
+- **Games.** A link at the top of the map's panel, with a slow glow that stops under reduced motion, and in every page's
+  header, goes to the new catalog at games.spaceradar.ai.
+- **`llms.txt` and `llms-full.txt`** for the main site, generated from the sitemap. `robots.txt` welcomes the same search
+  and AI crawlers the journal does.
+
+### Changed
+
+- **Every static page is drawn in the journal's design** (blog.spaceradar.ai). They share one header (Map, Journal, Games,
+  Lab, Subscribe, and the map button) and one footer with a Sites column. The page is 1240 px wide with a reading column,
+  links are blue, and there is one ember action per page. The tokens are `site/css/tokens.css`, the same file the
+  journal's kit uses. The Lab's simulators keep their own pages for now.
+- `deployed_boot_js_bytes` is 1 963 000 B. The envelope button, the Games link and their words add about 1.3 kB to the
+  boot graph; the form itself loads on the first press.
+
 ## [2.0.1] - 2026-11-09
 
 A patch for nine things: four that a visitor of the live 2.0.0 found, three found while it was being deployed and its zip checked, and two the release's own checks found. No shared link, saved data copy or registry row changes.
