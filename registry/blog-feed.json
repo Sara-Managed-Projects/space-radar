@@ -3,6 +3,53 @@
  "title": "Space Radar Journal",
  "items": [
   {
+   "title": "Sixty more craft with shapes of their own",
+   "url": "https://blog.spaceradar.ai/sixty-more-craft-with-shapes-of-their-own/",
+   "date": "2026-11-11",
+   "summary": "Release 1.4.0 adds sixty models of landers, weather satellites, Earth imagers and spent stages, built from cited metres and photographs.",
+   "image": "https://blog.spaceradar.ai/media/sixty-more-craft-with-shapes-of-their-own/share.jpg",
+   "tags": [
+    "Missions & Spacecraft",
+    "spacecraft",
+    "3D models",
+    "weather satellites",
+    "WorldView-3",
+    "rocket stages",
+    "release 1.4"
+   ]
+  },
+  {
+   "title": "Space Radar 2.0.0: What’s New in the Free 3D Map of Space",
+   "url": "https://blog.spaceradar.ai/space-radar-2-0-whats-new/",
+   "date": "2026-11-10",
+   "summary": "What’s new in Space Radar 2.0.0: walk at Moon and Mars landing sites, sky stories from 8 cultures, moving stars, 15 new simulators, video and VR.",
+   "image": "https://blog.spaceradar.ai/media/space-radar-2-0-whats-new/share.jpg",
+   "tags": [
+    "How It's Built",
+    "Space Radar",
+    "release 2.0",
+    "3D map",
+    "open source",
+    "astronomy app"
+   ]
+  },
+  {
+   "title": "Black holes in 3D, sized to the Event Horizon Telescope",
+   "url": "https://blog.spaceradar.ai/black-holes-sized-to-the-eht-shadows/",
+   "date": "2026-11-09",
+   "summary": "Release 1.4.0 draws Sagittarius A*, M87* and Cygnus X-1 in 3D, with shadows that follow from their masses and match the EHT's measurements.",
+   "image": "https://blog.spaceradar.ai/media/black-holes-sized-to-the-eht-shadows/share.jpg",
+   "tags": [
+    "Black Holes & Extremes",
+    "black holes",
+    "Event Horizon Telescope",
+    "Sagittarius A*",
+    "M87*",
+    "Cygnus X-1",
+    "release 1.4"
+   ]
+  },
+  {
    "title": "Eight nebulae as walls of glowing gas, dust and stars",
    "url": "https://blog.spaceradar.ai/eight-nebulae-walls-of-glowing-gas/",
    "date": "2026-11-07",
