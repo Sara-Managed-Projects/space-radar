@@ -27,9 +27,10 @@ first contribution to Space Radar, and you will be named in the release notes fo
 
 They are few, and `tests/test_lab.mjs` reads your file to hold the ones that can be checked by reading.
 
-- **One file.** `site/lab/<name>/index.html`, nothing beside it: no image, no second script. Inline CSS and JavaScript.
-- **No libraries and no network.** No `fetch`, no `<script src>`, no CDN, no web fonts of your own, no analytics. The only thing a page may
-  link is the site's own stylesheet `../../css/fonts.css` (it brings the site's Inter and Barlow faces, and the page works without it).
+- **One file.** `site/lab/<name>/index.html`, nothing beside it: no image, no second script. Inline JavaScript. The look is the site's: the page links `css/tokens.css`, `css/static.css` and `css/lab.css` (copy the head of `_template`), so the simulator carries no CSS of its own; a rule that is truly yours goes in a small `<style>` with every selector under `.sim`.
+- **No libraries and no network.** No `fetch`, no `<script src>`, no CDN, no web fonts of your own, no analytics. The only things a page may
+  link are the site's own faces (two `preload` lines) and its own stylesheets `css/tokens.css`, `css/static.css` and `css/lab.css` (the page still works without them).
+  The header and the footer are the site's: `python3 scripts/gen_lab_index.py` writes them between the `chrome:` markers, so leave those lines alone.
   A web address may appear in code only as a link a visitor can click (`<a href="https://...">`); sources go in the comment.
 - **Small.** Under about 200 lines and 26 000 bytes in all. If it does not fit, it is two ideas: make two simulators.
 - **One lesson**, in one sentence a 12-year-old understands, in `<meta name="description" content="...">`. It is also the card on the list.

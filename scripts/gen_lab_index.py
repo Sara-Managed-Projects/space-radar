@@ -15,7 +15,7 @@ THE LEVELS (forge #159, 2026-11-07). registry/lab-levels.yaml tags each simulato
 NGSS, KS3, GCSE (AQA 8463) and IB codes it shows. This script writes those tags onto the list's cards with a
 filter above them (age, curriculum code, words; a plain <form> the page's one small script reads, and every
 card stays listed with no script), and stamps each simulator's "See this in the 3D map" link from the row's
-`app` hash. The stamp is the one line of a simulator this script writes; --check refuses a stale one. A folder whose name starts
+`app` hash, and writes its header and footer (the site's, between chrome: markers). These stamps are all of a simulator this script writes; --check refuses a stale one. A folder whose name starts
 with an underscore (_template) is the starter and is not listed. The list is sorted by category, then by title.
 
 Run:  python3 scripts/gen_lab_index.py           # write site/lab/index.html and stamp the 3D-map links
@@ -31,7 +31,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from seo_chrome import footer, header, styles  # noqa: E402
+from seo_chrome import footer, header, lab_footer, styles  # noqa: E402
 from seo_subscribe import script as subscribe_script  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -100,6 +100,22 @@ def card_tags(row: dict | None) -> tuple[str, str, str]:
     words = ["Ages " + ", ".join(bands)] if bands else []
     words += [f"{fw.upper()} {', '.join(str(c) for c in row.get(fw) or [])}" for fw, _ in FRAMEWORKS if row.get(fw)]
     return " ".join(bands), " ".join(codes), " · ".join(words)
+
+
+# The header and the footer of a simulator are the site's (templates/partials/, scripts/seo_chrome.py), written into the
+# file between these markers so the file still opens by itself. The simulator's head links css/tokens.css, css/static.css
+# and css/lab.css (the picture, the controls); the Subscribe button goes to the band on this list.
+CHROME_HEAD = re.compile(r"<!-- chrome:header[^\n]*-->\n(?:.*?\n)?<!-- /chrome:header -->", re.S)
+CHROME_FOOT = re.compile(r"<!-- chrome:footer[^\n]*-->\n(?:.*?\n)?<!-- /chrome:footer -->", re.S)
+
+
+def stamp_chrome(text: str) -> str:
+    """A simulator's file with its header and footer set from the partials. Pure; a file with no markers is unchanged."""
+    head = ("<!-- chrome:header (written by scripts/gen_lab_index.py from templates/partials/header.html; do not edit) -->\n"
+            + header("../../", current="lab", subscribe="../index.html#subscribe") + "\n<!-- /chrome:header -->")
+    foot = ("<!-- chrome:footer (written by scripts/gen_lab_index.py from templates/partials/footer.html; do not edit) -->\n"
+            + lab_footer("../../") + "\n<!-- /chrome:footer -->")
+    return CHROME_FOOT.sub(lambda _: foot, CHROME_HEAD.sub(lambda _: head, text, count=1), count=1)
 
 
 def stamp_app_link(text: str, app: str | None) -> str:
@@ -234,14 +250,13 @@ def build() -> str:
 
 
 def stamped() -> list[tuple[Path, str, str]]:
-    """(file, its text now, its text with the app link from registry/lab-levels.yaml) of every simulator."""
+    """(file, its text now, its text with the app link from registry/lab-levels.yaml and the site's header and footer) of
+    every simulator, and of the starter (_template), which has no row and so keeps the plain link."""
     labs = levels()["labs"]
     out = []
     for p in sorted(LAB.glob("*/index.html")):
-        if p.parent.name.startswith("_"):
-            continue
         text = p.read_text(encoding="utf-8")
-        out.append((p, text, stamp_app_link(text, (labs.get(p.parent.name) or {}).get("app"))))
+        out.append((p, text, stamp_chrome(stamp_app_link(text, (labs.get(p.parent.name) or {}).get("app")))))
     return out
 
 
@@ -254,7 +269,7 @@ def main(argv: list[str]) -> int:
             print("site/lab/index.html is stale: run python3 scripts/gen_lab_index.py and commit it", file=sys.stderr)
             return 1
         if stale_links:
-            print(f"{len(stale_links)} simulator(s) carry a stale 3D-map link ({stale_links[0].parent.name} ...): run python3 scripts/gen_lab_index.py", file=sys.stderr)
+            print(f"{len(stale_links)} simulator(s) carry a stale 3D-map link, header or footer ({stale_links[0].parent.name} ...): run python3 scripts/gen_lab_index.py", file=sys.stderr)
             return 1
         print(f"site/lab/index.html is current ({len(simulators())} simulators)")
         return 0
@@ -262,7 +277,7 @@ def main(argv: list[str]) -> int:
     for p, _, want in stamped():
         if p in stale_links:
             p.write_text(want, encoding="utf-8")
-    print(f"wrote site/lab/index.html ({len(simulators())} simulators; {len(stale_links)} 3D-map link(s) stamped)")
+    print(f"wrote site/lab/index.html ({len(simulators())} simulators; {len(stale_links)} simulator(s) re-stamped: 3D-map link, header, footer)")
     return 0
 
 
