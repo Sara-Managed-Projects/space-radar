@@ -61,7 +61,7 @@ export function offerUndo(ctx, opts = {}) {
   node.dataset.undo = mine;
   const button = document.createElement('button');
   button.type = 'button';
-  button.className = 'sr-toast__action';
+  button.className = 'ui-btn ui-btn--sm ui-btn--secondary';
   button.textContent = U.back;
   node.appendChild(button);
 

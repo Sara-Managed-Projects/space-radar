@@ -72,16 +72,16 @@ export function createOpening(ctx, opts = {}) {
   const mk = (cls, name, label, title) => {
     const b = doc.createElement('button');
     b.type = 'button';
-    b.className = `sr-welcome__btn ${cls}`;
+    b.className = `ui-btn ${cls}`.trim();
     b.title = title;
     b.appendChild(name === 'moon' ? iconFrom(name, MOON, 16) : icon(name, 16));
     b.appendChild(doc.createTextNode(label));
     return b;
   };
   // 0077 W3-e: begin
-  const tonight = mk('sr-welcome__look', 'moon', W.tonight, W.tonightTitle);
-  const go = mk('sr-welcome__go sr-opening__go', 'play', W.trip, W.tripTitle);
-  const look = mk('sr-welcome__look', 'compass', W.explore, W.exploreTitle);
+  const tonight = mk('', 'moon', W.tonight, W.tonightTitle);
+  const go = mk('ui-btn--primary sr-opening__go', 'play', W.trip, W.tripTitle);
+  const look = mk('', 'compass', W.explore, W.exploreTitle);
   row.append(tonight, look, go);
   // 0077 W3-e: end
   const skip = doc.createElement('p');

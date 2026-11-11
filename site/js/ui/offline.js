@@ -135,7 +135,7 @@ export async function createOffline(ctx) {
     if (!node) return;
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = 'sr-toast__action';
+    button.className = 'ui-btn ui-btn--sm ui-btn--secondary';
     button.textContent = COPY.offline.reload;
     button.addEventListener('click', () => waiting.postMessage({ type: 'sr-skip-waiting' }));
     node.appendChild(button);

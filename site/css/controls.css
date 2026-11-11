@@ -23,8 +23,8 @@
 
 /* .ui-btn: the button. Default is a quiet filled pill; --primary is the view's one ember action; --secondary is blue;
    --ghost is an outline; --quiet is words only; --icon is a round icon button; --sm is 32 px; --tile is an icon over a short label (a card's row
-   of actions); --block fills its row. __label is the words, cut with an ellipsis when the button is narrow. aria-pressed="true" is
-   the selected look. A link can wear it too (<a class="ui-btn">). */
+   of actions); --block fills its row. __label is the words, cut with an ellipsis when the button is narrow. aria-pressed="true" (and
+   aria-expanded="true", a menu or a row that is open) is the selected look. A link can wear it too (<a class="ui-btn">). */
 .ui-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:var(--ui-h);margin:0;padding:0 16px;font-family:var(--sans);font-size:var(--ui-fs);font-weight:600;line-height:1;letter-spacing:0;color:var(--tx);text-decoration:none;white-space:nowrap;background:var(--ui-wash);border:0;border-radius:var(--ui-r-pill);box-shadow:inset 0 0 0 1px var(--line);cursor:pointer;transition:background-color var(--ui-fast) var(--ui-ease),box-shadow var(--ui-fast) var(--ui-ease),color var(--ui-fast) var(--ui-ease)}
 .ui-btn svg{flex:none;width:20px;height:20px}
 .ui-btn:hover{background:var(--ui-wash-hover);box-shadow:inset 0 0 0 1px var(--ui-sel-line)}
@@ -43,7 +43,7 @@
 .ui-btn--tile{flex-direction:column;gap:4px;min-width:0;min-height:56px;padding:0 4px;font-size:var(--ui-fs-sm);font-weight:400;border-radius:var(--ui-r)}
 .ui-btn--tile.ui-btn--primary{font-weight:600}
 .ui-btn__label{min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis}
-.ui-btn[aria-pressed='true']{color:var(--tx);background:var(--ui-sel);box-shadow:inset 0 0 0 1px var(--ui-sel-line)}
+.ui-btn:is([aria-pressed='true'],[aria-expanded='true']){color:var(--tx);background:var(--ui-sel);box-shadow:inset 0 0 0 1px var(--ui-sel-line)}
 .ui-btn:disabled,.ui-btn[aria-disabled='true']{opacity:0.45;cursor:not-allowed}
 .ui-btn:disabled:hover{background:var(--ui-wash);box-shadow:inset 0 0 0 1px var(--line)}
 .ui-btn--primary:disabled:hover{background:var(--ember);box-shadow:none}

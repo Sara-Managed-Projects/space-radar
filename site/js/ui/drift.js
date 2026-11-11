@@ -196,7 +196,7 @@ export function createBar(doc, handlers = {}) {
   bar.setAttribute('aria-label', D.name);
 
   const iconButton = (name, label, onClick, extra = '') => {
-    const b = el(doc, 'button', `sr-drift__btn sr-drift__btn--icon ${extra}`.trim());
+    const b = el(doc, 'button', `ui-btn ui-btn--icon ${extra}`.trim());
     b.type = 'button';
     b.setAttribute('aria-label', label);
     b.title = label;
@@ -205,7 +205,7 @@ export function createBar(doc, handlers = {}) {
     return b;
   };
   const textButton = (label, title, onClick, extra = '') => {
-    const b = el(doc, 'button', `sr-drift__btn ${extra}`.trim(), label);
+    const b = el(doc, 'button', `ui-btn ${extra}`.trim(), label);
     b.type = 'button';
     if (title) b.title = title;
     b.addEventListener('click', onClick);

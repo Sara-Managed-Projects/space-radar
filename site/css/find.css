@@ -24,7 +24,7 @@
 .sr-find__label { font-size: var(--sr-fs-sm); color: var(--sr-text-soft); }
 .sr-find__pair { display: inline-flex; align-items: center; gap: 4px; }
 .sr-find__dash { color: var(--sr-text-dim); }
-.sr-find__num, .sr-find__select, .sr-datejump__input {
+.sr-find__num, .sr-datejump__input {
   height: 36px;
   min-width: 0;
   padding: 0 var(--sp-2);
@@ -35,10 +35,8 @@
   border-radius: var(--sr-radius-sm);
 }
 .sr-find__num { width: 76px; }
-.sr-find__select { max-width: 190px; font-family: inherit; }
-.sr-find__num:focus-visible, .sr-find__select:focus-visible, .sr-datejump__input:focus-visible { outline: 2px solid var(--sr-atmosphere); outline-offset: 1px; }
-.sr-find__box { display: flex; align-items: center; gap: var(--sp-2); min-height: 36px; font-size: var(--sr-fs-sm); cursor: pointer; }
-.sr-find__box input { width: 18px; height: 18px; accent-color: var(--sr-ember); }
+.sr-find__field .ui-select { max-width: 190px; }
+.sr-find__num:focus-visible, .sr-datejump__input:focus-visible { outline: 2px solid var(--sr-atmosphere); outline-offset: 1px; }
 
 .sr-find__status, .sr-find__lead { margin: var(--sp-3) 0 var(--sp-2); font-size: var(--sr-fs-sm); color: var(--sr-text-soft); }
 .sr-find__tablewrap { overflow-x: auto; overscroll-behavior-x: contain; margin: 0 -4px; }
@@ -49,7 +47,7 @@
 .sr-find__table tbody tr { cursor: pointer; }
 .sr-find__table tbody tr:hover { background: var(--sr-wash); }
 .sr-find__table td { font-family: var(--sr-font-mono); color: var(--sr-text-soft); }
-.sr-find__sort, .sr-find__go, .sr-find__chartbtn {
+.sr-find__sort, .sr-find__go {
   min-height: 32px;
   padding: 0;
   font: inherit;
@@ -59,29 +57,17 @@
   border: 0;
   cursor: pointer;
 }
-.sr-find__sort:hover, .sr-find__go:hover { color: var(--sr-ember); }
-.sr-find__table th[aria-sort="ascending"] .sr-find__sort::after { content: " ↑"; color: var(--sr-ember); }
-.sr-find__table th[aria-sort="descending"] .sr-find__sort::after { content: " ↓"; color: var(--sr-ember); }
+.sr-find__sort:hover, .sr-find__go:hover { color: var(--sr-atmosphere); }
+.sr-find__table th[aria-sort="ascending"] .sr-find__sort::after { content: " ↑"; color: var(--sr-atmosphere); }
+.sr-find__table th[aria-sort="descending"] .sr-find__sort::after { content: " ↓"; color: var(--sr-atmosphere); }
 .sr-find__go { color: var(--sr-text); font-weight: 500; }
-.sr-find__chartbtn { display: block; min-height: 24px; font-size: 12px; color: var(--sr-text-dim); text-decoration: underline; text-underline-offset: 2px; }
-.sr-find__chartbtn:hover { color: var(--sr-ember); }
+.sr-find__chartbtn { margin-top: var(--sp-1); }
 .sr-find__honesty { margin-top: var(--sp-3); }
 .sr-find__link { margin-top: var(--sp-2); }
 
 .sr-find__chart { margin-top: var(--sp-3); padding: var(--sp-2) var(--sp-3) var(--sp-3); background: var(--sr-wash); border-radius: var(--sr-radius); }
 .sr-find__chart[hidden] { display: none; }
 .sr-find__charthead { display: flex; align-items: center; justify-content: space-between; }
-.sr-find__chartclose, .sr-datejump__close, .sr-findpill__clear {
-  width: 36px;
-  height: 36px;
-  font: 400 20px/1 var(--sr-font);
-  color: var(--sr-text-soft);
-  background: none;
-  border: 0;
-  border-radius: var(--sr-radius-pill);
-  cursor: pointer;
-}
-.sr-find__chartclose:hover, .sr-datejump__close:hover, .sr-findpill__clear:hover { color: var(--sr-text); background: var(--sr-wash-strong); }
 .sr-find__chartscroll { overflow-x: auto; }
 .sr-find__chartscroll svg { display: block; }
 .sr-find__body { fill: var(--sr-exoplanet); fill-opacity: 0.85; stroke: none; }
@@ -169,17 +155,12 @@ html.sr-phone .sr-datejump { left: 8px; right: 8px; bottom: 8px; transform: none
 
 /* b200-s2-guards: begin -- a finger's target is 44 px on a phone (docs/ui-guide.md principle 9; tests/test_touch_targets.mjs
    reads this file). Where the box can grow without moving anything it grows, else only the hit area does:
-   - the three 36 px closes keep their disc and get a 44 px hit area round it (inset -4px), as the card's close does;
+   - the closes and the size chart's button are the shared set's (css/controls.css), with their own 44 px hit areas;
    - a sort heading and a row's name are 32 px inside their cell's 6 px padding: the hit area fills the cell, so it
      reaches 44 and stays in its own row (::before for the sort, whose ::after is the arrow);
-   - the size chart link sits under the name, with no room round it: it is 44 tall, and an exoplanet row with a
-     chart is that much taller on a phone; positioned, so it is drawn over the name's hit area, not under it;
    - the no-path list's rows were 40, and are 44 like every other list row. */
-html.sr-phone .sr-find__chartclose, html.sr-phone .sr-datejump__close, html.sr-phone .sr-findpill__clear,
-html.sr-phone .sr-find__sort, html.sr-phone .sr-find__go, html.sr-phone .sr-find__chartbtn { position: relative; }
-html.sr-phone .sr-find__chartclose::after, html.sr-phone .sr-datejump__close::after, html.sr-phone .sr-findpill__clear::after { content: ""; position: absolute; inset: -4px; }
+html.sr-phone .sr-find__sort, html.sr-phone .sr-find__go { position: relative; }
 html.sr-phone .sr-find__sort::before, html.sr-phone .sr-find__go::after { content: ""; position: absolute; inset: -6px -4px; }
-html.sr-phone .sr-find__chartbtn { min-height: 44px; }
 html.sr-phone .sr-find__nopath .ui-row { min-height: 44px; }
 /* b200-s2-guards: end */
 /* b200-s4b-look: begin -- the date field on a phone is a bottom sheet over the pill and the tab sheet, from under the search

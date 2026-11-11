@@ -52,7 +52,7 @@ html[dir='rtl'] .sr-side[data-dir='pop'] .sr-side__view.is-current { animation-n
 
 /* --- text that was set to the left -------------------------------------------------------------------------- */
 
-html[dir='rtl'] :is(.sr-vs__labbtn, .sr-disc__head, .sr-card__aboardrow, .sr-tripsheet__stop,
+html[dir='rtl'] :is(.sr-disc__head, .sr-card__aboardrow, .sr-tripsheet__stop,
   .sr-tripcard, .sr-list__static, .sr-next .sr-next__body, .sr-statusline, .sr-show__head, .sr-show__keys,
   .sr-more__item, .sr-tonight-view__rowbtn, .sr-tripsheet__send, .sr-today__card, .sr-mission__event, .sr-sentence,
   .sr-passport-open, .sr-passport__place, .sr-spark__go, .sr-debris__oldname, .sr-moment__row, .sr-share__row, .sr-share__preset) {
@@ -66,7 +66,6 @@ html[dir='rtl'] :is(.sr-vs__labval, .sr-rows__val, .sr-kind__count, .sr-legend__
 html[dir='rtl'] .sr-card__why { padding-left: 0; padding-right: var(--sp-3); border-left: 0; border-right: 2px solid var(--sr-line-strong); }
 html[dir='rtl'] .sr-search__option { border-left: 0; border-right: 2px solid transparent; }
 html[dir='rtl'] .sr-search__note.is-warning { padding-left: 0; padding-right: 8px; border-left: 0; border-right: 2px solid var(--sr-stale); }
-html[dir='rtl'] .sr-toast__action { margin-left: 0; margin-right: var(--sp-3); }
 html[dir='rtl'] .sr-status__press,
 html[dir='rtl'] .sr-tour__skip { margin-left: 0; margin-right: auto; }
 html[dir='rtl'] .sr-more + .sr-more { margin-left: 0; margin-right: var(--sp-5); }

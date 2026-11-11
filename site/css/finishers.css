@@ -153,67 +153,17 @@ html.sr-phone .sr-launchchip {
   margin-top: var(--sp-3);
 }
 
-.sr-welcome__btn {
-  display: inline-flex;
+/* THREE WAYS IN (0077 W3-e, internal i#878): an icon over a word, three equal tiles in one row, 64 px high (the home's
+   section). The opening's row keeps one-line buttons over the scene, on glass so they read over a cloud. */
+.sr-welcome__actions > .ui-btn {
   flex: 1 1 0;
-  gap: var(--sp-2);
-  align-items: center;
-  justify-content: center;
-  height: 48px;
-  padding: 0 var(--sp-3);
-  font: 400 var(--sr-fs-label)/20px var(--sr-font);
-  white-space: nowrap;
-  cursor: pointer;
-  border: 0;
-  border-radius: var(--sr-radius);
-  transition: background-color var(--sr-fast) var(--sr-ease);
+  min-height: 64px;
 }
 
-.sr-welcome__go {
-  font-weight: 600;
-  color: var(--sr-ink);
-  background: var(--sr-ember);
-}
-
-.sr-welcome__go:active {
-  background: var(--sr-ember-light);
-}
-
-.sr-welcome__look {
-  color: var(--sr-text);
-  background: var(--sr-wash);
-}
-
-.sr-welcome__look:active {
-  background: var(--sr-wash-strong);
-}
-
-/* 0077 W3-e: begin (internal i#878) THREE WAYS IN: an icon over a word, three equal buttons in one row, 64 px high (the home's
-   section; the opening's row keeps its own one-line buttons, over the scene). */
-.sr-welcome__actions > .sr-welcome__btn {
-  flex-direction: column;
-  gap: var(--sp-1);
-  justify-content: center;
-  height: 64px;
-  padding: 0 var(--sp-1);
-  font-size: var(--sr-fs-label);
-}
-
-.sr-welcome__actions > .sr-welcome__btn .sr-welcome__label {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-/* 0077 W3-e: end */
-
-@media (hover: hover) {
-  .sr-welcome__go:hover {
-    background: var(--sr-ember-light);
-  }
-
-  .sr-welcome__look:hover {
-    background: var(--sr-wash-hover);
-  }
+.sr-opening__actions > .ui-btn:not(.ui-btn--primary) {
+  background: var(--sr-glass-strong);
+  -webkit-backdrop-filter: var(--sr-blur);
+  backdrop-filter: var(--sr-blur);
 }
 
 /* THE OPENING SHOT'S WORDS (ui/opening.js): a lead line and the welcome's two buttons on the
@@ -271,7 +221,6 @@ html.sr-phone .sr-launchchip {
   .sr-scalerail,
   .sr-launchchip,
   .sr-welcome,
-  .sr-welcome__btn,
   .sr-trip__home {
     transition: opacity 120ms linear;
   }

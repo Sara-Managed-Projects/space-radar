@@ -3039,27 +3039,10 @@ html.sr-trip-mode .sr-scenenote { display: none; }
 }
 .sr-toast[hidden] { display: none; }
 /* The toast's one text action (ui-guide §3.14; ui/offline.js "Reload"): text, not a filled button. */
-.sr-toast__action {
-  margin-left: var(--sp-3);
-  padding: var(--sp-1) var(--sp-2);
-  min-height: 24px;
-  background: none;
-  border: 0;
-  border-radius: var(--sr-radius-sm);
-  color: var(--sr-text);
-  font: inherit;
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  /* The action is one phrase: on a narrow screen it goes to the next line whole, never
-     "Back to where you / were" in three lines over the subject. */
-  white-space: nowrap;
-  cursor: pointer;
-}
-.sr-toast__action:hover { color: var(--sr-text-soft); }
-.sr-toast__action:active { color: var(--sr-text-dim); }
-@media (pointer: coarse) {
-  .sr-toast__action { min-height: 44px; min-width: 44px; }
+/* The action (css/controls.css .ui-btn--sm): one phrase, so on a narrow screen it goes to the next line whole, never
+   "Back to where you / were" in three lines over the subject (.ui-btn does not wrap). */
+.sr-toast > .ui-btn {
+  margin-inline-start: var(--sp-3);
 }
 
 /* Sound (spec 0035, 2026-09-23) ------------------------------------------------------------ */

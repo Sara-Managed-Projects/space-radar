@@ -29,6 +29,7 @@ import { COPY, t, timeText } from '../copy/en.js';
 import '../copy/en.find.js';
 import '../copy/en.moments.js';
 import { loadCss } from './latercss.js';
+import { icon } from './icons.js';
 import { parseWhen, findEclipse, fadeFor, launchesHidden, toInputValue, fromInputValue, MIN_YEAR, MAX_YEAR } from './whenparse.js';
 
 let api = null;
@@ -63,7 +64,8 @@ function build(ctx) {
   const head = el('div', 'sr-datejump__head');
   const title = el('h2', 'sr-micro', D.title);
   title.id = 'sr-datejump-title';
-  const close = el('button', 'sr-datejump__close', '×');
+  const close = el('button', 'ui-close');
+  close.appendChild(icon('x'));
   close.type = 'button';
   close.setAttribute('aria-label', D.close);
   close.title = D.close;

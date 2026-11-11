@@ -31,6 +31,7 @@ import { CLOUDS, CONSTELLATIONS, cloudById, constellationById, recordInCloud, re
 import { EPHEMERIDES } from '../data/ephemerides.js';
 import { createHighlight } from './findmap.js';
 import * as urlstate from './urlstate.js';
+import { icon } from './icons.js';
 
 const TABS = ['property', 'country', 'clouds'];
 const MODES = ['countries', 'operators', 'points', 'nopath'];
@@ -308,9 +309,10 @@ export function createFind(ctx, host) {
     return wrap;
   }
   function boxField(key, label) {
-    const lab = el('label', 'sr-find__box');
+    const lab = el('label', 'ui-opt');
     const inp = document.createElement('input');
     inp.type = 'checkbox';
+    inp.className = 'ui-check';
     inp.checked = !!st.q[key];
     inp.addEventListener('change', () => { if (inp.checked) st.q[key] = true; else delete st.q[key]; run(); });
     lab.append(inp, el('span', null, label));
@@ -336,7 +338,7 @@ export function createFind(ctx, host) {
     const wrap = el('div', 'sr-find__field');
     const lab = el('label', 'sr-find__label', label);
     const sel = document.createElement('select');
-    sel.className = 'sr-find__select';
+    sel.className = 'ui-select ui-select--sm';
     sel.id = `sr-find-${key}`;
     lab.htmlFor = sel.id;
     const any = document.createElement('option');
@@ -490,7 +492,7 @@ export function createFind(ctx, host) {
           b.addEventListener('click', (e) => { e.stopPropagation(); goToRow(q, row); });
           td.appendChild(b);
           if (q.kind === 'exoplanets' && row.host) {
-            const ch = button('sr-find__chartbtn', F.chart.open, t(F.chart.openTitle, { host: row.host }));
+            const ch = button('ui-btn ui-btn--sm ui-btn--quiet sr-find__chartbtn', F.chart.open, t(F.chart.openTitle, { host: row.host }));
             ch.addEventListener('click', (e) => { e.stopPropagation(); openChart(row.host, row.id); });
             td.appendChild(ch);
           }
@@ -532,7 +534,8 @@ export function createFind(ctx, host) {
     const H = maxR * 2 + 44;
     const head = el('div', 'sr-find__charthead');
     head.appendChild(el('h3', 'sr-micro', t(F.chart.title, { host: title })));
-    const close = button('sr-find__chartclose', '×', F.chart.close);
+    const close = button('ui-close', '', F.chart.close);
+    close.appendChild(icon('x'));
     close.setAttribute('aria-label', F.chart.close);
     close.addEventListener('click', () => { chartHost.hidden = true; chartHost.textContent = ''; st.chart = null; });
     head.appendChild(close);
