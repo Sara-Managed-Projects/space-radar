@@ -4384,14 +4384,14 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   width: 32px;
   height: 32px;
   content: '';
-  background: var(--ui-sel);
+  background: color-mix(in srgb, var(--sr-atmosphere) 30%, transparent);
   border-radius: 50%;
-  opacity: 0.2;
-  transform: scale(0.7);
+  opacity: 0.15;
+  transform: scale(0.6);
   animation: sr-games-breathe 3.6s var(--sr-ease) infinite alternate;
   pointer-events: none;
 }
-@keyframes sr-games-breathe { to { opacity: 1; transform: scale(1.1); } }
+@keyframes sr-games-breathe { to { opacity: 1; transform: scale(1.15); } }
 html:is(.sr-clean, .sr-hud, .sr-ambient, .sr-imagine-on, .sr-trip-mode) .sr-rail__btn--games::before { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce) { .sr-rail__btn--games::before { animation: none; } }
 

@@ -20,9 +20,14 @@ if (away) away.click();
 await settle(1500);
 
 // the rail and the head, twice
+// the breath's two ends, held still for the picture (a screenshot in software takes longer than the breath)
+const breath = () => document.getAnimations().find((a) => a.animationName === 'sr-games-breathe');
+const hold = (ms) => { const a = breath(); if (a) { a.pause(); a.currentTime = ms; } return !!a; };
+out.breath = hold(0);
 await snap('rail-a');
-await sleep(1800);
+hold(3600);
 await snap('rail-b');
+const b0 = breath(); if (b0) b0.play();
 
 // What to show, top and foot
 if (sr.rail && sr.rail.openShow) sr.rail.openShow();
