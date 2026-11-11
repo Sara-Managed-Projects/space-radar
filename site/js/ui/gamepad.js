@@ -228,11 +228,11 @@ export function wantPad(ctx, first = null) {
     root.setAttribute('aria-label', C.label);
     const head = el('header', 'sr-keyhint__head');
     head.appendChild(el('p', 'sr-keyhint__micro', C.title));
-    const close = el('button', 'sr-keyhint__close');
+    const close = el('button', 'ui-close');
     close.type = 'button';
     close.setAttribute('aria-label', C.close);
     close.title = C.close;
-    close.appendChild(icon('x', 16));
+    close.appendChild(icon('x'));
     close.addEventListener('click', () => api.hideHint());
     head.appendChild(close);
     root.appendChild(head);
@@ -250,7 +250,7 @@ export function wantPad(ctx, first = null) {
     odd.hidden = true;
     root.appendChild(odd);
     const label = el('label', 'sr-padhint__ship');
-    const box = el('input');
+    const box = el('input', 'ui-check');
     box.type = 'checkbox';
     box.checked = ship;
     box.addEventListener('change', () => api.setShip(box.checked));

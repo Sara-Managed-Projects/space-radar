@@ -532,28 +532,11 @@ html.sr-compact .sr-status {
   -webkit-line-clamp: 2;
 }
 
-/* × : a 36 px disc inside a 44 px target (the padding is the target, the content box the disc). */
+/* The close (css/controls.css .ui-close): its place in the card's head. */
 .sr-card__close {
   grid-column: 2;
   grid-row: 1 / span 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  margin: calc(-1 * var(--sp-1)) calc(-1 * var(--sp-1)) 0 0;
-  padding: var(--sp-1);
-  color: var(--sr-text);
-  background: var(--sr-wash);
-  background-clip: content-box;
-  border: 0;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: background-color var(--sr-fast) var(--sr-ease);
-}
-
-.sr-card__close:active {
-  background-color: var(--sr-wash-strong);
+  margin: 0;
 }
 
 /* 2. The three numbers: mono, the unit and what it measures dim under each (principle 4). */
@@ -755,10 +738,6 @@ html.sr-compact .sr-status {
 }
 
 @media (hover: hover) {
-  .sr-card__close:hover {
-    background-color: var(--sr-wash-hover);
-  }
-
   .sr-disc__head:hover {
     background: var(--sr-wash);
   }
@@ -1176,7 +1155,6 @@ button.sr-card__crumb:hover, button.sr-card__crumb:focus-visible { color: var(--
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sr-card__close,
   .sr-card__aboardrow,
   .sr-disc__head,
   .sr-disc__head .sr-icon {
@@ -2892,16 +2870,8 @@ html.sr-trip-mode.sr-phone[data-sheet='full'] .sr-toast {
 /* Colour by (spec 0026 req 11) -------------------------------------------------------------- */
 
 /* The colour key's field. */
-.sr-colourkey__select {
-  width: 100%;
-  min-height: 36px;
-  margin: 0 0 8px;
-  padding: 0 8px;
-  font: inherit;
-  color: var(--sr-text);
-  background: var(--sr-wash);
-  border: 1px solid var(--sr-line-strong);
-  border-radius: var(--sr-radius-sm);
+.sr-colourkey > .ui-select {
+  margin: 0 0 var(--sp-2);
 }
 
 .sr-colourkey__legend { margin: 0; padding: 0; list-style: none; }
@@ -2960,41 +2930,9 @@ html.sr-trip-mode.sr-phone[data-sheet='full'] .sr-toast {
   padding: var(--sp-2) 0;
 }
 
-.sr-scenenote__why,
-.sr-scenenote__close {
+.sr-scenenote > .ui-btn,
+.sr-scenenote > .ui-close {
   flex: 0 0 auto;
-  min-height: 32px;
-  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
-  background: transparent;
-  border: 0;
-  border-radius: var(--sr-radius);
-  cursor: pointer;
-  transition: color var(--sr-fast) var(--sr-ease), background-color var(--sr-fast) var(--sr-ease);
-}
-
-.sr-scenenote__why {
-  padding: 0 var(--sp-1);
-  color: var(--sr-ember);
-}
-
-.sr-scenenote__why[hidden] { display: none; }
-
-.sr-scenenote__close {
-  width: 32px;
-  padding: 0;
-  font-size: var(--sr-fs-glyph);
-  color: var(--sr-text-soft);
-}
-
-@media (hover: hover) {
-  .sr-scenenote__why:hover { color: var(--sr-ember-light); }
-  .sr-scenenote__close:hover { color: var(--sr-text); background-color: var(--sr-wash-hover); }
-}
-
-@media (pointer: coarse) {
-  .sr-scenenote__why,
-  .sr-scenenote__close { min-height: 44px; }
-  .sr-scenenote__close { width: 44px; }
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
@@ -4776,19 +4714,8 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   color: var(--sr-text-dim);
 }
 .sr-otherlight__mix[hidden], .sr-otherlight__credit[hidden] { display: none; }
-.sr-otherlight__slider {
-  flex: 1 1 auto;
-  min-width: 0;
-  min-height: 24px;
-  margin: 0;
-  accent-color: var(--sr-text-soft);
-  cursor: pointer;
-}
-.sr-otherlight__slider:focus-visible { outline: 2px solid var(--sr-atmosphere); outline-offset: 2px; }
+.sr-otherlight__mix .ui-range { flex: 1 1 auto; }
 .sr-otherlight__credit a { color: var(--sr-text-soft); text-decoration: underline; }
-@media (pointer: coarse) {
-  .sr-otherlight__slider { min-height: 44px; }
-}
 
 /* --- the time pill -------------------------------------------------------------------- */
 
@@ -6078,8 +6005,7 @@ html.sr-phone.sr-launchday:not([data-sheet='full']) .sr-skyfov {
 @media (pointer: coarse) {
   .sr-more,
   .sr-side__back,
-  .sr-show__label,
-  .sr-colourkey__select {
+  .sr-show__label {
     min-height: 44px;
   }
 }
@@ -6624,11 +6550,7 @@ html.sr-present .sr-trip__count {
 /* The trip's volume (ui/tripframe.js, public #298): a short native slider beside the sound toggle. */
 .sr-trip__vol {
   width: 72px;
-  height: 44px;
   margin: 0 var(--sp-1);
-  accent-color: var(--sr-ember);
-  background: transparent;
-  cursor: pointer;
 }
 .sr-trip__vol[hidden] { display: none; }
 

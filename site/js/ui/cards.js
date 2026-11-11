@@ -2883,7 +2883,7 @@ function render(record, ctx, opts = {}) {
   title.dataset.focus = 'title';
   title.title = name; // two lines, then an ellipsis: the whole name is here
   header.appendChild(title);
-  const close = el('button', 'sr-card__close');
+  const close = el('button', 'ui-close sr-card__close');
   close.type = 'button';
   close.title = COPY.card.closeTitle;
   close.setAttribute('aria-label', COPY.card.close);

@@ -29,7 +29,7 @@ export function overlayPanel(ctx) {
   title.textContent = C.panelTitle;
   wrap.appendChild(title);
   const select = document.createElement('select');
-  select.className = 'sr-colourkey__select';
+  select.className = 'ui-select ui-select--block';
   select.setAttribute('aria-label', C.panelTitle);
   const none = document.createElement('option');
   none.value = '';

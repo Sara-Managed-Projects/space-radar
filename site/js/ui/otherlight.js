@@ -53,7 +53,7 @@ export function otherLightPanel(ctx) {
   from.textContent = C.bands.visible;
   const slider = document.createElement('input');
   slider.type = 'range';
-  slider.className = 'sr-otherlight__slider';
+  slider.className = 'ui-range';
   slider.min = '0';
   slider.max = '100';
   slider.step = '1';

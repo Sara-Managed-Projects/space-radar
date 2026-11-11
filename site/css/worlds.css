@@ -26,19 +26,6 @@
   color: var(--sr-text-dim);
 }
 
-/* 44 px tall to the touch (the guide's target), the track drawn thin inside it. */
-.sr-orrery__range,
-.sr-cutaway__range {
-  display: block;
-  width: 100%;
-  min-height: 44px;
-  margin: 0;
-  accent-color: var(--sr-ember);
-  touch-action: pan-y;
-  cursor: pointer;
-}
-
-.sr-orrery__range:disabled { opacity: 0.45; cursor: default; }
 
 .sr-orrery__presets {
   display: flex;
@@ -103,12 +90,6 @@
   font-weight: 600;
 }
 
-.sr-cutaway__close {
-  min-width: 44px;
-  min-height: 44px;
-  font-size: var(--sr-fs-glyph);
-  line-height: 1;
-}
 
 .sr-cutaway__model {
   margin: var(--sp-1) 0 var(--sp-2);
@@ -165,7 +146,7 @@
   color: var(--sr-text-dim);
 }
 
-.sr-cutaway__layerbtn .sr-cutaway__range { grid-column: 2; min-height: 0; font-variant-numeric: tabular-nums; }
+.sr-cutaway__layerbtn .sr-cutaway__range { grid-column: 2; font-variant-numeric: tabular-nums; }
 
 .sr-cutaway__cls { grid-row: 1; grid-column: 3; text-align: right; }
 

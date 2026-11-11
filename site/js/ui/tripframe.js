@@ -420,7 +420,7 @@ export function createTripFrame(ctx) {
     // visits by the engine. A native range: arrows, Home and End work, and it is a 44 px target.
     const volume = document.createElement('input');
     volume.type = 'range';
-    volume.className = 'sr-trip__vol';
+    volume.className = 'ui-range sr-trip__vol';
     volume.min = '0';
     volume.max = '100';
     volume.step = '5';

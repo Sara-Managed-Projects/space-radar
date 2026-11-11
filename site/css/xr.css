@@ -53,17 +53,6 @@
   border-top: 1px solid var(--sr-line);
 }
 
-.sr-padhint__ship input {
-  width: 18px;
-  height: 18px;
-  margin: 1px 0 0;
-  accent-color: var(--sr-ember);
-}
-
-.sr-padhint__ship input:focus-visible {
-  outline: 2px solid var(--sr-atmosphere);
-  outline-offset: 2px;
-}
 
 .sr-padhint__shipwords {
   display: flex;

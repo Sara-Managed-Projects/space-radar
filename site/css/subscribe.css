@@ -12,8 +12,7 @@
 .sr-subpop :focus-visible{outline:2px solid var(--atm);outline-offset:2px}
 .sr-subpop__top{display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;margin:0 0 .5rem}
 .sr-subpop__top .sub__h{margin:.3rem 0 0}
-.sr-subpop__x{flex:none;display:grid;place-items:center;width:44px;height:44px;margin:-10px -10px 0 0;padding:0;border:0;border-radius:50%;background:transparent;color:var(--dim);cursor:pointer}
-.sr-subpop__x:hover{color:var(--tx);background:#ffffff12}
+.sr-subpop__top>.ui-close{margin:-4px -4px 0 0}
 .sr-subpop .sub{gap:.85rem}.sr-subpop .sub__x{margin:0!important;font-size:.9rem;color:#c5cdda}
 .sr-subpop .sub__l label{font-size:.88rem}
 .sr-subpop .sub__l input:focus-visible{outline:none;--sr-bracket-out:0}  /* the pill around it draws the ring (.sub__l label:has(input:focus-visible)) */

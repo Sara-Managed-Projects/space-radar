@@ -20,6 +20,7 @@
 // hold nothing, and never during a trip, which has its own frame.
 
 import { COPY } from '../copy/en.js';
+import { icon } from './icons.js';
 
 const SATELLITE_LAYERS = ['stations', 'visual'];
 
@@ -43,12 +44,12 @@ export function createSceneNote(ctx) {
   text.textContent = T.refused;
   const why = document.createElement('button');
   why.type = 'button';
-  why.className = 'sr-scenenote__why';
+  why.className = 'ui-btn ui-btn--sm ui-btn--secondary';
   why.textContent = T.why;
   const close = document.createElement('button');
   close.type = 'button';
-  close.className = 'sr-scenenote__close';
-  close.textContent = T.close;
+  close.className = 'ui-close';
+  close.appendChild(icon('x'));
   close.title = T.closeTitle;
   close.setAttribute('aria-label', T.closeTitle);
   root.append(text, why, close);

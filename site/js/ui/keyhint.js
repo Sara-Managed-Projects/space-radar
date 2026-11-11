@@ -320,11 +320,11 @@ export function createKeyHint(ctx, opts = {}) {
     root.setAttribute('aria-label', mode === 'touch' ? W.labelTouch : W.label);
     const head = el('header', 'sr-keyhint__head');
     head.appendChild(el('p', 'sr-keyhint__micro', mode === 'touch' ? W.titleTouch : W.title));
-    const close = el('button', 'sr-keyhint__close');
+    const close = el('button', 'ui-close');
     close.type = 'button';
     close.setAttribute('aria-label', W.close);
     close.title = W.closeTitle;
-    close.appendChild(icon('x', 16));
+    close.appendChild(icon('x'));
     close.addEventListener('click', () => hide('close'));
     head.appendChild(close);
     root.appendChild(head);

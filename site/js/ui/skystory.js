@@ -20,6 +20,7 @@
 import { COPY, t } from '../copy/en.js';
 import '../copy/en.later.js';
 import { isTypingIn } from './explore.js';
+import { icon } from './icons.js';
 
 const docs = new Map(); // culture -> Promise<doc>
 let card = null;
@@ -109,7 +110,8 @@ export async function openSkyStory(lore) {
   const head = el('div', 'sr-skystory__head');
   const title = el('h2', 'sr-skystory__title', lore.name || lore.key);
   title.id = 'sr-skystory-title';
-  const close = el('button', 'sr-skystory__close', '×');
+  const close = el('button', 'ui-close');
+  close.appendChild(icon('x'));
   close.type = 'button';
   close.setAttribute('aria-label', W.close);
   close.title = W.close;

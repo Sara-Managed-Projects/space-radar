@@ -85,7 +85,7 @@
 .ui-opt{display:flex;align-items:center;gap:12px;min-height:var(--ui-h-sm);font-size:var(--ui-fs);color:var(--tx);cursor:pointer}
 
 /* .ui-range: a native <input type="range">, the track and the thumb drawn from the tokens. */
-.ui-range{appearance:none;-webkit-appearance:none;display:block;width:100%;min-width:0;height:24px;margin:0;background:transparent;cursor:pointer}
+.ui-range{appearance:none;-webkit-appearance:none;display:block;width:100%;min-width:0;height:24px;margin:0;background:transparent;touch-action:pan-y;cursor:pointer}
 .ui-range::-webkit-slider-runnable-track{height:4px;background:var(--ui-edge);border-radius:var(--ui-r-pill)}
 .ui-range::-moz-range-track{height:4px;background:var(--ui-edge);border-radius:var(--ui-r-pill)}
 .ui-range::-moz-range-progress{height:4px;background:var(--atm);border-radius:var(--ui-r-pill)}

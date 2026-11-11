@@ -75,33 +75,8 @@
   color: var(--sr-text-dim);
 }
 
-.sr-keyhint__close {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
+.sr-keyhint__head > .ui-close {
   margin-right: calc(-1 * var(--sp-2));
-  padding: 0;
-  color: var(--sr-text-soft);
-  cursor: pointer;
-  background: transparent;
-  border: 0;
-  border-radius: 50%;
-  transition: background-color var(--sr-fast) var(--sr-ease), color var(--sr-fast) var(--sr-ease);
-}
-
-@media (hover: hover) {
-  .sr-keyhint__close:hover {
-    color: var(--sr-text);
-    background: var(--sr-wash);
-  }
-}
-
-.sr-keyhint__close:active { background: var(--sr-wash-strong); }
-
-.sr-keyhint__close:focus-visible {
-  outline: 2px solid var(--sr-atmosphere);
-  outline-offset: 2px;
 }
 
 /* --- the keyboard version ------------------------------------------------------------------ */
@@ -339,14 +314,7 @@ html.sr-phone.sr-card-open .sr-keyhint {
   pointer-events: none;
 }
 
-@media (pointer: coarse) {
-  .sr-keyhint__close {
-    width: 44px;
-    height: 44px;
-    /* No negative margin up or down: a box that clips its row cut this target to 44 x 32 (UI gate). */
-    margin: 0 calc(-1 * var(--sp-3)) 0 0;
-  }
-}
+
 
 /* --- reduced motion: a 120 ms fade, and every cap and finger still -------------------------- */
 

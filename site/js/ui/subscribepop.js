@@ -82,11 +82,11 @@ export function createSubscribe(ctx, { close, id = 'sr-sub', list = '', button =
     const h = el('h2', 'sub__h', w.title);
     h.id = `${id}-h`;
     top.appendChild(h);
-    x = el('button', 'sr-subpop__x');
+    x = el('button', 'ui-close');
     x.type = 'button';
     x.setAttribute('aria-label', w.close);
     x.title = w.close;
-    x.appendChild(icon('x', 18));
+    x.appendChild(icon('x'));
     x.addEventListener('click', () => { if (close) close(true); });
     top.appendChild(x);
     root.appendChild(top);
