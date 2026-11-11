@@ -138,6 +138,17 @@ for (const f of files) {
   check(!/#[0-9a-f]{3,8}\b/i.test(css.replace(/%23[0-9a-f]{6}/gi, '')), 'no colour literal in the set but the chevron\'s, inside its data URL');
 }
 
+// --- 6. Games is on the rail (the maintainer, 2026-11-11), not in the explore panel's head -----------------------------
+{
+  const rail = code(readFileSync(join(UI, 'rail.js'), 'utf8'));
+  check(/className = 'sr-rail__btn sr-rail__btn--games'/.test(rail) && /gamesLink\.href = COPY\.games\.href/.test(rail) && /gamesLink\.target = '_blank'/.test(rail)
+    && /gamesLink\.rel = 'noopener'/.test(rail) && /setAttribute\('aria-label', COPY\.games\.title\)/.test(rail) && /gamesLink\.title = COPY\.games\.title/.test(rail), 'the rail has the Games link: a new tab, named and titled from COPY.games');
+  check(/\[GAMEPAD_PATH, COPY\.games\.label, COPY\.games\.href\]/.test(rail), 'and a row of the phone\'s More menu');
+  check(!/COPY\.games|sr-games/.test(code(readFileSync(join(UI, 'explore.js'), 'utf8'))), 'the explore panel has no Games pill any more');
+  const ui = readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8');
+  check(/html\.sr-phone \.sr-rail__btn--games,/.test(ui), 'on a phone the rail folds it into More, as the journal\'s link');
+}
+
 if (problems.length) {
   console.error('controls FAILED:\n  ' + problems.join('\n  '));
   process.exit(1);
