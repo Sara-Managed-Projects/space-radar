@@ -449,7 +449,8 @@ const places = (options) => P.buildPlaces(RECORDS, options, look, facts);
   const css = read('site/css/drift.css');
   check(/\.sr-drift__host\.is-idle\s*\{\s*opacity: 0;/.test(css), 'css/drift.css: the bar goes when the pointer is still');
   check(/html\.sr-drift--still canvas\s*\{\s*cursor: none;/.test(css), 'css/drift.css: and the pointer with it');
-  check(/min-height: 44px/.test(css), 'css/drift.css: every target is 44 px');
+  // The bar's buttons are the control set's (css/controls.css .ui-btn, 2026-11-11): 40 px, 44 on touch.
+  check(/`ui-btn ui-btn--icon \$\{extra\}`/.test(read('site/js/ui/drift.js')) && /\.ui-btn,\.ui-select,\.ui-row\{min-height:44px\}/.test(read('site/css/controls.css')), 'css/drift.css: every target is the set\'s button, 44 px on touch');
   const boot = read('tests/test_boot_diet.mjs');
   for (const f of ['js/ui/drift.js', 'js/ui/driftplan.js']) check(boot.includes(`'${f}'`), `tests/test_boot_diet.mjs holds ${f} out of the first visit`);
   const d = COPY.drift;
