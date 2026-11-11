@@ -1739,7 +1739,7 @@ export function floodControls(record, ctx) {
   if (!offersFlood(record)) return [];
   const F = COPY.flood;
   const on = floodWantedNow();
-  const toggle = el('button', 'sr-card__tool', on ? F.off : F.on);
+  const toggle = el('button', 'ui-btn', on ? F.off : F.on);
   toggle.type = 'button';
   toggle.title = F.title;
   toggle.setAttribute('data-action', 'flood');
@@ -2957,7 +2957,7 @@ function render(record, ctx, opts = {}) {
   if (GROUND_SITES.includes(site)) {
     const G = COPY.groundDoor;
     const drive = DRIVE_SITES.includes(site);
-    const go = el('button', 'sr-card__tool', drive ? G.drive : G.stand);
+    const go = el('button', 'ui-btn', drive ? G.drive : G.stand);
     go.type = 'button';
     go.dataset.focus = 'ground-door';
     go.title = t(drive ? G.driveTitle : G.standTitle, { name: record.name || site });
@@ -2967,7 +2967,7 @@ function render(record, ctx, opts = {}) {
   const stories = typeof ctx.wantMoment === 'function' ? momentsForRecord(record) : [];
   for (const story of stories) {
     const W = COPY.momentShelf;
-    const go = el('button', 'sr-card__tool', stories.length > 1 ? t(W.replayNamed, { title: W.cards[story.id].title }) : W.replay);
+    const go = el('button', 'ui-btn', stories.length > 1 ? t(W.replayNamed, { title: W.cards[story.id].title }) : W.replay);
     go.type = 'button';
     go.dataset.focus = stories.length > 1 ? `replay-moment-${story.id}` : 'replay-moment';
     go.dataset.moment = story.id;
@@ -2980,7 +2980,7 @@ function render(record, ctx, opts = {}) {
   // layers (ui/cutaway.js, fetched on the first press), on its own stage. A tile of the quiet row, as the moment's is.
   if (record.layer === 'worlds' && INTERIOR_IDS.includes(record.id) && typeof ctx.wantCutaway === 'function') {
     const K = COPY.cutaway;
-    const look = el('button', 'sr-card__tool', K.button);
+    const look = el('button', 'ui-btn', K.button);
     look.type = 'button';
     look.dataset.focus = 'look-inside';
     look.title = t(K.buttonTitle, { name: record.name || record.id });

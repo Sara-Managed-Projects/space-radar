@@ -795,50 +795,9 @@ html.sr-compact .sr-status {
   margin-bottom: var(--sp-4);
 }
 
-.sr-card__tool {
+.sr-card__sky > .ui-btn {
   min-width: 0;
-  height: 44px;
-  padding: 0 var(--sp-2);
-  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
-  color: var(--sr-text-soft);
-  text-align: center;
-  background: var(--sr-wash);
-  border: 1px solid transparent;
-  border-radius: var(--sr-radius);
-  cursor: pointer;
-  transition: background-color var(--sr-fast) var(--sr-ease), border-color var(--sr-fast) var(--sr-ease), color var(--sr-fast) var(--sr-ease);
-}
-
-.sr-card__tool:active:not(:disabled) {
-  background: var(--sr-wash-strong);
-}
-
-.sr-card__tool[aria-pressed='true'] {
-  color: var(--sr-text);
-  background: var(--sr-wash-strong);
-  border-color: var(--sr-ember);
-}
-
-.sr-card__tool:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-@media (hover: hover) {
-  .sr-card__tool:hover:not(:disabled) {
-    color: var(--sr-text);
-    background: var(--sr-wash-hover);
-  }
-
-  .sr-card__tool[aria-pressed='true']:hover:not(:disabled) {
-    background: var(--sr-wash-strong);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .sr-card__tool {
-    transition: none;
-  }
+  white-space: normal;
 }
 
 /* The object's own page (internal #199): one quiet link at the foot of About it. */

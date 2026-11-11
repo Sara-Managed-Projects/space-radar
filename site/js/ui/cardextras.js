@@ -55,7 +55,7 @@ export function nextEventFor(record, items, nowMs) {
 
 /**
  * The card's quiet row, or nothing: one row of equal tiles under the four actions (ui.css
- * .sr-card__sky, .sr-card__tool). `lead` is the tiles the card puts first (a moment's replay, Look inside, its flood light). "Remind me" is the Coming up row's own calendar file
+ * .sr-card__sky of .ui-btn). `lead` is the tiles the card puts first (a moment's replay, Look inside, its flood light). "Remind me" is the Coming up row's own calendar file
  * (ui/next.js saveCalendar, data/ics.js: built in the browser, with its reminder inside, sent
  * nowhere). "Seen it" is a tick in the passport (ui/passport.js): the visitor's word and the day.
  */
@@ -70,7 +70,7 @@ export function skyControls(record, ctx, lead) {
   let item = null;
   try { item = nextEventFor(record, next && typeof next.items === 'function' ? next.items() : [], nowMs); } catch { item = null; }
   if (item) {
-    const b = el('button', 'sr-card__tool', P.remind);
+    const b = el('button', 'ui-btn', P.remind);
     b.type = 'button';
     b.setAttribute('data-action', 'remind');
     import('./next.js').then((m) => {
@@ -81,7 +81,7 @@ export function skyControls(record, ctx, lead) {
     row.appendChild(b);
   }
   if (offersSeen(record) && ctx && typeof ctx.wantPassport === 'function') {
-    const b = el('button', 'sr-card__tool', P.seenIt);
+    const b = el('button', 'ui-btn', P.seenIt);
     b.type = 'button';
     b.setAttribute('data-action', 'seen');
     b.setAttribute('aria-pressed', 'false');

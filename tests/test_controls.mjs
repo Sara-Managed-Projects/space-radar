@@ -110,7 +110,7 @@ const RETIRED = [
   'sr-vs__labbtn', 'sr-vs__select', 'sr-toast__action', 'sr-moment__btn', 'sr-find__ownerbtn', 'sr-find__select', 'sr-find__box',
   'sr-find__chartclose', 'sr-colourkey__select', 'sr-card__closebtn', 'sr-play__x', 'sr-skystory__close', 'sr-keyhint__close', 'sr-cutaway__close',
   'sr-scenenote__close', 'sr-scenenote__why', 'sr-subpop__x', 'sr-datejump__close', 'sr-findpill__clear', 'sr-otherlight__slider',
-  'sr-orrery__range', 'sr-games',
+  'sr-orrery__range', 'sr-games', 'sr-card__tool',
 ];
 const walk = (dir, ext) => readdirSync(join(ROOT, dir), { recursive: true }).filter((n) => n.endsWith(ext)).map((n) => join(dir, n));
 const files = [...walk('site/js', '.js').filter((f) => !f.includes('vendor')), ...walk('site/css', '.css'), 'site/index.html'];

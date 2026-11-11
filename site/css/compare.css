@@ -3,17 +3,14 @@
    ui/passportkinds.js and ui/photocompare.js through ui/latercss.js, never at boot: a first visit does not carry it. */
 
 
-/* Compare: a world card's disclosure row opens this in place (docs/ui-guide.md §3.10 item 7). Its two choices
-   are the card's quiet row (.sr-card__sky / .sr-card__tool, §3.10 item 5a): the same wash, edge and 44 px. */
+/* Compare: a world card's disclosure row opens this in place (docs/ui-guide.md §3.10 item 7). Its choices are the
+   control set's segmented pills (css/controls.css .ui-seg). */
 .sr-vs {
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
 }
 
-.sr-vs .sr-card__sky {
-  padding-bottom: 0;
-}
 
 .sr-vs__field {
   display: flex;

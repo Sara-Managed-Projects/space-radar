@@ -344,11 +344,11 @@ export function mountCompare(box, record, ctx = null) {
   let live = true;
 
   function choice(labelText, options, current, onPick, group) {
-    const row = el('div', 'sr-card__sky sr-vs__choice');
+    const row = el('div', 'ui-seg ui-seg--block sr-vs__choice');
     row.setAttribute('role', 'group');
     row.setAttribute('aria-label', labelText);
     for (const [value, text] of options) {
-      const b = el('button', 'sr-card__tool', text);
+      const b = el('button', 'ui-seg__btn', text);
       b.type = 'button';
       b.dataset.value = value;
       b.setAttribute('aria-pressed', value === current ? 'true' : 'false');
