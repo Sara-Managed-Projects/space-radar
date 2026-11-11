@@ -14,7 +14,7 @@ Read this with [DESIGN_PRINCIPLES.md](DESIGN_PRINCIPLES.md). The specimen of eve
 
 | desktop, 1440 × 900 | phone, 390 × 844 |
 |---|---|
-| ![The control set at 1440 px](images/ui/specimen-desktop.png) | ![The control set at 390 px](images/ui/specimen-phone.png) |
+| ![The control set at 1440 px](images/ui/specimen-desktop.jpg) ![The rest of it](images/ui/specimen-desktop-2.jpg) | ![The control set at 390 px, touch sizes](images/ui/specimen-phone.jpg) |
 
 ## The rules, in one place
 
@@ -191,13 +191,16 @@ When: a status or a tag (a span), or a filter you press (a button with `aria-pre
 
 ## In the app
 
+Before (main on 2026-11-11) and after, at 1440 × 900 and on a 390 × 844 phone:
+
 | | before | after |
 |---|---|---|
-| the rail, the head, the Games breath (two moments) | ![before](images/ui/before-desktop-rail-a.png) | ![after](images/ui/after-desktop-rail-a.png) ![after, 1.8 s later](images/ui/after-desktop-rail-b.png) |
-| What to show | ![before](images/ui/before-desktop-whattoshow-foot.png) | ![after](images/ui/after-desktop-whattoshow-foot.png) |
-| Record | ![before](images/ui/before-desktop-record.png) | ![after](images/ui/after-desktop-record.png) |
-| Dome and 360 | ![before](images/ui/before-desktop-dome.png) | ![after](images/ui/after-desktop-dome.png) |
-| a phone, the More menu | ![before](images/ui/before-phone-more.png) | ![after](images/ui/after-phone-more.png) |
+| the rail and the panel's head: Games leaves the head (whose wordmark wrapped) for the rail, where its glow breathes (its two ends) | ![before](images/ui/before-desktop-rail.jpg) | ![after, the breath in](images/ui/after-desktop-rail-a.jpg) ![after, the breath out](images/ui/after-desktop-rail-b.jpg) |
+| What to show: the bracketed segments become pills | ![before](images/ui/before-desktop-whattoshow.jpg) | ![after](images/ui/after-desktop-whattoshow.jpg) |
+| Record: drawn radios, the select, the x | ![before](images/ui/before-desktop-record.jpg) | ![after](images/ui/after-desktop-record.jpg) |
+| Share | ![before](images/ui/before-desktop-share.jpg) | ![after](images/ui/after-desktop-share.jpg) |
+| a card's actions | | ![after](images/ui/after-desktop-card.jpg) |
+| a phone: Record's select, styled; the More menu with Games | | ![after](images/ui/after-phone-record.jpg) ![after](images/ui/after-phone-more.jpg) |
 
-The full set of pictures, desktop and phone, before and after (What to show, Record, Dome and 360, Share,
-Find, a card, the email updates popover), is made by `tests/probes/look/ui-system.js` with `tools/cdp.mjs`.
+The walk that makes these (What to show, Record, Dome and 360, Share, Find, a card, the email updates popover, the
+More menu) is `tests/probes/look/ui-system.js`, after `_prelude.js`, with `tools/cdp.mjs`.
