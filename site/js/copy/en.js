@@ -744,7 +744,7 @@ export const COPY = {
     // Free email updates (ui/subscribe.js, fetched on the first press): the envelope, and its row on a phone.
     subscribe: 'Email updates',
   },
-  // The team's space games (games.spaceradar.ai), a link at the top of the explore panel (ui/explore.js).
+  // The team's space games (games.spaceradar.ai): a link on the tool rail and a row of its More menu (ui/rail.js).
   games: {
     label: 'Games',
     title: 'Space games from the Space Radar team (opens in a new tab)',

@@ -7,8 +7,6 @@
    popover alone, with the kit's values, so it looks like the journal's form inside the map's glass
    (web-kit/DESIGN.md, the app popover: 320 px, opened only by a click). */
 .sr-subpop{--bg:#0B0E14;--bg2:#05070A;--panel:#111723;--line:#ffffff1f;--tx:#E8ECF2;--dim:#9AA4B2;--atm:#6EC3FF;--ember:#FF9F43;--a:#6EC3FF;--sans:var(--sr-font);--cap:var(--sr-font-hud);--head:var(--sr-font-hud);font:400 15px/1.5 var(--sans);color:var(--tx)}
-.sr-subpop .btn{white-space:nowrap;display:inline-flex;align-items:center;gap:.4rem;padding:.72rem 1.15rem;min-height:44px;border-radius:999px;background:var(--atm);color:#06101a;font:600 .95rem/1 var(--sans);text-decoration:none;border:0;cursor:pointer;transition:filter .2s}
-.sr-subpop .btn:hover{filter:brightness(1.1)}
 .sr-subpop :focus-visible{outline:2px solid var(--atm);outline-offset:2px}
 .sr-subpop__top{display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;margin:0 0 .5rem}
 .sr-subpop__top .sub__h{margin:.3rem 0 0}
