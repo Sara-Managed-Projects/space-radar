@@ -193,7 +193,7 @@ if (w) {
 
   // All and None.
   const sec0 = byClass(w.root, 'sr-show__group')[0];
-  const [allBtn, noneBtn] = byClass(sec0, 'sr-show__bulkbtn');
+  const [allBtn, noneBtn] = byClass(sec0, 'ui-btn');
   allBtn.click();
   check(grouped[0].layers.every((l) => on.has(l.id)), 'All switches every layer of the group on');
   check(tally0() === t(C.groupCount, { on: grouped[0].layers.length, n: grouped[0].layers.length }), `and the count follows (got "${tally0()}")`);
@@ -246,8 +246,8 @@ if (w) {
 
   // The settings stay at the foot and Keys is the last row (#321).
   const kids = w.root.children;
-  const keys = w.root.querySelector('.sr-show__keys');
-  check(!!keys && kids[kids.length - 1] === keys, 'Keys is the last row');
+  const keys = w.root.querySelector('.ui-row');
+  check(!!keys && kids[kids.length - 1] === keys.parentNode, 'Keys is the last row (the set\'s row, in its section)');
   check(keys && keys.tagName === 'BUTTON' && [C.keysRow, C.keysRowTouch].includes(keys.textContent), `Keys is a button named from copy (got "${keys && keys.textContent}")`);
   const iKey = kids.findIndex((k) => k.classList.contains('sr-colourkey'));
   const iList = kids.findIndex((k) => k.classList.contains('sr-show__list'));
@@ -293,7 +293,7 @@ check(/^groups: \[/m.test(yaml), 'layers.yaml lists its groups');
   const show = W.createWhatToShow(makeCtx(firstOn).ctx, { storage: store });
   document.body.appendChild(show.root);
   const listNode = show.root.querySelector('.sr-show__list');
-  const stops = () => listNode.querySelectorAll('.sr-show__head').concat(listNode.querySelectorAll('.sr-show__bulkbtn'), listNode.querySelectorAll('.sr-show__box'));
+  const stops = () => listNode.querySelectorAll('.sr-show__head').concat(listNode.querySelectorAll('.ui-btn'), listNode.querySelectorAll('.ui-check'));
   const tabbable = () => stops().filter((n) => n.tabIndex === 0);
   check(stops().length > 10, `the list has its headings, its All and None and its rows (${stops().length})`);
   check(tabbable().length === 1, `exactly one of them takes Tab (got ${tabbable().length})`);

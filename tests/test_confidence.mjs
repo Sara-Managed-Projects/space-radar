@@ -106,7 +106,7 @@ const recs = (n, cls) => Array.from({ length: n }, () => ({ cls }));
 const { ctx, state } = makeCtx({ a: [...recs(5, 'measured'), ...recs(2, 'inferred')], b: [...recs(3, 'sample'), ...recs(1, 'illustrative'), {}] });
 const panel = K.confidencePanel(ctx);
 document.body.appendChild(panel);
-const boxes = panel.querySelectorAll('.sr-show__box');
+const boxes = panel.querySelectorAll('.ui-check');
 const counts = () => panel.querySelectorAll('.sr-show__count').map((n) => n.textContent);
 check(boxes.length === 4 && boxes.every((b) => b.checked), 'a box per class, all ticked: nothing is filtered at first');
 check(same(boxes.map((b) => b.dataset.class), K.CONFIDENCE), 'in the legend\'s order');
@@ -119,7 +119,7 @@ check(boxes.every((b, i) => b.getAttribute('aria-describedby') === panel.querySe
 const status = panel.querySelector('.sr-confidence__status');
 check(status.hidden === true, 'no "n of m" line while nothing is filtered');
 check(!rail.classList.contains('is-filtered'), 'and no dot on the rail');
-const [onlyBtn, allBtn] = panel.querySelectorAll('.sr-show__bulkbtn');
+const [onlyBtn, allBtn] = panel.querySelectorAll('.ui-btn');
 check(onlyBtn.textContent === COPY.confidence.onlyMeasured && allBtn.textContent === COPY.confidence.all && allBtn.disabled === true, '"Measured only" and "All", the second off while everything shows');
 
 boxes[2].checked = false; fire(boxes[2], 'change');
@@ -147,7 +147,7 @@ check(/Filters the dots/.test(panel.textContent), 'one line says what is filtere
 // No filter hooks: the panel is inert, not broken.
 {
   const p = K.confidencePanel({ layers: [], isLayerOn: () => false });
-  const b = p.querySelectorAll('.sr-show__box')[0]; b.checked = false;
+  const b = p.querySelectorAll('.ui-check')[0]; b.checked = false;
   let threw = false; try { fire(b, 'change'); } catch { threw = true; }
   check(!threw, 'a context with no setConfidence does not throw');
 }

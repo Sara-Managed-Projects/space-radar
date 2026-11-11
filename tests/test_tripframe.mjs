@@ -225,7 +225,7 @@ const ctx = {
 const frame = createTripFrame(ctx);
 const q = (sel) => document.body.querySelector(sel);
 const qa = (sel) => document.body.querySelectorAll(sel);
-const primaries = () => qa('.sr-act--primary').filter((n) => !n.hidden).length
+const primaries = () => qa('.ui-btn--tile.ui-btn--primary').filter((n) => !n.hidden).length
   + qa('.sr-tripsheet__start').length + qa('.sr-trip__tb--play').filter((n) => n.classList.contains('is-paused')).length;
 
 // --- the intro
@@ -386,9 +386,9 @@ await new Promise((r) => setTimeout(r, 0));
 {
   check(q('.sr-trip__toolbar').hidden === true && q('.sr-trip__top').hidden === true, 'the end card replaces the toolbar and the top bar');
   check(q('.sr-tripsheet__micro').textContent === T.endMicro && q('.sr-tripsheet__name').textContent === state.tourTitle, 'the end has its microlabel and the trip\'s name');
-  const acts = q('.sr-tripsheet__actions').querySelectorAll('.sr-act');
+  const acts = q('.sr-tripsheet__actions').querySelectorAll('.ui-btn--tile');
   check(acts.length === 3 && acts.map((a) => a.textContent).join('|') === [T.endExplore, T.endReplay, T.share].join('|'), `three actions: ${acts.map((a) => a.textContent).join(', ')}`);
-  check(acts[0].classList.contains('sr-act--primary') && primaries() === 1, 'Explore is the one ember');
+  check(acts[0].classList.contains('ui-btn--primary') && primaries() === 1, 'Explore is the one ember');
   check(acts.every((a) => a.querySelector('svg') && a.title), 'each with an icon and a tooltip');
   const card = q('.sr-tripsheet__nextcard');
   check(card && card.dataset.trip === 'fx-b' && card.dataset.group === 'solar-system', 'one next trip, the registry\'s own `next:`, as a trip card in its group\'s tint');
@@ -462,9 +462,9 @@ frame.dispose();
 
   notify({ phase: 'outro', index: 3 });
   await new Promise((r) => setTimeout(r, 0));
-  const acts = q('.sr-tripsheet__actions').querySelectorAll('.sr-act');
+  const acts = q('.sr-tripsheet__actions').querySelectorAll('.ui-btn--tile');
   check(acts.map((a) => a.textContent).join('|') === [T.endExplore, T.endHome, T.endReplay, T.share].join('|'), `after a trip on another world: Keep flying, Go home, Watch again, Share (${acts.map((a) => a.textContent).join(', ')})`);
-  check(acts[0].classList.contains('sr-act--primary') && primaries() === 1 && acts[0].title === T.endStayTitleStage, 'Keep flying is the one ember, and says it stays out there');
+  check(acts[0].classList.contains('ui-btn--primary') && primaries() === 1 && acts[0].title === T.endStayTitleStage, 'Keep flying is the one ember, and says it stays out there');
   const send = q('.sr-tripsheet__send');
   check(send && send.title === T.endSendTitle && send.textContent.includes(T.endSend), 'the end card has a picture to send');
   acts[0].click();
@@ -472,7 +472,7 @@ frame.dispose();
   check(!root.classList.contains('sr-present'), 'present mode ends with the trip');
   calls.length = 0;
   notify({ phase: 'outro', index: 3 });
-  q('.sr-tripsheet__actions').querySelectorAll('.sr-act')[1].click();
+  q('.sr-tripsheet__actions').querySelectorAll('.ui-btn--tile')[1].click();
   check(calls.includes('stop:left'), `Go home is the ordinary leave: ${calls.join()}`);
   f.dispose();
   state = { ...state, stageChanged: false };

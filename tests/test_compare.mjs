@@ -182,7 +182,7 @@ click(byText(box, 'To scale'));
 // the lab
 click(byText(box, 'All worlds'));
 eq(pressed(box)[0], 'All worlds', 'the lab is pressed');
-let rows = box.querySelectorAll('.sr-vs__labbtn');
+let rows = box.querySelectorAll('.sr-vs__entry');
 eq(rows.length, 11, 'the lab lists eleven worlds');
 eq(rows[0].querySelector('.sr-vs__labname').textContent, 'The Sun', 'widest first');
 const own = rows.find((r) => r.dataset.world === 'jupiter');

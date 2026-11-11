@@ -148,9 +148,9 @@ check(D.deepWords(null, false, K) === null, 'no readout for today');
 {
   const css = readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8');
   const dt = readFileSync(join(ROOT, 'site/js/ui/deeptime.js'), 'utf8');
-  check(/steps\.classList\.add\('sr-deeptime__pairs'\)/.test(dt) && /presets\.classList\.add\('sr-deeptime__pairs'\)/.test(dt) && /\.sr-deeptime__pairs \.sr-density__btn \{ flex-basis: 40%; \}/.test(css) && D.STEPS.length === 4,
+  check(/steps\.classList\.add\('sr-deeptime__pairs'\)/.test(dt) && /presets\.classList\.add\('sr-deeptime__pairs'\)/.test(dt) && /\.sr-deeptime__pairs \.ui-seg__btn \{ flex-basis: 40%; \}/.test(css) && D.STEPS.length === 4,
     'deep time\'s four steps and its pole stars sit two to a row');
-  check(css.indexOf('.sr-deeptime__pairs .sr-density__btn') > css.indexOf('.sr-skybar__wrap .sr-density__btn { flex: 1 1 30%; }'), 'after the wrapping row\'s third, so they win');
+  check(css.indexOf('.sr-deeptime__pairs .ui-seg__btn') > css.indexOf('.sr-skybar__wrap .ui-seg__btn { flex: 1 1 30%; }'), 'after the wrapping row\'s third, so they win');
 }
 
 if (problems.length) {

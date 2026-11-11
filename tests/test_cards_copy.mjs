@@ -541,7 +541,7 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   const mOk = { ok: true, frame: 'earth-inertial', tMs: Date.UTC(2026, 9, 1) };
   const ride = { rideAlong: () => true };
   const labels = (bs) => bs.map((b) => b.children[1].textContent).join();
-  const primaries = (bs) => bs.filter((b) => b.className.split(' ').includes('sr-act--primary')).length;
+  const primaries = (bs) => bs.filter((b) => b.className.split(' ').includes('ui-btn--primary')).length;
   const a1 = C.actionButtons(orbiting, ride, mOk);
   check(labels(a1) === [A.follow, A.ride, A.postcard, A.share].join() && primaries(a1) === 1 && a1[0].className.includes('primary'), `an Earth orbiter: Follow (the one primary), Ride along, Postcard, Share: ${labels(a1)}`);
   const a2 = C.actionButtons({ id: 'mars', klass: 'world', propagator: 'body', frame: 'sun-inertial', meta: {} }, ride, { ok: true, frame: 'sun-inertial' });

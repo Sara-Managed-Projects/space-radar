@@ -154,16 +154,10 @@ html.sr-phone .sr-launchchip {
 }
 
 /* THREE WAYS IN (0077 W3-e, internal i#878): an icon over a word, three equal tiles in one row, 64 px high (the home's
-   section). The opening's row keeps one-line buttons over the scene, on glass so they read over a cloud. */
+   section). The opening's row keeps one-line buttons on the scene, with no glass (the words' shadow carries them). */
 .sr-welcome__actions > .ui-btn {
   flex: 1 1 0;
   min-height: 64px;
-}
-
-.sr-opening__actions > .ui-btn:not(.ui-btn--primary) {
-  background: var(--sr-glass-strong);
-  -webkit-backdrop-filter: var(--sr-blur);
-  backdrop-filter: var(--sr-blur);
 }
 
 /* THE OPENING SHOT'S WORDS (ui/opening.js): a lead line and the welcome's two buttons on the

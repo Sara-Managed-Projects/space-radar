@@ -451,7 +451,7 @@ export function mountCompare(box, record, ctx = null) {
     for (const r of rows) {
       const li = el('li', 'sr-vs__labrow');
       const mine = r.id === id;
-      const b = el('button', `ui-row ui-row--plain sr-vs__lab${mine ? ' is-this' : ''}${r.id === state.withId ? ' is-with' : ''}`);
+      const b = el('button', `ui-row ui-row--plain sr-vs__entry${mine ? ' is-this' : ''}${r.id === state.withId ? ' is-with' : ''}`);
       b.type = 'button';
       b.dataset.world = r.id;
       if (mine) { b.setAttribute('aria-disabled', 'true'); b.title = C.thisCard; } else b.title = t(C.labTitle, { name: theName(r.id) });

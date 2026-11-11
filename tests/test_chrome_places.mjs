@@ -36,7 +36,7 @@ const toast = rule(css, '.sr-toast');
 check(toast && !/\btop:/.test(toast), 'the toast is not anchored to the top (the HUD tag of an arrival is there)');
 check(/bottom: calc\(var\(--sp-5\) \+ var\(--sr-time-h\) \+ var\(--sp-3\)/.test(toast), 'the toast stands 12 px above the time pill');
 check(/left: calc\(50% \+ var\(--sr-scene-left, 0px\) \/ 2\)/.test(toast), 'the toast is centred on the scene area, not the window');
-check(/white-space: nowrap/.test(rule(css, '.sr-toast__action')), 'the toast\'s action is one phrase and never breaks inside');
+check(/\.ui-btn\{[^}]*white-space:nowrap/.test(readFileSync(join(SITE, 'css/controls.css'), 'utf8')) && /className = 'ui-btn ui-btn--sm ui-btn--secondary'/.test(readFileSync(join(SITE, 'js/ui/camundo.js'), 'utf8')), 'the toast\'s action is the set\'s small button, one phrase that never breaks inside');
 const cardToast = rule(css, "html.sr-phone[data-sheet='full'] .sr-toast,\nhtml.sr-phone.sr-card-open .sr-toast");
 check(cardToast && /var\(--sr-sheet-h\) \+ var\(--sp-3\)/.test(cardToast) && !/--sr-time-h/.test(cardToast),
   'on a phone with a card up there is no pill, and the toast stands on the sheet, not a pill\'s height above it');

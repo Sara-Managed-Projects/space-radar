@@ -149,7 +149,7 @@
   list-style: none;
 }
 
-.sr-vs__lab {
+.sr-vs__entry {
   flex-direction: column;
   align-items: stretch;
   gap: 0;
@@ -157,7 +157,7 @@
   border-radius: 0;
 }
 
-.sr-vs__lab[aria-disabled='true'] { cursor: default; }
+.sr-vs__entry[aria-disabled='true'] { cursor: default; }
 
 .sr-vs__labtop {
   display: flex;
@@ -188,9 +188,9 @@
   border-radius: var(--sr-radius-sm);
 }
 
-.sr-vs__lab.is-this .sr-vs__fill { background: var(--sr-text); }
-.sr-vs__lab.is-this .sr-vs__labname { font-weight: 600; }
-.sr-vs__lab.is-with .sr-vs__fill { background: var(--sr-text-soft); }
+.sr-vs__entry.is-this .sr-vs__fill { background: var(--sr-text); }
+.sr-vs__entry.is-this .sr-vs__labname { font-weight: 600; }
+.sr-vs__entry.is-with .sr-vs__fill { background: var(--sr-text-soft); }
 
 
 /* The passport's second page: kinds, and what is noted (ui/passportkinds.js). Quiet rows, the same list. */
@@ -284,7 +284,7 @@
 
 /* Reduced motion: nothing here moves; the one colour change is a 120 ms fade (docs/ui-guide.md section 2.5). */
 @media (prefers-reduced-motion: reduce) {
-  .sr-vs__lab {
+  .sr-vs__entry {
     transition: none;
   }
 }

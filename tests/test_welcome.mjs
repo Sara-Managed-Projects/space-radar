@@ -66,16 +66,18 @@ check(w.firstTrip([{ id: 'a', off: true }, { id: 'b', off: false }, { id: 'c' }]
 check(w.firstTrip([{ id: 'a', off: true }]) === null && w.firstTrip(null) === null, 'none can run: none is started');
 
 const src = read('site/js/ui/welcome.js');
-check((src.match(/sr-welcome__go/g) || []).length === 1 && (src.match(/entrance\('sr-welcome__look'/g) || []).length === 2 && /entrance\('sr-welcome__go', 'trip'/.test(src), 'three buttons from one builder: Tonight and Explore the quiet one, Guided trip the ember, once');
+// The control set since 2026-11-11 (css/controls.css): the tiles are .ui-btn--tile, and Guided trip is the one .ui-btn--primary.
+check((src.match(/ui-btn--primary/g) || []).length === 1 && (src.match(/entrance\('', '(tonight|explore)'/g) || []).length === 2 && /entrance\('ui-btn--primary', 'trip'/.test(src) && /ui-btn ui-btn--tile/.test(src), 'three tiles from one builder: Tonight and Explore the plain one, Guided trip the ember, once');
 check(/setTab\('tonight'\)/.test(src) && /ctx\.explore\.setTab/.test(src), 'Tonight opens the Tonight tab through the explorer\'s own setTab');
 check(/data-tour|hide\('look'\)/.test(src) && /look\.addEventListener\('click', \(\) => hide\('look'\)\)/.test(src), 'Explore only puts the lines away: the map is as it was');
 check(!/\.hidden = true|classList\.add\('is-hidden'/.test(src.slice(src.indexOf('THREE WAYS IN, in one row'))), 'choosing one hides no tab and no control: nothing in the entrances touches the chrome');
 {
   const css0 = read('site/css/finishers.css');
   const rule = (sel) => (new RegExp(sel.replace(/[.]/g, '\\.') + '\\s*\\{([^}]*)\\}').exec(css0) || [])[1] || '';
-  check(/background:\s*var\(--sr-ember\)/.test(rule('.sr-welcome__go')), 'Guided trip is the ember');
-  check(!/--sr-ember/.test(rule('.sr-welcome__look')) && !/sr-welcome__tonight/.test(css0), 'Explore and Tonight are the quiet button, not the ember: one ember on the home');
-  check(/height:\s*64px/.test(rule('.sr-welcome__actions > .sr-welcome__btn')) && /flex-direction:\s*column/.test(rule('.sr-welcome__actions > .sr-welcome__btn')), 'an icon over a word, 64 px high: a 44 px target with room to spare');
+  const ctl = read('site/css/controls.css');
+  check(/\.ui-btn--primary\{[^}]*background:var\(--ember\)/.test(ctl), 'Guided trip is the ember (the set\'s primary)');
+  check(!/--sr-ember/.test(css0.slice(css0.indexOf('THREE WAYS IN'), css0.indexOf('THE OPENING SHOT'))) && !/sr-welcome__tonight/.test(css0), 'Explore and Tonight are the plain tile, not the ember: one ember on the home');
+  check(/min-height:\s*64px/.test(rule('.sr-welcome__actions > .ui-btn')) && /\.ui-btn--tile\{flex-direction:column/.test(ctl), 'an icon over a word, 64 px high: a 44 px target with room to spare');
 }
 const main = read('site/js/main.js');
 check(/import\('\.\/ui\/welcome\.js'\)/.test(main) && !/^import[^\n]*welcome/m.test(main), 'main.js imports it dynamically, never statically');
