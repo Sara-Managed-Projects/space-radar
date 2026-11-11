@@ -133,17 +133,12 @@
 .ui-chip:is([aria-pressed='true'],[aria-checked='true']){background:var(--ui-sel);box-shadow:inset 0 0 0 1px var(--ui-sel-line)}
 .ui-chip:disabled{opacity:0.45;cursor:not-allowed}
 
-/* a finger's target: 44 px on a touch screen. The 40 px ones grow; the small ones and the close button keep their
-   look and reach 44 with a hit area around them. */
+/* a finger's target: 44 px on a touch screen, measured on the control's own box (tests/test_touch_targets.mjs and
+   the CI ui walk measure the element, not a hit area around it), so every interactive control is 44 px here. */
 @media (pointer: coarse){
-.ui-btn,.ui-select,.ui-row{min-height:44px}
-.ui-btn--icon{width:44px}
-.ui-btn--sm,.ui-btn--sm.ui-btn--icon,.ui-select--sm{min-height:var(--ui-h-sm)}
-.ui-btn--sm.ui-btn--icon{width:var(--ui-h-sm)}
-.ui-btn--sm::after,.ui-close::after,:is(button,a).ui-chip::after{content:'';position:absolute;inset:-8px}
+.ui-btn,.ui-btn--sm,.ui-select,.ui-select--sm,.ui-row,.ui-seg__btn,.ui-close,:is(button,a).ui-chip{min-height:44px}
+.ui-btn--icon,.ui-btn--sm.ui-btn--icon,.ui-close{min-width:44px}
 .ui-seg{padding:2px;gap:0}
-.ui-seg__btn{min-height:40px}
-.ui-seg__btn::after{content:'';position:absolute;inset:-2px}
 .ui-opt{min-height:44px}
 .ui-range{height:44px}
 }

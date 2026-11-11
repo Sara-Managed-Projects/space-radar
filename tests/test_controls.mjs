@@ -134,7 +134,7 @@ for (const f of files) {
     'ui-pop__body', 'ui-pop__sect', 'ui-pop__eyebrow', 'ui-row', 'ui-chip']) check(new RegExp(`\\.${cls}(?![\\w-])[^{]*\\{`).test(css), `css/controls.css defines .${cls}`);
   check(/\.ui-select\{[^}]*appearance:none/.test(css), '.ui-select resets the browser\'s own look (appearance: none), so a phone draws it too');
   check(/:focus-visible\{outline:2px solid var\(--atm\)/.test(css), 'the set has the 2 px blue focus ring');
-  check(/@media \(pointer: coarse\)\{[\s\S]*\.ui-btn,\.ui-select,\.ui-row\{min-height:44px\}/.test(css), 'on touch the controls are 44 px');
+  check(/@media \(pointer: coarse\)\{[\s\S]*\.ui-btn,\.ui-btn--sm,\.ui-select,\.ui-select--sm,\.ui-row,\.ui-seg__btn,\.ui-close,:is\(button,a\)\.ui-chip\{min-height:44px\}/.test(css), 'on touch every control is 44 px on its own box (the CI ui walk measures the element, not a hit area)');
   check(!/#[0-9a-f]{3,8}\b/i.test(css.replace(/%23[0-9a-f]{6}/gi, '')), 'no colour literal in the set but the chevron\'s, inside its data URL');
 }
 
