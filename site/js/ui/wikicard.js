@@ -257,7 +257,7 @@ export function clipFor(index, key, text) {
 function readButton(box, getParts, getClip = () => null) {
   const W = COPY.wikiCard;
   const row = el('div', 'sr-wiki__read');
-  const btn = el('button', 'sr-btn sr-btn--quiet sr-card__inline', W.read);
+  const btn = el('button', 'ui-btn ui-btn--quiet sr-card__inline', W.read);
   btn.type = 'button';
   btn.title = W.readTitle;
   btn.dataset.focus = 'read-aloud';

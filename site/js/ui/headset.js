@@ -637,9 +637,9 @@ function openNote(hs, opener) {
   dlg.appendChild(h);
   for (const [key, cls] of [['comfort', ''], ['seizure', ' sr-xrnote__p--warn'], ['how', ''], ['untried', ' sr-xrnote__p--dim']]) dlg.appendChild(el('p', `sr-xrnote__p${cls}`, C[key]));
   const row = el('div', 'sr-xrnote__row');
-  const no = el('button', 'sr-btn sr-btn--quiet sr-xrnote__btn', C.cancel);
+  const no = el('button', 'ui-btn ui-btn--quiet sr-xrnote__btn', C.cancel);
   no.type = 'button';
-  const go = el('button', 'sr-btn sr-btn--primary sr-xrnote__btn', C.go);
+  const go = el('button', 'ui-btn ui-btn--primary sr-xrnote__btn', C.go);
   go.type = 'button';
   row.appendChild(no);
   row.appendChild(go);

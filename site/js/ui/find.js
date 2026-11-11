@@ -269,7 +269,7 @@ export function createFind(ctx, host) {
   prop.appendChild(refine);
   const honesty = el('p', 'sr-sect__note sr-find__honesty');
   prop.appendChild(honesty);
-  const linkBtn = button('sr-btn sr-btn--quiet sr-find__link', F.copyLink);
+  const linkBtn = button('ui-btn ui-btn--quiet sr-find__link', F.copyLink);
   linkBtn.addEventListener('click', () => {
     const url = `${location.origin}${location.pathname}#find=${encodeURIComponent(findText(st.q))}`;
     const done = () => { linkBtn.textContent = F.copied; setTimeout(() => { linkBtn.textContent = F.copyLink; }, 1600); };
@@ -738,12 +738,12 @@ export function createFind(ctx, host) {
     const actions = el('div', 'sr-find__actions');
     const ids = new Set(res.ids);
     const test = (r) => { const m = r.meta || {}; const n = Number(m.noradId || m.catalogueNumber); return ids.has(n); };
-    const show = button('sr-btn sr-btn--quiet', O.show);
+    const show = button('ui-btn ui-btn--quiet', O.show);
     show.addEventListener('click', () => {
       litLine.textContent = COPY.breakups.loadingActive;
       hl.set({ name, test, layers: ['active'] }).then((n) => { litLine.textContent = n ? t(O.lit, { n: fmt.int(n) }) : O.litNone; });
     });
-    const clear = button('sr-btn sr-btn--quiet', O.clear);
+    const clear = button('ui-btn ui-btn--quiet', O.clear);
     clear.addEventListener('click', () => { hl.clear(); litLine.textContent = ''; writeLink({}); });
     actions.append(show, clear);
     if (owner && owner.kind === 'country') {

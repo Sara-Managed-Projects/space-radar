@@ -130,7 +130,7 @@ export function confidencePanel(ctx) {
     const label = node('label', 'sr-show__label');
     const box = document.createElement('input');
     box.type = 'checkbox';
-    box.className = 'sr-show__box';
+    box.className = 'ui-check';
     box.dataset.class = id;
     const name = node('span', 'sr-show__name', COPY.truth.hints[id]);
     const count = node('span', 'sr-show__count', fmt.int(0));
@@ -146,10 +146,10 @@ export function confidencePanel(ctx) {
   }
   wrap.appendChild(list);
   const bar = node('div', 'sr-show__bulk');
-  const onlyBtn = node('button', 'sr-show__bulkbtn', C.onlyMeasured);
+  const onlyBtn = node('button', 'ui-btn ui-btn--sm ui-btn--ghost', C.onlyMeasured);
   onlyBtn.type = 'button';
   onlyBtn.title = C.onlyMeasuredTitle;
-  const allBtn = node('button', 'sr-show__bulkbtn', C.all);
+  const allBtn = node('button', 'ui-btn ui-btn--sm ui-btn--ghost', C.all);
   allBtn.type = 'button';
   allBtn.title = C.allTitle;
   bar.append(onlyBtn, allBtn);

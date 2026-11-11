@@ -357,7 +357,7 @@ export function createWhatToShow(ctx, opts = {}) {
   // source says what happened to it. The row itself says "empty"; this is where to go about it.
   const failed = el('p', 'sr-show__note sr-show__failed');
   const failedText = el('span', 'sr-show__failedtext');
-  const failedWhy = el('button', 'sr-show__failedwhy', C.layersFailedWhy);
+  const failedWhy = el('button', 'ui-btn ui-btn--sm ui-btn--quiet', C.layersFailedWhy);
   failedWhy.type = 'button';
   failedWhy.addEventListener('click', () => {
     if (ctx && ctx.rail && typeof ctx.rail.closeShow === 'function') ctx.rail.closeShow();
@@ -396,10 +396,10 @@ export function createWhatToShow(ctx, opts = {}) {
     const body = el('div', 'sr-show__gbody');
     body.id = bodyId;
     const bulk = el('div', 'sr-show__bulk');
-    const allBtn = el('button', 'sr-show__bulkbtn', C.groupAll);
+    const allBtn = el('button', 'ui-btn ui-btn--sm ui-btn--ghost', C.groupAll);
     allBtn.type = 'button';
     allBtn.setAttribute('aria-label', t(C.groupAllLabel, { group: title }));
-    const noneBtn = el('button', 'sr-show__bulkbtn', C.groupNone);
+    const noneBtn = el('button', 'ui-btn ui-btn--sm ui-btn--ghost', C.groupNone);
     noneBtn.type = 'button';
     noneBtn.setAttribute('aria-label', t(C.groupNoneLabel, { group: title }));
     bulk.append(allBtn, noneBtn);
@@ -423,7 +423,7 @@ export function createWhatToShow(ctx, opts = {}) {
       const label = el('label', 'sr-show__label');
       const box = document.createElement('input');
       box.type = 'checkbox';
-      box.className = 'sr-show__box';
+      box.className = 'ui-check';
       const { token, hex, mixed } = layerSwatch(layer);
       const swatch = el('span', `sr-swatch sr-swatch--${token}`);
       if (hex) swatch.style.background = hex;
@@ -583,8 +583,8 @@ export function createWhatToShow(ctx, opts = {}) {
   // --- the two settings: sound (spec 0035) and density (spec 0045) --------------------------------
   const sound = el('section', 'sr-show__section sr-show__setting');
   sound.appendChild(el('h2', 'sr-micro', COPY.audio.panelTitle));
-  sound.appendChild(soundButton(ctx, 'sr-show__toggle', 'toggle'));
-  const vol = volumeSlider(ctx, 'sr-show__vol');
+  sound.appendChild(soundButton(ctx, 'ui-btn ui-btn--sm', 'toggle'));
+  const vol = volumeSlider(ctx, 'ui-range');
   if (vol) sound.appendChild(vol);
   root.appendChild(sound);
   // The shutter (spec 0067): Eye, Camera, Deep, in the same row shape as Density below it.
@@ -633,17 +633,16 @@ export function createWhatToShow(ctx, opts = {}) {
 
   // --- Keys: the controls hint again, on request (issue #321) ----------------------------------
   const touch = isTouch();
-  const keys = el('button', 'sr-show__section sr-show__keys', touch ? C.keysRowTouch : C.keysRow);
+  const keys = el('button', 'ui-row', touch ? C.keysRowTouch : C.keysRow);
   keys.type = 'button';
   keys.title = touch ? C.keysRowTitleTouch : C.keysRowTitle;
-  keys.appendChild(el('span', 'sr-show__keysgo')).setAttribute('aria-hidden', 'true');
   keys.addEventListener('click', () => {
     // The popover closes first: the hint sits bottom-right and the popover would hide nothing of
     // it, but two floating panels at once is the clutter the rail was made to end.
     if (ctx && ctx.rail && typeof ctx.rail.closeShow === 'function') ctx.rail.closeShow();
     if (ctx && ctx.keyhint && typeof ctx.keyhint.show === 'function') ctx.keyhint.show({ all: true });
   });
-  root.appendChild(keys);
+  root.appendChild(el('div', 'sr-show__section sr-show__keys')).appendChild(keys);
 
   let keyedWas = undefined;
   /** Ring every swatch while another key colours the dots, and say which; put them back after. */

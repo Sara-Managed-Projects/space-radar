@@ -72,7 +72,6 @@ html[dir='rtl'] .sr-tour__skip { margin-left: 0; margin-right: auto; }
 html[dir='rtl'] .sr-more + .sr-more { margin-left: 0; margin-right: var(--sp-5); }
 html[dir='rtl'] .sr-confidence .sr-show__hint { margin-left: 0; margin-right: var(--sp-5); }
 html[dir='rtl'] .sr-show__chev { margin-left: 0; margin-right: 4px; }
-html[dir='rtl'] .sr-show__keysgo { margin-right: 0; margin-left: 4px; }
 html[dir='rtl'] .sr-readable ul { padding-left: 0; padding-right: 1.2em; }
 html[dir='rtl'].sr-phone .sr-rail__btn + .sr-rail__btn { border-left: 0; border-right: 1px solid var(--sr-line); }
 html[dir='rtl'] .sr-skip { left: auto; right: var(--sp-2); }

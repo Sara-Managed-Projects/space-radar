@@ -193,7 +193,7 @@ export function sparkBlock(record, distAt, tMs, ctx, approxAt) {
   const axis = el('div', 'sr-light__axis');
   axis.append(el('span', '', year(g.t0)), el('span', '', L.sparkNow), el('span', '', year(g.t1)));
   wrap.appendChild(axis);
-  const go = el('button', 'sr-btn sr-btn--quiet sr-card__inline sr-spark__go', closest);
+  const go = el('button', 'ui-btn ui-btn--quiet sr-card__inline sr-spark__go', closest);
   go.type = 'button';
   go.title = L.closestTitle;
   go.dataset.focus = 'spark-closest';

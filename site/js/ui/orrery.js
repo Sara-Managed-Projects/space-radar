@@ -175,7 +175,7 @@ export function createOrrery(ctx, opts = {}) {
     presets.setAttribute('role', 'group');
     presets.setAttribute('aria-label', O.presets);
     const preset = (text, title, to) => {
-      const b = el(doc, 'button', 'sr-btn sr-btn--quiet sr-orrery__preset', text);
+      const b = el(doc, 'button', 'ui-btn ui-btn--quiet sr-orrery__preset', text);
       b.type = 'button';
       b.title = title;
       b.addEventListener('click', () => { toSystem(); set(to, { frame: true }); });

@@ -694,9 +694,9 @@ export function createGroundStage(ctx, opts = {}) {
     body.append(time, l1, l2, driveHint, more);
     card.append(tag, name, body);
     const bar = el(doc, 'div', 'sr-ground__bar');
-    const drive = el(doc, 'button', 'sr-btn', T.drive);
-    const skyBtn = el(doc, 'button', 'sr-btn', T.skyOpen);
-    const leave = el(doc, 'button', 'sr-btn sr-btn--quiet', T.leave);
+    const drive = el(doc, 'button', 'ui-btn', T.drive);
+    const skyBtn = el(doc, 'button', 'ui-btn', T.skyOpen);
+    const leave = el(doc, 'button', 'ui-btn ui-btn--quiet', T.leave);
     for (const b of [drive, skyBtn, leave]) b.type = 'button';
     drive.setAttribute('aria-pressed', 'false');
     skyBtn.setAttribute('aria-expanded', 'false');
@@ -739,7 +739,7 @@ export function createGroundStage(ctx, opts = {}) {
     howto.hidden = true;
     // In a trip the stage's own bar steps aside (the trip's card speaks), so a stop at a rover has this one button: it
     // leaves the trip there, keeps this ground and drives.
-    const tripDrive = el(doc, 'button', 'sr-btn sr-float sr-ground__tripdrive', T.drive);
+    const tripDrive = el(doc, 'button', 'ui-btn sr-float sr-ground__tripdrive', T.drive);
     tripDrive.type = 'button';
     tripDrive.title = T.tripDriveTitle;
     tripDrive.hidden = true;

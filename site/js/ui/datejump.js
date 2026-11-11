@@ -91,7 +91,7 @@ function build(ctx) {
   text.spellcheck = false;
   text.setAttribute('aria-describedby', 'sr-datejump-hint');
   textLab.htmlFor = text.id;
-  const go = el('button', 'sr-btn sr-datejump__go', D.go);
+  const go = el('button', 'ui-btn sr-datejump__go', D.go);
   go.type = 'submit';
   const hint = el('p', 'sr-sect__note', D.hint);
   hint.id = 'sr-datejump-hint';

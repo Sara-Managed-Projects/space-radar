@@ -1,7 +1,7 @@
 /* css/moments.css -- the Moment player (site/js/moments/player.js, `#moment=<id>`; internal spec 0079 C1).
  *
  * Linked by moments/player.js the first time a moment opens, never at boot. Tokens only (css/ui.css :root), the
- * glass is `.sr-float`, the buttons are `.sr-btn`. The scene keeps the whole window: a small card at the top left
+ * glass is `.sr-float`, the buttons are `.ui-btn` (css/controls.css). The scene keeps the whole window: a small card at the top left
  * (what this is, the mission clock, the time compression, the chapter) and one strip at the foot (play, the
  * scrubber with its chapter ticks, Chapters, Share) with the honesty line inside it. Every target 44 px on touch.
  */

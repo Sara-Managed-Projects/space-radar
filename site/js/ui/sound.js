@@ -103,6 +103,6 @@ export function soundPanel(ctx) {
   note.className = 'sr-sound__note';
   note.textContent = COPY.audio.panelNote;
   wrap.appendChild(note);
-  wrap.appendChild(soundButton(ctx, 'sr-btn sr-sound__btn', 'toggle'));
+  wrap.appendChild(soundButton(ctx, 'ui-btn sr-sound__btn', 'toggle'));
   return wrap;
 }

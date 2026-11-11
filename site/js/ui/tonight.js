@@ -94,7 +94,7 @@ export function renderTonight(host, ctx) {
   // the place line that opens the city box and its chips in place (docs/ui-guide.md section 3.5).
   // Open by itself while the place is a guess or not set: that is when the visitor has to act.
   const placeRow = el('div', 'sr-tonight-view__where');
-  const change = el('button', 'sr-btn sr-btn--quiet sr-tonight-view__change', COPY.placeKeep.change);
+  const change = el('button', 'ui-btn ui-btn--quiet sr-tonight-view__change', COPY.placeKeep.change);
   change.type = 'button';
   change.title = COPY.placeKeep.changeTitle;
   change.setAttribute('aria-expanded', 'false');
@@ -141,11 +141,11 @@ export function renderTonight(host, ctx) {
   const empty = el('p', 'sr-tonight-view__empty');
   const dark = el('p', 'sr-tonight-view__dark');
   const actions = el('div', 'sr-tonight-view__actions');
-  const showMe = el('button', 'sr-btn', T.showMe);
+  const showMe = el('button', 'ui-btn', T.showMe);
   showMe.type = 'button';
   showMe.title = T.showMeTitle;
   showMe.hidden = true;
-  const more = el('button', 'sr-btn sr-btn--quiet', T.more);
+  const more = el('button', 'ui-btn ui-btn--quiet', T.more);
   more.type = 'button';
   more.setAttribute('aria-expanded', 'false');
   const list = el('ul', 'sr-tonight-view__list');

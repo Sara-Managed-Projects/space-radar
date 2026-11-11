@@ -94,7 +94,7 @@ function paint(box, row, nowMs, ctx) {
   box.appendChild(el('p', 'sr-card__aboardnote', [kind, periodWords].filter(Boolean).join(' ')));
   const nm = !far && nextMinimum(row, nowMs);
   if (nm) {
-    const go = el('button', 'sr-btn sr-btn--quiet sr-card__inline sr-spark__go', t(K.nextMin, { when: timeText.dayAndTime(nm) }));
+    const go = el('button', 'ui-btn ui-btn--quiet sr-card__inline sr-spark__go', t(K.nextMin, { when: timeText.dayAndTime(nm) }));
     go.type = 'button';
     go.disabled = !(ctx && ctx.clock && typeof ctx.clock.goTo === 'function');
     go.addEventListener('click', () => { try { ctx.clock.goTo(nm); } catch { /* the clock stays */ } });

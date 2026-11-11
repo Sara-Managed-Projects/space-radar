@@ -361,46 +361,6 @@ html.sr-compact .sr-status {
   color: var(--sr-text);
 }
 
-/* Buttons ---------------------------------------------------------------------------- */
-
-.sr-btn {
-  appearance: none;
-  min-height: 40px;
-  padding: 0 var(--sp-3);
-  font: inherit;
-  font-weight: 500;
-  color: var(--sr-text);
-  background: transparent;
-  border: 1px solid var(--sr-line-strong);
-  border-radius: var(--sr-radius-sm);
-  cursor: pointer;
-  transition:
-    border-color var(--sr-fast) var(--sr-ease),
-    background-color var(--sr-fast) var(--sr-ease);
-}
-
-.sr-btn:hover:not(:disabled) {
-  border-color: var(--sr-ember);
-}
-
-
-.sr-btn--primary {
-  color: var(--sr-ink);
-  background: var(--sr-ember);
-  border-color: var(--sr-ember);
-  font-weight: 600;
-}
-
-.sr-btn--quiet {
-  color: var(--sr-text-dim);
-  border-color: var(--sr-line);
-}
-
-.sr-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
 /* Class swatches and glyphs ----------------------------------------------------------- */
 
 .sr-swatch,
@@ -1535,10 +1495,6 @@ html.sr-hud #sr-time {
 /* ------------------------------------------------------------------------------------ */
 
 @media (prefers-reduced-motion: reduce) {
-  .sr-btn {
-    transition: none;
-  }
-
   /* A panel only fades, 120 ms, with no travel and no nudge (spec 0045 req 11). */
   .sr-float,
   .sr-card {
@@ -3212,15 +3168,6 @@ html.sr-trip-mode .sr-scenenote { display: none; }
   text-decoration: underline;
 }
 
-.sr-sound__btn.is-on {
-  color: var(--sr-ember);
-  border-color: var(--sr-ember);
-}
-
-/* The 44 px tap floor on a phone, as the Share buttons above. */
-html.sr-phone .sr-sound__btn {
-  min-height: 44px;
-}
 
 /* The tracked object's HUD (spec 0047, ui/hud.js) ---------------------------------------------- */
 
@@ -4686,7 +4633,7 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 /* 0077 W3-e: end */
 
 /* 0077 W3-e: begin (the rows of "How we know" are the layers' rows without the swatch: a box, a word, a count, a sentence under it) */
-.sr-confidence .sr-show__label { grid-template-columns: 18px 1fr auto; }
+.sr-confidence .sr-show__label { grid-template-columns: 20px 1fr auto; }
 .sr-confidence .sr-show__hint { margin-left: var(--sp-5); }
 /* 0077 W3-e: end */
 .sr-rail__btn:hover { background: var(--sr-wash); }
@@ -4798,21 +4745,6 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   gap: 4px;
   margin-top: -4px;
 }
-.sr-show__bulkbtn {
-  position: relative;
-  min-width: 44px;
-  height: 28px;
-  padding: 0 var(--sp-2);
-  font: inherit;
-  font-size: var(--sr-fs-sm);
-  color: var(--sr-text-soft);
-  background: none;
-  border: 1px solid var(--sr-line);
-  border-radius: var(--sr-radius-pill);
-  cursor: pointer;
-}
-.sr-show__bulkbtn:hover { color: var(--sr-text); background: var(--sr-wash-hover); }
-.sr-show__bulkbtn:active { background: var(--sr-wash-strong); }
 
 .sr-show__rows {
   margin: 0;
@@ -4822,47 +4754,20 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 
 /* "Keys": the last row, a quiet button with a chevron, as a settings list ends (issue #321). */
 .sr-show__keys {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  min-height: 44px;
-  padding-left: 0;
-  padding-right: 0;
-  padding-bottom: 0;
-  font: inherit;
-  font-size: var(--sr-fs-label);
-  color: var(--sr-text);
-  text-align: left;
-  background: none;
-  border: 0;
-  border-top: 1px solid var(--sr-line);
-  cursor: pointer;
+  padding-top: var(--sp-2);
 }
-/* The chevron is a child span: the button's ::before and ::after are the focus brackets. */
-.sr-show__keysgo {
-  width: 6px;
-  height: 6px;
-  margin-right: 4px;
-  border-right: 1.5px solid var(--sr-text-dim);
-  border-bottom: 1.5px solid var(--sr-text-dim);
-  transform: rotate(-45deg);
-}
-.sr-show__keys:hover { color: var(--sr-ember-light); }
 
 @media (prefers-reduced-motion: reduce) {
   .sr-show__chev { transition: none; }
 }
 
 @media (pointer: coarse) {
-  .sr-show__bulkbtn { height: 44px; }
   .sr-show__filter { height: 44px; font-size: var(--sr-fs-input); }
 }
 
 .sr-show__label {
   display: grid;
-  grid-template-columns: 18px 10px 1fr auto;
+  grid-template-columns: 20px 10px 1fr auto;
   align-items: center;
   gap: var(--sp-2);
   min-height: 36px;
@@ -4871,7 +4776,7 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 }
 
 .sr-show__label.is-split {
-  grid-template-columns: 18px 10px 1fr;
+  grid-template-columns: 20px 10px 1fr;
 }
 
 .sr-show__label.is-split .sr-show__count {
@@ -4879,21 +4784,9 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   white-space: normal;
 }
 
-.sr-show__box {
-  width: 16px;
-  height: 16px;
-  margin: 0;
-  accent-color: var(--sr-ember);
-}
-
-/* The list is walked with the arrow keys (public #315): the box under the keys wears the guide's
-   ring, not the browser's 1 px one, and its row lifts a step so the eye finds the name too. */
-.sr-show__box:focus-visible {
-  outline: 2px solid var(--sr-atmosphere);
-  outline-offset: 2px;
-}
-
-.sr-show__label:has(.sr-show__box:focus-visible) {
+/* The list is walked with the arrow keys (public #315): the box under the keys wears the ring (css/controls.css),
+   and its row lifts a step so the eye finds the name too. */
+.sr-show__label:has(.ui-check:focus-visible) {
   background: var(--sr-wash);
 }
 
@@ -4949,24 +4842,6 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   border-top: 1px solid var(--sr-line);
 }
 
-.sr-show__failedwhy {
-  flex: 0 0 auto;
-  min-height: 24px;
-  padding: 0;
-  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
-  color: var(--sr-ember);
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-}
-
-@media (hover: hover) {
-  .sr-show__failedwhy:hover { color: var(--sr-ember-light); }
-}
-
-@media (pointer: coarse) {
-  .sr-show__failedwhy { min-height: 44px; }
-}
 
 .sr-show__count {
   font: 400 var(--sr-fs-sm)/1.3 var(--sr-font-mono);
@@ -5018,19 +4893,6 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   margin: 0;
 }
 
-.sr-show__toggle {
-  height: 32px;
-  padding: 0 12px;
-  font: inherit;
-  font-size: var(--sr-fs-sm);
-  color: var(--sr-text);
-  background: var(--sr-wash);
-  border: 1px solid transparent;
-  border-radius: var(--sr-radius-pill);
-  cursor: pointer;
-}
-
-.sr-show__toggle.is-on { color: var(--sr-ember); border-color: var(--sr-ember); }
 
 .sr-show__setting .sr-density__note { flex-basis: 100%; margin: 0; font-size: var(--sr-fs-sm); color: var(--sr-text-dim); }
 /* Quality (ui/qualitypanel.js, spec 0073 req 6): the title and a mono note of what Auto wears now on
@@ -6366,7 +6228,6 @@ html.sr-phone.sr-launchday:not([data-sheet='full']) .sr-skyfov {
    and the place chips at 36, the card's back row at 36, "Show all" at 36, a button at 40, What to
    show's layer rows at 36, and the Right-now rows, which were 44 only by their padding. */
 @media (pointer: coarse) {
-  .sr-btn,
   .sr-chip,
   .sr-more,
   .sr-pick__btn,
@@ -6894,7 +6755,6 @@ html.sr-present .sr-trip__count {
 
 /* Two small targets on a phone that were real (internal #419 item 9): "Sound: off" in What to show
    was 32 px tall, and Eye / Binoculars / Telescope 42 px wide. */
-html.sr-phone .sr-show__toggle { min-height: 44px; }
 
 /* A launch within a day (ui/countdown.js): the number in the mono face, its state beside it. */
 .sr-count {
@@ -6927,17 +6787,6 @@ html.sr-phone .sr-show__toggle { min-height: 44px; }
 }
 .sr-trip__vol[hidden] { display: none; }
 
-/* The same slider in What to show (ui/sound.js volumeSlider): the full width of its row. */
-.sr-show__vol {
-  display: block;
-  width: 100%;
-  height: 44px;
-  margin: var(--sp-1) 0 0;
-  accent-color: var(--sr-ember);
-  background: transparent;
-  cursor: pointer;
-}
-.sr-show__vol[hidden] { display: none; }
 html.sr-phone .sr-trip__vol { width: 56px; }
 .sr-tripsheet__voiceoffer[hidden] { display: none; }
 
@@ -7328,7 +7177,7 @@ html.sr-phone .sr-time__date { width: 44px; height: 44px; }
 }
 /* The ground's Leave and its keys over a daylit sky (finding 12): glass behind both, as the buttons beside Leave have.
    Here and not in css/ground.css, one class deeper so it holds whichever file loads last. */
-.sr-ground .sr-ground__bar .sr-btn { background: var(--sr-glass-strong); -webkit-backdrop-filter: var(--sr-blur); backdrop-filter: var(--sr-blur); }
-.sr-ground .sr-ground__bar .sr-btn--quiet { color: var(--sr-text); }
+.sr-ground .sr-ground__bar .ui-btn { background: var(--sr-glass-strong); -webkit-backdrop-filter: var(--sr-blur); backdrop-filter: var(--sr-blur); }
+.sr-ground .sr-ground__bar .ui-btn--quiet { color: var(--sr-text); }
 .sr-ground .sr-ground__keys { padding: var(--sp-1) var(--sp-2); color: var(--sr-text); background: var(--sr-glass-strong); border-radius: var(--sr-radius-sm); }
 /* b200-s4b-look: end */

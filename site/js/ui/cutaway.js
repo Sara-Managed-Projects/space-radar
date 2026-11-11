@@ -213,7 +213,7 @@ export function createCutaway(ctx, opts = {}) {
     const head = el(doc, 'div', 'sr-cutaway__head');
     const h = el(doc, 'h2', 'sr-cutaway__title', t(C.title, { name }));
     h.id = 'sr-cutaway-title';
-    const x = el(doc, 'button', 'sr-btn sr-btn--quiet sr-cutaway__close', '×');
+    const x = el(doc, 'button', 'ui-btn ui-btn--quiet sr-cutaway__close', '×');
     x.type = 'button';
     x.setAttribute('aria-label', C.close);
     x.title = C.close;

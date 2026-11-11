@@ -125,7 +125,7 @@ export async function openSkyStory(lore) {
     title.textContent = t(W.notHereTitle, { culture: lore.cultureName || lore.culture });
     text.textContent = away.key ? t(W.notHere, { culture: lore.cultureName || lore.culture, name: away.name, deg: String(Math.round(away.deg)) }) : t(W.notHereNone, { culture: lore.cultureName || lore.culture });
     if (away.key) {
-      const go = el('button', 'sr-btn sr-skystory__nearest', t(W.nearest, { name: away.name }));
+      const go = el('button', 'ui-btn sr-skystory__nearest', t(W.nearest, { name: away.name }));
       go.type = 'button';
       go.addEventListener('click', () => openSkyStory({ culture: lore.culture, key: away.key, name: away.name, cultureName: lore.cultureName }));
       box.append(go);

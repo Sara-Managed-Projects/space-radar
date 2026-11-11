@@ -419,7 +419,7 @@ function appendPathSpan(host, record, ctx) {
   try { placed = propagateRecord(record, now); } catch { placed = null; }
   if (!placed) host.appendChild(el('p', 'sr-mission__note sr-mission__span', span.side === 'before' ? E.before : E.after));
   const acts = el('div', 'sr-mission__acts');
-  const go = button('sr-btn sr-btn--quiet sr-mission__go', E.go, 'mission-nearest');
+  const go = button('ui-btn ui-btn--quiet sr-mission__go', E.go, 'mission-nearest');
   const date = timeText.utcLong(span.nearestMs);
   go.title = t(span.side === 'before' ? E.goBefore : E.goAfter, { date });
   go.addEventListener('click', () => {
@@ -514,13 +514,13 @@ export function mountMission(host, record, ctx) {
 
   const acts = el('div', 'sr-mission__acts');
   if (place.moves && !here) {
-    const go = button('sr-btn sr-btn--quiet sr-mission__go', M.go, 'mission-go');
+    const go = button('ui-btn ui-btn--quiet sr-mission__go', M.go, 'mission-go');
     go.title = M.goTitle;
     go.addEventListener('click', () => choose(ctx, mission, index, record));
     acts.appendChild(go);
   }
   if (world) {
-    const see = button('sr-btn sr-btn--quiet sr-mission__go', t(M.seeWorld, { world: world.name }), 'mission-world');
+    const see = button('ui-btn ui-btn--quiet sr-mission__go', t(M.seeWorld, { world: world.name }), 'mission-world');
     see.title = t(M.seeWorldTitle, { world: world.name, name: mission.display });
     see.addEventListener('click', () => seeWorld(ctx, event, world));
     acts.appendChild(see);

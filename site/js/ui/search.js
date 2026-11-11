@@ -624,7 +624,7 @@ export function createSearch(ctx, host) {
   input.setAttribute('aria-autocomplete', 'list');
   input.setAttribute('aria-haspopup', 'listbox');
 
-  const fly = button('sr-btn sr-btn--primary sr-search__fly', COPY.search.fly, COPY.search.flyTitle);
+  const fly = button('ui-btn ui-btn--primary sr-search__fly', COPY.search.fly, COPY.search.flyTitle);
   fly.disabled = true;
 
   row.appendChild(input);

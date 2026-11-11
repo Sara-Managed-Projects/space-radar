@@ -247,7 +247,7 @@ export function createDebris(ctx, host, opts = {}) {
     }
     root.appendChild(bars);
 
-    const map = el('button', 'sr-btn sr-btn--quiet sr-debris__map', st.onMap ? D.hide : D.show);
+    const map = el('button', 'ui-btn ui-btn--quiet sr-debris__map', st.onMap ? D.hide : D.show);
     map.type = 'button';
     map.setAttribute('aria-pressed', st.onMap ? 'true' : 'false');
     map.title = D.showTitle;
