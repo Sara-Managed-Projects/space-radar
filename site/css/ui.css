@@ -3720,6 +3720,52 @@ html.sr-phone .sr-chevron {
   transition: color var(--sr-fast) var(--sr-ease), background var(--sr-fast) var(--sr-ease);
 }
 
+/* Games (ui/explore.js, the maintainer 2026-11-10: "add also game icon on left board ... with some gradual
+   animation"): a pill beside the collapse chevron, and one in a phone's sheet. Its glow breathes in and out over
+   3.2 s, transform and opacity only: the ONE loop in the chrome, named in tests/test_tokens.mjs. Still under reduced
+   motion, paused wherever the panel is out of sight (a clear screen, the HUD, a kiosk reel, a trip, a folded sidebar). */
+.sr-games {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 36px;
+  margin: 0 var(--sp-2) 0 auto;
+  padding: 0 var(--sp-3) 0 var(--sp-2);
+  font: 600 var(--sr-fs-sm)/1 var(--sr-font-hud);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sr-text);
+  text-decoration: none;
+  border-radius: var(--sr-radius-pill);
+  box-shadow: inset 0 0 0 1px var(--sr-line);
+}
+.sr-games:hover { box-shadow: inset 0 0 0 1px var(--sr-ember); }
+.sr-games svg { position: relative; color: var(--sr-ember); }
+.sr-games::before {
+  position: absolute;
+  top: var(--sp-1);
+  left: var(--sp-1);
+  width: 28px;
+  height: 28px;
+  content: '';
+  background: var(--sr-ember-soft);
+  border-radius: 50%;
+  opacity: 0.35;
+  transform: scale(0.8);
+  animation: sr-games-breathe 3.2s var(--sr-ease) infinite alternate;
+  pointer-events: none;
+}
+@keyframes sr-games-breathe { to { opacity: 1; transform: scale(1.3); } }
+html:is(.sr-clean, .sr-hud, .sr-ambient, .sr-imagine-on, .sr-trip-mode) .sr-games::before,
+.sr-side-collapsed .sr-games::before,
+#sr-side.is-collapsed .sr-games::before { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .sr-games::before { animation: none; } }
+.sr-games--sheet { display: none; }
+html.sr-phone .sr-games--sheet { display: inline-flex; margin: var(--sp-3) var(--sp-4) var(--sp-1); }
+@media (pointer: coarse) { .sr-games { min-height: 44px; } }
+html.sr-phone .sr-games { min-height: 44px; }
+
 .sr-explore__collapse:hover {
   color: var(--sr-text);
   background: var(--sr-wash);
@@ -4300,8 +4346,9 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   color: var(--sr-text-dim);
 }
 
-/* Email alerts (ui/subscribe.js): a row under the list that opens in place, the card's disclosure
-   row; inside it a field as the search's well, the two boxes as What to show's, one quiet button. */
+/* Email alerts (ui/subscribe.js): a row under Coming up that opens in place, the card's disclosure row.
+   Inside it, the email updates' form (ui/subscribepop.js) with the sky alerts list; its rules arrive with it
+   (css/subscribe.css). */
 .sr-subscribe-host:empty {
   display: none;
 }
@@ -4323,62 +4370,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   .sr-subscribe__chev { transition: none; }
 }
 
-.sr-subscribe__form {
-  display: grid;
-  gap: var(--sp-2);
-}
-
 .sr-subscribe__form[hidden] {
-  display: none;
-}
-
-.sr-subscribe__email {
-  width: 100%;
-  height: 44px;
-  padding: 0 var(--sp-3);
-  font: 400 var(--sr-fs-body)/20px var(--sr-font);
-  color: var(--sr-text);
-  background: var(--sr-wash);
-  border: 1px solid transparent;
-  border-radius: var(--sr-radius);
-}
-
-.sr-subscribe__email::placeholder {
-  color: var(--sr-text-soft);
-}
-
-.sr-subscribe__email:focus-visible {
-  border-color: var(--sr-line-strong);
-  outline: 2px solid var(--sr-ember);
-  outline-offset: 2px;
-}
-
-html.sr-phone .sr-subscribe__email {
-  font-size: var(--sr-fs-input);
-}
-
-.sr-subscribe__row {
-  display: flex;
-  gap: var(--sp-3);
-  align-items: center;
-  min-height: 44px;
-  font: 400 var(--sr-fs-body)/20px var(--sr-font);
-  color: var(--sr-text);
-  cursor: pointer;
-}
-
-.sr-subscribe__submit {
-  justify-self: start;
-  min-height: 44px;
-}
-
-.sr-subscribe__status {
-  margin: 0;
-  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
-  color: var(--sr-text-dim);
-}
-
-.sr-subscribe__status[hidden] {
   display: none;
 }
 
@@ -4751,6 +4743,9 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 }
 
 .sr-pop[hidden] { display: none; }
+/* The email updates' popover (ui/rail.js #sr-sub): the kit's 320 px; its contents and their rules arrive with
+   ui/subscribepop.js (css/subscribe.css). */
+.sr-pop.sr-subpop { width: 320px; }
 
 .sr-show__list {
   margin: 8px 0 0;
@@ -5638,6 +5633,7 @@ html.sr-phone .sr-rail__btn--share,
 html.sr-phone .sr-rail__btn--clean,
 html.sr-phone .sr-rail__btn--tour,
 html.sr-phone .sr-rail__btn--blog,
+html.sr-phone .sr-rail__btn--sub,
 html.sr-phone .sr-rail__btn--github {
   display: none;
 }

@@ -1,6 +1,7 @@
 <!doctype html>
 <!-- Built by scripts/seo_pages.py from templates/page.html at deploy time. Not in git; do not edit
-     the built copy. The header and the footer are templates/partials/. -->
+     the built copy. The header and the footer are templates/partials/ (scripts/seo_chrome.py), the look is
+     css/tokens.css and css/static.css: the journal's design, from the shared kit. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -25,14 +26,13 @@
 <meta name="twitter:image" content="{{image}}">
 <meta name="twitter:image:alt" content="{{image_alt}}">
 <link rel="icon" href="{{icon}}">
-<link rel="preload" href="../fonts/inter-400-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="../fonts/barlow-semi-condensed-600-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../css/fonts.css">
-<link rel="stylesheet" href="../css/static.css">
+{{styles}}
 <script type="application/ld+json">{{jsonld}}</script>
 </head>
 <body>
-{{header}}<main{{live_attr}}>
+<a class="skip" href="#main">Skip to the content</a>
+{{header}}
+<main id="main"{{live_attr}}>
 {{body}}</main>
 {{footer}}{{script}}</body>
 </html>

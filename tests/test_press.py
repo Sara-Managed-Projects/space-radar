@@ -75,7 +75,9 @@ with tempfile.TemporaryDirectory() as tmp:
     check("MIT License" in page, "the licence is named from LICENSE")
     check("CREDITS.md" in page and "EMBEDDING.md" in page, "the credits and the embedding guide are linked")
     check("github.com/Sara-Managed-Projects/space-radar/issues/new" in page, "the contact is the project's GitHub")
-    check("mailto:" not in page and re.search(r"[\w.+-]+@[\w-]+\.[a-z]{2,}", page) is None, "no address on the page")
+    # The footer's subscribe form shows "you@example.org" as its field's placeholder (scripts/seo_subscribe.py): a sample
+    # in a reserved domain, not an address of ours, so the placeholder is not read here.
+    check("mailto:" not in page and re.search(r"[\w.+-]+@[\w-]+\.[a-z]{2,}", re.sub(r'placeholder="[^"]*"', "", page)) is None, "no address on the page")
     check("{{" not in page and not re.search(r"\b(TODO|TBD|lorem)\b", page, re.I), "no placeholder left")
     check(not re.search(r"!|stunning|amazing|seamless|unlock", re.sub(r"<!--.*?-->|<!doctype[^>]*>|<style>.*?</style>", "", page, flags=re.S | re.I)), "no gush and no exclamation mark")
 

@@ -1495,7 +1495,7 @@ SEO_CASES: list[tuple[str, str, str, str, str]] = [
      '<li><a href="../accuracy/index.html">Accuracy</a></li>\n', "", "starlink/index.html"),
     ("a built page with two H1", "built/about/index.html", "<h1>About Space Radar</h1>", "<h1>About Space Radar</h1><h1>Again</h1>", "about/index.html"),
     ("a link from a built page to a page that is not there", "built/teachers/index.html",
-     '<a class="live" href="../">Open it now</a>', '<a class="live" href="../nowhere/index.html">Open it now</a>', "teachers/index.html"),
+     '<a class="btn btn--map" href="../">Open it now</a>', '<a class="btn btn--map" href="../nowhere/index.html">Open it now</a>', "teachers/index.html"),
     ("an alias listed in the sitemap", "built/sitemap.xml",
      "</urlset>", "<url><loc>https://www.spaceradar.ai/iss/index.html</loc><lastmod>2026-10-01</lastmod></url>\n</urlset>", "iss/index.html"),
     ("an alias whose canonical is a page nobody lists", "built/iss/index.html",

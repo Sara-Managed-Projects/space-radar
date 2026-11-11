@@ -1803,19 +1803,6 @@ export const COPY = {
   "shells": {
     "radio": "بلغ البث الراديوي من الأرض مسافة {n} سنة ضوئية"
   },
-  "subscribe": {
-    "heading": "راسلني بما هو قادم",
-    "emailLabel": "عنوان بريدك الإلكتروني",
-    "emailPlaceholder": "you@example.com",
-    "pickOne": "اختر واحدًا على الأقل.",
-    "launchesLabel": "الإطلاقات القادمة",
-    "showersLabel": "ذروات زخات الشهب",
-    "approachesLabel": "الاقترابات القريبة",
-    "submit": "اشترك",
-    "sending": "نرسل…",
-    "pending": "راجع بريدك للتأكيد.",
-    "couldNotReach": "تعذر الوصول إلى خدمة الاشتراك."
-  },
   "groundDoor": {
     "stand": "قف هنا",
     "drive": "قف هنا وقُد",
@@ -5741,3 +5728,38 @@ COPY.skyLore.notHere = "لا يُرسم أي شكل من سماء {culture} حي
 COPY.skyLore.notHereNone = "لا يُرسم أي شكل من سماء {culture} حيث ضغطت.";
 COPY.skyLore.nearest = "قصة {name}";
 // b200-s4a-look: end
+
+// redesign 2026-11-10: begin -- machine-drafted: the Games link of the explore panel (copy/en.js games), the rail's
+// email updates (rail.subscribe), their popover and the row under Coming up (copy/en.subscribe.js emailUpdates;
+// comingUp is the old subscribe.heading, moved)
+COPY.rail.subscribe = "تحديثات بالبريد";
+COPY.games = {"label": "ألعاب", "title": "ألعاب فضائية من فريق Space Radar (تُفتح في علامة تبويب جديدة)", "href": "https://games.spaceradar.ai/"};
+COPY.emailUpdates = {
+  "title": "تحديثات مجانية بالبريد",
+  "text": "اختر ما تريد أن تعرف عنه. لن يُرسل شيء حتى تؤكد.",
+  "pick": "اختر واحدة على الأقل",
+  "news": "أخبار Space Radar",
+  "journal": "المجلة",
+  "games": "ألعاب فضائية",
+  "sky": "تنبيهات السماء",
+  "email": "عنوان البريد",
+  "placeholder": "you@example.org",
+  "button": "اشترك",
+  "sending": "جارٍ الإرسال…",
+  "retry": "أعد المحاولة",
+  "check": "تحقق من بريدك: أرسلنا رابطًا إلى {email}. لن يُرسل شيء حتى تنقر عليه.",
+  "invalidEmail": "لا يبدو هذا العنوان صحيحًا.",
+  "rateLimited": "محاولات كثيرة من هنا. حاول مرة أخرى بعد دقائق.",
+  "busy": "اشتراكات كثيرة اليوم. حاول مرة أخرى غدًا.",
+  "sendFailed": "تعذر إرسال البريد. حاول لاحقًا.",
+  "invalidLists": "اختر قائمة واحدة على الأقل.",
+  "other": "حدث خطأ ما. حاول مرة أخرى.",
+  "unreachable": "تعذر الوصول إلى الخادم.",
+  "privacy": "نحتفظ بعنوانك والقوائم التي تختارها فقط. لا بكسلات تتبع ولا روابط معاد كتابتها. في كل رسالة إلغاء اشتراك بنقرة واحدة.",
+  "privacyLink": "الخصوصية",
+  "honeypot": "اترك هذا فارغًا",
+  "close": "إغلاق",
+  "comingUp": "راسلني بما هو قادم",
+  "skyButton": "استلم تنبيهات السماء"
+};
+// redesign 2026-11-10: end

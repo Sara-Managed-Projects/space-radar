@@ -488,7 +488,8 @@ if [ "$WHAT" != "assets" ]; then
   # served as binary/octet-stream is one a crawler may refuse. No-cache like index.html, so a new
   # page is in the sitemap the moment it is deployed. 404.html is what CloudFront answers for a
   # missing path once its error response names it (the maintainer's setting, in the SEO pull request).
-  # object-pages.json is the share sheet's map from a record to its page (ui/sharesheet.js).
+  # object-pages.json is the share sheet's map from a record to its page (ui/sharesheet.js). llms.txt and
+  # llms-full.txt are what a language model reads (scripts/seo_llms.py), plain text like robots.txt.
   # THE SERVICE WORKER, LAST, AND THE ORDER IS THE POINT (site/sw.js, scripts/stamp_sw.py). The
   # copy uploaded is stamped with this build: the SHA-256 of every file of the app as it is in
   # site/ right now. A browser that reads the new sw.js downloads exactly those files and refuses
@@ -512,6 +513,7 @@ if [ "$WHAT" != "assets" ]; then
   for f in "$SITE/index.html:text/html; charset=utf-8" "$BUILT/404.html:text/html; charset=utf-8" \
            "$SITE/robots.txt:text/plain; charset=utf-8" "$BUILT/sitemap.xml:application/xml; charset=utf-8" \
            "$BUILT/sitemap-images.xml:application/xml; charset=utf-8" \
+           "$BUILT/llms.txt:text/plain; charset=utf-8" "$BUILT/llms-full.txt:text/plain; charset=utf-8" \
            "$BUILT/object-pages.json:application/json; charset=utf-8" \
            "$BUILT/$KEYFILE:text/plain; charset=utf-8" \
            "$SITE/manifest.webmanifest:application/manifest+json; charset=utf-8" \
@@ -529,7 +531,7 @@ if [ "$WHAT" != "assets" ]; then
 fi
 
 if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
-  PATHS=("/" "/index.html" "/js/*" "/css/*" "/vendor/*" "/t/*" "/lab/*" "/o/*" "/press/*" "/embed/*" "/robots.txt" "/sitemap.xml" "/sitemap-images.xml" "/404.html" "/object-pages.json" "/manifest.webmanifest" "/build.json" "/sw.js")
+  PATHS=("/" "/index.html" "/js/*" "/css/*" "/vendor/*" "/t/*" "/lab/*" "/o/*" "/press/*" "/embed/*" "/robots.txt" "/sitemap.xml" "/sitemap-images.xml" "/llms.txt" "/llms-full.txt" "/404.html" "/object-pages.json" "/manifest.webmanifest" "/build.json" "/sw.js")
   # The gzip copies keep their names too.
   [ "$PRECOMPRESS" = "1" ] && PATHS+=("/_gz/*")
   # The pages seo_pages.py built, each by its directory, and the pictures (share/) with them: all of

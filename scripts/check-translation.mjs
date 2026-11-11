@@ -84,6 +84,8 @@ async function english() {
   // b200-f10-stars3d: begin -- the words of the 3D star map's AT-HYG tier (copy/en.startiers.js, forge #140)
   await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.startiers.js')).href);
   // b200-f10-stars3d: end
+  // redesign 2026-11-10: the email updates' popover (copy/en.subscribe.js, ui/subscribepop.js), drafted in every language
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.subscribe.js')).href);
   return { COPY: base.COPY, GLOSSARY: base.GLOSSARY };
 }
 

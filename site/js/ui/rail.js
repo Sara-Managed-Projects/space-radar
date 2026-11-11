@@ -10,6 +10,8 @@
 //   [tour]     The tour (ui/onboarding.js, internal spec 0074; the maintainer, 2026-10-14: "on the right should
 //              appear another icon of onboarding"): fetched on the first press, a row of More on a phone
 //   [blog]     The journal at blog.spaceradar.ai (the maintainer, 2026-11-02), a link in a new tab, a row of More on a phone
+//   [mail]     Free email updates (2026-11-10): a popover, #sr-sub, built by ui/subscribepop.js on the first press (the What
+//              to show pattern), a row of More on a phone. It opens only on a click; Escape, Close and a press outside shut it
 //   [github]   The repository, the mark from ui/github.js (the maintainer, 2026-10-02: the next icon after the eye)
 //   [more]     The phone only: Share, Hide and the repository, folded into one menu (below)
 //
@@ -58,6 +60,8 @@ const HIDE_PATH = [
 const TOUR_PATH = ['M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z', 'M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3', 'M12 17h.01'];
 
 // Lucide `newspaper` (ISC): the mark for the journal.
+// Lucide `mail` (ISC), the rectangle as a path: the envelope of the email updates.
+const MAIL_PATH = ['M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z', 'm22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7'];
 const BLOG_PATH = ['M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2', 'M18 14h-8', 'M15 18h-5', 'M10 6h8v4h-8V6Z'];
 
 /** What a key press means to the rail, or null. Pure, like ui/cleanview.js wantsToggle. */
@@ -137,6 +141,7 @@ export function createRail(ctx, host) {
     // (internal #419 item 5).
     if (ctx && ctx.keyhint && typeof ctx.keyhint.hide === 'function') ctx.keyhint.hide('popover');
     if (!menu.hidden) closeMore(false);
+    closeSub();
     pop.hidden = false;
     showBtn.setAttribute('aria-expanded', 'true');
     root.classList.add('is-open');
@@ -174,6 +179,7 @@ export function createRail(ctx, host) {
   const toggleShare = () => {
     if (share.isOpen()) { share.close(); return; }
     closeShow(false);
+    closeSub();
     share.open({ opener: shareBtn });
   };
   shareBtn.addEventListener('click', toggleShare);
@@ -204,6 +210,24 @@ export function createRail(ctx, host) {
   blogLink.title = COPY.rail.blog;
   blogLink.appendChild(icon(BLOG_PATH));
   root.appendChild(blogLink);
+
+  // --- Email updates: the What to show pattern, its contents fetched on the first press ------------
+  const subBtn = document.createElement('button');
+  subBtn.type = 'button';
+  subBtn.className = 'sr-rail__btn sr-rail__btn--sub';
+  subBtn.setAttribute('aria-label', COPY.rail.subscribe);
+  subBtn.title = COPY.rail.subscribe;
+  subBtn.setAttribute('aria-haspopup', 'dialog');
+  subBtn.setAttribute('aria-expanded', 'false');
+  subBtn.appendChild(icon(MAIL_PATH));
+  root.appendChild(subBtn);
+  // The popover, its closing (Escape, Close, a press outside) and its focus are the lazy module's: the boot graph holds
+  // the button alone. Opening it closes the other popovers (ui/subscribepop.js); opening one of them closes it (closeSub).
+  let sub = null;
+  const subscribe = () => sub || (sub = import('./subscribepop.js').then((m) => m.mountSubscribe(ctx, subBtn, moreBtn))
+    .catch((e) => { sub = null; console.warn('Email updates did not load', e); }));
+  const closeSub = () => { if (sub) sub.then((s) => s && s.close(false)); };
+  subBtn.addEventListener('click', () => subscribe().then((s) => s && s.toggle(subBtn)));
 
   // --- The repository: GitHub's own mark, after the eye ---------------------------------------------
   const gitHub = createGitHubMark(root, { className: 'sr-rail__btn sr-rail__btn--github' });
@@ -246,6 +270,7 @@ export function createRail(ctx, host) {
   menuRow('button', icon(SHARE_PATH), COPY.rail.menuShare, () => share.open({ opener: moreBtn }));
   menuRow('button', icon(HIDE_PATH), COPY.rail.menuHide, () => { if (ctx && ctx.cleanView) ctx.cleanView.set(true); });
   menuRow('button', icon(TOUR_PATH), COPY.rail.menuTour, toggleTour);
+  menuRow('button', icon(MAIL_PATH), COPY.rail.subscribe, () => subscribe().then((s) => s && s.open(moreBtn)));
   const blogRow = menuRow('a', icon(BLOG_PATH), COPY.rail.blog, () => {});
   blogRow.href = COPY.rail.blogHref;
   blogRow.target = '_blank';
@@ -263,6 +288,7 @@ export function createRail(ctx, host) {
   function openMore() {
     if (!menu.hidden) return;
     closeShow(false);
+    closeSub();
     if (ctx && ctx.share) ctx.share.close();
     menu.hidden = false;
     moreBtn.setAttribute('aria-expanded', 'true');

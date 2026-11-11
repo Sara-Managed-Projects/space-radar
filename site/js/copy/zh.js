@@ -1803,19 +1803,6 @@ export const COPY = {
   "shells": {
     "radio": "来自地球的无线电已经传到了 {n} 光年远"
   },
-  "subscribe": {
-    "heading": "用邮件告诉我接下来有什么",
-    "emailLabel": "你的电子邮箱地址",
-    "emailPlaceholder": "you@example.com",
-    "pickOne": "至少勾选一项。",
-    "launchesLabel": "即将进行的发射",
-    "showersLabel": "流星雨的极大期",
-    "approachesLabel": "近距离飞掠",
-    "submit": "订阅",
-    "sending": "正在发送……",
-    "pending": "请查看邮箱并确认。",
-    "couldNotReach": "无法连接订阅服务。"
-  },
   "groundDoor": {
     "stand": "站在这里",
     "drive": "站在这里并驾驶",
@@ -5741,3 +5728,38 @@ COPY.skyLore.notHere = "你点按的地方没有画出{culture}星空的任何�
 COPY.skyLore.notHereNone = "你点按的地方没有画出{culture}星空的任何图形。";
 COPY.skyLore.nearest = "{name}的故事";
 // b200-s4a-look: end
+
+// redesign 2026-11-10: begin -- machine-drafted: the Games link of the explore panel (copy/en.js games), the rail's
+// email updates (rail.subscribe), their popover and the row under Coming up (copy/en.subscribe.js emailUpdates;
+// comingUp is the old subscribe.heading, moved)
+COPY.rail.subscribe = "邮件更新";
+COPY.games = {"label": "游戏", "title": "Space Radar 团队的太空游戏（在新标签页中打开）", "href": "https://games.spaceradar.ai/"};
+COPY.emailUpdates = {
+  "title": "免费邮件更新",
+  "text": "选择你想了解的内容。在你确认之前不会发送任何邮件。",
+  "pick": "至少选择一项",
+  "news": "Space Radar 新闻",
+  "journal": "日志",
+  "games": "太空游戏",
+  "sky": "天象提醒",
+  "email": "电子邮件地址",
+  "placeholder": "you@example.org",
+  "button": "订阅",
+  "sending": "正在发送…",
+  "retry": "重试",
+  "check": "请查收邮件：我们已向 {email} 发送了一个链接。在你点击它之前不会发送任何邮件。",
+  "invalidEmail": "这个地址看起来不正确。",
+  "rateLimited": "此处尝试次数过多。请几分钟后再试。",
+  "busy": "今天订阅的人很多。请明天再试。",
+  "sendFailed": "我们无法发送邮件。请稍后再试。",
+  "invalidLists": "请至少选择一个列表。",
+  "other": "出了点问题。请重试。",
+  "unreachable": "无法连接服务器。",
+  "privacy": "我们只保存你的地址和你选择的列表，别无其他。没有跟踪像素，没有改写的链接。每封邮件都可一键退订。",
+  "privacyLink": "隐私",
+  "honeypot": "此项请留空",
+  "close": "关闭",
+  "comingUp": "用邮件告诉我接下来有什么",
+  "skyButton": "接收天象提醒"
+};
+// redesign 2026-11-10: end

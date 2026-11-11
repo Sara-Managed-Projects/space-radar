@@ -1810,19 +1810,6 @@ export const COPY = {
   "shells": {
     "radio": "גלי הרדיו מכדור הארץ הגיעו למרחק של {n} שנות אור"
   },
-  "subscribe": {
-    "heading": "שלח לי אימייל על מה שמגיע בקרוב",
-    "emailLabel": "כתובת האימייל שלך",
-    "emailPlaceholder": "you@example.com",
-    "pickOne": "סמן לפחות אחד.",
-    "launchesLabel": "שיגורים קרובים",
-    "showersLabel": "שיאים של ממטרי מטאורים",
-    "approachesLabel": "מעברים קרובים",
-    "submit": "הרשם",
-    "sending": "שולח…",
-    "pending": "בדוק את האימייל שלך כדי לאשר.",
-    "couldNotReach": "לא הצלחנו להגיע לשירות ההרשמה."
-  },
   "groundDoor": {
     "stand": "לעמוד כאן",
     "drive": "לעמוד כאן ולנהוג",
@@ -5748,3 +5735,38 @@ COPY.skyLore.notHere = "במקום שבו לחצתם לא מצוירת אף דמ
 COPY.skyLore.notHereNone = "במקום שבו לחצתם לא מצוירת אף דמות משמי {culture}.";
 COPY.skyLore.nearest = "הסיפור של {name}";
 // b200-s4a-look: end
+
+// redesign 2026-11-10: begin -- machine-drafted: the Games link of the explore panel (copy/en.js games), the rail's
+// email updates (rail.subscribe), their popover and the row under Coming up (copy/en.subscribe.js emailUpdates;
+// comingUp is the old subscribe.heading, moved)
+COPY.rail.subscribe = "עדכונים במייל";
+COPY.games = {"label": "משחקים", "title": "משחקי חלל של צוות Space Radar (נפתח בכרטיסייה חדשה)", "href": "https://games.spaceradar.ai/"};
+COPY.emailUpdates = {
+  "title": "עדכונים בחינם במייל",
+  "text": "בחרו על מה תרצו לשמוע. דבר לא נשלח עד שתאשרו.",
+  "pick": "בחרו לפחות אחת",
+  "news": "חדשות Space Radar",
+  "journal": "היומן",
+  "games": "משחקי חלל",
+  "sky": "התראות שמיים",
+  "email": "כתובת מייל",
+  "placeholder": "you@example.org",
+  "button": "להרשמה",
+  "sending": "שולח…",
+  "retry": "לנסות שוב",
+  "check": "בדקו את תיבת הדואר: שלחנו קישור אל {email}. דבר לא נשלח עד שתלחצו עליו.",
+  "invalidEmail": "הכתובת הזו לא נראית תקינה.",
+  "rateLimited": "יותר מדי ניסיונות מכאן. נסו שוב בעוד כמה דקות.",
+  "busy": "הרבה הרשמות היום. נסו שוב מחר.",
+  "sendFailed": "לא הצלחנו לשלוח את המייל. נסו שוב מאוחר יותר.",
+  "invalidLists": "בחרו לפחות רשימה אחת.",
+  "other": "משהו השתבש. נסו שוב.",
+  "unreachable": "לא ניתן להגיע לשרת.",
+  "privacy": "אנחנו שומרים את הכתובת שלכם ואת הרשימות שבחרתם, ותו לא. בלי פיקסלי מעקב, בלי קישורים משוכתבים. בכל מייל יש הסרה בלחיצה אחת.",
+  "privacyLink": "פרטיות",
+  "honeypot": "השאירו ריק",
+  "close": "סגירה",
+  "comingUp": "שלח לי אימייל על מה שמגיע בקרוב",
+  "skyButton": "לקבל התראות שמיים"
+};
+// redesign 2026-11-10: end

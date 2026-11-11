@@ -69,7 +69,8 @@ from pathlib import Path
 import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from seo_footer import sitelinks  # noqa: E402
+from seo_chrome import footer, header, styles  # noqa: E402
+from seo_subscribe import script as subscribe_script  # noqa: E402
 from gen_tours_js import FLIGHT_ESTIMATE_MS, RETURN_ESTIMATE_MS, SETTLE_MS, dwell_ms, expand_card  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -107,25 +108,27 @@ PAGE = """<!doctype html>
 <meta property="og:url" content="{url}">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="{url}">
-<link rel="stylesheet" href="../css/fonts.css">
-<link rel="stylesheet" href="../css/static.css">
+{styles}
 <script type="application/ld+json">{ld}</script>
 <meta http-equiv="refresh" content="0; url=../#trip={id}">
 </head>
 <body>
 <script>location.replace('../' + location.search + '#trip={id}');</script>
-<header class="top"><div class="top__in"><a class="mark" href="../">Space Radar</a><nav aria-label="Site"><a href="https://blog.spaceradar.ai/">Blog</a></nav><a class="openmap" href="../">Open the 3D map</a></div></header>
-<main>
-<p class="micro">Guided trip</p>
+<a class="skip" href="#main">Skip to the content</a>
+{header}
+<main id="main">
+<header class="ph"><div class="wrap ph__in">
+<p class="eyebrow">Guided trip</p>
 <h1>{title}</h1>
 <p class="lead">{blurb}</p>
-<p class="opentrip"><a href="../#trip={id}">Open the trip: {title}</a></p>
+<p class="cta opentrip"><a href="../#trip={id}">Open the trip: {title}</a></p>
+</div></header>
+<div class="doc">
 {stops}<p>{truth}</p>
+</div>
 </main>
-<footer><div class="foot__in">
-{sitelinks}
-</div></footer>
-</body>
+{footer}
+{script}</body>
 </html>
 """
 
@@ -259,7 +262,10 @@ def page_for(trip: dict, host: str) -> str:
         blurb=esc(blurb),
         truth=esc(truth_line(trip)),
         stops=stops_html_for(trip),
-        sitelinks=sitelinks("../"),
+        styles=styles("../"),
+        header=header("../", ember=False),
+        footer=footer("../", url),
+        script=subscribe_script("../"),
         description=esc(description_for(blurb)),
         image=esc(image_for(trip_id, host)),
         image_alt=esc(image_alt_for(trip_id, title)),

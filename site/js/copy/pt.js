@@ -1874,19 +1874,6 @@ export const COPY = {
   "shells": {
     "radio": "O rádio da Terra já chegou a {n} anos-luz"
   },
-  "subscribe": {
-    "heading": "O que vem aí, por e-mail",
-    "emailLabel": "Seu e-mail",
-    "emailPlaceholder": "voce@exemplo.com",
-    "pickOne": "Marque pelo menos uma.",
-    "launchesLabel": "Próximos lançamentos",
-    "showersLabel": "Picos de chuvas de meteoros",
-    "approachesLabel": "Passagens próximas",
-    "submit": "Assinar",
-    "sending": "Enviando…",
-    "pending": "Confira seu e-mail para confirmar.",
-    "couldNotReach": "Não foi possível acessar o serviço de assinatura."
-  },
   "groundDoor": {
     "stand": "Ficar aqui",
     "drive": "Ficar aqui e dirigir",
@@ -5821,3 +5808,38 @@ COPY.skyLore.notHere = "Onde você tocou não há nenhuma figura do céu {cultur
 COPY.skyLore.notHereNone = "Onde você tocou não há nenhuma figura do céu {culture} desenhada.";
 COPY.skyLore.nearest = "A história de {name}";
 // b200-s4a-look: end
+
+// redesign 2026-11-10: begin -- machine-drafted: the Games link of the explore panel (copy/en.js games), the rail's
+// email updates (rail.subscribe), their popover and the row under Coming up (copy/en.subscribe.js emailUpdates;
+// comingUp is the old subscribe.heading, moved)
+COPY.rail.subscribe = "Novidades por e-mail";
+COPY.games = {"label": "Jogos", "title": "Jogos espaciais da equipe do Space Radar (abre em uma nova aba)", "href": "https://games.spaceradar.ai/"};
+COPY.emailUpdates = {
+  "title": "Novidades grátis por e-mail",
+  "text": "Escolha sobre o que quer saber. Nada é enviado até você confirmar.",
+  "pick": "Escolha pelo menos uma",
+  "news": "Notícias do Space Radar",
+  "journal": "O Diário",
+  "games": "Jogos espaciais",
+  "sky": "Alertas do céu",
+  "email": "Endereço de e-mail",
+  "placeholder": "voce@example.org",
+  "button": "Inscrever-se",
+  "sending": "Enviando…",
+  "retry": "Tentar de novo",
+  "check": "Confira sua caixa de entrada: enviamos um link para {email}. Nada é enviado até você clicar nele.",
+  "invalidEmail": "Esse endereço não parece correto.",
+  "rateLimited": "Tentativas demais daqui. Tente de novo em alguns minutos.",
+  "busy": "Muitas inscrições hoje. Tente de novo amanhã.",
+  "sendFailed": "Não conseguimos enviar o e-mail. Tente de novo mais tarde.",
+  "invalidLists": "Escolha pelo menos uma lista.",
+  "other": "Algo deu errado. Tente de novo.",
+  "unreachable": "Não foi possível falar com o servidor.",
+  "privacy": "Guardamos seu endereço e as listas que você escolher, nada mais. Sem pixels de rastreamento, sem links reescritos. Todo e-mail tem descadastro com um clique.",
+  "privacyLink": "Privacidade",
+  "honeypot": "Deixe isto vazio",
+  "close": "Fechar",
+  "comingUp": "O que vem aí, por e-mail",
+  "skyButton": "Receber alertas do céu"
+};
+// redesign 2026-11-10: end

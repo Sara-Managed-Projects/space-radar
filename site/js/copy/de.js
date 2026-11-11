@@ -1884,19 +1884,6 @@ export const COPY = {
   "shells": {
     "radio": "Funk von der Erde hat {n} Lichtjahre erreicht"
   },
-  "subscribe": {
-    "heading": "Was kommt, per E-Mail",
-    "emailLabel": "Deine E-Mail-Adresse",
-    "emailPlaceholder": "du@example.com",
-    "pickOne": "Hake mindestens eines an.",
-    "launchesLabel": "Kommende Starts",
-    "showersLabel": "Maxima von Meteorströmen",
-    "approachesLabel": "Nahe Vorbeiflüge",
-    "submit": "Abonnieren",
-    "sending": "Wird gesendet …",
-    "pending": "Prüfe deine E-Mails, um zu bestätigen.",
-    "couldNotReach": "Der Abo-Dienst war nicht erreichbar."
-  },
   "groundDoor": {
     "stand": "Hier stehen",
     "drive": "Hier stehen und fahren",
@@ -5831,3 +5818,38 @@ COPY.skyLore.notHere = "Wo du getippt hast, ist keine Figur des {culture} Himmel
 COPY.skyLore.notHereNone = "Wo du getippt hast, ist keine Figur des {culture} Himmels gezeichnet.";
 COPY.skyLore.nearest = "Die Geschichte von {name}";
 // b200-s4a-look: end
+
+// redesign 2026-11-10: begin -- machine-drafted: the Games link of the explore panel (copy/en.js games), the rail's
+// email updates (rail.subscribe), their popover and the row under Coming up (copy/en.subscribe.js emailUpdates;
+// comingUp is the old subscribe.heading, moved)
+COPY.rail.subscribe = "E-Mail-Neuigkeiten";
+COPY.games = {"label": "Spiele", "title": "Weltraumspiele des Space-Radar-Teams (öffnet in einem neuen Tab)", "href": "https://games.spaceradar.ai/"};
+COPY.emailUpdates = {
+  "title": "Kostenlose Neuigkeiten per E-Mail",
+  "text": "Wähle, worüber du hören willst. Nichts wird gesendet, bevor du bestätigst.",
+  "pick": "Wähle mindestens eine",
+  "news": "Space-Radar-Neuigkeiten",
+  "journal": "Das Journal",
+  "games": "Weltraumspiele",
+  "sky": "Himmelsalarme",
+  "email": "E-Mail-Adresse",
+  "placeholder": "du@example.org",
+  "button": "Abonnieren",
+  "sending": "Wird gesendet…",
+  "retry": "Erneut versuchen",
+  "check": "Sieh in dein Postfach: Wir haben einen Link an {email} geschickt. Nichts wird gesendet, bevor du ihn anklickst.",
+  "invalidEmail": "Diese Adresse sieht nicht richtig aus.",
+  "rateLimited": "Zu viele Versuche von hier. Versuche es in ein paar Minuten erneut.",
+  "busy": "Heute gibt es viele Anmeldungen. Bitte versuche es morgen erneut.",
+  "sendFailed": "Wir konnten die E-Mail nicht senden. Bitte versuche es später erneut.",
+  "invalidLists": "Wähle mindestens eine Liste.",
+  "other": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+  "unreachable": "Der Server war nicht erreichbar.",
+  "privacy": "Wir speichern deine Adresse und die gewählten Listen, sonst nichts. Keine Tracking-Pixel, keine umgeschriebenen Links. Jede E-Mail hat eine Abmeldung mit einem Klick.",
+  "privacyLink": "Datenschutz",
+  "honeypot": "Dieses Feld leer lassen",
+  "close": "Schließen",
+  "comingUp": "Was kommt, per E-Mail",
+  "skyButton": "Himmelsalarme erhalten"
+};
+// redesign 2026-11-10: end

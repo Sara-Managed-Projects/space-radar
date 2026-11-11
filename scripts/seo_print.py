@@ -58,12 +58,12 @@ def pages(host: str) -> list[Page]:
     refused = paper_models.plan()[1]
     left_out = "".join(f"<li>{esc(r['world'].title())}: {esc(r['why'])}.</li>" for r in refused)
     body = (
-        '<p class="micro">Print and make</p>\n'
+        '<p class="eyebrow">Print and make</p>\n'
         f"<h1>Paper planets and models to print</h1>\n"
         f'<p class="lead">{f"A paper globe of every world Space Radar has a real map of, {worlds} of them{twice}, " if n else ""}'
         "a Moon-phase wheel, a distance-ladder strip and a fold-up James Webb Space Telescope. Each is one page of PDF, free, with no account, made by a script from the "
         "same maps and numbers the live map uses, so a sheet never disagrees with the app.</p>\n"
-        '<div class="cta"><a class="live" href="../">Open the live map</a><p>Every globe has a QR code that opens its world there.</p></div>\n'
+        '<div class="cta"><a class="btn btn--map" href="../">Open the live map</a><p>Every globe has a QR code that opens its world there.</p></div>\n'
         "<h2>How to print</h2>\n"
         "<ul>\n<li>Print at <strong>actual size</strong> (100 %, not \"fit to page\"): each sheet fits A4 and US Letter, landscape, with 10 mm to spare.</li>\n"
         "<li>Thick paper (160 to 200 g/m²) folds and holds best; thin card works for the Moon wheel.</li>\n"

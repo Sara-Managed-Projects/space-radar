@@ -224,6 +224,10 @@ const DEFERRED = {
   'js/scene/stars3dtree.js': 'the octree\'s arithmetic: with scene/stars3dtiles.js and its worker',
   'js/scene/stars3dworker.js': 'the octree\'s fetching: a worker scene/stars3dtiles.js starts on a rung of the ladder',
   'js/copy/en.startiers.js': 'the AT-HYG tier\'s words: with scene/stars3dtiles.js',
+  // redesign 2026-11-10: begin
+  'js/ui/subscribepop.js': 'the email updates\' popover: ui/rail.js fetches it on the first press of the envelope',
+  'js/copy/en.subscribe.js': 'the email updates\' words: with ui/subscribepop.js',
+  // redesign 2026-11-10: end
   // b200-f10-stars3d: end
 };
 // The light embed (js/embedlite.js) has no star systems at all: neither file can reach it.

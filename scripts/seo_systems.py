@@ -314,22 +314,22 @@ def system_page(sysd: dict, others: list[dict], host: str, old: dict | None, tod
             f'<a href="{KOPPARAPU}" rel="nofollow">ApJ Letters 787, L29</a>. Temperatures assume the Earth\'s reflectivity (0.3). '
             f"This page was built {esc(today)} from those registries; the numbers are not live.</p>\n{old_sources}")
 
-    body = (f'<p class="micro"><span class="dot" style="background:#ffc28a"></span>Star system, {esc(ly or "distance unknown")}</p>\n'
+    body = (f'<p class="eyebrow"><span class="dot" style="background:#ffc28a"></span>Star system, {esc(ly or "distance unknown")}</p>\n'
             f"<h1>{esc(display)} and its {count_words} {plural}</h1>\n"
             f'<p class="lead">{esc(lead)}</p>\n'
             f"<p>{esc(display)} is a star of spectral type {esc(sysd['spect'] or 'the table does not record')}"
             f"{', ' + esc(ly) + ' from us' if ly else ''}, with {count_words} known {plural}"
             f"{'. This page takes them one at a time.' if n > 1 else '.'}</p>\n"
-            f'<div class="cta"><a class="live" href="../#go={esc(sysd["id"])}">Fly to {esc(display)} in 3D</a>'
+            f'<div class="cta"><a class="btn btn--map" href="../#go={esc(sysd["id"])}">Fly to {esc(display)} in 3D</a>'
             f"<p>Drawn at the system's own scale, every orbit from the Archive's numbers.</p></div>\n"
-            f'<div class="note"><p><strong>What is measured, what is computed, what is imagined.</strong></p>'
+            f'<div class="callout callout--note"><p><strong>What is measured, what is computed, what is imagined.</strong></p>'
             f"<p><span class=\"badge measured\">measured</span> The period, and where the table says so the width and the mass, by the method named in each section.</p>"
             f"<p><span class=\"badge computed\">computed</span> Anything marked computed: the size of an orbit where Kepler's third law corrects the table, the temperature of a bare ball at that distance, the starlight received, and the habitable zone.</p>"
             f"<p><span class=\"badge imagined\">imagined</span> The picture is an artist's impression. Nobody has seen the surface of a planet of another star: its colour, clouds and land are not known, and the share picture says so in its corner.</p></div>\n"
-            + (f'<h2>The planets</h2>\n<ul class="links">{toc}</ul>\n' if toc else "")
+            + (f'<h2>The planets</h2>\n<ul class="tagcloud">{toc}</ul>\n' if toc else "")
             + sections
             + f"<h2>The star</h2>\n<dl>{star_dl}</dl>\n"
-            + (f'<h2>Other systems you can fly to</h2>\n<ul class="links">{neighbours}</ul>\n' if neighbours else "")
+            + (f'<h2>Other systems you can fly to</h2>\n<ul class="tagcloud">{neighbours}</ul>\n' if neighbours else "")
             + '<p><a href="../t/travel-to-exoplanets.html">Take the trip: Travel to exoplanets</a></p>\n')
 
     planet_nodes = [{"@type": "Thing", "@id": f"{url}#{p['go']}", "name": p["name"], "description": first_sentence(p, sysd["dist_pc"]),

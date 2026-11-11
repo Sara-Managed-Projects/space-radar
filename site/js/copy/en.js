@@ -741,6 +741,14 @@ export const COPY = {
     // The tour (ui/onboarding.js, internal spec 0074): the fourth tool, and its row on a phone.
     tour: 'Take the tour',
     menuTour: 'Take the tour',
+    // Free email updates (ui/subscribe.js, fetched on the first press): the envelope, and its row on a phone.
+    subscribe: 'Email updates',
+  },
+  // The team's space games (games.spaceradar.ai), a link at the top of the explore panel (ui/explore.js).
+  games: {
+    label: 'Games',
+    title: 'Space games from the Space Radar team (opens in a new tab)',
+    href: 'https://games.spaceradar.ai/',
   },
   // The time pill (0061 §7, ui/timepill.js).
   timePill: {

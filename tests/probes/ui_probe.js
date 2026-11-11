@@ -287,10 +287,11 @@ if (AUDIT) {
       sub.scrollIntoView({ block: 'center' });
       sub.click();
       await state('subscribe-open', { settle: 600 });
-      // Its error line without a request: an address and neither box ticked stops before the send.
+      // Its error without a request: the field left empty, the browser's own check stops the send. (Since
+      // 2026-11-10 the row posts to the live subscription service: a probe must never press it with an address.)
+      await until(() => sub.parentElement.querySelector('form'));
       const form = sub.parentElement.querySelector('form');
-      form.querySelector('input[type=email]').value = 'you@example.com';
-      for (const box of form.querySelectorAll('input[type=checkbox]')) box.checked = false;
+      form.querySelector('input[type=email]').value = '';
       form.querySelector('button[type=submit]').click();
       await state('subscribe-error', { settle: 600 });
       sub.click();

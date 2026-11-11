@@ -159,23 +159,6 @@ Object.assign(COPY, {
   shells: {
     radio: 'Radio from Earth has reached {n} light-years',
   },
-  // ui/subscribe.js (issue #251, close approaches #377): email-only alerts for upcoming
-  // launches, meteor shower peaks and close approaches -- the same for every subscriber,
-  // never a per-location pass alert (that is issue #290).
-  subscribe: {
-    // The row's label under Coming up: one line in a 320 px column (spec 0061 req 11).
-    heading: 'Email me what\'s coming up',
-    emailLabel: 'Your email address',
-    emailPlaceholder: 'you@example.com',
-    pickOne: 'Tick at least one.',
-    launchesLabel: 'Upcoming launches',
-    showersLabel: 'Meteor shower peaks',
-    approachesLabel: 'Close approaches',
-    submit: 'Subscribe',
-    sending: 'Sending…',
-    pending: 'Check your email to confirm.',
-    couldNotReach: 'Could not reach the subscription service.',
-  },
 
   // A landing site's door to its measured ground (ui/cards.js, scene/groundstage.js openGround; 2.0.1). `noDrive` is on
   // the cards of the rovers on the Moon, which have no measured ground here.

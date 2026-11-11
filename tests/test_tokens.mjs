@@ -422,6 +422,8 @@ check(all.some((r) => /:where\(button\):active/.test(r.selector) && has(r, 'tran
 check(all.some((r) => r.at === '@starting-style' && /\.sr-card\.sr-float/.test(r.selector) && has(r, 'opacity', '0') && has(r, 'transform', 'translateY(12px)')), 'the card opens from 12 px below, from nothing');
 check(all.some((r) => /prefers-reduced-motion: reduce/.test(r.at) && /\.sr-float/.test(r.selector) && has(r, 'transition', 'opacity 120ms linear')), 'reduced motion is a 120 ms fade and nothing else');
 check(token('--sr-fast') === '140ms' && token('--sr-mid') === '220ms' && token('--sr-slow') === '320ms', 'motion is 140 / 220 / 320 ms');
+check(all.some((r) => /prefers-reduced-motion:\s*reduce/.test(r.at) && r.selector.trim() === '.sr-games::before' && has(r, 'animation', 'none')) && all.some((r) => /animation-play-state/.test(r.body) && /\.sr-clean/.test(r.selector) && /\.sr-games::before/.test(r.selector)),
+  'the Games link\'s one loop stops under reduced motion and pauses on a clear screen');
 check(!/@keyframes\s+[\w-]*(pulse|bounce|glow)/i.test(FILES.map((f) => readFileSync(join(ROOT, f), 'utf8')).join('\n')), 'no bounce and no glow pulse');
 
 // --- 9b. motion from the tokens (docs/ui-guide.md section 2.5 and 7; spec 0061 req 12) ----------
@@ -431,9 +433,14 @@ check(!/@keyframes\s+[\w-]*(pulse|bounce|glow)/i.test(FILES.map((f) => readFileS
 // (docs/design-language.md): the boot veil and its one waiting mark in site.css, and a trip
 // subject's label settling over the scene (ui/labels.js EMPHASIS_MS, held by tests/test_labels.mjs).
 const SCENE_MOTION = new Set(['.boot', '.boot-mark::after', '#labels .label.is-subject .label__text', '#labels .label.is-dimmed']);
+// THE ONE LOOP (the maintainer, 2026-11-10: the Games link in the explore panel, "make it blinking or with some gradual
+// animation"): its glow breathes over 3.2 s, transform and opacity only. Held here instead: it is still under reduced
+// motion, and paused when the panel is out of sight (ui.css, next to the rule).
+const MAINTAINER_LOOP = new Set(['.sr-games::before']);
 const MOTION_PROPS = new Set(['transition', 'transition-duration', 'transition-delay', 'transition-timing-function', 'animation', 'animation-duration', 'animation-delay', 'animation-timing-function']);
 for (const r of all) {
   if (r.selector.split(',').every((x) => SCENE_MOTION.has(x.trim()))) continue;
+  if (MAINTAINER_LOOP.has(r.selector.trim()) && r.at === '') continue;
   // `-reduced` in a class is the same promise made from JavaScript (ui/hud.js reads the media query).
   const reduced = /prefers-reduced-motion:\s*reduce/.test(r.at) || /-reduced\b/.test(r.selector);
   for (const [prop, value] of decls(r.body)) {

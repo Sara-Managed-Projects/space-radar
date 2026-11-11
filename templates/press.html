@@ -21,35 +21,31 @@
 <meta property="og:image:alt" content="The Earth from space with the satellites around it as points of light, captioned Space Radar.">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="space-radar-mark.svg">
-<link rel="preload" href="../fonts/inter-400-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../css/fonts.css">
-<link rel="stylesheet" href="../css/static.css">
+{{styles}}
 <style>
-ol.facts{margin:0;padding:0 0 0 20px;max-width:65ch}
-ol.facts li{margin:0 0 12px}
-.shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin:0}
-.shots figure{margin:0}
-.shots img,.marks img{display:block;width:100%;height:auto;border-radius:var(--sr-radius);border:1px solid var(--sr-line)}
-.shots figcaption,.marks figcaption{margin-top:8px;font-size:13px;line-height:18px;color:var(--sr-text-dim)}
-.marks{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin:0}
-.marks figure{margin:0}
+ol.facts li{margin:0 0 .8rem}
+.shots,.marks{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,17rem),1fr));gap:1.25rem;margin:0 0 2rem}
+.marks{grid-template-columns:repeat(auto-fill,minmax(min(100%,12rem),1fr))}
+.doc .shots figure,.doc .marks figure{margin:0}
+.doc .shots img,.doc .marks img{display:block;width:100%;height:auto;border-radius:14px;box-shadow:0 0 0 1px var(--line)}
 .marks .light{background:#f2f4f7}
-.marks img{padding:16px;box-sizing:border-box}
-.glance{border-collapse:collapse;width:100%;margin:0 0 16px}
-.glance th,.glance td{text-align:left;padding:8px 12px 8px 0;border-bottom:1px solid var(--sr-line);vertical-align:top}
-.glance th{font-weight:600;white-space:nowrap}
-blockquote.copy{margin:0 0 16px;padding:0 0 0 16px;border-left:3px solid var(--sr-line)}
+.doc .marks img{padding:1rem;background:var(--panel)}.doc .marks img.light{background:#f2f4f7}
+.glance th{white-space:normal;width:34%}
+blockquote.copy{margin:0 0 1.35rem;padding:.1rem 0 .1rem 1.2rem;border-left:2px solid var(--a);color:#c5cdda}
 blockquote.copy p{margin:0}
 </style>
 </head>
 <body>
-<header class="top"><div class="top__in"><a class="mark" href="../">Space Radar</a><nav aria-label="Site"><a href="https://blog.spaceradar.ai/">Blog</a></nav><a class="openmap" href="../">Open the 3D map</a></div></header>
-<main>
-<p class="micro">Press kit</p>
+<a class="skip" href="#main">Skip to the content</a>
+{{header}}
+<main id="main">
+<header class="ph"><div class="wrap ph__in">
+<p class="eyebrow">Press kit</p>
 <h1>Space Radar</h1>
 <p class="lead">A live 3D map of space in a browser: satellites and the space station, launches, probes, planets, stars and galaxies, each drawn where it really is, with where the numbers come from.</p>
-<div class="cta"><a class="live" href="../">Open the live map</a><p>{{host_bare}} · free, no account</p></div>
-
+<div class="cta"><a class="btn btn--map" href="../">Open the live map</a><p>{{host_bare}} · free, no account</p></div>
+</div></header>
+<div class="doc">
 <h2>Boilerplate</h2>
 <p>To copy as it is. The sixty-word version:</p>
 <blockquote class="copy"><p>{{boilerplate}}</p></blockquote>
@@ -67,12 +63,12 @@ blockquote.copy p{margin:0}
 
 <h2>Facts at a glance</h2>
 <p>Counted from the project's registries on the day this page is built, not typed.</p>
-<table class="glance">
-{{glance}}</table>
+<div class="tbl__s"><table class="glance">
+{{glance}}</table></div>
 
 <h2>Where to find us</h2>
-<table class="glance">
-{{handles}}</table>
+<div class="tbl__s"><table class="glance">
+{{handles}}</table></div>
 
 <h2>Pictures</h2>
 <p>Screenshots of the app and the repository's social preview, free to use in coverage of Space Radar with the credit "Space Radar (spaceradar.ai)". They are drawings from measured positions, not photographs: please caption them as such. Planet and Earth textures in them are from the sources listed in the credits.</p>
@@ -95,11 +91,9 @@ blockquote.copy p{margin:0}
 
 <h2>Contact</h2>
 <p>Questions, corrections and press requests go through the project's GitHub: <a href="https://github.com/Sara-Managed-Projects/space-radar/issues/new">open an issue</a> or start a <a href="https://github.com/Sara-Managed-Projects/space-radar/discussions">discussion</a>. A correction to a fact on a card is always welcome there.</p>
+<div class="pagenote"><p>Built {{built}} from the project's registry; the counts above are read from it.</p></div>
+</div>
 </main>
-<footer><div class="foot__in">
-<p>Built {{built}} from the project's registry; the counts above are read from it.</p>
-<p><a href="../">Open the live map</a> · <a href="https://github.com/Sara-Managed-Projects/space-radar">Source code</a></p>
-{{sitelinks}}
-</div></footer>
-</body>
+{{footer}}
+{{script}}</body>
 </html>

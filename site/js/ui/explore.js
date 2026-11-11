@@ -279,6 +279,8 @@ function button(className, text) {
   return b;
 }
 
+// Lucide `gamepad` (ISC), its rectangle, cross and buttons folded into one path: the Games link.
+const GAMEPAD = 'M6 12h4M8 10v4M15 13h.01M18 11h.01M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z';
 function svgIcon(d, size = 18) {
   const svg = document.createElementNS(SVG_NS, 'svg');
   svg.setAttribute('viewBox', '0 0 24 24');
@@ -373,6 +375,17 @@ export function createExplore(ctx, host) {
   collapse.setAttribute('aria-label', COPY.shell.collapse);
   collapse.title = COPY.shell.collapse;
   collapse.addEventListener('click', () => { if (ctx.shell) ctx.shell.collapse(true); });
+  // GAMES (the maintainer, 2026-11-10): the team's space games, a link in a new tab as the rail's journal is, at the
+  // head of the panel. One more in the sheet's body on a phone, where the head has no wordmark row (ui.css shows
+  // one of the two). Its glow is ui.css's, transform and opacity only, still under reduced motion.
+  const games = el('a', 'sr-games sr-games--head');
+  games.href = COPY.games.href;
+  games.target = '_blank';
+  games.rel = 'noopener';
+  games.title = COPY.games.title;
+  games.appendChild(svgIcon(GAMEPAD, 16));
+  games.appendChild(el('span', null, COPY.games.label));
+  brand.appendChild(games);
   brand.appendChild(collapse);
   head.appendChild(brand);
 
@@ -449,6 +462,9 @@ export function createExplore(ctx, host) {
   if (ctx && ctx.shell && typeof ctx.shell.seatSearch === 'function') ctx.shell.seatSearch(searchHost);
 
   const body = el('div', 'sr-explore__body');
+  const sheetGames = games.cloneNode(true);
+  sheetGames.className = 'sr-games sr-games--sheet';
+  body.appendChild(sheetGames);
   root.appendChild(body);
   const panes = new Map();
   const tabButtons = new Map();
@@ -568,7 +584,7 @@ export function createExplore(ctx, host) {
   const next = createNext(ctx, { limit: COMING_UP_ROWS });
   next.root.classList.add('sr-sect');
   earth.appendChild(next.root);
-  // Where the email row sits when there is a notifier (ui/subscribe.js): under the list it is about.
+  // Where the email row sits (ui/subscribe.js, the sky alerts list): under the list it is about.
   const subscribeHost = el('div', 'sr-subscribe-host');
   next.root.appendChild(subscribeHost);
 
