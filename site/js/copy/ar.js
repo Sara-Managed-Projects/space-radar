@@ -5742,6 +5742,8 @@ COPY.emailUpdates = {
   "journal": "المجلة",
   "games": "ألعاب فضائية",
   "sky": "تنبيهات السماء",
+  "models": "نماذج Space Radar",
+  "video": "فيديو Space Radar",
   "email": "عنوان البريد",
   "placeholder": "you@example.org",
   "button": "اشترك",

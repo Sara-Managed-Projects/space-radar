@@ -608,7 +608,7 @@ def about_page(host: str) -> Page:
         f'<li><a href="{GITHUB}/blob/main/CREDITS.md">Credits and licences</a></li></ul>\n'
         f'<h2>Find us</h2>\n<ul class="tagcloud">{me}</ul>\n'
         + subscribe_form("../", f"{host}/about/index.html", form_id="updates", title="Get Space Radar by email", variant="card",
-                         text="New features of the map, new journal posts, news of the space games and the sky's coming events: pick what you want, "
+                         text="New features of the map, journal posts, news of the space games, the sky's coming events, new 3D models and films: pick what you want, "
                               "nothing more. Free, and you can leave in one click.") + "\n")
     page = Page(path="about/index.html", title=short, description=desc, body=body, og_title=short)
     page.jsonld = [webpage(host, page, [("About", "")], page_type="AboutPage")]

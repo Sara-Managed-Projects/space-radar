@@ -5832,6 +5832,8 @@ COPY.emailUpdates = {
   "journal": "Das Journal",
   "games": "Weltraumspiele",
   "sky": "Himmelsalarme",
+  "models": "Space-Radar-Modelle",
+  "video": "Space-Radar-Videos",
   "email": "E-Mail-Adresse",
   "placeholder": "du@example.org",
   "button": "Abonnieren",

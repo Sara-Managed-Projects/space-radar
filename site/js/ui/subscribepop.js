@@ -17,8 +17,8 @@
 // closing. Opening it closes What to show, More and the share sheet; Escape (in the capture phase, as the rail's own
 // popovers do, so the card underneath does not hear it), Close and a press outside close it.
 //
-// THE KIT'S RULES (web-kit/DESIGN.md section 3). It opens only on a click, never by itself. Four lists, none ticked,
-// one needed. "Already subscribed" looks exactly like "check your inbox": the service never says whether it knows an
+// THE KIT'S RULES (web-kit/DESIGN.md section 3). It opens only on a click, never by itself. Six lists (the service's ORDER), none
+// ticked, one needed. "Already subscribed" looks exactly like "check your inbox": the service never says whether it knows an
 // address. The privacy line, with its link, is under the form. Escape and Close dismiss it, and the focus goes back
 // to the envelope (ui/rail.js).
 //
@@ -34,7 +34,7 @@ import { loadCss } from './latercss.js';
 
 // The deployed service (internal infra/subscribe/README.md, stack space-radar-subscribe): POST <url>subscribe.
 export const SUBSCRIBE_URL = 'https://xc6vgkqu32sjm6cu4wqgvzrmsa0ytybx.lambda-url.eu-north-1.on.aws/';
-export const LISTS = ['news', 'journal', 'games', 'sky'];
+export const LISTS = ['news', 'journal', 'games', 'sky', 'models', 'video'];
 const PRIVACY = 'privacy/index.html';
 // Lucide `mail` (ISC): the envelope of the rail's button, at the button's size.
 const MAIL = [['rect', { width: 20, height: 16, x: 2, y: 4, rx: 2 }], ['path', { d: 'm22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7' }]];
@@ -64,7 +64,7 @@ function input(type, name, value) {
 }
 
 /**
- * The form. With no options it is the popover's: a heading with Close, four lists to pick from. The row under Coming
+ * The form. With no options it is the popover's: a heading with Close, six lists to pick from. The row under Coming
  * up (ui/subscribe.js) asks for one list, `list: 'sky'`, under its own heading (`labelledBy`): the kit's single-purpose
  * form, no box to tick and the button naming the list (`button`). Same states, same words, same request.
  * @param {object} [o] {close, id, list, button, source, labelledBy, fetchImpl}

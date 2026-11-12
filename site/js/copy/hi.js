@@ -5743,6 +5743,8 @@ COPY.emailUpdates = {
   "journal": "जर्नल",
   "games": "अंतरिक्ष गेम",
   "sky": "आकाश की सूचनाएँ",
+  "models": "Space Radar मॉडल",
+  "video": "Space Radar वीडियो",
   "email": "ईमेल पता",
   "placeholder": "you@example.org",
   "button": "सदस्यता लें",

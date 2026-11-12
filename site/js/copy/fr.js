@@ -5836,6 +5836,8 @@ COPY.emailUpdates = {
   "journal": "Le Journal",
   "games": "Jeux spatiaux",
   "sky": "Alertes du ciel",
+  "models": "Modèles de Space Radar",
+  "video": "Vidéos de Space Radar",
   "email": "Adresse e-mail",
   "placeholder": "vous@example.org",
   "button": "S'abonner",

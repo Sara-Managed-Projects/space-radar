@@ -31,9 +31,11 @@ LISTS = {
     "journal": ("The Journal", "New posts on blog.spaceradar.ai"),
     "games": ("Space games", "News about every Space Radar game"),
     "sky": ("Sky alerts", "Launches, meteor showers and close approaches"),
+    "models": ("Space Radar models", "New 3D models on models.spaceradar.ai"),
+    "video": ("Space Radar video", "New films and series on video.spaceradar.ai"),
 }
-# Every static page offers these four, in this order.
-ALL = ("news", "journal", "games", "sky")
+# Every static page offers these six, in this order (the service's ORDER).
+ALL = ("news", "journal", "games", "sky", "models", "video")
 
 PRIVACY_LINE = ("We keep your address and the lists you pick, nothing else. No tracking pixels, no rewritten links. "
                 "Every email has a one-click unsubscribe.")
@@ -47,7 +49,7 @@ esc = lambda s: html.escape(str(s), quote=True)  # noqa: E731
 
 def subscribe_form(root: str, source: str, *, lists: tuple[str, ...] = ALL, form_id: str = "subscribe",
                    title: str = "Free email updates from Space Radar", level: str = "h2",
-                   text: str = "News of the map, new journal posts, the space games and the sky's coming events. Pick what you want; leave in one click.",
+                   text: str = "News of the map, journal posts, the space games, the sky's coming events, new 3D models and films. Pick what you want; leave in one click.",
                    button: str = "Subscribe", variant: str = "band") -> str:
     """The kit's subscribeForm() markup. `root` is the page's way to the site root ("../", "../../", "/"), for the
     privacy link; `source` the page's absolute address (the script sends location.href instead)."""

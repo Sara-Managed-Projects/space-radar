@@ -5757,6 +5757,8 @@ COPY.emailUpdates = {
   "journal": "Журнал",
   "games": "Космические игры",
   "sky": "Небесные события",
+  "models": "Модели Space Radar",
+  "video": "Видео Space Radar",
   "email": "Адрес почты",
   "placeholder": "you@example.org",
   "button": "Подписаться",

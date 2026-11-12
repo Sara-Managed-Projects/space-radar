@@ -5749,6 +5749,8 @@ COPY.emailUpdates = {
   "journal": "היומן",
   "games": "משחקי חלל",
   "sky": "התראות שמיים",
+  "models": "מודלים של Space Radar",
+  "video": "וידאו של Space Radar",
   "email": "כתובת מייל",
   "placeholder": "you@example.org",
   "button": "להרשמה",

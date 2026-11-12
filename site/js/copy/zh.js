@@ -5742,6 +5742,8 @@ COPY.emailUpdates = {
   "journal": "日志",
   "games": "太空游戏",
   "sky": "天象提醒",
+  "models": "Space Radar 模型",
+  "video": "Space Radar 视频",
   "email": "电子邮件地址",
   "placeholder": "you@example.org",
   "button": "订阅",
