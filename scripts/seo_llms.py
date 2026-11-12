@@ -1,6 +1,6 @@
 """llms.txt and llms-full.txt for www.spaceradar.ai: what a language model reads to know the site (llmstxt.org).
 
-    write(out, host)   reads the sitemap the build just wrote (out/sitemap.xml) and every page it names (built under
+    write(out, host)   reads the pages sitemap the build just wrote (out/sitemap-pages.xml) and every page it names (built under
                        `out`, or committed under site/: the trips and the Lab), and writes out/llms.txt and out/llms-full.txt
 
 THE SHAPE is the journal's (internal blog/src/site-build.mjs): a title, a one-line summary as a quote, a paragraph on
@@ -46,7 +46,8 @@ OPTIONAL = [
     ("The Space Radar journal", "https://blog.spaceradar.ai/", "stories about space and how the map knows what it shows (its own llms.txt is at https://blog.spaceradar.ai/llms.txt)"),
     ("Space Radar games", "https://games.spaceradar.ai/", "the team's space games"),
     ("Source code", "https://github.com/Sara-Managed-Projects/space-radar", "the map, these pages and every data source, MIT licence"),
-    ("Sitemap", "{host}/sitemap.xml", "every page listed here, with its date"),
+    ("Sitemap", "{host}/sitemap-pages.xml", "every page listed here, with its date"),
+    ("Sitemap index", "{host}/sitemap.xml", "the sitemaps of every Space Radar site: the map, the journal, games, models and video"),
 ]
 
 
@@ -134,7 +135,7 @@ def _read(path: Path) -> _Page:
 
 
 def _urls(out: Path) -> list[str]:
-    return re.findall(r"<loc>([^<]+)</loc>", (out / "sitemap.xml").read_text(encoding="utf-8"))
+    return re.findall(r"<loc>([^<]+)</loc>", (out / "sitemap-pages.xml").read_text(encoding="utf-8"))
 
 
 def _file(out: Path, rel: str) -> Path | None:

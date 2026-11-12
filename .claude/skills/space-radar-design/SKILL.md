@@ -35,8 +35,12 @@ from the start: a page that invents its own button is sent back.
 - **The 4 px grid.** Spacing is 4, 8, 12, 16, 24, 32 (`--sp-1` to `--sp-6`); controls are 40 and 32 px.
 - **44 px touch targets** on `pointer: coarse` (the set does it: a small control gets a hit area).
 - **Visible focus.** The 2 px blue ring on every focusable thing; never `outline: none` without a replacement.
-- **Reduced motion.** Nothing moves under `prefers-reduced-motion`. Nothing loops, bounces or glows; the one
-  named exception is the rail's Games breath (`.sr-rail__btn--games::before`).
+- **Reduced motion.** Nothing moves under `prefers-reduced-motion`. Nothing loops, bounces or glows; the two
+  named exceptions are the rail's Games breath (`.sr-rail__btn--games::before`) and the Buy Me a Coffee cup's
+  tilt and coin hop (`css/coffee.css`, under 1 s of every 8), both the maintainer's requests.
+- **The Buy Me a Coffee link is one shared piece:** `templates/partials/coffee.html` (markup) and
+  `site/css/coffee.css` (public), the kit's `COFFEE` and the "coffee" block of `components.css` (internal), byte
+  for byte. Never a second copy, never a widget or script from the service.
 - **Dark only.** No light theme, no `prefers-color-scheme` branch.
 - **Words** live in the copy files (`site/js/copy/en.js` on the map), in all its languages; no literal
   strings in `site/js/ui`. Sentence case, no exclamation marks, a line of chrome is 60 characters or fewer.

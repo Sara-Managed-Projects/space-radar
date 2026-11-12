@@ -5734,6 +5734,8 @@ COPY.skyLore.nearest = "{name} की कहानी";
 // email updates (rail.subscribe), their popover and the row under Coming up (copy/en.subscribe.js emailUpdates;
 // comingUp is the old subscribe.heading, moved)
 COPY.rail.subscribe = "ईमेल अपडेट";
+COPY.rail.coffee = "हमें एक कॉफ़ी पिलाएँ";
+COPY.rail.coffeeLabel = "Buy Me a Coffee पर Space Radar का साथ दें";
 COPY.games = {"label": "गेम", "title": "Space Radar टीम के अंतरिक्ष गेम (नए टैब में खुलते हैं)", "href": "https://games.spaceradar.ai/"};
 COPY.emailUpdates = {
   "title": "मुफ़्त ईमेल अपडेट",
@@ -5743,6 +5745,8 @@ COPY.emailUpdates = {
   "journal": "जर्नल",
   "games": "अंतरिक्ष गेम",
   "sky": "आकाश की सूचनाएँ",
+  "models": "Space Radar मॉडल",
+  "video": "Space Radar वीडियो",
   "email": "ईमेल पता",
   "placeholder": "you@example.org",
   "button": "सदस्यता लें",

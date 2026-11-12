@@ -632,7 +632,7 @@ function rig({ link = { ambient: 'a-year-in-a-minute,back-to-the-moon,the-living
   check(/import\('\.\/ui\/autopilot\.js'\)/.test(main) && !/^import[^\n]*autopilot/m.test(main), 'main.js fetches the autopilot on demand, never at boot');
   check(/link\.ambient/.test(main) && /classList\.add\('sr-ambient'\)/.test(main), 'main.js hides the panels of a kiosk before they are built');
   const css = read('site/css/ui.css');
-  check(/html\.sr-ambient :is\(#sr-side, #sr-rail, #sr-time, \.sr-top, \.sr-toast, \.sr-scenenote, \.sr-keyhint\)/.test(css), 'css/ui.css: no panel, no toast, no hint under a reel');
+  check(/html\.sr-ambient :is\(#sr-side, #sr-rail, #sr-time, \.sr-top, \.sr-toast, \.sr-scenenote, \.sr-keyhint, body > \.coffee\)/.test(css), 'css/ui.css: no panel, no toast, no hint and no Buy Me a Coffee cup under a reel');
   const sheet = read('site/css/autopilot.css');
   check(/\.sr-ambient__shield\.is-still\s*\{\s*cursor: none;/.test(sheet), 'css/autopilot.css: the pointer hides when it is still');
   check(/html\.sr-ambient \.sr-trip__toolbar/.test(sheet) && /html\.sr-ambient \.sr-trip__top/.test(sheet), 'css/autopilot.css: no toolbar and no top bar');

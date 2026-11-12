@@ -1,0 +1,38 @@
+/* coffee.css -- the Buy Me a Coffee link of every Space Radar site: a drawn cup with steam and two coins, a plain link to
+   https://buymeacoffee.com/spaceradar (no script, no widget, nothing loads before a click). Asked for by the maintainer on
+   2026-11-12: gone with "hide everything", trips and Moments on the map, and never over content anywhere. Markup:
+   templates/partials/coffee.html; the kit carries both byte for byte (docs/UI_COMPONENTS.md). The kit's token names, plus
+   the cup's warm colours. In a footer (.foot) it is a row; from 1416 px, where the 1240 px page leaves an 80 px gutter,
+   the cup alone in that gutter's bottom-right corner. The map places it in css/ui.css. The second named loop
+   (DESIGN_PRINCIPLES rule 10): every 8 s the cup tilts and the coins hop, 0.6 s of motion, still under reduced motion. */
+:root{--coffee-cup:#F6EBDD;--coffee-brew:#5B3421;--coffee-crema:#B87C4C;--coffee-coin:#F5C451;--coffee-coin-edge:#C98A1E;--coffee-line:#3A2416;--coffee-size:44px}
+.coffee{display:inline-flex;align-items:center;gap:8px;min-height:44px;white-space:nowrap;color:var(--tx);font-family:var(--sans);font-weight:600;line-height:1;text-decoration:none}
+.coffee:hover .coffee__t{color:var(--atm)}
+.coffee:focus-visible{outline:2px solid var(--atm);outline-offset:2px}
+.coffee__art{flex:none;width:36px;height:36px;overflow:visible}
+.coffee__saucer{fill:var(--atm)}
+.coffee__ear{fill:none;stroke:var(--coffee-line);stroke-width:4.8;stroke-linecap:round}
+.coffee__ear2{fill:none;stroke:var(--coffee-cup);stroke-width:2.4;stroke-linecap:round}
+.coffee__mug{fill:var(--coffee-cup);stroke:var(--coffee-line);stroke-width:1.5;stroke-linejoin:round}
+.coffee__band{fill:var(--ember)}
+.coffee__brew{fill:var(--coffee-brew);stroke:var(--coffee-line);stroke-width:1.2}
+.coffee__crema{fill:var(--coffee-crema)}
+.coffee__steam{fill:none;stroke:var(--tx);stroke-width:1.75;stroke-linecap:round;opacity:.7}
+.coffee__coin{fill:var(--coffee-coin);stroke:var(--coffee-coin-edge);stroke-width:1.4}
+.coffee__mint{fill:none;stroke:var(--coffee-coin-edge);stroke-width:1.3;stroke-linecap:round}
+.coffee__cup,.coffee__coins{transform-box:view-box}
+.coffee__cup{transform-origin:20px 42px}
+.coffee__coins{transform-origin:41px 46px}
+.coffee .coffee__cup{animation:coffee-tilt 8s linear infinite}
+.coffee .coffee__coins{animation:coffee-hop 8s linear infinite}
+@keyframes coffee-tilt{0%,92%,100%{transform:rotate(0)}93.5%{transform:rotate(-7deg)}95%{transform:rotate(6deg)}96.5%{transform:rotate(-3deg)}98%{transform:rotate(1.5deg)}99.5%{transform:rotate(0)}}
+@keyframes coffee-hop{0%,93%,100%{transform:translateY(0)}95%{transform:translateY(-3px)}97%{transform:translateY(0)}98.2%{transform:translateY(-1.2px)}99.4%{transform:translateY(0)}}
+@media (prefers-reduced-motion: reduce){.coffee .coffee__cup,.coffee .coffee__coins{animation:none}}
+/* in a footer: a row of the band; from 1416 px the bottom-right corner of the page's gutter, the cup alone */
+.foot .coffee{margin-top:12px}
+@media (min-width: 1416px){
+.foot .coffee{position:fixed;right:16px;bottom:16px;z-index:2;justify-content:center;width:var(--coffee-size);height:var(--coffee-size);margin:0;border-radius:50%;background:color-mix(in srgb,var(--bg) 82%,transparent);box-shadow:inset 0 0 0 1px var(--line)}
+.foot .coffee:hover{box-shadow:inset 0 0 0 1px var(--atm)}
+.foot .coffee__art{width:32px;height:32px}
+.foot .coffee__t{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+}

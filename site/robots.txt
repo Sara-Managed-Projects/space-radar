@@ -1,5 +1,7 @@
-# spaceradar.ai: every page may be crawled. The sitemap lists the ones worth indexing: the map,
-# one page per notable object (/o/), one per guided trip (/t/), the Lab and the pages about the project.
+# spaceradar.ai: every page may be crawled. sitemap.xml is the index of every Space Radar site's sitemaps: this
+# site's pages (sitemap-pages.xml: the map, one page per notable object (/o/), one per guided trip (/t/), the Lab and
+# the pages about the project) and pictures (sitemap-images.xml), then the journal's, games', models' and video's,
+# each on its own host (docs/SEO_SITEMAPS.md).
 # Search engines and AI crawlers are welcome: the map and its pages exist to be found, read, quoted and linked
 # (the same list as the journal's robots.txt). A summary for language models is at /llms.txt, the full text at /llms-full.txt.
 User-agent: *
@@ -81,4 +83,5 @@ User-agent: DuckAssistBot
 Allow: /
 
 Sitemap: https://www.spaceradar.ai/sitemap.xml
+Sitemap: https://www.spaceradar.ai/sitemap-pages.xml
 Sitemap: https://www.spaceradar.ai/sitemap-images.xml

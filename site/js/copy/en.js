@@ -743,6 +743,10 @@ export const COPY = {
     menuTour: 'Take the tour',
     // Free email updates (ui/subscribe.js, fetched on the first press): the envelope, and its row on a phone.
     subscribe: 'Email updates',
+    // Buy Me a Coffee (index.html's floating cup, css/coffee.css): its row of More on a phone, and the name ui/rail.js
+    // gives the floating link.
+    coffee: 'Buy us a coffee',
+    coffeeLabel: 'Support Space Radar on Buy Me a Coffee',
   },
   // The team's space games (games.spaceradar.ai): a link on the tool rail and a row of its More menu (ui/rail.js).
   games: {

@@ -23,6 +23,9 @@ FILES.push('site/css/xr.css'); // b200-f8-xr: the gamepad's hint and the headset
 // The control set (2026-11-11): the design kit's controls, linked with ui.css. Written in the kit's token names (--tx,
 // --atm, --ember ... aliased to the --sr-* tokens in ui.css :root) and its own --ui-* sizes, corners and timing.
 FILES.push('site/css/controls.css');
+// The Buy Me a Coffee link (2026-11-12): the shared piece of every site, linked with ui.css; the kit's token names and its own
+// warm colours in :root.
+FILES.push('site/css/coffee.css');
 // Comments out, positions kept, so nothing quoted in a comment counts as a rule.
 const strip = (css) => css.replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' '));
 
@@ -441,7 +444,11 @@ const SCENE_MOTION = new Set(['.boot', '.boot-mark::after', '#labels .label.is-s
 // THE ONE LOOP (the maintainer, 2026-11-10: the Games link, "make it blinking or with some gradual animation"; 2026-11-11:
 // moved from the explore panel to the tool rail): its glow breathes over 3.6 s, transform and opacity only. Held here
 // instead: it is still under reduced motion, and paused when the rail is out of sight (ui.css, next to the rule).
-const MAINTAINER_LOOP = new Set(['.sr-rail__btn--games::before']);
+// THE SECOND (the maintainer, 2026-11-12: "colorful animated icon of coffee cup with coins, shaking somewhere in the right
+// bottom corner, but make sure it disappears when we click hide everything or on trips or on memories, so it won't annoy
+// people"): css/coffee.css, every 8 s the cup tilts and the coins hop, 0.6 s of motion, transform only; still under reduced
+// motion, gone or paused wherever the map hides its panels (css/ui.css, moments.css, ground.css).
+const MAINTAINER_LOOP = new Set(['.sr-rail__btn--games::before', '.coffee .coffee__cup', '.coffee .coffee__coins']);
 const MOTION_PROPS = new Set(['transition', 'transition-duration', 'transition-delay', 'transition-timing-function', 'animation', 'animation-duration', 'animation-delay', 'animation-timing-function']);
 for (const r of all) {
   if (r.selector.split(',').every((x) => SCENE_MOTION.has(x.trim()))) continue;

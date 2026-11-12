@@ -177,15 +177,15 @@ with tempfile.TemporaryDirectory() as tmp:
     ok(all(sync(d) and not any("--content-encoding" in c for c in sync(d)) for d in ("o", "t", "press")),
        "the pages a crawler reads (o/, t/, press/) are uploaded as written")
     ok("SEO ok" in r.stdout, "deploy.sh builds the pages and holds them to check_seo.py before it uploads")
-    smap = (BUILT / "sitemap.xml").read_text(encoding="utf-8") if (BUILT / "sitemap.xml").is_file() else ""
+    smap = (BUILT / "sitemap-pages.xml").read_text(encoding="utf-8") if (BUILT / "sitemap-pages.xml").is_file() else ""
     ok("/press/index.html</loc>" in smap, "the sitemap names the press page (internal #398)")
-    for name, typ in (("robots.txt", "text/plain"), ("sitemap.xml", "application/xml"),
+    for name, typ in (("robots.txt", "text/plain"), ("sitemap.xml", "application/xml"), ("sitemap-pages.xml", "application/xml"),
                       ("404.html", "text/html"), ("index.html", "text/html")):
         ok(re.search(rf"would upload {re.escape(name)} \({re.escape(typ)}", r.stdout) is not None,
            f"{name} is uploaded as {typ}")
     body = (ROOT / "scripts" / "deploy.sh").read_text(encoding="utf-8")
-    ok(all(p in body for p in ('"/o/*"', '"/robots.txt"', '"/sitemap.xml"', '"/404.html"')),
-       "the invalidation names /o/*, /robots.txt, /sitemap.xml and /404.html")
+    ok(all(p in body for p in ('"/o/*"', '"/robots.txt"', '"/sitemap.xml"', '"/sitemap-pages.xml"', '"/404.html"')),
+       "the invalidation names /o/*, /robots.txt, /sitemap.xml, /sitemap-pages.xml and /404.html")
 
 shutil.rmtree(BUILT, ignore_errors=True)
 if failures:

@@ -10,7 +10,7 @@
  * the time pill with its live line and deep-time note, and the ground sky's own story card and tag. tests/test_ground.mjs
  * holds the list to every `sr-float` the code makes, so a new one is either named here or named there as one that stays. */
 html.sr-ground-on :is(#sr-rail, .sr-top, .sr-scenenote, .sr-keyhint, #labels, #sr-hud,
-  .sr-scalerail, .sr-scalebadge, .sr-helio-labels, .sr-helio-chip, .sr-helio-legend, .sr-findpill, .sr-cutaway, .sr-pop) {
+  .sr-scalerail, .sr-scalebadge, .sr-helio-labels, .sr-helio-chip, .sr-helio-legend, .sr-findpill, .sr-cutaway, .sr-pop, body > .coffee) {
   display: none;
 }
 

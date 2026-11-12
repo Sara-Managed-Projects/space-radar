@@ -187,9 +187,25 @@ bs = importlib.import_module("build_seo")
 xml = bs.sitemap("https://www.spaceradar.ai", ["a", "b"], dates={"https://www.spaceradar.ai/o/a.html": "2020-01-02"})
 ok("<loc>https://www.spaceradar.ai/o/a.html</loc><lastmod>2020-01-02</lastmod>" in xml, "the sitemap writes the date it is given for a URL")
 ok(re.search(r"<loc>https://www\.spaceradar\.ai/o/b\.html</loc><lastmod>\d{4}-\d{2}-\d{2}</lastmod>", xml) is not None, "and the build's own date for a URL it is not given")
-dates = re.findall(r"<lastmod>([^<]+)</lastmod>", (built / "sitemap.xml").read_text(encoding="utf-8"))
-ok(len(dates) > 300 and all(re.match(r"^\d{4}-\d{2}-\d{2}$", x) for x in dates), f"the built sitemap has {len(dates)} valid dates")
-ok(f"embed/index.html</loc>" in (built / "sitemap.xml").read_text(encoding="utf-8"), "and lists the embed page")
+dates = re.findall(r"<lastmod>([^<]+)</lastmod>", (built / "sitemap-pages.xml").read_text(encoding="utf-8"))
+ok(len(dates) > 300 and all(re.match(r"^\d{4}-\d{2}-\d{2}$", x) for x in dates), f"the built pages sitemap has {len(dates)} valid dates")
+ok(f"embed/index.html</loc>" in (built / "sitemap-pages.xml").read_text(encoding="utf-8"), "and lists the embed page")
+# The www sitemap.xml is the index of every site's sitemaps (scripts/seo_sitemaps.py, docs/SEO_SITEMAPS.md).
+smi = (built / "sitemap.xml").read_text(encoding="utf-8")
+idx = re.findall(r"<sitemap><loc>([^<]+)</loc>(?:<lastmod>([^<]+)</lastmod>)?</sitemap>", smi)
+ok("<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">" in smi and "<urlset" not in smi, "the built sitemap.xml is a sitemap index")
+ok([u for u, _ in idx] == ["https://www.spaceradar.ai/sitemap-pages.xml", "https://www.spaceradar.ai/sitemap-images.xml",
+                         "https://blog.spaceradar.ai/sitemap.xml", "https://games.spaceradar.ai/sitemap.xml",
+                         "https://models.spaceradar.ai/sitemap.xml", "https://video.spaceradar.ai/sitemap.xml",
+                         "https://video.spaceradar.ai/sitemap-video.xml"],
+   f"it lists the main site's pages and pictures, then the journal's, games', models' and video's sitemaps ({[u for u, _ in idx]})")
+ok(all(re.match(r"^\d{4}-\d{2}-\d{2}$", d) for u, d in idx if u.startswith("https://www.")) and not any(d for u, d in idx if not u.startswith("https://www.")),
+   "the main site's two carry the build's date; the other sites' carry none (theirs to say)")
+ok(max(dates) == idx[0][1], "the pages sitemap's date in the index is its newest page's")
+ok(not any("index" in u.rsplit("/", 1)[-1] for u, _ in idx), "no index names another index (the video site's sitemap-index.xml is not listed)")
+idxf = tmp / "index.xml"
+idxf.write_text(smi)
+ok(indexnow.read_sitemap(str(idxf)) is None, "IndexNow reads an index as no list of pages, so a deploy never sends every URL")
 
 # --- 3: IndexNow ---------------------------------------------------------------------------------------
 ok(re.fullmatch(r"[0-9a-f]{32}", indexnow.KEY) is not None, "the key is 32 hex characters")

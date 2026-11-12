@@ -4,10 +4,14 @@
 Every rule here is one a crawler or a search result applies, and each refusal names the file:
 
 Two trees: site/ (committed: the home page, the trip pages, robots.txt, the pictures) and the
-directory scripts/build_seo.py built (not committed: the object pages, 404.html, sitemap.xml).
+directory scripts/build_seo.py built (not committed: the object pages, 404.html, the sitemaps).
 
   robots.txt   exists, names the sitemap, and does not shut the site out.
-  sitemap.xml  is a sitemap (the 0.9 namespace, under 50 000 URLs, a YYYY-MM-DD lastmod each);
+  sitemap.xml  is a sitemap INDEX (scripts/seo_sitemaps.py, docs/SEO_SITEMAPS.md): the 0.9 namespace; the main site's
+               sitemap-pages.xml and sitemap-images.xml, each built, then exactly the other sites' sitemaps of
+               seo_sitemaps.OTHER_SITEMAPS; every <loc> an absolute https URL on a spaceradar.ai host; none twice, none an
+               index; a lastmod is YYYY-MM-DD.
+  sitemap-pages.xml  is a sitemap (the 0.9 namespace, under 50 000 URLs, a YYYY-MM-DD lastmod each);
                every URL is on the canonical host and is a file in one of the two trees; no URL twice.
   every page   (site/index.html, site/t/*.html, built/o/*.html, built/404.html) has one <title> of at
                most 60 characters, the length a result shows before it cuts.
@@ -60,6 +64,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import indexnow  # noqa: E402
+import seo_sitemaps  # noqa: E402
 from seo_footer import REQUIRED_EXTERNAL, REQUIRED_INTERNAL  # noqa: E402
 
 PULL_LINK = re.compile(r"github\.com/[^/\s]+/[^/\s]+/pull/\d")
@@ -212,35 +217,63 @@ def check(root: Path, built: Path, require_share: bool = False) -> list[str]:
             if agent == "*" and re.search(r"(?im)^disallow:\s*/\s*$", g):
                 say("site/robots.txt shuts every crawler out of the whole site (Disallow: /)")
 
-    # --- sitemap.xml ------------------------------------------------------------------------
-    sitemap_urls: list[str] = []
-    sm = built / "sitemap.xml"
-    if not sm.is_file():
+    # --- sitemap.xml: the index of every site's sitemaps (scripts/seo_sitemaps.py) ---------------------
+    smi = built / "sitemap.xml"
+    if not smi.is_file():
         say("built/sitemap.xml is missing")
+    else:
+        try:
+            root_el = ET.parse(smi).getroot()
+            if root_el.tag != f"{{{NS}}}sitemapindex":
+                say(f"sitemap.xml: the root is {root_el.tag}, not a 0.9 sitemapindex (the index of every site's sitemaps)")
+            locs = []
+            for e in root_el.findall(f"{{{NS}}}sitemap"):
+                loc = (e.findtext(f"{{{NS}}}loc") or "").strip()
+                lastmod = (e.findtext(f"{{{NS}}}lastmod") or "").strip()
+                locs.append(loc)
+                if not re.match(r"^https://([a-z0-9-]+\.)*spaceradar\.ai/[^\s]*\.xml$", loc):
+                    say(f"sitemap.xml: {loc!r} is not an absolute https address of a sitemap on a spaceradar.ai host")
+                if re.search(r"index", loc.rsplit("/", 1)[-1]):
+                    say(f"sitemap.xml: {loc} looks like a sitemap index, and an index may not name another")
+                if lastmod and not DATE.match(lastmod):
+                    say(f"sitemap.xml: {loc} has lastmod {lastmod!r}, not YYYY-MM-DD")
+                if loc.startswith(HOST + "/") and not (built / loc[len(HOST) + 1:]).is_file():
+                    say(f"sitemap.xml: {loc} names built/{loc[len(HOST) + 1:]}, which does not exist")
+            want = seo_sitemaps.own(HOST) + list(seo_sitemaps.OTHER_SITEMAPS)
+            if locs != want:
+                say(f"sitemap.xml lists {locs}; it should list, in this order, {want} (scripts/seo_sitemaps.py)")
+        except ET.ParseError as e:
+            say(f"sitemap.xml does not parse: {e}")
+
+    # --- sitemap-pages.xml: every page of the main site worth indexing -----------------------------
+    sitemap_urls: list[str] = []
+    sm = built / seo_sitemaps.PAGES
+    if not sm.is_file():
+        say(f"built/{seo_sitemaps.PAGES} is missing")
     else:
         try:
             tree = ET.parse(sm)
             urlset = tree.getroot()
             if urlset.tag != f"{{{NS}}}urlset":
-                say(f"sitemap.xml: the root is {urlset.tag}, not a 0.9 urlset")
+                say(f"sitemap-pages.xml: the root is {urlset.tag}, not a 0.9 urlset")
             for u in urlset.findall(f"{{{NS}}}url"):
                 loc = (u.findtext(f"{{{NS}}}loc") or "").strip()
                 lastmod = (u.findtext(f"{{{NS}}}lastmod") or "").strip()
                 sitemap_urls.append(loc)
                 f = site_file(site, built, loc)
                 if f is None:
-                    say(f"sitemap.xml: {loc} is not on {HOST}")
+                    say(f"sitemap-pages.xml: {loc} is not on {HOST}")
                 elif not f.is_file():
-                    say(f"sitemap.xml: {loc} names {label(site, built, f)}, which does not exist")
+                    say(f"sitemap-pages.xml: {loc} names {label(site, built, f)}, which does not exist")
                 if lastmod and not DATE.match(lastmod):
-                    say(f"sitemap.xml: {loc} has lastmod {lastmod!r}, not YYYY-MM-DD")
+                    say(f"sitemap-pages.xml: {loc} has lastmod {lastmod!r}, not YYYY-MM-DD")
         except ET.ParseError as e:
-            say(f"sitemap.xml does not parse: {e}")
+            say(f"sitemap-pages.xml does not parse: {e}")
         if len(sitemap_urls) > 50000:
-            say(f"sitemap.xml has {len(sitemap_urls)} URLs; one sitemap holds 50 000")
+            say(f"sitemap-pages.xml has {len(sitemap_urls)} URLs; one sitemap holds 50 000")
         dupes = sorted({u for u in sitemap_urls if sitemap_urls.count(u) > 1})
         for u in dupes:
-            say(f"sitemap.xml lists {u} more than once")
+            say(f"sitemap-pages.xml lists {u} more than once")
     in_sitemap = set(sitemap_urls)
 
     # --- llms.txt and llms-full.txt: what a language model reads (scripts/seo_llms.py) ------------------
@@ -424,7 +457,7 @@ def check(root: Path, built: Path, require_share: bool = False) -> list[str]:
                 imgs = [(i.findtext(f"{{{IMG_NS}}}loc") or "").strip() for i in u.findall(f"{{{IMG_NS}}}image")]
                 listed[loc] = imgs
                 if loc not in in_sitemap:
-                    say(f"sitemap-images.xml lists {loc}, which sitemap.xml does not")
+                    say(f"sitemap-images.xml lists {loc}, which sitemap-pages.xml does not")
                 if page_images.get(loc) and imgs != [page_images[loc]]:
                     say(f"sitemap-images.xml gives {loc} the picture {imgs}, but the page's og:image is {page_images[loc]}")
             for url, img in page_images.items():
@@ -449,7 +482,7 @@ def check(root: Path, built: Path, require_share: bool = False) -> list[str]:
     elif keyfile.read_text(encoding="utf-8").strip() != indexnow.KEY:
         say(f"built/{indexnow.key_file_name()} does not hold the key")
     if f"{HOST}/{indexnow.key_file_name()}" in in_sitemap:
-        say("sitemap.xml lists the IndexNow key file")
+        say("sitemap-pages.xml lists the IndexNow key file")
 
     check_lab(site, built, say)
     return problems

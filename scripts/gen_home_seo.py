@@ -8,6 +8,12 @@ the `Organization` (its `sameAs` is the project's own four accounts and nothing 
 `WebApplication` (a free educational web application under the MIT licence). No `aggregateRating`
 or `review`: there are none, and a rating that is not a user's is not ours to write.
 
+A THIRD BLOCK, the Buy Me a Coffee link (COFFEE:BEGIN ... COFFEE:END, just before the footer): the shared piece every
+Space Radar site carries (templates/partials/coffee.html, css/coffee.css), copied as it is. A child of <body>, so the
+clear screen, the HUD-only view, filming, the opening shot and the embed hide it with the panels; css/ui.css places it
+(a floating cup bottom-right on a desktop) and hides it in a trip, a Moment, on the ground and the rest; on a phone
+ui/rail.js offers it as a row of the More menu instead.
+
 A SECOND BLOCK, the footer (FOOTER:BEGIN ... FOOTER:END, after the map's roots): the same partial
 every built page carries (templates/sitelinks.html, scripts/seo_footer.py). It is clipped out of
 sight on the map and tabindex -1, because the map is a full-screen scene with no room for a page
@@ -48,6 +54,9 @@ BEGIN = "<!-- SEO:BEGIN scripts/gen_home_seo.py -->"
 END = "<!-- SEO:END -->"
 FOOT_BEGIN = "<!-- FOOTER:BEGIN scripts/gen_home_seo.py from templates/sitelinks.html -->"
 FOOT_END = "<!-- FOOTER:END -->"
+CUP_BEGIN = "<!-- COFFEE:BEGIN scripts/gen_home_seo.py from templates/partials/coffee.html -->"
+CUP_END = "<!-- COFFEE:END -->"
+CUP = ROOT / "templates" / "partials" / "coffee.html"
 
 HOST = "https://www.spaceradar.ai"
 NAME = "Space Radar"
@@ -116,6 +125,11 @@ def footer() -> str:
     return "\n".join([FOOT_BEGIN, '<footer id="sr-sitefoot" class="sr-sitefoot">', links, "</footer>", FOOT_END])
 
 
+def coffee() -> str:
+    """The shared Buy Me a Coffee link, as every site carries it (templates/partials/coffee.html)."""
+    return "\n".join([CUP_BEGIN, CUP.read_text(encoding="utf-8").strip(), CUP_END])
+
+
 def rewrite(text: str) -> str:
     pattern = re.compile(re.escape(BEGIN) + r".*?" + re.escape(END), re.S)
     if not pattern.search(text):
@@ -124,7 +138,11 @@ def rewrite(text: str) -> str:
     foot = re.compile(re.escape(FOOT_BEGIN) + r".*?" + re.escape(FOOT_END), re.S)
     if not foot.search(text):
         raise SystemExit(f"gen_home_seo: {HTML.relative_to(ROOT)} has no {FOOT_BEGIN!r} block")
-    return foot.sub(lambda _: footer(), text, count=1)
+    text = foot.sub(lambda _: footer(), text, count=1)
+    cup = re.compile(re.escape(CUP_BEGIN) + r".*?" + re.escape(CUP_END), re.S)
+    if not cup.search(text):
+        raise SystemExit(f"gen_home_seo: {HTML.relative_to(ROOT)} has no {CUP_BEGIN!r} block")
+    return cup.sub(lambda _: coffee(), text, count=1)
 
 
 USAGE = """usage: python3 scripts/gen_home_seo.py [--check]

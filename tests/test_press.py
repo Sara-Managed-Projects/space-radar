@@ -67,7 +67,9 @@ with tempfile.TemporaryDirectory() as tmp:
         if href in footer:
             continue
         if href.startswith(("http://", "https://")):
-            check(href.startswith(("https://www.spaceradar.ai/", "https://blog.spaceradar.ai/", "https://github.com/Sara-Managed-Projects/space-radar") + build_press.ACCOUNT_URLS), f"an outside link: {href}")
+            # buymeacoffee.com/spaceradar: the footer's Buy Me a Coffee link, the shared piece (templates/partials/coffee.html).
+            check(href.startswith(("https://www.spaceradar.ai/", "https://blog.spaceradar.ai/", "https://github.com/Sara-Managed-Projects/space-radar",
+                                   "https://buymeacoffee.com/spaceradar") + build_press.ACCOUNT_URLS), f"an outside link: {href}")
             continue
         target = (press / href).resolve()
         in_site = (ROOT / "site" / href.replace("../", "", 1)) if href.startswith("../") else None

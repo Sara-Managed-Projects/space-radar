@@ -36,7 +36,7 @@ check(/<label class="sub__lb" for="subscribe-e">Email address<\/label>/.test(ban
 check(/<input id="subscribe-w" type="text" name="website" tabindex="-1" autocomplete="off" value="">/.test(band) && /<div class="sub__hp" aria-hidden="true">/.test(band), 'the honeypot `website` is empty, out of the tab order and hidden from a screen reader');
 check(/name="source" value="https:\/\/www\.spaceradar\.ai\/about\/index\.html"/.test(band), 'the page says where it is (source)');
 const boxes = [...band.matchAll(/<input type="checkbox" name="lists" value="([a-z:-]+)"([^>]*)>/g)];
-check(boxes.map((m) => m[1]).join() === 'news,journal,games,sky', `the static pages offer news, journal, games and sky (${boxes.map((m) => m[1])})`);
+check(boxes.map((m) => m[1]).join() === 'news,journal,games,sky,models,video', `the static pages offer news, journal, games, sky, models and video, the service's ORDER (${boxes.map((m) => m[1])})`);
 check(boxes.every((m) => !/checked/.test(m[2])), 'no list starts ticked');
 check(/data-multi/.test(band) && !/data-multi/.test(one) && /<input type="hidden" name="lists" value="journal">/.test(one) && !/type="checkbox"/.test(one), 'one list is a hidden field and no box; several are boxes');
 check(/<p class="sub__s" role="status" aria-live="polite"><\/p>/.test(band), 'the state is announced politely');
@@ -47,7 +47,17 @@ check(one.includes('href="../../privacy/index.html"'), 'the privacy link follows
 const page = await import(join(ROOT, 'site/js/pages/subscribe.js'));
 const pop = await import(join(ROOT, 'site/js/ui/subscribepop.js'));
 check(pop.SUBSCRIBE_URL === endpoint, `the popover posts to the same service (${pop.SUBSCRIBE_URL})`);
-check(pop.LISTS.join() === 'news,journal,games,sky', 'the popover offers the same four lists');
+check(pop.LISTS.join() === 'news,journal,games,sky,models,video', 'the popover offers the same six lists, in the same order');
+{
+  // Every list the popover offers has its label in English and in every language file (machine-drafted).
+  const en = read('site/js/copy/en.subscribe.js');
+  for (const name of pop.LISTS) check(new RegExp(`\\n    ${name}: '`).test(en), `copy/en.subscribe.js names the ${name} list`);
+  for (const lang of ['ar', 'de', 'es', 'fr', 'he', 'hi', 'pt', 'ru', 'uk', 'zh']) {
+    const src = read(`site/js/copy/${lang}.js`);
+    const blk = src.slice(src.indexOf('COPY.emailUpdates = {'), src.indexOf('COPY.emailUpdates = {') + 4000);
+    check(pop.LISTS.every((name) => blk.includes(`\n  "${name}": "`)), `copy/${lang}.js names all six lists`);
+  }
+}
 const popSrc = read('site/js/ui/subscribepop.js');
 check(/source = 'app:rail'/.test(popSrc) && /JSON\.stringify\(\{ email, lists, source, website: web\.value \}\)/.test(popSrc) && !/location\.(href|hash)/.test(popSrc), 'the popover says it is the app (app:rail, or app:coming-up for the row) and sends no page address or view');
 check(/website: web\.value/.test(popSrc) && /tabIndex = -1/.test(popSrc), 'the popover carries the honeypot too');

@@ -196,7 +196,7 @@ ok(printed == want, f"the page's three examples are the generator's output ({len
 plain = " ".join(page.text)
 ok("optional" in plain and "classroom" in plain, "the page says the link line is optional, for a classroom")
 ok("modelled" in plain, "the page says what the frame draws is modelled")
-sm = (out / "sitemap.xml").read_text(encoding="utf-8")
+sm = (out / "sitemap-pages.xml").read_text(encoding="utf-8")
 ok("https://www.spaceradar.ai/embed/index.html</loc>" in sm, "the sitemap lists the embed page")
 
 # --- 3: the list ------------------------------------------------------------------------------------------

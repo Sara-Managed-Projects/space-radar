@@ -2494,6 +2494,7 @@ html.sr-trip-mode #sr-card .sr-card__foot {
    middle of the window. */
 html.sr-trip-mode #sr-rail,
 html.sr-trip-mode #sr-time,
+html.sr-trip-mode body > .coffee,
 html.sr-trip-collapsed #sr-side {
   visibility: hidden;
   opacity: 0;
@@ -2710,13 +2711,13 @@ html.sr-ambient {
   --sr-scene-left: 0px;
 }
 
-html.sr-ambient :is(#sr-side, #sr-rail, #sr-time, .sr-top, .sr-toast, .sr-scenenote, .sr-keyhint) {
+html.sr-ambient :is(#sr-side, #sr-rail, #sr-time, .sr-top, .sr-toast, .sr-scenenote, .sr-keyhint, body > .coffee) {
   display: none;
 }
 
 /* A drawn world on its plain star stage (scene/exostage.js, `#imagine=N`; the rest is
    css/exoface.css, linked with it): the map's chrome, labels and reticle stand down. */
-html.sr-imagine-on :is(#sr-side, #sr-rail, #sr-time, .sr-top, .sr-toast, .sr-scenenote, .sr-keyhint, #labels, #sr-hud, .sr-card) {
+html.sr-imagine-on :is(#sr-side, #sr-rail, #sr-time, .sr-top, .sr-toast, .sr-scenenote, .sr-keyhint, #labels, #sr-hud, .sr-card, body > .coffee) {
   display: none;
 }
 
@@ -2745,6 +2746,7 @@ html.sr-trip-mode.sr-phone[data-sheet='full'] .sr-toast {
   html.sr-trip-mode #sr-side,
   html.sr-trip-mode #sr-rail,
   html.sr-trip-mode #sr-time,
+  html.sr-trip-mode body > .coffee,
   html.sr-trip-mode #labels,
   html.sr-trip-collapsed #sr-side,
   .sr-trip__toolbar.sr-float,
@@ -4395,6 +4397,40 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 html:is(.sr-clean, .sr-hud, .sr-ambient, .sr-imagine-on, .sr-trip-mode) .sr-rail__btn--games::before { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce) { .sr-rail__btn--games::before { animation: none; } }
 
+/* --- Buy Me a Coffee: the shared piece (css/coffee.css, index.html's COFFEE block) on the map ------------------------
+   A desktop: a 44 px glass circle in the bottom-right corner, the scene's inset in, on the controls' layer, under the
+   pill, the card, the rail and the toast, so whatever opens over it wins. Clear of the time pill (560 px, centred on
+   the scene) from 1100 px with the panel open, and at any width with it folded; from 900 to 1099 px with the panel open
+   the two would touch, so there it waits for the panel to fold. Clear of the heliosphere's chip (56 px up), and away
+   while the controls hint holds that corner. A phone: never floating, because the sheet and the bar own the edges; it is
+   a row of More there (ui/rail.js). Gone with the panels: the body > * rules (the clear screen, HUD only, filming, the
+   opening shot, the embed), the trip, ambient and imagine lists here, moments.css and ground.css, and below for Play,
+   the flight editor and the share sheet. The cup's loop stops whenever it is out of sight. */
+body > .coffee {
+  position: fixed;
+  right: calc(var(--sr-inset) + env(safe-area-inset-right, 0px));
+  bottom: calc(var(--sr-inset) + env(safe-area-inset-bottom, 0px));
+  z-index: var(--sr-z-controls);
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: var(--sr-glass);
+  border-radius: 50%;
+  -webkit-backdrop-filter: var(--sr-blur);
+  backdrop-filter: var(--sr-blur);
+  box-shadow: inset 0 0 0 1px var(--sr-line);
+}
+body > .coffee:hover { box-shadow: inset 0 0 0 1px var(--sr-atmosphere); }
+body > .coffee .coffee__art { width: 32px; height: 32px; }
+body > .coffee .coffee__t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+html.sr-phone body > .coffee,
+html:has(.sr-keyhint:not([hidden])) body > .coffee,
+html:is(.sr-play-on, .sr-flight-on, .sr-sharing) body > .coffee { display: none; }
+@media (min-width: 900px) and (max-width: 1099px) {
+  html:not(.sr-side-collapsed) body > .coffee { display: none; }
+}
+html:is(.sr-clean, .sr-hud, .sr-filming, .sr-trip-mode) .coffee :is(.coffee__cup, .coffee__coins) { animation-play-state: paused; }
+
 /* The popover opens to the rail's left, top-aligned with it; the share sheet (css/share.css)
    takes the same place. */
 .sr-pop {
@@ -5307,6 +5343,9 @@ html.sr-phone .sr-pop.sr-more:not([hidden]) {
 .sr-more__item svg {
   flex: 0 0 auto;
 }
+
+/* The Buy Me a Coffee row's cup (ui/rail.js clones index.html's): the size of the row's other marks, a little more for its coins. */
+.sr-more__item .coffee__art { width: 24px; height: 24px; }
 
 .sr-more__item:active {
   background: var(--sr-wash-strong);

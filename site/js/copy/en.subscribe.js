@@ -19,6 +19,8 @@ Object.assign(COPY, {
     journal: 'The Journal',
     games: 'Space games',
     sky: 'Sky alerts',
+    models: 'Space Radar models',
+    video: 'Space Radar video',
     email: 'Email address',
     placeholder: 'you@example.org',
     button: 'Subscribe',
