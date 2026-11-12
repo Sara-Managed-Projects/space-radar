@@ -241,7 +241,7 @@ def creators_page(host: str) -> Page:
         "on a clock that moves one frame at a time, so no frame is dropped however slow the machine. "
         f'The job is <a href="{GITHUB}/blob/main/scripts/creator_clips.py">scripts/creator_clips.py</a>, which runs '
         f'<a href="{GITHUB}/blob/main/tools/render-trip.mjs">tools/render-trip.mjs</a> once a trip.</p>\n'
-        + (f'<h3 class="group">Samples</h3>\n<p>Stills from the app with every panel hidden, 1280 x 720, made on 7 November 2026. Credit: '
+        + (f'<h3 class="group">Samples</h3>\n<p>Stills from the app with every panel hidden, 1280 x 720, made on 7 and 12 November 2026. Credit: '
            f"<code>{CREDIT}</code>, with the planet maps' makers (Solar System Scope, CC BY 4.0, or NASA), as the app's Sources panel lists them.</p>\n"
            f'<div class="shots">{pics}</div>\n' if pics else "")
         + f'<h3 class="group">The {len(jobs)} trips</h3>\n<ul class="cols">{clips}</ul>\n'
