@@ -26,6 +26,13 @@ tagged, and their dates are the day the last change in each landed.
 
 ### Changed
 
+- **The map's controls share one set, in the journal's design.** Every button, segmented choice, select, radio, box,
+  slider, close button and panel header in the app comes from `site/css/controls.css`: rounded pills, a blue wash for what
+  is chosen, a blue focus ring, and one ember button for the main action of each panel. 77 one-off control classes and the
+  ember corner brackets are gone. Selects look the same on a phone as on a desktop. `docs/UI_COMPONENTS.md` shows each one,
+  and `tests/test_controls.mjs` refuses a new one-off.
+- **Games is on the rail,** an icon like the others with a slow breathing glow that stops under reduced motion and pauses on
+  a clear screen and in trips. The panel's header no longer wraps, and the launch countdown has no browser tooltip.
 - **Every static page is drawn in the journal's design** (blog.spaceradar.ai). They share one header (Map, Journal, Games,
   Lab, Subscribe, and the map button) and one footer with a Sites column. The page is 1240 px wide with a reading column,
   links are blue, and there is one ember action per page. The tokens are `site/css/tokens.css`, the same file the

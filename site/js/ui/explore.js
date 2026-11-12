@@ -279,8 +279,6 @@ function button(className, text) {
   return b;
 }
 
-// Lucide `gamepad` (ISC), its rectangle, cross and buttons folded into one path: the Games link.
-const GAMEPAD = 'M6 12h4M8 10v4M15 13h.01M18 11h.01M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z';
 function svgIcon(d, size = 18) {
   const svg = document.createElementNS(SVG_NS, 'svg');
   svg.setAttribute('viewBox', '0 0 24 24');
@@ -301,7 +299,7 @@ function svgIcon(d, size = 18) {
 /** A list row that is a button: a name on the left, a mono value on the right. */
 function rowButton(name, value, onClick) {
   const li = el('li', 'sr-list__row');
-  const b = button('sr-list__btn');
+  const b = button('ui-row ui-row--plain');
   b.appendChild(el('span', 'sr-list__name', name));
   const v = el('span', 'sr-list__value', value || '');
   b.appendChild(v);
@@ -375,17 +373,6 @@ export function createExplore(ctx, host) {
   collapse.setAttribute('aria-label', COPY.shell.collapse);
   collapse.title = COPY.shell.collapse;
   collapse.addEventListener('click', () => { if (ctx.shell) ctx.shell.collapse(true); });
-  // GAMES (the maintainer, 2026-11-10): the team's space games, a link in a new tab as the rail's journal is, at the
-  // head of the panel. One more in the sheet's body on a phone, where the head has no wordmark row (ui.css shows
-  // one of the two). Its glow is ui.css's, transform and opacity only, still under reduced motion.
-  const games = el('a', 'sr-games sr-games--head');
-  games.href = COPY.games.href;
-  games.target = '_blank';
-  games.rel = 'noopener';
-  games.title = COPY.games.title;
-  games.appendChild(svgIcon(GAMEPAD, 16));
-  games.appendChild(el('span', null, COPY.games.label));
-  brand.appendChild(games);
   brand.appendChild(collapse);
   head.appendChild(brand);
 
@@ -452,7 +439,7 @@ export function createExplore(ctx, host) {
   // a visitor reaching for the search box wants them now, so the first focus asks for them.
   if (input) input.addEventListener('focus', () => { if (typeof ctx.loadAfterFirstVisit === 'function') ctx.loadAfterFirstVisit(); if (typeof ctx.loadMoreCatalogues === 'function') ctx.loadMoreCatalogues(); }); // 0079 r15-a45: the catalogues of stages A4 and A5 too
 
-  const tabs = el('div', 'sr-tabs');
+  const tabs = el('div', 'ui-seg ui-seg--block sr-tabs');
   tabs.setAttribute('role', 'tablist');
   tabs.dataset.tour = 'tabs';
   tabs.setAttribute('aria-label', COPY.tabs.label);
@@ -462,14 +449,11 @@ export function createExplore(ctx, host) {
   if (ctx && ctx.shell && typeof ctx.shell.seatSearch === 'function') ctx.shell.seatSearch(searchHost);
 
   const body = el('div', 'sr-explore__body');
-  const sheetGames = games.cloneNode(true);
-  sheetGames.className = 'sr-games sr-games--sheet';
-  body.appendChild(sheetGames);
   root.appendChild(body);
   const panes = new Map();
   const tabButtons = new Map();
   for (const id of TABS) {
-    const b = button('sr-tabs__tab', COPY.tabs[id]);
+    const b = button('ui-seg__btn', COPY.tabs[id]);
     b.setAttribute('role', 'tab');
     b.id = `sr-tab-${id}`;
     b.setAttribute('aria-controls', `sr-pane-${id}`);
@@ -830,7 +814,7 @@ export function createExplore(ctx, host) {
     now.hidden = !lines.length;
     for (const line of lines) {
       const li = el('li', `sr-now__row${line.lead ? ' is-lead' : ''}`);
-      const b = button('sr-now__btn');
+      const b = button('ui-row ui-row--plain');
       b.appendChild(el('span', 'sr-now__text', line.text));
       if (line.value) b.appendChild(el('span', 'sr-now__value', line.value));
       if (line.id === 'aurora') {

@@ -32,6 +32,7 @@ import * as THREE from '../../vendor/three.module.min.js';
 import { COPY, t, fmt } from '../copy/en.js';
 import '../copy/en.later.js';
 import { loadCss } from './latercss.js';
+import { icon } from './icons.js';
 import { write as writeUrl } from './urlstate.js';
 import { INTERIORS } from '../data/interiors.js';
 import { createCut } from '../scene/cutaway.js';
@@ -213,10 +214,11 @@ export function createCutaway(ctx, opts = {}) {
     const head = el(doc, 'div', 'sr-cutaway__head');
     const h = el(doc, 'h2', 'sr-cutaway__title', t(C.title, { name }));
     h.id = 'sr-cutaway-title';
-    const x = el(doc, 'button', 'sr-btn sr-btn--quiet sr-cutaway__close', '×');
+    const x = el(doc, 'button', 'ui-close');
     x.type = 'button';
     x.setAttribute('aria-label', C.close);
     x.title = C.close;
+    try { x.appendChild(icon('x')); } catch { /* a test's document */ }
     x.addEventListener('click', () => close());
     head.append(h, x);
     panel.appendChild(head);
@@ -266,7 +268,7 @@ export function createCutaway(ctx, opts = {}) {
     probe = doc.createElement('input');
     probe.type = 'range';
     probe.id = 'sr-cutaway-probe';
-    probe.className = 'sr-cutaway__range';
+    probe.className = 'ui-range';
     probe.min = '0';
     probe.max = String(PROBE_STEPS);
     probe.step = '1';

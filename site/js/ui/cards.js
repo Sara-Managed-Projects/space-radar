@@ -1592,7 +1592,7 @@ export { icon };
 
 /** One of the row's four: a 20 px icon over a 13 px label, the whole 56 px button the target. */
 function actionButton(action, label, title, iconName, onClick, primary) {
-  const b = el('button', primary ? 'sr-act sr-act--primary' : 'sr-act');
+  const b = el('button', primary ? 'ui-btn ui-btn--tile ui-btn--primary' : 'ui-btn ui-btn--tile');
   b.type = 'button';
   b.title = title;
   b.dataset.action = action;
@@ -1602,12 +1602,12 @@ function actionButton(action, label, title, iconName, onClick, primary) {
   const short = COPY.card.actions[`${action}Short`];
   if (short && short !== label) {
     b.setAttribute('aria-label', label);
-    b.appendChild(el('span', 'sr-act__label sr-act__label--long', label));
-    const s = el('span', 'sr-act__label sr-act__label--short', short);
+    b.appendChild(el('span', 'ui-btn__label sr-word--long', label));
+    const s = el('span', 'ui-btn__label sr-word--short', short);
     s.setAttribute('aria-hidden', 'true');
     b.appendChild(s);
   } else {
-    b.appendChild(el('span', 'sr-act__label', label));
+    b.appendChild(el('span', 'ui-btn__label', label));
   }
   b.addEventListener('click', onClick);
   return b;
@@ -1674,7 +1674,7 @@ function trackControls(record, ctx, m) {
   if (!low && ctx.groundTrack) {
     const st = ctx.groundTrack.state();
     const shown = st.forced && st.id === record.id;
-    const toggle = el('button', 'sr-btn sr-btn--quiet sr-card__inline', shown ? G.hideTrack : G.showTrack);
+    const toggle = el('button', 'ui-btn ui-btn--quiet sr-card__inline', shown ? G.hideTrack : G.showTrack);
     toggle.type = 'button';
     toggle.setAttribute('aria-pressed', shown ? 'true' : 'false');
     toggle.addEventListener('click', () => {
@@ -1739,7 +1739,7 @@ export function floodControls(record, ctx) {
   if (!offersFlood(record)) return [];
   const F = COPY.flood;
   const on = floodWantedNow();
-  const toggle = el('button', 'sr-card__tool', on ? F.off : F.on);
+  const toggle = el('button', 'ui-btn', on ? F.off : F.on);
   toggle.type = 'button';
   toggle.title = F.title;
   toggle.setAttribute('data-action', 'flood');
@@ -2532,7 +2532,7 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
   const seeNodes = [el('p', 'sr-card__seeline', seeItLine(record, ctx, m, passInfo))];
   if (seeRows.length) seeNodes.push(rowsList(seeRows));
   if (followAllowed(record, ctx, m)) {
-    const see = el('button', 'sr-btn sr-btn--quiet sr-card__inline', COPY.card.actions.seeFromHere);
+    const see = el('button', 'ui-btn ui-btn--quiet sr-card__inline', COPY.card.actions.seeFromHere);
     see.type = 'button';
     see.title = COPY.card.actions.seeFromHereTitle;
     see.dataset.focus = 'see-from-here';
@@ -2627,7 +2627,7 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
       const box = el('div', 'sr-card__exposure');
       const wrap = el('section', 'sr-panel sr-density sr-exposure');
       wrap.appendChild(el('h2', 'sr-panel__title', O.title));
-      const row = el('div', 'sr-density__choices');
+      const row = el('div', 'ui-seg ui-seg--block');
       row.setAttribute('role', 'group');
       row.setAttribute('aria-label', O.title);
       const note = el('p', 'sr-density__note');
@@ -2637,14 +2637,13 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
         for (const b of buttons) {
           const on = !!now[b.dataset.overlay];
           b.setAttribute('aria-pressed', on ? 'true' : 'false');
-          b.classList.toggle('sr-bracketed', on);
         }
         const z = can.zone && now.zone;
         const o = can.orbits && now.orbits;
         note.textContent = O.note[z && o ? 'both' : z ? 'zone' : o ? 'orbits' : 'none'];
       };
       for (const part of parts) {
-        const b = el('button', 'sr-density__btn', O[part]);
+        const b = el('button', 'ui-seg__btn', O[part]);
         b.type = 'button';
         b.dataset.overlay = part;
         b.title = O[`${part}Title`];
@@ -2673,7 +2672,7 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
       const box = el('div', 'sr-card__exposure');
       const wrap = el('section', 'sr-panel sr-density sr-exposure');
       wrap.appendChild(el('h2', 'sr-panel__title', F.title));
-      const row = el('div', 'sr-density__choices');
+      const row = el('div', 'ui-seg ui-seg--block');
       row.setAttribute('role', 'group');
       row.setAttribute('aria-label', F.title);
       const note = el('p', 'sr-density__note');
@@ -2682,12 +2681,11 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
         const now = ctx.worlds.faceOf(record.id) || 'own';
         for (const b of buttons) {
           b.setAttribute('aria-pressed', b.dataset.face === now ? 'true' : 'false');
-          b.classList.toggle('sr-bracketed', b.dataset.face === now);
         }
         note.textContent = F.notes[now] || '';
       };
       for (const face of ['own', ...faces]) {
-        const b = el('button', 'sr-density__btn', F.modes[face] || face);
+        const b = el('button', 'ui-seg__btn', F.modes[face] || face);
         b.type = 'button';
         b.dataset.face = face;
         b.title = F.notes[face] || '';
@@ -2770,7 +2768,7 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
   // "About it", not a sentence-long row under the card. Its tooltip is the long form.
   if (klass === 'world') {
     const isCentre = ctx && ctx.stage && ctx.stage.worldId === record.id;
-    const centre = el('button', 'sr-btn sr-btn--quiet sr-card__inline', isCentre ? COPY.card.isCentreShort : COPY.card.centreShort);
+    const centre = el('button', 'ui-btn ui-btn--quiet sr-card__inline', isCentre ? COPY.card.isCentreShort : COPY.card.centreShort);
     centre.type = 'button';
     centre.title = isCentre ? COPY.card.isCentre : t(COPY.card.makeCentre, { name });
     centre.dataset.focus = 'centre';
@@ -2885,7 +2883,7 @@ function render(record, ctx, opts = {}) {
   title.dataset.focus = 'title';
   title.title = name; // two lines, then an ellipsis: the whole name is here
   header.appendChild(title);
-  const close = el('button', 'sr-card__close');
+  const close = el('button', 'ui-close sr-card__close');
   close.type = 'button';
   close.title = COPY.card.closeTitle;
   close.setAttribute('aria-label', COPY.card.close);
@@ -2959,7 +2957,7 @@ function render(record, ctx, opts = {}) {
   if (GROUND_SITES.includes(site)) {
     const G = COPY.groundDoor;
     const drive = DRIVE_SITES.includes(site);
-    const go = el('button', 'sr-card__tool', drive ? G.drive : G.stand);
+    const go = el('button', 'ui-btn', drive ? G.drive : G.stand);
     go.type = 'button';
     go.dataset.focus = 'ground-door';
     go.title = t(drive ? G.driveTitle : G.standTitle, { name: record.name || site });
@@ -2969,7 +2967,7 @@ function render(record, ctx, opts = {}) {
   const stories = typeof ctx.wantMoment === 'function' ? momentsForRecord(record) : [];
   for (const story of stories) {
     const W = COPY.momentShelf;
-    const go = el('button', 'sr-card__tool', stories.length > 1 ? t(W.replayNamed, { title: W.cards[story.id].title }) : W.replay);
+    const go = el('button', 'ui-btn', stories.length > 1 ? t(W.replayNamed, { title: W.cards[story.id].title }) : W.replay);
     go.type = 'button';
     go.dataset.focus = stories.length > 1 ? `replay-moment-${story.id}` : 'replay-moment';
     go.dataset.moment = story.id;
@@ -2982,7 +2980,7 @@ function render(record, ctx, opts = {}) {
   // layers (ui/cutaway.js, fetched on the first press), on its own stage. A tile of the quiet row, as the moment's is.
   if (record.layer === 'worlds' && INTERIOR_IDS.includes(record.id) && typeof ctx.wantCutaway === 'function') {
     const K = COPY.cutaway;
-    const look = el('button', 'sr-card__tool', K.button);
+    const look = el('button', 'ui-btn', K.button);
     look.type = 'button';
     look.dataset.focus = 'look-inside';
     look.title = t(K.buttonTitle, { name: record.name || record.id });

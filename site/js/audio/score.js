@@ -33,6 +33,7 @@ import { createLoader } from './load.js';
 import { XFADE_S } from './beds.js';
 import { REAL_SOUNDS } from '../data/realsounds.js';
 import { loadCss } from '../ui/latercss.js';
+import { icon } from '../ui/icons.js';
 
 export const GLIDE_S = XFADE_S;
 export const DUCK_REAL = 0.25;
@@ -139,8 +140,8 @@ export function installScore(audio, ctx, opts = {}) {
   list.className = 'sr-realsound__list';
   const close = doc.createElement('button');
   close.type = 'button';
-  close.className = 'sr-realsound__close';
-  close.textContent = '×';
+  close.className = 'ui-close sr-realsound__close';
+  try { close.appendChild(icon('x')); } catch { /* a test's document */ }
   close.setAttribute('aria-label', C.hide);
   close.title = C.hide;
   close.addEventListener('click', () => { hidden.add(here()); stop(); paint(); });

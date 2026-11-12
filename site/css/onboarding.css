@@ -172,10 +172,8 @@
   margin-top: var(--sp-1);
 }
 
-.sr-tour__row .sr-btn {
+.sr-tour__row .ui-btn {
   min-width: 72px;
-  min-height: 44px;
-  font-size: var(--sr-fs-label);
 }
 
 /* Skip is pushed to the right with Next; the voice keeps the left. */

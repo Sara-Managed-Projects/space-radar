@@ -71,7 +71,8 @@ export function volumeSlider(ctx, className) {
   const T = COPY.trip;
   const v = document.createElement('input');
   v.type = 'range';
-  v.className = className;
+  v.className = 'ui-range';
+  if (className) v.classList.add(className);
   v.min = '0';
   v.max = '100';
   v.step = '5';
@@ -103,6 +104,6 @@ export function soundPanel(ctx) {
   note.className = 'sr-sound__note';
   note.textContent = COPY.audio.panelNote;
   wrap.appendChild(note);
-  wrap.appendChild(soundButton(ctx, 'sr-btn sr-sound__btn', 'toggle'));
+  wrap.appendChild(soundButton(ctx, 'ui-btn sr-sound__btn', 'toggle'));
   return wrap;
 }

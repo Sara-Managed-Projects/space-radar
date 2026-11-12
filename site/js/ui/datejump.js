@@ -29,6 +29,7 @@ import { COPY, t, timeText } from '../copy/en.js';
 import '../copy/en.find.js';
 import '../copy/en.moments.js';
 import { loadCss } from './latercss.js';
+import { icon } from './icons.js';
 import { parseWhen, findEclipse, fadeFor, launchesHidden, toInputValue, fromInputValue, MIN_YEAR, MAX_YEAR } from './whenparse.js';
 
 let api = null;
@@ -63,7 +64,8 @@ function build(ctx) {
   const head = el('div', 'sr-datejump__head');
   const title = el('h2', 'sr-micro', D.title);
   title.id = 'sr-datejump-title';
-  const close = el('button', 'sr-datejump__close', '×');
+  const close = el('button', 'ui-close');
+  close.appendChild(icon('x'));
   close.type = 'button';
   close.setAttribute('aria-label', D.close);
   close.title = D.close;
@@ -91,7 +93,7 @@ function build(ctx) {
   text.spellcheck = false;
   text.setAttribute('aria-describedby', 'sr-datejump-hint');
   textLab.htmlFor = text.id;
-  const go = el('button', 'sr-btn sr-datejump__go', D.go);
+  const go = el('button', 'ui-btn sr-datejump__go', D.go);
   go.type = 'submit';
   const hint = el('p', 'sr-sect__note', D.hint);
   hint.id = 'sr-datejump-hint';
@@ -155,7 +157,7 @@ function build(ctx) {
     filled = true;
     const [{ MISSIONS }, shelf] = await Promise.all([import('../data/missions.js'), import('../moments/shelf.js').catch(() => null)]);
     const chip = (words, title, onClick) => {
-      const b = el('button', 'sr-chip sr-datejump__chip', words);
+      const b = el('button', 'ui-chip sr-datejump__chip', words);
       b.type = 'button';
       if (title) b.title = title;
       b.addEventListener('click', onClick);

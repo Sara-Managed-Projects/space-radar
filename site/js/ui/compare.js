@@ -344,11 +344,11 @@ export function mountCompare(box, record, ctx = null) {
   let live = true;
 
   function choice(labelText, options, current, onPick, group) {
-    const row = el('div', 'sr-card__sky sr-vs__choice');
+    const row = el('div', 'ui-seg ui-seg--block sr-vs__choice');
     row.setAttribute('role', 'group');
     row.setAttribute('aria-label', labelText);
     for (const [value, text] of options) {
-      const b = el('button', 'sr-card__tool', text);
+      const b = el('button', 'ui-seg__btn', text);
       b.type = 'button';
       b.dataset.value = value;
       b.setAttribute('aria-pressed', value === current ? 'true' : 'false');
@@ -363,7 +363,7 @@ export function mountCompare(box, record, ctx = null) {
     const wrap = el('label', 'sr-vs__field');
     wrap.appendChild(el('span', 'sr-vs__fieldlabel', labelText));
     const s = document.createElement('select');
-    s.className = 'sr-vs__select';
+    s.className = 'ui-select ui-select--block';
     for (const [value, text] of options) {
       const o = document.createElement('option');
       o.value = value;
@@ -398,7 +398,7 @@ export function mountCompare(box, record, ctx = null) {
   function paintPair() {
     const b = BODY.get(state.withId) || BODY.get(defaultWith(id));
     const others = ORDER.filter((w) => w !== id);
-    box.appendChild(select(C.withLabel, others.map((w) => [w, nameOf(w)]), b.world, (v) => { state.withId = v; paint('.sr-vs__select'); }));
+    box.appendChild(select(C.withLabel, others.map((w) => [w, nameOf(w)]), b.world, (v) => { state.withId = v; paint('.ui-select'); }));
     box.appendChild(el('p', 'sr-vs__sentence', widerSentence(a, b)));
     const lay = layout(a, b, state.scale, VIEW_W, VIEW_H);
     const fig = el('figure', 'sr-vs__figure');
@@ -445,13 +445,13 @@ export function mountCompare(box, record, ctx = null) {
   }
 
   function paintLab() {
-    box.appendChild(select(C.propLabel, PROPS.map((p) => [p.id, C.rows[p.id]]), state.prop, (v) => { state.prop = v; paint('.sr-vs__select'); }));
+    box.appendChild(select(C.propLabel, PROPS.map((p) => [p.id, C.rows[p.id]]), state.prop, (v) => { state.prop = v; paint('.ui-select'); }));
     const rows = labRows(state.prop, id);
     const list = el('ul', 'sr-vs__lab');
     for (const r of rows) {
       const li = el('li', 'sr-vs__labrow');
       const mine = r.id === id;
-      const b = el('button', `sr-vs__labbtn${mine ? ' is-this' : ''}${r.id === state.withId ? ' is-with' : ''}`);
+      const b = el('button', `ui-row ui-row--plain sr-vs__entry${mine ? ' is-this' : ''}${r.id === state.withId ? ' is-with' : ''}`);
       b.type = 'button';
       b.dataset.world = r.id;
       if (mine) { b.setAttribute('aria-disabled', 'true'); b.title = C.thisCard; } else b.title = t(C.labTitle, { name: theName(r.id) });
@@ -465,7 +465,7 @@ export function mountCompare(box, record, ctx = null) {
       fill.style.width = `${(r.frac * 100).toFixed(1)}%`;
       bar.appendChild(fill);
       b.append(top, bar);
-      if (!mine) b.addEventListener('click', () => { state.withId = r.id; state.mode = 'pair'; paint('.sr-vs__select'); });
+      if (!mine) b.addEventListener('click', () => { state.withId = r.id; state.mode = 'pair'; paint('.ui-select'); });
       li.appendChild(b);
       list.appendChild(li);
     }

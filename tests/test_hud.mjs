@@ -173,8 +173,9 @@ check(/namesSelection\(\)/.test(labels), 'the labels leave the selection\'s name
 // Tokens written out (tests/helpers/css_tokens.mjs): the numbers below are still the numbers.
 const { resolveTokens } = await import(join(ROOT, 'tests/helpers/css_tokens.mjs'));
 const css = resolveTokens(readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, ''));
-const bracketRule = css.match(/([^{}]*\.sr-bracketed::before[^{}]*)\{/);
-check(bracketRule && /\.sr-reticle__box::before/.test(bracketRule[1]), 'the reticle is the same bracket rule as a focused control (0045)');
+// Since 2026-11-11 the reticle is the last of 0045's brackets: focus is a blue ring, selection a blue wash (css/controls.css).
+const bracketRule = css.match(/([^{}]*\.sr-reticle__box::before[^{}]*)\{([^}]*)\}/);
+check(bracketRule && /linear-gradient/.test(bracketRule[2]) && !/sr-bracketed/.test(css), 'the reticle keeps 0045\'s corner ticks, and nothing else wears them');
 check(/\.sr-reticle__box\.is-acquiring\s*\{[^}]*animation: sr-acquire var\(--sr-mid\) var\(--sr-ease\)/.test(css), 'acquire over --sr-mid on --sr-ease');
 check(/@keyframes sr-acquire\s*\{[^@]*scale\(1\.6\)[^@]*scale\(1\)/.test(css), 'from 1.6 to 1.0');
 check(!/sr-reticle[^{]*\{[^}]*animation[^}]*infinite/.test(css), 'no pulse, no spin');

@@ -160,8 +160,8 @@ export function createOnboarding(ctx, opts = {}) {
     voiceBtn.setAttribute('aria-pressed', String(voiceOnNow));
     voiceBtn.appendChild(icon('speech', 20));
     voiceBtn.hidden = !hasVoice;
-    skipBtn = button('sr-btn sr-btn--quiet sr-tour__skip', C.skip, C.skipTitle);
-    nextBtn = button('sr-btn sr-tour__next', C.next, C.nextTitle);
+    skipBtn = button('ui-btn ui-btn--quiet sr-tour__skip', C.skip, C.skipTitle);
+    nextBtn = button('ui-btn sr-tour__next', C.next, C.nextTitle);
     row.append(voiceBtn, skipBtn, nextBtn);
     card.append(head, words, row);
 

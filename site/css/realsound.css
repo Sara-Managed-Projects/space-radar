@@ -25,15 +25,7 @@
 .sr-realsound__list { order: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1; }
 .sr-realsound__close {
   order: 2;
-  flex: none;
-  width: 44px;
-  height: 44px;
-  margin: -6px -6px 0 0;
-  border: 0;
-  background: none;
-  color: var(--sr-text-dim);
-  font-size: var(--sr-fs-glyph);
-  cursor: pointer;
+  margin: calc(-1 * var(--sp-1)) calc(-1 * var(--sp-1)) 0 0;
 }
 .sr-realsound__play {
   display: block;
@@ -50,7 +42,7 @@
 .sr-realsound__how, .sr-realsound__credit { margin: -6px 0 0; padding: 0 4px; color: var(--sr-text-dim); }
 .sr-realsound__credit { margin-top: 4px; font-size: var(--sr-fs-unit); line-height: 15px; }
 .sr-realsound__live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-.sr-realsound__close:focus-visible, .sr-realsound__play:focus-visible { outline: 2px solid var(--sr-ember); outline-offset: 2px; }
+.sr-realsound__play:focus-visible { outline: 2px solid var(--sr-atmosphere); outline-offset: 2px; }
 
 @media (max-width: 899px) {
   .sr-realsound {

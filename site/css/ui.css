@@ -161,6 +161,22 @@
 
   /* Old names, kept for one release so no rule breaks in the change */
   --sr-panel: var(--sr-glass-solid);
+
+  /* The design kit's names (web-kit/css/tokens.css), which css/controls.css, the control set every Space Radar site
+     shares, is written in. Here they are the map's own values; --ember and --mono are site.css's. */
+  --bg: var(--sr-space);
+  --bg2: var(--sr-space-edge);
+  --panel: var(--sr-space);
+  --panel2: var(--sr-space-edge);
+  --line: var(--sr-line-strong);
+  --tx: var(--sr-text);
+  --dim: var(--sr-text-dim);
+  --atm: var(--sr-atmosphere);
+  --a: var(--sr-atmosphere);
+  --ink: var(--sr-space);
+  --ink-ember: var(--sr-ink);
+  --sans: var(--sr-font);
+  --cap: var(--sr-font-hud);
 }
 
 /* Reduced motion, everywhere at once (spec 0061 req 12, docs/ui-guide.md section 2.5): the three
@@ -262,35 +278,27 @@ html.sr-compact .sr-status {
   }
 }
 
-/* Corner brackets (spec 0045 req 8): the selection and focus signature, four 8 px ember L-ticks
-   just outside the corners. CSS only: ::before draws the top two, ::after is the same picture
-   turned upside down. A row inside a scrolling list draws them inside its own corners instead
-   (--sr-bracket-out: 0px), where the list's edge cannot clip them. */
+/* Focus and selection (the maintainer, 2026-11-11: the journal's design in the app). The ember corner brackets that
+   marked what was selected or focused are gone: focus is a 2 px atmosphere-blue ring, what is selected wears the blue
+   wash of css/controls.css (aria-pressed, aria-checked, aria-selected), and ember is the one main action of a view.
+   The scene's reticle keeps its four ticks: it is a mark on the thing in space, not a control. */
 /* Zero specificity, so a control that is fixed or absolute keeps its own position. */
-:where(button, a[href], [role='option'], summary),
-.sr-bracketed {
+:where(button, a[href], [role='option'], summary) {
   position: relative;
 }
 
-:where(button, a[href], [role='option'], summary):focus-visible {
-  outline: none;
+:where(button, a[href], [role='option'], summary, input, select, textarea):focus-visible {
+  outline: 2px solid var(--sr-atmosphere);
+  outline-offset: 2px;
 }
 
-.sr-bracketed::before,
-.sr-bracketed::after,
-.sr-search__option.is-active::before,
-.sr-search__option.is-active::after,
 .sr-reticle__box::before,
 .sr-reticle__box::after,
 .sr-skyreticle::before,
-.sr-skyreticle::after,
-.sr-search__row:has(:focus-visible)::before,
-.sr-search__row:has(:focus-visible)::after,
-:where(button, a[href], [role='option'], summary):focus-visible::before,
-:where(button, a[href], [role='option'], summary):focus-visible::after {
+.sr-skyreticle::after {
   content: '';
   position: absolute;
-  inset: calc(-1 * var(--sr-bracket-out, 4px));
+  inset: 0;
   pointer-events: none;
   background:
     linear-gradient(var(--sr-ember) 0 0) top left / var(--sr-bracket) var(--sr-bracket-w) no-repeat,
@@ -299,19 +307,20 @@ html.sr-compact .sr-status {
     linear-gradient(var(--sr-ember) 0 0) top right / var(--sr-bracket-w) var(--sr-bracket) no-repeat;
 }
 
-.sr-bracketed::after,
-.sr-search__option.is-active::after,
 .sr-reticle__box::after,
-.sr-skyreticle::after,
-.sr-search__row:has(:focus-visible)::after,
-:where(button, a[href], [role='option'], summary):focus-visible::after {
+.sr-skyreticle::after {
   transform: scaleY(-1);
 }
 
-/* The search field's well wears the brackets while its input has the keyboard (0061 task 5): an
-   input has no pseudo-elements of its own, and the hairline it had was 1.8:1, under SC 2.4.13. */
+/* The search field's well wears the focus ring while its input has the keyboard (0061 task 5): the input itself
+   draws none, and the hairline it had was 1.8:1, under SC 2.4.13. */
 .sr-search__row {
   position: relative;
+}
+
+.sr-search__row:has(:focus-visible) {
+  outline: 2px solid var(--sr-atmosphere);
+  outline-offset: 2px;
 }
 
 .sr-card *,
@@ -350,46 +359,6 @@ html.sr-compact .sr-status {
 .sr-status__title {
   font-size: var(--sr-fs-body);
   color: var(--sr-text);
-}
-
-/* Buttons ---------------------------------------------------------------------------- */
-
-.sr-btn {
-  appearance: none;
-  min-height: 40px;
-  padding: 0 var(--sp-3);
-  font: inherit;
-  font-weight: 500;
-  color: var(--sr-text);
-  background: transparent;
-  border: 1px solid var(--sr-line-strong);
-  border-radius: var(--sr-radius-sm);
-  cursor: pointer;
-  transition:
-    border-color var(--sr-fast) var(--sr-ease),
-    background-color var(--sr-fast) var(--sr-ease);
-}
-
-.sr-btn:hover:not(:disabled) {
-  border-color: var(--sr-ember);
-}
-
-
-.sr-btn--primary {
-  color: var(--sr-ink);
-  background: var(--sr-ember);
-  border-color: var(--sr-ember);
-  font-weight: 600;
-}
-
-.sr-btn--quiet {
-  color: var(--sr-text-dim);
-  border-color: var(--sr-line);
-}
-
-.sr-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
 }
 
 /* Class swatches and glyphs ----------------------------------------------------------- */
@@ -563,28 +532,11 @@ html.sr-compact .sr-status {
   -webkit-line-clamp: 2;
 }
 
-/* × : a 36 px disc inside a 44 px target (the padding is the target, the content box the disc). */
+/* The close (css/controls.css .ui-close): its place in the card's head. */
 .sr-card__close {
   grid-column: 2;
   grid-row: 1 / span 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  margin: calc(-1 * var(--sp-1)) calc(-1 * var(--sp-1)) 0 0;
-  padding: var(--sp-1);
-  color: var(--sr-text);
-  background: var(--sr-wash);
-  background-clip: content-box;
-  border: 0;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: background-color var(--sr-fast) var(--sr-ease);
-}
-
-.sr-card__close:active {
-  background-color: var(--sr-wash-strong);
+  margin: 0;
 }
 
 /* 2. The three numbers: mono, the unit and what it measures dim under each (principle 4). */
@@ -643,67 +595,19 @@ html.sr-compact .sr-status {
   padding: var(--sp-4) 0;
 }
 
-.sr-act {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-1);
-  min-width: 0;
-  height: 52px;
-  padding: 0 var(--sp-1);
-  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
-  color: var(--sr-text);
-  background: var(--sr-wash);
-  border: 0;
-  border-radius: var(--sr-radius);
-  cursor: pointer;
-  transition: background-color var(--sr-fast) var(--sr-ease);
-}
-
-.sr-act__label {
-  max-width: 100%;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
 /* Narrow (docs/ui-guide.md §5, under 360 px): icon and one word, where the action has a short one. */
-.sr-act__label--short {
+.sr-word--short {
   display: none;
 }
 
 @media (max-width: 359px) {
-  .sr-act__label--long {
+  .sr-word--long {
     display: none;
   }
 
-  .sr-act__label--short {
+  .sr-word--short {
     display: inline;
   }
-}
-
-.sr-act .sr-icon {
-  flex: 0 0 auto;
-}
-
-.sr-act--primary {
-  font-weight: 600;
-  color: var(--sr-ink);
-  background: var(--sr-ember);
-}
-
-.sr-act:active:not(:disabled) {
-  background: var(--sr-wash-strong);
-}
-
-.sr-act--primary:active:not(:disabled) {
-  background: var(--sr-ember-light);
-}
-
-.sr-act:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
 }
 
 /* 4. The next 90 minutes (spec 0048): the light now and the next change, a 6 px bar, the scale. */
@@ -834,18 +738,6 @@ html.sr-compact .sr-status {
 }
 
 @media (hover: hover) {
-  .sr-card__close:hover {
-    background-color: var(--sr-wash-hover);
-  }
-
-  .sr-act:hover:not(:disabled) {
-    background: var(--sr-wash-hover);
-  }
-
-  .sr-act--primary:hover:not(:disabled) {
-    background: var(--sr-ember-light);
-  }
-
   .sr-disc__head:hover {
     background: var(--sr-wash);
   }
@@ -903,50 +795,9 @@ html.sr-compact .sr-status {
   margin-bottom: var(--sp-4);
 }
 
-.sr-card__tool {
+.sr-card__sky > .ui-btn {
   min-width: 0;
-  height: 44px;
-  padding: 0 var(--sp-2);
-  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
-  color: var(--sr-text-soft);
-  text-align: center;
-  background: var(--sr-wash);
-  border: 1px solid transparent;
-  border-radius: var(--sr-radius);
-  cursor: pointer;
-  transition: background-color var(--sr-fast) var(--sr-ease), border-color var(--sr-fast) var(--sr-ease), color var(--sr-fast) var(--sr-ease);
-}
-
-.sr-card__tool:active:not(:disabled) {
-  background: var(--sr-wash-strong);
-}
-
-.sr-card__tool[aria-pressed='true'] {
-  color: var(--sr-text);
-  background: var(--sr-wash-strong);
-  border-color: var(--sr-ember);
-}
-
-.sr-card__tool:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-@media (hover: hover) {
-  .sr-card__tool:hover:not(:disabled) {
-    color: var(--sr-text);
-    background: var(--sr-wash-hover);
-  }
-
-  .sr-card__tool[aria-pressed='true']:hover:not(:disabled) {
-    background: var(--sr-wash-strong);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .sr-card__tool {
-    transition: none;
-  }
+  white-space: normal;
 }
 
 /* The object's own page (internal #199): one quiet link at the foot of About it. */
@@ -1263,8 +1114,6 @@ button.sr-card__crumb:hover, button.sr-card__crumb:focus-visible { color: var(--
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sr-act,
-  .sr-card__close,
   .sr-card__aboardrow,
   .sr-disc__head,
   .sr-disc__head .sr-icon {
@@ -1526,10 +1375,6 @@ html.sr-hud #sr-time {
 /* ------------------------------------------------------------------------------------ */
 
 @media (prefers-reduced-motion: reduce) {
-  .sr-btn {
-    transition: none;
-  }
-
   /* A panel only fades, 120 ms, with no travel and no nudge (spec 0045 req 11). */
   .sr-float,
   .sr-card {
@@ -1578,7 +1423,7 @@ html.sr-hud #sr-time {
 }
 
 .sr-search__input:focus-visible {
-  outline: 2px solid var(--sr-ember);
+  outline: 2px solid var(--sr-atmosphere);
   outline-offset: 1px;
 }
 
@@ -1709,11 +1554,9 @@ html.sr-phone .sr-search__option--rich {
 }
 
 .sr-search__option:hover,
-/* The selected row: the ember wash and the brackets, drawn inside the row's own corners because
-   the list scrolls and would clip them outside. */
+/* The selected row: the selection's blue wash (css/controls.css). */
 .sr-search__option.is-active {
-  --sr-bracket-out: 0px;
-  background: var(--sr-ember-soft);
+  background: var(--ui-sel);
 }
 
 .sr-search__option.is-active .sr-search__name {
@@ -2493,9 +2336,6 @@ html.sr-present.sr-trip-mode:not([data-trip-names]) #labels .label:not(.is-subje
   grid-auto-flow: row;
 }
 
-.sr-side .sr-tripsheet .sr-act {
-  height: 56px;
-}
 
 .sr-tripsheet__nextcard {
   width: 100%;
@@ -2961,25 +2801,11 @@ html.sr-trip-mode.sr-phone[data-sheet='full'] .sr-toast {
 
 .sr-pick[hidden] { display: none; }
 
-.sr-pick__btn {
-  appearance: none;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
+.sr-pick .ui-row {
   min-height: 36px;
-  padding: 0 8px;
-  font: inherit;
-  color: var(--sr-text);
-  text-align: left;
-  background: transparent;
-  border: 0;
+  padding: 0 var(--sp-2);
   border-radius: var(--sr-radius-sm);
-  cursor: pointer;
 }
-
-.sr-pick__btn:hover,
-.sr-pick__btn:focus-visible { background: var(--sr-wash); }
 
 .sr-pick__name { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -3003,16 +2829,8 @@ html.sr-trip-mode.sr-phone[data-sheet='full'] .sr-toast {
 /* Colour by (spec 0026 req 11) -------------------------------------------------------------- */
 
 /* The colour key's field. */
-.sr-colourkey__select {
-  width: 100%;
-  min-height: 36px;
-  margin: 0 0 8px;
-  padding: 0 8px;
-  font: inherit;
-  color: var(--sr-text);
-  background: var(--sr-wash);
-  border: 1px solid var(--sr-line-strong);
-  border-radius: var(--sr-radius-sm);
+.sr-colourkey > .ui-select {
+  margin: 0 0 var(--sp-2);
 }
 
 .sr-colourkey__legend { margin: 0; padding: 0; list-style: none; }
@@ -3071,41 +2889,9 @@ html.sr-trip-mode.sr-phone[data-sheet='full'] .sr-toast {
   padding: var(--sp-2) 0;
 }
 
-.sr-scenenote__why,
-.sr-scenenote__close {
+.sr-scenenote > .ui-btn,
+.sr-scenenote > .ui-close {
   flex: 0 0 auto;
-  min-height: 32px;
-  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
-  background: transparent;
-  border: 0;
-  border-radius: var(--sr-radius);
-  cursor: pointer;
-  transition: color var(--sr-fast) var(--sr-ease), background-color var(--sr-fast) var(--sr-ease);
-}
-
-.sr-scenenote__why {
-  padding: 0 var(--sp-1);
-  color: var(--sr-ember);
-}
-
-.sr-scenenote__why[hidden] { display: none; }
-
-.sr-scenenote__close {
-  width: 32px;
-  padding: 0;
-  font-size: var(--sr-fs-glyph);
-  color: var(--sr-text-soft);
-}
-
-@media (hover: hover) {
-  .sr-scenenote__why:hover { color: var(--sr-ember-light); }
-  .sr-scenenote__close:hover { color: var(--sr-text); background-color: var(--sr-wash-hover); }
-}
-
-@media (pointer: coarse) {
-  .sr-scenenote__why,
-  .sr-scenenote__close { min-height: 44px; }
-  .sr-scenenote__close { width: 44px; }
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
@@ -3150,27 +2936,10 @@ html.sr-trip-mode .sr-scenenote { display: none; }
 }
 .sr-toast[hidden] { display: none; }
 /* The toast's one text action (ui-guide §3.14; ui/offline.js "Reload"): text, not a filled button. */
-.sr-toast__action {
-  margin-left: var(--sp-3);
-  padding: var(--sp-1) var(--sp-2);
-  min-height: 24px;
-  background: none;
-  border: 0;
-  border-radius: var(--sr-radius-sm);
-  color: var(--sr-text);
-  font: inherit;
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  /* The action is one phrase: on a narrow screen it goes to the next line whole, never
-     "Back to where you / were" in three lines over the subject. */
-  white-space: nowrap;
-  cursor: pointer;
-}
-.sr-toast__action:hover { color: var(--sr-text-soft); }
-.sr-toast__action:active { color: var(--sr-text-dim); }
-@media (pointer: coarse) {
-  .sr-toast__action { min-height: 44px; min-width: 44px; }
+/* The action (css/controls.css .ui-btn--sm): one phrase, so on a narrow screen it goes to the next line whole, never
+   "Back to where you / were" in three lines over the subject (.ui-btn does not wrap). */
+.sr-toast > .ui-btn {
+  margin-inline-start: var(--sp-3);
 }
 
 /* Sound (spec 0035, 2026-09-23) ------------------------------------------------------------ */
@@ -3182,31 +2951,7 @@ html.sr-trip-mode .sr-scenenote { display: none; }
   color: var(--sr-text-dim);
 }
 
-/* Density (spec 0045 req 10): three choices in a row, the chosen one bracketed. */
-.sr-density__choices {
-  display: flex;
-  gap: var(--sp-2);
-}
-
-.sr-density__btn {
-  appearance: none;
-  flex: 1 1 0;
-  min-height: 36px;
-  padding: 0 var(--sp-2);
-  font: inherit;
-  font-size: var(--sr-fs-sm);
-  color: var(--sr-text-dim);
-  background: transparent;
-  border: 1px solid var(--sr-line);
-  border-radius: var(--sr-radius-sm);
-  cursor: pointer;
-}
-
-.sr-density__btn[aria-pressed='true'] {
-  color: var(--sr-text);
-  border-color: var(--sr-line-strong);
-}
-
+/* Density (spec 0045 req 10): three choices in a row, a segmented control (css/controls.css .ui-seg). */
 .sr-density__note {
   margin: var(--sp-2) 0 0;
   font-size: var(--sr-fs-sm);
@@ -3229,21 +2974,6 @@ html.sr-trip-mode .sr-scenenote { display: none; }
   text-decoration: underline;
 }
 
-/* A finger's target (docs/ui-guide.md principle 9): 44 px on a coarse pointer. */
-@media (pointer: coarse) {
-  .sr-exposure .sr-density__btn {
-    min-height: 44px;
-  }
-}
-.sr-sound__btn.is-on {
-  color: var(--sr-ember);
-  border-color: var(--sr-ember);
-}
-
-/* The 44 px tap floor on a phone, as the Share buttons above. */
-html.sr-phone .sr-sound__btn {
-  min-height: 44px;
-}
 
 /* The tracked object's HUD (spec 0047, ui/hud.js) ---------------------------------------------- */
 
@@ -3273,14 +3003,12 @@ html.sr-phone .sr-sound__btn {
   will-change: transform;
 }
 
-/* The reticle is 0045's corner brackets, the same rule as a focused control (the list above), on a
-   box sized to the thing: max(40 px, its drawn diameter + 12 px). Inside its own corners, because
-   the box is already the margin. */
+/* The reticle is 0045's corner brackets (the rule at the head of this file), on a box sized to the thing:
+   max(40 px, its drawn diameter + 12 px). Inside its own corners, because the box is already the margin. */
 .sr-reticle__box {
   position: relative;
   width: 28px;
   height: 28px;
-  --sr-bracket-out: 0px;
   transform-origin: 50% 50%;
 }
 
@@ -3692,24 +3420,35 @@ html.sr-phone .sr-chevron {
   padding: 20px 20px var(--sp-3);
 }
 
+/* The head's first row: the wordmark, the launch chip when a launch is inside a day (ui/launchchip.js), and the collapse
+   chevron, which is pinned to the corner so a crowded row wraps the chip to a line of its own, never the wordmark. */
 .sr-explore__brand {
+  position: relative;
   display: flex;
-  align-items: flex-end;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
+  row-gap: var(--sp-2);
+  min-height: 32px;
+  padding-right: 40px;
 }
 
 /* The wordmark: Barlow Semi Condensed 600 at 27 px. */
 .sr-wordmark {
   margin: 0;
+  white-space: nowrap;
   font: 600 var(--sr-fs-mark)/1 var(--sr-font-hud);
   letter-spacing: 0;
   color: var(--sr-text);
 }
 
 .sr-explore__collapse {
+  position: absolute;
+  top: -4px;
+  right: -8px;
   width: 36px;
   height: 36px;
-  margin: -4px -8px 0 0;
+  margin: 0;
   padding: 0;
   font: 400 var(--sr-fs-glyph)/1 var(--sr-font);
   color: var(--sr-text-soft);
@@ -3720,51 +3459,6 @@ html.sr-phone .sr-chevron {
   transition: color var(--sr-fast) var(--sr-ease), background var(--sr-fast) var(--sr-ease);
 }
 
-/* Games (ui/explore.js, the maintainer 2026-11-10: "add also game icon on left board ... with some gradual
-   animation"): a pill beside the collapse chevron, and one in a phone's sheet. Its glow breathes in and out over
-   3.2 s, transform and opacity only: the ONE loop in the chrome, named in tests/test_tokens.mjs. Still under reduced
-   motion, paused wherever the panel is out of sight (a clear screen, the HUD, a kiosk reel, a trip, a folded sidebar). */
-.sr-games {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  min-height: 36px;
-  margin: 0 var(--sp-2) 0 auto;
-  padding: 0 var(--sp-3) 0 var(--sp-2);
-  font: 600 var(--sr-fs-sm)/1 var(--sr-font-hud);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--sr-text);
-  text-decoration: none;
-  border-radius: var(--sr-radius-pill);
-  box-shadow: inset 0 0 0 1px var(--sr-line);
-}
-.sr-games:hover { box-shadow: inset 0 0 0 1px var(--sr-ember); }
-.sr-games svg { position: relative; color: var(--sr-ember); }
-.sr-games::before {
-  position: absolute;
-  top: var(--sp-1);
-  left: var(--sp-1);
-  width: 28px;
-  height: 28px;
-  content: '';
-  background: var(--sr-ember-soft);
-  border-radius: 50%;
-  opacity: 0.35;
-  transform: scale(0.8);
-  animation: sr-games-breathe 3.2s var(--sr-ease) infinite alternate;
-  pointer-events: none;
-}
-@keyframes sr-games-breathe { to { opacity: 1; transform: scale(1.3); } }
-html:is(.sr-clean, .sr-hud, .sr-ambient, .sr-imagine-on, .sr-trip-mode) .sr-games::before,
-.sr-side-collapsed .sr-games::before,
-#sr-side.is-collapsed .sr-games::before { animation-play-state: paused; }
-@media (prefers-reduced-motion: reduce) { .sr-games::before { animation: none; } }
-.sr-games--sheet { display: none; }
-html.sr-phone .sr-games--sheet { display: inline-flex; margin: var(--sp-3) var(--sp-4) var(--sp-1); }
-@media (pointer: coarse) { .sr-games { min-height: 44px; } }
-html.sr-phone .sr-games { min-height: 44px; }
 
 .sr-explore__collapse:hover {
   color: var(--sr-text);
@@ -3933,33 +3627,12 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   display: none;
 }
 
-/* The tabs: a segmented control, row D's 34 px segments in a 3 px well. */
-.sr-tabs {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  padding: 3px;
-  background: var(--sr-wash);
-  border-radius: var(--sr-radius);
-}
-
-.sr-tabs__tab {
-  height: 34px;
-  padding: 0;
-  font: inherit;
-  font-size: var(--sr-fs-sm);
-  color: var(--sr-text-soft);
-  background: transparent;
-  border: 0;
-  border-radius: var(--sr-radius-sm);
-  cursor: pointer;
-  transition: color var(--sr-fast) var(--sr-ease), background var(--sr-fast) var(--sr-ease);
-}
-
-.sr-tabs__tab:hover { color: var(--sr-text); }
-
-.sr-tabs__tab.is-on {
-  color: var(--sr-text);
-  background: var(--sr-wash-strong);
+/* The tabs: a segmented control (css/controls.css .ui-seg, the tab with aria-selected), four equal pills. */
+.sr-tabs > .ui-seg__btn {
+  padding: var(--sp-1);
+  line-height: 1.15;
+  white-space: normal;
+  text-align: center;
 }
 
 .sr-explore__body {
@@ -4007,32 +3680,23 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   list-style: none;
 }
 
-.sr-now__row + .sr-now__row .sr-now__btn {
+/* A row of a list in the panel (css/controls.css .ui-row, no chevron): the words line up with the section's title,
+   and the row's wash reaches past them on both sides. */
+.sr-now__row > .ui-row,
+.sr-list__row > .ui-row {
+  justify-content: space-between;
+  align-items: baseline;
+  width: calc(100% + 2 * var(--sp-3));
+  margin: 0 calc(-1 * var(--sp-3));
+  padding: var(--sp-3);
+}
+
+.sr-now__row + .sr-now__row > .ui-row {
   border-top: 1px solid var(--sr-line);
 }
 
-.sr-now__btn {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  width: 100%;
-  padding: 12px 0;
-  font: inherit;
-  font-size: var(--sr-fs-body);
-  line-height: 1.35;
-  text-align: left;
-  color: var(--sr-text);
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  transition: color var(--sr-fast) var(--sr-ease);
-}
-
-.sr-now__btn:hover .sr-now__text { color: var(--sr-ember-light); }
-
 /* The lead: Inter at 20 / 1.25, two lines at most (docs/ui-guide.md section 3.4). */
-.sr-now__row.is-lead .sr-now__btn {
+.sr-now__row.is-lead > .ui-row {
   padding-top: var(--sp-1);
   font-size: var(--sr-fs-lead);
   line-height: 1.25;
@@ -4214,7 +3878,6 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   border-top: 1px solid var(--sr-line);
 }
 
-.sr-list__btn,
 .sr-list__static {
   display: flex;
   align-items: baseline;
@@ -4232,9 +3895,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   border: 0;
 }
 
-.sr-list__btn { cursor: pointer; }
-.sr-list__btn:hover .sr-list__name { color: var(--sr-ember-light); }
-.sr-list__btn:disabled { cursor: default; color: var(--sr-text-dim); }
+.sr-list__row > .ui-row:disabled { cursor: default; color: var(--sr-text-dim); }
 
 .sr-list__value {
   flex: 0 0 auto;
@@ -4459,21 +4120,6 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   margin-top: var(--sp-2);
 }
 
-.sr-chip {
-  height: 36px;
-  padding: 0 var(--sp-3);
-  font: inherit;
-  font-size: var(--sr-fs-sm);
-  color: var(--sr-text);
-  background: var(--sr-wash);
-  border: 1px solid transparent;
-  border-radius: var(--sr-radius-pill);
-  cursor: pointer;
-}
-
-.sr-chip:hover:not(:disabled) { border-color: var(--sr-line-strong); }
-.sr-chip:disabled { color: var(--sr-text-dim); cursor: not-allowed; }
-.sr-chip--quiet { background: transparent; color: var(--sr-text-dim); }
 
 .sr-place__note {
   margin: var(--sp-2) 0 0;
@@ -4588,9 +4234,6 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   line-height: 26px;
 }
 
-.sr-card.is-docked .sr-act {
-  height: 56px;
-}
 
 /* --- the sources sheet, as a view ----------------------------------------------------- */
 .sr-side .sr-status {
@@ -4711,18 +4354,46 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 /* 0077 W3-e: end */
 
 /* 0077 W3-e: begin (the rows of "How we know" are the layers' rows without the swatch: a box, a word, a count, a sentence under it) */
-.sr-confidence .sr-show__label { grid-template-columns: 18px 1fr auto; }
+.sr-confidence .sr-show__label { grid-template-columns: 20px 1fr auto; }
 .sr-confidence .sr-show__hint { margin-left: var(--sp-5); }
 /* 0077 W3-e: end */
 .sr-rail__btn:hover { background: var(--sr-wash); }
 
 .sr-rail__btn[aria-expanded='true'],
 .sr-rail__btn[aria-pressed='true'] {
-  color: var(--sr-ember);
+  color: var(--sr-atmosphere);
 }
 
-/* The brackets would be clipped by the rail's rounded overflow; focus draws inside the button. */
-.sr-rail__btn:focus-visible { --sr-bracket-out: -4px; }
+/* The ring would be clipped by the rail's rounded overflow; focus draws inside the button. */
+.sr-rail__btn:focus-visible { outline-offset: -4px; }
+
+/* Games (ui/rail.js; the maintainer, 2026-11-10 and 11-11: "make it blinking or with some gradual animation", then "move it
+   to the right rail"): a soft blue glow behind the gamepad breathes in and out over 3.6 s, transform and opacity only. The
+   ONE loop in the chrome, named in tests/test_tokens.mjs and docs/DESIGN_PRINCIPLES.md rule 10. Still under reduced motion;
+   paused wherever the rail is out of sight (a clear screen, the HUD, a kiosk reel, an imagined world, a trip). */
+.sr-rail__btn--games {
+  position: relative;
+}
+.sr-rail__btn--games svg {
+  position: relative;
+}
+.sr-rail__btn--games::before {
+  position: absolute;
+  top: var(--sp-2);
+  left: var(--sp-2);
+  width: 32px;
+  height: 32px;
+  content: '';
+  background: color-mix(in srgb, var(--sr-atmosphere) 30%, transparent);
+  border-radius: 50%;
+  opacity: 0.15;
+  transform: scale(0.6);
+  animation: sr-games-breathe 3.6s var(--sr-ease) infinite alternate;
+  pointer-events: none;
+}
+@keyframes sr-games-breathe { to { opacity: 1; transform: scale(1.15); } }
+html:is(.sr-clean, .sr-hud, .sr-ambient, .sr-imagine-on, .sr-trip-mode) .sr-rail__btn--games::before { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .sr-rail__btn--games::before { animation: none; } }
 
 /* The popover opens to the rail's left, top-aligned with it; the share sheet (css/share.css)
    takes the same place. */
@@ -4770,7 +4441,7 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   border-radius: var(--sr-radius);
 }
 .sr-show__filter::placeholder { color: var(--sr-text-dim); }
-.sr-show__filter:focus-visible { outline: none; border-color: var(--sr-ember); }
+.sr-show__filter:focus-visible { outline: none; border-color: var(--sr-atmosphere); }
 
 .sr-show__group + .sr-show__group { border-top: 1px solid var(--sr-line); }
 .sr-show__group[hidden] { display: none; }
@@ -4823,21 +4494,6 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   gap: 4px;
   margin-top: -4px;
 }
-.sr-show__bulkbtn {
-  position: relative;
-  min-width: 44px;
-  height: 28px;
-  padding: 0 var(--sp-2);
-  font: inherit;
-  font-size: var(--sr-fs-sm);
-  color: var(--sr-text-soft);
-  background: none;
-  border: 1px solid var(--sr-line);
-  border-radius: var(--sr-radius-pill);
-  cursor: pointer;
-}
-.sr-show__bulkbtn:hover { color: var(--sr-text); background: var(--sr-wash-hover); }
-.sr-show__bulkbtn:active { background: var(--sr-wash-strong); }
 
 .sr-show__rows {
   margin: 0;
@@ -4847,47 +4503,20 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 
 /* "Keys": the last row, a quiet button with a chevron, as a settings list ends (issue #321). */
 .sr-show__keys {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  min-height: 44px;
-  padding-left: 0;
-  padding-right: 0;
-  padding-bottom: 0;
-  font: inherit;
-  font-size: var(--sr-fs-label);
-  color: var(--sr-text);
-  text-align: left;
-  background: none;
-  border: 0;
-  border-top: 1px solid var(--sr-line);
-  cursor: pointer;
+  padding-top: var(--sp-2);
 }
-/* The chevron is a child span: the button's ::before and ::after are the focus brackets. */
-.sr-show__keysgo {
-  width: 6px;
-  height: 6px;
-  margin-right: 4px;
-  border-right: 1.5px solid var(--sr-text-dim);
-  border-bottom: 1.5px solid var(--sr-text-dim);
-  transform: rotate(-45deg);
-}
-.sr-show__keys:hover { color: var(--sr-ember-light); }
 
 @media (prefers-reduced-motion: reduce) {
   .sr-show__chev { transition: none; }
 }
 
 @media (pointer: coarse) {
-  .sr-show__bulkbtn { height: 44px; }
   .sr-show__filter { height: 44px; font-size: var(--sr-fs-input); }
 }
 
 .sr-show__label {
   display: grid;
-  grid-template-columns: 18px 10px 1fr auto;
+  grid-template-columns: 20px 10px 1fr auto;
   align-items: center;
   gap: var(--sp-2);
   min-height: 36px;
@@ -4896,7 +4525,7 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 }
 
 .sr-show__label.is-split {
-  grid-template-columns: 18px 10px 1fr;
+  grid-template-columns: 20px 10px 1fr;
 }
 
 .sr-show__label.is-split .sr-show__count {
@@ -4904,21 +4533,9 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   white-space: normal;
 }
 
-.sr-show__box {
-  width: 16px;
-  height: 16px;
-  margin: 0;
-  accent-color: var(--sr-ember);
-}
-
-/* The list is walked with the arrow keys (public #315): the box under the keys wears the guide's
-   ring, not the browser's 1 px one, and its row lifts a step so the eye finds the name too. */
-.sr-show__box:focus-visible {
-  outline: 2px solid var(--sr-ember);
-  outline-offset: 2px;
-}
-
-.sr-show__label:has(.sr-show__box:focus-visible) {
+/* The list is walked with the arrow keys (public #315): the box under the keys wears the ring (css/controls.css),
+   and its row lifts a step so the eye finds the name too. */
+.sr-show__label:has(.ui-check:focus-visible) {
   background: var(--sr-wash);
 }
 
@@ -4974,24 +4591,6 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   border-top: 1px solid var(--sr-line);
 }
 
-.sr-show__failedwhy {
-  flex: 0 0 auto;
-  min-height: 24px;
-  padding: 0;
-  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
-  color: var(--sr-ember);
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-}
-
-@media (hover: hover) {
-  .sr-show__failedwhy:hover { color: var(--sr-ember-light); }
-}
-
-@media (pointer: coarse) {
-  .sr-show__failedwhy { min-height: 44px; }
-}
 
 .sr-show__count {
   font: 400 var(--sr-fs-sm)/1.3 var(--sr-font-mono);
@@ -5043,26 +4642,12 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   margin: 0;
 }
 
-.sr-show__toggle {
-  height: 32px;
-  padding: 0 12px;
-  font: inherit;
-  font-size: var(--sr-fs-sm);
-  color: var(--sr-text);
-  background: var(--sr-wash);
-  border: 1px solid transparent;
-  border-radius: var(--sr-radius-pill);
-  cursor: pointer;
-}
 
-.sr-show__toggle.is-on { color: var(--sr-ember); border-color: var(--sr-ember); }
-
-.sr-show__setting .sr-density__choices { display: flex; gap: 4px; }
 .sr-show__setting .sr-density__note { flex-basis: 100%; margin: 0; font-size: var(--sr-fs-sm); color: var(--sr-text-dim); }
 /* Quality (ui/qualitypanel.js, spec 0073 req 6): the title and a mono note of what Auto wears now on
    one line, then up to five choices across the row's whole width, one line, never wrapped. */
-.sr-quality .sr-density__choices { flex-basis: 100%; }
-.sr-quality .sr-density__btn { padding: 0 var(--sp-1); white-space: nowrap; }
+.sr-quality .ui-seg { flex-basis: 100%; }
+.sr-quality .ui-seg__btn { padding: 0 var(--sp-1); }
 .sr-quality__note {
   margin: 0;
   font: 400 var(--sr-fs-sm)/1.2 var(--sr-font-mono);
@@ -5070,18 +4655,11 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   color: var(--sr-text-dim);
 }
 .sr-quality__note[hidden] { display: none; }
-/* Look (ui/exposure.js lookPanel): "Film" is a short word, 43 px wide as a button. On a finger's screen
-   the row's buttons get more padding, which takes it past 44. Not a min-width: on a flex item with a
-   basis of nothing that replaces the automatic minimum, and "Measured" was then squeezed and cut
-   (seen in a look run, 2026-10-12). */
-@media (pointer: coarse) {
-  .sr-look .sr-density__btn { padding: 0 var(--sp-3); }
-}
 /* Other light (ui/otherlight.js): four choices take the row's whole width, under the title; then
    the one slider in the app, a native range between two words, and the survey's credit as a link
    that is underlined so colour alone does not say so. */
-.sr-otherlight .sr-density__choices { flex-basis: 100%; flex-wrap: wrap; }
-.sr-otherlight .sr-density__btn { flex: 1 1 40%; }
+.sr-otherlight .ui-seg { flex-basis: 100%; flex-wrap: wrap; border-radius: var(--ui-r); }
+.sr-otherlight .ui-seg > .ui-seg__btn { flex: 1 1 40%; }
 .sr-otherlight__mix {
   flex-basis: 100%;
   display: flex;
@@ -5091,19 +4669,8 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   color: var(--sr-text-dim);
 }
 .sr-otherlight__mix[hidden], .sr-otherlight__credit[hidden] { display: none; }
-.sr-otherlight__slider {
-  flex: 1 1 auto;
-  min-width: 0;
-  min-height: 24px;
-  margin: 0;
-  accent-color: var(--sr-text-soft);
-  cursor: pointer;
-}
-.sr-otherlight__slider:focus-visible { outline: 2px solid var(--sr-ember); outline-offset: 2px; }
+.sr-otherlight__mix .ui-range { flex: 1 1 auto; }
 .sr-otherlight__credit a { color: var(--sr-text-soft); text-decoration: underline; }
-@media (pointer: coarse) {
-  .sr-otherlight__slider { min-height: 44px; }
-}
 
 /* --- the time pill -------------------------------------------------------------------- */
 
@@ -5267,7 +4834,7 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 /* Keyboard focus (public #676): the tape clips what is drawn outside it, so the ring is drawn inside the
    slider's box, as the guide's ring on the other sliders is. */
 .sr-tape__slider:focus-visible {
-  outline: 2px solid var(--sr-ember);
+  outline: 2px solid var(--sr-atmosphere);
   outline-offset: -2px;
 }
 
@@ -5633,6 +5200,7 @@ html.sr-phone .sr-rail__btn--share,
 html.sr-phone .sr-rail__btn--clean,
 html.sr-phone .sr-rail__btn--tour,
 html.sr-phone .sr-rail__btn--blog,
+html.sr-phone .sr-rail__btn--games,
 html.sr-phone .sr-rail__btn--sub,
 html.sr-phone .sr-rail__btn--github {
   display: none;
@@ -5745,7 +5313,7 @@ html.sr-phone .sr-pop.sr-more:not([hidden]) {
 }
 
 .sr-more__item:focus-visible {
-  --sr-bracket-out: 0px;
+  outline-offset: -2px;
 }
 
 @media (hover: hover) {
@@ -5811,7 +5379,7 @@ html.sr-phone #sr-side.is-dragging .sr-sheet__handle {
 }
 
 .sr-sheet__handle:focus-visible {
-  --sr-bracket-out: -4px;
+  outline-offset: -4px;
 }
 
 .sr-sheet__handle:focus-visible .sr-sheet__grabber {
@@ -5855,12 +5423,8 @@ html.sr-phone .sr-explore__head {
   padding: 0 var(--sp-4);
 }
 
-html.sr-phone .sr-tabs {
-  padding: 2px;
-}
-
-html.sr-phone .sr-tabs__tab {
-  height: 44px;
+html.sr-phone .sr-tabs > .ui-seg__btn {
+  min-height: 44px;
   font-size: var(--sr-fs-label);
 }
 
@@ -5904,9 +5468,6 @@ html.sr-phone .sr-card.is-docked .sr-hero__num {
   font-size: var(--sr-fs-num-sm);
 }
 
-html.sr-phone .sr-card.is-docked .sr-act {
-  height: 52px;
-}
 
 html.sr-phone .sr-side .sr-status {
   padding-right: var(--sp-4);
@@ -6340,14 +5901,14 @@ html.sr-night-red::after {
 .sr-skybar { display: flex; flex-direction: column; gap: var(--sp-2); }
 .sr-skybar .sr-density__note { margin: 0; }
 .sr-skybar__wrap { flex-wrap: wrap; }
-/* The sky's own time: a strip to drag (ui/tonight.js), in the density button's look. */
-.sr-skytime { display: flex; flex: none; justify-content: space-between; align-items: center; cursor: ew-resize; touch-action: none; user-select: none; }
+/* The sky's own time: a strip to drag (ui/tonight.js), a well the width of its row. */
+.sr-skytime { display: flex; flex: 1 1 100%; justify-content: space-between; align-items: center; min-height: 44px; padding: 0 var(--sp-3); font-size: var(--sr-fs-sm); color: var(--sr-text-dim); background: var(--ui-wash); border-radius: var(--ui-r); box-shadow: inset 0 0 0 1px var(--line); cursor: ew-resize; touch-action: none; user-select: none; }
 .sr-skytime__at { color: var(--sr-text); }
 /* Where dusk, the middle of the night and dawn are on the strip: a hairline from the foot and a HUD
    unit beside it. The strip's middle is now. */
 .sr-skytime { position: relative; overflow: hidden; padding-bottom: var(--sp-4); }
 /* Keyboard focus (public #677): inside the strip, which clips what is drawn outside it. */
-.sr-skytime:focus-visible { outline: 2px solid var(--sr-ember); outline-offset: -2px; }
+.sr-skytime:focus-visible { outline: 2px solid var(--sr-atmosphere); outline-offset: -2px; }
 .sr-skytime__ticks { position: absolute; inset: 0; pointer-events: none; }
 .sr-skytime__tick { position: absolute; bottom: 0; width: 1px; height: var(--sp-3); background: var(--sr-line-strong); }
 .sr-skytime__tick[hidden] { display: none; }
@@ -6369,17 +5930,13 @@ html.sr-night-red::after {
   height: 40px;
   margin: -20px 0 0 -20px;
   pointer-events: none;
-  --sr-bracket-out: 0px;
 }
 .sr-skyreticle[hidden] { display: none; }
 /* The phone's row where there is no sensor, and "Undo line-up" with nothing to undo. */
-.sr-skybar .sr-density__choices[hidden], .sr-skybar .sr-density__btn[hidden] { display: none; }
-.sr-skybar__wrap .sr-density__btn { flex: 1 1 30%; }
+.sr-skybar__wrap { border-radius: var(--ui-r); }
+.sr-skybar__wrap.ui-seg > .ui-seg__btn { flex: 1 1 30%; }
 /* Deep time's steps and pole stars two to a row: "−10 000 years" does not fit a third of it (ui/deeptime.js). */
-.sr-deeptime__pairs .sr-density__btn { flex-basis: 40%; }
-@media (pointer: coarse) {
-  .sr-skybar .sr-density__btn { min-height: 44px; }
-}
+.sr-deeptime__pairs.ui-seg > .ui-seg__btn { flex-basis: 40%; }
 /* A row's name with its brightness at the right, in mono: the number a row is ranked by. */
 .sr-tonight-view__rowhead { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-2); }
 .sr-tonight-view__rowhead .sr-tonight-view__rowname { flex: 1 1 auto; min-width: 0; }
@@ -6402,14 +5959,9 @@ html.sr-phone.sr-launchday:not([data-sheet='full']) .sr-skyfov {
    and the place chips at 36, the card's back row at 36, "Show all" at 36, a button at 40, What to
    show's layer rows at 36, and the Right-now rows, which were 44 only by their padding. */
 @media (pointer: coarse) {
-  .sr-btn,
-  .sr-chip,
   .sr-more,
-  .sr-pick__btn,
   .sr-side__back,
-  .sr-now__btn,
-  .sr-show__label,
-  .sr-colourkey__select {
+  .sr-show__label {
     min-height: 44px;
   }
 }
@@ -6930,8 +6482,6 @@ html.sr-present .sr-trip__count {
 
 /* Two small targets on a phone that were real (internal #419 item 9): "Sound: off" in What to show
    was 32 px tall, and Eye / Binoculars / Telescope 42 px wide. */
-html.sr-phone .sr-show__toggle { min-height: 44px; }
-html.sr-phone .sr-skybar__wrap .sr-density__btn { min-width: 44px; min-height: 44px; }
 
 /* A launch within a day (ui/countdown.js): the number in the mono face, its state beside it. */
 .sr-count {
@@ -6956,25 +6506,10 @@ html.sr-phone .sr-skybar__wrap .sr-density__btn { min-width: 44px; min-height: 4
 /* The trip's volume (ui/tripframe.js, public #298): a short native slider beside the sound toggle. */
 .sr-trip__vol {
   width: 72px;
-  height: 44px;
   margin: 0 var(--sp-1);
-  accent-color: var(--sr-ember);
-  background: transparent;
-  cursor: pointer;
 }
 .sr-trip__vol[hidden] { display: none; }
 
-/* The same slider in What to show (ui/sound.js volumeSlider): the full width of its row. */
-.sr-show__vol {
-  display: block;
-  width: 100%;
-  height: 44px;
-  margin: var(--sp-1) 0 0;
-  accent-color: var(--sr-ember);
-  background: transparent;
-  cursor: pointer;
-}
-.sr-show__vol[hidden] { display: none; }
 html.sr-phone .sr-trip__vol { width: 56px; }
 .sr-tripsheet__voiceoffer[hidden] { display: none; }
 
@@ -7291,17 +6826,6 @@ button.sr-debris__oldname:hover { color: var(--sr-ember-light); }
   .sr-tonight-view__change[aria-expanded='true']:hover:not(:disabled) { background: var(--sr-wash-strong); }
 }
 
-.sr-tonight-view .sr-place__chips .sr-chip {
-  min-height: 44px;
-  border-radius: var(--sr-radius);
-}
-
-@media (hover: hover) {
-  .sr-tonight-view .sr-place__chips .sr-chip--quiet:hover:not(:disabled) {
-    background: var(--sr-wash);
-    border-color: transparent;
-  }
-}
 
 /* The line and its button sit on one line; the line wraps as far as it needs and the button stays
    at the top of it, so a three-line guess does not float the button in the middle of the text. */
@@ -7313,11 +6837,8 @@ button.sr-debris__oldname:hover { color: var(--sr-ember-light); }
 }
 /* 0077 W1-d: end */
 
-/* Windows high contrast (public #651). The keyboard mark above is gradient backgrounds on ::before and
-   ::after, and the focus ring is switched off, so a browser that forces colours (forced-colors: active)
-   showed no mark on a button, a link, an option or a summary (looked at in Chrome 156 with the media feature
-   emulated, 2026-11-05). The system's own highlight colour, as an outline, on the same selectors, on the
-   search box's row and on the search list's active option; the brackets stay where the author's colours are kept. */
+/* Windows high contrast (public #651): the system's own highlight colour as the outline, on the focusable things, the
+   search box's row and the search list's active option, whose blue wash a forced palette would drop. */
 @media (forced-colors: active) {
   :where(button, a[href], [role='option'], summary):focus-visible,
   .sr-search__row:has(:focus-visible),
@@ -7368,7 +6889,7 @@ html.sr-phone .sr-time__date { width: 44px; height: 44px; }
 }
 /* The ground's Leave and its keys over a daylit sky (finding 12): glass behind both, as the buttons beside Leave have.
    Here and not in css/ground.css, one class deeper so it holds whichever file loads last. */
-.sr-ground .sr-ground__bar .sr-btn { background: var(--sr-glass-strong); -webkit-backdrop-filter: var(--sr-blur); backdrop-filter: var(--sr-blur); }
-.sr-ground .sr-ground__bar .sr-btn--quiet { color: var(--sr-text); }
+.sr-ground .sr-ground__bar .ui-btn { background: var(--sr-glass-strong); -webkit-backdrop-filter: var(--sr-blur); backdrop-filter: var(--sr-blur); }
+.sr-ground .sr-ground__bar .ui-btn--quiet { color: var(--sr-text); }
 .sr-ground .sr-ground__keys { padding: var(--sp-1) var(--sp-2); color: var(--sr-text); background: var(--sr-glass-strong); border-radius: var(--sr-radius-sm); }
 /* b200-s4b-look: end */

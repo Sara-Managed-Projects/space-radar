@@ -99,44 +99,8 @@ html.sr-drift.sr-hud #sr-time {
   margin: 0;
 }
 
-.sr-drift__btn {
-  display: flex;
+.sr-drift__bar .ui-btn {
   flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-2);
-  min-width: 44px;
-  min-height: 44px;
-  padding: 0 var(--sp-3);
-  font: inherit;
-  white-space: nowrap;
-  color: var(--sr-text-soft);
-  background: var(--sr-wash);
-  border: 0;
-  border-radius: var(--sr-radius);
-  cursor: pointer;
-  transition: background-color var(--sr-fast) var(--sr-ease), color var(--sr-fast) var(--sr-ease);
-}
-
-.sr-drift__btn--icon {
-  width: 44px;
-  padding: 0;
-}
-
-.sr-drift__btn:hover {
-  color: var(--sr-text);
-  background: var(--sr-wash-strong);
-}
-
-.sr-drift__btn:active {
-  background: var(--sr-wash);
-}
-
-.sr-drift__btn[aria-pressed='true'],
-.sr-drift__btn[aria-expanded='true'] {
-  font-weight: 600;
-  color: var(--sr-text);
-  background: var(--sr-wash-strong);
 }
 
 @media (prefers-reduced-transparency: reduce) {
@@ -164,6 +128,6 @@ html.sr-phone .sr-drift__label {
   min-width: 0;
 }
 
-html.sr-phone .sr-drift__group .sr-drift__btn {
+html.sr-phone .sr-drift__group .ui-btn {
   flex: 1 1 auto;
 }

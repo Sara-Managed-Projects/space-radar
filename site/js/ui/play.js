@@ -37,6 +37,7 @@ import { eclDirection } from '../scene/clusters.js';
 import { NORTH_GALACTIC_POLE } from '../scene/galaxy.js';
 import { SUN_INERTIAL } from '../scene/stage.js';
 import { loadCss } from './latercss.js';
+import { icon } from './icons.js';
 import { write as writeUrl, clear as clearUrl } from './urlstate.js';
 import { isTypingIn } from './explore.js';
 import {
@@ -102,9 +103,11 @@ export function openPlay(ctx, key) {
   const h = el('h2', null, COPY.play.label);
   h.id = 'sr-play-h';
   h.tabIndex = -1;
-  const x = el('button', 'sr-play__x', '×');
+  const x = el('button', 'ui-close');
+  x.appendChild(icon('x'));
   x.type = 'button';
   x.setAttribute('aria-label', COPY.play.close);
+  x.title = COPY.play.close;
   head.append(h, x);
   const dayLine = el('p', 'sr-play__day');
   const body = el('div');
@@ -457,7 +460,7 @@ export function openPlay(ctx, key) {
     const ask = el('p', 'sr-play__ask');
     const label = el('label', 'sr-play__slider', COPY.play.slider);
     const out = el('output');
-    const input = el('input');
+    const input = el('input', 'ui-range');
     Object.assign(input, { type: 'range', min: SLIDER.min, max: SLIDER.max, step: SLIDER.step, value: 3 });
     label.append(out, input);
     const go = button(COPY.play.guess, null, true);

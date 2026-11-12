@@ -82,11 +82,11 @@ export function createSubscribe(ctx, { close, id = 'sr-sub', list = '', button =
     const h = el('h2', 'sub__h', w.title);
     h.id = `${id}-h`;
     top.appendChild(h);
-    x = el('button', 'sr-subpop__x');
+    x = el('button', 'ui-close');
     x.type = 'button';
     x.setAttribute('aria-label', w.close);
     x.title = w.close;
-    x.appendChild(icon('x', 18));
+    x.appendChild(icon('x'));
     x.addEventListener('click', () => { if (close) close(true); });
     top.appendChild(x);
     root.appendChild(top);
@@ -108,7 +108,8 @@ export function createSubscribe(ctx, { close, id = 'sr-sub', list = '', button =
     set.appendChild(el('legend', null, w.pick));
     for (const name of LISTS) {
       const lab = el('label');
-      lab.appendChild(input('checkbox', 'lists', name));
+      const box = lab.appendChild(input('checkbox', 'lists', name));
+      box.className = 'ui-check';
       lab.appendChild(el('span', null, w[name]));
       set.appendChild(lab);
     }
@@ -131,7 +132,7 @@ export function createSubscribe(ctx, { close, id = 'sr-sub', list = '', button =
   e.maxLength = 254;
   e.placeholder = w.placeholder;
   row.appendChild(e);
-  const b = el('button', 'btn sub__b');
+  const b = el('button', 'ui-btn ui-btn--primary sub__b');
   b.type = 'submit';
   b.appendChild(iconFrom('mail', MAIL, 18));
   const bl = el('span', null, label);

@@ -41,4 +41,4 @@
   color: var(--sr-text-dim);
 }
 .sr-wiki__credit a, .sr-wiki .sr-card__photo-credit a { color: var(--sr-text-soft); text-decoration: underline; text-underline-offset: 2px; }
-.sr-wiki__credit a:focus-visible, .sr-wiki .sr-card__photo-credit a:focus-visible { outline: 2px solid var(--sr-ember); outline-offset: 2px; }
+.sr-wiki__credit a:focus-visible, .sr-wiki .sr-card__photo-credit a:focus-visible { outline: 2px solid var(--sr-atmosphere); outline-offset: 2px; }

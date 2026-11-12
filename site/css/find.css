@@ -1,7 +1,7 @@
 /* css/find.css -- Find, the owners, the clouds and the date field (ui/find.js, ui/findmap.js, ui/datejump.js;
    release 2.0.0 batch f1-find, forge #150, #152, #153, #154). Fetched with the module that draws them
-   (ui/latercss.js), never on a first visit. The rows, chips and tabs are ui.css's own (.sr-list, .sr-chip,
-   .sr-tabs): only what is new is here. */
+   (ui/latercss.js), never on a first visit. The rows and tabs are ui.css's own, the chips css/controls.css's (.sr-list, .ui-chip,
+   .sr-tabs, on the shared .ui-seg): only what is new is here. */
 
 .sr-find { padding: 0 20px 20px; }
 .sr-find__head { position: sticky; top: 0; z-index: 1; margin: 0 -20px; padding: var(--sp-2) 20px; background: var(--sr-panel-solid); }
@@ -17,15 +17,14 @@
 .sr-find__pane > .sr-micro, .sr-find__detail .sr-micro { padding: var(--sp-3) 0 var(--sp-1); }
 
 .sr-find__kinds, .sr-find__chips { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-2); }
-.sr-find__chips .sr-chip, .sr-find__kinds .sr-chip { height: auto; min-height: 36px; padding: 6px var(--sp-3); line-height: 1.3; text-align: left; }
-.sr-chip.is-on, .sr-chip[aria-pressed="true"], .sr-chip[aria-checked="true"] { color: var(--sr-text); background: var(--sr-ember-soft); border-color: var(--sr-ember); }
+.sr-find__chips .ui-chip, .sr-find__kinds .ui-chip { padding: var(--sp-2) var(--sp-3); line-height: 1.3; white-space: normal; text-align: start; }
 
 .sr-find__form { display: grid; grid-template-columns: 1fr; gap: var(--sp-2); margin-top: var(--sp-3); }
 .sr-find__field { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); min-height: 44px; }
 .sr-find__label { font-size: var(--sr-fs-sm); color: var(--sr-text-soft); }
 .sr-find__pair { display: inline-flex; align-items: center; gap: 4px; }
 .sr-find__dash { color: var(--sr-text-dim); }
-.sr-find__num, .sr-find__select, .sr-datejump__input {
+.sr-find__num, .sr-datejump__input {
   height: 36px;
   min-width: 0;
   padding: 0 var(--sp-2);
@@ -36,10 +35,8 @@
   border-radius: var(--sr-radius-sm);
 }
 .sr-find__num { width: 76px; }
-.sr-find__select { max-width: 190px; font-family: inherit; }
-.sr-find__num:focus-visible, .sr-find__select:focus-visible, .sr-datejump__input:focus-visible { outline: 2px solid var(--sr-ember); outline-offset: 1px; }
-.sr-find__box { display: flex; align-items: center; gap: var(--sp-2); min-height: 36px; font-size: var(--sr-fs-sm); cursor: pointer; }
-.sr-find__box input { width: 18px; height: 18px; accent-color: var(--sr-ember); }
+.sr-find__field .ui-select { max-width: 190px; }
+.sr-find__num:focus-visible, .sr-datejump__input:focus-visible { outline: 2px solid var(--sr-atmosphere); outline-offset: 1px; }
 
 .sr-find__status, .sr-find__lead { margin: var(--sp-3) 0 var(--sp-2); font-size: var(--sr-fs-sm); color: var(--sr-text-soft); }
 .sr-find__tablewrap { overflow-x: auto; overscroll-behavior-x: contain; margin: 0 -4px; }
@@ -50,7 +47,7 @@
 .sr-find__table tbody tr { cursor: pointer; }
 .sr-find__table tbody tr:hover { background: var(--sr-wash); }
 .sr-find__table td { font-family: var(--sr-font-mono); color: var(--sr-text-soft); }
-.sr-find__sort, .sr-find__go, .sr-find__chartbtn {
+.sr-find__sort, .sr-find__go {
   min-height: 32px;
   padding: 0;
   font: inherit;
@@ -60,29 +57,17 @@
   border: 0;
   cursor: pointer;
 }
-.sr-find__sort:hover, .sr-find__go:hover { color: var(--sr-ember); }
-.sr-find__table th[aria-sort="ascending"] .sr-find__sort::after { content: " ↑"; color: var(--sr-ember); }
-.sr-find__table th[aria-sort="descending"] .sr-find__sort::after { content: " ↓"; color: var(--sr-ember); }
+.sr-find__sort:hover, .sr-find__go:hover { color: var(--sr-atmosphere); }
+.sr-find__table th[aria-sort="ascending"] .sr-find__sort::after { content: " ↑"; color: var(--sr-atmosphere); }
+.sr-find__table th[aria-sort="descending"] .sr-find__sort::after { content: " ↓"; color: var(--sr-atmosphere); }
 .sr-find__go { color: var(--sr-text); font-weight: 500; }
-.sr-find__chartbtn { display: block; min-height: 24px; font-size: 12px; color: var(--sr-text-dim); text-decoration: underline; text-underline-offset: 2px; }
-.sr-find__chartbtn:hover { color: var(--sr-ember); }
+.sr-find__chartbtn { margin-top: var(--sp-1); }
 .sr-find__honesty { margin-top: var(--sp-3); }
 .sr-find__link { margin-top: var(--sp-2); }
 
 .sr-find__chart { margin-top: var(--sp-3); padding: var(--sp-2) var(--sp-3) var(--sp-3); background: var(--sr-wash); border-radius: var(--sr-radius); }
 .sr-find__chart[hidden] { display: none; }
 .sr-find__charthead { display: flex; align-items: center; justify-content: space-between; }
-.sr-find__chartclose, .sr-datejump__close, .sr-findpill__clear {
-  width: 36px;
-  height: 36px;
-  font: 400 20px/1 var(--sr-font);
-  color: var(--sr-text-soft);
-  background: none;
-  border: 0;
-  border-radius: var(--sr-radius-pill);
-  cursor: pointer;
-}
-.sr-find__chartclose:hover, .sr-datejump__close:hover, .sr-findpill__clear:hover { color: var(--sr-text); background: var(--sr-wash-strong); }
 .sr-find__chartscroll { overflow-x: auto; }
 .sr-find__chartscroll svg { display: block; }
 .sr-find__body { fill: var(--sr-exoplanet); fill-opacity: 0.85; stroke: none; }
@@ -91,7 +76,6 @@
 .sr-find__bodyname { font: 500 11px var(--sr-font); fill: var(--sr-text); }
 .sr-find__bodysub { font: 400 10px var(--sr-font-mono); fill: var(--sr-text-dim); }
 
-.sr-find__ownerbtn { align-items: center; }
 .sr-find__flags { flex: none; display: inline-flex; gap: 3px; width: 45px; }
 .sr-find__flag { width: 21px; height: 14px; object-fit: cover; border-radius: 2px; box-shadow: 0 0 0 1px var(--sr-line); }
 .sr-find__noflag { display: inline-block; width: 21px; height: 14px; border-radius: 2px; border: 1px dashed var(--sr-line-strong); }
@@ -105,7 +89,7 @@
 .sr-find__why, .sr-find__kinds2 { margin: var(--sp-2) 0 0; font-size: var(--sr-fs-sm); line-height: 1.45; }
 .sr-find__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); margin-top: var(--sp-2); }
 .sr-find__point { margin-top: var(--sp-3); }
-.sr-find__nopath .sr-list__static, .sr-find__nopath .sr-list__btn { min-height: 40px; padding: 6px 0; font-size: var(--sr-fs-sm); }
+.sr-find__nopath .sr-list__static, .sr-find__nopath .ui-row { min-height: 40px; padding: 6px 0; font-size: var(--sr-fs-sm); }
 
 /* The pill over the scene while a group is lit (ui/findmap.js). */
 .sr-findpill {
@@ -159,7 +143,7 @@ html.sr-phone .sr-findpill { top: calc(var(--sr-top-end, 88px) + 8px); left: 50%
 html.sr-phone .sr-datejump { left: 8px; right: 8px; bottom: 8px; transform: none; width: auto; max-height: 72vh; }
 
 @media (prefers-reduced-motion: reduce) {
-  .sr-find__table tbody tr, .sr-chip { transition: none; }
+  .sr-find__table tbody tr { transition: none; }
 }
 .sr-find__chips > [hidden], .sr-find__pane .sr-micro[hidden] { display: none; }
 .sr-find__refine { margin-top: var(--sp-3); border-top: 1px solid var(--sr-line); }
@@ -171,18 +155,13 @@ html.sr-phone .sr-datejump { left: 8px; right: 8px; bottom: 8px; transform: none
 
 /* b200-s2-guards: begin -- a finger's target is 44 px on a phone (docs/ui-guide.md principle 9; tests/test_touch_targets.mjs
    reads this file). Where the box can grow without moving anything it grows, else only the hit area does:
-   - the three 36 px closes keep their disc and get a 44 px hit area round it (inset -4px), as the card's close does;
+   - the closes and the size chart's button are the shared set's (css/controls.css), with their own 44 px hit areas;
    - a sort heading and a row's name are 32 px inside their cell's 6 px padding: the hit area fills the cell, so it
      reaches 44 and stays in its own row (::before for the sort, whose ::after is the arrow);
-   - the size chart link sits under the name, with no room round it: it is 44 tall, and an exoplanet row with a
-     chart is that much taller on a phone; positioned, so it is drawn over the name's hit area, not under it;
    - the no-path list's rows were 40, and are 44 like every other list row. */
-html.sr-phone .sr-find__chartclose, html.sr-phone .sr-datejump__close, html.sr-phone .sr-findpill__clear,
-html.sr-phone .sr-find__sort, html.sr-phone .sr-find__go, html.sr-phone .sr-find__chartbtn { position: relative; }
-html.sr-phone .sr-find__chartclose::after, html.sr-phone .sr-datejump__close::after, html.sr-phone .sr-findpill__clear::after { content: ""; position: absolute; inset: -4px; }
+html.sr-phone .sr-find__sort, html.sr-phone .sr-find__go { position: relative; }
 html.sr-phone .sr-find__sort::before, html.sr-phone .sr-find__go::after { content: ""; position: absolute; inset: -6px -4px; }
-html.sr-phone .sr-find__chartbtn { min-height: 44px; }
-html.sr-phone .sr-find__nopath .sr-list__btn { min-height: 44px; }
+html.sr-phone .sr-find__nopath .ui-row { min-height: 44px; }
 /* b200-s2-guards: end */
 /* b200-s4b-look: begin -- the date field on a phone is a bottom sheet over the pill and the tab sheet, from under the search
    row to the screen's foot. It dropped from the search row as the other popovers do and stopped at 72 % of the screen,

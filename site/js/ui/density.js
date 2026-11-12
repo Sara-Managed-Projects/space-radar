@@ -83,14 +83,14 @@ export function densityPanel(density) {
   title.textContent = COPY.density.panelTitle;
   wrap.appendChild(title);
   const row = document.createElement('div');
-  row.className = 'sr-density__choices';
+  row.className = 'ui-seg ui-seg--block';
   row.setAttribute('role', 'group');
   row.setAttribute('aria-label', COPY.density.panelTitle);
   const buttons = new Map();
   for (const c of ['regular', 'compact', 'auto']) {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'sr-density__btn';
+    b.className = 'ui-seg__btn';
     b.textContent = COPY.density[c];
     b.addEventListener('click', () => density.set(c));
     buttons.set(c, b);
@@ -103,7 +103,6 @@ export function densityPanel(density) {
   const paint = (choice, on) => {
     for (const [c, b] of buttons) {
       b.setAttribute('aria-pressed', c === choice ? 'true' : 'false');
-      b.classList.toggle('sr-bracketed', c === choice);
     }
     note.textContent = choice === 'auto' ? (on ? COPY.density.autoCompact : COPY.density.autoRegular) : '';
     note.hidden = choice !== 'auto';

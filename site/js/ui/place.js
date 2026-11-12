@@ -108,14 +108,14 @@ export function createPlace(ctx) {
   // with the button as a pill of another style under it): the box takes the room, the button
   // stands beside it at the box's own height, fill and radius (ui.css .sr-place__row).
   const useMine = button('sr-place__mine', COPY.controls.locationUseMine, COPY.controls.locationUseMineTitle);
-  const clearBtn = button('sr-chip sr-chip--quiet', COPY.controls.locationClear);
+  const clearBtn = button('ui-btn ui-btn--sm ui-btn--quiet', COPY.controls.locationClear);
   row.append(input, datalist, useMine);
   root.appendChild(row);
   // Remember this place, and share it (internal #137). Both act on the place in use, rounded to
   // 0.1 degree by sky/placelink.js, and neither is offered for a place that was only guessed.
   const K = COPY.placeKeep;
-  const keepBtn = button('sr-chip sr-chip--quiet', K.remember, K.rememberTitle);
-  const shareBtn = button('sr-chip sr-chip--quiet', K.share, K.shareTitle);
+  const keepBtn = button('ui-btn ui-btn--sm ui-btn--quiet', K.remember, K.rememberTitle);
+  const shareBtn = button('ui-btn ui-btn--sm ui-btn--quiet', K.share, K.shareTitle);
   const chips = el('div', 'sr-place__chips');
   chips.append(clearBtn, keepBtn, shareBtn);
   root.appendChild(chips);

@@ -57,7 +57,7 @@ export function mountPhotoCompare(box, record, ctx) {
       const track = el('div', 'sr-photocmp__track');
       const fill = el('span', 'sr-photocmp__fill');
       const field = document.createElement('input');
-      field.className = 'sr-photocmp__field';
+      field.className = 'ui-range sr-photocmp__field';
       field.setAttribute('type', 'range');
       field.setAttribute('min', '0');
       field.setAttribute('max', '100');

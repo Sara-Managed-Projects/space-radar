@@ -18,6 +18,7 @@
 import { COPY, t, fmt } from '../copy/en.js';
 import '../copy/en.find.js';
 import { spreadAt } from '../data/clouds.js';
+import { icon } from './icons.js';
 
 /** The layers a group can be lit on: things in Earth orbit, from the stations to the debris. */
 const ORBIT_KLASSES = new Set(['satellite', 'station', 'debris']);
@@ -46,8 +47,8 @@ export function createHighlight(ctx) {
   words.setAttribute('aria-live', 'polite');
   const clearBtn = document.createElement('button');
   clearBtn.type = 'button';
-  clearBtn.className = 'sr-findpill__clear';
-  clearBtn.textContent = '×';
+  clearBtn.className = 'ui-close';
+  clearBtn.appendChild(icon('x'));
   clearBtn.setAttribute('aria-label', COPY.find.pillClear);
   clearBtn.title = COPY.find.pillClear;
   clearBtn.addEventListener('click', () => clear());

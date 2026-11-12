@@ -198,7 +198,7 @@ const S = await import(join(JS, 'ui/share.js'));
   check(/dataset\.srMotion === 'off'\) return true/.test(trip), 'a trip reads at the reader\'s pace when the row says Off');
   const wts = readFileSync(join(JS, 'ui/whattoshow.js'), 'utf8');
   check(/root\.appendChild\(motionRow\)/.test(wts) && /export function motionPanel/.test(wts), 'the Motion row is in What to show');
-  check(/sr-density__btn/.test(wts) && /aria-pressed/.test(wts) && /buttons\.on\.disabled = device\(\)/.test(wts), 'in the Quality row\'s shape; On is not offered against the device\'s own setting');
+  check(/ui-seg__btn/.test(wts) && /aria-pressed/.test(wts) && /buttons\.on\.disabled = device\(\)/.test(wts), 'in the Quality row\'s shape; On is not offered against the device\'s own setting');
   const later = readFileSync(join(JS, 'copy/en.later.js'), 'utf8');
   check(/r12Access: \{/.test(later) && /panelTitle: 'Motion'/.test(later), 'its words are in copy/en.later.js r12Access');
 }

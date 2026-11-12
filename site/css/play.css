@@ -22,8 +22,6 @@
 .sr-play__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .sr-play__head h2 { margin: 0; font: 600 20px / 1.2 var(--sr-font); }
 .sr-play__head h2:focus { outline: none; } /* focused on open so a screen reader starts here; not a control */
-.sr-play__x { flex: none; width: 44px; height: 44px; border: 0; border-radius: 50%; background: transparent; color: var(--sr-text-dim); font-size: 22px; cursor: pointer; }
-.sr-play__x:hover { background: var(--sr-wash); color: var(--sr-text); }
 .sr-play__day, .sr-play__note { margin: 4px 0 10px; font-size: var(--sr-fs-sm); color: var(--sr-text-dim); }
 .sr-play__ask { margin: 8px 0; font-weight: 600; }
 .sr-play__say { min-height: 1.45em; margin: 8px 0; color: var(--sr-text-soft); }
@@ -50,7 +48,6 @@
 .sr-play__crop { display: block; width: 100%; max-width: 280px; aspect-ratio: 1; margin: 8px auto; border-radius: var(--sr-radius); background: #000; }
 .sr-play__credit { font-size: 12px; color: var(--sr-text-dim); }
 .sr-play__slider { display: grid; gap: 4px; margin: 8px 0; font-size: var(--sr-fs-sm); color: var(--sr-text-dim); }
-.sr-play__slider input { width: 100%; min-height: 44px; margin: 0; accent-color: var(--sr-ember); }
 .sr-play__slider output { font: 500 var(--sr-fs-body) / 1.3 var(--sr-font-mono); color: var(--sr-text); }
 .sr-play__share { width: 100%; box-sizing: border-box; min-height: 96px; margin: 8px 0; padding: 8px 10px; color: var(--sr-text); background: var(--sr-wash); border: 1px solid var(--sr-line); border-radius: var(--sr-radius); font: 400 15px / 1.4 var(--sr-font-mono); resize: none; }
 

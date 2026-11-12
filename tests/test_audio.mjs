@@ -287,7 +287,7 @@ console.log('8. the shipped rows');
   const sound = readFileSync(new URL('../site/js/ui/sound.js', import.meta.url), 'utf8');
   const show = readFileSync(new URL('../site/js/ui/whattoshow.js', import.meta.url), 'utf8');
   check(/export function volumeSlider\(ctx, className\)/.test(sound) && /audio\.setVolume\(Number\(v\.value\) \/ 100\)/.test(sound) && /v\.hidden = !audio\.isOn\(\)/.test(sound), 'the volume slider drives the engine and is hidden while sound is off');
-  check(/volumeSlider\(ctx, 'sr-show__vol'\)/.test(show), 'What to show carries it under the sound toggle');
+  check(/volumeSlider\(ctx\)/.test(show), 'What to show carries it under the sound toggle');
 }
 
 // The volume is the visitor's, kept across visits (public #298).

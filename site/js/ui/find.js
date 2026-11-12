@@ -6,7 +6,7 @@
 //   openLink   the keys of the address that asked for it: {find, owner, operator, debris, constellation}
 //
 // ONE FAMILY OF PANELS. Find is a view of the sidebar like the card and the sources sheet, with the explore
-// view's own tabs, rows and chips (ui.css .sr-tabs, .sr-list, .sr-chip): three tabs, one question each.
+// view's own tabs, rows and chips (ui.css .sr-tabs, .sr-list; css/controls.css .ui-chip): three tabs, one question each.
 //   By property        a kind, its ranges and boxes, the questions as chips; the answer is a sortable table, and a
 //                      tap on a row goes there. A planet's row opens its system side by side, to scale.
 //   By country         the catalogue's owners with their flags and counts, the operators, the balance points and
@@ -31,6 +31,7 @@ import { CLOUDS, CONSTELLATIONS, cloudById, constellationById, recordInCloud, re
 import { EPHEMERIDES } from '../data/ephemerides.js';
 import { createHighlight } from './findmap.js';
 import * as urlstate from './urlstate.js';
+import { icon } from './icons.js';
 
 const TABS = ['property', 'country', 'clouds'];
 const MODES = ['countries', 'operators', 'points', 'nopath'];
@@ -173,7 +174,7 @@ export function createFind(ctx, host) {
   // --- the head: title and tabs -------------------------------------------------------------------
   const head = el('div', 'sr-find__head');
   head.appendChild(el('h2', 'sr-micro', F.title));
-  const tabs = el('div', 'sr-tabs sr-find__tabs');
+  const tabs = el('div', 'ui-seg ui-seg--block sr-tabs sr-find__tabs');
   tabs.setAttribute('role', 'tablist');
   tabs.setAttribute('aria-label', F.label);
   head.appendChild(tabs);
@@ -181,7 +182,7 @@ export function createFind(ctx, host) {
   const panes = new Map();
   const tabBtns = new Map();
   for (const id of TABS) {
-    const b = button('sr-tabs__tab', F.tabs[id]);
+    const b = button('ui-seg__btn', F.tabs[id]);
     b.setAttribute('role', 'tab');
     b.id = `sr-find-tab-${id}`;
     b.setAttribute('aria-controls', `sr-find-pane-${id}`);
@@ -237,7 +238,7 @@ export function createFind(ctx, host) {
   kindRow.setAttribute('aria-label', F.kindsLabel);
   const kindBtns = new Map();
   for (const k of FIND_KINDS) {
-    const b = button('sr-chip sr-find__kind', F.kinds[k]);
+    const b = button('ui-chip sr-find__kind', F.kinds[k]);
     b.setAttribute('role', 'radio');
     b.addEventListener('click', () => { st.q = { kind: k }; if (k === 'exoplanets' || k === 'stars') st.q.withinLy = k === 'stars' ? 20 : 100; paintProperty(); run(); });
     kindRow.appendChild(b);
@@ -247,7 +248,7 @@ export function createFind(ctx, host) {
   const presetHead = el('h3', 'sr-micro', F.presetsLabel);
   const presetRow = el('div', 'sr-find__chips');
   for (const p of PRESETS) {
-    const b = button('sr-chip sr-find__preset', F.presets[p.id]);
+    const b = button('ui-chip sr-find__preset', F.presets[p.id]);
     b.dataset.preset = p.id;
     b.addEventListener('click', () => { st.q = parseFind(p.find); paintProperty(); run(); });
     presetRow.appendChild(b);
@@ -269,7 +270,7 @@ export function createFind(ctx, host) {
   prop.appendChild(refine);
   const honesty = el('p', 'sr-sect__note sr-find__honesty');
   prop.appendChild(honesty);
-  const linkBtn = button('sr-btn sr-btn--quiet sr-find__link', F.copyLink);
+  const linkBtn = button('ui-btn ui-btn--quiet sr-find__link', F.copyLink);
   linkBtn.addEventListener('click', () => {
     const url = `${location.origin}${location.pathname}#find=${encodeURIComponent(findText(st.q))}`;
     const done = () => { linkBtn.textContent = F.copied; setTimeout(() => { linkBtn.textContent = F.copyLink; }, 1600); };
@@ -308,9 +309,10 @@ export function createFind(ctx, host) {
     return wrap;
   }
   function boxField(key, label) {
-    const lab = el('label', 'sr-find__box');
+    const lab = el('label', 'ui-opt');
     const inp = document.createElement('input');
     inp.type = 'checkbox';
+    inp.className = 'ui-check';
     inp.checked = !!st.q[key];
     inp.addEventListener('change', () => { if (inp.checked) st.q[key] = true; else delete st.q[key]; run(); });
     lab.append(inp, el('span', null, label));
@@ -336,7 +338,7 @@ export function createFind(ctx, host) {
     const wrap = el('div', 'sr-find__field');
     const lab = el('label', 'sr-find__label', label);
     const sel = document.createElement('select');
-    sel.className = 'sr-find__select';
+    sel.className = 'ui-select ui-select--sm';
     sel.id = `sr-find-${key}`;
     lab.htmlFor = sel.id;
     const any = document.createElement('option');
@@ -490,7 +492,7 @@ export function createFind(ctx, host) {
           b.addEventListener('click', (e) => { e.stopPropagation(); goToRow(q, row); });
           td.appendChild(b);
           if (q.kind === 'exoplanets' && row.host) {
-            const ch = button('sr-find__chartbtn', F.chart.open, t(F.chart.openTitle, { host: row.host }));
+            const ch = button('ui-btn ui-btn--sm ui-btn--quiet sr-find__chartbtn', F.chart.open, t(F.chart.openTitle, { host: row.host }));
             ch.addEventListener('click', (e) => { e.stopPropagation(); openChart(row.host, row.id); });
             td.appendChild(ch);
           }
@@ -532,7 +534,8 @@ export function createFind(ctx, host) {
     const H = maxR * 2 + 44;
     const head = el('div', 'sr-find__charthead');
     head.appendChild(el('h3', 'sr-micro', t(F.chart.title, { host: title })));
-    const close = button('sr-find__chartclose', '×', F.chart.close);
+    const close = button('ui-close', '', F.chart.close);
+    close.appendChild(icon('x'));
     close.setAttribute('aria-label', F.chart.close);
     close.addEventListener('click', () => { chartHost.hidden = true; chartHost.textContent = ''; st.chart = null; });
     head.appendChild(close);
@@ -584,7 +587,7 @@ export function createFind(ctx, host) {
   modeRow.setAttribute('aria-label', O.modesLabel);
   const modeBtns = new Map();
   for (const m of MODES) {
-    const b = button('sr-chip', O.modes[m]);
+    const b = button('ui-chip', O.modes[m]);
     b.setAttribute('role', 'radio');
     b.addEventListener('click', () => { st.mode = m; paintCountry(); });
     modeRow.appendChild(b);
@@ -669,7 +672,7 @@ export function createFind(ctx, host) {
 
   function groupRow(g, by, key, name, owner, noPathCount = false) {
     const li = el('li', 'sr-list__row');
-    const b = button('sr-list__btn sr-find__ownerbtn');
+    const b = button('ui-row ui-row--plain');
     b.title = t(O.rowTitle, { name });
     b.dataset[by] = key;
     b.appendChild(flags(owner));
@@ -687,7 +690,7 @@ export function createFind(ctx, host) {
   function craftRow(r, value, why) {
     const rec = recordForNorad(r.norad, r.name);
     const li = el('li', 'sr-list__row');
-    const node = rec ? button('sr-list__btn') : el('div', 'sr-list__static');
+    const node = rec ? button('ui-row ui-row--plain') : el('div', 'sr-list__static');
     const text = el('span', 'sr-find__rowtext');
     text.appendChild(el('span', 'sr-list__name', r.name));
     if (why) text.appendChild(el('span', 'sr-find__rowsub', why));
@@ -738,12 +741,12 @@ export function createFind(ctx, host) {
     const actions = el('div', 'sr-find__actions');
     const ids = new Set(res.ids);
     const test = (r) => { const m = r.meta || {}; const n = Number(m.noradId || m.catalogueNumber); return ids.has(n); };
-    const show = button('sr-btn sr-btn--quiet', O.show);
+    const show = button('ui-btn ui-btn--quiet', O.show);
     show.addEventListener('click', () => {
       litLine.textContent = COPY.breakups.loadingActive;
       hl.set({ name, test, layers: ['active'] }).then((n) => { litLine.textContent = n ? t(O.lit, { n: fmt.int(n) }) : O.litNone; });
     });
-    const clear = button('sr-btn sr-btn--quiet', O.clear);
+    const clear = button('ui-btn ui-btn--quiet', O.clear);
     clear.addEventListener('click', () => { hl.clear(); litLine.textContent = ''; writeLink({}); });
     actions.append(show, clear);
     if (owner && owner.kind === 'country') {
@@ -774,7 +777,7 @@ export function createFind(ctx, host) {
   const cloudRow = el('div', 'sr-find__chips');
   const cloudBtns = new Map();
   for (const c of CLOUDS) {
-    const b = button('sr-chip', B.names[c.id]);
+    const b = button('ui-chip', B.names[c.id]);
     b.setAttribute('aria-pressed', 'false');
     b.addEventListener('click', () => (st.cloud === c.id ? clearCloud() : showCloud(c.id)));
     cloudRow.appendChild(b);
@@ -788,7 +791,7 @@ export function createFind(ctx, host) {
   const fleetRow = el('div', 'sr-find__chips');
   const fleetBtns = new Map();
   for (const c of CONSTELLATIONS) {
-    const b = button('sr-chip', B.fleets[c.id]);
+    const b = button('ui-chip', B.fleets[c.id]);
     b.setAttribute('aria-pressed', 'false');
     b.addEventListener('click', () => (st.fleet === c.id ? clearFleet() : showFleet(c.id)));
     fleetRow.appendChild(b);
@@ -859,15 +862,15 @@ export function createFind(ctx, host) {
       if (ctx.timePill) ctx.timePill.paint();
     };
     for (const k of ['event', 'week', 'year']) {
-      const b = button('sr-chip', B.steps[k]);
+      const b = button('ui-chip', B.steps[k]);
       b.addEventListener('click', () => goStep(c.eventMs + STEP_MS[k]));
       steps.appendChild(b);
     }
-    const today = button('sr-chip', B.steps.today);
+    const today = button('ui-chip', B.steps.today);
     today.addEventListener('click', () => goStep(presentMs()));
     steps.appendChild(today);
     if (!reduced()) {
-      const play = button('sr-chip', B.play);
+      const play = button('ui-chip', B.play);
       play.addEventListener('click', () => {
         if (st.play) { stopPlay(); play.textContent = B.play; return; }
         hl.spread(c);
@@ -887,7 +890,7 @@ export function createFind(ctx, host) {
       });
       steps.appendChild(play);
     }
-    const back = button('sr-chip sr-chip--quiet', B.places);
+    const back = button('ui-btn ui-btn--sm ui-btn--quiet', B.places);
     back.addEventListener('click', () => { stopPlay(); hl.spread(null); try { ctx.clock.live(); } catch { /* nothing */ } if (ctx.timePill) ctx.timePill.paint(); });
     steps.appendChild(back);
     cloudDetail.appendChild(steps);

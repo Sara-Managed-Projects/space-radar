@@ -67,14 +67,6 @@
   margin: var(--sp-3) 0 0;
 }
 
-.sr-skystory__close {
-  min-width: 44px;
-  min-height: 44px;
-  margin: calc(-1 * var(--sp-2)) calc(-1 * var(--sp-2)) 0 0;
-  border: 0;
-  border-radius: var(--sr-radius-sm);
-  background: transparent;
-  color: var(--sr-text);
-  font: inherit;
-  cursor: pointer;
+.sr-skystory__head > .ui-close {
+  margin: calc(-1 * var(--sp-1)) calc(-1 * var(--sp-1)) 0 0;
 }

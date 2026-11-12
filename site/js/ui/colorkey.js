@@ -45,7 +45,7 @@ export function createColorKey(ctx) {
   const title = el('h2', 'sr-panel__title', T.title);
   root.appendChild(title);
   const select = document.createElement('select');
-  select.className = 'sr-colourkey__select';
+  select.className = 'ui-select ui-select--block';
   select.setAttribute('aria-label', T.title);
   for (const k of COLOR_KEYS) {
     const o = document.createElement('option');

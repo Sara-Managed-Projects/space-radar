@@ -43,12 +43,17 @@ export function createSceneNote(ctx) {
   text.textContent = T.refused;
   const why = document.createElement('button');
   why.type = 'button';
-  why.className = 'sr-scenenote__why';
+  why.className = 'ui-btn ui-btn--sm ui-btn--secondary';
   why.textContent = T.why;
   const close = document.createElement('button');
   close.type = 'button';
-  close.className = 'sr-scenenote__close';
-  close.textContent = T.close;
+  close.className = 'ui-close';
+  // The icon set's x (ui/icons.js `x`), drawn here: this note is in the boot graph and icons.js is not.
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  for (const [k, v] of [['viewBox', '0 0 24 24'], ['width', '20'], ['height', '20'], ['fill', 'none'], ['stroke', 'currentColor'], ['stroke-width', '1.75'], ['stroke-linecap', 'round'], ['stroke-linejoin', 'round'], ['aria-hidden', 'true'], ['focusable', 'false'], ['class', 'sr-icon sr-icon--x']]) svg.setAttribute(k, v);
+  for (const d of ['M18 6 6 18', 'm6 6 12 12']) svg.appendChild(document.createElementNS(NS, 'path')).setAttribute('d', d);
+  close.appendChild(svg);
   close.title = T.closeTitle;
   close.setAttribute('aria-label', T.closeTitle);
   root.append(text, why, close);

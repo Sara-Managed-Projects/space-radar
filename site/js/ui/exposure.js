@@ -28,14 +28,14 @@ export function exposurePanel(exposure) {
   title.textContent = C.panelTitle;
   wrap.appendChild(title);
   const row = document.createElement('div');
-  row.className = 'sr-density__choices';
+  row.className = 'ui-seg ui-seg--block';
   row.setAttribute('role', 'group');
   row.setAttribute('aria-label', C.panelTitle);
   const buttons = new Map();
   for (const mode of EXPOSURES) {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'sr-density__btn';
+    b.className = 'ui-seg__btn';
     b.textContent = C.modes[mode];
     b.title = C.notes[mode];
     b.dataset.exposure = mode;
@@ -50,7 +50,6 @@ export function exposurePanel(exposure) {
   const paint = (mode) => {
     for (const [m, b] of buttons) {
       b.setAttribute('aria-pressed', m === mode ? 'true' : 'false');
-      b.classList.toggle('sr-bracketed', m === mode);
     }
     note.textContent = C.notes[mode] || '';
   };
@@ -74,14 +73,14 @@ export function lookPanel(drawn) {
   title.textContent = C.panelTitle;
   wrap.appendChild(title);
   const row = document.createElement('div');
-  row.className = 'sr-density__choices';
+  row.className = 'ui-seg ui-seg--block';
   row.setAttribute('role', 'group');
   row.setAttribute('aria-label', C.panelTitle);
   const buttons = new Map();
   for (const mode of DRAWN) {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'sr-density__btn';
+    b.className = 'ui-seg__btn';
     b.textContent = C.modes[mode];
     b.title = C.titles[mode];
     b.dataset.look = mode;
@@ -93,7 +92,6 @@ export function lookPanel(drawn) {
   const paint = (mode) => {
     for (const [m, b] of buttons) {
       b.setAttribute('aria-pressed', m === mode ? 'true' : 'false');
-      b.classList.toggle('sr-bracketed', m === mode);
     }
   };
   const off = drawn.onChange(paint);

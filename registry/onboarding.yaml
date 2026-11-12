@@ -211,6 +211,11 @@ features:
     files: [site/js/ui/rail.js]
     surfaces: ["rail:blog"]
     not: "A link out of the app to the journal, not a feature of the map."
+  - id: games
+    name: The team's space games (the rail's gamepad, 2026-11-11)
+    files: [site/js/ui/rail.js]
+    surfaces: ["rail:games"]
+    not: "A link out of the app to games.spaceradar.ai, not a feature of the map, as the journal's is."
   - id: email-updates
     name: Free email updates (the rail's envelope, 2026-11-10)
     files: [site/js/ui/rail.js, site/js/ui/subscribepop.js]

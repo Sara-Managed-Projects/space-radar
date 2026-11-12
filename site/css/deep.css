@@ -3,7 +3,6 @@
    with those modules (ui/latercss.js), never on a first visit. Buttons and notes are ui.css's own classes. */
 
 .sr-holecmp__row { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: var(--sp-2) 0; }
-.sr-holecmp__row .sr-btn { min-height: 44px; }
 .sr-holecmp__figs { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: var(--sp-2) 0 0; }
 .sr-holecmp__figs[hidden] { display: none; }
 .sr-holecmp__fig { flex: 1 1 140px; max-width: 220px; margin: 0; }

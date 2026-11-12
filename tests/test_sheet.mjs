@@ -158,7 +158,7 @@ check(uncoveredBand(844, 0, 0).shift === 0, 'nothing covering, nothing moved');
   check(/html\.sr-phone\.sr-card-open:not\(\[data-sheet='full'\]\) \.sr-top__line \{\s*display: block;/.test(css), 'and on only while a card hides the pill, and not at full');
   check(!/setInterval/.test(readFileSync(join(JS, 'ui/shell.js'), 'utf8')) && !/sr-top__line|lineHost\.hidden|line\.hidden/.test(readFileSync(join(JS, 'ui/timepill.js'), 'utf8').replace(/lineHost && lineHost\.appendChild\(line\)|const lineHost = [^\n]*/g, '')), 'no script toggles it: CSS reads the state the shell and sheet already write');
   check(/html\.sr-phone \.sr-top \.sr-search__input \{[^}]*font-size: 16px/.test(css), 'the phone\'s search field is 16 px (no zoom on focus)');
-  check(/html\.sr-phone \.sr-tabs__tab \{[^}]*height: 44px/.test(css) && /width: calc\(var\(--sr-top-bar\) - 2px\)/.test(css), '44 px targets: the tabs and the top bar\'s tools');
+  check(/html\.sr-phone \.sr-tabs > \.ui-seg__btn \{[^}]*min-height: 44px/.test(css) && /width: calc\(var\(--sr-top-bar\) - 2px\)/.test(css), '44 px targets: the tabs and the top bar\'s tools');
 }
 
 if (problems.length) { console.error('sheet FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }

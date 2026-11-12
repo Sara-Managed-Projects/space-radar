@@ -71,10 +71,10 @@ function mountCompare(box, record, ctx) {
   const K = COPY.holeCompare;
   const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
   const row = el('div', 'sr-holecmp__row');
-  const earth = el('button', 'sr-btn sr-btn--quiet sr-card__inline', K.fromEarth);
+  const earth = el('button', 'ui-btn ui-btn--quiet sr-card__inline', K.fromEarth);
   earth.type = 'button';
   earth.title = K.fromEarthTitle;
-  const cmp = el('button', 'sr-btn sr-btn--quiet sr-card__inline', K.compare);
+  const cmp = el('button', 'ui-btn ui-btn--quiet sr-card__inline', K.compare);
   cmp.type = 'button';
   cmp.title = K.compareTitle;
   cmp.setAttribute('aria-expanded', 'false');

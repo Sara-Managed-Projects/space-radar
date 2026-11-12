@@ -28,7 +28,7 @@ export function qualityPanel(ctx) {
   note.className = 'sr-quality__note';
   wrap.appendChild(note);
   const row = document.createElement('div');
-  row.className = 'sr-density__choices';
+  row.className = 'ui-seg ui-seg--block';
   row.setAttribute('role', 'group');
   row.setAttribute('aria-label', C.panelTitle);
   wrap.appendChild(row);
@@ -45,7 +45,7 @@ export function qualityPanel(ctx) {
       for (const choice of offered) {
         const b = document.createElement('button');
         b.type = 'button';
-        b.className = 'sr-density__btn';
+        b.className = 'ui-seg__btn';
         b.textContent = C.choices[choice];
         b.title = C.titles[choice];
         b.dataset.quality = choice;
@@ -57,7 +57,6 @@ export function qualityPanel(ctx) {
     }
     for (const [choice, b] of buttons) {
       b.setAttribute('aria-pressed', choice === q.choice ? 'true' : 'false');
-      b.classList.toggle('sr-bracketed', choice === q.choice);
     }
     const words = qualityNote(q.plan(), C);
     note.textContent = words;

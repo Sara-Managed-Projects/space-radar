@@ -31,7 +31,9 @@ Ten rules, in priority order. When two collide, the earlier one wins.
 1. **The scene is sovereign.** Panels float over it and never resize, crop or tint it.
 2. **One place for everything.** One sidebar, one object card, one tool rail, one time pill. New
    content goes into one of those, not into a new floating panel.
-3. **One primary action per view.** At most one filled accent button on screen.
+3. **One primary action per view.** Ember (`.ui-btn--primary`) fills one button on a view, its main
+   action. Blue (`--atm`) is for links, the focus ring and what is selected; everything else is a
+   quiet pill.
 4. **Numbers are the hero.** A card leads with the three values that matter, large, in the
    monospace face, units small beneath.
 5. **No prose in chrome.** A line of interface is one line long (60 characters or fewer).
@@ -44,9 +46,21 @@ Ten rules, in priority order. When two collide, the earlier one wins.
 9. **Easy to hit, easy to reach.** 44 px targets on touch, 24 px minimum anywhere; everything
    reachable by keyboard, with a visible focus ring.
 10. **Calm motion with a reason.** Motion shows where something came from. Nothing loops, bounces
-    or glows, and `prefers-reduced-motion` turns it into a fade.
+    or glows, and `prefers-reduced-motion` turns it into a fade. One named exception: the Games
+    link on the tool rail (`.sr-rail__btn--games::before`) breathes a soft blue glow over 3.6 s,
+    transform and opacity only, still under reduced motion and paused whenever the rail is out of
+    sight (`tests/test_tokens.mjs` `MAINTAINER_LOOP`). A second loop is a design decision, not a
+    pull request.
 
 In practice:
+
+- **Controls come from one set.** Buttons, segmented choices, selects, radios, checkboxes,
+  sliders, close buttons, popovers, list rows and chips are the classes of `site/css/controls.css`
+  (the design kit's control set, the journal's look: pills, a 4 px grid, 40 px controls and 44 px
+  on touch, a 2 px blue focus ring). [UI_COMPONENTS.md](UI_COMPONENTS.md) shows each one with its
+  markup. A page lays them out; it never restyles them, and it never invents a one-off control:
+  `tests/test_controls.mjs` refuses one. The ember corner brackets that once marked selection
+  are gone; the scene's reticle keeps its four ticks, as a mark on the thing in space.
 
 - **Colours, sizes, radii and durations come from the tokens** in `site/css/` (the `--sr-*`
   custom properties). No new hex value, pixel size or easing curve in a component.

@@ -29,14 +29,14 @@ export function otherLightPanel(ctx) {
   title.textContent = C.panelTitle;
   wrap.appendChild(title);
   const row = document.createElement('div');
-  row.className = 'sr-density__choices';
+  row.className = 'ui-seg ui-seg--block';
   row.setAttribute('role', 'group');
   row.setAttribute('aria-label', C.panelTitle);
   const buttons = new Map();
   for (const id of ['visible', ...OTHER_LIGHT.map((b) => b.id)]) {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'sr-density__btn';
+    b.className = 'ui-seg__btn';
     b.textContent = C.bands[id] || id;
     b.title = C.colours[id] || C.notes[id] || '';
     b.dataset.band = id;
@@ -53,7 +53,7 @@ export function otherLightPanel(ctx) {
   from.textContent = C.bands.visible;
   const slider = document.createElement('input');
   slider.type = 'range';
-  slider.className = 'sr-otherlight__slider';
+  slider.className = 'ui-range';
   slider.min = '0';
   slider.max = '100';
   slider.step = '1';
@@ -80,7 +80,6 @@ export function otherLightPanel(ctx) {
     const band = OTHER_LIGHT.find((b) => b.id === ol.band) || null;
     for (const [k, b] of buttons) {
       b.setAttribute('aria-pressed', k === id ? 'true' : 'false');
-      b.classList.toggle('sr-bracketed', k === id);
     }
     mixRow.hidden = !band;
     credit.hidden = !band;

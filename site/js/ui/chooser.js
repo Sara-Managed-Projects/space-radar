@@ -47,7 +47,7 @@ export function showChooser(items, x, y, onPick, opts = {}) {
   for (const item of items) {
     const rec = item.record;
     const li = el('li', 'sr-pick__item');
-    const btn = el('button', 'sr-pick__btn');
+    const btn = el('button', 'ui-row ui-row--plain');
     btn.type = 'button';
     const dot = el('span', `sr-swatch sr-swatch--${rec.klass || 'satellite'}`);
     dot.setAttribute('aria-hidden', 'true');

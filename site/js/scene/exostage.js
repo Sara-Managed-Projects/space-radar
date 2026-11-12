@@ -155,8 +155,8 @@ export function createImagineStage(ctx, opts = {}) {
     const l1 = el(doc, 'p', 'sr-imagine__line');
     const l2 = el(doc, 'p', 'sr-imagine__line');
     const actions = el(doc, 'div', 'sr-imagine__actions');
-    const another = el(doc, 'button', 'sr-btn', E.another);
-    const back = el(doc, 'button', 'sr-btn sr-btn--quiet', E.back);
+    const another = el(doc, 'button', 'ui-btn', E.another);
+    const back = el(doc, 'button', 'ui-btn ui-btn--quiet', E.back);
     another.type = 'button'; back.type = 'button';
     actions.append(another, back);
     card.append(tag, name, l1, l2, actions);

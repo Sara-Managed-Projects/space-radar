@@ -74,7 +74,7 @@ html.sr-embed body > *:not(.sr-scene):not(.sr-veil):not(#boot):not(#labels):not(
 }
 
 .sr-embed__open:focus-visible {
-  outline: 2px solid var(--sr-ember);
+  outline: 2px solid var(--sr-atmosphere);
   outline-offset: 2px;
 }
 

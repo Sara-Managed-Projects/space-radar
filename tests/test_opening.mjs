@@ -71,7 +71,7 @@ const full = Sn.linesNow({ ...ctx, explore: { crew: () => ({ ISS: 7, Tiangong: 3
 check(full.some((m) => /Ten people/.test(m.text)) && full.length === now.length + 1, 'a headcount that has loaded joins the turn');
 const src = read('site/js/ui/opening.js');
 check(/sentence\.linesNow\(ctx\)/.test(src) && /import\('\.\/sentence\.js'\)/.test(src), 'ui/opening.js asks ui/sentence.js at every turn');
-check(/W\.trip/.test(src) && /W\.explore/.test(src) && /W\.tonight/.test(src) && (src.match(/sr-welcome__go/g) || []).length === 1, 'the three buttons are the welcome\'s words (0077 W3-e: Tonight, Explore, Guided trip), and one is the ember');
+check(/W\.trip/.test(src) && /W\.explore/.test(src) && /W\.tonight/.test(src) && (src.match(/ui-btn--primary/g) || []).length === 1, 'the three buttons are the welcome\'s words (0077 W3-e: Tonight, Explore, Guided trip), and one is the ember');
 check(/win\.localStorage\.setItem\(WELCOME_KEY, '1'\)/.test(src) && /const WELCOME_KEY = 'sr:welcome';/.test(src), 'a press on either is the welcome seen');
 check(COPY.opening && [...COPY.opening.skip].length <= 60 && [...COPY.opening.wait].length <= 60, 'its two lines of chrome are short');
 check(!/!/.test(COPY.opening.skip + COPY.opening.wait), 'and calm');

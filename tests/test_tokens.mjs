@@ -20,6 +20,9 @@ const check = (ok, msg) => { if (!ok) problems.push(msg); };
 // same rules as the stylesheets linked at boot.
 const FILES = ['site/css/site.css', 'site/css/ui.css', 'site/css/share.css', 'site/css/keyhint.css', 'site/css/embed.css', 'site/css/autopilot.css', 'site/css/drift.css', 'site/css/onboarding.css', 'site/css/finishers.css', 'site/css/searchkinds.css', 'site/css/exoface.css', 'site/css/compare.css']; // 0077 W2-d
 FILES.push('site/css/xr.css'); // b200-f8-xr: the gamepad's hint and the headset's note (forge #164, #158)
+// The control set (2026-11-11): the design kit's controls, linked with ui.css. Written in the kit's token names (--tx,
+// --atm, --ember ... aliased to the --sr-* tokens in ui.css :root) and its own --ui-* sizes, corners and timing.
+FILES.push('site/css/controls.css');
 // Comments out, positions kept, so nothing quoted in a comment counts as a rule.
 const strip = (css) => css.replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' '));
 
@@ -221,7 +224,9 @@ for (const r of all) {
     for (const part of value.split(/\s+|\//).filter(Boolean)) {
       // Tokens only since spec 0061 task 6 (docs/ui-guide.md section 2.3): a literal 5px is a
       // fifth corner nobody chose. `inherit` is a pseudo-element taking its host's corner.
-      const ok = /^var\(--sr-radius(-sm|-pill|-shell)?\)$/.test(part) || part === '50%' || part === '0' || part === 'inherit';
+      // The control set's corners (css/controls.css :root): --ui-r-sm (6, a box), --ui-r (12, rows), --ui-r-lg (20, a plain
+      // popover), --ui-r-pill.
+      const ok = /^var\(--sr-radius(-sm|-pill|-shell)?\)$/.test(part) || /^var\(--ui-r(-sm|-lg|-pill)?\)$/.test(part) || part === '50%' || part === '0' || part === 'inherit';
       if (!ok) problems.push(`${r.file} ${r.selector}: border-radius ${value}; a corner is --sr-radius-sm, --sr-radius, --sr-radius-shell, --sr-radius-pill, 50% or 0`);
     }
   }
@@ -275,7 +280,9 @@ for (const r of all) {
 // cloud above (2b). --sr-unread and --sr-text-faint are graphics (3.04 and 2.44 there): a row that
 // says "never read" in --sr-unread is a sentence at 3:1, and that was on the sources sheet.
 {
-  const TEXT_TOKENS = new Set(['--sr-text', '--sr-text-soft', '--sr-text-dim', '--sr-ember', '--sr-ember-light', '--sr-ink', '--sr-ok', '--sr-stale', '--text', '--text-dim']);
+  // The atmosphere blue is text too since 2026-11-11 (a selected rail tool, a link): it is held to 4.5:1 below. The kit's
+  // names are the same tokens (ui.css :root): --tx, --dim, --atm, --ink (on a blue fill), --ink-ember (on the ember).
+  const TEXT_TOKENS = new Set(['--sr-text', '--sr-text-soft', '--sr-text-dim', '--sr-ember', '--sr-ember-light', '--sr-ink', '--sr-ok', '--sr-stale', '--text', '--text-dim', '--sr-atmosphere', '--tx', '--dim', '--atm', '--ink', '--ink-ember']);
   for (const r of all) {
     for (const [prop, value] of decls(r.body)) {
       if (prop !== 'color') continue;
@@ -286,7 +293,7 @@ for (const r of all) {
   }
   if (glass && text) {
     const onW = over(glass, WHITE);
-    for (const name of ['--sr-ok', '--sr-stale']) {
+    for (const name of ['--sr-ok', '--sr-stale', '--sr-atmosphere']) {
       const fg = hex(token(name));
       check(!!fg && ratio(fg, onW) >= 4.5, `${name} as text on glass over a white cloud is ${fg ? ratio(fg, onW).toFixed(2) : '?'}:1, under 4.5:1`);
     }
@@ -363,23 +370,21 @@ check(/classList\.toggle\('sr-float', want === host\)/.test(js('tripframe.js')),
 check(/'sr-search__pop sr-float'/.test(js('search.js')), 'the search results wear sr-float');
 check(/'sr-share sr-float sr-over-clean'/.test(js('sharesheet.js')), 'the share sheet wears sr-float and still shows over a clear screen');
 
-// --- 7. corner brackets: the selection and focus signature --------------------------------------
-const bracket = all.find((r) => /::before/.test(r.selector) && /\.sr-bracketed::before/.test(r.selector));
-check(!!bracket, 'there is a .sr-bracketed::before rule');
-if (bracket) {
-  const sels = bracket.selector.split(',').map((s) => s.trim());
-  check(sels.includes('.sr-search__option.is-active::before'), 'the selected search row wears the brackets');
-  check(sels.some((s) => /:focus-visible::before$/.test(s)), 'a focused control wears the brackets');
-  const grads = (bracket.body.match(/linear-gradient\(var\(--sr-ember\) 0 0\)/g) || []).length;
-  check(grads === 4, `the ::before draws four ember ticks (two corners), found ${grads}`);
-  check(/var\(--sr-bracket\)/.test(bracket.body) && /var\(--sr-bracket-w\)/.test(bracket.body), 'the ticks are --sr-bracket long and --sr-bracket-w thick');
-  check(/pointer-events: none/.test(bracket.body), 'the brackets never take a tap');
+// --- 7. focus and selection (the maintainer, 2026-11-11: the journal's design in the app) --------------------------
+// The ember corner brackets that marked selection and focus are gone: focus is a 2 px blue ring, what is selected wears
+// the blue wash of css/controls.css, and ember is the one main action of a view. The scene's reticle keeps its ticks.
+check(!all.some((r) => /sr-bracketed/.test(r.selector)), 'no .sr-bracketed rule: selection is the controls\' blue wash');
+{
+  const focus = all.find((r) => /^:where\(button, a\[href\], \[role='option'\], summary, input, select, textarea\):focus-visible$/.test(r.selector.trim()) && r.at === '');
+  check(!!focus && has(focus, 'outline', '2px solid var(--sr-atmosphere)'), 'every focusable thing has the 2 px blue ring');
+  const set = all.find((r) => r.file === 'site/css/controls.css' && /:focus-visible/.test(r.selector) && /\.ui-btn/.test(r.selector));
+  check(!!set && has(set, 'outline', '2px solid var(--atm)'), 'the control set draws the same ring');
+  const reticle = all.find((r) => /\.sr-reticle__box::before/.test(r.selector));
+  const grads = reticle ? (reticle.body.match(/linear-gradient\(var\(--sr-ember\) 0 0\)/g) || []).length : 0;
+  check(grads === 4 && /var\(--sr-bracket\)/.test(reticle.body) && /pointer-events: none/.test(reticle.body), `the reticle keeps its four ember ticks (${grads}), --sr-bracket long, never taking a tap`);
+  check(all.some((r) => /\.sr-reticle__box::after/.test(r.selector) && /scaleY\(-1\)/.test(r.body)), '::after mirrors the reticle\'s top ticks into the bottom corners');
 }
-check(all.some((r) => /\.sr-bracketed::after/.test(r.selector) && /scaleY\(-1\)/.test(r.body)), '::after mirrors the top ticks into the bottom corners');
-check(token('--sr-bracket') === '8px' && token('--sr-bracket-w') === '1.5px', 'brackets are 8 px ticks, 1.5 px thick');
-for (const r of all.filter((x) => x.selector === '.sr-door.is-on')) {
-  check(!/border-color: var\(--sr-ember\)|inset 0 -2px 0 var\(--sr-ember\)/.test(r.body), 'the mode tile lost its 1 px ember box to the brackets');
-}
+check(token('--sr-bracket') === '8px' && token('--sr-bracket-w') === '1.5px', 'the reticle\'s ticks are 8 px, 1.5 px thick');
 
 // --- 8. type from the ladder, and its floor (issue #315, spec 0045 req 6; guide section 2.2) -----
 // Every font-size is a --sr-fs-* token (spec 0061 task 6): 13.5, 18, 22 and 27 px were each one
@@ -389,7 +394,7 @@ for (const r of all.filter((x) => x.selector === '.sr-door.is-on')) {
 // has to squint at.
 const UNIT_SELECTORS = new Set(['.sr-clock__tag', '.sr-traj__label', '.sr-tag__unit', '.sr-arc__cardinal']);
 {
-  const sizes = [...tokens].filter(([n]) => n.startsWith('--sr-fs-'));
+  const sizes = [...tokens].filter(([n]) => n.startsWith('--sr-fs-') || n.startsWith('--ui-fs'));
   check(sizes.length >= 8, `the type ladder is ${sizes.length} --sr-fs-* tokens in :root`);
   for (const [n, d] of sizes) {
     const px = /^([\d.]+)px$/.exec(d[0].value);
@@ -401,7 +406,7 @@ const UNIT_SELECTORS = new Set(['.sr-clock__tag', '.sr-traj__label', '.sr-tag__u
     for (const [prop, value] of decls(r.body)) {
       if (prop !== 'font-size' && prop !== 'font') continue;
       if (['inherit', '0', '100%', '1em'].includes(value)) continue;
-      const used = /var\((--sr-fs-[\w-]+)\)/.exec(value);
+      const used = /var\((--sr-fs-[\w-]+|--ui-fs(?:-[\w-]+)?)\)/.exec(value);
       if (!used || !tokens.has(used[1]) || /(?:^|\s)[\d.]+(px|rem|em|pt|%)(?=$|[\s/])/.test(value.replace(/\/\s*[\d.]+(px|em|%)?/, ''))) {
         problems.push(`${r.file} ${r.selector}: ${prop}: ${value}; a size is a --sr-fs-* token (the ladder in ui.css :root, docs/ui-guide.md section 2.2)`);
         continue;
@@ -422,8 +427,8 @@ check(all.some((r) => /:where\(button\):active/.test(r.selector) && has(r, 'tran
 check(all.some((r) => r.at === '@starting-style' && /\.sr-card\.sr-float/.test(r.selector) && has(r, 'opacity', '0') && has(r, 'transform', 'translateY(12px)')), 'the card opens from 12 px below, from nothing');
 check(all.some((r) => /prefers-reduced-motion: reduce/.test(r.at) && /\.sr-float/.test(r.selector) && has(r, 'transition', 'opacity 120ms linear')), 'reduced motion is a 120 ms fade and nothing else');
 check(token('--sr-fast') === '140ms' && token('--sr-mid') === '220ms' && token('--sr-slow') === '320ms', 'motion is 140 / 220 / 320 ms');
-check(all.some((r) => /prefers-reduced-motion:\s*reduce/.test(r.at) && r.selector.trim() === '.sr-games::before' && has(r, 'animation', 'none')) && all.some((r) => /animation-play-state/.test(r.body) && /\.sr-clean/.test(r.selector) && /\.sr-games::before/.test(r.selector)),
-  'the Games link\'s one loop stops under reduced motion and pauses on a clear screen');
+check(all.some((r) => /prefers-reduced-motion:\s*reduce/.test(r.at) && r.selector.trim() === '.sr-rail__btn--games::before' && has(r, 'animation', 'none')) && all.some((r) => /animation-play-state/.test(r.body) && /\.sr-clean/.test(r.selector) && /\.sr-trip-mode/.test(r.selector) && /\.sr-rail__btn--games::before/.test(r.selector)),
+  'the rail\'s Games link\'s one loop stops under reduced motion and pauses on a clear screen and in a trip');
 check(!/@keyframes\s+[\w-]*(pulse|bounce|glow)/i.test(FILES.map((f) => readFileSync(join(ROOT, f), 'utf8')).join('\n')), 'no bounce and no glow pulse');
 
 // --- 9b. motion from the tokens (docs/ui-guide.md section 2.5 and 7; spec 0061 req 12) ----------
@@ -433,10 +438,10 @@ check(!/@keyframes\s+[\w-]*(pulse|bounce|glow)/i.test(FILES.map((f) => readFileS
 // (docs/design-language.md): the boot veil and its one waiting mark in site.css, and a trip
 // subject's label settling over the scene (ui/labels.js EMPHASIS_MS, held by tests/test_labels.mjs).
 const SCENE_MOTION = new Set(['.boot', '.boot-mark::after', '#labels .label.is-subject .label__text', '#labels .label.is-dimmed']);
-// THE ONE LOOP (the maintainer, 2026-11-10: the Games link in the explore panel, "make it blinking or with some gradual
-// animation"): its glow breathes over 3.2 s, transform and opacity only. Held here instead: it is still under reduced
-// motion, and paused when the panel is out of sight (ui.css, next to the rule).
-const MAINTAINER_LOOP = new Set(['.sr-games::before']);
+// THE ONE LOOP (the maintainer, 2026-11-10: the Games link, "make it blinking or with some gradual animation"; 2026-11-11:
+// moved from the explore panel to the tool rail): its glow breathes over 3.6 s, transform and opacity only. Held here
+// instead: it is still under reduced motion, and paused when the rail is out of sight (ui.css, next to the rule).
+const MAINTAINER_LOOP = new Set(['.sr-rail__btn--games::before']);
 const MOTION_PROPS = new Set(['transition', 'transition-duration', 'transition-delay', 'transition-timing-function', 'animation', 'animation-duration', 'animation-delay', 'animation-timing-function']);
 for (const r of all) {
   if (r.selector.split(',').every((x) => SCENE_MOTION.has(x.trim()))) continue;
@@ -519,7 +524,7 @@ check(!tokens.has('--sr-font-serif'), '--sr-font-serif is defined; names and tit
       if (prop !== 'font' && prop !== 'font-family') continue;
       const bare = value.replace(/sans-serif/g, '');
       check(!/serif|Georgia|Palatino|Times|Iowan/i.test(bare), `${r.file} ${r.selector}: ${prop}: ${value}; a serif, and names and titles are sans`);
-      check(/var\(--sr-font(-hud|-mono)?\)|var\(--font\)|^inherit$/.test(value), `${r.file} ${r.selector}: ${prop}: ${value}; a face is --sr-font, --sr-font-hud or --sr-font-mono`);
+      check(/var\(--sr-font(-hud|-mono)?\)|var\(--font\)|var\(--(sans|cap|mono)\)|^inherit$/.test(value), `${r.file} ${r.selector}: ${prop}: ${value}; a face is --sr-font, --sr-font-hud or --sr-font-mono (the kit's --sans, --cap, --mono)`);
     }
   }
   const uiDir = join(ROOT, 'site/js/ui');
@@ -535,4 +540,4 @@ if (problems.length) {
   if (table.length) console.error('  contrast: ' + table.join('; '));
   process.exit(1);
 }
-console.log(`tokens ok: ${DESIGN_TOKENS.length} tokens defined once, the palette unchanged, 6 px corners, the lit edge and the brackets in place, every size, colour, corner and layer a token, nothing read under 13 px, Compact and the panel motion defined, three faces self-hosted and no serif; contrast ${table.join('; ')}`);
+console.log(`tokens ok: ${DESIGN_TOKENS.length} tokens defined once, the palette unchanged, 6 px corners, the lit edge, the blue focus ring and the reticle's ticks in place, every size, colour, corner and layer a token, nothing read under 13 px, Compact and the panel motion defined, three faces self-hosted and no serif; contrast ${table.join('; ')}`);

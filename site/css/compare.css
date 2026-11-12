@@ -3,17 +3,14 @@
    ui/passportkinds.js and ui/photocompare.js through ui/latercss.js, never at boot: a first visit does not carry it. */
 
 
-/* Compare: a world card's disclosure row opens this in place (docs/ui-guide.md §3.10 item 7). Its two choices
-   are the card's quiet row (.sr-card__sky / .sr-card__tool, §3.10 item 5a): the same wash, edge and 44 px. */
+/* Compare: a world card's disclosure row opens this in place (docs/ui-guide.md §3.10 item 7). Its choices are the
+   control set's segmented pills (css/controls.css .ui-seg). */
 .sr-vs {
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
 }
 
-.sr-vs .sr-card__sky {
-  padding-bottom: 0;
-}
 
 .sr-vs__field {
   display: flex;
@@ -24,34 +21,6 @@
 .sr-vs__fieldlabel {
   font: 400 var(--sr-fs-sm)/16px var(--sr-font);
   color: var(--sr-text-dim);
-}
-
-.sr-vs__select {
-  width: 100%;
-  min-height: 44px;
-  padding: 0 var(--sp-3);
-  font: 400 var(--sr-fs-body)/20px var(--sr-font);
-  color: var(--sr-text);
-  background: var(--sr-wash);
-  border: 1px solid transparent;
-  border-radius: var(--sr-radius);
-  transition: background-color var(--sr-fast) var(--sr-ease), border-color var(--sr-fast) var(--sr-ease);
-}
-
-.sr-vs__select:focus-visible {
-  outline: 2px solid var(--sr-ember);
-  outline-offset: 2px;
-}
-
-html.sr-phone .sr-vs__select {
-  font-size: var(--sr-fs-input);
-}
-
-@media (hover: hover) {
-  .sr-vs__select:hover {
-    background: var(--sr-wash-hover);
-    border-color: var(--sr-line-strong);
-  }
 }
 
 .sr-vs__sentence {
@@ -177,21 +146,15 @@ html.sr-phone .sr-vs__select {
   list-style: none;
 }
 
-.sr-vs__labbtn {
-  display: block;
-  width: 100%;
-  min-height: 44px;
-  padding: var(--sp-2) 0;
-  font: inherit;
-  color: var(--sr-text);
-  text-align: left;
-  background: transparent;
-  border: 0;
+.sr-vs__entry {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
   border-bottom: 1px solid var(--sr-line);
-  cursor: pointer;
+  border-radius: 0;
 }
 
-.sr-vs__labbtn[aria-disabled='true'] { cursor: default; }
+.sr-vs__entry[aria-disabled='true'] { cursor: default; }
 
 .sr-vs__labtop {
   display: flex;
@@ -222,13 +185,10 @@ html.sr-phone .sr-vs__select {
   border-radius: var(--sr-radius-sm);
 }
 
-.sr-vs__labbtn.is-this .sr-vs__fill { background: var(--sr-text); }
-.sr-vs__labbtn.is-this .sr-vs__labname { font-weight: 600; }
-.sr-vs__labbtn.is-with .sr-vs__fill { background: var(--sr-text-soft); }
+.sr-vs__entry.is-this .sr-vs__fill { background: var(--sr-text); }
+.sr-vs__entry.is-this .sr-vs__labname { font-weight: 600; }
+.sr-vs__entry.is-with .sr-vs__fill { background: var(--sr-text-soft); }
 
-@media (hover: hover) {
-  .sr-vs__labbtn:not([aria-disabled='true']):hover .sr-vs__labname { color: var(--sr-ember-light); }
-}
 
 /* The passport's second page: kinds, and what is noted (ui/passportkinds.js). Quiet rows, the same list. */
 .sr-passport__kinds .sr-list__value { color: var(--sr-text); }
@@ -288,14 +248,7 @@ html.sr-phone .sr-vs__select {
 .sr-photocmp__field {
   position: absolute;
   inset: 0;
-  width: 100%;
   height: 44px;
-  margin: 0;
-  padding: 0;
-  background: transparent;
-  appearance: none;
-  -webkit-appearance: none;
-  cursor: pointer;
 }
 
 .sr-photocmp__field::-webkit-slider-runnable-track {
@@ -308,28 +261,13 @@ html.sr-phone .sr-vs__select {
   background: transparent;
 }
 
+.sr-photocmp__field::-moz-range-progress {
+  background: transparent;
+}
+
+/* The shared thumb (css/controls.css .ui-range), centred on the 44 px track this one draws behind it. */
 .sr-photocmp__field::-webkit-slider-thumb {
-  width: 20px;
-  height: 20px;
-  margin-top: 12px;
-  background: var(--sr-text);
-  border: 1px solid var(--sr-panel-solid);
-  border-radius: 50%;
-  appearance: none;
-  -webkit-appearance: none;
-}
-
-.sr-photocmp__field::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
-  background: var(--sr-text);
-  border: 1px solid var(--sr-panel-solid);
-  border-radius: 50%;
-}
-
-.sr-photocmp__field:focus-visible {
-  outline: 2px solid var(--sr-ember);
-  outline-offset: 2px;
+  margin-top: calc((44px - 16px) / 2);
 }
 
 .sr-photocmp__ends {
@@ -343,7 +281,7 @@ html.sr-phone .sr-vs__select {
 
 /* Reduced motion: nothing here moves; the one colour change is a 120 ms fade (docs/ui-guide.md section 2.5). */
 @media (prefers-reduced-motion: reduce) {
-  .sr-vs__select {
-    transition: opacity 120ms linear;
+  .sr-vs__entry {
+    transition: none;
   }
 }

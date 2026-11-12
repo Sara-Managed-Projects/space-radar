@@ -42,6 +42,7 @@ import { toast, appBase, shareUrl, shareState } from './share.js';
 import { camValue, read as readUrl } from './urlstate.js';
 import { saveBlob } from './printcompose.js';
 import { muxWebm } from './webm.js';
+import { icon } from './icons.js';
 
 export const FPS = 30;
 export const END_S = 3;
@@ -227,8 +228,8 @@ function el(tag, className, text) {
   return n;
 }
 function radio(name, value, label, checked) {
-  const row = el('label', 'sr-make__choice');
-  const r = el('input');
+  const row = el('label', 'ui-opt');
+  const r = el('input', 'ui-radio');
   r.type = 'radio';
   r.name = name;
   r.value = value;
@@ -260,15 +261,16 @@ export function createRecorder(ctx) {
   let job = null; // { comp, g, crop, W, H, rec, chunks, began, seconds, source, url, phase, dest, mime }
   let made = null; // { blob, name }
 
-  const root = el('section', 'sr-make sr-make--small sr-float sr-over-clean');
+  const root = el('section', 'sr-make sr-make--small sr-float sr-over-clean ui-pop');
   root.id = 'sr-record';
   root.setAttribute('aria-labelledby', 'sr-record-title');
   root.hidden = true;
-  const head = el('div', 'sr-make__head');
-  const title = el('h2', 'sr-make__title', R.title);
+  const head = el('div', 'ui-pop__head');
+  const title = el('h2', 'ui-pop__title', R.title);
   title.id = 'sr-record-title';
   title.tabIndex = -1;
-  const closeBtn = el('button', 'sr-make__close', '×');
+  const closeBtn = el('button', 'ui-close');
+  closeBtn.appendChild(icon('x'));
   closeBtn.type = 'button';
   closeBtn.title = R.close;
   closeBtn.setAttribute('aria-label', R.close);
@@ -278,23 +280,25 @@ export function createRecorder(ctx) {
   const what = el('div', 'sr-make__choices');
   what.setAttribute('role', 'radiogroup');
   what.setAttribute('aria-label', R.whatLabel);
+  what.appendChild(el('p', 'ui-pop__eyebrow', R.whatLabel)).setAttribute('aria-hidden', 'true');
   const srcView = radio('sr-rec-src', 'view', R.sourceView, true);
   const srcPath = radio('sr-rec-src', 'path', R.sourcePath);
   const srcTrip = radio('sr-rec-src', 'trip', R.sourceTrip);
   what.append(srcView.row, srcPath.row, srcTrip.row);
   const lenWrap = el('label', 'sr-make__field');
-  lenWrap.appendChild(el('span', 'sr-make__fieldname', R.length));
-  const lenSel = el('select', 'sr-make__select');
+  lenWrap.appendChild(el('span', 'ui-pop__eyebrow', R.length));
+  const lenSel = el('select', 'ui-select ui-select--block');
   for (const s of VIEW_SECONDS) { const o = el('option', null, t(R.seconds, { n: s })); o.value = String(s); lenSel.appendChild(o); }
   lenSel.value = '20';
   lenWrap.appendChild(lenSel);
   const shapes = el('div', 'sr-make__choices');
   shapes.setAttribute('role', 'radiogroup');
   shapes.setAttribute('aria-label', R.shapeLabel);
+  shapes.appendChild(el('p', 'ui-pop__eyebrow', R.shapeLabel)).setAttribute('aria-hidden', 'true');
   const shapeRadios = Object.keys(CROPS).map((c, i) => radio('sr-rec-shape', c, R.crops[c], i === 0));
   for (const s of shapeRadios) shapes.appendChild(s.row);
-  const smoothRow = el('label', 'sr-make__check');
-  const smoothBox = el('input');
+  const smoothRow = el('label', 'ui-opt');
+  const smoothBox = el('input', 'ui-check');
   smoothBox.type = 'checkbox';
   smoothRow.append(smoothBox, el('span', null, R.smooth));
   const smoothNote = el('p', 'sr-make__note', R.smoothNote);
@@ -302,12 +306,12 @@ export function createRecorder(ctx) {
   const status = el('p', 'sr-make__status');
   status.setAttribute('role', 'status');
   const acts = el('div', 'sr-make__acts');
-  const goBtn = el('button', 'sr-make__btn sr-make__btn--primary', R.start);
+  const goBtn = el('button', 'ui-btn ui-btn--primary', R.start);
   goBtn.type = 'button';
-  const saveBtn = el('button', 'sr-make__btn', R.save);
+  const saveBtn = el('button', 'ui-btn', R.save);
   saveBtn.type = 'button';
   saveBtn.hidden = true;
-  const shareBtn = el('button', 'sr-make__btn', R.share);
+  const shareBtn = el('button', 'ui-btn', R.share);
   shareBtn.type = 'button';
   shareBtn.hidden = true;
   acts.append(goBtn, saveBtn, shareBtn);
@@ -450,7 +454,7 @@ export function createRecorder(ctx) {
 
   let sheet = null;
   function seat() {
-    if (isPhone() && !sheet) sheet = createSheet(root, { detents: ['peek', 'half', 'full'], initial: 'half', grab: '.sr-make__title', scrollers: '.sr-make__body', label: R.sheet });
+    if (isPhone() && !sheet) sheet = createSheet(root, { detents: ['peek', 'half', 'full'], initial: 'half', grab: '.ui-pop__title', scrollers: '.sr-make__body', label: R.sheet });
     else if (!isPhone() && sheet) { sheet.destroy(); sheet = null; }
     if (sheet) sheet.set('half');
   }
@@ -511,13 +515,13 @@ export async function filmRecord(ctx, film, search, g = window) {
   const panel = el('div', 'sr-make sr-make--film sr-float');
   panel.setAttribute('role', 'status');
   const line = el('p', 'sr-make__status', R.filmWarming);
-  const back = el('a', 'sr-make__btn', R.back);
+  const back = el('a', 'ui-btn', R.back);
   back.href = opts.end || appBase();
   back.hidden = true;
-  const again = el('button', 'sr-make__btn sr-make__btn--primary', R.save);
+  const again = el('button', 'ui-btn ui-btn--primary', R.save);
   again.type = 'button';
   again.hidden = true;
-  panel.append(el('p', 'sr-make__title', R.filmTitle), line, again, back);
+  panel.append(el('p', 'ui-pop__title', R.filmTitle), line, again, back);
   g.document.body.appendChild(panel);
   try {
     for (let i = 0; i < 4000 && !g.__srLayersReady; i += 1) await film.advance();

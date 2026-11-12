@@ -18,7 +18,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
-const FILES = ['site/css/site.css', 'site/css/ui.css', 'site/css/share.css', 'site/css/keyhint.css', 'site/css/embed.css', 'site/css/finishers.css', 'site/css/searchkinds.css', 'site/css/compare.css']; // 0077 W2-d
+const FILES = ['site/css/site.css', 'site/css/ui.css', 'site/css/share.css', 'site/css/keyhint.css', 'site/css/embed.css', 'site/css/finishers.css', 'site/css/searchkinds.css', 'site/css/compare.css', 'site/css/controls.css']; // 0077 W2-d; the control set, 2026-11-11
 const strip = (css) => css.replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' '));
 /** Every rule as {file, at, selector, body} (the reader tests/test_tokens.mjs uses). */
 export function rules(file, text) {
@@ -88,7 +88,8 @@ export function offGrid(ruleList) {
 // 2026-11-04 (release 1.8.0): 17 -> 5. Thirteen values moved onto the grid: the boot orbit's margin 22 -> 24,
 // the label dot's 5 -> 4, the toast's 10 -> 8, the tag's bottom 5 -> 4, its glyph gap 6 -> 8 and its readout
 // dot 6 -> 4, the off-screen chevron's gap 6 -> 4 and padding (3 10 3 6) -> (4 12 4 8), the collapse button's -6 -> -4.
-const OFF_GRID_KNOWN = { 14: 1, 3: 1, 5: 1, 22: 1, 0.75: 1 };
+// 2026-11-11 (the control set): 5 -> 4. The tabs' 3 px well went with the tabs' own look (they are .ui-seg pills).
+const OFF_GRID_KNOWN = { 14: 1, 5: 1, 22: 1, 0.75: 1 };
 {
   const found = offGrid(all);
   const bySize = new Map();
@@ -197,14 +198,11 @@ const OFF_GRID_KNOWN = { 14: 1, 3: 1, 5: 1, 22: 1, 0.75: 1 };
 // The guide's four first; then what the sheets also fill with ember, each with what it is. A new
 // ember fill is refused: a second orange button on a surface is two primaries.
 const EMBER_FILLS = [
-  [/^\.sr-btn--primary$/, 'the primary button'],
+  [/^\.ui-btn--primary(:hover|:disabled:hover)?$/, "the primary button, the view's one main action (css/controls.css; the card's actions, the welcome's Guided trip, photo mode's Save and the share sheet's Share wear it)"],
   [/^\.sr-time__dot$/, "the time pill's dot"],
-  [/\.sr-bracketed::(before|after)|\.sr-search__option\.is-active::|\.sr-search__row:has\(:focus-visible\)::|^:where\(.*\):focus-visible::(before|after)$|\.sr-tick$|\.sr-reticle|\.sr-skyreticle/, 'the bracket ticks: selection, focus, the reticle, and what the phone points at in the sky'],
-  [/^\.sr-act--primary$/, "the card's one primary action (the same button, on the card)"],
+  [/\.sr-tick$|\.sr-reticle|\.sr-skyreticle/, 'the reticle\'s ticks on the thing in space, and what the phone points at in the sky (selection and focus are blue since 2026-11-11)'],
   [/^\.sr-tripsheet__start$/, "the trip sheet's Start (its one primary)"],
-  [/^\.sr-welcome__go$/, "a first visit's Guided trip (the home's one primary, once per visitor: ui/welcome.js)"],
   [/^\.sr-trip__tb--play\.is-paused$/, 'Play while a trip is paused (the one thing to press)'],
-  [/^\.sr-photo__save$/, "the photo sheet's Save (its one primary)"],
   [/^\.sr-time__live$/, 'Back to now, shown only away from now'],
   [/^\.sr-tag__leader$/, "the tag's leader line: a mark, 1 px"],
   [/^\.sr-statusline\[data-state='failed'\] \.sr-statusline__dot$/, 'the status dot when a source failed: a mark'],
@@ -214,7 +212,7 @@ const EMBER_FILLS = [
   const seen = new Set();
   for (const r of all) {
     for (const [prop, value] of decls(r.body)) {
-      if (!/^background(-color|-image)?$/.test(prop) || !/var\(--sr-ember\)/.test(value)) continue;
+      if (!/^background(-color|-image)?$/.test(prop) || !/var\(--(sr-)?ember\)/.test(value)) continue; // --ember: the kit's name, css/controls.css
       for (const sel of selectors(r.selector)) {
         const i = EMBER_FILLS.findIndex(([re]) => re.test(sel));
         if (i < 0) problems.push(`${r.file} ${sel}: an ember fill that is not one of the named ones (the primary button, the pill's dot, the bracket ticks, ...). One primary per surface: use .sr-btn--primary, or name it in EMBER_FILLS with what it is`);

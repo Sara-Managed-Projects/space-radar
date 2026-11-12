@@ -25,6 +25,7 @@ import { createSheet } from './sheet.js';
 import { toast } from './share.js';
 import { write as writeUrl } from './urlstate.js';
 import { saveBlob } from './printcompose.js';
+import { icon } from './icons.js';
 import { createProjection, parseProj, projValue } from '../scene/projection.js';
 
 /** The sizes a saved frame is offered at: a dome master's side, a 360 frame's width (its height is half). */
@@ -59,15 +60,16 @@ export function createProjectPanel(ctx, gl) {
   const projection = createProjection(gl);
   let opener = null;
 
-  const root = el('section', 'sr-make sr-make--small sr-float sr-over-clean');
+  const root = el('section', 'sr-make sr-make--small sr-float sr-over-clean ui-pop');
   root.id = 'sr-dome';
   root.setAttribute('aria-labelledby', 'sr-dome-title');
   root.hidden = true;
-  const head = el('div', 'sr-make__head');
-  const title = el('h2', 'sr-make__title', D.title);
+  const head = el('div', 'ui-pop__head');
+  const title = el('h2', 'ui-pop__title', D.title);
   title.id = 'sr-dome-title';
   title.tabIndex = -1;
-  const closeBtn = el('button', 'sr-make__close', '×');
+  const closeBtn = el('button', 'ui-close');
+  closeBtn.appendChild(icon('x'));
   closeBtn.type = 'button';
   closeBtn.title = D.close;
   closeBtn.setAttribute('aria-label', D.close);
@@ -77,10 +79,11 @@ export function createProjectPanel(ctx, gl) {
   const kinds = el('div', 'sr-make__choices');
   kinds.setAttribute('role', 'radiogroup');
   kinds.setAttribute('aria-label', D.kindLabel);
+  kinds.appendChild(el('p', 'ui-pop__eyebrow', D.kindLabel)).setAttribute('aria-hidden', 'true');
   const radios = {};
   for (const [id, label] of [['', D.normal], ['dome', D.dome], ['360', D.wide]]) {
-    const row = el('label', 'sr-make__choice');
-    const r = el('input');
+    const row = el('label', 'ui-opt');
+    const r = el('input', 'ui-radio');
     r.type = 'radio';
     r.name = 'sr-dome-kind';
     r.value = id;
@@ -89,25 +92,25 @@ export function createProjectPanel(ctx, gl) {
     radios[id] = r;
   }
   const tiltWrap = el('label', 'sr-make__field');
-  tiltWrap.appendChild(el('span', 'sr-make__fieldname', D.tilt));
-  const tiltSel = el('select', 'sr-make__select');
+  tiltWrap.appendChild(el('span', 'ui-pop__eyebrow', D.tilt));
+  const tiltSel = el('select', 'ui-select ui-select--block');
   for (const d of TILTS) { const o = el('option', null, t(D.tiltDeg, { n: d })); o.value = String(d); tiltSel.appendChild(o); }
   tiltWrap.appendChild(tiltSel);
   const status = el('p', 'sr-make__status');
   status.setAttribute('role', 'status');
   const saveRow = el('div', 'sr-make__acts');
   const sizeWrap = el('label', 'sr-make__field');
-  sizeWrap.appendChild(el('span', 'sr-make__fieldname', D.size));
-  const sizeSel = el('select', 'sr-make__select');
+  sizeWrap.appendChild(el('span', 'ui-pop__eyebrow', D.size));
+  const sizeSel = el('select', 'ui-select ui-select--block');
   sizeWrap.appendChild(sizeSel);
-  const frameBtn = el('button', 'sr-make__btn sr-make__btn--primary', D.saveFrame);
+  const frameBtn = el('button', 'ui-btn ui-btn--primary', D.saveFrame);
   frameBtn.type = 'button';
   const skyWrap = el('label', 'sr-make__field');
-  skyWrap.appendChild(el('span', 'sr-make__fieldname', D.skySize));
-  const skySel = el('select', 'sr-make__select');
+  skyWrap.appendChild(el('span', 'ui-pop__eyebrow', D.skySize));
+  const skySel = el('select', 'ui-select ui-select--block');
   for (const s of SKY_SIZES) { const o = el('option', null, t(D.px, { n: fmt.int(s) })); o.value = String(s); skySel.appendChild(o); }
   skyWrap.appendChild(skySel);
-  const skyBtn = el('button', 'sr-make__btn', D.saveSky);
+  const skyBtn = el('button', 'ui-btn', D.saveSky);
   skyBtn.type = 'button';
   saveRow.append(sizeWrap, frameBtn, skyWrap, skyBtn);
   const credit = el('p', 'sr-make__note', D.credit);
@@ -191,7 +194,7 @@ export function createProjectPanel(ctx, gl) {
 
   let sheet = null;
   function seat() {
-    if (isPhone() && !sheet) sheet = createSheet(root, { detents: ['peek', 'half', 'full'], initial: 'half', grab: '.sr-make__title', scrollers: '.sr-make__body', label: D.sheet });
+    if (isPhone() && !sheet) sheet = createSheet(root, { detents: ['peek', 'half', 'full'], initial: 'half', grab: '.ui-pop__title', scrollers: '.sr-make__body', label: D.sheet });
     else if (!isPhone() && sheet) { sheet.destroy(); sheet = null; }
     if (sheet) sheet.set('half');
   }

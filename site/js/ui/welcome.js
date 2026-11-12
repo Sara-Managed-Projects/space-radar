@@ -98,7 +98,7 @@ function storageOf(win) {
 /** The words of an entrance, in a span of their own so the icon above them and the label stay two things. */
 function textSpan(doc, text) {
   const span = doc.createElement('span');
-  span.className = 'sr-welcome__label';
+  span.className = 'ui-btn__label';
   span.textContent = text;
   return span;
 }
@@ -138,20 +138,20 @@ export function createWelcome(ctx, opts = {}) {
     row.className = 'sr-welcome__actions';
     row.setAttribute('role', 'group');
     row.setAttribute('aria-label', E.label);
-    // Tonight and Explore share the quiet button's rules (`sr-welcome__look`); only Guided trip is the ember.
+    // Tonight and Explore are the plain tile (css/controls.css .ui-btn--tile); only Guided trip is the ember.
     const entrance = (cls, id, glyph, label, title) => {
       const b = document.createElement('button');
       b.type = 'button';
-      b.className = `sr-welcome__btn ${cls}`;
+      b.className = `ui-btn ui-btn--tile ${cls}`.trim();
       b.title = title;
       b.dataset.entrance = id;
       b.append(glyph, textSpan(doc, label));
       row.appendChild(b);
       return b;
     };
-    const tonight = entrance('sr-welcome__look', 'tonight', iconFrom('moon', MOON, 20), E.tonight, E.tonightTitle);
-    const look = entrance('sr-welcome__look', 'explore', icon('compass', 20), E.explore, E.exploreTitle);
-    const go = entrance('sr-welcome__go', 'trip', icon('play', 20), E.trip, E.tripTitle);
+    const tonight = entrance('', 'tonight', iconFrom('moon', MOON, 20), E.tonight, E.tonightTitle);
+    const look = entrance('', 'explore', icon('compass', 20), E.explore, E.exploreTitle);
+    const go = entrance('ui-btn--primary', 'trip', icon('play', 20), E.trip, E.tripTitle);
     root.appendChild(row);
     tonight.addEventListener('click', () => {
       hide('tonight');
@@ -206,7 +206,7 @@ export function createWelcome(ctx, opts = {}) {
     const hadFocus = root.contains(doc.activeElement);
     root.remove();
     if (hadFocus) {
-      const tab = doc.querySelector('.sr-tabs__tab[aria-selected="true"]');
+      const tab = doc.querySelector('.sr-tabs [aria-selected="true"]');
       if (tab) tab.focus({ preventScroll: true });
     }
   }

@@ -10,6 +10,8 @@
 //   [tour]     The tour (ui/onboarding.js, internal spec 0074; the maintainer, 2026-10-14: "on the right should
 //              appear another icon of onboarding"): fetched on the first press, a row of More on a phone
 //   [blog]     The journal at blog.spaceradar.ai (the maintainer, 2026-11-02), a link in a new tab, a row of More on a phone
+//   [games]    The team's space games at games.spaceradar.ai (the maintainer, 2026-11-11: off the explore panel, onto the rail,
+//              "animated"), a link in a new tab with the chrome's one slow breath (ui.css), a row of More on a phone
 //   [mail]     Free email updates (2026-11-10): a popover, #sr-sub, built by ui/subscribepop.js on the first press (the What
 //              to show pattern), a row of More on a phone. It opens only on a click; Escape, Close and a press outside shut it
 //   [github]   The repository, the mark from ui/github.js (the maintainer, 2026-10-02: the next icon after the eye)
@@ -62,6 +64,8 @@ const TOUR_PATH = ['M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z', 'M9.09 9a3 3 0 0
 // Lucide `newspaper` (ISC): the mark for the journal.
 // Lucide `mail` (ISC), the rectangle as a path: the envelope of the email updates.
 const MAIL_PATH = ['M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z', 'm22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7'];
+// Lucide `gamepad` (ISC), its rectangle, cross and buttons as one path: the Games link.
+const GAMEPAD_PATH = ['M6 12h4M8 10v4M15 13h.01M18 11h.01M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z'];
 const BLOG_PATH = ['M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2', 'M18 14h-8', 'M15 18h-5', 'M10 6h8v4h-8V6Z'];
 
 /** What a key press means to the rail, or null. Pure, like ui/cleanview.js wantsToggle. */
@@ -211,6 +215,17 @@ export function createRail(ctx, host) {
   blogLink.appendChild(icon(BLOG_PATH));
   root.appendChild(blogLink);
 
+  // --- Games: the same kind of link; its glow breathes (ui.css .sr-rail__btn--games::before) -------
+  const gamesLink = document.createElement('a');
+  gamesLink.className = 'sr-rail__btn sr-rail__btn--games';
+  gamesLink.href = COPY.games.href;
+  gamesLink.target = '_blank';
+  gamesLink.rel = 'noopener';
+  gamesLink.setAttribute('aria-label', COPY.games.title);
+  gamesLink.title = COPY.games.title;
+  gamesLink.appendChild(icon(GAMEPAD_PATH));
+  root.appendChild(gamesLink);
+
   // --- Email updates: the What to show pattern, its contents fetched on the first press ------------
   const subBtn = document.createElement('button');
   subBtn.type = 'button';
@@ -271,10 +286,12 @@ export function createRail(ctx, host) {
   menuRow('button', icon(HIDE_PATH), COPY.rail.menuHide, () => { if (ctx && ctx.cleanView) ctx.cleanView.set(true); });
   menuRow('button', icon(TOUR_PATH), COPY.rail.menuTour, toggleTour);
   menuRow('button', icon(MAIL_PATH), COPY.rail.subscribe, () => subscribe().then((s) => s && s.open(moreBtn)));
-  const blogRow = menuRow('a', icon(BLOG_PATH), COPY.rail.blog, () => {});
-  blogRow.href = COPY.rail.blogHref;
-  blogRow.target = '_blank';
-  blogRow.rel = 'noopener';
+  for (const [glyph, words, href] of [[BLOG_PATH, COPY.rail.blog, COPY.rail.blogHref], [GAMEPAD_PATH, COPY.games.label, COPY.games.href]]) {
+    const row = menuRow('a', icon(glyph), words, () => {});
+    row.href = href;
+    row.target = '_blank';
+    row.rel = 'noopener';
+  }
   // GitHub's own mark, cloned from the rail's link: the octicon is not redrawn (ui/github.js).
   const mark = gitHub && gitHub.querySelector('svg') ? gitHub.querySelector('svg').cloneNode(true) : icon([]);
   mark.setAttribute('width', '20');

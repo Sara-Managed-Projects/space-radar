@@ -194,11 +194,11 @@ export function openPhotoMode(ctx, opts = {}) {
   const bar = el('div', 'sr-photo__bar sr-float');
   bar.setAttribute('role', 'toolbar');
   bar.setAttribute('aria-label', P.barLabel);
-  const shapes = el('div', 'sr-photo__shapes');
+  const shapes = el('div', 'ui-seg sr-photo__shapes');
   shapes.setAttribute('role', 'group');
   shapes.setAttribute('aria-label', P.shapesLabel);
   const shapeBtns = SHAPES.map((id) => {
-    const b = button('sr-photo__seg', P.shapes[id], t(P.shapeTitle, { shape: P.shapes[id] }), '');
+    const b = button('ui-seg__btn', P.shapes[id], t(P.shapeTitle, { shape: P.shapes[id] }), '');
     b.dataset.shape = id;
     b.addEventListener('click', () => { shape = id; paint(); });
     shapes.appendChild(b);
@@ -207,7 +207,7 @@ export function openPhotoMode(ctx, opts = {}) {
   // The lens: a slider, because a field of view is a quantity and the picture answers as it moves.
   const lens = el('label', 'sr-photo__lens');
   const lensWord = el('span', 'sr-photo__label', P.lens);
-  const lensInput = el('input', 'sr-photo__range');
+  const lensInput = el('input', 'ui-range');
   lensInput.type = 'range';
   lensInput.min = String(LENS.min);
   lensInput.max = String(LENS.max);
@@ -230,23 +230,23 @@ export function openPhotoMode(ctx, opts = {}) {
   timeBox.setAttribute('role', 'group');
   timeBox.setAttribute('aria-label', P.timeLabel);
   const stepTitle = (dir) => t(P.timeTitle, { dir: dir < 0 ? P.earlier : P.later, unit: pill && typeof pill.unit === 'function' ? (COPY.timePill.unitWords[pill.unit()] || '') : '' }).trim();
-  const earlierBtn = button('sr-photo__btn', P.earlier, '', '');
-  const laterBtn = button('sr-photo__btn', P.later, '', '');
+  const earlierBtn = button('ui-btn', P.earlier, '', '');
+  const laterBtn = button('ui-btn', P.later, '', '');
   earlierBtn.addEventListener('click', () => { pill.step(-1); setTimeout(paint, 60); });
   laterBtn.addEventListener('click', () => { pill.step(1); setTimeout(paint, 60); });
   timeBox.append(earlierBtn, laterBtn);
   timeBox.hidden = !pill;
-  const captionBtn = button('sr-photo__btn', P.caption, P.captionTitle, '');
+  const captionBtn = button('ui-btn', P.caption, P.captionTitle, '');
   captionBtn.addEventListener('click', () => { withCaption = !withCaption; paint(); });
   // PNG: the same picture without JPEG's loss, for somebody who will edit it. Off by default: it is several times the bytes.
-  const pngBtn = button('sr-photo__btn', P.png, P.pngTitle, '');
+  const pngBtn = button('ui-btn', P.png, P.pngTitle, '');
   pngBtn.addEventListener('click', () => { asPng = !asPng; paint(); });
-  const saveBtn = button('sr-photo__btn sr-photo__save', P.save, P.saveTitle, 'download');
-  const closeBtn = button('sr-photo__close', '', P.done, 'x');
+  const saveBtn = button('ui-btn ui-btn--primary sr-photo__save', P.save, P.saveTitle, 'download');
+  const closeBtn = button('ui-close', '', P.done, 'x');
   closeBtn.setAttribute('aria-label', P.done);
   // The device's own share, straight from the frame (internal #397): built only where the browser
   // can hand a file on (navigator.canShare), so a desktop without it has no dead button.
-  const shareBtn = canShareFiles(typeof navigator !== 'undefined' ? navigator : null) ? button('sr-photo__btn sr-photo__share', P.share, P.shareTitle, '') : null;
+  const shareBtn = canShareFiles(typeof navigator !== 'undefined' ? navigator : null) ? button('ui-btn', P.share, P.shareTitle, '') : null;
   bar.append(shapes, lens, timeBox, captionBtn, pngBtn, ...(shareBtn ? [shareBtn] : []), saveBtn, closeBtn);
   root.append(...mattes, frame, bar);
   document.body.appendChild(root);
