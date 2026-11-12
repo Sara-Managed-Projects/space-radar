@@ -383,6 +383,15 @@ html.sr-phone:has(.sr-scalerail:not([hidden])) .sr-scenenote {
 html.sr-phone.sr-launchday:not([data-sheet='full']):has(.sr-scalerail:not([hidden])) .sr-scenenote {
   top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 2 * (44px + var(--sp-2)));
 }
+/* The size badge sits in the same spot (top bar + 8 px) on the Planets and Sun stages, so the note steps under it too,
+   and under both when the rail is up as well (the badge itself steps under the rail). Seen by the CI ui walk on the
+   Planets tab, 2026-11-12: the badge's text lay over the note's Sources button. */
+html.sr-phone:has(.sr-scalebadge:not([hidden])) .sr-scenenote {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 44px + var(--sp-2));
+}
+html.sr-phone:has(.sr-scalebadge:not([hidden])):has(.sr-scalerail:not([hidden])) .sr-scenenote {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 2 * (44px + var(--sp-2)));
+}
 /* With a card up, the band of scene above the sheet is the selection's: its tag sits beside Back, where the note
    would land (seen at 390 x 844 on Zhurong's card, 2026-11-08). The note is about the scene, so it waits, as it
    does at full; closing the card brings it back. */
