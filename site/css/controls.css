@@ -35,7 +35,7 @@
 .ui-btn--ghost{background:transparent}
 .ui-btn--quiet{color:var(--dim);background:transparent;box-shadow:none}
 .ui-btn--quiet:hover{color:var(--tx);background:var(--ui-wash);box-shadow:none}
-.ui-btn--icon{width:var(--ui-h);padding:0;border-radius:50%}
+.ui-btn--icon{flex:none;width:var(--ui-h);padding:0;border-radius:50%}
 .ui-btn--sm{min-height:var(--ui-h-sm);padding:0 12px;font-size:var(--ui-fs-sm);gap:4px}
 .ui-btn--sm svg{width:16px;height:16px}
 .ui-btn--sm.ui-btn--icon{width:var(--ui-h-sm);padding:0}
@@ -137,7 +137,7 @@
    the CI ui walk measure the element, not a hit area around it), so every interactive control is 44 px here. */
 @media (pointer: coarse){
 .ui-btn,.ui-btn--sm,.ui-select,.ui-select--sm,.ui-row,.ui-seg__btn,.ui-close,:is(button,a).ui-chip{min-height:44px}
-.ui-btn--icon,.ui-btn--sm.ui-btn--icon,.ui-close{min-width:44px}
+.ui-btn--icon,.ui-btn--sm,.ui-close{min-width:44px}
 .ui-seg{padding:2px;gap:0}
 .ui-opt{min-height:44px}
 .ui-range{height:44px}

@@ -190,7 +190,7 @@ check(/setAttribute\('aria-label', W\.close\)/.test(src) && typeof COPY.keyHint.
 check(hint.AUTO_HIDE_MS >= 8000 && hint.AUTO_HIDE_MS <= 15000, `it goes by itself after about 12 s (${hint.AUTO_HIDE_MS})`);
 const css = read('site/css/keyhint.css');
 check(!/infinite/.test(css), 'nothing in keyhint.css loops');
-check(/className = 'ui-close'|el\('button', 'ui-close'\)/.test(src) && /\.ui-close::after,[^{]*\{content:'';position:absolute;inset:-8px\}/.test(read('site/css/controls.css')), 'the close button is the set\'s, a 44 px target on a coarse pointer');
+check(/className = 'ui-close'|el\('button', 'ui-close'\)/.test(src) && /@media \(pointer: coarse\)\{\n[^}]*\.ui-close[^{]*\{min-height:44px\}[\s\S]*\.ui-close\{min-width:44px\}/.test(read('site/css/controls.css')), 'the close button is the set\'s, a 44 px target on a coarse pointer');
 check(/html\.sr-phone \.sr-keyhint \{[^}]*transition: bottom var\(--sr-slow\)/.test(css), 'on a phone the hint rises with the sheet, not ahead of it (its Close was 44 x 26, #543)');
 check(/prefers-reduced-motion: reduce\)\s*\{[\s\S]*?\.sr-keyhint\.is-playing \.sr-keyhint__cap,[\s\S]*?animation: none;/.test(css), 'reduced motion stills every keycap');
 check(/prefers-reduced-motion: reduce\)\s*\{[\s\S]*?transition: opacity 120ms linear;/.test(css), 'reduced motion is a 120 ms fade');
