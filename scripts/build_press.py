@@ -43,10 +43,13 @@ DEFAULT_HOST = "https://www.spaceradar.ai"
 # The README's pictures, with the words the README gives them. A file that is not here is not on
 # the page; a file here that is gone fails the build.
 PICTURES = [
-    ("hero.webp", "The Earth with today's clouds, the aurora and the satellites around it."),
-    ("saturn.webp", "Saturn and its rings, backlit, at a stop of the trip out past Jupiter."),
-    ("moon-landing.webp", "The Apollo 11 lunar module on the Moon, a stop of the Moon landings trip."),
-    ("phone.webp", "On a phone: the Earth, the aurora and the satellites above a bottom sheet."),
+    ("hero.webp", "The Earth with today's clouds, the night side's city lights and the satellites around it, every panel hidden."),
+    ("launch.webp", "A Falcon 9 lifting off at night, in the Moment of the first booster landing (22 December 2015)."),
+    ("saturn.webp", "Saturn backlit by the Sun, its rings lit from behind."),
+    ("moon-ground.webp", "Standing on the measured ground at an Apollo landing site, the lunar module's descent stage on the plain."),
+    ("black-hole.webp", "M87's black hole drawn in 3D, its shadow sized from its measured mass, beside the Event Horizon Telescope's pictures of 2017 and 2018 on its card."),
+    ("sky-street.webp", "Tonight's sky from a street near London, with the constellation pictures and the Tonight list."),
+    ("phone-earth.webp", "On a phone: the Earth and its satellites above the bottom sheet."),
 ]
 # The repository's social preview (scripts/build_social_preview.py): kept in assets/, copied into the kit.
 PREVIEW = ("social-preview.png", "The repository's social preview, 1280 by 640: the Earth and its satellites, the mark and the line "

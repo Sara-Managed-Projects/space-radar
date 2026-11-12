@@ -4,7 +4,7 @@
     python3 tests/test_press.py
 
 Asserted on a build into a temporary directory: five facts whose counts are the registry's; the
-README's four screenshots and the three SVGs copied and linked; every relative link resolving to
+README's screenshots named in build_press.PICTURES and the three SVGs copied and linked; every relative link resolving to
 a file of the build or of site/; the licence named from LICENSE; a contact through GitHub and no
 personal data (no address, no mailto:); no placeholder left; and that scripts/deploy.sh ships it.
 """
