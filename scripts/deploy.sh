@@ -329,8 +329,7 @@ if [ "$WHAT" != "assets" ]; then
     # The pages are sitemap-pages.xml since 2026-11-12 (sitemap.xml is the index of every site's sitemaps); until the
     # first deploy that ships it, the live list of pages is the old sitemap.xml.
     LIVE_HOST="$(python3 "$HERE/indexnow.py" host)"
-    python3 "$HERE/indexnow.py" fetch "$LIVE_HOST/sitemap-pages.xml" "$BUILT/live-sitemap.xml" 2>/dev/null
-    [ -s "$BUILT/live-sitemap.xml" ] || python3 "$HERE/indexnow.py" fetch "$LIVE_HOST/sitemap.xml" "$BUILT/live-sitemap.xml" \
+    { python3 "$HERE/indexnow.py" fetch "$LIVE_HOST/sitemap-pages.xml" "$BUILT/live-sitemap.xml" 2>/dev/null; [ -s "$BUILT/live-sitemap.xml" ] || python3 "$HERE/indexnow.py" fetch "$LIVE_HOST/sitemap.xml" "$BUILT/live-sitemap.xml"; } \
       || echo "warning: could not read the live sitemap; IndexNow will send nothing" >&2
   fi
   "${SYNC[@]}" "$APP/css" "s3://$BUCKET/css" \
