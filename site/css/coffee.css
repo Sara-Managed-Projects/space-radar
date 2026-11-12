@@ -1,24 +1,10 @@
 /* coffee.css -- the Buy Me a Coffee link of every Space Radar site: a drawn cup with steam and two coins, a plain link to
-   https://buymeacoffee.com/spaceradar (no script, no widget, nothing from the service loads before a click). The
-   maintainer, 2026-11-12: "some nice drawn icon (maybe colorful animated icon of coffee cup with coins, shaking somewhere
-   in the right bottom corner, but make sure it disappears when we click hide everything or on trips or on memories, so it
-   won't annoy people, and on blog, videos and models and static pages make sure it is not closing any content".
-
-   One piece, three hosts. The markup is templates/partials/coffee.html (public repo), byte for byte the kit's COFFEE
-   (web-kit/src/coffee.mjs, internal) and the link in site/index.html; this file is byte for byte the "coffee" block of the
-   kit's components.css (web-kit/tests/test_webkit.mjs --public holds both). Written in the kit's token names (--tx --dim
-   --atm --ember --line --bg --sans), which the map aliases in css/ui.css :root, plus the cup's own warm colours below.
-
-   Where it sits:
-   - in a footer (.foot, the static pages and every kit site): a row in the footer band, the cup and "Buy Me a Coffee";
-     from 1416 px, where the 1240 px page leaves a gutter of 80 px or more, the same link leaves the band for the
-     bottom-right corner of that gutter, the cup alone, so it never lies over the page's text;
-   - on the map (body > .coffee, css/ui.css): a floating cup bottom-right on a desktop, gone with the panels (clean view,
-     trips, Moments, the ground, the screensaver and the rest); on a phone a row of the More menu instead (ui/rail.js).
-
-   THE ONE OTHER LOOP (docs/DESIGN_PRINCIPLES.md rule 10, tests/test_tokens.mjs MAINTAINER_LOOP, the maintainer's request
-   above): every 8 s the cup tilts side to side and the coins hop, 0.6 s of motion in all, transform only. Still under
-   prefers-reduced-motion; display none or paused wherever the host hides it. Hover plays nothing more. */
+   https://buymeacoffee.com/spaceradar (no script, no widget, nothing loads before a click). Asked for by the maintainer on
+   2026-11-12: gone with "hide everything", trips and Moments on the map, and never over content anywhere. Markup:
+   templates/partials/coffee.html; the kit carries both byte for byte (docs/UI_COMPONENTS.md). The kit's token names, plus
+   the cup's warm colours. In a footer (.foot) it is a row; from 1416 px, where the 1240 px page leaves an 80 px gutter,
+   the cup alone in that gutter's bottom-right corner. The map places it in css/ui.css. The second named loop
+   (DESIGN_PRINCIPLES rule 10): every 8 s the cup tilts and the coins hop, 0.6 s of motion, still under reduced motion. */
 :root{--coffee-cup:#F6EBDD;--coffee-brew:#5B3421;--coffee-crema:#B87C4C;--coffee-coin:#F5C451;--coffee-coin-edge:#C98A1E;--coffee-line:#3A2416;--coffee-size:44px}
 .coffee{display:inline-flex;align-items:center;gap:8px;min-height:44px;white-space:nowrap;color:var(--tx);font-family:var(--sans);font-weight:600;line-height:1;text-decoration:none}
 .coffee:hover .coffee__t{color:var(--atm)}
