@@ -74,7 +74,7 @@ ok(r.returncode == 0, f"build_seo.py builds ({(r.stdout or r.stderr).strip().spl
 if r.returncode != 0:
     print(r.stderr)
     sys.exit(1)
-sitemap = (built / "sitemap.xml").read_text(encoding="utf-8")
+sitemap = (built / "sitemap-pages.xml").read_text(encoding="utf-8")
 
 index = (built / "read" / "index.html").read_text(encoding="utf-8")
 ok(f"<loc>{HOST}/read/index.html</loc>" in sitemap, "the index is in the sitemap")

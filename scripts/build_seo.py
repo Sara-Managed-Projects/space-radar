@@ -6,7 +6,9 @@
 writes, under DIR:
     o/<slug>.html   one page per notable object, from templates/object.html
     404.html        from templates/404.html
-    sitemap.xml     the home page, every trip page (site/t/), the Lab (site/lab/) and every object page
+    sitemap.xml     the sitemap INDEX of every Space Radar site (scripts/seo_sitemaps.py, docs/SEO_SITEMAPS.md): the two
+                    below, then the journal's, games', models' and video's own sitemaps on their hosts
+    sitemap-pages.xml  the home page, every trip page (site/t/), the Lab (site/lab/) and every object page
     llms.txt        every page of the sitemap for a language model, and llms-full.txt with their text (scripts/seo_llms.py)
     object-pages.json  {record id: slug}, for the app's share sheet (spec 0061 task 8)
     + everything scripts/seo_pages.py adds (the question pages, the 40 star systems, /events/, /teachers/ ...)
@@ -55,6 +57,7 @@ import seo_embed  # noqa: E402
 import seo_lab  # noqa: E402
 import seo_llms  # noqa: E402  (llms.txt and llms-full.txt)
 import indexnow  # noqa: E402
+import seo_sitemaps  # noqa: E402  (the www sitemap is an index of every site's)
 from seo_chrome import footer, header, styles  # noqa: E402
 from seo_subscribe import script as subscribe_script  # noqa: E402
 
@@ -298,9 +301,13 @@ def build(out: Path, host: str, today: str | None = None, snapshot_index: dict |
     dates = page_dates(host, pages)
     dates[f"{host}/embed/index.html"] = seo_dates.page_date(
         ["templates/embed.html", "templates/embed/generate.js", "scripts/seo_embed.py", "registry/embedders.yaml"], ROOT, lastmod())
-    (out / "sitemap.xml").write_text(sitemap(host, slugs, press=(out / "press" / "index.html").is_file(), dates=dates,
-                                             extra=["embed/index.html"] + lab_pages(), growth=extra["sitemap"]), encoding="utf-8")
-    # llms.txt and llms-full.txt, from that sitemap and the pages it names (scripts/seo_llms.py).
+    pages_xml = sitemap(host, slugs, press=(out / "press" / "index.html").is_file(), dates=dates,
+                        extra=["embed/index.html"] + lab_pages(), growth=extra["sitemap"])
+    (out / seo_sitemaps.PAGES).write_text(pages_xml, encoding="utf-8")
+    # sitemap.xml is the index of every site's sitemaps (scripts/seo_sitemaps.py), dated by the newest page of this one.
+    newest = max(re.findall(r"<lastmod>(\d{4}-\d{2}-\d{2})</lastmod>", pages_xml), default=lastmod())
+    (out / "sitemap.xml").write_text(seo_sitemaps.index(host, newest), encoding="utf-8")
+    # llms.txt and llms-full.txt, from the pages sitemap and the pages it names (scripts/seo_llms.py).
     seo_llms.write(out, host)
     # The share sheet links an object to its page (ui/sharesheet.js objectPageUrl), so that a link
     # preview shows the object's own title and picture. Which records have a page, and under which
@@ -352,7 +359,7 @@ def main(argv: list[str]) -> int:
         print("build_seo: --out must be outside site/; the built pages are not kept in git", file=sys.stderr)
         return 2
     n = build(out, host, today, snap, share_mode)
-    print(f"built {n} pages, the embed page, 404.html, sitemap.xml, sitemap-images.xml, llms.txt, llms-full.txt and object-pages.json into {out}")
+    print(f"built {n} pages, the embed page, 404.html, sitemap.xml (the index), sitemap-pages.xml, sitemap-images.xml, llms.txt, llms-full.txt and object-pages.json into {out}")
     return 0
 
 

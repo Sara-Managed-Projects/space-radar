@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Every trip has its own page in sitemap.xml, and the sitemap names no trip page that is not a trip (public #1271).
+"""Every trip has its own page in sitemap-pages.xml (the pages sitemap; sitemap.xml is the index of every site's), and the sitemap names no trip page that is not a trip (public #1271).
 
     python3 tests/test_sitemap_trips.py
 
@@ -44,8 +44,8 @@ def trip_urls(xml):
 def judge(trips, xml):
     """The findings of one sitemap against the list of trip ids."""
     listed = trip_urls(xml)
-    out = [f"trip {t} has no <loc> {HOST}/t/{t}.html in sitemap.xml" for t in trips if t not in listed]
-    out += [f"{HOST}/t/{t}.html is in sitemap.xml and {t} is not a trip of registry/tours.yaml" for t in listed if t not in trips]
+    out = [f"trip {t} has no <loc> {HOST}/t/{t}.html in sitemap-pages.xml" for t in trips if t not in listed]
+    out += [f"{HOST}/t/{t}.html is in sitemap-pages.xml and {t} is not a trip of registry/tours.yaml" for t in listed if t not in trips]
     out += [f"{HOST}/t/{t}.html is listed {len(v)} times" for t, v in listed.items() if len(v) > 1]
     out += [f"{HOST}/t/{t}.html has lastmod {v[0]!r}, not YYYY-MM-DD" for t, v in listed.items() if not re.fullmatch(r"\d{4}-\d\d-\d\d", v[0] or "")]
     return out
@@ -96,4 +96,4 @@ problems += [f"trips {v} share one description" for v in descs.values() if len(v
 if problems:
     print("FAIL the trip pages and the sitemap disagree:\n  " + "\n  ".join(problems))
     sys.exit(1)
-print(f"ok   all {len(trips)} trips are in sitemap.xml once, each with a page of its own words, and each rule was shown to fail first")
+print(f"ok   all {len(trips)} trips are in sitemap-pages.xml once, each with a page of its own words, and each rule was shown to fail first")

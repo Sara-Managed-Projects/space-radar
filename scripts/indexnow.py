@@ -4,7 +4,7 @@
     python3 scripts/indexnow.py key                       print the key; `host` prints the site's address
     python3 scripts/indexnow.py write-key DIR             write DIR/<key>.txt (the key file)
     python3 scripts/indexnow.py fetch URL FILE            save a sitemap (the live one, before a deploy)
-    python3 scripts/indexnow.py changed OLD NEW           the URLs of NEW sitemap.xml that are new or
+    python3 scripts/indexnow.py changed OLD NEW           the URLs of NEW sitemap-pages.xml that are new or
                                                           whose lastmod differs from OLD (a path or URL)
     python3 scripts/indexnow.py ping OLD NEW [--dry-run]  the above, POSTed to api.indexnow.org
 
@@ -56,6 +56,11 @@ def read_sitemap(source: str) -> dict[str, str] | None:
         root = ET.fromstring(data)
     except (OSError, urllib.error.URLError, ET.ParseError, ValueError) as e:
         print(f"indexnow: could not read {source}: {e}", file=sys.stderr)
+        return None
+    # Since 2026-11-12 the www sitemap.xml is an index of every site's sitemaps (scripts/seo_sitemaps.py) and the pages are
+    # sitemap-pages.xml. An index has no <url>: read as pages, every URL would look new and be sent, so it is no sitemap here.
+    if root.tag == f"{NS}sitemapindex":
+        print(f"indexnow: {source} is a sitemap index, not a list of pages", file=sys.stderr)
         return None
     return {(u.findtext(f"{NS}loc") or "").strip(): (u.findtext(f"{NS}lastmod") or "").strip()
             for u in root.findall(f"{NS}url")}

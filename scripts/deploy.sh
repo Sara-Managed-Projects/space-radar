@@ -15,7 +15,7 @@
 #   --app-only            skip the big assets; push HTML, CSS, JS, the vendored libraries (vendor/,
 #                         since 2026-10-07: they are code, stripped and stamped with the app),
 #                         the trip pages (t/), the Lab's simulators (lab/), robots.txt
-#                         and the pages scripts/build_seo.py builds (o/, sitemap.xml, 404.html,
+#                         and the pages scripts/build_seo.py builds (o/, sitemap.xml (the index), sitemap-pages.xml, 404.html,
 #                         object-pages.json, build.json (the commit this deploy is:
 #                         scripts/build_info.py), and what scripts/seo_pages.py adds: starlink/, satellites/,
 #                         iss/, planets-tonight/, events/, about/, sources/, accuracy/, teachers/, share/,
@@ -326,7 +326,11 @@ if [ "$WHAT" != "assets" ]; then
   # what the new one is compared with after the upload. Only when INDEXNOW=1; a failure here is a
   # warning and never stops the deploy (scripts/indexnow.py says why).
   if [ "${INDEXNOW:-}" = "1" ] && [ "$DRY_RUN" != "1" ]; then
-    python3 "$HERE/indexnow.py" fetch "$(python3 "$HERE/indexnow.py" host)/sitemap.xml" "$BUILT/live-sitemap.xml" \
+    # The pages are sitemap-pages.xml since 2026-11-12 (sitemap.xml is the index of every site's sitemaps); until the
+    # first deploy that ships it, the live list of pages is the old sitemap.xml.
+    LIVE_HOST="$(python3 "$HERE/indexnow.py" host)"
+    python3 "$HERE/indexnow.py" fetch "$LIVE_HOST/sitemap-pages.xml" "$BUILT/live-sitemap.xml" 2>/dev/null
+    [ -s "$BUILT/live-sitemap.xml" ] || python3 "$HERE/indexnow.py" fetch "$LIVE_HOST/sitemap.xml" "$BUILT/live-sitemap.xml" \
       || echo "warning: could not read the live sitemap; IndexNow will send nothing" >&2
   fi
   "${SYNC[@]}" "$APP/css" "s3://$BUCKET/css" \
@@ -512,6 +516,7 @@ if [ "$WHAT" != "assets" ]; then
   KEYFILE="$(python3 "$HERE/indexnow.py" key).txt"
   for f in "$SITE/index.html:text/html; charset=utf-8" "$BUILT/404.html:text/html; charset=utf-8" \
            "$SITE/robots.txt:text/plain; charset=utf-8" "$BUILT/sitemap.xml:application/xml; charset=utf-8" \
+           "$BUILT/sitemap-pages.xml:application/xml; charset=utf-8" \
            "$BUILT/sitemap-images.xml:application/xml; charset=utf-8" \
            "$BUILT/llms.txt:text/plain; charset=utf-8" "$BUILT/llms-full.txt:text/plain; charset=utf-8" \
            "$BUILT/object-pages.json:application/json; charset=utf-8" \
@@ -531,7 +536,7 @@ if [ "$WHAT" != "assets" ]; then
 fi
 
 if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
-  PATHS=("/" "/index.html" "/js/*" "/css/*" "/vendor/*" "/t/*" "/lab/*" "/o/*" "/press/*" "/embed/*" "/robots.txt" "/sitemap.xml" "/sitemap-images.xml" "/llms.txt" "/llms-full.txt" "/404.html" "/object-pages.json" "/manifest.webmanifest" "/build.json" "/sw.js")
+  PATHS=("/" "/index.html" "/js/*" "/css/*" "/vendor/*" "/t/*" "/lab/*" "/o/*" "/press/*" "/embed/*" "/robots.txt" "/sitemap.xml" "/sitemap-pages.xml" "/sitemap-images.xml" "/llms.txt" "/llms-full.txt" "/404.html" "/object-pages.json" "/manifest.webmanifest" "/build.json" "/sw.js")
   # The gzip copies keep their names too.
   [ "$PRECOMPRESS" = "1" ] && PATHS+=("/_gz/*")
   # The pages seo_pages.py built, each by its directory, and the pictures (share/) with them: all of
@@ -599,7 +604,7 @@ if [ "$WHAT" != "assets" ] && [ "${INDEXNOW:-}" = "1" ]; then
     echo "  would ping IndexNow for the pages that changed (INDEXNOW=1)"
   else
     echo "==> IndexNow: the pages that changed"
-    python3 "$HERE/indexnow.py" ping "$BUILT/live-sitemap.xml" "$BUILT/sitemap.xml" \
+    python3 "$HERE/indexnow.py" ping "$BUILT/live-sitemap.xml" "$BUILT/sitemap-pages.xml" \
       || echo "warning: the IndexNow ping failed; the deploy is not affected" >&2
   fi
 fi

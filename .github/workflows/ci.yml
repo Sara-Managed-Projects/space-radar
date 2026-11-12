@@ -297,7 +297,7 @@ jobs:
       # Public #1271: the trip pages carry the trip's own words, which only helps search if each trip is its own URL in
       # sitemap.xml. The trips of registry/tours.yaml are diffed against the sitemap both ways (check_seo.py only sees
       # the pages that exist), and each page has an H1 and a description of its own.
-      - name: "Every trip is its own URL in sitemap.xml, once, with a page of its own words"
+      - name: "Every trip is its own URL in sitemap-pages.xml, once, with a page of its own words"
         run: python3 tests/test_sitemap_trips.py
       # The long reads (registry/articles.yaml, registry/articles/*.md): built, in the sitemap, 600 to 1 000 words, a "Measured" heading,
       # a link into the map, every picture with alt text and a caption and under 300 kB, nothing unused.

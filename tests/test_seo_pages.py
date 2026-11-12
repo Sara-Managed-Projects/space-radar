@@ -153,7 +153,7 @@ if r.returncode != 0:
     sys.exit(1)
 
 yml = lambda n: yaml.safe_load((ROOT / "registry" / n).read_text(encoding="utf-8"))  # noqa: E731
-sitemap = (BUILT / "sitemap.xml").read_text(encoding="utf-8")
+sitemap = (BUILT / "sitemap-pages.xml").read_text(encoding="utf-8")
 in_map = lambda path: f"<loc>{HOST}/{path}</loc>" in sitemap  # noqa: E731
 tours = {t["id"] for t in yml("tours.yaml")["tours"]}
 
