@@ -5823,6 +5823,8 @@ COPY.skyLore.nearest = "Die Geschichte von {name}";
 // email updates (rail.subscribe), their popover and the row under Coming up (copy/en.subscribe.js emailUpdates;
 // comingUp is the old subscribe.heading, moved)
 COPY.rail.subscribe = "E-Mail-Neuigkeiten";
+COPY.rail.coffee = "Spendiere uns einen Kaffee";
+COPY.rail.coffeeLabel = "Space Radar auf Buy Me a Coffee unterstützen";
 COPY.games = {"label": "Spiele", "title": "Weltraumspiele des Space-Radar-Teams (öffnet in einem neuen Tab)", "href": "https://games.spaceradar.ai/"};
 COPY.emailUpdates = {
   "title": "Kostenlose Neuigkeiten per E-Mail",

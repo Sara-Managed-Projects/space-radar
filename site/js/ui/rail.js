@@ -292,6 +292,16 @@ export function createRail(ctx, host) {
     row.target = '_blank';
     row.rel = 'noopener';
   }
+  // Buy Me a Coffee: index.html's floating cup (css/coffee.css) is a desktop's; a phone has this row, the same drawing.
+  const cup = document.querySelector('body > .coffee');
+  if (cup) {
+    cup.setAttribute('aria-label', COPY.rail.coffeeLabel);
+    cup.title = COPY.rail.coffeeLabel;
+    const row = menuRow('a', cup.querySelector('svg').cloneNode(true), COPY.rail.coffee, () => {});
+    row.href = cup.href;
+    row.target = '_blank';
+    row.rel = 'noopener';
+  }
   // GitHub's own mark, cloned from the rail's link: the octicon is not redrawn (ui/github.js).
   const mark = gitHub && gitHub.querySelector('svg') ? gitHub.querySelector('svg').cloneNode(true) : icon([]);
   mark.setAttribute('width', '20');

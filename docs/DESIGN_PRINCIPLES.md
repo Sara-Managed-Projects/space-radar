@@ -49,8 +49,12 @@ Ten rules, in priority order. When two collide, the earlier one wins.
     or glows, and `prefers-reduced-motion` turns it into a fade. One named exception: the Games
     link on the tool rail (`.sr-rail__btn--games::before`) breathes a soft blue glow over 3.6 s,
     transform and opacity only, still under reduced motion and paused whenever the rail is out of
-    sight (`tests/test_tokens.mjs` `MAINTAINER_LOOP`). A second loop is a design decision, not a
-    pull request.
+    sight (`tests/test_tokens.mjs` `MAINTAINER_LOOP`). The second, also the maintainer's
+    (2026-11-12, "colorful animated icon of coffee cup with coins ... make sure it disappears when
+    we click hide everything or on trips or on memories, so it won't annoy people"): the Buy Me a
+    Coffee cup (`css/coffee.css`, `.coffee .coffee__cup` and `.coffee .coffee__coins`) tilts and its
+    coins hop once every 8 s, 0.6 s of motion, transform only, still under reduced motion and gone or
+    paused wherever the map hides its panels. A third loop is a design decision, not a pull request.
 
 In practice:
 

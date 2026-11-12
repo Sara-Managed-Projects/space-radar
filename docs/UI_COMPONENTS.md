@@ -189,6 +189,34 @@ When: a status or a tag (a span), or a filter you press (a button with `aria-pre
 
 `--accent` tints it with the thing's own `--a`. Don't: a chip as an action button (use `.ui-btn--sm`).
 
+## Beside the set: the Buy Me a Coffee link, `.coffee`
+
+Not a control but one shared piece, on every site: a drawn cup with steam and two coins, a plain link to
+`https://buymeacoffee.com/spaceradar` (a new tab, `rel="noopener"`, no script or widget from the service, nothing
+loaded before a click). The markup is [`templates/partials/coffee.html`](../templates/partials/coffee.html), the look
+[`site/css/coffee.css`](../site/css/coffee.css); the kit carries both byte for byte (`COFFEE` in
+`web-kit/src/coffee.mjs`, the "coffee" block of `components.css`), and `node web-kit/tests/test_webkit.mjs --public`
+holds them equal. Never copy it by hand: the map's `index.html` gets it from `scripts/gen_home_seo.py`, the static
+pages from `scripts/seo_chrome.py`, the kit's sites from `footer()`.
+
+```html
+<a class="coffee" href="https://buymeacoffee.com/spaceradar" target="_blank" rel="noopener"
+   aria-label="Support Space Radar on Buy Me a Coffee" title="Support Space Radar on Buy Me a Coffee">
+  <svg class="coffee__art" viewBox="0 0 48 48" aria-hidden="true" focusable="false">…</svg><span class="coffee__t">Buy Me a Coffee</span></a>
+```
+
+| where | how it sits |
+|---|---|
+| the map, a desktop | a 44 px glass circle bottom-right, the scene's inset in, under the pill, card, rail and toast layers; from 900 to 1099 px only with the panel folded (else it would touch the time pill); away while the controls hint holds the corner |
+| the map, a phone | never floating (the sheet and the top bar own the edges): a row of the More menu, the same drawing |
+| the map, hidden | the clear screen ("hide everything"), HUD only, filming, the opening shot, the embed, a trip, a Moment, the ground, the screensaver, an imagined world, Play, the flight editor, the share sheet; XR draws no page at all |
+| a static page, the journal, games, models, video | a row in the footer under the brand, the cup and its words; from 1416 px, where the 1240 px page leaves a gutter of 80 px or more, the same link floats in the bottom-right corner of that gutter, the cup alone, never over the text |
+
+Motion: every 8 s the cup tilts side to side and the coins hop, 0.6 s in all, transform only; still under
+`prefers-reduced-motion`, paused or gone wherever it is hidden. It is the second of the two named loops
+(`tests/test_tokens.mjs` `MAINTAINER_LOOP`, [DESIGN_PRINCIPLES.md](DESIGN_PRINCIPLES.md) rule 10).
+`tests/test_coffee.mjs` holds all of this.
+
 ## In the app
 
 Before (main on 2026-11-11) and after, at 1440 × 900 and on a 390 × 844 phone:

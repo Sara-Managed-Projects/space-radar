@@ -583,6 +583,8 @@ jobs:
         run: node tests/test_touch_targets.mjs
       - name: "One control set: every select, radio, checkbox, slider and close button in site/js/ui is css/controls.css's, and no retired look is left (docs/UI_COMPONENTS.md)"
         run: node tests/test_controls.mjs
+      - name: "Buy Me a Coffee: one plain link and one drawn cup on every site, a gentle named loop, gone with the panels and never floating on a phone (docs/UI_COMPONENTS.md)"
+        run: node tests/test_coffee.mjs
       - name: "A year in a minute: four worlds on the Sun's stage, drawn true, at 525 600"
         run: node tests/test_year_trip.mjs
       - name: "An Earth data map's key is one line in a phone's top bar while the sheet is at its peek (internal #386)"
