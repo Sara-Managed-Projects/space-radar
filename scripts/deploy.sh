@@ -608,7 +608,7 @@ fi
 # that got this far, the catalog of the models this project made (scripts/models_catalog.py: registry/models.yaml,
 # the .glb files, git's dates) goes to the models site's bucket as data/models-catalog.json, and that put rebuilds
 # every page of the site there. So a new model row reaches models.spaceradar.ai on the next deploy of this site with no
-# page work. Only when the bucket exists and this profile may see it (head-bucket); a failure is a warning and never
+# page work (stored max-age=0: the renderer reads it, nobody else). Only when the bucket exists and this profile may see it (head-bucket); a failure is a warning and never
 # fails the deploy, which has already succeeded. MODELS_BUCKET= (empty) turns it off.
 MODELS_BUCKET="${MODELS_BUCKET-space-radar-models-lifehub}"
 MODELS_REGION="${MODELS_REGION:-eu-north-1}"
@@ -621,7 +621,7 @@ if [ "$WHAT" != "assets" ] && [ -n "$MODELS_BUCKET" ]; then
     echo "==> the models catalog -> s3://$MODELS_BUCKET/data/models-catalog.json"
     if python3 "$HERE/models_catalog.py" --out "$BUILT/models-catalog.json"; then
       aws s3 cp "$BUILT/models-catalog.json" "s3://$MODELS_BUCKET/data/models-catalog.json" --region "$MODELS_REGION" \
-        --content-type "application/json; charset=utf-8" --cache-control "no-cache" \
+        --content-type "application/json; charset=utf-8" --cache-control "max-age=0" \
         || echo "warning: could not upload the models catalog; models.spaceradar.ai keeps the last one" >&2
     else
       echo "warning: scripts/models_catalog.py failed; models.spaceradar.ai keeps the last catalog" >&2
