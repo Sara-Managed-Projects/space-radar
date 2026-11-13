@@ -1,0 +1,29 @@
+{
+ "_about": "How this language writes what code fills in: numbers ({n1}), dates ({d1}), and the one line every translated page opens with (its link to the English original is <1>...</1>). docs/TRANSLATING.md, \"The pages a search engine reads\".",
+ "name": "العربية",
+ "english": "Arabic",
+ "status": "not started",
+ "numbers": {
+  "group": ",",
+  "decimal": ".",
+  "groupMin": 4
+ },
+ "months": [
+  "يناير",
+  "فبراير",
+  "مارس",
+  "أبريل",
+  "مايو",
+  "يونيو",
+  "يوليو",
+  "أغسطس",
+  "سبتمبر",
+  "أكتوبر",
+  "نوفمبر",
+  "ديسمبر"
+ ],
+ "date": "{d} {month} {y}",
+ "monthYear": "{month} {y}",
+ "dayMonth": "{d} {month}",
+ "notice": "هذه الصفحة ترجمة آلية من <1>الأصل الإنجليزي</1>."
+}

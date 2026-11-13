@@ -13,7 +13,9 @@
 export const PAGES_INDEX = 'object-pages.json';
 const PAGES_TIMEOUT_MS = 3000;
 
-const here = () => (typeof location !== 'undefined' && location.origin ? location.origin + String(location.pathname || '/').replace(/[^/]*$/, '') : '/');
+// The app's own folder: the document's base (the app shell under /es/ has <base href="../">, scripts/seo_i18n.py), else the page's.
+const here = () => (typeof document !== 'undefined' && document.baseURI ? String(document.baseURI).replace(/[?#].*$/, '').replace(/[^/]*$/, '')
+  : typeof location !== 'undefined' && location.origin ? location.origin + String(location.pathname || '/').replace(/[^/]*$/, '') : '/');
 
 /**
  * The object's own page when the deploy built one (`pages` is object-pages.json, {id: slug}), else

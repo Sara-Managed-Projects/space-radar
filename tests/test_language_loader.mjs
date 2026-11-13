@@ -35,6 +35,15 @@ assert.equal(pickLanguage('?lang=en', ['fr'], table), 'en', '?lang=en forces Eng
 assert.equal(pickLanguage('?lang=xx', ['fr'], table), 'en', 'a code nobody has written is English, and the browser is not asked');
 assert.equal(pickLanguage('?lang=constructor', [], table), 'en', 'a code that is a property of Object is not a language');
 assert.equal(pickLanguage('', ['fr-CA', 'en'], table), 'fr', 'the browser: the first language that is written and reviewed');
+// The app shell under /<code>/ (scripts/seo_i18n.py): the address says the language, before the browser does; ?lang= still wins.
+const { pathLanguage } = await import(href('copy/lang.js'));
+assert.equal(pickLanguage('', ['fr-CA'], table, '/es/'), 'es', '/es/ speaks Spanish, reviewed or not, whatever the browser prefers');
+assert.equal(pickLanguage('', [], table, '/site/es/index.html'), 'es', 'under a prefix too, and as index.html');
+assert.equal(pickLanguage('?lang=fr', [], table, '/es/'), 'fr', '?lang= is asked first');
+assert.equal(pickLanguage('?lang=en', [], table, '/es/'), 'en', 'and ?lang=en forces English there');
+assert.equal(pickLanguage('', [], table, '/xx/'), 'en', 'a folder that is no language is not one');
+assert.equal(pathLanguage('/es/o/jupiter.html', table), '', 'a page inside the folder is not the app shell');
+assert.equal(pathLanguage('/en/', table), '', 'English is the root, never /en/');
 assert.equal(pickLanguage('', ['es-ES', 'fr'], table), 'fr', 'the browser skips a language that has not been reviewed');
 assert.equal(pickLanguage('', ['es'], table), 'en', 'and a browser that only offers an unreviewed language gets English');
 assert.equal(pickLanguage('?lang=%E0%A4%A', [], table), 'en', 'garbage in the query does not throw');
@@ -127,7 +136,7 @@ for (const file of walk(JS)) {
   assert.ok(!/^(?:await\b|(?:const|let|var)\s+[^=\n]+=\s*await\b)/m.test(code), `${file} has a top-level await: the deploy's es2020 target refuses it`);
 }
 const langBytes = statSync(join(JS, 'copy/lang.js')).size;
-assert.ok(langBytes < 5200, `copy/lang.js is in the boot graph and must stay small (${langBytes} B as written, comments included)`); // 0077 W2-f: 3200 to 3500, three rows for fr, de, pt; 1.6.3: 3500 to 5200, six rows and the zh-Hant reading (its comments are the most of it: the served tree strips them)
+assert.ok(langBytes < 5800, `copy/lang.js is in the boot graph and must stay small (${langBytes} B as written, comments included)`); // 0077 W2-f: 3200 to 3500, three rows for fr, de, pt; 1.6.3: 3500 to 5200, six rows and the zh-Hant reading (its comments are the most of it: the served tree strips them); seo-languages: 5200 to 5800, the /<code>/ address rule (pathLanguage, 5674 B written)
 assert.ok(!/import\s*\(/.test(readFileSync(join(JS, 'copy/lang.js'), 'utf8').replace(/\/\/.*$/gm, '')), 'copy/lang.js only decides: it fetches nothing');
 
 // --- 4. the Spanish --------------------------------------------------------------------------------------

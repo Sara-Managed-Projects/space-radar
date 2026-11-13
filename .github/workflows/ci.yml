@@ -283,6 +283,12 @@ jobs:
         run: python3 scripts/gen_lab_index.py --check
       - name: The pages build, with one share picture each, and titles, descriptions, canonicals, pictures, JSON-LD, robots.txt, the sitemap and the image sitemap hold
         run: python3 scripts/build_seo.py --out "$RUNNER_TEMP/seo" --require-share && python3 scripts/check_seo.py --out "$RUNNER_TEMP/seo" --require-share
+      # The pages in other languages (scripts/seo_i18n.py, docs/TRANSLATING.md "The pages a search engine reads"): the catalog of what
+      # the English pages say is never behind them, and every translation keeps its slots and tags.
+      - name: "registry/seo-i18n/en/ holds every sentence the pages just built say, and every language's strings keep their {slots} and <tags>"
+        run: python3 scripts/seo_i18n.py extract --built "$RUNNER_TEMP/seo" --check && python3 scripts/seo_i18n.py check && python3 scripts/seo_i18n.py coverage --built "$RUNNER_TEMP/seo"
+      - name: "The pages in other languages: segments and slots, a page only when its own text is whole, hreflang both ways, the sitemaps, the translator's tools"
+        run: python3 tests/test_seo_i18n.py
       - name: The SEO build carries the card's words and no live number, and deploy.sh ships it
         run: python3 tests/test_seo.py
       # Spec 0061 task 8: the share sheet links an object to the page built above, by the map

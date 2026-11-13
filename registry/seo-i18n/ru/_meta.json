@@ -1,0 +1,43 @@
+{
+ "_about": "How this language writes what code fills in: numbers ({n1}), dates ({d1}), and the one line every translated page opens with (its link to the English original is <1>...</1>). docs/TRANSLATING.md, \"The pages a search engine reads\".",
+ "name": "Русский",
+ "english": "Russian",
+ "status": "not started",
+ "numbers": {
+  "group": " ",
+  "decimal": ",",
+  "groupMin": 5
+ },
+ "months": [
+  "января",
+  "февраля",
+  "марта",
+  "апреля",
+  "мая",
+  "июня",
+  "июля",
+  "августа",
+  "сентября",
+  "октября",
+  "ноября",
+  "декабря"
+ ],
+ "monthsStandalone": [
+  "январь",
+  "февраль",
+  "март",
+  "апрель",
+  "май",
+  "июнь",
+  "июль",
+  "август",
+  "сентябрь",
+  "октябрь",
+  "ноябрь",
+  "декабрь"
+ ],
+ "date": "{d} {month} {y} г.",
+ "monthYear": "{month} {y} г.",
+ "dayMonth": "{d} {month}",
+ "notice": "Эта страница — машинный перевод <1>английского оригинала</1>."
+}

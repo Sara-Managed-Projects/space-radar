@@ -11,6 +11,8 @@ Written by `scripts/build_seo.py` at deploy time, from `scripts/seo_sitemaps.py`
 ```xml
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <sitemap><loc>https://www.spaceradar.ai/sitemap-pages.xml</loc><lastmod>(newest page)</lastmod></sitemap>
+<sitemap><loc>https://www.spaceradar.ai/sitemap-pages-es.xml</loc><lastmod>(newest page)</lastmod></sitemap>
+(one per language with a page, in the app's order: es fr de pt ru uk zh hi he ar)
 <sitemap><loc>https://www.spaceradar.ai/sitemap-images.xml</loc><lastmod>(newest page)</lastmod></sitemap>
 <sitemap><loc>https://blog.spaceradar.ai/sitemap.xml</loc></sitemap>
 <sitemap><loc>https://games.spaceradar.ai/sitemap.xml</loc></sitemap>
@@ -23,6 +25,7 @@ Written by `scripts/build_seo.py` at deploy time, from `scripts/seo_sitemaps.py`
 | sitemap | made by | what it holds |
 |---|---|---|
 | `www…/sitemap-pages.xml` | `scripts/build_seo.py` `sitemap()` | the map, every trip, object, Lab and static page, each with its date |
+| `www…/sitemap-pages-<lang>.xml` | `scripts/seo_i18n.py` `build_languages()` | the pages built in that language (`/<lang>/…`), each `<url>` with `xhtml:link` alternates for every version that exists and `x-default` the English |
 | `www…/sitemap-images.xml` | `scripts/seo_share.py` | each page's share picture (Google's image extension) |
 | `blog…/sitemap.xml` | internal `blog/src/site-build.mjs` | every story, category and page of the journal |
 | `games…/sitemap.xml` | internal `games/src/games-build.mjs` | the games, with key art and trailers (image and video extensions) |
@@ -38,10 +41,23 @@ The rules it keeps:
 - Every site still names its own sitemap in its own `robots.txt`: `www` names the index, `sitemap-pages.xml` and
   `sitemap-images.xml`, and each of the other four names its own sitemap. Nothing depends on the index alone.
 - When a site adds a sitemap, its address goes into `OTHER_SITEMAPS` in `scripts/seo_sitemaps.py`.
+- The language sitemaps (since 2026-11-13) come right after `sitemap-pages.xml`, in the order of `site/js/copy/lang.js`, and only
+  for a language that has at least one page in this build (`seo_sitemaps.LANGUAGE_PAGES`). A page is in its language's sitemap
+  only when it is built in that language, which is only when its own text is translated whole (docs/TRANSLATING.md, "The pages a
+  search engine reads"). Each `<url>` carries Google's sitemap form of hreflang: an `xhtml:link rel="alternate"` for every language
+  the page exists in, itself included, and `x-default` for the English. `sitemap-pages.xml` stays the English pages, and its
+  entries gain the same alternates where a page has another language. The pages carry the same set as `<link rel="alternate">`.
+  A sitemap holds at most 50 000 URLs and 50 MB; a language has about 650.
+- `robots.txt` is written by the build (`site/robots.txt` and one `Sitemap:` line per language sitemap), so it names exactly the
+  sitemaps that exist.
 
 `scripts/check_seo.py` holds the build to this. It checks that `sitemap.xml` is a 0.9 `sitemapindex` listing exactly
-these addresses in this order, that each `www` one is in the build, that each address is https on a spaceradar.ai host,
-and that no entry is an index. `sitemap-pages.xml` keeps every rule the old `sitemap.xml` had. `tests/test_seo_growth.py`
+these addresses in this order (the language sitemaps exactly those of the languages with a page), that each `www` one is in the build, that each address is https on a spaceradar.ai host,
+and that no entry is an index. `sitemap-pages.xml` keeps every rule the old `sitemap.xml` had. For the languages (`check_languages()`): every URL of a
+language sitemap is a page of the build under its folder; every hreflang code is one of `en es fr de pt-BR ru uk zh-Hans hi he
+ar x-default`; every alternate names a page that exists and is reciprocal, in the pages and in the sitemaps alike; every language
+page's canonical is itself, its `<html lang dir>` is its language's (`rtl` for he and ar), it carries the machine-translation line
+linking the English, and it links its own language's version of a page wherever one exists; `robots.txt` names each language sitemap. `tests/test_seo_growth.py`
 and the refusals in `tests/test_refusals.py` show each rule failing. IndexNow (`scripts/indexnow.py`, opt-in in
 `deploy.sh`) compares the live `sitemap-pages.xml` with the new one. For the first deploy, when the live site has no
 `sitemap-pages.xml` yet, it reads the old `sitemap.xml`. It treats an index as no list of pages, so it never sends every

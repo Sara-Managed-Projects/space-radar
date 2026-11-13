@@ -381,8 +381,6 @@ if [ "$WHAT" != "assets" ]; then
   # to `/#trip=<id>`. HTML, no-cache, like index.html: a page that says the wrong thing about a
   # trip for a cache lifetime is a share that lies. --delete, because a trip that left the
   # registry must not keep a page that opens the app on nothing.
-  "${SYNC[@]}" "$SITE/t"   "s3://$BUCKET/t" \
-    --cache-control "$REVALIDATE" --content-type "text/html; charset=utf-8" --delete
   # THE ONE-MODEL VIEWER (site/model/, docs/EMBEDDING.md "One 3D model"): a page, its script and the index
   # scripts/models_catalog.py writes. models.spaceradar.ai frames it on every model page. Revalidated like the app and
   # --delete; it imports the vendored three.js uploaded above, so it needs no copy of its own.
@@ -417,6 +415,23 @@ if [ "$WHAT" != "assets" ]; then
   # b200-f6-learn: end
   python3 "$HERE/build_seo.py" --out "$BUILT" ${SNAP[@]+"${SNAP[@]}"} || die "scripts/build_seo.py failed"
   python3 "$HERE/check_seo.py" --out "$BUILT" || die "scripts/check_seo.py refused the built pages"
+  # One static page per trip (spec 0032): the share URL a crawler reads, which sends a browser on to `/#trip=<id>`. HTML,
+  # revalidated like index.html: a page that says the wrong thing about a trip for a cache lifetime is a share that lies.
+  # --delete, because a trip that left the registry must not keep a page that opens the app on nothing. Uploaded from the
+  # BUILD since the pages in other languages (scripts/seo_i18n.py): build_seo.py copies site/t/ there with each page's
+  # hreflang, which only the build knows.
+  "${SYNC[@]}" "$BUILT/t"   "s3://$BUCKET/t" \
+    --cache-control "$REVALIDATE" --content-type "text/html; charset=utf-8" --delete
+  # THE OTHER LANGUAGES (scripts/seo_i18n.py, docs/TRANSLATING.md "The pages a search engine reads"): /<code>/ holds
+  # every page whose own text that language's catalog covers whole, the app shell (/<code>/index.html) among them, and
+  # nothing else: their pictures, styles and scripts are the root's. HTML only, revalidated like the English pages and
+  # --delete; a language with no page this time is synced from an empty folder, so its old pages leave the site with it.
+  mkdir -p "$BUILT/.no-language"
+  for code in es fr de pt ru uk zh hi he ar; do
+    from="$BUILT/$code"; [ -d "$from" ] || from="$BUILT/.no-language"
+    "${SYNC[@]}" "$from" "s3://$BUCKET/$code" --cache-control "$REVALIDATE" \
+      --exclude "*" --include "*.html" --content-type "text/html; charset=utf-8" --delete
+  done
   # THE LAB (site/lab/, docs/ADD_A_SIMULATOR.md): small stand-alone simulator pages, each ONE HTML file with no
   # library and no network request, and the list scripts/gen_lab_index.py writes from them. Uploaded from the
   # BUILD, not site/lab/: scripts/seo_lab.py (run by build_seo.py) copies each one with its canonical, Open Graph
@@ -510,6 +525,9 @@ if [ "$WHAT" != "assets" ]; then
   # the install if one does not match, so sw.js goes up after everything it names. No-cache, like
   # index.html: a worker a browser cannot re-read is a release nobody can be moved off. The
   # manifest is no-cache too (a name or an icon list that changed must not wait a month).
+  # index.html is uploaded from the build (build_seo.py gives it its hreflang), so the stamp hashes that copy: it goes into the
+  # overlay the stamp reads, or is the overlay's one file when nothing was minified.
+  if [ ${#OVERLAY[@]} -gt 0 ]; then cp "$BUILT/index.html" "$BUILT/min/index.html"; else mkdir -p "$BUILT/shell" && cp "$BUILT/index.html" "$BUILT/shell/index.html" && OVERLAY=(--overlay "$BUILT/shell"); fi
   python3 "$HERE/stamp_sw.py" --site "$SITE" ${OVERLAY[@]+"${OVERLAY[@]}"} --out "$BUILT/sw.js" || die "scripts/stamp_sw.py failed"
   # WHAT THIS DEPLOY IS (public #291, scripts/build_info.py): build.json at the root says the commit,
   # its time, the time of this build and the worker's stamp just made. It is given nothing about
@@ -524,9 +542,20 @@ if [ "$WHAT" != "assets" ]; then
   # public by design and the file is always uploaded; it is how Bing and the others check that we own
   # the site. Asking them to look at changed pages is a separate, opt-in step below.
   KEYFILE="$(python3 "$HERE/indexnow.py" key).txt"
-  for f in "$SITE/index.html:text/html; charset=utf-8" "$BUILT/404.html:text/html; charset=utf-8" \
-           "$SITE/robots.txt:text/plain; charset=utf-8" "$BUILT/sitemap.xml:application/xml; charset=utf-8" \
+  # The language sitemaps (one per language that has a page this time, $BUILT/lang-dirs.txt); a language that has none any
+  # more loses its old one, as its pages left with the empty sync above.
+  LANGMAPS=()
+  for code in es fr de pt ru uk zh hi he ar; do
+    if [ -f "$BUILT/sitemap-pages-$code.xml" ]; then
+      LANGMAPS+=("$BUILT/sitemap-pages-$code.xml:application/xml; charset=utf-8")
+    elif [ "$DRY_RUN" != "1" ]; then
+      aws s3 rm "s3://$BUCKET/sitemap-pages-$code.xml" --region "$REGION" >/dev/null 2>&1 || true
+    fi
+  done
+  for f in "$BUILT/index.html:text/html; charset=utf-8" "$BUILT/404.html:text/html; charset=utf-8" \
+           "$BUILT/robots.txt:text/plain; charset=utf-8" "$BUILT/sitemap.xml:application/xml; charset=utf-8" \
            "$BUILT/sitemap-pages.xml:application/xml; charset=utf-8" \
+           ${LANGMAPS[@]+"${LANGMAPS[@]}"} \
            "$BUILT/sitemap-images.xml:application/xml; charset=utf-8" \
            "$BUILT/llms.txt:text/plain; charset=utf-8" "$BUILT/llms-full.txt:text/plain; charset=utf-8" \
            "$BUILT/object-pages.json:application/json; charset=utf-8" \
@@ -547,6 +576,8 @@ fi
 
 if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
   PATHS=("/" "/index.html" "/js/*" "/css/*" "/vendor/*" "/t/*" "/model/*" "/lab/*" "/o/*" "/press/*" "/embed/*" "/robots.txt" "/sitemap.xml" "/sitemap-pages.xml" "/sitemap-images.xml" "/llms.txt" "/llms-full.txt" "/404.html" "/object-pages.json" "/manifest.webmanifest" "/build.json" "/sw.js")
+  # Every language's folder and sitemap, whether it has pages this time or lost them (scripts/seo_i18n.py).
+  for code in es fr de pt ru uk zh hi he ar; do PATHS+=("/$code/*" "/sitemap-pages-$code.xml"); done
   # The gzip copies keep their names too.
   [ "$PRECOMPRESS" = "1" ] && PATHS+=("/_gz/*")
   # The pages seo_pages.py built, each by its directory, and the pictures (share/) with them: all of
@@ -593,7 +624,7 @@ if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
       [ "$want" = "$got" ] || die "the edge answers $path with ETag '$got', and the file just uploaded is '$want': the old build is still being served. Run the invalidation again: aws cloudfront create-invalidation --distribution-id $DISTRIBUTION --paths '/*'"
       echo "    the edge serves the new $path"
     }
-    edge_check index.html "$SITE/index.html"
+    edge_check index.html "$BUILT/index.html"
     edge_check js/main.js "$APP/js/main.js"
   fi
   if [ "$WHAT" != "app" ]; then

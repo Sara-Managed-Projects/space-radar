@@ -46,6 +46,12 @@ THE GROWTH PAGES (scripts/seo_pages.py, scripts/seo_share.py), held to the same 
                site's title and summary and names every page of the sitemap; llms-full.txt holds each one's text.
   A page of the embed gallery (embed/index.html) is judged like any indexable page above.
 
+THE OTHER LANGUAGES (scripts/seo_i18n.py): check_languages() below. The index lists sitemap-pages-<code>.xml for exactly
+the languages with a page, after sitemap-pages.xml and in the app's order; robots.txt names each; every URL of a language
+sitemap is a page of the build; every hreflang code is valid; every alternate is reciprocal, in the pages and in the
+sitemaps; every language page's canonical is itself, its <html lang>/dir are its language's, it says it was
+machine-translated and links the English, and it links its own language's pages where they exist.
+
 Run:  python3 scripts/build_seo.py --out /tmp/seo && python3 scripts/check_seo.py --out /tmp/seo
       python3 scripts/check_seo.py --root <dir> --out <dir>   # another site/ (the refusal tests)
 """
@@ -55,6 +61,7 @@ from __future__ import annotations
 import html
 import json
 import os
+import posixpath
 import re
 import struct
 import sys
@@ -64,6 +71,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import indexnow  # noqa: E402
+import seo_i18n  # noqa: E402  (the languages: their codes and hreflang values)
 import seo_sitemaps  # noqa: E402
 from seo_footer import REQUIRED_EXTERNAL, REQUIRED_INTERNAL  # noqa: E402
 
@@ -76,7 +84,7 @@ TITLE_MAX = 60
 DESC_MIN, DESC_MAX = 70, 160
 DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 # Built directories that are not pages of the growth set (the press page has its own builder and test).
-NOT_GROWTH = {"o", "press", "share", "embed", "lab"}  # press, the embed gallery and the Lab have their own builders; they are judged by the rules above and check_lab()
+NOT_GROWTH = {"o", "press", "share", "embed", "lab", "t", *seo_i18n.LANGS}  # press, the embed gallery and the Lab have their own builders; they are judged by the rules above and check_lab()
 FOOTER_PAGES = ("../about/index.html", "../sources/index.html", "../accuracy/index.html")
 IMG_NS = "http://www.google.com/schemas/sitemap-image/1.1"
 
@@ -93,6 +101,10 @@ class Head(HTMLParser):
         self.ld: list[str] = []
         self.h1 = 0
         self.footer_links: list[tuple[str, str]] = []  # (href, rel) of every <a> inside a <footer>
+        self.alternates: list[tuple[str, str]] = []  # (hreflang, href) of every <link rel="alternate" hreflang>
+        self.html_lang, self.html_dir = "", ""
+        self.note: list[str] = []  # the href of the link in the machine-translation note (data-i18n-note)
+        self._note = False
         self._footer = 0
         self._in: str | None = None
         self._buf: list[str] = []
@@ -109,16 +121,26 @@ class Head(HTMLParser):
                 self.meta.setdefault(key.lower(), []).append(a.get("content", ""))
         elif tag == "link" and a.get("rel"):
             self.links.setdefault(a["rel"].lower(), []).append(a.get("href", ""))
+            if a["rel"].lower() == "alternate" and "hreflang" in a:
+                self.alternates.append((a["hreflang"], a.get("href", "")))
+        elif tag == "html":
+            self.html_lang, self.html_dir = a.get("lang", ""), a.get("dir", "")
+        elif tag == "p" and "data-i18n-note" in a:
+            self._note = True
         elif tag == "footer":
             self._footer += 1
         elif tag == "a" and "href" in a:
             self.hrefs.append(a["href"])
+            if self._note:
+                self.note.append(a["href"])
             if self._footer:
                 self.footer_links.append((a["href"], a.get("rel", "").lower()))
         elif tag == "h1":
             self.h1 += 1
 
     def handle_endtag(self, tag):
+        if tag == "p":
+            self._note = False
         if tag == "footer" and self._footer:
             self._footer -= 1
         if self._in == "title" and tag == "title":
@@ -204,7 +226,8 @@ def check(root: Path, built: Path, require_share: bool = False) -> list[str]:
     say = problems.append
 
     # --- robots.txt -------------------------------------------------------------------------
-    robots = site / "robots.txt"
+    robots = built / "robots.txt" if (built / "robots.txt").is_file() else site / "robots.txt"  # the build's names the language sitemaps
+    codes = language_codes(built)
     if not robots.is_file():
         say("site/robots.txt is missing")
     else:
@@ -239,7 +262,7 @@ def check(root: Path, built: Path, require_share: bool = False) -> list[str]:
                     say(f"sitemap.xml: {loc} has lastmod {lastmod!r}, not YYYY-MM-DD")
                 if loc.startswith(HOST + "/") and not (built / loc[len(HOST) + 1:]).is_file():
                     say(f"sitemap.xml: {loc} names built/{loc[len(HOST) + 1:]}, which does not exist")
-            want = seo_sitemaps.own(HOST) + list(seo_sitemaps.OTHER_SITEMAPS)
+            want = seo_sitemaps.own(HOST, [f"sitemap-pages-{c}.xml" for c in codes]) + list(seo_sitemaps.OTHER_SITEMAPS)
             if locs != want:
                 say(f"sitemap.xml lists {locs}; it should list, in this order, {want} (scripts/seo_sitemaps.py)")
         except ET.ParseError as e:
@@ -293,10 +316,13 @@ def check(root: Path, built: Path, require_share: bool = False) -> list[str]:
 
     # --- the pages --------------------------------------------------------------------------
     growth = [f for d in sorted(built.iterdir()) if d.is_dir() and d.name not in NOT_GROWTH for f in sorted(d.glob("*.html"))]
-    files = [(site, site / "index.html"), (built, built / "404.html")] \
+    # The home page and the trips as deployed: build_seo.py copies them from site/ into the build with their hreflang.
+    home = (built, built / "index.html") if (built / "index.html").is_file() else (site, site / "index.html")
+    trips = built / "t" if (built / "t").is_dir() else site / "t"
+    files = [home, (built, built / "404.html")] \
         + [(built, f) for f in sorted((built / "o").glob("*.html"))] \
         + [(built, f) for f in growth] \
-        + [(site, f) for f in sorted((site / "t").glob("*.html"))] \
+        + [(trips.parent if trips.parent == built else site, f) for f in sorted(trips.glob("*.html"))] \
         + ([(built, built / "embed" / "index.html")] if (built / "embed" / "index.html").is_file() else [])
     manifest_f = built / "share-manifest.json"
     manifest = json.loads(manifest_f.read_text(encoding="utf-8")) if manifest_f.is_file() else {"drawn": False}
@@ -319,7 +345,7 @@ def check(root: Path, built: Path, require_share: bool = False) -> list[str]:
         url = page_url(base, f)
         # The growth rules (own twitter:image and share picture, one H1, the footer's pages) are for the pages scripts/seo_pages.py and
         # build_seo.py make; the embed gallery (scripts/seo_embed.py) is judged by the rules above it only.
-        growth_page = base == built and f.name != "404.html" and f.parent.name != "embed"
+        growth_page = base == built and f.name != "404.html" and f.parent.name not in ("embed", "t") and f != built / "index.html"
         # The footer is on the home page, the object pages, the 404 page and the pages built beside
         # them; a trip page is a redirect stub (its body is the trip's own cards) and has none.
         if f.parent.name != "t":
@@ -485,7 +511,217 @@ def check(root: Path, built: Path, require_share: bool = False) -> list[str]:
         say("sitemap-pages.xml lists the IndexNow key file")
 
     check_lab(site, built, say)
+    check_languages(site, built, say, robots.read_text(encoding="utf-8") if robots.is_file() else "")
     return problems
+
+
+# --- the pages in other languages (scripts/seo_i18n.py) ------------------------------------------------------------
+
+XHTML_NS = "http://www.w3.org/1999/xhtml"
+HREFLANG = {code: tag for code, tag in seo_i18n.TAG.items()}
+VALID_HREFLANG = set(HREFLANG.values()) | {"x-default"}
+SITEMAP_MAX_URLS, SITEMAP_MAX_BYTES = 50000, 50 * 1024 * 1024
+
+
+def language_codes(built: Path) -> list[str]:
+    """The languages this build has pages in: a folder built/<code>/ with an HTML page, in the app's order."""
+    return [c for c in seo_i18n.LANGS if (built / c).is_dir() and next((built / c).rglob("*.html"), None) is not None]
+
+
+def _url_path(url: str) -> str:
+    return url[len(HOST) + 1:].split("#")[0] if url.startswith(HOST + "/") else ""
+
+
+def _file_of(site: Path, built: Path, url: str) -> Path | None:
+    rel = _url_path(url)
+    if not url.startswith(HOST + "/"):
+        return None
+    rel = rel or "index.html"
+    if rel.endswith("/"):
+        rel += "index.html"
+    for base in (built, site):
+        if (base / rel).is_file():
+            return base / rel
+    return None
+
+
+def _lang_of(url: str) -> str:
+    first = _url_path(url).split("/")[0]
+    return first if first in seo_i18n.LANGS else "en"
+
+
+def _english_of(url: str) -> str:
+    code = _lang_of(url)
+    return url if code == "en" else HOST + "/" + _url_path(url)[len(code) + 1:]
+
+
+def check_alternates(name: str, url: str, alts: list[tuple[str, str]], site: Path, built: Path, say) -> frozenset:
+    """One page's (or one sitemap entry's) hreflang set: valid codes, each once; the page itself among them; x-default the
+    English page; each a page that exists, in the language its code says. Returns the set, to be compared across pages."""
+    seen = {}
+    for code, href in alts:
+        if code not in VALID_HREFLANG:
+            say(f"{name}: hreflang {code!r} is not one of {sorted(VALID_HREFLANG)}")
+            continue
+        if code in seen:
+            say(f"{name}: hreflang {code} is given twice")
+        seen[code] = href
+        if _file_of(site, built, href) is None:
+            say(f"{name}: hreflang {code} names {href}, which is not a page of this build")
+        elif code != "x-default" and HREFLANG.get(_lang_of(href)) != code:
+            say(f"{name}: hreflang {code} names {href}, a page in {_lang_of(href)}")
+    if alts:
+        mine = HREFLANG[_lang_of(url)]
+        if seen.get(mine) != url:
+            say(f"{name}: its hreflang set does not name the page itself ({mine} {url})")
+        if seen.get("x-default") != _english_of(url):
+            say(f"{name}: hreflang x-default is {seen.get('x-default')}, not the English page {_english_of(url)}")
+        if "en" not in seen:
+            say(f"{name}: its hreflang set has no English page")
+    return frozenset((c, h) for c, h in seen.items())
+
+
+def _sitemap_rows(f: Path, say) -> list[tuple[str, str, list[tuple[str, str]]]]:
+    """(loc, lastmod, [(hreflang, href)]) of each <url>."""
+    try:
+        root_el = ET.parse(f).getroot()
+    except ET.ParseError as e:
+        say(f"{f.name} does not parse: {e}")
+        return []
+    if root_el.tag != f"{{{NS}}}urlset":
+        say(f"{f.name}: the root is {root_el.tag}, not a 0.9 urlset")
+    rows = []
+    for u in root_el.findall(f"{{{NS}}}url"):
+        alts = [(x.get("hreflang", ""), x.get("href", "")) for x in u.findall(f"{{{XHTML_NS}}}link") if x.get("rel") == "alternate"]
+        rows.append(((u.findtext(f"{{{NS}}}loc") or "").strip(), (u.findtext(f"{{{NS}}}lastmod") or "").strip(), alts))
+    return rows
+
+
+def check_languages(site: Path, built: Path, say, robots_text: str) -> None:
+    """The pages in other languages (scripts/seo_i18n.py, docs/SEO_SITEMAPS.md):
+      sitemaps   one sitemap-pages-<code>.xml per language with a page, named by robots.txt (and by the index, checked
+                 above); under 50 000 URLs and 50 MB; every URL a page of the build in that language, with a YYYY-MM-DD
+                 lastmod; every page of the language in it; each entry's xhtml:link alternates valid and reciprocal.
+      pages      <html lang> the language's code and dir="rtl" for he and ar ("ltr" otherwise); a canonical that is the page
+                 itself; og:url the same; a title of at most 60 characters and (but the Lab's) a description of 70 to 160;
+                 hreflang for every version that exists and only those, x-default the English page, reciprocal on every
+                 page they name (English pages included); the machine-translation note linking the English original; no
+                 link to an English page that exists in the page's own language.
+    """
+    codes = language_codes(built)
+    for code in seo_i18n.LANGS:
+        sm = built / f"sitemap-pages-{code}.xml"
+        if code in codes and not sm.is_file():
+            say(f"built/{sm.name} is missing, and built/{code}/ has pages")
+        elif sm.is_file() and code not in codes:
+            say(f"built/{sm.name} exists, and built/{code}/ has no page")
+        if code in codes and not re.search(rf"^Sitemap:\s*{re.escape(HOST)}/sitemap-pages-{code}\.xml\s*$", robots_text, re.M):
+            say(f"robots.txt does not name {HOST}/sitemap-pages-{code}.xml")
+    # every hreflang set, from the pages and from the sitemaps, by URL
+    page_sets: dict[str, frozenset] = {}
+    map_sets: dict[str, frozenset] = {}
+    # English pages that carry alternates
+    for f in sorted(built.rglob("*.html")):
+        rel = f.relative_to(built).as_posix()
+        if rel.split("/")[0] in seo_i18n.LANGS:
+            continue
+        h = Head()
+        h.feed(f.read_text(encoding="utf-8"))
+        if h.alternates:
+            url = HOST + "/" + ("" if rel == "index.html" else rel)
+            page_sets[url] = check_alternates(f"built/{rel}", url, h.alternates, site, built, say)
+    for loc, _lm, alts in _sitemap_rows(built / seo_sitemaps.PAGES, say) if (built / seo_sitemaps.PAGES).is_file() else []:
+        if alts:
+            map_sets[loc] = check_alternates(f"sitemap-pages.xml {loc}", loc, alts, site, built, say)
+    for code in codes:
+        sm = built / f"sitemap-pages-{code}.xml"
+        listed = set()
+        if sm.is_file():
+            if sm.stat().st_size > SITEMAP_MAX_BYTES:
+                say(f"{sm.name} is {sm.stat().st_size} bytes; a sitemap holds 50 MB")
+            rows = _sitemap_rows(sm, say)
+            if len(rows) > SITEMAP_MAX_URLS:
+                say(f"{sm.name} has {len(rows)} URLs; one sitemap holds 50 000")
+            for loc, lastmod, alts in rows:
+                if loc in listed:
+                    say(f"{sm.name} lists {loc} more than once")
+                listed.add(loc)
+                if not loc.startswith(f"{HOST}/{code}/"):
+                    say(f"{sm.name}: {loc} is not under {HOST}/{code}/")
+                elif not (built / ((_url_path(loc) + "index.html") if loc.endswith("/") else _url_path(loc))).is_file():
+                    say(f"{sm.name}: {loc} is not a page of the build")
+                if not DATE.match(lastmod):
+                    say(f"{sm.name}: {loc} has lastmod {lastmod!r}, not YYYY-MM-DD")
+                if not alts:
+                    say(f"{sm.name}: {loc} has no xhtml:link alternates")
+                map_sets[loc] = check_alternates(f"{sm.name} {loc}", loc, alts, site, built, say)
+        for f in sorted((built / code).rglob("*.html")):
+            rel = f.relative_to(built).as_posix()
+            name = f"built/{rel}"
+            inner = rel[len(code) + 1:]
+            url = f"{HOST}/{code}/" + ("" if inner == "index.html" else inner)
+            if url not in listed:
+                say(f"{name} is not in {sm.name}")
+            h = Head()
+            h.feed(f.read_text(encoding="utf-8"))
+            if h.html_lang != HREFLANG[code]:
+                say(f"{name}: <html lang> is {h.html_lang!r}, not {HREFLANG[code]!r}")
+            want_dir = "rtl" if code in seo_i18n.RTL else "ltr"
+            if h.html_dir != want_dir:
+                say(f"{name}: <html dir> is {h.html_dir!r}, not {want_dir!r}")
+            canon = h.links.get("canonical", [])
+            english = _file_of(site, built, _english_of(url))
+            eh = Head()
+            if english is not None:
+                eh.feed(english.read_text(encoding="utf-8"))
+            e_canon = eh.links.get("canonical", [""])[0] if eh.links.get("canonical") else ""
+            if len(canon) != 1:
+                say(f"{name}: {len(canon)} canonical links, not one")
+            elif e_canon in ("", _english_of(url)) and canon[0] != url:
+                say(f"{name}: the canonical is {canon[0]}, not the page itself {url}")
+            if h.one("og:url") not in (None, url):
+                say(f"{name}: og:url is {h.one('og:url')!r}, not {url}")
+            title = h.titles[0] if h.titles else ""
+            if len(h.titles) != 1 or not title:
+                say(f"{name}: {len(h.titles)} <title> elements, or an empty one")
+            elif len(title) > TITLE_MAX:
+                say(f"{name}: the title is {len(title)} characters, over {TITLE_MAX}: {title!r}")
+            desc = h.one("description")
+            if not inner.startswith("lab/") and (desc is None or not DESC_MIN <= len(desc) <= DESC_MAX):
+                say(f"{name}: the description is {len(desc or '')} characters, outside {DESC_MIN}-{DESC_MAX}")
+            for block in h.ld:
+                try:
+                    json.loads(block)
+                except json.JSONDecodeError as e:
+                    say(f"{name}: a JSON-LD block does not parse ({e.msg})")
+            if not h.alternates:
+                say(f"{name}: no hreflang alternates")
+            page_sets[url] = check_alternates(name, url, h.alternates, site, built, say)
+            if _english_of(url) not in h.note:
+                say(f"{name}: no machine-translation note linking the English page {_english_of(url)}")
+            here = posixpath.dirname(rel)
+            for href in h.hrefs:
+                clean = html.unescape(href).split("#")[0].split("?")[0]
+                if "://" in href or href.startswith(("/", "mailto:", "#", "data:")) or not (clean.endswith(".html") or clean.endswith("/") or clean == ""):
+                    continue
+                target = posixpath.normpath(posixpath.join(here, clean or "."))
+                if target.split("/")[0] in seo_i18n.LANGS:
+                    continue
+                own = f"{code}/" + ("index.html" if target in (".", "") else (target + "index.html" if clean.endswith("/") else target))
+                if (built / own).is_file():
+                    say(f"{name}: links {href}, the English page, and the page is built in {code}: {own}")
+    # reciprocity: every page a set names carries the same set, in its HTML and in its sitemap
+    for kind, sets in (("page", page_sets), ("sitemap entry", map_sets)):
+        for url, group in sets.items():
+            for _code, href in group:
+                other = sets.get(href)
+                if other is None:
+                    say(f"{url} names {href} as an alternate, and that {kind} names no alternates")
+                elif other != group:
+                    say(f"{url} and {href} give different hreflang sets in their {kind}s: not reciprocal")
+    for url, group in page_sets.items():
+        if url in map_sets and map_sets[url] != group:
+            say(f"{url}: its hreflang in the page and in its sitemap differ")
 
 
 def check_lab(site: Path, built: Path, say) -> None:

@@ -8,6 +8,8 @@ writes, under DIR:
     404.html        from templates/404.html
     sitemap.xml     the sitemap INDEX of every Space Radar site (scripts/seo_sitemaps.py, docs/SEO_SITEMAPS.md): the two
                     below, then the journal's, games', models' and video's own sitemaps on their hosts
+    <lang>/...      every page again in each of the app's languages whose catalog covers it (scripts/seo_i18n.py), with
+                    sitemap-pages-<lang>.xml; index.html and t/ copied from site/ with their hreflang; robots.txt
     sitemap-pages.xml  the home page, every trip page (site/t/), the Lab (site/lab/) and every object page
     llms.txt        every page of the sitemap for a language model, and llms-full.txt with their text (scripts/seo_llms.py)
     object-pages.json  {record id: slug}, for the app's share sheet (spec 0061 task 8)
@@ -58,6 +60,7 @@ import seo_lab  # noqa: E402
 import seo_llms  # noqa: E402  (llms.txt and llms-full.txt)
 import indexnow  # noqa: E402
 import seo_sitemaps  # noqa: E402  (the www sitemap is an index of every site's)
+import seo_i18n  # noqa: E402  (the pages in the app's other languages)
 from seo_chrome import footer, header, styles  # noqa: E402
 from seo_subscribe import script as subscribe_script  # noqa: E402
 
@@ -304,9 +307,17 @@ def build(out: Path, host: str, today: str | None = None, snapshot_index: dict |
     pages_xml = sitemap(host, slugs, press=(out / "press" / "index.html").is_file(), dates=dates,
                         extra=["embed/index.html"] + lab_pages(), growth=extra["sitemap"])
     (out / seo_sitemaps.PAGES).write_text(pages_xml, encoding="utf-8")
+    # The other languages (scripts/seo_i18n.py, docs/TRANSLATING.md "The pages a search engine reads"): every page whose own
+    # text a language's catalog (registry/seo-i18n/<lang>/) covers whole, under <lang>/, with hreflang on both sides, and
+    # sitemap-pages-<lang>.xml. The app shell (site/index.html) and the trips (site/t/) are copied here with their hreflang,
+    # and scripts/deploy.sh uploads them from here.
+    langs = seo_i18n.build_languages(out, host)
     # sitemap.xml is the index of every site's sitemaps (scripts/seo_sitemaps.py), dated by the newest page of this one.
     newest = max(re.findall(r"<lastmod>(\d{4}-\d{2}-\d{2})</lastmod>", pages_xml), default=lastmod())
-    (out / "sitemap.xml").write_text(seo_sitemaps.index(host, newest), encoding="utf-8")
+    (out / "sitemap.xml").write_text(seo_sitemaps.index(host, newest, langs["sitemaps"]), encoding="utf-8")
+    # robots.txt names every sitemap of this site, the language ones included (they exist only once a language has a page).
+    robots = (SITE / "robots.txt").read_text(encoding="utf-8")
+    (out / "robots.txt").write_text(robots + "".join(f"Sitemap: {host}/{n}\n" for n in langs["sitemaps"]), encoding="utf-8")
     # llms.txt and llms-full.txt, from the pages sitemap and the pages it names (scripts/seo_llms.py).
     seo_llms.write(out, host)
     # The share sheet links an object to its page (ui/sharesheet.js objectPageUrl), so that a link
