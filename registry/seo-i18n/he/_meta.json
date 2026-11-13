@@ -1,0 +1,29 @@
+{
+ "_about": "How this language writes what code fills in: numbers ({n1}), dates ({d1}), and the one line every translated page opens with (its link to the English original is <1>...</1>). docs/TRANSLATING.md, \"The pages a search engine reads\".",
+ "name": "עברית",
+ "english": "Hebrew",
+ "status": "not started",
+ "numbers": {
+  "group": ",",
+  "decimal": ".",
+  "groupMin": 4
+ },
+ "months": [
+  "ינואר",
+  "פברואר",
+  "מרץ",
+  "אפריל",
+  "מאי",
+  "יוני",
+  "יולי",
+  "אוגוסט",
+  "ספטמבר",
+  "אוקטובר",
+  "נובמבר",
+  "דצמבר"
+ ],
+ "date": "{d} ב{month} {y}",
+ "monthYear": "{month} {y}",
+ "dayMonth": "{d} ב{month}",
+ "notice": "דף זה הוא תרגום מכונה של <1>המקור באנגלית</1>."
+}

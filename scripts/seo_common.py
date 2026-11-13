@@ -206,7 +206,7 @@ def from_blog(keywords: tuple[str, ...] = (), limit: int = 3, skip: str = "") ->
         return ""
     cards = "".join(f'<li><h3><a href="{esc(p["url"])}">{esc(p["title"])}</a></h3><p>{esc(p["summary"])}</p>'
                     f'<p class="meta">{esc(dt.date.fromisoformat(p["date"]).strftime("%-d %B %Y"))}</p></li>' for p in pick)
-    return (f'<section class="fromblog" aria-labelledby="fromblog-h"><h2 id="fromblog-h">From the journal</h2>\n<ul class="cards">{cards}</ul>\n'
+    return (f'<section class="fromblog" aria-labelledby="fromblog-h"><h2 id="fromblog-h">From the journal</h2>\n<ul class="cards" translate="no" lang="en">{cards}</ul>\n'
             f'<p class="dim"><a href="{BLOG}">Every story in the Space Radar journal</a></p></section>\n')
 
 

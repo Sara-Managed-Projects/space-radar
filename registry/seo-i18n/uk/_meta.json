@@ -1,0 +1,43 @@
+{
+ "_about": "How this language writes what code fills in: numbers ({n1}), dates ({d1}), and the one line every translated page opens with (its link to the English original is <1>...</1>). docs/TRANSLATING.md, \"The pages a search engine reads\".",
+ "name": "Українська",
+ "english": "Ukrainian",
+ "status": "not started",
+ "numbers": {
+  "group": " ",
+  "decimal": ",",
+  "groupMin": 5
+ },
+ "months": [
+  "січня",
+  "лютого",
+  "березня",
+  "квітня",
+  "травня",
+  "червня",
+  "липня",
+  "серпня",
+  "вересня",
+  "жовтня",
+  "листопада",
+  "грудня"
+ ],
+ "monthsStandalone": [
+  "січень",
+  "лютий",
+  "березень",
+  "квітень",
+  "травень",
+  "червень",
+  "липень",
+  "серпень",
+  "вересень",
+  "жовтень",
+  "листопад",
+  "грудень"
+ ],
+ "date": "{d} {month} {y} р.",
+ "monthYear": "{month} {y} р.",
+ "dayMonth": "{d} {month}",
+ "notice": "Ця сторінка — машинний переклад <1>англійського оригіналу</1>."
+}

@@ -13,6 +13,7 @@ scripts/check_seo.py refuses a build without them, or with a page of the sitemap
 from __future__ import annotations
 
 import html
+import json
 import re
 from html.parser import HTMLParser
 from pathlib import Path
@@ -152,6 +153,24 @@ def _name(page: _Page) -> str:
     return re.sub(r"\s*\|\s*Space Radar( Lab)?$", "", t) or page.h1 or "Space Radar"
 
 
+# The languages' own names, as site/js/copy/<lang>.js gives them (META.name).
+OWN_NAMES = {"es": "Español", "fr": "Français", "de": "Deutsch", "pt": "Português (Brasil)", "ru": "Русский", "uk": "Українська",
+             "zh": "简体中文", "hi": "हिन्दी", "he": "עברית", "ar": "العربية"}
+
+
+def languages_line(out: Path, host: str) -> str:
+    """One line naming the language versions the build made (scripts/seo_i18n.py writes out/i18n-report.json). This file
+    stays in English and lists the English pages; the translated ones are in each language's own sitemap."""
+    f = out / "i18n-report.json"
+    rep = json.loads(f.read_text(encoding="utf-8")) if f.is_file() else {"langs": {}}
+    have = [(c, r["published"]) for c, r in rep["langs"].items() if r["published"]]
+    if not have:
+        return ""
+    parts = [f"{OWN_NAMES.get(c, c)} ({host}/{c}/, {n} pages, sitemap {host}/sitemap-pages-{c}.xml)" for c, n in have]
+    return ("\nThe pages are also in other languages, machine-translated from the English and reviewed against it, each marked "
+            "so on the page: " + "; ".join(parts) + ".\n")
+
+
 def write(out: Path, host: str) -> tuple[int, int]:
     """Write out/llms.txt and out/llms-full.txt from the sitemap. Returns (pages listed, bytes of the full text)."""
     rows: list[tuple[str, str, str, _Page]] = []
@@ -169,7 +188,7 @@ def write(out: Path, host: str) -> tuple[int, int]:
         name = next(n for n, test in SECTIONS if test(row[0]))
         groups[name].append(row)
     clean = lambda s: " ".join(html.unescape(s).split())  # noqa: E731
-    lines = [f"# Space Radar\n\n> {SUMMARY}\n\n{INTRO.format(host=host)}\n"]
+    lines = [f"# Space Radar\n\n> {SUMMARY}\n\n{INTRO.format(host=host)}\n" + languages_line(out, host)]
     for name, items in groups.items():
         if items:
             lines.append(f"## {name}\n\n" + "\n".join(f"- [{clean(t)}]({u}): {clean(p.desc)}" for _, u, t, p in items) + "\n")

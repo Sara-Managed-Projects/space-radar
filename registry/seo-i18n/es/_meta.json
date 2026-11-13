@@ -1,0 +1,29 @@
+{
+ "_about": "How this language writes what code fills in: numbers ({n1}), dates ({d1}), and the one line every translated page opens with (its link to the English original is <1>...</1>). docs/TRANSLATING.md, \"The pages a search engine reads\".",
+ "name": "Español",
+ "english": "Spanish",
+ "status": "machine-translated, agent-reviewed",
+ "numbers": {
+  "group": " ",
+  "decimal": ",",
+  "groupMin": 5
+ },
+ "months": [
+  "enero",
+  "febrero",
+  "marzo",
+  "abril",
+  "mayo",
+  "junio",
+  "julio",
+  "agosto",
+  "septiembre",
+  "octubre",
+  "noviembre",
+  "diciembre"
+ ],
+ "date": "{d} de {month} de {y}",
+ "monthYear": "{month} de {y}",
+ "dayMonth": "{d} de {month}",
+ "notice": "Esta página es una traducción automática del <1>original en inglés</1>, revisada frente a él."
+}

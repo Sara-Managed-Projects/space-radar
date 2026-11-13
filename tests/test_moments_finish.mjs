@@ -78,7 +78,7 @@ const slots = (s) => (String(s).match(/\{[a-zA-Z]+\}/g) || []).sort().join(',');
 const leaves = (o, path = '') => Object.entries(o).flatMap(([k, v]) => (typeof v === 'string' ? [[path + k, v]] : leaves(v, `${path}${k}.`)));
 for (const code of ['es', 'fr', 'de', 'pt']) {
   const lang = await mod(`copy/${code}.js`);
-  check(lang.META && lang.META.review && lang.META.review.status === 'machine-drafted', `${code}: the file still says it is machine-drafted`);
+  check(lang.META && lang.META.review && ['machine-drafted', 'agent-reviewed'].includes(lang.META.review.status), `${code}: the file still says it is machine-drafted`);
   check(/Machine-drafted like the rest of this file/.test(src(`site/js/copy/${code}.js`)), `${code}: the Moments block says it was machine-drafted`);
   let n = 0;
   for (const section of ['momentPlayer', 'momentShelf', 'momentStories']) {

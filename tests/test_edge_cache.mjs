@@ -56,8 +56,13 @@ check(/"s3:\/\/\$BUCKET\/\$dir" --cache-control "\$REVALIDATE"/.test(code) && /P
 // Seventeen until 2.0.0, then twenty-two: print/'s page and PDFs (b200-f6-learn), and assets/ and creators/ as HTML,
 // JSON and pictures (b200-f9-reach, one loop of three uploads); twenty-three in 2.0.1 with the sounds' indexes;
 // twenty-six with the one-model viewer (model/: its page, script and index, models.spaceradar.ai).
+// Twenty-seven with the pages in other languages (scripts/seo_i18n.py): one sync per language folder, in a loop over the ten
+// codes, each folder and each language sitemap invalidated by the loop beside PATHS (checked just below).
 // A new upload changes the count here on purpose.
-check(!/--cache-control "no-cache"/.test(code) && (code.match(/--cache-control "\$REVALIDATE"/g) || []).length === 26, 'no upload still says a literal no-cache: all twenty-six read $REVALIDATE');
+check(!/--cache-control "no-cache"/.test(code) && (code.match(/--cache-control "\$REVALIDATE"/g) || []).length === 27, 'no upload still says a literal no-cache: all twenty-seven read $REVALIDATE');
+const langLoops = [...code.matchAll(/for code in ([a-z ]+); do/g)].map((m) => m[1].trim());
+check(langLoops.length === 3 && langLoops.every((l) => l === 'es fr de pt ru uk zh hi he ar'), `the language folders are synced, their sitemaps uploaded and both invalidated, for the same ten codes (${langLoops})`);
+check(/"s3:\/\/\$BUCKET\/\$code" --cache-control "\$REVALIDATE"/.test(code) && /PATHS\+=\("\/\$code\/\*" "\/sitemap-pages-\$code\.xml"\)/.test(code), 'each language folder is stored for revalidation and invalidated with its sitemap');
 check(/aws s3 cp "\$path" "s3:\/\/\$BUCKET\/\$name" --region "\$REGION" \\\n\s+--cache-control "\$REVALIDATE"/.test(code), 'the root files (index.html, sw.js, the manifest, the sitemap) carry it too');
 const paths = (/PATHS=\(([^)]*)\)/.exec(code) || [])[1] || '';
 const invalidated = [...paths.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
@@ -106,9 +111,10 @@ check(/\[ "\$EDGE_CACHE" = "1" \] \|\| REVALIDATE="no-cache"/.test(code) && /--n
 check(/\[ "\$EDGE_CACHE" = "1" \] && \[ "\$WHAT" != "assets" \] && \[ "\$DRY_RUN" != "1" \] && \[ -z "\$DISTRIBUTION" \]/.test(code), 'the refusal is for exactly that case: the app, for real, with the edge cache, and no distribution');
 
 // --- 4. the invalidation is waited for, then checked ----------------------------------------------
+// index.html is the BUILD's copy since the pages in other languages: build_seo.py gives it its hreflang, and that is what is uploaded.
 const at = (needle) => code.indexOf(needle);
 check(at('create-invalidation --distribution-id "$DISTRIBUTION"') > 0 && at('aws cloudfront wait invalidation-completed --distribution-id "$DISTRIBUTION" --id "$INVALIDATION"') > at('create-invalidation --distribution-id "$DISTRIBUTION"'), 'the script waits for its own invalidation');
-check(at('edge_check index.html "$SITE/index.html"') > at('wait invalidation-completed') && at('edge_check js/main.js "$APP/js/main.js"') > at('wait invalidation-completed'), 'and then asks the edge for the page and the entry module');
+check(at('edge_check index.html "$BUILT/index.html"') > at('wait invalidation-completed') && at('edge_check js/main.js "$APP/js/main.js"') > at('wait invalidation-completed'), 'and then asks the edge for the page and the entry module');
 check(/\[ "\$want" = "\$got" \] \|\| die "the edge answers \$path with ETag/.test(code), 'a different ETag at the edge fails the deploy');
 check(/sed -e 's\/\^W\\\/\/\/' -e 's\/"\/\/g'/.test(code), "a weak ETag (CloudFront compressed the body) is compared by its hash");
 // The ETag the script expects is the MD5 of the file it uploaded: what S3 reports for a single-part upload.

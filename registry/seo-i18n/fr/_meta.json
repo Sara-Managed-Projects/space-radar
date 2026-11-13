@@ -1,0 +1,29 @@
+{
+ "_about": "How this language writes what code fills in: numbers ({n1}), dates ({d1}), and the one line every translated page opens with (its link to the English original is <1>...</1>). docs/TRANSLATING.md, \"The pages a search engine reads\".",
+ "name": "Français",
+ "english": "French",
+ "status": "not started",
+ "numbers": {
+  "group": " ",
+  "decimal": ",",
+  "groupMin": 5
+ },
+ "months": [
+  "janvier",
+  "février",
+  "mars",
+  "avril",
+  "mai",
+  "juin",
+  "juillet",
+  "août",
+  "septembre",
+  "octobre",
+  "novembre",
+  "décembre"
+ ],
+ "date": "{d} {month} {y}",
+ "monthYear": "{month} {y}",
+ "dayMonth": "{d} {month}",
+ "notice": "Cette page est une traduction automatique de l’<1>original en anglais</1>."
+}

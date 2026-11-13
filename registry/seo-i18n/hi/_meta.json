@@ -1,0 +1,29 @@
+{
+ "_about": "How this language writes what code fills in: numbers ({n1}), dates ({d1}), and the one line every translated page opens with (its link to the English original is <1>...</1>). docs/TRANSLATING.md, \"The pages a search engine reads\".",
+ "name": "हिन्दी",
+ "english": "Hindi",
+ "status": "not started",
+ "numbers": {
+  "group": ",",
+  "decimal": ".",
+  "groupMin": 4
+ },
+ "months": [
+  "जनवरी",
+  "फ़रवरी",
+  "मार्च",
+  "अप्रैल",
+  "मई",
+  "जून",
+  "जुलाई",
+  "अगस्त",
+  "सितंबर",
+  "अक्टूबर",
+  "नवंबर",
+  "दिसंबर"
+ ],
+ "date": "{d} {month} {y}",
+ "monthYear": "{month} {y}",
+ "dayMonth": "{d} {month}",
+ "notice": "यह पृष्ठ <1>अंग्रेज़ी मूल</1> का मशीन अनुवाद है।"
+}

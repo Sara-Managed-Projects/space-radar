@@ -10,25 +10,25 @@ we will do that step for you.
 #534). Every one was drafted by a program from the English and
 **no native speaker has read any of them yet**: the table below says so, and until two people have, the page offers a language only to a
 visitor who asks for it (see "Review"); there is no language picker yet. Each file has every string of the interface, the cards, the glossary,
-the trips' stops that are in `en.js` and the Moments. What is not translated: the 30 trips' longer texts in `registry/tours.yaml`, the spoken
-voice, the pages a search engine reads, and the type phrases of the catalogue (a galaxy's "barred spiral galaxy" comes from the data in
+the trips' stops that are in `en.js` and the Moments. What is not translated in the app: the 30 trips' longer texts in `registry/tours.yaml` (their pages are, below), the spoken
+voice, and the type phrases of the catalogue (a galaxy's "barred spiral galaxy" comes from the data in
 English; only French has a table for them). A string that is not translated shows in English rather than as a gap. Writing a language now
 is not wasted: the loader reads exactly the file you write.
 
 <!-- translation-status:begin (node scripts/check-translation.mjs --write-doc) -->
 | Language | File | Strings present | Changed from English | Review | Shown from the browser’s language |
 | --- | --- | --- | --- | --- | --- |
-| English | `en.js` | 3 325 (the source) | - | the source | yes |
-| العربية (Arabic) | `ar.js` | 3 325 of 3 325 (100 %) | 3 247 (97.6 %) | machine-drafted | no: `?lang=ar` only |
-| Deutsch (German) | `de.js` | 3 323 of 3 325 (99.9 %) | 3 176 (95.5 %) | machine-drafted | no: `?lang=de` only |
-| Español (Spanish) | `es.js` | 3 325 of 3 325 (100 %) | 3 202 (96.3 %) | machine-drafted | no: `?lang=es` only |
-| Français (French) | `fr.js` | 3 321 of 3 325 (99.8 %) | 3 162 (95 %) | machine-drafted | no: `?lang=fr` only |
-| עברית (Hebrew) | `he.js` | 3 325 of 3 325 (100 %) | 3 233 (97.2 %) | machine-drafted | no: `?lang=he` only |
-| हिन्दी (Hindi) | `hi.js` | 3 325 of 3 325 (100 %) | 3 236 (97.3 %) | machine-drafted | no: `?lang=hi` only |
-| Português (Brasil) (Portuguese (Brazil)) | `pt.js` | 3 324 of 3 325 (99.9 %) | 3 194 (96 %) | machine-drafted | no: `?lang=pt` only |
-| Русский (Russian) | `ru.js` | 3 325 of 3 325 (100 %) | 3 237 (97.3 %) | machine-drafted | no: `?lang=ru` only |
-| Українська (Ukrainian) | `uk.js` | 3 325 of 3 325 (100 %) | 3 236 (97.3 %) | machine-drafted | no: `?lang=uk` only |
-| 简体中文 (Chinese (Simplified)) | `zh.js` | 3 325 of 3 325 (100 %) | 3 259 (98 %) | machine-drafted | no: `?lang=zh` only |
+| English | `en.js` | 4 522 (the source) | - | the source | yes |
+| العربية (Arabic) | `ar.js` | 4 522 of 4 522 (100 %) | 4 161 (92 %) | machine-drafted | no: `?lang=ar` only |
+| Deutsch (German) | `de.js` | 4 520 of 4 522 (99.9 %) | 4 303 (95.1 %) | machine-drafted | no: `?lang=de` only |
+| Español (Spanish) | `es.js` | 4 522 of 4 522 (100 %) | 4 339 (95.9 %) | machine-translated, agent-reviewed (not native-reviewed) | yes |
+| Français (French) | `fr.js` | 4 521 of 4 522 (99.9 %) | 4 290 (94.8 %) | machine-drafted | no: `?lang=fr` only |
+| עברית (Hebrew) | `he.js` | 4 522 of 4 522 (100 %) | 4 143 (91.6 %) | machine-drafted | no: `?lang=he` only |
+| हिन्दी (Hindi) | `hi.js` | 4 522 of 4 522 (100 %) | 4 146 (91.6 %) | machine-drafted | no: `?lang=hi` only |
+| Português (Brasil) (Portuguese (Brazil)) | `pt.js` | 4 521 of 4 522 (99.9 %) | 4 329 (95.7 %) | machine-drafted | no: `?lang=pt` only |
+| Русский (Russian) | `ru.js` | 4 522 of 4 522 (100 %) | 4 225 (93.4 %) | machine-drafted | no: `?lang=ru` only |
+| Українська (Ukrainian) | `uk.js` | 4 522 of 4 522 (100 %) | 4 227 (93.4 %) | machine-drafted | no: `?lang=uk` only |
+| 简体中文 (Chinese (Simplified)) | `zh.js` | 4 522 of 4 522 (100 %) | 4 177 (92.3 %) | machine-drafted | no: `?lang=zh` only |
 <!-- translation-status:end -->
 
 ## What is translated, in order
@@ -43,7 +43,8 @@ is not wasted: the loader reads exactly the file you write.
    a separate piece of work.
 3. **The trips** (`registry/tours.yaml`): 33 trips, about 11 000 words of titles, blurbs and cards.
    Each stop's words are what the voice reads. Do these after 1 and 2, one trip at a time.
-4. **The pages a search engine reads and the press page**: later, from the same text.
+4. **The pages a search engine reads** (the home page, the static pages, the trips, the Lab, the object, country and event pages): a
+   catalog of their own, `registry/seo-i18n/`, and its own section below, ["The pages a search engine reads"](#the-pages-a-search-engine-reads).
 
 ## Start
 
@@ -149,6 +150,81 @@ classroom meets first. The rule, as the checker holds it:
   a language puts the extra forms in the second string joined by `|` and its `RULES.plural` picks (`COPY.cls.minutesWord` is "минуты|минут" in Russian).
   A word that has no article in your language (`{a}`, `card.articles`, `r12Navigate.theWord`) is a zero-width space, `\u200b`: an empty string
   means "not translated" and shows the English.
+
+## The pages a search engine reads
+
+Every page in `sitemap-pages.xml` (about 650: the home page, the static pages, the 33 trips, the 106 Lab pages, the 354 object
+pages, the 102 country pages and the 29 events) can be published again under `/<code>/` (`/es/`, `/es/iss/index.html`,
+`/es/o/jupiter.html`, `/es/t/a-dark-sky.html`, `/es/lab/orbit-painter/index.html`), with `<html lang dir>`, a canonical of its
+own, hreflang both ways and its own sitemap, `sitemap-pages-<code>.xml`, in the index. `scripts/seo_i18n.py` does it at every
+deploy, from **one catalog of the English the pages say**:
+
+- `registry/seo-i18n/en/<area>.json`: `{key: English}`, written by `python3 scripts/seo_i18n.py extract --built DIR --also DIR2,DIR3`
+  from builds (`python3 scripts/build_seo.py --out DIR --no-share`), never by hand. A few sentences differ between a deploy's build
+  and CI's: give `--also` a build made with `--snapshot-index` (the saved copies' sources and days) and one made without numpy (CI
+  draws no paper globes), so the catalog holds both. Areas: `common` (on pages of several kinds: the header, the
+  footer, the subscribe card), `home`, `static`, `trips`, `lab`, `objects`, `countries`, `events`, `names` (the names of the pages'
+  subjects). `_context.json` says where each string is first seen. CI rebuilds the pages and runs `extract --check`: a sentence the
+  pages say and the catalog lacks fails the build, so the catalog is never behind the pages.
+- `registry/seo-i18n/<code>/<area>.json`: `{key: translation}`, the same keys, only the ones done. `<code>/_meta.json`: how the
+  language writes numbers and dates, and the one line every translated page opens with.
+
+**What a string looks like.** A string is one block of a page (a paragraph, a heading, a list item, a title, a description, an
+alt text, a JSON-LD name) with its markup and its data taken out:
+
+```json
+"3f9a2c81d0": "It is <1>about {n1} km/h</1> on {d1}, {n2}° up.",
+"77b10e4f2a": "{name} is a world in the solar system, about {n1} km across."
+```
+
+- `<1>…</1>` is a link or an emphasis around words; `<2/>` is a picture or a piece of code, which is never translated. Keep every
+  one, move them where your sentence needs them.
+- `{n1}`, `{n2}` are numbers and times, `{d1}` a date: code writes them in your language's style (`_meta.json`: `numbers` group and
+  decimal marks, `groupMin` the shortest number that is grouped; `months`, `date`, `monthYear`, `dayMonth`; `monthsStandalone`
+  where a month alone takes another form). Never type a number in.
+- `{name}` is the page's own subject (Jupiter, France, an eclipse), translated once in `names.json`. Most spacecraft, stars and
+  catalogue names keep their name (copy them); the Sun, the Moon, the planets and the big moons take your language's
+  ("Júpiter", "Ío"); countries and events are translated. A `{name}` that opens a sentence is given a capital by code.
+- The key is a hash of the English. When the English of a sentence changes, it is a new key: the old translation is no longer used.
+
+**The rule of publishing.** A page is built in a language only when **every** string of its own text is translated (its head
+and everything outside the header, nav and footer). Then it is in that language's sitemap and in every version's hreflang. One
+missing sentence and the page is not built in that language at all; a missing footer string shows in English. The trips (which
+send a browser on to the app) are built only where the home page is. These pages stay in English, each for its reason:
+
+- `planets-tonight/index.html`: its sentences are worked out for the night of each build, so they cannot be a catalog.
+
+A translated page opens with one line in its language saying it was machine-translated, linking the English original
+(`_meta.json` `notice`). Its share picture is the English one, and so is that picture's alt text. It does not run
+`js/pages/live.js` yet (that script writes its live sentences in English), so the place picker of the ISS, Starlink and event
+pages is hidden there and the page keeps its dated sentences.
+
+**Limits a translation must keep** (`scripts/check_seo.py` refuses the build otherwise): a title, with its ` | Space Radar`, of at
+most 60 characters; a meta description of 70 to 160. The checker tells you which page.
+
+### A translator's work, one language
+
+You touch only `registry/seo-i18n/<code>/` (and, once it is reviewed, one line each in `site/js/copy/lang.js` and this file).
+Nothing else, so ten translators can work at once.
+
+```bash
+python3 scripts/seo_i18n.py flat --out /tmp/fr --missing fr      # what French lacks, in pieces of about 12 000 characters:
+                                                               # NNN-<area>.json (translate the values) and NNN-<area>.context.json
+python3 scripts/seo_i18n.py merge fr /tmp/fr                     # back into registry/seo-i18n/fr/*.json; a lost {slot} or <tag> is refused
+python3 scripts/seo_i18n.py check fr                             # lost or extra slots and tags, keys the English no longer has, _meta.json
+python3 scripts/build_seo.py --out /tmp/seo --no-share && python3 scripts/check_seo.py --out /tmp/seo
+python3 scripts/seo_i18n.py coverage --built /tmp/seo            # pages published per language; /tmp/seo/i18n-report.json lists what each page lacks
+```
+
+1. Fill `_meta.json`: `numbers`, `months`, the date patterns, `notice` (its link as `<1>…</1>`). They are drafted for every language.
+2. Translate every piece, in context: `_context.json` names the page where each string is first seen. Keep names, numbers and
+   the honesty words (measured, computed, modelled, illustrative, an artist's impression) as strong as the English.
+3. `merge`, then `check`, then the build and `check_seo.py`; fix what they name (titles over 60 characters, most often).
+4. The review pass, a fresh read against the English, string by string: terms, numbers, units, proper names, slots, and for `he`
+   and `ar` a look at a page at 390 px, right to left. Then set `_meta.json` `status` to `machine-translated, agent-reviewed`.
+5. Once reviewed, the language is shown from the browser's language: `reviewed: true` for it in `site/js/copy/lang.js`,
+   `META.review.status: 'agent-reviewed'` in `site/js/copy/<code>.js`, and `node scripts/check-translation.mjs --write-doc`, which
+   says "machine-translated, agent-reviewed (not native-reviewed)" in the table above.
 
 ## The narration (205 clips)
 

@@ -2,6 +2,9 @@
 
     PAGES, IMAGES        the main site's own sitemaps, by name: sitemap-pages.xml (every page worth indexing, with its
                          date; scripts/build_seo.py sitemap()) and sitemap-images.xml (the share pictures)
+    LANGUAGE_PAGES       sitemap-pages-<lang>.xml: the pages in one of the app's other languages, each <url> with the
+                         xhtml:link alternates of every language the page exists in (scripts/seo_i18n.py), listed after
+                         sitemap-pages.xml in the app's order (es fr de pt ru uk zh hi he ar), only for a language with a page
     OTHER_SITEMAPS       the other sites' sitemaps, each on its own host and listing only that host's pages
     index(host, lastmod) the sitemap index written as sitemap.xml: the main site's two first, then the other sites'
 
@@ -36,14 +39,18 @@ OTHER_SITEMAPS = (
 )
 
 
-def own(host: str) -> list[str]:
-    """The main site's sitemaps, by address."""
-    return [f"{host}/{PAGES}", f"{host}/{IMAGES}"]
+LANGUAGE_PAGES = "sitemap-pages-{lang}.xml"  # one per language that has a page (scripts/seo_i18n.py), in site/js/copy/lang.js's order
 
 
-def index(host: str, lastmod: str) -> str:
+def own(host: str, languages: list[str] | tuple = ()) -> list[str]:
+    """The main site's sitemaps, by address: the English pages, then one per language (`languages` are their file names,
+    sitemap-pages-es.xml ..., in the app's order), then the pictures."""
+    return [f"{host}/{PAGES}"] + [f"{host}/{n}" for n in languages] + [f"{host}/{IMAGES}"]
+
+
+def index(host: str, lastmod: str, languages: list[str] | tuple = ()) -> str:
     """The sitemap index (sitemap.xml): the main site's sitemaps with the build's date, then every other site's."""
-    rows = [f"<sitemap><loc>{escape(u)}</loc><lastmod>{lastmod}</lastmod></sitemap>" for u in own(host)]
+    rows = [f"<sitemap><loc>{escape(u)}</loc><lastmod>{lastmod}</lastmod></sitemap>" for u in own(host, languages)]
     rows += [f"<sitemap><loc>{escape(u)}</loc></sitemap>" for u in OTHER_SITEMAPS]
     return ('<?xml version="1.0" encoding="UTF-8"?>\n'
             '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + "\n".join(rows) + "\n</sitemapindex>\n")

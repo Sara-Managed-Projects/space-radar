@@ -1,0 +1,29 @@
+{
+ "_about": "How this language writes what code fills in: numbers ({n1}), dates ({d1}), and the one line every translated page opens with (its link to the English original is <1>...</1>). docs/TRANSLATING.md, \"The pages a search engine reads\".",
+ "name": "Português (Brasil)",
+ "english": "Portuguese (Brazil)",
+ "status": "not started",
+ "numbers": {
+  "group": ".",
+  "decimal": ",",
+  "groupMin": 4
+ },
+ "months": [
+  "janeiro",
+  "fevereiro",
+  "março",
+  "abril",
+  "maio",
+  "junho",
+  "julho",
+  "agosto",
+  "setembro",
+  "outubro",
+  "novembro",
+  "dezembro"
+ ],
+ "date": "{d} de {month} de {y}",
+ "monthYear": "{month} de {y}",
+ "dayMonth": "{d} de {month}",
+ "notice": "Esta página é uma tradução automática do <1>original em inglês</1>."
+}

@@ -140,8 +140,12 @@ ok(not body_changed, f"only the head gains tags: what a visitor sees is the comm
 ok(not schema, f"each has one LearningResource at its own address, with no rating or review ({schema[:3]})")
 ok(not crumb_wrong, "the trail Space Radar > Lab > simulator is its own BreadcrumbList node, not a field of the "
    f"LearningResource, which schema.org does not define ({crumb_wrong[:3]})")
-ok((BUILT / "lab" / "index.html").read_bytes() == (LAB / "index.html").read_bytes() if (BUILT / "lab" / "index.html").is_file() else False,
-   "the Lab's list is built as committed (gen_lab_index.py writes its head)")
+# ... but for its hreflang, which the build adds where the list exists in another language (scripts/seo_i18n.py)
+sys.path.insert(0, str(ROOT / "scripts"))
+import seo_i18n  # noqa: E402
+ok(seo_i18n.strip_alternates((BUILT / "lab" / "index.html").read_text(encoding="utf-8")) == (LAB / "index.html").read_text(encoding="utf-8")
+   if (BUILT / "lab" / "index.html").is_file() else False,
+   "the Lab's list is built as committed (gen_lab_index.py writes its head), with its hreflang added")
 ok(not (BUILT / "lab" / "_template").exists(), "the contributor's starter is not built, so not uploaded")
 
 # --- 4: deploy.sh ships it ------------------------------------------------------------------

@@ -122,7 +122,10 @@ const COPY_DIR = resolve(HERE, '../site/js/copy');
 const DOC = resolve(HERE, '../docs/TRANSLATING.md');
 const DOC_BEGIN = '<!-- translation-status:begin (node scripts/check-translation.mjs --write-doc) -->';
 const DOC_END = '<!-- translation-status:end -->';
-const REVIEW_STATUSES = ['machine-drafted', 'human-drafted', 'reviewed'];
+// 'agent-reviewed' (the maintainer's decision, 2026-11-13): machine-translated, then read against the English by an agent for
+// terms, numbers, units, names and slots. Not a native speaker's review, and the table says so; it may be offered from the
+// browser's language, as 'reviewed' may.
+const REVIEW_STATUSES = ['machine-drafted', 'human-drafted', 'agent-reviewed', 'reviewed'];
 const hasLetters = (s) => /[a-z]{3}/i.test(s);
 
 /** Count the text leaves of an English tree, and how many of them a translation tree has, and changed. */
@@ -172,7 +175,7 @@ export async function status() {
     rows.push(row);
     if (!reg) problems.push(`${file} is not registered in LANGUAGES in site/js/copy/lang.js, so the page cannot show it`);
     if (row.review === 'unknown') problems.push(`${file} must export META.review.status: one of ${REVIEW_STATUSES.join(', ')}`);
-    if (row.offered && !(row.review === 'reviewed' && row.by.length >= 2)) problems.push(`${code} is offered from the browser's language (reviewed: true in lang.js) but META.review is not 'reviewed' with two names in \`by\`: the review rule (docs/TRANSLATING.md) is not met`);
+    if (row.offered && !((row.review === 'reviewed' && row.by.length >= 2) || row.review === 'agent-reviewed')) problems.push(`${code} is offered from the browser's language (reviewed: true in lang.js) but META.review is neither 'reviewed' with two names in \`by\` nor 'agent-reviewed': the review rule (docs/TRANSLATING.md) is not met`);
     if (row.review === 'reviewed' && row.by.length < 2) problems.push(`${file} says reviewed with fewer than two names in META.review.by: the author and a second native speaker`);
     if (row.slotProblems) problems.push(`${file} has ${row.slotProblems} lost or invented {slot}s: node scripts/check-translation.mjs site/js/copy/${file}`);
   }
@@ -188,7 +191,7 @@ export function table(st, markdown = true) {
   const head = ['Language', 'File', 'Strings present', 'Changed from English', 'Review', 'Shown from the browser\u2019s language'];
   const body = [['English', '`en.js`', `${spaced(st.total)} (the source)`, '-', 'the source', 'yes']];
   for (const r of st.rows) {
-    const review = r.review === 'reviewed' ? `reviewed by ${r.by.join(' and ')}` : r.review;
+    const review = r.review === 'reviewed' ? `reviewed by ${r.by.join(' and ')}` : r.review === 'agent-reviewed' ? 'machine-translated, agent-reviewed (not native-reviewed)' : r.review;
     body.push([`${r.name} (${r.english})`, `\`${r.code}.js\``, `${spaced(r.present)} of ${spaced(r.total)} (${pct(r.present, r.total)})`, `${spaced(r.changed)} (${pct(r.changed, r.total)})`, review, r.offered ? 'yes' : `no: \`?lang=${r.code}\` only`]);
   }
   if (markdown) return [head, head.map(() => '---'), ...body].map((row) => `| ${row.join(' | ')} |`).join('\n');
@@ -218,7 +221,7 @@ const shield = (s) => encodeURIComponent(s).replace(/-/g, '--').replace(/_/g, '_
 export function badges(st) {
   return st.rows.map((r) => {
     const review = r.review === 'reviewed' ? 'reviewed' : r.review;
-    const colour = r.review === 'reviewed' ? 'brightgreen' : r.present / r.total >= 0.99 ? 'yellow' : 'lightgrey';
+    const colour = r.review === 'reviewed' ? 'brightgreen' : r.review === 'agent-reviewed' ? 'yellowgreen' : r.present / r.total >= 0.99 ? 'yellow' : 'lightgrey';
     return `[![${r.english}: ${pct(r.present, r.total)}, ${review}](https://img.shields.io/badge/${shield(r.name)}-${shield(pct(r.present, r.total))}%20${shield(review)}-${colour})](docs/TRANSLATING.md)`;
   }).join('\n');
 }

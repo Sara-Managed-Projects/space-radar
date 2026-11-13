@@ -35,6 +35,15 @@ assert.equal(pickLanguage('?lang=en', ['fr'], table), 'en', '?lang=en forces Eng
 assert.equal(pickLanguage('?lang=xx', ['fr'], table), 'en', 'a code nobody has written is English, and the browser is not asked');
 assert.equal(pickLanguage('?lang=constructor', [], table), 'en', 'a code that is a property of Object is not a language');
 assert.equal(pickLanguage('', ['fr-CA', 'en'], table), 'fr', 'the browser: the first language that is written and reviewed');
+// The app shell under /<code>/ (scripts/seo_i18n.py): the address says the language, before the browser does; ?lang= still wins.
+const { pathLanguage } = await import(href('copy/lang.js'));
+assert.equal(pickLanguage('', ['fr-CA'], table, '/es/'), 'es', '/es/ speaks Spanish, reviewed or not, whatever the browser prefers');
+assert.equal(pickLanguage('', [], table, '/site/es/index.html'), 'es', 'under a prefix too, and as index.html');
+assert.equal(pickLanguage('?lang=fr', [], table, '/es/'), 'fr', '?lang= is asked first');
+assert.equal(pickLanguage('?lang=en', [], table, '/es/'), 'en', 'and ?lang=en forces English there');
+assert.equal(pickLanguage('', [], table, '/xx/'), 'en', 'a folder that is no language is not one');
+assert.equal(pathLanguage('/es/o/jupiter.html', table), '', 'a page inside the folder is not the app shell');
+assert.equal(pathLanguage('/en/', table), '', 'English is the root, never /en/');
 assert.equal(pickLanguage('', ['es-ES', 'fr'], table), 'fr', 'the browser skips a language that has not been reviewed');
 assert.equal(pickLanguage('', ['es'], table), 'en', 'and a browser that only offers an unreviewed language gets English');
 assert.equal(pickLanguage('?lang=%E0%A4%A', [], table), 'en', 'garbage in the query does not throw');
@@ -98,8 +107,11 @@ assert.deepEqual(es.articles, ['una', 'un', 'una', 'una', 'un', 'una'], 'RULES.a
 
 assert.equal(run({ location: { search: '?lang=xx' }, document: {} }, probe).tonight, 'Tonight', 'an unknown ?lang= is English');
 const fromBrowser = run({ location: { search: '' }, navigator: { languages: ['es-MX', 'es'], language: 'es-MX' }, document: {} }, probe);
-assert.equal(fromBrowser.tonight, 'Tonight', 'a Spanish browser is NOT given the machine-drafted Spanish by itself');
-assert.equal(fromBrowser.lang, '', 'and <html lang> stays as the page wrote it');
+// 2026-11-13 (the maintainer's decision): an agent-reviewed language is offered from the browser's language; Spanish is the first.
+assert.equal(fromBrowser.tonight, 'Esta noche', 'a Spanish browser is given the agent-reviewed Spanish by itself');
+const frBrowser = run({ location: { search: '' }, navigator: { languages: ['fr-FR'], language: 'fr-FR' }, document: {} }, probe);
+assert.equal(frBrowser.tonight, 'Tonight', 'a French browser is NOT given the machine-drafted French by itself');
+assert.equal(frBrowser.lang, '', 'and <html lang> stays as the page wrote it');
 assert.equal(run({ location: { search: '?lang=es&from=ig' } , document: {} }, probe).tonight, 'Esta noche', 'other query keys do not matter');
 
 // --- 3. English is free, and nothing here needs more than es2020 ---------------------------------------------
@@ -127,7 +139,7 @@ for (const file of walk(JS)) {
   assert.ok(!/^(?:await\b|(?:const|let|var)\s+[^=\n]+=\s*await\b)/m.test(code), `${file} has a top-level await: the deploy's es2020 target refuses it`);
 }
 const langBytes = statSync(join(JS, 'copy/lang.js')).size;
-assert.ok(langBytes < 5200, `copy/lang.js is in the boot graph and must stay small (${langBytes} B as written, comments included)`); // 0077 W2-f: 3200 to 3500, three rows for fr, de, pt; 1.6.3: 3500 to 5200, six rows and the zh-Hant reading (its comments are the most of it: the served tree strips them)
+assert.ok(langBytes < 5800, `copy/lang.js is in the boot graph and must stay small (${langBytes} B as written, comments included)`); // 0077 W2-f: 3200 to 3500, three rows for fr, de, pt; 1.6.3: 3500 to 5200, six rows and the zh-Hant reading (its comments are the most of it: the served tree strips them); seo-languages: 5200 to 5800, the /<code>/ address rule (pathLanguage, 5674 B written)
 assert.ok(!/import\s*\(/.test(readFileSync(join(JS, 'copy/lang.js'), 'utf8').replace(/\/\/.*$/gm, '')), 'copy/lang.js only decides: it fetches nothing');
 
 // --- 4. the Spanish --------------------------------------------------------------------------------------
@@ -137,8 +149,9 @@ const { out } = await check(join(JS, 'copy/es.js'));
 // since 1.6.3 the Spanish has every key, so a stage that adds one must add its Spanish (or this fails). A slot lost or invented, or text where English has a group, is: it prints a hole on the screen.
 assert.deepEqual([out.missing, out.placeholder, out.kind, out.extra], [[], [], [], []], `copy/es.js loses or invents a {slot}, or has the wrong kind of value:\n${JSON.stringify(out, null, 1).slice(0, 600)}`);
 const es_ = await import(href('copy/es.js'));
-assert.equal(es_.META.review.status, 'machine-drafted', 'the Spanish says what it is until two native speakers have read it');
-assert.equal(LANGUAGES.es.reviewed, false, 'and the browser\'s language does not bring it in');
+assert.equal(es_.META.review.status, 'agent-reviewed', 'the Spanish says what it is: machine-translated, read against the English by an agent, not by a native speaker');
+assert.equal(LANGUAGES.es.reviewed, true, 'and so the browser\'s language brings it in');
+for (const code of ['fr', 'de', 'pt', 'ru', 'uk', 'zh', 'hi', 'he', 'ar']) assert.equal(LANGUAGES[code].reviewed, false, `${code} is not offered from the browser's language yet`);
 assert.ok(LANGUAGES.es.locale === 'es-ES', 'its dates are written in Spanish');
 const st = await status();
 assert.deepEqual(st.problems, [], `the translation table has problems:\n${st.problems.join('\n')}`);

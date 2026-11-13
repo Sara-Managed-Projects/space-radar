@@ -160,3 +160,15 @@ ol.steps li{margin:0 0 .8rem}
 .sitelinks ul{list-style:none;margin:0;padding:0;display:grid}
 .foot .sitelinks a{display:inline-flex;align-items:center;min-height:36px;padding:.2rem 0}
 @media(pointer:coarse){.foot .sitelinks a{min-height:44px}}
+/* The pages in other languages (scripts/seo_i18n.py): the one line that says the page was machine-translated, first in <main>,
+   and the sides a right-to-left page (he, ar: <html dir="rtl">) turns round. Numbers, code and addresses stay left to right. */
+.i18n-note{margin:0;padding:.55rem 1rem;font-size:.86rem;line-height:1.45;color:var(--dim);text-align:center;border-bottom:1px solid var(--line)}
+.i18n-note a{color:var(--atm)}
+[dir=rtl] .top__r,[dir=rtl] .xnav{margin-left:0;margin-right:auto}[dir=rtl] .xnav+.top__r{margin-right:0}
+@media(max-width:719px){[dir=rtl] .top--x .top__r{margin-left:0;margin-right:auto}}
+[dir=rtl] .skip{left:auto;right:-999px}[dir=rtl] .skip:focus{right:.5rem}
+[dir=rtl] .sub__hp{left:auto!important;right:-9999px}
+[dir=rtl] caption,[dir=rtl] th,[dir=rtl] td{text-align:right}
+[dir=rtl] .sources ol,[dir=rtl] .doc ul:not([class]),[dir=rtl] .doc ol{padding-left:0;padding-right:1.4rem}
+[dir=rtl] .dot,[dir=rtl] .eyebrow img{margin-right:0;margin-left:.55rem}
+[dir=rtl] code,[dir=rtl] kbd,[dir=rtl] .num{direction:ltr;unicode-bidi:isolate}

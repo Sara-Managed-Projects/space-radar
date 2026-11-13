@@ -153,7 +153,7 @@ export async function createOffline(ctx) {
     if (!active) return;
     active.postMessage({ type: 'sr-version' });
     const names = performance.getEntriesByType('resource').map((r) => r.name);
-    active.postMessage({ type: 'sr-warm', urls: warmList(names, new URL('./', location.href).href) });
+    active.postMessage({ type: 'sr-warm', urls: warmList(names, new URL('./', document.baseURI || location.href).href) });
   }).catch(() => {});
   return { state: 'registered', registration };
 }

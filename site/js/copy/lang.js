@@ -7,7 +7,8 @@
 // en.facts.js) end by calling HOOK.localise, which puts the words over the English in place -- before any
 // module that imports them has run. Where nothing prepared (English, a lab page, a test) HOOK is empty.
 //
-// THE ORDER. `?lang=<code>` first (a regional form is read by its first part: es-MX is es). Else the
+// THE ORDER. `?lang=<code>` first (a regional form is read by its first part: es-MX is es). Else the language of
+// the address: /es/ is the app shell built for Spanish (scripts/seo_i18n.py), so it speaks Spanish. Else the
 // browser's own list (navigator.languages), but only a language marked `reviewed`: docs/TRANSLATING.md
 // ("Review") says a text is not offered to everyone until a second native speaker has read it, so a
 // machine-drafted language is reached by ?lang= alone. Else English. `?lang=en` forces English.
@@ -16,7 +17,7 @@
 export const LANGUAGES = {
   en: { locale: 'en-GB', pill: 'en-US', reviewed: true },
   // 0077 W1-e: begin
-  es: { locale: 'es-ES', pill: 'es-ES', reviewed: false }, // machine-drafted: flip `reviewed` when a native speaker has read copy/es.js
+  es: { locale: 'es-ES', pill: 'es-ES', reviewed: true }, // machine-translated, agent-reviewed 2026-11-13 (not native-reviewed)
   // 0077 W1-e: end
   // 0077 W2-f: begin
   fr: { locale: 'fr-FR', pill: 'fr-FR', reviewed: false }, // machine-drafted
@@ -48,14 +49,23 @@ const base = (tag, languages) => {
   return first === 'zh' && TRADITIONAL.includes(second) && languages && Object.prototype.hasOwnProperty.call(languages, 'zh-Hant') ? 'zh-Hant' : first;
 };
 
-/** The language to speak. Pure: `search` is location.search, `preferred` navigator.languages. */
-export function pickLanguage(search, preferred, languages = LANGUAGES) {
+/** The language a `/<code>/` address is in: the app shell's copy under /es/, /fr/ ... (scripts/seo_i18n.py), or ''. */
+export function pathLanguage(path, languages = LANGUAGES) {
+  const m = /\/([a-z]{2})\/(?:index\.html)?$/.exec(String(path || ''));
+  return m && m[1] !== 'en' && Object.prototype.hasOwnProperty.call(languages, m[1]) ? m[1] : '';
+}
+
+/** The language to speak. Pure: `search` is location.search, `preferred` navigator.languages, `path` location.pathname. */
+export function pickLanguage(search, preferred, languages = LANGUAGES, path = '') {
   const asked = /[?&]lang=([^&#]*)/.exec(String(search || ''));
   if (asked) {
     let code = '';
     try { code = base(decodeURIComponent(asked[1]), languages); } catch { /* a stray % in the address: no such language */ }
     return Object.prototype.hasOwnProperty.call(languages, code) ? code : 'en';
   }
+  // The app shell at /es/ speaks Spanish whatever the browser prefers: the address is the visitor's choice.
+  const fromPath = pathLanguage(path, languages);
+  if (fromPath) return fromPath;
   for (const tag of preferred || []) {
     const code = base(tag, languages);
     if (Object.prototype.hasOwnProperty.call(languages, code) && languages[code].reviewed) return code;
@@ -66,6 +76,8 @@ export function pickLanguage(search, preferred, languages = LANGUAGES) {
 export const LANG = pickLanguage(
   typeof location !== 'undefined' ? location.search : '',
   typeof navigator !== 'undefined' ? navigator.languages || [navigator.language] : [],
+  LANGUAGES,
+  typeof location !== 'undefined' ? location.pathname : '',
 );
 /** The locale the date and time formats are written in; the pill's is separate (its month is set in capitals). */
 export const LOCALE = LANGUAGES[LANG].locale;

@@ -121,7 +121,7 @@ def assets_page(host: str, plan: dict | None = None, dates: dict[str, str] | Non
         f'<a href="{esc(proc["url"])}">site/js/scene/models.js</a>, under the MIT licence. Credit: <code>{esc(proc["credit"])}</code>.</p>\n'
         "<p>The live cloud pictures are composited in each visitor's browser from NASA's newest geostationary images (GIBS), so there is no "
         "file to offer; NASA's own pages have the originals.</p>\n"
-        + (f"<h2>New and changed</h2>\n<p>The files most recently changed, from the project's history.</p>\n<ul>{log}</ul>\n" if log else "")
+        + (f"<h2>New and changed</h2>\n<p>The files most recently changed, from the project's history.</p>\n<ul translate='no' lang='en'>{log}</ul>\n" if log else "")
         + "<h2>Not ours: get these from their makers</h2>\n"
         "<p>The app also uses maps and models that others made. They are theirs to license and are not offered here.</p>\n"
         f'<ul class="tagcloud">{elsewhere}</ul>\n'

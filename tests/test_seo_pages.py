@@ -372,7 +372,10 @@ be = parse(BUILT / "events" / "bepicolombo-mercury-2026.html").plain
 ok("21 November 2026" in be and "9 and 10 December 2026" in be, "BepiColombo: ESA's dates")
 
 # --- every built page ----------------------------------------------------------------------------------
-pages = [f for d in sorted(BUILT.iterdir()) if d.is_dir() and d.name not in ("share", "press", "embed") for f in sorted(d.glob("*.html"))]
+# t/ (the trips, copied from site/ with their hreflang) and the language folders (scripts/seo_i18n.py: check_seo.check_languages
+# and tests/test_seo_i18n.py hold them) are not these pages.
+pages = [f for d in sorted(BUILT.iterdir()) if d.is_dir() and d.name not in ("share", "press", "embed", "t", "es", "fr", "de", "pt", "ru", "uk", "zh", "hi", "he", "ar")
+         for f in sorted(d.glob("*.html"))]
 nav_missing, tw_missing = [], []
 for f in pages:
     html = f.read_text(encoding="utf-8")
