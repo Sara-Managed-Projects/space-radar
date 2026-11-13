@@ -316,8 +316,9 @@ def check(root: Path, built: Path, require_share: bool = False) -> list[str]:
 
     # --- the pages --------------------------------------------------------------------------
     growth = [f for d in sorted(built.iterdir()) if d.is_dir() and d.name not in NOT_GROWTH for f in sorted(d.glob("*.html"))]
-    # The home page and the trips as deployed: build_seo.py copies them from site/ into the build with their hreflang.
-    home = (built, built / "index.html") if (built / "index.html").is_file() else (site, site / "index.html")
+    # The trips as deployed: build_seo.py copies them from site/ into the build with their hreflang. The home page is judged as
+    # committed (site/index.html): its built copy differs only by that hreflang, which check_languages() holds.
+    home = (site, site / "index.html")
     trips = built / "t" if (built / "t").is_dir() else site / "t"
     files = [home, (built, built / "404.html")] \
         + [(built, f) for f in sorted((built / "o").glob("*.html"))] \
