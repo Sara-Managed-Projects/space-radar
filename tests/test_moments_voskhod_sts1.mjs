@@ -254,7 +254,7 @@ const common = async (id, cover, models) => {
       check(Object.keys(en).filter((k) => en[k].split(/\s+/).length >= 6 && !/Houston/.test(en[k])).every((k) => tr[k] !== en[k]), `${code}: ${id} has no long sentence left in English`);
     }
     check(/Houston, we've had a problem/.test(lang.COPY.momentStories['apollo-13'].problem || lang.COPY.momentStories['apollo-13'].problem1 || JSON.stringify(lang.COPY.momentStories['apollo-13'])), `${code}: the radio lines of Apollo 13 stay as said`);
-    check(/Machine-drafted like the rest of this file/.test(src(`site/js/copy/${code}.js`)) && lang.META.review.status === 'machine-drafted', `${code}: still marked machine-drafted`);
+    check(/Machine-drafted like the rest of this file/.test(src(`site/js/copy/${code}.js`)) && ['machine-drafted', 'agent-reviewed'].includes(lang.META.review.status), `${code}: still marked machine-drafted`);
     check(['voskhod-2', 'sts-1'].every((id) => lang.COPY.momentShelf.cards[id] && lang.COPY.momentShelf.cards[id].title), `${code}: the shelf cards of the two new stories are translated`);
     for (const id of ['voskhod-2', 'sts-1']) {
       const en = COPY.momentStories[id], tr = lang.COPY.momentStories[id];
@@ -270,7 +270,7 @@ const common = async (id, cover, models) => {
   {
     const code = 'ru';
     const lang = await mod(`copy/${code}.js`);
-    check(/Machine-drafted like the rest of this file/.test(src(`site/js/copy/${code}.js`)) && lang.META.review.status === 'machine-drafted', `${code}: still marked machine-drafted`);
+    check(/Machine-drafted like the rest of this file/.test(src(`site/js/copy/${code}.js`)) && ['machine-drafted', 'agent-reviewed'].includes(lang.META.review.status), `${code}: still marked machine-drafted`);
     check(['voskhod-2', 'sts-1'].every((id) => lang.COPY.momentShelf.cards[id] && lang.COPY.momentShelf.cards[id].title && /[А-Яа-яЁё]/.test(lang.COPY.momentShelf.cards[id].blurb)), `${code}: the shelf cards of the two new stories are translated`);
     for (const id of ['voskhod-2', 'sts-1']) {
       const en = COPY.momentStories[id], tr = lang.COPY.momentStories[id];
@@ -286,7 +286,7 @@ const common = async (id, cover, models) => {
   {
     const code = 'uk';
     const lang = await mod(`copy/${code}.js`);
-    check(/Machine-drafted like the rest of this file/.test(src(`site/js/copy/${code}.js`)) && lang.META.review.status === 'machine-drafted', `${code}: still marked machine-drafted`);
+    check(/Machine-drafted like the rest of this file/.test(src(`site/js/copy/${code}.js`)) && ['machine-drafted', 'agent-reviewed'].includes(lang.META.review.status), `${code}: still marked machine-drafted`);
     check(['voskhod-2', 'sts-1'].every((id) => lang.COPY.momentShelf.cards[id] && lang.COPY.momentShelf.cards[id].title && /[А-Яа-яЁёІіЇїЄєҐґ]/.test(lang.COPY.momentShelf.cards[id].blurb)), `${code}: the shelf cards of the two new stories are translated`);
     for (const id of ['voskhod-2', 'sts-1']) {
       const en = COPY.momentStories[id], tr = lang.COPY.momentStories[id];

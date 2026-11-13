@@ -17,7 +17,7 @@
 export const LANGUAGES = {
   en: { locale: 'en-GB', pill: 'en-US', reviewed: true },
   // 0077 W1-e: begin
-  es: { locale: 'es-ES', pill: 'es-ES', reviewed: false }, // machine-drafted: flip `reviewed` when a native speaker has read copy/es.js
+  es: { locale: 'es-ES', pill: 'es-ES', reviewed: true }, // machine-translated, agent-reviewed 2026-11-13 (not native-reviewed)
   // 0077 W1-e: end
   // 0077 W2-f: begin
   fr: { locale: 'fr-FR', pill: 'fr-FR', reviewed: false }, // machine-drafted

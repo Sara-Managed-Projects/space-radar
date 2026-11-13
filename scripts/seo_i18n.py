@@ -279,14 +279,12 @@ def make_seg(parts: list[Tok], zone: str, name: str | None, names: set[str], whe
             tags[count] = [t.raw, None, t]
             pieces.append(f"<{count}/>")
     template = "".join(pieces).strip()
+    if template == "\x00name\x00" and name:  # the page's subject alone (its <h1>, its JSON-LD name): its "names" entry
+        return Seg(name, [], {}, zone, where)
     plain = re.sub(r"</?\d+/?>|\x00\w+\x00", "", template)
     if not LETTER.search(plain):
         return None
     template, values = _renumber(template, slots)
-    # a block that is a name of a page's subject, whole, is that name's entry (area "names")
-    if template == "{name}" and name:
-        template = name
-        values = []
     if template not in names and not WORDY.search(plain):
         return None  # a designation or a code ("B0.5IV", "KOI-351 b", "DJIBOUTI-1B (2026)"): the same in every language
     return Seg(template, values, {k: (v[0], v[1], v[2]) for k, v in tags.items()}, zone, where)
@@ -569,6 +567,7 @@ def extract(built: Path, host: str = DEFAULT_HOST) -> tuple[dict[str, dict[str, 
     areas_of: dict[str, set] = {}
     seen_on: dict[str, list] = {}
     is_name: set[str] = set()
+    roles: dict[str, set] = {}
     for path, doc, nm in pages:
         _items, segs = segment_page(doc, nm, names)
         for s in segs:
@@ -577,6 +576,10 @@ def extract(built: Path, host: str = DEFAULT_HOST) -> tuple[dict[str, dict[str, 
                 first[k] = (s.template, area_of(path))
             areas_of.setdefault(k, set()).add(area_of(path))
             seen_on.setdefault(k, []).append(path)
+            if s.zone == "head" and s.where == "text":
+                roles.setdefault(k, set()).add("title")
+            elif s.zone == "head" and s.where == "attr:content":
+                roles.setdefault(k, set()).add("description")
             if s.template in names:
                 is_name.add(k)
     cat: dict[str, dict[str, str]] = {a: {} for a in AREAS}
@@ -586,6 +589,8 @@ def extract(built: Path, host: str = DEFAULT_HOST) -> tuple[dict[str, dict[str, 
         cat[a][k] = tmpl
         where = sorted(set(seen_on[k]))
         ctx[k] = (where[0] or "index.html") + (f" (+{len(where) - 1} more)" if len(where) > 1 else "")
+        if roles.get(k):  # a title must stay within 60 characters, a description within 70 to 160 (scripts/check_seo.py)
+            ctx[k] += " [" + " and ".join(sorted(roles[k])) + "]"
     for nm in sorted(names):  # every subject name, also where no block is the name alone
         k = key_of(nm)
         if not any(k in cat[a] for a in AREAS):
@@ -921,7 +926,12 @@ def translate_page(path: str, seg_page: tuple, name: str | None, lang: "Lang", h
 
     def text_of(s: Seg) -> str:
         t = lang.strings.get(s.key)
-        return t if t is not None and not problems(s.template, t) else s.template
+        if t is None or problems(s.template, t):
+            return s.template
+        # a block opens with a capital where the English does ("The Moon" alone is "la Luna" in names, "La Luna" here)
+        if s.template[:1].isupper() and t[:1].islower() and lang.code not in ("de",):
+            t = t[:1].upper() + t[1:]
+        return t
 
     def attrs_for(segs_):
         return {s.attr: plain(s, text_of(s), lang, name_value) for s in segs_}
@@ -949,18 +959,50 @@ def translate_page(path: str, seg_page: tuple, name: str | None, lang: "Lang", h
                 _ld_set(data, p, plain(s, text_of(s), lang, name_value))
             _ld_localise(data, linker, lang.code)
             out.append(it.open_raw + json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/") + it.close_raw)
-    page = _without_live("".join(out))
+    page = _fit_head(_without_live("".join(out)))
     page = _head_for(page, host, lang, path, alternates, linker)
     page = _notice(page, host, lang, path)
     return PageResult(path, len(segs), [], chrome_missing, page)
 
 
-LIVE_SCRIPT = re.compile(r'<script type="module" src="[^"]*js/pages/live\.js"></script>\n?')
+TITLE_MAX, DESC_MAX = 60, 160  # scripts/check_seo.py's limits, which a translation that grew must still keep
+SUFFIXES = (" | Space Radar Lab", " | Space Radar", " · Space Radar")
+
+
+def _fit_title(t: str) -> str:
+    """The English builders' rule (seo_pages.title_with_site): the site's name is added only where it fits."""
+    for suf in SUFFIXES:
+        if len(t) > TITLE_MAX and t.endswith(suf):
+            return t[:-len(suf)]
+    return t
+
+
+def _fit_desc(t: str) -> str:
+    """A description that grew past 160 characters in translation ends at its last whole sentence that fits, else at its
+    last clause, else at a word, with an ellipsis."""
+    if len(t) <= DESC_MAX:
+        return t
+    cut = t[:DESC_MAX]
+    for mark in (". ", "; ", ": ", ", "):
+        i = cut.rfind(mark)
+        if i >= 70:
+            return cut[:i + 1].rstrip(",;: ") + ("" if mark == ". " else "…")
+    return cut[:cut.rfind(" ")].rstrip(",;: ") + "…"
+
+
+def _fit_head(page: str) -> str:
+    page = re.sub(r"<title>(.*?)</title>", lambda m: f"<title>{html.escape(_fit_title(html.unescape(m.group(1))), quote=False)}</title>", page, count=1, flags=re.S)
+    def meta(m):
+        return m.group(1) + html.escape(_fit_desc(html.unescape(m.group(2))), quote=True) + '">'
+    return re.sub(r'(<meta (?:name="description"|property="og:description"|name="twitter:description") content=")([^"]*)">', meta, page)
+
+
+LIVE_SCRIPT = re.compile(r'<script type="module" src="[^"]*js/(?:pages/live|objectnow)\.js"></script>\n?')
 
 
 def _without_live(page: str) -> str:
-    """A translated page does not run js/pages/live.js: it writes its sentences in English (a follow-up gives it the
-    language's words). The page keeps its dated sentences, which is what a crawler reads, and the controls only that
+    """A translated page does not run js/pages/live.js or js/objectnow.js: they write their sentences in English (a
+    follow-up gives them the language's words). The page keeps its dated sentences, which is what a crawler reads, and the controls only that
     script works (the place picker) are hidden."""
     page = LIVE_SCRIPT.sub("", page)
     return re.sub(r'<div class="place"', '<div class="place" hidden', page)

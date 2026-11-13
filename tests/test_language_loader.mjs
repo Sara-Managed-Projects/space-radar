@@ -107,8 +107,11 @@ assert.deepEqual(es.articles, ['una', 'un', 'una', 'una', 'un', 'una'], 'RULES.a
 
 assert.equal(run({ location: { search: '?lang=xx' }, document: {} }, probe).tonight, 'Tonight', 'an unknown ?lang= is English');
 const fromBrowser = run({ location: { search: '' }, navigator: { languages: ['es-MX', 'es'], language: 'es-MX' }, document: {} }, probe);
-assert.equal(fromBrowser.tonight, 'Tonight', 'a Spanish browser is NOT given the machine-drafted Spanish by itself');
-assert.equal(fromBrowser.lang, '', 'and <html lang> stays as the page wrote it');
+// 2026-11-13 (the maintainer's decision): an agent-reviewed language is offered from the browser's language; Spanish is the first.
+assert.equal(fromBrowser.tonight, 'Esta noche', 'a Spanish browser is given the agent-reviewed Spanish by itself');
+const frBrowser = run({ location: { search: '' }, navigator: { languages: ['fr-FR'], language: 'fr-FR' }, document: {} }, probe);
+assert.equal(frBrowser.tonight, 'Tonight', 'a French browser is NOT given the machine-drafted French by itself');
+assert.equal(frBrowser.lang, '', 'and <html lang> stays as the page wrote it');
 assert.equal(run({ location: { search: '?lang=es&from=ig' } , document: {} }, probe).tonight, 'Esta noche', 'other query keys do not matter');
 
 // --- 3. English is free, and nothing here needs more than es2020 ---------------------------------------------
@@ -146,8 +149,9 @@ const { out } = await check(join(JS, 'copy/es.js'));
 // since 1.6.3 the Spanish has every key, so a stage that adds one must add its Spanish (or this fails). A slot lost or invented, or text where English has a group, is: it prints a hole on the screen.
 assert.deepEqual([out.missing, out.placeholder, out.kind, out.extra], [[], [], [], []], `copy/es.js loses or invents a {slot}, or has the wrong kind of value:\n${JSON.stringify(out, null, 1).slice(0, 600)}`);
 const es_ = await import(href('copy/es.js'));
-assert.equal(es_.META.review.status, 'machine-drafted', 'the Spanish says what it is until two native speakers have read it');
-assert.equal(LANGUAGES.es.reviewed, false, 'and the browser\'s language does not bring it in');
+assert.equal(es_.META.review.status, 'agent-reviewed', 'the Spanish says what it is: machine-translated, read against the English by an agent, not by a native speaker');
+assert.equal(LANGUAGES.es.reviewed, true, 'and so the browser\'s language brings it in');
+for (const code of ['fr', 'de', 'pt', 'ru', 'uk', 'zh', 'hi', 'he', 'ar']) assert.equal(LANGUAGES[code].reviewed, false, `${code} is not offered from the browser's language yet`);
 assert.ok(LANGUAGES.es.locale === 'es-ES', 'its dates are written in Spanish');
 const st = await status();
 assert.deepEqual(st.problems, [], `the translation table has problems:\n${st.problems.join('\n')}`);

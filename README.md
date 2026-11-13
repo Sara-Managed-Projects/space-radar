@@ -309,8 +309,8 @@ Translations, as they stand (all machine-drafted and not yet shown from a browse
 <!-- translation-badges:begin (node scripts/check-translation.mjs --write-doc) -->
 [![Arabic: 100 %, machine-drafted](https://img.shields.io/badge/%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9-100%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
 [![German: 99.9 %, machine-drafted](https://img.shields.io/badge/Deutsch-99.9%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
-[![Spanish: 100 %, machine-drafted](https://img.shields.io/badge/Espa%C3%B1ol-100%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
-[![French: 99.8 %, machine-drafted](https://img.shields.io/badge/Fran%C3%A7ais-99.8%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
+[![Spanish: 100 %, agent-reviewed](https://img.shields.io/badge/Espa%C3%B1ol-100%20%25%20agent--reviewed-yellowgreen)](docs/TRANSLATING.md)
+[![French: 99.9 %, machine-drafted](https://img.shields.io/badge/Fran%C3%A7ais-99.9%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
 [![Hebrew: 100 %, machine-drafted](https://img.shields.io/badge/%D7%A2%D7%91%D7%A8%D7%99%D7%AA-100%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
 [![Hindi: 100 %, machine-drafted](https://img.shields.io/badge/%E0%A4%B9%E0%A4%BF%E0%A4%A8%E0%A5%8D%E0%A4%A6%E0%A5%80-100%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)
 [![Portuguese (Brazil): 99.9 %, machine-drafted](https://img.shields.io/badge/Portugu%C3%AAs%20(Brasil)-99.9%20%25%20machine--drafted-yellow)](docs/TRANSLATING.md)

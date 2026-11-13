@@ -188,6 +188,7 @@ def main() -> int:
         check(ld["@graph"][0]["inLanguage"] == "es" and ld["@graph"][0]["url"] == f"{HOST}/es/about/index.html" and ld["@graph"][0]["name"].startswith("ES "),
               "JSON-LD: inLanguage, the page's URL and its text")
         jp = (built / "es/o/jupiter.html").read_text(encoding="utf-8")
+        check("<h1>ES Jupiter</h1>" in jp, "the subject's own name, alone in its heading, is its names entry translated")
         check("js/pages/live.js" not in jp, "a translated page does not run live.js (its sentences are English)")
         check('href="../#at=jupiter"' in jp, "the map link goes to the Spanish app shell")
         home = (built / "es/index.html").read_text(encoding="utf-8")
