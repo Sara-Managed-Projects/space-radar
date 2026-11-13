@@ -66,6 +66,10 @@ const TOUR_PATH = ['M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z', 'M9.09 9a3 3 0 0
 const MAIL_PATH = ['M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z', 'm22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7'];
 // Lucide `gamepad` (ISC), its rectangle, cross and buttons as one path: the Games link.
 const GAMEPAD_PATH = ['M6 12h4M8 10v4M15 13h.01M18 11h.01M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z'];
+// Lucide `box` (ISC): the Models link.
+const MODELS_PATH = ['M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z', 'm3.3 7 8.7 5 8.7-5', 'M12 22V12'];
+// Lucide `circle-play` (ISC): the Video link.
+const VIDEO_PATH = ['M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Z', 'm10 8 6 4-6 4Z'];
 const BLOG_PATH = ['M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2', 'M18 14h-8', 'M15 18h-5', 'M10 6h8v4h-8V6Z'];
 
 /** What a key press means to the rail, or null. Pure, like ui/cleanview.js wantsToggle. */
@@ -286,7 +290,8 @@ export function createRail(ctx, host) {
   menuRow('button', icon(HIDE_PATH), COPY.rail.menuHide, () => { if (ctx && ctx.cleanView) ctx.cleanView.set(true); });
   menuRow('button', icon(TOUR_PATH), COPY.rail.menuTour, toggleTour);
   menuRow('button', icon(MAIL_PATH), COPY.rail.subscribe, () => subscribe().then((s) => s && s.open(moreBtn)));
-  for (const [glyph, words, href] of [[BLOG_PATH, COPY.rail.blog, COPY.rail.blogHref], [GAMEPAD_PATH, COPY.games.label, COPY.games.href]]) {
+  for (const [glyph, words, href] of [[BLOG_PATH, COPY.rail.blog, COPY.rail.blogHref], [GAMEPAD_PATH, COPY.games.label, COPY.games.href],
+    [MODELS_PATH, COPY.rail.models, COPY.rail.modelsHref], [VIDEO_PATH, COPY.rail.video, COPY.rail.videoHref]]) {
     const row = menuRow('a', icon(glyph), words, () => {});
     row.href = href;
     row.target = '_blank';

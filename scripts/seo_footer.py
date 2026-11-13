@@ -58,7 +58,8 @@ GROUPS = [
     ("Explore", ("about/", "sources/", "accuracy/", "satellites/", "starlink/", "o/international-space-station",
                  "planets-tonight/", "events/")),
     ("Teach and share", ("teachers/", "press/", "embed/", "creators/", "support/", "privacy/")),
-    ("Sites", ("https://blog.spaceradar.ai/", "https://games.spaceradar.ai/", "lab/")),
+    ("Sites", ("https://blog.spaceradar.ai/", "https://games.spaceradar.ai/", "https://models.spaceradar.ai/",
+               "https://video.spaceradar.ai/", "lab/")),
     ("Follow", ()),
 ]
 
@@ -77,7 +78,7 @@ def footer_columns(root: str) -> str:
         local = h[len(root):] if root and h.startswith(root) else h
         at = next((i for i, (_, keys) in enumerate(GROUPS) if any(local.startswith(k) for k in keys)), len(GROUPS) - 1)
         cols[at].append(ln)
-    # Each column in its group's order (the sites as the header has them: Map, Journal, Games, Lab).
+    # Each column in its group's order (the sites as the header has them: Map, Journal, Games, Models, Video, Lab).
     rank = lambda i, ln: next((j for j, k in enumerate(GROUPS[i][1]) if (href(ln)[len(root):] if root and href(ln).startswith(root) else href(ln)).startswith(k)), -1)  # noqa: E731
     cols = [sorted(c, key=lambda ln, i=i: rank(i, ln)) for i, c in enumerate(cols)]
     body = "".join(f'<div><p class="foot__h">{name}</p><ul>\n' + "\n".join(c) + "\n</ul></div>\n" for (name, _), c in zip(GROUPS, cols) if c)
