@@ -651,7 +651,7 @@ def privacy_page(host: str) -> Page:
         "<p>If you subscribe, one record is kept for your address. It holds:</p>\n"
         "<ul>\n"
         "<li>your email address;</li>\n"
-        "<li>the lists you picked: Space Radar news, the Journal, space games, sky alerts;</li>\n"
+        "<li>the lists you picked: Space Radar news, the Journal, space games (or one game's own list), sky alerts, Space Radar models, Space Radar video;</li>\n"
         "<li>your consent: when you asked, when you confirmed, the page you signed up on (its address without anything after a <code>?</code>) "
         "and the version of this page you agreed to;</li>\n"
         "<li>a short history of those steps (asked, confirmed, changed, left), so we can show that you asked;</li>\n"
