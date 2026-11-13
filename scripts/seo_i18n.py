@@ -1285,9 +1285,9 @@ def _catalog_text(cat: dict, ctx: dict) -> dict[str, str]:
 
 
 def main(argv: list[str]) -> int:
-    if not argv:
-        print(__doc__)
-        return 2
+    if not argv or argv[0] in ("-h", "--help"):
+        print(USAGE)
+        return 0 if argv else 2
     cmd, args = argv[0], argv[1:]
     opt = {}
     pos = []
@@ -1359,8 +1359,12 @@ def main(argv: list[str]) -> int:
         for c, r in rep["langs"].items():
             print(f"{c}: {r['published']} of {r['total']} pages")
         return 0
-    print(__doc__)
+    print(USAGE, file=sys.stderr)
     return 2
+
+
+USAGE = ("usage: python3 scripts/seo_i18n.py extract --built DIR [--also DIR] [--check] | flat --out DIR [--missing CODE] | "
+         "merge CODE DIR | check [CODE ...] | coverage --built DIR   (docs/TRANSLATING.md, \"The pages a search engine reads\")")
 
 
 if __name__ == "__main__":

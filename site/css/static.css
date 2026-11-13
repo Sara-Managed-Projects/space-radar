@@ -167,6 +167,7 @@ ol.steps li{margin:0 0 .8rem}
 [dir=rtl] .top__r,[dir=rtl] .xnav{margin-left:0;margin-right:auto}[dir=rtl] .xnav+.top__r{margin-right:0}
 @media(max-width:719px){[dir=rtl] .top--x .top__r{margin-left:0;margin-right:auto}}
 [dir=rtl] .skip{left:auto;right:-999px}[dir=rtl] .skip:focus{right:.5rem}
+[dir=rtl] .sub__hp{left:auto!important;right:-9999px}
 [dir=rtl] caption,[dir=rtl] th,[dir=rtl] td{text-align:right}
 [dir=rtl] .sources ol,[dir=rtl] .doc ul:not([class]),[dir=rtl] .doc ol{padding-left:0;padding-right:1.4rem}
 [dir=rtl] .dot,[dir=rtl] .eyebrow img{margin-right:0;margin-left:.55rem}
