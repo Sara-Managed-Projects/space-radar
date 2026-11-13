@@ -14,7 +14,7 @@
 #                         share pictures (og/) and the sounds (audio/) only.
 #   --app-only            skip the big assets; push HTML, CSS, JS, the vendored libraries (vendor/,
 #                         since 2026-10-07: they are code, stripped and stamped with the app),
-#                         the trip pages (t/), the Lab's simulators (lab/), robots.txt
+#                         the trip pages (t/), the Lab's simulators (lab/), the one-model viewer (model/), robots.txt
 #                         and the pages scripts/build_seo.py builds (o/, sitemap.xml (the index), sitemap-pages.xml, 404.html,
 #                         object-pages.json, build.json (the commit this deploy is:
 #                         scripts/build_info.py), and what scripts/seo_pages.py adds: starlink/, satellites/,
@@ -42,6 +42,8 @@
 #   --dry-run             print what would be uploaded and change nothing.
 #
 # Environment:
+#   MODELS_BUCKET=NAME    where the models catalog goes after a deploy of the app (default space-radar-models-lifehub,
+#                         region MODELS_REGION, default eu-north-1; skipped when the bucket is not there). Empty: off.
 #   INDEXNOW=1            after the app is uploaded, tell the IndexNow engines (Bing, Yandex and
 #                         others) which pages changed: scripts/indexnow.py. Off unless set; a failure
 #                         is a warning and never fails the deploy. The key file is always uploaded.
@@ -137,7 +139,7 @@ SYNC=(aws s3 sync --region "$REGION")
 # hypothetical: `site/models/` was added for the NASA spacecraft and this script did not know about
 # it, so the first deploy after that shipped an app whose models 403'd. The app degraded correctly
 # and nobody would have noticed for a while, which is exactly what makes it worth a check.
-KNOWN="textures data vendor js css models images t og audio fonts lab"
+KNOWN="textures data vendor js css models images t og audio fonts lab model"
 MISSING=""
 for d in "$SITE"/*/; do
   name=$(basename "$d")
@@ -381,6 +383,15 @@ if [ "$WHAT" != "assets" ]; then
   # registry must not keep a page that opens the app on nothing.
   "${SYNC[@]}" "$SITE/t"   "s3://$BUCKET/t" \
     --cache-control "$REVALIDATE" --content-type "text/html; charset=utf-8" --delete
+  # THE ONE-MODEL VIEWER (site/model/, docs/EMBEDDING.md "One 3D model"): a page, its script and the index
+  # scripts/models_catalog.py writes. models.spaceradar.ai frames it on every model page. Revalidated like the app and
+  # --delete; it imports the vendored three.js uploaded above, so it needs no copy of its own.
+  "${SYNC[@]}" "$SITE/model" "s3://$BUCKET/model" --cache-control "$REVALIDATE" \
+    --exclude "*" --include "*.html" --content-type "text/html; charset=utf-8" --delete
+  "${SYNC[@]}" "$SITE/model" "s3://$BUCKET/model" --cache-control "$REVALIDATE" \
+    --exclude "*" --include "*.js" --content-type "text/javascript; charset=utf-8"
+  "${SYNC[@]}" "$SITE/model" "s3://$BUCKET/model" --cache-control "$REVALIDATE" \
+    --exclude "*" --include "*.json" --content-type "application/json; charset=utf-8"
   # The pages a search engine reads that are not kept in git (spec 0061 task 9): one per notable
   # object, the sitemap and the 404 page, built here from the records and the card's own words
   # (scripts/build_seo.py; it needs Node, as the card's words are JavaScript). o/ is synced like
@@ -535,7 +546,7 @@ if [ "$WHAT" != "assets" ]; then
 fi
 
 if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
-  PATHS=("/" "/index.html" "/js/*" "/css/*" "/vendor/*" "/t/*" "/lab/*" "/o/*" "/press/*" "/embed/*" "/robots.txt" "/sitemap.xml" "/sitemap-pages.xml" "/sitemap-images.xml" "/llms.txt" "/llms-full.txt" "/404.html" "/object-pages.json" "/manifest.webmanifest" "/build.json" "/sw.js")
+  PATHS=("/" "/index.html" "/js/*" "/css/*" "/vendor/*" "/t/*" "/model/*" "/lab/*" "/o/*" "/press/*" "/embed/*" "/robots.txt" "/sitemap.xml" "/sitemap-pages.xml" "/sitemap-images.xml" "/llms.txt" "/llms-full.txt" "/404.html" "/object-pages.json" "/manifest.webmanifest" "/build.json" "/sw.js")
   # The gzip copies keep their names too.
   [ "$PRECOMPRESS" = "1" ] && PATHS+=("/_gz/*")
   # The pages seo_pages.py built, each by its directory, and the pictures (share/) with them: all of
@@ -590,6 +601,33 @@ if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
     echo "    their names are not content-hashed, so nothing expires them early. If you changed one, run:"
     echo "      aws cloudfront create-invalidation --distribution-id $DISTRIBUTION \\"
     echo "        --paths '/textures/*' '/models/*' '/images/*' '/og/*' '/audio/*'"
+  fi
+fi
+
+# THE MODELS CATALOG (models.spaceradar.ai, built in the internal repository's models/). After a deploy of the app
+# that got this far, the catalog of the models this project made (scripts/models_catalog.py: registry/models.yaml,
+# the .glb files, git's dates) goes to the models site's bucket as data/models-catalog.json, and that put rebuilds
+# every page of the site there. So a new model row reaches models.spaceradar.ai on the next deploy of this site with no
+# page work. Only when the bucket exists and this profile may see it (head-bucket); a failure is a warning and never
+# fails the deploy, which has already succeeded. MODELS_BUCKET= (empty) turns it off.
+MODELS_BUCKET="${MODELS_BUCKET-space-radar-models-lifehub}"
+MODELS_REGION="${MODELS_REGION:-eu-north-1}"
+if [ "$WHAT" != "assets" ] && [ -n "$MODELS_BUCKET" ]; then
+  if [ "$DRY_RUN" = "1" ]; then
+    python3 "$HERE/models_catalog.py" --out "$BUILT/models-catalog.json" >/dev/null \
+      && echo "  would upload models-catalog.json to s3://$MODELS_BUCKET/data/ (if the bucket exists)" \
+      || echo "warning: scripts/models_catalog.py failed; the models site would not be told" >&2
+  elif aws s3api head-bucket --bucket "$MODELS_BUCKET" --region "$MODELS_REGION" >/dev/null 2>&1; then
+    echo "==> the models catalog -> s3://$MODELS_BUCKET/data/models-catalog.json"
+    if python3 "$HERE/models_catalog.py" --out "$BUILT/models-catalog.json"; then
+      aws s3 cp "$BUILT/models-catalog.json" "s3://$MODELS_BUCKET/data/models-catalog.json" --region "$MODELS_REGION" \
+        --content-type "application/json; charset=utf-8" --cache-control "no-cache" \
+        || echo "warning: could not upload the models catalog; models.spaceradar.ai keeps the last one" >&2
+    else
+      echo "warning: scripts/models_catalog.py failed; models.spaceradar.ai keeps the last catalog" >&2
+    fi
+  else
+    echo "    (no models bucket $MODELS_BUCKET reachable with this profile: the models catalog was not sent)"
   fi
 fi
 
