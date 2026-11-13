@@ -738,6 +738,10 @@ export const COPY = {
     // The journal (ui/rail.js): the word is the same in every language we ship.
     blog: 'Blog',
     blogHref: 'https://blog.spaceradar.ai/',
+    models: 'Models',
+    modelsHref: 'https://models.spaceradar.ai/',
+    video: 'Video',
+    videoHref: 'https://video.spaceradar.ai/',
     // The tour (ui/onboarding.js, internal spec 0074): the fourth tool, and its row on a phone.
     tour: 'Take the tour',
     menuTour: 'Take the tour',

@@ -223,6 +223,10 @@ export const COPY = {
     "menuGitHub": "المصدر على GitHub",
     "blog": "المدونة",
     "blogHref": "https://blog.spaceradar.ai/",
+    "models": "نماذج",
+    "modelsHref": "https://models.spaceradar.ai/",
+    "video": "فيديو",
+    "videoHref": "https://video.spaceradar.ai/",
     "tour": "ابدأ الجولة",
     "menuTour": "ابدأ الجولة"
   },

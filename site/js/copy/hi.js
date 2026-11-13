@@ -224,6 +224,10 @@ export const COPY = {
     "menuGitHub": "GitHub पर सोर्स",
     "blog": "ब्लॉग",
     "blogHref": "https://blog.spaceradar.ai/",
+    "models": "मॉडल",
+    "modelsHref": "https://models.spaceradar.ai/",
+    "video": "वीडियो",
+    "videoHref": "https://video.spaceradar.ai/",
     "tour": "टूर लें",
     "menuTour": "टूर लें"
   },

@@ -58,6 +58,7 @@ def footer(root: str, source: str) -> str:
 
 
 LAB_LINKS = (("Sites", (("", "The 3D map"), ("https://blog.spaceradar.ai/", "Journal"), ("https://games.spaceradar.ai/", "Games"),
+                        ("https://models.spaceradar.ai/", "Models"), ("https://video.spaceradar.ai/", "Video"),
                         ("lab/index.html", "All simulators"))),
              ("More", (("about/index.html", "About"), ("sources/index.html", "Sources"), ("privacy/index.html", "Privacy"),
                        ("https://github.com/Sara-Managed-Projects/space-radar", "GitHub"))))
