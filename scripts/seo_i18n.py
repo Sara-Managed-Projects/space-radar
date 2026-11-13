@@ -1300,12 +1300,12 @@ def main(argv: list[str]) -> int:
     host = str(opt.get("host", DEFAULT_HOST)).rstrip("/")
     root = Path(opt["root"]) if "root" in opt else CAT
     if cmd == "extract":
-        # --built DIR: the build to read (CI's: no saved-copy index). --also DIR: a second build whose extra sentences join the
-        # catalog (a deploy-like build with --snapshot-index, whose pages name the saved copies' sources and days).
+        # --built DIR: the build to read. --also DIR[,DIR]: more builds whose extra sentences join the catalog: a deploy's
+        # (--snapshot-index: the saved copies' sources and days; numpy present: the paper globes) and CI's (neither).
         built = Path(opt["built"])
         cat, ctx = extract(built, host)
-        if isinstance(opt.get("also"), str):
-            cat2, ctx2 = extract(Path(opt["also"]), host)
+        for also in (opt["also"].split(",") if isinstance(opt.get("also"), str) else []):
+            cat2, ctx2 = extract(Path(also), host)
             have = {k for rows in cat.values() for k in rows}
             for a2, rows in cat2.items():
                 for k, v in rows.items():
@@ -1322,6 +1322,8 @@ def main(argv: list[str]) -> int:
                       + "; ".join(repr(need[k][:60]) for k in missing[:3])
                       + "\n  run: python3 scripts/build_seo.py --out DIR && python3 scripts/seo_i18n.py extract --built DIR"
                       + " (docs/TRANSLATING.md, \"The pages a search engine reads\")", file=sys.stderr)
+                for k in missing[:60]:  # all of them, so a build elsewhere (CI) says exactly what to add
+                    print(f"  missing {k}: {json.dumps(need[k], ensure_ascii=False)}", file=sys.stderr)
                 return 1
             note = f"; {len(unused)} more are a deploy's (or no longer said)" if unused else ""
             print(f"seo_i18n: the English catalog holds every string of the build ({len(need)}{note})")
@@ -1363,7 +1365,7 @@ def main(argv: list[str]) -> int:
     return 2
 
 
-USAGE = ("usage: python3 scripts/seo_i18n.py extract --built DIR [--also DIR] [--check] | flat --out DIR [--missing CODE] | "
+USAGE = ("usage: python3 scripts/seo_i18n.py extract --built DIR [--also DIR,DIR] [--check] | flat --out DIR [--missing CODE] | "
          "merge CODE DIR | check [CODE ...] | coverage --built DIR   (docs/TRANSLATING.md, \"The pages a search engine reads\")")
 
 

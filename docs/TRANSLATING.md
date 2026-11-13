@@ -159,8 +159,10 @@ pages, the 102 country pages and the 29 events) can be published again under `/<
 own, hreflang both ways and its own sitemap, `sitemap-pages-<code>.xml`, in the index. `scripts/seo_i18n.py` does it at every
 deploy, from **one catalog of the English the pages say**:
 
-- `registry/seo-i18n/en/<area>.json`: `{key: English}`, written by `python3 scripts/seo_i18n.py extract --built DIR` from a build
-  (`python3 scripts/build_seo.py --out DIR --no-share`), never by hand. Areas: `common` (on pages of several kinds: the header, the
+- `registry/seo-i18n/en/<area>.json`: `{key: English}`, written by `python3 scripts/seo_i18n.py extract --built DIR --also DIR2,DIR3`
+  from builds (`python3 scripts/build_seo.py --out DIR --no-share`), never by hand. A few sentences differ between a deploy's build
+  and CI's: give `--also` a build made with `--snapshot-index` (the saved copies' sources and days) and one made without numpy (CI
+  draws no paper globes), so the catalog holds both. Areas: `common` (on pages of several kinds: the header, the
   footer, the subscribe card), `home`, `static`, `trips`, `lab`, `objects`, `countries`, `events`, `names` (the names of the pages'
   subjects). `_context.json` says where each string is first seen. CI rebuilds the pages and runs `extract --check`: a sentence the
   pages say and the catalog lacks fails the build, so the catalog is never behind the pages.
