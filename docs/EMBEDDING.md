@@ -110,6 +110,35 @@ and should be captioned as one.
 The code is open source under the licence in `LICENSE`; textures, models and data keep the
 licences listed in `CREDITS.md`.
 
+## One 3D model
+
+Every model this project built itself (about two hundred spacecraft, stages, landers and stations, listed with
+pictures, sizes and downloads at [models.spaceradar.ai](https://models.spaceradar.ai/)) has a small viewer of its own,
+apart from the map: the model alone, to turn and zoom.
+
+```html
+<iframe src="https://www.spaceradar.ai/model/?id=hubble" title="Hubble Space Telescope, 3D model by Space Radar" width="600" height="450" loading="lazy" style="border:0;max-width:100%"></iframe>
+```
+
+| parameter | what it does | example |
+|---|---|---|
+| `id` | The model: its id on models.spaceradar.ai (the last part of a model page's address). Required. | `id=xrism` |
+| `turn` | `0` stops the slow auto-turn. It never runs for a reader who asked for reduced motion, and stops for good when they take the camera. | `turn=0` |
+| `bg` | `none` makes the page transparent, so the model sits on your own background. | `bg=none` |
+| `ui` | `0` hides the bar with the name and the two buttons. Keep the credit line on your page if you do. | `ui=0` |
+
+- **What it loads:** the page (`site/model/index.html` and `viewer.js`), the site's own three.js, its glTF loader and
+  the meshopt decoder (the same three files the map loads), a small index (`models.json`) and the one `.glb`: from a
+  few hundred kB for the first model, much less after. No app, no service worker, no cookie, no third-party request.
+- **What a reader gets:** drag to turn, scroll or pinch to zoom, the arrow keys and `+`/`-` once the frame has focus,
+  double-click or the reset button to frame the model again, and a button that stops the turning (motion that lasts
+  longer than five seconds can be paused, WCAG 2.2.2). The name links to the model's page on models.spaceradar.ai.
+- **Credit:** the models are under this repository's MIT licence. Say where it is from, for example "Hubble Space
+  Telescope 3D model by Space Radar (spaceradar.ai), MIT License"; each model page has the line to copy.
+- **Where the list comes from:** `scripts/models_catalog.py` reads `registry/models.yaml` and keeps the rows this project
+  made (kind `built-from-dimensions` or `derived-from-images`). It writes the viewer's index, and on every deploy of the
+  site the full catalog goes to models.spaceradar.ai, so a new model has its viewer and its page with no page work.
+
 ## Framing
 
 `https://www.spaceradar.ai/` is served without `X-Frame-Options` and without a

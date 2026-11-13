@@ -50,13 +50,14 @@ const uses = [...code.matchAll(/"s3:\/\/\$BUCKET\/([\w/]+)"[^\n]*(?:\\\n[^\n]*)*
 const revalidated = [...new Set(uses.filter(([, v]) => v === 'REVALIDATE').map(([p]) => p))].sort();
 // print/ since 2.0.0 (forge #161, b200-f6-learn): the paper models' page and its PDFs, synced by a block of its own.
 // audio/ since 2.0.1: only its indexes (*.json); the clips stay long-lived (LONG), and the indexes are invalidated by name.
-check(JSON.stringify(revalidated) === JSON.stringify(['_gz/css', '_gz/js', 'audio', 'css', 'embed', 'js', 'lab', 'o', 'press', 'print', 'share', 't', 'vendor']), `the folders stored for revalidation are the app's and the pages' (${revalidated})`);
+check(JSON.stringify(revalidated) === JSON.stringify(['_gz/css', '_gz/js', 'audio', 'css', 'embed', 'js', 'lab', 'model', 'o', 'press', 'print', 'share', 't', 'vendor']), `the folders stored for revalidation are the app's and the pages' (${revalidated})`);
 // The growth pages (scripts/seo_pages.py) are synced by a loop over pages-dirs.txt, share/ among them: the same list is invalidated.
 check(/"s3:\/\/\$BUCKET\/\$dir" --cache-control "\$REVALIDATE"/.test(code) && /PATHS\+=\("\/\$dir\/\*"\)/.test(code), 'every directory in pages-dirs.txt carries it and is invalidated by the same list');
 // Seventeen until 2.0.0, then twenty-two: print/'s page and PDFs (b200-f6-learn), and assets/ and creators/ as HTML,
-// JSON and pictures (b200-f9-reach, one loop of three uploads); twenty-three in 2.0.1 with the sounds' indexes.
+// JSON and pictures (b200-f9-reach, one loop of three uploads); twenty-three in 2.0.1 with the sounds' indexes;
+// twenty-six with the one-model viewer (model/: its page, script and index, models.spaceradar.ai).
 // A new upload changes the count here on purpose.
-check(!/--cache-control "no-cache"/.test(code) && (code.match(/--cache-control "\$REVALIDATE"/g) || []).length === 23, 'no upload still says a literal no-cache: all twenty-three read $REVALIDATE');
+check(!/--cache-control "no-cache"/.test(code) && (code.match(/--cache-control "\$REVALIDATE"/g) || []).length === 26, 'no upload still says a literal no-cache: all twenty-six read $REVALIDATE');
 check(/aws s3 cp "\$path" "s3:\/\/\$BUCKET\/\$name" --region "\$REGION" \\\n\s+--cache-control "\$REVALIDATE"/.test(code), 'the root files (index.html, sw.js, the manifest, the sitemap) carry it too');
 const paths = (/PATHS=\(([^)]*)\)/.exec(code) || [])[1] || '';
 const invalidated = [...paths.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
