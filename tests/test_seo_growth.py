@@ -194,11 +194,14 @@ ok(f"embed/index.html</loc>" in (built / "sitemap-pages.xml").read_text(encoding
 smi = (built / "sitemap.xml").read_text(encoding="utf-8")
 idx = re.findall(r"<sitemap><loc>([^<]+)</loc>(?:<lastmod>([^<]+)</lastmod>)?</sitemap>", smi)
 ok("<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">" in smi and "<urlset" not in smi, "the built sitemap.xml is a sitemap index")
-ok([u for u, _ in idx] == ["https://www.spaceradar.ai/sitemap-pages.xml", "https://www.spaceradar.ai/sitemap-images.xml",
+# the pages in other languages (scripts/seo_i18n.py): one sitemap per language with a page, after the English pages, in the app's order
+langmaps = [f"https://www.spaceradar.ai/sitemap-pages-{c}.xml" for c in ("es", "fr", "de", "pt", "ru", "uk", "zh", "hi", "he", "ar")
+            if (built / f"sitemap-pages-{c}.xml").is_file()]
+ok([u for u, _ in idx] == ["https://www.spaceradar.ai/sitemap-pages.xml", *langmaps, "https://www.spaceradar.ai/sitemap-images.xml",
                          "https://blog.spaceradar.ai/sitemap.xml", "https://games.spaceradar.ai/sitemap.xml",
                          "https://models.spaceradar.ai/sitemap.xml", "https://video.spaceradar.ai/sitemap.xml",
                          "https://video.spaceradar.ai/sitemap-video.xml"],
-   f"it lists the main site's pages and pictures, then the journal's, games', models' and video's sitemaps ({[u for u, _ in idx]})")
+   f"it lists the main site's pages, its language sitemaps and pictures, then the journal's, games', models' and video's sitemaps ({[u for u, _ in idx]})")
 ok(all(re.match(r"^\d{4}-\d{2}-\d{2}$", d) for u, d in idx if u.startswith("https://www.")) and not any(d for u, d in idx if not u.startswith("https://www.")),
    "the main site's two carry the build's date; the other sites' carry none (theirs to say)")
 ok(max(dates) == idx[0][1], "the pages sitemap's date in the index is its newest page's")
