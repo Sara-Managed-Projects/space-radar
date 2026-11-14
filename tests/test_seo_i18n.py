@@ -308,6 +308,15 @@ def main() -> int:
           and fr.date(("dm", 2, 1, 0)) == "2 janvier" and fr.date(("my", 0, 11, 2026)) == "novembre 2026",
           f"French dates: 1er only for the first, 11 and 21 as they are ({fr.date(('dmy', 1, 11, 2026))!r})")
     check(pt.date(("dmy", 1, 11, 2026)) == "1 de novembro de 2026", "and Portuguese keeps its digit")
+    # a translated title that grew past 60 characters ends at its last clause that fits, else at a word
+    long_fr = "La bibliothèque lunaire de Beresheet\xa0: sa position en ce moment | Space Radar"
+    check(S._fit_title(long_fr) == "La bibliothèque lunaire de Beresheet", f"a long title ends at its last clause ({S._fit_title(long_fr)!r})")
+    check(S._fit_title("Конфиденциальность: что хранит Space Radar и чего никогда не делает").endswith("…")
+          and len(S._fit_title("Конфиденциальность: что хранит Space Radar и чего никогда не делает")) <= 60, "or at a word, with an ellipsis")
+    check(S._fit_title("Satellites en orbite pour la Tchéquie (et la Tchécoslovaquie)\xa0: 7\u202f656") == "Satellites en orbite pour la Tchéquie…", "never in the middle of a bracket")
+    check(S._fit_title("Jupiter : sa position | Space Radar") == "Jupiter : sa position | Space Radar", "a title that fits is left alone")
+    import check_seo as _cs
+    check(_cs.DESC_MIN_LANG.get("zh") == 35 and "fr" not in _cs.DESC_MIN_LANG, "a Chinese description is held to half the characters of an alphabetic one")
     # a spacecraft that has the subject's name in its own is a name, not a slot (Mars Global Surveyor on Mars's page)
     _i, gs = S.segment_page("<p>On a larger screen its relief is from the heights Mars Global Surveyor’s laser altimeter measured; Mars is red.</p>", "Mars", {"Mars"})
     check([s.template for s in gs] == ["On a larger screen its relief is from the heights Mars Global Surveyor’s laser altimeter measured; {name} is red."],

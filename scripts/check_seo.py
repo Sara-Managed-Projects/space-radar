@@ -82,6 +82,9 @@ BLOG_HOST = "https://blog.spaceradar.ai"
 NS = "http://www.sitemaps.org/schemas/sitemap/0.9"
 TITLE_MAX = 60
 DESC_MIN, DESC_MAX = 70, 160
+# A Chinese character carries a syllable's worth of meaning, so its description is half the characters of an alphabetic one's
+# for the same sentence; 70 characters of Chinese is a paragraph.
+DESC_MIN_LANG = {"zh": 35}
 DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 # Built directories that are not pages of the growth set (the press page has its own builder and test).
 NOT_GROWTH = {"o", "press", "share", "embed", "lab", "t", *seo_i18n.LANGS}  # press, the embed gallery and the Lab have their own builders; they are judged by the rules above and check_lab()
@@ -607,7 +610,7 @@ def check_languages(site: Path, built: Path, say, robots_text: str) -> None:
                  above); under 50 000 URLs and 50 MB; every URL a page of the build in that language, with a YYYY-MM-DD
                  lastmod; every page of the language in it; each entry's xhtml:link alternates valid and reciprocal.
       pages      <html lang> the language's code and dir="rtl" for he and ar ("ltr" otherwise); a canonical that is the page
-                 itself; og:url the same; a title of at most 60 characters and (but the Lab's) a description of 70 to 160;
+                 itself; og:url the same; a title of at most 60 characters and (but the Lab's) a description of 70 to 160 (35 to 160 in Chinese);
                  hreflang for every version that exists and only those, x-default the English page, reciprocal on every
                  page they name (English pages included); the machine-translation note linking the English original; no
                  link to an English page that exists in the page's own language.
@@ -696,8 +699,9 @@ def check_languages(site: Path, built: Path, say, robots_text: str) -> None:
             elif len(title) > TITLE_MAX:
                 say(f"{name}: the title is {len(title)} characters, over {TITLE_MAX}: {title!r}")
             desc = h.one("description")
-            if not inner.startswith("lab/") and (desc is None or not DESC_MIN <= len(desc) <= DESC_MAX):
-                say(f"{name}: the description is {len(desc or '')} characters, outside {DESC_MIN}-{DESC_MAX}")
+            dmin = DESC_MIN_LANG.get(code, DESC_MIN)
+            if not inner.startswith("lab/") and (desc is None or not dmin <= len(desc) <= DESC_MAX):
+                say(f"{name}: the description is {len(desc or '')} characters, outside {dmin}-{DESC_MAX}")
             for block in h.ld:
                 try:
                     json.loads(block)
@@ -798,10 +802,19 @@ def main(argv: list[str]) -> int:
         return 2
     problems = check(root, built, require_share)
     if problems:
-        for p in problems[:40]:
-            print(p)
-        if len(problems) > 40:
-            print(f"... and {len(problems) - 40} more")
+        if len(problems) <= 40:
+            for p in problems:
+                print(p)
+        else:
+            # many problems are one problem on many pages (a title over 60 characters on the pages of one language): the
+            # first three of each kind, and how many there are, so one run shows every kind
+            kinds: dict[str, list[str]] = {}
+            for p in problems:
+                kinds.setdefault(re.sub(r"\d+", "N", re.sub(r"^built/([a-z]{2}/)?\S+?: ", r"\1", p))[:90], []).append(p)
+            for kind, rows in kinds.items():
+                print(f"[{len(rows)}x] {kind}")
+                for p in rows[:3]:
+                    print("    " + p[:230])
         print(f"\n{len(problems)} problem(s) a search engine would see")
         return 1
     n = 2 + len(list((built / "o").glob("*.html"))) + len(list((root / "site" / "t").glob("*.html"))) \

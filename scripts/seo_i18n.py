@@ -1053,12 +1053,27 @@ TITLE_MAX, DESC_MAX = 60, 160  # scripts/check_seo.py's limits, which a translat
 SUFFIXES = (" | Space Radar Lab", " | Space Radar", " · Space Radar")
 
 
+TITLE_BREAK = re.compile(r"[\s\u00a0\u202f]*(?:[:·—|,;]|\s-)[\s\u00a0\u202f]+")
+
+
 def _fit_title(t: str) -> str:
-    """The English builders' rule (seo_pages.title_with_site): the site's name is added only where it fits."""
+    """The English builders' rule (seo_pages.title_with_site): the site's name is added only where it fits. A translation
+    that is still too long ends at its last clause that fits ("La photo de famille de Charlie Duke : sa position en ce
+    moment" is "La photo de famille de Charlie Duke"), else at a word with an ellipsis."""
     for suf in SUFFIXES:
         if len(t) > TITLE_MAX and t.endswith(suf):
-            return t[:-len(suf)]
-    return t
+            t = t[:-len(suf)]
+            break
+    if len(t) <= TITLE_MAX:
+        return t
+    cuts = [m.start() for m in TITLE_BREAK.finditer(t) if 20 <= m.start() <= TITLE_MAX]
+    if cuts:
+        return t[:cuts[-1]].rstrip()
+    cut = t[:TITLE_MAX - 1]
+    cut = cut[:cut.rfind(" ")] if " " in cut else cut
+    if cut.count("(") > cut.count(")"):  # not in the middle of a bracket
+        cut = cut[:cut.rfind("(")]
+    return cut.rstrip(",;:·—- ") + "…"
 
 
 def _fit_desc(t: str) -> str:
@@ -1216,22 +1231,24 @@ def build_languages(out: Path, host: str, dates: dict[str, str] | None = None, r
         report["langs"][code] = {"published": len(ok), "total": len(pages),
                                  "missing_pages": {p: m[:20] for p, m in sorted(miss.items())},
                                  "missing_keys": len({k for m in miss.values() for k in m})}
+    # the aliases (/iss/ for the station's page): a language links its own alias where it has the page the alias names
+    aliases = alias_pages(out, host, set(by_path))
     # second pass: write, with the alternates every page now knows
     for code in codes:
         lang = langs[code]
         chrome_missing = 0
+        linkable = published[code] | {a for a, t in aliases.items() if t in published[code]}
         for path in sorted(published[code]):
             _doc, nm = by_path[path]
             langs_here = [c for c in codes if path in published[c]]
-            r = translate_page(path, segmented[path], nm, lang, host, published[code], alternates_block(host, path, langs_here))
+            r = translate_page(path, segmented[path], nm, lang, host, linkable, alternates_block(host, path, langs_here))
             chrome_missing += r.chrome_missing
             page = home_shell(r.html, lang) if path == "" else r.html
             dest = out / code / (path or "index.html")
             dest.parent.mkdir(parents=True, exist_ok=True)
             dest.write_text(page, encoding="utf-8")
         report["langs"][code]["chrome_strings_in_english"] = chrome_missing
-    # the aliases (/iss/ for the station's page): the language's copy of the page they name, with the same canonical
-    aliases = alias_pages(out, host, set(by_path))
+    # the aliases: the language's copy of the page they name, with the same canonical
     for code in codes:
         n = 0
         for alias, target in sorted(aliases.items()):
