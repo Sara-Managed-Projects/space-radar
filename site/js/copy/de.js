@@ -1523,7 +1523,7 @@ export const COPY = {
     },
     "fellBack": "Die Bilder waren langsam: Qualität wieder auf Auto.",
     "restore": "Mit voller Qualität neu laden",
-    "restoreTitle": "Langsame Bilder haben die feinere Darstellung für diesen Besuch entfernt. Diese Ansicht mit der Qualität neu laden, die Ihr Gerät schafft."
+    "restoreTitle": "Diese Ansicht in der Qualität neu laden, die Ihr Gerät schafft."
   },
   "status": {
     "title": "Quellen",

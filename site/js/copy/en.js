@@ -2376,7 +2376,7 @@ export const COPY = {
     },
     fellBack: 'Frames were slow: quality is back on Auto.',
     restore: 'Reload at full quality',
-    restoreTitle: 'Slow frames took the finer drawing away for this visit. Reload this view at the quality your device earns.',
+    restoreTitle: 'Reload this view at the quality your device earns.',
   },
 
   status: {

@@ -1381,7 +1381,7 @@ export const COPY = {
     },
     fellBack: "Los fotogramas iban lentos: la calidad vuelve a Auto.",
     restore: "Recargar con calidad completa",
-    restoreTitle: "Los fotogramas lentos quitaron el dibujo más fino en esta visita. Recarga esta vista con la calidad que merece tu dispositivo."
+    restoreTitle: "Recarga esta vista con la calidad que merece tu dispositivo."
   },
   status: {
     title: "Fuentes",

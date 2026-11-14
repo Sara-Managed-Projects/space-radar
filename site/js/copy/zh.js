@@ -1435,7 +1435,7 @@ export const COPY = {
     },
     "fellBack": "画面卡顿：画质已回到“自动”。",
     "restore": "以完整画质重新加载",
-    "restoreTitle": "画面卡顿使本次访问去掉了更精细的绘制。按你的设备能达到的画质重新加载此视图。"
+    "restoreTitle": "按你的设备能达到的画质重新加载此视图。"
   },
   "status": {
     "title": "数据源",

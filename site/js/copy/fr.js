@@ -1527,7 +1527,7 @@ export const COPY = {
     },
     "fellBack": "Images lentes : la qualité est revenue sur Auto.",
     "restore": "Recharger en pleine qualité",
-    "restoreTitle": "Des images lentes ont retiré le dessin le plus fin pour cette visite. Recharger cette vue à la qualité que mérite votre appareil."
+    "restoreTitle": "Recharger cette vue à la qualité que mérite votre appareil."
   },
   "status": {
     "title": "Sources",

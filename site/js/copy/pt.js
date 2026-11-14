@@ -1513,7 +1513,7 @@ export const COPY = {
     },
     "fellBack": "Os quadros estavam lentos: a qualidade voltou para Auto.",
     "restore": "Recarregar em qualidade total",
-    "restoreTitle": "Quadros lentos tiraram o desenho mais fino nesta visita. Recarregue esta vista na qualidade que o seu dispositivo merece."
+    "restoreTitle": "Recarregue esta vista na qualidade que o seu dispositivo merece."
   },
   "status": {
     "title": "Fontes",
