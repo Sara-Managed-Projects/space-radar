@@ -67,6 +67,9 @@ check(T1.h.climate === 'snowball' && T1.b.climate === 'desert' && T1.c.climate =
 check(Object.values(T1).every((f) => f.locked && f.kind === 'rocky' && !f.estimated.orbit && !f.estimated.radius), 'all seven are rock, locked, and drawn from measured sizes and orbits');
 check(T1.e.star.light[0] > T1.e.star.light[1] && T1.e.star.light[1] > T1.e.star.light[2] && T1.e.star.light[2] > 0.3, `a red dwarf lights its planets orange, part balanced (${T1.e.star.light.map((v) => v.toFixed(2))})`);
 check(earth.star.light.every((v) => v > 0.85), 'a Sun-like star lights them near white');
+// internal #286: a red dwarf's mild planet is mostly rock, a Sun-like star's mild planet keeps its seas
+check(T1.e.look.ocean < 0.3 && T1.e.look.green === 0 && T1.e.look.cloud < 0.25, `TRAPPIST-1 e is not drawn as a second Earth: ${T1.e.look.ocean.toFixed(2)} sea, ${T1.e.look.cloud.toFixed(2)} cloud, green ${T1.e.look.green}`);
+check(earth.look.ocean > 0.45 && sol('Mild', 1.0, 1.0, 365, 1.0).look.ocean > 0.45, 'a mild planet of a Sun-like star is drawn as before');
 
 // --- 2. pure and stable --------------------------------------------------------------------------
 {
