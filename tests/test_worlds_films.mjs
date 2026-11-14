@@ -149,7 +149,7 @@ const U = (id) => worlds.meshFor(id).material.uniforms;
 {
   const rec = Object.fromEntries(worldRecords().map((r) => [r.id, r]));
   const dep = (id) => (rec[id] && rec[id].meta && rec[id].meta.departure) || '';
-  check(dep('venus').includes(`${VENUS_CLOUDS.gain} of the contrast`) && /ultraviolet/.test(dep('venus')) && /nearly plain/.test(dep('venus')) && dep('venus').includes(`${VENUS_GROUND.exaggeration} times steeper`), 'Venus\'s card says how faint the streaks are drawn and why, and the ground\'s exaggeration');
+  check(dep('venus').includes(`${VENUS_CLOUDS.gain} times the contrast`) && /ultraviolet/.test(dep('venus')) && /Measured look shows the map as it is/.test(dep('venus')) && dep('venus').includes(`${VENUS_GROUND.exaggeration} times steeper`), 'Venus\'s card still says how much of the map\'s contrast the clouds carry (its wording waits for the language integration), and the ground\'s exaggeration, and the ground\'s exaggeration');
   check(/1989/.test(dep('neptune')) && /not computed/.test(dep('neptune')), 'Neptune\'s card says the arcs are as Voyager saw them and not where they are');
   const also = COPY.weather.also;
   check(!/no spot is drawn/.test(also.neptune) && /1989/.test(also.neptune) && /illustrative/.test(also.neptune) && /Measured/.test(also.neptune), 'Neptune\'s card no longer says no spot is drawn: it says whose spot, when, and that Measured leaves it out');
