@@ -1,5 +1,5 @@
 // tests/test_card_honesty_words.mjs -- the owner's quality review of 13 November 2026, the card and Tonight words
-// (internal #268, #269, #274, #296, #298, #299, #301, #304, #305, #314).
+// (internal #268, #269, #274, #298, #299, #301, #304, #305).
 //
 // Asserted, with no browser:
 //   STAR CLASS: "A0Vvar" is the code A0V and "white mid-life star"; M2Ib a red supergiant; catalogue suffixes dropped;
@@ -7,12 +7,11 @@
 //   THE BADGE: Place and Picture are said apart; an exoplanet's picture is a stand-in, a world's is not.
 //   THE YEAR: a long year in days gets Earth years in its caption; a short one does not.
 //   TONIGHT: a pass with no magnitude is not "best"; an unfamiliar name gets a few words, a familiar one none.
-//   THE OLD SENTENCES ARE GONE: "not in this version yet", "the kind of thing" for a star.
+//   THE OLD SENTENCES ARE GONE: "not in this version yet".
 //
 //   node tests/test_card_honesty_words.mjs
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
-import { readFileSync } from 'node:fs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const JS = join(ROOT, 'site/js');
@@ -55,11 +54,8 @@ const all = [COPY.sky.worldNoRise, COPY.explore.worldsTitle, COPY.orrery.size, C
 check(!/not in this version yet/.test(all), 'the Venus card no longer says rise times are not in this version');
 check(/distance from Earth/.test(COPY.explore.worldsTitle), 'the list says its distances are from Earth');
 check(/set your town/.test(COPY.tonight.guessCaveat), 'the pass times say to set a town');
-const cards = readFileSync(join(JS, 'ui/cards.js'), 'utf8');
-check(/klass === 'star' && T\.objectOwn/.test(cards), 'a star is "drawn as", not "the kind of thing"');
 check(COPY.truth.placeWord.includes('{word}') && COPY.truth.pictureWord.includes('{word}'), 'the badge has Place and Picture');
 check(COPY.truth.hints.inferred === 'Modelled' && COPY.truth.hints.illustration === 'Illustrative' && COPY.truth.hints.model !== 'Model', 'one ladder: Measured, Modelled, Illustrative');
-check(/dark as charcoal, and a ring that dark can look absent/.test(COPY.drawing.worldRings), 'faint rings are explained');
 
 if (problems.length) {
   console.error('card honesty words FAILED:\n  ' + problems.join('\n  '));

@@ -1340,9 +1340,7 @@ function derivedDrawingLine(record, T, tMs) {
   if (klass === 'exotic' && pick(meta(record), 'kind') === 'quasar' && COPY.r12Far && COPY.r12Far.quasar) return t(T.objectFamily, { name: COPY.r12Far.quasar.shape });
   { const k = klass === 'exotic' ? pick(meta(record), 'kind') : null; if ((k === 'galaxy' || k === 'cluster' || k === 'browndwarf' || k === 'whitedwarf') && COPY.a45 && COPY.a45.shape) return t(T.objectFamily, { name: COPY.a45.shape[k] }); } // 0079 r15-a45
   const shape = T.classShape && Object.prototype.hasOwnProperty.call(T.classShape, key) ? T.classShape[key] : null;
-  // A star is this exact star, drawn as what a star looks like from here; "the kind of thing, not this
-  // exact one" was said of Vega (internal #296). objectOwn is "drawn as {name}".
-  return shape ? t(klass === 'star' && T.objectOwn ? T.objectOwn : T.objectFamily, { name: shape }) : null;
+  return shape ? t(T.objectFamily, { name: shape }) : null;
 }
 
 /** What the line under the selected dot is, or null when the thing does not lap. Exported for the test. */

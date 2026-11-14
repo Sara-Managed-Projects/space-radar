@@ -1871,8 +1871,8 @@ export const COPY = {
     worldAirTrue: 'its haze is drawn at its measured height, and its colour is illustrative',
     // The narrow rings of Uranus and Neptune (scene/worlds.js URANUS_RINGS, NEPTUNE_RINGS): the radii
     // are measured; {w} times wider, {d} times more opaque and the brightness are so that they show.
-    worldRings: 'its rings are at their measured distances, drawn {w} times wider and far brighter than they are so that they show: the real ones are threads as dark as charcoal, and a ring that dark can look absent against the sky, in the app as in a photograph',
-    worldRingsDense: 'its rings are at their measured distances, drawn {w} times wider, {d} times more opaque and far brighter than they are so that they show: the real ones are faint threads as dark as charcoal, and a ring that dark can look absent against the sky, in the app as in a photograph',
+    worldRings: 'its rings are at their measured distances, drawn {w} times wider and far brighter than they are so that they show: the real ones are threads as dark as charcoal',
+    worldRingsDense: 'its rings are at their measured distances, drawn {w} times wider, {d} times more opaque and far brighter than they are so that they show: the real ones are faint threads as dark as charcoal',
     // The Sun close up (scene/sun.js, spec 0055 task 3): which parts of the picture are a model and
     // which are there to be seen.
     worldSun: 'close up, its edge darkens and reddens as a model of its atmosphere says it should; the grain stands for its churning surface: its cells are born, brighten and fade as real granules do, drawn coarser than they are (down to their real size from very close) and far faster, and the bright network toward the edge is illustrative; from very close the photographed map gives way to that drawn surface, which is illustrative too; the corona is illustrative, and drawn far brighter than it is so that it can be seen; the loops and hedgerows on its edge stand where NOAA’s active regions are near the limb, and their shapes and heights are illustrative; the stars beside it are faded, as its glare hides them from any camera',

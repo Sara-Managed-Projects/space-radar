@@ -30,11 +30,11 @@ tagged, and their dates are the day the last change in each landed.
   dropped; a planet's year in days also gives Earth years; the Sun's light time and the width and mass numbers say what they measure.
   A card's "How we know" badge splits Place from Picture ("Place: Measured, Picture: Illustrative"), and the card words are the
   Accuracy page's three: Measured, Modelled, Illustrative. The Venus card no longer says rise times are "not in this version yet",
-  a star is "drawn as" a point of light rather than "the kind of thing, not this exact one", the Planets tab's Size slider reads
+  the Planets tab's Size slider reads
   "Extra size: none" beside the badge that says planets are drawn larger, and its list says its distances are from Earth now.
   Tonight's best leaves out a satellite with no known brightness, names an unfamiliar satellite in a few words ("Biomass, a European
   forest-mapping satellite"), tells a visitor with a guessed place to set a town, and keeps its sky settings behind "More sky
-  settings". The launch chip's label says "Rocket launch" and where from. Neptune's card says a ring that dark can look absent.
+  settings". The launch chip's label says "Rocket launch" and where from.
 
 - **The map's controls share one set, in the journal's design.** Every button, segmented choice, select, radio, box,
   slider, close button and panel header in the app comes from `site/css/controls.css`: rounded pills, a blue wash for what
