@@ -316,7 +316,7 @@ def main() -> int:
     check(S._fit_title("Satellites en orbite pour la Tchéquie (et la Tchécoslovaquie)\xa0: 7\u202f656") == "Satellites en orbite pour la Tchéquie…", "never in the middle of a bracket")
     check(S._fit_title("Jupiter : sa position | Space Radar") == "Jupiter : sa position | Space Radar", "a title that fits is left alone")
     import check_seo as _cs
-    check(_cs.DESC_MIN_LANG.get("zh") == 35 and "fr" not in _cs.DESC_MIN_LANG, "a Chinese description is held to half the characters of an alphabetic one")
+    check(_cs.DESC_MIN_LANG["zh"] == 20 and all(c not in _cs.DESC_MIN_LANG for c in ("fr", "de", "pt", "es")), "a description in a compact script is held to less than 70 characters, a Latin one to 70")
     # a spacecraft that has the subject's name in its own is a name, not a slot (Mars Global Surveyor on Mars's page)
     _i, gs = S.segment_page("<p>On a larger screen its relief is from the heights Mars Global Surveyor’s laser altimeter measured; Mars is red.</p>", "Mars", {"Mars"})
     check([s.template for s in gs] == ["On a larger screen its relief is from the heights Mars Global Surveyor’s laser altimeter measured; {name} is red."],
