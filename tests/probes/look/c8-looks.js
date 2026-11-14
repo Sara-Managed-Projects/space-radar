@@ -60,7 +60,8 @@ try {
     const el = pick.elements || (pick.meta && pick.meta.elements) || {};
     const tp = el.tpMs;
     out.comet.tpMs = tp;
-    const readR = async (t) => { sr.clock.goTo(t); await sleep(1800); const row = sr.cometField.tails().find((x) => x.id === pick.id); return row ? row : null; };
+    out.comet.trace = [];
+    const readR = async (t) => { sr.clock.goTo(t); await sleep(2500); const all = sr.cometField.tails(); const row = all.find((x) => x.id === pick.id) || null; out.comet.trace.push({ days: Math.round((t - tp) / 86400e3), tails: all.length, row: row ? { rAu: +row.rAu.toFixed(2), mag: +row.mag.toFixed(1) } : null }); return row; };
     const find = async (target) => {
       // bisect on the days after perihelion: r grows from q outward
       let lo = tp + 1 * 86400e3, hi = tp + 400 * 86400e3, best = null;
@@ -75,6 +76,7 @@ try {
       return best;
     };
     sr.clock.setPaused(true);
+    out.comet.fieldState = sr.cometField.state();
     for (const target of [0.5, 1.4]) {
       const hit = Number.isFinite(tp) ? await find(target) : null;
       if (!hit) { look.missing.push('a time with ' + pick.name + ' at ' + target + ' au and a tail'); continue; }
