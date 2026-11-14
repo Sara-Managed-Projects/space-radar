@@ -93,6 +93,15 @@ def tree(tmp: Path) -> Path:
     (b / "planets-tonight" / "index.html").write_text(page(
         "Planets tonight", "Which planets you can see tonight, where to look and when, worked out for your place in your browser.",
         "<h1>Planets tonight</h1>\n<p>Venus is up.</p>", f"{HOST}/planets-tonight/index.html", "../"), encoding="utf-8")
+    # Two aliases, as /iss/ is for the station's page: one as deep as the page it names, one not. Neither is in the sitemap.
+    jup = (b / "o" / "jupiter.html").read_text(encoding="utf-8")
+    jup = jup.replace(f'<link rel="canonical" href="{HOST}/o/jupiter.html">', f'<link rel="canonical" href="{HOST}/o/jupiter.html">')  # the alias keeps the page's canonical
+    (b / "jup").mkdir()
+    (b / "jup" / "index.html").write_text(
+        jup.replace(f'<meta property="og:url" content="{HOST}/o/jupiter.html">', f'<meta property="og:url" content="{HOST}/jup/index.html">'), encoding="utf-8")
+    (b / "jupiter.html").write_text(
+        jup.replace(f'<meta property="og:url" content="{HOST}/o/jupiter.html">', f'<meta property="og:url" content="{HOST}/jupiter.html">')
+        .replace('href="../', 'href="'), encoding="utf-8")
     urls = ["", "about/index.html", "o/jupiter.html", "t/trip.html", "planets-tonight/index.html"]
     (b / "sitemap-pages.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
                                          + "\n".join(f"<url><loc>{HOST}/{u}</loc><lastmod>2026-11-13</lastmod></url>" for u in urls)
@@ -198,6 +207,23 @@ def main() -> int:
         trip = (built / "es/t/trip.html").read_text(encoding="utf-8")
         check('content="0; url=../#trip=x"' in trip, "a trip sends the browser to the Spanish app")
 
+        # --- 3b. aliases ----------------------------------------------------------------------------------------
+        check(S.alias_pages(built, HOST, {"", "about/index.html", "o/jupiter.html", "t/trip.html"}) == {"jup/index.html": "o/jupiter.html", "jupiter.html": "o/jupiter.html"},
+              f"the English aliases are found: pages outside the sitemap whose canonical is one of its pages ({S.alias_pages(built, HOST, {'', 'about/index.html', 'o/jupiter.html', 't/trip.html'})})")
+        al = (built / "es/jup/index.html").read_text(encoding="utf-8") if (built / "es/jup/index.html").is_file() else ""
+        check(rep["langs"]["es"]["aliases"] == 2 and al, "an alias is built in the language (/es/jup/ for /jup/)")
+        check(f'<link rel="canonical" href="{HOST}/es/o/jupiter.html">' in al and f'<meta property="og:url" content="{HOST}/es/jup/index.html">' in al
+              and "hreflang" not in al.split("<body")[0] and "<h1>ES Jupiter</h1>" in al and "data-i18n-note" in al,
+              "its canonical is the language's page, og:url its own, no hreflang, and it is the translated page")
+        in_map = re.findall(r"<loc>([^<]+)</loc>", (built / "sitemap-pages-es.xml").read_text(encoding="utf-8"))
+        check(not any(u.endswith(("/jup/index.html", "/es/jupiter.html")) for u in in_map), "and it is in no sitemap")
+        stub = (built / "es/jupiter.html").read_text(encoding="utf-8")
+        check('<base href="o/">' in stub and f'<link rel="canonical" href="{HOST}/es/o/jupiter.html">' in stub and '<html lang="es" dir="ltr">' in stub
+              and 'href="../../css/static.css"' in stub and "data-i18n-note" in stub,
+              "an alias not as deep as its page gets a base, so the page's relative addresses still reach the root; same canonical")
+        check("hreflang" not in (built / "jup/index.html").read_text(encoding="utf-8") and "hreflang" not in (built / "jupiter.html").read_text(encoding="utf-8"),
+              "the English aliases carry no hreflang either")
+
         # --- 4. sitemaps -------------------------------------------------------------------------------------
         sm = (built / "sitemap-pages-es.xml").read_text(encoding="utf-8")
         check(rep["sitemaps"] == ["sitemap-pages-es.xml"] and sm.count("<url>") == 4 and 'xmlns:xhtml="http://www.w3.org/1999/xhtml"' in sm,
@@ -245,6 +271,75 @@ def main() -> int:
         check(any("nokey" in b for b in bad) and n >= 1 and all(not S.problems(en[k], v) for k, v in S.load_lang("es", cat_root)[0].items()),
               f"merge writes what is whole and refuses a lost slot or tag and an unknown key ({n}, {bad[:2]})")
         check(k0 in S.load_lang("es", cat_root)[0] or any(k0 in b for b in bad), "the merged key is in place")
+
+    # --- 5b. what code does after the slots are in ------------------------------------------------------------------
+    pt = S.Lang("pt", {}, json.loads((ROOT / "registry/seo-i18n/pt/_meta.json").read_text(encoding="utf-8")))
+    fr = S.Lang("fr", {}, json.loads((ROOT / "registry/seo-i18n/fr/_meta.json").read_text(encoding="utf-8")))
+    _i, ex = S.segment_page("<p>France has 647 objects in orbit</p>", "France", {"France"})
+
+    def said(lang, text, name):
+        return S.render(ex[0], text, lang, name, lambda k, raw, closing: raw)
+    for text, name, want in (
+        ("A órbita de {name}.", "a Lua", "A órbita da Lua."), ("Perto de {name}.", "o Sol", "Perto do Sol."),
+        ("Há {n1} objetos em {name}.", "os Estados Unidos", "Há 647 objetos nos Estados Unidos."),
+        ("Em {name}, {n1} objetos.", "as Filipinas", "Nas Filipinas, 647 objetos."), ("Voltando a {name}.", "a Terra", "Voltando à Terra."),
+        ("Visível a {name}.", "as Plêiades", "Visível às Plêiades."), ("Visível a {name}.", "o Sol", "Visível ao Sol."),
+        ("Passa por {name}.", "o Brasil", "Passa pelo Brasil."), ("Passa por {name}.", "as Filipinas", "Passa pelas Filipinas."),
+        ("De {name}, {n1}.", "a Lua", "Da Lua, 647."), ("Perto de {name}.", "Júpiter", "Perto de Júpiter."),
+        ("Perto de {name}.", "a Lua e o Sol", "Perto da Lua e o Sol."),
+        ("{name} está em órbita.", "a Lua", "A Lua está em órbita."),
+    ):
+        check(said(pt, text, name) == want, f"pt: {text!r} with {name!r} is {want!r}, not {said(pt, text, name)!r}")
+    check(said(pt, "antes de o combustível acabar, {n1}", "x") == "antes de o combustível acabar, 647", "pt: a pair the translator wrote whole, away from a slot, is left")
+    check(S._pt_contract("Em <a href=\"x\">a França</a>.", [(15, 24)]) == "Na <a href=\"x\">França</a>.", "pt: a link that starts at the name keeps its markup")
+    for text, name, want in (
+        ("Près de {name}.", "le Soleil", "Près du Soleil."), ("Les orbites de {name}.", "les Pléiades", "Les orbites des Pléiades."),
+        ("Proche de {name}.", "Achernar", "Proche d’Achernar."), ("Il est à {name}.", "le Soleil", "Il est au Soleil."),
+        ("Il va à {name}.", "les Hyades", "Il va aux Hyades."), ("De {name}, {n1}.", "Io", "D’Io, 647."),
+        ("Autour de {name}.", "Jupiter", "Autour de Jupiter."), ("Autour de {name}.", "Hubble", "Autour de Hubble."),
+        ("Le {name} est là.", "Hubble", "Le Hubble est là."), ("Lancé en {n1}, {name}.", "Hubble", "Lancé en 647, Hubble."),
+        ("On sait que {name} est loin.", "Uranus", "On sait qu’Uranus est loin."), ("Je pense que {name}.", "Europe", "Je pense qu’Europe."),
+        ("Au sujet de {name} et de {n1} km", "Altaïr", "Au sujet d’Altaïr et de 647 km"), ("Il ne {name}.", "est", "Il n’est."),
+        ("Vue de {name}.", "Orcus", "Vue d’Orcus."), ("Proche de {name}.", "Hera", "Proche de Hera."),
+    ):
+        check(said(fr, text, name) == want, f"fr: {text!r} with {name!r} is {want!r}, not {said(fr, text, name)!r}")
+    check(S._fr_contract("près de <a href=\"x\">Achernar</a>", [(18, 26)]) == "près d’<a href=\"x\">Achernar</a>", "fr: an elision before a link keeps its markup")
+    check(fr.date(("dmy", 1, 11, 2026)) == "1er novembre 2026" and fr.date(("dm", 1, 3, 0)) == "1er mars" and fr.date(("dmy", 11, 11, 2026)) == "11 novembre 2026"
+          and fr.date(("dm", 2, 1, 0)) == "2 janvier" and fr.date(("my", 0, 11, 2026)) == "novembre 2026",
+          f"French dates: 1er only for the first, 11 and 21 as they are ({fr.date(('dmy', 1, 11, 2026))!r})")
+    check(pt.date(("dmy", 1, 11, 2026)) == "1 de novembro de 2026", "and Portuguese keeps its digit")
+    # a translated title that grew past 60 characters ends at its last clause that fits, else at a word
+    long_fr = "La bibliothèque lunaire de Beresheet\xa0: sa position en ce moment | Space Radar"
+    check(S._fit_title(long_fr) == "La bibliothèque lunaire de Beresheet", f"a long title ends at its last clause ({S._fit_title(long_fr)!r})")
+    check(S._fit_title("Конфиденциальность: что хранит Space Radar и чего никогда не делает").endswith("…")
+          and len(S._fit_title("Конфиденциальность: что хранит Space Radar и чего никогда не делает")) <= 60, "or at a word, with an ellipsis")
+    check(S._fit_title("Satellites en orbite pour la Tchéquie (et la Tchécoslovaquie)\xa0: 7\u202f656") == "Satellites en orbite pour la Tchéquie…", "never in the middle of a bracket")
+    check(S._fit_title("Jupiter : sa position | Space Radar") == "Jupiter : sa position | Space Radar", "a title that fits is left alone")
+    import check_seo as _cs
+    check(_cs.DESC_MIN_LANG["zh"] == 20 and all(c not in _cs.DESC_MIN_LANG for c in ("fr", "de", "pt", "es")), "a description in a compact script is held to less than 70 characters, a Latin one to 70")
+    # a spacecraft that has the subject's name in its own is a name, not a slot (Mars Global Surveyor on Mars's page)
+    _i, gs = S.segment_page("<p>On a larger screen its relief is from the heights Mars Global Surveyor’s laser altimeter measured; Mars is red.</p>", "Mars", {"Mars"})
+    check([s.template for s in gs] == ["On a larger screen its relief is from the heights Mars Global Surveyor’s laser altimeter measured; {name} is red."],
+          f"a spacecraft named after the subject keeps its name whole ({[s.template for s in gs]})")
+    for code in S.langs_with_catalogs():
+        rows, _m = S.load_lang(code)
+        bad = [k for k, v in rows.items() if re.search(r"\{name\}\s*" + S.SPACECRAFT_AFTER_NAME.strip(), v)]
+        check(not bad, f"{code}: no translation writes the subject before a spacecraft's own name ({bad[:2]})")
+    hi_rows, _m = S.load_lang("hi")
+    en_rows = S.load_english()
+    gs_key = next((k for k, v in en_rows.items() if "Mars Global Surveyor" in v), None)
+    check(gs_key and "Mars Global Surveyor" in hi_rows.get(gs_key, "") and "मंगल Global" not in hi_rows.get(gs_key, ""), "Hindi: the craft is Mars Global Surveyor, whole")
+    # Arabic has no articles, so {a} is empty: the sentence must not keep the double space (site/js/copy/en.js t())
+    import shutil as _sh, subprocess
+    node = _sh.which("node")
+    if node:
+        script = ("const m = await import(" + json.dumps((ROOT / "site/js/copy/en.js").as_uri()) + ");"
+                  "console.log(JSON.stringify([m.t('{name} هو {a} {status}، و{ago}', {name: 'X', a: '', status: 'S', ago: 'A'}), m.t('a {x} b', {x: ''}), m.t('a  b {x}', {x: 'c'}), m.t('{n} km', {n: 0})]));")
+        r = subprocess.run([node, "--input-type=module", "-e", script], capture_output=True, text=True)
+        got = json.loads(r.stdout) if r.returncode == 0 and r.stdout.strip() else None
+        check(got == ["X هو S، وA", "a b", "a  b c", "0 km"], f"t(): an empty slot leaves one space, a filled one leaves the template as written ({got} {r.stderr[:120]})")
+    ar_src = (ROOT / "site/js/copy/ar.js").read_text(encoding="utf-8")
+    check("{a}" in ar_src and "article() {\n    return '';" in ar_src, "Arabic: article() is empty, and t() is what closes the gap")
 
     # --- 6. the committed catalog --------------------------------------------------------------------------------
     for code in S.langs_with_catalogs():
