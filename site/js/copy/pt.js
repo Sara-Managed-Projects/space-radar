@@ -56,7 +56,7 @@ export const META = {
   code: 'pt',
   name: 'Português (Brasil)',
   english: 'Portuguese (Brazil)',
-  review: { status: 'agent-reviewed', by: [], note: 'Needs a second native speaker (docs/TRANSLATING.md, Review).' },
+  review: { status: 'agent-reviewed', by: [], note: 'Machine-translated, agent-reviewed against the English on 2026-11-14 (terms, numbers, units, names, slots), with the pages a search engine reads. Not native-reviewed yet (docs/TRANSLATING.md, Review).' },
 };
 
 // Colours of the stars (COPY.templates.star.colours) are adjectives for "estrela", so they take "uma".

@@ -53,7 +53,7 @@ export const META = {
   code: 'de',
   name: 'Deutsch',
   english: 'German',
-  review: { status: 'agent-reviewed', by: [], note: 'Machine-translated, then read against the English by an agent on 2026-11-14 (terms, numbers, units, names, slots, register; 242 fixes, and "abgerufen am" for every source date), with the pages a search engine reads. Not read by a native speaker yet (docs/TRANSLATING.md, Review).' },
+  review: { status: 'agent-reviewed', by: [], note: 'Machine-translated, agent-reviewed against the English on 2026-11-14 (terms, numbers, units, names, slots), with the pages a search engine reads. Not native-reviewed yet (docs/TRANSLATING.md, Review).' },
 };
 
 // ---- The grammar English had as code (copy/en.js `article`, `typeWords`, `plural`) -------------------------

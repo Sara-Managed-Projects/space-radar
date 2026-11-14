@@ -22,7 +22,7 @@ export const META = {
   code: "uk",
   name: "Українська",
   english: "Ukrainian",
-  review: { status: 'agent-reviewed', by: [], note: 'Needs a native reader and a second reader (docs/TRANSLATING.md, Review).' },
+  review: { status: 'agent-reviewed', by: [], note: 'Machine-translated, agent-reviewed against the English on 2026-11-14 (terms, numbers, units, names, slots), with the pages a search engine reads. Not native-reviewed yet (docs/TRANSLATING.md, Review).' },
 };
 
 export const RULES = {
