@@ -33,9 +33,13 @@ const NBSP = '\u00A0';
 export function t(template, vars) {
   if (typeof template !== 'string') return '';
   if (!vars) return template;
-  return template.replace(/\{(\w+)\}/g, (_, k) =>
-    vars[k] === undefined || vars[k] === null ? '' : String(vars[k]),
-  );
+  let emptied = false;
+  const out = template.replace(/\{(\w+)\}/g, (_, k) => {
+    if (vars[k] === undefined || vars[k] === null || vars[k] === '') { emptied = true; return ''; }
+    return String(vars[k]);
+  });
+  // A slot that came out empty (a language without articles: "{name} هو {a} {status}") leaves a double space: close it.
+  return emptied ? out.replace(/ {2,}/g, ' ') : out;
 }
 
 function groupDigits(intText) {

@@ -25,5 +25,6 @@
  "date": "{d} {month} {y}",
  "monthYear": "{month} {y}",
  "dayMonth": "{d} {month}",
+ "firstDay": "{d}er",
  "notice": "Cette page est une traduction automatique, vérifiée sur l’<1>original en anglais</1>."
 }

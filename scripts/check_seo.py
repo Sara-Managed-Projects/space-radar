@@ -104,6 +104,7 @@ class Head(HTMLParser):
         self.alternates: list[tuple[str, str]] = []  # (hreflang, href) of every <link rel="alternate" hreflang>
         self.html_lang, self.html_dir = "", ""
         self.note: list[str] = []  # the href of the link in the machine-translation note (data-i18n-note)
+        self.base = ""  # <base href>, which relative addresses are resolved against
         self._note = False
         self._footer = 0
         self._in: str | None = None
@@ -123,6 +124,8 @@ class Head(HTMLParser):
             self.links.setdefault(a["rel"].lower(), []).append(a.get("href", ""))
             if a["rel"].lower() == "alternate" and "hreflang" in a:
                 self.alternates.append((a["hreflang"], a.get("href", "")))
+        elif tag == "base" and "href" in a:
+            self.base = a["href"]
         elif tag == "html":
             self.html_lang, self.html_dir = a.get("lang", ""), a.get("dir", "")
         elif tag == "p" and "data-i18n-note" in a:
@@ -661,10 +664,15 @@ def check_languages(site: Path, built: Path, say, robots_text: str) -> None:
             name = f"built/{rel}"
             inner = rel[len(code) + 1:]
             url = f"{HOST}/{code}/" + ("" if inner == "index.html" else inner)
-            if url not in listed:
-                say(f"{name} is not in {sm.name}")
             h = Head()
             h.feed(f.read_text(encoding="utf-8"))
+            # An alias in a language (/es/iss/ for /es/o/international-space-station.html, as /iss/ is for the English page): its
+            # canonical is another page of the language's sitemap, and it is not in the sitemap or in any hreflang set itself.
+            alias = len(h.links.get("canonical", [])) == 1 and h.links["canonical"][0] != url and h.links["canonical"][0] in listed
+            if url not in listed and not alias:
+                say(f"{name} is not in {sm.name}")
+            if alias and (h.alternates or url in listed):
+                say(f"{name}: an alias page ({h.links['canonical'][0]} is its canonical) must carry no hreflang and not be in {sm.name}")
             if h.html_lang != HREFLANG[code]:
                 say(f"{name}: <html lang> is {h.html_lang!r}, not {HREFLANG[code]!r}")
             want_dir = "rtl" if code in seo_i18n.RTL else "ltr"
@@ -695,12 +703,16 @@ def check_languages(site: Path, built: Path, say, robots_text: str) -> None:
                     json.loads(block)
                 except json.JSONDecodeError as e:
                     say(f"{name}: a JSON-LD block does not parse ({e.msg})")
-            if not h.alternates:
-                say(f"{name}: no hreflang alternates")
-            page_sets[url] = check_alternates(name, url, h.alternates, site, built, say)
-            if _english_of(url) not in h.note:
-                say(f"{name}: no machine-translation note linking the English page {_english_of(url)}")
+            if not alias:
+                if not h.alternates:
+                    say(f"{name}: no hreflang alternates")
+                page_sets[url] = check_alternates(name, url, h.alternates, site, built, say)
+            note_for = _english_of(h.links["canonical"][0]) if alias else _english_of(url)
+            if note_for not in h.note:
+                say(f"{name}: no machine-translation note linking the English page {note_for}")
             here = posixpath.dirname(rel)
+            if h.base and "://" not in h.base and not h.base.startswith("/") and inner != "index.html":
+                here = posixpath.normpath(posixpath.join(here, h.base))  # an alias of a page in another folder
             for href in h.hrefs:
                 clean = html.unescape(href).split("#")[0].split("?")[0]
                 if "://" in href or href.startswith(("/", "mailto:", "#", "data:")) or not (clean.endswith(".html") or clean.endswith("/") or clean == ""):
