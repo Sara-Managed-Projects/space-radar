@@ -130,13 +130,13 @@ const SOUTH = { name: 'Southville', latDeg: -33.9, lonDeg: 18.4, altKm: 0, sourc
   for (const part of L.MILKY_WAY) check(part.ra >= 0 && part.ra < 360 && Math.abs(part.dec) <= 70 && part.rich > 0, `Milky Way stretch ${part.name}`);
 
   const oct = R.nextShower(Date.parse('2026-10-06T10:00:00Z'), SHOWERS);
-  check(oct && oct.shower.id === 'orionids' && new Date(oct.peakMs).getMonth() === 9 && new Date(oct.peakMs).getDate() === 21, `on 6 October the next shower is ${oct && oct.shower.id}`);
+  check(oct && oct.shower.id === 'draconids' && new Date(oct.peakMs).getMonth() === 9 && new Date(oct.peakMs).getDate() === 9, `on 6 October the next shower is ${oct && oct.shower.id}`);
   const peakNight = R.nextShower(Date.parse('2026-10-21T23:00:00'), SHOWERS);
   check(peakNight && peakNight.shower.id === 'orionids', 'on the peak night itself it is still the Orionids');
   const morningAfter = R.nextShower(Date.parse('2026-10-22T03:00:00'), SHOWERS);
   check(morningAfter && morningAfter.shower.id === 'orionids', 'and in the small hours after it, which is when the shower is watched');
   const later = R.nextShower(Date.parse('2026-10-24T12:00:00'), SHOWERS);
-  check(later && later.shower.id === 'leonids', `three days after, it is ${later && later.shower.id}`);
+  check(later && later.shower.id === 'southern-taurids', `three days after, it is ${later && later.shower.id}`);
   const newYear = R.nextShower(Date.parse('2026-12-28T12:00:00'), SHOWERS);
   check(newYear && newYear.shower.id === 'quadrantids' && new Date(newYear.peakMs).getFullYear() === 2027, 'after the last shower of the year the next is January’s, next year');
   check(R.nextShower(REAL, []) === null && R.nextShower(REAL, null) === null, 'no showers: null, not a throw');
@@ -375,8 +375,8 @@ async function walk(m, trip, plan, each) {
   if (plan && plan.count === trip.stops.length) {
     await walk(m, trip, plan, (stop, st) => {
       if (stop.look && stop.look.shower) {
-        check(st.ground === true && m.sky.held && m.sky.held.radiant === 'orionids' && m.sky.held.darkness === 'dark', `comets/${stop.id}: the sky view holds ${JSON.stringify(m.sky.held)}`);
-        check(/Orionids/.test(st.stopNote || '') && /meteors an hour/.test(st.stopNote || ''), `comets/${stop.id}: the line is "${st.stopNote}"`);
+        check(st.ground === true && m.sky.held && m.sky.held.radiant === 'draconids' && m.sky.held.darkness === 'dark', `comets/${stop.id}: the sky view holds ${JSON.stringify(m.sky.held)}`);
+        check(/Draconids/.test(st.stopNote || '') && /meteors an hour/.test(st.stopNote || ''), `comets/${stop.id}: the line is "${st.stopNote}"`);
         check(!/2026|21 Oct.*21 Oct/.test(String(stop.card.body)), `comets/${stop.id}: the card names a date the line generates`);
       }
     });
