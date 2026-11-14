@@ -1056,6 +1056,32 @@ def webp_2k(src_dir: Path, out_dir: Path, only: list[str]) -> int:
     return 0
 
 
+# THE SUN'S MAP, WHITE (2026-11-14, internal #280). The Solar System Scope map is an artist's orange
+# (mean linear colour 0.89, 0.30, 0.05) with large dark blotches (luminance 0.19 rms about 0.41): the
+# owner's review saw an orange ball with dark patches. The Sun in visible light is white and, apart
+# from its spots, nearly featureless, with limb darkening, which the shader draws (scene/sun.js).
+# So the map keeps only the old file's large-scale luminance pattern, at SUN_MOTTLE of its strength
+# (it is what the poles' and the far side's grain sits on), worn on one pale warm white,
+# SUN_WHITE (linear light), which the shader's tonemapper-free path shows as sRGB (255, 246, 231).
+SUN_WHITE = (1.0, 0.92, 0.80)
+SUN_MOTTLE = 0.05
+
+
+def sun_white(src: Path, out: Path) -> int:
+    a = np.asarray(Image.open(src).convert("RGB"), dtype=np.float64) / 255.0
+    lin = np.where(a <= 0.04045, a / 12.92, ((a + 0.055) / 1.055) ** 2.4)
+    luma = lin @ np.array(LUMA)
+    shade = 1.0 + SUN_MOTTLE * (luma / luma.mean() - 1.0)
+    rgb = np.clip(shade[..., None] * np.array(SUN_WHITE), 0.0, 1.0)
+    enc = np.where(rgb <= 0.0031308, rgb * 12.92, 1.055 * rgb ** (1 / 2.4) - 0.055)
+    img = Image.fromarray(np.round(enc * 255).astype(np.uint8))
+    img.save(out, "WEBP", quality=90, method=6)
+    back = np.asarray(Image.open(out).convert("RGB"), dtype=np.float64) / 255.0
+    bl = np.where(back <= 0.04045, back / 12.92, ((back + 0.055) / 1.055) ** 2.4)
+    print(f"  {out.name}: {out.stat().st_size:,d} B; mean linear {bl.mean((0, 1)).round(3).tolist()}, luminance {float((bl @ np.array(LUMA)).mean()):.4f}")
+    return 0
+
+
 def ktx2_build(out_dir: Path) -> int:
     """spec 0056 task 2: the plan in scripts/_ktx2.py, encoded and validated; nothing is written into site/."""
     import json
@@ -1091,8 +1117,12 @@ def main(argv: list[str]) -> int:
                          "run by .github/workflows/textures.yml), and print each file's bytes, GPU bytes and SHA-256")
     ap.add_argument("--webp-2k", type=Path, metavar="DIR",
                     help="re-encode the 2k JPEGs in DIR (2k_<world>.jpg) as WebP at SSIM >= 0.98 into site/textures/")
+    ap.add_argument("--sun-white", type=Path, metavar="OLD_MAP",
+                    help="make site/textures/2k_sun.webp from the earlier orange map (internal #280): white, nearly flat")
     args = ap.parse_args(argv)
     lazy()
+    if args.sun_white:
+        return sun_white(args.sun_white, ROOT / "site" / "textures" / "2k_sun.webp")
     if args.ktx2:
         return ktx2_build(args.ktx2)
     if args.webp_2k:

@@ -618,7 +618,7 @@ export const WORLDS = [
     // `rotation: 'iau'` since 2026-10-06: the Sun's mesh has its north pole and turns once in 25.38
     // days (astronomy-engine's IAU axis), which scene/sun.js counts today's sunspots from.
     body: 'Sun', frame: SUN_INERTIAL, view: VIEW_TRUE, rotation: 'iau',
-    look: { map: '2k_sun.webp', tint: 0xf18833, emissive: true, corona: true },
+    look: { map: '2k_sun.webp', tint: 0xfff3e3, emissive: true, corona: true },
   },
   {
     id: 'earth', display: 'Earth', parent: 'sun', radiusKm: 6371.0,
@@ -3518,8 +3518,8 @@ export function coronaSprite() {
   if (!ctx) return null;
   const g = ctx.createRadialGradient(size / 2, size / 2, size * 0.16, size / 2, size / 2, size / 2);
   g.addColorStop(0.0, 'rgba(255,246,230,0.85)');
-  g.addColorStop(0.35, 'rgba(255,201,138,0.28)');
-  g.addColorStop(1.0, 'rgba(255,201,138,0.0)');
+  g.addColorStop(0.35, 'rgba(255,230,190,0.26)');
+  g.addColorStop(1.0, 'rgba(255,230,190,0.0)');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, size, size);
   const tex = new THREE.CanvasTexture(canvas);

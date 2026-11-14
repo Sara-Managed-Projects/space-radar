@@ -236,7 +236,7 @@ export const IMAGE_ARRIVE_MS = 1200;
 /** The 171 ramp's red against its green (fitted, the shader's aia171), the picture's mean green as linear light, and the map's mean luminance (linear). */
 export const AIA171_RED = 1.44;
 export const AIA171_MEAN_LIN = 0.096;
-export const MAP_LUMA = 0.407;
+export const MAP_LUMA = 0.929;
 /**
  * THE LOOPS ARE OFF FOR RELEASE 1.2.0 (the review of 2026-10-15: seen from the Earth's side they read as
  * dashes and nested coils). The code stays; nothing draws them while this is false. opts.loops overrides
@@ -510,8 +510,8 @@ void main() {
   vec3 body = texture2D( uMap, vUv ).rgb;
   // From very close the map gives way to its own mean colour: no texel of it is on the screen.
   if ( uClose > 0.0 ) body = mix( body, textureLod( uMap, vec2( 0.5 ), ${CLOSE_MIP.toFixed(1)} ).rgb, uClose );
-  // The map's whitest patches are leaned to yellow-white, so the grain laid on them can still be seen.
-  body = mix( body, body * vec3( 0.95, 0.88, 0.70 ), smoothstep( 0.62, 0.98, min( body.r, min( body.g, body.b ) ) ) );
+  // The map is one pale white with a faint mottle (internal #280): the Sun is white to the eye. The soft
+  // shoulder at the end of this shader keeps the grain from clipping.
   vec3 colour = mix( uTint, body, uHasMap ) * limb( mu );
 
   vec3 p = normalize( vPosL );
@@ -951,7 +951,7 @@ export function createSunDetail(opts = {}) {
     uniforms: {
       uMap: { value: plain.map || null },
       uHasMap: { value: plain.map ? 1 : 0 },
-      uTint: { value: plain.color ? plain.color.clone() : new THREE.Color(0xf18833) },
+      uTint: { value: plain.color ? plain.color.clone() : new THREE.Color(0xfff3e3) },
       uTime: { value: 0 },
       uGrain: { value: 0 },
       uLevel: { value: 0 },

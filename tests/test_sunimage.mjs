@@ -99,7 +99,7 @@ function fakeImage(observedMs = OBS) {
   return { texture, observedMs, wavelengthA: 171, instrument: 'SDO/AIA', file: FIX.file, radiusUv: 0.483, side: 830, bytes: FIX.bytes, gpuBytes: I.textureBytes(830), dispose() { gone = true; }, get gone() { return gone; } };
 }
 function makeSun(img, tier = 1, loops = true) {
-  const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 12), new THREE.MeshBasicMaterial({ color: 0xf18833 }));
+  const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 12), new THREE.MeshBasicMaterial({ color: 0xfff3e3 }));
   const camera = new THREE.PerspectiveCamera(45, 1.6, 0.01, 1e6);
   camera.position.set(0, 0, 3.2);
   camera.lookAt(0, 0, 0);
