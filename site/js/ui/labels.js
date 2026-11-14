@@ -545,6 +545,10 @@ export function createLabels(ctx, host) {
       const r = worlds.drawnRadiusUnits(w.id);
       if (c && r > 0) out.push({ id: w.id, x: c.x, y: c.y, z: c.z, r });
     }
+    // A star drawn as a disc hides the names of what lies behind it, like a world (internal #275: "Canopus" was printed
+    // across Betelgeuse's face). Its own name and its planets' are skipped by id in project().
+    const disc = ctx.starDisc && typeof ctx.starDisc.sphere === 'function' ? ctx.starDisc.sphere() : null;
+    if (disc) out.push(disc);
     return out;
   }
 
@@ -563,7 +567,7 @@ export function createLabels(ctx, host) {
     if (!pos && ctx.systems && ctx.systems.active) pos = ctx.systems.drawnPositionOf(record.id, _v);
     if (!pos) pos = stage.toSceneInto(p, p.frame, _v, tMs);
     if (!pos) return null;
-    if (behindWorld(camera.position, pos, spheres, record.klass === 'world' ? record.id : null)) return null;
+    if (behindWorld(camera.position, pos, spheres, record.klass === 'world' || (ctx.starDisc && record.klass === 'star') ? record.id : null)) return null;
     // From the ground the air lifts a satellite's dot (scene/glyphs.js); its name goes with it (internal #418).
     if (ctx.skyView && ctx.skyView.ownsSky && ctx.skyView.apparent) ctx.skyView.apparent(pos);
     const dist = pos.distanceTo(camera.position);

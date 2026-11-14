@@ -73,7 +73,9 @@ check(discOpacity(1) === 0 && discOpacity(HIDE_POINT_PX) > 0.5 && discOpacity(10
   const want = (1 / 12) * (1 / Math.tan((22.5 * Math.PI) / 180)) * 450;
   check(twelve.drawn && Math.abs(twelve.radiusPx - want) < 0.5, `twelve radii out the disc is ${twelve.radiusPx.toFixed(1)} px in radius (${want.toFixed(1)})`);
   check(Math.abs(disc.mesh.material.uniforms.uSize.value / rUnits - 3) < 1e-9, 'the quad reaches three radii: the disc and its glow');
+  { const sp = at(12); void sp; const sph = disc.sphere(); check(sph && sph.id === sirius.id && Math.abs(sph.r - rUnits) < 1e-18 && Math.abs(sph.x - disc.mesh.position.x) < 1e-12, 'the drawn disc is a sphere the labels\' layer can hide names behind (#275)'); }
   check(!at(0.9).drawn, 'never drawn from inside the star');
+  check(disc.sphere() === null, 'and none while it is not drawn');
   stage.setWorld('earth');
   disc.set(sirius, phys);
   disc.update(camera, renderer);
