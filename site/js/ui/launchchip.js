@@ -39,6 +39,7 @@ import '../copy/en.later.js';
 import { loadCss } from './latercss.js';
 import { countdownState } from './countdown.js';
 import { whenText } from './next.js';
+import { launchLabel } from './labels.js';
 import { iconFrom } from './icons.js';
 
 // Lucide `rocket` (ISC; CREDITS.md), the shapes ui/searchrows.js draws a launch's row with.
@@ -75,7 +76,8 @@ export function chipWords(record, state, C = COPY.launchChip) {
   const sep = COPY.punctuation.separator;
   return {
     text: state.clock || state.words,
-    title: [record.name, state.words, state.age, C.opens].filter(Boolean).join(sep),
+    // Internal #304: "Vulcan VC6L" is jargon on its own; the label says it is a rocket and where from.
+    title: [t(C.rocket, { name: launchLabel(record.name) }), record.meta && record.meta.locationName, state.words, state.age, C.opens].filter(Boolean).join(sep),
   };
 }
 
@@ -147,7 +149,7 @@ export function createLaunchChip(ctx, opts = {}) {
     if (clock.textContent !== words.text) clock.textContent = words.text;
     // No native tooltip: it spilled over the search under the head (2026-11-11). The words are the chip's name, and
     // pressing it opens the launch's card, which says all of it.
-    if (root.getAttribute('aria-label') !== words.title) root.setAttribute('aria-label', words.title);
+    if (root.getAttribute('aria-label') !== words.title) { root.setAttribute('aria-label', words.title); root.title = words.title; }
     root.dataset.phase = hit.state.phase;
   }
 

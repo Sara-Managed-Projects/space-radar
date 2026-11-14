@@ -85,7 +85,7 @@ const w = tn.tonightWords({ observer: chicagoGuess, nowMs: first.startMs - 3725e
 check(/^Near Chicago, guessed from your time zone$/.test(w.place), `the place says it is a guess (${w.place})`);
 check(w.line.startsWith('International Space Station · ') && w.line.includes(timeText.hhmm(first.startMs)) && /at its highest \(\d+°\) · \d+ min$/.test(w.line), `the pass line (${w.line})`);
 check(w.countdown === '1:02:05' && w.status === 'Starts in 1:02:05', `the countdown in h:mm:ss (${w.status})`);
-check(w.caveat === 'Times can be a few minutes off where you are.', 'a guessed place carries the caveat');
+check(w.caveat === 'A guessed place: set your town for real times.', 'a guessed place carries the caveat');
 check(w.parts && w.parts.name === 'International Space Station' && w.parts.time === timeText.hhmm(first.startMs) && /^\d+°$/.test(w.parts.deg) && /^\d+$/.test(w.parts.mins) && /^From \S.* to \S/.test(w.parts.path), `the pass as its parts (${JSON.stringify(w.parts)})`);
 const wSet = tn.tonightWords({ observer: chicagoSet, nowMs: first.startMs - 60e3, ready: true, pass: first, dark });
 check(wSet.caveat === null && /^From Chicago$/.test(wSet.place), 'a set place has no caveat');

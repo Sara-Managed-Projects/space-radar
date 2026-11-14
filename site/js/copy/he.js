@@ -832,7 +832,19 @@ export const COPY = {
         "launched": "ימים בחלל",
         "fromYou": "{u} ממך",
         "heightAbove": "{u} למעלה",
+        "yearLong": "{u} להקפת השמש, {y} שנות כדור הארץ",
+        "lightFromSun": "{u} עד שהאור שלו מגיע אלינו",
+        "planetRadius": "{u} ברוחב",
+        "planetMass": "{u} במסה",
+        "mass": "מסה, ב{u}",
         "other": "{u}"
+      },
+      "starClass": {
+        "line": "{size}, {temp}",
+        "temp": { "O": "כחול", "B": "כחול-לבן", "A": "לבן", "F": "צהבהב-לבן", "G": "צהוב", "K": "כתום", "M": "אדום" },
+        "size": { "V": "כוכב בגיל העמידה", "IV": "תת-ענק", "III": "ענק", "II": "ענק בהיר", "I": "על-ענק", "VI": "תת-ננס", "none": "כוכב" },
+        "brownDwarf": "ננס חום",
+        "whiteDwarf": "ננס לבן",
       },
       "units": {
         "minutes": "דק׳",
@@ -1703,6 +1715,8 @@ export const COPY = {
       "catalogue": "קטלוג",
       "illustration": "איור"
     },
+    "placeWord": "מיקום: {word}",
+    "pictureWord": "תמונה: {word}",
     "loading": "פותח את המקרא.",
     "failed": "המקרא לא נטען. השורה למטה אומרת אותו בקצרה."
   },
@@ -2651,6 +2665,7 @@ export const COPY = {
       "markPeak": "{time} {deg}°",
       "honesty": "חושב למקום שלך. הבהירות היא הערכה."
     },
+    "settings": "עוד הגדרות שמיים",
     "skybar": {
       "title": "השמיים",
       "field": "שדה ראייה",
@@ -3248,6 +3263,7 @@ export const COPY = {
     "trueTitle": "כוכב הלכת הרחב ביותר, כשהנקודות מוסרות. לחץ כדי לצייר אותן שוב."
   },
   "launchChip": {
+    "rocket": "שיגור רקטה: {name}",
     "opens": "לחץ לכרטיס שלו",
     "train": "רכבת Starlink חדשה של {n}, מעליך {when}"
   },

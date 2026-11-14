@@ -26,6 +26,16 @@ tagged, and their dates are the day the last change in each landed.
 
 ### Changed
 
+- **Cards and Tonight say what they mean.** A star's class is read in words ("A0V, white mid-life star") with the catalogue's suffixes
+  dropped; a planet's year in days also gives Earth years; the Sun's light time and the width and mass numbers say what they measure.
+  A card's "How we know" badge splits Place from Picture ("Place: Measured, Picture: Illustrative"), and the card words are the
+  Accuracy page's three: Measured, Modelled, Illustrative. The Venus card no longer says rise times are "not in this version yet",
+  the Planets tab's Size slider reads
+  "Extra size: none" beside the badge that says planets are drawn larger, and its list says its distances are from Earth now.
+  Tonight's best leaves out a satellite with no known brightness, names an unfamiliar satellite in a few words ("Biomass, a European
+  forest-mapping satellite"), tells a visitor with a guessed place to set a town, and keeps its sky settings behind "More sky
+  settings". The launch chip's label says "Rocket launch" and where from.
+
 - **The map's controls share one set, in the journal's design.** Every button, segmented choice, select, radio, box,
   slider, close button and panel header in the app comes from `site/css/controls.css`: rounded pills, a blue wash for what
   is chosen, a blue focus ring, and one ember button for the main action of each panel. 77 one-off control classes and the

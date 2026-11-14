@@ -26,6 +26,7 @@ import * as Astronomy from '../../vendor/astronomy.js';
 import { COPY, t, fmt, timeText, compassWords, fistsWords } from '../copy/en.js';
 import '../copy/en.later.js';
 import { labelName } from '../ui/labels.js';
+import { whatIs } from './gloss.js';
 
 export const GUESS_MIN_PEAK_DEG = 40;
 export const SET_MIN_PEAK_DEG = 10;
@@ -157,8 +158,10 @@ export function tonightWords(state) {
     if (later) out.next = t(T.nextPass, { when: timeText.dayAndTime(later.startMs), name: nameOf(later) });
   } else {
     const minutes = Math.max(1, Math.round((p.endMs - p.startMs) / 60000));
+    // An unfamiliar name gets a few words after it (sky/gloss.js, internal #304).
+    const what = whatIs(p.record);
     out.line = t(T.passLine, {
-      name: nameOf(p),
+      name: what ? `${nameOf(p)}${COPY.punctuation.separator}${what}` : nameOf(p),
       time: timeText.hhmm(p.startMs),
       from: compassWords(p.startAz * DEG),
       to: compassWords(p.endAz * DEG),
@@ -168,6 +171,7 @@ export function tonightWords(state) {
     });
     out.parts = {
       name: nameOf(p),
+      what,
       time: timeText.hhmm(p.startMs),
       deg: t(T.degrees, { deg: fmt.int(p.peakEl * DEG) }),
       mins: fmt.int(minutes),
