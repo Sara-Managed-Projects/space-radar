@@ -16,7 +16,7 @@ const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
 const { starPhysical, bolometricCorrection, SUN_RADIUS_KM, SUN_TEFF_K, LY_KM } = await import(join(JS, 'scene/stars3d.js'));
-const { createStarDisc, limbDarkening, discOpacity, HIDE_POINT_PX } = await import(join(JS, 'scene/stardisc.js'));
+const { createStarDisc, limbDarkening, limbAt, discOpacity, HIDE_POINT_PX } = await import(join(JS, 'scene/stardisc.js'));
 const { stage } = await import(join(JS, 'scene/stage.js'));
 const { COPY } = await import(join(JS, 'copy/en.js'));
 
@@ -47,7 +47,9 @@ check(starPhysical(4.83, NaN).teffK > 5600 && starPhysical(4.83, NaN).teffK < 59
 check(starPhysical(1, 0.2).how === 'estimated' && /estimated/.test(COPY.card.values ? JSON.stringify(COPY.card) : JSON.stringify(COPY)), 'the method is named, and the card\'s word for it exists');
 
 // 3. The look: the Sun's limb, and when a disc is drawn at all.
-check(limbDarkening(1) === 1 && Math.abs(limbDarkening(0) - 0.4) < 1e-12 && limbDarkening(0.5) > 0.6, 'limb darkening: whole at the centre, 0.4 at the edge');
+check(limbDarkening(1) === 1 && Math.abs(limbDarkening(0) - 0.30) < 0.05 && limbDarkening(0.5) > 0.6, 'limb darkening: whole at the centre, the Sun\'s edge within 0.05 of the measured 0.30 at 550 nm');
+check(limbDarkening(0, 3200) < limbDarkening(0, 5772) && limbDarkening(0, 5772) < limbDarkening(0, 10000) && limbDarkening(0, 10000) < 0.6, 'a cool star\'s edge is darker than a hot star\'s (#277: the Sun\'s law was used for all)');
+check(limbDarkening(0, 0) === limbDarkening(0, 5772) && limbAt(0, 4000, 465) < limbAt(0, 4000, 610), 'no temperature is the Sun; the blue limb is darker than the red');
 check(discOpacity(1) === 0 && discOpacity(HIDE_POINT_PX) > 0.5 && discOpacity(10) === 1, 'a speck is the catalogue\'s point; from a few pixels the disc is the star');
 
 // 4. The disc on the stellar rung: at the star's place, its true size, and never from inside.
