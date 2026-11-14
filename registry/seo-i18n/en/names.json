@@ -130,7 +130,6 @@
  "6db91c1630": "Tau Ceti",
  "0bea3202ed": "Eris",
  "0f9ea8ed54": "Eta Carinae",
- "691e30a064": "Euclid",
  "10bf7156af": "Europa",
  "cf7711b047": "Europa Clipper",
  "a032420e74": "Flickering Globular",
@@ -226,13 +225,13 @@
  "aee57a542b": "Phobos",
  "f4aaa1ea46": "Perseverance, Jezero crater",
  "2dfc4c8584": "Zhurong, Utopia Planitia",
- "60e9f8503c": "Mars Pathfinder, Ares Vallis",
  "70fd2a759b": "Spirit, Gusev crater",
  "f73be7f779": "Opportunity, Meridiani Planum",
  "b7ac42882d": "Mars 2020 in cruise",
  "036100fe2a": "Mars 3, Ptolemaeus crater",
  "999591a055": "Mars Express",
  "e099ac5b40": "Mars Odyssey",
+ "60e9f8503c": "Mars Pathfinder, Ares Vallis",
  "45da8da847": "Mars Reconnaissance Orbiter",
  "0679cc51f8": "MAVEN",
  "322983837b": "MetOp-B",
@@ -482,5 +481,6 @@
  "c2c68cbdc3": "The annular solar eclipse of 26 January 2028",
  "3fa3ae4e7b": "The annular solar eclipse of 6 February 2027",
  "b27e3e8143": "The total solar eclipse of 2 August 2027",
- "6b1cd09db6": "The total solar eclipse of 22 July 2028"
+ "6b1cd09db6": "The total solar eclipse of 22 July 2028",
+ "691e30a064": "Euclid"
 }
