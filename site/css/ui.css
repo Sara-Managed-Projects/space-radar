@@ -5848,11 +5848,15 @@ html.sr-phone .sr-tonight-view__num { font-size: var(--sr-fs-num-sm); }
   text-shadow: 0 0 2px var(--sr-space), 0 0 2px var(--sr-space), 0 0 4px var(--sr-space), 0 0 8px var(--sr-space);
 }
 .sr-skylabel[hidden], .sr-skymark[hidden] { display: none; }
+/* A constellation's name (internal #288): the body face in the name's own case, not condensed capitals spaced wide,
+   and a dark edge drawn under the letters (paint-order) rather than a stack of blurs that breaks up at this size. */
 .sr-skylabel--con {
-  font: 600 var(--sr-fs-sm)/16px var(--sr-font-hud);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--sr-text-dim);
+  font: 600 var(--sr-fs-sm)/16px var(--sr-font);
+  letter-spacing: 0.02em;
+  color: var(--sr-text-soft);
+  -webkit-text-stroke: 3px var(--sr-space);
+  paint-order: stroke fill;
+  text-shadow: 0 0 6px var(--sr-space);
 }
 .sr-skylabel--here { color: var(--sr-text); }
 .sr-skylabel--body { color: var(--sr-text); font-weight: 600; }

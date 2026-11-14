@@ -242,7 +242,7 @@ export function createGalaxy(scene, opts = {}) {
       if (!d || !renderer || !camera || typeof renderer.compileAsync !== 'function' || !scene) return d;
       const shown = [points, dustPoints, far && far.group].filter(Boolean);
       for (const p of shown) p.visible = true;
-      return Promise.resolve(renderer.compileAsync(scene, camera)).catch(() => {}).then(() => { applyVisibility(); return d; });
+      return import('./safecompile.js').then((m) => m.compileSafe(renderer, scene, camera, null)).catch(() => {}).then(() => { applyVisibility(); return d; });
     });
   }
 

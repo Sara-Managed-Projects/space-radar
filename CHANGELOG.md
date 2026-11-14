@@ -48,6 +48,18 @@ tagged, and their dates are the day the last change in each landed.
   keeps the last thing you flew to in its box after you go elsewhere. The frame-rate guard no longer counts time it did
   not measure (a hidden tab, a stage change), and a visit it did trip has a "Reload at full quality" button in the quality
   row. On a phone the first-visit welcome comes up sooner.
+- **Sky and stage drawing.** The Moon in a daytime sky is laid over the blue and is faint when it is a thin crescent, not a
+  blazing glare (the planets-as-lights layer no longer draws on top of the ground sky). Constellation names in the sky view
+  are in the body face with a clean dark edge. A star drawn as a disc hides the names of what lies behind it. A star's disc
+  darkens toward its edge by its own temperature and colour (a modelled grey atmosphere, as the Sun's), where every star used
+  the Sun's law. Star colours come from a colorimetric black-body table (`registry/blackbody.yaml`, with its source and
+  error) where they came from a curve fit made for photo sliders. On the star map famous and bright stars are named before
+  brown and white dwarfs. From outside, the Milky Way is no longer covered by its pulsar, X-ray-binary and planet-host marks
+  (they come back as the camera comes within 65 000 light-years), the Kepler field's planet hosts thin out with distance on
+  the stellar rung, and the far-away stars are soft 3 px lights, not hard squares. Andromeda's model has a warm bulge, blue-white
+  arms and a gentler dust, and is not blown out to white. TRAPPIST-1 e, and the other mild planets of red dwarfs, are drawn
+  as mostly rock, since whether they have air or seas is not known. A warm-up that a quick stage change interrupted no longer
+  throws a page error.
 
 ## [2.0.1] - 2026-11-09
 

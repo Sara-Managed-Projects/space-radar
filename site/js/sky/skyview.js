@@ -864,7 +864,7 @@ export function createSkyView(ctx, options = {}) {
       u.uAlpha.value = ground ? 1 : sky.alpha;
       u.uGlowStrength.value = sky.glow;
       u.uHorizonGlowStrength.value = sky.horizonGlow;
-      u.uMoonBrightness.value = sky.moonBright;
+      u.uMoonBrightness.value = sky.moonBright * (1 - Math.max(0, Math.min(1, (sunElDeg + 12) / 10)));
       // The aureole: full from the horizon up, gone by the end of civil twilight.
       u.uSunHalo.value = Math.max(0, Math.min(1, (sunElDeg + 6) / 6));
       localDir(sunAzDeg * DEG2RAD, sunElDeg * DEG2RAD, u.uSunDir.value);

@@ -50,7 +50,7 @@ import { createStars3d, NAMED_STARS, SUN_RADIUS_KM, SUN_TEFF_K } from './scene/s
 import { createGalaxy } from './scene/galaxy.js';
 import { createDsoGlow } from './scene/dsoglow.js';
 import { createExposure, DEFAULT_EXPOSURE, createDrawn, DEFAULT_DRAWN } from './scene/exposure.js';
-import { isLadderStage, isSystemStage } from './scene/stage.js';
+import { isLadderStage, isSystemStage, detailLayerHidden } from './scene/stage.js';
 import { createSystems, loadIndex as loadSystemIndex } from './scene/systems.js';
 import { SUN_INERTIAL, STAGES } from './scene/stage.js';
 import { showChooser, hideChooser } from './ui/chooser.js';
@@ -2203,6 +2203,7 @@ export async function boot({ setStatus } = {}) {
     const ladder = isLadderStage(stage.worldId);
     if (layer.ladderOnly && !ladder) return false;
     if (ladder && !layer.ladderOnly && !LADDER_SCALE_LAYERS.has(layer.id)) return false;
+    if (ladder && detailLayerHidden(layer.id, stage.worldId, cameraRig.state.distance)) return false; // from outside the Milky Way is the picture (internal #283)
     return true;
   }
   ctx.isLayerDrawable = isLayerDrawable;
@@ -2986,7 +2987,9 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // (scene/camera.js refollow says what a frame's lag looked like).
     cameraRig.refollow();
     // After the worlds and the camera: each light sits on this frame's disc (scene/worldlights.js).
-    if (ctx.worldLights) ctx.worldLights.update(t);
+    // Not from the ground: the ground sky draws the Moon and the planets itself, and this light on top of them was a blazing glare
+    // on a thin daytime Moon (internal #273: the lights are added at the Moon's magnitude whatever the sky behind them).
+    if (ctx.worldLights) { ctx.worldLights.setVisible(!(ctx.skyView && ctx.skyView.ownsSky)); ctx.worldLights.update(t); }
     // What waited for the scene to stand at a new time (ctx.afterClockJump): a flight to somewhere
     // that has just moved. After the worlds, so a world's place is this frame's; the camera's own
     // update comes round again next frame.

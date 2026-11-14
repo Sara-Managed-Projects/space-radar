@@ -69,6 +69,14 @@ const DEBRIS_PICK_PENALTY = 1.6; // a satellite beats a speck at the same distan
 /** How much of a dot is left in the Earth's shadow, seen from space. Ours, illustrative. */
 export const SHADOW_OPACITY = 0.6;
 const PROVISIONAL_OPACITY = 0.7; // not yet in the public catalogue (spec 0026 req 15)
+/**
+ * A layer whose marks thin out with the camera's distance on the ladder's rungs (internal #285): [full to this many light-years,
+ * a floor share from that many]. The planet hosts of the Kepler field are 2 600 marks 2 000 to 3 000 ly out, and from the
+ * nearby stars they read as one strange green cloud over the stars; they come up as the camera nears. Illustrative: a display
+ * rule, not a measurement.
+ */
+export const FAR_FADE_LY = { exoplanets: [500, 2500, 0.12] };
+const LY_KM_FADE = 9460730472580.8;
 
 const VERT = /* glsl */ `
 attribute vec3 iOffset;
@@ -542,6 +550,9 @@ export function createGlyphLayer(scene, layer = {}) {
       if (answer && answer.pos.length === records.length * 3) { workerPos = answer.pos; workerMask = pool.mask; }
     }
     const ownPaths = ephemerisOf && ephemerisOf.size ? ephemerisOf : null;
+    const fadeRule = FAR_FADE_LY[layer.id];
+    const fadeCam = fadeRule && lastCamera && stage && stageMod.isLadderStage(stage.worldId) ? lastCamera.position : null;
+    const fadeUnitLy = fadeCam ? stage.unitKm / LY_KM_FADE : 0;
     for (let i = 0; i < records.length; i++) {
       const rec = records[i];
       // 0077 W3-e: begin (internal i#886: the confidence filter). A record the filter leaves out is not drawn and not tappable, like
@@ -626,7 +637,12 @@ export function createGlyphLayer(scene, layer = {}) {
       // model's own fade, so neither blinks -- and it stays in `live`, so it is still there to
       // tap. No model, a hidden model, or the hero layer off: the dot, as before.
       const yieldTo = modelOpacityOf ? modelOpacityOf(rec.id) : 0;
-      const own = selected ? 1 : recOpacity[i];
+      let own = selected ? 1 : recOpacity[i];
+      if (fadeCam && !selected) {
+        const dLy = Math.hypot(v.x - fadeCam.x, v.y - fadeCam.y, v.z - fadeCam.z) * fadeUnitLy;
+        const u = Math.min(1, Math.max(0, (dLy - fadeRule[0]) / (fadeRule[1] - fadeRule[0])));
+        own *= 1 - (1 - fadeRule[2]) * u * u * (3 - 2 * u);
+      }
       const opacity = Math.fround(dotOpacity(own, yieldTo));
       if (aOpacity[k] !== opacity) { aOpacity[k] = opacity; dOpacity = true; }
       // The sample halo does NOT yield: see the note in the fragment shader. It is drawn at the
