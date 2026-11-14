@@ -125,7 +125,8 @@ ${STRETCH_VERT}
   vCore = core / size;
   vGlare = glare;
   vGlow = glow;
-  vAlpha = ( m > uMagLimit ) ? 0.0 : ( 0.35 + 0.65 * tt ) * uGain * farShrink;
+  vAlpha = ( m > uMagLimit ) ? 0.0 : ( 0.35 + 0.65 * tt ) * uGain;
+  vAlpha *= farShrink; // a separate line: scene/stars3dtree.js faintVert matches the line above by its text
   // Where a photograph is drawn our stars step aside (scene/starholes.js); no hole, no change.
   if ( uHoleCount > 0 ) vAlpha *= starHole( normalize( mv.xyz ) );
   vColour = aColour;
