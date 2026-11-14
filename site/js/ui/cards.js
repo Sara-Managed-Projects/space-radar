@@ -84,7 +84,7 @@ import {
   positionAt, measure, heliocentricEarth, PASS_NO_OBSERVER, PASS_NOT_APPLICABLE, PASS_NONE,
   PASS_ERROR, PASS_OK, standsStill, nextPass, roughly, stormAdvisoryAgo, stormStatusKey, isWorld,
   whyLine, endedWords, pathEndedWords, rightNowRows, ensurePlaces, rangeLabel, nearEarthOnEllipse,
-  honestyLine, placesReady, truthRow,
+  honestyLine, placesReady, truthRow, starClassParts,
 } from './cardfacts.js';
 import { pathBeginsWords } from './cardfacts.js'; // 0077 W1-d
 export { pathBeginsWords } from './cardfacts.js'; // 0077 W1-d
@@ -2103,7 +2103,7 @@ const HERO_SLOTS = {
   orbiter: [{ rows: ['altitude'], unit: 'km' }, { rows: ['speed'], unit: 'km/h' }, { rows: ['period'], unit: 'minutes' }],
   planet: [{ rows: ['distanceFromSun'], unit: 'astronomical units' }, { rows: ['spin'], unit: 'hours' }, { rows: ['yearLength'], unit: 'days' }],
   moon: [{ rows: ['altitude', 'distanceFromEarth'], cap: 'away', unit: 'km' }, { rows: ['speed'], unit: 'km/h' }, { rows: ['spin'], unit: 'days' }],
-  sun: [{ rows: ['distanceFromEarth'], unit: 'astronomical units' }, { rows: ['lightTime'], unit: 'minutes' }, { rows: ['spin'], unit: 'days' }],
+  sun: [{ rows: ['distanceFromEarth'], unit: 'astronomical units' }, { rows: ['lightTime'], cap: 'lightFromSun', unit: 'minutes' }, { rows: ['spin'], unit: 'days' }],
   star: [{ rows: ['distanceFromSun'], cap: 'away', unit: 'light-years' }, { rows: ['brightness'] }, { rows: ['spectralType'] }],
   dso: [{ rows: ['distanceFromSun', 'lightLeft'], cap: 'away', unit: 'light-years' }, { rows: ['across'], unit: 'light-years' }, { rows: ['brightness'] }],
   craft: [{ rows: ['distanceFromEarth'], unit: 'astronomical units' }, { rows: ['speed'], unit: 'km/h' }, { rows: ['launched'] }],
@@ -2165,8 +2165,16 @@ export function heroNumbers(record, m, rows) {
   const caption = (key, unit) => t(H.captions[key] || H.captions.other, { u: H.units[unit] || unit || '' }).trim();
   const cell = (key, value, capKey) => {
     if (key === 'spectralType') {
-      const v = String(value || '').replace(/[.\s]+$/, '');
-      return v ? { key, num: v.slice(0, 7), caption: caption(key, ''), missing: false } : null;
+      // The code is the number and the words under it are the caption (internal #299); a row that is not a type says "star class".
+      const p = starClassParts(String(value || '').split(COPY.punctuation.separator)[0].replace(/[.\s]+$/, ''));
+      const full = String(value || '').split(COPY.punctuation.separator).slice(1).join(COPY.punctuation.separator);
+      return p.code ? { key, num: p.code.slice(0, 7), caption: full || p.words || caption(key, ''), missing: false } : null;
+    }
+    // Internal #301: a planet's year in days alone loses the point; add Earth years once it is a long one.
+    if (key === 'yearLength' && !capKey && H.captions.yearLong) {
+      const split0 = heroSplit(value);
+      const days = split0 && split0.unit === t(COPY.card.values.days, { n: '' }).trim() ? Number(split0.num.replace(/[^\d.,]/g, '').replace(',', '.')) : NaN;
+      if (days >= 1000) return { key, num: split0.num, caption: t(H.captions.yearLong, { u: H.units[split0.unit] || split0.unit, y: fmt.int(days / 365.25) }), missing: false };
     }
     const split = heroSplit(value);
     return split ? { key, num: split.num, caption: caption(capKey || key, split.unit), missing: false } : null;
@@ -2205,7 +2213,9 @@ function heroBlock(heroes) {
     // A long value (a spectral class, 2 540 000 light-years) steps down a size, not out of its column.
     if (String(h.num).length > 6) num.dataset.long = String(h.num).length > 9 ? '2' : '1';
     item.appendChild(num);
-    item.appendChild(el('span', 'sr-hero__unit', h.caption));
+    const unit = el('span', 'sr-hero__unit', h.caption);
+    unit.title = h.caption;
+    item.appendChild(unit);
     list.appendChild(item);
   }
   return list;

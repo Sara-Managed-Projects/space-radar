@@ -82,6 +82,10 @@ BLOG_HOST = "https://blog.spaceradar.ai"
 NS = "http://www.sitemaps.org/schemas/sitemap/0.9"
 TITLE_MAX = 60
 DESC_MIN, DESC_MAX = 70, 160
+# The least description was set for English. The same sentence is shorter in a script with no spaces (a Chinese character carries a
+# syllable's worth of meaning), in one that leaves vowels out (Hebrew, Arabic) and in one with long words and few articles; a
+# stub is still refused, at the least that language's translations of the same descriptions reach.
+DESC_MIN_LANG = {"zh": 20, "he": 50, "ar": 50, "hi": 50, "ru": 50, "uk": 50}
 DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 # Built directories that are not pages of the growth set (the press page has its own builder and test).
 NOT_GROWTH = {"o", "press", "share", "embed", "lab", "t", *seo_i18n.LANGS}  # press, the embed gallery and the Lab have their own builders; they are judged by the rules above and check_lab()
@@ -104,6 +108,7 @@ class Head(HTMLParser):
         self.alternates: list[tuple[str, str]] = []  # (hreflang, href) of every <link rel="alternate" hreflang>
         self.html_lang, self.html_dir = "", ""
         self.note: list[str] = []  # the href of the link in the machine-translation note (data-i18n-note)
+        self.base = ""  # <base href>, which relative addresses are resolved against
         self._note = False
         self._footer = 0
         self._in: str | None = None
@@ -123,6 +128,8 @@ class Head(HTMLParser):
             self.links.setdefault(a["rel"].lower(), []).append(a.get("href", ""))
             if a["rel"].lower() == "alternate" and "hreflang" in a:
                 self.alternates.append((a["hreflang"], a.get("href", "")))
+        elif tag == "base" and "href" in a:
+            self.base = a["href"]
         elif tag == "html":
             self.html_lang, self.html_dir = a.get("lang", ""), a.get("dir", "")
         elif tag == "p" and "data-i18n-note" in a:
@@ -604,7 +611,7 @@ def check_languages(site: Path, built: Path, say, robots_text: str) -> None:
                  above); under 50 000 URLs and 50 MB; every URL a page of the build in that language, with a YYYY-MM-DD
                  lastmod; every page of the language in it; each entry's xhtml:link alternates valid and reciprocal.
       pages      <html lang> the language's code and dir="rtl" for he and ar ("ltr" otherwise); a canonical that is the page
-                 itself; og:url the same; a title of at most 60 characters and (but the Lab's) a description of 70 to 160;
+                 itself; og:url the same; a title of at most 60 characters and (but the Lab's) a description of 70 to 160 (less in zh he ar hi ru uk: DESC_MIN_LANG);
                  hreflang for every version that exists and only those, x-default the English page, reciprocal on every
                  page they name (English pages included); the machine-translation note linking the English original; no
                  link to an English page that exists in the page's own language.
@@ -661,10 +668,15 @@ def check_languages(site: Path, built: Path, say, robots_text: str) -> None:
             name = f"built/{rel}"
             inner = rel[len(code) + 1:]
             url = f"{HOST}/{code}/" + ("" if inner == "index.html" else inner)
-            if url not in listed:
-                say(f"{name} is not in {sm.name}")
             h = Head()
             h.feed(f.read_text(encoding="utf-8"))
+            # An alias in a language (/es/iss/ for /es/o/international-space-station.html, as /iss/ is for the English page): its
+            # canonical is another page of the language's sitemap, and it is not in the sitemap or in any hreflang set itself.
+            alias = len(h.links.get("canonical", [])) == 1 and h.links["canonical"][0] != url and h.links["canonical"][0] in listed
+            if url not in listed and not alias:
+                say(f"{name} is not in {sm.name}")
+            if alias and (h.alternates or url in listed):
+                say(f"{name}: an alias page ({h.links['canonical'][0]} is its canonical) must carry no hreflang and not be in {sm.name}")
             if h.html_lang != HREFLANG[code]:
                 say(f"{name}: <html lang> is {h.html_lang!r}, not {HREFLANG[code]!r}")
             want_dir = "rtl" if code in seo_i18n.RTL else "ltr"
@@ -688,19 +700,24 @@ def check_languages(site: Path, built: Path, say, robots_text: str) -> None:
             elif len(title) > TITLE_MAX:
                 say(f"{name}: the title is {len(title)} characters, over {TITLE_MAX}: {title!r}")
             desc = h.one("description")
-            if not inner.startswith("lab/") and (desc is None or not DESC_MIN <= len(desc) <= DESC_MAX):
-                say(f"{name}: the description is {len(desc or '')} characters, outside {DESC_MIN}-{DESC_MAX}")
+            dmin = DESC_MIN_LANG.get(code, DESC_MIN)
+            if not inner.startswith("lab/") and (desc is None or not dmin <= len(desc) <= DESC_MAX):
+                say(f"{name}: the description is {len(desc or '')} characters, outside {dmin}-{DESC_MAX}")
             for block in h.ld:
                 try:
                     json.loads(block)
                 except json.JSONDecodeError as e:
                     say(f"{name}: a JSON-LD block does not parse ({e.msg})")
-            if not h.alternates:
-                say(f"{name}: no hreflang alternates")
-            page_sets[url] = check_alternates(name, url, h.alternates, site, built, say)
-            if _english_of(url) not in h.note:
-                say(f"{name}: no machine-translation note linking the English page {_english_of(url)}")
+            if not alias:
+                if not h.alternates:
+                    say(f"{name}: no hreflang alternates")
+                page_sets[url] = check_alternates(name, url, h.alternates, site, built, say)
+            note_for = _english_of(h.links["canonical"][0]) if alias else _english_of(url)
+            if note_for not in h.note:
+                say(f"{name}: no machine-translation note linking the English page {note_for}")
             here = posixpath.dirname(rel)
+            if h.base and "://" not in h.base and not h.base.startswith("/") and inner != "index.html":
+                here = posixpath.normpath(posixpath.join(here, h.base))  # an alias of a page in another folder
             for href in h.hrefs:
                 clean = html.unescape(href).split("#")[0].split("?")[0]
                 if "://" in href or href.startswith(("/", "mailto:", "#", "data:")) or not (clean.endswith(".html") or clean.endswith("/") or clean == ""):
@@ -786,10 +803,19 @@ def main(argv: list[str]) -> int:
         return 2
     problems = check(root, built, require_share)
     if problems:
-        for p in problems[:40]:
-            print(p)
-        if len(problems) > 40:
-            print(f"... and {len(problems) - 40} more")
+        if len(problems) <= 40:
+            for p in problems:
+                print(p)
+        else:
+            # many problems are one problem on many pages (a title over 60 characters on the pages of one language): the
+            # first three of each kind, and how many there are, so one run shows every kind
+            kinds: dict[str, list[str]] = {}
+            for p in problems:
+                kinds.setdefault(re.sub(r"\d+", "N", re.sub(r"^built/([a-z]{2}/)?\S+?: ", r"\1", p))[:90], []).append(p)
+            for kind, rows in kinds.items():
+                print(f"[{len(rows)}x] {kind}")
+                for p in rows[:3]:
+                    print("    " + p[:230])
         print(f"\n{len(problems)} problem(s) a search engine would see")
         return 1
     n = 2 + len(list((built / "o").glob("*.html"))) + len(list((root / "site" / "t").glob("*.html"))) \

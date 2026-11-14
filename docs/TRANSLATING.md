@@ -18,17 +18,17 @@ is not wasted: the loader reads exactly the file you write.
 <!-- translation-status:begin (node scripts/check-translation.mjs --write-doc) -->
 | Language | File | Strings present | Changed from English | Review | Shown from the browser’s language |
 | --- | --- | --- | --- | --- | --- |
-| English | `en.js` | 4 522 (the source) | - | the source | yes |
-| العربية (Arabic) | `ar.js` | 4 522 of 4 522 (100 %) | 4 161 (92 %) | machine-drafted | no: `?lang=ar` only |
-| Deutsch (German) | `de.js` | 4 520 of 4 522 (99.9 %) | 4 303 (95.1 %) | machine-drafted | no: `?lang=de` only |
-| Español (Spanish) | `es.js` | 4 522 of 4 522 (100 %) | 4 339 (95.9 %) | machine-translated, agent-reviewed (not native-reviewed) | yes |
-| Français (French) | `fr.js` | 4 521 of 4 522 (99.9 %) | 4 290 (94.8 %) | machine-drafted | no: `?lang=fr` only |
-| עברית (Hebrew) | `he.js` | 4 522 of 4 522 (100 %) | 4 143 (91.6 %) | machine-drafted | no: `?lang=he` only |
-| हिन्दी (Hindi) | `hi.js` | 4 522 of 4 522 (100 %) | 4 146 (91.6 %) | machine-drafted | no: `?lang=hi` only |
-| Português (Brasil) (Portuguese (Brazil)) | `pt.js` | 4 521 of 4 522 (99.9 %) | 4 329 (95.7 %) | machine-drafted | no: `?lang=pt` only |
-| Русский (Russian) | `ru.js` | 4 522 of 4 522 (100 %) | 4 225 (93.4 %) | machine-drafted | no: `?lang=ru` only |
-| Українська (Ukrainian) | `uk.js` | 4 522 of 4 522 (100 %) | 4 227 (93.4 %) | machine-drafted | no: `?lang=uk` only |
-| 简体中文 (Chinese (Simplified)) | `zh.js` | 4 522 of 4 522 (100 %) | 4 177 (92.3 %) | machine-drafted | no: `?lang=zh` only |
+| English | `en.js` | 4 529 (the source) | - | the source | yes |
+| العربية (Arabic) | `ar.js` | 4 529 of 4 529 (100 %) | 4 178 (92.2 %) | machine-translated, agent-reviewed (not native-reviewed) | yes |
+| Deutsch (German) | `de.js` | 4 527 of 4 529 (99.9 %) | 4 307 (95 %) | machine-translated, agent-reviewed (not native-reviewed) | yes |
+| Español (Spanish) | `es.js` | 4 529 of 4 529 (100 %) | 4 344 (95.9 %) | machine-translated, agent-reviewed (not native-reviewed) | yes |
+| Français (French) | `fr.js` | 4 528 of 4 529 (99.9 %) | 4 298 (94.8 %) | machine-translated, agent-reviewed (not native-reviewed) | yes |
+| עברית (Hebrew) | `he.js` | 4 529 of 4 529 (100 %) | 4 147 (91.5 %) | machine-translated, agent-reviewed (not native-reviewed) | yes |
+| हिन्दी (Hindi) | `hi.js` | 4 529 of 4 529 (100 %) | 4 384 (96.7 %) | machine-translated, agent-reviewed (not native-reviewed) | yes |
+| Português (Brasil) (Portuguese (Brazil)) | `pt.js` | 4 528 of 4 529 (99.9 %) | 4 334 (95.6 %) | machine-translated, agent-reviewed (not native-reviewed) | yes |
+| Русский (Russian) | `ru.js` | 4 529 of 4 529 (100 %) | 4 392 (96.9 %) | machine-translated, agent-reviewed (not native-reviewed) | yes |
+| Українська (Ukrainian) | `uk.js` | 4 529 of 4 529 (100 %) | 4 230 (93.3 %) | machine-translated, agent-reviewed (not native-reviewed) | yes |
+| 简体中文 (Chinese (Simplified)) | `zh.js` | 4 529 of 4 529 (100 %) | 4 188 (92.4 %) | machine-translated, agent-reviewed (not native-reviewed) | yes |
 <!-- translation-status:end -->
 
 ## What is translated, in order

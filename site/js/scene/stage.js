@@ -105,6 +105,19 @@ export const STAGES = {
   'system-trappist-1': { frame: SUN_INERTIAL, unitKm: 100000, system: 'trappist-1' },
 };
 
+/**
+ * The Milky Way's own detail layers (pulsars, X-ray binaries and the like, the planet hosts) are not drawn while the camera
+ * stands farther than this from what it looks at on the galaxy or Local Group rung (internal #283): from outside, 3 000 pink
+ * marks and their names lay over the model of the galaxy and hid it. 65 000 ly, about 20 kpc, a little over the disc's radius.
+ */
+export const GALAXY_DETAIL_LAYERS = new Set(['pulsars', 'exotics', 'extremes-more', 'exoplanets']);
+export const GALAXY_DETAIL_MAX_KM = 65000 * 9460730472580.8;
+export function detailLayerHidden(layerId, stageId, distanceUnits) {
+  if (stageId !== 'galaxy' && stageId !== 'local-group') return false;
+  if (!GALAXY_DETAIL_LAYERS.has(layerId) || !(distanceUnits > 0)) return false;
+  return distanceUnits * STAGES[stageId].unitKm > GALAXY_DETAIL_MAX_KM;
+}
+
 /** One unit on every star system's stage, km (registry/stages.yaml's rule for `kind: system`). */
 export const SYSTEM_UNIT_KM = 100000;
 

@@ -94,7 +94,8 @@ check(T.isJunk(rb.record) && T.isJunk({ name: 'COSMOS 1408 DEB' }) && T.isJunk({
   const dimStage = { ...rb, recordId: '1', record: { id: '1', name: 'ATLAS CENTAUR R/B' }, magnitude: 4.4, startMs: t0 + 1800e3, endMs: t0 + 2100e3 };
   const list = T.tonightBest({ observer: here, nowMs: evening, passes: [brightStage, dimStage, iss] }).rows.filter((r) => r.kind === 'pass').map((r) => r.pass);
   check(list.includes(brightStage) && !list.includes(dimStage) && list.includes(iss), 'a stage with a known bright magnitude stays; a dim one goes; the station is untouched');
-  check(T.worthARow({ ...iss, magnitude: null, record: { id: '20580', name: 'HST' } }), 'a named satellite with no magnitude is still offered');
+  check(!T.worthARow({ ...iss, magnitude: null, record: { id: '20580', name: 'HST' } }), 'a satellite with no known magnitude is not ranked among the best (internal #274)');
+check(T.worthARow({ ...iss, magnitude: 1.2, record: { id: '20580', name: 'HST' } }), 'a named satellite with a known magnitude is still offered');
 }
 for (let i = 0; i + 1 < best.rows.length; i += 1) check(best.rows[i].score >= best.rows[i + 1].score, `row ${i} outranks row ${i + 1}`);
 const ids = best.rows.map((r) => r.kind === 'pass' ? 'pass' : r.id);

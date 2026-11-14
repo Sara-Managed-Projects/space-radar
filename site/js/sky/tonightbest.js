@@ -295,8 +295,12 @@ export const JUNK_MAX_MAG = 3.5;
  * is still on the sky and in the passes list: this is about what is called "best".
  */
 export function worthARow(pass) {
-  if (!pass || !isJunk(pass.record)) return true;
-  return Number.isFinite(pass.magnitude) && pass.magnitude <= JUNK_MAX_MAG;
+  if (!pass) return true;
+  // Public/internal #274 (owner's review, 13 November 2026): "SPACEMOBILE-002, mag —" was ranked
+  // among the best things to see. Without a magnitude nothing says a pass is visible at all, so
+  // it is not "best"; the pass is still on the sky and in the passes list.
+  if (!Number.isFinite(pass.magnitude)) return false;
+  return !isJunk(pass.record) || pass.magnitude <= JUNK_MAX_MAG;
 }
 
 function planetScore(p) {

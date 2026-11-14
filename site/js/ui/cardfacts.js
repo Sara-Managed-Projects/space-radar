@@ -714,7 +714,7 @@ export function rightNowRows(record, m, passInfo) {
       rows.push([R.lightLeft, distLy >= 1.5 ? t(V.yearsAgo, { n: fmt.int(distLy) }) : t(V.monthsAgo, { n: fmt.int(distLy * 12) })]);
     }
     const spect = pick(md, 'spect');
-    if (spect) rows.push([R.spectralType, String(spect)]);
+    if (spect) rows.push([R.spectralType, starClassLine(spect)]);
     const mag = pickNumber(md, 'mag');
     if (mag !== null) rows.push([R.brightness, t(V.magnitude, { n: fmt.smart(mag) })]);
     const lum = pickNumber(md, 'lum');
@@ -994,6 +994,58 @@ export function positionKey(record, m) {
   return ['measured', 'inferred', 'illustrative', 'sample'].includes(cls) ? cls : 'unknown';
 }
 
+/**
+ * A star's spectral type as the code a reader can use and what it says in words (internal #299):
+ * "A0Vvar" is the code "A0V", "a white mid-life star"; the catalogue's suffixes (var, m, e) are
+ * dropped. The letter is the colour (hot blue to cool red), the numeral the size (V a dwarf like the
+ * Sun, III a giant, I a supergiant). Brown dwarfs (L, T, Y) and white dwarfs (D) are named as such.
+ * A type this cannot read comes back as it was written, with no words. Pure.
+ */
+export function starClassParts(raw) {
+  const S = COPY.card.hero.starClass;
+  const s = String(raw == null ? '' : raw).trim();
+  if (!S || !s) return { code: s, words: '' };
+  const wd = /^D[A-Z]?\d?/.exec(s);
+  if (wd) return { code: wd[0], words: S.whiteDwarf };
+  const m = /^([OBAFGKMLTY])\s*(\d(?:\.\d)?)?(?:\s*[-/]\s*\d(?:\.\d)?)?\s*(Ia\+|Iab|Ia|Ib|III|II|IV|VI|V|I)?/.exec(s);
+  if (!m) return { code: s, words: '' };
+  const code = m[0].replace(/\s+/g, '');
+  if ('LTY'.includes(m[1])) return { code, words: S.brownDwarf };
+  const lum = m[3] ? (/^I[ab+]*$/.test(m[3]) || m[3] === 'Ia+' ? 'I' : m[3]) : 'none';
+  return { code, words: t(S.line, { temp: S.temp[m[1]], size: S.size[lum] || S.size.none }) };
+}
+
+/** The row's value: the code, then the words. */
+export function starClassLine(raw) {
+  const p = starClassParts(raw);
+  return p.words ? `${p.code}${COPY.punctuation.separator}${p.words}` : p.code;
+}
+
+const STAND_IN_KLASSES = ['satellite', 'station', 'debris', 'rocket', 'probe', 'telescope'];
+/**
+ * Is the card's PICTURE a stand-in whatever its place is (internal #298, T2/D9)? An exoplanet's surface is
+ * an artist's impression; a satellite drawn from a generic shape is a kind of thing, not this one. The
+ * place can be measured all the same, so the badge says both and never one verdict for the card.
+ */
+export function pictureIsIllustrative(record) {
+  const k = klassOf(record);
+  if (k === 'exoplanet') return true;
+  let entry = null;
+  try { entry = realModelFor(record); } catch { entry = null; }
+  if (entry) return !!entry.generic;
+  return STAND_IN_KLASSES.includes(k);
+}
+
+/** The disclosure's hint: the deep sky's own drawn word, else "Place: ..." and, for a stand-in picture, "Picture: Illustrative". */
+export function truthHint(record, ctx, m) {
+  const T = COPY.truth;
+  const key = truthKey(record, ctx, m);
+  const word = T.hints[key];
+  if (klassOf(record) === 'dso' || !word || !T.placeWord) return word || null;
+  const place = t(T.placeWord, { word });
+  return pictureIsIllustrative(record) ? [place, t(T.pictureWord, { word: T.hints.illustrative })].join(COPY.punctuation.separator) : place;
+}
+
 /** The legend's key for a card: what draws now (deep sky), else how its position is known. */
 export function truthKey(record, ctx, m) {
   return klassOf(record) === 'dso' ? drawnNow(record, ctx) : positionKey(record, m);
@@ -1016,12 +1068,12 @@ export function truthRow(record, ctx, m) {
   const fill = () => import('./truthlegend.js')
     .then((mod) => {
       const head = panel.parentNode && panel.parentNode.querySelector ? panel.parentNode.querySelector('.sr-disc__hint') : null;
-      const hint = T.hints[truthKey(record, ctx, m)];
+      const hint = truthHint(record, ctx, m);
       if (head && hint && head.textContent !== hint) head.textContent = hint;
       return mod.fillLegend(panel, record, ctx, m);
     })
     .catch(() => { if (!panel.querySelector || !panel.querySelector('.sr-rows')) wait.textContent = T.failed; });
-  return { label: T.label, hint: T.hints[truthKey(record, ctx, m)] || null, panel, fill };
+  return { label: T.label, hint: truthHint(record, ctx, m), panel, fill };
 }
 
 // ---------------------------------------------------------------------------------------

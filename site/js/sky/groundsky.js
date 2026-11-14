@@ -333,7 +333,7 @@ void main() {
 `;
 const DISC_FRAG = /* glsl */ `
 uniform sampler2D uMap;
-uniform float uUseMap, uEmissive, uLimb, uRings, uOpacity, uCover, uGain;
+uniform float uUseMap, uEmissive, uLimb, uRings, uOpacity, uCover, uGain, uDaylight;
 uniform vec3 uColour, uSun, uTint;
 uniform mat3 uBody; // columns: the body's x, y, z axes
 varying vec2 vP;
@@ -351,6 +351,7 @@ void main() {
   vec3 col = vec3(0.0);
   float cover = 0.0;
   float zSphere = -1e9;
+  float litA = 0.0;
   if (r2 < 1.0) {
     float z = sqrt(1.0 - r2);
     zSphere = z;
@@ -364,6 +365,7 @@ void main() {
     float lit = smoothstep(-0.02, 0.12, dot(n, uSun)) * mix(1.0, max(dot(n, uSun), 0.0), 0.6);
     float limb = 1.0 - uLimb * (1.0 - z);
     col = albedo * limb * mix(lit + 0.012, 1.0, uEmissive);
+    litA = smoothstep(-0.02, 0.12, dot(n, uSun));
     cover = 1.0 - smoothstep(1.0 - px, 1.0, sqrt(r2));
   }
   if (uRings > 0.5) {
@@ -382,7 +384,10 @@ void main() {
   }
   if (cover <= 0.002) discard;
   // Premultiplied: light is added, and what is behind is hidden only where uCover says (the Sun).
-  gl_FragColor = vec4(col * uTint * uGain * cover * uOpacity, cover * uCover * uOpacity);
+  // By day (uDaylight, the Moon only; internal #273) the lit part is paint, not added light: a daylit Moon is about as
+  // bright as the sky round it, so it is laid over the blue at part strength and a thin crescent stays a faint one.
+  float paint = uDaylight * litA * 0.7;
+  gl_FragColor = vec4(col * uTint * uGain * cover * uOpacity * (1.0 - 0.5 * uDaylight), (cover * uCover + cover * paint) * uOpacity);
   #include <colorspace_fragment>
 }
 `;
@@ -617,7 +622,8 @@ export function createGroundSky(ctx, env) {
     u.uFloorZ.value.set(floor.zenith[0], floor.zenith[1], floor.zenith[2]);
     u.uFloorH.value.set(floor.horizon[0], floor.horizon[1], floor.horizon[2]);
     u.uHorizonGlow.value = glow;
-    u.uMoonBright.value = frame.moonBright || 0;
+    // Moonlight lifts a dark sky; it does nothing to a day one (internal #273): gone as the Sun comes up past -2 degrees.
+    u.uMoonBright.value = (frame.moonBright || 0) * (1 - Math.max(0, Math.min(1, (frame.sunAltDeg + 12) / 10)));
     const moon = discs.get('moon');
     if (moon && moon.apparent) u.uMoonDir.value.set(moon.apparent.local[0], moon.apparent.local[1], moon.apparent.local[2]);
     const kind = landscapeKind({ darkness: options.darkness, sea });
@@ -954,7 +960,7 @@ export function createGroundSky(ctx, env) {
         uCentre: { value: new THREE.Vector3() }, uRight: { value: new THREE.Vector3(1, 0, 0) }, uUp: { value: new THREE.Vector3(0, 1, 0) },
         uHalf: { value: 0 }, uExtent: { value: look.rings ? 2.4 : 1.08 }, uSquash: { value: 1 },
         uMap: { value: null }, uUseMap: { value: 0 }, uEmissive: { value: look.emissive || 0 }, uLimb: { value: look.limb || 0 },
-        uRings: { value: look.rings ? 1 : 0 }, uOpacity: { value: 1 }, uCover: { value: 1 }, uGain: { value: 1 },
+        uRings: { value: look.rings ? 1 : 0 }, uOpacity: { value: 1 }, uDaylight: { value: 0 }, uCover: { value: 1 }, uGain: { value: 1 },
         uColour: { value: new THREE.Color().setRGB(look.colour[0], look.colour[1], look.colour[2], THREE.SRGBColorSpace) },
         uSun: { value: new THREE.Vector3(0, 0, 1) }, uTint: { value: new THREE.Vector3(1, 1, 1) }, uBody: { value: new THREE.Matrix3() },
       },
@@ -1052,6 +1058,7 @@ export function createGroundSky(ctx, env) {
       // Light is added to the sky. Only the Sun hides what is behind it: the unlit part of the
       // Moon is the colour of the sky it stands in, by day and by moonlight alike.
       u.uCover.value = b.id === 'sun' ? 1 : 0;
+      u.uDaylight.value = b.id === 'moon' ? Math.max(0, Math.min(1, (frame.sunAltDeg + 8) / 10)) : 0;
       if (!d.mapAsked && d.look.map && loader && d.diameterPx >= MAP_AT_PX) {
         d.mapAsked = true;
         loader.load(String(url(`../../textures/${d.look.map}`)), (tex) => {

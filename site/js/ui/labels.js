@@ -247,6 +247,24 @@ export function isNotableHere(record, ladder) {
   return record.klass !== 'star';
 }
 
+/**
+ * Fame group of a record among the rest (internal #284): 0 a star people know (a hand-kept famous row, or bright enough to
+ * see without help: apparent magnitude 3 or brighter), 1 everything else, 2 a brown dwarf or white dwarf, which the
+ * eye cannot see. The stellar stage named "SCR 1845-6357 B" and "DENIS 0817-6155" while first-magnitude stars in the same
+ * frame went unnamed, because the rest was ranked by distance alone and the faint ones are the nearest. Pure.
+ */
+export const BRIGHT_STAR_MAG = 3;
+export function fameGroup(record) {
+  if (!record) return 1;
+  const kind = record.meta && record.meta.kind;
+  if (record.klass === 'exotic' && (kind === 'browndwarf' || kind === 'whitedwarf')) return 2;
+  if (record.klass === 'star') {
+    const m = record.meta || {};
+    if (m.why || (Number.isFinite(m.mag) && m.mag <= BRIGHT_STAR_MAG)) return 0;
+  }
+  return 1;
+}
+
 /** A launch ranks among the rest as though it were this many times as far (chooseLabels says why). */
 export const LAUNCH_SCORE = 2;
 
@@ -313,9 +331,13 @@ export function chooseLabels(candidates, opts = {}) {
   const tail = keyed.filter((k) => k.tier === TIER.rest);
   // rankAll's sort is stable, so a moon that ties its planet stays behind it, as sorted above.
   const byRecord = new Map(tail.map((k) => [k.c.record, k.c]));
+  // Famous stars first, the unseeable last, each group in rankAll's order (a stable sort keeps it).
   const rest = rankAll(tail.map((k) => ({ record: k.c.record, score: k.s })), [], tail.length)
     .map((x) => byRecord.get(x.record))
-    .filter(Boolean);
+    .filter(Boolean)
+    .map((c, i) => ({ c, i, g: fameGroup(c.record) }))
+    .sort((a, b) => (a.g - b.g) || (a.i - b.i))
+    .map((x) => x.c);
   const out = [];
   let train = 0;
   for (const c of head.concat(rest)) {
@@ -545,6 +567,10 @@ export function createLabels(ctx, host) {
       const r = worlds.drawnRadiusUnits(w.id);
       if (c && r > 0) out.push({ id: w.id, x: c.x, y: c.y, z: c.z, r });
     }
+    // A star drawn as a disc hides the names of what lies behind it, like a world (internal #275: "Canopus" was printed
+    // across Betelgeuse's face). Its own name and its planets' are skipped by id in project().
+    const disc = ctx.starDisc && typeof ctx.starDisc.sphere === 'function' ? ctx.starDisc.sphere() : null;
+    if (disc) out.push(disc);
     return out;
   }
 
@@ -563,7 +589,7 @@ export function createLabels(ctx, host) {
     if (!pos && ctx.systems && ctx.systems.active) pos = ctx.systems.drawnPositionOf(record.id, _v);
     if (!pos) pos = stage.toSceneInto(p, p.frame, _v, tMs);
     if (!pos) return null;
-    if (behindWorld(camera.position, pos, spheres, record.klass === 'world' ? record.id : null)) return null;
+    if (behindWorld(camera.position, pos, spheres, record.klass === 'world' || (ctx.starDisc && record.klass === 'star') ? record.id : null)) return null;
     // From the ground the air lifts a satellite's dot (scene/glyphs.js); its name goes with it (internal #418).
     if (ctx.skyView && ctx.skyView.ownsSky && ctx.skyView.apparent) ctx.skyView.apparent(pos);
     const dist = pos.distanceTo(camera.position);

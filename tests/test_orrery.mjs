@@ -169,7 +169,7 @@ check(KEYS.includes('size') && KEYS.includes('dist') && KEYS.includes('cut') && 
 }
 
 // --- words and laziness --------------------------------------------------------------------------
-check(UI.sizeWords(1) === 'true' && UI.sizeWords(2000) === `×${fmt.int(2000)}` && UI.distWords(1) === 'logarithmic' && UI.distWords(0.3) === '30% of the way to logarithmic', 'the sliders say their values in words');
+check(UI.sizeWords(1) === 'none' && UI.sizeWords(2000) === `×${fmt.int(2000)}` && UI.distWords(1) === 'logarithmic' && UI.distWords(0.3) === '30% of the way to logarithmic', 'the sliders say their values in words');
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 const main = read('site/js/main.js');
 check(/import\('\.\/ui\/orrery\.js'\)/.test(main) && !/^import[^\n]*orrery/m.test(main), 'main.js fetches the sliders dynamically, never statically');

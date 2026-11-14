@@ -437,7 +437,7 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
     heroes.forEach((h, i) => {
       check(!h.missing && h.num !== MISSING, `${what}: number ${i + 1} (${labels[i]}) is there: ${JSON.stringify(h)}`);
       check(fromRow(rows, labels[i], h.num), `${what}: "${h.num}" is the card's own "${labels[i]}" row (${JSON.stringify(rows.find(([k]) => k === labels[i]))})`);
-      check(typeof h.caption === 'string' && h.caption.length > 0 && h.caption.length <= 18, `${what}: number ${i + 1} has a one-line caption: "${h.caption}"`);
+      check(typeof h.caption === 'string' && h.caption.length > 0 && h.caption.length <= 44, `${what}: number ${i + 1} has a caption of at most two lines: "${h.caption}"`);
     });
     // The honesty line is still on every card, and the tag's short line is still its first clause.
     check(typeof honesty === 'string' && honesty.length > 0, `${what}: the honesty line stays (${honesty})`);
@@ -447,7 +447,7 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   const issHero = three(issGp).heroes;
   check(issHero.map((h) => h.caption).join('|') === 'km up|km/h|min a lap', `the ISS reads "km up", "km/h", "min a lap": ${issHero.map((h) => h.caption)}`);
   const marsHero = three(W('mars')).heroes;
-  check(marsHero[0].caption === 'AU from Sun' && /a turn$/.test(marsHero[1].caption) && /a year$/.test(marsHero[2].caption), `Mars reads AU from Sun, a turn, a year: ${marsHero.map((h) => h.caption)}`);
+  check(marsHero[0].caption === 'AU from Sun' && /to turn once$/.test(marsHero[1].caption) && /go round the Sun$/.test(marsHero[2].caption), `Mars reads AU from Sun, a turn, a year: ${marsHero.map((h) => h.caption)}`);
   check(/^24\.6$/.test(marsHero[1].num) && marsHero[2].num === '687', `Mars turns in 24.6 hours and goes round in 687 days: ${marsHero.map((h) => h.num)}`);
   const vHero = three(voyager).heroes;
   check(vHero[2].num === C.heroSplit(three(voyager).rows.find(([k]) => k === R.launched)[1]).num && Number(vHero[2].num.replace(/ /g, '')) > 17000, `Voyager 1's days since launch are counted from 5 September 1977: ${vHero[2].num}`);

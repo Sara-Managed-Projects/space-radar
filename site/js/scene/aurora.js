@@ -780,7 +780,7 @@ export function createAurora({
     // a new program is otherwise a stall of tens of milliseconds on a phone.
     if (renderer && camera && typeof renderer.compileAsync === 'function') {
       m.visible = true;
-      renderer.compileAsync(m, camera, scene || undefined).catch(() => {}).finally(() => { m.userData.compiled = true; });
+      import('./safecompile.js').then((c) => c.compileSafe(renderer, m, camera, scene)).catch(() => {}).finally(() => { m.userData.compiled = true; });
       // A program that fails to link never resolves compileAsync on some drivers; three then logs
       // the shader error, and drawing it is how that error reaches the console a probe reads.
       setTimeout(() => { m.userData.compiled = true; }, 3000);

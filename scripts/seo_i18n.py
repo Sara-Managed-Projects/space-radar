@@ -187,6 +187,11 @@ DATE = re.compile(rf"\b(?:(\d{{1,2}}) ({_M}) (\d{{4}})|({_M}) (\d{{4}})|(\d{{1,2
 NUMBER = re.compile(r"(?<![\w.,])(?:\d{1,2}:\d{2}|\d{1,3}(?:[,   ]\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)(?![\w]|[.,]\d)")
 
 
+# A page's subject is a slot, but a spacecraft that has the subject's name in its own ("Mars Global Surveyor" on Mars's page) is a
+# name in itself: it is kept whole in every language, never "{name} Global Surveyor" (which Hindi wrote "मंगल Global Surveyor").
+SPACECRAFT_AFTER_NAME = r" (?:Global Surveyor|Reconnaissance Orbiter|Express|Odyssey|Pathfinder|Climate Orbiter|Sample Return)"
+
+
 def slot_text(text: str, slots: list, name: str | None) -> str:
     """Put the slots into one run of English text, appending their values to `slots` (kind, value)."""
     def sub_date(m):
@@ -201,7 +206,7 @@ def slot_text(text: str, slots: list, name: str | None) -> str:
     text = DATE.sub(sub_date, text)
     if name:
         # the page's subject by its whole name, at word edges
-        text = re.sub(rf"(?<![\w-]){re.escape(name)}(?![\w-])", "\x00name\x00", text)
+        text = re.sub(rf"(?<![\w-]){re.escape(name)}(?![\w-])(?!{SPACECRAFT_AFTER_NAME})", "\x00name\x00", text)
     parts = re.split(r"(\x00(?:d|name)\x00)", text)
     out = [p if p.startswith("\x00") else NUMBER.sub(lambda m: (slots.append(("n", m.group(0))), "\x00n\x00")[1], p)
            for p in parts]
@@ -719,7 +724,8 @@ class Lang:
         kind, d, m, y = v
         months = (self.meta.get("monthsStandalone") if kind == "my" else None) or self.meta.get("months") or list(MONTHS)
         fmt = self.meta.get({"dmy": "date", "my": "monthYear", "dm": "dayMonth"}[kind]) or {"dmy": "{d} {month} {y}", "my": "{month} {y}", "dm": "{d} {month}"}[kind]
-        return fmt.replace("{d}", str(d)).replace("{month}", months[m - 1]).replace("{y}", str(y))
+        day = self.meta.get("firstDay", "{d}").replace("{d}", str(d)) if d == 1 else str(d)  # French: "1er novembre"
+        return fmt.replace("{d}", day).replace("{month}", months[m - 1]).replace("{y}", str(y))
 
 
 def render(seg: Seg, text: str, lang: Lang | None, name_value: str, tag_raw) -> str:
@@ -734,9 +740,11 @@ def render(seg: Seg, text: str, lang: Lang | None, name_value: str, tag_raw) -> 
             cd += 1
             values[f"d{cd}"] = lang.date(v) if lang else Lang("en", {}, {}).date(v)
     out = []
+    spans = []  # where the filled slots are in the joined text, for the grammar post-pass
     for piece in re.split(r"(<\/?\d+\/?>|\{(?:n\d+|d\d+|name)\})", text):
         if not piece:
             continue
+        before = len(out)
         m = TAGP.fullmatch(piece)
         if m:
             k = int(m.group(2))
@@ -751,7 +759,83 @@ def render(seg: Seg, text: str, lang: Lang | None, name_value: str, tag_raw) -> 
             out.append(html.escape(values[piece[1:-1]], quote=False))
         else:
             out.append(html.escape(piece, quote=False))
+        if SLOT.fullmatch(piece) and len(out) > before:
+            start = sum(len(x) for x in out[:before])
+            spans.append((start, start + len(out[-1])))
+    result = "".join(out)
+    post = POST_PASS.get(lang.code) if lang else None
+    return post(result, spans) if post and spans else result
+
+
+# --- grammar after the slots are in ------------------------------------------------------------------------------------
+# A name or a number is put into a sentence its translator wrote around a slot, so "de {name}" with the name "a Lua" reads
+# "de a Lua". These passes run on the finished sentence and touch only a place where a filled slot is one of the two words,
+# whole words only, so a sentence the translator wrote whole ("antes de o combustível acabar") is left as written.
+
+def _only_at_slots(text: str, spans: list, rx, fn) -> str:
+    out, last = [], 0
+    for m in rx.finditer(text):
+        if any(m.start() < b and m.end() > a for a, b in spans):
+            out.append(text[last:m.start()])
+            out.append(fn(m))
+            last = m.end()
+    out.append(text[last:])
     return "".join(out)
+
+
+def _case_of(src: str, word: str) -> str:
+    return word[:1].upper() + word[1:] if src[:1].isupper() else word
+
+
+def _joined(word: str, m) -> str:
+    """The contracted word, then the markup that stood between the two words (a link starting at the name), then the space
+    that followed the article only if nothing took its place."""
+    tags = m.group("tags")
+    return word + (" " + tags if tags else (" " if m.group("tail") else ""))
+
+
+PT_CONTRACT = {("de", "o"): "do", ("de", "a"): "da", ("de", "os"): "dos", ("de", "as"): "das",
+               ("em", "o"): "no", ("em", "a"): "na", ("em", "os"): "nos", ("em", "as"): "nas",
+               ("a", "o"): "ao", ("a", "os"): "aos", ("a", "a"): "à", ("a", "as"): "às",
+               ("por", "o"): "pelo", ("por", "a"): "pela", ("por", "os"): "pelos", ("por", "as"): "pelas"}
+PT_RX = re.compile(r"(?<![\w’'-])(?P<p>[Dd]e|[Ee]m|[Aa]|[Pp]or) (?P<tags>(?:<[^>]*>)*)(?P<a>os|as|o|a)(?![\w’'-])(?P<tail> |(?=[<,.;:!?)]|$))")
+
+
+def _pt_contract(text: str, spans: list) -> str:
+    """Portuguese: de/em/a/por + o/a/os/as become one word, where a slot supplies one of the two."""
+    def fn(m):
+        word = _case_of(m.group("p"), PT_CONTRACT[(m.group("p").lower(), m.group("a"))])
+        return _joined(word, m)
+    return _only_at_slots(text, spans, PT_RX, fn)
+
+
+FR_VOWEL = "AEIOUaeiouÀÂÄÆÉÈÊËÎÏÔÖŒÙÛÜàâäæéèêëîïôöœùûüÿ"  # no h: a mute h and an aspirated h cannot be told apart by a rule
+FR_CONTRACT = {("de", "le"): "du", ("de", "les"): "des", ("à", "le"): "au", ("à", "les"): "aux"}
+FR_RX = re.compile(r"(?<![\w’'-])(?:(?P<p>[Dd]e|[Àà]) (?P<tags>(?:<[^>]*>)*)(?P<a>les|le)(?![\w’'-])(?P<tail> |(?=[<,.;:!?)]|$))"
+                   r"|(?P<e>[Dd]e|[Ll]e|[Ll]a|[Qq]ue|[Jj]e|[Nn]e) (?P<etags>(?:<[^>]*>)*)(?=[" + FR_VOWEL + r"]))")
+FR_ELIDE = {"de": "d’", "le": "l’", "la": "l’", "que": "qu’", "je": "j’", "ne": "n’"}
+
+
+def _fr_contract(text: str, spans: list) -> str:
+    """French: de/à + le/les become du, des, au, aux; de, le, la, que, je, ne drop their vowel before a vowel (d’Achernar)
+    where a slot supplies one of the two words. An h is never elided here."""
+    def fn(m):
+        if m.group("e"):
+            word = m.group("e")
+            return _case_of(word, FR_ELIDE[word.lower()]) + m.group("etags")
+        return _joined(_case_of(m.group("p"), FR_CONTRACT[(m.group("p").lower(), m.group("a"))]), m)
+    out, last = [], 0
+    for m in FR_RX.finditer(text):
+        end = m.end() + (1 if m.group("e") else 0)  # the elision looks at the vowel too
+        if any(m.start() < b and end > a for a, b in spans):
+            out.append(text[last:m.start()])
+            out.append(fn(m))
+            last = m.end()
+    out.append(text[last:])
+    return "".join(out)
+
+
+POST_PASS = {"pt": _pt_contract, "fr": _fr_contract}
 
 
 def plain(seg: Seg, text: str, lang: Lang | None, name_value: str) -> str:
@@ -969,12 +1053,27 @@ TITLE_MAX, DESC_MAX = 60, 160  # scripts/check_seo.py's limits, which a translat
 SUFFIXES = (" | Space Radar Lab", " | Space Radar", " · Space Radar")
 
 
+TITLE_BREAK = re.compile(r"[\s\u00a0\u202f]*(?:[:·—|,;]|\s-)[\s\u00a0\u202f]+")
+
+
 def _fit_title(t: str) -> str:
-    """The English builders' rule (seo_pages.title_with_site): the site's name is added only where it fits."""
+    """The English builders' rule (seo_pages.title_with_site): the site's name is added only where it fits. A translation
+    that is still too long ends at its last clause that fits ("La photo de famille de Charlie Duke : sa position en ce
+    moment" is "La photo de famille de Charlie Duke"), else at a word with an ellipsis."""
     for suf in SUFFIXES:
         if len(t) > TITLE_MAX and t.endswith(suf):
-            return t[:-len(suf)]
-    return t
+            t = t[:-len(suf)]
+            break
+    if len(t) <= TITLE_MAX:
+        return t
+    cuts = [m.start() for m in TITLE_BREAK.finditer(t) if 20 <= m.start() <= TITLE_MAX]
+    if cuts:
+        return t[:cuts[-1]].rstrip()
+    cut = t[:TITLE_MAX - 1]
+    cut = cut[:cut.rfind(" ")] if " " in cut else cut
+    if cut.count("(") > cut.count(")"):  # not in the middle of a bracket
+        cut = cut[:cut.rfind("(")]
+    return cut.rstrip(",;:·—- ") + "…"
 
 
 def _fit_desc(t: str) -> str:
@@ -1132,20 +1231,34 @@ def build_languages(out: Path, host: str, dates: dict[str, str] | None = None, r
         report["langs"][code] = {"published": len(ok), "total": len(pages),
                                  "missing_pages": {p: m[:20] for p, m in sorted(miss.items())},
                                  "missing_keys": len({k for m in miss.values() for k in m})}
+    # the aliases (/iss/ for the station's page): a language links its own alias where it has the page the alias names
+    aliases = alias_pages(out, host, set(by_path))
     # second pass: write, with the alternates every page now knows
     for code in codes:
         lang = langs[code]
         chrome_missing = 0
+        linkable = published[code] | {a for a, t in aliases.items() if t in published[code]}
         for path in sorted(published[code]):
             _doc, nm = by_path[path]
             langs_here = [c for c in codes if path in published[c]]
-            r = translate_page(path, segmented[path], nm, lang, host, published[code], alternates_block(host, path, langs_here))
+            r = translate_page(path, segmented[path], nm, lang, host, linkable, alternates_block(host, path, langs_here))
             chrome_missing += r.chrome_missing
             page = home_shell(r.html, lang) if path == "" else r.html
             dest = out / code / (path or "index.html")
             dest.parent.mkdir(parents=True, exist_ok=True)
             dest.write_text(page, encoding="utf-8")
         report["langs"][code]["chrome_strings_in_english"] = chrome_missing
+    # the aliases: the language's copy of the page they name, with the same canonical
+    for code in codes:
+        n = 0
+        for alias, target in sorted(aliases.items()):
+            if target in published[code]:
+                dest = out / code / alias
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                dest.write_text(alias_copy((out / code / (target or "index.html")).read_text(encoding="utf-8"), host, code, alias, target),
+                                encoding="utf-8")
+                n += 1
+        report["langs"][code]["aliases"] = n
     # the English pages: their alternates (the app shell and the trips are copied from site/ into out/ for this)
     for path, (doc, nm) in by_path.items():
         langs_here = [c for c in codes if path in published[c]]
@@ -1190,6 +1303,40 @@ def build_languages(out: Path, host: str, dates: dict[str, str] | None = None, r
     (out / "i18n-report.json").write_text(json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
     (out / "lang-dirs.txt").write_text("".join(f"{c}\n" for c in codes if published[c]), encoding="utf-8")
     return report
+
+
+CANONICAL = re.compile(r'<link rel="canonical" href="([^"]*)">')
+
+
+def alias_pages(out: Path, host: str, listed: set[str]) -> dict[str, str]:
+    """{path: target path} for every English page that is not in the sitemap and whose canonical is a page of it on this
+    host (/iss/ names o/international-space-station.html). The language folders and the sitemap's own pages are skipped."""
+    found = {}
+    for f in sorted(out.rglob("*.html")):
+        rel = f.relative_to(out).as_posix()
+        if rel.split("/")[0] in LANGS or rel in listed or (rel == "index.html" and "" in listed):
+            continue
+        m = CANONICAL.search(f.read_text(encoding="utf-8", errors="replace")[:6000])
+        if not m:
+            continue
+        canon = html.unescape(m.group(1))
+        target = canon[len(host) + 1:] if canon.startswith(host + "/") else None
+        if target is not None and target != rel and target in listed and not (target == "" and rel == "index.html"):
+            found[rel] = target
+    return found
+
+
+def alias_copy(page: str, host: str, code: str, alias: str, target: str) -> str:
+    """An alias in a language: the language's page it names, with its canonical (the page's own address) and no hreflang, and
+    og:url the alias's own, as the English alias has. Where the alias is not as deep as its page, a <base> makes the page's
+    relative addresses still mean what they meant."""
+    page = strip_alternates(page)
+    own, canon = url_of(host, code, alias), url_of(host, code, target)
+    if alias.count("/") != target.count("/"):
+        base = posixpath.relpath(posixpath.dirname(target) or ".", posixpath.dirname(alias) or ".")
+        if base != ".":
+            page = page.replace("<head>\n", f'<head>\n<base href="{html.escape(base)}/">\n', 1)
+    return re.sub(r'<meta property="og:url" content="[^"]*">', f'<meta property="og:url" content="{html.escape(own)}">', page, count=1)
 
 
 def _sitemap_dates(f: Path) -> dict[str, str]:

@@ -1008,7 +1008,7 @@ Object.assign(COPY, {
     upNow: 'Up now, look {dir}',
     showMe: 'Show me',
     showMeTitle: 'Open the sky from your place, facing where it rises',
-    guessCaveat: 'Times can be a few minutes off where you are.',
+    guessCaveat: 'A guessed place: set your town for real times.',
     // THE PASS AS DRAWN (spec 0061 task 5, ui/tonight.js): the name, three numbers with their
     // units under them, and the way it goes. passLine above stays the whole account: the block's
     // accessible name and a list row's tooltip.
@@ -1081,6 +1081,7 @@ Object.assign(COPY, {
     },
     // THE SKY'S CONTROLS (internal #351, #356, #357; pub #454), in the Tonight view: the field of
     // view, what is drawn over the stars, how dark the visitor's own sky is, and red light.
+    settings: 'More sky settings',
     skybar: {
       title: 'The sky',
       field: 'Field of view',
@@ -1685,6 +1686,8 @@ Object.assign(COPY, {
   // Starlink launch's card is the Coming up list's next train pass, in its words of time.
   launchChip: {
     opens: 'press for its card',
+    // The chip's tooltip and label, first (ui/launchchip.js, internal #304): a rocket, then which.
+    rocket: 'Rocket launch: {name}',
     train: 'New Starlink train of {n}, over you {when}',
   },
   // ui/welcome.js (public #241, #287): a first visit's three lines and two buttons, once.
@@ -1879,8 +1882,8 @@ Object.assign(COPY, {
     notPublished: 'Date not published',
     // How a position is known (the honesty line's first half: copy/en.facts.js cls).
     position: {
-      measured: 'Seen by an instrument at a known time',
-      inferred: 'Worked forward from an older measurement',
+      measured: 'Worked out from a publisher’s data of a stated age',
+      inferred: 'Modelled forward from older data, or from physics',
       illustrative: 'Drawn to show the idea, not measured',
       sample: 'Bundled sample data, not live',
     },
@@ -2376,10 +2379,10 @@ Object.assign(COPY, {
   // ui/orrery.js and ui/scalebadge.js viewWords (forge #145): the Planets tab's Size and Distance sliders.
   orrery: {
     title: 'Size and distance',
-    size: 'Size',
-    sizeTrue: 'true',
+    size: 'Extra size',
+    sizeTrue: 'none',
     sizeValue: '×{n}',
-    sizeTitle: 'How much larger than life the worlds are drawn, from true to ×{max}',
+    sizeTitle: 'How much larger the worlds are drawn on top of the larger-than-life dots they already are, from none to ×{max}',
     dist: 'Distance',
     distTrue: 'true',
     distLog: 'logarithmic',

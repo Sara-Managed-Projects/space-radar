@@ -25,7 +25,7 @@
 
 import { COPY, GLOSSARY, t, timeText } from '../copy/en.js';
 import '../copy/en.later.js';
-import { klassOf, drawnNow, positionKey } from './cardfacts.js';
+import { klassOf, drawnNow, positionKey, pictureIsIllustrative } from './cardfacts.js';
 import { drawnOf, DRAWN_CLASSES } from '../data/deepsky.js';
 
 const MAX_TERMS = 6;
@@ -89,6 +89,7 @@ export function legendRows(record, ctx, m, { picture = null, band = null, text =
   const H = COPY.truth.hints;
   const here = [];
   here.push([R.where, H[positionKey(record, m)] || H.unknown]);
+  if (klassOf(record) !== 'dso' && pictureIsIllustrative(record)) here.push([R.drawn, H.illustrative]); // internal #298: the place may be measured and the picture a stand-in
   if (klassOf(record) === 'dso') {
     const classes = drawnOf(record);
     const list = classes.map((c) => H[c]).filter(Boolean).map((w, i) => (i ? w.toLowerCase() : w));

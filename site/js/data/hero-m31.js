@@ -18,7 +18,9 @@ export const HERO = {
       60000,
       90000
     ],
-    "dust_share": 0.3,
+    "dust_share": 0.22,
+    "dust_peak": 0.4,
+    "layer_power": 0.65,
     "seed": 31
   },
   "frame": {
@@ -37,7 +39,7 @@ export const HERO = {
       "re_kpc": 1.0,
       "q": 0.8,
       "light": 0.3,
-      "colour": "#f6ecf2",
+      "colour": "#fbe3c4",
       "source": "Courteau et al. 2011, ApJ 739, 20 (arXiv:1106.3564): Sersic n = 2.2 +/- 0.3, Re = 1.0 +/- 0.2 kpc; deprojected after Prugniel & Simien 1997; q 0.8 assumed"
     },
     {
@@ -48,8 +50,8 @@ export const HERO = {
       "r_max_kpc": 26,
       "light": 0.45,
       "arm_contrast": 0.15,
-      "colour": "#d2e4e2",
-      "colour_outer": "#bcd4d4",
+      "colour": "#d4dff0",
+      "colour_outer": "#b2c8e6",
       "source": "Courteau et al. 2011: exponential, Rd = 5.3 +/- 0.5 kpc; height 0.6 kpc assumed; cut at 26 kpc, about 1.3 times the catalogue's 177.83 arcmin radius"
     },
     {
@@ -64,7 +66,7 @@ export const HERO = {
       "scale_kpc": 8,
       "segments": 0.6,
       "light": 0.1,
-      "colour": "#b9cce0",
+      "colour": "#9db8ee",
       "source": "Gordon et al. 2006, ApJ 638, L87 (arXiv:astro-ph/0601314): two arms from the ends of a nuclear bar, out past the ring, 'composed of spiral segments'; pitch, width and the share kept as segments illustrative"
     },
     {
@@ -77,7 +79,7 @@ export const HERO = {
       "split_half_deg": 30,
       "split_sep_kpc": 1.5,
       "light": 0.12,
-      "colour": "#b4c8dc",
+      "colour": "#9fb8e8",
       "split_toward": {
         "ra_deg": 10.67429,
         "dec_deg": 40.86528
@@ -167,7 +169,7 @@ export const HERO = {
   ],
   "colours": {
     "mode": true,
-    "note": "Matched to her photograph at the hand-over (scene/nebulae.js, NOIRLab noao0001a, whose plates' filters are unstated): its mean colours measured 2026-10-15 are core #e3d7e3, inner disc #526362, outer disc #263839; the model takes their hue halfway to neutral (bulge #f6ecf2, disc #d2e4e2 to #bcd4d4, arms and ring a little bluer), so the cross-fade keeps its colour without copying the plate's green cast. Pink H II regions. Not enhanced; no pixel is taken from the photograph."
+    "note": "REVISED 2026-11-14 (internal #282: the model read as white with no colour, a bulge, arms and disc one grey): the bulge is warm (its old stars are yellow-orange in every photograph) and the disc, arms and ring blue-white (young stars), display values, not measured colours; the smooth layer's stretch is the one M51, M81 and M101 use. Before that: matched to her photograph at the hand-over (scene/nebulae.js, NOIRLab noao0001a, whose plates' filters are unstated): its mean colours measured 2026-10-15 are core #e3d7e3, inner disc #526362, outer disc #263839; the model takes their hue halfway to neutral (bulge #f6ecf2, disc #d2e4e2 to #bcd4d4, arms and ring a little bluer), so the cross-fade keeps its colour without copying the plate's green cast. Pink H II regions. Not enhanced; no pixel is taken from the photograph."
   },
   "drawn": [
     "model"
