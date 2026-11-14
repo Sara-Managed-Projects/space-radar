@@ -585,7 +585,7 @@ export const TITAN_LAKES = { map: 'titan_lakes.webp', fromShare: 0.12, darken: 0
  * 0.52, 0.22, a brown-tan), so the disc is pale and its streaks faint. ILLUSTRATIVE -- where the faint
  * streaks lie is the artist's, not today's clouds -- and a face (the radar Ground) is never changed.
  */
-export const VENUS_CLOUDS = { gain: 0.35, mean: [0.848, 0.71, 0.393] };
+export const VENUS_CLOUDS = { gain: 0.45, mean: [0.848, 0.71, 0.393] };
 
 /**
  * URANUS'S POLAR CAP (measured): the map we ship has no cap. Hubble's OPAL map of 23 October 2025
@@ -669,7 +669,7 @@ export const WORLDS = [
     // Magellan's heights under it (`faceRelief`); `groundFaces` are faces of solid ground, which the
     // cloud deck's wind does not carry (scene/weather/worldweather.js stands still while one is worn).
     // `uv` (internal #281): the cloud bands as an eye sees them, faint on a pale disc (VENUS_CLOUDS), in both looks.
-    look: { map: '2k_venus_atmosphere.webp', tint: 0xe6bf81, limb: 0.9, wrap: 0.18, air: 'venus', rim: { colour: 0xfff0c8, gain: 0.18 }, faces: { surface: '2k_venus_radar.webp' }, faceMono: { surface: VENUS_GROUND.tint }, groundFaces: ['surface'], faceRelief: { surface: VENUS_GROUND_RELIEF }, uv: VENUS_CLOUDS },
+    look: { map: '2k_venus_atmosphere.webp', tint: 0xe6bf81, limb: 0.8, wrap: 0.18, air: 'venus', rim: { colour: 0xfff0c8, gain: 0.18 }, faces: { surface: '2k_venus_radar.webp' }, faceMono: { surface: VENUS_GROUND.tint }, groundFaces: ['surface'], faceRelief: { surface: VENUS_GROUND_RELIEF }, uv: VENUS_CLOUDS },
   },
   {
     id: 'mars', display: 'Mars', parent: 'sun', radiusKm: 3389.5,
