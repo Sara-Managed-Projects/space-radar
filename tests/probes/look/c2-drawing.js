@@ -2,7 +2,7 @@
 // a thing to see. Each state is wrapped, so one that cannot be reached is a line in `missing`/`errors` and not the end.
 //   1  the daytime crescent Moon from Madrid, 13 November 2026 14:00 UTC (16 % lit, 19 degrees up, the Sun 25 up)  #273
 //   2  the constellation names in the night sky of the same place                                                  #288
-//   3  Betelgeuse close, with the far names that were printed across its disc                                      #275 #277
+//   3  Sirius close, as a disc with its limb darkening, and the names printed over it                               #275 #277
 //   4  the stellar rung from Betelgeuse: the names chosen, the host swarm                                          #284 #285
 //   5  the Milky Way from outside, then the Local Group                                                            #283 #285
 //   6  Andromeda close, the hero model                                                                             #282
@@ -33,27 +33,33 @@ await guard('constellation-names', async () => {
   sr.clock.live();
   await sleep(2000);
 });
-const bet = find(['exotic-betelgeuse', 'betelgeuse', 'hip-27989']);
-await guard('betelgeuse', async () => {
-  if (!bet) return;
+const sirius = find(['hip-32349']);
+await guard('sirius-close', async () => {
+  if (!sirius) return;
   sr.setStage('stellar'); await sleep(12000);
-  sr.select(bet, { fly: true, undo: false });
-  await sleep(20000);
+  sr.select(sirius, { fly: true, undo: false });
+  await sleep(25000);
   out.starDisc = sr.starDisc ? sr.starDisc.state() : null;
-  await shot('c2-3-betelgeuse-close', 'Betelgeuse close: the disc, its limb, and which names are printed on it', 4000);
+  await shot('c2-3-sirius-close', 'Sirius as a disc: its limb darkening at its own temperature, and which names are printed over it', 4000);
   out.labels = [...document.querySelectorAll('#labels .label:not([hidden]) .label__text')].map((n) => n.textContent);
 });
+const bet = find(['exotic-betelgeuse', 'betelgeuse', 'hip-27989']);
 await guard('stellar-from-betelgeuse', async () => {
   if (!bet) return;
-  rig.flyTo({ distance: rig.state.distance * 400, ms: 0 });
+  sr.select(bet, { fly: true, undo: false });
+  await sleep(20000);
+  rig.flyTo({ distance: 40, ms: 0 });
   await sleep(10000);
-  await shot('c2-4-stellar-from-betelgeuse', 'the stellar rung from far out: the names chosen and the planet-host swarm', 3000);
+  await shot('c2-4-stellar-from-betelgeuse', 'the stellar rung from Betelgeuse: the names chosen and the planet-host swarm', 3000);
   out.labelsFar = [...document.querySelectorAll('#labels .label:not([hidden]) .label__text')].map((n) => n.textContent);
 });
 await guard('galaxy-rung', async () => {
   sr.deselect(); sr.setStage('galaxy'); await sleep(20000);
-  await shot('c2-5-galaxy-rung', 'the Milky Way from outside: the model and what is drawn over it', 4000);
-  out.galaxyDist = rig.state.distance;
+  out.galaxyDistAtArrival = rig.state.distance;
+  await shot('c2-5a-galaxy-arrival', 'the galaxy rung on arrival (the camera a few kpc out)', 4000);
+  rig.flyTo({ distance: 60, ms: 0 });
+  await sleep(10000);
+  await shot('c2-5-galaxy-from-outside', 'the Milky Way from outside, 60 kpc out: the model and what is drawn over it', 4000);
   out.labelsGalaxy = [...document.querySelectorAll('#labels .label:not([hidden]) .label__text')].map((n) => n.textContent);
   sr.setStage('local-group'); await sleep(20000);
   await shot('c2-6-local-group', 'the Local Group rung: the background points and the markers', 4000);
