@@ -19,6 +19,7 @@ import * as THREE from '../../vendor/three.module.min.js';
 import * as frames from '../propagate/frames.js';
 import * as stageMod from './stage.js';
 import { PALETTE } from './glyphatlas.js';
+import { BLACKBODY } from '../data/blackbody.js';
 import { HOLES_GLSL_HEAD, holeUniforms, setHoles as setHoleUniforms } from './starholes.js';
 import { STRETCH_VERT_HEAD, STRETCH_VERT, STRETCH_FRAG_HEAD, STRETCH_FRAG, STAR_LIGHT_GLSL, stretchUniforms, writeStretch } from './stretch.js';
 
@@ -44,23 +45,20 @@ export function bvToKelvin(bv) {
 }
 
 /**
- * Black-body temperature -> sRGB, Tanner Helland's piecewise approximation (2012), normalised so
- * the brightest channel is 1. Blue above ~7 000 K, white near 6 500 K, orange below ~4 000 K.
+ * Black-body temperature -> sRGB, interpolated between the knots of a colorimetric table (internal #279):
+ * Planck's spectrum through the CIE 1931 2 degree colour-matching functions to sRGB, from Mitchell Charity's
+ * blackbody color datafile (registry/blackbody.yaml has the source, its date and the error). It was Tanner Helland's
+ * curve fit of 2012, made for a photo-editor's slider. Normalised so the brightest channel is 1. Blue above ~7 000 K,
+ * white near 6 500 K, orange below ~4 000 K. Pure.
  */
 export function kelvinToRgb(kelvin) {
-  const t = Math.min(40000, Math.max(1000, kelvin)) / 100;
-  let r, g, b;
-  if (t <= 66) {
-    r = 255;
-    g = 99.4708025861 * Math.log(t) - 161.1195681661;
-    b = t <= 19 ? 0 : 138.5177312231 * Math.log(t - 10) - 305.0447927307;
-  } else {
-    r = 329.698727446 * Math.pow(t - 60, -0.1332047592);
-    g = 288.1221695283 * Math.pow(t - 60, -0.0755148492);
-    b = 255;
-  }
-  const clamp = (v) => Math.min(255, Math.max(0, v)) / 255;
-  const out = [clamp(r), clamp(g), clamp(b)];
+  const K = BLACKBODY.kelvin;
+  const t = Math.min(K[K.length - 1], Math.max(K[0], kelvin));
+  let i = 1;
+  while (i < K.length - 1 && K[i] < t) i += 1;
+  const k = (t - K[i - 1]) / (K[i] - K[i - 1]);
+  const at = (n, c) => parseInt(BLACKBODY.rgb.substr(n * 6 + c * 2, 2), 16) / 255;
+  const out = [0, 1, 2].map((c) => at(i - 1, c) + (at(i, c) - at(i - 1, c)) * k);
   const max = Math.max(out[0], out[1], out[2]) || 1;
   return [out[0] / max, out[1] / max, out[2] / max];
 }

@@ -247,7 +247,7 @@ export function createDeepSky(THREE, env = {}) {
       }).then(() => {
         const renderer = gl.renderer || lastGl.renderer, camera = gl.camera || lastGl.camera;
         if (!h.hero || !renderer || !camera || typeof renderer.compileAsync !== 'function') return false;
-        return Promise.resolve(renderer.compileAsync(h.hero.group, camera, env.scene || undefined)).then(() => { h.warm = true; return true; }, () => false);
+        return import('../safecompile.js').then((c) => c.compileSafe(renderer, h.hero.group, camera, env.scene)).then(() => { h.warm = true; return true; }, () => false);
       }).catch((e) => { console.warn('deep: prefetch of', h.def.id, 'failed', e); return false; }));
     }
     return Promise.all(jobs);

@@ -318,6 +318,23 @@ function rockyLook(face) {
     look.atmK = 1;
     look.spec = 1;
     look.bump = 1;
+    // A RED DWARF'S MILD PLANET IS NOT DRAWN AS A SECOND EARTH (internal #286). "Mild enough for seas" is about the light
+    // it gets; whether it has an air or any water is not known. JWST found TRAPPIST-1 b most probably a bare rock
+    // (Greene et al. 2023, arXiv:2303.14849) and no thick CO2 atmosphere on c (Zieba et al. 2023, arXiv:2306.10150), and
+    // for e "no strong evidence for or against an atmosphere", a bare rock and an N2-rich air both fitting (Glidden et al.
+    // 2025, arXiv:2509.05407; the abstracts read 2026-11-14). A blue sea world with white cloud lit like a Sun-like
+    // star's planet is the most hopeful reading there is. So round a star under 4 000 K the drawing keeps the same seed
+    // and the same words but is mostly rock: a minor share of sea, a thin cloud, no green, a faint sky. The random draws
+    // above are all made first, so no other planet's face moves.
+    if (!water && face.star && face.star.teffK > 0 && face.star.teffK < 4000) {
+      look.ocean = 0.16 + (look.ocean - 0.5) * 0.4;
+      look.cloud = 0.1 + (look.cloud - 0.4) * 0.3;
+      look.green = 0;
+      look.atmK = 0.4;
+      look.spec = 0.5;
+      look.landLow = mix3(look.landLow, [0.1, 0.075, 0.06], 0.6);
+      look.landDry = mix3(look.landDry, [0.22, 0.15, 0.1], 0.5);
+    }
   } else if (climate === 'snowball') {
     look.ocean = 0.6;
     look.cloud = 0.2 + rnd() * 0.12;

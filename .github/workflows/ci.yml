@@ -61,6 +61,8 @@ jobs:
       # list of spacecraft.
       - name: The colour-keys mirror matches the registry (spec 0026 req 11)
         run: python3 scripts/gen_colorkeys_js.py --check
+      - name: The black-body colour table's mirror matches the registry (internal #279)
+        run: python3 scripts/gen_blackbody_js.py --check
       - name: The layers mirror matches the registry (spec 0026 req 8)
         run: python3 scripts/gen_layers_js.py --check
       - name: The aliases mirror matches the registry (spec 0021 req 6)
@@ -726,6 +728,12 @@ jobs:
         run: node tests/test_hero_spiral.mjs
       - name: heavy builds run a step a turn; the Milky Way is built in pieces and prewarmed (internal 549)
         run: node tests/test_spread.mjs
+      - name: star colours come from the colorimetric black-body table (internal #279)
+        run: node tests/test_starfield_blackbody.mjs
+      - name: the planet hosts of the Kepler field thin with distance on the rungs (internal #285)
+        run: node tests/test_glyph_farfade.mjs
+      - name: a shader warm-up survives its material being disposed mid-compile (internal #325)
+        run: node tests/test_safecompile.mjs
       - name: the sky sphere and the 3D stars lie in one frame (internal 549, #387)
         run: node tests/test_one_star_frame.mjs
       - name: the nebulae's photographs sit where their objects are, and nothing of them loads at boot (spec 0067)

@@ -111,6 +111,14 @@ void main() {
   core *= 1.0 + 0.8 * glow;   // and the peak itself a little wider, or a first-magnitude star is still a speck
   float size = core * ( 1.0 + 4.0 * glow ) + 26.0 * glare;
   float sizePx = size * uPixelRatio * uScale;
+  // FAR SCALE (internal #285): from the galaxy and Local Group rungs a star is a sprite of one or two pixels, and a Gaussian
+  // that small is a hard square of pixels, not the soft coloured star of the stellar rung. Past 2 kpc from the camera
+  // a sprite is drawn at least 3 px across and takes the light of the area it gave up, so it is resolved and soft.
+  float farShrink = 1.0;
+  if ( uShell < 0.5 && length( position - cameraPosition ) / uUnitsPerPc > 2000.0 && sizePx < 3.0 * uPixelRatio ) {
+    farShrink = sizePx / ( 3.0 * uPixelRatio );
+    sizePx = 3.0 * uPixelRatio;
+  }
   // Spec 0034: during a ladder flight the point becomes a capsule along its own screen motion;
   // at uStretch == 0 this is gl_PointSize = sizePx, as before.
 ${STRETCH_VERT}
@@ -118,6 +126,7 @@ ${STRETCH_VERT}
   vGlare = glare;
   vGlow = glow;
   vAlpha = ( m > uMagLimit ) ? 0.0 : ( 0.35 + 0.65 * tt ) * uGain;
+  vAlpha *= farShrink; // a separate line: scene/stars3dtree.js faintVert matches the line above by its text
   // Where a photograph is drawn our stars step aside (scene/starholes.js); no hole, no change.
   if ( uHoleCount > 0 ) vAlpha *= starHole( normalize( mv.xyz ) );
   vColour = aColour;
