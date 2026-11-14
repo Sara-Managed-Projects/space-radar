@@ -18,7 +18,8 @@ export const EXOTICS = [
       "Sgr A*",
       "galactic centre black hole"
     ],
-    "source": "https://en.wikipedia.org/wiki/Sagittarius_A* (infobox, read 2026-09-08)",
+    "source": "https://en.wikipedia.org/wiki/Sagittarius_A* (infobox, read 2026-09-08); distance and mass: GRAVITY Collaboration 2021, A&A (arXiv:2101.12098, Table 2 and Eq. 38: R0 = 8275 +/- 9 stat. +/- 33 sys. pc, mass 4.297 +/- 0.013 million Suns, opened 2026-11-15); Reid et al. 2019 (arXiv:1910.03357, abstract: R0 = 8.15 +/- 0.15 kpc, opened 2026-11-15)",
+    "distance_note": "about 27 000 light-years: GRAVITY's orbit of the star S2 gives 8 275 +/- 9 (statistical) +/- 33 (systematic) parsecs, 26 990 +/- 110 light-years; the Milky Way card's model uses Reid et al. 2019's 8.15 +/- 0.15 kiloparsecs, 26 600 +/- 500, which agrees",
     "image": {
       "file": "site/images/eht-sgr-a.jpg",
       "credit": "EHT Collaboration",
@@ -28,7 +29,7 @@ export const EXOTICS = [
     },
     "raDeg": 266.416837,
     "decDeg": -29.007811,
-    "distLy": 26996,
+    "distLy": 27000,
     "massMsun": 4297000
   },
   {
@@ -40,7 +41,8 @@ export const EXOTICS = [
       "Powehi",
       "Virgo A black hole"
     ],
-    "source": "https://en.wikipedia.org/wiki/Messier_87 (infobox and the M87* section; EHT 2019 mass, read 2026-09-08)",
+    "source": "https://en.wikipedia.org/wiki/Messier_87 (infobox and the M87* section; EHT 2019 mass, read 2026-09-08); distance and mass: EHT Collaboration 2019, ApJ 875, L6 (arXiv:1906.11243, abstract: 16.8 +0.8 -0.7 Mpc, 6.5 +/- 0.2 stat +/- 0.7 sys billion Suns, opened 2026-11-15)",
+    "distance_note": "16.8 (+0.8 / -0.7) megaparsecs, 54.8 million light-years, the distance the Event Horizon Telescope adopted for its mass; the same one the M87 galaxy's record and the jet in the black-hole drawing use",
     "image": {
       "file": "site/images/eht-m87.jpg",
       "credit": "EHT Collaboration",
@@ -50,7 +52,7 @@ export const EXOTICS = [
     },
     "raDeg": 187.705931,
     "decDeg": 12.391123,
-    "distLy": 53500000,
+    "distLy": 54800000,
     "massMsun": 6500000000
   },
   {
@@ -61,13 +63,14 @@ export const EXOTICS = [
     "aliases": [
       "Cyg X-1"
     ],
-    "source": "https://en.wikipedia.org/wiki/Cygnus_X-1 (infobox, read 2026-09-08)",
+    "source": "https://en.wikipedia.org/wiki/Cygnus_X-1 (infobox, read 2026-09-08); distance and mass: Miller-Jones et al. 2021 (arXiv:2102.09091, abstract: 2.22 +0.18 -0.17 kpc by radio astrometry, and with the earlier optical data a black-hole mass of 21.2 +/- 2.2 Suns, shown as 19.0 to 23.4; opened 2026-11-15). The older 13.8 to 17.5 Suns went with the older 1.86 kpc distance and is no longer used.",
+    "distance_note": "2.22 (+0.18 / -0.17) kiloparsecs, 7 240 light-years (6 690 to 7 830), from radio parallax",
     "raDeg": 299.590316,
     "decDeg": 35.201607,
-    "distLy": 7300,
-    "massMsunLow": 13.8,
-    "massMsunHigh": 17.5,
-    "massMsun": 15.65
+    "distLy": 7240,
+    "massMsunLow": 19.0,
+    "massMsunHigh": 23.4,
+    "massMsun": 21.2
   },
   {
     "id": "gaia-bh1",
@@ -85,11 +88,14 @@ export const EXOTICS = [
     "name": "Gaia BH3",
     "kind": "blackhole",
     "why": "The heaviest black hole from a dead star in our galaxy, thirty-three Suns, found in 2024 in the Gaia data.",
-    "source": "https://en.wikipedia.org/wiki/Gaia_BH3 (infobox, read 2026-09-08)",
+    "source": "https://en.wikipedia.org/wiki/Gaia_BH3 (infobox, read 2026-09-08); distance and mass: Gaia Collaboration, Panuzzo et al. 2024 (arXiv:2404.10486; abstract: 32.70 +/- 0.82 Suns, a distance of 590 pc; the paper text: 590.6 +/- 5.8 pc; opened 2026-11-15), the mass shown as 31.88 to 33.52 (32.70 +/- 0.82). The 1 936 light-years and 33.08 Suns the row carried before were the infobox's and are not in the paper.",
+    "distance_note": "590.6 +/- 5.8 parsecs, 1 926 +/- 19 light-years, the distance adopted for its star in the discovery paper",
     "raDeg": 294.827958,
     "decDeg": 14.931667,
-    "distLy": 1936,
-    "massMsun": 33.08
+    "distLy": 1926,
+    "massMsunLow": 31.88,
+    "massMsunHigh": 33.52,
+    "massMsun": 32.7
   },
   {
     "id": "v404-cygni",
@@ -129,11 +135,11 @@ export const EXOTICS = [
     "aliases": [
       "PSR B0531+21"
     ],
-    "source": "https://en.wikipedia.org/wiki/Crab_Pulsar (infobox, read 2026-09-08)",
+    "source": "https://en.wikipedia.org/wiki/Crab_Pulsar (infobox, read 2026-09-08); period: the Jodrell Bank Crab pulsar monthly ephemeris (www.jb.man.ac.uk/~pulsar/crab/crab2.txt, opened 2026-11-15), the row of 15 September 2026, MJD 61298: 29.5340803404 Hz, so 33.859 ms. It slows by about 36 nanoseconds a day, so the 33.392 ms this row carried before (the 1990s) is 1.4 per cent out of date; the card says 'as of' no date, so re-read the ephemeris when this is next edited.",
     "raDeg": 83.633125,
     "decDeg": 22.0145,
     "distLy": 6200,
-    "periodS": 0.0333924123
+    "periodS": 0.033859
   },
   {
     "id": "vela-pulsar",
@@ -240,9 +246,14 @@ export const EXOTICS = [
       "Alpha Orionis",
       "α Ori"
     ],
-    "source": "https://en.wikipedia.org/wiki/Betelgeuse (infobox, read 2026-09-08)",
-    "distance_note": "two published distances, 408 and 548 light-years; the star's boiling surface makes its parallax hard to pin down",
+    "source": "https://en.wikipedia.org/wiki/Betelgeuse (infobox, read 2026-09-08; its Distance section table of the published parallaxes, opened 2026-11-15); Joyce et al. 2020 (arXiv:2006.09837, abstract: 168 +27 -15 pc, parallax 5.95 +0.58 -0.85 mas, opened 2026-11-15)",
+    "distance_note": "two model-based estimates, 408 and 548 light-years (Neuhauser et al. 2022 as low as 125 parsecs; Joyce et al. 2020, 168 +27/-15 parsecs, 548 +90/-49 light-years); the Hipparcos parallax gives 500 +/- 65 and radio parallaxes 643 +/- 146 and 724 (+111/-156), because the star's boiling surface moves its centre; Gaia has no usable parallax",
     "vmag": 0.5,
+    "vmag_range": [
+      0.0,
+      1.6
+    ],
+    "hip": 27989,
     "raDeg": 88.792939,
     "decDeg": 7.407064,
     "distLyLow": 408,

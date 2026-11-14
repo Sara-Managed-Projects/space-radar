@@ -660,7 +660,8 @@ objects:
     what: globular cluster
     ra_deg: 201.697         # 13h 26m 47.28s
     dec_deg: -47.4795       # -47 deg 28 min 46.1 s
-    dist_kly: 15.8          # 15.8 +/- 1.1 kly
+    distance: {method: parallax, value_ly: 17710, low: 17547, high: 17873,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), the catalogue table 'Structural Parameters of Galactic Globular Clusters' at people.smp.uq.edu.au/HolgerBaumgardt/globular/ (column R_sun, kpc, with its error): Gaia EDR3 parallaxes, HST- and Gaia-based kinematic distances, subdwarf main-sequence fitting and star counts, combined. NGC 5139: 5.43 +/- 0.05 kpc", read: 2026-11-15}
     vmag: 3.9
     maj_ax_arcmin: 36.3
     con: Centaurus
@@ -674,7 +675,8 @@ objects:
     what: globular cluster
     ra_deg: 6.0231          # 00h 24m 05.539s
     dec_deg: -72.0814       # -72 deg 04 min 53.20 s
-    dist_kly: 14.5          # 4.45 +/- 0.01 kpc
+    distance: {method: parallax, value_ly: 14742, low: 14644, high: 14840,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), the catalogue table 'Structural Parameters of Galactic Globular Clusters' at people.smp.uq.edu.au/HolgerBaumgardt/globular/ (column R_sun, kpc, with its error): Gaia EDR3 parallaxes, HST- and Gaia-based kinematic distances, subdwarf main-sequence fitting and star counts, combined. NGC 104: 4.52 +/- 0.03 kpc", read: 2026-11-15}
     vmag: 4.09
     maj_ax_arcmin: 43.8
     con: Tucana
@@ -884,7 +886,8 @@ objects:
     what: globular cluster
     ra_deg: 114.5355        # 07h 38m 08.51s
     dec_deg: 38.8819        # +38 deg 52 min 54.9 s
-    dist_kly: 275           # 275 kly from the Sun
+    distance: {method: parallax, value_ly: 288551, low: 280723, high: 296378,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), the catalogue table 'Structural Parameters of Galactic Globular Clusters' at people.smp.uq.edu.au/HolgerBaumgardt/globular/ (column R_sun, kpc, with its error): Gaia EDR3 parallaxes, HST- and Gaia-based kinematic distances, subdwarf main-sequence fitting and star counts, combined. NGC 2419: 88.47 +/- 2.4 kpc", read: 2026-11-15}
     vmag: 10.3
     maj_ax_arcmin: 4.6
     con: Lynx
@@ -1467,7 +1470,8 @@ objects:
     what: globular cluster
     ra_deg: 265.1754        # 17h 40m 42.09s
     dec_deg: -53.6743       # -53 deg 40 min 27.6 s
-    dist_kly: 7.8           # 7.8 kly (2.4 kpc)
+    distance: {method: parallax, value_ly: 8089, low: 8023, high: 8154,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), the catalogue table 'Structural Parameters of Galactic Globular Clusters' at people.smp.uq.edu.au/HolgerBaumgardt/globular/ (column R_sun, kpc, with its error): Gaia EDR3 parallaxes, HST- and Gaia-based kinematic distances, subdwarf main-sequence fitting and star counts, combined. NGC 6397: 2.48 +/- 0.02 kpc", read: 2026-11-15}
     vmag: 6.68
     maj_ax_arcmin: 32.0     # 32.0 arcmin
     con: Ara

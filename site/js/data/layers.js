@@ -286,7 +286,7 @@ function milkyWayRecords() {
     cls: 'measured',
     meta: {
       home: true,
-      cite: 'Centre distance: Reid et al. 2019 (R0 = 8.15 kpc); disc size: Wikipedia, Milky Way',
+      cite: 'Centre distance: Reid et al. 2019 (R0 = 8.15 +/- 0.15 kpc, the map\'s one distance), which the GRAVITY Collaboration\'s 8 275 +/- 9 +/- 33 pc (2021) agrees with inside that error; the card says "about 27 000". Disc size: 26.8 +/- 1.1 kpc (87 400 +/- 3 600 light-years), an isophotal diameter after Goodwin et al. (Wikipedia, Milky Way, opened 2026-11-15); the disc has no sharp edge, and disc stars have been found 26 to 31.5 kpc from the centre (Lopez 2018, same page)',
       kind: 'galaxy',
       typeText: 'Barred spiral galaxy — the one we live in',
       hubble: 'SBbc',
@@ -295,7 +295,7 @@ function milkyWayRecords() {
       sizeLy: 87400,
       aliases: ['Milky Way', 'our galaxy', 'the Galaxy', 'galactic centre', 'galactic center'],
       // No number here: the card's first sentence gives the distance to the centre from distKpc
-      // (26 582), and since cards print this line under it (public #204) "26 600" beside it read as
+      // (26 582, printed rounded: "about 27 000"), and since cards print this line under it (public #204) "26 600" beside it read as
       // a second, different figure.
       why: 'Everything else on this map is inside it. The Sun sits a little more than halfway out from its centre.',
       drawsAs: 'variant',

@@ -13,7 +13,7 @@ export const HERO = {
   },
   "frame": {
     "units_ly": 1,
-    "distance_ly": 7000,
+    "distance_ly": 5540,
     "ra_deg": 274.70071,
     "dec_deg": -13.80722,
     "axes": "x west, y north, z toward the Sun; the record's place at the origin"
@@ -249,7 +249,7 @@ export const HERO = {
     "data_vs_model": "Measured: the stars' places and magnitudes (SIMBAD), that the Pillars are photo-evaporating columns lit by NGC 6611 and seen against the glow, and the light (the photograph). Reconstructed: the cavity's far wall and its relief, the dark columns' absorption from the photograph's darkness. Model: the columns' and the stars' depths, the cloud behind, each cluster star's place and brightness (seeded)",
     "geometry": "One bowl behind the cluster, its size read from the photograph and its depth illustrative, and said so; the Pillars are drawn as dust in front of the wall, not as solid columns",
     "colours": "The photograph's own, with each exposure's stretch as the photograph has it; Deep declared enhanced; stars by spectral type",
-    "distance": "The record's 7 000 ly (site/data/dso.json, the Messier list). Gaia-era distances to NGC 6611 are nearer (about 1.7 kpc); the record is not this stage's to change (for spec 0078). Lengths on the sky are scaled to the record's distance",
+    "distance": "The record's 5 540 ly (site/data/dso.json): the median Gaia DR3 distance of the cluster NGC 6611, 1698 pc (Hunt & Reffert 2023; internal #291), in place of the Messier table's 7 000 ly. Lengths on the sky are scaled to the record's distance",
     "credits": "CREDITS.md section 3l, Emission nebulae (0078 r14-neb-a); the card's rows name the reconstruction and that no astronomer has reviewed it",
     "by": "Space Radar maintainers",
     "date": "2026-10-26",

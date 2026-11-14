@@ -12,7 +12,7 @@ Inputs
   registry/dso-hand.yaml: objects OpenNGC does not have (the LMC), each with its source.
 
   scripts/data/messier-overlay.yaml: what a Messier row knows beyond the table (spec 0075 task 2):
-    its parent, its kind of distance, its orientation and its morphology.
+    its parent, its kind of distance, its orientation and its morphology, and a `common` nickname that replaces the table's (internal #294).
 
 THE OBJECT MODEL (internal spec 0075 design section 3). Every row may carry
   parent        a record id without `dso-`: what the object is inside (or a companion of). A semantic
@@ -161,6 +161,10 @@ def apply_model(out: list, hand_rows: list, overlay: dict, pictured: set) -> Non
     for r in out:
         e = extra.get(r["id"]) or {}
         r["parent"] = e.get("parent")
+        # `common:` (string or null) replaces the nickname OpenNGC/the Messier table gave the row (internal #294).
+        if "common" in e and r.get("messier"):
+            r["common"] = e["common"] or None
+            r["name"] = f"M{r['messier']}" + (f" \u00b7 {r['common']}" if r["common"] else "")
         r["orientation"] = plain(e.get("orientation"))
         r["morphology"] = e.get("morphology") or morphology_of(r)
         dist = e.get("distance")

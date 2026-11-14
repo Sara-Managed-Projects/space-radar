@@ -64,7 +64,7 @@ eq(j.spin[0], '9.93 hours', 'Jupiter turn');
 eq(j.year[0], '11.9 years', 'Jupiter year');
 eq(j.year[1], '365 days', 'Earth year');
 eq(j.dist[0], '5.2 AU', 'Jupiter from the Sun');
-eq(j.air[0], '89.8% hydrogen, 10.2% helium', 'Jupiter air');
+eq(j.air[0], '89.8% hydrogen, 10.2% helium (by volume)', 'Jupiter air says it is by volume (internal #295)');
 eq(j.pressure[0], 'No surface', 'a giant has no surface pressure');
 eq(j.pressure[1], '1.01 bar', 'Earth air pressure');
 eq(j.moons[0], '95', 'Jupiter moons');

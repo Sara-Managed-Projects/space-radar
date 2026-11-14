@@ -656,8 +656,10 @@ export function rightNowRows(record, m, passInfo) {
     const lo = pickNumber(md, 'distLyLow');
     const hi = pickNumber(md, 'distLyHigh');
     if (lo !== null && hi !== null) rows.push([R.distanceRange, t(V.lightYearsRange, { lo: fmt.int(lo), hi: fmt.int(hi) })]);
+    // The Sun is inside the Milky Way: the distance is to its centre, rounded (the sources differ by 400 light-years), and the sky position is the centre's (internal #270).
+    else if (md.home === true && distLy !== null) rows.push([R.distanceToCentre, t(V.lightYearsAbout, { n: fmt.int(roughly(distLy)) })]);
     else rows.push([R.distanceFromSun, distLy !== null ? t(V.lightYears, { n: fmt.int(distLy) }) : COPY.card.couldNotLook]);
-    if (distLy !== null) rows.push([R.lightLeft, distLy >= 1e6 ? t(V.millionYearsAgo, { n: fmt.smart(distLy / 1e6) }) : t(V.yearsAgo, { n: fmt.int(distLy) })]);
+    if (distLy !== null && md.home !== true) rows.push([R.lightLeft, distLy >= 1e6 ? t(V.millionYearsAgo, { n: fmt.smart(distLy / 1e6) }) : t(V.yearsAgo, { n: fmt.int(distLy) })]);
     // How the distance was found (spec 0075 task 6): where the registry says (registry/dso-hand.yaml).
     const est = distanceEstimate(record);
     if (est.method && COPY.deepFacts.methods[est.method]) rows.push([COPY.deepFacts.methodRow, COPY.deepFacts.methods[est.method]]);
@@ -675,12 +677,17 @@ export function rightNowRows(record, m, passInfo) {
     if (sizeLy !== null && sizeLy >= 1) rows.push([R.across, t(V.lightYears, { n: fmt.int(roughly(sizeLy)) })]);
     else if (sizeLy !== null && sizeLy >= 0.05) rows.push([R.across, t(V.lightYears, { n: fmt.num(sizeLy, 1) })]);
     const con = pick(md, 'con');
-    if (con) rows.push([R.constellation, String(con)]);
+    if (con) rows.push([md.home === true ? R.constellationCentre : R.constellation, String(con)]);
     const desig = pick(md, 'designation');
     const messier = pickNumber(md, 'messier');
     if (desig || messier !== null) rows.push([R.catalogue, [messier !== null ? `M${fmt.int(messier)}` : null, desig].filter(Boolean).join(COPY.punctuation.separator)]);
     const mag = pickNumber(md, 'mag');
-    if (mag !== null) rows.push([R.brightness, t(V.magnitude, { n: fmt.smart(mag) })]);
+    // An integrated magnitude of a patch of sky is good to a tenth, and one spread over a degree or more looks fainter than its number
+    // (the Large Magellanic Cloud's 0.1 is not "brighter than Vega"): say how much sky it is spread over (internal #290).
+    const spanDeg = pickNumber(md, 'majAxArcmin') !== null ? pickNumber(md, 'majAxArcmin') / 60 : null;
+    if (mag !== null) rows.push([R.brightness, spanDeg !== null && spanDeg >= 1 && md.home !== true
+      ? t(V.magnitudeSpread, { n: fmt.tidy(mag, 1), deg: fmt.tidy(spanDeg, spanDeg >= 10 ? 0 : 1) })
+      : t(V.magnitude, { n: fmt.tidy(mag, 1) })]);
   } else if (klassOf(record) === 'exoplanet') {
     const distLy = pickNumber(md, 'distLy');
     rows.push([R.distanceFromSun, distLy !== null ? t(V.lightYears, { n: fmt.smart(distLy) }) : COPY.card.couldNotLook]);
@@ -691,7 +698,7 @@ export function rightNowRows(record, m, passInfo) {
     const facts = systemRows ? systemRows.planet(record) : null;
     const rade = pickNumber(md, 'radiusEarths');
     if (facts && facts.radius) rows.push([R.planetRadius, facts.radius]);
-    else if (rade !== null) rows.push([R.planetRadius, t(V.earths, { n: fmt.smart(rade) })]);
+    else if (rade !== null) rows.push([R.planetRadius, t(V.earthsWide, { n: fmt.tidy(rade, 2) })]);
     const mass = pickNumber(md, 'massEarths');
     if (facts && facts.mass) rows.push([R.planetMass, facts.mass]);
     else if (mass !== null) rows.push([R.planetMass, t(V.earths, { n: fmt.smart(mass) })]);
@@ -709,14 +716,22 @@ export function rightNowRows(record, m, passInfo) {
     // Light-years, not astronomical units: 268 000 au for Proxima is a number nobody can hold.
     const distLy = pickNumber(md, 'distLy');
     // 0079 r15-a45: a star with a direction and a brightness and no distance says so, in place of "could not work this out"
-    rows.push([R.distanceFromSun, distLy !== null ? t(V.lightYears, { n: fmt.smart(distLy) }) : pick(md, 'noDistance') ? COPY.unplaced.noDistanceRow : COPY.card.couldNotLook]);
-    if (distLy !== null) {
+    // A star whose distance is a range (Betelgeuse, registry/exotics.yaml) says the range and why, not one catalogue number (internal #267).
+    const starLo = pickNumber(md, 'distLyLow');
+    const starHi = pickNumber(md, 'distLyHigh');
+    const starRange = starLo !== null && starHi !== null;
+    if (starRange) rows.push([R.distanceRange, t(V.lightYearsRange, { lo: fmt.int(starLo), hi: fmt.int(starHi) })]);
+    else rows.push([R.distanceFromSun, distLy !== null ? t(V.lightYears, { n: fmt.smart(distLy) }) : pick(md, 'noDistance') ? COPY.unplaced.noDistanceRow : COPY.card.couldNotLook]);
+    const starNote = pick(md, 'distanceNote');
+    if (starNote) rows.push([R.distanceNote, String(starNote)]);
+    if (distLy !== null && !starRange) {
       rows.push([R.lightLeft, distLy >= 1.5 ? t(V.yearsAgo, { n: fmt.int(distLy) }) : t(V.monthsAgo, { n: fmt.int(distLy * 12) })]);
     }
     const spect = pick(md, 'spect');
     if (spect) rows.push([R.spectralType, starClassLine(spect)]);
     const mag = pickNumber(md, 'mag');
-    if (mag !== null) rows.push([R.brightness, t(V.magnitude, { n: fmt.smart(mag) })]);
+    // A magnitude is read to a hundredth at best (0.03, not 0.030), and a star that varies by a magnitude or more says so (internal #290).
+    if (mag !== null) rows.push([R.brightness, t(Array.isArray(md.magVaries) ? V.magnitudeVaries : V.magnitude, { n: fmt.tidy(mag, Array.isArray(md.magVaries) ? 1 : 2) })]);
     const lum = pickNumber(md, 'lum');
     if (lum !== null && lum > 0) rows.push([R.luminosity, t(V.suns, { n: fmt.smart(lum) })]);
     // Worked out from its brightness and colour (scene/stars3d.js starPhysical), and it says so:
@@ -727,6 +742,8 @@ export function rightNowRows(record, m, passInfo) {
     if (width !== null && width > 0 && md.widthFrom === 'measured' && widthSource) rows.push([R.widthSource, String(widthSource)]);
     const hip = pick(md, 'hip');
     if (hip) rows.push([R.catalogue, `HIP ${hip}`]);
+    const distSource = pick(md, 'distSource');
+    if (distSource) rows.push([R.source, String(distSource)]);
     // 0079 r15-a45: the IAU Working Group on Star Names' name for it, with the day it was approved where the list has one
     const iau = md.iau;
     if (iau && iau.name) rows.push([R.iauName, iau.approved ? t(COPY.unplaced.iauApproved, { name: String(iau.name), date: String(iau.approved) }) : String(iau.name)]);

@@ -13,7 +13,9 @@
 #            `#go=<id>`). Left out, it is the host's name in lower case with dashes.
 #   display  the name people use, where the table's is a catalogue's abbreviation.
 #   aliases  other names a visitor may type.
-#   why      one of `temperate` (chosen for a planet near its star's habitable zone) or `extreme`.
+#   why      one of `temperate` (chosen for a planet near its star's habitable zone: scripts/build-systems.py refuses one with no planet in the band it
+#            computes, on its wide edge, or on the hot side with at most twice Earth's sunlight) or `extreme` (the hot, the huge and the odd: GJ 1214 and GJ 1132, whose
+#            planets get 17 and 2 to 20 times Earth's sunlight, are here since internal #293).
 #            A sorting word for the list; the card never prints it, and "habitable" is said only
 #            by the band scripts/build-systems.py computes.
 version: 1
@@ -32,8 +34,8 @@ hosts:
   - {host: Gliese 12, aliases: [GJ 12], why: temperate}
   - {host: K2-18, aliases: [EPIC 201912552], why: temperate}
   - {host: L 98-59, why: temperate}
-  - {host: GJ 1132, aliases: [Gliese 1132], why: temperate}
-  - {host: GJ 1214, aliases: [Gliese 1214], why: temperate}
+  - {host: GJ 1132, aliases: [Gliese 1132], why: extreme}
+  - {host: GJ 1214, aliases: [Gliese 1214], why: extreme}
   - {host: Ross 128, aliases: [FI Vir, Gliese 447], why: temperate}
   - {host: Wolf 1069, aliases: [Gliese 1253], why: temperate}
   - {host: GJ 667 C, aliases: [Gliese 667 C], why: temperate}

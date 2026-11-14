@@ -67,7 +67,7 @@ const fy=y=>y<1e9?(y<1e8?(y/1e6).toFixed(1):Math.round(y/1e6))+' million yr':+(y
 const age=t=>Math.pow(10,lerp(L0,L1,seg(t,.5,RV)));              // the clock runs along the log axis
 const SIM={dur:14,reveal:RV,hook:'THE BIGGER THE STAR,|THE SHORTER ITS LIFE',
  honest:'A rough scaling law, not a stellar model. Time axis is logarithmic (each tick is 10 times the last); masses in Suns.',
- line(P,t){const a=age(t);return`A star of 25 Suns burns out in about ${fy(LIFE(25))}; the Sun lasts about 10 billion years, 3,125 times longer. Lifetime = 10 billion years x (mass in Suns)^-2.5. At age ${fy(a)}, ${MS.filter(m=>a>=LIFE(m)).length} of the 6 stars have run out of fuel.`},
+ line(P,t){const a=age(t);return`A star of 25 Suns burns out in about ${fy(LIFE(25))}; the Sun lasts about 10 billion years, roughly 3,000 times longer (25^2.5 is 3,125 exactly, but the law is only a rough scaling). Lifetime = 10 billion years x (mass in Suns)^-2.5. At age ${fy(a)}, ${MS.filter(m=>a>=LIFE(m)).length} of the 6 stars have run out of fuel.`},
  draw(c,t){
   const a=age(t),xa=XL(a);stars(c,40);text('AGE '+fy(a),60,500,52,EMBER,800,'left');
   c.strokeStyle='rgba(255,255,255,.1)';c.lineWidth=2;
@@ -80,7 +80,7 @@ const SIM={dur:14,reveal:RV,hook:'THE BIGGER THE STAR,|THE SHORTER ITS LIFE',
    text(fy(LIFE(m)),xe+(xe<760?10:-10),Y+30,34,gone?EMBER:INK,700,xe<760?'left':'right')});
   c.strokeStyle=INK;c.lineWidth=4;c.beginPath();c.moveTo(xa,540);c.lineTo(xa,1275);c.stroke();
   text('AGE IN YEARS, LOG SCALE (M = MILLION, B = BILLION)',540,1385,34,DIM,500);
-  text('THE SUN OUTLASTS A 25-SUN STAR 3,125 TO 1',540,1445,36,EMBER,800)}};
+  text('THE SUN OUTLASTS A 25-SUN STAR ABOUT 3,000 TO 1',540,1445,36,EMBER,800)}};
 // ============================================ 2. THE PAGE (shared; rarely needs a change) =========================
 // The stage is 1080 units wide; the page shows the band y 270..1470 of it. Draw only inside it, and put no text under 34 units.
 // `draw(c, t, P)` gets the 2D context, the time t in seconds (it loops over SIM.dur) and the slider value P. `line(P, t)` is the caption under the picture.

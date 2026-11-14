@@ -23,13 +23,13 @@ check(doc.objects.some((o) => o.id === 'wlm' && o.distLy === 3226000) && doc.obj
 check(doc.objects.some((o) => o.id === 'sagittarius-dwarf' && o.distLy === 80400) && doc.objects.some((o) => o.id === 'sextans-a' && o.distLy === 4586000) && doc.objects.some((o) => o.id === 'sagdig' && o.designation === 'SagDIG'), 'the Sagittarius Dwarf at 80 400 ly, Sextans A at 4.59 Mly, SagDIG by its short name');
 check(doc.objects.some((o) => o.id === 'ursa-major-i' && o.vmag === null && o.majAxArcmin === null) && doc.objects.some((o) => o.id === 'reticulum-ii' && o.distLy === 103100 && o.hubble === null), 'Ursa Major I carries no magnitude or size the infobox did not print; Reticulum II has no Hubble code');
 const omega = doc.objects.find((o) => o.id === 'omega-centauri');
-check(omega && omega.kind === 'cluster' && omega.distLy === 15800 && omega.typeText === 'globular cluster', `Omega Centauri is a cluster 15 800 ly out (${omega && omega.kind}, ${omega && omega.distLy})`);
+check(omega && omega.kind === 'cluster' && omega.distLy === 17710 && omega.typeText === 'globular cluster', `Omega Centauri is a cluster 17 710 ly out (Baumgardt & Vasiliev 2021, internal #291) (${omega && omega.kind}, ${omega && omega.distLy})`);
 const coal = doc.objects.find((o) => o.id === 'coalsack');
 check(coal && coal.kind === 'nebula' && coal.vmag === null && coal.distLy === 587, 'the Coalsack is a nebula with no magnitude, 587 ly');
 check(doc.objects.find((o) => o.id === 'centaurus-a').distLyLow === 11000000, 'Centaurus A keeps its 11-13 Mly range');
 const horse = doc.objects.find((o) => o.id === 'horsehead-nebula');
 check(horse && horse.kind === 'nebula' && horse.distLy === 1375 && horse.designation === 'Barnard 33', 'the Horsehead is a dark nebula 1 375 ly out under its Barnard number');
-check(doc.objects.find((o) => o.id === 'ngc-2419').distLy === 275000 && doc.objects.find((o) => o.id === 'flame-nebula').vmag === null, 'NGC 2419 at 275 000 ly; the Flame Nebula keeps no citation-needed magnitude');
+check(doc.objects.find((o) => o.id === 'ngc-2419').distLy === 288551 && doc.objects.find((o) => o.id === 'flame-nebula').vmag === null, 'NGC 2419 at 288 600 ly (Baumgardt & Vasiliev 2021); the Flame Nebula keeps no citation-needed magnitude');
 // Thirty-one famous non-Messier rows (2026-09-22): each keeps what its infobox said, and no more.
 const byId = (id) => doc.objects.find((o) => o.id === id);
 check(byId('needle-galaxy')?.distLyLow === 38160000 && byId('needle-galaxy')?.distLyHigh === 53000000, 'the Needle Galaxy keeps both of its infobox distances as a range, 38.16 and 53 Mly');
@@ -38,7 +38,7 @@ check(byId('war-and-peace-nebula')?.majAxArcmin === null, 'the War and Peace Neb
 check(byId('antennae-galaxies')?.kind === 'galaxy' && byId('antennae-galaxies')?.typeCode === 'GPair' && byId('antennae-galaxies')?.distLy === 71750000, 'the Antennae are one row, a galaxy pair 71.75 Mly out');
 check(byId('heart-nebula')?.distLy === 7000 && byId('soul-nebula')?.distLy === 7500, 'the Heart and Soul at their infoboxes\' 7 000 and 7 500 ly');
 const hand22 = doc.objects.filter((o) => /read 2026-09-22/.test(o.distanceSource || ''));
-check(hand22.length === 31 && hand22.every((o) => typeof o.why === 'string' && o.why.length <= 160), `the thirty-one rows read 2026-09-22 each carry a why of 160 characters or fewer (${hand22.length})`);
+check(hand22.length === 30 && hand22.every((o) => typeof o.why === 'string' && o.why.length <= 160), `the thirty rows still read 2026-09-22 (NGC 6397's distance moved to Baumgardt & Vasiliev 2021, internal #291) each carry a why of 160 characters or fewer (${hand22.length})`);
 check(doc.openNgcTotal > 13000, `the file says how many OpenNGC objects exist without a distance (${doc.openNgcTotal})`);
 const m31 = doc.objects.find((o) => o.id === 'm31');
 check(m31 && m31.distLy === 2540000 && m31.distLyLow === 2430000 && m31.kind === 'galaxy' && m31.common === 'Andromeda Galaxy', 'M31 is Andromeda, 2.43-2.65 Mly, a galaxy');

@@ -60,12 +60,14 @@ export const STARS_NOTABLE = [
     "hip": 32349,
     "name": "Sirius",
     "why": "The brightest star in the night sky, almost twice as bright as Canopus, the next. A faint white dwarf, Sirius B, circles it.",
-    "source": "https://en.wikipedia.org/wiki/Sirius (read 2026-09-22)",
+    "source": "https://en.wikipedia.org/wiki/Sirius (read 2026-09-22); magnitude and class: Bright Star Catalogue, 5th revised ed. (VizieR V/50, HR 2491, opened 2026-11-15): V = -1.46, A1Vm. The star map's HYG data carries the Hipparcos catalogue's -1.44 and A0m (VizieR I/239, HIP 32349, opened 2026-11-15), whose own variability flag marks that magnitude 'duplicity-induced': Sirius B's glare was inside the satellite's measurement. The card prints the Bright Star Catalogue values (internal #311).",
     "radius_suns": 1.713,
     "radius_err_suns": 0.009,
     "teff_k": 9845,
     "teff_err_k": 64,
-    "physical_source": "https://arxiv.org/abs/1010.3790 (read 2026-10-09)"
+    "physical_source": "https://arxiv.org/abs/1010.3790 (read 2026-10-09)",
+    "mag": -1.46,
+    "spect": "A1Vm"
   },
   {
     "hip": 16537,
@@ -111,7 +113,10 @@ export const STARS_NOTABLE = [
     "hip": 24186,
     "name": "Kapteyn's Star",
     "why": "The nearest halo star: about 11 billion years old, going round the galaxy the wrong way. It may once have belonged to Omega Centauri.",
-    "source": "https://en.wikipedia.org/wiki/Kapteyn%27s_Star (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Kapteyn%27s_Star (read 2026-09-22)",
+    "radius_suns": 0.29,
+    "radius_err_suns": 0.03,
+    "physical_source": "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
   },
   {
     "hip": 3829,
@@ -163,7 +168,10 @@ export const STARS_NOTABLE = [
     "hip": 24436,
     "name": "Rigel",
     "why": "The brightest star in Orion and usually the seventh-brightest in the sky: a blue supergiant around 120 000 times as luminous as the Sun.",
-    "source": "https://en.wikipedia.org/wiki/Rigel (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Rigel (read 2026-09-22)",
+    "radius_suns": 74.0,
+    "radius_err_suns": 7.0,
+    "physical_source": "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
   },
   {
     "hip": 7588,
@@ -278,7 +286,10 @@ export const STARS_NOTABLE = [
     "hip": 116727,
     "name": "Gamma Cephei",
     "why": "Its planet, proposed in 1988, doubted, and confirmed in 2002, was the first ever discovered. From about 3157 CE it replaces Polaris as the pole star.",
-    "source": "https://en.wikipedia.org/wiki/Gamma_Cephei (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Gamma_Cephei (read 2026-09-22)",
+    "radius_suns": 4.93,
+    "radius_err_suns": 0.04,
+    "physical_source": "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
   },
   {
     "hip": 10826,
@@ -329,7 +340,10 @@ export const STARS_NOTABLE = [
     "hip": 113357,
     "name": "51 Pegasi",
     "why": "The first Sun-like star found with a planet, in 1995: a hot Jupiter going round it every four days. Its finders shared the 2019 Nobel Prize in Physics.",
-    "source": "https://en.wikipedia.org/wiki/51_Pegasi (read 2026-09-22) and https://en.wikipedia.org/wiki/51_Pegasi_b (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/51_Pegasi (read 2026-09-22) and https://en.wikipedia.org/wiki/51_Pegasi_b (read 2026-09-22)",
+    "radius_suns": 1.149,
+    "radius_err_suns": 0.02,
+    "physical_source": "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
   },
   {
     "hip": 7513,
@@ -356,7 +370,10 @@ export const STARS_NOTABLE = [
     "hip": 54061,
     "name": "Dubhe",
     "why": "The northern of the two Pointers: it and Merak point towards Polaris. Though named Alpha, it is only the second-brightest object in Ursa Major.",
-    "source": "https://en.wikipedia.org/wiki/Dubhe (read 2026-11-04)"
+    "source": "https://en.wikipedia.org/wiki/Dubhe (read 2026-11-04)",
+    "radius_suns": 26.0,
+    "radius_err_suns": 0.5,
+    "physical_source": "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
   },
   {
     "hip": 26727,
@@ -374,13 +391,19 @@ export const STARS_NOTABLE = [
     "hip": 25336,
     "name": "Bellatrix",
     "why": "The closest major star in Orion, and one of the closest known candidates for a core-collapse supernova. Its name is Latin for 'female warrior'.",
-    "source": "https://en.wikipedia.org/wiki/Bellatrix (read 2026-11-04)"
+    "source": "https://en.wikipedia.org/wiki/Bellatrix (read 2026-11-04)",
+    "radius_suns": 5.9,
+    "radius_err_suns": 0.2,
+    "physical_source": "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
   },
   {
     "hip": 27366,
     "name": "Saiph",
     "why": "A blue supergiant at the south-eastern corner of Orion's main quadrangle. It is smaller and less luminous than Rigel but hotter at its surface.",
-    "source": "https://en.wikipedia.org/wiki/Saiph (read 2026-11-04)"
+    "source": "https://en.wikipedia.org/wiki/Saiph (read 2026-11-04)",
+    "radius_suns": 11.6,
+    "radius_err_suns": 0.6,
+    "physical_source": "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
   },
   {
     "hip": 100453,
@@ -392,13 +415,19 @@ export const STARS_NOTABLE = [
     "hip": 46390,
     "name": "Alphard",
     "why": "The brightest star in Hydra. Its name is Arabic for 'the individual', there being no other bright stars near it.",
-    "source": "https://en.wikipedia.org/wiki/Alpha_Hydrae (read 2026-11-04)"
+    "source": "https://en.wikipedia.org/wiki/Alpha_Hydrae (read 2026-11-04)",
+    "radius_suns": 55.6,
+    "radius_err_suns": 0.6,
+    "physical_source": "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
   },
   {
     "hip": 9884,
     "name": "Hamal",
     "why": "The brightest star in Aries. The Sun stood in Aries at the spring equinox from 2000 to 100 BCE, which is why most astrology columns begin with Aries.",
-    "source": "https://en.wikipedia.org/wiki/Hamal (read 2026-11-04)"
+    "source": "https://en.wikipedia.org/wiki/Hamal (read 2026-11-04)",
+    "radius_suns": 14.93,
+    "radius_err_suns": 0.1,
+    "physical_source": "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
   },
   {
     "hip": 85927,
@@ -410,19 +439,28 @@ export const STARS_NOTABLE = [
     "hip": 15863,
     "name": "Mirfak",
     "why": "The brightest star in Perseus, outshining Algol. It lies in the midst of the Alpha Persei Cluster, which is easily visible in binoculars.",
-    "source": "https://en.wikipedia.org/wiki/Alpha_Persei (read 2026-11-04)"
+    "source": "https://en.wikipedia.org/wiki/Alpha_Persei (read 2026-11-04)",
+    "radius_suns": 51.8,
+    "radius_err_suns": 1.4,
+    "physical_source": "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
   },
   {
     "hip": 72607,
     "name": "Kochab",
     "why": "The brightest star in the bowl of the Little Dipper. Around 2467 BCE the Egyptians found true north with a plumb line between it and Mizar.",
-    "source": "https://en.wikipedia.org/wiki/Kochab (read 2026-11-05)"
+    "source": "https://en.wikipedia.org/wiki/Kochab (read 2026-11-05)",
+    "radius_suns": 15.36,
+    "radius_err_suns": 0.09,
+    "physical_source": "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
   },
   {
     "hip": 86032,
     "name": "Rasalhague",
     "why": "The brightest star in Ophiuchus; its name means 'the head of the serpent collector'. It spins so fast that its equator bulges about 20% wider than its poles.",
-    "source": "https://en.wikipedia.org/wiki/Alpha_Ophiuchi (read 2026-11-05)"
+    "source": "https://en.wikipedia.org/wiki/Alpha_Ophiuchi (read 2026-11-05)",
+    "radius_suns": 2.97,
+    "radius_err_suns": 0.05,
+    "physical_source": "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
   },
   {
     "hip": 62956,

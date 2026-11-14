@@ -12,6 +12,10 @@
 #             equal, and the card's "light left" row is the light-travel time from the same
 #             redshift, not the distance read as years (internal spec 0075 task 15).
 # redshift    the measured redshift, where the distance comes from one.
+# hip         (kind star only) the Hipparcos number of the same star in the HYG catalogue: scene/stars3d.js then gives that
+#             star's own record this row's distance range and note, in place of HYG's single Hipparcos distance (internal #267).
+# vmag_range  (kind star only) [faintest-end low, brightest-end high] magnitudes of a star that varies; the star's card
+#             then says "about {vmag}, varies" and not a three-digit catalogue magnitude.
 # mass_msun   solar masses, where the object has one worth saying. period_s for a pulsar.
 # vmag        visual magnitude, where the source prints one; a `kind: star` row must have it, because
 #             the card decides from it whether a person can see the thing (Betelgeuse can be).
@@ -25,11 +29,12 @@ exotics:
     kind: blackhole
     ra: 17h 45m 40.0409s
     dec: -29° 00′ 28.118″
-    dist_ly: 26996
+    dist_ly: 27000
+    distance_note: "about 27 000 light-years: GRAVITY's orbit of the star S2 gives 8 275 +/- 9 (statistical) +/- 33 (systematic) parsecs, 26 990 +/- 110 light-years; the Milky Way card's model uses Reid et al. 2019's 8.15 +/- 0.15 kiloparsecs, 26 600 +/- 500, which agrees"
     mass_msun: 4297000
     why: "The black hole at the centre of our galaxy, four million Suns in one point. Every star on this map goes round it."
     aliases: [Sgr A*, galactic centre black hole]
-    source: "https://en.wikipedia.org/wiki/Sagittarius_A* (infobox, read 2026-09-08)"
+    source: "https://en.wikipedia.org/wiki/Sagittarius_A* (infobox, read 2026-09-08); distance and mass: GRAVITY Collaboration 2021, A&A (arXiv:2101.12098, Table 2 and Eq. 38: R0 = 8275 +/- 9 stat. +/- 33 sys. pc, mass 4.297 +/- 0.013 million Suns, opened 2026-11-15); Reid et al. 2019 (arXiv:1910.03357, abstract: R0 = 8.15 +/- 0.15 kpc, opened 2026-11-15)"
     image:
       file: site/images/eht-sgr-a.jpg
       credit: "EHT Collaboration"
@@ -42,11 +47,12 @@ exotics:
     kind: blackhole
     ra: 12h 30m 49.42338s
     dec: +12° 23′ 28.0439″
-    dist_ly: 53500000
+    dist_ly: 54800000
+    distance_note: "16.8 (+0.8 / -0.7) megaparsecs, 54.8 million light-years, the distance the Event Horizon Telescope adopted for its mass; the same one the M87 galaxy's record and the jet in the black-hole drawing use"
     mass_msun: 6500000000
     why: "The first black hole anyone photographed: the orange ring of 2019. Six and a half billion Suns, at the heart of the galaxy M87."
     aliases: [Powehi, Virgo A black hole]
-    source: "https://en.wikipedia.org/wiki/Messier_87 (infobox and the M87* section; EHT 2019 mass, read 2026-09-08)"
+    source: "https://en.wikipedia.org/wiki/Messier_87 (infobox and the M87* section; EHT 2019 mass, read 2026-09-08); distance and mass: EHT Collaboration 2019, ApJ 875, L6 (arXiv:1906.11243, abstract: 16.8 +0.8 -0.7 Mpc, 6.5 +/- 0.2 stat +/- 0.7 sys billion Suns, opened 2026-11-15)"
     image:
       file: site/images/eht-m87.jpg
       credit: "EHT Collaboration"
@@ -59,11 +65,12 @@ exotics:
     kind: blackhole
     ra: 19h 58m 21.67574s
     dec: +35° 12′ 05.7845″
-    dist_ly: 7300
-    mass_msun: [13.8, 17.5]
+    dist_ly: 7240
+    distance_note: "2.22 (+0.18 / -0.17) kiloparsecs, 7 240 light-years (6 690 to 7 830), from radio parallax"
+    mass_msun: [19.0, 23.4]
     why: "The first black hole anyone was sure of, found in 1964 by its X-rays. It is eating a blue supergiant, HDE 226868."
     aliases: [Cyg X-1]
-    source: "https://en.wikipedia.org/wiki/Cygnus_X-1 (infobox, read 2026-09-08)"
+    source: "https://en.wikipedia.org/wiki/Cygnus_X-1 (infobox, read 2026-09-08); distance and mass: Miller-Jones et al. 2021 (arXiv:2102.09091, abstract: 2.22 +0.18 -0.17 kpc by radio astrometry, and with the earlier optical data a black-hole mass of 21.2 +/- 2.2 Suns, shown as 19.0 to 23.4; opened 2026-11-15). The older 13.8 to 17.5 Suns went with the older 1.86 kpc distance and is no longer used."
 
   - id: gaia-bh1
     name: Gaia BH1
@@ -80,10 +87,11 @@ exotics:
     kind: blackhole
     ra: 19h 39m 18.71s
     dec: +14° 55′ 54.0″
-    dist_ly: 1936
-    mass_msun: 33.08
+    dist_ly: 1926
+    distance_note: "590.6 +/- 5.8 parsecs, 1 926 +/- 19 light-years, the distance adopted for its star in the discovery paper"
+    mass_msun: [31.88, 33.52]
     why: "The heaviest black hole from a dead star in our galaxy, thirty-three Suns, found in 2024 in the Gaia data."
-    source: "https://en.wikipedia.org/wiki/Gaia_BH3 (infobox, read 2026-09-08)"
+    source: "https://en.wikipedia.org/wiki/Gaia_BH3 (infobox, read 2026-09-08); distance and mass: Gaia Collaboration, Panuzzo et al. 2024 (arXiv:2404.10486; abstract: 32.70 +/- 0.82 Suns, a distance of 590 pc; the paper text: 590.6 +/- 5.8 pc; opened 2026-11-15), the mass shown as 31.88 to 33.52 (32.70 +/- 0.82). The 1 936 light-years and 33.08 Suns the row carried before were the infobox's and are not in the paper."
 
   - id: v404-cygni
     name: V404 Cygni
@@ -115,10 +123,10 @@ exotics:
     ra: 05h 34m 31.95s
     dec: +22° 00′ 52.2″
     dist_ly: 6200
-    period_s: 0.0333924123
+    period_s: 0.033859
     why: "What was left when a star seen exploding in 1054 collapsed: a city-sized star spinning thirty times a second, inside the Crab Nebula (M1)."
     aliases: [PSR B0531+21]
-    source: "https://en.wikipedia.org/wiki/Crab_Pulsar (infobox, read 2026-09-08)"
+    source: "https://en.wikipedia.org/wiki/Crab_Pulsar (infobox, read 2026-09-08); period: the Jodrell Bank Crab pulsar monthly ephemeris (www.jb.man.ac.uk/~pulsar/crab/crab2.txt, opened 2026-11-15), the row of 15 September 2026, MJD 61298: 29.5340803404 Hz, so 33.859 ms. It slows by about 36 nanoseconds a day, so the 33.392 ms this row carried before (the 1990s) is 1.4 per cent out of date; the card says 'as of' no date, so re-read the ephemeris when this is next edited."
 
   - id: vela-pulsar
     name: Vela Pulsar
@@ -195,13 +203,15 @@ exotics:
     kind: star
     ra: 05h 55m 10.30536s
     dec: +07° 24′ 25.4304″
+    hip: 27989
     dist_ly: [408, 548]
     mass_msun: 14
     vmag: 0.50                # 0.0 to 1.6 as it breathes
-    distance_note: "two published distances, 408 and 548 light-years; the star's boiling surface makes its parallax hard to pin down"
+    vmag_range: [0.0, 1.6]
+    distance_note: "two model-based estimates, 408 and 548 light-years (Neuhauser et al. 2022 as low as 125 parsecs; Joyce et al. 2020, 168 +27/-15 parsecs, 548 +90/-49 light-years); the Hipparcos parallax gives 500 +/- 65 and radio parallaxes 643 +/- 146 and 724 (+111/-156), because the star's boiling surface moves its centre; Gaia has no usable parallax"
     why: "The red shoulder of Orion, a supergiant so large it would swallow Mars. It dimmed in 2019-20 after coughing out a cloud of dust; one day it will go supernova."
     aliases: [α Orionis, Alpha Orionis, α Ori]
-    source: "https://en.wikipedia.org/wiki/Betelgeuse (infobox, read 2026-09-08)"
+    source: "https://en.wikipedia.org/wiki/Betelgeuse (infobox, read 2026-09-08; its Distance section table of the published parallaxes, opened 2026-11-15); Joyce et al. 2020 (arXiv:2006.09837, abstract: 168 +27 -15 pc, parallax 5.95 +0.58 -0.85 mas, opened 2026-11-15)"
 
   - id: ss-433
     name: SS 433

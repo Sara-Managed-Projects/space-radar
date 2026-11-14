@@ -136,7 +136,7 @@ export function cell(prop, b) {
       if (b.exosphere) return { ...NONE, text: C.air.almostNone, note: C.notes.exosphere };
       if (!b.air || !b.air.length) return dash();
       const parts = b.air.map(([gas, share]) => t(C.air.part, { share: sig(share), gas: C.gas[gas] || gas }));
-      return { ...NONE, text: parts.join(C.air.join), note: b.world === 'sun' ? C.notes.photosphereAir : '' };
+      return { ...NONE, text: parts.join(C.air.join), note: b.world === 'sun' ? C.notes.photosphereAir : C.notes.airVolume };
     }
     case 'pressure': {
       if (b.exosphere) return { ...NONE, text: C.air.almostNone, note: '' };
