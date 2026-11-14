@@ -313,9 +313,12 @@
   const line = document.getElementById('boot-line');
   const sub = document.getElementById('boot-sub');
   const fail = (what, err) => {
+    // After the boot panel has been taken away the page is up: a later error is the console's, not a failed boot (internal #325).
+    const boot = document.getElementById('boot');
+    if (!boot || boot.classList.contains('gone')) { console.error(what, err); return; }
     line.textContent = what;
     sub.textContent = (err && (err.message || String(err))) || '';
-    document.getElementById('boot').classList.add('boot-failed');
+    boot.classList.add('boot-failed');
     console.error(what, err);
   };
   window.addEventListener('error', (e) => fail('Something broke while loading.', e.error || e.message));
