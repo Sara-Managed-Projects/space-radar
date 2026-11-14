@@ -286,7 +286,8 @@ function milkyWayRecords() {
     cls: 'measured',
     meta: {
       home: true,
-      cite: 'Centre distance: Reid et al. 2019 (R0 = 8.15 +/- 0.15 kpc, the map\'s one distance), which the GRAVITY Collaboration\'s 8 275 +/- 9 +/- 33 pc (2021) agrees with inside that error; the card says "about 27 000". Disc size: 26.8 +/- 1.1 kpc (87 400 +/- 3 600 light-years), an isophotal diameter after Goodwin et al. (Wikipedia, Milky Way, opened 2026-11-15); the disc has no sharp edge, and disc stars have been found 26 to 31.5 kpc from the centre (Lopez 2018, same page)',
+      cite: 'Centre distance: Reid et al. 2019 (R0 = 8.15 +/- 0.15 kpc, the map\'s one distance), which the GRAVITY Collaboration\'s 8 275 +/- 9 +/- 33 pc (2021) agrees with; the card says "about 27 000". Disc size: 26.8 +/- 1.1 kpc, after Goodwin et al. (Wikipedia, Milky Way)',
+      // Opened 2026-11-15 (Wikipedia, Milky Way): the 26.8 +/- 1.1 kpc (87 400 +/- 3 600 light-years) is an isophotal diameter; the disc has no sharp edge, and disc stars have been found 26 to 31.5 kpc from the centre (Lopez 2018, same page).
       kind: 'galaxy',
       typeText: 'Barred spiral galaxy — the one we live in',
       hubble: 'SBbc',
