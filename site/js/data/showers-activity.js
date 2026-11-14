@@ -27,6 +27,20 @@ export const SHOWER_ACTIVITY = [
     "sol": 45.5
   },
   {
+    "id": "alpha-capricornids",
+    "r": 2.5,
+    "active_from": "07-03",
+    "active_to": "08-15",
+    "sol": 128
+  },
+  {
+    "id": "southern-delta-aquariids",
+    "r": 2.5,
+    "active_from": "07-12",
+    "active_to": "08-23",
+    "sol": 128
+  },
+  {
     "id": "perseids",
     "r": 2.2,
     "active_from": "07-17",
@@ -34,11 +48,32 @@ export const SHOWER_ACTIVITY = [
     "sol": 140.0
   },
   {
+    "id": "draconids",
+    "r": 2.6,
+    "active_from": "10-06",
+    "active_to": "10-10",
+    "sol": 195.4
+  },
+  {
     "id": "orionids",
     "r": 2.5,
     "active_from": "10-02",
     "active_to": "11-07",
     "sol": 208.0
+  },
+  {
+    "id": "southern-taurids",
+    "r": 2.3,
+    "active_from": "09-20",
+    "active_to": "11-20",
+    "sol": 223
+  },
+  {
+    "id": "northern-taurids",
+    "r": 2.3,
+    "active_from": "10-20",
+    "active_to": "12-10",
+    "sol": 230
   },
   {
     "id": "leonids",

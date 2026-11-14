@@ -144,7 +144,8 @@ class ShowerPeakTest(unittest.TestCase):
         out = dig.next_shower_peaks(shw.SHOWERS, now)
         dates = [row["peak_date"] for row in out]
         self.assertEqual(dates, sorted(dates))
-        self.assertEqual(out[0]["id"], "orionids")  # the next peak after Sep 8 is Oct 21
+        self.assertEqual(out[0]["id"], "draconids")  # the next peak after Sep 8 is Oct 9, then the Orionids on Oct 21
+        self.assertEqual(out[1]["id"], "orionids")
 
     def test_ledger_key_shower_names_the_year(self):
         self.assertEqual(dig.ledger_key_shower({"id": "perseids", "year": 2026}), "shower:perseids:2026")

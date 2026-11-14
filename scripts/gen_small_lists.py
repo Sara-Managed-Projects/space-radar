@@ -158,7 +158,9 @@ def build_showers(refresh: bool) -> None:
     rows = [next(csv.reader([ln], delimiter="|", quotechar='"')) for ln in raw.splitlines() if ln.startswith('"')]
     ours = {r["id"]: r for r in yaml.safe_load((ROOT / "registry/showers.yaml").read_text(encoding="utf-8"))["showers"]}
     ours_by_code = {"QUA": "quadrantids", "LYR": "lyrids", "ETA": "eta-aquariids", "PER": "perseids", "ORI": "orionids",
-                    "LEO": "leonids", "GEM": "geminids", "URS": "ursids"}
+                    "LEO": "leonids", "GEM": "geminids", "URS": "ursids",
+                    "CAP": "alpha-capricornids", "SDA": "southern-delta-aquariids", "DRA": "draconids", "STA": "southern-taurids",
+                    "NTA": "northern-taurids"}
     by: dict[str, list] = {}
     for r in rows:
         by.setdefault(r[6].strip() or r[3], []).append(r)
@@ -204,7 +206,7 @@ def build_showers(refresh: bool) -> None:
         out.append(row)
     ids = [r["id"] for r in out]
     assert len(ids) == len(set(ids)), "shower ids collide"
-    assert sum(1 for r in out if r.get("ours")) == 8, "the eight showers of registry/showers.yaml are all matched"
+    assert sum(1 for r in out if r.get("ours")) == len(ours), "every shower of registry/showers.yaml is matched"
     print(f"  showers: {len(out)} established, {len(rows)} solutions")
     write("showers.json", {"asOf": AS_OF, "source": "IAU Meteor Data Center, Established meteor showers (last update 23 Oct 2026)",
                            "solutions": len(rows), "rows": out})

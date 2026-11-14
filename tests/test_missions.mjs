@@ -34,7 +34,7 @@ let events = 0;
 for (const m of M.MISSIONS) {
   check(!ids.has(m.id), `${m.id}: one row a mission`); ids.add(m.id);
   check(known.has(m.record), `${m.id}: its record ${m.record} is one the map has`);
-  check(m.source && /^https:\/\/([a-z0-9-]+\.)*nasa\.gov\//.test(m.source.url) && m.source.name.length > 3, `${m.id}: a source with a name and a link to a NASA page`);
+  check(m.source && /^https:\/\/([a-z0-9-]+\.)*(nasa\.gov|esa\.int)\//.test(m.source.url) && m.source.name.length > 3, `${m.id}: a source with a name and a link to a NASA or ESA page`);
   check(/^2026-\d\d-\d\d$/.test(String(m.read)), `${m.id}: the day its events were read on their pages`);
   // A rock nobody flew has no launch and no arrival: its discovery and its predicted pass are the list.
   check(m.events.length >= 3 || m.events.some((e) => e.predicted), `${m.id}: at least three events`);
@@ -59,9 +59,9 @@ for (const m of M.MISSIONS) {
     if (e.predicted) {
       check(e.predicted === true && ms > Date.parse('2026-10-06T00:00:00Z') && e.place === 'path', `${where}: a predicted event is in the future and on a path file`);
       check(M.eventWhen(e).endsWith('(predicted)'), `${where}: its date says it is predicted (${M.eventWhen(e)})`);
-    } else check(ms < Date.parse('2026-10-06T00:00:00Z'), `${where}: it has happened (a planned date is the launches list's business)`);
+    } else check(ms < Date.parse('2026-11-14T00:00:00Z'), `${where}: it has happened (a planned date is the launches list's business)`);
     check(M.findEvent(where) && M.findEvent(where).event === e, `${where}: found by its link id`);
-    check(e.source === undefined || (/^https:\/\/([a-z0-9-]+\.)*nasa\.gov\//.test(e.source.url) && e.source.name.length > 3), `${where}: an event read on another page names that NASA page`);
+    check(e.source === undefined || (/^https:\/\/([a-z0-9-]+\.)*(nasa\.gov|esa\.int)\//.test(e.source.url) && e.source.name.length > 3), `${where}: an event read on another page names that NASA or ESA page`);
   }
   // A landing site's events on the ground are placeable; nothing else claims to be a site.
   for (const e of m.events) if (e.place === 'site') check(SITES.some((s) => s.id === (e.record || m.record)), `${m.id}.${e.id}: only a landing site or a pad is a site`);

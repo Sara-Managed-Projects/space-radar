@@ -694,6 +694,53 @@ export const MISSIONS = [
     ]
   },
   {
+    "id": "euclid",
+    "record": "deep-euclid",
+    "display": "Euclid",
+    "read": "2026-11-14",
+    "source": {
+      "name": "ESA, Euclid",
+      "url": "https://www.esa.int/Science_Exploration/Space_Science/Euclid"
+    },
+    "events": [
+      {
+        "id": "launch",
+        "date": "2023-07-01T15:12:00Z",
+        "title": "Launch",
+        "text": "Euclid leaves Cape Canaveral on a Falcon 9, bound for the Sun-Earth L2 point.",
+        "place": "path",
+        "path_at": "2023-07-01T15:52:00Z",
+        "world": "earth"
+      },
+      {
+        "id": "first-images",
+        "date": "2023-11-07",
+        "precision": "day",
+        "title": "The first full-colour pictures",
+        "text": "ESA shows Euclid's first images: the Perseus Cluster, IC 342, NGC 6822, NGC 6397 and the Horsehead Nebula.",
+        "place": "path",
+        "world": "earth",
+        "source": {
+          "name": "ESA, Euclid's first images: the dazzling edge of darkness",
+          "url": "https://www.esa.int/Science_Exploration/Space_Science/Euclid/Euclid_s_first_images_the_dazzling_edge_of_darkness"
+        }
+      },
+      {
+        "id": "dr1-foundation",
+        "date": "2026-11-12",
+        "precision": "day",
+        "title": "The first big batch of data",
+        "text": "ESA releases DR1-Foundation: 13 months of observations, 1900 square degrees of sky, over a billion objects.",
+        "place": "path",
+        "world": "earth",
+        "source": {
+          "name": "ESA, Euclid lays the foundation for its best-ever 3D map of the Universe",
+          "url": "https://www.esa.int/articles/about-us/directorates/science/euclid/euclid-lays-the-foundation-for-its-best-ever-3d-map-of-the-universe"
+        }
+      }
+    ]
+  },
+  {
     "id": "apollo-11",
     "record": "apollo-11",
     "display": "Apollo 11",

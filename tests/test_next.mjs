@@ -102,8 +102,8 @@ check(buildNextItems([launch('A', H)], now, { observer: { latRad: 0.9, lonRad: 0
   const { SHOWERS } = await import(join(JS, 'data/showers.js'));
   const sept22 = new Date(2026, 8, 22, 20, 0).getTime();
   const within = showerItems(sept22, 30 * D, SHOWERS);
-  check(within.length === 1 && within[0].showerId === 'orionids', `from 22 September the next month holds the Orionids (${within.map((x) => x.showerId)})`);
-  const text = rt(within[0], sept22);
+  check(within.length === 2 && within[0].showerId === 'draconids' && within[1].showerId === 'orionids', `from 22 September the next month holds the Draconids and the Orionids (${within.map((x) => x.showerId)})`);
+  const text = rt(within[1], sept22);
   check(/The Orionids meteor shower peaks around .*21 Oct/.test(text) && /up to 20 an hour/.test(text) && !/\d\d:\d\d/.test(text), `a shower row gives a date, never a time: "${text}"`);
   // The Moon that night (Astronomy Engine): 2026's Orionids fall under a bright Moon, the Perseids
   // under a new one. The fraction is the same wherever you stand, so it needs no place.
@@ -132,11 +132,11 @@ check(buildNextItems([launch('A', H)], now, { observer: { latRad: 0.9, lonRad: 0
   const urs = radiantThatNight(SHOWERS.find((x) => x.id === 'ursids'), new Date(2026, 11, 22, 12).getTime(), sydney);
   process.env.TZ = 'Europe/London';
   check(urs && urs.altDeg < 0, `the Ursids' radiant (dec +76) never rises from Sydney (${urs && urs.altDeg.toFixed(0)} deg)`);
-  const withPlace = rt(showerItems(sept22, 30 * D, SHOWERS, london)[0], sept22);
+  const withPlace = rt(showerItems(sept22, 30 * D, SHOWERS, london)[1], sept22);
   check(/From where you are its radiant is highest around \d\d:\d\d/.test(withPlace), `with a place the row says when the radiant is highest: "${withPlace}"`);
   process.env.TZ = savedTz;
   const withShowers = buildNextItems([], sept22, { showers: SHOWERS });
-  check(withShowers.length === 1 && withShowers[0].kind === 'shower' && withShowers[0].record === null, 'with nothing else loaded the list still has the shower');
+  check(withShowers.length === 2 && withShowers[0].kind === 'shower' && withShowers[0].record === null, 'with nothing else loaded the list still has the shower');
 }
 
 // Storms that bring auroras (2026-09-22: NOAA forecast Kp 5.33 and "Coming up" said nothing).

@@ -217,6 +217,8 @@ COPY.dateJump.eventTitles = {
   "Saturn's orbit": "Saturn's orbit",
   "Closest to Pluto": "Closest to Pluto",
   "Arrokoth": "Arrokoth",
+  "The first full-colour pictures": "The first full-colour pictures",
+  "The first big batch of data": "The first big batch of data",
   "Back past Earth": "Back past Earth",
   "Into orbit round Jupiter": "Into orbit round Jupiter",
   "Past Venus": "Past Venus",

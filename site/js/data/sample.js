@@ -1143,6 +1143,26 @@ const ANCHORED_CRAFT = [
       '(JPL Horizons had it 1.46 million km out on 7 October 2026). It is drawn here on ' +
       "Earth's orbit; the offset is smaller than the dot.",
   },
+  // Added 2026-11-14 (internal #112, #319). Horizons -680 header (revised 2026-11-03): launched
+  // 2023-Jul-01 15:12 UTC on a Falcon 9, a halo orbit round the Earth-Sun L2 point "at an average
+  // distance of 1.5 million km from Earth"; ESA's Euclid page (esa.int/Science_Exploration/
+  // Space_Science/Euclid) says the same and "1.5 million km". Horizons, VECTORS, CENTER='500@399':
+  // 1.52 million km from Earth on 2026-11-14 (X 241 936, Y 1 496 065, Z 40 783). Its path file is
+  // in registry/ephemerides.yaml; the harvester's list asks for the same id.
+  {
+    id: 'deep-euclid',
+    name: 'Euclid',
+    launched: '2023-07-01',
+    klass: 'telescope',
+    horizonsId: -680,
+    anchor: 'earth',
+    earthRangeKm: 1.5e6,
+    note: 'ESA\u2019s cosmology survey telescope. Its first big batch of data, 1900 square degrees ' +
+      'of sky, was released on 12 November 2026.',
+    offset: 'It orbits the Sun\u2013Earth L2 point, 1.5 million km beyond Earth (JPL Horizons had it ' +
+      '1.52 million km out on 14 November 2026). It is drawn here on Earth\u2019s orbit; the offset is ' +
+      'smaller than the dot.',
+  },
 ];
 
 /**

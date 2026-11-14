@@ -289,6 +289,16 @@ sources:
     terms_recorded: 2026-09-08
     publisher: NASA Exoplanet Archive
 
+  # WHY THE SAVED NEO LIST IS SHORT (internal #113, read 2026-11-14). It is not a bug. This query is
+  # "closer than 10 lunar distances in the next 60 days", and on 2026-11-14 CAD answered 17 rows,
+  # every one of them present in the SBDB query below. harvest/publish.py then cuts jpl-sbdb-neo
+  # (43 090 rows that day) to the designations in this list, so the saved NEO file holds as many
+  # rows as this list does, and a count in the single digits is what the sky gave that week. The
+  # same query over past windows gives 57 to 302 rows a 60-day window (2019-2026), but those
+  # windows count every object found LATER; a window that has not happened yet holds only what is
+  # known today, so no floor above zero can be defended from history. The guards that exist: zero
+  # rows is refused (harvest/parsers/jpl_cad.py), and a count under half of the last good one is
+  # refused and the last good copy stays (harvest/snapshot.py accept()).
   - id: jpl-cad
     url: https://ssd-api.jpl.nasa.gov/cad.api?dist-max=10LD&date-min=now&date-max=%2B60&sort=date&diameter=true&fullname=true
     auth: none

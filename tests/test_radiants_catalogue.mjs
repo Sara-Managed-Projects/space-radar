@@ -32,11 +32,11 @@ await new Promise((r) => setTimeout(r, 400));
 view.update(t);
 console.log = log;
 const m = marks().filter((s) => s.userData.shower.catalogue);
-check(m.length >= 1 && m.some((s) => s.userData.shower.id === 'shower-october-draconids'), `on the Draconids' night the Draconids are marked (${marks().map((s) => s.userData.shower.id)})`);
+check(m.length >= 1 && m.some((s) => s.userData.shower.id === 'shower-62-andromedids') && marks().some((s) => s.userData.shower.id === 'draconids') && !m.some((s) => s.userData.shower.id === 'shower-october-draconids'), `on the Draconids' night the Draconids are marked once, as the registry's own, and a catalogue radiant beside them (${marks().map((s) => s.userData.shower.id)})`);
 for (const s of m) check(s.position.length() > 1 && s.visible, `${s.userData.shower.id}: the mark sits on the dome, not at the camera (${s.position.length().toFixed(1)})`);
-const d = m.find((s) => s.userData.shower.id === 'shower-october-draconids');
-// where it is: altitude 63.7 degrees, azimuth 297.7 from 50 N 10 E at 18:30 UTC (sky/radiants.js radiantAltAz); +Y is up
-check(d && Math.abs(Math.asin(d.position.y / d.position.length()) * 180 / Math.PI - 63.7) < 0.5, 'at an altitude of 63.7 degrees');
+const d = marks().find((s) => s.userData.shower.id === 'draconids');
+// where it is: altitude 63.9 degrees, azimuth 299.9 from 50 N 10 E at 18:30 UTC (sky/radiants.js radiantAltAz); +Y is up
+check(d && Math.abs(Math.asin(d.position.y / d.position.length()) * 180 / Math.PI - 63.9) < 0.5, 'at an altitude of 63.9 degrees');
 on = false; view.update(t);
 check(marks().filter((s) => s.userData.shower.catalogue).length === 0, 'the Meteor showers box off takes them away');
 if (problems.length) { console.error('radiants catalogue FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }

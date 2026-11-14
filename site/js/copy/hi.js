@@ -5680,6 +5680,8 @@ COPY.dateJump.eventTitles = {
   "Saturn's orbit": "शनि की कक्षा",
   "Closest to Pluto": "प्लूटो के सबसे पास",
   "Arrokoth": "अरोकोथ",
+  "The first full-colour pictures": "पहली रंगीन तस्वीरें",
+  "The first big batch of data": "डेटा का पहला बड़ा जत्था",
   "Back past Earth": "फिर पृथ्वी के पास से",
   "Into orbit round Jupiter": "बृहस्पति की कक्षा में",
   "Past Venus": "शुक्र के पास से",

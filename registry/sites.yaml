@@ -300,6 +300,12 @@ sites:
   # Luna 13 (public #758). NSSDCA's table gives the position without the LROC mark: its note c cites
   # Siddiqi (2002, 2018) and Ulivi and Harland (2004), so the place is a published estimate, not a
   # photographed lander. Region and sentence: https://en.wikipedia.org/wiki/Luna_13, read 2026-11-05.
+  # Checked again 2026-11-14 (internal #82): LROC's coordinate table (lroc.asu.edu/posts/938) has no
+  # Luna 13 row, and NSSDCA's table (updated 13 August 2025) still gives this estimate. Luna 9 has no
+  # row either (internal #52): NSSDCA says LROC shows no sign of the lander at the Pravda position,
+  # and the 2026 candidate (7.03 N, 64.33 W; Pinault, Crawford and Yano, npj Space Exploration 2, 4,
+  # doi 10.1038/s44453-025-00020-x) is a machine-learning detection its authors call a candidate for
+  # follow-up imaging, not an LROC identification.
   - id: luna-13
     display: "Luna 13, Oceanus Procellarum"
     class: surface

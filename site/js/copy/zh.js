@@ -5683,6 +5683,8 @@ COPY.dateJump.eventTitles = {
   "Saturn's orbit": "土星轨道",
   "Closest to Pluto": "最接近冥王星",
   "Arrokoth": "阿罗科斯",
+  "The first full-colour pictures": "首批彩色图像",
+  "The first big batch of data": "第一批大规模数据",
   "Back past Earth": "再次飞掠地球",
   "Into orbit round Jupiter": "进入环绕木星的轨道",
   "Past Venus": "飞掠金星",

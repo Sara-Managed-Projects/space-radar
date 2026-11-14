@@ -50,6 +50,7 @@ export const WIKI_TITLES = {
   umbriel: 'Umbriel_(moon)',
   // the craft beyond Earth
   'deep-jwst': 'James_Webb_Space_Telescope',
+  'deep-euclid': 'Euclid_(spacecraft)',
   'deep-soho': 'Solar_and_Heliospheric_Observatory',
   'deep-mro': 'Mars_Reconnaissance_Orbiter',
   'deep-mars-express': 'Mars_Express',

@@ -588,7 +588,7 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
 {
   const { sampleDeepSpace } = await import(join(ROOT, 'site/js/data/sample.js'));
   const rows = sampleDeepSpace();
-  check(rows.length === 39, `the deep-space layer holds thirty-nine records (found ${rows.length})`);
+  check(rows.length === 40, `the deep-space layer holds forty records (found ${rows.length})`);
   const want = {
     'deep-jwst': 'jwst.glb', 'deep-soho': 'soho.glb', 'deep-mro': 'mro.glb', 'deep-juno': 'juno.glb',
     'deep-voyager-1': 'voyager.glb', 'deep-voyager-2': 'voyager.glb', 'deep-parker': 'parker.glb',
@@ -621,7 +621,8 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
     // 0077 W1-b: end
   };
   // The 2026-09-22 twelve, less those above: generic on purpose, and never another craft's shape.
-  const generic = new Set([]); // 0077 W1-b: none left since 2026-10-20
+  // 2026-11-14 (internal #112): Euclid has a record and a path but no model yet (its model is internal #119: an agency model with a clear licence, or a photo-matched build).
+  const generic = new Set(['deep-euclid']);
   for (const r of rows) {
     const e = realModelFor(r);
     const got = e && e.file ? e.file : e && e.build ? `build:${e.build}` : null;

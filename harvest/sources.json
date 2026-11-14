@@ -362,6 +362,11 @@
             "id": "-227",
             "name": "Kepler",
             "app_id": "deep-kepler"
+          },
+          {
+            "id": "-680",
+            "name": "Euclid",
+            "app_id": "deep-euclid"
           }
         ]
       }

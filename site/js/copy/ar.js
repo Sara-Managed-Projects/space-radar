@@ -5683,6 +5683,8 @@ COPY.dateJump.eventTitles = {
   "Saturn's orbit": "مدار زحل",
   "Closest to Pluto": "أقرب نقطة من بلوتو",
   "Arrokoth": "أروكوث",
+  "The first full-colour pictures": "أولى الصور الملوّنة",
+  "The first big batch of data": "أول دفعة كبيرة من البيانات",
   "Back past Earth": "مرورًا بالأرض مجددًا",
   "Into orbit round Jupiter": "إلى مدار حول المشتري",
   "Past Venus": "مرورًا بالزهرة",
