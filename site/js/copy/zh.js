@@ -1433,7 +1433,9 @@ export const COPY = {
       "high": "同时让更多天体保持清晰",
       "ultra": "完整分辨率，近看时有最细的层次"
     },
-    "fellBack": "画面卡顿：画质已回到“自动”。"
+    "fellBack": "画面卡顿：画质已回到“自动”。",
+    "restore": "以完整画质重新加载",
+    "restoreTitle": "按你的设备能达到的画质重新加载此视图。"
   },
   "status": {
     "title": "数据源",
@@ -5511,6 +5513,7 @@ Object.assign(COPY, {
       "trappist-1h": "TRAPPIST-1 h"
     },
     "earthAndMoon": "地球和月球",
+    "nightOpened": "此处现在是夜晚，所以时钟已设到当地太阳时 {local}，太阳高度 {sun}°。用时钟可以回到现在。",
     "unknownGround": "该地点还没有地形模型。",
     "unknownSky": "这张地图还不能让你站在那个地方：目前只能站在月球、火星、土卫六、木卫二、Proxima b 或 TRAPPIST-1 e 上。"
   }

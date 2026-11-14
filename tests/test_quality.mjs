@@ -40,6 +40,20 @@ const check = (ok, msg) => { if (!ok) problems.push(msg); };
   for (let i = 0; i < 30; i++) { now += 16; if (latch.push(16, now)) tripped++; }
   check(tripped === 0, 'one huge frame among fast ones does not trip it');
 }
+// internal #265: time nobody measured is not counted. Slow for 2.9 s, hidden for a minute, then one more slow frame: no trip.
+{
+  const latch = createFrameLatch();
+  let tripped = 0, now = 0;
+  for (let i = 0; i < 72; i++) { now += 40; if (latch.push(40, now)) tripped++; }   // 2.88 s over the line
+  now += 60000; if (latch.push(40, now)) tripped++;                                // back from a hidden tab
+  check(tripped === 0 && latch.stats().gapResets === 1, `a gap clears the window instead of finishing the old stretch (${tripped} trips, ${latch.stats().gapResets} resets)`);
+  for (let i = 0; i < 200; i++) { now += 40; if (latch.push(40, now)) tripped++; }
+  check(tripped === 1, 'real slowness after the gap still trips it, once');
+  const b = createFrameLatch(); let t2 = 0, n2 = 0;
+  for (let i = 0; i < 72; i++) { n2 += 40; if (b.push(40, n2)) t2++; }
+  b.reset(); n2 += 40; if (b.push(40, n2)) t2++;
+  check(t2 === 0 && b.stats().frames === 1 && b.stats().overForMs === 0, 'reset() (a stage change) starts the count afresh');
+}
 check(createFrameLatch().push(NaN, 0) === false && createFrameLatch().push(-5, 0) === false, 'bad durations are ignored');
 
 // data-saver reads the connection honestly

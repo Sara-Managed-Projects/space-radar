@@ -569,6 +569,9 @@ export function createGroundStage(ctx, opts = {}) {
       // A moon's bare sky opens on its planet, when it is up (2.0.0 look finding 11: Titan's opened on haze, Saturn overhead).
       const first = next.groundId ? null : openingLook(next, now(), fovDeg);
       if (first) Object.assign(walker, first);
+      // Internal #272: a landing opened live at its night is a black screen. Open it at the next lit moment and say so;
+      // a clock the visitor or the link already set is left alone.
+      if (next.groundId) openLit(next);
       bodies = [];
       events = null;
       lastBodies = -Infinity;
@@ -654,6 +657,39 @@ export function createGroundStage(ctx, opts = {}) {
     if (pending && pending.p === p) pending = null;
     if (!ok && typeof opts.note === 'function') opts.note(L()[keys.ground ? 'unknownGround' : 'unknownSky'], [keys.ground ? 'ground' : 'sky']);
     return ok;
+  }
+
+  /** The sun's altitude at a place and instant, from the same solver the stage draws with; NaN where there is none. */
+  function lampAlt(pl, t) {
+    const v = worldBodyView(lightOf(), t, pl, { obs: observerHelioEqjKm(pl.world, pl.latDeg, pl.lonDeg, t), m: worldEqjToLocal(pl.world, pl.latDeg, pl.lonDeg, t) });
+    return v ? v.altDeg : NaN;
+  }
+
+  const DARK_BELOW_DEG = 5; // under this the live sun gives a black screen
+  const LIT_AT_DEG = 15; // the moment a dark opening moves to: low sun, long shadows, plenty to see
+  const LIT_STEP_MS = 3600e3;
+  const LIT_SEARCH_MS = 800 * 3600e3; // more than a lunar day and night
+
+  function openLit(next) {
+    if (!clock || typeof clock.goTo !== 'function' || clock.mode !== 'live') return;
+    const sky = SKY_WORLDS[next.world];
+    if (!sky || sky.exo) return;
+    const pl = { world: next.world, latDeg: next.latDeg, lonDeg: next.lonDeg };
+    try {
+      const t0 = clock.now();
+      const a0 = lampAlt(pl, t0);
+      if (!(a0 < DARK_BELOW_DEG)) return;
+      for (let dt = LIT_STEP_MS; dt <= LIT_SEARCH_MS; dt += LIT_STEP_MS) {
+        const alt = lampAlt(pl, t0 + dt);
+        if (alt >= LIT_AT_DEG) {
+          clock.goTo(t0 + dt);
+          if (typeof opts.info === 'function') opts.info(say(L().nightOpened, { local: hhmm(localSolarHours(next.world, next.lonDeg, t0 + dt)), sun: Math.round(alt) }));
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('no lit moment found for the ground', e);
+    }
   }
 
   function now() {
@@ -1333,6 +1369,7 @@ function stageOf(ctx) {
       scene: ctx.scene,
       clock: ctx.clock,
       write: writeUrlKeys,
+      info: (line) => { if (ctx.sceneNote && typeof ctx.sceneNote.say === 'function') ctx.sceneNote.say(line); },
       note: (line, dead) => { if (ctx.sceneNote && typeof ctx.sceneNote.say === 'function') ctx.sceneNote.say(line); clearUrlKeys(dead); },
     });
     // The address from then on: a link without `ground` or `sky` closes the stage, unless a trip opened it.

@@ -574,6 +574,7 @@ export function createSearch(ctx, host) {
     env: null, // where things are in the visitor's sky, for the rows
     group: null, // {id, q}: a constellation's row the visitor pressed, listed while the query stands
     only: false, // the "3D models" toggle under the results (spec 0076 W3-e)
+    pickedId: null, // the record this field last flew to: a different selection later makes its text stale
   };
   let only = null; // the toggle, built once the search rows have landed (its words are theirs)
 
@@ -997,6 +998,7 @@ export function createSearch(ctx, host) {
 
   function pick(record) {
     if (!record) return;
+    state.pickedId = record.id;
     try {
       if (typeof ctx.isLayerOn === 'function' && typeof ctx.setLayerOn === 'function') {
         if (!ctx.isLayerOn(record.layer)) {
@@ -1095,6 +1097,18 @@ export function createSearch(ctx, host) {
     }, 150);
   };
 
+  // Internal #317: the text stays after a pick (it says what was flown to), but a selection that did
+  // not come from this field (a link, a card, the way back to Earth, a click on empty sky) leaves it
+  // naming something else. Not while the visitor is typing in it.
+  const onSelect = (event) => {
+    if (!input.value || document.activeElement === input) return;
+    const rec = event && event.detail;
+    if (rec && rec.id === state.pickedId) return;
+    state.pickedId = null;
+    close(true);
+    paintList();
+  };
+
   const onFocusIn = () => {
     wantMore();
     refreshEnv();
@@ -1122,6 +1136,7 @@ export function createSearch(ctx, host) {
   input.addEventListener('focus', onFocusIn);
   wrap.addEventListener('focusout', onFocusOut);
   fly.addEventListener('click', onFly);
+  window.addEventListener('sr:select', onSelect);
   window.addEventListener('sr:layer', onLayer);
   window.addEventListener('sr:layers-ready', onLayer);
   window.addEventListener('sr:observer', refreshEnv);
@@ -1148,6 +1163,7 @@ export function createSearch(ctx, host) {
       input.removeEventListener('focus', onFocusIn);
       wrap.removeEventListener('focusout', onFocusOut);
       fly.removeEventListener('click', onFly);
+      window.removeEventListener('sr:select', onSelect);
       window.removeEventListener('sr:layer', onLayer);
       window.removeEventListener('sr:layers-ready', onLayer);
       window.removeEventListener('sr:observer', refreshEnv);

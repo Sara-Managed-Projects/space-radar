@@ -1379,7 +1379,9 @@ export const COPY = {
       high: "Más mundos nítidos a la vez",
       ultra: "Resolución completa y los pasos más finos de cerca"
     },
-    fellBack: "Los fotogramas iban lentos: la calidad vuelve a Auto."
+    fellBack: "Los fotogramas iban lentos: la calidad vuelve a Auto.",
+    restore: "Recargar con calidad completa",
+    restoreTitle: "Recarga esta vista con la calidad que merece tu dispositivo."
   },
   status: {
     title: "Fuentes",
@@ -5376,6 +5378,7 @@ Object.assign(COPY, {
       "trappist-1h": "TRAPPIST-1 h"
     },
     "earthAndMoon": "La Tierra y la Luna",
+    "nightOpened": "Ahora es de noche en este lugar, así que el reloj se puso en las {local} de hora solar local, con el Sol a {sun}° de altura. El reloj te devuelve al presente.",
     "unknownGround": "Todavía no hay un modelo del terreno para ese lugar.",
     "unknownSky": "Este mapa aún no permite estar de pie en ese lugar: solo en la Luna, Marte, Titán, Europa, Proxima b o TRAPPIST-1 e."
   }

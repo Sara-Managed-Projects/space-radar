@@ -40,6 +40,15 @@ tagged, and their dates are the day the last change in each landed.
 - `deployed_boot_js_bytes` is 1 963 000 B. The envelope button, the Games link and their words add about 1.3 kB to the
   boot graph; the form itself loads on the first press.
 
+### Fixed
+
+- **Links and first screens that opened empty.** A shared link to Andromeda, and "Fly to it" on any galaxy, cluster or
+  nebula, now stops near enough to see the object (it was a whole unit away, a million light-years on the Local Group's
+  rung). A landing-site link opened at lunar night now opens at the next morning there and says so. Search no longer
+  keeps the last thing you flew to in its box after you go elsewhere. The frame-rate guard no longer counts time it did
+  not measure (a hidden tab, a stage change), and a visit it did trip has a "Reload at full quality" button in the quality
+  row. On a phone the first-visit welcome comes up sooner.
+
 ## [2.0.1] - 2026-11-09
 
 A patch for nine things: four that a visitor of the live 2.0.0 found, three found while it was being deployed and its zip checked, and two the release's own checks found. No shared link, saved data copy or registry row changes.
