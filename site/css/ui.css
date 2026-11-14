@@ -5851,7 +5851,7 @@ html.sr-phone .sr-tonight-view__num { font-size: var(--sr-fs-num-sm); }
 /* A constellation's name (internal #288): the body face in the name's own case, not condensed capitals spaced wide,
    and a dark edge drawn under the letters (paint-order) rather than a stack of blurs that breaks up at this size. */
 .sr-skylabel--con {
-  font: 500 var(--sr-fs-sm)/16px var(--sr-font);
+  font: 600 var(--sr-fs-sm)/16px var(--sr-font);
   letter-spacing: 0.02em;
   color: var(--sr-text-soft);
   -webkit-text-stroke: 3px var(--sr-space);
