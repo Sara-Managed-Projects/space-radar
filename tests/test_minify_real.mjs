@@ -97,9 +97,18 @@ check(/(\d+) node tests pass against it/.test(gate) && Number(gate.match(/(\d+) 
 // --- 3. the limits --------------------------------------------------------------------------------
 const rels = (root) => walk(root).map((p) => relative(root, p).split(sep).join('/'));
 const all = rels(stripped);
-const untouched = all.filter((p) => p.endsWith('.css') || p.endsWith('.min.js') || p === 'vendor/basis/basis_transcoder.js' || p.endsWith('.wasm'));
+const untouched = all.filter((p) => p.endsWith('.min.js') || p === 'vendor/basis/basis_transcoder.js' || p.endsWith('.wasm'));
 check(untouched.length >= 10 && untouched.every((p) => readFileSync(join(built, p)).equals(readFileSync(join(stripped, p)))),
-  `stylesheets, *.min.js, the transcoder and its wasm are what the first pass wrote (${untouched.filter((p) => !readFileSync(join(built, p)).equals(readFileSync(join(stripped, p)))).slice(0, 3)})`);
+  `*.min.js, the transcoder and its wasm are what the first pass wrote (${untouched.filter((p) => !readFileSync(join(built, p)).equals(readFileSync(join(stripped, p)))).slice(0, 3)})`);
+// b-d6-perf: the stylesheets get esbuild's CSS minifier too: smaller, the same rules, a licence comment kept.
+{
+  const sheets = all.filter((p) => p.endsWith('.css'));
+  const was = sheets.reduce((n, p) => n + statSync(join(stripped, p)).size, 0);
+  const now = sheets.reduce((n, p) => n + statSync(join(built, p)).size, 0);
+  const braces = (root) => sheets.reduce((n, p) => n + (readFileSync(join(root, p), 'utf8').match(/\{/g) || []).length, 0);
+  check(sheets.length >= 20 && now < was * 0.94, `the stylesheets are minified: ${was} B -> ${now} B`);
+  check(braces(built) <= braces(stripped) && braces(built) > braces(stripped) * 0.9, `and keep their rules (${braces(stripped)} blocks -> ${braces(built)})`);
+}
 const maps = rels(built).filter((p) => p.endsWith('.js.map'));
 check(maps.length === summary[0] && maps.length > 200, `one map per minified module (${maps.length} maps, ${summary[0]} modules)`);
 const KEEP = /licen[cs]e|copyright|@preserve|SPDX|\(c\)/i;

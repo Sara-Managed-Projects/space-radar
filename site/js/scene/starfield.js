@@ -570,19 +570,15 @@ export function createStarfield(scene, opts = {}) {
     }
   }
 
-  const ready = (async () => {
-    const jobs = [
-      asArrayBuffer(src.starsBin).then(buildStars),
-      asJson(src.linesJson).then(buildLines),
-      asJson(src.namesJson).then(buildNames),
-      // asTexture() is synchronous and CAN throw (THREE.TextureLoader touches `document`).
-      // Called while building this array the throw would escape before Promise.allSettled ever
-      // ran, taking the stars, the lines and the names with it and rejecting `ready`. Deferring
-      // it into a then() is what makes the "one piece failing leaves the others drawing" promise
-      // above actually true.
-      Promise.resolve().then(() => asTexture(src.milkyWayTexture)).then(buildMilkyWay),
-    ];
-    const settled = await Promise.allSettled(jobs);
+  // THE FIGURES WAIT FOR THE SKY VIEW (b-d6-perf, 2026-11-14). The 89 figures' lines (27 kB) and their
+  // names (4.7 kB) are drawn only once the sky view has called setLines(true) (linesOn starts false,
+  // and nothing else reads `names`), so a first visit that never looks up from the ground does not
+  // fetch them. They are fetched by URL on the first setLines(true); a caller that hands in parsed
+  // rows (the node tests) or nothing (the light embed) gets them at once, as before.
+  const figuresLazy = [src.linesJson, src.namesJson].some((v) => typeof v === 'string' || v instanceof URL);
+  let figuresJob = null;
+  const figures = () => (figuresJob = figuresJob || Promise.allSettled([asJson(src.linesJson).then(buildLines), asJson(src.namesJson).then(buildNames)]).then(note));
+  function note(settled) {
     for (const s of settled) {
       if (s.status === 'rejected') {
         state.errors.push(String(s.reason && s.reason.message ? s.reason.message : s.reason));
@@ -590,6 +586,20 @@ export function createStarfield(scene, opts = {}) {
         console.warn('starfield:', s.reason);
       }
     }
+  }
+
+  const ready = (async () => {
+    const jobs = [
+      asArrayBuffer(src.starsBin).then(buildStars),
+      ...(figuresLazy ? [] : [figures()]),
+      // asTexture() is synchronous and CAN throw (THREE.TextureLoader touches `document`).
+      // Called while building this array the throw would escape before Promise.allSettled ever
+      // ran, taking the stars, the lines and the names with it and rejecting `ready`. Deferring
+      // it into a then() is what makes the "one piece failing leaves the others drawing" promise
+      // above actually true.
+      Promise.resolve().then(() => asTexture(src.milkyWayTexture)).then(buildMilkyWay),
+    ];
+    note(await Promise.allSettled(jobs));
     return state;
   })();
 
@@ -651,6 +661,7 @@ export function createStarfield(scene, opts = {}) {
     /** Whether the constellation figures are drawn at all: the sky view turns them on and off. */
     setLines(on) {
       linesOn = !!on;
+      if (linesOn && figuresLazy) figures();
       this.setSkyOpacity(skyOpacity);
     },
     /**
