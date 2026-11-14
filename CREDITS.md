@@ -261,7 +261,7 @@ satisfies that with:
 
 | File | Used for | Licence | Source |
 |---|---|---|---|
-| `2k_sun.webp` | the Sun | CC BY 4.0 | Solar System Scope |
+| `2k_sun.webp` | the Sun | CC BY 4.0 | Solar System Scope, adapted: its luminance pattern at 5 % of its strength on one pale white (2026-11-14, internal #280) |
 | `2k_mercury_messenger.webp` | Mercury | Public domain | [USGS Astrogeology Science Center and NASA/JHUAPL/Carnegie Institution of Washington (MESSENGER MDIS three-colour mosaic)](https://planetarymaps.usgs.gov/mosaic/Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.lbl), toned down |
 | `2k_mercury_relief.webp` | Mercury (relief) | Public domain | [USGS Astrogeology Science Center, MESSENGER global digital elevation model (Becker et al. 2016)](https://astrogeology.usgs.gov/search/map/mercury_messenger_global_dem_665m), local relief only, one grey channel |
 | `2k_pluto_relief.webp` | Pluto (relief) | Public domain | [USGS Astrogeology Science Center, New Horizons global digital elevation model (P. Schenk et al.)](https://astrogeology.usgs.gov/search/map/pluto_new_horizons_lorri_mvic_global_dem_300m), local relief only, one grey channel, on the encounter hemisphere (45 % of the sphere has heights) <!-- 0078 r14-pluto --> |

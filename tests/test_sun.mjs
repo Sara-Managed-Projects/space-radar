@@ -92,7 +92,7 @@ const FEED = [
 
 // --- 3. the module: the flat disc far away, the detailed Sun close, the flat disc under the latch -----
 {
-  const plain = new THREE.MeshBasicMaterial({ color: 0xf18833, toneMapped: false });
+  const plain = new THREE.MeshBasicMaterial({ color: 0xfff3e3, toneMapped: false });
   const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 8, 6), plain);
   const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ opacity: 1 }));
   mesh.add(sprite);
@@ -324,7 +324,7 @@ const FEED = [
     check(S.SUN_FRAG.includes(`textureLod( uMap, vec2( 0.5 ), ${S.CLOSE_MIP.toFixed(1)} )`) && S.CLOSE_MIP >= 11 && /if \( uClose > 0\.0 \) body = mix\( body,/.test(S.SUN_FRAG) && S.SUN_FRAG.includes(`mix( ${S.GRAIN_CONTRAST.toFixed(2)}, ${S.GRAIN_CONTRAST_CLOSE.toFixed(2)}, uClose )`), 'from very close the shader reads the map\'s mean colour only (the mip past its last), and the grain carries the picture');
     // NOTHING CLIPS TO WHITE.
     check(S.hotShoulder(0.5) === 0.5 && S.hotShoulder(S.HOT_KNEE) === S.HOT_KNEE && S.hotShoulder(1.0) < 0.93 && S.hotShoulder(3) < 1 && S.hotShoulder(1.3) > S.hotShoulder(1.0), `above the knee a brightness is bent under 1 and still rises: 1.0 is drawn ${S.hotShoulder(1).toFixed(3)}, 1.3 is ${S.hotShoulder(1.3).toFixed(3)}`);
-    check(S.SUN_FRAG.includes(`if ( top > ${S.HOT_KNEE.toFixed(2)} ) colour *=`) && S.SUN_FRAG.indexOf('if ( top >') > S.SUN_FRAG.indexOf('uFlares[ i ].w') && /body \* vec3\( 0\.95, 0\.88, 0\.70 \)/.test(S.SUN_FRAG), 'the shader bends everything, a flare\'s kernel too, and leans the map\'s whitest patches to yellow-white first');
+    check(S.SUN_FRAG.includes(`if ( top > ${S.HOT_KNEE.toFixed(2)} ) colour *=`) && S.SUN_FRAG.indexOf('if ( top >') > S.SUN_FRAG.indexOf('uFlares[ i ].w') && !/body \* vec3\(/.test(S.SUN_FRAG) && S.MAP_LUMA > 0.9, 'the shader bends everything, a flare\'s kernel too; the map is white, so nothing is leaned to yellow first (internal #280)');
     // THE SPHERE'S OWN NORMAL.
     check(/vec3 ray = normalize\( vPosW - cameraPosition \);/.test(S.SUN_FRAG) && /n = normalize\( oc \+ ray \* \( - along - sqrt\( disc \) \) \);/.test(S.SUN_FRAG) && /float mu = clamp\( dot\( n, - ray \), 0\.0, 1\.0 \);/.test(S.SUN_FRAG), 'limb darkening is shaded from where the line of sight meets the sphere, not from the mesh\'s facets');
     // THE CORONA IS PEARLY, NEVER BLUE OR GREY: in both of its colours red is the most and blue is not under 0.8.
@@ -454,7 +454,7 @@ const CMES = JSON.parse(readFileSync(join(ROOT, 'tests/fixtures/harvest/donki_cm
   check(near(A.prominenceShape({ region: 4549, areaMsh: 300 }, 1).height, A.PROM_ERUPTIVE_RADII) && A.prominenceShape({ region: 4549, areaMsh: 300 }, 0).height <= A.PROM_MAX_RADII, 'only a region flaring at M or X stands past 0.15 radii, to 0.4');
 
   const scene = (tier) => {
-    const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 8, 6), new THREE.MeshBasicMaterial({ color: 0xf18833 }));
+    const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 8, 6), new THREE.MeshBasicMaterial({ color: 0xfff3e3 }));
     const camera = new THREE.PerspectiveCamera(45, 1.6, 0.01, 1e6);
     camera.position.set(0, 0, 100); camera.lookAt(0, 0, 0); camera.updateMatrixWorld(true);
     return { mesh, camera, sun: S.createSunDetail({ mesh, camera, tier }) };

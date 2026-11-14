@@ -1021,7 +1021,7 @@ export const COPY = {
       "titan": "Clima: as faixas claras no norte representam as nuvens de metano que os telescópios Webb e Keck viram ali em novembro de 2022 e julho de 2023. Ilustrativo: não se sabe onde estão hoje as nuvens de Titã."
     },
     "also": {
-      "venus": "O Y escuro que gira junto é o que as câmeras de ultravioleta enxergam; a olho nu Vênus é quase lisa, e o lugar dele aqui é ilustrativo. Raios em Vênus já foram relatados e ainda são debatidos; nenhum é desenhado.",
+      "venus": "A olho nu Vênus é quase lisa e é desenhada assim; faltam as faixas e o Y do ultravioleta, e as faixas tênues são ilustrativas. Raios em Vênus já foram relatados e ainda são debatidos; nenhum é desenhado.",
       "uranus": "A calota brilhante sobre o polo norte é real: o brilho e a cor, latitude por latitude, vêm do mapa do Hubble de outubro de 2025, e o Hubble a vê ficar mais brilhante a cada ano, conforme chega o verão do norte de 2028.",
       "neptune": "O oval escuro no mapa de artista é a Grande Mancha Escura da Voyager 2, de 1989, que sumiu em 1994: ilustrativa, não desenhada no modo Medido. No modo Filme, os cirros de metano projetam sombras, desenhadas seis vezes mais largas e mais altas do que o medido; cada faixa é nossa."
     },

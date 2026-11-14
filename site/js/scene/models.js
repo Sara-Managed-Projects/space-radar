@@ -30,6 +30,8 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { CLASS_COLOURS, PALETTE } from './glyphatlas.js';
+import { cometTailGain } from './comettail.js';
+export { COMET_TAIL_NEAR_AU, COMET_TAIL_FLOOR, cometTailGain } from './comettail.js';
 import { dwarfLook, buildDwarf } from './dwarfs.js'; // 0077 W1-f: each far dwarf planet's own look
 // A data TABLE, not a data source: the rows a rocket is composed from, generated from
 // registry/rockets.yaml. Same direction glyphatlas.js is already imported in.
@@ -2914,33 +2916,37 @@ function buildAsteroid(variant, opts = {}) {
 
 // --------------------------------------------------------------------------------------- comet
 
-/** A tapered ribbon along +X, `bend` units of curve in Y. */
+/**
+ * A tapered ribbon along +X, `bend` units of curve in Y. Three vertices across each station, black at both
+ * edges and full colour down the middle (vertex colours, additive: black adds nothing), so the edge is soft
+ * with no texture. The material's opacity is set each frame from the comet's distance (`baseOpacity`).
+ */
 function tailRibbon(length, width, bend, colour, opacity, name) {
   const N = 10;
-  const pos = new Float32Array((N + 1) * 2 * 3);
+  const pos = new Float32Array((N + 1) * 3 * 3);
+  const col = new Float32Array((N + 1) * 3 * 3);
   const idx = [];
   for (let i = 0; i <= N; i++) {
     const t = i / N;
     const x = length * t;
     const y = bend * t * t;
     const w = width * (0.35 + 0.65 * (1 - t)) * (0.35 + t * 0.65);
-    pos[i * 6 + 0] = x;
-    pos[i * 6 + 1] = y - w;
-    pos[i * 6 + 2] = 0;
-    pos[i * 6 + 3] = x;
-    pos[i * 6 + 4] = y + w;
-    pos[i * 6 + 5] = 0;
+    const o = i * 9;
+    pos.set([x, y - w, 0, x, y, 0, x, y + w, 0], o);
+    col.set([0, 0, 0, 1, 1, 1, 0, 0, 0], o);
     if (i < N) {
-      const a = i * 2;
-      idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+      const a = i * 3;
+      idx.push(a, a + 1, a + 3, a + 1, a + 4, a + 3, a + 1, a + 2, a + 4, a + 2, a + 5, a + 4);
     }
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3));
   g.setIndex(idx);
   g.computeVertexNormals();
   const m = new THREE.MeshBasicMaterial({
     color: colour,
+    vertexColors: true,
     transparent: true,
     opacity,
     depthWrite: false,
@@ -2950,6 +2956,7 @@ function tailRibbon(length, width, bend, colour, opacity, name) {
   });
   const mesh2 = new THREE.Mesh(g, m);
   mesh2.name = name;
+  mesh2.userData.baseOpacity = opacity;
   return mesh2;
 }
 
@@ -4254,6 +4261,24 @@ function toVec(out, v, fallback) {
   return l > 1e-9 ? out.multiplyScalar(1 / l) : out.copy(fallback);
 }
 
+/**
+ * Roll `obj` about its direction of travel by `rollDeg`, positive to the RIGHT of the track: the face that looks at
+ * the Earth turns toward the right-hand side of the ground track, seen from above, as a right-looking radar's does.
+ * `heading` is made square to the nadir first (a velocity is not exactly level). Pure of everything but the object's
+ * quaternion; a zero or missing heading leaves it alone.
+ */
+const _rv = new THREE.Vector3();
+const _rq = new THREE.Quaternion();
+export function rollAboutHeading(obj, heading, nadir, rollDeg) {
+  _rv.set(heading.x, heading.y, heading.z);
+  _rv.addScaledVector(nadir, -_rv.dot(nadir));
+  if (!(_rv.lengthSq() > 1e-10) || !Number.isFinite(rollDeg)) return false;
+  _rv.normalize();
+  _rq.setFromAxisAngle(_rv, -rollDeg * Math.PI / 180);
+  obj.quaternion.premultiply(_rq);
+  return true;
+}
+
 /** Right-handed basis with +Z along `zDir` and +X as close to `xHint` as it can be. */
 function orient(obj, zDir, xHint) {
   _z.copy(zDir);
@@ -4439,6 +4464,11 @@ export function updateModelAttitude(obj, record, sunDirScene, nadirScene, tMs) {
     }
   }
 
+  // A RADAR SATELLITE THAT LOOKS TO ONE SIDE (internal #78). `userData.sarRoll` is the roll, degrees, from the route's
+  // `roll` (realmodels.js, each angle cited there); `userData.heading` is the direction of travel in the scene, written
+  // each frame by heroes.js. Only an Earth-facing attitude is rolled.
+  if (obj.userData.sarRoll && obj.userData.heading && (mode === 'sun-panels' || mode === 'nadir')) rollAboutHeading(obj, obj.userData.heading, _nadir, obj.userData.sarRoll);
+
   // comet tails: already anti-sunward from the basis above; scale with heliocentric distance
   if (obj.userData.tails) {
     // `userData.sunAu` and `userData.selected` are written each frame by heroes.js, as `burn` is. Until the
@@ -4447,6 +4477,9 @@ export function updateModelAttitude(obj, record, sunDirScene, nadirScene, tMs) {
     const au = cometSunAu(obj.userData, meta);
     const len = Number.isFinite(au) ? Math.min(2.5, Math.max(0.35, 1 / (au * au))) : 1;
     obj.userData.tails.scale.set(len, 1, 1);
+    // Brighter near the Sun, dimmer far from it (internal #47): the shared materials' opacity, no new material.
+    const gain = cometTailGain(au);
+    for (const rib of obj.userData.tails.children) if (rib.material && rib.userData.baseOpacity !== undefined) rib.material.opacity = rib.userData.baseOpacity * gain;
     obj.userData.tails.visible = cometTailVisible(au, obj.userData.selected !== undefined ? !!obj.userData.selected : !!meta.selected);
   }
 }

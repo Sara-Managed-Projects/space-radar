@@ -911,7 +911,7 @@ export const COPY = {
       titan: "Clima: las vetas pálidas del norte representan las nubes de metano que los telescopios Webb y Keck vieron allí en noviembre de 2022 y julio de 2023. Ilustrativo: no se sabe dónde están hoy las nubes de Titán."
     },
     also: {
-      venus: "La Y oscura que gira con ella es lo que ven las cámaras ultravioleta; a simple vista Venus es casi lisa, y el lugar de la Y aquí es ilustrativo. Se ha informado de rayos en Venus, pero aún se debate; no se dibuja ninguno.",
+      venus: "A simple vista Venus es casi lisa y así se dibuja; faltan las bandas y la Y del ultravioleta, y las tenues vetas son ilustrativas. Se ha informado de rayos en Venus, pero aún se debate; no se dibuja ninguno.",
       uranus: "El casquete brillante sobre el polo norte es real: su brillo y su color, latitud por latitud, se toman del mapa de Hubble de octubre de 2025, y Hubble lo ha visto aclararse año tras año a medida que se acerca el verano boreal de 2028.",
       neptune: "El óvalo oscuro del mapa del artista es la Gran Mancha Oscura de la Voyager 2 de 1989, desaparecida en 1994: ilustrativo, no se dibuja en el aspecto Medido. En el aspecto Cine, los cirros de metano proyectan sombras, dibujadas seis veces más anchas y más altas de lo medido; cada veta la hemos dibujado nosotros."
     },

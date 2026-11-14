@@ -419,7 +419,7 @@ export const TEXTURES = [
           2048,
           1024
         ],
-        "bytes": 296062,
+        "bytes": 21802,
         "format": "rgb",
         "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
       }

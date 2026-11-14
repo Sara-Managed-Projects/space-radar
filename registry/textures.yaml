@@ -427,12 +427,12 @@ textures:
       - tier: 0
         file: site/textures/2k_sun.webp
         px: [2048, 1024]
-        bytes: 296062
+        bytes: 21802
         format: rgb
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
-        make: "the publisher's 2k JPEG (822427 B) re-encoded as WebP, same 2048 x 1024 pixels, at quality 87: the lowest whose luma SSIM against the JPEG is at least 0.98 (0.9808); scripts/build-textures.py --webp-2k, 2026-10-08 (spec 0056 req 8). The licence line was read again on the publisher's page that day"
+        make: "the publisher's 2k map (as re-encoded to WebP on 2026-10-08, 296062 B) taken to white (internal #280, 2026-11-14): scripts/build-textures.py --sun-white keeps that map's luminance pattern at 5 % of its strength (it had 0.19 rms about 0.41, the blotches the owner's review saw on an orange ball) on one pale white, linear (1.0, 0.92, 0.80), and writes WebP 90: mean linear (0.991, 0.924, 0.798), luminance 0.929. The Sun is white to the eye and nearly featureless but for its spots; the shader draws the limb darkening and the grain"
 
 
   - id: venus

@@ -1032,7 +1032,7 @@ export const COPY = {
       "titan": "Wetter: Die hellen Streifen im Norden stehen für die Methanwolken, die die Teleskope Webb und Keck dort im November 2022 und im Juli 2023 gesehen haben. Illustrativ: Wo die Wolken des Titan heute sind, ist nicht bekannt."
     },
     "also": {
-      "venus": "Das dunkle Y, das mit herumzieht, ist das, was Ultraviolettkameras sehen; für das Auge ist die Venus fast einfarbig, und die Lage des Y ist hier illustrativ. Blitze auf der Venus wurden gemeldet und sind noch umstritten; es wird keiner gezeichnet.",
+      "venus": "Für das Auge ist die Venus fast einfarbig und so gezeichnet; die Bänder und das Y der Ultraviolettbilder fehlen, die schwachen Streifen sind illustrativ. Blitze auf der Venus wurden gemeldet und sind noch umstritten; es wird keiner gezeichnet.",
       "uranus": "Die helle Kappe über dem Nordpol ist echt: Ihre Helligkeit und Farbe, Breitengrad für Breitengrad, stammen aus Hubbles Karte vom Oktober 2025, und Hubble hat beobachtet, wie sie Jahr für Jahr heller wird, je näher der Nordsommer 2028 rückt.",
       "neptune": "Das dunkle Oval auf der künstlerischen Karte ist der Große Dunkle Fleck, den Voyager 2 im Jahr 1989 sah und der 1994 verschwunden war: illustrativ, in „Gemessen“ nicht gezeichnet. In „Film“ werfen Methan-Zirren Schatten, sechsmal breiter und höher gezeichnet als gemessen; jeder Streifen stammt von uns."
     },

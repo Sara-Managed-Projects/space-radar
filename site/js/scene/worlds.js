@@ -251,7 +251,7 @@ export function worldRecords() {
       ringsDense: w.look.ring && w.look.ring.bands ? w.look.ring.dense || 1 : 0,
       // 2026-10-08: a world drawn knowingly unlike its data says how, after its "drawn as" line
       // (ui/cards.js appends a row's `departure`): Saturn's bands, Mercury's relief, Venus's glow.
-      ...(COPY.drawing.worldDeparture[w.id] ? { departure: t(COPY.drawing.worldDeparture[w.id], { uv: String(VENUS_UV.gain), ground: String(VENUS_GROUND.exaggeration), steep: String(RELIEF_STEEP), contrast: String(SATURN_CONTRAST), mola: String(MARS_RELIEF.exaggeration), relief: String(EARTH_RELIEF.exaggeration), air: String(EARTH_AIR.heightGain), clouds: String(CLOUD_PARALLAX.thicker), plutoContrast: String(PLUTO_LOOK.contrast), plutoSteep: String(PLUTO_LOOK.steep) }) } : {}), // 0078 r14-pluto: plutoContrast, plutoSteep
+      ...(COPY.drawing.worldDeparture[w.id] ? { departure: t(COPY.drawing.worldDeparture[w.id], { uv: String(VENUS_CLOUDS.gain), ground: String(VENUS_GROUND.exaggeration), steep: String(RELIEF_STEEP), contrast: String(SATURN_CONTRAST), mola: String(MARS_RELIEF.exaggeration), relief: String(EARTH_RELIEF.exaggeration), air: String(EARTH_AIR.heightGain), clouds: String(CLOUD_PARALLAX.thicker), plutoContrast: String(PLUTO_LOOK.contrast), plutoSteep: String(PLUTO_LOOK.steep) }) } : {}), // 0078 r14-pluto: plutoContrast, plutoSteep
     },
   }));
 }
@@ -573,15 +573,19 @@ export const TITAN_LAKES = { map: 'titan_lakes.webp', fromShare: 0.12, darken: 0
 // 0077 W1-f: end
 
 /**
- * VENUS'S CLOUD BANDS, IN THE FILM LOOK. To an eye Venus is nearly plain; in ultraviolet (Mariner
- * 10 in 1974, Pioneer Venus, Venus Express's VMC, Akatsuki's UVI at 365 nm) its cloud tops carry
- * dark and bright bands and streaks with a third or more of contrast, from an absorber nobody has
- * identified. The map's own streaks (luminance 0.09 rms about 0.55, measured 2026-10-14) are drawn
- * `gain` times further from its mean colour (`mean`: linear light, weighted by area, measured on the
- * file the same day), as Saturn's bands are. ILLUSTRATIVE -- it is the map's pattern made stronger,
- * not an ultraviolet picture -- and not drawn under the Measured look, which shows the map as it is.
+ * VENUS'S CLOUDS, AS AN EYE SEES THEM (internal #281, from the owner's review of 13 November 2026).
+ * In visible light Venus is a nearly blank pale cream disc: the cloud tops are a layer of sulfuric-acid
+ * droplets, and the dark and bright bands and the Y-shaped streaks that make the planet's famous
+ * pictures are seen only in ultraviolet (Mariner 10 in 1974, Pioneer Venus, Venus Express's VMC,
+ * Akatsuki's UVI at 365 nm), from an absorber nobody has identified. The map we ship is an artist's
+ * picture with those bands painted brown (luminance 0.09 rms about 0.55, measured 2026-10-14), which
+ * drew bold markings an eye cannot see; and until 2026-11-14 the Film look drew them twice as strong.
+ * Now, in both looks, the map's streaks are drawn `gain` times as far from `mean` as the map has them:
+ * `mean` is a pale cream (sRGB 0.93, 0.86, 0.66; linear light below), not the map's own mean (0.79,
+ * 0.52, 0.22, a brown-tan), so the disc is pale and its streaks faint. ILLUSTRATIVE -- where the faint
+ * streaks lie is the artist's, not today's clouds -- and a face (the radar Ground) is never changed.
  */
-export const VENUS_UV = { gain: 2, mean: [0.7919, 0.5209, 0.2218] };
+export const VENUS_CLOUDS = { gain: 0.45, mean: [0.848, 0.71, 0.393] };
 
 /**
  * URANUS'S POLAR CAP (measured): the map we ship has no cap. Hubble's OPAL map of 23 October 2025
@@ -614,7 +618,7 @@ export const WORLDS = [
     // `rotation: 'iau'` since 2026-10-06: the Sun's mesh has its north pole and turns once in 25.38
     // days (astronomy-engine's IAU axis), which scene/sun.js counts today's sunspots from.
     body: 'Sun', frame: SUN_INERTIAL, view: VIEW_TRUE, rotation: 'iau',
-    look: { map: '2k_sun.webp', tint: 0xf18833, emissive: true, corona: true },
+    look: { map: '2k_sun.webp', tint: 0xfff3e3, emissive: true, corona: true },
   },
   {
     id: 'earth', display: 'Earth', parent: 'sun', radiusKm: 6371.0,
@@ -664,8 +668,8 @@ export const WORLDS = [
     // 2026-10-14 (VENUS_GROUND): the radar face is one channel worn in `faceMono`'s colour, with
     // Magellan's heights under it (`faceRelief`); `groundFaces` are faces of solid ground, which the
     // cloud deck's wind does not carry (scene/weather/worldweather.js stands still while one is worn).
-    // `uv` (spec 0073, Film only): the cloud bands as ultraviolet pictures show them (VENUS_UV).
-    look: { map: '2k_venus_atmosphere.webp', tint: 0xe6bf81, limb: 0.9, wrap: 0.18, air: 'venus', rim: { colour: 0xfff0c8, gain: 0.5 }, faces: { surface: '2k_venus_radar.webp' }, faceMono: { surface: VENUS_GROUND.tint }, groundFaces: ['surface'], faceRelief: { surface: VENUS_GROUND_RELIEF }, uv: VENUS_UV },
+    // `uv` (internal #281): the cloud bands as an eye sees them, faint on a pale disc (VENUS_CLOUDS), in both looks.
+    look: { map: '2k_venus_atmosphere.webp', tint: 0xe6bf81, limb: 0.8, wrap: 0.18, air: 'venus', rim: { colour: 0xfff0c8, gain: 0.18 }, faces: { surface: '2k_venus_radar.webp' }, faceMono: { surface: VENUS_GROUND.tint }, groundFaces: ['surface'], faceRelief: { surface: VENUS_GROUND_RELIEF }, uv: VENUS_CLOUDS },
   },
   {
     id: 'mars', display: 'Mars', parent: 'sun', radiusKm: 3389.5,
@@ -1788,8 +1792,7 @@ export function applyLook(material, look) {
     u.uContrast.value = look.contrast.gain;
     u.uMapMean.value.set(...look.contrast.mean);
   }
-  // 2026-10-14: Venus's ultraviolet bands (VENUS_UV) are the Film look's, the default; the worlds'
-  // setLook takes them off under Measured. Uranus's cap (URANUS_CAP) is measured and always on.
+  // Venus's clouds as an eye sees them (VENUS_CLOUDS) are worn in both looks. Uranus's cap (URANUS_CAP) is measured and always on.
   if (look.uv && u.uContrast) {
     u.uContrast.value = look.uv.gain;
     u.uMapMean.value.set(...look.uv.mean);
@@ -2888,7 +2891,7 @@ export function createWorlds(scene, opts = {}) {
     for (const [key, tex] of faceTex) if (tex && tex === next && key.startsWith(`${id}/`)) face = key.slice(id.length + 1);
     const isFace = !!(face && look.faces && look.faces[face]);
     if (look.contrast) u.uContrast.value = isFace ? 1 : look.contrast.gain;
-    else if (look.uv) u.uContrast.value = isFace || lookMeasured ? 1 : look.uv.gain;
+    else if (look.uv) u.uContrast.value = isFace ? 1 : look.uv.gain;
     if (look.wrap) u.uWrap.value = isFace ? 0 : look.wrap;
     const mono = isFace && look.faceMono && look.faceMono[face];
     if (u.uMono) { if (mono) u.uMono.value.set(mono[0], mono[1], mono[2], 1); else u.uMono.value.w = 0; }
@@ -3515,8 +3518,8 @@ export function coronaSprite() {
   if (!ctx) return null;
   const g = ctx.createRadialGradient(size / 2, size / 2, size * 0.16, size / 2, size / 2, size / 2);
   g.addColorStop(0.0, 'rgba(255,246,230,0.85)');
-  g.addColorStop(0.35, 'rgba(255,201,138,0.28)');
-  g.addColorStop(1.0, 'rgba(255,201,138,0.0)');
+  g.addColorStop(0.35, 'rgba(255,230,190,0.26)');
+  g.addColorStop(1.0, 'rgba(255,230,190,0.0)');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, size, size);
   const tex = new THREE.CanvasTexture(canvas);

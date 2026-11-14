@@ -1615,7 +1615,7 @@ export const COPY = {
     // A second sentence for a world's line (2026-10-08, internal #243 and #245): what else is drawn
     // and how much of it is known, or what its real maps show and we do not draw.
     also: {
-      venus: 'The dark Y going round with it is what ultraviolet cameras see; to the eye Venus is nearly plain, and its place here is illustrative. Lightning on Venus has been reported and is still debated; none is drawn.',
+      venus: 'To the eye Venus is nearly plain, and is drawn so; the bold bands and Y of ultraviolet pictures are not, and the faint streaks’ place is illustrative. Lightning on Venus has been reported and is still debated; none is drawn.',
       // 2026-10-14 (spec 0073): the cap is now drawn on the artist's map too, from Hubble's own rows.
       uranus: 'The bright cap over the north pole is real: its brightness and colour, latitude by latitude, are taken from Hubble’s map of October 2025, and Hubble has watched it brighten year after year as the northern summer of 2028 comes.',
       // 2026-10-14 (spec 0073): the artist's map carries Voyager's spot, and it was said that none was drawn.

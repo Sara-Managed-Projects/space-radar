@@ -1035,7 +1035,7 @@ export const COPY = {
       "titan": "Météo : les traînées pâles au nord figurent les nuages de méthane que les télescopes Webb et Keck y ont vus en novembre 2022 et en juillet 2023. Illustratif : on ne sait pas où sont aujourd’hui les nuages de Titan."
     },
     "also": {
-      "venus": "Le Y sombre qui tourne avec elle, c’est ce que voient les caméras ultraviolettes ; à l’œil, Vénus est presque unie, et la place du Y ici est illustrative. Des éclairs ont été signalés sur Vénus et sont encore débattus ; aucun n’est dessiné.",
+      "venus": "À l’œil, Vénus est presque unie et dessinée ainsi ; les bandes et le Y de l’ultraviolet n’y sont pas, et les faibles traînées sont illustratives. Des éclairs ont été signalés sur Vénus et sont encore débattus ; aucun n’est dessiné.",
       "uranus": "La calotte brillante au-dessus du pôle nord est réelle : sa luminosité et sa couleur, latitude par latitude, viennent de la carte de Hubble d’octobre 2025, et Hubble l’a vue s’éclaircir d’année en année à l’approche de l’été boréal de 2028.",
       "neptune": "L’ovale sombre de la carte de l’artiste est la Grande Tache sombre de Voyager 2 en 1989, disparue en 1994 : illustratif, non dessiné dans l’aspect Mesuré. Dans l’aspect Cinéma, des cirrus de méthane projettent des ombres, dessinées six fois plus larges et plus hautes que mesuré ; chaque traînée est de notre fait."
     },

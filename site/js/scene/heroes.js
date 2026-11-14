@@ -620,6 +620,7 @@ export function createHeroes(scene, ctx) {
     const klass = early && early.build ? M.builderKlass(record.klass, variant) : record.klass;
     const obj = M.modelFor(klass, variant, { record });
     obj.userData.recordId = record.id;
+    if (early && early.roll) obj.userData.sarRoll = early.roll; // a radar that looks to one side (realmodels.js `roll`, internal #78)
     obj.visible = false;
     // Whatever rides on this thing, as children of it. Two records in the app carry anything at
     // all, so this is a no-op for the rest -- but it is here rather than in the upgrade branch
@@ -644,6 +645,7 @@ export function createHeroes(scene, ctx) {
         const clone = loaded.clone(true);
         clone.userData.recordId = record.id;
         clone.userData.realModel = true;
+        if (real.roll) clone.userData.sarRoll = real.roll;
         // A thing on the ground stays on it through the swap (standOnGround). Anything else keeps
         // the seeded constant attitude it has always had: a file's axes say nothing about which way
         // a spacecraft points.
@@ -951,6 +953,12 @@ export function createHeroes(scene, ctx) {
       // the origin for anything on or around the stage's own, the drawn disc for a site on
       // another (nadirOf).
       nadirOf(c.record, c.pos, drawnCentre, _v);
+      // The direction of travel, for a radar that rolls to look to one side: the next two seconds of its own orbit (internal #78).
+      if (obj.userData.sarRoll && c.p) {
+        const p2 = propagate(c.record, tMs + 2000);
+        const d = p2 && p2.frame === c.p.frame ? stage.dirToScene({ x: p2.x - c.p.x, y: p2.y - c.p.y, z: p2.z - c.p.z }, c.p.frame, _climb, tMs) : null;
+        obj.userData.heading = d ? { x: d.x, y: d.y, z: d.z } : null;
+      }
       // A comet's tail goes by its distance from the Sun and by whether it is the selected one
       // (models.js cometTailVisible): per-frame state on the object, as `burn` is.
       if (obj.userData.tails) { obj.userData.sunAu = M.sunAuOf(c.p); obj.userData.selected = c.record.id === selectedId; }
