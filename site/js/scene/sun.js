@@ -156,9 +156,9 @@ export const LIMB_550 = [0.30, 0.93, -0.23];
 export const SUN_DETAIL_AT = 0.06;
 /** The grain's cells across one radius, and one cell's life in app seconds (illustrative). */
 export const GRAIN_CELLS = 40;
-export const GRAIN_CONTRAST = 0.26;
+export const GRAIN_CONTRAST = 0.16;
 /** The grain's contrast from very close, where it carries the picture (illustrative). */
-export const GRAIN_CONTRAST_CLOSE = 0.5;
+export const GRAIN_CONTRAST_CLOSE = 0.38;
 /** A cell's width as a share of half the view's height that the scale aims at: ten pixels in a view 900 tall. */
 export const GRAIN_TARGET = 0.022;
 /** The most doublings of GRAIN_CELLS: 40 x 2^4 = 640 cells across the radius, a granule's real size (1/700). */
@@ -242,7 +242,7 @@ export const MAP_LUMA = 0.929;
  * dashes and nested coils). The code stays; nothing draws them while this is false. opts.loops overrides
  * it for tests only.
  */
-export const LOOPS_ON = true;
+export const LOOPS_ON = false;
 /**
  * The picture is drawn where SDO saw a place at least this share as squarely as the camera does (fading
  * between the two): over a pole the picture's edge-on strip would be stretched four times and more. Seen

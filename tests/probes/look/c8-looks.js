@@ -58,7 +58,7 @@ try {
   out.comet.record = pick ? pick.name : null;
   if (pick) {
     const el = pick.elements || (pick.meta && pick.meta.elements) || {};
-    const tp = el.tpMs;
+    const tp = Number.isFinite(el.tpMs) ? el.tpMs : (pick.meta && pick.meta.perihelionMs);
     out.comet.tpMs = tp;
     out.comet.trace = [];
     const readR = async (t) => { sr.clock.goTo(t); await sleep(2500); const all = sr.cometField.tails(); const row = all.find((x) => x.id === pick.id) || null; out.comet.trace.push({ days: Math.round((t - tp) / 86400e3), tails: all.length, row: row ? { rAu: +row.rAu.toFixed(2), mag: +row.mag.toFixed(1) } : null }); return row; };
