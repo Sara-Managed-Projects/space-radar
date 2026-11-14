@@ -174,6 +174,8 @@ export function createStarDisc(scene) {
       material.uniforms.uOpacity.value = k;
       mesh.visible = k > 0.003;
     },
+    /** The drawn disc as a sphere in scene units {id, x, y, z, r}, or null while it is not drawn: the labels' layer hides what lies behind it (internal #275). */
+    sphere: () => (mesh.visible && radiusUnits > 0 && record ? { id: record.id, x: mesh.position.x, y: mesh.position.y, z: mesh.position.z, r: radiusUnits } : null),
     /** Radius on screen in pixels: main.js switches the catalogue's point off past HIDE_POINT_PX. */
     radiusPx: () => radiusPx,
     state: () => ({ id: record ? record.id : null, radiusKm: physical ? physical.radiusKm : null, teffK: physical ? physical.teffK : null, how: physical ? physical.how : null, radiusPx, drawn: mesh.visible, opacity: material.uniforms.uOpacity.value }),
