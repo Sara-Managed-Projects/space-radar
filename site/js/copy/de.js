@@ -309,7 +309,7 @@ export const COPY = {
     "driftTitle": "Die Kamera wandert von einem Ding zum nächsten"
   },
   "explore": {
-    "worldsTitle": "Die Welten",
+    "worldsTitle": "Die Welten, Entfernung von der Erde jetzt",
     "worldsDrawn": "Planeten als Punkte gezeichnet, größer als sie sind.",
     "farTitle": "Ferne Orte",
     "systemsTitle": "Sternsysteme",
@@ -923,8 +923,8 @@ export const COPY = {
         "distanceFromSun": "{u} von der Sonne",
         "distanceFromEarth": "{u} von der Erde",
         "lightTime": "{u} je Richtung",
-        "spin": "{u} pro Drehung",
-        "yearLength": "{u} pro Jahr",
+        "spin": "{u} für eine Drehung",
+        "yearLength": "{u} für einen Umlauf um die Sonne",
         "brightness": "Größenklasse",
         "spectralType": "Sternklasse",
         "across": "{u} breit",
@@ -1140,7 +1140,7 @@ export const COPY = {
       "mercury": "auf einem größeren Bildschirm stammt sein Relief aus dem Höhenmodell von MESSENGER, {steep}-mal steiler gezeichnet als gemessen, damit Kraterränder das Licht fangen",
       "pluto": "sein heller und dunkler Boden ist mit dem {plutoContrast}-fachen Kontrast des Kamerabilds gezeichnet, näher an den gemessenen Albedos; die Seite, die New Horizons nur von weitem sah, ist auf ihre eigene Schärfe weichgezeichnet; auf einem größeren Bildschirm stammt sein Relief aus den Stereohöhen von New Horizons, wo es welche gibt, {plutoSteep}-mal steiler gezeichnet als gemessen; der dünne blaue Dunst an seinem Rand ist als Schimmer gezeichnet, am hellsten gegen die Sonne; seine Stärke ist gewählt", // 0078 r14-pluto
       "mars": "auf einem größeren Bildschirm stammt sein Relief aus den Höhen, die der Laserhöhenmesser von Mars Global Surveyor gemessen hat, {mola}-mal steiler und höher gezeichnet, als sie sind, damit eine tiefstehende Sonne sie zeigt: Die Schatten, die der Olympus Mons und die Canyonwände werfen, sind um denselben Faktor zu lang.",
-      "venus": "das Leuchten um seinen Rand und über seine Tagseite hinaus steht für einen tiefen Dunst; wie dick er gezeichnet ist und wie weit er reicht, ist illustrativ; im Aussehen „Film“ sind seine Wolkenbänder mit dem {uv}-fachen Kontrast seiner Karte gezeichnet, so wie Ultraviolettkameras sie sehen (für ein Auge sind sie fast einfarbig), und das Aussehen „Gemessen“ zeigt die Karte, wie sie ist; sein Boden ist per Radar als Relief aus Magellans Höhenmesser gezeichnet, {ground}-mal steiler und höher als gemessen",
+      "venus": "das Leuchten um seinen Rand und über seine Tagseite hinaus steht für einen tiefen Dunst; wie dick er gezeichnet ist und wie weit er reicht, ist illustrativ; seine Wolken sind so gezeichnet, wie ein Auge sie sieht, als blasse cremefarbene Scheibe mit Streifen, deren Kontrast der {uv}-fache der Künstlerkarte ist, von der sie ausgehen, in beiden Aussehen; wo die schwachen Streifen liegen, ist illustrativ, und die kräftigen Bänder und das Y, die Ultraviolettkameras sehen, sind nicht gezeichnet; sein Boden ist per Radar als Relief aus Magellans Höhenmesser gezeichnet, {ground}-mal steiler und höher als gemessen",
       "neptune": "im Aussehen „Film“ sind die fünf Bögen seines äußeren Rings so gezeichnet, wie Voyager 2 sie 1989 sah, und laufen mit ihrer gemessenen Geschwindigkeit herum; wo sie heute im Ring sind, wird nicht berechnet, und zwei von ihnen sind seither verblasst oder gewandert",
       "saturn": "seine Bänder sind mit dem {contrast}-fachen Kontrast seiner Karte gezeichnet, eine Anpassung von uns; „So sah Hubble es“ ist nicht angepasst; auf einem größeren Bildschirm und aus der Nähe liegen die Ringlets und Lücken seiner Ringe dort, wo Cassini sie 2008 im Licht eines Sterns gemessen hat, über die Karte gelegt, und im Aussehen „Film“ ist aus noch größerer Nähe das Funkeln der Körner gezeichnet; innerhalb weniger Kilometer von den Ringen entfernt sind auf einem größeren Bildschirm im Aussehen „Film“ ihre größten Teilchen, zwei bis fünf Meter groß, als Eiskugeln gezeichnet: Wie viele es sind und wie groß, folgt der gemessenen Verteilung der Größen und der optischen Tiefe der Ringe, aber die Lage jedes einzelnen und die Klumpen im A-Ring sind illustrativ, und sie sind ruhend gezeichnet, als würdest du mit ihnen mitfliegen",
       "titan": "knapp über seinem Dunst, etwa 500 km hoch, ist eine dünne, abgelöste Dunstschicht dort gezeichnet, wo Cassini sie 2005 bis 2007 sah; sie sank und verblasste in den Jahren danach, und wo sie jetzt ist, ist nicht bekannt"
@@ -1148,9 +1148,9 @@ export const COPY = {
     "worldEarthshine": "seine dunkle Seite leuchtet im Erdschein, im eigenen Licht der Erde, {n}-mal heller gezeichnet, als diese Kamera es einfangen würde, etwa so, wie das Auge es sieht",
     "worldAir": "seine Luft ist {n}-mal dicker gezeichnet, als sie ist, damit sie in dieser Größe zu sehen ist, und die Farbe seines Dunstes ist illustrativ",
     "worldAirTrue": "sein Dunst ist in seiner gemessenen Höhe gezeichnet, und seine Farbe ist illustrativ",
-    "worldRings": "seine Ringe liegen in ihren gemessenen Abständen, {w}-mal breiter und viel heller gezeichnet, als sie sind, damit man sie sieht: Die echten sind Fäden, so dunkel wie Holzkohle",
-    "worldRingsDense": "seine Ringe liegen in ihren gemessenen Abständen, {w}-mal breiter, {d}-mal undurchsichtiger und viel heller gezeichnet, als sie sind, damit man sie sieht: Die echten sind schwache Fäden, so dunkel wie Holzkohle",
-    "worldSun": "aus der Nähe verdunkelt und rötet sich sein Rand, so wie ein Modell seiner Atmosphäre es verlangt; die Körnung steht für seine brodelnde Oberfläche: Ihre Zellen entstehen, werden heller und verblassen, wie es echte Granulen tun, gröber gezeichnet, als sie sind (aus ganz großer Nähe in ihrer wahren Größe) und viel schneller, und das helle Netz zum Rand hin ist illustrativ; aus ganz großer Nähe weicht die fotografierte Karte dieser gezeichneten Oberfläche, die ebenfalls illustrativ ist; die Korona ist illustrativ und viel heller gezeichnet, als sie ist, damit man sie sehen kann; die Schleifen und Hecken an seinem Rand stehen dort, wo die aktiven Regionen der NOAA nahe am Rand liegen, und ihre Formen und Höhen sind illustrativ; die Sterne daneben sind verblasst, weil sein Gleißen sie vor jeder Kamera verbirgt",
+    "worldRings": "seine Ringe liegen in ihren gemessenen Abständen, {w}-mal breiter und viel heller gezeichnet, als sie sind, damit man sie sieht: Die echten sind Fäden, so dunkel wie Holzkohle, und vor dem dunklen Himmel wären sie kaum zu sehen",
+    "worldRingsDense": "seine Ringe liegen in ihren gemessenen Abständen, {w}-mal breiter, {d}-mal undurchsichtiger und viel heller gezeichnet, als sie sind, damit man sie sieht: Die echten sind schwache Fäden, so dunkel wie Holzkohle, und vor dem dunklen Himmel wären sie kaum zu sehen",
+    "worldSun": "es wird weiß gezeichnet, wie ein Auge es sieht, nicht in dem Orange, mit dem viele Fotos es färben: Seine Karte ist die des Herausgebers, auf Weiß gebracht, mit nur einer schwachen Sprenkelung; aus der Nähe verdunkelt und rötet sich sein Rand, so wie ein Modell seiner Atmosphäre es verlangt; die Körnung steht für seine brodelnde Oberfläche: Ihre Zellen entstehen, werden heller und verblassen, wie es echte Granulen tun, gröber gezeichnet, als sie sind (aus ganz großer Nähe in ihrer wahren Größe) und viel schneller, und das helle Netz zum Rand hin ist illustrativ; aus ganz großer Nähe weicht die fotografierte Karte dieser gezeichneten Oberfläche, die ebenfalls illustrativ ist; die Korona ist illustrativ und viel heller gezeichnet, als sie ist, damit man sie sehen kann; die Schleifen und Hecken an seinem Rand stehen dort, wo die aktiven Regionen der NOAA nahe am Rand liegen, und ihre Formen und Höhen sind illustrativ; die Sterne daneben sind verblasst, weil sein Gleißen sie vor jeder Kamera verbirgt",
     "worldMosaic": "Unter der Kamera jetzt: {title}, hier mit etwa {res} pro Pixel gezeichnet.",
     "worldMosaicDetail": "Unter der Kamera jetzt: {title}; damit wird die Farbkarte auf etwa {res} pro Pixel geschärft.",
     "worldRelief": "Sein Relief stammt aus {title}: einer Zeichnung der Hänge unter einem festen Licht. Die Hänge entlang dieses Lichts werden von der Sonne, wo sie jetzt steht, neu beleuchtet, {n}-mal steiler als gemessen; Hänge quer dazu werden nicht gezeichnet.",
@@ -1393,7 +1393,7 @@ export const COPY = {
       "always": "Von {place}: steht jetzt am Himmel, {alt}, im {dir}. Es geht heute nicht unter.",
       "honest": "Für einen Horizont auf Meereshöhe berechnet; Hügel und Häuser sind darin nicht enthalten."
     },
-    "worldNoRise": "Dieses Objekt kannst du mit eigenen Augen sehen. Zu berechnen, wann es von deinem Ort aus aufgeht, ist in dieser Version noch nicht enthalten.",
+    "worldNoRise": "Dieses Objekt kannst du mit eigenen Augen sehen. Gib an, wo du bist, und diese Zeile nennt dir, wann es dort auf- und untergeht.",
     "worldSee": {
       "pluto": "Nicht mit bloßem Auge und nicht mit dem Fernglas: Pluto ist fast 3 000-mal schwächer als der schwächste Stern, den du sehen kannst, man braucht also ein Teleskop.",
       "io": "Ein normales Fernglas zeigt einen Lichtpunkt neben Jupiter; mit bloßem Auge geht er in Jupiters Glanz unter.",
@@ -1536,7 +1536,7 @@ export const COPY = {
     },
     "fellBack": "Die Bilder waren langsam: Qualität wieder auf Auto.",
     "restore": "Mit voller Qualität neu laden",
-    "restoreTitle": "Diese Ansicht in der Qualität neu laden, die Ihr Gerät schafft."
+    "restoreTitle": "Lade diese Ansicht in der Qualität neu, die dein Gerät schafft."
   },
   "status": {
     "title": "Quellen",
@@ -1780,16 +1780,16 @@ export const COPY = {
     "label": "Woher wir es wissen",
     "hints": {
       "measured": "Gemessen",
-      "inferred": "Berechnet",
+      "inferred": "Modelliert",
       "illustrative": "Illustrativ",
       "sample": "Stichprobe",
       "unknown": "Nicht bekannt",
       "unplaced": "Nicht platziert",
       "reconstruction": "Rekonstruiert",
-      "model": "Modell",
+      "model": "Typisch für seine Art",
       "photograph": "Foto",
       "catalogue": "Katalog",
-      "illustration": "Illustration"
+      "illustration": "Illustrativ"
     },
     "placeWord": "Ort: {word}",
     "pictureWord": "Bild: {word}",
@@ -2646,7 +2646,7 @@ export const COPY = {
     "upNow": "Jetzt am Himmel, schau nach {dir}",
     "showMe": "Zeigen",
     "showMeTitle": "Den Himmel von deinem Ort aus öffnen, mit Blick dorthin, wo es aufgeht",
-    "guessCaveat": "Zeiten können bei dir ein paar Minuten abweichen.",
+    "guessCaveat": "Geschätzter Ort: Stell deine Stadt ein, dann stimmen die Zeiten.",
     "unitRises": "geht auf",
     "unitHigh": "am höchsten",
     "unitLong": "Min. sichtbar",
@@ -3501,8 +3501,8 @@ export const COPY = {
     "span": "{a} bis {b}",
     "notPublished": "Datum nicht veröffentlicht",
     "position": {
-      "measured": "Von einem Instrument zu einer bekannten Zeit gesehen",
-      "inferred": "Von einer älteren Messung weitergerechnet",
+      "measured": "Berechnet aus den Daten eines Herausgebers, deren Alter angegeben ist",
+      "inferred": "Aus älteren Daten oder aus der Physik vorwärts modelliert",
       "illustrative": "Gezeichnet, um die Idee zu zeigen, nicht gemessen",
       "sample": "Mitgelieferte Stichprobendaten, nicht live"
     },
@@ -4676,10 +4676,10 @@ Object.assign(COPY, {
 Object.assign(COPY, {
   "orrery": {
     "title": "Größe und Abstand",
-    "size": "Größe",
-    "sizeTrue": "echt",
+    "size": "Zusatzgröße",
+    "sizeTrue": "keine",
     "sizeValue": "×{n}",
-    "sizeTitle": "Wie viel größer als in Wirklichkeit die Welten gezeichnet sind, von echt bis ×{max}",
+    "sizeTitle": "Um wie viel größer die Welten zusätzlich gezeichnet werden, über die ohnehin übergroßen Punkte hinaus, von keiner bis ×{max}",
     "dist": "Abstand",
     "distTrue": "echt",
     "distLog": "logarithmisch",

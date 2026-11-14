@@ -54,6 +54,7 @@ check(has(drawingLine(exotic), 'ring'), `an extreme object says it is a ring: ${
 check(has(drawingLine(dso), 'soft glow') && has(drawingLine(dso), 'true shape is not drawn'), `a deep-sky object says it is a soft glow, not its shape: ${drawingLine(dso)}`);
 check(has(drawingLine(exo), 'at its star'), `an exoplanet says it is drawn at its star: ${drawingLine(exo)}`);
 check(has(drawingLine(star), 'point of light'), `a star says it is a point of light sized by brightness: ${drawingLine(star)}`);
+check(!has(drawingLine(star), 'kind of thing'), `a named star is this star, not the kind of thing (internal #296): ${drawingLine(star)}`);
 check(has(drawingLine({ klass: 'rocket', meta: { drawsAs: 'generic', rocket: 'Nova' } }), 'generic rocket'), 'a record with its own drawsAs keeps the launch wording');
 
 // --- the class line names the age of the elements --------------------------------------------

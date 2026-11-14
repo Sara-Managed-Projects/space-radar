@@ -298,7 +298,7 @@ export const COPY = {
     "driftTitle": "A câmera vai passando de uma coisa para a próxima"
   },
   "explore": {
-    "worldsTitle": "Os mundos",
+    "worldsTitle": "Os mundos, distância da Terra agora",
     "worldsDrawn": "Planetas desenhados como pontos, maiores do que são.",
     "farTitle": "Lugares distantes",
     "systemsTitle": "Sistemas estelares",
@@ -912,8 +912,8 @@ export const COPY = {
         "distanceFromSun": "{u} do Sol",
         "distanceFromEarth": "{u} da Terra",
         "lightTime": "{u} em cada sentido",
-        "spin": "{u} por volta",
-        "yearLength": "{u} por ano",
+        "spin": "{u} para girar uma vez",
+        "yearLength": "{u} para dar a volta em torno do Sol",
         "brightness": "magnitude",
         "spectralType": "classe da estrela",
         "across": "{u} de largura",
@@ -921,7 +921,7 @@ export const COPY = {
         "launched": "dias no espaço",
         "fromYou": "{u} de você",
         "heightAbove": "{u} de altura",
-        "yearLong": "{u} para dar a volta ao Sol, {y} anos terrestres",
+        "yearLong": "{u} para dar a volta em torno do Sol, {y} anos terrestres",
         "lightFromSun": "{u} para a luz chegar até nós",
         "planetRadius": "{u} de largura",
         "planetMass": "{u} de massa",
@@ -1129,7 +1129,7 @@ export const COPY = {
       "mercury": "em uma tela maior, o relevo vem do modelo de elevação da MESSENGER, desenhado {steep} vezes mais íngreme do que o medido para que as bordas das crateras peguem a luz",
       "pluto": "o solo claro e escuro é desenhado com {plutoContrast} vezes o contraste da imagem da câmera, mais perto dos albedos medidos; o lado que a New Horizons só viu de longe é suavizado até a sua própria nitidez; em uma tela maior, o relevo vem das alturas estéreo da New Horizons, onde existem, desenhado {plutoSteep} vezes mais íngreme do que o medido; a fina névoa azul na borda é desenhada como um brilho, mais forte contra o Sol, cuja intensidade é escolhida", // 0078 r14-pluto
       "mars": "em uma tela maior, o relevo vem das alturas que o altímetro a laser da Mars Global Surveyor mediu, desenhadas {mola} vezes mais íngremes e altas do que são para que um Sol baixo as mostre: as sombras que o Monte Olimpo e as paredes dos cânions projetam são tantas vezes mais longas.",
-      "venus": "o halo ao redor da borda e além do lado do dia representa uma névoa densa; sua espessura desenhada e seu alcance são ilustrativos; no modo Filme, as faixas de nuvens são desenhadas com {uv} vezes o contraste do mapa, como as câmeras de ultravioleta as veem (a olho nu são quase lisas), e o modo Medido mostra o mapa como ele é; o solo, por radar, está em relevo a partir do altímetro da Magellan, desenhado {ground} vezes mais íngreme e alto do que o medido",
+      "venus": "o halo ao redor da borda e além do lado do dia representa uma névoa densa; sua espessura desenhada e seu alcance são ilustrativos; as nuvens são desenhadas como o olho as vê, um disco creme claro, com faixas cujo contraste é o do mapa de artista de origem multiplicado por {uv}, nos dois modos; onde ficam as faixas tênues é ilustrativo, e as faixas marcadas e o Y que as câmeras de ultravioleta veem não são desenhados; o solo, por radar, está em relevo a partir do altímetro da Magellan, desenhado {ground} vezes mais íngreme e alto do que o medido",
       "neptune": "no modo Filme, os cinco arcos do anel externo são desenhados como a Voyager 2 os viu em 1989, girando à velocidade medida; onde estão hoje ao redor do anel não é calculado, e dois deles desde então desbotaram ou mudaram de lugar",
       "saturn": "as faixas são desenhadas com {contrast} vezes o contraste do mapa, um ajuste nosso; “Como o Hubble viu” não tem ajuste; em uma tela maior e de perto, os anéis finos e as lacunas dos anéis estão onde a Cassini os mediu pela luz de uma estrela em 2008, sobrepostos ao mapa, e no modo Filme é desenhado o brilho dos grãos, ainda mais de perto; a poucos quilômetros dos anéis, em uma tela maior, no modo Filme, suas maiores partículas, de dois a cinco metros de largura, são desenhadas como bolas de gelo: quantas e de que tamanho seguem a distribuição medida de tamanhos e a profundidade óptica dos anéis, mas onde fica cada uma, e os aglomerados no anel A, são ilustrativos, e elas são desenhadas paradas, como se você viajasse junto com elas",
       "titan": "logo acima da névoa, a cerca de 500 km de altura, uma fina camada de névoa separada é desenhada onde a Cassini a viu em 2005 a 2007; ela desceu e desbotou nos anos seguintes, e não se sabe onde está agora"
@@ -1137,9 +1137,9 @@ export const COPY = {
     "worldEarthshine": "o lado escuro brilha com a luz da Terra, o próprio brilho do nosso planeta, desenhada {n} vezes mais forte do que essa câmera a captaria, mais ou menos como o olho a vê",
     "worldAir": "o ar é desenhado {n} vezes mais espesso do que é para que apareça neste tamanho, e a cor da névoa é ilustrativa",
     "worldAirTrue": "a névoa é desenhada na altura medida, e a cor dela é ilustrativa",
-    "worldRings": "os anéis estão nas distâncias medidas, desenhados {w} vezes mais largos e bem mais brilhantes do que são para que apareçam: os de verdade são fios escuros como carvão",
-    "worldRingsDense": "os anéis estão nas distâncias medidas, desenhados {w} vezes mais largos, {d} vezes mais opacos e bem mais brilhantes do que são para que apareçam: os de verdade são fios tênues, escuros como carvão",
-    "worldSun": "de perto, a borda escurece e avermelha como um modelo da atmosfera diz que deve; o granulado representa a superfície em ebulição: as células nascem, brilham e se apagam como os grânulos de verdade, desenhadas mais grossas do que são (até o tamanho real, bem de perto) e bem mais rápidas, e a rede brilhante perto da borda é ilustrativa; bem de perto, o mapa fotografado dá lugar a essa superfície desenhada, que também é ilustrativa; a coroa é ilustrativa e desenhada bem mais brilhante do que é para que possa ser vista; os arcos e cercas na borda ficam onde as regiões ativas da NOAA estão perto do limbo, e seus formatos e alturas são ilustrativos; as estrelas ao lado estão esmaecidas, porque o clarão do Sol as esconde de qualquer câmera",
+    "worldRings": "os anéis estão nas distâncias medidas, desenhados {w} vezes mais largos e bem mais brilhantes do que são para que apareçam: os de verdade são fios escuros como carvão, e contra o céu escuro quase não apareceriam",
+    "worldRingsDense": "os anéis estão nas distâncias medidas, desenhados {w} vezes mais largos, {d} vezes mais opacos e bem mais brilhantes do que são para que apareçam: os de verdade são fios tênues, escuros como carvão, e contra o céu escuro quase não apareceriam",
+    "worldSun": "é desenhado branco, como o olho o vê, e não no laranja com que muitas fotografias o tingem: o mapa é o do editor, levado ao branco, com apenas um leve salpicado; de perto, a borda escurece e avermelha como um modelo da atmosfera diz que deve; o granulado representa a superfície em ebulição: as células nascem, brilham e se apagam como os grânulos de verdade, desenhadas mais grossas do que são (até o tamanho real, bem de perto) e bem mais rápidas, e a rede brilhante perto da borda é ilustrativa; bem de perto, o mapa fotografado dá lugar a essa superfície desenhada, que também é ilustrativa; a coroa é ilustrativa e desenhada bem mais brilhante do que é para que possa ser vista; os arcos e cercas na borda ficam onde as regiões ativas da NOAA estão perto do limbo, e seus formatos e alturas são ilustrativos; as estrelas ao lado estão esmaecidas, porque o clarão do Sol as esconde de qualquer câmera",
     "worldMosaic": "Sob a câmera agora: {title}, desenhado aqui com cerca de {res} por pixel.",
     "worldMosaicDetail": "Sob a câmera agora: {title}, afinando o mapa de cores com cerca de {res} por pixel.",
     "worldRelief": "O relevo vem de {title}: um desenho de declives sob uma luz fixa. Os declives na direção dessa luz são iluminados de novo pelo Sol onde ele está agora, {n} vezes mais íngremes do que o medido; os declives transversais a ela não são desenhados.",
@@ -1382,7 +1382,7 @@ export const COPY = {
       "always": "De {place}: no céu agora, {alt}, no {dir}. Ele não se põe hoje.",
       "honest": "Calculado para um horizonte ao nível do mar; morros e casas não entram na conta."
     },
-    "worldNoRise": "Você pode ver este a olho nu. Calcular a que horas ele nasce no seu lugar ainda não está nesta versão.",
+    "worldNoRise": "Você pode ver este a olho nu. Informe onde você está e esta linha dirá quando ele nasce e se põe aí.",
     "worldSee": {
       "pluto": "Nem a olho nu, nem com binóculo: Plutão é quase 3 000 vezes mais fraco que a estrela mais fraca que você consegue ver, então é preciso um telescópio.",
       "io": "Um binóculo comum o mostra como um ponto de luz ao lado de Júpiter; a olho nu ele se perde no clarão de Júpiter.",
@@ -1769,16 +1769,16 @@ export const COPY = {
     "label": "Como sabemos",
     "hints": {
       "measured": "Medido",
-      "inferred": "Calculado",
+      "inferred": "Modelado",
       "illustrative": "Ilustrativo",
       "sample": "Amostra",
       "unknown": "Desconhecido",
       "unplaced": "Sem posição",
       "reconstruction": "Reconstruído",
-      "model": "Modelo",
+      "model": "Típico da sua classe",
       "photograph": "Fotografia",
       "catalogue": "Catálogo",
-      "illustration": "Ilustração"
+      "illustration": "Ilustrativo"
     },
     "placeWord": "Lugar: {word}",
     "pictureWord": "Imagem: {word}",
@@ -2635,7 +2635,7 @@ export const COPY = {
     "upNow": "No céu agora, olhe para o {dir}",
     "showMe": "Mostrar",
     "showMeTitle": "Abrir o céu a partir do seu lugar, de frente para onde ele nasce",
-    "guessCaveat": "Os horários podem variar alguns minutos.",
+    "guessCaveat": "Local estimado: informe sua cidade para ver os horários reais.",
     "unitRises": "nasce",
     "unitHigh": "no ponto mais alto",
     "unitLong": "min à vista",
@@ -3490,8 +3490,8 @@ export const COPY = {
     "span": "{a} a {b}",
     "notPublished": "Data não publicada",
     "position": {
-      "measured": "Visto por um instrumento em um horário conhecido",
-      "inferred": "Propagado a partir de uma medição mais antiga",
+      "measured": "Calculado a partir dos dados de quem os publica, com idade informada",
+      "inferred": "Modelado adiante a partir de dados mais antigos ou da física",
       "illustrative": "Desenhado para mostrar a ideia, não medido",
       "sample": "Dados de amostra incluídos, não ao vivo"
     },
@@ -4665,10 +4665,10 @@ Object.assign(COPY, {
 Object.assign(COPY, {
   "orrery": {
     "title": "Tamanho e distância",
-    "size": "Tamanho",
-    "sizeTrue": "real",
+    "size": "Tamanho extra",
+    "sizeTrue": "nenhum",
     "sizeValue": "×{n}",
-    "sizeTitle": "Quanto maiores do que na realidade os mundos são desenhados, de real até ×{max}",
+    "sizeTitle": "Quanto maiores os mundos são desenhados além dos pontos, que já são maiores do que na realidade, de nenhum até ×{max}",
     "dist": "Distância",
     "distTrue": "real",
     "distLog": "logarítmica",
@@ -5620,7 +5620,7 @@ Object.assign(COPY, {
       "trappist-1h": "TRAPPIST-1 h"
     },
     "earthAndMoon": "A Terra e a Lua",
-    "nightOpened": "É noite neste local agora, por isso o relógio foi posto às {local} de hora solar local, com o Sol a {sun}° de altura. O relógio leva-o de volta ao agora.",
+    "nightOpened": "É noite neste local agora, por isso o relógio foi posto às {local} de hora solar local, com o Sol a {sun}° de altura. O relógio leva você de volta ao agora.",
     "unknownGround": "Ainda não há modelo de terreno para esse local.",
     "unknownSky": "Este mapa ainda não permite ficar de pé nesse lugar: só na Lua, em Marte, em Titã, em Europa, em Proxima b ou em TRAPPIST-1 e."
   }
