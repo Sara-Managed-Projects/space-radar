@@ -86,5 +86,14 @@ check(ruleFactor({ what: 'x', fade: 'in', from_km: 0, to_km: 10 }, 10) === 1 && 
   quiet.apply(1); // a rule with no hook is skipped, never thrown on
 }
 
+// internal #283: the Milky Way's detail marks wait for a closer view
+{
+  const { detailLayerHidden } = await import(join(JS, 'scene/stage.js'));
+  check(detailLayerHidden('pulsars', 'galaxy', 60) && !detailLayerHidden('pulsars', 'galaxy', 10), 'pulsars are hidden from 60 kpc out on the galaxy rung and drawn from 10 kpc');
+  check(detailLayerHidden('exotics', 'local-group', 0.2) && !detailLayerHidden('exotics', 'local-group', 0.01), 'and on the Local Group rung from 0.2 Mly out');
+  check(!detailLayerHidden('deep-sky', 'galaxy', 500) && !detailLayerHidden('pulsars', 'stellar', 1e6) && !detailLayerHidden('pulsars', 'earth', 1e6), 'the galaxies stay; the stellar rung and the worlds are not asked');
+  check(!detailLayerHidden('pulsars', 'galaxy', 0) && !detailLayerHidden('pulsars', 'galaxy', NaN), 'no distance, no rule');
+}
+
 if (problems.length) { console.error('ladder FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('ladder ok: three rungs beyond the Solar System, nothing squeezed from the Sun or a rung, the sky-from-here fades out between 500 and 5 000 au');

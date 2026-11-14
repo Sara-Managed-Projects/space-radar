@@ -50,7 +50,7 @@ import { createStars3d, NAMED_STARS, SUN_RADIUS_KM, SUN_TEFF_K } from './scene/s
 import { createGalaxy } from './scene/galaxy.js';
 import { createDsoGlow } from './scene/dsoglow.js';
 import { createExposure, DEFAULT_EXPOSURE, createDrawn, DEFAULT_DRAWN } from './scene/exposure.js';
-import { isLadderStage, isSystemStage } from './scene/stage.js';
+import { isLadderStage, isSystemStage, detailLayerHidden } from './scene/stage.js';
 import { createSystems, loadIndex as loadSystemIndex } from './scene/systems.js';
 import { SUN_INERTIAL, STAGES } from './scene/stage.js';
 import { showChooser, hideChooser } from './ui/chooser.js';
@@ -2203,6 +2203,7 @@ export async function boot({ setStatus } = {}) {
     const ladder = isLadderStage(stage.worldId);
     if (layer.ladderOnly && !ladder) return false;
     if (ladder && !layer.ladderOnly && !LADDER_SCALE_LAYERS.has(layer.id)) return false;
+    if (ladder && detailLayerHidden(layer.id, stage.worldId, cameraRig.state.distance)) return false; // from outside the Milky Way is the picture (internal #283)
     return true;
   }
   ctx.isLayerDrawable = isLayerDrawable;
