@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 
 const JS = join(dirname(fileURLToPath(import.meta.url)), '..', 'site/js');
 const { labelLift, LABEL_MODEL_GAP } = await import(join(JS, 'ui/labels.js'));
-const { chooseLabels, labelName, labelParentId, isNotable, isOwnPlaceOnLadder, clampLabelX, keepClearOf, behindWorld, tooFarForFrame, FAR_FRAME_RATIO, LABEL_EDGE_PAD, LABEL_CAP, TRAIN_CAP } = await import(join(JS, 'ui/labels.js'));
+const { chooseLabels, labelName, labelParentId, isNotable, isOwnPlaceOnLadder, clampLabelX, keepClearOf, behindWorld, fameGroup, tooFarForFrame, FAR_FRAME_RATIO, LABEL_EDGE_PAD, LABEL_CAP, TRAIN_CAP } = await import(join(JS, 'ui/labels.js'));
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
@@ -43,6 +43,17 @@ check(all.length === LABEL_CAP && all[0].kind === 'selection' && all.filter((c) 
 const far = { record: rec('far'), kind: 'notable', x: 10, y: 10, dist: 500 };
 const close = { record: rec('close'), kind: 'notable', x: 700, y: 10, dist: 5 };
 check(chooseLabels([far, close])[0].record.id === 'close', 'notable labels are nearest first');
+// internal #284: a famous or bright star before a brown dwarf, though the dwarf is nearer
+{
+  const bd = { record: rec('bd-scr', 'exotic', { kind: 'browndwarf', why: 'x' }), kind: 'notable', x: 10, y: 10, dist: 6 };
+  const wd = { record: rec('wd', 'exotic', { kind: 'whitedwarf', why: 'x' }), kind: 'notable', x: 200, y: 10, dist: 7 };
+  const sirius = { record: rec('sirius', 'star', { why: 'x', mag: -1.4 }), kind: 'notable', x: 400, y: 10, dist: 9 };
+  const bright = { record: rec('bright', 'star', { mag: 2.1 }), kind: 'notable', x: 600, y: 10, dist: 300 };
+  const dim = { record: rec('dimstar', 'star', { why: undefined, mag: 7 }), kind: 'notable', x: 800, y: 10, dist: 2 };
+  const order = chooseLabels([bd, wd, dim, bright, sirius]).map((c) => c.record.id).join(',');
+  check(order === 'sirius,bright,dimstar,bd-scr,wd', `famous and bright stars, then the rest, then the dwarfs the eye cannot see (${order})`);
+  check(fameGroup(rec('p', 'satellite')) === 1 && fameGroup(null) === 1, 'anything else is in the middle group');
+}
 // bad input never throws
 check(chooseLabels(null).length === 0 && chooseLabels([{ record: null }, { record: rec('q'), kind: 'notable', x: NaN, y: 1 }]).length === 0, 'bad candidates are dropped, not thrown on');
 // names and notability
