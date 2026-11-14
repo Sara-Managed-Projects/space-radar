@@ -22,7 +22,7 @@ export const META = {
   code: "zh",
   name: "简体中文",
   english: "Chinese (Simplified)",
-  review: { status: 'machine-drafted', by: [], note: 'Needs a native reader and a second reader (docs/TRANSLATING.md, Review).' },
+  review: { status: 'agent-reviewed', by: [], note: 'Machine-translated, agent-reviewed against the English on 2026-11-14 (terms, numbers, units, names, slots), with the pages a search engine reads. Not native-reviewed yet (docs/TRANSLATING.md, Review).' },
 };
 
 export const RULES = {
@@ -204,18 +204,18 @@ export const COPY = {
     "farTitle": "遥远的地方",
     "systemsTitle": "恒星系统",
     "systemsMild": "宜居带附近的行星",
-    "systemsExtreme": "极端的星系",
+    "systemsExtreme": "极端的恒星系统",
     "exoRow": "其他恒星的行星",
     "exoShow": "显示",
     "exoHide": "隐藏",
     "exoTitle": "标出每一颗已知有行星的恒星",
     "lightYears": "{n} 光年",
-    "au": "{n} AU"
+    "au": "{n} 天文单位"
   },
   "rail": {
     "label": "工具",
-    "show": "显示什么 (L)",
-    "share": "分享 (P)",
+    "show": "显示什么（L）",
+    "share": "分享（P）",
     "more": "更多工具",
     "moreLabel": "更多",
     "menuShare": "分享",
@@ -355,8 +355,8 @@ export const COPY = {
   },
   "ladder": {
     "title": "有多远",
-    "rowName": "{label}, {distance}",
-    "rowNameLoading": "{label}, 还在加载",
+    "rowName": "{label}，{distance}",
+    "rowNameLoading": "{label}，还在加载",
     "weShowTitle": "已知的天体里，这张地图画出了多少",
     "weShowRow": "{n} 个{what}——已知共 {of} 个",
     "edge": "地图的边缘",
@@ -475,7 +475,7 @@ export const COPY = {
     "sizeMixed": "直径大约 {lo} 米到 {hi} 公里，是根据亮度估计的",
     "perihelion": "{name} 将在{when}到达离太阳最近的位置",
     "pass": "{name} 将在{when}从你头顶飞过",
-    "train": "一列共 {n} 颗的卫星将在{when}从你头顶飞过",
+    "train": "由 {n} 颗卫星排成的一列“卫星列车”将在{when}从你头顶飞过",
     "aurora": "NOAA 预报{word}，自{when}起（Kp {kp}）",
     "auroraNow": "地磁暴正在进行：{word}（Kp {kp}）",
     "shower": "{name}流星雨大约在 {date} 达到极大，在黑暗的天空下每小时最多 {zhr} 颗",
@@ -548,7 +548,7 @@ export const COPY = {
       "sizeRangeKm": "约 {lo} 到 {hi} 公里",
       "perihelion": "{when}离太阳最近",
       "pass": "{when}从你头顶飞过",
-      "trainTitle": "{n} 颗 Starlink 列车",
+      "trainTitle": "Starlink 列车（{n} 颗）",
       "auroraTitle": "极光预报",
       "auroraNowTitle": "此刻的地磁暴",
       "aurora": "NOAA 预报，自{when}起",
@@ -601,7 +601,7 @@ export const COPY = {
       "active": "活跃",
       "minorStorm": "小型磁暴——极北和极南地区可能出现极光",
       "moderateStorm": "中等磁暴——高纬度地区很可能出现极光",
-      "strongStorm": "强磁暴——离两极很远的地方也能看到极光，卫星会被推离轨道",
+      "strongStorm": "强磁暴——离两极很远的地方也能看到极光，卫星会被推得稍稍偏离轨道",
       "severeStorm": "严重磁暴",
       "extremeStorm": "极端磁暴"
     }
@@ -653,7 +653,7 @@ export const COPY = {
       "source": "读取自",
       "whySource": "我们为什么知道它，读取自",
       "widthSource": "宽度读取自",
-      "distanceNote": "大约就是这么远",
+      "distanceNote": "关于这个距离",
       "objectType": "它是什么",
       "constellation": "星座",
       "distanceRange": "距离（最佳估计）",
@@ -681,7 +681,7 @@ export const COPY = {
       "onBody": "位于",
       "whenSite": "时间",
       "onWorld": "站在",
-      "orbiting": "绕着谁运行",
+      "orbiting": "环绕",
       "heightAbove": "{world}上空高度",
       "closestApproach": "离地球最近",
       "moons": "卫星",
@@ -692,7 +692,7 @@ export const COPY = {
       "pad": "发射场",
       "destination": "目的地",
       "whereabouts": "它在哪里",
-      "lastSeen": "最后一次已知",
+      "lastSeen": "最后已知",
       "stormNow": "最新通报时",
       "stormWind": "路径上的最大风速",
       "stormAdvisory": "最新通报",
@@ -762,9 +762,9 @@ export const COPY = {
     "couldNotLook": "无法算出",
     "nobodyKnows": "没有人知道",
     "wouldNeed": "那需要 {wouldNeed}。",
-    "endedLine": "它的任务已于 {date} 结束。下面列出的事件，都可以追溯到那时。",
-    "pathEndedLine": "JPL 保存的它的轨迹，到 {date} 为止。下面列出的事件，都可以追溯到那时。",
-    "pathBeginsLine": "JPL 保存的它的轨迹，从 {date} 开始。下面列出的事件，都可以追溯到那时。",
+    "endedLine": "它的任务已于 {date} 结束。下面列出的事件，可以把你带回那时。",
+    "pathEndedLine": "JPL 保存的它的轨迹，到 {date} 为止。下面列出的事件，可以把你带回那时。",
+    "pathBeginsLine": "JPL 保存的它的轨迹，从 {date} 开始。下面列出的事件，可以把你带回那时。",
     "actions": {
       "flyTo": "飞向它",
       "flyToTitle": "把镜头移到这个天体",
@@ -845,7 +845,7 @@ export const COPY = {
         "days": "天",
         "seconds": "秒",
         "milliseconds": "毫秒",
-        "astronomical units": "AU",
+        "astronomical units": "天文单位",
         "light-years": "光年",
         "years ago": "光年",
         "million years ago": "百万光年",
@@ -884,7 +884,7 @@ export const COPY = {
     "clockElsewhere": "时钟现在是 {date} {time} UTC；云仍然是那张图拍到的样子。",
     "and": "和",
     "illustrative": "云：示意。这是过去某一天的一张图，缓缓漂移；它不是今天的天气。",
-    "illustrativeSaveData": "云：示意。开启了省流量的网络下，不会获取今天的卫星图。",
+    "illustrativeSaveData": "云：示意。在开启了省流量的网络下，不会获取今天的卫星图。",
     "illustrativeScrubbed": "云：示意，因为时钟离最新的卫星图（{date} {time} UTC）超过了 12 小时。",
     "gibsAcknowledgement": "感谢 NASA 全球影像浏览服务（GIBS）提供的影像。GIBS 是 NASA 地球科学数据与信息系统（ESDIS）的一部分。",
     "satelliteCredit": "实时云图：GOES-East 和 GOES-West 红外影像，NOAA；Himawari 红外影像，日本气象厅（JMA）。"
@@ -895,7 +895,7 @@ export const COPY = {
     "waiting": "极光：NOAA 的预报还没有送到。",
     "failed": "极光：暂时读取不到 NOAA 的预报，所以没有画出极光。",
     "far": "极光：没有画出，因为时钟离 NOAA 最新的预报超过了三小时。",
-    "saveData": "极光：开启了省流量的网络下，不会获取 NOAA 的预报。",
+    "saveData": "极光：在开启了省流量的网络下，不会获取 NOAA 的预报。",
     "switchedOff": "极光：已在图层里关闭。",
     "credit": "极光：由 NOAA 空间天气预报中心的 OVATION Prime 模型预报（公有领域）。",
     "rightNow": "两极附近很可能有极光",
@@ -916,18 +916,18 @@ export const COPY = {
       "credit": "闪电：落雷密度来自 NOAA nowCOAST，由美国国家气象局海洋预报中心根据地面监测网 NLDN 和 GLD360 制作（公有领域）。"
     },
     "worlds": {
-      "jupiter": "天气：云带按 Hubble 测得的风速相互滑过，大红斑在旋转。这是模拟的运动：今天云在哪里，并没有画出来。",
+      "jupiter": "天气：云带按 哈勃测得的风速相互滑过，大红斑在旋转。这是模拟的运动：今天云在哪里，并没有画出来。",
       "saturn": "天气：云带按 Cassini 实测的风速运动。这是模拟的运动，不是今天的云。北极的六边形画在它实测的位置；它的样子是示意的。",
       "venus": "天气：云层大约四天绕一圈，这是 Venus Express 测得的，比地面转得快六十倍。这是模拟的运动，不是今天的云。",
       "uranus": "天气：大气按 Keck 和 Gemini 望远镜测得的风速绕着行星漂移。这是模拟的运动，不是今天的云。",
-      "neptune": "天气：大气按 Voyager 2测得的风速呼啸着绕行，是所有行星里最快的。这是模拟的运动，不是今天的云。",
+      "neptune": "天气：大气按 旅行者2号测得的风速呼啸着绕行，是所有行星里最快的。这是模拟的运动，不是今天的云。",
       "mars": "天气：火星现在是{season}。冰冠和空气中的尘埃（光学厚度接近 {tau}），是这个季节通常的样子：这是季节性的、示意的，不是今天的天气。",
-      "titan": "天气：北部那些浅色的条纹，代表 Webb 和 Keck 望远镜在 2022 年 11 月和 2023 年 7 月看到的甲烷云。这是示意的：土卫六今天的云在哪里，并不知道。"
+      "titan": "天气：北部那些浅色的条纹，代表 韦布和 Keck 望远镜在 2022 年 11 月和 2023 年 7 月看到的甲烷云。这是示意的：土卫六今天的云在哪里，并不知道。"
     },
     "also": {
       "venus": "跟着一起转的那个暗色的 Y，是紫外相机看到的样子；用眼睛看，金星几乎一片素净，所以它在这里的位置是示意的。金星上有过闪电的报告，但仍有争议，所以没有画闪电。",
-      "uranus": "北极上方明亮的极冠是真实的：它逐个纬度的亮度和颜色，取自 Hubble 2025 年 10 月的地图；随着 2028 年北半球夏季临近，Hubble 看着它一年比一年亮。",
-      "neptune": "艺术图上那个暗色椭圆，是 Voyager 2 1989 年看到的大暗斑，到 1994 年已经消失：这是示意的，在“实测”外观里不画。在“电影”外观里，甲烷卷云会投下影子，画得比实测宽六倍、高六倍；每一道条纹都是我们画的。"
+      "uranus": "北极上方明亮的极冠是真实的：它逐个纬度的亮度和颜色，取自哈勃 2025 年 10 月的地图；随着 2028 年北半球夏季临近，哈勃看着它一年比一年亮。",
+      "neptune": "艺术家绘制的地图上那个暗色椭圆，是旅行者2号 1989 年看到的大暗斑，到 1994 年已经消失：这是示意的，在“实测”外观里不画。在“电影”外观里，甲烷卷云会投下影子，画得比实测宽六倍、高六倍；每一道条纹都是我们画的。"
     },
     "flashes": {
       "jupiter": "在它的夜面，偶尔闪现的亮光代表 Juno 发现的闪电，大多在遥远的北方：纬度是实测的，每一次闪光是示意的，而且画得比实际更大。",
@@ -974,7 +974,7 @@ export const COPY = {
       "envisat": "画成平稳的样子，仪器朝向地球，就像它工作时飞行的姿态；它自 2012 年起就失去联系，没有人再操控它",
       "ers1": "画成平稳的样子，仪器朝向地球，就像它工作时飞行的姿态；它的任务在 2000 年结束，没有人再操控它"
     },
-    "objectGeneric": "画成了一个普通的天体；我们没有 {name} 的外形",
+    "objectGeneric": "画成了一个普通的物体；我们没有 {name} 的外形",
     "classShape": {
       "satellite": "一颗普通的卫星",
       "station": "一座普通的空间站",
@@ -1030,12 +1030,12 @@ export const COPY = {
       "matched": "它的颜色从 New Horizons 彩色相机测得的红光和蓝光出发；绿光没有对应的滤镜，是在两者之间估计的；然后逐个色调对照 NASA 自己发布的这一面的彩色照片（PIA19952），比相机的数值更浓，和 NASA 发布的一样"
     },
     "worldCoverage": {
-      "miranda": "只有南半球拍到了，是 Voyager 2在 1986 年拍的；其余部分留作素面，没有去猜",
-      "ariel": "只有南半球拍到了，是 Voyager 2在 1986 年拍的；其余部分留作素面，没有去猜",
-      "umbriel": "只有南半球拍到了，是 Voyager 2在 1986 年拍的；其余部分留作素面，没有去猜",
-      "titania": "只有南半球拍到了，是 Voyager 2在 1986 年拍的；其余部分留作素面，没有去猜",
-      "oberon": "只有南半球拍到了，是 Voyager 2在 1986 年拍的；其余部分留作素面，没有去猜",
-      "triton": "Voyager 2在 1989 年拍到了其中一部分；其余部分留作素面，没有去猜",
+      "miranda": "只有南半球拍到了，是 旅行者2号在 1986 年拍的；其余部分留作素面，没有去猜",
+      "ariel": "只有南半球拍到了，是 旅行者2号在 1986 年拍的；其余部分留作素面，没有去猜",
+      "umbriel": "只有南半球拍到了，是 旅行者2号在 1986 年拍的；其余部分留作素面，没有去猜",
+      "titania": "只有南半球拍到了，是 旅行者2号在 1986 年拍的；其余部分留作素面，没有去猜",
+      "oberon": "只有南半球拍到了，是 旅行者2号在 1986 年拍的；其余部分留作素面，没有去猜",
+      "triton": "旅行者2号在 1989 年拍到了其中一部分；其余部分留作素面，没有去猜",
       "pluto": "2015 年 New Horizons 飞过时，遥远的南方正处在冬季的黑暗里：那里画出的地面是模拟的，是一层淡淡的纹理，用的是它上方陆地的颜色，不是照片",
       "charon": "2015 年 New Horizons 飞过时，遥远的南方正处在冬季的黑暗里：那里画出的地面是模拟的，是一层淡淡的纹理，用的是它上方陆地的颜色，不是照片"
     },
@@ -1052,8 +1052,8 @@ export const COPY = {
       "pluto": "它明暗不同的地面，对比度画成了相机照片的 {plutoContrast} 倍，更接近实测的反照率；New Horizons 只在远处见过的那一面，柔化到与它自己的清晰度相当；在较大的屏幕上，它的起伏取自 New Horizons 的立体高程（有数据的地方），画得比实测陡 {plutoSteep} 倍；它边缘那层淡蓝色的雾霾画成了光晕，在迎着太阳的一侧最亮，强度是我们选的",
       "mars": "在较大的屏幕上，它的起伏取自 Mars Global Surveyor 的激光高度计测得的高程，画得比实际陡、比实际高 {mola} 倍，这样低角度的太阳才能照出它们：奥林帕斯山和峡谷峭壁投下的影子，也因此长了这么多倍。",
       "venus": "它边缘和白昼面外侧的光晕，代表一层深厚的雾霾；画得多厚、伸得多远，都是示意的；在“电影”外观里，它的云带画成了地图对比度的 {uv} 倍，就像紫外相机看到的那样（肉眼看到的几乎一片素净），而“实测”外观按地图原样显示；它的地面是雷达测出的，起伏取自 Magellan 的高度计，画得比实测陡、比实测高 {ground} 倍",
-      "neptune": "在“电影”外观里，它外环的五段弧，画成 Voyager 2 1989 年看到的样子，按实测的速度绕行；它们今天在环上的哪个位置并没有推算，而且其中两段后来已经变暗或移动了",
-      "saturn": "它的云带画成了地图对比度的 {contrast} 倍，这是我们做的调整；“Hubble 眼中的样子”没有调整；在较大的屏幕上从近处看，光环里的细环和缝隙，在 Cassini 2008 年借恒星的光测出的位置上，叠在地图上方，在“电影”外观里，更近处还画出了颗粒的闪光；在较大的屏幕上、“电影”外观里，离光环几公里以内时，最大的颗粒（宽两到五米）画成冰球：有多少、多大，依据实测的大小分布和光环的光学厚度，但每一颗在哪里、A 环里的成团结构，都是示意的，而且画成静止的，就像你跟着它们一起飞行",
+      "neptune": "在“电影”外观里，它外环的五段弧，画成 旅行者2号 1989 年看到的样子，按实测的速度绕行；它们今天在环上的哪个位置并没有推算，而且其中两段后来已经变暗或移动了",
+      "saturn": "它的云带画成了地图对比度的 {contrast} 倍，这是我们做的调整；“哈勃眼中的样子”没有调整；在较大的屏幕上从近处看，光环里的细环和缝隙，在 Cassini 2008 年借恒星的光测出的位置上，叠在地图上方，在“电影”外观里，更近处还画出了颗粒的闪光；在较大的屏幕上、“电影”外观里，离光环几公里以内时，最大的颗粒（宽两到五米）画成冰球：有多少、多大，依据实测的大小分布和光环的光学厚度，但每一颗在哪里、A 环里的成团结构，都是示意的，而且画成静止的，就像你跟着它们一起飞行",
       "titan": "在它的雾霾上方约 500 公里处，按 Cassini 2005 年到 2007 年看到的位置，画了一层稀薄的、分离的雾霾；之后几年它下沉、变淡了，现在它在哪里并不知道"
     },
     "worldEarthshine": "它的暗面泛着地球反照的微光，也就是地球自己的光，画得比那台相机能拍到的亮 {n} 倍，大致是肉眼看到的样子",
@@ -1406,7 +1406,7 @@ export const COPY = {
     "searchingBut": "已搜索 {n} 个天体，还有 {m} 个图层没有加载。",
     "searchingButOne": "已搜索 {n} 个天体，还有 1 个图层没有加载。",
     "empty": "还没有加载任何可搜索的内容。",
-    "inputTitle": "搜索 (/)",
+    "inputTitle": "搜索（/）",
     "key": "/",
     "notLoaded": "没有加载，所以没有搜索：{layers}。",
     "stillLoading": "还在加载，所以暂时没有搜索：{layers}。",
@@ -1463,7 +1463,7 @@ export const COPY = {
     "ageNeverLine": "这个浏览器里还没有可用的副本",
     "viaSnapshotLine": "来自我们的快照，{age}获取",
     "viaLiveLine": "{age}从 {publisher} 实时读取",
-    "snapshotOverdue": "更新的副本已经晚了",
+    "snapshotOverdue": "较新的副本迟迟没有到",
     "snapshotChecking": "（正在检查有没有更新的）",
     "couldNotLookLine": "读取不到：{reason}",
     "reasonNoRoute": "{why}，而且浏览器无法直接读取 {publisher}",
@@ -1534,7 +1534,7 @@ export const COPY = {
     "title": "面板高度：{height}。点按或拖动来调整"
   },
   "print": {
-    "title": "把这个画面存为 6 × 4 英寸的明信片 (JPEG)",
+    "title": "把这个画面存为 6 × 4 英寸的明信片 （JPEG）",
     "making": "正在制作明信片",
     "saved": "明信片已保存",
     "failed": "暂时无法制作明信片",
@@ -1557,7 +1557,7 @@ export const COPY = {
     "live": "{name}：{readouts}"
   },
   "clean": {
-    "hide": "隐藏所有面板 (H)",
+    "hide": "隐藏所有面板 （H）",
     "show": "重新显示面板（H 或 Esc）",
     "hint": "按 H 或 Esc 显示面板。Shift+H 保留标签和时间"
   },
@@ -1718,10 +1718,10 @@ export const COPY = {
       "jupiter": "近看，在实测风速互相切变的地方和大红斑的尾流里，有小涡旋在翻滚，Oval BA 和三个白色椭圆在旋转。切变在哪里是实测的；每个涡旋是生成的，比地图更细：这是示意的。"
     },
     "poles": {
-      "jupiter": "每个极点周围的气旋，是根据 Juno 2017 年的观测模拟的：北极周围八个，南极周围五个：这是重建，不是照片。气旋之间颜色较暗的云层是示意的。"
+      "jupiter": "每个极点周围的气旋，是根据 Juno 2017 年的观测模拟的：北极周围八个，南极周围五个；这是重建，不是照片。气旋之间颜色较暗的云层是示意的。"
     }
   },
-  "weatherDetail": "比地图清晰的程度更近时，会生成一层细细的条纹状云纹理来支撑画面：它随实测的风运动，保留地图本来的颜色，其中没有一道条纹是真实的云。这是示意的。",
+  "weatherDetail": "拉近到超过地图本身的清晰度时，会生成一层细细的条纹状云纹理来支撑画面：它随实测的风运动，保留地图本来的颜色，其中没有一道条纹是真实的云。这是示意的。",
   "weatherVortex": {
     "turning": {
       "saturn": "近看，六边形里有一个小气旋在转动：它的风眼宽 2000 公里，眼壁以每秒 150 米的速度绕圈，这是 Cassini 2012 年测得的。绕着它画的螺旋是示意的，而且现在没有任何设备在监测它。"
@@ -1734,7 +1734,7 @@ export const COPY = {
     "prominences": "边缘上有 {n} 个日珥，位于 NOAA 列出的、离日面边缘十五度以内的活动区。位置是实测的；形状、高度和运动是示意的。",
     "prominencesOne": "边缘上有一个日珥，位于 NOAA 列出的、离日面边缘十五度以内的一个活动区。位置是实测的；形状、高度和运动是示意的。",
     "flare": "{region} 区正显示一次 {cls} 级耀斑：据 NOAA 的事件列表，它在 {date} {time} UTC 达到峰值。它的时间、级别、区域和衰减是实测的；画出来有多亮是示意的。",
-    "cme": "一次日冕物质抛射，在 {date} {time} UTC 离开太阳，速度 {speed} 公里/秒，画成日冕仪看到的样子：一道向外移动的明亮环状结构，后面是颜色较暗的空洞，还有一个明亮的核心。它的开始时间、方向、宽度和速度来自 NASA 的 DONKI 星表；这团云保持着这个速度，真实的并不会这样，它的样子是示意的。"
+    "cme": "一次日冕物质抛射，在 {date} {time} UTC 离开太阳，速度 {speed} 公里/秒，画成日冕仪看到的样子：一道向外移动的明亮环状结构，后面是颜色较暗的空洞，还有一个明亮的核心。它的开始时间、方向、宽度和速度来自 NASA 的 DONKI 目录；这团云保持着这个速度，真实的并不会这样，它的样子是示意的。"
   },
   "starSystem": {
     "zoneLabel": "宜居带（计算得出）",
@@ -1770,9 +1770,9 @@ export const COPY = {
       "mass": "质量",
       "least": "最小可能质量"
     },
-    "au": "{n} AU",
-    "auComputed": "{n} AU，由它的公转周期和恒星的质量计算得出",
-    "auYearComputed": "{n} AU；它的一年大约是 {y} 年，由这个距离和恒星的质量推算",
+    "au": "{n} 天文单位",
+    "auComputed": "{n} 天文单位，由它的公转周期和恒星的质量计算得出",
+    "auYearComputed": "{n} 天文单位；它的一年大约是 {y} 年，由这个距离和恒星的质量推算",
     "earthsEstimated": "地球的 {n} 倍，是档案根据它的质量做出的估计",
     "massEstimated": "地球的 {n} 倍，是档案根据它的大小做出的估计",
     "massLeast": "至少是地球的 {n} 倍",
@@ -1791,7 +1791,7 @@ export const COPY = {
       "no-luminosity": "没有计算：这颗恒星的亮度没有实测",
       "twoStars": "没有计算：它绕着两颗恒星转，而星表只描述了一颗"
     },
-    "zoneRange": "离恒星 {a} 到 {b} AU（Kopparapu 等人，2014）",
+    "zoneRange": "离恒星 {a} 到 {b} 天文单位（Kopparapu 等人，2014）",
     "overlay": {
       "title": "叠加到地图上",
       "zone": "宜居带",
@@ -1814,8 +1814,8 @@ export const COPY = {
     "starsBoth": "两颗，都画出来了",
     "companionValue": "直径 {width}，质量 {mass}，{k} K{derived}",
     "companionDerived": "（模型值；它的颜色是示意的）",
-    "zoneBoth": "{a} 到 {b} AU，两个太阳的光加在一起算",
-    "pairLine": "这两个太阳每 {days} 天互相绕转一圈，平均相距 {a} AU，轨道是论文里测得的；行星绕着两个太阳转。它们的位置由这条轨道计算得出；它们画在行星所在的平面上，也就是天空视图所用的那个平面。",
+    "zoneBoth": "{a} 到 {b} 天文单位，两个太阳的光加在一起算",
+    "pairLine": "这两个太阳每 {days} 天互相绕转一圈，平均相距 {a} 天文单位，轨道是论文里测得的；行星绕着两个太阳转。它们的位置由这条轨道计算得出；它们画在行星所在的平面上，也就是天空视图所用的那个平面。",
     "line": "大小和公转周期来自 NASA 系外行星档案，{date}读取。轨道画成圆形{computed}；颜色{phase}和轨道的倾斜是示意的{defaults}。",
     "lineComputed": "，其中 {n} 个的大小由公转周期和恒星的质量推算",
     "lineDefaults": "；没有实测大小的行星，画成地球那么大"
@@ -1877,7 +1877,7 @@ export const COPY = {
     "name": "漂流",
     "pause": "暂停（空格键）",
     "resume": "继续（空格键）",
-    "next": "下一个地方 (N)",
+    "next": "下一个地方 （N）",
     "options": "选项",
     "optionsTitle": "穿过什么、显示什么，以及节奏",
     "leave": "停止漂流（Esc）",
@@ -1911,7 +1911,7 @@ export const COPY = {
     "micro": "导览",
     "count": "{n} / {of}",
     "next": "下一步",
-    "nextTitle": "下一步 (N)",
+    "nextTitle": "下一步 （N）",
     "done": "完成",
     "doneTitle": "结束导览",
     "skip": "跳过",
@@ -1948,7 +1948,7 @@ export const COPY = {
       "star": "恒星",
       "exoplanet": "系外行星",
       "dso": "深空天体",
-      "storm": "热带风暴",
+      "storm": "热带气旋",
       "oddity": "奇特天体",
       "earthevent": "地球上的事件",
       "blackhole": "黑洞",
@@ -2003,7 +2003,7 @@ export const COPY = {
     "launchedLine": "最新的：{name}",
     "debris": "碎片，用数字说话",
     "debrisClose": "关闭碎片视图",
-    "debrisTitle": "统计轨道上所有被追踪的东西。会读取整个星表，大约 1.5 MB"
+    "debrisTitle": "统计轨道上所有被追踪的东西。会读取整个目录，大约 1.5 MB"
   },
   "sentence": {
     "one": "{a}。",
@@ -2264,51 +2264,51 @@ export const COPY = {
       },
       "notes": {
         "own": "云顶，这就是肉眼或望远镜曾经看到的金星的全部。",
-        "surface": "云层之下的地面，由 NASA 的 Magellan 在 1990 年到 1992 年间从轨道上用雷达测绘。亮的是粗糙的地面，暗的是平滑的地面。橙色是后加的，Magellan 没有扫到的条带，是从两边的边缘填补的。它像没有云一样被太阳照亮：它的山脉和陡崖来自 Magellan 的高度计，画得高了六倍，会投下影子。它不随云一起移动。"
+        "surface": "云层之下的地面，由 NASA 的 Magellan 在 1990 年到 1992 年间从轨道上用雷达测绘。亮的是粗糙的地面，暗的是平滑的地面。橙色是后加的，Magellan 没有扫到的条带，是从两边的边缘填补的。它像没有云一样被太阳照亮：它的山脉和陡崖来自 Magellan 的高度计，夸大到六倍高，会投下影子。它不随云一起移动。"
       }
     },
     "jupiter": {
       "title": "木星的两种面貌",
       "modes": {
         "own": "艺术地图",
-        "hubble": "Hubble 眼中的样子"
+        "hubble": "哈勃眼中的样子"
       },
       "notes": {
-        "own": "一张艺术地图，由航天器的照片制成并经过柔化 (Solar System Scope)。这是大多数人熟悉的那幅图。",
-        "hubble": "Hubble 在 2025 年 12 月 11 日测绘的木星。云带在那一天的位置上，没有任何一朵云在它今天的位置。颜色来自 Hubble 的红、绿、紫滤镜，比肉眼看到的略偏黄。NASA、ESA、A.A. Simon、M.H. Wong (OPAL)，CC BY 4.0，经改编。"
+        "own": "一张艺术地图，由航天器的照片制成并经过柔化 （Solar System Scope）。这是大多数人熟悉的那幅图。",
+        "hubble": "哈勃在 2025 年 12 月 11 日测绘的木星。云带在那一天的位置上，没有任何一朵云在它今天的位置。颜色来自哈勃的红、绿、紫滤镜，比肉眼看到的略偏黄。NASA、ESA、A.A. Simon、M.H. Wong (OPAL)，CC BY 4.0，经改编。"
       }
     },
     "saturn": {
       "title": "土星的两种面貌",
       "modes": {
         "own": "艺术地图",
-        "hubble": "Hubble 眼中的样子"
+        "hubble": "哈勃眼中的样子"
       },
       "notes": {
-        "own": "一张艺术地图，由航天器的照片制成并经过柔化 (Solar System Scope)。这是大多数人熟悉的那幅图。",
-        "hubble": "Hubble 在 2025 年 8 月 29 日测绘的土星，用的是它的红、绿、紫滤镜，比肉眼看到的略偏黄。那天被光环遮住的赤道条带，是用两边的云填补的。NASA、ESA、A.A. Simon、M.H. Wong (OPAL)，CC BY 4.0，经改编。"
+        "own": "一张艺术地图，由航天器的照片制成并经过柔化 （Solar System Scope）。这是大多数人熟悉的那幅图。",
+        "hubble": "哈勃在 2025 年 8 月 29 日测绘的土星，用的是它的红、绿、紫滤镜，比肉眼看到的略偏黄。那天被光环遮住的赤道条带，是用两边的云填补的。NASA、ESA、A.A. Simon、M.H. Wong (OPAL)，CC BY 4.0，经改编。"
       }
     },
     "uranus": {
       "title": "天王星的两种面貌",
       "modes": {
         "own": "艺术地图",
-        "hubble": "Hubble 眼中的样子"
+        "hubble": "哈勃眼中的样子"
       },
       "notes": {
-        "own": "一张艺术地图，由航天器的照片制成并经过柔化 (Solar System Scope)。这是大多数人熟悉的那幅图。",
-        "hubble": "Hubble 在 2025 年 10 月 23 日测绘的天王星。这颗行星是躺着转的，北极朝向我们，所以 Hubble 只看到了北半球；南半球用赤道的颜色填上，不是猜的。NASA、ESA、A.A. Simon、M.H. Wong (OPAL)，CC BY 4.0，经改编。"
+        "own": "一张艺术地图，由航天器的照片制成并经过柔化 （Solar System Scope）。这是大多数人熟悉的那幅图。",
+        "hubble": "哈勃在 2025 年 10 月 23 日测绘的天王星。这颗行星是躺着转的，北极朝向我们，所以哈勃只看到了北半球；南半球用赤道的颜色填上，不是猜的。NASA、ESA、A.A. Simon、M.H. Wong (OPAL)，CC BY 4.0，经改编。"
       }
     },
     "neptune": {
       "title": "海王星的两种面貌",
       "modes": {
         "own": "艺术地图",
-        "hubble": "Hubble 眼中的样子"
+        "hubble": "哈勃眼中的样子"
       },
       "notes": {
-        "own": "一张艺术地图，由航天器的照片制成并经过柔化 (Solar System Scope)。这是大多数人熟悉的那幅图。",
-        "hubble": "Hubble 在 2025 年 8 月 24 日测绘的海王星：比那些著名的图片颜色更浅。遥远的北部在 Hubble 的视线之外，用它看到的最后一片云的颜色填上，不是猜的。NASA、ESA、A.A. Simon、M.H. Wong (OPAL)，CC BY 4.0，经改编。"
+        "own": "一张艺术地图，由航天器的照片制成并经过柔化 （Solar System Scope）。这是大多数人熟悉的那幅图。",
+        "hubble": "哈勃在 2025 年 8 月 24 日测绘的海王星：比那些著名的图片颜色更浅。遥远的北部在哈勃的视线之外，用它看到的最后一片云的颜色填上，不是猜的。NASA、ESA、A.A. Simon、M.H. Wong (OPAL)，CC BY 4.0，经改编。"
       }
     }
   },
@@ -2360,7 +2360,7 @@ export const COPY = {
       "jupiter": "近看，Oval BA 和三个白色椭圆，在地图上它们所在的位置旋转。"
     },
     "poles": {
-      "jupiter": "每个极点周围的气旋，是根据 Juno 2017 年的观测模拟的：北极周围八个，南极周围五个：这是重建，不是照片。"
+      "jupiter": "每个极点周围的气旋，是根据 Juno 2017 年的观测模拟的：北极周围八个，南极周围五个；这是重建，不是照片。"
     },
     "sun": {
       "measured": "“实测”外观：生成的颗粒纹理已关闭，日冕和日珥保持静止。",
@@ -2382,9 +2382,9 @@ export const COPY = {
       "gamma": "伽马射线，伪彩色：脉冲星、耀变体、宇宙射线的辉光。"
     },
     "colours": {
-      "infrared": "红色是 22 µm，绿色是 4.6 µm，蓝色是 3.4 µm (WISE)",
-      "microwave": "一个波段，94 GHz，以亮度显示 (WMAP)",
-      "gamma": "红色是 0.3 到 1 GeV，绿色是 1 到 3，蓝色是 3 以上 (Fermi)"
+      "infrared": "红色是 22 µm，绿色是 4.6 µm，蓝色是 3.4 µm （WISE）",
+      "microwave": "一个波段，94 GHz，以亮度显示 （WMAP）",
+      "gamma": "红色是 0.3 到 1 GeV，绿色是 1 到 3，蓝色是 3 以上 （Fermi）"
     },
     "mixLabel": "从可见光的天空到{band}",
     "mixValue": "{pct}% {band}",
@@ -2787,7 +2787,7 @@ export const COPY = {
       "meteorNote": "{name}：这片天空里每小时约 {n} 颗。",
       "meteorFew": "{name}：这片天空里每小时不到 1 颗。",
       "meteorDown": "{name}：辐射点在地平线以下，没有条纹。",
-      "meteorHonest": "今晚的流量是模型算的。条纹是示意的。",
+      "meteorHonest": "今晚的流量是模拟值。条纹是示意的。",
       "meteorSporadic": "今晚没有流星雨。对日点流星源：每小时 {n} 颗。",
       "darkness": "你的天空",
       "darknessModes": {
@@ -2956,8 +2956,8 @@ export const COPY = {
     },
     "dso": {
       "leadHome": "{name} 是我们所在的星系；它的中心在 {dist} 光年之外",
-      "lead": "{name} 是{a} {type}，在 {dist} 光年之外",
-      "leadRange": "{name} 是{a} {type}，距离在 {lo} 到 {hi} 光年之间",
+      "lead": "{name} 是{a}{type}，在 {dist} 光年之外",
+      "leadRange": "{name} 是{a}{type}，距离在 {lo} 到 {hi} 光年之间",
       "leadUntyped": "{name} 在 {dist} 光年之外",
       "size": "宽约 {n} 光年",
       "seenAs": "我们看到的是它 {n} 年前的样子",
@@ -3175,7 +3175,7 @@ export const COPY = {
     "shortDate": "{year}年{month}{day}日",
     "closestTitle": "把时钟拨到这次最近的时刻",
     "moonDistances": "{n} 倍月球距离",
-    "au": "{n} AU",
+    "au": "{n} 天文单位",
     "sparkNote": "根据画出的轨道推算，每六天一个点。",
     "sparkApprox": "离得这么近，日期和距离只是近似的：地球的引力没有算进去。",
     "upYears": "已在天上 {n} 年：{date}发射",
@@ -3342,7 +3342,7 @@ export const COPY = {
     "card": {
       "helix": "它的光取自 ESO 的照片，它的形状取自 O’Dell、McCullough 和 Meixner (2004)：一个倾斜 23° 的内盘，和一个倾斜 53° 的外环。那些亮结位于它们实测的距离上。还没有经过天文学家审阅。"
     },
-    "how": "Hubble 和地面望远镜显示的是两个椭圆，499″ × 459″ 和 742″ × 446″。把它们看成是斜着看到的圆，就是两个分别倾斜 23° 和 53° 的环，而亮结朝向我们和远离我们的速度，说明了每个环的哪一侧离我们更近 (O’Dell、McCullough 和 Meixner 2004)。"
+    "how": "哈勃和地面望远镜显示的是两个椭圆，499″ × 459″ 和 742″ × 446″。把它们看成是斜着看到的圆，就是两个分别倾斜 23° 和 53° 的环，而亮结朝向我们和远离我们的速度，说明了每个环的哪一侧离我们更近 (O’Dell、McCullough 和 Meixner 2004)。"
   },
   "deepLmc": {
     "card": {
@@ -3362,7 +3362,7 @@ export const COPY = {
       "dso-tarantula-nebula": [
         [
           "在大麦哲伦云里的纵深",
-          "没有实测：它按大麦哲伦云的距离，沿它自己的方向画出。在倾斜的盘上，它可能近 2000 光年左右。"
+          "没有实测：它按大麦哲伦云的距离，沿它自己的方向画出。在倾斜的盘上，它可能更近约 2000 光年。"
         ],
         [
           "审阅",
@@ -3508,7 +3508,7 @@ export const COPY = {
     "none": "读取不到今天太阳的图片，所以整个圆面都是画出来的。"
   },
   "r12Nearby": {
-    "castShadows": "它的阴影，由地面自己的高度投出，高度数据来自 {title}，用的是太阳现在的位置和真实的比例：是实测的，最好时每 670 米一个高度值，所以宽度不到两公里左右的撞击坑，不会投下影子。",
+    "castShadows": "它的阴影，由地面自己的高度投出，高度数据来自 {title}，用的是太阳现在的位置和真实的比例：是实测的，最好时每 670 米一个高度值，所以宽度不到两公里的撞击坑，不会投下影子。",
     "sunriseModelled": "它在日出和日落时的颜色是模拟的：阳光被擦过的大气染红，只考虑了瑞利散射。"
   },
   "r12Giants": {
@@ -3588,9 +3588,9 @@ export const COPY = {
   },
   "deepRing": {
     "card": {
-      "m57": "它的光取自 Hubble 的照片，它的形状取自 O’Dell、Ferland、Henney 和 Peimbert (2013)：一个倾斜 13.5° 的厚环，几乎是沿着轴线看过去，中间偏蓝的气体画成朝向我们和远离我们伸展。它的颜色是照片的，是通过窄带滤镜拍到的。还没有经过天文学家审阅。",
+      "m57": "它的光取自 哈勃的照片，它的形状取自 O’Dell、Ferland、Henney 和 Peimbert (2013)：一个倾斜 13.5° 的厚环，几乎是沿着轴线看过去，中间偏蓝的气体画成朝向我们和远离我们伸展。它的颜色是照片的，是通过窄带滤镜拍到的。还没有经过天文学家审阅。",
       "m27": "它的光取自 NOIRLab 的照片，用的是它的气体自己的色调；它的形状是重建的：明亮的腰部是几乎侧向看到的厚环，较暗的耳朵是它的瓣，依据的是 Meaburn 等人 (2005) 测得的壳层速度。还没有经过天文学家审阅。",
-      "southern-ring": "它的光取自 Webb 的红外照片；它的形状依据 Kastner 等人 (2024) 和 De Marco 等人 (2022)：一个几乎沿着轴线看过去的环，一个穿过环的气泡，以及包着两者的分子晕。还没有经过天文学家审阅。"
+      "southern-ring": "它的光取自 韦布的红外照片；它的形状依据 Kastner 等人 (2024) 和 De Marco 等人 (2022)：一个几乎沿着轴线看过去的环，一个穿过环的气泡，以及包着两者的分子晕。还没有经过天文学家审阅。"
     },
     "rows": {
       "dso-m57": [
@@ -3628,7 +3628,7 @@ export const COPY = {
         ],
         [
           "它的颜色",
-          "是任何眼睛都看不到的红外光，由 Webb 图像的制作者上了颜色。"
+          "是任何眼睛都看不到的红外光，由 韦布图像的制作者上了颜色。"
         ],
         [
           "审阅",
@@ -3636,11 +3636,11 @@ export const COPY = {
         ]
       ]
     },
-    "how": "Hubble 用单一颜色的光拍的照片，加上整个星云里测得的气体速度，显示出一个几乎正对着我们的厚环：它的长轴倾斜 13.5°，东北端离我们更近。更快的气体充满它的中间，并沿着我们的视线朝向我们和远离我们伸展 (O’Dell、Ferland、Henney 和 Peimbert 2013)。"
+    "how": "哈勃用单一颜色的光拍的照片，加上整个星云里测得的气体速度，显示出一个几乎正对着我们的厚环：它的长轴倾斜 13.5°，东北端离我们更近。更快的气体充满它的中间，并沿着我们的视线朝向我们和远离我们伸展 (O’Dell、Ferland、Henney 和 Peimbert 2013)。"
   },
   "r12Dust": {
     "card": {
-      "crab": "它的光取自 Hubble 的照片，是伪彩色，附着在一层外壳上，外壳的形状依据 Martin、Milisavljevic 和 Drissen (2021)：一个约 4 秒差距长的纤维笼子，中间是空的。还没有经过天文学家审阅。",
+      "crab": "它的光取自 哈勃的照片，是伪彩色，附着在一层外壳上，外壳的形状依据 Martin、Milisavljevic 和 Drissen (2021)：一个约 4 秒差距长的纤维笼子，中间是空的。还没有经过天文学家审阅。",
       "veil": "它的光取自 NOIRLab 的照片，是伪彩色，附着在一个宽 37 秒差距的薄球壳上 (Fesen 等人，2018)：那些纤维就是它的边缘，从侧面看到的样子。还没有经过天文学家审阅。",
       "horsehead": "它的暗，是从 NOIRLab 的照片里读出来的：尘埃在 IC 434 发光的气体前面，吸收并染红了它后面的东西，自己不发光。还没有经过天文学家审阅。",
       "coalsack": "它的暗，是从它周围的银河读出来的：一团大约在 590 光年之外的尘埃，让它后面的恒星变暗、变红。还没有经过天文学家审阅。",
@@ -3858,7 +3858,7 @@ export const COPY = {
   },
   "r13Deep": {
     "card": {
-      "dso-tarantula-nebula": "它在我们视线附近的光，来自 Webb 的照片；它的气体是一个模型，参照 Pellegrini、Baldwin 和 Ferland (2011)：星团 R136 周围的一个空腔，位于一层被分子云限制住的发光气体壳之内。还没有经过天文学家审阅。",
+      "dso-tarantula-nebula": "它在我们视线附近的光，来自 韦布的照片；它的气体是一个模型，参照 Pellegrini、Baldwin 和 Ferland (2011)：星团 R136 周围的一个空腔，位于一层被分子云限制住的发光气体壳之内。还没有经过天文学家审阅。",
       "dso-m43": "它的光取自 ESO 的照片，它的形状重建为和猎户座大星云同一团暗云上的一个较小的凹处，被恒星 NU Orionis 照亮。还没有经过天文学家审阅。",
       "dso-m51": "根据已发表的倾角和结构建成：一个几乎正对着我们的双臂旋涡星系，它的伴星系 NGC 5195 在北旋臂末端的后面，还有伸向它的那条旋臂；纵深是模型。还没有经过天文学家审阅。",
       "dso-m81": "根据已发表的倾角和结构建成：一个巨大而古老的核球，两条缠绕紧密的旋臂，内缘有尘埃。还没有经过天文学家审阅。",
@@ -3866,7 +3866,7 @@ export const COPY = {
       "dso-m104": "根据已发表的倾角和结构建成：一个巨大的圆形核球，和一个几乎侧向看到的薄盘，尘埃环在前面。还没有经过天文学家审阅。",
       "dso-antennae-galaxies": "两个正在碰撞的星系，位于天空把它们放的地方，还有它们的两条潮汐尾；每一部分在前面还是后面多远，是模型，参照碰撞的模拟。还没有经过天文学家审阅。",
       "dso-m83": "根据已发表的倾角和结构建成：一个几乎正对着我们的棒旋星系，它的旋臂上有很多年轻的恒星和发光的氢。还没有经过天文学家审阅。",
-      "dso-ngc-1300": "根据已发表的结构建成：一根长长的星棒，前缘有尘埃带，两端各伸出一条旋臂，它们的形状按 Hubble 的照片对齐。还没有经过天文学家审阅。",
+      "dso-ngc-1300": "根据已发表的结构建成：一根长长的星棒，前缘有尘埃带，两端各伸出一条旋臂，它们的形状按 哈勃的照片对齐。还没有经过天文学家审阅。",
       "dso-centaurus-a": "根据已发表的数据建成：一个巨大的椭圆星系，被一个扭曲的、由尘埃和年轻恒星组成的盘穿过，参照一个拟合 Spitzer 图像的模型；它的两条喷流用伪彩色画出，因为它们发的是 X 射线和无线电波，不是可见光。还没有经过天文学家审阅。"
     }
   },
@@ -3946,7 +3946,7 @@ export const COPY = {
       "hours": "小时",
       "days": "天",
       "years": "年",
-      "au": "AU",
+      "au": "天文单位",
       "bar": "巴",
       "microbar": "微巴"
     },
@@ -4105,7 +4105,7 @@ export const COPY = {
     "cutNote": "各级火箭暂时都是从同一个模型上切出来的。",
     "drawnNote": "火焰和蒸汽是画出来的。",
     "groundNote": "发射台附近的地面是示意的；地球地图来自 Solar System Scope，CC BY 4.0。",
-    "groundNoteMars": "Ground near the site illustrative; Mars map Solar System Scope, CC BY 4.0.",
+    "groundNoteMars": "发射场附近的地面是示意的；火星地图来自 Solar System Scope，CC BY 4.0。",
     "keys": "空格键播放或暂停，方向键单步，Esc 关闭"
   },
   "momentShelf": {
@@ -4666,17 +4666,17 @@ Object.assign(COPY, {
     "chip": "日球层 · 模拟",
     "chipTitle": "包围太阳系的这个气泡是根据什么画的",
     "legendTitle": "日球层",
-    "rowTs": "终端激波：太阳风在这里减速到声速以下。模拟的形状穿过两个穿越点：Voyager 1 在 {a} AU，Voyager 2 在 {b} AU（实测）。",
-    "rowHp": "日球层顶：太阳风在这里遇上星际气体。模拟的形状（Parker 1961）穿过两个穿越点：Voyager 1 在 {a} AU，Voyager 2 在 {b} AU（实测）。",
+    "rowTs": "终端激波：太阳风在这里减速到声速以下。模拟的形状穿过两个穿越点：旅行者1号在 {a} AU，旅行者2号在 {b} AU（实测）。",
+    "rowHp": "日球层顶：太阳风在这里遇上星际气体。模拟的形状（Parker 1961）穿过两个穿越点：旅行者1号在 {a} AU，旅行者2号在 {b} AU（实测）。",
     "rowBow": "弓形波：星际气体在前方堆积的地方。示意：日球层顶距离的两倍（McComas 等人，2012）。",
     "rowRibbon": "IBEX 带：IBEX 在天空中测到的一条亮带（Funsten 等人，2013）。它的距离没有测过：画在 {au} AU 处。",
     "rowMotion": "太阳穿过本地星际气体的路线，{v} 公里/秒（IBEX，McComas 等人，2015）。箭头代表 {years} 年的路程，{au} AU。",
-    "sources": "穿越位置来自 JPL Horizons 中 Voyager 的轨迹，取 NASA 公布的穿越日期。形状：Parker 1961、Wilkin 1996，参考 Izmodenov & Alexashov 2015 和 Opher 等人 2015。",
+    "sources": "穿越位置来自 JPL Horizons 中旅行者号的轨迹，取 NASA 公布的穿越日期。形状：Parker 1961、Wilkin 1996，参考 Izmodenov & Alexashov 2015 和 Opher 等人 2015。",
     "crossing": "{craft}：{surface}，{au} AU，{date}",
     "motion": "太阳的路线，{v} 公里/秒",
     "craft": {
-      "deep-voyager-1": "Voyager 1",
-      "deep-voyager-2": "Voyager 2"
+      "deep-voyager-1": "旅行者1号",
+      "deep-voyager-2": "旅行者2号"
     },
     "surface": {
       "ts": "终端激波",
@@ -4906,7 +4906,7 @@ Object.assign(COPY, {
     "cloudsTitle": "碎片云",
     "fleetsTitle": "卫星星座",
     "names": {
-      "fy1c": "Fengyun-1C",
+      "fy1c": "风云一号C",
       "cosmos1408": "Cosmos 1408",
       "iridium33": "Iridium 33",
       "cosmos2251": "Cosmos 2251"
@@ -4946,8 +4946,8 @@ Object.assign(COPY, {
     "fleetNote": "按运营方在目录中给它们起的名字识别。",
     "loadingActive": "先载入所有在工作的卫星（7 MB）…",
     "loadingDebris": "先载入所有被追踪的碎片（7 MB）…",
-    "moment": "2007: Fengyun-1C",
-    "momentTitle": "跳到风云一号 C 被摧毁的那一分钟，并点亮它的碎片云"
+    "moment": "2007：风云一号C",
+    "momentTitle": "跳到风云一号C 被摧毁的那一分钟，并点亮它的碎片云"
   },
   "dateJump": {
     "title": "跳到某个日期",
@@ -5035,7 +5035,7 @@ Object.assign(COPY, {
     "yearAd": "公元 {n} 年",
     "yearBc": "公元前 {n} 年",
     "moved": "{year}的天空：每颗恒星都按自己实测的运动移动了。",
-    "far": "离今天这么远，不画月亮和行星，太阳放在历法给出的位置。",
+    "far": "离今天这么远，不画月球和行星，太阳放在历法给出的位置。",
     "pole": "北极星：{name}，离天极 {deg}°。",
     "noPole": "天极附近没有亮星：最近的{name}离它 {deg}°。",
     "unnamed": "一颗 {mag} 等星",
@@ -5247,15 +5247,15 @@ Object.assign(COPY, {
   "play": {
     "label": "每日挑战",
     "close": "关闭",
-    "day": "{day}(UTC)的谜题,今天所有人都一样。",
+    "day": "{day}（UTC）的谜题，今天所有人都一样。",
     "games": {
       "find-earth": {
         "title": "找到地球",
-        "blurb": "从星系一路找到我们的星球,用尽量少的选择。"
+        "blurb": "从星系一路找到我们的星球，用尽量少的选择。"
       },
       "which-world": {
-        "title": "这是哪个世界?",
-        "blurb": "一张真实地图的特写:从四个世界中选出它。"
+        "title": "这是哪个世界？",
+        "blurb": "一张真实地图的特写：从四个世界中选出它。"
       },
       "guess-distance": {
         "title": "猜距离",
@@ -5263,8 +5263,8 @@ Object.assign(COPY, {
       }
     },
     "other": "其他挑战",
-    "loading": "地图还在加载;准备好后挑战就会开始。",
-    "rung": "第 {n} 步,共 {of} 步:{where}",
+    "loading": "地图还在加载；准备好后挑战就会开始。",
+    "rung": "第 {n} 步，共 {of} 步：{where}",
     "rungs": {
       "local-group": "本星系群",
       "galaxy": "银河系",
@@ -5272,19 +5272,19 @@ Object.assign(COPY, {
       "sun": "太阳系"
     },
     "ask": {
-      "local-group": "哪个标记是我们的星系——银河系?",
-      "galaxy": "哪个标记是太阳?",
-      "stellar": "哪个标记是太阳?",
-      "sun": "哪个标记是地球?"
+      "local-group": "哪个标记是我们的星系——银河系？",
+      "galaxy": "哪个标记是太阳？",
+      "stellar": "哪个标记是太阳？",
+      "sun": "哪个标记是地球？"
     },
     "hints": {
-      "local-group": "我们的星系旁边紧挨着两个小伴星系:麦哲伦云。",
-      "galaxy": "太阳距中心的黑洞约 27 000 光年,位于一条安静的旋臂上。",
-      "stellar": "离太阳最近的恒星是暗淡的红矮星,以及 4.4 光年外的半人马座α。",
+      "local-group": "我们的星系旁边紧挨着两个小伴星系：麦哲伦云。",
+      "galaxy": "太阳距中心的黑洞约 27 000 光年，位于一条安静的旋臂上。",
+      "stellar": "离太阳最近的恒星是暗淡的红矮星，以及 4.4 光年外的半人马座α。",
       "sun": "地球是从太阳往外数的第三个世界。"
     },
-    "hint": "提示(消耗一次机会)",
-    "mark": "标记 {letter},{where}",
+    "hint": "提示（消耗一次机会）",
+    "mark": "标记 {letter}，{where}",
     "places": {
       "tl": "左上",
       "tc": "上方",
@@ -5298,30 +5298,30 @@ Object.assign(COPY, {
     },
     "milkyWay": "银河系",
     "sunName": "太阳",
-    "tries": "第 {n} 次选择,共 {max} 次",
-    "wrong": "不是这个:{letter} 是{name}。",
-    "right": "对,是{name}。正在拉近。",
+    "tries": "第 {n} 次选择，共 {max} 次",
+    "wrong": "不是这个：{letter} 是{name}。",
+    "right": "对，是{name}。正在拉近。",
     "found": "你用 {n} 次选择找到了地球。",
     "lost": "机会用完了。地球是从太阳往外数的第三个世界。",
-    "honest": "标记位于地图绘制每个天体的位置。在太阳系这一步,世界被画得比实际更近,和这个场景其他地方一样。",
-    "round": "第 {n} 轮,共 {of} 轮",
-    "worldAsk": "这是哪个世界的特写?",
+    "honest": "标记位于地图绘制每个天体的位置。在太阳系这一步，世界被画得比实际更近，和这个场景其他地方一样。",
+    "round": "第 {n} 轮，共 {of} 轮",
+    "worldAsk": "这是哪个世界的特写？",
     "more": "显示更多地图",
-    "worldRight": "对:{name}。",
-    "worldWrong": "不对:是{name}。",
-    "credit": "地图:{credit}",
+    "worldRight": "对：{name}。",
+    "worldWrong": "不对：是{name}。",
+    "credit": "地图：{credit}",
     "worldPicture": "太阳系中某个世界的真实地图特写",
-    "distAsk": "{name}有多远?",
-    "slider": "距离(光年)",
+    "distAsk": "{name}有多远？",
+    "slider": "距离（光年）",
     "guess": "猜",
-    "reveal": "{name}距离 {value}:你{off}。",
+    "reveal": "{name}距离 {value}：你{off}。",
     "offs": {
       "hit": "误差在四分之一以内",
       "near": "误差在两倍以内",
       "far": "误差在五倍以内",
       "miss": "误差超过五倍"
     },
-    "source": "距离:{source}",
+    "source": "距离：{source}",
     "units": {
       "ly": "{n} 光年",
       "kly": "{n} 千光年",
@@ -5334,10 +5334,10 @@ Object.assign(COPY, {
       "which-world": "3 个世界中答对 {n} 个",
       "guess-distance": "3 个中有 {n} 个在两倍以内"
     },
-    "shareTitle": "Space Radar:{game}",
+    "shareTitle": "Space Radar：{game}",
     "share": "分享结果",
     "copied": "已复制。粘贴到任何地方。",
-    "copyFailed": "无法复制:请选中上面的文字。",
+    "copyFailed": "无法复制：请选中上面的文字。",
     "played": "今天完成了。新的挑战在 UTC 午夜到来。",
     "streak": "连续 {n} 天"
   }
@@ -5357,7 +5357,7 @@ Object.assign(COPY, {
     "capB": "B · 圆圈",
     "capY": "Y · 三角",
     "capDpad": "方向键 ↑ ↓",
-    "capView": "视图 · Share",
+    "capView": "视图 · 分享",
     "turn": "环顾四周",
     "fly": "前进后退，侧向平移",
     "speed": "更快，更慢",
@@ -5538,12 +5538,12 @@ Object.assign(COPY, {
 // b200-c3-learn: begin -- the Fengyun-1C Moment (copy/en.moments.fengyun.js and its shelf card, forge #153), machine-drafted
 COPY.momentShelf.cards['fengyun-1c'] = {
   "title": "2007：风云一号C",
-  "when": "2007年1月11日至今",
-  "blurb": "一枚中国导弹在 865 km 高处摧毁一颗旧气象卫星，它已编目的 3 531 块碎片从一个点扩散成环绕地球的一层壳，由语音讲述。"
+  "when": "2007 年 1 月 11 日至今",
+  "blurb": "一枚中国导弹在 865 公里高处摧毁一颗旧气象卫星，它已编目的 3 531 块碎片从一个点扩散成环绕地球的一层壳，由语音讲述。"
 };
 COPY.momentStories['fengyun-1c'] = {
   "title": "2007：风云一号C",
-  "blurb": "一枚中国导弹在 865 km 高处摧毁一颗旧气象卫星，它的碎片从一个点扩散成环绕地球的一层壳，至今仍在。",
+  "blurb": "一枚中国导弹在 865 公里高处摧毁一颗旧气象卫星，它的碎片从一个点扩散成环绕地球的一层壳，至今仍在。",
   "chBefore": "风云一号C",
   "chHit": "试验",
   "chRing": "一个环",
@@ -5551,28 +5551,28 @@ COPY.momentStories['fengyun-1c'] = {
   "chYear": "第一年",
   "chShell": "一层壳",
   "chToday": "今天",
-  "v1a": "2007年1月11日傍晚。风云一号C是一颗已退役的中国气象卫星，重 960 kg，经过两极绕地球运行，高度 845 至 865 km。",
+  "v1a": "2007 年 1 月 11 日傍晚。风云一号C是一颗已退役的中国气象卫星，重 960 千克，经过两极绕地球运行，高度 845 至 865 公里。",
   "v1b": "一枚从西昌附近发射的导弹正向它爬升。它的轨迹从未公布，所以这里没有画出。",
-  "v2a": "22:26 UTC：拦截器迎面撞上卫星，接近速度约 8 km/s，把它撞成数千块碎片。",
+  "v2a": "22:26 UTC：拦截器迎面撞上卫星，接近速度约 8 公里/秒，把它撞成数千块碎片。",
   "v2b": "每块碎片飞出时都比其余的快一点或慢一点，所以各自走在自己的轨道上。",
   "v3a": "轨道越高，绕一圈的时间越长。一圈又一圈，碎片沿着原来的轨道拉开，几天之内就合成一个环。",
   "v4a": "地球的扁率使每条轨道的平面转动，高度和倾角不同，转得快慢也不同，于是这个环开始像扇子一样散开。",
   "v4b": "试验两个月后，已有超过 1 200 块碎片被编目，另有近 400 块正在跟踪，NASA 的《Orbital Debris Quarterly News》报道。",
-  "v5a": "到2007年底，目录中有 2 317 块碎片，只有 22 块落回地球。NASA 估计一厘米及以上的碎片至少有 150 000 块，小到无法跟踪。",
-  "v6a": "年复一年，轨道平面一直散开到绕满一圈。到2013年1月，这团碎片云已是环绕地球的一层壳：编目 3 378 块，仍在轨道上 3 076 块。",
-  "v6b": "卫星不得不躲避它们。国际空间站在2012年1月曾为其中一块让路。",
-  "v7a": "今天目录中有风云一号C的 3 531 块碎片，其中 2 310 块仍在天上，已近二十年。2021年11月10日，空间站又一次躲避了其中一块。",
+  "v5a": "到 2007 年底，目录中有 2 317 块碎片，只有 22 块落回地球。NASA 估计一厘米及以上的碎片至少有 150 000 块，小到无法跟踪。",
+  "v6a": "年复一年，轨道平面一直散开到绕满一圈。到 2013 年 1 月，这团碎片云已是环绕地球的一层壳：编目 3 378 块，仍在轨道上 3 076 块。",
+  "v6b": "卫星不得不躲避它们。国际空间站在 2012 年 1 月曾为其中一块让路。",
+  "v7a": "今天目录中有风云一号C的 3 531 块碎片，其中 2 310 块仍在天上，已近二十年。2021 年 11 月 10 日，空间站又一次躲避了其中一块。",
   "v7b": "数目是测量的。画面是模型：今天幸存的碎片在今天的轨道上，回推到试验的那一刻再散开。",
-  "pathSat": "风云一号C的轨道，845 × 865 km，倾角 98.6 度（NASA ODQN，2007年4月），按圆锥曲线绘制；卫星在轨道上被击中的位置是示意的",
+  "pathSat": "风云一号C的轨道，845 × 865 公里，倾角 98.6 度（NASA ODQN，2007 年 4 月），按圆锥曲线绘制；卫星在轨道上被击中的位置是示意的",
   "cloudNote": "这些碎片是目录中仍有的 2 310 块，用目录今天给出的轨道，由模型从一个点散开（二体运动加上地球扁率造成的漂移）；已落下的碎片没有画出，字幕中的数目是测量的。撞击时，每块碎片都从它今天的最低点出发，所以碎片云一开始是卫星下方的一条线，而不是一个点：自 2007 年以来，大气阻力已使许多轨道降低。",
   "drawnNote": "示意：风云一号C 画成带环的标记，每块碎片画成同样大小的点，都不按比例；撞击本身没有画出。",
   "footMore": "更多",
   "footLess": "收起",
-  "srcOdqn07": "NASA Orbital Debris Quarterly News 11(2)，2007年4月：卫星、它的轨道、最初的计数",
-  "srcOdqn08": "NASA Orbital Debris Quarterly News 12(1)，2008年1月：2007年底的计数",
-  "srcOdqn13": "NASA Orbital Debris Quarterly News 17(1)，2013年1月：已编目、已陨落和仍在轨道上的数目",
-  "srcOdqn14": "NASA Orbital Debris Quarterly News 18(1)，2014年1月：空间站2012年1月的规避机动",
-  "srcOdqn22": "NASA Orbital Debris Quarterly News 26(1)，2022年3月：空间站2021年11月10日的规避机动",
+  "srcOdqn07": "NASA Orbital Debris Quarterly News 11(2)，2007 年 4 月：卫星、它的轨道、最初的计数",
+  "srcOdqn08": "NASA Orbital Debris Quarterly News 12(1)，2008 年 1 月：2007 年底的计数",
+  "srcOdqn13": "NASA Orbital Debris Quarterly News 17(1)，2013 年 1 月：已编目、已陨落和仍在轨道上的数目",
+  "srcOdqn14": "NASA Orbital Debris Quarterly News 18(1)，2014 年 1 月：空间站 2012 年 1 月的规避机动",
+  "srcOdqn22": "NASA Orbital Debris Quarterly News 26(1)，2022 年 3 月：空间站 2021 年 11 月 10 日的规避机动",
   "srcCelestrak": "CelesTrak，Chinese ASAT test：事件最可能的时刻，22:26:10 UTC",
   "srcSatcat": "CelesTrak 卫星目录（SATCAT），读取于 2026-11-07：今天的计数和每块碎片的轨道",
   "srcWiki": "维基百科，2007 Chinese anti-satellite missile test：接近速度"
@@ -5609,7 +5609,7 @@ Object.assign(COPY, {
     "brightest": "从地球看、北在上时，所画的光环在位置角约 {ours}° 处最亮（在画面上测得）；{date} 的 EHT 图像在约 {theirs}° 处最亮。",
     "approx": {
       "m87-star": "已对齐：倾角（与视线成 17°）和喷流在天空中的方向（288°）是实测的（Walker 等 2018），气流按顺时针旋转（EHT 2019 第五篇），所以迎面而来、因运动而增亮的一侧落在南边。按线性亮度沿光环测量，我们的亮侧约为暗侧的 2.5 倍（模糊到 EHT 的 20 微角秒时为 2.1）；他们的在 2017 年为 2.7，2018 年为 4.2，因此我们的与 2017 年相符。近似之处：光线按不自转的黑洞追踪，气体是沿圆轨道运动的薄盘，而不是 EHT 模型中又热又厚的吸积流。他们的亮斑一年内移动了约 30°；我们的不动。",
-      "sgr-a-star": "已对齐：从与自转轴成 30° 的方向看，与 EHT 2022 第五篇中最吻合的模型一致，并像 GRAVITY 看到的耀发一样顺时针旋转。人为选择：自转轴在天空中的指向，至今无人测得；我们把它转到使较亮一侧落在 EHT 图像最亮之处。近似之处：光线绕不自转的黑洞和薄盘追踪；EHT 图像是对几分钟内就会变化的气流整夜的平均，作者说其中三个亮结并非都是真实的。 我们的亮侧约为暗侧的五倍（模糊到 EHT 的 20 微角秒时为 4.5），他们的为 1.7：在 30° 下，圆轨道使近侧增亮的程度远超 EHT 整夜平均所显示的。"
+      "sgr-a-star": "已对齐：从与自转轴成 30° 的方向看，与 EHT 2022 第五篇中最吻合的模型一致，并像 GRAVITY 看到的耀发一样顺时针旋转。人为选择：自转轴在天空中的指向，至今无人测得；我们把它转到使较亮一侧落在 EHT 图像最亮之处。近似之处：光线绕不自转的黑洞和薄盘追踪；EHT 图像是对几分钟内就会变化的气流整夜的平均，作者说其中三个亮结并非都是真实的。我们的亮侧约为暗侧的五倍（模糊到 EHT 的 20 微角秒时为 4.5），他们的为 1.7：在 30° 下，圆轨道使近侧增亮的程度远超 EHT 整夜平均所显示的。"
     }
   },
   "cardVoice": {

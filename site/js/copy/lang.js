@@ -20,21 +20,21 @@ export const LANGUAGES = {
   es: { locale: 'es-ES', pill: 'es-ES', reviewed: true }, // machine-translated, agent-reviewed 2026-11-13 (not native-reviewed)
   // 0077 W1-e: end
   // 0077 W2-f: begin
-  fr: { locale: 'fr-FR', pill: 'fr-FR', reviewed: false }, // machine-drafted
-  de: { locale: 'de-DE', pill: 'de-DE', reviewed: false }, // machine-drafted
-  pt: { locale: 'pt-BR', pill: 'pt-BR', reviewed: false }, // Brazil; ?lang=pt-BR is read as pt
+  fr: { locale: 'fr-FR', pill: 'fr-FR', reviewed: true }, // machine-translated, agent-reviewed 2026-11-14 (not native-reviewed)
+  de: { locale: 'de-DE', pill: 'de-DE', reviewed: true }, // machine-translated, agent-reviewed 2026-11-14 (not native-reviewed)
+  pt: { locale: 'pt-BR', pill: 'pt-BR', reviewed: true }, // Brazil; ?lang=pt-BR is read as pt
   // 0077 W2-f: end
-  // 1.6.3 (public #529 to #534): machine-drafted, hidden: reached by ?lang= alone (reviewed stays false until a native reader signs off) and
-  // listed by no picker. zh is Simplified (the maintainer has not chosen yet); `tag` is what <html lang> says when it is not the code. For Traditional
+  // 1.6.3 (public #529 to #534): machine-translated, agent-reviewed 2026-11-14 (not native-reviewed), so offered from the browser's language too.
+  // zh is Simplified (the maintainer has not chosen yet); `tag` is what <html lang> says when it is not the code. For Traditional
   // add `'zh-Hant': { locale: 'zh-TW', pill: 'zh-TW', tag: 'zh-Hant', reviewed: false }` and a copy/zh-Hant.js: pickLanguage already reads
   // zh-TW, zh-HK, zh-MO and zh-Hant as that entry once it exists, and zh-CN, zh-SG and zh-Hans as zh.
   // 1.6.3: begin
-  ru: { locale: 'ru-RU', pill: 'ru-RU', reviewed: false },
-  uk: { locale: 'uk-UA', pill: 'uk-UA', reviewed: false },
-  zh: { locale: 'zh-CN', pill: 'zh-CN', tag: 'zh-Hans', reviewed: false },
-  hi: { locale: 'hi-IN', pill: 'hi-IN', reviewed: false },
-  he: { locale: 'he-IL', pill: 'he-IL', reviewed: false }, // right to left: <html dir="rtl"> and css/rtl.css
-  ar: { locale: 'ar-u-nu-latn', pill: 'ar-u-nu-latn', reviewed: false }, // right to left; Latin digits, as the app's numbers are
+  ru: { locale: 'ru-RU', pill: 'ru-RU', reviewed: true },
+  uk: { locale: 'uk-UA', pill: 'uk-UA', reviewed: true },
+  zh: { locale: 'zh-CN', pill: 'zh-CN', tag: 'zh-Hans', reviewed: true },
+  hi: { locale: 'hi-IN', pill: 'hi-IN', reviewed: true },
+  he: { locale: 'he-IL', pill: 'he-IL', reviewed: true }, // right to left: <html dir="rtl"> and css/rtl.css
+  ar: { locale: 'ar-u-nu-latn', pill: 'ar-u-nu-latn', reviewed: true }, // right to left; Latin digits, as the app's numbers are
   // 1.6.3: end
 };
 const RTL = ['he', 'ar'];

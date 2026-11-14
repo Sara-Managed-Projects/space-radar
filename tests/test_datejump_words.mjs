@@ -55,7 +55,7 @@ for (const lang of LANGS) {
   check(chips.length > 100, `the dialog's chips were built (${chips.length})`);
   const fy = chips.filter((c) => c === COPY.momentShelf.cards['fengyun-1c'].title || c === COPY.breakups.moment);
   check(fy.length === 1, `"2007: Fengyun-1C" is one chip, not ${fy.length} (the Moment, with the cloud's own chip only when the shelf has none)`);
-  check(chips.includes('Start') && chips.includes('Der Adler ist gelandet') && !chips.includes('The Eagle has landed'), 'the mission event chips say their titles in the visitor\'s language');
+  check(chips.includes('Start') && chips.includes('Eagle ist gelandet') && !chips.includes('The Eagle has landed'), 'the mission event chips say their titles in the visitor\'s language');
   Object.keys(E).forEach((k) => { E[k] = keep[k]; });
 }
 

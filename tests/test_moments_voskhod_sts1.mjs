@@ -253,7 +253,7 @@ const common = async (id, cover, models) => {
       check(Object.keys(en).every((k) => slots(tr[k]) === slots(en[k])), `${code}: ${id} keeps every {slot}`);
       check(Object.keys(en).filter((k) => en[k].split(/\s+/).length >= 6 && !/Houston/.test(en[k])).every((k) => tr[k] !== en[k]), `${code}: ${id} has no long sentence left in English`);
     }
-    check(/Houston, we've had a problem/.test(lang.COPY.momentStories['apollo-13'].problem || lang.COPY.momentStories['apollo-13'].problem1 || JSON.stringify(lang.COPY.momentStories['apollo-13'])), `${code}: the radio lines of Apollo 13 stay as said`);
+    check(/Houston, we['’]ve had a problem/.test(lang.COPY.momentStories['apollo-13'].problem || lang.COPY.momentStories['apollo-13'].problem1 || JSON.stringify(lang.COPY.momentStories['apollo-13'])), `${code}: the radio lines of Apollo 13 stay as said`);
     check(/Machine-drafted like the rest of this file/.test(src(`site/js/copy/${code}.js`)) && ['machine-drafted', 'agent-reviewed'].includes(lang.META.review.status), `${code}: still marked machine-drafted`);
     check(['voskhod-2', 'sts-1'].every((id) => lang.COPY.momentShelf.cards[id] && lang.COPY.momentShelf.cards[id].title), `${code}: the shelf cards of the two new stories are translated`);
     for (const id of ['voskhod-2', 'sts-1']) {
@@ -264,7 +264,7 @@ const common = async (id, cover, models) => {
       check(Object.keys(en).every((k) => slots(tr[k]) === slots(en[k])), `${code}: ${id} keeps every {slot}`);
       check(Object.keys(en).filter((k) => en[k].split(/\s+/).length >= 6 && !/world's greatest all-electric/.test(en[k])).every((k) => tr[k] !== en[k]), `${code}: ${id} has no long sentence left in English`);
     }
-    check(/world's greatest all-electric flying machine/.test(lang.COPY.momentStories['sts-1'].stop), `${code}: Young's words stay as he said them`);
+    check(/world['’]s greatest all-electric flying machine/.test(lang.COPY.momentStories['sts-1'].stop), `${code}: Young's words stay as he said them`);
   }
   // Russian (#533): Voskhod 2 and STS-1 drafted; Apollo 13 and Sputnik 1 stay English until a translator has them
   {
@@ -280,7 +280,7 @@ const common = async (id, cover, models) => {
       check(Object.keys(en).every((k) => slots(tr[k]) === slots(en[k])), `${code}: ${id} keeps every {slot}`);
       check(Object.keys(en).filter((k) => en[k].split(/\s+/).length >= 6 && !/world's greatest all-electric/.test(en[k])).every((k) => tr[k] !== en[k]), `${code}: ${id} has no long sentence left in English`);
     }
-    check(/world's greatest all-electric flying machine/.test(lang.COPY.momentStories['sts-1'].stop), `${code}: Young's words stay as he said them`);
+    check(/world['’]s greatest all-electric flying machine/.test(lang.COPY.momentStories['sts-1'].stop), `${code}: Young's words stay as he said them`);
   }
   // Ukrainian (#534): Voskhod 2 and STS-1 drafted; Apollo 13, Sputnik 1, Hubble and Falcon 9 stay English until a translator has them
   {
@@ -296,7 +296,7 @@ const common = async (id, cover, models) => {
       check(Object.keys(en).every((k) => slots(tr[k]) === slots(en[k])), `${code}: ${id} keeps every {slot}`);
       check(Object.keys(en).filter((k) => en[k].split(/\s+/).length >= 6 && !/world's greatest all-electric/.test(en[k])).every((k) => tr[k] !== en[k]), `${code}: ${id} has no long sentence left in English`);
     }
-    check(/world's greatest all-electric flying machine/.test(lang.COPY.momentStories['sts-1'].stop), `${code}: Young's words stay as he said them`);
+    check(/world['’]s greatest all-electric flying machine/.test(lang.COPY.momentStories['sts-1'].stop), `${code}: Young's words stay as he said them`);
   }
 }
 

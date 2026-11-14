@@ -109,9 +109,21 @@ assert.equal(run({ location: { search: '?lang=xx' }, document: {} }, probe).toni
 const fromBrowser = run({ location: { search: '' }, navigator: { languages: ['es-MX', 'es'], language: 'es-MX' }, document: {} }, probe);
 // 2026-11-13 (the maintainer's decision): an agent-reviewed language is offered from the browser's language; Spanish is the first.
 assert.equal(fromBrowser.tonight, 'Esta noche', 'a Spanish browser is given the agent-reviewed Spanish by itself');
-const frBrowser = run({ location: { search: '' }, navigator: { languages: ['fr-FR'], language: 'fr-FR' }, document: {} }, probe);
-assert.equal(frBrowser.tonight, 'Tonight', 'a French browser is NOT given the machine-drafted French by itself');
-assert.equal(frBrowser.lang, '', 'and <html lang> stays as the page wrote it');
+// 2026-11-14: the nine other languages are agent-reviewed too (seo-languages-2), so every one is offered from the browser's language.
+for (const [code, nav, word] of [['fr', 'fr-FR', 'Ce soir'], ['de', 'de-AT', 'Heute Nacht'], ['pt', 'pt-BR', null], ['ru', 'ru-RU', null], ['uk', 'uk-UA', null], ['zh', 'zh-CN', null], ['hi', 'hi-IN', null], ['he', 'he-IL', null], ['ar', 'ar-EG', null]]) {
+  const b = run({ location: { search: '' }, navigator: { languages: [nav], language: nav }, document: {} }, probe);
+  assert.equal(b.lang, code === 'zh' ? 'zh-Hans' : code, `a ${nav} browser is given the agent-reviewed ${code} by itself`);
+  assert.notEqual(b.tonight, 'Tonight', `${code}: the section is not English`);
+  if (word) assert.equal(b.tonight, word, `${code}: ${word}`);
+  assert.equal(b.dir, ['he', 'ar'].includes(code) ? 'rtl' : '', `${code}: dir`);
+}
+// A language nobody has written (Swahili) is still English.
+assert.equal(run({ location: { search: '' }, navigator: { languages: ['sw-KE'], language: 'sw-KE' }, document: {} }, probe).tonight, 'Tonight', 'sw has no file: English');
+// Arabic has no article: {a} is empty, and the sentence must not keep a double space where it stood.
+const arStorm = run({ location: { search: '?lang=ar' }, document: {} }, `out({ lead: m.t(m.COPY.templates.storm.lead, { name: 'X', a: m.article('y'), status: 'S', ago: 'A' }), plain: m.t('a {x} b', { x: '' }), keep: m.t('a  b {x}', { x: 'c' }) });`);
+assert.ok(!/ {2}/.test(arStorm.lead), `Arabic storm.lead has a double space: ${JSON.stringify(arStorm.lead)}`);
+assert.equal(arStorm.plain, 'a b', 'an empty slot between two spaces leaves one');
+assert.equal(arStorm.keep, 'a  b c', 'and a filled slot leaves the template as written');
 assert.equal(run({ location: { search: '?lang=es&from=ig' } , document: {} }, probe).tonight, 'Esta noche', 'other query keys do not matter');
 
 // --- 3. English is free, and nothing here needs more than es2020 ---------------------------------------------
@@ -151,7 +163,7 @@ assert.deepEqual([out.missing, out.placeholder, out.kind, out.extra], [[], [], [
 const es_ = await import(href('copy/es.js'));
 assert.equal(es_.META.review.status, 'agent-reviewed', 'the Spanish says what it is: machine-translated, read against the English by an agent, not by a native speaker');
 assert.equal(LANGUAGES.es.reviewed, true, 'and so the browser\'s language brings it in');
-for (const code of ['fr', 'de', 'pt', 'ru', 'uk', 'zh', 'hi', 'he', 'ar']) assert.equal(LANGUAGES[code].reviewed, false, `${code} is not offered from the browser's language yet`);
+for (const code of ['fr', 'de', 'pt', 'ru', 'uk', 'zh', 'hi', 'he', 'ar']) { assert.equal(LANGUAGES[code].reviewed, true, `${code} is agent-reviewed, so the browser's language brings it in`); assert.equal((await import(href(`copy/${code}.js`))).META.review.status, 'agent-reviewed', `${code} says what it is`); assert.match((await import(href(`copy/${code}.js`))).META.review.note, /achine-translated.*agent-reviewed.*not native-reviewed/i, `${code}: the note is honest`); }
 assert.ok(LANGUAGES.es.locale === 'es-ES', 'its dates are written in Spanish');
 const st = await status();
 assert.deepEqual(st.problems, [], `the translation table has problems:\n${st.problems.join('\n')}`);
@@ -192,15 +204,15 @@ for (const [code, want] of Object.entries(WANT)) {
   assert.deepEqual(got.plural, want.plural, `${code}: RULES.plural`);
   assert.deepEqual(got.article.map((a) => typeof a), ['string', 'string'], `${code}: RULES.article answers`);
   const mod = await import(href(`copy/${code}.js`));
-  assert.equal(mod.META.review.status, 'machine-drafted', `${code}: it says what it is until two native speakers have read it`);
-  assert.equal(LANGUAGES[code].reviewed, false, `${code}: and the browser's language does not bring it in`);
+  assert.equal(mod.META.review.status, 'agent-reviewed', `${code}: it says what it is until native speakers have read it`);
+  assert.equal(LANGUAGES[code].reviewed, true, `${code}: agent-reviewed, so the browser's language brings it in`);
   const { out: o2 } = await check(join(JS, `copy/${code}.js`));
   // 1.6.3 (internal #995): the allowed-gaps lists are empty. Every key English has, the four drafted languages have too.
   assert.deepEqual([o2.missing, o2.placeholder, o2.kind, o2.extra], [[], [], [], []], `copy/${code}.js lacks a key, loses or invents a {slot}, or has a key English does not:\n${JSON.stringify(o2, null, 1).slice(0, 600)}`);
 }
 assert.equal(pickLanguage('?lang=pt-BR', [], LANGUAGES), 'pt', '?lang=pt-BR is read as pt: the file is copy/pt.js');
 assert.equal(run({ location: { search: '?lang=pt-BR' }, document: {} }, probe2).tonight, 'Esta noite');
-assert.equal(run({ location: { search: '' }, navigator: { languages: ['fr-FR', 'de', 'pt-BR'], language: 'fr-FR' }, document: {} }, probe2).tonight, 'Tonight', 'a machine-drafted language is never taken from the browser');
+assert.equal(run({ location: { search: '' }, navigator: { languages: ['fr-FR', 'de', 'pt-BR'], language: 'fr-FR' }, document: {} }, probe2).tonight, 'Ce soir', 'an agent-reviewed language is taken from the browser, the first of its list');
 // 0077 W2-f: end
 
 // 1.6.3: begin
@@ -222,11 +234,11 @@ const NEW = {
 };
 for (const [code, want] of Object.entries(NEW)) {
   const mod = await import(href(`copy/${code}.js`));
-  assert.equal(mod.META.review.status, 'machine-drafted', `${code}: it says what it is until a native reader has read it`);
+  assert.equal(mod.META.review.status, 'agent-reviewed', `${code}: it says what it is until a native reader has read it`);
   assert.equal(mod.META.name, want.name, `${code}: the language's own name`);
-  assert.equal(LANGUAGES[code].reviewed, false, `${code}: hidden: the browser's language never brings it in`);
+  assert.equal(LANGUAGES[code].reviewed, true, `${code}: agent-reviewed: the browser's language brings it in`);
   assert.equal(LANGUAGES[code].locale, want.locale, `${code}: dates are written in its locale`);
-  assert.equal(pickLanguage('', [code, `${code}-XX`], LANGUAGES), 'en', `${code}: a browser that asks for it still gets English`);
+  assert.equal(pickLanguage('', [code, `${code}-XX`], LANGUAGES), code, `${code}: a browser that asks for it gets it`);
   assert.equal(pickLanguage(`?lang=${code}`, [], LANGUAGES), code, `${code}: ?lang= reaches it`);
   const { out: o3 } = await check(join(JS, `copy/${code}.js`));
   assert.deepEqual([o3.missing, o3.placeholder, o3.kind, o3.extra], [[], [], [], []], `copy/${code}.js lacks a key, loses or invents a {slot}:\n${JSON.stringify(o3, null, 1).slice(0, 600)}`);
