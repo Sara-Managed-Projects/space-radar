@@ -5757,6 +5757,8 @@ COPY.dateJump.eventTitles = {
   "Saturn's orbit": "Die Saturnbahn",
   "Closest to Pluto": "Pluto am nächsten",
   "Arrokoth": "Arrokoth",
+  "The first full-colour pictures": "Die ersten Farbbilder",
+  "The first big batch of data": "Der erste große Datensatz",
   "Back past Earth": "Wieder an der Erde vorbei",
   "Into orbit round Jupiter": "In die Umlaufbahn um Jupiter",
   "Past Venus": "An der Venus vorbei",

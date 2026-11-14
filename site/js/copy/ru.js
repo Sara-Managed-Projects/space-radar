@@ -5682,6 +5682,8 @@ COPY.dateJump.eventTitles = {
   "Saturn's orbit": "Орбита Сатурна",
   "Closest to Pluto": "Ближе всего к Плутону",
   "Arrokoth": "Аррокот",
+  "The first full-colour pictures": "Первые цветные снимки",
+  "The first big batch of data": "Первая большая порция данных",
   "Back past Earth": "Снова мимо Земли",
   "Into orbit round Jupiter": "На орбиту вокруг Юпитера",
   "Past Venus": "Мимо Венеры",

@@ -5674,6 +5674,8 @@ COPY.dateJump.eventTitles = {
   "Saturn's orbit": "מסלול שבתאי",
   "Closest to Pluto": "הכי קרוב לפלוטו",
   "Arrokoth": "ארוקות׳",
+  "The first full-colour pictures": "התמונות הצבעוניות הראשונות",
+  "The first big batch of data": "קבוצת הנתונים הגדולה הראשונה",
   "Back past Earth": "שוב ליד כדור הארץ",
   "Into orbit round Jupiter": "למסלול סביב צדק",
   "Past Venus": "ליד נוגה",
