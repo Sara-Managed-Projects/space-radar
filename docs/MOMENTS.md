@@ -228,3 +228,21 @@ Every moment prints, small at its foot, how its path is known (`measured`, `reco
 the path's own sentence), that flames, steam and parachutes are drawn, that a cut model is a stand-in, and where the
 ground comes from. The time compression is always on screen. Positions of the Sun and the Moon are the
 mission's own (astronomy-engine); the Earth turns under them at the mission's sidereal time.
+
+### Launch-ground review: Apollo 11 at Launch Complex 39A (forge #315, 2026-11-14)
+
+Looked at with the `moment-stories` probe on main (4a9e2f83, SwiftShader, 1200 x 800), frame `apollo-11-ignition` (T-4 s). What is drawn:
+the Saturn V (110.6 m) on a ground of kind `coast` with `pad: true` (`site/data/moments/apollo-11.json`, `site/js/moments/stage.js`): scrub and sand
+with the shore 800 m away, a round concrete apron of about 124 m radius and a dark flame trench. The foot line says "Ground near the pad
+illustrative; Earth map Solar System Scope, CC BY 4.0" and the path line says the heights and distances between event times are approximate.
+
+Findings (what the frame shows; nothing here is a measured fact about the pad):
+
+- The ground and the apron are labelled illustrative, and are. The label is adequate for the ground.
+- The stack stands with no mobile launcher, umbilical tower, hold-down arms or service structure, so a viewer may take the launch complex for a bare
+  plain. The foot line does not say these are left out; the escape tower the caption mentions at T+197.9 s is the rocket's own, not the pad's.
+- The pad's true outline (a rectangle with a trench, on a raised mound) is not drawn; the round apron is a stand-in.
+- Only the first frame of the sequence was reviewed from the probe; the climb frames show the ground falling away and are not affected.
+
+Proposed, not done: add to the foot line of the pad moments that the launch tower and service structure are not drawn (a new string in
+`en.moments.js`, translated afterwards), or draw a mobile launcher from NASA's published dimensions. Either needs sources opened first.
