@@ -825,7 +825,19 @@ export const COPY = {
         "launched": "在太空的天数",
         "fromYou": "距你 {u}",
         "heightAbove": "高 {u}",
+        "yearLong": "绕太阳一圈 {u}，合 {y} 个地球年",
+        "lightFromSun": "{u} 光才到达我们",
+        "planetRadius": "宽度 {u}",
+        "planetMass": "质量 {u}",
+        "mass": "质量，单位 {u}",
         "other": "{u}"
+      },
+      "starClass": {
+        "line": "{temp}{size}",
+        "temp": { "O": "蓝色", "B": "蓝白色", "A": "白色", "F": "黄白色", "G": "黄色", "K": "橙色", "M": "红色" },
+        "size": { "V": "中年恒星", "IV": "亚巨星", "III": "巨星", "II": "亮巨星", "I": "超巨星", "VI": "亚矮星", "none": "恒星" },
+        "brownDwarf": "褐矮星",
+        "whiteDwarf": "白矮星",
       },
       "units": {
         "minutes": "分钟",
@@ -1696,6 +1708,8 @@ export const COPY = {
       "catalogue": "星表",
       "illustration": "示意图"
     },
+    "placeWord": "位置：{word}",
+    "pictureWord": "画面：{word}",
     "loading": "正在打开图例。",
     "failed": "图例没有加载出来。下面这一行用简短的话说明了。"
   },
@@ -2644,6 +2658,7 @@ export const COPY = {
       "markPeak": "{time} {deg}°",
       "honesty": "按你的位置计算得出。亮度是估计值。"
     },
+    "settings": "更多天空设置",
     "skybar": {
       "title": "天空",
       "field": "视场",
@@ -3241,6 +3256,7 @@ export const COPY = {
     "trueTitle": "最宽的行星，圆点已收起。点按再画出圆点。"
   },
   "launchChip": {
+    "rocket": "火箭发射：{name}",
     "opens": "点按打开它的卡片",
     "train": "新的 {n} 颗 Starlink 列车，将在{when}从你头顶飞过"
   },

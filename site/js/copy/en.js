@@ -711,7 +711,7 @@ export const COPY = {
   },
   // The Planets and Stars tabs' lists.
   explore: {
-    worldsTitle: 'The worlds',
+    worldsTitle: 'The worlds, distance from Earth now',
     // Under the Planets tab's list: the view it opens on draws each planet's path and a dot at
     // its place (scene/orbitrings.js), and a dot is the one thing drawn larger than it is.
     worldsDrawn: 'Planets drawn as dots, larger than they are.',
@@ -1460,8 +1460,14 @@ export const COPY = {
         distanceFromSun: '{u} from Sun',
         distanceFromEarth: '{u} from Earth',
         lightTime: '{u} each way',
-        spin: '{u} a turn',
-        yearLength: '{u} a year',
+        spin: '{u} to turn once',
+        yearLength: '{u} to go round the Sun',
+        // A long year in Earth years too (ui/cards.js heroNumbers, internal #301): {y} is a whole number.
+        yearLong: '{u} to go round the Sun, {y} Earth years',
+        lightFromSun: '{u} for its light to reach us',
+        planetRadius: '{u}’s width',
+        planetMass: '{u}’s mass',
+        mass: 'mass, in {u}',
         brightness: 'magnitude',
         spectralType: 'star class',
         across: '{u} across',
@@ -1470,6 +1476,15 @@ export const COPY = {
         fromYou: '{u} from you',
         heightAbove: '{u} up',
         other: '{u}',
+      },
+      // A star's class in words (ui/cardfacts.js starClassParts, internal #299): the letter is the
+      // colour, the Roman numeral the size; the catalogue's suffixes (var, m, e) are dropped.
+      starClass: {
+        line: '{temp} {size}',
+        temp: { O: 'blue', B: 'blue-white', A: 'white', F: 'yellow-white', G: 'yellow', K: 'orange', M: 'red' },
+        size: { V: 'mid-life star', IV: 'subgiant', III: 'giant', II: 'bright giant', I: 'supergiant', VI: 'subdwarf', none: 'star' },
+        brownDwarf: 'brown dwarf',
+        whiteDwarf: 'white dwarf',
       },
       units: {
         'minutes': 'min',
@@ -2187,10 +2202,10 @@ export const COPY = {
       always: 'From {place}: up now, {alt}, in the {dir}. It does not set today.',
       honest: 'Worked out for a sea-level horizon; hills and houses are not in it.',
     },
-    // Rise and set for a world needs 0014's sky maths. Say that, rather than imply it is
-    // invisible: the Moon and the planets are the easiest things in the sky to find.
+    // Shown only while no place is set or the clock holds no rise to work out (internal #268: it used to say
+    // rise times were "not in this version yet", which Tonight and the card's own line contradict).
     worldNoRise:
-      'You can see this one with your own eyes. Working out when it rises from your place is not in this version yet.',
+      'You can see this one with your own eyes. Set where you are and this line will say when it rises and sets from there.',
     // ...which is not true of Pluto or of Jupiter's moons, so they say what IS true. Sources in
     // registry/worlds.yaml `facts.seen`: the moons are "readily seen with common binoculars" and
     // lost to the eye in Jupiter's glare (Wikipedia, Galilean moons); Pluto is magnitude 13.65 to

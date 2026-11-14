@@ -935,7 +935,19 @@ export const COPY = {
         "launched": "jours dans l’espace",
         "fromYou": "{u} de toi",
         "heightAbove": "{u} d’altitude",
+        "yearLong": "{u} pour faire le tour du Soleil, {y} années terrestres",
+        "lightFromSun": "{u} pour que sa lumière nous atteigne",
+        "planetRadius": "{u} de large",
+        "planetMass": "{u} de masse",
+        "mass": "masse en {u}",
         "other": "{u}"
+      },
+      "starClass": {
+        "line": "{size} {temp}",
+        "temp": { "O": "bleue", "B": "bleu-blanc", "A": "blanche", "F": "jaune-blanc", "G": "jaune", "K": "orange", "M": "rouge" },
+        "size": { "V": "étoile en milieu de vie", "IV": "sous-géante", "III": "géante", "II": "géante brillante", "I": "supergéante", "VI": "sous-naine", "none": "étoile" },
+        "brownDwarf": "naine brune",
+        "whiteDwarf": "naine blanche",
       },
       "units": {
         "minutes": "min",
@@ -1782,6 +1794,8 @@ export const COPY = {
       "catalogue": "Catalogue",
       "illustration": "Illustration"
     },
+    "placeWord": "Position : {word}",
+    "pictureWord": "Image : {word}",
     "loading": "Ouverture de la légende.",
     "failed": "La légende ne s’est pas chargée. La ligne ci-dessous le dit en bref."
   },
@@ -2725,6 +2739,7 @@ export const COPY = {
       "markPeak": "{time} {deg}°",
       "honesty": "Calculé pour ton lieu. L’éclat est une estimation."
     },
+    "settings": "Plus de réglages du ciel",
     "skybar": {
       "title": "Le ciel",
       "field": "Champ de vision",
@@ -3304,6 +3319,7 @@ export const COPY = {
     "trueTitle": "La plus large planète, sans les points. Appuie pour les redessiner."
   },
   "launchChip": {
+    "rocket": "Lancement de fusée : {name}",
     "opens": "appuie pour sa fiche",
     "train": "Nouveau train Starlink de {n}, il te survole {when}"
   },

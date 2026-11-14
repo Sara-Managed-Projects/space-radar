@@ -811,7 +811,19 @@ export const COPY = {
         launched: "días en el espacio",
         fromYou: "a {u} de ti",
         heightAbove: "{u} de altura",
+        yearLong: "{u} para dar la vuelta al Sol, {y} años terrestres",
+        lightFromSun: "{u} para que su luz nos llegue",
+        planetRadius: "{u} de ancho",
+        planetMass: "{u} de masa",
+        mass: "masa en {u}",
         other: "{u}"
+      },
+      starClass: {
+        line: "{size} {temp}",
+        temp: { O: "azul", B: "azul-blanquecina", A: "blanca", F: "blanco-amarillenta", G: "amarilla", K: "naranja", M: "roja" },
+        size: { V: "estrella de media vida", IV: "subgigante", III: "gigante", II: "gigante brillante", I: "supergigante", VI: "subenana", none: "estrella" },
+        brownDwarf: "enana marrón",
+        whiteDwarf: "enana blanca",
       },
       units: {
         minutes: "min",
@@ -1636,6 +1648,8 @@ export const COPY = {
       catalogue: "Catálogo",
       illustration: "Ilustración"
     },
+    placeWord: "Lugar: {word}",
+    pictureWord: "Imagen: {word}",
     loading: "Abriendo la leyenda.",
     failed: "No se cargó la leyenda. La línea de abajo lo resume."
   },
@@ -2569,6 +2583,7 @@ export const COPY = {
       markPeak: "{time} {deg}°",
       honesty: "Calculado para tu lugar. El brillo es una estimación."
     },
+    settings: "Más ajustes del cielo",
     skybar: {
       title: "El cielo",
       field: "Campo de visión",
@@ -3135,6 +3150,7 @@ export const COPY = {
     trueTitle: "El planeta más ancho, sin los puntos. Pulsa para volver a dibujarlos."
   },
   launchChip: {
+    rocket: "Lanzamiento de cohete: {name}",
     opens: "pulsa para ver su ficha",
     train: "Nuevo tren Starlink de {n}, sobre ti {when}"
   },

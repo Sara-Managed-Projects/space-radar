@@ -1185,6 +1185,8 @@ jobs:
         run: node tests/test_ktx2.mjs
       - name: "the one-Chrome lock: a live owner is not robbed, a dead one is, the walk stops its servers (internal #460)"
         run: node tests/test_chromelock.mjs
+      - name: "the card's honesty and Tonight words: star class in words, Place and Picture, Earth years, no unranked best (internal #268 to #314)"
+        run: node tests/test_card_honesty_words.mjs
       - name: "the launch chip: which launch, what it says, the Starlink train's pass, no chase camera (public #289)"
         run: node tests/test_launchchip.mjs
       - name: "a first visit: once, three lines that fit, two buttons, one ember (public #241, #287)"

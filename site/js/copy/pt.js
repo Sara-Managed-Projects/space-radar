@@ -921,7 +921,19 @@ export const COPY = {
         "launched": "dias no espaço",
         "fromYou": "{u} de você",
         "heightAbove": "{u} de altura",
+        "yearLong": "{u} para dar a volta ao Sol, {y} anos terrestres",
+        "lightFromSun": "{u} para a luz chegar até nós",
+        "planetRadius": "{u} de largura",
+        "planetMass": "{u} de massa",
+        "mass": "massa em {u}",
         "other": "{u}"
+      },
+      "starClass": {
+        "line": "{size} {temp}",
+        "temp": { "O": "azul", "B": "azul-esbranquiçada", "A": "branca", "F": "branco-amarelada", "G": "amarela", "K": "laranja", "M": "vermelha" },
+        "size": { "V": "estrela na meia-idade", "IV": "subgigante", "III": "gigante", "II": "gigante brilhante", "I": "supergigante", "VI": "subanã", "none": "estrela" },
+        "brownDwarf": "anã marrom",
+        "whiteDwarf": "anã branca",
       },
       "units": {
         "minutes": "min",
@@ -1768,6 +1780,8 @@ export const COPY = {
       "catalogue": "Catálogo",
       "illustration": "Ilustração"
     },
+    "placeWord": "Lugar: {word}",
+    "pictureWord": "Imagem: {word}",
     "loading": "Abrindo a legenda.",
     "failed": "A legenda não carregou. A linha abaixo diz o essencial."
   },
@@ -2711,6 +2725,7 @@ export const COPY = {
       "markPeak": "{time} {deg}°",
       "honesty": "Calculado para o seu lugar. O brilho é estimado."
     },
+    "settings": "Mais configurações do céu",
     "skybar": {
       "title": "O céu",
       "field": "Campo de visão",
@@ -3290,6 +3305,7 @@ export const COPY = {
     "trueTitle": "O planeta mais largo, sem os pontos. Pressione para desenhá-los de novo."
   },
   "launchChip": {
+    "rocket": "Lançamento de foguete: {name}",
     "opens": "pressione para ver a ficha",
     "train": "Novo trem de {n} Starlink, sobre você {when}"
   },

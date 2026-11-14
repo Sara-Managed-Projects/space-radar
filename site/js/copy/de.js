@@ -932,7 +932,19 @@ export const COPY = {
         "launched": "Tage im All",
         "fromYou": "{u} von dir",
         "heightAbove": "{u} hoch",
+        "yearLong": "{u} für einen Umlauf um die Sonne, {y} Erdjahre",
+        "lightFromSun": "{u}, bis sein Licht uns erreicht",
+        "planetRadius": "{u} im Durchmesser",
+        "planetMass": "{u} an Masse",
+        "mass": "Masse in {u}",
         "other": "{u}"
+      },
+      "starClass": {
+        "line": "{size}, {temp}",
+        "temp": { "O": "blau", "B": "blauweiß", "A": "weiß", "F": "gelblich-weiß", "G": "gelb", "K": "orange", "M": "rot" },
+        "size": { "V": "Stern in der Lebensmitte", "IV": "Unterriese", "III": "Riese", "II": "heller Riese", "I": "Überriese", "VI": "Unterzwerg", "none": "Stern" },
+        "brownDwarf": "Brauner Zwerg",
+        "whiteDwarf": "Weißer Zwerg",
       },
       "units": {
         "minutes": "Min.",
@@ -1779,6 +1791,8 @@ export const COPY = {
       "catalogue": "Katalog",
       "illustration": "Illustration"
     },
+    "placeWord": "Ort: {word}",
+    "pictureWord": "Bild: {word}",
     "loading": "Die Legende wird geöffnet.",
     "failed": "Die Legende wurde nicht geladen. Die Zeile darunter sagt es kurz."
   },
@@ -2722,6 +2736,7 @@ export const COPY = {
       "markPeak": "{time} {deg}°",
       "honesty": "Für deinen Ort berechnet; Helligkeit geschätzt."
     },
+    "settings": "Weitere Himmelseinstellungen",
     "skybar": {
       "title": "Der Himmel",
       "field": "Blickfeld",
@@ -3301,6 +3316,7 @@ export const COPY = {
     "trueTitle": "Der breiteste Planet, ohne die Punkte. Drücken, um sie wieder zu zeichnen."
   },
   "launchChip": {
+    "rocket": "Raketenstart: {name}",
     "opens": "drücken für den Steckbrief",
     "train": "Neuer Starlink-Zug aus {n}: über dir {when}"
   },
