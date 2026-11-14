@@ -103,6 +103,7 @@ attachable:
   - {id: deep-juno,          horizons_id: "-61", emitted_by: "sample.js sampleDeepSpace(), PLANET_ORBITERS"}
   - {id: deep-parker,        horizons_id: "-96", emitted_by: "sample.js sampleDeepSpace(), ELLIPTIC_CRAFT"}
   - {id: deep-jwst,          horizons_id: "-170", emitted_by: "sample.js sampleDeepSpace(), ANCHORED_CRAFT"}
+  - {id: deep-euclid,        horizons_id: "-680", emitted_by: "sample.js sampleDeepSpace(), ANCHORED_CRAFT"}
   - {id: deep-soho,          horizons_id: "-21", emitted_by: "sample.js sampleDeepSpace(), ANCHORED_CRAFT"}
   - {id: deep-mro,           horizons_id: "-74", emitted_by: "sample.js sampleDeepSpace(), PLANET_ORBITERS"}
   # These two had no Horizons id in sample.js, and they were missing from this block while it

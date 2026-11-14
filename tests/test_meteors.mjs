@@ -104,4 +104,4 @@ const ground = readFileSync(join(JS, 'sky/groundsky.js'), 'utf8');
 check(/meteorsMod\.sourcesAt\(frame\.tMs, observer\)/.test(ground), 'sky/groundsky.js draws the sources of the night, not only a shower at its peak');
 
 if (problems.length) { console.error('meteors FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
-console.log(`meteors ok: eight showers with the IMO's r and activity period, a curve that is 1 at the Sun's longitude of the maximum and one an hour at the period's ends, the Perseids at ${per.zhr.toFixed(0)} an hour three nights early, and the antihelion source where Table 6 puts it`);
+console.log(`meteors ok: thirteen showers with the IMO's r and activity period, a curve that is 1 at the Sun's longitude of the maximum and one an hour at the period's ends, the Perseids at ${per.zhr.toFixed(0)} an hour three nights early, and the antihelion source where Table 6 puts it`);

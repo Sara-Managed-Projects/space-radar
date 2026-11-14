@@ -676,6 +676,7 @@ export const VISUAL_CLASSES = [
 "deep-jwst",
 "deep-soho",
 "deep-roman",
+"deep-euclid",
 "deep-mro",
 "deep-mars-express",
 "deep-mars-odyssey",

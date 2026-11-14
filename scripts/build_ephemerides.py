@@ -360,6 +360,13 @@ def fetch_range(hz: Horizons, command: str, centre: str, a: int, b: int, step: i
         stop = min(b, t + step * (MAX_ROWS - 1))
         if stop == t:
             got, info = hz.vectors(command, centre, TLIST=f"{jd_of(t):.9f}")
+        elif stop - t < step:
+            # A stretch shorter than one step (the last minutes of a segment whose end is not on
+            # the grid): Horizons refuses "STEP_SIZE too big", so ask for its two ends by time.
+            got, info = [], {}
+            for tt in (t, stop):
+                one, info = hz.vectors(command, centre, TLIST=f"{jd_of(tt):.9f}")
+                got.extend(one)
         else:
             got, info = hz.vectors(command, centre, START_TIME=horizons_time(t), STOP_TIME=horizons_time(stop), STEP_SIZE=STEP_WORD[step])
         rows.extend(got)

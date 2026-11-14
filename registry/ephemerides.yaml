@@ -218,6 +218,23 @@ craft:
       after: "2026-11-30T00:00:00Z"
       text: "Goddard's flight team gives Webb's path after 30 November 2026 as a five-year plan, not a record; each station-keeping burn redraws it."
 
+  # Euclid (internal #112, #319), added 2026-11-14. Horizons -680 header (revised 2026-11-03): launched
+  # 2023-Jul-01 15:12 UTC on a Falcon 9, halo orbit round the Earth-Sun L2 point "at an average
+  # distance of 1.5 million km from Earth"; "Tracking-data based through 2026-Oct-26, predicts from
+  # ESA thereafter", one trajectory file euclid_flp_00082_20230701_20311005_v01. Asked 2026-11-14:
+  # "No ephemeris ... prior to A.D. 2023-JUL-01 15:51:59.0550 UT" and "... after A.D. 2031-OCT-04
+  # 23:58:50.8177 UT". Kept relative to the Earth for the whole span, as Webb is.
+  - id: deep-euclid
+    name: Euclid
+    command: "-680"
+    from: "2023-07-01T15:52:00Z"
+    to: "2031-10-04T23:58:00Z"
+    windows:
+      - {centre: earth, from: "2023-07-01T15:52:00Z", to: "2031-10-04T23:58:00Z", tol_km: 10}
+    rough:
+      after: "2026-10-26T00:00:00Z"
+      text: "JPL's path for Euclid is built from tracking data up to 26 October 2026 and from ESA's predictions after it, which each station-keeping manoeuvre redraws."
+
   # Mars 2020's cruise: the spacecraft that carried Perseverance, a record of its own
   # (data/sample.js PAST_CRAFT), because the Jezero site is a place on Mars and its card is a
   # place's card. prior to 2020-JUL-30 12:51:34 UT: nothing. The file stops at 20:30 UT on landing

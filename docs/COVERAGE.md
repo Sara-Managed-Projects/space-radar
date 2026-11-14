@@ -27,13 +27,13 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | real_models | 311 | 311 |
 | model_kinds | 52 | 52 |
 | small_bodies | 22 | 22 |
-| probes | 39 | 39 |
+| probes | 40 | 40 |
 | reentries | 3 | 3 |
 | rockets | 59 | 59 |
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 39 | 39 |
-| **all** | **1195** | **111 382** |
+| **all** | **1196** | **111 383** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -51,7 +51,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [COMET](#comet) | 5 | `models.js`, `glyphs.js`, `kepler.js` | modelled | - |
 | [ARTIFICIAL_SATELLITE](#artificial_satellite) | 255 | `sgp4.js`, `glyphs.js`, `realmodels.js`, `models.js` | measured | - |
 | [LAUNCH_AND_ROCKET](#launch_and_rocket) | 85 | `models.js`, `ascent.js`, `realmodels.js` | illustrative | - |
-| [SPACE_PROBE](#space_probe) | 74 | `sampled.js`, `realmodels.js`, `models.js`, `glyphs.js` | measured | - |
+| [SPACE_PROBE](#space_probe) | 75 | `sampled.js`, `realmodels.js`, `models.js`, `glyphs.js` | measured | - |
 | [LANDING_SITE](#landing_site) | 76 | `models.js`, `realmodels.js`, `shadow.js` | measured | - |
 | [EXOPLANET](#exoplanet) | 185 | `systems.js`, `systemextras.js`, `exoface.js`, `exostage.js` | modelled | - |
 | [STAR](#star) | 64 | `stars3d.js`, `starfield.js`, `stardisc.js` | measured | - |
@@ -83,7 +83,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 1195 records: 373 measured, 457 modelled, 365 illustrative.
+Honesty over the 1196 records: 374 measured, 457 modelled, 365 illustrative.
 
 ## The classes
 
@@ -326,10 +326,10 @@ Honesty over the 1195 records: 373 measured, 457 modelled, 365 illustrative.
 - **Dates and filters:** Horizons windows per craft (ephemerides.yaml); events dated to the minute where the mission page gives one.
 - **Measured, modelled or reconstructed:** Measured: the paths. A stand-in (sample.js, dashed halo) where Horizons cannot be read from a browser, said on the card.
 - **Rights:** Horizons data courtesy NASA/JPL-Caltech; NASA models free and without copyright.
-- **Records (74):**
+- **Records (75):**
   - real_models (30): `mro`, `parker`, `juno`, `voyager`, `cassini`, `galileo`, `pioneer`, `lro`, `osiris-rex`, `stereo`, `dawn`, `odyssey`, `rosetta`, `near`, `stardust`, `deep-impact`, `maven`, `new-horizons`, `europa-clipper`, `psyche`, `juice`, `bepicolombo`, `hera`, `lucy`, `mars-express`, `hayabusa2`, `hope`, `orion-esm`, `mariner-2`, `galileo-probe`
   - model_kinds (4): `probe-generic`, `probe-new-horizons`, `probe-mars-2020-cruise`, `probe-solar-orbiter`
-  - probes (39): `deep-jwst`, `deep-soho`, `deep-roman`, `deep-mro`, `deep-mars-express`, `deep-mars-odyssey`, `deep-hope`, `deep-juno`, `deep-lro`, `deep-voyager-1`, `deep-voyager-2`, `deep-new-horizons`, `deep-pioneer-10`, `deep-pioneer-11`, `deep-maven`, `deep-cassini`, `deep-galileo`, `deep-mars-2020`, `deep-dawn`, `deep-rosetta`, `deep-near`, `deep-stardust`, `deep-deep-impact`, `deep-mariner-2`, `deep-galileo-probe`, `deep-parker`, `deep-solar-orbiter`, `deep-psyche`, `deep-lucy`, `deep-europa-clipper`, `deep-juice`, `deep-bepicolombo`, `deep-hera`, `deep-osiris-apex`, `deep-hayabusa2`, `deep-stereo-a`, `deep-gaia`, `deep-spitzer`, `deep-kepler`
+  - probes (40): `deep-jwst`, `deep-soho`, `deep-roman`, `deep-euclid`, `deep-mro`, `deep-mars-express`, `deep-mars-odyssey`, `deep-hope`, `deep-juno`, `deep-lro`, `deep-voyager-1`, `deep-voyager-2`, `deep-new-horizons`, `deep-pioneer-10`, `deep-pioneer-11`, `deep-maven`, `deep-cassini`, `deep-galileo`, `deep-mars-2020`, `deep-dawn`, `deep-rosetta`, `deep-near`, `deep-stardust`, `deep-deep-impact`, `deep-mariner-2`, `deep-galileo-probe`, `deep-parker`, `deep-solar-orbiter`, `deep-psyche`, `deep-lucy`, `deep-europa-clipper`, `deep-juice`, `deep-bepicolombo`, `deep-hera`, `deep-osiris-apex`, `deep-hayabusa2`, `deep-stereo-a`, `deep-gaia`, `deep-spitzer`, `deep-kepler`
   - layers (1): `deep-space`
 
 ### LANDING_SITE

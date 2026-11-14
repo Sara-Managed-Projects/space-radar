@@ -122,3 +122,6 @@ ids:
   - {id: "-53",  name: "Mars Odyssey",               app_id: deep-mars-odyssey, center: "'500@499'"}
   - {id: "-79",  name: "Spitzer Space Telescope",    app_id: deep-spitzer}
   - {id: "-227", name: "Kepler",                     app_id: deep-kepler}
+  # Added 2026-11-14 (internal #112): the header of -680 (revised 2026-11-03) names Euclid, and its
+  # trajectory file runs from 2023-Jul-01 to 2031-Oct-05, tracking-based to 2026-Oct-26.
+  - {id: "-680", name: "Euclid",                     app_id: deep-euclid}
