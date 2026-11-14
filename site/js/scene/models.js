@@ -30,6 +30,8 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { CLASS_COLOURS, PALETTE } from './glyphatlas.js';
+import { cometTailGain } from './comettail.js';
+export { COMET_TAIL_NEAR_AU, COMET_TAIL_FLOOR, cometTailGain } from './comettail.js';
 import { dwarfLook, buildDwarf } from './dwarfs.js'; // 0077 W1-f: each far dwarf planet's own look
 // A data TABLE, not a data source: the rows a rocket is composed from, generated from
 // registry/rockets.yaml. Same direction glyphatlas.js is already imported in.
@@ -2913,21 +2915,6 @@ function buildAsteroid(variant, opts = {}) {
 }
 
 // --------------------------------------------------------------------------------------- comet
-
-/**
- * A tail's brightness against the comet's distance from the Sun (internal #47, public #550). Sunlight on the tail
- * falls as the inverse square of the distance, so the tail is drawn at full strength inside COMET_TAIL_NEAR_AU
- * and dims as (NEAR / au)^2 beyond it, down to COMET_TAIL_FLOOR, so a selected comet far out is still seen.
- * ILLUSTRATIVE: the law's two numbers are ours (a real tail also brightens steeply as the ice turns to gas),
- * and the card already says the tail's shape is drawn. NaN (no known distance) is full strength. Pure.
- */
-export const COMET_TAIL_NEAR_AU = 0.8;
-export const COMET_TAIL_FLOOR = 0.2;
-export function cometTailGain(au) {
-  if (!Number.isFinite(au)) return 1;
-  const g = au > 0 ? (COMET_TAIL_NEAR_AU / au) ** 2 : 1;
-  return Math.min(1, Math.max(COMET_TAIL_FLOOR, g));
-}
 
 /**
  * A tapered ribbon along +X, `bend` units of curve in Y. Three vertices across each station, black at both

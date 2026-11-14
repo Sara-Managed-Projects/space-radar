@@ -33,7 +33,7 @@
 import { load } from '../data/sources.js';
 import { parseComets } from '../data/parsers.js';
 import { stage } from './stage.js';
-import { cometTailGain } from './models.js';
+import { cometTailGain } from './comettail.js';
 
 export const AU_KM = 149597870.7;
 const GM_SUN = 1.32712440018e11; // km^3/s^2
