@@ -805,10 +805,15 @@ export const REAL_MODELS = {
     // draws 0.8 m); DLR calls the three "almost identical". Airbus built it for Hisdesat and it flies in the TerraSAR-X orbit. By NUMBER (CelesTrak: `PAZ`, 2018-020A); a record with a
     // placeholder number still reaches the name key `paz` below and keeps the blade. Not `generic`: the file is this craft's own design (the registry row `terrasar-x` says so).
     43215: { build: 'radar', file: 'terrasar-x.glb', colour: 'satellite', name: 'PAZ', catalogue: 'PAZ', made: 'dimensions', axes: 'app' },
-    31598: { build: 'radar', file: 'cosmo-skymed.glb', colour: 'satellite', name: 'COSMO-SkyMed 1', catalogue: 'COSMO-SKYMED 1', made: 'dimensions', axes: 'app' },
-    32376: { build: 'radar', file: 'cosmo-skymed.glb', colour: 'satellite', name: 'COSMO-SkyMed 2', catalogue: 'COSMO-SKYMED 2', made: 'dimensions', axes: 'app' },
-    33412: { build: 'radar', file: 'cosmo-skymed.glb', colour: 'satellite', name: 'COSMO-SkyMed 3', catalogue: 'COSMO-SKYMED 3', made: 'dimensions', axes: 'app' },
-    37216: { build: 'radar', file: 'cosmo-skymed.glb', colour: 'satellite', name: 'COSMO-SkyMed 4', catalogue: 'COSMO-SKYMED 4', made: 'dimensions', axes: 'app' },
+    // ROLL (internal #78): eoPortal's COSMO-SkyMed page (read 2026-11-14) gives the nominal boresight as "incidence angle about 38 degrees to the right side of the spacecraft ground
+    // track", at "a nominal altitude of 619.6 km", the spacecraft steered to point it. The angle at the craft (the look angle from the nadir) follows from the incidence angle i and
+    // the orbit radius: asin(6371 / (6371 + 619.6) x sin 38) = 34.1 degrees (a spherical Earth of 6371 km), drawn as 34 to the right of the track (`roll`, scene/models.js
+    // rollAboutHeading). It also looks left "for limited periods"; the right is drawn. The other SAR craft below have only ranges of angle published where this was read
+    // (RADARSAT-2 20-49 degrees, CSG 20-60, SAOCOM 18-50) and stay level; Sentinel-1 and TerraSAR-X carry their cited angles in the file.
+    31598: { build: 'radar', file: 'cosmo-skymed.glb', colour: 'satellite', name: 'COSMO-SkyMed 1', catalogue: 'COSMO-SKYMED 1', made: 'dimensions', axes: 'app', roll: 34 },
+    32376: { build: 'radar', file: 'cosmo-skymed.glb', colour: 'satellite', name: 'COSMO-SkyMed 2', catalogue: 'COSMO-SKYMED 2', made: 'dimensions', axes: 'app', roll: 34 },
+    33412: { build: 'radar', file: 'cosmo-skymed.glb', colour: 'satellite', name: 'COSMO-SkyMed 3', catalogue: 'COSMO-SKYMED 3', made: 'dimensions', axes: 'app', roll: 34 },
+    37216: { build: 'radar', file: 'cosmo-skymed.glb', colour: 'satellite', name: 'COSMO-SkyMed 4', catalogue: 'COSMO-SKYMED 4', made: 'dimensions', axes: 'app', roll: 34 },
     44873: { build: 'radar', file: 'csg.glb', colour: 'satellite', name: 'CSG-1', catalogue: 'CSG-1', made: 'dimensions', axes: 'app' },
     51444: { build: 'radar', file: 'csg.glb', colour: 'satellite', name: 'CSG-2', catalogue: 'CSG-2', made: 'dimensions', axes: 'app' },
     67304: { build: 'radar', file: 'csg.glb', colour: 'satellite', name: 'CSG-3', catalogue: 'CSG-3', made: 'dimensions', axes: 'app' },
@@ -825,7 +830,9 @@ export const REAL_MODELS = {
     // X; the paddles are held at 45 degrees where the real ones turn. THE FILE IS LEVEL: the craft
     // rolls up to 30 degrees left or right for a pass from a nominal Earth-pointing attitude (cited),
     // so no one angle is how it flies.
-    39766: { build: 'radar', file: 'alos-2.glb', colour: 'satellite', name: 'ALOS-2', catalogue: 'ALOS-2', made: 'dimensions', axes: 'app' },
+    // ROLL (internal #78): eoPortal's ALOS-2 page (read 2026-11-14) says "ALOS-2 has a body pointing function of +-30 degrees in the roll axis" and "it is pointing 30 degrees
+    // sideways when observing". Drawn rolled 30 degrees to the right of the track (`roll`, scene/models.js rollAboutHeading); it flies either side, and the page names no nominal one.
+    39766: { build: 'radar', file: 'alos-2.glb', colour: 'satellite', name: 'ALOS-2', catalogue: 'ALOS-2', made: 'dimensions', axes: 'app', roll: 30 },
     60182: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ALOS-4 (DAICHI-4)', generic: true },
     // SAOCOM 1A AND 1B HAVE A FILE OF THEIR OWN since batch six (2026-10-13; public #978): saocom.glb,
     // built in code from CONAE's numbers as eoPortal gives them (a 10 m by 3.5 m antenna of seven

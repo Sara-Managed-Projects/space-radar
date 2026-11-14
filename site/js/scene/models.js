@@ -4274,6 +4274,24 @@ function toVec(out, v, fallback) {
   return l > 1e-9 ? out.multiplyScalar(1 / l) : out.copy(fallback);
 }
 
+/**
+ * Roll `obj` about its direction of travel by `rollDeg`, positive to the RIGHT of the track: the face that looks at
+ * the Earth turns toward the right-hand side of the ground track, seen from above, as a right-looking radar's does.
+ * `heading` is made square to the nadir first (a velocity is not exactly level). Pure of everything but the object's
+ * quaternion; a zero or missing heading leaves it alone.
+ */
+const _rv = new THREE.Vector3();
+const _rq = new THREE.Quaternion();
+export function rollAboutHeading(obj, heading, nadir, rollDeg) {
+  _rv.set(heading.x, heading.y, heading.z);
+  _rv.addScaledVector(nadir, -_rv.dot(nadir));
+  if (!(_rv.lengthSq() > 1e-10) || !Number.isFinite(rollDeg)) return false;
+  _rv.normalize();
+  _rq.setFromAxisAngle(_rv, -rollDeg * Math.PI / 180);
+  obj.quaternion.premultiply(_rq);
+  return true;
+}
+
 /** Right-handed basis with +Z along `zDir` and +X as close to `xHint` as it can be. */
 function orient(obj, zDir, xHint) {
   _z.copy(zDir);
@@ -4458,6 +4476,11 @@ export function updateModelAttitude(obj, record, sunDirScene, nadirScene, tMs) {
       plume.scale.set(1 + 1.6 * f, 1 + 2.2 * f, 1 + 1.6 * f);
     }
   }
+
+  // A RADAR SATELLITE THAT LOOKS TO ONE SIDE (internal #78). `userData.sarRoll` is the roll, degrees, from the route's
+  // `roll` (realmodels.js, each angle cited there); `userData.heading` is the direction of travel in the scene, written
+  // each frame by heroes.js. Only an Earth-facing attitude is rolled.
+  if (obj.userData.sarRoll && obj.userData.heading && (mode === 'sun-panels' || mode === 'nadir')) rollAboutHeading(obj, obj.userData.heading, _nadir, obj.userData.sarRoll);
 
   // comet tails: already anti-sunward from the basis above; scale with heliocentric distance
   if (obj.userData.tails) {

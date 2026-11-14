@@ -1335,6 +1335,8 @@ jobs:
       # 0079 a8: begin
       - name: "every comet's orbit, place and tail: the field agrees with the propagator, orbits lie on their conic, tails point away from the Sun, one indexed mesh for 4 000 comets (release 1.5.0 stage A8, internal #1068)"
         run: node tests/test_cometfield.mjs
+      - name: "radar satellites look to one side: the roll about the track, its sign and each cited angle (internal #78)"
+        run: node tests/test_sar_roll.mjs
       # 0079 a8: end
       # 0079 a6: begin
       - name: "the small complete lists: the IAU's showers, the observatories with their MPC codes, the launch sites and every landing and impact site become records, and their cards say what is not drawn (release 1.5.0 stage A6, internal #1064)"
