@@ -710,11 +710,7 @@ export const MISSIONS = [
         "text": "Euclid leaves Cape Canaveral on a Falcon 9, bound for the Sun-Earth L2 point.",
         "place": "path",
         "path_at": "2023-07-01T15:52:00Z",
-        "world": "earth",
-        "source": {
-          "name": "JPL Horizons, Euclid (-680) header",
-          "url": "https://ssd.jpl.nasa.gov/horizons/"
-        }
+        "world": "earth"
       },
       {
         "id": "first-images",
