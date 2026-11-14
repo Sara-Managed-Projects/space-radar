@@ -4298,8 +4298,15 @@ code. No licence attaches; the credit is owed anyway.
 
 - **B−V colour index → effective temperature**: F. J. Ballesteros (2012), *New insights into black
   bodies*, EPL **97**, 34008. Used in `site/js/scene/starfield.js`.
-- **Black-body temperature → sRGB**: Tanner Helland's piecewise approximation (2012). Used in
-  `site/js/scene/starfield.js`.
+- **Black-body temperature → sRGB**: Mitchell Charity's *Blackbody color datafile* (version 2001-Jun-22:
+  Planck's law through the CIE 1931 2 degree colour-matching functions to sRGB), read 2026-11-14 at
+  http://www.vendian.org/mncharity/dir3/blackbody/UnstableURLs/bbr_color.html ; 21 of its 391 rows are kept in
+  `registry/blackbody.yaml` and interpolated in `site/js/scene/starfield.js`. The page states no licence; it is a
+  table of computed colours, cited here. (Until 2026-11-14 this was Tanner Helland's piecewise curve fit of 2012.)
+- **Limb darkening of a star's disc**: a grey atmosphere in radiative equilibrium (Eddington's approximation, the
+  Eddington-Barbier relation) with Planck's law at each colour, at the star's own effective temperature, in
+  `site/js/scene/stardisc.js`; the same method as the Sun's in `site/js/scene/sun.js`, which is checked there against
+  the measured 550 nm law.
 - **SGP4/SDP4**: Hoots & Roehrich, *Spacetrack Report #3*; David Vallado et al., *Revisiting
   Spacetrack Report #3* (AIAA 2006-6753). Reaches this project through satellite.js.
 

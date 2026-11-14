@@ -1,0 +1,47 @@
+# Black-body colours: temperature -> the sRGB a star of that temperature is drawn in (internal #279, 2026-11-14).
+#
+# WHY THIS FILE EXISTS. scene/starfield.js drew every star's colour from Tanner Helland's curve fit of 2012, a
+# piecewise formula written to make a colour-temperature slider for photographs, not from a colorimetric
+# computation. This is the computation: a black body's spectrum (Planck's law) weighted by the CIE 1931 colour-matching
+# functions of the 2 degree standard observer, converted to sRGB (D65 white, the sRGB transfer curve), each colour
+# scaled so its brightest channel is 1 and any negative channel clipped to 0 (the gamut mapping the source states).
+#
+# SOURCE. Mitchell Charity, "Blackbody color datafile" (bbr_color.txt, version 2001-Jun-22; sRGB since that version),
+# http://www.vendian.org/mncharity/dir3/blackbody/UnstableURLs/bbr_color.html , read 2026-11-14: 391 rows from 1 000 K to
+# 40 000 K in 100 K steps, "2deg" rows used. The values are computed, not measured; the page states no licence, and a
+# table of computed colours is a set of facts, cited here, not a work copied. The rows below are 21 of the 391, chosen so
+# that straight-line interpolation between them (scene/starfield.js kelvinToRgb) stays within 2 of 255 in every channel
+# of every one of the 391 rows (tests/test_starfield_blackbody.mjs holds that against the full table, which is not kept
+# here: the 21 are all the browser needs).
+#
+# scripts/gen_blackbody_js.py mirrors this into site/js/data/blackbody.js; CI refuses drift.
+version: 1
+source: "http://www.vendian.org/mncharity/dir3/blackbody/UnstableURLs/bbr_color.html"
+read_on: 2026-11-14
+observer: "CIE 1931 2 degree"
+primaries: "sRGB, D65, normalised to a brightest channel of 1, gamma-encoded"
+max_error_255: 1.75   # against the 391 rows of the source, any channel, by linear interpolation between the knots
+
+# [kelvin, r, g, b] with r, g, b in 0..255 (sRGB-encoded)
+knots:
+  - [1000, 255, 51, 0]
+  - [1100, 255, 69, 0]
+  - [1300, 255, 93, 0]
+  - [1500, 255, 111, 0]
+  - [1900, 255, 135, 0]
+  - [2000, 255, 141, 11]
+  - [2100, 255, 146, 29]
+  - [2300, 255, 157, 51]
+  - [2600, 255, 170, 77]
+  - [3100, 255, 189, 111]
+  - [3600, 255, 203, 141]
+  - [4400, 255, 221, 180]
+  - [5500, 255, 238, 222]
+  - [6700, 254, 250, 255]
+  - [8000, 229, 233, 255]
+  - [10000, 207, 218, 255]
+  - [12900, 190, 206, 255]
+  - [15300, 182, 200, 255]
+  - [19200, 174, 194, 255]
+  - [24500, 168, 189, 255]
+  - [40000, 161, 183, 255]
