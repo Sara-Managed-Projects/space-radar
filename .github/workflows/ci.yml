@@ -730,6 +730,8 @@ jobs:
         run: node tests/test_spread.mjs
       - name: star colours come from the colorimetric black-body table (internal #279)
         run: node tests/test_starfield_blackbody.mjs
+      - name: the planet hosts of the Kepler field thin with distance on the rungs (internal #285)
+        run: node tests/test_glyph_farfade.mjs
       - name: a shader warm-up survives its material being disposed mid-compile (internal #325)
         run: node tests/test_safecompile.mjs
       - name: the sky sphere and the 3D stars lie in one frame (internal 549, #387)

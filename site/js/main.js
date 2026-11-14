@@ -2987,7 +2987,9 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // (scene/camera.js refollow says what a frame's lag looked like).
     cameraRig.refollow();
     // After the worlds and the camera: each light sits on this frame's disc (scene/worldlights.js).
-    if (ctx.worldLights) ctx.worldLights.update(t);
+    // Not from the ground: the ground sky draws the Moon and the planets itself, and this light on top of them was a blazing glare
+    // on a thin daytime Moon (internal #273: the lights are added at the Moon's magnitude whatever the sky behind them).
+    if (ctx.worldLights) { ctx.worldLights.setVisible(!(ctx.skyView && ctx.skyView.ownsSky)); ctx.worldLights.update(t); }
     // What waited for the scene to stand at a new time (ctx.afterClockJump): a flight to somewhere
     // that has just moved. After the worlds, so a world's place is this frame's; the camera's own
     // update comes round again next frame.
