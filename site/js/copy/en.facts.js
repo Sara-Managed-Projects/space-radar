@@ -189,10 +189,13 @@ Object.assign(COPY, {
   truth: {
     label: 'How we know',
     hints: {
-      measured: 'Measured', inferred: 'Worked out', illustrative: 'Illustrative', sample: 'Sample',
+      measured: 'Measured', inferred: 'Modelled', illustrative: 'Illustrative', sample: 'Sample',
       unknown: 'Not known', unplaced: 'Not placed',
-      reconstruction: 'Reconstructed', model: 'Model', photograph: 'Photograph', catalogue: 'Catalogue', illustration: 'Illustration',
+      reconstruction: 'Reconstructed', model: 'Of its kind', photograph: 'Photograph', catalogue: 'Catalogue', illustration: 'Illustrative',
     },
+    // The badge says both halves (ui/cardfacts.js truthHint, internal #298): "Place: Measured · Picture: Illustrative".
+    placeWord: 'Place: {word}',
+    pictureWord: 'Picture: {word}',
     loading: 'Opening the legend.',
     failed: 'The legend did not load. The line below says it in short.',
   },

@@ -121,6 +121,7 @@ export function renderTonight(host, ctx) {
   // three numbers with their units under them, then the way it goes beside its arc. The sentence
   // tonightWords() writes is the block's accessible name; nothing on screen is a paragraph.
   const name = el('p', 'sr-tonight-view__name');
+  const what = el('p', 'sr-tonight-view__what');
   const nums = el('dl', 'sr-tonight-view__nums');
   const cell = (unit) => {
     const c = el('div', 'sr-tonight-view__cell');
@@ -194,6 +195,7 @@ export function renderTonight(host, ctx) {
   way.appendChild(text);
   body.setAttribute('role', 'group');
   body.appendChild(name);
+  body.appendChild(what);
   body.appendChild(nums);
   body.appendChild(way);
   body.appendChild(caveat);
@@ -210,12 +212,29 @@ export function renderTonight(host, ctx) {
   root.appendChild(actions);
   root.appendChild(list);
   root.appendChild(bestTitle);
-  root.appendChild(viewBox);
   root.appendChild(bestList);
   root.appendChild(bestEmpty);
   root.appendChild(bestDark);
   root.appendChild(bestNote);
-  root.appendChild(skyControls);
+  // Answer first, settings behind one fold (internal #305): the next pass and tonight's best are what
+  // a first-comer came for; which way the window faces, the lens, the overlays, the sky cultures and
+  // the light pollution wait behind "More sky settings".
+  const settingsBtn = el('button', 'ui-btn ui-btn--quiet sr-tonight-view__settings', T.settings);
+  settingsBtn.type = 'button';
+  settingsBtn.id = 'sr-tonight-settings-btn';
+  settingsBtn.setAttribute('aria-expanded', 'false');
+  settingsBtn.setAttribute('aria-controls', 'sr-tonight-settings');
+  const settingsPanel = el('div', 'sr-tonight-view__settings-panel');
+  settingsPanel.id = 'sr-tonight-settings';
+  settingsPanel.hidden = true;
+  settingsPanel.append(viewBox, skyControls);
+  settingsBtn.addEventListener('click', () => {
+    const on = settingsBtn.getAttribute('aria-expanded') !== 'true';
+    settingsBtn.setAttribute('aria-expanded', on ? 'true' : 'false');
+    settingsPanel.hidden = !on;
+  });
+  root.appendChild(settingsBtn);
+  root.appendChild(settingsPanel);
 
   // --- the worker --------------------------------------------------------------------------------------
   const st = {
@@ -326,6 +345,8 @@ export function renderTonight(host, ctx) {
     const parts = w.parts || {};
     setText(name, parts.name);
     name.title = parts.name || '';
+    setText(what, parts.what);
+    what.hidden = !parts.what;
     setText(numTime, parts.time);
     setText(numDeg, parts.deg);
     setText(numMins, parts.mins);

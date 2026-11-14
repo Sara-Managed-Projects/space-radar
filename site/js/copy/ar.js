@@ -825,7 +825,19 @@ export const COPY = {
         "launched": "يومًا في الفضاء",
         "fromYou": "{u} عنك",
         "heightAbove": "{u} للأعلى",
+        "yearLong": "{u} لدورة حول الشمس، أي {y} سنة أرضية",
+        "lightFromSun": "{u} ليصلنا ضوؤها",
+        "planetRadius": "العرض: {u}",
+        "planetMass": "الكتلة: {u}",
+        "mass": "الكتلة، بوحدة {u}",
         "other": "{u}"
+      },
+      "starClass": {
+        "line": "{size} {temp}",
+        "temp": { "O": "أزرق", "B": "أزرق مائل إلى الأبيض", "A": "أبيض", "F": "أبيض مائل إلى الأصفر", "G": "أصفر", "K": "برتقالي", "M": "أحمر" },
+        "size": { "V": "نجم في منتصف العمر", "IV": "نجم شبه عملاق", "III": "نجم عملاق", "II": "نجم عملاق ساطع", "I": "نجم فائق العملقة", "VI": "نجم شبه قزم", "none": "نجم" },
+        "brownDwarf": "قزم بني",
+        "whiteDwarf": "قزم أبيض",
       },
       "units": {
         "minutes": "د",
@@ -1696,6 +1708,8 @@ export const COPY = {
       "catalogue": "فهرس",
       "illustration": "رسم توضيحي"
     },
+    "placeWord": "المكان: {word}",
+    "pictureWord": "الصورة: {word}",
     "loading": "نفتح دليل الرموز.",
     "failed": "لم يُحمَّل دليل الرموز. والسطر أدناه يقوله باختصار."
   },
@@ -2644,6 +2658,7 @@ export const COPY = {
       "markPeak": "{time} {deg}°",
       "honesty": "محسوب لمكانك. السطوع تقدير."
     },
+    "settings": "مزيد من إعدادات السماء",
     "skybar": {
       "title": "السماء",
       "field": "مجال الرؤية",
@@ -3241,6 +3256,7 @@ export const COPY = {
     "trueTitle": "أعرض الكواكب، مع إخفاء النقاط. اضغط لرسمها من جديد."
   },
   "launchChip": {
+    "rocket": "إطلاق صاروخ: {name}",
     "opens": "اضغط لبطاقته",
     "train": "قطار Starlink جديد من {n} فوقك {when}"
   },

@@ -582,8 +582,11 @@ html.sr-compact .sr-status {
   overflow: hidden;
   font: 400 var(--sr-fs-sm)/16px var(--sr-font);
   color: var(--sr-text-dim);
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  /* Two lines: "days to go round the Sun, 29 Earth years" (internal #301); the title has the rest. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 /* 3. Four actions, one of them ember (principle 3): a 20 px icon over a 13 px label. */
@@ -698,6 +701,9 @@ html.sr-compact .sr-status {
   line-height: 16px;
   color: var(--sr-text-dim);
 }
+
+.sr-disc[data-section="truth"] .sr-disc__label { flex: 0 0 auto; }
+.sr-disc[data-section="truth"] .sr-disc__hint { flex: 0 1 auto; min-width: 0; margin-left: auto; text-align: right; }
 
 .sr-disc__head .sr-icon {
   flex: 0 0 auto;
@@ -4145,6 +4151,10 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 .sr-tonight-view__where > .sr-tonight-view__place { flex: 1 1 auto; min-width: 0; overflow: visible; white-space: normal; }
 .sr-tonight-view__change { flex: none; }
 
+/* "More sky settings": one fold under the answer (internal #305). */
+.sr-tonight-view__settings { margin-top: var(--sp-3); }
+.sr-tonight-view__settings-panel[hidden] { display: none; }
+
 /* The status line: the sidebar's foot, one sentence, a coloured dot. */
 .sr-statusline {
   flex: 0 0 auto;
@@ -5719,6 +5729,14 @@ html.sr-phone[data-sheet='full'] .sr-scenenote {
 .sr-tonight-view__name {
   font: 400 var(--sr-fs-body)/20px var(--sr-font);
 }
+
+/* A few words for a name most people do not know (sky/gloss.js). */
+.sr-tonight-view__what {
+  margin: 0;
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+.sr-tonight-view__what[hidden] { display: none; }
 
 /* Three numbers between two hairlines, the card's own row (.sr-hero): mono, the unit dim under it. */
 .sr-tonight-view__nums {

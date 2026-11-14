@@ -50,7 +50,7 @@ check(chip.nextCountable([{ id: 'g', meta: {} }], now) === null, 'a row with no 
 const hit = chip.nextCountable([soon], now, 2 * H);
 const words = chip.chipWords(hit.record, hit.state);
 check(words.text === tMinus(2 * H), `the chip is the clock (got "${words.text}")`);
-check(words.title.includes(soon.name) && words.title.includes(COPY.countdown.go), 'the tooltip names the launch and Launch Library\'s status');
+check(words.title.includes('Rocket launch: Falcon 9 · Starlink Group 10-52') && words.title.includes(COPY.countdown.go), 'the tooltip names the launch and Launch Library\'s status');
 check(/2 hours|2 h/.test(words.title), `and how old that status is (got "${words.title}")`);
 const held = chip.nextCountable([launch('h', 'Soyuz 2.1b | Glonass', H, 'Hold')], now);
 check(chip.chipWords(held.record, held.state).text === COPY.countdown.hold, 'on Hold no number ticks: the chip says the word');
