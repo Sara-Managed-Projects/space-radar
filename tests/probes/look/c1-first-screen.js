@@ -4,12 +4,11 @@
 look.probe = 'c1-first-screen';
 const out = { arrivals: {}, search: {}, latch: sr.latch && sr.latch.stats ? sr.latch.stats() : null };
 const arrive = async (id, name) => {
-  sr.setStage('local-group');
-  await sleep(6000);
+  if (sr.stage && sr.stage.worldId !== 'local-group') { sr.setStage('local-group'); await sleep(15000); }
   const r = sr.recordById(id);
   if (!r) { look.missing.push(id); return; }
   sr.select(r, { fly: true, undo: false });
-  await sleep(9000);
+  await sleep(15000);
   const lv = sr.deep && sr.deep.level ? sr.deep.level(id) : null;
   const px = sr.deep && sr.deep.radiusPx ? sr.deep.radiusPx(id) : null;
   out.arrivals[id] = { stage: sr.stage && sr.stage.worldId, level: lv, radiusPx: px };
