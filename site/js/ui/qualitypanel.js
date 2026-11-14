@@ -32,6 +32,16 @@ export function qualityPanel(ctx) {
   row.setAttribute('role', 'group');
   row.setAttribute('aria-label', C.panelTitle);
   wrap.appendChild(row);
+  // Internal #265: the frame latch is one-way for the visit, so a false trip would keep the finer drawing off for good.
+  // The way back is a reload (the address carries the view), which starts a fresh visit at the tier the device earns.
+  const restore = document.createElement('button');
+  restore.type = 'button';
+  restore.className = 'ui-btn ui-btn--sm ui-btn--secondary ui-btn--block';
+  restore.textContent = C.restore;
+  restore.title = C.restoreTitle;
+  restore.hidden = true;
+  restore.addEventListener('click', () => { try { window.location.reload(); } catch { /* the browser refused: the address still works */ } });
+  wrap.appendChild(restore);
   let buttons = new Map();
   let offeredKey = '';
   const paint = () => {
@@ -61,6 +71,7 @@ export function qualityPanel(ctx) {
     const words = qualityNote(q.plan(), C);
     note.textContent = words;
     note.hidden = !words;
+    restore.hidden = !(q.describe().latched);
   };
   window.addEventListener('sr:tier', paint);
   paint();

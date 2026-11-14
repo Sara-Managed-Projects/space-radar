@@ -1525,7 +1525,9 @@ export const COPY = {
       "high": "Plus de mondes gardés nets à la fois",
       "ultra": "Pleine résolution et pas les plus fins de près"
     },
-    "fellBack": "Images lentes : la qualité est revenue sur Auto."
+    "fellBack": "Images lentes : la qualité est revenue sur Auto.",
+    "restore": "Recharger en pleine qualité",
+    "restoreTitle": "Des images lentes ont retiré le dessin le plus fin pour cette visite. Recharger cette vue à la qualité que mérite votre appareil."
   },
   "status": {
     "title": "Sources",
@@ -5616,6 +5618,7 @@ Object.assign(COPY, {
       "trappist-1h": "TRAPPIST-1 h"
     },
     "earthAndMoon": "La Terre et la Lune",
+    "nightOpened": "Il fait nuit sur ce site en ce moment : l'horloge a donc été réglée sur {local} (heure solaire locale), le Soleil à {sun}° de hauteur. L'horloge vous ramène à maintenant.",
     "unknownGround": "Il n’y a pas encore de modèle de terrain pour ce site.",
     "unknownSky": "Cette carte ne permet pas encore de se tenir à cet endroit : seulement sur la Lune, Mars, Titan, Europe, Proxima b ou TRAPPIST-1 e."
   }

@@ -1521,7 +1521,9 @@ export const COPY = {
       "high": "Mehr Welten gleichzeitig scharf",
       "ultra": "Volle Auflösung und die feinsten Stufen aus der Nähe"
     },
-    "fellBack": "Die Bilder waren langsam: Qualität wieder auf Auto."
+    "fellBack": "Die Bilder waren langsam: Qualität wieder auf Auto.",
+    "restore": "Mit voller Qualität neu laden",
+    "restoreTitle": "Langsame Bilder haben die feinere Darstellung für diesen Besuch entfernt. Diese Ansicht mit der Qualität neu laden, die Ihr Gerät schafft."
   },
   "status": {
     "title": "Quellen",
@@ -5612,6 +5614,7 @@ Object.assign(COPY, {
       "trappist-1h": "TRAPPIST-1 h"
     },
     "earthAndMoon": "Die Erde und der Mond",
+    "nightOpened": "Hier ist gerade Nacht, deshalb steht die Uhr auf {local} Ortszeit (Sonnenzeit), die Sonne {sun}° hoch. Mit der Uhr geht es zurück zu jetzt.",
     "unknownGround": "Für diesen Ort gibt es noch kein Geländemodell.",
     "unknownSky": "Auf diesem Ort kann man in dieser Karte noch nicht stehen. Möglich sind der Mond, der Mars, Titan, Europa, Proxima b und TRAPPIST-1 e."
   }

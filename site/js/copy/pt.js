@@ -1511,7 +1511,9 @@ export const COPY = {
       "high": "Mais mundos nítidos ao mesmo tempo",
       "ultra": "Resolução máxima e os degraus mais finos de perto"
     },
-    "fellBack": "Os quadros estavam lentos: a qualidade voltou para Auto."
+    "fellBack": "Os quadros estavam lentos: a qualidade voltou para Auto.",
+    "restore": "Recarregar em qualidade total",
+    "restoreTitle": "Quadros lentos tiraram o desenho mais fino nesta visita. Recarregue esta vista na qualidade que o seu dispositivo merece."
   },
   "status": {
     "title": "Fontes",
@@ -5602,6 +5604,7 @@ Object.assign(COPY, {
       "trappist-1h": "TRAPPIST-1 h"
     },
     "earthAndMoon": "A Terra e a Lua",
+    "nightOpened": "É noite neste local agora, por isso o relógio foi posto às {local} de hora solar local, com o Sol a {sun}° de altura. O relógio leva-o de volta ao agora.",
     "unknownGround": "Ainda não há modelo de terreno para esse local.",
     "unknownSky": "Este mapa ainda não permite ficar de pé nesse lugar: só na Lua, em Marte, em Titã, em Europa, em Proxima b ou em TRAPPIST-1 e."
   }
