@@ -11,7 +11,9 @@
 look.probe = 'c2-drawing';
 const out = { step: {}, trappist: null };
 const find = (ids) => { for (const id of ids) { const r = sr.recordById(id); if (r) return r; } look.missing.push(ids[0]); return null; };
-const guard = async (name, fn) => { try { await fn(); out.step[name] = 'ok'; } catch (e) { out.step[name] = 'threw'; look.errors.push('probe: ' + name + ' threw: ' + (e && e.stack || e)); } };
+const diag = () => { const bad = []; try { sr.scene.traverse((o) => { const ms = Array.isArray(o.material) ? o.material : o.material ? [o.material] : []; for (const m of ms) { if (m.isShaderMaterial && (!m.fragmentShader || !m.vertexShader)) bad.push((o.name || o.type) + ' lacks a shader'); if (!m.isShaderMaterial && !/^(Mesh|Points|Line|Sprite)/.test(m.type)) bad.push((o.name || o.type) + ' is a ' + m.type); } }); } catch (e) { bad.push('diag threw ' + e); } return bad; };
+out.diag = {};
+const guard = async (name, fn) => { try { await fn(); out.step[name] = 'ok'; out.diag[name] = diag().concat([look.errors.length + ' errors so far']);  } catch (e) { out.step[name] = 'threw'; look.errors.push('probe: ' + name + ' threw: ' + (e && e.stack || e)); } };
 const DEG = Math.PI / 180;
 
 await guard('moon-by-day', async () => {
