@@ -68,7 +68,7 @@ check(JSON.stringify(ended.map((r) => r.id)) === JSON.stringify(['deep-cassini',
     check(rows.every((r) => r.id !== String(md.horizonsId)), `${rec.id}: the harvester must not ask Horizons for it today (its trajectory has ended)`);
   }
 }
-check(records.length === 29, `the deep-space layer holds twenty-nine craft that are somewhere today (found ${records.length})`);
+check(records.length === 30, `the deep-space layer holds thirty craft that are somewhere today (found ${records.length})`);
 check(byId.size === records.length, 'record ids are unique');
 
 // Every id the harvester fetches has a record under the app id the list names, with the same name.

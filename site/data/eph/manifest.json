@@ -8,7 +8,7 @@
   "credit": "NASA/JPL-Caltech, Solar System Dynamics Group, Horizons On-Line Ephemeris System"
  },
  "frame": "ecliptic J2000 axes (Horizons REF_PLANE=ECLIPTIC, REF_SYSTEM=ICRF), relative to each segment's centre; km and km/s; times UTC (TIME_TYPE=UT)",
- "retrieved": "2026-11-07",
+ "retrieved": "2026-11-14",
  "craft": [
   {
    "id": "deep-voyager-1",
@@ -1625,6 +1625,57 @@
    "rough": {
     "after": "2026-11-30T00:00:00Z",
     "text": "Goddard's flight team gives Webb's path after 30 November 2026 as a five-year plan, not a record; each station-keeping burn redraws it."
+   }
+  },
+  {
+   "id": "deep-euclid",
+   "name": "Euclid",
+   "command": "-680",
+   "file": "deep-euclid.bin",
+   "bytes": 21032,
+   "sha256": "3b7d3a8f35e24ee68460f05c3a54b3e918885873792755b94d002c3ddae8f492",
+   "span": [
+    "2023-07-01T15:52:00Z",
+    "2031-10-04T23:58:00Z"
+   ],
+   "samples": 750,
+   "solution": "Euclid_current",
+   "header_revised": "Nov 03, 2026",
+   "retrieved": "2026-11-14",
+   "fit_max_km": 10.0,
+   "heldout": {
+    "n": 48,
+    "max_km": 9.889
+   },
+   "good_to_km": 20.0,
+   "segments": [
+    {
+     "centre": "earth",
+     "from": "2023-07-01T15:52:00Z",
+     "to": "2031-10-04T23:58:00Z",
+     "samples": 750,
+     "tol_km": 10.0,
+     "fit_max_km": 10.0,
+     "fetched": 72446,
+     "step_min_s": 900.0,
+     "step_max_s": 468000.0,
+     "steps": {
+      "10 min to 1 h": 3,
+      "1 h to 6 h": 5,
+      "6 h to 1 d": 5,
+      "1 d to 10 d": 736
+     },
+     "closest": {
+      "at": "2023-07-01T15:52:00Z",
+      "km": 11671.6
+     },
+     "passes": 1,
+     "centre_source": "DE441"
+    }
+   ],
+   "rough": {
+    "after": "2026-10-26T00:00:00Z",
+    "text": "JPL's path for Euclid is built from tracking data up to 26 October 2026 and from ESA's predictions after it, which each station-keeping manoeuvre redraws."
    }
   },
   {

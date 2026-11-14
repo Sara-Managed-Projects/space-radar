@@ -38,18 +38,18 @@ const say = (r) => C.firstSentence(r, {}, m, null);
     check(/^\d\d-\d\d$/.test(r.peak) && r.n >= 1, `${r.id}: a peak date and a solution count`);
   }
   const ours = rows.filter((r) => r.ours);
-  check(ours.length === 8 && ours.every((r) => SHOWERS.some((s) => s.id === r.ours)), 'the eight showers of registry/showers.yaml are matched, none is a ninth');
+  check(ours.length === SHOWERS.length && ours.length === 13 && SHOWERS.every((s) => ours.some((r) => r.ours === s.id)), 'the thirteen showers of registry/showers.yaml are matched, none is a fourteenth');
   check(rows.find((r) => r.code === 'PER').ours === 'perseids' && rows.find((r) => r.code === 'GEM').zhr === 150, 'the Perseids and Geminids are the registry\'s own rows (and carry its rate)');
   const rec = S.showerRecords(doc);
   check(rec.length === 172 && rec.every((r) => r.klass === 'shower' && r.layer === 'meteor-showers' && !r.propagator), 'a record each, with no place: a radiant is a direction');
   const dra = rec.find((r) => r.id === 'shower-october-draconids');
   check(dra && /meteor shower/.test(say(dra)) && /9 October/.test(say(dra)) && say(dra).length <= 170, `a card sentence: "${dra && say(dra)}"`);
   check(rec.find((r) => r.id === 'shower-daytime-beta-taurids').meta.aliases.includes('Daytime beta Taurids'), 'and a name with a hyphen is found with it as a space');
-  // the sky view marks the others near their peak, and not the eight twice
+  // the sky view marks the others near their peak, and not the thirteen twice
   const radiants = S.radiantRows(doc);
-  check(radiants.length === 164 && radiants.every((r) => r.catalogue && !r.zhr && Number.isFinite(r.ra_h)), 'the sky view gets 164 radiants without a rate');
+  check(radiants.length === 159 && radiants.every((r) => r.catalogue && !r.zhr && Number.isFinite(r.ra_h)), 'the sky view gets 159 radiants without a rate');
   const marked = R.activeShowers(Date.parse('2026-10-08T12:00:00Z'), radiants, 2).map((s) => s.id);
-  check(marked.includes('shower-october-draconids'), `on 8 October the Draconids are marked (${marked})`);
+  check(marked.includes('shower-october-camelopardalids') && !marked.includes('shower-october-draconids'), `on 8 October the October Camelopardalids are marked, and the Draconids, now the registry's own, are not marked twice (${marked})`);
   check(!R.activeShowers(Date.parse('2026-08-12T12:00:00Z'), radiants, 2).some((s) => /perseid/.test(s.id)), 'the Perseids are the registry\'s and are not marked twice');
   const sv = read('site/js/sky/skyview.js');
   check(/if \(sh\.catalogue\) continue;/.test(sv) && /import\('\.\.\/data\/smalllists\.js'\)/.test(sv) && !/^import .*smalllists/m.test(sv), 'skyview marks them, hands none to the ground sky, and imports the list late');
@@ -155,4 +155,4 @@ const say = (r) => C.firstSentence(r, {}, m, null);
 }
 
 if (problems.length) { console.error('small lists FAILED:\n  ' + problems.slice(0, 40).join('\n  ')); process.exit(1); }
-console.log('small lists ok: 172 showers (8 are the registry\'s), 3 850 observatories (2 694 with an MPC code), 111 launch sites, 93 landing and impact sites (17 on Venus, 62 more on the Moon, 4 on Mars, 9 small-body events, one planned landing), none twice, each with its card');
+console.log('small lists ok: 172 showers (13 are the registry\'s), 3 850 observatories (2 694 with an MPC code), 111 launch sites, 93 landing and impact sites (17 on Venus, 62 more on the Moon, 4 on Mars, 9 small-body events, one planned landing), none twice, each with its card');
