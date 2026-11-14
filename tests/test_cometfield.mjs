@@ -153,6 +153,14 @@ check(st.bytes < 1.5e6, `its GPU memory is fixed and modest (${(st.bytes / 1e6).
   check(st.tails >= 1 && st.tails <= F.TAIL_MAX, `the bright comets near the Sun have tails (${st.tails})`);
   const tails = field.group.children.find((o) => o.isMesh);
   check(tails.geometry.drawRange.count === st.tails * 2 * F.TAIL_SEGMENTS * 6, 'one ribbon of triangles per tail and kind');
+  {
+    const g = tails.geometry.getAttribute('aGain').array;
+    const drawn = st.tails * 2 * (F.TAIL_SEGMENTS + 1) * 2;
+    const rows = field.tails();
+    check(drawn > 0 && Array.from(g.slice(0, drawn)).every((x) => x >= 0.2 && x <= 1), 'every drawn tail vertex carries a brightness between the floor and 1 (internal #47)');
+    const gains = new Set(Array.from(g.slice(0, drawn)).map((x) => x.toFixed(3)));
+    check(rows.length < 2 || gains.size >= 1, 'the tails\' brightness follows each comet\'s distance from the Sun');
+  }
 }
 // a tier draws more of the famous and bright ones, never more than ORBIT_MAX, never a sungrazer's unless it is the selected one
 {

@@ -873,7 +873,18 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   check(Math.abs(sunAuOf({ frame: 'sun-inertial', x: 48.8 * AU, y: 0, z: 0 }) - 48.8) < 1e-9 && Number.isNaN(sunAuOf({ frame: 'earth-inertial', x: 1, y: 2, z: 3 })) && Number.isNaN(sunAuOf(null)), 'a position in the Sun\'s frame gives the distance; any other gives none');
   check(cometSunAu({ sunAu: 48.8 }, {}) === 48.8 && cometSunAu({}, { rAu: 2 }) === 2 && Number.isNaN(cometSunAu({}, {})), 'the frame\'s own distance first, the record\'s next, else none');
   check(!cometTailVisible(cometSunAu({ sunAu: sunAuOf({ frame: 'sun-inertial', x: 0, y: 48.8 * AU, z: 0 }) }, {}), true), 'Borisov at 48.8 au, selected, has no tail');
+  // Tail brightness follows the distance from the Sun (internal #47, public #550).
+  const { cometTailGain, COMET_TAIL_NEAR_AU, COMET_TAIL_FLOOR, modelFor } = await import(join(ROOT, 'site/js/scene/models.js'));
+  check(cometTailGain(0.5) === 1 && cometTailGain(COMET_TAIL_NEAR_AU) === 1 && cometTailGain(NaN) === 1, 'a tail inside the near distance, or with no known distance, is at full strength');
+  check(cometTailGain(1.0) < 1 && cometTailGain(1.0) > cometTailGain(1.4) && cometTailGain(1.4) > cometTailGain(3), 'it dims with distance from the Sun');
+  check(Math.abs(cometTailGain(1.6) - 0.25) < 1e-9 && cometTailGain(3) === COMET_TAIL_FLOOR && cometTailGain(40) === COMET_TAIL_FLOOR && COMET_TAIL_FLOOR > 0, 'as the inverse square down to a floor, so a selected comet far out is still seen');
+  {
+    const comet = modelFor('comet', 'tail-test');
+    const t = comet && comet.userData && comet.userData.tails;
+    check(t && t.children.length === 2 && t.children.every((r) => r.material.vertexColors === true && r.userData.baseOpacity > 0 && r.geometry.getAttribute('color')), 'both ribbons have a soft edge (black at the sides, colour down the middle) and keep their base opacity');
+  }
   const modelsSrc = readFileSync(join(ROOT, 'site/js/scene/models.js'), 'utf8');
+  check(/rib\.material\.opacity = rib\.userData\.baseOpacity \* gain/.test(modelsSrc), 'the per-frame update sets the shared materials\' opacity from the distance, with no new material');
   const heroesSrc = readFileSync(join(ROOT, 'site/js/scene/heroes.js'), 'utf8');
   check(/cometTailVisible\(au, obj\.userData\.selected !== undefined/.test(modelsSrc) && /userData\.sunAu = M\.sunAuOf\(c\.p\); obj\.userData\.selected = c\.record\.id === selectedId/.test(heroesSrc), 'the model update uses the rule, and the frame loop hands it the distance and the selection');
 }

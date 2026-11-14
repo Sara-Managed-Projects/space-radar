@@ -2914,33 +2914,52 @@ function buildAsteroid(variant, opts = {}) {
 
 // --------------------------------------------------------------------------------------- comet
 
-/** A tapered ribbon along +X, `bend` units of curve in Y. */
+/**
+ * A tail's brightness against the comet's distance from the Sun (internal #47, public #550). Sunlight on the tail
+ * falls as the inverse square of the distance, so the tail is drawn at full strength inside COMET_TAIL_NEAR_AU
+ * and dims as (NEAR / au)^2 beyond it, down to COMET_TAIL_FLOOR, so a selected comet far out is still seen.
+ * ILLUSTRATIVE: the law's two numbers are ours (a real tail also brightens steeply as the ice turns to gas),
+ * and the card already says the tail's shape is drawn. NaN (no known distance) is full strength. Pure.
+ */
+export const COMET_TAIL_NEAR_AU = 0.8;
+export const COMET_TAIL_FLOOR = 0.2;
+export function cometTailGain(au) {
+  if (!Number.isFinite(au)) return 1;
+  const g = au > 0 ? (COMET_TAIL_NEAR_AU / au) ** 2 : 1;
+  return Math.min(1, Math.max(COMET_TAIL_FLOOR, g));
+}
+
+/**
+ * A tapered ribbon along +X, `bend` units of curve in Y. Three vertices across each station, black at both
+ * edges and full colour down the middle (vertex colours, additive: black adds nothing), so the edge is soft
+ * with no texture. The material's opacity is set each frame from the comet's distance (`baseOpacity`).
+ */
 function tailRibbon(length, width, bend, colour, opacity, name) {
   const N = 10;
-  const pos = new Float32Array((N + 1) * 2 * 3);
+  const pos = new Float32Array((N + 1) * 3 * 3);
+  const col = new Float32Array((N + 1) * 3 * 3);
   const idx = [];
   for (let i = 0; i <= N; i++) {
     const t = i / N;
     const x = length * t;
     const y = bend * t * t;
     const w = width * (0.35 + 0.65 * (1 - t)) * (0.35 + t * 0.65);
-    pos[i * 6 + 0] = x;
-    pos[i * 6 + 1] = y - w;
-    pos[i * 6 + 2] = 0;
-    pos[i * 6 + 3] = x;
-    pos[i * 6 + 4] = y + w;
-    pos[i * 6 + 5] = 0;
+    const o = i * 9;
+    pos.set([x, y - w, 0, x, y, 0, x, y + w, 0], o);
+    col.set([0, 0, 0, 1, 1, 1, 0, 0, 0], o);
     if (i < N) {
-      const a = i * 2;
-      idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+      const a = i * 3;
+      idx.push(a, a + 1, a + 3, a + 1, a + 4, a + 3, a + 1, a + 2, a + 4, a + 2, a + 5, a + 4);
     }
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3));
   g.setIndex(idx);
   g.computeVertexNormals();
   const m = new THREE.MeshBasicMaterial({
     color: colour,
+    vertexColors: true,
     transparent: true,
     opacity,
     depthWrite: false,
@@ -2950,6 +2969,7 @@ function tailRibbon(length, width, bend, colour, opacity, name) {
   });
   const mesh2 = new THREE.Mesh(g, m);
   mesh2.name = name;
+  mesh2.userData.baseOpacity = opacity;
   return mesh2;
 }
 
@@ -4447,6 +4467,9 @@ export function updateModelAttitude(obj, record, sunDirScene, nadirScene, tMs) {
     const au = cometSunAu(obj.userData, meta);
     const len = Number.isFinite(au) ? Math.min(2.5, Math.max(0.35, 1 / (au * au))) : 1;
     obj.userData.tails.scale.set(len, 1, 1);
+    // Brighter near the Sun, dimmer far from it (internal #47): the shared materials' opacity, no new material.
+    const gain = cometTailGain(au);
+    for (const rib of obj.userData.tails.children) if (rib.material && rib.userData.baseOpacity !== undefined) rib.material.opacity = rib.userData.baseOpacity * gain;
     obj.userData.tails.visible = cometTailVisible(au, obj.userData.selected !== undefined ? !!obj.userData.selected : !!meta.selected);
   }
 }

@@ -33,6 +33,7 @@
 import { load } from '../data/sources.js';
 import { parseComets } from '../data/parsers.js';
 import { stage } from './stage.js';
+import { cometTailGain } from './models.js';
 
 export const AU_KM = 149597870.7;
 const GM_SUN = 1.32712440018e11; // km^3/s^2
@@ -294,11 +295,13 @@ attribute float aT;        // 0 at the head, 1 at the tip
 attribute float aSide;     // -1 or +1
 attribute float aWidth;    // half width at the tip, au
 attribute vec3 aTint;
+attribute float aGain;     // brightness against the comet's distance from the Sun (models.js cometTailGain)
 varying float vT;
 varying float vSide;
 varying vec3 vTint;
+varying float vGain;
 void main() {
-  vT = aT; vSide = aSide; vTint = aTint;
+  vT = aT; vSide = aSide; vTint = aTint; vGain = aGain;
   vec4 mv = modelViewMatrix * vec4(position, 1.0);
   vec3 along = normalize((modelViewMatrix * vec4(aTangent, 0.0)).xyz);
   vec3 side = cross(along, normalize(mv.xyz));
@@ -315,11 +318,12 @@ uniform float uLight;
 varying float vT;
 varying float vSide;
 varying vec3 vTint;
+varying float vGain;
 void main() {
   #include <logdepthbuf_fragment>
   float across = 1.0 - abs(vSide);
   float along = pow(1.0 - vT, 1.6);
-  float a = across * across * along * uLight;
+  float a = across * across * along * uLight * vGain;
   gl_FragColor = vec4(vTint * a, 1.0);
 }`;
 
@@ -338,7 +342,7 @@ export function createCometField(THREE, env = {}) {
   const uniforms = {
     uColour: { value: new THREE.Color(0xd9f3ff) }, uLight: { value: 0.3 }, uPixelRatio: { value: 1 }, uSelected: { value: -1 },
   };
-  const tailUniforms = { uLight: { value: 0.85 } };
+  const tailUniforms = { uLight: { value: 0.9 } };
   const S = { loaded: false, failed: null, n: 0, records: [], byId: new Map(), els: [], H: [], pos: null, r: null, mag: null, lastT: NaN, placedFor: null, tails: 0, drawn: 0, orbitVerts: 0, rows: [], bytes: 0 };
   let orbits = null, points = null, tailMesh = null;
   const _m = new THREE.Matrix4();
@@ -419,6 +423,7 @@ export function createCometField(THREE, env = {}) {
     tg.setAttribute('aSide', new THREE.BufferAttribute(new Float32Array(tv), 1));
     tg.setAttribute('aWidth', new THREE.BufferAttribute(new Float32Array(tv), 1));
     tg.setAttribute('aTint', new THREE.BufferAttribute(new Float32Array(tv * 3), 3));
+    tg.setAttribute('aGain', new THREE.BufferAttribute(new Float32Array(tv).fill(1), 1));
     const ti = [];
     for (let m = 0; m < TAIL_MAX * 2; m++) for (let s = 0; s < TAIL_SEGMENTS; s++) {
       const a = m * per + s * 2;
@@ -496,7 +501,7 @@ export function createCometField(THREE, env = {}) {
   const ION = [0.42, 0.7, 1.0], DUST = [1.0, 0.9, 0.7];
   function fillTails(tMs) {
     const g = tailMesh.geometry;
-    const pos = g.getAttribute('position').array, tan = g.getAttribute('aTangent').array, aT = g.getAttribute('aT').array, side = g.getAttribute('aSide').array, wid = g.getAttribute('aWidth').array, tint = g.getAttribute('aTint').array;
+    const pos = g.getAttribute('position').array, tan = g.getAttribute('aTangent').array, aT = g.getAttribute('aT').array, side = g.getAttribute('aSide').array, wid = g.getAttribute('aWidth').array, tint = g.getAttribute('aTint').array, gainA = g.getAttribute('aGain').array;
     const per = (TAIL_SEGMENTS + 1) * 2;
     let m = 0;
     for (const i of tailRows) {
@@ -505,6 +510,7 @@ export function createCometField(THREE, env = {}) {
       const vel = later ? [later[0] - head[0], later[1] - head[1], later[2] - head[2]] : [1, 0, 0];
       const L = tailLengthAu(S.mag[i], S.r[i]);
       if (!(L > 0)) continue;
+      const gain = cometTailGain(S.r[i]); // internal #47: brighter near the Sun, dimmer far from it
       for (const kind of ['ion', 'dust']) {
         const pts = tailPoints(head, vel, L, kind);
         const halfW = L * (kind === 'ion' ? 0.035 : 0.09);
@@ -518,6 +524,7 @@ export function createCometField(THREE, env = {}) {
             tan[v * 3] = tx; tan[v * 3 + 1] = ty; tan[v * 3 + 2] = tz;
             aT[v] = k / TAIL_SEGMENTS; side[v] = s === 0 ? -1 : 1; wid[v] = halfW;
             tint[v * 3] = col[0]; tint[v * 3 + 1] = col[1]; tint[v * 3 + 2] = col[2];
+            gainA[v] = gain;
           }
         }
         m += 1;
@@ -525,7 +532,7 @@ export function createCometField(THREE, env = {}) {
     }
     S.tails = m / 2;
     g.setDrawRange(0, m * TAIL_SEGMENTS * 6);
-    for (const name of ['position', 'aTangent', 'aT', 'aSide', 'aWidth', 'aTint']) g.getAttribute(name).needsUpdate = true;
+    for (const name of ['position', 'aTangent', 'aT', 'aSide', 'aWidth', 'aTint', 'aGain']) g.getAttribute(name).needsUpdate = true;
   }
 
   function noteTail(r, on) {
