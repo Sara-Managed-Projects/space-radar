@@ -2375,6 +2375,8 @@ export const COPY = {
       ultra: 'Full resolution and the finest steps close up',
     },
     fellBack: 'Frames were slow: quality is back on Auto.',
+    restore: 'Reload at full quality',
+    restoreTitle: 'Reload this view at the quality your device earns.',
   },
 
   status: {

@@ -16,7 +16,9 @@
 //   - When the median of the last twenty frame times stays over 33 ms for three seconds, the scene
 //     drops to one device pixel per CSS pixel and hides the Milky Way picture and the constellation
 //     lines -- once, latched, and said in the panel. It never climbs back by itself: a latch that
-//     flaps is worse than either state.
+//     flaps is worse than either state. What it does instead (internal #265, seen once at 120 fps): it does
+//     not count time it did not measure (a hidden tab, a stage change: reset()), and the quality row offers
+//     a way back (a reload at the quality the device earns, ui/qualitypanel.js).
 
 /** `src` sorted ascending into the reused array `out` (insertion: the window is 20 numbers). */
 function sortedInto(out, src) {
@@ -34,10 +36,16 @@ export function createFrameLatch(opts = {}) {
   const windowFrames = opts.windowFrames || 20;
   const thresholdMs = opts.thresholdMs || 33;
   const holdMs = opts.holdMs || 3000;
+  // Internal #265: frames are fed only while the loop is calm and the tab is shown, so a gap between two pushes is time
+  // nobody measured (a hidden tab, a trip on screen, the idle cap). The window and the clock of "slow since" are
+  // not carried across it: they would trip the latch on the first frame back from an old slow stretch.
+  const gapMs = opts.gapMs || 250;
   const frames = [];
   const scratch = [];
   let overSince = null;
   let latched = false;
+  let lastAt = null;
+  let gapResets = 0;
 
   function median() {
     if (!frames.length) return 0;
@@ -46,10 +54,19 @@ export function createFrameLatch(opts = {}) {
     return a.length % 2 ? a[h] : (a[h - 1] + a[h]) / 2;
   }
 
+  /** Forget the window: what came before is not evidence about what comes next (a new stage, a tab shown again). */
+  function reset() {
+    frames.length = 0;
+    overSince = null;
+    lastAt = null;
+  }
+
   /** Feed one frame's duration. Returns true exactly once, on the frame that trips the latch. */
   function push(frameMs, nowMs) {
     if (latched) return false;
     if (!Number.isFinite(frameMs) || frameMs <= 0) return false;
+    if (lastAt !== null && nowMs - lastAt > gapMs + Math.min(frameMs, 1000)) { reset(); gapResets += 1; }
+    lastAt = nowMs;
     frames.push(Math.min(frameMs, 1000));
     if (frames.length > windowFrames) frames.shift();
     if (frames.length < windowFrames) return false;
@@ -73,7 +90,12 @@ export function createFrameLatch(opts = {}) {
     return true;
   }
 
-  return { push, median, force, get latched() { return latched; } };
+  /** The counters a console check reads to see why it tripped (or did not): `spaceRadar` can log this. */
+  function stats() {
+    return { frames: frames.length, medianMs: Math.round(median() * 10) / 10, overForMs: overSince === null || lastAt === null ? 0 : Math.round(lastAt - overSince), gapResets };
+  }
+
+  return { push, median, force, reset, stats, get latched() { return latched; } };
 }
 
 // --- the resolution scale before the latch (internal #521, 2026-10-10) -----------------------------------

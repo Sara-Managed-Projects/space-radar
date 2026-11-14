@@ -275,6 +275,19 @@ if (reliefFar.utopia) {
   check(main.split('b200-f7-ground: begin').length === 2, 'main.js has one block of this batch');
 }
 
+
+// internal #272: a landing opened live at its night opens at its next morning, once, and says so in every language
+{
+  const gs = readFileSync(join(JS, 'scene/groundstage.js'), 'utf8');
+  check(/if \(next\.groundId\) openLit\(next\);/.test(gs), 'a ground opening looks for a lit moment');
+  check(/clock\.mode !== 'live'\) return;/.test(gs), 'a clock the link or the visitor set is left alone');
+  check(/info: \(line\) =>/.test(gs), 'the stage can tell the scene note what it did');
+  for (const l of ['en.ground', 'ar', 'de', 'es', 'fr', 'he', 'hi', 'pt', 'ru', 'uk', 'zh']) {
+    const t = readFileSync(join(JS, `copy/${l}.js`), 'utf8');
+    check(/nightOpened/.test(t) && /nightOpened[^\n]*\{local\}[^\n]*\{sun\}/.test(t), `${l}: the night-opening line has its two numbers`);
+  }
+}
+
 if (problems.length) {
   console.error(`test_ground: ${problems.length} problem(s)\n  ${problems.join('\n  ')}`);
   process.exit(1);

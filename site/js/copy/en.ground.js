@@ -74,6 +74,7 @@ Object.assign(COPY, {
       'trappist-1f': 'TRAPPIST-1 f', 'trappist-1g': 'TRAPPIST-1 g', 'trappist-1h': 'TRAPPIST-1 h',
     },
     earthAndMoon: 'The Earth and the Moon',
+    nightOpened: 'It is night at this site right now, so the clock was set to {local} local solar time, with the Sun {sun}° up. The clock takes you back to now.',
     unknownGround: 'There is no terrain model for that site yet.',
     unknownSky: 'That place is not one this map can stand on yet: the Moon, Mars, Titan, Europa, Proxima b or TRAPPIST-1 e.',
   },

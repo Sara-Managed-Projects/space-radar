@@ -182,6 +182,9 @@ const TODAY_MS = 4500;
 /** The first visit's three lines and two buttons (ui/welcome.js), the launch chip (ui/launchchip.js)
  * and the way home (ui/base.js): with the timeline, the first things after the first visit. */
 const WELCOME_MS = 4000;
+// Internal #271: most first visits are on a phone, where the screen is a globe and a sliver of sheet until the welcome raises it;
+// it comes sooner there than on a desktop, where the sidebar is already open beside the map.
+const WELCOME_PHONE_MS = 1500;
 /** A first visit's arrow at the tour's button (ui/onboarding.js): after the welcome and the keys hint have had their turn. */
 const TOUR_MS = 8000;
 const LAUNCHDAY_MS = 4800;
@@ -1166,7 +1169,7 @@ export async function boot({ setStatus } = {}) {
   const welcome = () => welcomeApi || (welcomeApi = import('./ui/welcome.js')
     .then((m) => m.createWelcome(ctx, { deepLink: arrivedByLink || location.hash.length > 1, embed: !!embed, automated: navigator.webdriver === true })));
   ctx.welcome = { show: () => welcome().then((api) => api.show()) };
-  const welcomeLater = () => afterFirstVisit(WELCOME_MS, () => {
+  const welcomeLater = () => afterFirstVisit(document.documentElement.classList.contains('sr-phone') ? WELCOME_PHONE_MS : WELCOME_MS, () => {
     let seen = true;
     try { seen = !!window.localStorage.getItem('sr:welcome'); } catch { seen = true; /* no memory: no welcome */ }
     if (seen || arrivedByLink) return;
@@ -1605,6 +1608,10 @@ export async function boot({ setStatus } = {}) {
     // plane, so selecting one recentres on the Sun at one unit = one light-year first. From a star
     // system's stage too: there the rest of the sky is a shell of directions.
     else if (record && ['star', 'exoplanet', 'dso', 'exotic'].includes(record.klass) && !isLadderStage(stage.worldId) && opts.fly !== false) ctx.setStage(farOff(record) ? 'local-group' : 'stellar');
+    // A small deep-sky object (a cluster, a nebula) named while the Local Group's rung is up is met on the stellar rung: a unit
+    // there is a million light-years, and the camera cannot stand near enough to show a thing a hundred light-years wide.
+    else if (record && record.klass === 'dso' && stage.worldId === 'local-group' && !farOff(record) && opts.fly !== false
+      && record.meta && Number.isFinite(record.meta.sizeLy) && record.meta.sizeLy < 10000) ctx.setStage('stellar');
     // A place past the stellar rung's far plane (a billion light-years: TON 618) is met on the Local
     // Group's, where it is drawn at all (spec 0075 task 17, DS-D10).
     else if (farOff(record) && isLadderStage(stage.worldId) && stage.worldId !== 'local-group' && opts.fly !== false) ctx.setStage('local-group');
@@ -1999,7 +2006,16 @@ export async function boot({ setStatus } = {}) {
       // Frame the object by its own size: a galaxy 200 000 ly across wants the camera well back.
       // 0076 W4-a: a galaxy of the local volume with no catalogued diameter is framed by its distance (a thousandth of it), not as a 20 ly nebula
       const sizeLy = record.meta && Number.isFinite(record.meta.sizeLy) ? record.meta.sizeLy : record.meta && record.meta.distLy > 1e6 ? record.meta.distLy / 1000 : 20;
-      const framing = Math.max(1, (sizeLy * 9460730472580.8 * 2.5) / stage.unitKm) * (ctx.deep && ctx.deep.arriveScale ? ctx.deep.arriveScale(record.id) : 1); // 0078 r14-neb-b: a hero's own framing
+      // Internal #264, #266: framed to fill the screen's narrower side (discDistance), which puts a galaxy or a nebula past the
+      // radius at which its model is drawn (scene/deep/lodsize.js THRESHOLDS); the old 2.5 widths stopped short of it. The floor is
+      // ONE LIGHT-YEAR in the stage's unit, not one unit: a unit is a million light-years on the Local Group's rung, and the floor
+      // of a whole unit left Andromeda a 60 px smudge there and M13 a dot.
+      const lyKm = 9460730472580.8;
+      const cv = ctx.renderer && ctx.renderer.domElement;
+      const vw = cv && cv.clientWidth > 0 ? cv.clientWidth : window.innerWidth;
+      const vh = cv && cv.clientHeight > 0 ? cv.clientHeight : window.innerHeight;
+      const fitted = discDistance((sizeLy * lyKm) / 2 / stage.unitKm, { fovDeg: camera.fov, aspect: vw / vh });
+      const framing = Math.max(lyKm / stage.unitKm, Math.min(fitted, (sizeLy * lyKm * 2.5) / stage.unitKm)) * (ctx.deep && ctx.deep.arriveScale ? ctx.deep.arriveScale(record.id) : 1); // 0078 r14-neb-b: a hero's own framing
       // 0076 W4-a (spec 0075 task 64): the steady stand-off is for any place past the stellar rung's far plane, not only the exotics'
       return farOff(record) && pos ? Math.max(framing, steadyDistance(Math.hypot(pos.x, pos.y, pos.z))) : framing;
     }
@@ -2773,6 +2789,10 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
   // The frame-rate latch (spec 0026 req 18): twenty-frame median over 33 ms for three seconds ->
   // one device pixel per CSS pixel and no Milky Way picture, once, said in the panel.
   const latch = createFrameLatch();
+  // Internal #265: a stage change loads and builds for a few seconds, and a tab shown again has a stale window: neither says
+  // anything about the device, so the latch starts counting afresh after them.
+  window.addEventListener('sr:stage', () => latch.reset());
+  document.addEventListener('visibilitychange', () => latch.reset());
   let quietUntil = 0; // b200-s1-fixes: the frame ladder and the latch are fed from here on (forge #14)
   // `?look=1` (scene/quality.js lookHeld), read once: a tool is looking, and neither the latch nor the
   // governor below is fed. Nothing else asks: the loaders, the tier and the clock run as for a visitor.
@@ -2826,6 +2846,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     get tripped() { return latch.latched; },
     held: looking,
     force() { if (latch.force()) degrade(); return latch.latched; },
+    stats: () => latch.stats(),
   };
   // Read once: every extra hero model is a file to fetch, so a metered or slow connection keeps
   // the model pool at its floor (scene/heroes.js, nextHeroCap).

@@ -222,6 +222,14 @@ check(JSON.stringify(findMatches(index, 'starlink').hits.map((h) => h.record.id)
   check(!/from '\.\.\/data\/kindwords\.js'/.test(src) && !/from '\.\.\/data\/visualclasses\.js'/.test(src), 'the field on the first screen imports neither the kind words nor the classes');
 }
 
+// --- stale text after navigating away (internal #317) ---------------------------------------------------------
+{
+  const src = readFileSync(join(JS, 'ui/search.js'), 'utf8');
+  check(/window\.addEventListener\('sr:select', onSelect\)/.test(src) && /window\.removeEventListener\('sr:select', onSelect\)/.test(src), 'the field hears every selection, and lets go of it on destroy');
+  check(/state\.pickedId = record\.id;/.test(src) && /rec\.id === state\.pickedId\) return;/.test(src), 'a selection the field made itself keeps its text');
+  check(/document\.activeElement === input\) return;[\s\S]{0,200}close\(true\)/.test(src), 'any other selection clears the text, but never while the visitor is typing');
+}
+
 // --- a key typed into search is the search's, whichever transient prompt is up (public #916) -----------------
 // 0077 W2-d: begin
 // #615 fixed one prompt (the go-back offer sat on the search row for six seconds on a phone). This holds the
