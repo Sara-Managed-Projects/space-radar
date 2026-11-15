@@ -35,4 +35,5 @@ for (const id of ['apollo-15', 'jezero', 'gale']) {
     await shot(`ground-${id}-${name}`, `${id}, ${name}: ${m.triangles} triangles, ${m.calls} calls`);
   }
 }
-return finish({ ...out, ...(fails.length ? { fail: fails.join('; ') } : {}) });
+const fail = fails.length ? fails.join('; ') : undefined;
+return finish({ ...out, fail });
