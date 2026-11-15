@@ -2596,9 +2596,24 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
   // notes, every row the card prints, the comparisons, the myths and the train -- the sections
   // the card has always had, in their old order.
   const sentence = firstSentence(record, ctx, m, passInfo);
-  const why = whyLine(record);
+  let why = whyLine(record);
   const aboutNodes = [el('p', 'sr-card__sentence', namedAbove ? withoutLeadingName(sentence, name) : sentence)];
   if (why) aboutNodes.push(el('p', 'sr-card__why', why));
+  // The Sun, the Moon and the planets have a paragraph of our own, in copy/en.cards.js, which is fetched here and not at boot (internal #302).
+  else if (klass === 'world' && ['', 'sun', 'earth'].includes(String(pick(meta(record), 'parent') || ''))) {
+    const aboutP = el('p', 'sr-card__why', '');
+    aboutP.hidden = true;
+    aboutNodes.push(aboutP);
+    import('../copy/en.cards.js').then((words) => {
+      const text = whyLine(record);
+      if (!text) return;
+      why = text;
+      aboutP.textContent = text;
+      aboutP.hidden = false;
+      const [page, path] = words.WORLD_ABOUT_PAGES[String(record.id).toLowerCase()];
+      aboutP.after(el('p', 'sr-card__note', t(COPY.worldAbout.source, { page, path })));
+    }).catch(() => { /* the card is whole without it */ });
+  }
   // The spin a turning hole is drawn with (ui/holespin.js, forge #149): after what it is and why it matters, then how it is drawn (internal #303).
   if (/^(exotic-)?(m87|sgr-a)-star$/.test(String(record.id || ''))) {
     const spinBox = el('div', 'sr-card__varcurve');

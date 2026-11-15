@@ -4820,7 +4820,7 @@ Object.assign(COPY, {
 });
 // b200-f2-worlds: end
 
-// 2.0.x (internal #300, #302, #303): the glossary's star and deep-sky words, the paragraphs of the Sun, Moon and planets, and the planets' lead lines. fr: machine-drafted
+// 2.0.x (internal #300, #302, #303): the glossary's star and deep-sky words (glossaryMore), the paragraphs of the Sun, Moon and planets, and the planets' lead lines. fr: machine-drafted
 // like the rest of this file (docs/TRANSLATING.md). A key this file already has is left as it is.
 {
   const topUp = (dst, src) => {
@@ -4830,12 +4830,22 @@ Object.assign(COPY, {
     }
   };
   topUp(COPY, {
-    "card": {
-      "rows": {
-        "aboutSource": "Le paragraphe sous la première ligne, lu sur"
-      }
+    "glossaryMore": {
+      "black hole": "Un endroit où la gravité est si forte que rien, pas même la lumière, ne peut en sortir. Ce n’est pas un trou, mais beaucoup de matière entassée dans un petit espace.",
+      "neutron star": "Ce qu’une étoile massive peut laisser quand elle meurt : plus que la masse du Soleil écrasée en une boule large à peu près comme une ville.",
+      "pulsar": "Une étoile à neutrons qui tourne vite et envoie des faisceaux comme un phare. Nous voyons un clignotement chaque fois qu’un faisceau passe sur nous.",
+      "white dwarf": "Le cœur chaud qui reste quand une étoile comme le Soleil a perdu ses couches extérieures. À peu près grosse comme la Terre, elle ne fabrique plus de chaleur et refroidit lentement.",
+      "brown dwarf": "Un objet trop gros pour être une planète et trop petit pour briller comme une étoile : environ 13 à 80 fois la masse de Jupiter. Il ne donne presque pas de lumière visible.",
+      "nebula": "Un nuage de gaz et de poussière dans l’espace. Certains brillent, d’autres cachent les étoiles qui sont derrière, et dans certains naissent de nouvelles étoiles.",
+      "galaxy": "Une immense famille d’étoiles, de gaz et de poussière tenue ensemble par la gravité. La nôtre, la Voie lactée, est une spirale large de plus de 100 000 années-lumière.",
+      "globular cluster": "Une boule de dizaines de milliers à des millions d’étoiles serrées par la gravité, plus denses au centre.",
+      "habitable zone": "L’éventail de distances à une étoile où une planète pourrait avoir de l’eau liquide à sa surface. Cela dit que la vie pourrait y être possible, pas qu’il y en a.",
+      "exoplanet": "Une planète qui tourne autour d’une étoile autre que le Soleil.",
+      "redshift": "De la lumière étirée vers des ondes plus longues, plus rouges, parce que sa source s’éloigne ou que l’espace s’est étiré en chemin. Pour les galaxies lointaines, plus de décalage vers le rouge veut dire plus loin.",
+      "supernova": "L’explosion d’une étoile à la fin de sa vie, ou d’une naine blanche. Pendant quelques semaines, elle peut briller autant qu’une galaxie entière.",
+      "light curve": "Un graphique de l’éclat de quelque chose au fil du temps. Une pulsation ou un creux peut montrer une étoile qui gonfle et se contracte, ou quelque chose qui passe devant."
     },
-    "worldFacts": {
+    "worldAbout": {
       "about": {
         "sun": "Le Soleil est une étoile : une boule de gaz très chaud et lumineux, faite surtout d’hydrogène et d’hélium, vieille d’environ 4,5 milliards d’années. Il est environ 100 fois plus large que la Terre. Son cœur est à environ 15 millions de degrés Celsius, assez chaud pour la fusion nucléaire, et l’énergie qui en sort est ce dont dépend la plupart de la vie sur Terre. Sa gravité retient tout le Système solaire.",
         "moon": "La Lune est le seul satellite naturel de la Terre, large de moins d’un tiers de la Terre. C’est une boule de roche couverte de cratères, à environ 384 000 km de nous en moyenne. Elle fait le tour de la Terre en environ 27 jours et tourne sur elle-même en autant de temps, si bien que l’on voit toujours la même face. Les taches sombres sont des plaines de lave ancienne. C’est le seul monde au-delà de la Terre que des humains ont visité jusqu’ici.",
@@ -4848,7 +4858,7 @@ Object.assign(COPY, {
         "uranus": "Uranus est une géante de glace quatre fois plus large que la Terre, trouvée en 1781 par William Herschel avec un télescope. Sa plus grande partie est un fluide chaud et dense d’eau, de méthane et d’ammoniac. Le méthane de son air absorbe la lumière rouge, ce qui lui donne une couleur bleu-vert. Elle est penchée d’environ 98 degrés, si bien qu’elle roule autour du Soleil sur le côté, et chaque pôle connaît environ 21 ans d’hiver sombre.",
         "neptune": "Neptune est une géante de glace quatre fois plus large que la Terre, et la seule planète que l’on ne peut pas voir à l’œil nu. Midi y est aussi sombre que notre crépuscule. Une année dure environ 165 années terrestres. Elle a d’abord été trouvée par le calcul, en 1846 : Urbain Le Verrier a calculé où elle devait être d’après le mouvement étrange d’Uranus, et Johann Galle l’a vue dès la première nuit où il a cherché."
       },
-      "aboutSource": "NASA Science, {page} (science.nasa.gov/{path}/), consulté le 15 novembre 2026"
+      "source": "NASA Science, {page} (science.nasa.gov/{path}/), consulté le 15 novembre 2026"
     },
     "templates": {
       "world": {
@@ -4906,22 +4916,6 @@ export const GLOSSARY = {
   "totality": "Les minutes d’une éclipse totale pendant lesquelles le Soleil est entièrement caché. Le ciel devient assez sombre pour voir des étoiles.",
   "annular": "En forme d’anneau. Lors d’une éclipse annulaire, la Lune est trop loin pour couvrir tout le Soleil, et un anneau brillant reste autour d’elle."
 };
-
-Object.assign(GLOSSARY, {
-  "black hole": "Un endroit où la gravité est si forte que rien, pas même la lumière, ne peut en sortir. Ce n’est pas un trou, mais beaucoup de matière entassée dans un petit espace.",
-  "neutron star": "Ce qu’une étoile massive peut laisser quand elle meurt : plus que la masse du Soleil écrasée en une boule large à peu près comme une ville.",
-  "pulsar": "Une étoile à neutrons qui tourne vite et envoie des faisceaux comme un phare. Nous voyons un clignotement chaque fois qu’un faisceau passe sur nous.",
-  "white dwarf": "Le cœur chaud qui reste quand une étoile comme le Soleil a perdu ses couches extérieures. À peu près grosse comme la Terre, elle ne fabrique plus de chaleur et refroidit lentement.",
-  "brown dwarf": "Un objet trop gros pour être une planète et trop petit pour briller comme une étoile : environ 13 à 80 fois la masse de Jupiter. Il ne donne presque pas de lumière visible.",
-  "nebula": "Un nuage de gaz et de poussière dans l’espace. Certains brillent, d’autres cachent les étoiles qui sont derrière, et dans certains naissent de nouvelles étoiles.",
-  "galaxy": "Une immense famille d’étoiles, de gaz et de poussière tenue ensemble par la gravité. La nôtre, la Voie lactée, est une spirale large de plus de 100 000 années-lumière.",
-  "globular cluster": "Une boule de dizaines de milliers à des millions d’étoiles serrées par la gravité, plus denses au centre.",
-  "habitable zone": "L’éventail de distances à une étoile où une planète pourrait avoir de l’eau liquide à sa surface. Cela dit que la vie pourrait y être possible, pas qu’il y en a.",
-  "exoplanet": "Une planète qui tourne autour d’une étoile autre que le Soleil.",
-  "redshift": "De la lumière étirée vers des ondes plus longues, plus rouges, parce que sa source s’éloigne ou que l’espace s’est étiré en chemin. Pour les galaxies lointaines, plus de décalage vers le rouge veut dire plus loin.",
-  "supernova": "L’explosion d’une étoile à la fin de sa vie, ou d’une naine blanche. Pendant quelques semaines, elle peut briller autant qu’une galaxie entière.",
-  "light curve": "Un graphique de l’éclat de quelque chose au fil du temps. Une pulsation ou un creux peut montrer une étoile qui gonfle et se contracte, ou quelque chose qui passe devant."
-});
 
 // b200-f1-find: begin -- Find, the owners, the clouds and the date field (copy/en.find.js, forge #150, #152, #153, #154), machine-drafted
 COPY.timePill.dateJump = "Aller à une date (UTC)";

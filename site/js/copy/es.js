@@ -4580,7 +4580,7 @@ Object.assign(COPY, {
 });
 // b200-f2-worlds: end
 
-// 2.0.x (internal #300, #302, #303): the glossary's star and deep-sky words, the paragraphs of the Sun, Moon and planets, and the planets' lead lines. es: machine-drafted
+// 2.0.x (internal #300, #302, #303): the glossary's star and deep-sky words (glossaryMore), the paragraphs of the Sun, Moon and planets, and the planets' lead lines. es: machine-drafted
 // like the rest of this file (docs/TRANSLATING.md). A key this file already has is left as it is.
 {
   const topUp = (dst, src) => {
@@ -4590,12 +4590,22 @@ Object.assign(COPY, {
     }
   };
   topUp(COPY, {
-    "card": {
-      "rows": {
-        "aboutSource": "El párrafo bajo la primera línea, leído de"
-      }
+    "glossaryMore": {
+      "black hole": "Un lugar donde la gravedad es tan fuerte que nada puede salir, ni siquiera la luz. No es un agujero, sino mucha materia apretada en un espacio pequeño.",
+      "neutron star": "Lo que puede dejar una estrella masiva cuando muere: más que la masa del Sol comprimida en una bola tan ancha como una ciudad.",
+      "pulsar": "Una estrella de neutrones que gira rápido y lanza haces de luz como un faro. Vemos un destello cada vez que un haz pasa por encima de nosotros.",
+      "white dwarf": "El núcleo caliente que queda cuando una estrella como el Sol ha soltado sus capas externas. Es más o menos tan grande como la Tierra, no produce calor nuevo y se enfría poco a poco.",
+      "brown dwarf": "Un objeto demasiado grande para ser un planeta y demasiado pequeño para brillar como una estrella: de unas 13 a 80 veces la masa de Júpiter. Casi no da luz visible.",
+      "nebula": "Una nube de gas y polvo en el espacio. Algunas brillan, otras tapan las estrellas que tienen detrás, y en algunas se están formando estrellas nuevas.",
+      "galaxy": "Una enorme familia de estrellas, gas y polvo unidos por la gravedad. La nuestra, la Vía Láctea, es una espiral de más de 100 000 años luz de ancho.",
+      "globular cluster": "Una bola de decenas de miles a millones de estrellas muy juntas por la gravedad, más densa en el centro.",
+      "habitable zone": "El margen de distancias a una estrella donde un planeta podría tener agua líquida en la superficie. Dice que allí podría ser posible la vida, no que viva alguien.",
+      "exoplanet": "Un planeta que gira alrededor de una estrella que no es el Sol.",
+      "redshift": "Luz estirada hacia ondas más largas y más rojas, porque su fuente se aleja o el espacio se estiró por el camino. En las galaxias lejanas, más corrimiento al rojo significa más lejos.",
+      "supernova": "La explosión de una estrella al final de su vida, o de una enana blanca. Durante unas semanas puede brillar tanto como una galaxia entera.",
+      "light curve": "Un gráfico de cuánto brilla algo a lo largo del tiempo. Un pulso o una caída puede mostrar una estrella que se hincha y se encoge, o algo que pasa por delante."
     },
-    "worldFacts": {
+    "worldAbout": {
       "about": {
         "sun": "El Sol es una estrella: una bola de gas muy caliente y brillante, sobre todo hidrógeno y helio, de unos 4.5 mil millones de años. Es unas 100 veces más ancho que la Tierra. Su núcleo está a unos 15 millones de grados Celsius, lo bastante caliente para la fusión nuclear, y la energía que sale de él es de la que depende casi toda la vida de la Tierra. Su gravedad mantiene unido todo el sistema solar.",
         "moon": "La Luna es el único satélite natural de la Tierra, de menos de un tercio de su ancho. Es una bola de roca llena de cráteres, a unos 384 000 km de distancia de media. Da una vuelta a la Tierra en unos 27 días y gira sobre sí misma una vez en el mismo tiempo, así que siempre vemos la misma cara. Las manchas oscuras son llanuras de lava antigua. Es el único mundo más allá de la Tierra que las personas han visitado hasta ahora.",
@@ -4608,7 +4618,7 @@ Object.assign(COPY, {
         "uranus": "Urano es un gigante helado cuatro veces más ancho que la Tierra, descubierto en 1781 por William Herschel con un telescopio. Casi todo él es un fluido caliente y denso de agua, metano y amoníaco. El metano de su aire absorbe la luz roja, y eso le da un color azul verdoso. Está inclinado unos 98 grados, así que rueda alrededor del Sol de lado, y cada polo pasa unos 21 años de invierno oscuro.",
         "neptune": "Neptuno es un gigante helado cuatro veces más ancho que la Tierra, y el único planeta que no se puede ver a simple vista. Allí el mediodía es tan tenue como nuestro crepúsculo. Un año dura unos 165 años terrestres. Se encontró en 1846 primero con cálculos: Urbain Le Verrier calculó dónde debía estar a partir del extraño movimiento de Urano, y Johann Galle lo vio la primera noche que lo buscó."
       },
-      "aboutSource": "NASA Science, {page} (science.nasa.gov/{path}/), leído el 15 de noviembre de 2026"
+      "source": "NASA Science, {page} (science.nasa.gov/{path}/), leído el 15 de noviembre de 2026"
     },
     "templates": {
       "world": {
@@ -4666,22 +4676,6 @@ export const GLOSSARY = {
   totality: "Los minutos de un eclipse total en que el Sol queda cubierto por completo. El cielo se oscurece lo bastante para ver estrellas.",
   annular: "En forma de anillo. En un eclipse anular la Luna está demasiado lejos para cubrir todo el Sol, y queda un anillo brillante a su alrededor."
 };
-
-Object.assign(GLOSSARY, {
-  "black hole": "Un lugar donde la gravedad es tan fuerte que nada puede salir, ni siquiera la luz. No es un agujero, sino mucha materia apretada en un espacio pequeño.",
-  "neutron star": "Lo que puede dejar una estrella masiva cuando muere: más que la masa del Sol comprimida en una bola tan ancha como una ciudad.",
-  "pulsar": "Una estrella de neutrones que gira rápido y lanza haces de luz como un faro. Vemos un destello cada vez que un haz pasa por encima de nosotros.",
-  "white dwarf": "El núcleo caliente que queda cuando una estrella como el Sol ha soltado sus capas externas. Es más o menos tan grande como la Tierra, no produce calor nuevo y se enfría poco a poco.",
-  "brown dwarf": "Un objeto demasiado grande para ser un planeta y demasiado pequeño para brillar como una estrella: de unas 13 a 80 veces la masa de Júpiter. Casi no da luz visible.",
-  "nebula": "Una nube de gas y polvo en el espacio. Algunas brillan, otras tapan las estrellas que tienen detrás, y en algunas se están formando estrellas nuevas.",
-  "galaxy": "Una enorme familia de estrellas, gas y polvo unidos por la gravedad. La nuestra, la Vía Láctea, es una espiral de más de 100 000 años luz de ancho.",
-  "globular cluster": "Una bola de decenas de miles a millones de estrellas muy juntas por la gravedad, más densa en el centro.",
-  "habitable zone": "El margen de distancias a una estrella donde un planeta podría tener agua líquida en la superficie. Dice que allí podría ser posible la vida, no que viva alguien.",
-  "exoplanet": "Un planeta que gira alrededor de una estrella que no es el Sol.",
-  "redshift": "Luz estirada hacia ondas más largas y más rojas, porque su fuente se aleja o el espacio se estiró por el camino. En las galaxias lejanas, más corrimiento al rojo significa más lejos.",
-  "supernova": "La explosión de una estrella al final de su vida, o de una enana blanca. Durante unas semanas puede brillar tanto como una galaxia entera.",
-  "light curve": "Un gráfico de cuánto brilla algo a lo largo del tiempo. Un pulso o una caída puede mostrar una estrella que se hincha y se encoge, o algo que pasa por delante."
-});
 
 // b200-f1-find: begin -- Find, the owners, the clouds and the date field (copy/en.find.js, forge #150, #152, #153, #154), machine-drafted
 COPY.timePill.dateJump = "Ir a una fecha (UTC)";

@@ -201,14 +201,6 @@ export const WORLD_ALIASES = {
 // card reads `meta.cite` first (ui/cards.js sourceRow), so this is where the world says so.
 const WORLD_CITE = 'computed with Astronomy Engine (Don Cross, MIT licence): truncated VSOP87 for the planets, ELP for the Moon';
 
-// Where each paragraph of COPY.worldFacts.about was read: the page's title and its address on science.nasa.gov (internal #302).
-const ABOUT_PAGES = {
-  sun: ['Our Sun: Facts', 'sun'], earth: ['Earth', 'earth'], moon: ['Moon Facts', 'moon/facts'],
-  mercury: ['Mercury Facts', 'mercury/facts'], venus: ['Venus Facts', 'venus/facts'], mars: ['Mars Facts', 'mars/facts'],
-  jupiter: ['Jupiter Facts', 'jupiter/facts'], saturn: ['Saturn Facts', 'saturn/facts'], uranus: ['Uranus Facts', 'uranus/facts'],
-  neptune: ['Neptune Facts', 'neptune/facts'],
-};
-
 export function worldRecords() {
   return WORLDS.map((w) => ({
     id: w.id,
@@ -222,11 +214,6 @@ export function worldRecords() {
     cls: 'measured',
     meta: {
       worldId: w.id,
-      // A paragraph of our own in place of the Wikipedia extract, and where it was read (ui/cardfacts.js whyLine).
-      // Not `why`: that key ranks labels and search, and every world is already on the map.
-      ...(COPY.worldFacts.about[w.id] && ABOUT_PAGES[w.id]
-        ? { about: COPY.worldFacts.about[w.id], aboutSource: t(COPY.worldFacts.aboutSource, { page: ABOUT_PAGES[w.id][0], path: ABOUT_PAGES[w.id][1] }) }
-        : {}),
       radiusKm: w.radiusKm,
       parent: w.parent,
       aliases: (WORLD_ALIASES[w.id] || []).slice(),

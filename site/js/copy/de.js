@@ -4817,7 +4817,7 @@ Object.assign(COPY, {
 });
 // b200-f2-worlds: end
 
-// 2.0.x (internal #300, #302, #303): the glossary's star and deep-sky words, the paragraphs of the Sun, Moon and planets, and the planets' lead lines. de: machine-drafted
+// 2.0.x (internal #300, #302, #303): the glossary's star and deep-sky words (glossaryMore), the paragraphs of the Sun, Moon and planets, and the planets' lead lines. de: machine-drafted
 // like the rest of this file (docs/TRANSLATING.md). A key this file already has is left as it is.
 {
   const topUp = (dst, src) => {
@@ -4827,12 +4827,22 @@ Object.assign(COPY, {
     }
   };
   topUp(COPY, {
-    "card": {
-      "rows": {
-        "aboutSource": "Der Absatz unter der ersten Zeile, gelesen aus"
-      }
+    "glossaryMore": {
+      "black hole": "Ein Ort, an dem die Schwerkraft so stark ist, dass nichts herauskommt, nicht einmal Licht. Es ist kein Loch, sondern sehr viel Materie auf kleinem Raum.",
+      "neutron star": "Das kann ein massereicher Stern hinterlassen, wenn er stirbt: mehr als die Masse der Sonne, zusammengepresst zu einer Kugel so breit wie eine Stadt.",
+      "pulsar": "Ein Neutronenstern, der sich schnell dreht und Strahlen aussendet wie ein Leuchtturm. Wir sehen jedes Mal ein Aufblitzen, wenn ein Strahl über uns hinwegstreicht.",
+      "white dwarf": "Der heiße Kern, der übrig bleibt, wenn ein Stern wie die Sonne seine äußeren Schichten abgeworfen hat. Er ist etwa so groß wie die Erde, erzeugt keine neue Wärme und kühlt langsam ab.",
+      "brown dwarf": "Ein Objekt, das zu groß für einen Planeten und zu klein ist, um wie ein Stern zu leuchten: etwa 13- bis 80-mal so schwer wie Jupiter. Es gibt fast kein sichtbares Licht ab.",
+      "nebula": "Eine Wolke aus Gas und Staub im All. Manche leuchten, manche verdecken die Sterne dahinter, und in manchen entstehen neue Sterne.",
+      "galaxy": "Eine riesige Familie aus Sternen, Gas und Staub, von der Schwerkraft zusammengehalten. Unsere, die Milchstraße, ist eine Spirale von mehr als 100 000 Lichtjahren Durchmesser.",
+      "globular cluster": "Eine Kugel aus Zehntausenden bis Millionen Sternen, von der Schwerkraft eng zusammengepackt, in der Mitte am dichtesten.",
+      "habitable zone": "Der Bereich von Abständen zu einem Stern, in dem ein Planet flüssiges Wasser an der Oberfläche haben könnte. Er sagt, dass dort Leben möglich sein könnte, nicht, dass dort welches lebt.",
+      "exoplanet": "Ein Planet, der einen anderen Stern als die Sonne umkreist.",
+      "redshift": "Licht, das zu längeren, röteren Wellen gedehnt ist, weil sich seine Quelle entfernt oder der Raum auf dem Weg gedehnt wurde. Bei fernen Galaxien bedeutet mehr Rotverschiebung: weiter weg.",
+      "supernova": "Die Explosion eines Sterns am Ende seines Lebens oder eines Weißen Zwergs. Einige Wochen lang kann sie so hell leuchten wie eine ganze Galaxie.",
+      "light curve": "Ein Diagramm, wie hell etwas im Lauf der Zeit ist. Ein Puls oder eine Delle darin kann einen Stern zeigen, der anschwillt und schrumpft, oder etwas, das davorzieht."
     },
-    "worldFacts": {
+    "worldAbout": {
       "about": {
         "sun": "Die Sonne ist ein Stern: eine Kugel aus sehr heißem, leuchtendem Gas, vor allem Wasserstoff und Helium, etwa 4,5 Milliarden Jahre alt. Sie ist etwa 100-mal so breit wie die Erde. Ihr Kern ist etwa 15 Millionen Grad Celsius heiß, heiß genug für Kernfusion, und die Energie, die herauskommt, ist das, wovon das meiste Leben auf der Erde abhängt. Ihre Schwerkraft hält das ganze Sonnensystem zusammen.",
         "moon": "Der Mond ist der einzige natürliche Satellit der Erde, weniger als ein Drittel so breit wie sie. Er ist eine Kugel aus Gestein voller Krater, im Durchschnitt etwa 384 000 km entfernt. Er umrundet die Erde in etwa 27 Tagen und dreht sich in derselben Zeit einmal um sich selbst, deshalb sehen wir immer dieselbe Seite. Die dunklen Flecken sind Ebenen aus altem Lavagestein. Er ist die einzige Welt außerhalb der Erde, die Menschen bisher besucht haben.",
@@ -4845,7 +4855,7 @@ Object.assign(COPY, {
         "uranus": "Uranus ist ein Eisriese, viermal so breit wie die Erde, 1781 von William Herschel mit einem Teleskop entdeckt. Der größte Teil besteht aus einer heißen, dichten Flüssigkeit aus Wasser, Methan und Ammoniak. Das Methan in seiner Lufthülle schluckt rotes Licht, das gibt ihm die blaugrüne Farbe. Er ist um etwa 98 Grad gekippt und rollt deshalb auf der Seite um die Sonne, und an jedem Pol herrscht etwa 21 Jahre lang dunkler Winter.",
         "neptune": "Neptun ist ein Eisriese, viermal so breit wie die Erde, und der einzige Planet, den man mit bloßem Auge nicht sehen kann. Der Mittag dort ist so dunkel wie bei uns die Dämmerung. Ein Jahr dauert etwa 165 Erdjahre. Entdeckt wurde er 1846 zuerst durch Rechnung: Urbain Le Verrier berechnete aus der seltsamen Bewegung des Uranus, wo er sein muss, und Johann Galle sah ihn in der ersten Nacht, in der er nachschaute."
       },
-      "aboutSource": "NASA Science, {page} (science.nasa.gov/{path}/), abgerufen am 15. November 2026"
+      "source": "NASA Science, {page} (science.nasa.gov/{path}/), abgerufen am 15. November 2026"
     },
     "templates": {
       "world": {
@@ -4903,22 +4913,6 @@ export const GLOSSARY = {
   "totality": "Die Minuten einer totalen Finsternis, in denen die Sonne ganz bedeckt ist. Der Himmel wird so dunkel, dass man Sterne sieht.",
   "annular": "Ringförmig. Bei einer ringförmigen Finsternis ist der Mond zu weit entfernt, um die ganze Sonne zu bedecken, und um ihn bleibt ein heller Ring."
 };
-
-Object.assign(GLOSSARY, {
-  "black hole": "Ein Ort, an dem die Schwerkraft so stark ist, dass nichts herauskommt, nicht einmal Licht. Es ist kein Loch, sondern sehr viel Materie auf kleinem Raum.",
-  "neutron star": "Das kann ein massereicher Stern hinterlassen, wenn er stirbt: mehr als die Masse der Sonne, zusammengepresst zu einer Kugel so breit wie eine Stadt.",
-  "pulsar": "Ein Neutronenstern, der sich schnell dreht und Strahlen aussendet wie ein Leuchtturm. Wir sehen jedes Mal ein Aufblitzen, wenn ein Strahl über uns hinwegstreicht.",
-  "white dwarf": "Der heiße Kern, der übrig bleibt, wenn ein Stern wie die Sonne seine äußeren Schichten abgeworfen hat. Er ist etwa so groß wie die Erde, erzeugt keine neue Wärme und kühlt langsam ab.",
-  "brown dwarf": "Ein Objekt, das zu groß für einen Planeten und zu klein ist, um wie ein Stern zu leuchten: etwa 13- bis 80-mal so schwer wie Jupiter. Es gibt fast kein sichtbares Licht ab.",
-  "nebula": "Eine Wolke aus Gas und Staub im All. Manche leuchten, manche verdecken die Sterne dahinter, und in manchen entstehen neue Sterne.",
-  "galaxy": "Eine riesige Familie aus Sternen, Gas und Staub, von der Schwerkraft zusammengehalten. Unsere, die Milchstraße, ist eine Spirale von mehr als 100 000 Lichtjahren Durchmesser.",
-  "globular cluster": "Eine Kugel aus Zehntausenden bis Millionen Sternen, von der Schwerkraft eng zusammengepackt, in der Mitte am dichtesten.",
-  "habitable zone": "Der Bereich von Abständen zu einem Stern, in dem ein Planet flüssiges Wasser an der Oberfläche haben könnte. Er sagt, dass dort Leben möglich sein könnte, nicht, dass dort welches lebt.",
-  "exoplanet": "Ein Planet, der einen anderen Stern als die Sonne umkreist.",
-  "redshift": "Licht, das zu längeren, röteren Wellen gedehnt ist, weil sich seine Quelle entfernt oder der Raum auf dem Weg gedehnt wurde. Bei fernen Galaxien bedeutet mehr Rotverschiebung: weiter weg.",
-  "supernova": "Die Explosion eines Sterns am Ende seines Lebens oder eines Weißen Zwergs. Einige Wochen lang kann sie so hell leuchten wie eine ganze Galaxie.",
-  "light curve": "Ein Diagramm, wie hell etwas im Lauf der Zeit ist. Ein Puls oder eine Delle darin kann einen Stern zeigen, der anschwillt und schrumpft, oder etwas, das davorzieht."
-});
 
 // b200-f1-find: begin -- Find, the owners, the clouds and the date field (copy/en.find.js, forge #150, #152, #153, #154), machine-drafted
 COPY.timePill.dateJump = "Zu einem Datum (UTC)";
