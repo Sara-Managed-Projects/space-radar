@@ -1,0 +1,22 @@
+# THE LINK-IN-BIO PAGE (internal #106): /links/, the address on the Instagram profile. One door for each recent post, so a view can
+# become a visit: the post's title (as posted), and the page of this site that shows the thing it was about.
+#
+# NEWEST FIRST. The page lists the first six rows (scripts/seo_pages.py links_page); add a row at the top when a post goes out and the
+# oldest drops off. A row types only what the post is: its title and its door. The words under each title are the door's own
+# description, read from the page, never written here.
+#
+#   id     a short word for the post; the door is tagged ?from=ig-<id> so the visit can be counted by what brought it
+#   title  the post's title exactly as it was posted (English; it is not translated)
+#   door   a page of this site, by path from the root, that exists in site/ (tests/test_link_in_bio.py): lab/<simulator>/index.html or
+#          t/<trip>.html
+#   posted the day the post went out (YYYY-MM-DD), from growth/log.md's daily reads
+version: 1
+listed_on: 2026-11-15
+posts:
+  - {id: seasons-tilt, title: "Seasons are not about distance from the Sun", door: lab/tilt-makes-the-seasons/index.html, posted: 2026-11-13}
+  - {id: doppler-waves, title: "The Doppler effect, shown as waves you can see", door: lab/doppler-siren-waves/index.html, posted: 2026-11-12}
+  - {id: biggest-stars, title: "The biggest stars die first", door: lab/big-stars-burn-fast/index.html, posted: 2026-11-12}
+  - {id: olympus-mons, title: "Olympus Mons is 2.4 times Everest", door: lab/olympus-mons-vs-everest/index.html, posted: 2026-11-11}
+  - {id: orbit-height, title: "Higher means slower: orbit height sets the lap time", door: lab/orbit-zoo-height-sets-the-lap-time/index.html, posted: 2026-11-11}
+  - {id: time-dilation, title: "Move fast, age slower: time dilation", door: lab/twin-clock-time-dilation/index.html, posted: 2026-11-10}
+  - {id: kepler-third-law, title: "Far planets take forever: Kepler's third law", door: lab/keplers-third-law-race/index.html, posted: 2026-11-08}

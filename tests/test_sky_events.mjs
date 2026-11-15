@@ -65,6 +65,25 @@ for (const r of rows) {
     check(c.kind === r.eclipse, `${r.id}: the registry says ${r.eclipse} and the sky says ${c.kind}`);
     check(moon.percent === 0, `${r.id}: a solar eclipse is at the new Moon (${moon.percent} percent lit)`);
   }
+  // Internal #105: the full Moons, the lunar eclipses and the planet meetings are held to the sky, not to what the row says.
+  if (r.kind === 'full-moon') {
+    check(c.moonAtPeak.phaseDeg > 179 && c.moonAtPeak.phaseDeg < 181, `${r.id}: the Moon is not full at ${c.instant} (phase ${c.moonAtPeak.phaseDeg})`);
+    check(c.distanceKm > 356000 && c.distanceKm < 407000, `${r.id}: the Moon's distance ${c.distanceKm} km is outside what an orbit of 357 000 to 406 700 km can give`);
+    check(typeof r.moon_name === 'string' && r.moon_name.endsWith(' Moon'), `${r.id}: the traditional name is typed, ending in Moon`);
+    check(c.month === Number(r.id.slice(-5, -3)), `${r.id}: the id's month is not the computed one (${c.month})`);
+  }
+  if (r.kind === 'lunar-eclipse') {
+    check(c.kind === r.eclipse, `${r.id}: the registry says ${r.eclipse} and the sky says ${c.kind}`);
+    check(c.moonAtPeak.percent === 100, `${r.id}: a lunar eclipse is at the full Moon (${c.moonAtPeak.percent} percent lit)`);
+    check(c.umbralPercent > 0 && c.upCount > 10, `${r.id}: some of the Moon is in the shadow, and some bundled cities see it`);
+    check((c.totalMinutes > 0) === (r.eclipse === 'total'), `${r.id}: totality only in a total eclipse`);
+  }
+  if (r.kind === 'conjunction') {
+    check(c.separationDeg < 1 && /within a degree/.test(r.summary), `${r.id}: the page says within a degree and the sky says ${c.separationDeg}`);
+    check(c.bodies.every((b) => b.visibility === c.bodies[0].visibility), `${r.id}: the two planets are on different sides of the Sun`);
+    check(new RegExp(c.bodies[0].visibility === 'morning' ? 'morning' : 'evening').test(r.summary), `${r.id}: the summary names the wrong part of the day`);
+    check(c.bodies.every((b) => b.elongationDeg >= 20), `${r.id}: a meeting under 20 degrees from the Sun is not worth a page`);
+  }
   for (const a of c.also) {
     if (a.what === 'greatest-western-elongation') {
       check(a.visibility === 'morning' && a.elongationDeg > 46 && a.elongationDeg < 48, `${r.id}: Venus at its greatest western elongation is 46 to 48 degrees in the morning sky (${a.elongationDeg})`);

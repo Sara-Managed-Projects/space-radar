@@ -164,11 +164,14 @@ def render(page: Page, ctx: Ctx) -> str:
     url = url_of(ctx.host, page.path)
     canonical = page.canonical or url
     graph = {"@context": "https://schema.org", "@graph": page.jsonld}
-    body = page.body + blog_for(page)
+    blog = blog_for(page)
+    body = page.body + blog
     script = ""
     if page.live:
         script = '<script type="module" src="../js/pages/live.js"></script>\n'
     script += subscribe_script("../")
+    if blog:  # internal #102: new stories without a deploy; the baked list stays when the feed cannot be read
+        script += '<script type="module" src="../js/pages/blog.js"></script>\n'
     out = fill(ctx.template, {
         "title": esc(page.title), "description": esc(page.description),
         "robots": f'<meta name="robots" content="{esc(page.robots)}">\n' if page.robots else "",
@@ -206,7 +209,9 @@ def from_blog(keywords: tuple[str, ...] = (), limit: int = 3, skip: str = "") ->
         return ""
     cards = "".join(f'<li><h3><a href="{esc(p["url"])}">{esc(p["title"])}</a></h3><p>{esc(p["summary"])}</p>'
                     f'<p class="meta">{esc(dt.date.fromisoformat(p["date"]).strftime("%-d %B %Y"))}</p></li>' for p in pick)
-    return (f'<section class="fromblog" aria-labelledby="fromblog-h"><h2 id="fromblog-h">From the journal</h2>\n<ul class="cards" translate="no" lang="en">{cards}</ul>\n'
+    # The data-blog-* attributes are what js/pages/blog.js redraws the list from (the journal's feed-lite.json) with the same rule.
+    attrs = f' data-blog-limit="{limit}" data-blog-keywords="{esc("|".join(keywords))}" data-blog-skip="{esc(skip)}"'
+    return (f'<section class="fromblog"{attrs} aria-labelledby="fromblog-h"><h2 id="fromblog-h">From the journal</h2>\n<ul class="cards" translate="no" lang="en">{cards}</ul>\n'
             f'<p class="dim"><a href="{BLOG}">Every story in the Space Radar journal</a></p></section>\n')
 
 

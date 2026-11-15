@@ -153,8 +153,8 @@ classroom meets first. The rule, as the checker holds it:
 
 ## The pages a search engine reads
 
-Every page in `sitemap-pages.xml` (about 650: the home page, the static pages, the 33 trips, the 106 Lab pages, the 354 object
-pages, the 102 country pages and the 29 events) can be published again under `/<code>/` (`/es/`, `/es/iss/index.html`,
+Every page in `sitemap-pages.xml` (about 900: the home page, the static pages, the 33 trips, the 106 Lab pages, the 572 object
+pages, the 102 country pages and the 58 events) can be published again under `/<code>/` (`/es/`, `/es/iss/index.html`,
 `/es/o/jupiter.html`, `/es/t/a-dark-sky.html`, `/es/lab/orbit-painter/index.html`), with `<html lang dir>`, a canonical of its
 own, hreflang both ways and its own sitemap, `sitemap-pages-<code>.xml`, in the index. `scripts/seo_i18n.py` does it at every
 deploy, from **one catalog of the English the pages say**:
@@ -193,6 +193,13 @@ missing sentence and the page is not built in that language at all; a missing fo
 send a browser on to the app) are built only where the home page is. These pages stay in English, each for its reason:
 
 - `planets-tonight/index.html`: its sentences are worked out for the night of each build, so they cannot be a catalog.
+
+**A shortfall is a failure.** `python3 scripts/seo_i18n.py coverage --built DIR --require-full` exits 1 when a language publishes fewer
+pages than the English sitemap holds less the pages above; CI runs it on the build it makes and on a second build made the way
+`scripts/deploy.sh` makes it (`--snapshot-index`, here a committed copy of the saved copies' index,
+`tests/fixtures/seo-snapshot-index.json`). Before 2026-11-15 `coverage` only printed numbers, and the deploy's variant of the ISS page said a
+sentence the catalog lacked, so that page was missing in every language while CI was green. `extract --also` is how a variant's sentences
+join the catalog: give it a build made without numpy (CI's, which draws no paper globes) and one made with `--snapshot-index`.
 
 A translated page opens with one line in its language saying it was machine-translated, linking the English original
 (`_meta.json` `notice`). Its share picture is the English one, and so is that picture's alt text. It does not run

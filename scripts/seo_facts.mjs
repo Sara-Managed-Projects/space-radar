@@ -88,6 +88,76 @@ function eclipseEvent(ev) {
   throw new Error(`${ev.id}: no ${ev.eclipse} eclipse within eight searches of ${ev.near}`);
 }
 
+const AU_KM = 149597870.7;
+const MEAN_MOON_KM = 384400;
+
+/** A full Moon (internal #105): the instant of the phase and the Moon's distance then. Searched from `near`, a few days before. */
+function fullMoonEvent(ev) {
+  const at = Astronomy.SearchMoonPhase(180, new Date(`${ev.near}T00:00:00Z`), 40);
+  if (!at) throw new Error(`${ev.id}: no full Moon within 40 days of ${ev.near}`);
+  const ms = at.date.getTime();
+  const km = Astronomy.GeoVector('Moon', at, true).Length() * AU_KM;
+  return { instant: iso(ms), instantMs: ms, distanceKm: Math.round(km), meanKm: MEAN_MOON_KM, nearer: km < MEAN_MOON_KM, month: new Date(ms).getUTCMonth() + 1, moonAtPeak: moonAt(ms) };
+}
+
+/** What each bundled city sees of a lunar eclipse: the Moon's height at the greatest eclipse. Computed, never typed. */
+function lunarFromCities(peak) {
+  const rows = [];
+  for (const c of CITIES) {
+    const obs = new Astronomy.Observer(c.latDeg, c.lonDeg, 0);
+    const eq = Astronomy.Equator('Moon', peak, obs, true, true);
+    const hor = Astronomy.Horizon(peak, obs, eq.ra, eq.dec, 'normal');
+    rows.push({ name: c.name, country: c.country, altDeg: Math.round(hor.altitude) });
+  }
+  return rows;
+}
+
+function lunarEclipseEvent(ev) {
+  let e = Astronomy.SearchLunarEclipse(new Date(`${ev.near}T00:00:00Z`));
+  for (let i = 0; i < 6 && e.kind !== ev.eclipse; i++) e = Astronomy.NextLunarEclipse(e.peak);
+  if (e.kind !== ev.eclipse) throw new Error(`${ev.id}: no ${ev.eclipse} lunar eclipse found from ${ev.near}`);
+  const ms = e.peak.date.getTime();
+  const cities = lunarFromCities(e.peak);
+  const up = cities.filter((c) => c.altDeg >= 10).sort((a, b) => b.altDeg - a.altDeg);
+  return {
+    instant: iso(ms), instantMs: ms, kind: e.kind, umbralPercent: Math.round(e.obscuration * 1000) / 10,
+    partialMinutes: Math.round(e.sd_partial * 2), totalMinutes: Math.round(e.sd_total * 2), moonAtPeak: moonAt(ms),
+    citiesUp: up.slice(0, 8), citiesCount: cities.length, upCount: up.length,
+  };
+}
+
+const PLANET_NAMES = { mercury: 'Mercury', venus: 'Venus', mars: 'Mars', jupiter: 'Jupiter', saturn: 'Saturn' };
+const angleBetween = (a, b, t) => {
+  const x = Astronomy.GeoVector(a, t, true);
+  const y = Astronomy.GeoVector(b, t, true);
+  return Math.acos(Math.min(1, (x.x * y.x + x.y * y.y + x.z * y.z) / (x.Length() * y.Length()))) * 180 / Math.PI;
+};
+
+/** Two planets at their closest in the sky (internal #105): the minute, found by narrowing a scan round `near`. */
+function conjunctionEvent(ev) {
+  const [a, b] = ev.bodies.map((id) => PLANET_NAMES[id]);
+  if (!a || !b) throw new Error(`${ev.id}: bodies must be two of ${Object.keys(PLANET_NAMES)}`);
+  let lo = Date.parse(`${ev.near}T00:00:00Z`) - 20 * 86400e3;
+  let hi = lo + 40 * 86400e3;
+  for (let step = 6 * 3600e3; step >= 60e3; step /= 6) {
+    let best = lo; let bestV = Infinity;
+    for (let t = lo; t <= hi; t += step) { const v = angleBetween(a, b, new Date(t)); if (v < bestV) { bestV = v; best = t; } }
+    lo = best - step; hi = best + step;
+  }
+  const ms = Math.round((lo + hi) / 2 / 60e3) * 60e3;
+  const t = new Date(ms);
+  const side = (name) => {
+    const el = Astronomy.Elongation(name, t);
+    const eq = Astronomy.Equator(name, t, new Astronomy.Observer(0, 0, 0), true, true);
+    return {
+      name, elongationDeg: Math.round(el.elongation), visibility: el.visibility,
+      mag: round1(Astronomy.Illumination(name, t).mag), constellation: Astronomy.Constellation(eq.ra, eq.dec).name,
+      distAu: Math.round(Astronomy.GeoVector(name, t, true).Length() * 100) / 100,
+    };
+  };
+  return { instant: iso(ms), instantMs: ms, separationDeg: Math.round(angleBetween(a, b, t) * 100) / 100, bodies: [side(a), side(b)], moonAtPeak: moonAt(ms) };
+}
+
 function missionEvent(ev) {
   const noon = Date.parse(ev.happens + 'T12:00:00Z');
   const mercury = elongationOf('Mercury', noon);
@@ -128,6 +198,9 @@ function events(rows) {
     else if (ev.kind === 'eclipse') facts = eclipseEvent(ev);
     else if (ev.kind === 'mission') facts = missionEvent(ev);
     else if (ev.kind === 'season') facts = seasonEvent(ev);
+    else if (ev.kind === 'full-moon') facts = fullMoonEvent(ev);
+    else if (ev.kind === 'lunar-eclipse') facts = lunarEclipseEvent(ev);
+    else if (ev.kind === 'conjunction') facts = conjunctionEvent(ev);
     else throw new Error(`${ev.id}: kind ${ev.kind}`);
     facts.id = ev.id;
     facts.also = (ev.also || []).map((a) => alsoEvent(a, facts.instantMs));

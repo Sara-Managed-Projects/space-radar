@@ -24,7 +24,10 @@
 //   - the oddities, and the landing sites on the Moon and Mars (not the Deep Space Network dishes,
 //     whose card line is one clause long: a page with no words of its own is spam, spec 0059);
 //   - the stations and the satellites worth knowing (data/layers.js NOTABLE).
-// About 250 in all, spec 0059's "about 200" plus the landing sites.
+//   - every Messier object, named or not (internal #110: people look up "M13", not only "Hercules Cluster");
+//   - every moon with a name of its own (site/data/moons.json; the ones that have only a provisional
+//     designation such as S/2003 J 2 are left out: a page about a number is the thin page spam is made of).
+// About 480 in all: spec 0059's "about 200" plus the landing sites, the Messier objects and the named moons.
 // One page per name: when two records share a name, the first group below keeps it.
 
 import { readFileSync } from 'node:fs';
@@ -40,6 +43,7 @@ const SRC = await import(join(JS, 'data/sources.js'));
 const { recordsFromNames } = await import(join(JS, 'scene/stars3d.js'));
 const { COPY, fmt } = await import(join(JS, 'copy/en.js'));
 const { SYSTEMS } = await import(join(JS, 'data/systems.js'));
+const { buildMoons } = await import(join(JS, 'data/moons.js'));
 const { WIKI_TITLES } = await import(join(JS, 'data/wikititles.js'));
 
 // The card's path for "no position": measure() catches the throw and returns its empty readings.
@@ -85,13 +89,16 @@ function candidates() {
   const stars = recordsFromNames(readJson('site/data/stars3d.names.json').rows).filter((r) => r.meta.why);
   const hosts = sample('systems');
   const dso = P.parseDso(readJson('site/data/dso.json'))
-    .filter((r) => (r.meta.messier == null ? r.meta.mag != null && r.meta.mag <= 6 : r.name && !/^M\d+$/.test(r.name) && r.meta.mag != null && r.meta.mag <= 8));
+    .filter((r) => (r.meta.messier == null ? r.meta.mag != null && r.meta.mag <= 6 : true));
+  // A moon has a name of its own when it is not a provisional designation ("S/2003 J 2") or a number.
+  const moons = buildMoons(readJson('site/data/moons.json')).filter((r) => /^[A-Z][A-Za-z' -]+$/.test(r.name));
   const sites = sample('hand-kept-sites').filter((r) => r.meta && (r.meta.world === 'moon' || r.meta.world === 'mars'));
   return [
     ...worlds.map((r) => ['worlds', r]),
     ...sample('deep-space').map((r) => ['craft', r]),
     ...satelliteRecords().map((r) => ['satellites', r]),
     ...sites.map((r) => ['sites', r]),
+    ...moons.map((r) => ['moons', r]),
     ...sample('far-bodies').map((r) => ['small', r]),
     ...sample('asteroids').map((r) => ['small', r]),
     ...sample('oddities').map((r) => ['oddities', r]),
@@ -207,6 +214,12 @@ function factsFor(r, klass, nameOf) {
     if (md.qAu) add('Closest to the Sun', `${fmt.num(md.qAu, 2)} AU`);
     if (md.aphelionAu) add('Farthest from the Sun', `${fmt.num(md.aphelionAu, 1)} AU`);
     if (Array.isArray(md.moons) && md.moons.length) add('Moons', md.moons.join(', '));
+  } else if (klass === 'moon') {
+    if (md.moonOf) add('Goes round', md.planetName, md.moonOf);
+    if (md.periodDays) add('One lap', md.periodDays >= 2 ? `${fmt.num(md.periodDays, md.periodDays >= 100 ? 0 : 1)} days` : `${fmt.num(md.periodDays * 24, 1)} hours`);
+    if (md.diameterKm) add('Diameter', `${fmt.num(md.diameterKm, md.diameterKm >= 100 ? 0 : 1)} km`);
+    if (md.discYear) add('Found', md.discoverer ? `${md.discYear}, by ${md.discoverer}` : md.discYear);
+    if (md.backwards) add('Direction', 'backwards, against the way its planet turns');
   } else if (klass === 'site') {
     if (md.world) add('On', nameOf(md.world), md.world);
     if (Number.isFinite(md.latDeg) && Number.isFinite(md.lonDeg)) {
@@ -290,7 +303,7 @@ const pages = picked.map(({ group, r, m, name, slug }) => {
   if (klass === 'world') {
     for (const p of picked) {
       const pm = p.r.meta || {};
-      if ((p.r.klass === 'world' && pm.parent === r.id) || (p.r.klass === 'site' && pm.world === r.id)) related.push(p);
+      if ((p.r.klass === 'world' && pm.parent === r.id) || (p.r.klass === 'site' && pm.world === r.id) || (p.r.klass === 'moon' && pm.moonOf === r.id)) related.push(p);
     }
   } else if (klass === 'dso' && md.con) {
     for (const p of picked) if (p !== undefined && p.r.klass === 'dso' && p.r.id !== r.id && (p.r.meta || {}).con === md.con) related.push(p);

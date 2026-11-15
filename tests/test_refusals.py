@@ -171,7 +171,7 @@ CASES: list[tuple[str, str, str, str]] = [
     ("a sky event whose map link names no world", "sky-events.yaml", "at: mercury}", "at: vulcan}"),
     ("a sky event with no source", "sky-events.yaml", '    sources:\n      - {words: "Computed here with Astronomy Engine (the Moon\'s shadow on the Earth)", url: "https://github.com/cosinekitty/astronomy", read: 2026-10-09}\n\n  - id: total-eclipse-2027', '    sources: []\n\n  - id: total-eclipse-2027'),
     ("a sky event whose trip is not a trip", "sky-events.yaml", "trip: comets-and-meteors", "trip: comets-and-meteorites"),
-    ("a sky event with no day it was checked", "sky-events.yaml", "checked_on: 2026-10-09\nchecked_with", "checked_with"),
+    ("a sky event with no day it was checked", "sky-events.yaml", "checked_on: 2026-11-15\nchecked_with", "checked_with"),
     ("satellite counts with no day", "seo-facts.yaml", seo_counts_day_line(), ""),
     ("a line about an old satellite that cites no page",
      "oldest-notes.yaml", '    source: "https://en.wikipedia.org/wiki/Vanguard_1"\n', ""),

@@ -288,7 +288,14 @@ jobs:
       # The pages in other languages (scripts/seo_i18n.py, docs/TRANSLATING.md "The pages a search engine reads"): the catalog of what
       # the English pages say is never behind them, and every translation keeps its slots and tags.
       - name: "registry/seo-i18n/en/ holds every sentence the pages just built say, and every language's strings keep their {slots} and <tags>"
-        run: python3 scripts/seo_i18n.py extract --built "$RUNNER_TEMP/seo" --check && python3 scripts/seo_i18n.py check && python3 scripts/seo_i18n.py coverage --built "$RUNNER_TEMP/seo"
+        run: python3 scripts/seo_i18n.py extract --built "$RUNNER_TEMP/seo" --check && python3 scripts/seo_i18n.py check && python3 scripts/seo_i18n.py coverage --built "$RUNNER_TEMP/seo" --require-full
+      # The deploy's build differs from the one above in the sentences that name the saved copies' days (scripts/deploy.sh passes
+      # --snapshot-index). In 2026-11 that variant said one sentence the catalog lacked, and the ISS page was missing in every language
+      # while this job was green. Build it here from a committed copy of the index and hold it to the same two rules.
+      - name: "The deploy's variant of the pages (with the saved copies' index) is whole in every language too"
+        run: |
+          python3 scripts/build_seo.py --out "$RUNNER_TEMP/seo-deploy" --no-share --snapshot-index tests/fixtures/seo-snapshot-index.json
+          python3 scripts/seo_i18n.py extract --built "$RUNNER_TEMP/seo-deploy" --check && python3 scripts/seo_i18n.py coverage --built "$RUNNER_TEMP/seo-deploy" --require-full
       - name: "The pages in other languages: segments and slots, a page only when its own text is whole, hreflang both ways, the sitemaps, the translator's tools"
         run: python3 tests/test_seo_i18n.py
       - name: The SEO build carries the card's words and no live number, and deploy.sh ships it
@@ -323,6 +330,15 @@ jobs:
       # The numbers the pages let the browser replace: the station from saved elements, tonight's planets, an eclipse from a place, and no location prompt on load.
       - name: "The pages' live half: the station's position from saved elements, tonight's planets and a place's eclipse, no position asked for on load"
         run: node tests/test_pagelive.mjs
+      # The "From the journal" lists redrawn from the journal's feed-lite.json at runtime (internal #102): the pick rule, a bad feed, foreign addresses.
+      - name: "The journal lists on the static pages: redrawn from the feed with the build's rule, and left alone when the feed fails"
+        run: node tests/test_blog_list.mjs
+      # The link-in-bio page (/links/, internal #106): every post's door is a real page, newest first.
+      - name: "The link-in-bio list: each post has a door that exists in site/, ids are used once, newest first"
+        run: python3 tests/test_link_in_bio.py
+      # The calendar files of the sky-event pages (internal #105): RFC 5545 lines, one event per file with its page and map link, the feeds.
+      - name: "The sky events' calendar files: valid lines, stable bytes, a link back to the page in every entry, the feeds registry/events.yaml names"
+        run: python3 tests/test_seo_calendar.py
       # registry/sky-events.yaml types a calendar's facts; every instant, phase and elongation is computed and held against what the page says.
       - name: "The dated events recomputed: stated dates inside the computed ones, the Moon's words, and each #t= link read by the app's own parser"
         run: node tests/test_sky_events.mjs

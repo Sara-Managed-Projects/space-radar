@@ -66,7 +66,7 @@ else:
     r = run(node, "scripts/object_pages.mjs")
     doc = json.loads(r.stdout) if r.returncode == 0 else {"pages": []}
     pages = doc["pages"]
-    ok(180 <= len(pages) <= 340, f"the selection rule picks two to three hundred objects ({len(pages)})")  # 310 at 1.9.0 (new landing sites, stars, fact sheets)
+    ok(300 <= len(pages) <= 600, f"the selection rule picks three to six hundred objects ({len(pages)})")  # 310 at 1.9.0; 528 with every Messier object and the named moons (internal #110)
     for must in ("europa", "voyager-1", "international-space-station", "sirius", "andromeda-galaxy",
                  "sagittarius-a-star", "apollo-11-landing-site", "trappist-1", "tesla-roadster-starman"):
         ok(any(p["slug"] == must for p in pages), f"a page for {must}")

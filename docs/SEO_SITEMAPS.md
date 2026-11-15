@@ -47,7 +47,7 @@ The rules it keeps:
   search engine reads"). Each `<url>` carries Google's sitemap form of hreflang: an `xhtml:link rel="alternate"` for every language
   the page exists in, itself included, and `x-default` for the English. `sitemap-pages.xml` stays the English pages, and its
   entries gain the same alternates where a page has another language. The pages carry the same set as `<link rel="alternate">`.
-  A sitemap holds at most 50 000 URLs and 50 MB; a language has about 650.
+  A sitemap holds at most 50 000 URLs and 50 MB; a language has about 900.
 - `robots.txt` is written by the build (`site/robots.txt` and one `Sitemap:` line per language sitemap), so it names exactly the
   sitemaps that exist.
 

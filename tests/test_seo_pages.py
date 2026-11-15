@@ -360,6 +360,20 @@ for e in evs:
     link = f'href="../#t={e["link"]["t"]}&amp;at={e["link"]["at"]}"'
     ok(node is not None and node.get("startDate") and node.get("name") and node.get("location") and in_map(f"events/{e['id']}.html")
        and link in html, f"{e['id']}: Event markup with a start date and a location, in the sitemap, with its #t= link")
+# Internal #50: what Google's Event rich result requires (name, startDate, location with an address or a url) and recommends (image, offers),
+# held on every event page, as the offline half of the Rich Results Test and the Schema Markup Validator.
+for e in evs:
+    html = (BUILT / "events" / f"{e['id']}.html").read_text(encoding="utf-8")
+    node = next((n for n in ld_nodes(html) if n.get("@type") == "Event"), {})
+    locs = node.get("location") or []
+    locs = locs if isinstance(locs, list) else [locs]
+    ok(re.match(r"^\d{4}-\d{2}-\d{2}", str(node.get("startDate", ""))) and node.get("name") and locs
+       and all((l.get("@type") == "VirtualLocation" and l.get("url")) or (l.get("@type") == "Place" and l.get("name") and l.get("address")) for l in locs)
+       and node.get("eventStatus") and node.get("eventAttendanceMode") and node.get("organizer", {}).get("name"),
+       f"{e['id']}: Event JSON-LD has name, startDate, a complete location, status, attendance mode and organizer")
+    off = node.get("offers") or {}
+    ok(node.get("image") and off.get("price") == "0" and off.get("priceCurrency") == "USD" and off.get("url") == node.get("url"),
+       f"{e['id']}: Event JSON-LD recommends an image and a free offer")
 ge = parse(BUILT / "events" / "geminids-2026.html").plain
 ok("14 December 2026, 13:45 UT" in ge and "21 percent" in ge, "Geminids: the computed peak and the Moon at the stated hour")
 le = parse(BUILT / "events" / "leonids-2026.html").plain
@@ -370,6 +384,37 @@ an = parse(BUILT / "events" / "annular-eclipse-2027.html").plain
 ok("6 February 2027, 15:59 UT" in an and "ISO 12312-2" in an, "the annular eclipse's greatest-eclipse time, and the safety line")
 be = parse(BUILT / "events" / "bepicolombo-mercury-2026.html").plain
 ok("21 November 2026" in be and "9 and 10 December 2026" in be, "BepiColombo: ESA's dates")
+
+# --- internal #105: the full Moons, the lunar eclipses, the planet meetings, and the calendar files ---------------------------------
+kinds = {k: [e for e in evs if e["kind"] == k] for k in ("full-moon", "lunar-eclipse", "conjunction", "meteor-shower")}
+ok(len(kinds["full-moon"]) >= 18 and len(kinds["lunar-eclipse"]) >= 3 and len(kinds["conjunction"]) >= 2, "full Moons for 18 months, lunar eclipses and conjunctions have pages")
+fm = parse(BUILT / "events" / "full-moon-2026-12-24.html").plain
+ok("24 December 2026, 01:28 UT" in fm and "356,729 km" in fm and "Cold Moon" in fm and "nearer than its average distance of 384,400 km" in fm,
+   "the December 2026 full Moon: the computed instant, its distance, the almanac's name")
+le = parse(BUILT / "events" / "lunar-eclipse-2028-12-31.html").plain
+ok("31 December 2028, 16:51 UT" in le and "total lunar eclipse" in le and "safe to look at" in le, "the total lunar eclipse: the computed instant, and that it is safe to watch")
+cj = parse(BUILT / "events" / "venus-saturn-2027.html").plain
+ok("7 May 2027" in cj and "0.6° apart" in cj and "Pisces" in cj, "Venus and Saturn: the computed meeting and the constellation")
+for e in evs:
+    f = BUILT / "events" / f"{e['id']}.html"
+    html = f.read_text(encoding="utf-8")
+    ok(f'href="{e["id"]}.ics"' in html and 'href="sky-events.ics"' in html and (BUILT / "events" / f"{e['id']}.ics").is_file(), f"{e['id']}: an add-to-calendar link and its file")
+    if e["kind"] in ("full-moon", "lunar-eclipse", "conjunction"):
+        ok('data-slot="event-local"' not in html and 'id="event-data"' not in html, f"{e['id']}: no per-place box and no per-place script")
+ics = (BUILT / "events" / "sky-events.ics").read_bytes().decode("utf-8")  # bytes: read_text would turn the CRLF into LF
+ok(ics.count("BEGIN:VEVENT") == len(evs) and ics.count("URL:https://www.spaceradar.ai/events/") == len(evs) and "\r\n" in ics,
+   "the all-events feed holds every event, each with its page as URL")
+ok(all((BUILT / "events" / f).is_file() for f in ("showers.ics", "eclipses.ics", "moons.ics", "sky.ics")), "the four kind feeds exist")
+body = (ROOT / "scripts" / "deploy.sh").read_text(encoding="utf-8")
+ok('--include "*.ics" --content-type "text/calendar' in body and '--exclude "*.ics"' in body, "deploy.sh sends the calendar files as text/calendar, apart from the HTML")
+
+# --- internal #106: the link-in-bio page ------------------------------------------------------------------------------------
+lk = BUILT / "links" / "index.html"
+lp = parse(lk)
+doors = yml("link-in-bio.yaml")["posts"][:6]
+ok(lk.is_file() and in_map("links/index.html") and all(f'href="../{d["door"]}?from=ig-{d["id"]}"' in lk.read_text(encoding="utf-8") for d in doors),
+   "/links/ lists the last six posts, each door tagged ?from=ig-<id>, and is in the sitemap")
+ok(lk.read_text(encoding="utf-8").count('class="btn btn--map"') == 7, "six doors and the whole map: seven buttons")
 
 # --- every built page ----------------------------------------------------------------------------------
 # t/ (the trips, copied from site/ with their hreflang) and the language folders (scripts/seo_i18n.py: check_seo.check_languages
@@ -412,7 +457,7 @@ ok(not re.search(r"\{\{|\bTODO\b|\blorem\b", "".join(f.read_text(encoding="utf-8
 # b200-f9-reach: "assets", "creators" and the five comparisons (scripts/seo_reach.py, forge #165, #166, #168)
 # 2026-11-10: "privacy" is /privacy/, what the email updates keep (scripts/seo_pages.py privacy_page)
 import seo_reach  # noqa: E402
-ok((BUILT / "pages-dirs.txt").read_text(encoding="utf-8").split() == sorted({"about", "accuracy", "country", "events", "first-pull-request", "iss", "nasa-eyes-alternative", "planets-tonight", "print", "privacy", "read", "satellites", "sources", "starlink", "teachers"}
+ok((BUILT / "pages-dirs.txt").read_text(encoding="utf-8").split() == sorted({"about", "accuracy", "country", "events", "first-pull-request", "iss", "links", "nasa-eyes-alternative", "planets-tonight", "print", "privacy", "read", "satellites", "sources", "starlink", "teachers"}
                                                                              | {"assets", "creators", *seo_reach.COMPARISONS}),
    "pages-dirs.txt lists the directories deploy.sh must ship")
 
@@ -462,9 +507,11 @@ with tempfile.TemporaryDirectory() as tmp:
     calls = log.read_text(encoding="utf-8").splitlines() if log.is_file() else []
     ok(r.returncode == 0, f"deploy.sh --app-only --dry-run: {(r.stderr or r.stdout).strip().splitlines()[-1:]}")
     for d in ("about", "accuracy", "events", "first-pull-request", "iss", "nasa-eyes-alternative", "planets-tonight", "read", "satellites", "sources", "starlink", "teachers"):
-        s = [c for c in calls if c.startswith("s3 sync") and f"s3://example-bucket/{d} " in c + " "]
+        s = [c for c in calls if c.startswith("s3 sync") and f"s3://example-bucket/{d} " in c + " " and "text/calendar" not in c]  # events/'s .ics sync is held below
         ok(len(s) == 1 and "text/html" in s[0] and "max-age=0, must-revalidate" in s[0] and "--content-encoding" not in s[0] and "--delete" in s[0],
            f"{d}/ is synced as written, as HTML a browser revalidates on every load, with --delete")
+    cal = [c for c in calls if c.startswith("s3 sync") and "s3://example-bucket/events " in c + " " and "text/calendar" in c]
+    ok(len(cal) == 1 and re.search(r"--include \W?\*\.ics", cal[0]) is not None and "--delete" in cal[0] and "max-age=0, must-revalidate" in cal[0], "events/'s calendar files are synced once, as text/calendar, revalidated, with --delete")
     ok(re.search(r"would upload sitemap-images\.xml \(application/xml", r.stdout) is not None, "sitemap-images.xml is uploaded as XML")
     body = (ROOT / "scripts" / "deploy.sh").read_text(encoding="utf-8")
     ok('"/sitemap-images.xml"' in body and 'PATHS+=("/$dir/*")' in body and "share" in body, "the invalidation names the new directories and the image sitemap; share/ has its own PNG sync")

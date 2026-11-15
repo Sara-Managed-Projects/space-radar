@@ -16,7 +16,7 @@
 #
 # Row fields (kind says which apply):
 #   id         page address /events/<id>.html; lower-case letters, digits, dashes
-#   kind       meteor-shower | mission | eclipse | season (a solstice, forge #90)
+#   kind       meteor-shower | mission | eclipse | season (a solstice, forge #90) | full-moon | lunar-eclipse | conjunction (internal #105)
 #   name       the event's name in the page's H1
 #   short      the title, at most 54 characters (the checker adds the site name only if it fits in 60)
 #   summary    one sentence for the description and the index; at most 160 characters
@@ -25,8 +25,11 @@
 #   moon_at    (meteor-shower) the instant the Moon's phase is stated for
 #   mission    (mission) the craft
 #   happens    (mission) the date the agency gives, YYYY-MM-DD
-#   eclipse    (eclipse) annular or total
-#   near       (eclipse) a date within a month before it, where the search starts
+#   eclipse    (eclipse) annular or total; (lunar-eclipse) partial or total
+#   near       (eclipse, lunar-eclipse) a date within a month before it, where the search starts; (full-moon) a date a few days
+#              before it; (conjunction) a date within three weeks of the closest approach
+#   moon_name  (full-moon) the traditional name of that month's full Moon, typed from an almanac (the only typed fact of the row)
+#   bodies     (conjunction) two of mercury, venus, mars, jupiter, saturn; the closest approach is computed
 #   season     (season) june-solstice or december-solstice
 #   year       (season) the year; the instant is computed (Astronomy Engine Seasons)
 #   also       other computed events the page tells with it: [{body, what}]
@@ -35,7 +38,7 @@
 #   trip       optional: a trip id of registry/tours.yaml
 #   sources    [{words, url, read}] where `read` is the day the page was opened
 version: 1
-checked_on: 2026-10-09
+checked_on: 2026-11-15
 checked_with: "Astronomy Engine (site/vendor/astronomy.js), run by scripts/seo_facts.mjs"
 
 events:
@@ -387,3 +390,336 @@ events:
     link: {t: "2028-12-21T08:00:00Z", at: earth}
     sources:
       - {words: "Computed here with Astronomy Engine (Seasons: the instant the Sun's apparent longitude is 90 or 270 degrees)", url: "https://github.com/cosinekitty/astronomy", read: 2026-11-08}
+
+  # --- internal #105: five more showers, every full Moon to May 2028, three lunar eclipses, two planet meetings
+  - id: alpha-capricornids-2027
+    kind: meteor-shower
+    name: "Alpha Capricornids 2027"
+    short: "Alpha Capricornids 2027: when and where to look"
+    summary: "The Alpha Capricornids peak on 31 July 2027 under a thin waning Moon: slow, often bright meteors, where the radiant is, and a link into that sky."
+    shower: alpha-capricornids
+    year: 2027
+    moon_at: 2027-07-31T20:00:00Z
+    link: {t: "2027-07-31T20:00:00Z", at: moon}
+    trip: comets-and-meteors
+    sources:
+      - {words: "IMO Meteor Shower Calendar 2027, Alpha Capricornids: active 3 July to 15 August, maximum 31 July, ZHR 5; the highest rates of it and the Southern Delta Aquariids are expected at the end of July with no moonlight interference", url: "https://www.imo.net/files/meteor-shower/cal2027.pdf", read: 2026-11-15}
+
+  - id: southern-delta-aquariids-2027
+    kind: meteor-shower
+    name: "Southern Delta Aquariids 2027"
+    short: "Southern Delta Aquariids 2027: when and where to look"
+    summary: "The Southern Delta Aquariids peak on 31 July 2027 under a thin waning Moon, best from the south: when to look, the radiant, and a link into that sky."
+    shower: southern-delta-aquariids
+    year: 2027
+    moon_at: 2027-07-31T20:00:00Z
+    link: {t: "2027-07-31T20:00:00Z", at: moon}
+    trip: comets-and-meteors
+    sources:
+      - {words: "IMO Meteor Shower Calendar 2027, Southern Delta Aquariids: active 12 July to 23 August, maximum 31 July, ZHR 25; highest rates at the end of July with no moonlight interference", url: "https://www.imo.net/files/meteor-shower/cal2027.pdf", read: 2026-11-15}
+
+  - id: draconids-2027
+    kind: meteor-shower
+    name: "Draconids 2027"
+    short: "Draconids 2027: when and where to look"
+    summary: "The Draconids peak on 9 October 2027 at about 07 hours UT under a bright waxing Moon: usually weak, once a storm. When to look, and a link into that sky."
+    shower: draconids
+    year: 2027
+    moon_at: 2027-10-09T07:00:00Z
+    link: {t: "2027-10-09T07:00:00Z", at: moon}
+    trip: comets-and-meteors
+    sources:
+      - {words: "IMO Meteor Shower Calendar 2027, October Draconids: active 6 to 10 October, maximum 9 October at 07h UT, ZHR 5 (?), the waxing Moon affecting evening observations when the radiant is highest", url: "https://www.imo.net/files/meteor-shower/cal2027.pdf", read: 2026-11-15}
+
+  - id: southern-taurids-2027
+    kind: meteor-shower
+    name: "Southern Taurids 2027"
+    short: "Southern Taurids 2027: when and where to look"
+    summary: "The Southern Taurids peak on 6 November 2027 under a half waxing Moon: slow, bright meteors from every latitude, and a link into that sky."
+    shower: southern-taurids
+    year: 2027
+    moon_at: 2027-11-06T01:00:00Z
+    link: {t: "2027-11-06T01:00:00Z", at: moon}
+    trip: comets-and-meteors
+    sources:
+      - {words: "IMO Meteor Shower Calendar 2027, Southern Taurids: maximum about 6 November, roughly between first quarter and full Moon, ZHR 7", url: "https://www.imo.net/files/meteor-shower/cal2027.pdf", read: 2026-11-15}
+
+  - id: northern-taurids-2027
+    kind: meteor-shower
+    name: "Northern Taurids 2027"
+    short: "Northern Taurids 2027: when and where to look"
+    summary: "The Northern Taurids peak on 13 November 2027 under a nearly full waxing Moon: a broad peak of slow meteors, and a link into that sky."
+    shower: northern-taurids
+    year: 2027
+    moon_at: 2027-11-13T00:00:00Z
+    link: {t: "2027-11-13T00:00:00Z", at: moon}
+    trip: comets-and-meteors
+    sources:
+      - {words: "IMO Meteor Shower Calendar 2027, Northern Taurids: maximum about 13 November, roughly between first quarter and full Moon, ZHR 5", url: "https://www.imo.net/files/meteor-shower/cal2027.pdf", read: 2026-11-15}
+
+  - id: full-moon-2026-11-24
+    kind: full-moon
+    name: "Full Moon, 24 November 2026"
+    short: "Full Moon, 24 November 2026: time and distance"
+    summary: "The Moon is full on 24 November 2026: the exact time, how far away it is, and a link that opens the map at that moment."
+    near: 2026-11-20
+    moon_name: "Beaver Moon"
+    link: {t: "2026-11-24T14:00:00Z", at: moon}
+    sources:
+      - {words: "The Old Farmer's Almanac, Full Moon names (the traditional name of each month's full Moon; North American and European traditions)", url: "https://www.almanac.com/full-moon-names", read: 2026-11-15}
+
+  - id: full-moon-2026-12-24
+    kind: full-moon
+    name: "Full Moon, 24 December 2026"
+    short: "Full Moon, 24 December 2026: time and distance"
+    summary: "The Moon is full on 24 December 2026: the exact time, how far away it is, and a link that opens the map at that moment."
+    near: 2026-12-20
+    moon_name: "Cold Moon"
+    link: {t: "2026-12-24T01:00:00Z", at: moon}
+    sources:
+      - {words: "The Old Farmer's Almanac, Full Moon names (the traditional name of each month's full Moon; North American and European traditions)", url: "https://www.almanac.com/full-moon-names", read: 2026-11-15}
+
+  - id: full-moon-2027-01-22
+    kind: full-moon
+    name: "Full Moon, 22 January 2027"
+    short: "Full Moon, 22 January 2027: time and distance"
+    summary: "The Moon is full on 22 January 2027: the exact time, how far away it is, and a link that opens the map at that moment."
+    near: 2027-01-18
+    moon_name: "Wolf Moon"
+    link: {t: "2027-01-22T12:00:00Z", at: moon}
+    sources:
+      - {words: "The Old Farmer's Almanac, Full Moon names (the traditional name of each month's full Moon; North American and European traditions)", url: "https://www.almanac.com/full-moon-names", read: 2026-11-15}
+
+  - id: full-moon-2027-02-20
+    kind: full-moon
+    name: "Full Moon, 20 February 2027"
+    short: "Full Moon, 20 February 2027: time and distance"
+    summary: "The Moon is full on 20 February 2027: the exact time, how far away it is, and a link that opens the map at that moment."
+    near: 2027-02-16
+    moon_name: "Snow Moon"
+    link: {t: "2027-02-20T23:00:00Z", at: moon}
+    sources:
+      - {words: "The Old Farmer's Almanac, Full Moon names (the traditional name of each month's full Moon; North American and European traditions)", url: "https://www.almanac.com/full-moon-names", read: 2026-11-15}
+
+  - id: full-moon-2027-03-22
+    kind: full-moon
+    name: "Full Moon, 22 March 2027"
+    short: "Full Moon, 22 March 2027: time and distance"
+    summary: "The Moon is full on 22 March 2027: the exact time, how far away it is, and a link that opens the map at that moment."
+    near: 2027-03-18
+    moon_name: "Worm Moon"
+    link: {t: "2027-03-22T10:00:00Z", at: moon}
+    sources:
+      - {words: "The Old Farmer's Almanac, Full Moon names (the traditional name of each month's full Moon; North American and European traditions)", url: "https://www.almanac.com/full-moon-names", read: 2026-11-15}
+
+  - id: full-moon-2027-04-20
+    kind: full-moon
+    name: "Full Moon, 20 April 2027"
+    short: "Full Moon, 20 April 2027: time and distance"
+    summary: "The Moon is full on 20 April 2027: the exact time, how far away it is, and a link that opens the map at that moment."
+    near: 2027-04-16
+    moon_name: "Pink Moon"
+    link: {t: "2027-04-20T22:00:00Z", at: moon}
+    sources:
+      - {words: "The Old Farmer's Almanac, Full Moon names (the traditional name of each month's full Moon; North American and European traditions)", url: "https://www.almanac.com/full-moon-names", read: 2026-11-15}
+
+  - id: full-moon-2027-05-20
+    kind: full-moon
+    name: "Full Moon, 20 May 2027"
+    short: "Full Moon, 20 May 2027: time and distance"
+    summary: "The Moon is full on 20 May 2027: the exact time, how far away it is, and a link that opens the map at that moment."
+    near: 2027-05-16
+    moon_name: "Flower Moon"
+    link: {t: "2027-05-20T10:00:00Z", at: moon}
+    sources:
+      - {words: "The Old Farmer's Almanac, Full Moon names (the traditional name of each month's full Moon; North American and European traditions)", url: "https://www.almanac.com/full-moon-names", read: 2026-11-15}
+
+  - id: full-moon-2027-06-19
+    kind: full-moon
+    name: "Full Moon, 19 June 2027"
+    short: "Full Moon, 19 June 2027: time and distance"
+    summary: "The Moon is full on 19 June 2027: the exact time, how far away it is, and a link that opens the map at that moment."
+    near: 2027-06-15
+    moon_name: "Strawberry Moon"
+    link: {t: "2027-06-19T00:00:00Z", at: moon}
+    sources:
+      - {words: "The Old Farmer's Almanac, Full Moon names (the traditional name of each month's full Moon; North American and European traditions)", url: "https://www.almanac.com/full-moon-names", read: 2026-11-15}
+
+  - id: full-moon-2027-07-18
+    kind: full-moon
+    name: "Full Moon, 18 July 2027"
+    short: "Full Moon, 18 July 2027: time and distance"
+    summary: "The Moon is full on 18 July 2027: the exact time, how far away it is, and a link that opens the map at that moment."
+    near: 2027-07-14
+    moon_name: "Buck Moon"
+    link: {t: "2027-07-18T15:00:00Z", at: moon}
+    sources:
+      - {words: "The Old Farmer's Almanac, Full Moon names (the traditional name of each month's full Moon; North American and European traditions)", url: "https://www.almanac.com/full-moon-names", read: 2026-11-15}
+
+  - id: full-moon-2027-08-17
+    kind: full-moon
+    name: "Full Moon, 17 August 2027"
+    short: "Full Moon, 17 August 2027: time and distance"
+    summary: "The Moon is full on 17 August 2027: the exact time, how far away it is, and a link that opens the map at that moment."
+    near: 2027-08-13
+    moon_name: "Sturgeon Moon"
+    link: {t: "2027-08-17T07:00:00Z", at: moon}
+    sources:
+      - {words: "The Old Farmer's Almanac, Full Moon names (the traditional name of each month's full Moon; North American and European traditions)", url: "https://www.almanac.com/full-moon-names", read: 2026-11-15}
+
+  - id: full-moon-2027-09-15
+    kind: full-moon
+    name: "Full Moon, 15 September 2027"
+    short: "Full Moon, 15 September 2027: time and distance"
+    summary: "The Moon is full on 15 September 2027: the exact time, how far away it is, and a link that opens the map at that moment."
+    near: 2027-09-11
+    moon_name: "Harvest Moon"
+    link: {t: "2027-09-15T23:00:00Z", at: moon}
+    sources:
+      - {words: "The Old Farmer's Almanac, Full Moon names (the traditional name of each month's full Moon; North American and European traditions)", url: "https://www.almanac.com/full-moon-names", read: 2026-11-15}
+
+  - id: full-moon-2027-10-15
+    kind: full-moon
+    name: "Full Moon, 15 October 2027"
+    short: "Full Moon, 15 October 2027: time and distance"
+    summary: "The Moon is full on 15 October 2027: the exact time, how far away it is, and a link that opens the map at that moment."
+    near: 2027-10-11
+    moon_name: "Hunter's Moon"
+    link: {t: "2027-10-15T13:00:00Z", at: moon}
+    sources:
+      - {words: "The Old Farmer's Almanac, Full Moon names (the traditional name of each month's full Moon; North American and European traditions)", url: "https://www.almanac.com/full-moon-names", read: 2026-11-15}
+
+  - id: full-moon-2027-11-14
+    kind: full-moon
+    name: "Full Moon, 14 November 2027"
+    short: "Full Moon, 14 November 2027: time and distance"
+    summary: "The Moon is full on 14 November 2027: the exact time, how far away it is, and a link that opens the map at that moment."
+    near: 2027-11-10
+    moon_name: "Beaver Moon"
+    link: {t: "2027-11-14T03:00:00Z", at: moon}
+    sources:
+      - {words: "The Old Farmer's Almanac, Full Moon names (the traditional name of each month's full Moon; North American and European traditions)", url: "https://www.almanac.com/full-moon-names", read: 2026-11-15}
+
+  - id: full-moon-2027-12-13
+    kind: full-moon
+    name: "Full Moon, 13 December 2027"
+    short: "Full Moon, 13 December 2027: time and distance"
+    summary: "The Moon is full on 13 December 2027: the exact time, how far away it is, and a link that opens the map at that moment."
+    near: 2027-12-09
+    moon_name: "Cold Moon"
+    link: {t: "2027-12-13T16:00:00Z", at: moon}
+    sources:
+      - {words: "The Old Farmer's Almanac, Full Moon names (the traditional name of each month's full Moon; North American and European traditions)", url: "https://www.almanac.com/full-moon-names", read: 2026-11-15}
+
+  - id: full-moon-2028-01-12
+    kind: full-moon
+    name: "Full Moon, 12 January 2028"
+    short: "Full Moon, 12 January 2028: time and distance"
+    summary: "The Moon is full on 12 January 2028: the exact time, how far away it is, and a link that opens the map at that moment."
+    near: 2028-01-08
+    moon_name: "Wolf Moon"
+    link: {t: "2028-01-12T04:00:00Z", at: moon}
+    sources:
+      - {words: "The Old Farmer's Almanac, Full Moon names (the traditional name of each month's full Moon; North American and European traditions)", url: "https://www.almanac.com/full-moon-names", read: 2026-11-15}
+
+  - id: full-moon-2028-02-10
+    kind: full-moon
+    name: "Full Moon, 10 February 2028"
+    short: "Full Moon, 10 February 2028: time and distance"
+    summary: "The Moon is full on 10 February 2028: the exact time, how far away it is, and a link that opens the map at that moment."
+    near: 2028-02-06
+    moon_name: "Snow Moon"
+    link: {t: "2028-02-10T15:00:00Z", at: moon}
+    sources:
+      - {words: "The Old Farmer's Almanac, Full Moon names (the traditional name of each month's full Moon; North American and European traditions)", url: "https://www.almanac.com/full-moon-names", read: 2026-11-15}
+
+  - id: full-moon-2028-03-11
+    kind: full-moon
+    name: "Full Moon, 11 March 2028"
+    short: "Full Moon, 11 March 2028: time and distance"
+    summary: "The Moon is full on 11 March 2028: the exact time, how far away it is, and a link that opens the map at that moment."
+    near: 2028-03-07
+    moon_name: "Worm Moon"
+    link: {t: "2028-03-11T01:00:00Z", at: moon}
+    sources:
+      - {words: "The Old Farmer's Almanac, Full Moon names (the traditional name of each month's full Moon; North American and European traditions)", url: "https://www.almanac.com/full-moon-names", read: 2026-11-15}
+
+  - id: full-moon-2028-04-09
+    kind: full-moon
+    name: "Full Moon, 9 April 2028"
+    short: "Full Moon, 9 April 2028: time and distance"
+    summary: "The Moon is full on 9 April 2028: the exact time, how far away it is, and a link that opens the map at that moment."
+    near: 2028-04-05
+    moon_name: "Pink Moon"
+    link: {t: "2028-04-09T10:00:00Z", at: moon}
+    sources:
+      - {words: "The Old Farmer's Almanac, Full Moon names (the traditional name of each month's full Moon; North American and European traditions)", url: "https://www.almanac.com/full-moon-names", read: 2026-11-15}
+
+  - id: full-moon-2028-05-08
+    kind: full-moon
+    name: "Full Moon, 8 May 2028"
+    short: "Full Moon, 8 May 2028: time and distance"
+    summary: "The Moon is full on 8 May 2028: the exact time, how far away it is, and a link that opens the map at that moment."
+    near: 2028-05-04
+    moon_name: "Flower Moon"
+    link: {t: "2028-05-08T19:00:00Z", at: moon}
+    sources:
+      - {words: "The Old Farmer's Almanac, Full Moon names (the traditional name of each month's full Moon; North American and European traditions)", url: "https://www.almanac.com/full-moon-names", read: 2026-11-15}
+
+  - id: lunar-eclipse-2028-01-12
+    kind: lunar-eclipse
+    name: "The partial lunar eclipse of 12 January 2028"
+    short: "Partial lunar eclipse, 12 January 2028: who sees it"
+    summary: "On 12 January 2028 the Moon passes through part of the Earth's dark shadow: the time, who sees it, and a link that opens the map at that moment."
+    eclipse: partial
+    near: 2027-12-25
+    link: {t: "2028-01-12T04:00:00Z", at: moon}
+    sources:
+      - {words: "NASA Goddard, Lunar eclipses 2021 to 2030 (greatest eclipse 12 January 2028 at 04:14 TD, umbral magnitude 0.066, partial)", url: "https://eclipse.gsfc.nasa.gov/LEdecade/LEdecade2021.html", read: 2026-11-15}
+      - {words: "Computed here with Astronomy Engine (the Moon in the Earth's shadow)", url: "https://github.com/cosinekitty/astronomy", read: 2026-11-15}
+
+  - id: lunar-eclipse-2028-07-06
+    kind: lunar-eclipse
+    name: "The partial lunar eclipse of 6 July 2028"
+    short: "Partial lunar eclipse, 6 July 2028: who sees it"
+    summary: "On 6 July 2028 the Moon passes through part of the Earth's dark shadow: the time, who sees it, and a link that opens the map at that moment."
+    eclipse: partial
+    near: 2028-06-20
+    link: {t: "2028-07-06T18:00:00Z", at: moon}
+    sources:
+      - {words: "NASA Goddard, Lunar eclipses 2021 to 2030 (greatest eclipse 6 July 2028 at 18:21 TD, umbral magnitude 0.389, partial)", url: "https://eclipse.gsfc.nasa.gov/LEdecade/LEdecade2021.html", read: 2026-11-15}
+      - {words: "Computed here with Astronomy Engine (the Moon in the Earth's shadow)", url: "https://github.com/cosinekitty/astronomy", read: 2026-11-15}
+
+  - id: lunar-eclipse-2028-12-31
+    kind: lunar-eclipse
+    name: "The total lunar eclipse of 31 December 2028"
+    short: "Total lunar eclipse, 31 December 2028: who sees it"
+    summary: "On 31 December 2028 the Moon moves wholly into the Earth's dark shadow: the time, who sees it, and a link that opens the map at that moment."
+    eclipse: total
+    near: 2028-12-15
+    link: {t: "2028-12-31T17:00:00Z", at: moon}
+    sources:
+      - {words: "NASA Goddard, Lunar eclipses 2021 to 2030 (greatest eclipse 31 December 2028 at 16:53 TD, umbral magnitude 1.246, total)", url: "https://eclipse.gsfc.nasa.gov/LEdecade/LEdecade2021.html", read: 2026-11-15}
+      - {words: "Computed here with Astronomy Engine (the Moon in the Earth's shadow)", url: "https://github.com/cosinekitty/astronomy", read: 2026-11-15}
+
+  - id: venus-saturn-2027
+    kind: conjunction
+    name: "Venus and Saturn close together, 7 May 2027"
+    short: "Venus and Saturn close together, 7 May 2027"
+    summary: "Venus passes within a degree of Saturn on 7 May 2027, low in the morning sky: when, how bright each is, and a link into the sky at that moment."
+    bodies: [venus, saturn]
+    near: 2027-05-07
+    link: {t: "2027-05-07T18:00:00Z", at: venus}
+    sources:
+      - {words: "Computed here with Astronomy Engine (the angle between the two planets, searched for its smallest value)", url: "https://github.com/cosinekitty/astronomy", read: 2026-11-15}
+
+  - id: venus-mars-2027
+    kind: conjunction
+    name: "Venus and Mars close together, 25 November 2027"
+    short: "Venus and Mars close together, 25 November 2027"
+    summary: "Venus passes within a degree of Mars on 25 November 2027, low in the evening sky: when, how bright each is, and a link into the sky at that moment."
+    bodies: [venus, mars]
+    near: 2027-11-25
+    link: {t: "2027-11-25T00:00:00Z", at: venus}
+    sources:
+      - {words: "Computed here with Astronomy Engine (the angle between the two planets, searched for its smallest value)", url: "https://github.com/cosinekitty/astronomy", read: 2026-11-15}

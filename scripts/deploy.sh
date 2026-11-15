@@ -467,10 +467,18 @@ if [ "$WHAT" != "assets" ]; then
       "${SYNC[@]}" "$BUILT/share" "s3://$BUCKET/share" --cache-control "$REVALIDATE" \
         --exclude "*" --include "*.png" --content-type "image/png" --delete
     else
+      # events/ also holds the calendar files (scripts/seo_calendar.py, internal #105): sent below as text/calendar, kept out of this sync
+      # (and so out of its --delete) by the exclude.
       "${SYNC[@]}" "$BUILT/$dir" "s3://$BUCKET/$dir" --cache-control "$REVALIDATE" \
-        --content-type "text/html; charset=utf-8" --delete
+        --exclude "*.ics" --content-type "text/html; charset=utf-8" --delete
     fi
   done < "$BUILT/pages-dirs.txt"
+  # The calendar files of the sky events: one per event page and the feeds a calendar subscribes to. Revalidated like the pages (a
+  # subscribing calendar asks again once a day), --delete so an event that leaves the registry leaves the calendar.
+  if [ -d "$BUILT/events" ]; then
+    "${SYNC[@]}" "$BUILT/events" "s3://$BUCKET/events" --cache-control "$REVALIDATE" \
+      --exclude "*" --include "*.ics" --content-type "text/calendar; charset=utf-8" --delete
+  fi
   # b200-f6-learn: begin (print) -- /print/ (forge #161): its page as HTML and the paper models as PDF, revalidated
   # like the pages (a sheet is remade at every deploy from the maps), --delete so a map that leaves leaves its sheet.
   # Invalidated with the rest of pages-dirs.txt below. A PDF is fetched only when a visitor clicks it.
