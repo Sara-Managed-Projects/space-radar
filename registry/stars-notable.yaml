@@ -81,7 +81,10 @@ stars:
   - hip: 32349
     name: Sirius
     why: "The brightest star in the night sky, almost twice as bright as Canopus, the next. A faint white dwarf, Sirius B, circles it."
-    source: "https://en.wikipedia.org/wiki/Sirius (read 2026-09-22); magnitude and class: Bright Star Catalogue, 5th revised ed. (VizieR V/50, HR 2491, opened 2026-11-15): V = -1.46, A1Vm. The star map's HYG data carries the Hipparcos catalogue's -1.44 and A0m (VizieR I/239, HIP 32349, opened 2026-11-15), whose own variability flag marks that magnitude 'duplicity-induced': Sirius B's glare was inside the satellite's measurement. The card prints the Bright Star Catalogue values (internal #311)."
+    # Magnitude and class (internal #311), opened 2026-11-15: the Bright Star Catalogue, 5th revised ed. (VizieR V/50, HR 2491) gives V = -1.46 and A1Vm.
+    # The star map's HYG data carries the Hipparcos catalogue's -1.44 and A0m (VizieR I/239, HIP 32349), whose own variability flag marks that
+    # magnitude 'duplicity-induced': Sirius B's glare was inside the satellite's measurement. The card prints the Bright Star Catalogue values.
+    source: "https://en.wikipedia.org/wiki/Sirius (read 2026-09-22); magnitude and class: Bright Star Catalogue HR 2491 (VizieR V/50, read 2026-11-15)"
     mag: -1.46
     spect: A1Vm
     radius_suns: 1.713
