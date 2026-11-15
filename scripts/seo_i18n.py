@@ -1505,15 +1505,26 @@ def main(argv: list[str]) -> int:
         return 1 if bad else 0
     if cmd == "coverage":
         rep = json.loads((Path(opt["built"]) / "i18n-report.json").read_text(encoding="utf-8"))
+        short = 0
         for c, r in rep["langs"].items():
             print(f"{c}: {r['published']} of {r['total']} pages")
+            if r["published"] < r["total"]:
+                short += 1
+                if opt.get("require-full"):
+                    for page, keys in sorted(r["missing_pages"].items())[:12]:
+                        print(f"  {c}: {page} lacks {len(keys)} string(s), for example {keys[0]}", file=sys.stderr)
+        # --require-full (CI): a language that publishes fewer pages than the English sitemap holds, less the pages kept in English, is a
+        # failure. Without it the shortfall was only a number nobody read (612 of 650 went unnoticed in 2026-11).
+        if opt.get("require-full") and short:
+            print(f"seo_i18n: {short} language(s) are missing pages: translate what `python3 scripts/seo_i18n.py flat --missing CODE` lists", file=sys.stderr)
+            return 1
         return 0
     print(USAGE, file=sys.stderr)
     return 2
 
 
 USAGE = ("usage: python3 scripts/seo_i18n.py extract --built DIR [--also DIR,DIR] [--check] | flat --out DIR [--missing CODE] | "
-         "merge CODE DIR | check [CODE ...] | coverage --built DIR   (docs/TRANSLATING.md, \"The pages a search engine reads\")")
+         "merge CODE DIR | check [CODE ...] | coverage --built DIR [--require-full]   (docs/TRANSLATING.md, \"The pages a search engine reads\")")
 
 
 if __name__ == "__main__":

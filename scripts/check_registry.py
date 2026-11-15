@@ -3025,8 +3025,8 @@ def check_sky_events(world_ids: set, tour_ids: set) -> list:
             fail(where, "duplicate id")
         seen.add(eid)
         kind = e.get("kind")
-        if kind not in ("meteor-shower", "mission", "eclipse", "season"):  # season: a solstice (b200-s1-fixes, forge #90)
-            fail(where, f"`kind:` {kind!r} is not meteor-shower, mission, eclipse or season")
+        if kind not in ("meteor-shower", "mission", "eclipse", "season", "full-moon", "lunar-eclipse", "conjunction"):  # season: a solstice (forge #90); the last three: internal #105
+            fail(where, f"`kind:` {kind!r} is not meteor-shower, mission, eclipse, season, full-moon, lunar-eclipse or conjunction")
         if not str(e.get("name") or "").strip():
             fail(where, "no `name:`")
         short = str(e.get("short") or "")
@@ -3055,6 +3055,15 @@ def check_sky_events(world_ids: set, tour_ids: set) -> list:
                 fail(where, "`eclipse:` must be annular or total")
             if not isinstance(e.get("near"), datetime.date):
                 fail(where, "`near:` must be a date shortly before the eclipse")
+        elif kind == "full-moon":
+            if not isinstance(e.get("near"), datetime.date) or not str(e.get("moon_name") or "").strip():
+                fail(where, "a full-moon row needs `near:` (a date a few days before it) and `moon_name:` (the almanac's traditional name)")
+        elif kind == "lunar-eclipse":
+            if e.get("eclipse") not in ("partial", "total") or not isinstance(e.get("near"), datetime.date):
+                fail(where, "`eclipse:` must be partial or total, with `near:` a date shortly before it")
+        elif kind == "conjunction":
+            if not (isinstance(e.get("bodies"), list) and len(e["bodies"]) == 2) or not isinstance(e.get("near"), datetime.date):
+                fail(where, "a conjunction row needs `bodies: [two planet ids]` and `near:` a date within three weeks of the closest approach")
         for a in e.get("also") or []:
             if not (isinstance(a, dict) and a.get("body") and a.get("what") == "greatest-western-elongation"):
                 fail(where, f"`also:` row {a!r} is not {{body, what: greatest-western-elongation}}")

@@ -36,6 +36,7 @@ DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 # (tests/test_seo_growth.py), so a renamed file cannot quietly turn a group into the fallback.
 OBJECT_SOURCES = {
     "worlds": ["registry/worlds.yaml"],
+    "moons": ["site/data/moons.json"],
     "craft": ["site/js/data/layers.js"],
     "satellites": ["site/js/data/layers.js"],
     "small": ["site/js/data/layers.js"],

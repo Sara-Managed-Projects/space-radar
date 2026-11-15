@@ -31,7 +31,9 @@ Run alone for a look: python3 scripts/seo_pages.py --out DIR   (build_seo.py is 
 from __future__ import annotations
 
 import datetime as dt
+import functools
 import json
+from html import unescape as html_unescape
 import re
 import shutil
 import subprocess
@@ -42,6 +44,7 @@ from urllib.parse import quote_plus
 import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import seo_calendar  # noqa: E402  (the .ics files of the event pages: scripts/seo_calendar.py)
 import seo_read  # noqa: E402  (the long reads: scripts/seo_read.py)
 import seo_systems  # noqa: E402
 # b200-f1-find: begin -- the country pages, /country/<iso>/ (forge #152)
@@ -108,7 +111,17 @@ def node_json(cmd: str, payload: dict) -> dict:
     return json.loads(run.stdout)
 
 
+@functools.lru_cache(maxsize=1)
+def _sky_events() -> tuple:
+    return tuple(_sky_events_uncached())
+
+
 def sky_events() -> list[dict]:
+    """The rows with their computed facts, worked out once per build (the pages and the calendar files share them)."""
+    return list(_sky_events())
+
+
+def _sky_events_uncached() -> list[dict]:
     """registry rows joined to what the maths says about each."""
     doc = yml("sky-events.yaml")
     rows = doc["events"]
@@ -363,7 +376,9 @@ def planets_page(host: str, today: str) -> Page:
 
 # --- events ------------------------------------------------------------------------------------------------
 
-AT_WORDS = {"moon": "the Moon", "earth": "the Earth", "mercury": "Mercury", "venus": "Venus"}
+AT_WORDS = {"moon": "the Moon", "earth": "the Earth", "mercury": "Mercury", "venus": "Venus", "mars": "Mars", "jupiter": "Jupiter", "saturn": "Saturn"}
+# Event kinds with nothing to work out per place: no place picker and no per-place script on their pages.
+QUIET_KINDS = {"season", "full-moon", "lunar-eclipse", "conjunction"}
 
 
 def link_of(ev: dict) -> str:
@@ -394,6 +409,19 @@ def event_sentence(ev: dict) -> str:
                 else "the Moon covers the Sun completely for those inside its narrow path")
         return (f"On {date_words(f['instant'])} {what}: greatest eclipse at {instant_words(f['instant'])}, at {abs(f['latDeg']):g}° {'S' if f['latDeg'] < 0 else 'N'}, "
                 f"{abs(f['lonDeg']):g}° {'W' if f['lonDeg'] < 0 else 'E'}. Computed with Astronomy Engine, checked {date_words(ev['checked_on'])}.")
+    if ev["kind"] == "full-moon":  # internal #105
+        return (f"The Moon is full at {instant_words(f['instant'])}, {groups(f['distanceKm'])} km from Earth, "
+                f"{'nearer' if f['nearer'] else 'farther'} than its average distance of {groups(f['meanKm'])} km.")
+    if ev["kind"] == "lunar-eclipse":
+        if f["kind"] == "total":
+            return (f"On {date_words(f['instant'])} the Moon moves wholly into the Earth's dark shadow: a total lunar eclipse, greatest at {instant_words(f['instant'])}, "
+                    f"with about {f['totalMinutes']} minutes of totality. Computed with Astronomy Engine, checked {date_words(ev['checked_on'])}.")
+        return (f"On {date_words(f['instant'])} the Moon passes through part of the Earth's dark shadow: a partial lunar eclipse, greatest at {instant_words(f['instant'])}, "
+                f"with {f['umbralPercent']:g} percent of the Moon's disc in the shadow. Computed with Astronomy Engine, checked {date_words(ev['checked_on'])}.")
+    if ev["kind"] == "conjunction":
+        a, b = f["bodies"]
+        return (f"At {instant_words(f['instant'])} {a['name']} and {b['name']} stand {f['separationDeg']:g}° apart, the closest they come in this meeting: "
+                f"{a['name']} is {a['elongationDeg']}° and {b['name']} {b['elongationDeg']}° from the Sun, in the {a['visibility']} sky.")
     if ev["kind"] == "season":  # forge #90
         june = f["season"] == "june-solstice"
         return (f"The {'June' if june else 'December'} solstice falls at {instant_words(f['instant'])}, the same instant everywhere: the Sun stands "
@@ -463,6 +491,49 @@ def event_page(ev: dict, host: str, trips: dict) -> Page:
                      "highest at noon and stays up longest, and inside the polar circle it does not set at all, while the other hemisphere has its shortest day "
                      "and, inside its polar circle, a day the Sun does not rise. After it the days begin to shorten again on one side and lengthen on the other.</p>\n")
         where_static = "A solstice is one instant for the whole Earth; the map's Tonight view gives your own sunrise and sunset for that day."
+    elif ev["kind"] == "full-moon":  # internal #105
+        gap = abs(f["distanceKm"] - f["meanKm"])
+        rows += [("Full Moon, computed", instant_words(f["instant"])), ("The Moon's distance then", f"{groups(f['distanceKm'])} km"),
+                 ("Against its average distance", f"{groups(gap)} km {'nearer' if f['nearer'] else 'farther'}"), ("Traditional name", ev["moon_name"])]
+        sections += ("<h2>What a full Moon is</h2>\n"
+                     "<p>The Moon is full when it stands opposite the Sun in the sky, so the whole face turned towards the Earth is lit. That is one instant for the whole "
+                     "Earth, given above in UT; what differs from place to place is the local date and whether the Moon is above the horizon at that moment.</p>\n"
+                     "<h2>Its distance</h2>\n"
+                     "<p>The Moon's orbit is an ellipse, so its distance from the Earth changes from one full Moon to the next. The distance above is computed for the "
+                     "instant of this one, from the centre of the Earth to the centre of the Moon, and set against the average of 384,400 km.</p>\n"
+                     "<h2>The traditional name</h2>\n"
+                     "<p>The names given to each month's full Moon come from North American and European traditions written down in almanacs. They are folklore: "
+                     "they say nothing about the Moon itself, and different almanacs give different names.</p>\n")
+        where_static = "The map's Tonight view gives your own Moonrise and Moonset for that day."
+    elif ev["kind"] == "lunar-eclipse":
+        rows += [("Greatest eclipse", instant_words(f["instant"])), ("Kind", f["kind"]),
+                 ("Moon's disc in the dark shadow", f"{f['umbralPercent']:g} percent"),
+                 ("Time in the dark shadow", f"about {f['partialMinutes']} minutes, from the first touch to the last")]
+        if f["kind"] == "total":
+            rows.append(("Totality", f"about {f['totalMinutes']} minutes"))
+        up = f["citiesUp"]
+        sections += ("<h2>Who sees what</h2>\n"
+                     + (f"<p>A lunar eclipse is seen from everywhere the Moon is above the horizon, which is the night side of the Earth at that moment. Of the {f['citiesCount']} cities "
+                        f"the map knows, the Moon is at least 10° up at the greatest eclipse in {f['upCount']}; the highest are "
+                        + ", ".join(f"{esc(c['name'])} ({esc(c['country'])}) at {c['altDeg']}°" for c in up) + " (computed for each).</p>\n" if up else
+                        "<p>A lunar eclipse is seen from everywhere the Moon is above the horizon. At the greatest eclipse the Moon is below 10° in all the cities the map knows.</p>\n")
+                     + "<h2>Look safely</h2>\n"
+                       "<p>Unlike a solar eclipse, a lunar eclipse is safe to look at with the naked eye, binoculars or a telescope: the Moon is only reflecting sunlight, and it is dimmer, not brighter.</p>\n")
+        where_static = "The Moon must be above your horizon at the time above; the map's Tonight view tells you whether it is."
+    elif ev["kind"] == "conjunction":
+        a, b = f["bodies"]
+        rows += [("Closest, computed", instant_words(f["instant"])), ("Apart in the sky", f"{f['separationDeg']:g}°")]
+        for x in (a, b):
+            rows.append((x["name"], f"magnitude {x['mag']:g}, {x['elongationDeg']}° from the Sun, {x['visibility']} sky, in {x['constellation']}"))
+        rows.append(("Their distances from Earth", f"{a['name']} {a['distAu']:g} AU, {b['name']} {b['distAu']:g} AU"))
+        look = ("in the east, low, before sunrise" if a["visibility"] == "morning" else "in the west, low, after sunset")
+        sections += ("<h2>What a conjunction is</h2>\n"
+                     f"<p>A conjunction is two bodies appearing close together in the sky. They only look close: {esc(a['name'])} is {a['distAu']:g} AU from the Earth and "
+                     f"{esc(b['name'])} {b['distAu']:g} AU, one in front of the other as seen from here, and a long way apart in space.</p>\n"
+                     "<h2>Where to look</h2>\n"
+                     f"<p>Look {look}. Both are within {max(a['elongationDeg'], b['elongationDeg'])}° of the Sun, so a clear horizon helps; the closest approach is given in UT, "
+                     "and the pair stays close for several days either side.</p>\n")
+        where_static = "The map's Tonight view shows where each planet stands in your sky."
     dl = "".join(f"<div><dt>{esc(a)}</dt><dd>{esc(b)}</dd></div>" for a, b in rows)
     trip = ev.get("trip")
     trip_link = (f'<p><a href="../#trip={esc(trip)}">Take the trip: {esc(trips[trip])}</a></p>\n' if trip else "")
@@ -474,17 +545,24 @@ def event_page(ev: dict, host: str, trips: dict) -> Page:
         f'<div class="cta"><a class="btn btn--map" href="{esc(link_of(ev))}">Open the map at that moment</a>'
         f"<p>Sets the map's clock to {esc(instant_words(ev['link']['t']))} and flies to {esc(AT_WORDS.get(ev['link']['at'], ev['link']['at']))}.</p></div>\n"
         f"{trip_link}"
+        f'<p class="cal"><a href="{esc(ev["id"])}.ics">Add to your calendar</a> with a reminder the day before, or <a href="sky-events.ics">subscribe to every sky event</a>.</p>\n'
         "<h2>The facts</h2>\n"
         f"<dl>{dl}</dl>\n"
         + ("<h2>Where to look from your place</h2>\n" + place_picker() + '<p data-slot="event-local" hidden></p>\n'
-           if ev["kind"] != "season" else "<h2>From your place</h2>\n")  # a solstice has nothing to compute per place
+           if ev["kind"] not in QUIET_KINDS else "<h2>From your place</h2>\n")  # a solstice, a full Moon, a conjunction: nothing to compute per place
         + f'<p class="dim">{esc(where_static)}</p>\n'
         + sections
-        + (f'<script type="application/json" id="event-data">{json.dumps({"kind": ev["kind"], "instant": f["instant"], "shower": ({"raH": f["shower"]["raH"], "decDeg": f["shower"]["decDeg"]} if "shower" in f else None), "also": f["also"]}, separators=(",", ":"))}</script>\n' if ev["kind"] != "season" else "")  # a solstice page has no per-place script
+        + (f'<script type="application/json" id="event-data">{json.dumps({"kind": ev["kind"], "instant": f["instant"], "shower": ({"raH": f["shower"]["raH"], "decDeg": f["shower"]["decDeg"]} if "shower" in f else None), "also": f["also"]}, separators=(",", ":"))}</script>\n' if ev["kind"] not in QUIET_KINDS else "")  # a page without a per-place box has no per-place script
         + '<h2>Sources</h2>\n<ul>' + srcs + "</ul>\n"
         '<div class="callout callout--note"><p><strong>Measured or computed?</strong> '
         + ("The instant of the solstice is computed with Astronomy Engine, the same library the map uses. Nothing on this page is typed in."
            if ev["kind"] == "season" else
+           "The instant, the distance and the other numbers on this page are computed with Astronomy Engine, the same library the map uses. "
+           f"Only the traditional name is typed, from an almanac, read {esc(date_words(ev['sources'][0]['read']))}."
+           if ev["kind"] == "full-moon" else
+           "The instants, distances and angles on this page are computed with Astronomy Engine, the same library the map uses, and were checked by a person on "
+           f"{esc(date_words(ev['checked_on']))}."
+           if ev["kind"] in ("lunar-eclipse", "conjunction") else
            "Dates of the showers and of the eclipses are computed with Astronomy Engine, the same library the map uses, "
            f"and were read by a person on {esc(date_words(ev['checked_on']))}. The Moon's percentage is computed. Rates are the IMO's and are not predictions of what you will count."
            if ev["kind"] != "mission" else
@@ -499,11 +577,18 @@ def event_page(ev: dict, host: str, trips: dict) -> Page:
                 "isAccessibleForFree": True, "url": url, "inLanguage": "en",
                 "location": [{"@type": "VirtualLocation", "url": url}],
                 "organizer": {"@type": "Organization", "name": "Space Radar", "url": f"{host}/"}}
+    # Google's Event rich result asks for name, startDate and location, and recommends an image and offers (internal #50): the share picture
+    # the page already draws, and the free ticket every event here is.
+    event_ld["image"] = [f"{host}/{Spec(key='events/' + ev['id'], name='').rel}"]
+    event_ld["offers"] = {"@type": "Offer", "url": url, "price": "0", "priceCurrency": "USD", "availability": "https://schema.org/InStock"}
     if ev["kind"] == "meteor-shower":
         event_ld["location"].append({"@type": "Place", "name": "The night sky, wherever the radiant is above the horizon", "address": "Worldwide"})
         event_ld["eventAttendanceMode"] = "https://schema.org/MixedEventAttendanceMode"
     elif ev["kind"] == "eclipse":
         event_ld["location"].append({"@type": "Place", "name": f"The path of the {f['kind']} eclipse and the band of partial eclipse round it", "address": "Worldwide"})
+        event_ld["eventAttendanceMode"] = "https://schema.org/MixedEventAttendanceMode"
+    elif ev["kind"] in ("lunar-eclipse", "full-moon"):
+        event_ld["location"].append({"@type": "Place", "name": "Everywhere on Earth where the Moon is above the horizon", "address": "Worldwide"})
         event_ld["eventAttendanceMode"] = "https://schema.org/MixedEventAttendanceMode"
     page.jsonld = [webpage(host, page, [("Sky events", "events/index.html"), (ev["name"], "")], extra={"about": {"@id": f"{url}#event"}}), event_ld]
     page.share = Spec(key=f"events/{ev['id']}", name=ev["name"], number=date_words(f["instant"][:10]), caption="Sky event", kind="plain", colour="#ffc28a",
@@ -512,31 +597,52 @@ def event_page(ev: dict, host: str, trips: dict) -> Page:
 
 
 KIND_WORDS = {"meteor-shower": ("meteor shower", "meteor showers"), "eclipse": ("solar eclipse", "solar eclipses"),
-              "season": ("solstice", "solstices"), "mission": ("mission event", "mission events")}
+              "lunar-eclipse": ("lunar eclipse", "lunar eclipses"), "full-moon": ("full Moon", "full Moons"),
+              "conjunction": ("conjunction", "conjunctions"), "season": ("solstice", "solstices"), "mission": ("mission event", "mission events")}
+def calendar_entries(events: list[dict], host: str) -> list[dict]:
+    """The events as scripts/seo_calendar.py takes them: each names its page and ends on the link that opens the map at that moment."""
+    out = []
+    for ev in events:
+        f = ev["facts"]
+        mission = ev["kind"] == "mission"
+        link = f"{host}/#t={ev['link']['t']}&at={ev['link']['at']}"
+        out.append({"id": ev["id"], "kind": ev["kind"], "name": ev["name"], "start": ev["happens"] if mission else f["instant"], "all_day": mission,
+                    "minutes": 120 if ev["kind"] in ("meteor-shower", "lunar-eclipse") else 60,
+                    "description": f"{event_sentence(ev)} Open the map at that moment: {link}", "url": url_of(host, f"events/{ev['id']}.html"),
+                    "category": KIND_WORDS[ev["kind"]][0].capitalize()})
+    return out
+
+
+# The index groups its list: (heading, kinds). A heading with no event is left out.
+INDEX_GROUPS = [("Meteor showers", ("meteor-shower",)), ("Eclipses", ("eclipse", "lunar-eclipse")), ("Full Moons", ("full-moon",)),
+                ("Planets close together", ("conjunction",)), ("Solstices and missions", ("season", "mission"))]
+FEED_LINKS = [("sky-events.ics", "Every sky event"), ("showers.ics", "Meteor showers"), ("eclipses.ics", "Solar and lunar eclipses"),
+              ("moons.ics", "Full Moons"), ("sky.ics", "Solstices, planet meetings and missions")]
 
 
 def events_index_description(ordered: list[dict]) -> str:
     """The index's description from the rows themselves (forge #90: it said "to August 2027" while the rows ran to December)."""
     first, last = ordered[0]["facts"]["instant"][:10], ordered[-1]["facts"]["instant"][:10]
     month = lambda d: date_words(d).split(" ", 1)[1]  # noqa: E731 ("16 November 2026" -> "November 2026")
-    counts = []
-    for kind, (one, many) in KIND_WORDS.items():
-        n = sum(1 for e in ordered if e["kind"] == kind)
-        if n:
-            counts.append(f"{n} {one if n == 1 else many}")
-    listed = ", ".join(counts[:-1]) + f" and {counts[-1]}" if len(counts) > 1 else counts[0]
-    return f"{len(ordered)} dated sky events from {month(first)} to {month(last)}: {listed}, each with a map link."
+    return (f"{len(ordered)} dated sky events from {month(first)} to {month(last)}: showers, eclipses, full Moons, planet meetings and solstices, "
+            "each with a map link and calendar file.")
 
 
 def events_index(events: list[dict], host: str) -> Page:
     short = "Sky events: meteor showers, eclipses and solstices"
     ordered = sorted(events, key=lambda e: e["facts"]["instant"])
     desc = events_index_description(ordered)
-    items = "".join(
-        f'<li><h3><a href="{esc(e["id"])}.html">{esc(e["name"])}</a></h3><p>{esc(date_words(e["facts"]["instant"][:10]))}</p><p>{esc(e["summary"])}</p></li>' for e in ordered)
+    cards = lambda rows: "".join(  # noqa: E731
+        f'<li><h3><a href="{esc(e["id"])}.html">{esc(e["name"])}</a></h3><p>{esc(date_words(e["facts"]["instant"][:10]))}</p><p>{esc(e["summary"])}</p></li>' for e in rows)
+    items = "".join(f'</ul>\n<h2>{esc(head)}</h2>\n<ul class="cards">' + cards([e for e in ordered if e["kind"] in kinds]) for head, kinds in INDEX_GROUPS
+                    if any(e["kind"] in kinds for e in ordered))[len("</ul>\n"):]
+    feeds = "".join(f'<li><a href="{f}">{esc(w)}</a></li>' for f, w in FEED_LINKS)
     body = ('<p class="eyebrow">Sky events</p>\n<h1>Sky events, with a link into the map at each moment</h1>\n'
             '<p class="lead">Every event here has a date computed or taken from an agency, what the Moon will do, what your place will see, and a link that opens the map at that moment.</p>\n'
-            f'<ul class="cards">{items}</ul>\n<p class="dim">Dates are computed with Astronomy Engine and checked by a person; a mission\'s date is its agency\'s. '
+            f'{items}</ul>\n<h2>Put them in your calendar</h2>\n'
+            "<p>Each event page has its own calendar file. To follow a whole kind, add one of these as a calendar subscription (in your calendar app, add a calendar from an address): "
+            "every entry links back to its page.</p>\n"
+            f'<ul class="tagcloud">{feeds}</ul>\n<p class="dim">Dates are computed with Astronomy Engine and checked by a person; a mission\'s date is its agency\'s. '
             "The sources are on each page.</p>\n")
     page = Page(path="events/index.html", title=short, description=desc, body=body, og_title=short)
     page.jsonld = [webpage(host, page, [("Sky events", "")], page_type="CollectionPage"),
@@ -544,6 +650,46 @@ def events_index(events: list[dict], host: str) -> Page:
                                                               for i, e in enumerate(ordered, start=1)]}]
     page.share = Spec(key="events/index", name="Sky events", number=f"{len(events)} dated events", caption="Space Radar", kind="plain", colour="#ffc28a",
                       alt="Rings and a dot, captioned Sky events.")
+    return page
+
+
+# --- the link-in-bio page (internal #106) ----------------------------------------------------------------------------
+
+LINKS_SHOWN = 6
+
+
+def lab_description(door: str) -> str:
+    """A Lab page's own meta description (what the door is), read from its file; "" when the file has none."""
+    m = re.search(r'<meta name="description" content="([^"]*)"', (ROOT / "site" / door).read_text(encoding="utf-8"))
+    return html_unescape(m.group(1)) if m else ""
+
+
+def links_page(host: str) -> Page:
+    """/links/: the last six Instagram posts, each with the page it shows, tagged ?from=ig-<id> (registry/link-in-bio.yaml)."""
+    doc = yml("link-in-bio.yaml")
+    posts = doc["posts"][:LINKS_SHOWN]
+    short = "Link in bio: open the latest posts in 3D"
+    desc = "The latest Space Radar Instagram posts, each with the simulator or trip it showed, to open and try in your browser. No account, no tracking."
+    cards = ""
+    for p in posts:
+        door = p["door"]
+        label = "Fly the trip" if door.startswith("t/") else "Open the simulator"
+        cards += (f'<li><h3 translate="no" lang="en">{esc(p["title"])}</h3>'
+                  f'<p translate="no" lang="en">{esc(lab_description(door) if door.startswith("lab/") else "")}</p>'
+                  f'<p><a class="btn btn--map" href="../{esc(door)}?from=ig-{esc(p["id"])}">{label}</a></p></li>')
+    insta = next(u for n, u in ACCOUNTS if n == "Instagram")
+    body = ('<p class="eyebrow">From Instagram</p>\n<h1>Open it in your browser</h1>\n'
+            '<p class="lead">Each post below was about something you can open and move yourself: no account, nothing to install.</p>\n'
+            f'<ul class="cards">{cards}</ul>\n'
+            '<h2>Or start from the whole map</h2>\n'
+            '<p><a class="btn btn--map" href="../?from=ig-map">Open the 3D map</a></p>\n'
+            f'<p class="dim">The posts are on <a href="{esc(insta)}" rel="me noopener">Instagram</a>. This page counts nothing about you: the tag after each address says only which post sent you here.</p>\n')
+    page = Page(path="links/index.html", title=short, description=desc, body=body, og_title=short, lastmod=str(doc["listed_on"]))
+    page.jsonld = [webpage(host, page, [("Link in bio", "")], page_type="CollectionPage"),
+                   {"@type": "ItemList", "itemListElement": [{"@type": "ListItem", "position": i, "name": p["title"],
+                                                               "url": url_of(host, p["door"])} for i, p in enumerate(posts, start=1)]}]
+    page.share = Spec(key="links/index", name="Open it in your browser", number=f"{len(posts)} latest posts", caption="Space Radar", kind="plain", colour="#ffc28a",
+                      alt="Rings and a dot, captioned Open it in your browser.")
     return page
 
 
@@ -1157,6 +1303,7 @@ def build_pages(host: str, objects: list[dict], today: str, snapshot_index: dict
     pages += iss_pages(iss, host, counts, snapshot_index)
     pages += [starlink_page(host, counts, slugs, today), satellites_page(host, counts, slugs), planets_page(host, today)]
     pages += [events_index(events, host)] + [event_page(e, host, tours) for e in events]
+    pages += [links_page(host)]
     pages += [about_page(host), sources_page(host, snapshot_index), accuracy_page(host),
               teachers_page(host, tours, yml("autopilot.yaml"), url_keys()), eyes_page(host), first_pr_page(host),
               privacy_page(host)]
@@ -1254,6 +1401,9 @@ def build_extra(out: Path, host: str, objects: list[dict], today: str, snapshot_
     shares = {k: s.rel for k, s in specs.items()} if drawn else {}
     ctx = make_ctx(host, shares)
     write_pages(pages, out, ctx)
+    # internal #105: the calendar files beside the event pages (scripts/seo_calendar.py); the deploy sends them as text/calendar.
+    events = sky_events()
+    seo_calendar.write(out, calendar_entries(events, host), str(events[0]["checked_on"]) + "T00:00:00Z")
     # b200-f1-find: begin -- the country pages are two directories down (scripts/seo_countries.py relink says why)
     for pg in pages:
         if pg.path.startswith("country/") and pg.path.count("/") == 2:
