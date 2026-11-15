@@ -32,8 +32,8 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | rockets | 59 | 59 |
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
-| layers | 39 | 39 |
-| **all** | **1196** | **111 383** |
+| layers | 40 | 40 |
+| **all** | **1197** | **111 384** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -79,11 +79,11 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [EARTH_LIVE](#earth_live) *house* | 6 | `aurora.js`, `lightning.js`, `liveclouds.js`, `glyphs.js` | measured | - |
 | [GROUND_SITE](#ground_site) *house* | 6 | `models.js`, `glyphs.js` | measured | - |
 | [ODDITY](#oddity) *house* | 10 | `models.js`, `glyphs.js` | modelled | - |
-| [MIXED_LAYER](#mixed_layer) *house* | 15 | `layers.js`, `glyphs.js` | measured | - |
+| [MIXED_LAYER](#mixed_layer) *house* | 16 | `layers.js`, `glyphs.js` | measured | - |
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 1196 records: 374 measured, 457 modelled, 365 illustrative.
+Honesty over the 1197 records: 375 measured, 457 modelled, 365 illustrative.
 
 ## The classes
 
@@ -778,5 +778,5 @@ Honesty over the 1196 records: 374 measured, 457 modelled, 365 illustrative.
 - **Dates and filters:** As its members.
 - **Measured, modelled or reconstructed:** As its members.
 - **Rights:** As its members.
-- **Records (15):**
-  - layers (15): `worlds`, `deep-sky`, `exotics`, `extremes-more`, `pulsars`, `beyond-more`, `quasars`, `far-bodies`, `moons`, `companions`, `hand-kept-sites`, `observatories`, `launch-sites`, `landing-sites`, `meteor-showers`
+- **Records (16):**
+  - layers (16): `worlds`, `deep-sky`, `exotics`, `extremes-more`, `pulsars`, `beyond-more`, `quasars`, `far-bodies`, `moons`, `companions`, `pha`, `hand-kept-sites`, `observatories`, `launch-sites`, `landing-sites`, `meteor-showers`

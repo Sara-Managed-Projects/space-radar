@@ -2804,6 +2804,29 @@ checks, or not checkable. The 21 moons already on the map are untouched. Compani
 two with a complete orbit are placed by it; the nine moons of dwarf planets have a measured size, shape and lap, and a tilt and place that are not known to us
 (illustrative). No moon has a shape drawn: they are points, and the card says so.
 <!-- 0079 a3: end -->
+<!-- 2.1.0 pha: begin -->
+## 3p. Potentially hazardous asteroids — NASA/JPL Small-Body Database and Horizons (release 2.1.0)
+
+`site/data/pha.json`, written by `scripts/gen_pha.py` (it downloads to `~/.cache/spaceradar-src/pha/`; the raw pages are not committed), and
+`tests/fixtures/pha_horizons.json` (the check of the model against JPL). Loaded after the first visit, never at boot (`site/js/data/pha.js`).
+Credit line kept word for word: "Potentially hazardous asteroids: NASA/JPL Small-Body Database and Horizons".
+
+| What | Read from | Terms, and how far they were checked | Read |
+|---|---|---|---|
+| the asteroids flagged potentially hazardous (2 552): designation, name, the orbit at JD 2461200.5, absolute magnitude, diameter where measured, MOID, class, day of the last observation, data-arc quality | JPL Small-Body Database Query API, <https://ssd-api.jpl.nasa.gov/sbdb_query.api?sb-kind=a&sb-group=pha&full-prec=1> (`sb-group=pha`) | NASA/JPL work; the terms are those of 3o and §4.18 (`jpl-sbdb-neo`, `horizons-deep-space`): NASA content "generally are not subject to copyright in the United States" (<https://www.nasa.gov/nasa-brand-center/images-and-media/>, §4.20); JPL's own copyright page has NOT been read | 2026-11-15 |
+| the same solution's osculating elements at that epoch for the rows whose own epoch differs (`horizons` in the file) | JPL Horizons API (`EPHEM_TYPE=ELEMENTS`, centre the Sun, ecliptic J2000), <https://ssd.jpl.nasa.gov/api/horizons.api> | as above | 2026-11-15 |
+| the definition: an orbit within 0.05 au of the Earth's and absolute magnitude 22.0 or less (about 140 m at an albedo of 14 %) | NASA CNEOS, Near-Earth Object groups, <https://cneos.jpl.nasa.gov/about/neo_groups.html>: "all asteroids with an Earth Minimum Orbit Intersection Distance (MOID) of 0.05 au or less and an absolute magnitude (H) of 22.0 or less are considered PHAs" | as above | 2026-11-15 |
+| the check: heliocentric vectors of every 64th row on 15 November 2026 and 9 June 2027 | JPL Horizons API (`EPHEM_TYPE=VECTORS`) | as above | 2026-11-15 |
+
+**Not used: the Minor Planet Center's PHA.txt** (<https://minorplanetcenter.net/iau/MPCORB/PHA.txt>, 2 540 rows). It was read to compare counts (2 540 against JPL's 2 552
+on the same day), and nothing is copied: the MPC pages read on 2026-11-15 (`/iau/MPCORB.html`, `/about`) state no licence for the file. If the project owner gets the MPC's
+permission, the rest of internal #37 (the 1.58 million minor planets) can use its daily MPCORB.
+
+What is measured, modelled, illustrative: the orbits are JPL's (measured), carried from one epoch by two-body motion (modelled). The place is `inferred`: a close pass
+to a planet bends an orbit, so it drifts from JPL's with the months from the epoch, which `tests/test_pha.mjs` measures against Horizons (40 asteroids, 15 November 2026
+and 9 June 2027: the median miss is 0.0001 and 0.0004 au, the worst 0.0010 and 0.0044 au) and the card says ("position propagated from elements 69 days old"). No
+asteroid has a shape drawn: they are small marks, and the card says "the kind of thing, not this exact one".
+<!-- 2.1.0 pha: end -->
 <!-- 0079 r15-a45: begin -->
 ## 3n. Stars and beyond the Milky Way: the compact catalogues of release 1.5.0 (stages A4 and A5)
 

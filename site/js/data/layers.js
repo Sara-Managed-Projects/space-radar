@@ -1118,6 +1118,32 @@ export const LAYERS = [
   },
   // 0079 a3: end
   {
+    // Mirrors registry/layers.yaml `pha` (release 2.1.0, internal #37). The potentially hazardous asteroids of the JPL Small-Body
+    // Database, site/data/pha.json built into records by data/pha.js, which is fetched when the visitor ticks the box
+    // (main.js TICKED_LAYERS: the first minute has no bytes to spare). `noModel`: a model of the generic asteroid on 2 500 different rocks would be the one lie this layer
+    // could tell; the glyph is the honest drawing and the card says what is known of each.
+    id: 'pha',
+    display: 'Potentially hazardous asteroids',
+    klass: 'asteroid',
+    source: 'bundled',
+    parse: null,
+    fetchLazy: () => import('./pha.js').then((m) => m.fetchPha()),
+    propagator: 'kepler',
+    frame: 'sun-inertial',
+    moments: { wonder: false, now: false, next: false },
+    defaultOn: false,
+    select: all,
+    budget: { maxItems: 2700 },
+    colour: C.asteroid,
+    glyph: 'asteroid',
+    sizePx: 6,
+    noModel: true,
+    nearKm: 0,
+    card: 'asteroid',
+    priority: 62,
+    sentence: 'The 2 552 asteroids whose orbits come within 0.05 au of the Earth\u2019s and that are bigger than about 140 metres, each where it is today on JPL\u2019s orbit. A name for a size and an orbit, not a forecast.',
+  },
+  {
     id: 'comets',
     display: 'Comets',
     klass: 'comet',

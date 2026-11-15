@@ -156,6 +156,7 @@ domains:
       moons: {credit: "Moons: NASA/JPL Solar System Dynamics and Horizons", source: "site/data/moons.json"}
       companions: {credit: "Moons of asteroids and far worlds: NASA/JPL Small-Body Database and the papers named on each card", source: "site/data/companions.json"}
       # 0079 a3: end
+      pha: {credit: "Potentially hazardous asteroids: NASA/JPL Small-Body Database and Horizons", source: "site/data/pha.json"}
       hand-kept-sites: {credit: "Landing sites, dishes and pads: each row of `registry/sites.yaml` names its reference", source: registry/sites.yaml}
       lightning: {credit: "NOAA nowCOAST", source: "registry/weather.yaml earth-lightning"}
       earth-events: {credit: "Fires, volcanoes and sea ice: NASA EONET", source: "registry/weather.yaml earth-events"}
@@ -844,4 +845,4 @@ classes:
       drawn: "As its members."
       rights: "As its members."
     records:
-      - {domain: layers, ids: [worlds, deep-sky, exotics, far-bodies, hand-kept-sites, moons, companions, extremes-more, pulsars, beyond-more, quasars, observatories, launch-sites, landing-sites, meteor-showers]} # 0079 a3, r15-a45, a6
+      - {domain: layers, ids: [worlds, deep-sky, exotics, far-bodies, hand-kept-sites, moons, companions, pha, extremes-more, pulsars, beyond-more, quasars, observatories, launch-sites, landing-sites, meteor-showers]} # 0079 a3, r15-a45, a6
