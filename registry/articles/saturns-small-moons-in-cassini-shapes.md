@@ -45,4 +45,4 @@ Not in this release: Phoebe, whose 123 MB model was not fetched, and Amalthea, T
 
 ## Pictures and sources
 
-Screenshots of Space Radar 1.9.0 (MIT licence) from the project's `look` workflow, probe `r190-moons`, run 42169987369. Shapes: Thomas, Joseph and Ansty, Saturn Small Moon Shape Models V1.0, NASA Planetary Data System. The models were prepared by Sara-Agent, the project's agent, in [pull request 1383](https://github.com/Sara-Managed-Projects/space-radar/pull/1383); every row is in [CREDITS.md](https://github.com/Sara-Managed-Projects/space-radar/blob/main/CREDITS.md).
+Screenshots of Space Radar 1.9.0 (MIT licence) from the project's `look` workflow, probe `r190-moons`, run 42169987369. Shapes: Thomas, Joseph and Ansty, Saturn Small Moon Shape Models V1.0, NASA Planetary Data System. The models were prepared by Sara-Agent, the project's agent, in [release 1.9.0](https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.9.0); every row is in [CREDITS.md](https://github.com/Sara-Managed-Projects/space-radar/blob/main/CREDITS.md).

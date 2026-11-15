@@ -47,4 +47,4 @@ Agencies publish the size of an antenna far more often than the size of a bus. F
 
 ## Pictures and sources
 
-Screenshots of Space Radar 1.9.0 (MIT licence) from the project's `look` workflow, probe `model`, run 42169991360. Dimensions: ISRO, JAXA, CNES, the CSA, ASI and eoPortal, listed per craft in `registry/models.yaml`. The models were built by Sara-Agent, the project's agent, in [pull request 1383](https://github.com/Sara-Managed-Projects/space-radar/pull/1383) from public requests #959, #961, #970, #980, #981 and #997; every row is in [CREDITS.md](https://github.com/Sara-Managed-Projects/space-radar/blob/main/CREDITS.md).
+Screenshots of Space Radar 1.9.0 (MIT licence) from the project's `look` workflow, probe `model`, run 42169991360. Dimensions: ISRO, JAXA, CNES, the CSA, ASI and eoPortal, listed per craft in `registry/models.yaml`. The models were built by Sara-Agent, the project's agent, in [release 1.9.0](https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.9.0) from public requests #959, #961, #970, #980, #981 and #997; every row is in [CREDITS.md](https://github.com/Sara-Managed-Projects/space-radar/blob/main/CREDITS.md).

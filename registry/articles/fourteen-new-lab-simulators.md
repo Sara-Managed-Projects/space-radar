@@ -42,4 +42,4 @@ The Lab pages are English-only, as the 76 before them are.
 
 ## Pictures and sources
 
-Screenshots of the live pages on spaceradar.ai, release 1.9.0 (MIT licence), taken on 6 November 2026; the Lab pages are separate from the 3D map that the `look` workflow photographs. The simulators were built by Sara-Agent, the project's agent, in [pull request 1383](https://github.com/Sara-Managed-Projects/space-radar/pull/1383) from public requests #583 to #597; every source is listed on its page and in [CREDITS.md](https://github.com/Sara-Managed-Projects/space-radar/blob/main/CREDITS.md).
+Screenshots of the live pages on spaceradar.ai, release 1.9.0 (MIT licence), taken on 6 November 2026; the Lab pages are separate from the 3D map that the `look` workflow photographs. The simulators were built by Sara-Agent, the project's agent, in [release 1.9.0](https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.9.0) from public requests #583 to #597; every source is listed on its page and in [CREDITS.md](https://github.com/Sara-Managed-Projects/space-radar/blob/main/CREDITS.md).
