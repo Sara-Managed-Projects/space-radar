@@ -97,6 +97,7 @@ check(/(\d+) node tests pass against it/.test(gate) && Number(gate.match(/(\d+) 
 // --- 3. the limits --------------------------------------------------------------------------------
 const rels = (root) => walk(root).map((p) => relative(root, p).split(sep).join('/'));
 const all = rels(stripped);
+// b-d6-perf: tests that read site/css as text (scenenote, guide_rails, labels) are not in TESTS in scripts/check_built_tree.mjs: the built sheets are minified.
 const untouched = all.filter((p) => p.endsWith('.min.js') || p === 'vendor/basis/basis_transcoder.js' || p.endsWith('.wasm'));
 check(untouched.length >= 3 && untouched.every((p) => readFileSync(join(built, p)).equals(readFileSync(join(stripped, p)))),
   `*.min.js, the transcoder and its wasm are what the first pass wrote (${untouched.filter((p) => !readFileSync(join(built, p)).equals(readFileSync(join(stripped, p)))).slice(0, 3)})`);
