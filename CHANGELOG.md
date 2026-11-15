@@ -50,7 +50,6 @@ tagged, and their dates are the day the last change in each landed.
 ### Changed
 
 - **The Hazardous asteroids layer has its name and sentence in all eleven languages.** They sit in `copy/en.js` (`controls.layerName`, `controls.layerSentence`) like the layers' other words, and the What to show row reads them.
-- **A desktop standing on a landing site sees the near ground at 4 m spacing, where it was 8 m.** The sun's shadow is cast from a thinner copy of that centre, so the shadow pass is no heavier than before (`scene/groundlod.js`).
 - **Landing-site ground draws far fewer triangles.** The measured terrain of Hadley, Jezero, Gale and the other ground stops is
   cut into blocks that grow coarser with distance and are thrown out when out of view, so a stop draws about 60 000 to
   85 000 triangles a frame (it was 410 000 and more at Hadley), on a phone as on a desktop. Heights are only subsampled

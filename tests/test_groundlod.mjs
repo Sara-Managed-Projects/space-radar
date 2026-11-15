@@ -9,9 +9,8 @@
 //     between two measured posts); no height is smoothed.
 //   THE COUNT, from the eight real sites: the most triangles a frame can draw with the camera throwing out nothing (every block
 //     once, the shadow map's blocks twice) is under triangles_per_stop (100 000) at tier 0, the phone and the latch's fallback,
-//     and a fraction of what the whole-grid mesh drew (393 000 and more at Hadley); tier 1 (a desktop) has its centre at 4 m
-//     where the phone's is 8 m, the finest blocks casting the sun's shadow from a thinner copy, and is under the row too, the camera's
-//     culling doing the rest (CI's trips job reads the real number; tests/probes/look/ground-lod.js the drawn one).
+//     and a fraction of what the whole-grid mesh drew (393 000 and more at Hadley); tier 1 stays near the row, the camera's
+//     culling doing the rest (CI's trips job reads the real number).
 //   WIRING: the stage cuts the ground with planGround and draws blocks; nothing at boot imports the module.
 //
 //   node tests/test_groundlod.mjs
@@ -124,14 +123,6 @@ const { BUDGETS } = await load('data/budgets.js');
     most0 = Math.max(most0, w0.total); most1 = Math.max(most1, w1.total);
     check(w0.total < BUDGETS.triangles_per_stop, `${g.id} at tier 0: at most ${w0.total} triangles a frame (${w0.near} near, ${w0.shadow} in the shadow map, ${w0.far} far), under triangles_per_stop (${BUDGETS.triangles_per_stop})`);
     check(w1.total < BUDGETS.triangles_per_stop, `${g.id} at tier 1: at most ${w1.total} triangles before the camera throws any out`);
-    // The desktop's centre is at 4 m (stride 2), the phone's at 8 m; the sun's depth pass is no heavier than at tier 0 because the
-    // finest blocks cast from a thinner copy of themselves.
-    const p1c = L.planGround(m, 1), p0c = L.planGround(m, 0);
-    check(p1c.nearBlocks.filter((b) => b.d < 2).length === 4 && p1c.nearBlocks.filter((b) => b.d < 2).every((b) => b.stride === 2), `${g.id}: tier 1's centre four blocks are 4 m apart`);
-    check(p0c.nearBlocks.filter((b) => b.d < 2).every((b) => b.stride === 4), `${g.id}: tier 0's centre stays 8 m apart`);
-    check(w1.shadow <= w0.shadow, `${g.id}: the sun's depth pass at tier 1 (${w1.shadow}) is no heavier than at tier 0 (${w0.shadow})`);
-    check(p1c.nearBlocks.filter(L.isFine).length === 4 && p0c.nearBlocks.filter(L.isFine).length === 0, `${g.id}: only the tier 1 centre casts from a copy`);
-    check(L.shadowBlock(p1c.nearBlocks.find((b) => b.d < 2)).stride === L.SHADOW_STRIDE && L.shadowBlock(p0c.nearBlocks[0]) === p0c.nearBlocks[0], `${g.id}: a fine block's copy is at SHADOW_STRIDE; a coarser block is its own`);
     // The coarse blocks are joined into few meshes (draw calls), with no triangle lost.
     const p1 = L.planGround(m, 1);
     const grps = L.groupBlocks(p1.nearBlocks, L.MERGE_FROM.near);
@@ -150,7 +141,6 @@ const { BUDGETS } = await load('data/budgets.js');
 {
   const stage = readFileSync(join(JS, 'scene/groundstage.js'), 'utf8');
   check(/from '\.\/groundlod\.js'/.test(stage) && /planGround\(manifest, t\)/.test(stage) && /blockArrays\(/.test(stage), 'the stage cuts the ground with planGround and draws blocks');
-  check(/shadowBlock/.test(stage) && /castShadow = false/.test(stage), 'the stage lets a fine block cast from its thinner copy');
   const main = readFileSync(join(JS, 'main.js'), 'utf8');
   check(!/groundlod/.test(main), 'main.js does not import the levels at boot');
 }
