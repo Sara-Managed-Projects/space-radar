@@ -743,7 +743,15 @@ export function rightNowRows(record, m, passInfo) {
     // Worked out from its brightness and colour (scene/stars3d.js starPhysical), and it says so:
     // the same number the disc on the scene is drawn from.
     const width = pickNumber(md, 'widthSuns');
-    if (width !== null && width > 0) rows.push([R.starWidth, t(md.widthFrom === 'measured' ? V.sunsWideMeasured : V.sunsWide, { n: fmt.smart(width) })]);
+    // A star an interferometer has measured to be flattened by its spin (internal #276): the width is the equator's, the poles are
+    // narrower, and the equator is cooler (gravity darkening). The temperatures are a model fitted to the images, and the row says so.
+    const rot = md.widthFrom === 'measured' && md.rotator && Number(md.rotator.polar_radius_suns) > 0 ? md.rotator : null;
+    if (width !== null && width > 0) rows.push([rot ? R.starWidthEq : R.starWidth, t(md.widthFrom === 'measured' ? V.sunsWideMeasured : V.sunsWide, { n: fmt.smart(width) })]);
+    if (width !== null && width > 0 && rot) {
+      rows.push([R.starWidthPole, t(V.sunsWideMeasured, { n: fmt.smart(Number(rot.polar_radius_suns)) })]);
+      const to100 = (k) => fmt.int(Math.round(Number(k) / 100) * 100);
+      rows.push([R.starSpin, t(V.starSpinShape, { pole: to100(rot.teff_pole_k), eq: to100(rot.teff_eq_k) })]);
+    }
     const widthSource = pick(md, 'widthSource');
     if (width !== null && width > 0 && md.widthFrom === 'measured' && widthSource) rows.push([R.widthSource, String(widthSource)]);
     const hip = pick(md, 'hip');

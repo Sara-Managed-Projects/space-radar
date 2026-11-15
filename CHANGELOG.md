@@ -13,6 +13,13 @@ tagged, and their dates are the day the last change in each landed.
 
 ### Added
 
+- **Fast-spinning stars are drawn flattened.** Vega, Altair, Regulus and Rasalhague, which interferometers have measured to bulge
+  at the equator, are drawn as flattened discs, turned as their spin axis is in the sky (the paper's inclination and position
+  angle), and darker and redder at the equator than at the poles (gravity darkening). Their cards now give the width across the
+  equator and from pole to pole, and a Spin line says the temperatures are a model fitted to the images. Widths and angles are each
+  paper's (Monnier 2012, Bouchaud 2019, Che 2011, Zhao 2009); between the pole and the equator the shape is a spheroid, up to 4 %
+  of the radius off the papers' Roche surfaces (Regulus, the fastest). Regulus's and Rasalhague's widths now come from those
+  imaging papers (4.21 and 2.871 Suns across the equator). Achernar, Alderamin and Caph are not drawn this way yet.
 - **More sky events, with calendar files.** `/events/` now has a page for every full Moon to May 2028 (its computed time and
   distance, and the traditional name), three lunar eclipses, two close meetings of planets (Venus with Saturn and with Mars),
   and five more meteor showers of 2027. Each event page has an "Add to your calendar" file with a reminder the day before, and

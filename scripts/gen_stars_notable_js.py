@@ -19,11 +19,15 @@ from _genmirror import Mirror, pick  # noqa: E402
 
 # `source` reaches the phone because the card prints it beside the line: a claim on a card says
 # where it was read, as an exotic's fact sheet does.
-FIELDS = ("hip", "proper", "name", "why", "source", "radius_suns", "radius_err_suns", "teff_k", "teff_err_k", "physical_source", "mag", "spect")
+FIELDS = ("hip", "proper", "name", "why", "source", "radius_suns", "radius_err_suns", "teff_k", "teff_err_k", "physical_source", "rotator", "mag", "spect")
 
 
 def render(doc: dict) -> list:
     rows = [pick(r, FIELDS) for r in doc.get("stars") or [] if isinstance(r, dict)]
+    # The paper's table (`rotator.note`) and the model's name are for the reviewer who reads the YAML; the phone does not draw from them.
+    for r in rows:
+        if isinstance(r.get("rotator"), dict):
+            r["rotator"] = {k: v for k, v in r["rotator"].items() if k not in ("note", "model")}
     return [("Famous stars, one line each on why, with the page it was read from.", "STARS_NOTABLE", rows)]
 
 

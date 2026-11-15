@@ -1281,6 +1281,9 @@ export const COPY = {
       // `source`: on a star card every other row is HYG's, and "Read from" would claim them too.
       whySource: 'Why it is known, read from',
       widthSource: 'Width read from',
+      starWidthEq: 'Width across the equator',
+      starWidthPole: 'Width pole to pole',
+      starSpin: 'Spin',
       distanceNote: 'About that distance',
       objectType: 'What it is',
       constellation: 'Constellation',
@@ -1370,6 +1373,7 @@ export const COPY = {
       sunsWide: '{n}× the Sun, estimated',
       // A width an interferometer measured (registry/stars-notable.yaml carries the paper).
       sunsWideMeasured: '{n}× the Sun, measured',
+      starSpinShape: 'Flattened by fast spin: poles about {pole} K, equator about {eq} K (a model fitted to telescope images)',
       earths: '{n}× Earth',
       // A planet's radius: "0.92× Earth" did not say what was 0.92 (internal #290).
       earthsWide: '{n}× Earth’s width',
