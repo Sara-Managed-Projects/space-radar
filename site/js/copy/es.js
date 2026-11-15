@@ -3286,13 +3286,13 @@ export const COPY = {
   },
   deepOrion: {
     card: {
-      orion: "Su luz procede de la fotografía de ESO y su forma está reconstruida según Wen y O’Dell (1995) y O’Dell (2001): una fina capa luminosa en la cara cercana de una nube oscura, con el Trapecio unos 0.2 pársecs delante de ella. Aún no revisado por un astrónomo."
+      orion: "Una capa fina y brillante de gas en la cara cercana de una nube oscura, iluminada por las estrellas del Trapecio. Su luz está tomada de la fotografía de ESO y su forma está reconstruida a partir de Wen y O’Dell (1995) y O’Dell (2001), con el Trapecio a unos 0.65 años luz por delante de la capa. Aún no revisada por un astrónomo."
     },
     rows: {
       "dso-m42": [
         [
           "Su forma en profundidad",
-          "Reconstruida. Cerca del Trapecio es medida: la capa luminosa está unos 0.2 pársecs detrás de su estrella más brillante. Más lejos, la profundidad sigue la imagen publicada de un cuenco que se abre hacia nosotros, no una medición."
+          "Reconstruido. Cerca del Trapecio está medido: la capa brillante queda a unos 0.65 años luz por detrás de su estrella más brillante. Más lejos, la profundidad sigue la imagen publicada de un cuenco que se abre hacia nosotros, no una medición."
         ],
         [
           "Detrás de ella",
@@ -4580,6 +4580,63 @@ Object.assign(COPY, {
 });
 // b200-f2-worlds: end
 
+// 2.0.x (internal #300, #302, #303): the glossary's star and deep-sky words (glossaryMore), the paragraphs of the Sun, Moon and planets, and the planets' lead lines. es: machine-drafted
+// like the rest of this file (docs/TRANSLATING.md). A key this file already has is left as it is.
+{
+  const topUp = (dst, src) => {
+    for (const k of Object.keys(src)) {
+      if (src[k] && typeof src[k] === 'object' && !Array.isArray(src[k]) && dst[k] && typeof dst[k] === 'object') topUp(dst[k], src[k]);
+      else if (!(k in dst)) dst[k] = src[k];
+    }
+  };
+  topUp(COPY, {
+    "glossaryMore": {
+      "black hole": "Un lugar donde la gravedad es tan fuerte que nada puede salir, ni siquiera la luz. No es un agujero, sino mucha materia apretada en un espacio pequeño.",
+      "neutron star": "Lo que puede dejar una estrella masiva cuando muere: más que la masa del Sol comprimida en una bola tan ancha como una ciudad.",
+      "pulsar": "Una estrella de neutrones que gira rápido y lanza haces de luz como un faro. Vemos un destello cada vez que un haz pasa por encima de nosotros.",
+      "white dwarf": "El núcleo caliente que queda cuando una estrella como el Sol ha soltado sus capas externas. Es más o menos tan grande como la Tierra, no produce calor nuevo y se enfría poco a poco.",
+      "brown dwarf": "Un objeto demasiado grande para ser un planeta y demasiado pequeño para brillar como una estrella: de unas 13 a 80 veces la masa de Júpiter. Casi no da luz visible.",
+      "nebula": "Una nube de gas y polvo en el espacio. Algunas brillan, otras tapan las estrellas que tienen detrás, y en algunas se están formando estrellas nuevas.",
+      "galaxy": "Una enorme familia de estrellas, gas y polvo unidos por la gravedad. La nuestra, la Vía Láctea, es una espiral de más de 100 000 años luz de ancho.",
+      "globular cluster": "Una bola de decenas de miles a millones de estrellas muy juntas por la gravedad, más densa en el centro.",
+      "habitable zone": "El margen de distancias a una estrella donde un planeta podría tener agua líquida en la superficie. Dice que allí podría ser posible la vida, no que viva alguien.",
+      "exoplanet": "Un planeta que gira alrededor de una estrella que no es el Sol.",
+      "redshift": "Luz estirada hacia ondas más largas y más rojas, porque su fuente se aleja o el espacio se estiró por el camino. En las galaxias lejanas, más corrimiento al rojo significa más lejos.",
+      "supernova": "La explosión de una estrella al final de su vida, o de una enana blanca. Durante unas semanas puede brillar tanto como una galaxia entera.",
+      "light curve": "Un gráfico de cuánto brilla algo a lo largo del tiempo. Un pulso o una caída puede mostrar una estrella que se hincha y se encoge, o algo que pasa por delante."
+    },
+    "worldAbout": {
+      "about": {
+        "sun": "El Sol es una estrella: una bola de gas muy caliente y brillante, sobre todo hidrógeno y helio, de unos 4.5 mil millones de años. Es unas 100 veces más ancho que la Tierra. Su núcleo está a unos 15 millones de grados Celsius, lo bastante caliente para la fusión nuclear, y la energía que sale de él es de la que depende casi toda la vida de la Tierra. Su gravedad mantiene unido todo el sistema solar.",
+        "moon": "La Luna es el único satélite natural de la Tierra, de menos de un tercio de su ancho. Es una bola de roca llena de cráteres, a unos 384 000 km de distancia de media. Da una vuelta a la Tierra en unos 27 días y gira sobre sí misma una vez en el mismo tiempo, así que siempre vemos la misma cara. Las manchas oscuras son llanuras de lava antigua. Es el único mundo más allá de la Tierra que las personas han visitado hasta ahora.",
+        "mercury": "Mercurio es el planeta más pequeño y el más cercano al Sol, solo un poco más grande que la Luna. Su suelo rocoso está lleno de cráteres. Casi no tiene aire que retenga el calor, así que pasa de unos 430 °C de día a unos menos 180 °C de noche. Da una vuelta al Sol en 88 días, más rápido que cualquier otro planeta.",
+        "venus": "Venus es casi del tamaño de la Tierra: 12 104 km de ancho, frente a 12 756. Su aire espeso es sobre todo dióxido de carbono, con nubes de ácido sulfúrico, y retiene el calor. El suelo está a unos 467 °C, más caliente que Mercurio y lo bastante para fundir el plomo, y el aire presiona sobre él unas 93 veces más fuerte que en la Tierra. Venus gira despacio y al revés: una vuelta dura 243 días terrestres, más que su año de 225.",
+        "earth": "La Tierra es el único lugar que sabemos que tiene seres vivos. Es el único planeta con agua líquida en la superficie, y la mayor parte está cubierta por océano. Una vuelta sobre sí misma dura 23.9 horas y una vuelta al Sol 365.25 días, por eso añadimos un día bisiesto cada cuatro años. La luz del Sol tarda unos ocho minutos en llegar aquí.",
+        "mars": "Marte es un desierto frío y polvoriento, más o menos la mitad de ancho que la Tierra. El hierro de sus rocas y de su polvo se ha oxidado, y por eso se ve rojo. Tiene el volcán más grande del sistema solar, el Olympus Mons, y un sistema de cañones, Valles Marineris, más de diez veces más largo y más ancho que el Gran Cañón. Antes fluían allí ríos y lagos; ahora el aire es delgado y su agua es hielo o muy salada.",
+        "jupiter": "Júpiter es el planeta más grande: 11 veces más ancho que la Tierra, con espacio para unas mil Tierras dentro. Es sobre todo hidrógeno y helio, y no tiene suelo sólido donde pisar. Sus franjas son nubes frías y ventosas de amoníaco y agua. La Gran Mancha Roja es una tormenta más ancha que la Tierra que la gente observa desde hace más de 300 años. Una vuelta sobre sí mismo dura solo 9.9 horas, el día más corto de todos los planetas.",
+        "saturn": "Saturno es una bola formada sobre todo de hidrógeno y helio, 9 veces más ancha que la Tierra. Sus anillos son miles de millones de trozos de hielo y roca, desde granos de polvo hasta bloques grandes como casas. Se extienden unos 282 000 km, pero suelen tener solo unos 10 metros de grosor. Saturno es el único planeta menos denso que el agua, así que una bañera lo bastante grande lo haría flotar.",
+        "uranus": "Urano es un gigante helado cuatro veces más ancho que la Tierra, descubierto en 1781 por William Herschel con un telescopio. Casi todo él es un fluido caliente y denso de agua, metano y amoníaco. El metano de su aire absorbe la luz roja, y eso le da un color azul verdoso. Está inclinado unos 98 grados, así que rueda alrededor del Sol de lado, y cada polo pasa unos 21 años de invierno oscuro.",
+        "neptune": "Neptuno es un gigante helado cuatro veces más ancho que la Tierra, y el único planeta que no se puede ver a simple vista. Allí el mediodía es tan tenue como nuestro crepúsculo. Un año dura unos 165 años terrestres. Se encontró en 1846 primero con cálculos: Urbain Le Verrier calculó dónde debía estar a partir del extraño movimiento de Urano, y Johann Galle lo vio la primera noche que lo buscó."
+      },
+      "source": "NASA Science, {page} (science.nasa.gov/{path}/), leído el 15 de noviembre de 2026"
+    },
+    "templates": {
+      "world": {
+        "what": {
+          "earth": "el tercer planeta desde el Sol, el único mundo que sabemos que tiene vida",
+          "mercury": "el planeta más pequeño, y el más cercano al Sol",
+          "venus": "el segundo planeta desde el Sol, casi del tamaño de la Tierra",
+          "mars": "el cuarto planeta desde el Sol, un mundo desértico y frío",
+          "jupiter": "el quinto planeta desde el Sol, y el más grande de todos",
+          "saturn": "el sexto planeta desde el Sol, famoso por sus anillos",
+          "uranus": "el séptimo planeta desde el Sol, inclinado de lado",
+          "neptune": "el octavo planeta desde el Sol, y el más lejano"
+        }
+      }
+    }
+  });
+}
+
 export const GLOSSARY = {
   orbit: "Un camino alrededor de algo, sostenido por la gravedad. Si vas lo bastante rápido de lado, sigues cayendo al lado de la Tierra en lugar de caer sobre ella.",
   "low Earth orbit": "La capa concurrida de unos 200 a 2 000 km de altura. Aquí están la estación, la mayoría de los satélites y la mayor parte de la basura.",
@@ -4935,7 +4992,7 @@ Object.assign(COPY, {
     "measured": "Medido: las magnitudes fechadas del Gran Oscurecimiento. Elementos: {cite}.",
     "modelled": "Modelado: la forma se dibuja a partir del período, la época y el rango del catálogo ({cite}).",
     "notes": {
-      "alf-ori": "En 2019 y 2020 bajó a magnitud 1.6, el Gran Oscurecimiento: una nube de polvo que había expulsado ocultó parte de ella.",
+      "alf-ori": "En 2019 y 2020 se atenuó hasta la magnitud 1.6, la Gran Atenuación: una nube de polvo que había expulsado tapó parte de ella. Los 6.4 años de arriba son su ciclo largo y lento; el pulso que conocen la mayoría de los observadores dura unos 400 días.",
       "omi-cet": "Los máximos de Mira llegan semanas antes o después de un ciclo a otro; estas fechas pueden desviarse otro tanto.",
       "bet-lyr": "Su período crece 19 segundos al año; la curva sigue la efeméride cuadrática de Harmanec y Scholz (1993).",
       "bet-per": "Los eclipses de Algol son puntuales al minuto: se debilita unas diez horas cada 2.87 días.",

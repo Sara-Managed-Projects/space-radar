@@ -53,7 +53,7 @@ Object.assign(COPY, {
     measured: 'Measured: the dated magnitudes of the Great Dimming. Elements: {cite}.',
     modelled: 'Modelled: the shape is drawn from the catalogue’s period, epoch and range ({cite}).',
     notes: {
-      'alf-ori': 'In 2019 and 2020 it faded to magnitude 1.6, the Great Dimming: a cloud of dust it had thrown off hid part of it.',
+      'alf-ori': 'In 2019 and 2020 it faded to magnitude 1.6, the Great Dimming: a cloud of dust it had thrown off hid part of it. The 6.4 years above is its long, slow cycle; the pulse most observers know is about 400 days.',
       'omi-cet': 'Mira’s maxima come weeks early or late from one cycle to the next, so these dates can be out by that much.',
       'bet-lyr': 'Its period grows by 19 seconds a year; the curve follows the quadratic ephemeris of Harmanec and Scholz (1993).',
       'bet-per': 'Algol’s eclipses keep to the minute: it fades for about ten hours every 2.87 days.',

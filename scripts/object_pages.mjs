@@ -42,6 +42,7 @@ const C = await import(join(JS, 'ui/cards.js'));
 const SRC = await import(join(JS, 'data/sources.js'));
 const { recordsFromNames } = await import(join(JS, 'scene/stars3d.js'));
 const { COPY, fmt } = await import(join(JS, 'copy/en.js'));
+await import(join(JS, 'copy/en.cards.js')); // the Sun, Moon and planets' own paragraphs (COPY.worldAbout, internal #302)
 const { SYSTEMS } = await import(join(JS, 'data/systems.js'));
 const { buildMoons } = await import(join(JS, 'data/moons.js'));
 const { WIKI_TITLES } = await import(join(JS, 'data/wikititles.js'));

@@ -25,6 +25,7 @@
 
 import { COPY, GLOSSARY, t, timeText } from '../copy/en.js';
 import '../copy/en.later.js';
+import '../copy/en.cards.js'; // the star and deep-sky words (COPY.glossaryMore, internal #300); this file is fetched when the row opens
 import { klassOf, drawnNow, positionKey, pictureIsIllustrative } from './cardfacts.js';
 import { drawnOf, DRAWN_CLASSES } from '../data/deepsky.js';
 
@@ -58,8 +59,11 @@ export function takenWords(taken) {
 }
 
 /** The glossary the legend draws on: copy/en.js GLOSSARY and the deep sky's five (r12Truth.glossary). */
+// Words that send a card's reader to a term the plain plural rule would miss (internal #300).
+const PLURALS = { galaxy: ['galaxies'], nebula: ['nebulae'], supernova: ['supernovae'] };
+
 export function glossaryList() {
-  const out = Object.entries(GLOSSARY).map(([term, say]) => ({ term, say, match: [] }));
+  const out = [...Object.entries(GLOSSARY), ...Object.entries(COPY.glossaryMore || {})].map(([term, say]) => ({ term, say, match: PLURALS[term] || [] }));
   for (const g of COPY.r12Truth.glossary) out.push({ term: g.term, say: g.say, match: g.match || [] });
   return out;
 }

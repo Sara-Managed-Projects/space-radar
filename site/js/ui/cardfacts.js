@@ -440,6 +440,12 @@ export const NOTE_KLASSES = new Set(['probe', 'telescope', 'asteroid', 'debris']
 export function whyLine(record) {
   if (!record) return null;
   const klass = klassOf(record);
+  // The ten bodies with a paragraph of our own (copy/en.cards.js worldAbout, internal #302). The words come with that file, so
+  // before it is fetched the card has none and the section that shows them fetches it (ui/cards.js).
+  if (klass === 'world') {
+    const about = COPY.worldAbout && COPY.worldAbout.about[String(record.id || '').toLowerCase()];
+    if (about) return String(about).trim() || null;
+  }
   // A line that NAMES WHERE IT WAS READ (`whySource`) is printed whatever the class: the far-bodies
   // rows (data/sample.js farBodies), filed as asteroids and one comet, whose `why` is one sourced
   // sentence each. It is `why` there and not `note` because `why` is also what makes a record worth

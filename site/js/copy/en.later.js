@@ -1541,6 +1541,15 @@ Object.assign(COPY, {
       // fit after it inside the card's 160 characters.
       leadWhat: '{name} is {what}',
       what: {
+        // The planets (internal #302), each from its NASA Science page (registry/worlds.yaml `facts.what`).
+        earth: 'the third planet from the Sun, the one world we know has life',
+        mercury: 'the smallest planet, and the closest to the Sun',
+        venus: 'the second planet from the Sun, nearly Earth’s size',
+        mars: 'the fourth planet from the Sun, a cold desert world',
+        jupiter: 'the fifth planet from the Sun, and the biggest of all',
+        saturn: 'the sixth planet from the Sun, famous for its rings',
+        uranus: 'the seventh planet from the Sun, tipped on its side',
+        neptune: 'the eighth planet from the Sun, and the farthest',
         pluto: 'a dwarf planet beyond Neptune, counted as the ninth planet until 2006',
         io: 'one of Jupiter’s four big moons, and the most volcanic world in the solar system',
         europa: 'one of Jupiter’s four big moons, with a salt-water ocean under its ice',
@@ -1838,12 +1847,12 @@ Object.assign(COPY, {
     // The hero's own source, after the honesty line (ui/cardfacts.js honestyClause reads `card[heroId]` from the
     // blocks it lists; until 'deepOrion' is among them the rows below carry the same news).
     card: {
-      orion: 'Its light is taken from ESO’s photograph, its shape reconstructed after Wen and O’Dell (1995) and O’Dell (2001): a thin glowing layer on the near face of a dark cloud, the Trapezium about 0.2 parsecs in front of it. Not yet reviewed by an astronomer.',
+      orion: 'A thin glowing layer of gas on the near face of a dark cloud, lit by the Trapezium stars. Its light is taken from ESO’s photograph and its shape is reconstructed after Wen and O’Dell (1995) and O’Dell (2001), with the Trapezium about 0.65 light-years in front of the layer. Not yet reviewed by an astronomer.',
     },
     // Rows under "Distance found by" on the card (ui/cardfacts.js, stage c's `rows` hook).
     rows: {
       'dso-m42': [
-        ['Its shape in depth', 'Reconstructed. Near the Trapezium it is measured: the glowing layer lies about 0.2 parsecs behind its brightest star. Farther out the depth follows the published picture of a bowl opening toward us, not a measurement.'],
+        ['Its shape in depth', 'Reconstructed. Near the Trapezium it is measured: the glowing layer lies about 0.65 light-years behind its brightest star. Farther out the depth follows the published picture of a bowl opening toward us, not a measurement.'],
         ['Behind it', 'The dark molecular cloud the nebula is carved from. Seen from behind, the nebula is hidden in it.'],
         ['Review', 'This model has not yet been reviewed by an astronomer.'],
       ],

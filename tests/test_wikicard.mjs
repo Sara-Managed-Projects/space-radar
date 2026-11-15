@@ -95,9 +95,11 @@ const deps = (bakedBy = {}, liveBy = {}, links = {}, norad = {}) => ({
   norad: async () => norad,
 });
 const card = (t) => ({ t, u: `https://x/${t}`, x: `${t} words.` });
-let got = await W.articleFor({ id: 'mars', klass: 'world', name: 'Mars' }, 'de', deps({ de: { mars: card('Mars (Planet)') } }));
-assert.equal(got.card.t, 'Mars (Planet)'); assert.equal(got.lang, 'de'); assert.equal(got.baked, '2026-11-07'); assert.equal(got.fallback, false);
-got = await W.articleFor({ id: 'mars', klass: 'world', name: 'Mars' }, 'hi', deps({ en: { mars: card('Mars') } }));
+// The Sun, the Moon and the planets have a paragraph of our own (copy/en.cards.js worldAbout, internal #302): no Wikipedia block.
+assert.equal(await W.articleFor({ id: 'mars', klass: 'world', name: 'Mars' }, 'de', deps({ de: { mars: card('Mars (Planet)') } })), null, 'Mars has words of our own');
+let got = await W.articleFor({ id: 'pluto', klass: 'world', name: 'Pluto' }, 'de', deps({ de: { pluto: card('Pluto (Zwergplanet)') } }));
+assert.equal(got.card.t, 'Pluto (Zwergplanet)'); assert.equal(got.lang, 'de'); assert.equal(got.baked, '2026-11-07'); assert.equal(got.fallback, false);
+got = await W.articleFor({ id: 'pluto', klass: 'world', name: 'Pluto' }, 'hi', deps({ en: { pluto: card('Pluto') } }));
 assert.equal(got.lang, 'en'); assert.equal(got.fallback, true, 'baked in English only: the card says it is the English one');
 calls.length = 0;
 got = await W.articleFor(ngc, 'en', deps({}, { 'en:NGC_7000': card('North America Nebula') }));
