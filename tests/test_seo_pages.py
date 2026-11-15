@@ -185,7 +185,7 @@ ok(all(h in sat.hrefs for h in ("../o/international-space-station.html", "../o/h
    "the hub links the ISS, Hubble, Tiangong and Starlink")
 import seo_pages as _sp  # noqa: E402
 ok(f"{facts['starlink_objects']:,}" in star.plain and _sp.date_words(str(facts["as_of"])) in star.plain, "a Starlink count with its date, from the registry's fallback when the build has no index")
-ok("about 17,000" in sat.plain and re.search(r"<title>Live 3D satellite map: about 17,000 objects</title>", sat_html), "the hub says about 17,000, derived from the count")
+ok("about 17,000" in sat.plain and re.search(r"<title>Free live 3D map of the ISS and about 17,000 satellites</title>", sat_html), "the hub says about 17,000, derived from the count")
 ok(all(re.search(r"Source: [^<]+, read \d+ \w+ \d{4}", h) for h in (star_html, sat_html)), "both carry a dated source line")
 ok(in_map("starlink/index.html") and in_map("satellites/index.html"), "both are in the sitemap")
 ok("../?from=starlink-page-map#at=starlink" in star.hrefs and "../?from=starlink-page-trip#trip=tonight-from-your-street" in star.hrefs,
@@ -443,6 +443,16 @@ tracks = {m for m in re.findall(r"label%3Atrack%3A(\w+)", (ROOT / "docs" / "FIRS
 ok({t[0] for t in seo_pages.STARTER_TRACKS} <= tracks, "every track on the page is one docs/FIRST_PR.md lists")
 ok("AI coding agents" in first.plain and "GOVERNANCE.md" in first_html, "the page says who writes most commits, and links the governance page")
 ok(in_map("first-pull-request/index.html") and 'href="../first-pull-request/index.html"' in about_html, "in the sitemap, and /about/ links it")
+# --- moon phases, tides and orbits ----------------------------------------------------------------------
+sims_html = (BUILT / "moon-phases-tides-orbits" / "index.html").read_text(encoding="utf-8")
+sims = parse(BUILT / "moon-phases-tides-orbits" / "index.html")
+sim_slugs = [s for _, slugs in seo_pages.CLASSROOM_SIMS for s in slugs]
+ok(sims_html.count("<h1") == 1 and all(w in sims.plain for w in ("moon phases", "tides", "orbits")), "the simulators page: one H1, names moon phases, tides and orbits")
+ok(all((ROOT / "site" / "lab" / s / "index.html").is_file() and f'href="../lab/{s}/index.html"' in sims_html for s in sim_slugs),
+   "every simulator the page lists exists in site/lab/ and is linked")
+ok(f"has {len(sim_slugs)} small simulators" in sims.plain, "the count on the page is the count of the list")
+teach_html = (BUILT / "teachers" / "index.html").read_text(encoding="utf-8")
+ok(in_map("moon-phases-tides-orbits/index.html") and 'href="../moon-phases-tides-orbits/index.html"' in teach_html, "in the sitemap, and /teachers/ links it")
 
 dirty = []
 for f in pages + [BUILT / "404.html"]:
@@ -457,7 +467,7 @@ ok(not re.search(r"\{\{|\bTODO\b|\blorem\b", "".join(f.read_text(encoding="utf-8
 # b200-f9-reach: "assets", "creators" and the five comparisons (scripts/seo_reach.py, forge #165, #166, #168)
 # 2026-11-10: "privacy" is /privacy/, what the email updates keep (scripts/seo_pages.py privacy_page)
 import seo_reach  # noqa: E402
-ok((BUILT / "pages-dirs.txt").read_text(encoding="utf-8").split() == sorted({"about", "accuracy", "country", "events", "first-pull-request", "iss", "links", "nasa-eyes-alternative", "planets-tonight", "print", "privacy", "read", "satellites", "sources", "starlink", "teachers"}
+ok((BUILT / "pages-dirs.txt").read_text(encoding="utf-8").split() == sorted({"about", "accuracy", "country", "events", "first-pull-request", "iss", "links", "moon-phases-tides-orbits", "nasa-eyes-alternative", "planets-tonight", "print", "privacy", "read", "satellites", "sources", "starlink", "teachers"}
                                                                              | {"assets", "creators", *seo_reach.COMPARISONS}),
    "pages-dirs.txt lists the directories deploy.sh must ship")
 
@@ -506,7 +516,7 @@ with tempfile.TemporaryDirectory() as tmp:
     r = run("bash", "scripts/deploy.sh", "--bucket", "example-bucket", "--app-only", "--dry-run", env=env)
     calls = log.read_text(encoding="utf-8").splitlines() if log.is_file() else []
     ok(r.returncode == 0, f"deploy.sh --app-only --dry-run: {(r.stderr or r.stdout).strip().splitlines()[-1:]}")
-    for d in ("about", "accuracy", "events", "first-pull-request", "iss", "nasa-eyes-alternative", "planets-tonight", "read", "satellites", "sources", "starlink", "teachers"):
+    for d in ("about", "accuracy", "events", "first-pull-request", "iss", "moon-phases-tides-orbits", "nasa-eyes-alternative", "planets-tonight", "read", "satellites", "sources", "starlink", "teachers"):
         s = [c for c in calls if c.startswith("s3 sync") and f"s3://example-bucket/{d} " in c + " " and "text/calendar" not in c]  # events/'s .ics sync is held below
         ok(len(s) == 1 and "text/html" in s[0] and "max-age=0, must-revalidate" in s[0] and "--content-encoding" not in s[0] and "--delete" in s[0],
            f"{d}/ is synced as written, as HTML a browser revalidates on every load, with --delete")

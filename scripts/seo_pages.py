@@ -8,6 +8,7 @@
     /about/, /sources/, /accuracy/                          the trust pages, from the registries
     /teachers/index.html                                    for the classroom
     /first-pull-request/index.html                          for a first contribution
+    /moon-phases-tides-orbits/index.html                    the Lab simulators for moon phases, tides and orbits
     /support/index.html                                     where money for the project goes (only once registry/support.yaml names the fund)
     /o/<system>.html                                        the 40 star systems (scripts/seo_systems.py)
 
@@ -32,6 +33,7 @@ from __future__ import annotations
 
 import datetime as dt
 import functools
+import html as html_lib
 import json
 from html import unescape as html_unescape
 import re
@@ -285,8 +287,8 @@ def satellites_page(host: str, counts: dict, slugs: set) -> Page:
     n = counts["active"]
     day = date_words(counts["date"])
     approx = rounded_thousands(n)
-    short = f"Live 3D satellite map: {approx} objects"
-    desc = f"A live 3D map of {approx} satellites at their real positions, with the space station, Hubble, Tiangong and Starlink, free in a browser."
+    short = f"Free live 3D map of the ISS and {approx} satellites"
+    desc = f"Where the ISS and {approx} satellites are right now, on a free live 3D map in a browser: Hubble, Tiangong and Starlink at their real positions, no account."
     link = lambda slug, text: f'<li><a href="../o/{slug}.html">{text}</a></li>' if slug in slugs else ""  # noqa: E731
     body = (
         '<p class="eyebrow"><span class="dot" style="background:#9ec3ff"></span>Satellites</p>\n'
@@ -963,6 +965,56 @@ def first_pr_page(host: str) -> Page:
     return page
 
 
+# The Lab simulators that teach one of the three topics, by folder under site/lab/. The one-line answer is each
+# simulator's own description, read from its page at build time, so the two cannot disagree.
+CLASSROOM_SIMS = [
+    ("Moon phases and eclipses", ["moon-phases-from-above", "two-eclipses-one-geometry", "sun-and-moon-look-the-same-size", "venus-phases-galileos-proof"]),
+    ("Tides", ["two-tides-not-one", "the-moon-spins-to-match", "the-moon-drifts-away"]),
+    ("Orbits", ["kepler-equal-areas", "keplers-third-law-race", "orbit-zoo-height-sets-the-lap-time", "one-launch-four-orbit-shapes", "orbit-painter"]),
+]
+
+
+def lab_sim(slug: str) -> tuple[str, str]:
+    """A Lab simulator's name and one-line description, from its own page."""
+    html = (ROOT / "site" / "lab" / slug / "index.html").read_text(encoding="utf-8")
+    t = re.search(r"<title>([^<|]*)", html)
+    d = re.search(r'name="description" content="([^"]*)"', html)
+    if not t or not d:
+        raise SystemExit(f"seo_pages: site/lab/{slug}/index.html has no title or description to list")
+    return html_lib.unescape(t.group(1).strip()), html_lib.unescape(d.group(1).strip())
+
+
+def classroom_sims_page(host: str) -> Page:
+    """For a teacher looking for browser simulators of moon phases, tides and orbits: which Lab pages teach which."""
+    short = "Simulators for moon phases, tides and orbits, in a browser"
+    n = sum(len(slugs) for _, slugs in CLASSROOM_SIMS)
+    desc = (f"{n} free interactive simulators to teach moon phases, eclipses, tides and orbits. "
+            "Each opens in a browser, with no account, no install and no advertising.")
+    sections = ""
+    for topic, slugs in CLASSROOM_SIMS:
+        items = "".join(f'<li><a href="../lab/{esc(s)}/index.html">{esc(name)}</a>: {esc(line)}</li>'
+                        for s, (name, line) in ((s, lab_sim(s)) for s in slugs))
+        sections += f"<h2>{esc(topic)}</h2>\n<ul>{items}</ul>\n"
+    body = (
+        '<p class="micro">For teachers</p>\n<h1>Interactive simulators to teach moon phases, tides and orbits</h1>\n'
+        f'<p class="lead">The Space Radar Lab has {n} small simulators for these three topics. Each opens in a web browser on a phone, '
+        "tablet or computer, with no account, no install and no advertising, and each shows one idea you can change and watch.</p>\n"
+        '<div class="cta"><a class="live" href="../lab/index.html">Open the Lab</a><p>Every simulator, on one page.</p></div>\n'
+        f"{sections}"
+        "<h2>In a classroom</h2>\n"
+        "<p>Each simulator is one HTML file with no libraries, so it also runs from the offline copy described on "
+        '<a href="../teachers/index.html">the page for teachers</a>, in a room with poor or no internet. '
+        "The same page has present mode, a kiosk setup and five ten-minute lesson starters that use the 3D map.</p>\n"
+        "<h2>Other free simulators</h2>\n"
+        "<p>PhET at the University of Colorado Boulder has free simulations of gravity and orbits, and the University of "
+        "Nebraska-Lincoln's astronomy education pages (NAAP) have a lunar phase simulator. Many teachers use them alongside these.</p>\n")
+    page = Page(path="moon-phases-tides-orbits/index.html", title=short, description=desc, body=body, og_title=short)
+    page.jsonld = [webpage(host, page, [("For teachers", "teachers/index.html"), ("Moon phases, tides and orbits", "")])]
+    page.share = Spec(key="moon-phases-tides-orbits/index", name="Moon phases, tides and orbits", number=f"{n} simulators in a browser", caption="For teachers", kind="plain",
+                      colour="#ff9f43", alt="Rings and a dot, captioned Moon phases, tides and orbits.")
+    return page
+
+
 def sources_rows() -> list[dict]:
     return yml("sources.yaml")["sources"]
 
@@ -1087,6 +1139,38 @@ def accuracy_page(host: str) -> Page:
 
 # --- teachers ---------------------------------------------------------------------------------------------
 
+# PhET and Solar System Scope as each one's own pages said on this day; the section below names the day.
+OTHERS_READ = "9 November 2026"
+PHET_ABOUT = "https://phet.colorado.edu/en/about"
+PHET_SIMS = [("gravity-and-orbits", "Gravity and Orbits"), ("keplers-laws", "Kepler's Laws"), ("my-solar-system", "My Solar System")]
+SSS_HOME = "https://www.solarsystemscope.com/"
+SSS_EMBED = "https://www.solarsystemscope.com/embed"
+
+
+def teachers_compare() -> str:
+    """/teachers/'s part that answers the two classroom questions in their own words, beside PhET and Solar System Scope, from their own pages."""
+    links = [f'<a href="https://phet.colorado.edu/en/simulations/{slug}">{esc(name)}</a>' for slug, name in PHET_SIMS]
+    phet_sims = ", ".join(links[:-1]) + " and " + links[-1]
+    return (
+        "<h2>Next to PhET and Solar System Scope</h2>\n"
+        "<p>Two questions teachers ask, in their own words. The usual answers are PhET and Solar System Scope, and both are good: here is what each does, so you can pick.</p>\n"
+        "<h3>A 3D solar system model for the classroom that works offline, with no login and no install</h3>\n"
+        f'<p><a href="{SSS_HOME}">Solar System Scope</a> is a 3D model of the Solar System. Its site says the online version is free and runs in the browser on a desktop computer with WebGL, '
+        f'that it can be <a href="{SSS_EMBED}">embedded in your own web page</a> with an iframe, and that the version that works offline is a paid desktop download (USD 9.80), and that there is also a mobile app.</p>\n'
+        "<p>Space Radar is free and open source, needs no account, and runs offline from the zip above: nothing is installed except Python 3 to serve the folder, which most Macs and Linux machines already have. "
+        'It shows where things are for the moment on the clock: the planets, <a href="../satellites/index.html">the satellites and the space station</a>, the nearest stars, '
+        "and narrated trips you can run in present mode. It can be embedded too: press Share, then Embed, for the <code>&lt;iframe&gt;</code> "
+        f'(<a href="{GITHUB}/blob/main/docs/EMBEDDING.md">docs/EMBEDDING.md</a>).</p>\n'
+        "<h3>Interactive space simulators in the browser to teach moon phases, tides and orbits</h3>\n"
+        f'<p><a href="{PHET_ABOUT}">PhET</a>, from the University of Colorado, makes free simulations that it says are research-based and tested with students in interviews and classrooms, '
+        f"and its site offers them in many languages, to run online or download. For orbits and the law of gravity behind them, {phet_sims} are the ones to know. "
+        "Space Radar's simulators are newer, in English, and have not been tested with students the way PhET's are.</p>\n"
+        '<p>What <a href="../lab/index.html">Space Radar\'s Lab</a> adds is one small simulator per idea, in one page each, including '
+        '<a href="../lab/moon-phases-from-above/index.html">the Moon\'s phases seen from above</a>, <a href="../lab/two-tides-not-one/index.html">why there are two tides, not one</a> and '
+        '<a href="../lab/kepler-equal-areas/index.html">Kepler\'s equal areas</a>, and every one of them sits beside the live 3D map and the trips.</p>\n'
+        f'<p>What this section says about PhET and Solar System Scope was read on {OTHERS_READ} from their own pages, linked above. If it is out of date, '
+        f'<a href="{ACCURACY_FORM}">tell us</a> {ON_GITHUB} and it will be corrected. Space Radar is not part of, and not endorsed by, either.</p>\n')
+
 LESSONS = [
     ("moon-phases", "Why the Moon changes shape",
      "Ask: where do you think the shadow on the Moon comes from? Then fly the trip and watch the Moon's month from space, then from your street. "
@@ -1163,6 +1247,7 @@ def teachers_page(host: str, tours: dict, reels: dict, url_keys: list[str]) -> P
         "<h2>Five ten-minute lesson starters</h2>\n"
         "<p>Each pairs a question with one trip, started in present mode.</p>\n"
         f'<ul class="cards">{lessons}</ul>\n'
+        '<p>For moon phases, tides and orbits there are also <a href="../moon-phases-tides-orbits/index.html">small simulators in the Lab</a>.</p>\n'
         "<h2>Accessibility</h2>\n"
         "<ul>\n"
         "<li>Every control can be reached and used from the keyboard, with a visible focus ring, and every control has a name a screen reader announces.</li>\n"
@@ -1170,6 +1255,7 @@ def teachers_page(host: str, tours: dict, reels: dict, url_keys: list[str]) -> P
         "<li>The words of every trip stop are on screen as captions, so a room does not need sound; the narrator can be turned off.</li>\n"
         "<li>Motion calms when the system asks for reduced motion (<code>prefers-reduced-motion</code>).</li>\n"
         "<li>The 3D scene is a canvas and is not described to a screen reader; the cards and trip words beside it are text. Say so to a student who relies on one, and tell us what would help.</li>\n</ul>\n"
+        f"{teachers_compare()}"
         f"{teachers_paying()}"
         + subscribe_form("../", f"{host}/teachers/index.html", form_id="updates", title="New trips and simulators, by email", variant="card",
                          text="News of the map's new trips, simulators and features, and the sky's coming events, worth a lesson. "
@@ -1306,7 +1392,7 @@ def build_pages(host: str, objects: list[dict], today: str, snapshot_index: dict
     pages += [links_page(host)]
     pages += [about_page(host), sources_page(host, snapshot_index), accuracy_page(host),
               teachers_page(host, tours, yml("autopilot.yaml"), url_keys()), eyes_page(host), first_pr_page(host),
-              privacy_page(host)]
+              privacy_page(host), classroom_sims_page(host)]
     pages += support_page(host)
     sysl = seo_systems.pages(host, by_slug, today)
     pages += sysl
