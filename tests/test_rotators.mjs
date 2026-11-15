@@ -105,8 +105,10 @@ for (const [hip, name, req, rpol, tp, te, inc, pa, beta] of PAPERS) {
 for (const k of ['widthEq', 'widthPole', 'spin']) check(typeof COPY.rotators[k] === 'string' && COPY.rotators[k].length > 3, `copy: rotators.${k}`);
 check(/\{pole\}/.test(COPY.rotators.spinShape) && /\{eq\}/.test(COPY.rotators.spinShape) && /model/.test(COPY.rotators.spinShape), 'copy: the spin line names both temperatures and says it is a model');
 // and the boot keeps nothing of it: no rotator number in the boot modules' data, the module is fetched on demand
-const main = (await import('node:fs')).readFileSync(join(JS, 'main.js'), 'utf8');
-check(/import\('\.\/data\/starrotators\.js'\)/.test(main) && !/from '\.\/data\/starrotators\.js'/.test(main), 'main.js fetches data/starrotators.js on demand and never imports it statically');
+const { readFileSync } = await import('node:fs');
+const disc = readFileSync(join(JS, 'scene/stardisc.js'), 'utf8'), main = readFileSync(join(JS, 'main.js'), 'utf8'), gen = readFileSync(join(JS, 'data/starrotators.js'), 'utf8');
+check(/import\('\.\.\/data\/starrotators\.js'\)/.test(disc) && !/from '\.\.\/data\/starrotators\.js'/.test(disc) && !/starrotators/.test(main), 'scene/stardisc.js fetches data/starrotators.js on demand; main.js and the boot never name it');
+check(/GENERATED from registry\/stars-notable\.yaml/.test(gen), 'the numbers module is generated');
 check(SUN_RADIUS_KM > 6e5, 'sanity: the Sun');
 
 if (problems.length) { console.error('test_rotators: FAIL\n  ' + problems.join('\n  ')); process.exit(1); }
