@@ -52,6 +52,10 @@ here refuses a row without that record, so a clip rendered again has to be liste
 
 The render needs: kokoro-onnx, misaki[en], soundfile, numpy, PyYAML, an ffmpeg with libopus, and
 the two model files (kokoro-v1.0.onnx, voices-v1.0.bin) whose sha256 the registry records.
+
+A RUN THAT SPEAKS OR LISTENS IS REFUSED BY DAY (07:00-23:00 Asia/Jerusalem) unless --allow-day; --check and
+--script are not. Start one as `bin/day-ban.sh && bin/cap.sh 90 <command>` (growth-kit), so it is also stopped
+by its own cap: a --listen chain started by day held the Mac's heavy lock all night on 2026-11-07.
 """
 from __future__ import annotations
 
@@ -970,6 +974,8 @@ def audition(args) -> int:
 
 
 def main(argv: list) -> int:
+    from _cli import day_ban
+
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--check", action="store_true", help="verify the manifest, the files and the budgets; no TTS")
     ap.add_argument("--script", action="store_true", help="print what the voice is given for every stop; no TTS")
@@ -983,6 +989,7 @@ def main(argv: list) -> int:
     ap.add_argument("--audition", help="write a listening set to this folder instead of rendering")
     ap.add_argument("--voices", default="bf_emma,bm_george,af_heart,am_michael")
     ap.add_argument("--stops", help="with --audition: comma-separated trip/stop keys")
+    ap.add_argument("--allow-day", action="store_true", help="speak or listen between 07:00 and 23:00 Israel time")
     args = ap.parse_args(argv)
     if args.check:
         return check()
@@ -999,8 +1006,8 @@ def main(argv: list) -> int:
                     print("     " + voice.phonemes(marked))
         return 0
     if args.audition:
-        return audition(args)
-    return render(args)
+        return day_ban(args.allow_day, "narrate.py --audition (TTS)") or audition(args)
+    return day_ban(args.allow_day, "narrate.py (TTS)") or render(args)
 
 
 if __name__ == "__main__":
