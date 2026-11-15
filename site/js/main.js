@@ -164,6 +164,9 @@ LATER_LAYERS.add('companions');
 // 0079 r15-a45: the four compact catalogues of release 1.5.0 stages A4 and A5 (data/a45.js): deferred like an on-demand layer, but small, so not `load: 'on-demand'`
 // (tests/test_layer_boot.mjs keeps that word for a catalogue-sized layer). ctx.loadMoreCatalogues fetches them.
 const MORE_CATALOGUES = new Set(['extremes-more', 'pulsars', 'beyond-more', 'quasars']);
+// 2.1.0 (internal #37): the potentially hazardous asteroids (data/pha.json, 145 kB gzipped) wait for the visitor who ticks their box: the first minute's
+// bytes (registry/budgets.yaml after_first_visit_bytes) have 1 kB to spare, so a layer nobody asked for does not arrive in it.
+const TICKED_LAYERS = new Set(['pha']);
 const LATER_LAYERS_MS = 3000;
 /** How long after sr:layers-ready the controls hint is imported and may show (ui/keyhint.js): after
  * the later layers and the aurora, when the first view has settled and before a visitor gives up. */
@@ -3241,7 +3244,7 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   const saveData = typeof navigator !== 'undefined' && shouldSaveData(navigator.connection);
   // `load: 'on-demand'` (registry/layers.yaml) is the same wait by design: the active catalogue
   // is 7 MB for 16 587 objects, and nobody asked for it until they ticked the box.
-  for (const l of LAYERS) l.deferred = !!(saveData && l.heavy) || l.load === 'on-demand' || MORE_CATALOGUES.has(l.id); // 0079 r15-a45: the stage A4 and A5 catalogues wait for a visitor who needs them
+  for (const l of LAYERS) l.deferred = !!(saveData && l.heavy) || l.load === 'on-demand' || MORE_CATALOGUES.has(l.id) || TICKED_LAYERS.has(l.id); // 0079 r15-a45: the stage A4 and A5 catalogues wait for a visitor who needs them
   if (saveData) window.dispatchEvent(new CustomEvent('sr:quality', { detail: { level: 'data-saver' } }));
   const ordered = [...LAYERS].filter((l) => l.enabled !== false).sort((a, b) => (a.priority || 50) - (b.priority || 50));
 

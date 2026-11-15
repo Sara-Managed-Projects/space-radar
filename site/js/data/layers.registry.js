@@ -500,6 +500,26 @@ export const LAYER_ROWS = [
     "train": null
   },
   {
+    "id": "pha",
+    "display": "Hazardous asteroids",
+    "group": "solar-system",
+    "enabled": true,
+    "moments": {
+      "wonder": false,
+      "now": false,
+      "next": false
+    },
+    "source": "bundled",
+    "sources": null,
+    "propagator": "kepler",
+    "frame": "sun-inertial",
+    "card": "asteroid",
+    "glyph": "asteroid",
+    "colour": "asteroid",
+    "maxItems": 2700,
+    "train": null
+  },
+  {
     "id": "comets",
     "display": "Comets",
     "group": "solar-system",

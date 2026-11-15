@@ -1687,6 +1687,7 @@ export const VISUAL_CLASSES = [
 "far-bodies",
 "moons",
 "companions",
+"pha",
 "hand-kept-sites",
 "observatories",
 "launch-sites",

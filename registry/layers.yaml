@@ -390,6 +390,24 @@ layers:
     budget: {max_items: 800}
   # 0079 a3: end
 
+  # Potentially hazardous asteroids (release 2.1.0, internal #37, the first consumer of stage A7): the 2 552 asteroids the JPL
+  # Small-Body Database flags, i.e. an orbit within 0.05 au of the Earth's and a rock brighter than absolute magnitude 22 (about 140 m).
+  # `bundled`: site/data/pha.json, written by scripts/gen_pha.py from NASA/JPL (public domain); data/pha.js builds the records when the
+  # layer is ticked (main.js TICKED_LAYERS), never at boot and not in the first minute either. Two-body motion from one epoch (JD 2461200.5),
+  # so the place is `inferred` and drifts with the months from that epoch; the card says so. Off by default: 2 500 dots round the Sun
+  # are a map of their own, and a visitor ticks the box when they want them.
+  - id: pha
+    display: Hazardous asteroids
+    group: solar-system
+    moments: {wonder: off, now: off, next: off}
+    source: bundled
+    propagator: kepler
+    frame: sun-inertial
+    style: {kind: glyph, glyph: asteroid, colour: asteroid}
+    card: asteroid
+    select: {all: true}
+    budget: {max_items: 2700}
+
   - id: comets
     display: Comets
     group: solar-system

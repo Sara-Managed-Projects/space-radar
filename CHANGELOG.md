@@ -28,6 +28,13 @@ tagged, and their dates are the day the last change in each landed.
   sitemap holds (it had been a number nobody read), and builds the deploy's variant of the pages too (with the saved copies' index),
   which had left the ISS page out of every language.
 - **Event pages carry an image and a free offer in their Event markup**, as Google's Event result recommends.
+- **Potentially hazardous asteroids, a layer of 2 552** (internal #37, the first consumer of the asteroid catalogue stage). In What to show, under the Solar
+  System, tick "Hazardous asteroids": every asteroid the JPL Small-Body Database flags (an orbit within 0.05 au of the Earth's, a rock
+  of about 140 metres or more), each where it is today on JPL's orbit. The card names the closest the two orbits come, the rock's own absolute magnitude, and
+  says that the name is a definition and not a forecast. The file (`site/data/pha.json`, 145 kB gzipped, from `scripts/gen_pha.py`) is fetched when the box is ticked,
+  not in the first minute. Two-body motion from one epoch is measured against Horizons for 40 of them: the median miss is 0.0001 au five months out and 0.0004 au a
+  year out, the worst 0.0044 au (`tests/test_pha.mjs`). The Minor Planet Center's file was read and not used (no licence stated); the other minor planets, the
+  near-Earth asteroids that are not on this list and DAMIT's shapes are still to do.
 
 - **Free email updates.** An envelope button on the map's rail opens a short form; every page's footer, the about and
   teachers pages, and the row under Coming up carry the same form. Pick any of Space Radar news, the Journal, Space games

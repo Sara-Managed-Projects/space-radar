@@ -467,6 +467,12 @@ jobs:
       - name: Every moon is where Horizons puts it within what its card says, and is honest where it is not
         run: node tests/test_moons.mjs
       # 0079 a3: end
+      # The potentially hazardous asteroids (2.1.0, internal #37): the file is whole and inside NASA's definition, two-body motion
+      # against Horizons' vectors on two days, the card's words, search, and the layer loading late and off by default.
+      - name: The potentially hazardous asteroids are where Horizons puts them within what their card says
+        run: |
+          python3 scripts/gen_pha.py --check
+          node tests/test_pha.mjs
       - name: The Now moment guesses a place and says so
         run: node tests/test_guessplace.mjs
       # A merge marker in a tool (tools/cdp.mjs on 2026-10-08 carried one and no probe could start) is a
