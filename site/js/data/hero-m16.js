@@ -61,16 +61,16 @@ export const HERO = {
           "along_arcmin": 12.0,
           "across_arcmin": 10.0,
           "pa_deg": 0,
-          "depth_ly": 14,
+          "depth_ly": 11,
           "shape": "cos"
         }
       ],
-      "blend_ly": 8,
+      "blend_ly": 6.3,
       "outside_ly": 0,
       "relief": {
         "power": 0.5,
         "max_ln": 0.4,
-        "max_ly": 3.0,
+        "max_ly": 2.4,
         "fine_arcmin": 0.25,
         "wide_arcmin": 2.0
       },
@@ -85,8 +85,8 @@ export const HERO = {
       "part": "cloud",
       "kind": "dust",
       "what": "the molecular cloud behind the glowing wall: dark from behind",
-      "thickness_ly": 10.0,
-      "sigma_per_ly": 1.5,
+      "thickness_ly": 8.0,
+      "sigma_per_ly": 1.9,
       "blur_arcmin": 2.0,
       "source": "the cloud's thickness and opacity here are illustrative (a model)"
     },
@@ -94,7 +94,7 @@ export const HERO = {
       "part": "dust",
       "kind": "dust",
       "what": "the Pillars of Creation and the other dark columns: dust and gas in front of the glowing wall, seen in silhouette",
-      "z_ly": 5.0,
+      "z_ly": 4.0,
       "blobs": [
         {
           "name": "Pillars of Creation",

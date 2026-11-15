@@ -315,17 +315,17 @@
     "depth": {
       "file": "site/data/deep/m16-front.bin",
       "bytes": 524304,
-      "sha256": "e6710c58f191559cf6a4e44c693f427da5a4899aab00dc8850fe90cf158fff0c",
+      "sha256": "50d16a07d18f72ea6dd530499195c3691d8579e6576ed0896b5c0db40e8acc0f",
       "grid": [
         256,
         256
       ],
       "z_ly": [
-        -15.489,
-        -1.776
+        -12.172,
+        -1.399
       ],
       "near_ly": 0.0,
-      "max_slope": 1.548,
+      "max_slope": 1.549,
       "max_slope_near": 0.0,
       "dust_tau_max": 0.631
     },
@@ -350,7 +350,7 @@
     "from": "site/images/nebulae/m16.webp",
     "from_sha256": "141086b062867e8f6a08f18bb8091895a6703aea240459403788a9a96c95a47c",
     "params": {
-      "distance_ly": 7000,
+      "distance_ly": 5540,
       "origin": [
         274.70071,
         -13.80722
@@ -374,16 +374,16 @@
             "along_arcmin": 12.0,
             "across_arcmin": 10.0,
             "pa_deg": 0,
-            "depth_ly": 14,
+            "depth_ly": 11,
             "shape": "cos"
           }
         ],
-        "blend_ly": 8,
+        "blend_ly": 6.3,
         "outside_ly": 0,
         "relief": {
           "power": 0.5,
           "max_ln": 0.4,
-          "max_ly": 3.0,
+          "max_ly": 2.4,
           "fine_arcmin": 0.25,
           "wide_arcmin": 2.0
         },
