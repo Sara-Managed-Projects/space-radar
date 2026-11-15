@@ -609,7 +609,7 @@ const TEMPLATES = {
     const con = pick(md, 'con');
     const name = displayName(record);
     let lead;
-    if (pick(md, 'home') === true && distLy !== null) lead = t(T.leadHome, { name, dist: fmt.int(distLy) });
+    if (pick(md, 'home') === true && distLy !== null) lead = t(T.leadHome, { name, dist: fmt.int(roughly(distLy)) }); // rounded: Reid 2019 and GRAVITY differ by 400 light-years (internal #270)
     else if (lo !== null && hi !== null) lead = t(T.leadRange, { name, a: article(type), type, lo: fmt.int(lo), hi: fmt.int(hi) });
     else if (distLy !== null) lead = t(T.lead, { name, a: article(type), type, dist: fmt.int(distLy) });
     else lead = t(T.leadUntyped, { name, dist: '?' });
@@ -2105,13 +2105,14 @@ const HERO_SLOTS = {
   planet: [{ rows: ['distanceFromSun'], unit: 'astronomical units' }, { rows: ['spin'], unit: 'hours' }, { rows: ['yearLength'], unit: 'days' }],
   moon: [{ rows: ['altitude', 'distanceFromEarth'], cap: 'away', unit: 'km' }, { rows: ['speed'], unit: 'km/h' }, { rows: ['spin'], unit: 'days' }],
   sun: [{ rows: ['distanceFromEarth'], unit: 'astronomical units' }, { rows: ['lightTime'], cap: 'lightFromSun', unit: 'minutes' }, { rows: ['spin'], unit: 'days' }],
-  star: [{ rows: ['distanceFromSun'], cap: 'away', unit: 'light-years' }, { rows: ['brightness'] }, { rows: ['spectralType'] }],
-  dso: [{ rows: ['distanceFromSun', 'lightLeft'], cap: 'away', unit: 'light-years' }, { rows: ['across'], unit: 'light-years' }, { rows: ['brightness'] }],
+  star: [{ rows: ['distanceFromSun', 'distanceRange'], cap: 'away', unit: 'light-years' }, { rows: ['brightness'] }, { rows: ['spectralType'] }],
+  // The Milky Way's distance row is the one to its centre (internal #270), whose caption says so.
+  dso: [{ rows: ['distanceToCentre', 'distanceFromSun', 'distanceRange', 'lightLeft'], cap: 'away', caps: { distanceToCentre: 'toCentre' }, unit: 'light-years' }, { rows: ['across'], unit: 'light-years' }, { rows: ['brightness'] }],
   craft: [{ rows: ['distanceFromEarth'], unit: 'astronomical units' }, { rows: ['speed'], unit: 'km/h' }, { rows: ['launched'] }],
 };
 // For every other kind, the first three of these the card prints: quantities, never a latitude, a
 // catalogue number or a year, which are numbers but not measures of the thing.
-const HERO_ANY = ['altitude', 'heightAbove', 'speed', 'period', 'fromYou', 'distanceFromEarth', 'distanceFromSun',
+const HERO_ANY = ['altitude', 'heightAbove', 'speed', 'period', 'fromYou', 'distanceFromEarth', 'distanceFromSun', 'distanceRange',
   'lightTime', 'lightLeft', 'across', 'spin', 'yearLength', 'planetRadius', 'planetMass', 'mass', 'luminosity',
   'brightness', 'launched'];
 
@@ -2139,6 +2140,21 @@ const NUMBER = /[−-]?\d[\d ]*(?:[.,]\d+)?/;
  * A range ("1 324 to 1 364 light-years", "to" in the language's own word: "bis") and a value with
  * no number are not one number: null. Exported for the test.
  */
+/**
+ * A distance range as one cell: "408 to 548 light-years" -> {num: '408–548', unit: 'light-years'}. The pattern is the language's own
+ * template (COPY.card.values.lightYearsRange), so "von 408 bis 548 Lichtjahren" splits too. Null for anything else. Exported for the test.
+ */
+export function heroRange(value) {
+  const tpl = String(COPY.card.values.lightYearsRange || '');
+  if (!tpl.includes('{lo}') || !tpl.includes('{hi}')) return null;
+  const N = '([\\d\\s\\u00a0\\u202f.,−-]+?)';
+  const esc = tpl.replace(/[.*+?^$()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`^${esc.replace('{lo}', N).replace('{hi}', `${N}(\\s*[^\\d\\s].*)`)}$`);
+  const hit = re.exec(String(value == null ? '' : value));
+  if (!hit) return null;
+  return { num: `${hit[1].trim()}–${hit[2].trim()}`, unit: hit[3].trim() };
+}
+
 export function heroSplit(value) {
   const s = String(value == null ? '' : value);
   const hit = NUMBER.exec(s);
@@ -2177,7 +2193,7 @@ export function heroNumbers(record, m, rows) {
       const days = split0 && split0.unit === t(COPY.card.values.days, { n: '' }).trim() ? Number(split0.num.replace(/[^\d.,]/g, '').replace(',', '.')) : NaN;
       if (days >= 1000) return { key, num: split0.num, caption: t(H.captions.yearLong, { u: H.units[split0.unit] || split0.unit, y: fmt.int(days / 365.25) }), missing: false };
     }
-    const split = heroSplit(value);
+    const split = key === 'distanceRange' ? heroRange(value) : heroSplit(value);
     return split ? { key, num: split.num, caption: caption(capKey || key, split.unit), missing: false } : null;
   };
   const kind = heroKind(record, m || {});
@@ -2189,6 +2205,9 @@ export function heroNumbers(record, m, rows) {
     for (const key of HERO_ANY) {
       if (out.length === 3 || !byKey.has(key) || (far && key === 'lightLeft')) continue;
       const c = cell(key, byKey.get(key));
+      // Light that left 27 000 years ago from a place 27 000 light-years away is the same number twice: "27 000 ly from Sun" beside
+      // "27 000 ly away" (internal #270). A different number (a distance range's, a far place's) stays.
+      if (c && key === 'lightLeft' && out.some((o) => o.key === 'distanceFromSun' && o.num === c.num)) continue;
       if (c) out.push(c);
     }
     return out;
@@ -2197,7 +2216,7 @@ export function heroNumbers(record, m, rows) {
   const noDistance = !!(record && record.meta && record.meta.noDistance);
   return slots.filter((slot) => !(noDistance && slot.rows[0] === 'distanceFromSun')).map((slot) => {
     for (const key of slot.rows) {
-      const c = byKey.has(key) ? cell(key, byKey.get(key), slot.cap) : null;
+      const c = byKey.has(key) ? cell(key, byKey.get(key), (slot.caps && slot.caps[key]) || slot.cap) : null;
       if (c) return c;
     }
     return { key: slot.rows[0], num: H.missing, caption: caption(slot.cap || slot.rows[0], slot.unit || ''), missing: true };

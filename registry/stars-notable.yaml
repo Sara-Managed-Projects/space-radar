@@ -20,6 +20,8 @@
 #          page in `source`. No numbers the card already prints from HYG (distance, magnitude),
 #          which would be a second, differently rounded copy of the same fact.
 # source   the page, and the day it was read.
+# mag, spect  OPTIONAL. A card value that replaces HYG's for this star when HYG's is known to be off (Sirius, internal #311); the
+#          `source` line then says where each came from.
 #
 # NOT HERE, ON PURPOSE. Betelgeuse and Eta Carinae are registry/exotics.yaml rows with their own
 # fact sheets; a second line for them here would be two cards' worth of claims for one star, and
@@ -79,7 +81,12 @@ stars:
   - hip: 32349
     name: Sirius
     why: "The brightest star in the night sky, almost twice as bright as Canopus, the next. A faint white dwarf, Sirius B, circles it."
-    source: "https://en.wikipedia.org/wiki/Sirius (read 2026-09-22)"
+    # Magnitude and class (internal #311), opened 2026-11-15: the Bright Star Catalogue, 5th revised ed. (VizieR V/50, HR 2491) gives V = -1.46 and A1Vm.
+    # The star map's HYG data carries the Hipparcos catalogue's -1.44 and A0m (VizieR I/239, HIP 32349), whose own variability flag marks that
+    # magnitude 'duplicity-induced': Sirius B's glare was inside the satellite's measurement. The card prints the Bright Star Catalogue values.
+    source: "https://en.wikipedia.org/wiki/Sirius (read 2026-09-22); magnitude and class: Bright Star Catalogue HR 2491 (VizieR V/50, read 2026-11-15)"
+    mag: -1.46
+    spect: A1Vm
     radius_suns: 1.713
     radius_err_suns: 0.009
     teff_k: 9845
@@ -131,6 +138,10 @@ stars:
     name: Kapteyn's Star
     why: "The nearest halo star: about 11 billion years old, going round the galaxy the wrong way. It may once have belonged to Omega Centauri."
     source: "https://en.wikipedia.org/wiki/Kapteyn%27s_Star (read 2026-09-22)"
+    radius_suns: 0.29
+    radius_err_suns: 0.03
+    physical_source: "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
+    physical_note: "JMMC Measured stellar Diameters Catalogue (VizieR II/345/jmdc, row HD33793, opened 2026-11-15): limb-darkened diameter 0.692 +/- 0.06 mas, K', measured in 2003A&A...397L...5S; parallax 255.66 +/- 0.91 mas (Hipparcos new reduction, VizieR I/311/hip2, HIP 24186, opened 2026-11-15); radius = half the diameter x the distance = 0.29 +/- 0.03 solar radii (the two relative errors added in quadrature; 1 diameter row(s) in the catalogue, the most precise taken)"
 
   - hip: 3829
     name: Van Maanen's Star
@@ -182,6 +193,10 @@ stars:
     name: Rigel
     why: "The brightest star in Orion and usually the seventh-brightest in the sky: a blue supergiant around 120 000 times as luminous as the Sun."
     source: "https://en.wikipedia.org/wiki/Rigel (read 2026-09-22)"
+    radius_suns: 74.0
+    radius_err_suns: 7.0
+    physical_source: "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
+    physical_note: "JMMC Measured stellar Diameters Catalogue (VizieR II/345/jmdc, row HD34085, opened 2026-11-15): limb-darkened diameter 2.606 +/- 0.009 mas, 550..850nm, measured in 2018AJ....155...30B; parallax 3.78 +/- 0.34 mas (Hipparcos new reduction, VizieR I/311/hip2, HIP 24436, opened 2026-11-15); radius = half the diameter x the distance = 74.0 +/- 7.0 solar radii (the two relative errors added in quadrature; 2 diameter row(s) in the catalogue, the most precise taken)"
 
   - hip: 7588
     name: Achernar
@@ -293,6 +308,10 @@ stars:
     name: Gamma Cephei
     why: "Its planet, proposed in 1988, doubted, and confirmed in 2002, was the first ever discovered. From about 3157 CE it replaces Polaris as the pole star."
     source: "https://en.wikipedia.org/wiki/Gamma_Cephei (read 2026-09-22)"
+    radius_suns: 4.93
+    radius_err_suns: 0.04
+    physical_source: "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
+    physical_note: "JMMC Measured stellar Diameters Catalogue (VizieR II/345/jmdc, row HD222404, opened 2026-11-15): limb-darkened diameter 3.254 +/- 0.02 mas, 550..850nm, measured in 2018AJ....155...30B; parallax 70.91 +/- 0.4 mas (Hipparcos new reduction, VizieR I/311/hip2, HIP 116727, opened 2026-11-15); radius = half the diameter x the distance = 4.93 +/- 0.04 solar radii (the two relative errors added in quadrature; 4 diameter row(s) in the catalogue, the most precise taken)"
 
   # --- stars that change, and stars that are several ----------------------------------------------
   - hip: 10826
@@ -339,6 +358,10 @@ stars:
     name: 51 Pegasi
     why: "The first Sun-like star found with a planet, in 1995: a hot Jupiter going round it every four days. Its finders shared the 2019 Nobel Prize in Physics."
     source: "https://en.wikipedia.org/wiki/51_Pegasi (read 2026-09-22) and https://en.wikipedia.org/wiki/51_Pegasi_b (read 2026-09-22)"
+    radius_suns: 1.149
+    radius_err_suns: 0.02
+    physical_source: "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
+    physical_note: "JMMC Measured stellar Diameters Catalogue (VizieR II/345/jmdc, row HD217014, opened 2026-11-15): limb-darkened diameter 0.685 +/- 0.011 mas, H, measured in 2013ApJ...771...40B; parallax 64.07 +/- 0.38 mas (Hipparcos new reduction, VizieR I/311/hip2, HIP 113357, opened 2026-11-15); radius = half the diameter x the distance = 1.149 +/- 0.02 solar radii (the two relative errors added in quadrature; 3 diameter row(s) in the catalogue, the most precise taken)"
 
   - hip: 7513
     name: Upsilon Andromedae
@@ -364,6 +387,10 @@ stars:
     name: Dubhe
     why: "The northern of the two Pointers: it and Merak point towards Polaris. Though named Alpha, it is only the second-brightest object in Ursa Major."
     source: "https://en.wikipedia.org/wiki/Dubhe (read 2026-11-04)"
+    radius_suns: 26.0
+    radius_err_suns: 0.5
+    physical_source: "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
+    physical_note: "JMMC Measured stellar Diameters Catalogue (VizieR II/345/jmdc, row HD95689, opened 2026-11-15): limb-darkened diameter 6.419 +/- 0.041 mas, 550..850nm, measured in 2018AJ....155...30B; parallax 26.54 +/- 0.48 mas (Hipparcos new reduction, VizieR I/311/hip2, HIP 54061, opened 2026-11-15); radius = half the diameter x the distance = 26.0 +/- 0.5 solar radii (the two relative errors added in quadrature; 3 diameter row(s) in the catalogue, the most precise taken)"
 
   - hip: 26727
     name: Alnitak
@@ -379,11 +406,19 @@ stars:
     name: Bellatrix
     why: "The closest major star in Orion, and one of the closest known candidates for a core-collapse supernova. Its name is Latin for 'female warrior'."
     source: "https://en.wikipedia.org/wiki/Bellatrix (read 2026-11-04)"
+    radius_suns: 5.9
+    radius_err_suns: 0.2
+    physical_source: "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
+    physical_note: "JMMC Measured stellar Diameters Catalogue (VizieR II/345/jmdc, row HD35468, opened 2026-11-15): limb-darkened diameter 0.71 +/- 0.005 mas, 740nm, measured in 2014A&A...570A.104C; parallax 12.92 +/- 0.52 mas (Hipparcos new reduction, VizieR I/311/hip2, HIP 25336, opened 2026-11-15); radius = half the diameter x the distance = 5.9 +/- 0.2 solar radii (the two relative errors added in quadrature; 3 diameter row(s) in the catalogue, the most precise taken)"
 
   - hip: 27366
     name: Saiph
     why: "A blue supergiant at the south-eastern corner of Orion's main quadrangle. It is smaller and less luminous than Rigel but hotter at its surface."
     source: "https://en.wikipedia.org/wiki/Saiph (read 2026-11-04)"
+    radius_suns: 11.6
+    radius_err_suns: 0.6
+    physical_source: "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
+    physical_note: "JMMC Measured stellar Diameters Catalogue (VizieR II/345/jmdc, row HD44743, opened 2026-11-15): limb-darkened diameter 0.542 +/- 0.017 mas, 4200A, measured in 2020NatAs...4.1164A; parallax 5.04 +/- 0.22 mas (Hipparcos new reduction, VizieR I/311/hip2, HIP 27366, opened 2026-11-15); radius = half the diameter x the distance = 11.6 +/- 0.6 solar radii (the two relative errors added in quadrature; 2 diameter row(s) in the catalogue, the most precise taken)"
 
   - hip: 100453
     name: Sadr
@@ -394,11 +429,19 @@ stars:
     name: Alphard
     why: "The brightest star in Hydra. Its name is Arabic for 'the individual', there being no other bright stars near it."
     source: "https://en.wikipedia.org/wiki/Alpha_Hydrae (read 2026-11-04)"
+    radius_suns: 55.6
+    radius_err_suns: 0.6
+    physical_source: "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
+    physical_note: "JMMC Measured stellar Diameters Catalogue (VizieR II/345/jmdc, row HD81797, opened 2026-11-15): limb-darkened diameter 9.36 +/- 0.006 mas, 2.3, measured in 2013MNRAS.434..437C; parallax 18.09 +/- 0.18 mas (Hipparcos new reduction, VizieR I/311/hip2, HIP 46390, opened 2026-11-15); radius = half the diameter x the distance = 55.6 +/- 0.6 solar radii (the two relative errors added in quadrature; 2 diameter row(s) in the catalogue, the most precise taken)"
 
   - hip: 9884
     name: Hamal
     why: "The brightest star in Aries. The Sun stood in Aries at the spring equinox from 2000 to 100 BCE, which is why most astrology columns begin with Aries."
     source: "https://en.wikipedia.org/wiki/Hamal (read 2026-11-04)"
+    radius_suns: 14.93
+    radius_err_suns: 0.1
+    physical_source: "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
+    physical_note: "JMMC Measured stellar Diameters Catalogue (VizieR II/345/jmdc, row HD12929, opened 2026-11-15): limb-darkened diameter 6.88 +/- 0.03 mas, 740nm, measured in 1999AJ....118.3032N; parallax 49.56 +/- 0.25 mas (Hipparcos new reduction, VizieR I/311/hip2, HIP 9884, opened 2026-11-15); radius = half the diameter x the distance = 14.93 +/- 0.1 solar radii (the two relative errors added in quadrature; 6 diameter row(s) in the catalogue, the most precise taken)"
 
   - hip: 85927
     name: Shaula
@@ -409,16 +452,28 @@ stars:
     name: Mirfak
     why: "The brightest star in Perseus, outshining Algol. It lies in the midst of the Alpha Persei Cluster, which is easily visible in binoculars."
     source: "https://en.wikipedia.org/wiki/Alpha_Persei (read 2026-11-04)"
+    radius_suns: 51.8
+    radius_err_suns: 1.4
+    physical_source: "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
+    physical_note: "JMMC Measured stellar Diameters Catalogue (VizieR II/345/jmdc, row HD20902, opened 2026-11-15): limb-darkened diameter 3.1 +/- 0.01 mas, 740nm, measured in 1999AJ....118.3032N; parallax 6.44 +/- 0.17 mas (Hipparcos new reduction, VizieR I/311/hip2, HIP 15863, opened 2026-11-15); radius = half the diameter x the distance = 51.8 +/- 1.4 solar radii (the two relative errors added in quadrature; 5 diameter row(s) in the catalogue, the most precise taken)"
 
   - hip: 72607
     name: Kochab
     why: "The brightest star in the bowl of the Little Dipper. Around 2467 BCE the Egyptians found true north with a plumb line between it and Mizar."
     source: "https://en.wikipedia.org/wiki/Kochab (read 2026-11-05)"
+    radius_suns: 15.36
+    radius_err_suns: 0.09
+    physical_source: "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
+    physical_note: "JMMC Measured stellar Diameters Catalogue (VizieR II/345/jmdc, row HD137759, opened 2026-11-15): limb-darkened diameter 3.559 +/- 0.011 mas, 550..850nm, measured in 2018AJ....155...30B; parallax 24.91 +/- 0.12 mas (Hipparcos new reduction, VizieR I/311/hip2, HIP 72607, opened 2026-11-15); radius = half the diameter x the distance = 15.36 +/- 0.09 solar radii (the two relative errors added in quadrature; 2 diameter row(s) in the catalogue, the most precise taken)"
 
   - hip: 86032
     name: Rasalhague
     why: "The brightest star in Ophiuchus; its name means 'the head of the serpent collector'. It spins so fast that its equator bulges about 20% wider than its poles."
     source: "https://en.wikipedia.org/wiki/Alpha_Ophiuchi (read 2026-11-05)"
+    radius_suns: 2.97
+    radius_err_suns: 0.05
+    physical_source: "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
+    physical_note: "JMMC Measured stellar Diameters Catalogue (VizieR II/345/jmdc, row HD159561, opened 2026-11-15): limb-darkened diameter 1.855 +/- 0.012 mas, 550..850nm, measured in 2018AJ....155...30B; parallax 67.13 +/- 1.06 mas (Hipparcos new reduction, VizieR I/311/hip2, HIP 86032, opened 2026-11-15); radius = half the diameter x the distance = 2.97 +/- 0.05 solar radii (the two relative errors added in quadrature; 2 diameter row(s) in the catalogue, the most precise taken)"
 
   - hip: 62956
     name: Alioth

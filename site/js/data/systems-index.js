@@ -467,7 +467,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.181,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201132 (read 2026-11-04)"
 },
-"why": "temperate",
+"why": "extreme",
 "planets": [
 {
 "id": "exo-gj-1132-b"
@@ -498,7 +498,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.182,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201214 (read 2026-11-04)"
 },
-"why": "temperate",
+"why": "extreme",
 "planets": [
 {
 "id": "exo-gj-1214-b"

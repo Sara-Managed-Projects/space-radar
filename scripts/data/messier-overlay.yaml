@@ -4,6 +4,11 @@
 # scripts/build-dso.py applies them, scripts/check_registry.py checks them.
 version: 1
 objects:
+  # NICKNAMES (internal #294). OpenNGC's first common name was kept for every Messier row, and some are French (M11's "Amas de l'Ecu de
+  # Sobieski"), abbreviated (M24, M13's "Hercules Globular Cluster") or nobody's (M4's
+  # "Spider", M5's "Rose", M35's "Shoe-Buckle", M67's "King Cobra"). `common: null` leaves the row its M number alone, as M2 and M3 have.
+  # The plain names (M11, M13, M17, M24, M43, M44, M76, M87) are the first names Wikipedia's List of Messier objects gives, opened 2026-11-15.
+  # Each id's `common:` line sits in its block below (or in the short blocks before the refreshed distances).
   # Andromeda's two bright companions (public #385) are drawn beside her and step back while her
   # photograph holds them. Companions, not parts: the card says "a companion of", not "inside".
   # Andromeda's viewing angles (spec 0076 W4-a, spec 0075 task 62): the record said 35 (OpenNGC's catalogue ellipse, which
@@ -21,6 +26,7 @@ objects:
   # De Mairan's Nebula is the northern part of the Orion Nebula, split from it by a dark lane. The
   # table's 1 300 ly is a rounded number that drew it 44 ly in front of a nebula 35 ly across.
   m43:
+    common: "De Mairan's Nebula"
     parent: m42
     distance: {method: assumed-member-of-parent, source: parent}
   # The Ring Nebula (internal spec 0076 W3-b, #872): the Messier table's 2 300 to 2 700 ly is replaced by Gaia DR3's
@@ -30,3 +36,205 @@ objects:
   m57:
     distance: {method: parallax, value_ly: 2569, low: 2483, high: 2661,
                source: "Gaia DR3 parallax of the central star, source_id 2090486618786534784: 1.2696 +/- 0.0438 mas (ESA/Gaia/DPAC, CC BY-NC 3.0 IGO; VizieR I/355/gaiadr3)", read: 2026-10-17}
+
+  m17:
+    common: "Omega Nebula"
+  m24:
+    common: "Small Sagittarius Star Cloud"
+  m76:
+    common: "Little Dumbbell Nebula"
+
+  # --- Distances refreshed from primary catalogues with error bars (internal #291, #292), read 2026-11-15 ---------------
+  # DETAIL BEHIND THE SHORT SOURCE LINES (the pages print `source`, and every sentence they print is translated, so the lines are kept short):
+  # globular clusters: Baumgardt & Vasiliev 2021's catalogue table 'Structural Parameters of Galactic Globular Clusters' at
+  # people.smp.uq.edu.au/HolgerBaumgardt/globular/, column R_sun (kpc, with its error): Gaia EDR3 parallaxes, HST- and Gaia-based kinematic distances,
+  # subdwarf main-sequence fitting and star counts, combined. Open clusters: Hunt & Reffert 2023, A&A 673, A114, VizieR J/A+A/673/A114/clusters,
+  # median distance (dist50) from Gaia DR3 parallaxes; the catalogue's 16th to 84th percentile spread is tiny (statistical only) and Gaia
+  # parallaxes carry a zero-point bias of a few tens of microarcseconds (Lindegren et al. 2021, arXiv:2012.01742, abstract), so no range is shown.
+  # The Messier table (Wikipedia) lagged the literature: Gaia-era globular-cluster and open-cluster distances, and tip-of-the-red-giant-branch
+  # distances for M51, M63 and M64. Each block names the page it was read from.
+  m10:
+    distance: {method: parallax, value_ly: 16536, low: 16340, high: 16732,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 5.07 +/- 0.06 kpc", read: 2026-11-15}
+  m103:
+    distance: {method: parallax, value_ly: 8241,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 211 members", read: 2026-11-15}
+  m107:
+    distance: {method: parallax, value_ly: 18363, low: 18102, high: 18624,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 5.63 +/- 0.08 kpc", read: 2026-11-15}
+  m11:
+    common: "Wild Duck Cluster"
+    distance: {method: parallax, value_ly: 7283,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 1911 members", read: 2026-11-15}
+  m12:
+    distance: {method: parallax, value_ly: 16667, low: 16504, high: 16830,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 5.11 +/- 0.05 kpc", read: 2026-11-15}
+  m13:
+    common: "Great Hercules Cluster"
+    distance: {method: parallax, value_ly: 24201, low: 23940, high: 24462,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 7.42 +/- 0.08 kpc", read: 2026-11-15}
+  m14:
+    distance: {method: parallax, value_ly: 29811, low: 28995, high: 30626,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 9.14 +/- 0.25 kpc", read: 2026-11-15}
+  m15:
+    distance: {method: parallax, value_ly: 34931, low: 34605, high: 35258,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 10.71 +/- 0.1 kpc", read: 2026-11-15}
+  m16:
+    distance: {method: parallax, value_ly: 5540,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 504 members", read: 2026-11-15}
+  m18:
+    distance: {method: parallax, value_ly: 4895,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 173 members", read: 2026-11-15}
+  m19:
+    distance: {method: parallax, value_ly: 27201, low: 26680, high: 27723,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 8.34 +/- 0.16 kpc", read: 2026-11-15}
+  m2:
+    distance: {method: parallax, value_ly: 38128, low: 37769, high: 38486,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 11.69 +/- 0.11 kpc", read: 2026-11-15}
+  m21:
+    distance: {method: parallax, value_ly: 3920,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 212 members", read: 2026-11-15}
+  m22:
+    distance: {method: parallax, value_ly: 10763, low: 10633, high: 10894,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 3.3 +/- 0.04 kpc", read: 2026-11-15}
+  m23:
+    distance: {method: parallax, value_ly: 2327,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 1128 members", read: 2026-11-15}
+  m25:
+    distance: {method: parallax, value_ly: 2103,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 725 members", read: 2026-11-15}
+  m26:
+    distance: {method: parallax, value_ly: 5986,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 470 members", read: 2026-11-15}
+  m28:
+    distance: {method: parallax, value_ly: 17515, low: 17188, high: 17841,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 5.37 +/- 0.1 kpc", read: 2026-11-15}
+  m29:
+    distance: {method: parallax, value_ly: 5574,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 70 members", read: 2026-11-15}
+  m3:
+    distance: {method: parallax, value_ly: 33203, low: 32942, high: 33464,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 10.18 +/- 0.08 kpc", read: 2026-11-15}
+  m30:
+    distance: {method: parallax, value_ly: 27593, low: 27299, high: 27886,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 8.46 +/- 0.09 kpc", read: 2026-11-15}
+  m34:
+    distance: {method: parallax, value_ly: 1597,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 1095 members", read: 2026-11-15}
+  m35:
+    common: null
+    distance: {method: parallax, value_ly: 2735,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 1609 members", read: 2026-11-15}
+  m36:
+    distance: {method: parallax, value_ly: 3669,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 373 members", read: 2026-11-15}
+  m37:
+    distance: {method: parallax, value_ly: 4571,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 2424 members", read: 2026-11-15}
+  m38:
+    distance: {method: parallax, value_ly: 3540,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 1072 members", read: 2026-11-15}
+  m4:
+    common: null
+    distance: {method: parallax, value_ly: 6034, low: 5969, high: 6099,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 1.85 +/- 0.02 kpc", read: 2026-11-15}
+  m41:
+    distance: {method: parallax, value_ly: 2332,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 948 members", read: 2026-11-15}
+  m44:
+    common: "Beehive Cluster"
+    distance: {method: parallax, value_ly: 598,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 1314 members", read: 2026-11-15}
+  m45:
+    distance: {method: parallax, value_ly: 440,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 1721 members", read: 2026-11-15}
+  m46:
+    distance: {method: parallax, value_ly: 5070,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 2577 members", read: 2026-11-15}
+  m47:
+    distance: {method: parallax, value_ly: 1527,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 1129 members", read: 2026-11-15}
+  m48:
+    distance: {method: parallax, value_ly: 2437,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 778 members", read: 2026-11-15}
+  m5:
+    common: null
+    distance: {method: parallax, value_ly: 24396, low: 24201, high: 24592,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 7.48 +/- 0.06 kpc", read: 2026-11-15}
+  m50:
+    distance: {method: parallax, value_ly: 3120,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 788 members", read: 2026-11-15}
+  m51:
+    distance: {method: TRGB, value_ly: 27980000.0, low: 27010000.0, high: 28960000.0,
+               source: "McQuinn et al. 2016, ApJ 826, 21 (arXiv:1606.04120): tip of the red giant branch, 8.58 +/- 0.10 Mpc (statistical; abstract), with the +/- 0.28 Mpc systematic that McQuinn et al. 2017, AJ 154, 51 (arXiv:1706.06586, section V) add for it; the range is the two added in quadrature, 8.28 to 8.88 Mpc", read: 2026-11-15}
+  m52:
+    distance: {method: parallax, value_ly: 5123,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 1190 members", read: 2026-11-15}
+  m53:
+    distance: {method: parallax, value_ly: 60339, low: 59752, high: 60926,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 18.5 +/- 0.18 kpc", read: 2026-11-15}
+  m54:
+    distance: {method: parallax, value_ly: 85714, low: 84638, high: 86790,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 26.28 +/- 0.33 kpc", read: 2026-11-15}
+  m55:
+    distance: {method: parallax, value_ly: 17449, low: 17286, high: 17612,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 5.35 +/- 0.05 kpc", read: 2026-11-15}
+  m56:
+    distance: {method: parallax, value_ly: 34018, low: 33561, high: 34475,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 10.43 +/- 0.14 kpc", read: 2026-11-15}
+  m6:
+    distance: {method: parallax, value_ly: 1474,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 974 members", read: 2026-11-15}
+  m62:
+    distance: {method: parallax, value_ly: 19667, low: 19374, high: 19961,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 6.03 +/- 0.09 kpc", read: 2026-11-15}
+  m63:
+    distance: {method: TRGB, value_ly: 28930000.0, low: 27920000.0, high: 29940000.0,
+               source: "McQuinn et al. 2017, AJ 154, 51 (arXiv:1706.06586, section V.1): tip of the red giant branch, 8.87 +/- 0.10 (statistical) +/- 0.29 (systematic) Mpc; the range is the two added in quadrature, 8.56 to 9.18 Mpc", read: 2026-11-15}
+  m64:
+    distance: {method: standard-candle, value_ly: 17090000.0, low: 16470000.0, high: 17710000.0,
+               source: "NED-D (ned.ipac.caltech.edu/cgi-bin/nDistance?name=NGC_4826, opened 2026-11-15): Tully et al. 2013, AJ 146, 86 (Cosmicflows-2), mean of surface-brightness-fluctuation, tip-of-the-red-giant-branch and Tully-Fisher distances, distance modulus 28.60 +/- 0.08 mag = 5.24 Mpc, range 5.05 to 5.43 Mpc; the TRGB distance alone in NED is 5.27 Mpc (Mould & Sakai 2008, ApJ 686, L75)", read: 2026-11-15}
+  m67:
+    common: null
+    distance: {method: parallax, value_ly: 2731,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 1844 members", read: 2026-11-15}
+  m68:
+    distance: {method: parallax, value_ly: 33920, low: 33594, high: 34246,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 10.4 +/- 0.1 kpc", read: 2026-11-15}
+  m69:
+    distance: {method: parallax, value_ly: 29028, low: 28702, high: 29354,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 8.9 +/- 0.1 kpc", read: 2026-11-15}
+  m7:
+    distance: {method: parallax, value_ly: 900,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 1427 members", read: 2026-11-15}
+  m70:
+    distance: {method: parallax, value_ly: 30528, low: 30169, high: 30887,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 9.36 +/- 0.11 kpc", read: 2026-11-15}
+  m71:
+    distance: {method: parallax, value_ly: 13046, low: 12883, high: 13209,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 4.0 +/- 0.05 kpc", read: 2026-11-15}
+  m72:
+    distance: {method: parallax, value_ly: 54338, low: 53751, high: 54925,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 16.66 +/- 0.18 kpc", read: 2026-11-15}
+  m75:
+    distance: {method: parallax, value_ly: 66927, low: 65460, high: 68395,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 20.52 +/- 0.45 kpc", read: 2026-11-15}
+  m79:
+    distance: {method: parallax, value_ly: 42661, low: 42074, high: 43248,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 13.08 +/- 0.18 kpc", read: 2026-11-15}
+  m80:
+    distance: {method: parallax, value_ly: 33725, low: 33333, high: 34116,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 10.34 +/- 0.12 kpc", read: 2026-11-15}
+  m87:
+    common: "Virgo A"
+    distance: {method: standard-candle, value_ly: 54790000.0, low: 52510000.0, high: 57400000.0,
+               source: "EHT Collaboration 2019, ApJ 875, L6 (First M87 Event Horizon Telescope Results VI, arXiv:1906.11243, abstract): the distance it adopts, 16.8 +0.8 / -0.7 Mpc, which is also the one scene/blackhole.js and the M87* fact sheet use", read: 2026-11-15}
+  m9:
+    distance: {method: parallax, value_ly: 27071, low: 26614, high: 27528,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 8.3 +/- 0.14 kpc", read: 2026-11-15}
+  m92:
+    distance: {method: parallax, value_ly: 27723, low: 27495, high: 27952,
+               source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 8.5 +/- 0.07 kpc", read: 2026-11-15}
+  m93:
+    distance: {method: parallax, value_ly: 3167,
+               source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 1043 members", read: 2026-11-15}

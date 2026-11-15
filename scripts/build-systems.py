@@ -406,6 +406,13 @@ def build() -> dict:
         if not planets:
             raise SystemExit(f"build-systems: `{host}` has no planet with a period; nothing to draw")
         planets.sort(key=lambda p: p["a_au"])
+        # `temperate` is the list's word for "a planet near the habitable zone" and the Stars tab prints it so (internal #293): it is
+        # true only when one of the planets is in this script's band, on its wide edge, or on the hot side of it with no more than twice
+        # the sunlight the Earth gets (Gliese 12 b gets 1.6 times). GJ 1214 b (17 times) and GJ 1132 b and c (20 and 2.1 times) are hot
+        # worlds and were filed there by hand. The factor two is this project's own line, said here and in registry/systems-list.yaml.
+        near = lambda q: q.get("zone") in ("inside", "edge") or (q.get("zone") == "hotter" and (q.get("insolation_earths") or 99) <= 2)
+        if entry.get("why") == "temperate" and hz is not None and not any(near(q) for q in planets):
+            raise SystemExit(f"build-systems: registry/systems-list.yaml files `{host}` as temperate, but none of its planets is in or near its computed habitable zone")
         system["planets"] = planets
         systems.append(system)
     return {"version": 1, "as_of": as_of, "albedo": ALBEDO, "systems": systems}

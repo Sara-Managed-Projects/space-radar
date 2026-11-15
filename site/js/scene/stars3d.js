@@ -32,6 +32,7 @@ import { stage, isLadderStage } from './stage.js';
 import { bvToKelvin, kelvinToRgb, starTint } from './starfield.js';
 import { COPY, t } from '../copy/en.js';
 import { STARS_NOTABLE } from '../data/starsnotable.js';
+import { EXOTICS } from '../data/exotics.js';
 import { drawnPositions } from './clusters.js';
 import { HOLES_GLSL_HEAD, holeUniforms, setHoles as setHoleUniforms } from './starholes.js';
 import { createPickIndex } from './pickindex.js';
@@ -194,6 +195,10 @@ export function parseStars3d(buffer) {
 const FAMOUS_BY_HIP = new Map(STARS_NOTABLE.filter((s) => s.hip).map((s) => [s.hip, s]));
 const FAMOUS_BY_PROPER = new Map(STARS_NOTABLE.filter((s) => !s.hip && s.proper).map((s) => [s.proper, s]));
 
+// A fact sheet of registry/exotics.yaml that is a star with a `hip:` (Betelgeuse): its distance range and note replace HYG's one
+// Hipparcos distance on the star's own record, so a search for the name and the exotics layer's marker say the same thing (internal #267).
+const EXOTIC_STAR_BY_HIP = new Map(EXOTICS.filter((x) => x.kind === 'star' && x.hip).map((x) => [x.hip, x]));
+
 /** The registry row for a names-file row, or null. */
 function famousRow(proper, hip) {
   if (hip) return FAMOUS_BY_HIP.get(hip) || null;
@@ -216,8 +221,19 @@ export function recordsFromNames(rows) {
     const aliases = [...new Set([catalogueName, bayer, flam, hip ? `HIP ${hip}` : null, iau ? iau.name : null, iau ? iau.designation : null])].filter((a) => a && a !== name); // 0079 r15-a45: + the IAU's name and designation
     const meta = { hip, spect, distLy, mag, lum, aliases, named: true };
     if (iau) meta.iau = iau; // 0079 r15-a45
+    const exotic = hip ? EXOTIC_STAR_BY_HIP.get(hip) : null;
+    if (exotic) {
+      meta.distLy = exotic.distLy;
+      if (exotic.distLyLow != null && exotic.distLyHigh != null) { meta.distLyLow = exotic.distLyLow; meta.distLyHigh = exotic.distLyHigh; }
+      if (exotic.distance_note) meta.distanceNote = exotic.distance_note;
+      meta.distSource = exotic.source;
+      // A star that varies by a magnitude and a half has no three-digit magnitude: the card says "about 0.5, varies".
+      if (Array.isArray(exotic.vmag_range) && exotic.vmag != null) { meta.mag = exotic.vmag; meta.magVaries = exotic.vmag_range; }
+    }
     if (famous) {
       meta.why = famous.why; meta.whySource = famous.source;
+      if (famous.mag != null) meta.mag = famous.mag; // a value the registry corrects (Sirius, internal #311)
+      if (famous.spect) meta.spect = famous.spect;
       // A width read off an interferometer, with its source (registry/stars-notable.yaml): the card then says "measured".
       if (famous.radius_suns > 0) { meta.measuredRadiusSuns = famous.radius_suns; meta.measuredTeffK = famous.teff_k; meta.widthSource = famous.physical_source; }
     }

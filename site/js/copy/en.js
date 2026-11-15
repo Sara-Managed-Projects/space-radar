@@ -89,9 +89,21 @@ function metres(value) {
   return num(n, 1);
 }
 
+/**
+ * A number to at most `max` decimals with no trailing zero: a magnitude is "0.03", "-1.46" and "4.0" never "0.030" (internal #290).
+ * `smart` pads to three significant figures below 1, which prints a digit the measurement does not have.
+ */
+function tidy(value, max = 2) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '';
+  const r = Number(n.toFixed(max));
+  return num(r, (String(Math.abs(r)).split('.')[1] || '').length);
+}
+
 export const fmt = {
   num,
   smart,
+  tidy,
   metres,
   int: (v) => num(v, 0),
   nbsp: NBSP,
@@ -1256,6 +1268,8 @@ export const COPY = {
       fromGuess: 'Distance from {place}, our guess at your place',
       distanceFromEarth: 'Distance from Earth',
       distanceFromSun: 'Distance from the Sun',
+      // The Milky Way's card: the Sun is inside it, so the distance is to its centre (internal #270).
+      distanceToCentre: 'Distance to its centre',
       lightLeft: 'Its light left it',
       sunlight: 'Right now it is',
       hostStar: 'Its star',
@@ -1270,6 +1284,7 @@ export const COPY = {
       distanceNote: 'About that distance',
       objectType: 'What it is',
       constellation: 'Constellation',
+      constellationCentre: 'Its centre is in',
       distanceRange: 'Distance, best estimates',
       planetRadius: 'Width, in Earths',
       planetMass: 'Mass, in Earths',
@@ -1356,6 +1371,12 @@ export const COPY = {
       // A width an interferometer measured (registry/stars-notable.yaml carries the paper).
       sunsWideMeasured: '{n}× the Sun, measured',
       earths: '{n}× Earth',
+      // A planet's radius: "0.92× Earth" did not say what was 0.92 (internal #290).
+      earthsWide: '{n}× Earth’s width',
+      lightYearsAbout: 'about {n} light-years',
+      // The Brightness row: a star that varies, and a patch of sky (the Large Magellanic Cloud) whose single magnitude is spread over a lot of it (internal #290).
+      magnitudeVaries: 'magnitude about {n}, varies',
+      magnitudeSpread: 'magnitude {n}, spread over {deg}° of sky',
       lightYearsRange: '{lo} to {hi} light-years',
       // Sedna's width is 906 km, +314 / -258: nobody has weighed or resolved it, so the card
       // gives the range rather than a middle that reads as a measurement.
@@ -1455,6 +1476,7 @@ export const COPY = {
       captions: {
         altitude: '{u} up',
         away: '{u} away',
+        toCentre: '{u} to its centre',
         speed: '{u}',
         period: '{u} a lap',
         distanceFromSun: '{u} from Sun',

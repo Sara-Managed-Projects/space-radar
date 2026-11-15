@@ -138,6 +138,7 @@ worlds:
     # epsilon ~18), against the planet's geometric albedo 0.488; lifted 4 times under Deep.
     look: {textures: uranus, ring_bands: {inner_km: 41000, outer_km: 52000, albedo: 0.015, widen: 10, stretch: {eye: 1, camera: 1, deep: 4}}}
 
+  # Neptune: radius_km is the volumetric mean radius and period_h the sidereal rotation period; NASA NSSDCA Planetary Fact Sheet, https://nssdc.gsfc.nasa.gov/planetary/factsheet/neptunefact.html, read 2026-11-15 (24 622 km and 16.11 hours, as the sheet of 3 October 2024 prints them; internal #312).
   - id: neptune
     display: Neptune
     parent: sun

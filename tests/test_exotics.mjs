@@ -27,9 +27,9 @@ check(mag && mag.kind === 'magnetar' && Math.abs(mag.periodS - 7.55592) < 1e-9 &
 check(EXOTICS.every((x) => x.source && x.why && Number.isFinite(x.raDeg) && Number.isFinite(x.decDeg) && x.distLy > 0), 'every row has a source, a why, a position and a distance');
 const sgr = EXOTICS.find((x) => x.id === 'sgr-a-star');
 check(sgr && Math.abs(sgr.raDeg - 266.41684) < 0.001 && Math.abs(sgr.decDeg + 29.00781) < 0.001, `Sgr A* converts to RA 266.4168 Dec -29.0078 (${sgr && sgr.raDeg}, ${sgr && sgr.decDeg})`);
-check(sgr.massMsun === 4297000 && sgr.distLy === 26996, 'Sgr A*: 4.297 million Suns, 26 996 ly');
+check(sgr.massMsun === 4297000 && sgr.distLy === 27000, 'Sgr A*: 4.297 million Suns, about 27 000 ly (GRAVITY 2021, rounded; internal #270)');
 const cyg = EXOTICS.find((x) => x.id === 'cygnus-x-1');
-check(cyg.massMsunLow === 13.8 && cyg.massMsunHigh === 17.5 && Math.abs(cyg.massMsun - 15.65) < 1e-9, 'a mass range becomes low/high/mid');
+check(cyg.massMsunLow === 19 && cyg.massMsunHigh === 23.4 && Math.abs(cyg.massMsun - 21.2) < 1e-9, 'a mass range becomes low/high/mid');
 const lgm = EXOTICS.find((x) => x.id === 'psr-b1919-21');
 check(lgm.distLyLow === 300 && lgm.distLyHigh === 3600 && lgm.periodS > 1.33, 'the first pulsar keeps its distance range and its period');
 const ton = EXOTICS.find((x) => x.id === 'ton-618');
@@ -52,7 +52,7 @@ const [mw] = galaxyRow.sample();
 const sgrRec = recs.find((r) => r.id === 'exotic-sgr-a-star');
 const angle = (a, b) => Math.acos(Math.min(1, (a.x * b.x + a.y * b.y + a.z * b.z) / (Math.hypot(a.x, a.y, a.z) * Math.hypot(b.x, b.y, b.z)))) * 180 / Math.PI;
 check(angle(sgrRec.pos, mw.pos) < 0.2, `Sgr A* is within 0.2 deg of the Milky Way record's centre (${angle(sgrRec.pos, mw.pos).toFixed(3)})`);
-check(Math.abs(Math.hypot(sgrRec.pos.x, sgrRec.pos.y, sgrRec.pos.z) / LY - 26996) < 1, 'Sgr A* is 26 996 ly out in km');
+check(Math.abs(Math.hypot(sgrRec.pos.x, sgrRec.pos.y, sgrRec.pos.z) / LY - 27000) < 1, 'Sgr A* is 27 000 ly out in km');
 const { parseDso } = await import(join(JS, 'data/parsers.js'));
 const { readFileSync } = await import('node:fs');
 const dso = parseDso(JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8')));
@@ -66,7 +66,7 @@ stage.setWorld('stellar'); stage.setTime(tMs);
 const p = propagate(cygRecord(), tMs);
 function cygRecord() { return recs.find((r) => r.id === 'exotic-cygnus-x-1'); }
 const v = p && stage.toScene(p, p.frame, tMs);
-check(v && Math.abs(v.length() - 7300) < 1, `Cygnus X-1 is 7 300 units out on the stellar rung (${v && v.length().toFixed(1)})`);
+check(v && Math.abs(v.length() - 7240) < 1, `Cygnus X-1 is 7 240 units out on the stellar rung (${v && v.length().toFixed(1)})`);
 stage.setWorld('earth');
 
 const index = buildIndex(recs, LAYERS);
@@ -84,4 +84,4 @@ check(seeItLine(sgrRec, null, m0, {}) === COPY.sky.needsTelescope, 'Sgr A*, with
 check(drawingLine(betRec).includes('point at this scale') && !drawingLine(betRec).includes('black hole'), `a star among the extremes is drawn as a ring for its own reason: ${drawingLine(betRec)}`);
 
 if (problems.length) { console.error('exotics FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
-console.log('exotics ok: twenty-seven fact sheets with sources; Sgr A* on the galaxy\'s centre, M87* on M87, Cygnus X-1 7 300 ly out; found by name and alias');
+console.log('exotics ok: twenty-seven fact sheets with sources; Sgr A* on the galaxy\'s centre, M87* on M87, Cygnus X-1 7 240 ly out; found by name and alias');

@@ -765,7 +765,7 @@ CASES: list[tuple[str, str, str, str]] = [
      'why: "One point of light, six stars in three pairs, each pair going round the others in orbits '
      'that take centuries, which is the sort of sentence that runs past what a card can print.'),
     ("a famous star with no source",
-     "stars-notable.yaml", '    source: "https://en.wikipedia.org/wiki/Sirius (read 2026-09-22)"\n', ""),
+     "stars-notable.yaml", '    source: "https://en.wikipedia.org/wiki/Sirius (read 2026-09-22); magnitude and class: Bright Star Catalogue HR 2491 (VizieR V/50, read 2026-11-15)"\n', ""),
     ("a famous star's source with no date it was read",
      "stars-notable.yaml", "wiki/Sirius (read 2026-09-22)", "wiki/Sirius"),
     ("a famous star that is already an extreme object with its own fact sheet",

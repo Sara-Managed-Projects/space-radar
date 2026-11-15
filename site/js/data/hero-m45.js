@@ -13,7 +13,7 @@ export const HERO = {
   },
   "frame": {
     "units_ly": 1,
-    "distance_ly": 425,
+    "distance_ly": 440,
     "ra_deg": 56.86917,
     "dec_deg": 24.10528,
     "axes": "x west, y north, z toward the Sun; the record's place at the origin"
@@ -96,7 +96,7 @@ export const HERO = {
         "soft_ly": 0.3,
         "thickness_ly": 2.0,
         "near_ly": 1.0,
-        "note": "z_ly is each star's depth as the app draws it (scene/clusters.js: the cluster's 425 ly plus 8 ly times a fixed number per star, not measured), from the record's place toward the Sun; tests/test_hero_r14neb.mjs holds them to clusters.js. front_ly and thickness_ly (illustrative): the cloud is in front of the stars (Ritchey et al. 2006); how far and how deep are not measured. Positions and V: SIMBAD",
+        "note": "z_ly is each star's depth as the app draws it (scene/clusters.js: the cluster's 440 ly plus 8 ly times a fixed number per star, not measured), from the record's place toward the Sun; tests/test_hero_r14neb.mjs holds them to clusters.js. front_ly and thickness_ly (illustrative): the cloud is in front of the stars (Ritchey et al. 2006); how far and how deep are not measured. Positions and V: SIMBAD",
         "stars": [
           {
             "id": "Alcyone",
@@ -202,7 +202,7 @@ export const HERO = {
     "data_vs_model": "Measured: the distance, the stars' places and magnitudes, the light (the photograph), that the gas is in front of the stars. Reconstructed: the light's depth at each place (from the stars as the app draws them, whose depths within the cluster are a fixed model) and the halo subtraction. Modelled: the change of the scattered light with the view (g = 0.6). Illustrative: how far in front of the stars the dust is and how deep (0.3 ly, a slab 2 ly thick)",
     "geometry": "A slab of dust 2 ly thick just in front of the stars that light it at each place, its light the photograph's spread by the starlight on it; the stars' own depths are scene/clusters.js's fixed numbers within the cluster (not measured), and the card says the depth is a reconstruction",
     "colours": "The photograph's own broadband colours; Deep declared enhanced",
-    "distance": "425 ly, the record's (the cluster's); Gaia puts the cluster at about 440 ly. Lengths on the sky are scaled to the record's",
+    "distance": "440 ly, the record's (the cluster's), from Gaia DR3 (Hunt & Reffert 2023; internal #291). The Messier table's 425 ly it carried before was Hipparcos-era. Lengths on the sky are scaled to the record's",
     "credits": "CREDITS.md section 3l (0078 r14-neb-b); the card's rows name the reconstruction and that no astronomer has reviewed it",
     "by": "Space Radar maintainers",
     "date": "2026-10-26",

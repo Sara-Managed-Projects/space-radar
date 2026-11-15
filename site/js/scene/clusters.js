@@ -31,16 +31,16 @@ const OBLIQUITY = 23.4392911 * D2R; // J2000 mean obliquity, as scene/nebulae.js
  * depthLy: half the depth the regrouped stars are spread over (0: the stars are left where they are).
  */
 export const CLUSTERS = [
-  { id: 'm45', raDeg: 56.86917, decDeg: 24.10528, distLy: 425, radiusDeg: 2.0, nearLy: 280, farLy: 620, depthLy: 8 },
+  { id: 'm45', raDeg: 56.86917, decDeg: 24.10528, distLy: 440, radiusDeg: 2.0, nearLy: 280, farLy: 620, depthLy: 8 },
   { id: 'hyades', raDeg: 66.75, decDeg: 15.8667, distLy: 153, radiusDeg: 6.0, nearLy: 125, farLy: 185, depthLy: 0 },
   // TWO MORE THE EYE KNOWS (public #424, 2026-10-08). The Beehive in Cancer and the Southern
   // Pleiades in Carina are both naked-eye clusters, both in the deep-sky file, and both far enough
   // that the catalogue strings their stars along the line of sight (measured on the shipped
   // binary: 451 to 722 light-years for the Beehive's 24, 376 to 630 for the Southern Pleiades' 21;
   // tests/test_clusters.mjs). depthLy is half the cluster's width on the sky at its distance, from
-  // the deep-sky file's own size: 108.6 arcminutes at 577 light-years is 18 light-years across,
+  // the deep-sky file's own size: 108.6 arcminutes at 598 light-years is 19 light-years across,
   // 50 arcminutes at 486 is 7.
-  { id: 'm44', raDeg: 130.0925, decDeg: 19.67206, distLy: 577, radiusDeg: 1.5, nearLy: 420, farLy: 800, depthLy: 9 },
+  { id: 'm44', raDeg: 130.0925, decDeg: 19.67206, distLy: 598, radiusDeg: 1.5, nearLy: 420, farLy: 800, depthLy: 9 },
   { id: 'ic-2602', raDeg: 160.7396, decDeg: -64.3942, distLy: 486, radiusDeg: 1.0, nearLy: 360, farLy: 650, depthLy: 4 },
 ];
 

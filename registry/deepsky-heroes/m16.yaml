@@ -25,7 +25,7 @@ levels:
   2: "structure: the cavity's far wall as a crisp lit sheet at its reconstructed depth (12 coarse steps and an exact crossing; 8 on T0, or the wall as a mesh), the cloud behind it, the Pillars and the dark columns in front, the O stars and the cluster"
   3: "close-up: the same with half the coordinator's march steps (12 to 32) and the sharp map round the Pillars; the camera may go into the cavity, to the Pillars and NGC 6611"
 # The record's place at the origin (NGC 6611's catalogue centre, site/data/dso.json); the cluster's O stars are 1-4' west.
-frame: {units_ly: 1, distance_ly: 7000, ra_deg: 274.70071, dec_deg: -13.80722, axes: "x west, y north, z toward the Sun; the record's place at the origin"}
+frame: {units_ly: 1, distance_ly: 5540, ra_deg: 274.70071, dec_deg: -13.80722, axes: "x west, y north, z toward the Sun; the record's place at the origin"}
 layers:
   - part: light
     kind: photograph
@@ -47,24 +47,24 @@ layers:
     # One bowl behind the cluster (reconstructed): z = -depth cos(pi/2 q), q its elliptical radius on the sky; outside it
     # the wall is at the cluster's plane. Its size is read from the photograph; its depth is illustrative.
     lobes:
-      - {name: cavity, centre_west_arcmin: 0.0, centre_north_arcmin: 0.0, along_arcmin: 12.0, across_arcmin: 10.0, pa_deg: 0, depth_ly: 14, shape: cos}
-    blend_ly: 8
+      - {name: cavity, centre_west_arcmin: 0.0, centre_north_arcmin: 0.0, along_arcmin: 12.0, across_arcmin: 10.0, pa_deg: 0, depth_ly: 11, shape: cos}
+    blend_ly: 6.3
     outside_ly: 0
-    relief: {power: 0.5, max_ln: 0.4, max_ly: 3.0, fine_arcmin: 0.25, wide_arcmin: 2.0}
+    relief: {power: 0.5, max_ln: 0.4, max_ly: 2.4, fine_arcmin: 0.25, wide_arcmin: 2.0}
     grid: [256, 256]
     check: "From our line each sky point's light is the photograph's (tests/test_hero_emission.mjs holds the column to 5 %); the wall's slope stays under 1.6"
     source: "Hester, J. J. et al. 1996, AJ 111, 2349 (the Pillars photo-evaporated by NGC 6611's O stars); McLeod, A. F. et al. 2015, MNRAS 450, 1057 (arXiv:1504.03323: 'the pillar tips are being ionised and photo-evaporated by the massive members of the nearby cluster NGC 6611', a sketch of the Pillars' 3D geometry round the cluster). The cavity's depth here is illustrative"
   - part: cloud
     kind: dust
     what: "the molecular cloud behind the glowing wall: dark from behind"
-    thickness_ly: 10.0
-    sigma_per_ly: 1.5
+    thickness_ly: 8.0
+    sigma_per_ly: 1.9
     blur_arcmin: 2.0
     source: "the cloud's thickness and opacity here are illustrative (a model)"
   - part: dust
     kind: dust
     what: "the Pillars of Creation and the other dark columns: dust and gas in front of the glowing wall, seen in silhouette"
-    z_ly: 5.0
+    z_ly: 4.0
     # Where the photograph's darkness is taken as dust (west, north from the record's place, arcmin): the three Pillars,
     # the Spire to their south-east and the column east of the cluster. Elsewhere a dark patch is a gap in the glow.
     blobs:
@@ -115,7 +115,7 @@ review:
   data_vs_model: "Measured: the stars' places and magnitudes (SIMBAD), that the Pillars are photo-evaporating columns lit by NGC 6611 and seen against the glow, and the light (the photograph). Reconstructed: the cavity's far wall and its relief, the dark columns' absorption from the photograph's darkness. Model: the columns' and the stars' depths, the cloud behind, each cluster star's place and brightness (seeded)"
   geometry: "One bowl behind the cluster, its size read from the photograph and its depth illustrative, and said so; the Pillars are drawn as dust in front of the wall, not as solid columns"
   colours: "The photograph's own, with each exposure's stretch as the photograph has it; Deep declared enhanced; stars by spectral type"
-  distance: "The record's 7 000 ly (site/data/dso.json, the Messier list). Gaia-era distances to NGC 6611 are nearer (about 1.7 kpc); the record is not this stage's to change (for spec 0078). Lengths on the sky are scaled to the record's distance"
+  distance: "The record's 5 540 ly (site/data/dso.json): the median Gaia DR3 distance of the cluster NGC 6611, 1698 pc (Hunt & Reffert 2023; internal #291), in place of the Messier table's 7 000 ly. Lengths on the sky are scaled to the record's distance"
   credits: "CREDITS.md section 3l, Emission nebulae (0078 r14-neb-a); the card's rows name the reconstruction and that no astronomer has reviewed it"
   by: "Space Radar maintainers"
   date: 2026-10-26

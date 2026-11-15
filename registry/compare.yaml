@@ -15,7 +15,12 @@
 # `spin_h`     sidereal rotation period, hours; `retro: true` where it turns the other way round.
 # `year_d`     sidereal orbit period round the Sun, days; null where the body does not orbit the Sun itself.
 # `sun_mkm`    distance from the Sun, 10^6 km, the semi-major axis; the Moon shares the Earth's.
-# `air`        [[gas, share in per cent by volume]], the sheet's major constituents; [] where it has none.
+# `air`        [[gas, share in per cent by volume]], the sheet's major constituents; [] where it has none. The planets' sheets say
+#              "by volume" (Jupiter's and Neptune's read 2026-11-15); the Sun's sheet gives its photosphere's H 90.965 and He 8.889
+#              per cent without saying by what, and one helium to eleven hydrogens can only be by NUMBER OF ATOMS (by mass the Sun is
+#              about a quarter helium), so the card says so (internal #295).
+# `spin_h`, for the Sun: the sheet's 609.12 h is "the adopted period at 16 deg. latitude"; its formula for the rate, (14.37 - 2.33 sin2 L
+#              - 1.56 sin4 L) deg/day, gives 360/14.37 = 25.1 days at the equator and 360/10.48 = 34.4 at the poles (read 2026-11-15).
 # `air_bar`    surface pressure in bar; null for a body with no surface; `exosphere: true` where the sheet calls
 #              the air an exosphere (Mercury, the Moon).
 # `moons`, `rings`  counts and yes/no as the sheet gives them on `read`; they change as moons are confirmed.
