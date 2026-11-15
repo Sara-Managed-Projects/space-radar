@@ -80,12 +80,11 @@ check(Number.isFinite(BUDGETS.draw_calls_per_stop) && Number.isFinite(BUDGETS.tr
   const probe = readFileSync(join(ROOT, 'tools/walk.probe.js'), 'utf8');
   check(/d\.calls > BUDGETS\.draw_calls_per_stop/.test(probe) && /d\.triangles > BUDGETS\.triangles_per_stop/.test(probe), 'tools/walk.probe.js compares each stop with draw_calls_per_stop and triangles_per_stop');
   check((probe.match(/\.\.\.\(await stopCost\(id\)\)/g) || []).length >= 3, 'at the first stop, each next stop and the last');
-  // 2.0.1: a stop on another world's ground (`stand:`) draws a measured terrain at true scale, held to its own row until
-  // forge #193 brings the terrain under the map's; both walks pick the row by whether the ground stage is up.
+  // Forge #193: a stop on another world's ground (`stand:`) has levels of detail and is held to the map's row; the 2.0.1 row
+  // of its own is gone.
   const cost = readFileSync(join(ROOT, 'tools/trips-cost.probe.js'), 'utf8');
-  check(Number.isFinite(BUDGETS.triangles_per_ground_stop) && BUDGETS.triangles_per_ground_stop > BUDGETS.triangles_per_stop, `registry/budgets.yaml has triangles_per_ground_stop (${BUDGETS.triangles_per_ground_stop}), above the map's row`);
-  check(/onGround && d\.triangles > BUDGETS\.triangles_per_ground_stop/.test(probe) && /!onGround && d\.triangles > BUDGETS\.triangles_per_stop/.test(probe), 'tools/walk.probe.js holds a stop on the ground to triangles_per_ground_stop, and every other stop to triangles_per_stop');
-  check(/BUDGETS\.triangles_per_ground_stop/.test(cost) && /const standing = !!\(ctx\.ground && ctx\.ground\.active\)/.test(cost), 'and so does tools/trips-cost.probe.js, the trips job of screens.yml');
+  check(BUDGETS.triangles_per_ground_stop === undefined, 'registry/budgets.yaml has no triangles_per_ground_stop: the ground stops meet triangles_per_stop');
+  check(!/triangles_per_ground_stop/.test(probe + cost), 'neither probe reads a row for the ground');
   check(/info\.autoReset = false;[\s\S]{0,200}info\.reset\(\);[\s\S]{0,300}finally \{ info\.autoReset = auto; \}/.test(probe), 'the counters are taken over for the frames measured and handed back');
   const walk = readFileSync(join(ROOT, 'tools/walk.mjs'), 'utf8');
   const lockSrc = readFileSync(join(ROOT, 'tools/chromelock.mjs'), 'utf8');
