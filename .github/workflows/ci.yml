@@ -1537,6 +1537,8 @@ jobs:
         run: node tests/test_worldframe.mjs
       - name: "Standing on a landing site: the ground's arithmetic, seven sites' terrain files at true scale with their licences, loaded only on `#ground=` (forge #146)"
         run: node tests/test_ground.mjs
+      - name: "Levels of detail for the landing sites' terrain: blocks tile the grid, no cracks between spacings, nothing invented, under 100 000 triangles a frame at tier 0 (forge #193)"
+        run: node tests/test_groundlod.mjs
       # b200-f7-ground: end
       # b200-c1-culture-helio: begin
       - name: "the heliosphere's ladder rung: 300 AU out, square to the nose, outside the heliopause, one climb and one turn, fetched on the press (forge #148)"
