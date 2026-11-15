@@ -61,4 +61,5 @@ for (const [q, name, note] of [['pha-20001566', '04-icarus', 'Icarus: an Apollo,
 }
 out.files = fileBytes();
 out.firstSentences = Object.fromEntries(Object.entries(out.cards).map(([k, v]) => [k, (v || '').split('\n').slice(0, 6).join(' / ')]));
-return finish(out.problems.length ? { fail: out.problems.join('; '), out } : { out });
+const result = out.problems.length ? { fail: out.problems.join('; '), out } : { out };
+return finish(result);

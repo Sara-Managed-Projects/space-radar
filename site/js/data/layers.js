@@ -1141,7 +1141,7 @@ export const LAYERS = [
     nearKm: 0,
     card: 'asteroid',
     priority: 62,
-    sentence: 'The 2 552 asteroids whose orbits come within 0.05 au of the Earth\u2019s and that are bigger than about 140 metres, each where it is today on JPL\u2019s orbit. A name for a size and an orbit, not a forecast.',
+    sentence: 'The 2 552 asteroids whose orbits come within 0.05 AU of the Earth\u2019s and that are bigger than about 140 metres, each where it is today on JPL\u2019s orbit. A name for a size and an orbit, not a forecast.',
   },
   {
     id: 'comets',

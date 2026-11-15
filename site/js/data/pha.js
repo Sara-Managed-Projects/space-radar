@@ -37,7 +37,7 @@ export function moidWords(moidAu) {
   const km = moidAu * AU_KM;
   const ld = km / LD_KM;
   const n = ld >= 10 ? Math.round(ld) : Math.round(ld * 10) / 10;
-  return `${moidAu.toFixed(4)} au (${n} times the Moon's distance)`;
+  return `${moidAu.toFixed(4)} AU (${n} times the Moon's distance)`;
 }
 
 /**

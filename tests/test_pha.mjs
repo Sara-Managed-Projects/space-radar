@@ -100,14 +100,14 @@ for (const r of recs.filter((_, i) => i % 97 === 0)) {
   const s = firstSentence(r, ctx, m0, { state: 'none' });
   check(typeof s === 'string' && s.length > 20 && s.length <= 160 && !/undefined|NaN|\{/.test(s), `${r.id}: first sentence ${JSON.stringify(s)}`);
   check(/near-Earth/.test(s), `${r.id}: says it is a near-Earth object: ${s}`);
-  check(/within [0-9.]+ au/.test(r.meta.why) && /not a forecast/.test(r.meta.why) && r.meta.why.includes(`magnitude is ${r.meta.absoluteMagnitude} `), `${r.id}: the why line names the distance and its own H and says it is not a forecast`);
+  check(/within [0-9.]+ AU/.test(r.meta.why) && /not a forecast/.test(r.meta.why) && r.meta.why.includes(`magnitude is ${r.meta.absoluteMagnitude} `), `${r.id}: the why line names the distance and its own H and says it is not a forecast`);
   check(/Small-Body Database/.test(sourceLine(r, ctx)) || /Small-Body Database/.test(r.meta.cite), `${r.id}: source line`);
   const h = honestyLine(r, { ...m0, cls: r.cls });
   check(typeof h === 'string' && !/undefined|NaN|\{/.test(h), `${r.id}: honesty ${h}`);
   check(klassLabel(r) === 'Asteroid', `${r.id}: the badge is ${klassLabel(r)}`);
 }
-check(moidWords(0.0338) === "0.0338 au (13 times the Moon's distance)", `moidWords: ${moidWords(0.0338)}`);
-check(moidWords(0.0007) === "0.0007 au (0.3 times the Moon's distance)", `moidWords small: ${moidWords(0.0007)}`);
+check(moidWords(0.0338) === "0.0338 AU (13 times the Moon's distance)", `moidWords: ${moidWords(0.0338)}`);
+check(moidWords(0.0007) === "0.0007 AU (0.3 times the Moon's distance)", `moidWords small: ${moidWords(0.0007)}`);
 
 // --- found ----------------------------------------------------------------------------------------------------------
 const index = buildIndex(recs, LAYERS);
