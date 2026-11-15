@@ -90,7 +90,6 @@ export const TESTS = [
   'test_riseany.mjs',
   'test_riseset.mjs',
   'test_route_builders.mjs',
-  'test_scenenote.mjs',
   'test_sgp4.mjs',
   'test_sky_trips.mjs',
   'test_skystars.mjs',

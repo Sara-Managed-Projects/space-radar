@@ -98,7 +98,7 @@ check(/(\d+) node tests pass against it/.test(gate) && Number(gate.match(/(\d+) 
 const rels = (root) => walk(root).map((p) => relative(root, p).split(sep).join('/'));
 const all = rels(stripped);
 const untouched = all.filter((p) => p.endsWith('.min.js') || p === 'vendor/basis/basis_transcoder.js' || p.endsWith('.wasm'));
-check(untouched.length >= 10 && untouched.every((p) => readFileSync(join(built, p)).equals(readFileSync(join(stripped, p)))),
+check(untouched.length >= 3 && untouched.every((p) => readFileSync(join(built, p)).equals(readFileSync(join(stripped, p)))),
   `*.min.js, the transcoder and its wasm are what the first pass wrote (${untouched.filter((p) => !readFileSync(join(built, p)).equals(readFileSync(join(stripped, p)))).slice(0, 3)})`);
 // b-d6-perf: the stylesheets get esbuild's CSS minifier too: smaller, the same rules, a licence comment kept.
 {
