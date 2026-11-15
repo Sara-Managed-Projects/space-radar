@@ -2849,6 +2849,28 @@ def check_stars_notable(exotics: list) -> list:
                 fail(where, "`radius_suns` and `radius_err_suns` must be positive numbers, the error under the radius; `teff_k` and `teff_err_k`, when given, both")
             if not STAR_SOURCE.match(str(r.get("physical_source") or "")):
                 fail(where, "`physical_source:` must be the page and the day it was read, \"https://... (read YYYY-MM-DD)\"")
+        rot = r.get("rotator")
+        if rot is not None:
+            # A star measured to be flattened by its spin (internal #276): the polar radius, the temperatures at the pole and the
+            # equator, and the viewing angles, all from the paper `physical_source` names. The disc is drawn from these alone.
+            num = lambda k: isinstance(rot, dict) and isinstance(rot.get(k), (int, float)) and not isinstance(rot.get(k), bool)  # noqa: E731
+            if not isinstance(rot, dict) or r.get("radius_suns") is None:
+                fail(where, "`rotator:` is a mapping and needs the equatorial width (`radius_suns`) it is drawn with")
+            else:
+                for k in ("polar_radius_suns", "polar_radius_err_suns", "teff_pole_k", "teff_eq_k", "inclination_deg", "pole_pa_deg"):
+                    if not num(k):
+                        fail(where, f"`rotator.{k}` must be a number")
+                if all(num(k) for k in ("polar_radius_suns", "polar_radius_err_suns", "teff_pole_k", "teff_eq_k", "inclination_deg")):
+                    if not (0 < rot["polar_radius_suns"] < r["radius_suns"] and 0 < rot["polar_radius_err_suns"] < rot["polar_radius_suns"]):
+                        fail(where, "`rotator.polar_radius_suns` must be positive and smaller than the equatorial `radius_suns` (the star is flattened)")
+                    if not (2000 <= rot["teff_eq_k"] < rot["teff_pole_k"] <= 50000):
+                        fail(where, "`rotator.teff_eq_k` must be under `teff_pole_k` (gravity darkening: the equator is the cooler), both within 2 000 to 50 000 K")
+                    if not 0 <= rot["inclination_deg"] <= 90:
+                        fail(where, "`rotator.inclination_deg` is the angle of the spin axis from the line of sight, 0 to 90")
+                if not str(rot.get("model") or "").strip() or not str(rot.get("note") or "").strip():
+                    fail(where, "`rotator.model` and `rotator.note` (the paper's table, quoted) are both required")
+                if "arxiv.org/abs/" not in str(r.get("physical_source") or ""):
+                    fail(where, "a `rotator:` star's `physical_source:` must be the paper's arXiv page")
         if not STAR_SOURCE.match(str(r.get("source") or "")):
             fail(where, "`source:` must be the page and the day it was read: "
                         "\"https://... (read YYYY-MM-DD)\" -- a line with no source is a rumour")

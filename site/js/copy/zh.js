@@ -5084,6 +5084,12 @@ Object.assign(COPY, {
 // b200-f4-cards: end
 // b200-f3-stars: begin -- deep time, the variable stars and the turning black holes (copy/en.stars.js, forge #141, #142, #149), machine-drafted
 Object.assign(COPY, {
+  "rotators": {
+    "widthEq": "赤道处的宽度",
+    "widthPole": "两极间的宽度",
+    "spin": "自转",
+    "spinShape": "因快速自转而变扁：两极约 {pole} K，赤道约 {eq} K（根据望远镜图像拟合的模型）",
+  },
   "deepTime": {
     "title": "深时",
     "back": "−{n} 年",

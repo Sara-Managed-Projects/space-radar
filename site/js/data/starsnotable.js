@@ -189,7 +189,7 @@ export const STARS_NOTABLE = [
     "source": "https://en.wikipedia.org/wiki/Altair (read 2026-09-22)",
     "radius_suns": 2.008,
     "radius_err_suns": 0.006,
-    "physical_source": "https://arxiv.org/abs/1912.03138 (read 2026-11-04)"
+    "physical_source": "https://arxiv.org/abs/1912.03138 (read 2026-11-15)"
   },
   {
     "hip": 21421,
@@ -248,9 +248,9 @@ export const STARS_NOTABLE = [
     "name": "Regulus",
     "why": "The closest bright star to the ecliptic, so the Moon often passes in front of it. It spins every 15.9 hours, near the speed that would tear it apart.",
     "source": "https://en.wikipedia.org/wiki/Regulus (read 2026-09-22)",
-    "radius_suns": 4.16,
-    "radius_err_suns": 0.08,
-    "physical_source": "https://arxiv.org/abs/astro-ph/0501261 (read 2026-11-04)"
+    "radius_suns": 4.21,
+    "radius_err_suns": 0.07,
+    "physical_source": "https://arxiv.org/abs/1105.0740 (read 2026-11-15)"
   },
   {
     "hip": 60718,
@@ -458,9 +458,9 @@ export const STARS_NOTABLE = [
     "name": "Rasalhague",
     "why": "The brightest star in Ophiuchus; its name means 'the head of the serpent collector'. It spins so fast that its equator bulges about 20% wider than its poles.",
     "source": "https://en.wikipedia.org/wiki/Alpha_Ophiuchi (read 2026-11-05)",
-    "radius_suns": 2.97,
-    "radius_err_suns": 0.05,
-    "physical_source": "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
+    "radius_suns": 2.871,
+    "radius_err_suns": 0.02,
+    "physical_source": "https://arxiv.org/abs/0906.2241 (read 2026-11-15)"
   },
   {
     "hip": 62956,

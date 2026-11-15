@@ -5093,6 +5093,12 @@ Object.assign(COPY, {
 // b200-f4-cards: end
 // b200-f3-stars: begin -- deep time, the variable stars and the turning black holes (copy/en.stars.js, forge #141, #142, #149), machine-drafted
 Object.assign(COPY, {
+  "rotators": {
+    "widthEq": "Ширина по екватору",
+    "widthPole": "Ширина від полюса до полюса",
+    "spin": "Обертання",
+    "spinShape": "Сплюснута швидким обертанням: полюси близько {pole} K, екватор близько {eq} K (модель, підігнана під зображення телескопів)",
+  },
   "deepTime": {
     "title": "Глибокий час",
     "back": "−{n} років",

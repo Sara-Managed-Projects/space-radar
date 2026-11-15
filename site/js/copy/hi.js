@@ -5081,6 +5081,12 @@ Object.assign(COPY, {
 // b200-f4-cards: end
 // b200-f3-stars: begin -- deep time, the variable stars and the turning black holes (copy/en.stars.js, forge #141, #142, #149), machine-drafted
 Object.assign(COPY, {
+  "rotators": {
+    "widthEq": "भूमध्य रेखा पर चौड़ाई",
+    "widthPole": "ध्रुव से ध्रुव तक चौड़ाई",
+    "spin": "घूर्णन",
+    "spinShape": "तेज़ घूर्णन से चपटा: ध्रुव लगभग {pole} K, भूमध्य रेखा लगभग {eq} K (दूरबीन की छवियों से मिलाया गया एक मॉडल)",
+  },
   "deepTime": {
     "title": "गहरा समय",
     "back": "−{n} वर्ष",

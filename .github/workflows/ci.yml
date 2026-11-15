@@ -1120,6 +1120,8 @@ jobs:
         run: node tests/test_skywords.mjs
       - name: "a star as a disc of its own size"
         run: node tests/test_stardisc.mjs
+      - name: "stars flattened by their spin: the papers' numbers, the darkening law, the axis (internal #276)"
+        run: node tests/test_rotators.mjs
       - name: "the Sun close up: limb darkening, today's sunspot groups"
         run: node tests/test_sun.mjs
       - name: "Use my location is rounded to 0.1 degree before anything keeps, shows or uses it (spec 0051 req 3, internal #137)"

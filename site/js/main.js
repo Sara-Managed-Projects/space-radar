@@ -1951,7 +1951,7 @@ export async function boot({ setStatus } = {}) {
     if (ctx.starDisc) { ctx.starDisc.set(record, phys); return; }
     if (!starDiscImport) {
       starDiscImport = import('./scene/stardisc.js').then((m) => {
-        ctx.starDisc = m.createStarDisc(scene);
+        ctx.starDisc = m.createStarDisc(scene, { changed: () => ctx.refreshCard && ctx.refreshCard() });
         ctx.starDiscHidePx = m.HIDE_POINT_PX;
         const s = ctx.selected();
         ctx.starDisc.set(s, starPhysicalOf(s));

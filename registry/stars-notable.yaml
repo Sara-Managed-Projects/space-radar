@@ -177,6 +177,20 @@ stars:
     radius_err_suns: 0.006
     physical_source: "https://arxiv.org/abs/1211.6055 (read 2026-11-04)"
     physical_note: "Monnier et al. 2012, \"Resolving Vega and the inclination controversy with CHARA/MIRC\": \"We call Model 3 our 'Concordance Model,' a set of parameters that agrees with CHARA/MIRC interferometry, the SED, v sin i, and rotational period estimates\"; its Table 2 row \"R eq (R_sun)\" reads 2.726 +/- 0.006 (the equatorial radius: Vega spins fast and is seen nearly pole-on, and the polar radius in the same table is 2.418 +/- 0.012)"
+    rotator:
+      polar_radius_suns: 2.418
+      polar_radius_err_suns: 0.012
+      teff_pole_k: 10070
+      teff_pole_err_k: 90
+      teff_eq_k: 8910
+      teff_eq_err_k: 130
+      inclination_deg: 6.2
+      inclination_err_deg: 0.4
+      pole_pa_deg: -58
+      pole_pa_err_deg: 6
+      beta: 0.231
+      model: "Roche model with a von Zeipel law of gravity darkening, fitted to CHARA/MIRC interferometry"
+      note: "Monnier et al. 2012, arXiv:1211.6055 (read 2026-11-15), Table 2, Model 3 (the Concordance Model): Inclination 6.2 +/- 0.4 deg, Pole position angle (East of North) -58 +/- 6 deg, Tpol 10070 +/- 90 K, Rpol 2.418 +/- 0.012 Rsun, beta 0.231 +/- 0.028, and the derived Teq 8910 +/- 130 K, Req 2.726 +/- 0.006 Rsun"
 
   - hip: 24608
     name: Capella
@@ -213,8 +227,19 @@ stars:
     source: "https://en.wikipedia.org/wiki/Altair (read 2026-09-22)"
     radius_suns: 2.008
     radius_err_suns: 0.006
-    physical_source: "https://arxiv.org/abs/1912.03138 (read 2026-11-04)"
+    physical_source: "https://arxiv.org/abs/1912.03138 (read 2026-11-15)"
     physical_note: "Bouchaud et al. 2019, \"A realistic two-dimensional model of Altair\": \"We determined Altair's equatorial radius to be 2.008 +/- 0.006 Rsun\" (the equatorial radius: Altair spins fast and is flattened)"
+    rotator:
+      polar_radius_suns: 1.565
+      polar_radius_err_suns: 0.014
+      teff_pole_k: 8621
+      teff_eq_k: 6780
+      inclination_deg: 50.65
+      inclination_err_deg: 1.23
+      pole_pa_deg: 301.13
+      pole_pa_err_deg: 0.34
+      model: "two-dimensional ESTER model of a rotating star, fitted to interferometry, spectroscopy and pulsations"
+      note: "Bouchaud et al. 2019, arXiv:1912.03138 (read 2026-11-15), Table 5, column \"This work\": i 50.65 +/- 1.23 deg, PA 301.13 +/- 0.34 deg, Tpole 8621 K, Teq 6780 K, Rpole 1.565 +/- 0.014 Rsun, Req 2.008 +/- 0.006 Rsun (the model's own outputs carry no error bars on the two temperatures); Monnier et al. 2007 (arXiv:0706.0867) found a less flattened Altair: Rpole 1.634 +/- 0.011, Req 2.029 +/- 0.007, i 57.2 +/- 1.9 deg"
 
   - hip: 21421
     name: Aldebaran
@@ -270,10 +295,24 @@ stars:
     name: Regulus
     why: "The closest bright star to the ecliptic, so the Moon often passes in front of it. It spins every 15.9 hours, near the speed that would tear it apart."
     source: "https://en.wikipedia.org/wiki/Regulus (read 2026-09-22)"
-    radius_suns: 4.16
-    radius_err_suns: 0.08
-    physical_source: "https://arxiv.org/abs/astro-ph/0501261 (read 2026-11-04)"
-    physical_note: "McAlister et al. 2005, \"First Results from the CHARA Array. I. An Interferometric and Spectroscopic Study of the Fast Rotator alpha Leonis (Regulus)\", Table 5 \"Final Parameters for Regulus\": R_e (R_sun) 4.16 ± 0.08 and R_p (R_sun) 3.14 ± 0.06, at d = 23.5 ± 0.4 pc (the equatorial radius: Regulus spins fast and its text says \"an equatorial radius that is 32 % larger than the polar radius\"; no temperature taken, the paper gives a polar and an equatorial one)"
+    radius_suns: 4.21
+    radius_err_suns: 0.07
+    physical_source: "https://arxiv.org/abs/1105.0740 (read 2026-11-15)"
+    physical_note: "Che et al. 2011, \"Colder and Hotter: Interferometric imaging of beta Cassiopeiae and alpha Leonis\", Table 4, modified von Zeipel (beta-free) column: Req 4.21 +0.07/-0.06 Rsun and Rpol 3.22 +0.05/-0.04 Rsun (the equatorial radius is the width; McAlister et al. 2005, arXiv:astro-ph/0501261, Table 5 had R_e 4.16 +/- 0.08 and R_p 3.14 +/- 0.06 with the same technique)"
+    rotator:
+      polar_radius_suns: 3.22
+      polar_radius_err_suns: 0.05
+      teff_pole_k: 14520
+      teff_pole_err_k: 690
+      teff_eq_k: 11010
+      teff_eq_err_k: 520
+      inclination_deg: 86.3
+      inclination_err_deg: 1.6
+      pole_pa_deg: 258
+      pole_pa_err_deg: 2
+      beta: 0.188
+      model: "Roche model with a modified von Zeipel law (free gravity-darkening exponent), fitted to CHARA/MIRC interferometry"
+      note: "Che et al. 2011, arXiv:1105.0740 (read 2026-11-15), Table 4, modified von Zeipel (beta-free) column: Inclination 86.3 (+1.0/-1.6) deg, Position Angle 258 (+2/-1) deg, Tpol 14520 (+550/-690) K, beta 0.188 (+0.012/-0.029), and the derived Teq 11010 (+420/-520) K, Req 4.21 (+0.07/-0.06) Rsun, Rpol 3.22 (+0.05/-0.04) Rsun (the larger of each pair of errors is kept)"
 
   - hip: 60718
     name: Acrux
@@ -470,10 +509,24 @@ stars:
     name: Rasalhague
     why: "The brightest star in Ophiuchus; its name means 'the head of the serpent collector'. It spins so fast that its equator bulges about 20% wider than its poles."
     source: "https://en.wikipedia.org/wiki/Alpha_Ophiuchi (read 2026-11-05)"
-    radius_suns: 2.97
-    radius_err_suns: 0.05
-    physical_source: "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
-    physical_note: "JMMC Measured stellar Diameters Catalogue (VizieR II/345/jmdc, row HD159561, opened 2026-11-15): limb-darkened diameter 1.855 +/- 0.012 mas, 550..850nm, measured in 2018AJ....155...30B; parallax 67.13 +/- 1.06 mas (Hipparcos new reduction, VizieR I/311/hip2, HIP 86032, opened 2026-11-15); radius = half the diameter x the distance = 2.97 +/- 0.05 solar radii (the two relative errors added in quadrature; 2 diameter row(s) in the catalogue, the most precise taken)"
+    radius_suns: 2.871
+    radius_err_suns: 0.020
+    physical_source: "https://arxiv.org/abs/0906.2241 (read 2026-11-15)"
+    physical_note: "Zhao et al. 2009, \"Imaging and Modeling Rapidly Rotating Stars: Alpha Cephei and Alpha Ophiuchi\", Table 4 (standard model, beta = 0.25 fixed): Req 2.871 +/- 0.020 Rsun and Rpol 2.390 +/- 0.014 Rsun (the equatorial radius is the width; this replaces the limb-darkened disc diameter of the JMMC catalogue, 2.97 +/- 0.05 Rsun, which is one apparent width of a flattened star)"
+    rotator:
+      polar_radius_suns: 2.390
+      polar_radius_err_suns: 0.014
+      teff_pole_k: 9300
+      teff_pole_err_k: 150
+      teff_eq_k: 7460
+      teff_eq_err_k: 100
+      inclination_deg: 87.70
+      inclination_err_deg: 0.43
+      pole_pa_deg: -53.88
+      pole_pa_err_deg: 1.23
+      beta: 0.25
+      model: "Roche model with the standard von Zeipel law (exponent 0.25 fixed), fitted to CHARA/MIRC interferometry"
+      note: "Zhao et al. 2009, arXiv:0906.2241 (read 2026-11-15), Table 4, Standard (beta = 0.25) model: Inclination 87.70 +/- 0.43 deg, Position Angle -53.88 +/- 1.23 deg, Tpol 9300 +/- 150 K, Rpol 2.390 +/- 0.014 Rsun, Teq 7460 +/- 100 K, Req 2.871 +/- 0.020 Rsun"
 
   - hip: 62956
     name: Alioth
