@@ -26,6 +26,11 @@ tagged, and their dates are the day the last change in each landed.
 
 ### Changed
 
+- **Landing-site ground draws far fewer triangles.** The measured terrain of Hadley, Jezero, Gale and the other ground stops is
+  cut into blocks that grow coarser with distance and are thrown out when out of view, so a stop draws about 60 000 to
+  85 000 triangles a frame (it was 410 000 and more at Hadley), on a phone as on a desktop. Heights are only subsampled
+  from the measured posts and blocks are stitched so no crack opens; the skyline and shadows look the same. The 2.0.1
+  budget row for ground stops is gone: they meet the map's `triangles_per_stop`.
 - **Cards and Tonight say what they mean.** A star's class is read in words ("A0V, white mid-life star") with the catalogue's suffixes
   dropped; a planet's year in days also gives Earth years; the Sun's light time and the width and mass numbers say what they measure.
   A card's "How we know" badge splits Place from Picture ("Place: Measured, Picture: Illustrative"), and the card words are the

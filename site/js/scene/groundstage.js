@@ -55,6 +55,7 @@ import {
   transits, parseSkyLink, toLocal, altAz, openingLook,
 } from '../sky/worldframe.js';
 import { skyLook, srgbToLinear } from '../sky/worldair.js';
+import { planGround, blockArrays, latticePosts, mergeArrays, groupBlocks, MERGE_FROM } from './groundlod.js';
 import { isTypingIn } from '../ui/explore.js';
 
 const DEG = Math.PI / 180;
@@ -332,47 +333,17 @@ export function createGroundStage(ctx, opts = {}) {
     return tex;
   }
 
-  /** A patch of a grid as a mesh: posts r0..r1, c0..c1 every `stride`, normals from the full grid, uv over the patch. */
-  function patch(grid, r0, r1, c0, c1, stride, skipCell) {
-    const half = (grid.size - 1) / 2;
-    const rows = Math.floor((r1 - r0) / stride) + 1;
-    const cols = Math.floor((c1 - c0) / stride) + 1;
-    const pos = new Float32Array(rows * cols * 3), nor = new Float32Array(rows * cols * 3), uv = new Float32Array(rows * cols * 2);
-    const H = grid.h, S = grid.size;
-    const at = (r, c) => H[Math.min(S - 1, Math.max(0, r)) * S + Math.min(S - 1, Math.max(0, c))];
-    let k = 0;
-    for (let i = 0; i < rows; i += 1) {
-      const r = r0 + i * stride;
-      for (let j = 0; j < cols; j += 1) {
-        const c = c0 + j * stride;
-        let h = at(r, c);
-        if (!Number.isFinite(h)) h = 0;
-        pos[k * 3] = (c - half) * grid.step; pos[k * 3 + 1] = h; pos[k * 3 + 2] = (r - half) * grid.step;
-        const hx = at(r, c + 1) - at(r, c - 1), hz = at(r + 1, c) - at(r - 1, c);
-        const nx = Number.isFinite(hx) ? -hx / (2 * grid.step) : 0, nz = Number.isFinite(hz) ? -hz / (2 * grid.step) : 0;
-        const len = Math.hypot(nx, 1, nz);
-        nor[k * 3] = nx / len; nor[k * 3 + 1] = 1 / len; nor[k * 3 + 2] = nz / len;
-        uv[k * 2] = (c - c0) / (c1 - c0); uv[k * 2 + 1] = (r - r0) / (r1 - r0);
-        k += 1;
-      }
-    }
-    const index = [];
-    for (let i = 0; i < rows - 1; i += 1) {
-      for (let j = 0; j < cols - 1; j += 1) {
-        const r = r0 + i * stride, c = c0 + j * stride;
-        if (skipCell && skipCell(r, c, stride)) continue;
-        if (!Number.isFinite(at(r, c)) || !Number.isFinite(at(r + stride, c + stride))) continue;
-        const a = i * cols + j, b = a + 1, d = a + cols, e = d + 1;
-        index.push(a, d, b, b, d, e);
-      }
-    }
+  /** A group of blocks of a grid as one mesh (scene/groundlod.js): normals from the full grid, uv over the tile it lies in. */
+  function blockMesh(grid, blocks, material, skipCell) {
+    const arr = mergeArrays(blocks.map((b) => blockArrays(grid, b, b.uvBox, skipCell)));
+    if (!arr.index.length) return null;
     const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    geo.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
-    geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
-    geo.setIndex(index);
+    geo.setAttribute('position', new THREE.BufferAttribute(arr.pos, 3));
+    geo.setAttribute('normal', new THREE.BufferAttribute(arr.nor, 3));
+    geo.setAttribute('uv', new THREE.BufferAttribute(arr.uv, 2));
+    geo.setIndex(new THREE.BufferAttribute(arr.index, 1));
     geo.computeBoundingSphere();
-    return geo;
+    return new THREE.Mesh(geo, material);
   }
 
   function groundMaterial(map, tint) {
@@ -398,42 +369,41 @@ export function createGroundStage(ctx, opts = {}) {
     const farGrid = { size: far.size, step: far.stepM, h: farBytes };
     const meshes = [];
     const t = tier();
-    const stride = t <= 0 ? 4 : 2;
     const halfPosts = (near.size - 1) / 2;
-    const q = Math.floor(near.size / 2);
-    // The near ground: four quarters, one orthoimage tile each.
-    const quarters = [[0, 0], [0, 1], [1, 0], [1, 1]];
-    quarters.forEach(([qr, qc], k) => {
-      const r0 = qr * q, c0 = qc * q;
-      const r1 = Math.min(near.size - 1, r0 + q), c1 = Math.min(near.size - 1, c0 + q);
-      const geo = patch(nearGrid, r0, r1, c0, c1, stride);
-      const mesh = new THREE.Mesh(geo, groundMaterial(texture(dataUrl(base + manifest.orthoNear.files[k])), manifest.tint));
+    // Levels of detail (forge #193, scene/groundlod.js): blocks, each at a spacing that grows with its distance from the
+    // visitor, and thrown out by the camera and the shadow map when out of view.
+    const plan = planGround(manifest, t);
+    // The near ground: blocks of four orthoimage tiles, one material (and one picture) each.
+    const nearMats = manifest.orthoNear.files.map((f) => groundMaterial(texture(dataUrl(base + f)), manifest.tint));
+    for (const grp of groupBlocks(plan.nearBlocks, MERGE_FROM.near)) {
+      const mesh = blockMesh(nearGrid, grp.blocks, nearMats[grp.blocks[0].tile]);
+      if (!mesh) continue;
       mesh.receiveShadow = true;
       mesh.castShadow = true;
       meshes.push(mesh);
-    });
-    // The far ground, with a hole where the near ground is (a far cell wholly inside it is not drawn), lowered a
-    // decimetre so the two never fight where the hole's edge meets the near ground's.
-    const nearHalfM = halfPosts * near.stepM;
-    const fHalf = (far.size - 1) / 2;
-    const skip = (r, c, s) => {
-      const x0 = (c - fHalf) * far.stepM, x1 = (c + s - fHalf) * far.stepM;
-      const z0 = (r - fHalf) * far.stepM, z1 = (r + s - fHalf) * far.stepM;
-      return x0 > -nearHalfM && x1 < nearHalfM && z0 > -nearHalfM && z1 < nearHalfM;
-    };
-    const farGeo = patch(farGrid, 0, far.size - 1, 0, far.size - 1, t <= 0 ? 2 : 1, skip);
-    const farMesh = new THREE.Mesh(farGeo, groundMaterial(texture(dataUrl(base + manifest.orthoFar.file)), manifest.tint));
-    farMesh.position.y = -0.1;
-    farMesh.receiveShadow = true;
-    meshes.push(farMesh);
+    }
+    // The far ground, with a hole where the near ground is, lowered a decimetre so the two never fight where the hole's
+    // edge meets the near ground's.
+    const nearHalfM = plan.nearHalfM;
+    const farMat = groundMaterial(texture(dataUrl(base + manifest.orthoFar.file)), manifest.tint);
+    for (const grp of groupBlocks(plan.farBlocks, MERGE_FROM.far)) {
+      const mesh = blockMesh(farGrid, grp.blocks, farMat, plan.skip);
+      if (!mesh) continue;
+      mesh.position.y = -0.1;
+      mesh.receiveShadow = true;
+      meshes.push(mesh);
+    }
     // A skirt round the near ground, four metres down, so no crack shows between the two grids.
     const skirtPts = [];
     const edge = (r, c) => [(c - halfPosts) * near.stepM, groundHeight(nearGrid, null, (c - halfPosts) * near.stepM, (r - halfPosts) * near.stepM), (r - halfPosts) * near.stepM];
     const ring = [];
-    for (let c = 0; c < near.size; c += stride) ring.push(edge(0, c));
-    for (let r = 0; r < near.size; r += stride) ring.push(edge(r, near.size - 1));
-    for (let c = near.size - 1; c >= 0; c -= stride) ring.push(edge(near.size - 1, c));
-    for (let r = near.size - 1; r >= 0; r -= stride) ring.push(edge(r, 0));
+    // The posts the outer blocks have (planGround's `edge` stride), so the skirt hangs from the mesh's own edge.
+    const lat = latticePosts(near.size, plan.nearBlocks.reduce((m, b) => Math.max(m, b.stride), 1));
+    const last = near.size - 1;
+    for (const c of lat) ring.push(edge(0, c));
+    for (const r of lat) ring.push(edge(r, last));
+    for (let i = lat.length - 1; i >= 0; i -= 1) ring.push(edge(last, lat[i]));
+    for (let i = lat.length - 1; i >= 0; i -= 1) ring.push(edge(lat[i], 0));
     for (let i = 0; i < ring.length; i += 1) {
       const a = ring[i], b = ring[(i + 1) % ring.length];
       if (!Number.isFinite(a[1]) || !Number.isFinite(b[1])) continue;
