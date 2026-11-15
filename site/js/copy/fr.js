@@ -150,6 +150,7 @@ export const RULES = {
 };
 
 export const COPY = {
+  "layerSentence": { "pha": "Les 2 552 astéroïdes dont l’orbite passe à moins de 0,05 ua de celle de la Terre et qui font plus de 140 mètres environ, chacun là où il est aujourd’hui sur l’orbite de JPL. Un nom donné pour une taille et une orbite, pas une prévision." },
   "app": {
     "name": "Space Radar",
     "bootSky": "Construction du ciel…",
@@ -1438,6 +1439,9 @@ export const COPY = {
     "layerCountLoading": "comptage",
     "layerHint": {
       "exoplanets": "Désactivé par défaut. Coche pour les afficher."
+    },
+    "layerName": {
+      "pha": "Astéroïdes dangereux"
     },
     "layerCountEmpty": "vide",
     "layerCountEmptyTitle": "Cette couche est revenue vide : sa source n’a pas pu être lue, ou n’a rien pour l’instant.",

@@ -244,14 +244,20 @@ function daysSince(ms, nowMs) {
   return Math.floor((nowMs - ms) / 86400000);
 }
 
-// WHERE A FAR BODY IS, from its own orbit rather than from a word somebody typed next to it. Each
-// bound is a planet's own, from NASA's planetary fact sheets: Mars's aphelion (1.666 au), Jupiter's
-// perihelion (4.950 au) and Neptune's aphelion (30.33 au). "Beyond Neptune" is written only of an
-// orbit that never comes inside Neptune's, and "far beyond" only of one whose CLOSEST point is more
-// than twice Neptune's distance -- Sedna's is 76 au. Anything else keeps the plain lead, which is
-// true of every dwarf planet there is.
-const MARS_APHELION_AU = 1.666;
-const JUPITER_PERIHELION_AU = 4.95;
+// WHERE A FAR BODY IS, from its own orbit rather than from a word somebody typed next to it. The bounds are the standard ones:
+//  - the MAIN BELT lies between the 4:1 and 2:1 Kirkwood gaps with Jupiter, at 2.06 and 3.27 au (Wikipedia, "Asteroid belt",
+//    "Main belt": "This lies between the strong 4:1 and 2:1 Kirkwood gaps at 2.06 and 3.27 AU"); an orbit that stays inside them is
+//    in the belt, and one that strays out of them (a Hungaria at 1.8 au, a Hilda past 3.7, Encke's comet) is not;
+//  - the INNER Solar System is "the region comprising the terrestrial planets and the asteroids", out to the frost line "a little
+//    less than 5 AU from the Sun" (Wikipedia, "Solar System"); the OUTER one starts there with Jupiter, whose perihelion is
+//    4.950 au (NASA planetary fact sheet), and runs to Neptune's aphelion, 30.33 au (same sheet);
+//  - "Beyond Neptune" is written only of an orbit that never comes inside Neptune's, and "far beyond" only of one whose CLOSEST point
+//    is more than twice Neptune's distance -- Sedna's is 76 au. Anything else keeps the plain lead, which is true of every dwarf
+//    planet there is.
+// Mars's aphelion (1.666 au) was the inner bound until 2026-11-15: it called Icarus at 1.76 au "Outer solar system".
+const MAIN_BELT_INNER_AU = 2.06;
+const MAIN_BELT_OUTER_AU = 3.27;
+const INNER_SYSTEM_EDGE_AU = 4.95;
 const NEPTUNE_APHELION_AU = 30.33;
 
 /** 'belt' | 'beyond' | 'farBeyond' | null, for a record carrying qAu and (if bound) aphelionAu. */
@@ -260,7 +266,7 @@ export function farRegion(record) {
   const q = pickNumber(md, 'qAu');
   const Q = pickNumber(md, 'aphelionAu');
   if (q === null) return null;
-  if (Q !== null && q > MARS_APHELION_AU && Q < JUPITER_PERIHELION_AU) return 'belt';
+  if (Q !== null && q >= MAIN_BELT_INNER_AU && Q <= MAIN_BELT_OUTER_AU) return 'belt';
   if (q > 2 * NEPTUNE_APHELION_AU) return 'farBeyond';
   if (q > NEPTUNE_APHELION_AU) return 'beyond';
   return null;
@@ -1767,12 +1773,12 @@ export function floodControls(record, ctx) {
 
 const cap = (s) => (s ? String(s).charAt(0).toUpperCase() + String(s).slice(1) : s);
 
-/** The region of a body going round the Sun, by its distance from it (the bounds farRegion uses). */
+/** The region of a body going round the Sun, by its distance from it (the bounds above): inner out to the frost line, then outer to Neptune's aphelion. */
 function sunRegion(distSunKm) {
   if (!Number.isFinite(distSunKm)) return null;
   const au = distSunKm / UNITS.AU_KM;
   const G = COPY.card.regime;
-  return au < MARS_APHELION_AU ? G.inner : au < NEPTUNE_APHELION_AU ? G.outer : G.beyondNeptune;
+  return au < INNER_SYSTEM_EDGE_AU ? G.inner : au < NEPTUNE_APHELION_AU ? G.outer : G.beyondNeptune;
 }
 
 /** Earth orbits by height: low under 2 000 km, the geostationary ring within 500 km of 35 786. */

@@ -44,6 +44,7 @@ export const RULES = {
 };
 
 export const COPY = {
+  "layerSentence": { "pha": "2552 האסטרואידים שמסלולם מתקרב למסלול כדור הארץ עד פחות מ-0.05 יחידות אסטרונומיות ושגודלם עולה על כ-140 מטר, כל אחד במקום שבו הוא נמצא היום על פי המסלול של JPL. זה שם לפי גודל ומסלול, לא תחזית." },
   "app": {
     "name": "Space Radar",
     "bootSky": "בונים את השמיים…",
@@ -1353,6 +1354,9 @@ export const COPY = {
     "layerCountLoading": "סופר",
     "layerHint": {
       "exoplanets": "כבוי. אפשר לסמן כדי להציג אותם."
+    },
+    "layerName": {
+      "pha": "אסטרואידים מסוכנים"
     },
     "layerCountEmpty": "ריק",
     "layerCountEmptyTitle": "השכבה הזאת חזרה ריקה: לא הצלחנו לקרוא את המקור שלה, או שאין בו כלום עכשיו.",

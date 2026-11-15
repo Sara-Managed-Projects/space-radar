@@ -38,6 +38,7 @@ export const RULES = {
 };
 
 export const COPY = {
+  "layerSentence": { "pha": "वे 2552 क्षुद्रग्रह जिनकी कक्षा पृथ्वी की कक्षा से 0.05 AU के भीतर आती है और जो लगभग 140 मीटर से बड़े हैं, हर एक वहाँ दिखाया गया है जहाँ वह आज JPL की कक्षा पर है। यह नाम आकार और कक्षा के लिए है, पूर्वानुमान नहीं।" },
   "app": {
     "name": "Space Radar",
     "bootSky": "आकाश बनाया जा रहा है…",
@@ -1347,6 +1348,9 @@ export const COPY = {
     "layerCountLoading": "गिन रहे हैं",
     "layerHint": {
       "exoplanets": "बंद है। दिखाने के लिए टिक करें।"
+    },
+    "layerName": {
+      "pha": "खतरनाक क्षुद्रग्रह"
     },
     "layerCountEmpty": "खाली",
     "layerCountEmptyTitle": "यह परत खाली लौटी: इसका स्रोत पढ़ा नहीं जा सका, या उसमें अभी कुछ नहीं है।",

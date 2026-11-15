@@ -37,6 +37,7 @@ export const RULES = {
 };
 
 export const COPY = {
+  "layerSentence": { "pha": "الكويكبات الـ2552 التي تقترب مداراتها من مدار الأرض بأقل من 0.05 وحدة فلكية ويزيد حجمها على نحو 140 مترًا، وكل منها في موضعه اليوم على مدار JPL. هذا اسم يعتمد على الحجم والمدار، وليس توقعًا." },
   "app": {
     "name": "Space Radar",
     "bootSky": "جارٍ بناء السماء…",
@@ -1346,6 +1347,9 @@ export const COPY = {
     "layerCountLoading": "نعدّ",
     "layerHint": {
       "exoplanets": "مُطفأة. ضع علامة لتظهر."
+    },
+    "layerName": {
+      "pha": "كويكبات خطرة"
     },
     "layerCountEmpty": "فارغة",
     "layerCountEmptyTitle": "عادت هذه الطبقة بلا شيء: تعذرت قراءة مصدرها، أو لا شيء فيه الآن.",

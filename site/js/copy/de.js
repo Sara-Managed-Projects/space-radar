@@ -147,6 +147,7 @@ const TYPES = {
 };
 
 export const COPY = {
+  "layerSentence": { "pha": "Die 2552 Asteroiden, deren Bahn der Erdbahn auf weniger als 0,05 AE nahekommt und die größer als etwa 140 Meter sind, jeder dort, wo er heute auf der Bahn von JPL steht. Ein Name für Größe und Bahn, keine Vorhersage." },
   "app": {
     "name": "Space Radar",
     "bootSky": "Der Himmel wird aufgebaut…",
@@ -1435,6 +1436,9 @@ export const COPY = {
     "layerCountLoading": "zählt",
     "layerHint": {
       "exoplanets": "Standardmäßig aus. Anhaken, um sie zu zeigen."
+    },
+    "layerName": {
+      "pha": "Gefährliche Asteroiden"
     },
     "layerCountEmpty": "leer",
     "layerCountEmptyTitle": "Diese Ebene kam ohne Inhalt zurück: Quelle nicht lesbar oder gerade leer.",

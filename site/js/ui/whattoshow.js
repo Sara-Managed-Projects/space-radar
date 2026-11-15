@@ -135,6 +135,12 @@ export function layerHint(id, C = COPY.controls) {
   return typeof hints[id] === 'string' ? hints[id] : '';
 }
 
+/** The name a row shows: the visitor's language when copy has one for this layer id (controls.layerName), else the registry's English `display`. Pure. */
+export function layerName(layer, C = COPY.controls) {
+  const names = (C && C.layerName) || {};
+  return (layer && typeof names[layer.id] === 'string' && names[layer.id]) || (layer && (layer.display || layer.id)) || '';
+}
+
 /** Switch a layer through main.js, and say so once so anything else can follow (sr:layer-toggle). */
 export function applyLayerOn(ctx, layer, on) {
   let handled = false;
@@ -429,8 +435,8 @@ export function createWhatToShow(ctx, opts = {}) {
       if (hex) swatch.style.background = hex;
       swatch.setAttribute('aria-hidden', 'true');
       if (mixed) swatch.title = C.swatchMixed;
-      const lname = el('span', 'sr-show__name', layer.display || layer.id);
-      lname.title = layer.display || layer.id; // one line, so a long name ends in an ellipsis
+      const lname = el('span', 'sr-show__name', layerName(layer, C));
+      lname.title = layerName(layer, C); // one line, so a long name ends in an ellipsis
       const count = el('span', 'sr-show__count', C.layerCountLoading);
       label.append(box, swatch, lname, count);
       li.appendChild(label);

@@ -49,6 +49,7 @@ tagged, and their dates are the day the last change in each landed.
 
 ### Changed
 
+- **The Hazardous asteroids layer has its name and sentence in all eleven languages.** They sit in `copy/en.js` (`controls.layerName`, `controls.layerSentence`) like the layers' other words, and the What to show row reads them.
 - **Landing-site ground draws far fewer triangles.** The measured terrain of Hadley, Jezero, Gale and the other ground stops is
   cut into blocks that grow coarser with distance and are thrown out when out of view, so a stop draws about 60 000 to
   85 000 triangles a frame (it was 410 000 and more at Hadley), on a phone as on a desktop. Heights are only subsampled
@@ -80,6 +81,7 @@ tagged, and their dates are the day the last change in each landed.
 
 ### Fixed
 
+- **The card's region badge follows the standard bounds.** Icarus at 1.76 AU read "Outer solar system" because the inner Solar System ended at Mars's aphelion; it now runs to the frost line (4.95 AU, Jupiter's perihelion), the main belt is the 2.06 to 3.27 AU between Jupiter's 4:1 and 2:1 gaps, and an orbit that strays out of it (a Hungaria, a Hilda, Encke's comet) is not headed "Asteroid belt".
 - **Links and first screens that opened empty.** A shared link to Andromeda, and "Fly to it" on any galaxy, cluster or
   nebula, now stops near enough to see the object (it was a whole unit away, a million light-years on the Local Group's
   rung). A landing-site link opened at lunar night now opens at the next morning there and says so. Search no longer
