@@ -3458,13 +3458,13 @@ export const COPY = {
   },
   "deepOrion": {
     "card": {
-      "orion": "Sein Licht stammt vom Foto der ESO, seine Form ist nach Wen und O’Dell (1995) und O’Dell (2001) rekonstruiert: eine dünne leuchtende Schicht auf der nahen Seite einer dunklen Wolke, das Trapez etwa 0,2 Parsec davor. Noch nicht von einem Astronomen geprüft."
+      "orion": "Eine dünne, leuchtende Gasschicht auf der nahen Seite einer dunklen Wolke, beleuchtet von den Sternen des Trapezes. Ihr Licht stammt aus dem Foto der ESO, ihre Form ist rekonstruiert nach Wen und O’Dell (1995) und O’Dell (2001), mit dem Trapez etwa 0,65 Lichtjahre vor der Schicht. Noch nicht von einem Astronomen geprüft."
     },
     "rows": {
       "dso-m42": [
         [
           "Seine Form in der Tiefe",
-          "Rekonstruiert. Nahe dem Trapez ist sie gemessen: Die leuchtende Schicht liegt etwa 0,2 Parsec hinter seinem hellsten Stern. Weiter draußen folgt die Tiefe dem veröffentlichten Bild einer Schale, die sich zu uns hin öffnet, nicht einer Messung."
+          "Rekonstruiert. Nahe dem Trapez ist sie gemessen: Die leuchtende Schicht liegt etwa 0,65 Lichtjahre hinter seinem hellsten Stern. Weiter draußen folgt die Tiefe dem veröffentlichten Bild einer Schale, die sich zu uns hin öffnet, nicht einer Messung."
         ],
         [
           "Dahinter",
@@ -4817,6 +4817,53 @@ Object.assign(COPY, {
 });
 // b200-f2-worlds: end
 
+// 2.0.x (internal #300, #302, #303): the glossary's star and deep-sky words, the paragraphs of the Sun, Moon and planets, and the planets' lead lines. de: machine-drafted
+// like the rest of this file (docs/TRANSLATING.md). A key this file already has is left as it is.
+{
+  const topUp = (dst, src) => {
+    for (const k of Object.keys(src)) {
+      if (src[k] && typeof src[k] === 'object' && !Array.isArray(src[k]) && dst[k] && typeof dst[k] === 'object') topUp(dst[k], src[k]);
+      else if (!(k in dst)) dst[k] = src[k];
+    }
+  };
+  topUp(COPY, {
+    "card": {
+      "rows": {
+        "aboutSource": "Der Absatz unter der ersten Zeile, gelesen aus"
+      }
+    },
+    "worldFacts": {
+      "about": {
+        "sun": "Die Sonne ist ein Stern: eine Kugel aus sehr heißem, leuchtendem Gas, vor allem Wasserstoff und Helium, etwa 4,5 Milliarden Jahre alt. Sie ist etwa 100-mal so breit wie die Erde. Ihr Kern ist etwa 15 Millionen Grad Celsius heiß, heiß genug für Kernfusion, und die Energie, die herauskommt, ist das, wovon das meiste Leben auf der Erde abhängt. Ihre Schwerkraft hält das ganze Sonnensystem zusammen.",
+        "moon": "Der Mond ist der einzige natürliche Satellit der Erde, weniger als ein Drittel so breit wie sie. Er ist eine Kugel aus Gestein voller Krater, im Durchschnitt etwa 384 000 km entfernt. Er umrundet die Erde in etwa 27 Tagen und dreht sich in derselben Zeit einmal um sich selbst, deshalb sehen wir immer dieselbe Seite. Die dunklen Flecken sind Ebenen aus altem Lavagestein. Er ist die einzige Welt außerhalb der Erde, die Menschen bisher besucht haben.",
+        "mercury": "Merkur ist der kleinste Planet und der Sonne am nächsten, nur ein wenig größer als der Mond. Sein felsiger Boden ist voller Krater. Er hat fast keine Luft, die die Wärme hält, und schwankt deshalb von etwa 430 °C am Tag bis etwa minus 180 °C in der Nacht. Er umrundet die Sonne in 88 Tagen, schneller als jeder andere Planet.",
+        "venus": "Die Venus ist fast so groß wie die Erde: 12 104 km breit, gegen 12 756. Ihre dicke Luft besteht vor allem aus Kohlendioxid, mit Wolken aus Schwefelsäure, und sie hält die Wärme fest. Der Boden ist etwa 467 °C heiß, heißer als auf dem Merkur und heiß genug, um Blei zu schmelzen, und die Luft drückt etwa 93-mal stärker auf ihn als auf der Erde. Die Venus dreht sich langsam und rückwärts: Eine Drehung dauert 243 Erdentage, länger als ihr Jahr mit 225.",
+        "earth": "Die Erde ist der einzige Ort, von dem wir wissen, dass es dort Lebewesen gibt. Sie ist der einzige Planet mit flüssigem Wasser an der Oberfläche, und der größte Teil davon ist von Ozean bedeckt. Eine Drehung dauert 23,9 Stunden und ein Umlauf um die Sonne 365,25 Tage, deshalb fügen wir alle vier Jahre einen Schalttag ein. Das Sonnenlicht braucht etwa acht Minuten bis hierher.",
+        "mars": "Der Mars ist eine kalte, staubige Wüste, etwa halb so breit wie die Erde. Das Eisen in seinem Gestein und Staub ist gerostet, deshalb sieht er rot aus. Hier liegt der größte Vulkan des Sonnensystems, der Olympus Mons, und ein Canyon-System, die Valles Marineris, mehr als zehnmal länger und breiter als der Grand Canyon. Früher flossen hier Flüsse und lagen Seen; heute ist die Luft dünn, und sein Wasser ist Eis oder sehr salzig.",
+        "jupiter": "Jupiter ist der größte Planet: 11-mal so breit wie die Erde, mit Platz für etwa tausend Erden. Er besteht vor allem aus Wasserstoff und Helium und hat keinen festen Boden, auf dem man stehen könnte. Seine Streifen sind kalte, stürmische Wolken aus Ammoniak und Wasser. Der Große Rote Fleck ist ein Sturm, der breiter ist als die Erde und den Menschen seit mehr als 300 Jahren beobachten. Eine Drehung dauert nur 9,9 Stunden, der kürzeste Tag aller Planeten.",
+        "saturn": "Saturn ist eine Kugel vor allem aus Wasserstoff und Helium, 9-mal so breit wie die Erde. Seine Ringe bestehen aus Milliarden Stücken Eis und Gestein, von Staubkörnern bis zu Brocken so groß wie Häuser. Sie reichen etwa 282 000 km weit hinaus, sind aber meist nur etwa 10 Meter dick. Saturn ist der einzige Planet, der weniger dicht ist als Wasser; eine ausreichend große Badewanne ließe ihn schwimmen.",
+        "uranus": "Uranus ist ein Eisriese, viermal so breit wie die Erde, 1781 von William Herschel mit einem Teleskop entdeckt. Der größte Teil besteht aus einer heißen, dichten Flüssigkeit aus Wasser, Methan und Ammoniak. Das Methan in seiner Lufthülle schluckt rotes Licht, das gibt ihm die blaugrüne Farbe. Er ist um etwa 98 Grad gekippt und rollt deshalb auf der Seite um die Sonne, und an jedem Pol herrscht etwa 21 Jahre lang dunkler Winter.",
+        "neptune": "Neptun ist ein Eisriese, viermal so breit wie die Erde, und der einzige Planet, den man mit bloßem Auge nicht sehen kann. Der Mittag dort ist so dunkel wie bei uns die Dämmerung. Ein Jahr dauert etwa 165 Erdjahre. Entdeckt wurde er 1846 zuerst durch Rechnung: Urbain Le Verrier berechnete aus der seltsamen Bewegung des Uranus, wo er sein muss, und Johann Galle sah ihn in der ersten Nacht, in der er nachschaute."
+      },
+      "aboutSource": "NASA Science, {page} (science.nasa.gov/{path}/), abgerufen am 15. November 2026"
+    },
+    "templates": {
+      "world": {
+        "what": {
+          "earth": "der dritte Planet von der Sonne, die einzige Welt, von der wir wissen, dass es dort Leben gibt",
+          "mercury": "der kleinste Planet und der Sonne am nächsten",
+          "venus": "der zweite Planet von der Sonne, fast so groß wie die Erde",
+          "mars": "der vierte Planet von der Sonne, eine kalte Wüstenwelt",
+          "jupiter": "der fünfte Planet von der Sonne und der größte von allen",
+          "saturn": "der sechste Planet von der Sonne, berühmt für seine Ringe",
+          "uranus": "der siebte Planet von der Sonne, auf die Seite gekippt",
+          "neptune": "der achte Planet von der Sonne und der am weitesten entfernte"
+        }
+      }
+    }
+  });
+}
+
 export const GLOSSARY = {
   "orbit": "Ein Weg um etwas herum, von der Schwerkraft gehalten. Wer seitlich schnell genug ist, fällt immer wieder an der Erde vorbei, statt auf sie.",
   "low Earth orbit": "Die belebte Schale in etwa 200 bis 2 000 km Höhe. Die Station, die meisten Satelliten und die meisten Trümmer sind hier.",
@@ -4856,6 +4903,22 @@ export const GLOSSARY = {
   "totality": "Die Minuten einer totalen Finsternis, in denen die Sonne ganz bedeckt ist. Der Himmel wird so dunkel, dass man Sterne sieht.",
   "annular": "Ringförmig. Bei einer ringförmigen Finsternis ist der Mond zu weit entfernt, um die ganze Sonne zu bedecken, und um ihn bleibt ein heller Ring."
 };
+
+Object.assign(GLOSSARY, {
+  "black hole": "Ein Ort, an dem die Schwerkraft so stark ist, dass nichts herauskommt, nicht einmal Licht. Es ist kein Loch, sondern sehr viel Materie auf kleinem Raum.",
+  "neutron star": "Das kann ein massereicher Stern hinterlassen, wenn er stirbt: mehr als die Masse der Sonne, zusammengepresst zu einer Kugel so breit wie eine Stadt.",
+  "pulsar": "Ein Neutronenstern, der sich schnell dreht und Strahlen aussendet wie ein Leuchtturm. Wir sehen jedes Mal ein Aufblitzen, wenn ein Strahl über uns hinwegstreicht.",
+  "white dwarf": "Der heiße Kern, der übrig bleibt, wenn ein Stern wie die Sonne seine äußeren Schichten abgeworfen hat. Er ist etwa so groß wie die Erde, erzeugt keine neue Wärme und kühlt langsam ab.",
+  "brown dwarf": "Ein Objekt, das zu groß für einen Planeten und zu klein ist, um wie ein Stern zu leuchten: etwa 13- bis 80-mal so schwer wie Jupiter. Es gibt fast kein sichtbares Licht ab.",
+  "nebula": "Eine Wolke aus Gas und Staub im All. Manche leuchten, manche verdecken die Sterne dahinter, und in manchen entstehen neue Sterne.",
+  "galaxy": "Eine riesige Familie aus Sternen, Gas und Staub, von der Schwerkraft zusammengehalten. Unsere, die Milchstraße, ist eine Spirale von mehr als 100 000 Lichtjahren Durchmesser.",
+  "globular cluster": "Eine Kugel aus Zehntausenden bis Millionen Sternen, von der Schwerkraft eng zusammengepackt, in der Mitte am dichtesten.",
+  "habitable zone": "Der Bereich von Abständen zu einem Stern, in dem ein Planet flüssiges Wasser an der Oberfläche haben könnte. Er sagt, dass dort Leben möglich sein könnte, nicht, dass dort welches lebt.",
+  "exoplanet": "Ein Planet, der einen anderen Stern als die Sonne umkreist.",
+  "redshift": "Licht, das zu längeren, röteren Wellen gedehnt ist, weil sich seine Quelle entfernt oder der Raum auf dem Weg gedehnt wurde. Bei fernen Galaxien bedeutet mehr Rotverschiebung: weiter weg.",
+  "supernova": "Die Explosion eines Sterns am Ende seines Lebens oder eines Weißen Zwergs. Einige Wochen lang kann sie so hell leuchten wie eine ganze Galaxie.",
+  "light curve": "Ein Diagramm, wie hell etwas im Lauf der Zeit ist. Ein Puls oder eine Delle darin kann einen Stern zeigen, der anschwillt und schrumpft, oder etwas, das davorzieht."
+});
 
 // b200-f1-find: begin -- Find, the owners, the clouds and the date field (copy/en.find.js, forge #150, #152, #153, #154), machine-drafted
 COPY.timePill.dateJump = "Zu einem Datum (UTC)";
@@ -5172,7 +5235,7 @@ Object.assign(COPY, {
     "measured": "Gemessen: die datierten Helligkeiten der Großen Verdunkelung. Elemente: {cite}.",
     "modelled": "Modelliert: Die Form ist aus Periode, Epoche und Spanne des Katalogs gezeichnet ({cite}).",
     "notes": {
-      "alf-ori": "2019 und 2020 verblasste er auf Größenklasse 1,6, die Große Verdunkelung: Eine ausgestoßene Staubwolke verdeckte einen Teil von ihm.",
+      "alf-ori": "2019 und 2020 verblasste er auf Größenklasse 1,6, die Große Verdunkelung: Eine ausgestoßene Staubwolke verdeckte einen Teil von ihm. Die 6,4 Jahre oben sind sein langer, langsamer Zyklus; der Puls, den die meisten Beobachter kennen, dauert etwa 400 Tage.",
       "omi-cet": "Miras Maxima kommen von Zyklus zu Zyklus Wochen zu früh oder zu spät, so weit können diese Daten danebenliegen.",
       "bet-lyr": "Seine Periode wächst um 19 Sekunden im Jahr; die Kurve folgt der quadratischen Ephemeride von Harmanec und Scholz (1993).",
       "bet-per": "Algols Bedeckungen sind auf die Minute genau: Alle 2,87 Tage wird er etwa zehn Stunden lang schwächer.",

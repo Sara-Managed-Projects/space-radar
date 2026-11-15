@@ -3447,13 +3447,13 @@ export const COPY = {
   },
   "deepOrion": {
     "card": {
-      "orion": "A luz vem da fotografia do ESO, a forma foi reconstruída segundo Wen e O’Dell (1995) e O’Dell (2001): uma camada fina e brilhante na face próxima de uma nuvem escura, com o Trapézio cerca de 0,2 parsec à frente dela. Ainda não revisado por um astrônomo."
+      "orion": "Uma camada fina e brilhante de gás na face próxima de uma nuvem escura, iluminada pelas estrelas do Trapézio. A luz vem da fotografia do ESO e o formato é reconstruído a partir de Wen e O’Dell (1995) e O’Dell (2001), com o Trapézio a cerca de 0,65 ano-luz à frente da camada. Ainda não revisado por um astrônomo."
     },
     "rows": {
       "dso-m42": [
         [
           "A forma em profundidade",
-          "Reconstruída. Perto do Trapézio ela é medida: a camada brilhante fica cerca de 0,2 parsec atrás da estrela mais brilhante dele. Mais longe, a profundidade segue a imagem publicada de uma tigela que se abre em nossa direção, não uma medição."
+          "Reconstruído. Perto do Trapézio ele é medido: a camada brilhante fica a cerca de 0,65 ano-luz atrás da estrela mais brilhante dele. Mais longe, a profundidade segue a imagem publicada de uma tigela que se abre na nossa direção, não uma medição."
         ],
         [
           "Atrás dela",
@@ -4806,6 +4806,53 @@ Object.assign(COPY, {
 });
 // b200-f2-worlds: end
 
+// 2.0.x (internal #300, #302, #303): the glossary's star and deep-sky words, the paragraphs of the Sun, Moon and planets, and the planets' lead lines. pt: machine-drafted
+// like the rest of this file (docs/TRANSLATING.md). A key this file already has is left as it is.
+{
+  const topUp = (dst, src) => {
+    for (const k of Object.keys(src)) {
+      if (src[k] && typeof src[k] === 'object' && !Array.isArray(src[k]) && dst[k] && typeof dst[k] === 'object') topUp(dst[k], src[k]);
+      else if (!(k in dst)) dst[k] = src[k];
+    }
+  };
+  topUp(COPY, {
+    "card": {
+      "rows": {
+        "aboutSource": "O parágrafo sob a primeira linha, lido de"
+      }
+    },
+    "worldFacts": {
+      "about": {
+        "sun": "O Sol é uma estrela: uma bola de gás muito quente e brilhante, feita principalmente de hidrogênio e hélio, com cerca de 4,5 bilhões de anos. Tem cerca de 100 vezes a largura da Terra. O núcleo está a cerca de 15 milhões de graus Celsius, quente o bastante para a fusão nuclear, e a energia que sai dele é aquela de que depende a maior parte da vida na Terra. A gravidade do Sol mantém todo o sistema solar unido.",
+        "moon": "A Lua é o único satélite natural da Terra, com menos de um terço da largura dela. É uma bola de rocha cheia de crateras, a cerca de 384 000 km de distância em média. Dá uma volta em torno da Terra em cerca de 27 dias e gira uma vez no mesmo tempo, por isso vemos sempre o mesmo lado. As manchas escuras são planícies de lava antiga. É o único mundo além da Terra que as pessoas já visitaram.",
+        "mercury": "Mercúrio é o menor planeta e o mais próximo do Sol, só um pouco maior que a Lua. Seu chão rochoso é cheio de crateras. Quase não tem ar para guardar o calor, então vai de cerca de 430 °C de dia a cerca de menos 180 °C à noite. Dá uma volta em torno do Sol em 88 dias, mais rápido que qualquer outro planeta.",
+        "venus": "Vênus tem quase o tamanho da Terra: 12 104 km de diâmetro, contra 12 756. Seu ar espesso é feito principalmente de dióxido de carbono, com nuvens de ácido sulfúrico, e retém o calor. O chão está a cerca de 467 °C, mais quente que Mercúrio e quente o bastante para derreter chumbo, e o ar pressiona o chão cerca de 93 vezes mais forte que na Terra. Vênus gira devagar e para trás: uma volta leva 243 dias terrestres, mais que o seu ano, de 225 dias.",
+        "earth": "A Terra é o único lugar que sabemos ter seres vivos. É o único planeta com água líquida na superfície, e a maior parte dela é coberta por oceano. Uma volta leva 23,9 horas e uma volta em torno do Sol leva 365,25 dias, por isso acrescentamos um dia extra a cada quatro anos. A luz do Sol leva cerca de oito minutos para chegar aqui.",
+        "mars": "Marte é um deserto frio e empoeirado, com cerca de metade da largura da Terra. O ferro de suas rochas e de sua poeira enferrujou, e por isso ele parece vermelho. Tem o maior vulcão do sistema solar, o Monte Olimpo, e um sistema de cânions, o Valles Marineris, com mais de dez vezes o comprimento e a largura do Grand Canyon. Rios e lagos já correram por lá; hoje o ar é fino e a água é gelo ou muito salgada.",
+        "jupiter": "Júpiter é o maior planeta: 11 vezes a largura da Terra, com espaço para cerca de mil Terras lá dentro. É feito principalmente de hidrogênio e hélio, sem chão sólido para pisar. Suas faixas são nuvens frias e ventosas de amônia e água. A Grande Mancha Vermelha é uma tempestade mais larga que a Terra, que as pessoas observam há mais de 300 anos. Uma volta leva só 9,9 horas, o dia mais curto de qualquer planeta.",
+        "saturn": "Saturno é uma bola feita principalmente de hidrogênio e hélio, com 9 vezes a largura da Terra. Seus anéis são bilhões de pedaços de gelo e rocha, de grãos de poeira a blocos do tamanho de casas. Eles se estendem por cerca de 282 000 km, mas costumam ter só cerca de 10 metros de espessura. Saturno é o único planeta menos denso que a água, então uma banheira grande o bastante o faria flutuar.",
+        "uranus": "Urano é um gigante de gelo com quatro vezes a largura da Terra, encontrado em 1781 por William Herschel com um telescópio. A maior parte dele é um fluido quente e denso de água, metano e amônia. O metano no ar absorve a luz vermelha, o que dá a ele uma cor azul-esverdeada. Ele está inclinado cerca de 98 graus, então rola em torno do Sol de lado, e cada polo tem cerca de 21 anos de inverno escuro.",
+        "neptune": "Netuno é um gigante de gelo com quatro vezes a largura da Terra, e o único planeta que não dá para ver só com os olhos. O meio-dia lá tem tão pouca luz quanto o nosso crepúsculo. Um ano leva cerca de 165 anos terrestres. Foi encontrado em 1846, primeiro por cálculos: Urbain Le Verrier deduziu onde ele devia estar a partir do movimento estranho de Urano, e Johann Galle o viu na primeira noite em que olhou."
+      },
+      "aboutSource": "NASA Science, {page} (science.nasa.gov/{path}/), consultado em 15 de novembro de 2026"
+    },
+    "templates": {
+      "world": {
+        "what": {
+          "earth": "o terceiro planeta a partir do Sol, o único mundo que sabemos ter vida",
+          "mercury": "o menor planeta, e o mais próximo do Sol",
+          "venus": "o segundo planeta a partir do Sol, quase do tamanho da Terra",
+          "mars": "o quarto planeta a partir do Sol, um mundo de deserto frio",
+          "jupiter": "o quinto planeta a partir do Sol, e o maior de todos",
+          "saturn": "o sexto planeta a partir do Sol, famoso por seus anéis",
+          "uranus": "o sétimo planeta a partir do Sol, inclinado de lado",
+          "neptune": "o oitavo planeta a partir do Sol, e o mais distante"
+        }
+      }
+    }
+  });
+}
+
 export const GLOSSARY = {
   "orbit": "Um caminho ao redor de algo, mantido pela gravidade. Se você for rápido o bastante para o lado, continua caindo ao largo da Terra, em vez de cair nela.",
   "low Earth orbit": "A camada movimentada de cerca de 200 a 2 000 km de altura. A estação, a maioria dos satélites e a maior parte dos detritos estão aqui.",
@@ -4845,6 +4892,22 @@ export const GLOSSARY = {
   "totality": "Os minutos de um eclipse total em que o Sol fica totalmente coberto. O céu escurece o bastante para ver estrelas.",
   "annular": "Em forma de anel. Num eclipse anular a Lua está longe demais para cobrir o Sol inteiro, e sobra um anel brilhante em volta dela."
 };
+
+Object.assign(GLOSSARY, {
+  "black hole": "Um lugar onde a gravidade é tão forte que nada consegue sair, nem a luz. Não é um buraco, e sim muita matéria reunida num espaço pequeno.",
+  "neutron star": "O que uma estrela de grande massa pode deixar quando morre: mais que a massa do Sol espremida numa bola do tamanho de uma cidade.",
+  "pulsar": "Uma estrela de nêutrons que gira rápido e lança feixes como um farol. Vemos um piscar cada vez que um feixe passa por nós.",
+  "white dwarf": "O núcleo quente que sobra quando uma estrela como o Sol perde as camadas de fora. Do tamanho da Terra, não produz calor novo e esfria devagar.",
+  "brown dwarf": "Um objeto grande demais para ser planeta e pequeno demais para brilhar como estrela: de cerca de 13 a 80 vezes a massa de Júpiter. Emite quase nenhuma luz visível.",
+  "nebula": "Uma nuvem de gás e poeira no espaço. Algumas brilham, algumas escondem as estrelas que ficam atrás e, em algumas, estrelas novas estão se formando.",
+  "galaxy": "Uma enorme família de estrelas, gás e poeira unida pela gravidade. A nossa, a Via Láctea, é uma espiral com mais de 100 000 anos-luz de largura.",
+  "globular cluster": "Uma bola de dezenas de milhares a milhões de estrelas bem apertadas pela gravidade, mais densa no centro.",
+  "habitable zone": "A faixa de distâncias de uma estrela em que um planeta poderia ter água líquida na superfície. Diz que a vida pode ser possível ali, não que alguém viva lá.",
+  "exoplanet": "Um planeta que gira em torno de uma estrela que não é o Sol.",
+  "redshift": "Luz esticada para ondas mais longas e mais vermelhas, porque a fonte se afasta ou o espaço se esticou pelo caminho. Para galáxias distantes, mais desvio para o vermelho quer dizer mais longe.",
+  "supernova": "A explosão de uma estrela no fim da vida, ou de uma anã branca. Por algumas semanas ela pode brilhar tanto quanto uma galáxia inteira.",
+  "light curve": "Um gráfico de quanto algo brilha ao longo do tempo. Uma pulsação ou uma queda nele pode mostrar uma estrela que incha e encolhe, ou algo passando na frente."
+});
 
 // b200-f1-find: begin -- Find, the owners, the clouds and the date field (copy/en.find.js, forge #150, #152, #153, #154), machine-drafted
 COPY.timePill.dateJump = "Ir para uma data (UTC)";
@@ -5161,7 +5224,7 @@ Object.assign(COPY, {
     "measured": "Medido: as magnitudes datadas do Grande Escurecimento. Elementos: {cite}.",
     "modelled": "Modelado: a forma é desenhada a partir do período, da época e da amplitude do catálogo ({cite}).",
     "notes": {
-      "alf-ori": "Em 2019 e 2020 caiu para magnitude 1,6, o Grande Escurecimento: uma nuvem de poeira que ela expeliu escondeu parte dela.",
+      "alf-ori": "Em 2019 e 2020 ela caiu para a magnitude 1,6, o Grande Escurecimento: uma nuvem de poeira que ela havia expelido escondeu parte dela. Os 6,4 anos acima são o seu ciclo longo e lento; a pulsação que a maioria dos observadores conhece é de cerca de 400 dias.",
       "omi-cet": "Os máximos de Mira chegam semanas antes ou depois de um ciclo para o outro; estas datas podem errar o mesmo tanto.",
       "bet-lyr": "Seu período cresce 19 segundos por ano; a curva segue a efeméride quadrática de Harmanec e Scholz (1993).",
       "bet-per": "Os eclipses de Algol acertam no minuto: ela enfraquece cerca de dez horas a cada 2,87 dias.",

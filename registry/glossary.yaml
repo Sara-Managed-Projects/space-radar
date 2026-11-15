@@ -59,3 +59,30 @@ terms:
   - {term: billion light-years, say: "A thousand million light-years, written Gly. The edge of what we can see is about 46 billion light-years away now."}
   - {term: lookback time, say: "How long ago the light we see left something. From far galaxies it is billions of years: we see them as they were then."}
   - {term: comoving distance, say: "How far away something is now, counting how much space has stretched since its light left. Far out it is more than the light's travel time suggests."}
+  # The star and deep-sky words the cards use (internal #300, 2026-11-15). Each says where it was read; the numbers in them are the page's.
+  # black hole: Black Holes - NASA Science, https://science.nasa.gov/universe/black-holes/, read 2026-11-15.
+  - {term: black hole, say: "A place where gravity is so strong that nothing, not even light, can get out. It is not a hole but a lot of matter packed into a small space."}
+  # neutron star: Stars: types - NASA Science, https://science.nasa.gov/universe/stars/types/, read 2026-11-15 (more mass than the Sun in a sphere about as wide as Manhattan is long).
+  - {term: neutron star, say: "What a massive star can leave behind when it dies: more than the Sun's mass squeezed into a ball about as wide as a city."}
+  # pulsar: Pulsar - Wikipedia, https://en.wikipedia.org/wiki/Pulsar, read 2026-11-15; Stars: types - NASA Science, https://science.nasa.gov/universe/stars/types/, read 2026-11-15.
+  - {term: pulsar, say: "A neutron star that spins fast and sends out beams like a lighthouse. We see a blink each time a beam sweeps across us."}
+  # white dwarf: Stars: types - NASA Science, https://science.nasa.gov/universe/stars/types/, read 2026-11-15 (usually Earth-size, produces no new heat, cools over billions of years).
+  - {term: white dwarf, say: "The hot core left when a star like the Sun has shed its outer layers. About as big as the Earth, it makes no new heat and slowly cools."}
+  # brown dwarf: Stars: types - NASA Science, https://science.nasa.gov/universe/stars/types/, read 2026-11-15 (generally 13 to 80 times the mass of Jupiter).
+  - {term: brown dwarf, say: "An object too big to be a planet and too small to shine like a star: about 13 to 80 times Jupiter's mass. It gives out almost no visible light."}
+  # nebula: Nebula - Wikipedia, https://en.wikipedia.org/wiki/Nebula, read 2026-11-15.
+  - {term: nebula, say: "A cloud of gas and dust in space. Some glow, some hide the stars behind them, and in some of them new stars are forming."}
+  # galaxy: Galaxies - NASA Science, https://science.nasa.gov/universe/galaxies/, read 2026-11-15.
+  - {term: galaxy, say: "A huge family of stars, gas and dust held together by gravity. Ours, the Milky Way, is a spiral more than 100 000 light-years across."}
+  # globular cluster: Globular cluster - Wikipedia, https://en.wikipedia.org/wiki/Globular_cluster, read 2026-11-15.
+  - {term: globular cluster, say: "A ball of tens of thousands to millions of stars packed tightly together by gravity, thickest at the centre."}
+  # habitable zone: Habitable Zone - NASA Science, https://science.nasa.gov/exoplanets/habitable-zone/, read 2026-11-15.
+  - {term: habitable zone, say: "The range of distances from a star where a planet could have liquid water on its surface. It says life might be possible there, not that any lives there."}
+  # exoplanet: What is an exoplanet? - NASA Science, https://science.nasa.gov/exoplanets/what-is-an-exoplanet/, read 2026-11-15.
+  - {term: exoplanet, say: "A planet that goes round a star other than the Sun."}
+  # redshift: Redshift - Wikipedia, https://en.wikipedia.org/wiki/Redshift, read 2026-11-15.
+  - {term: redshift, say: "Light stretched to longer, redder waves, because its source moves away or space stretched on the way. For far galaxies, more redshift means farther away."}
+  # supernova: Supernova - Wikipedia, https://en.wikipedia.org/wiki/Supernova, read 2026-11-15.
+  - {term: supernova, say: "The explosion of a star at the end of its life, or of a white dwarf. For a few weeks it can shine as bright as a whole galaxy."}
+  # light curve: Light curve - Wikipedia, https://en.wikipedia.org/wiki/Light_curve, read 2026-11-15.
+  - {term: light curve, say: "A graph of how bright something is over time. A pulse or a dip in it can show a star that swells and shrinks, or something passing in front."}

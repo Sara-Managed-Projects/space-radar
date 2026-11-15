@@ -13,12 +13,12 @@ export const EXOTICS = [
     "id": "sgr-a-star",
     "name": "Sagittarius A*",
     "kind": "blackhole",
-    "why": "The black hole at the centre of our galaxy, four million Suns in one point. Every star on this map goes round it.",
+    "why": "The black hole at the centre of our galaxy, four million Suns in one point. Our galaxy’s stars circle that centre, and the orbits nearest it proved it is there.",
     "aliases": [
       "Sgr A*",
       "galactic centre black hole"
     ],
-    "source": "https://en.wikipedia.org/wiki/Sagittarius_A* (infobox, read 2026-09-08); distance and mass: GRAVITY Collaboration 2021 (arXiv:2101.12098); Reid et al. 2019 (arXiv:1910.03357)",
+    "source": "https://en.wikipedia.org/wiki/Sagittarius_A* (infobox, read 2026-09-08); the star orbits: https://science.nasa.gov/universe/black-holes/ (read 2026-11-15); distance and mass: GRAVITY Collaboration 2021 (arXiv:2101.12098); Reid et al. 2019 (arXiv:1910.03357)",
     "distance_note": "about 27 000 light-years: GRAVITY's orbit of the star S2 gives 8 275 +/- 9 (statistical) +/- 33 (systematic) parsecs, 26 990 +/- 110 light-years; the Milky Way card's model uses Reid et al. 2019's 8.15 +/- 0.15 kiloparsecs, 26 600 +/- 500, which agrees",
     "image": {
       "file": "site/images/eht-sgr-a.jpg",
@@ -36,7 +36,7 @@ export const EXOTICS = [
     "id": "m87-star",
     "name": "M87*",
     "kind": "blackhole",
-    "why": "The first black hole anyone photographed: the orange ring of 2019. Six and a half billion Suns, at the heart of the galaxy M87.",
+    "why": "The first black hole anyone photographed: the glowing ring of 2019. Six and a half billion Suns, at the heart of the galaxy M87.",
     "aliases": [
       "Powehi",
       "Virgo A black hole"
@@ -240,7 +240,7 @@ export const EXOTICS = [
     "id": "betelgeuse",
     "name": "Betelgeuse",
     "kind": "star",
-    "why": "The red shoulder of Orion, a supergiant so large it would swallow Mars. It dimmed in 2019-20 after coughing out a cloud of dust; one day it will go supernova.",
+    "why": "The red shoulder of Orion: in the Sun’s place it would reach the asteroid belt. It dimmed in 2019-20 after a dust cloud; one day it will go supernova.",
     "aliases": [
       "α Orionis",
       "Alpha Orionis",

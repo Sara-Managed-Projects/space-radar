@@ -440,6 +440,11 @@ export const NOTE_KLASSES = new Set(['probe', 'telescope', 'asteroid', 'debris']
 export function whyLine(record) {
   if (!record) return null;
   const klass = klassOf(record);
+  // The ten bodies with a paragraph of our own (copy/en.js worldFacts.about, internal #302).
+  if (klass === 'world') {
+    const about = pick(meta(record), 'about');
+    if (about) return String(about).trim() || null;
+  }
   // A line that NAMES WHERE IT WAS READ (`whySource`) is printed whatever the class: the far-bodies
   // rows (data/sample.js farBodies), filed as asteroids and one comet, whose `why` is one sourced
   // sentence each. It is `why` there and not `note` because `why` is also what makes a record worth
@@ -795,6 +800,8 @@ export function rightNowRows(record, m, passInfo) {
       const whySource = pick(md, 'whySource');
       if (whySource && whyLine(record)) rows.push([R.whySource, String(whySource)]);
     }
+    const aboutSource = pick(md, 'aboutSource');
+    if (aboutSource && whyLine(record)) rows.push([R.aboutSource, String(aboutSource)]);
   }
 
   // 0079 a3: begin

@@ -31,6 +31,8 @@ worlds:
     ephemeris: {propagator: body, body: Sun}
     frames: [inertial]
     look: {textures: sun, corona: true}
+    facts:
+      about: {source: "https://science.nasa.gov/sun/", read: 2026-11-15, says: "The Sun is a 4.5 billion-year-old yellow dwarf star – a hot glowing ball of hydrogen and helium; about 100 times wider than Earth; core about 15 million degrees Celsius, hot enough to sustain nuclear fusion; its gravity holds the solar system together"}
 
   # Earth: radius_km is the volumetric mean radius; NASA NSSDCA Planetary Fact Sheet, https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html, read 2026-10-11.
   - id: earth
@@ -43,6 +45,9 @@ worlds:
     rotation: {kind: earth-gmst}
     frames: [inertial, fixed]
     look: {textures: earth-realistic, atmosphere: true, clouds: true, night_lights: true}
+    facts:
+      what: {source: "https://science.nasa.gov/earth/", read: 2026-11-15, says: "third planet from the Sun ... the only place we know of inhabited by living things"}
+      about: {source: "https://science.nasa.gov/earth/", read: 2026-11-15, says: "the only place we know of inhabited by living things; the only planet in our solar system with liquid water on the surface; most of our planet is covered in liquid water; 23.9 hours; 365.25 days; leap day every four years; about eight minutes for light from the Sun"}
 
   # the Moon: radius_km is the volumetric mean radius; NASA NSSDCA Planetary Fact Sheet, https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html, read 2026-10-11.
   - id: moon
@@ -57,6 +62,8 @@ worlds:
     rotation: {kind: moon-libration}
     frames: [inertial, fixed]
     look: {textures: moon}
+    facts:
+      about: {source: "https://science.nasa.gov/moon/facts/", read: 2026-11-15, says: "Earth's only natural satellite; radius about 1,740 km, less than a third of the width of Earth; average 384,400 km away; orbits in 27 Earth days and rotates in the same time; the only celestial body beyond Earth visited by humans; maria are impact basins filled with lava"}
 
   # The planets are rows from day one so that growing outward is a camera flight rather than a
   # rewrite. They render as textured spheres at true direction and scaled distance until the
@@ -71,6 +78,9 @@ worlds:
     rotation: {kind: sidereal, period_h: 1407.6}
     frames: [inertial, fixed]
     look: {textures: mercury}
+    facts:
+      what: {source: "https://science.nasa.gov/mercury/facts/", read: 2026-11-15, says: "smallest planet in our solar system and nearest to the Sun"}
+      about: {source: "https://science.nasa.gov/mercury/facts/", read: 2026-11-15, says: "smallest planet, nearest the Sun, only slightly larger than Earth's Moon; day 800°F (430°C), night minus 290°F (minus 180°C); 88 Earth days to orbit, faster than any other planet"}
 
   # Venus: radius_km is the volumetric mean radius and period_h the sidereal rotation period; NASA NSSDCA Planetary Fact Sheet, https://nssdc.gsfc.nasa.gov/planetary/factsheet/venusfact.html, read 2026-10-12.
   - id: venus
@@ -83,6 +93,9 @@ worlds:
     rotation: {kind: sidereal, period_h: -5832.6}
     frames: [inertial, fixed]
     look: {textures: venus, atmosphere: thick}
+    facts:
+      what: {source: "https://science.nasa.gov/venus/facts/", read: 2026-11-15, says: "Venus is the second planet from the Sun ... nearly as big around as Earth"}
+      about: {source: "https://science.nasa.gov/venus/facts/", read: 2026-11-15, says: "diameter 12,104 km versus 12,756 km for Earth; surface 467 C; pressure about 93 times sea level on Earth; mostly carbon dioxide with clouds of sulfuric acid; hotter even than Mercury; day 243 Earth days, year 225; spins backward"}
 
   # Mars: radius_km is the volumetric mean radius and period_h the sidereal rotation period; NASA NSSDCA Planetary Fact Sheet, https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html, read 2026-10-11.
   - id: mars
@@ -95,6 +108,9 @@ worlds:
     rotation: {kind: sidereal, period_h: 24.6229}
     frames: [inertial, fixed]
     look: {textures: mars, atmosphere: thin}
+    facts:
+      what: {source: "https://science.nasa.gov/mars/facts/", read: 2026-11-15, says: "the fourth planet from the Sun — is a dusty, cold, desert world"}
+      about: {source: "https://science.nasa.gov/mars/facts/", read: 2026-11-15, says: "about half the size of Earth; iron oxidizes (rusts) so the surface looks red; Olympus Mons the largest volcano; Valles Marineris more than 10 times longer and wider than Earth's Grand Canyon; ancient river valley networks, deltas and lakebeds; thin atmosphere; water-ice and briny water today"}
 
   # Jupiter: radius_km is the volumetric mean radius and period_h the sidereal rotation period; NASA NSSDCA Planetary Fact Sheet, https://nssdc.gsfc.nasa.gov/planetary/factsheet/jupiterfact.html, read 2026-10-11.
   - id: jupiter
@@ -111,6 +127,9 @@ worlds:
     # 123 000-128 940 km, 5e-6, albedo about 0.015. The Amalthea and Thebe gossamer rings (to 221 900 km,
     # 1e-7) are not drawn. Tier 1 and up; stretched 8 000 times under Camera, 40 000 under Deep.
     look: {textures: jupiter, atmosphere: thick, ring_bands: {inner_km: 89400, outer_km: 129500, halo_thick_km: 10000, optical_depth_max: 5.0e-6, albedo: 0.015, stretch: {eye: 0, camera: 8000, deep: 40000}}}
+    facts:
+      what: {source: "https://science.nasa.gov/jupiter/facts/", read: 2026-11-15, says: "largest planet in our solar system ... the fifth planet from the Sun"}
+      about: {source: "https://science.nasa.gov/jupiter/facts/", read: 2026-11-15, says: "11 times wider than Earth; if hollow, 1,000 Earths could fit inside; mostly hydrogen and helium; no true surface; clouds of ammonia and water; Great Red Spot observed for more than 300 years and twice as wide as Earth; day 9.9 hours, the shortest in the solar system"}
 
   # Saturn: radius_km is the volumetric mean radius and period_h the sidereal rotation period; NASA NSSDCA Planetary Fact Sheet, https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturnfact.html, read 2026-10-11.
   - id: saturn
@@ -122,6 +141,9 @@ worlds:
     rotation: {kind: sidereal, period_h: 10.656}
     frames: [inertial, fixed]
     look: {textures: saturn, ring: {inner_km: 74500, outer_km: 140220, texture: saturn-ring}}
+    facts:
+      what: {source: "https://science.nasa.gov/saturn/facts/", read: 2026-11-15, says: "Saturn is the sixth planet from the Sun, and the second-largest planet"}
+      about: {source: "https://science.nasa.gov/saturn/facts/", read: 2026-11-15, says: "9 times wider than Earth; mostly hydrogen and helium; rings of billions of small chunks of ice and rock from dust-sized grains to chunks as big as a house; extend up to 282,000 km, typically about 10 meters thick; the only planet with an average density less than water"}
 
     # Uranus: radius_km is the volumetric mean radius and period_h the sidereal rotation period; NASA NSSDCA Planetary Fact Sheet, https://nssdc.gsfc.nasa.gov/planetary/factsheet/uranusfact.html, read 2026-10-11.
   - id: uranus
@@ -137,6 +159,9 @@ worlds:
     # read 2026-10-16), drawn 10 times wider at their own albedo, about 0.015 ("Albedo (x 10-3): ~15";
     # epsilon ~18), against the planet's geometric albedo 0.488; lifted 4 times under Deep.
     look: {textures: uranus, ring_bands: {inner_km: 41000, outer_km: 52000, albedo: 0.015, widen: 10, stretch: {eye: 1, camera: 1, deep: 4}}}
+    facts:
+      what: {source: "https://science.nasa.gov/uranus/facts/", read: 2026-11-15, says: "the seventh planet from the Sun ... appears to spin sideways"}
+      about: {source: "https://science.nasa.gov/uranus/facts/", read: 2026-11-15, says: "four times wider than Earth; discovered in 1781 by William Herschel, first planet found with a telescope; 80% or more of the mass a hot dense fluid of water, methane and ammonia; methane absorbs red light giving the blue-green color; tilt 97.77 degrees; 21-year-long dark winter"}
 
   # Neptune: radius_km is the volumetric mean radius and period_h the sidereal rotation period; NASA NSSDCA Planetary Fact Sheet, https://nssdc.gsfc.nasa.gov/planetary/factsheet/neptunefact.html, read 2026-11-15 (24 622 km and 16.11 hours, as the sheet of 3 October 2024 prints them; internal #312).
   - id: neptune
@@ -148,6 +173,9 @@ worlds:
     rotation: {kind: sidereal, period_h: 16.11}
     frames: [inertial, fixed]
     look: {textures: neptune}
+    facts:
+      what: {source: "https://science.nasa.gov/neptune/facts/", read: 2026-11-15, says: "Neptune is the eighth and most distant planet in our solar system"}
+      about: {source: "https://science.nasa.gov/neptune/facts/", read: 2026-11-15, says: "four times wider than Earth; the only planet not visible to the naked eye; high noon would seem like dim twilight; 165 Earth years for an orbit; first planet located through mathematical predictions: Le Verrier proposed the position, Galle found it on his first night of searching in 1846"}
     # Its card said "You can see this one with your own eyes" until 2026-09-22, which at magnitude
     # 7.7 it cannot; copy/en.js worldSee.neptune now says what this page does.
     facts:

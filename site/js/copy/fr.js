@@ -3461,13 +3461,13 @@ export const COPY = {
   },
   "deepOrion": {
     "card": {
-      "orion": "Sa lumière vient de la photographie de l’ESO, sa forme est reconstituée d’après Wen et O’Dell (1995) et O’Dell (2001) : une fine couche lumineuse sur la face proche d’un nuage sombre, le Trapèze environ 0,2 parsec devant elle. Pas encore relu par un astronome."
+      "orion": "Une fine couche de gaz lumineux sur la face proche d’un nuage sombre, éclairée par les étoiles du Trapèze. Sa lumière vient de la photographie de l’ESO et sa forme est reconstituée d’après Wen et O’Dell (1995) et O’Dell (2001), le Trapèze se trouvant à environ 0,65 année-lumière devant la couche. Pas encore relu par un astronome."
     },
     "rows": {
       "dso-m42": [
         [
           "Sa forme en profondeur",
-          "Reconstituée. Près du Trapèze, elle est mesurée : la couche lumineuse se trouve à environ 0,2 parsec derrière son étoile la plus brillante. Plus loin, la profondeur suit l’image publiée d’une cuvette qui s’ouvre vers nous, pas une mesure."
+          "Reconstituée. Près du Trapèze, elle est mesurée : la couche lumineuse se trouve à environ 0,65 année-lumière derrière son étoile la plus brillante. Plus loin, la profondeur suit l’image publiée d’une cuvette qui s’ouvre vers nous, pas une mesure."
         ],
         [
           "Derrière elle",
@@ -4820,6 +4820,53 @@ Object.assign(COPY, {
 });
 // b200-f2-worlds: end
 
+// 2.0.x (internal #300, #302, #303): the glossary's star and deep-sky words, the paragraphs of the Sun, Moon and planets, and the planets' lead lines. fr: machine-drafted
+// like the rest of this file (docs/TRANSLATING.md). A key this file already has is left as it is.
+{
+  const topUp = (dst, src) => {
+    for (const k of Object.keys(src)) {
+      if (src[k] && typeof src[k] === 'object' && !Array.isArray(src[k]) && dst[k] && typeof dst[k] === 'object') topUp(dst[k], src[k]);
+      else if (!(k in dst)) dst[k] = src[k];
+    }
+  };
+  topUp(COPY, {
+    "card": {
+      "rows": {
+        "aboutSource": "Le paragraphe sous la première ligne, lu sur"
+      }
+    },
+    "worldFacts": {
+      "about": {
+        "sun": "Le Soleil est une étoile : une boule de gaz très chaud et lumineux, faite surtout d’hydrogène et d’hélium, vieille d’environ 4,5 milliards d’années. Il est environ 100 fois plus large que la Terre. Son cœur est à environ 15 millions de degrés Celsius, assez chaud pour la fusion nucléaire, et l’énergie qui en sort est ce dont dépend la plupart de la vie sur Terre. Sa gravité retient tout le Système solaire.",
+        "moon": "La Lune est le seul satellite naturel de la Terre, large de moins d’un tiers de la Terre. C’est une boule de roche couverte de cratères, à environ 384 000 km de nous en moyenne. Elle fait le tour de la Terre en environ 27 jours et tourne sur elle-même en autant de temps, si bien que l’on voit toujours la même face. Les taches sombres sont des plaines de lave ancienne. C’est le seul monde au-delà de la Terre que des humains ont visité jusqu’ici.",
+        "mercury": "Mercure est la plus petite planète et la plus proche du Soleil, à peine plus grosse que la Lune. Son sol rocheux est couvert de cratères. Elle n’a presque pas d’air pour garder la chaleur : elle passe d’environ 430 °C le jour à environ moins 180 °C la nuit. Elle fait le tour du Soleil en 88 jours, plus vite que toute autre planète.",
+        "venus": "Vénus a presque la taille de la Terre : 12 104 km de large, contre 12 756. Son air épais est surtout du dioxyde de carbone, avec des nuages d’acide sulfurique, et il retient la chaleur. Le sol est à environ 467 °C, plus chaud que sur Mercure et assez chaud pour faire fondre le plomb, et l’air y appuie environ 93 fois plus fort que sur Terre. Vénus tourne lentement et à l’envers : un tour dure 243 jours terrestres, plus longtemps que son année de 225.",
+        "earth": "La Terre est le seul endroit où l’on sait qu’il y a des êtres vivants. C’est la seule planète avec de l’eau liquide à sa surface, en grande partie couverte par l’océan. Un tour sur elle-même dure 23,9 heures et un tour autour du Soleil 365,25 jours, c’est pourquoi on ajoute un jour bissextile tous les quatre ans. La lumière du Soleil met environ huit minutes pour arriver jusqu’ici.",
+        "mars": "Mars est un désert froid et poussiéreux, environ deux fois moins large que la Terre. Le fer de ses roches et de sa poussière a rouillé, ce qui la fait paraître rouge. Elle a le plus grand volcan du Système solaire, Olympus Mons, et un réseau de canyons, Valles Marineris, plus de dix fois plus long et plus large que le Grand Canyon. Des rivières et des lacs y ont coulé autrefois ; aujourd’hui l’air est mince et son eau est de la glace ou très salée.",
+        "jupiter": "Jupiter est la plus grosse planète : 11 fois plus large que la Terre, avec la place pour environ mille Terres à l’intérieur. Elle est faite surtout d’hydrogène et d’hélium, sans sol solide où se poser. Ses bandes sont des nuages froids et venteux d’ammoniac et d’eau. La Grande Tache rouge est une tempête plus large que la Terre, que l’on observe depuis plus de 300 ans. Un tour sur elle-même ne dure que 9,9 heures, le jour le plus court de toutes les planètes.",
+        "saturn": "Saturne est une boule faite surtout d’hydrogène et d’hélium, 9 fois plus large que la Terre. Ses anneaux sont des milliards de morceaux de glace et de roche, des grains de poussière aux blocs gros comme des maisons. Ils s’étendent sur environ 282 000 km, mais n’ont d’habitude qu’environ 10 mètres d’épaisseur. Saturne est la seule planète moins dense que l’eau : une baignoire assez grande la ferait flotter.",
+        "uranus": "Uranus est une géante de glace quatre fois plus large que la Terre, trouvée en 1781 par William Herschel avec un télescope. Sa plus grande partie est un fluide chaud et dense d’eau, de méthane et d’ammoniac. Le méthane de son air absorbe la lumière rouge, ce qui lui donne une couleur bleu-vert. Elle est penchée d’environ 98 degrés, si bien qu’elle roule autour du Soleil sur le côté, et chaque pôle connaît environ 21 ans d’hiver sombre.",
+        "neptune": "Neptune est une géante de glace quatre fois plus large que la Terre, et la seule planète que l’on ne peut pas voir à l’œil nu. Midi y est aussi sombre que notre crépuscule. Une année dure environ 165 années terrestres. Elle a d’abord été trouvée par le calcul, en 1846 : Urbain Le Verrier a calculé où elle devait être d’après le mouvement étrange d’Uranus, et Johann Galle l’a vue dès la première nuit où il a cherché."
+      },
+      "aboutSource": "NASA Science, {page} (science.nasa.gov/{path}/), consulté le 15 novembre 2026"
+    },
+    "templates": {
+      "world": {
+        "what": {
+          "earth": "la troisième planète à partir du Soleil, le seul monde dont on sait qu’il abrite la vie",
+          "mercury": "la plus petite planète, et la plus proche du Soleil",
+          "venus": "la deuxième planète à partir du Soleil, presque de la taille de la Terre",
+          "mars": "la quatrième planète à partir du Soleil, un monde désertique et froid",
+          "jupiter": "la cinquième planète à partir du Soleil, et la plus grosse de toutes",
+          "saturn": "la sixième planète à partir du Soleil, célèbre pour ses anneaux",
+          "uranus": "la septième planète à partir du Soleil, couchée sur le côté",
+          "neptune": "la huitième planète à partir du Soleil, et la plus éloignée"
+        }
+      }
+    }
+  });
+}
+
 export const GLOSSARY = {
   "orbit": "Un trajet autour de quelque chose, retenu par la gravité. Va assez vite sur le côté, et tu continues de tomber à côté de la Terre au lieu de tomber dessus.",
   "low Earth orbit": "La couche très fréquentée d’environ 200 à 2 000 km d’altitude. La station, la plupart des satellites et la plupart des débris sont ici.",
@@ -4859,6 +4906,22 @@ export const GLOSSARY = {
   "totality": "Les minutes d’une éclipse totale pendant lesquelles le Soleil est entièrement caché. Le ciel devient assez sombre pour voir des étoiles.",
   "annular": "En forme d’anneau. Lors d’une éclipse annulaire, la Lune est trop loin pour couvrir tout le Soleil, et un anneau brillant reste autour d’elle."
 };
+
+Object.assign(GLOSSARY, {
+  "black hole": "Un endroit où la gravité est si forte que rien, pas même la lumière, ne peut en sortir. Ce n’est pas un trou, mais beaucoup de matière entassée dans un petit espace.",
+  "neutron star": "Ce qu’une étoile massive peut laisser quand elle meurt : plus que la masse du Soleil écrasée en une boule large à peu près comme une ville.",
+  "pulsar": "Une étoile à neutrons qui tourne vite et envoie des faisceaux comme un phare. Nous voyons un clignotement chaque fois qu’un faisceau passe sur nous.",
+  "white dwarf": "Le cœur chaud qui reste quand une étoile comme le Soleil a perdu ses couches extérieures. À peu près grosse comme la Terre, elle ne fabrique plus de chaleur et refroidit lentement.",
+  "brown dwarf": "Un objet trop gros pour être une planète et trop petit pour briller comme une étoile : environ 13 à 80 fois la masse de Jupiter. Il ne donne presque pas de lumière visible.",
+  "nebula": "Un nuage de gaz et de poussière dans l’espace. Certains brillent, d’autres cachent les étoiles qui sont derrière, et dans certains naissent de nouvelles étoiles.",
+  "galaxy": "Une immense famille d’étoiles, de gaz et de poussière tenue ensemble par la gravité. La nôtre, la Voie lactée, est une spirale large de plus de 100 000 années-lumière.",
+  "globular cluster": "Une boule de dizaines de milliers à des millions d’étoiles serrées par la gravité, plus denses au centre.",
+  "habitable zone": "L’éventail de distances à une étoile où une planète pourrait avoir de l’eau liquide à sa surface. Cela dit que la vie pourrait y être possible, pas qu’il y en a.",
+  "exoplanet": "Une planète qui tourne autour d’une étoile autre que le Soleil.",
+  "redshift": "De la lumière étirée vers des ondes plus longues, plus rouges, parce que sa source s’éloigne ou que l’espace s’est étiré en chemin. Pour les galaxies lointaines, plus de décalage vers le rouge veut dire plus loin.",
+  "supernova": "L’explosion d’une étoile à la fin de sa vie, ou d’une naine blanche. Pendant quelques semaines, elle peut briller autant qu’une galaxie entière.",
+  "light curve": "Un graphique de l’éclat de quelque chose au fil du temps. Une pulsation ou un creux peut montrer une étoile qui gonfle et se contracte, ou quelque chose qui passe devant."
+});
 
 // b200-f1-find: begin -- Find, the owners, the clouds and the date field (copy/en.find.js, forge #150, #152, #153, #154), machine-drafted
 COPY.timePill.dateJump = "Aller à une date (UTC)";
@@ -5175,7 +5238,7 @@ Object.assign(COPY, {
     "measured": "Mesuré : les magnitudes datées du Grand Assombrissement. Éléments : {cite}.",
     "modelled": "Modélisé : la forme est tirée de la période, de l’époque et de l’amplitude du catalogue ({cite}).",
     "notes": {
-      "alf-ori": "En 2019 et 2020, elle a faibli jusqu’à la magnitude 1,6, le Grand Assombrissement : un nuage de poussière qu’elle avait éjecté en cachait une partie.",
+      "alf-ori": "En 2019 et 2020, elle est tombée à la magnitude 1,6, la Grande Atténuation : un nuage de poussière qu’elle avait rejeté en cachait une partie. Les 6,4 ans ci-dessus sont son cycle long et lent ; la pulsation que la plupart des observateurs connaissent dure environ 400 jours.",
       "omi-cet": "Les maxima de Mira arrivent des semaines en avance ou en retard d’un cycle à l’autre ; ces dates peuvent être décalées d’autant.",
       "bet-lyr": "Sa période s’allonge de 19 secondes par an ; la courbe suit l’éphéméride quadratique de Harmanec et Scholz (1993).",
       "bet-per": "Les éclipses d’Algol tiennent à la minute : elle faiblit une dizaine d’heures tous les 2,87 jours.",

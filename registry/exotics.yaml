@@ -32,11 +32,12 @@ exotics:
     dist_ly: 27000
     distance_note: "about 27 000 light-years: GRAVITY's orbit of the star S2 gives 8 275 +/- 9 (statistical) +/- 33 (systematic) parsecs, 26 990 +/- 110 light-years; the Milky Way card's model uses Reid et al. 2019's 8.15 +/- 0.15 kiloparsecs, 26 600 +/- 500, which agrees"
     mass_msun: 4297000
-    why: "The black hole at the centre of our galaxy, four million Suns in one point. Every star on this map goes round it."
+    why: "The black hole at the centre of our galaxy, four million Suns in one point. Our galaxy’s stars circle that centre, and the orbits nearest it proved it is there."
     aliases: [Sgr A*, galactic centre black hole]
     # Read 2026-11-15: GRAVITY Collaboration 2021 (arXiv:2101.12098, Table 2 and Eq. 38): R0 = 8275 +/- 9 stat. +/- 33 sys. pc, mass 4.297 +/- 0.013 million Suns;
     # Reid et al. 2019 (arXiv:1910.03357, abstract): R0 = 8.15 +/- 0.15 kpc. Both opened 2026-11-15.
-    source: "https://en.wikipedia.org/wiki/Sagittarius_A* (infobox, read 2026-09-08); distance and mass: GRAVITY Collaboration 2021 (arXiv:2101.12098); Reid et al. 2019 (arXiv:1910.03357)"
+    # Read 2026-11-15: NASA Science, Black Holes (https://science.nasa.gov/universe/black-holes/): "Astronomers tracked the orbits of several stars near the center of the Milky Way to prove it houses a supermassive black hole"; Sagittarius A* is "4 million times the Sun's mass".
+    source: "https://en.wikipedia.org/wiki/Sagittarius_A* (infobox, read 2026-09-08); the star orbits: https://science.nasa.gov/universe/black-holes/ (read 2026-11-15); distance and mass: GRAVITY Collaboration 2021 (arXiv:2101.12098); Reid et al. 2019 (arXiv:1910.03357)"
     image:
       file: site/images/eht-sgr-a.jpg
       credit: "EHT Collaboration"
@@ -52,7 +53,7 @@ exotics:
     dist_ly: 54800000
     distance_note: "16.8 (+0.8 / -0.7) megaparsecs, 54.8 million light-years, the distance the Event Horizon Telescope adopted for its mass; the same one the M87 galaxy's record and the jet in the black-hole drawing use"
     mass_msun: 6500000000
-    why: "The first black hole anyone photographed: the orange ring of 2019. Six and a half billion Suns, at the heart of the galaxy M87."
+    why: "The first black hole anyone photographed: the glowing ring of 2019. Six and a half billion Suns, at the heart of the galaxy M87."
     aliases: [Powehi, Virgo A black hole]
     # Read 2026-11-15, abstract: 16.8 +0.8 -0.7 Mpc, 6.5 +/- 0.2 stat +/- 0.7 sys billion Suns.
     source: "https://en.wikipedia.org/wiki/Messier_87 (infobox and the M87* section; EHT 2019 mass, read 2026-09-08); distance and mass: EHT Collaboration 2019, ApJ 875, L6 (arXiv:1906.11243)"
@@ -218,9 +219,11 @@ exotics:
     vmag: 0.50                # 0.0 to 1.6 as it breathes
     vmag_range: [0.0, 1.6]
     distance_note: "two model-based estimates, 408 and 548 light-years (Neuhauser et al. 2022 as low as 125 parsecs; Joyce et al. 2020, 168 +27/-15 parsecs, 548 +90/-49 light-years); the Hipparcos parallax gives 500 +/- 65 and radio parallaxes 643 +/- 146 and 724 (+111/-156), because the star's boiling surface moves its centre; Gaia has no usable parallax"
-    why: "The red shoulder of Orion, a supergiant so large it would swallow Mars. It dimmed in 2019-20 after coughing out a cloud of dust; one day it will go supernova."
+    why: "The red shoulder of Orion: in the Sun’s place it would reach the asteroid belt. It dimmed in 2019-20 after a dust cloud; one day it will go supernova."
     aliases: [α Orionis, Alpha Orionis, α Ori]
     # Read 2026-11-15: Joyce et al. 2020 abstract: 168 +27 -15 pc, parallax 5.95 +0.58 -0.85 mas; Wikipedia's Distance section table of published parallaxes.
+    # The size, read the same day in the same abstract: a radius of 764 +116 -62 solar radii, which is 3.55 +0.54 -0.29 AU (1 solar radius = 0.00465 AU), so in the Sun's place it reaches
+    # into the asteroid belt (about 2.1 to 3.3 AU) and not to Jupiter (5.2 AU); older and larger estimates reach further. Its ~400 day pulse: the same abstract.
     source: "https://en.wikipedia.org/wiki/Betelgeuse (infobox, read 2026-09-08; its Distance section table of the published parallaxes, opened 2026-11-15); Joyce et al. 2020 (arXiv:2006.09837)"
 
   - id: ss-433
