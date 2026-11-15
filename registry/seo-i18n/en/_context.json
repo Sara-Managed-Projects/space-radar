@@ -60,7 +60,6 @@
  "03036d2542": "assets/index.html",
  "0305bdf085": "o/beresheet-lunar-library.html [description]",
  "03070d1434": "o/pds-70.html",
- "03141b4a82": "o/sun.html",
  "032993c6a9": "o/sentinel-6-michael-freilich.html [description]",
  "033b4904d4": "lab/index.html (+1 more) [description]",
  "0346ad7e22": "events/bepicolombo-mercury-2026.html",
@@ -173,7 +172,6 @@
  "0937205859": "t/strangest-things.html [description]",
  "094d515b36": "country/tw/index.html",
  "09679e10e6": "o/kepler-90.html",
- "0969950578": "o/neptune.html",
  "098419cf36": "teachers/index.html",
  "098a70d6da": "lab/index.html (+1 more) [description]",
  "0993b96224": "t/strangest-things.html",
@@ -2892,7 +2890,6 @@
  "a0e280e3a0": "solar-system-scope-alternative/index.html (+1 more)",
  "a0e392da2d": "print/index.html [description and title]",
  "a13e519e23": "o/international-space-station.html",
- "a1604d0dce": "o/venus.html",
  "a165ec34b6": "nasa-eyes-alternative/index.html",
  "a173917e31": "t/into-the-helix.html [description]",
  "a17ac2c03b": "o/crab-pulsar.html (+6 more)",
@@ -4001,7 +3998,6 @@
  "e5cc85deb2": "o/55-cancri.html (+4 more) [description]",
  "e5f541ba05": "o/bodes-galaxy.html (+2 more) [description]",
  "e5f880105e": "read/sixty-more-craft-with-shapes-of-their-own.html",
- "e5ff6adce7": "o/18-scorpii.html (+48 more)",
  "e601c260d2": "o/sedna.html [description]",
  "e614ef31c2": "satellites/index.html",
  "e62ee48749": "o/psr-j1614-2230.html",
@@ -4423,5 +4419,9 @@
  "ffdd4381e8": "first-pull-request/index.html",
  "ffe6653b81": "assets/index.html",
  "fffc1b115f": "events/index.html (+1 more) [description]",
- "fffc5e494b": "events/lyrids-2027.html (+1 more)"
+ "fffc5e494b": "events/lyrids-2027.html (+1 more)",
+ "ee06751d5a": "o/18-scorpii.html (+48 more)",
+ "57af0864f0": "o/neptune.html",
+ "a1eb1145d5": "o/sun.html",
+ "714961a804": "o/venus.html"
 }

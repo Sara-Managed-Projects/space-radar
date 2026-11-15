@@ -38,7 +38,6 @@
  "d2dea2d27e": "Spectral type",
  "dbefca6cc3": "See it from here",
  "63f41cc0d4": "Bright enough to see with your own eyes from a dark place.",
- "e5ff6adce7": "Drawn as a point of light, sized by how bright it looks from where you are — the kind of thing, not this exact one.",
  "3ca233748d": "Source: HYG Stellar Database v4.4 (CC BY-SA {n1}), Gaia and Hipparcos distances",
  "798f676ce2": "{name} is a near-Earth object on its own orbit around the Sun. A rubble pile the shape of a peanut. Hayabusa returned about {n1} grains of it in {n2}.",
  "7856017c5c": "A rubble pile the shape of a peanut. Hayabusa returned about {n1} grains of it in {n2}.",
@@ -766,7 +765,6 @@
  "6f441ae11c": "Launched in {d1} with a mirror as wide as Hubble’s, {n1} metres, to survey the sky in infrared light from beyond the Moon.",
  "d9f1db2649": "The first spacecraft to orbit an asteroid and the first to touch down on one: {n1} Eros, which it circled for a year from {d1}.",
  "7cd01772de": "Not by eye: {name} is magnitude {n1} to {n2}, too faint to see without help. Strong binoculars or a telescope show it as a small blue disc.",
- "0969950578": "Lit as a camera exposed for its own sunlight would show it · seen from far off it is a light at its computed brightness: the glow is how a camera records a point too bright to resolve · its rings are at their measured distances, drawn {n1} times wider, {n2} times more opaque and far brighter than they are so that they show: the real ones are faint threads as dark as charcoal · in the Film look the five arcs of its outer ring are drawn as Voyager {n3} saw them in {n4}, going round at their measured speed; where they are round the ring today is not computed, and two of them have since faded or moved.",
  "1a91e1bdca": "It crossed Pluto in nine hours in {n1} after a nine-year fall towards it, and in {n2} flew past Arrokoth, a Kuiper belt rock, the farthest thing ever visited.",
  "d598004051": "A tight knot of hot young stars in the Scorpion's tail, the core of a much larger stellar association.",
  "f596a2913d": "Source: Position and distance: <1>https://en.wikipedia.org/wiki/NGC_6231</1> (infobox, read {n1}-{n2}-{n3})",
@@ -948,7 +946,6 @@
  "58e37c2fec": "It flew through the coma of comet Wild {n1} in {d1}, sent a capsule of comet dust back to Earth in {n2}, then flew past comet Tempel {n3} in {n4}.",
  "92757887c2": "Its year is three weeks shorter than ours, so it slowly laps Earth, watching the Sun’s eruptions from the side; it last passed us in {d1}.",
  "7917bf7840": "{name} is the star at the centre of the solar system, about {n1} km across.",
- "03141b4a82": "Close up, its edge darkens and reddens as a model of its atmosphere says it should; the grain stands for its churning surface: its cells are born, brighten and fade as real granules do, drawn coarser than they are (down to their real size from very close) and far faster, and the bright network toward the edge is illustrative; from very close the photographed map gives way to that drawn surface, which is illustrative too; the corona is illustrative, and drawn far brighter than it is so that it can be seen; the loops and hedgerows on its edge stand where NOAA’s active regions are near the limb, and their shapes and heights are illustrative; the stars beside it are faded, as its glare hides them from any camera.",
  "4c225659c7": "{name} is a satellite going round the Earth. Its night-time camera is where the famous picture of Earth’s city lights comes from.",
  "5a009d8945": "Its night-time camera is where the famous picture of Earth’s city lights comes from.",
  "d20205e4e4": "The first American spacecraft to land softly on the Moon, in {d1}. It sent home more than {n1} pictures.",
@@ -1038,7 +1035,6 @@
  "60ff0c6f3f": "A0Vvar",
  "e38f5d28d9": "The brightest pulsar in the gamma-ray sky, eleven times a second, from a supernova about eleven thousand years ago.",
  "9879f2528b": "Source: <1>https://en.wikipedia.org/wiki/Vela_Pulsar</1> (infobox, read {n1}-{n2}-{n3})",
- "a1604d0dce": "Lit as a camera exposed for its own sunlight would show it · seen from far off it is a light at its computed brightness: the glow is how a camera records a point too bright to resolve · its air is drawn {n1} times thicker than it is so that it shows at this size, and the colour of its haze is illustrative · the glow round its edge and past its day side stands for a deep haze; how thick it is drawn and how far it reaches are illustrative; in the Film look its cloud bands are drawn with {n2} times the contrast its map has, as ultraviolet cameras see them (to an eye they are nearly plain), and the Measured look shows the map as it is; its ground, by radar, is in relief from Magellan’s altimeter, drawn {n3} times steeper and taller than measured.",
  "396022ea67": "Landed in {d1} and sent back pictures and weather reports for more than six years, until {d2}.",
  "7f2eeca0fb": "Drawn from a published model of Viking {n1} lander.",
  "fb2f3a85b2": "Landed in {d1}. In the Martian winter its cameras saw a thin coat of frost on the ground around it.",
@@ -1079,5 +1075,9 @@
  "425bb491c5": "The {name} is about {n1} km above the Earth, going once round it every {n2} minutes at about {n3} km/h, somewhere between {n4}° north and {n5}° south of the equator. Your browser works out the exact spot the moment this page opens, from orbital elements saved on {d1}.",
  "c989913134": "{name} is a space telescope. ESA’s cosmology survey telescope. Its first big batch of data, {n1} square degrees of sky, was released on {d1}.",
  "085326696f": "ESA’s cosmology survey telescope. Its first big batch of data, {n1} square degrees of sky, was released on {d1}.",
- "817555742b": "Drawn as a generic telescope — the kind of thing, not this exact one."
+ "817555742b": "Drawn as a generic telescope — the kind of thing, not this exact one.",
+ "ee06751d5a": "Drawn as a point of light, sized by how bright it looks from where you are.",
+ "57af0864f0": "Lit as a camera exposed for its own sunlight would show it · seen from far off it is a light at its computed brightness: the glow is how a camera records a point too bright to resolve · its rings are at their measured distances, drawn {n1} times wider, {n2} times more opaque and far brighter than they are so that they show: the real ones are faint threads as dark as charcoal, and against the dark sky they would hardly show at all · in the Film look the five arcs of its outer ring are drawn as Voyager {n3} saw them in {n4}, going round at their measured speed; where they are round the ring today is not computed, and two of them have since faded or moved.",
+ "a1eb1145d5": "It is drawn white, as an eye sees it, not the orange that many photographs are tinted: its map is the publisher’s taken to white, with only a faint mottle left; close up, its edge darkens and reddens as a model of its atmosphere says it should; the grain stands for its churning surface: its cells are born, brighten and fade as real granules do, drawn coarser than they are (down to their real size from very close) and far faster, and the bright network toward the edge is illustrative; from very close the photographed map gives way to that drawn surface, which is illustrative too; the corona is illustrative, and drawn far brighter than it is so that it can be seen; the loops and hedgerows on its edge stand where NOAA’s active regions are near the limb, and their shapes and heights are illustrative; the stars beside it are faded, as its glare hides them from any camera.",
+ "714961a804": "Lit as a camera exposed for its own sunlight would show it · seen from far off it is a light at its computed brightness: the glow is how a camera records a point too bright to resolve · its air is drawn {n1} times thicker than it is so that it shows at this size, and the colour of its haze is illustrative · the glow round its edge and past its day side stands for a deep haze; how thick it is drawn and how far it reaches are illustrative; its clouds are drawn as an eye sees them, a pale cream disc, with streaks at {n2} times the contrast of the artist’s map it is drawn from, in both looks; where the faint streaks lie is illustrative, and the bold bands and the Y that ultraviolet cameras see are not drawn; its ground, by radar, is in relief from Magellan’s altimeter, drawn {n3} times steeper and taller than measured."
 }

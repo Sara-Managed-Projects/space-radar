@@ -194,7 +194,7 @@ export const COPY = {
     driftTitle: "La cámara va de una cosa a la siguiente"
   },
   explore: {
-    worldsTitle: "Los mundos",
+    worldsTitle: "Los mundos, distancia a la Tierra ahora",
     worldsDrawn: "Planetas como puntos, más grandes que en la realidad.",
     farTitle: "Lugares lejanos",
     systemsTitle: "Sistemas estelares",
@@ -802,8 +802,8 @@ export const COPY = {
         distanceFromSun: "{u} del Sol",
         distanceFromEarth: "{u} de la Tierra",
         lightTime: "{u} en cada sentido",
-        spin: "{u} por vuelta",
-        yearLength: "{u} por año",
+        spin: "{u} para girar una vez",
+        yearLength: "{u} para dar la vuelta al Sol",
         brightness: "magnitud",
         spectralType: "clase de estrella",
         across: "{u} de ancho",
@@ -1015,16 +1015,16 @@ export const COPY = {
       mercury: "en una pantalla más grande, su relieve sale del modelo de elevación de MESSENGER, dibujado {steep} veces más empinado de lo medido para que los bordes de los cráteres atrapen la luz",
       pluto: "su suelo claro y oscuro se dibuja con {plutoContrast} veces el contraste de la imagen de la cámara, más cerca de los albedos medidos; el lado que New Horizons solo vio de lejos se suaviza a su propia nitidez; en una pantalla más grande, su relieve sale de las alturas estéreo de New Horizons, donde las hay, dibujado {plutoSteep} veces más empinado de lo medido; la fina bruma azul de su borde se dibuja como un brillo, más fuerte a contraluz, cuya intensidad es elegida", // 0078 r14-pluto
       mars: "en una pantalla más grande, su relieve sale de las alturas que midió el altímetro láser de Mars Global Surveyor, dibujadas {mola} veces más empinadas y más altas de lo que son para que un Sol bajo las muestre: las sombras que proyectan el Monte Olimpo y las paredes del cañón son demasiado largas en esa misma proporción.",
-      venus: "el resplandor alrededor de su borde y más allá de su lado diurno representa una bruma profunda; su grosor dibujado y hasta dónde llega son ilustrativos; en el aspecto Cine sus bandas de nubes se dibujan con {uv} veces el contraste de su mapa, como las ven las cámaras ultravioleta (a simple vista son casi lisas), y el aspecto Medido muestra el mapa tal cual es; su suelo, visto por radar, está en relieve con el altímetro de Magellan, dibujado {ground} veces más empinado y alto de lo medido",
+      venus: "el resplandor alrededor de su borde y más allá de su lado diurno representa una bruma profunda; su grosor dibujado y hasta dónde llega son ilustrativos; sus nubes se dibujan como las ve el ojo, un disco de color crema pálido, con vetas cuyo contraste es el del mapa de artista del que parte multiplicado por {uv}, en ambos aspectos; dónde caen las tenues vetas es ilustrativo, y las bandas marcadas y la Y que ven las cámaras ultravioleta no se dibujan; su suelo, visto por radar, está en relieve con el altímetro de Magellan, dibujado {ground} veces más empinado y alto de lo medido",
       neptune: "en el aspecto Cine, los cinco arcos de su anillo exterior se dibujan como los vio la Voyager 2 en 1989, girando a su velocidad medida; no se calcula dónde están hoy a lo largo del anillo, y dos de ellos se han desvanecido o se han movido desde entonces",
       saturn: "sus bandas se dibujan con {contrast} veces el contraste de su mapa, un ajuste nuestro; «Como lo vio Hubble» no está ajustado; en una pantalla más grande y de cerca, los anillos finos y los huecos de sus anillos están donde los midió Cassini a través de la luz de una estrella en 2008, superpuestos al mapa, y en el aspecto Cine se dibuja además el destello de los granos, aún más de cerca; a pocos kilómetros de los anillos, en una pantalla más grande y en el aspecto Cine, sus partículas más grandes, de dos a cinco metros, se dibujan como bolas de hielo: cuántas hay y de qué tamaño siguen la distribución de tamaños medida y la profundidad óptica de los anillos, pero dónde está cada una, y los grumos del anillo A, son ilustrativos, y se dibujan quietas, como si viajaras con ellas"
     },
     worldEarthshine: "su lado oscuro brilla con la luz cenicienta, la propia luz de la Tierra, dibujada {n} veces más brillante de lo que la captaría esa cámara, más o menos como la ve el ojo",
     worldAir: "su aire se dibuja {n} veces más grueso de lo que es para que se vea a este tamaño, y el color de su bruma es ilustrativo",
     worldAirTrue: "su bruma se dibuja a su altura medida, y su color es ilustrativo",
-    worldRings: "sus anillos están a sus distancias medidas, dibujados {w} veces más anchos y mucho más brillantes de lo que son para que se vean: los reales son hilos tan oscuros como el carbón",
-    worldRingsDense: "sus anillos están a sus distancias medidas, dibujados {w} veces más anchos, {d} veces más opacos y mucho más brillantes de lo que son para que se vean: los reales son hilos tenues tan oscuros como el carbón",
-    worldSun: "de cerca, su borde se oscurece y enrojece como dice que debe hacerlo un modelo de su atmósfera; el grano representa su superficie en ebullición: sus celdas nacen, se iluminan y se apagan como lo hacen los gránulos reales, dibujadas más gruesas de lo que son (hasta su tamaño real desde muy cerca) y mucho más rápido, y la red brillante hacia el borde es ilustrativa; desde muy cerca el mapa fotografiado deja paso a esa superficie dibujada, que también es ilustrativa; la corona es ilustrativa, y se dibuja mucho más brillante de lo que es para que pueda verse; los arcos y las protuberancias de su borde están donde las regiones activas de NOAA están cerca del limbo, y sus formas y alturas son ilustrativas; las estrellas a su lado están atenuadas, porque su resplandor las oculta a cualquier cámara",
+    worldRings: "sus anillos están a sus distancias medidas, dibujados {w} veces más anchos y mucho más brillantes de lo que son para que se vean: los reales son hilos tan oscuros como el carbón, y sobre el cielo oscuro apenas se verían",
+    worldRingsDense: "sus anillos están a sus distancias medidas, dibujados {w} veces más anchos, {d} veces más opacos y mucho más brillantes de lo que son para que se vean: los reales son hilos tenues tan oscuros como el carbón, y sobre el cielo oscuro apenas se verían",
+    worldSun: "se dibuja blanco, como lo ve el ojo, y no del naranja con que muchas fotografías lo tiñen: su mapa es el de su editor, llevado al blanco, con solo un leve moteado; de cerca, su borde se oscurece y enrojece como dice que debe hacerlo un modelo de su atmósfera; el grano representa su superficie en ebullición: sus celdas nacen, se iluminan y se apagan como lo hacen los gránulos reales, dibujadas más gruesas de lo que son (hasta su tamaño real desde muy cerca) y mucho más rápido, y la red brillante hacia el borde es ilustrativa; desde muy cerca el mapa fotografiado deja paso a esa superficie dibujada, que también es ilustrativa; la corona es ilustrativa, y se dibuja mucho más brillante de lo que es para que pueda verse; los arcos y las protuberancias de su borde están donde las regiones activas de NOAA están cerca del limbo, y sus formas y alturas son ilustrativas; las estrellas a su lado están atenuadas, porque su resplandor las oculta a cualquier cámara",
     worldMosaic: "Bajo la cámara ahora: {title}, dibujado aquí a unos {res} por píxel.",
     worldMosaicDetail: "Bajo la cámara ahora: {title}, que afina el mapa de color a unos {res} por píxel.",
     worldRelief: "Su relieve viene de {title}: un dibujo de pendientes bajo una luz fija. Las pendientes en la dirección de esa luz se iluminan de nuevo con el Sol donde está ahora, {n} veces más empinadas de lo medido; las pendientes transversales a ella no se dibujan.",
@@ -1250,7 +1250,7 @@ export const COPY = {
       always: "Desde {place}: está sobre el horizonte ahora, {alt}, hacia el {dir}. Hoy no se pone.",
       honest: "Calculado para un horizonte a nivel del mar; no cuenta con colinas ni casas."
     },
-    worldNoRise: "Puedes verlo a simple vista. Calcular cuándo sale desde tu lugar aún no está en esta versión.",
+    worldNoRise: "Puedes verlo a simple vista. Indica dónde estás y esta línea dirá cuándo sale y se pone desde allí.",
     worldSee: {
       pluto: "Ni a simple vista ni con prismáticos: Plutón es casi 3 000 veces más débil que la estrella más débil que puedes ver, así que hace falta un telescopio.",
       io: "Unos prismáticos comunes lo muestran como un punto de luz junto a Júpiter; a simple vista se pierde en el resplandor de Júpiter.",
@@ -1637,16 +1637,16 @@ export const COPY = {
     label: "Cómo lo sabemos",
     hints: {
       measured: "Medido",
-      inferred: "Calculado",
+      inferred: "Modelado",
       illustrative: "Ilustrativo",
       sample: "Muestra",
       unknown: "Desconocido",
       unplaced: "Sin ubicar",
       reconstruction: "Reconstruido",
-      model: "Modelo",
+      model: "Típico de su clase",
       photograph: "Fotografía",
       catalogue: "Catálogo",
-      illustration: "Ilustración"
+      illustration: "Ilustrativo"
     },
     placeWord: "Lugar: {word}",
     pictureWord: "Imagen: {word}",
@@ -2493,7 +2493,7 @@ export const COPY = {
     upNow: "Visible ahora, mira hacia el {dir}",
     showMe: "Muéstramelo",
     showMeTitle: "Abrir el cielo desde tu lugar, mirando hacia donde sale",
-    guessCaveat: "Donde estás, las horas pueden variar unos minutos.",
+    guessCaveat: "Lugar supuesto: indica tu ciudad para ver horas reales.",
     unitRises: "sale",
     unitHigh: "en su punto más alto",
     unitLong: "min a la vista",
@@ -3323,8 +3323,8 @@ export const COPY = {
     span: "de {a} a {b}",
     notPublished: "Fecha sin publicar",
     position: {
-      measured: "Visto por un instrumento en un momento conocido",
-      inferred: "Calculado hacia delante a partir de una medición más antigua",
+      measured: "Calculado a partir de los datos de quien los publica, de una antigüedad indicada",
+      inferred: "Modelado hacia delante a partir de datos más antiguos o de la física",
       illustrative: "Dibujado para mostrar la idea, no medido",
       sample: "Datos de muestra incluidos, no en vivo"
     },
@@ -4439,10 +4439,10 @@ Object.assign(COPY, {
 Object.assign(COPY, {
   "orrery": {
     "title": "Tamaño y distancia",
-    "size": "Tamaño",
-    "sizeTrue": "real",
+    "size": "Tamaño extra",
+    "sizeTrue": "ninguno",
     "sizeValue": "×{n}",
-    "sizeTitle": "Cuánto más grandes que en la realidad se dibujan los mundos, de real a ×{max}",
+    "sizeTitle": "Cuánto más grandes se dibujan los mundos, además de los puntos ya más grandes que la realidad que son, de ninguno a ×{max}",
     "dist": "Distancia",
     "distTrue": "real",
     "distLog": "logarítmica",
