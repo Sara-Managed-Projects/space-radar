@@ -158,16 +158,27 @@ export function blockTriangles(grid, b, skipCell) {
 
 // The levels. Distances are metres from the middle; strides are posts (near: 2 m apart, far: 120 m apart).
 // Tier 0 is a phone and the frame latch's fallback, tier 1 and up a desktop. The centre four near blocks are the ones the
-// sun's shadow map draws again (its box is 260 m round the visitor), so they count twice.
+// sun's shadow map draws again (its box is 260 m round the visitor), so they count twice -- except the finest of them: a block
+// drawn finer than SHADOW_STRIDE casts its shadow from a thinner copy of itself (`shadowBlock`), so the desktop's centre can be
+// at 4 m (stride 2) where it was 8 m (stride 4, the phone's) with the sun's depth pass no heavier than before.
 export const NEAR_LEVELS = {
   0: { block: 128, rings: [[2, 4], [400, 8], [700, 16], [1e9, 32]], edge: 32 },
-  1: { block: 128, rings: [[2, 4], [300, 8], [600, 16], [1e9, 32]], edge: 32 },
+  1: { block: 128, rings: [[2, 2], [300, 8], [600, 16], [1e9, 32]], edge: 32 },
 };
 export const FAR_LEVELS = {
   0: { block: 64, rings: [[1000, 2], [12000, 4], [1e9, 8]] },
   1: { block: 64, rings: [[1000, 2], [10000, 4], [1e9, 8]] },
 };
 export const levelFor = (table, tier) => table[tier <= 0 ? 0 : 1];
+
+/** The coarsest spacing (in posts) a block casts a shadow at: a finer block casts from a copy at this stride (4 posts = 8 m on the 2 m grid). */
+export const SHADOW_STRIDE = 4;
+
+/** Is this block drawn finer than it casts? (Its mesh does not cast; a thinner copy does, invisible to the camera's colour.) */
+export const isFine = (b) => b.stride < SHADOW_STRIDE;
+
+/** The block as the sun's depth pass sees it: the same block at SHADOW_STRIDE when it is finer, else itself. The shadow bias (0.6 m normal bias) covers the few centimetres of height between the two. */
+export const shadowBlock = (b) => (isFine(b) ? { ...b, stride: SHADOW_STRIDE } : b);
 
 /** The shadow map's half-width round the visitor, metres (groundstage.js shadowCam). */
 export const SHADOW_HALF_M = 260;
@@ -204,19 +215,22 @@ export function inShadow(grid, b) {
 }
 
 /**
- * The most triangles a frame can draw of a site, with nothing thrown out by the camera: every block of both grids once, and
- * the near blocks inside the shadow map's box a second time (the sun's depth pass). The camera only ever lowers it.
+ * The most triangles a frame can draw of a site, with nothing thrown out by the camera: every block of both grids once, the thinner
+ * shadow copies of the finest blocks once more, and the near blocks inside the shadow map's box a second time (the sun's depth pass,
+ * at SHADOW_STRIDE for a fine block). The camera only ever lowers it.
  * @param {{h: Float32Array}} nearH @param {{h: Float32Array}} farH the full height grids ({size, step, h})
  */
 export function worstTriangles(plan, nearH, farH) {
-  let main = 0, shadow = 0, far = 0;
+  let main = 0, shadow = 0, far = 0, copy = 0;
   for (const b of plan.nearBlocks) {
-    const n = blockTriangles(nearH, b);
-    main += n;
-    if (inShadow(plan.nearGrid, b)) shadow += n;
+    main += blockTriangles(nearH, b);
+    const c = blockTriangles(nearH, shadowBlock(b));
+    // A fine block's thinner copy is drawn by the camera too (no colour, but the renderer counts it) and is what the shadow map draws of it.
+    if (isFine(b)) copy += c;
+    if (inShadow(plan.nearGrid, b)) shadow += c;
   }
   for (const b of plan.farBlocks) far += blockTriangles(farH, b, plan.skip);
-  return { near: main, shadow, far, total: main + shadow + far };
+  return { near: main, copy, shadow, far, total: main + copy + shadow + far };
 }
 
 /** Blocks drawn at this spacing or coarser are joined into one mesh each (a draw call apiece would cost more than their few triangles). */

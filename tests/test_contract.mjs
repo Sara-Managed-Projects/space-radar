@@ -92,7 +92,7 @@ const CONTRACT = {
   'ui/rail.js': ['createRail', 'railKey'],
   // Spec 0068 task 3: the groups, their counts, the filter and the remembered open groups, pure for
   // tests/test_whattoshow.mjs.
-  'ui/whattoshow.js': ['createWhatToShow', 'countText', 'layerSwatch', 'keyedBy', 'MIXED_DRAW', 'applyLayerOn',
+  'ui/whattoshow.js': ['createWhatToShow', 'countText', 'layerName', 'layerTitle', 'layerSwatch', 'keyedBy', 'MIXED_DRAW', 'applyLayerOn',
     'OPEN_KEY', 'FILTER_MIN_ROWS', 'groupLayers', 'groupTally', 'defaultOpen', 'readOpen', 'writeOpen', 'matchesFilter', 'setGroupOn'],
   'ui/timepill.js': ['createTimePill', 'PILL_RATES', 'nextRate', 'stepMs', 'clampToWindow', 'pillText'],
   'ui/place.js': ['createPlace', 'findCity', 'observerFor'],

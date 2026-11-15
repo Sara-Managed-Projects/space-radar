@@ -1293,6 +1293,12 @@ export const COPY = {
     layerHint: {
       exoplanets: "Desactivado por defecto. Márcalo para mostrarlos."
     },
+    layerName: {
+      pha: "Asteroides peligrosos"
+    },
+    layerSentence: {
+      pha: "Los 2552 asteroides cuya órbita pasa a menos de 0,05 UA de la de la Tierra y que miden más de unos 140 metros, cada uno donde está hoy según la órbita de JPL. Es un nombre por su tamaño y su órbita, no una predicción."
+    },
     layerCountEmpty: "vacía",
     layerCountEmptyTitle: "Esta capa volvió vacía: no se pudo leer su fuente, o ahora no contiene nada.",
     layerWaits: "aún no",

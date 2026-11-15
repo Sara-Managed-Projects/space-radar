@@ -135,6 +135,20 @@ export function layerHint(id, C = COPY.controls) {
   return typeof hints[id] === 'string' ? hints[id] : '';
 }
 
+/** The name a row shows: the visitor's language when copy has one for this layer id (controls.layerName), else the registry's English `display`. Pure. */
+export function layerName(layer, C = COPY.controls) {
+  const names = (C && C.layerName) || {};
+  return (layer && typeof names[layer.id] === 'string' && names[layer.id]) || (layer && (layer.display || layer.id)) || '';
+}
+
+/** The sentence that goes with a name (the row's tooltip): controls.layerSentence, else the registry's English `sentence`, else the name alone. Pure. */
+export function layerTitle(layer, C = COPY.controls) {
+  const sentences = (C && C.layerSentence) || {};
+  const name = layerName(layer, C);
+  const said = (layer && typeof sentences[layer.id] === 'string' && sentences[layer.id]) || (layer && layer.sentence) || '';
+  return said ? `${name}. ${said}` : name;
+}
+
 /** Switch a layer through main.js, and say so once so anything else can follow (sr:layer-toggle). */
 export function applyLayerOn(ctx, layer, on) {
   let handled = false;
@@ -429,8 +443,8 @@ export function createWhatToShow(ctx, opts = {}) {
       if (hex) swatch.style.background = hex;
       swatch.setAttribute('aria-hidden', 'true');
       if (mixed) swatch.title = C.swatchMixed;
-      const lname = el('span', 'sr-show__name', layer.display || layer.id);
-      lname.title = layer.display || layer.id; // one line, so a long name ends in an ellipsis
+      const lname = el('span', 'sr-show__name', layerName(layer, C));
+      lname.title = layerTitle(layer, C); // one line, so a long name ends in an ellipsis; the title has all of it
       const count = el('span', 'sr-show__count', C.layerCountLoading);
       label.append(box, swatch, lname, count);
       li.appendChild(label);

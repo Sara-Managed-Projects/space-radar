@@ -55,7 +55,7 @@ import {
   transits, parseSkyLink, toLocal, altAz, openingLook,
 } from '../sky/worldframe.js';
 import { skyLook, srgbToLinear } from '../sky/worldair.js';
-import { planGround, blockArrays, latticePosts, mergeArrays, groupBlocks, MERGE_FROM } from './groundlod.js';
+import { planGround, blockArrays, latticePosts, mergeArrays, groupBlocks, MERGE_FROM, isFine, shadowBlock } from './groundlod.js';
 import { isTypingIn } from '../ui/explore.js';
 
 const DEG = Math.PI / 180;
@@ -374,13 +374,20 @@ export function createGroundStage(ctx, opts = {}) {
     // visitor, and thrown out by the camera and the shadow map when out of view.
     const plan = planGround(manifest, t);
     // The near ground: blocks of four orthoimage tiles, one material (and one picture) each.
+    const shadowOnly = new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false });
     const nearMats = manifest.orthoNear.files.map((f) => groundMaterial(texture(dataUrl(base + f)), manifest.tint));
     for (const grp of groupBlocks(plan.nearBlocks, MERGE_FROM.near)) {
       const mesh = blockMesh(nearGrid, grp.blocks, nearMats[grp.blocks[0].tile]);
       if (!mesh) continue;
       mesh.receiveShadow = true;
-      mesh.castShadow = true;
       meshes.push(mesh);
+      // A block drawn finer than the shadow map needs (the desktop's centre, 4 m) does not cast itself: a thinner copy of it
+      // does (groundlod.js shadowBlock), written to neither colour nor depth so the camera sees nothing of it.
+      if (grp.blocks.some(isFine)) {
+        mesh.castShadow = false;
+        const copy = blockMesh(nearGrid, grp.blocks.map(shadowBlock), shadowOnly);
+        if (copy) { copy.castShadow = true; copy.receiveShadow = false; meshes.push(copy); }
+      } else mesh.castShadow = true;
     }
     // The far ground, with a hole where the near ground is, lowered a decimetre so the two never fight where the hole's
     // edge meets the near ground's.

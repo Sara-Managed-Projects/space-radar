@@ -168,6 +168,25 @@ for (const id of ['dwarf-eris', 'dwarf-haumea', 'dwarf-makemake', 'dwarf-gonggon
   check(/ is a dwarf planet beyond Neptune/.test(s), `${id}: "${s}"`);
 }
 check(/95\.5 astronomical units/.test(say(byId.get('dwarf-eris'))), `Eris's distance on its card: "${say(byId.get('dwarf-eris'))}"`);
+// The region badge follows the standard bounds (ui/cards.js, with the sources): the main belt is 2.06 to 3.27 au (the 4:1 and 2:1 Kirkwood gaps,
+// Wikipedia "Asteroid belt"), the inner Solar System runs out to the frost line, a little under 5 au (Wikipedia "Solar System"; Jupiter's perihelion,
+// 4.95 au, is the bound), the outer from there to Neptune's aphelion. Mars's aphelion, 1.666 au, was the old bound: Icarus at 1.76 au read "Outer".
+{
+  const AU = 149597870.7;
+  const head = (rec, au) => microLabel(rec, { distSunKm: au * AU, frame: 'sun-inertial' });
+  const icarus = { id: 'asteroid-1566', name: '1566 Icarus', klass: 'asteroid', meta: { qAu: 0.187, aphelionAu: 1.969 } };
+  check(/Inner solar system$/.test(head(icarus, 1.76)) && !/Outer/.test(head(icarus, 1.76)), `Icarus at 1.76 au is in the inner solar system: "${head(icarus, 1.76)}"`);
+  const plain = { id: 'x', name: 'x', klass: 'asteroid', meta: {} };
+  for (const [au, want] of [[0.4, 'Inner'], [1.76, 'Inner'], [2.5, 'Inner'], [4.9, 'Inner'], [4.96, 'Outer'], [9.5, 'Outer'], [30.0, 'Outer'], [30.4, 'Beyond Neptune']]) {
+    check(new RegExp(`${want} ?(solar system)?$`, 'i').test(head(plain, au)), `${au} au: ${want} (got "${head(plain, au)}")`);
+  }
+  check(farRegion({ meta: { qAu: 2.55, aphelionAu: 2.98 } }) === 'belt', 'Ceres\'s orbit (2.55 to 2.98 au) is in the main belt');
+  check(farRegion({ meta: { qAu: 2.06, aphelionAu: 3.27 } }) === 'belt', 'the belt\'s own edges are in');
+  check(farRegion({ meta: { qAu: 1.78, aphelionAu: 2.0 } }) === null, 'a Hungaria (1.78 to 2.0 au) skirts the belt and is not in it');
+  check(farRegion({ meta: { qAu: 2.18, aphelionAu: 4.09 } }) === null, 'Encke\'s comet (2.18 to 4.09 au) strays past the belt and is not in it');
+  check(farRegion({ meta: { qAu: 3.7, aphelionAu: 4.2 } }) === null, 'a Hilda (past 3.7 au) is not in the main belt');
+  check(/Asteroid belt$/.test(head({ ...plain, meta: { qAu: 2.2, aphelionAu: 3.1 } }, 2.6)), 'a main-belt asteroid is headed by the belt');
+}
 // The region is the orbit's own: an orbit that dips inside Neptune's is not "beyond Neptune".
 check(farRegion({ meta: { qAu: 29.7, aphelionAu: 49.3 } }) === null, 'a Pluto-like orbit, crossing Neptune\'s, is not called beyond it');
 check(/Sedna/.test(byId.get('dwarf-sedna').name) && rightNowFor(byId.get('dwarf-sedna'), ctx(T_HZ)).some(([k, v]) => k === 'Across' && /648 to 1 ?\s?220 km/.test(v)),

@@ -1458,7 +1458,7 @@ export const COPY = {
       heo: 'High Earth orbit',
       inner: 'Inner solar system',
       outer: 'Outer solar system',
-      // A body whose whole orbit lies between Mars's and Jupiter's (ui/cards.js farRegion): Ceres, Vesta.
+      // A body whose whole orbit lies inside the main belt, 2.06 to 3.27 au (ui/cards.js farRegion): Ceres, Vesta. Inner runs to the frost line (4.95 au), outer to Neptune.
       belt: 'Asteroid belt',
       beyondNeptune: 'Beyond Neptune',
       round: 'Round {world}',
@@ -2279,6 +2279,13 @@ export const COPY = {
     // One sentence under a row that is off on purpose (public #271): how to show it.
     layerHint: {
       exoplanets: 'Switched off. Tick to show them.', // 0079 a13: on by default since 1.5.0
+    },
+    // The layers' names and the sentence under each, by registry id (data/layers.js `display` and `sentence` stay the English fallback).
+    layerName: {
+      pha: 'Hazardous asteroids'
+    },
+    layerSentence: {
+      pha: 'The 2 552 asteroids whose orbits come within 0.05 AU of the Earth’s and that are bigger than about 140 metres, each where it is today on JPL’s orbit. A name for a size and an orbit, not a forecast.'
     },
     // Three silences, three short words beside the name (spec 0061 req 11: the row is one line at
     // 390 and at 1440); each one's tooltip is the sentence it stands for.
