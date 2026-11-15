@@ -2539,5 +2539,11 @@ Object.assign(COPY.skyLore, {
 // 0077 W1-e: begin
 // The sections this file added, in the visitor's language (copy/lang.js says how; public #524). 1.6.3: asked at the END of the file: wave 2's Compare,
 // passport and photograph sections are added above, and were never put into a language while this call sat before them.
+// The sentence under a layer's name, by registry id (data/layers.js `sentence` is the English fallback). Here, not beside controls.layerName
+// in copy/en.js: nothing at boot reads it. 2552 is grouped with U+202F where a language groups four digits.
+Object.assign(COPY, {
+  layerSentence: { pha: 'The 2 552 asteroids whose orbits come within 0.05 AU of the Earth’s and that are bigger than about 140 metres, each where it is today on JPL’s orbit. A name for a size and an orbit, not a forecast.' },
+});
+
 if (HOOK.localise) HOOK.localise({ COPY }, Object.keys(COPY).filter((k) => !KEYS_BEFORE.has(k)));
 // 0077 W1-e: end

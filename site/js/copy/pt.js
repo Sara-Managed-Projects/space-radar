@@ -136,6 +136,7 @@ export const RULES = {
 };
 
 export const COPY = {
+  "layerSentence": { "pha": "Os 2 552 asteroides cuja órbita passa a menos de 0,05 UA da órbita da Terra e que têm mais de cerca de 140 metros, cada um onde está hoje na órbita do JPL. Um nome por tamanho e órbita, não uma previsão." },
   "app": {
     "name": "Space Radar",
     "bootSky": "Montando o céu…",
@@ -1427,9 +1428,6 @@ export const COPY = {
     },
     "layerName": {
       "pha": "Asteroides perigosos"
-    },
-    "layerSentence": {
-      "pha": "Os 2.552 asteroides cuja órbita passa a menos de 0,05 UA da órbita da Terra e que têm mais de cerca de 140 metros, cada um onde está hoje na órbita do JPL. Um nome por tamanho e órbita, não uma previsão."
     },
     "layerCountEmpty": "vazia",
     "layerCountEmptyTitle": "Esta camada voltou sem nada: não foi possível ler a fonte, ou ela não tem nada agora.",

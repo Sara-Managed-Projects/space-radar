@@ -320,20 +320,20 @@ check(/^groups: \[/m.test(yaml), 'layers.yaml lists its groups');
   document.body.removeChild(show.root);
 }
 
-// LAYER NAMES IN THE VISITOR'S LANGUAGE: copy.controls.layerName / layerSentence by registry id, the registry's English as the fallback,
-// and all ten language files carry the same ids (the way layerHint does).
+// LAYER NAMES IN THE VISITOR'S LANGUAGE: copy.controls.layerName by registry id, the registry's English as the fallback, and all ten
+// language files carry the name and the sentence (the sentence is copy/en.later.js `layerSentence`, read by nothing at boot).
 {
   const pha = LAYERS.find((l) => l.id === 'pha');
+  await import(pathToFileURL(join(JS, 'copy/en.later.js')).href);
   check(pha && W.layerName(pha) === COPY.controls.layerName.pha && COPY.controls.layerName.pha === pha.display, 'English copy and the registry agree on the Hazardous asteroids name');
-  check(COPY.controls.layerSentence.pha === pha.sentence, 'and on its sentence');
-  const fr = { layerName: { pha: 'Astéroïdes dangereux' }, layerSentence: { pha: 'Une phrase.' } };
-  check(W.layerName(pha, fr) === 'Astéroïdes dangereux' && W.layerTitle(pha, fr) === 'Astéroïdes dangereux. Une phrase.', 'a language\'s name and sentence are what the row shows and says');
+  check(COPY.layerSentence.pha.replace(/\u202f/g, ' ') === pha.sentence, 'and on its sentence');
+  const fr = { layerName: { pha: 'Astéroïdes dangereux' } };
+  check(W.layerName(pha, fr) === 'Astéroïdes dangereux', 'a language\'s name is what the row shows');
   check(W.layerName({ id: 'zz', display: 'Zed' }, fr) === 'Zed' && W.layerName({ id: 'zz' }, {}) === 'zz', 'a layer the copy does not name keeps the registry name, then its id');
   for (const code of ['es', 'fr', 'de', 'pt', 'ru', 'uk', 'zh', 'hi', 'he', 'ar']) {
     const { COPY: L } = await import(pathToFileURL(join(JS, `copy/${code}.js`)).href);
-    const c = L.controls || {};
-    check(c.layerName && c.layerName.pha && c.layerSentence && c.layerSentence.pha, `${code}: the Hazardous asteroids name and sentence are translated`);
-    check(c.layerSentence && /2[\s.]?552/.test(c.layerSentence.pha || ''), `${code}: the sentence keeps the 2 552 count`);
+    check(L.controls && L.controls.layerName && L.controls.layerName.pha, `${code}: the Hazardous asteroids name is translated`);
+    check(L.layerSentence && /2[\s.\u202f]?552/.test(L.layerSentence.pha || ''), `${code}: the sentence is translated and keeps the 2552 count`);
   }
 }
 

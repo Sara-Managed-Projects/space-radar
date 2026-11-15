@@ -37,6 +37,7 @@ export const RULES = {
 };
 
 export const COPY = {
+  "layerSentence": { "pha": "共 2552 颗小行星，轨道与地球轨道的距离小于 0.05 天文单位，且大于约 140 米，每颗都画在今天它在 JPL 轨道上的位置。这个名称只依据大小和轨道，并不是预测。" },
   "app": {
     "name": "Space Radar",
     "bootSky": "正在构建天空…",
@@ -1349,9 +1350,6 @@ export const COPY = {
     },
     "layerName": {
       "pha": "危险小行星"
-    },
-    "layerSentence": {
-      "pha": "共 2552 颗小行星，轨道与地球轨道的距离小于 0.05 天文单位，且大于约 140 米，每颗都画在今天它在 JPL 轨道上的位置。这个名称只依据大小和轨道，并不是预测。"
     },
     "layerCountEmpty": "空",
     "layerCountEmptyTitle": "这个图层没有取回任何内容：它的数据源读取不到，或者现在没有内容。",

@@ -44,6 +44,7 @@ export const RULES = {
 };
 
 export const COPY = {
+  "layerSentence": { "pha": "Los 2552 asteroides cuya órbita pasa a menos de 0,05 UA de la de la Tierra y que miden más de unos 140 metros, cada uno donde está hoy según la órbita de JPL. Es un nombre por su tamaño y su órbita, no una predicción." },
   app: {
     name: "Space Radar",
     bootSky: "Construyendo el cielo…",
@@ -1295,9 +1296,6 @@ export const COPY = {
     },
     layerName: {
       pha: "Asteroides peligrosos"
-    },
-    layerSentence: {
-      pha: "Los 2552 asteroides cuya órbita pasa a menos de 0,05 UA de la de la Tierra y que miden más de unos 140 metros, cada uno donde está hoy según la órbita de JPL. Es un nombre por su tamaño y su órbita, no una predicción."
     },
     layerCountEmpty: "vacía",
     layerCountEmptyTitle: "Esta capa volvió vacía: no se pudo leer su fuente, o ahora no contiene nada.",
