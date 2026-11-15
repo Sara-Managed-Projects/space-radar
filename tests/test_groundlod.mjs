@@ -122,7 +122,14 @@ const { BUDGETS } = await load('data/budgets.js');
     const w0 = L.worstTriangles(L.planGround(m, 0), nearG, farG), w1 = L.worstTriangles(L.planGround(m, 1), nearG, farG);
     most0 = Math.max(most0, w0.total); most1 = Math.max(most1, w1.total);
     check(w0.total < BUDGETS.triangles_per_stop, `${g.id} at tier 0: at most ${w0.total} triangles a frame (${w0.near} near, ${w0.shadow} in the shadow map, ${w0.far} far), under triangles_per_stop (${BUDGETS.triangles_per_stop})`);
-    check(w1.total < 1.5 * BUDGETS.triangles_per_stop, `${g.id} at tier 1: at most ${w1.total} before the camera throws any out`);
+    check(w1.total < BUDGETS.triangles_per_stop, `${g.id} at tier 1: at most ${w1.total} triangles before the camera throws any out`);
+    // The coarse blocks are joined into few meshes (draw calls), with no triangle lost.
+    const p1 = L.planGround(m, 1);
+    const grps = L.groupBlocks(p1.nearBlocks, L.MERGE_FROM.near);
+    const arrs = grps.map((x) => L.mergeArrays(x.blocks.map((b) => L.blockArrays(nearG, b, b.uvBox))));
+    const sumTri = p1.nearBlocks.reduce((n, b) => n + L.blockTriangles(nearG, b), 0);
+    check(arrs.reduce((n, a) => n + a.index.length / 3, 0) === sumTri && arrs.every((a) => a.index.every((i) => i < a.pos.length / 3)), `${g.id}: joining the coarse blocks loses no triangle and keeps every index in range`);
+    check(grps.length + L.groupBlocks(p1.farBlocks, L.MERGE_FROM.far).length <= 70, `${g.id}: the ground is at most 70 meshes (${grps.length} near)`);
     // The plan covers the near ground wholly and the far ground outside the hole.
     const p = L.planGround(m, 0);
     check(p.nearBlocks.every((b) => Number.isInteger(b.tile) && b.tile >= 0 && b.tile < 4), `${g.id}: every near block lies in one of the four pictures`);

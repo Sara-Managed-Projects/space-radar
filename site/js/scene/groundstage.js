@@ -55,7 +55,7 @@ import {
   transits, parseSkyLink, toLocal, altAz, openingLook,
 } from '../sky/worldframe.js';
 import { skyLook, srgbToLinear } from '../sky/worldair.js';
-import { planGround, blockArrays, latticePosts } from './groundlod.js';
+import { planGround, blockArrays, latticePosts, mergeArrays, groupBlocks, MERGE_FROM } from './groundlod.js';
 import { isTypingIn } from '../ui/explore.js';
 
 const DEG = Math.PI / 180;
@@ -333,16 +333,17 @@ export function createGroundStage(ctx, opts = {}) {
     return tex;
   }
 
-  /** One block of a grid as a mesh (scene/groundlod.js): normals from the full grid, uv over the tile it lies in. */
-  function blockMesh(grid, b, material, skipCell) {
-    const arr = blockArrays(grid, b, b.uvBox, skipCell);
+  /** A group of blocks of a grid as one mesh (scene/groundlod.js): normals from the full grid, uv over the tile it lies in. */
+  function blockMesh(grid, blocks, material, skipCell) {
+    const arr = mergeArrays(blocks.map((b) => blockArrays(grid, b, b.uvBox, skipCell)));
+    if (!arr.index.length) return null;
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(arr.pos, 3));
     geo.setAttribute('normal', new THREE.BufferAttribute(arr.nor, 3));
     geo.setAttribute('uv', new THREE.BufferAttribute(arr.uv, 2));
     geo.setIndex(new THREE.BufferAttribute(arr.index, 1));
     geo.computeBoundingSphere();
-    return arr.index.length ? new THREE.Mesh(geo, material) : null;
+    return new THREE.Mesh(geo, material);
   }
 
   function groundMaterial(map, tint) {
@@ -374,8 +375,8 @@ export function createGroundStage(ctx, opts = {}) {
     const plan = planGround(manifest, t);
     // The near ground: blocks of four orthoimage tiles, one material (and one picture) each.
     const nearMats = manifest.orthoNear.files.map((f) => groundMaterial(texture(dataUrl(base + f)), manifest.tint));
-    for (const b of plan.nearBlocks) {
-      const mesh = blockMesh(nearGrid, b, nearMats[b.tile]);
+    for (const grp of groupBlocks(plan.nearBlocks, MERGE_FROM.near)) {
+      const mesh = blockMesh(nearGrid, grp.blocks, nearMats[grp.blocks[0].tile]);
       if (!mesh) continue;
       mesh.receiveShadow = true;
       mesh.castShadow = true;
@@ -385,8 +386,8 @@ export function createGroundStage(ctx, opts = {}) {
     // edge meets the near ground's.
     const nearHalfM = plan.nearHalfM;
     const farMat = groundMaterial(texture(dataUrl(base + manifest.orthoFar.file)), manifest.tint);
-    for (const b of plan.farBlocks) {
-      const mesh = blockMesh(farGrid, b, farMat, plan.skip);
+    for (const grp of groupBlocks(plan.farBlocks, MERGE_FROM.far)) {
+      const mesh = blockMesh(farGrid, grp.blocks, farMat, plan.skip);
       if (!mesh) continue;
       mesh.position.y = -0.1;
       mesh.receiveShadow = true;

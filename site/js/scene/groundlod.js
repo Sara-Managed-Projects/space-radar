@@ -161,11 +161,11 @@ export function blockTriangles(grid, b, skipCell) {
 // sun's shadow map draws again (its box is 260 m round the visitor), so they count twice.
 export const NEAR_LEVELS = {
   0: { block: 128, rings: [[2, 4], [400, 8], [700, 16], [1e9, 32]], edge: 32 },
-  1: { block: 128, rings: [[2, 2], [300, 4], [600, 8], [1e9, 16]], edge: 16 },
+  1: { block: 128, rings: [[2, 4], [300, 8], [600, 16], [1e9, 32]], edge: 32 },
 };
 export const FAR_LEVELS = {
   0: { block: 64, rings: [[1000, 2], [12000, 4], [1e9, 8]] },
-  1: { block: 64, rings: [[1000, 2], [15000, 4], [1e9, 8]] },
+  1: { block: 64, rings: [[1000, 2], [10000, 4], [1e9, 8]] },
 };
 export const levelFor = (table, tier) => table[tier <= 0 ? 0 : 1];
 
@@ -217,4 +217,35 @@ export function worstTriangles(plan, nearH, farH) {
   }
   for (const b of plan.farBlocks) far += blockTriangles(farH, b, plan.skip);
   return { near: main, shadow, far, total: main + shadow + far };
+}
+
+/** Blocks drawn at this spacing or coarser are joined into one mesh each (a draw call apiece would cost more than their few triangles). */
+export const MERGE_FROM = { near: 16, far: 8 };
+
+/** Join several blocks' arrays into one (indices moved on by the vertices before them). */
+export function mergeArrays(list) {
+  const verts = list.reduce((n, a) => n + a.pos.length / 3, 0);
+  const pos = new Float32Array(verts * 3), nor = new Float32Array(verts * 3), uv = new Float32Array(verts * 2);
+  const idx = [];
+  let v = 0;
+  for (const a of list) {
+    pos.set(a.pos, v * 3); nor.set(a.nor, v * 3); uv.set(a.uv, v * 2);
+    for (let i = 0; i < a.index.length; i += 1) idx.push(a.index[i] + v);
+    v += a.pos.length / 3;
+  }
+  return { pos, nor, uv, index: verts < 65536 ? Uint16Array.from(idx) : Uint32Array.from(idx) };
+}
+
+/** The meshes the stage makes: one per fine block, one per (tile, coarse) group. Returns [{key, blocks}]. */
+export function groupBlocks(blocks, mergeFrom) {
+  const out = [];
+  const coarse = new Map();
+  for (const b of blocks) {
+    if (b.stride >= mergeFrom) {
+      const key = `c${b.tile === undefined ? 0 : b.tile}`;
+      if (!coarse.has(key)) { const g = { key, blocks: [] }; coarse.set(key, g); out.push(g); }
+      coarse.get(key).blocks.push(b);
+    } else out.push({ key: `${b.i},${b.j}`, blocks: [b] });
+  }
+  return out;
 }
