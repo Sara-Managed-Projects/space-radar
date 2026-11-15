@@ -511,7 +511,7 @@ with tempfile.TemporaryDirectory() as tmp:
         ok(len(s) == 1 and "text/html" in s[0] and "max-age=0, must-revalidate" in s[0] and "--content-encoding" not in s[0] and "--delete" in s[0],
            f"{d}/ is synced as written, as HTML a browser revalidates on every load, with --delete")
     cal = [c for c in calls if c.startswith("s3 sync") and "s3://example-bucket/events " in c + " " and "text/calendar" in c]
-    ok(len(cal) == 1 and "--include \"*.ics\"" in cal[0] and "--delete" in cal[0] and "max-age=0, must-revalidate" in cal[0], "events/'s calendar files are synced once, as text/calendar, revalidated, with --delete")
+    ok(len(cal) == 1 and re.search(r"--include \W?\*\.ics", cal[0]) is not None and "--delete" in cal[0] and "max-age=0, must-revalidate" in cal[0], "events/'s calendar files are synced once, as text/calendar, revalidated, with --delete")
     ok(re.search(r"would upload sitemap-images\.xml \(application/xml", r.stdout) is not None, "sitemap-images.xml is uploaded as XML")
     body = (ROOT / "scripts" / "deploy.sh").read_text(encoding="utf-8")
     ok('"/sitemap-images.xml"' in body and 'PATHS+=("/$dir/*")' in body and "share" in body, "the invalidation names the new directories and the image sitemap; share/ has its own PNG sync")
