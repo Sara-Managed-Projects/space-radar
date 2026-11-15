@@ -1156,14 +1156,14 @@ def teachers_compare() -> str:
         "<p>Two questions teachers ask, in their own words. The usual answers are PhET and Solar System Scope, and both are good: here is what each does, so you can pick.</p>\n"
         "<h3>A 3D solar system model for the classroom that works offline, with no login and no install</h3>\n"
         f'<p><a href="{SSS_HOME}">Solar System Scope</a> is a 3D model of the Solar System. Its site says the online version is free and runs in the browser on a desktop computer with WebGL, '
-        f'that it can be <a href="{SSS_EMBED}">embedded in your own web page</a> with an iframe, and that the version that works offline is a paid desktop download (USD 9.80) or a mobile app.</p>\n'
+        f'that it can be <a href="{SSS_EMBED}">embedded in your own web page</a> with an iframe, and that the version that works offline is a paid desktop download (USD 9.80), and that there is also a mobile app.</p>\n'
         "<p>Space Radar is free and open source, needs no account, and runs offline from the zip above: nothing is installed except Python 3 to serve the folder, which most Macs and Linux machines already have. "
         'It shows where things are for the moment on the clock: the planets, <a href="../satellites/index.html">the satellites and the space station</a>, the nearest stars, '
         "and narrated trips you can run in present mode. It can be embedded too: press Share, then Embed, for the <code>&lt;iframe&gt;</code> "
         f'(<a href="{GITHUB}/blob/main/docs/EMBEDDING.md">docs/EMBEDDING.md</a>).</p>\n'
         "<h3>Interactive space simulators in the browser to teach moon phases, tides and orbits</h3>\n"
         f'<p><a href="{PHET_ABOUT}">PhET</a>, from the University of Colorado, makes free simulations that it says are research-based and tested with students in interviews and classrooms, '
-        f"and its site offers them in dozens of languages, to run online or download. For orbits and the law of gravity behind them, {phet_sims} are the ones to know. "
+        f"and its site offers them in many languages, to run online or download. For orbits and the law of gravity behind them, {phet_sims} are the ones to know. "
         "Space Radar's simulators are newer, in English, and have not been tested with students the way PhET's are.</p>\n"
         '<p>What <a href="../lab/index.html">Space Radar\'s Lab</a> adds is one small simulator per idea, in one page each, including '
         '<a href="../lab/moon-phases-from-above/index.html">the Moon\'s phases seen from above</a>, <a href="../lab/two-tides-not-one/index.html">why there are two tides, not one</a> and '
