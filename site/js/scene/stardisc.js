@@ -3,9 +3,9 @@
 //
 // Contract: createStarDisc(scene) -> { set(record | null, physical | null), update(camera, renderer),
 //             state(), dispose(), mesh }
-//   physical: { radiusKm, teffK, how, rotator? }   scene/stars3d.js starPhysical() or the Exoplanet Archive's row
-//   rotator: { polarOverEq, teffPoleK, teffEqK, inclinationDeg, poleAngleDeg }  a star an interferometer has measured to be flattened
-//             by its spin (registry/stars-notable.yaml `rotator:`, internal #276)
+//   physical: { radiusKm, teffK, how }   scene/stars3d.js starPhysical() or the Exoplanet Archive's row
+//   A star an interferometer has measured to be flattened by its spin carries `record.meta.rotator` (data/starrotators.js, from
+//   registry/stars-notable.yaml `rotator:`, internal #276): main.js fetches it the first time such a star is chosen.
 // Pure, for tests/test_stardisc.mjs: limbDarkening(mu, teffK), limbAt(mu, teffK, nm), discOpacity(radiusPx), HIDE_POINT_PX
 //   and for tests/test_rotators.mjs: rotatorLaw(), rotatorPoint(), poleDirection()
 //
@@ -140,6 +140,8 @@ export const HIDE_POINT_PX = 3;
 
 /** The Sun's nominal effective temperature (IAU 2015 Resolution B3): a star with no temperature is drawn as the Sun. */
 const SUN_TEFF_K = 5772;
+/** The Sun's nominal radius in km (IAU 2015 Resolution B3). */
+const SUN_RADIUS_KM = 695700;
 /** The three colours' wavelengths in nm (red, green, blue) as scene/sun.js, and hc / k in nm K. */
 export const LIMB_NM = [610, 550, 465];
 const HC_OVER_K = 1.438777e7;
@@ -287,13 +289,17 @@ export function createStarDisc(scene) {
     // A flattened star: the shape, the darkening law and the axis, as the paper has them. A frame other than the Sun's is not drawn flat.
     poleScene = null;
     material.uniforms.uRot.value = 0;
-    const rot = physical.rotator;
+    // The numbers arrive on the record (main.js fetches data/starrotators.js the first time such a star is chosen).
+    const rr = record.meta && record.meta.rotator;
+    const rot = rr && rr.polar_radius_suns > 0 && physical.radiusKm > 0 ? { polarOverEq: rr.polar_radius_suns / (physical.radiusKm / SUN_RADIUS_KM), teffPoleK: rr.teff_pole_k, teffEqK: rr.teff_eq_k, inclinationDeg: rr.inclination_deg, poleAngleDeg: rr.pole_pa_deg } : null;
     if (rot && rot.polarOverEq > 0 && rot.polarOverEq < 1 && (record.frame || SUN_INERTIAL) === SUN_INERTIAL && record.pos) {
       const u = poleDirection(record.pos, rot.inclinationDeg, rot.poleAngleDeg);
       const law = rotatorLaw(rot.polarOverEq, rot.teffPoleK, rot.teffEqK);
       if (Number.isFinite(u.x) && Number.isFinite(law.beta)) {
         poleScene = new THREE.Vector3(u.x, u.z, -u.y); // the axis remap of scene/stage.js
         material.uniforms.uRot.value = 1;
+        material.uniforms.uTeff.value = rot.teffPoleK; // the colour's reference is the pole
+        material.uniforms.uColour.value.setRGB(...kelvinToRgb(rot.teffPoleK), THREE.SRGBColorSpace);
         material.uniforms.uK.value = law.k;
         material.uniforms.uC.value = law.c;
         material.uniforms.uBeta.value = law.beta;

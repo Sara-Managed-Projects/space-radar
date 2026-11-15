@@ -25,6 +25,7 @@ import { moonRows } from './moonfacts.js'; // 0079 a3
 import { gmst, eciToEcef, ecefToGeodetic, geodeticToEcef, parseFrame, bodyFixedToSpherical, worldRadiusKm, toStage, spinPeriodHours, moonLapHours, yearDays } from '../propagate/frames.js';
 import { predictPasses } from '../sky/passes.js';
 import '../copy/en.facts.js';
+import '../copy/en.stars.js'; // COPY.rotators
 import { drawnOf, primaryDrawn, distanceEstimate, parentIdOf, DRAWN_CLASSES } from '../data/deepsky.js';
 import { lookbackGyr } from '../data/cosmology.js';
 
@@ -746,11 +747,11 @@ export function rightNowRows(record, m, passInfo) {
     // A star an interferometer has measured to be flattened by its spin (internal #276): the width is the equator's, the poles are
     // narrower, and the equator is cooler (gravity darkening). The temperatures are a model fitted to the images, and the row says so.
     const rot = md.widthFrom === 'measured' && md.rotator && Number(md.rotator.polar_radius_suns) > 0 ? md.rotator : null;
-    if (width !== null && width > 0) rows.push([rot ? R.starWidthEq : R.starWidth, t(md.widthFrom === 'measured' ? V.sunsWideMeasured : V.sunsWide, { n: fmt.smart(width) })]);
+    if (width !== null && width > 0) rows.push([rot ? COPY.rotators.widthEq : R.starWidth, t(md.widthFrom === 'measured' ? V.sunsWideMeasured : V.sunsWide, { n: fmt.smart(width) })]);
     if (width !== null && width > 0 && rot) {
-      rows.push([R.starWidthPole, t(V.sunsWideMeasured, { n: fmt.smart(Number(rot.polar_radius_suns)) })]);
+      rows.push([COPY.rotators.widthPole, t(V.sunsWideMeasured, { n: fmt.smart(Number(rot.polar_radius_suns)) })]);
       const to100 = (k) => fmt.int(Math.round(Number(k) / 100) * 100);
-      rows.push([R.starSpin, t(V.starSpinShape, { pole: to100(rot.teff_pole_k), eq: to100(rot.teff_eq_k) })]);
+      rows.push([COPY.rotators.spin, t(COPY.rotators.spinShape, { pole: to100(rot.teff_pole_k), eq: to100(rot.teff_eq_k) })]);
     }
     const widthSource = pick(md, 'widthSource');
     if (width !== null && width > 0 && md.widthFrom === 'measured' && widthSource) rows.push([R.widthSource, String(widthSource)]);

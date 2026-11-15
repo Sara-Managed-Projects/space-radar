@@ -24,11 +24,22 @@ FIELDS = ("hip", "proper", "name", "why", "source", "radius_suns", "radius_err_s
 
 def render(doc: dict) -> list:
     rows = [pick(r, FIELDS) for r in doc.get("stars") or [] if isinstance(r, dict)]
-    # The paper's table (`rotator.note`) and the model's name are for the reviewer who reads the YAML; the phone does not draw from them.
+    # A rotator's numbers ride a module of their own (data/starrotators.js, fetched when such a star is chosen): the first visit
+    # keeps only the fact that the star has them.
     for r in rows:
-        if isinstance(r.get("rotator"), dict):
-            r["rotator"] = {k: v for k, v in r["rotator"].items() if k not in ("note", "model")}
+        if "rotator" in r:
+            r["rotator"] = True
     return [("Famous stars, one line each on why, with the page it was read from.", "STARS_NOTABLE", rows)]
+
+
+def render_rotators(doc: dict) -> list:
+    out = {}
+    for r in doc.get("stars") or []:
+        if isinstance(r, dict) and isinstance(r.get("rotator"), dict) and r.get("hip") is not None:
+            # The paper's table (`note`) and the model's name are for the reviewer who reads the YAML; the phone does not draw from them.
+            out[str(r["hip"])] = {k: v for k, v in r["rotator"].items() if k not in ("note", "model")}
+    return [("Stars measured to be flattened by their spin, by Hipparcos number: the polar radius in Suns (the equatorial one is the "
+             "row's radius_suns), the temperatures at the pole and the equator, the spin axis's inclination and position angle.", "STAR_ROTATORS", out)]
 
 
 HEADER = """// GENERATED from registry/stars-notable.yaml by scripts/gen_stars_notable_js.py. Do not edit.
@@ -42,8 +53,18 @@ HEADER = """// GENERATED from registry/stars-notable.yaml by scripts/gen_stars_n
 // where the names file says something else, and the old one stays as an alias for search.
 """
 
+ROT_HEADER = """// GENERATED from registry/stars-notable.yaml by scripts/gen_stars_notable_js.py. Do not edit.
+//
+// The `rotator:` blocks of the famous stars (internal #276), fetched by main.js the first time such a star is chosen
+// (scene/rotators.js imports this): not part of the first visit. `--check` fails CI if this file and the YAML disagree.
+"""
+
 MIRROR = Mirror(source="registry/stars-notable.yaml", target="site/js/data/starsnotable.js", header=HEADER,
                 render=render, what="starsnotable.js")
 
+ROTATORS = Mirror(source="registry/stars-notable.yaml", target="site/js/data/starrotators.js", header=ROT_HEADER,
+                  render=render_rotators, what="starrotators.js")
+
 if __name__ == "__main__":
-    sys.exit(MIRROR.main())
+    # Both mirrors, one answer: the first non-zero code wins, and each prints its own line.
+    sys.exit(max(MIRROR.main(), ROTATORS.main()))

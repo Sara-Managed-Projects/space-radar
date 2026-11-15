@@ -655,9 +655,6 @@ export const COPY = {
       "source": "المصدر",
       "whySource": "لماذا هو معروف، من",
       "widthSource": "العرض من",
-      "starWidthEq": "العرض عند خط الاستواء",
-      "starWidthPole": "العرض من قطب إلى قطب",
-      "starSpin": "الدوران",
       "distanceNote": "تقريبًا عند هذا البعد",
       "objectType": "ما هو",
       "constellation": "الكوكبة",
@@ -738,7 +735,6 @@ export const COPY = {
       "suns": "{n}× الشمس",
       "sunsWide": "{n}× الشمس، تقديرًا",
       "sunsWideMeasured": "{n}× الشمس، قيمة مقيسة",
-      "starSpinShape": "مفلطح بسبب دورانه السريع: القطبان نحو {pole} كلفن، وخط الاستواء نحو {eq} كلفن (نموذج مضبوط على صور التلسكوبات)",
       "earths": "{n}× الأرض",
       "earthsWide": "{n}× عرض الأرض",
       "lightYearsAbout": "نحو {n} سنة ضوئية",
@@ -5088,6 +5084,12 @@ Object.assign(COPY, {
 // b200-f4-cards: end
 // b200-f3-stars: begin -- deep time, the variable stars and the turning black holes (copy/en.stars.js, forge #141, #142, #149), machine-drafted
 Object.assign(COPY, {
+  "rotators": {
+    "widthEq": "العرض عند خط الاستواء",
+    "widthPole": "العرض من قطب إلى قطب",
+    "spin": "الدوران",
+    "spinShape": "مفلطح بسبب دورانه السريع: القطبان نحو {pole} كلفن، وخط الاستواء نحو {eq} كلفن (نموذج مضبوط على صور التلسكوبات)",
+  },
   "deepTime": {
     "title": "الزمن العميق",
     "back": "−{n} سنة",

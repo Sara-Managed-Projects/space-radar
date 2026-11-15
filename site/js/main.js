@@ -1646,6 +1646,13 @@ export async function boot({ setStatus } = {}) {
         });
       }
     }
+    // A star the interferometers measured to be flattened by its spin: its numbers are a module of their own, fetched the first time one is chosen.
+    if (record && record.meta && record.meta.rotates && !record.meta.rotator) {
+      import('./data/starrotators.js').then((m) => {
+        record.meta.rotator = m.STAR_ROTATORS[record.meta.hip];
+        if (selected === record) { wantStarDisc(record); showCard(record, ctx); }
+      }).catch(() => {});
+    }
     wantStarDisc(record);
     // Start the map now, not when the disc grows past the threshold mid-flight: a selected world is
     // about to fill the screen, and a trip's own flight (fly: false) needs it just as much.

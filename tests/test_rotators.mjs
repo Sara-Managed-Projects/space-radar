@@ -14,8 +14,10 @@ const near = (a, b, tol) => Math.abs(a - b) <= tol;
 await import(join(ROOT, 'site/vendor/three.module.min.js'));
 const { rotatorLaw, rotatorPoint, poleDirection } = await import(join(JS, 'scene/stardisc.js'));
 const { STARS_NOTABLE } = await import(join(JS, 'data/starsnotable.js'));
+const { STAR_ROTATORS } = await import(join(JS, 'data/starrotators.js'));
 const { recordsFromNames, SUN_RADIUS_KM } = await import(join(JS, 'scene/stars3d.js'));
 const { COPY } = await import(join(JS, 'copy/en.js'));
+await import(join(JS, 'copy/en.stars.js'));
 const DEG = Math.PI / 180;
 
 // What each paper prints, typed again here from the table rows (not read from the registry), so a slip in the registry shows.
@@ -31,14 +33,14 @@ const rows = new Map(STARS_NOTABLE.map((r) => [r.hip, r]));
 for (const [hip, name, req, rpol, tp, te, inc, pa, beta] of PAPERS) {
   const r = rows.get(hip);
   check(r && r.name === name, `${name}: the row exists`);
-  if (!r || !r.rotator) { check(false, `${name} has a rotator block`); continue; }
-  const o = r.rotator;
+  const o = STAR_ROTATORS[String(hip)];
+  if (!r || r.rotator !== true || !o) { check(false, `${name} has a rotator block (the row says so, the module has it)`); continue; }
   check(r.radius_suns === req, `${name}: the equatorial width is the paper's ${req} (${r.radius_suns})`);
   check(o.polar_radius_suns === rpol, `${name}: the polar radius is the paper's ${rpol} (${o.polar_radius_suns})`);
   check(o.teff_pole_k === tp && o.teff_eq_k === te, `${name}: the temperatures are the paper's ${tp} and ${te}`);
   check(o.inclination_deg === inc && o.pole_pa_deg === pa, `${name}: the angles are the paper's ${inc} and ${pa}`);
   check(/arxiv\.org\/abs\//.test(r.physical_source) && /\(read 2026-\d\d-\d\d\)$/.test(r.physical_source), `${name}: the paper and the day are named`);
-  check(o.note === undefined && o.model === undefined, `${name}: the paper's note stays in the YAML, off the phone`);
+  check(o.note === undefined && o.model === undefined && typeof r.rotator === 'boolean', `${name}: the paper's note stays in the YAML, and the first visit holds a flag, not the numbers`);
 
   // the law reproduces the equator, and agrees with the paper's own exponent where it gives one
   const law = rotatorLaw(rpol / req, tp, te);
@@ -71,7 +73,7 @@ for (const [hip, name, req, rpol, tp, te, inc, pa, beta] of PAPERS) {
 
   // the record carries the block and the disc gets the ratio
   const rec = recordsFromNames([[1, name, '', '', hip, 'A0', 25, 1, 1, 1, 1, 1]])[0];
-  check(rec && rec.meta.rotator && rec.meta.rotator.teff_pole_k === tp, `${name}: the star record carries the block`);
+  check(rec && rec.meta.rotates === true && rec.meta.rotator === undefined, `${name}: the star record says it rotates and holds no numbers until they are fetched`);
 }
 
 // The axis. Vega is at RA 18h 36m 56.3s, Dec +38d 47m 01s (SIMBAD ICRS, J2000). Independent check: build the sky north and east in
@@ -100,8 +102,11 @@ for (const [hip, name, req, rpol, tp, te, inc, pa, beta] of PAPERS) {
 }
 
 // The card: the words exist in every language, and the copy has the fields the card prints.
-for (const k of ['starWidthEq', 'starWidthPole', 'starSpin']) check(typeof COPY.card.rows[k] === 'string' && COPY.card.rows[k].length > 3, `copy: card.rows.${k}`);
-check(/\{pole\}/.test(COPY.card.values.starSpinShape) && /\{eq\}/.test(COPY.card.values.starSpinShape) && /model/.test(COPY.card.values.starSpinShape), 'copy: the spin line names both temperatures and says it is a model');
+for (const k of ['widthEq', 'widthPole', 'spin']) check(typeof COPY.rotators[k] === 'string' && COPY.rotators[k].length > 3, `copy: rotators.${k}`);
+check(/\{pole\}/.test(COPY.rotators.spinShape) && /\{eq\}/.test(COPY.rotators.spinShape) && /model/.test(COPY.rotators.spinShape), 'copy: the spin line names both temperatures and says it is a model');
+// and the boot keeps nothing of it: no rotator number in the boot modules' data, the module is fetched on demand
+const main = (await import('node:fs')).readFileSync(join(JS, 'main.js'), 'utf8');
+check(/import\('\.\/data\/starrotators\.js'\)/.test(main) && !/from '\.\/data\/starrotators\.js'/.test(main), 'main.js fetches data/starrotators.js on demand and never imports it statically');
 check(SUN_RADIUS_KM > 6e5, 'sanity: the Sun');
 
 if (problems.length) { console.error('test_rotators: FAIL\n  ' + problems.join('\n  ')); process.exit(1); }

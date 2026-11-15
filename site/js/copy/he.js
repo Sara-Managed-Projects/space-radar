@@ -662,9 +662,6 @@ export const COPY = {
       "source": "נקרא מתוך",
       "whySource": "למה זה ידוע, נקרא מתוך",
       "widthSource": "הרוחב נקרא מתוך",
-      "starWidthEq": "רוחב בקו המשווה",
-      "starWidthPole": "רוחב מקוטב לקוטב",
-      "starSpin": "סיבוב",
       "distanceNote": "בערך המרחק הזה",
       "objectType": "מה הוא",
       "constellation": "קבוצת כוכבים",
@@ -745,7 +742,6 @@ export const COPY = {
       "suns": "{n}× השמש",
       "sunsWide": "{n}× השמש, הערכה",
       "sunsWideMeasured": "{n}× השמש, נמדד",
-      "starSpinShape": "מעוך מסיבוב מהיר: הקטבים כ-{pole} K, קו המשווה כ-{eq} K (מודל שהותאם לתמונות טלסקופ)",
       "earths": "{n}× כדור הארץ",
       "earthsWide": "{n}× רוחב כדור הארץ",
       "lightYearsAbout": "כ-{n} שנות אור",
@@ -5095,6 +5091,12 @@ Object.assign(COPY, {
 // b200-f4-cards: end
 // b200-f3-stars: begin -- deep time, the variable stars and the turning black holes (copy/en.stars.js, forge #141, #142, #149), machine-drafted
 Object.assign(COPY, {
+  "rotators": {
+    "widthEq": "רוחב בקו המשווה",
+    "widthPole": "רוחב מקוטב לקוטב",
+    "spin": "סיבוב",
+    "spinShape": "מעוך מסיבוב מהיר: הקטבים כ-{pole} K, קו המשווה כ-{eq} K (מודל שהותאם לתמונות טלסקופ)",
+  },
   "deepTime": {
     "title": "זמן עמוק",
     "back": "−{n} שנים",

@@ -656,9 +656,6 @@ export const COPY = {
       "source": "यहाँ से पढ़ा",
       "whySource": "यह कैसे पता चला, यहाँ से पढ़ा",
       "widthSource": "चौड़ाई यहाँ से पढ़ी",
-      "starWidthEq": "भूमध्य रेखा पर चौड़ाई",
-      "starWidthPole": "ध्रुव से ध्रुव तक चौड़ाई",
-      "starSpin": "घूर्णन",
       "distanceNote": "उस दूरी के बारे में",
       "objectType": "यह क्या है",
       "constellation": "तारामंडल",
@@ -739,7 +736,6 @@ export const COPY = {
       "suns": "सूर्य का {n} गुना",
       "sunsWide": "सूर्य का {n} गुना, अनुमानित",
       "sunsWideMeasured": "सूर्य का {n} गुना, मापा हुआ",
-      "starSpinShape": "तेज़ घूर्णन से चपटा: ध्रुव लगभग {pole} K, भूमध्य रेखा लगभग {eq} K (दूरबीन की छवियों से मिलाया गया एक मॉडल)",
       "earths": "पृथ्वी का {n} गुना",
       "earthsWide": "पृथ्वी की चौड़ाई का {n} गुना",
       "lightYearsAbout": "लगभग {n} प्रकाश-वर्ष",
@@ -5085,6 +5081,12 @@ Object.assign(COPY, {
 // b200-f4-cards: end
 // b200-f3-stars: begin -- deep time, the variable stars and the turning black holes (copy/en.stars.js, forge #141, #142, #149), machine-drafted
 Object.assign(COPY, {
+  "rotators": {
+    "widthEq": "भूमध्य रेखा पर चौड़ाई",
+    "widthPole": "ध्रुव से ध्रुव तक चौड़ाई",
+    "spin": "घूर्णन",
+    "spinShape": "तेज़ घूर्णन से चपटा: ध्रुव लगभग {pole} K, भूमध्य रेखा लगभग {eq} K (दूरबीन की छवियों से मिलाया गया एक मॉडल)",
+  },
   "deepTime": {
     "title": "गहरा समय",
     "back": "−{n} वर्ष",

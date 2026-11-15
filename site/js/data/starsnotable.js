@@ -152,19 +152,7 @@ export const STARS_NOTABLE = [
     "radius_suns": 2.726,
     "radius_err_suns": 0.006,
     "physical_source": "https://arxiv.org/abs/1211.6055 (read 2026-11-04)",
-    "rotator": {
-      "polar_radius_suns": 2.418,
-      "polar_radius_err_suns": 0.012,
-      "teff_pole_k": 10070,
-      "teff_pole_err_k": 90,
-      "teff_eq_k": 8910,
-      "teff_eq_err_k": 130,
-      "inclination_deg": 6.2,
-      "inclination_err_deg": 0.4,
-      "pole_pa_deg": -58,
-      "pole_pa_err_deg": 6,
-      "beta": 0.231
-    }
+    "rotator": true
   },
   {
     "hip": 24608,
@@ -203,16 +191,7 @@ export const STARS_NOTABLE = [
     "radius_suns": 2.008,
     "radius_err_suns": 0.006,
     "physical_source": "https://arxiv.org/abs/1912.03138 (read 2026-11-15)",
-    "rotator": {
-      "polar_radius_suns": 1.565,
-      "polar_radius_err_suns": 0.014,
-      "teff_pole_k": 8621,
-      "teff_eq_k": 6780,
-      "inclination_deg": 50.65,
-      "inclination_err_deg": 1.23,
-      "pole_pa_deg": 301.13,
-      "pole_pa_err_deg": 0.34
-    }
+    "rotator": true
   },
   {
     "hip": 21421,
@@ -274,19 +253,7 @@ export const STARS_NOTABLE = [
     "radius_suns": 4.21,
     "radius_err_suns": 0.07,
     "physical_source": "https://arxiv.org/abs/1105.0740 (read 2026-11-15)",
-    "rotator": {
-      "polar_radius_suns": 3.22,
-      "polar_radius_err_suns": 0.05,
-      "teff_pole_k": 14520,
-      "teff_pole_err_k": 690,
-      "teff_eq_k": 11010,
-      "teff_eq_err_k": 520,
-      "inclination_deg": 86.3,
-      "inclination_err_deg": 1.6,
-      "pole_pa_deg": 258,
-      "pole_pa_err_deg": 2,
-      "beta": 0.188
-    }
+    "rotator": true
   },
   {
     "hip": 60718,
@@ -497,19 +464,7 @@ export const STARS_NOTABLE = [
     "radius_suns": 2.871,
     "radius_err_suns": 0.02,
     "physical_source": "https://arxiv.org/abs/0906.2241 (read 2026-11-15)",
-    "rotator": {
-      "polar_radius_suns": 2.39,
-      "polar_radius_err_suns": 0.014,
-      "teff_pole_k": 9300,
-      "teff_pole_err_k": 150,
-      "teff_eq_k": 7460,
-      "teff_eq_err_k": 100,
-      "inclination_deg": 87.7,
-      "inclination_err_deg": 0.43,
-      "pole_pa_deg": -53.88,
-      "pole_pa_err_deg": 1.23,
-      "beta": 0.25
-    }
+    "rotator": true
   },
   {
     "hip": 62956,

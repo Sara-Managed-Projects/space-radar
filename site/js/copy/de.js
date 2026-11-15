@@ -765,9 +765,6 @@ export const COPY = {
       "source": "Gelesen aus",
       "whySource": "Warum man es kennt, gelesen aus",
       "widthSource": "Breite gelesen aus",
-      "starWidthEq": "Durchmesser am Äquator",
-      "starWidthPole": "Durchmesser von Pol zu Pol",
-      "starSpin": "Drehung",
       "distanceNote": "Zu dieser Entfernung",
       "objectType": "Was es ist",
       "constellation": "Sternbild",
@@ -845,7 +842,6 @@ export const COPY = {
       "suns": "{n}× Sonne",
       "sunsWide": "{n}× Sonne, geschätzt",
       "sunsWideMeasured": "{n}× Sonne, gemessen",
-      "starSpinShape": "Durch schnelle Drehung abgeplattet: Pole etwa {pole} K, Äquator etwa {eq} K (ein an Teleskopbilder angepasstes Modell)",
       "earths": "{n}× Erde",
       "earthsWide": "{n}× so breit wie die Erde",
       "lightYearsAbout": "etwa {n} Lichtjahre",
@@ -5190,6 +5186,12 @@ Object.assign(COPY, {
 // b200-f4-cards: end
 // b200-f3-stars: begin -- deep time, the variable stars and the turning black holes (copy/en.stars.js, forge #141, #142, #149), machine-drafted
 Object.assign(COPY, {
+  "rotators": {
+    "widthEq": "Durchmesser am Äquator",
+    "widthPole": "Durchmesser von Pol zu Pol",
+    "spin": "Drehung",
+    "spinShape": "Durch schnelle Drehung abgeplattet: Pole etwa {pole} K, Äquator etwa {eq} K (ein an Teleskopbilder angepasstes Modell)",
+  },
   "deepTime": {
     "title": "Tiefe Zeit",
     "back": "−{n} Jahre",

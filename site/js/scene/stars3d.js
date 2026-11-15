@@ -236,8 +236,7 @@ export function recordsFromNames(rows) {
       if (famous.spect) meta.spect = famous.spect;
       // A width read off an interferometer, with its source (registry/stars-notable.yaml): the card then says "measured".
       if (famous.radius_suns > 0) { meta.measuredRadiusSuns = famous.radius_suns; meta.measuredTeffK = famous.teff_k; meta.widthSource = famous.physical_source; }
-      // A star measured to be flattened by its spin (internal #276): scene/stardisc.js draws it as such.
-      if (famous.rotator && famous.radius_suns > 0) meta.rotator = famous.rotator;
+      if (famous.rotator && famous.radius_suns > 0) meta.rotates = true; // flattened by its spin: scene/rotators.js has the numbers (internal #276)
     }
     out.push(starRecord(idx, name, { x, y, z }, meta));
   }
@@ -610,12 +609,6 @@ export function createStars3d(scene, opts = {}) {
       // colour then stays the colour-index estimate, and only the width says "measured".
       let teffK = record.meta.measuredTeffK;
       if (!(teffK > 0) && data && Number.isInteger(idx) && idx >= 0 && idx < data.count) teffK = starPhysical(data.absMag[idx], data.ci[idx]).teffK;
-      // A rotator (registry/stars-notable.yaml `rotator:`) is drawn flattened and darker at its equator; its colour reference is its pole.
-      const rot = record.meta.rotator;
-      if (rot && rot.polar_radius_suns > 0 && rot.teff_pole_k > 0 && rot.teff_eq_k > 0) {
-        return { radiusKm: SUN_RADIUS_KM * record.meta.measuredRadiusSuns, teffK: rot.teff_pole_k, how: 'measured',
-          rotator: { polarOverEq: rot.polar_radius_suns / record.meta.measuredRadiusSuns, teffPoleK: rot.teff_pole_k, teffEqK: rot.teff_eq_k, inclinationDeg: rot.inclination_deg, poleAngleDeg: rot.pole_pa_deg } };
-      }
       return { radiusKm: SUN_RADIUS_KM * record.meta.measuredRadiusSuns, teffK, how: 'measured' };
     }
     if (!data || !Number.isInteger(idx) || idx < 0 || idx >= data.count) return null;

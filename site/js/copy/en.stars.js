@@ -71,6 +71,13 @@ Object.assign(COPY, {
       'sgr-a-star': 'The spin is chosen: EHT 2022 paper V favours 0.5 to 0.94.',
     },
   },
+  // data/starrotators.js: a star measured to be flattened by its spin (Vega, Altair, Regulus, Rasalhague), on its card.
+  rotators: {
+    widthEq: 'Width across the equator',
+    widthPole: 'Width pole to pole',
+    spin: 'Spin',
+    spinShape: 'Flattened by fast spin: poles about {pole} K, equator about {eq} K (a model fitted to telescope images)',
+  },
 });
 
 // The sections this file added, in the visitor's language when a translation has them (copy/lang.js, as en.later.js does).

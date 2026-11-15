@@ -655,9 +655,6 @@ export const COPY = {
       "source": "读取自",
       "whySource": "我们为什么知道它，读取自",
       "widthSource": "宽度读取自",
-      "starWidthEq": "赤道处的宽度",
-      "starWidthPole": "两极间的宽度",
-      "starSpin": "自转",
       "distanceNote": "关于这个距离",
       "objectType": "它是什么",
       "constellation": "星座",
@@ -738,7 +735,6 @@ export const COPY = {
       "suns": "太阳的 {n} 倍",
       "sunsWide": "太阳的 {n} 倍（估计值）",
       "sunsWideMeasured": "太阳的 {n} 倍（实测）",
-      "starSpinShape": "因快速自转而变扁：两极约 {pole} K，赤道约 {eq} K（根据望远镜图像拟合的模型）",
       "earths": "地球的 {n} 倍",
       "earthsWide": "地球宽度的 {n} 倍",
       "lightYearsAbout": "约 {n} 光年",
@@ -5088,6 +5084,12 @@ Object.assign(COPY, {
 // b200-f4-cards: end
 // b200-f3-stars: begin -- deep time, the variable stars and the turning black holes (copy/en.stars.js, forge #141, #142, #149), machine-drafted
 Object.assign(COPY, {
+  "rotators": {
+    "widthEq": "赤道处的宽度",
+    "widthPole": "两极间的宽度",
+    "spin": "自转",
+    "spinShape": "因快速自转而变扁：两极约 {pole} K，赤道约 {eq} K（根据望远镜图像拟合的模型）",
+  },
   "deepTime": {
     "title": "深时",
     "back": "−{n} 年",
