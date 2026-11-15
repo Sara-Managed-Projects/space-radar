@@ -13,6 +13,22 @@ tagged, and their dates are the day the last change in each landed.
 
 ### Added
 
+- **More sky events, with calendar files.** `/events/` now has a page for every full Moon to May 2028 (its computed time and
+  distance, and the traditional name), three lunar eclipses, two close meetings of planets (Venus with Saturn and with Mars),
+  and five more meteor showers of 2027. Each event page has an "Add to your calendar" file with a reminder the day before, and
+  there are feeds a calendar can subscribe to (`/events/sky-events.ics`, `showers.ics`, `eclipses.ics`, `moons.ics`, `sky.ics`);
+  every entry links back to its page and to the map at that moment.
+- **Every Messier object and every named moon has a page.** The 110 Messier objects, named or not, and the 148 moons of Jupiter,
+  Saturn, Uranus, Neptune and Pluto that have a name of their own (not a provisional designation) now have their own `/o/` page,
+  in all eleven languages.
+- **A link-in-bio page** (`/links/`): the latest Instagram posts, each opening the simulator it showed, tagged with the post.
+- **The journal lists on the static pages update without a map deploy.** They read the journal's slim `feed-lite.json` in the
+  browser and keep the list built into the page when it cannot.
+- **A gap in the pages in other languages is now a failure.** CI refuses a language that publishes fewer pages than the English
+  sitemap holds (it had been a number nobody read), and builds the deploy's variant of the pages too (with the saved copies' index),
+  which had left the ISS page out of every language.
+- **Event pages carry an image and a free offer in their Event markup**, as Google's Event result recommends.
+
 - **Free email updates.** An envelope button on the map's rail opens a short form; every page's footer, the about and
   teachers pages, and the row under Coming up carry the same form. Pick any of Space Radar news, the Journal, Space games
   and Sky alerts (none is ticked for you). Nothing is sent until the address is confirmed. Every email has a one-click

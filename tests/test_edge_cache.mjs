@@ -50,7 +50,7 @@ const uses = [...code.matchAll(/"s3:\/\/\$BUCKET\/([\w/]+)"[^\n]*(?:\\\n[^\n]*)*
 const revalidated = [...new Set(uses.filter(([, v]) => v === 'REVALIDATE').map(([p]) => p))].sort();
 // print/ since 2.0.0 (forge #161, b200-f6-learn): the paper models' page and its PDFs, synced by a block of its own.
 // audio/ since 2.0.1: only its indexes (*.json); the clips stay long-lived (LONG), and the indexes are invalidated by name.
-check(JSON.stringify(revalidated) === JSON.stringify(['_gz/css', '_gz/js', 'audio', 'css', 'embed', 'js', 'lab', 'model', 'o', 'press', 'print', 'share', 't', 'vendor']), `the folders stored for revalidation are the app's and the pages' (${revalidated})`);
+check(JSON.stringify(revalidated) === JSON.stringify(['_gz/css', '_gz/js', 'audio', 'css', 'embed', 'events', 'js', 'lab', 'model', 'o', 'press', 'print', 'share', 't', 'vendor']), `the folders stored for revalidation are the app's and the pages' (${revalidated})`);
 // The growth pages (scripts/seo_pages.py) are synced by a loop over pages-dirs.txt, share/ among them: the same list is invalidated.
 check(/"s3:\/\/\$BUCKET\/\$dir" --cache-control "\$REVALIDATE"/.test(code) && /PATHS\+=\("\/\$dir\/\*"\)/.test(code), 'every directory in pages-dirs.txt carries it and is invalidated by the same list');
 // Seventeen until 2.0.0, then twenty-two: print/'s page and PDFs (b200-f6-learn), and assets/ and creators/ as HTML,
@@ -58,8 +58,9 @@ check(/"s3:\/\/\$BUCKET\/\$dir" --cache-control "\$REVALIDATE"/.test(code) && /P
 // twenty-six with the one-model viewer (model/: its page, script and index, models.spaceradar.ai).
 // Twenty-seven with the pages in other languages (scripts/seo_i18n.py): one sync per language folder, in a loop over the ten
 // codes, each folder and each language sitemap invalidated by the loop beside PATHS (checked just below).
+// Twenty-eight with the sky events' calendar files (events/*.ics as text/calendar, internal #105).
 // A new upload changes the count here on purpose.
-check(!/--cache-control "no-cache"/.test(code) && (code.match(/--cache-control "\$REVALIDATE"/g) || []).length === 27, 'no upload still says a literal no-cache: all twenty-seven read $REVALIDATE');
+check(!/--cache-control "no-cache"/.test(code) && (code.match(/--cache-control "\$REVALIDATE"/g) || []).length === 28, 'no upload still says a literal no-cache: all twenty-eight read $REVALIDATE');
 const langLoops = [...code.matchAll(/for code in ([a-z ]+); do/g)].map((m) => m[1].trim());
 check(langLoops.length === 3 && langLoops.every((l) => l === 'es fr de pt ru uk zh hi he ar'), `the language folders are synced, their sitemaps uploaded and both invalidated, for the same ten codes (${langLoops})`);
 check(/"s3:\/\/\$BUCKET\/\$code" --cache-control "\$REVALIDATE"/.test(code) && /PATHS\+=\("\/\$code\/\*" "\/sitemap-pages-\$code\.xml"\)/.test(code), 'each language folder is stored for revalidation and invalidated with its sitemap');
@@ -78,7 +79,9 @@ check(audioSyncs.some((l) => /--cache-control "\$REVALIDATE"/.test(l) && /--incl
 check(code.indexOf('--include "*.json" --content-type "application/json; charset=utf-8" --delete') > code.indexOf('echo "==> the app"'), "and in the app's block, so an --assets-only deploy still stores nothing with s-maxage");
 check(/find "\$SITE\/audio" -name "\*\.json"/.test(code) && /PATHS\+=\("\/audio\/\$\{f#"\$SITE\/audio\/"\}"\)/.test(code), 'every audio index is invalidated by its own name');
 for (const f of ['cards/en/index.json', 'moments/fengyun-1c/index.json']) check(existsSync(join(ROOT, 'site/audio', f)), `site/audio/${f} exists (wikicard.js and the Fengyun-1C Moment read it)`);
-for (const p of revalidated.filter((x) => !x.startsWith('_gz/') && x !== 'share' && x !== 'audio')) check(invalidated.includes(`/${p}/*`) || (pageDirs.has(p) && byPagesDirs), `/${p}/* is invalidated on every deploy`);
+for (const p of revalidated.filter((x) => !x.startsWith('_gz/') && x !== 'share' && x !== 'audio' && x !== 'events')) check(invalidated.includes(`/${p}/*`) || (pageDirs.has(p) && byPagesDirs), `/${p}/* is invalidated on every deploy`);
+// events/ is an ordinary page directory (its HTML is in the loop over pages-dirs.txt, invalidated with the rest); its calendar files have a sync of their own.
+check(byPagesDirs && /--include "\*\.ics" --content-type "text\/calendar; charset=utf-8"/.test(code) && /path="events\/index\.html"/.test(readFileSync(join(ROOT, 'scripts/seo_pages.py'), 'utf8')), 'events/ is invalidated with pages-dirs.txt, and its .ics files are sent as text/calendar');
 check(pageDirs.has('print') && /path="print\/index\.html"/.test(readFileSync(join(ROOT, 'scripts/seo_print.py'), 'utf8')), 'print/ is a page of pages-dirs.txt (scripts/seo_print.py), which is why it is invalidated with them');
 check(/PATHS\+=\("\/_gz\/\*"\)/.test(code), '/_gz/* is invalidated with it');
 const rootFiles = [...(/for f in ([\s\S]*?); do/.exec(code) || [, ''])[1].matchAll(/\/([\w.-]+):/g)].map((m) => m[1]);
