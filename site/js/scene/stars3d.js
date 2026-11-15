@@ -235,7 +235,7 @@ export function recordsFromNames(rows) {
       if (famous.mag != null) meta.mag = famous.mag; // a value the registry corrects (Sirius, internal #311)
       if (famous.spect) meta.spect = famous.spect;
       // A width read off an interferometer, with its source (registry/stars-notable.yaml): the card then says "measured".
-      if (famous.radius_suns > 0) { meta.measuredRadiusSuns = famous.radius_suns; meta.measuredTeffK = famous.teff_k; meta.widthSource = famous.physical_source; meta.rotates = famous.rotator; } // rotates: flattened by its spin, numbers in data/starrotators.js (internal #276)
+      if (famous.radius_suns > 0) { meta.measuredRadiusSuns = famous.radius_suns; meta.measuredTeffK = famous.teff_k; meta.widthSource = famous.physical_source; }
     }
     out.push(starRecord(idx, name, { x, y, z }, meta));
   }

@@ -34,13 +34,13 @@ for (const [hip, name, req, rpol, tp, te, inc, pa, beta] of PAPERS) {
   const r = rows.get(hip);
   check(r && r.name === name, `${name}: the row exists`);
   const o = STAR_ROTATORS[String(hip)];
-  if (!r || r.rotator !== true || !o) { check(false, `${name} has a rotator block (the row says so, the module has it)`); continue; }
+  if (!r || !o) { check(false, `${name} has a rotator block in the numbers module`); continue; }
   check(r.radius_suns === req, `${name}: the equatorial width is the paper's ${req} (${r.radius_suns})`);
   check(o.polar_radius_suns === rpol, `${name}: the polar radius is the paper's ${rpol} (${o.polar_radius_suns})`);
   check(o.teff_pole_k === tp && o.teff_eq_k === te, `${name}: the temperatures are the paper's ${tp} and ${te}`);
   check(o.inclination_deg === inc && o.pole_pa_deg === pa, `${name}: the angles are the paper's ${inc} and ${pa}`);
   check(/arxiv\.org\/abs\//.test(r.physical_source) && /\(read 2026-\d\d-\d\d\)$/.test(r.physical_source), `${name}: the paper and the day are named`);
-  check(o.note === undefined && o.model === undefined && typeof r.rotator === 'boolean', `${name}: the paper's note stays in the YAML, and the first visit holds a flag, not the numbers`);
+  check(o.note === undefined && o.model === undefined && r.rotator === undefined, `${name}: the paper's note stays in the YAML, and the first visit's data holds none of it`);
 
   // the law reproduces the equator, and agrees with the paper's own exponent where it gives one
   const law = rotatorLaw(rpol / req, tp, te);
@@ -71,9 +71,7 @@ for (const [hip, name, req, rpol, tp, te, inc, pa, beta] of PAPERS) {
   }
   check(worst < 0.04, `${name}: the spheroid is within 4 % of the Roche surface (${(worst * 100).toFixed(2)} %)`);
 
-  // the record carries the block and the disc gets the ratio
-  const rec = recordsFromNames([[1, name, '', '', hip, 'A0', 25, 1, 1, 1, 1, 1]])[0];
-  check(rec && rec.meta.rotates === true && rec.meta.rotator === undefined, `${name}: the star record says it rotates and holds no numbers until they are fetched`);
+  check(rows.get(hip).measured === undefined && r.radius_suns === req, `${name}: the first visit's row keeps only its width`);
 }
 
 // The axis. Vega is at RA 18h 36m 56.3s, Dec +38d 47m 01s (SIMBAD ICRS, J2000). Independent check: build the sky north and east in
@@ -106,8 +104,9 @@ for (const k of ['widthEq', 'widthPole', 'spin']) check(typeof COPY.rotators[k] 
 check(/\{pole\}/.test(COPY.rotators.spinShape) && /\{eq\}/.test(COPY.rotators.spinShape) && /model/.test(COPY.rotators.spinShape), 'copy: the spin line names both temperatures and says it is a model');
 // and the boot keeps nothing of it: no rotator number in the boot modules' data, the module is fetched on demand
 const { readFileSync } = await import('node:fs');
-const disc = readFileSync(join(JS, 'scene/stardisc.js'), 'utf8'), main = readFileSync(join(JS, 'main.js'), 'utf8'), gen = readFileSync(join(JS, 'data/starrotators.js'), 'utf8');
+const disc = readFileSync(join(JS, 'scene/stardisc.js'), 'utf8'), main = readFileSync(join(JS, 'main.js'), 'utf8'), card = readFileSync(join(JS, 'ui/cardfacts.js'), 'utf8'), gen = readFileSync(join(JS, 'data/starrotators.js'), 'utf8');
 check(/import\('\.\.\/data\/starrotators\.js'\)/.test(disc) && !/from '\.\.\/data\/starrotators\.js'/.test(disc) && !/starrotators/.test(main), 'scene/stardisc.js fetches data/starrotators.js on demand; main.js and the boot never name it');
+check(!/copy\/en\.stars\.js/.test(card.replace(/\/\/.*$/gm, '')) && /import\('\.\.\/copy\/en\.stars\.js'\)/.test(disc), 'the card never imports the lazy words itself: the disc fetches them with the numbers');
 check(/GENERATED from registry\/stars-notable\.yaml/.test(gen), 'the numbers module is generated');
 check(SUN_RADIUS_KM > 6e5, 'sanity: the Sun');
 

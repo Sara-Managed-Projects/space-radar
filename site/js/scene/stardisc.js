@@ -5,7 +5,7 @@
 //             state(), dispose(), mesh }
 //   physical: { radiusKm, teffK, how }   scene/stars3d.js starPhysical() or the Exoplanet Archive's row
 //   A star an interferometer has measured to be flattened by its spin carries `record.meta.rotator` (data/starrotators.js, from
-//   registry/stars-notable.yaml `rotator:`, internal #276): set() fetches it the first time such a star is chosen.
+//   registry/stars-notable.yaml `rotator:`, internal #276): set() fetches it the first time a star with a measured width is chosen.
 // Pure, for tests/test_stardisc.mjs: limbDarkening(mu, teffK), limbAt(mu, teffK, nm), discOpacity(radiusPx), HIDE_POINT_PX
 //   and for tests/test_rotators.mjs: rotatorLaw(), rotatorPoint(), poleDirection()
 //
@@ -289,7 +289,7 @@ export function createStarDisc(scene, opts = {}) {
     // A flattened star: the shape, the darkening law and the axis, as the paper has them. A frame other than the Sun's is not drawn flat.
     poleScene = null;
     material.uniforms.uRot.value = 0;
-    // The numbers arrive on the record (set() fetches data/starrotators.js the first time such a star is chosen).
+    // The numbers arrive on the record (set() fetches data/starrotators.js the first time a star with a measured width is chosen).
     const rr = record.meta && record.meta.rotator;
     const rot = rr && rr.polar_radius_suns > 0 && physical.radiusKm > 0 ? { polarOverEq: rr.polar_radius_suns / (physical.radiusKm / SUN_RADIUS_KM), teffPoleK: rr.teff_pole_k, teffEqK: rr.teff_eq_k, inclinationDeg: rr.inclination_deg, poleAngleDeg: rr.pole_pa_deg } : null;
     if (rot && rot.polarOverEq > 0 && rot.polarOverEq < 1 && (record.frame || SUN_INERTIAL) === SUN_INERTIAL && record.pos) {
@@ -314,13 +314,18 @@ export function createStarDisc(scene, opts = {}) {
       record = next && phys && phys.radiusKm > 0 ? next : null;
       physical = record ? phys : null;
       placedFor = '';
-      // A star measured to be flattened by its spin: its numbers are a module fetched the first time one is chosen (internal #276),
-      // then the disc is placed again and `opts.changed` repaints the card, which prints them too.
-      if (record && record.meta && record.meta.rotates && !record.meta.rotator) {
+      // A star measured to be flattened by its spin (internal #276): its numbers, and the words for them, are modules fetched the first time
+      // a star with a measured width is chosen (a few dozen); then the disc is placed again and `opts.changed` repaints the card, which prints them too.
+      if (record && record.meta && record.meta.measuredRadiusSuns > 0 && record.meta.rotator === undefined) {
         const rec = record;
-        import('../data/starrotators.js').then((m) => { rec.meta.rotator = m.STAR_ROTATORS[rec.meta.hip]; placedFor = ''; if (opts.changed) opts.changed(); }).catch(() => {});
+        rec.meta.rotator = null; // asked once
+        Promise.all([import('../data/starrotators.js'), import('../copy/en.stars.js')]).then(([m]) => {
+          const rot = m.STAR_ROTATORS[rec.meta.hip];
+          if (!rot) return;
+          rec.meta.rotator = rot; placedFor = '';
+          if (opts.changed) opts.changed();
+        }).catch(() => {});
       }
-      if (!record) { mesh.visible = false; radiusPx = 0; }
     },
     update(camera, renderer) {
       radiusPx = 0;

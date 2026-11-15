@@ -151,8 +151,7 @@ export const STARS_NOTABLE = [
     "source": "https://en.wikipedia.org/wiki/Vega (read 2026-09-22)",
     "radius_suns": 2.726,
     "radius_err_suns": 0.006,
-    "physical_source": "https://arxiv.org/abs/1211.6055 (read 2026-11-04)",
-    "rotator": true
+    "physical_source": "https://arxiv.org/abs/1211.6055 (read 2026-11-04)"
   },
   {
     "hip": 24608,
@@ -190,8 +189,7 @@ export const STARS_NOTABLE = [
     "source": "https://en.wikipedia.org/wiki/Altair (read 2026-09-22)",
     "radius_suns": 2.008,
     "radius_err_suns": 0.006,
-    "physical_source": "https://arxiv.org/abs/1912.03138 (read 2026-11-15)",
-    "rotator": true
+    "physical_source": "https://arxiv.org/abs/1912.03138 (read 2026-11-15)"
   },
   {
     "hip": 21421,
@@ -252,8 +250,7 @@ export const STARS_NOTABLE = [
     "source": "https://en.wikipedia.org/wiki/Regulus (read 2026-09-22)",
     "radius_suns": 4.21,
     "radius_err_suns": 0.07,
-    "physical_source": "https://arxiv.org/abs/1105.0740 (read 2026-11-15)",
-    "rotator": true
+    "physical_source": "https://arxiv.org/abs/1105.0740 (read 2026-11-15)"
   },
   {
     "hip": 60718,
@@ -463,8 +460,7 @@ export const STARS_NOTABLE = [
     "source": "https://en.wikipedia.org/wiki/Alpha_Ophiuchi (read 2026-11-05)",
     "radius_suns": 2.871,
     "radius_err_suns": 0.02,
-    "physical_source": "https://arxiv.org/abs/0906.2241 (read 2026-11-15)",
-    "rotator": true
+    "physical_source": "https://arxiv.org/abs/0906.2241 (read 2026-11-15)"
   },
   {
     "hip": 62956,
