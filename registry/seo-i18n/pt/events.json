@@ -285,7 +285,6 @@
  "12fe086456": "Onde olhar",
  "351f7427e0": "Olhe para o leste, baixo, antes do nascer do Sol. Os dois estão a menos de {n1}° do Sol, então um horizonte limpo ajuda; a maior aproximação é dada em UT, e o par continua perto por vários dias antes e depois.",
  "5347d6185c": "<1>Calculado aqui com o Astronomy Engine (o ângulo entre os dois planetas, procurando o menor valor)</1>, consultado em {d1}",
- "9c10481307": "Vênus e Marte juntos, {n1} nov. {n2}",
  "1cbaa17ddd": "Em {d1}, {n1} UT, Vênus e Marte ficam a {n2}° um do outro, a maior proximidade deste encontro: Vênus está a {n3}° e Marte a {n4}° do Sol, no céu do entardecer.",
  "8442f90697": "magnitude -{n1}, a {n2}° do Sol, céu do entardecer, em Sagitário",
  "dc21c5af7e": "magnitude {n1}, a {n2}° do Sol, céu do entardecer, em Sagitário",

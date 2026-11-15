@@ -20,6 +20,39 @@
 version: 1
 
 articles:
+  - slug: radar-and-earth-science-satellites-in-their-own-shapes
+    title: "RADARSAT-2, COSMO-SkyMed, GOSAT and five more Earth watchers in their own shapes"
+    short: "Radar and Earth-science satellites in their own shapes"
+    description: "Release 1.9.0 builds RADARSAT-2, the RCM, COSMO-SkyMed, Elektro-L, AstroSat, GOSAT and MicroCarb in 3D from published dimensions and pictures."
+    lead: "Release 1.9.0 replaces the generic radar blade, weather box and telescope tube with models of eight kinds of satellite, built from their published sizes."
+    release: "1.9.0"
+    published: 2026-11-06
+    hero: radarsat-2.webp
+    hero_alt: "RADARSAT-2, a gold bus on a long dark radar antenna with two blue solar wings, over the night side of the Earth."
+    open: "https://www.spaceradar.ai/#go=sat-32382"
+    open_label: "Fly to RADARSAT-2"
+  - slug: fourteen-new-lab-simulators
+    title: "Fourteen new Lab simulators: orbits, clocks, stars and the habitable zone"
+    short: "Fourteen new space simulators in the Space Radar Lab"
+    description: "Release 1.9.0 adds fourteen one-page simulators to the Lab: a Hohmann transfer, the habitable zone, twin clocks, escape velocity and more."
+    lead: "Release 1.9.0 adds fourteen simulators to the Lab, each one idea you push with a slider, every number traced to its source."
+    release: "1.9.0"
+    published: 2026-11-06
+    hero: hohmann.webp
+    hero_alt: "The Hohmann Transfer Hop simulator: Earth, a transfer ellipse and the two burns of 2.40 and 1.46 km/s."
+    open: "https://www.spaceradar.ai/lab/"
+    open_label: "Open the Lab"
+  - slug: saturns-small-moons-in-cassini-shapes
+    title: "Pan, Atlas, Hyperion and eight more of Saturn's small moons in their Cassini shapes"
+    short: "Saturn's small moons in their Cassini shapes, in 3D"
+    description: "Release 1.9.0 draws eleven of Saturn's small moons, from Pan's ridge to spongy Hyperion, from the Cassini shape models in NASA's archive."
+    lead: "Release 1.9.0 replaces the grey stand-in with the shapes Cassini measured for eleven of Saturn's small moons."
+    release: "1.9.0"
+    published: 2026-11-06
+    hero: pan.webp
+    hero_alt: "Pan seen side on, a pale walnut-shaped moon with a ridge round its middle."
+    open: "https://www.spaceradar.ai/#go=pan"
+    open_label: "Fly to Pan"
   - slug: moments-a-mission-on-one-clock
     title: "Moments: a mission replayed in 3D on one clock"
     short: "Moments: watch the Saturn V launch in 3D, on one clock"

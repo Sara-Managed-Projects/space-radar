@@ -285,7 +285,6 @@
  "12fe086456": "Dónde mirar",
  "351f7427e0": "Mira hacia el este, bajo, antes del amanecer. Los dos están a menos de {n1}° del Sol, así que ayuda un horizonte despejado; el momento más cercano se da en UT, y la pareja sigue cerca varios días antes y después.",
  "5347d6185c": "<1>Calculado aquí con Astronomy Engine (el ángulo entre los dos planetas, buscando su valor más pequeño)</1>, leído el {d1}",
- "9c10481307": "Venus y Marte muy juntos, {n1} de noviembre de {n2}",
  "1cbaa17ddd": "A las {d1}, {n1} UT Venus y Marte están a {n2}° uno del otro, lo más cerca que llegan en este encuentro: Venus está a {n3}° del Sol y Marte a {n4}°, en el cielo de la tarde.",
  "8442f90697": "magnitud -{n1}, a {n2}° del Sol, cielo de la tarde, en Sagitario",
  "dc21c5af7e": "magnitud {n1}, a {n2}° del Sol, cielo de la tarde, en Sagitario",

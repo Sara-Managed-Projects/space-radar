@@ -285,7 +285,6 @@
  "12fe086456": "Where to look",
  "351f7427e0": "Look in the east, low, before sunrise. Both are within {n1}° of the Sun, so a clear horizon helps; the closest approach is given in UT, and the pair stays close for several days either side.",
  "5347d6185c": "<1>Computed here with Astronomy Engine (the angle between the two planets, searched for its smallest value)</1>, read {d1}",
- "9c10481307": "Venus and Mars close together, {n1} Nov {n2}",
  "1cbaa17ddd": "At {d1}, {n1} UT Venus and Mars stand {n2}° apart, the closest they come in this meeting: Venus is {n3}° and Mars {n4}° from the Sun, in the evening sky.",
  "8442f90697": "magnitude -{n1}, {n2}° from the Sun, evening sky, in Sagittarius",
  "dc21c5af7e": "magnitude {n1}, {n2}° from the Sun, evening sky, in Sagittarius",
