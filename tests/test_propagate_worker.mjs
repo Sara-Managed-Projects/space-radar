@@ -319,8 +319,10 @@ assert.ok(s.ticks >= INSTANTS.length && s.records === N && s.failed === null);
   assert.ok(/r\.propagator === 'kepler'/.test(main), "main.js's wantPool counts kepler records");
   // No kepler layer that loads at boot may reach the threshold either.
   const layers = readFileSync(join(ROOT, 'registry', 'layers.yaml'), 'utf8').split(/\n  - id: /).slice(1);
+  // A layer main.js holds until its box is ticked (TICKED_LAYERS) is not a boot request either.
+  const ticked = new Set([...(/TICKED_LAYERS = new Set\(\[([^\]]*)\]/.exec(main) || [, ''])[1].matchAll(/'([^']+)'/g)].map((m) => m[1]));
   for (const block of layers) {
-    if (!/propagator: kepler/.test(block) || /load: on-demand/.test(block)) continue;
+    if (!/propagator: kepler/.test(block) || /load: on-demand/.test(block) || ticked.has(block.split('\n')[0].trim())) continue;
     const max = /max_items: (\d+)/.exec(block);
     assert.ok(max && Number(max[1]) < POOL_MIN_RECORDS, `layer ${block.split('\n')[0]} loads at boot with up to ${max && max[1]} kepler records: under POOL_MIN_RECORDS or the worker is a boot request`);
   }

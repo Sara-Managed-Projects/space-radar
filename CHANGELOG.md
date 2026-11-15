@@ -29,7 +29,7 @@ tagged, and their dates are the day the last change in each landed.
   which had left the ISS page out of every language.
 - **Event pages carry an image and a free offer in their Event markup**, as Google's Event result recommends.
 - **Potentially hazardous asteroids, a layer of 2 552** (internal #37, the first consumer of the asteroid catalogue stage). In What to show, under the Solar
-  System, tick "Potentially hazardous asteroids": every asteroid the JPL Small-Body Database flags (an orbit within 0.05 au of the Earth's, a rock
+  System, tick "Hazardous asteroids": every asteroid the JPL Small-Body Database flags (an orbit within 0.05 au of the Earth's, a rock
   of about 140 metres or more), each where it is today on JPL's orbit. The card names the closest the two orbits come, the rock's own absolute magnitude, and
   says that the name is a definition and not a forecast. The file (`site/data/pha.json`, 145 kB gzipped, from `scripts/gen_pha.py`) is fetched when the box is ticked,
   not in the first minute. Two-body motion from one epoch is measured against Horizons for 40 of them: the median miss is 0.0001 au five months out and 0.0004 au a

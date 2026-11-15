@@ -1123,7 +1123,7 @@ export const LAYERS = [
     // (main.js TICKED_LAYERS: the first minute has no bytes to spare). `noModel`: a model of the generic asteroid on 2 500 different rocks would be the one lie this layer
     // could tell; the glyph is the honest drawing and the card says what is known of each.
     id: 'pha',
-    display: 'Potentially hazardous asteroids',
+    display: 'Hazardous asteroids',
     klass: 'asteroid',
     source: 'bundled',
     parse: null,

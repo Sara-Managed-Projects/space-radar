@@ -501,7 +501,7 @@ export const LAYER_ROWS = [
   },
   {
     "id": "pha",
-    "display": "Potentially hazardous asteroids",
+    "display": "Hazardous asteroids",
     "group": "solar-system",
     "enabled": true,
     "moments": {
