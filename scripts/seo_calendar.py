@@ -1,4 +1,4 @@
-"""The calendar files of the sky-event pages (internal #105): one .ics per event page, and four feeds a calendar can subscribe to.
+"""The calendar files of the sky-event pages (internal #105): one .ics per event page, and the feeds a calendar can subscribe to.
 
     events/<id>.ics        the one event, with a reminder the day before (the page's "Add to your calendar")
     events/sky-events.ics  every event
