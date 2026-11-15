@@ -69,7 +69,10 @@ assert.ok(BUDGETS.first_visit_bytes + BUDGETS.after_first_visit_bytes < smallest
 const local = measured.filter((m) => m.compressed === false);
 const newest = local[local.length - 1];
 for (const m of local) {
-  assert.ok(m.ours <= BUDGETS.first_visit_bytes, `${m.id}: our own ${m.ours} B inside first_visit_bytes`);
+  // A row measured before 2026-11-15 was taken before the constellation files left the first visit and the sheets were
+  // minified (b-d6-perf, 45 952 B in all, registry/budgets.yaml): it is history, and may sit that far over today's cap.
+  const slack = String(m.day) < '2026-11-15' ? 45952 : 0;
+  assert.ok(m.ours <= BUDGETS.first_visit_bytes + slack, `${m.id}: our own ${m.ours} B inside first_visit_bytes`);
   assert.ok(m.requests <= BUDGETS.first_visit_requests, `${m.id}: ${m.requests} requests inside first_visit_requests`);
   assert.ok(m.first_frame_ms <= BUDGETS.phone_first_frame_ms, `${m.id}: first frame ${m.first_frame_ms} ms inside phone_first_frame_ms`);
   assert.equal(m.webgl, 2, `${m.id}: the scene got WebGL 2`);

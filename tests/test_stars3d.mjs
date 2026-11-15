@@ -142,6 +142,28 @@ stage.setWorld('earth');
   check(src.includes('${STRETCH_VERT}') && src.includes('${STRETCH_FRAG}'), 'starfield.js splices the same shader chunks as stars3d.js');
 }
 
+// 7b. THE FIGURES WAIT FOR THE SKY VIEW (b-d6-perf): a starfield given file names fetches the constellation
+//     lines and names only at the first setLines(true), and one given parsed rows or nothing builds them at once.
+{
+  const { createStarfield } = await import(join(JS, 'scene/starfield.js'));
+  const asked = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (u) => { asked.push(String(u)); return { ok: true, json: async () => (String(u).includes('lines') ? { features: [] } : []) }; };
+  try {
+    const sky = createStarfield(new THREE.Scene(), { starsBin: '', linesJson: 'data/x.lines.json', namesJson: 'data/x.names.json', milkyWayTexture: '' });
+    await sky.ready;
+    check(asked.length === 0, `a starfield that is only drawn fetches no constellation file (asked: ${asked.join(', ') || 'none'})`);
+    sky.setLines(true);
+    sky.setLines(true);
+    await new Promise((r) => setTimeout(r, 20));
+    check(asked.length === 2 && asked.some((u) => u.includes('lines')) && asked.some((u) => u.includes('names')), `the first setLines(true) fetches the lines and the names, once (asked: ${asked.join(', ')})`);
+    asked.length = 0;
+    const eager = createStarfield(new THREE.Scene(), { starsBin: '', linesJson: { features: [] }, namesJson: [], milkyWayTexture: '' });
+    await eager.ready;
+    check(asked.length === 0, 'parsed rows are used as they are, with no fetch');
+  } finally { globalThis.fetch = realFetch; }
+}
+
 // Five named stars come out in their colours (spec 0058 task 1, internal #430). The colour drawn is
 // kelvinToRgb(bvToKelvin(B-V)) from the star's own colour index in the file (HYG v4.4), the two
 // functions stars3d.js itself calls; held here by ORDER, which is what an eye checks: the two red

@@ -46,6 +46,10 @@ WHY IT IS SAFE, IN ORDER OF HOW MUCH EACH IS WORTH
      (acorn) and the two syntax trees were identical for all of them. That is evidence about the
      scanner on the day, not a gate: there is no parser in this repository, by choice.
 
+THE STYLESHEETS (b-d6-perf, 2026-11-14): with `--esbuild` the same binary also minifies every stylesheet
+(`--minify` on the CSS, no bundling, no target lowering), after the stripper: 130 435 B of css/ui.css became
+117 792 B, and the five sheets a first visit loads together lose about 14 kB. A licence comment is put back on top.
+
 THE SECOND PASS: A REAL MINIFIER, `--esbuild` (internal #515, 2026-10-09). The stripper leaves
 every name and every space inside a line: MEASURED that day on the modules a first visit loads,
 1 207 369 B, of which a minifier takes another 27 %. `--esbuild auto` (the pinned binary of
@@ -392,6 +396,43 @@ def kept_comments(stripped: str) -> list[str]:
     return seen
 
 
+def minify_css(out: Path, esbuild: str, sheets: dict[str, str]) -> tuple[int, int, int]:
+    """Run esbuild's CSS minifier over the stripped stylesheets ({site-relative path: first-pass text}).
+
+    b-d6-perf (2026-11-14): the first pass leaves one declaration per line and every long colour as
+    written; esbuild's minifier (no bundling, no target lowering: `@import` and `url()` stay as they
+    are) takes another 8 to 10 % off ui.css and the same off the rest. Rewrites out/<path>. A licence
+    comment the first pass kept goes back on top, as for the modules. Returns (files, bytes before,
+    bytes after); raises SystemExit when esbuild refuses or warns, as for the modules.
+    """
+    todo = sorted(sheets)
+    if not todo:
+        return 0, 0, 0
+    before = after = 0
+    with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as src:
+        for rel in todo:
+            (Path(src) / rel).parent.mkdir(parents=True, exist_ok=True)
+            (Path(src) / rel).write_text(sheets[rel], encoding="utf-8")
+        done = subprocess.run(
+            [esbuild, *todo, f"--outdir={tmp}", "--outbase=.", "--minify", "--legal-comments=none", "--charset=utf8",
+             "--log-level=warning"],
+            cwd=src, capture_output=True, text=True)
+        if done.returncode != 0 or done.stderr.strip():
+            raise SystemExit(f"minify_site: esbuild refused or warned over the stylesheets; nothing is trusted from this pass:\n{done.stderr.strip()[:2000]}")
+        for rel in todo:
+            banner = "".join(c + "\n" for c in re.findall(r"/\*.*?\*/", sheets[rel], re.S))
+            text = banner + (Path(tmp) / rel).read_text(encoding="utf-8")
+            if not text.endswith("\n"):
+                text += "\n"
+            target = out / rel
+            stat = target.stat()
+            target.write_text(text, encoding="utf-8")
+            os.utime(target, (stat.st_atime, stat.st_mtime))
+            before += len(sheets[rel].encode("utf-8"))
+            after += len(text.encode("utf-8"))
+    return len(todo), before, after
+
+
 def minify_modules(site: Path, out: Path, esbuild: str, stripped: dict[str, str],
                    inputs: dict[str, str] | None = None) -> tuple[int, int]:
     """Run esbuild over the ES modules among `stripped` ({site-relative path: first-pass text}).
@@ -464,6 +505,7 @@ def build(site: Path, out: Path, tree: bool = False, node: str | None = None, qu
     kept: list[tuple[str, str]] = []
     written: list[Path] = []
     first_pass: dict[str, str] = {}
+    sheets: dict[str, str] = {}
     for sub, suffix, strip in (("js", ".js", strip_js), ("css", ".css", strip_css), ("vendor", ".js", strip_js)):
         for path in sorted((site / sub).rglob("*")):
             if not path.is_file():
@@ -500,6 +542,8 @@ def build(site: Path, out: Path, tree: bool = False, node: str | None = None, qu
             os.utime(target, (stat.st_atime, stat.st_mtime))
             before += len(text.encode("utf-8"))
             after += len(small.encode("utf-8"))
+            if suffix == ".css" and small is not text:
+                sheets[rel.as_posix()] = small
             if suffix == ".js":
                 written.append(target)
                 if small is not text:  # a file the scanner refused is not given to the second pass
@@ -517,6 +561,9 @@ def build(site: Path, out: Path, tree: bool = False, node: str | None = None, qu
         count, now = minify_modules(site, out, esbuild, first_pass, shader_inputs or None)
         after += now - was
         second = f"; esbuild minified {count} modules, {was} B -> {now} B, a source map beside each"
+        files, css_was, css_now = minify_css(out, esbuild, sheets)
+        after += css_now - css_was
+        second += f"; and {files} stylesheets, {css_was} B -> {css_now} B"
     if shaders:
         second += f"; shader text stripped (--shaders), {shader_saved} B less before the minifier"
     if tree:
