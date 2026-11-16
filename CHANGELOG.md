@@ -96,6 +96,19 @@ tagged, and their dates are the day the last change in each landed.
   while the camera flies to something (the drift, a search, a link, "Fly to it", a trip), its model is drawn at the size
   it will have on arrival, seen from the real distance: a rover on the Moon grows as the camera closes in, where it was
   drawn 260 px tall from the first frame.
+- **Links by catalogue number open the right object.** `#at=m31`, `#at=m42`, `#at=ngc224`, `#at=andromeda` and the same ids in an
+  embed said "That object is not on this map", and `#at=m1` opened M10. A link's id is now read by one resolver: the record id, a
+  Messier, NGC or HIP designation, a NORAD number, an international designator, a page's slug or a name, exact match first. An
+  embed whose id the map does not have says so in one line.
+- **Search knows more ways of naming things.** "hubble space telescope", "M 31" with a space, "IC 434", "Kuiper" (the satellite
+  constellation) and "big dipper" find something, and "M1" lists the Crab Nebula first.
+- **A satellite's card is honest when the clock moves.** Before the date of its orbital elements the card says how far back the
+  position was worked ("worked back 5 days from its elements", not "elements 0 minutes old"); on a date the elements cannot
+  answer for it says so in one line in place of three dashes, the badge reads "Not placed" and today's crew is not listed.
+- **Small ones.** A link's date outside 1700 to 2200 is held to the nearest date the map shows, and says so; `#rate=` alone
+  applies in a running tab; a link's error note goes after a few seconds and when the next link is opened; leaving a Moment
+  while it loads no longer throws; the model viewer says when the browser cannot draw 3D or the catalog did not arrive; the
+  daily challenge says when its data failed and offers to try again; Tonight's headline pass says what an unfamiliar satellite is.
 - **The card's region badge follows the standard bounds.** Icarus at 1.76 AU read "Outer solar system" because the inner Solar System ended at Mars's aphelion; it now runs to the frost line (4.95 AU, Jupiter's perihelion), the main belt is the 2.06 to 3.27 AU between Jupiter's 4:1 and 2:1 gaps, and an orbit that strays out of it (a Hungaria, a Hilda, Encke's comet) is not headed "Asteroid belt".
 - **Links and first screens that opened empty.** A shared link to Andromeda, and "Fly to it" on any galaxy, cluster or
   nebula, now stops near enough to see the object (it was a whole unit away, a million light-years on the Local Group's
