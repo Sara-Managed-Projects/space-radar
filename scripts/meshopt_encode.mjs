@@ -7,7 +7,8 @@
 //   encodeIndexBuffer(indices)               -> Uint8Array   the triangle codec, version 0 (mode TRIANGLES)
 //   orderForCodec(indices, vertexCount)      -> { indices, remap }   triangles walked edge to edge, vertices in first use
 //   writeGlb({ meshes, extras })             -> Uint8Array   meshes: [{ name, positions (Float32Array), indices?
-//                                                             (Uint32Array; none = POINTS), colours? (Uint8Array rgba) }]
+//                                                             (Uint32Array; none = POINTS), colours? (Uint8Array rgba),
+//                                                             bits? (8..16: the positions' grid across the box) }]
 //
 // The formats are meshoptimizer's (Arseny Kapoulkine, MIT), written here from their description: nothing is copied.
 // Positions are stored as normalised 16-bit integers in the mesh's own box (KHR_mesh_quantization) with the node's
@@ -182,14 +183,18 @@ export function writeGlb({ meshes, extras = null, generator = 'space-radar scrip
     for (let i = 0; i < n; i++) for (let k = 0; k < 3; k++) { const v = m.positions[i * 3 + k]; if (v < lo[k]) lo[k] = v; if (v > hi[k]) hi[k] = v; }
     const span = hi.map((h, k) => Math.max(h - lo[k], 1e-12));
     const stride = m.colours ? 12 : 8;
+    // `bits` (16 by default): positions on a grid of 2^bits steps across the box, for point sets whose places are known far
+    // more coarsely than a 65 535th of it. Sixteen bits are stored normalised; fewer as plain integers (the high byte
+    // is then nearly constant and packs to nothing), with the node's scale carrying them back.
+    const bits = Math.min(16, Math.max(8, m.bits || 16)), top = (1 << bits) - 1, whole = bits === 16;
     const vb = new Uint8Array(n * stride), dv = new DataView(vb.buffer);
     for (let i = 0; i < n; i++) {
-      for (let k = 0; k < 3; k++) dv.setUint16(i * stride + k * 2, Math.round(((m.positions[i * 3 + k] - lo[k]) / span[k]) * 65535), true);
+      for (let k = 0; k < 3; k++) dv.setUint16(i * stride + k * 2, Math.round(((m.positions[i * 3 + k] - lo[k]) / span[k]) * top), true);
       if (m.colours) for (let k = 0; k < 4; k++) vb[i * stride + 8 + k] = m.colours[i * 4 + k];
     }
     const bv = view(encodeVertexBuffer(vb, n, stride), n, stride, 'ATTRIBUTES', 34962);
     const attributes = { POSITION: accessors.length };
-    accessors.push({ bufferView: bv, byteOffset: 0, componentType: 5123, normalized: true, count: n, type: 'VEC3', min: [0, 0, 0], max: [65535, 65535, 65535] });
+    accessors.push({ bufferView: bv, byteOffset: 0, componentType: 5123, ...(whole ? { normalized: true } : {}), count: n, type: 'VEC3', min: [0, 0, 0], max: [top, top, top] });
     if (m.colours) { attributes.COLOR_0 = accessors.length; accessors.push({ bufferView: bv, byteOffset: 8, componentType: 5121, normalized: true, count: n, type: 'VEC4' }); }
     const prim = { attributes, mode: m.indices ? 4 : 0 };
     if (m.indices) {
@@ -199,7 +204,7 @@ export function writeGlb({ meshes, extras = null, generator = 'space-radar scrip
       accessors.push({ bufferView: iv, componentType: wide ? 5125 : 5123, count: m.indices.length, type: 'SCALAR' });
     }
     gltfMeshes.push({ name: m.name, primitives: [prim] });
-    nodes.push({ name: m.name, mesh: gltfMeshes.length - 1, translation: lo, scale: span, ...(m.extras ? { extras: m.extras } : {}) });
+    nodes.push({ name: m.name, mesh: gltfMeshes.length - 1, translation: lo, scale: whole ? span : span.map((v) => v / top), ...(m.extras ? { extras: m.extras } : {}) });
   }
   const json = {
     asset: { version: '2.0', generator },

@@ -59,7 +59,7 @@ check(orderedSize < rawSize * 0.5 && orderedSize < g.length, `ordering packs it:
 {
   const positions = new Float32Array(41 * 31 * 3);
   for (let i = 0; i < 41 * 31; i++) { positions[i * 3] = (i % 41) * 0.5 - 3; positions[i * 3 + 1] = Math.floor(i / 41) * 0.25; positions[i * 3 + 2] = Math.sin(i * 0.1); }
-  const glb = writeGlb({ meshes: [{ name: 'grid', positions, indices: g }, { name: 'dots', positions: positions.slice(0, 300), colours: new Uint8Array(400).fill(200) }], extras: { note: 'test' } });
+  const glb = writeGlb({ meshes: [{ name: 'grid', positions, indices: g }, { name: 'dots', positions: positions.slice(0, 300), colours: new Uint8Array(400).fill(200), bits: 10 }], extras: { note: 'test' } });
   const dv = new DataView(glb.buffer);
   check(dv.getUint32(0, true) === 0x46546c67 && dv.getUint32(4, true) === 2 && dv.getUint32(8, true) === glb.length, 'glb: magic, version 2, total length');
   const jl = dv.getUint32(12, true);
@@ -74,6 +74,12 @@ check(orderedSize < rawSize * 0.5 && orderedSize < g.length, `ordering packs it:
   let worst = 0;
   for (let i = 0; i < 41 * 31; i++) for (let k = 0; k < 3; k++) worst = Math.max(worst, Math.abs(q.getUint16(i * 8 + k * 2, true) / 65535 * node.scale[k] + node.translation[k] - positions[i * 3 + k]));
   check(worst < 20 / 65535, `glb: positions come back through the node's scale and translation (worst ${worst.toExponential(2)})`);
+  // the point set on a 10-bit grid: plain integers, the node's scale carrying them back to a 1 024th of the box
+  const da = json.accessors[json.meshes[1].primitives[0].attributes.POSITION], dn = json.nodes[1];
+  const dq = new DataView(decodeView(da.bufferView).buffer);
+  let dWorst = 0, dMax = 0;
+  for (let i = 0; i < 100; i++) for (let k = 0; k < 3; k++) { const raw = dq.getUint16(i * 12 + k * 2, true); dMax = Math.max(dMax, raw); dWorst = Math.max(dWorst, Math.abs(raw * dn.scale[k] + dn.translation[k] - positions[i * 3 + k])); }
+  check(!da.normalized && dMax === 1023 && da.max[0] === 1023 && dWorst <= 0.51 * Math.max(...dn.scale), `glb: a point set on a 10-bit grid comes back to a 1 024th of its box (worst ${dWorst.toExponential(2)})`);
   const iv = new Uint16Array(decodeView(json.accessors[json.meshes[0].primitives[0].indices].bufferView).buffer);
   check(iv.length === g.length && Math.max(...iv) === 41 * 31 - 1, 'glb: the indices decode, 16-bit');
 }

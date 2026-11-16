@@ -42,7 +42,8 @@ export function parseMeshFile(buffer, decoder) {
     const n = pa.count, s = node.scale || [1, 1, 1], t = node.translation || [0, 0, 0];
     const dv = new DataView(pv.bytes.buffer);
     const positions = new Float32Array(n * 3);
-    for (let i = 0; i < n; i++) for (let k = 0; k < 3; k++) positions[i * 3 + k] = dv.getUint16(i * pv.stride + (pa.byteOffset || 0) + k * 2, true) / 65535 * s[k] + t[k];
+    const unit = pa.normalized ? 1 / 65535 : 1; // 16-bit positions are stored normalised, coarser ones as plain integers
+    for (let i = 0; i < n; i++) for (let k = 0; k < 3; k++) positions[i * 3 + k] = dv.getUint16(i * pv.stride + (pa.byteOffset || 0) + k * 2, true) * unit * s[k] + t[k];
     let colours = null;
     if (prim.attributes.COLOR_0 >= 0) {
       const ca = json.accessors[prim.attributes.COLOR_0], cv = viewOf(ca.bufferView);
