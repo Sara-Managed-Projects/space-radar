@@ -132,7 +132,7 @@ const W = C.windOf(P);
     if (W.kind[i] === 0 && Math.abs(W.beta[i] - 0.55) < 1e-6) {
       const z = dot(p, outer.axis), rho = Math.hypot(p[0] - outer.axis[0] * z, p[1] - outer.axis[1] * z, p[2] - outer.axis[2] * z);
       sum2 += (rho - outer.rLy) ** 2 + z * z; n += 1;
-      if (Math.abs(dot(v, outer.axis)) > 1e-9 || !near(Math.hypot(...v), 1, 1e-9)) radial = false;
+      if (Math.abs(dot(v, outer.axis)) > 1e-6 || !near(Math.hypot(...v), 1, 1e-6)) radial = false;
       const b = C.boost(W.beta[i], dot(eye, v), W.gamma);
       // which half of the ring on the sky: the projected axis points south-east, so the north-west half is against it
       const along = p[0] * outer.axis[0] + p[1] * outer.axis[1];
