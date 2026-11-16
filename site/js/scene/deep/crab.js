@@ -50,7 +50,6 @@ const D2R = Math.PI / 180;
 const LY_PER_PC = 3.261563777;
 const ARCSEC = D2R / 3600;
 const YEAR_MS = 365.2425 * 86400e3;
-const f3 = (x) => Number(x).toFixed(4);
 const norm = (v) => { const l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; };
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
