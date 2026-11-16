@@ -77,6 +77,10 @@ export const HEROES = [
   { id: 'ngc1300', record: 'dso-ngc-1300', stage: 'r14-neb-b', stub: { shipped: true, drawn: ['model'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./spiral.js'), import('../../data/hero-ngc1300.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
   { id: 'cena', record: 'dso-centaurus-a', stage: 'r14-neb-b', stub: { shipped: true, drawn: ['model', 'illustration'], children: [], arrive: 0.6 }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./spiral.js'), import('../../data/hero-cena.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
   // 0078 r14-neb-b: end
+  // Objects built from published 3D data (the deep-space review of 2026-11-16), read lazily as W3-c's lines are.
+  // The Homunculus round Eta Carinae: ESO's mesh of Steffen et al. 2014's model, turned and sized by Smith 2006's numbers
+  // (scene/deep/homunculus.js). `extent`: its level follows the mesh's long axis, which its record's size is.
+  { id: 'homunculus', record: 'dso-homunculus-nebula', stage: 'ds2', stub: { shipped: true, drawn: ['reconstruction', 'illustration'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./homunculus.js'), import('../../data/hero-homunculus.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
 ];
 
 // Deep layers that are not one object: the local volume's galaxies (stage e). Built on the stages named.

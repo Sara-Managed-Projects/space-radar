@@ -2759,6 +2759,27 @@ distance; its true width is that over 1 + z). Its light is its F200W magnitude, 
 minus F444W colour Webb saw, **illustrative** (observed, not rest frame), and each is drawn as one round, centrally peaked shape.
 <!-- 0077 W3-f: end -->
 
+### The Homunculus from its published 3D model (2026-11-16)
+
+Eta Carinae's Homunculus Nebula (`site/js/scene/deep/homunculus.js`, `registry/deepsky-heroes/homunculus.yaml`) is drawn
+from a published 3D model, not from a photograph. The mesh, `site/data/deep/homunculus.glb` (68 536 B), is made by
+`scripts/build_deep_homunculus.mjs` from the file ESO distributes: every one of its 8 552 vertices and 17 101 triangles,
+none moved; the axes renamed to the paper's un-tilted view, lengths divided by the mean polar radius, positions stored
+as 16-bit integers and packed with meshopt.
+
+| what | from | licence |
+|---|---|---|
+| The 3D model of the nebula's outer shell | **NASA's Goddard Space Flight Center/Ed Campion & UNAM/W. Steffen**; ESO, *A 3D Model of the Homunculus Nebula around the star Eta Carinae*, [3dmodel_004](https://www.eso.org/public/products/models3d/3dmodel_004/) (Wavefront .obj, downloaded 2026-11-16) | ESO's terms of use, CC BY 4.0: free with the full credit visible ([Usage of ESO images, videos, web texts and music](https://www.eso.org/public/copyright/), read 2026-11-16). Changed by Space Radar as said above |
+| The model itself: the shell rebuilt from the Doppler shift of molecular hydrogen in 92 slit positions of the VLT's X-shooter | Steffen W. and others 2014, MNRAS 442, 3316, *The three-dimensional structure of the Eta Carinae Homunculus* (arXiv:1407.4096) | facts, cited |
+| The tilt (41.0 +/- 0.5 degrees from our line of sight), the position angle (310 degrees), the polar radius (21 690 au in March 2005), the distance (2 350 +/- 50 pc) and the age (158.8 years then) | Smith N. 2006, ApJ 644, 1151, *The structure of the Homunculus. I.* (arXiv:astro-ph/0602464) | facts, cited |
+
+What is measured and what is not. The shape, the tilt, the size, the distance and the growth with the clock's date are
+**measured** (the growth assumes every part has moved straight out since the eruption, as Smith 2006 does; Steffen and
+others find the near lobe departs from that by about a tenth, which is not drawn). How the file's own axes sit before the
+tilt is not written in it: it was read off the mesh against the paper's figures 4 and 5 and checked against figure 5 from
+both sides. The surface's brightness, its mottling and the star's glare are **illustrative**; the Measured look takes
+the mottling off. The card carries the credit line and says no astronomer has reviewed the drawing.
+
 <!-- 0078 r14-mw-bh: begin -->
 ## 3m. The black holes in 3D (release 1.4.0)
 

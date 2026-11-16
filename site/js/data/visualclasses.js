@@ -1338,12 +1338,14 @@ export const VISUAL_CLASSES = [
 "members": {
 "dso": [
 "dso-m78",
+"dso-homunculus-nebula",
 "dso-iris-nebula"
 ],
 "photographs": [
 "dso-m45"
 ],
 "heroes": [
+"dso-homunculus-nebula",
 "dso-iris-nebula",
 "dso-m45",
 "dso-m78"

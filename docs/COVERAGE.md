@@ -14,9 +14,9 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 |---|---:|---:|
 | worlds | 31 | 31 |
 | rings | 1 | 1 |
-| dso | 209 | 209 |
+| dso | 210 | 210 |
 | photographs | 30 | 30 |
-| heroes | 33 | 33 |
+| heroes | 34 | 34 |
 | exotics | 27 | 27 |
 | systems | 51 | 51 |
 | planets | 134 | 134 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 40 | 40 |
-| **all** | **1197** | **111 384** |
+| **all** | **1199** | **111 386** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -63,7 +63,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [EMISSION_NEBULA](#emission_nebula) | 44 | `dsoglow.js`, `gasmat.js`, `orion.js`, `carina.js` | measured | carina, orion |
 | [PLANETARY_NEBULA](#planetary_nebula) | 23 | `dsoglow.js`, `helix.js`, `ring.js`, `shellneb.js`, `gasmat.js` | measured | helix, m27, m57, southern-ring |
 | [DARK_NEBULA](#dark_nebula) | 5 | `dsoglow.js`, `dustsheet.js` | measured | coalsack, horsehead |
-| [REFLECTION_NEBULA](#reflection_nebula) | 6 | `dsoglow.js`, `dustsheet.js`, `reflection.js` | illustrative | iris, m45, m78 |
+| [REFLECTION_NEBULA](#reflection_nebula) | 8 | `dsoglow.js`, `dustsheet.js`, `reflection.js`, `homunculus.js` | illustrative | homunculus, iris, m45, m78 |
 | [SUPERNOVA_REMNANT](#supernova_remnant) | 6 | `nebulae.js`, `dsoglow.js`, `remnant.js` | measured | crab, veil |
 | [GALAXY_SPIRAL](#galaxy_spiral) | 56 | `galaxy.js`, `spiral.js`, `dsoglow.js` | illustrative | m101, m104, m31, m33, m51, m81, m83, ngc1300 |
 | [GALAXY_IRREGULAR](#galaxy_irregular) | 19 | `lmc.js`, `smc.js`, `magellanic.js`, `dsoglow.js` | illustrative | lmc, smc |
@@ -83,7 +83,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 1197 records: 375 measured, 457 modelled, 365 illustrative.
+Honesty over the 1199 records: 375 measured, 458 modelled, 366 illustrative.
 
 ## The classes
 
@@ -516,19 +516,19 @@ Honesty over the 1197 records: 375 measured, 457 modelled, 365 illustrative.
 
 **Reflection nebulae**
 
-- **Drawn by:** `site/js/scene/dsoglow.js`, `site/js/scene/deep/dustsheet.js`, `site/js/scene/deep/reflection.js`
+- **Drawn by:** `site/js/scene/dsoglow.js`, `site/js/scene/deep/dustsheet.js`, `site/js/scene/deep/reflection.js`, `site/js/scene/deep/homunculus.js`
 - **Default honesty:** illustrative
 - **On a weak device (T0, or after the frame latch):** The reflection glow.
-- **Hero overrides:** `m78` (registry/deepsky-heroes/m78.yaml), `iris` (registry/deepsky-heroes/iris.yaml), `m45` (registry/deepsky-heroes/m45.yaml)
+- **Hero overrides:** `m78` (registry/deepsky-heroes/m78.yaml), `iris` (registry/deepsky-heroes/iris.yaml), `m45` (registry/deepsky-heroes/m45.yaml), `homunculus` (registry/deepsky-heroes/homunculus.yaml)
 - **Source:** OpenNGC; the photograph of M45.
 - **Dates and filters:** As the photograph's row.
 - **Measured, modelled or reconstructed:** Measured: places and the photograph. Illustrative: the glow.
 - **Rights:** OpenNGC CC BY-SA 4.0; the photograph CC BY 4.0.
 - **What is missing is tracked in:** internal #784 (pale-blue sheets lit by their star, W3-c)
-- **Records (6):**
-  - dso (2): `m78`, `iris-nebula`
+- **Records (8):**
+  - dso (3): `m78`, `homunculus-nebula`, `iris-nebula`
   - photographs (1): `m45`
-  - heroes (3): `iris`, `m45`, `m78`
+  - heroes (4): `homunculus`, `iris`, `m45`, `m78`
 
 ### SUPERNOVA_REMNANT
 

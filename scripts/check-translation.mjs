@@ -86,6 +86,8 @@ async function english() {
   // b200-f10-stars3d: end
   // redesign 2026-11-10: the email updates' popover (copy/en.subscribe.js, ui/subscribepop.js), drafted in every language
   await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.subscribe.js')).href);
+  // the deep-space objects built from published 3D data (copy/en.deepdata.js, scene/deep/homunculus.js), drafted in every language
+  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.deepdata.js')).href);
   return { COPY: base.COPY, GLOSSARY: base.GLOSSARY };
 }
 
