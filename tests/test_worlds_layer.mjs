@@ -551,10 +551,11 @@ const PARENT = { phobos: 'mars', deimos: 'mars', enceladus: 'saturn', titan: 'sa
       check(lag < 5 && skipped > 100,
         `${id} seen from Earth at ${iso} is ${lag.toFixed(2)} km from where it was when the light left (skipping the light time would be ${Math.round(skipped)} km)`);
     }
-    // Outside the span the error was measured over, a refusal and not a guess.
+    // Outside the span the error was measured over (1950 to 2100 since 2026-11-16; the years
+    // outside 2000-2050 are tests/test_moons_span.mjs's), a refusal and not a guess.
     for (const t of [MOON_ELEMENTS_VALID.fromMs - 86400000, MOON_ELEMENTS_VALID.toMs + 86400000]) {
       check(positionOf(id, t) === null && propagate(rec, t) === null && worldPositionKm(id, t, 'earth-inertial') === null,
-        `${id} is not placed on ${new Date(t).toISOString().slice(0, 10)}, outside 2000-2050`);
+        `${id} is not placed on ${new Date(t).toISOString().slice(0, 10)}, outside the span moons.js measured`);
     }
     check(positionOf(id, NaN) === null, `no time, no ${id}`);
   }
@@ -827,7 +828,7 @@ const TEN_PARENT = { mimas: 'saturn', tethys: 'saturn', dione: 'saturn', rhea: '
     }
     for (const t of [MOON_ELEMENTS_VALID.fromMs - 86400000, MOON_ELEMENTS_VALID.toMs + 86400000]) {
       check(positionOf(id, t) === null && propagate(rec, t) === null && worldPositionKm(id, t, 'earth-inertial') === null,
-        `${id} is not placed on ${new Date(t).toISOString().slice(0, 10)}, outside 2000-2050`);
+        `${id} is not placed on ${new Date(t).toISOString().slice(0, 10)}, outside the span moons.js measured`);
     }
     check(positionOf(id, NaN) === null, `no time, no ${id}`);
     // The pole is the planet's own, held, as moons.js says: Saturn's for its five, the antipode of

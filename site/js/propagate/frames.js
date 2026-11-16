@@ -596,8 +596,8 @@ export function moonParent(worldId) {
 
 /**
  * A moon's position relative to its planet's centre, km, EQJ axes, geometric -- or null for any
- * other world, a time that is not a time, or (for the fitted six) a time outside the span their
- * error was measured over.
+ * other world, a time that is not a time, or (for the fitted sixteen) a time outside the span
+ * their error was measured over (propagate/moons.js MOON_ELEMENTS_VALID, 1950 to 2100).
  */
 export function moonOffsetKm(worldId, tMs) {
   if (isJupiterMoon(worldId)) return jupiterMoonOffsetKm(worldId, tMs);

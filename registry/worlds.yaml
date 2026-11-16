@@ -291,7 +291,8 @@ worlds:
   # (2000-2050), added to its planet's own position -- `ephemeris.moon` again. That file has the
   # method and the error measured against Horizons at instants the fit never saw: Phobos within
   # 5.9 km over 2000-2050, Deimos 120, Enceladus 1 480, Titan 836, Triton 9.8, Charon 0.7 (0.003
-  # to 0.62 % of each orbit). Outside 2000-2050 nothing was measured and they are not drawn.
+  # to 0.62 % of each orbit). Outside 2000-2050 they are drawn too, from 1950 to 2100, and that
+  # file says how far out each is there (2026-11-16); before 1950 and after 2100 they are not drawn.
   #
   # Radii: JPL Solar System Dynamics, Planetary Satellite Physical Parameters, one table for all
   # six. Albedos: NASA's fact sheets, as for the five above, so the eleven flat colours share one
@@ -416,7 +417,8 @@ worlds:
   # measured against JPL Horizons at instants the fit never saw. Worst over 2000-2050: Tethys 119
   # km, Rhea 199, Miranda 117, Ariel 114, Dione 235, Umbriel 410, Mimas 703, Titania 996, Oberon
   # 1 230, Iapetus 6 800 -- 0.04 % to 0.38 % of each orbit, against the 0.62 % this app already
-  # draws Enceladus at, so none of the ten was left out. Outside 2000-2050 they are not drawn.
+  # draws Enceladus at, so none of the ten was left out. Outside 2000-2050 they are drawn from 1950
+  # to 2100 with the error that file states for those years; before 1950 and after 2100, not drawn.
   #
   # Radii: the same JPL table as the six above. Albedos: NASA's Saturnian and Uranian satellite
   # fact sheets, so all twenty-one flat worlds share one light-to-dark order (scene/worlds.js

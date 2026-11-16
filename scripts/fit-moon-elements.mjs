@@ -5,9 +5,13 @@
 //   node scripts/fit-moon-elements.mjs           measure the shipped rows against JPL Horizons
 //   node scripts/fit-moon-elements.mjs --refit   fit them again from fresh Horizons vectors and
 //                                                print new rows, then measure those
+//   node scripts/fit-moon-elements.mjs --outer   measure what the browser answers OUTSIDE 2000-2050
+//                                                (1950-2000 and 2050-2100; THE OUTER YEARS below)
+//   node scripts/fit-moon-elements.mjs --outer --refit   fit MOON_ELEMENTS_OUTER again, print its
+//                                                rows, then measure those
 //
 // Needs the network (ssd.jpl.nasa.gov) and nothing else: no packages. About 30 small Horizons
-// queries, a minute or two. Nothing here runs in the browser or in CI.
+// queries, a minute or two (--outer: 48 larger ones, 62 with --refit). Nothing here runs in the browser or in CI.
 //
 // THE MEASUREMENT uses instants the fit never saw: per moon, 998 over 2024-2030 starting at 03:17
 // UT, and 1 002 over 2000-2050 starting 2000-01-03 07:41 UT. Every vector is geometric, relative
@@ -36,9 +40,22 @@
 // Which numbers are free is per moon, as moons.js describes: Titan's, Charon's and all ten of the
 // 2026-09-22 moons' poles are held, only Phobos, Deimos and Triton carry the quadratic term, and
 // the sine terms and the second (k, h) / (q, p) vectors are per moon.
+//
+// THE OUTER YEARS (2026-11-16). MOON_ELEMENTS answers 2000-2050 and nothing here changes it. Outside
+// that span the browser uses the same row, or, for the moons named in OUTER_FREE below, that row
+// with a few numbers replaced (moons.js, MOON_ELEMENTS_OUTER). Those few are fitted here: the
+// 2000-2050 row is the start, only OUTER_FREE's numbers move, and the vectors are 2 001 over
+// 1960-2000 plus 2 501 over 2050-2100 (none inside 2000-2050, where the row is never used). Each
+// fitted number is then cut to the fewest significant digits that move the moon less than 0.03 km
+// at any measured instant (the file is in the page's boot). THE MEASUREMENT is at instants no fit
+// saw: 1 500 over 1960-2000 starting 1960-01-02 05:23 UT, 1 500 over 2050-2100 starting 2050-01-02
+// 05:23 UT, and 400 over 1950-1960 starting 1950-01-02 09:11 UT -- a decade no fit was given at all.
 
+import { createHash } from 'node:crypto';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { MOON_ELEMENTS, elementsOffsetKm } from '../site/js/propagate/moons.js';
+import { MOON_ELEMENTS, MOON_ELEMENTS_OUTER, elementsOffsetKm } from '../site/js/propagate/moons.js';
 
 const API = 'https://ssd.jpl.nasa.gov/api/horizons.api';
 export const TARGET = {
@@ -82,6 +99,17 @@ const FREE = {
   titania: [...BASE, ...E2, ...LIB2],
   oberon: [...BASE, ...E2, ...LIB],
 };
+// THE OUTER YEARS: the numbers of each moon's 2000-2050 row that are fitted again for the years
+// outside it. A moon that is not here keeps its whole row there (moons.js says how far out each is).
+export const OUTER_FREE = {
+  phobos: ['L0', 'n', 'c2'],
+  deimos: ['L0', 'n', 'c2'],
+  enceladus: ['L0', 'n', ...LIB2],
+  mimas: ['L0', 'n', ...LIB2],
+  iapetus: ['L0', 'n', 'k0', 'h0', 'wdot', 'q0', 'p0', 'odot', ...I2],
+  miranda: ['L0', 'n'],
+  ariel: ['L0', 'n'],
+};
 // Finite-difference steps, in each number's own units.
 const STEP = {
   a: 1e-3, L0: 1e-6, n: 1e-9, k0: 1e-7, h0: 1e-7, wdot: 1e-8, q0: 1e-7, p0: 1e-7, odot: 1e-8,
@@ -98,9 +126,16 @@ export async function horizons(id, start, stop, steps) {
     START_TIME: `'${start}'`, STOP_TIME: `'${stop}'`, STEP_SIZE: `'${steps}'`,
   };
   const url = `${API}?${new URLSearchParams(q)}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Horizons ${res.status} for ${id}`);
-  const text = (await res.json()).result || '';
+  // MOON_FIT_CACHE=<folder> keeps Horizons' replies on disk, so a second run asks for nothing twice.
+  const kept = process.env.MOON_FIT_CACHE ? join(process.env.MOON_FIT_CACHE, `${createHash('sha1').update(url).digest('hex').slice(0, 20)}.json`) : null;
+  let text = kept && existsSync(kept) ? JSON.parse(readFileSync(kept, 'utf8')).result : null;
+  if (!text) {
+    const res = await fetch(url, { headers: { 'user-agent': 'fit-moon-elements/1.0' } });
+    if (!res.ok) throw new Error(`Horizons ${res.status} for ${id}`);
+    text = (await res.json()).result || '';
+    if (kept && text.includes('$$SOE')) writeFileSync(kept, JSON.stringify({ result: text }));
+    await new Promise((done) => setTimeout(done, 500)); // one request at a time, half a second apart
+  }
   const block = text.split('$$SOE')[1];
   if (!block) throw new Error(`Horizons returned no vectors for ${id}: ${text.slice(0, 400)}`);
   return block.split('$$EOE')[0].trim().split('\n').map((line) => {
@@ -182,10 +217,47 @@ export function worst(el, rows) {
 // the shipped rows came out of, rather than growing a second fitter somewhere else.
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await main();
 
+// A fitted row with each number of `keys` cut to the fewest significant digits that move the moon
+// less than 0.03 km at any of `times`.
+export function trimmed(el, keys, times) {
+  const out = { ...el };
+  for (const k of keys) {
+    const full = times.map((t) => elementsOffsetKm({ ...out, [k]: el[k] }, t));
+    for (let digits = 4; digits <= 13; digits++) {
+      const trial = { ...out, [k]: Number(el[k].toPrecision(digits)) };
+      const moved = times.reduce((m, t, i) => { const p = elementsOffsetKm(trial, t); return Math.max(m, Math.hypot(p.x - full[i].x, p.y - full[i].y, p.z - full[i].z)); }, 0);
+      if (moved < 0.03 || digits === 13) { out[k] = trial[k]; break; }
+    }
+  }
+  return out;
+}
+
+async function outerYears(refit, km) {
+  for (const id of Object.keys(MOON_ELEMENTS)) {
+    const { parent, ...inSpan } = MOON_ELEMENTS[id];
+    const before = await horizons(id, '1960-01-02 05:23', '1999-12-30 11:07', 1499);
+    const after = await horizons(id, '2050-01-02 05:23', '2099-12-30 11:07', 1499);
+    const fifties = await horizons(id, '1950-01-02 09:11', '1959-12-30 15:49', 399);
+    let el = { ...inSpan, ...(MOON_ELEMENTS_OUTER[id] || {}) };
+    if (refit && OUTER_FREE[id]) {
+      const rows = [...await horizons(id, '1960-01-01', '2000-01-01', 2000), ...await horizons(id, '2050-01-01', '2100-01-01', 2500)];
+      const times = [...before, ...after, ...fifties].filter((_, i) => i % 3 === 0).map((row) => row.t);
+      el = trimmed(fit(inSpan, rows, OUTER_FREE[id]), OUTER_FREE[id], times);
+      console.log(`  ${id}: { ${OUTER_FREE[id].map((k) => `${k}: ${el[k]}`).join(', ')} },`);
+    }
+    const all = [...fifties, ...before, ...after];
+    const flyby = (iso) => { const t = Date.parse(iso); return worst(el, all.filter((row) => Math.abs(row.t - t) < 2 * 365.25 * 86400000)); };
+    console.log(`${id.padEnd(9)} ${(MOON_ELEMENTS_OUTER[id] || (refit && OUTER_FREE[id]) ? 'outer row' : 'same row').padEnd(9)}  1950-1960 ${km(worst(el, fifties)).padStart(6)} km   1960-2000 ${km(worst(el, before)).padStart(6)} km   `
+      + `2050-2100 ${km(worst(el, after)).padStart(6)} km   worst ${(100 * worst(el, all) / el.a).toFixed(2)} % of a   `
+      + `within two years of 1971-11-14 ${km(flyby('1971-11-14'))}, 1980-11-12 ${km(flyby('1980-11-12'))}, 1986-01-24 ${km(flyby('1986-01-24'))}, 1989-08-25 ${km(flyby('1989-08-25'))}`);
+  }
+}
+
 async function main() {
-if (process.argv.includes('--help') || process.argv.includes('-h')) { console.log('usage: node scripts/fit-moon-elements.mjs [--refit]  (prints the worst error of each shipped moon against Horizons; --refit refits the elements first)'); process.exit(0); }
+if (process.argv.includes('--help') || process.argv.includes('-h')) { console.log('usage: node scripts/fit-moon-elements.mjs [--refit] [--outer]  (prints the worst error of each shipped moon against Horizons over 2000-2050; --refit refits the elements first; --outer does both for the years outside 2000-2050 instead)'); process.exit(0); }
 const refit = process.argv.includes('--refit');
 const km = (v) => (v < 10 ? v.toFixed(1) : String(Math.round(v)));
+if (process.argv.includes('--outer')) { await outerYears(refit, km); return; }
 for (const id of Object.keys(MOON_ELEMENTS)) {
   const { parent, ...shipped } = MOON_ELEMENTS[id];
   let el = shipped;

@@ -106,6 +106,13 @@ tagged, and their dates are the day the last change in each landed.
   full height (which is how the Size slider is reached). Two guards for narrower screens and longer languages: the
   badge's lines wrap where they would have ended in an ellipsis, and a number in a card's Compare table cannot break
   between two digits.
+- **Sixteen moons are drawn from 1950 to 2100, not only from 2000 to 2050.** Phobos, Deimos, Saturn's seven, Uranus's five,
+  Triton and Charon had no position outside 2000 to 2050, so Titan was missing when Voyager 1 passed Saturn (12 November 1980),
+  Miranda at Uranus (1986), Triton at Neptune (1989) and Phobos in November 1971. Each is now placed over 1950 to 2100 and
+  checked against JPL Horizons there: within 0.6 % of its orbit at worst (Titan 521 km, Miranda 96, Triton 16 and Phobos
+  4.8 km from Horizons at those four flybys). Seven of them (Phobos, Deimos, Mimas, Enceladus, Iapetus, Miranda, Ariel) carry a
+  few numbers fitted for the outer years; inside 2000 to 2050 every position is exactly what it was. Before 1950 and after 2100
+  they are still not drawn. `site/js/propagate/moons.js` grows by about 0.8 kB in the boot graph.
 - **The card's region badge follows the standard bounds.** Icarus at 1.76 AU read "Outer solar system" because the inner Solar System ended at Mars's aphelion; it now runs to the frost line (4.95 AU, Jupiter's perihelion), the main belt is the 2.06 to 3.27 AU between Jupiter's 4:1 and 2:1 gaps, and an orbit that strays out of it (a Hungaria, a Hilda, Encke's comet) is not headed "Asteroid belt".
 - **Links and first screens that opened empty.** A shared link to Andromeda, and "Fly to it" on any galaxy, cluster or
   nebula, now stops near enough to see the object (it was a whole unit away, a million light-years on the Local Group's
