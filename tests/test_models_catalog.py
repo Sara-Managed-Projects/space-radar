@@ -62,6 +62,50 @@ check(all(m["live"] == "" or m["live"].startswith("https://www.spaceradar.ai/#at
 hub = next(m for m in cat["models"] if m["id"] == "hubble")
 check(hub["norad"] == [20580] and hub["live"].endswith("#at=sat-20580") and hub["class"] == "telescope", "Hubble: NORAD 20580, live link, telescope")
 
+# --- the overall size: the craft's own named dimension, never the largest number in the table ------------------------
+def dims_of(**kw: float) -> dict:
+    return mc.dimensions_of({"dimensions": {k + "_m" if not k.endswith("_m") else k: v for k, v in kw.items()}})
+
+check(mc.overall_of(dims_of(sphere_diameter=0.585, whip_long=2.9, rocket_length=29.167)) == (0.585, "diameter"),
+      "Sputnik 1's size is its sphere (0.585 m diameter), not its rocket's 29 m")
+check(mc.overall_of(dims_of(rover_length=0.65, imp_mast=0.8)) == (None, ""), "a table with no overall field of the craft gives no size (Pathfinder)")
+check(mc.overall_of(dims_of(span=73, length=20, height=5)) == (73.0, "span"), "span wins when it is the largest overall field")
+check(mc.overall_of(dims_of(length=13.2, diameter=4.2, door=3.0)) == (13.2, "length"), "Hubble: 13.2 m long")
+check(mc.overall_of(dims_of(length=13.2, diameter=4.2), "diameter_m") == (4.2, "diameter"), "a row's `overall:` names the key")
+check(mc.overall_of(dims_of(braking_cone=2.9, sphere_diameter=1.2)) == (1.2, "diameter"), "Mars 3: the sphere, not the braking cone")
+for m in cat["models"]:
+    if m["size_m"] is None:
+        check(m["size_what"] == "", f"{m['id']}: no overall size, no word for it")
+    else:
+        keys = {k for k, _ in mc.OVERALL_KEYS}
+        have = [i["value"] for i in m["dimensions"]["items"] if i["key"] in keys]
+        flat = [x for v in have for x in (v if isinstance(v, list) else [v])]
+        check(m["size_m"] in flat and m["size_what"] in ("span", "diameter", "length", "height", "width", "overall"),
+              f"{m['id']}: its size {m['size_m']} m ({m['size_what']}) is one of the row's own overall fields")
+by = {m["id"]: m for m in cat["models"]}
+check(by["sputnik-1"]["size_m"] == 0.585 and by["sputnik-1"]["size_what"] == "diameter", "Sputnik 1 is 0.585 m in diameter")
+check(by["pathfinder"]["size_m"] is None, "Pathfinder has no overall size")
+
+# --- where the map uses it: the app's own routing (scripts/model_reach.mjs -> realModelFor) --------------------------
+import shutil  # noqa: E402
+import tempfile  # noqa: E402
+FIXTURE = ROOT / "tests" / "fixtures" / "snapshots" / "celestrak-active-cut.json"
+check(all(m["reach"]["state"] == "unknown" for m in cat["models"]), "without a population run the catalog says `unknown`, never `none`")
+if shutil.which("node"):
+    reach = mc.run_reach(ROOT, {"active": FIXTURE})
+    check(reach is not None and reach["satellites"] and "ao-7.glb" in reach["files"], "model_reach.mjs: OSCAR 7 of the fixture is drawn with ao-7.glb")
+    rc = mc.catalog(with_dates=False, reach=reach)
+    rb = {m["id"]: m for m in rc["models"]}
+    check(rb["ao-7"]["reach"]["state"] == "drawn" and rb["ao-7"]["live"].startswith(mc.SITE + "/#at=sat-"), "AO-7 is drawn, with a link to the object")
+    check(rb["starlink-v1"]["reach"]["state"] in ("routed", "drawn"), "Starlink v1 has a route (the fixture holds none of its satellites)")
+    check(rb["sputnik-1"]["reach"]["state"] == "moments" and rb["sputnik-1"]["live"].endswith("#moment=sputnik-1"), "Sputnik 1 is staged by its Moment only")
+    check(all(m["reach"]["state"] in ("drawn", "routed", "moments", "none") for m in rc["models"]), "every state is one of the four")
+    check(all(m["live"] == "" or re.fullmatch(r"https://www\.spaceradar\.ai/#(at|moment)=[A-Za-z0-9_-]+", m["live"]) for m in rc["models"]), "every live link is the map's own")
+    bare = mc.run_reach(ROOT, {})
+    check(bare is not None and not bare["satellites"] and "starlink-v1.glb" in bare["routed"], "without satellite files, a routed file is `unknown` rather than unused")
+    rb2 = {m["id"]: m for m in mc.catalog(with_dates=False, reach=bare)["models"]}
+    check(rb2["starlink-v1"]["reach"]["state"] == "unknown", "starlink-v1 without a population: unknown")
+
 # --- triangles, the long way -------------------------------------------------------------------------------------
 def tris_long_way(path: Path) -> int:
     raw = path.read_bytes()
