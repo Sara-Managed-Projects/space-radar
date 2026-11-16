@@ -200,11 +200,8 @@ function stageRadiusUnits() {
  */
 const _reachBox = new THREE.Box3();
 const _reachV = new THREE.Vector3();
-const _reachInv = new THREE.Matrix4();
-/** @param {Array<THREE.Vector3>} [corners] filled with the eight corners of the model's box in its own frame (pickAll's outline) */
-function unitReachOf(obj, corners = null) {
+function unitReachOf(obj) {
   obj.updateMatrixWorld(true);
-  if (corners) corners.length = 0;
   _reachBox.makeEmpty();
   obj.traverse((n) => {
     if (!n.isMesh || n.userData.noReach) return; // a contact shadow is not part of the model
@@ -219,13 +216,9 @@ function unitReachOf(obj, corners = null) {
   // the box's own centre, because a model whose mass sits off to one side still hangs off to one
   // side when it is drawn.
   let reach = 0;
-  if (corners) _reachInv.copy(obj.matrixWorld).invert();
   for (const x of [_reachBox.min.x, _reachBox.max.x]) {
     for (const y of [_reachBox.min.y, _reachBox.max.y]) {
-      for (const z of [_reachBox.min.z, _reachBox.max.z]) {
-        reach = Math.max(reach, _reachV.set(x, y, z).length());
-        if (corners) corners.push(new THREE.Vector3(x, y, z).applyMatrix4(_reachInv));
-      }
+      for (const z of [_reachBox.min.z, _reachBox.max.z]) reach = Math.max(reach, _reachV.set(x, y, z).length());
     }
   }
   return reach > 0 ? reach : 0.5;
@@ -687,8 +680,7 @@ export function createHeroes(scene, ctx) {
     // procedural Voyager too, not only on the one that finished downloading.
     M.attachOddityModels(obj, record.id);
     root.add(obj);
-    const corners = [];
-    const entry = { obj, record, fadeStart: null, upgraded: false, reach: unitReachOf(obj, corners), corners };
+    const entry = { obj, record, fadeStart: null, upgraded: false, reach: unitReachOf(obj) };
     if (standsOnBareGround(record, obj)) { addContactShadow(obj, entry.reach); addGroundPatch(obj, record, entry.reach); }
     live.set(record.id, entry);
 
@@ -727,7 +719,7 @@ export function createHeroes(scene, ctx) {
         // MEASURED BEFORE THE SCALE IS COPIED ON. unitReachOf() walks world matrices, so asking it
         // after the line below would return a reach already multiplied by the drawn scale -- and
         // the clearance cap would then be computed from a number in the wrong units entirely.
-        entry.reach = unitReachOf(clone, entry.corners);
+        entry.reach = unitReachOf(clone);
         if (standsOnBareGround(record, clone)) addContactShadow(clone, entry.reach);
         if (standsOnBareGround(record, clone)) addGroundPatch(clone, record, entry.reach);
         clone.position.copy(entry.obj.position);
@@ -1130,8 +1122,9 @@ export function createHeroes(scene, ctx) {
      * Every drawn model near the pointer, for scene/pickrank.js (internal #341): {record, kind: 'model',
      * px, score, sx, sy, r, depth, span}. The owner, 2026-11-16: "they should be clickable as a whole; now I
      * must click a specific part". A pick was the screen distance to the craft's centre point, 10 px for
-     * a mouse, under a model 260 px across. The target is now the model's own box as projected (its
-     * outline, scene/pickrank.js hullDistance): `px` is the distance to it, zero anywhere on the model.
+     * a mouse, under a model 260 px across. The target is now the model's outline: the boxes of its drawn
+     * parts as they stand this frame (a wing that has turned to the Sun included), projected, and the hull
+     * round them (scene/pickrank.js hullDistance). `px` is the distance to it, zero anywhere on the model.
      * Not a model still fading in, nor one smaller than a dot, which the dot carries.
      */
     pickAll(ndcX, ndcY, camera, vp, reachPx = 24) {
@@ -1150,15 +1143,22 @@ export function createHeroes(scene, ctx) {
         if (!(_v.z > -1 && _v.z < 1)) continue;
         const sx = (_v.x + 1) * halfW;
         const sy = (1 - _v.y) * halfH;
-        const r = entry.px / 2; // its bounding circle: nothing of the model is outside it
-        const off = Math.hypot(sx - tapX, sy - tapY);
-        if (off > r + reachPx) continue;
-        let px = Math.max(0, off - r);
-        if (entry.corners && entry.corners.length === 8) {
-          obj.updateMatrixWorld();
-          const pts = entry.corners.map((c) => { _v.copy(c).applyMatrix4(obj.matrixWorld).project(camera); return [(_v.x + 1) * halfW, (1 - _v.y) * halfH]; });
-          px = hullDistance(pts, tapX, tapY);
-        }
+        const r = entry.px / 2; // its circle as measured at rest; a part that moves may reach a little past it
+        if (Math.hypot(sx - tapX, sy - tapY) > r * 1.5 + reachPx) continue;
+        const pts = [];
+        obj.updateMatrixWorld(true);
+        obj.traverse((n) => {
+          if (!n.isMesh || !n.geometry || n.userData.noReach) return; // the same parts unitReachOf counts
+          for (let p = n; p && p !== obj; p = p.parent) if (!p.visible) return;
+          if (!n.geometry.boundingBox) n.geometry.computeBoundingBox();
+          const b = n.geometry.boundingBox;
+          if (!b || b.isEmpty()) return;
+          for (let i = 0; i < 8; i++) {
+            _v.set(i & 1 ? b.max.x : b.min.x, i & 2 ? b.max.y : b.min.y, i & 4 ? b.max.z : b.min.z).applyMatrix4(n.matrixWorld).project(camera);
+            pts.push([(_v.x + 1) * halfW, (1 - _v.y) * halfH]);
+          }
+        });
+        const px = pts.length ? hullDistance(pts, tapX, tapY) : Math.max(0, Math.hypot(sx - tapX, sy - tapY) - r);
         if (px > reachPx) continue;
         out.push({ record: entry.record, kind: 'model', px, score: px, sx, sy, r, depth: obj.position.distanceTo(_camPos), span: (entry.reach || 0.5) * obj.scale.x });
       }

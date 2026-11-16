@@ -229,7 +229,7 @@ try {
       }).catch(failed('cast ' + cmd, token));
       return;
     }
-    // `await window.cdpInput('mouseMoved', x, y)`, 'mousePressed', 'mouseReleased', 'touchStart', 'touchEnd', or
+    // `await window.cdpInput('mouseMoved', x, y)`, 'mousePressed', 'mouseReleased', 'touchStart', 'touchEnd', 'touchTap', or
     // `cdpInput('key', 'Tab')`: a REAL pointer or key, from the protocol. Added for the UI audit
     // (spec 0061 task 6): `:hover` and `:active` answer only to the browser's own pointer, and
     // `:focus-visible` only after a real key, so a probe that calls el.focus() and dispatches
@@ -245,6 +245,12 @@ try {
         } else if (type === 'touchStart' || type === 'touchEnd') {
           // A finger (tests/probes/look/pick-flight.js): the page gets pointer events of type "touch".
           await send(ws, 'Input.dispatchTouchEvent', { type, touchPoints: type === 'touchStart' ? [{ x, y, id: 1 }] : [] }, sessionIdRef.id);
+        } else if (type === 'touchTap') {
+          // A finger's quick tap, 60 ms from down to up BY THE EVENTS' OWN TIMES: a software renderer handles the up a
+          // frame after the down, most of a second later, and the times a real screen stamps on a tap are not that.
+          const t = Date.now() / 1000;
+          await send(ws, 'Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y, id: 1 }], timestamp: t }, sessionIdRef.id);
+          await send(ws, 'Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [], timestamp: t + 0.06 }, sessionIdRef.id);
         } else {
           const pressed = type === 'mousePressed' || type === 'mouseReleased';
           await send(ws, 'Input.dispatchMouseEvent', { type, x, y, button: pressed ? 'left' : 'none', buttons: type === 'mousePressed' ? 1 : 0, clickCount: pressed ? 1 : 0 }, sessionIdRef.id);

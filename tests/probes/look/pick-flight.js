@@ -5,7 +5,8 @@
 //   gh workflow run look.yml --ref <branch> -f probe=pick-flight -f ref=<branch> -f subject=sat-25544
 // and again with -f mobile=true. `subject` is only there so the run saves the catalogue of every active
 // satellite, which the crowded view needs. The pointer is REAL (tools/cdp.mjs cdpInput): a mouse at
-// desktop sizes, a finger (touchStart, touchEnd) on a phone.
+// desktop sizes, a finger on a phone (touchTap: down and up 60 ms apart by the events' own times; a ref
+// that times a press by its handlers reads a tap as a long press on a slow renderer, and opens the list).
 //
 //   models   the ISS and Hubble, flown to as a click does and the clock paused. Points ON the drawn model
 //            (its own vertices, spread from the middle to the tips of the panels) are tapped while it is
@@ -42,7 +43,7 @@ const closeChooser = () => document.dispatchEvent(new KeyboardEvent('keydown', {
 const tap = async (x, y) => {
   lastSel = undefined;
   await frame();
-  if (phone) { const a = window.cdpInput('touchStart', x, y); const b = window.cdpInput('touchEnd', x, y); await a; await b; }
+  if (phone) await window.cdpInput('touchTap', x, y);
   else { await window.cdpInput('mouseMoved', x, y); const a = window.cdpInput('mousePressed', x, y); const b = window.cdpInput('mouseReleased', x, y); await a; await b; }
   await sleep(350); await frame();
   if (chooserOpen()) { closeChooser(); await sleep(100); return 'list'; }
