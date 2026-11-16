@@ -780,8 +780,12 @@ def check_assets(site: Path, built: Path, say) -> None:
     rewritten (scripts/seo_i18n.py Linker); a script's `src` was not, so /es/o/mars.html asked for /es/js/pages/subscribe.js
     and got a 404: every subscribe form, journal strip and the embed generator of ten languages ran without its script, on
     about 8 800 pages, and nothing here looked. An address is resolved as a browser resolves it (against <base href> when the
-    page has one, else against the page) and must name a file of the build or of site/. Another host is not ours to judge."""
+    page has one, else against the page) and must name a file of the build or of site/. Another host is not ours to judge.
+    A `--root` that is a partial copy of the repository (tests/test_refusals.py links a few folders of site/ into a
+    temporary tree) finds the app's own files in the repository's site/, where a deploy takes them from."""
     from urllib.parse import urljoin
+    own = Path(__file__).resolve().parent.parent / "site"
+    places = [built, site] + ([own] if own.resolve() != site.resolve() else [])
     seen: dict[str, bool] = {}
     counted = 0
     for f in sorted(built.rglob("*.html")):
@@ -805,7 +809,7 @@ def check_assets(site: Path, built: Path, say) -> None:
             counted += 1
             ok = seen.get(path)
             if ok is None:
-                ok = seen[path] = (built / path).is_file() or (site / path).is_file()
+                ok = seen[path] = any((base_dir / path).is_file() for base_dir in places)
             if not ok:
                 say(f"built/{rel}: <{what}> names {url}, which is /{path} for a browser, and neither the build nor site/ has that file")
     if counted < 1000:
