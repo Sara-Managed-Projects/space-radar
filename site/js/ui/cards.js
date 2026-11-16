@@ -48,6 +48,10 @@ import '../copy/en.later.js';
 import { sizeClause, lapClause } from './moonfacts.js'; // 0079 a3
 import { realModelFor, padVehicleShown } from '../scene/realmodels.js';
 import '../scene/sourcedtables.js'; // b200-s5-ci: the sourced bus and CubeSat routes, before the first card
+import { MODEL_FRAMES } from '../data/modelframes.js';
+import { lawFor, ruleKey } from '../scene/attitude.js';
+import { isGeostationary } from '../data/parsers.js';
+import { parseFrame } from '../propagate/frames.js';
 import { periodMsOf, wholePathKind } from '../scene/orbitline.js';
 import {
   toStage,
@@ -1425,6 +1429,30 @@ export function dwarfDrawingLine(id) {
   return parts.join(' ');
 }
 // 0077 W1-f: end
+
+/**
+ * WHICH WAY IT POINTS, AND THAT NOBODY MEASURED IT (review of 2026-11-16). No catalogue gives a craft's attitude, so the model is
+ * turned by the rule its kind of craft is flown by (scene/attitude.js): this is the sentence that says so, and says which rule.
+ * For a craft that is drawn as a model: a satellite, a station, a telescope or a probe. NULL for a file in its author's own axes
+ * whose row has no `attitude:` (registry/models.yaml): that one keeps a fixed angle, and the card says nothing of which way it
+ * points because nothing is known. Not part of drawingLine(): the pages a search engine reads quote that line, and this one is
+ * about the picture on the map.
+ */
+const POINTED_KLASSES = new Set(['satellite', 'station', 'telescope', 'probe']);
+export function attitudeLine(record) {
+  const T = COPY.drawing && COPY.drawing.attitude;
+  const klass = klassOf(record);
+  if (!T || !POINTED_KLASSES.has(klass)) return null;
+  let entry = null;
+  try { entry = realModelFor(record); } catch { entry = null; }
+  const row = entry && entry.file ? MODEL_FRAMES[entry.file] : null;
+  // a file from other hands with no axes on record keeps the seeded constant angle (scene/models.js): nothing to say
+  if (entry && entry.file && !row && entry.axes !== 'app') return null;
+  const f = parseFrame(record && record.frame);
+  const law = lawFor(row ? row.law : klass === 'probe' ? 'earth-dish' : 'sun-panels', { geostationary: isGeostationary(record), orbitsWorld: !!f && f.world !== 'sun' });
+  const rule = T.rules[ruleKey(law)];
+  return rule ? t(T.lead, { rule }) : null;
+}
 
 export function drawingLine(record, tMs) {
   const md = meta(record);
@@ -2867,8 +2895,10 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
 
   // Sources for this record: what the drawn shape is, and where the numbers were read.
   const drawn = drawingLine(record, m && m.tMs);
+  const pointed = attitudeLine(record);
   add('sources', S.sources, null, panelOf([
     drawn ? el('p', 'sr-card__drawn', drawn) : null,
+    pointed ? el('p', 'sr-card__drawn', pointed) : null,
     // A star system's line says what is measured and what is illustrative: the legend says what those mean (internal #908).
     drawn && systemLine(record) ? legendLink() : null,
     el('p', 'sr-card__source', sourceLine(record, ctx)),

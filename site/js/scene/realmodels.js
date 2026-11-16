@@ -59,8 +59,10 @@ function loadKit() {
       // nothing of either is wanted until a file is.
       import('./pbr.js'),
       import('../data/modellooks.js'),
-    ]).then(([g, m, models, pbr, looks]) => {
-      kit = { GLTFLoader: g.GLTFLoader, MeshoptDecoder: m.MeshoptDecoder, toonMaterial: models.toonMaterial, pbr, looks: looks.MODEL_LOOKS || {} };
+      // 2026-11-16: and each file's own axes with the law it is flown by, where its row states them (registry/models.yaml `attitude:`).
+      import('../data/modelframes.js'),
+    ]).then(([g, m, models, pbr, looks, frames]) => {
+      kit = { GLTFLoader: g.GLTFLoader, MeshoptDecoder: m.MeshoptDecoder, toonMaterial: models.toonMaterial, pbr, looks: looks.MODEL_LOOKS || {}, frames: frames.MODEL_FRAMES || {}, frameQuat: models.frameQuat };
       // 0077 W2-pbr: end
       return kit;
     }).catch((err) => { kitAsked = null; throw err; });
@@ -2467,8 +2469,16 @@ export function loadRealModel(entry, { keepMaterials = false } = {}) {
           const turn = NOSE_UP[entry.file];
           let top = scene;
           if (turn) { top = new THREE.Group(); scene.rotation.set(turn[0], turn[1], turn[2]); top.add(scene); }
-          if (keepMaterials) return resolve(normalise(top));
-          if (!entry.map) { applyToon(scene, entry.colour, null, entry.file, entry); const out = normalise(top); out.userData.look = scene.userData.look; return resolve(out); } // 0077 W2-pbr: the file, for its look
+          // 2026-11-16: A FILE'S OWN AXES GO WITH IT. `fileFrame` is plain data (the law, the turn to the app's axes as a quaternion, a
+          // cited spin), so it survives Object3D.clone(); scene/heroes.js reads it when it swaps the file in, and nothing else has to.
+          const framed = (out) => {
+            const row = kit.frames[entry.file];
+            const q = row && kit.frameQuat ? kit.frameQuat(row) : null;
+            if (q) out.userData.fileFrame = { law: row.law, q, ...(row.spinS > 0 && { spinS: row.spinS }) };
+            return out;
+          };
+          if (keepMaterials) return resolve(framed(normalise(top)));
+          if (!entry.map) { applyToon(scene, entry.colour, null, entry.file, entry); const out = framed(normalise(top)); out.userData.look = scene.userData.look; return resolve(out); } // 0077 W2-pbr: the file, for its look
           // The map first, then the material: a body shown plain and then repainted would flash.
           // A map that does not arrive leaves the body in its class colour, as it was before.
           const done = (tex) => {

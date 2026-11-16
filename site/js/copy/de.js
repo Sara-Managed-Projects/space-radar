@@ -1089,6 +1089,17 @@ export const COPY = {
       "envisat": "in ruhiger Lage gezeigt, die Instrumente zur Erde gerichtet, so wie es flog, als es noch arbeitete; es ist seit 2012 tot, und niemand steuert es",
       "ers1": "in ruhiger Lage gezeigt, die Instrumente zur Erde gerichtet, so wie es flog, als es noch arbeitete; seine Mission endete 2000, und niemand steuert es"
     },
+    "attitude": {
+      "lead": "wohin es zeigt, ist modelliert, nicht gemessen: {rule}",
+      "rules": {
+        "nadir": "eine Seite zur Welt unter ihm, die Solarflügel zur Sonne gedreht",
+        "geo": "eine Seite zur Erde, die Solarflügel in Nord-Süd-Richtung",
+        "lvlh": "immer dieselbe Seite nach unten und dasselbe Ende voraus, die ganze Runde lang",
+        "sun": "eine Seite zur Sonne, der Blick auf eine feste Stelle am Himmel",
+        "earth": "die Antennenschüssel auf die Erde gerichtet",
+        "spin": "die Antennenschüssel auf die Erde gerichtet, um diese Achse drehend"
+      }
+    },
     "objectGeneric": "gezeichnet als allgemeines Objekt; für {name} haben wir keine Form",
     "classShape": {
       "satellite": "ein allgemeiner Satellit",

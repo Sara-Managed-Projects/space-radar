@@ -43,6 +43,7 @@ import { realModelFor, loadRealModel, padVehicleShown } from './realmodels.js';
 import { propagate } from '../propagate/index.js';
 import { stage } from './stage.js';
 import { parseFrame } from '../propagate/frames.js';
+import { isGeostationary } from '../data/parsers.js';
 import { modelOpacity } from './onemark.js';
 import { WORLDS } from './worlds.js';
 
@@ -439,9 +440,13 @@ const spinToScene = (tMs) => (v, out) => { _spinIn.x = v[0] * 1e3; _spinIn.y = v
  * @param {THREE.Vector3} out
  * @returns {THREE.Vector3} out, a unit vector
  */
-export function nadirOf(record, pos, centreOf, out) {
-  const f = record && record.propagator === 'fixed' ? parseFrame(record.frame) : null;
-  if (f && f.kind === 'fixed' && f.world !== stage.worldId && typeof centreOf === 'function') {
+export function nadirOf(record, pos, centreOf, out, movingFrame) {
+  // 2026-11-16: `movingFrame` is the frame a MOVING record was propagated in ('mars-inertial' for Mars Odyssey). A craft that goes
+  // round another world than the stage's looks down at THAT world: from the Sun's or the Earth's stage every Mars orbiter was
+  // pointed at the middle of the view. The Sun is nobody's ground: a craft on its way keeps the stage's origin, as before.
+  const fixed = record && record.propagator === 'fixed';
+  const f = fixed ? parseFrame(record.frame) : movingFrame ? parseFrame(movingFrame) : null;
+  if (f && (fixed ? f.kind === 'fixed' : f.world !== 'sun') && f.world !== stage.worldId && typeof centreOf === 'function') {
     const c = centreOf(f.world, _ground);
     if (c && c.distanceToSquared(pos) > 0) return out.copy(c).sub(pos).normalize();
   }
@@ -592,7 +597,16 @@ function standsOnBareGround(record, obj) {
   return !!(record && record.meta && record.meta.siteShape && obj && obj.userData.attitude === 'up');
 }
 
+/** The north of a frame, for stage.dirToScene: the Earth's axis in Earth orbit, the ecliptic's pole beyond. */
+const NORTH = { x: 0, y: 0, z: 1 };
+const _earthAt = new THREE.Vector3();
+
 export function createHeroes(scene, ctx) {
+  /** The law a drawn craft flies: what its shape or its file's row says, and what the record changes (scene/attitude.js lawFor, through models.js). */
+  const lawOf = (base, record) => {
+    const f = parseFrame(record && record.frame);
+    return M && M.lawFor ? M.lawFor(base, { geostationary: isGeostationary(record), orbitsWorld: !!f && f.world !== 'sun' }) : base;
+  };
   let selectedPx = SELECTED_PX; // per frame: selectedPixels(the uncovered band), update() below
   const drawnCentre = (id, out) => (ctx.worlds && ctx.worlds.drawnPositionOf ? ctx.worlds.drawnPositionOf(id, out) : null);
   // The other worlds on this stage, as drawn, gathered once a frame for capForNeighbour.
@@ -672,6 +686,7 @@ export function createHeroes(scene, ctx) {
     const klass = early && early.build ? M.builderKlass(record.klass, variant) : record.klass;
     const obj = M.modelFor(klass, variant, { record });
     obj.userData.recordId = record.id;
+    obj.userData.attitude = lawOf(obj.userData.attitude, record); // a geostationary craft's wings lie north and south; a far probe's dish looks at the Earth (scene/attitude.js)
     if (early && early.roll) obj.userData.sarRoll = early.roll; // a radar that looks to one side (realmodels.js `roll`, internal #78)
     obj.visible = false;
     // Whatever rides on this thing, as children of it. Two records in the app carry anything at
@@ -709,6 +724,17 @@ export function createHeroes(scene, ctx) {
         // look down, a wing's cells face the Sun) and not at the seeded constant angle.
         if (real.axes === 'app' && entry.obj.userData.attitude) {
           clone.userData.attitude = entry.obj.userData.attitude;
+          clone.userData.klass = entry.obj.userData.klass;
+        }
+        // 2026-11-16: AND SO IS A FILE FROM OTHER HANDS WHOSE ROW SAYS WHICH OF ITS AXES IS WHICH (registry/models.yaml `attitude:`;
+        // realmodels.js puts it on the loaded model as `fileFrame`). It is flown by the law its row names (scene/attitude.js): the ISS
+        // with the same face down and the same end forward, Terra's instruments at the ground, Webb's shield at the Sun, Voyager's dish
+        // at the Earth. 99 routed files kept the seeded angle until then; one with no `attitude:` still does, and the card says nothing.
+        const ff = clone.userData.fileFrame;
+        if (ff && entry.obj.userData.attitude !== 'up') {
+          clone.userData.attitude = lawOf(ff.law, record);
+          clone.userData.frame = ff.q;
+          if (ff.spinS > 0) clone.userData.spinS = ff.spinS;
           clone.userData.klass = entry.obj.userData.klass;
         }
         // 0077 W3-d: a shape in its body's own axes turns about its measured pole (scene/moonshape.js applySpin).
@@ -1011,9 +1037,19 @@ export function createHeroes(scene, ctx) {
       // Attitude wants the nadir direction: from the object toward the centre of its world --
       // the origin for anything on or around the stage's own, the drawn disc for a site on
       // another (nadirOf).
-      nadirOf(c.record, c.pos, drawnCentre, _v);
-      // The direction of travel, for a radar that rolls to look to one side: the next two seconds of its own orbit (internal #78).
-      if (obj.userData.sarRoll && c.p) {
+      nadirOf(c.record, c.pos, drawnCentre, _v, c.p && c.p.frame);
+      // What a craft's law points at besides the Sun and its world (scene/attitude.js), as per-frame state on the object: the north
+      // of the sky it is drawn in for wings that lie north and south and for a telescope's fixed gaze, the Earth for a far dish.
+      const law = obj.userData.attitude;
+      if (law === 'geo' || law === 'sun') {
+        const n = stage.dirToScene(NORTH, c.p && c.p.frame, _climb, tMs);
+        obj.userData.north = n ? { x: n.x, y: n.y, z: n.z } : null;
+      } else if (law === 'earth' || law === 'spin') {
+        const e = drawnCentre('earth', _earthAt);
+        obj.userData.earthDir = e && e.distanceToSquared(c.pos) > 0 ? { x: e.x - c.pos.x, y: e.y - c.pos.y, z: e.z - c.pos.z } : null;
+      }
+      // The direction of travel, for a radar that rolls to look to one side and for a station that flies one end forward: the next two seconds of its own orbit (internal #78).
+      if ((obj.userData.sarRoll || law === 'lvlh') && c.p) {
         const p2 = propagate(c.record, tMs + 2000);
         const d = p2 && p2.frame === c.p.frame ? stage.dirToScene({ x: p2.x - c.p.x, y: p2.y - c.p.y, z: p2.z - c.p.z }, c.p.frame, _climb, tMs) : null;
         obj.userData.heading = d ? { x: d.x, y: d.y, z: d.z } : null;

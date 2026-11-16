@@ -38,6 +38,10 @@ import { dwarfLook, buildDwarf } from './dwarfs.js'; // 0077 W1-f: each far dwar
 import { ROCKET_BY_ID, GENERIC_ROCKET } from '../data/rocketmatch.js';
 import { attachedOdditiesFor } from '../data/attached.js';
 import './sourcedtables.js'; // b200-s5-ci: the sourced bus and CubeSat routes, before the first hero is built
+// The laws a craft is pointed by, and the turn from a file's own axes to the app's (scene/attitude.js, pure). Handed on to
+// scene/heroes.js and scene/realmodels.js through this module, which both load on first use: nothing of it is in the boot graph.
+import { attitudeAxes, DEFAULT_SPIN_S } from './attitude.js';
+export { lawFor, frameQuat } from './attitude.js';
 // 0076 W2-a: the red of the penumbra (scene/airtint.js AIR_REDDENING), on the Earth's shadow side only.
 import { AIR_TINT_GLSL, AIR_REDDENING, EARTH_RADIUS_KM, airReddeningOn } from './airtint.js';
 
@@ -4243,6 +4247,8 @@ const DEFAULT_ATTITUDE = {
   world: 'fixed',
 };
 
+/** The attitudes that place the app's axes by a law, so that a file's own frame (userData.frame) may be turned into them. */
+const FRAMED_MODES = new Set(['sun-panels', 'nadir', 'earth-dish', 'geo', 'lvlh', 'sun', 'earth', 'spin']);
 const _sun = new THREE.Vector3();
 const _nadir = new THREE.Vector3();
 const _x = new THREE.Vector3();
@@ -4345,6 +4351,34 @@ export function updateModelAttitude(obj, record, sunDirScene, nadirScene, tMs) {
       orient(obj, _nadir, _v.normalize());
       break;
     }
+    case 'geo':
+    case 'lvlh':
+    case 'sun':
+    case 'earth':
+    case 'spin': {
+      // THE LAWS OF scene/attitude.js (2026-11-16): a geostationary craft's wings north and south, the ISS with one end forward, a
+      // sunshield or a telescope's cells at the Sun, a far probe's dish at the Earth, a spin-stabilised craft turning about it.
+      // What each needs besides the Sun and the nadir is per-frame state on the object, written by scene/heroes.js as `burn` and
+      // `climb` are: `north`, `heading`, `earthDir`. When it is not there (another caller, a world not drawn) the craft is
+      // pointed as every shape was before: +Z at its world, +X square to the Sun.
+      const u = obj.userData;
+      let angle = 0;
+      if (mode === 'spin' && Number.isFinite(tMs) && !lessMotion()) {
+        // One turn in the craft's own seconds where somebody published them, else DEFAULT_SPIN_S, which is ours. Held to the
+        // rate the eye can follow when the clock runs fast, as a tumbling stage is (tumblePhase).
+        angle = tumblePhase(u.spinState || (u.spinState = {}), tMs, typeof performance !== 'undefined' ? performance.now() : NaN, (u.spinS > 0 ? u.spinS : DEFAULT_SPIN_S) * 1000);
+      }
+      const axes = attitudeAxes(mode, { sun: _sun, nadir: _nadir, north: u.north, heading: u.heading, earth: u.earthDir, rigid: !(u.panelPivots && u.panelPivots.length), angle });
+      if (axes) {
+        _m4.makeBasis(_x.fromArray(axes.x), _y.fromArray(axes.y), _z.fromArray(axes.z));
+        obj.quaternion.setFromRotationMatrix(_m4);
+      } else {
+        _v.crossVectors(_sun, _nadir);
+        if (_v.lengthSq() < 1e-8) _v.set(1, 0, 0);
+        orient(obj, _nadir, _v.normalize());
+      }
+      break;
+    }
     case 'ascent': {
       // BODY +Y ALONG THE DIRECTION OF TRAVEL, and the plume trails behind it.
       //
@@ -4437,6 +4471,11 @@ export function updateModelAttitude(obj, record, sunDirScene, nadirScene, tMs) {
       break;
     }
   }
+
+  // A FILE IN ITS AUTHOR'S AXES (2026-11-16): the law above placed the APP's axes; `userData.frame` is the turn from the file's own
+  // to those (scene/attitude.js frameQuat, from the file's row in registry/models.yaml), so the file's Earth deck, wings or dish
+  // land where the law put +Z and +X. Written by scene/heroes.js on a loaded model whose row has an `attitude:`.
+  if (obj.userData.frame && FRAMED_MODES.has(mode)) obj.quaternion.multiply(_q.fromArray(obj.userData.frame));
 
   // panels track the Sun about the model's +X axis
   const pivots = obj.userData.panelPivots;
