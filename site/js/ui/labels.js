@@ -46,7 +46,7 @@
 import * as THREE from '../../vendor/three.module.min.js';
 import { propagate } from '../propagate/index.js';
 import { stage, isLadderStage } from '../scene/stage.js';
-import { realModelFor } from '../scene/realmodels.js';
+import { realModelFor, routeTitle } from '../scene/realmodels.js';
 import { WORLDS, systemOf } from '../scene/worlds.js';
 import { rankAll } from '../scene/pickrank.js';
 import { dsoMark } from '../scene/glyphatlas.js';
@@ -113,9 +113,9 @@ export function labelName(record) {
     let entry = null;
     try { entry = realModelFor(record); } catch { entry = null; }
     // A route's own `displayName` names this exact object even when its shape is generic
-    // (Tiangong); otherwise a generic route's `name` is a class ("a Starlink") and renames nothing.
-    if (entry && entry.displayName) name = String(entry.displayName).trim();
-    else if (entry && !entry.generic && entry.name) name = String(entry.name).trim();
+    // (Tiangong); otherwise a generic route's `name` is a class ("a Starlink") and renames nothing,
+    // and neither does a family's (scene/realmodels.js routeTitle).
+    name = routeTitle(entry);
   }
   // Then the hand-kept list's own name (data/layers.js NOTABLE), before the catalogue's string.
   if (!name && record && record.meta && record.meta.listName) name = String(record.meta.listName).trim();
