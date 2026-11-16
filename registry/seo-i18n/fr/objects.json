@@ -1228,5 +1228,16 @@
  "241f99ddc0": "Le premier rover martien de la Chine, posé en {n1}. Sur la carte 3D en direct, à sa position réelle.",
  "5a7fea6fc2": "Le premier rover martien de la Chine, posé en {n1}.",
  "1072746da5": "Le dessin représente Zhurong · forme construite d’après des dimensions et des photos publiées ; détails simplifiés.",
- "425bb491c5": "{name} est à environ {n1} km au-dessus de la Terre et en fait le tour toutes les {n2} minutes, à environ {n3} km/h, entre {n4}° nord et {n5}° sud de l’équateur. Ton navigateur calcule l’endroit exact à l’ouverture de cette page, à partir d’éléments orbitaux enregistrés le {d1}."
+ "425bb491c5": "{name} est à environ {n1} km au-dessus de la Terre et en fait le tour toutes les {n2} minutes, à environ {n3} km/h, entre {n4}° nord et {n5}° sud de l’équateur. Ton navigateur calcule l’endroit exact à l’ouverture de cette page, à partir d’éléments orbitaux enregistrés le {d1}.",
+ "5228bc9a0a": "{name} est un satellite météo GOES en orbite autour de la Terre. Un satellite météo immobile au-dessus d’un même point, à {n1} km d’altitude.",
+ "5a48eb483b": "{name} est un satellite météo GOES en orbite autour de la Terre.",
+ "81f4838ba7": "La carte dessine un satellite météo GOES — le type d’objet, pas cet objet précis.",
+ "3d546b91fa": "{name} est un satellite météo GOES en orbite autour de la Terre. Son homologue du Pacifique, aujourd’hui en réserve en orbite.",
+ "7e67d98935": "{name} est un satellite météo GOES en orbite autour de la Terre. Celui qui surveille la côte ouest des États-Unis et les tempêtes du Pacifique.",
+ "246df821e2": "{name} est un satellite météo GOES en orbite autour de la Terre. Le plus récent, qui a repris la surveillance des ouragans de l’Atlantique en {d1}.",
+ "fb42a1668d": "Le dessin représente l’étage de descente de Luna {n1}, sur le modèle de Luna {n2}, sans l’étage de remontée · forme construite d’après des dimensions et des photos publiées ; détails simplifiés.",
+ "6e881752f0": "Le dessin représente l’étage de descente de Luna {n1}, debout ; Luna {n2} est tombée sur le côté et a gardé son étage de remontée — le type d’objet, pas cet objet précis · forme construite d’après des dimensions et des photos publiées ; détails simplifiés.",
+ "eb816396cb": "Le dessin représente l’étage de descente de Luna {n1} ; Luna {n2} était le modèle suivant, avec une foreuse plus profonde — le type d’objet, pas cet objet précis · forme construite d’après des dimensions et des photos publiées ; détails simplifiés.",
+ "8d10d6deb2": "Le dessin représente Surveyor {n1}, sans son instrument à diffusion alpha · forme construite d’après des dimensions et des photos publiées ; détails simplifiés.",
+ "66ba90603d": "Le dessin représente WorldView-{n1}, un engin plus haut sur la même plateforme — le type d’objet, pas cet objet précis · forme construite d’après des dimensions et des photos publiées ; détails simplifiés."
 }

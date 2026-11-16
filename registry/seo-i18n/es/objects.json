@@ -1228,5 +1228,16 @@
  "241f99ddc0": "El primer róver marciano de China, que aterrizó en {n1}. Está en el mapa 3D en vivo, en el lugar donde está de verdad.",
  "5a7fea6fc2": "El primer róver marciano de China, que aterrizó en {n1}.",
  "1072746da5": "Dibujado como Zhurong · forma construida a partir de medidas e imágenes publicadas; detalles simplificados.",
- "425bb491c5": "La {name} está a unos {n1} km sobre la Tierra y le da una vuelta cada {n2} minutos a unos {n3} km/h, entre {n4}° norte y {n5}° sur del ecuador. Tu navegador calcula el punto exacto en el momento en que se abre esta página, a partir de elementos orbitales guardados el {d1}."
+ "425bb491c5": "La {name} está a unos {n1} km sobre la Tierra y le da una vuelta cada {n2} minutos a unos {n3} km/h, entre {n4}° norte y {n5}° sur del ecuador. Tu navegador calcula el punto exacto en el momento en que se abre esta página, a partir de elementos orbitales guardados el {d1}.",
+ "5228bc9a0a": "{name} es un satélite meteorológico GOES que da vueltas a la Tierra. Se queda quieto sobre un mismo punto, a {n1} km de altura.",
+ "5a48eb483b": "{name} es un satélite meteorológico GOES que da vueltas alrededor de la Tierra.",
+ "81f4838ba7": "Dibujado como un satélite meteorológico GOES — el tipo de objeto, no este en concreto.",
+ "3d546b91fa": "{name} es un satélite meteorológico GOES que da vueltas a la Tierra. Su compañero del Pacífico, ahora el repuesto en órbita.",
+ "7e67d98935": "{name} es un satélite meteorológico GOES que da vueltas a la Tierra. Vigila la costa oeste de Estados Unidos y las tormentas del Pacífico.",
+ "246df821e2": "{name} es un satélite meteorológico GOES que da vueltas a la Tierra. Es el más nuevo; tomó el relevo de los huracanes del Atlántico en {d1}.",
+ "fb42a1668d": "Dibujado como la etapa de descenso de Luna {n1}, con el diseño de Luna {n2}, ya sin la etapa de ascenso · forma construida a partir de medidas e imágenes publicadas; detalles simplificados.",
+ "6e881752f0": "Dibujado como la etapa de descenso de Luna {n1}, en pie; Luna {n2} cayó de lado y conservó su etapa de ascenso — el tipo de objeto, no este en concreto · forma construida a partir de medidas e imágenes publicadas; detalles simplificados.",
+ "eb816396cb": "Dibujado como la etapa de descenso de Luna {n1}; Luna {n2} era el modelo posterior, con un taladro más profundo — el tipo de objeto, no este en concreto · forma construida a partir de medidas e imágenes publicadas; detalles simplificados.",
+ "8d10d6deb2": "Dibujado como el Surveyor {n1}, sin su instrumento de dispersión alfa · forma construida a partir de medidas e imágenes publicadas; detalles simplificados.",
+ "66ba90603d": "Dibujado como WorldView-{n1}, una nave más alta sobre la misma plataforma — el tipo de objeto, no este en concreto · forma construida a partir de medidas e imágenes publicadas; detalles simplificados."
 }

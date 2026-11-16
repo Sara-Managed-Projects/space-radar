@@ -1228,5 +1228,16 @@
  "241f99ddc0": "Chinas erster Marsrover, {n1} gelandet. Auf der Live-Karte in 3D steht das Objekt dort, wo es wirklich ist.",
  "5a7fea6fc2": "Chinas erster Marsrover, {n1} gelandet.",
  "1072746da5": "Gezeichnet als Zhurong · Form aus veröffentlichten Maßen und Bildern gebaut; Einzelheiten vereinfacht.",
- "425bb491c5": "{name} fliegt etwa {n1} km über der Erde, umrundet sie alle {n2} Minuten mit etwa {n3} km/h und bleibt dabei zwischen {n4}° nördlicher und {n5}° südlicher Breite. Dein Browser berechnet die genaue Position in dem Moment, in dem sich diese Seite öffnet, aus Bahnelementen, gespeichert am {d1}."
+ "425bb491c5": "{name} fliegt etwa {n1} km über der Erde, umrundet sie alle {n2} Minuten mit etwa {n3} km/h und bleibt dabei zwischen {n4}° nördlicher und {n5}° südlicher Breite. Dein Browser berechnet die genaue Position in dem Moment, in dem sich diese Seite öffnet, aus Bahnelementen, gespeichert am {d1}.",
+ "5228bc9a0a": "{name} ist ein GOES-Wettersatellit, der die Erde umkreist. Ein Wettersatellit, der still über einem Punkt steht, {n1} km hoch.",
+ "5a48eb483b": "{name} ist ein GOES-Wettersatellit, der die Erde umkreist.",
+ "81f4838ba7": "Gezeichnet als GOES-Wettersatellit – die Art von Objekt, nicht genau dieses.",
+ "3d546b91fa": "{name} ist ein GOES-Wettersatellit, der die Erde umkreist. Das Gegenstück für den Pazifik, heute die Reserve im Orbit.",
+ "7e67d98935": "{name} ist ein GOES-Wettersatellit, der die Erde umkreist. Er beobachtet die Westküste der USA und die Stürme über dem Pazifik.",
+ "246df821e2": "{name} ist ein GOES-Wettersatellit, der die Erde umkreist. Der neueste von ihnen übernahm im {d1} die Hurrikanwache über dem Atlantik.",
+ "fb42a1668d": "Gezeichnet als Abstiegsstufe von Luna {n1} in der Bauart von Luna {n2}, ohne die Aufstiegsstufe · Form aus veröffentlichten Maßen und Bildern gebaut; Einzelheiten vereinfacht.",
+ "6e881752f0": "Gezeichnet als Abstiegsstufe von Luna {n1}, stehend; Luna {n2} fiel auf die Seite und behielt ihre Aufstiegsstufe – die Art von Objekt, nicht genau dieses · Form aus veröffentlichten Maßen und Bildern gebaut; Einzelheiten vereinfacht.",
+ "eb816396cb": "Gezeichnet als Abstiegsstufe von Luna {n1}; Luna {n2} war die spätere Bauart mit einem tiefer reichenden Bohrer – die Art von Objekt, nicht genau dieses · Form aus veröffentlichten Maßen und Bildern gebaut; Einzelheiten vereinfacht.",
+ "8d10d6deb2": "Gezeichnet als Surveyor {n1}, ohne das Alpha-Streuinstrument · Form aus veröffentlichten Maßen und Bildern gebaut; Einzelheiten vereinfacht.",
+ "66ba90603d": "Gezeichnet als WorldView-{n1}, ein höheres Raumfahrzeug auf demselben Satellitenbus – die Art von Objekt, nicht genau dieses · Form aus veröffentlichten Maßen und Bildern gebaut; Einzelheiten vereinfacht."
 }
