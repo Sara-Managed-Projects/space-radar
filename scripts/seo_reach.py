@@ -353,7 +353,7 @@ def comparison_pages(host: str, counts: dict | None = None) -> list[Page]:
         "Newtonian spaceship flight, with docking.",
         "VR through SteamVR, drawn by a PC's graphics card.",
         "Ray-traced black holes with volumetric disks; Space Radar's spinning holes are an approximation, labelled modelled.",
-        "18 languages, and a large community: about 16,000 Steam reviews and a Discord of about 13,400.",
+        "18 languages, and a large community: about 16 000 Steam reviews and a Discord of about 13 400.",
         "The other side of it: SpaceEngine draws all this on a Windows PC with a dedicated graphics card; Space Radar does less, in a browser, "
         "on whatever device is to hand."])
     se_ours = ("What Space Radar does that SpaceEngine does not", [
@@ -443,10 +443,10 @@ def comparison_pages(host: str, counts: dict | None = None) -> list[Page]:
             f"Track {sats} satellites live in 3D in your browser, with the passes over your place. How it compares with Cosmoscope's 3D tracker.",
             "A live satellite tracker in 3D",
             f"Space Radar places {sats} active satellites in 3D for the moment on the clock, from public orbital elements, "
-            "and ranks which will pass over you, with Starlink trains, a debris census and re-entries. Cosmoscope also draws about 16,900 live "
+            "and ranks which will pass over you, with Starlink trains, a debris census and re-entries. Cosmoscope also draws about 16 900 live "
             "satellites in 3D. Here is what each does.",
             ("Cosmoscope", "Space Radar"),
-            [("Satellites drawn", "About 16,900", f"{sats.capitalize()} active ones, each with a card and its source"),
+            [("Satellites drawn", "About 16 900", f"{sats.capitalize()} active ones, each with a card and its source"),
              ("Sky events", "Five fixed presets", "Eclipses, meteor showers, conjunctions, rise and set, from your place"),
              ("First load", "About 36 MB", first),
              ("Languages", "English", f"{n['languages']} (machine-drafted, under review)")],

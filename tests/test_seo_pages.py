@@ -210,8 +210,14 @@ ok(seo_pages.satellite_counts({"snapshots": {"celestrak-active": {"items": 0}}})
 pt_html = (BUILT / "planets-tonight" / "index.html").read_text(encoding="utf-8")
 pt = parse(BUILT / "planets-tonight" / "index.html")
 lead = re.search(r'<p class="lead">(.*?)</p>', pt_html, re.S).group(1)
-ok(lead.startswith("On the evening of 9 October 2026, from London, the planets up in the dark are ") and all(n in lead for n in ("Jupiter", "Saturn", "Mars")),
+ok(lead.startswith("On the night of 9 October 2026, from London, the planets up in the dark are ") and all(n in lead for n in ("Jupiter", "Saturn", "Mars")),
    f"the static lead sentence names tonight's planets with the date ({lead[:90]!r})")
+# The night runs past midnight (review 2026-11-16): every time carries its own date, the evening's or the next morning's, and
+# the Moon's phase is said in words, not as the code's token ("(firstQuarter)").
+ok(re.findall(r"\d\d:\d\d UT", lead) and all(re.search(r"\d\d:\d\d UT on (9|10) October", m) for m in re.findall(r"\d\d:\d\d UT[^,;)]*", lead)),
+   "every planet's time in the lead says which day it is on, 9 or 10 October")
+ok(re.search(r"\((new|waxing|waning|first|last|full)[A-Z]", pt_html) is None and re.search(r"percent lit \([a-z ]+\)", pt_html) is not None,
+   "the Moon's phase is in words")
 ok(re.search(r'<url><loc>https://www.spaceradar.ai/planets-tonight/index.html</loc><lastmod>2026-10-09</lastmod>', sitemap) is not None, "in the sitemap, with the build's day as lastmod")
 ok("getCurrentPosition" not in pt_html and "geolocation" not in pt_html, "the page's own HTML never asks for a position")
 ok(len(re.search(r"<title>(.*?)</title>", pt_html).group(1)) <= 60 and "../#trip=planets-tonight" in pt.hrefs, "a title under 60 and the link to the sky from the ground")

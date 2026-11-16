@@ -1502,7 +1502,7 @@ const LOST_ORBITERS = [
     vKmS: [1.106146210, 1.471414496, 0.617508591],
     periodMin: 219.2,
     orbit: 'swung round Mars every 3 hours 39 minutes, from about 200 km up out to about 4 500 km',
-    why: 'NASA has had no contact with MAVEN since 6 December 2025. The orbit drawn is its last ' +
+    why: 'NASA has had no contact with MAVEN since 6 December 2025 and declared the mission over on 3 June 2026. The orbit drawn is its last ' +
       'tracked one: when last tracked it swung round Mars every 3 hours 39 minutes, from about ' +
       '200 km up out to about 4 500 km. The dot starts from JPL Horizons’ position for it ' +
       'relative to Mars on 4 December 2025, the last day JPL’s track is fitted to tracking, and ' +

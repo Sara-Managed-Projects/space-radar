@@ -272,6 +272,9 @@ sources:
   # parameters table so every planet has one best value per column. No CORS header (measured
   # 2026-09-08), so the browser reads our snapshot; it falls back to the dated copy in
   # site/data/exoplanets.csv when there is none. Weekly: the table grows by a few planets a week.
+  # `pl_bmasselim` and `pl_radelim` (2026-11-16): the Archive's flags for a mass or a radius that is a LIMIT, not a value
+  # (1 an upper limit, -1 a lower one). 225 of the table's 6 470 masses were upper limits that day, and without the flag the
+  # card printed each as the planet's mass (HD 10180 g "3 375 Earths"). site/js/data/parsers.js parseExoplanets reads them.
   - id: nasa-exoplanet-archive
     url: https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+pl_name,hostname,ra,dec,sy_dist,pl_rade,pl_bmasse,pl_orbper,disc_year,discoverymethod,st_teff,st_rad,st_spectype,pl_bmasselim,pl_radelim+from+pscomppars&format=csv
     auth: none

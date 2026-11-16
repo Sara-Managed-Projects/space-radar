@@ -163,7 +163,7 @@ def iss_pages(p: dict, host: str, counts: dict, snapshot_index: dict | None) -> 
     title = "Where is the ISS right now? Live 3D tracker" + SUFFIX
     h1 = "Where is the International Space Station right now?"
     static_answer = ("The International Space Station is about 400 km above the Earth, going once round it every 93 minutes at about "
-                     "27,600 km/h, somewhere between 51.6° north and 51.6° south of the equator. Your browser works out the exact spot "
+                     "27 600 km/h, somewhere between 51.6° north and 51.6° south of the equator. Your browser works out the exact spot "
                      "the moment this page opens"
                      + (f", from orbital elements saved on {saved_day}" if saved_day else ", from the orbital elements this site saves from CelesTrak")
                      + ".")
@@ -219,7 +219,7 @@ def iss_pages(p: dict, host: str, counts: dict, snapshot_index: dict | None) -> 
             iss["sameAs"] = p["sameAs"]
         page.jsonld = [webpage(host, Page(path=f"o/{ISS_SLUG}.html", title=title, description=description, body=""), [(p["name"], "")],
                                extra={"about": {"@id": f"{url}#thing"}, "mainEntity": {"@id": f"{host}/#app-iss"}}), sw, iss]
-        page.share = Spec(key=f"o/{ISS_SLUG}", name="Where is the ISS right now?", number="400 km up, 27,600 km/h", caption="Space station",
+        page.share = Spec(key=f"o/{ISS_SLUG}", name="Where is the ISS right now?", number="400 km up, 27 600 km/h", caption="Space station",
                           kind="plain", colour="#F2F4F7", alt="The International Space Station as a bright dot on rings, captioned Where is the ISS right now?")
         return page
 
