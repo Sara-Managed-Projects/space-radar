@@ -874,6 +874,13 @@ jobs:
       # Internal #466: the landing's move, and the film clock handed to a tool, with no browser.
       - name: "#go= lands with one interruptible push-in, and the film's clock can be had without a trip (internal #466)"
         run: node tests/test_golink.mjs
+      # Internal #310 (review of 16 Nov 2026): a language menu in the app, and the names of things in each language.
+      - name: the language menu lists eleven languages by their own names, each a link to the same view, and keeps the choice
+        run: node tests/test_language_menu.mjs
+      - name: the names of things per language are what the translated catalogs give (scripts/gen_names_i18n.py)
+        run: python3 scripts/gen_names_i18n.py --check
+      - name: in every language the Moon, Mars, the Sun, the Earth, the Milky Way and the station are found by its own words, and every layer has a name
+        run: node tests/test_local_names.mjs
       - name: a shared link is the view and nothing else, and every Share opens the one sheet (spec 0033, 0061 task 8)
         run: node tests/test_share.mjs
       # Spec 0044: the byte gate's rules on fixtures. The real boot is in screens.yml, which has a

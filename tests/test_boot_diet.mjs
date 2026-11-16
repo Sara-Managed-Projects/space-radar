@@ -200,6 +200,8 @@ const DEFERRED = {
   'js/scene/deep/galclusters.js': 'galaxy clusters and quasars: the deep-sky coordinator fetches it on the Local Group rung (release 1.2.0 W4-b, internal #784)',
   // 0076 W3-e (kindwords.js, visualclasses.js)
   'js/data/kindwords.js': 'the words for a kind of thing ("galaxies"): with ui/searchrows.js, on the search field\'s first focus',
+  'js/ui/languagepop.js': 'the language menu (internal #310): ui/rail.js fetches it on the first press of its language button',
+  'js/ui/localnames.js': 'the names of things in the page\'s language (internal #310): main.js fetches it only when the page is not in English',
   'js/data/visualclasses.js': 'every record\'s visual class: ui/searchrows.js fetches it the first time a kind is typed',
   // 0076 W4-c (scenesummary.js)
   'js/ui/scenesummary.js': 'what is on screen, for a screen reader: main.js fetches it SUMMARY_MS after sr:layers-ready (internal spec 0076 W4-c)',

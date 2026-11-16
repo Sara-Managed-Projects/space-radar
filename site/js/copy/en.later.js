@@ -1667,6 +1667,13 @@ Object.assign(COPY, {
     row: '{words} · {publisher}',
     title: 'Opens {publisher}’s own page in a new tab',
   },
+  // The language menu (ui/languagepop.js): its links carry each language's own name, which is not translated.
+  language: {
+    title: 'Language',
+    close: 'Close',
+    listLabel: 'Languages',
+    note: 'The page loads again in that language, on the same view. Every language but English is a machine translation checked against the English.',
+  },
   placeKeep: {
     group: 'Where you are',
     change: 'Change place',

@@ -763,6 +763,8 @@ export const COPY = {
     menuTour: 'Take the tour',
     // Free email updates (ui/subscribe.js, fetched on the first press): the envelope, and its row on a phone.
     subscribe: 'Email updates',
+    // The language menu (ui/languagepop.js, fetched on the first press): the rail's button, and its row on a phone.
+    language: 'Language',
     // Buy Me a Coffee (index.html's floating cup, css/coffee.css): its row of More on a phone, and the name ui/rail.js
     // gives the floating link.
     coffee: 'Buy us a coffee',
@@ -2280,8 +2282,49 @@ export const COPY = {
     layerHint: {
       exoplanets: 'Switched off. Tick to show them.', // 0079 a13: on by default since 1.5.0
     },
+    // Every layer's name (registry/layers.yaml `display`, the same words: tests/test_local_names.mjs holds them equal), here so that
+    // each language can say it (internal #310). main.js writes a language's names over `display` before any panel is built.
     layerName: {
-      pha: 'Hazardous asteroids'
+      worlds: 'Planets and moons',
+      stars: 'Stars',
+      exoplanets: 'Planets around other stars',
+      systems: 'Star systems',
+      'deep-sky': 'Nebulae, clusters and galaxies',
+      galaxy: 'The Milky Way',
+      exotics: 'Black holes and other extremes',
+      'extremes-more': 'Magnetars and dead stars',
+      pulsars: 'Pulsars',
+      'beyond-more': 'Local Group and clusters',
+      quasars: 'Quasars',
+      stations: 'Crewed stations',
+      notable: 'Satellites worth knowing',
+      'starlink-trains': 'Fresh Starlink trains',
+      'just-launched': 'Just launched',
+      active: 'Everything active',
+      'geo-ring': 'The geostationary ring',
+      'debris-notable': 'Famous debris',
+      'debris-field': 'All tracked debris',
+      launches: 'Rockets on their way up',
+      asteroids: 'Asteroids passing by',
+      'far-bodies': 'Dwarf planets, far travellers',
+      moons: 'Moons of the planets',
+      companions: 'Asteroid and TNO moons',
+      pha: 'Hazardous asteroids',
+      comets: 'Comets',
+      'deep-space': 'Probes and telescopes',
+      visual: 'Bright enough to see',
+      'ground-sites': 'Pads, dishes and observatories',
+      'hand-kept-sites': 'Dishes, landers and rovers',
+      storms: 'Tropical storms now',
+      aurora: 'Aurora',
+      lightning: 'Lightning',
+      'earth-events': 'Fires, volcanoes and icebergs',
+      reentries: 'Things that came down',
+      oddities: 'Odd things we sent',
+      observatories: 'All observatories',
+      'launch-sites': 'All launch sites',
+      'landing-sites': 'Every landing and impact site',
+      'meteor-showers': 'Meteor showers',
     },
     // Three silences, three short words beside the name (spec 0061 req 11: the row is one line at
     // 390 and at 1440); each one's tooltip is the sentence it stands for.

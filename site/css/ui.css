@@ -5248,6 +5248,7 @@ html.sr-phone .sr-rail__btn--tour,
 html.sr-phone .sr-rail__btn--blog,
 html.sr-phone .sr-rail__btn--games,
 html.sr-phone .sr-rail__btn--sub,
+html.sr-phone .sr-rail__btn--lang,
 html.sr-phone .sr-rail__btn--github {
   display: none;
 }

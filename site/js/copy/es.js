@@ -224,7 +224,8 @@ export const COPY = {
     video: "Vídeo",
     videoHref: "https://video.spaceradar.ai/",
     tour: "Hacer el recorrido",
-    menuTour: "Hacer el recorrido"
+    menuTour: "Hacer el recorrido",
+    language: "Idioma"
   },
   timePill: {
     label: "Hora",
@@ -1295,7 +1296,46 @@ export const COPY = {
       exoplanets: "Desactivado por defecto. Márcalo para mostrarlos."
     },
     layerName: {
-      pha: "Asteroides peligrosos"
+      worlds: "Planetas y lunas",
+      stars: "Estrellas",
+      exoplanets: "Planetas de otras estrellas",
+      systems: "Sistemas estelares",
+      'deep-sky': "Nebulosas, cúmulos y galaxias",
+      galaxy: "La Vía Láctea",
+      exotics: "Agujeros negros y extremos",
+      'extremes-more': "Magnetares y estrellas muertas",
+      pulsars: "Púlsares",
+      'beyond-more': "Grupo Local y cúmulos",
+      quasars: "Cuásares",
+      stations: "Estaciones tripuladas",
+      notable: "Satélites que conviene conocer",
+      'starlink-trains': "Trenes recientes de Starlink",
+      'just-launched': "Recién lanzados",
+      active: "Todo lo activo",
+      'geo-ring': "El anillo geoestacionario",
+      'debris-notable': "Basura espacial famosa",
+      'debris-field': "Toda la basura rastreada",
+      launches: "Cohetes en ascenso",
+      asteroids: "Asteroides de paso",
+      'far-bodies': "Planetas enanos y viajeros",
+      moons: "Lunas de los planetas",
+      companions: "Lunas de asteroides y TNO",
+      pha: "Asteroides peligrosos",
+      comets: "Cometas",
+      'deep-space': "Sondas y telescopios",
+      visual: "Visibles a simple vista",
+      'ground-sites': "Rampas, antenas y observatorios",
+      'hand-kept-sites': "Antenas, módulos y róveres",
+      storms: "Tormentas tropicales ahora",
+      aurora: "Auroras",
+      lightning: "Rayos",
+      'earth-events': "Incendios, volcanes e icebergs",
+      reentries: "Lo que cayó",
+      oddities: "Cosas raras que enviamos",
+      observatories: "Todos los observatorios",
+      'launch-sites': "Todas las bases de lanzamiento",
+      'landing-sites': "Aterrizajes e impactos",
+      'meteor-showers': "Lluvias de meteoros"
     },
     layerCountEmpty: "vacía",
     layerCountEmptyTitle: "Esta capa volvió vacía: no se pudo leer su fuente, o ahora no contiene nada.",
@@ -3138,6 +3178,12 @@ export const COPY = {
   links: {
     row: "{words} · {publisher}",
     title: "Abre la propia página de {publisher} en una pestaña nueva"
+  },
+  language: {
+    title: "Idioma",
+    close: "Cerrar",
+    listLabel: "Idiomas",
+    note: "La página se carga de nuevo en ese idioma, en la misma vista. Todos los idiomas salvo el inglés son traducciones automáticas revisadas frente al inglés."
   },
   placeKeep: {
     group: "Dónde estás",
