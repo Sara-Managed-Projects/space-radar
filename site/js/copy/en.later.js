@@ -303,6 +303,10 @@ Object.assign(COPY, {
     trip: 'Trip',
     // An IAU figure (Orion), as opposed to a constellation of satellites (the 'group' row below).
     starPattern: 'Constellation of stars',
+    // A pattern that is part of a figure ("Big Dipper"): {name} is the figure's name.
+    asterism: 'Star pattern in {name}',
+    // One of Find's nine constellations of satellites ("Kuiper"), by name: pressing it opens Find on it.
+    fleet: 'Satellite constellation · press to light it on the globe',
     mission: 'Mission',
     eventName: '{mission}: {title}',
     event: 'Mission event · {date}',
@@ -1010,6 +1014,9 @@ Object.assign(COPY, {
     showMe: 'Show me',
     showMeTitle: 'Open the sky from your place, facing where it rises',
     guessCaveat: 'A guessed place: set your town for real times.',
+    // After the name of a pass that has no words of its own (sky/gloss.js): what it is and when it went up.
+    satLaunched: 'a satellite launched in {year}',
+    rocketLaunched: 'a spent rocket stage launched in {year}',
     // THE PASS AS DRAWN (spec 0061 task 5, ui/tonight.js): the name, three numbers with their
     // units under them, and the way it goes. passLine above stays the whole account: the block's
     // accessible name and a list row's tooltip.
@@ -1631,6 +1638,8 @@ Object.assign(COPY, {
     stale: 'Read on {date}: more than two days old, so it may have changed.',
     joined: 'Names are the crews of the vehicles docked now.',
     unmatched: 'The names on file did not match this count, so none are shown.',
+    // The clock is on another date: the list is today's and is not shown for it (ui/cardextras.js crewBlock).
+    otherDate: 'The crew list is for today. The map is showing another date, so nobody is listed.',
     waiting: 'Reading the crew list.',
     none: 'No crew list for this station.',
   },

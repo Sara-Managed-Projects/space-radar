@@ -31,6 +31,10 @@ aliases:
   - {say: north star, means: polaris, why: "the name most people know it by (Wikipedia, Polaris, read 2026-11-04: 'commonly called the North Star'); the catalogue's proper name is Polaris"}
   - {say: dog star, means: sirius, why: "Sirius is the Dog Star (Wikipedia, Sirius, read 2026-11-04: 'Sirius A, also known as the Dog Star'); the catalogue row is named Sirius"}
   - {say: starlink train, means: starlink, why: "what people call a fresh launch of Starlink satellites in a line (Wikipedia, Starlink, read 2026-11-04, uses 'Starlink satellite train'); the catalogue lists each one as STARLINK-nnnn"}
+  # Review of 16 Nov 2026: the full name of the telescope the catalogue calls HST, and the Horsehead's neighbour.
+  - {say: hubble space telescope, means: hst, why: "the telescope's full name; CelesTrak's name for it is HST (the row above answers the bare 'hubble')"}
+  - {say: ic 434, means: horsehead nebula, why: "IC 434 is the bright emission nebula the Horsehead (Barnard 33) is silhouetted against (Wikipedia, IC 434, read 2026-11-16: 'a bright emission nebula in the equatorial constellation of Orion'); the map's row is the Horsehead Nebula, which is what a visitor typing IC 434 is looking for"}
+  - {say: ic434, means: horsehead nebula, why: "as above, typed without the space"}
 
 # WHAT A KIND IS CALLED (internal spec 0076 W3-e; internal #879, #880). Typing a word below lists the
 # records of those classes (registry/visual-classes.yaml, through site/js/data/visualclasses.js), grouped by

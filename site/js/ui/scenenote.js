@@ -1,12 +1,15 @@
 // ui/scenenote.js -- one note on the scene when no satellite could be read at all.
 //
-// Contract: createSceneNote(ctx) -> { check(), say(text), destroy() }
+// Contract: createSceneNote(ctx) -> { check(), say(text, opts?), clearLink(), destroy() }
 // Also exported, pure, for the test: refusedEverywhere(statuses, counts) -> boolean
 //
 // `say(text)` (spec 0032, 2026-09-23) is the second thing the note can carry: one line about a
 // deep link that named a trip, an object or a place this map does not have. Same place on the
 // screen, same close button, no "why" button (there is no drawer to open for it). It takes the
 // note over until it is closed; the satellite line, if it is due, comes back after.
+// A LINK'S line (`say(text, { link: true })`, main.js linkNote) does not wait to be closed: it goes after
+// LINK_NOTE_MS, and at once when the next link is applied (`clearLink()`), so "That object is not on this
+// map" is never left standing over the next, valid view (review of 16 Nov 2026).
 //
 // WHY. A visitor whose connection CelesTrak refuses -- a phone behind carrier NAT on its first
 // visit, or this machine for all of 2026-09-22 -- saw a beautiful Earth with nothing on it and not a
@@ -22,6 +25,8 @@
 import { COPY } from '../copy/en.js';
 
 const SATELLITE_LAYERS = ['stations', 'visual'];
+/** How long a link's line stays when nobody closes it: long enough to read twice. */
+export const LINK_NOTE_MS = 9000;
 
 /** Pure. `statuses` is sources.status(); `counts` maps a layer id to its record count. */
 export function refusedEverywhere(statuses, counts) {
@@ -32,7 +37,7 @@ export function refusedEverywhere(statuses, counts) {
 }
 
 export function createSceneNote(ctx) {
-  if (typeof document === 'undefined') return { check() {}, say() {}, destroy() {} };
+  if (typeof document === 'undefined') return { check() {}, say() {}, clearLink() {}, destroy() {} };
   const T = COPY.sceneNote;
   const root = document.createElement('aside');
   root.className = 'sr-scenenote sr-float';
@@ -81,9 +86,22 @@ export function createSceneNote(ctx) {
     root.hidden = !refusedEverywhere(statuses, counts);
   }
 
-  /** One line of the caller's own, until it is closed. */
-  function say(line) {
+  /** One line of the caller's own, until it is closed; a link's line (`opts.link`) also goes by itself. */
+  let saidByLink = false;
+  let linkTimer = 0;
+  function say(line, opts = null) {
+    clearTimeout(linkTimer);
     said = line ? String(line) : null;
+    saidByLink = !!(said && opts && opts.link);
+    if (saidByLink) linkTimer = setTimeout(clearLink, LINK_NOTE_MS);
+    check();
+  }
+  /** Take a link's line down (the next link is being applied, or its time is up). Any other line stays. */
+  function clearLink() {
+    clearTimeout(linkTimer);
+    if (!saidByLink) return;
+    saidByLink = false;
+    said = null;
     check();
   }
 
@@ -93,7 +111,7 @@ export function createSceneNote(ctx) {
     if (ctx.shell) ctx.shell.openSources();
   });
   // Closing the link's line closes only that line; the satellite line is its own dismissal.
-  close.addEventListener('click', () => { if (said) said = null; else dismissed = true; check(); });
+  close.addEventListener('click', () => { clearTimeout(linkTimer); saidByLink = false; if (said) said = null; else dismissed = true; check(); });
   const onReady = () => { settled = true; check(); };
   const onLayer = () => check();
   window.addEventListener('sr:layers-ready', onReady);
@@ -102,7 +120,9 @@ export function createSceneNote(ctx) {
   return {
     check,
     say,
+    clearLink,
     destroy() {
+      clearTimeout(linkTimer);
       window.removeEventListener('sr:layers-ready', onReady);
       window.removeEventListener('sr:layer', onLayer);
       root.remove();

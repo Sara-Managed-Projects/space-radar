@@ -478,6 +478,7 @@ export const COPY = {
     "unknownVersion": "Este link é de um mapa mais novo. Mostrando a vista padrão.",
     "unknownTrip": "Essa viagem não está mais no mapa. Mostrando a vista padrão.",
     "unknownAt": "Esse objeto não está neste mapa; mostrando a vista padrão.",
+    "tOutOfRange": "Data fora de 1700 a 2200. Mostrando a mais próxima.",
     "unknownStage": "Não dá para centrar o mapa aí. Mostrando a vista padrão."
   },
   "share": {
@@ -868,6 +869,8 @@ export const COPY = {
     "endedLine": "A missão terminou em {date}. Os eventos dela, abaixo, remontam até lá.",
     "pathEndedLine": "A trajetória que o JPL guarda para ele termina em {date}. Os eventos dele, abaixo, remontam até lá.",
     "pathBeginsLine": "A trajetória que o JPL guarda para ele começa em {date}. Os eventos dele, abaixo, remontam até lá.",
+    "elementsOutLine": "Sem posição para esta data: a órbita só é conhecida até cerca de um mês antes ou depois de {date}.",
+    "notLaunchedLine": "Sem posição para esta data: foi lançado em {year}.",
     "actions": {
       "flyTo": "Voar até lá",
       "flyToTitle": "Levar a câmera até este objeto",
@@ -1683,6 +1686,8 @@ export const COPY = {
     "label": "Como sabemos onde está",
     "measured": "posição medida",
     "inferred": "posição propagada a partir de elementos com {n} {unit} de idade",
+    "inferredBefore": "posição calculada para trás, {n} {unit} antes da data dos elementos",
+    "noPositionForDate": "nenhuma posição é desenhada para esta data",
     "inferredUnknownAge": "posição propagada a partir de elementos de idade desconhecida",
     "inferredNoElements": "posição calculada, não medida",
     "stormAdvisory": "o centro dele no aviso das {time} UTC, {ago}; uma tempestade se move, então já se moveu desde então",
@@ -2043,6 +2048,8 @@ export const COPY = {
     "downNow": "abaixo do seu horizonte agora",
     "trip": "Viagem",
     "starPattern": "Constelação de estrelas",
+    "asterism": "Figura de estrelas em {name}",
+    "fleet": "Constelação de satélites · pressione para destacá-la no globo",
     "mission": "Missão",
     "eventName": "{mission}: {title}",
     "event": "Evento da missão · {date}",
@@ -2647,6 +2654,8 @@ export const COPY = {
     "showMe": "Mostrar",
     "showMeTitle": "Abrir o céu a partir do seu lugar, de frente para onde ele nasce",
     "guessCaveat": "Local estimado: informe sua cidade para ver os horários reais.",
+    "satLaunched": "um satélite lançado em {year}",
+    "rocketLaunched": "um estágio de foguete usado, lançado em {year}",
     "unitRises": "nasce",
     "unitHigh": "no ponto mais alto",
     "unitLong": "min à vista",
@@ -3258,6 +3267,7 @@ export const COPY = {
     "stale": "Lido em {date}: com mais de dois dias, pode ter mudado.",
     "joined": "Os nomes são as tripulações dos veículos acoplados agora.",
     "unmatched": "Os nomes registrados não bateram com esta contagem, então nenhum é mostrado.",
+    "otherDate": "A lista da tripulação é a de hoje. O mapa mostra outra data, então ninguém é listado.",
     "waiting": "Lendo a lista da tripulação.",
     "none": "Sem lista de tripulação para esta estação."
   },
@@ -5430,6 +5440,8 @@ Object.assign(COPY, {
     },
     "other": "Outros desafios",
     "loading": "O mapa ainda está carregando; o desafio começa quando ele estiver pronto.",
+    "failed": "O desafio não conseguiu carregar as distâncias.",
+    "retry": "Tentar de novo",
     "rung": "Passo {n} de {of}: {where}",
     "rungs": {
       "local-group": "o Grupo Local",

@@ -13,7 +13,8 @@
 //   groupRows(hits, countOf, open) -> hits, a constellation's satellites folded into one row
 //   runExtra(ctx, hit) -> does it;  whereEnv(ctx) -> a promise of describe()'s env
 //   constellationCentre(lines) -> { raDeg, decDeg } | null    where a figure's lines are, on average
-//   setConstellations(names, lines) / loadConstellations() -> the 88 star patterns as rows ("orion")
+//   setConstellations(names, lines) / loadConstellations() -> the 88 star patterns as rows ("orion"), and the asterisms
+//   setFleets(names) -> the nine constellations of satellites as rows ("kuiper"), which open Find on them
 //   readKind(query, index) -> { row, of } | null       a kind of thing typed: "galaxies", "moons of saturn"
 //   setClasses(list) / loadClasses() / classOf(record)  the visual classes (data/visualclasses.js)
 //   modelOf(record) -> 'real' | 'rebuilt' | null        drawn from a 3D model, or a reconstruction
@@ -38,6 +39,7 @@ import { TOURS_INDEX } from '../data/tours-index.js';
 import { TOUR_WORDS } from '../data/tours-words.js';
 import { MISSIONS } from '../data/missions.js';
 import { editDistance } from './search.js';
+import { CONSTELLATIONS } from '../data/clouds.js';
 import { parseFrame } from '../propagate/frames.js';
 import { icon, iconFrom } from './icons.js';
 import { KINDS } from '../data/kindwords.js';
@@ -333,9 +335,41 @@ export function setConstellations(names, lines) {
     const c = constellationCentre(byId.get(n.id));
     if (!c || !n.name) continue;
     stars.push({ extra: 'constellation', id: n.id, name: n.name, sub: COPY.searchRows.starPattern, words: norm(n.name), raDeg: c.raDeg, decDeg: c.decDeg });
+    // A pattern people name that is part of this figure (ASTERISMS): a row of its own, which turns to the figure.
+    for (const a of ASTERISMS[n.id] || []) {
+      stars.push({ extra: 'constellation', id: n.id, name: a, sub: t(COPY.searchRows.asterism, { name: n.name }), words: norm(a), raDeg: c.raDeg, decDeg: c.decDeg });
+    }
   }
   return stars.length;
 }
+
+/**
+ * Star patterns that are not one of the 88 figures but part of one, by the figure's id (review of 16 Nov 2026:
+ * "big dipper" found nothing). Wikipedia, "Asterism (astronomy)", read 2026-11-16: the Big Dipper or Plough "is
+ * composed of the seven brightest stars in Ursa Major"; Ursa Minor is "widely known by its pseudonym, the
+ * Little Dipper"; the Southern Cross's area "is now recognised as the constellation Crux"; "The Northern Cross
+ * in Cygnus"; three stars "form the belt of Orion". The names are English: what a visitor types.
+ */
+export const ASTERISMS = {
+  UMa: ['Big Dipper', 'The Plough'],
+  UMi: ['Little Dipper'],
+  Cru: ['Southern Cross'],
+  Cyg: ['Northern Cross'],
+  Ori: ["Orion's Belt"],
+};
+
+// --- the constellations of satellites, by name (review of 16 Nov 2026: "kuiper" found nothing) ---
+// Find lists nine fleets and lights each on the globe (`#constellation=kuiper`, ui/find.js); the search box knew
+// only the two whose satellites happen to be among its rows (GROUPS above). Each fleet is a row here, by the name
+// Find gives it (copy/en.find.js COPY.breakups.fleets, fetched with this module's star patterns, never at boot),
+// and pressing it opens Find on that fleet.
+let fleets = [];
+/** Make the fleets' rows from Find's names for them, `{ kuiper: 'Kuiper', ... }`. Returns how many. */
+export function setFleets(names) {
+  fleets = CONSTELLATIONS.filter((c) => names && names[c.id]).map((c) => ({ extra: 'fleet', id: c.id, name: String(names[c.id]), sub: COPY.searchRows.fleet, words: norm(names[c.id]) }));
+  return fleets.length;
+}
+if (typeof document !== 'undefined') import('../copy/en.find.js').then(() => setFleets(COPY.breakups && COPY.breakups.fleets), () => 0);
 
 let starsLoading = null;
 /** Fetch the two files once. Never rejects: with no files there are no star-pattern rows. */
@@ -374,7 +408,7 @@ function scoreWords(words, q) {
 export function findExtras(query, limit = EXTRA_ROWS) {
   const q = norm(query);
   if (q.length < 3) return [];
-  const pool = all().concat(stars, NEAR());
+  const pool = all().concat(stars, fleets, NEAR());
   let found = [];
   for (const e of pool) {
     const s = scoreWords(e.words, q);
@@ -386,18 +420,18 @@ export function findExtras(query, limit = EXTRA_ROWS) {
       if (e.words.split(/[^a-z0-9]+/).some((w) => w.length >= 3 && editDistance(q, w, cap) <= cap)) found.push({ e, s: 1 });
     }
   }
-  const order = { suggest: 0, constellation: 1, trip: 2, mission: 3, event: 4 };
+  const order = { suggest: 0, constellation: 1, fleet: 1, trip: 2, mission: 3, event: 4 };
   found.sort((a, b) => (order[a.e.extra] - order[b.e.extra]) || (b.s - a.s) || ((b.e.lead || 0) - (a.e.lead || 0)));
   const out = [];
   const eventsOf = new Map();
-  for (const { e } of found) {
+  for (const { e, s } of found) {
     if (e.extra === 'event') {
       const named = scoreWords(e.title, q) > 0;
       const n = eventsOf.get(e.mission) || 0;
       if (n >= 1 && !named) continue;
       eventsOf.set(e.mission, n + 1);
     }
-    out.push({ extra: e.extra, id: e.id, name: e.name, sub: e.sub, record: e.record || null, ...(e.extra === 'constellation' ? { raDeg: e.raDeg, decDeg: e.decDeg } : {}) });
+    out.push({ extra: e.extra, id: e.id, name: e.name, sub: e.sub, record: e.record || null, sure: s >= 10, ...(e.extra === 'constellation' ? { raDeg: e.raDeg, decDeg: e.decDeg } : {}) });
     if (out.length >= limit) break;
   }
   // 0079 a2: begin
@@ -428,6 +462,8 @@ export function runExtra(ctx, hit) {
   try {
     if (hit.extra === 'trip') { if (ctx.trip && typeof ctx.trip.start === 'function') { ctx.trip.start(hit.id); return true; } return false; }
     if (hit.extra === 'constellation') return turnToStars(ctx, hit);
+    // A fleet of satellites: Find lights it on the globe (ui/find.js openLink, as `#constellation=<id>` does).
+    if (hit.extra === 'fleet') { if (typeof ctx.wantFind !== 'function') return false; ctx.wantFind().then((f) => f && f.openLink({ constellation: hit.id })); return true; }
     if (hit.extra === 'suggest') { if (ctx.explore && typeof ctx.explore.setTab === 'function') { ctx.explore.setTab('tonight'); return true; } return false; }
     // 0079 a2: begin
     if (hit.extra === 'catalogue') {

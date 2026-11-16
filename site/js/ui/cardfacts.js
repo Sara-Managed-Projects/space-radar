@@ -17,6 +17,7 @@
 
 import { COPY, t, fmt, timeText, fistsWords, inWords, ageInWords, UNITS, typeWords } from '../copy/en.js';
 import { propagate, EPHEMERIS_OF } from '../propagate/index.js';
+import { MAX_AGE_MS } from '../propagate/sgp4.js';
 import { launchLabel } from './labels.js';
 import { realModelFor } from '../scene/realmodels.js';
 import { sunlitState } from '../scene/shadow.js';
@@ -513,6 +514,30 @@ export function pathBeginsWords(record, m) {
   return tMs < Date.parse(`${pick(meta(record), 'endDate')}T00:00:00Z`) ? timeText.utcLong(ms) : null;
 }
 // 0077 W1-d: end
+
+/**
+ * A satellite drawn from an element set, on a date its elements cannot answer for (review of 16 Nov 2026: the ISS on
+ * 1 Jan 1990 read "- km up - km/h - min a lap" with no reason, a badge of "Place: Measured" and today's crew).
+ * propagate/sgp4.js draws nothing further than MAX_AGE_MS from the set's epoch, so the dot is honestly gone; this
+ * is the sentence for the card. Null while the object is placed and for anything not drawn from elements.
+ *   { key: 'notLaunched', year }   the date is before the year its international designator gives for the launch
+ *   { key: 'outside', date }       the date is more than about a month from the elements' own date
+ */
+export function elementsOutWords(record, m) {
+  if (!record || !m || m.ok || record.propagator !== 'sgp4' || !Number.isFinite(m.tMs)) return null;
+  const epoch = record.epoch;
+  if (!Number.isFinite(epoch) || Math.abs(m.tMs - epoch) <= MAX_AGE_MS) return null;
+  const launched = /^(\d{4})-\d{3}/.exec(String(pick(meta(record), 'intlDesignator') || ''));
+  if (launched && new Date(m.tMs).getUTCFullYear() < Number(launched[1])) return { key: 'notLaunched', year: launched[1] };
+  return { key: 'outside', date: timeText.utcLong(epoch) };
+}
+
+/** That sentence, whole, for the card: "No position for this date: ...". */
+export function elementsOutLine(record, m) {
+  const out = elementsOutWords(record, m);
+  if (!out) return null;
+  return out.key === 'notLaunched' ? t(COPY.card.notLaunchedLine, { year: out.year }) : t(COPY.card.elementsOutLine, { date: out.date });
+}
 
 export function rightNowRows(record, m, passInfo) {
   const R = COPY.card.rows;
@@ -1031,6 +1056,8 @@ export function drawnNow(record, ctx) {
 /** How a record's position is known, as the honesty line's first half says it: measured, inferred, illustrative, sample, unplaced or unknown. */
 export function positionKey(record, m) {
   if (pick(meta(record), 'unplaceable')) return 'unplaced';
+  // No dot for this date (elementsOutWords): the badge must not call a position that is not shown "Measured".
+  if (elementsOutWords(record, m)) return 'unplaced';
   const cls = (m && m.cls) || (record && record.cls) || '';
   return ['measured', 'inferred', 'illustrative', 'sample'].includes(cls) ? cls : 'unknown';
 }
@@ -1147,6 +1174,8 @@ export function classLine(record, m) {
   // ABOUT, and "position propagated from elements of unknown age" would be a sentence about
   // elements that do not exist.
   if (pick(meta(record), 'unplaceable')) return COPY.cls.unplaced;
+  // A satellite on a date its elements cannot answer for: there is no position to have a class about.
+  if (elementsOutWords(record, m)) return COPY.cls.noPositionForDate;
   // 0079 a6: a record of the small lists names the line that is true of it (a shower is a direction; a small body's landing has no place drawn)
   const own = pick(meta(record), 'clsLine');
   if (own && Object.prototype.hasOwnProperty.call(COPY.cls, own)) return t(COPY.cls[own], { n: pick(meta(record), 'approxDeg') });
@@ -1168,7 +1197,9 @@ export function classLine(record, m) {
       // "worked out rather than measured" with no age, the ISS included, on 19-hour-old data.
       if (!record || !(record.elements || record.satrec || record.omm)) return COPY.cls.inferredNoElements; // `omm`: an element set read from tiles (data/tracked.js)
       if (!Number.isFinite(epoch) || !Number.isFinite(m.tMs)) return COPY.cls.inferredUnknownAge;
-      return t(COPY.cls.inferred, ageParts(Math.max(0, m.tMs - epoch)));
+      // The age is from the SHOWN instant, in either direction: a position worked back 29 days from the set was
+      // labelled "elements 0 minutes old" while this was clamped at zero (review of 16 Nov 2026).
+      return m.tMs < epoch ? t(COPY.cls.inferredBefore, ageParts(epoch - m.tMs)) : t(COPY.cls.inferred, ageParts(m.tMs - epoch));
     }
     case 'illustrative':
       // The whole tracked population of debris (data/satcat.js): the orbit is the catalogue's, the

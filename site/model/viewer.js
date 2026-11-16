@@ -45,7 +45,15 @@ function say(title, text, link) {
 const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 let autoTurn = q.get('turn') !== '0' && !reduce.matches;
 
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'low-power' });
+// A browser that cannot make a WebGL context (switched off, a blocked GPU) throws here, at the top of the module:
+// the page then kept "Loading the model…" for ever (review of 16 Nov 2026). It says what happened instead, and stops.
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'low-power' });
+} catch (err) {
+  say('No 3D here', 'This browser cannot draw 3D on this page (WebGL is off or not available).', PAGE);
+  throw err;
+}
 renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -195,6 +203,10 @@ function frame(t) {
   if (autoTurn) wake();
 }
 function wake() { if (!raf) raf = requestAnimationFrame(frame); }
+// A lost context is asked back (preventDefault), and the picture is drawn again when it returns: the canvas used to
+// stay blank until the reader moved it.
+canvas.addEventListener('webglcontextlost', (e) => e.preventDefault());
+canvas.addEventListener('webglcontextrestored', wake);
 addEventListener('resize', () => { resize(); if (model) { const d = view.dist / HOME.dist; fit(model); view.dist = clampDist(HOME.dist * d); } wake(); });
 document.addEventListener('visibilitychange', () => { last = 0; wake(); });
 if ('IntersectionObserver' in window) {
@@ -220,11 +232,16 @@ async function main() {
     say('No model named', 'Add ?id= and a model of Space Radar\'s own, for example ?id=hubble.', PAGE);
     return;
   }
+  // The catalog not arriving (offline, a server error, an answer that is not JSON) is not "no such model".
   let entry;
   try {
     const r = await fetch('./models.json');
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
     entry = (await r.json()).models[id];
-  } catch { /* said below */ }
+  } catch {
+    say('Could not load the catalog', 'The list of models did not arrive. Try again in a moment.', PAGE);
+    return;
+  }
   if (!entry) { say('Not one of ours', `There is no model "${id}" in Space Radar's catalog.`, PAGE); return; }
 
   const name = $('name');
