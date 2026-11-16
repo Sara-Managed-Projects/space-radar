@@ -1749,6 +1749,20 @@ export const COPY = {
       envisat: 'shown steady, with its instruments to the Earth, as it flew while it worked; it has been dead since 2012 and nobody steers it',
       ers1: 'shown steady, with its instruments to the Earth, as it flew while it worked; its mission ended in 2000 and nobody steers it',
     },
+    // 2026-11-16: WHICH WAY IT POINTS. Nobody publishes a craft's attitude, so the model is turned by the rule its kind of craft is
+    // flown by (scene/attitude.js), and the card says so and says which rule (ui/cards.js attitudeLine). A file whose own axes are
+    // not on record keeps a fixed angle and gets no line.
+    attitude: {
+      lead: 'which way it points is modelled, not measured: {rule}',
+      rules: {
+        nadir: 'one face to the world below, its solar panels turned toward the Sun',
+        geo: 'one face to the Earth, its solar panels along north and south',
+        lvlh: 'the same side down and the same end forward, all the way round',
+        sun: 'one side to the Sun, looking at one place in the sky',
+        earth: 'its dish pointed at the Earth',
+        spin: 'its dish pointed at the Earth, turning about that line',
+      },
+    },
     objectGeneric: 'drawn as a generic object; we have no shape for {name}',
     // The procedural shape a class falls back to when nothing more specific is known. Used
     // with objectFamily: "drawn as a generic satellite -- the kind of thing, not this exact one".

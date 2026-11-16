@@ -1092,6 +1092,17 @@ export const COPY = {
       "envisat": "montré stable, instruments tournés vers la Terre, comme il volait quand il fonctionnait ; il est hors service depuis 2012 et personne ne le dirige",
       "ers1": "montré stable, instruments tournés vers la Terre, comme il volait quand il fonctionnait ; sa mission s’est terminée en 2000 et personne ne le dirige"
     },
+    "attitude": {
+      "lead": "son orientation est modélisée, pas mesurée : {rule}",
+      "rules": {
+        "nadir": "une face vers le monde en dessous, les panneaux solaires tournés vers le Soleil",
+        "geo": "une face vers la Terre, les panneaux solaires alignés du nord au sud",
+        "lvlh": "toujours le même côté vers le bas et la même extrémité vers l’avant, sur tout le tour",
+        "sun": "un côté vers le Soleil, le regard sur un même point du ciel",
+        "earth": "l’antenne pointée vers la Terre",
+        "spin": "l’antenne pointée vers la Terre, en tournant autour de cet axe"
+      }
+    },
     "objectGeneric": "dessiné comme un objet générique ; nous n’avons aucune forme pour {name}",
     "classShape": {
       "satellite": "un satellite générique",
