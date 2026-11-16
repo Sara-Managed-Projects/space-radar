@@ -273,15 +273,16 @@ html.sr-sharing .sr-cutaway { display: none; }
 
 .sr-helio-legend__row .sr-cutaway__swatch { margin-top: 2px; grid-row: auto; }
 
-/* On a phone the chip and its legend sit under the top bar, clear of the sheet. */
+/* On a phone the chip and its legend sit under the top bar, clear of the sheet, and under the size badge and the scene note
+   that steps below it (finishers.css): the badge's height moves all three, so the chip does not land on the note's Sources button. */
 html.sr-phone .sr-helio-chip {
-  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 128px);
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + max(44px, var(--sr-badge-h, 44px)) + 84px);
   bottom: auto;
   right: max(var(--sp-4), env(safe-area-inset-right, 0px));
 }
 
 html.sr-phone .sr-helio-legend {
-  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 180px);
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + max(44px, var(--sr-badge-h, 44px)) + 136px);
   bottom: auto;
   left: max(var(--sp-4), env(safe-area-inset-left, 0px));
   right: max(var(--sp-4), env(safe-area-inset-right, 0px));
