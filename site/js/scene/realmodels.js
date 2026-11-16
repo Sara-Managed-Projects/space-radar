@@ -332,8 +332,10 @@ export const REAL_MODELS = {
     // a generic station of its own -- selecting Nauka showed a second, different space station. They
     // are drawn as the station they are part of; heroes.js's docked-vehicle rule means only one of
     // the two models is ever on screen at that point, whichever is selected.
-    49044: { file: 'iss.glb', colour: 'station', name: 'the International Space Station, which Nauka is part of', catalogue: 'ISS (NAUKA)' },
-    36086: { file: 'iss.glb', colour: 'station', name: 'the International Space Station, which Poisk is part of', catalogue: 'POISK' },
+    // 2026-11-16 (review of that day): UNITY, ZVEZDA AND DESTINY are catalogued apart too (25575, 26400, 26700 in CelesTrak's `active` group) and had no route: three
+    // generic stations sat at the ISS. Same route, and each of the five is TITLED by its own name (`displayName`): `name` is what is drawn, for the card's "drawn" line.
+    ...Object.fromEntries([[49044, 'Nauka', 'ISS (NAUKA)'], [36086, 'Poisk', 'POISK'], [25575, 'Unity', 'ISS (UNITY)'], [26400, 'Zvezda', 'ISS (ZVEZDA)'], [26700, 'Destiny', 'ISS (DESTINY)']]
+      .map(([n, m, catalogue]) => [n, { file: 'iss.glb', colour: 'station', name: `the International Space Station, which ${m} is part of`, displayName: `${m}, an ISS module`, catalogue }])),
     // A ROCKET STAGE CATALOGUED AS A PAYLOAD. AC-2 (1963) put the instrumented Centaur stage itself
     // into orbit -- the first hydrogen engine fired in space -- so the catalogue calls the stage the
     // payload and its name carries no R/B. It was drawn, and its card described it, as "a generic
@@ -1096,6 +1098,10 @@ export const REAL_MODELS = {
     //   HawkEye 360 Hawk-A, -B, -C (the Pathfinder block); not the later, larger blocks.
     //   GHGSat-C1 to -C8 (SFL's NEMO bus); not C12 and C13. Gaofen-1 only, not Gaofen-1 02, 03, 04.
     40115: R14_WV3,
+    // 2026-11-16: WorldView-1 and -2 had no shape at all. They are on the same Ball BCP 5000 bus and shorter (3.6 and 4.3 m against 5.7 m: the row `worldview-3` of
+    // registry/models.yaml, which is why they were not given the file as their own), so they wear it as a stand-in, `generic`, and the name says what differs.
+    32060: { ...R14_WV3, name: 'WorldView-3, a taller craft on the same bus', catalogue: 'WORLDVIEW-1 (WV-1)', generic: true },
+    35946: { ...R14_WV3, name: 'WorldView-3, a taller craft on the same bus', catalogue: 'WORLDVIEW-2 (WV-2)', generic: true },
     43812: R14_BSK,
     44499: R14_BSK,
     47971: R14_BSK,
@@ -1774,6 +1780,9 @@ export const REAL_MODELS = {
     // because a key the catalogue never says is a file nobody ever sees. Klass satellite only, so
     // the launch's debris and spent stage keep their own shapes.
     spacemobile: { build: 'spacemobile', colour: 'satellite', name: 'a BlueBird direct-to-phone satellite', klass: ['satellite'], generic: true },
+    // 2026-11-16: BlueWalker 3 (53807, `BLUEWALKER-3`), the same company's prototype with a 64 m2 array (en.wikipedia.org/wiki/BlueWalker_3, read that day), had no shape: one of
+    // the brightest satellites was the class box. The same flat sheet, as a stand-in.
+    bluewalker: { build: 'spacemobile', colour: 'satellite', name: 'a BlueBird direct-to-phone satellite, the craft BlueWalker 3 was the prototype of', klass: ['satellite'], generic: true },
     // FILES AS WELL since batch three (2026-10-13; public #937): the capsule turned on a lathe from
     // the heat shield's rim to the docking port, the nose cone OPEN as it is on orbit, the trunk
     // with cells on the half toward the Sun and radiators on the other (registry rows `dragon-crew`,
@@ -1909,13 +1918,18 @@ export const REAL_MODELS = {
     // Itokawa still waits: Gaskell's model of it has JAXA co-authors (tests/test_station_shapes.mjs).
     // 2026-10-07: and it wears Dawn's mosaic (`map`, as Vesta above).
     ceres: { file: 'dwarf-ceres.glb', colour: 'asteroid', name: '1 Ceres', klass: ['asteroid'], map: '2k_ceres_dawn.webp', mapped: 'dawn' },
-    tdrs: { file: 'tdrs.glb', colour: 'satellite', name: 'Tracking and Data Relay Satellite', klass: ['satellite'] },
+    // 2026-11-16: `generic`, as GOES below. TDRS 3 to 7 are the first generation (TRW) and 8 to 13 are Boeing's second and third; NASA's file is one craft and its
+    // listing ("Tracking and Data Relay Satellites (TDRS) (A)") does not say which, so the card says "the kind of thing" and is titled by the catalogue's own name.
+    tdrs: { file: 'tdrs.glb', colour: 'satellite', name: 'a Tracking and Data Relay Satellite', klass: ['satellite'], generic: true },
     swift: { file: 'swift.glb', colour: 'telescope', name: 'Swift', klass: ['satellite', 'telescope'] },
     tess: { file: 'tess.glb', colour: 'telescope', name: 'TESS', klass: ['satellite', 'telescope'] },
     sdo: { file: 'sdo.glb', colour: 'telescope', name: 'Solar Dynamics Observatory', klass: ['satellite', 'telescope'] },
     dscovr: { file: 'dscovr.glb', colour: 'satellite', name: 'DSCOVR', klass: ['satellite'] },
     'suomi npp': { file: 'suomi.glb', colour: 'satellite', name: 'Suomi NPP', klass: ['satellite'] },
-    goes: { file: 'goes.glb', colour: 'satellite', name: 'GOES weather satellite', klass: ['satellite'] },
+    // 2026-11-16: ONE NASA FILE, EVERY GOES. GOES 14 and 15 are the GOES-N series and 16 to 19 the GOES-R series, different buses, and all six were titled
+    // "GOES weather satellite" and said to be drawn "from a published model of" themselves. NASA's listing ("Geostationary Operational Environmental Satellites",
+    // one .glb and a picture, read 2026-11-16) names no series, so the route is `generic`: the card keeps the catalogue's name and says "the kind of thing".
+    goes: { file: 'goes.glb', colour: 'satellite', name: 'a GOES weather satellite', klass: ['satellite'], generic: true },
     // Gaia and Solar Orbiter are matched by NAME: Solar Orbiter carries no Horizons id in the
     // bundled deep-space data, and Gaia's (-139479, since 2026-09-22) had no glTF to key, because
     // its shape was built rather than downloaded. // 0077 W1-b
@@ -2002,6 +2016,12 @@ export const REAL_MODELS = {
     // `display`); `name` is what the model is of, for the line that says what is drawn.
     'surveyor-1': { build: 'surveyor', file: 'surveyor.glb', colour: 'site', name: 'Surveyor 1', displayName: 'Surveyor 1, Oceanus Procellarum', made: 'dimensions' },
     'surveyor-3': { build: 'surveyor', file: 'surveyor-3.glb', colour: 'site', name: 'Surveyor 3', displayName: 'Surveyor 3, Oceanus Procellarum', made: 'dimensions' },
+    // 2026-11-16: SURVEYOR 5, 6 AND 7 wore the generic lander with the two Surveyor files in the library. NSSDCA (1967-084A, 1967-112A, 1968-001A, read 2026-11-16):
+    // Surveyor 5's "instrumentation ... was similar to that of the previous Surveyors" with "an alpha-scattering instrument ... installed in place of the surface sampler";
+    // Surveyor 6 had "a payload virtually identical to that of Surveyor 5"; Surveyor 7 "was similar in design to Surveyor 6" and carried "a surface sampler similar to
+    // that flown on Surveyor 3". So 5 and 6 wear the file without the sampler and 7 the one with it; none of the three files has the alpha-scattering box, and the name says so.
+    ...Object.fromEntries([['5', '', 'Mare Tranquillitatis'], ['6', '', 'Sinus Medii'], ['7', '-3', 'Tycho crater rim']].map(([n, f, at]) => [`surveyor-${n}`,
+      { build: 'surveyor', file: `surveyor${f}.glb`, colour: 'site', name: `Surveyor ${n}, without its alpha-scattering instrument`, displayName: `Surveyor ${n}, ${at}`, made: 'dimensions' }])),
     // THREE MODERN LANDERS (public #1133, #1135, #1136), each built in code from cited metres and
     // photographs and drawn AS IT CAME TO REST: Vikram upright with its ramp down and Pragyan gone;
     // Odysseus on its side, the legs under it broken; Blue Ghost upright. Until the file arrives each is
@@ -2037,6 +2057,12 @@ export const REAL_MODELS = {
     // Phoenix with both arrays open, the Mars 3 capsule with its four petals open. NASA publishes no model of Pathfinder or
     // Phoenix (read 2026-10-26: its 3D Resources and NASA Science's 3D models have none), so none is official.
     'luna-16': { build: 'lander', file: 'luna-16.glb', colour: 'site', name: "Luna 16's descent stage, the ascent stage gone", displayName: 'Luna 16, Mare Fecunditatis', made: 'dimensions' },
+    // 2026-11-16: THE OTHER THREE SAMPLE-RETURN LUNAS wore the generic lander. Luna 20 is the same Ye-8-5 craft as Luna 16 and its ascent stage left too (en.wikipedia.org/wiki/Luna_20,
+    // read 2026-11-16), so it wears the file as its own. Luna 24 and Luna 23 are the Ye-8-5M, changed to drill 2.5 m deep (en.wikipedia.org/wiki/Luna_24, /Luna_23, read the same day),
+    // and Luna 23 "tipped over on its side" and sent nothing home, so its ascent stage is still on it: for those two the file is `generic`, the kind of thing, and the name says what differs.
+    'luna-20': { build: 'lander', file: 'luna-16.glb', colour: 'site', name: "Luna 20's descent stage, of Luna 16's design, the ascent stage gone", displayName: 'Luna 20, Apollonius highlands', made: 'dimensions' },
+    'luna-24': { build: 'lander', file: 'luna-16.glb', colour: 'site', name: "Luna 16's descent stage; Luna 24 was the later type with a deeper drill", displayName: 'Luna 24, Mare Crisium', made: 'dimensions', generic: true },
+    'luna-23': { build: 'lander', file: 'luna-16.glb', colour: 'site', name: "Luna 16's descent stage, standing; Luna 23 fell on its side and kept its ascent stage", displayName: 'Luna 23, Mare Crisium', made: 'dimensions', generic: true },
     'mars-pathfinder': { build: 'lander', file: 'pathfinder.glb', colour: 'site', name: 'Mars Pathfinder, with Sojourner beside it', displayName: 'Mars Pathfinder, Ares Vallis', made: 'dimensions' },
     phoenix: { build: 'lander', file: 'phoenix.glb', colour: 'site', name: 'Phoenix, both arrays open', displayName: 'Phoenix, Vastitas Borealis', made: 'dimensions' },
     'mars-3': { build: 'lander', file: 'mars-3.glb', colour: 'site', name: 'the Mars 3 landing capsule, its petals open', displayName: 'Mars 3, Ptolemaeus crater', made: 'dimensions' },
@@ -2138,6 +2164,30 @@ export function padVehicleShown(record, tMs) {
     if (timed ? tMs >= t - PAD_LEAD_MS && tMs < t + 60e3 : tMs >= t && tMs < t + 24 * 3600e3) return true;
   }
   return false;
+}
+
+/**
+ * THE TITLE A ROUTE GIVES ITS OBJECT, or '' when the object keeps its own name. A route's `name` is what is DRAWN, for the card's "drawn" line; it is also
+ * the object's name only when the route is for that one object ("International Space Station" for ISS (ZARYA), "Hubble Space Telescope" for HST).
+ *
+ * REVIEW OF 2026-11-16: 149 satellites in 17 families shared a title, because a family's route name replaced the catalogue's: six GOES were all "GOES weather
+ * satellite", 25 Kinéis "Kinéis", LAGEOS 1 and 2 "LAGEOS", and every SL-8 stage "a Kosmos-3M second stage". So a name does not title when it is a class's
+ * ("a ...", "an ..."), when the route is `generic`, or when two routes share it; `displayName` always does. Pure.
+ */
+let sharedNames = null;
+export function routeTitle(entry) {
+  if (!entry) return '';
+  if (entry.displayName) return String(entry.displayName).trim();
+  const name = entry.generic || !entry.name ? '' : String(entry.name).trim();
+  if (!name || /^an? /i.test(name)) return '';
+  if (!sharedNames) {
+    const seen = new Set();
+    sharedNames = new Set();
+    for (const table of [REAL_MODELS.norad, REAL_MODELS.horizons, REAL_MODELS.bySite]) {
+      for (const e of Object.values(table)) if (e && e.name && !e.generic) (seen.has(e.name) ? sharedNames : seen).add(e.name);
+    }
+  }
+  return sharedNames.has(name) ? '' : name;
 }
 
 /** The entry in REAL_MODELS this record matches, or null. */

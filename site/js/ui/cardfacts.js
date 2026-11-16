@@ -19,7 +19,7 @@ import { COPY, t, fmt, timeText, fistsWords, inWords, ageInWords, UNITS, typeWor
 import { propagate, EPHEMERIS_OF } from '../propagate/index.js';
 import { MAX_AGE_MS } from '../propagate/sgp4.js';
 import { launchLabel } from './labels.js';
-import { realModelFor } from '../scene/realmodels.js';
+import { realModelFor, routeTitle } from '../scene/realmodels.js';
 import { sunlitState } from '../scene/shadow.js';
 import { periodMsOf } from '../scene/orbitline.js';
 import { moonRows } from './moonfacts.js'; // 0079 a3
@@ -81,9 +81,9 @@ export function displayName(record) {
     let entry = null;
     try { entry = realModelFor(record); } catch { entry = null; }
     // A route's own `displayName` names this exact object even when its shape is generic
-    // (Tiangong); otherwise a generic route's `name` is a class ("a Starlink") and renames nothing.
-    if (entry && entry.displayName) name = String(entry.displayName).trim();
-    else if (entry && !entry.generic && entry.name) name = String(entry.name).trim();
+    // (Tiangong); otherwise a generic route's `name` is a class ("a Starlink") and renames nothing,
+    // and neither does a family's (scene/realmodels.js routeTitle: six GOES were one title).
+    name = routeTitle(entry);
   }
   // Then the hand-kept list's own name (data/layers.js NOTABLE), before the catalogue's string.
   if (!name && record && record.meta && record.meta.listName) name = String(record.meta.listName).trim();

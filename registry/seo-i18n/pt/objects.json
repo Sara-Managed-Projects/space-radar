@@ -1237,5 +1237,16 @@
  "241f99ddc0": "O primeiro rover da China em Marte, que pousou em {n1}. Está no mapa 3D ao vivo, no lugar onde realmente fica.",
  "5a7fea6fc2": "O primeiro rover da China em Marte, que pousou em {n1}.",
  "1072746da5": "Desenho: o Zhurong · forma construída a partir de dimensões e imagens publicadas; detalhes simplificados.",
- "425bb491c5": "{name} fica a cerca de {n1} km acima da Terra, dando uma volta a cada {n2} minutos a cerca de {n3} km/h, em algum ponto entre {n4}° norte e {n5}° sul do equador. Seu navegador calcula o ponto exato assim que esta página abre, a partir de elementos orbitais salvos em {d1}."
+ "425bb491c5": "{name} fica a cerca de {n1} km acima da Terra, dando uma volta a cada {n2} minutos a cerca de {n3} km/h, em algum ponto entre {n4}° norte e {n5}° sul do equador. Seu navegador calcula o ponto exato assim que esta página abre, a partir de elementos orbitais salvos em {d1}.",
+ "5228bc9a0a": "{name} é um satélite meteorológico GOES que gira ao redor da Terra. Um satélite meteorológico que fica parado sobre um mesmo ponto, a {n1} km de altura.",
+ "5a48eb483b": "{name} é um satélite meteorológico GOES que gira ao redor da Terra.",
+ "81f4838ba7": "Aparece como um satélite meteorológico GOES — o tipo de coisa, não este exemplar exato.",
+ "3d546b91fa": "{name} é um satélite meteorológico GOES que gira ao redor da Terra. O equivalente dele no Pacífico, agora reserva em órbita.",
+ "7e67d98935": "{name} é um satélite meteorológico GOES que gira ao redor da Terra. O que vigia a costa oeste dos Estados Unidos e as tempestades do Pacífico.",
+ "246df821e2": "{name} é um satélite meteorológico GOES que gira ao redor da Terra. O mais novo deles. Assumiu a vigilância dos furacões do Atlântico em {d1}.",
+ "fb42a1668d": "Desenho: o estágio de descida da Luna {n1}, com o projeto da Luna {n2}, sem o estágio de subida · forma construída a partir de dimensões e imagens publicadas; detalhes simplificados.",
+ "6e881752f0": "Desenho: o estágio de descida da Luna {n1}, de pé; a Luna {n2} tombou de lado e ficou com o estágio de subida — o tipo de coisa, não este exemplar exato · forma construída a partir de dimensões e imagens publicadas; detalhes simplificados.",
+ "eb816396cb": "Desenho: o estágio de descida da Luna {n1}; a Luna {n2} era o modelo posterior, com uma broca mais profunda — o tipo de coisa, não este exemplar exato · forma construída a partir de dimensões e imagens publicadas; detalhes simplificados.",
+ "8d10d6deb2": "Desenho: a Surveyor {n1}, sem o instrumento de espalhamento alfa · forma construída a partir de dimensões e imagens publicadas; detalhes simplificados.",
+ "66ba90603d": "Desenho: o WorldView-{n1}, uma nave mais alta sobre a mesma plataforma — o tipo de coisa, não este exemplar exato · forma construída a partir de dimensões e imagens publicadas; detalhes simplificados."
 }

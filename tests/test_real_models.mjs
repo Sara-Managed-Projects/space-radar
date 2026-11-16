@@ -735,5 +735,70 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
   check(ir(70002, 'ONEWEB-0012 DEB', 'debris') === null, 'OneWeb debris keeps the debris shape');
 }
 
+// REVIEW OF 2026-11-16: A ROUTE NEVER GIVES TWO OBJECTS ONE TITLE. 149 satellites in 17 families were titled by their family's route name (six GOES all "GOES weather
+// satellite", 25 Kinéis, LAGEOS 1 and 2). The card and the label take a route's title from routeTitle(): the object's own name unless the route is for that one object.
+{
+  const { routeTitle } = await import(pathToFileURL(join(ROOT, 'site/js/scene/realmodels.js')).href);
+  const { displayName } = await import(pathToFileURL(join(ROOT, 'site/js/ui/cardfacts.js')).href);
+  const { labelName } = await import(pathToFileURL(join(ROOT, 'site/js/ui/labels.js')).href);
+  // every route by number, by Horizons id and by site: no title is given twice
+  const titled = new Map();
+  for (const table of ['norad', 'horizons', 'bySite']) {
+    for (const [key, entry] of Object.entries(REAL_MODELS[table])) {
+      const title = routeTitle(entry);
+      if (!title) continue;
+      check(!titled.has(title), `${table}[${key}] and ${titled.get(title)} would both be titled "${title}": a family's name belongs in the "drawn" line, give each a name of its own or none`);
+      titled.set(title, `${table}[${key}]`);
+    }
+  }
+  check(titled.size > 150, `the routes that title their object were read (${titled.size})`);
+  // a route by name word reaches many objects when its name is a class's: none of those titles
+  for (const [key, entry] of Object.entries(REAL_MODELS.named)) {
+    if (/^an? /i.test(String(entry.name || '')) || entry.generic) check(routeTitle(entry) === (entry.displayName || ''), `named[${key}] ("${entry.name}") is a kind of thing and titles nothing`);
+  }
+  const sat = (norad, name, klass = 'satellite') => ({ id: `sat-${norad}`, name, klass, layer: 'active', meta: { noradId: norad } });
+  // the catalogue's own name, with the family in the "drawn" line
+  for (const [norad, name, drawn] of [[41866, 'GOES 16', 'a GOES weather satellite'], [51850, 'GOES 18', 'a GOES weather satellite'], [36411, 'EWS-G2 (GOES 15)', 'a GOES weather satellite'],
+    [19548, 'TDRS 3', 'a Tracking and Data Relay Satellite'], [42915, 'TDRS 13', 'a Tracking and Data Relay Satellite'], [8820, 'LAGEOS 1', 'LAGEOS'], [22195, 'LAGEOS 2', 'LAGEOS'],
+    [60084, 'KINEIS-1A', 'Kinéis'], [32258, 'WGS F1 (USA 195)', 'WGS (Wideband Global SATCOM)'], [38755, 'SPOT 6', 'SPOT 6 / SPOT 7'], [2802, 'SL-8 R/B', 'a Kosmos-3M second stage', 'rocket']]) {
+    const r = sat(norad, name, name.endsWith('R/B') ? 'rocket' : 'satellite');
+    const got = realModelFor(r);
+    check(displayName(r) === name && labelName(r) === name, `${name} is titled by its own name on the card and the label (card "${displayName(r)}", label "${labelName(r)}")`);
+    check(got && got.name === drawn, `${name}: the family's name is what is drawn ("${got && got.name}")`);
+  }
+  // one object, one route: the name a person uses still titles it
+  for (const [norad, name, title] of [[25544, 'ISS (ZARYA)', 'International Space Station'], [20580, 'HST', 'Hubble Space Telescope'], [39084, 'LANDSAT 8', 'Landsat 8']]) {
+    check(displayName(sat(norad, name)) === title, `${name} is still titled "${title}" (got "${displayName(sat(norad, name))}")`);
+  }
+  // the ISS's modules that the catalogue lists apart: all five wear the station and are titled by their own names
+  for (const [norad, name, title] of [[49044, 'ISS (NAUKA)', 'Nauka, an ISS module'], [36086, 'POISK', 'Poisk, an ISS module'], [25575, 'ISS (UNITY)', 'Unity, an ISS module'],
+    [26400, 'ISS (ZVEZDA)', 'Zvezda, an ISS module'], [26700, 'ISS (DESTINY)', 'Destiny, an ISS module']]) {
+    const r = sat(norad, name, 'station');
+    const got = realModelFor(r);
+    check(got && got.file === 'iss.glb' && got.catalogue === name, `${name} wears iss.glb (${JSON.stringify(got)})`);
+    check(displayName(r) === title, `${name} is titled "${title}" (got "${displayName(r)}")`);
+  }
+  // GOES and TDRS: one NASA file for craft of different generations is the kind of thing, and says so
+  for (const name of ['GOES 14', 'GOES 19', 'TDRS 5', 'TDRS 12']) {
+    const got = realModelFor(sat(70010, name));
+    check(got && got.generic === true && /^(goes|tdrs)\.glb$/.test(got.file), `${name} wears NASA's file as the kind of thing (${JSON.stringify(got)})`);
+  }
+  // the landers that had a file of their design in the library and wore the generic lander
+  const site = (id) => realModelFor({ id, name: id, klass: 'site', meta: { siteShape: 'lander' } });
+  for (const [id, file, generic] of [['luna-20', 'luna-16.glb', false], ['luna-23', 'luna-16.glb', true], ['luna-24', 'luna-16.glb', true],
+    ['surveyor-5', 'surveyor.glb', false], ['surveyor-6', 'surveyor.glb', false], ['surveyor-7', 'surveyor-3.glb', false]]) {
+    const got = site(id);
+    check(got && got.file === file && !!got.generic === generic && got.made === 'dimensions' && /^(Luna|Surveyor) \d+, /.test(got.displayName || ''), `${id} wears ${file}${generic ? ' as the kind of thing' : ''} and keeps its site's title (${JSON.stringify(got)})`);
+  }
+  // stand-ins that say so: WorldView-1 and -2 (the same bus, shorter), BlueWalker 3 (the BlueBirds' prototype)
+  for (const [norad, name] of [[32060, 'WORLDVIEW-1 (WV-1)'], [35946, 'WORLDVIEW-2 (WV-2)']]) {
+    const got = realModelFor(sat(norad, name));
+    check(got && got.file === 'worldview-3.glb' && got.generic === true && got.catalogue === name && displayName(sat(norad, name)) === name, `${name} wears worldview-3.glb as a stand-in and keeps its name (${JSON.stringify(got)})`);
+  }
+  const bw = realModelFor(sat(53807, 'BLUEWALKER-3'));
+  check(bw && bw.build === 'spacemobile' && bw.generic === true, `BlueWalker 3 wears the BlueBird sheet as a stand-in (${JSON.stringify(bw)})`);
+  check(realModelFor(sat(70011, 'BLUEWALKER-3 DEB', 'debris')) === null, 'its debris keeps the debris shape');
+}
+
 if (problems.length) { console.error('real models FAILED:\n  ' + problems.slice(0, 40).join('\n  ') + (problems.length > 40 ? `\n  ... and ${problems.length - 40} more` : '')); process.exit(1); }
 console.log(`real models ok: ${rows.length} models on disc are binary glTF 2 with meshes (${triangles} triangles in all), each worn by a route (${rows.filter(waiting).map((r) => r.id).join(', ') || 'none'} waiting, and saying so) and each route's file a row; ${own} craft with a route of their own get it from realModelFor, none a generic shape (${generic} routes are a class's shape and say so)`);
