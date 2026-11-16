@@ -25,6 +25,20 @@
 #     attribution requirement, so this one mattered.
 #   * `starfield` carried a NASA SVS / Gaia DR2 credit line. The shipped 2k_stars_milky_way (.webp since 2026-09-21) is
 #     also Solar System Scope, CC BY 4.0.
+#
+# WHICH WAY A FILE POINTS (2026-11-16). A file from other hands is in its author's axes, so the app could not aim it and
+# flew it at a constant angle seeded from the object's id. A `real_models` row may say which of the file's axes is which and
+# the law the craft is flown by: `attitude: {law: nadir, face: "-y", panel: "z"}`. `face` is the axis the law points (the
+# Earth deck; the side turned to the Sun; a dish's boresight), `panel` the second axis (the wings' axis; the way a station
+# flies; a telescope's tube), "x", "+y", "-z" or three numbers; `cells` the side the cells face where that is fixed and square
+# to both; `spin_s` the seconds of one turn where somebody published it. The laws are stated in site/js/scene/attitude.js
+# (nadir, geo, lvlh, sun, earth, spin); scripts/gen_model_frames_js.py mirrors the rows into site/js/data/modelframes.js and
+# refuses a row it cannot read; tests/test_attitude.mjs holds each. THE AXES OF THE 30 ROWS THAT HAVE ONE WERE READ OFF
+# PICTURES of each file drawn along its six axes (and the facing of its solar-cell triangles), not off the app: a row whose
+# axes are wrong shows as a craft with its dish or its Earth deck pointing away, and is fixed here. A row with no `attitude:`
+# keeps the seeded angle and its card says nothing of which way it points. Cited: Pioneer 10's 4.8 turns a minute and its
+# antenna kept at the Earth (en.wikipedia.org/wiki/Pioneer_10, read 2026-11-16). Juno's period is not cited: it turns at
+# scene/attitude.js DEFAULT_SPIN_S, which is ours.
 version: 1
 
 # Procedural geometry. `file: ""` is the point: these are built in code, not loaded, which is why

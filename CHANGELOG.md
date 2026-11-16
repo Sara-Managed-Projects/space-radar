@@ -88,6 +88,17 @@ tagged, and their dates are the day the last change in each landed.
 
 ### Fixed
 
+- **Spacecraft drawn from published models point the way their kind of craft does.** 99 model files from other hands (every NASA
+  file, the ISS and all the far probes among them) flew at a fixed angle picked from the object's id. Thirty of them now follow a
+  simple rule, stated in the code and on the card: the ISS keeps the same side down and the same end forward; Terra, Aqua,
+  Landsat 8, the Mars Reconnaissance Orbiter and the Lunar Reconnaissance Orbiter look down with their wings turned to the Sun;
+  GOES and TDRS look at the Earth with their wings north and south; Hubble, Chandra, Kepler, Spitzer and Roman turn their cells
+  to the Sun and look at one place in the sky; Webb turns its sunshield, Parker its heat shield and SOHO, SDO and STEREO their
+  faces to the Sun; Voyager 1 and 2, Cassini and Galileo point their dish at the Earth; Pioneer 10 and 11 and Juno turn about it.
+  Every geostationary satellite keeps its wings north and south through the seasons, a probe on its way points its dish at the
+  Earth (it pointed at the middle of the view), and a craft in orbit round Mars or the Moon looks down at that world from any
+  view. The card's Sources section says "which way it points is modelled, not measured" and which rule. A model whose axes are
+  not on record yet keeps its fixed angle and its card says nothing of which way it points.
 - **A 3D model is one thing to click, small icons over the Earth are easier to hit, and a flight no longer carries its
   subject along at full size.** A spacecraft drawn as a model answers to a click or a tap anywhere on it (its panels, its
   trusses), also in front of a planet; it answered only at its centre point. Over the Earth an icon is hit anywhere on the
