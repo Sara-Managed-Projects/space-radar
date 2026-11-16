@@ -2312,7 +2312,7 @@ Object.assign(COPY, {
     gas: { hydrogen: 'hydrogen', helium: 'helium', methane: 'methane', nitrogen: 'nitrogen', oxygen: 'oxygen', argon: 'argon', 'carbon dioxide': 'carbon dioxide' },
     source: 'NASA’s Planetary Fact Sheets, read {date}.',
     giantNote: 'A giant has no surface: its gravity and temperature are at the 1 bar level.',
-    moonsNote: 'Moon counts grow as new ones are confirmed.',
+    moonsNote: 'Moon counts are JPL’s list of known moons, read {date}; they grow as new ones are confirmed.',
     spinNote: 'The Sun does not turn as one body: the sheet’s value is at 16° latitude, and the equator turns faster than the poles.',
     drawnTrue: 'Drawn to one scale from each mean radius, not photographs.',
     drawnSame: 'Same width, so not to scale. Rings keep their share of it.',

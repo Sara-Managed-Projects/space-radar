@@ -26,7 +26,7 @@
 
 import { COPY, t, fmt, timeText } from '../copy/en.js';
 import '../copy/en.later.js';
-import { COMPARE_BODIES, COMPARE_READ } from '../data/compare.js';
+import { COMPARE_BODIES, COMPARE_READ, COMPARE_MOONS_READ } from '../data/compare.js';
 import { loadCss } from './latercss.js';
 
 const AU_KM = 149597870.7;
@@ -385,6 +385,10 @@ export function mountCompare(box, record, ctx = null) {
   function sourceLine() {
     return t(C.source, { date: timeText.utcLong(Date.parse(`${COMPARE_READ}T00:00:00Z`)) });
   }
+  // The moon counts are JPL's list of the known moons, read on a day of its own (registry/compare.yaml `moons`).
+  function moonsLine() {
+    return t(C.moonsNote, { date: timeText.utcLong(Date.parse(`${COMPARE_MOONS_READ}T00:00:00Z`)) });
+  }
 
   function paint(focusSel) {
     if (!live) return;
@@ -441,7 +445,7 @@ export function mountCompare(box, record, ctx = null) {
     }
     box.appendChild(table);
     const giants = [a, b].some((x) => x.temp_at === 'bar1');
-    box.appendChild(foot([sourceLine(), giants ? C.giantNote : '', C.moonsNote]));
+    box.appendChild(foot([sourceLine(), giants ? C.giantNote : '', moonsLine()]));
   }
 
   function paintLab() {
@@ -474,7 +478,7 @@ export function mountCompare(box, record, ctx = null) {
     const notes = [spec.log ? C.labLog : C.labLinear];
     if (state.prop === 'temp' || state.prop === 'gravity') notes.push(C.giantNote);
     if (state.prop === 'spin') notes.push(C.spinNote);
-    box.appendChild(foot([sourceLine(), ...notes, state.prop === 'moons' ? C.moonsNote : '']));
+    box.appendChild(foot([sourceLine(), ...notes, state.prop === 'moons' ? moonsLine() : '']));
   }
 
   paint();

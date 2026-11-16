@@ -114,6 +114,8 @@ def trips() -> tuple[list[dict], list[dict]]:
 def options(pages: list[dict]) -> tuple[str, str]:
     by: dict[str, list[dict]] = {}
     for p in pages:
+        if p.get("ended"):  # no longer in orbit (site/js/data/ended.js): an embed of it would show nothing
+            continue
         by.setdefault(p["klassLabel"], []).append(p)
     objs = ""
     for label in sorted(by):

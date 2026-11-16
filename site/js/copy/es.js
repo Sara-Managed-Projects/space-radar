@@ -4351,7 +4351,7 @@ Object.assign(COPY, {
       },
       "source": "Hojas de datos planetarios de la NASA, leídas el {date}.",
       "giantNote": "Un gigante no tiene superficie: su gravedad y su temperatura son las del nivel de 1 bar.",
-      "moonsNote": "El número de lunas crece a medida que se confirman otras nuevas.",
+      "moonsNote": "El número de lunas es el de la lista de lunas conocidas del JPL, consultada el {date}; crece a medida que se confirman otras nuevas.",
       "spinNote": "El Sol no gira como un solo cuerpo: el valor de la hoja es a 16° de latitud, y el ecuador gira más rápido que los polos.",
       "drawnTrue": "Dibujados a una sola escala a partir del radio medio de cada uno; no son fotografías.",
       "drawnSame": "Mismo ancho, así que no están a escala. Los anillos conservan su parte proporcional.",

@@ -855,6 +855,10 @@ jobs:
       # alone, which a browser resolves against the base: the first selection moved /es/ to the English root.
       - name: "a visit under /es/, /fr/ ... keeps its folder through every address write, and Share, a trip and a place link open in the same language"
         run: node tests/test_language_address.mjs
+      # Review of 2026-11-16: Swift re-entered on 4 November 2026 and was still in the list of working satellites, with a page in the
+      # present tense. A craft that ends moves to site/js/data/ended.js; scripts/check_notable_decay.py (freshness.yml) finds the next.
+      - name: "a craft no longer in orbit is in no list the map draws or the harvester cuts, and says what it was, with its dates and sources"
+        run: node tests/test_ended.mjs
       # Share (spec 0033): the link is built from the known keys only, so the visitor's place can
       # never ride along, and the postcard's caption is the card's own lines, string for string.
       # Spec 0035: a stub AudioContext. No context and no fetch before a gesture, one context after

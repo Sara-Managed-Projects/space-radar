@@ -23,13 +23,25 @@
 #              - 1.56 sin4 L) deg/day, gives 360/14.37 = 25.1 days at the equator and 360/10.48 = 34.4 at the poles (read 2026-11-15).
 # `air_bar`    surface pressure in bar; null for a body with no surface; `exosphere: true` where the sheet calls
 #              the air an exosphere (Mercury, the Moon).
-# `moons`, `rings`  counts and yes/no as the sheet gives them on `read`; they change as moons are confirmed.
+# `rings`      yes/no as the sheet gives it on `read`.
+# `moons`      NOT the fact sheet's (review of 2026-11-16): the sheets lag by years (Jupiter's, last updated 2024-10-02, says 95;
+#              Saturn's 274, Uranus's 28). The count is JPL Solar System Dynamics' list of the known planetary satellites,
+#              https://ssd.jpl.nasa.gov/sats/discovery.html, read on `moons_read`: Mars 2, Jupiter 115, Saturn 293, Uranus 29,
+#              Neptune 16, Pluto 5 (460 in all), which NASA Science's pages agree with ("Jupiter has 115 moons that have been
+#              officially recognized by the IAU"; "Saturn has 293 confirmed moons ... as of August 2026"; "Uranus has 29 officially
+#              recognized moons, as of August 2026", all read 2026-11-16). It is the SAME COUNT AS THE MOONS THE MAP HOLDS
+#              (registry/worlds.yaml's moons of the planet plus site/data/moons.json's rows, built from the same JPL tables),
+#              plus the ones named in `moons_not_drawn`: tests/test_compare.mjs fails when the two differ, so neither can be
+#              brought up to date without the other.
+# `moons_not_drawn`  moons JPL counts and the map has no record of, by name, each with its reason in a comment.
 # `ring_bands` [[inner km, outer km, weight]] from the planet's Rings Fact Sheet, from the centre of the
 #              planet; weight 1 a thick bright ring, 0.4 a thin one, 0.1 a faint one (the picture's, not a
 #              measurement: the sheets give optical depths over a wide range). A single-radius ring is [r, r, w].
 #              Only rings of an optical depth of about 1e-4 or more are drawn, and the comments say which are not.
 version: 1
 read: "2026-10-20"
+moons_read: "2026-11-16"
+moons_page: https://ssd.jpl.nasa.gov/sats/discovery.html
 bodies:
   - world: sun
     page: https://nssdc.gsfc.nasa.gov/planetary/factsheet/sunfact.html
@@ -139,7 +151,7 @@ bodies:
     sun_mkm: 778.479
     air: [["hydrogen", 89.8], ["helium", 10.2]]
     air_bar: null
-    moons: 95
+    moons: 115
     rings: true
     # Halo 89 400 to 123 000; Main Ring 123 000 to 128 940. The Amalthea and Thebe gossamer rings (128 940 to
     # 221 900) are not drawn: at an optical depth of 1e-7 they are a thousand times fainter than the Main Ring.
@@ -158,7 +170,10 @@ bodies:
     sun_mkm: 1432.041
     air: [["hydrogen", 96.3], ["helium", 3.25]]
     air_bar: null
-    moons: 274
+    moons: 293
+    # S/2009 S 1, the moonlet Cassini saw as a shadow in the B ring (IAUC 9091): JPL's list counts it and its table of
+    # orbits has no row for it, so site/data/moons.json (scripts/gen_moons.py, from that table) has none either.
+    moons_not_drawn: ["S/2009 S 1"]
     rings: true
     # C 74 658 to 91 975; B 91 975 to 117 507; the Cassini Division 117 507 to 122 340 is the gap; A 122 340 to
     # 136 780; the F ring at 139 826. Not drawn: D (66 900 to 74 510), G (166 000 to 173 000) and E (180 000 to
@@ -179,7 +194,7 @@ bodies:
     sun_mkm: 2867.043
     air: [["hydrogen", 82.5], ["helium", 15.2], ["methane", 2.3]]
     air_bar: null
-    moons: 28
+    moons: 29
     rings: true
     # The nine main rings 6, 5, 4, Alpha, Beta, Eta, Gamma, Delta, Lambda and Epsilon, each at its radius.
     ring_bands: [[41837, 41837, 0.4], [42234, 42234, 0.4], [42571, 42571, 0.4], [44718, 44718, 0.4], [45661, 45661, 0.4], [47176, 47176, 0.4], [47627, 47627, 0.4], [48300, 48300, 0.4], [50024, 50024, 0.4], [51149, 51149, 0.7]]
