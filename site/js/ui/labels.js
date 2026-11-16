@@ -46,6 +46,7 @@
 import * as THREE from '../../vendor/three.module.min.js';
 import { propagate } from '../propagate/index.js';
 import { stage, isLadderStage } from '../scene/stage.js';
+import { CROWD_LAYERS, CROWD_NAMED_FROM, crowdShare } from '../scene/onemark.js';
 import { realModelFor } from '../scene/realmodels.js';
 import { WORLDS, systemOf } from '../scene/worlds.js';
 import { rankAll } from '../scene/pickrank.js';
@@ -728,6 +729,18 @@ export function createLabels(ctx, host) {
     return typeof c === 'string' && HEX.test(c) ? c : '';
   }
 
+  /**
+   * Is this record's mark a speck in the crowd at the Sun (scene/onemark.js crowdShare, internal #441)? On the Sun's
+   * stage a comet, an asteroid or a spacecraft that stands close to the Sun on the screen is drawn small and faint so
+   * that the planets can be seen, and a faint speck is not named: "67P/Churyumov-Gerasimenko" ran through the inner
+   * planets, and "Earth" was one name among the pile's. The selection is named wherever it is.
+   */
+  function inCrowd(record, tMs, camera, focalPx) {
+    const p = propagate(record, tMs);
+    const pos = p ? stage.toSceneInto(p, p.frame, _c, tMs) : null;
+    return !!pos && crowdShare(pos.length(), pos.distanceTo(camera.position), focalPx) < CROWD_NAMED_FROM;
+  }
+
   function candidatesNow(tMs) {
     const camera = ctx.camera;
     if (!camera) return [];
@@ -786,10 +799,12 @@ export function createLabels(ctx, host) {
       if (!drawable(layer)) continue;
       if (!layerNamedFrom(layer, stage.worldId)) continue;
       const records = ctx.recordsFor(layer.id) || [];
+      const crowdFocal = stage.worldId === 'sun' && CROWD_LAYERS.has(layer.id) && camera.isPerspectiveCamera ? (h / 2) / Math.tan((camera.fov * Math.PI) / 360) : 0;
       // a layer that is small enough to name entirely, or the hand-kept rows of a big one
       for (const r of records) {
         if (seen.has(r.id) || !isNotableHere(r, ladder)) continue; // on the ladder: not inside the Sun's pixel
         if (isGround(r)) continue; // the ground has no label
+        if (crowdFocal && inCrowd(r, tMs, camera, crowdFocal)) continue; // a speck in the crowd at the Sun has no name
         if (!mayNameHere(r, layer)) continue; // a dead stage on a layer about light, not derelicts
         // THE PARENT RULE (internal spec 0075 task 5): the Tarantula is named once its LMC is large on
         // screen, or when it is chosen; until then the parent speaks for it (scene/deep/deepsky.js).
@@ -931,7 +946,8 @@ export function createLabels(ctx, host) {
     const out = [];
     if (typeof host.getBoundingClientRect !== 'function' || typeof document.querySelectorAll !== 'function') return out;
     const origin = host.getBoundingClientRect();
-    for (const node of document.querySelectorAll(PANEL_SELECTOR)) {
+    // And the page's own floating link (css/coffee.css): "Pluto" ran under the Buy Me a Coffee cup and read "Plu" (internal #450).
+    for (const node of document.querySelectorAll(`${PANEL_SELECTOR}, body > .coffee`)) {
       if (typeof node.getBoundingClientRect !== 'function') continue;
       if (node.hidden) continue;
       const r = node.getBoundingClientRect();

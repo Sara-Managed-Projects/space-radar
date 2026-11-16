@@ -287,6 +287,8 @@ for (const r of all) {
   // names are the same tokens (ui.css :root): --tx, --dim, --atm, --ink (on a blue fill), --ink-ember (on the ember).
   const TEXT_TOKENS = new Set(['--sr-text', '--sr-text-soft', '--sr-text-dim', '--sr-ember', '--sr-ember-light', '--sr-ink', '--sr-ok', '--sr-stale', '--text', '--text-dim', '--sr-atmosphere', '--tx', '--dim', '--atm', '--ink', '--ink-ember']);
   for (const r of all) {
+    // Under a forced palette (Windows high contrast) the text colours are the system's own keywords, not ours (internal #447).
+    if (/forced-colors:\s*active/.test(r.at)) continue;
     for (const [prop, value] of decls(r.body)) {
       if (prop !== 'color') continue;
       const v = /^var\((--[\w-]+)\)$/.exec(value);
@@ -395,7 +397,13 @@ check(token('--sr-bracket') === '8px' && token('--sr-bracket-w') === '1.5px', 't
 // be --sr-fs-unit (11): the clock's UTC/Local tag, the trajectory chart's axis captions, the tag's
 // KM (spec 0047) and the arc's N E S W (spec 0051). Anything else under 13 is a sentence somebody
 // has to squint at.
-const UNIT_SELECTORS = new Set(['.sr-clock__tag', '.sr-traj__label', '.sr-tag__unit', '.sr-arc__cardinal']);
+const UNIT_SELECTORS = new Set(['.sr-clock__tag', '.sr-traj__label', '.sr-tag__unit', '.sr-arc__cardinal', '.sr-ground__fold::after']);
+// The stylesheets fetched with a panel, held to the type ladder too (internal #448: css/find.css had 10, 11 and 12 px
+// lines and css/ground.css four of 11 px, because this test read only the stylesheets above). Type only: their
+// spacing and corners are older than the tokens and are not held here yet.
+const TYPE_ONLY_FILES = ['site/css/find.css', 'site/css/ground.css'];
+// css/find.css's two chart lines are being rewritten on the type ladder by the chart's own change (internal #339).
+const TYPE_NOT_YET = new Set(['.sr-find__bodyname', '.sr-find__bodysub']);
 {
   const sizes = [...tokens].filter(([n]) => n.startsWith('--sr-fs-') || n.startsWith('--ui-fs'));
   check(sizes.length >= 8, `the type ladder is ${sizes.length} --sr-fs-* tokens in :root`);
@@ -404,8 +412,8 @@ const UNIT_SELECTORS = new Set(['.sr-clock__tag', '.sr-traj__label', '.sr-tag__u
     check(!!px && d.length === 1, `${n} is one px value (${d.map((x) => x.value).join(', ')})`);
     if (px) check(n === '--sr-fs-unit' ? parseFloat(px[1]) >= 11 : parseFloat(px[1]) >= 13, `${n} is ${d[0].value}; reading text is 13 px or more, a unit 11`);
   }
-  for (const r of all) {
-    if (r.at.startsWith('@font-face')) continue;
+  for (const r of all.concat(TYPE_ONLY_FILES.flatMap(rules))) {
+    if (r.at.startsWith('@font-face') || TYPE_NOT_YET.has(r.selector.trim())) continue;
     for (const [prop, value] of decls(r.body)) {
       if (prop !== 'font-size' && prop !== 'font') continue;
       if (['inherit', '0', '100%', '1em'].includes(value)) continue;

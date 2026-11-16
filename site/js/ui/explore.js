@@ -78,6 +78,17 @@ const SHOW_ME_MS = 900;
 const AU_WORDS = t(COPY.card.values.au, { n: '' }).trim();
 
 /**
+ * Which of a world's tag readouts (ui/cardfacts.js tagLines) is its distance from the Earth, for the list "The worlds,
+ * distance from Earth now". Pure. A world round the Sun has one by that name; the Moon goes round the Earth, so its
+ * card measures it as everything round the Earth is measured, by its height above the ground, and that is its
+ * distance from us (internal #444: the list took only the first kind, and the Moon's row was the one with no number).
+ */
+export function worldDistance(readouts) {
+  const list = Array.isArray(readouts) ? readouts : [];
+  return list.find((x) => x.key === 'earth') || list.find((x) => x.key === 'altitude') || null;
+}
+
+/**
  * Open Notify's headcount per craft (data/parsers.js parseAstros), read once and kept here --
  * the snapshot is minutes old at most, and `load()` already has its own cache and cadence gate,
  * so nothing here re-fetches sooner than that. Module-level, not per-instance: the data has no
@@ -959,7 +970,7 @@ export function createExplore(ctx, host) {
       let value = '';
       try {
         const lines = tagLines(rec, ctx);
-        const d = lines && lines.readouts.find((x) => x.key === 'earth');
+        const d = lines && worldDistance(lines.readouts);
         // The card's own number, in the list's short unit: "1.52 AU" where the card says it in words.
         value = d ? (d.unit === AU_WORDS ? t(COPY.explore.au, { n: d.num }) : `${d.num} ${d.unit}`) : '';
       } catch { value = ''; }

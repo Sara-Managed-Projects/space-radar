@@ -578,15 +578,13 @@ html.sr-compact .sr-status {
   color: var(--sr-text-dim);
 }
 
+/* The whole caption, on as many lines as it takes (internal #443). It was cut at two lines, and "days to go round the
+   Sun, 12 Earth years" is three in a 98 px column: the Earth years, the point of the long form (internal #301), were
+   never shown on Jupiter's, Saturn's, Uranus's, Neptune's or Pluto's card. A long word breaks; nothing is cut. */
 .sr-hero__unit {
-  overflow: hidden;
   font: 400 var(--sr-fs-sm)/16px var(--sr-font);
   color: var(--sr-text-dim);
-  /* Two lines: "days to go round the Sun, 29 Earth years" (internal #301); the title has the rest. */
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
+  overflow-wrap: anywhere;
 }
 
 /* 3. Four actions, one of them ember (principle 3): a 20 px icon over a 13 px label. */
@@ -596,6 +594,20 @@ html.sr-compact .sr-status {
   gap: var(--sp-2);
   margin: 0;
   padding: var(--sp-4) 0;
+}
+
+/* A tile's words on two lines where a language's are wider than a quarter of the card (internal #454): "Carte postale",
+   "Compartilhar" and "Поделиться" are 76 to 82 px in the 65 px a tile has, and each ended in an ellipsis. Words wrap, a
+   long one is hyphenated by the browser's dictionary for the page's language, or broken where it must; never cut.
+   Two 15 px lines under the 20 px icon are the tile's 56 px. */
+.sr-card__actions .ui-btn__label {
+  max-height: 30px;
+  line-height: 15px;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  -webkit-hyphens: auto;
+  hyphens: auto;
 }
 
 /* Narrow (docs/ui-guide.md §5, under 360 px): icon and one word, where the action has a short one. */
@@ -3130,9 +3142,18 @@ html.sr-trip-mode .sr-scenenote { display: none; }
 }
 
 /* Digits in fixed columns (req 5), units small caps in the dim text. */
+/* The readings wrap between one and the next when the line is wider than the window (internal #446: each distance
+   now says what it is from, and "5.32 AU from Sun · 5.26 AU from Earth · 45 970 km/h" is wider than a phone). */
 .sr-tag__readouts {
+  max-width: calc(100vw - var(--sp-6));
   font: 400 var(--sr-fs-sm)/1.4 var(--sr-font-mono);
   font-variant-numeric: tabular-nums;
+  white-space: normal;
+}
+
+.sr-tag__readout {
+  display: inline-block;
+  white-space: nowrap;
 }
 
 .sr-tag__readout + .sr-tag__readout::before,
@@ -4914,6 +4935,15 @@ html:is(.sr-clean, .sr-hud, .sr-filming, .sr-trip-mode) .coffee :is(.coffee__cup
   font-variant-numeric: tabular-nums;
   color: var(--sr-text-dim);
   border-left: 1px solid var(--sr-line-strong);
+}
+
+/* The ember line would be drawn through it (ui/scrubber.js underCursor): written before its tick, ending at it. The
+   rule moves to the label's right edge, so the tick stays where it is (the 1 px is the rule's own width). */
+.sr-tape__label.is-before {
+  margin-left: 1px;
+  padding: var(--sp-1) var(--sp-1) 0 0;
+  border-left: 0;
+  border-right: 1px solid var(--sr-line-strong);
 }
 
 .sr-tape__label.is-day { color: var(--sr-text); }
@@ -6906,6 +6936,54 @@ button.sr-debris__oldname:hover { color: var(--sr-ember-light); }
   .sr-search__option.is-active {
     outline: 2px solid Highlight;
     outline-offset: 2px;
+  }
+
+  /* What is selected (internal #447). The control set says it with a wash and an inset line (css/controls.css), and a
+     forced palette drops both: the chosen tab, segment, toggle, chip and row looked like the rest. Here they take the
+     system's own selection colours, and the focus ring stays the outline above. `:root` so these win over
+     css/controls.css, which is linked after this file. */
+  :root .ui-seg__btn:is([aria-pressed='true'], [aria-checked='true'], [aria-selected='true']),
+  :root .ui-btn:is([aria-pressed='true'], [aria-expanded='true']),
+  :root .ui-chip:is([aria-pressed='true'], [aria-checked='true']),
+  :root .ui-row:is([aria-current='true'], [aria-current='page'], [aria-selected='true']) {
+    forced-color-adjust: none;
+    color: HighlightText;
+    background: Highlight;
+  }
+  /* A segmented track and a pill were drawn by an inset shadow, which a forced palette drops too: a real line. */
+  :root .ui-seg,
+  :root .ui-chip {
+    border: 1px solid ButtonBorder;
+  }
+  /* A radio's dot and a mixed checkbox's bar were backgrounds, a slider's track and thumb too: borders, which stay. */
+  :root .ui-radio::before {
+    width: 0;
+    height: 0;
+    background: none;
+    border: 4px solid Highlight;
+  }
+  :root .ui-check:indeterminate::before {
+    height: 0;
+    background: none;
+    border-top: 2px solid Highlight;
+  }
+  :root .ui-range::-webkit-slider-runnable-track {
+    box-sizing: border-box;
+    border: 1px solid ButtonText;
+  }
+  :root .ui-range::-moz-range-track {
+    box-sizing: border-box;
+    border: 1px solid ButtonText;
+  }
+  :root .ui-range::-webkit-slider-thumb {
+    forced-color-adjust: none;
+    background: Highlight;
+    border-color: Canvas;
+  }
+  :root .ui-range::-moz-range-thumb {
+    forced-color-adjust: none;
+    background: Highlight;
+    border-color: Canvas;
   }
 }
 

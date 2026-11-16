@@ -18,7 +18,7 @@ import * as propagateMod from '../propagate/index.js';
 import * as stageMod from './stage.js';
 import { earthShadowLit, sunAndEarthScene, orbitsEarth, standsOn, groundLit, worldCentreScene } from './shadow.js';
 import { GLSL_AIR } from '../sky/skymath.js';
-import { dotOpacity } from './onemark.js';
+import { dotOpacity, CROWD_LAYERS, CROWD_FLOOR, crowdShare, crowdFactor } from './onemark.js';
 import {
   getGlyphAtlas,
   glyphCell,
@@ -553,6 +553,10 @@ export function createGlyphLayer(scene, layer = {}) {
     const fadeRule = FAR_FADE_LY[layer.id];
     const fadeCam = fadeRule && lastCamera && stage && stageMod.isLadderStage(stage.worldId) ? lastCamera.position : null;
     const fadeUnitLy = fadeCam ? stage.unitKm / LY_KM_FADE : 0;
+    // On the Sun's stage a small body's or a craft's mark gives way to the planets while it stands in the crowd at
+    // the Sun (scene/onemark.js crowdShare, internal #441). The Sun is that stage's origin.
+    const crowdCam = CROWD_LAYERS.has(layer.id) && lastCamera && lastCamera.isPerspectiveCamera && stage && stage.worldId === 'sun' ? lastCamera.position : null;
+    const crowdFocal = crowdCam ? 0.5 * lastCamera.projectionMatrix.elements[5] * Math.max(1, viewport.h) : 0;
     for (let i = 0; i < records.length; i++) {
       const rec = records[i];
       // 0077 W3-e: begin (internal i#886: the confidence filter). A record the filter leaves out is not drawn and not tappable, like
@@ -631,7 +635,8 @@ export function createGlyphLayer(scene, layer = {}) {
       }
       lit = Math.fround(lit);
       if (aLit[k] !== lit) { aLit[k] = lit; dLit = true; }
-      const size = selected ? Math.fround(recSize[i] * 1.35) : recSize[i];
+      const crowd = crowdCam && !selected ? crowdShare(Math.hypot(v.x, v.y, v.z), Math.hypot(v.x - crowdCam.x, v.y - crowdCam.y, v.z - crowdCam.z), crowdFocal) : 1;
+      const size = selected ? Math.fround(recSize[i] * 1.35) : crowd < 1 ? Math.fround(recSize[i] * crowdFactor(crowd, CROWD_FLOOR.size)) : recSize[i];
       if (aSize[k] !== size) { aSize[k] = size; dSize = true; }
       // An object is drawn once. While its model is on screen the dot yields to it -- by the
       // model's own fade, so neither blinks -- and it stays in `live`, so it is still there to
@@ -643,6 +648,7 @@ export function createGlyphLayer(scene, layer = {}) {
         const u = Math.min(1, Math.max(0, (dLy - fadeRule[0]) / (fadeRule[1] - fadeRule[0])));
         own *= 1 - (1 - fadeRule[2]) * u * u * (3 - 2 * u);
       }
+      if (crowd < 1) own *= crowdFactor(crowd, CROWD_FLOOR.opacity);
       const opacity = Math.fround(dotOpacity(own, yieldTo));
       if (aOpacity[k] !== opacity) { aOpacity[k] = opacity; dOpacity = true; }
       // The sample halo does NOT yield: see the note in the fragment shader. It is drawn at the

@@ -27,7 +27,8 @@
 # `ring_bands` [[inner km, outer km, weight]] from the planet's Rings Fact Sheet, from the centre of the
 #              planet; weight 1 a thick bright ring, 0.4 a thin one, 0.1 a faint one (the picture's, not a
 #              measurement: the sheets give optical depths over a wide range). A single-radius ring is [r, r, w].
-#              Only rings of an optical depth of about 1e-4 or more are drawn, and the comments say which are not.
+#              Only rings of an optical depth of about 1e-4 or more are drawn as bands, and the comments say which are
+#              not. A fainter ring that is still the planet's main one is at most one hairline at weight 0.1 (Jupiter's).
 version: 1
 read: "2026-10-20"
 bodies:
@@ -143,7 +144,11 @@ bodies:
     rings: true
     # Halo 89 400 to 123 000; Main Ring 123 000 to 128 940. The Amalthea and Thebe gossamer rings (128 940 to
     # 221 900) are not drawn: at an optical depth of 1e-7 they are a thousand times fainter than the Main Ring.
-    ring_bands: [[89400, 123000, 0.1], [123000, 128940, 0.25]]
+    # Internal #452: the halo and the Main Ring were two filled bands out to 1.84 radii, and beside Saturn's the
+    # picture read as a second ringed planet. Both stop a few millionths of the light (registry/worlds.yaml gives
+    # the Main Ring an optical depth of 5e-6, a hundred-thousandth of Saturn's B ring), under this file's own
+    # floor for a band. So: one faint hairline at the Main Ring's outer edge, and the halo is not drawn.
+    ring_bands: [[128940, 128940, 0.1]]
   - world: saturn
     page: https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturnfact.html
     rings_page: https://nssdc.gsfc.nasa.gov/planetary/factsheet/satringfact.html

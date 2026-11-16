@@ -182,14 +182,9 @@ export const COMPARE_BODIES = [
     "rings_page": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/jupringfact.html",
     "ring_bands": [
       [
-        89400,
-        123000,
-        0.1
-      ],
-      [
-        123000,
         128940,
-        0.25
+        128940,
+        0.1
       ]
     ]
   },
