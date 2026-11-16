@@ -2647,6 +2647,7 @@ export const COPY = {
     "showMe": "Mostrar",
     "showMeTitle": "Abrir o céu a partir do seu lugar, de frente para onde ele nasce",
     "guessCaveat": "Local estimado: informe sua cidade para ver os horários reais.",
+    "setPlace": "Definir seu local",
     "unitRises": "nasce",
     "unitHigh": "no ponto mais alto",
     "unitLong": "min à vista",
@@ -3293,6 +3294,11 @@ export const COPY = {
   "links": {
     "row": "{words} · {publisher}",
     "title": "Abre a página do próprio {publisher} em uma nova aba"
+  },
+  "showMemory": {
+    "note": "O que você escolher aqui fica guardado neste navegador.",
+    "reset": "Redefinir escolhas",
+    "resetTitle": "Volta as camadas, as cores e a camada de dados ao início e esquece as escolhas"
   },
   "placeKeep": {
     "group": "Onde você está",

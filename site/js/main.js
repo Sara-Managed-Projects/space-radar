@@ -21,7 +21,7 @@ import { createCameraRig, worldFramingDistance, steadyDistance } from './scene/c
 import { createViewShift, MAX_SHIFT_FRACTION, PILL_GAP_PX } from './scene/viewshift.js';
 import { parsePlaceValue, keptPlace, browserStorage } from './sky/placelink.js';
 import { dropFrom, readMoment, writeMoment, bootLink, laterLink, linkChange, read as readUrlKeys, write as writeUrlState, clear as clearUrlState, stopIndex, parseCam } from './ui/urlstate.js'; // 0077 W3-e
-import { guessObserver, roundPlace } from './sky/guessplace.js';
+import { guessObserver, roundPlace, isRoughGuess } from './sky/guessplace.js';
 import { COPY, CITIES, t as fill } from './copy/en.js';
 import { LAYERS, loadLayer, addSystemRows, addPlanetAliases } from './data/layers.js';
 import * as sources from './data/sources.js';
@@ -1382,6 +1382,8 @@ export async function boot({ setStatus } = {}) {
     return landed;
   };
   window.addEventListener('sr:layers-ready', () => {
+    // What to show as the visitor left it (ui/showmemory.js): fetched only when this browser kept a choice, never by a frame or a reel.
+    try { if (!embed && !ambient && !film && localStorage.getItem('sr:show')) import('./ui/showmemory.js').then((m) => m.installShowMemory(ctx)).catch((e) => console.warn('the kept choices did not load', e)); } catch { /* no storage: the defaults */ }
     const tripRunning = !!(ctx.trip && ctx.trip.state && ctx.trip.state.phase !== 'idle');
     const apply = () => (ambient ? startReel() : startDrift(goLanding(tripRunning) || applyUrlState(ctx, laterLink(link, tripRunning))));
     // A trip's stops may be stars or exoplanets (OFF THE FIRST VISIT): those land first. An `at`
@@ -2354,6 +2356,11 @@ export async function boot({ setStatus } = {}) {
     if (moment === 'now' && !observer) {
       const guess = guessObserver(CITIES);
       if (guess) ctx.setObserver(guess);
+      // Not the zone's own city: the time zone table says where the zone is (sky/zoneplace.js), and the guess is replaced.
+      if (isRoughGuess(guess)) {
+        import('./sky/zoneplace.js').then((m) => m.refineGuess()).then((better) => { if (better && observer && observer.source === 'guess') ctx.setObserver(better); })
+          .catch((e) => console.warn('the time zones did not load', e));
+      }
     }
     if (moment === 'now' && observer) enterGround();
     else if (ctx.skyView.active) ctx.skyView.exit();

@@ -266,7 +266,14 @@ async function placePicker(onChange) {
   const { guessObserver } = await import('../sky/guessplace.js');
   const { keptPlace, browserStorage } = await import('../sky/placelink.js');
   const select = document.querySelector('[data-slot="place-select"]');
-  let observer = firstObserver({ kept: keptPlace(browserStorage()), guess: guessObserver(CITIES) });
+  const kept = keptPlace(browserStorage());
+  let guess = guessObserver(CITIES);
+  // No place kept and the guess is not the time zone's own city: the time zone table says where the zone is
+  // (sky/zoneplace.js; Perth for Australia/Perth, where the rough guess said Manila).
+  if (!kept && guess && guess.how !== 'timezone') {
+    try { guess = (await (await import('../sky/zoneplace.js')).refineGuess()) || guess; } catch { /* the rough guess stands */ }
+  }
+  let observer = firstObserver({ kept, guess });
   if (select) {
     const opt = (v, t) => { const o = document.createElement('option'); o.value = v; o.textContent = t; return o; };
     select.append(opt('', 'Choose a city'));

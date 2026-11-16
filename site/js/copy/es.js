@@ -2505,6 +2505,7 @@ export const COPY = {
     showMe: "Muéstramelo",
     showMeTitle: "Abrir el cielo desde tu lugar, mirando hacia donde sale",
     guessCaveat: "Lugar supuesto: indica tu ciudad para ver horas reales.",
+    setPlace: "Indica tu lugar",
     unitRises: "sale",
     unitHigh: "en su punto más alto",
     unitLong: "min a la vista",
@@ -3138,6 +3139,11 @@ export const COPY = {
   links: {
     row: "{words} · {publisher}",
     title: "Abre la propia página de {publisher} en una pestaña nueva"
+  },
+  showMemory: {
+    note: "Lo que elijas aquí se guarda en este navegador.",
+    reset: "Restablecer opciones",
+    resetTitle: "Devuelve las capas, los colores y la capa de datos a como estaban al principio, y olvida lo elegido"
   },
   placeKeep: {
     group: "Dónde estás",

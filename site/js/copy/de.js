@@ -2658,6 +2658,7 @@ export const COPY = {
     "showMe": "Zeigen",
     "showMeTitle": "Den Himmel von deinem Ort aus öffnen, mit Blick dorthin, wo es aufgeht",
     "guessCaveat": "Geschätzter Ort: Stell deine Stadt ein, dann stimmen die Zeiten.",
+    "setPlace": "Ort festlegen",
     "unitRises": "geht auf",
     "unitHigh": "am höchsten",
     "unitLong": "Min. sichtbar",
@@ -3304,6 +3305,11 @@ export const COPY = {
   "links": {
     "row": "{words} · {publisher}",
     "title": "Öffnet die eigene Seite von {publisher} in einem neuen Tab"
+  },
+  "showMemory": {
+    "note": "Was du hier wählst, bleibt in diesem Browser gespeichert.",
+    "reset": "Auswahl zurücksetzen",
+    "resetTitle": "Setzt Ebenen, Farben und die Datenebene auf den Anfang zurück und vergisst die Auswahl"
   },
   "placeKeep": {
     "group": "Wo du bist",

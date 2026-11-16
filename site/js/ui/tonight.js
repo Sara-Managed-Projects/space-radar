@@ -27,7 +27,7 @@
 
 import { COPY, CITIES, t, fmt, timeText, compassWords } from '../copy/en.js';
 import '../copy/en.later.js';
-import { guessObserver } from '../sky/guessplace.js';
+import { guessObserver, isRoughGuess } from '../sky/guessplace.js';
 import { createPlace } from './place.js';
 import { nextVisible, passState, darkness, tonightWords, SEARCH_HOURS, LONG_SEARCH_HOURS } from '../sky/tonight.js';
 import { arcSvg } from './skyarc.js';
@@ -107,9 +107,24 @@ export function renderTonight(host, ctx) {
     const open = placeOpen === null ? (!o || o.source === 'guess') : placeOpen;
     placeCtl.root.hidden = !open;
     change.setAttribute('aria-expanded', open ? 'true' : 'false');
+    paintChange();
   };
+  // While the place is a guess the way to set it is said outright, on a button that is easy to see (review of
+  // 16 Nov 2026: a guess a continent off, and "Change place" in the quiet style beside it). Painted with the view,
+  // so it follows the place: "Change place", quiet again, once a real one is set.
+  function paintChange() {
+    const o = ctx.observer;
+    const guessed = !o || o.source === 'guess';
+    const words = guessed ? T.setPlace : COPY.placeKeep.change;
+    if (change.textContent === words) return;
+    change.textContent = words;
+    change.classList.toggle('ui-btn--quiet', !guessed);
+    change.classList.toggle('ui-btn--secondary', guessed);
+  }
   change.addEventListener('click', () => {
-    placeOpen = placeCtl.root.hidden;
+    // A guessed place (or none): the button is "Set your place", the box is already open, and a press goes to its field.
+    const o = ctx.observer;
+    placeOpen = !o || o.source === 'guess' ? true : placeCtl.root.hidden;
     paintPlaceBox();
     if (placeOpen) placeCtl.focus();
   });
@@ -341,6 +356,7 @@ export function renderTonight(host, ctx) {
     const later = st.ready && !pass ? nextVisible(st.passes, o, now) : null;
     const w = tonightWords({ observer: o, nowMs: now, ready: st.ready || !o, pass, later, dark: st.dark && st.dark.key ? st.dark : null, couldNotLook: st.couldNotLook, scrubbed });
     setText(place, w.place);
+    paintChange();
     body.hidden = !pass;
     const parts = w.parts || {};
     setText(name, parts.name);
@@ -925,6 +941,12 @@ export function renderTonight(host, ctx) {
   if (!ctx.observer && typeof ctx.setObserver === 'function') {
     const g = guessObserver(CITIES);
     if (g) ctx.setObserver(g);
+    // A zone whose own city is not in the bundled list: the time zone table says where the zone is (sky/zoneplace.js;
+    // Perth for Australia/Perth, where the rough guess said Manila), and the guess is replaced while it is still one.
+    if (isRoughGuess(g)) {
+      import('../sky/zoneplace.js').then((m) => m.refineGuess()).then((better) => { if (better && ctx.observer && ctx.observer.source === 'guess') ctx.setObserver(better); })
+        .catch((e) => console.warn('the time zones did not load', e));
+    }
   }
   if (window.__srLayersReady) idle(() => ask(SEARCH_HOURS));
   renderBest();

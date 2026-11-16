@@ -2580,6 +2580,7 @@ export const COPY = {
     "showMe": "带我去看",
     "showMeTitle": "从你的位置打开天空，朝向它升起的方向",
     "guessCaveat": "地点是猜的：设置你的城市，才能得到准确时间。",
+    "setPlace": "设置你的位置",
     "unitRises": "升起",
     "unitHigh": "最高",
     "unitLong": "分钟可见",
@@ -3244,6 +3245,11 @@ export const COPY = {
   "links": {
     "row": "{words} · {publisher}",
     "title": "在新标签页中打开 {publisher} 自己的页面"
+  },
+  "showMemory": {
+    "note": "你在这里的选择会保存在这个浏览器里。",
+    "reset": "重置选择",
+    "resetTitle": "把图层、颜色和数据图层恢复到最初的样子，并忘掉这些选择"
   },
   "placeKeep": {
     "group": "你的位置",

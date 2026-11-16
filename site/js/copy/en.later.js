@@ -1009,6 +1009,8 @@ Object.assign(COPY, {
     showMe: 'Show me',
     showMeTitle: 'Open the sky from your place, facing where it rises',
     guessCaveat: 'A guessed place: set your town for real times.',
+    // The place button while the place is a guess (ui/tonight.js): it opens the city box and goes to its field.
+    setPlace: 'Set your place',
     // THE PASS AS DRAWN (spec 0061 task 5, ui/tonight.js): the name, three numbers with their
     // units under them, and the way it goes. passLine above stays the whole account: the block's
     // accessible name and a list row's tooltip.
@@ -1666,6 +1668,12 @@ Object.assign(COPY, {
   links: {
     row: '{words} · {publisher}',
     title: 'Opens {publisher}’s own page in a new tab',
+  },
+  // What to show remembers a visitor's choices (ui/showmemory.js); this row is there only while something is kept.
+  showMemory: {
+    note: 'What you choose here is kept in this browser.',
+    reset: 'Reset choices',
+    resetTitle: 'Put the layers, the colours and the data layer back as they started, and forget the choices',
   },
   placeKeep: {
     group: 'Where you are',

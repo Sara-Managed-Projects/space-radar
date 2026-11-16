@@ -2661,6 +2661,7 @@ export const COPY = {
     "showMe": "Montre-moi",
     "showMeTitle": "Ouvrir le ciel depuis chez toi, face à l’endroit où il se lève",
     "guessCaveat": "Lieu deviné : indique ta ville pour des heures exactes.",
+    "setPlace": "Indique ton lieu",
     "unitRises": "se lève",
     "unitHigh": "au plus haut",
     "unitLong": "min visible",
@@ -3307,6 +3308,11 @@ export const COPY = {
   "links": {
     "row": "{words} · {publisher}",
     "title": "Ouvre, dans un nouvel onglet, la page de l’éditeur : {publisher}"
+  },
+  "showMemory": {
+    "note": "Ce que tu choisis ici est gardé dans ce navigateur.",
+    "reset": "Réinitialiser les choix",
+    "resetTitle": "Remet les calques, les couleurs et la couche de données comme au départ, et oublie les choix"
   },
   "placeKeep": {
     "group": "Où tu es",
