@@ -10,9 +10,13 @@
 # (scripts/seo_facts.mjs, Astronomy Engine in site/vendor/, the library the map itself uses), and
 # tests/test_sky_events.mjs recomputes each row and fails if a typed date has moved off the computed
 # one by more than a day. `checked_on` is the day that was last done by a person reading the output.
-# The moon is asked at `moon_at`, an instant we choose to stand for the night (UT midnight of the
-# peak's date, or the hour the shower is best placed): the page says which, and the percentage is
-# the Moon's lit fraction then, for anywhere on Earth.
+# The moon is asked at `moon_at`, the whole hour nearest the computed peak (the IMO's own hour where
+# its calendar gives one): the page says which, and the percentage is the Moon's lit fraction then,
+# for anywhere on Earth. `moon_at` and `link.t` of a shower are the same instant, within eight hours
+# of the computed peak, and a summary that names a night ("17 to 18 November") names the one the
+# peak falls in, counted from noon UT to noon UT: tests/test_sky_events.mjs holds all three. (Until
+# 2026-11-16 the Leonids 2026 row said "night of 16 to 17" and stated the Moon 24 hours before a
+# peak at 17 November 23:48 UT, which sent readers out a night early.)
 #
 # Row fields (kind says which apply):
 #   id         page address /events/<id>.html; lower-case letters, digits, dashes
@@ -38,7 +42,7 @@
 #   trip       optional: a trip id of registry/tours.yaml
 #   sources    [{words, url, read}] where `read` is the day the page was opened
 version: 1
-checked_on: 2026-11-15
+checked_on: 2026-11-16
 checked_with: "Astronomy Engine (site/vendor/astronomy.js), run by scripts/seo_facts.mjs"
 
 events:
@@ -46,13 +50,14 @@ events:
     kind: meteor-shower
     name: "Leonids 2026"
     short: "Leonids 2026: when and where to look"
-    summary: "The Leonids peak on the night of 16 to 17 November 2026 under a half Moon: what to expect, where the radiant is, and a link into the sky at that hour."
+    summary: "The Leonids peak late on 17 November 2026, at about 23:45 UT, the night of 17 to 18 November, under a half Moon: where to look, and a link into that sky."
     shower: leonids
     year: 2026
-    moon_at: 2026-11-17T00:00:00Z
-    link: {t: "2026-11-17T00:00:00Z", at: moon}
+    moon_at: 2026-11-18T00:00:00Z
+    link: {t: "2026-11-18T00:00:00Z", at: moon}
     trip: tonight-from-your-street
     sources:
+      - {words: "IMO Meteor Shower Calendar 2026, Leonids: maximum November 17, 23h45m UT (nodal crossing at solar longitude 235.27), the Moon near its first quarter", url: "https://www.imo.net/files/meteor-shower/cal2026.pdf", read: 2026-11-16}
       - {words: "IMO Meteor Shower Calendar 2027 (rates, radiant, activity)", url: "https://www.imo.net/files/meteor-shower/cal2027.pdf", read: 2026-10-07}
 
   - id: bepicolombo-mercury-2026
@@ -71,13 +76,14 @@ events:
     kind: meteor-shower
     name: "Geminids 2026"
     short: "Geminids 2026: when and where to look"
-    summary: "The Geminids, the year's richest shower, peak on 13 to 14 December 2026 with a thin Moon: when to look, where the radiant is, and a link into that sky."
+    summary: "The Geminids, the year's richest shower, peak on 14 December 2026 at about 14 hours UT with a thin Moon: when to look, the radiant, and a link into that sky."
     shower: geminids
     year: 2026
-    moon_at: 2026-12-14T02:00:00Z
-    link: {t: "2026-12-14T02:00:00Z", at: moon}
+    moon_at: 2026-12-14T14:00:00Z
+    link: {t: "2026-12-14T14:00:00Z", at: moon}
     trip: comets-and-meteors
     sources:
+      - {words: "IMO Meteor Shower Calendar 2026, Geminids: a broad maximum on December 14 centred at 14h UT (solar longitude 262.2), only a waxing crescent Moon", url: "https://www.imo.net/files/meteor-shower/cal2026.pdf", read: 2026-11-16}
       - {words: "IMO Meteor Shower Calendar 2027 (rates, radiant, activity)", url: "https://www.imo.net/files/meteor-shower/cal2027.pdf", read: 2026-10-07}
 
   - id: quadrantids-2027

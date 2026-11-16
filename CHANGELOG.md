@@ -88,6 +88,18 @@ tagged, and their dates are the day the last change in each landed.
 
 ### Fixed
 
+- **Weather is drawn again on the live site.** Lightning on the Earth's night side, the moving air of Jupiter, Saturn and
+  Venus, Mars's season and the faint rings were missing for every visitor: the deploy strips shader comments and indentation,
+  and two shader patches looked for a comment and for indented lines. They now look for lines of code, and a test runs every
+  shader patch against the tree a deploy builds.
+- **Pages in the ten other languages load their scripts.** The subscribe form, the journal strip and the embed generator on
+  `/es/`, `/fr/` and the rest asked for files under `/<lang>/js/`, which do not exist. The check of the built pages now holds
+  every script, stylesheet, icon and picture address of every page, in every language, to a file of the build.
+- **A visit under `/es/`, `/fr/` and the other languages stays there.** The first selection used to rewrite the address to the English root, so a
+  reload, the copied address and Share lost the language.
+- **Leonids 2026.** The index said "the night of 16 to 17 November"; the peak is 17 November at about 23:45 UT (IMO Meteor
+  Shower Calendar 2026), the night of 17 to 18 November. The summary, the Moon's phase and the link into the map now use that
+  moment. The Geminids 2026 page said "13 to 14 December" for a maximum centred on 14 December, 14h UT, and is corrected too.
 - **A 3D model is one thing to click, small icons over the Earth are easier to hit, and a flight no longer carries its
   subject along at full size.** A spacecraft drawn as a model answers to a click or a tap anywhere on it (its panels, its
   trusses), also in front of a planet; it answered only at its centre point. Over the Earth an icon is hit anywhere on the

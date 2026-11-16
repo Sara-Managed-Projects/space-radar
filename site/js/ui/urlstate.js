@@ -170,7 +170,12 @@ export function write(patch) {
   if ((location.hash || '') === target) return;
   try {
     // An empty target drops the `#` too, rather than leaving a bare one on the address bar.
-    history.replaceState(null, '', target || `${location.pathname}${location.search}`);
+    // THE WHOLE ADDRESS, NEVER THE FRAGMENT ALONE (review of 2026-11-16). A URL given to replaceState is resolved
+    // against the document's BASE, and the app shell of a language (/es/, /fr/ ...) has <base href="../">
+    // (scripts/seo_i18n.py home_shell), so '#at=moon' alone named https://www.spaceradar.ai/#at=moon: the first
+    // selection moved a Spanish visit to the English root, and a reload, the copied address and Share lost the
+    // language. A path that starts at the root means the same under any base.
+    history.replaceState(null, '', `${location.pathname || '/'}${location.search || ''}${target}`);
   } catch {
     location.hash = target;
   }

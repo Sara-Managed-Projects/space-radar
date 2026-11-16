@@ -855,6 +855,10 @@ jobs:
       # dialects once bounced the app between moments; this is the check that there is one.
       - name: one module owns every key of the URL, and a stop is found by number or by id (spec 0032)
         run: node tests/test_urlstate.mjs
+      # Review of 2026-11-16: the app shell of a language has <base href="../">, and the hash writer gave replaceState the fragment
+      # alone, which a browser resolves against the base: the first selection moved /es/ to the English root.
+      - name: "a visit under /es/, /fr/ ... keeps its folder through every address write, and Share, a trip and a place link open in the same language"
+        run: node tests/test_language_address.mjs
       # Share (spec 0033): the link is built from the known keys only, so the visitor's place can
       # never ride along, and the postcard's caption is the card's own lines, string for string.
       # Spec 0035: a stub AudioContext. No context and no fetch before a gesture, one context after
@@ -1165,6 +1169,14 @@ jobs:
         run: node tests/test_sky_shaders_src.mjs
       - name: "shader text in templates loses its comments and indentation, each shader checked, switched off by default (internal #553 / #531)"
         run: python3 tests/test_strip_shaders.py
+      # Review of 2026-11-16: the weather's shader patch anchored on a GLSL comment and the faint rings' on indented lines, both of
+      # which a deploy strips, so no world had weather on the live site while every test here was green. The first test runs every
+      # patch of a shader's text (it is also in scripts/check_built_tree.mjs TESTS, so test_minify_real.mjs and a deploy run it on the
+      # minified tree); the second refuses an anchor that is a comment or holds indentation, where it is written.
+      - name: "every shader patched by its text finds the lines it changes: weather, faint rings, tiles, stars, ring grains, model materials"
+        run: node tests/test_shader_patches.mjs
+      - name: "a piece of shader text that code looks for is one trimmed line of code: no comment, no indentation (a deploy strips both; reads source text)"
+        run: node tests/test_shader_anchors_src.mjs
       - name: "stored at Brotli 11: one rule in deploy.sh, verify-deploy.sh and the edge function; copies decode byte for byte; a same-size content change is still uploaded (internal #514, #576)"
         run: node tests/test_precompress.mjs
       # 0077 W3-e: begin

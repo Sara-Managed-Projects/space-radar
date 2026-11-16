@@ -89,7 +89,8 @@ document.activeElement = document.body;
 globalThis.window = globalThis;
 const written = [];
 globalThis.location = { origin: 'https://www.spaceradar.ai', pathname: '/', hash: '', search: '' };
-globalThis.history = { replaceState(_s, _t, target) { written.push(String(target)); location.hash = String(target).startsWith('#') ? String(target) : ''; } };
+// The app writes the whole address (path, query, fragment: ui/urlstate.js write()), so the fragment is what follows the '#'.
+globalThis.history = { replaceState(_s, _t, target) { const u = String(target); const i = u.indexOf('#'); written.push(i >= 0 ? u.slice(i) : ''); location.hash = i >= 0 ? u.slice(i) : ''; } };
 globalThis.addEventListener = () => {};
 globalThis.removeEventListener = () => {};
 globalThis.dispatchEvent = () => true;
