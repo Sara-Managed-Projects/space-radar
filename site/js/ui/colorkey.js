@@ -62,6 +62,9 @@ export function createColorKey(ctx) {
   // record while the layer row says 209. The line says which set it is.
   root.appendChild(el('p', 'sr-colourkey__scope', T.scope));
   let current = COLOR_KEYS[0] ? COLOR_KEYS[0].id : 'class';
+  // The key the dots are in already (a choice restored from an earlier visit, ui/showmemory.js): the select says so.
+  const now = typeof ctx.colourKey === 'function' ? ctx.colourKey() : '';
+  if (now && COLOR_KEYS.some((k) => k.id === now)) { current = now; select.value = now; }
 
   function onRecords() {
     const out = [];
@@ -74,6 +77,9 @@ export function createColorKey(ctx) {
   }
 
   function refresh() {
+    // The key the dots are in is main.js's to say: one put back or reset elsewhere shows in the select.
+    const live = typeof ctx.colourKey === 'function' ? ctx.colourKey() : '';
+    if (live && live !== current && COLOR_KEYS.some((k) => k.id === live)) { current = live; select.value = live; }
     const key = keyById(current) || COLOR_KEYS[0];
     if (!key) return;
     const records = onRecords();

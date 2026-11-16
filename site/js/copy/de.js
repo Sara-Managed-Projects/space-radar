@@ -2707,6 +2707,7 @@ export const COPY = {
     "guessCaveat": "Geschätzter Ort: Stell deine Stadt ein, dann stimmen die Zeiten.",
     "satLaunched": "ein {year} gestarteter Satellit",
     "rocketLaunched": "eine ausgebrannte Raketenstufe, gestartet {year}",
+    "setPlace": "Ort festlegen",
     "unitRises": "geht auf",
     "unitHigh": "am höchsten",
     "unitLong": "Min. sichtbar",
@@ -3360,6 +3361,11 @@ export const COPY = {
     "close": "Schließen",
     "listLabel": "Sprachen",
     "note": "Die Seite lädt in dieser Sprache neu, mit derselben Ansicht. Alle Sprachen außer Englisch sind maschinelle Übersetzungen, die gegen das Englische geprüft wurden."
+  },
+  "showMemory": {
+    "note": "Was du hier wählst, bleibt in diesem Browser gespeichert.",
+    "reset": "Auswahl zurücksetzen",
+    "resetTitle": "Setzt Ebenen, Farben und die Datenebene auf den Anfang zurück und vergisst die Auswahl"
   },
   "placeKeep": {
     "group": "Wo du bist",

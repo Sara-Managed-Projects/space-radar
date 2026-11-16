@@ -2629,6 +2629,7 @@ export const COPY = {
     "guessCaveat": "地点是猜的：设置你的城市，才能得到准确时间。",
     "satLaunched": "{year} 年发射的一颗卫星",
     "rocketLaunched": "{year} 年发射的一级废弃火箭",
+    "setPlace": "设置你的位置",
     "unitRises": "升起",
     "unitHigh": "最高",
     "unitLong": "分钟可见",
@@ -3300,6 +3301,11 @@ export const COPY = {
     "close": "关闭",
     "listLabel": "语言",
     "note": "页面会用那种语言重新加载，视图不变。除英语外，其他语言都是机器翻译，并对照英语检查过。"
+  },
+  "showMemory": {
+    "note": "你在这里的选择会保存在这个浏览器里。",
+    "reset": "重置选择",
+    "resetTitle": "把图层、颜色和数据图层恢复到最初的样子，并忘掉这些选择"
   },
   "placeKeep": {
     "group": "你的位置",

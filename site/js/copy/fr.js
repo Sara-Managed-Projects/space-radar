@@ -2710,6 +2710,7 @@ export const COPY = {
     "guessCaveat": "Lieu deviné : indique ta ville pour des heures exactes.",
     "satLaunched": "un satellite lancé en {year}",
     "rocketLaunched": "un étage de fusée usé, lancé en {year}",
+    "setPlace": "Indique ton lieu",
     "unitRises": "se lève",
     "unitHigh": "au plus haut",
     "unitLong": "min visible",
@@ -3363,6 +3364,11 @@ export const COPY = {
     "close": "Fermer",
     "listLabel": "Langues",
     "note": "La page se recharge dans cette langue, sur la même vue. Toutes les langues sauf l’anglais sont des traductions automatiques relues face à l’anglais."
+  },
+  "showMemory": {
+    "note": "Ce que tu choisis ici est gardé dans ce navigateur.",
+    "reset": "Réinitialiser les choix",
+    "resetTitle": "Remet les calques, les couleurs et la couche de données comme au départ, et oublie les choix"
   },
   "placeKeep": {
     "group": "Où tu es",

@@ -2696,6 +2696,7 @@ export const COPY = {
     "guessCaveat": "Local estimado: informe sua cidade para ver os horários reais.",
     "satLaunched": "um satélite lançado em {year}",
     "rocketLaunched": "um estágio de foguete usado, lançado em {year}",
+    "setPlace": "Definir seu local",
     "unitRises": "nasce",
     "unitHigh": "no ponto mais alto",
     "unitLong": "min à vista",
@@ -3349,6 +3350,11 @@ export const COPY = {
     "close": "Fechar",
     "listLabel": "Idiomas",
     "note": "A página carrega de novo nesse idioma, na mesma vista. Todos os idiomas, exceto o inglês, são traduções automáticas conferidas com o inglês."
+  },
+  "showMemory": {
+    "note": "O que você escolher aqui fica guardado neste navegador.",
+    "reset": "Redefinir escolhas",
+    "resetTitle": "Volta as camadas, as cores e a camada de dados ao início e esquece as escolhas"
   },
   "placeKeep": {
     "group": "Onde você está",

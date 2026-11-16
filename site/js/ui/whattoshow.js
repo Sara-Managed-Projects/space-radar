@@ -2,7 +2,7 @@
 // behind the tool rail's first button (spec 0061 req 5, design §5).
 //
 // Contract: createWhatToShow(ctx, opts?) -> { root, refresh(), destroy() }
-//   opts.storage: where the open groups are remembered (default: localStorage, if it can be reached)
+//   opts.storage: where the open groups and the visitor's choices are remembered (default: localStorage, if it can be reached)
 // 0077 W3-e: the section "How we know" (ui/confidence.js) sits between the layers and Colour by.
 // Also exported, pure: countText(layer, records, n), layerSwatch(layer) -> {token, hex},
 //   groupLayers(layers, groups), groupTally(rows, isOn), defaultOpen(groups, isOn),
@@ -58,6 +58,7 @@ import { otherLightPanel } from './otherlight.js';
 import { confidencePanel } from './confidence.js';
 // 0077 W3-e: end
 import { LAYER_GROUPS } from '../data/layers.registry.js';
+import { writeShow, forgetShow, hasShow, readShow, defaultOn } from './showmemory.js';
 
 const REFRESH_MS = 1000;
 /** Where the open groups are remembered: a JSON list of group ids. */
@@ -341,6 +342,11 @@ export function createWhatToShow(ctx, opts = {}) {
   const storage = 'storage' in opts ? opts.storage : defaultStorage();
   const C = COPY.controls;
   const isOn = (id) => (typeof ctx.isLayerOn === 'function' ? !!ctx.isLayerOn(id) : false);
+  // WHAT A VISITOR CHOOSES HERE IS KEPT (ui/showmemory.js, review of 16 Nov 2026): a layer's box, All and None, Colour by
+  // and Earth data, in this browser, against the opening view's defaults (a choice that is the default again is dropped).
+  const layerById = new Map(layerList(ctx).map((l) => [l.id, l]));
+  let paintReset = () => {};
+  const keep = (patch) => { writeShow(storage, patch, (id) => defaultOn(layerById.get(id))); paintReset(); };
   const shown = layerList(ctx).filter((layer) => layer.enabled !== false); // spec 0026 req 8
   const groups = groupLayers(shown);
 
@@ -414,8 +420,9 @@ export function createWhatToShow(ctx, opts = {}) {
     body.appendChild(ul);
     sec.appendChild(body);
     list.appendChild(sec);
-    allBtn.addEventListener('click', () => { setGroupOn(ctx, group.layers, true); paint(); });
-    noneBtn.addEventListener('click', () => { setGroupOn(ctx, group.layers, false); paint(); });
+    const keepGroup = (on) => keep({ layers: Object.fromEntries(group.layers.map((l) => [l.id, on])) });
+    allBtn.addEventListener('click', () => { setGroupOn(ctx, group.layers, true); keepGroup(true); paint(); });
+    noneBtn.addEventListener('click', () => { setGroupOn(ctx, group.layers, false); keepGroup(false); paint(); });
     head.addEventListener('click', () => {
       if (open.has(group.id)) open.delete(group.id); else open.add(group.id);
       writeOpen(storage, open);
@@ -445,7 +452,7 @@ export function createWhatToShow(ctx, opts = {}) {
       const hintText = layerHint(layer.id, C);
       const hint = hintText ? el('p', 'sr-show__hint', hintText) : null;
       if (hint) { hint.id = `sr-show-hint-${layer.id}`; box.setAttribute('aria-describedby', hint.id); li.appendChild(hint); }
-      box.addEventListener('change', () => { applyLayerOn(ctx, layer, box.checked); paint(); });
+      box.addEventListener('change', () => { applyLayerOn(ctx, layer, box.checked); keep({ layers: { [layer.id]: box.checked } }); paint(); });
       rows.set(layer.id, { box, count, label, layer, swatch, hex, mixed, li, hint, group: group.id });
     }
   });
@@ -650,6 +657,42 @@ export function createWhatToShow(ctx, opts = {}) {
   });
   root.appendChild(el('div', 'sr-show__section sr-show__keys')).appendChild(keys);
 
+  // --- Reset: the defaults again, and nothing kept. Shown only while this browser keeps a choice. ---
+  const M = COPY.showMemory;
+  const resetRow = el('div', 'sr-show__section sr-show__reset');
+  resetRow.appendChild(el('p', 'sr-show__note', M.note));
+  const resetBtn = el('button', 'ui-btn ui-btn--sm ui-btn--quiet', M.reset);
+  resetBtn.type = 'button';
+  resetBtn.title = M.resetTitle;
+  resetBtn.addEventListener('click', () => {
+    const kept = readShow(storage);
+    forgetShow(storage);
+    for (const id of Object.keys(kept.layers)) {
+      const layer = layerById.get(id);
+      if (layer && layer.enabled !== false && isOn(id) !== defaultOn(layer)) applyLayerOn(ctx, layer, defaultOn(layer));
+    }
+    if (kept.colour && typeof ctx.setColourKey === 'function') {
+      ctx.setColourKey('class');
+      window.dispatchEvent(new CustomEvent('sr:colour-key', { detail: { id: 'class', from: 'memory' } }));
+    }
+    if (kept.overlay && typeof ctx.setOverlay === 'function') ctx.setOverlay(null);
+    key.refresh();
+    paint();
+    paintReset();
+    // The button has gone with its reason: the focus goes to the panel's first control, not to the page.
+    const first = root.querySelector('input, button, select');
+    if (first) first.focus({ preventScroll: true });
+  });
+  resetRow.appendChild(resetBtn);
+  root.appendChild(resetRow);
+  paintReset = () => { resetRow.hidden = !hasShow(storage); };
+  paintReset();
+  // Colour by and Earth data are their own modules: their choices are heard here. A key or a map put back by
+  // ui/showmemory.js itself (`from: 'memory'`) is not a new choice.
+  const onColourChoice = (e) => { if (e && e.detail && e.detail.from !== 'memory') keep({ colour: e.detail.id }); };
+  window.addEventListener('sr:colour-key', onColourChoice);
+  if (overlay) overlay.addEventListener('change', (e) => { if (e.target && e.target.tagName === 'SELECT') keep({ overlay: e.target.value || null }); });
+
   let keyedWas = undefined;
   /** Ring every swatch while another key colours the dots, and say which; put them back after. */
   function paintKey() {
@@ -718,6 +761,7 @@ export function createWhatToShow(ctx, opts = {}) {
     root,
     refresh() {
       paint();
+      paintReset();
       key.refresh();
       if (confidence) confidence.refresh(); // 0077 W3-e
       if (!timer) timer = setInterval(() => { if (root.closest('[hidden]')) { clearInterval(timer); timer = 0; } else paint(); }, REFRESH_MS);
@@ -729,6 +773,7 @@ export function createWhatToShow(ctx, opts = {}) {
       window.removeEventListener('sr:layer', onAny);
       window.removeEventListener('sr:moment', onAny);
       window.removeEventListener('sr:colour-key', onAny);
+      window.removeEventListener('sr:colour-key', onColourChoice);
       document.removeEventListener('sr:layer-toggle', onAny);
       key.destroy();
       if (confidence) confidence.destroy(); // 0077 W3-e

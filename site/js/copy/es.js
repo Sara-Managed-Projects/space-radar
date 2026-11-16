@@ -2554,6 +2554,7 @@ export const COPY = {
     guessCaveat: "Lugar supuesto: indica tu ciudad para ver horas reales.",
     satLaunched: "un satélite lanzado en {year}",
     rocketLaunched: "una etapa de cohete agotada, lanzada en {year}",
+    setPlace: "Indica tu lugar",
     unitRises: "sale",
     unitHigh: "en su punto más alto",
     unitLong: "min a la vista",
@@ -3194,6 +3195,11 @@ export const COPY = {
     close: "Cerrar",
     listLabel: "Idiomas",
     note: "La página se carga de nuevo en ese idioma, en la misma vista. Todos los idiomas salvo el inglés son traducciones automáticas revisadas frente al inglés."
+  },
+  showMemory: {
+    note: "Lo que elijas aquí se guarda en este navegador.",
+    reset: "Restablecer opciones",
+    resetTitle: "Devuelve las capas, los colores y la capa de datos a como estaban al principio, y olvida lo elegido"
   },
   placeKeep: {
     group: "Dónde estás",
