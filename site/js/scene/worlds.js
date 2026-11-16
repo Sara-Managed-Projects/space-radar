@@ -3013,7 +3013,9 @@ export function createWorlds(scene, opts = {}) {
       if (edge > forgivePx) continue;
       const record = records.find((x) => x.id === w.id);
       // `depth` and the centre are for scene/pickrank.js: the nearer disc wins, and a disc hides what is behind it.
-      if (record) out.push({ record, edge, r, cx: (_proj.x + 1) * halfW, cy: (1 - _proj.y) * halfH, depth: dist });
+      // `horizon`: how far the limb is from the camera. A point inside the outline is hidden when it is farther than
+      // that, in front of the globe when it is nearer: the one measure a mark's depth is compared with (internal #342).
+      if (record) out.push({ record, edge, r, cx: (_proj.x + 1) * halfW, cy: (1 - _proj.y) * halfH, depth: dist, horizon: Math.sqrt(Math.max(0, dist * dist - mesh.scale.x * mesh.scale.x)) });
     }
     return out.sort((p, q) => (p.r - q.r) || (p.edge - q.edge));
   }
