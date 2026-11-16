@@ -98,7 +98,7 @@ export const NOTABLE = [
   { noradId: 43613, name: 'ICESat-2', why: 'It fires 10 000 laser pulses a second at the ice sheets and counts the photons that come back.' },
   { noradId: 43476, name: 'GRACE-FO 1', why: 'Two satellites chasing each other, weighing groundwater by how the gap between them changes.' },
   { noradId: 40376, name: 'SMAP', why: 'It measures how wet the soil is, everywhere, every three days.' },
-  { noradId: 41866, name: 'GOES 16', why: 'A weather satellite that sits still over one spot, 35 786 km up. It kept the Atlantic hurricane watch until GOES 19 took over in April 2025, and is now a spare in orbit.' }, // NOAA NESDIS: GOES-16 and GOES-17 "both serve as on-orbit backups" (nesdis.noaa.gov/our-satellites/currently-flying/geostationary-satellites, read 2026-11-16)
+  { noradId: 41866, name: 'GOES 16', why: 'A weather satellite that sits still over one spot, 35 786 km up. It kept the Atlantic hurricane watch until GOES 19 took over in April 2025. Now a spare.' }, // NOAA NESDIS: GOES-16 and GOES-17 "both serve as on-orbit backups" (nesdis.noaa.gov/our-satellites/currently-flying/geostationary-satellites, read 2026-11-16)
   { noradId: 43226, name: 'GOES 17', why: 'Its Pacific counterpart until GOES 18 took over, and now a spare in orbit too.' },
   { noradId: 51850, name: 'GOES 18', why: 'The one watching the US west coast and the Pacific storms.' },
   { noradId: 60133, name: 'GOES 19', why: 'The newest of them. It took over the Atlantic hurricane watch in April 2025.' },

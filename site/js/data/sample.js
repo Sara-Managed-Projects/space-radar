@@ -1325,8 +1325,8 @@ const PLANET_ORBITERS = [
     // 2026-11-16 (https://science.nasa.gov/mission/juno/): "circling Jupiter every 33 days until end of mission" and
     // "scheduled to continue investigating the solar system's largest planet through September 2025". No NASA
     // statement of its status after that date was found that day, so the note says what the page says and no more.
-    note: 'It dives between Jupiter and its radiation belts about every 33 days, closer to the ' +
-      'cloud tops than any orbiter before it. NASA planned its extended mission to September 2025.',
+    note: 'It dives between Jupiter and its radiation belts every 33 days, closer to the ' +
+      'cloud tops than any orbiter before it. NASA planned its mission to September 2025.',
     rKm: [1350578.538, -661190.227, -5432547.724],
     vKmS: [0.553754, -0.858287, -0.963073],
     periodMin: 47084.5,
@@ -1497,7 +1497,7 @@ const LOST_ORBITERS = [
     // 6 December 2025 (https://www.nasa.gov/news-release/nasa-says-farewell-to-maven-mars-mission-hosts-media-call-today/
     // and https://science.nasa.gov/mission/maven/, both read 2026-11-16).
     note: 'In orbit round Mars from September 2014 to study how the planet loses its air to ' +
-      'space. It fell silent on 6 December 2025, and NASA declared the mission over on 3 June 2026.',
+      'space. Silent since 6 December 2025; NASA ended the mission on 3 June 2026.',
     rKm: [1249.946451, 3646.897367, -6566.122126],
     vKmS: [1.106146210, 1.471414496, 0.617508591],
     periodMin: 219.2,

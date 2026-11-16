@@ -285,7 +285,7 @@ export const EXOTICS = [
     "id": "grs-1915-105",
     "name": "GRS 1915+105",
     "kind": "blackhole",
-    "why": "For years our heaviest stellar black hole, and the first in our own galaxy seen throwing matter out apparently faster than light. A trick of geometry called superluminal motion.",
+    "why": "For years our heaviest stellar black hole, and the first in our galaxy seen throwing matter out apparently faster than light: a trick of geometry.",
     "aliases": [
       "V1487 Aquilae"
     ],
