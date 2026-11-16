@@ -223,11 +223,16 @@ const iconTest = async (label) => {
   res.frameMs = await (async () => { const t = performance.now(); for (let i = 0; i < 5; i++) await frame(); return Math.round((performance.now() - t) / 5); })();
   const reset = async () => { if (sr.selected()) sr.deselect({ stay: true }); await settle(8000); if (sr.stage.worldId !== 'earth') { sr.setStage('earth'); await sleep(2500); } rig.restoreState(view, 0); await sleep(200); await frame(); await frame(); };
   const taps = { lone: [], crowd: [], earth: [] };
+  await reset();
   const n = phone ? 6 : 8;
   for (const [key, list] of [['lone', pickSome(clear.filter((q) => q.crowd < 3), n)], ['crowd', pickSome(clear.filter((q) => q.crowd >= 3), n)]]) {
     for (const mk of list) {
       for (const [name, dx, dy] of [['mid', 0, 0], ['edge', mk.r * 0.6, -mk.r * 0.6]]) {
-        const got = await tap(mk.x + dx, mk.y + dy);
+        // Where the dot is drawn NOW, asked of the layers again: the list above was made a minute ago on a slow renderer.
+        const at = toScreen(scenePos(mk.rec));
+        if (!onCanvas(at.x, at.y) || !marksAt(at.x, at.y, LOCAL, front).some((q) => q.record.id === mk.rec.id && q.px < 1.5)) continue;
+        res.moved = Math.max(res.moved || 0, Math.round(Math.hypot(at.x - mk.x, at.y - mk.y) * 10) / 10);
+        const got = await tap(at.x + dx, at.y + dy);
         taps[key].push({ at: name, r: mk.r, crowd: mk.crowd, got: got === mk.rec.id ? 'icon' : got });
         await reset();
       }
