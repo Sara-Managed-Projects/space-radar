@@ -68,6 +68,7 @@ const DEFERRED = {
   'js/ui/onboardingplan.js': 'the tour\'s arithmetic: with ui/onboarding.js',
   'js/data/onboarding.js': 'the tour\'s steps: with ui/onboarding.js',
   'js/scene/models.js': 'the model shapes: scene/heroes.js fetches them when a record wants geometry',
+  'js/scene/modelpick.js': 'a drawn model as one pick target (internal #341): scene/heroes.js fetches it with the model shapes, and no model can be pointed at before they are here',
   // b200-s5-ci: begin
   'js/scene/sourcedtables.js': 'the sourced bus and CubeSat routes: ui/cards.js and scene/models.js import it',
   'js/data/geobuses.js': 'which bus a geostationary satellite flies: with scene/sourcedtables.js',

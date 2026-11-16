@@ -711,6 +711,7 @@ export function createGlyphLayer(scene, layer = {}) {
   }
 
   const _m = new THREE.Matrix4();
+  const _eye = new THREE.Vector3();
 
   /**
    * Every record within the forgiveness rule, nearest first, each with its pixel distance and its
@@ -728,6 +729,8 @@ export function createGlyphLayer(scene, layer = {}) {
     // The canvas as it is now (the caller's), not the size it had when this layer last drew.
     const halfW = (vp ? vp.w : viewport.w) * 0.5;
     const halfH = (vp ? vp.h : viewport.h) * 0.5;
+    mesh.worldToLocal(_eye.setFromMatrixPosition(cam.matrixWorld));
+    const skyShare = material.uniforms.uSky.value > 0.5 ? material.uniforms.uSkyScale.value : 1;
     const out = [];
     for (let i = 0; i < geometry.instanceCount; i++) {
       const x = livePos[i * 3];
@@ -745,7 +748,11 @@ export function createGlyphLayer(scene, layer = {}) {
       if (attrRing.array[i] < PICK_MIN_OPACITY && !(selectedRec && live[i] === selectedRec)) continue;
       const rec = live[i];
       if (!rec) continue;
-      out.push({ record: rec, px, score: rec.klass === 'debris' ? px * DEBRIS_PICK_PENALTY : px, sx: (cx + 1) * halfW, sy: (1 - cy) * halfH, depth: w });
+      // `r`: half the icon as the shader draws it (the clamp and the ground sky's share are VERT's), so the reach over a
+      // disc is never smaller than the icon. `depth`: the straight-line distance from the camera, the measure a disc's
+      // limb is given in (worlds.js pickAll `horizon`); it was the clip w, a different measure (internal #342).
+      const r = Math.min(14, Math.max(4, attrSize.array[i])) * 0.5 * skyShare;
+      out.push({ record: rec, px, score: rec.klass === 'debris' ? px * DEBRIS_PICK_PENALTY : px, sx: (cx + 1) * halfW, sy: (1 - cy) * halfH, depth: Math.hypot(x - _eye.x, y - _eye.y, z - _eye.z), r });
     }
     out.sort((p, q) => p.score - q.score);
     return out.slice(0, Math.max(1, limit));

@@ -1438,7 +1438,9 @@ export async function boot({ setStatus } = {}) {
     pointers.add(e.pointerId);
     if (pointers.size > 1) { if (gesture) gesture.pinched = true; return; }
     const type = e.pointerType === 'touch' ? 'touch' : 'mouse';
-    gesture = { id: e.pointerId, type, x: e.clientX, y: e.clientY, t: performance.now(), pinched: false, decision: decisionAt(e.clientX, e.clientY, type) };
+    // `t` is the EVENT's own time, not the handler's: on a slow frame the up of a quick tap is handled most of a second after
+    // its down, and by the handlers' clock every tap on a slow phone was a long press and opened the list (measured 2026-11-16).
+    gesture = { id: e.pointerId, type, x: e.clientX, y: e.clientY, t: e.timeStamp > 0 ? e.timeStamp : performance.now(), pinched: false, decision: decisionAt(e.clientX, e.clientY, type) };
   });
   window.addEventListener('pointerup', (e) => { pointers.delete(e.pointerId); });
   const cancelGesture = () => { pointers.clear(); gesture = null; };
@@ -1450,7 +1452,7 @@ export async function boot({ setStatus } = {}) {
     if (g.pinched || pointers.size > 1) return;
     // A drag is a camera move, not a tap: 5 px for a mouse, 10 for a finger.
     if (Math.hypot(e.clientX - g.x, e.clientY - g.y) > TAP_SLOP_PX[g.type]) return;
-    const held = performance.now() - g.t;
+    const held = (e.timeStamp > 0 ? e.timeStamp : performance.now()) - g.t;
     hideChooser();
     const d = g.decision;
     // A long press on a crowded spot, and a tap the two best of which are too close to tell apart, list what is there instead of guessing.
@@ -1475,8 +1477,9 @@ export async function boot({ setStatus } = {}) {
   // A near miss opens the card and flies nowhere (live site, 2026-11-02: a click on dark sky between dense stars
   // flew the camera 2 313 light-years to a faint unnamed star). The camera goes only for a click on the dot itself,
   // or for a choice from the list (reach null).
+  // "On the dot itself" is the icon as drawn (pickrank.js `on`), and a model is hit anywhere on its body (internal #341, #342).
   function pickOpts(item, reach) {
-    const nearMiss = reach && item && item.kind === 'glyph' && Number.isFinite(item.px) && item.px > reach.onDisc;
+    const nearMiss = reach && item && item.kind === 'glyph' && Number.isFinite(item.px) && (item.on === undefined ? item.px > reach.onDisc : !item.on);
     // An unnamed catalogue star is a speck among thousands: tapped, it opens its card and "Fly to it" is the journey
     // (live 1.5.4: a tap on dark sky on the stellar rung flew to HYG 20454, 68 light-years off).
     const speck = reach && item && item.record && item.record.meta && item.record.meta.named === false;
@@ -1530,13 +1533,16 @@ export async function boot({ setStatus } = {}) {
   function candidatesAt(ndcX, ndcY, rect, reach) {
     const vp = { w: rect.width, h: rect.height };
     const r = reach.local; // the layers scan with the wider reach; pickrank.js cuts each tier at its own
+    // The nearest PER_LAYER of each dot layer: its far side's dots are among them (pickrank.js hides those), and with 6 a
+    // crowded sky's nearest visible icon was sometimes not one of them.
+    const PER_LAYER = 24;
     const glyphs = [];
     const add = (list, tier) => { for (const c of list) { c.tier = tier || tierOfRecord(c.record); glyphs.push(c); } };
     for (const layer of LAYERS) {
       if (!isLayerDrawable(layer)) continue;
       const gl = glyphLayers.get(layer.id);
       if (!gl || !gl.pickAll) continue;
-      add(gl.pickAll(ndcX, ndcY, 6, r, camera, vp));
+      add(gl.pickAll(ndcX, ndcY, PER_LAYER, r, camera, vp));
     }
     if (isLayerOn('stars') && ctx.stars3d) {
       add(ctx.stars3d.pickAll(ndcX, ndcY, camera, vp, 6, r));
@@ -1549,6 +1555,14 @@ export async function boot({ setStatus } = {}) {
     // 0079 a8: end
     // A star system's own star and planets, on its stage (spec 0040): the same exo-... records, and what the stage is about.
     if (ctx.systems && ctx.systems.active) add(ctx.systems.pickAll(ndcX, ndcY, camera, vp, 6, r), 'local');
+    // A craft drawn as its model is one target as big as it looks (heroes.js pickAll, internal #341). The dots of the
+    // vehicles docked inside it are not drawn: they are named to pickrank.js, which lists them after it.
+    const models = heroes.pickAll ? heroes.pickAll(ndcX, ndcY, camera, vp, r) : [];
+    if (models.length) {
+      const insideOf = new Map(heroes.hidden().map((x) => [x.record.id, x.insideOf.id]));
+      for (const c of glyphs) if (insideOf.has(c.record.id)) c.inside = insideOf.get(c.record.id);
+      add(models, 'local');
+    }
     // Every disc near the pointer, also those too far to be taken: a disc hides the marks behind it.
     const discs = isLayerOn('worlds') && worlds.pickAll ? worlds.pickAll(ndcX, ndcY, camera, vp, r + 24) : [];
     return { glyphs, discs };
