@@ -697,6 +697,52 @@ def lab_description(door: str) -> str:
     return html_unescape(m.group(1)) if m else ""
 
 
+# --- the Leo Triplet: a group's page at the address that used to be one galaxy's ----------------------------------
+
+LEO_TRIPLET_SLUG = "leo-triplet"
+LEO_TRIPLET_SOURCE = "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-66/"
+
+
+def leo_triplet_page(host: str, by_slug: dict) -> Page:
+    """/o/leo-triplet.html: the group, linking its two Messier galaxies (review 2026-11-16).
+
+    The address is indexed and linked: until that day it showed M65 alone under the group's name (OpenNGC gives both M65
+    and M66 the nickname "Leo Triplet", so the two shared one page and M66 had none). Each galaxy now has its own page,
+    and this one stays, saying what the triplet is. Every number on it is the two galaxies' own first sentence, never
+    typed here. NASA's Messier 66 page (read 2026-11-16) is where the three members are named: M66 and "its neighbor M65,
+    both of which belong to the Leo Triplet of galaxies. (The third member, NGC 3628 ... is not included in the Messier
+    catalog)".
+    """
+    m65, m66 = by_slug.get("m65"), by_slug.get("m66")
+    if m65 is None or m66 is None:
+        raise SystemExit("seo_pages: the Leo Triplet's page needs the object pages of M65 and M66 (o/m65.html, o/m66.html)")
+    short = "The Leo Triplet: M65, M66 and NGC 3628"
+    desc = "The Leo Triplet is three spiral galaxies close together in the constellation Leo: M65, M66 and NGC 3628. Two have a page here, each at its own distance."
+    lead = "The Leo Triplet is three spiral galaxies close together in the constellation Leo: M65, M66 and NGC 3628."
+    body = ('<p class="eyebrow"><span class="dot" style="background:#c9a0ff"></span>Deep sky, a group of galaxies</p>\n'
+            "<h1>The Leo Triplet</h1>\n"
+            f'<p class="lead">{esc(lead)}</p>\n'
+            "<p>Two of the three are in Charles Messier's catalogue and each has a page of its own here. The third, NGC 3628, is not a Messier "
+            "object and is not on this map.</p>\n"
+            '<ul class="sky-list">'
+            f'<li><a href="m65.html">M65</a>. {esc(m65["lead"])}</li>'
+            f'<li><a href="m66.html">M66</a>. {esc(m66["lead"])}</li>'
+            "</ul>\n"
+            "<p>This address used to show M65 alone under the group's name. The Leo Triplet is the three galaxies together, and neither of them alone.</p>\n"
+            '<div class="cta"><a class="btn btn--map" href="../#go=dso-m66">Fly to M66 in 3D</a>'
+            "<p>M65 is beside it on the map, at its own distance.</p></div>\n")
+    foot = (f'<p>The members of the group: NASA, <a href="{LEO_TRIPLET_SOURCE}" rel="nofollow">Messier 66</a>. '
+            "The two galaxies' distances and sizes are their own pages' and are sourced there.</p>\n")
+    page = Page(path=f"o/{LEO_TRIPLET_SLUG}.html", title=title_with_site(short), description=desc, body=body, foot=foot, og_title=short, og_type="article", kind="object")
+    url = url_of(host, page.path)
+    page.jsonld = [webpage(host, page, [("Deep sky", ""), ("The Leo Triplet", "")], page_type="CollectionPage", extra={"about": {"@id": f"{url}#group"}}),
+                   {"@type": "Thing", "@id": f"{url}#group", "name": "Leo Triplet", "description": lead, "url": url,
+                    "hasPart": [{"@type": "Thing", "name": g["name"], "url": url_of(host, f"o/{g['slug']}.html")} for g in (m65, m66)]}]
+    page.share = Spec(key=f"o/{LEO_TRIPLET_SLUG}", name="The Leo Triplet", number="M65, M66 and NGC 3628", caption="Group of galaxies", kind="plain",
+                      colour="#c9a0ff", alt="Rings and a dot, captioned The Leo Triplet, M65, M66 and NGC 3628.")
+    return page
+
+
 def links_page(host: str) -> Page:
     """/links/: the last six Instagram posts, each with the page it shows, tagged ?from=ig-<id> (registry/link-in-bio.yaml)."""
     doc = yml("link-in-bio.yaml")
@@ -1421,6 +1467,7 @@ def build_pages(host: str, objects: list[dict], today: str, snapshot_index: dict
     pages += [starlink_page(host, counts, slugs, today), satellites_page(host, counts, slugs), planets_page(host, today)]
     pages += [events_index(events, host)] + [event_page(e, host, tours) for e in events]
     pages += [links_page(host)]
+    pages += [leo_triplet_page(host, by_slug)]
     pages += [about_page(host), sources_page(host, snapshot_index), accuracy_page(host),
               teachers_page(host, tours, yml("autopilot.yaml"), url_keys()), eyes_page(host), first_pr_page(host),
               privacy_page(host), classroom_sims_page(host)]

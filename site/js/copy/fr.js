@@ -1813,6 +1813,8 @@ export const COPY = {
   "deepFacts": {
     "methodRow": "Distance trouvée par",
     "billionLightYears": "{n} milliards d’années-lumière",
+    "lessThan": "Moins de {v}",
+    "moreThan": "Plus de {v}",
     "methods": {
       "parallax": "parallaxe : le décalage de son étoile devant le ciel lointain",
       "eclipsing-binary": "les étoiles binaires à éclipses qu’on y trouve",
@@ -1930,8 +1932,6 @@ export const COPY = {
     "massLeast": "Au moins {n} × la Terre",
     "massLimit": "Moins de {n} × la Terre : une limite supérieure, pas une mesure",
     "massLimitKnown": "Sa masse n’est connue que par une limite supérieure.",
-    "lessThan": "Moins de {v}",
-    "moreThan": "Plus de {v}",
     "sizeDefault": "Non mesurée : dessinée à la taille de la Terre",
     "temperature": "{k} K ({c} °C), si elle réfléchit {pct} % de sa lumière comme la Terre",
     "zone": {

@@ -1810,6 +1810,8 @@ export const COPY = {
   "deepFacts": {
     "methodRow": "Entfernung bestimmt durch",
     "billionLightYears": "{n} Milliarden Lichtjahre",
+    "lessThan": "Weniger als {v}",
+    "moreThan": "Mehr als {v}",
     "methods": {
       "parallax": "Parallaxe: die Verschiebung seines Sterns vor dem fernen Himmel",
       "eclipsing-binary": "Bedeckungsveränderliche Sterne darin",
@@ -1927,8 +1929,6 @@ export const COPY = {
     "massLeast": "Mindestens {n}× Erde",
     "massLimit": "Weniger als {n}× Erde: eine Obergrenze, keine Messung",
     "massLimitKnown": "Seine Masse ist nur als Obergrenze bekannt.",
-    "lessThan": "Weniger als {v}",
-    "moreThan": "Mehr als {v}",
     "sizeDefault": "Nicht gemessen: in Erdgröße gezeichnet",
     "temperature": "{k} K ({c} °C), wenn er {pct} % seines Lichts zurückwirft wie die Erde",
     "zone": {

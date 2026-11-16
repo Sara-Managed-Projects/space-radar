@@ -1727,6 +1727,8 @@ export const COPY = {
   "deepFacts": {
     "methodRow": "قُدِّر البعد بـ",
     "billionLightYears": "{n} مليار سنة ضوئية",
+    "lessThan": "أقل من {v}",
+    "moreThan": "أكثر من {v}",
     "methods": {
       "parallax": "اختلاف المنظر: انزياح نجمه أمام السماء البعيدة",
       "eclipsing-binary": "ثنائيات كاسفة من النجوم فيه",
@@ -1845,8 +1847,6 @@ export const COPY = {
     "massLeast": "على الأقل {n}× الأرض",
     "massLimit": "أقل من {n}× الأرض: حد أعلى وليس قياسًا",
     "massLimitKnown": "كتلته معروفة كحد أعلى فقط.",
-    "lessThan": "أقل من {v}",
-    "moreThan": "أكثر من {v}",
     "sizeDefault": "غير مقيس: مرسوم بحجم الأرض",
     "temperature": "{k} K ({c} °م)، إن عكس {pct} % من ضوئه كما تفعل الأرض",
     "zone": {

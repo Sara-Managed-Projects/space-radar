@@ -1742,6 +1742,8 @@ export const COPY = {
   "deepFacts": {
     "methodRow": "Расстояние найдено по",
     "billionLightYears": "{n} млрд св. лет",
+    "lessThan": "Меньше {v}",
+    "moreThan": "Больше {v}",
     "methods": {
       "parallax": "параллаксу: смещению его звезды на фоне далёкого неба",
       "eclipsing-binary": "затменным двойным звёздам в нём",
@@ -1860,8 +1862,6 @@ export const COPY = {
     "massLeast": "Не меньше {n}× Земли",
     "massLimit": "Меньше {n}× Земли: верхний предел, а не измерение",
     "massLimitKnown": "Для её массы известен только верхний предел.",
-    "lessThan": "Меньше {v}",
-    "moreThan": "Больше {v}",
     "sizeDefault": "Не измерено: нарисована размером с Землю",
     "temperature": "{k} K ({c} °C), если она отражает {pct} % своего света, как Земля",
     "zone": {

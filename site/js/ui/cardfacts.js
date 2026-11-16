@@ -44,7 +44,7 @@ export function setSystemRows(source) { systemRows = source; }
  */
 export function limitWords(limit, words) {
   if (limit !== 'upper' && limit !== 'lower') return words;
-  const C = COPY.starSystem || {};
+  const C = COPY.deepFacts || {};
   const tpl = limit === 'upper' ? C.lessThan : C.moreThan;
   return tpl ? t(tpl, { v: words }) : null;
 }

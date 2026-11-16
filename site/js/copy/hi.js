@@ -1728,6 +1728,8 @@ export const COPY = {
   "deepFacts": {
     "methodRow": "दूरी ऐसे पता चली",
     "billionLightYears": "{n} अरब प्रकाश-वर्ष",
+    "lessThan": "{v} से कम",
+    "moreThan": "{v} से अधिक",
     "methods": {
       "parallax": "लंबन: दूर के आसमान के सामने इसके तारे का खिसकना",
       "eclipsing-binary": "इसमें मौजूद ग्रहण लगाने वाले जोड़ीदार तारे",
@@ -1846,8 +1848,6 @@ export const COPY = {
     "massLeast": "कम से कम पृथ्वी का {n} गुना",
     "massLimit": "पृथ्वी के {n} गुना से कम: यह ऊपरी सीमा है, माप नहीं",
     "massLimitKnown": "इसके द्रव्यमान की केवल ऊपरी सीमा ज्ञात है।",
-    "lessThan": "{v} से कम",
-    "moreThan": "{v} से अधिक",
     "sizeDefault": "मापा नहीं गया: पृथ्वी जितना बनाया गया",
     "temperature": "{k} K ({c} °C), अगर यह अपनी रोशनी का {pct} % पृथ्वी की तरह लौटाता है",
     "zone": {

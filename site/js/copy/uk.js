@@ -1736,6 +1736,8 @@ export const COPY = {
   "deepFacts": {
     "methodRow": "Відстань знайдено за",
     "billionLightYears": "{n} млрд св. р.",
+    "lessThan": "Менше {v}",
+    "moreThan": "Більше {v}",
     "methods": {
       "parallax": "паралаксом: зсув його зорі на тлі далекого неба",
       "eclipsing-binary": "затемнюваними подвійними зорями в ньому",
@@ -1854,8 +1856,6 @@ export const COPY = {
     "massLeast": "Щонайменше {n}× Землі",
     "massLimit": "Менше {n}× Землі: верхня межа, а не вимірювання",
     "massLimitKnown": "Для її маси відома лише верхня межа.",
-    "lessThan": "Менше {v}",
-    "moreThan": "Більше {v}",
     "sizeDefault": "Не виміряно: намальовано розміром із Землю",
     "temperature": "{k} K ({c} °C), якщо вона відбиває {pct} % свого світла, як Земля",
     "zone": {

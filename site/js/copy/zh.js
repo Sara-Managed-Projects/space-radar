@@ -1727,6 +1727,8 @@ export const COPY = {
   "deepFacts": {
     "methodRow": "距离的测定方法",
     "billionLightYears": "{n} 十亿光年",
+    "lessThan": "小于{v}",
+    "moreThan": "大于{v}",
     "methods": {
       "parallax": "视差：它的恒星相对遥远天空的位移",
       "eclipsing-binary": "它里面的食双星",
@@ -1845,8 +1847,6 @@ export const COPY = {
     "massLeast": "至少是地球的 {n} 倍",
     "massLimit": "小于地球的 {n} 倍：这是上限，不是实测值",
     "massLimitKnown": "它的质量只知道上限。",
-    "lessThan": "小于{v}",
-    "moreThan": "大于{v}",
     "sizeDefault": "没有实测：画成地球那么大",
     "temperature": "{k} K（{c} °C），假设它像地球一样反射 {pct}% 的光",
     "zone": {

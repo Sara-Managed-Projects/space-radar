@@ -1667,6 +1667,8 @@ export const COPY = {
   deepFacts: {
     methodRow: "Distancia hallada por",
     billionLightYears: "{n} mil millones de años luz",
+    lessThan: "Menos de {v}",
+    moreThan: "Más de {v}",
     methods: {
       parallax: "paralaje: el desplazamiento de su estrella respecto al cielo lejano",
       "eclipsing-binary": "estrellas binarias eclipsantes en ella",
@@ -1784,8 +1786,6 @@ export const COPY = {
     massLeast: "Al menos {n}× la Tierra",
     massLimit: "Menos de {n}× la Tierra: un límite superior, no una medida",
     massLimitKnown: "De su masa solo se conoce un límite superior.",
-    lessThan: "Menos de {v}",
-    moreThan: "Más de {v}",
     sizeDefault: "Sin medir: se dibuja del tamaño de la Tierra",
     temperature: "{k} K ({c} °C), si refleja el {pct} % de su luz como lo hace la Tierra",
     zone: {

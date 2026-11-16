@@ -105,11 +105,9 @@ Object.assign(COPY, {
     massEstimated: '{n}× Earth, the archive’s estimate from its size',
     massLeast: 'At least {n}× Earth',
     // The Archive's mass column also holds LIMITS (pl_bmasselim): "HD 10180 g, 3 375 Earths" is the most it can
-    // weigh, not what it weighs (review 2026-11-16). A limit is worded as one, on the system's card and the plain one.
+    // weigh, not what it weighs (review 2026-11-16). A limit is worded as one, on the system's card; the plain card's words are copy/en.facts.js deepFacts.lessThan.
     massLimit: 'Less than {n}× Earth: an upper limit, not a measurement',
     massLimitKnown: 'Its mass is known only as an upper limit.',
-    lessThan: 'Less than {v}',
-    moreThan: 'More than {v}',
     sizeDefault: 'Not measured: drawn the size of the Earth',
     // {pct}: the share of light the planet is taken to reflect, from the generated data.
     temperature: '{k} K ({c} °C), if it reflects {pct} % of its light as the Earth does',

@@ -1734,6 +1734,8 @@ export const COPY = {
   "deepFacts": {
     "methodRow": "המרחק נמצא באמצעות",
     "billionLightYears": "{n} מיליארד שנות אור",
+    "lessThan": "פחות מ־{v}",
+    "moreThan": "יותר מ־{v}",
     "methods": {
       "parallax": "פרלקסה: ההיסט של הכוכב שלו ביחס לשמיים הרחוקים",
       "eclipsing-binary": "כוכבים כפולים מסתירים שבתוכו",
@@ -1852,8 +1854,6 @@ export const COPY = {
     "massLeast": "לפחות {n}× כדור הארץ",
     "massLimit": "פחות מ־{n}× כדור הארץ: גבול עליון, לא מדידה",
     "massLimitKnown": "המסה שלו ידועה רק כגבול עליון.",
-    "lessThan": "פחות מ־{v}",
-    "moreThan": "יותר מ־{v}",
     "sizeDefault": "לא נמדד: מצויר בגודל של כדור הארץ",
     "temperature": "{k} K ({c} °C), אם הוא מחזיר {pct} % מהאור שלו כמו כדור הארץ",
     "zone": {
