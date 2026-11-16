@@ -44,6 +44,10 @@ Object.assign(COPY, {
     label: 'How we know where it is',
     measured: 'measured position',
     inferred: 'position propagated from elements {n} {unit} old',
+    // The clock stands BEFORE the elements' own date: the position is worked backwards from them.
+    inferredBefore: 'position worked back {n} {unit} from its elements',
+    // A satellite on a date further from its elements than they can answer for: nothing is drawn.
+    noPositionForDate: 'no position is drawn for this date',
     inferredUnknownAge: 'position propagated from elements of unknown age',
     // For a record with NO elements at all: a surface object drawn at a surveyed point near it.
     // "Position propagated from elements of unknown age" was printed under Alan Shepard's golf

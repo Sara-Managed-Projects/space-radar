@@ -379,6 +379,7 @@ export const COPY = {
     "unknownVersion": "这个链接来自更新版本的地图。现在显示默认视图。",
     "unknownTrip": "这张地图里已经没有那个旅程了。现在显示默认视图。",
     "unknownAt": "这张地图上没有那个天体，现在显示默认视图。",
+    "tOutOfRange": "那个日期超出了这张地图显示的 1700 到 2200 年。现在显示最接近的日期。",
     "unknownStage": "这张地图无法对准那个地方。现在显示默认视图。"
   },
   "share": {
@@ -772,6 +773,8 @@ export const COPY = {
     "endedLine": "它的任务已于 {date} 结束。下面列出的事件，可以把你带回那时。",
     "pathEndedLine": "JPL 保存的它的轨迹，到 {date} 为止。下面列出的事件，可以把你带回那时。",
     "pathBeginsLine": "JPL 保存的它的轨迹，从 {date} 开始。下面列出的事件，可以把你带回那时。",
+    "elementsOutLine": "这个日期没有位置：它的轨道只在 {date} 前后约一个月内已知。",
+    "notLaunchedLine": "这个日期没有位置：它发射于 {year} 年。",
     "actions": {
       "flyTo": "飞向它",
       "flyToTitle": "把镜头移到这个天体",
@@ -1606,6 +1609,8 @@ export const COPY = {
     "label": "我们怎么知道它在哪里",
     "measured": "实测位置",
     "inferred": "位置由 {n} {unit}前的轨道根数外推得出",
+    "inferredBefore": "位置由轨道根数倒推 {n} {unit}得出",
+    "noPositionForDate": "这个日期没有画出位置",
     "inferredUnknownAge": "位置由不知道是多久以前的轨道根数外推得出",
     "inferredNoElements": "位置是推算的，不是实测的",
     "stormAdvisory": "它的中心取自 {time} UTC 的通报，{ago}；风暴在移动，所以那之后它已经移动了",
@@ -1976,6 +1981,8 @@ export const COPY = {
     "downNow": "现在在你的地平线以下",
     "trip": "旅程",
     "starPattern": "星座",
+    "asterism": "{name} 中的星群",
+    "fleet": "卫星星座 · 按下可在地球上点亮它",
     "mission": "任务",
     "eventName": "{mission}：{title}",
     "event": "任务事件 · {date}",
@@ -2580,6 +2587,8 @@ export const COPY = {
     "showMe": "带我去看",
     "showMeTitle": "从你的位置打开天空，朝向它升起的方向",
     "guessCaveat": "地点是猜的：设置你的城市，才能得到准确时间。",
+    "satLaunched": "{year} 年发射的一颗卫星",
+    "rocketLaunched": "{year} 年发射的一级废弃火箭",
     "unitRises": "升起",
     "unitHigh": "最高",
     "unitLong": "分钟可见",
@@ -3209,6 +3218,7 @@ export const COPY = {
     "stale": "{date}读取：已经超过两天，可能有变化。",
     "joined": "名字是现在对接着的各个飞行器的乘组。",
     "unmatched": "存档里的名字和这个人数对不上，所以没有显示。",
+    "otherDate": "乘组名单是今天的。地图显示的是另一个日期，所以没有列出任何人。",
     "waiting": "正在读取乘组名单。",
     "none": "这座空间站没有乘组名单。"
   },
@@ -5339,6 +5349,8 @@ Object.assign(COPY, {
     },
     "other": "其他挑战",
     "loading": "地图还在加载；准备好后挑战就会开始。",
+    "failed": "挑战没能加载距离数据。",
+    "retry": "再试一次",
     "rung": "第 {n} 步，共 {of} 步：{where}",
     "rungs": {
       "local-group": "本星系群",

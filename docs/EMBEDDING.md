@@ -25,8 +25,8 @@ All in the query string, after `?embed=1`. Anything not listed is ignored.
 | parameter | what it does | example |
 |---|---|---|
 | `embed` | `1` turns the embed on. Required. | `?embed=1` |
-| `at` | The object to open on: a record id, a NORAD catalogue number, or a name as you would type it in the search box. | `at=sat-25544`, `at=25544`, `at=iss`, `at=mars` |
-| `trip` | A guided trip to play instead of one object: any of the 26 (the ids are the page names under `/t/`, and the `id:` rows of `registry/tours.yaml`). Wins over `at`. | `trip=moon-landings` |
+| `at` | The object to open on: a record id, a NORAD catalogue number, a catalogue designation (Messier, NGC, an international designator), a page's slug under `/o/`, or a name as you would type it in the search box. An exact id or designation wins over a name that merely starts with it. An id the map does not have shows one line saying so. | `at=sat-25544`, `at=25544`, `at=m31`, `at=ngc-224`, `at=iss`, `at=mars` |
+| `trip` | A guided trip to play instead of one object: any of them (the ids are the page names under `/t/`, and the `id:` rows of `registry/tours.yaml`). Wins over `at`. | `trip=moon-landings` |
 | `stop` | With `trip`: the stop to start at, counted from 1. | `stop=3` |
 | `t` | The moment to show, as an ISO 8601 UTC instant. Left out, the view is live. | `t=2027-08-02T10:00:00Z` |
 | `stage` | The world the map is centred on. | `stage=mars` |

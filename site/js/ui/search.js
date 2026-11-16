@@ -61,6 +61,10 @@ const CAT_EXACT = 1000; // "25544" is unambiguous: the strongest signal there is
 const NAME_EXACT = 900;
 const NAME_PREFIX = 800;
 const WORD_PREFIX = 700; // "dragon" finds "CREW DRAGON 12"
+// A catalogue designation typed whole ("m1", "ngc 224", "ic 434") that is one of a record's other names: above
+// every name that merely STARTS with those letters. "M1" listed M10, M19 and M14 before the Crab Nebula, whose
+// name is the nebula's and whose designation is an alias (review of 16 Nov 2026).
+const DESIGNATION_EXACT = 850;
 const NAME_CONTAINS = 600;
 const ALIAS_WORD = 650; // a word of another name for it (worlds.yaml aliases)
 const OTHER_CONTAINS = 500; // designator or operator
@@ -307,6 +311,28 @@ export function catalogQuery(q) {
 // 0077 W2-d: end
 
 /**
+ * A catalogue designation as it is typed: a short run of letters, then digits, with or without the space
+ * ("m31", "M 31", "ngc224", "NGC 224", "ic 434", "hip 27989"). Answers both spellings, [spaced, compact], or
+ * null for anything else. A record's aliases hold one or both (data/parsers.js parseDso: "M31", "NGC 224",
+ * "NGC224"), so the query is compared in both. Pure.
+ */
+export function designationForms(q) {
+  const m = /^([a-z]{1,8}) ?([0-9]{1,7}[a-z]?)$/.exec(q);
+  return m ? [`${m[1]} ${m[2]}`, `${m[1]}${m[2]}`] : null;
+}
+
+/** Is `q` in `text` as whole words: at a boundary on both sides? */
+function wholeIn(text, q) {
+  let at = text.indexOf(q);
+  while (at >= 0) {
+    const end = at + q.length;
+    if ((at === 0 || isBoundary(text.charCodeAt(at - 1))) && (end === text.length || isBoundary(text.charCodeAt(end)))) return true;
+    at = text.indexOf(q, at + 1);
+  }
+  return false;
+}
+
+/**
  * The whole ranking, pure and DOM-free.
  *
  * @param {Object} index   from buildIndex
@@ -335,6 +361,7 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
   const numeric = /^[0-9]+$/.test(q);
   const catQ = catalogQuery(q); // 0077 W2-d
   const aliasNumeric = alias ? /^[0-9]+$/.test(alias) : false;
+  const forms = designationForms(q);
   // The score is kept from the scan rather than recomputed in the comparator: scoring twice was
   // the difference between one pass and one pass plus a sort's worth of indexOf.
   // Spec 0021 requirement 4: a match is a whole thing or the start of a word. Letters buried inside
@@ -346,6 +373,12 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
   for (let i = 0; i < index.n; i += 1) {
     let score = scoreOne(index, i, q, numeric);
     if (catQ && index.cat[i] === catQ) score = Math.max(score, CAT_EXACT); // 0077 W2-d: A0690, 00005
+    // A designation typed whole, in either spelling, that is one of this record's other names or its own.
+    if (forms && score < NAME_EXACT) {
+      const other = index.alias[i];
+      const name = index.name[i];
+      if ((other && (wholeIn(other, forms[0]) || wholeIn(other, forms[1]))) || name === forms[0] || name === forms[1]) score = DESIGNATION_EXACT;
+    }
     if (score === NAME_CONTAINS) { buried.push({ i, score }); score = 0; }
     if (alias) {
       // The alias must land at the START OF A WORD, which is what WORD_PREFIX and better mean.
@@ -945,8 +978,12 @@ export function createSearch(ctx, host) {
       rows.splice(0, rows.length, ...grouped);
       state.total = Math.max(0, state.total - (before - rows.length));
       const merged = state.hits.length - before;
-      const extras = kind ? [] : m.findExtras(q).filter((x) => !(x.extra === 'mission' && rows.some((h) => h.record && h.record.id === x.record)));
+      const extras = kind ? [] : m.findExtras(q).filter((x) => !(x.extra === 'mission' && rows.some((h) => h.record && h.record.id === x.record))
+        // A fleet that is already a row of its own satellites (searchrows.js groupRows) is not listed twice.
+        && !(x.extra === 'fleet' && rows.some((h) => h.extra === 'group' && h.id === x.id)));
       if (extras.length && state.missed && !rows.length) state.missed = '';
+      // A fleet or a star pattern the query names outright ("kuiper", "big dipper") is an answer too: no nearest names beside it.
+      if (state.missed && extras.some((x) => x.sure && (x.extra === 'fleet' || x.extra === 'constellation'))) { state.missed = ''; state.total = 0; rows.splice(0, rows.length); }
       // 0079 a2: a designation only the catalogue knows is an answer, not a miss: the nearest names are not offered beside it
       if (state.missed && extras.some((x) => x.extra === 'catalogue')) { state.missed = ''; state.total = 0; rows.splice(0, rows.length); }
       state.total = Math.max(0, state.total - merged);
@@ -1038,6 +1075,8 @@ export function createSearch(ctx, host) {
   // --- events ---------------------------------------------------------------------------
 
   const onInput = () => {
+    // Text that arrives without the field ever taking focus (a paste by script, a voice tool) still gets the rows' own words.
+    wantMore();
     window.clearTimeout(state.inputTimer);
     state.inputTimer = window.setTimeout(() => run(input.value), INPUT_DEBOUNCE_MS);
   };

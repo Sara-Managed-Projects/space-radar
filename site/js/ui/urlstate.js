@@ -253,15 +253,32 @@ export function writeMoment(moment) {
  * the fragment from an iframe's src. `embed` is therefore not one of KEYS: the hash never carries
  * it, write() never produces it, and the app's own links are unchanged by it.
  */
+/** The dates a link may name: the range the date field offers (ui/whenparse.js MIN_YEAR, MAX_YEAR; tests/test_urlstate.mjs holds them equal). */
+export const T_MIN_MS = Date.UTC(1700, 0, 1);
+export const T_MAX_MS = Date.UTC(2200, 11, 31, 23, 59, 59);
+
+/**
+ * A link's `t` as an instant: { ms, clamped }, or null when it is not a date at all. A date outside
+ * T_MIN_MS..T_MAX_MS is held to the nearer end, and `clamped` says so: `#t=+275760-09-13T00:00:00Z` put the clock
+ * on the last instant a Date can hold and every repaint of the time pill threw (review of 16 Nov 2026). Pure.
+ */
+export function linkInstant(text) {
+  if (!text || text === 'now') return null;
+  const ms = Date.parse(text);
+  if (!Number.isFinite(ms)) return null;
+  if (ms < T_MIN_MS) return { ms: T_MIN_MS, clamped: true };
+  if (ms > T_MAX_MS) return { ms: T_MAX_MS, clamped: true };
+  return { ms, clamped: false };
+}
+
 export function bootLink(clock, extra = null) {
   // `extra`: the keys an embed's QUERY carries (ui/embed.js embedLink); the hash wins over them.
   const st = extra ? { ...extra, ...read() } : read();
   const replay = st.moment !== undefined && st.moment !== '0'; // 0079 C1: a moment's `t` is its own clock's
+  let outOfRange = false;
   if (clock && !st.unknownVersion && !replay) { // 0079 C1
-    if (st.t && st.t !== 'now') {
-      const ms = Date.parse(st.t);
-      if (Number.isFinite(ms)) clock.goTo(ms);
-    }
+    const at = linkInstant(st.t);
+    if (at) { clock.goTo(at.ms); outOfRange = at.clamped; }
     if (st.rate) {
       const r = Number(st.rate);
       if (r > 0 && clock.rates().includes(r)) clock.setRate(r);
@@ -270,6 +287,8 @@ export function bootLink(clock, extra = null) {
   const rest = { ...st };
   delete rest.t;
   delete rest.rate;
+  // Not a key of the link: main.js says one line about it when the layers land (applyUrlState).
+  if (outOfRange) rest.tOutOfRange = true;
   return rest;
 }
 
@@ -316,7 +335,8 @@ export function laterLink(link, tripRunning) {
  *
  * Returns what to do, for main.js to carry out, or null when the link names no view at all (a bare
  * `#sources`, a moment alone, a format this reader does not know): then nothing is touched.
- *   clock  { goTo: ms, rate } | { live: true } | null    `t` absent means now (spec 0032 req 5)
+ *   clock  { goTo: ms, rate, clamped? } | { rate } | { live: true } | null    `t` absent means now (spec 0032 req 5);
+ *          `clamped`: the date was outside T_MIN_MS..T_MAX_MS and is held to the nearer end; `{ rate }`: a rate and no `t`
  *   stage  the stage id the link names, or null
  *   trip   { start: id, stop } | { jump: stop } | { stop: true } | null
  *   event  the mission event, or null
@@ -345,9 +365,11 @@ export function linkChange(link, now = {}) {
     return { clock: now.live === false ? { live: true } : null, stage: elsewhere ? DEFAULT_STAGE : null, trip: now.trip ? { stop: true } : null, event: null, at: now.at ? { none: true } : null };
   }
   const out = { clock: null, stage: link.stage || (elsewhere && !link.trip && !link.event ? DEFAULT_STAGE : null), trip: null, event: null, at: null };
-  const ms = link.t && link.t !== 'now' ? Date.parse(link.t) : NaN;
+  const at = linkInstant(link.t);
   const rate = Number(link.rate) > 0 ? Number(link.rate) : 1;
-  if (Number.isFinite(ms)) out.clock = { goTo: ms, rate };
+  if (at) out.clock = at.clamped ? { goTo: at.ms, rate, clamped: true } : { goTo: at.ms, rate };
+  // `#rate=3600` and no `t`: the rate, from now (a fresh load applies it the same way: bootLink).
+  else if (Number(link.rate) > 0 && !link.trip) out.clock = { rate };
   if (link.trip) {
     out.trip = now.trip === link.trip ? { jump: link.stop || '1' } : { start: link.trip, stop: link.stop || null };
     return out;

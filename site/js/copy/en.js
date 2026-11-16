@@ -961,6 +961,8 @@ export const COPY = {
     unknownVersion: 'This link is from a newer map. Showing the default view.',
     unknownTrip: 'That trip is gone from this map. Showing the default view.',
     unknownAt: 'That object is not on this map; showing the default view.',
+    // A link's date outside the years the map answers for (ui/urlstate.js linkInstant): held to the nearest it does.
+    tOutOfRange: 'That date is outside 1700 to 2200, the years this map shows. Showing the nearest.',
     unknownStage: 'This map cannot centre on that place. Showing the default.',
   },
   // Sharing (spec 0033, spec 0061 task 8): one sheet, ui/sharesheet.js, with the postcard, the link
@@ -1416,6 +1418,9 @@ export const COPY = {
     endedLine: 'Its mission ended on {date}. Its events, below, go back to it.',
     pathEndedLine: 'The path JPL holds for it ends on {date}. Its events, below, go back to it.',
     pathBeginsLine: 'The path JPL holds for it begins on {date}. Its events, below, go back to it.', // 0077 W1-d
+    // A satellite drawn from orbital elements, on a date they cannot answer for (ui/cardfacts.js elementsOutWords).
+    elementsOutLine: 'No position for this date: its orbit is only known within about a month of {date}.',
+    notLaunchedLine: 'No position for this date: it was launched in {year}.',
 
     actions: {
       flyTo: 'Fly to it',

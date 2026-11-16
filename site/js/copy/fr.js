@@ -492,6 +492,7 @@ export const COPY = {
     "unknownVersion": "Lien d’une carte plus récente : vue par défaut.",
     "unknownTrip": "Ce voyage n’existe plus ici : vue par défaut.",
     "unknownAt": "Cet objet n’est pas sur la carte : vue par défaut.",
+    "tOutOfRange": "Cette date est hors de 1700 à 2200, les années que montre cette carte. Voici la plus proche.",
     "unknownStage": "Impossible de centrer la carte sur ce lieu : vue par défaut."
   },
   "share": {
@@ -882,6 +883,8 @@ export const COPY = {
     "endedLine": "Sa mission s’est terminée le {date}. Ses événements, plus bas, y remontent.",
     "pathEndedLine": "La trajectoire de cet objet que JPL conserve s’arrête le {date}. Ses événements, plus bas, y remontent.",
     "pathBeginsLine": "La trajectoire de cet objet que JPL conserve commence le {date}. Ses événements, plus bas, y remontent.",
+    "elementsOutLine": "Pas de position pour cette date : son orbite n’est connue qu’à un mois environ du {date}.",
+    "notLaunchedLine": "Pas de position pour cette date : il a été lancé en {year}.",
     "actions": {
       "flyTo": "S’y rendre",
       "flyToTitle": "Déplacer la caméra vers cet objet",
@@ -1697,6 +1700,8 @@ export const COPY = {
     "label": "Comment nous savons où il est",
     "measured": "position mesurée",
     "inferred": "position propagée à partir d’éléments vieux de {n} {unit}",
+    "inferredBefore": "position calculée en remontant {n} {unit} avant la date de ses éléments",
+    "noPositionForDate": "aucune position n’est dessinée pour cette date",
     "inferredUnknownAge": "position propagée à partir d’éléments d’âge inconnu",
     "inferredNoElements": "position calculée plutôt que mesurée",
     "stormAdvisory": "son centre au bulletin de {time} UTC, {ago} ; une tempête bouge, donc elle a bougé depuis",
@@ -2057,6 +2062,8 @@ export const COPY = {
     "downNow": "sous ton horizon maintenant",
     "trip": "Voyage",
     "starPattern": "Constellation d’étoiles",
+    "asterism": "Figure d’étoiles dans {name}",
+    "fleet": "Constellation de satellites · appuie pour l’éclairer sur le globe",
     "mission": "Mission",
     "eventName": "{mission} : {title}",
     "event": "Événement de mission · {date}",
@@ -2661,6 +2668,8 @@ export const COPY = {
     "showMe": "Montre-moi",
     "showMeTitle": "Ouvrir le ciel depuis chez toi, face à l’endroit où il se lève",
     "guessCaveat": "Lieu deviné : indique ta ville pour des heures exactes.",
+    "satLaunched": "un satellite lancé en {year}",
+    "rocketLaunched": "un étage de fusée usé, lancé en {year}",
     "unitRises": "se lève",
     "unitHigh": "au plus haut",
     "unitLong": "min visible",
@@ -3272,6 +3281,7 @@ export const COPY = {
     "stale": "Lu le {date} : plus de deux jours, donc cela a pu changer.",
     "joined": "Les noms sont ceux des équipages des vaisseaux amarrés en ce moment.",
     "unmatched": "Les noms en mémoire ne correspondaient pas à ce nombre, donc aucun n’est montré.",
+    "otherDate": "La liste de l’équipage est celle d’aujourd’hui. La carte montre une autre date : personne n’est indiqué.",
     "waiting": "Lecture de la liste d’équipage.",
     "none": "Pas de liste d’équipage pour cette station."
   },
@@ -5444,6 +5454,8 @@ Object.assign(COPY, {
     },
     "other": "Autres défis",
     "loading": "La carte se charge encore ; le défi commence dès qu’elle est prête.",
+    "failed": "Le défi n’a pas pu charger ses distances.",
+    "retry": "Réessayer",
     "rung": "Étape {n} sur {of} : {where}",
     "rungs": {
       "local-group": "le Groupe local",

@@ -151,7 +151,9 @@ check((closest(index, 'satrun')[0] || {}).record.id === 'saturn', '"satrun" offe
   const names = JSON.parse(readFileSync(join(ROOT, 'site/data/constellation-names.json'), 'utf8'));
   const lines = JSON.parse(readFileSync(join(ROOT, 'site/data/constellations.lines.json'), 'utf8'));
   const n = R.setConstellations(names, lines);
-  check(n >= 85 && n <= 90, `${n} star patterns have a name and lines`);
+  // The 88 figures (those with lines) and the asterisms inside them (ui/searchrows.js ASTERISMS: the Big Dipper, ...).
+  const asterisms = Object.values(R.ASTERISMS).reduce((a, list) => a + list.length, 0);
+  check(n - asterisms >= 85 && n - asterisms <= 90 && asterisms >= 5, `${n} star patterns have a name and lines, ${asterisms} of them asterisms`);
   const orion = R.findExtras('orion').find((e) => e.extra === 'constellation');
   check(orion && orion.name === 'Orion' && orion.sub === COPY.searchRows.starPattern, `"orion" finds the constellation (${JSON.stringify(orion)})`);
   check(R.findExtras('orion')[0].extra === 'constellation', 'and it is the first extra row, before the trips that mention it');

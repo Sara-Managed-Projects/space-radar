@@ -374,6 +374,7 @@ export const COPY = {
     unknownVersion: "Enlace de un mapa más nuevo. Se muestra la vista inicial.",
     unknownTrip: "Ese viaje ya no está en el mapa. Se muestra la vista inicial.",
     unknownAt: "Ese objeto no está en el mapa; se muestra la vista inicial.",
+    tOutOfRange: "Esa fecha queda fuera de 1700 a 2200, los años que muestra este mapa. Se muestra la más cercana.",
     unknownStage: "No se puede centrar ahí. Se muestra la vista inicial."
   },
   share: {
@@ -758,6 +759,8 @@ export const COPY = {
     endedLine: "Su misión terminó el {date}. Sus hitos, más abajo, te llevan de vuelta a ella.",
     pathEndedLine: "La trayectoria que guarda el JPL termina el {date}. Sus hitos, más abajo, te llevan de vuelta a ella.",
     pathBeginsLine: "La trayectoria que guarda el JPL empieza el {date}. Sus hitos, más abajo, te llevan de vuelta a ella.",
+    elementsOutLine: "Sin posición para esta fecha: su órbita solo se conoce hasta cerca de un mes antes o después del {date}.",
+    notLaunchedLine: "Sin posición para esta fecha: se lanzó en {year}.",
     actions: {
       flyTo: "Ir allí",
       flyToTitle: "Mover la cámara a este objeto",
@@ -1551,6 +1554,8 @@ export const COPY = {
     label: "Cómo sabemos dónde está",
     measured: "posición medida",
     inferred: "posición propagada a partir de elementos de hace {n} {unit}",
+    inferredBefore: "posición calculada hacia atrás, {n} {unit} antes de la fecha de sus elementos",
+    noPositionForDate: "no se dibuja ninguna posición para esta fecha",
     inferredUnknownAge: "posición propagada a partir de elementos de antigüedad desconocida",
     inferredNoElements: "posición calculada en lugar de medida",
     stormAdvisory: "su centro en el aviso de las {time} UTC, {ago}; una tormenta se mueve, así que ya se ha movido desde entonces",
@@ -1911,6 +1916,8 @@ export const COPY = {
     downNow: "bajo tu horizonte ahora",
     trip: "Viaje",
     starPattern: "Constelación de estrellas",
+    asterism: "Figura de estrellas en {name}",
+    fleet: "Constelación de satélites · pulsa para iluminarla en el globo",
     mission: "Misión",
     eventName: "{mission}: {title}",
     event: "Hito de misión · {date}",
@@ -2505,6 +2512,8 @@ export const COPY = {
     showMe: "Muéstramelo",
     showMeTitle: "Abrir el cielo desde tu lugar, mirando hacia donde sale",
     guessCaveat: "Lugar supuesto: indica tu ciudad para ver horas reales.",
+    satLaunched: "un satélite lanzado en {year}",
+    rocketLaunched: "una etapa de cohete agotada, lanzada en {year}",
     unitRises: "sale",
     unitHigh: "en su punto más alto",
     unitLong: "min a la vista",
@@ -3103,6 +3112,7 @@ export const COPY = {
     stale: "Leído el {date}: tiene más de dos días, así que puede haber cambiado.",
     joined: "Los nombres son las tripulaciones de los vehículos acoplados ahora.",
     unmatched: "Los nombres que tenemos no coincidían con este recuento, así que no se muestra ninguno.",
+    otherDate: "La lista de tripulantes es la de hoy. El mapa muestra otra fecha, así que no se indica a nadie.",
     waiting: "Leyendo la lista de la tripulación.",
     none: "No hay lista de tripulación para esta estación."
   },
@@ -5204,6 +5214,8 @@ Object.assign(COPY, {
     },
     "other": "Otros retos",
     "loading": "El mapa aún se está cargando; el reto empieza cuando esté listo.",
+    "failed": "El reto no pudo cargar sus distancias.",
+    "retry": "Reintentar",
     "rung": "Paso {n} de {of}: {where}",
     "rungs": {
       "local-group": "el Grupo Local",

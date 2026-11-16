@@ -489,6 +489,7 @@ export const COPY = {
     "unknownVersion": "Dieser Link stammt von einer neueren Karte. Es wird die Standardansicht gezeigt.",
     "unknownTrip": "Diese Reise gibt es auf dieser Karte nicht mehr. Es wird die Standardansicht gezeigt.",
     "unknownAt": "Dieses Objekt ist nicht auf dieser Karte. Es wird die Standardansicht gezeigt.",
+    "tOutOfRange": "Dieses Datum liegt außerhalb von 1700 bis 2200, den Jahren dieser Karte. Es wird das nächste gezeigt.",
     "unknownStage": "Diese Karte kann nicht auf diesen Ort zentrieren. Es wird die Standardansicht gezeigt."
   },
   "share": {
@@ -879,6 +880,8 @@ export const COPY = {
     "endedLine": "Seine Mission endete am {date}. Seine Ereignisse unten führen dorthin zurück.",
     "pathEndedLine": "Der Weg, den das JPL für dieses Objekt hat, endet am {date}. Seine Ereignisse unten führen dorthin zurück.",
     "pathBeginsLine": "Der Weg, den das JPL für dieses Objekt hat, beginnt am {date}. Seine Ereignisse unten führen dorthin zurück.",
+    "elementsOutLine": "Keine Position für dieses Datum: Die Bahn ist nur etwa einen Monat um den {date} bekannt.",
+    "notLaunchedLine": "Keine Position für dieses Datum: Der Start war {year}.",
     "actions": {
       "flyTo": "Hinfliegen",
       "flyToTitle": "Die Kamera zu diesem Objekt bewegen",
@@ -1694,6 +1697,8 @@ export const COPY = {
     "label": "Woher wir wissen, wo es ist",
     "measured": "gemessene Position",
     "inferred": "Position fortgeschrieben aus Bahnelementen, die {n} {unit} alt sind",
+    "inferredBefore": "Position {n} {unit} vor das Datum der Bahnelemente zurückgerechnet",
+    "noPositionForDate": "für dieses Datum wird keine Position gezeichnet",
     "inferredUnknownAge": "Position fortgeschrieben aus Bahnelementen unbekannten Alters",
     "inferredNoElements": "Position berechnet, nicht gemessen",
     "stormAdvisory": "sein Zentrum bei der Meldung von {time} UTC, {ago}; ein Sturm zieht weiter, er hat sich seither also bewegt",
@@ -2054,6 +2059,8 @@ export const COPY = {
     "downNow": "jetzt unter deinem Horizont",
     "trip": "Reise",
     "starPattern": "Sternbild",
+    "asterism": "Sternfigur in {name}",
+    "fleet": "Satelliten-Konstellation · drücken, um sie auf dem Globus hervorzuheben",
     "mission": "Mission",
     "eventName": "{mission}: {title}",
     "event": "Missionsereignis · {date}",
@@ -2658,6 +2665,8 @@ export const COPY = {
     "showMe": "Zeigen",
     "showMeTitle": "Den Himmel von deinem Ort aus öffnen, mit Blick dorthin, wo es aufgeht",
     "guessCaveat": "Geschätzter Ort: Stell deine Stadt ein, dann stimmen die Zeiten.",
+    "satLaunched": "ein {year} gestarteter Satellit",
+    "rocketLaunched": "eine ausgebrannte Raketenstufe, gestartet {year}",
     "unitRises": "geht auf",
     "unitHigh": "am höchsten",
     "unitLong": "Min. sichtbar",
@@ -3269,6 +3278,7 @@ export const COPY = {
     "stale": "Gelesen am {date}: mehr als zwei Tage alt, es kann sich also etwas geändert haben.",
     "joined": "Die Namen sind die Besatzungen der Fahrzeuge, die jetzt angedockt sind.",
     "unmatched": "Die gespeicherten Namen passten nicht zu dieser Zahl, deshalb werden keine gezeigt.",
+    "otherDate": "Die Besatzungsliste gilt für heute. Die Karte zeigt ein anderes Datum, deshalb wird niemand genannt.",
     "waiting": "Die Besatzungsliste wird gelesen.",
     "none": "Keine Besatzungsliste für diese Station."
   },
@@ -5441,6 +5451,8 @@ Object.assign(COPY, {
     },
     "other": "Weitere Herausforderungen",
     "loading": "Die Karte lädt noch; die Herausforderung beginnt, sobald sie bereit ist.",
+    "failed": "Die Herausforderung konnte ihre Entfernungen nicht laden.",
+    "retry": "Erneut versuchen",
     "rung": "Schritt {n} von {of}: {where}",
     "rungs": {
       "local-group": "die Lokale Gruppe",

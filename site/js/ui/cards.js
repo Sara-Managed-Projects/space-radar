@@ -86,7 +86,7 @@ import {
   whyLine, endedWords, pathEndedWords, rightNowRows, ensurePlaces, rangeLabel, nearEarthOnEllipse,
   honestyLine, placesReady, truthRow, starClassParts,
 } from './cardfacts.js';
-import { pathBeginsWords } from './cardfacts.js'; // 0077 W1-d
+import { pathBeginsWords, elementsOutLine } from './cardfacts.js'; // 0077 W1-d
 export { pathBeginsWords } from './cardfacts.js'; // 0077 W1-d
 export {
   stormAdvisoryAgo, stormAdvisoryText, earthEventRows, whyLine, endedWords, pathEndedWords, ensurePlaces,
@@ -1650,7 +1650,7 @@ export function actionButtons(record, ctx, m) {
     if (ended) { fly.title = t(A.flyEnded, { date: ended }); fly.setAttribute('aria-label', fly.title); }
     else if (pathEnds) { fly.title = t(A.flyPathEnded, { date: pathEnds }); fly.setAttribute('aria-label', fly.title); }
     else if (pathBegins) { fly.title = t(A.flyPathBegins, { date: pathBegins }); fly.setAttribute('aria-label', fly.title); } // 0077 W1-d
-    else if (fly.disabled) fly.title = A.flyNowhere;
+    else if (fly.disabled) fly.title = elementsOutLine(record, m) || A.flyNowhere;
     buttons.push(fly);
     const see = actionButton('see', A.seeShort, A.seeFromHereTitle, 'telescope', () => seeFromHere(record, ctx));
     see.disabled = !canSeeFromHere(record, m);
@@ -2593,7 +2593,7 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
   const aboard = aboardSection(record, ctx);
   const crew = crewBlock(record, rowsList, () => {
     if (current && current.record === record) { try { render(current.record, current.ctx, current.opts); } catch { /* keep the card */ } }
-  });
+  }, m.tMs);
   if (aboard || crew) {
     add('aboard', aboard && aboard.riding ? S.ridingOn : S.aboard, crew ? crew.hint : null, panelOf([crew ? crew.node : null, aboard ? aboard.node : null]));
   }
@@ -2954,8 +2954,11 @@ function render(record, ctx, opts = {}) {
   const ended = endedWords(record, m);
   const pathEnds = ended ? null : pathEndedWords(record, m);
   const pathBegins = ended || pathEnds ? null : pathBeginsWords(record, m); // 0077 W1-d
-  const heroes = ended || pathEnds ? [] : heroNumbers(record, m, rows);
+  // A satellite on a date its elements cannot answer for (ui/cardfacts.js elementsOutWords): one line, not three dashes.
+  const outOfElements = ended || pathEnds || pathBegins ? null : elementsOutLine(record, m);
+  const heroes = ended || pathEnds || outOfElements ? [] : heroNumbers(record, m, rows);
   if (heroes.length && !pathBegins) body.appendChild(heroBlock(heroes)); // 0077 W1-d: before its path, as after it: no dashes
+  if (outOfElements) body.appendChild(el('p', 'sr-card__sentence sr-card__ended', outOfElements));
   if (ended) body.appendChild(el('p', 'sr-card__sentence sr-card__ended', t(COPY.card.endedLine, { date: ended })));
   else if (pathEnds) body.appendChild(el('p', 'sr-card__sentence sr-card__ended', t(COPY.card.pathEndedLine, { date: pathEnds })));
   else if (pathBegins) body.appendChild(el('p', 'sr-card__sentence sr-card__ended', t(COPY.card.pathBeginsLine, { date: pathBegins }))); // 0077 W1-d

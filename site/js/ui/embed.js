@@ -201,7 +201,10 @@ export async function installEmbed(search = typeof location !== 'undefined' ? lo
     paint();
     open.addEventListener('pointerdown', paint);
     open.addEventListener('focus', paint);
-    if (ctx) ctx.embed = { link, bar, href: () => { paint(); return open.href; } };
+    // `note(text)`: one line for the frame when its link names something the map does not have (main.js openAt):
+    // an embed has no note of the scene's, and a bare Earth with no word reads as a broken page.
+    const sayNote = (text) => { note = String(text || ''); say(ctx && ctx.trip ? ctx.trip.state : null); };
+    if (ctx) ctx.embed = { link, bar, note: sayNote, href: () => { paint(); return open.href; } };
     return bar;
   }
 

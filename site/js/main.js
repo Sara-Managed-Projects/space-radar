@@ -33,8 +33,6 @@ import { createRail } from './ui/rail.js';
 import { toast } from './ui/share.js';
 import { createTimePill } from './ui/timepill.js';
 import { createSceneNote } from './ui/scenenote.js';
-import { buildIndex, findMatches, LINK_MIN_SCORE } from './ui/search.js';
-import { satIdOf } from './data/catnum.js';
 import { createDensity } from './ui/density.js';
 import { createTripGate } from './ui/tripgate.js';
 import { createVeil } from './ui/veil.js';
@@ -1145,7 +1143,8 @@ export async function boot({ setStatus } = {}) {
   // `sr-play-on` at once keeps the first visit's controls hint off the card (ui/keyhint.js whyNot)
   const playLink = () => { const k = readUrlKeys().play; if (!k || embed) return; document.documentElement.classList.add('sr-play-on'); import('./ui/play.js').then((m) => m.openPlay(ctx, k)).catch((e) => { document.documentElement.classList.remove('sr-play-on'); console.warn('play did not load', e); }); };
   playLink();
-  window.addEventListener('hashchange', playLink);
+  // A later link without `play=` (an object, the empty address) closes the challenge it would otherwise sit over.
+  window.addEventListener('hashchange', () => { if (!readUrlKeys().play && ctx.play && ctx.play.isOpen && ctx.play.isOpen()) ctx.play.close(); else playLink(); });
   // b200-f6-learn: end
   // TODAY (internal #270, ui/today.js): the home's dated cards, generated from what is loaded,
   // and under them the way into the debris view (ui/debris.js). TODAY_MS after sr:layers-ready.
@@ -2398,6 +2397,8 @@ export async function boot({ setStatus } = {}) {
   });
   window.addEventListener('hashchange', () => {
     setMoment(readMomentFromHash(), { silent: true });
+    // The last link's line ("That object is not on this map") does not stand over this one's view (ui/scenenote.js).
+    if (ctx.sceneNote && ctx.sceneNote.clearLink) ctx.sceneNote.clearLink();
     // THE WHOLE VIEW, not only at boot and not only `at` (public #331): Back, Forward or an address
     // pasted over this one is a link opened in a tab that is already running, and the clock, the
     // stage, the trip and its stop are as much the view as what is selected. ui/urlstate.js
@@ -2423,7 +2424,14 @@ export async function boot({ setStatus } = {}) {
     const plan = linkChange(keys, { at: current ? current.id : null, trip: running ? running.tourId : null, live: clock.mode === 'live', stage: stage.worldId });
     if (!plan) return;
     if (plan.clock && plan.clock.live) clock.live();
-    else if (plan.clock) { clock.goTo(plan.clock.goTo); if (clock.rates().includes(plan.clock.rate)) clock.setRate(plan.clock.rate); }
+    else if (plan.clock) {
+      // `#rate=3600` alone (no `t`): the rate from now on, as a fresh load reads it (ui/urlstate.js bootLink).
+      if (Number.isFinite(plan.clock.goTo)) clock.goTo(plan.clock.goTo); else if (clock.mode !== 'live') clock.live();
+      if (clock.rates().includes(plan.clock.rate)) clock.setRate(plan.clock.rate);
+      if (plan.clock.clamped) linkNote(ctx, COPY.link.tOutOfRange);
+    }
+    // A rate the clock does not offer was not applied: the address stops saying it.
+    if (keys.rate !== undefined && !clock.rates().includes(Number(keys.rate))) clearUrlState(['rate']);
     if (plan.stage && STAGES[plan.stage]) { if (stage.worldId !== plan.stage) ctx.setStage(plan.stage); } else if (plan.stage) linkNote(ctx, COPY.link.unknownStage, ['stage']);
     if (plan.trip && plan.trip.start) { openTrip(ctx, keys); return; }
     if (plan.trip && plan.trip.jump) {
@@ -3479,7 +3487,8 @@ function wireSound(ctx) {
 // address bar so a link copied from here does not carry it on.
 
 function linkNote(ctx, line, deadKeys) {
-  if (ctx.sceneNote && typeof ctx.sceneNote.say === 'function') ctx.sceneNote.say(line);
+  // A link's line goes by itself after a few seconds, and when the next link is applied (the hashchange listener).
+  if (ctx.sceneNote && typeof ctx.sceneNote.say === 'function') ctx.sceneNote.say(line, { link: true });
   if (deadKeys) clearUrlState(deadKeys);
 }
 
@@ -3489,6 +3498,8 @@ function applyUrlState(ctx, st) {
   // applies none of them rather than half of a link.
   if (st.unknownVersion) { linkNote(ctx, COPY.link.unknownVersion); return; }
   // `t` and `rate` are not here: ui/urlstate.js bootLink() applied them at boot, and took them out.
+  // A date outside what the map answers for was held to the nearest it does, and the scene says so.
+  if (st.tOutOfRange) linkNote(ctx, COPY.link.tOutOfRange);
   if (st.stage) {
     if (STAGES[st.stage]) ctx.setStage(st.stage);
     else linkNote(ctx, COPY.link.unknownStage, ['stage']);
@@ -3562,37 +3573,32 @@ function openTrip(ctx, st) {
 }
 
 /**
- * What `#at=` names. A record id first (`sat-25544`, `europa`), then a bare catalogue number
- * (`25544`), then what a person would type (`iss`, `hubble`), through the same index and alias
- * table as the search box. Only a whole-name, name-prefix or word-prefix match counts: a
- * letters-inside-a-word hit is a guess, and a link must not fly somewhere it did not name.
+ * What `#at=` names (and `#go=`, and an embed's `at=`): ui/resolveid.js is the one resolver. A record id as
+ * written is answered here, at once; anything else (a bare catalogue number, `m31`, `ngc-224`, `iss`,
+ * `andromeda-galaxy`) fetches the resolver, which takes an exact id, designation, name or slug before
+ * anything a person might have typed, and never lets `m1` run on into M10.
  */
-function resolveAt(ctx, id) {
+function openAt(ctx, id, how = null) {
   const text = String(id || '').trim();
-  if (!text) return null;
-  // A planet or a star system by its bare id, as `#go=` gives it: `kepler-186-f`, `kepler-186`.
-  const direct = ctx.recordById(text) || ctx.recordById(`exo-${text}`) || ctx.recordById(`star-${text}`);
-  if (direct) return direct;
-  // A number, Alpha-5 too (`100690`, `A0690`); and `int-<designator>`, the id a number of 90 000 and up had before 2026-10-14.
-  const sat = satIdOf(text) && ctx.recordById(satIdOf(text));
-  if (sat) return sat;
-  const records = typeof ctx.records === 'function' ? ctx.records() : [];
-  const intl = /^int-(.+)$/.exec(text);
-  const byIntl = intl && records.find((r) => r && r.meta && r.meta.intlDesignator === intl[1]);
-  if (byIntl) return byIntl;
-  const found = findMatches(buildIndex(records, ctx.layers || []), text.replace(/[-_+]+/g, ' '), 1);
-  const hit = found.hits[0];
-  return hit && !found.fallback && hit.score >= LINK_MIN_SCORE ? hit.record : null;
-}
-
-function openAt(ctx, id) {
-  const record = resolveAt(ctx, id);
-  // A star or an exoplanet before its layer has landed (OFF THE FIRST VISIT): load it, then look again.
-  if (!record && ctx.loadAfterFirstVisit && !ctx.laterLayersLoaded()) {
-    ctx.loadAfterFirstVisit().then(() => ctx.loadMoreCatalogues()).then(() => openAt(ctx, id), () => openAt(ctx, id)); // 0079 r15-a45: a link may name a pulsar or a cluster
+  let record = text ? ctx.recordById(text) : null;
+  if (!record && text && !how) {
+    import('./ui/resolveid.js').then((m) => openAt(ctx, id, m), () => openAt(ctx, id, { resolveId: () => null }));
     return;
   }
-  if (!record) { linkNote(ctx, COPY.link.unknownAt, ['at']); return; }
+  if (!record && text) record = how.resolveId(text, { records: typeof ctx.records === 'function' ? ctx.records() : [], layers: ctx.layers || [], recordById: ctx.recordById });
+  // A star or an exoplanet before its layer has landed (OFF THE FIRST VISIT): load it, then look again.
+  if (!record && ctx.loadAfterFirstVisit && !ctx.laterLayersLoaded()) {
+    ctx.loadAfterFirstVisit().then(() => ctx.loadMoreCatalogues()).then(() => openAt(ctx, id, how), () => openAt(ctx, id, how)); // 0079 r15-a45: a link may name a pulsar or a cluster
+    return;
+  }
+  if (!record) {
+    // The note says "showing the default view": so nothing stays selected from before (a link pasted over a running tab),
+    // and an embed, which has no note of the scene's, says it in its own line (ui/embed.js).
+    linkNote(ctx, COPY.link.unknownAt, ['at']);
+    if (typeof ctx.selected === 'function' && ctx.selected() && typeof ctx.deselect === 'function') ctx.deselect();
+    if (ctx.embed && typeof ctx.embed.note === 'function') ctx.embed.note(COPY.link.unknownAt);
+    return;
+  }
   // Spec 0021's rule, as ui/search.js: a record whose layer is off has no mark and no model, so
   // flying to it arrives at empty sky. The layer goes on first, and the panel is told (it paints
   // its checkboxes from its own state, and ignores an event with no `from` as its own echo).

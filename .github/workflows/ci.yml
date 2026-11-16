@@ -874,6 +874,12 @@ jobs:
       # Internal #466: the landing's move, and the film clock handed to a tool, with no browser.
       - name: "#go= lands with one interruptible push-in, and the film's clock can be had without a trip (internal #466)"
         run: node tests/test_golink.mjs
+      # Review of 16 Nov 2026: one resolver for `#at=`, `#go=` and an embed's `at=`, with a table of ids; and the
+      # search, card and link faults found the same day.
+      - name: a link's id opens what it names (record id, Messier, NGC, HIP, NORAD, designator, name, slug), and m1 is never M10
+        run: node tests/test_resolveid.mjs
+      - name: "search knows full and spaced names; a satellite card is honest when the clock moves; a link's date, rate and note (review of 16 Nov 2026)"
+        run: node tests/test_review_f1.mjs
       - name: a shared link is the view and nothing else, and every Share opens the one sheet (spec 0033, 0061 task 8)
         run: node tests/test_share.mjs
       # Spec 0044: the byte gate's rules on fixtures. The real boot is in screens.yml, which has a
