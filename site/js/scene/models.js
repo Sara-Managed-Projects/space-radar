@@ -4360,7 +4360,8 @@ export function updateModelAttitude(obj, record, sunDirScene, nadirScene, tMs) {
       // sunshield or a telescope's cells at the Sun, a far probe's dish at the Earth, a spin-stabilised craft turning about it.
       // What each needs besides the Sun and the nadir is per-frame state on the object, written by scene/heroes.js as `burn` and
       // `climb` are: `north`, `heading`, `earthDir`. When it is not there (another caller, a world not drawn) the craft is
-      // pointed as every shape was before: +Z at its world, +X square to the Sun.
+      // pointed as every shape was before: +Z at its world, +X square to the Sun. `cellsOnY` (heroes.js) marks a loaded file whose
+      // cells are fixed on +Y: it cannot turn its wings to the Sun, so `geo` turns the craft end for end to keep them sunward.
       const u = obj.userData;
       let angle = 0;
       if (mode === 'spin' && Number.isFinite(tMs) && !lessMotion()) {
@@ -4368,7 +4369,7 @@ export function updateModelAttitude(obj, record, sunDirScene, nadirScene, tMs) {
         // rate the eye can follow when the clock runs fast, as a tumbling stage is (tumblePhase).
         angle = tumblePhase(u.spinState || (u.spinState = {}), tMs, typeof performance !== 'undefined' ? performance.now() : NaN, (u.spinS > 0 ? u.spinS : DEFAULT_SPIN_S) * 1000);
       }
-      const axes = attitudeAxes(mode, { sun: _sun, nadir: _nadir, north: u.north, heading: u.heading, earth: u.earthDir, rigid: !(u.panelPivots && u.panelPivots.length), angle });
+      const axes = attitudeAxes(mode, { sun: _sun, nadir: _nadir, north: u.north, heading: u.heading, earth: u.earthDir, rigid: !!u.cellsOnY, angle });
       if (axes) {
         _m4.makeBasis(_x.fromArray(axes.x), _y.fromArray(axes.y), _z.fromArray(axes.z));
         obj.quaternion.setFromRotationMatrix(_m4);

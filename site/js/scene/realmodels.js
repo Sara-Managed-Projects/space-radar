@@ -2474,7 +2474,7 @@ export function loadRealModel(entry, { keepMaterials = false } = {}) {
           const framed = (out) => {
             const row = kit.frames[entry.file];
             const q = row && kit.frameQuat ? kit.frameQuat(row) : null;
-            if (q) out.userData.fileFrame = { law: row.law, q, ...(row.spinS > 0 && { spinS: row.spinS }) };
+            if (q) out.userData.fileFrame = { law: row.law, q, ...(row.spinS > 0 && { spinS: row.spinS }), ...(row.cells != null && { cells: true }) };
             return out;
           };
           if (keepMaterials) return resolve(framed(normalise(top)));

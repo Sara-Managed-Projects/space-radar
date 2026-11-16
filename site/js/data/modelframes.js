@@ -71,7 +71,7 @@ export const MODEL_FRAMES = {
     ]
   },
   "lro.glb": {
-    "law": "nadir",
+    "law": "sun",
     "face": "+y",
     "panel": "x"
   },

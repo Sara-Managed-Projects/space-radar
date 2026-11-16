@@ -255,6 +255,7 @@ const heroes = readFileSync(join(ROOT, 'site/js/scene/heroes.js'), 'utf8');
 check(/clone\.userData\.fileFrame/.test(heroes) && /clone\.userData\.frame = ff\.q/.test(heroes) && /lawOf\(ff\.law, record\)/.test(heroes), 'scene/heroes.js flies a loaded file by its row\'s law and frame');
 check(/law === 'lvlh'\) && c\.p/.test(heroes) && /obj\.userData\.north = /.test(heroes) && /obj\.userData\.earthDir = /.test(heroes), 'and writes the heading, the north and the Earth\'s direction on the object each frame');
 const real = readFileSync(join(ROOT, 'site/js/scene/realmodels.js'), 'utf8');
+check(/cellsOnY = true/.test(heroes) && /rigid: !!u\.cellsOnY/.test(readFileSync(join(ROOT, 'site/js/scene/models.js'), 'utf8')), 'only a file whose cells are known to be on +Y is turned end for end by `geo`');
 check(/import\('\.\.\/data\/modelframes\.js'\)/.test(real) && /out\.userData\.fileFrame = \{ law: row\.law, q/.test(real), 'scene/realmodels.js puts a file\'s frame on the loaded model, fetched with the loader and not at boot');
 
 // --- 6. the card ---------------------------------------------------------------------------------------------------

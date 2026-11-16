@@ -725,6 +725,7 @@ export function createHeroes(scene, ctx) {
         if (real.axes === 'app' && entry.obj.userData.attitude) {
           clone.userData.attitude = entry.obj.userData.attitude;
           clone.userData.klass = entry.obj.userData.klass;
+          clone.userData.cellsOnY = true; // the app's axes: cells toward +Y, and a file's wings do not turn (scene/attitude.js `geo`)
         }
         // 2026-11-16: AND SO IS A FILE FROM OTHER HANDS WHOSE ROW SAYS WHICH OF ITS AXES IS WHICH (registry/models.yaml `attitude:`;
         // realmodels.js puts it on the loaded model as `fileFrame`). It is flown by the law its row names (scene/attitude.js): the ISS
@@ -735,6 +736,7 @@ export function createHeroes(scene, ctx) {
           clone.userData.attitude = lawOf(ff.law, record);
           clone.userData.frame = ff.q;
           if (ff.spinS > 0) clone.userData.spinS = ff.spinS;
+          if (ff.cells) clone.userData.cellsOnY = true;
           clone.userData.klass = entry.obj.userData.klass;
         }
         // 0077 W3-d: a shape in its body's own axes turns about its measured pole (scene/moonshape.js applySpin).
