@@ -229,7 +229,8 @@ export const COPY = {
     "video": "فيديو",
     "videoHref": "https://video.spaceradar.ai/",
     "tour": "ابدأ الجولة",
-    "menuTour": "ابدأ الجولة"
+    "menuTour": "ابدأ الجولة",
+    "language": "اللغة"
   },
   "timePill": {
     "label": "الوقت",
@@ -1352,7 +1353,46 @@ export const COPY = {
       "exoplanets": "مُطفأة. ضع علامة لتظهر."
     },
     "layerName": {
-      "pha": "كويكبات خطرة"
+      "worlds": "الكواكب والأقمار",
+      "stars": "النجوم",
+      "exoplanets": "كواكب حول نجوم أخرى",
+      "systems": "الأنظمة النجمية",
+      "deep-sky": "سدم وعناقيد ومجرات",
+      "galaxy": "درب التبانة",
+      "exotics": "الثقوب السوداء وأجرام قصوى",
+      "extremes-more": "نجوم مغناطيسية ونجوم ميتة",
+      "pulsars": "النجوم النابضة",
+      "beyond-more": "المجموعة المحلية والعناقيد",
+      "quasars": "الكوازارات",
+      "stations": "محطات مأهولة",
+      "notable": "أقمار تستحق المعرفة",
+      "starlink-trains": "قطارات ستارلينك الجديدة",
+      "just-launched": "أُطلقت للتو",
+      "active": "كل ما هو نشط",
+      "geo-ring": "الحلقة الثابتة بالنسبة للأرض",
+      "debris-notable": "حطام مشهور",
+      "debris-field": "كل الحطام المرصود",
+      "launches": "صواريخ في طريقها إلى الأعلى",
+      "asteroids": "كويكبات عابرة",
+      "far-bodies": "كواكب قزمة ومسافرون بعيدون",
+      "moons": "أقمار الكواكب",
+      "companions": "أقمار الكويكبات وأجرام ما وراء نبتون",
+      "pha": "كويكبات خطرة",
+      "comets": "المذنبات",
+      "deep-space": "مسابير وتلسكوبات",
+      "visual": "ساطعة تُرى بالعين",
+      "ground-sites": "منصات وأطباق ومراصد",
+      "hand-kept-sites": "أطباق ومركبات هبوط وجوالات",
+      "storms": "العواصف المدارية الآن",
+      "aurora": "الشفق القطبي",
+      "lightning": "البرق",
+      "earth-events": "حرائق وبراكين وجبال جليدية",
+      "reentries": "أشياء سقطت عائدة",
+      "oddities": "أشياء غريبة أرسلناها",
+      "observatories": "كل المراصد",
+      "launch-sites": "كل مواقع الإطلاق",
+      "landing-sites": "كل مواقع الهبوط والاصطدام",
+      "meteor-showers": "زخات الشهب"
     },
     "layerCountEmpty": "فارغة",
     "layerCountEmptyTitle": "عادت هذه الطبقة بلا شيء: تعذرت قراءة مصدرها، أو لا شيء فيه الآن.",
@@ -3254,6 +3294,12 @@ export const COPY = {
   "links": {
     "row": "{words} · {publisher}",
     "title": "يفتح صفحة {publisher} نفسها في علامة تبويب جديدة"
+  },
+  "language": {
+    "title": "اللغة",
+    "close": "إغلاق",
+    "listLabel": "اللغات",
+    "note": "تُحمَّل الصفحة من جديد بتلك اللغة، على العرض نفسه. كل اللغات عدا الإنجليزية ترجمة آلية روجعت على الإنجليزية."
   },
   "placeKeep": {
     "group": "مكانك",

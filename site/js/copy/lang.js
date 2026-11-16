@@ -12,6 +12,7 @@
 // browser's own list (navigator.languages), but only a language marked `reviewed`: docs/TRANSLATING.md
 // ("Review") says a text is not offered to everyone until a second native speaker has read it, so a
 // machine-drafted language is reached by ?lang= alone. Else English. `?lang=en` forces English.
+// Between the address and the browser's list: the visitor's own choice, kept by the language menu (LANG_KEY).
 // An unknown code is English too: a wrong address never breaks the page.
 // The list below is where a language is registered (0077 anchor: languages).
 export const LANGUAGES = {
@@ -55,8 +56,15 @@ export function pathLanguage(path, languages = LANGUAGES) {
   return m && m[1] !== 'en' && Object.prototype.hasOwnProperty.call(languages, m[1]) ? m[1] : '';
 }
 
-/** The language to speak. Pure: `search` is location.search, `preferred` navigator.languages, `path` location.pathname. */
-export function pickLanguage(search, preferred, languages = LANGUAGES, path = '') {
+/** Where the language menu (ui/languagepop.js) keeps the visitor's own choice: localStorage, this browser only. */
+export const LANG_KEY = 'sr:lang';
+
+/**
+ * The language to speak. Pure: `search` is location.search, `preferred` navigator.languages, `path` location.pathname,
+ * `chosen` what the language menu kept. The address still wins (?lang=, then /es/): a link in a language opens in it.
+ * Then the visitor's own choice, before the browser's list, so that "English" picked on a German browser stays English.
+ */
+export function pickLanguage(search, preferred, languages = LANGUAGES, path = '', chosen = '') {
   const asked = /[?&]lang=([^&#]*)/.exec(String(search || ''));
   if (asked) {
     let code = '';
@@ -66,6 +74,7 @@ export function pickLanguage(search, preferred, languages = LANGUAGES, path = ''
   // The app shell at /es/ speaks Spanish whatever the browser prefers: the address is the visitor's choice.
   const fromPath = pathLanguage(path, languages);
   if (fromPath) return fromPath;
+  if (chosen && Object.prototype.hasOwnProperty.call(languages, chosen)) return chosen;
   for (const tag of preferred || []) {
     const code = base(tag, languages);
     if (Object.prototype.hasOwnProperty.call(languages, code) && languages[code].reviewed) return code;
@@ -78,6 +87,7 @@ export const LANG = pickLanguage(
   typeof navigator !== 'undefined' ? navigator.languages || [navigator.language] : [],
   LANGUAGES,
   typeof location !== 'undefined' ? location.pathname : '',
+  (() => { try { return localStorage.getItem(LANG_KEY) || ''; } catch { return ''; } })(),
 );
 /** The locale the date and time formats are written in; the pill's is separate (its month is set in capitals). */
 export const LOCALE = LANGUAGES[LANG].locale;

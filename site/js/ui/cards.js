@@ -1894,7 +1894,10 @@ function parentOf(record, ctx, m = null) {
 export function parentChain(record, ctx, m = null) {
   if (!record) return [];
   const own = displayName(record);
-  const out = [{ name: klassOf(record) === 'world' ? bareWorld(own) : own, record, here: true }];
+  // A world's own name as its parents are said: the sky's bare name in the visitor's language ("Luna", not "La Luna"
+  // beside "Sol › Tierra"), else the card's name without its article.
+  const bare = klassOf(record) === 'world' && COPY.sky && COPY.sky.bodies ? COPY.sky.bodies[String(record.id)] : '';
+  const out = [{ name: klassOf(record) === 'world' ? bare || bareWorld(own) : own, record, here: true }];
   let cur = record;
   const seen = new Set([String(record.id)]);
   for (let i = 0; i < 6 && cur; i += 1) {

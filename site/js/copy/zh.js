@@ -229,7 +229,8 @@ export const COPY = {
     "video": "视频",
     "videoHref": "https://video.spaceradar.ai/",
     "tour": "新手导览",
-    "menuTour": "新手导览"
+    "menuTour": "新手导览",
+    "language": "语言"
   },
   "timePill": {
     "label": "时间",
@@ -1352,7 +1353,46 @@ export const COPY = {
       "exoplanets": "已关闭。勾选即可显示。"
     },
     "layerName": {
-      "pha": "危险小行星"
+      "worlds": "行星和卫星",
+      "stars": "恒星",
+      "exoplanets": "其他恒星的行星",
+      "systems": "恒星系统",
+      "deep-sky": "星云、星团和星系",
+      "galaxy": "银河系",
+      "exotics": "黑洞和其他极端天体",
+      "extremes-more": "磁星和死亡恒星",
+      "pulsars": "脉冲星",
+      "beyond-more": "本星系群和星系团",
+      "quasars": "类星体",
+      "stations": "载人空间站",
+      "notable": "值得认识的卫星",
+      "starlink-trains": "新发射的星链列车",
+      "just-launched": "刚刚发射",
+      "active": "所有在用卫星",
+      "geo-ring": "地球静止轨道环",
+      "debris-notable": "著名的太空碎片",
+      "debris-field": "所有被跟踪的碎片",
+      "launches": "正在升空的火箭",
+      "asteroids": "路过的小行星",
+      "far-bodies": "矮行星和远行者",
+      "moons": "行星的卫星",
+      "companions": "小行星和海外天体的卫星",
+      "pha": "危险小行星",
+      "comets": "彗星",
+      "deep-space": "探测器和望远镜",
+      "visual": "亮到肉眼可见",
+      "ground-sites": "发射台、天线和天文台",
+      "hand-kept-sites": "天线、着陆器和巡视器",
+      "storms": "当前的热带风暴",
+      "aurora": "极光",
+      "lightning": "闪电",
+      "earth-events": "火灾、火山和冰山",
+      "reentries": "落回地球的东西",
+      "oddities": "我们送上天的怪东西",
+      "observatories": "所有天文台",
+      "launch-sites": "所有发射场",
+      "landing-sites": "所有着陆点和撞击点",
+      "meteor-showers": "流星雨"
     },
     "layerCountEmpty": "空",
     "layerCountEmptyTitle": "这个图层没有取回任何内容：它的数据源读取不到，或者现在没有内容。",
@@ -3254,6 +3294,12 @@ export const COPY = {
   "links": {
     "row": "{words} · {publisher}",
     "title": "在新标签页中打开 {publisher} 自己的页面"
+  },
+  "language": {
+    "title": "语言",
+    "close": "关闭",
+    "listLabel": "语言",
+    "note": "页面会用那种语言重新加载，视图不变。除英语外，其他语言都是机器翻译，并对照英语检查过。"
   },
   "placeKeep": {
     "group": "你的位置",

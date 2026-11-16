@@ -221,6 +221,11 @@ features:
     files: [site/js/ui/rail.js, site/js/ui/subscribepop.js]
     surfaces: ["rail:sub"]
     not: "An offer to write to the visitor, not a feature of the map; the tour does not ask anyone for an address."
+  - id: language
+    name: The language menu (the rail's language button, internal #310)
+    files: [site/js/ui/rail.js, site/js/ui/languagepop.js]
+    surfaces: ["rail:lang"]
+    not: "A setting of the page, not a feature of the map: it loads the same view again in another language, and the tour is already in the visitor's own."
   - id: repository
     name: The GitHub mark
     files: [site/js/ui/github.js]

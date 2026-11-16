@@ -236,7 +236,8 @@ export const COPY = {
     "video": "וידאו",
     "videoHref": "https://video.spaceradar.ai/",
     "tour": "סיור מודרך",
-    "menuTour": "סיור מודרך"
+    "menuTour": "סיור מודרך",
+    "language": "שפה"
   },
   "timePill": {
     "label": "זמן",
@@ -1359,7 +1360,46 @@ export const COPY = {
       "exoplanets": "כבוי. אפשר לסמן כדי להציג אותם."
     },
     "layerName": {
-      "pha": "אסטרואידים מסוכנים"
+      "worlds": "כוכבי לכת וירחים",
+      "stars": "כוכבים",
+      "exoplanets": "כוכבי לכת של כוכבים אחרים",
+      "systems": "מערכות כוכבים",
+      "deep-sky": "ערפיליות, צבירים וגלקסיות",
+      "galaxy": "שביל החלב",
+      "exotics": "חורים שחורים וקיצוניים אחרים",
+      "extremes-more": "מגנטרים וכוכבים מתים",
+      "pulsars": "פולסרים",
+      "beyond-more": "הקבוצה המקומית וצבירים",
+      "quasars": "קוואזרים",
+      "stations": "תחנות מאוישות",
+      "notable": "לוויינים שכדאי להכיר",
+      "starlink-trains": "רכבות סטארלינק טריות",
+      "just-launched": "שוגרו זה עתה",
+      "active": "כל הפעילים",
+      "geo-ring": "הטבעת הגאוסטציונרית",
+      "debris-notable": "פסולת חלל מפורסמת",
+      "debris-field": "כל הפסולת שבמעקב",
+      "launches": "טילים בדרך למעלה",
+      "asteroids": "אסטרואידים חולפים",
+      "far-bodies": "כוכבי לכת ננסיים ונוסעים רחוקים",
+      "moons": "ירחי כוכבי הלכת",
+      "companions": "ירחי אסטרואידים ו-TNO",
+      "pha": "אסטרואידים מסוכנים",
+      "comets": "שביטים",
+      "deep-space": "גשושיות וטלסקופים",
+      "visual": "בהירים דיים לראות בעין",
+      "ground-sites": "כני שיגור, צלחות ומצפים",
+      "hand-kept-sites": "צלחות, נחתות ורכבי שטח",
+      "storms": "סופות טרופיות עכשיו",
+      "aurora": "זוהר קוטבי",
+      "lightning": "ברקים",
+      "earth-events": "שריפות, הרי געש וקרחונים",
+      "reentries": "דברים שנפלו חזרה",
+      "oddities": "דברים מוזרים ששלחנו",
+      "observatories": "כל המצפים",
+      "launch-sites": "כל אתרי השיגור",
+      "landing-sites": "כל אתרי הנחיתה והפגיעה",
+      "meteor-showers": "מטרי מטאורים"
     },
     "layerCountEmpty": "ריק",
     "layerCountEmptyTitle": "השכבה הזאת חזרה ריקה: לא הצלחנו לקרוא את המקור שלה, או שאין בו כלום עכשיו.",
@@ -3261,6 +3301,12 @@ export const COPY = {
   "links": {
     "row": "{words} · {publisher}",
     "title": "פותח את הדף של {publisher} עצמו בלשונית חדשה"
+  },
+  "language": {
+    "title": "שפה",
+    "close": "סגירה",
+    "listLabel": "שפות",
+    "note": "הדף ייטען מחדש בשפה הזאת, באותה תצוגה. כל השפות מלבד אנגלית הן תרגום מכונה שנבדק מול האנגלית."
   },
   "placeKeep": {
     "group": "איפה אתם",

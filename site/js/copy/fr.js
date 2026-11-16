@@ -342,7 +342,8 @@ export const COPY = {
     "video": "Vidéo",
     "videoHref": "https://video.spaceradar.ai/",
     "tour": "Faire la visite",
-    "menuTour": "Faire la visite"
+    "menuTour": "Faire la visite",
+    "language": "Langue"
   },
   "timePill": {
     "label": "Heure",
@@ -1444,7 +1445,46 @@ export const COPY = {
       "exoplanets": "Désactivé par défaut. Coche pour les afficher."
     },
     "layerName": {
-      "pha": "Astéroïdes dangereux"
+      "worlds": "Planètes et lunes",
+      "stars": "Étoiles",
+      "exoplanets": "Planètes d’autres étoiles",
+      "systems": "Systèmes stellaires",
+      "deep-sky": "Nébuleuses, amas et galaxies",
+      "galaxy": "La Voie lactée",
+      "exotics": "Trous noirs et extrêmes",
+      "extremes-more": "Magnétars et étoiles mortes",
+      "pulsars": "Pulsars",
+      "beyond-more": "Groupe local et amas",
+      "quasars": "Quasars",
+      "stations": "Stations habitées",
+      "notable": "Satellites à connaître",
+      "starlink-trains": "Trains Starlink récents",
+      "just-launched": "Tout juste lancés",
+      "active": "Tout ce qui est actif",
+      "geo-ring": "L’anneau géostationnaire",
+      "debris-notable": "Débris célèbres",
+      "debris-field": "Tous les débris suivis",
+      "launches": "Fusées en montée",
+      "asteroids": "Astéroïdes de passage",
+      "far-bodies": "Planètes naines, voyageurs",
+      "moons": "Lunes des planètes",
+      "companions": "Lunes d’astéroïdes et d’OTN",
+      "pha": "Astéroïdes dangereux",
+      "comets": "Comètes",
+      "deep-space": "Sondes et télescopes",
+      "visual": "Visibles à l’œil nu",
+      "ground-sites": "Pas de tir, antennes, observatoires",
+      "hand-kept-sites": "Antennes, atterrisseurs, rovers",
+      "storms": "Tempêtes tropicales en cours",
+      "aurora": "Aurores",
+      "lightning": "Foudre",
+      "earth-events": "Feux, volcans et icebergs",
+      "reentries": "Ce qui est retombé",
+      "oddities": "Objets insolites envoyés",
+      "observatories": "Tous les observatoires",
+      "launch-sites": "Tous les sites de lancement",
+      "landing-sites": "Atterrissages et impacts",
+      "meteor-showers": "Pluies de météores"
     },
     "layerCountEmpty": "vide",
     "layerCountEmptyTitle": "Cette couche est revenue vide : sa source n’a pas pu être lue, ou n’a rien pour l’instant.",
@@ -3317,6 +3357,12 @@ export const COPY = {
   "links": {
     "row": "{words} · {publisher}",
     "title": "Ouvre, dans un nouvel onglet, la page de l’éditeur : {publisher}"
+  },
+  "language": {
+    "title": "Langue",
+    "close": "Fermer",
+    "listLabel": "Langues",
+    "note": "La page se recharge dans cette langue, sur la même vue. Toutes les langues sauf l’anglais sont des traductions automatiques relues face à l’anglais."
   },
   "placeKeep": {
     "group": "Où tu es",

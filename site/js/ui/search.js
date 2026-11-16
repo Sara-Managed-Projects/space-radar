@@ -125,10 +125,21 @@ function recordsOf(ctx) {
 // The index
 // ---------------------------------------------------------------------------------------
 
-/** Lower-cased, trimmed, inner runs of whitespace collapsed. Applied to the query too. */
+/**
+ * Accents folded: "Júpiter" and "jupiter" are one word to a search, "Vía Láctea" and "via lactea" too (review of
+ * 16 Nov 2026: the Spanish app answered "Nothing called «Júpiter»"). Only text that has a character outside ASCII
+ * pays for it; a letter with an accent becomes that letter alone, so the folded text is as long as it was.
+ */
+export function fold(text) {
+  // eslint-disable-next-line no-control-regex
+  if (!/[^\x00-\x7f]/.test(text)) return text;
+  try { return text.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch { return text; }
+}
+
+/** Lower-cased, trimmed, inner runs of whitespace collapsed, accents folded. Applied to the query too. */
 function norm(value) {
   if (value === null || value === undefined) return '';
-  return String(value).trim().toLowerCase().replace(/\s+/g, ' ');
+  return fold(String(value).trim().toLowerCase().replace(/\s+/g, ' '));
 }
 
 /**
@@ -175,7 +186,8 @@ export function buildIndex(records, layers) {
   const index = {
     n: 0,
     record: [],
-    name: [], // lower-cased
+    name: [], // lower-cased; in another language, the record's name in that language (meta.localName)
+    name2: [], // then the catalogue's own (English) name, which still finds it as well as it ever did; '' in English
     cat: [], // catalogue number as text, '' when the object has none
     desig: [], // lower-cased international designator
     oper: [], // lower-cased operator
@@ -195,7 +207,11 @@ export function buildIndex(records, layers) {
   for (const record of list) {
     if (!record) continue;
     const meta = record.meta || {};
-    const name = norm(record.name || meta.objectName);
+    // IN ANOTHER LANGUAGE (ui/localnames.js, internal #310): a record that has a name in the page's language is
+    // searched by it first ("luna" is the Moon before Luna 23), and by the catalogue's English name beside it.
+    const own = norm(record.name || meta.objectName);
+    const local = meta.localName ? norm(meta.localName) : '';
+    const name = local || own;
     const cat = meta.catalogueNumber != null ? meta.catalogueNumber : meta.noradId;
     const catText = Number.isFinite(Number(cat)) && cat !== null ? String(cat) : '';
     // The OMM parser carries no operator today; LightLive2 spells the same idea `provider`.
@@ -206,6 +222,7 @@ export function buildIndex(records, layers) {
 
     index.record.push(record);
     index.name.push(name);
+    index.name2.push(local && own !== local ? own : '');
     index.cat.push(catText);
     index.desig.push(norm(meta.intlDesignator));
     index.oper.push(oper);
@@ -244,24 +261,31 @@ export function buildIndex(records, layers) {
  * Score one entry against an already-normalised query. 0 means no match.
  * One indexOf over the name carries three of the tiers, which is why the scan is cheap.
  */
+function scoreName(name, q) {
+  if (name === q) return NAME_EXACT;
+  let at = name.indexOf(q);
+  if (at === 0) return NAME_PREFIX;
+  if (at > 0) {
+    // A later occurrence may start a word even when the first one does not, so keep looking
+    // before settling for "contains". This only runs on entries that already matched.
+    while (at > 0) {
+      if (isBoundary(name.charCodeAt(at - 1))) return WORD_PREFIX;
+      at = name.indexOf(q, at + 1);
+    }
+    return NAME_CONTAINS;
+  }
+  return 0;
+}
+
 function scoreOne(index, i, q, numeric) {
   if (numeric && index.cat[i] === q) return CAT_EXACT;
 
   const name = index.name[i];
-  if (name) {
-    if (name === q) return NAME_EXACT;
-    let at = name.indexOf(q);
-    if (at === 0) return NAME_PREFIX;
-    if (at > 0) {
-      // A later occurrence may start a word even when the first one does not, so keep looking
-      // before settling for "contains". This only runs on entries that already matched.
-      while (at > 0) {
-        if (isBoundary(name.charCodeAt(at - 1))) return WORD_PREFIX;
-        at = name.indexOf(q, at + 1);
-      }
-      return NAME_CONTAINS;
-    }
-  }
+  let named = name ? scoreName(name, q) : 0;
+  // The catalogue's own name beside the page language's: the better of the two.
+  const name2 = index.name2[i];
+  if (name2 && named < NAME_EXACT) named = Math.max(named, scoreName(name2, q));
+  if (named) return named;
 
   // An alias is a name people use, so it ranks like a word of the name -- below the name's own
   // words, above a match in the operator. "red planet" finds Mars; "planet" alone finds it too.
@@ -464,7 +488,9 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
 
   for (const hit of unique) {
     const i = hit.i;
-    const shown = index.record[i].name || COPY.card.unknownName;
+    // In another language the row is drawn with the record's name in it (ui/localnames.js), as its card is titled.
+    const lm = index.record[i].meta;
+    const shown = (lm && lm.localName && lm.displayName) || index.record[i].name || COPY.card.unknownName;
     out.hits.push({
       record: index.record[i],
       name: shown,
@@ -480,7 +506,7 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
       // at = 9, and the row highlighted " (JP". The same mismatch hit a record with no `name`
       // but a `meta.objectName`, where the index holds the object name and the row draws
       // "Unnamed object". Not landing at all is -1, and the row then draws without a mark.
-      at: shown.toLowerCase().indexOf(q),
+      at: fold(shown.toLowerCase()).indexOf(q),
       length: q.length,
     });
   }
@@ -966,7 +992,7 @@ export function createSearch(ctx, host) {
       // events the query names. A query that names only those is not a miss.
       const m = state.more;
       const rows = m.mergeSame(state.hits.map((h) => ({ ...h, name: undefined, row: m.describe(h.record, state.env) })).map((h) => {
-        const at = h.row.title.toLowerCase().indexOf(q);
+        const at = fold(h.row.title.toLowerCase()).indexOf(q);
         return { ...h, name: h.row.title, at, length: q.length };
       }));
       // A constellation is one row until it is pressed (searchrows.js groupRows).
@@ -1177,6 +1203,8 @@ export function createSearch(ctx, host) {
   fly.addEventListener('click', onFly);
   window.addEventListener('sr:select', onSelect);
   window.addEventListener('sr:layer', onLayer);
+  // The records' names in the page's language have landed (ui/localnames.js): the index is built again with them.
+  window.addEventListener('sr:names', onLayer);
   window.addEventListener('sr:layers-ready', onLayer);
   window.addEventListener('sr:observer', refreshEnv);
   if (reduceMotion.addEventListener) reduceMotion.addEventListener('change', onMotion);
@@ -1204,6 +1232,7 @@ export function createSearch(ctx, host) {
       fly.removeEventListener('click', onFly);
       window.removeEventListener('sr:select', onSelect);
       window.removeEventListener('sr:layer', onLayer);
+      window.removeEventListener('sr:names', onLayer);
       window.removeEventListener('sr:layers-ready', onLayer);
       window.removeEventListener('sr:observer', refreshEnv);
       if (reduceMotion.removeEventListener) reduceMotion.removeEventListener('change', onMotion);

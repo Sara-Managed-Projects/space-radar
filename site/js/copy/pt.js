@@ -328,7 +328,8 @@ export const COPY = {
     "video": "Vídeo",
     "videoHref": "https://video.spaceradar.ai/",
     "tour": "Fazer o tour",
-    "menuTour": "Fazer o tour"
+    "menuTour": "Fazer o tour",
+    "language": "Idioma"
   },
   "timePill": {
     "label": "Hora",
@@ -1430,7 +1431,46 @@ export const COPY = {
       "exoplanets": "Desligados por padrão. Marque para mostrá-los."
     },
     "layerName": {
-      "pha": "Asteroides perigosos"
+      "worlds": "Planetas e luas",
+      "stars": "Estrelas",
+      "exoplanets": "Planetas de outras estrelas",
+      "systems": "Sistemas estelares",
+      "deep-sky": "Nebulosas, aglomerados e galáxias",
+      "galaxy": "A Via Láctea",
+      "exotics": "Buracos negros e extremos",
+      "extremes-more": "Magnetares e estrelas mortas",
+      "pulsars": "Pulsares",
+      "beyond-more": "Grupo Local e aglomerados",
+      "quasars": "Quasares",
+      "stations": "Estações tripuladas",
+      "notable": "Satélites que vale conhecer",
+      "starlink-trains": "Trens recentes da Starlink",
+      "just-launched": "Recém-lançados",
+      "active": "Tudo o que está ativo",
+      "geo-ring": "O anel geoestacionário",
+      "debris-notable": "Detritos famosos",
+      "debris-field": "Todos os detritos rastreados",
+      "launches": "Foguetes subindo",
+      "asteroids": "Asteroides de passagem",
+      "far-bodies": "Planetas anões e viajantes",
+      "moons": "Luas dos planetas",
+      "companions": "Luas de asteroides e TNOs",
+      "pha": "Asteroides perigosos",
+      "comets": "Cometas",
+      "deep-space": "Sondas e telescópios",
+      "visual": "Visíveis a olho nu",
+      "ground-sites": "Rampas, antenas e observatórios",
+      "hand-kept-sites": "Antenas, módulos e rovers",
+      "storms": "Tempestades tropicais agora",
+      "aurora": "Aurora",
+      "lightning": "Raios",
+      "earth-events": "Incêndios, vulcões e icebergs",
+      "reentries": "O que caiu",
+      "oddities": "Coisas curiosas que enviamos",
+      "observatories": "Todos os observatórios",
+      "launch-sites": "Todas as bases de lançamento",
+      "landing-sites": "Pousos e impactos",
+      "meteor-showers": "Chuvas de meteoros"
     },
     "layerCountEmpty": "vazia",
     "layerCountEmptyTitle": "Esta camada voltou sem nada: não foi possível ler a fonte, ou ela não tem nada agora.",
@@ -3303,6 +3343,12 @@ export const COPY = {
   "links": {
     "row": "{words} · {publisher}",
     "title": "Abre a página do próprio {publisher} em uma nova aba"
+  },
+  "language": {
+    "title": "Idioma",
+    "close": "Fechar",
+    "listLabel": "Idiomas",
+    "note": "A página carrega de novo nesse idioma, na mesma vista. Todos os idiomas, exceto o inglês, são traduções automáticas conferidas com o inglês."
   },
   "placeKeep": {
     "group": "Onde você está",

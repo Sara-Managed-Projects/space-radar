@@ -303,6 +303,7 @@ check(JSON.stringify(findMatches(index, 'starlink').hits.map((h) => h.record.id)
     'ui/gamepad.js': 'Escape only, on the controller hint itself: hides the hint',
     'ui/projectpanel.js': 'Escape only, on its own sheet: closes the projection panel',
     'ui/recorder.js': 'Escape only, on its own sheet: closes the recorder',
+    'ui/languagepop.js': 'Escape only, and only while its own popover is open: closes the language menu, as the rail\'s other popovers do',
     // b200-s2-guards: end
   };
   const guards = { 'ui/onboarding.js': /INPUT\|TEXTAREA\|SELECT/, 'ui/drift.js': /tag === 'INPUT'/, 'ui/keyhint.js': /tag === 'INPUT'/, 'sky/skyview.js': /tag === 'INPUT'/, 'scene/camera.js': /tag === 'input'/, 'moments/player.js': /tag === 'INPUT'/, 'scene/groundstage.js': /isTypingIn\(e\.target\)/, 'ui/play.js': /isTypingIn\(e\.target\)/, 'ui/skystory.js': /isTypingIn\(e\.target\)/ }; // b200-s2-guards: the last three

@@ -296,6 +296,10 @@ export async function boot({ setStatus } = {}) {
   const ambient = !embed && !!(link && link.ambient && link.ambient !== '0');
   if (ambient) document.documentElement.classList.add('sr-ambient');
 
+  // THE LAYERS' NAMES IN THE PAGE'S LANGUAGE (internal #310): copy has one for every layer (COPY.controls.layerName,
+  // filled by a language's file), written over `display` here, before any panel reads it: What to show, the word beside
+  // a search result, the status lines. In English they are the same words and nothing changes.
+  for (const l of LAYERS) { const n = COPY.controls.layerName[l.id]; if (n && n !== l.display) { l.displayEn = l.display; l.display = n; } }
   const ctx = {
     clock, stage, scene, camera, cameraRig, viewShift, worlds, renderer, rendererApi, sources,
     layers: LAYERS,
@@ -1381,6 +1385,8 @@ export async function boot({ setStatus } = {}) {
     return landed;
   };
   window.addEventListener('sr:layers-ready', () => {
+    // The names of things in the page's language (ui/localnames.js, internal #310): one small file, never in English.
+    if (document.documentElement.lang !== 'en') import('./ui/localnames.js').then((m) => m.installLocalNames(ctx)).catch((e) => console.warn('the names did not load', e));
     const tripRunning = !!(ctx.trip && ctx.trip.state && ctx.trip.state.phase !== 'idle');
     const apply = () => (ambient ? startReel() : startDrift(goLanding(tripRunning) || applyUrlState(ctx, laterLink(link, tripRunning))));
     // A trip's stops may be stars or exoplanets (OFF THE FIRST VISIT): those land first. An `at`

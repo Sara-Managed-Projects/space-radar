@@ -339,7 +339,8 @@ export const COPY = {
     "video": "Video",
     "videoHref": "https://video.spaceradar.ai/",
     "tour": "Rundgang machen",
-    "menuTour": "Rundgang machen"
+    "menuTour": "Rundgang machen",
+    "language": "Sprache"
   },
   "timePill": {
     "label": "Zeit",
@@ -1441,7 +1442,46 @@ export const COPY = {
       "exoplanets": "Standardmäßig aus. Anhaken, um sie zu zeigen."
     },
     "layerName": {
-      "pha": "Gefährliche Asteroiden"
+      "worlds": "Planeten und Monde",
+      "stars": "Sterne",
+      "exoplanets": "Planeten anderer Sterne",
+      "systems": "Sternsysteme",
+      "deep-sky": "Nebel, Haufen und Galaxien",
+      "galaxy": "Die Milchstraße",
+      "exotics": "Schwarze Löcher und Extreme",
+      "extremes-more": "Magnetare und tote Sterne",
+      "pulsars": "Pulsare",
+      "beyond-more": "Lokale Gruppe und Haufen",
+      "quasars": "Quasare",
+      "stations": "Bemannte Stationen",
+      "notable": "Wissenswerte Satelliten",
+      "starlink-trains": "Frische Starlink-Ketten",
+      "just-launched": "Gerade gestartet",
+      "active": "Alles Aktive",
+      "geo-ring": "Der geostationäre Ring",
+      "debris-notable": "Bekannter Weltraumschrott",
+      "debris-field": "Aller verfolgte Schrott",
+      "launches": "Raketen im Aufstieg",
+      "asteroids": "Vorbeiziehende Asteroiden",
+      "far-bodies": "Zwergplaneten, ferne Reisende",
+      "moons": "Monde der Planeten",
+      "companions": "Monde von Asteroiden und TNOs",
+      "pha": "Gefährliche Asteroiden",
+      "comets": "Kometen",
+      "deep-space": "Sonden und Teleskope",
+      "visual": "Mit bloßem Auge sichtbar",
+      "ground-sites": "Rampen, Antennen, Observatorien",
+      "hand-kept-sites": "Antennen, Lander und Rover",
+      "storms": "Tropenstürme jetzt",
+      "aurora": "Polarlicht",
+      "lightning": "Blitze",
+      "earth-events": "Brände, Vulkane und Eisberge",
+      "reentries": "Was herunterkam",
+      "oddities": "Kurioses, das wir schickten",
+      "observatories": "Alle Observatorien",
+      "launch-sites": "Alle Startplätze",
+      "landing-sites": "Alle Lande- und Einschlagorte",
+      "meteor-showers": "Meteorströme"
     },
     "layerCountEmpty": "leer",
     "layerCountEmptyTitle": "Diese Ebene kam ohne Inhalt zurück: Quelle nicht lesbar oder gerade leer.",
@@ -3314,6 +3354,12 @@ export const COPY = {
   "links": {
     "row": "{words} · {publisher}",
     "title": "Öffnet die eigene Seite von {publisher} in einem neuen Tab"
+  },
+  "language": {
+    "title": "Sprache",
+    "close": "Schließen",
+    "listLabel": "Sprachen",
+    "note": "Die Seite lädt in dieser Sprache neu, mit derselben Ansicht. Alle Sprachen außer Englisch sind maschinelle Übersetzungen, die gegen das Englische geprüft wurden."
   },
   "placeKeep": {
     "group": "Wo du bist",
