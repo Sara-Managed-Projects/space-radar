@@ -229,7 +229,7 @@ try {
       }).catch(failed('cast ' + cmd, token));
       return;
     }
-    // `await window.cdpInput('mouseMoved', x, y)`, 'mousePressed', 'mouseReleased', or
+    // `await window.cdpInput('mouseMoved', x, y)`, 'mousePressed', 'mouseReleased', 'touchStart', 'touchEnd', or
     // `cdpInput('key', 'Tab')`: a REAL pointer or key, from the protocol. Added for the UI audit
     // (spec 0061 task 6): `:hover` and `:active` answer only to the browser's own pointer, and
     // `:focus-visible` only after a real key, so a probe that calls el.focus() and dispatches
@@ -242,6 +242,9 @@ try {
           const base = { key, code: key.length === 1 ? 'Key' + key.toUpperCase() : key, windowsVirtualKeyCode: code, nativeVirtualKeyCode: code };
           await send(ws, 'Input.dispatchKeyEvent', { type: 'rawKeyDown', ...base }, sessionIdRef.id);
           await send(ws, 'Input.dispatchKeyEvent', { type: 'keyUp', ...base }, sessionIdRef.id);
+        } else if (type === 'touchStart' || type === 'touchEnd') {
+          // A finger (tests/probes/look/pick-flight.js): the page gets pointer events of type "touch".
+          await send(ws, 'Input.dispatchTouchEvent', { type, touchPoints: type === 'touchStart' ? [{ x, y, id: 1 }] : [] }, sessionIdRef.id);
         } else {
           const pressed = type === 'mousePressed' || type === 'mouseReleased';
           await send(ws, 'Input.dispatchMouseEvent', { type, x, y, button: pressed ? 'left' : 'none', buttons: type === 'mousePressed' ? 1 : 0, clickCount: pressed ? 1 : 0 }, sessionIdRef.id);
