@@ -5372,6 +5372,9 @@ def main() -> int:
     else:
         credits = credits_path.read_text(encoding="utf-8")
         shipped = {Path(str(m.get("file") or "")).name for m in real_models} - {""}
+        # The meshes of the deep-sky objects drawn from published 3D data (site/data/deep/*.glb, each
+        # credited in its own CREDITS.md section and its registry/deepsky-heroes row) are shipped too.
+        shipped |= {p.name for p in (ROOT / "site/data/deep").glob("*.glb")}
         for name in sorted(shipped):
             if name not in credits:
                 fail("CREDITS.md", f"`{name}` ships and models.yaml credits it, but CREDITS.md "

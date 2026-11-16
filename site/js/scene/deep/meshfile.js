@@ -64,6 +64,6 @@ export function parseMeshFile(buffer, decoder) {
 export function loadMeshFile(url) {
   return Promise.all([
     fetch(url).then((r) => { if (!r.ok) throw new Error(`meshfile: ${url} answered ${r.status}`); return r.arrayBuffer(); }),
-    import('../../vendor/meshopt_decoder.module.js').then((m) => m.MeshoptDecoder.ready.then(() => m.MeshoptDecoder)),
+    import('../../../vendor/meshopt_decoder.module.js').then((m) => m.MeshoptDecoder.ready.then(() => m.MeshoptDecoder)),
   ]).then(([buffer, decoder]) => parseMeshFile(buffer, decoder));
 }
