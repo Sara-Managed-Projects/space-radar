@@ -431,8 +431,8 @@ sources:
     offline: shipped
     checked: 2026-10-16
     pins:
-      - {file: site/data/deep/clusters.bin, sha256: ec62a3321f5c6773ea0be5b0d3738f49797514adedd1576c39216c07a6f2b0de}
-      - {file: site/data/deep/clusters.json, sha256: 92b874837e1ab7a50afe479f8f69fe46bb243ed44c98408efb3165b21e6ef394}
+      - {file: site/data/deep/clusters.bin, sha256: f793f1f7943ebdbb844aaafc8224bdc4e9c4aa7dbf1c1964f6eef2edbbba1380}
+      - {file: site/data/deep/clusters.json, sha256: dbe3c3f5d49b9f909ea067e622fb31320f56af10f1d20e647ac5fcabe803ca2b}
   # 0076 W3-b
   # The Ring Nebula hero's light (internal spec 0076 W3-b, #872): scripts/build_deep_ring.py takes the stars out of the
   # ESA/Hubble photograph already shipped (heic1310a, the esa-hubble row above) and nothing is fetched. A row of its
