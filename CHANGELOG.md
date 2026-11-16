@@ -112,6 +112,10 @@ tagged, and their dates are the day the last change in each landed.
 - **Leonids 2026.** The index said "the night of 16 to 17 November"; the peak is 17 November at about 23:45 UT (IMO Meteor
   Shower Calendar 2026), the night of 17 to 18 November. The summary, the Moon's phase and the link into the map now use that
   moment. The Geminids 2026 page said "13 to 14 December" for a maximum centred on 14 December, 14h UT, and is corrected too.
+- **A rover or lander on another world is met the same way from anywhere.** Chosen while the camera was far out in the
+  Solar System (beside Voyager 1, say), Perseverance was met 26 million km short of Mars, a full-size rover beside a dot
+  of a planet. The arrival is now solved again when the camera gets there, so it ends about 470 km from the rover with
+  Mars filling the view, as it does from the Earth.
 - **A 3D model is one thing to click, small icons over the Earth are easier to hit, and a flight no longer carries its
   subject along at full size.** A spacecraft drawn as a model answers to a click or a tap anywhere on it (its panels, its
   trusses), also in front of a planet; it answered only at its centre point. Over the Earth an icon is hit anywhere on the

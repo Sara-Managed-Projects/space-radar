@@ -121,10 +121,13 @@ const SIZE_EASE_MS = 140;
 /**
  * The pixel size this frame, on the way from last frame's to the one wanted. A model drawn for the first
  * time (`prev` not above zero) takes the wanted size at once: there is nothing to jump from. Pure.
+ * BY THE FRAME'S REAL LENGTH, up to a second: counted as 100 ms at most (the fade's cap), a renderer that
+ * draws a frame a second took ten frames, ten seconds, to reach the arrival size (MEASURED 2026-11-16 on
+ * the look runner: a rover read 408 px five seconds after arriving, 432 before the ease existed).
  */
 export function easedPixels(prev, want, frameMs) {
   if (!(prev > 0) || !(want > 0)) return want;
-  const ms = frameMs > 0 ? Math.min(frameMs, 100) : 16;
+  const ms = frameMs > 0 ? Math.min(frameMs, 1000) : 16;
   const next = prev + (want - prev) * (1 - Math.exp(-ms / SIZE_EASE_MS));
   return Math.abs(next - want) < 0.5 ? want : next;
 }
@@ -640,7 +643,7 @@ export function createHeroes(scene, ctx) {
   /** The last update()'s clock, so drawnOpacity() reads the same fade the frame drew. */
   let lastTMs = 0;
   let fadeNow = 0; // milliseconds of frames drawn: what the fade-in counts (see update)
-  let frameMsNow = 16; // this frame's length, capped: what a change of size is eased by (easedPixels)
+  let frameMsNow = 16; // this frame's real length, up to a second: what a change of size is eased by (easedPixels)
   /** id -> {obj, record, fadeStart} */
   const live = new Map();
   // The adaptive pool (nextHeroCap above): the cap the device has earned, how long the camera has
@@ -884,8 +887,8 @@ export function createHeroes(scene, ctx) {
     // 1000x it was the other failure, a fade over in one frame. `frameMs` is the real frame
     // length main.js already passes (and the film's virtual one, so a rendered trip is unchanged).
     selectedPx = selectedPixels(at.bandPx);
-    frameMsNow = Number.isFinite(at.frameMs) && at.frameMs > 0 ? Math.min(at.frameMs, 100) : 16;
-    fadeNow += frameMsNow;
+    frameMsNow = Number.isFinite(at.frameMs) && at.frameMs > 0 ? Math.min(at.frameMs, 1000) : 16;
+    fadeNow += Math.min(frameMsNow, 100);
     lastTMs = fadeNow;
     const camera = ctx.camera;
     if (!camera) return;

@@ -50,7 +50,9 @@ check(easedPixels(0, 37, 16) === 37 && easedPixels(undefined, 37, 16) === 37, 'a
   let px = 84; const seen = [];
   for (let i = 0; i < 90; i++) { px = easedPixels(px, 260, 16); seen.push(px); }
   check(seen[0] > 84 && seen[0] < 120 && seen.every((v, i) => i === 0 || v >= seen[i - 1]) && px === 260, `a change of size is eased, not a jump, and gets there (${seen[0].toFixed(1)} first, ${px} after 90 frames)`);
-  check(easedPixels(260, 84, 16) < 260 && easedPixels(260, 84, 1e6) > 84, 'down as well as up, and one long frame is not the whole way');
+  check(easedPixels(260, 84, 16) < 260 && easedPixels(260, 84, 16) > 84, 'down as well as up');
+  // a frame a second long (a software renderer) is the whole way: the ease is by real time, not by frames
+  check(easedPixels(84, 260, 1000) === 260 && easedPixels(84, 260, 100) < 200, 'a second-long frame arrives at once; a tenth of a second does not');
 }
 check(modelShareByPixels(3) === 0 && modelShareByPixels(6) === 0 && modelShareByPixels(14) === 1 && modelShareByPixels(260) === 1 && modelShareByPixels(10) === 0.5 && modelShareByPixels(undefined) === 0, 'a model smaller than a dot leaves the dot; from 14 px the model alone');
 

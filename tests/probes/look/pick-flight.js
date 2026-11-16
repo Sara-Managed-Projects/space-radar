@@ -20,6 +20,9 @@
 //            as the drift flies (select with a long cruise): every frame's flight share, camera distance and
 //            the model's size on screen (`sr.heroes.drawnPx`). Pictures on the way (the subject in view past
 //            the middle of the flight, and near its end) and on arrival.
+//   afar     where the camera stops at a site on another world, chosen from the home view and from beside
+//            Voyager 1 (and from another site on the same world): kilometres from the site, the world's disc
+//            and the model in pixels. The same site must be met the same way from anywhere.
 look.probe = 'pick-flight';
 const el = sr.renderer.domElement;
 const V3 = sr.camera.position.constructor;
@@ -28,7 +31,7 @@ const pointer = phone ? 'touch' : 'mouse';
 const LOCAL = phone ? 24 : 10; // scene/pickrank.js REACH.*.local: what the app counts a crowd in
 const P = await import(new URL('./js/propagate/index.js', document.baseURI).href);
 const G = await import(new URL('./js/scene/glyphs.js', document.baseURI).href);
-const out = { pointer, problems: [], models: {}, icons: {}, flights: [] };
+const out = { pointer, problems: [], models: {}, icons: {}, flights: [], afar: [] };
 const rect = () => el.getBoundingClientRect();
 const frame = () => new Promise((r) => requestAnimationFrame(r));
 const settle = async (cap = 30000) => { await until(() => !rig.state.flying, cap, 150); await frame(); await frame(); };
@@ -296,6 +299,34 @@ const flightLog = async (id, label, home) => {
   });
 };
 
+// ---------------------------------------------------------------- the arrival at a site, from near and from afar
+/** Choose `id` as a click on a list row does, from the home view or from beside `fromId`, and say where the camera stops. */
+const arrivalAt = async (id, label, fromId, home) => {
+  const rec = sr.recordById(id);
+  const from = fromId ? sr.recordById(fromId) : null;
+  if (!rec || (fromId && !from)) { look.missing.push(rec ? fromId : id); return; }
+  sr.deselect(); await settle();
+  if (sr.stage.worldId !== 'earth') { sr.setStage('earth'); await sleep(3000); }
+  rig.restoreState(home, 0);
+  sr.clock.live();
+  await sleep(1200);
+  if (from) { sr.select(from, { fly: true, undo: false }); await settle(60000); await sleep(2500); await settle(); }
+  const startKm = sr.camera.position.distanceTo(scenePos(rec)) * sr.stage.unitKm;
+  sr.select(rec, { fly: true, undo: false });
+  // Where the flight itself stops, then quiet for two seconds: a second solve on arrival is a flight of its own.
+  await settle(60000);
+  const firstKm = Math.round(sr.camera.position.distanceTo(scenePos(rec)) * sr.stage.unitKm);
+  let moves = 0;
+  for (let i = 0; i < 12; i++) { await settle(60000); moves++; await sleep(2000); if (!rig.state.flying) break; }
+  const pos = scenePos(rec);
+  const on = rec.meta && rec.meta.world;
+  const r = rect();
+  const disc = on ? sr.worlds.pickAll(0, 0, sr.camera, { w: r.width, h: r.height }, 1e9).find((q) => q.record.id === on) : null;
+  const row = { id, label, from: fromId || 'home', startKm: Math.round(startKm), firstKm, km: Math.round(sr.camera.position.distanceTo(pos) * sr.stage.unitKm), world: on || null, worldPx: disc ? Math.round(disc.r * 20) / 10 : null, modelPx: Math.round(sr.heroes.drawnPx(id)), moves };
+  out.afar.push(row);
+  await shot(`arrival-${label}`, `${rec.name} chosen from ${from ? from.name : 'the home view'}: the camera stops ${row.km.toLocaleString('en')} km from it, ${on || 'its world'} ${row.worldPx} px across, its model ${row.modelPx} px`);
+};
+
 const section = async (name, fn) => { try { await fn(); } catch (e) { look.errors.push(`probe: ${name} threw: ${(e && e.stack) || e}`); } };
 await settle(90000);
 await sleep(2000);
@@ -319,6 +350,19 @@ if (want('flights')) {
   await section('flight: lander', () => flightLog('apollo-11', 'lander', home));
   await section('flight: the ISS', () => flightLog('sat-25544', 'iss', home));
   await section('flight: Voyager 1', () => flightLog('deep-voyager-1', 'voyager', home));
+  try { if (lamp && lamp.setFloodLight) lamp.setFloodLight(false); } catch { /* a ref without the lamp */ }
+  for (const id of ['landing-sites', 'deep-space']) { try { sr.setLayerOn(id, false); } catch { /* as it was */ } }
+}
+if (want('afar')) {
+  for (const id of ['landing-sites', 'deep-space']) { try { if (!sr.isLayerOn(id)) sr.setLayerOn(id, true); } catch (e) { look.missing.push('layer ' + id); } }
+  const lamp = await import(new URL('./js/scene/models.js', document.baseURI).href).catch(() => null);
+  try { if (lamp && lamp.setFloodLight) lamp.setFloodLight(true); } catch { /* a ref without the lamp */ }
+  await sleep(4000);
+  await section('arrival: Perseverance from home', () => arrivalAt('jezero', 'mars-rover-from-home', null, home));
+  await section('arrival: Perseverance from Voyager 1', () => arrivalAt('jezero', 'mars-rover-from-voyager', 'deep-voyager-1', home));
+  await section('arrival: Yutu from home', () => arrivalAt('yutu', 'moon-rover-from-home', null, home));
+  await section('arrival: Yutu from Voyager 1', () => arrivalAt('yutu', 'moon-rover-from-voyager', 'deep-voyager-1', home));
+  await section('arrival: Viking 1 from Curiosity', () => arrivalAt('viking-1', 'mars-lander-from-mars', 'gale', home));
   try { if (lamp && lamp.setFloodLight) lamp.setFloodLight(false); } catch { /* a ref without the lamp */ }
   for (const id of ['landing-sites', 'deep-space']) { try { sr.setLayerOn(id, false); } catch { /* as it was */ } }
 }

@@ -2519,6 +2519,7 @@ export function createWorlds(scene, opts = {}) {
       const meshRadiusKm = mesh.userData.scaleRadiusKm || w.radiusKm;
       const trueRadiusUnits = meshRadiusKm / stage.unitKm;
 
+      systemRadius.delete(w.id); // this frame's, or none: a stage change must not be served last stage's
       if (isStage) {
         mesh.position.set(0, 0, 0);
         mesh.scale.setScalar(trueRadiusUnits);
@@ -2558,6 +2559,10 @@ export function createWorlds(scene, opts = {}) {
             w.radiusKm * shrink,
             (crowded ? viewKm : drawnKm) * capRad,
           );
+          // Crowded, the disc is a share of the CAMERA's distance: from the outer Solar System Mars is drawn millions of
+          // km wide. What the camera finds when it gets there is the uncrowded size, kept for an arrival to be framed on
+          // (settledRadiusUnits; review of 2026-11-16: Perseverance, chosen from beside Voyager 1, was met 26.4 million km short).
+          if (crowded) systemRadius.set(w.id, (Math.max(w.radiusKm * shrink, drawnKm * PLANET_VIEW.MIN_ANGULAR_RADIUS_RAD) * (meshRadiusKm / w.radiusKm)) / stage.unitKm);
           mesh.position.copy(_pos);
           mesh.scale.setScalar((drawnRadiusKm * (meshRadiusKm / w.radiusKm)) / stage.unitKm);
           viewState.set(w.id, describe(w, trueDistKm, drawnKm, drawnRadiusKm, null, crowded ? near : null));
@@ -2968,6 +2973,11 @@ export function createWorlds(scene, opts = {}) {
    * empty sky" (the issue; the arithmetic is in tests/test_arrival.mjs). This is the radius without
    * the floor, which is what the camera finds when it gets there. Every other world is as drawn.
    */
+  /** The radius a world has once the camera is at it, with no pixel floor and no crowding: as drawn for every world that has neither. */
+  function settledRadiusUnits(id) {
+    const r = systemRadius.get(id);
+    return r > 0 ? r : drawnRadiusUnits(id);
+  }
   function arrivalRadiusUnits(id) {
     const r = systemRadius.get(id);
     // A lumpy moon reaches farther than its mean radius (`look.reach`, the model's longest radius
@@ -3160,6 +3170,7 @@ export function createWorlds(scene, opts = {}) {
     /** This frame's TRUE position (update()'s own answer, not a second ephemeris): scene/worldlights.js. */
     truePositionOf: (id) => truePos.get(id) || null,
     drawnRadiusUnits,
+    settledRadiusUnits,
     arrivalRadiusUnits,
     preloadShape,
     hasShape,
