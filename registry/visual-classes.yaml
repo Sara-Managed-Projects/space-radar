@@ -69,6 +69,7 @@ domains:
       carina: {credit: "### Carina (0077 W2-e)"}  # 0077 W2-e
       smc: {credit: "### The SMC and the Magellanic Stream (0077 W2-e)"}  # 0077 W2-e
       homunculus: {credit: "### The Homunculus from its published 3D model (2026-11-16)"}
+      casa: {credit: "### Cassiopeia A from its published 3D reconstruction (2026-11-16)"}
       # 0077 W3-f: begin
       m51: {credit: "### Galaxies from their structure (0077 W3-f)"}
       m81: {credit: "### Galaxies from their structure (0077 W3-f)"}
@@ -603,10 +604,10 @@ classes:
 
   - id: SUPERNOVA_REMNANT
     title: Supernova remnants
-    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js, site/js/scene/deep/remnant.js]
+    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js, site/js/scene/deep/remnant.js, site/js/scene/deep/casa.js]
     honesty: measured
     fallback: The photograph of the Crab or the Veil; the glow elsewhere.
-    heroes: {crab: registry/deepsky-heroes/crab.yaml, veil: registry/deepsky-heroes/veil.yaml}
+    heroes: {crab: registry/deepsky-heroes/crab.yaml, veil: registry/deepsky-heroes/veil.yaml, casa: registry/deepsky-heroes/casa.yaml}
     issue: "internal #784 (shells, W3-c); internal #549 (NASA meshes wait on a licence)"
     note:
       source: "Photographs of M1 (the Crab) and the Veil; OpenNGC."
@@ -616,7 +617,7 @@ classes:
     records:
       - {domain: dso, where: {typeCode: SNR}}
       - {domain: photographs, ids: [m1, veil-nebula]}
-      - {domain: heroes, ids: [crab, veil]}
+      - {domain: heroes, ids: [crab, veil, casa]}
 
   # --- galaxies and beyond -----------------------------------------------------------------------------
   - id: GALAXY_SPIRAL

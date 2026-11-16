@@ -228,6 +228,10 @@ budgets:
   # its mesh, site/data/deep/homunculus.glb, fetched when the nebula is near, never at boot. tests/test_homunculus.mjs.
   - {id: deep_homunculus_bytes, value: 80000, unit: B, since: 2026-11-16, reason: "spec 0076 design section 4 allows a hero 1.5 MB; 68 536 B measured on 2026-11-16: ESO's 531 487 B .obj (8 552 vertices, 17 101 triangles, none dropped) as 16-bit positions packed with meshopt"}
   - {id: deep_homunculus_draw_calls, value: 2, unit: calls, since: 2026-11-16, reason: "spec 0076 design section 4: at most +5 for a hero; the shell is one opaque mesh and the star one sprite"}
+  # Cassiopeia A (scene/deep/casa.js): its point sets, site/data/deep/casa.glb, fetched when the remnant is near, never at
+  # boot. tests/test_casa.mjs.
+  - {id: deep_casa_bytes, value: 100000, unit: B, since: 2026-11-16, reason: "spec 0076 design section 4 allows a hero 1.5 MB; 81 384 B measured on 2026-11-16: the Chandra X-ray Center's seven VTK files (10.2 MB, 143 000 vertices) thinned to 24 219 points on a 10-bit grid, packed with meshopt"}
+  - {id: deep_casa_draw_calls, value: 2, unit: calls, since: 2026-11-16, reason: "spec 0076 design section 4: at most +5 for a hero; every part's points are one call and the blast wave's sphere one"}
   # 0078 r14-neb-a: begin
   # Emission nebulae as heroes (release 1.4.0 stage r14-neb-a; scene/deep/emission.js): each hero's light map, walls' map and
   # sharp map (scripts/build_deep_emission.py), fetched when that nebula is near, never at boot. tests/test_hero_emission.mjs.

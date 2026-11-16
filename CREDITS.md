@@ -2780,6 +2780,28 @@ tilt is not written in it: it was read off the mesh against the paper's figures 
 both sides. The surface's brightness, its mottling and the star's glare are **illustrative**; the Measured look takes
 the mottling off. The card carries the credit line and says no astronomer has reviewed the drawing.
 
+### Cassiopeia A from its published 3D reconstruction (2026-11-16)
+
+Cassiopeia A (`site/js/scene/deep/casa.js`, `registry/deepsky-heroes/casa.yaml`) is drawn from the three-dimensional
+reconstruction of DeLaney et al. 2010, as the Chandra X-ray Center distributes it. The point sets,
+`site/data/deep/casa.glb` (81 384 B), are made by `scripts/build_deep_casa.mjs` from the seven VTK files: each file's
+vertices thinned to one point per cell of a grid (143 000 vertices to 24 219 points, none moved by more than half a
+cell), the axes renamed, the unit set to 3.5 arcseconds by three lengths the paper states, and the origin moved to
+zero velocity.
+
+| what | from | licence |
+|---|---|---|
+| The 3D reconstruction: iron (Fe-K) and silicon (Si XIII) from Chandra, argon ([Ar II]) and cold silicon ([Si II]) from Spitzer, the optical jets and outer knots, the neutron star | **NASA/CXC/MIT/T.Delaney et al.**; Chandra X-ray Center, [How to hold a dead star in your hand](https://chandra.si.edu/deadstar/deadstar.html), "CasA Supernova remnant volumetric data ASCII VTK files created from telescope data" (downloaded 2026-11-16) | Chandra's [image use policy](https://chandra.si.edu/photo/image_use.html), read 2026-11-16: "no claim to copyright is being asserted and the material may be used in accordance with NASA guidelines"; acknowledgement requested. Changed by Space Radar as said above |
+| The model itself, its scale (0.022 arcseconds for each km/s), the blast wave's radius (153 arcseconds) and the two rates of growth it quotes (0.304 % and 0.208 % a year) | DeLaney T. and others 2010, ApJ 725, 2038, *The three-dimensional structure of Cassiopeia A* (arXiv:1011.3858) | facts, cited |
+| The expansion centre (the record's place), the explosion's date (1671.3 +/- 0.9 if nothing slowed the knots) and 3.4 kpc | Thorstensen J. R., Fesen R. A. & van den Bergh S. 2001, AJ 122, 297 (arXiv:astro-ph/0104188) | facts, cited |
+| The colour code (green iron; yellow argon and silicon, the jets and outer debris; red cold debris; blue the outer blast wave) and the blast wave's speed ("about 11 million miles per hour") | Chandra X-ray Center, [Cassiopeia A: a star explodes and turns inside out](https://chandra.si.edu/photo/2009/casa2/) and the page above | facts, cited |
+
+What is measured and what is not. Where each point is, and how fast each part grows today, are **measured**. How each
+part grew before today (a power law through its rate), the blast wave as a plain sphere (in Chandra's own model the
+blue filaments "are only a representation"), and the neutron star's depth are **modelled**. The colours are a legend
+(**false colour**) and the model holds no brightness: every point of a kind is equally bright, its size the data's
+resolution. The card says so, carries the credit and says no astronomer has reviewed the drawing.
+
 <!-- 0078 r14-mw-bh: begin -->
 ## 3m. The black holes in 3D (release 1.4.0)
 

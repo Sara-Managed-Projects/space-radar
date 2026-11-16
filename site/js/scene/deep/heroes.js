@@ -81,6 +81,10 @@ export const HEROES = [
   // The Homunculus round Eta Carinae: ESO's mesh of Steffen et al. 2014's model, turned and sized by Smith 2006's numbers
   // (scene/deep/homunculus.js). `extent`: its level follows the mesh's long axis, which its record's size is.
   { id: 'homunculus', record: 'dso-homunculus-nebula', stage: 'ds2', stub: { shipped: true, drawn: ['reconstruction', 'illustration'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./homunculus.js'), import('../../data/hero-homunculus.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
+  // Cassiopeia A: the Chandra X-ray Center's files of DeLaney et al. 2010's Doppler reconstruction as point sets, each part
+  // growing on the clock at its measured rate (scene/deep/casa.js). `extent`: the jets reach half as far again as the
+  // blast wave, whose width is the record's size.
+  { id: 'casa', record: 'dso-cassiopeia-a', stage: 'ds2', stub: { shipped: true, drawn: ['reconstruction', 'model'], children: [], extent: 1.5 }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./casa.js'), import('../../data/hero-casa.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
 ];
 
 // Deep layers that are not one object: the local volume's galaxies (stage e). Built on the stages named.
