@@ -191,6 +191,11 @@ features:
     files: [site/js/ui/drift.js]
     surfaces: ["want:wantDrift"]
     step: drift
+  - id: figure-side
+    name: A constellation seen from the side (leave the Sun, watch the figure come apart)
+    files: [site/js/ui/figureside.js]
+    surfaces: ["want:wantFigureSide"]
+    not: "Reached from a figure's story card in the sky and from the search (\"Orion from the side\"), two steps past a first visit; the tour's find step teaches the search that leads to it."
   - id: reels
     name: Reels, a screen that plays trips on its own
     files: [site/js/ui/autopilot.js]

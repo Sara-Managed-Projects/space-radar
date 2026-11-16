@@ -1558,6 +1558,9 @@ jobs:
         run: node tests/test_cutaway.mjs
       - name: "the heliosphere: the Voyagers' crossings on JPL's tracks, both surfaces through them, labelled modelled (forge #148)"
         run: node tests/test_heliosphere.mjs
+      # The 2026-11-16 deep-space review, idea 6: a constellation seen from the side (ui/figureside.js, registry/sideviews.yaml).
+      - name: "a constellation from the side: six figures offered, the Big Dipper its seven stars, exact from the Sun, apart from the side, eleven languages, out of the first visit"
+        run: node tests/test_figureside.mjs
       # b200-f2-worlds: end
       # b200-m2-buses: begin
       - name: "registry/geo-buses.yaml and registry/cubesats.yaml and the browser's mirrors of their drawn families agree (forge #117, #118)"

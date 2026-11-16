@@ -1,7 +1,7 @@
 // scene/figures3d.js -- constellation figures that draw themselves, between the stars' real places.
 //
 // Contract: createFigures3d(ctx, opts?) -> { ready, show(spec), clear(), update(camera, renderer),
-//             namesTheSky(), state(), dispose() }
+//             namesTheSky(), state(), dispose(), define(features, names), placedOf(id) }
 //   spec = { figures: ['Ori', ...], names: true, stars: 3, ecliptic: false }
 //
 // OFF THE FIRST VISIT. main.js imports this file the first time a trip names a figure
@@ -552,8 +552,29 @@ export function createFigures3d(ctx, opts = {}) {
   let lineScale = 1;
   const setLineScale = (k) => { lineScale = Number.isFinite(k) && k > 0 ? Math.min(6, k) : 1; };
 
+  // MORE FIGURES THAN THE 88, AND A FIGURE'S OWN PLACES (ui/figureside.js: a constellation seen from the side). An
+  // asterism is part of a constellation and has no row in the line file: `define` takes it as the same kind of
+  // feature (registry/sideviews.yaml, its corners copied from the constellation's own lines) and never replaces a
+  // figure the files gave. `placedOf` is what the stroke is built from, with the corner stars' names, for a caller
+  // that frames the figure and says how far its stars are; null until the files have landed or for an id nobody drew.
+  function define(features, names) {
+    return ready.then((ok) => {
+      if (!ok) return false;
+      for (const [id, f] of parseFigures({ features }, names)) if (!figures.has(id)) figures.set(id, f);
+      return true;
+    });
+  }
+  function placedOf(id) {
+    if (!figures || !figures.has(id)) return null;
+    if (!placed.has(id)) placed.set(id, placeFigure(figures.get(id), candidates));
+    const p = placed.get(id);
+    return { ...p, starNames: p.stars.map((s) => namedByIndex.get(s.index) || '') };
+  }
+
   return {
     setLineScale,
+    define,
+    placedOf,
     ready,
     show,
     clear,

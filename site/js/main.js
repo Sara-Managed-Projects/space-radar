@@ -1244,6 +1244,9 @@ export async function boot({ setStatus } = {}) {
   ctx.wantOrrery = f2Want('sliders', () => import('./ui/orrery.js').then((m) => (ctx.orrery = m.createOrrery(ctx))));
   ctx.wantCutaway = f2Want('cutaway', () => import('./ui/cutaway.js').then((m) => (ctx.cutaway = m.createCutaway(ctx, { scene }))));
   ctx.wantHeliosphere = f2Want('heliosphere', () => import('./scene/heliosphere.js').then((m) => (ctx.heliosphere = m.createHeliosphere(ctx, { scene }))));
+  // A constellation seen from the side (ui/figureside.js): asked by a figure's story card (`sr:figure-side`), a search row or a `figure=` link.
+  ctx.wantFigureSide = f2Want('figureside', () => import('./ui/figureside.js').then((m) => (ctx.figureSide = m.createFigureSide(ctx))));
+  window.addEventListener('sr:figure-side', (e) => ctx.wantFigureSide().then((f) => { if (f) f.open(e.detail); }));
   // b200-f2-worlds: end
   // OFFLINE (site/sw.js, ui/offline.js; issues #290, #453): the service worker is registered
   // OFFLINE_MS after sr:layers-ready, past the keys hint, so nothing it does is a first visit's cost.
@@ -2528,6 +2531,9 @@ export async function boot({ setStatus } = {}) {
     // `#imagine=N` pasted over a running page opens that world; taken out of it, closes it.
     const world = !!(keys.imagine && keys.imagine !== '0');
     if (world || (ctx.imagine && ctx.imagine.active)) { ctx.wantImagine(keys.imagine); if (world) return; }
+    // `#figure=orion` pasted over a running page opens that figure from the side; taken out of it, closes it.
+    const fig = !!(keys.figure && keys.figure !== '0');
+    if (fig || (ctx.figureSide && ctx.figureSide.isOpen())) { ctx.wantFigureSide().then((f) => { if (f) f.fromLink(keys.figure); }); if (fig) return; }
     const current = typeof ctx.selected === 'function' ? ctx.selected() : null;
     const running = ctx.trip && ctx.trip.state && ctx.trip.state.phase !== 'idle' ? ctx.trip.state : null;
     const plan = linkChange(keys, { at: current ? current.id : null, trip: running ? running.tourId : null, live: clock.mode === 'live', stage: stage.worldId });
@@ -3618,6 +3624,7 @@ function applyUrlState(ctx, st) {
     ctx.wantOrrery().then((o) => { if (o) o.fromLink(st); });
   }
   if (st.cut !== undefined && ctx.wantCutaway) ctx.wantCutaway().then((c) => { if (c) c.fromLink(st.cut); });
+  if (st.figure !== undefined && ctx.wantFigureSide) ctx.wantFigureSide().then((f) => { if (f) f.fromLink(st.figure); });
   // b200-f2-worlds: end
   // A trip that is not on this map is ignored like any other unknown key: `at` still applies.
   if (st.trip && openTrip(ctx, st)) return;

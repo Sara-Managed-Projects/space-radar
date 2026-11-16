@@ -46,6 +46,8 @@ import { KINDS } from '../data/kindwords.js';
 import { realModelFor } from '../scene/realmodels.js';
 import { HEROES } from '../scene/deep/heroes.js';
 import { loadCss } from './latercss.js';
+import { SIDE_FIGURES } from '../data/sideviews.js';
+import '../copy/en.side.js'; // the words of a figure's "from the side" row (COPY.figureSide)
 
 /** The classes found by where they are round the Sun, not round the Earth (whereNow). */
 const WANDERERS = new Set(['probe', 'comet', 'asteroid']);
@@ -340,6 +342,14 @@ export function setConstellations(names, lines) {
       stars.push({ extra: 'constellation', id: n.id, name: a, sub: t(COPY.searchRows.asterism, { name: n.name }), words: norm(a), raDeg: c.raDeg, decDeg: c.decDeg });
     }
   }
+  // The figures offered from the side (registry/sideviews.yaml, ui/figureside.js): one more row each, found by the
+  // figure's own name ("orion", "big dipper"), which leaves the Sun to watch it come apart.
+  const nameOf = new Map((Array.isArray(names) ? names : []).map((n) => [n.id, n.name]));
+  for (const r of SIDE_FIGURES) {
+    const name = r.figure ? nameOf.get(r.figure) : COPY.figureSide.names[r.name];
+    if (!name || (r.figure ? !byId.has(r.figure) : !byId.has(r.of))) continue;
+    stars.push({ extra: 'figureside', id: r.id, name: t(COPY.figureSide.searchRow, { name }), sub: COPY.figureSide.searchSub, words: norm(name) });
+  }
   return stars.length;
 }
 
@@ -420,7 +430,7 @@ export function findExtras(query, limit = EXTRA_ROWS) {
       if (e.words.split(/[^a-z0-9]+/).some((w) => w.length >= 3 && editDistance(q, w, cap) <= cap)) found.push({ e, s: 1 });
     }
   }
-  const order = { suggest: 0, constellation: 1, fleet: 1, trip: 2, mission: 3, event: 4 };
+  const order = { suggest: 0, constellation: 1, fleet: 1, figureside: 1, trip: 2, mission: 3, event: 4 };
   found.sort((a, b) => (order[a.e.extra] - order[b.e.extra]) || (b.s - a.s) || ((b.e.lead || 0) - (a.e.lead || 0)));
   const out = [];
   const eventsOf = new Map();
@@ -464,6 +474,7 @@ export function runExtra(ctx, hit) {
     if (hit.extra === 'constellation') return turnToStars(ctx, hit);
     // A fleet of satellites: Find lights it on the globe (ui/find.js openLink, as `#constellation=<id>` does).
     if (hit.extra === 'fleet') { if (typeof ctx.wantFind !== 'function') return false; ctx.wantFind().then((f) => f && f.openLink({ constellation: hit.id })); return true; }
+    if (hit.extra === 'figureside') { if (typeof ctx.wantFigureSide !== 'function') return false; ctx.wantFigureSide().then((f) => { if (f) f.open(hit.id); }); return true; }
     if (hit.extra === 'suggest') { if (ctx.explore && typeof ctx.explore.setTab === 'function') { ctx.explore.setTab('tonight'); return true; } return false; }
     // 0079 a2: begin
     if (hit.extra === 'catalogue') {

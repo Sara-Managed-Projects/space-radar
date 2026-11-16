@@ -1,0 +1,73 @@
+/* figureside.css -- a constellation seen from the side (ui/figureside.js; the 2026-11-16 deep-space review, idea 6).
+ *
+ * Linked by ui/figureside.js when the side view first opens, never at boot: a first visit carries none of it.
+ * Tokens only. The panel is the shared .ui-pop (css/controls.css) on the map's glass; this file only places it:
+ * where the cutaway's panel sits (css/worlds.css .sr-cutaway), left of the tools rail on a desktop and under the
+ * top bar on a phone, where scene/viewshift.js measures it and moves the figure into the part nobody covers.
+ * It does not move in or out, so reduced motion has nothing to stop.
+ */
+
+.sr-figside {
+  position: fixed;
+  top: calc(var(--sr-inset) + env(safe-area-inset-top, 0px) + 56px);
+  right: calc(var(--sr-inset) + env(safe-area-inset-right, 0px) + 48px + 12px);
+  z-index: var(--sr-z-controls);
+  box-sizing: border-box;
+  width: 320px;
+  /* Clear of the time pill at the foot of the scene (two rows, about 100 px, and its gap). */
+  max-height: calc(100vh - 2 * var(--sr-inset) - 56px - 140px);
+  overflow: auto;
+  font-family: var(--sr-font);
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius);
+}
+
+.sr-figside.sr-float { background: var(--sr-glass-strong); }
+
+@media (prefers-reduced-transparency: reduce) {
+  .sr-figside.sr-float { background: var(--sr-glass-solid); }
+}
+
+.sr-figside:focus { outline: none; }
+
+.sr-figside__lede,
+.sr-figside__where,
+.sr-figside__range {
+  margin: 0;
+  font-size: var(--sr-fs-sm);
+  line-height: 20px;
+  color: var(--sr-text);
+}
+
+.sr-figside__where {
+  min-height: 20px;
+  color: var(--sr-text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-figside__acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+/* A phone: under the top bar, the screen's width, short: the words a visitor needs while the figure turns (the
+   swing, where the camera is, the two buttons). The rest scrolls. */
+html.sr-phone .sr-figside {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2));
+  right: max(var(--sp-4), env(safe-area-inset-right, 0px));
+  left: max(var(--sp-4), env(safe-area-inset-left, 0px));
+  width: auto;
+  max-height: 34vh;
+}
+
+/* ...and under the line below the bar whenever that line is up (css/worlds.css says the same of the cutaway). */
+html.sr-phone:is(.sr-card-open, .sr-launchday, .sr-overlay-keyed):not([data-sheet='full']) .sr-figside {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 44px + var(--sp-2));
+}
+
+html.sr-phone .sr-figside__lede { display: none; }
+
+html.sr-clean .sr-figside,
+html.sr-trip-mode .sr-figside,
+html.sr-sharing .sr-figside { display: none; }
