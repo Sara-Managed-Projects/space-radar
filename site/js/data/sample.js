@@ -387,9 +387,17 @@ const FAR_BODIES = [
     // heliocentric a (544 au) is not the orbit's size in the long run: the barycentric one is 506
     // au and the lap about 11 400 years, which is the figure the `why` line gives. Near where
     // Sedna is now, the two ellipses are the same curve to far better than a pixel.
+    // `longRun` IS WHAT A PAGE PRINTS FOR THE LAP AND THE FAR POINT (review of 2026-11-16: the page's Key
+    // facts printed the heliocentric 12 679 years and 1 011.3 AU two lines under a sentence that says
+    // 11 400). JPL Horizons, osculating elements about the Solar System's barycentre (centre 500@0,
+    // ecliptic J2000) on 2026-11-16, read that day: A 7.576281e10 km = 506.4 au, AD 1.401275e11 km =
+    // 936.7 au, PR 3.594322e11 s = 11 390 years. JPL SBDB's heliocentric orbit 51 (epoch JD 2461200.5)
+    // gives per 4.63e6 d = 12 676 years, a 544 au, ad 1010 au, which is the row below and what is drawn.
+    // tests/test_far_bodies.mjs holds `longRun` and the `why` line to each other.
     aAu: 543.719529, e: 0.859882459, iDeg: 11.9252758, nodeDeg: 144.506166, argpDeg: 311.098773,
     maDeg: 358.595694, epochJd: SBDB_EPOCH_JD, tpJd: 2479264.7507,
     solution: '2026-06-06', lastObs: '2026-02-27',
+    longRun: { periodYears: 11390, aphelionAu: 937, cite: 'JPL Horizons, 90377 Sedna: its orbit about the Solar System’s centre of mass, read 16 November 2026' },
     hMag: 1.5,
     // 906 km, +314 / -258 (Lellouch et al. 2013, in the infobox): nobody has weighed or resolved
     // it, so the card prints the range, not the middle.
@@ -582,6 +590,8 @@ function sbdbBody(b, layer) {
         perihelionMs: jdToMs(b.tpJd),
         // JPL's heliocentric osculating period. See Sedna's row for why no card prints it.
         periodDays: bound ? periodDays(aKm) : null,
+        // Where that period is not the lap in the long run: the barycentric lap and far point, which a page prints instead.
+        longRun: b.longRun ? { periodYears: b.longRun.periodYears, aphelionAu: b.longRun.aphelionAu, cite: b.longRun.cite } : null,
         absoluteMagnitude: b.hMag,
         diameterKm: b.diameterKm,
         diameterLowKm: b.diameterLowKm ?? null,

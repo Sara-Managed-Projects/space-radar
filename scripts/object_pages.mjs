@@ -41,11 +41,12 @@ const P = await import(join(JS, 'data/parsers.js'));
 const C = await import(join(JS, 'ui/cards.js'));
 const SRC = await import(join(JS, 'data/sources.js'));
 const { recordsFromNames } = await import(join(JS, 'scene/stars3d.js'));
-const { COPY, fmt } = await import(join(JS, 'copy/en.js'));
+const { COPY, fmt, t } = await import(join(JS, 'copy/en.js'));
 await import(join(JS, 'copy/en.cards.js')); // the Sun, Moon and planets' own paragraphs (COPY.worldAbout, internal #302)
 const { SYSTEMS } = await import(join(JS, 'data/systems.js'));
 const { buildMoons } = await import(join(JS, 'data/moons.js'));
 const { WIKI_TITLES } = await import(join(JS, 'data/wikititles.js'));
+const { NOTABLE_ENDED } = await import(join(JS, 'data/ended.js'));
 
 // The card's path for "no position": measure() catches the throw and returns its empty readings.
 const CTX = { clock: { now() { throw new Error('a static page has no clock'); } }, layers: L.LAYERS, sources: SRC };
@@ -82,8 +83,24 @@ function satelliteRecords() {
       meta: { noradId: row.noradId, why: row.why, listName: row.name },
     });
   }
+  // A craft that is no longer in orbit (data/ended.js) keeps its page, which says what it WAS: `meta.ended` is its
+  // row, and the page below takes its sentences, its dates and its sources from it and offers no live view.
+  for (const row of NOTABLE_ENDED) {
+    out.push({
+      id: `sat-${row.noradId}`, name: row.name, klass: 'satellite', layer: 'notable', source: 'celestrak-notable',
+      cls: 'inferred', frame: 'earth-inertial',
+      meta: { noradId: row.noradId, why: row.why, listName: row.name, ended: row },
+    });
+  }
   return out;
 }
+
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+/** "2026-11-04" as "4 November 2026". */
+const dayWords = (iso) => `${Number(iso.slice(8, 10))} ${MONTH_NAMES[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`;
+const ENDED_HOW = { 're-entered': 'Re-entered the atmosphere', 'switched-off': 'Switched off', lost: 'Contact lost' };
+// What an ended craft's page says where a working one's says "Where it is right now is on the live 3D map."
+const LIVE_ENDED = 'It is no longer in orbit, so the live map does not draw it.';
 
 function candidates() {
   const worlds = sample('worlds');
@@ -210,10 +227,17 @@ function factsFor(r, klass, nameOf) {
     if (md.periodS) add('Turns once every', md.periodS >= 1 ? `${fmt.num(md.periodS, 2)} seconds` : `${fmt.num(md.periodS * 1000, 2)} milliseconds`);
   } else if (klass === 'asteroid' || klass === 'comet') {
     if (md.designation) add('Catalogue', md.designation);
-    if (md.diameterKm) add('Diameter', md.diameterKm >= 10 ? `${fmt.int(md.diameterKm)} km` : `${fmt.num(md.diameterKm, 2)} km`);
-    if (md.periodDays && md.periodDays < 1e8) add('One lap of the Sun', md.periodDays > 730 ? `${fmt.int(md.periodDays / 365.25)} years` : `${fmt.int(md.periodDays)} days`);
+    // ONE FIGURE FOR ONE QUANTITY (review of 2026-11-16: Sedna's page said "about 11 400 years" in its text and
+    // "12 679 years" here, and 906 km where the card says 648 to 1 220). A size nobody has measured is the card's
+    // range (ui/cardfacts.js, the same words); a lap that the heliocentric elements get wrong is the record's
+    // `longRun`, rounded as its sentence rounds it. tests/test_seo_pages.py reads the built pages for both.
+    if (md.diameterLowKm && md.diameterHighKm) add('Diameter', t(COPY.card.values.kmRange, { lo: fmt.int(md.diameterLowKm), hi: fmt.int(md.diameterHighKm) }));
+    else if (md.diameterKm) add('Diameter', md.diameterKm >= 10 ? `${fmt.int(md.diameterKm)} km` : `${fmt.num(md.diameterKm, 2)} km`);
+    if (md.longRun) add('One lap of the Sun', `about ${fmt.int(Math.round(md.longRun.periodYears / 100) * 100)} years`);
+    else if (md.periodDays && md.periodDays < 1e8) add('One lap of the Sun', md.periodDays > 730 ? `${fmt.int(md.periodDays / 365.25)} years` : `${fmt.int(md.periodDays)} days`);
     if (md.qAu) add('Closest to the Sun', `${fmt.num(md.qAu, 2)} AU`);
-    if (md.aphelionAu) add('Farthest from the Sun', `${fmt.num(md.aphelionAu, 1)} AU`);
+    if (md.longRun) add('Farthest from the Sun', `about ${fmt.int(md.longRun.aphelionAu)} AU`);
+    else if (md.aphelionAu) add('Farthest from the Sun', `${fmt.num(md.aphelionAu, 1)} AU`);
     if (Array.isArray(md.moons) && md.moons.length) add('Moons', md.moons.join(', '));
   } else if (klass === 'moon') {
     if (md.moonOf) add('Goes round', md.planetName, md.moonOf);
@@ -228,6 +252,11 @@ function factsFor(r, klass, nameOf) {
     }
   } else if (['satellite', 'station', 'debris'].includes(klass)) {
     if (md.noradId) add('Catalogue number (NORAD)', md.noradId);
+    if (md.ended) {
+      add('Launched', dayWords(md.ended.launched));
+      if (md.ended.scienceEnded) add('Science ended', dayWords(md.ended.scienceEnded));
+      add(ENDED_HOW[md.ended.how] || 'Ended', dayWords(md.ended.ended));
+    }
   }
   return f;
 }
@@ -287,14 +316,19 @@ const nameOf = (id) => nameById.get(id) || cap(id);
 
 const pages = picked.map(({ group, r, m, name, slug }) => {
   const klass = r.klass;
-  const lead = C.firstSentence(r, CTX, m, null);
+  const ended = (r.meta && r.meta.ended) || null;
+  // An ended craft's first sentence is its row's, in the past tense: the card's ("X is a space telescope going round
+  // the Earth") is the sentence of a thing that is there.
+  const lead = ended ? ended.lead : C.firstSentence(r, CTX, m, null);
   let why = C.whyLine(r);
   // A satellite's line is data/layers.js NOTABLE's: printed here, except where it will not stay true.
   if (!why && ['satellite', 'station', 'debris'].includes(klass) && r.meta.why && !DATED_WHY.has(r.meta.noradId)) why = r.meta.why;
   // A landing site's sentence IS its `doing`; an oddity's IS its `fact`. Do not print it twice.
   if (why && why === lead) why = null;
-  const drawing = C.drawingLine(r);
-  const sources = C.sourceLine(r, CTX);
+  const drawing = ended ? null : C.drawingLine(r); // it is not drawn
+  let sources = ended ? ended.sources : C.sourceLine(r, CTX);
+  // The lap and the far point printed above are not the source line's orbit: say where they were read.
+  if (r.meta && r.meta.longRun && sources !== COPY.source.unknown) sources = `${sources} · Lap and far point: ${r.meta.longRun.cite}`;
   const facts = factsFor(r, klass, nameOf).map(([label, value, link]) => ({ label, value, href: link && slugById.has(link) ? `${slugById.get(link)}.html` : null }));
   const myths = Array.isArray(r.meta && r.meta.myths) ? r.meta.myths.map((x) => ({ claim: cap(String(x.claim)), correction: String(x.correction), source: x.source || null })) : [];
   // Related pages: a world's moons and landing sites, a site's world, a deep-sky object's
@@ -321,9 +355,10 @@ const pages = picked.map(({ group, r, m, name, slug }) => {
     klassLabel: C.klassLabel(r),
     colour: (layer(r.layer) || {}).colour || null,
     name,
-    title: titleFor(name, klass, r.id),
-    description: descriptionFor(lead, why, liveLineFor(klass, r.id)),
-    liveLine: liveLineFor(klass, r.id),
+    title: ended ? `${name} | ${SITE}` : titleFor(name, klass, r.id), // not "where it is now"
+    description: descriptionFor(lead, why, ended ? LIVE_ENDED : liveLineFor(klass, r.id)),
+    liveLine: ended ? LIVE_ENDED : liveLineFor(klass, r.id),
+    ended: ended ? { on: ended.ended, how: ended.how } : null,
     nowBody: klass === 'world' && Object.prototype.hasOwnProperty.call(NOW_BODIES, r.id) ? NOW_BODIES[r.id] : null,
     lead,
     why,

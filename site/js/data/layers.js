@@ -71,6 +71,8 @@ const C = {
 // here: a wrong catalogue number does not fail, it silently draws the wrong object, which is the
 // worst failure this app has.
 
+// A CRAFT THAT ENDS LEAVES THIS LIST for data/ended.js NOTABLE_ENDED, which says why: Swift (28485) re-entered on
+// 2026-11-04 and was still described here as working twelve days later. scripts/check_notable_decay.py finds the next.
 /** @type {Array<{noradId:number, name:string, why:string}>} */
 export const NOTABLE = [
   { noradId: 25544, name: 'ISS (Zarya)', why: 'People have lived here without a break since November 2000. It is the brightest thing in the sky after the Moon and Venus.' },
@@ -79,7 +81,6 @@ export const NOTABLE = [
   { noradId: 25867, name: 'Chandra X-ray Observatory', why: 'It sees the X-rays from black holes eating. Its orbit reaches a third of the way to the Moon.' },
   { noradId: 25989, name: 'XMM-Newton', why: "Europe's X-ray telescope, and the largest satellite ESA has ever launched." },
   { noradId: 43435, name: 'TESS', why: 'It found thousands of planets around other stars by watching them dim their own suns.' },
-  { noradId: 28485, name: 'Swift', why: 'It turns to point at a gamma-ray burst within a minute of one going off anywhere in the universe.' },
   { noradId: 38358, name: 'NuSTAR', why: 'Its detectors sit ten metres from its mirrors on a mast that unfolded in orbit.' },
   { noradId: 25994, name: 'Terra', why: 'Since 1999 it has taken the picture of the whole planet that most maps of vegetation are built from.' },
   { noradId: 27424, name: 'Aqua', why: 'It measures where the water is — clouds, ice, ocean temperature — twice a day, everywhere.' },

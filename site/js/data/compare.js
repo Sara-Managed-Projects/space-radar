@@ -7,6 +7,9 @@
 /** The day the NASA pages were read, as YYYY-MM-DD. */
 export const COMPARE_READ = "2026-10-20";
 
+/** The day JPL's list of the known moons was read (the moon counts are its, not the fact sheets'), as YYYY-MM-DD. */
+export const COMPARE_MOONS_READ = "2026-11-16";
+
 /** What the Compare view and the comparison lab say about a world: NASA's Planetary Fact Sheets, one row a body. */
 export const COMPARE_BODIES = [
   {
@@ -177,7 +180,7 @@ export const COMPARE_BODIES = [
       ]
     ],
     "air_bar": null,
-    "moons": 95,
+    "moons": 115,
     "rings": true,
     "rings_page": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/jupringfact.html",
     "ring_bands": [
@@ -211,7 +214,7 @@ export const COMPARE_BODIES = [
       ]
     ],
     "air_bar": null,
-    "moons": 274,
+    "moons": 293,
     "rings": true,
     "rings_page": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/satringfact.html",
     "ring_bands": [
@@ -265,7 +268,7 @@ export const COMPARE_BODIES = [
       ]
     ],
     "air_bar": null,
-    "moons": 28,
+    "moons": 29,
     "rings": true,
     "rings_page": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/uranringfact.html",
     "ring_bands": [

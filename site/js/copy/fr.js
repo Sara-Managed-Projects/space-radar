@@ -4591,7 +4591,7 @@ Object.assign(COPY, {
       },
       "source": "Fiches de données planétaires de la NASA, lues le {date}.",
       "giantNote": "Un géant n’a pas de surface : sa gravité et sa température sont celles du niveau de 1 bar.",
-      "moonsNote": "Le nombre de lunes augmente à mesure que de nouvelles sont confirmées.",
+      "moonsNote": "Le nombre de lunes est celui de la liste des lunes connues du JPL, consultée le {date} ; il augmente à mesure que de nouvelles sont confirmées.",
       "spinNote": "Le Soleil ne tourne pas d’un bloc : la valeur de la fiche est à 16° de latitude, et l’équateur tourne plus vite que les pôles.",
       "drawnTrue": "Dessinés à une seule échelle d’après le rayon moyen de chacun, pas des photographies.",
       "drawnSame": "Même largeur, donc pas à l’échelle. Les anneaux gardent leur part de cette largeur.",

@@ -387,6 +387,55 @@ ok("6 February 2027, 15:59 UT" in an and "ISO 12312-2" in an, "the annular eclip
 be = parse(BUILT / "events" / "bepicolombo-mercury-2026.html").plain
 ok("21 November 2026" in be and "9 and 10 December 2026" in be, "BepiColombo: ESA's dates")
 
+# --- review of 2026-11-16: one figure for one quantity on a page, and a craft that has ended says so ---------------------------------
+# Sedna's page said "about 11 400 years" in its text and "One lap of the Sun 12 679 years" in Key facts, and 906 km where the
+# card says 648 to 1 220. Every object page's lap and width in its sentences is held to the Key facts' own, to two per cent
+# (or inside the range the facts give).
+def _n(text: str) -> float:
+    return float(re.sub(r"[\s\u00a0\u202f,]", "", text))
+
+
+def _facts(page_html: str) -> dict:
+    return {htmllib.unescape(k): htmllib.unescape(re.sub(r"<[^>]+>", "", v)) for k, v in re.findall(r"<div><dt>(.*?)</dt><dd>(.*?)</dd></div>", page_html, re.S)}
+
+
+held_laps = held_widths = 0
+for f in sorted((BUILT / "o").glob("*.html")):
+    doc = f.read_text(encoding="utf-8")
+    facts = _facts(doc)
+    m = re.search(r'<p class="lead">(.*?)</p>', doc, re.S)
+    w = re.search(r'<div class="doc">\s*<p>(.*?)</p>', doc, re.S)
+    prose = htmllib.unescape(re.sub(r"<[^>]+>", "", (m.group(1) if m else "") + " " + (w.group(1) if w else "")))
+    lap = re.search(r"(?:about )?([\d][\d\s\u00a0,.]*) years$", facts.get("One lap of the Sun", ""))
+    if lap:
+        for said in re.findall(r"(?:about |every |takes (?:it )?)([\d][\d\s\u00a0,]*) years", prose):
+            held_laps += 1
+            ok(abs(_n(said) - _n(lap.group(1))) / _n(lap.group(1)) <= 0.02, f"o/{f.name}: the text says {said.strip()} years and Key facts say {facts['One lap of the Sun']}")
+    wide = re.search(r"^(?:about )?([\d][\d\s\u00a0,.]*?)(?: to ([\d][\d\s\u00a0,.]*))? km$", facts.get("Diameter", ""))
+    if wide:
+        lo = _n(wide.group(1))
+        hi = _n(wide.group(2)) if wide.group(2) else lo
+        for said in re.findall(r"([\d][\d\s\u00a0,]*) km (?:across|wide|in diameter)", prose):
+            held_widths += 1
+            # to two per cent, or to the whole kilometre a sentence rounds to ("16 km across" for 16.4 km)
+            ok(lo * 0.98 - 0.5 <= _n(said) <= hi * 1.02 + 0.5, f"o/{f.name}: the text says {said.strip()} km across and Key facts say {facts['Diameter']}")
+sedna_html = (BUILT / "o" / "sedna.html").read_text(encoding="utf-8")
+sedna = _facts(sedna_html)
+ok(held_laps >= 1 and re.search(r"^about 11.?400 years$", sedna.get("One lap of the Sun", "")) and re.search(r"^648 to 1.?220 km$", sedna.get("Diameter", ""))
+   and re.search(r"^about 937 AU$", sedna.get("Farthest from the Sun", "")) and not re.search(r"12.?679", sedna_html) and "JPL Horizons" in sedna_html,
+   f"Sedna: one lap (about 11 400 years, as its sentence), the card's range for its width, the far point of the same orbit, and where they were read ({sedna})")
+# Swift re-entered on 4 November 2026 and its page still said "is a space telescope going round the Earth", with a button to see it live.
+swift_html = (BUILT / "o" / "swift.html").read_text(encoding="utf-8")
+swift = parse(BUILT / "o" / "swift.html").plain
+ok("Swift was a space telescope" in swift and "re-entered the atmosphere on 4 November 2026" in swift and "It turned to point" in swift
+   and " is a space telescope" not in swift and "It turns to point" not in swift, "Swift: the past tense, and the day it re-entered")
+ok("See it live" not in swift_html.split("<main", 1)[1].split("</main>", 1)[0] and "no longer in orbit" in swift and "How the map draws it" not in swift,
+   "Swift: no live button and no line about how it is drawn")
+sf = _facts(swift_html)
+ok(sf.get("Launched") == "20 November 2004" and sf.get("Science ended") == "23 October 2026" and sf.get("Re-entered the atmosphere") == "4 November 2026"
+   and "swift.gsfc.nasa.gov" in swift_html and "celestrak.org" in swift_html, f"Swift: its dates in Key facts, with NASA's and CelesTrak's pages ({sf})")
+ok('value="sat-28485"' not in (BUILT / "embed" / "index.html").read_text(encoding="utf-8"), "the embed generator does not offer a craft that is no longer in orbit")
+
 # --- internal #105: the full Moons, the lunar eclipses, the planet meetings, and the calendar files ---------------------------------
 kinds = {k: [e for e in evs if e["kind"] == k] for k in ("full-moon", "lunar-eclipse", "conjunction", "meteor-shower")}
 ok(len(kinds["full-moon"]) >= 18 and len(kinds["lunar-eclipse"]) >= 3 and len(kinds["conjunction"]) >= 2, "full Moons for 18 months, lunar eclipses and conjunctions have pages")

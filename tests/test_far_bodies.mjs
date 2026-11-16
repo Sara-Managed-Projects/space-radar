@@ -356,6 +356,37 @@ for (const id of DWARFS) {
   disposeModels(obj);
 }
 
+// ---- ONE FIGURE FOR ONE QUANTITY (review of 2026-11-16) --------------------------------------------------------
+// Sedna's sourced line says "about 11 400 years" and its page's Key facts printed the heliocentric osculating
+// 12 679, two lines apart. A number of years or of AU in a body's `why` line is held to what its page prints: the
+// record's `longRun` where it has one (the lap about the Solar System's centre of mass), else its own elements.
+{
+  const num = (s) => Number(String(s).replace(/[\s\u00a0\u202f,]/g, ''));
+  let held = 0;
+  for (const r of records) {
+    const md = r.meta;
+    const why = String(md.why || '');
+    const lap = md.longRun ? md.longRun.periodYears : (md.periodDays ? md.periodDays / 365.25 : null);
+    const far = md.longRun ? md.longRun.aphelionAu : md.aphelionAu;
+    for (const m of why.matchAll(/(?:about |every |takes (?:it )?)([\d][\d\s\u00a0,]*) years/g)) {
+      held++;
+      check(lap !== null && Math.abs(num(m[1]) - lap) / lap <= 0.02, `${r.name}: its line says ${m[1].trim()} years and its page prints a lap of ${lap === null ? 'none' : Math.round(lap)} years`);
+    }
+    const span = /between ([\d.]+) and ([\d.]+) AU/.exec(why);
+    if (span) {
+      held++;
+      check(Math.abs(Number(span[1]) - md.qAu) <= 1 && Math.abs(Number(span[2]) - far) <= 1, `${r.name}: its line says ${span[1]} to ${span[2]} AU and its orbit is ${md.qAu.toFixed(1)} to ${Number(far).toFixed(1)} AU`);
+    }
+    if (md.longRun) {
+      check(md.longRun.periodYears > 0 && md.longRun.aphelionAu > md.qAu && /JPL Horizons/.test(md.longRun.cite) && /read \d{1,2} \w+ \d{4}/.test(md.longRun.cite), `${r.name}: longRun has a lap, a far point beyond the near one and a dated JPL source`);
+      // it is there because the heliocentric elements are off: by more than the two per cent a sentence is held to
+      check(Math.abs(md.periodDays / 365.25 - md.longRun.periodYears) / md.longRun.periodYears > 0.02, `${r.name}: longRun differs from the heliocentric period, or it is not needed`);
+    }
+  }
+  const sedna = records.find((r) => r.id === 'dwarf-sedna');
+  check(held >= 2 && sedna && sedna.meta.longRun && Math.round(sedna.meta.longRun.periodYears / 100) * 100 === 11400, `Sedna's lap in the long run rounds to the 11 400 years its line says (${held} figures held)`);
+}
+
 if (problems.length) { console.error('far bodies FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`far bodies ok: ${records.length} bodies within 0.001 au of Horizons (the two visitors within 0.05), `
   + `8 cards say "dwarf planet", 2 say "from another star", search finds each, and the line is the whole path through the dot`);

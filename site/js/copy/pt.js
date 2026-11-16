@@ -4577,7 +4577,7 @@ Object.assign(COPY, {
       },
       "source": "Planetary Fact Sheets da NASA (tabelas de dados planetários), lidas em {date}.",
       "giantNote": "Um gigante não tem superfície: a gravidade e a temperatura dele são as do nível de 1 bar.",
-      "moonsNote": "O número de luas cresce à medida que novas são confirmadas.",
+      "moonsNote": "O número de luas é o da lista de luas conhecidas do JPL, consultada em {date}; cresce à medida que novas são confirmadas.",
       "spinNote": "O Sol não gira como um corpo só: o valor da tabela é a 16° de latitude, e o equador gira mais depressa que os polos.",
       "drawnTrue": "Desenhados em uma só escala a partir do raio médio de cada um, não são fotografias.",
       "drawnSame": "Mesma largura, então fora de escala. Os anéis mantêm a mesma proporção.",

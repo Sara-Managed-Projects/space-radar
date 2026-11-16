@@ -4588,7 +4588,7 @@ Object.assign(COPY, {
       },
       "source": "Planetary Fact Sheets der NASA, abgerufen am {date}.",
       "giantNote": "Ein Riese hat keine Oberfläche: Seine Schwerkraft und seine Temperatur gelten auf der Ebene von 1 bar.",
-      "moonsNote": "Die Zahl der Monde wächst, wenn neue bestätigt werden.",
+      "moonsNote": "Die Zahl der Monde stammt aus der JPL-Liste der bekannten Monde, abgerufen am {date}; sie wächst, wenn neue bestätigt werden.",
       "spinNote": "Die Sonne dreht sich nicht als ein Körper: Der Wert des Datenblatts gilt bei 16° Breite, und der Äquator dreht sich schneller als die Pole.",
       "drawnTrue": "In einem Maßstab aus dem mittleren Radius jeder Welt gezeichnet, keine Fotos.",
       "drawnSame": "Gleiche Breite, also nicht maßstabsgetreu. Ringe behalten ihren Anteil daran.",

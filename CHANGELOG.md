@@ -97,6 +97,18 @@ tagged, and their dates are the day the last change in each landed.
   every script, stylesheet, icon and picture address of every page, in every language, to a file of the build.
 - **A visit under `/es/`, `/fr/` and the other languages stays there.** The first selection used to rewrite the address to the English root, so a
   reload, the copied address and Share lost the language.
+- **Swift is described as it is: gone.** NASA's Swift observatory ended its science on 23 October 2026 and re-entered the
+  atmosphere on 4 November 2026 (NASA's Swift pages; CelesTrak's catalogue). Its page said "is a space telescope going round
+  the Earth" and offered to show it live; it now says what it was, in the past tense, with its dates and no live button, and
+  the satellite is in no list the map draws. A scheduled check holds the hand-kept list of working satellites to CelesTrak's
+  catalogue, so the next one that leaves orbit is found.
+- **One count of moons.** The Compare view said 95, 274 and 28 moons for Jupiter, Saturn and Uranus (NASA's fact sheets, years
+  behind); it now says 115, 293 and 29, JPL's list of known moons (read 16 November 2026), the same moons the map holds, and a
+  test fails when the two counts differ.
+- **Sedna's page gives one lap, not two.** Its text said "about 11 400 years" and its Key facts "12 679 years" (the orbit
+  about the Sun alone, which is not the lap in the long run). Key facts now give about 11 400 years and a far point of about
+  937 AU, from JPL Horizons' orbit about the Solar System's centre of mass, and the width as the range the card gives (648 to
+  1 220 km). A check over every object page holds a lap or a width in its text to its Key facts.
 - **Leonids 2026.** The index said "the night of 16 to 17 November"; the peak is 17 November at about 23:45 UT (IMO Meteor
   Shower Calendar 2026), the night of 17 to 18 November. The summary, the Moon's phase and the link into the map now use that
   moment. The Geminids 2026 page said "13 to 14 December" for a maximum centred on 14 December, 14h UT, and is corrected too.
