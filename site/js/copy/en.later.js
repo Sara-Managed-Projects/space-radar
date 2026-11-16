@@ -2109,10 +2109,10 @@ Object.assign(COPY, {
     // The hero's own source, after the honesty line (ui/cardfacts.js honestyClause reads `card[heroId]` from the
     // blocks it lists; until 'r12Dust' is among them the rows below carry the same news).
     card: {
-      crab: 'Its light is taken from Hubble’s photograph, in false colour, carried on a shell whose shape follows Martin, Milisavljevic and Drissen (2021): a filament cage about 4 parsecs long round an empty middle. Not yet reviewed by an astronomer.',
+      crab: 'A cage of filaments round the glow of the pulsar’s wind, on the outline Martin, Milisavljevic and Drissen measured (2021). Each filament’s place is modelled, and the colours follow Hubble’s false-colour picture. Not yet reviewed by an astronomer.', // the 2026-11-16 review: its own model (scene/deep/crab.js)
       veil: 'Its light is taken from NOIRLab’s photograph, in false colour, carried on a thin sphere 37 parsecs across (Fesen and others, 2018): the filaments are its rim seen edge on. Not yet reviewed by an astronomer.',
       horsehead: 'Its darkness is read from NOIRLab’s photograph: dust in front of the glowing gas of IC 434, which absorbs and reddens what is behind it and gives off no light. Not yet reviewed by an astronomer.',
-      coalsack: 'Its darkness is read from the Milky Way around it: a cloud of dust about 590 light-years away that dims and reddens the stars behind it. Not yet reviewed by an astronomer.',
+      coalsack: 'Its darkness is read from the Milky Way around it: a cloud of dust about 590 light-years away that dims and reddens the stars behind it. Its outline is measured, its depth is modelled. Not yet reviewed by an astronomer.',
       m78: 'Its light is NOIRLab’s photograph: dust scattering the blue light of the star in front of it, on the face of a dark cloud. Its depth is reconstructed. Not yet reviewed by an astronomer.',
       iris: 'Its light is NOIRLab’s photograph: dust scattering the light of the young star HD 200775 in a hollow of its cloud. Its depth is reconstructed. Not yet reviewed by an astronomer.',
       m45: 'Its light is NOIRLab’s photograph: a cloud of dust drifting through the cluster, just in front of its stars, scattering their blue light (Ritchey and others, 2006). Its depth is reconstructed. Not yet reviewed by an astronomer.', // 0078 r14-neb-b
@@ -2120,8 +2120,10 @@ Object.assign(COPY, {
     // Rows under "Distance found by" on the card (ui/cardfacts.js, stage c's `rows` hook), keyed by record.
     rows: {
       'dso-m1': [
-        ['Its shape in depth', 'Reconstructed from a measured outline. The filaments reach about 2 parsecs along the axis of the pulsar’s wind and none lie within half a parsec of the centre (Martin and others, 2021). Drawn as an ellipsoid along that axis; which end is nearer us is assumed.'],
-        ['Its colours', 'False colour: the photograph’s narrow filters for oxygen and sulphur, mapped to colours by the picture’s makers.'],
+        ['Its shape', 'A measured outline with modelled filaments. No gas lies more than 2 parsecs from the centre along the pulsar’s axis and none within half a parsec; the waist is pinched and two lobes stand out (Martin and others, 2021). The filaments form a honeycomb of the measured size, but where each one is drawn is modelled.'],
+        ['The pulsar’s wind', 'Measured rings, modelled jets. Two X-ray rings circle the pulsar, the inner one a light-year across, tilted 63 degrees from our line of sight. Gas leaves them at half the speed of light, so the side moving toward the viewer is brighter (Ng and Romani, 2004 and 2008). The jets’ length is modelled.'],
+        ['Its colours', 'Illustrative. The filaments and the glow take their colours from Hubble’s false-colour picture at the same place on the sky. The pulsar’s wind is X-ray light, which no eye can see, drawn violet-blue.'],
+        ['On the clock', 'The star was seen to explode in 1054, and the cloud grows about a tenth of a per cent a year (measured). The model grows with the app’s clock from 1054; how the growth changed over the centuries is modelled.'],
         ['Review', 'This model has not yet been reviewed by an astronomer.'],
       ],
       'dso-veil-nebula': [
@@ -2135,6 +2137,7 @@ Object.assign(COPY, {
         ['Review', 'This model has not yet been reviewed by an astronomer.'],
       ],
       'dso-coalsack': [
+        ['Its outline and depth', 'The outline is measured on the map of the Milky Way drawn here (NASA, from Gaia’s star counts): one dark region about 7 by 4 degrees. Darker patches near it are other clouds and are left out. The depth is modelled: a thin, lumpy sheet at one distance.'],
         ['How dark it is', 'Read from how much darker the Milky Way is here than at the same distance from its middle line nearby. That is an estimate and lower than infrared maps give, because stars in front of the cloud add their light.'],
         ['What the dust does', 'It only absorbs: the stars behind it are dimmed and reddened. Stars in front of it are not. Part of the darkness to the north-east is a second cloud far behind, drawn here at the near distance.'],
         ['Review', 'This model has not yet been reviewed by an astronomer.'],

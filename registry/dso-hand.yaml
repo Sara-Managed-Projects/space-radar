@@ -856,11 +856,20 @@ objects:
     designation: Caldwell 99
     type: DrkN
     what: dark nebula
-    ra_deg: 192.5           # 12h 50m
-    dec_deg: -62.5          # -62 deg 30 min
+    # THE CENTRE AND THE OUTLINE (the 2026-11-16 deep-space review). The infobox's 12h 50m, -62 deg 30 min (192.5, -62.5)
+    # was a rounded place, and SIMBAD's "Coalsack Nebula" (187.83, -63.74) is the cloud's western end. Two sources agree
+    # on the middle: Beuther et al. 2011 (A&A 533, A17, arXiv:1107.2298, read 2026-11-16) put the Coalsack "between
+    # Galactic longitudes 305 >= l >= 300 deg", whose middle on the Galactic plane (l = 302.5, b = 0) is RA 191.91,
+    # Dec -62.87; and the one dark region the hero's map keeps (NASA SVS Deep Star Maps 2020, from Gaia DR2 star counts;
+    # scripts/build_deep_sheets.py one_cloud, site/images/deep/sheets/manifest.json `outline`) has its centre within a few
+    # arcminutes of that. The minor axis and the angle are that region's own, measured on the same map.
+    ra_deg: 191.91          # l = 302.5, b = 0
+    dec_deg: -62.87
     dist_kly: 0.587         # 180 pc
     # vmag omitted: a dark cloud has no magnitude
-    maj_ax_arcmin: 420      # 7 x 5 deg
+    maj_ax_arcmin: 446      # the map's dark region: 446 x 237 arcmin at position angle 47 (the infobox said 7 x 5 deg)
+    min_ax_arcmin: 237
+    pos_ang_deg: 47
     con: Crux
     source: "https://en.wikipedia.org/wiki/Coalsack_Nebula (infobox, read 2026-09-09)"
     why: "A hole in the Milky Way next to the Southern Cross: not a hole but a cloud of dust so thick no starlight gets through."
