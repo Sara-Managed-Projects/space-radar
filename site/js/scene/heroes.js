@@ -1128,7 +1128,7 @@ export function createHeroes(scene, ctx) {
     },
     /**
      * Every drawn model near the pointer, for scene/pickrank.js (internal #341): {record, kind: 'model',
-     * px, score, sx, sy, r, depth}. The owner, 2026-11-16: "they should be clickable as a whole; now I
+     * px, score, sx, sy, r, depth, span}. The owner, 2026-11-16: "they should be clickable as a whole; now I
      * must click a specific part". A pick was the screen distance to the craft's centre point, 10 px for
      * a mouse, under a model 260 px across. The target is now the model's own box as projected (its
      * outline, scene/pickrank.js hullDistance): `px` is the distance to it, zero anywhere on the model.
@@ -1160,7 +1160,7 @@ export function createHeroes(scene, ctx) {
           px = hullDistance(pts, tapX, tapY);
         }
         if (px > reachPx) continue;
-        out.push({ record: entry.record, kind: 'model', px, score: px, sx, sy, r, depth: obj.position.distanceTo(_camPos) });
+        out.push({ record: entry.record, kind: 'model', px, score: px, sx, sy, r, depth: obj.position.distanceTo(_camPos), span: (entry.reach || 0.5) * obj.scale.x });
       }
       return out;
     },

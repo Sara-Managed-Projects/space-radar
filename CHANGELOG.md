@@ -88,6 +88,14 @@ tagged, and their dates are the day the last change in each landed.
 
 ### Fixed
 
+- **A 3D model is one thing to click, small icons over the Earth are easier to hit, and a flight no longer carries its
+  subject along at full size.** A spacecraft drawn as a model answers to a click or a tap anywhere on it (its panels, its
+  trusses), also in front of a planet; it answered only at its centre point. Over the Earth an icon is hit anywhere on the
+  icon as it is drawn, with a margin for a finger, and where icons crowd the one under the pointer is taken instead of the
+  Earth; a click between icons is still the Earth. A quick tap on a slow phone is no longer read as a long press. And
+  while the camera flies to something (the drift, a search, a link, "Fly to it", a trip), its model is drawn at the size
+  it will have on arrival, seen from the real distance: a rover on the Moon grows as the camera closes in, where it was
+  drawn 260 px tall from the first frame.
 - **The card's region badge follows the standard bounds.** Icarus at 1.76 AU read "Outer solar system" because the inner Solar System ended at Mars's aphelion; it now runs to the frost line (4.95 AU, Jupiter's perihelion), the main belt is the 2.06 to 3.27 AU between Jupiter's 4:1 and 2:1 gaps, and an orbit that strays out of it (a Hungaria, a Hilda, Encke's comet) is not headed "Asteroid belt".
 - **Links and first screens that opened empty.** A shared link to Andromeda, and "Fly to it" on any galaxy, cluster or
   nebula, now stops near enough to see the object (it was a whole unit away, a million light-years on the Local Group's

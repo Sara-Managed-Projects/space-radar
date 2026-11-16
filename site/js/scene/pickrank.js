@@ -6,8 +6,9 @@
 //                                the debris penalty applied (glyphs.js), sx/sy where it is drawn (CSS px
 //                                from the canvas corner), depth the straight-line distance from the camera
 //                                and r half the icon as drawn, in CSS px (absent: a point with no size);
-//   model  {record, kind: 'model', px, score, sx, sy, depth, r}   a craft drawn as its 3D model (heroes.js
-//                                pickAll); px is the distance to the model's outline, zero anywhere on it;
+//   model  {record, kind: 'model', px, score, sx, sy, depth, r, span}   a craft drawn as its 3D model
+//                                (heroes.js pickAll); px is the distance to the model's outline, zero anywhere
+//                                on it, span how far it reaches from its centre in the units of depth;
 //   disc   {record, edge, r, cx, cy, depth, horizon, tier}   a world drawn as a disc; edge is the distance to
 //                                its RIM (zero when the pointer is on it), r its radius in px, depth the
 //                                distance to its centre and horizon the distance to its limb.
@@ -130,9 +131,10 @@ export function decide(marks, discs, reach = REACH.touch) {
   const localMarks = near.filter((m) => m.tier !== 'backdrop').sort((a, b) => scoreOf(a) - scoreOf(b));
   const backMarks = near.filter((m) => m.tier === 'backdrop').sort((a, b) => scoreOf(a) - scoreOf(b));
   const discList = front.concat(inside);
-  // Over a model only an icon the pointer is on, drawn in front of it, comes first.
+  // Over a model only an icon the pointer is on, drawn in front of it, comes first: nearer than the model's own
+  // near side (`span`, how far it reaches from its centre), so a dot that sits inside the model is the model's.
   const top = models[0] || null;
-  const firstMarks = top ? localMarks.filter((m) => onIcon(m) && Number.isFinite(m.depth) && m.depth < depthOf(top)) : localMarks;
+  const firstMarks = top ? localMarks.filter((m) => onIcon(m) && Number.isFinite(m.depth) && m.depth < depthOf(top) - (top.span > 0 ? top.span : 0)) : localMarks;
   const laterMarks = top ? localMarks.filter((m) => !firstMarks.includes(m)) : [];
 
   const out = [];

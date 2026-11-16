@@ -164,7 +164,7 @@ const within = (list, reach) => list.filter((m) => m.px <= reach).length;
   check(hullDistance([[0, 0], [10, 0], [10, 10], [0, 10]], 5, 5) === 0 && hullDistance([[0, 0], [10, 0], [10, 10], [0, 10]], 15, 5) === 5, 'a square: inside, and 5 px beside it');
   check(hullDistance([[0, 0], [10, 0]], 5, 3) === 3 && hullDistance([[4, 4]], 4, 9) === 5 && hullDistance([], 1, 1) === Infinity && hullDistance([[0, 0], [10, 0], [5, 0]], 5, 0) === 0, 'a line, a point and nothing do not throw');
 
-  const model = (px, extra = {}) => ({ record: iss, kind: 'model', px, score: px, tier: 'local', sx: 700, sy: 300, r: 150, depth: 800, ...extra });
+  const model = (px, extra = {}) => ({ record: iss, kind: 'model', px, score: px, tier: 'local', sx: 700, sy: 300, r: 150, depth: 800, span: 60, ...extra });
   const earthBehind = disc(earth, 900, { cx: 900, cy: 1100, depth: D, horizon: LIMB });
   // anywhere on the body, in front of the planet: the model, for a mouse and a finger, and it flies (kind 'model', on)
   const onBody = decide([model(0)], [earthBehind], mouse);
@@ -189,6 +189,10 @@ const within = (list, reach) => list.filter((m) => m.px <= reach).length;
   const other = (depth, px = 1) => iconAt(sat, 'satellite', 760, 320, px, { depth });
   check(rankPick([model(0), other(500)], [earthBehind], mouse) === sat, 'an icon under the pointer in front of the model is taken');
   check(rankPick([model(0), other(1500)], [earthBehind], mouse) === iss, 'an icon behind the model is not');
+  // a module the catalogue lists on its own sits at the station's centre, a hair nearer by rounding: it is inside the model
+  const nauka = { id: 'sat-nauka', klass: 'satellite' };
+  const inIt = decide([model(0), iconAt(nauka, 'satellite', 700, 300, 0.3, { depth: 799.999 }), iconAt({ id: 'sat-zvezda', klass: 'satellite' }, 'satellite', 700.4, 300, 0.5, { depth: 799.998 })], [earthBehind], mouse);
+  check(inIt.winner === iss && !inIt.ambiguous, 'dots that sit inside the model do not take its middle, nor make it a list');
   check(rankPick([model(0), other(500, 8)], [], mouse) === iss, 'an icon only near the pointer does not take a click on the model');
   // two models: the nearer
   const hubble = { id: 'sat-20580', klass: 'telescope' };

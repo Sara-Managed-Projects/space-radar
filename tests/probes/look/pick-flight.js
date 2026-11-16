@@ -17,7 +17,8 @@
 //            the icon's edge; and spots of the Earth with no icon near are tapped: they must be the Earth.
 //   flights  from the home view to a rover on the Moon, a rover on Mars, a lander, the ISS and Voyager 1,
 //            as the drift flies (select with a long cruise): every frame's flight share, camera distance and
-//            the model's size on screen (`sr.heroes.drawnPx`). A picture early in the flight and on arrival.
+//            the model's size on screen (`sr.heroes.drawnPx`). A picture on the way (past the flight's first
+//            third, when the camera looks where it is going) and on arrival.
 look.probe = 'pick-flight';
 const el = sr.renderer.domElement;
 const V3 = sr.camera.position.constructor;
@@ -92,7 +93,7 @@ const tally = (rows, id) => ({ taps: rows.length, hits: rows.filter((q) => q.got
 const modelTest = async (id, label) => {
   const rec = sr.recordById(id);
   if (!rec) { look.missing.push(id); return; }
-  sr.clock.setPaused(false);
+  sr.clock.live();
   sr.select(rec, { fly: true, undo: false });
   await settle();
   await until(() => sr.heroes.drawnPx(id) > 60, 40000, 250);
@@ -130,7 +131,7 @@ const modelTest = async (id, label) => {
   m.plainOffCentre = tally(plain.filter((q) => q.d > (phone ? 24 : 10)), id);
   out.models[label] = m;
   sr.deselect({ stay: true });
-  sr.clock.setPaused(false);
+  sr.clock.live();
 };
 
 // ---------------------------------------------------------------- icons over the Earth
@@ -238,7 +239,7 @@ const iconTest = async (label) => {
   res.tapEarth = sumTaps(taps.earth, 'earth');
   out.icons[label] = res;
   await shot(`icons-${label}`, `${label}: ${res.dots} dots in front of the Earth, ${res.crowded} of them in a crowd for a ${pointer}`);
-  sr.clock.setPaused(false);
+  sr.clock.live();
 };
 
 // ---------------------------------------------------------------- flights
@@ -249,7 +250,7 @@ const flightLog = async (id, label, home) => {
   await settle();
   if (sr.stage.worldId !== 'earth') { sr.setStage('earth'); await sleep(3000); }
   rig.restoreState(home, 0);
-  sr.clock.setPaused(false);
+  sr.clock.live();
   await sleep(1500); await frame(); await frame();
   const rows = [];
   let early = false, arrivedAt = null;
@@ -262,7 +263,8 @@ const flightLog = async (id, label, home) => {
     const flying = !!rig.state.flying;
     const k = rig.flightProgress ? rig.flightProgress() : null;
     rows.push({ ms: Math.round(performance.now() - t0), k: k == null ? null : Math.round(k * 1000) / 1000, flying, d: pos ? sr.camera.position.distanceTo(pos) : null, px: Math.round(sr.heroes.drawnPx(rec.id) * 10) / 10 });
-    if (!early && flying && k != null && k >= 0.2) { early = true; await shot(`flight-${label}-early`, `${rec.name}: a fifth of the way there, its model ${rows[rows.length - 1].px} px`); }
+    // Past the flight's first third the camera is looking at where it is going (the rig's targetDelay): the subject is in the picture.
+    if (!early && flying && k != null && k >= 0.6) { early = true; await shot(`flight-${label}-midway`, `${rec.name}: on the way (${Math.round(k * 100)} % of the flight, ${pos && rows[0].d ? Math.round((100 * rows[rows.length - 1].d) / rows[0].d) : '?'} % of the distance left), its model ${rows[rows.length - 1].px} px`); }
     if (!flying && arrivedAt == null) arrivedAt = performance.now();
     if (arrivedAt != null && performance.now() - arrivedAt > 5000) break;
   }
@@ -296,12 +298,16 @@ if (want('models')) {
 }
 if (want('flights')) {
   for (const id of ['landing-sites', 'deep-space']) { try { if (!sr.isLayerOn(id)) sr.setLayerOn(id, true); } catch (e) { look.missing.push('layer ' + id); } }
+  // The card's lamp ("Light it"), so a model on a night side is not black on black in the pictures.
+  const lamp = await import(new URL('./js/scene/models.js', document.baseURI).href).catch(() => null);
+  try { if (lamp && lamp.setFloodLight) lamp.setFloodLight(true); } catch { /* a ref without the lamp */ }
   await sleep(4000);
   await section('flight: Moon rover', () => flightLog('yutu', 'moon-rover', home));
   await section('flight: Mars rover', () => flightLog('gale', 'mars-rover', home));
   await section('flight: lander', () => flightLog('apollo-11', 'lander', home));
   await section('flight: the ISS', () => flightLog('sat-25544', 'iss', home));
   await section('flight: Voyager 1', () => flightLog('deep-voyager-1', 'voyager', home));
+  try { if (lamp && lamp.setFloodLight) lamp.setFloodLight(false); } catch { /* a ref without the lamp */ }
   for (const id of ['landing-sites', 'deep-space']) { try { sr.setLayerOn(id, false); } catch { /* as it was */ } }
 }
 if (want('crowd')) {
