@@ -342,6 +342,7 @@ export function setConstellations(names, lines) {
       stars.push({ extra: 'constellation', id: n.id, name: a, sub: t(COPY.searchRows.asterism, { name: n.name }), words: norm(a), raDeg: c.raDeg, decDeg: c.decDeg });
     }
   }
+  const patterns = stars.length;
   // The figures offered from the side (registry/sideviews.yaml, ui/figureside.js): one more row each, found by the
   // figure's own name ("orion", "big dipper"), which leaves the Sun to watch it come apart.
   const nameOf = new Map((Array.isArray(names) ? names : []).map((n) => [n.id, n.name]));
@@ -350,7 +351,7 @@ export function setConstellations(names, lines) {
     if (!name || (r.figure ? !byId.has(r.figure) : !byId.has(r.of))) continue;
     stars.push({ extra: 'figureside', id: r.id, name: t(COPY.figureSide.searchRow, { name }), sub: COPY.figureSide.searchSub, words: norm(name) });
   }
-  return stars.length;
+  return patterns;
 }
 
 /**

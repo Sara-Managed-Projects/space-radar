@@ -189,6 +189,21 @@ check(/import\('\.\/ui\/figureside\.js'\)/.test(main) && !/^import[^\n]*figuresi
 check(/addEventListener\('sr:figure-side'/.test(main) && /st\.figure !== undefined/.test(main) && /keys\.figure/.test(main), 'main.js opens it for the story card\'s event, a link at boot and a link pasted later');
 const story = readFileSync(join(JS, 'ui/skystory.js'), 'utf8');
 check(/lore\.culture === 'western'/.test(story) && /new CustomEvent\('sr:figure-side', \{ detail: lore\.key \}\)/.test(story) && /ui-btn ui-btn--secondary/.test(story), 'a western figure\'s story card has the button, a shared control, and asks by the figure\'s own key');
+// The search field, for real: "big dipper" finds its row (nothing else answers to that name), "orion" finds the
+// constellation first and its side view beside it.
+{
+  const R = await import(join(JS, 'ui/searchrows.js'));
+  const n = R.setConstellations(names, lines);
+  check(n >= 85 && n <= 90, `the side views are not counted as star patterns (${n})`);
+  const dipper = R.findExtras('big dipper');
+  check(dipper.length >= 1 && dipper[0].extra === 'figureside' && dipper[0].id === 'big-dipper' && dipper[0].name === 'Big Dipper from the side', `"big dipper" finds its side view (${JSON.stringify(dipper[0])})`);
+  const orion = R.findExtras('orion');
+  check(orion[0].extra === 'constellation' && orion.some((e) => e.extra === 'figureside' && e.id === 'orion' && e.sub === W.searchSub), `"orion" finds the constellation, then Orion from the side (${orion.map((e) => e.extra)})`);
+  let asked = null;
+  const ok = R.runExtra({ wantFigureSide: () => Promise.resolve({ open: (id) => { asked = id; } }) }, dipper[0]);
+  await new Promise((r) => setTimeout(r, 0));
+  check(ok === true && asked === 'big-dipper', 'following the row opens that figure from the side');
+}
 const rows = readFileSync(join(JS, 'ui/searchrows.js'), 'utf8');
 check(/extra: 'figureside'/.test(rows) && /hit\.extra === 'figureside'/.test(rows), 'the search field has a row for each offered figure and follows it');
 // The boot graph: none of the new files is reachable by static imports from main.js.
