@@ -68,13 +68,17 @@
 .sr-find__chart { margin-top: var(--sp-3); padding: var(--sp-2) var(--sp-3) var(--sp-3); background: var(--sr-wash); border-radius: var(--sr-radius); }
 .sr-find__chart[hidden] { display: none; }
 .sr-find__charthead { display: flex; align-items: center; justify-content: space-between; }
-.sr-find__chartscroll { overflow-x: auto; }
-.sr-find__chartscroll svg { display: block; }
-.sr-find__body { fill: var(--sr-exoplanet); fill-opacity: 0.85; stroke: none; }
-.sr-find__body.is-guessed { fill: none; stroke: var(--sr-exoplanet); stroke-dasharray: 3 3; }
-.sr-find__body.is-focus { stroke: var(--sr-ember); stroke-width: 2; }
-.sr-find__bodyname { font: 500 11px var(--sr-font); fill: var(--sr-text); }
-.sr-find__bodysub { font: 400 10px var(--sr-font-mono); fill: var(--sr-text-dim); }
+/* The chart is a row of slots that wraps: a body's disc, its name and its distance, each slot as wide as its widest
+   line, so no name is printed over its neighbour's (ui/find.js openChart, internal #339). The discs of a row stand on one
+   line because the two lines of words under each are the same height. */
+.sr-find__bodies { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--sp-3) var(--sp-2); margin: var(--sp-2) 0; }
+.sr-find__slot { display: flex; flex-direction: column; align-items: center; min-width: 0; max-width: 100%; text-align: center; }
+.sr-find__body { display: block; flex: none; box-sizing: border-box; margin: 2px 2px var(--sp-1); border-radius: 50%; background: var(--sr-exoplanet); opacity: 0.85; }
+.sr-find__body.is-guessed { background: none; border: 1px dashed var(--sr-exoplanet); opacity: 1; }
+.sr-find__body.is-focus { box-shadow: 0 0 0 2px var(--sr-ember); }
+/* Its words, at the smallest size anything is read at (they were 11 and 10 px in the picture). */
+.sr-find__bodyname { font: 500 var(--sr-fs-sm)/16px var(--sr-font); color: var(--sr-text); overflow-wrap: break-word; }
+.sr-find__bodysub { min-height: 16px; font: 400 var(--sr-fs-sm)/16px var(--sr-font-mono); color: var(--sr-text-dim); white-space: nowrap; }
 
 .sr-find__flags { flex: none; display: inline-flex; gap: 3px; width: 45px; }
 .sr-find__flag { width: 21px; height: 14px; object-fit: cover; border-radius: 2px; box-shadow: 0 0 0 1px var(--sr-line); }
@@ -149,7 +153,7 @@ html.sr-phone .sr-datejump { left: 8px; right: 8px; bottom: 8px; transform: none
 .sr-find__refine { margin-top: var(--sp-3); border-top: 1px solid var(--sr-line); }
 .sr-find__refine > summary { min-height: 40px; display: flex; align-items: center; cursor: pointer; padding: 0; }
 .sr-find__srclabel { margin-inline-end: 0.35em; }
-.sr-find__body.is-reference { fill: var(--sr-earth-ocean); fill-opacity: 1; stroke: var(--sr-atmosphere); stroke-width: 1; }
+.sr-find__body.is-reference { background: var(--sr-earth-ocean); opacity: 1; border: 1px solid var(--sr-atmosphere); }
 .sr-find__table th[scope="row"] { min-width: 88px; }
 .sr-find__table td { font-size: 12px; }
 

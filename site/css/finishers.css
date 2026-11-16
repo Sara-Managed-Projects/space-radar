@@ -22,11 +22,11 @@
   align-items: center;
   min-height: 32px;
   max-width: calc(100vw - var(--sr-scene-left) - 2 * var(--sr-inset) - 64px);
-  padding: 0 var(--sp-3);
+  padding: var(--sp-1) var(--sp-3);
   font: 400 var(--sr-fs-sm)/18px var(--sr-font);
   font-variant-numeric: tabular-nums;
   color: var(--sr-text);
-  text-align: left;
+  text-align: start;
   cursor: pointer;
   background: var(--sr-glass-strong);
   border-radius: var(--sr-radius);
@@ -39,10 +39,13 @@
   border-color: var(--sr-ember);
 }
 
+/* The line WRAPS where the badge is as wide as it may be: a narrow phone, a long language. It was one line that would end
+   in an ellipsis there, and the end of the line is the number (internal #339; at 390 px English, German and Hebrew were
+   measured to fit on one line, 291 px the longest). Balanced, so a second row is not one orphaned word. */
 .sr-scalebadge__text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 0;
+  overflow-wrap: break-word;
+  text-wrap: balance;
 }
 
 @media (hover: hover) {
@@ -68,6 +71,14 @@ html.sr-clean .sr-scalebadge,
 html.sr-trip-mode .sr-scalebadge,
 html.sr-ambient .sr-scalebadge,
 html.sr-sharing .sr-scalebadge {
+  display: none;
+}
+
+/* At full height the sheet is the page, and the badge is about the scene the sheet now covers: it is not drawn over the
+   sheet's own words. It was (internal #339): on a phone the Size slider is at the foot of the Planets tab, reached with
+   the sheet pulled up, and "Planets drawn at least x2 000 larger" lay across the first rows of the list, and of a
+   card's Compare table. The rail, the note and the cutaway already step aside the same way. */
+html.sr-phone[data-sheet='full'] .sr-scalebadge {
   display: none;
 }
 
@@ -387,10 +398,11 @@ html.sr-phone.sr-launchday:not([data-sheet='full']):has(.sr-scalerail:not([hidde
    and under both when the rail is up as well (the badge itself steps under the rail). Seen by the CI ui walk on the
    Planets tab, 2026-11-12: the badge's text lay over the note's Sources button. */
 html.sr-phone:has(.sr-scalebadge:not([hidden])) .sr-scenenote {
-  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 44px + var(--sp-2));
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + max(44px, var(--sr-badge-h, 44px)) + var(--sp-2));
 }
+/* --sr-badge-h is the badge's own height (ui/scalebadge.js writes it): 44 px until its lines wrap to a third row. */
 html.sr-phone:has(.sr-scalebadge:not([hidden])):has(.sr-scalerail:not([hidden])) .sr-scenenote {
-  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 2 * (44px + var(--sp-2)));
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 44px + max(44px, var(--sr-badge-h, 44px)) + 2 * var(--sp-2));
 }
 /* With a card up, the band of scene above the sheet is the selection's: its tag sits beside Back, where the note
    would land (seen at 390 x 844 on Zhurong's card, 2026-11-08). The note is about the scene, so it waits, as it

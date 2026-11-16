@@ -51,6 +51,9 @@ import { WORLDS, systemOf } from '../scene/worlds.js';
 import { rankAll } from '../scene/pickrank.js';
 import { dsoMark } from '../scene/glyphatlas.js';
 
+/** A ringed world's rings, in its own radii: what its name has to clear (discsNow). Saturn's are the ones drawn bright. */
+const RING_REACH = new Map(WORLDS.filter((w) => w.look && w.look.ring).map((w) => [w.id, w.look.ring.outerKm / w.radiusKm]));
+
 /** Names on screen at once, desktop and phone (spec 0061 req 10). */
 export const LABEL_CAP = 8;
 /** Candidates measured per tick, so a name that yields its box can be replaced by the next one. */
@@ -374,22 +377,8 @@ export function labelParentId(record) {
  * 4 px a name's first letter sat against the glass of a phone, which read as a name cut off. */
 export const LABEL_EDGE_PAD = 12;
 
-/** Air between a model's silhouette and the name above it, in CSS pixels. */
+/** Air between a disc's or a model's silhouette and the name beside it, in CSS pixels. */
 export const LABEL_MODEL_GAP = 6;
-
-/**
- * How far to raise a label so it clears its own MODEL. Pure. A label hangs from 0.4 to 1.4 of its
- * height above the anchor, which clears a dot and nothing bigger: at the ISS arrival "Terra" was
- * printed across Terra's own model, 84 px of spacecraft under a name 20 px above its centre
- * (internal #334). `radiusPx` is the model's reach on screen (scene/heroes.js drawnReach); with no
- * model it is 0 and the label stays where it always was.
- */
-export function labelLift(radiusPx, boxHeight, gap = LABEL_MODEL_GAP) {
-  const r = Number.isFinite(radiusPx) && radiusPx > 0 ? Math.min(radiusPx, 200) : 0;
-  if (!r) return 0;
-  const clear = 0.4 * (Number.isFinite(boxHeight) ? boxHeight : 0);
-  return Math.max(0, Math.round(r + gap - clear));
-}
 
 /**
  * Where to centre a label of `boxWidth` anchored at `x`, so the whole box stays on screen.
@@ -414,12 +403,90 @@ export function clampLabelX(x, boxWidth, hostWidth, pad = LABEL_EDGE_PAD) {
 
 /** Space kept between two label boxes, in CSS pixels. */
 export const LABEL_GAP_PX = 2;
+
+/**
+ * Where a name goes so that it is clear of the DISC it names. Pure.
+ *
+ * WHY. A label hangs from 0.4 to 1.4 of its height above its anchor, which clears a dot and nothing
+ * bigger. At the ISS arrival "Terra" was printed across Terra's own model, 84 px of spacecraft under a
+ * name 20 px above its centre (internal #334), so a model's reach raised its name, by at most 200 px.
+ * A WORLD's radius on screen was never asked (internal #339, "text unreadable there"): with the Planets
+ * tab's Size slider up (ui/orrery.js) every planet's name was printed across its own bright disc, with
+ * a text shadow to read it by.
+ *
+ * `a` is the anchor: { x, y } the centre on screen, `r` the silhouette's radius, `rx` and `ry` its reach
+ * sideways and upward where that is more (Saturn's rings); `bw`, `bh` the name's box; `hw`, `hh` the
+ * window; `blocked` the panels. The first place that is whole on screen and under no panel: above the
+ * disc (where a name always was), right of it, left of it, below it. When none is, the disc fills the
+ * view: the name goes ON it, just inside its upper edge or the window's, and says so (`over`), so the
+ * caller can put a plate behind the letters. A thing with no radius is placed as it always was, above
+ * its dot, unless that is off the top of the window: then under it.
+ * Returns { x, y, side, over }: the box's centre, and the y the stylesheet hangs it from (its top is
+ * y - 1.4 bh).
+ */
+export function placeLabel(a, bw, bh, hw, hh, blocked = [], gap = LABEL_MODEL_GAP, pad = LABEL_EDGE_PAD) {
+  const r = Number.isFinite(a.r) && a.r > 0 ? a.r : 0;
+  const cx = clampLabelX(a.x, bw, hw, pad);
+  if (!r) {
+    // A dot's name hangs above it; within a name's height of the top of the window it hung half outside, so
+    // there it goes under the dot.
+    const top = a.y - 1.4 * bh;
+    if (!(top < pad) && !(top + bh > hh - pad)) return { x: cx, y: a.y, side: 'above', over: false };
+    const t = Math.max(pad, Math.min(top < pad ? a.y + 0.4 * bh : top, hh - pad - bh));
+    return { x: cx, y: t + 1.4 * bh, side: t > a.y ? 'below' : 'above', over: false };
+  }
+  const rx = a.rx > r ? a.rx : r;
+  const ry = a.ry > r ? a.ry : r;
+  const half = bw / 2;
+  const mid = Math.min(Math.max(a.y - bh / 2, pad), hh - pad - bh);
+  // `grow`: the plate's reach past the box, when the name will have one.
+  const free = (x, top, grow = 0) => { const g = LABEL_GAP_PX + grow; return !blocked.some((k) => x - half < k.right + g && x + half + g > k.left && top < k.bottom + g && top + bh + g > k.top); };
+  const tries = [
+    ['above', cx, a.y - Math.max(0, ry + gap - 0.4 * bh) - 1.4 * bh],
+    ['right', a.x + rx + gap + half, mid],
+    ['left', a.x - rx - gap - half, mid],
+    ['below', cx, a.y + ry + gap],
+  ];
+  for (const [side, x, top] of tries) {
+    if (top >= pad && top + bh <= hh - pad && x - half >= pad && x + half <= hw - pad && free(x, top)) return { x, y: top + 1.4 * bh, side, over: false };
+  }
+  let top = Math.max(pad, Math.min(a.y - r + gap, hh - pad - bh));
+  for (let i = 0; i < 8 && !free(cx, top, PLATE_PAD) && top + 2 * bh + gap <= hh - pad; i++) top += bh + gap;
+  return { x: cx, y: top + 1.4 * bh, side: 'over', over: true };
+}
+
+/**
+ * How far a ring of radius `R` px reaches sideways and upward on the screen. Pure. `n` is the ring's
+ * axis (any length), `right` and `up` the camera's own, unit vectors: a ring seen edge-on reaches no
+ * higher than its planet, seen from its pole as far as it is wide.
+ */
+export function ringReach(R, n, right, up) {
+  const len = Math.hypot(n[0], n[1], n[2]) || 1;
+  const span = (v) => R * Math.sqrt(Math.max(0, 1 - ((n[0] * v[0] + n[1] * v[1] + n[2] * v[2]) / len) ** 2));
+  return { rx: span(right), ry: span(up) };
+}
+
+/** A disc this small behind a name is a dot behind two letters and needs no plate, in CSS pixels. */
+export const PLATE_MIN_R = 10;
+/** The share of a name's width, at each end, that may lie on a disc before the name gets a plate. */
+export const PLATE_INSET = 0.2;
+/** How far a plate reaches past its name's box (css/site.css `.label[data-plate]`), in CSS pixels. */
+export const PLATE_PAD = 4;
+
+/** Does the box touch the disc? `box` is {left, top, right, bottom}, `d` {x, y, r}. Pure. */
+export function boxOnDisc(box, d) {
+  const nx = Math.min(Math.max(d.x, box.left), box.right);
+  const ny = Math.min(Math.max(d.y, box.top), box.bottom);
+  return Math.hypot(nx - d.x, ny - d.y) < d.r;
+}
 /**
  * What a label may not print under: the panels, the card, the phone's sheet and top bar -- and the
  * HUD's tag and chevron, which name the selection. MEASURED 2026-10-02 at the ISS arrival: "Tiangong
  * space station" was printed across the ISS's tag, two names on one glass chip.
  */
-const PANEL_SELECTOR = '#sr-side, #sr-rail, #sr-time, .sr-pop, .sr-panel, .sr-card, #sr-top, .sr-tag, .sr-chevron';
+// And the chips that stand on the scene itself (internal #339): the scale badge, the rail over it and the heliosphere's
+// chip, which a planet's name ran under on a phone ("Uranus" under "Heliosphere, modelled").
+const PANEL_SELECTOR = '#sr-side, #sr-rail, #sr-time, .sr-pop, .sr-panel, .sr-card, #sr-top, .sr-tag, .sr-chevron, .sr-scalebadge, .sr-scalerail, .sr-helio-chip';
 
 /**
  * Which of these placed boxes to keep, in priority order: the first box always, and each later box
@@ -547,11 +614,13 @@ export function createLabels(ctx, host) {
     node.appendChild(dot);
     node.appendChild(text);
     host.appendChild(node);
-    pool.push({ node, dot, text, klass: '', colour: '' });
+    pool.push({ node, dot, text, klass: '', colour: '', plate: false });
   }
   const _v = new THREE.Vector3();
   const _c = new THREE.Vector3();
   let spheres = [];
+  // The drawn discs on the screen this tick: id -> { id, x, y, r, rx, ry } in CSS pixels (discsNow).
+  let discs = new Map();
   // On the Sun's stage every planet is ranked as a bright one: they are what that view is of.
   let lastAllPlanets = false;
 
@@ -574,6 +643,37 @@ export function createLabels(ctx, host) {
     return out;
   }
 
+  /**
+   * Every drawn disc as a circle on the screen, once per update (internal #339): a world's own name is
+   * placed clear of its circle (placeLabel), and a name that crosses another's gets a plate. A ringed
+   * world reaches as far as its rings do from where the camera stands (ringReach).
+   */
+  function discsNow(camera, w, h) {
+    const out = new Map();
+    if (!camera.isPerspectiveCamera) return out;
+    const f = (h / 2) / Math.tan((camera.fov * Math.PI) / 360);
+    const ce = camera.matrixWorld.elements;
+    for (const s of spheres) {
+      _c.set(s.x, s.y, s.z);
+      const d = _c.distanceTo(camera.position);
+      if (!(d > s.r)) continue; // the camera is inside it
+      _c.project(camera);
+      if (_c.z > 1 || _c.z < -1) continue;
+      const r = (f * s.r) / Math.sqrt(d * d - s.r * s.r);
+      const disc = { id: s.id, x: (_c.x + 1) * 0.5 * w, y: (1 - _c.y) * 0.5 * h, r, rx: r, ry: r };
+      const reach = RING_REACH.get(s.id);
+      const mesh = reach && ctx.worlds && ctx.worlds.meshFor ? ctx.worlds.meshFor(s.id) : null;
+      if (mesh) {
+        const e = mesh.matrixWorld.elements;
+        const ring = ringReach(r * reach, [e[4], e[5], e[6]], [ce[0], ce[1], ce[2]], [ce[4], ce[5], ce[6]]);
+        disc.rx = Math.max(r, ring.rx);
+        disc.ry = Math.max(r, ring.ry);
+      }
+      out.set(s.id, disc);
+    }
+    return out;
+  }
+
   function project(record, tMs, camera, w, h) {
     // From the ground the sky view names the Sun, the Moon, the planets and the stars itself, where
     // the air puts them (sky/groundsky.js); a second name at the orbital scene's place for the same
@@ -593,16 +693,21 @@ export function createLabels(ctx, host) {
     // From the ground the air lifts a satellite's dot (scene/glyphs.js); its name goes with it (internal #418).
     if (ctx.skyView && ctx.skyView.ownsSky && ctx.skyView.apparent) ctx.skyView.apparent(pos);
     const dist = pos.distanceTo(camera.position);
-    // Its model's reach on screen, when it is drawn as one (labelLift raises the name over it).
+    // Its reach on screen (placeLabel puts the name clear of it): a world's or a star's drawn disc, with
+    // its rings, or a spacecraft's model when it is drawn as one.
     let r = 0;
-    const reach = ctx.heroes && typeof ctx.heroes.drawnReach === 'function' ? ctx.heroes.drawnReach(record.id) : 0;
-    if (reach > 0 && dist > 0 && camera.isPerspectiveCamera) r = (reach / dist) / Math.tan((camera.fov * Math.PI) / 360) * (h / 2);
+    const disc = record.klass === 'world' || record.klass === 'star' ? discs.get(record.id) : null;
+    const reach = !disc && ctx.heroes && typeof ctx.heroes.drawnReach === 'function' ? ctx.heroes.drawnReach(record.id) : 0;
+    if (disc) r = disc.r;
+    else if (reach > 0 && dist > 0 && camera.isPerspectiveCamera) r = (reach / dist) / Math.tan((camera.fov * Math.PI) / 360) * (h / 2);
     pos.project(camera);
     if (pos.z > 1 || pos.z < -1) return null;
     const x = (pos.x + 1) * 0.5 * w;
     const y = (1 - pos.y) * 0.5 * h;
-    if (x < -20 || y < -20 || x > w + 20 || y > h + 20) return null;
-    return { x, y, dist, r };
+    // A disc that fills the view keeps its name while its centre is a little way off the window.
+    const m = 20 + (disc ? 0.6 * r : 0);
+    if (x < -m || y < -m || x > w + m || y > h + m) return null;
+    return { x, y, dist, r, rx: disc ? disc.rx : r, ry: disc ? disc.ry : r };
   }
 
   /**
@@ -631,6 +736,7 @@ export function createLabels(ctx, host) {
     const out = [];
     const seen = new Set();
     spheres = occluders();
+    discs = discsNow(camera, w, h);
     const inTrip = document.documentElement.classList.contains('sr-trip-mode');
     const selected = typeof ctx.selected === 'function' ? ctx.selected() : null;
     const layerOf = (id) => (ctx.layers || []).find((l) => l.id === id);
@@ -765,30 +871,50 @@ export function createLabels(ctx, host) {
       setClass(slot.node, DIMMED_CLASS, subjectId !== null && !isSubject);
     }
     const w = host.clientWidth || window.innerWidth;
+    const h = host.clientHeight || window.innerHeight;
     // Measure every box once (one layout), then place, then keep only the boxes that do not overlap
     // one kept before them. The CSS draws a label at translate(-50%, -140%) from its anchor, so the
     // box spans x +- width/2 and from y - 1.4 height to y - 0.4 height.
     const placed = [];
+    const panels = panelRects();
     for (let i = 0; i < pool.length; i++) {
       const c = chosen[i];
       if (!c) break;
       const bw = pool[i].node.offsetWidth;
       const bh = pool[i].node.offsetHeight;
-      const x = clampLabelX(c.x, bw, w);
-      const y = c.y - labelLift(c.r, bh);
-      placed.push({ x, y, left: x - bw / 2, right: x + bw / 2, top: y - 1.4 * bh, bottom: y - 0.4 * bh });
+      const { x, y, over } = placeLabel(c, bw, bh, w, h, panels);
+      const b = { x, y, left: x - bw / 2, right: x + bw / 2, top: y - 1.4 * bh, bottom: y - 0.4 * bh };
+      // A PLATE BEHIND THE LETTERS (css/site.css `.label[data-plate]`) where a disc is behind them: its
+      // own, when that fills the view, or any other the name crosses -- the Sun, a planet at the Size
+      // slider's far end, the Earth under a satellite's name. MEASURED 2026-11-16 on the Earth view:
+      // "Suomi NPP" lay whole on a white cloud deck, white letters on white with a shadow for an edge.
+      b.plate = over || platedBy(b, c.record);
+      if (b.plate) { b.left -= PLATE_PAD; b.right += PLATE_PAD; b.top -= PLATE_PAD; b.bottom += PLATE_PAD; }
+      placed.push(b);
     }
-    const keep = capKept(keepClearOf(placed, LABEL_GAP_PX, panelRects()), LABEL_CAP);
+    const keep = capKept(keepClearOf(placed, LABEL_GAP_PX, panels), LABEL_CAP);
     lastBoxes = placed.filter((_, i) => keep[i]);
     const now = new Set();
     for (let i = 0; i < placed.length; i++) {
       const slot = pool[i];
       if (!keep[i]) { slot.node.hidden = true; continue; }
       const b = placed[i];
+      if (slot.plate !== b.plate) { slot.node.toggleAttribute('data-plate', b.plate); slot.plate = b.plate; }
       slot.node.style.transform = `translate(${Math.round(b.x)}px, ${Math.round(b.y)}px) translate(-50%, -140%)`;
       now.add(chosen[i].record.id);
     }
     shownIds = now;
+  }
+
+  /**
+   * Is a drawn disc, other than its own, behind this box? Behind its middle three fifths: a name whose first
+   * letters touch a limb is over the sky for the rest of its length and keeps the plain look.
+   */
+  function platedBy(box, record) {
+    const inset = PLATE_INSET * (box.right - box.left);
+    const mid = { left: box.left + inset, right: box.right - inset, top: box.top, bottom: box.bottom };
+    for (const d of discs.values()) if (d.r >= PLATE_MIN_R && d.id !== record.id && boxOnDisc(mid, d)) return true;
+    return false;
   }
 
   /**

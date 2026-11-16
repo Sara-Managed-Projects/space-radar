@@ -47,11 +47,15 @@
   padding-bottom: var(--sp-1);
 }
 
+/* It wraps with the badge (css/finishers.css): set nowrap, a line longer than the badge would run out of its glass
+   (internal #339; the three languages measured at 390 px fit). */
 .sr-scalebadge__sub {
+  min-width: 0;
   font-size: var(--sr-fs-sm);
   line-height: 16px;
   color: var(--sr-text-dim);
-  white-space: nowrap;
+  overflow-wrap: break-word;
+  text-wrap: balance;
 }
 
 .sr-scalebadge__sub[hidden] { display: none; }

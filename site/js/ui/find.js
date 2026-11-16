@@ -39,7 +39,6 @@ const LY_KM = 9460730472580.8;
 const ROWS_SHOWN = 100;
 const OWNERS_SHOWN = 120;
 const LINK_KEYS = ['find', 'owner', 'operator', 'debris', 'constellation'];
-const SVG_NS = 'http://www.w3.org/2000/svg';
 const STEP_MS = { event: 0, week: 7 * 86400e3, year: 365.25 * 86400e3 };
 const PLAY_MS = 20000;
 
@@ -527,11 +526,8 @@ export function createFind(ctx, host) {
       const earth = typeof ctx.recordById === 'function' ? ctx.recordById('earth') : null;
       bodies.push({ id: 'earth', name: earth ? earth.name : '', radiusEarths: 1, reference: true });
     }
-    const W = 320;
     const maxR = 34;
     const placed = chartScale(bodies, { maxR, gap: 8 });
-    const width = Math.max(W, placed.length ? placed[placed.length - 1].xPx + placed[placed.length - 1].rPx + 8 : W);
-    const H = maxR * 2 + 44;
     const head = el('div', 'sr-find__charthead');
     head.appendChild(el('h3', 'sr-micro', t(F.chart.title, { host: title })));
     const close = button('ui-close', '', F.chart.close);
@@ -540,40 +536,26 @@ export function createFind(ctx, host) {
     close.addEventListener('click', () => { chartHost.hidden = true; chartHost.textContent = ''; st.chart = null; });
     head.appendChild(close);
     chartHost.appendChild(head);
-    const scroll = el('div', 'sr-find__chartscroll');
-    const svg = document.createElementNS(SVG_NS, 'svg');
-    svg.setAttribute('viewBox', `0 0 ${width} ${H}`);
-    svg.setAttribute('width', String(width));
-    svg.setAttribute('height', String(H));
-    svg.setAttribute('role', 'img');
-    svg.setAttribute('aria-label', t(F.chart.label, { host: title }));
-    const base = maxR + 6;
+    // A SLOT A BODY: its disc, then its name and its distance as words of the page, in a row that wraps (css/find.css).
+    // The discs were drawn edge to edge in one picture with each name centred under its own (internal #339, the owner:
+    // "UI bug with the planets sizes part, text unreadable there"): Mercury, Venus, the Earth and Mars are 3 to 6 px wide
+    // at Jupiter's scale, so four names and four distances were printed 12 px apart, one over the other. The page now
+    // gives each name its own width, in any face and any language, and starts another row when one is full: still one
+    // scale, still in order from the star, read from the right in a right-to-left language.
+    const row = el('div', 'sr-find__bodies');
+    row.setAttribute('role', 'img');
+    row.setAttribute('aria-label', t(F.chart.label, { host: title }));
     bodies.forEach((b, i) => {
       const p = placed[i];
-      const c = document.createElementNS(SVG_NS, 'circle');
-      c.setAttribute('cx', (p.xPx + 4).toFixed(1));
-      c.setAttribute('cy', (base + maxR - p.rPx).toFixed(1));
-      c.setAttribute('r', p.rPx.toFixed(1));
-      c.setAttribute('class', `sr-find__body${p.guessed ? ' is-guessed' : ''}${b.id === focusId ? ' is-focus' : ''}${b.reference ? ' is-reference' : ''}`);
-      svg.appendChild(c);
-      const label = document.createElementNS(SVG_NS, 'text');
-      label.setAttribute('x', (p.xPx + 4).toFixed(1));
-      label.setAttribute('y', String(base + maxR + 16));
-      label.setAttribute('text-anchor', 'middle');
-      label.setAttribute('class', 'sr-find__bodyname');
+      const slot = el('div', 'sr-find__slot');
+      // The disc is a box of the page with round corners, as wide as the scale makes it.
+      const disc = el('span', `sr-find__body${p.guessed ? ' is-guessed' : ''}${b.id === focusId ? ' is-focus' : ''}${b.reference ? ' is-reference' : ''}`);
+      disc.style.width = disc.style.height = `${(2 * p.rPx).toFixed(1)}px`;
       const short = host && b.name.startsWith(host) ? b.name.slice(host.length).trim() || b.name : b.name;
-      label.textContent = short;
-      svg.appendChild(label);
-      const sub = document.createElementNS(SVG_NS, 'text');
-      sub.setAttribute('x', (p.xPx + 4).toFixed(1));
-      sub.setAttribute('y', String(base + maxR + 30));
-      sub.setAttribute('text-anchor', 'middle');
-      sub.setAttribute('class', 'sr-find__bodysub');
-      sub.textContent = b.aAu > 0 ? t(COPY.card.values.au, { n: fmt.smart(b.aAu) }) : '';
-      svg.appendChild(sub);
+      slot.append(disc, el('span', 'sr-find__bodyname', short), el('span', 'sr-find__bodysub', b.aAu > 0 ? t(COPY.explore.au, { n: fmt.smart(b.aAu) }) : ''));
+      row.appendChild(slot);
     });
-    scroll.appendChild(svg);
-    chartHost.appendChild(scroll);
+    chartHost.appendChild(row);
     chartHost.appendChild(el('p', 'sr-sect__note', F.chart.note));
     st.chart = host || 'sun';
   }

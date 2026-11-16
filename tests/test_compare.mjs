@@ -232,5 +232,12 @@ check(imports.every((p) => ['../copy/en.js', '../data/compare.js', './latercss.j
 const cardRows = /const COMPARABLE = new Set\(\[([^\]]+)\]\)/.exec(cards);
 check(!!cardRows && cardRows[1].match(/'(\w+)'/g).map((q) => q.slice(1, -1)).join() === ORDER.join(), 'the ids cards.js offers Compare for are the registry\'s bodies');
 
+// Internal #339: a number in the table cannot be broken between two digits.
+{
+  const css = readFileSync(join(ROOT, 'site/css/compare.css'), 'utf8');
+  check(/\.sr-vs__num \{[^}]*white-space:\s*nowrap/.test(css), 'a number stays on one line');
+  check(!/overflow-wrap:\s*anywhere/.test(css.replace(/\/\*[\s\S]*?\*\//g, '')), 'no cell breaks anywhere: a long word breaks, a number does not');
+}
+
 if (problems.length) { console.error('compare FAILED:\n  ' + problems.slice(0, 60).join('\n  ')); process.exit(1); }
 console.log(`compare ok: ${ORDER.length} bodies from NASA's fact sheets, ${pairs} pairs laid out inside the box in both modes at three widths, ${PROPS.length} measures in the lab, the panel built and pressed`);
