@@ -111,6 +111,20 @@ check(/\.sr-scalebadge\s*\{[^}]*var\(--sr-z-/.test(css), 'the badge takes its z-
 check(!/sr-scalebadge/.test(read('site/css/ui.css')) && /loadCss\('finishers'/.test(src), 'its rules are not a first visit\'s: css/finishers.css comes with the module');
 check(/prefers-reduced-motion/.test(src) || /reducedMotion/.test(src), 'True size is a cut under reduced motion');
 
+// Internal #339: the badge's words are never cut and never lie over the sheet's.
+{
+  const fin = read('site/css/finishers.css');
+  const rule = (css, sel) => { const m = new RegExp(sel.replace(/[.[\]'=:()]/g, '\\$&') + '\\s*\\{([^}]*)\\}').exec(css); return m ? m[1] : null; };
+  const text = rule(fin, '.sr-scalebadge__text');
+  check(text !== null && !/ellipsis|nowrap/.test(text) && /overflow-wrap:\s*break-word/.test(text), 'the badge\'s line wraps: no ellipsis, no nowrap');
+  const sub = rule(read('site/css/worlds.css'), '.sr-scalebadge__sub');
+  check(sub !== null && !/nowrap/.test(sub) && /overflow-wrap:\s*break-word/.test(sub), 'its second line wraps with it and stays inside the badge');
+  const full = rule(fin, "html.sr-phone[data-sheet='full'] .sr-scalebadge");
+  check(full !== null && /display:\s*none/.test(full), 'on a phone the badge is not drawn over a sheet at full height');
+  check(/max\(44px, var\(--sr-badge-h, 44px\)\)/.test(fin) && /setProperty\('--sr-badge-h'/.test(src), 'the note under the badge is told how tall a wrapped badge is');
+  check(/text-align:\s*start/.test(rule(fin, '.sr-scalebadge') || ''), 'wrapped lines start at the reading side, in Hebrew as in English');
+}
+
 if (problems.length) {
   console.error('scalebadge FAILED:\n  ' + problems.join('\n  '));
   process.exit(1);

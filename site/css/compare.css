@@ -125,10 +125,13 @@
   font: 400 var(--sr-fs-body)/20px var(--sr-font);
   color: var(--sr-text);
   font-variant-numeric: tabular-nums;
-  overflow-wrap: anywhere;
+  /* A word longer than its column breaks; a NUMBER never does (internal #339: `anywhere` would let "142 984" part between
+     two digits in a column narrower than it, and a number read in two halves is two numbers; at 390 px none was measured
+     to break). */
+  overflow-wrap: break-word;
 }
 
-.sr-vs__num { font-family: var(--sr-font-mono); }
+.sr-vs__num { font-family: var(--sr-font-mono); white-space: nowrap; }
 .sr-vs__unit { color: var(--sr-text-dim); font-size: var(--sr-fs-sm); }
 .sr-vs__dash { color: var(--sr-text-dim); }
 

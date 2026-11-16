@@ -108,6 +108,16 @@ tagged, and their dates are the day the last change in each landed.
   while the camera flies to something (the drift, a search, a link, "Fly to it", a trip), its model is drawn at the size
   it will have on arrival, seen from the real distance: a rover on the Moon grows as the camera closes in, where it was
   drawn 260 px tall from the first frame.
+- **Words on the Planets tab that could not be read.** "Our planets side by side" printed the names and distances of
+  Mercury, Venus, the Earth and Mars over one another (at Jupiter's scale they are a few pixels wide and stood 12 px
+  apart): each planet now has a slot as wide as its name, the row wraps instead of overprinting, the type is 13 px and a
+  distance reads "0.387 AU". With the Size slider up, a planet's name was printed across its own bright disc once you
+  zoomed in: it now sits above the disc, beside or below it when there is no room, and on a dark plate when the disc
+  fills the view; a name that crosses the Sun, another planet or the Earth's clouds has the same plate, and no name
+  hangs half off the top of the window. On a phone the scale badge no longer lies over the sheet when it is pulled to
+  full height (which is how the Size slider is reached). Two guards for narrower screens and longer languages: the
+  badge's lines wrap where they would have ended in an ellipsis, and a number in a card's Compare table cannot break
+  between two digits.
 - **The card's region badge follows the standard bounds.** Icarus at 1.76 AU read "Outer solar system" because the inner Solar System ended at Mars's aphelion; it now runs to the frost line (4.95 AU, Jupiter's perihelion), the main belt is the 2.06 to 3.27 AU between Jupiter's 4:1 and 2:1 gaps, and an orbit that strays out of it (a Hungaria, a Hilda, Encke's comet) is not headed "Asteroid belt".
 - **Links and first screens that opened empty.** A shared link to Andromeda, and "Fly to it" on any galaxy, cluster or
   nebula, now stops near enough to see the object (it was a whole unit away, a million light-years on the Local Group's
