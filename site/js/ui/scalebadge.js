@@ -167,6 +167,7 @@ export function createScaleBadge(ctx, opts = {}) {
   let trueOn = false;
   let raf = 0;
   let scale = 1;
+  let height = 0;
 
   const worldRow = (id) => {
     const list = ctx.worlds && Array.isArray(ctx.worlds.worlds) ? ctx.worlds.worlds : [];
@@ -211,6 +212,12 @@ export function createScaleBadge(ctx, opts = {}) {
     if (subLine.textContent !== words.sub) subLine.textContent = words.sub; // b200-f2-worlds
     subLine.hidden = !words.sub;
     if (root.title !== words.title) root.title = words.title;
+    // Its lines wrap on a phone in a long language (css/finishers.css): what stands under it is told how tall it is now.
+    const tall = root.hidden ? 0 : root.offsetHeight;
+    if (Number.isFinite(tall) && tall !== height) {
+      height = tall;
+      if (tall > 0) doc.documentElement.style.setProperty('--sr-badge-h', `${tall}px`); else doc.documentElement.style.removeProperty('--sr-badge-h');
+    }
   }
 
   function apply(k) {

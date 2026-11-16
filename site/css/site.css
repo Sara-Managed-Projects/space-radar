@@ -208,6 +208,16 @@ html.sr-render .sr-skip { display: none; }
 .labels .label .dot.sr-swatch--dso-cluster { border-radius: 0; -webkit-mask: radial-gradient(circle at 50% 18%, var(--sr-text) 1.3px, transparent 1.7px), radial-gradient(circle at 18% 78%, var(--sr-text) 1.3px, transparent 1.7px), radial-gradient(circle at 82% 78%, var(--sr-text) 1.3px, transparent 1.7px); mask: radial-gradient(circle at 50% 18%, var(--sr-text) 1.3px, transparent 1.7px), radial-gradient(circle at 18% 78%, var(--sr-text) 1.3px, transparent 1.7px), radial-gradient(circle at 82% 78%, var(--sr-text) 1.3px, transparent 1.7px); }
 .labels .label[data-kind='selection'] { font-weight: 600; }
 .labels .label[data-kind='notable'] { opacity: .8; }
+/* A name with a disc behind its letters (ui/labels.js placeLabel, internal #339): the planet's own when it fills the view,
+   or one the name crosses, the Earth under a satellite's name among them. Level 2 glass behind it, 9.7:1 over a white cloud
+   where the shadow alone left a halo; the plate is a spread shadow, so the box labels.js measured is the box it placed. */
+.labels .label[data-plate] {
+  opacity: 1;
+  text-shadow: none;
+  background: var(--sr-glass);
+  border-radius: var(--sr-radius-sm);
+  box-shadow: 0 0 0 var(--sp-1) var(--sr-glass);
+}
 
 /* --- the phone ------------------------------------------------------------------------------
    Under 900 px the sidebar is one bottom sheet of three heights and the tools a top bar (ui/shell.js,

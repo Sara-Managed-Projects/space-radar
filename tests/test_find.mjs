@@ -92,6 +92,32 @@ check(Math.abs(placed[1].rPx - 40) < 1e-9 && Math.abs(placed[0].rPx - 40 / 11.2)
 check(placed[2].guessed && placed[0].xPx < placed[1].xPx && placed[1].xPx < placed[2].xPx, 'left to right, the unknown one flagged');
 check(F.SOLAR_SYSTEM.length === 9 && F.SOLAR_SYSTEM[2].id === 'earth', 'our planets');
 
+// --- the chart's words: a slot each, in rows that wrap (internal #339) --------------------------------
+// The owner: "UI bug with the planets sizes part, text unreadable there". Edge to edge, Mercury, Venus, the Earth and Mars
+// are 12 px apart at Jupiter's scale, and their four names and four distances were printed over one another in one
+// picture. Each body is now a slot of the page (its disc, its name, its distance) in a row that wraps.
+{
+  const ours = F.chartScale(F.SOLAR_SYSTEM.map((b) => ({ id: b.id, radiusEarths: b.radiusKm / F.EARTH_RADIUS_KM })), { maxR: 34, gap: 8 });
+  const centres = ours.slice(0, 4).map((p) => p.xPx);
+  check(centres[3] - centres[0] < 50, `the bug: edge to edge, the four inner planets' centres span ${Math.round(centres[3] - centres[0])} px, less than one name`);
+  check(Math.abs(ours[4].rPx - 34) < 1e-9 && Math.abs(ours[2].rPx / ours[4].rPx - 6371.0 / 69911) < 1e-9, 'one scale still: the Earth is 0.091 of Jupiter');
+  const findCss = readFileSync(join(ROOT, 'site/css/find.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const rule = (sel) => { const m = new RegExp(sel.replace(/\./g, '\\.') + '\\s*\\{([^}]*)\\}').exec(findCss); return m ? m[1] : ''; };
+  check(/display:\s*flex/.test(rule('.sr-find__bodies')) && /flex-wrap:\s*wrap/.test(rule('.sr-find__bodies')) && /align-items:\s*flex-end/.test(rule('.sr-find__bodies')), 'the chart is a row of slots that wraps, the discs standing on one line');
+  check(/gap:\s*var\(--sp-3\) var\(--sp-2\)/.test(rule('.sr-find__bodies')), 'with air between two names and between two rows');
+  check(/flex-direction:\s*column/.test(rule('.sr-find__slot')) && /align-items:\s*center/.test(rule('.sr-find__slot')), 'a slot is its disc over its two lines of words, centred');
+  check(/font:\s*500 var\(--sr-fs-sm\)\/16px/.test(rule('.sr-find__bodyname')) && /font:\s*400 var\(--sr-fs-sm\)\/16px/.test(rule('.sr-find__bodysub')), 'the chart\'s words are 13 px (--sr-fs-sm), not 11 and 10');
+  check(/min-height:\s*16px/.test(rule('.sr-find__bodysub')) && /white-space:\s*nowrap/.test(rule('.sr-find__bodysub')), 'a body with no distance keeps its line (the discs stay on one line), and a distance is never broken');
+  check(!/sr-find__chartscroll/.test(findCss) && !/\b1[01]px\b/.test(rule('.sr-find__bodyname') + rule('.sr-find__bodysub')), 'nothing scrolls sideways and nothing is under 13 px');
+  const findSrc = readFileSync(join(ROOT, 'site/js/ui/find.js'), 'utf8');
+  const chartSrc = findSrc.slice(findSrc.indexOf('async function openChart'), findSrc.indexOf('// BY COUNTRY'));
+  check(/el\('div', 'sr-find__slot'\)/.test(chartSrc) && /el\('span', 'sr-find__bodyname'/.test(chartSrc) && /el\('span', 'sr-find__bodysub'/.test(chartSrc), 'ui/find.js builds a slot a body: its disc and its words as text of the page');
+  check(!/createElementNS\(SVG_NS, 'text'\)/.test(chartSrc) && !/text-anchor/.test(chartSrc), 'no name is a text of the picture, centred on a disc 3 px wide');
+  check(/disc\.style\.width = disc\.style\.height = `\$\{\(2 \* p\.rPx\)\.toFixed\(1\)\}px`/.test(chartSrc) && /border-radius:\s*50%/.test(rule('.sr-find__body')), 'a disc is as wide as the one scale makes it');
+  check(/COPY\.explore\.au/.test(chartSrc) && !/COPY\.card\.values\.au/.test(chartSrc), 'the distance is "0.387 AU" (the Planets list\'s own form), not "0.387 astronomical units" under a 3 px disc');
+  check(/setAttribute\('role', 'img'\)/.test(chartSrc) && /F\.chart\.label/.test(chartSrc), 'the row is still one picture with one description for a screen reader');
+}
+
 if (problems.length) {
   console.error(`test_find: ${problems.length} problem(s)\n  - ${problems.join('\n  - ')}`);
   process.exit(1);

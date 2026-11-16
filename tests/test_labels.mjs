@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 import { readFileSync } from 'node:fs';
 
 const JS = join(dirname(fileURLToPath(import.meta.url)), '..', 'site/js');
-const { labelLift, LABEL_MODEL_GAP } = await import(join(JS, 'ui/labels.js'));
+const { placeLabel, ringReach, boxOnDisc, LABEL_MODEL_GAP, PLATE_MIN_R, PLATE_PAD, PLATE_INSET } = await import(join(JS, 'ui/labels.js'));
 const { chooseLabels, labelName, labelParentId, isNotable, isOwnPlaceOnLadder, clampLabelX, keepClearOf, behindWorld, fameGroup, tooFarForFrame, FAR_FRAME_RATIO, LABEL_EDGE_PAD, LABEL_CAP, TRAIN_CAP } = await import(join(JS, 'ui/labels.js'));
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
@@ -82,10 +82,95 @@ check(labelName({ name: 'A'.repeat(60), meta: {} }).length <= 34, 'a long name i
   // Internal #334: off the glass's edge, and above its own model.
   check(LABEL_EDGE_PAD >= 12, `a label keeps ${LABEL_EDGE_PAD} px off the edge; 4 put its first letter against a phone's glass`);
   check(clampLabelX(5, box, W) - box / 2 === LABEL_EDGE_PAD, 'a label anchored at the left edge starts a pad in');
-  check(labelLift(0, 20) === 0 && labelLift(undefined, 20) === 0 && labelLift(NaN, 20) === 0, 'no model, no lift: a dot\'s label is where it was');
-  check(labelLift(6, 20) === Math.max(0, 6 + LABEL_MODEL_GAP - 8), 'a model smaller than the label\'s own clearance barely moves it');
-  { const bh = 20; const r = 42; const lift = labelLift(r, bh); check((0 - lift) - 0.4 * bh <= -(r + LABEL_MODEL_GAP) + 0.5, `an 84 px model's name sits above its silhouette (bottom ${-lift - 0.4 * bh}, model top ${-r})`); }
-  check(labelLift(5000, 20) <= 200 + LABEL_MODEL_GAP, 'a model that fills the screen does not throw its name off it');
+}
+
+// CLEAR OF ITS OWN DISC (internal #339, the owner: "UI bug with the planets sizes part, text unreadable there"). With the
+// Planets tab's Size slider up, a planet is a bright ball and its name was printed across it: the name's lift was a
+// spacecraft model's reach and 0 for a world. placeLabel is the placement, for a disc of any size anywhere in the window.
+{
+  const boxOf = (p, bw, bh) => ({ left: p.x - bw / 2, right: p.x + bw / 2, top: p.y - 1.4 * bh, bottom: p.y - 0.4 * bh });
+  const PAD = LABEL_EDGE_PAD;
+  // A dot: where it always was, whatever the edge.
+  for (const r of [0, undefined, NaN, -3]) {
+    const p = placeLabel({ x: 200, y: 300, r }, 60, 20, 1440, 900);
+    check(p.x === 200 && p.y === 300 && p.over === false, `no radius, no move: a dot's label is where it was (r ${r}: ${JSON.stringify(p)})`);
+  }
+  { const p = placeLabel({ x: 200, y: 300, r: 6 }, 60, 20, 1440, 900); check(p.side === 'above' && p.y === 300 - Math.max(0, 6 + LABEL_MODEL_GAP - 8), `a disc smaller than the label's own clearance barely moves it: ${JSON.stringify(p)}`); }
+  { const bh = 20; const r = 42; const p = placeLabel({ x: 700, y: 450, r }, 60, bh, 1440, 900); check(p.side === 'above' && boxOf(p, 60, bh).bottom <= 450 - r - LABEL_MODEL_GAP + 0.5, `an 84 px model's name sits above its silhouette (bottom ${boxOf(p, 60, bh).bottom}, top of the model ${450 - r})`); }
+  // A dot within a name's height of the top of the window: its name hung half outside ("Psyche" at y -12, the look run of
+  // 2026-11-16). Under the dot there, and never past the bottom either.
+  { const p = placeLabel({ x: 300, y: 20, r: 0 }, 60, 20, 1440, 900); const b = boxOf(p, 60, 20); check(p.side === 'below' && b.top === 20 + 8 && b.top >= PAD, `a dot at the top edge: its name goes under it: ${JSON.stringify(b)}`); }
+  { const p = placeLabel({ x: 300, y: 915, r: 0 }, 60, 20, 1440, 900); check(boxOf(p, 60, 20).bottom <= 900 - PAD + 1e-9, 'a dot just past the bottom edge: its name is whole'); }
+  // The measured case: Jupiter at Size x2000 is a ball some 120 px in radius; its name hung 8 to 28 px above its CENTRE.
+  { const p = placeLabel({ x: 700, y: 450, r: 120 }, 52, 18, 1440, 900); const b = boxOf(p, 52, 18); check(p.side === 'above' && b.bottom <= 450 - 120 - LABEL_MODEL_GAP + 0.5 && !boxOnDisc(b, { x: 700, y: 450, r: 120 }), `a 240 px planet's name is above its disc, not across it: ${JSON.stringify(b)}`); }
+  // No room above (the disc reaches the top of the window): beside it, level with its centre.
+  { const p = placeLabel({ x: 500, y: 300, r: 295 }, 52, 18, 1440, 900); const b = boxOf(p, 52, 18); check(p.side === 'right' && b.left >= 500 + 295 + LABEL_MODEL_GAP - 0.5 && Math.abs((b.top + b.bottom) / 2 - 300) < 1, `no room above: to the right, level with the centre: ${p.side} ${JSON.stringify(b)}`); }
+  { const p = placeLabel({ x: 1100, y: 300, r: 295 }, 52, 18, 1440, 900); check(p.side === 'left' && boxOf(p, 52, 18).right <= 1100 - 295 - LABEL_MODEL_GAP + 0.5, `nor to the right: to the left: ${p.side}`); }
+  { const p = placeLabel({ x: 195, y: 150, r: 170 }, 52, 18, 390, 844); check(p.side === 'below' && boxOf(p, 52, 18).top >= 150 + 170 + LABEL_MODEL_GAP - 0.5, `on a phone, a disc across the top of the window: below it: ${p.side}`); }
+  // A panel in the way counts as no room: above is under the phone's top bar, so the name goes below.
+  { const bar = [{ left: 0, top: 0, right: 390, bottom: 110 }]; const p = placeLabel({ x: 195, y: 280, r: 160 }, 52, 18, 390, 844, bar); check(p.side === 'below', `above is under a panel: ${p.side}`); const q = placeLabel({ x: 195, y: 280, r: 160 }, 52, 18, 390, 844, []); check(q.side === 'above', 'and above again without the panel'); }
+  // The disc fills the view: the name is ON it, in the window, and says so, so that it gets its plate.
+  { const p = placeLabel({ x: 720, y: 450, r: 900 }, 52, 18, 1440, 900); const b = boxOf(p, 52, 18); check(p.over === true && p.side === 'over' && b.top >= PAD && b.bottom <= 900 - PAD && b.left >= PAD && b.right <= 1440 - PAD && boxOnDisc(b, { x: 720, y: 450, r: 900 }), `a disc that fills the view: the name is on it and in the window: ${JSON.stringify(b)}`); }
+  { const p = placeLabel({ x: 195, y: 400, r: 300 }, 52, 18, 390, 844, [{ left: 0, top: 0, right: 390, bottom: 110 }, { left: 0, top: 700, right: 390, bottom: 844 }]); const b = boxOf(p, 52, 18); check(p.over === true && b.top >= 110 && b.bottom <= 700, `on a phone between the top bar and the sheet: on the disc, under neither: ${JSON.stringify(b)}`); }
+  // The plate reaches 4 px past the box: beside a chip the name would fit and its plate would not ("Earth" on a phone, the
+  // look run of 2026-11-16: placed 3.5 px right of the scale rail's chip, then hidden because its plate touched it).
+  { const chip = [{ left: 16, top: 64, right: 170, bottom: 110 }]; const p = placeLabel({ x: 195, y: 345, r: 424 }, 43, 20, 390, 844, [{ left: 0, top: 0, right: 390, bottom: 56 }, ...chip, { left: 0, top: 630, right: 390, bottom: 844 }]); const b = boxOf(p, 43, 20); check(p.over === true && (b.left - PLATE_PAD >= 170 + 2 || b.top - PLATE_PAD >= 110 + 2), `a name on its disc keeps its PLATE clear of a chip, not only its box: ${JSON.stringify(b)}`); }
+  // Just inside the upper edge of a disc whose top is in the window, not in the middle of the picture.
+  { const p = placeLabel({ x: 195, y: 420, r: 300 }, 52, 18, 390, 844, [{ left: 0, top: 0, right: 390, bottom: 108 }, { left: 0, top: 700, right: 390, bottom: 844 }]); const b = boxOf(p, 52, 18); check(p.over === true && b.top >= 420 - 300 && b.top <= 420 - 300 + 2 * LABEL_MODEL_GAP, `over: just inside the disc's upper edge (top ${b.top}, the edge ${120})`); }
+
+  // EVERY SLIDER POSITION is a disc of some radius somewhere in the window: sweep them all, on a desktop and a phone, with
+  // the panels each has. Never off the window; clear of the disc unless it says `over`; and `over` only when no side was free.
+  let swept = 0;
+  for (const [W, H, panels] of [
+    [1440, 900, [{ left: 0, top: 0, right: 360, bottom: 900 }, { left: 1380, top: 0, right: 1440, bottom: 900 }, { left: 372, top: 12, right: 640, bottom: 60 }]],
+    [390, 844, [{ left: 0, top: 0, right: 390, bottom: 108 }, { left: 0, top: 724, right: 390, bottom: 844 }]],
+    [390, 844, []],
+  ]) {
+    for (const bw of [38, 52, 96, 180]) for (const r of [0, 0.4, 3, 9, 20, 45, 90, 150, 240, 400, 700, 1500]) {
+      for (let x = -40; x <= W + 40; x += 53) for (let y = -40; y <= H + 40; y += 47) {
+        const bh = 18;
+        const a = { x, y, r, rx: r, ry: r };
+        const p = placeLabel(a, bw, bh, W, H, panels);
+        const b = boxOf(p, bw, bh);
+        swept++;
+        const inWindow = b.left >= PAD - 0.01 && b.right <= W - PAD + 0.01 && b.top >= PAD - 0.01 && b.bottom <= H - PAD + 0.01;
+        if (!inWindow) { problems.push(`a name left the window: ${W}x${H} bw ${bw} r ${r} at ${x},${y}: ${p.side} ${JSON.stringify(b)}`); break; }
+        if (!p.over && boxOnDisc(b, { x, y, r })) { problems.push(`a name was placed across its own disc without saying so: ${W}x${H} bw ${bw} r ${r} at ${x},${y}: ${p.side} ${JSON.stringify(b)}`); break; }
+        if (r > 0 && !p.over && panels.some((k) => b.left < k.right && b.right > k.left && b.top < k.bottom && b.bottom > k.top)) { problems.push(`a name was placed under a panel: ${W}x${H} bw ${bw} r ${r} at ${x},${y}: ${p.side}`); break; }
+        if (p.over) {
+          // No side was free: each of the four either leaves the window or is under a panel.
+          const half = bw / 2;
+          const mid = Math.min(Math.max(y - bh / 2, PAD), H - PAD - bh);
+          const cx = clampLabelX(x, bw, W);
+          const sides = [[cx, Math.min(y - 1.4 * bh, y - r - LABEL_MODEL_GAP - bh)], [x + r + LABEL_MODEL_GAP + half, mid], [x - r - LABEL_MODEL_GAP - half, mid], [cx, y + r + LABEL_MODEL_GAP]];
+          const ok = sides.some(([sx, top]) => top >= PAD && top + bh <= H - PAD && sx - half >= PAD && sx + half <= W - PAD && !panels.some((k) => sx - half < k.right + 2 && sx + half + 2 > k.left && top < k.bottom + 2 && top + bh + 2 > k.top));
+          if (ok) { problems.push(`a name was put on its disc with a side free: ${W}x${H} bw ${bw} r ${r} at ${x},${y}`); break; }
+        }
+      }
+    }
+  }
+  check(swept > 20000, `the sweep ran (${swept} placements)`);
+
+  // Saturn's rings: seen from the pole they reach as far as they are wide, edge-on no higher than the planet.
+  { const k = ringReach(100, [0, 2, 0], [1, 0, 0], [0, 1, 0]); check(Math.abs(k.rx - 100) < 1e-9 && k.ry < 1e-9, `rings edge-on reach sideways and not upward: ${JSON.stringify(k)}`); }
+  { const k = ringReach(100, [0, 0, 1], [1, 0, 0], [0, 1, 0]); check(Math.abs(k.rx - 100) < 1e-9 && Math.abs(k.ry - 100) < 1e-9, `rings seen from the pole reach as far up as sideways: ${JSON.stringify(k)}`); }
+  { const s = Math.SQRT1_2; const k = ringReach(100, [0, s, s], [1, 0, 0], [0, 1, 0]); check(Math.abs(k.ry - 100 * s) < 1e-6, `rings tilted 45 degrees reach 0.71 of their radius upward: ${k.ry}`); }
+  { const p = placeLabel({ x: 700, y: 450, r: 40, rx: 93, ry: 70 }, 52, 18, 1440, 900); check(p.side === 'above' && boxOf(p, 52, 18).bottom <= 450 - 70 - LABEL_MODEL_GAP + 0.5, 'a ringed planet\'s name clears its rings, not only its ball'); }
+  { const p = placeLabel({ x: 700, y: 200, r: 150, rx: 349, ry: 150 }, 52, 18, 1440, 900, [{ left: 0, top: 0, right: 1440, bottom: 60 }]); check(p.side === 'right' && boxOf(p, 52, 18).left >= 700 + 349, `and beside it, it starts past the rings: ${p.side}`); }
+
+  // The plate: a box that touches a disc, and the numbers the stylesheet shares.
+  check(boxOnDisc({ left: 90, top: 90, right: 150, bottom: 108 }, { x: 100, y: 100, r: 30 }) === true, 'a box over a disc is on it');
+  check(boxOnDisc({ left: 140, top: 60, right: 200, bottom: 78 }, { x: 100, y: 100, r: 30 }) === false, 'a box past its corner is not');
+  check(boxOnDisc({ left: 131, top: 91, right: 190, bottom: 109 }, { x: 100, y: 100, r: 30 }) === false && boxOnDisc({ left: 129, top: 91, right: 190, bottom: 109 }, { x: 100, y: 100, r: 30 }) === true, 'the edge of the disc is the line');
+  check(PLATE_MIN_R >= 8 && PLATE_MIN_R <= 16, 'a disc under a label\'s own height needs no plate');
+  const site = readFileSync(join(JS, '..', 'css/site.css'), 'utf8');
+  const plate = /\.labels \.label\[data-plate\]\s*\{([^}]*)\}/.exec(site);
+  check(plate && /background:\s*var\(--sr-glass\)/.test(plate[1]) && /box-shadow:\s*0 0 0 var\(--sp-1\) var\(--sr-glass\)/.test(plate[1]) && /opacity:\s*1\b/.test(plate[1]), 'the plate is glass from the tokens, spread by --sp-1, at full opacity');
+  check(PLATE_PAD === 4, 'PLATE_PAD is --sp-1, the plate\'s spread');
+  check(site.indexOf('.labels .label[data-plate]') > site.indexOf(".labels .label[data-kind='notable']"), 'the plate\'s rule comes after the notable names\' 0.8, which it undoes');
+  const src = readFileSync(join(JS, 'ui/labels.js'), 'utf8');
+  check(/d\.r >= PLATE_MIN_R && d\.id !== record\.id && boxOnDisc\(mid, d\)/.test(src) && PLATE_INSET === 0.2, 'a name gets its plate over any drawn disc but its own, the ground of the stage included, once the disc is behind its middle three fifths');
+  check(/placeLabel\(c, bw, bh, w, h, panels\)/.test(src) && /discs\.get\(record\.id\)/.test(src) && /toggleAttribute\('data-plate'/.test(src), 'update() places every name with placeLabel, from the drawn disc of a world, and marks the plate as an attribute');
 }
 
 // BOXES, NOT ANCHORS. Seen on the live site on a 390 px phone, 2026-09-21: two payloads from one
