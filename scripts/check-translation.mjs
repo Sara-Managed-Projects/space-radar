@@ -8,7 +8,7 @@
 //   node scripts/check-translation.mjs --check-doc                           # fail if the table there is stale or a language breaks the review rule
 //
 // A translation is an ES module that exports `COPY` and `GLOSSARY` with the same shape as
-// site/js/copy/en.js and site/js/copy/en.later.js together. This lists, and fails on:
+// site/js/copy/en.js and every site/js/copy/en.*.js together. This lists, and fails on:
 //   missing      a key English has and the translation lacks
 //   extra        a key the translation has and English lacks (a typo, or a string that was removed)
 //   kind         a key that is text in one and a list or group in the other
@@ -17,7 +17,7 @@
 //                prints nothing.
 //   untouched    only reported with --strict: a string identical to the English (fine for a name,
 //                a number or "OK"; a translator should have looked at it)
-// It reads only the two files. No network, no browser, no install.
+// It reads every English file in site/js/copy (en.js and each en.*.js) and the translation. No network, no browser, no install.
 import { pathToFileURL } from 'node:url';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -46,47 +46,54 @@ export function compare(en, tr, path = '', out = { missing: [], extra: [], kind:
   return out;
 }
 
+/**
+ * Every file of English words: copy/en.js and each copy/en.*.js beside it, read from the folder and never from a list.
+ * (Internal #442: this used to be a hand-kept list of imports, and five files were never added to it -- en.moons.js,
+ * en.nebheroes.js, en.deepheroes.js, en.w3e.js and two Moments -- so 209 strings were English in every language while
+ * the table said 100 %. tests/test_check_translation.mjs holds that the list is the folder.)
+ */
+export function englishFiles(dir = resolve(HERE, '../site/js/copy')) {
+  const later = readdirSync(dir).filter((f) => /^en\.[A-Za-z0-9.]+\.js$/.test(f)).sort();
+  // en.later.js first, as the page loads it first; the rest import what they need themselves.
+  return ['en.js', ...later.filter((f) => f === 'en.later.js'), ...later.filter((f) => f !== 'en.later.js')];
+}
+
 async function english() {
-  const base = await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.js')).href);
-  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.later.js')).href); // adds its sections to base.COPY
-  // 1.6.2: the Moments' words (momentPlayer, momentShelf, momentStories) and the three stories' words, each added to base.COPY; 1.7.2: Apollo 13, Sputnik 1, Voskhod 2 and STS-1 too (Spanish #525, Portuguese Brazil #526, French #527, German #528, Russian #533 and Ukrainian #534 have Voskhod 2 and STS-1 drafted; zh, hi, he and ar keep the English until a translator has them); 1.7.7: Hubble's deployment and the first Falcon 9 landing too
-  for (const f of ['en.moments.js', 'en.moments.vostok.js', 'en.moments.apollo11.js', 'en.moments.artemis2.js', 'en.moments.apollo13.js', 'en.moments.sputnik.js', 'en.moments.voskhod.js', 'en.moments.sts1.js', 'en.moments.hubble.js', 'en.moments.falcon9.js']) await import(pathToFileURL(resolve(HERE, '../site/js/copy/' + f)).href);
-  // b200-f1-find: begin -- the words of Find, the owners, the clouds and the date field (copy/en.find.js), drafted in every language
-  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.find.js')).href);
-  // b200-f1-find: end
-  // b200-f4-cards: begin -- the words of a card's Wikipedia block and Read aloud (copy/en.cards.js), drafted in every language
-  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.cards.js')).href);
-  // b200-f4-cards: end
-  // b200-f3-stars: begin -- the words of deep time, the variable stars and the turning holes (copy/en.stars.js)
-  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.stars.js')).href);
-  // b200-f3-stars: end
-  // b200-f5-make: begin -- the words of the flight editor, Record and Dome and 360 (copy/en.make.js), drafted in every language
-  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.make.js')).href);
-  // b200-f5-make: end
-  // b200-f6-learn: begin -- the words of the daily challenges (copy/en.play.js, forge #160), drafted in every language
-  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.play.js')).href);
-  // b200-f6-learn: end
-  // b200-f8-xr: begin -- the words of the gamepad and the headset (copy/en.xr.js), drafted in every language
-  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.xr.js')).href);
-  // b200-f8-xr: end
-  // b200-f9-reach: begin -- the words of the real recordings' panel (copy/en.sound.js, forge #163), drafted in every language
-  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.sound.js')).href);
-  // b200-f9-reach: end
-  // b200-f7-ground: begin -- the words of standing on another world and its sky (copy/en.ground.js)
-  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.ground.js')).href);
-  // b200-f7-ground: end
-  // b200-c3-learn: begin -- the Fengyun-1C Moment's words (copy/en.moments.fengyun.js, forge #153), drafted in every language
-  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.moments.fengyun.js')).href);
-  // b200-c3-learn: end
-  // b200-c2-deep: begin -- the words of the 3D stars over deep time, the variable stars' rows, the EHT comparison and the cards' voice (copy/en.deep.js)
-  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.deep.js')).href);
-  // b200-c2-deep: end
-  // b200-f10-stars3d: begin -- the words of the 3D star map's AT-HYG tier (copy/en.startiers.js, forge #140)
-  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.startiers.js')).href);
-  // b200-f10-stars3d: end
-  // redesign 2026-11-10: the email updates' popover (copy/en.subscribe.js, ui/subscribepop.js), drafted in every language
-  await import(pathToFileURL(resolve(HERE, '../site/js/copy/en.subscribe.js')).href);
-  return { COPY: base.COPY, GLOSSARY: base.GLOSSARY };
+  const [first, ...rest] = englishFiles();
+  const base = await import(pathToFileURL(resolve(HERE, '../site/js/copy', first)).href);
+  for (const f of rest) await import(pathToFileURL(resolve(HERE, '../site/js/copy', f)).href); // each adds its sections to base.COPY
+  return { COPY: withoutAliases(base.COPY), GLOSSARY: withoutAliases(base.GLOSSARY) };
+}
+
+/**
+ * A plain copy of a tree of words in which a group that two paths reach is kept once, at its shortest path. English does
+ * this on purpose (copy/en.moons.js: `COPY.templates.moon = COPY.moonCard`, one object the card reads by its class); the
+ * loader translates the object in place through the section it was added as, so a language file carries it once too.
+ */
+export function withoutAliases(tree) {
+  const reached = new Map();
+  const walk = (v, path) => {
+    if (!v || typeof v !== 'object') return;
+    if (!reached.has(v)) reached.set(v, []);
+    reached.get(v).push(path);
+    if (reached.get(v).length > 1) return;
+    for (const k of Object.keys(v)) walk(v[k], [...path, k]);
+  };
+  walk(tree, []);
+  const drop = new Set();
+  for (const paths of reached.values()) {
+    if (paths.length < 2) continue;
+    paths.sort((a, b) => a.length - b.length);
+    for (const p of paths.slice(1)) drop.add(p.join('\u0000'));
+  }
+  const copy = (v, path) => {
+    if (!v || typeof v !== 'object') return v;
+    if (Array.isArray(v)) return v.map((x, i) => copy(x, [...path, String(i)]));
+    const out = {};
+    for (const k of Object.keys(v)) if (!drop.has([...path, k].join('\u0000'))) out[k] = copy(v[k], [...path, k]);
+    return out;
+  };
+  return copy(tree, []);
 }
 
 export async function check(file, strict = false) {
@@ -94,8 +101,8 @@ export async function check(file, strict = false) {
   const tr = await import(pathToFileURL(resolve(file)).href);
   const out = { missing: [], extra: [], kind: [], placeholder: [], untouched: [] };
   if (!tr.COPY || !tr.GLOSSARY) throw new Error(`${file} must export COPY and GLOSSARY`);
-  compare(en.COPY, tr.COPY, 'COPY', out);
-  compare(en.GLOSSARY, tr.GLOSSARY, 'GLOSSARY', out);
+  compare(en.COPY, withoutAliases(tr.COPY), 'COPY', out);
+  compare(en.GLOSSARY, withoutAliases(tr.GLOSSARY), 'GLOSSARY', out);
   const failing = ['missing', 'extra', 'kind', 'placeholder'].concat(strict ? ['untouched'] : []);
   return { out, failed: failing.some((k) => out[k].length > 0) };
 }
