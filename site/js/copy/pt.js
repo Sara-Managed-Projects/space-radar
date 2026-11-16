@@ -1082,6 +1082,17 @@ export const COPY = {
       "envisat": "mostrado estável, com os instrumentos voltados para a Terra, como voava enquanto funcionava; está inativo desde 2012 e ninguém o controla",
       "ers1": "mostrado estável, com os instrumentos voltados para a Terra, como voava enquanto funcionava; a missão terminou em 2000 e ninguém o controla"
     },
+    "attitude": {
+      "lead": "para onde aponta é modelado, não medido: {rule}",
+      "rules": {
+        "nadir": "uma face para o mundo abaixo, os painéis solares voltados para o Sol",
+        "geo": "uma face para a Terra, os painéis solares na direção norte-sul",
+        "lvlh": "sempre o mesmo lado para baixo e a mesma ponta para a frente, a volta inteira",
+        "sun": "um lado para o Sol, olhando para um mesmo ponto do céu",
+        "earth": "a antena apontada para a Terra",
+        "spin": "a antena apontada para a Terra, girando em torno dessa linha"
+      }
+    },
     "objectGeneric": "desenhado como um objeto genérico; não temos a forma de {name}",
     "classShape": {
       "satellite": "um satélite genérico",

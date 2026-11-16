@@ -967,6 +967,17 @@ export const COPY = {
       envisat: "se muestra estable, con sus instrumentos hacia la Tierra, como volaba mientras funcionaba; está inactivo desde 2012 y nadie lo gobierna",
       ers1: "se muestra estable, con sus instrumentos hacia la Tierra, como volaba mientras funcionaba; su misión terminó en 2000 y nadie lo gobierna"
     },
+    attitude: {
+      lead: "hacia dónde apunta es un modelo, no una medición: {rule}",
+      rules: {
+        nadir: "una cara hacia el mundo que tiene debajo y los paneles solares vueltos hacia el Sol",
+        geo: "una cara hacia la Tierra y los paneles solares de norte a sur",
+        lvlh: "siempre el mismo lado hacia abajo y el mismo extremo por delante, durante toda la vuelta",
+        sun: "un lado hacia el Sol, mirando a un mismo punto del cielo",
+        earth: "la antena apuntando a la Tierra",
+        spin: "la antena apuntando a la Tierra, girando alrededor de esa línea",
+      },
+    },
     objectGeneric: "se dibuja como un objeto genérico; no tenemos una forma para {name}",
     classShape: {
       satellite: "un satélite genérico",
