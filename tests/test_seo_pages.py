@@ -417,11 +417,12 @@ for f in sorted((BUILT / "o").glob("*.html")):
         hi = _n(wide.group(2)) if wide.group(2) else lo
         for said in re.findall(r"([\d][\d\s\u00a0,]*) km (?:across|wide|in diameter)", prose):
             held_widths += 1
-            ok(lo * 0.98 <= _n(said) <= hi * 1.02, f"o/{f.name}: the text says {said.strip()} km across and Key facts say {facts['Diameter']}")
+            # to two per cent, or to the whole kilometre a sentence rounds to ("16 km across" for 16.4 km)
+            ok(lo * 0.98 - 0.5 <= _n(said) <= hi * 1.02 + 0.5, f"o/{f.name}: the text says {said.strip()} km across and Key facts say {facts['Diameter']}")
 sedna_html = (BUILT / "o" / "sedna.html").read_text(encoding="utf-8")
 sedna = _facts(sedna_html)
 ok(held_laps >= 1 and re.search(r"^about 11.?400 years$", sedna.get("One lap of the Sun", "")) and re.search(r"^648 to 1.?220 km$", sedna.get("Diameter", ""))
-   and re.search(r"^about 937 AU$", sedna.get("Farthest from the Sun", "")) and "12 679" not in sedna_html and "12,679" not in sedna_html and "JPL Horizons" in sedna_html,
+   and re.search(r"^about 937 AU$", sedna.get("Farthest from the Sun", "")) and not re.search(r"12.?679", sedna_html) and "JPL Horizons" in sedna_html,
    f"Sedna: one lap (about 11 400 years, as its sentence), the card's range for its width, the far point of the same orbit, and where they were read ({sedna})")
 # Swift re-entered on 4 November 2026 and its page still said "is a space telescope going round the Earth", with a button to see it live.
 swift_html = (BUILT / "o" / "swift.html").read_text(encoding="utf-8")
