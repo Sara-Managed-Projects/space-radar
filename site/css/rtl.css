@@ -29,6 +29,26 @@ html[dir='rtl'] .sr-ambient__mark { right: auto; left: var(--sp-6); }
 html[dir='rtl'] .sr-imagine__card { left: auto; right: var(--sp-5); }
 html[dir='rtl'].sr-trip-collapsed:not(.sr-phone) #sr-side { transform: translateX(110%); }
 
+/* Panels that open beside the tools rail follow it to the left (internal #449): Record, Dome and 360 and the flight editor
+   (css/make.css, the same offset as .sr-pop), the Look-inside cutaway and the Sun view's legend (css/worlds.css). Before this
+   they stayed 60 px from the right edge, over the sidebar, which RTL puts there. tests/test_rtl_panels.mjs holds the list. */
+html[dir='rtl']:not(.sr-phone) .sr-make:not(.sr-make--film),
+html[dir='rtl']:not(.sr-phone) .sr-cutaway,
+html[dir='rtl']:not(.sr-phone) .sr-realsound { right: auto; left: calc(var(--sr-inset) + env(safe-area-inset-left, 0px) + 48px + 12px); }
+html[dir='rtl']:not(.sr-phone) .sr-helio-chip { right: auto; left: calc(var(--sr-inset) + env(safe-area-inset-left, 0px)); }
+html[dir='rtl']:not(.sr-phone) .sr-helio-legend { right: auto; left: calc(var(--sr-inset) + env(safe-area-inset-left, 0px)); margin-right: 0; margin-left: calc(48px + 12px); }
+/* The pill and the date field are centred on the band the sidebar leaves, which is the left one now. */
+html[dir='rtl']:not(.sr-phone) .sr-findpill,
+html[dir='rtl']:not(.sr-phone) .sr-datejump { left: calc(50% - var(--sr-scene-left, 0px) / 2); }
+/* Names and the first column start at the right; a value column and a class name end at the left. */
+html[dir='rtl'] .sr-find__table th[scope="row"], html[dir='rtl'] .sr-find__table thead th:first-child { text-align: right; }
+html[dir='rtl'] .sr-find__table th, html[dir='rtl'] .sr-find__table td { text-align: left; }
+html[dir='rtl'] .sr-find__table th[scope="row"] { text-align: right; }
+html[dir='rtl'] .sr-cutaway__cls { text-align: left; }
+html[dir='rtl'] .sr-realsound__close { margin: calc(-1 * var(--sp-1)) 0 0 calc(-1 * var(--sp-1)); }
+html[dir='rtl'] .sr-cutaway__layerbtn, html[dir='rtl'] .sr-play__menu button { text-align: right; }
+html[dir='rtl'] .sr-datejump__rangelist { padding-left: 0; padding-right: 18px; }
+
 /* The band the sidebar leaves is now on the LEFT: whatever was centred on it, or started at its edge, mirrors. */
 html[dir='rtl'] .sr-trip__toolbar,
 html[dir='rtl'] .sr-trip__top,

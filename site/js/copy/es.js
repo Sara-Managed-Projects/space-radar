@@ -5732,3 +5732,394 @@ COPY.emailUpdates = {
   "skyButton": "Recibir alertas del cielo"
 };
 // redesign 2026-11-10: end
+
+// internal #442: begin -- the seven sections the checker did not count (it read a hand-kept list of English files): moon cards, nebula and Carina/SMC texts, confidence, share views and presets
+COPY.klass.moon = "Luna";
+COPY.klassFar.candidate = "Candidato a planeta enano";
+COPY.templates.asteroid.leadCandidate = "{name} es un objeto grande más allá de Neptuno que podría ser un planeta enano, algo que la UAI aún no ha decidido";
+COPY.momentStories["curiosity-edl"] = {
+  "title": "Curiosity: siete minutos hasta Marte",
+  "blurb": "6 de agosto de 2012: el Mars Science Laboratory desde lo alto de la atmósfera marciana hasta el cráter Gale: el escudo térmico, el paracaídas, la mochila cohete y la grúa celeste, según el propio reloj del JPL.",
+  "chEntry": "La atmósfera",
+  "chHeat": "Calentamiento máximo",
+  "chChute": "El paracaídas",
+  "chPowered": "Descenso con cohetes",
+  "chCrane": "La grúa celeste",
+  "chLanded": "Contacto con el suelo",
+  "ready": "Marte, 30 s antes de la atmósfera. La etapa de crucero se soltó hace diez minutos; Curiosity viaja dentro de su cápsula, con el escudo térmico por delante, a unos 5.9 km/s. Reloj: segundos desde la entrada, 05:10:45.7 UTC del 6 de agosto de 2012.",
+  "entry": "Entrada, 05:10:45.7 UTC: a 131 km sobre el suelo del lugar de aterrizaje (cifra de la NASA; el punto de entrada está muy aguas arriba del lugar), a 5.9 km/s. El vehículo vuela inclinado, con algo de sustentación, para poder dirigirse.",
+  "guided": "Pequeños propulsores en la cápsula trasera dirigen la sustentación en curvas en S para aterrizar en el objetivo (no dibujado). Más de nueve décimas partes del frenado antes del paracaídas las realiza el aire.",
+  "heating": "Hacia los 80 s: calentamiento máximo, unos 2 100 C en la cara del escudo. El pico de frenado llega unos diez segundos después; en esta reconstrucción es de unos 9.6 g.",
+  "slow": "El resplandor se apaga a medida que el aire se espesa y la velocidad baja. Nueve minutos antes de la entrada, el vehículo soltó dos bloques de tungsteno de 75 kg para desplazar su centro de masas fuera del eje durante el vuelo con sustentación (no dibujado).",
+  "weights": "Unos 20 s antes del paracaídas se suelta el último lastre: seis bloques de 25 kg, para devolver el peso al eje durante el descenso bajo el dosel (no dibujado).",
+  "chute": "259.2 s, 05:15:04.9 UTC: se abre el paracaídas, a 11 km de altura y unos 405 m/s: un dosel de unos 16 m de diámetro sujeto con 80 cuerdas, de más de 50 m cada una. Se dibuja con los colores del vuelo real.",
+  "shield": "278.9 s, 05:15:24.6 UTC: se suelta el escudo térmico, a unos 8 km de altura y a 125 m/s, y cae. La cámara de descenso del rover empieza a filmar el suelo y el radar de la etapa a leerlo.",
+  "radar": "Bajo el paracaídas, el rover cuelga dentro de la cápsula trasera, recogido bajo su mochila cohete. El radar mide la altura y la velocidad; el ordenador de vuelo espera el momento de soltarse.",
+  "backshell": "Unos 80 s después del escudo, a unos 1.6 km y 80 m/s, la cápsula trasera suelta al rover y su mochila cohete. Se encienden los ocho motores de frenado, de 400 a 3 100 N cada uno.",
+  "divert": "La etapa de descenso se aleja en picado y realiza una maniobra de 300 m para apartarse de la cápsula trasera y del paracaídas, que derivan (su caída aquí es ilustrativa). Frena hasta 0.75 m/s.",
+  "skycrane": "412.9 s, 05:17:38.6 UTC: a unos 20 m de altura el rover suelta la etapa, y cuatro de sus ocho motores se apagan. La etapa lo baja con un cable de 7.6 m formado por tres cuerdas; las ruedas se despliegan.",
+  "touchdown": "431.6 s, 05:17:57.3 UTC: contacto con el suelo, a unos 0.75 m/s, en el cráter Gale, a 2.4 km del centro de la elipse objetivo. Siete minutos y once segundos desde la entrada en la atmósfera.",
+  "cut": "El rover espera dos segundos, detectando su peso en las ruedas, y después dispara los explosivos que cortan las cuerdas. La etapa acelera.",
+  "flyaway": "La etapa se aleja para estrellarse unos 650 m más allá, para no caer sobre el rover (su trayectoria aquí es ilustrativa).",
+  "earth": "La señal tardó 13 min 48 s en llegar a la Tierra: 05:31:45.4 UTC, las 22:31 en Pasadena. «¡Contacto confirmado. Estamos a salvo en Marte!» (Allen Chen, JPL).",
+  "pathEdl": "los tiempos, alturas y velocidades publicados de los sucesos, unidos por una masa puntual ajustada a ellos; el rumbo de la brújula es nuestro",
+  "pathDescent": "las velocidades y tiempos publicados, los últimos 135 m de la etapa y la grúa celeste unidos entre ellos; la caída de la etapa es ilustrativa",
+  "pathBackshell": "nuestro: la cápsula trasera y su paracaídas derivan y caen; no hay trayectoria suya publicada en lo que se leyó",
+  "pathRover": "los tiempos del JPL y los 20 m y 0.75 m/s de la NASA, con el cable desenrollándose durante los 18.7 s entre ambos",
+  "srcJpl": "JPL, «Timeline of Major Mission Events During Curiosity's Landing» (los tiempos de entrada, paracaídas, escudo térmico, separación del rover y contacto con el suelo)",
+  "srcKit": "NASA, Mars Science Laboratory Landing press kit, julio de 2012 (entrada a 131 km y 5.9 km/s, alturas y velocidades del paracaídas, el escudo y la cápsula trasera; dominio público)",
+  "srcPowered": "Sell y otros, «Powered Flight Design and Reconstructed Performance Summary for the Mars Science Laboratory Mission», AAS 13-424 (la maniobra de 300 m)",
+  "srcWiki": "Mars Science Laboratory, Wikipedia (el paracaídas, el cable, los motores y la caída de la etapa)"
+};
+COPY.momentStories["new-horizons-pluto"] = {
+  "title": "New Horizons en Plutón",
+  "blurb": "14 de julio de 2015: la primera visita a Plutón, desde seis horas antes hasta el paso a 13.8 km/s, según la trayectoria del propio JPL: Plutón y Caronte como discos, la media luna detrás.",
+  "chApproach": "La aproximación",
+  "chClosest": "Máxima proximidad",
+  "chAway": "Mirando atrás",
+  "chCharon": "Caronte",
+  "ready": "05:48 UTC, seis horas antes: a 300 000 km de Plutón, tras más de nueve años y 3 000 millones de millas (NASA). Plutón y Caronte aún son puntos. El reloj cuenta segundos desde la máxima proximidad según la trayectoria Horizons del JPL, 11:48:29 UT.",
+  "approach": "Plutón mide unos 2 380 km de diámetro y Caronte unos 1 210 km; se orbitan cada 6.4 días. En esta reproducción Caronte está sobre la longitud 0 del ecuador de Plutón, a 19 591 km, que es donde ambos mantienen la misma cara vuelta el uno hacia el otro (nuestro dibujo).",
+  "last": "La nave va por su cuenta: durante buena parte del día apunta sus instrumentos a Plutón y no tiene contacto con el control de la misión (NASA). Está iluminada desde el lado del Sol y se dirige a la línea donde termina el día en Plutón.",
+  "closest": "Máxima proximidad a Plutón: 12 490 km sobre la superficie, a 13.78 km/s según la trayectoria del JPL a las 11:48:29 UT. El horario de la NASA indica sobre las 7:49 EDT, 11:49:57 UTC, a 12 500 km de altura y 30 800 mph; los 88 s de diferencia entre ambos relojes no se concilian aquí.",
+  "pluto": "La nave sobrevuela ahora el lado nocturno de Plutón: cruzó la línea entre día y noche hace unos cinco minutos y mira hacia el planeta iluminado. Con la luz detrás, la neblina de Plutón brillaría (no dibujada: solo se dibuja el borde del planeta).",
+  "away": "Detrás, Plutón es una media luna que se hace más delgada a medida que la nave se aleja. La Tierra está a 4.77 millones de millones de km, es decir, a 4 horas 25 minutos por radio (nuestra suma a partir de la posición de los planetas).",
+  "charon": "Unos 14 minutos después de Plutón, Caronte: a menos de 28 860 km (NASA). En esta reproducción está más cerca a las 12:02:36 UT, es decir, el segundo de Plutón del JPL más 14 min 7 s; Wikipedia indica las 12:02:22.",
+  "clock": "Lo que la nave ve ahora llega a la Tierra 4 horas 25 minutos tarde, y una respuesta tardaría otro tanto en volver: no se podría dirigir la nave desde tierra.",
+  "home": "Hacia las 00:53 UTC del 15 de julio (las 20:53 EDT del día 14) llegó la señal de «llamada a casa»: New Horizons había sobrevivido al paso y estaba bien (revista Astronomy, a partir de la NASA).",
+  "pathFlyby": "La trayectoria de la nave alrededor de Plutón según Horizons del JPL, tal como la tiene el archivo propio de este sitio; su actitud se dibuja con la nariz hacia delante, y es nuestra",
+  "srcTimetable": "El calendario del encuentro del 14 de julio de 2015, tal como lo imprimió la NASA, «Pluto's time to shine just hours away» (la máxima proximidad, 30 800 mph, Caronte 14 minutos después)",
+  "srcHorizons": "JPL Horizons, nave -98 alrededor de Plutón (la trayectoria: la tasa de variación de distancia cambia de signo entre las 11:48 y las 11:49 UT), y el archivo de este sitio",
+  "srcWiki": "New Horizons, Wikipedia (máxima proximidad de Caronte, 12:02:22 UTC)",
+  "srcPhone": "«Phoning home from Pluto», revista Astronomy (la señal de las 20:53 EDT)"
+};
+Object.assign(COPY, {
+  "deepCarina": {
+    "card": {
+      "carina": "Su luz procede de la fotografía de ESO; su forma se reconstruye siguiendo a Smith y otros (2000) y a Smith y Brooks (2008): una cavidad de dos lóbulos soplada por sus cúmulos, con su pared luminosa detrás de Eta Carinae y el oscuro carril de polvo en forma de V delante. Aún no revisado por un astrónomo."
+    },
+    "rows": {
+      "dso-carina-nebula": [
+        [
+          "Su forma en profundidad",
+          "Reconstruida. A la mayor escala, la nebulosa es una cavidad de dos lóbulos de unos 40 parsecs de ancho, a lo largo de un eje perpendicular al plano de la Vía Láctea. El brillo se dibuja en la pared lejana de la cavidad; la profundidad de cada lóbulo no se ha medido."
+        ],
+        [
+          "Delante de ella",
+          "El oscuro carril en forma de V es polvo y gas molecular delante del gas luminoso, tal como se observa. Cuánto está delante no se mide: se dibuja a 20 años luz de los cúmulos."
+        ],
+        [
+          "Sus estrellas",
+          "Eta Carinae y catorce de sus estrellas calientes más brillantes, en sus posiciones medidas; sus profundidades no se miden, así que están en un mismo plano. Los cúmulos Trumpler 14 y 16 son una muestra sembrada de sus estrellas."
+        ],
+        [
+          "Revisión",
+          "Este modelo aún no ha sido revisado por un astrónomo."
+        ]
+      ]
+    },
+    "how": "Las imágenes infrarrojas de toda la nebulosa muestran una sola estructura: una burbuja con dos lóbulos expulsados fuera del plano de la Vía Láctea por los cúmulos de su cintura (Smith y otros, 2000). Eta Carinae está dentro: su luz se refleja a lo largo del Keyhole, y el polvo que la rodea oculta el gas luminoso detrás de ella, pero no delante."
+  },
+  "deepSmc": {
+    "card": {
+      "smc": "Este modelo se construye a partir de su fotografía y de los recuentos de sus propias estrellas hechos por Gaia, con la profundidad a lo largo de nuestra línea de visión que se mide para sus Cefeidas pulsantes y sus gigantes rojas viejas (Ripepi y otros, 2017; Scowcroft y otros, 2016; Tatton y otros, 2021). Aún no revisado por un astrónomo."
+    },
+    "rows": {
+      "dso-smc": [
+        [
+          "Su forma en profundidad",
+          "No es un disco plano: sus estrellas jóvenes se extienden más de 25 000 parsecs a lo largo de nuestra línea de visión, con el extremo nororiental más cercano a nosotros, y sus estrellas viejas se sitúan cerca de un plano inclinado unos 40°. Medido como tendencias; la profundidad de cada estrella dibujada es un modelo, nunca una medición."
+        ],
+        [
+          "A su alrededor",
+          "El Puente y la Corriente Magallánicos: gas de hidrógeno arrancado de las Nubes, cartografiado por su brillo de radio (HI4PI). Ningún ojo ni cámara lo ve, así que se dibuja tenue y en color falso. Dónde se encuentra a lo largo de nuestra línea de visión es un modelo: solo su extremo en las Nubes está anclado."
+        ],
+        [
+          "Revisión",
+          "Este modelo aún no ha sido revisado por un astrónomo."
+        ]
+      ]
+    },
+    "how": "Los astrónomos midieron la distancia de cientos de sus Cefeidas, estrellas cuyas pulsaciones revelan lo brillantes que son. Se alinean en una franja de más de 25 000 parsecs de largo que apunta casi hacia nosotros, con el extremo nororiental más cercano: la Nube Pequeña está siendo desgarrada por la Grande (Ripepi y otros, 2017)."
+  },
+  "moonCard": {
+    "lead": "{name} es una luna de {planet}",
+    "leadBackwards": "{name} es una luna de {planet}, que gira en sentido contrario al de la rotación de {planet}",
+    "leadFar": "{name} es una luna de {parent}",
+    "leadFarKnown": "{name} es una luna de {parent}, descubierta en {year}",
+    "leadAsteroid": "{name} es una luna del asteroide {parent}",
+    "leadAsteroidKnown": "{name} es una luna del asteroide {parent}, descubierta en {year}",
+    "leadFarWorld": "{name} es una luna del mundo lejano {parent}",
+    "across": "unos {n} km de diámetro",
+    "acrossAtMost": "menos de {n} km de diámetro",
+    "lap": "que tarda {n} en dar una vuelta",
+    "lapDays": "{n} días",
+    "lapYears": "{n} años",
+    "lapHours": "{n} horas",
+    "distance": "{n} km del centro de {planet} de media",
+    "found": "descubierta en {year}",
+    "size": "su tamaño no está medido",
+    "clsIllustrative": "órbita según la efemérides del JPL, la posición en ella es ilustrativa",
+    "rows": {
+      "orbits": "Gira alrededor",
+      "lap": "Una vuelta",
+      "mean": "Distancia media al centro de {planet}",
+      "shape": "Forma de la órbita",
+      "across": "Diámetro",
+      "found": "Descubierta",
+      "designation": "Nombre provisional",
+      "place": "Su posición en la órbita",
+      "moonOf": "Luna de",
+      "separation": "Distancia media a su cuerpo madre",
+      "reported": "Comunicada por",
+      "lapKnown": "Una vuelta, según el informe"
+    },
+    "values": {
+      "km": "{n} km",
+      "days": "{n} días",
+      "years": "{n} años",
+      "hours": "{n} horas",
+      "shapeNear": "casi un círculo (excentricidad {e})",
+      "shape": "una elipse (excentricidad {e})",
+      "shapeLong": "una elipse alargada (excentricidad {e})",
+      "acrossMeasured": "{n} km",
+      "acrossRange": "de {lo} a {hi} km",
+      "acrossAtMost": "menos de {n} km",
+      "acrossNone": "no medido",
+      "foundBy": "{year}, por {by}",
+      "foundYear": "{year}",
+      "placeGood": "se mantuvo a menos de {deg}° de la del JPL en las {n} lunas de su tipo que se compararon, diez y veintidós meses después de {epoch}",
+      "placeLost": "no se conoce: las lunas de su tipo estaban hasta {deg}° de la posición del JPL dentro del año siguiente a {epoch}",
+      "placeUnchecked": "no se conoce: el JPL no tiene ahora una posición para ella",
+      "sameAsParent": "dibujada en su cuerpo madre: el JPL no tiene órbita alrededor de ella",
+      "backwards": "en contra de la rotación del planeta",
+      "forwards": "a favor de la rotación del planeta"
+    },
+    "orbitKnown": "la órbita es la del JPL para {epoch}, según la efeméride de satélites, y la luna avanza por ella con el periodo medio del JPL; las lunas de este tipo (una vuelta de 100 días o más, una órbita que el Sol apenas curva) se compararon con el JPL el {days}, {n} de ellas, y ninguna estaba a más de {deg}° de donde la pone el JPL",
+    "orbitKnownLost": "la órbita es la del JPL para {epoch}, según la efeméride de satélites, y es real; avanzando por ella con el periodo medio del JPL, las lunas de este tipo (una vuelta rápida, o una órbita que el Sol curva con fuerza) estaban hasta {deg}° de donde las pone el JPL dentro del año siguiente, así que no sabemos dónde está esta luna en su órbita y la marca es ilustrativa",
+    "orbitKnownUnchecked": "la órbita es la media del JPL para {epoch}, porque el JPL no tiene una posición para esta luna el 1 de enero de 2026, y la luna avanza por ella con el periodo medio del JPL; no se pudo comprobar nada, así que su lugar en la órbita es ilustrativo",
+    "orbitFar": "el tamaño, la forma y la vuelta de la órbita proceden del artículo citado abajo; su inclinación y el lugar de la luna en ella no los conocemos, así que el anillo se dibuja plano en la eclíptica y la marca es ilustrativa",
+    "orbitFarTilted": "el tamaño, la forma, la vuelta y la inclinación de la órbita proceden del artículo citado abajo; el lugar de la luna en ella no lo conocemos, así que la marca es ilustrativa",
+    "orbitFull": "la órbita y el lugar de la luna en ella proceden del artículo citado abajo, fechados el {epoch}; cuanto más lejos esté el reloj de ese día, menos fiable es el lugar",
+    "atParent": "el JPL no tiene órbita para ella alrededor de {parent}: se dibuja en la posición de {parent}, y su distancia a {parent} no se dibuja",
+    "drawn": "dibujada como un punto en su órbita: nadie ha fotografiado su forma, así que no se dibuja ninguna",
+    "drawnBig": "dibujada como un punto en su órbita: su tamaño está medido pero su forma no, así que no se dibuja ninguna",
+    "candidate": "{name} es un objeto grande más allá de Neptuno que podría ser un planeta enano; la UAI aún no lo ha decidido",
+    "candidateWhy": "Tamaño: {src}.",
+    "sourceMoons": "NASA/JPL Solar System Dynamics, elementos medios de los satélites planetarios y circunstancias de su descubrimiento (ssd.jpl.nasa.gov/sats), consultado el {read}; la órbita del {epoch} según JPL Horizons",
+    "sourceCompanion": "NASA/JPL Small-Body Database, satélites de {parent} (ssd-api.jpl.nasa.gov/sbdb.api), consultado el {read}",
+    "sourceFar": "{ref}; consultado a través del artículo de Wikipedia sobre {name} (CC BY-SA 4.0) el {read}",
+    "sourceBody": "NASA/JPL Small-Body Database, {name} (órbita resuelta {solution}), consultado el {read}",
+    "layerMoons": "Todas las lunas de Júpiter, Saturno, Urano, Neptuno y Plutón de las que el mapa no tenía registro, cada una en su órbita el 1 de enero de 2026.",
+    "layerCompanions": "Las lunas de los asteroides y de los mundos lejanos, entre ellas las de los planetas enanos, y los objetos grandes más allá de Neptuno que podrían ser planetas enanos."
+  },
+  "deepNebulae": {
+    "card": {
+      "m8": "Su luz es la de su fotografía (ESO); su forma se reconstruye: gas luminoso en la cara cercana de su nube oscura, el Reloj de Arena alrededor de Herschel 36, el carril oscuro delante y el cúmulo NGC 6530 frente a ella (siguiendo a Tothill y otros, 2008). Aún no revisado por un astrónomo.",
+      "m20": "Su luz es la de su fotografía (Observatorio Rubin); su forma se reconstruye: una joven burbuja de gas luminoso alrededor de su estrella O, cortada por tres carriles oscuros delante, en la luz azul que sus estrellas dispersan del polvo que la rodea (siguiendo a Lefloch y Cernicharo, 2000). Aún no revisado por un astrónomo.",
+      "m16": "Su luz es la de su fotografía (ESO); su forma se reconstruye: la cavidad que el cúmulo NGC 6611 ha excavado en su nube, su pared lejana luminosa, y los Pilares de la Creación en primer plano con sus puntas hacia el cúmulo (siguiendo a Hester y otros, 1996, y a McLeod y otros, 2015). Aún no revisado por un astrónomo.",
+      "m17": "Su luz es la de su fotografía (ESO); su forma se reconstruye: gas luminoso en el borde de una nube oscura gigante, su barra brillante es un frente visto casi de canto (siguiendo a Pellegrini y otros, 2007). Aún no revisado por un astrónomo.",
+      "rosette": "Su luz es la de su fotografía (NOIRLab); su forma se reconstruye: un anillo grueso de gas luminoso alrededor de la cavidad que los vientos del cúmulo NGC 2244 han excavado en una nube fina, en forma de lámina (siguiendo a Wareing y otros, 2018). Aún no revisado por un astrónomo.",
+      "california": "Su luz es la de su fotografía (NOIRLab); su forma en profundidad no está medida: se dibuja como una lámina larga y poco profunda de hidrógeno iluminada por Xi Persei. Aún no revisado por un astrónomo.",
+      "north-america": "Su luz es la de su fotografía (NOIRLab); su forma se reconstruye: una región de gas luminoso alrededor de la Estrella Bajamar, que la nube oscura LDN 935 situada delante divide en la Norteamérica y el Pelícano (siguiendo a Kuhn y Hillenbrand, 2020). Aún no revisado por un astrónomo.",
+      "cats-paw": "Su luz es la de su fotografía (ESO); su forma se reconstruye: burbujas de gas luminoso soplando a lo largo de un filamento oscuro de unos 50 parsecs, las almohadillas de la pata (siguiendo a Arzoumanian y otros, 2022). Aún no revisado por un astrónomo."
+    },
+    "rows": {
+      "dso-m8": [
+        [
+          "Su forma en profundidad",
+          "Reconstruida. El gas luminoso está en la cara cercana de su nube oscura, más profundo alrededor del Reloj de Arena; la profundidad no se ha medido."
+        ],
+        [
+          "Delante de ella",
+          "El oscuro carril que le da nombre y los pequeños glóbulos oscuros son polvo delante del resplandor; cuánto está delante no se mide. El cúmulo NGC 6530 es una muestra sembrada de sus estrellas."
+        ],
+        [
+          "Su luz",
+          "Medida: la luz de cada punto es la de su fotografía, con las estrellas retiradas (las brillantes se dibujan como estrellas). Desde nuestro lado el modelo muestra exactamente esa luz; girado, la misma luz se sitúa sobre las paredes reconstruidas."
+        ],
+        [
+          "Revisión",
+          "Este modelo aún no ha sido revisado por un astrónomo."
+        ]
+      ],
+      "dso-m20": [
+        [
+          "Su forma en profundidad",
+          "Reconstruida. Una burbuja de gas luminoso alrededor de su estrella O; parte de su luz se dibuja en el lado lejano y parte en el cercano; no se ha medido ninguna de las dos profundidades. La luz azul se dibuja sobre la nube que queda detrás."
+        ],
+        [
+          "Delante de ella",
+          "Los tres carriles oscuros son polvo visto contra el resplandor; cuánto está delante no se mide."
+        ],
+        [
+          "Su luz",
+          "Medida: la luz de cada punto es la de su fotografía, con las estrellas retiradas (las brillantes se dibujan como estrellas). Desde nuestro lado el modelo muestra exactamente esa luz; girado, la misma luz se sitúa sobre las paredes reconstruidas."
+        ],
+        [
+          "Revisión",
+          "Este modelo aún no ha sido revisado por un astrónomo."
+        ]
+      ],
+      "dso-m16": [
+        [
+          "Su forma en profundidad",
+          "Reconstruida. El resplandor se dibuja en la pared lejana de la cavidad detrás del cúmulo; no se ha medido la profundidad de la cavidad."
+        ],
+        [
+          "Los Pilares",
+          "Columnas de polvo y gas cuyas puntas la luz del cúmulo va evaporando, tal como se observa. Se dibujan como polvo delante de la pared luminosa; sus profundidades no se miden."
+        ],
+        [
+          "Su luz",
+          "Medida: la luz de cada punto es la de su fotografía, con las estrellas retiradas (las brillantes se dibujan como estrellas). Desde nuestro lado el modelo muestra exactamente esa luz; girado, la misma luz se sitúa sobre las paredes reconstruidas."
+        ],
+        [
+          "Revisión",
+          "Este modelo aún no ha sido revisado por un astrónomo."
+        ]
+      ],
+      "dso-m17": [
+        [
+          "Su forma en profundidad",
+          "Reconstruida. Gas luminoso en el borde de una nube oscura gigante al oeste; su barra brillante es el punto donde el gas se encuentra con la nube, visto casi de canto, tal como se observa. Las profundidades no se miden."
+        ],
+        [
+          "Sus estrellas",
+          "Su cúmulo, NGC 6618, está casi oculto por el polvo: algunas de sus estrellas calientes se dibujan en sus posiciones medidas, y el resto es una muestra sembrada."
+        ],
+        [
+          "Su luz",
+          "Medida: la luz de cada punto es la de su fotografía, con las estrellas retiradas (las brillantes se dibujan como estrellas). Desde nuestro lado el modelo muestra exactamente esa luz; girado, la misma luz se sitúa sobre las paredes reconstruidas."
+        ],
+        [
+          "Revisión",
+          "Este modelo aún no ha sido revisado por un astrónomo."
+        ]
+      ],
+      "dso-rosette-nebula": [
+        [
+          "Su forma en profundidad",
+          "Reconstruida. Un anillo grueso alrededor de una cavidad excavada por los vientos de su cúmulo en una nube fina, en forma de lámina; parte de su luz se dibuja en la cara lejana del anillo y parte en la cercana. No se ha medido ninguna de las dos profundidades."
+        ],
+        [
+          "Sus estrellas",
+          "Las estrellas calientes del cúmulo NGC 2244 en sus posiciones medidas, y el resto es una muestra sembrada; sus profundidades no se miden."
+        ],
+        [
+          "Su luz",
+          "Medida: la luz de cada punto es la de su fotografía, con las estrellas retiradas (las brillantes se dibujan como estrellas). Desde nuestro lado el modelo muestra exactamente esa luz; girado, la misma luz se sitúa sobre las paredes reconstruidas."
+        ],
+        [
+          "Revisión",
+          "Este modelo aún no ha sido revisado por un astrónomo."
+        ]
+      ],
+      "dso-california-nebula": [
+        [
+          "Su forma en profundidad",
+          "No medida. Se dibuja como una lámina larga y poco profunda de hidrógeno luminoso cuyo relieve sigue su brillo: una ilustración de su profundidad, no una medición."
+        ],
+        [
+          "Su estrella",
+          "Xi Persei, la estrella caliente que la hace brillar, en su posición medida."
+        ],
+        [
+          "Su luz",
+          "Medida: la luz de cada punto es la de su fotografía, con las estrellas retiradas (las brillantes se dibujan como estrellas). Desde nuestro lado el modelo muestra exactamente esa luz; girado, la misma luz se sitúa sobre las paredes reconstruidas."
+        ],
+        [
+          "Revisión",
+          "Este modelo aún no ha sido revisado por un astrónomo."
+        ]
+      ],
+      "dso-north-america-nebula": [
+        [
+          "Su forma en profundidad",
+          "Reconstruida. La Norteamérica y el Pelícano son una sola región de gas luminoso alrededor de la Estrella Bajamar; el resplandor se dibuja en su cara lejana, a una profundidad no medida."
+        ],
+        [
+          "Delante de ella",
+          "La nube oscura LDN 935 queda delante del resplandor y lo divide en dos en nuestro cielo; cuánto está delante no se mide."
+        ],
+        [
+          "Su luz",
+          "Medida: la luz de cada punto es la de su fotografía, con las estrellas retiradas (las brillantes se dibujan como estrellas). Desde nuestro lado el modelo muestra exactamente esa luz; girado, la misma luz se sitúa sobre las paredes reconstruidas."
+        ],
+        [
+          "Revisión",
+          "Este modelo aún no ha sido revisado por un astrónomo."
+        ]
+      ],
+      "dso-cats-paw-nebula": [
+        [
+          "Su forma en profundidad",
+          "Reconstruida. Cada almohadilla es una burbuja de gas luminoso a lo largo de un filamento oscuro; sus tamaños están medidos en el cielo, sus profundidades no."
+        ],
+        [
+          "Su luz",
+          "Medida: la luz de cada punto es la de su fotografía, con las estrellas retiradas (las brillantes se dibujan como estrellas). Desde nuestro lado el modelo muestra exactamente esa luz; girado, la misma luz se sitúa sobre las paredes reconstruidas."
+        ],
+        [
+          "Revisión",
+          "Este modelo aún no ha sido revisado por un astrónomo."
+        ]
+      ]
+    },
+    "how": "Una fotografía registra cuánta luz llega de cada punto de una nebulosa, pero no a qué distancia a lo largo de nuestra línea de visión está. Estos modelos conservan la luz de cada nebulosa y la colocan sobre paredes cuya forma sigue lo que los astrónomos han medido: una ampolla, una cavidad, un anillo o burbujas, con el polvo que vieron delante."
+  },
+  "confidence": {
+    "title": "Cómo lo sabemos",
+    "onlyMeasured": "Solo medidos",
+    "onlyMeasuredTitle": "Mostrar solo los puntos vistos por un instrumento en un momento conocido",
+    "all": "Todos",
+    "allTitle": "Volver a mostrar todos los puntos",
+    "status": "Mostrando {n} de {m} puntos",
+    "scope": "Filtra los puntos; el campo de estrellas no cambia.",
+    "railNote": "Algunos puntos están ocultos: Cómo lo sabemos"
+  },
+  "views": {
+    "row": "Vistas de llegada",
+    "label": "Vistas de este lugar",
+    "curatedLabel": "De la hoja",
+    "savedLabel": "Guardadas aquí",
+    "act": "{act}: {what}",
+    "go": "Ir",
+    "copy": "Copiar",
+    "remove": "Quitar",
+    "save": "Guardar esta vista",
+    "saveTitle": "Guarda dónde está la cámara, solo en este navegador",
+    "saved": "Vista guardada en este navegador.",
+    "savedPage": "Se conserva hasta que se cierre esta página.",
+    "full": "Hay doce vistas guardadas. Quita primero una.",
+    "copied": "Enlace a esta vista copiado.",
+    "copyRefused": "No se pudo copiar. El enlace está en la barra de direcciones.",
+    "none": "Todavía no hay nada guardado.",
+    "goTitle": "Volar hasta allí y situarse donde estaba encuadrado",
+    "copyTitle": "Un enlace que abre esta vista",
+    "removeTitle": "Olvidar esta vista",
+    "pose": "{az}° de giro, {pol}° desde el polo, {km} km",
+    "away": "a {km} km",
+    "curated": {
+      "above": "Desde encima del plano",
+      "inPlane": "En el plano"
+    },
+    "aboveTitle": "Desde encima del plano de los planetas: mirando hacia abajo, al lado norte del Sistema Solar",
+    "inPlaneTitle": "En el plano de los planetas: a la altura de sus órbitas, de perfil"
+  },
+  "presets": {
+    "row": "Ajustes de foto",
+    "label": "Ajustes de foto",
+    "go": "Abrir",
+    "science": "Encuadre científico",
+    "scienceNote": "Aspecto medido, con pie de foto",
+    "cinematic": "Encuadre cinematográfico",
+    "cinematicNote": "Amplio, objetivo largo, obturación lenta",
+    "telescope": "Vista de telescopio",
+    "telescopeNote": "Objetivo más estrecho, cuadrado",
+    "card": "Ficha del objeto",
+    "cardNote": "Vertical, etiqueta en la imagen guardada",
+    "title": "{name}: {note}"
+  }
+});
+// internal #442: end
