@@ -18,8 +18,8 @@
 //            the icon's edge; and spots of the Earth with no icon near are tapped: they must be the Earth.
 //   flights  from the home view to a rover on the Moon, a rover on Mars, a lander, the ISS and Voyager 1,
 //            as the drift flies (select with a long cruise): every frame's flight share, camera distance and
-//            the model's size on screen (`sr.heroes.drawnPx`). A picture on the way (past the flight's first
-//            third, when the camera looks where it is going) and on arrival.
+//            the model's size on screen (`sr.heroes.drawnPx`). Pictures on the way (the subject in view past
+//            the middle of the flight, and near its end) and on arrival.
 look.probe = 'pick-flight';
 const el = sr.renderer.domElement;
 const V3 = sr.camera.position.constructor;
@@ -259,7 +259,7 @@ const flightLog = async (id, label, home) => {
   sr.clock.live();
   await sleep(1500); await frame(); await frame();
   const rows = [];
-  let early = false, arrivedAt = null;
+  let early = false, late = false, arrivedAt = null;
   const t0 = performance.now();
   // As the drift flies (ui/drift.js): select, with a long flight on the cruise ease.
   sr.select(rec, { fly: true, undo: false, flyMs: 12000, flight: { ease: 'cruise' } });
@@ -269,8 +269,13 @@ const flightLog = async (id, label, home) => {
     const flying = !!rig.state.flying;
     const k = rig.flightProgress ? rig.flightProgress() : null;
     rows.push({ ms: Math.round(performance.now() - t0), k: k == null ? null : Math.round(k * 1000) / 1000, flying, d: pos ? sr.camera.position.distanceTo(pos) : null, px: Math.round(sr.heroes.drawnPx(rec.id) * 10) / 10 });
-    // Past the flight's first third the camera is looking at where it is going (the rig's targetDelay): the subject is in the picture.
-    if (!early && flying && k != null && k >= 0.6) { early = true; await shot(`flight-${label}-midway`, `${rec.name}: on the way (${Math.round(k * 100)} % of the flight, ${pos && rows[0].d ? Math.round((100 * rows[rows.length - 1].d) / rows[0].d) : '?'} % of the distance left), its model ${rows[rows.length - 1].px} px`); }
+    // Two pictures on the way: the first frame past the middle of the flight with the subject in the picture (the camera
+    // turns to where it is going over the flight's first part), and one near the end, still tens of arrival distances out.
+    const here = pos ? toScreen(pos) : null;
+    const inView = here && here.z > -1 && here.z < 1 && onCanvas(here.x, here.y);
+    const said = () => `${Math.round(k * 100)} % of the flight, ${rows[0].d ? Math.round((1000 * rows[rows.length - 1].d) / rows[0].d) / 10 : '?'} % of the distance left, its model ${rows[rows.length - 1].px} px`;
+    if (!early && flying && k != null && k >= 0.5 && inView) { early = true; await shot(`flight-${label}-midway`, `${rec.name}: on the way (${said()})`); }
+    else if (early && !late && flying && k != null && k >= 0.9 && inView) { late = true; await shot(`flight-${label}-late`, `${rec.name}: nearly there (${said()})`); }
     if (!flying && arrivedAt == null) arrivedAt = performance.now();
     if (arrivedAt != null && performance.now() - arrivedAt > 5000) break;
   }
@@ -295,7 +300,8 @@ const section = async (name, fn) => { try { await fn(); } catch (e) { look.error
 await settle(90000);
 await sleep(2000);
 const home = rig.saveState();
-const only = new URLSearchParams(location.search).get('lookOnly');
+// `-f subject=sat-25544.flights` (or .icons, .models, .crowd, joined by underscores) runs those sections alone.
+const only = (new URLSearchParams(location.search).get('lookSubject') || '').split('.').slice(1).join('.') || new URLSearchParams(location.search).get('lookOnly');
 const want = (name) => !only || only.split('_').includes(name);
 if (want('icons')) await section('icons, the home view', () => iconTest('home'));
 if (want('models')) {
