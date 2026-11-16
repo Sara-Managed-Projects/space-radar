@@ -1827,17 +1827,19 @@ export async function boot({ setStatus } = {}) {
       // Mimas with it, had grown on the way. Two frames after the flight ends the scene has been
       // placed from the new camera; if the framing is more than 8 % off, a short second move fixes it.
       // A SITE ON ANOTHER WORLD'S GROUND IS SOLVED AGAIN TOO, UNTIL IT HOLDS (review of 2026-11-16). Its arrival is
-      // framed with the limb of the world it stands on (limbPose), from that world's DRAWN radius and place, and a
-      // far planet is drawn enlarged and moved (scene/worlds.js PLANET_VIEW). MEASURED on the live site: Perseverance
-      // chosen with the camera at Voyager 1 stopped 26.4 million km short, Mars a 0.6 px dot and the rover's model
-      // 463 px beside it; from the home view the same choice arrives 469 km out. The numbers that were right from
-      // 25 billion km are not the numbers at the planet, so two frames after each arrival the pose is solved from
-      // where the camera now is, and flown, until it moves less than 8 % (SITE_SETTLE_ROUNDS at most).
+      // framed with the limb of the world it stands on (limbPose), and a far planet is drawn enlarged and moved
+      // (scene/worlds.js PLANET_VIEW). MEASURED on the live site: Perseverance chosen with the camera at Voyager 1
+      // stopped 26.4 million km short, Mars a 0.6 px dot and the rover's model 463 px beside it; from the home view
+      // the same choice arrives 469 km out. limbPose now frames on the size the world has when the camera is there,
+      // which is right the first time for a planet; this is the net under it (a moon of a far planet, a card still
+      // sliding in when the flight began): two frames after each arrival the pose is solved from where the camera
+      // now is, and flown, until it moves less than 8 % (SITE_SETTLE_ROUNDS at most).
       const SITE_SETTLE_ROUNDS = 6;
       const siteSettle = (round, used) => (reason) => {
         if (reason !== 'done' || typeof requestAnimationFrame !== 'function') return;
         requestAnimationFrame(() => requestAnimationFrame(() => {
-          if (selected !== record || cameraRig.state.flying) return;
+          // Not under the drift's slow turn, which has begun by now: a flight would end it.
+          if (selected !== record || cameraRig.state.flying || cameraRig.state.orbiting) return;
           const world = teachRigWorld(record);
           const at = positionOfRecord(record);
           if (!at) return;
@@ -1875,7 +1877,9 @@ export async function boot({ setStatus } = {}) {
     cameraRig.follow(on
       ? () => {
         const c = worlds.drawnPositionOf(on);
-        if (c) cameraRig.setWorldCentre(c);
+        // ... and its radius: a far planet's disc shrinks as the camera closes on it, and the ground the camera is kept
+        // out of must shrink with it, or the flight ends on the sphere it was taught from afar.
+        if (c) { cameraRig.setWorldCentre(c); cameraRig.setWorldRadius(worlds.drawnRadiusUnits(on)); }
         return positionOfRecord(record);
       }
       : () => positionOfRecord(record));
@@ -2118,8 +2122,12 @@ export async function boot({ setStatus } = {}) {
     if (!w || !(w.radiusKm > 0)) return null;
     const centre = onWorld ? worlds.drawnPositionOf(onWorld) : { x: 0, y: 0, z: 0 };
     if (!centre) return null;
-    const R = onWorld ? worlds.drawnRadiusUnits(onWorld) : w.radiusKm / stage.unitKm;
-    const r = Math.hypot(pos.x - centre.x, pos.y - centre.y, pos.z - centre.z);
+    // The world's size WHEN THE CAMERA IS AT IT (worlds.js settledRadiusUnits), and the subject's height over it at that
+    // size: seen from the outer Solar System a planet is drawn a share of the camera's distance wide, and an arrival
+    // framed on that stopped 26.4 million km short of Mars (review of 2026-11-16).
+    const drawnR = onWorld ? worlds.drawnRadiusUnits(onWorld) : 0;
+    const R = onWorld ? worlds.settledRadiusUnits(onWorld) : w.radiusKm / stage.unitKm;
+    const r = Math.hypot(pos.x - centre.x, pos.y - centre.y, pos.z - centre.z) * (drawnR > 0 ? R / drawnR : 1);
     if (!(r > 0)) return null;
     // Where the camera's up is, seen from the subject: framing.js keeps the world below on screen.
     const up = camera.up;

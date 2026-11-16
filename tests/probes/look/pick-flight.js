@@ -313,14 +313,16 @@ const arrivalAt = async (id, label, fromId, home) => {
   if (from) { sr.select(from, { fly: true, undo: false }); await settle(60000); await sleep(2500); await settle(); }
   const startKm = sr.camera.position.distanceTo(scenePos(rec)) * sr.stage.unitKm;
   sr.select(rec, { fly: true, undo: false });
-  // Quiet for two seconds: a second solve on arrival is a flight of its own.
+  // Where the flight itself stops, then quiet for two seconds: a second solve on arrival is a flight of its own.
+  await settle(60000);
+  const firstKm = Math.round(sr.camera.position.distanceTo(scenePos(rec)) * sr.stage.unitKm);
   let moves = 0;
   for (let i = 0; i < 12; i++) { await settle(60000); moves++; await sleep(2000); if (!rig.state.flying) break; }
   const pos = scenePos(rec);
   const on = rec.meta && rec.meta.world;
   const r = rect();
   const disc = on ? sr.worlds.pickAll(0, 0, sr.camera, { w: r.width, h: r.height }, 1e9).find((q) => q.record.id === on) : null;
-  const row = { id, label, from: fromId || 'home', startKm: Math.round(startKm), km: Math.round(sr.camera.position.distanceTo(pos) * sr.stage.unitKm), world: on || null, worldPx: disc ? Math.round(disc.r * 20) / 10 : null, modelPx: Math.round(sr.heroes.drawnPx(id)), moves };
+  const row = { id, label, from: fromId || 'home', startKm: Math.round(startKm), firstKm, km: Math.round(sr.camera.position.distanceTo(pos) * sr.stage.unitKm), world: on || null, worldPx: disc ? Math.round(disc.r * 20) / 10 : null, modelPx: Math.round(sr.heroes.drawnPx(id)), moves };
   out.afar.push(row);
   await shot(`arrival-${label}`, `${rec.name} chosen from ${from ? from.name : 'the home view'}: the camera stops ${row.km.toLocaleString('en')} km from it, ${on || 'its world'} ${row.worldPx} px across, its model ${row.modelPx} px`);
 };
