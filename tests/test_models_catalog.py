@@ -62,6 +62,14 @@ check(all(m["live"] == "" or m["live"].startswith("https://www.spaceradar.ai/#at
 hub = next(m for m in cat["models"] if m["id"] == "hubble")
 check(hub["norad"] == [20580] and hub["live"].endswith("#at=sat-20580") and hub["class"] == "telescope", "Hubble: NORAD 20580, live link, telescope")
 
+# --- class and mission a visitor would expect --------------------------------------------------------------------
+by = {m["id"]: m for m in cat["models"]}
+check(all(by[i]["class"] == "probe" and by[i]["mission"] == "planetary" for i in ("msl-entry", "msl-descent-stage")),
+      "Curiosity's aeroshell and descent stage are probe hardware, planetary science (not crewed craft, not a launcher)")
+check(by["sputnik-1"]["mission"] == "technology" and by["sert-2"]["mission"] == "technology",
+      "Sputnik 1 and SERT-2 are not launch vehicles")
+check(all(m["mission"] != "launch" for m in cat["models"] if m["class"] != "rocket"), "only rockets are in the launch group")
+
 # --- the overall size: the craft's own named dimension, never the largest number in the table ------------------------
 def dims_of(**kw: float) -> dict:
     return mc.dimensions_of({"dimensions": {k + "_m" if not k.endswith("_m") else k: v for k, v in kw.items()}})
