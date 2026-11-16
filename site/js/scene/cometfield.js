@@ -346,6 +346,7 @@ export function createCometField(THREE, env = {}) {
   const S = { loaded: false, failed: null, n: 0, records: [], byId: new Map(), els: [], H: [], pos: null, r: null, mag: null, lastT: NaN, placedFor: null, tails: 0, drawn: 0, orbitVerts: 0, rows: [], bytes: 0 };
   let orbits = null, points = null, tailMesh = null;
   const _m = new THREE.Matrix4();
+  const _eye = new THREE.Vector3();
   const tailRows = []; // the comets with a tail now: row indices
   const noted = new Set(); // rows whose card carries the tail's note
   const scratch = [0, 0, 0, 0];
@@ -605,6 +606,7 @@ export function createCometField(THREE, env = {}) {
     _m.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse).multiply(group.matrixWorld);
     const e = _m.elements;
     const halfW = viewport.w * 0.5, halfH = viewport.h * 0.5;
+    const eye = group.worldToLocal(camera.getWorldPosition(_eye));
     const out = [];
     const lim = Math.min(S.n, tierLimit(env.tier ? env.tier() : 1));
     const shown = points.geometry.getAttribute('aShown').array; // the draw's own gate: a comet with no place (zeroed, at the Sun), one past POINT_MAX_AU, one that is another layer's
@@ -615,7 +617,8 @@ export function createCometField(THREE, env = {}) {
       if (w <= 0) continue;
       const dx = ((e[0] * x + e[4] * y + e[8] * z + e[12]) / w - ndcX) * halfW, dy = ((e[1] * x + e[5] * y + e[9] * z + e[13]) / w - ndcY) * halfH;
       const px = Math.sqrt(dx * dx + dy * dy);
-      if (px <= reachPx) out.push({ i, px, sx: (e[0] * x + e[4] * y + e[8] * z + e[12]) / w * halfW + halfW, sy: halfH - (e[1] * x + e[5] * y + e[9] * z + e[13]) / w * halfH, depth: w });
+      // depth: the straight-line distance from the camera, the measure scene/pickrank.js compares with a disc's limb.
+      if (px <= reachPx) out.push({ i, px, sx: (e[0] * x + e[4] * y + e[8] * z + e[12]) / w * halfW + halfW, sy: halfH - (e[1] * x + e[5] * y + e[9] * z + e[13]) / w * halfH, depth: Math.hypot(x - eye.x, y - eye.y, z - eye.z) });
     }
     out.sort((p, q) => p.px - q.px);
     return out.slice(0, Math.max(1, limit)).map(({ i, px, sx, sy, depth }) => ({ record: recordAt(i), px, score: px + PICK_BEHIND_PX, sx, sy, depth })).filter((c) => c.record);
