@@ -1366,6 +1366,10 @@ jobs:
         run: node tests/test_cometfield.mjs
       - name: "radar satellites look to one side: the roll about the track, its sign and each cited angle (internal #78)"
         run: node tests/test_sar_roll.mjs
+      # The model review of 2026-11-16: 99 routed files flew at a constant angle seeded from the object's id. A file's row now says
+      # which of its axes is which and the law it is flown by (registry/models.yaml `attitude:`, scene/attitude.js).
+      - name: "which way a spacecraft points: the Sun, the nadir and the Earth's direction, six laws, each file's own axes from the registry and its mirror, the card's sentence (model review of 2026-11-16)"
+        run: python3 scripts/gen_model_frames_js.py --check && node tests/test_attitude.mjs
       # 0079 a8: end
       # 0079 a6: begin
       - name: "the small complete lists: the IAU's showers, the observatories with their MPC codes, the launch sites and every landing and impact site become records, and their cards say what is not drawn (release 1.5.0 stage A6, internal #1064)"

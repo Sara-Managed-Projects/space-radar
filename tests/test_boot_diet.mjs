@@ -175,6 +175,8 @@ const DEFERRED = {
   // 0077 W2-pbr: begin
   'js/scene/pbr.js': 'real models in their own materials: scene/realmodels.js fetches it with the glTF loader (release 1.3.0, internal #967)',
   'js/data/modellooks.js': 'the registry\'s `look:` per model file: with scene/pbr.js',
+  'js/data/modelframes.js': 'the registry\'s `attitude:` per model file (its own axes and the law it is flown by): with the model loader and with the card',
+  'js/scene/attitude.js': 'the laws a craft is pointed by: scene/models.js imports it, and the card',
   // 0077 W2-pbr: end
   // 0076 W2-c (plumes.js)
   'js/scene/plumes.js': 'plumes where they were seen: main.js fetches it when Io, Enceladus or Triton gets its own stage (internal spec 0076 W2-c)',
