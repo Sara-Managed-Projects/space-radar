@@ -106,6 +106,13 @@ tagged, and their dates are the day the last change in each landed.
   full height (which is how the Size slider is reached). Two guards for narrower screens and longer languages: the
   badge's lines wrap where they would have ended in an ellipsis, and a number in a card's Compare table cannot break
   between two digits.
+- **Curiosity and Perseverance are drawn where they are, not where they landed.** Their markers stood on their landing
+  sites, 14.3 km and 12.2 km from the rovers (a review of positions, 2026-11-16). Each now stands at the latest waypoint of
+  NASA's mission map, and its card's Sources say which: "Position: NASA's waypoint for sol 5073 (13 November 2026)". A monthly
+  job reads the two waypoints again and opens a pull request when a rover has moved. The landing places are markers of their
+  own, Bradbury Landing and Octavia E. Butler Landing; the ground you can stand and drive on there, the replay of Curiosity's
+  landing and Perseverance's landing, first flight and first rock core are still shown at the landing place. Perseverance's
+  card no longer says it is in a crater: it climbed up and over Jezero's western rim (NASA's mission updates).
 - **The card's region badge follows the standard bounds.** Icarus at 1.76 AU read "Outer solar system" because the inner Solar System ended at Mars's aphelion; it now runs to the frost line (4.95 AU, Jupiter's perihelion), the main belt is the 2.06 to 3.27 AU between Jupiter's 4:1 and 2:1 gaps, and an orbit that strays out of it (a Hungaria, a Hilda, Encke's comet) is not headed "Asteroid belt".
 - **Links and first screens that opened empty.** A shared link to Andromeda, and "Fly to it" on any galaxy, cluster or
   nebula, now stops near enough to see the object (it was a whole unit away, a million light-years on the Local Group's

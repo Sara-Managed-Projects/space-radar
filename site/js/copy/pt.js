@@ -2595,7 +2595,8 @@ export const COPY = {
   "source": {
     "prefix": "Fonte",
     "unknown": "Fonte não registrada",
-    "fetched": "lido {age}"
+    "fetched": "lido {age}",
+    "waypoint": "Posição: ponto de passagem da NASA no sol {sol} ({date})"
   },
   "photo": {
     "title": "Compor uma imagem",

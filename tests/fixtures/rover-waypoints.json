@@ -1,0 +1,25 @@
+{
+ "what": "The last waypoint of NASA's current-position file for each rover that still drives, as scripts/refresh_rover_positions.py read it: the rows `gale` and `jezero` of registry/sites.yaml are written from these, and tests/test_rover_positions.mjs holds them to these. Written by that script; do not edit.",
+ "rovers": {
+  "gale": {
+   "rover": "Curiosity",
+   "url": "https://mars.nasa.gov/mmgis-maps/MSL/Layers/json/MSL_waypoints_current.json",
+   "read": "2026-11-16",
+   "sol": 5073,
+   "lat": -4.82602331,
+   "lon": 137.388886,
+   "dist_total_m": 38638.02,
+   "as_of": "2026-11-13"
+  },
+  "jezero": {
+   "rover": "Perseverance",
+   "url": "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_waypoints_current.json",
+   "read": "2026-11-16",
+   "sol": 2022,
+   "lat": 18.43559434,
+   "lon": 77.23322287,
+   "dist_total_m": 45245.71,
+   "as_of": "2026-10-28"
+  }
+ }
+}

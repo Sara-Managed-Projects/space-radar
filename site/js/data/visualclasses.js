@@ -160,6 +160,8 @@ export const VISUAL_CLASSES = [
 "deimos"
 ],
 "sites": [
+"octavia-e-butler-landing",
+"bradbury-landing",
 "vostok-1-landing",
 "voskhod-2-landing",
 "edwards-afb-runway-23",

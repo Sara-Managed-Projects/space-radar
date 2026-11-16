@@ -2528,7 +2528,8 @@ export const COPY = {
   "source": {
     "prefix": "来源",
     "unknown": "没有记录来源",
-    "fetched": "{age}读取"
+    "fetched": "{age}读取",
+    "waypoint": "位置：NASA 第 {sol} 个火星日的航路点（{date}）"
   },
   "photo": {
     "title": "构图拍照",

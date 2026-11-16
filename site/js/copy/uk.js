@@ -2537,7 +2537,8 @@ export const COPY = {
   "source": {
     "prefix": "Джерело",
     "unknown": "Джерело не записано",
-    "fetched": "прочитано {age}"
+    "fetched": "прочитано {age}",
+    "waypoint": "Положення: шляхова точка NASA за сол {sol} ({date})"
   },
   "photo": {
     "title": "Скласти знімок",

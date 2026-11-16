@@ -951,6 +951,9 @@ Object.assign(COPY, {
     prefix: 'Source',
     unknown: 'Source not recorded',
     fetched: 'read {age}',
+    // A rover that still drives (Curiosity, Perseverance): the waypoint of NASA's mission map its marker stands at
+    // (ui/cards.js positionAsOfLine; the sol and the day are registry/sites.yaml's, refreshed each month).
+    waypoint: 'Position: NASA’s waypoint for sol {sol} ({date})',
   },
 
   // Photo mode (public #288, ui/photomode.js): Share's "Photo mode". Everything off the screen, a

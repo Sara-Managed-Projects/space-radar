@@ -2453,7 +2453,8 @@ export const COPY = {
   source: {
     prefix: "Fuente",
     unknown: "Fuente no registrada",
-    fetched: "leído {age}"
+    fetched: "leído {age}",
+    waypoint: "Posición: punto de ruta de la NASA del sol {sol} ({date})"
   },
   photo: {
     title: "Componer una imagen",

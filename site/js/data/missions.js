@@ -1174,14 +1174,16 @@ export const MISSIONS = [
         "date": "2021-02-18T20:55:00Z",
         "title": "Landing in Jezero",
         "text": "The rover lands in Jezero crater after a seven-month cruise. The time is when the signal reached Earth.",
-        "place": "site"
+        "place": "site",
+        "record": "octavia-e-butler-landing"
       },
       {
         "id": "first-flight",
         "date": "2021-04-19T07:34:00Z",
         "title": "The first flight",
         "text": "Ingenuity flies for 39.1 seconds, hovering 3 metres up for 30 of them.",
-        "place": "site"
+        "place": "site",
+        "record": "octavia-e-butler-landing"
       },
       {
         "id": "first-core",
@@ -1190,6 +1192,7 @@ export const MISSIONS = [
         "title": "The first rock core",
         "text": "The rover seals Montdenier, its first core of rock and its second sample, in a tube.",
         "place": "site",
+        "record": "octavia-e-butler-landing",
         "source": {
           "name": "NASA Science, Mars rock samples",
           "url": "https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/"

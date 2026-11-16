@@ -23,7 +23,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | stars_notable | 55 | 55 |
 | catalogues | 5 | 110 192 |
 | other_light | 3 | 3 |
-| sites | 60 | 60 |
+| sites | 62 | 62 |
 | real_models | 311 | 311 |
 | model_kinds | 52 | 52 |
 | small_bodies | 22 | 22 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 40 | 40 |
-| **all** | **1197** | **111 384** |
+| **all** | **1199** | **111 386** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -45,7 +45,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [VOLCANIC_MOON](#volcanic_moon) | 1 | `worlds.js` | measured | - |
 | [ICY_MOON](#icy_moon) | 27 | `worlds.js` | measured | - |
 | [TITAN](#titan) | 2 | `worlds.js`, `atmosphere.js` | measured | - |
-| [AIRLESS_MOON](#airless_moon) | 11 | `worlds.js`, `tiles.js`, `moonshape.js` | measured | - |
+| [AIRLESS_MOON](#airless_moon) | 13 | `worlds.js`, `tiles.js`, `moonshape.js` | measured | - |
 | [DWARF_PLANET](#dwarf_planet) | 9 | `worlds.js`, `glyphs.js`, `models.js`, `dwarfs.js` | measured | - |
 | [ASTEROID](#asteroid) | 31 | `models.js`, `realmodels.js`, `glyphs.js`, `kepler.js`, `moonshape.js` | modelled | - |
 | [COMET](#comet) | 5 | `models.js`, `glyphs.js`, `kepler.js` | modelled | - |
@@ -83,7 +83,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 1197 records: 375 measured, 457 modelled, 365 illustrative.
+Honesty over the 1199 records: 377 measured, 457 modelled, 365 illustrative.
 
 ## The classes
 
@@ -222,9 +222,9 @@ Honesty over the 1197 records: 375 measured, 457 modelled, 365 illustrative.
 - **Measured, modelled or reconstructed:** Measured: the maps, the heights and the shapes. Modelled: shading along the light. Deimos has a shape and no map: drawn grey, said on its card.
 - **Rights:** NASA and USGS public domain; Solar System Scope CC BY 4.0.
 - **What is missing is tracked in:** #864 (shadows from LOLA at a low Sun, W2-a); internal #379 (Deimos's map)
-- **Records (11):**
+- **Records (13):**
   - worlds (3): `moon`, `phobos`, `deimos`
-  - sites (8): `vostok-1-landing`, `voskhod-2-landing`, `edwards-afb-runway-23`, `falcon-lz-1`, `copernicus`, `tycho`, `shackleton`, `moon-south-pole`
+  - sites (10): `octavia-e-butler-landing`, `bradbury-landing`, `vostok-1-landing`, `voskhod-2-landing`, `edwards-afb-runway-23`, `falcon-lz-1`, `copernicus`, `tycho`, `shackleton`, `moon-south-pole`
 
 ### DWARF_PLANET
 

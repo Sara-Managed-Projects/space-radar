@@ -2535,7 +2535,8 @@ export const COPY = {
   "source": {
     "prefix": "מקור",
     "unknown": "המקור לא תועד",
-    "fetched": "נקרא {age}"
+    "fetched": "נקרא {age}",
+    "waypoint": "מיקום: נקודת הציון של NASA לסול {sol} ({date})"
   },
   "photo": {
     "title": "הרכב תמונה",

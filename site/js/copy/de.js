@@ -2606,7 +2606,8 @@ export const COPY = {
   "source": {
     "prefix": "Quelle",
     "unknown": "Quelle nicht verzeichnet",
-    "fetched": "gelesen {age}"
+    "fetched": "gelesen {age}",
+    "waypoint": "Position: Wegpunkt der NASA für Sol {sol} ({date})"
   },
   "photo": {
     "title": "Ein Bild gestalten",
