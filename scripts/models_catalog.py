@@ -25,9 +25,22 @@ THE FULL CATALOG (--out) is what scripts/deploy.sh uploads to the models site's 
 where a put rebuilds every page: a new row here reaches models.spaceradar.ai on the next main-site deploy with no page
 work. It carries, per model: id, name, class, mission, look, the honesty sentence, the dimensions with their source,
 the reference credits, the licence (MIT, this repository's), the file with its bytes, kB, SHA-256 and the triangles
-counted from the .glb, the NORAD ids parsed from `used_for`, the live link where there is an object on the map, the
-day the file was added (git), the picture paths on the models site, and the downloads (GitHub raw, the forge as the
-fallback). The date needs the git history: a shallow clone gives no date rather than a wrong one, and --check does not
+counted from the .glb, the NORAD ids parsed from `used_for`, where the map uses it (`reach`) and the live link to one such
+object, the overall size of the craft (`size_m`, `size_what`), the day the file was added (git), the picture paths on the models site, and the downloads (GitHub raw, the forge as the
+fallback). 
+WHERE THE MAP USES IT (`reach`, `live`) comes from the app's own routing, not from the registry's prose: scripts/model_reach.mjs
+runs site/js/scene/realmodels.js realModelFor() (catalogue number, Horizons id, site, name with its class, the CubeSat and bus
+tables, the geostationary ring) over the records the app ships and over the saved CelesTrak files `active` and `stations`.
+Those files are fetched from the live site when this script writes the catalog (--population LAYER=FILE gives them by hand;
+--no-population skips them), so a count is the map's today. `reach.state` is `drawn` (count, up to three examples),
+`routed` (a route names the file and no object matches today), `moments` (only the replayed Moments stage it, with their
+ids), `unknown` (no population: a route exists, no count) or `none`. `live` links the first example (#at=<id>) or the Moment.
+
+THE OVERALL SIZE (`size_m`, `size_what`) is a named field of the craft itself (OVERALL_KEYS: span, diameter, length, height,
+width), never the largest number in the table, which may be a rocket's length or one antenna boom; `size_m` is null and
+`size_what` empty when the row has no such field. Rows decide by `overall:` (a dimensions key) when the default would be wrong.
+
+The date needs the git history: a shallow clone gives no date rather than a wrong one, and --check does not
 compare dates, so CI's two-commit checkout passes.
 
 THE INDEX (site/model/models.json, committed) is the small half the viewer page (site/model/index.html) reads to turn
@@ -43,6 +56,8 @@ import re
 import struct
 import subprocess
 import sys
+import tempfile
+import urllib.request
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -52,6 +67,7 @@ ROOT = Path(__file__).resolve().parent.parent
 INDEX = ROOT / "site" / "model" / "models.json"
 SITE = "https://www.spaceradar.ai"
 MODELS_SITE = "https://models.spaceradar.ai"
+POPULATION = {"stations": SITE + "/data/v1/celestrak-stations.json", "active": SITE + "/data/v1/celestrak-active.cols.json"}
 GITHUB_RAW = "https://raw.githubusercontent.com/Sara-Managed-Projects/space-radar/main/site/models/"
 FORGE_RAW = "https://git.sara-agent.org/sara-projects/space-radar/raw/branch/main/site/models/"
 LICENCE = {"id": "MIT", "name": "MIT License", "url": "https://github.com/Sara-Managed-Projects/space-radar/blob/main/LICENSE"}
@@ -182,6 +198,54 @@ def live_link(row: dict, norad: list[int]) -> str:
     return f"{SITE}/#at={m.group(1)}" if m else ""
 
 
+def fetch_population(into: Path) -> dict[str, Path]:
+    """The saved CelesTrak files the live map reads, downloaded into `into`; {} for any that cannot be had."""
+    out = {}
+    for layer, url in POPULATION.items():
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "space-radar-models-catalog/1.0 (+https://spaceradar.ai)"})
+            with urllib.request.urlopen(req, timeout=60) as r:
+                body = r.read()
+            json.loads(body)
+        except (OSError, ValueError):
+            continue
+        path = into / f"{layer}.json"
+        path.write_bytes(body)
+        out[layer] = path
+    return out
+
+
+def run_reach(root: Path, population: dict[str, Path]) -> dict | None:
+    """scripts/model_reach.mjs output, or None where node is not there or the script fails (the catalog then says `unknown`)."""
+    args = ["node", str(root / "scripts" / "model_reach.mjs")]
+    for layer, path in population.items():
+        args += ["--sat", f"{layer}={path}"]
+    try:
+        out = subprocess.run(args, capture_output=True, text=True, timeout=300, check=True, cwd=str(root)).stdout
+        return json.loads(out)
+    except (OSError, subprocess.SubprocessError, ValueError):
+        return None
+
+
+def reach_of(mid: str, file: str, reach: dict | None, norad: list[int], row: dict) -> tuple[dict, str]:
+    """({state, count, examples, moments}, live link) for one model from model_reach.mjs's output (see the docstring)."""
+    if reach is None:
+        return {"state": "unknown", "count": None, "examples": [], "moments": []}, live_link(row, norad)
+    hit = reach["files"].get(file)
+    moments = reach.get("moments", {}).get(mid, [])
+    if hit:
+        ex = [{"id": e["id"], "name": e["name"]} for e in hit["examples"]]
+        return ({"state": "drawn", "count": hit["count"], "examples": ex, "moments": moments, "counted": bool(reach["satellites"])},
+                f"{SITE}/#at={ex[0]['id']}")
+    if file in reach["routed"]:
+        # a route names the file; without the satellite files an unmatched route proves nothing
+        return ({"state": "routed" if reach["satellites"] else "unknown", "count": 0 if reach["satellites"] else None,
+                 "examples": [], "moments": moments}, live_link(row, norad))
+    if moments:
+        return {"state": "moments", "count": 0, "examples": [], "moments": moments}, f"{SITE}/#moment={moments[0]}"
+    return {"state": "none", "count": 0, "examples": [], "moments": []}, ""
+
+
 def mission_of(row: dict) -> str:
     """The class decides for rockets, telescopes, probes and surface sites; satellites and stations are grouped by
     the first rule that matches their id, then their `used_for`; MISSION_OF names the few the words get wrong."""
@@ -225,21 +289,52 @@ def dimensions_of(row: dict) -> dict:
     return {"items": items, "source": str(d.get("source") or ""), "read": str(d.get("read") or "")}
 
 
-def size_of(dims: dict) -> tuple[float | None, str]:
+# The craft's OWN overall dimension, by the key a row names it with: (key, what it is, the order breaks ties). A table also
+# holds a rocket's length, a boom, a dish, a stowed envelope; none of those is how big the model is.
+OVERALL_KEYS = (
+    ("span_m", "span"), ("wing_span_m", "span"), ("tip_to_tip_m", "span"), ("wing_tip_to_tip_m", "span"),
+    ("total_length_m", "length"), ("in_orbit_length_m", "length"), ("height_with_trunk_m", "height"), ("whole_craft_length_m", "length"), ("length_m", "length"),
+    ("overall_height_m", "height"), ("height_m", "height"),
+    ("max_diameter_m", "diameter"), ("diameter_m", "diameter"), ("sphere_diameter_m", "diameter"),
+    ("overall_m", "overall"), ("width_m", "width"),
+)
+
+
+def overall_of(dims: dict, key: str | None = None) -> tuple[float | None, str]:
+    """(metres, 'span' | 'diameter' | 'length' | 'height' | 'width' | 'overall') of the craft itself: the largest of
+    OVERALL_KEYS the row gives (or the one dimensions key the row's `overall:` names); (None, '') when it gives none."""
+    have = {it["key"]: it["value"] for it in dims["items"] if it["unit"] == "m"}
+    best: tuple[float, str] | None = None
+    for k, what in OVERALL_KEYS:
+        if key and k != key:
+            continue
+        v = have.get(k)
+        if isinstance(v, list):
+            v = max((x for x in v if isinstance(x, (int, float))), default=None)
+        if isinstance(v, (int, float)) and not isinstance(v, bool) and v > 0 and (best is None or v > best[0]):
+            best = (float(v), what)
+    return best if best else (None, "")
+
+
+def size_band(metres: float | None) -> str:
+    if metres is None:
+        return ""
+    for key, _name, top in SIZES:
+        if metres < top:
+            return key
+    return SIZES[-1][0]
+
+
+def largest_of(dims: dict) -> float | None:
+    """The largest length in the table: only for the filter's band when a row names no overall dimension."""
     best = None
     for it in dims["items"]:
         if it["unit"] != "m":
             continue
-        vals = it["value"] if isinstance(it["value"], list) else [it["value"]]
-        for v in vals:
+        for v in it["value"] if isinstance(it["value"], list) else [it["value"]]:
             if isinstance(v, (int, float)) and v > 0 and (best is None or v > best):
                 best = float(v)
-    if best is None:
-        return None, ""
-    for key, _name, top in SIZES:
-        if best < top:
-            return best, key
-    return best, SIZES[-1][0]
+    return best
 
 
 def references_of(row: dict) -> list[dict]:
@@ -296,13 +391,15 @@ def pictures_of(mid: str) -> dict:
             "angles": [f"{base}/angle-{i}.webp" for i in (1, 2, 3)], "share": f"{base}/share.jpg"}
 
 
-def entry(row: dict, root: Path, added: dict[str, str], changed: dict[str, str] | None = None) -> dict:
+def entry(row: dict, root: Path, added: dict[str, str], changed: dict[str, str] | None = None, reach: dict | None = None) -> dict:
     f = root / row["file"]
     fname = f.name
     data = f.read_bytes()
     norad = norad_ids(row.get("used_for"))
     dims = dimensions_of(row)
-    size_m, band = size_of(dims)
+    size_m, size_what = overall_of(dims, row.get("overall"))
+    band = size_band(size_m if size_m is not None else largest_of(dims))
+    used, live = reach_of(row["id"], fname, reach, norad, row)
     name = name_of(row["id"])
     return {
         "id": row["id"],
@@ -318,6 +415,7 @@ def entry(row: dict, root: Path, added: dict[str, str], changed: dict[str, str] 
         "used_for": str(row.get("used_for") or ""),
         "dimensions": dims,
         "size_m": size_m,
+        "size_what": size_what,
         "size": band,
         "references": references_of(row),
         "licence": dict(LICENCE, note=str(row.get("licence") or "")),
@@ -329,7 +427,8 @@ def entry(row: dict, root: Path, added: dict[str, str], changed: dict[str, str] 
         "triangles": glb_triangles(f),
         "budget_tris": row.get("budget_tris"),
         "norad": norad,
-        "live": live_link(row, norad),
+        "reach": used,
+        "live": live,
         "added": added.get(row["file"], ""),
         "modified": (changed or {}).get(row["file"], "") or added.get(row["file"], ""),
         "changes": str(row.get("modified") or ""),
@@ -346,9 +445,9 @@ def rows(doc: dict | None = None) -> list[dict]:
             if isinstance(r, dict) and r.get("kind") in OWN_KINDS and r.get("id") not in EXCLUDED]
 
 
-def catalog(root: Path = ROOT, doc: dict | None = None, with_dates: bool = True) -> dict:
+def catalog(root: Path = ROOT, doc: dict | None = None, with_dates: bool = True, reach: dict | None = None) -> dict:
     added, changed = git_days(root) if with_dates else ({}, {})
-    models = [entry(r, root, added, changed) for r in rows(doc)]
+    models = [entry(r, root, added, changed, reach) for r in rows(doc)]
     models.sort(key=lambda m: m["id"])
     return {
         "version": VERSION,
@@ -403,9 +502,24 @@ def problems(cat: dict, doc: dict | None = None) -> list[str]:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--out", help="write the full catalog (models-catalog.json) here")
+    ap.add_argument("--population", action="append", default=[], metavar="LAYER=FILE",
+                    help="a saved CelesTrak file (active, stations) to count the map's objects in; default: the live site's")
+    ap.add_argument("--no-population", action="store_true", help="do not count satellites (routes only)")
     ap.add_argument("--check", action="store_true", help="the index is current and every row builds; writes nothing")
     a = ap.parse_args(argv)
-    cat = catalog(with_dates=not a.check)
+    reach = None
+    if not a.check and a.out:
+        with tempfile.TemporaryDirectory() as tmp:
+            pop = {} if a.no_population else {k: Path(v) for k, _, v in (x.partition("=") for x in a.population)}
+            if not pop and not a.no_population:
+                pop = fetch_population(Path(tmp))
+                if len(pop) < len(POPULATION):
+                    print(f"warning: only {sorted(pop)} of {sorted(POPULATION)} could be fetched; counts are left out", file=sys.stderr)
+                    pop = {}
+            reach = run_reach(ROOT, pop)
+            if reach is None:
+                print("warning: model_reach.mjs did not run (is node on PATH?); `reach` says unknown", file=sys.stderr)
+    cat = catalog(with_dates=not a.check, reach=reach)
     bad = problems(cat)
     idx = dumps(index_of(cat), compact=True)
     if a.check:
