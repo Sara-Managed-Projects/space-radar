@@ -8,6 +8,7 @@
 //   nearestMark(marks, x, centreMs, unit, width, reachPx), roughSpans(centreMs, anchorMs, unit, width),
 //   stepMark(marks, tMs, dir) -> the mark before or after | null, moonMarks(nowMs) -> items,
 //   clearOfNow(labelX, labelW, nowX, nowW) -> whether a tick's label stands clear of the "now" word
+//   underCursor(labelX, labelW, cursorX) -> whether the ember line is drawn through a tick's label
 //
 // WHY A TAPE AND NOT A THUMB. The window is a month back and a year on (ui/timepill.js says why),
 // and the things worth scrubbing to are a pass in forty minutes and an eclipse in ten months. On
@@ -77,6 +78,16 @@ const DAY_MS = 86400e3;
 /** Whether a label at `labelX`, `labelW` wide, stands clear of the "now" word at `nowX`, `nowW` wide (px). Pure. */
 export function clearOfNow(labelX, labelW, nowX, nowW) {
   return labelX + labelW <= nowX || labelX >= nowX + nowW;
+}
+/**
+ * Whether the fixed ember line (the shown instant, at `cursorX`) is drawn through a tick's label that starts at
+ * `labelX` and is `labelW` wide (px). Pure. MEASURED 2026-11-16 at 06:51 UTC: the line fell between the "0" and the
+ * "6" of "06:00" ("0|6:00"), as it does for the two hours after every labelled tick at the hour scale (internal #451).
+ * Such a label is written on the other side of its tick, ending at it (css `.sr-tape__label.is-before`), where the
+ * line, which is to the right of the tick, cannot reach it.
+ */
+export function underCursor(labelX, labelW, cursorX, lineW = 2) {
+  return cursorX + lineW / 2 > labelX && cursorX - lineW / 2 < labelX + labelW;
 }
 // b200-s4b-look: end
 
@@ -404,11 +415,15 @@ export function createScrubber(ctx, pill) {
     labelPool.forEach((node, i) => {
       const l = plan.labels[i];
       // A label's width from its text (mono, about 8 px a character, and its 4 px inset): read before it is shown.
-      node.hidden = !l || (nowShown && !clearOfNow(l.x, 4 + 8 * String(l.text).length, nowX, nowW));
+      const lw = l ? 4 + 8 * String(l.text).length : 0;
+      // The ember line through this label: the label goes before its tick (underCursor says why).
+      const before = !!l && underCursor(l.x, lw, width * CURSOR_AT);
+      node.hidden = !l || (nowShown && !clearOfNow(before ? l.x - lw : l.x, lw, nowX, nowW));
       if (!l) return;
       if (node.textContent !== l.text) node.textContent = l.text;
       node.classList.toggle('is-day', !!l.day);
-      node.style.transform = `translateX(${l.x}px)`;
+      node.classList.toggle('is-before', before);
+      node.style.transform = before ? `translateX(${l.x}px) translateX(-100%)` : `translateX(${l.x}px)`;
     });
     const spans = roughSpans(tMs, anchor, unit, width);
     place(roughL, spans.left);

@@ -164,7 +164,7 @@ eq(select.querySelectorAll('option').length, 10, 'the other-body field lists eve
 eq(select.querySelectorAll('option').some((o) => o.value === 'jupiter'), false, 'a world is not offered itself');
 check(box.querySelector('svg') && box.querySelectorAll('circle').length === 2, 'two discs are drawn');
 eq(box.querySelector('svg').attrs.viewBox, `0 0 ${VIEW_W} ${VIEW_H}`, 'the picture has its own fixed box and the card scales it');
-check(box.querySelectorAll('path').length >= 1, 'the rings of the giant are drawn');
+check(box.querySelectorAll('path').length + box.querySelectorAll('ellipse').length >= 1, 'the rings of the giant are drawn (Jupiter\'s one hairline is an ellipse line, internal #452)');
 check(/Jupiter is 11 times as wide as Earth\./.test(box.textContent), 'the sentence is there');
 check(box.querySelectorAll('.sr-vs__row').length === TABLE_PROPS.length, 'one row for each measure');
 check(/NASA’s Planetary Fact Sheets, read 20 October 2026\./.test(box.textContent), `the source and the day it was read are said (${box.querySelector('.sr-vs__source') && box.querySelector('.sr-vs__source').textContent})`);

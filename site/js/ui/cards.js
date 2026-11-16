@@ -1597,6 +1597,29 @@ export function followAllowed(record, ctx, m) {
 // again from here, for the card's own callers and the test that holds the drawing rules.
 export { icon };
 
+/** The view-scale notes on the page (a world's "drawn larger than it is" line), each with the function that reads it now. */
+const VIEW_NOTES = new WeakMap();
+let viewNotesWatched = false;
+/** Bring every view-scale note on the page up to date. Exported for the test. */
+export function refreshViewNotes(doc = typeof document !== 'undefined' ? document : null) {
+  if (!doc || typeof doc.querySelectorAll !== 'function') return 0;
+  let n = 0;
+  for (const node of doc.querySelectorAll('.sr-card__note--view')) {
+    const read = VIEW_NOTES.get(node);
+    if (!read) continue;
+    const text = read();
+    if (node.textContent !== text) { node.textContent = text; n += 1; }
+    if (node.hidden !== !text) node.hidden = !text;
+  }
+  return n;
+}
+/** ui/orrery.js says `sr:view-scale` once the scene has placed the worlds by the sliders' new position. */
+function watchViewNotes() {
+  if (viewNotesWatched || typeof window === 'undefined' || typeof window.addEventListener !== 'function') return;
+  viewNotesWatched = true;
+  window.addEventListener('sr:view-scale', () => refreshViewNotes());
+}
+
 /** One of the row's four: a 20 px icon over a 13 px label, the whole 56 px button the target. */
 function actionButton(action, label, title, iconName, onClick, primary) {
   const b = el('button', primary ? 'ui-btn ui-btn--tile ui-btn--primary' : 'ui-btn ui-btn--tile');
@@ -2711,8 +2734,17 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
   // A world says how it is drawn (spec 0028 step 0). The compression note is scene/worlds.js's own
   // sentence (`viewScale`), never restated here; the Earth's clouds say what they are (COPY.clouds).
   if (klass === 'world') {
-    const vs = ctx && ctx.worlds && typeof ctx.worlds.viewScale === 'function' ? ctx.worlds.viewScale(record.id) : null;
-    if (vs && vs.exaggerated && vs.note) aboutNodes.push(el('p', 'sr-card__note', vs.note));
+    // Read again whenever the Planets tab's sliders move (internal #453): the note was read once, when the card was
+    // built, so an open card went on stating the last position ("drawn x200 larger") beside a badge that said x2 000.
+    const viewNote = () => {
+      const vs = ctx && ctx.worlds && typeof ctx.worlds.viewScale === 'function' ? ctx.worlds.viewScale(record.id) : null;
+      return vs && vs.exaggerated && vs.note ? String(vs.note) : '';
+    };
+    const noteNode = el('p', 'sr-card__note sr-card__note--view', viewNote());
+    noteNode.hidden = !noteNode.textContent;
+    VIEW_NOTES.set(noteNode, viewNote);
+    watchViewNotes();
+    aboutNodes.push(noteNode);
     // A world with a second face (Venus: its clouds, or the ground under them by radar). The row
     // is the exposure control's, class for class (ui/exposure.js), so it brings no new look; the
     // line under it says what the chosen picture is and that the ground's colour is added.

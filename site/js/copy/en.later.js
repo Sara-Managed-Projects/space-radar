@@ -455,8 +455,9 @@ Object.assign(COPY, {
     noTrips: 'No trips finished yet.',
     // Seen with your own eyes (public #395): a tick set on a card, the visitor's own word.
     seenTitle: 'Seen with your own eyes',
-    noSeen: 'Nothing ticked yet. A card has a Seen it button.',
-    seenIt: 'Seen it',
+    // "Spotted", not "Seen it": the card's row above has "See it" (when and where to look), one letter away (internal #445).
+    noSeen: 'Nothing ticked yet. A card has a Spotted button.',
+    seenIt: 'Spotted',
     // The name of the card's quiet row (ui/cardextras.js skyControls), for a screen reader.
     toolsLabel: 'More for this object',
     seenOn: 'Seen {date}',

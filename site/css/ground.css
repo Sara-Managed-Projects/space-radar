@@ -86,7 +86,7 @@ html.sr-trip-mode .sr-ground {
 
 .sr-ground__fold::after {
   content: " \25BE";
-  font-size: 0.7em;
+  font-size: var(--sr-fs-unit);
   color: var(--sr-text-dim);
 }
 
@@ -126,7 +126,7 @@ html.sr-trip-mode :is(.sr-ground__card, .sr-ground__bar, .sr-ground__panel, .sr-
 
 .sr-ground__src {
   margin: var(--sp-1) 0 0;
-  font: 400 11px/1.35 var(--sr-font);
+  font: 400 var(--sr-fs-sm)/1.35 var(--sr-font);
   color: var(--sr-text-dim);
   opacity: 0.85;
 }
@@ -234,7 +234,7 @@ html.sr-trip-mode .sr-ground__tripdrive:not([hidden]) {
   top: calc(var(--sp-4) + 52px);
   margin: 0;
   max-width: 420px;
-  font: 400 11px/1.4 var(--sr-font);
+  font: 400 var(--sr-fs-sm)/1.4 var(--sr-font);
   color: var(--sr-text-dim);
   text-align: right;
 }
@@ -250,7 +250,7 @@ html.sr-trip-mode .sr-ground__tripdrive:not([hidden]) {
   left: 0;
   top: 0;
   margin: 6px 0 0 8px;
-  font: 500 12px/1.2 var(--sr-font);
+  font: 500 var(--sr-fs-sm)/1.2 var(--sr-font);
   color: var(--sr-text);
   text-shadow: 0 0 3px var(--sr-space-edge);
   white-space: nowrap;
@@ -258,7 +258,7 @@ html.sr-trip-mode .sr-ground__tripdrive:not([hidden]) {
 
 .sr-ground__label.is-compass {
   margin: -16px 0 0 -4px;
-  font: 600 13px/1 var(--sr-font-hud);
+  font: 600 var(--sr-fs-sm)/1 var(--sr-font-hud);
   color: var(--sr-ember);
 }
 
@@ -304,7 +304,7 @@ html.sr-trip-mode .sr-ground__tripdrive:not([hidden]) {
   }
 
   .sr-ground__name {
-    font-size: 17px;
+    font-size: var(--sr-fs-input);
     margin: 0;
   }
 
@@ -317,7 +317,7 @@ html.sr-trip-mode .sr-ground__tripdrive:not([hidden]) {
   }
 
   .sr-ground__line {
-    font-size: 11px;
+    font-size: var(--sr-fs-sm);
     line-height: 1.35;
   }
 

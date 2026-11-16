@@ -941,6 +941,12 @@ export function splitReadout(value) {
  *
  * @returns {{name, klass, readouts: {key, num, unit, suffix}[], honesty, tMs}}
  */
+/** "from Sun", "from Earth": the card's caption for that number without its unit (COPY.card.hero.captions). */
+function fromWords(key) {
+  const caption = COPY.card.hero && COPY.card.hero.captions ? COPY.card.hero.captions[key] : '';
+  return caption ? t(caption, { u: '' }).replace(/\s+/g, ' ').trim() : '';
+}
+
 export function tagLines(record, ctx, m) {
   const mm = m || measure(record, ctx);
   const R = COPY.card.rows;
@@ -960,7 +966,11 @@ export function tagLines(record, ctx, m) {
       // Since internal spec 0076 W1-c it follows the shares (spec 0075 task 40): "· photograph" on our
       // line, where the photograph is what draws, "· reconstructed" once turned off it (drawnNow).
       : key === 'sun' && klassOf(record) === 'dso' ? COPY.deepFacts.drawnTag[drawnNow(record, ctx)] || ''
-        : '';
+        // A distance says what it is from (internal #446): a planet's tag read "5.32 AU · 5.26 AU · 45 970 km/h", two
+        // bare distances. The words are the card's own, under the same numbers (COPY.card.hero.captions).
+        : key === 'sun' && label !== R.distanceRange ? fromWords('distanceFromSun')
+          : key === 'earth' ? fromWords('distanceFromEarth')
+            : '';
     readouts.push({ key, num: split.num, unit: split.unit, suffix });
   }
   return { name: displayName(record), klass: klassOf(record), readouts, honesty: shortHonesty(record, mm), tMs: mm.tMs };

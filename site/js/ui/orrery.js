@@ -91,6 +91,7 @@ export function createOrrery(ctx, opts = {}) {
   const tripOn = () => doc.documentElement.classList.contains('sr-trip-mode');
 
   let view = null;
+  let noteAsked = false;
 
   function push() {
     view = held ? null : viewOf({ size, dist });
@@ -98,6 +99,16 @@ export function createOrrery(ctx, opts = {}) {
     if (ctx.worlds && typeof ctx.worlds.setOrrery === 'function') ctx.worlds.setOrrery(placer);
     if (ctx.orbitRings && typeof ctx.orbitRings.invalidate === 'function') ctx.orbitRings.invalidate();
     if (ctx.scaleBadge && typeof ctx.scaleBadge.refresh === 'function') ctx.scaleBadge.refresh();
+    // The scene places the worlds by the new position on its next frame, and writes each one's note then
+    // (scene/worlds.js viewScale). An open card's note is read again after that (ui/cards.js, internal #453).
+    const raf = typeof win.requestAnimationFrame === 'function' ? win.requestAnimationFrame.bind(win) : (fn) => win.setTimeout(fn, 32);
+    if (!noteAsked) {
+      noteAsked = true;
+      raf(() => raf(() => {
+        noteAsked = false;
+        try { win.dispatchEvent(new win.Event('sr:view-scale')); } catch { /* an old engine: the card says it when it is next opened */ }
+      }));
+    }
   }
 
   function paint() {
