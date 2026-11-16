@@ -962,7 +962,7 @@ export const COPY = {
     unknownTrip: 'That trip is gone from this map. Showing the default view.',
     unknownAt: 'That object is not on this map; showing the default view.',
     // A link's date outside the years the map answers for (ui/urlstate.js linkInstant): held to the nearest it does.
-    tOutOfRange: 'That date is outside 1700 to 2200, the years this map shows. Showing the nearest.',
+    tOutOfRange: 'That date is outside 1700 to 2200. Showing the nearest.',
     unknownStage: 'This map cannot centre on that place. Showing the default.',
   },
   // Sharing (spec 0033, spec 0061 task 8): one sheet, ui/sharesheet.js, with the postcard, the link

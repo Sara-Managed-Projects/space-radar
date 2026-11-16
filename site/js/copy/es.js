@@ -374,7 +374,7 @@ export const COPY = {
     unknownVersion: "Enlace de un mapa más nuevo. Se muestra la vista inicial.",
     unknownTrip: "Ese viaje ya no está en el mapa. Se muestra la vista inicial.",
     unknownAt: "Ese objeto no está en el mapa; se muestra la vista inicial.",
-    tOutOfRange: "Esa fecha queda fuera de 1700 a 2200, los años que muestra este mapa. Se muestra la más cercana.",
+    tOutOfRange: "Fecha fuera de 1700 a 2200. Se muestra la más cercana.",
     unknownStage: "No se puede centrar ahí. Se muestra la vista inicial."
   },
   share: {

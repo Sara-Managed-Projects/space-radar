@@ -492,7 +492,7 @@ export const COPY = {
     "unknownVersion": "Lien d’une carte plus récente : vue par défaut.",
     "unknownTrip": "Ce voyage n’existe plus ici : vue par défaut.",
     "unknownAt": "Cet objet n’est pas sur la carte : vue par défaut.",
-    "tOutOfRange": "Cette date est hors de 1700 à 2200, les années que montre cette carte. Voici la plus proche.",
+    "tOutOfRange": "Date hors de 1700 à 2200. Voici la plus proche.",
     "unknownStage": "Impossible de centrer la carte sur ce lieu : vue par défaut."
   },
   "share": {

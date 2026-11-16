@@ -478,7 +478,7 @@ export const COPY = {
     "unknownVersion": "Este link é de um mapa mais novo. Mostrando a vista padrão.",
     "unknownTrip": "Essa viagem não está mais no mapa. Mostrando a vista padrão.",
     "unknownAt": "Esse objeto não está neste mapa; mostrando a vista padrão.",
-    "tOutOfRange": "Essa data fica fora de 1700 a 2200, os anos que este mapa mostra. Mostrando a mais próxima.",
+    "tOutOfRange": "Data fora de 1700 a 2200. Mostrando a mais próxima.",
     "unknownStage": "Não dá para centrar o mapa aí. Mostrando a vista padrão."
   },
   "share": {

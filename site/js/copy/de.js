@@ -489,7 +489,7 @@ export const COPY = {
     "unknownVersion": "Dieser Link stammt von einer neueren Karte. Es wird die Standardansicht gezeigt.",
     "unknownTrip": "Diese Reise gibt es auf dieser Karte nicht mehr. Es wird die Standardansicht gezeigt.",
     "unknownAt": "Dieses Objekt ist nicht auf dieser Karte. Es wird die Standardansicht gezeigt.",
-    "tOutOfRange": "Dieses Datum liegt außerhalb von 1700 bis 2200, den Jahren dieser Karte. Es wird das nächste gezeigt.",
+    "tOutOfRange": "Datum außerhalb von 1700 bis 2200. Gezeigt wird das nächste.",
     "unknownStage": "Diese Karte kann nicht auf diesen Ort zentrieren. Es wird die Standardansicht gezeigt."
   },
   "share": {
