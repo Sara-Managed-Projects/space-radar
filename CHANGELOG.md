@@ -88,6 +88,15 @@ tagged, and their dates are the day the last change in each landed.
 
 ### Fixed
 
+- **A card is titled by the object's own name.** 149 satellites in 17 families shared a title, because the name of the model they
+  are drawn with replaced the catalogue's: GOES 14 to 19 were all "GOES weather satellite", eight TDRS, 25 Kinéis, LAGEOS 1 and 2.
+  The title and the label are now the object's name ("GOES 18", "TDRS 13", "LAGEOS 2") and the family's name is in the card's
+  "drawn as" line. Nauka and Poisk are titled "Nauka, an ISS module" and "Poisk, an ISS module".
+- **Thirteen craft that had no shape, or the generic one, are drawn with a model that was already in the library.** The ISS
+  modules Unity, Zvezda and Destiny (three generic stations sat at the ISS) are drawn as the station they are part of; Luna 20
+  wears Luna 16's descent stage and Surveyor 5, 6 and 7 the Surveyor files, with what differs said on the card; Luna 23 and 24,
+  WorldView-1 and -2 and BlueWalker 3 wear a stand-in the card calls "the kind of thing, not this exact one". GOES and TDRS, each
+  one NASA file worn by craft of different generations, now say so too.
 - **A 3D model is one thing to click, small icons over the Earth are easier to hit, and a flight no longer carries its
   subject along at full size.** A spacecraft drawn as a model answers to a click or a tap anywhere on it (its panels, its
   trusses), also in front of a planet; it answered only at its centre point. Over the Earth an icon is hit anywhere on the
