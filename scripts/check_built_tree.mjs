@@ -89,6 +89,8 @@ export const TESTS = [
   'test_riseset.mjs',
   'test_route_builders.mjs',
   'test_sgp4.mjs',
+  // 2026-11-16: every shader patched by its text, on the tree a deploy uploads (the weather's anchor was a comment the strip removes).
+  'test_shader_patches.mjs',
   'test_sky_trips.mjs',
   'test_skystars.mjs',
   'test_snapshot_parsers.mjs',

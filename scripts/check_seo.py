@@ -520,6 +520,7 @@ def check(root: Path, built: Path, require_share: bool = False) -> list[str]:
 
     check_lab(site, built, say)
     check_languages(site, built, say, robots.read_text(encoding="utf-8") if robots.is_file() else "")
+    check_assets(site, built, say)
     return problems
 
 
@@ -740,6 +741,75 @@ def check_languages(site: Path, built: Path, say, robots_text: str) -> None:
     for url, group in page_sets.items():
         if url in map_sets and map_sets[url] != group:
             say(f"{url}: its hreflang in the page and in its sitemap differ")
+
+
+class Assets(HTMLParser):
+    """The files a page asks a browser for as it loads: its scripts, its stylesheets and icons, its pictures and media."""
+
+    LINK_RELS = {"stylesheet", "icon", "apple-touch-icon", "mask-icon", "manifest", "preload", "modulepreload"}
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.base = ""
+        self.urls: list[tuple[str, str]] = []  # (what, url)
+
+    def handle_starttag(self, tag, attrs):
+        a = {k: (v or "") for k, v in attrs}
+        if tag == "base" and a.get("href") and not self.base:
+            self.base = a["href"]
+        elif tag == "script" and a.get("src"):
+            self.urls.append(("script", a["src"]))
+        elif tag == "link" and a.get("href") and self.LINK_RELS & set(a.get("rel", "").lower().split()):
+            self.urls.append(("link rel=" + a.get("rel", "").lower(), a["href"]))
+        elif tag in ("img", "source", "video", "audio", "track", "embed"):
+            if a.get("src"):
+                self.urls.append((tag, a["src"]))
+            if a.get("poster"):
+                self.urls.append((tag + " poster", a["poster"]))
+            for part in a.get("srcset", "").split(","):
+                if part.strip():
+                    self.urls.append((tag + " srcset", part.split()[0]))
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+
+
+def check_assets(site: Path, built: Path, say) -> None:
+    """EVERY SCRIPT, STYLESHEET, ICON AND PICTURE A BUILT PAGE NAMES IS A FILE OF THE TREE A DEPLOY UPLOADS, in every language
+    (review of 2026-11-16). The pages under /<lang>/ are the English pages moved one folder down, with their addresses
+    rewritten (scripts/seo_i18n.py Linker); a script's `src` was not, so /es/o/mars.html asked for /es/js/pages/subscribe.js
+    and got a 404: every subscribe form, journal strip and the embed generator of ten languages ran without its script, on
+    about 8 800 pages, and nothing here looked. An address is resolved as a browser resolves it (against <base href> when the
+    page has one, else against the page) and must name a file of the build or of site/. Another host is not ours to judge."""
+    from urllib.parse import urljoin
+    seen: dict[str, bool] = {}
+    counted = 0
+    for f in sorted(built.rglob("*.html")):
+        rel = f.relative_to(built).as_posix()
+        p = Assets()
+        try:
+            p.feed(f.read_text(encoding="utf-8"))
+        except (UnicodeDecodeError, ValueError):
+            continue
+        page = HOST + "/" + rel
+        base = urljoin(page, p.base) if p.base else page
+        for what, url in p.urls:
+            if url.startswith(("data:", "blob:", "about:")):
+                continue
+            full = urljoin(base, url)
+            if not full.startswith(HOST + "/"):
+                continue
+            path = full[len(HOST) + 1:].split("#")[0].split("?")[0]
+            if path == "" or path.endswith("/"):
+                path += "index.html"
+            counted += 1
+            ok = seen.get(path)
+            if ok is None:
+                ok = seen[path] = (built / path).is_file() or (site / path).is_file()
+            if not ok:
+                say(f"built/{rel}: <{what}> names {url}, which is /{path} for a browser, and neither the build nor site/ has that file")
+    if counted < 1000:
+        say(f"the asset check looked at only {counted} addresses in the built pages: it has stopped seeing them")
 
 
 def check_lab(site: Path, built: Path, say) -> None:

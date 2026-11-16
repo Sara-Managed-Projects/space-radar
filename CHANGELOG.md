@@ -88,6 +88,18 @@ tagged, and their dates are the day the last change in each landed.
 
 ### Fixed
 
+- **Weather is drawn again on the live site.** Lightning on the Earth's night side, the moving air of Jupiter, Saturn and
+  Venus, Mars's season and the faint rings were missing for every visitor: the deploy strips shader comments and indentation,
+  and two shader patches looked for a comment and for indented lines. They now look for lines of code, and a test runs every
+  shader patch against the tree a deploy builds.
+- **Pages in the ten other languages load their scripts.** The subscribe form, the journal strip and the embed generator on
+  `/es/`, `/fr/` and the rest asked for files under `/<lang>/js/`, which do not exist. The check of the built pages now holds
+  every script, stylesheet, icon and picture address of every page, in every language, to a file of the build.
+- **A visit under `/es/`, `/fr/` and the other languages stays there.** The first selection used to rewrite the address to the English root, so a
+  reload, the copied address and Share lost the language.
+- **Leonids 2026.** The index said "the night of 16 to 17 November"; the peak is 17 November at about 23:45 UT (IMO Meteor
+  Shower Calendar 2026), the night of 17 to 18 November. The summary, the Moon's phase and the link into the map now use that
+  moment. The Geminids 2026 page said "13 to 14 December" for a maximum centred on 14 December, 14h UT, and is corrected too.
 - **The card's region badge follows the standard bounds.** Icarus at 1.76 AU read "Outer solar system" because the inner Solar System ended at Mars's aphelion; it now runs to the frost line (4.95 AU, Jupiter's perihelion), the main belt is the 2.06 to 3.27 AU between Jupiter's 4:1 and 2:1 gaps, and an orbit that strays out of it (a Hungaria, a Hilda, Encke's comet) is not headed "Asteroid belt".
 - **Links and first screens that opened empty.** A shared link to Andromeda, and "Fly to it" on any galaxy, cluster or
   nebula, now stops near enough to see the object (it was a whole unit away, a million light-years on the Local Group's

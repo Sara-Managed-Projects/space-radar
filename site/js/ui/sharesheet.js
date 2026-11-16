@@ -592,7 +592,8 @@ export function createShareSheet(ctx) {
 
   async function lookUp(my, record, base, live) {
     const titleW = wikiTitleOf(record);
-    const pages = live ? objectPages(base) : Promise.resolve(null);
+    // The list of pages is the app's own file (the root's, also under /es/); `base` is where this visit's links start.
+    const pages = live ? objectPages() : Promise.resolve(null);
     if (titleW) {
       wikiLine.hidden = false;
       wikiLine.textContent = S.lookingUp;

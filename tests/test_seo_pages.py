@@ -375,9 +375,11 @@ for e in evs:
     ok(node.get("image") and off.get("price") == "0" and off.get("priceCurrency") == "USD" and off.get("url") == node.get("url"),
        f"{e['id']}: Event JSON-LD recommends an image and a free offer")
 ge = parse(BUILT / "events" / "geminids-2026.html").plain
-ok("14 December 2026, 13:45 UT" in ge and "21 percent" in ge, "Geminids: the computed peak and the Moon at the stated hour")
+ok("14 December 2026, 13:45 UT" in ge and "25 percent" in ge and "14 December 2026, 14:00 UT" in ge, "Geminids: the computed peak and the Moon at the stated hour, the whole hour nearest it")
 le = parse(BUILT / "events" / "leonids-2026.html").plain
-ok("17 November 2026, 23:48 UT" in le and "45 percent" in le, "Leonids: the computed peak, and the plan's 45 percent Moon at the stated hour")
+# Review of 2026-11-16: the Moon was stated for 17 November 00:00 UT (45 percent), a day before the peak; it is stated at the peak now.
+ok("17 November 2026, 23:48 UT" in le and "55 percent" in le and "18 November 2026, 00:00 UT" in le and "night of 17 to 18 November" in (BUILT / "events" / "leonids-2026.html").read_text(encoding="utf-8"),
+   "Leonids: the computed peak, the Moon at the hour nearest it (55 percent), and the night named is the one the peak falls in")
 qu = parse(BUILT / "events" / "quadrantids-2027.html").plain
 ok("3 January 2027, 17:56 UT" in qu and "46.95" in qu, "Quadrantids with Venus: its greatest western elongation, computed")
 an = parse(BUILT / "events" / "annular-eclipse-2027.html").plain
