@@ -184,10 +184,12 @@ const iconTest = async (label) => {
   const ask = { points: 0, icon: 0, earth: 0, list: 0, other: 0, nothing: 0 };
   const askCrowd = { points: 0, icon: 0, earth: 0, list: 0, other: 0, nothing: 0 };
   const askLone = { points: 0, icon: 0, earth: 0, list: 0, other: 0, nothing: 0 };
-  for (const mk of live.slice(0, 600)) {
-    // Only an icon no other icon lies over: there the visitor plainly points at this one.
-    if (mk.nearest < mk.r * 2 + 1) continue;
-    for (const [dx, dy] of [[0, 0], [mk.r * 0.5, 0], [0, -mk.r * 0.9]]) {
+  const stride = Math.max(1, Math.floor(live.length / 500));
+  for (const mk of live.filter((_, i) => i % stride === 0)) {
+    // Not two icons drawn on one spot (the app lists those). An icon that another overlaps is asked in its middle only,
+    // where it is the nearest; one that stands clear also half way out and on its edge.
+    if (mk.nearest < 4) continue;
+    for (const [dx, dy] of mk.nearest < mk.r * 2 + 1 ? [[0, 0]] : [[0, 0], [mk.r * 0.5, 0], [0, -mk.r * 0.9]]) {
       const d = sr.decisionAt(mk.x + dx, mk.y + dy, pointer);
       const w = d && d.winner;
       const key = d && d.ambiguous && d.list.length > 1 ? 'list' : !w ? 'nothing' : w.id === mk.rec.id ? 'icon' : w.id === 'earth' ? 'earth' : 'other';
@@ -216,6 +218,7 @@ const iconTest = async (label) => {
   // 3. Real taps: lone and crowded icons, in the middle and near the edge; then empty Earth.
   const pickSome = (list, n) => { const step = Math.max(1, Math.floor(list.length / n)); return list.filter((_, i) => i % step === 0).slice(0, n); };
   const clear = live.filter((q) => q.nearest >= q.r * 2 + 1);
+  res.frameMs = await (async () => { const t = performance.now(); for (let i = 0; i < 5; i++) await frame(); return Math.round((performance.now() - t) / 5); })();
   const reset = async () => { if (sr.selected()) sr.deselect({ stay: true }); await settle(8000); if (sr.stage.worldId !== 'earth') { sr.setStage('earth'); await sleep(2500); } rig.restoreState(view, 0); await sleep(200); await frame(); await frame(); };
   const taps = { lone: [], crowd: [], earth: [] };
   const n = phone ? 6 : 8;

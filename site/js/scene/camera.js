@@ -1207,6 +1207,20 @@ export function createCameraRig(camera, domElement, options = {}) {
     return (out || new THREE.Vector3()).copy(travelDir);
   }
 
+  /**
+   * Where the camera will stand when the running flight ends, scene units; null with none flying. A
+   * followed subject re-aims the flight every frame, and this moves with it. scene/heroes.js asks: a
+   * model is drawn on the way at the size it will have on arrival (internal #340).
+   */
+  function arrivalPosition(out = new THREE.Vector3()) {
+    if (!flight) return null;
+    const az = flight.fromAz + flight.dAz;
+    const pol = flight.fromPolar + flight.dPolar;
+    syncUpBasis();
+    return out.set(Math.sin(pol) * Math.sin(az), Math.cos(pol), Math.sin(pol) * Math.cos(az))
+      .applyQuaternion(upQuatInv).multiplyScalar(Math.exp(flight.toLogDist)).add(flight.toTarget);
+  }
+
   /** How far through the running flight, 0..1 by the rig's own clock, or null with none flying. */
   function flightProgress() {
     if (!flight || !(flight.ms > 0)) return null;
@@ -1341,6 +1355,7 @@ export function createCameraRig(camera, domElement, options = {}) {
     onFade,
     velocityDir,
     flightProgress,
+    arrivalPosition,
     setWorldRadius,
     setWorldCentre,
     setTarget,

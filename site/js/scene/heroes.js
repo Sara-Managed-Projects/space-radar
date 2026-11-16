@@ -43,6 +43,7 @@ import { propagate } from '../propagate/index.js';
 import { stage } from './stage.js';
 import { parseFrame } from '../propagate/frames.js';
 import { modelOpacity } from './onemark.js';
+import { hullDistance } from './pickrank.js';
 import { WORLDS } from './worlds.js';
 
 /** How many pixels tall a hero model should read as. Big enough to see it is a thing with parts. */
@@ -88,6 +89,55 @@ const BAND_FILL = 0.9;
 export function selectedPixels(bandPx) {
   if (!(bandPx > 0)) return SELECTED_PX;
   return Math.max(TARGET_PX, Math.min(SELECTED_PX, Math.floor((bandPx * BAND_FILL) / MODEL_SPAN)));
+}
+/**
+ * ON THE WAY TO IT, A MODEL IS THE SIZE IT WILL BE ON ARRIVAL (internal #340).
+ *
+ * The owner, 2026-11-16: "When Play on its own goes from a deep-space object to a rover on the Moon, the
+ * rover is zoomed in from the beginning and flies with the camera until the Moon." A selection is drawn
+ * at a constant 260 px whatever the distance (the header's rule) and is selected BEFORE the camera moves
+ * (main.js select, then flyToRecord), and a thing standing on a world's ground has no altitude cap to
+ * shrink it when it is far: so from the first frame of a flight the rover was 260 px tall, at the Moon's
+ * place in the sky, and stayed that size all the way in.
+ *
+ * While the camera is flying, the pixel budget is therefore multiplied by this share: how far the camera
+ * will stand from the model when the flight ends (scene/camera.js arrivalPosition), over how far it is
+ * now. That is the model at ONE size in the world, the one it has on arrival, seen from the real
+ * distance: a speck from the Earth, growing as the camera closes, 260 px as it stops. Never above 1: a
+ * flight that backs away leaves the size alone. With no flight the share is 1 and nothing changes, so
+ * the arrival look, a trip's stop and a hand on the wheel are as they were. Every flight goes through
+ * the one rig, so the drift, the search, a link, the card's button, the HUD chevron, the missions, the
+ * lists, the trips and the moments are all covered by this one rule.
+ *
+ * @param {number} dNow      camera to model now, scene units
+ * @param {number} dArrival  camera to model when the flight ends; NaN or absent with no flight
+ */
+export function flightShare(dNow, dArrival) {
+  if (!(dNow > 0) || !Number.isFinite(dArrival) || dArrival < 0) return 1;
+  return Math.min(1, dArrival / dNow);
+}
+/** A change of the pixel budget is eased over about this long, so a model never jumps in size. */
+const SIZE_EASE_MS = 140;
+/**
+ * The pixel size this frame, on the way from last frame's to the one wanted. A model drawn for the first
+ * time (`prev` not above zero) takes the wanted size at once: there is nothing to jump from. Pure.
+ */
+export function easedPixels(prev, want, frameMs) {
+  if (!(prev > 0) || !(want > 0)) return want;
+  const ms = frameMs > 0 ? Math.min(frameMs, 100) : 16;
+  const next = prev + (want - prev) * (1 - Math.exp(-ms / SIZE_EASE_MS));
+  return Math.abs(next - want) < 0.5 ? want : next;
+}
+/**
+ * A MODEL SMALLER THAN ITS OWN DOT IS CARRIED BY THE DOT. The dot yields to its model (drawnOpacity), so a
+ * model a few pixels across, far away on a flight or squeezed by the altitude cap, left nothing to see.
+ * Below DOT_CARRIES_PX the dot stays whole; from MODEL_CARRIES_PX the model alone, as before. Pure.
+ */
+const DOT_CARRIES_PX = 6;
+const MODEL_CARRIES_PX = 14;
+export function modelShareByPixels(px) {
+  if (!(px > DOT_CARRIES_PX)) return 0;
+  return Math.min(1, (px - DOT_CARRIES_PX) / (MODEL_CARRIES_PX - DOT_CARRIES_PX));
 }
 function heroPixels(record, selected, selectedPx = SELECTED_PX) {
   const base = selected ? selectedPx : TARGET_PX;
@@ -150,8 +200,11 @@ function stageRadiusUnits() {
  */
 const _reachBox = new THREE.Box3();
 const _reachV = new THREE.Vector3();
-function unitReachOf(obj) {
+const _reachInv = new THREE.Matrix4();
+/** @param {Array<THREE.Vector3>} [corners] filled with the eight corners of the model's box in its own frame (pickAll's outline) */
+function unitReachOf(obj, corners = null) {
   obj.updateMatrixWorld(true);
+  if (corners) corners.length = 0;
   _reachBox.makeEmpty();
   obj.traverse((n) => {
     if (!n.isMesh || n.userData.noReach) return; // a contact shadow is not part of the model
@@ -166,9 +219,13 @@ function unitReachOf(obj) {
   // the box's own centre, because a model whose mass sits off to one side still hangs off to one
   // side when it is drawn.
   let reach = 0;
+  if (corners) _reachInv.copy(obj.matrixWorld).invert();
   for (const x of [_reachBox.min.x, _reachBox.max.x]) {
     for (const y of [_reachBox.min.y, _reachBox.max.y]) {
-      for (const z of [_reachBox.min.z, _reachBox.max.z]) reach = Math.max(reach, _reachV.set(x, y, z).length());
+      for (const z of [_reachBox.min.z, _reachBox.max.z]) {
+        reach = Math.max(reach, _reachV.set(x, y, z).length());
+        if (corners) corners.push(new THREE.Vector3(x, y, z).applyMatrix4(_reachInv));
+      }
     }
   }
   return reach > 0 ? reach : 0.5;
@@ -348,6 +405,7 @@ const FADE_MS = 200;
 
 const _v = new THREE.Vector3();
 const _camPos = new THREE.Vector3();
+const _arrive = new THREE.Vector3();
 const _climb = new THREE.Vector3();
 const _sunHere = new THREE.Vector3();
 const _sunLocal = new THREE.Vector3();
@@ -589,6 +647,7 @@ export function createHeroes(scene, ctx) {
   /** The last update()'s clock, so drawnOpacity() reads the same fade the frame drew. */
   let lastTMs = 0;
   let fadeNow = 0; // milliseconds of frames drawn: what the fade-in counts (see update)
+  let frameMsNow = 16; // this frame's length, capped: what a change of size is eased by (easedPixels)
   /** id -> {obj, record, fadeStart} */
   const live = new Map();
   // The adaptive pool (nextHeroCap above): the cap the device has earned, how long the camera has
@@ -628,7 +687,8 @@ export function createHeroes(scene, ctx) {
     // procedural Voyager too, not only on the one that finished downloading.
     M.attachOddityModels(obj, record.id);
     root.add(obj);
-    const entry = { obj, record, fadeStart: null, upgraded: false, reach: unitReachOf(obj) };
+    const corners = [];
+    const entry = { obj, record, fadeStart: null, upgraded: false, reach: unitReachOf(obj, corners), corners };
     if (standsOnBareGround(record, obj)) { addContactShadow(obj, entry.reach); addGroundPatch(obj, record, entry.reach); }
     live.set(record.id, entry);
 
@@ -667,7 +727,7 @@ export function createHeroes(scene, ctx) {
         // MEASURED BEFORE THE SCALE IS COPIED ON. unitReachOf() walks world matrices, so asking it
         // after the line below would return a reach already multiplied by the drawn scale -- and
         // the clearance cap would then be computed from a number in the wrong units entirely.
-        entry.reach = unitReachOf(clone);
+        entry.reach = unitReachOf(clone, entry.corners);
         if (standsOnBareGround(record, clone)) addContactShadow(clone, entry.reach);
         if (standsOnBareGround(record, clone)) addGroundPatch(clone, record, entry.reach);
         clone.position.copy(entry.obj.position);
@@ -795,13 +855,17 @@ export function createHeroes(scene, ctx) {
     // selection is never skipped: if you asked for the Dragon, you get the Dragon.
     const f = camera.projectionMatrix.elements[5];
     const h = (ctx.renderer && ctx.renderer.domElement && ctx.renderer.domElement.clientHeight) || 800;
+    // Where the camera will stand when the flight it is on ends: null with none (flightShare, above).
+    const arrive = ctx.cameraRig && ctx.cameraRig.arrivalPosition ? ctx.cameraRig.arrivalPosition(_arrive) : null;
     gatherOthers();
     const kept = [];
     const hidden = [];
     for (const c of out) {
-      // The SAME heroPixels() as the scale below, or a big Starship is drawn large and still
-      // swallows its neighbours as though it were small. One function, two call sites.
-      const px = heroPixels(c.record, c.forced, selectedPx);
+      // The SAME pixels as the scale below (update() reads c.px), or a big Starship is drawn large and
+      // still swallows its neighbours as though it were small. One number, two readers.
+      const was = live.get(c.record.id);
+      const px = easedPixels(was ? was.pxBudget : 0, heroPixels(c.record, c.forced, selectedPx) * flightShare(c.d, arrive ? c.pos.distanceTo(arrive) : NaN), frameMsNow);
+      c.px = px;
       // The model may not exist yet on the frame it is first considered; half a unit is the
       // convention every shape is built to, and this only decides which neighbour is hidden.
       const reach = (live.get(c.record.id) || {}).reach || 0.5;
@@ -828,7 +892,8 @@ export function createHeroes(scene, ctx) {
     // 1000x it was the other failure, a fade over in one frame. `frameMs` is the real frame
     // length main.js already passes (and the film's virtual one, so a rendered trip is unchanged).
     selectedPx = selectedPixels(at.bandPx);
-    fadeNow += Number.isFinite(at.frameMs) && at.frameMs > 0 ? Math.min(at.frameMs, 100) : 16;
+    frameMsNow = Number.isFinite(at.frameMs) && at.frameMs > 0 ? Math.min(at.frameMs, 100) : 16;
+    fadeNow += frameMsNow;
     lastTMs = fadeNow;
     const camera = ctx.camera;
     if (!camera) return;
@@ -925,7 +990,9 @@ export function createHeroes(scene, ctx) {
       const obj = entry.obj;
       obj.position.copy(c.pos);
 
-      const px = heroPixels(c.record, c.record.id === selectedId, selectedPx);
+      // The pixel budget candidates() worked out: the selected size or the plain one, by the flight's share, eased.
+      const px = c.px > 0 ? c.px : heroPixels(c.record, c.record.id === selectedId, selectedPx);
+      entry.pxBudget = px;
       const size = heroScale(px, c.d, h, f, altitudeCapApplies(c.record) ? c.pos : null, entry.reach, nearAlt(c));
       obj.scale.setScalar(size);
       entry.px = c.d > 0 ? (2 * (entry.reach || 0.5) * size / c.d) * (h / 2) * f : 0;
@@ -1033,7 +1100,10 @@ export function createHeroes(scene, ctx) {
      * screen, if not - dot".
      */
     drawnOpacity(id) {
-      return modelOpacity(live.get(id), root.visible, lastTMs, FADE_MS);
+      const entry = live.get(id);
+      const shown = modelOpacity(entry, root.visible, lastTMs, FADE_MS);
+      // A model smaller than its own dot does not take the dot away (modelShareByPixels).
+      return shown > 0 ? shown * modelShareByPixels(entry.px) : 0;
     },
     /**
      * How far this record's model reaches from its centre, in scene units, as drawn this frame; 0
@@ -1055,6 +1125,44 @@ export function createHeroes(scene, ctx) {
       const entry = live.get(id);
       if (!entry || !entry.obj || !entry.obj.visible || !root.visible) return 0;
       return entry.px || 0;
+    },
+    /**
+     * Every drawn model near the pointer, for scene/pickrank.js (internal #341): {record, kind: 'model',
+     * px, score, sx, sy, r, depth}. The owner, 2026-11-16: "they should be clickable as a whole; now I
+     * must click a specific part". A pick was the screen distance to the craft's centre point, 10 px for
+     * a mouse, under a model 260 px across. The target is now the model's own box as projected (its
+     * outline, scene/pickrank.js hullDistance): `px` is the distance to it, zero anywhere on the model.
+     * Not a model still fading in, nor one smaller than a dot, which the dot carries.
+     */
+    pickAll(ndcX, ndcY, camera, vp, reachPx = 24) {
+      const out = [];
+      if (!root.visible || !camera || !vp || !(vp.w > 0) || !(vp.h > 0)) return out;
+      const halfW = vp.w * 0.5;
+      const halfH = vp.h * 0.5;
+      const tapX = (ndcX + 1) * halfW;
+      const tapY = (1 - ndcY) * halfH;
+      camera.updateMatrixWorld();
+      camera.getWorldPosition(_camPos);
+      for (const entry of live.values()) {
+        const obj = entry.obj;
+        if (!obj || !obj.visible || !(entry.px >= MODEL_CARRIES_PX) || modelOpacity(entry, true, lastTMs, FADE_MS) < 0.5) continue;
+        _v.copy(obj.position).project(camera);
+        if (!(_v.z > -1 && _v.z < 1)) continue;
+        const sx = (_v.x + 1) * halfW;
+        const sy = (1 - _v.y) * halfH;
+        const r = entry.px / 2; // its bounding circle: nothing of the model is outside it
+        const off = Math.hypot(sx - tapX, sy - tapY);
+        if (off > r + reachPx) continue;
+        let px = Math.max(0, off - r);
+        if (entry.corners && entry.corners.length === 8) {
+          obj.updateMatrixWorld();
+          const pts = entry.corners.map((c) => { _v.copy(c).applyMatrix4(obj.matrixWorld).project(camera); return [(_v.x + 1) * halfW, (1 - _v.y) * halfH]; });
+          px = hullDistance(pts, tapX, tapY);
+        }
+        if (px > reachPx) continue;
+        out.push({ record: entry.record, kind: 'model', px, score: px, sx, sy, r, depth: obj.position.distanceTo(_camPos) });
+      }
+      return out;
     },
     setVisible(b) { root.visible = !!b; },
     dispose() {
