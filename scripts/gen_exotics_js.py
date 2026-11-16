@@ -49,6 +49,11 @@ def render(doc: dict) -> list:
             row["distLy"] = (d[0] + d[1]) / 2
         else:
             row["distLy"] = d
+            # `dist_ly_range: [low, high]` beside a single `dist_ly`: the range the card SAYS, while the mark stays at
+            # `dist_ly` (a pulsar inside its nebula, a black hole inside its galaxy: the midpoint of a range would move it).
+            rng = r.get("dist_ly_range")
+            if isinstance(rng, list) and len(rng) == 2:
+                row["distLyLow"], row["distLyHigh"] = rng
         m = r.get("mass_msun")
         if isinstance(m, list):
             row["massMsunLow"], row["massMsunHigh"] = m

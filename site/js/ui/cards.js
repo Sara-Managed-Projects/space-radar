@@ -88,7 +88,7 @@ import {
   positionAt, measure, heliocentricEarth, PASS_NO_OBSERVER, PASS_NOT_APPLICABLE, PASS_NONE,
   PASS_ERROR, PASS_OK, standsStill, nextPass, roughly, stormAdvisoryAgo, stormStatusKey, isWorld,
   whyLine, endedWords, pathEndedWords, rightNowRows, ensurePlaces, rangeLabel, nearEarthOnEllipse,
-  honestyLine, placesReady, truthRow, starClassParts,
+  honestyLine, placesReady, truthRow, starClassParts, starLy, deepSkyLy, rangeLy, visibleSuns, plainNumber,
 } from './cardfacts.js';
 import { pathBeginsWords, elementsOutLine } from './cardfacts.js'; // 0077 W1-d
 export { pathBeginsWords } from './cardfacts.js'; // 0077 W1-d
@@ -596,15 +596,19 @@ const TEMPLATES = {
     const period = pickNumber(md, 'periodS');
     const name = displayName(record);
     const leadKey = { blackhole: 'leadBlackhole', pulsar: 'leadPulsar', magnetar: 'leadMagnetar', star: 'leadStar', quasar: 'leadQuasar' /* 0076 W4-b */, galaxy: 'leadGalaxy', cluster: 'leadCluster', browndwarf: 'leadBrowndwarf', whitedwarf: 'leadWhitedwarf' /* 0079 r15-a45 */ }[kind] || 'leadBlackhole';
+    const [rLo, rHi] = lo !== null && hi !== null ? rangeLy(lo, hi) : [null, null]; // a range to the precision of its own width, as the deep sky's
     const lead = lo !== null && hi !== null
-      ? t(T.leadRange, { name, a: article(T.kinds[kind] || kind), kind: T.kinds[kind] || kind, lo: fmt.int(lo), hi: fmt.int(hi) })
+      ? t(T.leadRange, { name, a: article(T.kinds[kind] || kind), kind: T.kinds[kind] || kind, lo: fmt.int(rLo), hi: fmt.int(rHi) })
       : t(T[leadKey], { name, dist: distLy !== null ? (distLy < 100 ? fmt.smart(distLy) : fmt.int(distLy)) : '?' }); // 0079 r15-a45: a brown dwarf at 6.5 light-years is not 7
     let massSay = null;
-    if (mLo !== null && mHi !== null) massSay = t(T.massRange, { lo: fmt.smart(mLo), hi: fmt.smart(mHi) });
-    else if (mass !== null && mass >= 1e9) massSay = t(T.massBillions, { n: fmt.smart(mass / 1e9) });
-    else if (mass !== null && mass >= 1e6) massSay = t(T.massMillions, { n: fmt.smart(mass / 1e6) });
-    else if (mass !== null) massSay = t(T.mass, { n: fmt.smart(mass) });
-    const spinSay = period === null ? null : period < 1 ? t(T.spins, { n: fmt.smart(1 / period) }) : t(T.spinsSlow, { n: fmt.smart(period) });
+    // The registry's own digits and no more: fmt.smart pads to three figures ("14.0 Suns", "9.00 Suns"), which
+    // claims a digit nobody measured of a supergiant's or a black hole's mass (a regression of internal #290).
+    const plain = plainNumber;
+    if (mLo !== null && mHi !== null) massSay = t(T.massRange, { lo: plain(mLo), hi: plain(mHi) });
+    else if (mass !== null && mass >= 1e9) massSay = t(T.massBillions, { n: plain(mass / 1e9) });
+    else if (mass !== null && mass >= 1e6) massSay = t(T.massMillions, { n: plain(mass / 1e6) });
+    else if (mass !== null) massSay = t(T.mass, { n: plain(mass) });
+    const spinSay = period === null ? null : period < 1 ? t(T.spins, { n: plain(1 / period) }) : t(T.spinsSlow, { n: plain(period) });
     return buildSentence(lead, [massSay, spinSay]);
   },
 
@@ -615,20 +619,21 @@ const TEMPLATES = {
     const hi = pickNumber(md, 'distLyHigh');
     const kind = String(pick(md, 'kind') || 'other');
     const type = pick(md, 'typeText') ? typeWords(pick(md, 'typeText')) : (T.kinds[kind] || T.kinds.other);
-    const sizeLy = pickNumber(md, 'sizeLy');
+    // `sizeLySaid` where a row says its width in words of its own (the Milky Way: data/layers.js says why).
+    const sizeLy = pickNumber(md, 'sizeLySaid') ?? pickNumber(md, 'sizeLy');
     const con = pick(md, 'con');
     const name = displayName(record);
     let lead;
     if (pick(md, 'home') === true && distLy !== null) lead = t(T.leadHome, { name, dist: fmt.int(roughly(distLy)) }); // rounded: Reid 2019 and GRAVITY differ by 400 light-years (internal #270)
-    else if (lo !== null && hi !== null) lead = t(T.leadRange, { name, a: article(type), type, lo: fmt.int(lo), hi: fmt.int(hi) });
-    else if (distLy !== null) lead = t(T.lead, { name, a: article(type), type, dist: fmt.int(distLy) });
+    else if (lo !== null && hi !== null) { const [a, b] = rangeLy(lo, hi); lead = t(T.leadRange, { name, a: article(type), type, lo: fmt.int(a), hi: fmt.int(b) }); }
+    else if (distLy !== null) lead = t(T.lead, { name, a: article(type), type, dist: fmt.int(deepSkyLy(distLy)) });
     else lead = t(T.leadUntyped, { name, dist: '?' });
     return buildSentence(lead, [
       con ? t(T.constellation, { con: String(con) }) : null,
       sizeLy !== null && sizeLy >= 1 ? t(T.size, { n: fmt.int(roughly(sizeLy)) }) : null,
       // Not for the galaxy we are inside: "the Milky Way ... seen as it was 26 582 years ago".
       distLy !== null && distLy >= 1e6 ? t(T.seenAsMillions, { n: fmt.smart(distLy / 1e6) }) : null,
-      distLy !== null && distLy < 1e6 && pick(md, 'home') !== true ? t(T.seenAs, { n: fmt.int(distLy) }) : null,
+      distLy !== null && distLy < 1e6 && pick(md, 'home') !== true ? t(T.seenAs, { n: fmt.int(deepSkyLy(distLy)) }) : null,
     ]);
   },
 
@@ -636,7 +641,8 @@ const TEMPLATES = {
     const md = meta(record);
     const distLy = pickNumber(md, 'distLy');
     const host = pick(md, 'host');
-    const rade = pickNumber(md, 'radiusEarths');
+    // A radius the Archive gives only as a limit (pl_radelim) is not said as the planet's size.
+    const rade = pick(md, 'radiusLimit') ? null : pickNumber(md, 'radiusEarths');
     const mass = pickNumber(md, 'massEarths');
     const period = pickNumber(md, 'periodDays');
     const year = pickNumber(md, 'discYear');
@@ -659,18 +665,21 @@ const TEMPLATES = {
     const spect = String(pick(md, 'spect') || '');
     const letter = spect.charAt(0).toUpperCase();
     const colour = T.colours && Object.prototype.hasOwnProperty.call(T.colours, letter) ? T.colours[letter] : null;
-    const lum = pickNumber(md, 'lum');
+    // Not for a star whose brightness swings by magnitudes: one catalogue moment is not its light (Mira).
+    const lum = Array.isArray(md.magVaries) ? null : pickNumber(md, 'lum');
     const name = displayName(record);
-    const dist = distLy !== null ? fmt.smart(distLy) : null;
+    // To the figures the parallax supports (cardfacts.js starLy): "1 977 light-years" for Alnilam was three too many.
+    const shown = distLy !== null ? starLy(distLy) : null;
+    const dist = shown !== null ? fmt.smart(shown) : null;
     if (distLy === null && pick(md, 'noDistance')) return buildSentence(colour ? t(COPY.a45.unplaced.leadColour, { name, a: article(colour), colour }) : t(COPY.a45.unplaced.lead, { name }), []); // 0079 r15-a45
     const lead = distLy === null ? t(COPY.templates.satellite.lead, { name })
       : colour ? t(T.leadColour, { name, a: article(colour), colour, dist })
         : t(T.lead, { name, dist });
     return buildSentence(lead, [
       distLy !== null && distLy < 20 ? T.near : null,
-      distLy !== null && distLy >= 1.5 ? t(T.seenAs, { n: fmt.int(distLy) }) : null,
+      distLy !== null && distLy >= 1.5 ? t(T.seenAs, { n: fmt.int(shown) }) : null,
       distLy !== null && distLy < 1.5 ? t(T.seenAsMonths, { n: fmt.int(distLy * 12) }) : null,
-      lum !== null && lum >= 1.5 ? t(T.luminosity, { n: fmt.int(lum) }) : null,
+      lum !== null && lum >= 1.5 ? t(T.luminosity, { n: visibleSuns(lum) }) : null,
       lum !== null && lum > 0 && lum < 0.5 ? t(T.dimmer, { n: `${fmt.smart(lum * 100)}%` }) : null,
     ]);
   },

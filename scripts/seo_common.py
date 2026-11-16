@@ -54,6 +54,17 @@ FALLBACK_IMAGE = ("og/default.png", 1200, 630,
 
 esc = lambda s: html.escape(str(s), quote=True)  # noqa: E731
 
+# ONE WAY TO GROUP DIGITS ON EVERY PAGE (review 2026-11-16): the app's (site/js/copy/en.js `num`), a narrow no-break
+# space, "35 786 km". The search pages had three: that one on the object pages, a comma on the star systems, the
+# full Moons, the ISS and the satellite counts ("360,754 km", "16,894"), a plain space on the countries. Another
+# language's pages write the number their own way from the same digits (scripts/seo_i18n.py reads all three).
+NNBSP = "\u202f"
+
+
+def grouped(n) -> str:
+    """`35 786`: a whole number, digits in threes with U+202F between them."""
+    return f"{round(n):,}".replace(",", NNBSP)
+
 
 def slug_of(name: str) -> str:
     """scripts/object_pages.mjs slugOf(): the same name gives the same address in both."""

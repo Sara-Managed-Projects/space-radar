@@ -104,6 +104,12 @@ Object.assign(COPY, {
     earthsEstimated: '{n}× Earth’s width, the archive’s estimate from its mass',
     massEstimated: '{n}× Earth, the archive’s estimate from its size',
     massLeast: 'At least {n}× Earth',
+    // The Archive's mass column also holds LIMITS (pl_bmasselim): "HD 10180 g, 3 375 Earths" is the most it can
+    // weigh, not what it weighs (review 2026-11-16). A limit is worded as one, on the system's card and the plain one.
+    massLimit: 'Less than {n}× Earth: an upper limit, not a measurement',
+    massLimitKnown: 'Its mass is known only as an upper limit.',
+    lessThan: 'Less than {v}',
+    moreThan: 'More than {v}',
     sizeDefault: 'Not measured: drawn the size of the Earth',
     // {pct}: the share of light the planet is taken to reflect, from the generated data.
     temperature: '{k} K ({c} °C), if it reflects {pct} % of its light as the Earth does',
@@ -386,7 +392,7 @@ Object.assign(COPY, {
       launch: 'Launch Library 2',
       shower: 'the IMO shower calendar',
       moon: 'Astronomy Engine',
-      crew: 'Open Notify',
+      crew: 'Launch Library 2',
       storms: 'GDACS',
       approach: 'NASA JPL',
       launched: 'CelesTrak',
@@ -1388,7 +1394,7 @@ Object.assign(COPY, {
       near: 'one of the nearest there are',
       seenAs: 'seen as it was {n} years ago',
       seenAsMonths: 'seen as it was {n} months ago',
-      luminosity: 'shining {n} times as bright as the Sun',
+      luminosity: 'shining {n} times as bright as the Sun in visible light', // V band only: not the star's whole output (review 2026-11-16)
       dimmer: 'shining at {n} of the Sun’s brightness',
       // Spectral class letter -> the colour a person would see. The letters are the physics; the
       // words are what the eye reports, and they are the whole reason to print the class at all.
@@ -1940,7 +1946,7 @@ Object.assign(COPY, {
     // The deep sky's glossary terms (registry/glossary.yaml, word for word; tests/test_truthlegend.mjs).
     // `match`: other words on a card that send the reader to the term.
     glossary: [
-      { term: 'parsec', match: ['kpc'], say: 'About 3.26 light-years: the distance from which the Earth\'s orbit would look one arcsecond wide. Papers write pc, and kpc for a thousand.' },
+      { term: 'parsec', match: ['kpc'], say: 'About 3.26 light-years: the distance from which the gap between the Earth and the Sun would look one arcsecond wide. Papers write pc, and kpc for a thousand.' },
       { term: 'million light-years', match: ['million years ago'], say: 'A million light-years, written Mly. Andromeda, the nearest big galaxy, is about 2.5 million away.' },
       { term: 'billion light-years', match: ['billion years ago'], say: 'A thousand million light-years, written Gly. The edge of what we can see is about 46 billion light-years away now.' },
       { term: 'lookback time', match: ['light left'], say: 'How long ago the light we see left something. From far galaxies it is billions of years: we see them as they were then.' },

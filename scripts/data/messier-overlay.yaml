@@ -16,6 +16,29 @@ objects:
   # the hero's own (registry/deepsky-heroes/m31.yaml): de Vaucouleurs 1958, ApJ 128, 465, 38 and 77 degrees from face on,
   # read through the later papers that adopt them; the NW side near. The 3-degree difference is the catalogue ellipse's
   # (isophotes of the whole galaxy) against the disc's line of nodes (the disc alone).
+  # THE LEO TRIPLET IS THREE GALAXIES, NOT A NAME FOR ONE (review 2026-11-16). OpenNGC gives the group's name to both rows,
+  # so M65 and M66 were both "Leo Triplet", shared one page address, and M66 had no page. NASA's Messier 66 page: M66 and
+  # "its neighbor M65, both of which belong to the Leo Triplet of galaxies. (The third member, NGC 3628 ... is not included
+  # in the Messier catalog)" (https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-66/,
+  # read 2026-11-16). Each keeps its M number alone; the `why` line says what the triplet is.
+  m65:
+    common: null
+    why: "One of the Leo Triplet, three galaxies close together in the sky: M65, M66 and NGC 3628."
+  m66:
+    common: null
+    why: "One of the Leo Triplet, three galaxies close together in the sky: M65, M66 and NGC 3628."
+  # M40 IS TWO UNRELATED STARS ON ONE LINE OF SIGHT, so it has no one distance (review 2026-11-16). Gaia DR3 parallaxes, read on
+  # SIMBAD 2026-11-16 (https://simbad.harvard.edu/simbad/sim-id?Ident=HD+238107 and ...HD+238108): HD 238107 3.2191 +/- 0.0118 mas
+  # (1 013 light-years), HD 238108 6.9328 +/- 0.0155 mas (470 light-years). The table's 510 was neither. The mark is placed at
+  # the nearer star; the range is the two stars, and the `why` line says so.
+  m40:
+    distance: {method: parallax, value_ly: 470, low: 470, high: 1013,
+               source: "Gaia DR3 parallaxes of its two stars, read on SIMBAD: HD 238108 6.9328 mas (470 light-years, where the mark is placed) and HD 238107 3.2191 mas (1 013 light-years)", read: 2026-11-16}
+    why: "Not a pair: two unrelated stars that happen to line up. One is about 470 light-years away and the other about 1 010, so there is no one distance to give."
+  # M73 IS FOUR STARS THAT HAPPEN TO LINE UP (an asterism; SIMBAD files NGC 6994 as "not an object", read 2026-11-16), so its one
+  # distance, the Messier table's rough 2 500 light-years, is only where the mark is put. No star's own distance was read for it.
+  m73:
+    why: "Four stars that happen to line up, not a cluster. The one distance here is only where the mark is placed: the stars are not together in space."
   m31:
     orientation: {pa_deg: 38, incl_deg: 77, near_side: NW,
                   source: "de Vaucouleurs 1958, ApJ 128, 465 (as the hero profile cites it; the paper itself is not yet read); near side from the dust lanes against the bulge"}

@@ -360,6 +360,11 @@ jobs:
       # the enabled rows; a template or a sentence with a number of its own fails here.
       - name: "One number of sources: the pages read one function, a switched-off row is in neither, nobody types a count"
         run: python3 tests/test_source_counts.py
+      # The data review of 2026-11-16: Venus at 467 C in one place and 464 C in another, Eris's year 557 and 560, two galaxies
+      # under one name and one page, an upper limit printed as a measured mass. Each case fixed that day is held, read from
+      # the files the app and the pages read.
+      - name: "One value per quantity: Venus, the Earth's width, the Milky Way, the parsec, the Crab, M87, Eris, one name per Messier object, no limit as a mass"
+        run: python3 tests/test_one_value.py
       # A translator's tool: lists missing keys, extra keys and lost {slots}; shown to fail.
       - name: "The translation checker names a missing key, a lost slot and an untouched string"
         run: node tests/test_check_translation.mjs

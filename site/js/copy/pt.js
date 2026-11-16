@@ -768,7 +768,7 @@ export const COPY = {
       "catalogueCopy": "Cópia do catálogo",
       "spectralType": "Tipo de estrela",
       "brightness": "Brilho aparente",
-      "luminosity": "Luz emitida",
+      "luminosity": "Luz visível emitida",
       "starWidth": "Largura",
       "catalogue": "Catálogo",
       "lightTime": "Tempo de rádio, em cada sentido",
@@ -1914,6 +1914,10 @@ export const COPY = {
     "earthsEstimated": "{n}× a largura da Terra, estimativa do arquivo a partir da massa",
     "massEstimated": "{n}× a Terra, estimativa do arquivo a partir do tamanho",
     "massLeast": "Pelo menos {n}× a Terra",
+    "massLimit": "Menos de {n}× a Terra: um limite superior, não uma medição",
+    "massLimitKnown": "Da sua massa só se conhece um limite superior.",
+    "lessThan": "Menos de {v}",
+    "moreThan": "Mais de {v}",
     "sizeDefault": "Não medido: desenhado do tamanho da Terra",
     "temperature": "{k} K ({c} °C), se refletir {pct}% da luz como a Terra faz",
     "zone": {
@@ -2177,7 +2181,7 @@ export const COPY = {
       "launch": "Launch Library 2",
       "shower": "calendário de chuvas de meteoros da IMO",
       "moon": "Astronomy Engine",
-      "crew": "Open Notify",
+      "crew": "Launch Library 2",
       "storms": "GDACS",
       "approach": "NASA JPL",
       "launched": "CelesTrak",
@@ -3119,7 +3123,7 @@ export const COPY = {
       "near": "uma das mais próximas que existem",
       "seenAs": "vista como era há {n} anos",
       "seenAsMonths": "vista como era há {n} meses",
-      "luminosity": "brilhando {n} vezes mais que o Sol",
+      "luminosity": "brilhando {n} vezes mais que o Sol em luz visível",
       "dimmer": "brilhando com {n} do brilho do Sol",
       "colours": {
         "O": "azul",
@@ -3599,7 +3603,7 @@ export const COPY = {
         "match": [
           "kpc"
         ],
-        "say": "Cerca de 3,26 anos-luz: a distância da qual a órbita da Terra pareceria ter um segundo de arco de largura. Os artigos escrevem pc, e kpc para mil."
+        "say": "Cerca de 3,26 anos-luz: a distância da qual a distância entre a Terra e o Sol pareceria ter um segundo de arco de largura. Os artigos escrevem pc, e kpc para mil."
       },
       {
         "term": "milhões de anos-luz",
@@ -4900,7 +4904,7 @@ Object.assign(COPY, {
       "white dwarf": "O núcleo quente que sobra quando uma estrela como o Sol perde as camadas de fora. Do tamanho da Terra, não produz calor novo e esfria devagar.",
       "brown dwarf": "Um objeto grande demais para ser planeta e pequeno demais para brilhar como estrela: de cerca de 13 a 80 vezes a massa de Júpiter. Emite quase nenhuma luz visível.",
       "nebula": "Uma nuvem de gás e poeira no espaço. Algumas brilham, algumas escondem as estrelas que ficam atrás e, em algumas, estrelas novas estão se formando.",
-      "galaxy": "Uma enorme família de estrelas, gás e poeira unida pela gravidade. A nossa, a Via Láctea, é uma espiral com mais de 100 000 anos-luz de largura.",
+      "galaxy": "Uma enorme família de estrelas, gás e poeira unida pela gravidade. A nossa, a Via Láctea, é uma espiral com cerca de 100 000 anos-luz de largura.",
       "globular cluster": "Uma bola de dezenas de milhares a milhões de estrelas bem apertadas pela gravidade, mais densa no centro.",
       "habitable zone": "A faixa de distâncias de uma estrela em que um planeta poderia ter água líquida na superfície. Diz que a vida pode ser possível ali, não que alguém viva lá.",
       "exoplanet": "Um planeta que gira em torno de uma estrela que não é o Sol.",
@@ -4913,7 +4917,7 @@ Object.assign(COPY, {
         "sun": "O Sol é uma estrela: uma bola de gás muito quente e brilhante, feita principalmente de hidrogênio e hélio, com cerca de 4,5 bilhões de anos. Tem cerca de 100 vezes a largura da Terra. O núcleo está a cerca de 15 milhões de graus Celsius, quente o bastante para a fusão nuclear, e a energia que sai dele é aquela de que depende a maior parte da vida na Terra. A gravidade do Sol mantém todo o sistema solar unido.",
         "moon": "A Lua é o único satélite natural da Terra, com menos de um terço da largura dela. É uma bola de rocha cheia de crateras, a cerca de 384 000 km de distância em média. Dá uma volta em torno da Terra em cerca de 27 dias e gira uma vez no mesmo tempo, por isso vemos sempre o mesmo lado. As manchas escuras são planícies de lava antiga. É o único mundo além da Terra que as pessoas já visitaram.",
         "mercury": "Mercúrio é o menor planeta e o mais próximo do Sol, só um pouco maior que a Lua. Seu chão rochoso é cheio de crateras. Quase não tem ar para guardar o calor, então vai de cerca de 430 °C de dia a cerca de menos 180 °C à noite. Dá uma volta em torno do Sol em 88 dias, mais rápido que qualquer outro planeta.",
-        "venus": "Vênus tem quase o tamanho da Terra: 12 104 km de diâmetro, contra 12 756. Seu ar espesso é feito principalmente de dióxido de carbono, com nuvens de ácido sulfúrico, e retém o calor. O chão está a cerca de 467 °C, mais quente que Mercúrio e quente o bastante para derreter chumbo, e o ar pressiona o chão cerca de 93 vezes mais forte que na Terra. Vênus gira devagar e para trás: uma volta leva 243 dias terrestres, mais que o seu ano, de 225 dias.",
+        "venus": "Vênus tem quase o tamanho da Terra: 12 104 km de diâmetro, contra 12 742. Seu ar espesso é feito principalmente de dióxido de carbono, com nuvens de ácido sulfúrico, e retém o calor. O chão está a cerca de 464 °C, mais quente que Mercúrio e quente o bastante para derreter chumbo, e o ar pressiona o chão cerca de 92 vezes mais forte que na Terra. Vênus gira devagar e para trás: uma volta leva 243 dias terrestres, mais que o seu ano, de 225 dias.",
         "earth": "A Terra é o único lugar que sabemos ter seres vivos. É o único planeta com água líquida na superfície, e a maior parte dela é coberta por oceano. Uma volta leva 23,9 horas e uma volta em torno do Sol leva 365,25 dias, por isso acrescentamos um dia extra a cada quatro anos. A luz do Sol leva cerca de oito minutos para chegar aqui.",
         "mars": "Marte é um deserto frio e empoeirado, com cerca de metade da largura da Terra. O ferro de suas rochas e de sua poeira enferrujou, e por isso ele parece vermelho. Tem o maior vulcão do sistema solar, o Monte Olimpo, e um sistema de cânions, o Valles Marineris, com mais de dez vezes o comprimento e a largura do Grand Canyon. Rios e lagos já correram por lá; hoje o ar é fino e a água é gelo ou muito salgada.",
         "jupiter": "Júpiter é o maior planeta: 11 vezes a largura da Terra, com espaço para cerca de mil Terras lá dentro. É feito principalmente de hidrogênio e hélio, sem chão sólido para pisar. Suas faixas são nuvens frias e ventosas de amônia e água. A Grande Mancha Vermelha é uma tempestade mais larga que a Terra, que as pessoas observam há mais de 300 anos. Uma volta leva só 9,9 horas, o dia mais curto de qualquer planeta.",

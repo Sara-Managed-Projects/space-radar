@@ -327,6 +327,10 @@ const FAR_BODIES = [
     klass: 'asteroid',
     farKind: 'dwarf',
     // sstr=136199. Solved 2026-06-06, observations 1954-09-03 to 2026-02-06.
+    // ONE YEAR FOR ERIS (review 2026-11-16): the trip says NASA's "Eris takes 557 Earth years to make one trip around the Sun"
+    // (https://science.nasa.gov/dwarf-planets/eris/, read 2026-11-16), and its page printed 560 from the elements below
+    // (a = 67.93 au; JPL SBDB's own per is 2.05e5 d, 561 y). The page says NASA's too; the orbit drawn is still these elements'.
+    lapYears: 557,
     aAu: 67.9339469, e: 0.438238535, iDeg: 43.9258279, nodeDeg: 36.0047704, argpDeg: 150.794924,
     maDeg: 211.774434, epochJd: SBDB_EPOCH_JD, tpJd: 2545407.7168,
     solution: '2026-06-06', lastObs: '2026-02-06',
@@ -501,9 +505,11 @@ const FAR_BODIES = [
     hMag: null, // a comet's M1 (13.8) is not an asteroid's H, and nothing here reads it
     diameterKm: null, // "at most 0.4 to 0.5 km" is an upper limit, not a size
     moons: null,
-    why: 'The first comet seen coming from another star, found on 29 August 2019 by Gennadiy Borisov, ' +
+    // 30 August, not 29: NASA Science, "discovered by Crimean amateur astronomer Gennady Borisov on Aug. 30, 2019"
+    // (https://science.nasa.gov/solar-system/comets/2i-borisov/, read 2026-11-16); the MPC's first observation is 2019-08-30 too.
+    why: 'The first comet seen coming from another star, found on 30 August 2019 by Gennadiy Borisov, ' +
       'an amateur astronomer and telescope maker in Crimea.',
-    whySource: 'Wikipedia, 2I/Borisov, read 22 September 2026',
+    whySource: 'NASA Science, 2I/Borisov, read 16 November 2026; Wikipedia, 2I/Borisov, read 22 September 2026',
     // scene/models.js shows a selected comet's tails at any distance, so it reads as a comet. Seen
     // in the browser on 2026-09-22: two tails on a comet 48 au out that nobody has seen since 2020.
     departure: 'the tails are part of the drawing, not an observation: nobody has seen Borisov since September 2020',
@@ -592,6 +598,8 @@ function sbdbBody(b, layer) {
         periodDays: bound ? periodDays(aKm) : null,
         // Where that period is not the lap in the long run: the barycentric lap and far point, which a page prints instead.
         longRun: b.longRun ? { periodYears: b.longRun.periodYears, aphelionAu: b.longRun.aphelionAu, cite: b.longRun.cite } : null,
+        // The lap a page SAYS, where a published sentence gives one (Eris): scripts/object_pages.mjs prints it in place of the osculating figure.
+        lapYearsSaid: Number.isFinite(b.lapYears) ? b.lapYears : null,
         absoluteMagnitude: b.hMag,
         diameterKm: b.diameterKm,
         diameterLowKm: b.diameterLowKm ?? null,
@@ -1313,8 +1321,12 @@ const PLANET_ORBITERS = [
     // "Every 38 days" was one stage of an orbit the moon flybys kept shortening (53 days in the
     // prime mission, about 33 by 2024); "than anything has been" overlooked Galileo's probe,
     // which went in.
-    note: 'It dives between Jupiter and its radiation belts every month or so, closer to the ' +
-      'cloud tops than any orbiter before it.',
+    // "Every month or so" and silence about the mission's term (review 2026-11-16). NASA's mission page, read
+    // 2026-11-16 (https://science.nasa.gov/mission/juno/): "circling Jupiter every 33 days until end of mission" and
+    // "scheduled to continue investigating the solar system's largest planet through September 2025". No NASA
+    // statement of its status after that date was found that day, so the note says what the page says and no more.
+    note: 'It dives between Jupiter and its radiation belts about every 33 days, closer to the ' +
+      'cloud tops than any orbiter before it. NASA planned its extended mission to September 2025.',
     rKm: [1350578.538, -661190.227, -5432547.724],
     vKmS: [0.553754, -0.858287, -0.963073],
     periodMin: 47084.5,
@@ -1481,8 +1493,11 @@ const LOST_ORBITERS = [
     horizonsId: -202,
     world: 'mars',
     aliases: ['Mars Atmosphere and Volatile EvolutioN'],
-    note: 'In orbit round Mars since September 2014 to study how the planet loses its air to ' +
-      'space. NASA has not heard from it since 6 December 2025.',
+    // NASA release 26-047, 3 June 2026, "NASA Says Farewell to MAVEN, Declares End of Mission": last heard on
+    // 6 December 2025 (https://www.nasa.gov/news-release/nasa-says-farewell-to-maven-mars-mission-hosts-media-call-today/
+    // and https://science.nasa.gov/mission/maven/, both read 2026-11-16).
+    note: 'In orbit round Mars from September 2014 to study how the planet loses its air to ' +
+      'space. It fell silent on 6 December 2025, and NASA declared the mission over on 3 June 2026.',
     rKm: [1249.946451, 3646.897367, -6566.122126],
     vKmS: [1.106146210, 1.471414496, 0.617508591],
     periodMin: 219.2,
@@ -1738,9 +1753,11 @@ const OSCULATING_CRAFT = [
     klass: 'probe',
     horizonsId: -49,
     // Horizons -49 header (revised 2025-10-25): 3548 Eurybates on 2027-08-11 is the first of the
-    // five Jupiter Trojans in its flyby list. 5.05 au from the Sun on 2026-09-22 (Horizons).
-    note: 'Now 5 AU from the Sun, it flies past 3548 Eurybates in August 2027, the first of the ' +
-      'five Trojan asteroids sharing Jupiter’s orbit that it will visit.',
+    // five Jupiter Trojan ENCOUNTERS in its flyby list. 5.05 au from the Sun on 2026-09-22 (Horizons).
+    // NASA counts eight Trojans in those five: Eurybates and Queta, Polymele and its satellite, Leucus, Orus,
+    // Patroclus and Menoetius ("eight Trojan asteroids", https://science.nasa.gov/mission/lucy/, read 2026-11-16).
+    note: 'Now 5 AU from the Sun, it flies past 3548 Eurybates in August 2027, the first of five ' +
+      'encounters with eight Trojan asteroids sharing Jupiter’s orbit.',
     destination: 'Jupiter’s Trojan asteroids',
     aAu: 3.354199, e: 0.71343, iDeg: 4.4203, nodeDeg: 261.2311, argpDeg: 160.4172, maDeg: 106.295,
     // Coasting: 4 000 km at 90 days, 16 000 at 180. Its next burn, DSM-3, is 312.7 m/s on
@@ -1777,7 +1794,10 @@ const OSCULATING_CRAFT = [
     // Closest approach 2026-09-28 11:50 TDB, 15 248 km from Earth's centre (Horizons, CENTER=
     // '500@399', 10-minute steps). Horizons -28 header (revised 2026-09-21): Earth flyby #2 of the
     // gravity assists that bring it to Jupiter in July 2031.
-    note: 'Its Earth flyby of 28 September 2026, 15 000 km from Earth’s centre, is one of the ' +
+    // The distance a visitor can look up is ESA's, above the surface: "On 28 September 2026, the spacecraft will come
+    // within 8640 km of our planet", closest approach 11:45 UTC (https://www.esa.int/articles/juice-to-fly-past-earth-for-third-gravity-assist,
+    // read 2026-11-16). 15 000 km from the centre was the same pass measured another way, a figure no source prints.
+    note: 'Its Earth flyby of 28 September 2026, 8 640 km above the surface by ESA’s figure, was one of the ' +
       'gravity assists that take it to Jupiter in July 2031.',
     destination: 'Jupiter’s moon Ganymede',
     // The elements for 1 OCTOBER, after the flyby, not 22 September: the flyby adds about 4 km/s,
@@ -1812,8 +1832,11 @@ const OSCULATING_CRAFT = [
     horizonsId: -91,
     // Horizons -91 header (revised 2026-09-01): its objective is the crater DART left on Dimorphos
     // on 2022-09-26; rendezvous manoeuvre 2026-Oct, arrival "Late 2026".
-    note: 'ESA’s follow-up to NASA’s DART impact, it reaches the asteroid pair Didymos and ' +
-      'Dimorphos in late 2026 to measure the crater DART left.',
+    // ARRIVED: ESA, 11 November 2026, "Hera ... has arrived at its target asteroids. Positioned just 30-25 km away from
+    // the binary Didymos system" (https://www.esa.int/articles/about-us/directorates/operations/space-safety/hera/hera-spacecraft-in-rectangular-orbit-around-target-asteroids,
+    // read 2026-11-16).
+    note: 'ESA’s follow-up to NASA’s DART impact, it reached the asteroid pair Didymos and ' +
+      'Dimorphos in November 2026 to measure the crater DART left.',
     aAu: 1.693677, e: 0.396112, iDeg: 3.3826, nodeDeg: 72.0392, argpDeg: 317.9109, maDeg: 313.4267,
     // 137 000 km at 30 days, 429 000 at 42 as it manoeuvres in; Horizons' file ends 2026-11-04.
     drift: 'Checked against JPL’s own forecast, it is 140 000 km out after a month; that forecast ' +

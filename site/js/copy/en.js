@@ -645,8 +645,8 @@ export const COPY = {
     people: 'People in space',
     iss: 'ISS',
     tiangong: 'Tiangong',
-    // Open Notify's headcount (data/parsers.js parseAstros), once it has loaded; a station named
-    // with no count yet (or Open Notify unreachable) falls back to its bare name.
+    // Launch Library 2's headcount (data/parsers.js parseStationHeadcount), once it has loaded; a
+    // station named with no count yet (or the list unreachable or old) falls back to its bare name.
     crewAt: '{n} on {name}',
   },
   // The one line at the sidebar's foot: how the sources are, and how old the oldest reading is.
@@ -1297,7 +1297,7 @@ export const COPY = {
       catalogueCopy: 'Catalogue copy',
       spectralType: 'Type of star',
       brightness: 'How bright it looks',
-      luminosity: 'Light output',
+      luminosity: 'Light output, in visible light',
       starWidth: 'Width',
       catalogue: 'Catalogue',
       iauName: 'IAU-approved name', // 0079 r15-a45

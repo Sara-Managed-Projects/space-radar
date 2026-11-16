@@ -44,7 +44,13 @@ function showerEvent(ev) {
   const peakMs = peakInstant(sh, ev.year);
   if (peakMs === null) throw new Error(`${ev.id}: ${ev.shower} has no solar longitude, so no computed peak`);
   const moonMs = Date.parse(ev.moon_at);
-  const con = Astronomy.Constellation(sh.ra_h, sh.dec);
+  // THE CONSTELLATION A SHOWER IS NAMED FOR, where the catalogue's radiant POINT falls just across a boundary from it
+  // (review 2026-11-16): the IMO's Perseid radiant (RA 3.22 h, Dec +58) looks up as Cassiopeia and the Lyrids' (18.17 h, +34)
+  // as Hercules, and the pages said the Perseids come "from Cassiopeia". NASA: "Radiant Constellation Perseus"
+  // (https://science.nasa.gov/solar-system/meteors-meteorites/perseids/) and "Radiant Constellation Lyra"
+  // (.../lyrids/), both read 2026-11-16. Every other shower's is still looked up from its point.
+  const NAMED_FOR = { perseids: 'Perseus', lyrids: 'Lyra' };
+  const con = NAMED_FOR[sh.id] ? { name: NAMED_FOR[sh.id] } : Astronomy.Constellation(sh.ra_h, sh.dec);
   return {
     instant: iso(peakMs),
     instantMs: peakMs,
@@ -97,7 +103,15 @@ function fullMoonEvent(ev) {
   if (!at) throw new Error(`${ev.id}: no full Moon within 40 days of ${ev.near}`);
   const ms = at.date.getTime();
   const km = Astronomy.GeoVector('Moon', at, true).Length() * AU_KM;
-  return { instant: iso(ms), instantMs: ms, distanceKm: Math.round(km), meanKm: MEAN_MOON_KM, nearer: km < MEAN_MOON_KM, month: new Date(ms).getUTCMonth() + 1, moonAtPeak: moonAt(ms) };
+  // A penumbral lunar eclipse at this full Moon (the Moon in the Earth's outer shadow only): said on the page, which has no
+  // eclipse page of its own for it. A partial or total one has its own page (kind lunar-eclipse) and is not repeated here.
+  let penumbral = null;
+  try {
+    const e = Astronomy.SearchLunarEclipse(new Date(ms - 2 * 86400e3));
+    const peak = e.peak.date.getTime();
+    if (e.kind === 'penumbral' && Math.abs(peak - ms) < 86400e3) penumbral = { instant: iso(peak) };
+  } catch { /* no eclipse found: nothing is said */ }
+  return { instant: iso(ms), instantMs: ms, distanceKm: Math.round(km), meanKm: MEAN_MOON_KM, nearer: km < MEAN_MOON_KM, month: new Date(ms).getUTCMonth() + 1, moonAtPeak: moonAt(ms), penumbral };
 }
 
 /** What each bundled city sees of a lunar eclipse: the Moon's height at the greatest eclipse. Computed, never typed. */

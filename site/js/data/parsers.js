@@ -1438,6 +1438,12 @@ export function parseExoplanets(text, opts = {}) {
   if (iName < 0 || iHost < 0 || iRa < 0 || iDec < 0 || iDist < 0) return [];
   const iRade = col('pl_rade'), iMass = col('pl_bmasse'), iPer = col('pl_orbper'), iYear = col('disc_year');
   const iMethod = col('discoverymethod'), iTeff = col('st_teff'), iSrad = col('st_rad'), iSpect = col('st_spectype');
+  // The Archive's limit flags (review 2026-11-16): 1 = the number is an UPPER LIMIT, -1 = a lower limit, 0 or
+  // blank = a value. 225 of the table's masses are upper limits (HD 10180 g "3 375 Earths"), and a card that
+  // prints one as a mass is wrong by two orders of magnitude. A copy written before the columns were asked
+  // for has none, and its numbers stay unlabelled until the next weekly read.
+  const iMassLim = col('pl_bmasselim'), iRadLim = col('pl_radelim');
+  const limit = (f, i) => { const v = i < 0 ? NaN : parseFloat(f[i]); return v === 1 ? 'upper' : v === -1 ? 'lower' : null; };
   const num = (f, i) => { if (i < 0) return null; const v = parseFloat(f[i]); return Number.isFinite(v) ? v : null; };
   const out = [];
   for (let k = 1; k < lines.length; k++) {
@@ -1462,6 +1468,8 @@ export function parseExoplanets(text, opts = {}) {
         distLy: Math.round(distPc * LY_PER_PC * 100) / 100,
         radiusEarths: num(f, iRade),
         massEarths: num(f, iMass),
+        massLimit: limit(f, iMassLim),
+        radiusLimit: limit(f, iRadLim),
         periodDays: num(f, iPer),
         discYear: year === null ? null : Math.round(year),
         method: (iMethod >= 0 ? f[iMethod] : '').trim() || null,
@@ -1777,30 +1785,33 @@ export function parseGdacsCyclones(json, opts = {}) {
 }
 
 // =================================================================================================
-// Open Notify — who is aboard (2026-10-02)
+// Launch Library 2 — how many people are aboard each station (2026-11-16)
 // =================================================================================================
 //
-// MEASURED 2026-10-02 against registry/sources.yaml open-notify-astros (tests/fixtures/harvest/
-// open_notify.json is that answer, verbatim): `{message: 'success', number: N, people: [{name,
-// craft}, ...]}`. Not a layer -- there is nothing here to draw, only a headcount for the "People in
-// space" Right now line (ui/explore.js) -- so this returns a plain craft -> count map, not records.
+// The "People in space" Right now line (ui/explore.js) and the sentence's crew clause read the
+// publisher's own headcount, `onboard_crew`, from the stations answer the station card already
+// reads (registry/sources.yaml ll2-stations; tests/fixtures/harvest/ll2_stations.json is that
+// answer). Until 2026-11-16 this was Open Notify's astros.json, whose body had not changed since
+// mid-2024 (nine names on the ISS that had long since landed) while answering 200 every hour:
+// the source is retired. Not a layer -- there is nothing here to draw -- so this returns a plain
+// station id -> count map, not records. data/crew.js parseStations reads the same field for the
+// card; this one is here because the Explore panel is on the boot path and crew.js is not.
 
 /**
  * @param {*} body
- * @returns {Record<string, number>|null} a count per craft name, verbatim as Open Notify spells it
- *   ("ISS", "Tiangong"); null for anything that is not the shape the API documents.
+ * @returns {Record<string, number>|null} a count per Launch Library station id ("4" the ISS,
+ *   "18" Tiangong); null for anything that is not the shape the API documents, or with no count.
  */
-export function parseAstros(body) {
+export function parseStationHeadcount(body) {
   let doc = body;
   if (typeof doc === 'string') {
     try { doc = JSON.parse(doc); } catch { return null; }
   }
-  if (!doc || typeof doc !== 'object' || doc.message !== 'success' || !Array.isArray(doc.people)) return null;
-  const byCraft = {};
-  for (const p of doc.people) {
-    const craft = p && typeof p.craft === 'string' ? p.craft.trim() : '';
-    if (!craft) continue;
-    byCraft[craft] = (byCraft[craft] || 0) + 1;
+  if (!doc || typeof doc !== 'object' || !Array.isArray(doc.results)) return null;
+  const byStation = {};
+  for (const s of doc.results) {
+    if (!s || !Number.isFinite(s.id) || !Number.isFinite(s.onboard_crew) || s.onboard_crew < 0) continue;
+    byStation[String(s.id)] = s.onboard_crew;
   }
-  return Object.keys(byCraft).length ? byCraft : null;
+  return Object.keys(byStation).length ? byStation : null;
 }

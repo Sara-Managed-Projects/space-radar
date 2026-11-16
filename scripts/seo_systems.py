@@ -36,7 +36,7 @@ from pathlib import Path
 
 import yaml
 
-from seo_common import Page, esc, slug_of, webpage, url_of
+from seo_common import Page, esc, grouped, slug_of, webpage, url_of
 from seo_share import Spec
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -84,7 +84,14 @@ def systems() -> list[dict]:
             if row is None:
                 raise SystemExit(f"seo_systems: {p['id']} is in the registry and not in site/data/exoplanets.csv")
             q = dict(p)
+            # ONE NAME FOR THE SYSTEM (review 2026-11-16). The Archive files Kepler-90 under KOI-351, so seven of its eight
+            # planets were "KOI-351 b" to "h" on a page titled Kepler-90. The planets take the page's name; the Archive's
+            # is said once, beside the star (system_page).
             q["name"] = row["pl_name"]
+            q["archive_name"] = row["pl_name"]
+            shown = s.get("display") or s["host"]
+            if shown != s["host"] and q["name"].startswith(s["host"] + " "):
+                q["name"] = shown + q["name"][len(s["host"]):]
             q["go"] = p["id"].removeprefix("exo-")
             q["method"] = q.get("method") or row.get("discoverymethod")
             q["year"] = q.get("year") or (int(row["disc_year"]) if row.get("disc_year") else None)
@@ -113,7 +120,14 @@ def systems() -> list[dict]:
 # --- words --------------------------------------------------------------------------------------------
 
 def num(v: float) -> str:
-    return f"{v:,.0f}" if v >= 1000 else f"{v:g}"
+    return grouped(v) if v >= 1000 else f"{v:g}"
+
+
+def fig3(v: float) -> str:
+    """Three significant figures at most, and no padding: the Archive stores a unit conversion's digits
+    (GJ 1132 b "1.19151465 Earth radii", WASP-12 b "22.02564708"), not a measurement to six figures
+    (review 2026-11-16, a regression of internal #290)."""
+    return f"{float(f'{v:.3g}'):g}"
 
 
 def light_years(pc: float | None) -> str | None:
@@ -132,10 +146,16 @@ def width_clause(p: dict) -> str:
     r = p.get("radius_earths")
     if r is None:
         m = p.get("mass_earths")
+        # AN UPPER LIMIT IS NOT A MASS (review 2026-11-16): "HD 10180 g ... with a mass of about 3,375 times Earth's" was
+        # the Archive's limit (pl_bmasselim = 1), printed as the planet's weight.
+        if m and p.get("mass_from") == "limit":
+            return f"of unknown width, with a mass of less than {num(m)} times Earth's"
+        if m and p.get("mass_from") == "least":
+            return f"of unknown width, with a mass of at least {num(m)} times Earth's"
         return f"of unknown width, with a mass of about {num(m)} times Earth's" if m else "of unknown size"
-    base = f"{r:g} times Earth's width"
+    base = f"{fig3(r)} times Earth's width"
     if p.get("radius_from") == "estimated":
-        base = f"about {r:g} times Earth's width (a size estimated from its mass)"
+        base = f"about {fig3(r)} times Earth's width (a size estimated from its mass)"
     if r >= 6:
         base += f", about {r / JUPITER_RADII:.1f} times Jupiter's"
     return base
@@ -173,6 +193,8 @@ def mass_words(p: dict) -> tuple[str, str] | None:
     if m is None:
         return None
     how = p.get("mass_from")
+    if how == "limit":
+        return f"less than {num(m)} times Earth's", "an upper limit: the most it can weigh, not a measurement of it"
     if how == "least":
         return f"at least {num(m)} times Earth's", "measured: a minimum, because the tilt of the orbit is not known"
     if how == "estimated":
@@ -226,10 +248,10 @@ def planet_section(sysd: dict, p: dict) -> str:
 
     r = p.get("radius_earths")
     if r is not None:
-        row("Width", f"{r:g} × Earth's", "measured" if p.get("radius_from") != "estimated" else "estimated", "measured" if p.get("radius_from") != "estimated" else "computed")
+        row("Width", f"{fig3(r)} × Earth's", "measured" if p.get("radius_from") != "estimated" else "estimated", "measured" if p.get("radius_from") != "estimated" else "computed")
     mw = mass_words(p)
     if mw:
-        row("Mass", esc(mw[0]), mw[1].split(":")[0], "measured" if mw[1].startswith("measured") else "computed")
+        row("Mass", esc(mw[0]), mw[1].split(":")[0], "measured" if mw[1].startswith("measured") else "limit" if mw[1].startswith("an upper limit") else "computed")
     row("One year", f"{num(p['period_days'])} days", "measured", "measured")
     row("Distance from its star", f"{p['a_au']:g} AU", "computed from the period and the star's mass" if p.get("a_from") == "kepler" else "from the Archive", "computed" if p.get("a_from") == "kepler" else "measured")
     if p.get("equilibrium_k") is not None:
@@ -317,13 +339,16 @@ def system_page(sysd: dict, others: list[dict], host: str, old: dict | None, tod
     body = (f'<p class="eyebrow"><span class="dot" style="background:#ffc28a"></span>Star system, {esc(ly or "distance unknown")}</p>\n'
             f"<h1>{esc(display)} and its {count_words} {plural}</h1>\n"
             f'<p class="lead">{esc(lead)}</p>\n'
-            f"<p>{esc(display)} is a star of spectral type {esc(sysd['spect'] or 'the table does not record')}"
+            f"<p>{esc(display)} is a star{' of spectral type ' + esc(sysd['spect']) if sysd['spect'] else ''}"
             f"{', ' + esc(ly) + ' from us' if ly else ''}, with {count_words} known {plural}"
-            f"{'. This page takes them one at a time.' if n > 1 else '.'}</p>\n"
+            f"{'. This page takes them one at a time.' if n > 1 else '.'}"
+            f"{' The NASA Exoplanet Archive files this star as ' + esc(sysd['host']) + '.' if sysd['host'] != display else ''}</p>\n"
             f'<div class="cta"><a class="btn btn--map" href="../#go={esc(sysd["id"])}">Fly to {esc(display)} in 3D</a>'
             f"<p>Drawn at the system's own scale, every orbit from the Archive's numbers.</p></div>\n"
             f'<div class="callout callout--note"><p><strong>What is measured, what is computed, what is imagined.</strong></p>'
             f"<p><span class=\"badge measured\">measured</span> The period, and where the table says so the width and the mass, by the method named in each section.</p>"
+            + (f"<p><span class=\"badge limit\">upper limit</span> A mass the table gives only as the most the planet can weigh. It is not a measurement, and the planet may be far lighter.</p>" if any(p.get("mass_from") == "limit" for p in sysd["planets"]) else "")
+            +
             f"<p><span class=\"badge computed\">computed</span> Anything marked computed: the size of an orbit where Kepler's third law corrects the table, the temperature of a bare ball at that distance, the starlight received, and the habitable zone.</p>"
             f"<p><span class=\"badge imagined\">imagined</span> The picture is an artist's impression. Nobody has seen the surface of a planet of another star: its colour, clouds and land are not known, and the share picture says so in its corner.</p></div>\n"
             + (f'<h2>The planets</h2>\n<ul class="tagcloud">{toc}</ul>\n' if toc else "")

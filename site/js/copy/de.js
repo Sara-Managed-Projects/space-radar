@@ -779,7 +779,7 @@ export const COPY = {
       "catalogueCopy": "Katalogkopie",
       "spectralType": "Art des Sterns",
       "brightness": "Scheinbare Helligkeit",
-      "luminosity": "Lichtleistung",
+      "luminosity": "Lichtleistung im sichtbaren Licht",
       "starWidth": "Durchmesser",
       "catalogue": "Katalog",
       "lightTime": "Funklaufzeit je Richtung",
@@ -1925,6 +1925,10 @@ export const COPY = {
     "earthsEstimated": "{n}× so breit wie die Erde, Schätzung des Archivs aus der Masse",
     "massEstimated": "{n}× Erde, Schätzung des Archivs aus der Größe",
     "massLeast": "Mindestens {n}× Erde",
+    "massLimit": "Weniger als {n}× Erde: eine Obergrenze, keine Messung",
+    "massLimitKnown": "Seine Masse ist nur als Obergrenze bekannt.",
+    "lessThan": "Weniger als {v}",
+    "moreThan": "Mehr als {v}",
     "sizeDefault": "Nicht gemessen: in Erdgröße gezeichnet",
     "temperature": "{k} K ({c} °C), wenn er {pct} % seines Lichts zurückwirft wie die Erde",
     "zone": {
@@ -2188,7 +2192,7 @@ export const COPY = {
       "launch": "Launch Library 2",
       "shower": "der Meteorstrom-Kalender der IMO",
       "moon": "Astronomy Engine",
-      "crew": "Open Notify",
+      "crew": "Launch Library 2",
       "storms": "GDACS",
       "approach": "NASA JPL",
       "launched": "CelesTrak",
@@ -3130,7 +3134,7 @@ export const COPY = {
       "near": "einer der nächstgelegenen überhaupt",
       "seenAs": "gesehen, wie er vor {n} Jahren war",
       "seenAsMonths": "gesehen, wie er vor {n} Monaten war",
-      "luminosity": "{n}-mal so hell wie die Sonne",
+      "luminosity": "im sichtbaren Licht {n}-mal so hell wie die Sonne",
       "dimmer": "mit {n} der Helligkeit der Sonne",
       "colours": {
         "O": "blauer",
@@ -3610,7 +3614,7 @@ export const COPY = {
         "match": [
           "kpc"
         ],
-        "say": "Etwa 3,26 Lichtjahre: die Entfernung, aus der die Erdbahn eine Bogensekunde breit erschiene. In Fachtexten steht pc, und kpc für tausend."
+        "say": "Etwa 3,26 Lichtjahre: die Entfernung, aus der der Abstand zwischen Erde und Sonne eine Bogensekunde breit erschiene. In Fachtexten steht pc, und kpc für tausend."
       },
       {
         "term": "Millionen Lichtjahre",
@@ -4911,7 +4915,7 @@ Object.assign(COPY, {
       "white dwarf": "Der heiße Kern, der übrig bleibt, wenn ein Stern wie die Sonne seine äußeren Schichten abgeworfen hat. Er ist etwa so groß wie die Erde, erzeugt keine neue Wärme und kühlt langsam ab.",
       "brown dwarf": "Ein Objekt, das zu groß für einen Planeten und zu klein ist, um wie ein Stern zu leuchten: etwa 13- bis 80-mal so schwer wie Jupiter. Es gibt fast kein sichtbares Licht ab.",
       "nebula": "Eine Wolke aus Gas und Staub im All. Manche leuchten, manche verdecken die Sterne dahinter, und in manchen entstehen neue Sterne.",
-      "galaxy": "Eine riesige Familie aus Sternen, Gas und Staub, von der Schwerkraft zusammengehalten. Unsere, die Milchstraße, ist eine Spirale von mehr als 100 000 Lichtjahren Durchmesser.",
+      "galaxy": "Eine riesige Familie aus Sternen, Gas und Staub, von der Schwerkraft zusammengehalten. Unsere, die Milchstraße, ist eine Spirale von etwa 100 000 Lichtjahren Durchmesser.",
       "globular cluster": "Eine Kugel aus Zehntausenden bis Millionen Sternen, von der Schwerkraft eng zusammengepackt, in der Mitte am dichtesten.",
       "habitable zone": "Der Bereich von Abständen zu einem Stern, in dem ein Planet flüssiges Wasser an der Oberfläche haben könnte. Er sagt, dass dort Leben möglich sein könnte, nicht, dass dort welches lebt.",
       "exoplanet": "Ein Planet, der einen anderen Stern als die Sonne umkreist.",
@@ -4924,7 +4928,7 @@ Object.assign(COPY, {
         "sun": "Die Sonne ist ein Stern: eine Kugel aus sehr heißem, leuchtendem Gas, vor allem Wasserstoff und Helium, etwa 4,5 Milliarden Jahre alt. Sie ist etwa 100-mal so breit wie die Erde. Ihr Kern ist etwa 15 Millionen Grad Celsius heiß, heiß genug für Kernfusion, und die Energie, die herauskommt, ist das, wovon das meiste Leben auf der Erde abhängt. Ihre Schwerkraft hält das ganze Sonnensystem zusammen.",
         "moon": "Der Mond ist der einzige natürliche Satellit der Erde, weniger als ein Drittel so breit wie sie. Er ist eine Kugel aus Gestein voller Krater, im Durchschnitt etwa 384 000 km entfernt. Er umrundet die Erde in etwa 27 Tagen und dreht sich in derselben Zeit einmal um sich selbst, deshalb sehen wir immer dieselbe Seite. Die dunklen Flecken sind Ebenen aus altem Lavagestein. Er ist die einzige Welt außerhalb der Erde, die Menschen bisher besucht haben.",
         "mercury": "Merkur ist der kleinste Planet und der Sonne am nächsten, nur ein wenig größer als der Mond. Sein felsiger Boden ist voller Krater. Er hat fast keine Luft, die die Wärme hält, und schwankt deshalb von etwa 430 °C am Tag bis etwa minus 180 °C in der Nacht. Er umrundet die Sonne in 88 Tagen, schneller als jeder andere Planet.",
-        "venus": "Die Venus ist fast so groß wie die Erde: 12 104 km breit, gegen 12 756. Ihre dicke Luft besteht vor allem aus Kohlendioxid, mit Wolken aus Schwefelsäure, und sie hält die Wärme fest. Der Boden ist etwa 467 °C heiß, heißer als auf dem Merkur und heiß genug, um Blei zu schmelzen, und die Luft drückt etwa 93-mal stärker auf ihn als auf der Erde. Die Venus dreht sich langsam und rückwärts: Eine Drehung dauert 243 Erdentage, länger als ihr Jahr mit 225.",
+        "venus": "Die Venus ist fast so groß wie die Erde: 12 104 km breit, gegen 12 742. Ihre dicke Luft besteht vor allem aus Kohlendioxid, mit Wolken aus Schwefelsäure, und sie hält die Wärme fest. Der Boden ist etwa 464 °C heiß, heißer als auf dem Merkur und heiß genug, um Blei zu schmelzen, und die Luft drückt etwa 92-mal stärker auf ihn als auf der Erde. Die Venus dreht sich langsam und rückwärts: Eine Drehung dauert 243 Erdentage, länger als ihr Jahr mit 225.",
         "earth": "Die Erde ist der einzige Ort, von dem wir wissen, dass es dort Lebewesen gibt. Sie ist der einzige Planet mit flüssigem Wasser an der Oberfläche, und der größte Teil davon ist von Ozean bedeckt. Eine Drehung dauert 23,9 Stunden und ein Umlauf um die Sonne 365,25 Tage, deshalb fügen wir alle vier Jahre einen Schalttag ein. Das Sonnenlicht braucht etwa acht Minuten bis hierher.",
         "mars": "Der Mars ist eine kalte, staubige Wüste, etwa halb so breit wie die Erde. Das Eisen in seinem Gestein und Staub ist gerostet, deshalb sieht er rot aus. Hier liegt der größte Vulkan des Sonnensystems, der Olympus Mons, und ein Canyon-System, die Valles Marineris, mehr als zehnmal länger und breiter als der Grand Canyon. Früher flossen hier Flüsse und lagen Seen; heute ist die Luft dünn, und sein Wasser ist Eis oder sehr salzig.",
         "jupiter": "Jupiter ist der größte Planet: 11-mal so breit wie die Erde, mit Platz für etwa tausend Erden. Er besteht vor allem aus Wasserstoff und Helium und hat keinen festen Boden, auf dem man stehen könnte. Seine Streifen sind kalte, stürmische Wolken aus Ammoniak und Wasser. Der Große Rote Fleck ist ein Sturm, der breiter ist als die Erde und den Menschen seit mehr als 300 Jahren beobachten. Eine Drehung dauert nur 9,9 Stunden, der kürzeste Tag aller Planeten.",

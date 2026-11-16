@@ -44,11 +44,17 @@ class Source:
     enabled: bool = True
     list: dict | None = None
     query: str | None = None
+    # The oldest the newest date INSIDE the body may be (the parser's `newest(body)`); None = not checked.
+    content_max_age: str | None = None
     extra: dict = field(default_factory=dict, compare=False)
 
     @property
     def refresh_seconds(self) -> int:
         return parse_duration(self.refresh)
+
+    @property
+    def content_max_age_seconds(self) -> int | None:
+        return parse_duration(self.content_max_age) if self.content_max_age else None
 
     @property
     def secret(self) -> str | None:
@@ -90,7 +96,7 @@ def by_id(sources: list[Source]) -> dict[str, Source]:
     return {s.id: s for s in sources}
 
 
-_KNOWN = {"id", "url", "auth", "refresh", "freshness_max", "parser", "outputs", "enabled", "list", "query"}
+_KNOWN = {"id", "url", "auth", "refresh", "freshness_max", "content_max_age", "parser", "outputs", "enabled", "list", "query"}
 
 
 def _source_of(row: dict, where: Path) -> Source:
@@ -102,6 +108,8 @@ def _source_of(row: dict, where: Path) -> Source:
             raise RegistryError(f"{where}[{sid}]: no `{key}`")
     parse_duration(row["refresh"])
     parse_duration(row["freshness_max"])
+    if row.get("content_max_age"):
+        parse_duration(row["content_max_age"])
     auth = row.get("auth", "none")
     if auth != "none" and not str(auth).startswith("secret:"):
         raise RegistryError(f"{where}[{sid}]: auth {auth!r} must be `none` or `secret:NAME`")
@@ -120,5 +128,6 @@ def _source_of(row: dict, where: Path) -> Source:
         enabled=row.get("enabled", True) is not False,
         list=lst,
         query=row.get("query"),
+        content_max_age=str(row["content_max_age"]) if row.get("content_max_age") else None,
         extra={k: v for k, v in row.items() if k not in _KNOWN},
     )

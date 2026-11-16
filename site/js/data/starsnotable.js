@@ -113,25 +113,29 @@ export const STARS_NOTABLE = [
     "hip": 24186,
     "name": "Kapteyn's Star",
     "why": "The nearest halo star: about 11 billion years old, going round the galaxy the wrong way. It may once have belonged to Omega Centauri.",
-    "source": "https://en.wikipedia.org/wiki/Kapteyn%27s_Star (read 2026-09-22)",
+    "source": "https://en.wikipedia.org/wiki/Kapteyn%27s_Star (read 2026-09-22); class: SIMBAD, HD 33793 (read 2026-11-16)",
     "radius_suns": 0.29,
     "radius_err_suns": 0.03,
-    "physical_source": "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)"
+    "physical_source": "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)",
+    "spect": "M1VIp"
   },
   {
     "hip": 3829,
     "name": "Van Maanen's Star",
     "why": "The nearest lone white dwarf. A 1917 photograph of its spectrum holds the earliest known evidence of planetary matter outside the Solar System.",
-    "source": "https://en.wikipedia.org/wiki/Van_Maanen_2 (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Van_Maanen_2 (read 2026-09-22); class: SIMBAD, Wolf 28 (read 2026-11-16)",
+    "spect": "DZ7.5"
   },
   {
     "hip": 30438,
     "name": "Canopus",
     "why": "The second-brightest star in the night sky. Spacecraft steer by it: in 1964 Mariner 4 locked on to it, the first time a star had been used.",
-    "source": "https://en.wikipedia.org/wiki/Canopus (read 2026-09-22)",
+    "source": "https://en.wikipedia.org/wiki/Canopus (read 2026-09-22); magnitude and class: SIMBAD, * alf Car (read 2026-11-16)",
     "radius_suns": 73.2,
     "radius_err_suns": 3.9,
-    "physical_source": "https://arxiv.org/abs/2109.07153 (read 2026-11-04)"
+    "physical_source": "https://arxiv.org/abs/2109.07153 (read 2026-11-04)",
+    "mag": -0.74,
+    "spect": "A9II"
   },
   {
     "hip": 69673,
@@ -295,7 +299,11 @@ export const STARS_NOTABLE = [
     "hip": 10826,
     "name": "Mira",
     "why": "Latin for 'wonderful': every 332 days or so it brightens to naked-eye view, then fades out of sight. It was recorded changing in 1596.",
-    "source": "https://en.wikipedia.org/wiki/Mira (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Mira (read 2026-09-22); brightness range: AAVSO VSX, omi Cet (read 2026-11-16)",
+    "mag_range": [
+      2.0,
+      10.1
+    ]
   },
   {
     "hip": 14576,

@@ -67,7 +67,6 @@ EXPECTED_COUNTS = {
     "space_track_tip": 1,  # documented shape, not a capture -- CAPTURED.json says so
     "nasa_exoplanet_archive": 12,
     "gdacs_tc": 20,
-    "open_notify": 12,
     "ll2_crew": 15,       # LL2's flag, Starman and four who had landed included; the page joins
     "ll2_stations": 7,    # vehicles docked now, over two stations
     "ll2_previous": 6,
@@ -791,6 +790,74 @@ MRO_REFUSAL = (
 )
 
 
+class FrozenContent(unittest.TestCase):
+    """An upstream that answers 200 with a body that stopped changing (review 2026-11-16: Open Notify
+    said "success" every hour with the crews of mid-2024, and the index called it ok)."""
+
+    def crew_source(self, **over):
+        return source(id="ll2-astronauts", parser="ll2_crew", refresh="6h", content_max_age="300d", **over)
+
+    def test_each_dated_parser_reads_the_newest_date_in_its_fixture(self):
+        want = {"ll2": "2026-09-10T09:00:00Z", "ll2_previous": "2026-10-07T03:25:00Z",
+                "ll2_crew": "2026-10-01T15:10:06Z", "ll2_stations": "2026-10-01T23:05:00Z"}
+        for name, stamp in want.items():
+            with self.subTest(parser=name):
+                self.assertEqual(parsers.load(name).newest(fixture(name)[0]), stamp)
+
+    def test_starman_is_not_the_newest_person(self):
+        body = {"results": [{"name": "Starman", "last_flight": "2030-01-01T00:00:00Z", "type": {"name": "Non-Human"}},
+                            {"name": "A Person", "last_flight": "2024-03-01T00:00:00Z", "type": {"name": "Government"}}]}
+        self.assertEqual(parsers.load("ll2_crew").newest(body), "2024-03-01T00:00:00Z")
+
+    def test_the_rows_with_a_limit_have_a_parser_that_can_read_dates(self):
+        limited = [s for s in registry.load() if s.content_max_age]
+        self.assertGreaterEqual(len(limited), 4)
+        for s in limited:
+            with self.subTest(source=s.id):
+                self.assertTrue(callable(getattr(parsers.load(s.parser), "newest", None)))
+                self.assertGreater(s.content_max_age_seconds, 0)
+        self.assertNotIn("open-notify-astros", {s.id for s in registry.load()})
+
+    def test_a_frozen_body_is_refused_with_the_date_in_words_and_never_stamped(self):
+        _, text, ct = fixture("ll2_crew")
+        late = snap.parse_iso("2028-06-01T00:00:00Z")   # the fixture's newest launch is 2026-10-01
+        with tempfile.TemporaryDirectory() as tmp:
+            store = snap.DirStore(tmp)
+            doc = run(store, [self.crew_source()], now=late, fetcher=Fetcher(lambda u, h, e, s: response(u, text=text, content_type=ct)),
+                      env={}, sleep=lambda s: None, log=lambda s: None)
+            e = doc["snapshots"]["ll2-astronauts"]
+            self.assertEqual(e["status"], "refused")
+            self.assertIn("2026-10-01T15:10:06Z", e["last_error"])
+            self.assertIn("stopped changing", e["last_error"])
+            self.assertIsNone(e["fetched_at"])
+            self.assertFalse((Path(tmp) / "ll2-astronauts.json").exists())
+
+    def test_a_copy_that_froze_later_keeps_its_old_stamps(self):
+        _, text, ct = fixture("ll2_crew")
+        answer = Fetcher(lambda u, h, e, s: response(u, text=text, content_type=ct))
+        with tempfile.TemporaryDirectory() as tmp:
+            store = snap.DirStore(tmp)
+            first = run(store, [self.crew_source()], now=NOW, fetcher=answer, env={}, sleep=lambda s: None, log=lambda s: None)
+            self.assertEqual(first["snapshots"]["ll2-astronauts"]["status"], "ok")
+            late = snap.parse_iso("2028-06-01T00:00:00Z")
+            again = run(store, [self.crew_source()], now=late, fetcher=answer, env={}, sleep=lambda s: None, log=lambda s: None)
+            e = again["snapshots"]["ll2-astronauts"]
+            self.assertEqual(e["status"], "refused")
+            self.assertEqual(e["fetched_at"], "2026-09-08T00:00:00Z")   # the age the browser shows is the true one
+
+    def test_a_row_without_a_limit_or_a_body_without_dates_is_not_refused(self):
+        _, text, ct = fixture("ll2_crew")
+        late = snap.parse_iso("2028-06-01T00:00:00Z")
+        with tempfile.TemporaryDirectory() as tmp:
+            doc = run(snap.DirStore(tmp), [source(id="ll2-astronauts", parser="ll2_crew")], now=late,
+                      fetcher=Fetcher(lambda u, h, e, s: response(u, text=text, content_type=ct)),
+                      env={}, sleep=lambda s: None, log=lambda s: None)
+            self.assertEqual(doc["snapshots"]["ll2-astronauts"]["status"], "ok")
+        from harvest.run import frozen_reason
+        self.assertIsNone(frozen_reason(parsers.load("ll2_crew"), {"results": [{"name": "x", "last_flight": None}]}, self.crew_source(), late))
+        self.assertIsNone(frozen_reason(parsers.load("ll2_crew"), {"results": [{"name": "x", "last_flight": "not a date"}]}, self.crew_source(), late))
+
+
 class HorizonsClamp(unittest.TestCase):
     """MEASURED 2026-09-08: MRO's predicted file ended 28 Sep and a 30-day window lost the object."""
 
@@ -828,6 +895,14 @@ class HorizonsClamp(unittest.TestCase):
         self.assertEqual(e["items"], 2, "the clamped id counts; nothing was dropped")
         self.assertIn("window shortened", e.get("last_error") or e.get("partial") or json.dumps(e),
                       "the manifest says the window was shortened, so nobody mistakes 27 days for 30")
+        # ... and KEEPS saying so while that copy is the one published: the next run, which is not due, clears
+        # `last_error` (review 2026-11-16: the live index said nothing of an MRO path two weeks short).
+        self.assertIn("-74: window after 2026-09-28", e.get("note") or "")
+        later = run(self.store, [src], now=NOW + timedelta(hours=1), fetcher=f, sleep=lambda s: None, log=lambda s: None)
+        e2 = later["snapshots"][src.id]
+        self.assertEqual(e2["status"], "not-due")
+        self.assertIsNone(e2["last_error"])
+        self.assertIn("window shortened", e2.get("note") or "", "the row still says the span is short")
 
     def test_a_second_refusal_is_not_retried_forever(self):
         lst = {"params": {"COMMAND": "'{id}'", "STOP_TIME": "'{stop}'"}, "ids": [{"id": "-74"}]}

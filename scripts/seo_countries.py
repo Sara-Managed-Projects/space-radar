@@ -32,6 +32,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from seo_common import ROOT, Page, esc, webpage  # noqa: E402
+from seo_common import grouped as _grouped  # noqa: E402
 from seo_share import Spec  # noqa: E402
 
 OWNERS_JS = ROOT / "site/js/data/owners.js"
@@ -98,7 +99,7 @@ def day_words(iso_day: str) -> str:
 
 
 def groups(n: int) -> str:
-    return f"{n:,}".replace(",", " ")
+    return _grouped(n)   # one grouping for every page: seo_common.grouped says which and why
 
 
 def relink(html: str) -> str:

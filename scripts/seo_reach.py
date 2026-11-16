@@ -35,6 +35,7 @@ import asset_pack  # noqa: E402
 import creator_clips  # noqa: E402
 import count_facts  # noqa: E402
 from seo_common import ACCURACY_FORM, GITHUB, ON_GITHUB, ROOT, Page, esc, webpage  # noqa: E402
+from seo_common import grouped as _grouped  # noqa: E402
 from seo_share import Spec  # noqa: E402
 
 REG = ROOT / "registry"
@@ -54,15 +55,15 @@ def languages() -> int:
 
 
 def plural(n: int, one: str, many: str) -> str:
-    return f"{n:,} {one if n == 1 else many}"
+    return f"{_grouped(n)} {one if n == 1 else many}"
 
 
 # --- /assets/ -------------------------------------------------------------------------------------------------
 
 def asset_row(x: dict, dates: dict[str, str]) -> str:
-    size = f"{x['kb']:,.0f} kB" if isinstance(x.get("kb"), (int, float)) else ""
+    size = f"{_grouped(x['kb'])} kB" if isinstance(x.get("kb"), (int, float)) else ""
     px = f", {x['px'][0]} x {x['px'][1]} px" if x.get("px") else ""
-    tris = f", up to {x['tris']:,} triangles" if x.get("tris") else ""
+    tris = f", up to {_grouped(x['tris'])} triangles" if x.get("tris") else ""
     day = f" · changed {dates[x['file']]}" if x["file"] in dates else ""
     app = f' · <a href="{esc(x["app"])}">See it in the app</a>' if x.get("app") else ""
     return (f'<li><h3><a href="{esc(x["url"])}">{esc(x["name"])}</a></h3>'
@@ -290,7 +291,7 @@ def satellites(counts: dict | None = None) -> str:
 
     `counts` is scripts/seo_pages.py satellite_counts(), which reads both; without it (a test) the registry's fallback."""
     n = (counts or {}).get("active") or _yml("seo-facts.yaml")["satellite_counts"]["active_objects"]
-    return f"about {round(n / 1000) * 1000:,}"
+    return f"about {_grouped(round(n / 1000) * 1000)}"
 
 
 def us(counts: dict | None = None) -> dict:

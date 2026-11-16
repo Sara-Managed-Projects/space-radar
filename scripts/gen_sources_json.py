@@ -34,7 +34,7 @@ TARGET = ROOT / "harvest" / "sources.json"
 LAYERS = ROOT / "site" / "js" / "data" / "layers.js"
 NOTABLE_TARGET = ROOT / "harvest" / "notable.json"
 
-FIELDS = ("id", "url", "auth", "refresh", "freshness_max", "parser", "outputs", "enabled", "list", "query")
+FIELDS = ("id", "url", "auth", "refresh", "freshness_max", "content_max_age", "parser", "outputs", "enabled", "list", "query")
 
 
 def resolve_list(path: str) -> dict:

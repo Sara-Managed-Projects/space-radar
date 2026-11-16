@@ -22,7 +22,7 @@ const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
 const { createViewStack, readCollapsed, writeCollapsed, SIDE_KEY, VIEWS } = await import(join(JS, 'ui/shell.js'));
-const { TABS, tabTarget, tabFor, rightNowLines, statusSummary, tripMeta, wantsSearch, homeTripOrder, offNote } = await import(join(JS, 'ui/explore.js'));
+const { TABS, tabTarget, tabFor, rightNowLines, statusSummary, tripMeta, wantsSearch, homeTripOrder, offNote, CREWED, HEADCOUNT_STALE_MS, headcountFrom } = await import(join(JS, 'ui/explore.js'));
 const { nextRate, stepMs, clampToWindow, pillText, PILL_RATES } = await import(join(JS, 'ui/timepill.js'));
 const { railKey } = await import(join(JS, 'ui/rail.js'));
 const { COPY } = await import(join(JS, 'copy/en.js'));
@@ -114,13 +114,29 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   const auroraLead = rightNowLines({ aurora, crewed, wallMs });
   check(auroraLead[0].id === 'aurora' && auroraLead[0].lead, 'with no storms it leads');
   check(rightNowLines({ aurora: null, crewed }).every((l) => l.id !== 'aurora') && rightNowLines({ aurora: { text: '' } }).length === 0, 'no storm in space, no aurora line');
-  // Open Notify's headcount (explore.js pollAstros), once it has loaded.
-  const counted = [{ key: 'iss', record: iss, count: 9 }, { key: 'tiangong', record: { id: 'sat-48274' }, count: 3 }];
+  // Launch Library 2's headcount (explore.js pollCrew), once it has loaded.
+  const counted = [{ key: 'iss', record: iss, count: 7 }, { key: 'tiangong', record: { id: 'sat-48274' }, count: 3 }];
   const withCount = rightNowLines({ crewed: counted, wallMs });
-  check(withCount[0].id === 'crew' && withCount[0].value === '9 on ISS · 3 on Tiangong', `the headcount names how many once it has loaded (${withCount[0] && withCount[0].value})`);
-  const partialCount = [{ key: 'iss', record: iss, count: 9 }, { key: 'tiangong', record: { id: 'sat-48274' } }];
-  check(rightNowLines({ crewed: partialCount, wallMs })[0].value === '9 on ISS · Tiangong', 'a station with no count yet falls back to its bare name');
-  check(rightNowLines({ crewed: [{ key: 'iss', record: iss, count: 0 }], wallMs })[0].value === 'ISS', 'a zero count (Open Notify answered but named nobody) is treated as no count, not "0 on ISS"');
+  check(withCount[0].id === 'crew' && withCount[0].value === '7 on ISS · 3 on Tiangong', `the headcount names how many once it has loaded (${withCount[0] && withCount[0].value})`);
+  const partialCount = [{ key: 'iss', record: iss, count: 7 }, { key: 'tiangong', record: { id: 'sat-48274' } }];
+  check(rightNowLines({ crewed: partialCount, wallMs })[0].value === '7 on ISS · Tiangong', 'a station with no count yet falls back to its bare name');
+  check(rightNowLines({ crewed: [{ key: 'iss', record: iss, count: 0 }], wallMs })[0].value === 'ISS', 'a zero count (the list answered but counted nobody) is treated as no count, not "0 on ISS"');
+  // The count is Launch Library 2's own `onboard_crew` from the stations answer the station card reads
+  // (review 2026-11-16: Open Notify's list was frozen on the crews of mid-2024 and said 9 on the ISS).
+  const stationsBody = JSON.parse(readFileSync(join(ROOT, 'tests/fixtures/harvest/ll2_stations.json'), 'utf8'));
+  const { parseStationHeadcount } = await import(join(JS, 'data/parsers.js'));
+  const { STATION_RECORD } = await import(join(JS, 'data/crew.js'));
+  const head = parseStationHeadcount(stationsBody);
+  check(head && head['4'] === 7 && head['18'] === 3, `the stations answer gives 7 on the ISS and 3 on Tiangong (${JSON.stringify(head)})`);
+  check(parseStationHeadcount({ people: [{ name: 'x', craft: 'ISS' }], message: 'success' }) === null && parseStationHeadcount('nonsense') === null && parseStationHeadcount({ results: [{ id: 4 }] }) === null,
+    'a body that is not the stations answer, or carries no count, is no headcount');
+  check(CREWED.every((c) => STATION_RECORD[c.ll2] === c.id) && CREWED.length === Object.keys(STATION_RECORD).length, 'the Right now stations are data/crew.js STATION_RECORD, id for id');
+  const t0 = Date.parse('2026-11-16T12:00:00Z');
+  check(headcountFrom({ ok: true, data: stationsBody, fetchedAt: t0 - 3600e3 }, t0)['4'] === 7, 'a fresh copy is counted');
+  check(headcountFrom({ ok: true, data: stationsBody, fetchedAt: t0 - HEADCOUNT_STALE_MS - 1 }, t0) === null, 'a copy more than two days old is no headcount: the stations are named bare');
+  check(headcountFrom({ ok: false, data: stationsBody }, t0) === null && headcountFrom(null, t0) === null, 'a failed read is no headcount');
+  const explSrc = readFileSync(join(JS, 'ui/explore.js'), 'utf8');
+  check(/load\('ll2-stations'\)/.test(explSrc) && !/open-notify/.test(explSrc), 'the poll reads ll2-stations and nothing reads Open Notify');
 }
 
 // --- 5. the status line ----------------------------------------------------------------------------

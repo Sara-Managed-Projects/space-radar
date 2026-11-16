@@ -60,6 +60,14 @@ export function decodeExoplanets(buf) {
   const method = col(Uint8Array), spect = col(Uint16Array);
   const names = new TextDecoder().decode(new Uint8Array(buf, at, header.namesBytes)).split('\n');
   const asOf = header.asOf || null;
+  // Which numbers are LIMITS, not values (the Archive's pl_bmasselim / pl_radelim; scripts/exopack.py).
+  const limitOf = (by) => {
+    const m = new Map();
+    for (const i of (by && by.upper) || []) m.set(i, 'upper');
+    for (const i of (by && by.lower) || []) m.set(i, 'lower');
+    return m;
+  };
+  const massLimit = limitOf(header.massLimits), radiusLimit = limitOf(header.radiusLimits);
   const out = [];
   let ra = 0, dec = 0, dist = 0;
   for (let i = 0; i < n; i++) {
@@ -82,6 +90,8 @@ export function decodeExoplanets(buf) {
         distLy: Math.round(distPc * LY_PER_PC * 100) / 100,
         radiusEarths: rade[i] === NONE16 ? null : rade[i] / 100,
         massEarths: mass[i] === NONE16 ? null : Math.pow(10, mass[i] / 10000 - 2),
+        massLimit: massLimit.get(i) || null,
+        radiusLimit: radiusLimit.get(i) || null,
         periodDays: per[i] === NONE16 ? null : Math.pow(10, per[i] / 6000 - 2),
         discYear: year[i] === 0 ? null : year[i],
         method: method[i] === 255 ? null : header.methods[method[i]],
