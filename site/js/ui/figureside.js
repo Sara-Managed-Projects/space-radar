@@ -407,7 +407,7 @@ export function createFigureSide(ctx, opts = {}) {
     if (!open_) {
       const wasGround = !!(ctx.skyView && ctx.skyView.active);
       if (wasGround && typeof ctx.setMoment === 'function') ctx.setMoment('wonder');
-      saved = { ground: wasGround, stage: stage.worldId, rig: rig.saveState(), fov: camera.fov, layersOn: [], layersOff: [] };
+      saved = { ground: wasGround, stage: stage.worldId, rig: rig.saveState(), fov: camera.fov, layersOn: [], layersOff: [], focus: doc.activeElement };
       if (stage.worldId !== STAGE) ctx.setStage(STAGE);
       if (setLayer('stars', true)) saved.layersOn.push('stars');
       for (const id of HIDES) { const was = ctx.isLayerOn(id); setLayer(id, false); if (was && !ctx.isLayerOn(id)) saved.layersOff.push(id); }
@@ -501,6 +501,8 @@ export function createFigureSide(ctx, opts = {}) {
       }
     }
     if (write && was) writeUrl({ figure: '' });
+    // The focus goes back to what had it (the search field, the page), as a closed card's does.
+    if (s && s.focus && s.focus.isConnected && typeof s.focus.focus === 'function' && s.focus !== doc.body) { try { s.focus.focus({ preventScroll: true }); } catch { /* gone */ } }
     win.dispatchEvent(new CustomEvent('sr:figureside', { detail: { id: null } }));
   }
 
