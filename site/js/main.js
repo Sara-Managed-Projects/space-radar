@@ -1826,6 +1826,28 @@ export async function boot({ setStatus } = {}) {
       // Earth arrived a third wider than the screen's free band, because Saturn's drawn disc, and
       // Mimas with it, had grown on the way. Two frames after the flight ends the scene has been
       // placed from the new camera; if the framing is more than 8 % off, a short second move fixes it.
+      // A SITE ON ANOTHER WORLD'S GROUND IS SOLVED AGAIN TOO, UNTIL IT HOLDS (review of 2026-11-16). Its arrival is
+      // framed with the limb of the world it stands on (limbPose), from that world's DRAWN radius and place, and a
+      // far planet is drawn enlarged and moved (scene/worlds.js PLANET_VIEW). MEASURED on the live site: Perseverance
+      // chosen with the camera at Voyager 1 stopped 26.4 million km short, Mars a 0.6 px dot and the rover's model
+      // 463 px beside it; from the home view the same choice arrives 469 km out. The numbers that were right from
+      // 25 billion km are not the numbers at the planet, so two frames after each arrival the pose is solved from
+      // where the camera now is, and flown, until it moves less than 8 % (SITE_SETTLE_ROUNDS at most).
+      const SITE_SETTLE_ROUNDS = 6;
+      const siteSettle = (round, used) => (reason) => {
+        if (reason !== 'done' || typeof requestAnimationFrame !== 'function') return;
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          if (selected !== record || cameraRig.state.flying) return;
+          const world = teachRigWorld(record);
+          const at = positionOfRecord(record);
+          if (!at) return;
+          const far = arrivalDistance(record, at);
+          const pose = limbPose(record, at, far, world);
+          const again = pose ? pose.distance : far;
+          if (!(again > 0) || Math.abs(again / used - 1) < 0.08) return;
+          cameraRig.flyTo({ targetScene: at, distance: again, tilt: pose ? pose.tilt : undefined, ms: 500, targetDelay: 0, onArrive: round + 1 < SITE_SETTLE_ROUNDS ? siteSettle(round + 1, again) : undefined });
+        }));
+      };
       const settle = record.klass === 'world' ? (reason) => {
         if (reason !== 'done' || typeof requestAnimationFrame !== 'function') return;
         requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -1836,7 +1858,7 @@ export async function boot({ setStatus } = {}) {
           const side = litOffset(worlds.sunDirOf(record.id), camera.up, undefined, worlds.faceDirOf(record.id));
           cameraRig.flyTo({ targetScene: at, distance: again, offset: side || undefined, ms: 500, targetDelay: 0 });
         }));
-      } : undefined;
+      } : on ? siteSettle(0, limb ? limb.distance : distance) : undefined;
       // A system's host star is met from over its orbits, as the trips meet it (40 degrees from the
       // pole, scene/systems.js OVERVIEW_POLAR), not from whatever tilt the camera happened to have
       // (internal #476: Kepler-16 arrived edge-on, LHS 1140 straight down).
