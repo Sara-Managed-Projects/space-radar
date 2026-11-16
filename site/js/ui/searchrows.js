@@ -475,7 +475,7 @@ export function runExtra(ctx, hit) {
     if (hit.extra === 'constellation') return turnToStars(ctx, hit);
     // A fleet of satellites: Find lights it on the globe (ui/find.js openLink, as `#constellation=<id>` does).
     if (hit.extra === 'fleet') { if (typeof ctx.wantFind !== 'function') return false; ctx.wantFind().then((f) => f && f.openLink({ constellation: hit.id })); return true; }
-    if (hit.extra === 'figureside') { if (typeof ctx.wantFigureSide !== 'function') return false; ctx.wantFigureSide().then((f) => { if (f) f.open(hit.id); }); return true; }
+    if (hit.extra === 'figureside') { window.dispatchEvent(new CustomEvent('sr:figure-side', { detail: hit.id })); return true; } // main.js fetches ui/figureside.js
     if (hit.extra === 'suggest') { if (ctx.explore && typeof ctx.explore.setTab === 'function') { ctx.explore.setTab('tonight'); return true; } return false; }
     // 0079 a2: begin
     if (hit.extra === 'catalogue') {

@@ -134,6 +134,10 @@ for (const row of SIDE_FIGURES) {
   const fr = S.frameOf(F.placeFigure(figures.get('Ori'), candidates));
   check(fr.nearLy < 300 && fr.farLy > 1200, `Orion's corners run from ${fr.nearLy.toFixed(0)} to ${fr.farLy.toFixed(0)} light-years`);
 }
+{
+  const src = readFileSync(join(JS, 'ui/figureside.js'), 'utf8');
+  check(/export function sideLink\(ctx, value\) \{\s*return \(ctx\.figureSide = ctx\.figureSide \|\| createFigureSide\(ctx\)\)\.fromLink\(value\);/.test(src), 'sideLink makes the side view once, keeps it on ctx.figureSide and hands it the figure');
+}
 check(S.frameOf(null) === null && S.frameOf({ stars: [] }) === null, 'a figure with no measured corner has no frame');
 {
   const rigSrc = readFileSync(join(JS, 'scene/camera.js'), 'utf8');
@@ -186,7 +190,7 @@ const { KEYS } = await import(join(JS, 'ui/urlstate.js'));
 check(KEYS.includes('figure') && KEYS.indexOf('figure') < KEYS.indexOf('cam') && KEYS[KEYS.length - 1] === 'cam', '`figure` is a key of the link, before `cam`');
 const main = readFileSync(join(JS, 'main.js'), 'utf8');
 check(/import\('\.\/ui\/figureside\.js'\)/.test(main) && !/^import[^\n]*figureside/m.test(main), 'main.js fetches ui/figureside.js when it is asked for, never at boot');
-check(/addEventListener\('sr:figure-side'/.test(main) && /st\.figure !== undefined/.test(main) && /keys\.figure/.test(main), 'main.js opens it for the story card\'s event, a link at boot and a link pasted later');
+check(/for \(const name of \['sr:figure-side', 'sr:layers-ready', 'hashchange'\]\) \{\s*window\.addEventListener\(name,/.test(main) && /e\.detail \|\| readUrlKeys\(\)\.figure/.test(main) && /m\.sideLink\(ctx, v\)/.test(main), 'main.js opens it for a card\'s or a search row\'s event, for a link once the layers have landed and for a link pasted later');
 const story = readFileSync(join(JS, 'ui/skystory.js'), 'utf8');
 check(/lore\.culture === 'western'/.test(story) && /new CustomEvent\('sr:figure-side', \{ detail: lore\.key \}\)/.test(story) && /ui-btn ui-btn--secondary/.test(story), 'a western figure\'s story card has the button, a shared control, and asks by the figure\'s own key');
 // The search field, for real: "big dipper" finds its row (nothing else answers to that name), "orion" finds the
@@ -200,12 +204,15 @@ check(/lore\.culture === 'western'/.test(story) && /new CustomEvent\('sr:figure-
   const orion = R.findExtras('orion');
   check(orion[0].extra === 'constellation' && orion.some((e) => e.extra === 'figureside' && e.id === 'orion' && e.sub === W.searchSub), `"orion" finds the constellation, then Orion from the side (${orion.map((e) => e.extra)})`);
   let asked = null;
-  const ok = R.runExtra({ wantFigureSide: () => Promise.resolve({ open: (id) => { asked = id; } }) }, dipper[0]);
-  await new Promise((r) => setTimeout(r, 0));
-  check(ok === true && asked === 'big-dipper', 'following the row opens that figure from the side');
+  const had = globalThis.window; const hadEvent = globalThis.CustomEvent;
+  globalThis.window = { dispatchEvent: (e) => { asked = [e.type, e.detail]; } };
+  globalThis.CustomEvent = class { constructor(type, init) { this.type = type; this.detail = init && init.detail; } };
+  const ok = R.runExtra({}, dipper[0]);
+  globalThis.window = had; globalThis.CustomEvent = hadEvent;
+  check(ok === true && asked && asked[0] === 'sr:figure-side' && asked[1] === 'big-dipper', 'following the row asks for that figure from the side');
 }
 const rows = readFileSync(join(JS, 'ui/searchrows.js'), 'utf8');
-check(/extra: 'figureside'/.test(rows) && /hit\.extra === 'figureside'/.test(rows), 'the search field has a row for each offered figure and follows it');
+check(/extra: 'figureside'/.test(rows) && /hit\.extra === 'figureside'\) \{ window\.dispatchEvent\(new CustomEvent\('sr:figure-side', \{ detail: hit\.id \}\)\)/.test(rows), 'the search field has a row for each offered figure and asks for it by the same event');
 // The boot graph: none of the new files is reachable by static imports from main.js.
 {
   const STATIC = /(?:\bimport|\bexport)\s*(?:[^'";()]*?\bfrom\s*)?['"](\.{1,2}\/[^'"]+)['"]/g;
@@ -225,7 +232,7 @@ check(/'sr-figside sr-float ui-pop'/.test(side) && /ui-btn ui-btn--primary/.test
 const css = readFileSync(join(ROOT, 'site/css/figureside.css'), 'utf8');
 check(!/#[0-9a-fA-F]{3,8}\b|rgba?\(/.test(css.replace(/\/\*[\s\S]*?\*\//g, '')), 'css/figureside.css uses tokens only');
 const shift = readFileSync(join(JS, 'scene/viewshift.js'), 'utf8');
-check(/'html\.sr-phone \.sr-figside'/.test(shift), 'on a phone the view moves out from under the panel (scene/viewshift.js)');
+check(/'html\.sr-phone :is\(\.sr-cutaway,\.sr-figside\)'/.test(shift), 'on a phone the view moves out from under the panel (scene/viewshift.js)');
 
 if (problems.length) { console.error('figure side FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`figure side ok: ${SIDE_FIGURES.length} figures offered (Orion, the Big Dipper's seven stars, Cassiopeia, the Southern Cross, Scorpius, Leo), each exact from the Sun and apart from the side, in eleven languages, out of the first visit`);

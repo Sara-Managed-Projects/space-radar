@@ -2,6 +2,7 @@
 //
 // Contract: createFigureSide(ctx) -> { open(value, opts?), close(opts?), isOpen(), openId(), fromLink(value),
 //                                     state(), destroy() }
+//           sideLink(ctx, value)  -> main.js's one call: makes it once (ctx.figureSide) and hands it the figure
 // Pure, for tests/test_figureside.mjs: resolveFigure(value, rows, known), asterismFeature(row),
 //   frameOf(placed), sideBasis(dir), rigAngles(offset, up), fovFor(radiusRad, aspect, baseDeg, fill),
 //   sweepAt(elapsedMs, fromDeg, toDeg, totalMs), angleOf(cam, target, home), homeOffsetLy(distanceLy, nearLy),
@@ -23,8 +24,8 @@
 // is widened when the figure would not fit the screen (fovFor), never the camera moved back: a step back along
 // that line bends a figure whose nearest star is a third as far as its farthest.
 //
-// NOTHING AT BOOT. main.js imports this file when a figure's story card asks (ui/skystory.js, the event
-// `sr:figure-side`), when a search row does (ui/searchrows.js) or when a link carries `figure=`.
+// NOTHING AT BOOT. main.js imports this file when a figure's story card or a search row asks (ui/skystory.js,
+// ui/searchrows.js: the event `sr:figure-side`) or when the link carries `figure=`, and calls fromLink().
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { COPY, t, fmt } from '../copy/en.js';
@@ -163,6 +164,14 @@ export function angleOf(cam, target, home) {
   const na = Math.hypot(a[0], a[1], a[2]); const nb = Math.hypot(b[0], b[1], b[2]);
   if (!(na > 0) || !(nb > 0)) return 0;
   return Math.acos(Math.min(1, Math.max(-1, (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]) / (na * nb)))) / D2R;
+}
+
+/**
+ * What main.js calls, and all it calls: the side view made once and kept on `ctx.figureSide`, then given the figure
+ * asked for (fromLink: nothing closes it). Kept this short on main.js's side because its bytes are a first visit's.
+ */
+export function sideLink(ctx, value) {
+  return (ctx.figureSide = ctx.figureSide || createFigureSide(ctx)).fromLink(value);
 }
 
 const el = (doc, tag, cls, text) => { const n = doc.createElement(tag); if (cls) n.className = cls; if (text) n.textContent = text; return n; };
@@ -506,11 +515,17 @@ export function createFigureSide(ctx, opts = {}) {
     win.dispatchEvent(new CustomEvent('sr:figureside', { detail: { id: null } }));
   }
 
-  /** `#figure=<id>` from a link. */
+  /**
+   * The one door main.js knows: a figure asked for by a card, a search row or the link's `figure=`, or nothing, when
+   * the key has left the address (the view closes). A figure that is already the one open is left as it is: the
+   * address changing for another reason must not send the camera back to the Sun.
+   */
   function fromLink(value) {
-    const want = String(value || '').trim();
+    const want = String(value == null ? '' : value).trim();
     if (!want || want === '0') { close(); return Promise.resolve(false); }
-    return open(want, { write: false });
+    const low = want.toLowerCase();
+    if (open_ && (open_.id.toLowerCase() === low || String(open_.figure).toLowerCase() === low)) return Promise.resolve(true);
+    return open(want);
   }
 
   return {

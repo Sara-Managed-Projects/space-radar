@@ -72,11 +72,10 @@ KEYS.splice(KEYS.indexOf('cam'), 0, 'play');
 // b200-f7-ground: begin (forge #146, #147) -- `ground` a landing site to stand on (`#ground=apollo-15`, a
 // registry/ground.yaml row) and `sky` a place on another world to look up from (`#sky=mars:jezero`, `#sky=titan`,
 // `#sky=europa:10,200`; sky/worldframe.js parseSkyLink). scene/groundstage.js writes them; before `cam`, which stays last.
-KEYS.splice(KEYS.indexOf('cam'), 0, 'ground', 'sky');
-// b200-f7-ground: end
 // `figure` a constellation seen from the side (`#figure=orion`, `#figure=big-dipper`, or an IAU code, `#figure=Cyg`;
-// registry/sideviews.yaml, ui/figureside.js). Before `cam`, which stays last.
-KEYS.splice(KEYS.indexOf('cam'), 0, 'figure');
+// registry/sideviews.yaml, ui/figureside.js), in the same call because every byte of this file is a first visit's.
+KEYS.splice(KEYS.indexOf('cam'), 0, 'ground', 'sky', 'figure');
+// b200-f7-ground: end
 export const VERSION = '1';
 /** The release this code is (0076 W4-c). A release bumps it with CHANGELOG.md; tests/test_access.mjs holds its shape. */
 export const BUILD = '2.0.1';
