@@ -124,6 +124,50 @@ check(closeUpDistance(at(400), 0, f) === Infinity, 'no viewport, no constraint')
     'a planet and the Moon arrive at the size they are drawn');
 }
 
+// Review of 2026-11-16: from the outer Solar System the planets crowd, and a crowded planet is drawn a share of the CAMERA's
+// distance wide. An arrival framed on that stopped 26.4 million km short of Mars. The size the camera finds when it gets
+// there is the uncrowded one, and that is what an arrival is framed on (scene/worlds.js settledRadiusUnits).
+{
+  const { createWorlds } = await import(join(JS, 'scene/worlds.js'));
+  stage.setWorld('earth');
+  const camera = new THREE.PerspectiveCamera(45, 1440 / 900, 1e-6, 1e12);
+  camera.position.set(0, 0, 30);
+  camera.updateMatrixWorld();
+  const worlds = createWorlds(new THREE.Scene(), { textureBase: 't/', loadTexture: () => new THREE.Texture(), camera });
+  const t = Date.parse('2026-11-16T12:00:00Z');
+  stage.setTime(t);
+  worlds.update(t);
+  const home = worlds.drawnRadiusUnits('mars');
+  check(home > 0 && worlds.settledRadiusUnits('mars') === home, `from the home view Mars is not crowded: its settled size is its drawn size (${home.toFixed(2)} units)`);
+  // Beside Voyager 1: 25.9 billion km out, in the stage's units.
+  const far = 25.9e9 / stage.unitKm;
+  camera.position.set(far * 0.6, far * 0.3, far * 0.74);
+  camera.updateMatrixWorld();
+  worlds.update(t);
+  const crowded = worlds.drawnRadiusUnits('mars');
+  check(crowded * stage.unitKm > 20e6, `from beside Voyager 1 Mars is drawn ${(crowded * stage.unitKm / 1e6).toFixed(1)} million km in radius: a share of the camera's distance`);
+  check(Math.abs(worlds.settledRadiusUnits('mars') / home - 1) < 1e-9 && Math.abs(worlds.arrivalRadiusUnits('mars') / home - 1) < 1e-9,
+    `and its settled size is the one it has from the home view (${worlds.settledRadiusUnits('mars').toFixed(2)} against ${home.toFixed(2)} units), which is what an arrival is framed on`);
+  // Fly there: next to the drawn Mars it is drawn at that size.
+  const mars = worlds.meshFor('mars').position.clone();
+  camera.position.copy(mars).add(new THREE.Vector3(0, 0, home * 3));
+  camera.updateMatrixWorld();
+  worlds.update(t);
+  check(Math.abs(worlds.drawnRadiusUnits('mars') / home - 1) < 1e-9 && worlds.settledRadiusUnits('mars') === worlds.drawnRadiusUnits('mars'), 'at Mars the camera finds that size');
+  // Not kept across a stage change: on Mars's own stage it is its true size.
+  stage.setWorld('mars');
+  stage.setTime(t);
+  camera.position.set(0, 0, 30);
+  camera.updateMatrixWorld();
+  worlds.update(t);
+  check(worlds.settledRadiusUnits('mars') === worlds.drawnRadiusUnits('mars'), 'a stage change is not served the last stage\'s number');
+  stage.setWorld('earth');
+  stage.setTime(t);
+  const src = (await import('node:fs')).readFileSync(join(JS, 'main.js'), 'utf8');
+  check(/const R = onWorld \? worlds\.settledRadiusUnits\(onWorld\)/.test(src), 'main.js limbPose frames a site on its world\'s settled size');
+  check(/cameraRig\.setWorldCentre\(c\); cameraRig\.setWorldRadius\(worlds\.drawnRadiusUnits\(on\)\);/.test(src), 'the rig\'s keep-out radius follows the drawn disc during the flight');
+}
+
 // ...and on its lit face: the rig stands where it is told to (flyTo's `offset`), and what main.js
 // tells it is scene/framing.js litOffset of the world's own Sun direction (scene/worlds.js sunDirOf).
 {
