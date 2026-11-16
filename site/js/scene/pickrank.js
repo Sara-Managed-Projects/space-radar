@@ -7,7 +7,7 @@
 //                                from the canvas corner), depth the straight-line distance from the camera
 //                                and r half the icon as drawn, in CSS px (absent: a point with no size);
 //   model  {record, kind: 'model', px, score, sx, sy, depth, r, span}   a craft drawn as its 3D model
-//                                (heroes.js pickAll); px is the distance to the model's outline, zero anywhere
+//                                (scene/modelpick.js); px is the distance to the model's outline, zero anywhere
 //                                on it, span how far it reaches from its centre in the units of depth;
 //   disc   {record, edge, r, cx, cy, depth, horizon, tier}   a world drawn as a disc; edge is the distance to
 //                                its RIM (zero when the pointer is on it), r its radius in px, depth the
@@ -164,37 +164,6 @@ export function decide(marks, discs, reach = REACH.touch) {
     ambiguous = apart <= AMBIGUITY_PX && nearer <= AIM_PX;
   }
   return { winner: out.length ? out[0].record : null, list: out, ambiguous };
-}
-
-/**
- * How far a point is from the outline of a set of screen points, 0 anywhere inside it: the convex hull of a
- * model's box as projected (heroes.js pickAll), so a model is hit on its panels as on its middle. Pure.
- * @param {Array<[number, number]>} points
- * @returns {number} CSS px; Infinity with no points
- */
-export function hullDistance(points, x, y) {
-  const p = (Array.isArray(points) ? points : []).filter((q) => q && Number.isFinite(q[0]) && Number.isFinite(q[1]))
-    .slice().sort((a, b) => (a[0] - b[0]) || (a[1] - b[1]));
-  if (!p.length) return Infinity;
-  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
-  const chain = (list) => {
-    const h = [];
-    for (const q of list) { while (h.length >= 2 && cross(h[h.length - 2], h[h.length - 1], q) <= 0) h.pop(); h.push(q); }
-    h.pop();
-    return h;
-  };
-  const hull = p.length > 1 ? chain(p).concat(chain(p.slice().reverse())) : p;
-  let inside = hull.length >= 3;
-  let best = Infinity;
-  for (let i = 0; i < hull.length; i++) {
-    const a = hull[i], b = hull[(i + 1) % hull.length];
-    if (inside && cross(a, b, [x, y]) < 0) inside = false;
-    const ux = b[0] - a[0], uy = b[1] - a[1];
-    const len = ux * ux + uy * uy;
-    const t = len > 0 ? Math.min(1, Math.max(0, ((x - a[0]) * ux + (y - a[1]) * uy) / len)) : 0;
-    best = Math.min(best, Math.hypot(x - a[0] - ux * t, y - a[1] - uy * t));
-  }
-  return inside ? 0 : best;
 }
 
 /** @returns {Object|null} the winning record */

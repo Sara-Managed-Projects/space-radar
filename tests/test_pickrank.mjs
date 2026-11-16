@@ -89,7 +89,8 @@ check(decide([mark(sat, 8)], [], mouseOn).list[0].px === 8, 'the list carries ho
 
 // ---- THE ICON AS DRAWN IS THE TARGET (internal #342), with the sizes the shader draws (glyphs.js GLYPH_SIZE_PX, clamped 4..14).
 const { GLYPH_SIZE_PX } = await import(join(JS, 'scene/glyphs.js'));
-const { hullDistance, CROWD_ON_DISC } = await import(join(JS, 'scene/pickrank.js'));
+const { CROWD_ON_DISC } = await import(join(JS, 'scene/pickrank.js'));
+const { hullDistance } = await import(join(JS, 'scene/modelpick.js'));
 const halfOf = (klass) => Math.min(14, Math.max(4, GLYPH_SIZE_PX[klass])) / 2;
 // The home view: the camera 28 000 km from the Earth's centre, the disc 300 px in radius; distances in km.
 const D = 28000, RE = 6371, LIMB = Math.sqrt(D * D - RE * RE);

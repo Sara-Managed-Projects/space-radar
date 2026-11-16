@@ -22,13 +22,14 @@ import * as THREE from '../../vendor/three.module.min.js';
 // until it arrives an object stays the dot it already is -- which is what a model that has not
 // faded in yet looks like anyway.
 let M = null;
+let pickMod = null; // scene/modelpick.js: a drawn model as a pick target, fetched with the shapes it is about
 let modelsAsked = null;
 let modelsRetryAt = 0;
 export function warmModels() {
   if (M) return Promise.resolve(M);
   const now = Date.now();
   if (!modelsAsked && now >= modelsRetryAt) {
-    modelsAsked = import('./models.js').then((m) => { M = m; return m; }).catch((e) => {
+    modelsAsked = Promise.all([import('./models.js'), import('./modelpick.js')]).then(([m, p]) => { pickMod = p; M = m; return m; }).catch((e) => {
       // Offline, or a deploy in flight: ask again in a while rather than never.
       console.warn('the model shapes did not load', e && e.message);
       modelsAsked = null;
@@ -43,7 +44,6 @@ import { propagate } from '../propagate/index.js';
 import { stage } from './stage.js';
 import { parseFrame } from '../propagate/frames.js';
 import { modelOpacity } from './onemark.js';
-import { hullDistance } from './pickrank.js';
 import { WORLDS } from './worlds.js';
 
 /** How many pixels tall a hero model should read as. Big enough to see it is a thing with parts. */
@@ -1119,50 +1119,13 @@ export function createHeroes(scene, ctx) {
       return entry.px || 0;
     },
     /**
-     * Every drawn model near the pointer, for scene/pickrank.js (internal #341): {record, kind: 'model',
-     * px, score, sx, sy, r, depth, span}. The owner, 2026-11-16: "they should be clickable as a whole; now I
-     * must click a specific part". A pick was the screen distance to the craft's centre point, 10 px for
-     * a mouse, under a model 260 px across. The target is now the model's outline: the boxes of its drawn
-     * parts as they stand this frame (a wing that has turned to the Sun included), projected, and the hull
-     * round them (scene/pickrank.js hullDistance). `px` is the distance to it, zero anywhere on the model.
-     * Not a model still fading in, nor one smaller than a dot, which the dot carries.
+     * Every drawn model near the pointer, for scene/pickrank.js (internal #341): a model is one target as
+     * big as it looks. The work is scene/modelpick.js, fetched with the shapes (warmModels): no model is
+     * drawn before they are here. Not a model still fading in, nor one smaller than a dot, which the dot carries.
      */
     pickAll(ndcX, ndcY, camera, vp, reachPx = 24) {
-      const out = [];
-      if (!root.visible || !camera || !vp || !(vp.w > 0) || !(vp.h > 0)) return out;
-      const halfW = vp.w * 0.5;
-      const halfH = vp.h * 0.5;
-      const tapX = (ndcX + 1) * halfW;
-      const tapY = (1 - ndcY) * halfH;
-      camera.updateMatrixWorld();
-      camera.getWorldPosition(_camPos);
-      for (const entry of live.values()) {
-        const obj = entry.obj;
-        if (!obj || !obj.visible || !(entry.px >= MODEL_CARRIES_PX) || modelOpacity(entry, true, lastTMs, FADE_MS) < 0.5) continue;
-        _v.copy(obj.position).project(camera);
-        if (!(_v.z > -1 && _v.z < 1)) continue;
-        const sx = (_v.x + 1) * halfW;
-        const sy = (1 - _v.y) * halfH;
-        const r = entry.px / 2; // its circle as measured at rest; a part that moves may reach a little past it
-        if (Math.hypot(sx - tapX, sy - tapY) > r * 1.5 + reachPx) continue;
-        const pts = [];
-        obj.updateMatrixWorld(true);
-        obj.traverse((n) => {
-          if (!n.isMesh || !n.geometry || n.userData.noReach) return; // the same parts unitReachOf counts
-          for (let p = n; p && p !== obj; p = p.parent) if (!p.visible) return;
-          if (!n.geometry.boundingBox) n.geometry.computeBoundingBox();
-          const b = n.geometry.boundingBox;
-          if (!b || b.isEmpty()) return;
-          for (let i = 0; i < 8; i++) {
-            _v.set(i & 1 ? b.max.x : b.min.x, i & 2 ? b.max.y : b.min.y, i & 4 ? b.max.z : b.min.z).applyMatrix4(n.matrixWorld).project(camera);
-            pts.push([(_v.x + 1) * halfW, (1 - _v.y) * halfH]);
-          }
-        });
-        const px = pts.length ? hullDistance(pts, tapX, tapY) : Math.max(0, Math.hypot(sx - tapX, sy - tapY) - r);
-        if (px > reachPx) continue;
-        out.push({ record: entry.record, kind: 'model', px, score: px, sx, sy, r, depth: obj.position.distanceTo(_camPos), span: (entry.reach || 0.5) * obj.scale.x });
-      }
-      return out;
+      if (!pickMod || !root.visible) return [];
+      return pickMod.pickModels(live.values(), (e) => e.px >= MODEL_CARRIES_PX && modelOpacity(e, true, lastTMs, FADE_MS) >= 0.5, ndcX, ndcY, camera, vp, reachPx);
     },
     setVisible(b) { root.visible = !!b; },
     dispose() {
