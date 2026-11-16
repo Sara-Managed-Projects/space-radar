@@ -1170,12 +1170,21 @@ export function parseHorizonsVectors(body, base = []) {
         samplesFromMs: first,
         samplesToMs: last,
         why:
-          'Position from JPL Horizons: the mission’s own trajectory, sampled every six hours ' +
-          'and interpolated between samples. Fetched by our scheduled job, not by this page.',
+          'Position from JPL Horizons: the mission’s own trajectory, sampled ' + stepWords(samples) +
+          ' and interpolated between samples, for the months either side of the day it was fetched; ' +
+          'outside them the map has no position for it. Fetched by our scheduled job, not by this page.',
       },
     });
   }
   return out;
+}
+
+/** "every six hours", "every day": the step of a table, in words, from its first two rows. */
+function stepWords(samples) {
+  const h = Math.round((samples[1].tMs - samples[0].tMs) / 3600000);
+  if (h === 24) return 'every day';
+  if (h > 0 && h < 24) return h === 1 ? 'every hour' : `every ${['', '', 'two', 'three', 'four', 'five', 'six'][h] || h} hours`;
+  return 'at a fixed step';
 }
 
 /** NAIF ids Horizons names in "Center body name: Mars (499)", for the centres this app asks for. */

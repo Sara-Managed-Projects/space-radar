@@ -138,7 +138,7 @@
     },
     {
       "id": "jpl-sbdb-neo",
-      "url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name,spkid,e,a,q,i,om,w,ma,epoch,H,diameter,class&sb-kind=a&sb-group=neo",
+      "url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name,spkid,e,a,q,i,om,w,ma,epoch,H,diameter,class&sb-kind=a&sb-group=neo&full-prec=1",
       "auth": "none",
       "refresh": "24h",
       "freshness_max": "168h",
@@ -149,7 +149,7 @@
     },
     {
       "id": "jpl-sbdb-comets",
-      "url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name,e,a,q,i,om,w,ma,tp,epoch,M1,K1&sb-kind=c",
+      "url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name,e,a,q,i,om,w,ma,tp,epoch,M1,K1&sb-kind=c&full-prec=1",
       "auth": "none",
       "refresh": "24h",
       "freshness_max": "168h",
@@ -203,22 +203,9 @@
         "deep-space.json"
       ],
       "list": {
-        "params": {
-          "format": "json",
-          "EPHEM_TYPE": "VECTORS",
-          "CENTER": "'500@10'",
-          "STEP_SIZE": "'6 h'",
-          "VEC_TABLE": "'2'",
-          "TIME_TYPE": "'UT'",
-          "OUT_UNITS": "'KM-S'",
-          "CSV_FORMAT": "'YES'",
-          "COMMAND": "'{id}'",
-          "START_TIME": "'{start}'",
-          "STOP_TIME": "'{stop}'"
-        },
         "window": {
-          "before": "1d",
-          "after": "30d"
+          "before": "120d",
+          "after": "120d"
         },
         "pause_s": 0.5,
         "ids": [
@@ -236,13 +223,23 @@
             "id": "-74",
             "name": "Mars Reconnaissance Orbiter",
             "app_id": "deep-mro",
-            "center": "'500@499'"
+            "center": "'500@499'",
+            "step": "'6 h'",
+            "window": {
+              "before": "45d",
+              "after": "45d"
+            }
           },
           {
             "id": "-61",
             "name": "Juno",
             "app_id": "deep-juno",
-            "center": "'500@599'"
+            "center": "'500@599'",
+            "step": "'6 h'",
+            "window": {
+              "before": "45d",
+              "after": "45d"
+            }
           },
           {
             "id": "-31",
@@ -272,12 +269,14 @@
           {
             "id": "-96",
             "name": "Parker Solar Probe",
-            "app_id": "deep-parker"
+            "app_id": "deep-parker",
+            "step": "'6 h'"
           },
           {
             "id": "-255",
             "name": "Psyche",
-            "app_id": "deep-psyche"
+            "app_id": "deep-psyche",
+            "step": "'6 h'"
           },
           {
             "id": "-49",
@@ -287,17 +286,20 @@
           {
             "id": "-159",
             "name": "Europa Clipper",
-            "app_id": "deep-europa-clipper"
+            "app_id": "deep-europa-clipper",
+            "step": "'6 h'"
           },
           {
             "id": "-28",
             "name": "JUICE",
-            "app_id": "deep-juice"
+            "app_id": "deep-juice",
+            "step": "'6 h'"
           },
           {
             "id": "-121",
             "name": "BepiColombo",
-            "app_id": "deep-bepicolombo"
+            "app_id": "deep-bepicolombo",
+            "step": "'6 h'"
           },
           {
             "id": "-91",
@@ -307,7 +309,8 @@
           {
             "id": "-64",
             "name": "OSIRIS-APEX",
-            "app_id": "deep-osiris-apex"
+            "app_id": "deep-osiris-apex",
+            "step": "'6 h'"
           },
           {
             "id": "-37",
@@ -318,7 +321,12 @@
             "id": "-62",
             "name": "Hope (Emirates Mars Mission)",
             "app_id": "deep-hope",
-            "center": "'500@499'"
+            "center": "'500@499'",
+            "step": "'6 h'",
+            "window": {
+              "before": "45d",
+              "after": "45d"
+            }
           },
           {
             "id": "-234",
@@ -329,13 +337,23 @@
             "id": "-41",
             "name": "Mars Express",
             "app_id": "deep-mars-express",
-            "center": "'500@499'"
+            "center": "'500@499'",
+            "step": "'6 h'",
+            "window": {
+              "before": "45d",
+              "after": "45d"
+            }
           },
           {
             "id": "-85",
             "name": "Lunar Reconnaissance Orbiter",
             "app_id": "deep-lro",
-            "center": "'500@301'"
+            "center": "'500@301'",
+            "step": "'6 h'",
+            "window": {
+              "before": "45d",
+              "after": "45d"
+            }
           },
           {
             "id": "-139479",
@@ -351,7 +369,12 @@
             "id": "-53",
             "name": "Mars Odyssey",
             "app_id": "deep-mars-odyssey",
-            "center": "'500@499'"
+            "center": "'500@499'",
+            "step": "'6 h'",
+            "window": {
+              "before": "45d",
+              "after": "45d"
+            }
           },
           {
             "id": "-79",
@@ -367,6 +390,12 @@
             "id": "-680",
             "name": "Euclid",
             "app_id": "deep-euclid"
+          },
+          {
+            "id": "-144",
+            "name": "Solar Orbiter",
+            "app_id": "deep-solar-orbiter",
+            "step": "'6 h'"
           }
         ]
       }

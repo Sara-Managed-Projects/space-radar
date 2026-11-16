@@ -1673,7 +1673,7 @@ const ELLIPTIC_CRAFT = [
     name: 'Solar Orbiter',
     launched: '2020-02-10',
     klass: 'probe',
-    horizonsId: null,
+    horizonsId: -144, // JPL Horizons, header read 2026-11-16 (internal #112); the harvester asks for it, six-hourly (harvest/lists/horizons-ids.yaml)
     aAu: 0.81,
     e: 0.29,
     iDeg: 17,

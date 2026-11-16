@@ -506,6 +506,26 @@ class Quirks(unittest.TestCase):
         self.assertIn("CENTER=%27500%40499%27", f.calls[1]["url"])
         self.assertNotIn("500%4010", f.calls[1]["url"], "the row's centre replaces the list's, it is not added")
 
+    def test_an_id_row_with_its_own_step_and_window_asks_for_them_and_only_it_does(self):
+        # 2026-11-16 (internal #397): the list covers 120 days either side at a daily step; a craft that bends in
+        # hours (Parker, JUICE ...) has `step:` and one round a world a narrower `window:`.
+        good = fixture("horizons")[0]["-170"]
+        lst = {"params": {"COMMAND": "'{id}'", "START_TIME": "'{start}'", "STOP_TIME": "'{stop}'", "STEP_SIZE": "'1 d'"},
+               "window": {"before": "120d", "after": "120d"},
+               "ids": [{"id": "-170"}, {"id": "-96", "step": "'6 h'"},
+                       {"id": "-74", "step": "'6 h'", "window": {"before": "45d", "after": "45d"}}]}
+        src = source(id="list-source", parser="horizons", list=lst, refresh="24h")
+        f = Fetcher(lambda url, h, e, s: response(url, text=json.dumps({"result": good})))
+        run(self.store, [src], now=NOW, fetcher=f, sleep=lambda s: None, log=lambda s: None)
+        u = [c["url"] for c in f.calls]
+        self.assertIn("STEP_SIZE=%271+d%27", u[0].replace("%20", "+"))
+        self.assertIn("START_TIME=%272026-05-11%27", u[0])
+        self.assertIn("STOP_TIME=%272027-01-06%27", u[0])
+        self.assertIn("STEP_SIZE=%276+h%27", u[1].replace("%20", "+"))
+        self.assertIn("START_TIME=%272026-05-11%27", u[1], "a step of its own keeps the list's window")
+        self.assertIn("START_TIME=%272026-07-25%27", u[2])
+        self.assertIn("STOP_TIME=%272026-10-23%27", u[2])
+
     def test_list_row_reports_a_failed_id_without_losing_the_others(self):
         good = fixture("horizons")[0]["-170"]
         lst = {"params": {"COMMAND": "'{id}'"}, "ids": [{"id": "-170"}, {"id": "-31"}]}

@@ -1454,6 +1454,10 @@ jobs:
       # 1.8.0 tests I: begin
       - name: "hermite and sampled: a table of spacecraft positions becomes a position at any moment, measured near a sample and inferred between (public #619)"
         run: node tests/test_propagate_sampled.mjs
+      - name: "Craft from the saved Horizons tables: Horizons' own hourly vectors inside a table, no position two days outside it (internal #397)"
+        run: node tests/test_snapshot_span.mjs
+      - name: "Listed close approaches against JPL's close-approach table: full-precision SBDB elements, distance and time within a stated tolerance (internal #392)"
+        run: node tests/test_neo_cad.mjs
       - name: "staticPos places every star and galaxy and answers null for a record with no usable position (public #620)"
         run: node tests/test_propagate_static.mjs
       - name: "the Kepler equation solvers behind every orbit drawn from elements: the answer satisfies the equation, a circle, a wrapped angle, Barker's equation (public #621)"
