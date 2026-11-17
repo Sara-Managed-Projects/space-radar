@@ -449,7 +449,10 @@ export function createScrubber(ctx, pill) {
       const { m, x } = drawn[k];
       // Not in the tape's last MARK_EDGE_PX either side: there the mark's 44 px target is clipped
       // by the tape and shares its pixels with the step button beside it, so a tap on a launch
-      // eight hours off was "forward one hour" (internal #419 item 6, seen at 390 px).
+      // eight hours off was "forward one hour" (internal #419 item 6, seen at 390 px). The test is on the
+      // place it is drawn, after spreadMarks moved it aside: a mark pushed into the edge is not drawn (16 Nov review).
+      const drawnAt = x + shifts[k];
+      if (drawnAt < MARK_EDGE_PX || drawnAt > width - MARK_EDGE_PX) continue;
       seen.add(m.id);
       let b = markNodes.get(m.id);
       if (!b) {
