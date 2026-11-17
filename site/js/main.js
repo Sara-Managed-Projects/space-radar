@@ -1385,10 +1385,6 @@ export async function boot({ setStatus } = {}) {
     return landed;
   };
   window.addEventListener('sr:layers-ready', () => {
-    // The names of things in the page's language (ui/localnames.js, internal #310): one small file, never in English.
-    if (document.documentElement.lang !== 'en') import('./ui/localnames.js').then((m) => m.installLocalNames(ctx)).catch((e) => console.warn('the names did not load', e));
-    // What to show as the visitor left it (ui/showmemory.js): fetched only when this browser kept a choice, never by a frame or a reel.
-    try { if (!embed && !ambient && !film && localStorage.getItem('sr:show')) import('./ui/showmemory.js').then((m) => m.installShowMemory(ctx)).catch((e) => console.warn('the kept choices did not load', e)); } catch { /* no storage: the defaults */ }
     const tripRunning = !!(ctx.trip && ctx.trip.state && ctx.trip.state.phase !== 'idle');
     const apply = () => (ambient ? startReel() : startDrift(goLanding(tripRunning) || applyUrlState(ctx, laterLink(link, tripRunning))));
     // A trip's stops may be stars or exoplanets (OFF THE FIRST VISIT): those land first. An `at`
@@ -1397,6 +1393,10 @@ export async function boot({ setStatus } = {}) {
     else apply();
     // Today's clouds: their first look is START_DELAY_MS after this, never during the first visit.
     if (!embed) ctx.liveClouds.start();
+    // The names of things in the page's language (ui/localnames.js, internal #310): one small file, never in English.
+    if (document.documentElement.lang !== 'en') import('./ui/localnames.js').then((m) => m.installLocalNames(ctx)).catch((e) => console.warn('the names did not load', e));
+    // What to show as the visitor left it (ui/showmemory.js): fetched only when this browser kept a choice, never by a frame or a reel.
+    try { if (!embed && !ambient && !film && localStorage.getItem('sr:show')) import('./ui/showmemory.js').then((m) => m.installShowMemory(ctx)).catch((e) => console.warn('the kept choices did not load', e)); } catch { /* no storage: the defaults */ }
   }, { once: true });
 
   // Data arrives in the background, layer by layer, slowest last. Nothing here is awaited by the
