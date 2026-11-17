@@ -160,7 +160,7 @@ def apply_position_overrides(out: list, hand: dict) -> None:
         r = by_id[o["id"]]
         r["raDeg"], r["decDeg"] = round(o["ra_deg"], 5), round(o["dec_deg"], 5)
         r["posLy"] = ecliptic_ly(r["raDeg"], r["decDeg"], r["distLy"])
-        r["positionSource"] = o["source"]
+        r["centreSource"] = o["source"]  # not positionSource: the object pages print that line in ten languages
 
 
 def apply_model(out: list, hand_rows: list, overlay: dict, pictured: set) -> None:

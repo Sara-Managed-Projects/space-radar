@@ -1485,7 +1485,7 @@ position_overrides:
   - id: m45
     ra_deg: 56.60083
     dec_deg: 24.11389
-    source: "OpenNGC (name, size, magnitude); centre: SIMBAD 'Cl Melotte 22', RA 56.600833 deg, Dec +24.113889 deg (J2000, from Tarricq et al. 2021, 2021A&A...647A..19T), read 2026-11-17 from the SIMBAD TAP service (OpenNGC's 56.86917, +24.10528 is 14.7 arcmin away)"
+    source: "SIMBAD 'Cl Melotte 22', RA 56.600833 deg, Dec +24.113889 deg (J2000, from Tarricq et al. 2021, 2021A&A...647A..19T), read 2026-11-17 from the SIMBAD TAP service (the row stays OpenNGC's for name, size and magnitude; its own 56.86917, +24.10528 is 14.7 arcmin away)"
 
 messier_distances:
   # Thousands of light-years, from the table in https://en.wikipedia.org/wiki/List_of_Messier_objects

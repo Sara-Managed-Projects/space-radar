@@ -27,7 +27,7 @@ check(doc.objects.some((o) => o.id === 'smc' && o.distLy === 203650) && doc.obje
   const D = Math.PI / 180;
   const sep = Math.acos(Math.min(1, Math.sin(m45.decDeg * D) * Math.sin(24.113888889 * D) + Math.cos(m45.decDeg * D) * Math.cos(24.113888889 * D) * Math.cos((m45.raDeg - 56.600833333) * D))) / D * 60;
   check(sep < 0.1, `M45's centre is within 0.1 arcmin of SIMBAD's (${sep.toFixed(3)} arcmin)`);
-  check(/SIMBAD/.test(m45.positionSource) && /^OpenNGC/.test(m45.positionSource), 'M45 cites SIMBAD for its centre and OpenNGC for the rest of the row');
+  check(/SIMBAD/.test(m45.centreSource) && m45.positionSource === 'OpenNGC', 'M45 cites SIMBAD for its centre (centreSource) and keeps OpenNGC as the row\'s source');
 }
 check(doc.objects.some((o) => o.id === 'wlm' && o.distLy === 3226000) && doc.objects.some((o) => o.id === 'ngc-6822' && o.designation === 'NGC 6822') && doc.objects.some((o) => o.id === 'carina-dwarf' && o.vmag === null), 'WLM at 3.23 Mly, Barnard\'s Galaxy keeps its NGC number, Carina has no V magnitude invented');
 check(doc.objects.some((o) => o.id === 'sagittarius-dwarf' && o.distLy === 80400) && doc.objects.some((o) => o.id === 'sextans-a' && o.distLy === 4586000) && doc.objects.some((o) => o.id === 'sagdig' && o.designation === 'SagDIG'), 'the Sagittarius Dwarf at 80 400 ly, Sextans A at 4.59 Mly, SagDIG by its short name');
@@ -161,7 +161,7 @@ const say = edge ? edge.card.body : '';
 const n = (text) => Number(String(text).replace(/\s/g, ''));
 const starBuf = readFileSync(join(ROOT, 'site/data/stars3d.bin'));
 const placed = parseStars3d(starBuf.buffer.slice(starBuf.byteOffset, starBuf.byteOffset + starBuf.byteLength)).count;
-const fromNgc = doc.objects.filter((o) => String(o.positionSource).startsWith('OpenNGC')).length;
+const fromNgc = doc.objects.filter((o) => o.positionSource === 'OpenNGC').length;
 const said = say.match(/shows ([\d ]+) stars .*?, ([\d ]+) nebulae, clusters and galaxies \(([\d ]+) of them from OpenNGC's ([\d ]+)\)/);
 check(!!said, `the edge card still states its stars and deep-sky counts in the form this test reads: "${say.slice(0, 160)}"`);
 if (said) {
@@ -174,7 +174,7 @@ if (said) {
 // The Layers panel's sentence counts the hand rows; the count comes from the file.
 {
   const said = (row.sentence || '').match(/Messier objects and (\d+) more/);
-  const hand = doc.objects.filter((o) => !String(o.positionSource).startsWith('OpenNGC')).length;
+  const hand = doc.objects.filter((o) => o.positionSource !== 'OpenNGC').length;
   check(said && Number(said[1]) === hand, `the deep-sky layer's sentence says ${said && said[1]} more than Messier; dso.json has ${hand}`);
 }
 
