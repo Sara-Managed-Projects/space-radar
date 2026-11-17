@@ -67,6 +67,7 @@ const MASCULINE = new Set(['planeta', 'cometa', 'mapa', 'dia', 'sistema', 'progr
 
 // The English type phrases of the deep-sky catalogue (data/dso.json `typeText`), lowercased, in Portuguese.
 const TYPES = {
+  'two-lobed nebula of dust and gas': "nebulosa bilobada de poeira e gás",
   'supernova remnant': 'remanescente de supernova',
   'globular cluster': 'aglomerado globular',
   'open cluster': 'aglomerado aberto',

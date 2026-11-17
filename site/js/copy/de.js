@@ -104,6 +104,7 @@ const PLACES = [
 
 // Every typeText in site/data/dso.json (2026-10-20), lowercased, and the same phrase in German after "ein/eine".
 const TYPES = {
+  'two-lobed nebula of dust and gas': "zweilappiger Nebel aus Staub und Gas",
   'globular cluster': 'Kugelsternhaufen',
   'open cluster': 'offener Sternhaufen',
   'dwarf spheroidal galaxy': 'sphäroidale Zwerggalaxie',

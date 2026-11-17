@@ -83,6 +83,7 @@ const FEMININE = new Set([
 
 // The 46 type phrases data/dso.json holds (English, as the catalogue writes them), in French. Keys are lower case.
 const TYPES = {
+  'two-lobed nebula of dust and gas': "nébuleuse à deux lobes de poussière et de gaz",
   'globular cluster': 'amas globulaire',
   'open cluster': 'amas ouvert',
   'dwarf spheroidal galaxy': 'galaxie naine sphéroïdale',
