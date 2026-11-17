@@ -153,6 +153,16 @@ def morphology_of(row: dict) -> str | None:
     return "unknown"
 
 
+def apply_position_overrides(out: list, hand: dict) -> None:
+    """registry/dso-hand.yaml `position_overrides`: a better centre for a row OpenNGC placed. In place; safe to repeat."""
+    by_id = {r["id"]: r for r in out}
+    for o in hand.get("position_overrides") or []:
+        r = by_id[o["id"]]
+        r["raDeg"], r["decDeg"] = round(o["ra_deg"], 5), round(o["dec_deg"], 5)
+        r["posLy"] = ecliptic_ly(r["raDeg"], r["decDeg"], r["distLy"])
+        r["positionSource"] = o["source"]
+
+
 def apply_model(out: list, hand_rows: list, overlay: dict, pictured: set) -> None:
     """The object model's fields onto the built rows, children placed at their parents' distance. In place."""
     by_id = {r["id"]: r for r in out}
@@ -305,6 +315,7 @@ def refresh(check: bool) -> int:
         out.append(r)
     hand_rows = hand.get("objects") or []
     out += [hand_row(o) for o in hand_rows]
+    apply_position_overrides(out, hand)
     apply_model(out, hand_rows, load_overlay(), pictured_ids())
     doc = {**{k: v for k, v in old.items() if k != "objects"}, "count": len(out), "objects": out}
     rc = write(doc, check)
@@ -395,6 +406,7 @@ def main(argv):
         })
     hand_rows = hand.get("objects") or []
     out += [hand_row(o) for o in hand_rows]
+    apply_position_overrides(out, hand)
     apply_model(out, hand_rows, load_overlay(), pictured_ids())
     doc = {
         "source": "OpenNGC (CC BY-SA 4.0) positions; distances from the sources each row names; built by scripts/build-dso.py",

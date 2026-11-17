@@ -5,6 +5,8 @@
 //   julianYear(ms) -> the Julian epoch of an instant (2000.0 is J2000)
 //   MOTION_FROM_YEARS, FAR_FROM_YEARS, DEEP_YEARS, POLE_STAR_MAG, POLE_STAR_DEG
 //   motionYears(ms, nowMs) -> years to move the stars from their J2000 places, 0 within 50 years of now
+//     (the readout's rule: "the sky has moved" is said only past that)
+//   starYears(ms) -> years from J2000 at `ms`, always: where the sky view puts the stars (internal #396)
 //   isFar(ms) -> true past what Astronomy Engine's own precession and planets are good for
 //   equatorPole(epj), eclipticPole(epj) -> unit vectors in J2000 axes
 //   precessionMatrix(epj) -> number[9], row-major: mean equator and equinox of J2000 -> of that epoch
@@ -73,6 +75,16 @@ export function julianYear(ms) {
 export function motionYears(ms, nowMs) {
   if (!Number.isFinite(ms) || !Number.isFinite(nowMs)) return 0;
   if (Math.abs(ms - nowMs) <= MOTION_FROM_YEARS * YEAR_MS) return 0;
+  return starYears(ms, nowMs);
+}
+
+/**
+ * The years to move the stars from their J2000 places to the clock's instant, with no window around now:
+ * Rigil Kentaurus is 101 arcseconds and Arcturus 61 from their J2000 places in 2026 (internal #396), which
+ * the sky view's field of a degree shows. Clamped to DEEP_YEARS (and a margin) either side of `nowMs`.
+ */
+export function starYears(ms, nowMs = Date.now()) {
+  if (!Number.isFinite(ms) || !Number.isFinite(nowMs)) return 0;
   const y = julianYear(Math.max(-DEEP_YEARS * 1.05 * YEAR_MS + nowMs, Math.min(DEEP_YEARS * 1.05 * YEAR_MS + nowMs, ms)));
   return y - 2000;
 }

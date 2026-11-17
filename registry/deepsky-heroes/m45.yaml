@@ -25,7 +25,7 @@ children: []
 levels:
   2: "structure: one box over the photograph's footprint, marched (16 samples; 6 on T0 and under the latch): the photograph's light spread through a slab of dust by the starlight falling on it, added to what is behind"
   3: "close-up: the same, the march's steps (to 32); the camera may go through it, among the stars (the dust within 1 ly of it fades)"
-frame: {units_ly: 1, distance_ly: 440, ra_deg: 56.86917, dec_deg: 24.10528, axes: "x west, y north, z toward the Sun; the record's place at the origin"}
+frame: {units_ly: 1, distance_ly: 440, ra_deg: 56.60083, dec_deg: 24.11389, axes: "x west, y north, z toward the Sun; the record's place at the origin"}
 layers:
   - part: light
     kind: photograph
@@ -63,14 +63,14 @@ layers:
       note: "z_ly is each star's depth as the app draws it (scene/clusters.js: the cluster's 440 ly plus 8 ly times a fixed number per star, not measured), from the record's place toward the Sun; tests/test_hero_r14neb.mjs holds them to clusters.js. front_ly and thickness_ly (illustrative): the cloud is in front of the stars (Ritchey et al. 2006); how far and how deep are not measured. Positions and V: SIMBAD"
       stars:
         - {id: "Alcyone", ra_deg: 56.87115, dec_deg: 24.10514, v_mag: 2.87, z_ly: -5.459}
-        - {id: "Atlas", ra_deg: 57.29059, dec_deg: 24.05342, v_mag: 3.62, z_ly: -1.707}
-        - {id: "Electra", ra_deg: 56.21890, dec_deg: 24.11334, v_mag: 3.70, z_ly: 1.857}
-        - {id: "Maia", ra_deg: 56.45669, dec_deg: 24.36775, v_mag: 3.87, z_ly: -1.743}
-        - {id: "Merope", ra_deg: 56.58156, dec_deg: 23.94836, v_mag: 4.18, z_ly: -5.997}
-        - {id: "Taygeta", ra_deg: 56.30206, dec_deg: 24.46728, v_mag: 4.30, z_ly: 2.308}
-        - {id: "Pleione", ra_deg: 57.29673, dec_deg: 24.13671, v_mag: 5.05, z_ly: 7.118}
-        - {id: "Celaeno", ra_deg: 56.20088, dec_deg: 24.28947, v_mag: 5.45, z_ly: 4.275}
-        - {id: "Asterope", ra_deg: 56.47699, dec_deg: 24.55451, v_mag: 5.76, z_ly: -6.095}
+        - {id: "Atlas", ra_deg: 57.29059, dec_deg: 24.05342, v_mag: 3.62, z_ly: -1.694}
+        - {id: "Electra", ra_deg: 56.21890, dec_deg: 24.11334, v_mag: 3.70, z_ly: 1.838}
+        - {id: "Maia", ra_deg: 56.45669, dec_deg: 24.36775, v_mag: 3.87, z_ly: -1.755}
+        - {id: "Merope", ra_deg: 56.58156, dec_deg: 23.94836, v_mag: 4.18, z_ly: -6.005}
+        - {id: "Taygeta", ra_deg: 56.30206, dec_deg: 24.46728, v_mag: 4.30, z_ly: 2.292}
+        - {id: "Pleione", ra_deg: 57.29673, dec_deg: 24.13671, v_mag: 5.05, z_ly: 7.131}
+        - {id: "Celaeno", ra_deg: 56.20088, dec_deg: 24.28947, v_mag: 5.45, z_ly: 4.256}
+        - {id: "Asterope", ra_deg: 56.47699, dec_deg: 24.55451, v_mag: 5.76, z_ly: -6.106}
     source: "NOIRLab/NSF/AURA/T.A. Rector (University of Alaska Anchorage), R. Cool (University of Arizona) and WIYN, noao-m45, CC BY 4.0: https://noirlab.edu/public/images/noao-m45/ (B, V and I, WIYN 0.9-metre, Mosaic I, released 2020-06-30)"
   - part: scatter
     kind: phase

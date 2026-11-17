@@ -1478,6 +1478,15 @@ objects:
     source: "https://en.wikipedia.org/wiki/NGC_6397 (infobox, read 2026-09-22)"
     why: "One of the two nearest globular clusters, with M4; in 2004 the beryllium in two of its stars put the Milky Way's age at about 13.6 billion years."
 
+position_overrides:
+  # A centre OpenNGC has and another catalogue places better, one row each: id, ra_deg, dec_deg (J2000) and the
+  # `source:` the card's source line cites (internal #418). scripts/build-dso.py applies it after OpenNGC's row,
+  # so a rebuild from the catalogue keeps it; the row's name, size and magnitude stay OpenNGC's.
+  - id: m45
+    ra_deg: 56.60083
+    dec_deg: 24.11389
+    source: "OpenNGC (name, size, magnitude); centre: SIMBAD 'Cl Melotte 22', RA 56.600833 deg, Dec +24.113889 deg (J2000, from Tarricq et al. 2021, 2021A&A...647A..19T), read 2026-11-17 from the SIMBAD TAP service (OpenNGC's 56.86917, +24.10528 is 14.7 arcmin away)"
+
 messier_distances:
   # Thousands of light-years, from the table in https://en.wikipedia.org/wiki/List_of_Messier_objects
   # (read 2026-09-08). A range is written as [low, high]; the card prints both. Positions come from
