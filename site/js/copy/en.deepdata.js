@@ -1,5 +1,6 @@
 // The words of the deep-space objects built from published 3D data (the deep-space review of 2026-11-16): the
-// Homunculus Nebula round Eta Carinae (scene/deep/homunculus.js) and Cassiopeia A (scene/deep/casa.js).
+// Homunculus Nebula round Eta Carinae (scene/deep/homunculus.js), Cassiopeia A (scene/deep/casa.js), the Vela pulsar wind
+// nebula (scene/deep/vela.js) and the Cat's Eye (scene/deep/catseye.js).
 // ADDED TO THE SAME `COPY` OBJECT as copy/en.later.js's sections, and imported by those lazy modules only: a first visit
 // does not fetch them. ui/cardfacts.js honestyClause reads `card[heroId]` from the hero's own block, and its rows from
 // `COPY[heroCopy].rows[recordId]` once the hero has drawn. Drafted in every language (copy/<code>.js).
@@ -49,6 +50,39 @@ Object.assign(COPY, {
     },
     // "How astronomers reconstructed its 3D form": two sentences, sourced, for a card disclosure or a trip.
     how: 'Each chemical element glows at its own colours, and gas moving toward us or away shifts them, so a telescope that splits the light finds how fast each patch of iron, silicon or argon moves along our line. Because all of it left one point about 350 years ago, that speed is also a distance in front of that point or behind it: Chandra’s X-rays and Spitzer’s infrared light together gave the first 3D map of an exploded star (DeLaney and others, 2010).',
+  },
+  deepVela: {
+    // The hero's own source, after the honesty line.
+    card: {
+      vela: 'Two rings of X-ray light and a pair of jets, drawn from the geometry fitted to Chandra’s picture (Ng and Romani, 2004 and 2008). The jets’ length and which end of the axis is nearer are modelled; the colour is illustrative. Not yet reviewed by an astronomer.',
+    },
+    rows: {
+      'dso-vela-pulsar-wind-nebula': [
+        ['The two rings', 'Measured. Fitted to Chandra’s X-ray picture: each ring 21.25 arcseconds in radius, the spin axis tilted 63.6° from our line of sight and at position angle 130.6° on the sky, the rings 11.61 arcseconds apart as we see them (Ng and Romani, 2004, 2008).'],
+        ['Why one side is brighter', 'Measured. The flow along each ring moves at 0.44 of the speed of light, which brightens the side coming toward the camera; the pattern changes as the view turns.'],
+        ['The jets', 'Their speed is measured (0.45 of light’s). Their length and brightness are modelled: the real jet bends and changes from year to year.'],
+        ['Which end is near', 'Modelled. The papers do not say which end of the axis points toward us.'],
+        ['Colour', 'Illustrative. X-rays are not light an eye sees; they are drawn violet-blue.'],
+        ['Review', 'This drawing has not yet been reviewed by an astronomer.'],
+      ],
+    },
+  },
+  deepCatsEye: {
+    // The hero's own source, after the honesty line.
+    card: {
+      catseye: 'Its parts, angles and speeds come from a published 3D model (Clairmont, Steffen and Koning, 2022); the sizes are read off Hubble’s picture. The colours are illustrative. Not yet reviewed by an astronomer.',
+    },
+    rows: {
+      'dso-cats-eye-nebula': [
+        ['Its parts', 'Measured. An egg-shaped inner shell inside an outer shell of two round lobes, a ring round the waist, two clumps on the axis and two jets: a model fitted to Hubble’s picture and five maps of the gas’s speed (Clairmont and others, 2022).'],
+        ['The two partial rings', 'Measured. Each is the base of a cone 38° from the axis, leaning 17°, open over 300° of its turn: the trace of a jet that wobbled and never finished one circle. Where each gap lies is modelled.'],
+        ['Speeds', 'Measured. Everything moves straight out: the outer shell at 25 to 33.5 km/s, the waist ring at 24, the clumps at 44, the jets at 72. The model’s age is 2 136 years, at 4 272 light-years (Gaia).'],
+        ['Sizes and axis', 'Read off Hubble’s picture by Space Radar, to about a tenth: the paper shows its model in pictures, not in a table.'],
+        ['Tilt', 'Modelled. The paper says only that the axis is slightly tilted; it is drawn 80° from our line of sight, the north end toward us.'],
+        ['Colour', 'Illustrative. Hubble’s false colour, which the model does not have. The Measured look shows grey.'],
+        ['Review', 'This drawing has not yet been reviewed by an astronomer.'],
+      ],
+    },
   },
 });
 

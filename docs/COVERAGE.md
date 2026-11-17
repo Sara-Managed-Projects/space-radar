@@ -14,9 +14,9 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 |---|---:|---:|
 | worlds | 31 | 31 |
 | rings | 1 | 1 |
-| dso | 211 | 211 |
+| dso | 212 | 212 |
 | photographs | 30 | 30 |
-| heroes | 35 | 35 |
+| heroes | 37 | 37 |
 | exotics | 27 | 27 |
 | systems | 51 | 51 |
 | planets | 134 | 134 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 40 | 40 |
-| **all** | **1203** | **111 390** |
+| **all** | **1206** | **111 393** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -61,10 +61,10 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [OPEN_CLUSTER](#open_cluster) | 38 | `clusters.js`, `dsoglow.js`, `globular.js` | illustrative | - |
 | [GLOBULAR_CLUSTER](#globular_cluster) | 33 | `dsoglow.js`, `globular.js` | illustrative | - |
 | [EMISSION_NEBULA](#emission_nebula) | 44 | `dsoglow.js`, `gasmat.js`, `orion.js`, `carina.js` | measured | carina, orion |
-| [PLANETARY_NEBULA](#planetary_nebula) | 23 | `dsoglow.js`, `helix.js`, `ring.js`, `shellneb.js`, `gasmat.js` | measured | helix, m27, m57, southern-ring |
+| [PLANETARY_NEBULA](#planetary_nebula) | 24 | `dsoglow.js`, `helix.js`, `ring.js`, `shellneb.js`, `gasmat.js`, `catseye.js`, `softpoints.js` | measured | catseye, helix, m27, m57, southern-ring |
 | [DARK_NEBULA](#dark_nebula) | 5 | `dsoglow.js`, `dustsheet.js` | measured | coalsack, horsehead |
 | [REFLECTION_NEBULA](#reflection_nebula) | 8 | `dsoglow.js`, `dustsheet.js`, `reflection.js`, `homunculus.js` | illustrative | homunculus, iris, m45, m78 |
-| [SUPERNOVA_REMNANT](#supernova_remnant) | 8 | `nebulae.js`, `dsoglow.js`, `remnant.js`, `casa.js`, `crab.js` | measured | casa, crab, veil |
+| [SUPERNOVA_REMNANT](#supernova_remnant) | 10 | `nebulae.js`, `dsoglow.js`, `remnant.js`, `casa.js`, `crab.js`, `vela.js`, `softpoints.js` | measured | casa, crab, veil, vela |
 | [GALAXY_SPIRAL](#galaxy_spiral) | 56 | `galaxy.js`, `spiral.js`, `dsoglow.js` | illustrative | m101, m104, m31, m33, m51, m81, m83, ngc1300 |
 | [GALAXY_IRREGULAR](#galaxy_irregular) | 19 | `lmc.js`, `smc.js`, `magellanic.js`, `dsoglow.js` | illustrative | lmc, smc |
 | [GALAXY_ELLIPTICAL](#galaxy_elliptical) | 42 | `dsoglow.js`, `spiral.js` | illustrative | cena |
@@ -83,7 +83,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 1203 records: 377 measured, 459 modelled, 367 illustrative.
+Honesty over the 1206 records: 377 measured, 461 modelled, 368 illustrative.
 
 ## The classes
 
@@ -480,19 +480,19 @@ Honesty over the 1203 records: 377 measured, 459 modelled, 367 illustrative.
 
 **Planetary nebulae**
 
-- **Drawn by:** `site/js/scene/dsoglow.js`, `site/js/scene/deep/helix.js`, `site/js/scene/deep/ring.js`, `site/js/scene/deep/shellneb.js`, `site/js/scene/deep/gasmat.js`
+- **Drawn by:** `site/js/scene/dsoglow.js`, `site/js/scene/deep/helix.js`, `site/js/scene/deep/ring.js`, `site/js/scene/deep/shellneb.js`, `site/js/scene/deep/gasmat.js`, `site/js/scene/deep/catseye.js`, `site/js/scene/deep/softpoints.js`
 - **Default honesty:** measured
 - **On a weak device (T0, or after the frame latch):** The glow; the Helix's rings and the Ring's, the Dumbbell's and the Southern Ring's layers unmarched after the latch.
-- **Hero overrides:** `helix` (registry/deepsky-heroes/helix.yaml), `m57` (registry/deepsky-heroes/m57.yaml), `m27` (registry/deepsky-heroes/m27.yaml), `southern-ring` (registry/deepsky-heroes/southern-ring.yaml)
+- **Hero overrides:** `helix` (registry/deepsky-heroes/helix.yaml), `m57` (registry/deepsky-heroes/m57.yaml), `m27` (registry/deepsky-heroes/m27.yaml), `southern-ring` (registry/deepsky-heroes/southern-ring.yaml), `catseye` (registry/deepsky-heroes/catseye.yaml)
 - **Source:** Photographs of M27, M57, the Helix and the Southern Ring; the Helix hero from O'Dell, McCullough & Meixner 2004 (two rings) and the knots of Meixner et al. 2005 and Matsuura et al. 2009.
 - **Dates and filters:** Photographs as registry/nebulae.yaml dates them; the Helix's light from eso0907a.
 - **Measured, modelled or reconstructed:** Measured: the photographs, the rings' sizes and tilts. Reconstructed: which ring each point's light belongs to, the slabs' thickness. Illustrative: the knots' places (seeded).
 - **Rights:** ESO, ESA/Hubble, ESA/Webb CC BY 4.0; papers cited.
 - **What is missing is tracked in:** #872 (M57 as a shell, W3-b)
-- **Records (23):**
+- **Records (24):**
   - dso (15): `m27`, `m57`, `m76`, `m97`, `helix-nebula`, `cats-eye-nebula`, `eskimo-nebula`, `saturn-nebula`, `butterfly-nebula`, `ghost-of-jupiter`, `blue-snowball`, `skull-nebula`, `blinking-planetary`, `southern-ring-nebula`, `ngc-7027`
   - photographs (4): `helix-nebula`, `m27`, `m57`, `southern-ring-nebula`
-  - heroes (4): `helix`, `m27`, `m57`, `southern-ring`
+  - heroes (5): `catseye`, `helix`, `m27`, `m57`, `southern-ring`
 
 ### DARK_NEBULA
 
@@ -534,19 +534,19 @@ Honesty over the 1203 records: 377 measured, 459 modelled, 367 illustrative.
 
 **Supernova remnants**
 
-- **Drawn by:** `site/js/scene/nebulae.js`, `site/js/scene/dsoglow.js`, `site/js/scene/deep/remnant.js`, `site/js/scene/deep/casa.js`, `site/js/scene/deep/crab.js`
+- **Drawn by:** `site/js/scene/nebulae.js`, `site/js/scene/dsoglow.js`, `site/js/scene/deep/remnant.js`, `site/js/scene/deep/casa.js`, `site/js/scene/deep/crab.js`, `site/js/scene/deep/vela.js`, `site/js/scene/deep/softpoints.js`
 - **Default honesty:** measured
 - **On a weak device (T0, or after the frame latch):** The photograph of the Crab or the Veil; the glow elsewhere.
-- **Hero overrides:** `crab` (registry/deepsky-heroes/crab.yaml), `veil` (registry/deepsky-heroes/veil.yaml), `casa` (registry/deepsky-heroes/casa.yaml)
-- **Source:** Photographs of M1 (the Crab) and the Veil; OpenNGC; for the Crab's model Martin, Milisavljevic & Drissen 2021 (the outline and the filaments' scale) and Ng & Romani 2004, 2008 (the pulsar wind's rings).
+- **Hero overrides:** `crab` (registry/deepsky-heroes/crab.yaml), `veil` (registry/deepsky-heroes/veil.yaml), `casa` (registry/deepsky-heroes/casa.yaml), `vela` (registry/deepsky-heroes/vela.yaml)
+- **Source:** Photographs of M1 (the Crab) and the Veil; OpenNGC; for the Crab's model Martin, Milisavljevic & Drissen 2021 (the outline and the filaments' scale) and Ng & Romani 2004, 2008 (the pulsar wind's rings, and the Vela pulsar wind nebula's two tori).
 - **Dates and filters:** As the photographs' rows.
 - **Measured, modelled or reconstructed:** Measured: the photographs; the Crab's outline, empty middle, pinched waist, lobes and honeycomb scale, its pulsar wind's two rings and its growth rate. Reconstructed: the Veil's shell in depth, its light the photograph's (W3-c). Modelled: the Crab as a cage of filaments round a glow (since 2026-11-16): each filament's place, the jets, the growth law from 1054. Illustrative: the Crab's colours (Hubble's false-colour mosaic; X-rays violet-blue), and the glow elsewhere.
 - **Rights:** CC BY 4.0 photographs; OpenNGC CC BY-SA 4.0.
 - **What is missing is tracked in:** internal #784 (shells, W3-c); internal #549 (NASA meshes wait on a licence)
-- **Records (8):**
-  - dso (3): `m1`, `veil-nebula`, `cassiopeia-a`
+- **Records (10):**
+  - dso (4): `m1`, `veil-nebula`, `cassiopeia-a`, `vela-pulsar-wind-nebula`
   - photographs (2): `m1`, `veil-nebula`
-  - heroes (3): `casa`, `crab`, `veil`
+  - heroes (4): `casa`, `crab`, `veil`, `vela`
 
 ### GALAXY_SPIRAL
 

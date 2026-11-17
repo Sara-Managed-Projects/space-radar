@@ -85,6 +85,11 @@ export const HEROES = [
   // growing on the clock at its measured rate (scene/deep/casa.js). `extent`: the jets reach half as far again as the
   // blast wave, whose width is the record's size.
   { id: 'casa', record: 'dso-cassiopeia-a', stage: 'ds2', stub: { shipped: true, drawn: ['reconstruction', 'model'], children: [], extent: 1.5 }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./casa.js'), import('../../data/hero-casa.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
+  // The pulsar wind nebula of the Vela pulsar (Ng & Romani's fitted tori, scene/deep/vela.js) and the Cat's Eye (Clairmont, Steffen &
+  // Koning's morpho-kinematic model, scene/deep/catseye.js), both soft points in one instanced draw (scene/deep/softpoints.js).
+  // `extent`: how much wider than its catalogue size each draws its object (the jets, the ansae).
+  { id: 'vela', record: 'dso-vela-pulsar-wind-nebula', stage: 'ds-2026-11-17', stub: { shipped: true, drawn: ['reconstruction', 'model'], children: [], extent: 2.4 }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./vela.js'), import('../../data/hero-vela.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
+  { id: 'catseye', record: 'dso-cats-eye-nebula', stage: 'ds-2026-11-17', stub: { shipped: true, drawn: ['reconstruction', 'model'], children: [], extent: 2.2 }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./catseye.js'), import('../../data/hero-catseye.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
 ];
 
 // Deep layers that are not one object: the local volume's galaxies (stage e). Built on the stages named.

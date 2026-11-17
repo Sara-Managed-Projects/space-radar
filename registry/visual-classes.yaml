@@ -70,6 +70,8 @@ domains:
       smc: {credit: "### The SMC and the Magellanic Stream (0077 W2-e)"}  # 0077 W2-e
       homunculus: {credit: "### The Homunculus from its published 3D model (2026-11-16)"}
       casa: {credit: "### Cassiopeia A from its published 3D reconstruction (2026-11-16)"}
+      vela: {credit: "### Pulsar wind nebulae and the Cat's Eye (2026-11-17)"}
+      catseye: {credit: "### Pulsar wind nebulae and the Cat's Eye (2026-11-17)"}
       # 0077 W3-f: begin
       m51: {credit: "### Galaxies from their structure (0077 W3-f)"}
       m81: {credit: "### Galaxies from their structure (0077 W3-f)"}
@@ -553,10 +555,10 @@ classes:
 
   - id: PLANETARY_NEBULA
     title: Planetary nebulae
-    renderer: [site/js/scene/dsoglow.js, site/js/scene/deep/helix.js, site/js/scene/deep/ring.js, site/js/scene/deep/shellneb.js, site/js/scene/deep/gasmat.js]  # 0078 r14-neb-b
+    renderer: [site/js/scene/dsoglow.js, site/js/scene/deep/helix.js, site/js/scene/deep/ring.js, site/js/scene/deep/shellneb.js, site/js/scene/deep/gasmat.js, site/js/scene/deep/catseye.js, site/js/scene/deep/softpoints.js]  # 0078 r14-neb-b; the Cat's Eye, 2026-11-17
     honesty: measured
     fallback: The glow; the Helix's rings and the Ring's, the Dumbbell's and the Southern Ring's layers unmarched after the latch.  # 0078 r14-neb-b
-    heroes: {helix: registry/deepsky-heroes/helix.yaml, m57: registry/deepsky-heroes/m57.yaml, m27: registry/deepsky-heroes/m27.yaml, southern-ring: registry/deepsky-heroes/southern-ring.yaml}  # 0078 r14-neb-b
+    heroes: {helix: registry/deepsky-heroes/helix.yaml, m57: registry/deepsky-heroes/m57.yaml, m27: registry/deepsky-heroes/m27.yaml, southern-ring: registry/deepsky-heroes/southern-ring.yaml, catseye: registry/deepsky-heroes/catseye.yaml}  # 0078 r14-neb-b; the Cat's Eye
     issue: "#872 (M57 as a shell, W3-b)"
     note:
       source: "Photographs of M27, M57, the Helix and the Southern Ring; the Helix hero from O'Dell, McCullough & Meixner 2004 (two rings) and the knots of Meixner et al. 2005 and Matsuura et al. 2009."
@@ -566,7 +568,7 @@ classes:
     records:
       - {domain: dso, where: {typeCode: PN}}
       - {domain: photographs, ids: [helix-nebula, m27, m57, southern-ring-nebula]}
-      - {domain: heroes, ids: [helix, m57, m27, southern-ring]}  # 0078 r14-neb-b
+      - {domain: heroes, ids: [helix, m57, m27, southern-ring, catseye]}  # 0078 r14-neb-b; the Cat's Eye
 
   - id: DARK_NEBULA
     title: Dark nebulae
@@ -604,20 +606,20 @@ classes:
 
   - id: SUPERNOVA_REMNANT
     title: Supernova remnants
-    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js, site/js/scene/deep/remnant.js, site/js/scene/deep/casa.js, site/js/scene/deep/crab.js]
+    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js, site/js/scene/deep/remnant.js, site/js/scene/deep/casa.js, site/js/scene/deep/crab.js, site/js/scene/deep/vela.js, site/js/scene/deep/softpoints.js]
     honesty: measured
     fallback: The photograph of the Crab or the Veil; the glow elsewhere.
-    heroes: {crab: registry/deepsky-heroes/crab.yaml, veil: registry/deepsky-heroes/veil.yaml, casa: registry/deepsky-heroes/casa.yaml}
+    heroes: {crab: registry/deepsky-heroes/crab.yaml, veil: registry/deepsky-heroes/veil.yaml, casa: registry/deepsky-heroes/casa.yaml, vela: registry/deepsky-heroes/vela.yaml}
     issue: "internal #784 (shells, W3-c); internal #549 (NASA meshes wait on a licence)"
     note:
-      source: "Photographs of M1 (the Crab) and the Veil; OpenNGC; for the Crab's model Martin, Milisavljevic & Drissen 2021 (the outline and the filaments' scale) and Ng & Romani 2004, 2008 (the pulsar wind's rings)."
+      source: "Photographs of M1 (the Crab) and the Veil; OpenNGC; for the Crab's model Martin, Milisavljevic & Drissen 2021 (the outline and the filaments' scale) and Ng & Romani 2004, 2008 (the pulsar wind's rings, and the Vela pulsar wind nebula's two tori)."
       dates: "As the photographs' rows."
       drawn: "Measured: the photographs; the Crab's outline, empty middle, pinched waist, lobes and honeycomb scale, its pulsar wind's two rings and its growth rate. Reconstructed: the Veil's shell in depth, its light the photograph's (W3-c). Modelled: the Crab as a cage of filaments round a glow (since 2026-11-16): each filament's place, the jets, the growth law from 1054. Illustrative: the Crab's colours (Hubble's false-colour mosaic; X-rays violet-blue), and the glow elsewhere."
       rights: "CC BY 4.0 photographs; OpenNGC CC BY-SA 4.0."
     records:
       - {domain: dso, where: {typeCode: SNR}}
       - {domain: photographs, ids: [m1, veil-nebula]}
-      - {domain: heroes, ids: [crab, veil, casa]}
+      - {domain: heroes, ids: [crab, veil, casa, vela]}
 
   # --- galaxies and beyond -----------------------------------------------------------------------------
   - id: GALAXY_SPIRAL

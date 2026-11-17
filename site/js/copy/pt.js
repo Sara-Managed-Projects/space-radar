@@ -6478,6 +6478,80 @@ Object.assign(COPY, {
   }
 });
 // ds2: end
+// ds3: begin -- the words of the Vela pulsar wind nebula and the Cat's Eye (copy/en.deepdata.js), machine-drafted
+Object.assign(COPY, {
+  "deepVela": {
+    "card": {
+      "vela": "Dois anéis de luz de raios X e um par de jatos, desenhados com a geometria ajustada à imagem do Chandra (Ng e Romani, 2004 e 2008). O comprimento dos jatos e qual extremo do eixo está mais perto são modelados; a cor é ilustrativa. Ainda não revisto por um astrónomo."
+    },
+    "rows": {
+      "dso-vela-pulsar-wind-nebula": [
+        [
+          "Os dois anéis",
+          "Medidos. Ajustados à imagem de raios X do Chandra: cada anel com 21,25 segundos de arco de raio, o eixo de rotação inclinado 63,6° em relação à nossa linha de visão e no ângulo de posição 130,6° do céu, com os anéis a 11,61 segundos de arco um do outro tal como os vemos (Ng e Romani, 2004, 2008)."
+        ],
+        [
+          "Porque um lado é mais brilhante",
+          "Medido. O fluxo ao longo de cada anel move-se a 0,44 da velocidade da luz, o que ilumina o lado que vem para a câmara; o padrão muda quando a vista roda."
+        ],
+        [
+          "Os jatos",
+          "A sua velocidade é medida (0,45 da da luz). O comprimento e o brilho são modelados: o jato real curva-se e muda de ano para ano."
+        ],
+        [
+          "Que extremo está perto",
+          "Modelado. Os artigos não dizem que extremo do eixo aponta para nós."
+        ],
+        [
+          "Cor",
+          "Ilustrativa. Os raios X não são luz que um olho veja; são desenhados em azul-violeta."
+        ],
+        [
+          "Revisão",
+          "Este desenho ainda não foi revisto por um astrónomo."
+        ]
+      ]
+    }
+  },
+  "deepCatsEye": {
+    "card": {
+      "catseye": "As suas partes, ângulos e velocidades vêm de um modelo 3D publicado (Clairmont, Steffen e Koning, 2022); os tamanhos são lidos na imagem do Hubble. As cores são ilustrativas. Ainda não revisto por um astrónomo."
+    },
+    "rows": {
+      "dso-cats-eye-nebula": [
+        [
+          "As suas partes",
+          "Medidas. Uma casca interior em forma de ovo dentro de uma casca exterior de dois lóbulos redondos, um anel na cintura, dois aglomerados no eixo e dois jatos: um modelo ajustado à imagem do Hubble e a cinco mapas da velocidade do gás (Clairmont e outros, 2022)."
+        ],
+        [
+          "Os dois anéis parciais",
+          "Medidos. Cada um é a base de um cone a 38° do eixo, inclinado 17°, aberto em 300° da sua volta: o rasto de um jato que oscilava e nunca completou um círculo. Onde fica cada abertura é modelado."
+        ],
+        [
+          "Velocidades",
+          "Medidas. Tudo se move em linha reta para fora: a casca exterior a 25–33,5 km/s, o anel da cintura a 24, os aglomerados a 44, os jatos a 72. A idade do modelo é de 2 136 anos, a 4 272 anos-luz (Gaia)."
+        ],
+        [
+          "Tamanhos e eixo",
+          "Lidos na imagem do Hubble pelo Space Radar, com cerca de um décimo de precisão: o artigo mostra o modelo em imagens, não numa tabela."
+        ],
+        [
+          "Inclinação",
+          "Modelada. O artigo diz apenas que o eixo está ligeiramente inclinado; é desenhado a 80° da nossa linha de visão, com o extremo norte para nós."
+        ],
+        [
+          "Cor",
+          "Ilustrativa. A cor falsa do Hubble, que o modelo não tem. O aspeto Medido mostra-a em cinzento."
+        ],
+        [
+          "Revisão",
+          "Este desenho ainda não foi revisto por um astrónomo."
+        ]
+      ]
+    }
+  }
+});
+// ds3: end
 // A constellation seen from the side (ui/figureside.js, copy/en.side.js): begin
 COPY.figureSide = {
   "open": "Ver de lado",

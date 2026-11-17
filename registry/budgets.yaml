@@ -232,6 +232,12 @@ budgets:
   # boot. tests/test_casa.mjs.
   - {id: deep_casa_bytes, value: 100000, unit: B, since: 2026-11-16, reason: "spec 0076 design section 4 allows a hero 1.5 MB; 81 384 B measured on 2026-11-16: the Chandra X-ray Center's seven VTK files (10.2 MB, 143 000 vertices) thinned to 24 219 points on a 10-bit grid, packed with meshopt"}
   - {id: deep_casa_draw_calls, value: 2, unit: calls, since: 2026-11-16, reason: "spec 0076 design section 4: at most +5 for a hero; every part's points are one call and the blast wave's sphere one"}
+  # The Vela pulsar wind nebula (scene/deep/vela.js) and the Cat's Eye (scene/deep/catseye.js), soft points from published geometry
+  # (scene/deep/softpoints.js): no data file, only the modules and the two profiles, fetched when the object is near, never at boot.
+  # tests/test_pointheroes.mjs.
+  - {id: deep_pointheroes_bytes, value: 75000, unit: B, since: 2026-11-17, reason: "spec 0076 design section 4 allows a hero 1.5 MB; the two modules, the shared points shader and the two profiles measured at about 43 000 B on 2026-11-17 (the hero's points are generated, nothing is downloaded)"}
+  - {id: deep_vela_draw_calls, value: 2, unit: calls, since: 2026-11-17, reason: "spec 0076 design section 4: at most +5 for a hero; the fitted tori with the pulsar are one instanced call and the jets another, so the Measured look can drop the modelled jets"}
+  - {id: deep_catseye_draw_calls, value: 1, unit: calls, since: 2026-11-17, reason: "spec 0076 design section 4: at most +5 for a hero; every surface's points are one instanced call"}
   # The S-stars round Sagittarius A* (scene/sstars.js, internal #419): the module and its table (data/sstars.js), fetched the first
   # time the hole's picture is drawn for it, never at boot. tests/test_sstars.mjs.
   - {id: deep_sstars_bytes, value: 30000, unit: B, since: 2026-11-17, reason: "spec 0076 design section 4 allows a hero 1.5 MB; the module and the 39 orbits' table are about 21 kB on 2026-11-17 (no mesh, no texture: the orbits are computed)"}

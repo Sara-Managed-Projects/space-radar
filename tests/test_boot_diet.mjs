@@ -207,6 +207,12 @@ const DEFERRED = {
   'js/data/hero-homunculus.js': 'a hero\'s profile: with the coordinator',
   'js/scene/deep/casa.js': 'Cassiopeia A from its published 3D reconstruction: the coordinator fetches it when the remnant is near',
   'js/data/hero-casa.js': 'a hero\'s profile: with the coordinator',
+  // the Vela pulsar wind nebula and the Cat's Eye, soft points from published geometry (the deep-space review, 2026-11-17)
+  'js/scene/deep/vela.js': 'the Vela pulsar wind nebula\'s fitted tori and jets: the coordinator fetches it when the nebula is near',
+  'js/scene/deep/catseye.js': 'the Cat\'s Eye from its published morpho-kinematic model: the coordinator fetches it when the nebula is near',
+  'js/scene/deep/softpoints.js': 'soft additive points with an optional Doppler boost: with the objects that draw them',
+  'js/data/hero-vela.js': 'a hero\'s profile: with the coordinator',
+  'js/data/hero-catseye.js': 'a hero\'s profile: with the coordinator',
   'js/copy/en.deepdata.js': 'the words of the objects built from published 3D data: with their modules',
   // the S-stars round Sagittarius A* (internal #419): fetched by scene/portraits.js when the hole's picture is drawn for it
   'js/scene/sstars.js': 'the S-stars on their measured orbits: scene/portraits.js fetches it with the Sagittarius A* picture',
