@@ -586,9 +586,9 @@ export const LAYERS = [
     priority: 62,
     // 178 rows since the hand-kept 68 (dso-hand.yaml) joined the Messier list; the sentence still
     // said "the Messier objects and the Magellanic Clouds" (2026-09-22). And since scene/dsoglow.js
-    // each is drawn as wide as it measures. 211 since thirty-one famous non-Messier objects joined
-    // the hand rows the same day (the Heart and Soul, the Antennae, Thor's Helmet...).
-    sentence: 'The Messier objects and 101 more, from the Local Group\'s dwarf galaxies to the Carina Nebula, at their measured distances and drawn as wide as they measure. Every other NGC and IC object, Harris\'s globular clusters, Green\'s supernova remnants and the open clusters Gaia found are drawn too, as a mark for their kind at a distance the catalogue gives or that is worked out from it; one with no distance says so.', // 0079 a2: was "has no distances written down, so it is not drawn as places"
+    // each is drawn as wide as it measures. 212 since SN 1987A joined (211 since thirty-one famous non-Messier objects joined
+    // the hand rows the same day (the Heart and Soul, the Antennae, Thor's Helmet...)).
+    sentence: 'The Messier objects and 102 more, from the Local Group\'s dwarf galaxies to the Carina Nebula, at their measured distances and drawn as wide as they measure. Every other NGC and IC object, Harris\'s globular clusters, Green\'s supernova remnants and the open clusters Gaia found are drawn too, as a mark for their kind at a distance the catalogue gives or that is worked out from it; one with no distance says so.', // 0079 a2: was "has no distances written down, so it is not drawn as places"
   },
   {
     // The Milky Way as a place (spec 0028 step 6). Mirrors registry/layers.yaml `galaxy`. One record --
