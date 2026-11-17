@@ -1696,7 +1696,7 @@ export const COPY = {
     records: {
       "dso-milky-way": {
         drawn: "una ilustración construida sobre mediciones",
-        split: "Medido: las estrellas a pocos miles de años luz (Gaia), el ángulo de la barra, las direcciones a lo largo de los brazos y los brazos más cercanos (Reid et al. 2019). Deducido: el lado lejano más allá del centro, oculto por el polvo; sus brazos son los cercanos llevados al otro lado."
+        split: "Medido: las estrellas a pocos miles de años luz (Gaia), el ángulo de la barra, las direcciones a lo largo de los brazos y los brazos más cercanos (Reid et al. 2019). Deducido: el lado lejano más allá del centro, oculto por el polvo; sus brazos son los cercanos llevados al otro lado. Cuatro corrientes estelares (Sagitario, Huérfana-Chenab, GD-1, Palomar 5) se dibujan con la biblioteca galstreams (Mateu 2023): se mide dónde está cada una en el cielo y también su distancia, salvo la de GD-1, que se supone; la cinta de estrellas alrededor de cada línea es ilustrativa."
       }
     }
   },

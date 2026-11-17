@@ -1840,7 +1840,7 @@ export const COPY = {
     "records": {
       "dso-milky-way": {
         "drawn": "eine Illustration auf Grundlage von Messungen",
-        "split": "Gemessen: die Sterne innerhalb weniger tausend Lichtjahre (Gaia), der Winkel des Balkens, die Richtungen entlang der Arme und die näheren Arme (Reid et al. 2019). Erschlossen: die ferne Seite hinter dem Zentrum, vom Staub verdeckt; ihre Arme sind die nahen, um das Zentrum herum fortgesetzt."
+        "split": "Gemessen: die Sterne innerhalb weniger tausend Lichtjahre (Gaia), der Winkel des Balkens, die Richtungen entlang der Arme und die näheren Arme (Reid et al. 2019). Erschlossen: die ferne Seite hinter dem Zentrum, vom Staub verdeckt; ihre Arme sind die nahen, um das Zentrum herum fortgesetzt. Vier Sternströme (Sagittarius, Orphan-Chenab, GD-1, Palomar 5) werden nach der Bibliothek galstreams (Mateu 2023) gezeichnet: Wo jeder am Himmel liegt, ist gemessen, ebenso seine Entfernung, außer bei GD-1, dessen Entfernung angenommen ist; das Band aus Sternen um jede Linie ist illustrativ."
       }
     }
   },

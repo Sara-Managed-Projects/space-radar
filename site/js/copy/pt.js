@@ -1829,7 +1829,7 @@ export const COPY = {
     "records": {
       "dso-milky-way": {
         "drawn": "uma ilustração construída sobre medições",
-        "split": "Medido: as estrelas a poucos milhares de anos-luz (Gaia), o ângulo da barra, as direções ao longo dos braços e os braços mais próximos (Reid et al. 2019). Deduzido: o lado distante, além do centro, escondido pela poeira; os braços dele são os próximos levados para lá."
+        "split": "Medido: as estrelas a poucos milhares de anos-luz (Gaia), o ângulo da barra, as direções ao longo dos braços e os braços mais próximos (Reid et al. 2019). Deduzido: o lado distante, além do centro, escondido pela poeira; os braços dele são os próximos levados para lá. Quatro correntes estelares (Sagitário, Órfã-Chenab, GD-1, Palomar 5) são desenhadas a partir da biblioteca galstreams (Mateu 2023): onde cada uma está no céu é medido, e também a sua distância, exceto a de GD-1, que é presumida; a faixa de estrelas em volta de cada linha é ilustrativa."
       }
     }
   },

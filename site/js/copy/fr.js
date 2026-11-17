@@ -1843,7 +1843,7 @@ export const COPY = {
     "records": {
       "dso-milky-way": {
         "drawn": "une illustration construite sur des mesures",
-        "split": "Mesuré : les étoiles à quelques milliers d’années-lumière (Gaia), l’angle de la barre, les directions le long des bras et les bras les plus proches (Reid et al. 2019). Déduit : l’autre côté, au-delà du centre, caché par la poussière ; ses bras sont les bras proches prolongés."
+        "split": "Mesuré : les étoiles à quelques milliers d’années-lumière (Gaia), l’angle de la barre, les directions le long des bras et les bras les plus proches (Reid et al. 2019). Déduit : l’autre côté, au-delà du centre, caché par la poussière ; ses bras sont les bras proches prolongés. Quatre courants d’étoiles (Sagittaire, Orphan-Chenab, GD-1, Palomar 5) sont dessinés d’après la bibliothèque galstreams (Mateu 2023) : la place de chacun dans le ciel est mesurée, ainsi que sa distance sauf pour GD-1, dont la distance est supposée ; le ruban d’étoiles autour de chaque ligne est illustratif."
       }
     }
   },

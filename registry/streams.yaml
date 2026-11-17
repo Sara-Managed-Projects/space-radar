@@ -1,0 +1,100 @@
+# Stellar streams round the Milky Way (internal #420, the deep-space review of 2026-11-16, idea 2): four tracks of the
+# galstreams library, drawn by site/js/scene/deep/streams.js (a deep layer, scene/deep/heroes.js DEEP_LAYERS) from the
+# points scripts/build_deep_streams.py bakes into site/data/deep/streams.json. The track files are not in git.
+#
+# THE LIBRARY. galstreams (Mateu 2023, MNRAS 520, 5225, arXiv:2204.10326, doi 10.1093/mnras/stad321), https://github.com/cmateu/galstreams,
+# BSD 3-Clause licence (LICENSE read 2026-11-17: "Copyright (c) 2017, Cecilia Mateu", redistribution with the notice allowed,
+# the name of the holder not to endorse). Read at commit 6a304c05bea7f774390a11082ea127719e99b70a (committed 2026-06-03).
+# Each file is a table of points along one stream: sky position (ICRS ra, dec) and distance from the Sun, with proper motions.
+#
+# WHAT IS MEASURED AND WHAT IS NOT. The tracks are fits through the stream's member stars, so WHERE each stream lies on the
+# sky is measured. The distance along each is measured for Sagittarius (Gaia DR2 RR Lyrae: Ramos et al. 2020), Orphan-Chenab
+# (knots of Table C2, Koposov et al. 2019) and Palomar 5 (RR Lyrae, a polynomial: Price-Whelan et al. 2019); for GD-1 it is
+# NOT measured star by star: the library adopts the gradient d = 0.05 phi1 + 10 kpc that Price-Whelan & Bonaca 2018
+# propose (the library's own track note, read 2026-11-17). Drawn here and illustrative: the line's width and brightness, the
+# colours, the ribbon of points about each track (a few times the width the summary table gives where there is one).
+# Not drawn: the stars themselves, the streams' ends beyond the tracks, the Sagittarius stream's second wrap (the library
+# has one track; the N-body particles of Vasiliev, Belokurov & Erkal 2021 are not used).
+id: streams
+frame: "heliocentric: the track's (ra, dec, distance) as measured from the Sun, turned into the scene's axes (ecliptic J2000, sun-inertial) in kly; no Galactic model, no Sun position is assumed"
+file: site/data/deep/streams.json
+made_by: scripts/build_deep_streams.py
+library:
+  name: galstreams
+  paper: "Mateu, C. 2023, galstreams: A library of Milky Way stellar stream footprints and tracks, MNRAS 520, 5225 (arXiv:2204.10326, doi:10.1093/mnras/stad321)"
+  repository: https://github.com/cmateu/galstreams
+  commit: 6a304c05bea7f774390a11082ea127719e99b70a
+  licence: "BSD 3-Clause (https://github.com/cmateu/galstreams/blob/master/LICENSE, read 2026-11-17)"
+  read: 2026-11-17
+  kpc_ly: 3261.5637769   # light-years in a kiloparsec (IAU 2015 B2 parsec)
+  step_note: "every step-th row of the file, the last row always, rounded to 0.001 kly"
+streams:
+  - id: sagittarius
+    name: Sagittarius stream
+    file: track.st.Sagittarius.antoja2020.ecsv
+    sha256: 4ea181c1456f3a9df28f12a41dfbbd1ea34401e6a0d5838a7bd01a52defd10a9
+    bytes: 3263840
+    rows: 28000
+    step: 100
+    kept: 281
+    dist_kpc: [18.954, 52.327]
+    first: {ra_deg: 62.8186, dec_deg: 16.0063, dist_kpc: 37.3149}
+    last: {ra_deg: 149.7943, dec_deg: 27.8478, dist_kpc: 19.412}
+    colour: [1.0, 0.72, 0.3]
+    source: "sky and proper-motion track: Antoja et al. 2020, A&A 635, L3 (arXiv:2001.10012); distance track: Ramos et al. 2020, A&A 640, C5 (corrigendum; RR Lyrae 'Strip' sample); both as the library's track note says, read 2026-11-17"
+    dwarf: "the Sagittarius dwarf, the stream's source: Galactic l 5.6, b -14.2 deg, 26.0 kpc (McConnachie 2012, as the library's lib/mw_satellites_2018.csv lists it, read 2026-11-17)"
+  - id: orphan-chenab
+    name: Orphan-Chenab stream
+    file: track.st.Orphan-Chenab.koposov2019.ecsv
+    sha256: faa2fb5c919153ae29191816aa90a8747a316c8fe408f1362c8aa1b1aab005c7
+    bytes: 2675932
+    rows: 23000
+    step: 100
+    kept: 231
+    dist_kpc: [15.982, 100.0]
+    first: {ra_deg: 341.0157, dec_deg: -13.6516, dist_kpc: 100.0}
+    last: {ra_deg: 136.4365, dec_deg: 60.3418, dist_kpc: 55.41}
+    colour: [0.55, 0.85, 1.0]
+    width_deg: 0.8   # the summary table's median width on the sky (master_log.txt, Koposov 2019)
+    source: "Koposov et al. 2019, MNRAS 485, 4726 (arXiv:1812.08172), the sky and distance knots of its Tables C1 and C2 as the library implements them (read 2026-11-17)"
+  - id: gd-1
+    name: GD-1 stream
+    file: track.st.GD-1.pricewhelan2018.ecsv
+    sha256: 408c67823e5887dfbd80e3540c266b85c483504b51e77dfeacfc3c4bd33415b9
+    bytes: 1163191
+    rows: 9981
+    step: 50
+    kept: 201
+    dist_kpc: [5.508, 10.499]
+    first: {ra_deg: 124.0646, dec_deg: -7.9708, dist_kpc: 5.5083}
+    last: {ra_deg: 219.5622, dec_deg: 58.2053, dist_kpc: 10.4987}
+    colour: [0.65, 1.0, 0.65]
+    width_deg: 0.67   # the track's summary row, width_phi2 0.6737 deg
+    distance_note: "assumed along the track: d = 0.05 phi1 + 10 kpc (Price-Whelan & Bonaca 2018), the library's note"
+    source: "Price-Whelan & Bonaca 2018, ApJ 863, L20 (arXiv:1805.00425); the frame of Koposov, Rix & Hogg 2010, ApJ 712, 260 (arXiv:0907.1085)"
+  - id: palomar-5
+    name: Palomar 5 stream
+    file: track.st.Pal5.pricewhelan2019.ecsv
+    sha256: 292cb014fedf20ba50024859306aad32748c0f62ca89035e5000d7d3b3727ee7
+    bytes: 238403
+    rows: 2097
+    step: 20
+    kept: 106
+    dist_kpc: [19.088, 22.023]
+    first: {ra_deg: 242.0938, dec_deg: 6.8831, dist_kpc: 22.0234}
+    last: {ra_deg: 224.6574, dec_deg: -4.8005, dist_kpc: 19.0882}
+    colour: [1.0, 0.55, 0.75]
+    source: "the distance and proper-motion tracks: Price-Whelan et al. 2019, AJ 158, 223 (arXiv:1910.00595), its Table 1; the sky track: Bonaca et al. 2020, ApJ 889, 70 (arXiv:1910.00592)"
+look:
+  # display values, illustrative: nothing here is measured
+  line_alpha: 0.9
+  ribbon_points: 1400
+  ribbon_width_kly: {sagittarius: 2.5, orphan-chenab: 1.2, gd-1: 0.25, palomar-5: 0.15}
+  fade_from_kly: 15      # drawn with the camera farther than this from the Sun, whole by 40
+  fade_to_kly: 40
+drawn: [model]
+review:
+  data_vs_model: "Measured: where each stream lies on the sky, and its distance for Sagittarius, Orphan-Chenab and Palomar 5. Assumed by the library: GD-1's distance gradient. Illustrative: the line and ribbon, their widths and colours."
+  by: Space Radar maintainers
+  date: 2026-11-17
+  astronomer: "not yet; the card says so"

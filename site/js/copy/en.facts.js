@@ -181,7 +181,7 @@ Object.assign(COPY, {
     records: {
       'dso-milky-way': {
         drawn: 'an illustration built on measurements',
-        split: 'Measured: the stars within a few thousand light-years (Gaia), the bar’s angle, the directions along the arms and the nearer arms (Reid et al. 2019). Inferred: the far side beyond the centre, hidden by dust; its arms are the near ones carried round.',
+        split: 'Measured: the stars within a few thousand light-years (Gaia), the bar’s angle, the directions along the arms and the nearer arms (Reid et al. 2019). Inferred: the far side beyond the centre, hidden by dust; its arms are the near ones carried round. Four stellar streams (Sagittarius, Orphan-Chenab, GD-1, Palomar 5) are drawn from the galstreams library (Mateu 2023): where each lies on the sky is measured, and so is its distance except GD-1’s, which is assumed; the ribbon of stars about each line is illustrative.',
       },
     },
   },

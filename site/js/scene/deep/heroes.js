@@ -103,6 +103,8 @@ export const DEEP_LAYERS = [
   // 0077 W3-f: begin (the SMC ships, and its Bridge and Stream with it: MAGELLANIC's line, defined below, is read lazily)
   { id: 'magellanic', stage: 'W2-e', stages: ['stellar', 'galaxy', 'local-group'], build: () => import('./magellanic.js') },
   // 0077 W3-f: end
+  // Stellar streams round the Milky Way (internal #420, 2026-11-17): four tracks of the galstreams library, scene/deep/streams.js.
+  { id: 'streams', stage: 'ds4', stages: ['stellar', 'galaxy', 'local-group'], build: () => import('./streams.js') },
 ];
 
 // 0077 W2-e: begin
