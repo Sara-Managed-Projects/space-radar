@@ -14,9 +14,9 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 |---|---:|---:|
 | worlds | 31 | 31 |
 | rings | 1 | 1 |
-| dso | 210 | 210 |
+| dso | 211 | 211 |
 | photographs | 30 | 30 |
-| heroes | 34 | 34 |
+| heroes | 35 | 35 |
 | exotics | 27 | 27 |
 | systems | 51 | 51 |
 | planets | 134 | 134 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 40 | 40 |
-| **all** | **1199** | **111 386** |
+| **all** | **1201** | **111 388** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -64,7 +64,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [PLANETARY_NEBULA](#planetary_nebula) | 23 | `dsoglow.js`, `helix.js`, `ring.js`, `shellneb.js`, `gasmat.js` | measured | helix, m27, m57, southern-ring |
 | [DARK_NEBULA](#dark_nebula) | 5 | `dsoglow.js`, `dustsheet.js` | measured | coalsack, horsehead |
 | [REFLECTION_NEBULA](#reflection_nebula) | 8 | `dsoglow.js`, `dustsheet.js`, `reflection.js`, `homunculus.js` | illustrative | homunculus, iris, m45, m78 |
-| [SUPERNOVA_REMNANT](#supernova_remnant) | 6 | `nebulae.js`, `dsoglow.js`, `remnant.js` | measured | crab, veil |
+| [SUPERNOVA_REMNANT](#supernova_remnant) | 8 | `nebulae.js`, `dsoglow.js`, `remnant.js`, `casa.js` | measured | casa, crab, veil |
 | [GALAXY_SPIRAL](#galaxy_spiral) | 56 | `galaxy.js`, `spiral.js`, `dsoglow.js` | illustrative | m101, m104, m31, m33, m51, m81, m83, ngc1300 |
 | [GALAXY_IRREGULAR](#galaxy_irregular) | 19 | `lmc.js`, `smc.js`, `magellanic.js`, `dsoglow.js` | illustrative | lmc, smc |
 | [GALAXY_ELLIPTICAL](#galaxy_elliptical) | 42 | `dsoglow.js`, `spiral.js` | illustrative | cena |
@@ -83,7 +83,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 1199 records: 375 measured, 458 modelled, 366 illustrative.
+Honesty over the 1201 records: 375 measured, 459 modelled, 367 illustrative.
 
 ## The classes
 
@@ -534,19 +534,19 @@ Honesty over the 1199 records: 375 measured, 458 modelled, 366 illustrative.
 
 **Supernova remnants**
 
-- **Drawn by:** `site/js/scene/nebulae.js`, `site/js/scene/dsoglow.js`, `site/js/scene/deep/remnant.js`
+- **Drawn by:** `site/js/scene/nebulae.js`, `site/js/scene/dsoglow.js`, `site/js/scene/deep/remnant.js`, `site/js/scene/deep/casa.js`
 - **Default honesty:** measured
 - **On a weak device (T0, or after the frame latch):** The photograph of the Crab or the Veil; the glow elsewhere.
-- **Hero overrides:** `crab` (registry/deepsky-heroes/crab.yaml), `veil` (registry/deepsky-heroes/veil.yaml)
+- **Hero overrides:** `crab` (registry/deepsky-heroes/crab.yaml), `veil` (registry/deepsky-heroes/veil.yaml), `casa` (registry/deepsky-heroes/casa.yaml)
 - **Source:** Photographs of M1 (the Crab) and the Veil; OpenNGC.
 - **Dates and filters:** As the photographs' rows.
 - **Measured, modelled or reconstructed:** Measured: the photographs. Reconstructed: the Veil's shell in depth, its light the photograph's (W3-c; the Crab's is built and held). Illustrative: the glow.
 - **Rights:** CC BY 4.0 photographs; OpenNGC CC BY-SA 4.0.
 - **What is missing is tracked in:** internal #784 (shells, W3-c); internal #549 (NASA meshes wait on a licence)
-- **Records (6):**
-  - dso (2): `m1`, `veil-nebula`
+- **Records (8):**
+  - dso (3): `m1`, `veil-nebula`, `cassiopeia-a`
   - photographs (2): `m1`, `veil-nebula`
-  - heroes (2): `crab`, `veil`
+  - heroes (3): `casa`, `crab`, `veil`
 
 ### GALAXY_SPIRAL
 

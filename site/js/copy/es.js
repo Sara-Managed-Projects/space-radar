@@ -5732,3 +5732,92 @@ COPY.emailUpdates = {
   "skyButton": "Recibir alertas del cielo"
 };
 // redesign 2026-11-10: end
+
+// ds2: begin -- the words of the Homunculus Nebula and Cassiopeia A (copy/en.deepdata.js), machine-drafted
+Object.assign(COPY, {
+  "deepHomunculus": {
+    "card": {
+      "homunculus": "Su forma es un modelo 3D publicado, construido a partir de la velocidad medida de cada parte de la nebulosa (Steffen y otros, 2014), girado y escalado con las medidas de Smith (2006). Su brillo y su moteado son ilustrativos. Modelo: Centro de Vuelos Espaciales Goddard de la NASA/Ed Campion y UNAM/W. Steffen, a través de ESO. Aún no revisado por un astrónomo."
+    },
+    "rows": {
+      "dso-homunculus-nebula": [
+        [
+          "Su forma",
+          "Medida. Un modelo 3D construido con el corrimiento Doppler de su gas de hidrógeno, leído a lo largo de 92 franjas de la nebulosa con el Very Large Telescope de ESO (Steffen y otros, 2014). El hueco de cada polo, el surco que lo rodea y los dos bultos cerca de la cintura están en los datos."
+        ],
+        [
+          "Su inclinación y su tamaño",
+          "Medidos. El lóbulo lejano apunta al noroeste, a 41° de nuestra línea de visión; el cercano apunta hacia nosotros en la misma medida. En 2005 cada polo estaba a 21 690 veces la distancia Tierra–Sol de la estrella (Smith, 2006)."
+        ],
+        [
+          "Crece",
+          "Cada parte ha salido disparada en línea recta a su propia velocidad desde la erupción de la década de 1840, así que su tamaño sigue la fecha del reloj. Antes de la erupción no se dibuja."
+        ],
+        [
+          "Su superficie",
+          "Ilustrativa. El brillo y el moteado representan polvo iluminado desde dentro por la estrella; el modelo solo contiene la forma. El aspecto Medido quita el moteado."
+        ],
+        [
+          "Modelo 3D",
+          "Centro de Vuelos Espaciales Goddard de la NASA/Ed Campion y UNAM/W. Steffen, a través de ESO (CC BY 4.0). No se movió ningún punto."
+        ],
+        [
+          "Revisión",
+          "Este dibujo aún no ha sido revisado por un astrónomo."
+        ]
+      ]
+    },
+    "how": "El gas que viene hacia nosotros desplaza su luz al azul y el que se aleja, al rojo, y el Homúnculo se expande de forma pareja desde la década de 1840, así que la velocidad de un punto a lo largo de nuestra línea también dice cuánto está por delante de la estrella o por detrás. Los astrónomos leyeron la velocidad de su hidrógeno a lo largo de 92 franjas de la nebulosa y construyeron su forma a partir de eso (Steffen y otros, 2014)."
+  },
+  "deepCasA": {
+    "card": {
+      "casa": "Cada punto es un lugar donde se midió ese gas: su velocidad hacia nosotros o alejándose da su profundidad (DeLaney y otros, 2010). Los colores son una leyenda, no lo que vería un ojo. Modelo: NASA/CXC/MIT/T. Delaney y otros. Aún no revisado por un astrónomo."
+    },
+    "rows": {
+      "dso-cassiopeia-a": [
+        [
+          "Verde",
+          "Hierro, visto en rayos X por el telescopio Chandra. Lugares medidos."
+        ],
+        [
+          "Amarillo",
+          "Argón y silicio, vistos en rayos X y en luz infrarroja, con los dos chorros y los nudos exteriores vistos en luz visible. Lugares medidos."
+        ],
+        [
+          "Rojo",
+          "Silicio frío en el centro, visto en luz infrarroja por el telescopio Spitzer: restos que la onda de choque interior aún no ha calentado. Lugares medidos."
+        ],
+        [
+          "Cáscara azul",
+          "La onda expansiva exterior, a 153 segundos de arco del centro. Modelada: una esfera lisa del tamaño medido, en lugar de los filamentos reales, como en el propio modelo de Chandra."
+        ],
+        [
+          "Punto blanco",
+          "La estrella de neutrones que dejó la explosión. Su lugar en el cielo está medido; su profundidad, no."
+        ],
+        [
+          "Cómo se conoce su profundidad",
+          "Los restos han salido en línea recta desde un punto desde la explosión, así que el gas que se mueve hacia nosotros está delante de ese punto y el que se aleja, detrás: cada 1 000 km/s son 22 segundos de arco de profundidad."
+        ],
+        [
+          "Crece",
+          "En el reloj, cada parte a su propio ritmo medido: 0,3 % al año los restos libres, 0,2 % el gas de rayos X frenado, unos 4 900 km/s la onda expansiva. Antes de 1671 no se dibuja."
+        ],
+        [
+          "Brillo",
+          "No está en el modelo. Cada punto de un color es igual de brillante, y su tamaño es la nitidez de los datos, no el tamaño de un grumo."
+        ],
+        [
+          "Modelo 3D",
+          "NASA/CXC/MIT/T. Delaney y otros, a partir de los archivos del Centro de Rayos X Chandra. Reducido a 24 219 puntos."
+        ],
+        [
+          "Revisión",
+          "Este dibujo aún no ha sido revisado por un astrónomo."
+        ]
+      ]
+    },
+    "how": "Cada elemento químico brilla en sus propios colores, y el gas que se acerca o se aleja los desplaza, así que un telescopio que descompone la luz averigua a qué velocidad se mueve a lo largo de nuestra línea cada mancha de hierro, silicio o argón. Como todo salió de un punto hace unos 350 años, esa velocidad es también una distancia por delante o por detrás de ese punto: los rayos X de Chandra y la luz infrarroja de Spitzer dieron juntos el primer mapa 3D de una estrella que explotó (DeLaney y otros, 2010)."
+  }
+});
+// ds2: end

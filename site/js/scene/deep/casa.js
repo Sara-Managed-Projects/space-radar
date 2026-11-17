@@ -160,13 +160,13 @@ export function createHero(THREE, env = {}) {
     vertexShader: VERT, fragmentShader: FRAG,
     uniforms: { uGrowFree: { value: 1 }, uGrowSlowed: { value: 1 }, uPxPerRad: { value: 900 }, uPixelRatio: { value: 1 }, uShare: { value: 0 }, uGain: { value: 1 } },
     // gasmat.js COLOUR_POLICY: display values, no depth write; additive light
-    transparent: true, depthTest: false, depthWrite: false, toneMapped: false, blending: THREE.AdditiveBlending,
+    transparent: false, depthTest: false, depthWrite: false, toneMapped: false, blending: THREE.AdditiveBlending,
   });
   mat.name = 'deep-casa-debris';
   const shockMat = new THREE.ShaderMaterial({
     vertexShader: SHOCK_VERT, fragmentShader: SHOCK_FRAG,
     uniforms: { uColour: { value: new THREE.Vector3(...shock.colour) }, uShare: { value: 0 } },
-    transparent: true, depthTest: false, depthWrite: false, toneMapped: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, // both walls from outside, the far one from inside
+    transparent: false, depthTest: false, depthWrite: false, toneMapped: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, // both walls from outside, the far one from inside
   });
   shockMat.name = 'deep-casa-blast-wave';
   const shockMesh = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 40), shockMat);

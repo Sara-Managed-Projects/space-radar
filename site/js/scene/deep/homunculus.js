@@ -181,7 +181,7 @@ export function createHero(THREE, env = {}) {
   const starMat = new THREE.ShaderMaterial({
     vertexShader: STAR_VERT, fragmentShader: STAR_FRAG,
     uniforms: { uShare: { value: 0 } },
-    transparent: true, depthTest: false, depthWrite: false, toneMapped: false, blending: THREE.AdditiveBlending,
+    transparent: false, depthTest: false, depthWrite: false, toneMapped: false, blending: THREE.AdditiveBlending,
   });
   const star = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), starMat);
   star.name = `${group.name}-star`;

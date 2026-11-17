@@ -5372,14 +5372,13 @@ def main() -> int:
     else:
         credits = credits_path.read_text(encoding="utf-8")
         shipped = {Path(str(m.get("file") or "")).name for m in real_models} - {""}
-        # The meshes of the deep-sky objects drawn from published 3D data (site/data/deep/*.glb, each
-        # credited in its own CREDITS.md section and its registry/deepsky-heroes row) are shipped too.
-        shipped |= {p.name for p in (ROOT / "site/data/deep").glob("*.glb")}
         for name in sorted(shipped):
             if name not in credits:
                 fail("CREDITS.md", f"`{name}` ships and models.yaml credits it, but CREDITS.md "
                                    f"never names it -- 19 files were missing when this was written")
-        for name in sorted(set(re.findall(r"[A-Za-z0-9_.-]+\.glb", credits))):
+        # `site/data/deep/<name>.glb` is a deep-sky object's own mesh (point sets or a shell, drawn from published 3D data), not
+        # a spacecraft model: it has a CREDITS section and a registry/deepsky-heroes row, not a models.yaml row.
+        for name in sorted(set(re.findall(r"(?<!site/data/deep/)(?<![A-Za-z0-9_.-])[A-Za-z0-9_.-]+\.glb", credits))):
             if name not in shipped:
                 fail("CREDITS.md", f"credits `{name}`, which has no models.yaml real_models row "
                                    f"and does not ship -- a credit for work that is not here")
