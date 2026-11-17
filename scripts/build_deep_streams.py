@@ -83,6 +83,9 @@ def bake(tracks: Path) -> dict:
 
 def main() -> int:
     args = sys.argv[1:]
+    if "-h" in args or "--help" in args:
+        print("usage: build_deep_streams.py --tracks=DIR | --check\n" + __doc__)
+        return 0
     if "--check" in args:
         j = json.loads(OUT.read_text())
         reg = REGISTRY.read_text()
@@ -97,7 +100,7 @@ def main() -> int:
         return 1 if bad else 0
     tracks = next((Path(a.split("=", 1)[1]) for a in args if a.startswith("--tracks=")), None)
     if tracks is None:
-        print(__doc__)
+        print("usage: build_deep_streams.py --tracks=DIR | --check", file=sys.stderr)
         return 2
     j = bake(tracks)
     OUT.parent.mkdir(parents=True, exist_ok=True)

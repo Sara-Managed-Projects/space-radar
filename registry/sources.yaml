@@ -180,7 +180,7 @@ sources:
   # database is accessible to everyone, for free". That page states no licence and no attribution
   # wording; the credit below is the one this registry already gives Launch Library.
   # BUDGET: these three rows are one call each every 6 h; with the two rows above (one each every
-  # 2 h) that is 1.5 calls an hour against 15. `browser: false`: a visitor's browser never calls
+  # 2 h) that is 1.5 calls an hour against 15. `browser` is false: a visitor's browser never calls
   # LL2 for these, so a busy day here cannot spend the publisher's limit; the page reads our saved
   # copy, says its age, and says so when it is more than 48 h old.
   # The stations answer has the docked set itself (each port's `currently_docked`), so no hand-kept
