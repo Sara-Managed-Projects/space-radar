@@ -766,6 +766,10 @@ jobs:
         run: node tests/test_exoplanets.mjs
       - name: deep-sky objects sit at sourced distances (spec 0028 step 5)
         run: node tests/test_dso.mjs
+      # The 2026-11-16 deep-space review: seven edge-on galaxies were round glows (no minor axis or angle in their
+      # rows), and the Pleiades' mark sat on Alcyone. Every galaxy row now carries its catalogue ellipse or says why not.
+      - name: galaxies are their catalogue ellipses, edge-on ones thin and turned; the Pleiades sit among their stars
+        run: node tests/test_dso_ellipses.mjs
       - name: the Milky Way model is a model, in the right place (spec 0028 step 6)
         run: node tests/test_galaxy.mjs
       - name: galaxies from their own structure - Andromeda and M33 as heroes, the disc foreshortens as the camera circles (spec 0075 stage d)

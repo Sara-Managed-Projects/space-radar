@@ -1250,5 +1250,7 @@
  "66ba90603d": "Dibujado como WorldView-{n1}, una nave más alta sobre la misma plataforma — el tipo de objeto, no este en concreto · forma construida a partir de medidas e imágenes publicadas; detalles simplificados.",
  "c90413fd85": "Aquí aterrizó Curiosity el {d1}. El róver ha seguido su camino y tiene su propia marca.",
  "3262df82d7": "Aquí aterrizó Perseverance el {d1}. El róver ha seguido su camino y tiene su propia marca.",
- "cbdf08776a": "Un róver del tamaño de un coche que recoge muestras de roca. Aterrizó en el cráter Jezero en {n1} y desde entonces ha subido y cruzado el borde occidental del cráter."
+ "cbdf08776a": "Un róver del tamaño de un coche que recoge muestras de roca. Aterrizó en el cráter Jezero en {n1} y desde entonces ha subido y cruzado el borde occidental del cráter.",
+ "3bf96d01d2": "Fuente: posición: Hunt & Reffert {n1}, A&A {n2}, A114 (VizieR J/A+A/{n3}/A114), el centro de sus miembros de Gaia DR3; distancia: Hunt & Reffert {n4} (arXiv:{n5}), mediana de {n6} miembros de Gaia DR3",
+ "3b0df8fa45": "Fuente: posición: SIMBAD (NGC {n1}; Tarricq et al. {n2}, A&A {n3}, A19); distancia: <1>https://en.wikipedia.org/wiki/List_of_Messier_objects</1>"
 }

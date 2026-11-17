@@ -1250,5 +1250,7 @@
  "66ba90603d": "Drawn as WorldView-{n1}, a taller craft on the same bus — the kind of thing, not this exact one · shape built from published dimensions and pictures; details simplified.",
  "c90413fd85": "Where Curiosity landed on {d1}. The rover has driven on, and has a marker of its own.",
  "3262df82d7": "Where Perseverance landed on {d1}. The rover has driven on, and has a marker of its own.",
- "cbdf08776a": "A rover the size of a car, collecting rock samples. It landed in Jezero crater in {n1} and has since climbed up and over the crater's western rim."
+ "cbdf08776a": "A rover the size of a car, collecting rock samples. It landed in Jezero crater in {n1} and has since climbed up and over the crater's western rim.",
+ "3bf96d01d2": "Source: Position: Hunt & Reffert {n1}, A&A {n2}, A114 (VizieR J/A+A/{n3}/A114), the centre of its Gaia DR3 members; distance: Hunt & Reffert {n4} (arXiv:{n5}), Gaia DR3 median of {n6} members",
+ "3b0df8fa45": "Source: Position: SIMBAD (NGC {n1}; Tarricq et al. {n2}, A&A {n3}, A19); distance: <1>https://en.wikipedia.org/wiki/List_of_Messier_objects</1>"
 }

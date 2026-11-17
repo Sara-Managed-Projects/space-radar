@@ -1250,5 +1250,7 @@
  "66ba90603d": "Gezeichnet als WorldView-{n1}, ein höheres Raumfahrzeug auf demselben Satellitenbus – die Art von Objekt, nicht genau dieses · Form aus veröffentlichten Maßen und Bildern gebaut; Einzelheiten vereinfacht.",
  "c90413fd85": "Hier landete Curiosity am {d1}. Der Rover ist weitergefahren und hat eine eigene Markierung.",
  "3262df82d7": "Hier landete Perseverance am {d1}. Der Rover ist weitergefahren und hat eine eigene Markierung.",
- "cbdf08776a": "Ein Rover so groß wie ein Auto, der Gesteinsproben sammelt. Er landete {n1} im Jezero-Krater und ist seitdem über den westlichen Kraterrand hinaufgefahren."
+ "cbdf08776a": "Ein Rover so groß wie ein Auto, der Gesteinsproben sammelt. Er landete {n1} im Jezero-Krater und ist seitdem über den westlichen Kraterrand hinaufgefahren.",
+ "3bf96d01d2": "Quelle: Position: Hunt & Reffert {n1}, A&A {n2}, A114 (VizieR J/A+A/{n3}/A114), der Mittelpunkt seiner Gaia-DR3-Mitglieder; Entfernung: Hunt & Reffert {n4} (arXiv:{n5}), Median aus {n6} Gaia-DR3-Mitgliedern",
+ "3b0df8fa45": "Quelle: Position: SIMBAD (NGC {n1}; Tarricq et al. {n2}, A&A {n3}, A19); Entfernung: <1>https://en.wikipedia.org/wiki/List_of_Messier_objects</1>"
 }

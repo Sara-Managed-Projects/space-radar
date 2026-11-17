@@ -1250,5 +1250,7 @@
  "66ba90603d": "Le dessin représente WorldView-{n1}, un engin plus haut sur la même plateforme — le type d’objet, pas cet objet précis · forme construite d’après des dimensions et des photos publiées ; détails simplifiés.",
  "c90413fd85": "C’est ici que Curiosity s’est posé le {d1}. Le rover a repris la route et a son propre repère.",
  "3262df82d7": "C’est ici que Perseverance s’est posé le {d1}. Le rover a repris la route et a son propre repère.",
- "cbdf08776a": "Un rover de la taille d’une voiture, qui récolte des échantillons de roche. Il s’est posé dans le cratère Jezero en {n1} et a depuis grimpé et franchi le bord ouest du cratère."
+ "cbdf08776a": "Un rover de la taille d’une voiture, qui récolte des échantillons de roche. Il s’est posé dans le cratère Jezero en {n1} et a depuis grimpé et franchi le bord ouest du cratère.",
+ "3bf96d01d2": "Source : position : Hunt & Reffert {n1}, A&A {n2}, A114 (VizieR J/A+A/{n3}/A114), le centre de ses membres Gaia DR3 ; distance : Hunt & Reffert {n4} (arXiv:{n5}), médiane de {n6} membres Gaia DR3",
+ "3b0df8fa45": "Source : position : SIMBAD (NGC {n1} ; Tarricq et al. {n2}, A&A {n3}, A19) ; distance : <1>https://en.wikipedia.org/wiki/List_of_Messier_objects</1>"
 }
