@@ -524,13 +524,13 @@ classes:
     title: Globular clusters
     renderer: [site/js/scene/dsoglow.js, site/js/scene/deep/globular.js]
     honesty: illustrative
-    fallback: The globular glow profile with its holder; near, stars by King's profile from Harris's radii (scene/deep/globular.js, 0076 W3-a).
-    issue: "internal #819 (King-profile points, spec 0075 task 19, W3-a)"
+    fallback: The globular glow profile with its holder; near, the real Gaia members of 12 of them (M2, M3, M4, M5, M10, M13, M15, M22, M92, 47 Tucanae, NGC 6397, Omega Centauri; scene/deep/globular.js, internal #417 and #425), the others stars by King's profile from Harris's radii (0076 W3-a).
+    issue: "internal #819 (King-profile points, spec 0075 task 19, W3-a); internal #417, #425 (real members)"
     note:
       source: "OpenNGC for place, size and magnitude; the Messier distances."
       dates: "As OPEN_CLUSTER."
-      drawn: "Measured: place, size, distance, core and tidal radius (Harris 1996, VizieR VII/202). Modelled: the stars, by King's (1962) profile, their number, brightness and colour. Illustrative: the glow standing in for the faint stars."
-      rights: "OpenNGC CC BY-SA 4.0; VizieR's terms (free of usage in a scientific context, authors cited)."
+      drawn: "Measured: place, size, distance, core and tidal radius (Harris 1996, VizieR VII/202). Modelled: the stars, by King's (1962) profile, their number, brightness and colour. Illustrative: the glow standing in for the faint stars. For 12 of the 33 (Vasiliev and Baumgardt 2021, Zenodo 4891252, membership probability at least 0.5): measured, each member's place on the sky, brightness and colour (Gaia EDR3); modelled, its depth along the line of sight (King's profile at its projected radius), its absolute magnitude (the map's distance, Harris's reddening) and its approximate B-V; the crowded centre is missing stars Gaia could not separate."
+      rights: "OpenNGC CC BY-SA 4.0; VizieR's terms (free of usage in a scientific context, authors cited); the 12 clusters' members: Vasiliev and Baumgardt 2021 CC BY 4.0, Gaia EDR3 CC BY-NC 3.0 IGO (ESA)."
     records:
       - {domain: dso, where: {typeCode: GCl}}
 
@@ -730,6 +730,19 @@ classes:
       dates: "Read 2026-10-20."
       drawn: "Measured: each galaxy's direction, and its size and light in the catalogue's band. Measured or inferred: its distance (its own by SBF for 71 Virgo galaxies, its cluster's by SBF or by the members' mean redshift otherwise). Modelled: its depth inside the cluster where it has no distance of its own. Illustrative: the round, centrally peaked shape."
       rights: "VizieR: free of usage in a scientific context, the original authors cited; SDSS: public domain."
+    records: []
+
+  - id: LOCAL_DUST
+    title: The Sun's neighbourhood in dust (the Local Bubble)
+    renderer: [site/js/scene/deep/localdust.js]
+    honesty: modelled
+    fallback: Nothing is drawn on tier 0 or under the Eye exposure; on every other look one Points draw of 40 000 points, faded in as the camera leaves the neighbourhood (300 to 1 500 ly out of the Sun) and out far away (8 000 to 30 000 ly).
+    issue: "internal #423 (a searchable record with a card, and the dust dimming the stars behind it: later; this is drawn, not yet a record)"
+    note:
+      source: "Edenhofer G., Zucker C., Frank P., Saydjari A.K., Speagle J.S., Finkbeiner D., Ensslin T. 2024, A&A 685, A82, A parsec-scale Galactic 3D dust map out to 1.25 kpc from the Sun (arXiv:2308.01295), Zenodo 10.5281/zenodo.8187943, mean_and_std_xyz.fits; the Local Bubble's shell from O'Neill T.J., Zucker C., Goodman A.A., Edenhofer G. 2024, ApJ 973, 138 (arXiv:2403.04961)."
+      dates: "The map is built from Gaia DR3 (2022) and 2MASS; data record read 2026-11-17."
+      drawn: "Measured: where the dust is and how dense (the posterior mean of the extinction density from Gaia starlight) in 8 pc cells within 640 pc of the Sun, in the map's own Galactic axes; its resolution is the map's (about 14 arcminutes on the sky), and its far field is less certain. Modelled: the points, a seeded random sample of 40 000 drawn in proportion to the density (capped at its 99.7th percentile so the densest clouds do not take them all), each at a random place in its cell and quantised to 5 pc: a point is not a dust grain and their number is not a mass. Illustrative: the soft warm colour (real dust is dark against the stars and glows only in the infrared), the brightness law. Not drawn: the dust dimming the stars behind it, the standard deviation of the map, anything beyond 640 pc."
+      rights: "Edenhofer et al. 2024 data: CC BY 4.0 (the Zenodo record's licence field); built from Gaia DR3, CC BY-NC 3.0 IGO (ESA), so site/data/deep/localdust.bin keeps the non-commercial term. Space Radar is free and non-commercial."
     records: []
 
   - id: COSMIC_WEB

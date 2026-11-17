@@ -97,6 +97,8 @@ export const DEEP_LAYERS = [
   // 0079 a2: begin (every NGC and IC object, Harris, Green and the open clusters: scene/deep/catalogue.js; two files fetched on the first rung entered)
   { id: 'catalogue', stage: 'A2', stages: ['stellar', 'galaxy', 'local-group'], build: () => import('./catalogue.js') },
   // 0079 a2: end
+  // internal #423: the Sun's neighbourhood as real 3D dust (the Local Bubble), seen from outside it; the stellar rung only
+  { id: 'localdust', stage: 'r2-dust', stages: ['stellar'], build: () => import('./localdust.js') },
   { id: 'galclusters', stage: 'W4-b', stages: ['local-group'], build: () => import('./galclusters.js'), ask: (env, on) => ({ recordById: env.recordById, on }) },
   // 0077 W2-e: begin
   // The Magellanic Bridge and Stream (scene/deep/magellanic.js: HI4PI's hydrogen at a modelled distance, false colour) ship

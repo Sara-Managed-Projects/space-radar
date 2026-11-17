@@ -72,6 +72,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [AGN_QUASAR](#agn_quasar) | 3 | `glyphs.js`, `stage.js`, `galclusters.js` | illustrative | - |
 | [GALAXY_GROUP](#galaxy_group) | 1 | `localvolume.js` | measured | - |
 | [GALAXY_CLUSTER](#galaxy_cluster) | 0 | `galclusters.js` | modelled | - |
+| [LOCAL_DUST](#local_dust) | 0 | `localdust.js` | modelled | - |
 | [COSMIC_WEB](#cosmic_web) | 0 | none yet (1.3+ (internal #826, #828; spec 0075 tasks 23 and 24): the DESI DR1 wedge with its footprint) | illustrative | - |
 | [CMB_AND_HORIZON](#cmb_and_horizon) | 2 | `shells.js`, `cmb.js` | measured | - |
 | [HELIOSPHERE](#heliosphere) *house* | 1 | `heliosphere.js` | modelled | - |
@@ -449,12 +450,12 @@ Honesty over the 1205 records: 377 measured, 460 modelled, 368 illustrative.
 
 - **Drawn by:** `site/js/scene/dsoglow.js`, `site/js/scene/deep/globular.js`
 - **Default honesty:** illustrative
-- **On a weak device (T0, or after the frame latch):** The globular glow profile with its holder; near, stars by King's profile from Harris's radii (scene/deep/globular.js, 0076 W3-a).
+- **On a weak device (T0, or after the frame latch):** The globular glow profile with its holder; near, the real Gaia members of 12 of them (M2, M3, M4, M5, M10, M13, M15, M22, M92, 47 Tucanae, NGC 6397, Omega Centauri; scene/deep/globular.js, internal
 - **Source:** OpenNGC for place, size and magnitude; the Messier distances.
 - **Dates and filters:** As OPEN_CLUSTER.
-- **Measured, modelled or reconstructed:** Measured: place, size, distance, core and tidal radius (Harris 1996, VizieR VII/202). Modelled: the stars, by King's (1962) profile, their number, brightness and colour. Illustrative: the glow standing in for the faint stars.
-- **Rights:** OpenNGC CC BY-SA 4.0; VizieR's terms (free of usage in a scientific context, authors cited).
-- **What is missing is tracked in:** internal #819 (King-profile points, spec 0075 task 19, W3-a)
+- **Measured, modelled or reconstructed:** Measured: place, size, distance, core and tidal radius (Harris 1996, VizieR VII/202). Modelled: the stars, by King's (1962) profile, their number, brightness and colour. Illustrative: the glow standing in for the faint stars. For 12 of the 33 (Vasiliev and Baumgardt 2021, Zenodo 4891252, membership probability at least 0.5): measured, each member's place on the sky, brightness and colour (Gaia EDR3); modelled, its depth along the line of sight (King's profile at its projected radius), its absolute magnitude (the map's distance, Harris's reddening) and its approximate B-V; the crowded centre is missing stars Gaia could not separate.
+- **Rights:** OpenNGC CC BY-SA 4.0; VizieR's terms (free of usage in a scientific context, authors cited); the 12 clusters' members: Vasiliev and Baumgardt 2021 CC BY 4.0, Gaia EDR3 CC BY-NC 3.0 IGO (ESA).
+- **What is missing is tracked in:** internal #819 (King-profile points, spec 0075 task 19, W3-a); internal #417, #425 (real members)
 - **Records (33):**
   - dso (33): `m2`, `m3`, `m4`, `m5`, `m9`, `m10`, `m12`, `m13`, `m14`, `m15`, `m19`, `m22`, `m28`, `m30`, `m53`, `m54`, `m55`, `m56`, `m62`, `m68`, `m69`, `m70`, `m71`, `m72`, `m75`, `m79`, `m80`, `m92`, `m107`, `omega-centauri`, `47-tucanae`, `ngc-2419`, `ngc-6397`
 
@@ -663,6 +664,20 @@ Honesty over the 1205 records: 377 measured, 460 modelled, 368 illustrative.
 - **Measured, modelled or reconstructed:** Measured: each galaxy's direction, and its size and light in the catalogue's band. Measured or inferred: its distance (its own by SBF for 71 Virgo galaxies, its cluster's by SBF or by the members' mean redshift otherwise). Modelled: its depth inside the cluster where it has no distance of its own. Illustrative: the round, centrally peaked shape.
 - **Rights:** VizieR: free of usage in a scientific context, the original authors cited; SDSS: public domain.
 - **What is missing is tracked in:** internal #784 (clusters as searchable records with a card: 1.3+; they are drawn, not yet records)
+- **Records:** none on the map today.
+
+### LOCAL_DUST
+
+**The Sun's neighbourhood in dust (the Local Bubble)**
+
+- **Drawn by:** `site/js/scene/deep/localdust.js`
+- **Default honesty:** modelled
+- **On a weak device (T0, or after the frame latch):** Nothing is drawn on tier 0 or under the Eye exposure; on every other look one Points draw of 40 000 points, faded in as the camera leaves the neighbourhood (300 to 1 500 ly out of the Sun) and out far away (8 000 to 30 000 ly).
+- **Source:** Edenhofer G., Zucker C., Frank P., Saydjari A.K., Speagle J.S., Finkbeiner D., Ensslin T. 2024, A&A 685, A82, A parsec-scale Galactic 3D dust map out to 1.25 kpc from the Sun (arXiv:2308.01295), Zenodo 10.5281/zenodo.8187943, mean_and_std_xyz.fits; the Local Bubble's shell from O'Neill T.J., Zucker C., Goodman A.A., Edenhofer G. 2024, ApJ 973, 138 (arXiv:2403.04961).
+- **Dates and filters:** The map is built from Gaia DR3 (2022) and 2MASS; data record read 2026-11-17.
+- **Measured, modelled or reconstructed:** Measured: where the dust is and how dense (the posterior mean of the extinction density from Gaia starlight) in 8 pc cells within 640 pc of the Sun, in the map's own Galactic axes; its resolution is the map's (about 14 arcminutes on the sky), and its far field is less certain. Modelled: the points, a seeded random sample of 40 000 drawn in proportion to the density (capped at its 99.7th percentile so the densest clouds do not take them all), each at a random place in its cell and quantised to 5 pc: a point is not a dust grain and their number is not a mass. Illustrative: the soft warm colour (real dust is dark against the stars and glows only in the infrared), the brightness law. Not drawn: the dust dimming the stars behind it, the standard deviation of the map, anything beyond 640 pc.
+- **Rights:** Edenhofer et al. 2024 data: CC BY 4.0 (the Zenodo record's licence field); built from Gaia DR3, CC BY-NC 3.0 IGO (ESA), so site/data/deep/localdust.bin keeps the non-commercial term. Space Radar is free and non-commercial.
+- **What is missing is tracked in:** internal #423 (a searchable record with a card, and the dust dimming the stars behind it: later; this is drawn, not yet a record)
 - **Records:** none on the map today.
 
 ### COSMIC_WEB

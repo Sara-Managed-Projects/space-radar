@@ -186,6 +186,8 @@ const DEFERRED = {
   'js/data/plumes.js': 'the plumes\' registry: with scene/plumes.js',
   // 0076 W3-a (globular.js)
   'js/scene/deep/globular.js': 'star clusters as stars: the deep-sky coordinator fetches it on the first rung of the ladder (release 1.2.0, internal #819, #871)',
+  // internal #423 (localdust.js)
+  'js/scene/deep/localdust.js': 'the Sun\'s neighbourhood in dust: the deep-sky coordinator fetches it when the stellar rung is entered (internal #423)',
   // 0076 W3-b (ring.js, shellneb.js)
   'js/scene/deep/ring.js': 'the Ring Nebula hero: the coordinator fetches it when M57 is near (release 1.2.0, internal #872)',
   'js/scene/deep/shellneb.js': 'the planetary nebulae\'s shared part: with the Helix or the Ring',
