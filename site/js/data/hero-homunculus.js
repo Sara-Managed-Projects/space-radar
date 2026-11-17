@@ -73,7 +73,7 @@ export const HERO = {
   ],
   "review": {
     "data_vs_model": "Measured: the shape (Steffen et al. 2014), the tilt, the position angle, the size, the distance and the age (Smith 2006). Reconstructed: the mesh's own axes, read off its features against the paper's figures. Illustrative: the brightness, the mottling and the star's glare",
-    "geometry": "The mesh as published, no vertex moved; turned by i = 41.0 degrees and position angle 310 degrees; the mean of its two poles set to 21 690 au at 2005.17 and grown in proportion to its age (homologous expansion: Steffen et al. find the approaching lobe departs from it by about a tenth, which is not drawn)",
+    "geometry": "The mesh as published, no vertex moved; turned by i = 41.0 degrees and position angle 310 degrees; the mean of its two poles set to 21 690 AU at 2005.17 and grown in proportion to its age (homologous expansion: Steffen et al. find the approaching lobe departs from it by about a tenth, which is not drawn)",
     "colours": "Illustrative, declared on the card; the Measured look shows the bare reconstruction",
     "distance": "7 665 ly, the record's: Smith 2006's 2 350 +/- 50 pc from this nebula's own shape and age, with which Gaia's parallaxes of the Carina clusters agree (registry/dso-hand.yaml carina-nebula)",
     "credits": "CREDITS.md, The Homunculus (deep-space review, 2026-11-16); the card's rows name the model, its credit and that no astronomer has reviewed the drawing",

@@ -7,9 +7,9 @@
 #   Measured: the SHAPE (Steffen et al. 2014: the outer shell of molecular hydrogen rebuilt from the Doppler shift of its
 #   2.12 micron line in 92 slit positions of the VLT's X-shooter, with the polar holes, the trench round each pole and
 #   the two protrusions near the waist); the TILT (the polar axis 41.0 +/- 0.5 degrees from our line of sight, the
-#   south-east lobe toward us), its direction on the sky (position angle 310 degrees), the SIZE (the poles 21 690 au
+#   south-east lobe toward us), its direction on the sky (position angle 310 degrees), the SIZE (the poles 21 690 AU
 #   from the star in March 2005, table 1), the DISTANCE (2 350 +/- 50 pc) and the AGE (the Doppler speed gives the depth
-#   as 33.5 au for each km/s: 158.8 years in March 2005, an eruption in 1846), all Smith 2006.
+#   as 33.5 AU for each km/s: 158.8 years in March 2005, an eruption in 1846), all Smith 2006.
 #   Reconstructed: how the mesh's own un-tilted axes sit before the two angles are applied. The file does not say; it
 #   was read off the mesh against the paper's figures 4 and 5 (the lobe with one curved trench and one hole is the
 #   approaching one, the lobe with several pits the receding one; the Red Protrusion on the left and the Blue on the
@@ -40,8 +40,8 @@ layers:
     # (section 3), the slit "oriented at P.A. = 310 degrees along the polar axis" (section 2), the approaching lobe the
     # south-east one. `near: SE` is the lobe toward us.
     axis: {incl_deg: 41.0, incl_err_deg: 0.5, pa_deg: 310, near: SE}
-    # Table 1 of Smith 2006, latitude 89.1 degrees: radius 21 690 au, 648 km/s. The observations were made on 2005 March
-    # 1 and 2 (2005.17). "D_R = 33.5 x V_R, measured in AU": 33.5 au per km/s is 158.8 years of straight-line motion.
+    # Table 1 of Smith 2006, latitude 89.1 degrees: radius 21 690 AU, 648 km/s. The observations were made on 2005 March
+    # 1 and 2 (2005.17). "D_R = 33.5 x V_R, measured in AU": 33.5 AU per km/s is 158.8 years of straight-line motion.
     polar_radius_au: 21690
     epoch: 2005.17
     age_yr: 158.8
@@ -65,7 +65,7 @@ sources:
   - "ESO, A 3D Model of the Homunculus Nebula around the star Eta Carinae, 3dmodel_004 (https://www.eso.org/public/products/models3d/3dmodel_004/), read 2026-11-16"
 review:
   data_vs_model: "Measured: the shape (Steffen et al. 2014), the tilt, the position angle, the size, the distance and the age (Smith 2006). Reconstructed: the mesh's own axes, read off its features against the paper's figures. Illustrative: the brightness, the mottling and the star's glare"
-  geometry: "The mesh as published, no vertex moved; turned by i = 41.0 degrees and position angle 310 degrees; the mean of its two poles set to 21 690 au at 2005.17 and grown in proportion to its age (homologous expansion: Steffen et al. find the approaching lobe departs from it by about a tenth, which is not drawn)"
+  geometry: "The mesh as published, no vertex moved; turned by i = 41.0 degrees and position angle 310 degrees; the mean of its two poles set to 21 690 AU at 2005.17 and grown in proportion to its age (homologous expansion: Steffen et al. find the approaching lobe departs from it by about a tenth, which is not drawn)"
   colours: "Illustrative, declared on the card; the Measured look shows the bare reconstruction"
   distance: "7 665 ly, the record's: Smith 2006's 2 350 +/- 50 pc from this nebula's own shape and age, with which Gaia's parallaxes of the Carina clusters agree (registry/dso-hand.yaml carina-nebula)"
   credits: "CREDITS.md, The Homunculus (deep-space review, 2026-11-16); the card's rows name the model, its credit and that no astronomer has reviewed the drawing"
