@@ -1,0 +1,59 @@
+# Constellations seen from the side (ui/figureside.js; the 2026-11-16 deep-space review, idea 6).
+#
+# From the Sun a constellation is a figure; its stars are at very different distances, and from a few hundred
+# light-years to one side the figure comes apart. The app already draws a figure between its corner stars' real
+# places (scene/figures3d.js, used by the trips). These rows are the figures the side view OFFERS BY NAME: in its
+# panel's list, in the search field ("Orion from the side") and as links (`#figure=orion`). Any of the 88 figures
+# of site/data/constellations.lines.json opens too, by its three-letter IAU code (`#figure=Cyg`) or from its
+# story card in the sky: this file is the short list, not the limit.
+#
+# id          the link's word: lower case, hyphens.
+# figure      the IAU code of a figure in site/data/constellations.lines.json (d3-celestial, BSD-3-Clause).
+# asterism    in place of `figure`, for a pattern that is PART of a constellation and has no line file of its own:
+#   of        the IAU code of the constellation it is part of;
+#   name      the key of its name in site/js/copy/en.side.js (COPY.figureSide.names), translated with the app;
+#   note      the key of one more sentence about it (COPY.figureSide.notes), where the source gives one;
+#   stars     its stars in drawing order, by the names the 3D star catalogue carries (tests/test_figureside.mjs
+#             holds each corner to the star of that name);
+#   path      the same corners as [right ascension, declination] in degrees, J2000, COPIED from the constellation's
+#             own lines in the line file: scripts/gen_sideviews_js.py refuses a corner that is not one of them, so
+#             the pattern is drawn through exactly the stars the constellation's figure is.
+#   source    where it was read that these stars make the pattern, and when.
+#
+# WHAT IS MEASURED. The corner stars' places: each is the brightest star of the 3D catalogue (HYG v4.4, CC BY-SA 4.0:
+# Hipparcos and Gaia parallaxes) within a third of a degree of the corner. WHAT IS NOT: the lines, a tradition.
+# The catalogue carries no error for a distance, so the panel says in words that a far star's is the least certain
+# and prints no error figure.
+version: 1
+
+figures:
+  - id: orion
+    figure: Ori
+
+  - id: big-dipper
+    asterism:
+      of: UMa
+      name: bigDipper
+      note: bigDipper
+      stars: [Megrez, Dubhe, Merak, Phecda, Megrez, Alioth, Mizar, Alkaid]
+      # The first line of Ursa Major's figure in the line file: the bowl (Megrez, Dubhe, Merak, Phecda, back to
+      # Megrez) and the handle (Alioth, Mizar, Alkaid).
+      path: [[-176.1435, 57.0326], [165.932, 61.751], [165.4603, 56.3824], [178.4577, 53.6948], [-176.1435, 57.0326],
+             [-166.4927, 55.9598], [-159.0186, 54.9254], [-153.1148, 49.3133]]
+      # Read 2026-11-16: "an asterism consisting of seven bright stars of the constellation Ursa Major"; "Four define
+      # a 'bowl' or 'body' and three define a 'handle'"; the table of the seven (Dubhe, Merak, Phecda, Megrez, Alioth,
+      # Mizar, Alkaid); and "Five of the stars of the Big Dipper are at the core of the Ursa Major Moving Group. The
+      # two at the ends, Dubhe and Alkaid, are not part of the swarm" (the note).
+      source: "https://en.wikipedia.org/wiki/Big_Dipper (read 2026-11-16)"
+
+  - id: cassiopeia
+    figure: Cas
+
+  - id: southern-cross
+    figure: Cru
+
+  - id: scorpius
+    figure: Sco
+
+  - id: leo
+    figure: Leo

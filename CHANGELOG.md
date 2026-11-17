@@ -21,6 +21,14 @@ tagged, and their dates are the day the last change in each landed.
   languages find the Moon, Mars, the Sun, the Earth, the Milky Way and the station, with or without article and accents
   ("Júpiter" and "jupiter" alike); cards, labels and search rows are titled in the language, with the English name still
   found; and all 40 layer names in What to show are translated.
+
+- **A constellation seen from the side.** Orion, the Big Dipper, Cassiopeia, the Southern Cross, Scorpius and Leo (and any of
+  the 88 figures, by its code) can be left behind: the camera starts at the Sun, where the lines fall on the figure as we see
+  it, and swings up to a quarter turn round it while the figure comes apart, each corner star at its measured distance with
+  the distance written beside it. A slider is the swing, "Fly out" plays it in twenty seconds, and under reduced motion the
+  button goes there at once. Open it from a figure's story card in the sky ("See it from the side"), from the search ("Orion
+  from the side", "Big Dipper") or with a link, `#figure=orion`. The stars' places are measured (HYG: Hipparcos and Gaia);
+  the lines are a tradition, and the panel says so in eleven languages.
 - **Fast-spinning stars are drawn flattened.** Vega, Altair, Regulus and Rasalhague, which interferometers have measured to bulge
   at the equator, are drawn as flattened discs, turned as their spin axis is in the sky (the paper's inclination and position
   angle), and darker and redder at the equator than at the poles (gravity darkening). Their cards now give the width across the

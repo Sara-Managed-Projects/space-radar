@@ -4,6 +4,7 @@
 //           sourceLines(doc, story, words)   -> [string]                             pure: what the card says it rests on
 //           openSkyStory(lore)               opens the card for { culture, key, name, cultureName, away? }
 //           closeSkyStory()                  closes it, and gives the focus back to where it was
+// A western figure's card also offers it seen from the side (ui/figureside.js): a button that asks main.js for it.
 // Imported by sky/groundsky.js the first time a figure's tag is pressed (or the figure tapped twice):
 // neither this, nor css/skystory.css, nor data/skystories/<culture>.json is fetched before.
 //
@@ -19,6 +20,7 @@
 
 import { COPY, t } from '../copy/en.js';
 import '../copy/en.later.js';
+import '../copy/en.side.js'; // the words of the button below (COPY.figureSide)
 import { isTypingIn } from './explore.js';
 import { icon } from './icons.js';
 
@@ -133,6 +135,23 @@ export async function openSkyStory(lore) {
       box.append(go);
     }
   }
+  // A western figure can be seen from the side (ui/figureside.js, the 2026-11-16 deep-space review): its stars at their
+  // measured distances, the camera leaving the Sun. The button says so and main.js fetches the rest (`sr:figure-side`).
+  let acts = null;
+  if (!away && lore.culture === 'western' && lore.key) {
+    acts = el('div', 'sr-skystory__acts');
+    const side = el('button', 'ui-btn ui-btn--secondary', COPY.figureSide.open);
+    side.type = 'button';
+    side.title = t(COPY.figureSide.openTitle, { name: lore.name || lore.key });
+    side.addEventListener('click', () => {
+      returnFocus = null; // the side view's own panel takes the focus
+      closeSkyStory();
+      window.dispatchEvent(new CustomEvent('sr:figure-side', { detail: lore.key }));
+    });
+    acts.append(side);
+    box.append(acts);
+  }
+  const add = (node) => (acts ? box.insertBefore(node, acts) : box.append(node));
   document.body.appendChild(box); // above the panels: the scene labels' layer is under them
   card = box;
   document.addEventListener('keydown', onKey, true);
@@ -149,9 +168,9 @@ export async function openSkyStory(lore) {
   if (card !== box) return;
   const story = storyFor(doc, lore.key);
   text.textContent = story && story.text ? story.text : W.none;
-  if (story && story.more) box.append(el('p', 'sr-skystory__text', story.more));
-  for (const line of sourceLines(doc, story, W).filter((l) => l !== text.textContent)) box.append(el('p', 'sr-skystory__note', line));
+  if (story && story.more) add(el('p', 'sr-skystory__text', story.more));
+  for (const line of sourceLines(doc, story, W).filter((l) => l !== text.textContent)) add(el('p', 'sr-skystory__note', line));
   // In English in every language: said in the visitor's own when that is not English.
   const lang = (document.documentElement.getAttribute('lang') || 'en').toLowerCase();
-  if (story && story.text && !lang.startsWith('en') && doc.lang === 'en') box.append(el('p', 'sr-skystory__note', W.inEnglish));
+  if (story && story.text && !lang.startsWith('en') && doc.lang === 'en') add(el('p', 'sr-skystory__note', W.inEnglish));
 }
