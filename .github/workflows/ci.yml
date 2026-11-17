@@ -1347,6 +1347,13 @@ jobs:
         run: node tests/test_dustsheet.mjs
       - name: "the remnants' and the dust's maps are the bake of their pictures and profiles"
         run: python3 scripts/build_deep_sheets.py --check
+      # objects built from published 3D data (the deep-space review of 2026-11-16)
+      - name: "the mesh packer writes what the app's meshopt decoder reads, bit for bit"
+        run: node tests/test_meshopt_encode.mjs
+      - name: "the Homunculus from its published 3D model: the source's mesh, the measured tilt, size and growth, the credit on the card"
+        run: node tests/test_homunculus.mjs
+      - name: "Cassiopeia A from its published 3D reconstruction: the source's parts, the place and the growth of each, the legend and the credit on the card"
+        run: node tests/test_casa.mjs
       # 0076 W3-d
       - name: "where you are and the way back: a chain from the Sun or the Milky Way on every card, Back along the visitor's own path (20 steps, never sent), the ladder's rung and a note at each join (internal spec 0076 W3-d)"
         run: node tests/test_navigate.mjs

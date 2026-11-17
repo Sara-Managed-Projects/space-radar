@@ -5776,7 +5776,7 @@ COPY.truth.exoPacked = "نسختنا المضغوطة بتاريخ {date}"; // f
 COPY.truth.exoLive = "قائمة الأرشيف، قُرئت في {date}";
 // The deep-sky catalogue's type phrases (data/dso.json `typeText`), lowercased, in this language: the card's lead and its
 // "What it is" row read them through RULES.typeWords; a phrase not here stays English, which is data.
-const S1_TYPES = {"globular cluster": "عنقود كروي", "open cluster": "عنقود مفتوح", "dwarf spheroidal galaxy": "مجرة قزمة شبه كروية", "spiral galaxy": "مجرة حلزونية", "emission nebula": "سديم انبعاث", "planetary nebula": "سديم كوكبي", "dwarf irregular galaxy": "مجرة قزمة غير منتظمة", "barred spiral galaxy": "مجرة حلزونية ذات قضيب", "elliptical galaxy": "مجرة إهليلجية", "lenticular galaxy": "مجرة عدسية", "h ii region nebula with cluster": "منطقة هيدروجين متأين مع عنقود", "dwarf elliptical galaxy": "مجرة قزمة إهليلجية", "h ii region nebula": "منطقة هيدروجين متأين", "barred irregular galaxy": "مجرة غير منتظمة ذات قضيب", "ultra-faint dwarf galaxy": "مجرة قزمة شديدة الخفوت", "dark nebula": "سديم مظلم", "young open cluster in an emission nebula": "عنقود مفتوح فتي داخل سديم انبعاث", "supernova remnant": "بقايا مستعر أعظم", "nebula with cluster": "سديم مع عنقود", "milky way star cloud": "سحابة نجمية في درب التبانة", "optical double": "نجم مزدوج بصري", "asterism": "كوكبة نجمية صغيرة", "diffuse nebula": "سديم منتشر", "starburst galaxy": "مجرة انفجار نجمي", "dwarf irregular starburst galaxy": "مجرة قزمة غير منتظمة بانفجار نجمي", "transition dwarf galaxy, part irregular, part spheroidal": "مجرة قزمة انتقالية، غير منتظمة جزئيًا وشبه كروية جزئيًا", "barred irregular galaxy, seen edge-on": "مجرة غير منتظمة ذات قضيب، تُرى من الحافة", "ultra-faint dwarf galaxy, or perhaps a star cluster": "مجرة قزمة شديدة الخفوت، أو ربما عنقود نجمي", "transition dwarf galaxy, part spheroidal, part irregular": "مجرة قزمة انتقالية، شبه كروية جزئيًا وغير منتظمة جزئيًا", "spiral galaxy, seen nearly edge-on and bursting with new stars": "مجرة حلزونية تُرى من الحافة تقريبًا وتعج بنجوم جديدة", "peculiar galaxy with a giant black hole firing radio jets": "مجرة شاذة فيها ثقب أسود عملاق يطلق نفاثات راديوية", "pair of open clusters": "زوج من العناقيد المفتوحة", "spiral galaxy seen exactly edge-on": "مجرة حلزونية تُرى من الحافة تمامًا", "reflection nebula": "سديم انعكاس", "reflection and emission nebula": "سديم انعكاس وانبعاث", "spiral galaxy seen edge-on": "مجرة حلزونية تُرى من الحافة", "barred spiral galaxy seen edge-on": "مجرة حلزونية ذات قضيب تُرى من الحافة", "spiral galaxy seen face-on": "مجرة حلزونية تُرى من الأمام", "barred spiral galaxy seen nearly edge-on": "مجرة حلزونية ذات قضيب تُرى من الحافة تقريبًا", "pair of colliding galaxies": "زوج من المجرات المتصادمة"};
+const S1_TYPES = {"two-lobed nebula of dust and gas": "سديم ثنائي الفصّ من الغبار والغاز", "globular cluster": "عنقود كروي", "open cluster": "عنقود مفتوح", "dwarf spheroidal galaxy": "مجرة قزمة شبه كروية", "spiral galaxy": "مجرة حلزونية", "emission nebula": "سديم انبعاث", "planetary nebula": "سديم كوكبي", "dwarf irregular galaxy": "مجرة قزمة غير منتظمة", "barred spiral galaxy": "مجرة حلزونية ذات قضيب", "elliptical galaxy": "مجرة إهليلجية", "lenticular galaxy": "مجرة عدسية", "h ii region nebula with cluster": "منطقة هيدروجين متأين مع عنقود", "dwarf elliptical galaxy": "مجرة قزمة إهليلجية", "h ii region nebula": "منطقة هيدروجين متأين", "barred irregular galaxy": "مجرة غير منتظمة ذات قضيب", "ultra-faint dwarf galaxy": "مجرة قزمة شديدة الخفوت", "dark nebula": "سديم مظلم", "young open cluster in an emission nebula": "عنقود مفتوح فتي داخل سديم انبعاث", "supernova remnant": "بقايا مستعر أعظم", "nebula with cluster": "سديم مع عنقود", "milky way star cloud": "سحابة نجمية في درب التبانة", "optical double": "نجم مزدوج بصري", "asterism": "كوكبة نجمية صغيرة", "diffuse nebula": "سديم منتشر", "starburst galaxy": "مجرة انفجار نجمي", "dwarf irregular starburst galaxy": "مجرة قزمة غير منتظمة بانفجار نجمي", "transition dwarf galaxy, part irregular, part spheroidal": "مجرة قزمة انتقالية، غير منتظمة جزئيًا وشبه كروية جزئيًا", "barred irregular galaxy, seen edge-on": "مجرة غير منتظمة ذات قضيب، تُرى من الحافة", "ultra-faint dwarf galaxy, or perhaps a star cluster": "مجرة قزمة شديدة الخفوت، أو ربما عنقود نجمي", "transition dwarf galaxy, part spheroidal, part irregular": "مجرة قزمة انتقالية، شبه كروية جزئيًا وغير منتظمة جزئيًا", "spiral galaxy, seen nearly edge-on and bursting with new stars": "مجرة حلزونية تُرى من الحافة تقريبًا وتعج بنجوم جديدة", "peculiar galaxy with a giant black hole firing radio jets": "مجرة شاذة فيها ثقب أسود عملاق يطلق نفاثات راديوية", "pair of open clusters": "زوج من العناقيد المفتوحة", "spiral galaxy seen exactly edge-on": "مجرة حلزونية تُرى من الحافة تمامًا", "reflection nebula": "سديم انعكاس", "reflection and emission nebula": "سديم انعكاس وانبعاث", "spiral galaxy seen edge-on": "مجرة حلزونية تُرى من الحافة", "barred spiral galaxy seen edge-on": "مجرة حلزونية ذات قضيب تُرى من الحافة", "spiral galaxy seen face-on": "مجرة حلزونية تُرى من الأمام", "barred spiral galaxy seen nearly edge-on": "مجرة حلزونية ذات قضيب تُرى من الحافة تقريبًا", "pair of colliding galaxies": "زوج من المجرات المتصادمة"};
 const S1_PLACES = [[" in the large magellanic cloud", " في سحابة ماجلان الكبرى"], [" in the small magellanic cloud", " في سحابة ماجلان الصغرى"], [" in the milky way", " في درب التبانة"], [" in the local group", " في المجموعة المحلية"]];
 RULES.typeWords = (text) => {
   let base = String(text || '').trim();
@@ -6333,3 +6333,91 @@ Object.assign(COPY, {
   }
 });
 // internal #442: end
+// ds2: begin -- the words of the Homunculus Nebula and Cassiopeia A (copy/en.deepdata.js), machine-drafted
+Object.assign(COPY, {
+  "deepHomunculus": {
+    "card": {
+      "homunculus": "شكلها نموذج ثلاثي الأبعاد منشور، بُني من السرعة المقيسة لكل جزء من السديم (شتيفن وآخرون، 2014)، ودُوِّر وضُبط مقياسه وفق قياسات سميث (2006). سطوعها وتبقّعها للتوضيح فقط. النموذج: مركز غودارد لرحلات الفضاء التابع لناسا/إد كامبيون وUNAM/و. شتيفن، عبر ESO. لم يراجعها فلكي بعد."
+    },
+    "rows": {
+      "dso-homunculus-nebula": [
+        [
+          "شكلها",
+          "مقيس. نموذج ثلاثي الأبعاد بُني من انزياح دوبلر لغاز الهيدروجين فيها، قُرئ على امتداد 92 شريحة من السديم بتلسكوب ESO الكبير جدًا (شتيفن وآخرون، 2014). الفجوة عند كل قطب والخندق حولها والنتوءان قرب الخصر موجودة في البيانات."
+        ],
+        [
+          "ميلها وحجمها",
+          "مقيسان. الفص البعيد يشير إلى الشمال الغربي، على بعد 41° من خط نظرنا؛ والقريب يشير نحونا بالقدر نفسه. في عام 2005 كان كل قطب يبعد عن النجم 21 690 ضعف المسافة بين الأرض والشمس (سميث، 2006)."
+        ],
+        [
+          "إنها تكبر",
+          "كل جزء يندفع في خط مستقيم بسرعته الخاصة منذ الانفجار في أربعينيات القرن التاسع عشر، لذا يتبع حجمها تاريخ الساعة. قبل الانفجار لا تُرسم."
+        ],
+        [
+          "سطحها",
+          "للتوضيح. السطوع والتبقّع يمثلان غبارًا يضيئه النجم من الداخل؛ والنموذج لا يحوي إلا الشكل. مظهر «المقيس» يزيل التبقّع."
+        ],
+        [
+          "النموذج الثلاثي الأبعاد",
+          "مركز غودارد لرحلات الفضاء التابع لناسا/إد كامبيون وUNAM/و. شتيفن، عبر ESO (CC BY 4.0). لم تُنقل أي نقطة."
+        ],
+        [
+          "المراجعة",
+          "لم يراجع فلكي هذا الرسم بعد."
+        ]
+      ]
+    },
+    "how": "الغاز المقترب منا يزيح ضوءه نحو الأزرق والمبتعد نحو الأحمر، والهومونكولوس يتمدد بانتظام منذ أربعينيات القرن التاسع عشر، فسرعة نقطة ما على خط نظرنا تخبر أيضًا كم هي أمام النجم أو خلفه. قرأ الفلكيون سرعة هيدروجينه على امتداد 92 شريحة من السديم وبنوا منها شكله (شتيفن وآخرون، 2014)."
+  },
+  "deepCasA": {
+    "card": {
+      "casa": "كل نقطة هي مكان قيس فيه ذلك الغاز: سرعته نحونا أو بعيدًا عنا تعطي عمقه (ديلاني وآخرون، 2010). الألوان مفتاح رموز لا ما تراه العين. النموذج: NASA/CXC/MIT/ت. ديلاني وآخرون. لم يراجعها فلكي بعد."
+    },
+    "rows": {
+      "dso-cassiopeia-a": [
+        [
+          "الأخضر",
+          "الحديد، كما رآه تلسكوب تشاندرا بالأشعة السينية. أماكن مقيسة."
+        ],
+        [
+          "الأصفر",
+          "الأرغون والسيليكون، كما رُئيا بالأشعة السينية وبالضوء تحت الأحمر، مع النفاثتين والعقد الخارجية المرئية بالضوء المرئي. أماكن مقيسة."
+        ],
+        [
+          "الأحمر",
+          "سيليكون بارد في الوسط، رآه تلسكوب سبيتزر بالضوء تحت الأحمر: حطام لم تسخّنه بعد موجة الصدمة المتجهة إلى الداخل. أماكن مقيسة."
+        ],
+        [
+          "القشرة الزرقاء",
+          "موجة الانفجار الخارجية، على بعد 153 ثانية قوسية من المركز. مُنمذجة: كرة بسيطة بالحجم المقيس بدل الخيوط الحقيقية، كما في نموذج تشاندرا نفسه."
+        ],
+        [
+          "النقطة البيضاء",
+          "النجم النيوتروني الذي خلّفه الانفجار. مكانه في السماء مقيس؛ أما عمقه فلا."
+        ],
+        [
+          "كيف يُعرف عمقها",
+          "الحطام يندفع في خط مستقيم من نقطة واحدة منذ الانفجار، فالغاز المتحرك نحونا أمام تلك النقطة والمبتعد خلفها: كل 1 000 كم/ث تساوي 22 ثانية قوسية من العمق."
+        ],
+        [
+          "إنها تكبر",
+          "على الساعة يكبر كل جزء بمعدله المقيس: 0.3 % في السنة للحطام الحر، و0.2 % لغاز الأشعة السينية المتباطئ، ونحو 4 900 كم/ث لموجة الانفجار. قبل 1671 لا تُرسم."
+        ],
+        [
+          "السطوع",
+          "ليس في النموذج. كل نقطة من لون واحد متساوية السطوع، وحجمها هو حدّة البيانات لا حجم كتلة."
+        ],
+        [
+          "النموذج الثلاثي الأبعاد",
+          "NASA/CXC/MIT/ت. ديلاني وآخرون، من ملفات مركز تشاندرا للأشعة السينية. خُفّض إلى 24 219 نقطة."
+        ],
+        [
+          "المراجعة",
+          "لم يراجع فلكي هذا الرسم بعد."
+        ]
+      ]
+    },
+    "how": "كل عنصر كيميائي يتوهج بألوانه الخاصة، والغاز المقترب أو المبتعد يزيحها، فيعرف التلسكوب الذي يحلل الضوء سرعة كل بقعة من الحديد أو السيليكون أو الأرغون على خط نظرنا. ولأن كل شيء خرج من نقطة واحدة قبل نحو 350 عامًا، فهذه السرعة هي أيضًا مسافة أمام تلك النقطة أو خلفها: أعطت أشعة تشاندرا السينية وضوء سبيتزر تحت الأحمر معًا أول خريطة ثلاثية الأبعاد لنجم انفجر (ديلاني وآخرون، 2010)."
+  }
+});
+// ds2: end

@@ -83,6 +83,7 @@ const FEMININE = new Set([
 
 // The 46 type phrases data/dso.json holds (English, as the catalogue writes them), in French. Keys are lower case.
 const TYPES = {
+  'two-lobed nebula of dust and gas': "nébuleuse à deux lobes de poussière et de gaz",
   'globular cluster': 'amas globulaire',
   'open cluster': 'amas ouvert',
   'dwarf spheroidal galaxy': 'galaxie naine sphéroïdale',
@@ -6427,3 +6428,91 @@ Object.assign(COPY, {
   }
 });
 // internal #442: end
+// ds2: begin -- the words of the Homunculus Nebula and Cassiopeia A (copy/en.deepdata.js), machine-drafted
+Object.assign(COPY, {
+  "deepHomunculus": {
+    "card": {
+      "homunculus": "Sa forme est un modèle 3D publié, construit à partir de la vitesse mesurée de chaque partie de la nébuleuse (Steffen et al., 2014), orienté et mis à l’échelle d’après les mesures de Smith (2006). Sa luminosité et son aspect moucheté sont illustratifs. Modèle : Goddard Space Flight Center de la NASA/Ed Campion et UNAM/W. Steffen, via l’ESO. Pas encore relu par un astronome."
+    },
+    "rows": {
+      "dso-homunculus-nebula": [
+        [
+          "Sa forme",
+          "Mesurée. Un modèle 3D construit à partir du décalage Doppler de son hydrogène, lu le long de 92 bandes de la nébuleuse avec le Very Large Telescope de l’ESO (Steffen et al., 2014). Le creux à chaque pôle, la tranchée qui l’entoure et les deux bosses près de la taille sont dans les données."
+        ],
+        [
+          "Son inclinaison et sa taille",
+          "Mesurées. Le lobe lointain pointe vers le nord-ouest, à 41° de notre ligne de visée ; le proche pointe vers nous d’autant. En 2005, chaque pôle était à 21 690 fois la distance Terre–Soleil de l’étoile (Smith, 2006)."
+        ],
+        [
+          "Elle grandit",
+          "Chaque partie file en ligne droite à sa propre vitesse depuis l’éruption des années 1840, donc sa taille suit la date de l’horloge. Avant l’éruption, elle n’est pas dessinée."
+        ],
+        [
+          "Sa surface",
+          "Illustrative. La luminosité et l’aspect moucheté représentent de la poussière éclairée de l’intérieur par l’étoile ; le modèle ne contient que la forme. L’aspect Mesuré retire le moucheté."
+        ],
+        [
+          "Modèle 3D",
+          "Goddard Space Flight Center de la NASA/Ed Campion et UNAM/W. Steffen, via l’ESO (CC BY 4.0). Aucun point n’a été déplacé."
+        ],
+        [
+          "Relecture",
+          "Ce dessin n’a pas encore été relu par un astronome."
+        ]
+      ]
+    },
+    "how": "Le gaz qui vient vers nous décale sa lumière vers le bleu et celui qui s’éloigne vers le rouge, et l’Homoncule s’étend de façon uniforme depuis les années 1840 : la vitesse d’un point le long de notre ligne de visée dit donc aussi de combien il est devant l’étoile ou derrière. Les astronomes ont lu la vitesse de son hydrogène le long de 92 bandes de la nébuleuse et en ont construit la forme (Steffen et al., 2014)."
+  },
+  "deepCasA": {
+    "card": {
+      "casa": "Chaque point est un endroit où ce gaz a été mesuré : sa vitesse vers nous ou à l’opposé donne sa profondeur (DeLaney et al., 2010). Les couleurs sont une légende, pas ce que verrait l’œil. Modèle : NASA/CXC/MIT/T. Delaney et al. Pas encore relu par un astronome."
+    },
+    "rows": {
+      "dso-cassiopeia-a": [
+        [
+          "Vert",
+          "Du fer, vu en rayons X par le télescope Chandra. Positions mesurées."
+        ],
+        [
+          "Jaune",
+          "De l’argon et du silicium, vus en rayons X et en infrarouge, avec les deux jets et les nœuds extérieurs vus en lumière visible. Positions mesurées."
+        ],
+        [
+          "Rouge",
+          "Du silicium froid au centre, vu en infrarouge par le télescope Spitzer : des débris que le choc vers l’intérieur n’a pas encore chauffés. Positions mesurées."
+        ],
+        [
+          "Coque bleue",
+          "L’onde de choc extérieure, à 153 secondes d’arc du centre. Modélisée : une simple sphère de la taille mesurée, à la place des vrais filaments, comme dans le modèle de Chandra lui-même."
+        ],
+        [
+          "Point blanc",
+          "L’étoile à neutrons laissée par l’explosion. Sa place dans le ciel est mesurée ; sa profondeur ne l’est pas."
+        ],
+        [
+          "Comment on connaît sa profondeur",
+          "Les débris sont partis en ligne droite d’un même point depuis l’explosion : le gaz qui vient vers nous est donc devant ce point et celui qui s’éloigne derrière. Chaque tranche de 1 000 km/s vaut 22 secondes d’arc de profondeur."
+        ],
+        [
+          "Elle grandit",
+          "Sur l’horloge, chaque partie à son propre rythme mesuré : 0,3 % par an pour les débris libres, 0,2 % pour le gaz X ralenti, environ 4 900 km/s pour l’onde de choc. Avant 1671, elle n’est pas dessinée."
+        ],
+        [
+          "Luminosité",
+          "Absente du modèle. Chaque point d’une couleur est aussi brillant que les autres, et sa taille est la netteté des données, pas la taille d’un grumeau."
+        ],
+        [
+          "Modèle 3D",
+          "NASA/CXC/MIT/T. Delaney et al., d’après les fichiers du Centre de rayons X Chandra. Réduit à 24 219 points."
+        ],
+        [
+          "Relecture",
+          "Ce dessin n’a pas encore été relu par un astronome."
+        ]
+      ]
+    },
+    "how": "Chaque élément chimique brille à ses propres couleurs, et le gaz qui approche ou s’éloigne les décale : un télescope qui disperse la lumière trouve donc la vitesse de chaque plaque de fer, de silicium ou d’argon le long de notre ligne de visée. Comme tout est parti d’un même point il y a environ 350 ans, cette vitesse est aussi une distance, devant ce point ou derrière : les rayons X de Chandra et l’infrarouge de Spitzer ont donné ensemble la première carte 3D d’une étoile qui a explosé (DeLaney et al., 2010)."
+  }
+});
+// ds2: end

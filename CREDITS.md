@@ -2759,6 +2759,49 @@ distance; its true width is that over 1 + z). Its light is its F200W magnitude, 
 minus F444W colour Webb saw, **illustrative** (observed, not rest frame), and each is drawn as one round, centrally peaked shape.
 <!-- 0077 W3-f: end -->
 
+### The Homunculus from its published 3D model (2026-11-16)
+
+Eta Carinae's Homunculus Nebula (`site/js/scene/deep/homunculus.js`, `registry/deepsky-heroes/homunculus.yaml`) is drawn
+from a published 3D model, not from a photograph. The mesh, `site/data/deep/homunculus.glb` (68 536 B), is made by
+`scripts/build_deep_homunculus.mjs` from the file ESO distributes: every one of its 8 552 vertices and 17 101 triangles,
+none moved; the axes renamed to the paper's un-tilted view, lengths divided by the mean polar radius, positions stored
+as 16-bit integers and packed with meshopt.
+
+| what | from | licence |
+|---|---|---|
+| The 3D model of the nebula's outer shell | **NASA's Goddard Space Flight Center/Ed Campion & UNAM/W. Steffen**; ESO, *A 3D Model of the Homunculus Nebula around the star Eta Carinae*, [3dmodel_004](https://www.eso.org/public/products/models3d/3dmodel_004/) (Wavefront .obj, downloaded 2026-11-16) | ESO's terms of use, CC BY 4.0: free with the full credit visible ([Usage of ESO images, videos, web texts and music](https://www.eso.org/public/copyright/), read 2026-11-16). Changed by Space Radar as said above |
+| The model itself: the shell rebuilt from the Doppler shift of molecular hydrogen in 92 slit positions of the VLT's X-shooter | Steffen W. and others 2014, MNRAS 442, 3316, *The three-dimensional structure of the Eta Carinae Homunculus* (arXiv:1407.4096) | facts, cited |
+| The tilt (41.0 +/- 0.5 degrees from our line of sight), the position angle (310 degrees), the polar radius (21 690 au in March 2005), the distance (2 350 +/- 50 pc) and the age (158.8 years then) | Smith N. 2006, ApJ 644, 1151, *The structure of the Homunculus. I.* (arXiv:astro-ph/0602464) | facts, cited |
+
+What is measured and what is not. The shape, the tilt, the size, the distance and the growth with the clock's date are
+**measured** (the growth assumes every part has moved straight out since the eruption, as Smith 2006 does; Steffen and
+others find the near lobe departs from that by about a tenth, which is not drawn). How the file's own axes sit before the
+tilt is not written in it: it was read off the mesh against the paper's figures 4 and 5 and checked against figure 5 from
+both sides. The surface's brightness, its mottling and the star's glare are **illustrative**; the Measured look takes
+the mottling off. The card carries the credit line and says no astronomer has reviewed the drawing.
+
+### Cassiopeia A from its published 3D reconstruction (2026-11-16)
+
+Cassiopeia A (`site/js/scene/deep/casa.js`, `registry/deepsky-heroes/casa.yaml`) is drawn from the three-dimensional
+reconstruction of DeLaney et al. 2010, as the Chandra X-ray Center distributes it. The point sets,
+`site/data/deep/casa.glb` (81 384 B), are made by `scripts/build_deep_casa.mjs` from the seven VTK files: each file's
+vertices thinned to one point per cell of a grid (143 000 vertices to 24 219 points, none moved by more than half a
+cell), the axes renamed, the unit set to 3.5 arcseconds by three lengths the paper states, and the origin moved to
+zero velocity.
+
+| what | from | licence |
+|---|---|---|
+| The 3D reconstruction: iron (Fe-K) and silicon (Si XIII) from Chandra, argon ([Ar II]) and cold silicon ([Si II]) from Spitzer, the optical jets and outer knots, the neutron star | **NASA/CXC/MIT/T.Delaney et al.**; Chandra X-ray Center, [How to hold a dead star in your hand](https://chandra.si.edu/deadstar/deadstar.html), "CasA Supernova remnant volumetric data ASCII VTK files created from telescope data" (downloaded 2026-11-16) | Chandra's [image use policy](https://chandra.si.edu/photo/image_use.html), read 2026-11-16: "no claim to copyright is being asserted and the material may be used in accordance with NASA guidelines"; acknowledgement requested. Changed by Space Radar as said above |
+| The model itself, its scale (0.022 arcseconds for each km/s), the blast wave's radius (153 arcseconds) and the two rates of growth it quotes (0.304 % and 0.208 % a year) | DeLaney T. and others 2010, ApJ 725, 2038, *The three-dimensional structure of Cassiopeia A* (arXiv:1011.3858) | facts, cited |
+| The expansion centre (the record's place), the explosion's date (1671.3 +/- 0.9 if nothing slowed the knots) and 3.4 kpc | Thorstensen J. R., Fesen R. A. & van den Bergh S. 2001, AJ 122, 297 (arXiv:astro-ph/0104188) | facts, cited |
+| The colour code (green iron; yellow argon and silicon, the jets and outer debris; red cold debris; blue the outer blast wave) and the blast wave's speed ("about 11 million miles per hour") | Chandra X-ray Center, [Cassiopeia A: a star explodes and turns inside out](https://chandra.si.edu/photo/2009/casa2/) and the page above | facts, cited |
+
+What is measured and what is not. Where each point is, and how fast each part grows today, are **measured**. How each
+part grew before today (a power law through its rate), the blast wave as a plain sphere (in Chandra's own model the
+blue filaments "are only a representation"), and the neutron star's depth are **modelled**. The colours are a legend
+(**false colour**) and the model holds no brightness: every point of a kind is equally bright, its size the data's
+resolution. The card says so, carries the credit and says no astronomer has reviewed the drawing.
+
 <!-- 0078 r14-mw-bh: begin -->
 ## 3m. The black holes in 3D (release 1.4.0)
 
