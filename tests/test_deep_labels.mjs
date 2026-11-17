@@ -32,7 +32,7 @@ const records = new Map(parseDso(JSON.parse(readFileSync(join(ROOT, 'site/data/d
 const F = COPY.deepFacts;
 const MODULES = { helix: 'helix', lmc: 'lmc', m31: 'spiral', m33: 'spiral', orion: 'orion', m57: 'ring', crab: 'remnant', veil: 'remnant', horsehead: 'dustsheet', coalsack: 'dustsheet', m78: 'dustsheet', iris: 'dustsheet', carina: 'carina', smc: 'smc', m51: 'spiral', m81: 'spiral', m101: 'spiral', m104: 'spiral', antennae: 'spiral' }; // 0077 W3-f: the spirals and the Antennae
 Object.assign(MODULES, { m8: 'emission', m20: 'emission', m16: 'emission', m17: 'emission', rosette: 'emission', california: 'emission', 'north-america': 'emission', 'cats-paw': 'emission' }); // 0078 r14-neb-a
-Object.assign(MODULES, { homunculus: 'homunculus', casa: 'casa' }); // the objects drawn from published 3D data, 2026-11-16
+Object.assign(MODULES, { homunculus: 'homunculus', casa: 'casa', sn1987a: 'sn1987a' }); // the objects drawn from published 3D data, 2026-11-16
 Object.assign(MODULES, { m27: 'ring', 'southern-ring': 'ring', m45: 'reflection', m83: 'spiral', ngc1300: 'spiral', cena: 'spiral' }); // 0078 r14-neb-b
 const fresh = (rec) => ({ ...rec, meta: { ...(rec.meta || {}) } });
 let sampled = 0, shipped = 0;

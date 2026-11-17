@@ -104,6 +104,9 @@ const DEFERRED = {
   'js/data/ephemerides.js': 'the index of the path files: with the reader',
   'js/propagate/pool.js': 'SGP4 for a big catalogue in a worker: main.js fetches it when a layer lands with 2 000 SGP4 records or more',
   'js/propagate/worker.js': 'the worker itself: with propagate/pool.js',
+  'js/ui/figureside.js': 'a constellation seen from the side: main.js fetches it for a story card\'s button, a search row or a `figure=` link',
+  'js/data/sideviews.js': 'the figures the side view offers: with ui/figureside.js or ui/searchrows.js',
+  'js/copy/en.side.js': 'the side view\'s words: with ui/figureside.js, ui/skystory.js or ui/searchrows.js',
   'js/ui/searchrows.js': 'what a search row says, and the trips, missions and events it finds: ui/search.js fetches it on the field\'s first focus',
   'js/data/tours-words.js': 'the words a trip is found by: with ui/searchrows.js',
   'js/data/missions.js': 'the missions\' events: with ui/missions.js or ui/searchrows.js',
@@ -189,6 +192,7 @@ const DEFERRED = {
   'js/data/hero-m57.js': 'a hero\'s profile: with the coordinator',
   // 0076 W3-c (remnant.js, dustsheet.js)
   'js/scene/deep/remnant.js': 'remnants as shells: the coordinator fetches it when the Crab or the Veil is near (release 1.2.0 W3-c, internal #784)',
+  'js/scene/deep/crab.js': 'the Crab Nebula\'s own model, a cage of filaments round the pulsar\'s wind: the coordinator fetches it when M1 is near (the 2026-11-16 deep-space review)',
   'js/scene/deep/dustsheet.js': 'dust as sheets: the coordinator fetches it when the Horsehead, the Coalsack, M78 or the Iris is near (release 1.2.0 W3-c, internal #784, #806)',
   'js/data/hero-crab.js': 'a hero\'s profile: with the coordinator',
   'js/data/hero-veil.js': 'a hero\'s profile: with the coordinator',
@@ -207,6 +211,9 @@ const DEFERRED = {
   'js/data/hero-sn1987a.js': 'a hero\'s profile: with the coordinator',
   'js/scene/deep/streams.js': 'the stellar streams: scene/deep/heroes.js DEEP_LAYERS builds it on the three outer stages',
   'js/copy/en.deepdata.js': 'the words of the objects built from published 3D data: with their modules',
+  // the S-stars round Sagittarius A* (internal #419): fetched by scene/portraits.js when the hole's picture is drawn for it
+  'js/scene/sstars.js': 'the S-stars on their measured orbits: scene/portraits.js fetches it with the Sagittarius A* picture',
+  'js/data/sstars.js': 'the S-stars\' orbit table: with the module that draws it',
   // 0076 W3-d (scalerail.js)
   'js/ui/scalerail.js': 'where you are and Back: ui/cards.js fetches it with the first card, ui/scalebadge.js on the Sun\'s stage (internal spec 0076 W3-d)',
   // 0076 W4-b (galclusters.js)

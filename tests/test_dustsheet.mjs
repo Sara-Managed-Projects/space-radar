@@ -238,7 +238,21 @@ function placed(H, rid, ly, deg = 0) {
     check(on === true && stub.shipped === false && /stepped aside/.test(h.stats().path), 'on T0 the Horsehead hero steps aside: its stub says not shipped, so the coordinator draws main\'s photograph, glow and holder');
     h.dispose();
   }
-  check(P.coalsack.shipped === false, 'the Coalsack is held (the lead, #1215): its code stays, nothing of it is drawn');
+  // Held by the lead on 2026-10-17 (#1215) for its cost on a phone (the kept stars walked for every pixel) and shipped on
+  // 2026-11-16 (the deep-space review, fault 3) with that walk moved to the grid's corners and the map cut to the one cloud.
+  check(P.coalsack.shipped === true && HEROES.find((h) => h.id === 'coalsack').stub.shipped === true, 'the Coalsack ships: a dark nebula is drawn as darkness');
+  check(/flat varying vec2 vKeepIdx/.test(D.SHADERS.absorb) && !/for \( int i = 0; i < \d+; i\+\+ \)/.test(D.SHADERS.absorb) && /keepOf\( vKeepIdx\.x, rd \), keepOf\( vKeepIdx\.y, rd \)/.test(D.SHADERS.absorb), 'a pixel tests two kept stars, found per corner: no walk of the list in the fragment shader');
+  check(/flat varying vec2 vKeepIdx/.test(D.SHADERS.sheetVertex) && /#ifdef GAS_ABSORB/.test(D.SHADERS.sheetVertex), 'the grid\'s corners find them, in the absorbing material only');
+  {
+    const man = JSON.parse(readFileSync(join(ROOT, 'site/images/deep/sheets/manifest.json'), 'utf8')).files['coalsack-dust.webp'];
+    const rec = JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8')).objects.find((o) => o.id === 'coalsack');
+    const o = man.outline;
+    check(o && o.floor_tau === 0.2 && o.area_sq_deg > 10 && o.area_sq_deg < 25, `the map keeps the one dark region (${o && o.area_sq_deg} square degrees), not the frame's other clouds`);
+    check(o && rec.majAxArcmin === o.length_arcmin && rec.minAxArcmin === o.width_arcmin && rec.posAngDeg === o.pos_ang_deg, `the record's size and angle are that region's, measured on the map (${o && [o.length_arcmin, o.width_arcmin, o.pos_ang_deg]})`);
+    const sep = Math.hypot((rec.raDeg - o.centre_deg[0]) * Math.cos(rec.decDeg * Math.PI / 180), rec.decDeg - o.centre_deg[1]) * 60;
+    check(sep < 6, `the record's centre (the middle of Beuther et al.'s longitudes, l = 302.5, b = 0) is ${sep.toFixed(1)} arcminutes from the region's own`);
+    check(P.coalsack.frame.ra_deg === rec.raDeg && P.coalsack.frame.dec_deg === rec.decDeg, 'the hero\'s frame is the record\'s place');
+  }
   check(P.horsehead.frame.min_tier === 1 && D.sheetOf(P.horsehead).minTier === 1, 'the Horsehead steps aside below tier 1 (its relief faceted on T0)');
 }
 

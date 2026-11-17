@@ -151,7 +151,8 @@ const say = edge ? edge.card.body : '';
 const n = (text) => Number(String(text).replace(/\s/g, ''));
 const starBuf = readFileSync(join(ROOT, 'site/data/stars3d.bin'));
 const placed = parseStars3d(starBuf.buffer.slice(starBuf.byteOffset, starBuf.byteOffset + starBuf.byteLength)).count;
-const fromNgc = doc.objects.filter((o) => o.positionSource === 'OpenNGC').length;
+// OpenNGC's rows are the Messier ones (type, size and magnitude are its own; three take a newer centre, the 2026-11-16 audit).
+const fromNgc = doc.objects.filter((o) => o.messier != null).length;
 const said = say.match(/shows ([\d ]+) stars .*?, ([\d ]+) nebulae, clusters and galaxies \(([\d ]+) of them from OpenNGC's ([\d ]+)\)/);
 check(!!said, `the edge card still states its stars and deep-sky counts in the form this test reads: "${say.slice(0, 160)}"`);
 if (said) {
@@ -164,7 +165,7 @@ if (said) {
 // The Layers panel's sentence counts the hand rows; the count comes from the file.
 {
   const said = (row.sentence || '').match(/Messier objects and (\d+) more/);
-  const hand = doc.objects.filter((o) => o.positionSource !== 'OpenNGC').length;
+  const hand = doc.objects.filter((o) => o.messier == null).length;
   check(said && Number(said[1]) === hand, `the deep-sky layer's sentence says ${said && said[1]} more than Messier; dso.json has ${hand}`);
 }
 

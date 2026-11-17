@@ -1030,7 +1030,8 @@ export const COPY = {
     exoticDeparture: {
       pulseSlowed: "su parpadeo se dibuja {n} veces más lento de lo que gira, para que un ojo pueda seguirlo",
       pulseTrue: "su parpadeo se dibuja al ritmo al que gira",
-      portrait: "mientras esta ficha está abierta, se dibuja en su lugar un modelo, mucho más grande de lo que se vería desde aquí: la sombra y la luz curvada como las da su masa, el disco modelado"
+      portrait: "mientras esta ficha está abierta, se dibuja en su lugar un modelo, mucho más grande de lo que se vería desde aquí: la sombra y la luz curvada como las da su masa, el disco modelado",
+      sstars: "las estrellas que lo rodean se dibujan en sus órbitas medidas cuando uno se acerca a cerca de un año luz: 39 de ellas (S2 según el ajuste de GRAVITY, las demás según Gillessen y otros, 2017), cada una donde el reloj la sitúa en su órbita; sus tamaños y colores son ilustrativos, y la imagen del agujero les cede el sitio"
     },
     worldDeparture: {
       earth: "en una pantalla más grande, sus montañas salen de las alturas ETOPO 2022 de NOAA, dibujadas {relief} veces más empinadas de lo que son para que un Sol bajo las muestre; el resplandor del aire alrededor de su borde se dibuja {air} veces más alto que el aire; desde una órbita baja y en una pantalla más grande, sus nubes se alzan hacia el horizonte y bajo un Sol bajo, dibujadas {clouds} veces más gruesas de lo que son para que se vean su inclinación, sus largas sombras y la última luz en sus cimas (con su grosor verdadero en el aspecto Medido), con la altura de cada cima tomada de su temperatura medida donde cubre la imagen de hoy y del brillo del mapa de nubes en el resto",
@@ -3545,26 +3546,16 @@ export const COPY = {
   r12Dust: {
     card: {
       "m45": "Su luz es la fotografía de NOIRLab: una nube de polvo que atraviesa el cúmulo, justo delante de sus estrellas, y que dispersa su luz azul (Ritchey y otros, 2006). Su profundidad está reconstruida. Aún no revisado por un astrónomo.",
-      crab: "Su luz procede de la fotografía de Hubble, en falso color, llevada sobre una cáscara cuya forma sigue a Martin, Milisavljevic y Drissen (2021): una jaula de filamentos de unos 4 pársecs de largo alrededor de un centro vacío. Aún no revisado por un astrónomo.",
+      crab: "Una jaula de filamentos alrededor del resplandor del viento del púlsar, sobre el contorno que midieron Martin, Milisavljevic y Drissen (2021). El lugar de cada filamento está modelado y los colores siguen la imagen en falso color de Hubble. Aún no revisado por un astrónomo.",
       veil: "Su luz procede de la fotografía de NOIRLab, en falso color, llevada sobre una esfera delgada de 37 pársecs de ancho (Fesen y otros, 2018): los filamentos son su borde visto de canto. Aún no revisado por un astrónomo.",
       horsehead: "Su oscuridad se lee en la fotografía de NOIRLab: polvo delante del gas incandescente de IC 434, que absorbe y enrojece lo que hay detrás y no emite luz. Aún no revisado por un astrónomo.",
-      coalsack: "Su oscuridad se lee en la Vía Láctea que lo rodea: una nube de polvo a unos 590 años luz que atenúa y enrojece las estrellas que hay detrás. Aún no revisado por un astrónomo.",
+      coalsack: "Su oscuridad se lee en la Vía Láctea que lo rodea: una nube de polvo a unos 590 años luz que atenúa y enrojece las estrellas que hay detrás. Su contorno está medido; su profundidad, modelada. Aún no revisado por un astrónomo.",
       m78: "Su luz es la fotografía de NOIRLab: polvo que dispersa la luz azul de la estrella que tiene delante, en la cara de una nube oscura. Su profundidad está reconstruida. Aún no revisado por un astrónomo.",
       iris: "Su luz es la fotografía de NOIRLab: polvo que dispersa la luz de la joven estrella HD 200775 en un hueco de su nube. Su profundidad está reconstruida. Aún no revisado por un astrónomo."
     },
     rows: {
       "dso-m45": [["Su forma en profundidad", "Reconstruida. El gas está delante de las estrellas, como muestra su luz; a qué distancia delante y qué grosor tiene el polvo son ilustrativos, y las profundidades de las estrellas dentro del cúmulo son un modelo fijo, no medidas."], ["Lo que hace el polvo", "Dispersa la luz de las estrellas, sobre todo la azul, así que brilla en azul alrededor de las más brillantes, Mérope y Maia sobre todo. Es una nube de paso, no aquella de la que nacieron las estrellas."], ["Revisión", "Este modelo aún no ha sido revisado por un astrónomo."]],
-      "dso-m1": [
-        [
-          "Su forma en profundidad",
-          "Reconstruida a partir de un contorno medido. Los filamentos llegan a unos 2 pársecs a lo largo del eje del viento del púlsar y ninguno está a menos de medio pársec del centro (Martin y otros, 2021). Se dibuja como un elipsoide a lo largo de ese eje; qué extremo está más cerca de nosotros es una suposición."
-        ],
-        [
-          "Sus colores",
-          "Falso color: los filtros estrechos de la fotografía para el oxígeno y el azufre, asignados a colores por los autores de la imagen."
-        ],
-        ["Revisión", "Este modelo aún no ha sido revisado por un astrónomo."]
-      ],
+      "dso-m1": [["Su forma","Un contorno medido con filamentos modelados. No hay gas a más de 2 pársecs del centro a lo largo del eje del púlsar ni a menos de medio pársec; la cintura está estrechada y sobresalen dos lóbulos (Martin y otros, 2021). Los filamentos forman un panal del tamaño medido, pero el lugar donde se dibuja cada uno está modelado."],["El viento del púlsar","Anillos medidos, chorros modelados. Dos anillos de rayos X rodean el púlsar; el interior mide un año luz de ancho y están inclinados 63 grados respecto a nuestra línea de visión. El gas sale de ellos a la mitad de la velocidad de la luz, así que el lado que se mueve hacia quien mira es más brillante (Ng y Romani, 2004 y 2008). La longitud de los chorros está modelada."],["Sus colores","Ilustrativos. Los filamentos y el resplandor toman sus colores de la imagen en falso color de Hubble en el mismo lugar del cielo. El viento del púlsar es luz de rayos X, que ningún ojo puede ver, dibujada en azul violáceo."],["En el reloj","La estrella se vio estallar en 1054 y la nube crece cerca de una décima de un uno por ciento al año (medido). El modelo crece con el reloj de la aplicación desde 1054; cómo cambió el crecimiento a lo largo de los siglos está modelado."],["Revisión","Este modelo aún no ha sido revisado por un astrónomo."]],
       "dso-veil-nebula": [
         [
           "Su forma en profundidad",
@@ -3587,17 +3578,7 @@ export const COPY = {
         ],
         ["Revisión", "Este modelo aún no ha sido revisado por un astrónomo."]
       ],
-      "dso-coalsack": [
-        [
-          "Lo oscura que es",
-          "Se lee a partir de cuánto más oscura es aquí la Vía Láctea que a la misma distancia de su línea media en las cercanías. Es una estimación y menor que la de los mapas infrarrojos, porque las estrellas que están delante de la nube añaden su luz."
-        ],
-        [
-          "Lo que hace el polvo",
-          "Solo absorbe: las estrellas que hay detrás se atenúan y enrojecen. Las que están delante, no. Parte de la oscuridad del noreste es una segunda nube mucho más lejana, dibujada aquí a la distancia cercana."
-        ],
-        ["Revisión", "Este modelo aún no ha sido revisado por un astrónomo."]
-      ],
+      "dso-coalsack": [["Su contorno y su profundidad","El contorno está medido en el mapa de la Vía Láctea que se dibuja aquí (NASA, a partir de los recuentos de estrellas de Gaia): una región oscura de unos 7 por 4 grados. Las manchas oscuras cercanas son otras nubes y se dejan fuera. La profundidad está modelada: una lámina delgada e irregular a una sola distancia."],["Lo oscura que es","Se lee a partir de cuánto más oscura es aquí la Vía Láctea que a la misma distancia de su línea media en las cercanías. Es una estimación y menor que la de los mapas infrarrojos, porque las estrellas que están delante de la nube añaden su luz."],["Lo que hace el polvo","Solo absorbe: las estrellas que hay detrás se atenúan y enrojecen. Las que están delante, no. Parte de la oscuridad del noreste es una segunda nube mucho más lejana, dibujada aquí a la distancia cercana."],["Revisión","Este modelo aún no ha sido revisado por un astrónomo."]],
       "dso-m78": [
         [
           "Su forma en profundidad",
@@ -6321,3 +6302,36 @@ Object.assign(COPY, {
   }
 });
 // ds2: end
+// A constellation seen from the side (ui/figureside.js, copy/en.side.js): begin
+COPY.figureSide = {
+  "open": "Verla de lado",
+  "openTitle": "Deja el Sol y mira cómo se deshace {name}",
+  "searchRow": "{name}, de lado",
+  "searchSub": "Deja el Sol y mira cómo se deshace la figura",
+  "title": "{name}, de lado",
+  "loading": "Cargando las distancias de las estrellas…",
+  "lede": "Desde el Sol estas estrellas forman una figura. Cada una está a su propia distancia, así que de lado la figura se deshace.",
+  "angle": "Cuánto girar hacia el lado",
+  "where": "{deg}° hacia el lado, a {ly} años luz del Sol",
+  "home": "En el Sol: la figura como la vemos",
+  "range": "Sus estrellas están entre {near} y {far} años luz.",
+  "play": "Salir volando",
+  "playTitle": "Deja el Sol y gira hasta verla de lado, en veinte segundos",
+  "pause": "Pausa",
+  "jump": "Ir al lado",
+  "back": "Volver al Sol",
+  "another": "Otra figura",
+  "honest": "Medido: dónde está cada estrella, por su paralaje (Hipparcos y Gaia, catálogo HYG); las más lejanas son las menos seguras. Tradición: las líneas entre ellas.",
+  "unplaced": "{n} de sus esquinas no tienen una estrella con distancia medida: se dibujan a la distancia media de la figura.",
+  "close": "Cerrar la vista de lado",
+  "unknown": "Aquí no se dibuja ninguna figura de estrellas con ese nombre.",
+  "inTrip": "Sal primero del viaje para ver una figura de lado.",
+  "failed": "No se cargaron las distancias de las estrellas. Inténtalo de nuevo en un momento.",
+  "names": {
+    "bigDipper": "El Carro"
+  },
+  "notes": {
+    "bigDipper": "Cinco de sus siete estrellas sí viajan juntas, a unos 80 años luz. Las dos de los extremos, Dubhe y Alkaid, no."
+  }
+};
+// A constellation seen from the side: end

@@ -70,3 +70,11 @@
 .sr-skystory__head > .ui-close {
   margin: calc(-1 * var(--sp-1)) calc(-1 * var(--sp-1)) 0 0;
 }
+
+/* The card's one action: a western figure seen from the side (ui/figureside.js). */
+.sr-skystory__acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin: var(--sp-3) 0 0;
+}

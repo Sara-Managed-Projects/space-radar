@@ -1,11 +1,23 @@
 {
   "files": {
     "coalsack-dust.webp": {
-      "bytes": 3374,
-      "sha256": "25bb83d140531b0442b45298aaed5dccd15405c496a7af541089135e72ec11e8",
+      "bytes": 1268,
+      "sha256": "a35d91c74dd06bfc06cb8e701cdfbffe7defc5b6d9d0d5d4e6d07dcc0ce7065b",
       "tau_front_max": 2.133,
       "tau_back_max": 0.0,
-      "tau_front_mean": 0.1082
+      "tau_front_mean": 0.0626,
+      "outline": {
+        "floor_tau": 0.2,
+        "pixels": 5284,
+        "area_sq_deg": 15.8,
+        "centre_deg": [
+          191.94,
+          -62.91
+        ],
+        "length_arcmin": 446,
+        "width_arcmin": 237,
+        "pos_ang_deg": 47
+      }
     },
     "crab-light.webp": {
       "bytes": 14006,
@@ -59,8 +71,8 @@
       "peak_p99": 0.425
     },
     "stars.json": {
-      "bytes": 1854,
-      "sha256": "69998778903d78378a471061c8188760a6c8835f5693b56b66e3acd3d5d41e13"
+      "bytes": 1185,
+      "sha256": "c0a1f6cf0350d518740be472cab4c9001c4cdeddf1b4a09a1718e4624705ecfd"
     }
   },
   "inputs": [
@@ -92,15 +104,6 @@
       "size": [
         504,
         512
-      ]
-    },
-    {
-      "id": "coalsack",
-      "from": "site/textures/4k/milky_way.webp",
-      "from_sha256": "181997538c607dcfcedb764038e3d8687e6a45cd4b8f502c713dcb4a1683c107",
-      "size": [
-        256,
-        256
       ]
     },
     {
@@ -174,6 +177,15 @@
       "size": [
         512,
         374
+      ]
+    },
+    {
+      "id": "coalsack",
+      "from": "site/textures/4k/milky_way.webp",
+      "from_sha256": "181997538c607dcfcedb764038e3d8687e6a45cd4b8f502c713dcb4a1683c107",
+      "size": [
+        256,
+        256
       ]
     }
   ]

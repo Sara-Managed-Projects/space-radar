@@ -383,6 +383,7 @@ function exoticDeparture(x) {
   const parts = [];
   if (shown) parts.push(shown.slower > 1 ? t(T.pulseSlowed, { n: fmt.int(shown.slower) }) : T.pulseTrue);
   if (x.kind === 'blackhole') parts.push(T.portrait); // 0078 r14-mw-bh: every black hole is drawn in 3D (the quasars keep the far layer's words)
+  if (x.id === 'sgr-a-star') parts.push(T.sstars); // internal #419: the stars that circle it, on their measured orbits (scene/sstars.js)
   return parts.length ? { departure: parts.join(COPY.punctuation.separator) } : {};
 }
 

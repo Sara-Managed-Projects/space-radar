@@ -31,7 +31,7 @@ const OBLIQUITY = 23.4392911 * D2R; // J2000 mean obliquity, as scene/nebulae.js
  * depthLy: half the depth the regrouped stars are spread over (0: the stars are left where they are).
  */
 export const CLUSTERS = [
-  { id: 'm45', raDeg: 56.86917, decDeg: 24.10528, distLy: 440, radiusDeg: 2.0, nearLy: 280, farLy: 620, depthLy: 8 },
+  { id: 'm45', raDeg: 56.6798, decDeg: 24.1085, distLy: 440, radiusDeg: 2.0, nearLy: 280, farLy: 620, depthLy: 8 },
   { id: 'hyades', raDeg: 66.75, decDeg: 15.8667, distLy: 153, radiusDeg: 6.0, nearLy: 125, farLy: 185, depthLy: 0 },
   // TWO MORE THE EYE KNOWS (public #424, 2026-10-08). The Beehive in Cancer and the Southern
   // Pleiades in Carina are both naked-eye clusters, both in the deep-sky file, and both far enough

@@ -411,6 +411,7 @@
  "b758c5c215": "The first black hole anyone was sure of, found in {n1} by its X-rays. It is eating a blue supergiant, HDE {n2}.",
  "02d124a23a": "Black hole",
  "517a174794": "Drawn as a ring at its measured distance; a black hole has no shape to draw and a pulsar is far too small — the kind of thing, not this exact one · while this card is open a model of it is drawn at its place, far larger than it would look from here: the shadow and the light bent round it as its mass makes them, the disc modelled.",
+ "d4c77946c8": "Drawn as a ring at its measured distance; a black hole has no shape to draw and a pulsar is far too small — the kind of thing, not this exact one · while this card is open a model of it is drawn at its place, far larger than it would look from here: the shadow and the light bent round it as its mass makes them, the disc modelled · the stars that circle it are drawn on their measured orbits when you come within about a light-year: {n1} of them (S2 from GRAVITY’s fit, the rest from Gillessen and others, {n2}), each where the clock puts it on its orbit; their sizes and colours are illustrative, and the picture of the hole gives way to them.",
  "6c06fafecf": "Source: <1>https://en.wikipedia.org/wiki/Cygnus_X-{n1}</1> (infobox, read {n2}-{n3}-{n4}); distance and mass: Miller-Jones et al. {n5} (arXiv:{n6})",
  "bb9ecb6aff": "{name} is a spacecraft out in the solar system. Where it is right now is on the live 3D map.",
  "c8a8f2e9e2": "The first spacecraft to orbit two worlds beyond Earth: the asteroid Vesta in {n1} and {n2}, then the dwarf planet Ceres from {n3}.",
@@ -1250,5 +1251,7 @@
  "66ba90603d": "Drawn as WorldView-{n1}, a taller craft on the same bus — the kind of thing, not this exact one · shape built from published dimensions and pictures; details simplified.",
  "c90413fd85": "Where Curiosity landed on {d1}. The rover has driven on, and has a marker of its own.",
  "3262df82d7": "Where Perseverance landed on {d1}. The rover has driven on, and has a marker of its own.",
- "cbdf08776a": "A rover the size of a car, collecting rock samples. It landed in Jezero crater in {n1} and has since climbed up and over the crater's western rim."
+ "cbdf08776a": "A rover the size of a car, collecting rock samples. It landed in Jezero crater in {n1} and has since climbed up and over the crater's western rim.",
+ "3bf96d01d2": "Source: Position: Hunt & Reffert {n1}, A&A {n2}, A114 (VizieR J/A+A/{n3}/A114), the centre of its Gaia DR3 members; distance: Hunt & Reffert {n4} (arXiv:{n5}), Gaia DR3 median of {n6} members",
+ "3b0df8fa45": "Source: Position: SIMBAD (NGC {n1}; Tarricq et al. {n2}, A&A {n3}, A19); distance: <1>https://en.wikipedia.org/wiki/List_of_Messier_objects</1>"
 }

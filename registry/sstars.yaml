@@ -1,0 +1,77 @@
+# The S-stars: the stars that circle Sagittarius A*, on their measured orbits (the deep-space review of 2026-11-16, idea 1;
+# internal issue #419). Drawn by site/js/scene/sstars.js when the black hole's picture is on (scene/portraits.js); mirrored to
+# site/js/data/sstars.js by scripts/gen_sstars_js.py (never edit that file). tests/test_sstars.mjs.
+#
+# WHAT IS MEASURED. The orbit of every star below: the size of its ellipse on the sky (a, arcseconds), its shape (e), its
+# tilt (i), the turn of its long axis in the sky plane (Omega, the position angle of the node) and in its own plane (omega),
+# the date it passes closest (t_peri) and the time round (P). These are the published fits to the stars' positions and
+# speeds, with their 1 sigma errors (`err`, in the same order and units as the value). The mass at the centre and our
+# distance to it, from the orbit of S2.
+# WHAT IS ILLUSTRATIVE. The stars' sizes and colours (a star is a soft point; the sources give none), the orbit lines'
+# brightness, and the white mark at the centre, which stands for a hole 5 millionths of an arcsecond across.
+# HOW IT IS DRAWN. In AU: an orbit's size is a (arcsec) times R0 (parsecs): one arcsecond is one AU at one parsec. Where a star
+# is on it comes from the Kepler solver of propagate/kepler.js, in the clock's date, the star's period and pericentre date
+# being the paper's. At a different R0 an orbit's size changes, its period does not: the paper's elements are angles and times.
+#
+# SOURCES (arXiv, the abstract and table read 2026-11-17 through arxiv.org's HTML render):
+#   gillessen2017: Gillessen, S. et al. 2017, ApJ 837, 30, "An update on monitoring stellar orbits in the Galactic Center"
+#     (arXiv:1611.09144), Table 3, "Orbital parameters of the 40 stars for which we were able to determine orbits"
+#     (a, e, i, Omega, omega, t_P, T). The paper's own R0 is 8.32 kpc and its mass 4.28 million Suns (section III.6).
+#   gravity2021: GRAVITY Collaboration 2021 (arXiv:2101.12098), Table 2, the S2 fit: R0 = 8274.9 +/- 9.3 pc,
+#     M = 4.297 +/- 0.013 million Suns, and S2's elements (used for S2 in place of Gillessen's row).
+#   The distance and mass are the ones registry/exotics.yaml already gives Sagittarius A* (the same paper).
+# LICENCE. Published measurements: facts, cited. No file, figure or text is copied.
+# NOT HERE: S62 and S4714 (Peissker et al. 2020), which are not among Table 3's 40; S111, whose fit is unbound (e > 1, no period).
+version: 1
+centre:
+  name: Sagittarius A*
+  record: exotic-sgr-a-star
+  r0_pc: 8274.9
+  r0_err_pc: 9.3
+  mass_msun: 4297000
+  source: gravity2021
+# The labelled stars: S2 (the one whose pericentre passages of 2002 and 2018 proved the mass), S55 (the shortest period of
+# the table, 12.8 years) and S175 (the most eccentric orbit of the table's ellipses, e = 0.987).
+labelled: [S2, S55, S175]
+# The pericentre of S2 of 2018: the date and the distance the paper's numbers give (tests/test_sstars.mjs recomputes both).
+s2_2018: {t_peri: 2018.378990, peri_au_about: 120}
+stars:
+  - {id: S1, source: gillessen2017, a: [0.595, 0.024], e: [0.556, 0.018], i: [119.14, 0.21], om: [342.04, 0.32], w: [122.3, 1.4], tp: [2001.80, 0.15], p: [166.0, 5.8]}
+  - {id: S2, source: gravity2021, a: [0.124982, 0.000034], e: [0.884215, 0.000058], i: [134.685, 0.029], om: [227.175, 0.029], w: [66.259, 0.030], tp: [2018.378990, 0.000082], p: [16.0458, 0.0013]}
+  - {id: S4, source: gillessen2017, a: [0.3570, 0.0037], e: [0.3905, 0.0059], i: [80.33, 0.08], om: [258.84, 0.07], w: [290.8, 1.5], tp: [1957.4, 1.2], p: [77.0, 1.0]}
+  - {id: S6, source: gillessen2017, a: [0.6574, 0.0006], e: [0.8400, 0.0003], i: [87.24, 0.06], om: [85.07, 0.12], w: [116.23, 0.07], tp: [2108.61, 0.03], p: [192.0, 0.17]}
+  - {id: S8, source: gillessen2017, a: [0.4047, 0.0014], e: [0.8031, 0.0075], i: [74.37, 0.30], om: [315.43, 0.19], w: [346.70, 0.41], tp: [1983.64, 0.24], p: [92.9, 0.41]}
+  - {id: S9, source: gillessen2017, a: [0.2724, 0.0041], e: [0.644, 0.020], i: [82.41, 0.24], om: [156.60, 0.10], w: [150.6, 1.0], tp: [1976.71, 0.92], p: [51.3, 0.70]}
+  - {id: S12, source: gillessen2017, a: [0.2987, 0.0018], e: [0.8883, 0.0017], i: [33.56, 0.49], om: [230.1, 1.8], w: [317.9, 1.5], tp: [1995.59, 0.04], p: [58.9, 0.22]}
+  - {id: S13, source: gillessen2017, a: [0.2641, 0.0016], e: [0.4250, 0.0023], i: [24.70, 0.48], om: [74.5, 1.7], w: [245.2, 2.4], tp: [2004.86, 0.04], p: [49.00, 0.14]}
+  - {id: S14, source: gillessen2017, a: [0.2863, 0.0036], e: [0.9761, 0.0037], i: [100.59, 0.87], om: [226.38, 0.64], w: [334.59, 0.87], tp: [2000.12, 0.06], p: [55.3, 0.48]}
+  - {id: S17, source: gillessen2017, a: [0.3559, 0.0096], e: [0.397, 0.011], i: [96.83, 0.11], om: [191.62, 0.21], w: [326.0, 1.9], tp: [1991.19, 0.41], p: [76.6, 1.0]}
+  - {id: S18, source: gillessen2017, a: [0.2379, 0.0015], e: [0.471, 0.012], i: [110.67, 0.18], om: [49.11, 0.18], w: [349.46, 0.66], tp: [1993.86, 0.16], p: [41.9, 0.18]}
+  - {id: S19, source: gillessen2017, a: [0.520, 0.094], e: [0.750, 0.043], i: [71.96, 0.35], om: [344.60, 0.62], w: [155.2, 2.3], tp: [2005.39, 0.16], p: [135, 14]}
+  - {id: S21, source: gillessen2017, a: [0.2190, 0.0017], e: [0.764, 0.014], i: [58.8, 1.0], om: [259.64, 0.62], w: [166.4, 1.1], tp: [2027.40, 0.17], p: [37.00, 0.28]}
+  - {id: S22, source: gillessen2017, a: [1.31, 0.28], e: [0.449, 0.088], i: [105.76, 0.95], om: [291.7, 1.4], w: [95, 20], tp: [1996.9, 10.2], p: [540, 63]}
+  - {id: S23, source: gillessen2017, a: [0.253, 0.012], e: [0.56, 0.14], i: [48.0, 7.1], om: [249, 13], w: [39.0, 6.7], tp: [2024.7, 3.7], p: [45.8, 1.6]}
+  - {id: S24, source: gillessen2017, a: [0.944, 0.048], e: [0.8970, 0.0049], i: [103.67, 0.42], om: [7.93, 0.37], w: [290, 15], tp: [2024.50, 0.03], p: [331, 16]}
+  - {id: S29, source: gillessen2017, a: [0.428, 0.019], e: [0.728, 0.052], i: [105.8, 1.7], om: [161.96, 0.80], w: [346.5, 5.9], tp: [2025.96, 0.94], p: [101.0, 2.0]}
+  - {id: S31, source: gillessen2017, a: [0.449, 0.010], e: [0.5497, 0.0025], i: [109.03, 0.27], om: [137.16, 0.30], w: [308.0, 3.0], tp: [2018.07, 0.14], p: [108, 1.2]}
+  - {id: S33, source: gillessen2017, a: [0.657, 0.026], e: [0.608, 0.064], i: [60.5, 2.5], om: [100.1, 5.5], w: [303.7, 1.6], tp: [1928, 12], p: [192.0, 5.2]}
+  - {id: S38, source: gillessen2017, a: [0.1416, 0.0002], e: [0.8201, 0.0007], i: [171.1, 2.1], om: [101.06, 0.24], w: [17.99, 0.25], tp: [2003.19, 0.01], p: [19.2, 0.02]}
+  - {id: S39, source: gillessen2017, a: [0.370, 0.015], e: [0.9236, 0.0021], i: [89.36, 0.73], om: [159.03, 0.10], w: [23.3, 3.8], tp: [2000.06, 0.06], p: [81.1, 1.5]}
+  - {id: S42, source: gillessen2017, a: [0.95, 0.18], e: [0.567, 0.083], i: [67.16, 0.66], om: [196.14, 0.75], w: [35.8, 3.2], tp: [2008.24, 0.75], p: [335, 58]}
+  - {id: S54, source: gillessen2017, a: [1.20, 0.87], e: [0.893, 0.078], i: [62.2, 1.4], om: [288.35, 0.70], w: [140.8, 2.3], tp: [2004.46, 0.07], p: [477, 199]}
+  - {id: S55, source: gillessen2017, a: [0.1078, 0.0010], e: [0.7209, 0.0077], i: [150.1, 2.2], om: [325.5, 4.0], w: [331.5, 3.9], tp: [2009.34, 0.04], p: [12.80, 0.11]}
+  - {id: S60, source: gillessen2017, a: [0.3877, 0.0070], e: [0.7179, 0.0051], i: [126.87, 0.30], om: [170.54, 0.85], w: [29.37, 0.29], tp: [2023.89, 0.09], p: [87.1, 1.4]}
+  - {id: S66, source: gillessen2017, a: [1.502, 0.095], e: [0.128, 0.043], i: [128.5, 1.6], om: [92.3, 3.2], w: [134, 17], tp: [1771, 38], p: [664, 37]}
+  - {id: S67, source: gillessen2017, a: [1.126, 0.026], e: [0.293, 0.057], i: [136.0, 1.1], om: [96.5, 6.4], w: [213.5, 1.6], tp: [1705, 22], p: [431, 10]}
+  - {id: S71, source: gillessen2017, a: [0.973, 0.040], e: [0.899, 0.013], i: [74.0, 1.3], om: [35.16, 0.86], w: [337.8, 4.9], tp: [1695, 21], p: [346, 11]}
+  - {id: S83, source: gillessen2017, a: [1.49, 0.19], e: [0.365, 0.075], i: [127.2, 1.4], om: [87.7, 1.2], w: [203.6, 6.0], tp: [2046.8, 6.3], p: [656, 69]}
+  - {id: S85, source: gillessen2017, a: [4.6, 3.30], e: [0.78, 0.15], i: [84.78, 0.29], om: [107.36, 0.43], w: [156.3, 6.8], tp: [1930.2, 9.8], p: [3580, 2550]}
+  - {id: S87, source: gillessen2017, a: [2.74, 0.16], e: [0.224, 0.027], i: [119.54, 0.87], om: [106.32, 0.99], w: [336.1, 7.7], tp: [611, 154], p: [1640, 105]}
+  - {id: S89, source: gillessen2017, a: [1.081, 0.055], e: [0.639, 0.038], i: [87.61, 0.16], om: [238.99, 0.18], w: [126.4, 4.0], tp: [1783, 26], p: [406, 27]}
+  - {id: S91, source: gillessen2017, a: [1.917, 0.089], e: [0.303, 0.034], i: [114.49, 0.32], om: [105.35, 0.74], w: [356.4, 1.6], tp: [1108, 69], p: [958, 50]}
+  - {id: S96, source: gillessen2017, a: [1.499, 0.057], e: [0.174, 0.022], i: [126.36, 0.96], om: [115.66, 0.59], w: [233.6, 2.4], tp: [1646, 16], p: [662, 29]}
+  - {id: S97, source: gillessen2017, a: [2.32, 0.46], e: [0.35, 0.11], i: [113.0, 1.3], om: [113.2, 1.4], w: [28, 14], tp: [2132, 29], p: [1270, 309]}
+  - {id: S145, source: gillessen2017, a: [1.12, 0.18], e: [0.50, 0.25], i: [83.7, 1.6], om: [263.92, 0.94], w: [185, 16], tp: [1808, 58], p: [426, 71]}
+  - {id: S175, source: gillessen2017, a: [0.414, 0.039], e: [0.9867, 0.0018], i: [88.53, 0.60], om: [326.83, 0.78], w: [68.52, 0.40], tp: [2009.51, 0.01], p: [96.2, 5.0]}
+  - {id: R34, source: gillessen2017, a: [1.81, 0.15], e: [0.641, 0.098], i: [136.0, 8.3], om: [330, 19], w: [57.0, 8.0], tp: [1522, 52], p: [877, 83]}
+  - {id: R44, source: gillessen2017, a: [3.9, 1.4], e: [0.27, 0.27], i: [131.0, 5.2], om: [80.5, 7.1], w: [217, 24], tp: [1963, 85], p: [2730, 1350]}

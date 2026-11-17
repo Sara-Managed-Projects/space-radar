@@ -142,6 +142,8 @@ jobs:
       # Spec 0044: the gates themselves. A stale mirror is a test holding the previous number.
       - name: The budgets mirror matches the registry (spec 0044)
         run: python3 scripts/gen_budgets_js.py --check
+      - name: "The S-stars' table mirrors the registry and every period obeys Kepler's third law (internal #419)"
+        run: python3 scripts/gen_sstars_js.py --check
       # Spec 0068 task 1: one WebP per trip card, the right size and inside trip_picture_bytes. Stdlib
       # only (the WebP header is read by hand), so the job's one dependency stays PyYAML.
       - name: Every trip has its card picture, 640 x 360 and inside its budget (spec 0068)
@@ -246,6 +248,8 @@ jobs:
       - name: "A black hole in 3D: the shadow, the bent light, the beamed disc, M87*'s jet, Cygnus X-1's companion (release 1.4.0)"
         run: node tests/test_blackhole.mjs
       # 0078 r14-mw-bh: end
+      - name: "The S-stars round Sagittarius A*: the published elements, S2 120 AU from the hole at its 2018.38 pericentre, the sense of motion, three draw calls, the hole's picture giving way, the card's words (internal #419)"
+        run: node tests/test_sstars.mjs
       - name: The walk notices another project's headless Chrome (internal #460)
         run: node tests/test_chrome_quiet.mjs
       - name: The prepared cloud workflow stays minimal (internal #139)
@@ -766,6 +770,10 @@ jobs:
         run: node tests/test_exoplanets.mjs
       - name: deep-sky objects sit at sourced distances (spec 0028 step 5)
         run: node tests/test_dso.mjs
+      # The 2026-11-16 deep-space review: seven edge-on galaxies were round glows (no minor axis or angle in their
+      # rows), and the Pleiades' mark sat on Alcyone. Every galaxy row now carries its catalogue ellipse or says why not.
+      - name: galaxies are their catalogue ellipses, edge-on ones thin and turned; the Pleiades sit among their stars
+        run: node tests/test_dso_ellipses.mjs
       - name: the Milky Way model is a model, in the right place (spec 0028 step 6)
         run: node tests/test_galaxy.mjs
       - name: galaxies from their own structure - Andromeda and M33 as heroes, the disc foreshortens as the camera circles (spec 0075 stage d)
@@ -1353,6 +1361,9 @@ jobs:
       # 0076 W3-c
       - name: "remnants as shells: the Crab and the Veil on their published geometry, the photograph exactly on our line (internal spec 0076 W3-c, #784)"
         run: node tests/test_remnant.mjs
+      # The 2026-11-16 deep-space review, fault 2: the Crab had no model of its own (its hero held since 17 October).
+      - name: "the Crab Nebula: a cage of filaments on the measured outline, the pulsar wind's fitted rings, growing from 1054"
+        run: node tests/test_crab.mjs
       - name: "dust as sheets: a star behind is dimmed and reddened, the dust never glows, the draw order (internal spec 0076 W3-c, #784, #806)"
         run: node tests/test_dustsheet.mjs
       - name: "the remnants' and the dust's maps are the bake of their pictures and profiles"
@@ -1581,6 +1592,9 @@ jobs:
         run: node tests/test_cutaway.mjs
       - name: "the heliosphere: the Voyagers' crossings on JPL's tracks, both surfaces through them, labelled modelled (forge #148)"
         run: node tests/test_heliosphere.mjs
+      # The 2026-11-16 deep-space review, idea 6: a constellation seen from the side (ui/figureside.js, registry/sideviews.yaml).
+      - name: "a constellation from the side: six figures offered, the Big Dipper its seven stars, exact from the Sun, apart from the side, eleven languages, out of the first visit"
+        run: node tests/test_figureside.mjs
       # b200-f2-worlds: end
       # b200-m2-buses: begin
       - name: "registry/geo-buses.yaml and registry/cubesats.yaml and the browser's mirrors of their drawn families agree (forge #117, #118)"

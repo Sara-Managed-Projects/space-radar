@@ -511,7 +511,7 @@ async function walk(m, trip, plan, each) {
   portraits.dispose();
   // 0078 r14-mw-bh: a black hole is drawn in 3D (scene/blackhole.js), at the share of the view while its true size is smaller
   const src = readFileSync(join(JS, 'scene/portraits.js'), 'utf8');
-  check(/createBlackHole\(/.test(src) && /share: PORTRAIT_SHARE/.test(src) && !/SpriteMaterial|ImageLoader/.test(src), 'a 3D black hole at a share of the view, no photograph on a sprite');
+  check(/createBlackHole\(/.test(src) && /share: (PORTRAIT_SHARE|holeShare\()/.test(src) && !/SpriteMaterial|ImageLoader/.test(src), 'a 3D black hole at a share of the view, no photograph on a sprite');
   const main = readFileSync(join(JS, 'main.js'), 'utf8');
   check(/import\('\.\/scene\/portraits\.js'\)/.test(main) && !/^import .*portraits\.js/m.test(main), 'the portraits are a dynamic import: nothing of them at boot');
 }

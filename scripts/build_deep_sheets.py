@@ -26,7 +26,9 @@ the envelope is behind dust of optical depth tau = ln(dark_below x envelope / pi
 brightest glow, the cloud is at least `cloud_tau` thick (deep inside a cloud nothing lit is behind it to measure
 against), and with `cloud_side` only beyond a line on the sky (the Horsehead's cloud lies east of IC 434's front). With
 `background: galactic-latitude` (the Coalsack) the glow is not the envelope but the Milky Way map at the same galactic
-latitude, the median over `window_deg` of longitude either side. For a reflection nebula the cloud BEHIND the lit dust is
+latitude, the median over `window_deg` of longitude either side; and with `connected: {floor, soften_arcmin}` only the
+one dark region that holds the middle's darkest point is kept (other dark patches in the frame are other clouds), and
+its centre, length, width and angle are written to the manifest as the cloud's measured outline. For a reflection nebula the cloud BEHIND the lit dust is
 `back_tau` wherever the light is at least `back_from` of its brightest. Under the dust the LIGHT behind is given back:
 the picture times exp(tau), never more than dark_below x the envelope, in the envelope's colour where the picture is too
 dark to have one; so on our line light x exp(-tau) is the picture again wherever the darkness is read from it.
@@ -388,6 +390,58 @@ def dust_maps(rgb, rule: dict, tau_max: float, arcmin_px: float, background=None
     return enc(light), tau, back
 
 
+def one_cloud(tau, rule: dict, arcmin_px: float, pic: dict):
+    """THE CLOUD AND NOT ITS NEIGHBOURS (the 2026-11-16 deep-space review, fault 3). The rule reads darkness anywhere in
+    the picture, and round the Coalsack the Milky Way has other dark patches that are other clouds at other distances.
+    `rule.connected: {floor, soften_arcmin}` keeps the ONE region of optical depth >= floor that holds the darkest point
+    of the picture's middle third, with a soft edge, and measures it: its centre (weighted by optical depth), its full
+    length and width and the position angle of its long axis (north through east). Returns (tau kept, the outline)."""
+    import numpy as np
+
+    c = rule.get("connected") or {}
+    floor = float(c.get("floor", 0.2))
+    ny, nx = tau.shape
+    mid = tau[ny // 3:2 * ny // 3, nx // 3:2 * nx // 3]
+    j0, i0 = np.unravel_index(int(np.argmax(mid)), mid.shape)
+    start = (j0 + ny // 3, i0 + nx // 3)
+    keep = np.zeros(tau.shape, dtype=bool)
+    keep[start] = True
+    stack = [start]
+    while stack:
+        j, i = stack.pop()
+        for dj, di in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            J, I = j + dj, i + di
+            if 0 <= J < ny and 0 <= I < nx and not keep[J, I] and tau[J, I] >= floor:
+                keep[J, I] = True
+                stack.append((J, I))
+    soft = np.clip(gaussian(keep.astype(np.float64), max(0.5, float(c.get("soften_arcmin", 20)) / arcmin_px)) * 2.0, 0, 1)
+    # the outline, on the kept region itself: x west and y north of the picture's centre, arcminutes
+    jj, ii = np.nonzero(keep)
+    w = tau[jj, ii]
+    xw = (ii + 0.5) / nx * pic["width_arcmin"] - pic["width_arcmin"] / 2
+    yn = pic["height_arcmin"] / 2 - (jj + 0.5) / ny * pic["height_arcmin"]
+    cx, cy = float((w * xw).sum() / w.sum()), float((w * yn).sum() / w.sum())
+    dx, dy = xw - cx, yn - cy
+    sxx, syy, sxy = float((w * dx * dx).sum() / w.sum()), float((w * dy * dy).sum() / w.sum()), float((w * dx * dy).sum() / w.sum())
+    ang = 0.5 * math.atan2(2 * sxy, sxx - syy)          # the long axis, from west toward north
+    ca, sa = math.cos(ang), math.sin(ang)
+    along, across = dx * ca + dy * sa, -dx * sa + dy * ca
+    # the centre on the sky: the tangent plane's inverse (x west is -xi)
+    xi, eta = math.radians(-cx / 60), math.radians(cy / 60)
+    a0, d0 = math.radians(pic["ra_deg"]), math.radians(pic["dec_deg"])
+    rho = math.hypot(xi, eta)
+    cc = math.atan(rho)
+    dec = math.asin(math.cos(cc) * math.sin(d0) + (eta * math.sin(cc) * math.cos(d0) / rho if rho else 0.0))
+    ra = a0 + math.atan2(xi * math.sin(cc), rho * math.cos(d0) * math.cos(cc) - eta * math.sin(d0) * math.sin(cc))
+    outline = {
+        "floor_tau": floor, "pixels": int(keep.sum()), "area_sq_deg": round(float(keep.sum()) * (arcmin_px / 60) ** 2, 1),
+        "centre_deg": [round(math.degrees(ra) % 360, 2), round(math.degrees(dec), 2)],
+        "length_arcmin": round(float(along.max() - along.min())), "width_arcmin": round(float(across.max() - across.min())),
+        "pos_ang_deg": round(math.degrees(math.atan2(-ca, sa)) % 180),
+    }
+    return tau * soft, outline
+
+
 def latitude_background(gal, rule: dict, pic: dict):
     """The Milky Way at the same galactic latitude: per row of the galactic map, the median over `window_deg` of
     longitude either side (the cloud is a few degrees across, so it does not move the median). Only the rows and
@@ -612,10 +666,15 @@ def bake_one(hid: str, files: dict, stars: dict, cat, maps: dict) -> None:
         row["from_sha256"] = sha(MILKY)
         row["size"] = [n, n]
         _, front, back = dust_maps(rgb, rule, float(dust["tau_max"]), pic["width_arcmin"] / n, background=bgm)
+        outline = None
+        if rule.get("connected"):
+            front, outline = one_cloud(front, rule, pic["width_arcmin"] / n, pic)
         maps[hid] = (front, pic)
         save_dust(OUT / f"{hid}-dust.webp", front, back, float(dust["tau_max"]))
         files[f"{hid}-dust.webp"] = {"tau_front_max": round(float(front.max()), 3), "tau_back_max": 0.0,
                                     "tau_front_mean": round(float(front.mean()), 4)}
+        if outline:
+            files[f"{hid}-dust.webp"]["outline"] = outline
     if dust:
         stars[hid] = stars_for(prof, cat, *maps[hid])
     files.setdefault("_rows", []).append(row)

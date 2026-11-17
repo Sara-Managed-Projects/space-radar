@@ -12,7 +12,8 @@ Inputs
   registry/dso-hand.yaml: objects OpenNGC does not have (the LMC), each with its source.
 
   scripts/data/messier-overlay.yaml: what a Messier row knows beyond the table (spec 0075 task 2):
-    its parent, its kind of distance, its orientation and its morphology, and a `common` nickname that replaces the table's (internal #294).
+    its parent, its kind of distance, its orientation and its morphology, a `common` nickname that replaces the table's (internal #294),
+    and a `centre` that replaces OpenNGC's place on the sky where a better one is published (the 2026-11-16 audit).
 
 THE OBJECT MODEL (internal spec 0075 design section 3). Every row may carry
   parent        a record id without `dso-`: what the object is inside (or a companion of). A semantic
@@ -165,6 +166,14 @@ def apply_model(out: list, hand_rows: list, overlay: dict, pictured: set) -> Non
         if "common" in e and r.get("messier"):
             r["common"] = e["common"] or None
             r["name"] = f"M{r['messier']}" + (f" \u00b7 {r['common']}" if r["common"] else "")
+        # `centre:` {ra_deg, dec_deg, source, read}: a Messier row's place on the sky from a named catalogue in place of
+        # OpenNGC's (the 2026-11-16 position audit: OpenNGC puts the Pleiades on Alcyone, a quarter of a degree east of
+        # the middle of its members). The distance stays; the place in space is worked out again from the new direction.
+        c = e.get("centre")
+        if isinstance(c, dict) and r.get("messier"):
+            r["raDeg"], r["decDeg"] = c["ra_deg"], c["dec_deg"]
+            r["positionSource"] = c["source"]
+            r["posLy"] = ecliptic_ly(r["raDeg"], r["decDeg"], r["distLy"])
         r["orientation"] = plain(e.get("orientation"))
         r["morphology"] = e.get("morphology") or morphology_of(r)
         dist = e.get("distance")
