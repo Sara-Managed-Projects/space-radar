@@ -1534,6 +1534,8 @@ jobs:
         run: node tests/test_snapshot_span.mjs
       - name: "Listed close approaches against JPL's close-approach table: full-precision SBDB elements, distance and time within a stated tolerance (internal #392)"
         run: node tests/test_neo_cad.mjs
+      - name: "Comets from the feed against JPL Horizons: Encke, 21P and Olbers at a fixed instant, within a stated angle seen from Earth (internal #393)"
+        run: node tests/test_comet_reference.mjs
       - name: "staticPos places every star and galaxy and answers null for a record with no usable position (public #620)"
         run: node tests/test_propagate_static.mjs
       - name: "the Kepler equation solvers behind every orbit drawn from elements: the answer satisfies the equation, a circle, a wrapped angle, Barker's equation (public #621)"
