@@ -1,0 +1,118 @@
+{
+ "version": 1,
+ "built": "2026-11-17",
+ "stride": 4,
+ "count": 40000,
+ "bin": {
+  "bytes": 160016,
+  "sha256": "99759bd1f1a8e1b52b2dcad82f7ced6d7d728c5b6dea88298506a3c6befe9e82"
+ },
+ "grid": {
+  "cellPc": 8,
+  "cells": 160,
+  "boxPc": 640.0,
+  "quantumPc": 5.0196,
+  "axes": "Galactic X (to the Galactic centre), Y (rotation), Z (north), the Sun at the origin"
+ },
+ "density": {
+  "unit": "differential extinction per parsec, E of Zhang, Green & Rix (2023)",
+  "maxCell": 0.044423,
+  "aLog10Range": [
+   -5.0,
+   -1.3524
+  ]
+ },
+ "sampling": {
+  "samples": 40000,
+  "weight": "cell density, capped at its 99.7th percentile (2.761e-03)",
+  "seed": 423
+ },
+ "shells": [
+  {
+   "fromPc": 0,
+   "toPc": 40,
+   "meanDensity": 0.0
+  },
+  {
+   "fromPc": 40,
+   "toPc": 80,
+   "meanDensity": 1.544e-05
+  },
+  {
+   "fromPc": 80,
+   "toPc": 120,
+   "meanDensity": 0.0001489
+  },
+  {
+   "fromPc": 120,
+   "toPc": 160,
+   "meanDensity": 0.0003904
+  },
+  {
+   "fromPc": 160,
+   "toPc": 200,
+   "meanDensity": 0.0003247
+  },
+  {
+   "fromPc": 200,
+   "toPc": 240,
+   "meanDensity": 0.000286
+  },
+  {
+   "fromPc": 240,
+   "toPc": 280,
+   "meanDensity": 0.0002168
+  },
+  {
+   "fromPc": 280,
+   "toPc": 320,
+   "meanDensity": 0.0001823
+  },
+  {
+   "fromPc": 320,
+   "toPc": 360,
+   "meanDensity": 0.0001497
+  },
+  {
+   "fromPc": 360,
+   "toPc": 400,
+   "meanDensity": 0.0001477
+  },
+  {
+   "fromPc": 400,
+   "toPc": 440,
+   "meanDensity": 0.0001355
+  },
+  {
+   "fromPc": 440,
+   "toPc": 480,
+   "meanDensity": 0.000111
+  },
+  {
+   "fromPc": 480,
+   "toPc": 520,
+   "meanDensity": 9.317e-05
+  },
+  {
+   "fromPc": 520,
+   "toPc": 560,
+   "meanDensity": 8.474e-05
+  },
+  {
+   "fromPc": 560,
+   "toPc": 600,
+   "meanDensity": 7.506e-05
+  },
+  {
+   "fromPc": 600,
+   "toPc": 640,
+   "meanDensity": 7.541e-05
+  }
+ ],
+ "sources": {
+  "map": "Edenhofer G. et al. 2024, A&A 685, A82 (arXiv:2308.01295); Zenodo 10.5281/zenodo.8187943, mean_and_std_xyz.fits (15 662 543 040 B), CC BY 4.0",
+  "bubble": "O'Neill T.J., Zucker C., Goodman A.A., Edenhofer G. 2024, ApJ 973, 138 (arXiv:2403.04961): the shell at 170 pc on average, 70 to 600+ pc, typically 35 pc thick",
+  "gaia": "ESA/Gaia/DPAC, Gaia DR3 (the extinctions' stars); CC BY-NC 3.0 IGO"
+ },
+ "licence": "Edenhofer et al. 2024 map: CC BY 4.0; built from Gaia DR3, CC BY-NC 3.0 IGO (ESA)"
+}

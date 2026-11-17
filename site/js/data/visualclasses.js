@@ -1577,6 +1577,12 @@ export const VISUAL_CLASSES = [
 "members": {}
 },
 {
+"id": "LOCAL_DUST",
+"title": "The Sun's neighbourhood in dust (the Local Bubble)",
+"honesty": "modelled",
+"members": {}
+},
+{
 "id": "COSMIC_WEB",
 "title": "The cosmic web",
 "honesty": "illustrative",
