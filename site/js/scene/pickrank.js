@@ -60,8 +60,8 @@ const EXOPLANET_MARK_PX = 2;
 const scoreOf = (m) => m.score + (m.record && m.record.klass === 'exoplanet' ? EXOPLANET_MARK_PX : 0);
 /** A press this long, touch only, is a long press. A mouse click is a click however long it was held. */
 export const LONG_PRESS_MS = 450;
-/** How far a pointer may travel and still be a tap. */
-export const TAP_SLOP_PX = { mouse: 5, touch: 10 };
+/** How far a pointer may travel and still be a tap; past it the gesture is a drag (scene/gestures.js DRAG_START_PX is this). */
+export const TAP_SLOP_PX = { mouse: 3, touch: 6 };
 
 /** The reach for a PointerEvent.pointerType. A pen is as exact as a mouse; anything unknown is a finger. */
 export function reachFor(pointerType) {

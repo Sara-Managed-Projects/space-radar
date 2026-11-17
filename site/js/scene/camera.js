@@ -33,6 +33,7 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { stage as theStage } from './stage.js';
+import { dragStarted, wheelLogDelta, keysBelongToMap, zoomPanFraction } from './gestures.js';
 
 /**
  * THE EDGE OF THE MAP (internal spec 0075 task 17, DS-D09): 50 billion light-years. The observable
@@ -475,7 +476,8 @@ export function createCameraRig(camera, domElement, options = {}) {
 
   function onPointerDown(e) {
     if (!domElement) return;
-    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    // `down` is where the press began and `dragging` whether it has gone past the dead zone (gestures.js dragStarted).
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, down: { x: e.clientX, y: e.clientY }, type: e.pointerType, dragging: false });
     if (pointers.size === 2) {
       const [a, b] = [...pointers.values()];
       pinchDistance = Math.hypot(a.x - b.x, a.y - b.y);
@@ -498,6 +500,15 @@ export function createCameraRig(camera, domElement, options = {}) {
     prev.y = e.clientY;
 
     if (pointers.size === 1) {
+      // A press that has not travelled a tap's slop is still a tap: it turns nothing and ends no flight.
+      if (!prev.dragging) {
+        if (!dragStarted(prev.type, Math.hypot(e.clientX - prev.down.x, e.clientY - prev.down.y))) return;
+        prev.dragging = true;
+        // The turn starts from here, not from the press (no jump as the zone is crossed), and the hand is on the camera.
+        interrupt();
+        emitUserInput(e.shiftKey || e.buttons === 2 || e.buttons === 4 ? 'pan' : 'orbit');
+        return;
+      }
       const panning = e.shiftKey || e.buttons === 2 || e.buttons === 4;
       if (panning) panBy(dx, dy);
       else orbitBy(dx, dy);
@@ -536,11 +547,23 @@ export function createCameraRig(camera, domElement, options = {}) {
 
   function onWheel(e) {
     e.preventDefault?.();
-    // deltaMode 1 is lines, 2 is pages.
-    const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1;
-    dollyBy((e.deltaY * unit) / 600);
+    // A trackpad pinch is a wheel with ctrlKey and small deltas: wheelLogDelta scales it (internal #435).
+    zoomToward(e.clientX, e.clientY, wheelLogDelta(e));
     interrupt();
     emitUserInput('dolly');
+  }
+
+  /**
+   * Zoom by `logDelta` (positive is out) keeping the point under the pointer under it (internal #439). Only on
+   * the free camera: a followed object holds the middle of the view, so there the zoom is about the middle.
+   */
+  function zoomToward(clientX, clientY, logDelta) {
+    dollyBy(logDelta);
+    if (followFn || flight || !domElement || !(clientX === clientX) || typeof domElement.getBoundingClientRect !== 'function') return;
+    const rect = domElement.getBoundingClientRect();
+    if (!(rect.width > 0) || !(rect.height > 0)) return;
+    const k = zoomPanFraction(logDelta * state.dollySpeed) / (state.panSpeed || 1);
+    panBy(-(clientX - (rect.left + rect.width / 2)) * k, -(clientY - (rect.top + rect.height / 2)) * k);
   }
 
   function onContextMenu(e) {
@@ -576,6 +599,8 @@ export function createCameraRig(camera, domElement, options = {}) {
     if (!CAMERA_KEYS.has(e.key)) return false;
     if (typeof keysEnabled === 'function' && !keysEnabled()) return false;
     const el = e.target;
+    // Inside a panel, a dialog or a list the arrows and Page keys are that panel's (internal #436).
+    if (!keysBelongToMap(el, domElement)) return false;
     const tag = el && el.tagName ? String(el.tagName).toLowerCase() : '';
     if (tag === 'input' || tag === 'textarea' || tag === 'select') return false;
     if (el && el.isContentEditable) return false;
@@ -1343,6 +1368,7 @@ export function createCameraRig(camera, domElement, options = {}) {
     flyTo,
     follow,
     refollow,
+    zoomToward,
     stopFollow,
     onUserInput,
     state,
