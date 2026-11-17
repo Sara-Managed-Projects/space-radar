@@ -19,6 +19,7 @@
  "sources": {
   "globular": "Harris W.E. 1996, AJ 112, 1487 (VizieR VII/202)",
   "open": "Hunt E.L. & Reffert S. 2023, A&A 673, A114 (VizieR J/A+A/673/A114), Gaia DR3 members",
+  "globularMembers": "Vasiliev E. & Baumgardt H. 2021, MNRAS 505, 5978 (Zenodo 10.5281/zenodo.4891252, CC BY 4.0): the real members of 12 globulars, in globular-members.{json,bin}",
   "gaia": "ESA/Gaia/DPAC, Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1; CC BY-NC 3.0 IGO",
   "extinction": "Wang S. & Chen X. 2019, ApJ 877, 116 (A_G / A_V = 0.789, E(BP-RP) / A_V = 0.413)"
  },
@@ -37,7 +38,9 @@
    "mHB": 0.61,
    "logRhoc": 3.89,
    "rsunKpc": 11.4,
-   "ebv": 0.05
+   "ebv": 0.05,
+   "gaiaMembers": 3000,
+   "gaiaInRt": 4933
   },
   {
    "id": "m3",
@@ -52,7 +55,9 @@
    "mHB": 0.61,
    "logRhoc": 3.56,
    "rsunKpc": 10.0,
-   "ebv": 0.01
+   "ebv": 0.01,
+   "gaiaMembers": 3000,
+   "gaiaInRt": 13399
   },
   {
    "id": "m4",
@@ -67,7 +72,9 @@
    "mHB": 0.67,
    "logRhoc": 3.83,
    "rsunKpc": 2.2,
-   "ebv": 0.36
+   "ebv": 0.36,
+   "gaiaMembers": 3000,
+   "gaiaInRt": 14680
   },
   {
    "id": "m5",
@@ -82,7 +89,9 @@
    "mHB": 0.66,
    "logRhoc": 3.94,
    "rsunKpc": 7.3,
-   "ebv": 0.03
+   "ebv": 0.03,
+   "gaiaMembers": 3000,
+   "gaiaInRt": 11923
   },
   {
    "id": "m9",
@@ -112,7 +121,9 @@
    "mHB": 0.62,
    "logRhoc": 3.51,
    "rsunKpc": 4.3,
-   "ebv": 0.28
+   "ebv": 0.28,
+   "gaiaMembers": 3000,
+   "gaiaInRt": 10783
   },
   {
    "id": "m12",
@@ -142,7 +153,9 @@
    "mHB": 0.62,
    "logRhoc": 3.32,
    "rsunKpc": 7.0,
-   "ebv": 0.02
+   "ebv": 0.02,
+   "gaiaMembers": 3000,
+   "gaiaInRt": 14805
   },
   {
    "id": "m14",
@@ -172,7 +185,9 @@
    "mHB": 0.52,
    "logRhoc": 5.37,
    "rsunKpc": 10.2,
-   "ebv": 0.09
+   "ebv": 0.09,
+   "gaiaMembers": 3000,
+   "gaiaInRt": 8011
   },
   {
    "id": "m19",
@@ -202,7 +217,9 @@
    "mHB": 0.6,
    "logRhoc": 3.65,
    "rsunKpc": 3.2,
-   "ebv": 0.34
+   "ebv": 0.34,
+   "gaiaMembers": 3000,
+   "gaiaInRt": 8544
   },
   {
    "id": "m28",
@@ -442,7 +459,9 @@
    "mHB": 0.51,
    "logRhoc": 4.3,
    "rsunKpc": 8.1,
-   "ebv": 0.02
+   "ebv": 0.02,
+   "gaiaMembers": 3000,
+   "gaiaInRt": 7143
   },
   {
    "id": "m107",
@@ -472,7 +491,9 @@
    "mHB": 0.61,
    "logRhoc": 3.13,
    "rsunKpc": 5.1,
-   "ebv": 0.12
+   "ebv": 0.12,
+   "gaiaMembers": 3000,
+   "gaiaInRt": 74138
   },
   {
    "id": "47-tucanae",
@@ -487,7 +508,9 @@
    "mHB": 0.74,
    "logRhoc": 4.87,
    "rsunKpc": 4.3,
-   "ebv": 0.05
+   "ebv": 0.05,
+   "gaiaMembers": 3000,
+   "gaiaInRt": 56990
   },
   {
    "id": "ngc-2419",
@@ -517,7 +540,9 @@
    "mHB": 0.56,
    "logRhoc": 5.69,
    "rsunKpc": 2.2,
-   "ebv": 0.18
+   "ebv": 0.18,
+   "gaiaMembers": 3000,
+   "gaiaInRt": 17457
   }
  ],
  "open": [

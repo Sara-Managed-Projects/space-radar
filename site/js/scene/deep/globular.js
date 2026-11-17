@@ -53,6 +53,10 @@ export const UNDER_MEASURED = { stars: 'same', members: 'same' };
 /** The card's words block (copy/en.later.js r12Clusters) and what is drawn, by kind (data/deepsky.js DRAWN_CLASSES). */
 export const COPY_BLOCK = 'r12Clusters';
 export const DRAWN = { globular: ['model'], open: ['catalogue'] };
+/** A globular with its real Gaia members (scripts/build_globular_members.py; clusters.json `gaiaMembers`): measured sky positions and brightness, modelled depth. */
+export const DRAWN_REAL = ['catalogue', 'model'];
+/** The globulars' member files, fetched the first time one of those clusters is drawn (never at boot). */
+export const GM_FILES = { json: 'globular-members.json', bin: 'globular-members.bin' };
 
 /** Stars drawn for one globular, by tier (T0, T1, T2): the brightest of the model's, never more than it has. */
 /**
@@ -243,6 +247,15 @@ function rowsFor(kind, row, record, built) {
   const W = COPY[COPY_BLOCK];
   if (!W || !W.templates) return null;
   const T = W.templates;
+  if (kind === 'globular' && row.gaiaMembers > 0) {
+    // Real members: their count is the file's, the radii the catalogue's at the map's distance.
+    const rcLy = row.rcArcmin * ARCMIN * record.meta.distLy;
+    return [
+      [T.starsLabel, t(T.globularReal, { n: groupDigits(row.gaiaMembers), of: groupDigits(row.gaiaInRt), p: '0.5' })],
+      [T.depthLabel, t(T.globularRealDepth, { rc: rcLy < 10 ? rcLy.toFixed(1) : groupDigits(rcLy), rt: groupDigits(rcLy * 10 ** row.c) })],
+      [T.reviewLabel, T.review],
+    ];
+  }
   if (kind === 'globular') {
     // The catalogue's radii at the map's distance and the model's count: no sampling for a card.
     const rcLy = row.rcArcmin * ARCMIN * record.meta.distLy;
@@ -330,7 +343,7 @@ export function createLayer(THREE, env = {}) {
   group.name = 'deep-clusters';
   group.renderOrder = -1;
   const base = env.base || (typeof import.meta !== 'undefined' ? new URL('../../../', import.meta.url) : null);
-  const state = { manifest: null, failed: null, members: null, membersFailed: null, membersLoading: null, calls: 0, bytes: 0, fileBytes: 0 };
+  const state = { manifest: null, failed: null, members: null, membersFailed: null, membersLoading: null, gm: null, gmFile: null, gmFailed: null, gmLoading: null, calls: 0, bytes: 0, fileBytes: 0 };
   const rows = new Map();     // record id -> { kind, row }
   const built = new Map();    // record id -> { mesh, kind, count, tier, absMag, light, usedAt, share, taken, rPx }
   const taken = new Map();    // record id -> the share of its light the stars draw now (the glow and holder step back by it)
@@ -359,7 +372,7 @@ export function createLayer(THREE, env = {}) {
       const rec = env.recordById ? env.recordById(id) : null;
       if (!rec || !rec.meta) continue;
       const { kind, row } = rows.get(id);
-      if (!rec.meta.heroDrawn) rec.meta.heroDrawn = DRAWN[kind].slice();
+      if (!rec.meta.heroDrawn) rec.meta.heroDrawn = (kind === 'globular' && row.gaiaMembers > 0 ? DRAWN_REAL : DRAWN[kind]).slice();
       if (!rec.meta.heroCopy) rec.meta.heroCopy = COPY_BLOCK;
       if (W && W.rows && !W.rows[id] && (kind === 'open' || Number.isFinite(rec.meta.distLy))) { const r = rowsFor(kind, row, rec, null); if (r) W.rows[id] = r; }
       unstamped.delete(id);
@@ -378,6 +391,18 @@ export function createLayer(THREE, env = {}) {
       .finally(() => { state.membersLoading = null; });
   }
 
+  /** The globulars' real members: the row for `id` once both files are here (else starts the fetch and returns null). */
+  function wantGlobularMembers(id) {
+    if (state.gm && state.gmFile) return (state.gm.clusters || []).find((c) => c.id === id.replace(/^dso-/, '')) || null;
+    if (state.gmFailed || state.gmLoading) return null;
+    state.gmLoading = Promise.resolve()
+      .then(() => (env.loadGlobularMembers ? env.loadGlobularMembers() : Promise.all([fetchJson(base, GM_FILES.json), fetchBin(base, GM_FILES.bin)])))
+      .then(([man, buf]) => { state.gmFile = parseMembers(buf); state.gm = man; state.fileBytes += buf.byteLength + JSON.stringify(man).length; })
+      .catch((e) => { state.gmFailed = String(e && e.message || e); console.warn('deep: the globulars\' members did not load', e); })
+      .finally(() => { state.gmLoading = null; });
+    return null;
+  }
+
   function material() {
     return new THREE.ShaderMaterial({
       vertexShader: VERT, fragmentShader: FRAG,
@@ -392,7 +417,19 @@ export function createLayer(THREE, env = {}) {
     let a;
     if (entry.kind === 'globular') {
       if (!Number.isFinite(rec.meta.distLy)) return null;
-      a = sampleGlobular(entry.row, rec.meta.distLy, tier);
+      const gmRow = entry.row.gaiaMembers > 0 ? wantGlobularMembers(id) : null;
+      if (entry.row.gaiaMembers > 0 && !state.gmFailed && !gmRow) return null; // the real members are on their way
+      if (gmRow) {
+        a = membersOf(state.gmFile, gmRow);
+        let L = 0;
+        a.light = new Float64Array(a.count);
+        const lTotal = 10 ** (-0.4 * (entry.row.mvt - SUN_V));
+        for (let i = 0; i < a.count; i++) { a.light[i] = 10 ** (-0.4 * (a.absMag[i] - SUN_V)) / lTotal; L += a.light[i]; }
+        if (L > 1) for (let i = 0; i < a.count; i++) a.light[i] /= L;
+        a.real = true;
+      } else {
+        a = sampleGlobular(entry.row, rec.meta.distLy, tier);
+      }
     } else {
       if (!state.members) { wantMembers(); return null; }
       a = membersOf(state.members, entry.row);
@@ -424,8 +461,8 @@ export function createLayer(THREE, env = {}) {
     state.bytes += bytes;
     // The card's numbers are the ones drawn (a globular's count is the model's, its radii the catalogue's).
     const W = COPY[COPY_BLOCK];
-    if (entry.kind === 'globular' && W && W.rows) { const r = rowsFor('globular', entry.row, rec, a); if (r) W.rows[id] = r; }
-    return { mesh, kind: entry.kind, count: a.count, tier, absMag: a.absMag, light: a.light, usedAt: 0, share: 0, taken: 0, rPx: 0, bytes };
+    if (entry.kind === 'globular' && W && W.rows && !a.real) { const r = rowsFor('globular', entry.row, rec, a); if (r) W.rows[id] = r; }
+    return { mesh, kind: entry.kind, real: !!a.real, count: a.count, tier, absMag: a.absMag, light: a.light, usedAt: 0, share: 0, taken: 0, rPx: 0, bytes };
   }
   function drop(id) {
     const b = built.get(id);
@@ -476,7 +513,7 @@ export function createLayer(THREE, env = {}) {
     for (const [id, rp] of want) {
       const entry = rows.get(id);
       let b = built.get(id);
-      if (b && entry.kind === 'globular' && b.tier !== tier && builds === 0) { drop(id); b = null; }
+      if (b && entry.kind === 'globular' && !b.real && b.tier !== tier && builds === 0) { drop(id); b = null; }
       if (!b) { if (builds > 0) continue; builds += 1; b = build(id, entry, tier); if (!b) continue; built.set(id, b); }
       const rec = env.recordById(id);
       if (!place(b, rec)) continue;
@@ -519,13 +556,13 @@ export function createLayer(THREE, env = {}) {
 
   return {
     group, frame,
-    ready: () => !!(state.manifest || state.failed) && !state.membersLoading,
+    ready: () => !!(state.manifest || state.failed) && !state.membersLoading && !state.gmLoading,
     whenLoaded: () => loading,
     /** record id -> the share of its light the stars draw now: deepsky.js steps its glow and holder back by it. */
     shares: () => new Map(taken),
     taken: (id) => taken.get(id) || 0,
     stats: () => ({
-      id: 'clusters', loaded: !!state.manifest, failed: state.failed, members: state.members ? state.members.count : 0, membersFailed: state.membersFailed,
+      id: 'clusters', loaded: !!state.manifest, failed: state.failed, members: state.members ? state.members.count : 0, membersFailed: state.membersFailed, globularMembers: state.gmFile ? state.gmFile.count : 0, globularMembersFailed: state.gmFailed,
       calls: state.calls, bytes: state.bytes, fileBytes: state.fileBytes,
       drawn: [...built.entries()].filter(([, b]) => b.mesh.visible).map(([id, b]) => ({ id, kind: b.kind, points: b.mesh.geometry.drawRange.count === Infinity ? b.count : Math.min(b.count, b.mesh.geometry.drawRange.count), of: b.count, tier: b.tier, share: Math.round(b.share * 100) / 100, taken: Math.round(b.taken * 100) / 100, rPx: Math.round(b.rPx) })),
     }),

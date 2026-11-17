@@ -38,6 +38,10 @@ const dsoDoc = JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8')
 const dso = new Map(dsoDoc.objects.map((o) => [o.id, o]));
 const manBytes = readFileSync(join(ROOT, 'site/data/deep/clusters.json'));
 const MAN = JSON.parse(manBytes.toString('utf8'));
+const gmBytes = readFileSync(join(ROOT, 'site/data/deep/globular-members.json'));
+const GM = JSON.parse(gmBytes.toString('utf8'));
+const gmBuf = readFileSync(join(ROOT, 'site/data/deep/globular-members.bin'));
+const GMBIN = gmBuf.buffer.slice(gmBuf.byteOffset, gmBuf.byteOffset + gmBuf.byteLength);
 const binBuf = readFileSync(join(ROOT, 'site/data/deep/clusters.bin'));
 const BIN = binBuf.buffer.slice(binBuf.byteOffset, binBuf.byteOffset + binBuf.byteLength);
 
@@ -148,14 +152,14 @@ check(pl.count > 500 && pl.measuredDepth > 100 && pl.inHyg > 20, `the Pleiades: 
 // 6. The layer.
 stage.setWorld('stellar');
 const recs = new Map();
-for (const id of ['m13', 'omega-centauri', '47-tucanae', 'm45', 'hyades']) {
+for (const id of ['m13', 'm9', 'omega-centauri', '47-tucanae', 'm45', 'hyades']) {
   const o = dso.get(id);
   recs.set(`dso-${id}`, { id: `dso-${id}`, klass: 'dso', pos: { x: o.posLy[0] * LY_KM, y: o.posLy[1] * LY_KM, z: o.posLy[2] * LY_KM }, meta: { distLy: o.distLy } });
 }
 const px = new Map();
 let on = true, tier = 1, latched = false;
 const layer = G.createLayer(THREE, {
-  load: async () => MAN, loadMembers: async () => BIN, open: true, // the members, switched on for the test (OPEN_MEMBERS is off)
+  load: async () => MAN, loadMembers: async () => BIN, loadGlobularMembers: async () => [GM, GMBIN], open: true, // the members, switched on for the test (OPEN_MEMBERS is off)
   records: () => [...recs.values()], recordById: (id) => recs.get(id) || null, radiusPx: (id) => px.get(id) || 0,
   quality: () => ({ tier, latched }), pictureShare: () => 0, on: () => on,
 });
@@ -170,11 +174,13 @@ const step = () => layer.frame({ camera, renderer: null, stage, gain: 1, visible
 px.set('dso-m13', 8); step();
 check(layer.stats().calls === 0 && layer.taken('dso-m13') === 0, 'no stars while the cluster is a few pixels (its glow is the cluster)');
 px.set('dso-m13', 30); step();
+await new Promise((r) => setTimeout(r, 20)); // the globulars' member files
+step();
 const s1 = layer.stats();
 check(s1.calls === 1 && s1.drawn[0].id === 'dso-m13' && s1.drawn[0].share > 0 && s1.drawn[0].share < 1, `between FROM_PX and FULL_PX the stars fade in (${JSON.stringify(s1.drawn)})`);
 px.set('dso-m13', 200); step();
 const share = layer.shares().get('dso-m13');
-check(share > 0.2 && share <= G.LF.light, `the glow steps back by the light the stars draw at 300 ly (${share.toFixed(2)})`);
+check(share > 0.02 && share <= 1, `the glow steps back by the light the real members draw at 300 ly (${share && share.toFixed(2)})`);
 for (const id of ['dso-omega-centauri', 'dso-47-tucanae', 'dso-m45', 'dso-hyades']) px.set(id, 120);
 for (let i = 0; i < 6; i++) step(); // one build a frame
 await new Promise((r) => setTimeout(r, 20)); // the members' file
@@ -195,13 +201,57 @@ check(layer.stats().calls === 0 && layer.shares().size === 0, 'the BEFORE switch
 on = true;
 // The card.
 const W = COPY[G.COPY_BLOCK];
-check(W && W.rows['dso-m13'] && W.rows['dso-m13'].length === 3 && /King/.test(W.rows['dso-m13'][0][1]) && /Harris/.test(W.rows['dso-m13'][0][1]), 'M13\'s card says its stars are a model from Harris\'s radii by King\'s profile');
+px.set('dso-m9', 120); px.set('dso-m13', 0); for (const id of ['dso-omega-centauri', 'dso-47-tucanae', 'dso-m45', 'dso-hyades']) px.set(id, 0);
+for (let i = 0; i < 3; i++) step();
+check(layer.stats().drawn.some((d) => d.id === 'dso-m9'), 'a globular without members (M9) is still drawn by the model');
+check(W && W.rows['dso-m9'] && W.rows['dso-m9'].length === 3 && /King/.test(W.rows['dso-m9'][0][1]) && /Harris/.test(W.rows['dso-m9'][0][1]), 'M9\'s card says its stars are a model from Harris\'s radii by King\'s profile');
+check(W.rows['dso-m13'] && W.rows['dso-m13'].length === 3 && /Gaia|Vasiliev/.test(W.rows['dso-m13'][0][1]) && /Modelled/.test(W.rows['dso-m13'][1][1]) && /King/.test(W.rows['dso-m13'][1][1]) && /Measured/.test(W.rows['dso-m13'][0][1]), 'M13\'s card says: measured sky positions and brightness, modelled depth');
+check(m13.meta.heroDrawn.join() === 'catalogue,model' && recs.get('dso-m9').meta.heroDrawn.join() === 'model', 'drawn classes: real globulars are catalogue + model, the others model');
 check(W.rows['dso-m45'] && /probability of at least 0\.5/.test(W.rows['dso-m45'][0][1]) && /Gaia/.test(W.rows['dso-m45'][0][1]), 'the Pleiades\' card states the probability cut');
-check(m13.meta.heroDrawn[0] === 'model' && recs.get('dso-m45').meta.heroDrawn[0] === 'catalogue' && m13.meta.heroCopy === G.COPY_BLOCK, 'what is drawn: a model for a globular, catalogue positions for an open cluster');
+check(recs.get('dso-m45').meta.heroDrawn[0] === 'catalogue' && m13.meta.heroCopy === G.COPY_BLOCK, 'what is drawn: a model for a globular, catalogue positions for an open cluster');
 const realM13 = parseDso(dsoDoc).find((r) => r.id === 'dso-m13');
 check(realM13 && !realM13.meta.heroDrawn, 'the records are stamped only by the layer, never in the file');
 layer.dispose();
 check(layer.group.children.length === 0, 'dispose gives every buffer back');
+
+// 7. The globulars' real members (scripts/build_globular_members.py; Vasiliev & Baumgardt 2021, CC BY 4.0).
+{
+  const gfile = G.parseMembers(GMBIN);
+  check(gfile.count === GM.count && GMBIN.byteLength === GM.bin.bytes, `the members' bin holds the manifest's ${GM.count} stars`);
+  check(GM.cuts.prob === 0.5 && GM.cuts.insideTidalRadius === true && /CC BY 4\.0/.test(GM.licence) && /CC BY-NC 3\.0 IGO/.test(GM.licence) && /Vasiliev/.test(GM.sources.members) && /4891252/.test(GM.sources.members), 'the cut, the source and both licences are written in the manifest');
+  check(/depth/.test(GM.modelled) && /sky position/.test(GM.measured), 'the manifest says what is measured (sky positions) and what is modelled (depth)');
+  check(GM.clusters.length >= 10 && GM.clusters.every((c) => MAN.globulars.find((g) => g.id === c.id && g.gaiaMembers === c.count && g.gaiaInRt === c.membersInRt)), 'clusters.json knows each real-member globular and its counts (so the card can say it before the file arrives)');
+  check(GBYTES() <= BUDGETS.deep_globular_members_bytes, `the member files are within the budget (${GBYTES()} B of ${BUDGETS.deep_globular_members_bytes}; registry/budgets.yaml deep_globular_members_bytes)`);
+  for (const c of GM.clusters) {
+    const a = G.membersOf(gfile, c);
+    const o = dso.get(c.id);
+    const row = MAN.globulars.find((g) => g.id === c.id);
+    const rt = row.rcArcmin * ARCMIN * o.distLy * 10 ** row.c;
+    let maxR = 0, sorted = true, inFront = 0;
+    for (let i = 0; i < a.count; i++) {
+      maxR = Math.max(maxR, Math.hypot(a.pos[i * 3], a.pos[i * 3 + 1], a.pos[i * 3 + 2]));
+      if (i && a.absMag[i] < a.absMag[i - 1]) sorted = false;
+      if (a.prob[i] < 0.5 - 1e-6) sorted = false;
+    }
+    check(a.count === c.count && sorted, `${c.id}: ${a.count} members, brightest first, each with probability at least 0.5`);
+    check(maxR <= rt * 1.02, `${c.id}: every star within its tidal radius of the centre (${maxR.toFixed(0)} of ${rt.toFixed(0)} ly)`);
+    // The depth is modelled, not measured: nothing is flagged as a measured depth, and the line-of-sight spread is King-like (not a sheet).
+    const los = (() => { const d = Math.hypot(...o.posLy); return [o.posLy[0] / d, o.posLy[1] / d, o.posLy[2] / d]; })();
+    let sz = 0, sp = 0;
+    for (let i = 0; i < a.count; i++) {
+      const z = a.pos[i * 3] * los[0] + a.pos[i * 3 + 1] * los[1] + a.pos[i * 3 + 2] * los[2];
+      const R2 = a.pos[i * 3] ** 2 + a.pos[i * 3 + 1] ** 2 + a.pos[i * 3 + 2] ** 2 - z * z;
+      sz += z * z; sp += R2 / 2;
+      if (a.measured[i]) inFront += 1;
+    }
+    check(inFront === 0, `${c.id}: no star claims a measured depth`);
+    check(sz > 0.25 * sp && sz < 4 * sp, `${c.id}: the line-of-sight spread is as wide as the sky's (a ball, not a sheet: ${Math.sqrt(sz / a.count).toFixed(1)} vs ${Math.sqrt(sp / a.count).toFixed(1)} ly)`);
+  }
+  // M13's stars are not the model's: the file's brightest star is the catalogue's, not a seeded one.
+  const m13a = G.membersOf(gfile, GM.clusters.find((c) => c.id === 'm13'));
+  check(m13a.count === 3000 && m13a.absMag[0] < m13a.absMag[2999] && m13a.absMag[0] > -6 && m13a.absMag[2999] < 6, `M13's members run from a bright giant to the file's faint end (${m13a.absMag[0]} to ${m13a.absMag[2999]} G)`);
+}
+function GBYTES() { return gmBytes.length + GMBIN.byteLength; }
 
 if (problems.length) { console.error(`globular: ${problems.length} problem(s)\n  - ` + problems.join('\n  - ')); process.exit(1); }
 const om = G.sampleGlobular(row('omega-centauri'), dso.get('omega-centauri').distLy, 2);

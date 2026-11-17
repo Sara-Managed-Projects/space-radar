@@ -523,13 +523,13 @@ classes:
     title: Globular clusters
     renderer: [site/js/scene/dsoglow.js, site/js/scene/deep/globular.js]
     honesty: illustrative
-    fallback: The globular glow profile with its holder; near, stars by King's profile from Harris's radii (scene/deep/globular.js, 0076 W3-a).
-    issue: "internal #819 (King-profile points, spec 0075 task 19, W3-a)"
+    fallback: The globular glow profile with its holder; near, the real Gaia members of 12 of them (M2, M3, M4, M5, M10, M13, M15, M22, M92, 47 Tucanae, NGC 6397, Omega Centauri; scene/deep/globular.js, internal #417 and #425), the others stars by King's profile from Harris's radii (0076 W3-a).
+    issue: "internal #819 (King-profile points, spec 0075 task 19, W3-a); internal #417, #425 (real members)"
     note:
       source: "OpenNGC for place, size and magnitude; the Messier distances."
       dates: "As OPEN_CLUSTER."
-      drawn: "Measured: place, size, distance, core and tidal radius (Harris 1996, VizieR VII/202). Modelled: the stars, by King's (1962) profile, their number, brightness and colour. Illustrative: the glow standing in for the faint stars."
-      rights: "OpenNGC CC BY-SA 4.0; VizieR's terms (free of usage in a scientific context, authors cited)."
+      drawn: "Measured: place, size, distance, core and tidal radius (Harris 1996, VizieR VII/202). Modelled: the stars, by King's (1962) profile, their number, brightness and colour. Illustrative: the glow standing in for the faint stars. For 12 of the 33 (Vasiliev and Baumgardt 2021, Zenodo 4891252, membership probability at least 0.5): measured, each member's place on the sky, brightness and colour (Gaia EDR3); modelled, its depth along the line of sight (King's profile at its projected radius), its absolute magnitude (the map's distance, Harris's reddening) and its approximate B-V; the crowded centre is missing stars Gaia could not separate."
+      rights: "OpenNGC CC BY-SA 4.0; VizieR's terms (free of usage in a scientific context, authors cited); the 12 clusters' members: Vasiliev and Baumgardt 2021 CC BY 4.0, Gaia EDR3 CC BY-NC 3.0 IGO (ESA)."
     records:
       - {domain: dso, where: {typeCode: GCl}}
 

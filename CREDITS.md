@@ -2519,6 +2519,20 @@ explicitely cited", and tables from A&A "are free for a scientific usage". Space
 | The members' absolute magnitudes and colours less the clusters' extinction: A_G = 0.789 A_V, E(BP−RP) = 0.413 A_V | Wang S. & Chen X. 2019, ApJ 877, 116 | facts, cited |
 | Gaia DR3's global parallax offset, −0.017 mas | Lindegren L. et al. 2021, A&A 649, A4 | facts, cited |
 
+Real members of twelve globulars (internal #417, #425; `scripts/build_globular_members.py`, read 2026-11-17 into
+`site/data/deep/globular-members.json` and `.bin`): Vasiliev E. & Baumgardt H. 2021, MNRAS 505, 5978, *Gaia EDR3 view
+on Galactic globular clusters*, the catalogue of stars with membership probabilities, Zenodo
+[10.5281/zenodo.4891252](https://doi.org/10.5281/zenodo.4891252), licence CC BY 4.0 (the record's metadata, read that
+day). The stars are Gaia EDR3 measurements, so the file keeps ESA's CC BY-NC 3.0 IGO term like `clusters.bin`. For M2, M3,
+M4, M5, M10, M13, M15, M22, M92, 47 Tucanae, NGC 6397 and Omega Centauri the 3 000 brightest members (probability at
+least 0.5, a quality flag of the catalogue, inside Harris's tidal radius) are drawn at their measured places on the sky,
+with their G magnitude and BP-RP colour. Their depth along the line of sight is not measured (a parallax at 10 kpc is
+smaller than its error): it is drawn from King's profile at each star's projected radius with Harris's core radius and
+concentration, seeded by the Gaia source id. Their absolute magnitudes use the map's distance and Harris's E(B-V)
+(A_G = 0.789 A_V, A_V = 3.1 E(B-V)); the colour is the same linear fit as the open clusters'. Gaia cannot separate the
+crowded centre, so the centre is missing stars; the card says so and the glow stands for them. The other 21 globulars
+stay a model.
+
 What is measured and what is not. A globular's core and tidal radius are Harris's; its stars are a model of its
 kind, not its own stars: their number, brightness and colour follow a luminosity function and an illustrative
 colour scale that are ours (the card says so), and their light is shared with the glow so the two together
