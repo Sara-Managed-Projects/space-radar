@@ -1551,5 +1551,6 @@
  "1516773da3": "Vesta",
  "195d0a5474": "Vesta map and shape: NASA/JPL-Caltech/UCLA/MPS/DLR/IDA (Dawn Framing Camera, HAMO mosaic and stereo height model by DLR), hosted by USGS Astrogeology Science Center (NASA media: not subject to copyright in the United States)",
  "e6a93be90a": "Source: CelesTrak's active catalogue and Starlink supplemental file, as saved by this site's harvester, read {d1}. Launches: Launch Library (The Space Devs), from this site's saved copy. The browser replaces this count with the one in the saved copy when the page opens. CelesTrak asks for one download of a file per update, so this page never fetches it itself.",
- "e2141e883e": "Source: CelesTrak's active catalogue and Starlink supplemental file, as saved by this site's harvester, read {d1}. The browser replaces these counts with the saved copy's when the page opens."
+ "e2141e883e": "Source: CelesTrak's active catalogue and Starlink supplemental file, as saved by this site's harvester, read {d1}. The browser replaces these counts with the saved copy's when the page opens.",
+ "bc3e21874e": "The sources: CelesTrak ({n1} feeds), The Space Devs ({n2} feeds), NASA JPL ({n3} feeds), NASA Exoplanet Archive ({n4} feed), NASA Deep Space Network ({n5} feed), NOAA SWPC ({n6} feeds), NASA EONET ({n7} feeds), NASA DONKI ({n8} feed), NASA SDO ({n9} feed), NASA GIBS ({n10} feed), NOAA nowCOAST ({n11} feed), PacIOOS ({n12} feed), NOAA CoastWatch ({n13} feeds), GDACS ({n14} feed), Wikidata ({n15} feed)."
 }

@@ -292,5 +292,17 @@
  "dc21c5af7e": "magnitude {n1}, {n2}° from the Sun, evening sky, in Sagittarius",
  "aee6b0cce1": "Venus {n1} AU, Mars {n2} AU",
  "44efad8e76": "A conjunction is two bodies appearing close together in the sky. They only look close: Venus is {n1} AU from the Earth and Mars {n2} AU, one in front of the other as seen from here, and a long way apart in space.",
- "c84e805bb1": "Look in the west, low, after sunset. Both are within {n1}° of the Sun, so a clear horizon helps; the closest approach is given in UT, and the pair stays close for several days either side."
+ "c84e805bb1": "Look in the west, low, after sunset. Both are within {n1}° of the Sun, so a clear horizon helps; the closest approach is given in UT, and the pair stays close for several days either side.",
+ "fafdf3f85c": "The Lyrids peak on {d1}, {n1} UT, with up to about {n2} meteors an hour under a perfect dark sky, coming from Lyra. The Moon is about {n3} percent lit and waning at the hour we state it for ({d2}, {n4} UT).",
+ "efdc1c2d95": "in Lyra",
+ "2039350aea": "The Perseids peak on {d1}, {n1} UT, with up to about {n2} meteors an hour under a perfect dark sky, coming from Perseus. The Moon is about {n3} percent lit and waxing at the hour we state it for ({d2}, {n4} UT).",
+ "1926ca6d6c": "in Perseus",
+ "f3b70cdbe1": "The Perseids peak on {d1}, {n1} UT, with up to about {n2} meteors an hour under a perfect dark sky, coming from Perseus. The Moon is about {n3} percent lit and waning at the hour we state it for ({d2}, {n4} UT).",
+ "4346d47850": "comet 96P/Machholz (suspected)",
+ "1ba746076a": "Also that night",
+ "1e5fc3ca07": "a penumbral lunar eclipse, greatest at {d1}, {n1} UT",
+ "3d17ebb0d1": "A faint eclipse the same night",
+ "467a711085": "At this full Moon the Moon passes through the Earth's outer shadow, the penumbra: a penumbral lunar eclipse, greatest at {d1}, {n1} UT. The Moon dims slightly and is not cut by a dark edge, so most people notice nothing.",
+ "1849e0ca66": "How long, and by whose measure",
+ "77d53c86f5": "The times and lengths on this page are computed with Astronomy Engine, to the nearest minute. NASA's eclipse tables size the Earth's shadow slightly differently, so the lengths they give for the same eclipse are a minute or two shorter."
 }
