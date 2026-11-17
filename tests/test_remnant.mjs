@@ -33,8 +33,10 @@ for (const P of [CRAB, VEIL]) {
   check(P.review.by === 'Space Radar maintainers' && /not yet/.test(P.review.astronomer || ''), `${P.id}: signed under the lead's policy, no astronomer's review claimed`);
   const def = HEROES.find((h) => h.id === P.id);
   check(def && def.stub && def.stub.shipped === P.shipped && !/hero-/.test(String(def.profile)) && /hero-/.test(String(def.build)), `${P.id}: its line's stub says what its registry says (shipped ${P.shipped}); the full profile is read with its module`);
-  check(/FALSE COLOUR/.test(P.colours.note || ''), `${P.id}: the photograph's false colour is declared`);
-  check(Array.isArray(P.drawn) && P.drawn.includes('reconstruction'), `${P.id}: drawn as a reconstruction`);
+  // The Crab's own model (scene/deep/crab.js, 2026-11-16) keeps this module's shell as its outline's base; its colours
+  // and its class are tests/test_crab.mjs's.
+  if (P.id !== 'crab') check(/FALSE COLOUR/.test(P.colours.note || ''), `${P.id}: the photograph's false colour is declared`);
+  if (P.id !== 'crab') check(Array.isArray(P.drawn) && P.drawn.includes('reconstruction'), `${P.id}: drawn as a reconstruction`);
   check(P.credits.length >= 2, `${P.id}: its credit lines`);
 }
 check(/Martin, T\., Milisavljevic, D\. & Drissen, L\. 2021, MNRAS 502, 1864/.test(R.part(CRAB, 'shell').source), 'the Crab\'s envelope is Martin et al. 2021\'s (the acceptance: published expansion geometry)');
@@ -44,10 +46,11 @@ check(/Fesen, R\. A\. et al\. 2018/.test(R.part(VEIL, 'shell').source) && /2\.85
 {
   const rows = HEROES.filter((h) => h.stage === 'W3-c');
   check(rows.length === 6, `six W3-c heroes in scene/deep/heroes.js (got ${rows.length})`);
-  for (const id of ['crab', 'veil']) {
+  for (const id of ['veil']) {
     const h = HEROES.find((x) => x.id === id);
     check(h && /remnant\.js/.test(String(h.build)), `${id} is drawn by scene/deep/remnant.js`);
   }
+  check(/crab\.js/.test(String(HEROES.find((x) => x.id === 'crab').build)), 'the Crab has its own module since 2026-11-16 (scene/deep/crab.js), on this one\'s shell geometry');
   const src = readFileSync(join(JS, 'scene/deep/remnant.js'), 'utf8');
   check(!/\b(crab|veil|cygnus)\b/i.test(src.replace(/\/\/.*$/gm, '')), 'no object is named in remnant.js\'s code: no per-object fork (the package\'s anti-pattern)');
 }
@@ -126,14 +129,14 @@ ourLine(gv, 'the Veil');
 
 // --- 6. the hero: one additive mesh in the opaque list, shares, Measured, tiers ------------------------------------
 {
-  const hero = R.createHero(THREE, { profile: CRAB, record: null });
+  const hero = R.createHero(THREE, { profile: VEIL, record: null });
   const meshes = [];
   hero.group.traverse((o) => { if (o.isMesh) meshes.push(o); });
   check(meshes.length === 1, `one mesh, one draw call (got ${meshes.length})`);
   const m = meshes[0].material;
   check(m.blending === THREE.AdditiveBlending && m.transparent === false && m.depthWrite === false && m.toneMapped === false, 'additive (it adds light, never darkens), in the opaque list, no depth write, display values (gasmat.js COLOUR_POLICY)');
   check(/-shells$/.test(meshes[0].name), 'the contract\'s draw-order check knows its mesh by "-shells"');
-  check(hero.latchSafe === true && hero.card && hero.card.copy === 'r12Dust' && hero.card.drawn['dso-m1'][0] === 'reconstruction', 'latch-safe, and the card reads the r12Dust words with "reconstruction"');
+  check(hero.latchSafe === true && hero.card && hero.card.copy === 'r12Dust' && hero.card.drawn['dso-veil-nebula'][0] === 'reconstruction', 'latch-safe, and the card reads the r12Dust words with "reconstruction"');
   hero.dispose();
   const s = R.sharesFor({ level: 1, rPx: 200, photo: 1, viewH: 900 });
   check(s.gas === 0, 'on our line, where the photograph is drawn, the hero gives way to it');

@@ -330,9 +330,9 @@ CASES: list[tuple[str, str, str, str]] = [
     # drawn as a launch pad, a number with no page behind it, a page with no date, and a sentence
     # the card would have cut in half.
     ("a landing site that does not say what to draw, so it would be a launch pad",
-     "sites.yaml", "shape: rover, source: pds-msl", "source: pds-msl"),
+     "sites.yaml", "shape: rover, source: msl-rover-waypoints-current", "source: msl-rover-waypoints-current"),
     ("a landing site drawn as a shape nothing builds",
-     "sites.yaml", "shape: rover, source: pds-msl", "shape: hovercraft, source: pds-msl"),
+     "sites.yaml", "shape: rover, source: msl-rover-waypoints-current", "shape: hovercraft, source: msl-rover-waypoints-current"),
     ("a landing site citing a reference that does not exist",
      "sites.yaml", "source: pds-msl", "source: pds-nothing"),
     ("a new landing site that cites nothing",

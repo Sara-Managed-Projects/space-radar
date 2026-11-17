@@ -133,6 +133,11 @@ objects:
     distance: {method: parallax, value_ly: 17515, low: 17188, high: 17841,
                source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 5.37 +/- 0.1 kpc", read: 2026-11-15}
   m29:
+    # THE CENTRE (the 2026-11-16 position audit; every row of site/data/dso.json was compared with SIMBAD). OpenNGC's place was 2.6' from SIMBAD's, most of the cluster's 3.6' width; this one is 1.0' from SIMBAD's.
+    # Hunt & Reffert 2023's centre for NGC 6913, the catalogue whose Gaia DR3 members the map draws for this cluster
+    # (VizieR J/A+A/673/A114 `clusters`, RA_ICRS / DE_ICRS, read 2026-10-16 into the cache scripts/build_deep_clusters.py
+    # bakes from), so the mark, the glow and the stars share one middle.
+    centre: {ra_deg: 305.9553, dec_deg: 38.4989, source: "Hunt & Reffert 2023, A&A 673, A114 (VizieR J/A+A/673/A114), the centre of its Gaia DR3 members", read: 2026-11-16}
     distance: {method: parallax, value_ly: 5574,
                source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 70 members", read: 2026-11-15}
   m3:
@@ -161,6 +166,12 @@ objects:
     common: null
     distance: {method: parallax, value_ly: 6034, low: 5969, high: 6099,
                source: "Baumgardt & Vasiliev 2021 (arXiv:2105.09526), 1.85 +/- 0.02 kpc", read: 2026-11-15}
+  # M39's place (the 2026-11-16 position audit): OpenNGC's was 11.7' from SIMBAD's, on a cluster 19.5' wide. SIMBAD's centre
+  # (basic.ra / dec for NGC 7092, coo_bibcode 2021A&A...647A..19T: Tarricq et al. 2021, from Gaia members; CfA mirror, read
+  # 2026-11-16). Hunt & Reffert 2023 list the cluster as Theia 517, a structure about a degree in half-number radius whose
+  # centre is 6.6' from SIMBAD's, so the narrower catalogue centre is the one taken; the members drawn keep their own places.
+  m39:
+    centre: {ra_deg: 322.8892, dec_deg: 48.2469, source: "SIMBAD (NGC 7092; Tarricq et al. 2021, A&A 647, A19)", read: 2026-11-16}
   m41:
     distance: {method: parallax, value_ly: 2332,
                source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 948 members", read: 2026-11-15}
@@ -169,6 +180,11 @@ objects:
     distance: {method: parallax, value_ly: 598,
                source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 1314 members", read: 2026-11-15}
   m45:
+    # THE CENTRE (the 2026-11-16 position audit; every row of site/data/dso.json was compared with SIMBAD). OpenNGC's place for the Pleiades is Alcyone (56.869, +24.105): 14.7' from SIMBAD's centre and 10.4' from this one.
+    # Hunt & Reffert 2023's centre for Melotte 22, the catalogue whose Gaia DR3 members the map draws for this cluster
+    # (VizieR J/A+A/673/A114 `clusters`, RA_ICRS / DE_ICRS, read 2026-10-16 into the cache scripts/build_deep_clusters.py
+    # bakes from), so the mark, the glow and the stars share one middle.
+    centre: {ra_deg: 56.6798, dec_deg: 24.1085, source: "Hunt & Reffert 2023, A&A 673, A114 (VizieR J/A+A/673/A114), the centre of its Gaia DR3 members", read: 2026-11-16}
     distance: {method: parallax, value_ly: 440,
                source: "Hunt & Reffert 2023 (arXiv:2303.13424), Gaia DR3 median of 1721 members", read: 2026-11-15}
   m46:

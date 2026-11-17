@@ -411,6 +411,7 @@
  "b758c5c215": "El primer agujero negro del que se tuvo certeza, descubierto en {n1} por sus rayos X. Está devorando una supergigante azul, HDE {n2}.",
  "02d124a23a": "Agujero negro",
  "517a174794": "Dibujado como un anillo a su distancia medida; un agujero negro no tiene forma que dibujar y un púlsar es demasiado pequeño — el tipo de objeto, no este en concreto · mientras esta ficha está abierta, se dibuja un modelo de él en su lugar, mucho más grande de lo que se vería desde aquí: la sombra y la luz curvada a su alrededor como las produce su masa, con el disco modelado.",
+ "d4c77946c8": "Dibujado como un anillo a su distancia medida; un agujero negro no tiene forma que dibujar y un púlsar es demasiado pequeño — el tipo de objeto, no este en concreto · mientras esta ficha está abierta, se dibuja un modelo de él en su lugar, mucho más grande de lo que se vería desde aquí: la sombra y la luz curvada a su alrededor como las produce su masa, con el disco modelado · las estrellas que lo rodean se dibujan en sus órbitas medidas cuando uno se acerca a cerca de un año luz: {n1} de ellas (S2 según el ajuste de GRAVITY, las demás según Gillessen y otros, {n2}), cada una donde el reloj la sitúa en su órbita; sus tamaños y colores son ilustrativos, y la imagen del agujero les cede el sitio.",
  "6c06fafecf": "Fuente: <1>https://en.wikipedia.org/wiki/Cygnus_X-{n1}</1> (infobox, leído {n2}-{n3}-{n4}); distancia y masa: Miller-Jones et al. {n5} (arXiv:{n6})",
  "bb9ecb6aff": "{name} es una nave espacial que viaja por el sistema solar. Dónde está ahora mismo lo ves en el mapa 3D en vivo.",
  "c8a8f2e9e2": "La primera nave en orbitar dos mundos más allá de la Tierra: el asteroide Vesta en {n1} y {n2}, y luego el planeta enano Ceres desde {n3}.",
@@ -939,7 +940,6 @@
  "0f2609ae51": "Se fotografió directamente en {n1}, como un punto débil junto al resplandor de su estrella. Su órbita está más lejos de su estrella que la zona habitable calculada para ella. La tabla compuesta del Exoplanet Archive le da {n2} UA, lo que no cumple la tercera ley de Kepler; la página usa la distancia de Keppler et al. {n3}, un único artículo cuyos propios periodo y masa de la estrella sí la cumplen.",
  "3a9ac54961": "Fuente: NASA Exoplanet Archive, tabla Planetary Systems Composite Parameters (DOI de la tabla <1>{n1}/NEA13</1>), consultada el {n2}-{n3}-{n4}; https://exoplanetarchive.ipac.caltech.edu/overview/PDS%{n5}. Zona habitable: Kopparapu et al. {n6}, <2>ApJ Letters {n7}, L29</2>. Las temperaturas suponen la reflectividad de la Tierra ({n8}). Esta página se generó el {n9}-{n10}-{n11} a partir de esos registros; las cifras no son en vivo.",
  "aed02bb526": "{n1}, por E. Karkoschka",
- "ed84e6abf6": "Un róver del tamaño de un coche que recoge muestras de roca en un cráter que antes fue el delta de un río.",
  "aabb82c6da": "Dibujado a partir de un modelo publicado de Perseverance.",
  "011bb6c050": "{name} es un objeto cercano a la Tierra con su propia órbita alrededor del Sol. De él vienen las Gemínidas.",
  "e8b37bd7eb": "De él vienen las Gemínidas. Se acerca al Sol más que Mercurio y suelta polvo cuando llega allí.",
@@ -1349,5 +1349,10 @@
  "6ab7ec5b64": "No es una pareja: son dos estrellas sin relación que casualmente se alinean. Una está a unos {n1} años luz y la otra a unos {n2}, así que no hay una única distancia que dar.",
  "2b470163bf": "Fuente: posición: OpenNGC (CC BY-SA {n1}); distancia: paralajes de Gaia DR3 de sus dos estrellas, consultados en SIMBAD: HD {n2} {n3} mas ({n4} años luz, donde se coloca la marca) y HD {n5} {n6} mas ({n7} años luz)",
  "b5a2ff2c2f": "{name} es un telescopio espacial que gira alrededor de la Tierra. El telescopio de rayos X de Europa, el mayor satélite científico construido nunca en Europa.",
- "5ff1b6dc56": "El telescopio de rayos X de Europa, el mayor satélite científico construido nunca en Europa."
+ "5ff1b6dc56": "El telescopio de rayos X de Europa, el mayor satélite científico construido nunca en Europa.",
+ "c90413fd85": "Aquí aterrizó Curiosity el {d1}. El róver ha seguido su camino y tiene su propia marca.",
+ "3262df82d7": "Aquí aterrizó Perseverance el {d1}. El róver ha seguido su camino y tiene su propia marca.",
+ "cbdf08776a": "Un róver del tamaño de un coche que recoge muestras de roca. Aterrizó en el cráter Jezero en {n1} y desde entonces ha subido y cruzado el borde occidental del cráter.",
+ "3bf96d01d2": "Fuente: posición: Hunt & Reffert {n1}, A&A {n2}, A114 (VizieR J/A+A/{n3}/A114), el centro de sus miembros de Gaia DR3; distancia: Hunt & Reffert {n4} (arXiv:{n5}), mediana de {n6} miembros de Gaia DR3",
+ "3b0df8fa45": "Fuente: posición: SIMBAD (NGC {n1}; Tarricq et al. {n2}, A&A {n3}, A19); distancia: <1>https://en.wikipedia.org/wiki/List_of_Messier_objects</1>"
 }

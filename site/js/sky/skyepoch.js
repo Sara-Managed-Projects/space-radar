@@ -3,8 +3,8 @@
 // Contract: createSkyEpoch({ fetchBytes }) -> { ready, apply(years, targets), hidesUnmoved(years), state() }
 //   targets: { stars: BufferGeometry | null, lines: [LineSegments], names: [{ name, mag, dir }] }
 //   state(): { years, epoch, moved, unmoved, pole: { name, mag, sepDeg } | null, south: ... } | null
-// Imported by sky/groundsky.js the first time the clock is more than 50 years from now; data/starmotion.bin
-// (275 kB, scripts/build-starmotion.py) is fetched then and never on a visit that stays near today.
+// Imported by sky/groundsky.js once the sky view is up (the stars sit at their places of the clock's date, internal #396); data/starmotion.bin
+// (275 kB, scripts/build-starmotion.py) is fetched then, after the first frames and never at boot.
 //
 // HOW A POINT FINDS ITS MOTION. The sky's stars come from two catalogues (d3-celestial's naked-eye file and
 // HYG's fainter tiers), its figures from a third, and none of them carries a row number the others share.

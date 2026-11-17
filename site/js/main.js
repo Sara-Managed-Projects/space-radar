@@ -1244,6 +1244,16 @@ export async function boot({ setStatus } = {}) {
   ctx.wantOrrery = f2Want('sliders', () => import('./ui/orrery.js').then((m) => (ctx.orrery = m.createOrrery(ctx))));
   ctx.wantCutaway = f2Want('cutaway', () => import('./ui/cutaway.js').then((m) => (ctx.cutaway = m.createCutaway(ctx, { scene }))));
   ctx.wantHeliosphere = f2Want('heliosphere', () => import('./scene/heliosphere.js').then((m) => (ctx.heliosphere = m.createHeliosphere(ctx, { scene }))));
+  // A constellation seen from the side (ui/figureside.js), fetched when one is asked for and never before: by a figure's
+  // story card or a search row (the event `sr:figure-side`, its detail the figure), or by `figure=` in the link, read once
+  // the layers have landed and again whenever the address changes (taken out of it, the view closes). One listener for
+  // the three, because every byte here is a first visit's (registry/budgets.yaml first_visit_bytes).
+  for (const name of ['sr:figure-side', 'sr:layers-ready', 'hashchange']) {
+    window.addEventListener(name, (e) => {
+      const v = e.detail || readUrlKeys().figure; // the two other events carry no detail
+      if (v || ctx.figureSide) import('./ui/figureside.js').then((m) => m.sideLink(ctx, v)); // it keeps itself on ctx.figureSide
+    });
+  }
   // b200-f2-worlds: end
   // OFFLINE (site/sw.js, ui/offline.js; issues #290, #453): the service worker is registered
   // OFFLINE_MS after sr:layers-ready, past the keys hint, so nothing it does is a first visit's cost.

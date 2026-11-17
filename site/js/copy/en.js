@@ -1890,6 +1890,7 @@ export const COPY = {
       pulseSlowed: 'its blink is drawn {n} times slower than it turns, so that an eye can follow it',
       pulseTrue: 'its blink is drawn at the rate it turns',
       portrait: 'while this card is open a model of it is drawn at its place, far larger than it would look from here: the shadow and the light bent round it as its mass makes them, the disc modelled', // 0078 r14-mw-bh
+      sstars: 'the stars that circle it are drawn on their measured orbits when you come within about a light-year: 39 of them (S2 from GRAVITY’s fit, the rest from Gillessen and others, 2017), each where the clock puts it on its orbit; their sizes and colours are illustrative, and the picture of the hole gives way to them', // internal #419: the S-stars (scene/sstars.js)
     },
     worldDeparture: {
       // The Earth (2026-10-08, scene/earth.js EARTH_RELIEF, scene/atmosphere.js EARTH_AIR): {relief}

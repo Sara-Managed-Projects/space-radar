@@ -411,6 +411,7 @@
  "b758c5c215": "O primeiro buraco negro de que alguém teve certeza, descoberto em {n1} pelos raios X. Está devorando uma supergigante azul, HDE {n2}.",
  "02d124a23a": "Buraco negro",
  "517a174794": "Aparece como um anel na distância medida; um buraco negro não tem forma para desenhar e um pulsar é pequeno demais — o tipo de coisa, não este exemplar exato · enquanto esta ficha está aberta, um modelo é desenhado no lugar do objeto, bem maior do que pareceria daqui: a sombra e a luz curvada ao redor dele, tal como a massa dele as molda; o disco é modelado.",
+ "d4c77946c8": "Aparece como um anel na distância medida; um buraco negro não tem forma para desenhar e um pulsar é pequeno demais — o tipo de coisa, não este exemplar exato · enquanto esta ficha está aberta, um modelo é desenhado no lugar do objeto, bem maior do que pareceria daqui: a sombra e a luz curvada ao redor dele, tal como a massa dele as molda; o disco é modelado · as estrelas que o rodeiam são desenhadas nas suas órbitas medidas quando se chega a cerca de um ano-luz: {n1} delas (a S2 pelo ajuste do GRAVITY, as outras por Gillessen e outros, {n2}), cada uma onde o relógio a põe na sua órbita; os tamanhos e as cores são ilustrativos, e a imagem do buraco cede o lugar a elas.",
  "6c06fafecf": "Fonte: <1>https://en.wikipedia.org/wiki/Cygnus_X-{n1}</1> (infobox, consultado em {n2}-{n3}-{n4}); distância e massa: Miller-Jones et al. {n5} (arXiv:{n6})",
  "bb9ecb6aff": "{name} é uma espaçonave lá fora no sistema solar. A posição neste exato momento está no mapa 3D ao vivo.",
  "c8a8f2e9e2": "A primeira espaçonave a orbitar dois mundos além da Terra: o asteroide Vesta em {n1} e {n2}, depois o planeta anão Ceres a partir de {n3}.",
@@ -939,7 +940,6 @@
  "0f2609ae51": "Foi fotografado diretamente, um ponto fraco ao lado do brilho ofuscante da sua estrela, em {n1}. A órbita dele fica mais longe da estrela do que a zona habitável calculada para ela. A tabela combinada do Exoplanet Archive dá {n2} UA para ele, o que não bate com a terceira lei de Kepler; a página usa a distância de Keppler et al. {n3}, um único artigo em que o período e a massa da estrela batem com ela.",
  "3a9ac54961": "Fonte: NASA Exoplanet Archive, tabela Planetary Systems Composite Parameters (DOI da tabela <1>{n1}/NEA13</1>), consultado em {n2}-{n3}-{n4}; https://exoplanetarchive.ipac.caltech.edu/overview/PDS%{n5}. Zona habitável: Kopparapu et al. {n6}, <2>ApJ Letters {n7}, L29</2>. As temperaturas supõem a refletividade da Terra ({n8}). Esta página foi gerada em {n9}-{n10}-{n11} a partir desses registros; os números não são ao vivo.",
  "aed02bb526": "{n1}, por E. Karkoschka",
- "ed84e6abf6": "Um rover do tamanho de um carro, coletando amostras de rocha numa cratera que já foi o delta de um rio.",
  "aabb82c6da": "Desenho feito a partir de um modelo publicado do Perseverance.",
  "011bb6c050": "{name} é um objeto próximo da Terra, em órbita própria ao redor do Sol. As Geminídeas vêm dele.",
  "e8b37bd7eb": "As Geminídeas vêm dele. Ele passa mais perto do Sol do que Mercúrio e solta poeira quando chega lá.",
@@ -1349,5 +1349,10 @@
  "6ab7ec5b64": "Não é um par: são duas estrelas sem relação que por acaso estão alinhadas. Uma está a cerca de {n1} anos-luz e a outra a cerca de {n2}, então não há uma única distância para dar.",
  "2b470163bf": "Fonte: posição: OpenNGC (CC BY-SA {n1}); distância: paralaxes do Gaia DR3 das duas estrelas, consultadas no SIMBAD: HD {n2} {n3} mas ({n4} anos-luz, onde a marca é colocada) e HD {n5} {n6} mas ({n7} anos-luz)",
  "b5a2ff2c2f": "{name} é um telescópio espacial que orbita a Terra. O telescópio de raios X da Europa, o maior satélite científico já construído na Europa.",
- "5ff1b6dc56": "O telescópio de raios X da Europa, o maior satélite científico já construído na Europa."
+ "5ff1b6dc56": "O telescópio de raios X da Europa, o maior satélite científico já construído na Europa.",
+ "c90413fd85": "Aqui aterrou o Curiosity em {d1}. O rover seguiu viagem e tem a sua própria marca.",
+ "3262df82d7": "Aqui aterrou o Perseverance em {d1}. O rover seguiu viagem e tem a sua própria marca.",
+ "cbdf08776a": "Um rover do tamanho de um carro, que recolhe amostras de rocha. Aterrou na cratera Jezero em {n1} e desde então subiu e passou a borda oeste da cratera.",
+ "3bf96d01d2": "Fonte: posição: Hunt & Reffert {n1}, A&A {n2}, A114 (VizieR J/A+A/{n3}/A114), o centro dos seus membros do Gaia DR3; distância: Hunt & Reffert {n4} (arXiv:{n5}), mediana de {n6} membros do Gaia DR3",
+ "3b0df8fa45": "Fonte: posição: SIMBAD (NGC {n1}; Tarricq et al. {n2}, A&A {n3}, A19); distância: <1>https://en.wikipedia.org/wiki/List_of_Messier_objects</1>"
 }

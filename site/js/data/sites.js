@@ -470,13 +470,25 @@ export const SITES = [
     "display": "Perseverance, Jezero crater",
     "class": "surface",
     "world": "mars",
+    "lat": 18.43559434,
+    "lon": 77.23322287,
+    "shape": "rover",
+    "as_of_sol": 2022,
+    "as_of": "2026-10-28",
+    "doing": "A rover the size of a car, collecting rock samples. It landed in Jezero crater in 2021 and has since climbed up and over the crater's western rim."
+  },
+  {
+    "id": "octavia-e-butler-landing",
+    "display": "Octavia E. Butler Landing, Jezero crater",
+    "class": "feature",
+    "world": "mars",
     "lat": 18.4446,
     "lon": 77.4509,
-    "shape": "rover",
     "aliases": [
-      "Octavia E. Butler Landing"
+      "Octavia Butler Landing",
+      "Perseverance landing site"
     ],
-    "doing": "A rover the size of a car, collecting rock samples in a crater that was once a river delta."
+    "doing": "Where Perseverance landed on 18 February 2021. The rover has driven on, and has a marker of its own."
   },
   {
     "id": "ingenuity",
@@ -497,13 +509,24 @@ export const SITES = [
     "display": "Curiosity, Gale crater",
     "class": "surface",
     "world": "mars",
+    "lat": -4.82602331,
+    "lon": 137.388886,
+    "shape": "rover",
+    "as_of_sol": 5073,
+    "as_of": "2026-11-13",
+    "doing": "Driving up a mountain of layered rock since 2012."
+  },
+  {
+    "id": "bradbury-landing",
+    "display": "Bradbury Landing, Gale crater",
+    "class": "feature",
+    "world": "mars",
     "lat": -4.5895,
     "lon": 137.4417,
-    "shape": "rover",
     "aliases": [
-      "Bradbury Landing"
+      "Curiosity landing site"
     ],
-    "doing": "Driving up a mountain of layered rock since 2012."
+    "doing": "Where Curiosity landed on 6 August 2012. The rover has driven on, and has a marker of its own."
   },
   {
     "id": "elysium",

@@ -21,6 +21,14 @@ tagged, and their dates are the day the last change in each landed.
   languages find the Moon, Mars, the Sun, the Earth, the Milky Way and the station, with or without article and accents
   ("Júpiter" and "jupiter" alike); cards, labels and search rows are titled in the language, with the English name still
   found; and all 40 layer names in What to show are translated.
+
+- **A constellation seen from the side.** Orion, the Big Dipper, Cassiopeia, the Southern Cross, Scorpius and Leo (and any of
+  the 88 figures, by its code) can be left behind: the camera starts at the Sun, where the lines fall on the figure as we see
+  it, and swings up to a quarter turn round it while the figure comes apart, each corner star at its measured distance with
+  the distance written beside it. A slider is the swing, "Fly out" plays it in twenty seconds, and under reduced motion the
+  button goes there at once. Open it from a figure's story card in the sky ("See it from the side"), from the search ("Orion
+  from the side", "Big Dipper") or with a link, `#figure=orion`. The stars' places are measured (HYG: Hipparcos and Gaia);
+  the lines are a tradition, and the panel says so in eleven languages.
 - **Fast-spinning stars are drawn flattened.** Vega, Altair, Regulus and Rasalhague, which interferometers have measured to bulge
   at the equator, are drawn as flattened discs, turned as their spin axis is in the sky (the paper's inclination and position
   angle), and darker and redder at the equator than at the poles (gravity darkening). Their cards now give the width across the
@@ -210,6 +218,13 @@ tagged, and their dates are the day the last change in each landed.
   Lyra; the Southern Delta Aquariids' comet is 96P/Machholz (suspected). Eclipse times are rounded to the minute, full-Moon pages
   mention a penumbral eclipse the same night, and "Planets tonight" gives each time its own date.
 
+- **Curiosity and Perseverance are drawn where they are, not where they landed.** Their markers stood on their landing
+  sites, 14.3 km and 12.2 km from the rovers (a review of positions, 2026-11-16). Each now stands at the latest waypoint of
+  NASA's mission map, and its card's Sources say which: "Position: NASA's waypoint for sol 5073 (13 November 2026)". A monthly
+  job reads the two waypoints again and opens a pull request when a rover has moved. The landing places are markers of their
+  own, Bradbury Landing and Octavia E. Butler Landing; the ground you can stand and drive on there, the replay of Curiosity's
+  landing and Perseverance's landing, first flight and first rock core are still shown at the landing place. Perseverance's
+  card no longer says it is in a crater: it climbed up and over Jezero's western rim (NASA's mission updates).
 - **The card's region badge follows the standard bounds.** Icarus at 1.76 AU read "Outer solar system" because the inner Solar System ended at Mars's aphelion; it now runs to the frost line (4.95 AU, Jupiter's perihelion), the main belt is the 2.06 to 3.27 AU between Jupiter's 4:1 and 2:1 gaps, and an orbit that strays out of it (a Hungaria, a Hilda, Encke's comet) is not headed "Asteroid belt".
 - **Links and first screens that opened empty.** A shared link to Andromeda, and "Fly to it" on any galaxy, cluster or
   nebula, now stops near enough to see the object (it was a whole unit away, a million light-years on the Local Group's

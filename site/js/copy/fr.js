@@ -83,6 +83,7 @@ const FEMININE = new Set([
 
 // The 46 type phrases data/dso.json holds (English, as the catalogue writes them), in French. Keys are lower case.
 const TYPES = {
+  'two-lobed nebula of dust and gas': "nébuleuse à deux lobes de poussière et de gaz",
   'globular cluster': 'amas globulaire',
   'open cluster': 'amas ouvert',
   'dwarf spheroidal galaxy': 'galaxie naine sphéroïdale',
@@ -1159,7 +1160,8 @@ export const COPY = {
     "exoticDeparture": {
       "pulseSlowed": "son clignotement est dessiné {n} fois plus lent que sa rotation, pour que l’œil puisse le suivre",
       "pulseTrue": "son clignotement est dessiné à la vitesse de sa rotation",
-      "portrait": "tant que cette fiche est ouverte, un modèle est dessiné à sa place, bien plus grand qu’il ne paraîtrait d’ici : l’ombre et la lumière courbée que donne sa masse, le disque modélisé"
+      "portrait": "tant que cette fiche est ouverte, un modèle est dessiné à sa place, bien plus grand qu’il ne paraîtrait d’ici : l’ombre et la lumière courbée que donne sa masse, le disque modélisé",
+      "sstars": "les étoiles qui tournent autour de lui sont dessinées sur leurs orbites mesurées quand on s’en approche à environ une année-lumière : 39 d’entre elles (S2 d’après l’ajustement de GRAVITY, les autres d’après Gillessen et al., 2017), chacune là où l’horloge la place sur son orbite ; leurs tailles et leurs couleurs sont illustratives, et l’image du trou leur cède la place"
     },
     "worldDeparture": {
       "earth": "sur un grand écran, ses montagnes viennent des altitudes ETOPO 2022 de la NOAA, dessinées {relief} fois plus raides qu’elles ne sont pour qu’un Soleil bas les montre ; la lueur de l’air sur son bord est dessinée {air} fois plus haute que l’air ; depuis l’orbite basse sur un grand écran, ses nuages se dressent vers l’horizon et sous un Soleil bas, dessinés {clouds} fois plus épais qu’ils ne sont pour qu’on voie leur inclinaison, leurs longues ombres et la dernière lumière sur leurs sommets (à leur vraie épaisseur dans l’aspect Mesuré), la hauteur de chaque sommet venant de sa température mesurée là où l’image du jour la couvre, et de l’éclat de la carte des nuages ailleurs",
@@ -2671,7 +2673,8 @@ export const COPY = {
   "source": {
     "prefix": "Source",
     "unknown": "Source non notée",
-    "fetched": "lue {age}"
+    "fetched": "lue {age}",
+    "waypoint": "Position : point de passage de la NASA pour le sol {sol} ({date})"
   },
   "photo": {
     "title": "Composer une image",
@@ -3743,29 +3746,16 @@ export const COPY = {
   "r12Dust": {
     "card": {
       "m45": "Sa lumière est la photographie de NOIRLab : un nuage de poussière qui traverse l’amas, juste devant ses étoiles, diffuse leur lumière bleue (Ritchey et d’autres, 2006). Sa profondeur est reconstituée. Pas encore relu par un astronome.",
-      "crab": "Sa lumière vient de la photographie de Hubble, en fausses couleurs, portée par une coque dont la forme suit Martin, Milisavljevic et Drissen (2021) : une cage de filaments longue d’environ 4 parsecs autour d’un milieu vide. Pas encore relu par un astronome.",
+      "crab": "Une cage de filaments autour de la lueur du vent du pulsar, sur le contour mesuré par Martin, Milisavljevic et Drissen (2021). La place de chaque filament est modélisée et les couleurs suivent l’image en fausses couleurs de Hubble. Pas encore relu par un astronome.",
       "veil": "Sa lumière vient de la photographie de NOIRLab, en fausses couleurs, portée par une fine sphère de 37 parsecs de diamètre (Fesen et autres, 2018) : les filaments sont son bord vu par la tranche. Pas encore relu par un astronome.",
       "horsehead": "Son obscurité se lit dans la photographie de NOIRLab : de la poussière devant le gaz lumineux d’IC 434, qui absorbe et rougit ce qui est derrière elle et n’émet aucune lumière. Pas encore relu par un astronome.",
-      "coalsack": "Son obscurité se lit dans la Voie lactée autour d’elle : un nuage de poussière à environ 590 années-lumière qui assombrit et rougit les étoiles derrière lui. Pas encore relu par un astronome.",
+      "coalsack": "Son obscurité se lit dans la Voie lactée autour d’elle : un nuage de poussière à environ 590 années-lumière qui assombrit et rougit les étoiles derrière lui. Son contour est mesuré, sa profondeur est modélisée. Pas encore relu par un astronome.",
       "m78": "Sa lumière est la photographie de NOIRLab : de la poussière qui diffuse la lumière bleue de l’étoile devant elle, sur la face d’un nuage sombre. Sa profondeur est reconstituée. Pas encore relu par un astronome.",
       "iris": "Sa lumière est la photographie de NOIRLab : de la poussière qui diffuse la lumière de la jeune étoile HD 200775 dans un creux de son nuage. Sa profondeur est reconstituée. Pas encore relu par un astronome."
     },
     "rows": {
       "dso-m45": [["Sa forme en profondeur", "Reconstituée. Le gaz est devant les étoiles, comme le montre leur lumière ; à quelle distance devant, et l’épaisseur de la poussière, sont illustratifs, et les profondeurs des étoiles dans l’amas sont un modèle fixe, non mesurées."], ["Ce que fait la poussière", "Elle diffuse la lumière des étoiles, surtout la bleue, et brille donc en bleu autour des plus brillantes, Mérope et Maïa surtout. C’est un nuage de passage, pas celui dont les étoiles sont nées."], ["Relecture", "Ce modèle n’a pas encore été relu par un astronome."]],
-      "dso-m1": [
-        [
-          "Sa forme en profondeur",
-          "Reconstituée à partir d’un contour mesuré. Les filaments s’étendent sur environ 2 parsecs le long de l’axe du vent du pulsar et aucun ne se trouve à moins d’un demi-parsec du centre (Martin et autres, 2021). Dessinée comme un ellipsoïde le long de cet axe ; l’extrémité la plus proche de nous est supposée."
-        ],
-        [
-          "Ses couleurs",
-          "Fausses couleurs : les filtres étroits de la photographie pour l’oxygène et le soufre, associés à des couleurs par les auteurs de l’image."
-        ],
-        [
-          "Relecture",
-          "Ce modèle n’a pas encore été relu par un astronome."
-        ]
-      ],
+      "dso-m1": [["Sa forme","Un contour mesuré avec des filaments modélisés. Aucun gaz ne se trouve à plus de 2 parsecs du centre le long de l’axe du pulsar, ni à moins d’un demi-parsec ; la taille est resserrée et deux lobes ressortent (Martin et autres, 2021). Les filaments forment un nid d’abeilles de la taille mesurée, mais l’endroit où chacun est dessiné est modélisé."],["Le vent du pulsar","Anneaux mesurés, jets modélisés. Deux anneaux de rayons X entourent le pulsar ; l’anneau intérieur fait une année-lumière de diamètre et ils sont inclinés de 63 degrés par rapport à notre ligne de visée. Le gaz les quitte à la moitié de la vitesse de la lumière, si bien que le côté qui vient vers l’observateur est plus brillant (Ng et Romani, 2004 et 2008). La longueur des jets est modélisée."],["Ses couleurs","Illustratives. Les filaments et la lueur prennent leurs couleurs dans l’image en fausses couleurs de Hubble, au même endroit du ciel. Le vent du pulsar est une lumière en rayons X, qu’aucun œil ne peut voir, dessinée en bleu-violet."],["Sur l’horloge","On a vu l’étoile exploser en 1054 et le nuage grandit d’environ un dixième de pour cent par an (mesuré). Le modèle grandit avec l’horloge de l’application à partir de 1054 ; la façon dont cette croissance a changé au fil des siècles est modélisée."],["Relecture","Ce modèle n’a pas encore été relu par un astronome."]],
       "dso-veil-nebula": [
         [
           "Sa forme en profondeur",
@@ -3794,20 +3784,7 @@ export const COPY = {
           "Ce modèle n’a pas encore été relu par un astronome."
         ]
       ],
-      "dso-coalsack": [
-        [
-          "Son degré d’obscurité",
-          "Lu d’après l’obscurité plus forte de la Voie lactée ici qu’à la même distance de sa ligne médiane, tout près. C’est une estimation, plus basse que celle des cartes infrarouges, car des étoiles devant le nuage ajoutent leur lumière."
-        ],
-        [
-          "Ce que fait la poussière",
-          "Elle ne fait qu’absorber : les étoiles derrière elle sont atténuées et rougies. Celles devant elle ne le sont pas. Une partie de l’obscurité au nord-est est un second nuage bien plus loin, dessiné ici à la distance proche."
-        ],
-        [
-          "Relecture",
-          "Ce modèle n’a pas encore été relu par un astronome."
-        ]
-      ],
+      "dso-coalsack": [["Son contour et sa profondeur","Le contour est mesuré sur la carte de la Voie lactée dessinée ici (NASA, d’après les comptages d’étoiles de Gaia) : une région sombre d’environ 7 degrés sur 4. Les taches sombres voisines sont d’autres nuages et sont laissées de côté. La profondeur est modélisée : une nappe mince et bosselée à une seule distance."],["Son degré d’obscurité","Lu d’après l’obscurité plus forte de la Voie lactée ici qu’à la même distance de sa ligne médiane, tout près. C’est une estimation, plus basse que celle des cartes infrarouges, car des étoiles devant le nuage ajoutent leur lumière."],["Ce que fait la poussière","Elle ne fait qu’absorber : les étoiles derrière elle sont atténuées et rougies. Celles devant elle ne le sont pas. Une partie de l’obscurité au nord-est est un second nuage bien plus loin, dessiné ici à la distance proche."],["Relecture","Ce modèle n’a pas encore été relu par un astronome."]],
       "dso-m78": [
         [
           "Sa forme en profondeur",
@@ -6431,3 +6408,124 @@ Object.assign(COPY, {
   }
 });
 // internal #442: end
+// ds2: begin -- the words of the Homunculus Nebula and Cassiopeia A (copy/en.deepdata.js), machine-drafted
+Object.assign(COPY, {
+  "deepHomunculus": {
+    "card": {
+      "homunculus": "Sa forme est un modèle 3D publié, construit à partir de la vitesse mesurée de chaque partie de la nébuleuse (Steffen et al., 2014), orienté et mis à l’échelle d’après les mesures de Smith (2006). Sa luminosité et son aspect moucheté sont illustratifs. Modèle : Goddard Space Flight Center de la NASA/Ed Campion et UNAM/W. Steffen, via l’ESO. Pas encore relu par un astronome."
+    },
+    "rows": {
+      "dso-homunculus-nebula": [
+        [
+          "Sa forme",
+          "Mesurée. Un modèle 3D construit à partir du décalage Doppler de son hydrogène, lu le long de 92 bandes de la nébuleuse avec le Very Large Telescope de l’ESO (Steffen et al., 2014). Le creux à chaque pôle, la tranchée qui l’entoure et les deux bosses près de la taille sont dans les données."
+        ],
+        [
+          "Son inclinaison et sa taille",
+          "Mesurées. Le lobe lointain pointe vers le nord-ouest, à 41° de notre ligne de visée ; le proche pointe vers nous d’autant. En 2005, chaque pôle était à 21 690 fois la distance Terre–Soleil de l’étoile (Smith, 2006)."
+        ],
+        [
+          "Elle grandit",
+          "Chaque partie file en ligne droite à sa propre vitesse depuis l’éruption des années 1840, donc sa taille suit la date de l’horloge. Avant l’éruption, elle n’est pas dessinée."
+        ],
+        [
+          "Sa surface",
+          "Illustrative. La luminosité et l’aspect moucheté représentent de la poussière éclairée de l’intérieur par l’étoile ; le modèle ne contient que la forme. L’aspect Mesuré retire le moucheté."
+        ],
+        [
+          "Modèle 3D",
+          "Goddard Space Flight Center de la NASA/Ed Campion et UNAM/W. Steffen, via l’ESO (CC BY 4.0). Aucun point n’a été déplacé."
+        ],
+        [
+          "Relecture",
+          "Ce dessin n’a pas encore été relu par un astronome."
+        ]
+      ]
+    },
+    "how": "Le gaz qui vient vers nous décale sa lumière vers le bleu et celui qui s’éloigne vers le rouge, et l’Homoncule s’étend de façon uniforme depuis les années 1840 : la vitesse d’un point le long de notre ligne de visée dit donc aussi de combien il est devant l’étoile ou derrière. Les astronomes ont lu la vitesse de son hydrogène le long de 92 bandes de la nébuleuse et en ont construit la forme (Steffen et al., 2014)."
+  },
+  "deepCasA": {
+    "card": {
+      "casa": "Chaque point est un endroit où ce gaz a été mesuré : sa vitesse vers nous ou à l’opposé donne sa profondeur (DeLaney et al., 2010). Les couleurs sont une légende, pas ce que verrait l’œil. Modèle : NASA/CXC/MIT/T. Delaney et al. Pas encore relu par un astronome."
+    },
+    "rows": {
+      "dso-cassiopeia-a": [
+        [
+          "Vert",
+          "Du fer, vu en rayons X par le télescope Chandra. Positions mesurées."
+        ],
+        [
+          "Jaune",
+          "De l’argon et du silicium, vus en rayons X et en infrarouge, avec les deux jets et les nœuds extérieurs vus en lumière visible. Positions mesurées."
+        ],
+        [
+          "Rouge",
+          "Du silicium froid au centre, vu en infrarouge par le télescope Spitzer : des débris que le choc vers l’intérieur n’a pas encore chauffés. Positions mesurées."
+        ],
+        [
+          "Coque bleue",
+          "L’onde de choc extérieure, à 153 secondes d’arc du centre. Modélisée : une simple sphère de la taille mesurée, à la place des vrais filaments, comme dans le modèle de Chandra lui-même."
+        ],
+        [
+          "Point blanc",
+          "L’étoile à neutrons laissée par l’explosion. Sa place dans le ciel est mesurée ; sa profondeur ne l’est pas."
+        ],
+        [
+          "Comment on connaît sa profondeur",
+          "Les débris sont partis en ligne droite d’un même point depuis l’explosion : le gaz qui vient vers nous est donc devant ce point et celui qui s’éloigne derrière. Chaque tranche de 1 000 km/s vaut 22 secondes d’arc de profondeur."
+        ],
+        [
+          "Elle grandit",
+          "Sur l’horloge, chaque partie à son propre rythme mesuré : 0,3 % par an pour les débris libres, 0,2 % pour le gaz X ralenti, environ 4 900 km/s pour l’onde de choc. Avant 1671, elle n’est pas dessinée."
+        ],
+        [
+          "Luminosité",
+          "Absente du modèle. Chaque point d’une couleur est aussi brillant que les autres, et sa taille est la netteté des données, pas la taille d’un grumeau."
+        ],
+        [
+          "Modèle 3D",
+          "NASA/CXC/MIT/T. Delaney et al., d’après les fichiers du Centre de rayons X Chandra. Réduit à 24 219 points."
+        ],
+        [
+          "Relecture",
+          "Ce dessin n’a pas encore été relu par un astronome."
+        ]
+      ]
+    },
+    "how": "Chaque élément chimique brille à ses propres couleurs, et le gaz qui approche ou s’éloigne les décale : un télescope qui disperse la lumière trouve donc la vitesse de chaque plaque de fer, de silicium ou d’argon le long de notre ligne de visée. Comme tout est parti d’un même point il y a environ 350 ans, cette vitesse est aussi une distance, devant ce point ou derrière : les rayons X de Chandra et l’infrarouge de Spitzer ont donné ensemble la première carte 3D d’une étoile qui a explosé (DeLaney et al., 2010)."
+  }
+});
+// ds2: end
+// A constellation seen from the side (ui/figureside.js, copy/en.side.js): begin
+COPY.figureSide = {
+  "open": "La voir de côté",
+  "openTitle": "Quitte le Soleil et regarde {name} se défaire",
+  "searchRow": "{name}, de côté",
+  "searchSub": "Quitte le Soleil et regarde la figure se défaire",
+  "title": "{name}, de côté",
+  "loading": "Chargement des distances des étoiles…",
+  "lede": "Depuis le Soleil, ces étoiles forment une figure. Chacune est à sa propre distance : de côté, la figure se défait.",
+  "angle": "De combien tourner vers le côté",
+  "where": "{deg}° sur le côté, à {ly} années-lumière du Soleil",
+  "home": "Au Soleil : la figure telle qu’on la voit",
+  "range": "Ses étoiles sont entre {near} et {far} années-lumière.",
+  "play": "S’envoler",
+  "playTitle": "Quitte le Soleil et tourne jusqu’au côté, en vingt secondes",
+  "pause": "Pause",
+  "jump": "Aller sur le côté",
+  "back": "Retour au Soleil",
+  "another": "Une autre figure",
+  "honest": "Mesuré : la place de chaque étoile, par sa parallaxe (Hipparcos et Gaia, catalogue HYG) ; les plus lointaines sont les moins sûres. Tradition : les lignes entre elles.",
+  "unplaced": "{n} de ses coins n’ont pas d’étoile à distance mesurée : ils sont dessinés à la distance moyenne de la figure.",
+  "close": "Fermer la vue de côté",
+  "unknown": "Aucune figure d’étoiles de ce nom n’est dessinée ici.",
+  "inTrip": "Quitte d’abord le voyage pour voir une figure de côté.",
+  "failed": "Les distances des étoiles ne se sont pas chargées. Réessaie dans un instant.",
+  "names": {
+    "bigDipper": "Grand Chariot"
+  },
+  "notes": {
+    "bigDipper": "Cinq de ses sept étoiles voyagent bien ensemble, à environ 80 années-lumière. Les deux des extrémités, Dubhe et Alkaid, non."
+  }
+};
+// A constellation seen from the side: end

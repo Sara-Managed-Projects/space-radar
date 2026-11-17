@@ -1,0 +1,190 @@
+// GENERATED from registry/deepsky-heroes/casa.yaml by scripts/gen_deepsky_heroes_js.py. Do not edit.
+// A deep-sky hero's authored profile (internal spec 0075, design section 3): read by
+// scene/deep/heroes.js when the hero comes near, never at boot.
+export const HERO = {
+  "id": "casa",
+  "record": "dso-cassiopeia-a",
+  "stage": "ds2-2026-11-16",
+  "shipped": true,
+  "children": [],
+  "levels": {
+    "2": "structure: the reconstruction's 24 219 points in one draw call, coloured by what they are, and the blast wave as one thin sphere; each part sized for the clock's date",
+    "3": "close-up: the same; the camera may go inside"
+  },
+  "frame": {
+    "units_ly": 1,
+    "distance_ly": 11090,
+    "ra_deg": 350.8657083,
+    "dec_deg": 58.8137222,
+    "axes": "x west, y north, z toward the Sun; arcseconds about the explosion's place (the expansion centre on the sky, zero velocity along our line), turned into light-years at 3.4 kpc",
+    "growth": {
+      "epoch": 2005.04,
+      "exploded": 1671.3,
+      "free": {
+        "rate_pct_per_yr": 0.304,
+        "source": "Thorstensen, Fesen & van den Bergh 2001, as DeLaney et al. 2010 section 4.1 quote it"
+      },
+      "slowed": {
+        "rate_pct_per_yr": 0.208,
+        "source": "DeLaney & Rudnick 2003, as DeLaney et al. 2010 section 4.1 quote it"
+      }
+    },
+    "units": {
+      "arcsec_per_unit": 3.5,
+      "origin_shift_arcsec": 18.898,
+      "checks": "mean 3D radius of the [Ar II] 107 arcseconds (the paper: about 110), of the [Si II] 92 (about 91); the neutron star 20.6 from the paper's origin (20.2)"
+    }
+  },
+  "layers": [
+    {
+      "part": "iron",
+      "kind": "points",
+      "what": "iron, seen in X-rays (the Fe-K line, Chandra ACIS): 7 883 points",
+      "file": "site/data/deep/casa.glb",
+      "made_by": "scripts/build_deep_casa.mjs",
+      "from": "CasA_supernova_remnant-ascii_vtks.zip (4 124 113 B, sha256 b20f87bec5ecda9925344c1bfa31caced700d08298fefe26d1aa0970ddcfe03d, downloaded 2026-11-16 from https://chandra.si.edu/deadstar/deadstar.html), fekcorr-ascii.vtk",
+      "credit": "NASA/CXC/MIT/T.Delaney et al.",
+      "licence": "Chandra's image use policy (https://chandra.si.edu/photo/image_use.html, read 2026-11-16): 'no claim to copyright is being asserted and the material may be used in accordance with NASA guidelines'; acknowledgement requested",
+      "colour": [
+        0.3,
+        0.95,
+        0.4
+      ],
+      "symbol_arcsec": 6,
+      "alpha": 0.1,
+      "motion": "slowed",
+      "source": "DeLaney, T. et al. 2010, ApJ 725, 2038 (arXiv:1011.3858), section 4.4"
+    },
+    {
+      "part": "argon",
+      "kind": "points",
+      "what": "argon, seen in the infrared (the [Ar II] line, Spitzer IRS): the Bright Ring, 7 189 points",
+      "from": "the same archive, newar-ascii.vtk",
+      "colour": [
+        1.0,
+        0.8,
+        0.22
+      ],
+      "symbol_arcsec": 6,
+      "alpha": 0.1,
+      "motion": "free",
+      "source": "DeLaney et al. 2010, sections 4.1 and 4.3"
+    },
+    {
+      "part": "silicon-hot",
+      "kind": "points",
+      "what": "silicon, seen in X-rays (the Si XIII line, Chandra HETG; Lazendic et al. 2006): 228 points",
+      "from": "the same archive, newhetg-ascii.vtk",
+      "colour": [
+        1.0,
+        0.8,
+        0.22
+      ],
+      "symbol_arcsec": 10,
+      "alpha": 0.22,
+      "motion": "slowed",
+      "source": "DeLaney et al. 2010, section 4.3"
+    },
+    {
+      "part": "silicon-cold",
+      "kind": "points",
+      "what": "cold silicon the inward shock has not yet reached, seen in the infrared (the [Si II] line, Spitzer IRS): 6 683 points",
+      "from": "the same archive, newsi-ascii.vtk",
+      "colour": [
+        1.0,
+        0.27,
+        0.2
+      ],
+      "symbol_arcsec": 15,
+      "alpha": 0.035,
+      "motion": "free",
+      "source": "DeLaney et al. 2010, section 4.7"
+    },
+    {
+      "part": "jets",
+      "kind": "points",
+      "what": "the north-east jet and its counter-jet: fast optical knots (Fesen & Gunderson 1996; Fesen 2001), 702 points",
+      "from": "the same archive, newjets-ascii.vtk",
+      "colour": [
+        1.0,
+        0.8,
+        0.22
+      ],
+      "symbol_arcsec": 6,
+      "alpha": 0.28,
+      "motion": "free",
+      "source": "DeLaney et al. 2010, section 2 and table 1"
+    },
+    {
+      "part": "outer-knots",
+      "kind": "points",
+      "what": "outer optical knots, at and beyond the blast wave (Fesen 2001): 1 533 points",
+      "from": "the same archive, newopt-ascii.vtk",
+      "colour": [
+        1.0,
+        0.8,
+        0.22
+      ],
+      "symbol_arcsec": 6,
+      "alpha": 0.28,
+      "motion": "free",
+      "source": "DeLaney et al. 2010, table 1"
+    },
+    {
+      "part": "neutron-star",
+      "kind": "points",
+      "what": "the central neutron star, a mark of one size on the screen; on the sky it is 6.6 arcseconds south of the expansion centre (Thorstensen et al. 2001); its depth is not measured (the model places it at zero velocity)",
+      "from": "the same archive, cco-ascii.vtk",
+      "colour": [
+        0.85,
+        0.92,
+        1.0
+      ],
+      "symbol_arcsec": 0,
+      "alpha": 1.0,
+      "motion": "free",
+      "source": "DeLaney et al. 2010, section 4.2"
+    },
+    {
+      "part": "blast-wave",
+      "kind": "sphere",
+      "what": "the outer blast wave: a sphere of its measured radius, a representation (it was not mapped by Doppler shift)",
+      "radius_arcsec": 153,
+      "speed_km_s": 4917,
+      "colour": [
+        0.3,
+        0.55,
+        1.0
+      ],
+      "source": "DeLaney et al. 2010 (the radius); Chandra X-ray Center, How to hold a dead star in your hand (the speed)"
+    }
+  ],
+  "colours": {
+    "mode": "enhanced",
+    "lines": {},
+    "note": "FALSE COLOUR, a legend and not what an eye would see: Chandra's own colour code for this model (green iron, yellow argon and silicon with the jets and outer debris, red cold debris, blue the blast wave). Every point of a kind is equally bright: the model holds no brightness"
+  },
+  "drawn": [
+    "reconstruction",
+    "model"
+  ],
+  "sources": [
+    "DeLaney, T., Rudnick, L., Stage, M. D., Smith, J. D., Isensee, K., Rho, J., Allen, G. E., Gomez, H., Kozasa, T., Reach, W. T., Davis, J. E. & Houck, J. C. 2010, The three-dimensional structure of Cassiopeia A, ApJ 725, 2038 (https://arxiv.org/abs/1011.3858), read 2026-11-16",
+    "Thorstensen, J. R., Fesen, R. A. & van den Bergh, S. 2001, The expansion center and dynamical age of the Galactic supernova remnant Cassiopeia A, AJ 122, 297 (https://arxiv.org/abs/astro-ph/0104188), the abstract, read 2026-11-16",
+    "Chandra X-ray Center, How to hold a dead star in your hand (https://chandra.si.edu/deadstar/deadstar.html) and Cassiopeia A: a star explodes and turns inside out (https://chandra.si.edu/photo/2009/casa2/), read 2026-11-16: the files, the colour code, the blast wave's speed"
+  ],
+  "review": {
+    "data_vs_model": "Measured: where each kind of debris is (DeLaney et al. 2010) and today's rate of growth of each part. Modelled: the growth before today, the blast wave as a sphere, the files' unit, the neutron star's depth. Not in the model: brightness",
+    "geometry": "The Chandra X-ray Center's export of the paper's model, thinned to one point a cell; axes read off the data (the jets north-east and south-west, the south-east iron toward us) and the unit set by three lengths the paper states",
+    "colours": "False colour, Chandra's legend for the model, declared on the card",
+    "distance": "11 090 ly, the record's: 3.4 kpc, the distance Thorstensen et al. 2001 and DeLaney et al. 2010 use; lengths on the sky are scaled to it",
+    "credits": "CREDITS.md, Cassiopeia A from its published 3D reconstruction (2026-11-16); the card's rows carry the credit and say no astronomer has reviewed the drawing",
+    "by": "Space Radar maintainers",
+    "date": "2026-11-16",
+    "astronomer": "not yet; the card says so"
+  },
+  "credits": [
+    "Cassiopeia A's 3D reconstruction: NASA/CXC/MIT/T.Delaney et al. (the Chandra X-ray Center's VTK files; DeLaney et al. 2010, ApJ 725, 2038). Thinned to point sets by Space Radar",
+    "Its place and the date of the explosion: Thorstensen, Fesen & van den Bergh 2001, AJ 122, 297"
+  ]
+};

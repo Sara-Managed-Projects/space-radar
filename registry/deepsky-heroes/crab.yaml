@@ -1,27 +1,43 @@
 # A deep-sky hero (internal spec 0075; README.md beside this file says what each field holds).
-# The Crab Nebula (M1) as a SHELL: the filaments of the supernova of 1054 round the pulsar's wind nebula (internal spec
-# 0076 stage W3-c, internal #784). Drawn by site/js/scene/deep/remnant.js, the one module every remnant shares; its
-# light is baked by scripts/build_deep_sheets.py from the photograph the app already shows.
+# The Crab Nebula (M1): a CAGE OF FILAMENTS round the blue-white glow of the pulsar's wind, and inside it the pulsar with
+# the wind's two X-ray rings and two jets (the 2026-11-16 deep-space review, fault 2). Drawn by site/js/scene/deep/crab.js.
+# Its first model (internal spec 0076 stage W3-c, internal #784) carried the photograph on an ellipsoid and was held by the
+# lead on 2026-10-17 (#1215: "turned it is a pale egg, from inside a grey wash"); the `light` and `shell` parts below are
+# that model's, kept because the new one stands on them (the ellipsoid is the outline's base, the photograph its colours).
 #
-# WHAT IS MEASURED AND WHAT IS RECONSTRUCTED.
+# WHAT IS MEASURED, WHAT IS MODELLED, WHAT IS ILLUSTRATIVE.
 #   Measured: the distance (the record's, 6 500 ly: Trimble 1973's 2 kpc, the distance Martin et al. 2021 adopt), the
-#   centre of expansion (taken at the pulsar, within 5 arcsec of Kaplan et al. 2008's), the direction and tilt of the
-#   pulsar's torus axis (Ng & Romani 2004), the outer envelope's reach along that axis (no H-alpha emitting gas beyond
-#   2 pc) and the inner void (none within 0.5 pc: both Martin, Milisavljevic & Drissen 2021, from 310 000 SITELLE
-#   spectra under uniform expansion), and the LIGHT: the photograph.
-#   Reconstructed: the envelope as an ellipsoid whose major axis follows the torus axis (Martin et al. 2021 fit one;
-#   they also find its true outline "heart-shaped", which this ellipsoid does not draw), its two minor axes equal
-#   (not measured), and how each sky point's light is shared out along our line (evenly through the shell's depth).
+#   centre of expansion (taken at the pulsar, within 5 arcsec of Kaplan et al. 2008's). The OUTLINE'S NUMBERS, all from
+#   Martin, Milisavljevic & Drissen 2021 (310 000 SITELLE spectra under uniform expansion; arXiv:2101.02709, the paper
+#   read 2026-11-16): no gas beyond 2 pc along the pulsar's axis and none within 0.5 pc of the centre; the volume is
+#   "heart-shaped", symmetrical about the plane of the pulsar's torus, with a pinched valley round that plane; the two
+#   fastest lobes, north-west and south-east, 120 degrees apart, the north-west one along the axis and the south-east one
+#   not, the south-east lobe standing 1.3 times out of the fitted ellipsoid; the filaments a honeycomb whose cells are
+#   about pi / 10 across in the fast lobes and about pi / 3.5, with thicker walls, deeper in (0.5 to 1 pc across). The
+#   WIND: Ng & Romani 2004 (ApJ 601, 479; arXiv:astro-ph/0310155, Table 1, read 2026-11-16) fit Chandra's picture with
+#   two rings; their axis's position angle and tilt, their radii and the speed of the flow are the table's, and Ng &
+#   Romani 2008 (ApJ 673, 411; arXiv:0710.4168, Table 2, read 2026-11-16) give the same numbers with their systematic
+#   errors (the tilt to about a degree). The GROWTH: 1.160(15) thousandths a year (Nugent 1998, as Martin et al. quote
+#   it), the motions meeting at about 1130 CE when run back in straight lines, later than the supernova of 1054 because
+#   the pulsar's wind has pushed the gas (both from Martin et al.'s text). The spectra are of November 2016.
+#   Modelled: WHERE EACH FILAMENT IS (a honeycomb of the measured scale on the measured outline: the data cube is not
+#   public), how deep the valley is and how wide the lobe, the glow as a soft ellipsoid, the jets' length and speed
+#   (Ng & Romani fit the rings, not the jets, and say the jets bend and change), which end of the axis is nearer (the
+#   south-east one: the fit's own Doppler factor makes the north-west half of the rings the bright one, as observed, only
+#   that way), and the growth as a power law from 1054 with the measured rate today.
+#   Illustrative: the colours. Filaments and glow take theirs from Hubble's false-colour mosaic at the same place on
+#   the sky; the wind is X-ray light drawn violet-blue; the filaments' thickness.
 id: crab
 record: dso-m1
 stage: W3-c
-# HELD by the lead (2026-10-17, #1215): turned it is a pale egg, from inside a grey wash. The code stays; `shipped: true` again once
-# the light is held to the shell's outer surface (or self-absorbs) and the fill fades inside (spec 0076, For spec 0076, left).
-shipped: false
+# Shipped again on 2026-11-16 as a different model (scene/deep/crab.js), after pictures at 1440 x 900 and 390 x 844 from
+# our side, turned, close and inside (the pull request shows them). Signed by the maintainers under the lead's review
+# policy of 2026-10-15; the card says no astronomer has reviewed it (internal #785).
+shipped: true
 children: []
 levels:
-  2: "structure: the shell's light from the photograph, carried on the ellipsoid in depth (4 samples a segment; 2 on T0 and under the latch)"
-  3: "close-up: the same with up to 8 samples a segment; the camera may go inside the shell"
+  2: "structure: the cage of filaments as ribbons (about 8 000 pieces; half on T0 and under the latch), the synchrotron glow in closed form, the wind's rings, jets and the pulsar as soft points: three additive draws, no march"
+  3: "close-up: the same; the camera may go inside the cage, where the filaments stay sharp round it and the glow is a faint haze toward the middle"
 frame: {units_ly: 1, distance_ly: 6500, ra_deg: 83.63321, dec_deg: 22.01447, axes: "x west, y north, z toward the Sun; the record's place at the origin"}
 layers:
   - part: light
@@ -60,31 +76,114 @@ layers:
     limb_min: 0.35
     check: "From our line each sky point's light is the photograph's (tests/test_remnant.mjs holds the column to 1 %)"
     source: "Martin, T., Milisavljevic, D. & Drissen, L. 2021, MNRAS 502, 1864 (arXiv:2101.02709): the 3D envelope from SITELLE spectra, an ellipsoid fitted along the torus axis, nothing beyond 2 pc on that axis, nothing within 0.5 pc of the centre; Ng, C.-Y. & Romani, R. W. 2004, ApJ 601, 479: the torus's position angle and inclination"
+  # ------------------------------------------------------------------------------------------------------------------
+  # THE NEW MODEL'S PARTS (scene/deep/crab.js). Lengths in light-years unless a name says otherwise.
+  - part: envelope
+    kind: model
+    what: "the outline: the ellipsoid above with a pinched waist round the torus's plane and the south-east lobe swollen (the paper's heart shape)"
+    # No line-emitting gas within 0.5 pc of the centre (Martin et al. 2021): no filament is drawn nearer.
+    void_pc: 0.5
+    # The "equatorial valley" exists (measured); its depth is not given as a number: 18 % over 20 degrees, a model.
+    pinch: {depth: 0.18, width_deg: 20}
+    # The south-east lobe: 1.3 times the fitted ellipsoid (measured), 120 degrees from the north-west lobe seen from the
+    # north (measured), so 60 degrees from the axis's south-east end, turned away from us (the turn's sense follows
+    # from its being south-east on the sky). Its width is a model.
+    lobe: {from_axis_deg: 60, gain: 0.3, width_deg: 35}
+    source: "Martin, Milisavljevic & Drissen 2021, MNRAS 502, 1864 (arXiv:2101.02709): its section 4.1 (the outer and inner envelopes and their comparison) and its summary"
+  - part: filaments
+    kind: model
+    what: "the filaments: two honeycombs of the measured scale, a coarse thick one deep in and a fine thin one on the outline, with spikes inward and struts between"
+    seed: 1054
+    # `level`: how often an icosahedron is divided before its dual is taken: 1 gives 42 cells about 35 degrees across
+    # (between the paper's pi / 3.5 and pi / 10; with the jitter they run from about 25 to 50), 2 gives 162 cells about
+    # 18 degrees across (pi / 10). `at`: the corners' distance as a share of the outline's. Thicknesses illustrative.
+    nets:
+      - {name: deep, level: 1, at: [0.56, 0.70], width_ly: 0.17, jitter: 0.45, wobble: 0.16, pieces: 8, bright: 1.0}
+      - {name: outline, level: 2, at: [0.86, 1.0], width_ly: 0.075, jitter: 0.40, wobble: 0.12, pieces: 6, bright: 0.8}
+    spikes: {share: 0.55, length: [0.07, 0.22], width_ly: 0.05, bright: 0.6}
+    struts: 0.45
+    min_px: 1.3
+    # what a filament keeps of its light where the mosaic is dark (the far side, the model's own reach)
+    floor: 0.3
+    gain: 0.5
+    # Illustrative: where the mosaic is orange the filament is orange (deeper ones redder), where it is blue-green it
+    # is the green of doubly ionised oxygen. The mosaic's own colours are false colour (narrow filters).
+    colours: {deep: [1.0, 0.42, 0.18], rim: [1.0, 0.62, 0.3], cool: [0.62, 0.95, 0.6]}
+    source: "Scale and hierarchy: Martin et al. 2021, the filaments' section and summary point 3 (cells about pi/10 in the fast lobes, about pi/3.5 with thicker filaments deeper in, the largest 0.5 to 1 pc across at the smallest radii). Each filament's place: modelled by Space Radar"
+  - part: synchrotron
+    kind: model
+    what: "the pulsar wind nebula's visible glow (synchrotron light): a soft ellipsoid inside the cage, its brightness on the sky shaped by the mosaic's blue"
+    sigma: 0.45
+    amp: 0.55
+    photo: 0.7
+    colour: [0.62, 0.78, 1.0]
+    source: "Its shape is a model (a Gaussian ellipsoid on the envelope's axes); its pattern on the sky is the photograph's"
+  - part: wind
+    kind: fit
+    what: "the pulsar's wind in X-rays: the two rings Ng & Romani fitted, the jets along their axis, the pulsar"
+    distance_pc: 2000
+    seed: 531
+    # Ng & Romani 2004, Table 1 (2008, Table 2: the same, with systematic errors): position angle of the axis (north
+    # through east), its inclination to our line of sight, the ring's radius, its Gaussian blur (held fixed in the fit:
+    # 2008's 1.5 arcsec for the inner ring) and the flow's speed as a share of light's.
+    inner: {pa_deg: 124.0, incl_deg: 61.3, r_arcsec: 15.6, blur_arcsec: 1.5, beta: 0.49, points: 700, amp: 1.0}
+    outer: {pa_deg: 126.31, incl_deg: 63.03, r_arcsec: 41.33, blur_arcsec: 5.9, beta: 0.55, points: 1800, amp: 0.55}
+    # The fit's own assumption for the spectrum: intensity goes as (1 - n.beta)^-(1 + Gamma), Gamma = 1.5.
+    photon_index: 1.5
+    norm: 0.3
+    # NOT FITTED: the jets' length, width and speed (a model). "the jets are in several cases distinctly curved, and
+    # repeated exposures of Crab and Vela indicate that this bending in the plane of the sky changes with time"
+    # (Ng & Romani 2008); drawn straight along the outer ring's axis.
+    jets: {length_ly: 2.1, from_ly: 0.12, width_ly: 0.09, beta: 0.4, points: 420, amp: 0.5}
+    pulsar_ly: 0.03
+    pulsar_amp: 3.0
+    min_px: 1.6
+    gain: 0.6
+    # FALSE COLOUR: X-rays are not visible light.
+    colour: [0.56, 0.58, 1.0]
+    pulsar_colour: [1.0, 1.0, 1.0]
+    check: "The inner ring is 2 x 15.6 arcsec x 2 kpc = 0.99 ly across; Chandra's own page says 'The inner ring is about one light year across' (chandra.si.edu/deadstar/crab.html, read 2026-11-16)"
+    source: "Ng, C.-Y. & Romani, R. W. 2004, ApJ 601, 479 (arXiv:astro-ph/0310155), Table 1; Ng, C.-Y. & Romani, R. W. 2008, ApJ 673, 411 (arXiv:0710.4168), Table 2"
+  - part: expansion
+    kind: model
+    what: "its growth on the app's clock, from the supernova of 1054"
+    explosion_year: 1054
+    # The measured rate and where the motions meet when run back in straight lines (Martin et al. 2021, where the reconstruction's linear model is set out:
+    # "e = 1.160(15) x 10^-3 year^-1 computed by Nugent 1998"; "the computed outburst date lies around 1130 CE ...
+    # attributed to material having been accelerated by the Crab's pulsar wind nebula").
+    rate_per_year: 0.001160
+    convergence_year: 1130
+    # The outline's size is the spectra's, of November 2016.
+    epoch_year: 2016.9
+    max: 4
+    source: "Martin et al. 2021 (quoting Nugent 1998, PASP 110, 831, and Stephenson & Green 2002 for 1054); the power law between is Space Radar's"
 colours:
   mode: enhanced
   lines: {}
-  note: "FALSE COLOUR. The photograph's own: narrow filters for oxygen in two states and sulphur, mapped to colours by the picture's makers; shown with each exposure's stretch as the photograph is"
+  note: "ILLUSTRATIVE. The filaments' and the glow's colours are taken from Hubble's false-colour mosaic at the same place on the sky (narrow filters for oxygen in two states and sulphur, mapped to colours by the picture's makers); the pulsar's wind is X-ray light drawn violet-blue"
   enhanced:
     mode: enhanced
     under: deep
     lines: {}
-    note: "Deep: the photograph's own Deep stretch on top of its false colour"
-drawn: [reconstruction]
+    note: "Deep: brighter, on top of the same illustrative colours"
+drawn: [model]
 sources:
   - "Martin, T., Milisavljevic, D. & Drissen, L. 2021, 3D mapping of the Crab Nebula with SITELLE. I. Deconvolution and kinematic reconstruction, MNRAS 502, 1864 (https://arxiv.org/abs/2101.02709)"
-  - "Ng, C.-Y. & Romani, R. W. 2004, Fitting pulsar wind tori, ApJ 601, 479 (https://arxiv.org/abs/astro-ph/0310155): the Crab's outer torus at position angle 126.3 degrees, its axis 63.0 degrees from the line of sight"
+  - "Ng, C.-Y. & Romani, R. W. 2004, Fitting pulsar wind tori, ApJ 601, 479 (https://arxiv.org/abs/astro-ph/0310155): the Crab's outer torus at position angle 126.3 degrees, its axis 63.0 degrees from the line of sight, radius 41.33 arcsec, flow 0.55 c; the inner ring 15.6 arcsec, 0.49 c"
+  - "Ng, C.-Y. & Romani, R. W. 2008, Fitting pulsar wind tori. II. Error analysis and applications, ApJ 673, 411 (https://arxiv.org/abs/0710.4168): the same fit with systematic errors; the jets bend and change"
+  - "NASA/CXC, The Crab Nebula in 3D (https://chandra.si.edu/deadstar/crab.html): 'The inner ring is about one light year across', the check on the ring's size"
   - "Kaplan, D. L. et al. 2008, ApJ 677, 1201: the pulsar's proper motion and the explosion centre"
   - "Trimble, V. 1973, PASP 85, 579: the distance, 2 kpc (1.7 to 2.4)"
   - "ESA/Hubble heic0515a (CC BY 4.0), the photograph the app already shows: the hero's LIGHT (its stars removed)"
 review:
-  data_vs_model: "Measured: the distance, the centre, the torus axis's direction and tilt, the envelope's reach along it and the inner void (Martin et al. 2021), and the light (the photograph). Reconstructed: the envelope as an ellipsoid with equal minor axes, which end of its axis is nearer (assumed), the shell's depth along our line, the inner surface drawn at 0.75 pc rather than 0.5, and the share of the light given to the wind nebula inside (20 %); both illustrative"
-  geometry: "Martin et al. 2021 for the envelope and the void; Ng & Romani 2004 for the axis; the heart shape they find is not drawn (an ellipsoid stands for it, as their own fit does)"
-  colours: "The photograph's own false colour, declared on the card; Deep declared enhanced"
+  data_vs_model: "Measured: the distance, the centre, the outline's reach along the pulsar's axis, the empty middle, the pinched waist, the two lobes 120 degrees apart and the honeycomb's scale (Martin et al. 2021); the wind's two rings, their axis, radii and flow speed (Ng & Romani 2004, 2008); the growth rate (Nugent 1998 as Martin et al. quote it). Modelled: each filament's place (a honeycomb of the measured scale, not the real filaments), the valley's depth and the lobe's width, the glow's shape, the jets' length and speed, which end of the axis is nearer, the growth as a power law from 1054. Illustrative: the colours (the mosaic's false colour for the gas, violet-blue for the X-ray wind) and the filaments' thickness. The card says each"
+  geometry: "Martin et al. 2021 for the outline, the void, the waist, the lobes and the honeycomb's scale; Ng & Romani 2004 and 2008 for the rings and the axis. The real heart shape is known only from the paper's words and figures (its data cube is not public): the model follows the words"
+  colours: "Illustrative, declared on the card: Hubble's false-colour mosaic sampled at each place on the sky; X-rays drawn violet-blue; Deep declared enhanced"
   distance: "6 500 ly, the record's (2.0 kpc, Trimble 1973), as Martin et al. 2021 adopt; lengths on the sky are scaled to it"
-  credits: "CREDITS.md section 3l, Remnants and dust (0076 W3-c); the card's rows name the reconstruction and that no astronomer has reviewed it"
+  credits: "CREDITS.md section 3l, Remnants and dust (0076 W3-c); the card's rows name the model and that no astronomer has reviewed it"
   by: "Space Radar maintainers"
-  date: 2026-10-17
+  date: 2026-11-16
   astronomer: "not yet: the independent review is internal #785; the card says so"
 credits:
-  - "The Crab Nebula's 3D envelope: Martin, Milisavljevic & Drissen 2021, MNRAS 502, 1864; its axis: Ng & Romani 2004, ApJ 601, 479; reconstructed by Space Radar"
+  - "The Crab Nebula's outline and the scale of its filaments: Martin, Milisavljevic & Drissen 2021, MNRAS 502, 1864; the pulsar wind's rings and axis: Ng & Romani 2004, ApJ 601, 479, and 2008, ApJ 673, 411; modelled by Space Radar"
   - "Its light: the photograph heic0515a, NASA, ESA and Allison Loll/Jeff Hester (Arizona State University), acknowledgement Davide De Martin (ESA/Hubble) (CC BY 4.0), its stars removed by Space Radar"

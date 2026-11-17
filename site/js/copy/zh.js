@@ -1067,7 +1067,8 @@ export const COPY = {
     "exoticDeparture": {
       "pulseSlowed": "它的闪烁画得比它自转慢 {n} 倍，这样眼睛才跟得上",
       "pulseTrue": "它的闪烁按它自转的速率画出",
-      "portrait": "这张卡片打开时，它的位置上会画出一个它的模型，比从这里看到的大得多：阴影和被它弯折的光，按它的质量产生的效果画出，圆盘是模拟的"
+      "portrait": "这张卡片打开时，它的位置上会画出一个它的模型，比从这里看到的大得多：阴影和被它弯折的光，按它的质量产生的效果画出，圆盘是模拟的",
+      "sstars": "当你靠近到大约一光年以内时，环绕它的恒星会画在它们测得的轨道上：共 39 颗（S2 取自 GRAVITY 的拟合，其余取自 Gillessen 等人，2017），每颗恒星在轨道上的位置由时钟决定；它们的大小和颜色是示意性的，黑洞的画面则为它们让路"
     },
     "worldDeparture": {
       "earth": "在较大的屏幕上，它的山脉取自 NOAA 的 ETOPO 2022 高程数据，画得比实际陡 {relief} 倍，这样低角度的太阳才能照出它们；它边缘大气的光晕，画得比实际的大气高 {air} 倍；在较大的屏幕上从近地轨道看，它的云朝地平线竖起，并在低角度的太阳下伸展，画得比实际厚 {clouds} 倍，这样才能看出它们的倾斜、长长的影子和云顶上最后的光（在“实测”外观里按真实厚度画）；每个云顶的高度，在今天的卫星图覆盖的地方由实测温度得出，其他地方由云图的亮度得出",
@@ -2590,7 +2591,8 @@ export const COPY = {
   "source": {
     "prefix": "来源",
     "unknown": "没有记录来源",
-    "fetched": "{age}读取"
+    "fetched": "{age}读取",
+    "waypoint": "位置：NASA 第 {sol} 个火星日的航路点（{date}）"
   },
   "photo": {
     "title": "构图拍照",
@@ -3728,29 +3730,16 @@ export const COPY = {
   },
   "r12Dust": {
     "card": {
-      "crab": "它的光取自 哈勃的照片，是伪彩色，附着在一层外壳上，外壳的形状依据 Martin、Milisavljevic 和 Drissen (2021)：一个约 4 秒差距长的纤维笼子，中间是空的。还没有经过天文学家审阅。",
+      "crab": "一个由纤维组成的笼子，围着脉冲星风的辉光，画在 Martin、Milisavljevic 和 Drissen (2021) 测得的轮廓上。每根纤维的位置是模型给出的，颜色取自哈勃的伪彩色图片。还没有经过天文学家审阅。",
       "veil": "它的光取自 NOIRLab 的照片，是伪彩色，附着在一个宽 37 秒差距的薄球壳上 (Fesen 等人，2018)：那些纤维就是它的边缘，从侧面看到的样子。还没有经过天文学家审阅。",
       "horsehead": "它的暗，是从 NOIRLab 的照片里读出来的：尘埃在 IC 434 发光的气体前面，吸收并染红了它后面的东西，自己不发光。还没有经过天文学家审阅。",
-      "coalsack": "它的暗，是从它周围的银河读出来的：一团大约在 590 光年之外的尘埃，让它后面的恒星变暗、变红。还没有经过天文学家审阅。",
+      "coalsack": "它的暗，是从它周围的银河读出来的：一团大约在 590 光年之外的尘埃，让它后面的恒星变暗、变红。它的轮廓是测得的，纵深是模型给出的。还没有经过天文学家审阅。",
       "m78": "它的光来自 NOIRLab 的照片：尘埃散射着它前方那颗恒星的蓝光，在一团暗云的表面上。它的纵深是重建的。还没有经过天文学家审阅。",
       "iris": "它的光来自 NOIRLab 的照片：尘埃散射着年轻恒星 HD 200775 的光，在它那团云的一个凹处里。它的纵深是重建的。还没有经过天文学家审阅。",
       "m45": "它的光来自 NOIRLab 的照片：一团尘埃飘过星团，就在恒星的前面，散射着它们的蓝光 (Ritchey 等人，2006)。它的纵深是重建的。还没有经过天文学家审阅。"
     },
     "rows": {
-      "dso-m1": [
-        [
-          "它的纵深形状",
-          "根据实测的轮廓重建。那些纤维沿着脉冲星风的轴线延伸约 2 秒差距，离中心半秒差距以内一根也没有 (Martin 等人，2021)。画成沿那条轴线的椭球；哪一端离我们更近，是假设的。"
-        ],
-        [
-          "它的颜色",
-          "伪彩色：照片里氧和硫的窄带滤镜，由图片的制作者映射成颜色。"
-        ],
-        [
-          "审阅",
-          "这个模型还没有经过天文学家审阅。"
-        ]
-      ],
+      "dso-m1": [["它的形状","轮廓是测得的，纤维是模型。沿着脉冲星的轴，离中心 2 秒差距以外没有气体，半秒差距以内也没有；腰部收窄，有两个瓣突出来（Martin 等人，2021）。纤维组成的蜂窝大小与测得的一致，但每一根画在哪里是模型给出的。"],["脉冲星风","环是测得的，喷流是模型。两个 X 射线环围着脉冲星，内环宽一光年，它们相对我们的视线倾斜 63 度。气体以一半光速离开环，所以朝观看者运动的一侧更亮（Ng 和 Romani，2004 和 2008）。喷流的长度是模型给出的。"],["它的颜色","示意的。纤维和辉光的颜色取自哈勃伪彩色图片上天空中的同一位置。脉冲星风是 X 射线，人眼看不见，这里画成蓝紫色。"],["随时钟变化","人们在 1054 年看到这颗恒星爆炸，这团云每年大约长大千分之一（测得）。模型从 1054 年起随应用的时钟长大；几百年里增长怎样变化，是模型给出的。"],["审阅","这个模型还没有经过天文学家审阅。"]],
       "dso-veil-nebula": [
         [
           "它的纵深形状",
@@ -3779,20 +3768,7 @@ export const COPY = {
           "这个模型还没有经过天文学家审阅。"
         ]
       ],
-      "dso-coalsack": [
-        [
-          "它有多暗",
-          "是从这里的银河比附近、离银河中线同样距离的地方暗多少读出来的。这是估计值，比红外地图给出的低，因为云前面的恒星加上了它们的光。"
-        ],
-        [
-          "尘埃做了什么",
-          "它只吸收：它后面的恒星被减弱、被染红。它前面的恒星则不会。东北方向的一部分暗，是远在后面的第二团云，这里画在了近处的距离上。"
-        ],
-        [
-          "审阅",
-          "这个模型还没有经过天文学家审阅。"
-        ]
-      ],
+      "dso-coalsack": [["它的轮廓和纵深","轮廓是在这里画出的银河图上测得的（NASA，依据 Gaia 的恒星计数）：一块约 7 度乘 4 度的暗区。附近的暗斑是别的云，没有画进来。纵深是模型给出的：一层薄而起伏的片，位于同一个距离上。"],["它有多暗","是从这里的银河比附近、离银河中线同样距离的地方暗多少读出来的。这是估计值，比红外地图给出的低，因为云前面的恒星加上了它们的光。"],["尘埃做了什么","它只吸收：它后面的恒星被减弱、被染红。它前面的恒星则不会。东北方向的一部分暗，是远在后面的第二团云，这里画在了近处的距离上。"],["审阅","这个模型还没有经过天文学家审阅。"]],
       "dso-m78": [
         [
           "它的纵深形状",
@@ -5780,7 +5756,7 @@ COPY.truth.exoPacked = "我们 {date} 的压缩副本"; // forge #88: which list
 COPY.truth.exoLive = "档案馆的列表，读取于 {date}";
 // The deep-sky catalogue's type phrases (data/dso.json `typeText`), lowercased, in this language: the card's lead and its
 // "What it is" row read them through RULES.typeWords; a phrase not here stays English, which is data.
-const S1_TYPES = {"globular cluster": "球状星团", "open cluster": "疏散星团", "dwarf spheroidal galaxy": "矮椭球星系", "spiral galaxy": "旋涡星系", "emission nebula": "发射星云", "planetary nebula": "行星状星云", "dwarf irregular galaxy": "矮不规则星系", "barred spiral galaxy": "棒旋星系", "elliptical galaxy": "椭圆星系", "lenticular galaxy": "透镜状星系", "h ii region nebula with cluster": "带星团的电离氢区", "dwarf elliptical galaxy": "矮椭圆星系", "h ii region nebula": "电离氢区", "barred irregular galaxy": "棒状不规则星系", "ultra-faint dwarf galaxy": "超暗弱矮星系", "dark nebula": "暗星云", "young open cluster in an emission nebula": "发射星云中的年轻疏散星团", "supernova remnant": "超新星遗迹", "nebula with cluster": "带星团的星云", "milky way star cloud": "银河星云", "optical double": "光学双星", "asterism": "星群", "diffuse nebula": "弥漫星云", "starburst galaxy": "星暴星系", "dwarf irregular starburst galaxy": "矮不规则星暴星系", "transition dwarf galaxy, part irregular, part spheroidal": "过渡型矮星系，部分不规则、部分椭球", "barred irregular galaxy, seen edge-on": "棒状不规则星系，侧向可见", "ultra-faint dwarf galaxy, or perhaps a star cluster": "超暗弱矮星系，也可能是星团", "transition dwarf galaxy, part spheroidal, part irregular": "过渡型矮星系，部分椭球、部分不规则", "spiral galaxy, seen nearly edge-on and bursting with new stars": "旋涡星系，近乎侧向可见，充满新生恒星", "peculiar galaxy with a giant black hole firing radio jets": "特殊星系，中心巨型黑洞喷出射电喷流", "pair of open clusters": "一对疏散星团", "spiral galaxy seen exactly edge-on": "完全侧向的旋涡星系", "reflection nebula": "反射星云", "reflection and emission nebula": "反射兼发射星云", "spiral galaxy seen edge-on": "侧向的旋涡星系", "barred spiral galaxy seen edge-on": "侧向的棒旋星系", "spiral galaxy seen face-on": "正向的旋涡星系", "barred spiral galaxy seen nearly edge-on": "近乎侧向的棒旋星系", "pair of colliding galaxies": "一对正在碰撞的星系"};
+const S1_TYPES = {"two-lobed nebula of dust and gas": "由尘埃和气体构成的双叶星云", "globular cluster": "球状星团", "open cluster": "疏散星团", "dwarf spheroidal galaxy": "矮椭球星系", "spiral galaxy": "旋涡星系", "emission nebula": "发射星云", "planetary nebula": "行星状星云", "dwarf irregular galaxy": "矮不规则星系", "barred spiral galaxy": "棒旋星系", "elliptical galaxy": "椭圆星系", "lenticular galaxy": "透镜状星系", "h ii region nebula with cluster": "带星团的电离氢区", "dwarf elliptical galaxy": "矮椭圆星系", "h ii region nebula": "电离氢区", "barred irregular galaxy": "棒状不规则星系", "ultra-faint dwarf galaxy": "超暗弱矮星系", "dark nebula": "暗星云", "young open cluster in an emission nebula": "发射星云中的年轻疏散星团", "supernova remnant": "超新星遗迹", "nebula with cluster": "带星团的星云", "milky way star cloud": "银河星云", "optical double": "光学双星", "asterism": "星群", "diffuse nebula": "弥漫星云", "starburst galaxy": "星暴星系", "dwarf irregular starburst galaxy": "矮不规则星暴星系", "transition dwarf galaxy, part irregular, part spheroidal": "过渡型矮星系，部分不规则、部分椭球", "barred irregular galaxy, seen edge-on": "棒状不规则星系，侧向可见", "ultra-faint dwarf galaxy, or perhaps a star cluster": "超暗弱矮星系，也可能是星团", "transition dwarf galaxy, part spheroidal, part irregular": "过渡型矮星系，部分椭球、部分不规则", "spiral galaxy, seen nearly edge-on and bursting with new stars": "旋涡星系，近乎侧向可见，充满新生恒星", "peculiar galaxy with a giant black hole firing radio jets": "特殊星系，中心巨型黑洞喷出射电喷流", "pair of open clusters": "一对疏散星团", "spiral galaxy seen exactly edge-on": "完全侧向的旋涡星系", "reflection nebula": "反射星云", "reflection and emission nebula": "反射兼发射星云", "spiral galaxy seen edge-on": "侧向的旋涡星系", "barred spiral galaxy seen edge-on": "侧向的棒旋星系", "spiral galaxy seen face-on": "正向的旋涡星系", "barred spiral galaxy seen nearly edge-on": "近乎侧向的棒旋星系", "pair of colliding galaxies": "一对正在碰撞的星系"};
 const S1_PLACES = [[" in the large magellanic cloud", "（位于大麦哲伦云）"], [" in the small magellanic cloud", "（位于小麦哲伦云）"], [" in the milky way", "（位于银河系）"], [" in the local group", "（位于本星系群）"]];
 RULES.typeWords = (text) => {
   let base = String(text || '').trim();
@@ -6337,3 +6313,124 @@ Object.assign(COPY, {
   }
 });
 // internal #442: end
+// ds2: begin -- the words of the Homunculus Nebula and Cassiopeia A (copy/en.deepdata.js), machine-drafted
+Object.assign(COPY, {
+  "deepHomunculus": {
+    "card": {
+      "homunculus": "它的形状是一个已发表的三维模型，由星云各部分的实测速度构建（Steffen 等，2014），按 Smith（2006）的测量转向并定标。亮度和斑驳感是示意性的。模型：美国国家航空航天局戈达德太空飞行中心/Ed Campion 与 UNAM/W. Steffen，经欧洲南方天文台提供。尚未经天文学家审阅。"
+    },
+    "rows": {
+      "dso-homunculus-nebula": [
+        [
+          "形状",
+          "实测。用欧洲南方天文台甚大望远镜沿星云 92 条狭缝读出的氢气多普勒位移构建的三维模型（Steffen 等，2014）。每个极点的空洞、围绕它的沟槽和腰部附近的两处隆起都在数据里。"
+        ],
+        [
+          "倾角与大小",
+          "实测。远端的瓣指向西北，偏离视线 41°；近端的瓣同样角度朝向我们。2005 年每个极点距恒星 21 690 个日地距离（Smith，2006）。"
+        ],
+        [
+          "它在膨胀",
+          "自 1840 年代的爆发以来，每一部分都以各自的速度笔直向外飞散，所以它的大小随时钟日期变化。爆发之前不绘制。"
+        ],
+        [
+          "表面",
+          "示意性。亮度和斑驳感代表被恒星从内部照亮的尘埃；模型只包含形状。“实测”外观会去掉斑驳感。"
+        ],
+        [
+          "三维模型",
+          "美国国家航空航天局戈达德太空飞行中心/Ed Campion 与 UNAM/W. Steffen，经欧洲南方天文台提供（CC BY 4.0）。没有移动任何一个点。"
+        ],
+        [
+          "审阅",
+          "这幅图尚未经天文学家审阅。"
+        ]
+      ]
+    },
+    "how": "朝我们而来的气体光线偏蓝，远离的偏红，而人形星云自 1840 年代起均匀膨胀，所以一个点沿视线的速度也说明它在恒星之前还是之后、有多远。天文学家沿星云 92 条狭缝读出其氢气的速度，并据此构建了它的形状（Steffen 等，2014）。"
+  },
+  "deepCasA": {
+    "card": {
+      "casa": "每个点都是测到该气体的位置：它朝向或远离我们的速度给出深度（DeLaney 等，2010）。颜色是图例，不是眼睛会看到的样子。模型：NASA/CXC/MIT/T. Delaney 等。尚未经天文学家审阅。"
+    },
+    "rows": {
+      "dso-cassiopeia-a": [
+        [
+          "绿色",
+          "钱德拉望远镜在 X 射线中看到的铁。位置为实测。"
+        ],
+        [
+          "黄色",
+          "在 X 射线和红外光中看到的氩和硅，以及在可见光中看到的两道喷流和外围团块。位置为实测。"
+        ],
+        [
+          "红色",
+          "中央的冷硅，由斯皮策望远镜在红外光中看到：向内的激波尚未加热的残骸。位置为实测。"
+        ],
+        [
+          "蓝色外壳",
+          "外层冲击波，距中心 153 角秒。为模型：一个实测大小的光滑球体，代替真实的纤维结构，与钱德拉自己的模型一样。"
+        ],
+        [
+          "白点",
+          "爆炸留下的中子星。它在天空中的位置是实测的；深度不是。"
+        ],
+        [
+          "如何得知深度",
+          "爆炸以来残骸从一点笔直飞出，所以朝我们运动的气体在该点之前，远离的在其后：每 1 000 公里/秒对应 22 角秒的深度。"
+        ],
+        [
+          "它在膨胀",
+          "在时钟上，每一部分按各自的实测速率膨胀：自由残骸每年 0.3 %，减速的 X 射线气体 0.2 %，冲击波约 4 900 公里/秒。1671 年之前不绘制。"
+        ],
+        [
+          "亮度",
+          "模型中没有。同一种颜色的每个点同样亮，其大小是数据的清晰度，不是团块的大小。"
+        ],
+        [
+          "三维模型",
+          "NASA/CXC/MIT/T. Delaney 等，取自钱德拉 X 射线中心的文件。已精简为 24 219 个点。"
+        ],
+        [
+          "审阅",
+          "这幅图尚未经天文学家审阅。"
+        ]
+      ]
+    },
+    "how": "每种化学元素都以自己的颜色发光，靠近或远离的气体会使其移位，所以能分光的望远镜可以得知每一片铁、硅或氩沿视线的运动速度。由于一切都在约 350 年前从一点飞出，这个速度也就是在该点之前或之后的距离：钱德拉的 X 射线和斯皮策的红外光合起来，给出了第一张爆炸恒星的三维地图（DeLaney 等，2010）。"
+  }
+});
+// ds2: end
+// A constellation seen from the side (ui/figureside.js, copy/en.side.js): begin
+COPY.figureSide = {
+  "open": "从侧面看",
+  "openTitle": "离开太阳，看{name}散开",
+  "searchRow": "从侧面看{name}",
+  "searchSub": "离开太阳，看图形散开",
+  "title": "从侧面看{name}",
+  "loading": "正在载入恒星的距离…",
+  "lede": "从太阳看，这些恒星连成一个图形。它们各有各的距离，所以从侧面看，图形就散开了。",
+  "angle": "向侧面转多少",
+  "where": "偏向侧面 {deg}°，距太阳 {ly} 光年",
+  "home": "在太阳处：我们看到的图形",
+  "range": "它的恒星距我们 {near} 到 {far} 光年。",
+  "play": "飞出去",
+  "playTitle": "离开太阳，用二十秒转到侧面",
+  "pause": "暂停",
+  "jump": "转到侧面",
+  "back": "回到太阳",
+  "another": "换一个图形",
+  "honest": "实测：每颗恒星的位置，来自它的视差（依巴谷和盖亚，HYG 星表）；最远的最不确定。传统：恒星之间的连线。",
+  "unplaced": "它有 {n} 个角没有实测距离的恒星：画在图形的中间距离上。",
+  "close": "关闭侧面视图",
+  "unknown": "这里没有画这个名字的星座图形。",
+  "inTrip": "请先离开旅程，再从侧面看图形。",
+  "failed": "恒星的距离没有载入。请稍后再试。",
+  "names": {
+    "bigDipper": "北斗七星"
+  },
+  "notes": {
+    "bigDipper": "七颗星里有五颗确实结伴而行，距我们约 80 光年。两端的天枢和摇光则不是。"
+  }
+};
+// A constellation seen from the side: end

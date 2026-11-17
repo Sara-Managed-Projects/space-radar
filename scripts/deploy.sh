@@ -519,6 +519,10 @@ if [ "$WHAT" != "assets" ]; then
     --exclude "*" --include "*.html" --content-type "text/html; charset=utf-8" --delete
   "${SYNC[@]}" "$BUILT/press" "s3://$BUCKET/press" --cache-control "$REVALIDATE" \
     --exclude "*" --include "*.webp" --content-type "image/webp" --delete
+  # The social preview is a PNG (assets/social-preview.png, the kit's one non-WebP picture). No sync here named *.png until
+  # 2026-11 (internal #474), so every press page pointed at a file that was never uploaded and answered 404.
+  "${SYNC[@]}" "$BUILT/press" "s3://$BUCKET/press" --cache-control "$REVALIDATE" \
+    --exclude "*" --include "*.png" --content-type "image/png" --delete
   "${SYNC[@]}" "$BUILT/press" "s3://$BUCKET/press" --cache-control "$REVALIDATE" \
     --exclude "*" --include "*.svg" --content-type "image/svg+xml" --delete
   # The root files, each with its own type: the CLI guesses from the extension, and a sitemap

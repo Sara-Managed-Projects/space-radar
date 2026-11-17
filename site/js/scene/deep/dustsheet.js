@@ -25,7 +25,9 @@
 //           relief: it is lifted away from the light by up to `half_ly` where it is thickest (sqrt(tau / tau_max)), in
 //           its vertex shader, so turned it is a lumpy cloud, not a flat card. A catalogue star IN FRONT of the dust
 //           (scripts/build_deep_sheets.py lists them) is kept clear: a disc its own size is left round each one on the
-//           camera's side of the dust.
+//           camera's side of the dust. Which stars a pixel tests is found per corner of the grid (the two nearest its
+//           line of sight, carried flat across each triangle), not by walking the list for every pixel: that walk
+//           was 7.7 times the frame on a phone, the reason the Coalsack was held until 2026-11-16.
 //   light   additive: the light layer's glow; the dust in front of it, drawn after it, dims and reddens it. For a
 //           reflection nebula it is weighted by a Henyey-Greenstein phase function of the angle star - dust - eye
 //           against that angle seen from here (1 on our line). The light is only where the photograph has it.
@@ -296,6 +298,12 @@ uniform float uRelief;      // ly at full optical depth, signed (away from the l
 uniform float uChannel;     // 0: red (front), 1: green (behind)
 varying vec2 vUv;
 varying vec3 vPos;
+#ifdef GAS_ABSORB
+uniform vec3 uCam;
+uniform vec4 uKeep[ ${MAX_KEEP} ];   // xyz: a kept star in the sky frame; w: the cosine of its disc's radius
+uniform int uKeepN;
+flat varying vec2 vKeepIdx;  // the two kept stars nearest this corner's line of sight (-1: none)
+#endif
 #include <common>
 #include <logdepthbuf_pars_vertex>
 void main() {
@@ -308,6 +316,19 @@ void main() {
     z += uRelief * v;          // sqrt(tau / tau_max) is the channel's own value
   }
   vPos = vec3( xy, z );
+  #ifdef GAS_ABSORB
+  // THE KEPT STARS, FOUND PER CORNER (the lead's condition on #1215: the list was walked for every pixel, 48 times, and on
+  // a phone that was 7.7 times the frame). Each corner of the grid finds the two listed stars nearest its line of sight;
+  // a triangle takes its last corner's pair (flat, not interpolated), and a pixel tests those two discs only.
+  vec3 rdv = normalize( vPos - uCam );
+  float c0 = -2.0, c1 = -2.0, i0 = -1.0, i1 = -1.0;
+  for ( int i = 0; i < ${MAX_KEEP}; i++ ) {
+    if ( i >= uKeepN ) break;
+    float c = dot( normalize( uKeep[ i ].xyz - uCam ), rdv );
+    if ( c > c0 ) { c1 = c0; i1 = i0; c0 = c; i0 = float( i ); } else if ( c > c1 ) { c1 = c; i1 = float( i ); }
+  }
+  vKeepIdx = vec2( i0, i1 );
+  #endif
   gl_Position = projectionMatrix * modelViewMatrix * vec4( vPos, 1.0 );
   #include <logdepthbuf_vertex>
 }
@@ -341,6 +362,12 @@ uniform vec3 uK;            // A(lambda) / A(V) at red, green and blue (Cardelli
 uniform vec4 uKeep[ ${MAX_KEEP} ];   // xyz: a kept star in the sky frame; w: the cosine of its disc's radius
 uniform int uKeepN;
 uniform float uKeepIn;      // the feather: the disc's inner cosine is 1 - (1 - w) x this
+flat varying vec2 vKeepIdx;  // the two kept stars this triangle tests (the vertex shader finds them)
+float keepOf( float idx, vec3 rd ) {
+  if ( idx < 0.0 ) return 0.0;
+  vec4 s = uKeep[ int( idx + 0.5 ) ];
+  return smoothstep( s.w, 1.0 - ( 1.0 - s.w ) * uKeepIn, dot( normalize( s.xyz - uCam ), rd ) );
+}
 #include <common>
 #include <logdepthbuf_pars_fragment>
 void main() {
@@ -352,13 +379,7 @@ void main() {
   float tau = uTauMax * v * v * coverSheet( vUv, uEdge ) * grazeOf( abs( rd.z ) );
   if ( tau < 0.002 ) discard;
   // what is behind keeps T = exp(-tau k) of its light; on display values that is T^(1/2.2) = exp(-tau k / 2.2)
-  float keep = 0.0;
-  for ( int i = 0; i < ${MAX_KEEP}; i++ ) {
-    if ( i >= uKeepN ) break;
-    float c = dot( normalize( uKeep[ i ].xyz - uCam ), rd );
-    float w = uKeep[ i ].w;
-    keep = max( keep, smoothstep( w, 1.0 - ( 1.0 - w ) * uKeepIn, c ) );
-  }
+  float keep = max( keepOf( vKeepIdx.x, rd ), keepOf( vKeepIdx.y, rd ) );
   vec3 Td = mix( exp( -tau * uK * ${f3(1 / 2.2)} ), vec3( 1.0 ), keep );   // T^(1/2.2), one exp
   gl_FragColor = vec4( mix( vec3( 1.0 ), Td, uShare ), 1.0 );
 }

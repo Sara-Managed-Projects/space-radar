@@ -160,6 +160,8 @@ export const VISUAL_CLASSES = [
 "deimos"
 ],
 "sites": [
+"octavia-e-butler-landing",
+"bradbury-landing",
 "vostok-1-landing",
 "voskhod-2-landing",
 "edwards-afb-runway-23",
@@ -1338,12 +1340,14 @@ export const VISUAL_CLASSES = [
 "members": {
 "dso": [
 "dso-m78",
+"dso-homunculus-nebula",
 "dso-iris-nebula"
 ],
 "photographs": [
 "dso-m45"
 ],
 "heroes": [
+"dso-homunculus-nebula",
 "dso-iris-nebula",
 "dso-m45",
 "dso-m78"
@@ -1357,13 +1361,15 @@ export const VISUAL_CLASSES = [
 "members": {
 "dso": [
 "dso-m1",
-"dso-veil-nebula"
+"dso-veil-nebula",
+"dso-cassiopeia-a"
 ],
 "photographs": [
 "dso-m1",
 "dso-veil-nebula"
 ],
 "heroes": [
+"dso-cassiopeia-a",
 "dso-m1",
 "dso-veil-nebula"
 ]

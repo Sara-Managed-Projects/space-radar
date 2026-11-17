@@ -411,6 +411,7 @@
  "b758c5c215": "Le premier trou noir dont on a été sûr, découvert en {n1} grâce à ses rayons X. Il dévore une supergéante bleue, HDE {n2}.",
  "02d124a23a": "Trou noir",
  "517a174794": "La carte dessine un anneau à sa distance mesurée ; un trou noir n’a pas de forme à dessiner et un pulsar est bien trop petit — le type d’objet, pas cet objet précis · quand cette fiche est ouverte, un modèle de l’objet est dessiné à sa place, bien plus grand qu’il ne paraîtrait d’ici : l’ombre et la lumière courbée autour, telles que sa masse les produit, avec un disque modélisé.",
+ "d4c77946c8": "La carte dessine un anneau à sa distance mesurée ; un trou noir n’a pas de forme à dessiner et un pulsar est bien trop petit — le type d’objet, pas cet objet précis · quand cette fiche est ouverte, un modèle de l’objet est dessiné à sa place, bien plus grand qu’il ne paraîtrait d’ici : l’ombre et la lumière courbée autour, telles que sa masse les produit, avec un disque modélisé · les étoiles qui tournent autour de lui sont dessinées sur leurs orbites mesurées quand on s’en approche à environ une année-lumière : {n1} d’entre elles (S2 d’après l’ajustement de GRAVITY, les autres d’après Gillessen et al., {n2}), chacune là où l’horloge la place sur son orbite ; leurs tailles et leurs couleurs sont illustratives, et l’image du trou leur cède la place.",
  "6c06fafecf": "Source : <1>https://en.wikipedia.org/wiki/Cygnus_X-{n1}</1> (infobox, lue le {n2}-{n3}-{n4}) ; distance et masse : Miller-Jones et al. {n5} (arXiv:{n6})",
  "bb9ecb6aff": "{name} est un engin spatial dans le Système solaire. La carte 3D en direct montre sa position en ce moment.",
  "c8a8f2e9e2": "Le premier engin spatial en orbite autour de deux mondes au-delà de la Terre : l’astéroïde Vesta en {n1} et {n2}, puis la planète naine Cérès à partir de {n3}.",
@@ -939,7 +940,6 @@
  "0f2609ae51": "Elle a été photographiée directement en {n1}, point faible à côté de l’éclat de son étoile. Son orbite est plus éloignée de son étoile que la zone habitable calculée pour elle. La table composite de l’Archive lui donne {n2} ua, ce qui ne s’accorde pas avec la troisième loi de Kepler ; la page utilise la distance de Keppler et al. {n3}, un seul article dont la période et la masse de l’étoile, elles, s’y accordent.",
  "3a9ac54961": "Source : NASA Exoplanet Archive, table Planetary Systems Composite Parameters (DOI de la table <1>{n1}/NEA13</1>), consultée le {n2}-{n3}-{n4} ; https://exoplanetarchive.ipac.caltech.edu/overview/PDS%{n5}. Zone habitable : Kopparapu et al. {n6}, <2>ApJ Letters {n7}, L29</2>. Les températures supposent la réflectivité de la Terre ({n8}). Cette page a été construite le {n9}-{n10}-{n11} à partir de ces registres ; les chiffres ne sont pas en direct.",
  "aed02bb526": "{n1}, par E. Karkoschka",
- "ed84e6abf6": "Un rover de la taille d’une voiture, qui collecte des échantillons de roche dans un cratère où se trouvait autrefois le delta d’une rivière.",
  "aabb82c6da": "Le dessin suit un modèle publié de Perseverance.",
  "011bb6c050": "{name} est un objet géocroiseur, sur sa propre orbite autour du Soleil. C’est la source des Géminides.",
  "e8b37bd7eb": "C’est la source des Géminides. Son orbite passe plus près du Soleil que celle de Mercure, et là, de la poussière s’en détache.",
@@ -1349,5 +1349,10 @@
  "6ab7ec5b64": "Pas un couple : deux étoiles sans lien qui se trouvent alignées par hasard. L’une est à environ {n1} années-lumière et l’autre à environ {n2}, donc il n’y a pas une seule distance à donner.",
  "2b470163bf": "Source : position : OpenNGC (CC BY-SA {n1}) ; distance : parallaxes Gaia DR3 de ses deux étoiles, lues sur SIMBAD : HD {n2} {n3} mas ({n4} années-lumière, là où la marque est placée) et HD {n5} {n6} mas ({n7} années-lumière)",
  "b5a2ff2c2f": "{name} est un télescope spatial autour de la Terre. Le télescope à rayons X de l’Europe, le plus grand satellite scientifique jamais construit en Europe.",
- "5ff1b6dc56": "Le télescope à rayons X de l’Europe, le plus grand satellite scientifique jamais construit en Europe."
+ "5ff1b6dc56": "Le télescope à rayons X de l’Europe, le plus grand satellite scientifique jamais construit en Europe.",
+ "c90413fd85": "C’est ici que Curiosity s’est posé le {d1}. Le rover a repris la route et a son propre repère.",
+ "3262df82d7": "C’est ici que Perseverance s’est posé le {d1}. Le rover a repris la route et a son propre repère.",
+ "cbdf08776a": "Un rover de la taille d’une voiture, qui récolte des échantillons de roche. Il s’est posé dans le cratère Jezero en {n1} et a depuis grimpé et franchi le bord ouest du cratère.",
+ "3bf96d01d2": "Source : position : Hunt & Reffert {n1}, A&A {n2}, A114 (VizieR J/A+A/{n3}/A114), le centre de ses membres Gaia DR3 ; distance : Hunt & Reffert {n4} (arXiv:{n5}), médiane de {n6} membres Gaia DR3",
+ "3b0df8fa45": "Source : position : SIMBAD (NGC {n1} ; Tarricq et al. {n2}, A&A {n3}, A19) ; distance : <1>https://en.wikipedia.org/wiki/List_of_Messier_objects</1>"
 }

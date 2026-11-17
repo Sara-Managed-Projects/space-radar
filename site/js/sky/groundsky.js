@@ -72,7 +72,7 @@ import { GLSL_SKY, exposureFor, twilightFloor } from './skyair.js';
 import { createLandscape, landscapeKind, sampleSea, seedOf, seaWords } from './landscape.js';
 import { horizonGlowStrength } from './skyview.js';
 // b200-f3-stars: begin -- the sky of another millennium (forge #141): sky/skyepoch.js is imported when the clock is far
-import { motionYears, isFar } from './starmotion.js';
+import { motionYears, starYears, isFar } from './starmotion.js';
 // b200-f3-stars: end
 
 const DEG = Math.PI / 180;
@@ -1522,14 +1522,17 @@ export function createGroundSky(ctx, env) {
       .catch((err) => { epochAsked = false; console.warn('ground sky: the star motions did not load', err); });
   }
   function updateEpoch(tMs) {
-    const years = motionYears(tMs, Date.now());
+    // The stars are always at their places of the clock's date (internal #396: proper motion is 101 arcseconds for
+    // Rigil Kentaurus by now); the readout of a moved sky is only for a clock more than 50 years from now.
+    const years = starYears(tMs);
+    const readout = motionYears(tMs, Date.now()) !== 0;
     if (years && !epochAsked) askEpoch();
     if (!epoch) return false;
     const shown = [];
     for (const c of cultures.values()) if (c.obj) shown.push(c.obj);
     if (hereCon.obj) shown.push(hereCon.obj);
     epoch.apply(years, { stars: stars && stars.points.geometry, lines: shown, names: starNames });
-    stats.epoch = epoch.state();
+    stats.epoch = readout ? epoch.state() : null;
     return epoch.hidesUnmoved(years);
   }
   // The famous variables at the clock's brightness (sky/skyvariables.js, forge #142), once the stars are up.

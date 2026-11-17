@@ -104,6 +104,7 @@ const PLACES = [
 
 // Every typeText in site/data/dso.json (2026-10-20), lowercased, and the same phrase in German after "ein/eine".
 const TYPES = {
+  'two-lobed nebula of dust and gas': "zweilappiger Nebel aus Staub und Gas",
   'globular cluster': 'Kugelsternhaufen',
   'open cluster': 'offener Sternhaufen',
   'dwarf spheroidal galaxy': 'sphäroidale Zwerggalaxie',
@@ -1156,7 +1157,8 @@ export const COPY = {
     "exoticDeparture": {
       "pulseSlowed": "sein Blinken ist {n}-mal langsamer gezeichnet, als es sich dreht, damit ein Auge ihm folgen kann",
       "pulseTrue": "sein Blinken ist so schnell gezeichnet, wie es sich dreht",
-      "portrait": "solange dieser Steckbrief offen ist, wird an seinem Ort ein Modell gezeichnet, viel größer, als es von hier aus aussähe: Schatten und gebogenes Licht, wie seine Masse sie macht, die Scheibe modelliert"
+      "portrait": "solange dieser Steckbrief offen ist, wird an seinem Ort ein Modell gezeichnet, viel größer, als es von hier aus aussähe: Schatten und gebogenes Licht, wie seine Masse sie macht, die Scheibe modelliert",
+      "sstars": "die Sterne, die es umkreisen, werden auf ihren gemessenen Bahnen gezeichnet, sobald man sich ihm auf etwa ein Lichtjahr nähert: 39 davon (S2 nach GRAVITYs Fit, die übrigen nach Gillessen u. a., 2017), jeder dort, wo ihn die Uhr auf seiner Bahn hinstellt; ihre Größen und Farben sind illustrativ, und das Bild des Lochs weicht vor ihnen zurück"
     },
     "worldDeparture": {
       "earth": "auf einem größeren Bildschirm stammen seine Berge aus den ETOPO-2022-Höhen der NOAA, {relief}-mal steiler gezeichnet, als sie sind, damit eine tiefstehende Sonne sie zeigt; das Leuchten der Luft um seinen Rand ist {air}-mal höher gezeichnet, als die Luft ist; aus niedriger Umlaufbahn stehen auf einem größeren Bildschirm seine Wolken zum Horizont hin und unter einer tiefstehenden Sonne auf, {clouds}-mal dicker gezeichnet, als sie sind, damit man ihre Neigung, ihre langen Schatten und das letzte Licht auf ihren Spitzen sehen kann (im Aussehen „Gemessen“ in ihrer wahren Dicke), die Höhe jeder Spitze aus ihrer gemessenen Temperatur, wo das heutige Bild sie abdeckt, und sonst aus der Helligkeit der Wolkenkarte",
@@ -2668,7 +2670,8 @@ export const COPY = {
   "source": {
     "prefix": "Quelle",
     "unknown": "Quelle nicht verzeichnet",
-    "fetched": "gelesen {age}"
+    "fetched": "gelesen {age}",
+    "waypoint": "Position: Wegpunkt der NASA für Sol {sol} ({date})"
   },
   "photo": {
     "title": "Ein Bild gestalten",
@@ -3740,29 +3743,16 @@ export const COPY = {
   "r12Dust": {
     "card": {
       "m45": "Sein Licht ist das Foto von NOIRLab: eine Staubwolke, die durch den Haufen zieht, knapp vor seinen Sternen, und deren blaues Licht streut (Ritchey und andere, 2006). Seine Tiefe ist rekonstruiert. Noch nicht von einem Astronomen geprüft.",
-      "crab": "Sein Licht stammt vom Foto von Hubble, in Falschfarben, getragen von einer Schale, deren Form Martin, Milisavljevic und Drissen (2021) folgt: ein Filamentkäfig von etwa 4 Parsec Länge um eine leere Mitte. Noch nicht von einem Astronomen geprüft.",
+      "crab": "Ein Käfig aus Filamenten um das Leuchten des Pulsarwinds, auf dem Umriss, den Martin, Milisavljevic und Drissen (2021) gemessen haben. Der Ort jedes Filaments ist modelliert, und die Farben folgen dem Falschfarbenbild von Hubble. Noch nicht von einem Astronomen geprüft.",
       "veil": "Sein Licht stammt vom Foto von NOIRLab, in Falschfarben, getragen von einer dünnen Kugel von 37 Parsec Durchmesser (Fesen und andere, 2018): Die Filamente sind ihr Rand, von der Kante gesehen. Noch nicht von einem Astronomen geprüft.",
       "horsehead": "Seine Dunkelheit ist aus dem Foto von NOIRLab abgelesen: Staub vor dem leuchtenden Gas von IC 434, der schluckt und rötet, was dahinter ist, und kein Licht abgibt. Noch nicht von einem Astronomen geprüft.",
-      "coalsack": "Seine Dunkelheit ist aus der Milchstraße um ihn herum abgelesen: eine Staubwolke in etwa 590 Lichtjahren Entfernung, die die Sterne dahinter abdunkelt und rötet. Noch nicht von einem Astronomen geprüft.",
+      "coalsack": "Seine Dunkelheit ist aus der Milchstraße um ihn herum abgelesen: eine Staubwolke in etwa 590 Lichtjahren Entfernung, die die Sterne dahinter abdunkelt und rötet. Sein Umriss ist gemessen, seine Tiefe modelliert. Noch nicht von einem Astronomen geprüft.",
       "m78": "Sein Licht ist das Foto von NOIRLab: Staub, der das blaue Licht des Sterns davor streut, auf der Vorderseite einer dunklen Wolke. Seine Tiefe ist rekonstruiert. Noch nicht von einem Astronomen geprüft.",
       "iris": "Sein Licht ist das Foto von NOIRLab: Staub, der das Licht des jungen Sterns HD 200775 in einer Mulde seiner Wolke streut. Seine Tiefe ist rekonstruiert. Noch nicht von einem Astronomen geprüft."
     },
     "rows": {
       "dso-m45": [["Seine Form in der Tiefe", "Rekonstruiert. Das Gas liegt vor den Sternen, wie ihr Licht zeigt; wie weit davor und wie dick der Staub ist, ist illustrativ, und die Tiefen der Sterne im Haufen sind ein festes Modell, nicht gemessen."], ["Was der Staub tut", "Er streut das Licht der Sterne, das blaue am stärksten, und leuchtet daher blau um die hellsten, vor allem Merope und Maia. Es ist eine durchziehende Wolke, nicht die, aus der die Sterne entstanden sind."], ["Prüfung", "Dieses Modell wurde noch nicht von einem Astronomen geprüft."]],
-      "dso-m1": [
-        [
-          "Seine Form in der Tiefe",
-          "Rekonstruiert aus einem gemessenen Umriss. Die Filamente reichen etwa 2 Parsec entlang der Achse des Pulsarwinds, und keines liegt innerhalb eines halben Parsec vom Zentrum (Martin und andere, 2021). Als Ellipsoid entlang dieser Achse gezeichnet; welches Ende uns näher ist, ist angenommen."
-        ],
-        [
-          "Seine Farben",
-          "Falschfarben: die Schmalbandfilter des Fotos für Sauerstoff und Schwefel, von den Machern des Bildes auf Farben abgebildet."
-        ],
-        [
-          "Prüfung",
-          "Dieses Modell ist noch nicht von einem Astronomen geprüft worden."
-        ]
-      ],
+      "dso-m1": [["Seine Form","Ein gemessener Umriss mit modellierten Filamenten. Entlang der Achse des Pulsars liegt kein Gas weiter als 2 Parsec vom Zentrum und keines näher als ein halbes Parsec; die Taille ist eingeschnürt, und zwei Lappen ragen heraus (Martin und andere, 2021). Die Filamente bilden eine Wabe der gemessenen Größe, aber wo jedes einzelne gezeichnet ist, ist modelliert."],["Der Pulsarwind","Gemessene Ringe, modellierte Jets. Zwei Röntgenringe umgeben den Pulsar; der innere ist ein Lichtjahr breit, und sie sind 63 Grad gegen unsere Sichtlinie geneigt. Das Gas verlässt sie mit halber Lichtgeschwindigkeit, deshalb ist die Seite heller, die sich auf den Betrachter zubewegt (Ng und Romani, 2004 und 2008). Die Länge der Jets ist modelliert."],["Seine Farben","Illustrativ. Die Filamente und das Leuchten nehmen ihre Farben aus dem Falschfarbenbild von Hubble an derselben Stelle des Himmels. Der Pulsarwind ist Röntgenlicht, das kein Auge sehen kann, und ist violettblau gezeichnet."],["Auf der Uhr","Der Stern wurde 1054 explodieren gesehen, und die Wolke wächst um etwa ein Zehntelprozent pro Jahr (gemessen). Das Modell wächst mit der Uhr der App ab 1054; wie sich das Wachstum über die Jahrhunderte verändert hat, ist modelliert."],["Prüfung","Dieses Modell ist noch nicht von einem Astronomen geprüft worden."]],
       "dso-veil-nebula": [
         [
           "Seine Form in der Tiefe",
@@ -3791,20 +3781,7 @@ export const COPY = {
           "Dieses Modell ist noch nicht von einem Astronomen geprüft worden."
         ]
       ],
-      "dso-coalsack": [
-        [
-          "Wie dunkel er ist",
-          "Abgelesen daran, wie viel dunkler die Milchstraße hier ist als in gleichem Abstand von ihrer Mittellinie in der Nähe. Das ist eine Schätzung und niedriger, als Infrarotkarten ergeben, weil Sterne vor der Wolke ihr Licht hinzufügen."
-        ],
-        [
-          "Was der Staub tut",
-          "Er schluckt nur: Die Sterne dahinter sind abgedunkelt und gerötet. Sterne davor nicht. Ein Teil der Dunkelheit im Nordosten ist eine zweite Wolke weit dahinter, hier in der nahen Entfernung gezeichnet."
-        ],
-        [
-          "Prüfung",
-          "Dieses Modell ist noch nicht von einem Astronomen geprüft worden."
-        ]
-      ],
+      "dso-coalsack": [["Sein Umriss und seine Tiefe","Der Umriss ist auf der Karte der Milchstraße gemessen, die hier gezeichnet wird (NASA, aus den Sternzählungen von Gaia): ein dunkles Gebiet von etwa 7 mal 4 Grad. Dunkle Flecken in der Nähe sind andere Wolken und werden weggelassen. Die Tiefe ist modelliert: eine dünne, unebene Schicht in einer einzigen Entfernung."],["Wie dunkel er ist","Abgelesen daran, wie viel dunkler die Milchstraße hier ist als in gleichem Abstand von ihrer Mittellinie in der Nähe. Das ist eine Schätzung und niedriger, als Infrarotkarten ergeben, weil Sterne vor der Wolke ihr Licht hinzufügen."],["Was der Staub tut","Er schluckt nur: Die Sterne dahinter sind abgedunkelt und gerötet. Sterne davor nicht. Ein Teil der Dunkelheit im Nordosten ist eine zweite Wolke weit dahinter, hier in der nahen Entfernung gezeichnet."],["Prüfung","Dieses Modell ist noch nicht von einem Astronomen geprüft worden."]],
       "dso-m78": [
         [
           "Seine Form in der Tiefe",
@@ -6428,3 +6405,124 @@ Object.assign(COPY, {
   }
 });
 // internal #442: end
+// ds2: begin -- the words of the Homunculus Nebula and Cassiopeia A (copy/en.deepdata.js), machine-drafted
+Object.assign(COPY, {
+  "deepHomunculus": {
+    "card": {
+      "homunculus": "Ihre Form ist ein veröffentlichtes 3D-Modell, gebaut aus der gemessenen Geschwindigkeit jedes Teils des Nebels (Steffen u. a., 2014), gedreht und skaliert nach Smiths Messungen (2006). Helligkeit und Fleckigkeit sind illustrativ. Modell: NASA Goddard Space Flight Center/Ed Campion und UNAM/W. Steffen, über ESO. Noch nicht von einem Astronomen geprüft."
+    },
+    "rows": {
+      "dso-homunculus-nebula": [
+        [
+          "Ihre Form",
+          "Gemessen. Ein 3D-Modell aus der Doppler-Verschiebung ihres Wasserstoffgases, gelesen entlang von 92 Streifen über den Nebel mit dem Very Large Telescope der ESO (Steffen u. a., 2014). Das Loch an jedem Pol, der Graben darum und die beiden Beulen nahe der Taille stehen in den Daten."
+        ],
+        [
+          "Neigung und Größe",
+          "Gemessen. Der ferne Lappen zeigt nach Nordwesten, 41° von unserer Blickrichtung weg; der nahe zeigt ebenso weit auf uns zu. 2005 war jeder Pol 21 690-mal so weit vom Stern entfernt wie die Erde von der Sonne (Smith, 2006)."
+        ],
+        [
+          "Sie wächst",
+          "Jeder Teil fliegt seit dem Ausbruch der 1840er Jahre geradlinig mit eigener Geschwindigkeit nach außen, ihre Größe folgt also dem Datum der Uhr. Vor dem Ausbruch wird sie nicht gezeichnet."
+        ],
+        [
+          "Ihre Oberfläche",
+          "Illustrativ. Helligkeit und Fleckigkeit stehen für Staub, den der Stern von innen beleuchtet; das Modell enthält nur die Form. Der Look „Gemessen“ nimmt die Fleckigkeit weg."
+        ],
+        [
+          "3D-Modell",
+          "NASA Goddard Space Flight Center/Ed Campion und UNAM/W. Steffen, über ESO (CC BY 4.0). Kein Punkt wurde verschoben."
+        ],
+        [
+          "Prüfung",
+          "Diese Zeichnung wurde noch nicht von einem Astronomen geprüft."
+        ]
+      ]
+    },
+    "how": "Gas, das auf uns zukommt, verschiebt sein Licht ins Blaue, Gas, das sich entfernt, ins Rote, und der Homunculus dehnt sich seit den 1840er Jahren gleichmäßig aus; die Geschwindigkeit eines Punkts entlang unserer Sichtlinie sagt also auch, wie weit er vor oder hinter dem Stern liegt. Astronomen lasen die Geschwindigkeit seines Wasserstoffs entlang von 92 Streifen über den Nebel und bauten daraus seine Form (Steffen u. a., 2014)."
+  },
+  "deepCasA": {
+    "card": {
+      "casa": "Jeder Punkt ist ein Ort, an dem dieses Gas gemessen wurde: Seine Geschwindigkeit auf uns zu oder von uns weg ergibt seine Tiefe (DeLaney u. a., 2010). Die Farben sind eine Legende, nicht das, was ein Auge sähe. Modell: NASA/CXC/MIT/T. Delaney u. a. Noch nicht von einem Astronomen geprüft."
+    },
+    "rows": {
+      "dso-cassiopeia-a": [
+        [
+          "Grün",
+          "Eisen, im Röntgenlicht vom Chandra-Teleskop gesehen. Gemessene Orte."
+        ],
+        [
+          "Gelb",
+          "Argon und Silizium, in Röntgen- und Infrarotlicht gesehen, mit den beiden Jets und den äußeren Knoten im sichtbaren Licht. Gemessene Orte."
+        ],
+        [
+          "Rot",
+          "Kaltes Silizium in der Mitte, im Infrarotlicht vom Spitzer-Teleskop gesehen: Trümmer, die die nach innen laufende Stoßfront noch nicht erhitzt hat. Gemessene Orte."
+        ],
+        [
+          "Blaue Schale",
+          "Die äußere Stoßwelle, 153 Bogensekunden vom Zentrum. Modelliert: eine glatte Kugel der gemessenen Größe als Ersatz für die wirklichen Filamente, wie in Chandras eigenem Modell."
+        ],
+        [
+          "Weißer Punkt",
+          "Der Neutronenstern, den die Explosion hinterließ. Sein Ort am Himmel ist gemessen; seine Tiefe nicht."
+        ],
+        [
+          "Wie seine Tiefe bekannt ist",
+          "Die Trümmer sind seit der Explosion geradlinig von einem Punkt ausgeflogen; Gas, das sich auf uns zubewegt, liegt also vor diesem Punkt, Gas, das sich entfernt, dahinter: je 1 000 km/s sind 22 Bogensekunden Tiefe."
+        ],
+        [
+          "Sie wächst",
+          "Auf der Uhr wächst jeder Teil mit seiner eigenen gemessenen Rate: 0,3 % im Jahr die freien Trümmer, 0,2 % das abgebremste Röntgengas, etwa 4 900 km/s die Stoßwelle. Vor 1671 wird sie nicht gezeichnet."
+        ],
+        [
+          "Helligkeit",
+          "Nicht im Modell. Jeder Punkt einer Farbe ist gleich hell, und seine Größe ist die Schärfe der Daten, nicht die Größe eines Klumpens."
+        ],
+        [
+          "3D-Modell",
+          "NASA/CXC/MIT/T. Delaney u. a., aus den Dateien des Chandra X-ray Center. Auf 24 219 Punkte ausgedünnt."
+        ],
+        [
+          "Prüfung",
+          "Diese Zeichnung wurde noch nicht von einem Astronomen geprüft."
+        ]
+      ]
+    },
+    "how": "Jedes chemische Element leuchtet in eigenen Farben, und Gas, das näher kommt oder sich entfernt, verschiebt sie; ein Teleskop, das das Licht zerlegt, findet so, wie schnell sich jeder Fleck aus Eisen, Silizium oder Argon entlang unserer Sichtlinie bewegt. Da alles vor rund 350 Jahren von einem Punkt ausging, ist diese Geschwindigkeit auch eine Entfernung vor oder hinter diesem Punkt: Chandras Röntgenlicht und Spitzers Infrarotlicht ergaben zusammen die erste 3D-Karte eines explodierten Sterns (DeLaney u. a., 2010)."
+  }
+});
+// ds2: end
+// A constellation seen from the side (ui/figureside.js, copy/en.side.js): begin
+COPY.figureSide = {
+  "open": "Von der Seite ansehen",
+  "openTitle": "Verlass die Sonne und sieh zu, wie {name} zerfällt",
+  "searchRow": "{name} von der Seite",
+  "searchSub": "Verlass die Sonne und sieh zu, wie die Figur zerfällt",
+  "title": "{name} von der Seite",
+  "loading": "Die Entfernungen der Sterne werden geladen …",
+  "lede": "Von der Sonne aus bilden diese Sterne eine Figur. Jeder steht in seiner eigenen Entfernung, deshalb zerfällt die Figur von der Seite.",
+  "angle": "Wie weit zur Seite",
+  "where": "{deg}° zur Seite, {ly} Lichtjahre von der Sonne",
+  "home": "An der Sonne: die Figur, wie wir sie sehen",
+  "range": "Ihre Sterne sind {near} bis {far} Lichtjahre entfernt.",
+  "play": "Losfliegen",
+  "playTitle": "Verlass die Sonne und schwenke in zwanzig Sekunden zur Seite",
+  "pause": "Pause",
+  "jump": "Zur Seite gehen",
+  "back": "Zurück zur Sonne",
+  "another": "Eine andere Figur",
+  "honest": "Gemessen: wo jeder Stern steht, aus seiner Parallaxe (Hipparcos und Gaia, HYG-Katalog); die fernsten sind am unsichersten. Überlieferung: die Linien dazwischen.",
+  "unplaced": "{n} ihrer Ecken haben keinen Stern mit gemessener Entfernung: Sie sind in der mittleren Entfernung der Figur gezeichnet.",
+  "close": "Seitenansicht schließen",
+  "unknown": "Eine Sternfigur mit diesem Namen wird hier nicht gezeichnet.",
+  "inTrip": "Verlass zuerst die Reise, um eine Figur von der Seite zu sehen.",
+  "failed": "Die Entfernungen der Sterne wurden nicht geladen. Versuch es gleich noch einmal.",
+  "names": {
+    "bigDipper": "Großer Wagen"
+  },
+  "notes": {
+    "bigDipper": "Fünf seiner sieben Sterne ziehen tatsächlich gemeinsam, etwa 80 Lichtjahre entfernt. Die beiden an den Enden, Dubhe und Alkaid, nicht."
+  }
+};
+// A constellation seen from the side: end

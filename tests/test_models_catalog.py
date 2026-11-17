@@ -93,6 +93,10 @@ for m in cat["models"]:
 by = {m["id"]: m for m in cat["models"]}
 check(by["sputnik-1"]["size_m"] == 0.585 and by["sputnik-1"]["size_what"] == "diameter", "Sputnik 1 is 0.585 m in diameter")
 check(by["pathfinder"]["size_m"] is None, "Pathfinder has no overall size")
+check(by["sputnik-1"]["size_key"] == "sphere_diameter_m" and by["sputnik-1"]["size_source"] == by["sputnik-1"]["dimensions"]["source"] != "",
+      "the size names its row and carries the dimensions' source (internal #398)")
+check(by["mars-3"]["size_key"] == "sphere_diameter_m", "Mars 3's size is read from the sphere row")
+check(all((m["size_key"] != "") == (m["size_m"] is not None) for m in cat["models"]), "a size has a key and a source, no size has neither")
 
 # --- where the map uses it: the app's own routing (scripts/model_reach.mjs -> realModelFor) --------------------------
 import shutil  # noqa: E402
@@ -109,6 +113,12 @@ if shutil.which("node"):
     check(rb["sputnik-1"]["reach"]["state"] == "moments" and rb["sputnik-1"]["live"].endswith("#moment=sputnik-1"), "Sputnik 1 is staged by its Moment only")
     check(all(m["reach"]["state"] in ("drawn", "routed", "moments", "none") for m in rc["models"]), "every state is one of the four")
     check(all(m["live"] == "" or re.fullmatch(r"https://www\.spaceradar\.ai/#(at|moment)=[A-Za-z0-9_-]+", m["live"]) for m in rc["models"]), "every live link is the map's own")
+    check("venera-9.glb" in reach["files"] and rb["venera-9"]["reach"]["state"] == "drawn" and rb["venera-9"]["live"].endswith("#at=venera-9"),
+          "Venera 9 is drawn at its landing sites (the landing-sites layer is in the reach run, internal #406)")
+    check(all(0 <= m["reach"]["generic"] <= m["reach"]["count"] for m in rc["models"] if m["reach"]["state"] == "drawn"),
+          "`generic` counts some of the objects a model is drawn for (internal #408)")
+    check(rb["cubesat-3u"]["reach"]["state"] != "drawn" or rb["cubesat-3u"]["reach"]["generic"] == rb["cubesat-3u"]["reach"]["count"],
+          "a CubeSat form is drawn as the kind of thing for every object")
     bare = mc.run_reach(ROOT, {})
     check(bare is not None and not bare["satellites"] and "starlink-v1.glb" in bare["routed"], "without satellite files, a routed file is `unknown` rather than unused")
     rb2 = {m["id"]: m for m in mc.catalog(with_dates=False, reach=bare)["models"]}

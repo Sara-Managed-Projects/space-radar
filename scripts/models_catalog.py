@@ -32,7 +32,8 @@ WHERE THE MAP USES IT (`reach`, `live`) comes from the app's own routing, not fr
 runs site/js/scene/realmodels.js realModelFor() (catalogue number, Horizons id, site, name with its class, the CubeSat and bus
 tables, the geostationary ring) over the records the app ships and over the saved CelesTrak files `active` and `stations`.
 Those files are fetched from the live site when this script writes the catalog (--population LAYER=FILE gives them by hand;
---no-population skips them), so a count is the map's today. `reach.state` is `drawn` (count, up to three examples),
+--no-population skips them), so a count is the map's today. `reach.state` is `drawn` (count, up to three examples, and `generic`: how many of those objects the route marks as the kind of thing,
+not that craft's own shape, which is what the page's "kind of thing" note is made from),
 `routed` (a route names the file and no object matches today), `moments` (only the replayed Moments stage it, with their
 ids), `unknown` (no population: a route exists, no count) or `none`. `live` links the first example (#at=<id>) or the Moment.
 
@@ -241,7 +242,8 @@ def reach_of(mid: str, file: str, reach: dict | None, norad: list[int], row: dic
     moments = reach.get("moments", {}).get(mid, [])
     if hit:
         ex = [{"id": e["id"], "name": e["name"]} for e in hit["examples"]]
-        return ({"state": "drawn", "count": hit["count"], "examples": ex, "moments": moments, "counted": bool(reach["satellites"])},
+        return ({"state": "drawn", "count": hit["count"], "examples": ex, "moments": moments, "counted": bool(reach["satellites"]),
+                 "generic": min(int(hit.get("generic") or 0), hit["count"])},
                 f"{SITE}/#at={ex[0]['id']}")
     if file in reach["routed"]:
         # a route names the file; without the satellite files an unmatched route proves nothing
@@ -309,6 +311,22 @@ OVERALL_KEYS = (
     ("max_diameter_m", "diameter"), ("diameter_m", "diameter"), ("sphere_diameter_m", "diameter"),
     ("overall_m", "overall"), ("width_m", "width"),
 )
+
+
+def overall_key_of(dims: dict, key: str | None = None) -> str:
+    """The dimensions key `overall_of` took its number from ('' when it took none), so the page can name the row and its source."""
+    metres, _what = overall_of(dims, key)
+    if metres is None:
+        return ""
+    for k, _w in OVERALL_KEYS:
+        if key and k != key:
+            continue
+        for it in dims["items"]:
+            if it["key"] == k and it["unit"] == "m":
+                vals = it["value"] if isinstance(it["value"], list) else [it["value"]]
+                if any(isinstance(v, (int, float)) and not isinstance(v, bool) and float(v) == metres for v in vals):
+                    return k
+    return ""
 
 
 def overall_of(dims: dict, key: str | None = None) -> tuple[float | None, str]:
@@ -409,6 +427,7 @@ def entry(row: dict, root: Path, added: dict[str, str], changed: dict[str, str] 
     norad = norad_ids(row.get("used_for"))
     dims = dimensions_of(row)
     size_m, size_what = overall_of(dims, row.get("overall"))
+    size_key = overall_key_of(dims, row.get("overall"))
     band = size_band(size_m if size_m is not None else largest_of(dims))
     used, live = reach_of(row["id"], fname, reach, norad, row)
     name = name_of(row["id"])
@@ -427,6 +446,8 @@ def entry(row: dict, root: Path, added: dict[str, str], changed: dict[str, str] 
         "dimensions": dims,
         "size_m": size_m,
         "size_what": size_what,
+        "size_key": size_key,  # the dimensions row the size is read from ('' when none): the page names it and gives `dimensions.source`
+        "size_source": dims["source"] if size_key else "",
         "size": band,
         "references": references_of(row),
         "licence": dict(LICENCE, note=str(row.get("licence") or "")),

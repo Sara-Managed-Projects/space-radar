@@ -17,7 +17,7 @@ const { buildIndex, findMatches } = await import(join(JS, 'ui/search.js'));
 const { drawingLine } = await import(join(JS, 'ui/cards.js'));
 
 const doc = JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8'));
-check(doc.count === 209 && doc.objects.length === 209, `110 Messier objects, forty-one Local Group galaxies and fifty-eight famous non-Messier objects by hand (${doc.count})`);
+check(doc.count === 211 && doc.objects.length === 211, `110 Messier objects, forty-one Local Group galaxies and sixty famous non-Messier objects by hand (${doc.count})`);
 check(doc.objects.some((o) => o.id === 'smc' && o.distLy === 203650) && doc.objects.some((o) => o.id === 'fornax-dwarf') && doc.objects.some((o) => o.id === 'sculptor-dwarf'), 'the SMC, Fornax and Sculptor dwarfs are hand rows with sourced distances');
 check(doc.objects.some((o) => o.id === 'wlm' && o.distLy === 3226000) && doc.objects.some((o) => o.id === 'ngc-6822' && o.designation === 'NGC 6822') && doc.objects.some((o) => o.id === 'carina-dwarf' && o.vmag === null), 'WLM at 3.23 Mly, Barnard\'s Galaxy keeps its NGC number, Carina has no V magnitude invented');
 check(doc.objects.some((o) => o.id === 'sagittarius-dwarf' && o.distLy === 80400) && doc.objects.some((o) => o.id === 'sextans-a' && o.distLy === 4586000) && doc.objects.some((o) => o.id === 'sagdig' && o.designation === 'SagDIG'), 'the Sagittarius Dwarf at 80 400 ly, Sextans A at 4.59 Mly, SagDIG by its short name');
@@ -51,7 +51,7 @@ check(doc.objects.some((o) => o.id === 'lmc' && o.distLy === 161740 && o.distanc
 check(doc.objects.find((o) => o.id === 'm45')?.kind === 'cluster', 'the Pleiades (from the addendum) are a cluster');
 
 const recs = parseDso(doc);
-check(recs.length === 209 && recs.every((r) => r.klass === 'dso' && r.propagator === 'static' && r.layer === 'deep-sky'), 'one static dso record per object');
+check(recs.length === 211 && recs.every((r) => r.klass === 'dso' && r.propagator === 'static' && r.layer === 'deep-sky'), 'one static dso record per object');
 // a hand row speaks in words, not a Hubble code, and credits the one page it came from (found live 2026-09-09)
 const wlmRec = recs.find((r) => r.id === 'dso-wlm');
 check(wlmRec && wlmRec.meta.typeText === 'dwarf irregular galaxy' && wlmRec.meta.hubble === 'IB(s)m', `WLM: words for the sentence, the code beside them (${wlmRec && wlmRec.meta.typeText})`);
@@ -151,7 +151,8 @@ const say = edge ? edge.card.body : '';
 const n = (text) => Number(String(text).replace(/\s/g, ''));
 const starBuf = readFileSync(join(ROOT, 'site/data/stars3d.bin'));
 const placed = parseStars3d(starBuf.buffer.slice(starBuf.byteOffset, starBuf.byteOffset + starBuf.byteLength)).count;
-const fromNgc = doc.objects.filter((o) => o.positionSource === 'OpenNGC').length;
+// OpenNGC's rows are the Messier ones (type, size and magnitude are its own; three take a newer centre, the 2026-11-16 audit).
+const fromNgc = doc.objects.filter((o) => o.messier != null).length;
 const said = say.match(/shows ([\d ]+) stars .*?, ([\d ]+) nebulae, clusters and galaxies \(([\d ]+) of them from OpenNGC's ([\d ]+)\)/);
 check(!!said, `the edge card still states its stars and deep-sky counts in the form this test reads: "${say.slice(0, 160)}"`);
 if (said) {
@@ -164,7 +165,7 @@ if (said) {
 // The Layers panel's sentence counts the hand rows; the count comes from the file.
 {
   const said = (row.sentence || '').match(/Messier objects and (\d+) more/);
-  const hand = doc.objects.filter((o) => o.positionSource !== 'OpenNGC').length;
+  const hand = doc.objects.filter((o) => o.messier == null).length;
   check(said && Number(said[1]) === hand, `the deep-sky layer's sentence says ${said && said[1]} more than Messier; dso.json has ${hand}`);
 }
 
