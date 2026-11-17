@@ -209,10 +209,12 @@ ok(seo_pages.satellite_counts({"snapshots": {"celestrak-active": {"items": 0}}})
 # --- planets tonight --------------------------------------------------------------------------------
 pt_html = (BUILT / "planets-tonight" / "index.html").read_text(encoding="utf-8")
 pt = parse(BUILT / "planets-tonight" / "index.html")
-lead = re.search(r'<p class="lead">(.*?)</p>', pt_html, re.S).group(1)
+lead = re.search(r'<p class="lead"[^>]*>(.*?)</p>', pt_html, re.S).group(1)
 ok(lead.startswith("On the evening of 9 October 2026, from London, the planets up in the dark are ") and all(n in lead for n in ("Jupiter", "Saturn", "Mars")),
    f"the static lead sentence names tonight's planets with the date ({lead[:90]!r})")
 ok(re.search(r'<url><loc>https://www.spaceradar.ai/planets-tonight/index.html</loc><lastmod>2026-10-09</lastmod>', sitemap) is not None, "in the sitemap, with the build's day as lastmod")
+ok('<p class="lead" lang="en" dir="ltr" translate="no">' in pt_html and "<ul class=\"sky-list\" lang=\"en\" dir=\"ltr\" translate=\"no\">" in pt_html,
+   "the night's own sentences are marked English, so the other languages' pages carry them as they are (internal #476)")
 ok("getCurrentPosition" not in pt_html and "geolocation" not in pt_html, "the page's own HTML never asks for a position")
 ok(len(re.search(r"<title>(.*?)</title>", pt_html).group(1)) <= 60 and "../#trip=planets-tonight" in pt.hrefs, "a title under 60 and the link to the sky from the ground")
 # the same build on another date says another date (the sentence is computed, not typed)
