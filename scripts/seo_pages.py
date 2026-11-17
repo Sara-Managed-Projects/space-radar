@@ -350,12 +350,16 @@ def planets_page(host: str, today: str) -> Page:
     body = (
         '<p class="eyebrow"><span class="dot" style="background:#ffc28a"></span>Sky tonight</p>\n'
         "<h1>Which planets can you see tonight?</h1>\n"
-        f'<p class="lead">{esc(sentence)}</p>\n'
+        # The night's own sentences (planets, magnitudes, compass points, the Moon) change with every build, so they cannot be a
+        # catalog: in the other languages they stay in English, marked as such (lang="en", translate="no"), and the paragraph
+        # under them says so (internal #476: the page was the only one with no /<lang>/ version).
+        f'<p class="lead" lang="en" dir="ltr" translate="no">{esc(sentence)}</p>\n'
         f'<p class="dim">Worked out when this page was built, for {esc(night)} and {esc(place)} only (the build knows no other place). '
-        "The list below is for your place and your moment, worked out in your browser.</p>\n"
+        "The list below is for your place and your moment, worked out in your browser. "
+        "The sentence above and the list for the build's night are written in English on every language's page.</p>\n"
         '<div data-slot="planets-live" hidden>\n<h2>From your place tonight</h2>\n<p data-slot="planets-summary"></p>\n'
         '<ul class="sky-list" data-slot="planets-list"></ul>\n<p data-slot="planets-down" class="dim"></p>\n<p data-slot="moon-line"></p>\n</div>\n'
-        f'<h2>From {esc(place)} on {esc(night)}</h2>\n<ul class="sky-list">{items}</ul>\n<p>{esc(moon_line)}</p>\n'
+        f'<h2>From {esc(place)} on {esc(night)}</h2>\n<ul class="sky-list" lang="en" dir="ltr" translate="no">{items}</ul>\n<p lang="en" dir="ltr" translate="no">{esc(moon_line)}</p>\n'
         "<h2>Choose your place</h2>\n"
         + place_picker("This page starts from the place you set in the map, or a city guessed from your time zone. It does not ask your browser for a position unless you press the button.")
         + '<div class="cta"><a class="btn btn--map" href="../#trip=planets-tonight">See the sky from the ground</a>'

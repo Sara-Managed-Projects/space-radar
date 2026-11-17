@@ -16,7 +16,7 @@
 //    eight hydrazine engines of 400 to 3 100 N, and the descent stage's crash 650 m away.
 //  - Sell et al., "Powered Flight Design and Reconstructed Performance Summary for the Mars Science Laboratory Mission" (AAS 13-424, NTRS
 //    20150007794): the 300 m divert that keeps the descent stage clear of the back shell and the parachute, 85 m/s to 0.75 m/s, the 7.5 m bridle.
-//  - Bradbury Landing (Gale crater) 4.5895 S, 137.4417 E (registry/sites.yaml `gale`).
+//  - Bradbury Landing (Gale crater) 4.5895 S, 137.4417 E (registry/sites.yaml `bradbury-landing`; the row `gale` is the rover where NASA last placed it).
 // WHAT IS OURS: the path between the events. Entry: a point mass on a round Mars (a lift fraction and an entry angle searched for so that it is at
 // the published parachute altitude and speed at the published second; the peak of its deceleration then falls where the press kit puts it, which
 // is printed below). After the parachute the heights are the published ones joined by a monotone curve, the along-track distance follows from the

@@ -939,7 +939,6 @@
  "0f2609ae51": "Elle a été photographiée directement en {n1}, point faible à côté de l’éclat de son étoile. Son orbite est plus éloignée de son étoile que la zone habitable calculée pour elle. La table composite de l’Archive lui donne {n2} ua, ce qui ne s’accorde pas avec la troisième loi de Kepler ; la page utilise la distance de Keppler et al. {n3}, un seul article dont la période et la masse de l’étoile, elles, s’y accordent.",
  "3a9ac54961": "Source : NASA Exoplanet Archive, table Planetary Systems Composite Parameters (DOI de la table <1>{n1}/NEA13</1>), consultée le {n2}-{n3}-{n4} ; https://exoplanetarchive.ipac.caltech.edu/overview/PDS%{n5}. Zone habitable : Kopparapu et al. {n6}, <2>ApJ Letters {n7}, L29</2>. Les températures supposent la réflectivité de la Terre ({n8}). Cette page a été construite le {n9}-{n10}-{n11} à partir de ces registres ; les chiffres ne sont pas en direct.",
  "aed02bb526": "{n1}, par E. Karkoschka",
- "ed84e6abf6": "Un rover de la taille d’une voiture, qui collecte des échantillons de roche dans un cratère où se trouvait autrefois le delta d’une rivière.",
  "aabb82c6da": "Le dessin suit un modèle publié de Perseverance.",
  "011bb6c050": "{name} est un objet géocroiseur, sur sa propre orbite autour du Soleil. C’est la source des Géminides.",
  "e8b37bd7eb": "C’est la source des Géminides. Son orbite passe plus près du Soleil que celle de Mercure, et là, de la poussière s’en détache.",
@@ -1248,5 +1247,8 @@
  "6e881752f0": "Le dessin représente l’étage de descente de Luna {n1}, debout ; Luna {n2} est tombée sur le côté et a gardé son étage de remontée — le type d’objet, pas cet objet précis · forme construite d’après des dimensions et des photos publiées ; détails simplifiés.",
  "eb816396cb": "Le dessin représente l’étage de descente de Luna {n1} ; Luna {n2} était le modèle suivant, avec une foreuse plus profonde — le type d’objet, pas cet objet précis · forme construite d’après des dimensions et des photos publiées ; détails simplifiés.",
  "8d10d6deb2": "Le dessin représente Surveyor {n1}, sans son instrument à diffusion alpha · forme construite d’après des dimensions et des photos publiées ; détails simplifiés.",
- "66ba90603d": "Le dessin représente WorldView-{n1}, un engin plus haut sur la même plateforme — le type d’objet, pas cet objet précis · forme construite d’après des dimensions et des photos publiées ; détails simplifiés."
+ "66ba90603d": "Le dessin représente WorldView-{n1}, un engin plus haut sur la même plateforme — le type d’objet, pas cet objet précis · forme construite d’après des dimensions et des photos publiées ; détails simplifiés.",
+ "c90413fd85": "C’est ici que Curiosity s’est posé le {d1}. Le rover a repris la route et a son propre repère.",
+ "3262df82d7": "C’est ici que Perseverance s’est posé le {d1}. Le rover a repris la route et a son propre repère.",
+ "cbdf08776a": "Un rover de la taille d’une voiture, qui récolte des échantillons de roche. Il s’est posé dans le cratère Jezero en {n1} et a depuis grimpé et franchi le bord ouest du cratère."
 }

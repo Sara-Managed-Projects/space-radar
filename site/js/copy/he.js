@@ -2593,7 +2593,8 @@ export const COPY = {
   "source": {
     "prefix": "מקור",
     "unknown": "המקור לא תועד",
-    "fetched": "נקרא {age}"
+    "fetched": "נקרא {age}",
+    "waypoint": "מיקום: נקודת הציון של NASA לסול {sol} ({date})"
   },
   "photo": {
     "title": "הרכב תמונה",
@@ -5783,7 +5784,7 @@ COPY.truth.exoPacked = "העותק הדחוס שלנו מ־{date}"; // forge #88
 COPY.truth.exoLive = "הרשימה של הארכיון, נקראה ב־{date}";
 // The deep-sky catalogue's type phrases (data/dso.json `typeText`), lowercased, in this language: the card's lead and its
 // "What it is" row read them through RULES.typeWords; a phrase not here stays English, which is data.
-const S1_TYPES = {"globular cluster": "צביר כדורי", "open cluster": "צביר פתוח", "dwarf spheroidal galaxy": "גלקסיה ננסית ספרואידלית", "spiral galaxy": "גלקסיה ספירלית", "emission nebula": "ערפילית פליטה", "planetary nebula": "ערפילית פלנטרית", "dwarf irregular galaxy": "גלקסיה ננסית אי־סדירה", "barred spiral galaxy": "גלקסיה ספירלית מוטה", "elliptical galaxy": "גלקסיה אליפטית", "lenticular galaxy": "גלקסיה עדשתית", "h ii region nebula with cluster": "אזור H II עם צביר", "dwarf elliptical galaxy": "גלקסיה ננסית אליפטית", "h ii region nebula": "אזור H II", "barred irregular galaxy": "גלקסיה אי־סדירה מוטה", "ultra-faint dwarf galaxy": "גלקסיה ננסית חיוורת במיוחד", "dark nebula": "ערפילית אפלה", "young open cluster in an emission nebula": "צביר פתוח צעיר בתוך ערפילית פליטה", "supernova remnant": "שארית סופרנובה", "nebula with cluster": "ערפילית עם צביר", "milky way star cloud": "ענן כוכבים של שביל החלב", "optical double": "כפולה אופטית", "asterism": "אסטריזם", "diffuse nebula": "ערפילית מפוזרת", "starburst galaxy": "גלקסיית התפרצות כוכבים", "dwarf irregular starburst galaxy": "גלקסיה ננסית אי־סדירה עם התפרצות כוכבים", "transition dwarf galaxy, part irregular, part spheroidal": "גלקסיה ננסית מעבר, חלקה אי־סדירה וחלקה ספרואידלית", "barred irregular galaxy, seen edge-on": "גלקסיה אי־סדירה מוטה, נראית מהצד", "ultra-faint dwarf galaxy, or perhaps a star cluster": "גלקסיה ננסית חיוורת במיוחד, ואולי צביר כוכבים", "transition dwarf galaxy, part spheroidal, part irregular": "גלקסיה ננסית מעבר, חלקה ספרואידלית וחלקה אי־סדירה", "spiral galaxy, seen nearly edge-on and bursting with new stars": "גלקסיה ספירלית, נראית כמעט מהצד ומלאה בכוכבים חדשים", "peculiar galaxy with a giant black hole firing radio jets": "גלקסיה חריגה עם חור שחור ענק שיורה סילוני רדיו", "pair of open clusters": "זוג צבירים פתוחים", "spiral galaxy seen exactly edge-on": "גלקסיה ספירלית הנראית בדיוק מהצד", "reflection nebula": "ערפילית החזרה", "reflection and emission nebula": "ערפילית החזרה ופליטה", "spiral galaxy seen edge-on": "גלקסיה ספירלית הנראית מהצד", "barred spiral galaxy seen edge-on": "גלקסיה ספירלית מוטה הנראית מהצד", "spiral galaxy seen face-on": "גלקסיה ספירלית הנראית מלפנים", "barred spiral galaxy seen nearly edge-on": "גלקסיה ספירלית מוטה הנראית כמעט מהצד", "pair of colliding galaxies": "זוג גלקסיות מתנגשות"};
+const S1_TYPES = {"two-lobed nebula of dust and gas": "ערפילית דו־אונית של אבק וגז", "globular cluster": "צביר כדורי", "open cluster": "צביר פתוח", "dwarf spheroidal galaxy": "גלקסיה ננסית ספרואידלית", "spiral galaxy": "גלקסיה ספירלית", "emission nebula": "ערפילית פליטה", "planetary nebula": "ערפילית פלנטרית", "dwarf irregular galaxy": "גלקסיה ננסית אי־סדירה", "barred spiral galaxy": "גלקסיה ספירלית מוטה", "elliptical galaxy": "גלקסיה אליפטית", "lenticular galaxy": "גלקסיה עדשתית", "h ii region nebula with cluster": "אזור H II עם צביר", "dwarf elliptical galaxy": "גלקסיה ננסית אליפטית", "h ii region nebula": "אזור H II", "barred irregular galaxy": "גלקסיה אי־סדירה מוטה", "ultra-faint dwarf galaxy": "גלקסיה ננסית חיוורת במיוחד", "dark nebula": "ערפילית אפלה", "young open cluster in an emission nebula": "צביר פתוח צעיר בתוך ערפילית פליטה", "supernova remnant": "שארית סופרנובה", "nebula with cluster": "ערפילית עם צביר", "milky way star cloud": "ענן כוכבים של שביל החלב", "optical double": "כפולה אופטית", "asterism": "אסטריזם", "diffuse nebula": "ערפילית מפוזרת", "starburst galaxy": "גלקסיית התפרצות כוכבים", "dwarf irregular starburst galaxy": "גלקסיה ננסית אי־סדירה עם התפרצות כוכבים", "transition dwarf galaxy, part irregular, part spheroidal": "גלקסיה ננסית מעבר, חלקה אי־סדירה וחלקה ספרואידלית", "barred irregular galaxy, seen edge-on": "גלקסיה אי־סדירה מוטה, נראית מהצד", "ultra-faint dwarf galaxy, or perhaps a star cluster": "גלקסיה ננסית חיוורת במיוחד, ואולי צביר כוכבים", "transition dwarf galaxy, part spheroidal, part irregular": "גלקסיה ננסית מעבר, חלקה ספרואידלית וחלקה אי־סדירה", "spiral galaxy, seen nearly edge-on and bursting with new stars": "גלקסיה ספירלית, נראית כמעט מהצד ומלאה בכוכבים חדשים", "peculiar galaxy with a giant black hole firing radio jets": "גלקסיה חריגה עם חור שחור ענק שיורה סילוני רדיו", "pair of open clusters": "זוג צבירים פתוחים", "spiral galaxy seen exactly edge-on": "גלקסיה ספירלית הנראית בדיוק מהצד", "reflection nebula": "ערפילית החזרה", "reflection and emission nebula": "ערפילית החזרה ופליטה", "spiral galaxy seen edge-on": "גלקסיה ספירלית הנראית מהצד", "barred spiral galaxy seen edge-on": "גלקסיה ספירלית מוטה הנראית מהצד", "spiral galaxy seen face-on": "גלקסיה ספירלית הנראית מלפנים", "barred spiral galaxy seen nearly edge-on": "גלקסיה ספירלית מוטה הנראית כמעט מהצד", "pair of colliding galaxies": "זוג גלקסיות מתנגשות"};
 const S1_PLACES = [[" in the large magellanic cloud", " בענן מגלן הגדול"], [" in the small magellanic cloud", " בענן מגלן הקטן"], [" in the milky way", " בשביל החלב"], [" in the local group", " בקבוצה המקומית"]];
 RULES.typeWords = (text) => {
   let base = String(text || '').trim();
@@ -6340,3 +6341,91 @@ Object.assign(COPY, {
   }
 });
 // internal #442: end
+// ds2: begin -- the words of the Homunculus Nebula and Cassiopeia A (copy/en.deepdata.js), machine-drafted
+Object.assign(COPY, {
+  "deepHomunculus": {
+    "card": {
+      "homunculus": "צורתה היא מודל תלת־ממדי שפורסם, שנבנה ממהירותו הנמדדת של כל חלק בערפילית (שטפן ואחרים, 2014), בסיבוב ובקנה מידה לפי מדידותיו של סמית (2006). הבהירות והכתמים הם להמחשה בלבד. מודל: מרכז גודארד לטיסות חלל של נאס״א/אד קמפיון ו־UNAM/ו. שטפן, דרך ESO. טרם נבדק בידי אסטרונום."
+    },
+    "rows": {
+      "dso-homunculus-nebula": [
+        [
+          "צורתה",
+          "נמדדה. מודל תלת־ממדי שנבנה מהסחת הדופלר של גז המימן שלה, שנקראה לאורך 92 רצועות בערפילית בטלסקופ הענק מאוד של ESO (שטפן ואחרים, 2014). החור בכל קוטב, התעלה סביבו ושתי הבליטות ליד המותניים נמצאים בנתונים."
+        ],
+        [
+          "הנטייה והגודל",
+          "נמדדו. האונה הרחוקה מצביעה צפונה־מערבה, 41° מקו הראייה שלנו; הקרובה מצביעה אלינו באותה מידה. ב־2005 כל קוטב היה במרחק 21 690 פעמים המרחק בין כדור הארץ לשמש מהכוכב (סמית, 2006)."
+        ],
+        [
+          "היא גדלה",
+          "כל חלק עף ישר במהירותו שלו מאז ההתפרצות של שנות ה־1840, ולכן גודלה עוקב אחר תאריך השעון. לפני ההתפרצות היא לא מצוירת."
+        ],
+        [
+          "פני השטח",
+          "להמחשה. הבהירות והכתמים מייצגים אבק שהכוכב מאיר מבפנים; המודל מכיל רק את הצורה. המראה «נמדד» מסיר את הכתמים."
+        ],
+        [
+          "מודל תלת־ממדי",
+          "מרכז גודארד לטיסות חלל של נאס״א/אד קמפיון ו־UNAM/ו. שטפן, דרך ESO (CC BY 4.0). אף נקודה לא הוזזה."
+        ],
+        [
+          "בדיקה",
+          "הציור הזה טרם נבדק בידי אסטרונום."
+        ]
+      ]
+    },
+    "how": "גז שמתקרב אלינו מסיט את אורו לכחול וגז שמתרחק לאדום, והומונקולוס מתרחב באופן אחיד מאז שנות ה־1840, ולכן מהירותה של נקודה לאורך קו הראייה אומרת גם כמה היא לפני הכוכב או מאחוריו. אסטרונומים קראו את מהירות המימן שלו לאורך 92 רצועות בערפילית ובנו ממנה את צורתו (שטפן ואחרים, 2014)."
+  },
+  "deepCasA": {
+    "card": {
+      "casa": "כל נקודה היא מקום שבו נמדד הגז: מהירותו לעברנו או ממנו נותנת את עומקו (דלייני ואחרים, 2010). הצבעים הם מקרא, לא מה שהעין הייתה רואה. מודל: NASA/CXC/MIT/ט. דלייני ואחרים. טרם נבדק בידי אסטרונום."
+    },
+    "rows": {
+      "dso-cassiopeia-a": [
+        [
+          "ירוק",
+          "ברזל, שנראה בקרני רנטגן בטלסקופ צ׳נדרה. מקומות נמדדים."
+        ],
+        [
+          "צהוב",
+          "ארגון וסיליקון, שנראו בקרני רנטגן ובאור אינפרא־אדום, עם שני הסילונים והפקעים החיצוניים שנראו באור נראה. מקומות נמדדים."
+        ],
+        [
+          "אדום",
+          "סיליקון קר באמצע, שנראה באור אינפרא־אדום בטלסקופ ספיצר: פסולת שגל ההלם הפנימה עוד לא חימם. מקומות נמדדים."
+        ],
+        [
+          "קליפה כחולה",
+          "גל ההלם החיצוני, 153 שניות קשת מהמרכז. מדומה: כדור פשוט בגודל הנמדד במקום החוטים האמיתיים, כמו במודל של צ׳נדרה עצמו."
+        ],
+        [
+          "נקודה לבנה",
+          "כוכב הנייטרונים שהפיצוץ השאיר. מקומו בשמיים נמדד; עומקו לא."
+        ],
+        [
+          "איך ידוע עומקה",
+          "הפסולת עפה ישר מנקודה אחת מאז הפיצוץ, ולכן גז שנע לעברנו נמצא לפני הנקודה הזאת וגז שמתרחק מאחוריה: כל 1 000 ק״מ/שנייה הם 22 שניות קשת של עומק."
+        ],
+        [
+          "היא גדלה",
+          "על השעון כל חלק גדל בקצב הנמדד שלו: 0.3 % בשנה לפסולת החופשית, 0.2 % לגז הרנטגן המואט, כ־4 900 ק״מ/שנייה לגל ההלם. לפני 1671 היא לא מצוירת."
+        ],
+        [
+          "בהירות",
+          "אינה במודל. כל נקודה בצבע אחד בהירה באותה מידה, וגודלה הוא חדות הנתונים, לא גודל גוש."
+        ],
+        [
+          "מודל תלת־ממדי",
+          "NASA/CXC/MIT/ט. דלייני ואחרים, מקובצי מרכז הרנטגן צ׳נדרה. דולל ל־24 219 נקודות."
+        ],
+        [
+          "בדיקה",
+          "הציור הזה טרם נבדק בידי אסטרונום."
+        ]
+      ]
+    },
+    "how": "כל יסוד כימי זורח בצבעים משלו, וגז שמתקרב או מתרחק מסיט אותם, ולכן טלסקופ שמפצל את האור מוצא באיזו מהירות נע כל כתם של ברזל, סיליקון או ארגון לאורך קו הראייה. מכיוון שהכול יצא מנקודה אחת לפני כ־350 שנה, המהירות הזאת היא גם מרחק לפני הנקודה או מאחוריה: קרני הרנטגן של צ׳נדרה והאור האינפרא־אדום של ספיצר נתנו יחד את המפה התלת־ממדית הראשונה של כוכב שהתפוצץ (דלייני ואחרים, 2010)."
+  }
+});
+// ds2: end

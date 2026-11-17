@@ -703,6 +703,29 @@ objects:
     source: "https://en.wikipedia.org/wiki/Carina_Nebula (infobox, read 2026-09-09)"
     why: "Four times the size of the Orion Nebula and brighter, home to Eta Carinae and some of the heaviest stars known; the south's great nebula."
 
+  # The Homunculus (review of 2026-11-16, deep space): the two-lobed nebula Eta Carinae threw out in the 1840s, drawn from
+  # its published 3D model (registry/deepsky-heroes/homunculus.yaml, site/js/scene/deep/homunculus.js). Its place is the
+  # star's (registry/exotics.yaml eta-carinae: 10h 45m 03.591s, -59 deg 41 min 04.26 s) and its distance the same row's,
+  # which is this nebula's own: Smith 2006 measured 2 350 +/- 50 pc from its shape and its age (the abstract and
+  # section 3, read 2026-11-16). The size on the sky is the model's outline at that distance in late 2026: 18.7 by
+  # 11.1 arcseconds along and across the polar axis (tests/test_homunculus.mjs computes both); the axis lies at
+  # position angle 310 degrees (Smith 2006), the same line as 130.
+  - id: homunculus-nebula
+    name: Homunculus Nebula
+    type: RfN
+    what: two-lobed nebula of dust and gas
+    parent: carina-nebula
+    ra_deg: 161.2649625
+    dec_deg: -59.6845167
+    distance: {method: kinematic, value_ly: 7665, low: 7502, high: 7828,
+               source: "Smith 2006, ApJ 644, 1151 (arXiv:astro-ph/0602464): 2 350 +/- 50 pc from the nebula's own shape and age", read: 2026-11-16}
+    maj_ax_arcmin: 0.31
+    min_ax_arcmin: 0.185
+    pos_ang_deg: 130
+    con: Carina
+    source: "Smith 2006, ApJ 644, 1151 (arXiv:astro-ph/0602464, read 2026-11-16): the distance, the tilt and the size; Steffen et al. 2014, MNRAS 442, 3316 (arXiv:1407.4096, read 2026-11-16): the shape"
+    why: "Two hollow lobes of dust and gas thrown out by the star Eta Carinae in the 1840s, still flying apart at up to 650 kilometres a second."
+
   - id: helix-nebula
     name: Helix Nebula
     designation: NGC 7293
@@ -850,6 +873,27 @@ objects:
     con: Cygnus
     source: "https://en.wikipedia.org/wiki/Veil_Nebula (infobox, read 2026-09-09)"
     why: "The torn shell of a star that exploded ten to twenty thousand years ago, six full Moons across, in lacework filaments."
+
+  # Cassiopeia A (review of 2026-11-16, deep space): drawn from its published 3D reconstruction
+  # (registry/deepsky-heroes/casa.yaml, site/js/scene/deep/casa.js). Its place is the point its debris flies out from:
+  # the expansion centre of Thorstensen, Fesen & van den Bergh 2001 (AJ 122, 297, arXiv:astro-ph/0104188, the abstract,
+  # read 2026-11-16: 23h 23m 27.77s +/- 0.05s, +58 deg 48 min 49.4 s +/- 0.4, ICRS), which is the 3D model's origin on
+  # the sky. 3.4 kpc is the distance that paper and DeLaney et al. 2010 use (11 090 ly; Wikipedia's infobox, read
+  # 2026-11-16: "c. 11,000 ly"). The size is the blast wave's: 153 arcseconds in radius (DeLaney et al. 2010), 5.1
+  # arcminutes across. Green's catalogue row for it (G111.7-2.1, site/data/deep/catalogue.bin) gives way to this one.
+  - id: cassiopeia-a
+    name: Cassiopeia A
+    designation: Cas A
+    type: SNR
+    what: supernova remnant
+    ra_deg: 350.8657083     # 23h 23m 27.77s
+    dec_deg: 58.8137222     # +58 deg 48 min 49.4 s
+    dist_kly: 11.09         # 3.4 kpc
+    # vmag omitted: it is all but invisible in ordinary light
+    maj_ax_arcmin: 5.1
+    con: Cassiopeia
+    source: "Thorstensen, Fesen & van den Bergh 2001, AJ 122, 297 (arXiv:astro-ph/0104188, read 2026-11-16): the place and 3.4 kpc; DeLaney et al. 2010, ApJ 725, 2038 (arXiv:1011.3858, read 2026-11-16): the size; https://en.wikipedia.org/wiki/Cassiopeia_A (infobox, read 2026-11-16)"
+    why: "What is left of a star that blew up about 350 years ago: the strongest radio source in the sky beyond the Solar System, still flying apart."
 
   - id: coalsack
     name: Coalsack Nebula

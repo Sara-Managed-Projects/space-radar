@@ -104,6 +104,7 @@ const PLACES = [
 
 // Every typeText in site/data/dso.json (2026-10-20), lowercased, and the same phrase in German after "ein/eine".
 const TYPES = {
+  'two-lobed nebula of dust and gas': "zweilappiger Nebel aus Staub und Gas",
   'globular cluster': 'Kugelsternhaufen',
   'open cluster': 'offener Sternhaufen',
   'dwarf spheroidal galaxy': 'sphäroidale Zwerggalaxie',
@@ -2664,7 +2665,8 @@ export const COPY = {
   "source": {
     "prefix": "Quelle",
     "unknown": "Quelle nicht verzeichnet",
-    "fetched": "gelesen {age}"
+    "fetched": "gelesen {age}",
+    "waypoint": "Position: Wegpunkt der NASA für Sol {sol} ({date})"
   },
   "photo": {
     "title": "Ein Bild gestalten",
@@ -6424,3 +6426,91 @@ Object.assign(COPY, {
   }
 });
 // internal #442: end
+// ds2: begin -- the words of the Homunculus Nebula and Cassiopeia A (copy/en.deepdata.js), machine-drafted
+Object.assign(COPY, {
+  "deepHomunculus": {
+    "card": {
+      "homunculus": "Ihre Form ist ein veröffentlichtes 3D-Modell, gebaut aus der gemessenen Geschwindigkeit jedes Teils des Nebels (Steffen u. a., 2014), gedreht und skaliert nach Smiths Messungen (2006). Helligkeit und Fleckigkeit sind illustrativ. Modell: NASA Goddard Space Flight Center/Ed Campion und UNAM/W. Steffen, über ESO. Noch nicht von einem Astronomen geprüft."
+    },
+    "rows": {
+      "dso-homunculus-nebula": [
+        [
+          "Ihre Form",
+          "Gemessen. Ein 3D-Modell aus der Doppler-Verschiebung ihres Wasserstoffgases, gelesen entlang von 92 Streifen über den Nebel mit dem Very Large Telescope der ESO (Steffen u. a., 2014). Das Loch an jedem Pol, der Graben darum und die beiden Beulen nahe der Taille stehen in den Daten."
+        ],
+        [
+          "Neigung und Größe",
+          "Gemessen. Der ferne Lappen zeigt nach Nordwesten, 41° von unserer Blickrichtung weg; der nahe zeigt ebenso weit auf uns zu. 2005 war jeder Pol 21 690-mal so weit vom Stern entfernt wie die Erde von der Sonne (Smith, 2006)."
+        ],
+        [
+          "Sie wächst",
+          "Jeder Teil fliegt seit dem Ausbruch der 1840er Jahre geradlinig mit eigener Geschwindigkeit nach außen, ihre Größe folgt also dem Datum der Uhr. Vor dem Ausbruch wird sie nicht gezeichnet."
+        ],
+        [
+          "Ihre Oberfläche",
+          "Illustrativ. Helligkeit und Fleckigkeit stehen für Staub, den der Stern von innen beleuchtet; das Modell enthält nur die Form. Der Look „Gemessen“ nimmt die Fleckigkeit weg."
+        ],
+        [
+          "3D-Modell",
+          "NASA Goddard Space Flight Center/Ed Campion und UNAM/W. Steffen, über ESO (CC BY 4.0). Kein Punkt wurde verschoben."
+        ],
+        [
+          "Prüfung",
+          "Diese Zeichnung wurde noch nicht von einem Astronomen geprüft."
+        ]
+      ]
+    },
+    "how": "Gas, das auf uns zukommt, verschiebt sein Licht ins Blaue, Gas, das sich entfernt, ins Rote, und der Homunculus dehnt sich seit den 1840er Jahren gleichmäßig aus; die Geschwindigkeit eines Punkts entlang unserer Sichtlinie sagt also auch, wie weit er vor oder hinter dem Stern liegt. Astronomen lasen die Geschwindigkeit seines Wasserstoffs entlang von 92 Streifen über den Nebel und bauten daraus seine Form (Steffen u. a., 2014)."
+  },
+  "deepCasA": {
+    "card": {
+      "casa": "Jeder Punkt ist ein Ort, an dem dieses Gas gemessen wurde: Seine Geschwindigkeit auf uns zu oder von uns weg ergibt seine Tiefe (DeLaney u. a., 2010). Die Farben sind eine Legende, nicht das, was ein Auge sähe. Modell: NASA/CXC/MIT/T. Delaney u. a. Noch nicht von einem Astronomen geprüft."
+    },
+    "rows": {
+      "dso-cassiopeia-a": [
+        [
+          "Grün",
+          "Eisen, im Röntgenlicht vom Chandra-Teleskop gesehen. Gemessene Orte."
+        ],
+        [
+          "Gelb",
+          "Argon und Silizium, in Röntgen- und Infrarotlicht gesehen, mit den beiden Jets und den äußeren Knoten im sichtbaren Licht. Gemessene Orte."
+        ],
+        [
+          "Rot",
+          "Kaltes Silizium in der Mitte, im Infrarotlicht vom Spitzer-Teleskop gesehen: Trümmer, die die nach innen laufende Stoßfront noch nicht erhitzt hat. Gemessene Orte."
+        ],
+        [
+          "Blaue Schale",
+          "Die äußere Stoßwelle, 153 Bogensekunden vom Zentrum. Modelliert: eine glatte Kugel der gemessenen Größe als Ersatz für die wirklichen Filamente, wie in Chandras eigenem Modell."
+        ],
+        [
+          "Weißer Punkt",
+          "Der Neutronenstern, den die Explosion hinterließ. Sein Ort am Himmel ist gemessen; seine Tiefe nicht."
+        ],
+        [
+          "Wie seine Tiefe bekannt ist",
+          "Die Trümmer sind seit der Explosion geradlinig von einem Punkt ausgeflogen; Gas, das sich auf uns zubewegt, liegt also vor diesem Punkt, Gas, das sich entfernt, dahinter: je 1 000 km/s sind 22 Bogensekunden Tiefe."
+        ],
+        [
+          "Sie wächst",
+          "Auf der Uhr wächst jeder Teil mit seiner eigenen gemessenen Rate: 0,3 % im Jahr die freien Trümmer, 0,2 % das abgebremste Röntgengas, etwa 4 900 km/s die Stoßwelle. Vor 1671 wird sie nicht gezeichnet."
+        ],
+        [
+          "Helligkeit",
+          "Nicht im Modell. Jeder Punkt einer Farbe ist gleich hell, und seine Größe ist die Schärfe der Daten, nicht die Größe eines Klumpens."
+        ],
+        [
+          "3D-Modell",
+          "NASA/CXC/MIT/T. Delaney u. a., aus den Dateien des Chandra X-ray Center. Auf 24 219 Punkte ausgedünnt."
+        ],
+        [
+          "Prüfung",
+          "Diese Zeichnung wurde noch nicht von einem Astronomen geprüft."
+        ]
+      ]
+    },
+    "how": "Jedes chemische Element leuchtet in eigenen Farben, und Gas, das näher kommt oder sich entfernt, verschiebt sie; ein Teleskop, das das Licht zerlegt, findet so, wie schnell sich jeder Fleck aus Eisen, Silizium oder Argon entlang unserer Sichtlinie bewegt. Da alles vor rund 350 Jahren von einem Punkt ausging, ist diese Geschwindigkeit auch eine Entfernung vor oder hinter diesem Punkt: Chandras Röntgenlicht und Spitzers Infrarotlicht ergaben zusammen die erste 3D-Karte eines explodierten Sterns (DeLaney u. a., 2010)."
+  }
+});
+// ds2: end

@@ -27,7 +27,7 @@
 #
 # `aliases:` is optional and is what search matches besides the display name (ui/search.js reads
 # meta.aliases): the rover a lander carried (Sojourner, Pragyan, Yutu), the name a site was given
-# (Tranquility Base, Bradbury Landing), and "Change" for the four Chang'e rows, because a search
+# (Tranquility Base, Columbia Memorial Station), and "Change" for the four Chang'e rows, because a search
 # box does not make anybody type an apostrophe.
 #
 # The rule is keyed on `landed:` rather than on `class: surface` because a surface row need not be
@@ -147,6 +147,23 @@ references:
            point (site 3, drive 0, sol 13, 'Site increment, no motion', total distance 0 m) is
            lon 77.45088572, lat 18.44462715, the rover where it landed, in the convention of the
            helicopter's layer above (planetocentric, east-positive)."
+  # The two rovers that still drive (2026-11-16): the "current waypoint" files of NASA's mission maps, one feature each.
+  # `read:` is rewritten with the rows by scripts/refresh_rover_positions.py; `says:` names no number that changes.
+  m20-rover-waypoints-current:
+    url: "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_waypoints_current.json"
+    read: 2026-11-16
+    says: "NASA/JPL-Caltech, the current-position layer of the Mars 2020 mission map ('Where is Perseverance?'): one
+           point, the rover's latest end-of-drive localization, with its `sol`, `lon`, `lat` and `dist_total_m` (metres
+           driven). The same convention as the mission's waypoints layer above (planetocentric, east-positive), whose
+           last point it repeats. The row's lat and lon are that point's coordinates, digit for digit."
+  msl-rover-waypoints-current:
+    url: "https://mars.nasa.gov/mmgis-maps/MSL/Layers/json/MSL_waypoints_current.json"
+    read: 2026-11-16
+    says: "NASA/JPL-Caltech, the current-position layer of the Mars Science Laboratory mission map ('Where is
+           Curiosity?'): one point, the rover's latest position, with its `sol`, `lon`, `lat` and `dist_total_m`. The
+           frame is the one of the row `bradbury-landing`: the first point of the mission's waypoints layer
+           (MSL_waypoints.json, sol 3, total distance 0 m) is lat -4.589467, lon 137.441633, 4 m from the PDS
+           landing coordinates. The row's lat and lon are the current point's coordinates, digit for digit."
   wu-2024:
     url: "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11544219/fullTextXML"
     read: 2026-10-16
@@ -559,13 +576,57 @@ sites:
     doing: "Firefly's lander, March 2025: the first fully successful commercial Moon landing. It worked for a whole lunar day and into the night."
 
   # --- On Mars ------------------------------------------------------------------------
-  # Uncited: NASA's landing announcement numbers, not matched to a reference in this change.
-  - {id: jezero, display: "Perseverance, Jezero crater", class: surface, world: mars, lat: 18.4446, lon: 77.4509, landed: 2021-02-18, shape: rover, source: m20-rover-waypoints, aliases: ["Octavia E. Butler Landing"], doing: "A rover the size of a car, collecting rock samples in a crater that was once a river delta."}
+  # THE TWO ROVERS THAT STILL DRIVE STAND WHERE NASA LAST PLACED THEM, NOT WHERE THEY LANDED (2026-11-16). Until then the
+  # rows `jezero` and `gale` were the landing points under the rovers' names and a present-tense sentence: 12.2 km and
+  # 14.3 km from the rovers (a review of positions, 2026-11-16). Now:
+  #   * `jezero` and `gale` (the ids stay: trips, links, the ground and the models name them) are THE ROVER: `lat`, `lon`
+  #     are the one feature of NASA's "current waypoint" file of the mission map (`m20-rover-waypoints-current`,
+  #     `msl-rover-waypoints-current`), `as_of_sol` its `sol`, `dist_total_m` its `dist_total_m`, and `as_of` the UTC day
+  #     on which that sol's local noon fell (scripts/refresh_rover_positions.py says how it is worked out). The card
+  #     prints "Position: NASA's waypoint for sol N (day)" from `as_of_sol` and `as_of` (ui/cards.js positionAsOfLine).
+  #     `landed:` is still the day it came down.
+  #   * THE LANDING PLACE IS A ROW OF ITS OWN, a place and not a machine (`class: feature`, a mark and a name, as
+  #     Copernicus and the field Vostok 1 came down in): `octavia-e-butler-landing` and `bradbury-landing`, with the
+  #     coordinates and the sources the rover rows had. The ground a visitor stands on (registry/ground.yaml `gale`,
+  #     `jezero`) is the landing place's and says so (`at:` there); the landing of registry/missions.yaml is shown at it.
+  #   * ONLY scripts/refresh_rover_positions.py WRITES lat, lon, as_of_sol, as_of AND dist_total_m of these two rows, and
+  #     the `read:` of their two references: .github/workflows/rover-positions.yml runs it on the first of each month
+  #     and opens a pull request. It rewrites those fields in place, so keep each of the two rows on ONE line with the
+  #     fields named as they are. tests/test_rover_positions.mjs holds the rows to the waypoints of
+  #     tests/fixtures/rover-waypoints.json and to more than 5 km from their landing rows.
+  # What the sentences say, each read on 2026-11-16:
+  #   * Perseverance is no longer in the crater. NASA Science, "Perseverance Science Updates"
+  #     (https://science.nasa.gov/mission/mars-2020-perseverance/science-updates/): "After roughly four months of
+  #     climbing up and over the rim of Jezero crater", and (29 September 2026) "After spending the last six months
+  #     exploring 'Lac de Charmes,' a region of ancient rock beyond Jezero crater's western rim". JPL, "NASA's
+  #     Perseverance Sets Off-World Record for Total Distance Driven"
+  #     (https://www.jpl.nasa.gov/news/nasas-perseverance-sets-off-world-record-for-total-distance-driven/): "the region
+  #     off the western rim of Jezero Crater nicknamed 'Lac de Charmes'", and the mission's extension "will carry
+  #     Perseverance's exploration of the crater rim through roughly the end of 2028". THE NAME STAYS "Perseverance,
+  #     Jezero crater": the page of a site is named by its `display` (scripts/object_pages.mjs slugOf), so another
+  #     name would move /o/perseverance-jezero-crater.html and leave the old address with nothing; the card's name is
+  #     "Perseverance" alone, and the sentence says where it is.
+  #     The mission page (https://science.nasa.gov/mission/mars-2020-perseverance/): "The rover is collecting core
+  #     samples of Martian rock and regolith", "Launch / Landing July 30, 2020 / Feb. 18, 2021"; its rover-components
+  #     page: "Length 10 feet (3 meters) Width 9 feet (2.7 meters)" (the size of a car). The old sentence said "in a
+  #     crater that was once a river delta".
+  #   * Curiosity is still in Gale crater, on its mountain: https://science.nasa.gov/mission/msl-curiosity/ "Curiosity
+  #     explores Gale Crater", "Launch / Landing Nov. 26, 2011 / Aug. 6, 2012", and "an elevation gain of 1 kilometer in
+  #     its journey from Gale Crater on Mars up the slope of Mount Sharp" (26 August 2026). Its sentence stays.
+  #   * The names: JPL, 22 August 2012 (https://www.jpl.nasa.gov/news/nasa-mars-rover-begins-driving-at-bradbury-landing/),
+  #     "its landing site, now named Bradbury Landing"; NASA Science, 5 March 2021
+  #     (https://science.nasa.gov/resource/welcome-to-octavia-e-butler-landing/), "NASA has named the landing site of
+  #     the agency's Perseverance rover 'Octavia E. Butler Landing'".
+  #   * `dist_total_m` is kept here and printed nowhere: Curiosity's file gives `dist_total_m` 38638.02 beside `dist_km`
+  #     38.32, two odometers that disagree by 0.3 km, and nothing read here says which one NASA means.
+  - {id: jezero, display: "Perseverance, Jezero crater", class: surface, world: mars, lat: 18.43559434, lon: 77.23322287, landed: 2021-02-18, shape: rover, source: m20-rover-waypoints-current, as_of_sol: 2022, as_of: 2026-10-28, dist_total_m: 45245.71, doing: "A rover the size of a car, collecting rock samples. It landed in Jezero crater in 2021 and has since climbed up and over the crater's western rim."}
+  - {id: octavia-e-butler-landing, display: "Octavia E. Butler Landing, Jezero crater", class: feature, world: mars, lat: 18.4446, lon: 77.4509, source: m20-rover-waypoints, aliases: ["Octavia Butler Landing", "Perseverance landing site"], doing: "Where Perseverance landed on 18 February 2021. The rover has driven on, and has a marker of its own."}
   # Ingenuity where it stopped (2026-10-07; public #437, internal #389): the last row of NASA's own
   # waypoint file for the helicopter, flight 72 on 18 January 2024, at Airfield Chi. NASA named
   # the place Valinor Hills. 7.4 km west of the rover's landing site on this map.
   - {id: ingenuity, display: "Ingenuity, Valinor Hills", class: surface, world: mars, lat: 18.4973, lon: 77.3225, landed: 2024-01-18, shape: lander, source: m20-heli-waypoints, aliases: ["Mars Helicopter", "Airfield Chi"], doing: "The first aircraft to fly on another world: 72 flights from 2021 to 2024. It stands where the last one ended."}
-  - {id: gale, display: "Curiosity, Gale crater", class: surface, world: mars, lat: -4.5895, lon: 137.4417, landed: 2012-08-06, shape: rover, source: pds-msl, aliases: ["Bradbury Landing"], doing: "Driving up a mountain of layered rock since 2012."}
+  - {id: gale, display: "Curiosity, Gale crater", class: surface, world: mars, lat: -4.82602331, lon: 137.388886, landed: 2012-08-06, shape: rover, source: msl-rover-waypoints-current, as_of_sol: 5073, as_of: 2026-11-13, dist_total_m: 38638.02, doing: "Driving up a mountain of layered rock since 2012."}
+  - {id: bradbury-landing, display: "Bradbury Landing, Gale crater", class: feature, world: mars, lat: -4.5895, lon: 137.4417, source: pds-msl, aliases: ["Curiosity landing site"], doing: "Where Curiosity landed on 6 August 2012. The rover has driven on, and has a marker of its own."}
   - {id: elysium, display: "InSight, Elysium Planitia", class: surface, world: mars, lat: 4.5024, lon: 135.6234, landed: 2018-11-26, shape: lander, source: golombek-2020, doing: "Listened to marsquakes until its solar panels were covered in dust in 2022."}
   # Uncited: Wikipedia gives 25.066 N, 109.925 E, a thousandth of a degree from this row, citing
   # Liu et al. (2021), which was not read here. Landed 14 May UTC; it was 15 May in Beijing.

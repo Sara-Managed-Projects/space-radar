@@ -328,6 +328,9 @@ missions:
       - {id: europa-io, date: "1995-12-07", precision: day, title: "Europa and Io, on the way in", text: "While the probe is still approaching, the orbiter passes Europa and then Io.", place: path}
       - {id: entry, date: "1995-12-07T22:05:00Z", title: "Into Jupiter’s air", text: "It meets Jupiter’s atmosphere at 47.6 km per second, then sends data for 58 minutes on a parachute. JPL’s path for it ends at this minute.", place: path, world: jupiter}
 
+  # 2026-11-16: the record `jezero` is the rover where NASA last placed it, on the crater's rim (registry/sites.yaml). Its
+  # three events of 2021 happened on the crater's floor, at and near the landing place, so each names that place's own
+  # record (`octavia-e-butler-landing`), as Apollo 11's launch names its pad: the map shows the landing where it was.
   - id: perseverance
     record: jezero
     path_record: deep-mars-2020
@@ -336,9 +339,9 @@ missions:
     source: {name: "NASA NSSDCA, Mars 2020 Perseverance", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2020-052A"}
     events:
       - {id: launch, date: "2020-07-30T11:50:00Z", title: "Launch", text: "Perseverance leaves Cape Canaveral on an Atlas V, carrying the Ingenuity helicopter.", place: path, path_at: "2020-07-30T12:52:00Z", world: earth}
-      - {id: landing, date: "2021-02-18T20:55:00Z", title: "Landing in Jezero", text: "The rover lands in Jezero crater after a seven-month cruise. The time is when the signal reached Earth.", place: site}
-      - {id: first-flight, date: "2021-04-19T07:34:00Z", title: "The first flight", text: "Ingenuity flies for 39.1 seconds, hovering 3 metres up for 30 of them.", place: site}
-      - {id: first-core, date: "2021-09-06", precision: day, title: "The first rock core", text: "The rover seals Montdenier, its first core of rock and its second sample, in a tube.", place: site, source: {name: "NASA Science, Mars rock samples", url: "https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/"}}
+      - {id: landing, date: "2021-02-18T20:55:00Z", title: "Landing in Jezero", text: "The rover lands in Jezero crater after a seven-month cruise. The time is when the signal reached Earth.", place: site, record: octavia-e-butler-landing}
+      - {id: first-flight, date: "2021-04-19T07:34:00Z", title: "The first flight", text: "Ingenuity flies for 39.1 seconds, hovering 3 metres up for 30 of them.", place: site, record: octavia-e-butler-landing}
+      - {id: first-core, date: "2021-09-06", precision: day, title: "The first rock core", text: "The rover seals Montdenier, its first core of rock and its second sample, in a tube.", place: site, record: octavia-e-butler-landing, source: {name: "NASA Science, Mars rock samples", url: "https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/"}}
 
   - id: iss
     record: sat-25544

@@ -68,6 +68,8 @@ domains:
       iris: {credit: "### Remnants and dust (0076 W3-c)"}
       carina: {credit: "### Carina (0077 W2-e)"}  # 0077 W2-e
       smc: {credit: "### The SMC and the Magellanic Stream (0077 W2-e)"}  # 0077 W2-e
+      homunculus: {credit: "### The Homunculus from its published 3D model (2026-11-16)"}
+      casa: {credit: "### Cassiopeia A from its published 3D reconstruction (2026-11-16)"}
       # 0077 W3-f: begin
       m51: {credit: "### Galaxies from their structure (0077 W3-f)"}
       m81: {credit: "### Galaxies from their structure (0077 W3-f)"}
@@ -585,10 +587,10 @@ classes:
 
   - id: REFLECTION_NEBULA
     title: Reflection nebulae
-    renderer: [site/js/scene/dsoglow.js, site/js/scene/deep/dustsheet.js, site/js/scene/deep/reflection.js]  # 0078 r14-neb-b
+    renderer: [site/js/scene/dsoglow.js, site/js/scene/deep/dustsheet.js, site/js/scene/deep/reflection.js, site/js/scene/deep/homunculus.js]  # 0078 r14-neb-b; the Homunculus, 2026-11-16
     honesty: illustrative
     fallback: The reflection glow.  # 0078 r14-neb-b
-    heroes: {m78: registry/deepsky-heroes/m78.yaml, iris: registry/deepsky-heroes/iris.yaml, m45: registry/deepsky-heroes/m45.yaml}  # 0078 r14-neb-b
+    heroes: {m78: registry/deepsky-heroes/m78.yaml, iris: registry/deepsky-heroes/iris.yaml, m45: registry/deepsky-heroes/m45.yaml, homunculus: registry/deepsky-heroes/homunculus.yaml}  # 0078 r14-neb-b
     issue: "internal #784 (pale-blue sheets lit by their star, W3-c)"
     note:
       source: "OpenNGC; the photograph of M45."
@@ -598,14 +600,14 @@ classes:
     records:
       - {domain: dso, where: {typeCode: RfN}}
       - {domain: photographs, ids: [m45]}
-      - {domain: heroes, ids: [m78, iris, m45]}  # 0078 r14-neb-b
+      - {domain: heroes, ids: [m78, iris, m45, homunculus]}  # 0078 r14-neb-b
 
   - id: SUPERNOVA_REMNANT
     title: Supernova remnants
-    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js, site/js/scene/deep/remnant.js]
+    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js, site/js/scene/deep/remnant.js, site/js/scene/deep/casa.js]
     honesty: measured
     fallback: The photograph of the Crab or the Veil; the glow elsewhere.
-    heroes: {crab: registry/deepsky-heroes/crab.yaml, veil: registry/deepsky-heroes/veil.yaml}
+    heroes: {crab: registry/deepsky-heroes/crab.yaml, veil: registry/deepsky-heroes/veil.yaml, casa: registry/deepsky-heroes/casa.yaml}
     issue: "internal #784 (shells, W3-c); internal #549 (NASA meshes wait on a licence)"
     note:
       source: "Photographs of M1 (the Crab) and the Veil; OpenNGC."
@@ -615,7 +617,7 @@ classes:
     records:
       - {domain: dso, where: {typeCode: SNR}}
       - {domain: photographs, ids: [m1, veil-nebula]}
-      - {domain: heroes, ids: [crab, veil]}
+      - {domain: heroes, ids: [crab, veil, casa]}
 
   # --- galaxies and beyond -----------------------------------------------------------------------------
   - id: GALAXY_SPIRAL

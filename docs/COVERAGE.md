@@ -14,16 +14,16 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 |---|---:|---:|
 | worlds | 31 | 31 |
 | rings | 1 | 1 |
-| dso | 209 | 209 |
+| dso | 211 | 211 |
 | photographs | 30 | 30 |
-| heroes | 33 | 33 |
+| heroes | 35 | 35 |
 | exotics | 27 | 27 |
 | systems | 51 | 51 |
 | planets | 134 | 134 |
 | stars_notable | 55 | 55 |
 | catalogues | 5 | 110 192 |
 | other_light | 3 | 3 |
-| sites | 60 | 60 |
+| sites | 62 | 62 |
 | real_models | 311 | 311 |
 | model_kinds | 52 | 52 |
 | small_bodies | 22 | 22 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 40 | 40 |
-| **all** | **1197** | **111 384** |
+| **all** | **1203** | **111 390** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -45,7 +45,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [VOLCANIC_MOON](#volcanic_moon) | 1 | `worlds.js` | measured | - |
 | [ICY_MOON](#icy_moon) | 27 | `worlds.js` | measured | - |
 | [TITAN](#titan) | 2 | `worlds.js`, `atmosphere.js` | measured | - |
-| [AIRLESS_MOON](#airless_moon) | 11 | `worlds.js`, `tiles.js`, `moonshape.js` | measured | - |
+| [AIRLESS_MOON](#airless_moon) | 13 | `worlds.js`, `tiles.js`, `moonshape.js` | measured | - |
 | [DWARF_PLANET](#dwarf_planet) | 9 | `worlds.js`, `glyphs.js`, `models.js`, `dwarfs.js` | measured | - |
 | [ASTEROID](#asteroid) | 31 | `models.js`, `realmodels.js`, `glyphs.js`, `kepler.js`, `moonshape.js` | modelled | - |
 | [COMET](#comet) | 5 | `models.js`, `glyphs.js`, `kepler.js` | modelled | - |
@@ -63,8 +63,8 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [EMISSION_NEBULA](#emission_nebula) | 44 | `dsoglow.js`, `gasmat.js`, `orion.js`, `carina.js` | measured | carina, orion |
 | [PLANETARY_NEBULA](#planetary_nebula) | 23 | `dsoglow.js`, `helix.js`, `ring.js`, `shellneb.js`, `gasmat.js` | measured | helix, m27, m57, southern-ring |
 | [DARK_NEBULA](#dark_nebula) | 5 | `dsoglow.js`, `dustsheet.js` | measured | coalsack, horsehead |
-| [REFLECTION_NEBULA](#reflection_nebula) | 6 | `dsoglow.js`, `dustsheet.js`, `reflection.js` | illustrative | iris, m45, m78 |
-| [SUPERNOVA_REMNANT](#supernova_remnant) | 6 | `nebulae.js`, `dsoglow.js`, `remnant.js` | measured | crab, veil |
+| [REFLECTION_NEBULA](#reflection_nebula) | 8 | `dsoglow.js`, `dustsheet.js`, `reflection.js`, `homunculus.js` | illustrative | homunculus, iris, m45, m78 |
+| [SUPERNOVA_REMNANT](#supernova_remnant) | 8 | `nebulae.js`, `dsoglow.js`, `remnant.js`, `casa.js` | measured | casa, crab, veil |
 | [GALAXY_SPIRAL](#galaxy_spiral) | 56 | `galaxy.js`, `spiral.js`, `dsoglow.js` | illustrative | m101, m104, m31, m33, m51, m81, m83, ngc1300 |
 | [GALAXY_IRREGULAR](#galaxy_irregular) | 19 | `lmc.js`, `smc.js`, `magellanic.js`, `dsoglow.js` | illustrative | lmc, smc |
 | [GALAXY_ELLIPTICAL](#galaxy_elliptical) | 42 | `dsoglow.js`, `spiral.js` | illustrative | cena |
@@ -83,7 +83,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 1197 records: 375 measured, 457 modelled, 365 illustrative.
+Honesty over the 1203 records: 377 measured, 459 modelled, 367 illustrative.
 
 ## The classes
 
@@ -222,9 +222,9 @@ Honesty over the 1197 records: 375 measured, 457 modelled, 365 illustrative.
 - **Measured, modelled or reconstructed:** Measured: the maps, the heights and the shapes. Modelled: shading along the light. Deimos has a shape and no map: drawn grey, said on its card.
 - **Rights:** NASA and USGS public domain; Solar System Scope CC BY 4.0.
 - **What is missing is tracked in:** #864 (shadows from LOLA at a low Sun, W2-a); internal #379 (Deimos's map)
-- **Records (11):**
+- **Records (13):**
   - worlds (3): `moon`, `phobos`, `deimos`
-  - sites (8): `vostok-1-landing`, `voskhod-2-landing`, `edwards-afb-runway-23`, `falcon-lz-1`, `copernicus`, `tycho`, `shackleton`, `moon-south-pole`
+  - sites (10): `octavia-e-butler-landing`, `bradbury-landing`, `vostok-1-landing`, `voskhod-2-landing`, `edwards-afb-runway-23`, `falcon-lz-1`, `copernicus`, `tycho`, `shackleton`, `moon-south-pole`
 
 ### DWARF_PLANET
 
@@ -516,37 +516,37 @@ Honesty over the 1197 records: 375 measured, 457 modelled, 365 illustrative.
 
 **Reflection nebulae**
 
-- **Drawn by:** `site/js/scene/dsoglow.js`, `site/js/scene/deep/dustsheet.js`, `site/js/scene/deep/reflection.js`
+- **Drawn by:** `site/js/scene/dsoglow.js`, `site/js/scene/deep/dustsheet.js`, `site/js/scene/deep/reflection.js`, `site/js/scene/deep/homunculus.js`
 - **Default honesty:** illustrative
 - **On a weak device (T0, or after the frame latch):** The reflection glow.
-- **Hero overrides:** `m78` (registry/deepsky-heroes/m78.yaml), `iris` (registry/deepsky-heroes/iris.yaml), `m45` (registry/deepsky-heroes/m45.yaml)
+- **Hero overrides:** `m78` (registry/deepsky-heroes/m78.yaml), `iris` (registry/deepsky-heroes/iris.yaml), `m45` (registry/deepsky-heroes/m45.yaml), `homunculus` (registry/deepsky-heroes/homunculus.yaml)
 - **Source:** OpenNGC; the photograph of M45.
 - **Dates and filters:** As the photograph's row.
 - **Measured, modelled or reconstructed:** Measured: places and the photograph. Illustrative: the glow.
 - **Rights:** OpenNGC CC BY-SA 4.0; the photograph CC BY 4.0.
 - **What is missing is tracked in:** internal #784 (pale-blue sheets lit by their star, W3-c)
-- **Records (6):**
-  - dso (2): `m78`, `iris-nebula`
+- **Records (8):**
+  - dso (3): `m78`, `homunculus-nebula`, `iris-nebula`
   - photographs (1): `m45`
-  - heroes (3): `iris`, `m45`, `m78`
+  - heroes (4): `homunculus`, `iris`, `m45`, `m78`
 
 ### SUPERNOVA_REMNANT
 
 **Supernova remnants**
 
-- **Drawn by:** `site/js/scene/nebulae.js`, `site/js/scene/dsoglow.js`, `site/js/scene/deep/remnant.js`
+- **Drawn by:** `site/js/scene/nebulae.js`, `site/js/scene/dsoglow.js`, `site/js/scene/deep/remnant.js`, `site/js/scene/deep/casa.js`
 - **Default honesty:** measured
 - **On a weak device (T0, or after the frame latch):** The photograph of the Crab or the Veil; the glow elsewhere.
-- **Hero overrides:** `crab` (registry/deepsky-heroes/crab.yaml), `veil` (registry/deepsky-heroes/veil.yaml)
+- **Hero overrides:** `crab` (registry/deepsky-heroes/crab.yaml), `veil` (registry/deepsky-heroes/veil.yaml), `casa` (registry/deepsky-heroes/casa.yaml)
 - **Source:** Photographs of M1 (the Crab) and the Veil; OpenNGC.
 - **Dates and filters:** As the photographs' rows.
 - **Measured, modelled or reconstructed:** Measured: the photographs. Reconstructed: the Veil's shell in depth, its light the photograph's (W3-c; the Crab's is built and held). Illustrative: the glow.
 - **Rights:** CC BY 4.0 photographs; OpenNGC CC BY-SA 4.0.
 - **What is missing is tracked in:** internal #784 (shells, W3-c); internal #549 (NASA meshes wait on a licence)
-- **Records (6):**
-  - dso (2): `m1`, `veil-nebula`
+- **Records (8):**
+  - dso (3): `m1`, `veil-nebula`, `cassiopeia-a`
   - photographs (2): `m1`, `veil-nebula`
-  - heroes (2): `crab`, `veil`
+  - heroes (3): `casa`, `crab`, `veil`
 
 ### GALAXY_SPIRAL
 

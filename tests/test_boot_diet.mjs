@@ -196,6 +196,14 @@ const DEFERRED = {
   'js/data/hero-coalsack.js': 'a hero\'s profile: with the coordinator',
   'js/data/hero-m78.js': 'a hero\'s profile: with the coordinator',
   'js/data/hero-iris.js': 'a hero\'s profile: with the coordinator',
+  // objects built from published 3D data (the deep-space review of 2026-11-16)
+  'js/scene/deep/homunculus.js': 'the Homunculus from its published 3D model: the coordinator fetches it when the nebula is near',
+  'js/scene/deep/meshfile.js': 'reads a compact mesh file: with the object that needs one',
+  'js/scene/deep/skyplace.js': 'a deep-sky object\'s own axes in the scene: with the object that needs them',
+  'js/data/hero-homunculus.js': 'a hero\'s profile: with the coordinator',
+  'js/scene/deep/casa.js': 'Cassiopeia A from its published 3D reconstruction: the coordinator fetches it when the remnant is near',
+  'js/data/hero-casa.js': 'a hero\'s profile: with the coordinator',
+  'js/copy/en.deepdata.js': 'the words of the objects built from published 3D data: with their modules',
   // 0076 W3-d (scalerail.js)
   'js/ui/scalerail.js': 'where you are and Back: ui/cards.js fetches it with the first card, ui/scalebadge.js on the Sun\'s stage (internal spec 0076 W3-d)',
   // 0076 W4-b (galclusters.js)

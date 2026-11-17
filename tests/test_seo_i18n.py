@@ -130,6 +130,9 @@ def main() -> int:
     check(S.problems("It is {n1} km", "Son km") and S.problems("<1>a</1> b", "a b") and not S.problems("<1>a</1> {n1}", "{n1} <1>b</1>"),
           "a lost slot or tag is a problem; moved ones are not")
 
+    # No page is ENGLISH_ONLY today (internal #476); the mechanism is held with one made up for this fixture.
+    check(S.ENGLISH_ONLY == {}, "no page is kept in English whole")
+    S.ENGLISH_ONLY = {"planets-tonight/index.html": "a fixture"}
     with tempfile.TemporaryDirectory() as t:
         tmp = Path(t)
         built = tree(tmp)
@@ -345,6 +348,7 @@ def main() -> int:
     for code in S.langs_with_catalogs():
         probs = S.check_lang(code)
         check(not probs, f"registry/seo-i18n/{code}/: {probs[:3]}")
+    S.ENGLISH_ONLY = {}
     doc = (ROOT / "docs/TRANSLATING.md").read_text(encoding="utf-8")
     for path, why in S.ENGLISH_ONLY.items():
         check(path in doc, f"docs/TRANSLATING.md says why {path} stays English")
