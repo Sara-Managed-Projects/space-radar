@@ -168,8 +168,8 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
   const sat = (norad, name, klass = 'satellite') => realModelFor({ id: `sat-${norad}`, name, klass, layer: 'active', meta: { noradId: norad } });
   // THE SECOND BATCH (2026-10-13, public #947, #969; NOAA 21 rebuilt from dimensions): Hitomi, Ajisai
   // and the two LAGEOS by number, as themselves.
-  for (const [norad, name, file, how] of [[57800, 'XRISM', 'xrism.glb', 'render'], [54234, 'NOAA 21 (JPSS-2)', 'noaa21.glb', 'dimensions'], [10967, 'SEASAT 1', 'seasat.glb', 'render'], [38358, 'NUSTAR', 'nustar.glb', 'dimensions'],
-    [41337, 'ASTRO-H (HITOMI)', 'hitomi.glb', 'render'], [16908, 'AJISAI (EGS)', 'ajisai.glb', 'dimensions'], [8820, 'LAGEOS 1', 'lageos.glb', 'dimensions'], [22195, 'LAGEOS 2', 'lageos.glb', 'dimensions'],
+  for (const [norad, name, file, how] of [[57800, 'XRISM', 'xrism.glb', 'dimensions'], [54234, 'NOAA 21 (JPSS-2)', 'noaa21.glb', 'dimensions'], [10967, 'SEASAT 1', 'seasat.glb', 'render'], [38358, 'NUSTAR', 'nustar.glb', 'dimensions'],
+    [41337, 'ASTRO-H (HITOMI)', 'hitomi.glb', 'dimensions'], [16908, 'AJISAI (EGS)', 'ajisai.glb', 'dimensions'], [8820, 'LAGEOS 1', 'lageos.glb', 'dimensions'], [22195, 'LAGEOS 2', 'lageos.glb', 'dimensions'],
     // THE THIRD BATCH (2026-10-13): the other laser-ranging balls, each from its own ILRS page.
     [7646, 'STARLETTE', 'starlette.glb', 'dimensions'], [22824, 'STELLA', 'starlette.glb', 'dimensions'], [38077, 'LARES', 'lares.glb', 'dimensions'], [53105, 'LARES-2', 'lares2.glb', 'dimensions'],
     [19751, 'COSMOS 1989 (ETALON 1)', 'etalon.glb', 'dimensions'], [20026, 'COSMOS 2024 (ETALON 2)', 'etalon.glb', 'dimensions'], [25398, 'WESTPAC', 'westpac.glb', 'dimensions'],
@@ -591,7 +591,7 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
   }
   if (typeof drawingLine === 'function') {
     const line = drawingLine({ id: 'sat-57800', name: 'XRISM', klass: 'satellite', layer: 'visual', meta: { noradId: 57800 } }, Date.UTC(2026, 9, 13));
-    check(typeof line === 'string' && line.startsWith('drawn as XRISM') && line.includes(sentences.render) && !/published model/.test(line), `XRISM's card says it is drawn as XRISM from an artist's render, and not from a published model: ${JSON.stringify(line)}`);
+    check(typeof line === 'string' && line.startsWith('drawn as XRISM') && line.includes(sentences.dimensions) && !/published model/.test(line), `XRISM's card says it is drawn as XRISM from published dimensions (built in code since 2026-11-17), and not from a published model: ${JSON.stringify(line)}`);
     const nu = drawingLine({ id: 'sat-38358', name: 'NUSTAR', klass: 'satellite', layer: 'notable', meta: { noradId: 38358 } }, Date.UTC(2026, 9, 13));
     const sw = drawingLine({ id: 'sat-54754', name: 'SWOT', klass: 'satellite', layer: 'active', meta: { noradId: 54754 } }, Date.UTC(2026, 9, 13));
     check(typeof sw === 'string' && /published model of SWOT/.test(sw) && !sw.includes(sentences.dimensions), `SWOT's card says it is drawn from a published model, and not that it was built here: ${JSON.stringify(sw)}`);
@@ -635,7 +635,7 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     const h = drawingLine({ id: 'sat-41337', name: 'ASTRO-H (HITOMI)', klass: 'satellite', layer: 'visual', meta: { noradId: 41337 } }, Date.UTC(2026, 9, 13));
     const was = COPY.drawing.objectWas && COPY.drawing.objectWas.hitomi;
     check(typeof was === 'string' && /broke apart/.test(was) && /main body/.test(was), `COPY.drawing.objectWas.hitomi says the craft broke apart and what is tracked is its main body: ${JSON.stringify(was)}`);
-    check(typeof h === 'string' && h.startsWith('drawn as Hitomi') && h.includes(sentences.render) && h.endsWith(was), `Hitomi's card says it is drawn as Hitomi, from a render, and that it is shown whole though it broke apart: ${JSON.stringify(h)}`);
+    check(typeof h === 'string' && h.startsWith('drawn as Hitomi') && h.includes(sentences.dimensions) && h.endsWith(was), `Hitomi's card says it is drawn as Hitomi, from published dimensions, and that it is shown whole though it broke apart: ${JSON.stringify(h)}`);
     for (const r of routes) if (r.entry && r.entry.was !== undefined) check(typeof (COPY.drawing.objectWas || {})[r.entry.was] === 'string', `${r.table}[${r.key}] says was: '${r.entry.was}', and COPY.drawing.objectWas has no such sentence`);
     const lg = drawingLine({ id: 'sat-8820', name: 'LAGEOS 1', klass: 'satellite', layer: 'active', meta: { noradId: 8820 } }, Date.UTC(2026, 9, 13));
     check(typeof lg === 'string' && lg.startsWith('drawn as LAGEOS') && lg.includes(sentences.dimensions) && !/kind of thing/.test(lg), `LAGEOS 1's card says it is drawn as LAGEOS, built from dimensions: ${JSON.stringify(lg)}`);
