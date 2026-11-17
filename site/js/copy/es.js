@@ -6308,6 +6308,80 @@ Object.assign(COPY, {
   }
 });
 // ds2: end
+// ds3: begin -- the words of the Vela pulsar wind nebula and the Cat's Eye (copy/en.deepdata.js), machine-drafted
+Object.assign(COPY, {
+  "deepVela": {
+    "card": {
+      "vela": "Dos anillos de luz de rayos X y un par de chorros, dibujados con la geometría ajustada a la imagen de Chandra (Ng y Romani, 2004 y 2008). La longitud de los chorros y qué extremo del eje está más cerca son un modelo; el color es ilustrativo. Aún no revisado por un astrónomo."
+    },
+    "rows": {
+      "dso-vela-pulsar-wind-nebula": [
+        [
+          "Los dos anillos",
+          "Medidos. Ajustados a la imagen de rayos X de Chandra: cada anillo de 21,25 segundos de arco de radio, el eje de giro inclinado 63,6° respecto a nuestra línea de visión y en el ángulo de posición 130,6° del cielo, con los anillos a 11,61 segundos de arco entre sí tal como los vemos (Ng y Romani, 2004, 2008)."
+        ],
+        [
+          "Por qué un lado brilla más",
+          "Medido. El flujo a lo largo de cada anillo va a 0,44 de la velocidad de la luz, lo que ilumina el lado que viene hacia la cámara; el patrón cambia al girar la vista."
+        ],
+        [
+          "Los chorros",
+          "Su velocidad está medida (0,45 de la de la luz). Su longitud y su brillo son un modelo: el chorro real se curva y cambia de un año a otro."
+        ],
+        [
+          "Qué extremo está cerca",
+          "Modelado. Los artículos no dicen qué extremo del eje apunta hacia nosotros."
+        ],
+        [
+          "Color",
+          "Ilustrativo. Los rayos X no son luz que vea un ojo; se dibujan en azul violeta."
+        ],
+        [
+          "Revisión",
+          "Este dibujo aún no ha sido revisado por un astrónomo."
+        ]
+      ]
+    }
+  },
+  "deepCatsEye": {
+    "card": {
+      "catseye": "Sus partes, ángulos y velocidades vienen de un modelo 3D publicado (Clairmont, Steffen y Koning, 2022); los tamaños se leen en la imagen de Hubble. Los colores son ilustrativos. Aún no revisado por un astrónomo."
+    },
+    "rows": {
+      "dso-cats-eye-nebula": [
+        [
+          "Sus partes",
+          "Medidas. Una cáscara interior en forma de huevo dentro de una cáscara exterior de dos lóbulos redondos, un anillo en la cintura, dos grumos en el eje y dos chorros: un modelo ajustado a la imagen de Hubble y a cinco mapas de la velocidad del gas (Clairmont y otros, 2022)."
+        ],
+        [
+          "Los dos anillos parciales",
+          "Medidos. Cada uno es la base de un cono a 38° del eje, inclinado 17°, abierto en 300° de su vuelta: la huella de un chorro que se bamboleaba y nunca completó un círculo. Dónde queda cada hueco es un modelo."
+        ],
+        [
+          "Velocidades",
+          "Medidas. Todo se mueve en línea recta hacia fuera: la cáscara exterior a 25–33,5 km/s, el anillo de la cintura a 24, los grumos a 44, los chorros a 72. La edad del modelo es de 2 136 años, a 4 272 años luz (Gaia)."
+        ],
+        [
+          "Tamaños y eje",
+          "Leídos en la imagen de Hubble por Space Radar, con una precisión de un décimo: el artículo muestra su modelo en imágenes, no en una tabla."
+        ],
+        [
+          "Inclinación",
+          "Modelada. El artículo solo dice que el eje está algo inclinado; se dibuja a 80° de nuestra línea de visión, con el extremo norte hacia nosotros."
+        ],
+        [
+          "Color",
+          "Ilustrativo. El falso color de Hubble, que el modelo no tiene. El aspecto Medido lo muestra en gris."
+        ],
+        [
+          "Revisión",
+          "Este dibujo aún no ha sido revisado por un astrónomo."
+        ]
+      ]
+    }
+  }
+});
+// ds3: end
 // A constellation seen from the side (ui/figureside.js, copy/en.side.js): begin
 COPY.figureSide = {
   "open": "Verla de lado",

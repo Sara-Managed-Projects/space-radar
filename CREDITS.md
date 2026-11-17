@@ -2805,6 +2805,29 @@ tilt is not written in it: it was read off the mesh against the paper's figures 
 both sides. The surface's brightness, its mottling and the star's glare are **illustrative**; the Measured look takes
 the mottling off. The card carries the credit line and says no astronomer has reviewed the drawing.
 
+### Pulsar wind nebulae and the Cat's Eye (2026-11-17)
+
+The Vela pulsar's wind nebula (`site/js/scene/deep/vela.js`, `registry/deepsky-heroes/vela.yaml`) and the Cat's Eye Nebula
+(`site/js/scene/deep/catseye.js`, `registry/deepsky-heroes/catseye.yaml`) are drawn from geometry published in papers, as
+soft points (`site/js/scene/deep/softpoints.js`). No picture, mesh or data file of anyone's is shipped: the numbers are facts,
+cited, and each dot is generated.
+
+| what | from | licence |
+|---|---|---|
+| Vela's two tori (position angle 130.63 degrees, tilt 63.60 degrees, radius 21.25 arcseconds, thickness 3.0, separation 11.61, flow 0.44 c) and the jets' speed (0.45 c) | Ng C.-Y. & Romani R. W. 2004, ApJ 601, 479, *Fitting pulsar wind tori* (arXiv:astro-ph/0310155), Table 1; Ng & Romani 2008, ApJ 673, 411 (arXiv:0710.4168), Table 1: fits to Chandra X-ray pictures | facts, cited |
+| The Cat's Eye's parts and shapes, the partial rings' cone (38 degrees, tilt 17 degrees, 300 degrees), the jets (26 degrees, 19 arcseconds), the speeds, the age (2 136 years) | Clairmont R., Steffen W. & Koning N. 2022, MNRAS, *Morpho-kinematic modeling of the point-symmetric Cat's Eye, NGC 6543* (arXiv:2209.01313): a SHAPE model fitted to Hubble's [N II] picture and five position-velocity diagrams | facts, cited |
+| The Cat's Eye's distance, 1.31 kpc | Chornay N. & Walton N. 2021 (arXiv:2102.13654), Gaia EDR3, as Clairmont et al. use it | facts, cited |
+| The Cat's Eye's axis (position angle 1 and 181 degrees) and the sizes of its parts, read off the picture | ESA/Hubble heic0414a, NASA, ESA, HEIC and the Hubble Heritage Team (STScI/AURA), [CC BY 4.0](https://esahubble.org/images/heic0414a/), read 2026-11-17: its stated orientation and field; the picture itself is not shipped | CC BY 4.0, credited |
+
+What is measured and what is not. Vela's tori and the jets' speed are **measured** (fits, with systematic errors that
+dominate for Vela); the jets' length, which end of the axis is nearer and the scatter of dots are **modelled**; the colour
+is **illustrative** (X-rays drawn violet-blue). The Cat's Eye's parts, angles and speeds are **measured** (a published
+model); the axis' position angle and the sizes are read off Hubble's picture to about 10 per cent; the axis' tilt (the
+paper says "slightly tilted"), the rings' gaps and lean and the jets' direction round the axis are **modelled**; the colours
+are **illustrative**, and the Measured look takes them to grey. The cards carry the sources and say no astronomer has
+reviewed the drawings. The Cat's Eye record's distance changed with this work from 3.3 +/- 0.9 kly (Wikipedia's infobox)
+to 4 272 ly (Gaia).
+
 ### Cassiopeia A from its published 3D reconstruction (2026-11-16)
 
 Cassiopeia A (`site/js/scene/deep/casa.js`, `registry/deepsky-heroes/casa.yaml`) is drawn from the three-dimensional

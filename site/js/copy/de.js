@@ -6529,6 +6529,80 @@ Object.assign(COPY, {
   }
 });
 // ds2: end
+// ds3: begin -- the words of the Vela pulsar wind nebula and the Cat's Eye (copy/en.deepdata.js), machine-drafted
+Object.assign(COPY, {
+  "deepVela": {
+    "card": {
+      "vela": "Zwei Ringe aus Röntgenlicht und zwei Jets, gezeichnet nach der an Chandras Bild angepassten Geometrie (Ng und Romani, 2004 und 2008). Die Länge der Jets und welches Achsenende uns näher ist, sind modelliert; die Farbe ist illustrativ. Noch nicht von einem Astronomen geprüft."
+    },
+    "rows": {
+      "dso-vela-pulsar-wind-nebula": [
+        [
+          "Die zwei Ringe",
+          "Gemessen. An Chandras Röntgenbild angepasst: jeder Ring 21,25 Bogensekunden im Radius, die Drehachse 63,6° gegen unsere Blickrichtung geneigt und im Positionswinkel 130,6° am Himmel, die Ringe von uns aus gesehen 11,61 Bogensekunden voneinander entfernt (Ng und Romani, 2004, 2008)."
+        ],
+        [
+          "Warum eine Seite heller ist",
+          "Gemessen. Die Strömung entlang jedes Rings bewegt sich mit 0,44 Lichtgeschwindigkeit, was die Seite aufhellt, die auf die Kamera zukommt; das Muster ändert sich, wenn sich der Blick dreht."
+        ],
+        [
+          "Die Jets",
+          "Ihre Geschwindigkeit ist gemessen (0,45 der Lichtgeschwindigkeit). Länge und Helligkeit sind modelliert: der echte Jet biegt sich und ändert sich von Jahr zu Jahr."
+        ],
+        [
+          "Welches Ende nah ist",
+          "Modelliert. Die Arbeiten sagen nicht, welches Ende der Achse auf uns zeigt."
+        ],
+        [
+          "Farbe",
+          "Illustrativ. Röntgenstrahlen sind kein Licht, das ein Auge sieht; sie sind violettblau gezeichnet."
+        ],
+        [
+          "Prüfung",
+          "Diese Zeichnung wurde noch nicht von einem Astronomen geprüft."
+        ]
+      ]
+    }
+  },
+  "deepCatsEye": {
+    "card": {
+      "catseye": "Ihre Teile, Winkel und Geschwindigkeiten stammen aus einem veröffentlichten 3D-Modell (Clairmont, Steffen und Koning, 2022); die Größen sind aus Hubbles Bild abgelesen. Die Farben sind illustrativ. Noch nicht von einem Astronomen geprüft."
+    },
+    "rows": {
+      "dso-cats-eye-nebula": [
+        [
+          "Ihre Teile",
+          "Gemessen. Eine eiförmige innere Hülle in einer äußeren Hülle aus zwei runden Lappen, ein Ring um die Taille, zwei Klumpen auf der Achse und zwei Jets: ein Modell, angepasst an Hubbles Bild und fünf Karten der Gasgeschwindigkeit (Clairmont u. a., 2022)."
+        ],
+        [
+          "Die zwei Teilringe",
+          "Gemessen. Jeder ist die Basis eines Kegels 38° von der Achse, um 17° geneigt, offen über 300° seiner Drehung: die Spur eines Jets, der taumelte und nie einen ganzen Kreis vollendete. Wo jede Lücke liegt, ist modelliert."
+        ],
+        [
+          "Geschwindigkeiten",
+          "Gemessen. Alles bewegt sich geradlinig nach außen: die äußere Hülle mit 25 bis 33,5 km/s, der Taillenring mit 24, die Klumpen mit 44, die Jets mit 72. Das Alter des Modells beträgt 2 136 Jahre, bei 4 272 Lichtjahren (Gaia)."
+        ],
+        [
+          "Größen und Achse",
+          "Von Space Radar aus Hubbles Bild abgelesen, auf etwa ein Zehntel genau: die Arbeit zeigt ihr Modell in Bildern, nicht in einer Tabelle."
+        ],
+        [
+          "Neigung",
+          "Modelliert. Die Arbeit sagt nur, dass die Achse leicht geneigt ist; gezeichnet ist sie 80° gegen unsere Blickrichtung, das Nordende uns zugewandt."
+        ],
+        [
+          "Farbe",
+          "Illustrativ. Hubbles Falschfarben, die das Modell nicht hat. Der Look „Gemessen“ zeigt Grau."
+        ],
+        [
+          "Prüfung",
+          "Diese Zeichnung wurde noch nicht von einem Astronomen geprüft."
+        ]
+      ]
+    }
+  }
+});
+// ds3: end
 // A constellation seen from the side (ui/figureside.js, copy/en.side.js): begin
 COPY.figureSide = {
   "open": "Von der Seite ansehen",

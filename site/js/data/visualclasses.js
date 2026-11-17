@@ -1308,6 +1308,7 @@ export const VISUAL_CLASSES = [
 "dso-southern-ring-nebula"
 ],
 "heroes": [
+"dso-cats-eye-nebula",
 "dso-helix-nebula",
 "dso-m27",
 "dso-m57",
@@ -1363,7 +1364,8 @@ export const VISUAL_CLASSES = [
 "dso-m1",
 "dso-veil-nebula",
 "dso-cassiopeia-a",
-"dso-sn-1987a"
+"dso-sn-1987a",
+"dso-vela-pulsar-wind-nebula"
 ],
 "photographs": [
 "dso-m1",
@@ -1373,7 +1375,8 @@ export const VISUAL_CLASSES = [
 "dso-cassiopeia-a",
 "dso-m1",
 "dso-sn-1987a",
-"dso-veil-nebula"
+"dso-veil-nebula",
+"dso-vela-pulsar-wind-nebula"
 ]
 }
 },

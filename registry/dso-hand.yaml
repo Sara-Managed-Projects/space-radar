@@ -902,11 +902,15 @@ objects:
     what: planetary nebula
     ra_deg: 269.6393        # 17h 58m 33.423s
     dec_deg: 66.6332        # +66 deg 37 min 59.52 s
-    dist_kly: 3.3           # 3.3 +/- 0.9 kly
+    # 1.31 kpc from Gaia's parallax of the central star (Chornay & Walton 2021, arXiv:2102.13654), the distance Clairmont,
+    # Steffen & Koning 2022 (arXiv:2209.01313, the introduction and section 6, read 2026-11-17) build their model at; the
+    # 3.3 +/- 0.9 kly this row had was the Wikipedia infobox's, before Gaia. 1.31 kpc x 3 261.564 ly/kpc = 4 272 ly.
+    distance: {method: parallax, value_ly: 4272,
+               source: "Chornay & Walton 2021 (Gaia EDR3 parallax of the central star, arXiv:2102.13654), 1.31 kpc, as Clairmont, Steffen & Koning 2022 (arXiv:2209.01313) use it", read: 2026-11-17}
     # vmag omitted: the infobox gives 9.8 in B, not V
     maj_ax_arcmin: 0.33      # core 20 arcsec
     con: Draco
-    source: "https://en.wikipedia.org/wiki/Cat%27s_Eye_Nebula (infobox, read 2026-09-09)"
+    source: "https://en.wikipedia.org/wiki/Cat%27s_Eye_Nebula (infobox, read 2026-09-09); the distance: Chornay & Walton 2021 via Clairmont et al. 2022 (read 2026-11-17)"
     why: "The first planetary nebula whose light was split into a spectrum (1864), showing glowing gas, not stars; Hubble's portrait of it is famous."
 
   - id: double-cluster
@@ -1071,6 +1075,24 @@ objects:
     con: Dorado
     source: "Panagia 2003, arXiv:astro-ph/0309416 (the abstract, read 2026-11-17): 51.4 +/- 1.2 kpc; Sugerman et al. 2005, ApJS 159, 60 (arXiv:astro-ph/0502378, read 2026-11-17): the rings; https://en.wikipedia.org/wiki/SN_1987A (infobox, read 2026-11-17): the place"
     why: "The star that blew up in the Large Magellanic Cloud in 1987, the nearest supernova in four hundred years, and the three glowing rings of gas it lit up."
+  # The Vela pulsar's wind nebula (review of 2026-11-16, deep space, idea 8): the X-ray tori and jets Chandra shows round the
+  # pulsar, drawn from Ng & Romani's fitted geometry (registry/deepsky-heroes/vela.yaml, site/js/scene/deep/vela.js). Its
+  # place is the pulsar's (registry/exotics.yaml vela-pulsar: 08h 35m 20.65525s, -45 deg 10 min 35.1545 s) and its
+  # distance that row's, 959 ly. Its size is the fitted torus' diameter at that distance: 2 x 21.25 arcseconds
+  # (Ng & Romani 2004, ApJ 601, 479, their Table 1) = 0.71 arcminutes. It is the nebula the pulsar blows, not the
+  # supernova remnant round it (which is eight degrees wide and has no record here).
+  - id: vela-pulsar-wind-nebula
+    name: Vela Pulsar Wind Nebula
+    designation: PSR B0833-45 nebula
+    type: SNR
+    what: pulsar wind nebula
+    ra_deg: 128.836063      # 08h 35m 20.65525s
+    dec_deg: -45.176432     # -45 deg 10 min 35.1545 s
+    dist_kly: 0.959         # 959 ly, as the Vela pulsar's row
+    maj_ax_arcmin: 0.71     # the fitted torus' diameter, 2 x 21.25 arcsec
+    con: Vela
+    source: "Ng & Romani 2004, ApJ 601, 479 (arXiv:astro-ph/0310155, Table 1, read 2026-11-17): the torus' size; registry/exotics.yaml vela-pulsar: the place and the distance"
+    why: "The cloud of charged particles the Vela pulsar blows around itself, which Chandra shows as two glowing rings and a pair of jets along its spin axis."
 
   - id: coalsack
     name: Coalsack Nebula

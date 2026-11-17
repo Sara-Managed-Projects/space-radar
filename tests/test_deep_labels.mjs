@@ -32,7 +32,7 @@ const records = new Map(parseDso(JSON.parse(readFileSync(join(ROOT, 'site/data/d
 const F = COPY.deepFacts;
 const MODULES = { helix: 'helix', lmc: 'lmc', m31: 'spiral', m33: 'spiral', orion: 'orion', m57: 'ring', crab: 'remnant', veil: 'remnant', horsehead: 'dustsheet', coalsack: 'dustsheet', m78: 'dustsheet', iris: 'dustsheet', carina: 'carina', smc: 'smc', m51: 'spiral', m81: 'spiral', m101: 'spiral', m104: 'spiral', antennae: 'spiral' }; // 0077 W3-f: the spirals and the Antennae
 Object.assign(MODULES, { m8: 'emission', m20: 'emission', m16: 'emission', m17: 'emission', rosette: 'emission', california: 'emission', 'north-america': 'emission', 'cats-paw': 'emission' }); // 0078 r14-neb-a
-Object.assign(MODULES, { homunculus: 'homunculus', casa: 'casa', sn1987a: 'sn1987a' }); // the objects drawn from published 3D data, 2026-11-16
+Object.assign(MODULES, { homunculus: 'homunculus', casa: 'casa', sn1987a: 'sn1987a', vela: 'vela', catseye: 'catseye' }); // the objects drawn from published 3D data, 2026-11-16
 Object.assign(MODULES, { m27: 'ring', 'southern-ring': 'ring', m45: 'reflection', m83: 'spiral', ngc1300: 'spiral', cena: 'spiral' }); // 0078 r14-neb-b
 const fresh = (rec) => ({ ...rec, meta: { ...(rec.meta || {}) } });
 let sampled = 0, shipped = 0;
@@ -81,6 +81,14 @@ for (const def of HEROES) {
     check(/reviewed by an astronomer/.test(said), `${t.id}: its card says no astronomer has reviewed it yet`);
     sampled += 1;
   }
+}
+// The rule for depth made from ONE photograph (internal #431, the deep-space review of 2026-11-16, idea 15): the distance of a gas pixel
+// is never measured, so every emission hero's card says its depth is reconstructed or not measured, and that it is not measured, in the
+// row that every one of them carries ("Its shape in depth"). A card that dropped the row, or called the depth measured, fails here.
+for (const def of HEROES.filter((h) => MODULES[h.id] === 'emission')) {
+  const rows = (COPY.deepNebulae.rows[`dso-${def.record.replace(/^dso-/, '')}`] || []);
+  const depth = rows.find((r) => /depth/i.test(r[0]));
+  check(depth && /^(Reconstructed|Not measured)/.test(depth[1]) && /depths?\b[^.]*\b(not|neither|never)\b|\b(not|neither|never)\b[^.]*\bmeasured/i.test(depth[1]), `${def.id}: its card has a depth row that says the depth is reconstructed or not measured (one photograph gives no distance for gas)`);
 }
 check(shipped >= 10 && sampled >= shipped + 1, `every shipped hero and its children sampled (${shipped} heroes, ${sampled} records)`);
 for (const [id, hero] of [['dso-carina-nebula', 'carina'], ['dso-smc', 'smc'], ['dso-tarantula-nebula', null], ['dso-helix-nebula', 'helix'], ['dso-m31', 'm31']]) check(records.has(id), `${id} (${hero || 'a child'}) is sampled`);
