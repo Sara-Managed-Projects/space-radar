@@ -57,6 +57,11 @@ with tempfile.TemporaryDirectory() as tmp:
     check("not affiliated with the Korean company SpaceRadar" in page, "the name note is missing")
     check("CITATION.cff" in page and (ROOT / "CITATION.cff").is_file(), "the page must point at CITATION.cff, which must exist")
     check((press / "social-preview.png").is_file(), "the social preview is not in the kit")
+    # Every file type the kit holds has a sync in deploy.sh that names it (internal #474: the PNG had none, so it was never uploaded).
+    deploy = (ROOT / "scripts" / "deploy.sh").read_text(encoding="utf-8")
+    for ext in sorted({p.suffix for p in press.iterdir() if p.is_file()}):
+        check(re.search(rf'press" "s3://\$BUCKET/press"[^\n]*\\\n\s*--exclude "\*" --include "\*{re.escape(ext)}"', deploy) is not None,
+              f"scripts/deploy.sh has no sync for the press kit's {ext} files")
     for name, _label, _k in build_press.MARKS:
         svg = (press / name).read_text(encoding="utf-8") if (press / name).is_file() else ""
         check(svg.startswith("<svg ") and "<title>Space Radar</title>" in svg and "<text" not in svg and "<script" not in svg, f"{name} is a plain titled SVG with no text element (the wordmark is outlines) and no script")

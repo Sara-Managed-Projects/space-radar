@@ -521,9 +521,10 @@ def _subject_in(node) -> str | None:
 # --- the pages --------------------------------------------------------------------------------------------------------
 
 # Pages kept in English, each with its reason (tests/test_seo_i18n.py holds the list to this file's docs).
-ENGLISH_ONLY = {
-    "planets-tonight/index.html": "its sentences are worked out for the night of each build, so they cannot be a catalog",
-}
+# None today: /planets-tonight/ was the one (its sentences are worked out for the night of each build), until its dated sentences
+# were marked lang="en" translate="no" (scripts/seo_pages.py planets_page) and the rest of the page, which does not change, went in
+# the catalog (internal #476).
+ENGLISH_ONLY: dict[str, str] = {}
 
 
 def page_paths(built: Path, host: str) -> list[str]:
@@ -1030,6 +1031,10 @@ def translate_page(path: str, seg_page: tuple, name: str | None, lang: "Lang", h
     out = []
     for it in items:
         if isinstance(it, str):
+            # A comment is the English page's working note (a Lab page's "Sources" block: the sentences its author checked, in
+            # English). It is not text of the page, and kept in a translation it reads as English left behind (internal #475).
+            if it.startswith("<!--"):
+                continue
             if it.startswith("<script"):
                 # A SCRIPT'S OWN ADDRESS MOVES WITH THE PAGE (review of 2026-11-16). The text inside a script is never
                 # touched, and until that day neither was its opening tag: `src="../js/pages/subscribe.js"` was copied
