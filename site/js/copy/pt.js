@@ -1145,7 +1145,8 @@ export const COPY = {
     "exoticDeparture": {
       "pulseSlowed": "o piscar é desenhado {n} vezes mais lento do que o giro, para que um olho consiga acompanhá-lo",
       "pulseTrue": "o piscar é desenhado no ritmo em que ele gira",
-      "portrait": "enquanto esta ficha está aberta, um modelo é desenhado no lugar dele, bem maior do que pareceria daqui: a sombra e a luz curvada como a massa as dá, o disco modelado"
+      "portrait": "enquanto esta ficha está aberta, um modelo é desenhado no lugar dele, bem maior do que pareceria daqui: a sombra e a luz curvada como a massa as dá, o disco modelado",
+      "sstars": "as estrelas que o rodeiam são desenhadas nas suas órbitas medidas quando se chega a cerca de um ano-luz: 39 delas (a S2 pelo ajuste do GRAVITY, as outras por Gillessen e outros, 2017), cada uma onde o relógio a põe na sua órbita; os tamanhos e as cores são ilustrativos, e a imagem do buraco cede o lugar a elas"
     },
     "worldDeparture": {
       "earth": "em uma tela maior, as montanhas vêm das alturas do ETOPO 2022 da NOAA, desenhadas {relief} vezes mais íngremes do que são para que um Sol baixo as mostre; o brilho do ar ao redor da borda é desenhado {air} vezes mais alto do que o ar é; da órbita baixa, em uma tela maior, as nuvens se erguem em direção ao horizonte e sob um Sol baixo, desenhadas {clouds} vezes mais espessas do que são para que se vejam a inclinação, as sombras longas e a última luz no topo delas (na espessura real no modo Medido), com a altura de cada topo tirada da temperatura medida onde a imagem de hoje cobre e do brilho do mapa de nuvens nos demais lugares",
