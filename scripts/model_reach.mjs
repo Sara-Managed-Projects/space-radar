@@ -11,7 +11,7 @@
 //     app's own parseCelestrakGP() with that layer's name: `active` and `stations` on the map. Without --sat only the
 //     hand-kept records are counted, and the output says so (`satellites: false`).
 //
-// Output: {satellites: bool, routed: [every file a route names], moments: {model id: [Moment ids]}, files: {"<file>.glb": {count, examples: [{id, name, layer, klass}], layers: {layer: n}}}}.
+// Output: {satellites: bool, routed: [every file a route names], moments: {model id: [Moment ids]}, files: {"<file>.glb": {count, generic: n of them drawn as `the kind of thing`, examples: [{id, name, layer, klass}], layers: {layer: n}}}}.
 // `examples` are the first three objects in file order (the link on the page goes to the first). A file that no object
 // reaches is absent.
 import { readFileSync } from 'node:fs';
@@ -24,6 +24,7 @@ const { realModelFor, REAL_MODELS } = await at('site/js/scene/realmodels.js');
 await at('site/js/scene/sourcedtables.js'); // the CubeSat and bus tables, as the card and the shapes load them
 const sample = await at('site/js/data/sample.js');
 const { parseCelestrakGP } = await at('site/js/data/parsers.js');
+const { landingRecords } = await at('site/js/data/smalllists.js');
 const { decodeColumns } = await at('site/js/data/columnar.js');
 
 const sats = [];
@@ -38,6 +39,8 @@ for (let i = 0; i < argv.length; i++) {
 const records = [
   ...sample.sampleDeepSpace(), ...sample.handKeptSites(), ...sample.namedAsteroids(), ...sample.namedComets(),
   ...sample.farBodies(), ...sample.sampleAsteroids(),
+  // the landing-sites layer (site/data/lists/landing-sites.json): the rows with a `model` are drawn with it (Venera 9 and 10)
+  ...landingRecords(JSON.parse(readFileSync(join(ROOT, 'site/data/lists/landing-sites.json'), 'utf8'))),
 ];
 for (const [layer, file] of sats) {
   const body = JSON.parse(readFileSync(file, 'utf8'));
@@ -53,8 +56,9 @@ for (const r of records) {
   let entry = null;
   try { entry = realModelFor(r); } catch { entry = null; }
   if (!entry || !entry.file) continue;
-  const f = files[entry.file] || (files[entry.file] = { count: 0, examples: [], layers: {} });
+  const f = files[entry.file] || (files[entry.file] = { count: 0, examples: [], layers: {}, generic: 0 });
   f.count++;
+  if (entry.generic) f.generic++; // the route says the shape is the kind of thing, not this exact object
   f.layers[r.layer] = (f.layers[r.layer] || 0) + 1;
   if (f.examples.length < 3) f.examples.push({ id: r.id, name: r.name, layer: r.layer, klass: r.klass });
 }
