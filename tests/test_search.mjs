@@ -298,6 +298,7 @@ check(JSON.stringify(findMatches(index, 'starlink').hits.map((h) => h.record.id)
     'scene/groundstage.js': 'guarded: isTypingIn (explore.js), on its own layer: the walk keys leave a field alone',
     'ui/play.js': 'guarded: isTypingIn (explore.js); on the document, so A-D and Escape leave a field outside the card alone',
     'ui/skystory.js': 'guarded: isTypingIn (explore.js); Escape only, heard first, and never taken from a field',
+    'ui/figureside.js': 'Escape only, and only while its own panel is open: an Escape typed into the search or a text area is left to it',
     'ui/datejump.js': 'Escape and Tab only, on its own popover: Escape closes it from its own date fields, Tab wraps at its ends',
     'ui/flighteditor.js': 'Escape only, on its own sheet: closes the flight editor',
     'ui/gamepad.js': 'Escape only, on the controller hint itself: hides the hint',
