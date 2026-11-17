@@ -153,6 +153,75 @@ check(D.deepWords(null, false, K) === null, 'no readout for today');
   check(css.indexOf('.sr-deeptime__pairs.ui-seg > .ui-seg__btn') > css.indexOf('.sr-skybar__wrap.ui-seg > .ui-seg__btn { flex: 1 1 30%; }'), 'after the wrapping row\'s third, so they win');
 }
 
+// 7. THE STARS AT TODAY'S DATE (internal #396): the sky view puts every star at its place of the clock's date, not J2000.
+// starYears has no window around now, and the moved Rigil Kentaurus and Arcturus travel what their proper motions say.
+// SIMBAD basic table, read 2026-11-17 from the SIMBAD TAP service, ICRS epoch 2000, mas/yr (pmra is mu_alpha cos delta),
+// both from the Hipparcos reduction of van Leeuwen 2007 (2007A&A...474..653V):
+//   * alf Cen A : RA 219.90205833 Dec -60.83399269  pmra -3679.25  pmdec +473.67
+//   * * alf Boo (Arcturus): RA 213.91530029 Dec +19.18240916  pmra -1093.39  pmdec -2000.06
+// The expectation is the textbook linear change in place, d(alpha) cos(delta) = pmra t, d(delta) = pmdec t.
+{
+  const at = Date.UTC(2026, 10, 17, 0, 0, 0);
+  const t = M.starYears(at, at);
+  check(Math.abs(t - 26.88) < 0.01, `starYears at 2026-11-17 is ${t.toFixed(3)} Julian years from J2000 (26.88)`);
+  check(M.starYears(at, at) !== 0 && M.motionYears(at, at) === 0, 'the readout window still says nothing moved today while starYears moves the stars');
+  const match = M.createMatcher(m);
+  const cases = [['Rigil Kentaurus', 219.90205833, -60.83399269, -3679.25, 473.67], ['Arcturus', 213.91530029, 19.18240916, -1093.39, -2000.06]];
+  for (const [name, ra, dec, pmra, pmdec] of cases) {
+    const i = match(dirOf(ra, dec), 0.05, true);
+    check(i >= 0, `${name} is in starmotion.bin`);
+    if (i < 0) continue;
+    const d0 = [m.dir[i * 3], m.dir[i * 3 + 1], m.dir[i * 3 + 2]];
+    const d1 = M.moveOne(m, i, t, [0, 0, 0]);
+    // The displacement on the sky, in arcseconds east and north of the J2000 place.
+    const a0 = Math.atan2(d0[1], d0[0]);
+    const dl0 = Math.asin(d0[2]);
+    const east = [-Math.sin(a0), Math.cos(a0), 0];
+    const north = [-Math.sin(dl0) * Math.cos(a0), -Math.sin(dl0) * Math.sin(a0), Math.cos(dl0)];
+    const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+    const diff = [d1[0] - d0[0], d1[1] - d0[1], d1[2] - d0[2]];
+    const gotE = dot(diff, east) / AS;
+    const gotN = dot(diff, north) / AS;
+    const wantE = pmra * t / 1000;
+    const wantN = pmdec * t / 1000;
+    check(Math.hypot(gotE - wantE, gotN - wantN) < 1.0, `${name} 2026-11-17: moved ${gotE.toFixed(1)}", ${gotN.toFixed(1)}" east, north; SIMBAD's proper motion says ${wantE.toFixed(1)}", ${wantN.toFixed(1)}"`);
+    check(Math.hypot(wantE, wantN) > 55, `${name}: the motion is the 61 to 101 arcseconds the review found (${Math.hypot(wantE, wantN).toFixed(0)}")`);
+  }
+}
+
+// 8. PRECESSION AND NUTATION TO THE DATE, which Astronomy Engine's frame carries: Arcturus's altitude and azimuth at
+// Greenwich 2026-11-17 22:00 UT, from Meeus, Astronomical Algorithms 2nd ed.: precession from J2000 to the date by
+// eq. 21.2 and 21.3 (zeta, z, theta), the mean sidereal time of eq. 12.4; the lowest-order nutation (eq. 22.1's first term,
+// -17.20" sin(Omega) in longitude, 9.20" cos(Omega) in obliquity) is left out, which is under 20", so the match is to 0.01 degree.
+{
+  const at = new Date(Date.UTC(2026, 10, 17, 22, 0, 0));
+  const T = (at.getTime() - Date.UTC(2000, 0, 1, 12)) / (36525 * 864e5);
+  const zeta = (2306.2181 * T + 0.30188 * T * T + 0.017998 * T * T * T) * AS;
+  const zz = (2306.2181 * T + 1.09468 * T * T + 0.018203 * T * T * T) * AS;
+  const th = (2004.3109 * T - 0.42665 * T * T - 0.041833 * T * T * T) * AS;
+  const ra0 = 213.91530029 * DEG;
+  const de0 = 19.18240916 * DEG;
+  const A = Math.cos(de0) * Math.sin(ra0 + zeta);
+  const B = Math.cos(th) * Math.cos(de0) * Math.cos(ra0 + zeta) - Math.sin(th) * Math.sin(de0);
+  const C = Math.sin(th) * Math.cos(de0) * Math.cos(ra0 + zeta) + Math.cos(th) * Math.sin(de0);
+  const raD = Math.atan2(A, B) + zz;
+  const deD = Math.asin(C);
+  const jd = (at.getTime() / 864e5) + 2440587.5;
+  const gmst = ((280.46061837 + 360.98564736629 * (jd - 2451545) + 0.000387933 * T * T) % 360 + 360) % 360;
+  const lat = 51.5 * DEG;
+  const lon = -0.1;
+  const H = (gmst + lon) * DEG - raD;
+  const sinAlt = Math.sin(lat) * Math.sin(deD) + Math.cos(lat) * Math.cos(deD) * Math.cos(H);
+  const wantAlt = Math.asin(sinAlt) / DEG;
+  const loc = eqjToLocal(at, { latitude: 51.5, longitude: lon, height: 0 });
+  const v = mul(loc, dirOf(213.91530029, 19.18240916)); // +X east, +Y up, +Z south
+  const gotAlt = Math.asin(Math.max(-1, Math.min(1, v[1]))) / DEG;
+  const wantAz = (Math.atan2(Math.sin(H), Math.cos(H) * Math.sin(lat) - Math.tan(deD) * Math.cos(lat)) / DEG + 180 + 360) % 360; // from north, through east
+  const gotAz = (Math.atan2(v[0], -v[2]) / DEG + 360) % 360;
+  check(Math.abs(gotAlt - wantAlt) < 0.01, `Arcturus altitude ${gotAlt.toFixed(4)} against Meeus ${wantAlt.toFixed(4)}`);
+  check(Math.abs(((gotAz - wantAz + 540) % 360) - 180) < 0.01, `Arcturus azimuth ${gotAz.toFixed(4)} against Meeus ${wantAz.toFixed(4)}`);
+}
+
 if (problems.length) {
   console.error(`starmotion FAILED (${problems.length}):\n  ` + problems.slice(0, 30).join('\n  '));
   process.exit(1);
