@@ -292,5 +292,17 @@
  "dc21c5af7e": "magnitud {n1}, a {n2}° del Sol, cielo de la tarde, en Sagitario",
  "aee6b0cce1": "Venus a {n1} UA, Marte a {n2} UA",
  "44efad8e76": "Una conjunción es cuando dos cuerpos se ven muy juntos en el cielo. Solo lo parecen: Venus está a {n1} UA de la Tierra y Marte a {n2} UA, uno delante del otro visto desde aquí, y muy lejos entre sí en el espacio.",
- "c84e805bb1": "Mira hacia el oeste, bajo, después del atardecer. Los dos están a menos de {n1}° del Sol, así que ayuda un horizonte despejado; el momento más cercano se da en UT, y la pareja sigue cerca varios días antes y después."
+ "c84e805bb1": "Mira hacia el oeste, bajo, después del atardecer. Los dos están a menos de {n1}° del Sol, así que ayuda un horizonte despejado; el momento más cercano se da en UT, y la pareja sigue cerca varios días antes y después.",
+ "fafdf3f85c": "Las Líridas alcanzan su máximo el {d1}, a las {n1} UT, con hasta unos {n2} meteoros por hora bajo un cielo oscuro perfecto, que vienen de Lira. La Luna está iluminada en torno al {n3} por ciento y menguante a la hora para la que lo damos ({d2}, {n4} UT).",
+ "efdc1c2d95": "en Lira",
+ "2039350aea": "Las Perseidas alcanzan su máximo el {d1}, a las {n1} UT, con hasta unos {n2} meteoros por hora bajo un cielo oscuro perfecto, que vienen de Perseo. La Luna está iluminada en torno al {n3} por ciento y creciente a la hora para la que lo damos ({d2}, {n4} UT).",
+ "1926ca6d6c": "en Perseo",
+ "f3b70cdbe1": "Las Perseidas alcanzan su máximo el {d1}, a las {n1} UT, con hasta unos {n2} meteoros por hora bajo un cielo oscuro perfecto, que vienen de Perseo. La Luna está iluminada en torno al {n3} por ciento y menguante a la hora para la que lo damos ({d2}, {n4} UT).",
+ "4346d47850": "cometa 96P/Machholz (sospechado)",
+ "1ba746076a": "También esa noche",
+ "1e5fc3ca07": "un eclipse lunar penumbral, con máximo el {d1}, a las {n1} UT",
+ "3d17ebb0d1": "Un eclipse débil la misma noche",
+ "467a711085": "En esta luna llena la Luna pasa por la sombra exterior de la Tierra, la penumbra: un eclipse lunar penumbral, con máximo el {d1}, a las {n1} UT. La Luna se atenúa un poco y no la corta ningún borde oscuro, así que la mayoría de la gente no nota nada.",
+ "1849e0ca66": "Cuánto dura, y según quién",
+ "77d53c86f5": "Las horas y duraciones de esta página están calculadas con Astronomy Engine, al minuto más cercano. Las tablas de eclipses de la NASA dimensionan la sombra de la Tierra de forma ligeramente distinta, así que las duraciones que dan para el mismo eclipse son uno o dos minutos más cortas."
 }

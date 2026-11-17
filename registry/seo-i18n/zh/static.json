@@ -1551,5 +1551,6 @@
  "1516773da3": "灶神星",
  "195d0a5474": "灶神星地图和形状：NASA/JPL-Caltech/UCLA/MPS/DLR/IDA（Dawn 分幅相机，DLR 制作的 HAMO 拼接图和立体高度模型），由 USGS Astrogeology Science Center 托管（NASA 媒体：在美国不受版权保护）",
  "e6a93be90a": "来源：CelesTrak 的在役卫星目录和 Starlink 补充文件，即本站采集程序保存的版本，查阅于 {d1}。发射：Launch Library（The Space Devs），来自本站保存的副本。网页打开时，浏览器会用保存的副本里的数量替换这个数字。CelesTrak 要求每次更新只下载一次文件，所以本页从不自己去取。",
- "e2141e883e": "来源：CelesTrak 的在役卫星目录和 Starlink 补充文件，即本站采集程序保存的版本，查阅于 {d1}。网页打开时，浏览器会用保存的副本里的数量替换这些数字。"
+ "e2141e883e": "来源：CelesTrak 的在役卫星目录和 Starlink 补充文件，即本站采集程序保存的版本，查阅于 {d1}。网页打开时，浏览器会用保存的副本里的数量替换这些数字。",
+ "bc3e21874e": "来源：CelesTrak（{n1} 个数据源）、The Space Devs（{n2} 个）、NASA JPL（{n3} 个）、NASA Exoplanet Archive（{n4} 个）、NASA Deep Space Network（{n5} 个）、NOAA SWPC（{n6} 个）、NASA EONET（{n7} 个）、NASA DONKI（{n8} 个）、NASA SDO（{n9} 个）、NASA GIBS（{n10} 个）、NOAA nowCOAST（{n11} 个）、PacIOOS（{n12} 个）、NOAA CoastWatch（{n13} 个）、GDACS（{n14} 个）、Wikidata（{n15} 个）。"
 }
