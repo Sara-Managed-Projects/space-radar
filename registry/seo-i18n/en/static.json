@@ -1562,5 +1562,11 @@
  "2d757f95f1": "{n1} languages; Cosmoscope is in English.",
  "2f415a609c": "What it says about Cosmoscope was read on {d1} from <1>Cosmoscope</1>, <2>its live satellite tracker</2>, in the project's <3>competitor review</3>. Products change: if something here is out of date, <4>tell us</4> on GitHub (it needs a free GitHub account) and it will be corrected. Space Radar is not connected with Cosmoscope, and the names are their makers' trademarks.",
  "e2141e883e": "Source: CelesTrak's active catalogue and Starlink supplemental file, as saved by this site's harvester, read {d1}. The browser replaces these counts with the saved copy's when the page opens.",
- "e6a93be90a": "Source: CelesTrak's active catalogue and Starlink supplemental file, as saved by this site's harvester, read {d1}. Launches: Launch Library (The Space Devs), from this site's saved copy. The browser replaces this count with the one in the saved copy when the page opens. CelesTrak asks for one download of a file per update, so this page never fetches it itself."
+ "e6a93be90a": "Source: CelesTrak's active catalogue and Starlink supplemental file, as saved by this site's harvester, read {d1}. Launches: Launch Library (The Space Devs), from this site's saved copy. The browser replaces this count with the one in the saved copy when the page opens. CelesTrak asks for one download of a file per update, so this page never fetches it itself.",
+ "a0e392da2d": "Printable paper models for the classroom",
+ "b20b210059": "A free Moon-phase wheel, distance-ladder strip and fold-up JWST to print for the classroom, one A4 or Letter page each.",
+ "d04ce23874": "a Moon-phase wheel, a distance-ladder strip and a fold-up James Webb Space Telescope. Each is one page of PDF, free, with no account, made by a script from the same maps and numbers the live map uses, so a sheet never disagrees with the app.",
+ "59109706d9": "Live 3D satellite map: about {n1} objects",
+ "5fc08eadec": "A live 3D map of about {n1} satellites at their real positions, with the space station, Hubble, Tiangong and Starlink, free in a browser.",
+ "036ff543d7": "Screenshots of Space Radar 1.9.0 (MIT licence) from the project's <1/> workflow, probe <2/>, run {n1}. Shapes: Thomas, Joseph and Ansty, Saturn Small Moon Shape Models V1.0, NASA Planetary Data System. The models were prepared by Sara-Agent, the project's agent, in <3>pull request {n2}</3>; every row is in <4>CREDITS.md</4>."
 }
