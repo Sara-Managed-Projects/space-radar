@@ -42,6 +42,9 @@ const C = await import(join(JS, 'ui/cards.js'));
 const SRC = await import(join(JS, 'data/sources.js'));
 const { recordsFromNames } = await import(join(JS, 'scene/stars3d.js'));
 const { COPY, fmt, t } = await import(join(JS, 'copy/en.js'));
+// Honest precision, the card's own rules (ui/cardfacts.js says why each): a page's Key facts must not print more figures than its lead.
+const { starLy, deepSkyLy, rangeLy, plainNumber, visibleSuns, toFigures } = await import(join(JS, 'ui/cardfacts.js'));
+const { lookbackGyr } = await import(join(JS, 'data/cosmology.js'));
 await import(join(JS, 'copy/en.cards.js')); // the Sun, Moon and planets' own paragraphs (COPY.worldAbout, internal #302)
 const { SYSTEMS } = await import(join(JS, 'data/systems.js'));
 const { buildMoons } = await import(join(JS, 'data/moons.js'));
@@ -193,6 +196,10 @@ const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 /** Two significant figures: a size worked out from an angle and a distance is not good to more. */
 const sig2 = (v) => { const p = Math.pow(10, Math.max(0, Math.floor(Math.log10(Math.abs(v))) - 1)); return Math.round(v / p) * p; };
 const ly = (v) => `${v >= 100 ? fmt.int(v) : fmt.num(v, v >= 10 ? 1 : 2)} light-years`;
+/** A size worked out from an angle and a distance: two figures, no padded zero ("7", not "7.00"), and "1 light-year". */
+const sizeLy = (v) => { const r = sig2(v); const n = r >= 100 ? fmt.int(r) : fmt.tidy(r, 1); return `${n} ${n === '1' ? 'light-year' : 'light-years'}`; };
+/** A small body's lap: days under two years, one decimal of a year under ten (Ceres 4.6, not 5), whole years above. */
+const lapWords = (days) => (days > 730 ? `${days / 365.25 < 10 ? fmt.num(days / 365.25, 1) : fmt.int(days / 365.25)} years` : `${fmt.int(days)} days`);
 
 /** Facts that do not go stale, from the record the card reads. [label, value, linkSlugOrNull]. */
 function factsFor(r, klass, nameOf) {
@@ -200,12 +207,17 @@ function factsFor(r, klass, nameOf) {
   const f = [];
   const add = (label, value, link = null) => { if (value != null && value !== '') f.push([label, String(value), link]); };
   if (klass === 'world') {
-    if (md.radiusKm) add('Diameter', `${fmt.int(2 * md.radiusKm)} km`);
+    // The MEAN diameter (2 x the volumetric mean radius the map draws with): the Earth is 12 742 km so, and 12 756 at the equator.
+    if (md.radiusKm) add('Mean diameter', `${fmt.int(2 * md.radiusKm)} km`);
     if (md.parent && md.parent !== 'sun') add('Goes round', nameOf(md.parent), md.parent);
     else if (r.id !== 'sun') add('Goes round', nameOf('sun'), 'sun');
   } else if (klass === 'star') {
-    if (md.distLy) add('Distance', ly(md.distLy));
-    if (Number.isFinite(md.mag)) add('Brightness from Earth', `magnitude ${fmt.num(md.mag, 2)}`);
+    // A star whose distance is a range says the range, as its lead does (Betelgeuse: its row printed 478 under "between 408 and 548").
+    if (md.distLyLow && md.distLyHigh) add('Distance', `${fmt.int(md.distLyLow)} to ${fmt.int(md.distLyHigh)} light-years`);
+    else if (md.distLy) add('Distance', ly(starLy(md.distLy)));
+    // A star that swings by magnitudes says its range, not one catalogue moment of it (Mira: 6.47 in the catalogue, 2 to 10 in the sky).
+    if (Array.isArray(md.magVaries) && md.magVaries.length === 2) add('Brightness from Earth', `magnitude ${fmt.tidy(md.magVaries[0], 1)} to ${fmt.tidy(md.magVaries[1], 1)}: it varies`);
+    else if (Number.isFinite(md.mag)) add('Brightness from Earth', `magnitude ${fmt.num(md.mag, 2)}`);
     if (md.spect) add('Spectral type', String(md.spect).replace(/\.+$/, ''));
     if (md.teffK) add('Surface temperature', `${fmt.int(md.teffK)} K`);
     if (md.planets) add('Planets known', md.planets);
@@ -213,18 +225,30 @@ function factsFor(r, klass, nameOf) {
   } else if (klass === 'dso') {
     if (md.typeText) add('Type', md.typeText);
     if (md.con) add('Constellation', md.con);
-    if (md.distLyLow && md.distLyHigh) add('Distance', `${ly(md.distLyLow).replace(' light-years', '')} to ${ly(md.distLyHigh)}`);
-    else if (md.distLy) add('Distance', ly(md.distLy));
-    if (md.sizeLy) add('Size', `about ${ly(sig2(md.sizeLy))} across`);
+    const [dLo, dHi] = md.distLyLow && md.distLyHigh ? rangeLy(md.distLyLow, md.distLyHigh) : [null, null];
+    if (dLo && dHi) add('Distance', `${ly(dLo).replace(' light-years', '')} to ${ly(dHi)}`);
+    // The galaxy we are inside: to its centre, and rounded as the lead rounds it (internal #270; "26 582" beside "about 27 000").
+    else if (md.home === true && md.distLy) add('Distance to its centre', `about ${ly(toFigures(md.distLy, 2))}`);
+    else if (md.distLy) add('Distance', ly(deepSkyLy(md.distLy)));
+    if (md.sizeLySaid || md.sizeLy) add('Size', `about ${sizeLy(md.sizeLySaid || md.sizeLy)} across`);
     if (Number.isFinite(md.mag)) add('Brightness from Earth', `magnitude ${fmt.num(md.mag, 1)}`);
-    const cat = [md.messier != null ? `M${md.messier}` : null, md.designation].filter(Boolean).join(', ');
+    // OpenNGC's row id is not a second name: "M040" beside "M40", "Mel022" for Melotte 22.
+    const desig = md.designation && /^M0*\d+$/.test(md.designation) ? null : md.designation && /^Mel0*(\d+)$/.test(md.designation) ? md.designation.replace(/^Mel0*(\d+)$/, 'Melotte $1') : md.designation;
+    const cat = [md.messier != null ? `M${md.messier}` : null, desig].filter(Boolean).join(', ');
     add('Catalogue', cat);
   } else if (klass === 'exotic') {
     const kind = md.kind && COPY.templates.exotic.kinds[md.kind];
     if (kind) add('Kind', cap(kind));
-    if (md.distLy) add('Distance', ly(md.distLy));
-    if (md.massMsun) add('Mass', md.massMsun >= 1e6 ? `${fmt.num(md.massMsun / 1e6, md.massMsun >= 1e9 ? 0 : 2)} million Suns` : `${fmt.num(md.massMsun, 2)} Suns`);
-    if (md.periodS) add('Turns once every', md.periodS >= 1 ? `${fmt.num(md.periodS, 2)} seconds` : `${fmt.num(md.periodS * 1000, 2)} milliseconds`);
+    // PLACED BY REDSHIFT: the number is how far the thing is NOW (comoving), which can be more light-years than the
+    // universe has years, and the page must say so beside it and give the time the light took (review 2026-11-16).
+    if (md.distLy && Number.isFinite(md.redshift)) {
+      add('Distance now', `${ly(toFigures(md.distLy, 3))} (space has stretched since the light left)`);
+      add('Light left it', `${fmt.tidy(lookbackGyr(md.redshift), 1)} billion years ago`);
+    } else if (md.distLyLow && md.distLyHigh) { const [a, b] = rangeLy(md.distLyLow, md.distLyHigh); add('Distance', `${ly(a).replace(' light-years', '')} to ${ly(b)}`); }
+    else if (md.distLy) add('Distance', ly(md.distLy));
+    // The registry's own digits, never padded: "14.00 Suns", "291.00 Suns", "237.00 milliseconds" (a regression of internal #290).
+    if (md.massMsun) add('Mass', md.massMsun >= 1e9 ? `${plainNumber(md.massMsun / 1e9)} billion Suns` : md.massMsun >= 1e6 ? `${plainNumber(md.massMsun / 1e6)} million Suns` : `${plainNumber(md.massMsun)} Suns`);
+    if (md.periodS) add('Turns once every', md.periodS >= 1 ? `${plainNumber(md.periodS)} seconds` : `${plainNumber(md.periodS * 1000)} milliseconds`);
   } else if (klass === 'asteroid' || klass === 'comet') {
     if (md.designation) add('Catalogue', md.designation);
     // ONE FIGURE FOR ONE QUANTITY (review of 2026-11-16: Sedna's page said "about 11 400 years" in its text and
@@ -233,11 +257,15 @@ function factsFor(r, klass, nameOf) {
     // `longRun`, rounded as its sentence rounds it. tests/test_seo_pages.py reads the built pages for both.
     if (md.diameterLowKm && md.diameterHighKm) add('Diameter', t(COPY.card.values.kmRange, { lo: fmt.int(md.diameterLowKm), hi: fmt.int(md.diameterHighKm) }));
     else if (md.diameterKm) add('Diameter', md.diameterKm >= 10 ? `${fmt.int(md.diameterKm)} km` : `${fmt.num(md.diameterKm, 2)} km`);
+    // Where a published sentence gives the lap (Eris, data/sample.js `lapYears`), the page says that one.
     if (md.longRun) add('One lap of the Sun', `about ${fmt.int(Math.round(md.longRun.periodYears / 100) * 100)} years`);
-    else if (md.periodDays && md.periodDays < 1e8) add('One lap of the Sun', md.periodDays > 730 ? `${fmt.int(md.periodDays / 365.25)} years` : `${fmt.int(md.periodDays)} days`);
-    if (md.qAu) add('Closest to the Sun', `${fmt.num(md.qAu, 2)} AU`);
+    else if (md.lapYearsSaid) add('One lap of the Sun', `${fmt.int(md.lapYearsSaid)} years`);
+    else if (md.periodDays && md.periodDays < 1e8) add('One lap of the Sun', lapWords(md.periodDays));
+    // The same decimals for the near end and the far end (Ceres: 2.55 and 2.99, not 2.55 and 3.0); whole AU past a hundred.
+    const auWords = (v) => `${v >= 100 ? fmt.int(v) : fmt.num(v, v >= 10 ? 1 : 2)} AU`;
+    if (md.qAu) add('Closest to the Sun', auWords(md.qAu));
     if (md.longRun) add('Farthest from the Sun', `about ${fmt.int(md.longRun.aphelionAu)} AU`);
-    else if (md.aphelionAu) add('Farthest from the Sun', `${fmt.num(md.aphelionAu, 1)} AU`);
+    else if (md.aphelionAu) add('Farthest from the Sun', auWords(md.aphelionAu));
     if (Array.isArray(md.moons) && md.moons.length) add('Moons', md.moons.join(', '));
   } else if (klass === 'moon') {
     if (md.moonOf) add('Goes round', md.planetName, md.moonOf);
@@ -301,8 +329,14 @@ for (const c of all) if (c.group === 'satellites' && shared.get(c.name) > 1) c.n
 const picked = [];
 const byName = new Set();
 const slugs = new Set();
+const droppedDeepSky = [];
 for (const { group, r, m, name } of all) {
-  if (byName.has(name.toLowerCase())) continue;
+  if (byName.has(name.toLowerCase())) {
+    // TWO RECORDS, ONE NAME, ONE PAGE: M65 and M66 were both "Leo Triplet" (OpenNGC's group name on both rows) and M66
+    // had no page for it (review 2026-11-16). A deep-sky record that would vanish this way stops the build instead.
+    if (group === 'deep-sky' && r.meta && r.meta.messier != null) droppedDeepSky.push(`${r.id} ("${name}")`);
+    continue;
+  }
   byName.add(name.toLowerCase());
   let slug = slugOf(name);
   if (slugs.has(slug)) slug = `${slug}-${r.klass}`;
@@ -310,6 +344,7 @@ for (const { group, r, m, name } of all) {
   picked.push({ group, r, m, name, slug });
 }
 
+if (droppedDeepSky.length) throw new Error(`object_pages: ${droppedDeepSky.join(', ')} share a name with another record and would have no page; give each its own name (scripts/data/messier-overlay.yaml \`common:\`)`);
 const slugById = new Map(picked.map((p) => [p.r.id, p.slug]));
 const nameById = new Map(picked.map((p) => [p.r.id, p.name]));
 const nameOf = (id) => nameById.get(id) || cap(id);
@@ -319,7 +354,11 @@ const pages = picked.map(({ group, r, m, name, slug }) => {
   const ended = (r.meta && r.meta.ended) || null;
   // An ended craft's first sentence is its row's, in the past tense: the card's ("X is a space telescope going round
   // the Earth") is the sentence of a thing that is there.
-  const lead = ended ? ended.lead : C.firstSentence(r, CTX, m, null);
+  let lead = ended ? ended.lead : C.firstSentence(r, CTX, m, null);
+  // Four GOES satellites share one model and so one card name, and all four pages opened "GOES weather satellite is a
+  // satellite going round the Earth" (review 2026-11-16). A page named from the list says that name in its lead too.
+  const cardName = C.tagLines(r, CTX, m).name;
+  if (!ended && group === 'satellites' && cardName !== name && lead.startsWith(cardName)) lead = name + lead.slice(cardName.length);
   let why = C.whyLine(r);
   // A satellite's line is data/layers.js NOTABLE's: printed here, except where it will not stay true.
   if (!why && ['satellite', 'station', 'debris'].includes(klass) && r.meta.why && !DATED_WHY.has(r.meta.noradId)) why = r.meta.why;

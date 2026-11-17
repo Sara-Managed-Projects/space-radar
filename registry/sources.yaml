@@ -6,6 +6,11 @@
 #
 # cadence         never fetched more often than this.
 # freshness_max   after this the app shows a stale stamp. It still renders (spec 0001 rule 6).
+# content_max_age optional. The oldest the NEWEST date inside the body may be (the parser's
+#                 `newest(body)`), measured at fetch. An upstream that answers 200 with a body that
+#                 stopped changing is refused with that reason instead of being stamped fresh, so
+#                 the copy held keeps its true age and the freshness rule above can see it
+#                 (2026-11-16: Open Notify answered "success" hourly with the crews of mid-2024).
 # auth            `none`, or `secret:NAME` — a missing secret SKIPS the source and reports it,
 #                 it never fails the run for the free sources.
 # browser         true when the host answers a page with `Access-Control-Allow-Origin: *`, so
@@ -128,25 +133,13 @@ sources:
     publisher: CelesTrak
 
   # --- Who is aboard --------------------------------------------------------------------
-  # MEASURED 2026-10-02: `Access-Control-Allow-Origin: *`, so CORS itself allows a page to read
-  # this. But the API has no https endpoint at all (TLS connections are refused outright), and
-  # this app is served over https, so a browser here cannot request it: not a CORS refusal, a
-  # mixed-content one, with the same result for the status panel. The harvester fetches it over
-  # plain HTTP (harvest/fetch.py's urllib has no such restriction) and the browser reads the
-  # saved copy. No documented rate limit; the cadence here is a courtesy, not a measured ceiling.
-  - id: open-notify-astros
-    url: http://api.open-notify.org/astros.json
-    auth: none
-    browser: false
-    cadence: 1h
-    freshness_max: 24h
-    parser: open_notify
-    outputs: [astros.json]
-    attribution: "Who is in space: Open Notify"
-    licence: "No licence stated for the data; the project's source code is GPL-3.0 (its LICENSE file, read 2026-11-04); a handful of names and facts"
-    terms_url: https://github.com/open-notify/Open-Notify-API
-    terms_recorded: 2026-10-05
-    publisher: Open Notify
+  # RETIRED 2026-11-16: `open-notify-astros` (http://api.open-notify.org/astros.json). Its body had
+  # not changed since mid-2024 -- nine names on the ISS (Kononenko, Chub, Caldwell Dyson, Dominick,
+  # Barratt, Epps, Grebenkin, Wilmore, Williams) and three on Tiangong, all long since landed --
+  # while it answered 200 every hour, so the index called it `ok` and the Right now panel printed
+  # "9 on ISS" beside Launch Library's 7. The headcount now reads `ll2-stations` (onboard_crew),
+  # the list the station card already used. Nothing else read the source. A body with no dates in
+  # it cannot be checked for age; the rows below that do carry dates now are (`content_max_age`).
 
   # --- Launches and events -----------------------------------------------------------
   # MEASURED live from the API's own throttle endpoint: 15 requests per hour per IP. A
@@ -159,6 +152,7 @@ sources:
     cadence: 2h
     freshness_max: 12h
     parser: ll2
+    content_max_age: 7d   # the newest launch time in the list; upcoming launches are in the future
     outputs: [launches.json, sites-pads.json]
     attribution: "Launch data by The Space Devs"
     licence: "No published licence; free up to 15 requests an hour (read 2026-11-04)"
@@ -198,6 +192,7 @@ sources:
     cadence: 6h
     freshness_max: 48h
     parser: ll2_stations
+    content_max_age: 200d   # the newest docking; a ship arrives at one of the two stations every few weeks
     outputs: [stations-docked.json]
     attribution: "Launch data by The Space Devs"
     licence: "No published licence; free up to 15 requests an hour"
@@ -212,6 +207,7 @@ sources:
     cadence: 6h
     freshness_max: 48h
     parser: ll2_crew
+    content_max_age: 300d   # the newest launch of anyone flagged in space; crews change at least twice a year
     outputs: [crew.json]
     attribution: "Launch data by The Space Devs"
     licence: "No published licence; free up to 15 requests an hour"
@@ -227,6 +223,7 @@ sources:
     cadence: 6h
     freshness_max: 48h
     parser: ll2_previous
+    content_max_age: 30d   # the newest launch that happened; there are several a week
     outputs: [launches-previous.json]
     attribution: "Launch data by The Space Devs"
     licence: "No published licence; free up to 15 requests an hour"
@@ -275,8 +272,11 @@ sources:
   # parameters table so every planet has one best value per column. No CORS header (measured
   # 2026-09-08), so the browser reads our snapshot; it falls back to the dated copy in
   # site/data/exoplanets.csv when there is none. Weekly: the table grows by a few planets a week.
+  # `pl_bmasselim` and `pl_radelim` (2026-11-16): the Archive's flags for a mass or a radius that is a LIMIT, not a value
+  # (1 an upper limit, -1 a lower one). 225 of the table's 6 470 masses were upper limits that day, and without the flag the
+  # card printed each as the planet's mass (HD 10180 g "3 375 Earths"). site/js/data/parsers.js parseExoplanets reads them.
   - id: nasa-exoplanet-archive
-    url: https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+pl_name,hostname,ra,dec,sy_dist,pl_rade,pl_bmasse,pl_orbper,disc_year,discoverymethod,st_teff,st_rad,st_spectype+from+pscomppars&format=csv
+    url: https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+pl_name,hostname,ra,dec,sy_dist,pl_rade,pl_bmasse,pl_orbper,disc_year,discoverymethod,st_teff,st_rad,st_spectype,pl_bmasselim,pl_radelim+from+pscomppars&format=csv
     auth: none
     browser: false
     cadence: 168h

@@ -292,5 +292,17 @@
  "dc21c5af7e": "magnitude {n1}, à {n2}° du Soleil, ciel du soir, dans le Sagittaire",
  "aee6b0cce1": "Vénus {n1} ua, Mars {n2} ua",
  "44efad8e76": "Une conjonction, c’est deux astres qui paraissent proches dans le ciel. Ils ne font que le paraître : Vénus est à {n1} ua de la Terre et Mars à {n2} ua, l’une devant l’autre vues d’ici, et très loin l’une de l’autre dans l’espace.",
- "c84e805bb1": "Regarde vers l’ouest, bas, après le coucher du Soleil. Toutes deux sont à moins de {n1}° du Soleil, donc un horizon dégagé aide ; le plus grand rapprochement est donné en UT, et le couple reste proche plusieurs jours avant et après."
+ "c84e805bb1": "Regarde vers l’ouest, bas, après le coucher du Soleil. Toutes deux sont à moins de {n1}° du Soleil, donc un horizon dégagé aide ; le plus grand rapprochement est donné en UT, et le couple reste proche plusieurs jours avant et après.",
+ "fafdf3f85c": "Les Lyrides atteignent leur maximum le {d1} à {n1} UT, avec jusqu’à environ {n2} étoiles filantes par heure sous un ciel parfaitement noir, venant de la Lyre. La Lune est éclairée à environ {n3} % et décroissante à l’heure indiquée ({d2}, {n4} UT).",
+ "efdc1c2d95": "dans la Lyre",
+ "2039350aea": "Les Perséides atteignent leur maximum le {d1} à {n1} UT, avec jusqu’à environ {n2} étoiles filantes par heure sous un ciel parfaitement noir, venant de Persée. La Lune est éclairée à environ {n3} % et croissante à l’heure indiquée ({d2}, {n4} UT).",
+ "1926ca6d6c": "dans Persée",
+ "f3b70cdbe1": "Les Perséides atteignent leur maximum le {d1} à {n1} UT, avec jusqu’à environ {n2} étoiles filantes par heure sous un ciel parfaitement noir, venant de Persée. La Lune est éclairée à environ {n3} % et décroissante à l’heure indiquée ({d2}, {n4} UT).",
+ "4346d47850": "comète 96P/Machholz (soupçonnée)",
+ "1ba746076a": "Aussi cette nuit-là",
+ "1e5fc3ca07": "une éclipse de Lune par la pénombre, à son maximum le {d1} à {n1} UT",
+ "3d17ebb0d1": "Une éclipse discrète la même nuit",
+ "467a711085": "À cette pleine Lune, la Lune traverse l’ombre extérieure de la Terre, la pénombre : une éclipse de Lune par la pénombre, à son maximum le {d1} à {n1} UT. La Lune s’assombrit à peine et aucun bord sombre ne la découpe, si bien que la plupart des gens ne remarquent rien.",
+ "1849e0ca66": "Combien de temps, et selon qui",
+ "77d53c86f5": "Les heures et les durées de cette page sont calculées avec Astronomy Engine, à la minute près. Les tables d’éclipses de la NASA fixent la taille de l’ombre de la Terre un peu différemment, si bien que les durées qu’elles donnent pour la même éclipse sont plus courtes d’une minute ou deux."
 }

@@ -35,6 +35,7 @@ import asset_pack  # noqa: E402
 import creator_clips  # noqa: E402
 import count_facts  # noqa: E402
 from seo_common import ACCURACY_FORM, GITHUB, ON_GITHUB, ROOT, Page, esc, webpage  # noqa: E402
+from seo_common import grouped as _grouped  # noqa: E402
 from seo_share import Spec  # noqa: E402
 
 REG = ROOT / "registry"
@@ -54,15 +55,15 @@ def languages() -> int:
 
 
 def plural(n: int, one: str, many: str) -> str:
-    return f"{n:,} {one if n == 1 else many}"
+    return f"{_grouped(n)} {one if n == 1 else many}"
 
 
 # --- /assets/ -------------------------------------------------------------------------------------------------
 
 def asset_row(x: dict, dates: dict[str, str]) -> str:
-    size = f"{x['kb']:,.0f} kB" if isinstance(x.get("kb"), (int, float)) else ""
+    size = f"{_grouped(x['kb'])} kB" if isinstance(x.get("kb"), (int, float)) else ""
     px = f", {x['px'][0]} x {x['px'][1]} px" if x.get("px") else ""
-    tris = f", up to {x['tris']:,} triangles" if x.get("tris") else ""
+    tris = f", up to {_grouped(x['tris'])} triangles" if x.get("tris") else ""
     day = f" · changed {dates[x['file']]}" if x["file"] in dates else ""
     app = f' · <a href="{esc(x["app"])}">See it in the app</a>' if x.get("app") else ""
     return (f'<li><h3><a href="{esc(x["url"])}">{esc(x["name"])}</a></h3>'
@@ -290,7 +291,7 @@ def satellites(counts: dict | None = None) -> str:
 
     `counts` is scripts/seo_pages.py satellite_counts(), which reads both; without it (a test) the registry's fallback."""
     n = (counts or {}).get("active") or _yml("seo-facts.yaml")["satellite_counts"]["active_objects"]
-    return f"about {round(n / 1000) * 1000:,}"
+    return f"about {_grouped(round(n / 1000) * 1000)}"
 
 
 def us(counts: dict | None = None) -> dict:
@@ -352,7 +353,7 @@ def comparison_pages(host: str, counts: dict | None = None) -> list[Page]:
         "Newtonian spaceship flight, with docking.",
         "VR through SteamVR, drawn by a PC's graphics card.",
         "Ray-traced black holes with volumetric disks; Space Radar's spinning holes are an approximation, labelled modelled.",
-        "18 languages, and a large community: about 16,000 Steam reviews and a Discord of about 13,400.",
+        "18 languages, and a large community: about 16 000 Steam reviews and a Discord of about 13 400.",
         "The other side of it: SpaceEngine draws all this on a Windows PC with a dedicated graphics card; Space Radar does less, in a browser, "
         "on whatever device is to hand."])
     se_ours = ("What Space Radar does that SpaceEngine does not", [
@@ -442,10 +443,10 @@ def comparison_pages(host: str, counts: dict | None = None) -> list[Page]:
             f"Track {sats} satellites live in 3D in your browser, with the passes over your place. How it compares with Cosmoscope's 3D tracker.",
             "A live satellite tracker in 3D",
             f"Space Radar places {sats} active satellites in 3D for the moment on the clock, from public orbital elements, "
-            "and ranks which will pass over you, with Starlink trains, a debris census and re-entries. Cosmoscope also draws about 16,900 live "
+            "and ranks which will pass over you, with Starlink trains, a debris census and re-entries. Cosmoscope also draws about 16 900 live "
             "satellites in 3D. Here is what each does.",
             ("Cosmoscope", "Space Radar"),
-            [("Satellites drawn", "About 16,900", f"{sats.capitalize()} active ones, each with a card and its source"),
+            [("Satellites drawn", "About 16 900", f"{sats.capitalize()} active ones, each with a card and its source"),
              ("Sky events", "Five fixed presets", "Eclipses, meteor showers, conjunctions, rise and set, from your place"),
              ("First load", "About 36 MB", first),
              ("Languages", "English", f"{n['languages']} (machine-drafted, under review)")],

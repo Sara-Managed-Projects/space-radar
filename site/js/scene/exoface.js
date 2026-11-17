@@ -193,6 +193,15 @@ export function faceFor(row) {
     if (r.massFrom === 'estimated') { massEarths = null; massKind = null; }
     else if (r.massFrom === 'least' && massEarths) massKind = 'least';
   }
+  // A LIMIT IS NOT A NUMBER TO DRAW FROM (review 2026-11-16). The Archive's mass column holds upper limits
+  // too (`massFrom: limit` in the generated systems, `massLimit: 'upper'` on a plain record; pl_bmasselim):
+  // HD 10180 g's "3 375 Earths" is the most it can weigh, and a face drawn from it would be a gas giant
+  // nobody measured. An upper limit is dropped like an estimate; a lower limit is said as "at least"; a
+  // radius that is only a limit is kept apart like an estimated one.
+  const massLimit = r.massFrom === 'limit' ? 'upper' : r.massLimit;
+  if (massLimit === 'upper') { massEarths = null; massKind = null; }
+  else if (massLimit === 'lower' && massEarths) massKind = 'least';
+  if ((r.radiusLimit === 'upper' || r.radiusLimit === 'lower') && measuredRadius) { radiusGuess = measuredRadius; measuredRadius = null; }
   // THE ARCHIVE'S COMPOSITE TABLE FILLS A MISSING MASS OR RADIUS FROM THE OTHER (Chen and Kipping's
   // relation) and the slimmed table carries no flag for it. A pair that sits on that relation to
   // 3 % is one number and its forecast: the forecast is dropped, so it is neither printed as

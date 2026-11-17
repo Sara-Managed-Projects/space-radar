@@ -147,6 +147,10 @@ Object.assign(COPY, {
     methodRow: 'Distance found by',
     // A far record's distance, comoving, from its redshift (spec 0075 stage e, ui/cardfacts.js exotics).
     billionLightYears: '{n} billion light-years',
+    // A number a catalogue gives only as a LIMIT (the NASA Exoplanet Archive's pl_bmasselim / pl_radelim), around the value's own words:
+    // "Less than 3 375× Earth". Here, where ui/cardfacts.js can read them without the card's later words (review 2026-11-16).
+    lessThan: 'Less than {v}',
+    moreThan: 'More than {v}',
     methods: {
       parallax: 'parallax: the shift of its star against the far sky',
       'eclipsing-binary': 'eclipsing binary stars in it',

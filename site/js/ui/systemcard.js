@@ -32,6 +32,8 @@ export function knownLine(planet) {
   const out = [C.unseen, t(measured.length > 1 ? C.measuredMany : C.measuredOne, { what: join(measured, C) })];
   if (estimated.length) out.push(t(estimated.length > 1 ? C.estimatedMany : C.estimatedOne, { what: join(estimated, C) }));
   if (!planet.radiusFrom) out.push(t(C.unmeasuredOne, { what: C.what.size }));
+  // An upper limit is neither measured nor estimated: the table says only what the planet cannot exceed.
+  if (planet.massFrom === 'limit' && C.massLimitKnown) out.push(C.massLimitKnown);
   return out.join(' ');
 }
 
@@ -43,7 +45,8 @@ export function planetFacts(system, planet, albedo = 0.3) {
   const radius = planet.radiusFrom === 'estimated' ? t(C.earthsEstimated, { n: n(planet.radiusEarths) })
     : !planet.radiusFrom ? C.sizeDefault : null;
   const mass = planet.massFrom === 'estimated' ? t(C.massEstimated, { n: n(planet.massEarths) })
-    : planet.massFrom === 'least' ? t(C.massLeast, { n: n(planet.massEarths) }) : null;
+    : planet.massFrom === 'least' ? t(C.massLeast, { n: n(planet.massEarths) })
+      : planet.massFrom === 'limit' ? t(C.massLimit, { n: n(planet.massEarths) }) : null;
   rows.push([R.orbit, planet.periodFrom === 'kepler' && C.auYearComputed
     ? t(C.auYearComputed, { n: n(planet.aAu), y: fmt.int(Math.round(planet.periodDays / 365.25)) }) // 0079 a13: its year is worked out, not measured
     : t(planet.aFrom === 'kepler' ? C.auComputed : C.au, { n: n(planet.aAu) })]);

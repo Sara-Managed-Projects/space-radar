@@ -4,6 +4,7 @@
     python3 scripts/build-exoplanets.py path/to/pscomppars.csv 2026-09-08
     python3 scripts/build-exoplanets.py --pull 2026-10-08 [--keep path/to/pscomppars.csv]
     python3 scripts/build-exoplanets.py --systems-only 2026-10-25
+    python3 scripts/build-exoplanets.py --limits-only 2026-11-16
 
 `--pull` asks the Archive's TAP service for the table (QUERY below) instead of reading a file; the
 day is still typed, because it is the day somebody ran this and looked at the result.
@@ -18,6 +19,16 @@ mass from the radius ("Calculated Value" in the column's reference); a card that
 has to know. Those columns are written for the listed hosts only, to registry/systems-columns.csv,
 with the slim columns too. --systems-only refreshes this side file without changing the bundled
 catalogue; scripts/build-systems.py validates the new rows before this file is replaced.
+
+A LIMIT IS NOT A MEASUREMENT (review 2026-11-16). The composite table's mass column also holds UPPER LIMITS:
+`pl_bmasselim` is 1 where the number is the most the planet can weigh (225 of 6 470 planets that day: HD 10180 g
+"3 375 Earths", whose published least mass is about 21), -1 where it is a lower limit (13), 0 where it is a value;
+`pl_radelim` says the same of the radius (5 lower limits, no upper ones). Neither file kept the flag, so every
+limit was printed as a mass and the star systems' pages called it "measured". Both columns are now written to
+both files (blank for 0, to keep the browser's table small) and packed (scripts/exopack.py). --limits-only adds
+them to the files as they stand, without changing any other number: it pulls the five columns, and writes a
+planet's flag only when the Archive's value that day is the value the file already holds (to the file's own
+rounding), so a flag is never attached to a number it was not published with; the rest are listed.
 
 ONE PAPER'S SET PER PLANET (internal #474). The composite table takes each column from whichever paper
 filled it, so a planet's distance, period and star's mass can come from three papers that disagree. The
@@ -59,7 +70,10 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "site/data/exoplanets.csv"
 COLUMNS = ("pl_name", "hostname", "ra", "dec", "sy_dist", "pl_rade", "pl_bmasse", "pl_orbper",
-           "disc_year", "discoverymethod", "st_teff", "st_rad", "st_spectype")
+           "disc_year", "discoverymethod", "st_teff", "st_rad", "st_spectype", "pl_bmasselim", "pl_radelim")
+# The Archive's limit flags (the docstring says what they are). Written as 1 or -1, and blank for 0.
+LIMITS = ("pl_bmasselim", "pl_radelim")
+LIMITS_QUERY = "select pl_name,pl_rade,pl_radelim,pl_bmasse,pl_bmasselim from pscomppars"
 # The wider columns, kept for the hosts of registry/systems-list.yaml only (the docstring says why).
 SIDE = ROOT / "registry/systems-columns.csv"
 # The per-paper rows of the Archive's `ps` table for the same hosts (the docstring says why).
@@ -74,7 +88,7 @@ CALC = (("r", "pl_rade_reflink"), ("m", "pl_bmasse_reflink"))
 TAP = "https://exoplanetarchive.ipac.caltech.edu/TAP/sync"
 QUERY = ("select pl_name,hostname,ra,dec,sy_dist,pl_rade,pl_bmasse,pl_orbper,disc_year,discoverymethod,"
          "st_teff,st_rad,st_spectype,pl_orbsmax,st_mass,st_lum,pl_orbeccen,pl_tranmid,cb_flag,sy_snum,"
-         "pl_bmassprov,pl_rade_reflink,pl_bmasse_reflink from pscomppars")
+         "pl_bmassprov,pl_rade_reflink,pl_bmasse_reflink,pl_bmasselim,pl_radelim from pscomppars")
 SETS_QUERY = ("select pl_name,default_flag,pl_orbsmax,pl_orbper,st_mass,pl_refname,pl_pubdate from ps "
               "where pl_orbsmax is not null and pl_orbper is not null and st_mass is not null")
 ROUND = {"ra": 5, "dec": 5, "sy_dist": 3, "pl_rade": 3, "pl_bmasse": 3, "pl_orbper": 5, "st_teff": 0, "st_rad": 3}
@@ -128,6 +142,87 @@ def sets_text(src: Path, planets: set[str], as_of: str) -> str:
     return out.getvalue()
 
 
+def limit_flag(v) -> str:
+    """The Archive's limit flag as the files carry it: "1" (an upper limit), "-1" (a lower limit), "" (a value, or none)."""
+    try:
+        f = int(float((v or "").strip()))
+    except ValueError:
+        return ""
+    return str(f) if f in (1, -1) else ""
+
+
+def _same(file_value: str, archive_value: str, places: int | None) -> bool:
+    """Is the Archive's number today the number the file holds, written the way the file writes it?"""
+    try:
+        a, b = float(file_value), float(archive_value)
+    except (TypeError, ValueError):
+        return False
+    if places is not None:   # the slim file: rounded, then printed to six figures (the write loop in main())
+        return (str(int(round(b))) if places == 0 else f"{round(b, places):g}") == (file_value or "").strip()
+    return abs(a - b) <= 1e-9 * max(1.0, abs(a))
+
+
+def merge_limits(path: Path, flags: dict, as_of: str, places: dict) -> tuple[int, list[str]]:
+    """Add (or refresh) the two limit columns of one of our CSV files, touching no other number.
+
+    `flags` maps pl_name -> the Archive's row {pl_rade, pl_radelim, pl_bmasse, pl_bmasselim} read today.
+    Returns (flags written, the planets whose flagged number is no longer the file's).
+    """
+    lines = path.read_text(encoding="utf-8").splitlines()
+    head = [ln for ln in lines if ln.startswith("#")]
+    rows = list(csv.DictReader(ln for ln in lines if ln.strip() and not ln.startswith("#")))
+    fields = [c for c in rows[0].keys() if c not in LIMITS]
+    # Before a trailing `calc` column where the file has one (the side file), else at the end.
+    at = fields.index("calc") if "calc" in fields else len(fields)
+    fields[at:at] = list(LIMITS)
+    wrote, moved = 0, []
+    for r in rows:
+        a = flags.get(r["pl_name"].strip())
+        for flag_col, value_col in (("pl_bmasselim", "pl_bmasse"), ("pl_radelim", "pl_rade")):
+            flag = limit_flag(a[flag_col]) if a else ""
+            if flag and not _same(r.get(value_col), a[value_col], places.get(value_col)):
+                moved.append(f"{r['pl_name']} {value_col}: file {r.get(value_col) or 'blank'}, Archive {a[value_col] or 'blank'} (flag {flag})")
+                flag = ""
+            r[flag_col] = flag
+            wrote += bool(flag)
+    # "read", not "as of": the browser's parser takes the LAST "as of <date>" on the line for the table's day.
+    note = f"; limit flags ({', '.join(LIMITS)}) read {as_of}"
+    head = [re.sub(r"; limit flags \([^)]*\) read \d{4}-\d{2}-\d{2}", "", h) for h in head]
+    if head:
+        first = head[0]
+        cut = first.find("; ")
+        head[0] = (first[:cut] + note + first[cut:]) if cut >= 0 else first + note
+    out = io.StringIO(newline="")
+    for h in head:
+        out.write(h + "\n")
+    w = csv.writer(out, lineterminator="\n")
+    w.writerow(fields)
+    for r in rows:
+        w.writerow([r.get(c) or "" for c in fields])
+    path.write_text(out.getvalue(), encoding="utf-8")
+    return wrote, moved
+
+
+def limits_only(as_of: str) -> int:
+    url = TAP + "?" + urllib.parse.urlencode({"query": LIMITS_QUERY, "format": "csv"})
+    with urllib.request.urlopen(url, timeout=600) as resp:  # noqa: S310 -- one fixed https host
+        text = resp.read().decode("utf-8")
+    flags = {r["pl_name"].strip(): r for r in csv.DictReader(io.StringIO(text))}
+    n_upper = sum(1 for r in flags.values() if limit_flag(r["pl_bmasselim"]) == "1")
+    print(f"exoplanets: {len(flags)} planets read from {TAP}; {n_upper} masses are upper limits")
+    for path, places in ((OUT, ROUND), (SIDE, {})):
+        wrote, moved = merge_limits(path, flags, as_of, places)
+        print(f"exoplanets: {wrote} limit flags -> {path.relative_to(ROOT)}")
+        for m in moved:
+            print(f"  not flagged, the number has moved since the file was written: {m}")
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import exopack
+    packed = exopack.pack(OUT)
+    (ROOT / "site/data/exoplanets.bin").write_bytes(packed)
+    print(f"exoplanets: packed -> site/data/exoplanets.bin {len(packed)} B")
+    return 0
+
+
 def listed_hosts() -> set[str]:
     doc = yaml.safe_load((ROOT / "registry/systems-list.yaml").read_text(encoding="utf-8")) or {}
     return {str(h["host"]) for h in doc.get("hosts") or []}
@@ -158,7 +253,7 @@ def write_side(src: Path, as_of: str, sets_src: Path | None = None) -> None:
     w.writerow(SIDE_COLUMNS + ("calc",))
     for r in rows:
         calc = "".join(letter for letter, col in CALC if "CALCULATED" in (r.get(col) or "").upper())
-        w.writerow([(r.get(c) or "").strip() for c in SIDE_COLUMNS] + [calc])
+        w.writerow([limit_flag(r.get(c)) if c in LIMITS else (r.get(c) or "").strip() for c in SIDE_COLUMNS] + [calc])
     # The per-paper rows: the new pull, or the file as it stands (a source that is a file has none).
     sets_out = sets_text(sets_src, {r["pl_name"].strip() for r in rows}, as_of) if sets_src is not None else \
         SETS.read_text(encoding="utf-8") if SETS.exists() else None
@@ -184,7 +279,7 @@ def write_side(src: Path, as_of: str, sets_src: Path | None = None) -> None:
         SETS.write_text(sets_out, encoding="utf-8")
     print(f"star systems: {len(rows)} planets of {len(hosts)} hosts -> {SIDE.relative_to(ROOT)} ({SIDE.stat().st_size} B)")
 
-USAGE = "python3 scripts/build-exoplanets.py (path/to/pscomppars.csv | --pull [--keep FILE] | --systems-only) YYYY-MM-DD"
+USAGE = "python3 scripts/build-exoplanets.py (path/to/pscomppars.csv | --pull [--keep FILE] | --systems-only | --limits-only) YYYY-MM-DD"
 
 
 def main(argv: list[str]) -> int:
@@ -206,6 +301,8 @@ def main(argv: list[str]) -> int:
     except ValueError:
         print(f"build-exoplanets: not a date (YYYY-MM-DD): {as_of}\nusage: {USAGE}", file=sys.stderr)
         return 2
+    if argv[0] == "--limits-only":
+        return limits_only(as_of)
     if argv[0] not in ("--pull", "--systems-only") and not Path(argv[0]).is_file():
         print(f"build-exoplanets: no such file: {argv[0]}\nusage: {USAGE}", file=sys.stderr)
         return 2
@@ -230,6 +327,8 @@ def main(argv: list[str]) -> int:
             vals = []
             for c in COLUMNS:
                 v = (row.get(c) or "").strip()
+                if c in LIMITS:
+                    v = limit_flag(v)
                 if v and c in ROUND:
                     try:
                         f = float(v)

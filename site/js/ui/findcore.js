@@ -174,8 +174,10 @@ export function exoRow(record, override = null, star = null) {
   const teq = override && Number.isFinite(override.equilibriumK) ? override.equilibriumK
     : lum && a ? (lum * SUN_LUMINOSITY_W * (1 - ALBEDO) / (16 * Math.PI * STEFAN_BOLTZMANN * (a * AU_M) ** 2)) ** 0.25 : null;
   const zone = override && override.zone ? override.zone : zoneOf(a, habitableZone(teff, lum, true));
-  const radius = fin(override && override.radiusEarths) ?? fin(m.radiusEarths);
-  const mass = fin(override && override.massEarths) ?? fin(m.massEarths);
+  // A number the Archive gives only as a LIMIT (pl_bmasselim, pl_radelim) is not the planet's mass or width: a search
+  // for planets of 1 000 to 5 000 Earth masses must not answer with HD 10180 g, whose "3 375" is the most it can weigh.
+  const radius = fin(override && override.radiusEarths) ?? (m.radiusLimit ? null : fin(m.radiusEarths));
+  const mass = override && override.massFrom === 'limit' ? null : fin(override && override.massEarths) ?? (m.massLimit ? null : fin(m.massEarths));
   if (!(lum > 0)) lum = null;
   return {
     id: record.id, name: record.name, host: m.host || null,

@@ -20,3 +20,17 @@ def validate(body) -> None:
 def count(body) -> int:
     validate(body)
     return len(body["results"])
+
+
+def newest(body) -> str | None:
+    """The latest launch of any PERSON flagged in space ("Starman", type Non-Human, has been up
+    since 2018 and is not one). Crews change at least twice a year (registry row `content_max_age`)."""
+    out = []
+    for a in body.get("results", []):
+        if not isinstance(a, dict) or not a.get("last_flight"):
+            continue
+        kind = a.get("type") if isinstance(a.get("type"), dict) else {}
+        if "non-human" in str(kind.get("name") or "").lower():
+            continue
+        out.append(a["last_flight"])
+    return max(out) if out else None

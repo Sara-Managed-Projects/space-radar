@@ -5144,6 +5144,15 @@ def main() -> int:
         for key in ("cadence", "freshness_max"):
             if not duration_ok(s.get(key, "")):
                 fail(where, f"`{key}` must look like `15m` or `3h`, got {s.get(key)!r}")
+        # `content_max_age` is a promise the parser must be able to keep: it is read against the
+        # parser's newest(body), and a row whose parser has none would be a check that never runs.
+        if s.get("content_max_age") is not None:
+            if not re.fullmatch(r"\d+[mhd]", str(s.get("content_max_age"))):
+                fail(where, f"`content_max_age` must look like `7d` or `300d`, got {s.get('content_max_age')!r}")
+            pmod = ROOT / "harvest" / "parsers" / f"{parser}.py"
+            if pmod.exists() and "def newest(" not in pmod.read_text(encoding="utf-8"):
+                fail(where, f"`content_max_age` is set but harvest/parsers/{parser}.py has no newest(body) "
+                            f"to read the body's own dates with")
         outputs = s.get("outputs")
         if not outputs or not isinstance(outputs, list):
             fail(where, "no `outputs:` list")

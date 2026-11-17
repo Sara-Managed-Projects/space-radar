@@ -37,7 +37,7 @@ import { TOUR_GROUPS } from '../data/tours-index.js';
 import { LADDER_RUNGS, WE_SHOW } from '../data/ladder.js';
 import { SYSTEMS } from '../data/systems.js';
 import { load } from '../data/sources.js';
-import { parseAstros } from '../data/parsers.js';
+import { parseStationHeadcount } from '../data/parsers.js';
 import { groupTrips, eventSubtitle } from './trippicker.js';
 import { tripPicture, PICTURE_DELAY_MS } from './trippics.js';
 import { createSearch } from './search.js';
@@ -61,14 +61,16 @@ const COMING_UP_ROWS = 5;
 const PLANET_IDS = ['sun', 'mercury', 'venus', 'moon', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
 /**
  * The crewed stations the "People in space" line names, by the record id their elements load as.
- * `craft` is Open Notify's own spelling (tests/fixtures/harvest/open_notify.json), the key the
- * headcount poll below matches against -- kept apart from the display label (copy/en.js R[key]),
- * which is free to read differently without breaking the match.
+ * `ll2` is Launch Library 2's station id, the key the headcount poll below matches against
+ * (data/crew.js STATION_RECORD is the same pairing, read by the station's card; tests/test_shell.mjs
+ * holds the two together).
  */
-const CREWED = [
-  { id: 'sat-25544', key: 'iss', craft: 'ISS' },
-  { id: 'sat-48274', key: 'tiangong', craft: 'Tiangong' },
+export const CREWED = [
+  { id: 'sat-25544', key: 'iss', ll2: 4 },
+  { id: 'sat-48274', key: 'tiangong', ll2: 18 },
 ];
+/** Past this the headcount is not printed: the station card's own rule (data/crew.js CREW_STALE_MS). */
+export const HEADCOUNT_STALE_MS = 48 * 3600e3;
 const STORM_RANK = { hurricane: 3, storm: 2, depression: 1 };
 const LY_PER_PC = 3.26156;
 const REFRESH_MS = 30e3;
@@ -89,14 +91,15 @@ export function worldDistance(readouts) {
 }
 
 /**
- * Open Notify's headcount per craft (data/parsers.js parseAstros), read once and kept here --
- * the snapshot is minutes old at most, and `load()` already has its own cache and cadence gate,
- * so nothing here re-fetches sooner than that. Module-level, not per-instance: the data has no
- * observer, so two mounted explore views would otherwise poll twice for the same answer.
+ * The publisher's headcount per station (Launch Library 2's `onboard_crew`, data/parsers.js
+ * parseStationHeadcount), read once and kept here -- `load()` already has its own cache and
+ * cadence gate, so nothing here re-fetches sooner than that. Module-level, not per-instance: the
+ * data has no observer, so two mounted explore views would otherwise poll twice for the same
+ * answer. A copy older than HEADCOUNT_STALE_MS is no headcount: the line names the stations bare.
  */
-let astrosCounts = null;
-let astrosInFlight = null;
-/** Same craft -> count map, order aside; a changed answer is the only one worth a repaint. */
+let crewCounts = null;
+let crewInFlight = null;
+/** Same station -> count map, order aside; a changed answer is the only one worth a repaint. */
 function sameCounts(a, b) {
   if (a === b) return true;
   if (!a || !b) return false;
@@ -104,21 +107,26 @@ function sameCounts(a, b) {
   if (ak.length !== Object.keys(b).length) return false;
   return ak.every((k) => a[k] === b[k]);
 }
+/** The counts a read gives, or null when it failed, is not the shape, or is too old to print. Pure. */
+export function headcountFrom(res, wallMs) {
+  if (!res || !res.ok || res.data == null) return null;
+  if (Number.isFinite(res.fetchedAt) && Number.isFinite(wallMs) && wallMs - res.fetchedAt > HEADCOUNT_STALE_MS) return null;
+  return parseStationHeadcount(res.data);
+}
 /**
  * Kicks off a read of the headcount and repaints Right now once it lands WITH A CHANGED ANSWER;
  * a no-op mid-flight, and -- since this runs from inside paintNow -- a no-op once loaded and
  * unchanged, or `onLoaded` calling paintNow would call this again forever.
  */
-function pollAstros(onLoaded) {
-  if (astrosInFlight) return;
-  astrosInFlight = load('open-notify-astros')
+function pollCrew(onLoaded) {
+  if (crewInFlight) return;
+  crewInFlight = load('ll2-stations')
     .then((res) => {
-      astrosInFlight = null;
-      if (!res || !res.ok || res.data == null) return;
-      const byCraft = parseAstros(res.data);
-      if (byCraft && !sameCounts(byCraft, astrosCounts)) { astrosCounts = byCraft; onLoaded(); }
+      crewInFlight = null;
+      const byStation = headcountFrom(res, Date.now());
+      if (byStation && !sameCounts(byStation, crewCounts)) { crewCounts = byStation; onLoaded(); }
     })
-    .catch(() => { astrosInFlight = null; });
+    .catch(() => { crewInFlight = null; });
 }
 
 /** Where a tab goes. Pure. */
@@ -181,8 +189,9 @@ export function rightNowLines(input = {}) {
   }
   const crewed = (Array.isArray(input.crewed) ? input.crewed : []).filter((x) => x && x.record && R[x.key]);
   if (crewed.length) {
-    // The headcount (Open Notify, via explore.js's astros poll) names how many once it has
-    // loaded; a station with no count yet, or Open Notify unreachable, falls back to its bare name.
+    // The headcount (Launch Library 2's onboard_crew, via explore.js's crew poll) names how many
+    // once it has loaded; a station with no count yet, or the list unreachable or more than two
+    // days old, falls back to its bare name.
     const names = crewed.map((x) => (Number.isFinite(x.count) && x.count > 0)
       ? t(R.crewAt, { n: fmt.int(x.count), name: R[x.key] })
       : R[x.key]);
@@ -814,11 +823,11 @@ export function createExplore(ctx, host) {
     const wallMs = Date.now();
     let clouds = null;
     try { clouds = ctx.liveClouds ? ctx.liveClouds.state() : null; } catch { clouds = null; }
-    pollAstros(() => { if (current === 'earth') paintNow(); });
+    pollCrew(() => { if (current === 'earth') paintNow(); });
     const crewed = [];
     for (const c of CREWED) {
       const rec = typeof ctx.recordById === 'function' ? ctx.recordById(c.id) : null;
-      if (rec) crewed.push({ key: c.key, record: rec, count: astrosCounts ? astrosCounts[c.craft] : undefined });
+      if (rec) crewed.push({ key: c.key, record: rec, count: crewCounts ? crewCounts[c.ll2] : undefined });
     }
     const lines = rightNowLines({ storms: ctx.recordsFor ? ctx.recordsFor('storms') : [], aurora: auroraNow(wallMs), clouds, crewed, wallMs });
     while (nowList.firstChild) nowList.removeChild(nowList.firstChild);
@@ -1081,8 +1090,8 @@ export function createExplore(ctx, host) {
     return mount;
   }
 
-  // `crew` is Open Notify's headcount by craft, or null until it is read (ui/sentence.js).
-  const api = { root, tab: () => current, setTab: goTab, refresh, search, subscribeHost, next, todayHost, crew: () => astrosCounts, mountTab };
+  // `crew` is Launch Library 2's headcount by station, or null until it is read (ui/sentence.js).
+  const api = { root, tab: () => current, setTab: goTab, refresh, search, subscribeHost, next, todayHost, crew: () => crewCounts, mountTab };
   if (ctx) ctx.explore = api;
   return api;
 }

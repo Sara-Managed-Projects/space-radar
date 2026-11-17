@@ -15,7 +15,10 @@ sides together by decoding the file and comparing every planet with the CSV row 
     1 B   version (1)
     1 B   reserved (0)
     2 B   header length H
-    H B   UTF-8 JSON: {asOf, n, methods:[..], spects:[..], hosts:{index: host}, namesBytes}
+    H B   UTF-8 JSON: {asOf, n, methods:[..], spects:[..], hosts:{index: host}, namesBytes,
+                      massLimits:{upper:[index..], lower:[index..]}, radiusLimits:{upper:[..], lower:[..]}}
+          (the two limit maps since 2026-11-16: the planets whose mass or radius in the Archive's table is a
+          LIMIT, not a value -- pl_bmasselim, pl_radelim; a reader that does not know them reads the file as before)
     then, each n entries long, in this order:
       ra     i32  microdegrees (0..360e6), as the difference from the planet before it (the first from 0)
       dec    i32  microdegrees, the same
@@ -92,7 +95,12 @@ def pack(csv_path: Path, as_of: str | None = None) -> bytes:
     cols = {k: [] for k in ("ra", "dec", "dist", "rade", "mass", "per", "teff", "srad", "year", "method", "spect")}
     names: list[str] = []
     hosts: dict[str, str] = {}
+    limits = {"pl_bmasselim": {"upper": [], "lower": []}, "pl_radelim": {"upper": [], "lower": []}}
     for i, r in enumerate(rows):
+        for col, by in limits.items():
+            flag = (r.get(col) or "").strip()
+            if flag in ("1", "-1"):
+                by["upper" if flag == "1" else "lower"].append(i)
         ra, dec, dist = _f(r["ra"]), _f(r["dec"]), _f(r["sy_dist"])
         if ra is None or dec is None or dist is None or dist <= 0:
             raise ValueError(f"{r['pl_name']} has no place; the bundled csv never carries one")
@@ -124,7 +132,8 @@ def pack(csv_path: Path, as_of: str | None = None) -> bytes:
             hosts[str(i)] = host
     blob = "\n".join(names).encode("utf-8")
     header = json.dumps({"asOf": as_of, "n": len(rows), "methods": methods, "spects": spects, "hosts": hosts,
-                         "namesBytes": len(blob)}, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+                         "namesBytes": len(blob), "massLimits": limits["pl_bmasselim"], "radiusLimits": limits["pl_radelim"]},
+                        ensure_ascii=False, separators=(",", ":")).encode("utf-8")
     out = bytearray(b"SRXP" + struct.pack("<BBH", 1, 0, len(header)) + header)
     for key in ("ra", "dec", "dist"):
         prev = 0

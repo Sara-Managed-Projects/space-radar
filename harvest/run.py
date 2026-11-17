@@ -196,6 +196,14 @@ def run_source(store, source: Source, prev: snap.Entry, *, now: datetime, dry_ru
     if not ok:
         return done(_carry(prev, status="refused", error=reason))
 
+    # A body can be well-formed, full, and years old (Open Notify, 2024 to 2026: "success", twelve
+    # names, every hour). Where the body carries dates and the row says how old the newest may be,
+    # a frozen answer is refused like any other bad one: the copy held keeps its own stamps and
+    # ages honestly, instead of a dead list being stamped fresh every run.
+    frozen = frozen_reason(parser, body, source, now)
+    if frozen:
+        return done(_carry(prev, status="refused", error=frozen))
+
     # ONE parser packs (harvest/parsers/sea_grid.py says why: megabytes of repeated coordinates). It is
     # asked after the count and the guard, so what was counted is what the upstream sent.
     if callable(getattr(parser, "pack", None)):
@@ -216,8 +224,35 @@ def run_source(store, source: Source, prev: snap.Entry, *, now: datetime, dry_ru
         status="ok",
         last_error=fetched.partial or None,
         etag=fetched.etag,
+        # A SPAN SHORTER THAN ASKED STAYS ON THE ROW for as long as that copy is the one published (review 2026-11-16).
+        # `last_error` is this run's: the next run that is not due clears it, and on 2026-11-16 the index said nothing
+        # about a Mars Reconnaissance Orbiter path that ended two weeks before every other craft's. `note` is carried
+        # with the copy (_carry), which is how internal #87 (JWST's and Juno's paths ran out) would have been seen coming.
+        note=fetched.shortened or None,
     )
     return done(entry, wrote=True)
+
+
+def frozen_reason(parser, body, source: Source, now: datetime) -> str | None:
+    """Why this body is too old to publish, in words, or None. Pure.
+
+    Only for a row with `content_max_age` whose parser has `newest(body)`. A body with no readable
+    date is not refused here (the parser's validate() decides what a body must carry).
+    """
+    limit = source.content_max_age_seconds
+    fn = getattr(parser, "newest", None)
+    if not limit or not callable(fn):
+        return None
+    try:
+        stamp = fn(body)
+        newest = snap.parse_iso(stamp) if stamp else None
+    except Exception:  # a date we cannot read is not evidence of age
+        return None
+    if newest is None or now - newest <= timedelta(seconds=limit):
+        return None
+    return (f"the newest date in the body is {snap.iso(newest)}, more than {source.content_max_age} "
+            f"before this fetch: the upstream answers but its content has stopped changing; "
+            f"the previous snapshot stays")
 
 
 # --- the three ways to fetch ---------------------------------------------------------------------
@@ -233,6 +268,7 @@ class Fetched:
     not_modified: bool = False
     body: object = None          # already-built body (list fetches); None means "decode text"
     partial: str | None = None   # a list fetch where some ids failed: which, in words
+    shortened: str | None = None  # a list fetch where an id's window was cut to what the upstream holds: which, in words
 
 
 def _conditional(prev: snap.Entry) -> dict:
@@ -378,8 +414,9 @@ def _fetch_list(source: Source, *, now: datetime, fetcher, sleep) -> Fetched:
     if clamps:
         notes.append("window shortened to what Horizons holds for " + "; ".join(clamps))
     partial = "; ".join(notes) if notes else None
+    shortened = ("window shortened to what Horizons holds for " + "; ".join(clamps)) if clamps else None
     return Fetched(status=200, text="", content_type="application/json", bytes=total, etag=None,
-                   body=body, partial=partial)
+                   body=body, partial=partial, shortened=shortened)
 
 
 # --- outcomes ------------------------------------------------------------------------------------

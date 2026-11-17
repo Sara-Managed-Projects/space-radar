@@ -234,6 +234,7 @@ export function recordsFromNames(rows) {
       meta.why = famous.why; meta.whySource = famous.source;
       if (famous.mag != null) meta.mag = famous.mag; // a value the registry corrects (Sirius, internal #311)
       if (famous.spect) meta.spect = famous.spect;
+      if (Array.isArray(famous.mag_range)) meta.magVaries = famous.mag_range; // a long-period variable (Mira): no one brightness, no light output from it
       // A width read off an interferometer, with its source (registry/stars-notable.yaml): the card then says "measured".
       if (famous.radius_suns > 0) { meta.measuredRadiusSuns = famous.radius_suns; meta.measuredTeffK = famous.teff_k; meta.widthSource = famous.physical_source; }
     }

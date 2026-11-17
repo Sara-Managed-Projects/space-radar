@@ -201,6 +201,23 @@ tagged, and their dates are the day the last change in each landed.
   4.8 km from Horizons at those four flybys). Seven of them (Phobos, Deimos, Mimas, Enceladus, Iapetus, Miranda, Ariel) carry a
   few numbers fitted for the outer years; inside 2000 to 2050 every position is exactly what it was. Before 1950 and after 2100
   they are still not drawn. `site/js/propagate/moons.js` grows by about 0.8 kB in the boot graph.
+
+
+- **A data review's faults, corrected at their sources (16 November 2026).** "People in space" on the Right now panel counted
+  from a list frozen on the crews of mid-2024 (9 on the ISS); it now reads Launch Library 2's own headcount, the list the
+  station card already used, and that frozen source is retired. The harvester refuses a body whose newest date is too old
+  instead of stamping it fresh, and keeps saying so when a spacecraft's saved path is shorter than asked. An exoplanet mass the
+  NASA Exoplanet Archive gives only as an upper limit (225 planets: HD 10180 g, 51 Eri b, Kepler-22 b, Kepler-62 b to f) is worded
+  "less than", never "measured", on cards and pages. Numbers carry the figures their measurement supports: star distances past
+  100 light-years to two figures, a star's light against the Sun's said as visible light, no padded zeros on masses, periods and
+  sizes, exoplanet widths to three figures, a small body's year to one decimal under ten. One way of grouping digits on every
+  search page. One value per quantity: Venus's temperature and pressure, the Earth's width, Eris's year, the Crab's distance,
+  M87's, the Milky Way's width, the parsec. M66 has a page of its own (M65 and M66 no longer share the group's name), and M40 and
+  M73 say they are chance alignments. Status lines brought up to date from the agencies' pages: MAVEN, Hera, Tiangong, Juno,
+  MetOp-C, Lucy, XMM-Newton, JUICE's flyby, 2I/Borisov's date, the four GOES pages. The Perseids and Lyrids come from Perseus and
+  Lyra; the Southern Delta Aquariids' comet is 96P/Machholz (suspected). Eclipse times are rounded to the minute, full-Moon pages
+  mention a penumbral eclipse the same night, and "Planets tonight" gives each time its own date.
+
 - **Curiosity and Perseverance are drawn where they are, not where they landed.** Their markers stood on their landing
   sites, 14.3 km and 12.2 km from the rovers (a review of positions, 2026-11-16). Each now stands at the latest waypoint of
   NASA's mission map, and its card's Sources say which: "Position: NASA's waypoint for sol 5073 (13 November 2026)". A monthly

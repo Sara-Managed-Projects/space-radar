@@ -7,6 +7,12 @@ A parser module exposes:
     not_modified(text) -> bool    optional; True when a 200/403 TEXT answer means "nothing new"
                                   (CelesTrak says it in words rather than with a 304)
 
+    newest(body) -> str|None      optional; the newest ISO time INSIDE the body (a launch, a docking).
+                                  A row with `content_max_age:` is refused when that time is older
+                                  than the limit: an upstream can answer 200 for years with a body
+                                  that stopped changing (Open Notify did), and a fetch time cannot
+                                  see that. None when the body carries no time: nothing is refused.
+
     pack(body) -> body            optional, and one parser has it (sea_grid): the body to SAVE in
                                   place of the upstream's, when that is megabytes of repeated
                                   coordinates. Called after count() and the never-worse guard.
