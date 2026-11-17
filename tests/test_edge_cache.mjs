@@ -60,7 +60,7 @@ check(/"s3:\/\/\$BUCKET\/\$dir" --cache-control "\$REVALIDATE"/.test(code) && /P
 // codes, each folder and each language sitemap invalidated by the loop beside PATHS (checked just below).
 // Twenty-eight with the sky events' calendar files (events/*.ics as text/calendar, internal #105).
 // A new upload changes the count here on purpose.
-check(!/--cache-control "no-cache"/.test(code) && (code.match(/--cache-control "\$REVALIDATE"/g) || []).length === 28, 'no upload still says a literal no-cache: all twenty-eight read $REVALIDATE');
+check(!/--cache-control "no-cache"/.test(code) && (code.match(/--cache-control "\$REVALIDATE"/g) || []).length === 29, 'no upload still says a literal no-cache: all twenty-nine read $REVALIDATE');
 const langLoops = [...code.matchAll(/for code in ([a-z ]+); do/g)].map((m) => m[1].trim());
 check(langLoops.length === 3 && langLoops.every((l) => l === 'es fr de pt ru uk zh hi he ar'), `the language folders are synced, their sitemaps uploaded and both invalidated, for the same ten codes (${langLoops})`);
 check(/"s3:\/\/\$BUCKET\/\$code" --cache-control "\$REVALIDATE"/.test(code) && /PATHS\+=\("\/\$code\/\*" "\/sitemap-pages-\$code\.xml"\)/.test(code), 'each language folder is stored for revalidation and invalidated with its sitemap');
