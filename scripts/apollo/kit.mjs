@@ -3,7 +3,7 @@
 //   cd <a folder with node_modules for @gltf-transform/core extensions functions, meshoptimizer, draco3dgltf, sharp>
 //   node /path/to/space-radar/scripts/apollo/build-saturn-v.mjs ...
 //
-// A TRIANGLE is {p:[9 numbers, metres], n:[9]|null, c:[r,g,b] linear, tag:0|1|2}. tag 0 = body,
+// A TRIANGLE is {p:[9 numbers, metres], n:[9]|null, c:[r,g,b] linear, tag:0|1|2|3}. tag 0 = body,
 // 1 = solar-panel, 2 = foil: the mesh names scene/realmodels.js applyToon reads for the specular
 // family (the same three names scripts/bake-own-colours.mjs writes). `n` is kept where a triangle
 // comes from NASA's own file (so the look of a NASA part is not touched by splitting it), and
@@ -46,7 +46,7 @@ export async function readTris(path, { filter } = {}) {
     const mesh = node.getMesh();
     if (!mesh || (filter && !filter(node))) return;
     const M = node.getWorldMatrix();
-    const tag = /panel|solar|array/i.test(`${node.getName()} ${mesh.getName()}`) ? 1 : /foil|mli|kapton|blanket/i.test(`${node.getName()} ${mesh.getName()}`) ? 2 : 0;
+    const tag = /panel|solar|array/i.test(`${node.getName()} ${mesh.getName()}`) ? 1 : /foil|mli|kapton|blanket/i.test(`${node.getName()} ${mesh.getName()}`) ? 2 : /mirror/i.test(`${node.getName()} ${mesh.getName()}`) ? 3 : 0;
     for (const prim of mesh.listPrimitives()) {
       const pa = prim.getAttribute('POSITION'), na = prim.getAttribute('NORMAL'), ia = prim.getIndices();
       const mat = prim.getMaterial();
@@ -278,13 +278,13 @@ export async function writeParts(outPath, parts, { crease = 40 } = {}) {
   const doc = new Document();
   const buffer = doc.createBuffer();
   const scene = doc.createScene('model');
-  const NAMES = ['body', 'solar-panel', 'foil'];
+  const NAMES = ['body', 'solar-panel', 'foil', 'mirror']; // 3 = mirror: polished metal, scene/pbr.js roleOf (a sphere of Sputnik 1)
   let total = 0;
   for (const part of parts) {
     const tris = withNormals(part.tris, crease);
     const node = doc.createNode(part.name).setTranslation(part.origin.map((v) => +v.toFixed(4)));
     scene.addChild(node);
-    for (let tag = 0; tag < 3; tag++) {
+    for (let tag = 0; tag < 4; tag++) {
       const mine = tris.filter((t) => t.tag === tag);
       if (!mine.length) continue;
       const mesh = doc.createMesh(NAMES[tag]);

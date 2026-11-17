@@ -71,11 +71,14 @@ for (let i = 0; i < WHICH.length; i++) {
   if (klass === 'file') {
     // `file:hubble.glb@telescope` names the class colour a file WOULD be painted if it carried no
     // colours of its own, which is the half of the before/after a recolour is judged by.
-    const [file, colour = 'asteroid'] = variant.split('@');
+    // `file:sputnik-1.glb@satellite!sputnik-nose+x` hides the nodes of those names in that cell only (a part the catalogue pictures leave out: registry `picture_hide`).
+    const [fileAndColour, hideList = ''] = variant.split('!');
+    const [file, colour = 'asteroid'] = fileAndColour.split('@');
     // b200-m2-buses: begin -- the loader hands back ONE object a file (it is cached), so the same file listed four times (four angles) was one object in the last cell; each cell gets its own clone
     const loaded = await loadRealModel({ file, colour });
     if (!loaded) throw new Error(`could not load ${variant}`);
     const obj = loaded.clone(true);
+    if (hideList) { const hide = new Set(hideList.split('+')); obj.traverse((n) => { if (hide.has(n.name)) n.visible = false; }); }
     // b200-m2-buses: end
     obj.userData.cell = i;
     scene.add(obj);

@@ -75,6 +75,7 @@ export const MODEL_LOOKS = {
   "sert-2.glb": "pbr",
   "shuttle-rms.glb": "pbr",
   "slim.glb": "pbr",
+  "sputnik-1.glb": "pbr",
   "swarm.glb": "pbr",
   "timed.glb": "pbr",
   "tracers.glb": "pbr",
