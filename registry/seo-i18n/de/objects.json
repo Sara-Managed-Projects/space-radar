@@ -411,6 +411,7 @@
  "b758c5c215": "Das erste Schwarze Loch, bei dem man sich sicher war, entdeckt im Jahr {n1} durch seine Röntgenstrahlung. Es verschlingt einen blauen Überriesen, HDE {n2}.",
  "02d124a23a": "Schwarzes Loch",
  "517a174794": "Gezeichnet als Ring in der gemessenen Entfernung; ein Schwarzes Loch hat keine Form, die man zeichnen könnte, und ein Pulsar ist viel zu klein – die Art von Objekt, nicht genau dieses · solange dieser Steckbrief offen ist, wird an der Stelle des Objekts ein Modell gezeichnet, viel größer, als es von hier aus aussähe: der Schatten und das darum gebogene Licht, so wie die Masse des Objekts sie formt; die Scheibe ist modelliert.",
+ "d4c77946c8": "Gezeichnet als Ring in der gemessenen Entfernung; ein Schwarzes Loch hat keine Form, die man zeichnen könnte, und ein Pulsar ist viel zu klein – die Art von Objekt, nicht genau dieses · solange dieser Steckbrief offen ist, wird an der Stelle des Objekts ein Modell gezeichnet, viel größer, als es von hier aus aussähe: der Schatten und das darum gebogene Licht, so wie die Masse des Objekts sie formt; die Scheibe ist modelliert · die Sterne, die es umkreisen, werden auf ihren gemessenen Bahnen gezeichnet, sobald man sich ihm auf etwa ein Lichtjahr nähert: {n1} davon (S2 nach GRAVITYs Fit, die übrigen nach Gillessen u. a., {n2}), jeder dort, wo ihn die Uhr auf seiner Bahn hinstellt; ihre Größen und Farben sind illustrativ, und das Bild des Lochs weicht vor ihnen zurück.",
  "6c06fafecf": "Quelle: <1>https://en.wikipedia.org/wiki/Cygnus_X-{n1}</1> (Infobox, abgerufen {n2}-{n3}-{n4}); Entfernung und Masse: Miller-Jones et al. {n5} (arXiv:{n6})",
  "bb9ecb6aff": "{name} ist ein Raumfahrzeug draußen im Sonnensystem. Die aktuelle Position zeigt die Live-Karte in 3D.",
  "c8a8f2e9e2": "Das erste Raumfahrzeug, das zwei Welten jenseits der Erde umkreiste: in den Jahren {n1} und {n2} den Asteroiden Vesta, dann ab {n3} den Zwergplaneten Ceres.",
@@ -1250,5 +1251,7 @@
  "66ba90603d": "Gezeichnet als WorldView-{n1}, ein höheres Raumfahrzeug auf demselben Satellitenbus – die Art von Objekt, nicht genau dieses · Form aus veröffentlichten Maßen und Bildern gebaut; Einzelheiten vereinfacht.",
  "c90413fd85": "Hier landete Curiosity am {d1}. Der Rover ist weitergefahren und hat eine eigene Markierung.",
  "3262df82d7": "Hier landete Perseverance am {d1}. Der Rover ist weitergefahren und hat eine eigene Markierung.",
- "cbdf08776a": "Ein Rover so groß wie ein Auto, der Gesteinsproben sammelt. Er landete {n1} im Jezero-Krater und ist seitdem über den westlichen Kraterrand hinaufgefahren."
+ "cbdf08776a": "Ein Rover so groß wie ein Auto, der Gesteinsproben sammelt. Er landete {n1} im Jezero-Krater und ist seitdem über den westlichen Kraterrand hinaufgefahren.",
+ "3bf96d01d2": "Quelle: Position: Hunt & Reffert {n1}, A&A {n2}, A114 (VizieR J/A+A/{n3}/A114), der Mittelpunkt seiner Gaia-DR3-Mitglieder; Entfernung: Hunt & Reffert {n4} (arXiv:{n5}), Median aus {n6} Gaia-DR3-Mitgliedern",
+ "3b0df8fa45": "Quelle: Position: SIMBAD (NGC {n1}; Tarricq et al. {n2}, A&A {n3}, A19); Entfernung: <1>https://en.wikipedia.org/wiki/List_of_Messier_objects</1>"
 }

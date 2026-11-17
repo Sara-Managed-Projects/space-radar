@@ -411,6 +411,7 @@
  "b758c5c215": "El primer agujero negro del que se tuvo certeza, descubierto en {n1} por sus rayos X. Está devorando una supergigante azul, HDE {n2}.",
  "02d124a23a": "Agujero negro",
  "517a174794": "Dibujado como un anillo a su distancia medida; un agujero negro no tiene forma que dibujar y un púlsar es demasiado pequeño — el tipo de objeto, no este en concreto · mientras esta ficha está abierta, se dibuja un modelo de él en su lugar, mucho más grande de lo que se vería desde aquí: la sombra y la luz curvada a su alrededor como las produce su masa, con el disco modelado.",
+ "d4c77946c8": "Dibujado como un anillo a su distancia medida; un agujero negro no tiene forma que dibujar y un púlsar es demasiado pequeño — el tipo de objeto, no este en concreto · mientras esta ficha está abierta, se dibuja un modelo de él en su lugar, mucho más grande de lo que se vería desde aquí: la sombra y la luz curvada a su alrededor como las produce su masa, con el disco modelado · las estrellas que lo rodean se dibujan en sus órbitas medidas cuando uno se acerca a cerca de un año luz: {n1} de ellas (S2 según el ajuste de GRAVITY, las demás según Gillessen y otros, {n2}), cada una donde el reloj la sitúa en su órbita; sus tamaños y colores son ilustrativos, y la imagen del agujero les cede el sitio.",
  "6c06fafecf": "Fuente: <1>https://en.wikipedia.org/wiki/Cygnus_X-{n1}</1> (infobox, leído {n2}-{n3}-{n4}); distancia y masa: Miller-Jones et al. {n5} (arXiv:{n6})",
  "bb9ecb6aff": "{name} es una nave espacial que viaja por el sistema solar. Dónde está ahora mismo lo ves en el mapa 3D en vivo.",
  "c8a8f2e9e2": "La primera nave en orbitar dos mundos más allá de la Tierra: el asteroide Vesta en {n1} y {n2}, y luego el planeta enano Ceres desde {n3}.",
@@ -1250,5 +1251,7 @@
  "66ba90603d": "Dibujado como WorldView-{n1}, una nave más alta sobre la misma plataforma — el tipo de objeto, no este en concreto · forma construida a partir de medidas e imágenes publicadas; detalles simplificados.",
  "c90413fd85": "Aquí aterrizó Curiosity el {d1}. El róver ha seguido su camino y tiene su propia marca.",
  "3262df82d7": "Aquí aterrizó Perseverance el {d1}. El róver ha seguido su camino y tiene su propia marca.",
- "cbdf08776a": "Un róver del tamaño de un coche que recoge muestras de roca. Aterrizó en el cráter Jezero en {n1} y desde entonces ha subido y cruzado el borde occidental del cráter."
+ "cbdf08776a": "Un róver del tamaño de un coche que recoge muestras de roca. Aterrizó en el cráter Jezero en {n1} y desde entonces ha subido y cruzado el borde occidental del cráter.",
+ "3bf96d01d2": "Fuente: posición: Hunt & Reffert {n1}, A&A {n2}, A114 (VizieR J/A+A/{n3}/A114), el centro de sus miembros de Gaia DR3; distancia: Hunt & Reffert {n4} (arXiv:{n5}), mediana de {n6} miembros de Gaia DR3",
+ "3b0df8fa45": "Fuente: posición: SIMBAD (NGC {n1}; Tarricq et al. {n2}, A&A {n3}, A19); distancia: <1>https://en.wikipedia.org/wiki/List_of_Messier_objects</1>"
 }

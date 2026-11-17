@@ -1160,7 +1160,8 @@ export const COPY = {
     "exoticDeparture": {
       "pulseSlowed": "son clignotement est dessiné {n} fois plus lent que sa rotation, pour que l’œil puisse le suivre",
       "pulseTrue": "son clignotement est dessiné à la vitesse de sa rotation",
-      "portrait": "tant que cette fiche est ouverte, un modèle est dessiné à sa place, bien plus grand qu’il ne paraîtrait d’ici : l’ombre et la lumière courbée que donne sa masse, le disque modélisé"
+      "portrait": "tant que cette fiche est ouverte, un modèle est dessiné à sa place, bien plus grand qu’il ne paraîtrait d’ici : l’ombre et la lumière courbée que donne sa masse, le disque modélisé",
+      "sstars": "les étoiles qui tournent autour de lui sont dessinées sur leurs orbites mesurées quand on s’en approche à environ une année-lumière : 39 d’entre elles (S2 d’après l’ajustement de GRAVITY, les autres d’après Gillessen et al., 2017), chacune là où l’horloge la place sur son orbite ; leurs tailles et leurs couleurs sont illustratives, et l’image du trou leur cède la place"
     },
     "worldDeparture": {
       "earth": "sur un grand écran, ses montagnes viennent des altitudes ETOPO 2022 de la NOAA, dessinées {relief} fois plus raides qu’elles ne sont pour qu’un Soleil bas les montre ; la lueur de l’air sur son bord est dessinée {air} fois plus haute que l’air ; depuis l’orbite basse sur un grand écran, ses nuages se dressent vers l’horizon et sous un Soleil bas, dessinés {clouds} fois plus épais qu’ils ne sont pour qu’on voie leur inclinaison, leurs longues ombres et la dernière lumière sur leurs sommets (à leur vraie épaisseur dans l’aspect Mesuré), la hauteur de chaque sommet venant de sa température mesurée là où l’image du jour la couvre, et de l’éclat de la carte des nuages ailleurs",
@@ -3741,29 +3742,16 @@ export const COPY = {
   "r12Dust": {
     "card": {
       "m45": "Sa lumière est la photographie de NOIRLab : un nuage de poussière qui traverse l’amas, juste devant ses étoiles, diffuse leur lumière bleue (Ritchey et d’autres, 2006). Sa profondeur est reconstituée. Pas encore relu par un astronome.",
-      "crab": "Sa lumière vient de la photographie de Hubble, en fausses couleurs, portée par une coque dont la forme suit Martin, Milisavljevic et Drissen (2021) : une cage de filaments longue d’environ 4 parsecs autour d’un milieu vide. Pas encore relu par un astronome.",
+      "crab": "Une cage de filaments autour de la lueur du vent du pulsar, sur le contour mesuré par Martin, Milisavljevic et Drissen (2021). La place de chaque filament est modélisée et les couleurs suivent l’image en fausses couleurs de Hubble. Pas encore relu par un astronome.",
       "veil": "Sa lumière vient de la photographie de NOIRLab, en fausses couleurs, portée par une fine sphère de 37 parsecs de diamètre (Fesen et autres, 2018) : les filaments sont son bord vu par la tranche. Pas encore relu par un astronome.",
       "horsehead": "Son obscurité se lit dans la photographie de NOIRLab : de la poussière devant le gaz lumineux d’IC 434, qui absorbe et rougit ce qui est derrière elle et n’émet aucune lumière. Pas encore relu par un astronome.",
-      "coalsack": "Son obscurité se lit dans la Voie lactée autour d’elle : un nuage de poussière à environ 590 années-lumière qui assombrit et rougit les étoiles derrière lui. Pas encore relu par un astronome.",
+      "coalsack": "Son obscurité se lit dans la Voie lactée autour d’elle : un nuage de poussière à environ 590 années-lumière qui assombrit et rougit les étoiles derrière lui. Son contour est mesuré, sa profondeur est modélisée. Pas encore relu par un astronome.",
       "m78": "Sa lumière est la photographie de NOIRLab : de la poussière qui diffuse la lumière bleue de l’étoile devant elle, sur la face d’un nuage sombre. Sa profondeur est reconstituée. Pas encore relu par un astronome.",
       "iris": "Sa lumière est la photographie de NOIRLab : de la poussière qui diffuse la lumière de la jeune étoile HD 200775 dans un creux de son nuage. Sa profondeur est reconstituée. Pas encore relu par un astronome."
     },
     "rows": {
       "dso-m45": [["Sa forme en profondeur", "Reconstituée. Le gaz est devant les étoiles, comme le montre leur lumière ; à quelle distance devant, et l’épaisseur de la poussière, sont illustratifs, et les profondeurs des étoiles dans l’amas sont un modèle fixe, non mesurées."], ["Ce que fait la poussière", "Elle diffuse la lumière des étoiles, surtout la bleue, et brille donc en bleu autour des plus brillantes, Mérope et Maïa surtout. C’est un nuage de passage, pas celui dont les étoiles sont nées."], ["Relecture", "Ce modèle n’a pas encore été relu par un astronome."]],
-      "dso-m1": [
-        [
-          "Sa forme en profondeur",
-          "Reconstituée à partir d’un contour mesuré. Les filaments s’étendent sur environ 2 parsecs le long de l’axe du vent du pulsar et aucun ne se trouve à moins d’un demi-parsec du centre (Martin et autres, 2021). Dessinée comme un ellipsoïde le long de cet axe ; l’extrémité la plus proche de nous est supposée."
-        ],
-        [
-          "Ses couleurs",
-          "Fausses couleurs : les filtres étroits de la photographie pour l’oxygène et le soufre, associés à des couleurs par les auteurs de l’image."
-        ],
-        [
-          "Relecture",
-          "Ce modèle n’a pas encore été relu par un astronome."
-        ]
-      ],
+      "dso-m1": [["Sa forme","Un contour mesuré avec des filaments modélisés. Aucun gaz ne se trouve à plus de 2 parsecs du centre le long de l’axe du pulsar, ni à moins d’un demi-parsec ; la taille est resserrée et deux lobes ressortent (Martin et autres, 2021). Les filaments forment un nid d’abeilles de la taille mesurée, mais l’endroit où chacun est dessiné est modélisé."],["Le vent du pulsar","Anneaux mesurés, jets modélisés. Deux anneaux de rayons X entourent le pulsar ; l’anneau intérieur fait une année-lumière de diamètre et ils sont inclinés de 63 degrés par rapport à notre ligne de visée. Le gaz les quitte à la moitié de la vitesse de la lumière, si bien que le côté qui vient vers l’observateur est plus brillant (Ng et Romani, 2004 et 2008). La longueur des jets est modélisée."],["Ses couleurs","Illustratives. Les filaments et la lueur prennent leurs couleurs dans l’image en fausses couleurs de Hubble, au même endroit du ciel. Le vent du pulsar est une lumière en rayons X, qu’aucun œil ne peut voir, dessinée en bleu-violet."],["Sur l’horloge","On a vu l’étoile exploser en 1054 et le nuage grandit d’environ un dixième de pour cent par an (mesuré). Le modèle grandit avec l’horloge de l’application à partir de 1054 ; la façon dont cette croissance a changé au fil des siècles est modélisée."],["Relecture","Ce modèle n’a pas encore été relu par un astronome."]],
       "dso-veil-nebula": [
         [
           "Sa forme en profondeur",
@@ -3792,20 +3780,7 @@ export const COPY = {
           "Ce modèle n’a pas encore été relu par un astronome."
         ]
       ],
-      "dso-coalsack": [
-        [
-          "Son degré d’obscurité",
-          "Lu d’après l’obscurité plus forte de la Voie lactée ici qu’à la même distance de sa ligne médiane, tout près. C’est une estimation, plus basse que celle des cartes infrarouges, car des étoiles devant le nuage ajoutent leur lumière."
-        ],
-        [
-          "Ce que fait la poussière",
-          "Elle ne fait qu’absorber : les étoiles derrière elle sont atténuées et rougies. Celles devant elle ne le sont pas. Une partie de l’obscurité au nord-est est un second nuage bien plus loin, dessiné ici à la distance proche."
-        ],
-        [
-          "Relecture",
-          "Ce modèle n’a pas encore été relu par un astronome."
-        ]
-      ],
+      "dso-coalsack": [["Son contour et sa profondeur","Le contour est mesuré sur la carte de la Voie lactée dessinée ici (NASA, d’après les comptages d’étoiles de Gaia) : une région sombre d’environ 7 degrés sur 4. Les taches sombres voisines sont d’autres nuages et sont laissées de côté. La profondeur est modélisée : une nappe mince et bosselée à une seule distance."],["Son degré d’obscurité","Lu d’après l’obscurité plus forte de la Voie lactée ici qu’à la même distance de sa ligne médiane, tout près. C’est une estimation, plus basse que celle des cartes infrarouges, car des étoiles devant le nuage ajoutent leur lumière."],["Ce que fait la poussière","Elle ne fait qu’absorber : les étoiles derrière elle sont atténuées et rougies. Celles devant elle ne le sont pas. Une partie de l’obscurité au nord-est est un second nuage bien plus loin, dessiné ici à la distance proche."],["Relecture","Ce modèle n’a pas encore été relu par un astronome."]],
       "dso-m78": [
         [
           "Sa forme en profondeur",

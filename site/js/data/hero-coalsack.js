@@ -5,7 +5,7 @@ export const HERO = {
   "id": "coalsack",
   "record": "dso-coalsack",
   "stage": "W3-c",
-  "shipped": false,
+  "shipped": true,
   "children": [],
   "levels": {
     "2": "structure: each layer one sheet over its picture (64 x 64 vertices; 32 on T0 and under the latch, 96 on T2), drawn far to near: the dust multiplies what is behind it, the glow adds",
@@ -14,8 +14,8 @@ export const HERO = {
   "frame": {
     "units_ly": 1,
     "distance_ly": 587,
-    "ra_deg": 192.5,
-    "dec_deg": -62.5,
+    "ra_deg": 191.91,
+    "dec_deg": -62.87,
     "axes": "x west, y north, z toward the Sun; the record's place at the origin"
   },
   "layers": [
@@ -26,8 +26,8 @@ export const HERO = {
       "file": "site/images/deep/sheets/coalsack-dust.webp",
       "from": "site/textures/4k/milky_way.webp (NASA/Goddard Space Flight Center Scientific Visualization Studio, Gaia DR2: ESA/Gaia/DPAC), resampled north up on the sky round the record",
       "picture": {
-        "ra_deg": 192.5,
-        "dec_deg": -62.5,
+        "ra_deg": 191.91,
+        "dec_deg": -62.87,
         "width_arcmin": 840,
         "height_arcmin": 840,
         "north_deg": 0
@@ -41,7 +41,11 @@ export const HERO = {
         "blur_arcmin": 60,
         "dark_below": 0.85,
         "cloud_below": 0,
-        "cloud_tau": 0
+        "cloud_tau": 0,
+        "connected": {
+          "floor": 0.2,
+          "soften_arcmin": 20
+        }
       },
       "tau_max": 3.0,
       "feather": [
@@ -78,13 +82,13 @@ export const HERO = {
     "Cardelli, J. A., Clayton, G. C. & Mathis, J. S. 1989, ApJ 345, 245: the extinction law (R_V = 3.1)"
   ],
   "review": {
-    "data_vs_model": "Measured: the distance, place and size, and the darkness (the Milky Way map). Reconstructed: the optical depth from the darkness (the rule; lower than the near-infrared maps'), the cloud's thickness; the far cloud drawn at the near distance, said on the card",
+    "data_vs_model": "Measured: the distance, the place, the outline (the one dark region of the Milky Way map, 446 by 237 arcminutes) and the darkness (the same map). Reconstructed: the optical depth from the darkness (the rule; lower than the near-infrared maps'), the cloud's thickness; the far cloud drawn at the near distance, said on the card",
     "geometry": "One cloud at the near distance (Beuther et al. 2011 find several clouds, one at 3 kpc); its thickness is illustrative",
     "colours": "None of its own; the reddening of what is behind is Cardelli, Clayton and Mathis's law",
     "distance": "587 ly, the record's (180 pc), inside the 100 to 200 pc the surveys give",
     "credits": "CREDITS.md section 3l, Remnants and dust (0076 W3-c); the card's rows name the reconstruction and that no astronomer has reviewed it",
     "by": "Space Radar maintainers",
-    "date": "2026-10-17",
+    "date": "2026-11-16",
     "astronomer": "not yet: the independent review is internal #785; the card says so"
   },
   "credits": [

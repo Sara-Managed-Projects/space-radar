@@ -2587,11 +2587,12 @@ absorbs (a multiply blend in its own material) and reddens by the extinction law
 
 | what | the numbers | from |
 |---|---|---|
-| the Crab's shell | the envelope fitted as an ellipsoid along the pulsar's torus axis, no line-emitting gas beyond 2 pc along it and none within 0.5 pc of the centre (310 000 SITELLE spectra, uniform expansion); its true outline is "heart-shaped", not drawn | Martin, Milisavljevic & Drissen 2021, MNRAS 502, 1864 (arXiv:2101.02709) |
-| the Crab's axis | the outer torus at position angle 126.3 degrees, its axis 63.0 degrees from the line of sight; which end is nearer is assumed | Ng & Romani 2004, ApJ 601, 479 (arXiv:astro-ph/0310155) |
+| the Crab's outline and filaments | no line-emitting gas beyond 2 pc along the pulsar's axis and none within 0.5 pc of the centre; a "heart-shaped" volume symmetrical about the plane of the pulsar's torus, pinched round that plane, its two fast lobes 120 degrees apart and the south-east one 1.3 times out of the fitted ellipsoid; the filaments a honeycomb, cells about pi/10 across in the lobes and larger with thicker walls deeper in (310 000 SITELLE spectra, uniform expansion). Drawn as a cage of that scale on that outline: each filament's place is modelled (scene/deep/crab.js, 2026-11-16) | Martin, Milisavljevic & Drissen 2021, MNRAS 502, 1864 (arXiv:2101.02709) |
+| the Crab's pulsar wind | two X-ray rings fitted to Chandra's picture: radii 15.6 and 41.33 arcsec, the axis at position angle 124.0 and 126.31 degrees, 61.3 and 63.03 degrees from the line of sight, the flow at 0.49 and 0.55 of light's speed, brightened toward the viewer by (1 - n.beta)^-(1 + 1.5); the jets' length and speed are modelled, and the south-east end of the axis is taken as the nearer | Ng & Romani 2004, ApJ 601, 479 (arXiv:astro-ph/0310155); Ng & Romani 2008, ApJ 673, 411 (arXiv:0710.4168); the inner ring's size checked against NASA/CXC's "about one light year across" (chandra.si.edu/deadstar/crab.html) |
+| the Crab's growth | 1.160(15) thousandths a year; run back in straight lines the motions meet about 1130, later than the supernova of 1054 because the pulsar's wind has pushed the gas; drawn on the app's clock as a power law from 1054 with that rate today (modelled) | Nugent 1998 and Stephenson & Green 2002, as Martin, Milisavljevic & Drissen 2021 quote them |
 | the Cygnus Loop (the Veil) | 735 +/- 25 pc; a main shell 2.85 degrees (37 pc) across, fairly spherical; its centre SIMBAD's | Fesen, Weil, Cisneros, Blair & Raymond 2018, MNRAS 481, 1786 (arXiv:1809.01713); SIMBAD, CDS |
 | the Horsehead | in silhouette against the glowing gas of IC 434, lit from behind by sigma Ori 3.5 pc away in projection; the edge seen nearly edge on | Abergel et al. 2024, A&A (arXiv:2404.15816); Habart et al. 2005, A&A (arXiv:astro-ph/0501536) |
-| the Coalsack | the near cloud at 100 to 200 pc; a second cloud about 3.1 kpc away in the north-east (drawn here at the near distance); extinction above 6 and up to 10 magnitudes in a few places | Beuther et al. 2011, A&A (arXiv:1107.2298) |
+| the Coalsack | between Galactic longitudes 300 and 305 degrees (the record sits at their middle on the plane); the near cloud at 100 to 200 pc; a second cloud about 3.1 kpc away in the north-east (drawn here at the near distance); extinction above 6 and up to 10 magnitudes in a few places. Its outline: the one dark region of the Milky Way map the app draws, 446 by 237 arcminutes at position angle 47 (measured by scripts/build_deep_sheets.py) | Beuther et al. 2011, A&A 533, A17 (arXiv:1107.2298); NASA SVS Deep Star Maps 2020 (Gaia DR2) |
 | M78's and the Iris's stars | HD 38563 (B2II-III, V 10.81) and HD 200775 (B2Ve, V 7.43): places, magnitudes, types; their depths are not measured | SIMBAD, CDS (https://simbad.cds.unistra.fr/), read 2026-10-17, cited as "CDS/SIMBAD" |
 | the Iris's cavity | HD 200775 in a cavity largely devoid of molecular gas | Gerin, Phillips, Keene, Betz et al. 1998 (arXiv:astro-ph/9802116) |
 | the extinction law | A(lambda) / A(V) at 0.61, 0.55 and 0.45 um for R_V = 3.1 (the stars behind the dust reddened) | Cardelli, Clayton & Mathis 1989, ApJ 345, 245 |
@@ -2816,6 +2817,23 @@ HDE 226868's mass, radius and temperature (Ramachandran et al. 2025, via Wikiped
 masses are `registry/exotics.yaml`'s. Where a profile's angle is not measured (Sagittarius A*'s axis on the sky, most of
 the stellar holes), it is chosen and `blackhole.js` says so.
 <!-- 0078 r14-mw-bh: end -->
+
+### The S-stars round Sagittarius A* (2026-11-17)
+
+`site/js/scene/sstars.js` draws the stars that circle Sagittarius A* on their measured orbits, from the table
+`registry/sstars.yaml` (mirrored to `site/js/data/sstars.js` by `scripts/gen_sstars_js.py`). No file, figure or text of the
+papers is copied: the numbers are published measurements, read from the papers on 2026-11-17 and cited per row.
+
+| what | from | licence |
+|---|---|---|
+| The orbits of 39 stars (size, shape, tilt, the two turns, the date of the closest pass and the period, each with its error) | Gillessen S. and others 2017, ApJ 837, 30, *An update on monitoring stellar orbits in the Galactic Center* (arXiv:1611.09144), Table 3 (S111's fit is unbound, so it is not drawn) | facts, cited |
+| S2's orbit (used in place of that table's row for S2), the distance to the hole (8 274.9 pc) and its mass (4.297 million Suns) | GRAVITY Collaboration 2021 (arXiv:2101.12098), Table 2 | facts, cited |
+
+What is measured and what is not. Every orbit, and where each star is on it on the clock's date (from the paper's period
+and pericentre date, through the app's Kepler solver), are **measured**. The stars' sizes and colours, the lines'
+brightness and the mark at the centre (a hole 0.08 AU across, drawn as a point) are **illustrative**. The orbits are at
+true size, so they show only within about a light-year of the hole; the hole's picture, which is far larger than life, gives
+way to them as they come into view. Not seen in a browser when this was written.
 
 <!-- 0079 a3: begin -->
 ## 3o. Every moon — NASA/JPL Solar System Dynamics, Horizons and the Small-Body Database (release 1.5.0)

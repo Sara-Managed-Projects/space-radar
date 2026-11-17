@@ -1157,7 +1157,8 @@ export const COPY = {
     "exoticDeparture": {
       "pulseSlowed": "sein Blinken ist {n}-mal langsamer gezeichnet, als es sich dreht, damit ein Auge ihm folgen kann",
       "pulseTrue": "sein Blinken ist so schnell gezeichnet, wie es sich dreht",
-      "portrait": "solange dieser Steckbrief offen ist, wird an seinem Ort ein Modell gezeichnet, viel größer, als es von hier aus aussähe: Schatten und gebogenes Licht, wie seine Masse sie macht, die Scheibe modelliert"
+      "portrait": "solange dieser Steckbrief offen ist, wird an seinem Ort ein Modell gezeichnet, viel größer, als es von hier aus aussähe: Schatten und gebogenes Licht, wie seine Masse sie macht, die Scheibe modelliert",
+      "sstars": "die Sterne, die es umkreisen, werden auf ihren gemessenen Bahnen gezeichnet, sobald man sich ihm auf etwa ein Lichtjahr nähert: 39 davon (S2 nach GRAVITYs Fit, die übrigen nach Gillessen u. a., 2017), jeder dort, wo ihn die Uhr auf seiner Bahn hinstellt; ihre Größen und Farben sind illustrativ, und das Bild des Lochs weicht vor ihnen zurück"
     },
     "worldDeparture": {
       "earth": "auf einem größeren Bildschirm stammen seine Berge aus den ETOPO-2022-Höhen der NOAA, {relief}-mal steiler gezeichnet, als sie sind, damit eine tiefstehende Sonne sie zeigt; das Leuchten der Luft um seinen Rand ist {air}-mal höher gezeichnet, als die Luft ist; aus niedriger Umlaufbahn stehen auf einem größeren Bildschirm seine Wolken zum Horizont hin und unter einer tiefstehenden Sonne auf, {clouds}-mal dicker gezeichnet, als sie sind, damit man ihre Neigung, ihre langen Schatten und das letzte Licht auf ihren Spitzen sehen kann (im Aussehen „Gemessen“ in ihrer wahren Dicke), die Höhe jeder Spitze aus ihrer gemessenen Temperatur, wo das heutige Bild sie abdeckt, und sonst aus der Helligkeit der Wolkenkarte",
@@ -3738,29 +3739,16 @@ export const COPY = {
   "r12Dust": {
     "card": {
       "m45": "Sein Licht ist das Foto von NOIRLab: eine Staubwolke, die durch den Haufen zieht, knapp vor seinen Sternen, und deren blaues Licht streut (Ritchey und andere, 2006). Seine Tiefe ist rekonstruiert. Noch nicht von einem Astronomen geprüft.",
-      "crab": "Sein Licht stammt vom Foto von Hubble, in Falschfarben, getragen von einer Schale, deren Form Martin, Milisavljevic und Drissen (2021) folgt: ein Filamentkäfig von etwa 4 Parsec Länge um eine leere Mitte. Noch nicht von einem Astronomen geprüft.",
+      "crab": "Ein Käfig aus Filamenten um das Leuchten des Pulsarwinds, auf dem Umriss, den Martin, Milisavljevic und Drissen (2021) gemessen haben. Der Ort jedes Filaments ist modelliert, und die Farben folgen dem Falschfarbenbild von Hubble. Noch nicht von einem Astronomen geprüft.",
       "veil": "Sein Licht stammt vom Foto von NOIRLab, in Falschfarben, getragen von einer dünnen Kugel von 37 Parsec Durchmesser (Fesen und andere, 2018): Die Filamente sind ihr Rand, von der Kante gesehen. Noch nicht von einem Astronomen geprüft.",
       "horsehead": "Seine Dunkelheit ist aus dem Foto von NOIRLab abgelesen: Staub vor dem leuchtenden Gas von IC 434, der schluckt und rötet, was dahinter ist, und kein Licht abgibt. Noch nicht von einem Astronomen geprüft.",
-      "coalsack": "Seine Dunkelheit ist aus der Milchstraße um ihn herum abgelesen: eine Staubwolke in etwa 590 Lichtjahren Entfernung, die die Sterne dahinter abdunkelt und rötet. Noch nicht von einem Astronomen geprüft.",
+      "coalsack": "Seine Dunkelheit ist aus der Milchstraße um ihn herum abgelesen: eine Staubwolke in etwa 590 Lichtjahren Entfernung, die die Sterne dahinter abdunkelt und rötet. Sein Umriss ist gemessen, seine Tiefe modelliert. Noch nicht von einem Astronomen geprüft.",
       "m78": "Sein Licht ist das Foto von NOIRLab: Staub, der das blaue Licht des Sterns davor streut, auf der Vorderseite einer dunklen Wolke. Seine Tiefe ist rekonstruiert. Noch nicht von einem Astronomen geprüft.",
       "iris": "Sein Licht ist das Foto von NOIRLab: Staub, der das Licht des jungen Sterns HD 200775 in einer Mulde seiner Wolke streut. Seine Tiefe ist rekonstruiert. Noch nicht von einem Astronomen geprüft."
     },
     "rows": {
       "dso-m45": [["Seine Form in der Tiefe", "Rekonstruiert. Das Gas liegt vor den Sternen, wie ihr Licht zeigt; wie weit davor und wie dick der Staub ist, ist illustrativ, und die Tiefen der Sterne im Haufen sind ein festes Modell, nicht gemessen."], ["Was der Staub tut", "Er streut das Licht der Sterne, das blaue am stärksten, und leuchtet daher blau um die hellsten, vor allem Merope und Maia. Es ist eine durchziehende Wolke, nicht die, aus der die Sterne entstanden sind."], ["Prüfung", "Dieses Modell wurde noch nicht von einem Astronomen geprüft."]],
-      "dso-m1": [
-        [
-          "Seine Form in der Tiefe",
-          "Rekonstruiert aus einem gemessenen Umriss. Die Filamente reichen etwa 2 Parsec entlang der Achse des Pulsarwinds, und keines liegt innerhalb eines halben Parsec vom Zentrum (Martin und andere, 2021). Als Ellipsoid entlang dieser Achse gezeichnet; welches Ende uns näher ist, ist angenommen."
-        ],
-        [
-          "Seine Farben",
-          "Falschfarben: die Schmalbandfilter des Fotos für Sauerstoff und Schwefel, von den Machern des Bildes auf Farben abgebildet."
-        ],
-        [
-          "Prüfung",
-          "Dieses Modell ist noch nicht von einem Astronomen geprüft worden."
-        ]
-      ],
+      "dso-m1": [["Seine Form","Ein gemessener Umriss mit modellierten Filamenten. Entlang der Achse des Pulsars liegt kein Gas weiter als 2 Parsec vom Zentrum und keines näher als ein halbes Parsec; die Taille ist eingeschnürt, und zwei Lappen ragen heraus (Martin und andere, 2021). Die Filamente bilden eine Wabe der gemessenen Größe, aber wo jedes einzelne gezeichnet ist, ist modelliert."],["Der Pulsarwind","Gemessene Ringe, modellierte Jets. Zwei Röntgenringe umgeben den Pulsar; der innere ist ein Lichtjahr breit, und sie sind 63 Grad gegen unsere Sichtlinie geneigt. Das Gas verlässt sie mit halber Lichtgeschwindigkeit, deshalb ist die Seite heller, die sich auf den Betrachter zubewegt (Ng und Romani, 2004 und 2008). Die Länge der Jets ist modelliert."],["Seine Farben","Illustrativ. Die Filamente und das Leuchten nehmen ihre Farben aus dem Falschfarbenbild von Hubble an derselben Stelle des Himmels. Der Pulsarwind ist Röntgenlicht, das kein Auge sehen kann, und ist violettblau gezeichnet."],["Auf der Uhr","Der Stern wurde 1054 explodieren gesehen, und die Wolke wächst um etwa ein Zehntelprozent pro Jahr (gemessen). Das Modell wächst mit der Uhr der App ab 1054; wie sich das Wachstum über die Jahrhunderte verändert hat, ist modelliert."],["Prüfung","Dieses Modell ist noch nicht von einem Astronomen geprüft worden."]],
       "dso-veil-nebula": [
         [
           "Seine Form in der Tiefe",
@@ -3789,20 +3777,7 @@ export const COPY = {
           "Dieses Modell ist noch nicht von einem Astronomen geprüft worden."
         ]
       ],
-      "dso-coalsack": [
-        [
-          "Wie dunkel er ist",
-          "Abgelesen daran, wie viel dunkler die Milchstraße hier ist als in gleichem Abstand von ihrer Mittellinie in der Nähe. Das ist eine Schätzung und niedriger, als Infrarotkarten ergeben, weil Sterne vor der Wolke ihr Licht hinzufügen."
-        ],
-        [
-          "Was der Staub tut",
-          "Er schluckt nur: Die Sterne dahinter sind abgedunkelt und gerötet. Sterne davor nicht. Ein Teil der Dunkelheit im Nordosten ist eine zweite Wolke weit dahinter, hier in der nahen Entfernung gezeichnet."
-        ],
-        [
-          "Prüfung",
-          "Dieses Modell ist noch nicht von einem Astronomen geprüft worden."
-        ]
-      ],
+      "dso-coalsack": [["Sein Umriss und seine Tiefe","Der Umriss ist auf der Karte der Milchstraße gemessen, die hier gezeichnet wird (NASA, aus den Sternzählungen von Gaia): ein dunkles Gebiet von etwa 7 mal 4 Grad. Dunkle Flecken in der Nähe sind andere Wolken und werden weggelassen. Die Tiefe ist modelliert: eine dünne, unebene Schicht in einer einzigen Entfernung."],["Wie dunkel er ist","Abgelesen daran, wie viel dunkler die Milchstraße hier ist als in gleichem Abstand von ihrer Mittellinie in der Nähe. Das ist eine Schätzung und niedriger, als Infrarotkarten ergeben, weil Sterne vor der Wolke ihr Licht hinzufügen."],["Was der Staub tut","Er schluckt nur: Die Sterne dahinter sind abgedunkelt und gerötet. Sterne davor nicht. Ein Teil der Dunkelheit im Nordosten ist eine zweite Wolke weit dahinter, hier in der nahen Entfernung gezeichnet."],["Prüfung","Dieses Modell ist noch nicht von einem Astronomen geprüft worden."]],
       "dso-m78": [
         [
           "Seine Form in der Tiefe",
