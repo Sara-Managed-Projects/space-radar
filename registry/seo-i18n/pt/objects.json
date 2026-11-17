@@ -939,7 +939,6 @@
  "0f2609ae51": "Foi fotografado diretamente, um ponto fraco ao lado do brilho ofuscante da sua estrela, em {n1}. A órbita dele fica mais longe da estrela do que a zona habitável calculada para ela. A tabela combinada do Exoplanet Archive dá {n2} UA para ele, o que não bate com a terceira lei de Kepler; a página usa a distância de Keppler et al. {n3}, um único artigo em que o período e a massa da estrela batem com ela.",
  "3a9ac54961": "Fonte: NASA Exoplanet Archive, tabela Planetary Systems Composite Parameters (DOI da tabela <1>{n1}/NEA13</1>), consultado em {n2}-{n3}-{n4}; https://exoplanetarchive.ipac.caltech.edu/overview/PDS%{n5}. Zona habitável: Kopparapu et al. {n6}, <2>ApJ Letters {n7}, L29</2>. As temperaturas supõem a refletividade da Terra ({n8}). Esta página foi gerada em {n9}-{n10}-{n11} a partir desses registros; os números não são ao vivo.",
  "aed02bb526": "{n1}, por E. Karkoschka",
- "ed84e6abf6": "Um rover do tamanho de um carro, coletando amostras de rocha numa cratera que já foi o delta de um rio.",
  "aabb82c6da": "Desenho feito a partir de um modelo publicado do Perseverance.",
  "011bb6c050": "{name} é um objeto próximo da Terra, em órbita própria ao redor do Sol. As Geminídeas vêm dele.",
  "e8b37bd7eb": "As Geminídeas vêm dele. Ele passa mais perto do Sol do que Mercúrio e solta poeira quando chega lá.",
@@ -1228,5 +1227,8 @@
  "241f99ddc0": "O primeiro rover da China em Marte, que pousou em {n1}. Está no mapa 3D ao vivo, no lugar onde realmente fica.",
  "5a7fea6fc2": "O primeiro rover da China em Marte, que pousou em {n1}.",
  "1072746da5": "Desenho: o Zhurong · forma construída a partir de dimensões e imagens publicadas; detalhes simplificados.",
- "425bb491c5": "{name} fica a cerca de {n1} km acima da Terra, dando uma volta a cada {n2} minutos a cerca de {n3} km/h, em algum ponto entre {n4}° norte e {n5}° sul do equador. Seu navegador calcula o ponto exato assim que esta página abre, a partir de elementos orbitais salvos em {d1}."
+ "425bb491c5": "{name} fica a cerca de {n1} km acima da Terra, dando uma volta a cada {n2} minutos a cerca de {n3} km/h, em algum ponto entre {n4}° norte e {n5}° sul do equador. Seu navegador calcula o ponto exato assim que esta página abre, a partir de elementos orbitais salvos em {d1}.",
+ "c90413fd85": "Aqui aterrou o Curiosity em {d1}. O rover seguiu viagem e tem a sua própria marca.",
+ "3262df82d7": "Aqui aterrou o Perseverance em {d1}. O rover seguiu viagem e tem a sua própria marca.",
+ "cbdf08776a": "Um rover do tamanho de um carro, que recolhe amostras de rocha. Aterrou na cratera Jezero em {n1} e desde então subiu e passou a borda oeste da cratera."
 }
