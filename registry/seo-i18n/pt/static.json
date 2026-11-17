@@ -1560,5 +1560,7 @@
  "975f37a46c": "Eventos do céu calculados para o seu lugar, enquanto o Cosmoscope tem cinco predefinições.",
  "d793a76fb9": "{n1} viagens guiadas lidas em voz alta, com legendas.",
  "2d757f95f1": "{n1} idiomas; o Cosmoscope está em inglês.",
- "2f415a609c": "O que aqui se diz sobre o Cosmoscope foi consultado em {d1} no <1>Cosmoscope</1> e no <2>rastreador de satélites ao vivo dele</2>, na <3>análise de concorrentes</3> do projeto. Os produtos mudam: se algo aqui estiver desatualizado, <4>avise a gente</4> no GitHub (é preciso uma conta grátis no GitHub) e será corrigido. O Space Radar não tem vínculo com o Cosmoscope, e os nomes são marcas de seus donos."
+ "2f415a609c": "O que aqui se diz sobre o Cosmoscope foi consultado em {d1} no <1>Cosmoscope</1> e no <2>rastreador de satélites ao vivo dele</2>, na <3>análise de concorrentes</3> do projeto. Os produtos mudam: se algo aqui estiver desatualizado, <4>avise a gente</4> no GitHub (é preciso uma conta grátis no GitHub) e será corrigido. O Space Radar não tem vínculo com o Cosmoscope, e os nomes são marcas de seus donos.",
+ "e2141e883e": "Fonte: o catálogo de ativos e o arquivo suplementar da Starlink do CelesTrak, como salvos pelo coletor deste site, consultados em {d1}. O navegador troca estas contagens pelas da cópia salva quando a página abre.",
+ "e6a93be90a": "Fonte: o catálogo de ativos e o arquivo suplementar da Starlink do CelesTrak, como salvos pelo coletor deste site, consultados em {d1}. Lançamentos: Launch Library (The Space Devs), a partir da cópia salva deste site. O navegador troca esta contagem pela da cópia salva quando a página abre. O CelesTrak pede que cada arquivo seja baixado uma só vez por atualização, então esta página nunca o baixa por conta própria."
 }

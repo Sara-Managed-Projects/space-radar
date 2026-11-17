@@ -1560,5 +1560,7 @@
  "975f37a46c": "Sky events computed for your place, against Cosmoscope's five presets.",
  "d793a76fb9": "{n1} guided trips read aloud, with captions.",
  "2d757f95f1": "{n1} languages; Cosmoscope is in English.",
- "2f415a609c": "What it says about Cosmoscope was read on {d1} from <1>Cosmoscope</1>, <2>its live satellite tracker</2>, in the project's <3>competitor review</3>. Products change: if something here is out of date, <4>tell us</4> on GitHub (it needs a free GitHub account) and it will be corrected. Space Radar is not connected with Cosmoscope, and the names are their makers' trademarks."
+ "2f415a609c": "What it says about Cosmoscope was read on {d1} from <1>Cosmoscope</1>, <2>its live satellite tracker</2>, in the project's <3>competitor review</3>. Products change: if something here is out of date, <4>tell us</4> on GitHub (it needs a free GitHub account) and it will be corrected. Space Radar is not connected with Cosmoscope, and the names are their makers' trademarks.",
+ "e2141e883e": "Source: CelesTrak's active catalogue and Starlink supplemental file, as saved by this site's harvester, read {d1}. The browser replaces these counts with the saved copy's when the page opens.",
+ "e6a93be90a": "Source: CelesTrak's active catalogue and Starlink supplemental file, as saved by this site's harvester, read {d1}. Launches: Launch Library (The Space Devs), from this site's saved copy. The browser replaces this count with the one in the saved copy when the page opens. CelesTrak asks for one download of a file per update, so this page never fetches it itself."
 }

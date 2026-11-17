@@ -1560,5 +1560,7 @@
  "975f37a46c": "Fenómenos del cielo calculados para tu lugar, frente a los cinco ajustes fijos de Cosmoscope.",
  "d793a76fb9": "{n1} viajes guiados leídos en voz alta, con subtítulos.",
  "2d757f95f1": "{n1} idiomas; Cosmoscope está en inglés.",
- "2f415a609c": "Lo que se dice aquí sobre Cosmoscope se leyó el {d1} en <1>Cosmoscope</1> y <2>su rastreador de satélites en vivo</2>, en el <3>análisis de la competencia</3> del proyecto. Los productos cambian: si algo de aquí está desactualizado, <4>avísanos</4> en GitHub (necesitas una cuenta gratuita de GitHub) y se corregirá. Space Radar no tiene relación con Cosmoscope, y los nombres son marcas de sus creadores."
+ "2f415a609c": "Lo que se dice aquí sobre Cosmoscope se leyó el {d1} en <1>Cosmoscope</1> y <2>su rastreador de satélites en vivo</2>, en el <3>análisis de la competencia</3> del proyecto. Los productos cambian: si algo de aquí está desactualizado, <4>avísanos</4> en GitHub (necesitas una cuenta gratuita de GitHub) y se corregirá. Space Radar no tiene relación con Cosmoscope, y los nombres son marcas de sus creadores.",
+ "e2141e883e": "Fuente: el catálogo de satélites activos de CelesTrak y su archivo complementario de Starlink, guardados por el recolector de este sitio, leídos el {d1}. El mapa en vivo usa siempre la copia guardada más reciente.",
+ "e6a93be90a": "Fuente: el catálogo de satélites activos de CelesTrak y su archivo complementario de Starlink, guardados por el recolector de este sitio, leídos el {d1}. Lanzamientos: Launch Library (The Space Devs), de la copia guardada de este sitio. El mapa en vivo usa siempre la copia guardada más reciente. CelesTrak pide una sola descarga de cada archivo por actualización, así que esta página nunca lo descarga por su cuenta."
 }
