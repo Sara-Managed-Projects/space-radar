@@ -300,8 +300,8 @@ assert.equal(colourRoute(root([])), 'class', 'a model with no materials keeps th
     'falcon9-stage1.glb': /NOTHING YET/,
     'falcon9-upper.glb': /NOTHING YET/,
     // MAVEN was the one, until 2026-10-08: it has a record now (data/sample.js LOST_ORBITERS)
-    'sls-block1.glb': /used_for: "NOTHING YET, waiting for the Artemis II Moments replay and its scene route\./,
-    'orion-esm.glb': /used_for: "NOTHING YET, waiting for the Artemis II Moments replay and its scene route\./,
+    'sls-block1.glb': /used_for: "NOTHING YET[^"]*artemis-ii/,
+    'orion-esm.glb': /used_for: "NOTHING YET[^"]*artemis-ii/,
   };
   const unreachable = shipped.filter((f) => !routed.has(f) && !UNROUTED_ON_PURPOSE[f]);
   assert.deepEqual(unreachable, [], 'models that ship and that no record can be drawn with');
