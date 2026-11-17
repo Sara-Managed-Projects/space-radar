@@ -31,9 +31,9 @@ nose.push(...cylinder(1.49, Y_NOSE - 0.03, Y_NOSE + 0.05, 40, RING));
 for (const y of [0.55, 1.15]) nose.push(...cylinder(((prof.find((p) => p[1] >= y) || [1])[0]) + 0.012, Y_NOSE + y - 0.012, Y_NOSE + y + 0.012, 40, RING));
 
 // the sphere: two hemispheres, the seam at the equator, 36 bolt heads, four hinges on the front hemisphere
-const ball = placeTris(sphere(R, 40, 20, POLISH, { tag: 2 }), { t: [0, Y_SPH, 0] });
-ball.push(...cylinder(R * 1.004, Y_SPH - 0.012, Y_SPH + 0.012, 48, SEAM, { tag: 2 }));
-for (let k = 0; k < 36; k++) { const a = (2 * Math.PI * k) / 36; ball.push(...placeTris(cylinder(0.0045, -0.003, 0.003, 6, BOLT, { tag: 2 }), { t: polar(R * 1.004 + 0.002, a, Y_SPH + 0.026), rz: 0 })); }
+const ball = placeTris(sphere(R, 40, 20, POLISH, { tag: 3 }), { t: [0, Y_SPH, 0] });
+ball.push(...cylinder(R * 1.004, Y_SPH - 0.012, Y_SPH + 0.012, 48, SEAM, { tag: 3 }));
+for (let k = 0; k < 36; k++) { const a = (2 * Math.PI * k) / 36; ball.push(...placeTris(cylinder(0.0045, -0.003, 0.003, 6, BOLT, { tag: 3 }), { t: polar(R * 1.004 + 0.002, a, Y_SPH + 0.026), rz: 0 })); }
 const hinges = [];
 for (let k = 0; k < 4; k++) {
   const a = Math.PI / 4 + (Math.PI / 2) * k;

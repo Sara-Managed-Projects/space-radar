@@ -347,32 +347,30 @@ export const REAL_MODELS = {
     // communications satellite with a dish, which is what the satellite default is. The card says
     // "a space telescope -- the kind of thing, not this exact one", which is now true of the shape.
     // 0078 r14-m7: OAO 2 (3597) and OAO 3 (6153) wore the generic space-telescope builder here; they have files of their own below  // 0078 r14-m7
-    // HITOMI HAS ITS OWN SHAPE since 2026-10-13 (public #969): hitomi.glb is XRISM's generated body
-    // (the same bus: XRISM is Hitomi's recovery mission) with what XRISM does not have built in
-    // code from cited metres: the 6.4 m extensible optical bench as a lattice, the HXI plate at its
-    // end, the two soft gamma-ray detectors (registry/models.yaml row `hitomi`).
+    // HITOMI HAS ITS OWN SHAPE since 2026-10-13 (public #969), BUILT IN CODE since 2026-11-17 (internal #402; tools/xrism-builder): hitomi.glb is
+    // XRISM's bus (the same bus: XRISM is Hitomi's recovery mission) with a short drum of four barrels and what XRISM does not have: the
+    // 6.4 m extensible optical bench as a lattice, the HXI plate at its end, the two soft gamma-ray detectors (registry/models.yaml row `hitomi`).
     // THE CATALOGUE OBJECT IS WHAT IS LEFT OF IT. Hitomi spun itself apart on 26 March 2016, five
     // weeks after launch; 41337 is its main body, and JAXA's own finding is that both solar paddles
     // broke off at their bases. The file is the craft AS LAUNCHED, which is what the issue asks
     // for, so `was: 'hitomi'` makes the card say that in a sentence of its own
     // (COPY.drawing.objectWas): an intact telescope may not be drawn on a wreck without saying so.
-    41337: { build: 'space-telescope', file: 'hitomi.glb', colour: 'telescope', name: 'Hitomi (ASTRO-H)', catalogue: 'ASTRO-H (HITOMI)', made: 'render', was: 'hitomi', axes: 'app' },
+    41337: { build: 'space-telescope', file: 'hitomi.glb', colour: 'telescope', name: 'Hitomi (ASTRO-H)', catalogue: 'ASTRO-H (HITOMI)', made: 'dimensions', was: 'hitomi', axes: 'app' },
     // HXMT (INSIGHT-HXMT, "HUIYAN") HAS ITS OWN SHAPE since release 1.7.5 (public #967): hxmt.glb, BUILT in code from cited metres
     // and IHEP's pictures (registry/models.yaml row `hxmt`, kind `built-from-dimensions`; no agency publishes a mesh). It was the
     // generic space telescope. `axes: 'app'`: the telescopes' boresight (up the payload) at -Z, away from the Earth; the gold
     // platform at +Z; the two wings along X with their cells toward +Y. NOT AS IT FLIES: the real craft points its telescopes
     // at whatever it observes; the app knows no target.
     42758: { file: 'hxmt.glb', colour: 'telescope', name: 'Insight-HXMT (Huiyan)', catalogue: 'HXMT (HUIYAN)', made: 'dimensions', axes: 'app' },
-    // XRISM's own shape since 2026-10-13 (public #968): xrism.glb, GENERATED from two frames of NASA
-    // Goddard's turntable render and its two solar paddles then REPLACED by flat ones built in code
-    // (registry/models.yaml row `xrism`). The build stays as what is drawn while the file is on its
-    // way. Not `generic` any more: it is this craft, and `made: 'renders'` makes the card say the
-    // shape came from an artist's render. Hitomi (41337) above does not wear it: the same bus with a
+    // XRISM's own shape since 2026-10-13 (public #968); BUILT IN CODE since 2026-11-17 (internal #402; tools/xrism-builder, registry row `xrism`):
+    // the first file was generated from two frames of NASA Goddard's turntable render and looked melted. The build stays as what is
+    // drawn while the file is on its way. Not `generic` any more: it is this craft, and `made: 'dimensions'` says the shape was
+    // built from published metres. Hitomi (41337) above does not wear it: the same bus with a
     // six-metre optical bench, which since batch two is a file of its own (public #969).
     // `axes: 'app'` since batch three (2026-10-13): the file was built to the app's axes (mirrors at
     // -Z, away from the Earth; paddles along X; cells toward +Y) and flew at the seeded constant
     // angle every loaded file had, its paddles' backs to the Sun. Now it flies as its build did.
-    57800: { build: 'space-telescope', file: 'xrism.glb', colour: 'telescope', name: 'XRISM', catalogue: 'XRISM', made: 'render', axes: 'app' },
+    57800: { build: 'space-telescope', file: 'xrism.glb', colour: 'telescope', name: 'XRISM', catalogue: 'XRISM', made: 'dimensions', axes: 'app' },
     // CHEOPS (public #963): ESA's exoplanet photometry telescope on its hexagonal Airbus platform, built from ESA's, Bern's and the mission paper's published
     // dimensions (registry/models.yaml row `cheops`, kind `built-from-dimensions`; none of the pictures it was drawn from is in the file). `axes: 'app'`:
     // +X the array axis, +Y the cells' side (the Sun's), +Z the launcher ring toward the Earth; THE TELESCOPE LOOKS ALONG -Y, not -Z: on this craft the boresight is

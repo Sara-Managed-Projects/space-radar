@@ -16,7 +16,7 @@ the wordmark is not drawn.
 The berth: the telescope sat on two aft trunnion latches on the longerons and one keel latch on the bay floor (the
 Hubble's own trunnions and keel fitting are on its model, `hubble-sts31`); the latches here are ours in shape.
 
-parts: body (the base, the retention latches, the berth), rms-upper, rms-lower, rms-wrist.
+parts: body (the base, the retention latches), rms-berth (the Hubble berth: two trunnion latches and the keel latch; a stand-alone picture leaves it out), rms-upper, rms-lower, rms-wrist.
 """
 import json
 import math
@@ -65,7 +65,7 @@ def cyl_x(c, length, r, seg=20):
     return frustum(c - SIDE * length / 2, c + SIDE * length / 2, r, r, seg=seg)
 
 
-parts = {k: Model(k) for k in ("body", "rms-upper", "rms-lower", "rms-wrist")}
+parts = {k: Model(k) for k in ("body", "rms-berth", "rms-upper", "rms-lower", "rms-wrist")}
 
 
 def add(part, label, role, col, mesh):
@@ -109,17 +109,17 @@ add("rms-wrist", "wrist-camera-arm", "body", METAL, merge([rod(at(w0 + 1.6, (0, 
 # ---- the berth: the two aft trunnion latches on the longerons, the keel latch on the bay floor ---------------------------
 Y_TRUN = 21.94          # the telescope's equipment section, where its trunnions are (hubble-sts31 y -2.15 -> 19.79 - y)
 for s in (-1, 1):
-    add("body", "trunnion-latch", "body", METAL, box(np.array([s * 2.43, Y_TRUN, -1.45]), (0.5, 0.7, 0.42)))
-    add("body", "trunnion-jaw", "body", DARK, box(np.array([s * 2.25, Y_TRUN, -1.33]), (0.2, 0.55, 0.22)))
-    add("body", "trunnion-gold", "foil", GOLD, box(np.array([s * 2.62, Y_TRUN, -1.45]), (0.12, 0.62, 0.34), crinkle=0.01, div=0.12, seed=7))
-add("body", "keel-pedestal", "body", METAL, merge([box(np.array([0, 18.8, -3.62]), (0.6, 0.9, 0.7)), box(np.array([0, 18.8, -3.12]), (0.36, 0.5, 0.35))]))
-add("body", "keel-latch", "body", DARK, box(np.array([0, 18.8, -3.3]), (0.5, 0.3, 0.2)))
-add("body", "keel-base", "body", GREYW, box(np.array([0, 18.8, -3.95]), (1.6, 1.4, 0.18)))
+    add("rms-berth", "trunnion-latch", "body", METAL, box(np.array([s * 2.43, Y_TRUN, -1.45]), (0.5, 0.7, 0.42)))
+    add("rms-berth", "trunnion-jaw", "body", DARK, box(np.array([s * 2.25, Y_TRUN, -1.33]), (0.2, 0.55, 0.22)))
+    add("rms-berth", "trunnion-gold", "foil", GOLD, box(np.array([s * 2.62, Y_TRUN, -1.45]), (0.12, 0.62, 0.34), crinkle=0.01, div=0.12, seed=7))
+add("rms-berth", "keel-pedestal", "body", METAL, merge([box(np.array([0, 18.8, -3.62]), (0.6, 0.9, 0.7)), box(np.array([0, 18.8, -3.12]), (0.36, 0.5, 0.35))]))
+add("rms-berth", "keel-latch", "body", DARK, box(np.array([0, 18.8, -3.3]), (0.5, 0.3, 0.2)))
+add("rms-berth", "keel-base", "body", GREYW, box(np.array([0, 18.8, -3.95]), (1.6, 1.4, 0.18)))
 
 
 def export(path):
     recs = []
-    for name in ("body", "rms-upper", "rms-lower", "rms-wrist"):
+    for name in ("body", "rms-berth", "rms-upper", "rms-lower", "rms-wrist"):
         pm = parts[name]
         tris, ncol = pm.export(None, crease=40, foil_crease=12, max_colours=8)
         print("  %-10s %5d tris %d colours" % (name, tris, ncol))

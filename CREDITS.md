@@ -30,8 +30,8 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | The Milky Way | our illustration, from Reid et al. 2019 | measurements, cited | [3e](#3e-the-milky-way-model--an-illustration-built-from-published-measurements) |
 | 3D spacecraft models | NASA 3D Resources | public domain (NASA media guidelines) | [3b](#3b-3d-models--nasa-public-domain) |
 | The Cygnus cargo ship's shape | generated from a NASA photograph with TRELLIS (Microsoft Research), cleaned by us | public domain; MIT; ours | [3b-2](#3b-2-a-model-made-from-photographs--cygnus-2026-10-12) |
-| The shapes of XRISM, Seasat and NuSTAR | two generated from NASA and JPL artist's renders with TRELLIS (Microsoft Research) and repaired by us; NuSTAR built by us from published dimensions | public domain; MIT; ours | [3b-3](#3b-3-four-models-made-here--xrism-noaa-21-seasat-nustar-2026-10-13) |
-| The shapes of LAGEOS, Ajisai, the Soyuz, NOAA-21 and Hitomi | four built by us in code from published dimensions; Hitomi is XRISM's generated body with its own optical bench built by us | public domain; MIT; ours | [3b-4](#3b-4-five-more-made-here--lageos-ajisai-soyuz-ms-noaa-21-rebuilt-hitomi-2026-10-13) |
+| The shapes of XRISM, Seasat and NuSTAR | Seasat generated from a JPL artist's concept with TRELLIS (Microsoft Research) and repaired by us; NuSTAR built by us from published dimensions; XRISM was generated the same way and was rebuilt in code from published dimensions on 2026-11-17 (internal #402) | public domain; MIT; ours | [3b-3](#3b-3-four-models-made-here--xrism-noaa-21-seasat-nustar-2026-10-13) |
+| The shapes of LAGEOS, Ajisai, the Soyuz, NOAA-21 and Hitomi | four built by us in code from published dimensions; Hitomi was XRISM's generated body with its own optical bench built by us, and since 2026-11-17 is built in code throughout (internal #402) | public domain; MIT; ours | [3b-4](#3b-4-five-more-made-here--lageos-ajisai-soyuz-ms-noaa-21-rebuilt-hitomi-2026-10-13) |
 | The shapes of the Progress, both Dragons, Shenzhou, Tianzhou, and five more laser-ranging balls | built by us in code from published dimensions | public domain where a picture was used; ours | [3b-5](#3b-5-ten-more-built-from-dimensions--progress-ms-crew-and-cargo-dragon-shenzhou-tianzhou-and-five-laser-ranging-balls-2026-10-13) |
 | The shapes of SWOT, NISAR, IXPE and PACE | SWOT is JPL's own published model; the other three built by us in code from published dimensions | public domain; ours | [3b-6](#3b-6-four-nasa-craft--swot-from-jpls-own-model-nisar-ixpe-and-pace-built-from-dimensions-2026-10-13) |
 | The shapes of the first Starlink generation, Umbra and ICEYE | built by us in code from published dimensions | ours; one render compared with is CC BY 4.0 | [3b-7](#3b-7-three-commercial-craft-built-from-dimensions--the-first-starlink-generation-umbra-iceye-2026-10-13) |
@@ -891,7 +891,7 @@ not fixed.
 
 | File | What | Whose | Licence | Where |
 |---|---|---|---|---|
-| `xrism.glb` (141 KB, 13 731 triangles) | Generated from two frames of one turntable render, "XRISM 001" and "XRISM 004"; compared with "XRISM 002" | NASA's Goddard Space Flight Center Conceptual Image Lab | public domain | <https://commons.wikimedia.org/wiki/File:XRISM_001.png>, <https://commons.wikimedia.org/wiki/File:XRISM_004.png>, <https://commons.wikimedia.org/wiki/File:XRISM_002.png> (read 2026-10-13; from <https://svs.gsfc.nasa.gov/20374/>) |
+| `xrism.glb` (72 KB, 9 068 triangles) | REBUILT IN CODE 2026-11-17 (internal #402, tools/xrism-builder) from the published envelope and panel sizes; the first file was generated from two frames of one turntable render, "XRISM 001" and "XRISM 004" (TRELLIS), and is replaced. The renders, with "XRISM 002", are looked at only | NASA's Goddard Space Flight Center Conceptual Image Lab | public domain | <https://commons.wikimedia.org/wiki/File:XRISM_001.png>, <https://commons.wikimedia.org/wiki/File:XRISM_004.png>, <https://commons.wikimedia.org/wiki/File:XRISM_002.png> (read 2026-10-13; from <https://svs.gsfc.nasa.gov/20374/>) |
 | `seasat.glb` (66 KB, 8 468 triangles) | The trunk generated from the artist's concept "Seasat"; compared with "Seasat in orbit" | NASA/JPL | public domain | <https://commons.wikimedia.org/wiki/File:Seasat.jpg>, <https://commons.wikimedia.org/wiki/File:Seasat_in_orbit.jpg> (read 2026-10-13) |
 | both | The generator: TRELLIS, image-large weights | Microsoft Research | MIT (code and weights, each read on its own page 2026-10-12) | <https://github.com/microsoft/TRELLIS>, <https://huggingface.co/microsoft/TRELLIS-image-large> |
 | both | The cuts, the parts built in code, the proportions, the colours | this project | this repository's licence | `registry/models.yaml`, rows `xrism`, `seasat`, `modified:` |
@@ -941,21 +941,21 @@ lists what is drawn differently from the craft.
 `3D model: built by Space Radar from published dimensions, a NASA photograph and NASA drawings of the Soyuz`;
 `3D model: built by Space Radar from published dimensions and NOAA's drawings and render of NOAA-21`
 
-**One wears another craft's generated body.** Hitomi (ASTRO-H) flew on the bus XRISM was later
-built on. `hitomi.glb` (138 KB) is the body TRELLIS generated from NASA Goddard's render **of
-XRISM** (section 3b-3), with what only Hitomi had built in code from cited metres: the 6.4 m
+**Hitomi is built in code since 2026-11-17 (internal #402, tools/xrism-builder).** Hitomi (ASTRO-H) flew on the bus XRISM was later
+built on. `hitomi.glb` (98 KB, 12 580 triangles) was the body TRELLIS generated from NASA Goddard's render **of
+XRISM** (section 3b-3); that mesh is replaced by XRISM's bus built in code from the published panel sizes, with what only Hitomi had built from cited metres: the 6.4 m
 extensible optical bench, the plate at its end with the two hard X-ray imagers, the two soft
-gamma-ray detectors. Hitomi broke apart in March 2016; the file is the craft as launched, and its
+gamma-ray detectors. No generated mesh is in the file now; the renders and drawings are looked at only. Hitomi broke apart in March 2016; the file is the craft as launched, and its
 card says that what is tracked today is the main body.
 
 | What | Whose | Licence | Where |
 |---|---|---|---|
-| The renders of XRISM the body was generated from: "XRISM 001", "XRISM 004" | NASA's Goddard Space Flight Center Conceptual Image Lab | public domain | <https://commons.wikimedia.org/wiki/File:XRISM_001.png>, <https://commons.wikimedia.org/wiki/File:XRISM_004.png> (read 2026-10-13) |
+| The renders of XRISM the earlier, now replaced, body was generated from and the bus is now compared with: "XRISM 001", "XRISM 004" | NASA's Goddard Space Flight Center Conceptual Image Lab | public domain | <https://commons.wikimedia.org/wiki/File:XRISM_001.png>, <https://commons.wikimedia.org/wiki/File:XRISM_004.png> (read 2026-10-13) |
 | The drawing and the labelled schematic of Hitomi its own parts were drawn from: "Hitomi", "Astro-H schema (en)" | NASA; NASA/HEASARC | public domain | <https://commons.wikimedia.org/wiki/File:Hitomi.png>, <https://commons.wikimedia.org/wiki/File:Astro-H_schema_(en).png> (read 2026-10-13) |
 | The generator: TRELLIS, image-large weights | Microsoft Research | MIT (code and weights) | <https://github.com/microsoft/TRELLIS>, <https://huggingface.co/microsoft/TRELLIS-image-large> |
 | The repairs, the parts built in code, the colours | this project | this repository's licence | `registry/models.yaml`, row `hitomi`, `modified:` |
 
-**Credit line:** `3D model: body generated from NASA Goddard renders of XRISM with TRELLIS (Microsoft Research, MIT); Hitomi's optical bench and detectors built by Space Radar from published dimensions and NASA drawings`
+**Credit line:** `3D model: built by Space Radar from published dimensions; compared with NASA's drawing and NASA/HEASARC's schematic of Hitomi (public domain)`
 
 No agency insignia, flag or maker's mark is on any of the five; NASA, NOAA, JAXA, Roscosmos and
 the craft's builders do not endorse Space Radar. "Soyuz" names the spacecraft and nothing here is
