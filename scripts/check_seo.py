@@ -701,8 +701,10 @@ def check_languages(site: Path, built: Path, say, robots_text: str) -> None:
                 say(f"{name}: the title is {len(title)} characters, over {TITLE_MAX}: {title!r}")
             desc = h.one("description")
             dmin = DESC_MIN_LANG.get(code, DESC_MIN)
-            if not inner.startswith("lab/") and (desc is None or not dmin <= len(desc) <= DESC_MAX):
-                say(f"{name}: the description is {len(desc or '')} characters, outside {dmin}-{DESC_MAX}")
+            # The Lab's description is the contributor's one-sentence lesson and is not held to the minimum (check_lab), but it
+            # is held to the maximum in every language, like every other page (internal #478).
+            if desc is None or len(desc) > DESC_MAX or (not inner.startswith("lab/") and len(desc) < dmin):
+                say(f"{name}: the description is {len(desc or '')} characters, outside {dmin if not inner.startswith('lab/') else 1}-{DESC_MAX}")
             for block in h.ld:
                 try:
                     json.loads(block)
@@ -745,7 +747,7 @@ def check_languages(site: Path, built: Path, say, robots_text: str) -> None:
 def check_lab(site: Path, built: Path, say) -> None:
     """Every simulator in site/lab/ is built under built/lab/ (scripts/seo_lab.py) with one canonical and og:url at its
     own address, og:title, og:description, an og:image that exists, and one LearningResource block. The description is
-    not held to DESC_MIN: it is the contributor's one-sentence lesson, and fourteen are shorter than 70 characters."""
+    not held to DESC_MIN: it is the contributor's one-sentence lesson, and fourteen are shorter than 70 characters. Title and description are held to the maximums."""
     sims = [p for p in sorted((site / "lab").glob("*/index.html")) if not p.parent.name.startswith("_")]
     if sims and not (built / "lab" / "index.html").is_file():
         say("built/lab/index.html is missing: deploy.sh uploads the Lab from the build")
@@ -765,6 +767,11 @@ def check_lab(site: Path, built: Path, say) -> None:
         for key in ("og:title", "og:description"):
             if not h.one(key):
                 say(f"{rel}: no {key}")
+        # Search results cut a longer title or description (internal #478: two lessons were 174 and 193 characters).
+        if h.titles and len(h.titles[0]) > TITLE_MAX:
+            say(f"{rel}: the title is {len(h.titles[0])} characters, over {TITLE_MAX}: {h.titles[0]!r}")
+        if len(h.one("description") or "") > DESC_MAX:
+            say(f"{rel}: the description is {len(h.one('description'))} characters, over {DESC_MAX}")
         img = h.one("og:image")
         imgf = site_file(site, built, img) if img else None
         if imgf is None or not imgf.is_file():

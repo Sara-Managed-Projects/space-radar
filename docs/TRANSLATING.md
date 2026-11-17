@@ -190,9 +190,10 @@ alt text, a JSON-LD name) with its markup and its data taken out:
 **The rule of publishing.** A page is built in a language only when **every** string of its own text is translated (its head
 and everything outside the header, nav and footer). Then it is in that language's sitemap and in every version's hreflang. One
 missing sentence and the page is not built in that language at all; a missing footer string shows in English. The trips (which
-send a browser on to the app) are built only where the home page is. These pages stay in English, each for its reason:
-
-- `planets-tonight/index.html`: its sentences are worked out for the night of each build, so they cannot be a catalog.
+send a browser on to the app) are built only where the home page is. A page can be kept in English whole (`ENGLISH_ONLY` in
+`scripts/seo_i18n.py`, each with its reason here); none is today. `planets-tonight/` was one, because its sentences are worked
+out for the night of each build: now those sentences and the night's list are marked `lang="en" translate="no"` (so they stay English
+on every language's page, and the page says so), and the rest of the page, which does not change, is translated.
 
 **A shortfall is a failure.** `python3 scripts/seo_i18n.py coverage --built DIR --require-full` exits 1 when a language publishes fewer
 pages than the English sitemap holds less the pages above; CI runs it on the build it makes and on a second build made the way
