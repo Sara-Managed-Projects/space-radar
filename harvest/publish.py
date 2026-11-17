@@ -152,7 +152,7 @@ def force_due(previous: snap.Manifest, now: datetime, slack_s: int = 0) -> set[s
 
 
 def finish(store: snap.Store, manifest: snap.Manifest, previous: snap.Manifest, sources, now: datetime,
-           log=print, notable: set[int] | None = None) -> None:
+           log=print, notable: set[int] | None = None, refine_neo=None) -> None:
     """Apply rules 1 to 5 above to `manifest` (this run's rows) and write the files they make to `store`."""
     notable = notable_ids() if notable is None else notable
 
@@ -169,7 +169,7 @@ def finish(store: snap.Store, manifest: snap.Manifest, previous: snap.Manifest, 
             log(f"    {sid}: this refresh failed; publishing the last good copy from {e.fetched_at} ({e.items} rows)")
 
     # 3. the cut
-    _cut_neo(store, manifest, now, log)
+    _cut_neo(store, manifest, now, log, refine_neo)
 
     # 4. the derived files
     for parent, child, keep, what in derived(notable):
@@ -180,7 +180,7 @@ def finish(store: snap.Store, manifest: snap.Manifest, previous: snap.Manifest, 
         _twin(store, sid, e, previous.snapshots.get(sid), now, log)
 
 
-def _cut_neo(store, manifest, now, log) -> None:
+def _cut_neo(store, manifest, now, log, refine=None) -> None:
     neo, cad = manifest.snapshots.get(NEO_ID), manifest.snapshots.get(CAD_ID)
     if not _usable(neo) or not _usable(cad) or neo.note:       # nothing to cut by, or already cut
         return
@@ -193,10 +193,19 @@ def _cut_neo(store, manifest, now, log) -> None:
     if not cut["data"]:
         log(f"    {NEO_ID}: no row of the {before} is in the close-approach list; published whole")
         return
+    refined = 0
+    if refine is not None:      # internal #392: Horizons' elements at each approach (harvest/neo_elements.py); never raises
+        try:
+            cut, refined = refine(cut, cb, log=log)
+        except Exception as e:
+            log(f"    {NEO_ID}: Horizons elements skipped ({str(e)[:80]})")
     neo_doc["body"] = json.dumps(cut) if was_str else cut
     neo_doc["items"] = len(cut["data"])
     neo_doc["note"] = (f"trimmed from {before} rows to the {len(cut['data'])} whose designation is in "
                        f"jpl-cad.json of the same publish; the app joins no other row (parseNeoApproaches)")
+    if refined:
+        neo_doc["note"] += (f"; {refined} of them carry JPL Horizons' osculating elements at the epoch of their "
+                            f"listed close approach in place of SBDB's own (neo_elements.py)")
     neo.bytes = snap.write_snapshot(store, neo_doc, now=now)
     neo.items = len(cut["data"])
     neo.note = neo_doc["note"]
@@ -255,7 +264,8 @@ def finish_and_queue(store: snap.Store, manifest: snap.Manifest, previous: snap.
                      log=print, deadline: float | None = None) -> None:
     """`finish`, then the daily slow-job queue (harvest/slowjobs.py: tile sets), which writes beside the snapshots
     and puts nothing in the manifest. What the hourly run and `python3 -m harvest` pass to `run`."""
-    finish(store, manifest, previous, sources, now, log)
+    from . import neo_elements
+    finish(store, manifest, previous, sources, now, log, refine_neo=neo_elements.refine_body)
     from . import slowjobs
     slowjobs.run_due(store, now, log=log, deadline=deadline)
 

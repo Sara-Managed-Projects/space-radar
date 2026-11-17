@@ -33,7 +33,7 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { stage as theStage } from './stage.js';
-import { dragStarted, wheelLogDelta, keysBelongToMap, zoomPanFraction } from './gestures.js';
+import { dragStarted, wheelLogDelta, keysBelongToMap, zoomPanFraction, twistDelta } from './gestures.js';
 
 /**
  * THE EDGE OF THE MAP (internal spec 0075 task 17, DS-D09): 50 billion light-years. The observable
@@ -433,6 +433,7 @@ export function createCameraRig(camera, domElement, options = {}) {
 
   const pointers = new Map(); // pointerId -> {x, y}
   let pinchDistance = 0;
+  let pinchAngle = NaN;
   const pinchMid = { x: 0, y: 0 };
 
   function elementSize() {
@@ -481,6 +482,7 @@ export function createCameraRig(camera, domElement, options = {}) {
     if (pointers.size === 2) {
       const [a, b] = [...pointers.values()];
       pinchDistance = Math.hypot(a.x - b.x, a.y - b.y);
+      pinchAngle = Math.atan2(b.y - a.y, b.x - a.x);
       pinchMid.x = (a.x + b.x) / 2;
       pinchMid.y = (a.y + b.y) / 2;
     }
@@ -526,6 +528,13 @@ export function createCameraRig(camera, domElement, options = {}) {
       const my = (a.y + b.y) / 2;
       if (pinchDistance > 0 && d > 0) dollyBy(Math.log(pinchDistance / d));
       panBy(mx - pinchMid.x, my - pinchMid.y);
+      // A twist turns the view about the target, as a drag across does (internal #439): clockwise fingers, clockwise scene.
+      const angle = Math.atan2(b.y - a.y, b.x - a.x);
+      const twist = twistDelta(pinchAngle, angle);
+      if (twist) {
+        dAz -= twist;
+        pinchAngle = angle;
+      }
       pinchDistance = d;
       pinchMid.x = mx;
       pinchMid.y = my;
@@ -536,7 +545,10 @@ export function createCameraRig(camera, domElement, options = {}) {
 
   function onPointerUp(e) {
     pointers.delete(e.pointerId);
-    if (pointers.size < 2) pinchDistance = 0;
+    if (pointers.size < 2) {
+      pinchDistance = 0;
+      pinchAngle = NaN;
+    }
     state.userInteracting = pointers.size > 0;
     try {
       domElement?.releasePointerCapture?.(e.pointerId);

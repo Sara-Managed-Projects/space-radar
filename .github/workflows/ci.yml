@@ -205,6 +205,8 @@ jobs:
       # an hourly schedule reads an hourly source, the cut / derived files / column twins, the handler.
       - name: The harvester never overwrites good data with a failure, and publishes what the old script did
         run: python3 tests/test_harvest_publish.py
+      - name: "Horizons elements at each close approach: parsed to SBDB units, kept row by row, fail-soft (internal #392)"
+        run: python3 tests/test_harvest_neo_elements.py
       # 0078 r14-data: end
       # Every user-visible string lives in site/js/copy/en.js. Three files cited this check by name
       # before it existed; on the first run it was ever given it found three real leaks in
@@ -1547,6 +1549,8 @@ jobs:
         run: node tests/test_snapshot_span.mjs
       - name: "Listed close approaches against JPL's close-approach table: full-precision SBDB elements, distance and time within a stated tolerance (internal #392)"
         run: node tests/test_neo_cad.mjs
+      - name: "Comets from the feed against JPL Horizons: Encke, 21P and Olbers at a fixed instant, within a stated angle seen from Earth (internal #393)"
+        run: node tests/test_comet_reference.mjs
       - name: "staticPos places every star and galaxy and answers null for a record with no usable position (public #620)"
         run: node tests/test_propagate_static.mjs
       - name: "the Kepler equation solvers behind every orbit drawn from elements: the answer satisfies the equation, a circle, a wrapped angle, Barker's equation (public #621)"
