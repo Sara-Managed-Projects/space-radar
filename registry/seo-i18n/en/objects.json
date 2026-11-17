@@ -1248,5 +1248,7 @@
  "6e881752f0": "Drawn as Luna {n1}'s descent stage, standing; Luna {n2} fell on its side and kept its ascent stage — the kind of thing, not this exact one · shape built from published dimensions and pictures; details simplified.",
  "eb816396cb": "Drawn as Luna {n1}'s descent stage; Luna {n2} was the later type with a deeper drill — the kind of thing, not this exact one · shape built from published dimensions and pictures; details simplified.",
  "8d10d6deb2": "Drawn as Surveyor {n1}, without its alpha-scattering instrument · shape built from published dimensions and pictures; details simplified.",
- "66ba90603d": "Drawn as WorldView-{n1}, a taller craft on the same bus — the kind of thing, not this exact one · shape built from published dimensions and pictures; details simplified."
+ "66ba90603d": "Drawn as WorldView-{n1}, a taller craft on the same bus — the kind of thing, not this exact one · shape built from published dimensions and pictures; details simplified.",
+ "3bf96d01d2": "Source: Position: Hunt & Reffert {n1}, A&A {n2}, A114 (VizieR J/A+A/{n3}/A114), the centre of its Gaia DR3 members; distance: Hunt & Reffert {n4} (arXiv:{n5}), Gaia DR3 median of {n6} members",
+ "3b0df8fa45": "Source: Position: SIMBAD (NGC {n1}; Tarricq et al. {n2}, A&A {n3}, A19); distance: <1>https://en.wikipedia.org/wiki/List_of_Messier_objects</1>"
 }

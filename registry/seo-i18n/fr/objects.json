@@ -1248,5 +1248,7 @@
  "6e881752f0": "Le dessin représente l’étage de descente de Luna {n1}, debout ; Luna {n2} est tombée sur le côté et a gardé son étage de remontée — le type d’objet, pas cet objet précis · forme construite d’après des dimensions et des photos publiées ; détails simplifiés.",
  "eb816396cb": "Le dessin représente l’étage de descente de Luna {n1} ; Luna {n2} était le modèle suivant, avec une foreuse plus profonde — le type d’objet, pas cet objet précis · forme construite d’après des dimensions et des photos publiées ; détails simplifiés.",
  "8d10d6deb2": "Le dessin représente Surveyor {n1}, sans son instrument à diffusion alpha · forme construite d’après des dimensions et des photos publiées ; détails simplifiés.",
- "66ba90603d": "Le dessin représente WorldView-{n1}, un engin plus haut sur la même plateforme — le type d’objet, pas cet objet précis · forme construite d’après des dimensions et des photos publiées ; détails simplifiés."
+ "66ba90603d": "Le dessin représente WorldView-{n1}, un engin plus haut sur la même plateforme — le type d’objet, pas cet objet précis · forme construite d’après des dimensions et des photos publiées ; détails simplifiés.",
+ "3bf96d01d2": "Source : position : Hunt & Reffert {n1}, A&A {n2}, A114 (VizieR J/A+A/{n3}/A114), le centre de ses membres Gaia DR3 ; distance : Hunt & Reffert {n4} (arXiv:{n5}), médiane de {n6} membres Gaia DR3",
+ "3b0df8fa45": "Source : position : SIMBAD (NGC {n1} ; Tarricq et al. {n2}, A&A {n3}, A19) ; distance : <1>https://en.wikipedia.org/wiki/List_of_Messier_objects</1>"
 }

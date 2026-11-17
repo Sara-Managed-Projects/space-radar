@@ -1248,5 +1248,7 @@
  "6e881752f0": "Dibujado como la etapa de descenso de Luna {n1}, en pie; Luna {n2} cayó de lado y conservó su etapa de ascenso — el tipo de objeto, no este en concreto · forma construida a partir de medidas e imágenes publicadas; detalles simplificados.",
  "eb816396cb": "Dibujado como la etapa de descenso de Luna {n1}; Luna {n2} era el modelo posterior, con un taladro más profundo — el tipo de objeto, no este en concreto · forma construida a partir de medidas e imágenes publicadas; detalles simplificados.",
  "8d10d6deb2": "Dibujado como el Surveyor {n1}, sin su instrumento de dispersión alfa · forma construida a partir de medidas e imágenes publicadas; detalles simplificados.",
- "66ba90603d": "Dibujado como WorldView-{n1}, una nave más alta sobre la misma plataforma — el tipo de objeto, no este en concreto · forma construida a partir de medidas e imágenes publicadas; detalles simplificados."
+ "66ba90603d": "Dibujado como WorldView-{n1}, una nave más alta sobre la misma plataforma — el tipo de objeto, no este en concreto · forma construida a partir de medidas e imágenes publicadas; detalles simplificados.",
+ "3bf96d01d2": "Fuente: posición: Hunt & Reffert {n1}, A&A {n2}, A114 (VizieR J/A+A/{n3}/A114), el centro de sus miembros de Gaia DR3; distancia: Hunt & Reffert {n4} (arXiv:{n5}), mediana de {n6} miembros de Gaia DR3",
+ "3b0df8fa45": "Fuente: posición: SIMBAD (NGC {n1}; Tarricq et al. {n2}, A&A {n3}, A19); distancia: <1>https://en.wikipedia.org/wiki/List_of_Messier_objects</1>"
 }

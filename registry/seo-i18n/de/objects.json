@@ -1248,5 +1248,7 @@
  "6e881752f0": "Gezeichnet als Abstiegsstufe von Luna {n1}, stehend; Luna {n2} fiel auf die Seite und behielt ihre Aufstiegsstufe – die Art von Objekt, nicht genau dieses · Form aus veröffentlichten Maßen und Bildern gebaut; Einzelheiten vereinfacht.",
  "eb816396cb": "Gezeichnet als Abstiegsstufe von Luna {n1}; Luna {n2} war die spätere Bauart mit einem tiefer reichenden Bohrer – die Art von Objekt, nicht genau dieses · Form aus veröffentlichten Maßen und Bildern gebaut; Einzelheiten vereinfacht.",
  "8d10d6deb2": "Gezeichnet als Surveyor {n1}, ohne das Alpha-Streuinstrument · Form aus veröffentlichten Maßen und Bildern gebaut; Einzelheiten vereinfacht.",
- "66ba90603d": "Gezeichnet als WorldView-{n1}, ein höheres Raumfahrzeug auf demselben Satellitenbus – die Art von Objekt, nicht genau dieses · Form aus veröffentlichten Maßen und Bildern gebaut; Einzelheiten vereinfacht."
+ "66ba90603d": "Gezeichnet als WorldView-{n1}, ein höheres Raumfahrzeug auf demselben Satellitenbus – die Art von Objekt, nicht genau dieses · Form aus veröffentlichten Maßen und Bildern gebaut; Einzelheiten vereinfacht.",
+ "3bf96d01d2": "Quelle: Position: Hunt & Reffert {n1}, A&A {n2}, A114 (VizieR J/A+A/{n3}/A114), der Mittelpunkt seiner Gaia-DR3-Mitglieder; Entfernung: Hunt & Reffert {n4} (arXiv:{n5}), Median aus {n6} Gaia-DR3-Mitgliedern",
+ "3b0df8fa45": "Quelle: Position: SIMBAD (NGC {n1}; Tarricq et al. {n2}, A&A {n3}, A19); Entfernung: <1>https://en.wikipedia.org/wiki/List_of_Messier_objects</1>"
 }
