@@ -76,8 +76,9 @@ export function sizeAt(shell, year, distLy, extent) {
 }
 
 /** The look's switches: the mottling is generated, so the Measured look takes it off. Pure. */
-export function lookFor(look) {
-  return { mottle: drawnUnder(look || 'film', UNDER_MEASURED.mottle) ? 1 : 0, star: drawnUnder(look || 'film', UNDER_MEASURED.star) ? 1 : 0 };
+export function lookFor(chosen) {
+  const look = chosen || 'film';
+  return { mottle: drawnUnder(look, UNDER_MEASURED.mottle) ? 1 : 0, star: drawnUnder(look, UNDER_MEASURED.star) ? 1 : 0 };
 }
 
 const VERT = /* glsl */`
