@@ -1030,7 +1030,8 @@ export const COPY = {
     exoticDeparture: {
       pulseSlowed: "su parpadeo se dibuja {n} veces más lento de lo que gira, para que un ojo pueda seguirlo",
       pulseTrue: "su parpadeo se dibuja al ritmo al que gira",
-      portrait: "mientras esta ficha está abierta, se dibuja en su lugar un modelo, mucho más grande de lo que se vería desde aquí: la sombra y la luz curvada como las da su masa, el disco modelado"
+      portrait: "mientras esta ficha está abierta, se dibuja en su lugar un modelo, mucho más grande de lo que se vería desde aquí: la sombra y la luz curvada como las da su masa, el disco modelado",
+      sstars: "las estrellas que lo rodean se dibujan en sus órbitas medidas cuando uno se acerca a cerca de un año luz: 39 de ellas (S2 según el ajuste de GRAVITY, las demás según Gillessen y otros, 2017), cada una donde el reloj la sitúa en su órbita; sus tamaños y colores son ilustrativos, y la imagen del agujero les cede el sitio"
     },
     worldDeparture: {
       earth: "en una pantalla más grande, sus montañas salen de las alturas ETOPO 2022 de NOAA, dibujadas {relief} veces más empinadas de lo que son para que un Sol bajo las muestre; el resplandor del aire alrededor de su borde se dibuja {air} veces más alto que el aire; desde una órbita baja y en una pantalla más grande, sus nubes se alzan hacia el horizonte y bajo un Sol bajo, dibujadas {clouds} veces más gruesas de lo que son para que se vean su inclinación, sus largas sombras y la última luz en sus cimas (con su grosor verdadero en el aspecto Medido), con la altura de cada cima tomada de su temperatura medida donde cubre la imagen de hoy y del brillo del mapa de nubes en el resto",

@@ -1157,7 +1157,8 @@ export const COPY = {
     "exoticDeparture": {
       "pulseSlowed": "sein Blinken ist {n}-mal langsamer gezeichnet, als es sich dreht, damit ein Auge ihm folgen kann",
       "pulseTrue": "sein Blinken ist so schnell gezeichnet, wie es sich dreht",
-      "portrait": "solange dieser Steckbrief offen ist, wird an seinem Ort ein Modell gezeichnet, viel größer, als es von hier aus aussähe: Schatten und gebogenes Licht, wie seine Masse sie macht, die Scheibe modelliert"
+      "portrait": "solange dieser Steckbrief offen ist, wird an seinem Ort ein Modell gezeichnet, viel größer, als es von hier aus aussähe: Schatten und gebogenes Licht, wie seine Masse sie macht, die Scheibe modelliert",
+      "sstars": "die Sterne, die es umkreisen, werden auf ihren gemessenen Bahnen gezeichnet, sobald man sich ihm auf etwa ein Lichtjahr nähert: 39 davon (S2 nach GRAVITYs Fit, die übrigen nach Gillessen u. a., 2017), jeder dort, wo ihn die Uhr auf seiner Bahn hinstellt; ihre Größen und Farben sind illustrativ, und das Bild des Lochs weicht vor ihnen zurück"
     },
     "worldDeparture": {
       "earth": "auf einem größeren Bildschirm stammen seine Berge aus den ETOPO-2022-Höhen der NOAA, {relief}-mal steiler gezeichnet, als sie sind, damit eine tiefstehende Sonne sie zeigt; das Leuchten der Luft um seinen Rand ist {air}-mal höher gezeichnet, als die Luft ist; aus niedriger Umlaufbahn stehen auf einem größeren Bildschirm seine Wolken zum Horizont hin und unter einer tiefstehenden Sonne auf, {clouds}-mal dicker gezeichnet, als sie sind, damit man ihre Neigung, ihre langen Schatten und das letzte Licht auf ihren Spitzen sehen kann (im Aussehen „Gemessen“ in ihrer wahren Dicke), die Höhe jeder Spitze aus ihrer gemessenen Temperatur, wo das heutige Bild sie abdeckt, und sonst aus der Helligkeit der Wolkenkarte",

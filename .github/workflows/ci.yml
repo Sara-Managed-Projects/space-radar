@@ -142,6 +142,8 @@ jobs:
       # Spec 0044: the gates themselves. A stale mirror is a test holding the previous number.
       - name: The budgets mirror matches the registry (spec 0044)
         run: python3 scripts/gen_budgets_js.py --check
+      - name: "The S-stars' table mirrors the registry and every period obeys Kepler's third law (internal #419)"
+        run: python3 scripts/gen_sstars_js.py --check
       # Spec 0068 task 1: one WebP per trip card, the right size and inside trip_picture_bytes. Stdlib
       # only (the WebP header is read by hand), so the job's one dependency stays PyYAML.
       - name: Every trip has its card picture, 640 x 360 and inside its budget (spec 0068)
@@ -246,6 +248,8 @@ jobs:
       - name: "A black hole in 3D: the shadow, the bent light, the beamed disc, M87*'s jet, Cygnus X-1's companion (release 1.4.0)"
         run: node tests/test_blackhole.mjs
       # 0078 r14-mw-bh: end
+      - name: "The S-stars round Sagittarius A*: the published elements, S2 120 AU from the hole at its 2018.38 pericentre, the sense of motion, three draw calls, the hole's picture giving way, the card's words (internal #419)"
+        run: node tests/test_sstars.mjs
       - name: The walk notices another project's headless Chrome (internal #460)
         run: node tests/test_chrome_quiet.mjs
       - name: The prepared cloud workflow stays minimal (internal #139)

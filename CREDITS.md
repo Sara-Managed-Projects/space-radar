@@ -2817,6 +2817,23 @@ masses are `registry/exotics.yaml`'s. Where a profile's angle is not measured (S
 the stellar holes), it is chosen and `blackhole.js` says so.
 <!-- 0078 r14-mw-bh: end -->
 
+### The S-stars round Sagittarius A* (2026-11-17)
+
+`site/js/scene/sstars.js` draws the stars that circle Sagittarius A* on their measured orbits, from the table
+`registry/sstars.yaml` (mirrored to `site/js/data/sstars.js` by `scripts/gen_sstars_js.py`). No file, figure or text of the
+papers is copied: the numbers are published measurements, read from the papers on 2026-11-17 and cited per row.
+
+| what | from | licence |
+|---|---|---|
+| The orbits of 39 stars (size, shape, tilt, the two turns, the date of the closest pass and the period, each with its error) | Gillessen S. and others 2017, ApJ 837, 30, *An update on monitoring stellar orbits in the Galactic Center* (arXiv:1611.09144), Table 3 (S111's fit is unbound, so it is not drawn) | facts, cited |
+| S2's orbit (used in place of that table's row for S2), the distance to the hole (8 274.9 pc) and its mass (4.297 million Suns) | GRAVITY Collaboration 2021 (arXiv:2101.12098), Table 2 | facts, cited |
+
+What is measured and what is not. Every orbit, and where each star is on it on the clock's date (from the paper's period
+and pericentre date, through the app's Kepler solver), are **measured**. The stars' sizes and colours, the lines'
+brightness and the mark at the centre (a hole 0.08 AU across, drawn as a point) are **illustrative**. The orbits are at
+true size, so they show only within about a light-year of the hole; the hole's picture, which is far larger than life, gives
+way to them as they come into view. Not seen in a browser when this was written.
+
 <!-- 0079 a3: begin -->
 ## 3o. Every moon — NASA/JPL Solar System Dynamics, Horizons and the Small-Body Database (release 1.5.0)
 

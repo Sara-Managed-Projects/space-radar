@@ -33,6 +33,11 @@ import { createBlackHole } from './blackhole.js';
 export const PORTRAIT_SHARE = 0.32;
 const FADE_MS = 700;
 const SUN_INERTIAL = 'sun-inertial';
+// internal #419: Sagittarius A* also draws the stars that circle it, on their measured orbits (scene/sstars.js), fetched here
+// the first time its picture is drawn. Close in they are at true size and the picture, which is far larger than life, gives
+// way to a mark: `holeShare` is the share its picture is drawn at, the portrait's own where the orbits are not in view.
+export const SGR_A_STAR = 'exotic-sgr-a-star';
+export const holeShare = (starsFieldShare) => PORTRAIT_SHARE * (1 - Math.min(1, Math.max(0, Number(starsFieldShare) || 0)));
 
 /** The scale of something `share` of a view `fovDeg` tall, at unit distance (kept for the trip tests). */
 export function portraitScale(share, fovDeg) {
@@ -92,9 +97,32 @@ export function createPortraits(scene, opts = {}) {
     // glow would be a grey fog over everything: the coordinator leaves the host's holder out while the hole is drawn.
     const host = hole.profile.host && opts.recordById ? opts.recordById(hole.profile.host) : null;
     if (host && host.meta) host.meta.holderOff = true;
-    current = { record: rec, hole, opacity: 0, want: 1, host };
+    current = { record: rec, hole, opacity: 0, want: 1, host, stars: null };
     status = 'shown';
+    if (rec.id === SGR_A_STAR) attachStars(current);
     return true;
+  }
+
+  /** The S-stars of an Sgr A* picture: fetched, built and added to the picture's root; none if the fetch fails. */
+  function attachStars(entry) {
+    Promise.all([import('./sstars.js'), import('../data/sstars.js')]).then(([m, d]) => {
+      if (entry.gone) return;
+      entry.stars = m.createSStars(THREE, { data: d.SSTARS, record: entry.record, ...place, toScene: place.toScene, dirToScene: (v, out) => place.dirToScene(v, out) });
+      root.add(entry.stars.group);
+    }).catch((e) => console.warn('black hole: the S-stars did not load', e));
+  }
+  /** One entry's frame: the stars first (they say how far the picture gives way), then the picture. */
+  function drawEntry(entry, camera, tMs) {
+    const viewH = typeof globalThis.innerHeight === 'number' && globalThis.innerHeight > 0 ? globalThis.innerHeight : 1000;
+    const viewW = typeof globalThis.innerWidth === 'number' && globalThis.innerWidth > 0 ? globalThis.innerWidth : 1000;
+    let field = 0;
+    if (entry.stars) { entry.stars.update({ camera, tMs, viewH, viewW, opacity: entry.opacity }); field = entry.stars.fieldShare(); }
+    entry.hole.update({ camera, share: holeShare(field), tMs });
+  }
+  function dropEntry(entry) {
+    entry.gone = true;
+    entry.hole.dispose();
+    if (entry.stars) { entry.stars.dispose(); entry.stars = null; }
   }
 
   /** Fade it out; it is gone, and its record forgotten, when the fade ends. */
@@ -117,12 +145,12 @@ export function createPortraits(scene, opts = {}) {
     for (let i = leaving.length - 1; i >= 0; i--) {
       const e = leaving[i];
       step(e, frameMs);
-      if (e.opacity <= 0) { e.hole.dispose(); leaving.splice(i, 1); continue; }
-      e.hole.update({ camera, share: PORTRAIT_SHARE, tMs });
+      if (e.opacity <= 0) { dropEntry(e); leaving.splice(i, 1); continue; }
+      drawEntry(e, camera, tMs);
     }
     if (!current) { if (status === 'shown') status = 'off'; return; }
     step(current, frameMs);
-    current.hole.update({ camera, share: PORTRAIT_SHARE, tMs });
+    drawEntry(current, camera, tMs);
     // b200-c2-deep: the frames while it is fully drawn, and a step down when they are too slow (stepDown above)
     if (current.opacity >= 1 && frameMs > 0) {
       const f = current.frames || (current.frames = []);
@@ -150,8 +178,8 @@ export function createPortraits(scene, opts = {}) {
     magnification: () => (current ? current.hole.magnification() : 1),
     dispose() {
       if (current && current.host && current.host.meta) current.host.meta.holderOff = false;
-      if (current) current.hole.dispose();
-      for (const e of leaving) e.hole.dispose();
+      if (current) dropEntry(current);
+      for (const e of leaving) dropEntry(e);
       current = null; leaving.length = 0;
       scene.remove(root);
     },

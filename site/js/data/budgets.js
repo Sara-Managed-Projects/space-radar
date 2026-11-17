@@ -67,6 +67,8 @@ export const BUDGETS = {
   "deep_homunculus_draw_calls": 2,
   "deep_casa_bytes": 100000,
   "deep_casa_draw_calls": 2,
+  "deep_sstars_bytes": 30000,
+  "deep_sstars_draw_calls": 3,
   "deep_nebula_bytes": 600000,
   "deep_nebula_draw_calls": 3,
   "deep_galclusters_bytes": 150000,

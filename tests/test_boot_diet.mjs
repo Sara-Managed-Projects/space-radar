@@ -204,6 +204,9 @@ const DEFERRED = {
   'js/scene/deep/casa.js': 'Cassiopeia A from its published 3D reconstruction: the coordinator fetches it when the remnant is near',
   'js/data/hero-casa.js': 'a hero\'s profile: with the coordinator',
   'js/copy/en.deepdata.js': 'the words of the objects built from published 3D data: with their modules',
+  // the S-stars round Sagittarius A* (internal #419): fetched by scene/portraits.js when the hole's picture is drawn for it
+  'js/scene/sstars.js': 'the S-stars on their measured orbits: scene/portraits.js fetches it with the Sagittarius A* picture',
+  'js/data/sstars.js': 'the S-stars\' orbit table: with the module that draws it',
   // 0076 W3-d (scalerail.js)
   'js/ui/scalerail.js': 'where you are and Back: ui/cards.js fetches it with the first card, ui/scalebadge.js on the Sun\'s stage (internal spec 0076 W3-d)',
   // 0076 W4-b (galclusters.js)

@@ -1160,7 +1160,8 @@ export const COPY = {
     "exoticDeparture": {
       "pulseSlowed": "son clignotement est dessiné {n} fois plus lent que sa rotation, pour que l’œil puisse le suivre",
       "pulseTrue": "son clignotement est dessiné à la vitesse de sa rotation",
-      "portrait": "tant que cette fiche est ouverte, un modèle est dessiné à sa place, bien plus grand qu’il ne paraîtrait d’ici : l’ombre et la lumière courbée que donne sa masse, le disque modélisé"
+      "portrait": "tant que cette fiche est ouverte, un modèle est dessiné à sa place, bien plus grand qu’il ne paraîtrait d’ici : l’ombre et la lumière courbée que donne sa masse, le disque modélisé",
+      "sstars": "les étoiles qui tournent autour de lui sont dessinées sur leurs orbites mesurées quand on s’en approche à environ une année-lumière : 39 d’entre elles (S2 d’après l’ajustement de GRAVITY, les autres d’après Gillessen et al., 2017), chacune là où l’horloge la place sur son orbite ; leurs tailles et leurs couleurs sont illustratives, et l’image du trou leur cède la place"
     },
     "worldDeparture": {
       "earth": "sur un grand écran, ses montagnes viennent des altitudes ETOPO 2022 de la NOAA, dessinées {relief} fois plus raides qu’elles ne sont pour qu’un Soleil bas les montre ; la lueur de l’air sur son bord est dessinée {air} fois plus haute que l’air ; depuis l’orbite basse sur un grand écran, ses nuages se dressent vers l’horizon et sous un Soleil bas, dessinés {clouds} fois plus épais qu’ils ne sont pour qu’on voie leur inclinaison, leurs longues ombres et la dernière lumière sur leurs sommets (à leur vraie épaisseur dans l’aspect Mesuré), la hauteur de chaque sommet venant de sa température mesurée là où l’image du jour la couvre, et de l’éclat de la carte des nuages ailleurs",
