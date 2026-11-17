@@ -403,6 +403,21 @@ export function pathSpan(recordId, tMs) {
 }
 
 /**
+ * The same, for a craft drawn from the harvested snapshot of JPL's tables and not from a path file
+ * (data/parsers.js sets `meta.samplesFromMs` and `meta.samplesToMs`): the saved table's own ends. Outside
+ * them propagate/sampled.js answers nothing (internal #397), and the card says so. Null for any other record.
+ */
+function snapshotSpan(record, tMs) {
+  const m = record && record.meta;
+  if (!m || !Number.isFinite(tMs)) return null;
+  const fromMs = m.samplesFromMs;
+  const toMs = m.samplesToMs;
+  if (!Number.isFinite(fromMs) || !Number.isFinite(toMs)) return null;
+  const side = tMs < fromMs ? 'before' : tMs > toMs ? 'after' : 'inside';
+  return { fromMs, toMs, side, nearestMs: side === 'before' ? fromMs : side === 'after' ? toMs : tMs };
+}
+
+/**
  * The days JPL's path for the craft covers, and, when the clock is outside them, that the map has
  * no position for it then (when the record's own propagator has none either) and a button that
  * moves the clock to the nearest day it has. Up to two sentences and one button; false when the
@@ -410,7 +425,7 @@ export function pathSpan(recordId, tMs) {
  */
 function appendPathSpan(host, record, ctx) {
   const now = ctx.clock.now();
-  const span = pathSpan(record.id, now);
+  const span = pathSpan(record.id, now) || snapshotSpan(record, now);
   if (!span) return false;
   const E = COPY.ephemeris;
   host.appendChild(el('p', 'sr-mission__note sr-mission__span', t(E.span, { from: timeText.utcLong(span.fromMs), to: timeText.utcLong(span.toMs) })));
@@ -454,8 +469,8 @@ export function mountMission(host, record, ctx) {
   while (host.firstChild) host.removeChild(host.firstChild);
   if (file) wantPath(ctx, record);
   if (!mission) {
-    // No event list, but its own path (Apophis, OSIRIS-APEX): the card still says what is drawn.
-    if (file) {
+    // No event list, but its own path (Apophis, OSIRIS-APEX) or a saved table (Parker, JUICE ...): the card still says what is drawn.
+    if (file || snapshotSpan(record, ctx.clock.now())) {
       host.className = 'sr-card__mission sr-mission';
       const spanned = appendPathSpan(host, record, ctx); // 0077 W1-d
       host.hidden = !(appendPathWords(host, record, ctx.clock.now()) || spanned); // 0077 W1-d

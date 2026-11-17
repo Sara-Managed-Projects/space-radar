@@ -62,36 +62,30 @@
 #
 # `params` is the query string, with three placeholders the harvester fills: {id}, {start}, {stop}.
 # Horizons wants its string values single-quoted, hence the quotes inside the quotes.
-# `window` is the sample span around the run time: propagate/sampled.js interpolates inside a
-# record's range and stops answering 7 days outside it, so a daily fetch with a day behind and
-# thirty ahead is never on the edge.
-
-params:
-  format: json
-  EPHEM_TYPE: VECTORS
-  CENTER: "'500@10'"        # heliocentric, the frame the deep-space layer draws in
-  STEP_SIZE: "'6 h'"
-  VEC_TABLE: "'2'"          # position and velocity, which cubic Hermite needs
-  # Times in UT, not TDB (internal #424, #552). Horizons' default for a vector table is TDB, 69.184 s
-  # ahead of UTC, which the app read as UTC (1 644 km along Mars's path for MRO). JPL's API page
-  # (ssd-api.jpl.nasa.gov/doc/horizons.html, read 2026-10-09) lists TIME_TYPE as "UT , TT , TDB ...
-  # observer tables: UT or TT; vector tables: TDB or UT". The table's header then reads JDUT and
-  # data/parsers.js horizonsTimeScale() takes no 69 s off: a saved TDB snapshot is read as before.
-  TIME_TYPE: "'UT'"
-  OUT_UNITS: "'KM-S'"
-  CSV_FORMAT: "'YES'"
-  COMMAND: "'{id}'"
-  START_TIME: "'{start}'"
-  STOP_TIME: "'{stop}'"
-
-window: {before: 1d, after: 30d}
+# `window` is the sample span around the run time, and a row's own `window:` replaces it. Until 2026-11-16 it was
+# a day back and thirty ahead at six hours, and propagate/sampled.js held the first or last sample for seven days
+# outside it: two days back JWST was drawn 3.0 million km from Earth against 1.66 million real, and past a week every
+# craft vanished (internal #397). Now it is 120 days either side of the run, and sampled.js answers NOTHING outside the
+# table (the card says the map has no path for that date). The span moves with the daily run.
+#
+# STEP, measured 2026-11-16: Horizons' own hourly vectors for 2026-07-18..2027-03-16 against a cubic Hermite through
+# every 24th and every 6th row of them (the app's propagate/sampled.js), worst error over the 241 days:
+#   daily is enough (0.0 to 2 km): JWST 1.8, Voyager 1 and 2, New Horizons, Pioneer 10 and 11, Lucy, Gaia, Spitzer,
+#   Kepler, Euclid 0.4. Not enough: Parker 330 000 km at daily and 7 155 at six-hourly (perihelion), Solar Orbiter
+#   45 000 / 4 271 (Venus flyby 2026-12-24), JUICE 41 000 / 7 350 (Earth flyby 2026-09-28), Europa Clipper 24 000 /
+#   10 583 (Earth flyby 2026-12-03), BepiColombo 58 000 / 20 846, Psyche (a manoeuvre 2027-03-01) and OSIRIS-APEX.
+#   Those seven take `step: 6 h` (960 rows each); the error is in the few hours round the event, and a few thousand
+#   km at most, on a map where the craft is a dot millions of km from anything. Everything else is under 100 km.
+# The craft round another world keep six hours and a window of 45 days either side: propagate/orbiter.js carries them
+# between the states by the world's pull, and data/parsers.js refuses a coarser step.
+window: {before: 120d, after: 120d}
 pause_s: 0.5
 
 ids:
   - {id: "-170", name: "James Webb Space Telescope", app_id: deep-jwst}
   - {id: "-21",  name: "SOHO",                       app_id: deep-soho}
-  - {id: "-74",  name: "Mars Reconnaissance Orbiter", app_id: deep-mro, center: "'500@499'"}
-  - {id: "-61",  name: "Juno",                       app_id: deep-juno, center: "'500@599'"}
+  - {id: "-74",  name: "Mars Reconnaissance Orbiter", app_id: deep-mro, center: "'500@499'", step: "'6 h'", window: {before: 45d, after: 45d}}
+  - {id: "-61",  name: "Juno",                       app_id: deep-juno, center: "'500@599'", step: "'6 h'", window: {before: 45d, after: 45d}}
   - {id: "-31",  name: "Voyager 1",                  app_id: deep-voyager-1}
   - {id: "-32",  name: "Voyager 2",                  app_id: deep-voyager-2}
   - {id: "-98",  name: "New Horizons",               app_id: deep-new-horizons}
@@ -100,28 +94,31 @@ ids:
   # request for today is refused. They are drawn from their path files only (site/data/eph).
   - {id: "-23",  name: "Pioneer 10",                 app_id: deep-pioneer-10}
   - {id: "-24",  name: "Pioneer 11",                 app_id: deep-pioneer-11}
-  - {id: "-96",  name: "Parker Solar Probe",         app_id: deep-parker}
-  - {id: "-255", name: "Psyche",                     app_id: deep-psyche}
+  - {id: "-96",  name: "Parker Solar Probe",         app_id: deep-parker, step: "'6 h'"}
+  - {id: "-255", name: "Psyche",                     app_id: deep-psyche, step: "'6 h'"}
   - {id: "-49",  name: "Lucy",                       app_id: deep-lucy}
-  - {id: "-159", name: "Europa Clipper",             app_id: deep-europa-clipper}
-  - {id: "-28",  name: "JUICE",                      app_id: deep-juice}
-  - {id: "-121", name: "BepiColombo",                app_id: deep-bepicolombo}
+  - {id: "-159", name: "Europa Clipper",             app_id: deep-europa-clipper, step: "'6 h'"}
+  - {id: "-28",  name: "JUICE",                      app_id: deep-juice, step: "'6 h'"}
+  - {id: "-121", name: "BepiColombo",                app_id: deep-bepicolombo, step: "'6 h'"}
   - {id: "-91",  name: "Hera",                       app_id: deep-hera}
-  - {id: "-64",  name: "OSIRIS-APEX",                app_id: deep-osiris-apex}
+  - {id: "-64",  name: "OSIRIS-APEX",                app_id: deep-osiris-apex, step: "'6 h'"}
   - {id: "-37",  name: "Hayabusa2",                  app_id: deep-hayabusa2}
-  - {id: "-62",  name: "Hope (Emirates Mars Mission)", app_id: deep-hope, center: "'500@499'"}
+  - {id: "-62",  name: "Hope (Emirates Mars Mission)", app_id: deep-hope, center: "'500@499'", step: "'6 h'", window: {before: 45d, after: 45d}}
   - {id: "-234", name: "STEREO-A",                   app_id: deep-stereo-a}
-  - {id: "-41",  name: "Mars Express",               app_id: deep-mars-express, center: "'500@499'"}
-  - {id: "-85",  name: "Lunar Reconnaissance Orbiter", app_id: deep-lro, center: "'500@301'"}
+  - {id: "-41",  name: "Mars Express",               app_id: deep-mars-express, center: "'500@499'", step: "'6 h'", window: {before: 45d, after: 45d}}
+  - {id: "-85",  name: "Lunar Reconnaissance Orbiter", app_id: deep-lro, center: "'500@301'", step: "'6 h'", window: {before: 45d, after: 45d}}
   - {id: "-139479", name: "Gaia",                    app_id: deep-gaia}
   # Added 2026-10-07 with their models (internal #389). Each header was read that day: Roman's
   # file is a flight-dynamics prediction that ends 2026-10-26 (the anchor stays the stand-in
   # after it), Odyssey's is fitted to 2026-09-23, Spitzer's and Kepler's are long predictions for
   # two craft that are switched off. THE HARVESTER NEEDS A REDEPLOY to fetch these.
   - {id: "-211", name: "Nancy Grace Roman Space Telescope", app_id: deep-roman}
-  - {id: "-53",  name: "Mars Odyssey",               app_id: deep-mars-odyssey, center: "'500@499'"}
+  - {id: "-53",  name: "Mars Odyssey",               app_id: deep-mars-odyssey, center: "'500@499'", step: "'6 h'", window: {before: 45d, after: 45d}}
   - {id: "-79",  name: "Spitzer Space Telescope",    app_id: deep-spitzer}
   - {id: "-227", name: "Kepler",                     app_id: deep-kepler}
   # Added 2026-11-14 (internal #112): the header of -680 (revised 2026-11-03) names Euclid, and its
   # trajectory file runs from 2023-Jul-01 to 2031-Oct-05, tracking-based to 2026-Oct-26.
   - {id: "-680", name: "Euclid",                     app_id: deep-euclid}
+  # Added 2026-11-16 (internal #112, review of positions): Solar Orbiter was drawn from a year-old orbit, 97.6 million km
+  # from where it is (the dot at the perihelion of 1 Jan 2026). Horizons -144 is current; six hours for its flybys.
+  - {id: "-144", name: "Solar Orbiter",              app_id: deep-solar-orbiter, step: "'6 h'"}

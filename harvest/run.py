@@ -318,8 +318,10 @@ def _fetch_list(source: Source, *, now: datetime, fetcher, sleep) -> Fetched:
     params_t = spec.get("params") or {}
     window = spec.get("window") or LIST_DEFAULT_WINDOW
     pause = float(spec.get("pause_s", LIST_DEFAULT_PAUSE_S))
-    start = (now - timedelta(seconds=parse_duration(str(window.get("before", "1d"))))).strftime("%Y-%m-%d")
-    stop = (now + timedelta(seconds=parse_duration(str(window.get("after", "30d"))))).strftime("%Y-%m-%d")
+    def span(w: dict) -> tuple[str, str]:
+        return ((now - timedelta(seconds=parse_duration(str(w.get("before", "1d"))))).strftime("%Y-%m-%d"),
+                (now + timedelta(seconds=parse_duration(str(w.get("after", "30d"))))).strftime("%Y-%m-%d"))
+    start, stop = span(window)
 
     body: dict[str, str] = {}
     failures: list[str] = []
@@ -327,7 +329,12 @@ def _fetch_list(source: Source, *, now: datetime, fetcher, sleep) -> Fetched:
     total = 0
     for i, row in enumerate(spec["ids"]):
         sid = str(row["id"] if isinstance(row, dict) else row)
-        params = {k: str(v).format(id=sid, start=start, stop=stop) for k, v in params_t.items()}
+        # A row may carry its own `window:` (before/after) and `step:` (Horizons' STEP_SIZE, quoted): a craft that
+        # bends in hours takes a finer step, a craft round a world a narrower window (the list says why).
+        r_start, r_stop = (span(row["window"]) if isinstance(row, dict) and row.get("window") else (start, stop))
+        params = {k: str(v).format(id=sid, start=r_start, stop=r_stop) for k, v in params_t.items()}
+        if isinstance(row, dict) and row.get("step"):
+            params["STEP_SIZE"] = str(row["step"])
         # A craft round another world is drawn from that world, so it is asked for relative to it
         # (harvest/lists/horizons-ids.yaml says why, with the measurements). The key is CENTER
         # because that is the one parameter such a row changes; the rest stay the list's.

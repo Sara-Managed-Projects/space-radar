@@ -145,6 +145,16 @@ tagged, and their dates are the day the last change in each landed.
   Earth (it pointed at the middle of the view), and a craft in orbit round Mars or the Moon looks down at that world from any
   view. The card's Sources section says "which way it points is modelled, not measured" and which rule. A model whose axes are
   not on record yet keeps its fixed angle and its card says nothing of which way it points.
+- **Deep-space craft no longer freeze, jump or vanish when the clock leaves the saved month.** The saved table of JPL's
+  tracks covered a day back and thirty ahead, and outside it the map held the first or last place for a week: two days back
+  JWST was drawn 3.0 million km from Earth against 1.66 million real, and after a week every craft was gone (a review of
+  positions, 2026-11-16). The table now runs 120 days either side of the day it is saved (daily steps, six-hourly for Parker,
+  Solar Orbiter, JUICE, Europa Clipper, BepiColombo, Psyche and OSIRIS-APEX, which bend in hours; 45 days for the craft round
+  Mars, Jupiter and the Moon), and outside it a craft is not drawn: its card says JPL's path for it runs from this day to that,
+  that the clock is outside it, and how to go to the nearest day. Solar Orbiter is asked of Horizons (-144) instead of drawn
+  97.6 million km off its place. The harvester's list and `run.py` change (a row may carry its own `step` and `window`), so the
+  harvester needs a redeploy before the longer tables arrive. The close-approach asteroids and the comets are asked of SBDB at
+  full precision (`full-prec=1`): three of the four checked objects pass Earth within 1 % and 1.4 h of JPL's close-approach table.
 - **A 3D model is one thing to click, small icons over the Earth are easier to hit, and a flight no longer carries its
   subject along at full size.** A spacecraft drawn as a model answers to a click or a tap anywhere on it (its panels, its
   trusses), also in front of a planet; it answered only at its centre point. Over the Earth an icon is hit anywhere on the
