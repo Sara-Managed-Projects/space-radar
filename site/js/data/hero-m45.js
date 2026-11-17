@@ -14,8 +14,8 @@ export const HERO = {
   "frame": {
     "units_ly": 1,
     "distance_ly": 440,
-    "ra_deg": 56.60083,
-    "dec_deg": 24.11389,
+    "ra_deg": 56.86917,
+    "dec_deg": 24.10528,
     "axes": "x west, y north, z toward the Sun; the record's place at the origin"
   },
   "layers": [
@@ -110,56 +110,56 @@ export const HERO = {
             "ra_deg": 57.29059,
             "dec_deg": 24.05342,
             "v_mag": 3.62,
-            "z_ly": -1.694
+            "z_ly": -1.707
           },
           {
             "id": "Electra",
             "ra_deg": 56.2189,
             "dec_deg": 24.11334,
             "v_mag": 3.7,
-            "z_ly": 1.838
+            "z_ly": 1.857
           },
           {
             "id": "Maia",
             "ra_deg": 56.45669,
             "dec_deg": 24.36775,
             "v_mag": 3.87,
-            "z_ly": -1.755
+            "z_ly": -1.743
           },
           {
             "id": "Merope",
             "ra_deg": 56.58156,
             "dec_deg": 23.94836,
             "v_mag": 4.18,
-            "z_ly": -6.005
+            "z_ly": -5.997
           },
           {
             "id": "Taygeta",
             "ra_deg": 56.30206,
             "dec_deg": 24.46728,
             "v_mag": 4.3,
-            "z_ly": 2.292
+            "z_ly": 2.308
           },
           {
             "id": "Pleione",
             "ra_deg": 57.29673,
             "dec_deg": 24.13671,
             "v_mag": 5.05,
-            "z_ly": 7.131
+            "z_ly": 7.118
           },
           {
             "id": "Celaeno",
             "ra_deg": 56.20088,
             "dec_deg": 24.28947,
             "v_mag": 5.45,
-            "z_ly": 4.256
+            "z_ly": 4.275
           },
           {
             "id": "Asterope",
             "ra_deg": 56.47699,
             "dec_deg": 24.55451,
             "v_mag": 5.76,
-            "z_ly": -6.106
+            "z_ly": -6.095
           }
         ]
       },

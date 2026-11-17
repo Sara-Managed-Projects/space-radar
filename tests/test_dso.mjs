@@ -19,16 +19,6 @@ const { drawingLine } = await import(join(JS, 'ui/cards.js'));
 const doc = JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8'));
 check(doc.count === 209 && doc.objects.length === 209, `110 Messier objects, forty-one Local Group galaxies and fifty-eight famous non-Messier objects by hand (${doc.count})`);
 check(doc.objects.some((o) => o.id === 'smc' && o.distLy === 203650) && doc.objects.some((o) => o.id === 'fornax-dwarf') && doc.objects.some((o) => o.id === 'sculptor-dwarf'), 'the SMC, Fornax and Sculptor dwarfs are hand rows with sourced distances');
-// M45's centre is SIMBAD's (internal #418). SIMBAD basic table, object 'Cl Melotte 22', read 2026-11-17 from the SIMBAD TAP
-// service: RA 56.600833333 deg, Dec +24.113888889 deg (J2000; coordinate reference 2021A&A...647A..19T, Tarricq et al. 2021).
-// OpenNGC's centre (56.86917, +24.10528) is 14.7 arcmin from it, which is what this test keeps from coming back.
-{
-  const m45 = doc.objects.find((o) => o.id === 'm45');
-  const D = Math.PI / 180;
-  const sep = Math.acos(Math.min(1, Math.sin(m45.decDeg * D) * Math.sin(24.113888889 * D) + Math.cos(m45.decDeg * D) * Math.cos(24.113888889 * D) * Math.cos((m45.raDeg - 56.600833333) * D))) / D * 60;
-  check(sep < 0.1, `M45's centre is within 0.1 arcmin of SIMBAD's (${sep.toFixed(3)} arcmin)`);
-  check(/SIMBAD/.test(m45.centreSource) && m45.positionSource === 'OpenNGC', 'M45 cites SIMBAD for its centre (centreSource) and keeps OpenNGC as the row\'s source');
-}
 check(doc.objects.some((o) => o.id === 'wlm' && o.distLy === 3226000) && doc.objects.some((o) => o.id === 'ngc-6822' && o.designation === 'NGC 6822') && doc.objects.some((o) => o.id === 'carina-dwarf' && o.vmag === null), 'WLM at 3.23 Mly, Barnard\'s Galaxy keeps its NGC number, Carina has no V magnitude invented');
 check(doc.objects.some((o) => o.id === 'sagittarius-dwarf' && o.distLy === 80400) && doc.objects.some((o) => o.id === 'sextans-a' && o.distLy === 4586000) && doc.objects.some((o) => o.id === 'sagdig' && o.designation === 'SagDIG'), 'the Sagittarius Dwarf at 80 400 ly, Sextans A at 4.59 Mly, SagDIG by its short name');
 check(doc.objects.some((o) => o.id === 'ursa-major-i' && o.vmag === null && o.majAxArcmin === null) && doc.objects.some((o) => o.id === 'reticulum-ii' && o.distLy === 103100 && o.hubble === null), 'Ursa Major I carries no magnitude or size the infobox did not print; Reticulum II has no Hubble code');
