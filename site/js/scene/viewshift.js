@@ -81,7 +81,7 @@ const TOP_REACH = 0.25; // a bar must start in the top quarter to count as docke
 // a 1440 px window, and the globe centred on the WINDOW sat with its left limb under it. Row D draws
 // the Earth centred on what is left (150 px right of the window's middle at 1440): the view is moved
 // right by half the column's right edge, the same half-the-covered-band rule as the bottom.
-const LEFT_SELECTORS = ['html:not(.sr-phone) #sr-side'];
+const LEFT_SELECTORS = ['html:not(.sr-phone) #sr-side', 'html.sr-phone-land #sr-side']; // and a phone held sideways (internal #455)
 const LEFT_EDGE_PX = 40; // a column must start this near the left edge to count as docked there
 const TALL = 0.6; // and run at least this share of the canvas's height
 

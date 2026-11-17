@@ -6033,3 +6033,394 @@ COPY.emailUpdates = {
   "skyButton": "Himmelsalarme erhalten"
 };
 // redesign 2026-11-10: end
+
+// internal #442: begin -- the seven sections the checker did not count (it read a hand-kept list of English files): moon cards, nebula and Carina/SMC texts, confidence, share views and presets
+COPY.klass.moon = "Mond";
+COPY.klassFar.candidate = "Zwergplanet-Kandidat";
+COPY.templates.asteroid.leadCandidate = "{name} ist ein großes Objekt jenseits des Neptun, das ein Zwergplanet sein könnte; die IAU hat darüber noch nicht entschieden";
+COPY.momentStories["curiosity-edl"] = {
+  "title": "Curiosity: sieben Minuten bis zum Mars",
+  "blurb": "6. August 2012: das Mars Science Laboratory von der Oberkante der Marsatmosphäre bis zum Gale-Krater: der Hitzeschild, der Fallschirm, der Raketenrucksack und der Sky Crane, nach der eigenen Uhr des JPL.",
+  "chEntry": "Die Atmosphäre",
+  "chHeat": "Maximale Erhitzung",
+  "chChute": "Der Fallschirm",
+  "chPowered": "Angetriebener Abstieg",
+  "chCrane": "Der Sky Crane",
+  "chLanded": "Aufsetzen",
+  "ready": "Mars, 30 s vor der Atmosphäre. Die Reisestufe wurde vor zehn Minuten abgetrennt; Curiosity fliegt in ihrer Aeroshell, Hitzeschild voraus, mit etwa 5.9 km/s. Uhr: Sekunden seit dem Eintritt, 05:10:45.7 UTC am 6. August 2012.",
+  "entry": "Eintritt, 05:10:45.7 UTC: 131 km über dem Boden des Landeplatzes (Angabe der NASA; der Eintrittspunkt liegt weit stromaufwärts des Platzes), mit 5.9 km/s. Das Fahrzeug fliegt schräg, mit etwas Auftrieb, damit es gesteuert werden kann.",
+  "guided": "Kleine Triebwerke an der hinteren Schale steuern den Auftrieb in S-Kurven, um am Ziel zu landen (nicht gezeichnet). Mehr als neun Zehntel des Abbremsens vor dem Fallschirm übernimmt die Luft.",
+  "heating": "Etwa 80 s nach dem Eintritt: maximale Erhitzung, rund 2 100 °C auf der Vorderseite des Schilds. Die stärkste Verzögerung folgt etwa zehn Sekunden später; in dieser Rekonstruktion beträgt sie etwa 9.6 g.",
+  "slow": "Das Leuchten erlischt, während die Luft dichter wird und die Geschwindigkeit sinkt. Neun Minuten vor dem Eintritt warf das Fahrzeug zwei Wolframblöcke zu je 75 kg ab, um seinen Schwerpunkt für den Flug mit Auftrieb aus der Achse zu verschieben (nicht gezeichnet).",
+  "weights": "Etwa 20 s vor dem Fallschirm fällt der letzte Ballast ab: sechs Blöcke zu je 25 kg, um das Gewicht für den Abstieg unter dem Schirm wieder auf die Achse zu bringen (nicht gezeichnet).",
+  "chute": "259.2 s, 05:15:04.9 UTC: der Fallschirm öffnet sich, 11 km hoch bei etwa 405 m/s: ein Schirm von rund 16 m Durchmesser an 80 Leinen, jede über 50 m lang. Er ist in den Farben des Fluges gezeichnet.",
+  "shield": "278.9 s, 05:15:24.6 UTC: der Hitzeschild wird abgeworfen, etwa 8 km hoch bei 125 m/s, und fällt weg. Die Abstiegskamera des Rovers beginnt, den Boden zu filmen, und das Radar der Stufe, ihn zu vermessen.",
+  "radar": "Unter dem Fallschirm hängt der Rover in der hinteren Schale, unter seinem Raketenrucksack verstaut. Das Radar misst Höhe und Geschwindigkeit; der Bordcomputer wartet auf den Augenblick, sich zu lösen.",
+  "backshell": "Etwa 80 s nach dem Schild, bei rund 1.6 km und 80 m/s, löst die hintere Schale den Rover und seinen Raketenrucksack. Alle acht Landetriebwerke, je 400 bis 3 100 N, zünden.",
+  "divert": "Die Abstiegsstufe taucht seitlich weg und fliegt ein 300-m-Manöver, um von der hinteren Schale und dem Fallschirm fernzubleiben, die weitertreiben (ihr Fall ist hier illustrativ). Sie bremst auf 0.75 m/s.",
+  "skycrane": "412.9 s, 05:17:38.6 UTC: etwa 20 m hoch lässt der Rover die Stufe los, und vier ihrer acht Triebwerke schalten ab. Die Stufe senkt ihn an einem 7.6 m langen Seil aus drei Strängen ab; die Räder klappen aus.",
+  "touchdown": "431.6 s, 05:17:57.3 UTC: Aufsetzen mit etwa 0.75 m/s im Gale-Krater, 2.4 km von der Mitte der Zielellipse entfernt. Sieben Minuten und elf Sekunden nach dem Eintritt in die Luft.",
+  "cut": "Der Rover wartet zwei Sekunden, spürt sein Gewicht auf den Rädern und zündet dann die Pyrotechnik, die die Seile durchtrennt. Die Stufe gibt Schub.",
+  "flyaway": "Die Stufe fliegt davon und stürzt etwa 650 m entfernt ab, damit sie nicht auf den Rover fällt (ihr Weg ist hier illustrativ).",
+  "earth": "Das Signal brauchte 13 Min. 48 s bis zur Erde: 05:31:45.4 UTC, 22:31 Uhr in Pasadena. „Aufsetzen bestätigt. Wir sind sicher auf dem Mars!“ (Allen Chen, JPL).",
+  "pathEdl": "die veröffentlichten Ereigniszeiten, Höhen und Geschwindigkeiten, verbunden durch einen an sie angepassten Massepunkt; der Kompasskurs ist unserer",
+  "pathDescent": "die veröffentlichten Geschwindigkeiten und Zeiten, die letzten 135 m der Stufe und der Sky Crane dazwischen verbunden; der Absturz der Stufe ist illustrativ",
+  "pathBackshell": "unser: die hintere Schale und ihr Fallschirm treiben und fallen; eine Bahn von ihnen ist in dem Gelesenen nicht veröffentlicht",
+  "pathRover": "die Zeiten des JPL und die 20 m und 0.75 m/s der NASA, das Seil läuft in den 18.7 s dazwischen ab",
+  "srcJpl": "JPL, „Timeline of Major Mission Events During Curiosity’s Landing“ (die Zeiten von Eintritt, Fallschirm, Hitzeschild, Abtrennung des Rovers und Aufsetzen)",
+  "srcKit": "NASA, Mars Science Laboratory Landing Press Kit, Juli 2012 (Eintritt in 131 km Höhe mit 5.9 km/s, Höhen und Geschwindigkeiten von Fallschirm, Schild und hinterer Schale; gemeinfrei)",
+  "srcPowered": "Sell u. a., „Powered Flight Design and Reconstructed Performance Summary for the Mars Science Laboratory Mission“, AAS 13-424 (das 300-m-Manöver)",
+  "srcWiki": "Mars Science Laboratory, Wikipedia (Fallschirm, Seil, Triebwerke, Absturz der Stufe)"
+};
+COPY.momentStories["new-horizons-pluto"] = {
+  "title": "New Horizons am Pluto",
+  "blurb": "14. Juli 2015: der erste Besuch am Pluto, von sechs Stunden vorher bis zum Vorbeiflug mit 13.8 km/s, nach der Bahn des JPL: Pluto und Charon als Scheiben, dahinter die Sichel.",
+  "chApproach": "Der Anflug",
+  "chClosest": "Größte Annäherung",
+  "chAway": "Rückblick",
+  "chCharon": "Charon",
+  "ready": "05:48 UTC, sechs Stunden vorher: 300 000 km vom Pluto entfernt, nach mehr als neun Jahren und 3 Milliarden Meilen (NASA). Pluto und Charon sind noch Punkte. Die Uhr zählt Sekunden ab der größten Annäherung nach der Horizons-Bahn des JPL, 11:48:29 UT.",
+  "approach": "Pluto misst rund 2 380 km im Durchmesser und Charon rund 1 210 km; sie umkreisen einander alle 6.4 Tage. In dieser Wiedergabe steht Charon über der Länge 0 des Plutoäquators, in 19 591 km Entfernung, dort, wo beide einander ihre Seite zuwenden (unsere Zeichnung).",
+  "last": "Die Sonde ist auf sich allein gestellt: Für einen großen Teil des Tages richtet sie ihre Instrumente auf Pluto und hat keinen Kontakt zur Missionskontrolle (NASA). Sie ist von der Sonnenseite beleuchtet und hält auf die Linie zu, an der auf Pluto der Tag endet.",
+  "closest": "Größte Annäherung an Pluto: 12 490 km über der Oberfläche, mit 13.78 km/s nach der JPL-Bahn um 11:48:29 UT. Der Zeitplan der NASA nennt etwa 7:49 Uhr EDT, 11:49:57 UTC, 12 500 km Höhe und 30 800 mph; die 88 s zwischen beiden Uhren sind hier nicht abgeglichen.",
+  "pluto": "Die Sonde fliegt jetzt über die Nachtseite des Pluto: Sie hat vor etwa fünf Minuten die Linie zwischen Tag und Nacht überquert und blickt auf den besonnten Planeten zurück. Gegenlicht würde den Dunst des Pluto leuchten lassen (nicht gezeichnet: nur der Planetenrand wird gezeichnet).",
+  "away": "Dahinter ist Pluto eine Sichel, die dünner wird, je weiter die Sonde sich entfernt. Die Erde ist 4.77 Milliarden km entfernt, 4 Stunden 25 Minuten per Funk (unsere Summe aus den Planetenpositionen).",
+  "charon": "Etwa 14 Minuten nach Pluto: Charon, auf unter 28 860 km (NASA). In dieser Wiedergabe ist er am nächsten um 12:02:36 UT, Plutos Sekunde des JPL plus 14 Min. 7 s; Wikipedia gibt 12:02:22 an.",
+  "clock": "Was die Sonde jetzt sieht, erreicht die Erde 4 Stunden 25 Minuten zu spät, und eine Antwort bräuchte ebenso lange zurück: Vom Boden aus ließe sich nichts steuern.",
+  "home": "Gegen 00:53 UTC am 15. Juli (20:53 Uhr EDT am 14.) kam das Signal „Phone home“ an: New Horizons hatte den Vorbeiflug überstanden und war wohlauf (Zeitschrift Astronomy, nach NASA).",
+  "pathFlyby": "Die Bahn der Sonde um den Pluto nach der Horizons-Datei des JPL, wie sie diese Website besitzt; ihre Lage ist nasenvoran gezeichnet und ist unsere",
+  "srcTimetable": "Der Zeitplan der Begegnung vom 14. Juli 2015, wie von der NASA veröffentlicht, „Pluto’s time to shine just hours away“ (größte Annäherung, 30 800 mph, Charon 14 Minuten später)",
+  "srcHorizons": "JPL Horizons, Raumsonde -98 um Pluto (die Bahn: die Entfernungsänderungsrate wechselt zwischen 11:48 und 11:49 UT das Vorzeichen), und die Datei dieser Website",
+  "srcWiki": "New Horizons, Wikipedia (größte Annäherung an Charon, 12:02:22 UTC)",
+  "srcPhone": "„Phoning home from Pluto“, Zeitschrift Astronomy (das Signal um 20:53 Uhr EDT)"
+};
+Object.assign(COPY, {
+  "deepCarina": {
+    "card": {
+      "carina": "Sein Licht stammt von ESOs Fotografie, seine Form ist nach Smith u. a. (2000) und Smith und Brooks (2008) rekonstruiert: eine Höhlung aus zwei Lappen, von seinen Sternhaufen ausgeblasen, mit der leuchtenden Wand hinter Eta Carinae und dem dunklen V-förmigen Staubband davor. Noch nicht von einem Astronomen geprüft."
+    },
+    "rows": {
+      "dso-carina-nebula": [
+        [
+          "Seine Form in der Tiefe",
+          "Rekonstruiert. Im größten Maßstab ist der Nebel eine Höhlung aus zwei Lappen von etwa 40 Parsec Breite, entlang einer Achse senkrecht zur Ebene der Milchstraße. Das Leuchten ist auf die ferne Wand der Höhlung gezeichnet; wie tief jeder Lappen ist, wurde nicht gemessen."
+        ],
+        [
+          "Davor",
+          "Das dunkle V-förmige Band ist Staub und molekulares Gas vor dem leuchtenden Gas, wie beobachtet. Wie weit davor, ist nicht gemessen: Es ist 20 Lichtjahre vor den Sternhaufen gezeichnet."
+        ],
+        [
+          "Seine Sterne",
+          "Eta Carinae und vierzehn seiner hellsten heißen Sterne an ihren gemessenen Orten; ihre Tiefen sind nicht gemessen, daher stehen sie in einer Ebene. Die Sternhaufen Trumpler 14 und 16 sind eine gesäte Auswahl ihrer Sterne."
+        ],
+        [
+          "Prüfung",
+          "Dieses Modell wurde noch nicht von einem Astronomen geprüft."
+        ]
+      ]
+    },
+    "how": "Infrarotaufnahmen des ganzen Nebels zeigen eine einzige Struktur, eine Blase mit zwei Lappen, die von den Sternhaufen in seiner Mitte aus der Ebene der Milchstraße geblasen wurden (Smith u. a., 2000). Eta Carinae liegt darin: Ihr Licht wird durch den Keyhole hindurch reflektiert, und der Staub um sie verbirgt das leuchtende Gas hinter ihr, nicht aber davor."
+  },
+  "deepSmc": {
+    "card": {
+      "smc": "Dieses Modell ist aus seiner Fotografie und Gaias Zählungen seiner eigenen Sterne aufgebaut, mit der Tiefe entlang unserer Sichtlinie, wie sie für seine pulsierenden Cepheiden und alten roten Riesen gemessen wird (Ripepi u. a., 2017; Scowcroft u. a., 2016; Tatton u. a., 2021). Noch nicht von einem Astronomen geprüft."
+    },
+    "rows": {
+      "dso-smc": [
+        [
+          "Seine Form in der Tiefe",
+          "Keine flache Scheibe: Seine jungen Sterne erstrecken sich über mehr als 25 000 Parsec entlang unserer Sichtlinie, mit dem nordöstlichen Ende am nächsten zu uns, und seine alten Sterne liegen nahe einer um etwa 40° geneigten Ebene. Als Trends gemessen; die Tiefe jedes gezeichneten Sterns ist ein Modell, nie eine Messung."
+        ],
+        [
+          "Rundherum",
+          "Die Magellansche Brücke und der Strom: Wasserstoffgas, das aus den Wolken herausgezogen wurde, kartiert nach seinem Radioleuchten (HI4PI). Kein Auge und keine Kamera sehen es, daher ist es schwach und in Falschfarben gezeichnet. Wo es entlang unserer Sichtlinie liegt, ist ein Modell: Nur sein Ende bei den Wolken ist verankert."
+        ],
+        [
+          "Prüfung",
+          "Dieses Modell wurde noch nicht von einem Astronomen geprüft."
+        ]
+      ]
+    },
+    "how": "Astronomen haben die Entfernungen von Hunderten seiner Cepheiden gemessen, Sternen, deren Pulsation verrät, wie hell sie sind. Sie liegen auf einer mehr als 25 000 Parsec langen Spur, die fast auf uns zeigt, mit dem nordöstlichen Ende am nächsten: Die Kleine Wolke wird von der Großen auseinandergezerrt (Ripepi u. a., 2017)."
+  },
+  "moonCard": {
+    "lead": "{name} ist ein Mond von {planet}",
+    "leadBackwards": "{name} ist ein Mond von {planet}, der die Gegenrichtung zur Drehung von {planet} umläuft",
+    "leadFar": "{name} ist ein Mond von {parent}",
+    "leadFarKnown": "{name} ist ein Mond von {parent}, entdeckt {year}",
+    "leadAsteroid": "{name} ist ein Mond des Asteroiden {parent}",
+    "leadAsteroidKnown": "{name} ist ein Mond des Asteroiden {parent}, entdeckt {year}",
+    "leadFarWorld": "{name} ist ein Mond der fernen Welt {parent}",
+    "across": "etwa {n} km im Durchmesser",
+    "acrossAtMost": "unter {n} km im Durchmesser",
+    "lap": "braucht {n} für einen Umlauf",
+    "lapDays": "{n} Tage",
+    "lapYears": "{n} Jahre",
+    "lapHours": "{n} Stunden",
+    "distance": "im Mittel {n} km vom Mittelpunkt von {planet} entfernt",
+    "found": "entdeckt {year}",
+    "size": "seine Größe ist nicht gemessen",
+    "clsIllustrative": "Bahn nach der Ephemeride des JPL, die Position auf ihr ist illustrativ",
+    "rows": {
+      "orbits": "Umläuft",
+      "lap": "Ein Umlauf",
+      "mean": "Mittlerer Abstand zum Mittelpunkt von {planet}",
+      "shape": "Form der Bahn",
+      "across": "Durchmesser",
+      "found": "Entdeckt",
+      "designation": "Vorläufige Bezeichnung",
+      "place": "Seine Position auf der Bahn",
+      "moonOf": "Mond von",
+      "separation": "Mittlerer Abstand zu seinem Hauptkörper",
+      "reported": "Gemeldet von",
+      "lapKnown": "Ein Umlauf, nach dem Bericht"
+    },
+    "values": {
+      "km": "{n} km",
+      "days": "{n} Tage",
+      "years": "{n} Jahre",
+      "hours": "{n} Stunden",
+      "shapeNear": "fast ein Kreis (Exzentrizität {e})",
+      "shape": "eine Ellipse (Exzentrizität {e})",
+      "shapeLong": "eine lange Ellipse (Exzentrizität {e})",
+      "acrossMeasured": "{n} km",
+      "acrossRange": "{lo} bis {hi} km",
+      "acrossAtMost": "unter {n} km",
+      "acrossNone": "nicht gemessen",
+      "foundBy": "{year}, durch {by}",
+      "foundYear": "{year}",
+      "placeGood": "lag innerhalb von {deg}° der Position des JPL bei den {n} geprüften Monden seiner Art, zehn und zweiundzwanzig Monate nach {epoch}",
+      "placeLost": "nicht bekannt: Monde seiner Art lagen im Jahr nach {epoch} bis zu {deg}° von der Position des JPL entfernt",
+      "placeUnchecked": "nicht bekannt: Das JPL hat derzeit keine Position für ihn",
+      "sameAsParent": "am Hauptkörper gezeichnet: Das JPL führt keine Bahn um ihn",
+      "backwards": "gegen die Drehung des Planeten",
+      "forwards": "mit der Drehung des Planeten"
+    },
+    "orbitKnown": "die Bahn ist die des JPL für {epoch}, aus der Satelliten-Ephemeride, und der Mond wird mit der mittleren Periode des JPL auf ihr mitgeführt; Monde dieser Art (ein Umlauf von 100 Tagen oder mehr, eine Bahn, die die Sonne kaum krümmt) wurden am {days} mit dem JPL verglichen, {n} davon, und keiner lag mehr als {deg}° von dem Ort entfernt, den das JPL angibt",
+    "orbitKnownLost": "die Bahn ist die des JPL für {epoch}, aus der Satelliten-Ephemeride, und sie ist real; mit der mittleren Periode des JPL mitgeführt, lagen Monde dieser Art (ein schneller Umlauf oder eine Bahn, die die Sonne stark krümmt) im Jahr danach bis zu {deg}° von dem Ort entfernt, an dem das JPL sie angibt; wo dieser Mond auf seiner Bahn steht, ist uns daher nicht bekannt, und die Markierung darauf ist illustrativ",
+    "orbitKnownUnchecked": "die Bahn ist die mittlere Bahn des JPL für {epoch}, weil das JPL für diesen Mond am 1. Januar 2026 keine Position hat; der Mond wird mit der mittleren Periode des JPL auf ihr mitgeführt; nichts konnte geprüft werden, daher ist seine Lage auf der Bahn illustrativ",
+    "orbitFar": "Größe, Form und Umlauf der Bahn stammen aus der unten genannten Arbeit; ihre Neigung und die Lage des Mondes auf ihr sind uns nicht bekannt, daher ist der Ring flach in der Ekliptik gezeichnet und die Markierung darauf illustrativ",
+    "orbitFarTilted": "Größe, Form, Umlauf und Neigung der Bahn stammen aus der unten genannten Arbeit; wo der Mond auf ihr steht, ist uns nicht bekannt, daher ist die Markierung illustrativ",
+    "orbitFull": "die Bahn und die Lage des Mondes auf ihr stammen aus der unten genannten Arbeit, datiert auf {epoch}; je weiter die Uhr von diesem Tag entfernt ist, desto weniger verlässlich ist die Lage",
+    "atParent": "Das JPL führt für ihn keine Bahn um {parent}: Er ist an der Stelle von {parent} gezeichnet, und sein Abstand zu {parent} wird nicht gezeichnet",
+    "drawn": "als Punkt auf seiner Bahn gezeichnet: Niemand hat seine Form fotografiert, daher wird keine gezeichnet",
+    "drawnBig": "als Punkt auf seiner Bahn gezeichnet: Seine Größe ist gemessen, seine Form nicht, daher wird keine gezeichnet",
+    "candidate": "{name} ist ein großes Objekt jenseits des Neptun, das ein Zwergplanet sein könnte; die IAU hat noch nicht entschieden",
+    "candidateWhy": "Größe: {src}.",
+    "sourceMoons": "NASA/JPL Solar System Dynamics, mittlere Elemente der Planetenmonde und Entdeckungsumstände (ssd.jpl.nasa.gov/sats), abgerufen am {read}; die Bahn am {epoch} aus JPL Horizons",
+    "sourceCompanion": "NASA/JPL Small-Body Database, Monde von {parent} (ssd-api.jpl.nasa.gov/sbdb.api), abgerufen am {read}",
+    "sourceFar": "{ref}; abgerufen über den Wikipedia-Artikel zu {name} (CC BY-SA 4.0) am {read}",
+    "sourceBody": "NASA/JPL Small-Body Database, {name} (Bahn gelöst {solution}), abgerufen am {read}",
+    "layerMoons": "Jeder Mond von Jupiter, Saturn, Uranus, Neptun und Pluto, zu dem die Karte keinen Eintrag hatte, jeweils auf seiner Bahn am 1. Januar 2026.",
+    "layerCompanions": "Die Monde der Asteroiden und der fernen Welten, darunter die Monde der Zwergplaneten, und die großen Objekte jenseits des Neptun, die Zwergplaneten sein könnten."
+  },
+  "deepNebulae": {
+    "card": {
+      "m8": "Sein Licht ist das seiner Fotografie (ESO); seine Form ist rekonstruiert: leuchtendes Gas auf der nahen Seite seiner dunklen Wolke, die Sanduhr um Herschel 36, das dunkle Band davor und der Sternhaufen NGC 6530 vor ihm (nach Tothill u. a., 2008). Noch nicht von einem Astronomen geprüft.",
+      "m20": "Sein Licht ist das seiner Fotografie (Rubin-Observatorium); seine Form ist rekonstruiert: eine junge Blase aus leuchtendem Gas um seinen O-Stern, durch drei dunkle Bänder davor zerschnitten, im blauen Licht, das seine Sterne am Staub um ihn streuen (nach Lefloch und Cernicharo, 2000). Noch nicht von einem Astronomen geprüft.",
+      "m16": "Sein Licht ist das seiner Fotografie (ESO); seine Form ist rekonstruiert: die Höhlung, die der Sternhaufen NGC 6611 in seine Wolke geblasen hat, ihre leuchtende ferne Wand und die Säulen der Schöpfung davor, mit ihren Spitzen zum Sternhaufen (nach Hester u. a., 1996, und McLeod u. a., 2015). Noch nicht von einem Astronomen geprüft.",
+      "m17": "Sein Licht ist das seiner Fotografie (ESO); seine Form ist rekonstruiert: leuchtendes Gas am Rand einer riesigen dunklen Wolke, sein heller Balken eine fast von der Kante gesehene Front (nach Pellegrini u. a., 2007). Noch nicht von einem Astronomen geprüft.",
+      "rosette": "Sein Licht ist das seiner Fotografie (NOIRLab); seine Form ist rekonstruiert: ein dicker Ring aus leuchtendem Gas um die Höhlung, die die Winde des Sternhaufens NGC 2244 in eine dünne, blattartige Wolke geblasen haben (nach Wareing u. a., 2018). Noch nicht von einem Astronomen geprüft.",
+      "california": "Sein Licht ist das seiner Fotografie (NOIRLab); seine Form in der Tiefe ist nicht gemessen: Er ist als langes, flaches Blatt aus Wasserstoff gezeichnet, das von Xi Persei beleuchtet wird. Noch nicht von einem Astronomen geprüft.",
+      "north-america": "Sein Licht ist das seiner Fotografie (NOIRLab); seine Form ist rekonstruiert: eine Region leuchtenden Gases um den Bajamar-Stern, die die davorliegende dunkle Wolke LDN 935 in Nordamerika und Pelikan teilt (nach Kuhn und Hillenbrand, 2020). Noch nicht von einem Astronomen geprüft.",
+      "cats-paw": "Sein Licht ist das seiner Fotografie (ESO); seine Form ist rekonstruiert: Blasen leuchtenden Gases, entlang eines dunklen, rund 50 Parsec langen Filaments geblasen, die Ballen der Pfote (nach Arzoumanian u. a., 2022). Noch nicht von einem Astronomen geprüft."
+    },
+    "rows": {
+      "dso-m8": [
+        [
+          "Seine Form in der Tiefe",
+          "Rekonstruiert. Das leuchtende Gas liegt auf der nahen Seite seiner dunklen Wolke, am tiefsten um die Sanduhr; wie tief, ist nicht gemessen."
+        ],
+        [
+          "Davor",
+          "Das dunkle Band, das ihm seinen Namen gibt, und die kleinen dunklen Globulen sind Staub vor dem Glühen; wie weit davor, ist nicht gemessen. Der Sternhaufen NGC 6530 ist eine gesäte Auswahl seiner Sterne."
+        ],
+        [
+          "Sein Licht",
+          "Gemessen: Das Licht jedes Punktes ist das seiner Fotografie, mit herausgerechneten Sternen (die hellen sind als Sterne gezeichnet). Von unserer Seite zeigt das Modell genau dieses Licht; gedreht liegt dasselbe Licht auf den rekonstruierten Wänden."
+        ],
+        [
+          "Prüfung",
+          "Dieses Modell wurde noch nicht von einem Astronomen geprüft."
+        ]
+      ],
+      "dso-m20": [
+        [
+          "Seine Form in der Tiefe",
+          "Rekonstruiert. Eine Blase leuchtenden Gases um seinen O-Stern; ein Teil seines Lichts ist auf der fernen Seite gezeichnet, ein Teil auf der nahen; keine der beiden Tiefen ist gemessen. Das blaue Licht ist auf die Wolke dahinter gezeichnet."
+        ],
+        [
+          "Davor",
+          "Die drei dunklen Bänder sind Staub, vor dem Glühen gesehen; wie weit davor, ist nicht gemessen."
+        ],
+        [
+          "Sein Licht",
+          "Gemessen: Das Licht jedes Punktes ist das seiner Fotografie, mit herausgerechneten Sternen (die hellen sind als Sterne gezeichnet). Von unserer Seite zeigt das Modell genau dieses Licht; gedreht liegt dasselbe Licht auf den rekonstruierten Wänden."
+        ],
+        [
+          "Prüfung",
+          "Dieses Modell wurde noch nicht von einem Astronomen geprüft."
+        ]
+      ],
+      "dso-m16": [
+        [
+          "Seine Form in der Tiefe",
+          "Rekonstruiert. Das Leuchten ist auf die ferne Wand der Höhlung hinter dem Sternhaufen gezeichnet; wie tief die Höhlung ist, ist nicht gemessen."
+        ],
+        [
+          "Die Säulen",
+          "Säulen aus Staub und Gas, deren Spitzen das Licht des Sternhaufens abträgt, wie beobachtet. Sie sind als Staub vor der leuchtenden Wand gezeichnet; ihre Tiefen sind nicht gemessen."
+        ],
+        [
+          "Sein Licht",
+          "Gemessen: Das Licht jedes Punktes ist das seiner Fotografie, mit herausgerechneten Sternen (die hellen sind als Sterne gezeichnet). Von unserer Seite zeigt das Modell genau dieses Licht; gedreht liegt dasselbe Licht auf den rekonstruierten Wänden."
+        ],
+        [
+          "Prüfung",
+          "Dieses Modell wurde noch nicht von einem Astronomen geprüft."
+        ]
+      ],
+      "dso-m17": [
+        [
+          "Seine Form in der Tiefe",
+          "Rekonstruiert. Leuchtendes Gas am Rand einer riesigen dunklen Wolke im Westen; sein heller Balken ist die Stelle, an der das Gas auf die Wolke trifft, fast von der Kante gesehen, wie beobachtet. Die Tiefen sind nicht gemessen."
+        ],
+        [
+          "Seine Sterne",
+          "Sein Sternhaufen, NGC 6618, ist größtenteils vom Staub verborgen: Einige seiner heißen Sterne sind an ihren gemessenen Orten gezeichnet, der Rest ist eine gesäte Auswahl."
+        ],
+        [
+          "Sein Licht",
+          "Gemessen: Das Licht jedes Punktes ist das seiner Fotografie, mit herausgerechneten Sternen (die hellen sind als Sterne gezeichnet). Von unserer Seite zeigt das Modell genau dieses Licht; gedreht liegt dasselbe Licht auf den rekonstruierten Wänden."
+        ],
+        [
+          "Prüfung",
+          "Dieses Modell wurde noch nicht von einem Astronomen geprüft."
+        ]
+      ],
+      "dso-rosette-nebula": [
+        [
+          "Seine Form in der Tiefe",
+          "Rekonstruiert. Ein dicker Ring um eine Höhlung, die die Winde seines Sternhaufens in einer dünnen, blattartigen Wolke geblasen haben; ein Teil seines Lichts ist auf der fernen Fläche des Rings gezeichnet, ein Teil auf der nahen. Keine der beiden Tiefen ist gemessen."
+        ],
+        [
+          "Seine Sterne",
+          "Die heißen Sterne des Sternhaufens NGC 2244 an ihren gemessenen Orten, der Rest ist eine gesäte Auswahl; ihre Tiefen sind nicht gemessen."
+        ],
+        [
+          "Sein Licht",
+          "Gemessen: Das Licht jedes Punktes ist das seiner Fotografie, mit herausgerechneten Sternen (die hellen sind als Sterne gezeichnet). Von unserer Seite zeigt das Modell genau dieses Licht; gedreht liegt dasselbe Licht auf den rekonstruierten Wänden."
+        ],
+        [
+          "Prüfung",
+          "Dieses Modell wurde noch nicht von einem Astronomen geprüft."
+        ]
+      ],
+      "dso-california-nebula": [
+        [
+          "Seine Form in der Tiefe",
+          "Nicht gemessen. Gezeichnet als langes, flaches Blatt leuchtenden Wasserstoffs, dessen Relief seiner Helligkeit folgt: eine Veranschaulichung seiner Tiefe, keine Messung."
+        ],
+        [
+          "Sein Stern",
+          "Xi Persei, der heiße Stern, der ihn leuchten lässt, an seinem gemessenen Ort."
+        ],
+        [
+          "Sein Licht",
+          "Gemessen: Das Licht jedes Punktes ist das seiner Fotografie, mit herausgerechneten Sternen (die hellen sind als Sterne gezeichnet). Von unserer Seite zeigt das Modell genau dieses Licht; gedreht liegt dasselbe Licht auf den rekonstruierten Wänden."
+        ],
+        [
+          "Prüfung",
+          "Dieses Modell wurde noch nicht von einem Astronomen geprüft."
+        ]
+      ],
+      "dso-north-america-nebula": [
+        [
+          "Seine Form in der Tiefe",
+          "Rekonstruiert. Nordamerika und der Pelikan sind eine einzige Region leuchtenden Gases um den Bajamar-Stern; das Glühen ist auf seine ferne Seite gezeichnet, in einer nicht gemessenen Tiefe."
+        ],
+        [
+          "Davor",
+          "Die dunkle Wolke LDN 935 liegt vor dem Glühen und teilt es an unserem Himmel in zwei; wie weit davor, ist nicht gemessen."
+        ],
+        [
+          "Sein Licht",
+          "Gemessen: Das Licht jedes Punktes ist das seiner Fotografie, mit herausgerechneten Sternen (die hellen sind als Sterne gezeichnet). Von unserer Seite zeigt das Modell genau dieses Licht; gedreht liegt dasselbe Licht auf den rekonstruierten Wänden."
+        ],
+        [
+          "Prüfung",
+          "Dieses Modell wurde noch nicht von einem Astronomen geprüft."
+        ]
+      ],
+      "dso-cats-paw-nebula": [
+        [
+          "Seine Form in der Tiefe",
+          "Rekonstruiert. Jeder Ballen ist eine Blase leuchtenden Gases entlang eines dunklen Filaments; ihre Größen sind am Himmel gemessen, ihre Tiefen nicht."
+        ],
+        [
+          "Sein Licht",
+          "Gemessen: Das Licht jedes Punktes ist das seiner Fotografie, mit herausgerechneten Sternen (die hellen sind als Sterne gezeichnet). Von unserer Seite zeigt das Modell genau dieses Licht; gedreht liegt dasselbe Licht auf den rekonstruierten Wänden."
+        ],
+        [
+          "Prüfung",
+          "Dieses Modell wurde noch nicht von einem Astronomen geprüft."
+        ]
+      ]
+    },
+    "how": "Eine Fotografie zeigt, wie viel Licht von jedem Punkt eines Nebels kommt, nicht aber, wie weit entlang unserer Sichtlinie er liegt. Diese Modelle behalten das Licht jedes Nebels und legen es auf Wände, deren Form dem folgt, was Astronomen gemessen haben: eine Blase, eine Höhlung, ein Ring oder Blasen, mit dem Staub, den sie davor sahen."
+  },
+  "confidence": {
+    "title": "Woher wir das wissen",
+    "onlyMeasured": "Nur gemessene",
+    "onlyMeasuredTitle": "Nur die Punkte zeigen, die ein Instrument zu einer bekannten Zeit gesehen hat",
+    "all": "Alle",
+    "allTitle": "Alle Punkte wieder zeigen",
+    "status": "{n} von {m} Punkten werden angezeigt",
+    "scope": "Filtert die Punkte; das Sternfeld bleibt unverändert.",
+    "railNote": "Einige Punkte sind ausgeblendet: Woher wir das wissen"
+  },
+  "views": {
+    "row": "Ankunftsansichten",
+    "label": "Ansichten dieses Ortes",
+    "curatedLabel": "Aus der Liste",
+    "savedLabel": "Hier gespeichert",
+    "act": "{act}: {what}",
+    "go": "Los",
+    "copy": "Kopieren",
+    "remove": "Entfernen",
+    "save": "Diese Ansicht speichern",
+    "saveTitle": "Hält fest, wo die Kamera steht, nur in diesem Browser",
+    "saved": "Ansicht in diesem Browser gespeichert.",
+    "savedPage": "Bleibt erhalten, bis diese Seite geschlossen wird.",
+    "full": "Zwölf Ansichten sind gespeichert. Entfernen Sie zuerst eine.",
+    "copied": "Link zu dieser Ansicht kopiert.",
+    "copyRefused": "Kopieren nicht möglich. Der Link steht in der Adressleiste.",
+    "none": "Noch nichts gespeichert.",
+    "goTitle": "Dorthin fliegen und dort stehen, wo der Ausschnitt war",
+    "copyTitle": "Ein Link, der diese Ansicht öffnet",
+    "removeTitle": "Diese Ansicht vergessen",
+    "pose": "{az}° Drehung, {pol}° vom Pol, {km} km",
+    "away": "{km} km entfernt",
+    "curated": {
+      "above": "Von oberhalb der Ebene",
+      "inPlane": "In der Ebene"
+    },
+    "aboveTitle": "Von oberhalb der Ebene der Planeten: Blick hinab auf die Nordseite des Sonnensystems",
+    "inPlaneTitle": "In der Ebene der Planeten: auf der Höhe ihrer Bahnen, von der Seite"
+  },
+  "presets": {
+    "row": "Foto-Voreinstellungen",
+    "label": "Foto-Voreinstellungen",
+    "go": "Öffnen",
+    "science": "Wissenschaftlicher Rahmen",
+    "scienceNote": "Gemessene Ansicht, Beschriftung an",
+    "cinematic": "Kinematografischer Rahmen",
+    "cinematicNote": "Weit, langes Objektiv, lange Belichtung",
+    "telescope": "Teleskopansicht",
+    "telescopeNote": "Engstes Objektiv, quadratisch",
+    "card": "Objektkarte",
+    "cardNote": "Hochformat, Etikett auf dem gespeicherten Bild",
+    "title": "{name}: {note}"
+  }
+});
+// internal #442: end

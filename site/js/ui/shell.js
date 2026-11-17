@@ -75,10 +75,17 @@ VIEWS.push('find');
 // b200-f1-find: end
 /** The spec's line between the sidebar and the phone's sheet (0061 req 1 and 8). */
 export const DESKTOP_QUERY = '(min-width: 900px)';
+/**
+ * A phone held sideways (internal #455): wider than tall and under 500 px high. The page is still the phone's (the top bar, the
+ * rail in it), but the sheet docks to the side as a column, as the desktop's sidebar does, instead of a full-width bottom sheet
+ * that left 147 px of sky at 844 x 390. css/ui.css `html.sr-phone-land`; scene/viewshift.js counts the column as it does the sidebar.
+ */
+export const LANDSCAPE_QUERY = '(orientation: landscape) and (max-height: 500px)';
 
 const TRIP_CLASS = 'sr-trip-mode';
 const COLLAPSED_CLASS = 'sr-side-collapsed';
 const PHONE_CLASS = 'sr-phone';
+const LAND_CLASS = 'sr-phone-land';
 /** What drags the sheet at full, besides its handle: each view's head (ui/sheet.js THE DRAG). */
 const SHEET_GRAB = '.sr-explore__head, .sr-side__bar, .sr-card__header, .sr-tripsheet__head';
 /** What scrolls in the sheet at full and is put back to its top below it. */
@@ -191,6 +198,7 @@ export function createShell(ctx, opts = {}) {
     return sourcesLoad;
   }
   const mm = typeof matchMedia === 'function' ? matchMedia(DESKTOP_QUERY) : null;
+  const mmLand = typeof matchMedia === 'function' ? matchMedia(LANDSCAPE_QUERY) : null;
   const root = document.documentElement;
   const stack = createViewStack('home');
   let collapsedChoice = readCollapsed(storage);
@@ -346,6 +354,7 @@ export function createShell(ctx, opts = {}) {
   function layout() {
     const phone = isPhone();
     root.classList.toggle(PHONE_CLASS, phone);
+    root.classList.toggle(LAND_CLASS, phone && !!(mmLand && mmLand.matches));
     if (phone) {
       if (railHost.parentNode !== toolsSlot) toolsSlot.appendChild(railHost);
       if (searchNode && searchNode.parentNode !== searchSlot) searchSlot.appendChild(searchNode);
@@ -414,7 +423,8 @@ export function createShell(ctx, opts = {}) {
     // On a phone a view comes up at its own height (sheetFor), and only when it changed.
     const from = shownView;
     shownView = view;
-    const want = sheet ? sheetFor(view, from) : null;
+    // Sideways the sheet is a column, always as tall as the screen: it has one height, half, whatever the view.
+    const want = sheet ? (root.classList.contains(LAND_CLASS) ? 'half' : sheetFor(view, from)) : null;
     if (want && sheet.detent() !== want) sheet.set(want);
     else announce(sheet ? sheet.detent() : null);
   }
@@ -490,6 +500,7 @@ export function createShell(ctx, opts = {}) {
     }).observe(root, { attributes: true, attributeFilter: ['class'] });
   }
   if (mm && mm.addEventListener) mm.addEventListener('change', () => { layout(); onCardChange(); paint(); });
+  if (mmLand && mmLand.addEventListener) mmLand.addEventListener('change', () => { layout(); paint(); });
   // A turned phone or a resized window: the heights are the window's, so they are measured again.
   window.addEventListener('resize', () => { if (sheet) sheet.refresh(); });
 

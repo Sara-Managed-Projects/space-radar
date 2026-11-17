@@ -73,6 +73,7 @@ check(/momentsForRecord\(record\)/.test(cards) && /import \{ momentsForRecord \}
 const { COPY } = await mod('copy/en.js');
 await mod('copy/en.moments.js');
 for (const f of ['vostok', 'apollo11', 'artemis2', 'apollo13', 'sputnik', 'voskhod', 'sts1', 'hubble', 'falcon9']) await mod(`copy/en.moments.${f}.js`);
+for (const f of ['curiosity', 'newhorizons']) await mod(`copy/en.moments.${f}.js`); // internal #442: their stories are in every language file now
 await mod('copy/en.moments.fengyun.js'); // b200-c3-learn: the Fengyun-1C story (forge #153), drafted in every language   // 1.7.2: Apollo 13 and Sputnik 1 in four languages; Voskhod 2 and STS-1 drafted in Spanish (#525), Portuguese Brazil (#526), French (#527), German (#528), Russian (#533; Apollo 13 and Sputnik 1 still English there) and Ukrainian (#534; Apollo 13, Sputnik 1, Hubble and Falcon 9 still English there)
 const slots = (s) => (String(s).match(/\{[a-zA-Z]+\}/g) || []).sort().join(',');
 const leaves = (o, path = '') => Object.entries(o).flatMap(([k, v]) => (typeof v === 'string' ? [[path + k, v]] : leaves(v, `${path}${k}.`)));
@@ -101,7 +102,7 @@ for (const code of ['es', 'fr', 'de', 'pt']) {
     }
     for (const [path] of have) if (!leaves(en, `${section}.`).some(([p]) => p === path)) check(false, `${code}: ${path} has no English`);
   }
-  check(n === 479, `${code}: all 479 strings of the Moments are covered (${n})`); // b200-c3-learn: 440 + the Fengyun-1C card (3) and story (34); b200-s1-fixes: + the long clock's units, metYears and metDays (2)
+  check(n === 531, `${code}: all 531 strings of the Moments are covered (${n})`); // internal #442: + the Curiosity and New Horizons stories (52); b200-c3-learn: 440 + the Fengyun-1C card (3) and story (34); b200-s1-fixes: + the long clock's units, metYears and metDays (2)
 }
 // The stories hand their words to the language hook once they are in COPY; the lines said in the recordings stay in their own language.
 for (const f of ['vostok', 'apollo11', 'artemis2', 'apollo13', 'sputnik', 'voskhod', 'sts1', 'hubble', 'falcon9']) {

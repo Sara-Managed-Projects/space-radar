@@ -706,6 +706,8 @@ jobs:
         run: node tests/test_tonightbest.mjs
       - name: One mark per object -- a dot yields to its 3D model
         run: node tests/test_onemark.mjs
+      - name: "Right to left: each panel beside the tools rail mirrors in css/rtl.css (internal 449); a phone held sideways gets a side sheet (internal 455)"
+        run: node tests/test_rtl_panels.mjs && node tests/test_landscape_phone.mjs
       - name: "The Planets tab and the cards: planets win over the crowd of small bodies, uncut captions, the Moon's distance, the hour label, Jupiter's ring (internal 441, 443, 444, 451, 452, 454)"
         run: node tests/test_ux1_planets_cards.mjs
       - name: A loaded model keeps its colours, and ships no image it cannot use
