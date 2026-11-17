@@ -299,6 +299,12 @@ sources:
   # known today, so no floor above zero can be defended from history. The guards that exist: zero
   # rows is refused (harvest/parsers/jpl_cad.py), and a count under half of the last good one is
   # refused and the last good copy stays (harvest/snapshot.py accept()).
+  #
+  # THE ELEMENTS OF THOSE ROWS (internal #392, 2026-11-17). SBDB's osculating elements are for its own epoch, and a two-body orbit from
+  # months before a slow encounter cannot hold it (2026 QQ8: 16.7 lunar distances drawn against CAD's 3.5). When the cut is made,
+  # harvest/neo_elements.py asks JPL Horizons (ssd.jpl.nasa.gov/api/horizons.api, EPHEM_TYPE=ELEMENTS, one request a listed object,
+  # at most 40, 120 s) for osculating elements at the Julian date of each object's first listed approach and writes them over the row's
+  # e, a, q, i, om, w, ma and epoch. A failure keeps SBDB's row. The same JPL terms apply as for the rows around it.
   - id: jpl-cad
     url: https://ssd-api.jpl.nasa.gov/cad.api?dist-max=10LD&date-min=now&date-max=%2B60&sort=date&diameter=true&fullname=true
     auth: none
