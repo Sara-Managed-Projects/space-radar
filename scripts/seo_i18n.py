@@ -1031,6 +1031,10 @@ def translate_page(path: str, seg_page: tuple, name: str | None, lang: "Lang", h
     out = []
     for it in items:
         if isinstance(it, str):
+            # A comment is the English page's working note (a Lab page's "Sources" block: the sentences its author checked, in
+            # English). It is not text of the page, and kept in a translation it reads as English left behind (internal #475).
+            if it.startswith("<!--"):
+                continue
             out.append(_retag_all(it, linker) if it.startswith("<") and not it.startswith(("<script", "<style", "<!--")) else it)
         elif isinstance(it, Seg):
             out.append(render(it, text_of(it), lang, name_value, tag_raw_for(it)))

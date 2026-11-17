@@ -211,8 +211,8 @@ def from_blog(keywords: tuple[str, ...] = (), limit: int = 3, skip: str = "") ->
                     f'<p class="meta">{esc(dt.date.fromisoformat(p["date"]).strftime("%-d %B %Y"))}</p></li>' for p in pick)
     # The data-blog-* attributes are what js/pages/blog.js redraws the list from (the journal's feed-lite.json) with the same rule.
     attrs = f' data-blog-limit="{limit}" data-blog-keywords="{esc("|".join(keywords))}" data-blog-skip="{esc(skip)}"'
-    return (f'<section class="fromblog"{attrs} aria-labelledby="fromblog-h"><h2 id="fromblog-h">From the journal</h2>\n<ul class="cards" translate="no" lang="en">{cards}</ul>\n'
-            f'<p class="dim"><a href="{BLOG}">Every story in the Space Radar journal</a></p></section>\n')
+    return (f'<section class="fromblog"{attrs} aria-labelledby="fromblog-h"><h2 id="fromblog-h">From the journal</h2>\n<ul class="cards" translate="no" lang="en" dir="ltr">{cards}</ul>\n'
+            f'<p class="dim"><a href="{BLOG}">Every story in the Space Radar journal</a> (in English)</p></section>\n')
 
 
 # What each kind of page offers from the blog: (path prefix, keywords, how many). The first prefix that matches wins.
