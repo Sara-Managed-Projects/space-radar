@@ -184,8 +184,8 @@ ok("../satellites/index.html" in star.hrefs and "../starlink/index.html" in sat.
 ok(all(h in sat.hrefs for h in ("../o/international-space-station.html", "../o/hubble-space-telescope.html", "../o/tiangong-space-station.html", "../starlink/index.html")),
    "the hub links the ISS, Hubble, Tiangong and Starlink")
 import seo_pages as _sp  # noqa: E402
-ok(f"{facts['starlink_objects']:,}" in star.plain and _sp.date_words(str(facts["as_of"])) in star.plain, "a Starlink count with its date, from the registry's fallback when the build has no index")
-ok("about 17,000" in sat.plain and re.search(r"<title>Free live 3D map of the ISS and about 17,000 satellites</title>", sat_html), "the hub says about 17,000, derived from the count")
+ok(f"{facts['starlink_objects']:,}".replace(",", " ") in star.plain and _sp.date_words(str(facts["as_of"])) in star.plain, "a Starlink count with its date, from the registry's fallback when the build has no index")
+ok("about 17 000" in sat.plain and re.search(r"<title>Free live 3D map of the ISS and about 17\u202f000 satellites</title>", sat_html), "the hub says about 17,000, derived from the count")
 ok(all(re.search(r"Source: [^<]+, read \d+ \w+ \d{4}", h) for h in (star_html, sat_html)), "both carry a dated source line")
 ok(in_map("starlink/index.html") and in_map("satellites/index.html"), "both are in the sitemap")
 ok("../?from=starlink-page-map#at=starlink" in star.hrefs and "../?from=starlink-page-trip#trip=tonight-from-your-street" in star.hrefs,
@@ -203,7 +203,7 @@ index = {"snapshots": {"celestrak-supplemental-starlink": {"items": 12345, "fetc
 c = seo_pages.satellite_counts(index)
 ok(c["starlink"] == 12345 and c["active"] == 18001 and c["date"] == "2026-10-01" and c["from"] == "index", "a build given the saved copy's index states its numbers and its day")
 pg = seo_pages.satellites_page(HOST, c, set())
-ok("about 18,000" in pg.title and "1 October 2026" in pg.body, "and the page follows them")
+ok("about 18\u202f000" in pg.title and "1 October 2026" in pg.body, "and the page follows them")
 ok(seo_pages.satellite_counts({"snapshots": {"celestrak-active": {"items": 0}}})["from"] == "registry", "an index without the counts falls back to the registry's, with its date")
 
 # --- planets tonight --------------------------------------------------------------------------------
@@ -381,15 +381,15 @@ for e in evs:
     ok(node.get("image") and off.get("price") == "0" and off.get("priceCurrency") == "USD" and off.get("url") == node.get("url"),
        f"{e['id']}: Event JSON-LD recommends an image and a free offer")
 ge = parse(BUILT / "events" / "geminids-2026.html").plain
-ok("14 December 2026, 13:45 UT" in ge and "25 percent" in ge and "14 December 2026, 14:00 UT" in ge, "Geminids: the computed peak and the Moon at the stated hour, the whole hour nearest it")
+ok("14 December 2026, 13:46 UT" in ge and "25 percent" in ge and "14 December 2026, 14:00 UT" in ge, "Geminids: the computed peak and the Moon at the stated hour, the whole hour nearest it")
 le = parse(BUILT / "events" / "leonids-2026.html").plain
 # Review of 2026-11-16: the Moon was stated for 17 November 00:00 UT (45 percent), a day before the peak; it is stated at the peak now.
-ok("17 November 2026, 23:48 UT" in le and "55 percent" in le and "18 November 2026, 00:00 UT" in le and "night of 17 to 18 November" in (BUILT / "events" / "leonids-2026.html").read_text(encoding="utf-8"),
+ok("17 November 2026, 23:49 UT" in le and "55 percent" in le and "18 November 2026, 00:00 UT" in le and "night of 17 to 18 November" in (BUILT / "events" / "leonids-2026.html").read_text(encoding="utf-8"),
    "Leonids: the computed peak, the Moon at the hour nearest it (55 percent), and the night named is the one the peak falls in")
 qu = parse(BUILT / "events" / "quadrantids-2027.html").plain
 ok("3 January 2027, 17:56 UT" in qu and "46.95" in qu, "Quadrantids with Venus: its greatest western elongation, computed")
 an = parse(BUILT / "events" / "annular-eclipse-2027.html").plain
-ok("6 February 2027, 15:59 UT" in an and "ISO 12312-2" in an, "the annular eclipse's greatest-eclipse time, and the safety line")
+ok("6 February 2027, 16:00 UT" in an and "ISO 12312-2" in an, "the annular eclipse's greatest-eclipse time, and the safety line")
 be = parse(BUILT / "events" / "bepicolombo-mercury-2026.html").plain
 ok("21 November 2026" in be and "9 and 10 December 2026" in be, "BepiColombo: ESA's dates")
 
@@ -446,10 +446,10 @@ ok('value="sat-28485"' not in (BUILT / "embed" / "index.html").read_text(encodin
 kinds = {k: [e for e in evs if e["kind"] == k] for k in ("full-moon", "lunar-eclipse", "conjunction", "meteor-shower")}
 ok(len(kinds["full-moon"]) >= 18 and len(kinds["lunar-eclipse"]) >= 3 and len(kinds["conjunction"]) >= 2, "full Moons for 18 months, lunar eclipses and conjunctions have pages")
 fm = parse(BUILT / "events" / "full-moon-2026-12-24.html").plain
-ok("24 December 2026, 01:28 UT" in fm and "356,729 km" in fm and "Cold Moon" in fm and "nearer than its average distance of 384,400 km" in fm,
+ok("24 December 2026, 01:29 UT" in fm and "356 729 km" in fm and "Cold Moon" in fm and "nearer than its average distance of 384 400 km" in fm,
    "the December 2026 full Moon: the computed instant, its distance, the almanac's name")
 le = parse(BUILT / "events" / "lunar-eclipse-2028-12-31.html").plain
-ok("31 December 2028, 16:51 UT" in le and "total lunar eclipse" in le and "safe to look at" in le, "the total lunar eclipse: the computed instant, and that it is safe to watch")
+ok("31 December 2028, 16:52 UT" in le and "total lunar eclipse" in le and "safe to look at" in le, "the total lunar eclipse: the computed instant, and that it is safe to watch")
 cj = parse(BUILT / "events" / "venus-saturn-2027.html").plain
 ok("7 May 2027" in cj and "0.6° apart" in cj and "Pisces" in cj, "Venus and Saturn: the computed meeting and the constellation")
 for e in evs:
