@@ -46,7 +46,7 @@ check(threw, 'a file that is not the dust file is refused');
 const shell = (r0) => MAN.shells.find((s) => s.fromPc === r0).meanDensity;
 check(shell(0) < 1e-5 && shell(120) > 20 * Math.max(shell(0), 1e-6) && shell(120) > shell(0) * 10 && shell(40) < shell(120) / 5, `the cube's mean density: ${shell(0)} within 40 pc, ${shell(40)} at 40 to 80, ${shell(120)} at 120 to 160 pc (the Sun is in a cavity, its wall round 120 to 200 pc)`);
 const p = D.pointsOf(file, MAN);
-let near = 0, far = 0, sx = 0, sy = 0, sz = 0;
+let near = 0, far = 0;
 for (let i = 0; i < p.count; i++) {
   const r = Math.hypot(p.pos[i * 3], p.pos[i * 3 + 1], p.pos[i * 3 + 2]);
   if (r < 60) near += 1;
