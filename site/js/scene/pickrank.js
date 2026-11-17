@@ -166,6 +166,35 @@ export function decide(marks, discs, reach = REACH.touch) {
   return { winner: out.length ? out[0].record : null, list: out, ambiguous };
 }
 
+/** How far past a name's box a pointer still means the name, CSS px, by what is pointing. */
+export const LABEL_PAD = { mouse: 0, touch: 4 };
+
+/**
+ * A NAME IS A TARGET FOR WHAT IT NAMES (the owner, 17 Nov 2026: the highlighted names round the Earth could not be
+ * clicked). A name is drawn above the canvas, beside its thing's mark, with the mark a few pixels below it; a click
+ * on the name's letters or its swatch went through to the Earth behind. The box the pointer is in (ui/labels.js
+ * boxes(), each with its `record`) wins over what is drawn under it, since the name is drawn on top. The last one
+ * placed is the one on top when two overlap (they are kept clear of each other, so this is only at their edges).
+ * @param {Array<{left:number,right:number,top:number,bottom:number,record:Object}>} boxes
+ * @returns {Object|null} the named record
+ */
+export function labelAt(boxes, x, y, pad = 0) {
+  if (!Array.isArray(boxes) || !Number.isFinite(x) || !Number.isFinite(y)) return null;
+  for (let i = boxes.length - 1; i >= 0; i--) {
+    const b = boxes[i];
+    if (!b || !b.record) continue;
+    if (x >= b.left - pad && x <= b.right + pad && y >= b.top - pad && y <= b.bottom + pad) return b.record;
+  }
+  return null;
+}
+
+/** A decision with the named record first: what decide() found stays in the list after it. */
+export function withLabel(decision, record) {
+  if (!record) return decision;
+  const rest = ((decision && decision.list) || []).filter((c) => c.record && c.record.id !== record.id);
+  return { winner: record, list: [{ record, kind: 'label', tier: 'local', on: true }, ...rest], ambiguous: false };
+}
+
 /** @returns {Object|null} the winning record */
 export function rankPick(glyphs, discs, reach) {
   return decide(glyphs, discs, reach).winner;

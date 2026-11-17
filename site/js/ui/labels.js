@@ -898,7 +898,8 @@ export function createLabels(ctx, host) {
       const bw = pool[i].node.offsetWidth;
       const bh = pool[i].node.offsetHeight;
       const { x, y, over } = placeLabel(c, bw, bh, w, h, panels);
-      const b = { x, y, left: x - bw / 2, right: x + bw / 2, top: y - 1.4 * bh, bottom: y - 0.4 * bh };
+      // `record`: a name is a target for what it names (scene/pickrank.js labelAt): a click on it opens that.
+      const b = { x, y, left: x - bw / 2, right: x + bw / 2, top: y - 1.4 * bh, bottom: y - 0.4 * bh, record: c.record };
       // A PLATE BEHIND THE LETTERS (css/site.css `.label[data-plate]`) where a disc is behind them: its
       // own, when that fills the view, or any other the name crosses -- the Sun, a planet at the Size
       // slider's far end, the Earth under a satellite's name. MEASURED 2026-11-16 on the Earth view:
