@@ -1697,7 +1697,7 @@ export const COPY = {
     records: {
       "dso-milky-way": {
         drawn: "una ilustración construida sobre mediciones",
-        split: "Medido: las estrellas a pocos miles de años luz (Gaia), el ángulo de la barra, las direcciones a lo largo de los brazos y los brazos más cercanos (Reid et al. 2019). Deducido: el lado lejano más allá del centro, oculto por el polvo; sus brazos son los cercanos llevados al otro lado."
+        split: "Medido: las estrellas a pocos miles de años luz (Gaia), el ángulo de la barra, las direcciones a lo largo de los brazos y los brazos más cercanos (Reid et al. 2019). Deducido: el lado lejano más allá del centro, oculto por el polvo; sus brazos son los cercanos llevados al otro lado. Cuatro corrientes estelares (Sagitario, Huérfana-Chenab, GD-1, Palomar 5) se dibujan con la biblioteca galstreams (Mateu 2023): se mide dónde está cada una en el cielo y también su distancia, salvo la de GD-1, que se supone; la cinta de estrellas alrededor de cada línea es ilustrativa."
       }
     }
   },
@@ -6215,6 +6215,40 @@ Object.assign(COPY, {
       ]
     },
     "how": "El gas que viene hacia nosotros desplaza su luz al azul y el que se aleja, al rojo, y el Homúnculo se expande de forma pareja desde la década de 1840, así que la velocidad de un punto a lo largo de nuestra línea también dice cuánto está por delante de la estrella o por detrás. Los astrónomos leyeron la velocidad de su hidrógeno a lo largo de 92 franjas de la nebulosa y construyeron su forma a partir de eso (Steffen y otros, 2014)."
+  },
+  "deepSn1987a": {
+    "card": {
+      "sn1987a": "Los anillos se dibujan con los tamaños e inclinaciones que los astrónomos midieron a partir de los ecos de luz de la explosión y del movimiento de los propios anillos (Sugerman y otros, 2005; Panagia, 2003; Tziamtzis y otros, 2011). Los puntos que los marcan y los colores son ilustrativos. Aún no revisado por un astrónomo."
+    },
+    "rows": {
+      "dso-sn-1987a": [
+        [
+          "Anillo ecuatorial",
+          "Medido. Unos 0,8 segundos de arco de radio, que a 51,4 miles de pársecs son unos dos tercios de año luz, inclinado 43° respecto a la vista de frente, con su borde norte más cerca de nosotros (Panagia, 2003; Sugerman y otros, 2005)."
+        ],
+        [
+          "Anillos exteriores",
+          "Medido. Dos anillos mayores, de unos 1,4 y 1,6 años luz de radio, uno a cada lado del plano de la estrella, inclinados unos 45° y 38° (Sugerman y otros, 2005; Tziamtzis y otros, 2011). El del sur no es exactamente una elipse."
+        ],
+        [
+          "A qué distancia",
+          "El retraso del brillo del anillo interior tras la explosión da su tamaño real; su tamaño en el cielo da entonces la distancia a la supernova: 51,4 ± 1,2 miles de pársecs (Panagia, 2003)."
+        ],
+        [
+          "No se dibuja",
+          "Los nudos brillantes del anillo, los restos en su interior, las nebulosas mayores más lejos y el lento crecimiento del anillo (unos 10 km/s)."
+        ],
+        [
+          "Puntos y colores",
+          "Ilustrativo. Cada anillo se dibuja como una elipse plana de puntos; los colores cálido y azul pálido solo distinguen los anillos."
+        ],
+        [
+          "Revisión",
+          "Este dibujo todavía no ha sido revisado por un astrónomo."
+        ]
+      ]
+    },
+    "how": "El destello de la explosión iluminó los anillos, y su brillo nos llegó más tarde desde el lado lejano del anillo que desde el cercano. Ese retraso da el tamaño real del anillo, y el tamaño que ocupa en el cielo da la distancia. Los anillos exteriores se sitúan a partir de ecos del destello en el gas cercano (Sugerman y otros, 2005)."
   },
   "deepCasA": {
     "card": {

@@ -1264,7 +1264,7 @@ export function honestyClause(record, m) {
     // new hero's source sentence shows without a line here; and a record a hero draws as its child (the Tarantula, M43)
     // by its own id, `card[recordId]`; the blocks below as well, so a hero's sentence shows before it first draws (its
     // id is stamped at once). r13Deep holds the sentences of release 1.3.0 for records another block lacks.
-    const blocks = [md.heroCopy, 'deepHelix', 'deepLmc', 'deepGalaxy', 'deepOrion', 'deepRing', 'r12Dust', 'deepCarina', 'deepSmc', 'r13Deep', 'deepNebulae', 'deepHomunculus', 'deepCasA']; // 0078 r14-neb-a: deepNebulae; 2026-11-16: the two objects drawn from published 3D data
+    const blocks = [md.heroCopy, 'deepHelix', 'deepLmc', 'deepGalaxy', 'deepOrion', 'deepRing', 'r12Dust', 'deepCarina', 'deepSmc', 'r13Deep', 'deepNebulae', 'deepHomunculus', 'deepCasA', 'deepSn1987a']; // 0078 r14-neb-a: deepNebulae; 2026-11-16: the two objects drawn from published 3D data
     const own = (md.heroId || md.heroCopy) && Array.isArray(md.heroDrawn) ? blocks.map((b) => b && COPY[b] && COPY[b].card && ((md.heroId && COPY[b].card[md.heroId]) || COPY[b].card[record.id])).find(Boolean) : null;
     // 0077 W2-e: end
     return words.length ? t(F.drawnLine, { drawn: words.join(F.drawnJoin) }) + (own ? ` ${own}` : '') : null;

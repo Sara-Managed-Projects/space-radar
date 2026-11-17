@@ -2803,6 +2803,46 @@ blue filaments "are only a representation"), and the neutron star's depth are **
 (**false colour**) and the model holds no brightness: every point of a kind is equally bright, its size the data's
 resolution. The card says so, carries the credit and says no astronomer has reviewed the drawing.
 
+### SN 1987A's rings, at their measured size and tilt (2026-11-17)
+
+`site/js/scene/deep/sn1987a.js` draws the three rings round SN 1987A from the numbers in `registry/deepsky-heroes/sn1987a.yaml`.
+No picture, file or text of the papers is copied: the numbers are published measurements, read from the papers on 2026-11-17 and
+cited per row.
+
+| what | from | licence |
+|---|---|---|
+| The equatorial ring's size (6.23 +/- 0.08 x 10^17 cm, 808 +/- 17 mas) and the distance to the supernova, 51.4 +/- 1.2 kpc | Panagia N. 2003, *A geometric determination of the distance to SN 1987A and the LMC* (arXiv:astro-ph/0309416), the abstract | facts, cited |
+| The three rings as ellipses (semi-major axes, axis ratios, position angles, offsets and heights from the supernova, in light-years at 50 kpc); the equatorial ring's tilt (about 43 degrees) | Sugerman B. E. K., Crotts A. P. S., Kunkel W. E., Heathcote S. R. & Lawrence S. S. 2005, ApJS 159, 60 (arXiv:astro-ph/0502378), Table 3 and section I | facts, cited |
+| The outer rings' tilts (about 45 and 38 degrees) | Tziamtzis A., Lundqvist P., Gröningsson P. & Nasoudi-Shoar S. 2011, A&A 527, A35 (arXiv:1008.3387), section 4.1 | facts, cited |
+| The supernova's place | Wikipedia, SN 1987A, infobox (read 2026-11-17) | CC BY-SA 4.0, a position |
+
+What is measured and what is not. The rings' angular sizes, their offsets and heights from the supernova and their tilts are
+**measured** (light echoes, and the ring's velocities). Each ring as a plane ellipse, and the points that mark it, are
+**modelled**; the colours are **illustrative**. The rings' bright knots, the debris inside, the ring's slow growth and the larger
+nebulae are not drawn. The card says so and no astronomer has reviewed the drawing.
+
+### Stellar streams round the Milky Way, from the galstreams library (2026-11-17)
+
+`site/js/scene/deep/streams.js` draws four stellar streams (Sagittarius, Orphan-Chenab, GD-1, Palomar 5) from the **galstreams**
+library's track files, read at commit `6a304c05bea7f774390a11082ea127719e99b70a` on 2026-11-17 (`registry/streams.yaml` names each
+file, its size and SHA-256). `scripts/build_deep_streams.py` turns each track's (ra, dec, distance from the Sun) into light-years
+in the scene's axes and keeps about one point in 100 (819 points in `site/data/deep/streams.json`, 19 619 B); nothing is
+smoothed or extended. The library is not shipped, only these derived points.
+
+| what | from | licence |
+|---|---|---|
+| The tracks (sky position and distance of each stream) | Mateu C. 2023, *galstreams: A library of Milky Way stellar stream footprints and tracks*, MNRAS 520, 5225 (arXiv:2204.10326, doi:10.1093/mnras/stad321), https://github.com/cmateu/galstreams, copyright (c) 2017 Cecilia Mateu | BSD 3-Clause (the notice is reproduced here as the licence asks; the holder's name is not used to endorse this site) |
+| Sagittarius: sky and proper-motion track; distance track | Antoja T. and others 2020, A&A 635, L3 (arXiv:2001.10012); Ramos P. and others 2020, A&A 640, C5 (RR Lyrae) | the paper's facts, cited |
+| Orphan-Chenab | Koposov S. E. and others 2019, MNRAS 485, 4726 (arXiv:1812.08172) | the paper's facts, cited |
+| GD-1 (its distance is the authors' adopted gradient, not measured) | Price-Whelan A. M. & Bonaca A. 2018, ApJ 863, L20 (arXiv:1805.00425); the frame of Koposov, Rix & Hogg 2010, ApJ 712, 260 | the paper's facts, cited |
+| Palomar 5 | Price-Whelan A. M. and others 2019, AJ 158, 223 (arXiv:1910.00595); Bonaca A. and others 2020, ApJ 889, 70 (arXiv:1910.00592) | the paper's facts, cited |
+| The Sagittarius dwarf's place (the test's check: 26.0 kpc) | McConnachie A. W. 2012, as the library's `mw_satellites_2018.csv` lists it | the paper's fact, cited |
+
+What is measured and what is not. Where each stream lies on the sky is **measured**, and so is its distance for Sagittarius,
+Orphan-Chenab and Palomar 5; GD-1's distance is **adopted** by the library from a gradient its discoverers propose. The ribbon of
+points about each line, its width, brightness and the colours are **illustrative**. The stars themselves are not drawn. The card
+says so and no astronomer has reviewed the drawing.
+
 <!-- 0078 r14-mw-bh: begin -->
 ## 3m. The black holes in 3D (release 1.4.0)
 

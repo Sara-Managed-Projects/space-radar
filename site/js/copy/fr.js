@@ -1844,7 +1844,7 @@ export const COPY = {
     "records": {
       "dso-milky-way": {
         "drawn": "une illustration construite sur des mesures",
-        "split": "Mesuré : les étoiles à quelques milliers d’années-lumière (Gaia), l’angle de la barre, les directions le long des bras et les bras les plus proches (Reid et al. 2019). Déduit : l’autre côté, au-delà du centre, caché par la poussière ; ses bras sont les bras proches prolongés."
+        "split": "Mesuré : les étoiles à quelques milliers d’années-lumière (Gaia), l’angle de la barre, les directions le long des bras et les bras les plus proches (Reid et al. 2019). Déduit : l’autre côté, au-delà du centre, caché par la poussière ; ses bras sont les bras proches prolongés. Quatre courants d’étoiles (Sagittaire, Orphan-Chenab, GD-1, Palomar 5) sont dessinés d’après la bibliothèque galstreams (Mateu 2023) : la place de chacun dans le ciel est mesurée, ainsi que sa distance sauf pour GD-1, dont la distance est supposée ; le ruban d’étoiles autour de chaque ligne est illustratif."
       }
     }
   },
@@ -6439,6 +6439,40 @@ Object.assign(COPY, {
       ]
     },
     "how": "Le gaz qui vient vers nous décale sa lumière vers le bleu et celui qui s’éloigne vers le rouge, et l’Homoncule s’étend de façon uniforme depuis les années 1840 : la vitesse d’un point le long de notre ligne de visée dit donc aussi de combien il est devant l’étoile ou derrière. Les astronomes ont lu la vitesse de son hydrogène le long de 92 bandes de la nébuleuse et en ont construit la forme (Steffen et al., 2014)."
+  },
+  "deepSn1987a": {
+    "card": {
+      "sn1987a": "Les anneaux sont dessinés aux tailles et aux inclinaisons que les astronomes ont mesurées d’après les échos lumineux de l’explosion et le mouvement des anneaux eux-mêmes (Sugerman et al., 2005 ; Panagia, 2003 ; Tziamtzis et al., 2011). Les points qui les marquent et les couleurs sont illustratifs. Pas encore relu par un astronome."
+    },
+    "rows": {
+      "dso-sn-1987a": [
+        [
+          "Anneau équatorial",
+          "Mesuré. Environ 0,8 seconde d’arc de rayon, soit à 51,4 milliers de parsecs environ deux tiers d’année-lumière, incliné de 43° par rapport à une vue de face, son bord nord le plus proche de nous (Panagia, 2003 ; Sugerman et al., 2005)."
+        ],
+        [
+          "Anneaux extérieurs",
+          "Mesuré. Deux anneaux plus grands, d’environ 1,4 et 1,6 année-lumière de rayon, de part et d’autre du plan de l’étoile, inclinés d’environ 45° et 38° (Sugerman et al., 2005 ; Tziamtzis et al., 2011). Celui du sud n’est pas tout à fait une ellipse."
+        ],
+        [
+          "À quelle distance",
+          "Le retard de la lueur de l’anneau intérieur après l’explosion donne sa taille réelle ; sa taille sur le ciel donne alors la distance de la supernova : 51,4 ± 1,2 milliers de parsecs (Panagia, 2003)."
+        ],
+        [
+          "Non dessiné",
+          "Les nœuds brillants de l’anneau, les débris à l’intérieur, les nébuleuses plus grandes plus loin et la lente croissance de l’anneau (environ 10 km/s)."
+        ],
+        [
+          "Points et couleurs",
+          "Illustratif. Chaque anneau est dessiné comme une ellipse plane de points ; les couleurs chaude et bleu pâle servent seulement à distinguer les anneaux."
+        ],
+        [
+          "Relecture",
+          "Ce dessin n’a pas encore été relu par un astronome."
+        ]
+      ]
+    },
+    "how": "Le flash de l’explosion a éclairé les anneaux, et sa lueur nous est parvenue plus tard du côté éloigné de l’anneau que du côté proche. Ce retard donne la taille réelle de l’anneau, et la taille qu’il couvre sur le ciel donne la distance. Les anneaux extérieurs sont placés d’après des échos du flash sur le gaz voisin (Sugerman et al., 2005)."
   },
   "deepCasA": {
     "card": {
