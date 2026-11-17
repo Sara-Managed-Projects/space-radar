@@ -72,7 +72,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [AGN_QUASAR](#agn_quasar) | 3 | `glyphs.js`, `stage.js`, `galclusters.js` | illustrative | - |
 | [GALAXY_GROUP](#galaxy_group) | 1 | `localvolume.js` | measured | - |
 | [GALAXY_CLUSTER](#galaxy_cluster) | 0 | `galclusters.js` | modelled | - |
-| [LOCAL_DUST](#local_dust) | 0 | `localdust.js` | modelled | - |
+| [LOCAL_DUST](#local_dust) *house* | 0 | `localdust.js` | modelled | - |
 | [COSMIC_WEB](#cosmic_web) | 0 | none yet (1.3+ (internal #826, #828; spec 0075 tasks 23 and 24): the DESI DR1 wedge with its footprint) | illustrative | - |
 | [CMB_AND_HORIZON](#cmb_and_horizon) | 2 | `shells.js`, `cmb.js` | measured | - |
 | [HELIOSPHERE](#heliosphere) *house* | 1 | `heliosphere.js` | modelled | - |
@@ -668,7 +668,7 @@ Honesty over the 1208 records: 377 measured, 462 modelled, 369 illustrative.
 
 ### LOCAL_DUST
 
-**The Sun's neighbourhood in dust (the Local Bubble)**
+**The Sun's neighbourhood in dust (the Local Bubble)** (a class of the house, not of the package)
 
 - **Drawn by:** `site/js/scene/deep/localdust.js`
 - **Default honesty:** modelled

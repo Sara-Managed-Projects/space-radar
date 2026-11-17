@@ -1585,6 +1585,7 @@ export const VISUAL_CLASSES = [
 "id": "LOCAL_DUST",
 "title": "The Sun's neighbourhood in dust (the Local Bubble)",
 "honesty": "modelled",
+"house": true,
 "members": {}
 },
 {

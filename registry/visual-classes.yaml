@@ -736,6 +736,7 @@ classes:
 
   - id: LOCAL_DUST
     title: The Sun's neighbourhood in dust (the Local Bubble)
+    house: true
     renderer: [site/js/scene/deep/localdust.js]
     honesty: modelled
     fallback: Nothing is drawn on tier 0 or under the Eye exposure; on every other look one Points draw of 40 000 points, faded in as the camera leaves the neighbourhood (300 to 1 500 ly out of the Sun) and out far away (8 000 to 30 000 ly).
