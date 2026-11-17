@@ -151,7 +151,10 @@ ok(re.search(r"permissions:\n\s+issues: write\n\s+contents: read\n", code) is no
 secrets = set(re.findall(r"secrets\.([A-Za-z_]+)", code))
 ok(not secrets and "aws" not in code.lower() and "id-token" not in code, f"no secret and no cloud credential ({secrets})")
 ok("https://www.spaceradar.ai" in code and "/build.json" in code and "/data/v1/index.json" in code, "it reads the public site's two files")
-ok(f'TITLE: "{freshness.ISSUE_TITLE}"' in code and code.count("gh issue create") == 1 and code.index("gh issue list") < code.index("gh issue create"),
+# One `gh issue create` per watched title (the freshness job, and since 16 Nov the `notable` job), each after its own `gh issue list`.
+_blocks = code.split("\n  notable:")
+ok(f'TITLE: "{freshness.ISSUE_TITLE}"' in _blocks[0] and code.count("gh issue create") == code.count("TITLE:")
+   and all(b.count("gh issue create") <= 1 and ("gh issue create" not in b or b.index("gh issue list") < b.index("gh issue create")) for b in _blocks),
    "it looks for the open issue by its title before it opens one")
 ok("gh issue close" in code and "gh issue comment" in code, "it comments on the same issue, and closes it when the site is fresh again")
 ok("scripts/freshness.py" in code and "--commit-of" in code, "the decision is the script's, and only a commit the script vouches for goes into an API path")
