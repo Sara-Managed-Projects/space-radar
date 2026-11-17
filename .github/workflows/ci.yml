@@ -1361,6 +1361,9 @@ jobs:
       # 0076 W3-c
       - name: "remnants as shells: the Crab and the Veil on their published geometry, the photograph exactly on our line (internal spec 0076 W3-c, #784)"
         run: node tests/test_remnant.mjs
+      # The 2026-11-16 deep-space review, fault 2: the Crab had no model of its own (its hero held since 17 October).
+      - name: "the Crab Nebula: a cage of filaments on the measured outline, the pulsar wind's fitted rings, growing from 1054"
+        run: node tests/test_crab.mjs
       - name: "dust as sheets: a star behind is dimmed and reddened, the dust never glows, the draw order (internal spec 0076 W3-c, #784, #806)"
         run: node tests/test_dustsheet.mjs
       - name: "the remnants' and the dust's maps are the bake of their pictures and profiles"

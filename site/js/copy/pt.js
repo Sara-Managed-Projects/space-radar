@@ -3728,29 +3728,16 @@ export const COPY = {
   "r12Dust": {
     "card": {
       "m45": "A luz é a fotografia do NOIRLab: uma nuvem de poeira que atravessa o aglomerado, bem à frente das estrelas, espalha a luz azul delas (Ritchey e outros, 2006). A profundidade é reconstruída. Ainda não revisado por um astrônomo.",
-      "crab": "A luz vem da fotografia do Hubble, em cor falsa, levada sobre uma casca cuja forma segue Martin, Milisavljevic e Drissen (2021): uma gaiola de filamentos com cerca de 4 parsecs de comprimento ao redor de um meio vazio. Ainda não revisado por um astrônomo.",
+      "crab": "Uma gaiola de filamentos ao redor do brilho do vento do pulsar, sobre o contorno que Martin, Milisavljevic e Drissen mediram (2021). O lugar de cada filamento é modelado, e as cores seguem a imagem em cor falsa do Hubble. Ainda não revisado por um astrônomo.",
       "veil": "A luz vem da fotografia do NOIRLab, em cor falsa, levada sobre uma esfera fina de 37 parsecs de largura (Fesen e outros, 2018): os filamentos são a borda dela vista de perfil. Ainda não revisado por um astrônomo.",
       "horsehead": "A escuridão é lida a partir da fotografia do NOIRLab: poeira diante do gás brilhante de IC 434, que absorve e avermelha o que está atrás e não emite luz. Ainda não revisado por um astrônomo.",
-      "coalsack": "A escuridão é lida a partir da Via Láctea ao redor: uma nuvem de poeira a cerca de 590 anos-luz que escurece e avermelha as estrelas atrás dela. Ainda não revisado por um astrônomo.",
+      "coalsack": "A escuridão é lida a partir da Via Láctea ao redor: uma nuvem de poeira a cerca de 590 anos-luz que escurece e avermelha as estrelas atrás dela. O contorno é medido, a profundidade é modelada. Ainda não revisado por um astrônomo.",
       "m78": "A luz é a fotografia do NOIRLab: poeira espalhando a luz azul da estrela à frente, na face de uma nuvem escura. A profundidade é reconstruída. Ainda não revisado por um astrônomo.",
       "iris": "A luz é a fotografia do NOIRLab: poeira espalhando a luz da jovem estrela HD 200775 em uma cavidade da nuvem. A profundidade é reconstruída. Ainda não revisado por um astrônomo."
     },
     "rows": {
       "dso-m45": [["A forma em profundidade", "Reconstruída. O gás está à frente das estrelas, como a luz dele mostra; a que distância à frente e qual a espessura da poeira são ilustrativos, e as profundidades das estrelas dentro do aglomerado são um modelo fixo, não medidas."], ["O que a poeira faz", "Espalha a luz das estrelas, sobretudo a azul, e por isso brilha em azul ao redor das mais brilhantes, sobretudo Mérope e Maia. É uma nuvem de passagem, não aquela de onde as estrelas nasceram."], ["Revisão", "Este modelo ainda não foi revisado por um astrônomo."]],
-      "dso-m1": [
-        [
-          "A forma em profundidade",
-          "Reconstruída a partir de um contorno medido. Os filamentos se estendem cerca de 2 parsecs ao longo do eixo do vento do pulsar e nenhum fica a menos de meio parsec do centro (Martin e outros, 2021). Desenhada como um elipsoide ao longo desse eixo; qual ponta está mais perto de nós é suposto."
-        ],
-        [
-          "As cores",
-          "Cor falsa: os filtros estreitos da fotografia para oxigênio e enxofre, mapeados em cores pelos autores da imagem."
-        ],
-        [
-          "Revisão",
-          "Este modelo ainda não foi revisado por um astrônomo."
-        ]
-      ],
+      "dso-m1": [["A forma","Um contorno medido com filamentos modelados. Não há gás a mais de 2 parsecs do centro ao longo do eixo do pulsar nem a menos de meio parsec; a cintura é estreitada e dois lóbulos se destacam (Martin e outros, 2021). Os filamentos formam um favo do tamanho medido, mas o lugar onde cada um é desenhado é modelado."],["O vento do pulsar","Anéis medidos, jatos modelados. Dois anéis de raios X circundam o pulsar; o interno tem um ano-luz de largura, e eles estão inclinados 63 graus em relação à nossa linha de visada. O gás sai deles à metade da velocidade da luz, então o lado que se move em direção a quem observa é mais brilhante (Ng e Romani, 2004 e 2008). O comprimento dos jatos é modelado."],["As cores","Ilustrativas. Os filamentos e o brilho tiram suas cores da imagem em cor falsa do Hubble no mesmo lugar do céu. O vento do pulsar é luz de raios X, que nenhum olho consegue ver, desenhada em azul-violeta."],["No relógio","A estrela foi vista explodir em 1054, e a nuvem cresce cerca de um décimo de um por cento ao ano (medido). O modelo cresce com o relógio do aplicativo a partir de 1054; como o crescimento mudou ao longo dos séculos é modelado."],["Revisão","Este modelo ainda não foi revisado por um astrônomo."]],
       "dso-veil-nebula": [
         [
           "A forma em profundidade",
@@ -3779,20 +3766,7 @@ export const COPY = {
           "Este modelo ainda não foi revisado por um astrônomo."
         ]
       ],
-      "dso-coalsack": [
-        [
-          "Quão escuro é",
-          "Lido a partir de quanto a Via Láctea é mais escura aqui do que à mesma distância da linha central dela nas proximidades. É uma estimativa e menor do que os mapas em infravermelho dão, porque as estrelas diante da nuvem acrescentam a luz delas."
-        ],
-        [
-          "O que a poeira faz",
-          "Ela só absorve: as estrelas atrás dela ficam mais fracas e avermelhadas. As estrelas diante dela não. Parte da escuridão a nordeste é uma segunda nuvem bem atrás, desenhada aqui na distância próxima."
-        ],
-        [
-          "Revisão",
-          "Este modelo ainda não foi revisado por um astrônomo."
-        ]
-      ],
+      "dso-coalsack": [["O contorno e a profundidade","O contorno é medido no mapa da Via Láctea desenhado aqui (NASA, a partir das contagens de estrelas do Gaia): uma região escura de cerca de 7 por 4 graus. Manchas escuras próximas são outras nuvens e ficam de fora. A profundidade é modelada: uma lâmina fina e irregular a uma única distância."],["Quão escuro é","Lido a partir de quanto a Via Láctea é mais escura aqui do que à mesma distância da linha central dela nas proximidades. É uma estimativa e menor do que os mapas em infravermelho dão, porque as estrelas diante da nuvem acrescentam a luz delas."],["O que a poeira faz","Ela só absorve: as estrelas atrás dela ficam mais fracas e avermelhadas. As estrelas diante dela não. Parte da escuridão a nordeste é uma segunda nuvem bem atrás, desenhada aqui na distância próxima."],["Revisão","Este modelo ainda não foi revisado por um astrônomo."]],
       "dso-m78": [
         [
           "A forma em profundidade",

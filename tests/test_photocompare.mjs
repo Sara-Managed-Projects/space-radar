@@ -118,7 +118,14 @@ eq(H.heroForRecord('dso-helix-nebula').id, 'helix', 'the Helix has a hero');
 eq(H.heroForRecord('dso-m13'), null, 'a globular cluster in the catalogue with no hero has none');
 eq(await H.heroShipped('dso-helix-nebula'), true, 'the Helix\'s reconstruction is signed off');
 eq(await H.heroShipped('dso-m13'), false, 'no hero, nothing to compare');
-eq(await H.heroShipped('dso-m1'), false, 'a hero that is not shipped (the Crab) is not offered');
+// Every hero ships since 2026-11-16 (the Crab and the Coalsack were the last two held), so "not shipped" is shown on a stub switched off.
+{
+  const crab = H.HEROES.find((h) => h.id === 'crab');
+  eq(await H.heroShipped('dso-m1'), true, 'the Crab ships');
+  crab.stub.shipped = false;
+  eq(await H.heroShipped('dso-m1'), false, 'a hero that is not shipped is not offered');
+  crab.stub.shipped = true;
+}
 eq(await H.heroShipped('nonsense'), false, 'and an id that is nothing is not');
 const offered = [];
 for (const h of H.HEROES) if (await H.heroShipped(h.record) && PICTURE_FOR.has(h.record)) offered.push(h.record);
@@ -185,7 +192,12 @@ const f3 = box3.querySelector('input'); f3.value = '5'; fire(f3, 'input');
 eq(calls.fly.length, 1, 'with no rig it falls back to the card\'s own flight');
 // not offered
 eq(await PC.mountPhotoCompare(document.createElement('div'), { id: 'dso-m13' }, ctx), null, 'a record with no reconstruction is offered nothing');
-eq(await PC.mountPhotoCompare(document.createElement('div'), { id: 'dso-m1' }, ctx), null, 'nor one whose reconstruction is not signed off');
+{
+  const crab = H.HEROES.find((h) => h.id === 'crab');
+  crab.stub.shipped = false;
+  eq(await PC.mountPhotoCompare(document.createElement('div'), { id: 'dso-m1' }, ctx), null, 'nor one whose reconstruction is not signed off');
+  crab.stub.shipped = true;
+}
 eq(await PC.mountPhotoCompare(document.createElement('div'), record, {}), null, 'nor without the layer of photographs');
 eq(await PC.mountPhotoCompare(document.createElement('div'), record, { nebulae: {} }), null, 'nor with a layer that has no slider');
 // the source: no storage, no URL key, no request
