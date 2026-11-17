@@ -45,8 +45,53 @@
 //   Titania     982     946     1 008        996    (0.23 %)       436 281 km
 //   Oberon    1 187   1 189     1 208      1 230    (0.21 %)       583 449 km
 //
-// (Each moon's own row below says how it got there.) Outside 2000-2050 nothing was measured, so
+// (Each moon's own row below says how it got there.) That table is 2000-2050; THE OUTER YEARS,
+// next, is 1950-2000 and 2050-2100. Before 1950 and after 2100 nothing was measured, so
 // moonOffsetKm() answers null there and the moon is not drawn: a refusal, not a guess.
+//
+// THE OUTER YEARS (2026-11-16). Until then the span stopped at 2000 and 2050, so Titan was not
+// drawn when Voyager 1 passed Saturn (1980), nor Miranda at Uranus (1986), Triton at Neptune
+// (1989), Phobos for Mariner 9 (1971). Horizons has all sixteen over 1950-2100 (it answered from
+// MAR099, SAT441L, URA184, NEP098 and PLU060 that day, and the 2000-2050 column above, measured
+// again at the same instants, came out the same to the kilometre), so each row was run outside its span
+// and measured against it: 1 500 instants over 1960-2000, 1 500 over 2050-2100, 400 over 1950-1960.
+// NINE HOLD AS THEY ARE, inside 0.46 % of their orbits, and keep their one row. SEVEN DO NOT, or
+// do much better for two or three numbers: for those, a FEW NUMBERS of the row are fitted again to
+// 4 502 Horizons vectors over 1960-2000 and 2050-2100 (MOON_ELEMENTS_OUTER; the rest of the row is
+// kept) and used ONLY OUTSIDE 2000-2050. Inside it the answer is the 2000-2050 row's and no other,
+// to the last bit, so the table above and the cards' "within N km over 2000 to 2050" stand.
+// Worst error in km at instants no fit saw (1950-1960 was given to no fit at all), the worst of
+// the three as a share of the orbit's radius, and what the 2000-2050 row alone gave there:
+//
+//              1950-1960  1960-2000  2050-2100             fitted again     2000-2050 row alone
+//   Phobos         14         15         15    (0.16 %)    L0, n, c2             19 /     23 /     50
+//   Deimos        139        140        135    (0.60 %)    L0, n, c2            520 /    423 /  1 097
+//   Mimas         590        815        792    (0.44 %)    L0, n, two `lib`   9 669 / 15 502 / 12 711
+//   Enceladus   1 080      1 003        943    (0.45 %)    L0, n, two `lib`   1 748 /  1 686 /  1 465
+//   Tethys      1 004        749        824    (0.34 %)    -- one row
+//   Dione         569        501        289    (0.15 %)    -- one row
+//   Rhea          563        459        388    (0.11 %)    -- one row
+//   Titan       1 592      1 044      1 064    (0.13 %)    -- one row
+//   Iapetus     8 925      7 629      6 680    (0.25 %)    L0, n, e, tilts   46 256 / 31 467 / 47 740
+//   Miranda       330        281        284    (0.25 %)    L0, n                561 /    510 /    477
+//   Ariel         697        478        286    (0.37 %)    L0, n              1 060 /    801 /    271
+//   Umbriel     1 093        956        997    (0.41 %)    -- one row
+//   Titania     1 974      1 804      1 602    (0.45 %)    -- one row
+//   Oberon      1 625      1 511      1 378    (0.28 %)    -- one row
+//   Triton        139         85        227    (0.06 %)    -- one row
+//   Charon          3.7        2.9        4.6  (0.02 %)    -- one row
+//
+// So every one of the sixteen is inside 0.60 % of its orbit over 1950-2100, where the worst inside
+// 2000-2050 is Enceladus's 0.62 %. On the four dates above (the app's own event instants, vectors
+// in tests/fixtures/moon_span_horizons.json): Titan 521 km from Horizons at 1980-11-12T23:46Z,
+// Miranda 96 at 1986-01-24T17:59Z, Triton 16 at 1989-08-25T03:56Z, Phobos 4.8 at 1971-11-14T00:00Z.
+// WHAT WENT WRONG OUTSIDE is in every case something fifty years could not see: Mimas's seventy-
+// year swing with Tethys (fitted over 140 years it is 43.45 degrees at 70.67 years, not 42.60 at
+// 69.5), Iapetus's two tilts that turn once in thousands of years, a mean motion good to fifty
+// years and not to a hundred and fifty (Deimos, Miranda, Ariel, Phobos). THE SEAM: at 2000-01-01
+// and 2050-01-01 those seven step from one row to the other, by 9 and 6 km (Phobos), 65 and 180
+// (Deimos), 76 and 72 (Mimas), 573 and 433 (Enceladus), 2 516 and 4 058 (Iapetus, 0.11 % of its
+// orbit), 219 and 206 (Miranda), 204 and 37 (Ariel): inside the two errors that meet there.
 //
 // NONE OF THE TEN WAS LEFT OUT. Every one is inside a quarter of a percent of its own orbit except
 // Mimas, at 0.38 %, and the worst already shipped here is Enceladus at 0.62 %, so all ten are
@@ -143,8 +188,11 @@ const DAY_MS = 86400000;
  */
 export const EPOCH_MS = Date.UTC(2027, 0, 1);
 
-/** The span the error above was measured over. Outside it: null. */
-export const MOON_ELEMENTS_VALID = { fromMs: Date.UTC(2000, 0, 1), toMs: Date.UTC(2050, 0, 1) };
+/** The span every one of the sixteen has a position over (THE OUTER YEARS above). Outside it: null. */
+export const MOON_ELEMENTS_VALID = { fromMs: Date.UTC(1950, 0, 1), toMs: Date.UTC(2100, 0, 1) };
+
+/** The span MOON_ELEMENTS was fitted to and its error table measured over. Inside it, those rows alone answer. */
+export const MOON_ELEMENTS_FITTED = { fromMs: Date.UTC(2000, 0, 1), toMs: Date.UTC(2050, 0, 1) };
 
 // One row per moon. Angles in degrees, rates in degrees per day, `a` in km. The pole is the fixed
 // axis the node precesses about (JPL's "local Laplace plane" pole, refined by the fit where it
@@ -346,6 +394,28 @@ export const MOON_ELEMENTS = {
   },
 };
 
+// THE OUTER YEARS' NUMBERS (2026-11-16; THE OUTER YEARS above): for seven moons, the few numbers of
+// the row above that are replaced outside 2000-2050. Everything a row here does not name is the
+// 2000-2050 row's. Fitted by scripts/fit-moon-elements.mjs --outer --refit, which also cuts each
+// number to the fewest digits that move the moon less than 0.03 km (this file is in the boot).
+export const MOON_ELEMENTS_OUTER = {
+  phobos: { L0: 39.581, n: 1128.84495067, c2: 9.081e-9 },
+  deimos: { L0: 63.6104, n: 285.161889377, c2: -1.186e-10 },
+  // The Dione resonance's swing again: 0.26 degrees at 11.05 years; the 4.75-year one, 0.13
+  // degrees in the row above, is 0.016 over these years.
+  enceladus: { L0: 193.31481, n: 262.731899855, libA: 0.01382, libB: 0.008045, libNu: 0.207688, lib2A: -0.14985, lib2B: -0.21466, lib2Nu: 0.0891605 },
+  // The Tethys resonance over 140 years: 43.45 degrees at 70.67 years (2000-2050 alone: 42.60 at 69.5).
+  mimas: { L0: 159.33735, n: 381.9944967, libA: 6.30519, libB: -42.9929, libNu: 0.013947294, lib2A: -0.30486, lib2B: 0.64812, lib2Nu: 0.041857 },
+  // Both tilt vectors and the ellipse. The tilts turn once in thousands of years, so 140 years of
+  // arc splits them differently from 50 (13.2 and 13.3 degrees here, 23.0 and 7.9 above); neither
+  // split is claimed as the physical one, only their sum is measured.
+  iapetus: { L0: 200.844198, n: 4.53794662868, k0: -0.01269097, h0: -0.02553108, wdot: 0.000268426, q0: 0.06906726, p0: -0.093240156, odot: -0.000158347, q2: -0.10940611, p2: -0.03996511, o2dot: 0.000054988 },
+  miranda: { L0: 240.74627, n: 254.69066009 },
+  ariel: { L0: 96.91977, n: 142.835646774 },
+};
+const OUTER_ROWS = {};
+for (const id of Object.keys(MOON_ELEMENTS_OUTER)) OUTER_ROWS[id] = { ...MOON_ELEMENTS[id], ...MOON_ELEMENTS_OUTER[id] };
+
 /** Does this table place the world? (Jupiter's moons are frames.js's, by JupiterMoons().) */
 export function hasFittedElements(worldId) {
   return Object.prototype.hasOwnProperty.call(MOON_ELEMENTS, String(worldId || '').toLowerCase());
@@ -354,13 +424,16 @@ export function hasFittedElements(worldId) {
 /**
  * Where a moon is relative to its planet's centre: km, EQJ (J2000 equatorial) axes, geometric (no
  * light time -- propagate/body.js back-dates for the view from Earth). Null for a world not in the
- * table, a time that is not one, or a time outside MOON_ELEMENTS_VALID.
+ * table, a time that is not one, or a time outside MOON_ELEMENTS_VALID. Inside MOON_ELEMENTS_FITTED
+ * the answer is the moon's MOON_ELEMENTS row; outside it, its outer row where it has one.
  */
 export function fittedMoonOffsetKm(worldId, tMs) {
-  const el = MOON_ELEMENTS[String(worldId || '').toLowerCase()];
+  const id = String(worldId || '').toLowerCase();
+  const el = MOON_ELEMENTS[id];
   if (!el || !Number.isFinite(tMs)) return null;
   if (tMs < MOON_ELEMENTS_VALID.fromMs || tMs > MOON_ELEMENTS_VALID.toMs) return null;
-  return elementsOffsetKm(el, tMs);
+  const fitted = tMs >= MOON_ELEMENTS_FITTED.fromMs && tMs <= MOON_ELEMENTS_FITTED.toMs;
+  return elementsOffsetKm(fitted ? el : OUTER_ROWS[id] || el, tMs);
 }
 
 /**

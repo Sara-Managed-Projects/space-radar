@@ -14,6 +14,8 @@
 //              "animated"), a link in a new tab with the chrome's one slow breath (ui.css), a row of More on a phone
 //   [mail]     Free email updates (2026-11-10): a popover, #sr-sub, built by ui/subscribepop.js on the first press (the What
 //              to show pattern), a row of More on a phone. It opens only on a click; Escape, Close and a press outside shut it
+//   [lang]     The language (internal #310): a popover, #sr-lang, built by ui/languagepop.js on the first press, a row of More
+//              on a phone. Eleven links, each language by its own name, to the same view in that language
 //   [github]   The repository, the mark from ui/github.js (the maintainer, 2026-10-02: the next icon after the eye)
 //   [more]     The phone only: Share, Hide and the repository, folded into one menu (below)
 //
@@ -70,6 +72,8 @@ const GAMEPAD_PATH = ['M6 12h4M8 10v4M15 13h.01M18 11h.01M4 6h16a2 2 0 0 1 2 2v8
 const MODELS_PATH = ['M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z', 'm3.3 7 8.7 5 8.7-5', 'M12 22V12'];
 // Lucide `circle-play` (ISC): the Video link.
 const VIDEO_PATH = ['M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Z', 'm10 8 6 4-6 4Z'];
+// Lucide `languages` (ISC): the two scripts side by side, the mark every site uses for "choose a language".
+const LANG_PATH = ['m5 8 6 6', 'm4 14 6-6 2-3', 'M2 5h12', 'M7 2h1', 'm22 22-5-10-5 10', 'M14 18h6'];
 const BLOG_PATH = ['M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2', 'M18 14h-8', 'M15 18h-5', 'M10 6h8v4h-8V6Z'];
 
 /** What a key press means to the rail, or null. Pure, like ui/cleanview.js wantsToggle. */
@@ -150,6 +154,7 @@ export function createRail(ctx, host) {
     if (ctx && ctx.keyhint && typeof ctx.keyhint.hide === 'function') ctx.keyhint.hide('popover');
     if (!menu.hidden) closeMore(false);
     closeSub();
+    closeLang();
     pop.hidden = false;
     showBtn.setAttribute('aria-expanded', 'true');
     root.classList.add('is-open');
@@ -188,6 +193,7 @@ export function createRail(ctx, host) {
     if (share.isOpen()) { share.close(); return; }
     closeShow(false);
     closeSub();
+    closeLang();
     share.open({ opener: shareBtn });
   };
   shareBtn.addEventListener('click', toggleShare);
@@ -248,6 +254,24 @@ export function createRail(ctx, host) {
   const closeSub = () => { if (sub) sub.then((s) => s && s.close(false)); };
   subBtn.addEventListener('click', () => subscribe().then((s) => s && s.toggle(subBtn)));
 
+  // --- Language: the eleven languages by their own names (internal #310), as the envelope: the popover, its links and
+  // its closing are ui/languagepop.js's, fetched on the first press; the boot graph holds the button alone.
+  const langBtn = document.createElement('button');
+  langBtn.type = 'button';
+  langBtn.className = 'sr-rail__btn sr-rail__btn--lang';
+  langBtn.setAttribute('aria-label', COPY.rail.language);
+  langBtn.title = COPY.rail.language;
+  langBtn.setAttribute('aria-haspopup', 'dialog');
+  langBtn.setAttribute('aria-expanded', 'false');
+  langBtn.appendChild(icon(LANG_PATH));
+  root.appendChild(langBtn);
+  let lang = null;
+  const language = () => lang || (lang = import('./languagepop.js').then((m) => m.mountLanguage(ctx, langBtn, moreBtn))
+    .catch((e) => { lang = null; console.warn('The language menu did not load', e); }));
+  const closeLang = () => { if (lang) lang.then((s) => s && s.close(false)); };
+  langBtn.addEventListener('click', () => { closeSub(); language().then((s) => s && s.toggle(langBtn)); });
+  subBtn.addEventListener('click', closeLang);
+
   // --- The repository: GitHub's own mark, after the eye ---------------------------------------------
   const gitHub = createGitHubMark(root, { className: 'sr-rail__btn sr-rail__btn--github' });
 
@@ -290,6 +314,7 @@ export function createRail(ctx, host) {
   menuRow('button', icon(HIDE_PATH), COPY.rail.menuHide, () => { if (ctx && ctx.cleanView) ctx.cleanView.set(true); });
   menuRow('button', icon(TOUR_PATH), COPY.rail.menuTour, toggleTour);
   menuRow('button', icon(MAIL_PATH), COPY.rail.subscribe, () => subscribe().then((s) => s && s.open(moreBtn)));
+  menuRow('button', icon(LANG_PATH), COPY.rail.language, () => language().then((s) => s && s.open(moreBtn)));
   for (const [glyph, words, href] of [[BLOG_PATH, COPY.rail.blog, COPY.rail.blogHref], [GAMEPAD_PATH, COPY.games.label, COPY.games.href],
     [MODELS_PATH, COPY.rail.models, COPY.rail.modelsHref], [VIDEO_PATH, COPY.rail.video, COPY.rail.videoHref]]) {
     const row = menuRow('a', icon(glyph), words, () => {});
@@ -321,6 +346,7 @@ export function createRail(ctx, host) {
     if (!menu.hidden) return;
     closeShow(false);
     closeSub();
+    closeLang();
     if (ctx && ctx.share) ctx.share.close();
     menu.hidden = false;
     moreBtn.setAttribute('aria-expanded', 'true');

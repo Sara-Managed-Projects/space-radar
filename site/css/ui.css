@@ -5278,6 +5278,7 @@ html.sr-phone .sr-rail__btn--tour,
 html.sr-phone .sr-rail__btn--blog,
 html.sr-phone .sr-rail__btn--games,
 html.sr-phone .sr-rail__btn--sub,
+html.sr-phone .sr-rail__btn--lang,
 html.sr-phone .sr-rail__btn--github {
   display: none;
 }
@@ -7032,3 +7033,41 @@ html.sr-phone .sr-time__date { width: 44px; height: 44px; }
 .sr-ground .sr-ground__bar .ui-btn--quiet { color: var(--sr-text); }
 .sr-ground .sr-ground__keys { padding: var(--sp-1) var(--sp-2); color: var(--sr-text); background: var(--sr-glass-strong); border-radius: var(--sr-radius-sm); }
 /* b200-s4b-look: end */
+
+/* A PHONE HELD SIDEWAYS (internal #455; ui/shell.js LANDSCAPE_QUERY: wider than tall, under 500 px high). The portrait sheet was a
+   full-width bottom sheet, and at 844 x 390 a half sheet (187 px) under a 56 px top bar left 147 px of sky. Sideways the sheet is
+   a column on the side the desktop's sidebar is on (the start side: the left, and the right in Hebrew and Arabic), under the top
+   bar, as tall as what is left. It has one height, so the handle is gone and its views scroll. The time pill stands in the band
+   the column leaves, and scene/viewshift.js moves the subject into that band as it does for the desktop's sidebar. */
+html.sr-phone-land {
+  --sr-land-w: min(360px, 46vw);
+  --sr-sheet-h: 0px !important;
+}
+
+html.sr-phone-land #sr-side {
+  top: var(--sr-top-end);
+  inset-inline: max(var(--sp-2), env(safe-area-inset-left, 0px)) auto;
+  width: var(--sr-land-w);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  border-width: 1px;
+  border-radius: var(--sr-radius-shell) var(--sr-radius-shell) 0 0;
+  transform: none;
+  touch-action: auto;
+}
+
+html.sr-phone-land .sr-sheet__handle { display: none; }
+
+html.sr-phone-land #sr-side :is(.sr-explore__body, .sr-side__cardslot, .sr-side__sourceshost, .sr-side__trip) {
+  overflow-y: auto;
+  touch-action: pan-y;
+}
+
+html.sr-phone-land #sr-side :is(.sr-explore__head, .sr-side__bar, .sr-card__header, .sr-tripsheet__head) { touch-action: auto; }
+
+html.sr-phone-land .sr-time {
+  left: calc(50% + var(--sr-land-w) / 2);
+  width: min(560px, calc(100vw - var(--sr-land-w) - 3 * var(--sp-4)));
+  transform: translate(-50%, calc(-1 * var(--sp-3)));
+}
+
+html[dir='rtl'].sr-phone-land .sr-time { left: calc(50% - var(--sr-land-w) / 2); }

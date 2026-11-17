@@ -242,11 +242,12 @@ check(findMatches(index, 'Kepler-90').hits[0]?.record.id === 'star-kepler-90' &&
   const U = await import(join(JS, 'ui/urlstate.js'));
   let written = null;
   globalThis.location = { hash: '#go=kepler-186-f', pathname: '/', search: '' };
-  globalThis.history = { replaceState: (a, b, target) => { written = target; globalThis.location.hash = target.startsWith('#') ? target : ''; } };
+  globalThis.history = { replaceState: (a, b, target) => { written = target; const i = target.indexOf('#'); globalThis.location.hash = i >= 0 ? target.slice(i) : ''; } };
   const link = U.read();
   check(link.at === 'kepler-186-f' && link.go === undefined, `#go=kepler-186-f reads as at=kepler-186-f (${JSON.stringify(link)})`);
   U.write({ at: 'exo-kepler-186-f', stage: 'system-kepler-186' });
-  check(written === '#at=exo-kepler-186-f&stage=system-kepler-186', `the app's own write drops go= (${written})`);
+  // the whole address is written, path first (a fragment alone would be resolved against a language shell's <base>)
+  check(written === '/#at=exo-kepler-186-f&stage=system-kepler-186', `the app's own write drops go= (${written})`);
   globalThis.location.hash = '#go=kepler-186&at=iss';
   check(U.read().at === 'iss', 'an `at` beside it wins');
   delete globalThis.location; delete globalThis.history;

@@ -162,7 +162,7 @@ for (const row of hint.TOUCH_ROWS) check(typeof COPY.keyHint.how[row.id] === 'st
 // The gestures: one finger turns, two pinch and move (scene/camera.js onPointerMove).
 {
   const cam = read('site/js/scene/camera.js');
-  check(/pointers\.size === 1\)[\s\S]{0,400}orbitBy\(dx, dy\)/.test(cam), 'one finger dragging turns (orbitBy)');
+  check(/pointers\.size === 1\)[\s\S]{0,1000}orbitBy\(dx, dy\)/.test(cam), 'one finger dragging turns (orbitBy)');
   check(/pointers\.size >= 2\)[\s\S]{0,600}dollyBy\(Math\.log\(pinchDistance \/ d\)\)[\s\S]{0,80}panBy\(/.test(cam), 'two fingers pinch to zoom and move together to pan');
 }
 

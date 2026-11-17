@@ -26,7 +26,7 @@ import * as Astronomy from '../../vendor/astronomy.js';
 import { COPY, t, fmt, timeText, compassWords, fistsWords } from '../copy/en.js';
 import '../copy/en.later.js';
 import { labelName } from '../ui/labels.js';
-import { whatIs } from './gloss.js';
+import { whatIs, launchYear, isFamiliar } from './gloss.js';
 
 export const GUESS_MIN_PEAK_DEG = 40;
 export const SET_MIN_PEAK_DEG = 10;
@@ -159,7 +159,10 @@ export function tonightWords(state) {
   } else {
     const minutes = Math.max(1, Math.round((p.endMs - p.startMs) / 60000));
     // An unfamiliar name gets a few words after it (sky/gloss.js, internal #304).
-    const what = whatIs(p.record);
+    // One with no line of its own says what kind of thing it is and when it went up, from its own designator
+    // ("ISIS 1" alone read badly, review of 16 Nov 2026); a name everybody knows says nothing more.
+    const year = isFamiliar(p.record) ? null : launchYear(p.record);
+    const what = whatIs(p.record) || (year ? t(p.record.klass === 'rocket' ? T.rocketLaunched : T.satLaunched, { year: String(year) }) : '');
     out.line = t(T.passLine, {
       name: what ? `${nameOf(p)}${COPY.punctuation.separator}${what}` : nameOf(p),
       time: timeText.hhmm(p.startMs),

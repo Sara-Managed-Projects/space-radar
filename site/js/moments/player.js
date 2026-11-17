@@ -409,6 +409,8 @@ export function createMomentPlayer(ctx, opts = {}) {
     if (opened !== id) return false;
     if (file.wordsFile && /^en\.[a-z0-9.-]+\.js$/.test(file.wordsFile)) {
       try { await import(`../copy/${file.wordsFile}`); } catch (err) { console.warn(`moment ${id}: its words did not load`, err && err.message); }
+      // Left while its words were on the way (close() tore the stage down): go quietly, as after the first wait.
+      if (opened !== id) return false;
     }
     m = file;
     m.tracks = m.tracks || {};

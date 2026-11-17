@@ -469,7 +469,9 @@ export function openPlay(ctx, key) {
     body.children[3].append(go);
     const show = () => { const w = lyWords(sliderLy(input.value)); out.textContent = w; input.setAttribute('aria-valuetext', w); };
     input.addEventListener('input', show);
-    whenReady(() => fetch(new URL('../../data/dso.json', import.meta.url)).then((r) => r.json()).then((doc) => {
+    // The distances are one file. When it does not arrive the card says so and offers to ask again: it used to answer
+    // a failure with the words for "still loading", for ever (review of 16 Nov 2026).
+    const ask1 = () => whenReady(() => fetch(new URL('../../data/dso.json', import.meta.url)).then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); }).then((doc) => {
       if (g !== gen) return;
       const pool = doc.objects.filter((o) => o.distLy > 0 && o.distanceSource).sort((a, b) => (a.id < b.id ? -1 : 1));
       const rounds = pick(pool, ROUNDS, rand);
@@ -499,7 +501,15 @@ export function openPlay(ctx, key) {
         go.textContent = COPY.play.next;
       };
       round();
-    }).catch((e) => { console.warn('the distances did not load', e); say.textContent = COPY.play.loading; }));
+    }).catch((e) => {
+      console.warn('the distances did not load', e);
+      if (g !== gen) return;
+      say.textContent = COPY.play.failed;
+      input.disabled = true;
+      go.textContent = COPY.play.retry;
+      go.onclick = () => { if (g !== gen) return; go.onclick = null; say.textContent = COPY.play.loading; ask1(); };
+    }));
+    ask1();
   }
 
   /**
@@ -518,7 +528,7 @@ export function openPlay(ctx, key) {
     ctx.cameraRig.flyTo({ targetScene: dir.multiplyScalar(D), distance: D, offset: { x: -p.x, y: -p.y, z: -p.z }, ms: 1200, onArrive: ring, onCancel: ring });
   }
 
-  ctx.play = { open, close };
+  ctx.play = { open, close, isOpen: () => card.isConnected };
   open(key);
   return ctx.play;
 }

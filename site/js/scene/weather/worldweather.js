@@ -96,8 +96,16 @@ export const FLASH_COLOUR = [0.85, 0.95, 1.25];
 /** A methane cloud on Titan, linear RGB, and how much of the ground under it the thickest part hides. */
 export const TITAN_CLOUD = [0.62, 0.52, 0.40];
 export const TITAN_CLOUD_COVER = 0.45;
-/** Where the declarations go: before the first function WORLD_FRAG defines. */
-export const PARS_ANCHOR = '// Oren-Nayar, qualitative form';
+/**
+ * Where the declarations go: before WORLD_FRAG's orenNayar(), the first function that could call them.
+ * A LINE OF CODE, NEVER A COMMENT (review of 2026-11-16): a deploy strips the shaders' comments and
+ * indentation (scripts/strip_shaders.py), and until that day this anchor was the comment above that
+ * function, so on the live site weatherFragment() threw for every visitor and no world had weather,
+ * while the repository's own tree passed. Every anchor in this module is one trimmed line of GLSL,
+ * and tests/test_shader_patches.mjs runs each patch against the tree a deploy builds
+ * (scripts/check_built_tree.mjs TESTS).
+ */
+export const PARS_ANCHOR = 'float orenNayar( vec3 n, vec3 l, vec3 v, float sigma ) {';
 
 /**
  * The hexagon as drawn. `cornerShare`: how far the line follows the flat-sided hexagon rather than
@@ -312,21 +320,25 @@ export function ringThinLight(tau, mu, cosAlpha, dust, g, muMin = 0) {
 export function faintFragment(src = RING_FRAG) {
   let out = src;
   const swap = (from, to) => {
-    if (!out.includes(from)) throw new Error(`faintFragment: RING_FRAG has no "${from.trim().slice(0, 60)}"`);
+    if (out.split(from).length - 1 !== 1) throw new Error(`faintFragment: RING_FRAG has ${out.split(from).length - 1} of "${from.slice(0, 60)}", not 1`);
     out = out.replace(from, to);
   };
-  swap('uniform vec4 uArcBand;\n', 'uniform vec4 uArcBand;\nuniform vec3 uThin;\nuniform vec3 uHalo;\n');
-  swap('  float tau = -log( 1.0 - alpha );\n', '  float tau = tex.a * uThin.x;\n  alpha = tau;\n');
-  const a = out.indexOf('  float S;\n');
-  const end = '( exp( -tau / m ) - exp( -tau / m0 ) );\n  }\n';
-  const b = out.indexOf(end, a);
-  if (a < 0 || b < 0) throw new Error('faintFragment: RING_FRAG has no slab to replace');
-  out = out.slice(0, a) + '  float rl = length( vPosL.xy );\n  float S = 2.0 * tau / ( rl > uHalo.x && rl < uHalo.y ? max( m, uHalo.z ) : m );\n' + out.slice(b + end.length);
+  // Each anchor is ONE TRIMMED LINE of RING_FRAG, with no indentation and no line end in it: a deploy strips
+  // both from a shader (scripts/strip_shaders.py), and an anchor that held them matched the repository's
+  // text and not the live site's (review of 2026-11-16; tests/test_shader_patches.mjs holds it on the built tree).
+  swap('uniform vec4 uArcBand;', 'uniform vec4 uArcBand;\nuniform vec3 uThin;\nuniform vec3 uHalo;');
+  swap('float tau = -log( 1.0 - alpha );', 'float tau = tex.a * uThin.x;\n  alpha = tau;');
+  const a = out.indexOf('float S;');
+  const last = '( exp( -tau / m ) - exp( -tau / m0 ) );';
+  const b = a < 0 ? -1 : out.indexOf(last, a);
+  const close = b < 0 ? -1 : out.indexOf('}', b + last.length);
+  if (a < 0 || close < 0 || out.slice(b + last.length, close).trim() !== '') throw new Error('faintFragment: RING_FRAG has no slab to replace');
+  out = out.slice(0, a) + 'float rl = length( vPosL.xy );\n  float S = 2.0 * tau / ( rl > uHalo.x && rl < uHalo.y ? max( m, uHalo.z ) : m );' + out.slice(close + 1);
   swap('float dust = RING_DUST * ( 1.0 - alpha );', 'float dust = uThin.y;');
   swap('dustPhase( cosAlpha, RING_DUST_G )', 'dustPhase( cosAlpha, uThin.z )');
   swap('RING_DUST_COLOUR * fine', 'fine');
-  swap('  gl_FragColor = vec4( light, cover );', '  light = uCeil * ( 1.0 - exp( -light / uCeil ) );\n  gl_FragColor = vec4( light, cover );');
-  swap('uniform vec3 uHalo;\n', 'uniform vec3 uHalo;\nuniform vec3 uCeil;\n');
+  swap('gl_FragColor = vec4( light, cover );', 'light = uCeil * ( 1.0 - exp( -light / uCeil ) );\n  gl_FragColor = vec4( light, cover );');
+  swap('uniform vec3 uHalo;', 'uniform vec3 uHalo;\nuniform vec3 uCeil;');
   return out;
 }
 
@@ -799,7 +811,7 @@ vec3 wxFlash( vec3 posL, float sunDot ) { return vec3( 0.0 ); }
 export function weatherFragment(source = WORLD_FRAG) {
   const count = source.split(MAP_LINE).length - 1;
   if (count !== 1) throw new Error(`WORLD_FRAG reads its map on ${count} lines, not 1`);
-  if (!source.includes(PARS_ANCHOR)) throw new Error('WORLD_FRAG has no place for the weather declarations');
+  if (source.split(PARS_ANCHOR).length - 1 !== 1) throw new Error('WORLD_FRAG has no place for the weather declarations');
   if (source.split(OUT_LINE).length - 1 !== 1) throw new Error('WORLD_FRAG no longer ends in one ' + OUT_LINE);
   if (!/float d = dot\( n, uSunDir \);/.test(source)) throw new Error('WORLD_FRAG no longer has the Sun\'s height as `d`: a flash would not know night from day');
   return source.replace(PARS_ANCHOR, `${WX_PARS}\n${PARS_ANCHOR}`).replace(MAP_LINE, MAP_LINE_WX).replace(OUT_LINE, OUT_LINE_WX);

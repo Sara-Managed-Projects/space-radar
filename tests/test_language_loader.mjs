@@ -151,7 +151,7 @@ for (const file of walk(JS)) {
   assert.ok(!/^(?:await\b|(?:const|let|var)\s+[^=\n]+=\s*await\b)/m.test(code), `${file} has a top-level await: the deploy's es2020 target refuses it`);
 }
 const langBytes = statSync(join(JS, 'copy/lang.js')).size;
-assert.ok(langBytes < 5800, `copy/lang.js is in the boot graph and must stay small (${langBytes} B as written, comments included)`); // 0077 W2-f: 3200 to 3500, three rows for fr, de, pt; 1.6.3: 3500 to 5200, six rows and the zh-Hant reading (its comments are the most of it: the served tree strips them); seo-languages: 5200 to 5800, the /<code>/ address rule (pathLanguage, 5674 B written)
+assert.ok(langBytes < 6600, `copy/lang.js is in the boot graph and must stay small (${langBytes} B as written, comments included)`); // 0077 W2-f: 3200 to 3500, three rows for fr, de, pt; 1.6.3: 3500 to 5200, six rows and the zh-Hant reading (its comments are the most of it: the served tree strips them); seo-languages: 5200 to 5800, the /<code>/ address rule (pathLanguage, 5674 B written) 2026-11-16: 5800 to 6600, the visitor's own choice kept by the language menu (LANG_KEY, internal #310), most of it comment
 assert.ok(!/import\s*\(/.test(readFileSync(join(JS, 'copy/lang.js'), 'utf8').replace(/\/\/.*$/gm, '')), 'copy/lang.js only decides: it fetches nothing');
 
 // --- 4. the Spanish --------------------------------------------------------------------------------------

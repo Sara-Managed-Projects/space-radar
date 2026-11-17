@@ -21,7 +21,7 @@ import { createCameraRig, worldFramingDistance, steadyDistance } from './scene/c
 import { createViewShift, MAX_SHIFT_FRACTION, PILL_GAP_PX } from './scene/viewshift.js';
 import { parsePlaceValue, keptPlace, browserStorage } from './sky/placelink.js';
 import { dropFrom, readMoment, writeMoment, bootLink, laterLink, linkChange, read as readUrlKeys, write as writeUrlState, clear as clearUrlState, stopIndex, parseCam } from './ui/urlstate.js'; // 0077 W3-e
-import { guessObserver, roundPlace } from './sky/guessplace.js';
+import { guessObserver, roundPlace, isRoughGuess } from './sky/guessplace.js';
 import { COPY, CITIES, t as fill } from './copy/en.js';
 import { LAYERS, loadLayer, addSystemRows, addPlanetAliases } from './data/layers.js';
 import * as sources from './data/sources.js';
@@ -33,8 +33,6 @@ import { createRail } from './ui/rail.js';
 import { toast } from './ui/share.js';
 import { createTimePill } from './ui/timepill.js';
 import { createSceneNote } from './ui/scenenote.js';
-import { buildIndex, findMatches, LINK_MIN_SCORE } from './ui/search.js';
-import { satIdOf } from './data/catnum.js';
 import { createDensity } from './ui/density.js';
 import { createTripGate } from './ui/tripgate.js';
 import { createVeil } from './ui/veil.js';
@@ -45,6 +43,7 @@ import { createStings } from './audio/stings.js';
 import { rungOf } from './audio/pick.js';
 import { AUDIO } from './data/audio.js';
 import { decide, reachFor, LONG_PRESS_MS, TAP_SLOP_PX } from './scene/pickrank.js';
+import { isPrimaryPress, followIsNear, orbiterArrival, pointerKind } from './scene/gestures.js';
 import { createLod } from './scene/lod.js';
 import { createStars3d, NAMED_STARS, SUN_RADIUS_KM, SUN_TEFF_K } from './scene/stars3d.js';
 import { createGalaxy } from './scene/galaxy.js';
@@ -298,6 +297,10 @@ export async function boot({ setStatus } = {}) {
   const ambient = !embed && !!(link && link.ambient && link.ambient !== '0');
   if (ambient) document.documentElement.classList.add('sr-ambient');
 
+  // THE LAYERS' NAMES IN THE PAGE'S LANGUAGE (internal #310): copy has one for every layer (COPY.controls.layerName,
+  // filled by a language's file), written over `display` here, before any panel reads it: What to show, the word beside
+  // a search result, the status lines. In English they are the same words and nothing changes.
+  for (const l of LAYERS) { const n = COPY.controls.layerName[l.id]; if (n && n !== l.display) { l.displayEn = l.display; l.display = n; } }
   const ctx = {
     clock, stage, scene, camera, cameraRig, viewShift, worlds, renderer, rendererApi, sources,
     layers: LAYERS,
@@ -1145,7 +1148,8 @@ export async function boot({ setStatus } = {}) {
   // `sr-play-on` at once keeps the first visit's controls hint off the card (ui/keyhint.js whyNot)
   const playLink = () => { const k = readUrlKeys().play; if (!k || embed) return; document.documentElement.classList.add('sr-play-on'); import('./ui/play.js').then((m) => m.openPlay(ctx, k)).catch((e) => { document.documentElement.classList.remove('sr-play-on'); console.warn('play did not load', e); }); };
   playLink();
-  window.addEventListener('hashchange', playLink);
+  // A later link without `play=` (an object, the empty address) closes the challenge it would otherwise sit over.
+  window.addEventListener('hashchange', () => { if (!readUrlKeys().play && ctx.play && ctx.play.isOpen && ctx.play.isOpen()) ctx.play.close(); else playLink(); });
   // b200-f6-learn: end
   // TODAY (internal #270, ui/today.js): the home's dated cards, generated from what is loaded,
   // and under them the way into the debris view (ui/debris.js). TODAY_MS after sr:layers-ready.
@@ -1390,6 +1394,10 @@ export async function boot({ setStatus } = {}) {
     else apply();
     // Today's clouds: their first look is START_DELAY_MS after this, never during the first visit.
     if (!embed) ctx.liveClouds.start();
+    // The names of things in the page's language (ui/localnames.js, internal #310): one small file, never in English.
+    if (document.documentElement.lang !== 'en') import('./ui/localnames.js').then((m) => m.installLocalNames(ctx)).catch((e) => console.warn('the names did not load', e));
+    // What to show as the visitor left it (ui/showmemory.js): fetched only when this browser kept a choice, never by a frame or a reel.
+    try { if (!embed && !ambient && !film && localStorage.getItem('sr:show')) import('./ui/showmemory.js').then((m) => m.installShowMemory(ctx)).catch((e) => console.warn('the kept choices did not load', e)); } catch { /* no storage: the defaults */ }
   }, { once: true });
 
   // Data arrives in the background, layer by layer, slowest last. Nothing here is awaited by the
@@ -1434,33 +1442,69 @@ export async function boot({ setStatus } = {}) {
   // long it was held. The rules themselves are scene/pickrank.js.
   const pointers = new Set();
   let gesture = null;
+  let lastTap = null;
+  const DOUBLE_TAP_MS = 400;
+  const DOUBLE_TAP_PX = { mouse: 6, touch: 24 };
+  let holdTimer = 0;
+  const clearHold = () => { if (holdTimer) { clearTimeout(holdTimer); holdTimer = 0; } };
+  // A press that is not the primary button is not a tap (internal #434): a right or middle click does nothing on the map.
   canvas.addEventListener('pointerdown', (e) => {
     pointers.add(e.pointerId);
-    if (pointers.size > 1) { if (gesture) gesture.pinched = true; return; }
-    const type = e.pointerType === 'touch' ? 'touch' : 'mouse';
+    if (pointers.size > 1) { if (gesture) gesture.pinched = true; clearHold(); return; }
+    if (!isPrimaryPress(e)) { gesture = null; return; }
+    const type = pointerKind(e.pointerType);
     // `t` is the EVENT's own time, not the handler's: on a slow frame the up of a quick tap is handled most of a second after
     // its down, and by the handlers' clock every tap on a slow phone was a long press and opened the list (measured 2026-11-16).
-    gesture = { id: e.pointerId, type, x: e.clientX, y: e.clientY, t: e.timeStamp > 0 ? e.timeStamp : performance.now(), pinched: false, decision: decisionAt(e.clientX, e.clientY, type) };
+    gesture = { id: e.pointerId, type, x: e.clientX, y: e.clientY, t: e.timeStamp > 0 ? e.timeStamp : performance.now(), pinched: false, moved: false, shown: false, decision: decisionAt(e.clientX, e.clientY, type) };
+    // THE LIST OPENS AT THE END OF THE HOLD, finger still down (internal #437), not when it lifts.
+    clearHold();
+    if (type === 'touch') {
+      const g = gesture;
+      holdTimer = setTimeout(() => {
+        holdTimer = 0;
+        if (gesture !== g || g.pinched || g.moved || inTrip()) return;
+        const list = g.decision.list.slice(0, 6);
+        if (list.length < 2) return;
+        g.shown = true;
+        if (navigator.vibrate) { try { navigator.vibrate(12); } catch { /* a cue only */ } }
+        showChooser(list, g.x, g.y, (rec) => select(rec, pickOpts(list.find((x) => x.record === rec), null)), { layers: LAYERS });
+      }, LONG_PRESS_MS);
+    }
+  });
+  window.addEventListener('pointermove', (e) => {
+    const g = gesture;
+    if (g && g.id === e.pointerId && !g.moved && Math.hypot(e.clientX - g.x, e.clientY - g.y) > TAP_SLOP_PX[g.type]) { g.moved = true; clearHold(); }
   });
   window.addEventListener('pointerup', (e) => { pointers.delete(e.pointerId); });
-  const cancelGesture = () => { pointers.clear(); gesture = null; };
+  const cancelGesture = () => { pointers.clear(); clearHold(); gesture = null; };
   window.addEventListener('pointercancel', cancelGesture);
   canvas.addEventListener('pointerup', (e) => {
     const g = gesture;
     if (!g || g.id !== e.pointerId) return;
     gesture = null;
-    if (g.pinched || pointers.size > 1) return;
+    clearHold();
+    if (g.pinched || pointers.size > 1 || g.shown) return; // `shown`: the hold already opened its list
     // A drag is a camera move, not a tap: 5 px for a mouse, 10 for a finger.
     if (Math.hypot(e.clientX - g.x, e.clientY - g.y) > TAP_SLOP_PX[g.type]) return;
     const held = (e.timeStamp > 0 ? e.timeStamp : performance.now()) - g.t;
     hideChooser();
     const d = g.decision;
     // A long press on a crowded spot, and a tap the two best of which are too close to tell apart, list what is there instead of guessing.
-    if ((g.type === 'touch' && held >= LONG_PRESS_MS) || d.ambiguous) {
+    if ((g.type === 'touch' && held >= LONG_PRESS_MS) || d.ambiguous) { // (the hold's own timer shows the list while the finger is down; this is a slow frame's late up)
       const list = d.list.slice(0, 6);
       if (list.length > 1) { showChooser(list, e.clientX, e.clientY, (rec) => select(rec, pickOpts(list.find((x) => x.record === rec), null)), { layers: LAYERS }); return; }
     }
     let hit = d.winner;
+    // A DOUBLE CLICK OR TAP (internal #439): the second tap near the first, soon after, flies to what is under it,
+    // or zooms in on the spot when nothing is.
+    const at = e.timeStamp > 0 ? e.timeStamp : performance.now();
+    const twice = lastTap && at - lastTap.t < DOUBLE_TAP_MS && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) <= DOUBLE_TAP_PX[g.type];
+    lastTap = twice ? null : { t: at, x: e.clientX, y: e.clientY };
+    if (twice && !(ctx.skyView && ctx.skyView.ownsSky) && !inTrip()) {
+      if (hit) { hopTo(hit); return; }
+      cameraRig.zoomToward(e.clientX, e.clientY, -Math.LN2);
+      return;
+    }
     // From the ground a tap asks "what is that" (sky/skyview.js tapSky): a satellite's dot or a
     // photograph answers as before with its card; a star, a planet or anything else in the sky is
     // named in a tag first, and the same thing tapped again is its card.
@@ -1671,7 +1715,7 @@ export async function boot({ setStatus } = {}) {
     if (ctx.groundTrack) ctx.groundTrack.set(record);
     if (opts.fly !== false) flyToRecord(record, opts.flyMs, opts.flight);
     else if (opts.cardOnly) cameraRig.stopFollow();
-    else if (!(record && record.meta && record.meta.noDistance)) cameraRig.follow(() => positionOfRecord(record)); // 0079 r15-a45: nothing to follow
+    else if (!(record && record.meta && record.meta.noDistance)) followWithoutFlight(record); // 0079 r15-a45: nothing to follow
     window.dispatchEvent(new CustomEvent('sr:select', { detail: record }));
     // A place met on the night side is met from the whole Earth's distance, and the toast says why
     // (flyToRecord): with the way back when the view was moved for the visitor, alone when they
@@ -1679,6 +1723,19 @@ export async function boot({ setStatus } = {}) {
     const night = !!record && nightArrival === record && opts.fly !== false;
     if (offer) offerUndo(opts.undoName || labelName(record) || record.name, night);
     else if (night && !inTrip() && opts.from !== 'drift') import('./ui/camundo.js').then((m) => m.sayNight(labelName(record) || record.name)).catch(() => {});
+  }
+
+  /**
+   * Select without a flight (a mission's event step, Undo, a trip's stop): follow the object only when it is already
+   * about where the camera looks. From far away that was a cut onto it at the old distance (internal #440); now the
+   * camera stays, the card opens and the HUD's chevron points the way.
+   */
+  function followWithoutFlight(record) {
+    const pos = positionOfRecord(record);
+    const t = cameraRig.saveState().target;
+    const dist = pos && t ? Math.hypot(pos.x - t.x, pos.y - t.y, pos.z - t.z) : NaN;
+    if (inTrip() || followIsNear(dist, cameraRig.state.distance)) cameraRig.follow(() => positionOfRecord(record));
+    else cameraRig.stopFollow();
   }
 
   // --- the view before an automatic move, and the way back (internal #274) ------------------------
@@ -1826,6 +1883,30 @@ export async function boot({ setStatus } = {}) {
       // Earth arrived a third wider than the screen's free band, because Saturn's drawn disc, and
       // Mimas with it, had grown on the way. Two frames after the flight ends the scene has been
       // placed from the new camera; if the framing is more than 8 % off, a short second move fixes it.
+      // A SITE ON ANOTHER WORLD'S GROUND IS SOLVED AGAIN TOO, UNTIL IT HOLDS (review of 2026-11-16). Its arrival is
+      // framed with the limb of the world it stands on (limbPose), and a far planet is drawn enlarged and moved
+      // (scene/worlds.js PLANET_VIEW). MEASURED on the live site: Perseverance chosen with the camera at Voyager 1
+      // stopped 26.4 million km short, Mars a 0.6 px dot and the rover's model 463 px beside it; from the home view
+      // the same choice arrives 469 km out. limbPose now frames on the size the world has when the camera is there,
+      // which is right the first time for a planet; this is the net under it (a moon of a far planet, a card still
+      // sliding in when the flight began): two frames after each arrival the pose is solved from where the camera
+      // now is, and flown, until it moves less than 8 % (SITE_SETTLE_ROUNDS at most).
+      const SITE_SETTLE_ROUNDS = 6;
+      const siteSettle = (round, used) => (reason) => {
+        if (reason !== 'done' || typeof requestAnimationFrame !== 'function') return;
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          // Not under the drift's slow turn, which has begun by now: a flight would end it.
+          if (selected !== record || cameraRig.state.flying || cameraRig.state.orbiting) return;
+          const world = teachRigWorld(record);
+          const at = positionOfRecord(record);
+          if (!at) return;
+          const far = arrivalDistance(record, at);
+          const pose = limbPose(record, at, far, world);
+          const again = pose ? pose.distance : far;
+          if (!(again > 0) || Math.abs(again / used - 1) < 0.08) return;
+          cameraRig.flyTo({ targetScene: at, distance: again, tilt: pose ? pose.tilt : undefined, ms: 500, targetDelay: 0, onArrive: round + 1 < SITE_SETTLE_ROUNDS ? siteSettle(round + 1, again) : undefined });
+        }));
+      };
       const settle = record.klass === 'world' ? (reason) => {
         if (reason !== 'done' || typeof requestAnimationFrame !== 'function') return;
         requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -1836,7 +1917,7 @@ export async function boot({ setStatus } = {}) {
           const side = litOffset(worlds.sunDirOf(record.id), camera.up, undefined, worlds.faceDirOf(record.id));
           cameraRig.flyTo({ targetScene: at, distance: again, offset: side || undefined, ms: 500, targetDelay: 0 });
         }));
-      } : undefined;
+      } : on ? siteSettle(0, limb ? limb.distance : distance) : undefined;
       // A system's host star is met from over its orbits, as the trips meet it (40 degrees from the
       // pole, scene/systems.js OVERVIEW_POLAR), not from whatever tilt the camera happened to have
       // (internal #476: Kepler-16 arrived edge-on, LHS 1140 straight down).
@@ -1853,7 +1934,9 @@ export async function boot({ setStatus } = {}) {
     cameraRig.follow(on
       ? () => {
         const c = worlds.drawnPositionOf(on);
-        if (c) cameraRig.setWorldCentre(c);
+        // ... and its radius: a far planet's disc shrinks as the camera closes on it, and the ground the camera is kept
+        // out of must shrink with it, or the flight ends on the sphere it was taught from afar.
+        if (c) { cameraRig.setWorldCentre(c); cameraRig.setWorldRadius(worlds.drawnRadiusUnits(on)); }
         return positionOfRecord(record);
       }
       : () => positionOfRecord(record));
@@ -1864,6 +1947,12 @@ export async function boot({ setStatus } = {}) {
    * The world a record stands on, when that is not the stage's own: a landing site on the Moon or
    * Mars, seen from the Earth stage. Null for everything else, the stage's own ground included.
    */
+  /** The planet a craft in orbit round it is met with (data/sample.js PLANET_ORBITERS meta.orbits), when it is drawn on this stage. */
+  function orbitedWorldOf(record) {
+    const w = record && record.klass !== 'world' && record.meta && record.meta.construction === 'round-a-world' ? record.meta.orbits : null;
+    if (!w || w === stage.worldId || !WORLDS.some((x) => x.id === w)) return null;
+    return worlds.drawnPositionOf(w) ? w : null;
+  }
   function surfaceWorldOf(record) {
     const f = record && record.propagator === 'fixed' ? parseFrame(record.frame) : null;
     if (!f || f.kind !== 'fixed' || f.world === stage.worldId) return null;
@@ -1881,7 +1970,7 @@ export async function boot({ setStatus } = {}) {
    * another world's ground. Returns the world it taught, or null.
    */
   function teachRigWorld(record) {
-    const on = surfaceWorldOf(record);
+    const on = surfaceWorldOf(record) || orbitedWorldOf(record);
     if (on) {
       cameraRig.setWorldRadius(worlds.drawnRadiusUnits(on));
       cameraRig.setWorldCentre(worlds.drawnPositionOf(on));
@@ -2052,6 +2141,16 @@ export async function boot({ setStatus } = {}) {
       return Math.max(0.05, (widthKm / tanN) / stage.unitKm);
     }
     // 0077 W3-d: end
+    // A craft in orbit round a planet is met WITH the planet in the picture (internal #433): 350 000 km out, Mars was a 2 px dot.
+    const orbited = orbitedWorldOf(record);
+    if (orbited && pos) {
+      const c = worlds.drawnPositionOf(orbited);
+      const near = orbiterArrival({ generic: arrivalGeneric(record, pos), r: Math.hypot(pos.x - c.x, pos.y - c.y, pos.z - c.z), R: worlds.drawnRadiusUnits(orbited) });
+      if (near) return near;
+    }
+    return arrivalGeneric(record, pos);
+  }
+  function arrivalGeneric(record, pos) {
     const layer = layerRec(record.layer);
     const nearKm = (layer && layer.nearKm) || 2000;
     // No farther than the selected model can be drawn at full size (scene/heroes.js
@@ -2096,8 +2195,12 @@ export async function boot({ setStatus } = {}) {
     if (!w || !(w.radiusKm > 0)) return null;
     const centre = onWorld ? worlds.drawnPositionOf(onWorld) : { x: 0, y: 0, z: 0 };
     if (!centre) return null;
-    const R = onWorld ? worlds.drawnRadiusUnits(onWorld) : w.radiusKm / stage.unitKm;
-    const r = Math.hypot(pos.x - centre.x, pos.y - centre.y, pos.z - centre.z);
+    // The world's size WHEN THE CAMERA IS AT IT (worlds.js settledRadiusUnits), and the subject's height over it at that
+    // size: seen from the outer Solar System a planet is drawn a share of the camera's distance wide, and an arrival
+    // framed on that stopped 26.4 million km short of Mars (review of 2026-11-16).
+    const drawnR = onWorld ? worlds.drawnRadiusUnits(onWorld) : 0;
+    const R = onWorld ? worlds.settledRadiusUnits(onWorld) : w.radiusKm / stage.unitKm;
+    const r = Math.hypot(pos.x - centre.x, pos.y - centre.y, pos.z - centre.z) * (drawnR > 0 ? R / drawnR : 1);
     if (!(r > 0)) return null;
     // Where the camera's up is, seen from the subject: framing.js keeps the world below on screen.
     const up = camera.up;
@@ -2354,6 +2457,11 @@ export async function boot({ setStatus } = {}) {
     if (moment === 'now' && !observer) {
       const guess = guessObserver(CITIES);
       if (guess) ctx.setObserver(guess);
+      // Not the zone's own city: the time zone table says where the zone is (sky/zoneplace.js), and the guess is replaced.
+      if (isRoughGuess(guess)) {
+        import('./sky/zoneplace.js').then((m) => m.refineGuess()).then((better) => { if (better && observer && observer.source === 'guess') ctx.setObserver(better); })
+          .catch((e) => console.warn('the time zones did not load', e));
+      }
     }
     if (moment === 'now' && observer) enterGround();
     else if (ctx.skyView.active) ctx.skyView.exit();
@@ -2398,6 +2506,8 @@ export async function boot({ setStatus } = {}) {
   });
   window.addEventListener('hashchange', () => {
     setMoment(readMomentFromHash(), { silent: true });
+    // The last link's line ("That object is not on this map") does not stand over this one's view (ui/scenenote.js).
+    if (ctx.sceneNote && ctx.sceneNote.clearLink) ctx.sceneNote.clearLink();
     // THE WHOLE VIEW, not only at boot and not only `at` (public #331): Back, Forward or an address
     // pasted over this one is a link opened in a tab that is already running, and the clock, the
     // stage, the trip and its stop are as much the view as what is selected. ui/urlstate.js
@@ -2423,7 +2533,14 @@ export async function boot({ setStatus } = {}) {
     const plan = linkChange(keys, { at: current ? current.id : null, trip: running ? running.tourId : null, live: clock.mode === 'live', stage: stage.worldId });
     if (!plan) return;
     if (plan.clock && plan.clock.live) clock.live();
-    else if (plan.clock) { clock.goTo(plan.clock.goTo); if (clock.rates().includes(plan.clock.rate)) clock.setRate(plan.clock.rate); }
+    else if (plan.clock) {
+      // `#rate=3600` alone (no `t`): the rate from now on, as a fresh load reads it (ui/urlstate.js bootLink).
+      if (Number.isFinite(plan.clock.goTo)) clock.goTo(plan.clock.goTo); else if (clock.mode !== 'live') clock.live();
+      if (clock.rates().includes(plan.clock.rate)) clock.setRate(plan.clock.rate);
+      if (plan.clock.clamped) linkNote(ctx, COPY.link.tOutOfRange);
+    }
+    // A rate the clock does not offer was not applied: the address stops saying it.
+    if (keys.rate !== undefined && !clock.rates().includes(Number(keys.rate))) clearUrlState(['rate']);
     if (plan.stage && STAGES[plan.stage]) { if (stage.worldId !== plan.stage) ctx.setStage(plan.stage); } else if (plan.stage) linkNote(ctx, COPY.link.unknownStage, ['stage']);
     if (plan.trip && plan.trip.start) { openTrip(ctx, keys); return; }
     if (plan.trip && plan.trip.jump) {
@@ -3479,7 +3596,8 @@ function wireSound(ctx) {
 // address bar so a link copied from here does not carry it on.
 
 function linkNote(ctx, line, deadKeys) {
-  if (ctx.sceneNote && typeof ctx.sceneNote.say === 'function') ctx.sceneNote.say(line);
+  // A link's line goes by itself after a few seconds, and when the next link is applied (the hashchange listener).
+  if (ctx.sceneNote && typeof ctx.sceneNote.say === 'function') ctx.sceneNote.say(line, { link: true });
   if (deadKeys) clearUrlState(deadKeys);
 }
 
@@ -3489,6 +3607,8 @@ function applyUrlState(ctx, st) {
   // applies none of them rather than half of a link.
   if (st.unknownVersion) { linkNote(ctx, COPY.link.unknownVersion); return; }
   // `t` and `rate` are not here: ui/urlstate.js bootLink() applied them at boot, and took them out.
+  // A date outside what the map answers for was held to the nearest it does, and the scene says so.
+  if (st.tOutOfRange) linkNote(ctx, COPY.link.tOutOfRange);
   if (st.stage) {
     if (STAGES[st.stage]) ctx.setStage(st.stage);
     else linkNote(ctx, COPY.link.unknownStage, ['stage']);
@@ -3562,37 +3682,32 @@ function openTrip(ctx, st) {
 }
 
 /**
- * What `#at=` names. A record id first (`sat-25544`, `europa`), then a bare catalogue number
- * (`25544`), then what a person would type (`iss`, `hubble`), through the same index and alias
- * table as the search box. Only a whole-name, name-prefix or word-prefix match counts: a
- * letters-inside-a-word hit is a guess, and a link must not fly somewhere it did not name.
+ * What `#at=` names (and `#go=`, and an embed's `at=`): ui/resolveid.js is the one resolver. A record id as
+ * written is answered here, at once; anything else (a bare catalogue number, `m31`, `ngc-224`, `iss`,
+ * `andromeda-galaxy`) fetches the resolver, which takes an exact id, designation, name or slug before
+ * anything a person might have typed, and never lets `m1` run on into M10.
  */
-function resolveAt(ctx, id) {
+function openAt(ctx, id, how = null) {
   const text = String(id || '').trim();
-  if (!text) return null;
-  // A planet or a star system by its bare id, as `#go=` gives it: `kepler-186-f`, `kepler-186`.
-  const direct = ctx.recordById(text) || ctx.recordById(`exo-${text}`) || ctx.recordById(`star-${text}`);
-  if (direct) return direct;
-  // A number, Alpha-5 too (`100690`, `A0690`); and `int-<designator>`, the id a number of 90 000 and up had before 2026-10-14.
-  const sat = satIdOf(text) && ctx.recordById(satIdOf(text));
-  if (sat) return sat;
-  const records = typeof ctx.records === 'function' ? ctx.records() : [];
-  const intl = /^int-(.+)$/.exec(text);
-  const byIntl = intl && records.find((r) => r && r.meta && r.meta.intlDesignator === intl[1]);
-  if (byIntl) return byIntl;
-  const found = findMatches(buildIndex(records, ctx.layers || []), text.replace(/[-_+]+/g, ' '), 1);
-  const hit = found.hits[0];
-  return hit && !found.fallback && hit.score >= LINK_MIN_SCORE ? hit.record : null;
-}
-
-function openAt(ctx, id) {
-  const record = resolveAt(ctx, id);
-  // A star or an exoplanet before its layer has landed (OFF THE FIRST VISIT): load it, then look again.
-  if (!record && ctx.loadAfterFirstVisit && !ctx.laterLayersLoaded()) {
-    ctx.loadAfterFirstVisit().then(() => ctx.loadMoreCatalogues()).then(() => openAt(ctx, id), () => openAt(ctx, id)); // 0079 r15-a45: a link may name a pulsar or a cluster
+  let record = text ? ctx.recordById(text) : null;
+  if (!record && text && !how) {
+    import('./ui/resolveid.js').then((m) => openAt(ctx, id, m), () => openAt(ctx, id, { resolveId: () => null }));
     return;
   }
-  if (!record) { linkNote(ctx, COPY.link.unknownAt, ['at']); return; }
+  if (!record && text) record = how.resolveId(text, { records: typeof ctx.records === 'function' ? ctx.records() : [], layers: ctx.layers || [], recordById: ctx.recordById });
+  // A star or an exoplanet before its layer has landed (OFF THE FIRST VISIT): load it, then look again.
+  if (!record && ctx.loadAfterFirstVisit && !ctx.laterLayersLoaded()) {
+    ctx.loadAfterFirstVisit().then(() => ctx.loadMoreCatalogues()).then(() => openAt(ctx, id, how), () => openAt(ctx, id, how)); // 0079 r15-a45: a link may name a pulsar or a cluster
+    return;
+  }
+  if (!record) {
+    // The note says "showing the default view": so nothing stays selected from before (a link pasted over a running tab),
+    // and an embed, which has no note of the scene's, says it in its own line (ui/embed.js).
+    linkNote(ctx, COPY.link.unknownAt, ['at']);
+    if (typeof ctx.selected === 'function' && ctx.selected() && typeof ctx.deselect === 'function') ctx.deselect();
+    if (ctx.embed && typeof ctx.embed.note === 'function') ctx.embed.note(COPY.link.unknownAt);
+    return;
+  }
   // Spec 0021's rule, as ui/search.js: a record whose layer is off has no mark and no model, so
   // flying to it arrives at empty sky. The layer goes on first, and the panel is told (it paints
   // its checkboxes from its own state, and ignores an event with no `from` as its own echo).

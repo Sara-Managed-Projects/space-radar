@@ -258,10 +258,24 @@ export function crewRows(crew, fetchedAtMs, wallMs) {
  * for a record that is not one of the stations Launch Library follows. Before the two copies are
  * here it is one line saying so; `onLanded` repaints the card when they arrive.
  */
-export function crewBlock(record, rowsList, onLanded) {
+/** The crew list is today's: it is shown only while the clock stands within this of the wall clock. */
+export const CREW_NOW_MS = 24 * 3600 * 1000;
+
+/** Is the shown instant one the crew list answers for? Pure. `tMs` absent: yes (a caller with no clock). */
+export function crewCovers(tMs, wallMs) {
+  return !Number.isFinite(tMs) || !Number.isFinite(wallMs) || Math.abs(tMs - wallMs) <= CREW_NOW_MS;
+}
+
+export function crewBlock(record, rowsList, onLanded, tMs = NaN) {
   if (!hasCrewSource(record)) return null;
   const C = COPY.crew;
   const wrap = el('div', 'sr-crew');
+  // Another date on the clock: today's crew is not that date's ("7 aboard" stood on 1 Jan 1990, eight years before
+  // the first module flew; review of 16 Nov 2026). One line says so, and no count goes in the row's hint.
+  if (!crewCovers(tMs, Date.now())) {
+    wrap.appendChild(el('p', 'sr-card__aboardnote', C.otherDate));
+    return { node: wrap, hint: null };
+  }
   if (!crewState.done) {
     askCrew(onLanded);
     wrap.appendChild(el('p', 'sr-card__aboardnote', C.waiting));

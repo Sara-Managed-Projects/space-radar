@@ -48,6 +48,10 @@ import '../copy/en.later.js';
 import { sizeClause, lapClause } from './moonfacts.js'; // 0079 a3
 import { realModelFor, padVehicleShown } from '../scene/realmodels.js';
 import '../scene/sourcedtables.js'; // b200-s5-ci: the sourced bus and CubeSat routes, before the first card
+import { MODEL_FRAMES } from '../data/modelframes.js';
+import { lawFor, ruleKey } from '../scene/attitude.js';
+import { isGeostationary } from '../data/parsers.js';
+import { parseFrame } from '../propagate/frames.js';
 import { periodMsOf, wholePathKind } from '../scene/orbitline.js';
 import {
   toStage,
@@ -86,7 +90,7 @@ import {
   whyLine, endedWords, pathEndedWords, rightNowRows, ensurePlaces, rangeLabel, nearEarthOnEllipse,
   honestyLine, placesReady, truthRow, starClassParts,
 } from './cardfacts.js';
-import { pathBeginsWords } from './cardfacts.js'; // 0077 W1-d
+import { pathBeginsWords, elementsOutLine } from './cardfacts.js'; // 0077 W1-d
 export { pathBeginsWords } from './cardfacts.js'; // 0077 W1-d
 export {
   stormAdvisoryAgo, stormAdvisoryText, earthEventRows, whyLine, endedWords, pathEndedWords, ensurePlaces,
@@ -1426,6 +1430,30 @@ export function dwarfDrawingLine(id) {
 }
 // 0077 W1-f: end
 
+/**
+ * WHICH WAY IT POINTS, AND THAT NOBODY MEASURED IT (review of 2026-11-16). No catalogue gives a craft's attitude, so the model is
+ * turned by the rule its kind of craft is flown by (scene/attitude.js): this is the sentence that says so, and says which rule.
+ * For a craft that is drawn as a model: a satellite, a station, a telescope or a probe. NULL for a file in its author's own axes
+ * whose row has no `attitude:` (registry/models.yaml): that one keeps a fixed angle, and the card says nothing of which way it
+ * points because nothing is known. Not part of drawingLine(): the pages a search engine reads quote that line, and this one is
+ * about the picture on the map.
+ */
+const POINTED_KLASSES = new Set(['satellite', 'station', 'telescope', 'probe']);
+export function attitudeLine(record) {
+  const T = COPY.drawing && COPY.drawing.attitude;
+  const klass = klassOf(record);
+  if (!T || !POINTED_KLASSES.has(klass)) return null;
+  let entry = null;
+  try { entry = realModelFor(record); } catch { entry = null; }
+  const row = entry && entry.file ? MODEL_FRAMES[entry.file] : null;
+  // a file from other hands with no axes on record keeps the seeded constant angle (scene/models.js): nothing to say
+  if (entry && entry.file && !row && entry.axes !== 'app') return null;
+  const f = parseFrame(record && record.frame);
+  const law = lawFor(row ? row.law : klass === 'probe' ? 'earth-dish' : 'sun-panels', { geostationary: isGeostationary(record), orbitsWorld: !!f && f.world !== 'sun' });
+  const rule = T.rules[ruleKey(law)];
+  return rule ? t(T.lead, { rule }) : null;
+}
+
 export function drawingLine(record, tMs) {
   const md = meta(record);
   const drawsAs = pick(md, 'drawsAs');
@@ -1673,7 +1701,7 @@ export function actionButtons(record, ctx, m) {
     if (ended) { fly.title = t(A.flyEnded, { date: ended }); fly.setAttribute('aria-label', fly.title); }
     else if (pathEnds) { fly.title = t(A.flyPathEnded, { date: pathEnds }); fly.setAttribute('aria-label', fly.title); }
     else if (pathBegins) { fly.title = t(A.flyPathBegins, { date: pathBegins }); fly.setAttribute('aria-label', fly.title); } // 0077 W1-d
-    else if (fly.disabled) fly.title = A.flyNowhere;
+    else if (fly.disabled) fly.title = elementsOutLine(record, m) || A.flyNowhere;
     buttons.push(fly);
     const see = actionButton('see', A.seeShort, A.seeFromHereTitle, 'telescope', () => seeFromHere(record, ctx));
     see.disabled = !canSeeFromHere(record, m);
@@ -1894,7 +1922,10 @@ function parentOf(record, ctx, m = null) {
 export function parentChain(record, ctx, m = null) {
   if (!record) return [];
   const own = displayName(record);
-  const out = [{ name: klassOf(record) === 'world' ? bareWorld(own) : own, record, here: true }];
+  // A world's own name as its parents are said: the sky's bare name in the visitor's language ("Luna", not "La Luna"
+  // beside "Sol › Tierra"), else the card's name without its article.
+  const bare = klassOf(record) === 'world' && COPY.sky && COPY.sky.bodies ? COPY.sky.bodies[String(record.id)] : '';
+  const out = [{ name: klassOf(record) === 'world' ? bare || bareWorld(own) : own, record, here: true }];
   let cur = record;
   const seen = new Set([String(record.id)]);
   for (let i = 0; i < 6 && cur; i += 1) {
@@ -2616,7 +2647,7 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
   const aboard = aboardSection(record, ctx);
   const crew = crewBlock(record, rowsList, () => {
     if (current && current.record === record) { try { render(current.record, current.ctx, current.opts); } catch { /* keep the card */ } }
-  });
+  }, m.tMs);
   if (aboard || crew) {
     add('aboard', aboard && aboard.riding ? S.ridingOn : S.aboard, crew ? crew.hint : null, panelOf([crew ? crew.node : null, aboard ? aboard.node : null]));
   }
@@ -2899,8 +2930,10 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
 
   // Sources for this record: what the drawn shape is, and where the numbers were read.
   const drawn = drawingLine(record, m && m.tMs);
+  const pointed = attitudeLine(record);
   add('sources', S.sources, null, panelOf([
     drawn ? el('p', 'sr-card__drawn', drawn) : null,
+    pointed ? el('p', 'sr-card__drawn', pointed) : null,
     // A star system's line says what is measured and what is illustrative: the legend says what those mean (internal #908).
     drawn && systemLine(record) ? legendLink() : null,
     el('p', 'sr-card__source', sourceLine(record, ctx)),
@@ -2986,8 +3019,11 @@ function render(record, ctx, opts = {}) {
   const ended = endedWords(record, m);
   const pathEnds = ended ? null : pathEndedWords(record, m);
   const pathBegins = ended || pathEnds ? null : pathBeginsWords(record, m); // 0077 W1-d
-  const heroes = ended || pathEnds ? [] : heroNumbers(record, m, rows);
+  // A satellite on a date its elements cannot answer for (ui/cardfacts.js elementsOutWords): one line, not three dashes.
+  const outOfElements = ended || pathEnds || pathBegins ? null : elementsOutLine(record, m);
+  const heroes = ended || pathEnds || outOfElements ? [] : heroNumbers(record, m, rows);
   if (heroes.length && !pathBegins) body.appendChild(heroBlock(heroes)); // 0077 W1-d: before its path, as after it: no dashes
+  if (outOfElements) body.appendChild(el('p', 'sr-card__sentence sr-card__ended', outOfElements));
   if (ended) body.appendChild(el('p', 'sr-card__sentence sr-card__ended', t(COPY.card.endedLine, { date: ended })));
   else if (pathEnds) body.appendChild(el('p', 'sr-card__sentence sr-card__ended', t(COPY.card.pathEndedLine, { date: pathEnds })));
   else if (pathBegins) body.appendChild(el('p', 'sr-card__sentence sr-card__ended', t(COPY.card.pathBeginsLine, { date: pathBegins }))); // 0077 W1-d

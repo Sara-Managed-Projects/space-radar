@@ -13,6 +13,14 @@ tagged, and their dates are the day the last change in each landed.
 
 ### Added
 
+- **A language menu.** The tool rail has a language button (a row of More on a phone) that lists the eleven languages by
+  their own names. Choosing one loads the same view again in that language (the selection, the clock, the stage and the
+  camera are kept) and the choice is remembered in the browser, so English stays English on a browser set to German.
+- **The names of things in every language.** In a translated app the search now knows that language's names: "Luna",
+  "Marte", "Sol", "Tierra", "Vía Láctea", "Estación Espacial Internacional" and their equivalents in the other nine
+  languages find the Moon, Mars, the Sun, the Earth, the Milky Way and the station, with or without article and accents
+  ("Júpiter" and "jupiter" alike); cards, labels and search rows are titled in the language, with the English name still
+  found; and all 40 layer names in What to show are translated.
 - **Fast-spinning stars are drawn flattened.** Vega, Altair, Regulus and Rasalhague, which interferometers have measured to bulge
   at the equator, are drawn as flattened discs, turned as their spin axis is in the sky (the paper's inclination and position
   angle), and darker and redder at the equator than at the poles (gravity darkening). Their cards now give the width across the
@@ -88,6 +96,65 @@ tagged, and their dates are the day the last change in each landed.
 
 ### Fixed
 
+- **Weather is drawn again on the live site.** Lightning on the Earth's night side, the moving air of Jupiter, Saturn and
+  Venus, Mars's season and the faint rings were missing for every visitor: the deploy strips shader comments and indentation,
+  and two shader patches looked for a comment and for indented lines. They now look for lines of code, and a test runs every
+  shader patch against the tree a deploy builds.
+- **Pages in the ten other languages load their scripts.** The subscribe form, the journal strip and the embed generator on
+  `/es/`, `/fr/` and the rest asked for files under `/<lang>/js/`, which do not exist. The check of the built pages now holds
+  every script, stylesheet, icon and picture address of every page, in every language, to a file of the build.
+- **A visit under `/es/`, `/fr/` and the other languages stays there.** The first selection used to rewrite the address to the English root, so a
+  reload, the copied address and Share lost the language.
+- **Swift is described as it is: gone.** NASA's Swift observatory ended its science on 23 October 2026 and re-entered the
+  atmosphere on 4 November 2026 (NASA's Swift pages; CelesTrak's catalogue). Its page said "is a space telescope going round
+  the Earth" and offered to show it live; it now says what it was, in the past tense, with its dates and no live button, and
+  the satellite is in no list the map draws. A scheduled check holds the hand-kept list of working satellites to CelesTrak's
+  catalogue, so the next one that leaves orbit is found.
+- **One count of moons.** The Compare view said 95, 274 and 28 moons for Jupiter, Saturn and Uranus (NASA's fact sheets, years
+  behind); it now says 115, 293 and 29, JPL's list of known moons (read 16 November 2026), the same moons the map holds, and a
+  test fails when the two counts differ.
+- **Sedna's page gives one lap, not two.** Its text said "about 11 400 years" and its Key facts "12 679 years" (the orbit
+  about the Sun alone, which is not the lap in the long run). Key facts now give about 11 400 years and a far point of about
+  937 AU, from JPL Horizons' orbit about the Solar System's centre of mass, and the width as the range the card gives (648 to
+  1 220 km). A check over every object page holds a lap or a width in its text to its Key facts.
+- **Leonids 2026.** The index said "the night of 16 to 17 November"; the peak is 17 November at about 23:45 UT (IMO Meteor
+  Shower Calendar 2026), the night of 17 to 18 November. The summary, the Moon's phase and the link into the map now use that
+  moment. The Geminids 2026 page said "13 to 14 December" for a maximum centred on 14 December, 14h UT, and is corrected too.
+- **A rover or lander on another world is met the same way from anywhere.** Chosen while the camera was far out in the
+  Solar System (beside Voyager 1, say), Perseverance was met 26 million km short of Mars, a full-size rover beside a dot
+  of a planet. The arrival is now solved again when the camera gets there, so it ends about 470 km from the rover with
+  Mars filling the view, as it does from the Earth.
+- **A card is titled by the object's own name.** 149 satellites in 17 families shared a title, because the name of the model they
+  are drawn with replaced the catalogue's: GOES 14 to 19 were all "GOES weather satellite", eight TDRS, 25 Kinéis, LAGEOS 1 and 2.
+  The title and the label are now the object's name ("GOES 18", "TDRS 13", "LAGEOS 2") and the family's name is in the card's
+  "drawn as" line. Nauka and Poisk are titled "Nauka, an ISS module" and "Poisk, an ISS module".
+- **Thirteen craft that had no shape, or the generic one, are drawn with a model that was already in the library.** The ISS
+  modules Unity, Zvezda and Destiny (three generic stations sat at the ISS) are drawn as the station they are part of; Luna 20
+  wears Luna 16's descent stage and Surveyor 5, 6 and 7 the Surveyor files, with what differs said on the card; Luna 23 and 24,
+  WorldView-1 and -2 and BlueWalker 3 wear a stand-in the card calls "the kind of thing, not this exact one". GOES and TDRS, each
+  one NASA file worn by craft of different generations, now say so too.
+- **Spacecraft drawn from published models point the way their kind of craft does.** 99 model files from other hands (every NASA
+  file, the ISS and all the far probes among them) flew at a fixed angle picked from the object's id. Thirty of them now follow a
+  simple rule, stated in the code and on the card: the ISS keeps the same side down and the same end forward; Terra, Aqua,
+  Landsat 8 and the Mars Reconnaissance Orbiter look down with their wings turned to the Sun; GOES and TDRS look at the Earth
+  with their wings north and south; Hubble, Chandra, Kepler, Spitzer and Roman turn their cells to the Sun and look at one place
+  in the sky, as do Mars Odyssey, MAVEN, the Lunar Reconnaissance Orbiter and OSIRIS-APEX; Webb turns its sunshield, Parker its
+  heat shield and SOHO, SDO and STEREO their faces to the Sun; Voyager 1 and 2, Cassini and Galileo point their dish at the Earth;
+  Pioneer 10 and 11 and Juno turn about it.
+  Every geostationary satellite keeps its wings north and south through the seasons, a probe on its way points its dish at the
+  Earth (it pointed at the middle of the view), and a craft in orbit round Mars or the Moon looks down at that world from any
+  view. The card's Sources section says "which way it points is modelled, not measured" and which rule. A model whose axes are
+  not on record yet keeps its fixed angle and its card says nothing of which way it points.
+- **Deep-space craft no longer freeze, jump or vanish when the clock leaves the saved month.** The saved table of JPL's
+  tracks covered a day back and thirty ahead, and outside it the map held the first or last place for a week: two days back
+  JWST was drawn 3.0 million km from Earth against 1.66 million real, and after a week every craft was gone (a review of
+  positions, 2026-11-16). The table now runs 120 days either side of the day it is saved (daily steps, six-hourly for Parker,
+  Solar Orbiter, JUICE, Europa Clipper, BepiColombo, Psyche and OSIRIS-APEX, which bend in hours; 45 days for the craft round
+  Mars, Jupiter and the Moon), and outside it a craft is not drawn: its card says JPL's path for it runs from this day to that,
+  that the clock is outside it, and how to go to the nearest day. Solar Orbiter is asked of Horizons (-144) instead of drawn
+  97.6 million km off its place. The harvester's list and `run.py` change (a row may carry its own `step` and `window`), so the
+  harvester needs a redeploy before the longer tables arrive. The close-approach asteroids and the comets are asked of SBDB at
+  full precision (`full-prec=1`): three of the four checked objects pass Earth within 1 % and 1.4 h of JPL's close-approach table.
 - **A 3D model is one thing to click, small icons over the Earth are easier to hit, and a flight no longer carries its
   subject along at full size.** A spacecraft drawn as a model answers to a click or a tap anywhere on it (its panels, its
   trusses), also in front of a planet; it answered only at its centre point. Over the Earth an icon is hit anywhere on the
@@ -106,6 +173,26 @@ tagged, and their dates are the day the last change in each landed.
   full height (which is how the Size slider is reached). Two guards for narrower screens and longer languages: the
   badge's lines wrap where they would have ended in an ellipsis, and a number in a card's Compare table cannot break
   between two digits.
+- **Links by catalogue number open the right object.** `#at=m31`, `#at=m42`, `#at=ngc224`, `#at=andromeda` and the same ids in an
+  embed said "That object is not on this map", and `#at=m1` opened M10. A link's id is now read by one resolver: the record id, a
+  Messier, NGC or HIP designation, a NORAD number, an international designator, a page's slug or a name, exact match first. An
+  embed whose id the map does not have says so in one line.
+- **Search knows more ways of naming things.** "hubble space telescope", "M 31" with a space, "IC 434", "Kuiper" (the satellite
+  constellation) and "big dipper" find something, and "M1" lists the Crab Nebula first.
+- **A satellite's card is honest when the clock moves.** Before the date of its orbital elements the card says how far back the
+  position was worked ("worked back 5 days from its elements", not "elements 0 minutes old"); on a date the elements cannot
+  answer for it says so in one line in place of three dashes, the badge reads "Not placed" and today's crew is not listed.
+- **Small ones.** A link's date outside 1700 to 2200 is held to the nearest date the map shows, and says so; `#rate=` alone
+  applies in a running tab; a link's error note goes after a few seconds and when the next link is opened; leaving a Moment
+  while it loads no longer throws; the model viewer says when the browser cannot draw 3D or the catalog did not arrive; the
+  daily challenge says when its data failed and offers to try again; Tonight's headline pass says what an unfamiliar satellite is.
+- **Sixteen moons are drawn from 1950 to 2100, not only from 2000 to 2050.** Phobos, Deimos, Saturn's seven, Uranus's five,
+  Triton and Charon had no position outside 2000 to 2050, so Titan was missing when Voyager 1 passed Saturn (12 November 1980),
+  Miranda at Uranus (1986), Triton at Neptune (1989) and Phobos in November 1971. Each is now placed over 1950 to 2100 and
+  checked against JPL Horizons there: within 0.6 % of its orbit at worst (Titan 521 km, Miranda 96, Triton 16 and Phobos
+  4.8 km from Horizons at those four flybys). Seven of them (Phobos, Deimos, Mimas, Enceladus, Iapetus, Miranda, Ariel) carry a
+  few numbers fitted for the outer years; inside 2000 to 2050 every position is exactly what it was. Before 1950 and after 2100
+  they are still not drawn. `site/js/propagate/moons.js` grows by about 0.8 kB in the boot graph.
 - **The card's region badge follows the standard bounds.** Icarus at 1.76 AU read "Outer solar system" because the inner Solar System ended at Mars's aphelion; it now runs to the frost line (4.95 AU, Jupiter's perihelion), the main belt is the 2.06 to 3.27 AU between Jupiter's 4:1 and 2:1 gaps, and an orbit that strays out of it (a Hungaria, a Hilda, Encke's comet) is not headed "Asteroid belt".
 - **Links and first screens that opened empty.** A shared link to Andromeda, and "Fly to it" on any galaxy, cluster or
   nebula, now stops near enough to see the object (it was a whole unit away, a million light-years on the Local Group's

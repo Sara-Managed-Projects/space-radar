@@ -37,7 +37,7 @@ const yamlText = readFileSync(join(ROOT, 'harvest/lists/horizons-ids.yaml'), 'ut
 const idLines = yamlText.split('\n').filter((l) => /^\s*-\s*\{\s*id:/.test(l));
 // `center:` is optional and names the world a craft circles (2026-09-22); the rest are the Sun's.
 const list = idLines.map((l) => {
-  const m = /id:\s*"(-?\d+)"\s*,\s*name:\s*"([^"]+)"\s*,\s*app_id:\s*([a-z0-9-]+)\s*(?:,\s*center:\s*"'500@(\d+)'"\s*)?\}/.exec(l);
+  const m = /id:\s*"(-?\d+)"\s*,\s*name:\s*"([^"]+)"\s*,\s*app_id:\s*([a-z0-9-]+)\s*(?:,\s*center:\s*"'500@(\d+)'"\s*)?(?:,\s*step:\s*"'(?:\d+ [hd])'"\s*)?(?:,\s*window:\s*\{before:\s*\d+d,\s*after:\s*\d+d\}\s*)?\}/.exec(l);
   return m ? { id: m[1], name: m[2], appId: m[3], center: m[4] ? Number(m[4]) : null } : { bad: l };
 });
 check(list.every((r) => !r.bad), `every horizons-ids.yaml row reads as {id, name, app_id[, center]}: ${JSON.stringify(list.filter((r) => r.bad))}`);
@@ -96,8 +96,8 @@ for (const rec of records) {
   check(listed.has(String(hid)), `${rec.id} carries Horizons id ${hid} and the harvester never fetches it`);
 }
 const unlisted = records.filter((r) => r.meta.horizonsId == null).map((r) => r.id).sort();
-check(JSON.stringify(unlisted) === JSON.stringify(['deep-solar-orbiter']),
-  `only Solar Orbiter goes without a Horizons id; Gaia has one since 2026-09-22 (found ${unlisted})`);
+check(unlisted.length === 0,
+  `every craft has a Horizons id: Gaia since 2026-09-22, Solar Orbiter (-144) since 2026-11-16 (found ${unlisted})`);
 // A model keyed on an id the harvester does not fetch would be a model on a stand-in forever.
 for (const key of Object.keys(REAL_MODELS.horizons)) {
   if (ended.some((r) => String(r.meta.horizonsId) === key)) continue; // drawn from its path file

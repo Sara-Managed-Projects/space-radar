@@ -102,9 +102,29 @@ Then `node scripts/check-translation.mjs --write-doc` puts your language into th
 changed (the counts move whenever the English does, so they are refreshed with `--write-doc`, not held).
 
 How the page chooses (`site/js/copy/lang.js`): `?lang=` first (`es-MX` is read as `es`; `?lang=en` forces English; a
-code nobody has written is English); else the browser's own list of languages, but only for a language marked
+code nobody has written is English); then the language of the address (`/es/` is the Spanish app); then the visitor's
+own choice, kept by the language menu; else the browser's own list of languages, but only for a language marked
 `reviewed`; else English. `<html lang>` follows (and `dir="rtl"` for Hebrew and Arabic). A first visit in English
 fetches nothing extra: the language file loads only when a language is chosen, and it is never part of the first screen.
+
+**The language menu** (`site/js/ui/languagepop.js`, the rail's language button; a row of More on a phone) lists every
+language of `copy/lang.js` by its own name (the `META.name` of its file). Each row is a link to the same view in that
+language: to the language's folder where the site has one (`/es/`), else `?lang=<code>`; the selection, the clock,
+the stage and the camera ride in the address, and the page loads again. The choice is kept in the browser
+(`localStorage`, `sr:lang`), so the bare address speaks it next time. A new language needs one line there
+(`LANGUAGE_NAMES`); `tests/test_language_menu.mjs` fails until it has one.
+
+**The names of things.** Two kinds, in two places:
+
+- **Layers** ("Crewed stations", "Bright enough to see"): `controls.layerName` in the language's file, one name per
+  layer id, the English beside it in `copy/en.js` (the same words as `registry/layers.yaml`). They share a row with a
+  count, so keep them near the length of the English.
+- **Objects** (the Moon, the Andromeda Galaxy, the International Space Station): not in the language's file. They are
+  the names the search pages already use, `registry/seo-i18n/<code>/names.json` (below, "The pages a search engine
+  reads"); `python3 scripts/gen_names_i18n.py` writes them to `site/data/names/<code>.json`, which the map fetches for
+  that language only (`site/js/ui/localnames.js`). A card's title, a label and a search row then use the name, the
+  search finds it with or without its article and accents, and the English name still finds it. Change a name in the
+  catalog, run the script, and commit both; CI runs it with `--check`.
 
 ## Review
 

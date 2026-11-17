@@ -238,7 +238,7 @@ sources:
   # MEASURED: no Access-Control-Allow-Origin on any JPL endpoint, so these could not be
   # called from the page even if the rate limits allowed it.
   - id: jpl-sbdb-neo
-    url: https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name,spkid,e,a,q,i,om,w,ma,epoch,H,diameter,class&sb-kind=a&sb-group=neo
+    url: https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name,spkid,e,a,q,i,om,w,ma,epoch,H,diameter,class&sb-kind=a&sb-group=neo&full-prec=1
     auth: none
     browser: false
     cadence: 24h
@@ -258,7 +258,7 @@ sources:
   # directly instead of derived. One parser, jpl_sbdb, reads both rows: it only checks for
   # full_name/e/a/q/i/om/w/epoch, which this query carries too.
   - id: jpl-sbdb-comets
-    url: https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name,e,a,q,i,om,w,ma,tp,epoch,M1,K1&sb-kind=c
+    url: https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name,e,a,q,i,om,w,ma,tp,epoch,M1,K1&sb-kind=c&full-prec=1
     auth: none
     browser: false
     cadence: 24h

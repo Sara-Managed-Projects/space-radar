@@ -224,7 +224,8 @@ const sweep = (node, path) => {
     check(!/!/.test(text) && !/→/.test(text) && !/ -- /.test(text) && !PICTO.test(text.replace(/[©®™↑↓←↔]/g, '')), `COPY.${dotted} has an exclamation mark, an arrow, a double hyphen or an emoji: "${text}"`);
     // Title Case is asked of the template's own words: a name or a weekday filled in is not its doing.
     const words = node.replace(/\{\w+\}/g, ' ').split(/\s+/).filter((w) => /^[A-Za-z]/.test(w));
-    if (words.length >= 3 && n <= MAX_CHARS) check(words.filter((w) => /^[A-Z][a-z]/.test(w)).length < words.length, `COPY.${dotted} is in Title Case: "${text}"`);
+    // "The Milky Way" is the galaxy's name, not a label set in Title Case (the layer's name, registry/layers.yaml `display`).
+    if (words.length >= 3 && n <= MAX_CHARS && dotted !== 'controls.layerName.galaxy') check(words.filter((w) => /^[A-Z][a-z]/.test(w)).length < words.length, `COPY.${dotted} is in Title Case: "${text}"`);
     return;
   }
   if (Array.isArray(node)) { node.forEach((v, i) => sweep(v, [...path, String(i)])); return; }

@@ -706,6 +706,8 @@ jobs:
         run: node tests/test_tonightbest.mjs
       - name: One mark per object -- a dot yields to its 3D model
         run: node tests/test_onemark.mjs
+      - name: "Right to left: each panel beside the tools rail mirrors in css/rtl.css (internal 449); a phone held sideways gets a side sheet (internal 455)"
+        run: node tests/test_rtl_panels.mjs && node tests/test_landscape_phone.mjs
       - name: "The Planets tab and the cards: planets win over the crowd of small bodies, uncut captions, the Moon's distance, the hour label, Jupiter's ring (internal 441, 443, 444, 451, 452, 454)"
         run: node tests/test_ux1_planets_cards.mjs
       - name: A loaded model keeps its colours, and ships no image it cannot use
@@ -724,8 +726,16 @@ jobs:
       # vectors written into the test (no network here), and Neptune's card to what it can say.
       - name: worlds are objects (spec 0028 step 0), and eleven moons and Pluto sit where NASA and JPL put them
         run: node tests/test_worlds_layer.mjs
+      # The sixteen fitted moons outside 2000-2050 (review of 2026-11-16: Titan, Miranda, Triton and
+      # Phobos were absent on the Voyager and Mariner 9 dates): JPL Horizons vectors from 1957 to
+      # 2099 kept in tests/fixtures/moon_span_horizons.json, a tolerance per moon, the 2000-2050
+      # answer unchanged to a millionth of a kilometre, and null before 1950 and after 2100.
+      - name: sixteen moons are where Horizons puts them from 1950 to 2100, and unchanged inside 2000 to 2050
+        run: node tests/test_moons_span.mjs
       - name: what a pointer means, by tier, occlusion, reach and ambiguity (spec 0028 step 1, and the 1.5.2 pick review); the icon as drawn, a crowd, a model as one target (internal #341, #342)
         run: node tests/test_pickrank.mjs
+      - name: pointer, wheel and key rules (a drag dead zone, the primary button, the trackpad pinch, keys in panels, zoom toward the pointer; internal #433-#440)
+        run: node tests/test_gestures.mjs
       - name: on the way to it a model is the size it will be on arrival, and a drawn model is hit on its outline (internal #340, #341)
         run: node tests/test_flight_size.mjs
       - name: the hover's screen grid agrees with a full scan and is quick
@@ -855,6 +865,14 @@ jobs:
       # dialects once bounced the app between moments; this is the check that there is one.
       - name: one module owns every key of the URL, and a stop is found by number or by id (spec 0032)
         run: node tests/test_urlstate.mjs
+      # Review of 2026-11-16: the app shell of a language has <base href="../">, and the hash writer gave replaceState the fragment
+      # alone, which a browser resolves against the base: the first selection moved /es/ to the English root.
+      - name: "a visit under /es/, /fr/ ... keeps its folder through every address write, and Share, a trip and a place link open in the same language"
+        run: node tests/test_language_address.mjs
+      # Review of 2026-11-16: Swift re-entered on 4 November 2026 and was still in the list of working satellites, with a page in the
+      # present tense. A craft that ends moves to site/js/data/ended.js; scripts/check_notable_decay.py (freshness.yml) finds the next.
+      - name: "a craft no longer in orbit is in no list the map draws or the harvester cuts, and says what it was, with its dates and sources"
+        run: node tests/test_ended.mjs
       # Share (spec 0033): the link is built from the known keys only, so the visitor's place can
       # never ride along, and the postcard's caption is the card's own lines, string for string.
       # Spec 0035: a stub AudioContext. No context and no fetch before a gesture, one context after
@@ -876,6 +894,24 @@ jobs:
       # Internal #466: the landing's move, and the film clock handed to a tool, with no browser.
       - name: "#go= lands with one interruptible push-in, and the film's clock can be had without a trip (internal #466)"
         run: node tests/test_golink.mjs
+      # Review of 16 Nov 2026: one resolver for `#at=`, `#go=` and an embed's `at=`, with a table of ids; and the
+      # search, card and link faults found the same day.
+      - name: a link's id opens what it names (record id, Messier, NGC, HIP, NORAD, designator, name, slug), and m1 is never M10
+        run: node tests/test_resolveid.mjs
+      - name: "search knows full and spaced names; a satellite card is honest when the clock moves; a link's date, rate and note (review of 16 Nov 2026)"
+        run: node tests/test_review_f1.mjs
+      # Internal #310 (review of 16 Nov 2026): a language menu in the app, and the names of things in each language.
+      - name: the language menu lists eleven languages by their own names, each a link to the same view, and keeps the choice
+        run: node tests/test_language_menu.mjs
+      - name: the names of things per language are what the translated catalogs give (scripts/gen_names_i18n.py)
+        run: python3 scripts/gen_names_i18n.py --check
+      - name: in every language the Moon, Mars, the Sun, the Earth, the Milky Way and the station are found by its own words, and every layer has a name
+        run: node tests/test_local_names.mjs
+      # Review of 16 Nov 2026: What to show forgot its choices on a reload; Tonight's guessed place could be a continent off.
+      - name: What to show keeps a visitor's choices, and a guessed place is the time zone's own city (review of 16 Nov 2026)
+        run: node tests/test_review_f1c.mjs
+      - name: the time zones' places are well formed (scripts/gen_zone_places.py; the IANA table, public domain)
+        run: python3 scripts/gen_zone_places.py --check
       - name: a shared link is the view and nothing else, and every Share opens the one sheet (spec 0033, 0061 task 8)
         run: node tests/test_share.mjs
       # Spec 0044: the byte gate's rules on fixtures. The real boot is in screens.yml, which has a
@@ -1165,6 +1201,14 @@ jobs:
         run: node tests/test_sky_shaders_src.mjs
       - name: "shader text in templates loses its comments and indentation, each shader checked, switched off by default (internal #553 / #531)"
         run: python3 tests/test_strip_shaders.py
+      # Review of 2026-11-16: the weather's shader patch anchored on a GLSL comment and the faint rings' on indented lines, both of
+      # which a deploy strips, so no world had weather on the live site while every test here was green. The first test runs every
+      # patch of a shader's text (it is also in scripts/check_built_tree.mjs TESTS, so test_minify_real.mjs and a deploy run it on the
+      # minified tree); the second refuses an anchor that is a comment or holds indentation, where it is written.
+      - name: "every shader patched by its text finds the lines it changes: weather, faint rings, tiles, stars, ring grains, model materials"
+        run: node tests/test_shader_patches.mjs
+      - name: "a piece of shader text that code looks for is one trimmed line of code: no comment, no indentation (a deploy strips both; reads source text)"
+        run: node tests/test_shader_anchors_src.mjs
       - name: "stored at Brotli 11: one rule in deploy.sh, verify-deploy.sh and the edge function; copies decode byte for byte; a same-size content change is still uploaded (internal #514, #576)"
         run: node tests/test_precompress.mjs
       # 0077 W3-e: begin
@@ -1368,6 +1412,10 @@ jobs:
         run: node tests/test_cometfield.mjs
       - name: "radar satellites look to one side: the roll about the track, its sign and each cited angle (internal #78)"
         run: node tests/test_sar_roll.mjs
+      # The model review of 2026-11-16: 99 routed files flew at a constant angle seeded from the object's id. A file's row now says
+      # which of its axes is which and the law it is flown by (registry/models.yaml `attitude:`, scene/attitude.js).
+      - name: "which way a spacecraft points: the Sun, the nadir and the Earth's direction, six laws, each file's own axes from the registry and its mirror, the card's sentence (model review of 2026-11-16)"
+        run: python3 scripts/gen_model_frames_js.py --check && node tests/test_attitude.mjs
       # 0079 a8: end
       # 0079 a6: begin
       - name: "the small complete lists: the IAU's showers, the observatories with their MPC codes, the launch sites and every landing and impact site become records, and their cards say what is not drawn (release 1.5.0 stage A6, internal #1064)"
@@ -1454,6 +1502,10 @@ jobs:
       # 1.8.0 tests I: begin
       - name: "hermite and sampled: a table of spacecraft positions becomes a position at any moment, measured near a sample and inferred between (public #619)"
         run: node tests/test_propagate_sampled.mjs
+      - name: "Craft from the saved Horizons tables: Horizons' own hourly vectors inside a table, no position two days outside it (internal #397)"
+        run: node tests/test_snapshot_span.mjs
+      - name: "Listed close approaches against JPL's close-approach table: full-precision SBDB elements, distance and time within a stated tolerance (internal #392)"
+        run: node tests/test_neo_cad.mjs
       - name: "staticPos places every star and galaxy and answers null for a record with no usable position (public #620)"
         run: node tests/test_propagate_static.mjs
       - name: "the Kepler equation solvers behind every orbit drawn from elements: the answer satisfies the equation, a circle, a wrapped angle, Barker's equation (public #621)"

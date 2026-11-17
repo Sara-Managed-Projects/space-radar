@@ -61,6 +61,10 @@ const CAT_EXACT = 1000; // "25544" is unambiguous: the strongest signal there is
 const NAME_EXACT = 900;
 const NAME_PREFIX = 800;
 const WORD_PREFIX = 700; // "dragon" finds "CREW DRAGON 12"
+// A catalogue designation typed whole ("m1", "ngc 224", "ic 434") that is one of a record's other names: above
+// every name that merely STARTS with those letters. "M1" listed M10, M19 and M14 before the Crab Nebula, whose
+// name is the nebula's and whose designation is an alias (review of 16 Nov 2026).
+const DESIGNATION_EXACT = 850;
 const NAME_CONTAINS = 600;
 const ALIAS_WORD = 650; // a word of another name for it (worlds.yaml aliases)
 const OTHER_CONTAINS = 500; // designator or operator
@@ -121,10 +125,21 @@ function recordsOf(ctx) {
 // The index
 // ---------------------------------------------------------------------------------------
 
-/** Lower-cased, trimmed, inner runs of whitespace collapsed. Applied to the query too. */
+/**
+ * Accents folded: "Júpiter" and "jupiter" are one word to a search, "Vía Láctea" and "via lactea" too (review of
+ * 16 Nov 2026: the Spanish app answered "Nothing called «Júpiter»"). Only text that has a character outside ASCII
+ * pays for it; a letter with an accent becomes that letter alone, so the folded text is as long as it was.
+ */
+export function fold(text) {
+  // eslint-disable-next-line no-control-regex
+  if (!/[^\x00-\x7f]/.test(text)) return text;
+  try { return text.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch { return text; }
+}
+
+/** Lower-cased, trimmed, inner runs of whitespace collapsed, accents folded. Applied to the query too. */
 function norm(value) {
   if (value === null || value === undefined) return '';
-  return String(value).trim().toLowerCase().replace(/\s+/g, ' ');
+  return fold(String(value).trim().toLowerCase().replace(/\s+/g, ' '));
 }
 
 /**
@@ -171,7 +186,8 @@ export function buildIndex(records, layers) {
   const index = {
     n: 0,
     record: [],
-    name: [], // lower-cased
+    name: [], // lower-cased; in another language, the record's name in that language (meta.localName)
+    name2: [], // then the catalogue's own (English) name, which still finds it as well as it ever did; '' in English
     cat: [], // catalogue number as text, '' when the object has none
     desig: [], // lower-cased international designator
     oper: [], // lower-cased operator
@@ -191,7 +207,11 @@ export function buildIndex(records, layers) {
   for (const record of list) {
     if (!record) continue;
     const meta = record.meta || {};
-    const name = norm(record.name || meta.objectName);
+    // IN ANOTHER LANGUAGE (ui/localnames.js, internal #310): a record that has a name in the page's language is
+    // searched by it first ("luna" is the Moon before Luna 23), and by the catalogue's English name beside it.
+    const own = norm(record.name || meta.objectName);
+    const local = meta.localName ? norm(meta.localName) : '';
+    const name = local || own;
     const cat = meta.catalogueNumber != null ? meta.catalogueNumber : meta.noradId;
     const catText = Number.isFinite(Number(cat)) && cat !== null ? String(cat) : '';
     // The OMM parser carries no operator today; LightLive2 spells the same idea `provider`.
@@ -202,6 +222,7 @@ export function buildIndex(records, layers) {
 
     index.record.push(record);
     index.name.push(name);
+    index.name2.push(local && own !== local ? own : '');
     index.cat.push(catText);
     index.desig.push(norm(meta.intlDesignator));
     index.oper.push(oper);
@@ -240,24 +261,31 @@ export function buildIndex(records, layers) {
  * Score one entry against an already-normalised query. 0 means no match.
  * One indexOf over the name carries three of the tiers, which is why the scan is cheap.
  */
+function scoreName(name, q) {
+  if (name === q) return NAME_EXACT;
+  let at = name.indexOf(q);
+  if (at === 0) return NAME_PREFIX;
+  if (at > 0) {
+    // A later occurrence may start a word even when the first one does not, so keep looking
+    // before settling for "contains". This only runs on entries that already matched.
+    while (at > 0) {
+      if (isBoundary(name.charCodeAt(at - 1))) return WORD_PREFIX;
+      at = name.indexOf(q, at + 1);
+    }
+    return NAME_CONTAINS;
+  }
+  return 0;
+}
+
 function scoreOne(index, i, q, numeric) {
   if (numeric && index.cat[i] === q) return CAT_EXACT;
 
   const name = index.name[i];
-  if (name) {
-    if (name === q) return NAME_EXACT;
-    let at = name.indexOf(q);
-    if (at === 0) return NAME_PREFIX;
-    if (at > 0) {
-      // A later occurrence may start a word even when the first one does not, so keep looking
-      // before settling for "contains". This only runs on entries that already matched.
-      while (at > 0) {
-        if (isBoundary(name.charCodeAt(at - 1))) return WORD_PREFIX;
-        at = name.indexOf(q, at + 1);
-      }
-      return NAME_CONTAINS;
-    }
-  }
+  let named = name ? scoreName(name, q) : 0;
+  // The catalogue's own name beside the page language's: the better of the two.
+  const name2 = index.name2[i];
+  if (name2 && named < NAME_EXACT) named = Math.max(named, scoreName(name2, q));
+  if (named) return named;
 
   // An alias is a name people use, so it ranks like a word of the name -- below the name's own
   // words, above a match in the operator. "red planet" finds Mars; "planet" alone finds it too.
@@ -307,6 +335,28 @@ export function catalogQuery(q) {
 // 0077 W2-d: end
 
 /**
+ * A catalogue designation as it is typed: a short run of letters, then digits, with or without the space
+ * ("m31", "M 31", "ngc224", "NGC 224", "ic 434", "hip 27989"). Answers both spellings, [spaced, compact], or
+ * null for anything else. A record's aliases hold one or both (data/parsers.js parseDso: "M31", "NGC 224",
+ * "NGC224"), so the query is compared in both. Pure.
+ */
+export function designationForms(q) {
+  const m = /^([a-z]{1,8}) ?([0-9]{1,7}[a-z]?)$/.exec(q);
+  return m ? [`${m[1]} ${m[2]}`, `${m[1]}${m[2]}`] : null;
+}
+
+/** Is `q` in `text` as whole words: at a boundary on both sides? */
+function wholeIn(text, q) {
+  let at = text.indexOf(q);
+  while (at >= 0) {
+    const end = at + q.length;
+    if ((at === 0 || isBoundary(text.charCodeAt(at - 1))) && (end === text.length || isBoundary(text.charCodeAt(end)))) return true;
+    at = text.indexOf(q, at + 1);
+  }
+  return false;
+}
+
+/**
  * The whole ranking, pure and DOM-free.
  *
  * @param {Object} index   from buildIndex
@@ -335,6 +385,7 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
   const numeric = /^[0-9]+$/.test(q);
   const catQ = catalogQuery(q); // 0077 W2-d
   const aliasNumeric = alias ? /^[0-9]+$/.test(alias) : false;
+  const forms = designationForms(q);
   // The score is kept from the scan rather than recomputed in the comparator: scoring twice was
   // the difference between one pass and one pass plus a sort's worth of indexOf.
   // Spec 0021 requirement 4: a match is a whole thing or the start of a word. Letters buried inside
@@ -346,6 +397,12 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
   for (let i = 0; i < index.n; i += 1) {
     let score = scoreOne(index, i, q, numeric);
     if (catQ && index.cat[i] === catQ) score = Math.max(score, CAT_EXACT); // 0077 W2-d: A0690, 00005
+    // A designation typed whole, in either spelling, that is one of this record's other names or its own.
+    if (forms && score < NAME_EXACT) {
+      const other = index.alias[i];
+      const name = index.name[i];
+      if ((other && (wholeIn(other, forms[0]) || wholeIn(other, forms[1]))) || name === forms[0] || name === forms[1]) score = DESIGNATION_EXACT;
+    }
     if (score === NAME_CONTAINS) { buried.push({ i, score }); score = 0; }
     if (alias) {
       // The alias must land at the START OF A WORD, which is what WORD_PREFIX and better mean.
@@ -431,7 +488,9 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
 
   for (const hit of unique) {
     const i = hit.i;
-    const shown = index.record[i].name || COPY.card.unknownName;
+    // In another language the row is drawn with the record's name in it (ui/localnames.js), as its card is titled.
+    const lm = index.record[i].meta;
+    const shown = (lm && lm.localName && lm.displayName) || index.record[i].name || COPY.card.unknownName;
     out.hits.push({
       record: index.record[i],
       name: shown,
@@ -447,7 +506,7 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
       // at = 9, and the row highlighted " (JP". The same mismatch hit a record with no `name`
       // but a `meta.objectName`, where the index holds the object name and the row draws
       // "Unnamed object". Not landing at all is -1, and the row then draws without a mark.
-      at: shown.toLowerCase().indexOf(q),
+      at: fold(shown.toLowerCase()).indexOf(q),
       length: q.length,
     });
   }
@@ -933,7 +992,7 @@ export function createSearch(ctx, host) {
       // events the query names. A query that names only those is not a miss.
       const m = state.more;
       const rows = m.mergeSame(state.hits.map((h) => ({ ...h, name: undefined, row: m.describe(h.record, state.env) })).map((h) => {
-        const at = h.row.title.toLowerCase().indexOf(q);
+        const at = fold(h.row.title.toLowerCase()).indexOf(q);
         return { ...h, name: h.row.title, at, length: q.length };
       }));
       // A constellation is one row until it is pressed (searchrows.js groupRows).
@@ -945,8 +1004,12 @@ export function createSearch(ctx, host) {
       rows.splice(0, rows.length, ...grouped);
       state.total = Math.max(0, state.total - (before - rows.length));
       const merged = state.hits.length - before;
-      const extras = kind ? [] : m.findExtras(q).filter((x) => !(x.extra === 'mission' && rows.some((h) => h.record && h.record.id === x.record)));
+      const extras = kind ? [] : m.findExtras(q).filter((x) => !(x.extra === 'mission' && rows.some((h) => h.record && h.record.id === x.record))
+        // A fleet that is already a row of its own satellites (searchrows.js groupRows) is not listed twice.
+        && !(x.extra === 'fleet' && rows.some((h) => h.extra === 'group' && h.id === x.id)));
       if (extras.length && state.missed && !rows.length) state.missed = '';
+      // A fleet or a star pattern the query names outright ("kuiper", "big dipper") is an answer too: no nearest names beside it.
+      if (state.missed && extras.some((x) => x.sure && (x.extra === 'fleet' || x.extra === 'constellation'))) { state.missed = ''; state.total = 0; rows.splice(0, rows.length); }
       // 0079 a2: a designation only the catalogue knows is an answer, not a miss: the nearest names are not offered beside it
       if (state.missed && extras.some((x) => x.extra === 'catalogue')) { state.missed = ''; state.total = 0; rows.splice(0, rows.length); }
       state.total = Math.max(0, state.total - merged);
@@ -1038,6 +1101,8 @@ export function createSearch(ctx, host) {
   // --- events ---------------------------------------------------------------------------
 
   const onInput = () => {
+    // Text that arrives without the field ever taking focus (a paste by script, a voice tool) still gets the rows' own words.
+    wantMore();
     window.clearTimeout(state.inputTimer);
     state.inputTimer = window.setTimeout(() => run(input.value), INPUT_DEBOUNCE_MS);
   };
@@ -1138,6 +1203,8 @@ export function createSearch(ctx, host) {
   fly.addEventListener('click', onFly);
   window.addEventListener('sr:select', onSelect);
   window.addEventListener('sr:layer', onLayer);
+  // The records' names in the page's language have landed (ui/localnames.js): the index is built again with them.
+  window.addEventListener('sr:names', onLayer);
   window.addEventListener('sr:layers-ready', onLayer);
   window.addEventListener('sr:observer', refreshEnv);
   if (reduceMotion.addEventListener) reduceMotion.addEventListener('change', onMotion);
@@ -1165,6 +1232,7 @@ export function createSearch(ctx, host) {
       fly.removeEventListener('click', onFly);
       window.removeEventListener('sr:select', onSelect);
       window.removeEventListener('sr:layer', onLayer);
+      window.removeEventListener('sr:names', onLayer);
       window.removeEventListener('sr:layers-ready', onLayer);
       window.removeEventListener('sr:observer', refreshEnv);
       if (reduceMotion.removeEventListener) reduceMotion.removeEventListener('change', onMotion);

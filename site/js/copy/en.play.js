@@ -18,6 +18,9 @@ Object.assign(COPY, {
     },
     other: 'Other challenges',
     loading: 'The map is still loading; the challenge starts when it is ready.',
+    // The challenge's own data did not arrive (ui/play.js guessDistance): said, with a button to ask again.
+    failed: 'The challenge could not load its distances.',
+    retry: 'Try again',
     // Find Earth: four rungs of the map's own ladder, each with four lettered marks on real objects.
     rung: 'Step {n} of {of}: {where}',
     rungs: { 'local-group': 'the Local Group', galaxy: 'the Milky Way', stellar: "the Sun's neighbourhood", sun: 'the Solar System' },

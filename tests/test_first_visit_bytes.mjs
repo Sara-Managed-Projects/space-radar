@@ -339,7 +339,7 @@ if (BASE || FROM) {
     check(Number.isFinite(BUDGETS.after_first_visit_bytes) && BUDGETS.after_first_visit_bytes > 0, 'registry/budgets.yaml has the row');
     check(/test_first_visit_bytes\.mjs --base=http:\/\/127\.0\.0\.1:8178 --out=\.ci-screens\/first-visit\.json --minute/.test(readFileSync(join(ROOT, '.github/workflows/screens.yml'), 'utf8')), 'screens.yml measures the first minute on the tree a deploy uploads');
   }
-  check(/function openAt\(ctx, id\) \{[\s\S]{0,400}loadAfterFirstVisit\(\)\.then/.test(main), 'a link to a star or an exoplanet waits for them rather than saying it names nothing');
+  check(/function openAt\(ctx, id, how = null\) \{[\s\S]{0,900}loadAfterFirstVisit\(\)\.then/.test(main), 'a link to a star or an exoplanet waits for them rather than saying it names nothing');
   // Spec 0070: the film camera is a dynamic import behind `render=1`, and not in the preload block.
   check(/\/\[\?&\]render=1\(\?:&\|\$\)\/\.test\(location\.search\)\s*\n\s*\? await import\('\.\/ui\/rendermode\.js'\)/.test(main) && !/^import [^\n]*rendermode/m.test(main),
     'main.js imports ui/rendermode.js only for an address with render=1');

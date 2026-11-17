@@ -303,6 +303,10 @@ Object.assign(COPY, {
     trip: 'Trip',
     // An IAU figure (Orion), as opposed to a constellation of satellites (the 'group' row below).
     starPattern: 'Constellation of stars',
+    // A pattern that is part of a figure ("Big Dipper"): {name} is the figure's name.
+    asterism: 'Star pattern in {name}',
+    // One of Find's nine constellations of satellites ("Kuiper"), by name: pressing it opens Find on it.
+    fleet: 'Satellite constellation · press to light it on the globe',
     mission: 'Mission',
     eventName: '{mission}: {title}',
     event: 'Mission event · {date}',
@@ -1010,6 +1014,11 @@ Object.assign(COPY, {
     showMe: 'Show me',
     showMeTitle: 'Open the sky from your place, facing where it rises',
     guessCaveat: 'A guessed place: set your town for real times.',
+    // After the name of a pass that has no words of its own (sky/gloss.js): what it is and when it went up.
+    satLaunched: 'a satellite launched in {year}',
+    rocketLaunched: 'a spent rocket stage launched in {year}',
+    // The place button while the place is a guess (ui/tonight.js): it opens the city box and goes to its field.
+    setPlace: 'Set your place',
     // THE PASS AS DRAWN (spec 0061 task 5, ui/tonight.js): the name, three numbers with their
     // units under them, and the way it goes. passLine above stays the whole account: the block's
     // accessible name and a list row's tooltip.
@@ -1631,6 +1640,8 @@ Object.assign(COPY, {
     stale: 'Read on {date}: more than two days old, so it may have changed.',
     joined: 'Names are the crews of the vehicles docked now.',
     unmatched: 'The names on file did not match this count, so none are shown.',
+    // The clock is on another date: the list is today's and is not shown for it (ui/cardextras.js crewBlock).
+    otherDate: 'The crew list is for today. The map is showing another date, so nobody is listed.',
     waiting: 'Reading the crew list.',
     none: 'No crew list for this station.',
   },
@@ -1667,6 +1678,19 @@ Object.assign(COPY, {
   links: {
     row: '{words} · {publisher}',
     title: 'Opens {publisher}’s own page in a new tab',
+  },
+  // The language menu (ui/languagepop.js): its links carry each language's own name, which is not translated.
+  language: {
+    title: 'Language',
+    close: 'Close',
+    listLabel: 'Languages',
+    note: 'The page loads again in that language, on the same view. Every language but English is a machine translation checked against the English.',
+  },
+  // What to show remembers a visitor's choices (ui/showmemory.js); this row is there only while something is kept.
+  showMemory: {
+    note: 'What you choose here is kept in this browser.',
+    reset: 'Reset choices',
+    resetTitle: 'Put the layers, the colours and the data layer back as they started, and forget the choices',
   },
   placeKeep: {
     group: 'Where you are',
@@ -2313,7 +2337,7 @@ Object.assign(COPY, {
     gas: { hydrogen: 'hydrogen', helium: 'helium', methane: 'methane', nitrogen: 'nitrogen', oxygen: 'oxygen', argon: 'argon', 'carbon dioxide': 'carbon dioxide' },
     source: 'NASA’s Planetary Fact Sheets, read {date}.',
     giantNote: 'A giant has no surface: its gravity and temperature are at the 1 bar level.',
-    moonsNote: 'Moon counts grow as new ones are confirmed.',
+    moonsNote: 'Moon counts are JPL’s list of known moons, read {date}; they grow as new ones are confirmed.',
     spinNote: 'The Sun does not turn as one body: the sheet’s value is at 16° latitude, and the equator turns faster than the poles.',
     drawnTrue: 'Drawn to one scale from each mean radius, not photographs.',
     drawnSame: 'Same width, so not to scale. Rings keep their share of it.',

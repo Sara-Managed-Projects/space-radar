@@ -1030,7 +1030,15 @@ def translate_page(path: str, seg_page: tuple, name: str | None, lang: "Lang", h
     out = []
     for it in items:
         if isinstance(it, str):
-            out.append(_retag_all(it, linker) if it.startswith("<") and not it.startswith(("<script", "<style", "<!--")) else it)
+            if it.startswith("<script"):
+                # A SCRIPT'S OWN ADDRESS MOVES WITH THE PAGE (review of 2026-11-16). The text inside a script is never
+                # touched, and until that day neither was its opening tag: `src="../js/pages/subscribe.js"` was copied
+                # as written into /<lang>/o/x.html, where it names /<lang>/js/..., a file nobody uploads. Every
+                # subscribe form, journal strip and the embed generator of the ten languages had no script.
+                cut = it.index(">") + 1
+                out.append(_retag(it[:cut], linker) + it[cut:])
+            else:
+                out.append(_retag_all(it, linker) if it.startswith("<") and not it.startswith(("<style", "<!--")) else it)
         elif isinstance(it, Seg):
             out.append(render(it, text_of(it), lang, name_value, tag_raw_for(it)))
         elif isinstance(it, Tok):

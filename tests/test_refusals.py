@@ -171,7 +171,7 @@ CASES: list[tuple[str, str, str, str]] = [
     ("a sky event whose map link names no world", "sky-events.yaml", "at: mercury}", "at: vulcan}"),
     ("a sky event with no source", "sky-events.yaml", '    sources:\n      - {words: "Computed here with Astronomy Engine (the Moon\'s shadow on the Earth)", url: "https://github.com/cosinekitty/astronomy", read: 2026-10-09}\n\n  - id: total-eclipse-2027', '    sources: []\n\n  - id: total-eclipse-2027'),
     ("a sky event whose trip is not a trip", "sky-events.yaml", "trip: comets-and-meteors", "trip: comets-and-meteorites"),
-    ("a sky event with no day it was checked", "sky-events.yaml", "checked_on: 2026-11-15\nchecked_with", "checked_with"),
+    ("a sky event with no day it was checked", "sky-events.yaml", "checked_on: 2026-11-16\nchecked_with", "checked_with"),
     ("satellite counts with no day", "seo-facts.yaml", seo_counts_day_line(), ""),
     ("a line about an old satellite that cites no page",
      "oldest-notes.yaml", '    source: "https://en.wikipedia.org/wiki/Vanguard_1"\n', ""),
@@ -1560,6 +1560,11 @@ SEO_CASES: list[tuple[str, str, str, str, str]] = [
     ("a Spanish page with no machine-translation note", "built/es/about/index.html", " data-i18n-note>", ">", "es/about/index.html"),
     ("a Spanish page that links the English version of a page Spanish has", "built/es/about/index.html",
      'href="../sources/index.html"', 'href="../../sources/index.html"', "es/about/index.html"),
+    # --- every script, stylesheet and picture a page names is a file (check_seo.check_assets, review of 2026-11-16) ---
+    ("a Spanish page whose script is asked for under /es/js/, where no file is", "built/es/about/index.html",
+     'src="../../js/pages/subscribe.js"', 'src="../js/pages/subscribe.js"', "es/about/index.html"),
+    ("an English page whose stylesheet names no file", "built/about/index.html",
+     'href="../css/static.css"', 'href="../css/statics.css"', "about/index.html"),
     ("a sitemap index outside the 0.9 namespace", "built/sitemap.xml",
      '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">', '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.84">', "sitemap.xml"),
 ]

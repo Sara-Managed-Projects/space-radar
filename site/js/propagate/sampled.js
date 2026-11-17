@@ -6,14 +6,18 @@
 // polygon -- at a one-hour cadence in LEO, linear interpolation cuts the corner by tens of km.
 //
 // Samples: [{tMs, x, y, z, vx, vy, vz}] in the record's frame, km and km/s. Sorted or not.
-// Outside the sample range the endpoint is returned, marked `inferred`: the app degrades to the
-// last thing it knew rather than dropping the object off the screen.
+// Outside the sample range there is NO answer (null), to within SAMPLE_EXACT_MS of the first or last
+// sample. It used to hold the first or last sample for seven days, and a craft doing 17 to 100 km/s
+// was then millions of km from where JPL has it, still drawn and still `inferred` (review of
+// 2026-11-16: JWST two days before the table 3.0 million km from Earth against 1.66 real). A craft
+// that is not on the map for a date says so on its card (ui/missions.js); the saved table covers
+// months either side of the day it was fetched (harvest/lists/horizons-ids.yaml `window`).
 
 /** Within this of a sample, the answer is the sample itself: `measured`. */
 export const SAMPLE_EXACT_MS = 1000;
 
-/** Beyond this past either end of the samples, stop drawing. */
-export const EXTRAPOLATION_LIMIT_MS = 7 * 24 * 3600 * 1000;
+/** Beyond this past either end of the samples, stop drawing: the table's own ends, and no margin. */
+export const EXTRAPOLATION_LIMIT_MS = SAMPLE_EXACT_MS;
 
 const sortedCache = new WeakMap();
 const normalisedCache = new WeakMap();

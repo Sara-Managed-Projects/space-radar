@@ -133,12 +133,17 @@ for (const typed of ['100690', 'A0690']) {
   check(byId.get(N.satIdOf(read().at)) === s3c, `#at=${typed} names Sentinel-3C`);
 }
 delete globalThis.location;
-// main.js resolveAt (not importable in node): numbers through the helper, and the old `int-` ids still open
+// ui/resolveid.js (main.js openAt asks it): numbers through the helper, and the old `int-` ids still open
 const main = readFileSync(join(JS, 'main.js'), 'utf8');
-const resolve = main.slice(main.indexOf('function resolveAt('), main.indexOf('function openAt('));
-check(/import \{ satIdOf \} from '\.\/data\/catnum\.js';/.test(main) && resolve.includes('satIdOf(text)'), 'main.js resolveAt reads a number through data/catnum.js');
-check(!/sat-\$\{text\}/.test(resolve), 'main.js resolveAt does not build `sat-<text>` by hand');
-check(/\/\^int-\(\.\+\)\$\/\.exec\(text\)/.test(resolve) && resolve.includes('intlDesignator === intl[1]'), 'a link made before 2026-10-14 (#at=int-2026-209B) still opens its object');
+const resolve = readFileSync(join(JS, 'ui/resolveid.js'), 'utf8');
+check(/import \{ satIdOf \} from '\.\.\/data\/catnum\.js';/.test(resolve) && resolve.includes('satIdOf(number)') && /import\('\.\/ui\/resolveid\.js'\)/.test(main), 'the link resolver reads a number through data/catnum.js, and main.js asks the resolver');
+check(!/sat-\$\{/.test(resolve), 'the resolver does not build `sat-<text>` by hand');
+check(/\/\^int-\(\.\+\)\$\/i\.exec\(raw\)/.test(resolve) && resolve.includes('intlDesignator === intl[1]'), 'a link made before 2026-10-14 (#at=int-2026-209B) still opens its object');
+{
+  const { resolveId } = await import(join(JS, 'ui/resolveid.js'));
+  const have = { records: [s3c], layers: [] };
+  for (const typed of ['100690', 'A0690', 'sat-100690', 'norad-100690', `int-${s3c.meta.intlDesignator}`]) check(resolveId(typed, have) === s3c, `the resolver opens Sentinel-3C for #at=${typed}`);
+}
 const L = await import(join(JS, 'embedlite.js'));
 eq(JSON.stringify(L.liteTarget('?embed=1&at=100690')), '{"kind":"station","id":"sat-100690"}', 'the light embed reads 100690');
 eq(JSON.stringify(L.liteTarget('?embed=1&at=A0690')), '{"kind":"station","id":"sat-100690"}', 'the light embed reads A0690');

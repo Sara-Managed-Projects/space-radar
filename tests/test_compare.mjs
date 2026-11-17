@@ -28,6 +28,46 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
 const { BODY, ORDER, cell, rowsFor, widerSentence, layout, labRows, defaultWith, canCompare, extentKm, MIN_R, PROPS, TABLE_PROPS, mountCompare, VIEW_W, VIEW_H } = M;
 
 // --- 1. the registry ---------------------------------------------------------------------------
+// --- 1a. ONE COUNT OF MOONS (review of 2026-11-16) -----------------------------------------------
+// The Compare view said 95, 274 and 28 moons for Jupiter, Saturn and Uranus (the fact sheets, years behind) while the
+// map's own moon list, the object pages and NASA said 115, 293 and 29. A world's count here IS the number of its moons
+// the map holds (registry/worlds.yaml's moons of it, plus site/data/moons.json's rows) plus the ones the registry names
+// as not drawn: when either side changes, this fails until the other follows.
+{
+  const { execFileSync } = await import('node:child_process');
+  const reg = JSON.parse(execFileSync('python3', ['-c', `
+import yaml, json, sys
+c = yaml.safe_load(open('registry/compare.yaml'))
+w = yaml.safe_load(open('registry/worlds.yaml'))['worlds']
+json.dump({'moons_read': str(c.get('moons_read') or ''), 'moons_page': c.get('moons_page'),
+           'bodies': {b['world']: {'moons': b.get('moons'), 'not_drawn': b.get('moons_not_drawn') or []} for b in c['bodies']},
+           'parents': [x.get('parent') or '' for x in w]}, sys.stdout)
+`], { cwd: ROOT, encoding: 'utf8' }));
+  const moonsJson = JSON.parse(readFileSync(join(ROOT, 'site/data/moons.json'), 'utf8'));
+  const pCol = moonsJson.cols.indexOf('p');
+  const nameCol = moonsJson.cols.indexOf('name');
+  const desigCol = moonsJson.cols.indexOf('desig');
+  const held = new Map();
+  const bump = (id) => held.set(id, (held.get(id) || 0) + 1);
+  for (const parent of reg.parents) if (parent && parent !== 'sun') bump(parent);
+  for (const row of moonsJson.rows) bump(moonsJson.planets[row[pCol]][0]);
+  const names = new Set(moonsJson.rows.flatMap((row) => [row[nameCol], row[desigCol]]).filter(Boolean).map((x) => String(x).replace(/[^a-z0-9]/gi, '').toLowerCase()));
+  check(/^\d{4}-\d\d-\d\d$/.test(reg.moons_read) && /^https:\/\/ssd\.jpl\.nasa\.gov\/sats\//.test(String(reg.moons_page)), 'compare.yaml says where the moon counts were read (JPL SSD) and when');
+  let total = 0;
+  for (const id of ORDER) {
+    const b = reg.bodies[id];
+    if (id === 'sun') { check(b.moons === null, 'the Sun is not counted for moons'); continue; }
+    const drawn = held.get(id) || 0;
+    total += b.moons;
+    check(b.moons === drawn + b.not_drawn.length,
+      `${id}: registry/compare.yaml says ${b.moons} moons and the map holds ${drawn} (worlds.yaml + site/data/moons.json)${b.not_drawn.length ? ` plus ${b.not_drawn.length} named as not drawn` : ''}: bring the one that is behind up to date, from JPL's list`);
+    check(BODY.get(id).moons === b.moons, `${id}: the browser's copy has the registry's count`);
+    for (const n of b.not_drawn) check(!names.has(String(n).replace(/[^a-z0-9]/gi, '').toLowerCase()), `${id}: ${n} is named as not drawn, and site/data/moons.json has it`);
+  }
+  // JPL's page: "A total of 460 planetary satellites (including those of Pluto but not Earth)", read 2026-11-16; Mercury and Venus none, the Earth one.
+  check(total >= 461, `the planets and Pluto have at least the 461 moons of 2026-11-16 (${total})`);
+}
+
 eq(ORDER.join(), 'sun,mercury,venus,earth,moon,mars,jupiter,saturn,uranus,neptune,pluto', 'the bodies, in the order they are listed');
 const worlds = readFileSync(join(ROOT, 'registry/worlds.yaml'), 'utf8');
 for (const id of ORDER) {
@@ -67,7 +107,7 @@ eq(j.dist[0], '5.2 AU', 'Jupiter from the Sun');
 eq(j.air[0], '89.8% hydrogen, 10.2% helium (by volume)', 'Jupiter air says it is by volume (internal #295)');
 eq(j.pressure[0], 'No surface', 'a giant has no surface pressure');
 eq(j.pressure[1], '1.01 bar', 'Earth air pressure');
-eq(j.moons[0], '95', 'Jupiter moons');
+eq(j.moons[0], '115', 'Jupiter moons (JPL\'s list, not the fact sheet\'s 95 of 2024)');
 eq(j.rings[0], 'Yes', 'Jupiter rings');
 const v = row('venus', 'pluto');
 eq(v.spin[0], '243 days (turning backwards)', 'Venus turns backwards');

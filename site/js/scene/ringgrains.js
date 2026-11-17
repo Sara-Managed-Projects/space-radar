@@ -236,6 +236,18 @@ void main() {
 `;
 
 /**
+ * VERT with the ring's map warp and the fine map's ratio in. Throws when a placeholder is gone: a
+ * `replace` that matches nothing is silent, and the shader would then not compile on a visitor's
+ * machine only (tests/test_shader_patches.mjs runs this on the tree a deploy builds). Pure.
+ */
+export function grainsVertex(ringGlsl, fineMax) {
+  for (const mark of ['#RING_U_GLSL#', '#FINE_MAX#']) {
+    if (VERT.split(mark).length - 1 !== 1) throw new Error(`ring grains: VERT has ${VERT.split(mark).length - 1} of ${mark}, not 1`);
+  }
+  return VERT.replace('#RING_U_GLSL#', ringGlsl).replace('#FINE_MAX#', Number(fineMax || 4).toFixed(1));
+}
+
+/**
  * The particles. `ringUniforms` is the sheet's material's uniforms (its map, fine strip and warp are
  * read from them every frame, so a strip that arrives later is used). Returns the Points and an update.
  */
@@ -285,7 +297,7 @@ export function createRingGrains(THREE, { root, ringUniforms, ringGlsl, fineMax 
   };
   const material = new THREE.ShaderMaterial({
     name: 'ring-grains',
-    vertexShader: VERT.replace('#RING_U_GLSL#', ringGlsl).replace('#FINE_MAX#', Number(fineMax || 4).toFixed(1)),
+    vertexShader: grainsVertex(ringGlsl, fineMax),
     fragmentShader: FRAG,
     uniforms: u,
     transparent: true,

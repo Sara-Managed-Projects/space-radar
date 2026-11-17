@@ -5,6 +5,11 @@
 // the observer this returns carries `source: 'guess'` and the panel prints that in words. It is
 // never stored; setting a real place replaces it.
 //
+// THE ZONE'S OWN PLACE (review of 16 Nov 2026). The guesses below know only the bundled cities, and the third one took
+// Australia/Perth to Manila and Europe/Athens to Helsinki. Every zone has a place of its own in the time zone
+// database: sky/zoneplace.js fetches that table when the guess here is not the zone's own city (`how` other than
+// 'timezone') and the caller replaces the guess with it. This file stays what the boot graph carries.
+//
 // Three guesses, in order. The IANA time zone names a city ("Europe/Berlin", "America/New_York");
 // when that city is in the bundled list, that is the guess. Otherwise a bundled city IN that zone.
 // Otherwise the UTC offset: only cities whose own zone has that offset right now are candidates,
@@ -14,7 +19,7 @@
 
 const DEG2RAD = Math.PI / 180;
 
-function observerFrom(city, how) {
+export function observerFrom(city, how) {
   return {
     name: city.name,
     country: city.country,
@@ -85,9 +90,12 @@ export function guessObserver(cities, hints = {}) {
     const part = zone.split('/').pop().replace(/_/g, ' ').toLowerCase();
     // Two San Juans: a name only counts when that city keeps the zone's clock.
     const clock = zoneOffsetMinutes(zone, now);
-    const hit = cities.find((c) => c.name.toLowerCase() === part && (!c.zone || c.zone === zone || zoneOffsetMinutes(c.zone, now) === clock))
-      || cities.find((c) => c.zone === zone);
+    const hit = cities.find((c) => c.name.toLowerCase() === part && (!c.zone || c.zone === zone || zoneOffsetMinutes(c.zone, now) === clock));
     if (hit) return observerFrom(hit, 'timezone');
+    // A bundled city that keeps this zone's clock, but is not the city the zone is named for (Beijing for
+    // Asia/Shanghai): `how: 'zone-city'`, which a caller may better with the zone's own place (sky/zoneplace.js).
+    const inZone = cities.find((c) => c.zone === zone);
+    if (inZone) return observerFrom(inZone, 'zone-city');
   }
   let offset = hints.offsetMinutes;
   if (offset === undefined) {
@@ -106,6 +114,11 @@ export function guessObserver(cities, hints = {}) {
   const local = region ? same.filter((c) => typeof c.zone === 'string' && c.zone.split('/')[0] === region) : [];
   const best = nearestMeridian(local.length ? local : same.length ? same : cities, offset);
   return best ? observerFrom(best, 'offset') : null;
+}
+
+/** Does a guess stand on the zone's own city (nothing to better), or on a rougher answer? */
+export function isRoughGuess(o) {
+  return !!o && o.source === 'guess' && o.how !== 'timezone' && o.how !== 'zone';
 }
 
 /**

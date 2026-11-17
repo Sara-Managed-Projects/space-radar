@@ -763,6 +763,8 @@ export const COPY = {
     menuTour: 'Take the tour',
     // Free email updates (ui/subscribe.js, fetched on the first press): the envelope, and its row on a phone.
     subscribe: 'Email updates',
+    // The language menu (ui/languagepop.js, fetched on the first press): the rail's button, and its row on a phone.
+    language: 'Language',
     // Buy Me a Coffee (index.html's floating cup, css/coffee.css): its row of More on a phone, and the name ui/rail.js
     // gives the floating link.
     coffee: 'Buy us a coffee',
@@ -961,6 +963,8 @@ export const COPY = {
     unknownVersion: 'This link is from a newer map. Showing the default view.',
     unknownTrip: 'That trip is gone from this map. Showing the default view.',
     unknownAt: 'That object is not on this map; showing the default view.',
+    // A link's date outside the years the map answers for (ui/urlstate.js linkInstant): held to the nearest it does.
+    tOutOfRange: 'That date is outside 1700 to 2200. Showing the nearest.',
     unknownStage: 'This map cannot centre on that place. Showing the default.',
   },
   // Sharing (spec 0033, spec 0061 task 8): one sheet, ui/sharesheet.js, with the postcard, the link
@@ -1416,6 +1420,9 @@ export const COPY = {
     endedLine: 'Its mission ended on {date}. Its events, below, go back to it.',
     pathEndedLine: 'The path JPL holds for it ends on {date}. Its events, below, go back to it.',
     pathBeginsLine: 'The path JPL holds for it begins on {date}. Its events, below, go back to it.', // 0077 W1-d
+    // A satellite drawn from orbital elements, on a date they cannot answer for (ui/cardfacts.js elementsOutWords).
+    elementsOutLine: 'No position for this date: its orbit is only known within about a month of {date}.',
+    notLaunchedLine: 'No position for this date: it was launched in {year}.',
 
     actions: {
       flyTo: 'Fly to it',
@@ -1748,6 +1755,20 @@ export const COPY = {
       // "Dead since 2012" is data/layers.js's own wording for Envisat, kept.
       envisat: 'shown steady, with its instruments to the Earth, as it flew while it worked; it has been dead since 2012 and nobody steers it',
       ers1: 'shown steady, with its instruments to the Earth, as it flew while it worked; its mission ended in 2000 and nobody steers it',
+    },
+    // 2026-11-16: WHICH WAY IT POINTS. Nobody publishes a craft's attitude, so the model is turned by the rule its kind of craft is
+    // flown by (scene/attitude.js), and the card says so and says which rule (ui/cards.js attitudeLine). A file whose own axes are
+    // not on record keeps a fixed angle and gets no line.
+    attitude: {
+      lead: 'which way it points is modelled, not measured: {rule}',
+      rules: {
+        nadir: 'one face to the world below, its solar panels turned toward the Sun',
+        geo: 'one face to the Earth, its solar panels along north and south',
+        lvlh: 'the same side down and the same end forward, all the way round',
+        sun: 'one side to the Sun, looking at one place in the sky',
+        earth: 'its dish pointed at the Earth',
+        spin: 'its dish pointed at the Earth, turning about that line',
+      },
     },
     objectGeneric: 'drawn as a generic object; we have no shape for {name}',
     // The procedural shape a class falls back to when nothing more specific is known. Used
@@ -2280,8 +2301,49 @@ export const COPY = {
     layerHint: {
       exoplanets: 'Switched off. Tick to show them.', // 0079 a13: on by default since 1.5.0
     },
+    // Every layer's name (registry/layers.yaml `display`, the same words: tests/test_local_names.mjs holds them equal), here so that
+    // each language can say it (internal #310). main.js writes a language's names over `display` before any panel is built.
     layerName: {
-      pha: 'Hazardous asteroids'
+      worlds: 'Planets and moons',
+      stars: 'Stars',
+      exoplanets: 'Planets around other stars',
+      systems: 'Star systems',
+      'deep-sky': 'Nebulae, clusters and galaxies',
+      galaxy: 'The Milky Way',
+      exotics: 'Black holes and other extremes',
+      'extremes-more': 'Magnetars and dead stars',
+      pulsars: 'Pulsars',
+      'beyond-more': 'Local Group and clusters',
+      quasars: 'Quasars',
+      stations: 'Crewed stations',
+      notable: 'Satellites worth knowing',
+      'starlink-trains': 'Fresh Starlink trains',
+      'just-launched': 'Just launched',
+      active: 'Everything active',
+      'geo-ring': 'The geostationary ring',
+      'debris-notable': 'Famous debris',
+      'debris-field': 'All tracked debris',
+      launches: 'Rockets on their way up',
+      asteroids: 'Asteroids passing by',
+      'far-bodies': 'Dwarf planets, far travellers',
+      moons: 'Moons of the planets',
+      companions: 'Asteroid and TNO moons',
+      pha: 'Hazardous asteroids',
+      comets: 'Comets',
+      'deep-space': 'Probes and telescopes',
+      visual: 'Bright enough to see',
+      'ground-sites': 'Pads, dishes and observatories',
+      'hand-kept-sites': 'Dishes, landers and rovers',
+      storms: 'Tropical storms now',
+      aurora: 'Aurora',
+      lightning: 'Lightning',
+      'earth-events': 'Fires, volcanoes and icebergs',
+      reentries: 'Things that came down',
+      oddities: 'Odd things we sent',
+      observatories: 'All observatories',
+      'launch-sites': 'All launch sites',
+      'landing-sites': 'Every landing and impact site',
+      'meteor-showers': 'Meteor showers',
     },
     // Three silences, three short words beside the name (spec 0061 req 11: the row is one line at
     // 390 and at 1440); each one's tooltip is the sentence it stands for.

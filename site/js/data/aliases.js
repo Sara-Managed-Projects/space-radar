@@ -22,5 +22,8 @@ export const ALIASES = {
   "chinese space station": "css",
   "north star": "polaris",
   "dog star": "sirius",
-  "starlink train": "starlink"
+  "starlink train": "starlink",
+  "hubble space telescope": "hst",
+  "ic 434": "horsehead nebula",
+  "ic434": "horsehead nebula"
 };

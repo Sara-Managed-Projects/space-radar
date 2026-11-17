@@ -22,6 +22,7 @@ def render(doc: dict) -> list:
     bodies = [pick(b, BODY_FIELDS) for b in (doc.get("bodies") or []) if isinstance(b, dict)]
     return [
         ("The day the NASA pages were read, as YYYY-MM-DD.", "COMPARE_READ", str(doc.get("read") or "")),
+        ("The day JPL's list of the known moons was read (the moon counts are its, not the fact sheets'), as YYYY-MM-DD.", "COMPARE_MOONS_READ", str(doc.get("moons_read") or "")),
         ("What the Compare view and the comparison lab say about a world: NASA's Planetary Fact Sheets, one row a body.", "COMPARE_BODIES", bodies),
     ]
 

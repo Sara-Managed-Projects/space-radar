@@ -51,6 +51,31 @@ for (const r of rows) {
   check(ranges.length > 0, `${r.id}: the title, name or summary states a date`);
   const here = ranges.some((x) => x.year === when.getUTCFullYear() && x.month === when.getUTCMonth() && x.days[0] <= when.getUTCDate() && when.getUTCDate() <= x.days[1]);
   check(here, `${r.id}: computed ${c.instant} is not within any date the page states (${JSON.stringify(ranges)})`);
+  // A NIGHT IS THE ONE THE PEAK FALLS IN (review of 2026-11-16). "16 to 17 November" passed the check above for a peak at
+  // 17 November 23:48 UT, because the 17th is in it: but that peak is in the night of 17 to 18, and the page sent readers
+  // out a night early. A range of two days is read as a night, noon UT to noon UT, with or without the year after it.
+  const nights = [...text.matchAll(new RegExp(`(\\d{1,2}) to (\\d{1,2}) (${MONTHS.join('|')})(?: (\\d{4}))?`, 'g'))]
+    .map((m) => ({ a: Number(m[1]), b: Number(m[2]), month: MONTHS.indexOf(m[3]), year: m[4] ? Number(m[4]) : when.getUTCFullYear() }));
+  for (const n of nights) {
+    if (r.kind !== 'meteor-shower' || n.b !== n.a + 1) continue;
+    const from = Date.UTC(n.year, n.month, n.a, 12);
+    check(c.instantMs >= from && c.instantMs <= from + 86400e3, `${r.id}: the page says the night of ${n.a} to ${n.b} ${MONTHS[n.month]}, and the computed peak ${c.instant} is not in it (noon UT to noon UT)`);
+  }
+  // An hour the summary states is the computed one, to the hour.
+  for (const m of r.summary.matchAll(/at about (\d{1,2})(?::(\d{2}))?(?: to (\d{1,2}))? (?:hours )?UT/g)) {
+    const lo = Number(m[1]) + (m[2] ? Number(m[2]) / 60 : 0);
+    const hi = m[3] ? Number(m[3]) : lo;
+    const h = when.getUTCHours() + when.getUTCMinutes() / 60;
+    const off = h < lo ? lo - h : h > hi ? h - hi : 0;
+    check(Math.min(off, 24 - off) <= 1, `${r.id}: the summary says "${m[0]}" and the computed instant is ${c.instant}`);
+  }
+  // The Moon is stated, and the map opened, near the peak: the same instant for both, within eight hours of it.
+  if (r.kind === 'meteor-shower') {
+    const moonAt = Date.parse(r.moon_at);
+    check(moonAt === Date.parse(r.link.t), `${r.id}: \`moon_at\` (${r.moon_at}) and the link's moment (${r.link.t}) are one instant`);
+    const off = Math.abs(moonAt - c.instantMs) / 3600e3;
+    check(off <= 8, `${r.id}: the Moon is stated ${off.toFixed(1)} hours from the computed peak ${c.instant}, over eight: the phase and the link are another night's`);
+  }
   // A mission's date is the agency's, typed: it is what the page prints and must equal what the title says.
   if (r.kind === 'mission') check(r.happens === c.instant, `${r.id}: the date is the registry's own`);
   // The words about the Moon agree with the computed phase.

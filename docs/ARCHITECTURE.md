@@ -83,7 +83,7 @@ that command with the AWS upload around it, for a source the Lambda is refused b
 | A trip | `registry/tours.yaml` | `site/js/data/tours.js`, `site/t/` (by `scripts/gen_trip_pages.py`) | `site/js/ui/trip.js`, `site/js/ui/tripframe.js` |
 | A card | `site/js/copy/en.js` (the words) | none | `site/js/ui/cards.js` |
 | A world | `registry/worlds.yaml` | none: `site/js/scene/worlds.js` is kept by hand and checked | `site/js/scene/worlds.js` |
-| A 3D model | `registry/models.yaml`, the file in `site/models/`, a line in `CREDITS.md` | none | `site/js/scene/realmodels.js` |
+| A 3D model | `registry/models.yaml`, the file in `site/models/`, a line in `CREDITS.md` | `site/js/data/modellooks.js` (a row's `look:`), `site/js/data/modelframes.js` (a row's `attitude:`: which of the file's axes is its Earth face, its wings' axis, and the law it is pointed by, `scene/attitude.js`) | `site/js/scene/realmodels.js` |
 | A data source | `registry/sources.yaml`, `registry/layers.yaml` | `site/js/data/layers.registry.js`, `harvest/sources.json` | `site/js/data/sources.js`, `site/js/data/parsers.js`, `harvest/` |
 | A translation | `site/js/copy/en.js` is the English; a language is `site/js/copy/<code>.js` | `scripts/check-translation.mjs` makes the skeleton and checks it | not loaded yet: see `docs/TRANSLATING.md` |
 | A sky culture | `registry/skycultures.yaml` | `site/data/skycultures/` (by `scripts/build-skycultures.py`) | `site/js/sky/skyculture.js` |

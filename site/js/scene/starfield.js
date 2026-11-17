@@ -183,7 +183,8 @@ export function sunGlare(alphaRad) {
 
 // --------------------------------------------------------------------------------- shaders
 
-const STAR_VERT = /* glsl */ `
+/** Exported for tests/test_shader_patches.mjs: scene/stardeep.js patches this text by one of its lines, on the built tree too. */
+export const STAR_VERT = /* glsl */ `
 ${HOLES_GLSL_HEAD}
 attribute float aSize;
 attribute float aAlpha;

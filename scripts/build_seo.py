@@ -195,6 +195,8 @@ def object_page(p: dict, host: str, template: str, share: "seo_share.Spec | None
         "colour": esc(p.get("colour") or "#9aa4b2"), "klass": esc(p["klassLabel"]), "lead": esc(p["lead"]),
         "why": f'<p>{esc(p["why"])}</p>\n' if p.get("why") else "", "id": p["id"],
         "live_line": esc(p["liveLine"]),
+        # A craft that is no longer in orbit (site/js/data/ended.js) has a line and no button: there is nothing to see live.
+        "live_button": "" if p.get("ended") else f'<a class="btn btn--map" href="../#at={p["id"]}">See it live</a>',
         # internal #294: a planet, the Moon or the Sun gets its "where is it now" line worked out in the browser
         # (site/js/objectnow.js); the static sentence in the paragraph is the fallback and what a crawler reads.
         "now_attrs": (f' id="now" data-body="{esc(p["nowBody"])}" data-name="{esc(("The " if p["nowBody"] in ("Sun", "Moon") else "") + p["nowBody"])}"'
