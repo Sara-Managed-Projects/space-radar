@@ -6478,3 +6478,36 @@ Object.assign(COPY, {
   }
 });
 // ds2: end
+// A constellation seen from the side (ui/figureside.js, copy/en.side.js): begin
+COPY.figureSide = {
+  "open": "Ver de lado",
+  "openTitle": "Deixe o Sol e veja {name} se desfazer",
+  "searchRow": "{name}, de lado",
+  "searchSub": "Deixe o Sol e veja a figura se desfazer",
+  "title": "{name}, de lado",
+  "loading": "Carregando as distâncias das estrelas…",
+  "lede": "Vistas do Sol, estas estrelas formam uma figura. Cada uma está à sua própria distância; por isso, de lado, a figura se desfaz.",
+  "angle": "Quanto girar para o lado",
+  "where": "{deg}° para o lado, a {ly} anos-luz do Sol",
+  "home": "No Sol: a figura como a vemos",
+  "range": "Suas estrelas estão entre {near} e {far} anos-luz.",
+  "play": "Sair voando",
+  "playTitle": "Deixe o Sol e gire até o lado, em vinte segundos",
+  "pause": "Pausar",
+  "jump": "Ir para o lado",
+  "back": "Voltar ao Sol",
+  "another": "Outra figura",
+  "honest": "Medido: onde está cada estrela, pela paralaxe (Hipparcos e Gaia, catálogo HYG); as mais distantes são as menos certas. Tradição: as linhas entre elas.",
+  "unplaced": "{n} dos cantos não têm estrela com distância medida: são desenhados na distância média da figura.",
+  "close": "Fechar a vista de lado",
+  "unknown": "Nenhuma figura de estrelas com esse nome é desenhada aqui.",
+  "inTrip": "Saia primeiro da viagem para ver uma figura de lado.",
+  "failed": "As distâncias das estrelas não carregaram. Tente de novo em instantes.",
+  "names": {
+    "bigDipper": "Grande Carro"
+  },
+  "notes": {
+    "bigDipper": "Cinco das sete estrelas viajam mesmo juntas, a cerca de 80 anos-luz. As duas das pontas, Dubhe e Alkaid, não."
+  }
+};
+// A constellation seen from the side: end

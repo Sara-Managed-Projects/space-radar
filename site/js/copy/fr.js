@@ -6492,3 +6492,36 @@ Object.assign(COPY, {
   }
 });
 // ds2: end
+// A constellation seen from the side (ui/figureside.js, copy/en.side.js): begin
+COPY.figureSide = {
+  "open": "La voir de côté",
+  "openTitle": "Quitte le Soleil et regarde {name} se défaire",
+  "searchRow": "{name}, de côté",
+  "searchSub": "Quitte le Soleil et regarde la figure se défaire",
+  "title": "{name}, de côté",
+  "loading": "Chargement des distances des étoiles…",
+  "lede": "Depuis le Soleil, ces étoiles forment une figure. Chacune est à sa propre distance : de côté, la figure se défait.",
+  "angle": "De combien tourner vers le côté",
+  "where": "{deg}° sur le côté, à {ly} années-lumière du Soleil",
+  "home": "Au Soleil : la figure telle qu’on la voit",
+  "range": "Ses étoiles sont entre {near} et {far} années-lumière.",
+  "play": "S’envoler",
+  "playTitle": "Quitte le Soleil et tourne jusqu’au côté, en vingt secondes",
+  "pause": "Pause",
+  "jump": "Aller sur le côté",
+  "back": "Retour au Soleil",
+  "another": "Une autre figure",
+  "honest": "Mesuré : la place de chaque étoile, par sa parallaxe (Hipparcos et Gaia, catalogue HYG) ; les plus lointaines sont les moins sûres. Tradition : les lignes entre elles.",
+  "unplaced": "{n} de ses coins n’ont pas d’étoile à distance mesurée : ils sont dessinés à la distance moyenne de la figure.",
+  "close": "Fermer la vue de côté",
+  "unknown": "Aucune figure d’étoiles de ce nom n’est dessinée ici.",
+  "inTrip": "Quitte d’abord le voyage pour voir une figure de côté.",
+  "failed": "Les distances des étoiles ne se sont pas chargées. Réessaie dans un instant.",
+  "names": {
+    "bigDipper": "Grand Chariot"
+  },
+  "notes": {
+    "bigDipper": "Cinq de ses sept étoiles voyagent bien ensemble, à environ 80 années-lumière. Les deux des extrémités, Dubhe et Alkaid, non."
+  }
+};
+// A constellation seen from the side: end

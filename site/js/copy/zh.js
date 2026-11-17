@@ -6397,3 +6397,36 @@ Object.assign(COPY, {
   }
 });
 // ds2: end
+// A constellation seen from the side (ui/figureside.js, copy/en.side.js): begin
+COPY.figureSide = {
+  "open": "从侧面看",
+  "openTitle": "离开太阳，看{name}散开",
+  "searchRow": "从侧面看{name}",
+  "searchSub": "离开太阳，看图形散开",
+  "title": "从侧面看{name}",
+  "loading": "正在载入恒星的距离…",
+  "lede": "从太阳看，这些恒星连成一个图形。它们各有各的距离，所以从侧面看，图形就散开了。",
+  "angle": "向侧面转多少",
+  "where": "偏向侧面 {deg}°，距太阳 {ly} 光年",
+  "home": "在太阳处：我们看到的图形",
+  "range": "它的恒星距我们 {near} 到 {far} 光年。",
+  "play": "飞出去",
+  "playTitle": "离开太阳，用二十秒转到侧面",
+  "pause": "暂停",
+  "jump": "转到侧面",
+  "back": "回到太阳",
+  "another": "换一个图形",
+  "honest": "实测：每颗恒星的位置，来自它的视差（依巴谷和盖亚，HYG 星表）；最远的最不确定。传统：恒星之间的连线。",
+  "unplaced": "它有 {n} 个角没有实测距离的恒星：画在图形的中间距离上。",
+  "close": "关闭侧面视图",
+  "unknown": "这里没有画这个名字的星座图形。",
+  "inTrip": "请先离开旅程，再从侧面看图形。",
+  "failed": "恒星的距离没有载入。请稍后再试。",
+  "names": {
+    "bigDipper": "北斗七星"
+  },
+  "notes": {
+    "bigDipper": "七颗星里有五颗确实结伴而行，距我们约 80 光年。两端的天枢和摇光则不是。"
+  }
+};
+// A constellation seen from the side: end

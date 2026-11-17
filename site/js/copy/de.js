@@ -6489,3 +6489,36 @@ Object.assign(COPY, {
   }
 });
 // ds2: end
+// A constellation seen from the side (ui/figureside.js, copy/en.side.js): begin
+COPY.figureSide = {
+  "open": "Von der Seite ansehen",
+  "openTitle": "Verlass die Sonne und sieh zu, wie {name} zerfällt",
+  "searchRow": "{name} von der Seite",
+  "searchSub": "Verlass die Sonne und sieh zu, wie die Figur zerfällt",
+  "title": "{name} von der Seite",
+  "loading": "Die Entfernungen der Sterne werden geladen …",
+  "lede": "Von der Sonne aus bilden diese Sterne eine Figur. Jeder steht in seiner eigenen Entfernung, deshalb zerfällt die Figur von der Seite.",
+  "angle": "Wie weit zur Seite",
+  "where": "{deg}° zur Seite, {ly} Lichtjahre von der Sonne",
+  "home": "An der Sonne: die Figur, wie wir sie sehen",
+  "range": "Ihre Sterne sind {near} bis {far} Lichtjahre entfernt.",
+  "play": "Losfliegen",
+  "playTitle": "Verlass die Sonne und schwenke in zwanzig Sekunden zur Seite",
+  "pause": "Pause",
+  "jump": "Zur Seite gehen",
+  "back": "Zurück zur Sonne",
+  "another": "Eine andere Figur",
+  "honest": "Gemessen: wo jeder Stern steht, aus seiner Parallaxe (Hipparcos und Gaia, HYG-Katalog); die fernsten sind am unsichersten. Überlieferung: die Linien dazwischen.",
+  "unplaced": "{n} ihrer Ecken haben keinen Stern mit gemessener Entfernung: Sie sind in der mittleren Entfernung der Figur gezeichnet.",
+  "close": "Seitenansicht schließen",
+  "unknown": "Eine Sternfigur mit diesem Namen wird hier nicht gezeichnet.",
+  "inTrip": "Verlass zuerst die Reise, um eine Figur von der Seite zu sehen.",
+  "failed": "Die Entfernungen der Sterne wurden nicht geladen. Versuch es gleich noch einmal.",
+  "names": {
+    "bigDipper": "Großer Wagen"
+  },
+  "notes": {
+    "bigDipper": "Fünf seiner sieben Sterne ziehen tatsächlich gemeinsam, etwa 80 Lichtjahre entfernt. Die beiden an den Enden, Dubhe und Alkaid, nicht."
+  }
+};
+// A constellation seen from the side: end
