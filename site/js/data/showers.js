@@ -62,7 +62,7 @@ export const SHOWERS = [
     "dec": -16.0,
     "v_kms": 41,
     "sol": 128,
-    "parent": "comet P/2008 Y12 (SOHO)",
+    "parent": "comet 96P/Machholz (suspected)",
     "note": "One of the most active showers in the southern hemisphere; from mid-northern latitudes only a small part of it can be seen."
   },
   {

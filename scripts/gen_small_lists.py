@@ -196,7 +196,9 @@ def build_showers(refresh: bool) -> None:
         if dra is not None and dde is not None:
             row["dra"], row["ddec"] = dra, dde
         if parent:
-            row["parent"] = parent
+            # The Data Center's file spells the Leonids' comet "55P/Temple-Tuttle"; it is Tempel's (Wilhelm Tempel, 1865), as the
+            # event pages and the MPC write it. A typing slip in a source is not copied (review 2026-11-16).
+            row["parent"] = parent.replace("Temple-Tuttle", "Tempel-Tuttle")
         if activity and activity not in ("annual",):
             row["activity"] = activity
         if code in ours_by_code:

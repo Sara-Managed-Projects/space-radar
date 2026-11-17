@@ -31,6 +31,11 @@ check(g.wheelLogDelta({ deltaY: -4, ctrlKey: true }) < 0, 'pinching out zooms in
 check(g.wheelLogDelta({ deltaY: 3, deltaMode: 1 }) === 48 / 600, 'a line delta is 16 px');
 check(Math.abs(g.wheelLogDelta({ deltaY: 1e5 })) <= g.WHEEL_MAX_LOG, 'one event never moves more than the cap');
 
+// #439: a two-finger twist is the change in the angle of the line between the fingers.
+check(g.twistDelta(0, 0.005) === 0 && g.twistDelta(NaN, 1) === 0, 'a twist under the dead zone, or from no pair, is nothing');
+check(Math.abs(g.twistDelta(0, 0.5) - 0.5) < 1e-12 && g.twistDelta(0.5, 0) < 0, 'clockwise on screen is positive');
+check(Math.abs(g.twistDelta(Math.PI - 0.1, -Math.PI + 0.1) - 0.2) < 1e-9, 'crossing the +-PI seam is a small twist, not a jump');
+
 // #436: the map's keys only when the key lands on the canvas or the page.
 const canvas = { tagName: 'CANVAS' };
 check(g.keysBelongToMap(canvas, canvas) && g.keysBelongToMap({ tagName: 'BODY' }, canvas) && g.keysBelongToMap(null, canvas) && g.keysBelongToMap({}, canvas), 'the canvas, the body and the window have the keys');
@@ -89,6 +94,24 @@ check(g.orbiterArrival({ generic: 350000, r: 1e9, R: 3390 }) === null && g.orbit
     dom.fire('pointermove', { pointerId: 1, pointerType: 'mouse', clientX: 180, clientY: 101, buttons: 1 });
     run(rig, 1);
     check(Math.abs(rig.state.azimuth - az0) > 0.05, 'past the dead zone it turns');
+  }
+
+  // #439: two fingers that keep their distance and turn about their midpoint turn the view, and do not zoom
+  {
+    const dom = stub();
+    const rig = make(dom);
+    const az0 = rig.state.azimuth;
+    const d0 = rig.state.distance;
+    const f = (id, x, y, t = 'pointermove') => dom.fire(t, { pointerId: id, pointerType: 'touch', clientX: x, clientY: y, buttons: 1 });
+    f(1, 300, 300, 'pointerdown'); f(2, 500, 300, 'pointerdown');
+    for (let i = 1; i <= 10; i++) { // 0.5 rad clockwise in ten steps about (400, 300), radius 100
+      const a = Math.PI + 0.05 * i;
+      f(1, 400 + 100 * Math.cos(a), 300 + 100 * Math.sin(a));
+      f(2, 400 - 100 * Math.cos(a), 300 - 100 * Math.sin(a));
+    }
+    run(rig, 2);
+    check(Math.abs(Math.abs(rig.state.azimuth - az0) - 0.5) < 0.05, 'a half-radian twist turns the view by about a half radian');
+    check(Math.abs(rig.state.distance - d0) / d0 < 0.02, 'a twist at constant finger distance does not zoom');
   }
 
   // #435: a pinch wheel zooms ten times as far as the same raw delta without ctrlKey

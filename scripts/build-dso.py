@@ -13,6 +13,7 @@ Inputs
 
   scripts/data/messier-overlay.yaml: what a Messier row knows beyond the table (spec 0075 task 2):
     its parent, its kind of distance, its orientation and its morphology, a `common` nickname that replaces the table's (internal #294),
+    and a `why` sentence for the card (M40 and M73, which are not objects with one distance).
     and a `centre` that replaces OpenNGC's place on the sky where a better one is published (the 2026-11-16 audit).
 
 THE OBJECT MODEL (internal spec 0075 design section 3). Every row may carry
@@ -166,6 +167,9 @@ def apply_model(out: list, hand_rows: list, overlay: dict, pictured: set) -> Non
         if "common" in e and r.get("messier"):
             r["common"] = e["common"] or None
             r["name"] = f"M{r['messier']}" + (f" \u00b7 {r['common']}" if r["common"] else "")
+        # `why:` a sentence the card prints under the lead (the hand rows always had one; a Messier row may now).
+        if "why" in e and r.get("messier"):
+            r["why"] = e["why"] or None
         # `centre:` {ra_deg, dec_deg, source, read}: a Messier row's place on the sky from a named catalogue in place of
         # OpenNGC's (the 2026-11-16 position audit: OpenNGC puts the Pleiades on Alcyone, a quarter of a degree east of
         # the middle of its members). The distance stays; the place in space is worked out again from the new direction.

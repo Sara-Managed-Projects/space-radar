@@ -22,3 +22,13 @@ def count(body) -> int:
     validate(body)
     return sum(1 for st in body["results"] for port in st["docking_location"]
                if isinstance(port, dict) and port.get("currently_docked"))
+
+
+def newest(body) -> str | None:
+    """The latest docking of a vehicle docked now, over every station (registry row `content_max_age`)."""
+    out = [port["currently_docked"].get("docking")
+           for st in body.get("results", []) if isinstance(st, dict)
+           for port in st.get("docking_location") or []
+           if isinstance(port, dict) and isinstance(port.get("currently_docked"), dict)]
+    out = [d for d in out if d]
+    return max(out) if out else None

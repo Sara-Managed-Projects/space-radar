@@ -63,6 +63,7 @@ from seo_common import (ACCOUNTS, ACCURACY_FORM, CLASSROOM_FORM, GITHUB, ON_GITH
 from seo_share import Spec  # noqa: E402
 from seo_subscribe import subscribe_form  # noqa: E402  (the kit's subscribe form: the footer's, and a card on /about/ and /teachers/)
 from support import support_url  # noqa: E402  (registry/support.yaml: "" draws no money link anywhere)
+from seo_common import grouped as _grouped  # noqa: E402
 import count_facts  # noqa: E402  (how many sources and feeds: ONE rule, count_facts.source_counts)
 
 REG = ROOT / "registry"
@@ -82,12 +83,14 @@ def date_words(d: str | dt.date) -> str:
 
 
 def instant_words(iso: str) -> str:
-    d = dt.datetime.fromisoformat(iso.replace("Z", "+00:00"))
+    # ROUNDED to the minute, not cut (review 2026-11-16): the 2 August 2027 eclipse is greatest at 10:06:37 UT, which
+    # is 10:07 and was printed 10:06; NASA's table (10:07:49 TD) rounds the same way.
+    d = dt.datetime.fromisoformat(iso.replace("Z", "+00:00")) + dt.timedelta(seconds=30)
     return f"{d.day} {MONTHS[d.month - 1]} {d.year}, {d:%H:%M} UT"
 
 
 def groups(n: float) -> str:
-    return f"{round(n):,}"
+    return _grouped(n)   # one grouping for every page: seo_common.grouped says which and why
 
 
 def title_with_site(short: str) -> str:
@@ -160,7 +163,7 @@ def iss_pages(p: dict, host: str, counts: dict, snapshot_index: dict | None) -> 
     title = "Where is the ISS right now? Live 3D tracker" + SUFFIX
     h1 = "Where is the International Space Station right now?"
     static_answer = ("The International Space Station is about 400 km above the Earth, going once round it every 93 minutes at about "
-                     "27,600 km/h, somewhere between 51.6° north and 51.6° south of the equator. Your browser works out the exact spot "
+                     "27 600 km/h, somewhere between 51.6° north and 51.6° south of the equator. Your browser works out the exact spot "
                      "the moment this page opens"
                      + (f", from orbital elements saved on {saved_day}" if saved_day else ", from the orbital elements this site saves from CelesTrak")
                      + ".")
@@ -216,7 +219,7 @@ def iss_pages(p: dict, host: str, counts: dict, snapshot_index: dict | None) -> 
             iss["sameAs"] = p["sameAs"]
         page.jsonld = [webpage(host, Page(path=f"o/{ISS_SLUG}.html", title=title, description=description, body=""), [(p["name"], "")],
                                extra={"about": {"@id": f"{url}#thing"}, "mainEntity": {"@id": f"{host}/#app-iss"}}), sw, iss]
-        page.share = Spec(key=f"o/{ISS_SLUG}", name="Where is the ISS right now?", number="400 km up, 27,600 km/h", caption="Space station",
+        page.share = Spec(key=f"o/{ISS_SLUG}", name="Where is the ISS right now?", number="400 km up, 27 600 km/h", caption="Space station",
                           kind="plain", colour="#F2F4F7", alt="The International Space Station as a bright dot on rings, captioned Where is the ISS right now?")
         return page
 
@@ -329,24 +332,37 @@ def satellites_page(host: str, counts: dict, slugs: set) -> Page:
 
 # --- planets tonight ------------------------------------------------------------------------------------
 
+# sky/tonightbest.js phaseName()'s eight tokens, as a person says them.
+MOON_PHASE_WORDS = {
+    "new": "new", "waxingCrescent": "a waxing crescent", "firstQuarter": "near first quarter", "waxingGibbous": "waxing gibbous",
+    "full": "full", "waningGibbous": "waning gibbous", "lastQuarter": "near last quarter", "waningCrescent": "a waning crescent",
+}
+
 def planets_page(host: str, today: str) -> Page:
     facts = node_json("planets", {"date": today, "place": REFERENCE_PLACE})
     place = facts["place"]["name"]
     night = date_words(today)
     ups = facts["planets"]
+    # THE NIGHT RUNS PAST MIDNIGHT (review 2026-11-16): "On the evening of 16 November" was followed by four planets at
+    # 06:06 to 06:36 UT, which are before dawn on the 17th. Every time now carries its own date, and the sentence says "night".
+    def when(p: dict) -> str:
+        d = dt.date.fromisoformat(p["bestUtc"][:10])
+        return f"{p['bestUtc'][11:16]} UT on {d.day} {MONTHS[d.month - 1]}"
     if ups:
-        parts = [f"{p['name']} (magnitude {p['mag']:g}, highest in the {p['compass']} at {p['bestUtc'][11:16]} UT, {p['altDeg']}° up)" for p in ups]
-        sentence = f"On the evening of {night}, from {place}, the planets up in the dark are " + "; ".join(parts) + "."
+        parts = [f"{p['name']} (magnitude {p['mag']:g}, highest in the {p['compass']} at {when(p)}, {p['altDeg']}° up)" for p in ups]
+        sentence = f"On the night of {night}, from {place}, the planets up in the dark are " + "; ".join(parts) + "."
     else:
-        sentence = f"On the evening of {night}, from {place}, no bright planet is well up while the sky is dark."
+        sentence = f"On the night of {night}, from {place}, no bright planet is well up while the sky is dark."
     if facts["notUp"]:
         sentence += f" Not well placed: {', '.join(facts['notUp'])}."
     moon = facts.get("moon")
-    moon_line = (f"The Moon is {moon['percent']} percent lit ({moon['phase']}) and {'is' if moon['upTonight'] else 'is not'} up in the dark."
+    # The phase in words: the page printed the code's own token, "(firstQuarter)".
+    moon_line = (f"The Moon is {moon['percent']} percent lit ({MOON_PHASE_WORDS.get(moon['phase'], 'its phase is not named here')}) and "
+                 f"{'is' if moon['upTonight'] else 'is not'} up in the dark."
                  if moon else "")
     short = "Planets visible tonight: which, where and when"
     desc = "Which planets you can see tonight, where to look and when, worked out for your place in your browser, with tonight's list for London."
-    items = "".join(f"<li>{esc(p['name'])}, magnitude {p['mag']:g}: highest at {esc(p['bestUtc'][11:16])} UT, {p['altDeg']}° up in the {esc(p['compass'])}.</li>" for p in ups)
+    items = "".join(f"<li>{esc(p['name'])}, magnitude {p['mag']:g}: highest at {esc(when(p))}, {p['altDeg']}° up in the {esc(p['compass'])}.</li>" for p in ups)
     body = (
         '<p class="eyebrow"><span class="dot" style="background:#ffc28a"></span>Sky tonight</p>\n'
         "<h1>Which planets can you see tonight?</h1>\n"
@@ -501,12 +517,20 @@ def event_page(ev: dict, host: str, trips: dict) -> Page:
         gap = abs(f["distanceKm"] - f["meanKm"])
         rows += [("Full Moon, computed", instant_words(f["instant"])), ("The Moon's distance then", f"{groups(f['distanceKm'])} km"),
                  ("Against its average distance", f"{groups(gap)} km {'nearer' if f['nearer'] else 'farther'}"), ("Traditional name", ev["moon_name"])]
+        # A full Moon that grazes the Earth's OUTER shadow (review 2026-11-16): NASA's table lists penumbral lunar eclipses on
+        # 20 February, 18 July and 17 August 2027 (https://eclipse.gsfc.nasa.gov/LEdecade/LEdecade2021.html, read 2026-11-16),
+        # and the full-Moon pages of those nights said nothing. Computed (scripts/seo_facts.mjs), never typed.
+        if f.get("penumbral"):
+            rows.append(("Also that night", f"a penumbral lunar eclipse, greatest at {instant_words(f['penumbral']['instant'])}"))
+            sections += ("<h2>A faint eclipse the same night</h2>\n"
+                         f"<p>At this full Moon the Moon passes through the Earth's outer shadow, the penumbra: a penumbral lunar eclipse, greatest at "
+                         f"{esc(instant_words(f['penumbral']['instant']))}. The Moon dims slightly and is not cut by a dark edge, so most people notice nothing.</p>\n")
         sections += ("<h2>What a full Moon is</h2>\n"
                      "<p>The Moon is full when it stands opposite the Sun in the sky, so the whole face turned towards the Earth is lit. That is one instant for the whole "
                      "Earth, given above in UT; what differs from place to place is the local date and whether the Moon is above the horizon at that moment.</p>\n"
                      "<h2>Its distance</h2>\n"
                      "<p>The Moon's orbit is an ellipse, so its distance from the Earth changes from one full Moon to the next. The distance above is computed for the "
-                     "instant of this one, from the centre of the Earth to the centre of the Moon, and set against the average of 384,400 km.</p>\n"
+                     "instant of this one, from the centre of the Earth to the centre of the Moon, and set against the average of " + groups(f["meanKm"]) + " km.</p>\n"
                      "<h2>The traditional name</h2>\n"
                      "<p>The names given to each month's full Moon come from North American and European traditions written down in almanacs. They are folklore: "
                      "they say nothing about the Moon itself, and different almanacs give different names.</p>\n")
@@ -523,6 +547,13 @@ def event_page(ev: dict, host: str, trips: dict) -> Page:
                         f"the map knows, the Moon is at least 10° up at the greatest eclipse in {f['upCount']}; the highest are "
                         + ", ".join(f"{esc(c['name'])} ({esc(c['country'])}) at {c['altDeg']}°" for c in up) + " (computed for each).</p>\n" if up else
                         "<p>A lunar eclipse is seen from everywhere the Moon is above the horizon. At the greatest eclipse the Moon is below 10° in all the cities the map knows.</p>\n")
+                     # WHOSE MINUTES (review 2026-11-16). NASA's five-millennium table (https://eclipse.gsfc.nasa.gov/LEdecade/LEdecade2021.html,
+                     # read 2026-11-16) gives 01h11m of totality on 31 December 2028 where this page computes 72 minutes, and 00h56m and
+                     # 02h21m in the dark shadow on 12 January and 6 July 2028 where it computes 58 and 143: the two size the Earth's shadow
+                     # differently. The page says whose its numbers are and that NASA's run a little shorter.
+                     + "<h2>How long, and by whose measure</h2>\n"
+                       "<p>The times and lengths on this page are computed with Astronomy Engine, to the nearest minute. NASA's eclipse tables size the Earth's shadow "
+                       "slightly differently, so the lengths they give for the same eclipse are a minute or two shorter.</p>\n"
                      + "<h2>Look safely</h2>\n"
                        "<p>Unlike a solar eclipse, a lunar eclipse is safe to look at with the naked eye, binoculars or a telescope: the Moon is only reflecting sunlight, and it is dimmer, not brighter.</p>\n")
         where_static = "The Moon must be above your horizon at the time above; the map's Tonight view tells you whether it is."
@@ -668,6 +699,52 @@ def lab_description(door: str) -> str:
     """A Lab page's own meta description (what the door is), read from its file; "" when the file has none."""
     m = re.search(r'<meta name="description" content="([^"]*)"', (ROOT / "site" / door).read_text(encoding="utf-8"))
     return html_unescape(m.group(1)) if m else ""
+
+
+# --- the Leo Triplet: a group's page at the address that used to be one galaxy's ----------------------------------
+
+LEO_TRIPLET_SLUG = "leo-triplet"
+LEO_TRIPLET_SOURCE = "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-66/"
+
+
+def leo_triplet_page(host: str, by_slug: dict) -> Page:
+    """/o/leo-triplet.html: the group, linking its two Messier galaxies (review 2026-11-16).
+
+    The address is indexed and linked: until that day it showed M65 alone under the group's name (OpenNGC gives both M65
+    and M66 the nickname "Leo Triplet", so the two shared one page and M66 had none). Each galaxy now has its own page,
+    and this one stays, saying what the triplet is. Every number on it is the two galaxies' own first sentence, never
+    typed here. NASA's Messier 66 page (read 2026-11-16) is where the three members are named: M66 and "its neighbor M65,
+    both of which belong to the Leo Triplet of galaxies. (The third member, NGC 3628 ... is not included in the Messier
+    catalog)".
+    """
+    m65, m66 = by_slug.get("m65"), by_slug.get("m66")
+    if m65 is None or m66 is None:
+        raise SystemExit("seo_pages: the Leo Triplet's page needs the object pages of M65 and M66 (o/m65.html, o/m66.html)")
+    short = "The Leo Triplet: M65, M66 and NGC 3628"
+    desc = "The Leo Triplet is three spiral galaxies close together in the constellation Leo: M65, M66 and NGC 3628. Two have a page here, each at its own distance."
+    lead = "The Leo Triplet is three spiral galaxies close together in the constellation Leo: M65, M66 and NGC 3628."
+    body = ('<p class="eyebrow"><span class="dot" style="background:#c9a0ff"></span>Deep sky, a group of galaxies</p>\n'
+            "<h1>The Leo Triplet</h1>\n"
+            f'<p class="lead">{esc(lead)}</p>\n'
+            "<p>Two of the three are in Charles Messier's catalogue and each has a page of its own here. The third, NGC 3628, is not a Messier "
+            "object and is not on this map.</p>\n"
+            '<ul class="sky-list">'
+            f'<li><a href="m65.html">M65</a>. {esc(m65["lead"])}</li>'
+            f'<li><a href="m66.html">M66</a>. {esc(m66["lead"])}</li>'
+            "</ul>\n"
+            "<p>This address used to show M65 alone under the group's name. The Leo Triplet is the three galaxies together, and neither of them alone.</p>\n"
+            '<div class="cta"><a class="btn btn--map" href="../#go=dso-m66">Fly to M66 in 3D</a>'
+            "<p>M65 is beside it on the map, at its own distance.</p></div>\n")
+    foot = (f'<p>The members of the group: NASA, <a href="{LEO_TRIPLET_SOURCE}" rel="nofollow">Messier 66</a>. '
+            "The two galaxies' distances and sizes are their own pages' and are sourced there.</p>\n")
+    page = Page(path=f"o/{LEO_TRIPLET_SLUG}.html", title=title_with_site(short), description=desc, body=body, foot=foot, og_title=short, og_type="article", kind="object")
+    url = url_of(host, page.path)
+    page.jsonld = [webpage(host, page, [("Deep sky", ""), ("The Leo Triplet", "")], page_type="CollectionPage", extra={"about": {"@id": f"{url}#group"}}),
+                   {"@type": "Thing", "@id": f"{url}#group", "name": "Leo Triplet", "description": lead, "url": url,
+                    "hasPart": [{"@type": "Thing", "name": g["name"], "url": url_of(host, f"o/{g['slug']}.html")} for g in (m65, m66)]}]
+    page.share = Spec(key=f"o/{LEO_TRIPLET_SLUG}", name="The Leo Triplet", number="M65, M66 and NGC 3628", caption="Group of galaxies", kind="plain",
+                      colour="#c9a0ff", alt="Rings and a dot, captioned The Leo Triplet, M65, M66 and NGC 3628.")
+    return page
 
 
 def links_page(host: str) -> Page:
@@ -1394,6 +1471,7 @@ def build_pages(host: str, objects: list[dict], today: str, snapshot_index: dict
     pages += [starlink_page(host, counts, slugs, today), satellites_page(host, counts, slugs), planets_page(host, today)]
     pages += [events_index(events, host)] + [event_page(e, host, tours) for e in events]
     pages += [links_page(host)]
+    pages += [leo_triplet_page(host, by_slug)]
     pages += [about_page(host), sources_page(host, snapshot_index), accuracy_page(host),
               teachers_page(host, tours, yml("autopilot.yaml"), url_keys()), eyes_page(host), first_pr_page(host),
               privacy_page(host), classroom_sims_page(host)]

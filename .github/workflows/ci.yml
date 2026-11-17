@@ -205,6 +205,8 @@ jobs:
       # an hourly schedule reads an hourly source, the cut / derived files / column twins, the handler.
       - name: The harvester never overwrites good data with a failure, and publishes what the old script did
         run: python3 tests/test_harvest_publish.py
+      - name: "Horizons elements at each close approach: parsed to SBDB units, kept row by row, fail-soft (internal #392)"
+        run: python3 tests/test_harvest_neo_elements.py
       # 0078 r14-data: end
       # Every user-visible string lives in site/js/copy/en.js. Three files cited this check by name
       # before it existed; on the first run it was ever given it found three real leaks in
@@ -369,6 +371,11 @@ jobs:
       # the enabled rows; a template or a sentence with a number of its own fails here.
       - name: "One number of sources: the pages read one function, a switched-off row is in neither, nobody types a count"
         run: python3 tests/test_source_counts.py
+      # The data review of 2026-11-16: Venus at 467 C in one place and 464 C in another, Eris's year 557 and 560, two galaxies
+      # under one name and one page, an upper limit printed as a measured mass. Each case fixed that day is held, read from
+      # the files the app and the pages read.
+      - name: "One value per quantity: Venus, the Earth's width, the Milky Way, the parsec, the Crab, M87, Eris, one name per Messier object, no limit as a mass"
+        run: python3 tests/test_one_value.py
       # A translator's tool: lists missing keys, extra keys and lost {slots}; shown to fail.
       - name: "The translation checker names a missing key, a lost slot and an untouched string"
         run: node tests/test_check_translation.mjs
@@ -743,6 +750,8 @@ jobs:
         run: node tests/test_moons_span.mjs
       - name: what a pointer means, by tier, occlusion, reach and ambiguity (spec 0028 step 1, and the 1.5.2 pick review); the icon as drawn, a crowd, a model as one target (internal #341, #342)
         run: node tests/test_pickrank.mjs
+      - name: A click on a name opens what it names (the highlighted names round the Earth)
+        run: node tests/test_label_pick.mjs
       - name: pointer, wheel and key rules (a drag dead zone, the primary button, the trackpad pinch, keys in panels, zoom toward the pointer; internal #433-#440)
         run: node tests/test_gestures.mjs
       - name: on the way to it a model is the size it will be on arrival, and a drawn model is hit on its outline (internal #340, #341)
@@ -1375,6 +1384,12 @@ jobs:
         run: node tests/test_homunculus.mjs
       - name: "Cassiopeia A from its published 3D reconstruction: the source's parts, the place and the growth of each, the legend and the credit on the card"
         run: node tests/test_casa.mjs
+      - name: "SN 1987A's rings at their measured size and tilt: the papers' numbers, 0.82 arcseconds at 51.4 kpc against Panagia's 808 mas, the 43 degree tilt, one draw call (internal #429)"
+        run: node tests/test_sn1987a.mjs
+      - name: "Stellar streams from the galstreams tracks: the points are the files' own, Sagittarius by its dwarf, GD-1's adopted ends, two draw calls (internal #420)"
+        run: node tests/test_streams.mjs
+      - name: "The streams file matches its registry (internal #420)"
+        run: python3 scripts/build_deep_streams.py --check
       # 0076 W3-d
       - name: "where you are and the way back: a chain from the Sun or the Milky Way on every card, Back along the visitor's own path (20 steps, never sent), the ladder's rung and a note at each join (internal spec 0076 W3-d)"
         run: node tests/test_navigate.mjs
@@ -1534,6 +1549,8 @@ jobs:
         run: node tests/test_snapshot_span.mjs
       - name: "Listed close approaches against JPL's close-approach table: full-precision SBDB elements, distance and time within a stated tolerance (internal #392)"
         run: node tests/test_neo_cad.mjs
+      - name: "Comets from the feed against JPL Horizons: Encke, 21P and Olbers at a fixed instant, within a stated angle seen from Earth (internal #393)"
+        run: node tests/test_comet_reference.mjs
       - name: "staticPos places every star and galaxy and answers null for a record with no usable position (public #620)"
         run: node tests/test_propagate_static.mjs
       - name: "the Kepler equation solvers behind every orbit drawn from elements: the answer satisfies the equation, a circle, a wrapped angle, Barker's equation (public #621)"

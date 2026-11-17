@@ -783,7 +783,7 @@ export const COPY = {
       "catalogueCopy": "Copie du catalogue",
       "spectralType": "Type d’étoile",
       "brightness": "Éclat apparent",
-      "luminosity": "Luminosité",
+      "luminosity": "Luminosité en lumière visible",
       "starWidth": "Largeur",
       "catalogue": "Catalogue",
       "lightTime": "Temps radio, aller simple",
@@ -1815,6 +1815,8 @@ export const COPY = {
   "deepFacts": {
     "methodRow": "Distance trouvée par",
     "billionLightYears": "{n} milliards d’années-lumière",
+    "lessThan": "Moins de {v}",
+    "moreThan": "Plus de {v}",
     "methods": {
       "parallax": "parallaxe : le décalage de son étoile devant le ciel lointain",
       "eclipsing-binary": "les étoiles binaires à éclipses qu’on y trouve",
@@ -1844,7 +1846,7 @@ export const COPY = {
     "records": {
       "dso-milky-way": {
         "drawn": "une illustration construite sur des mesures",
-        "split": "Mesuré : les étoiles à quelques milliers d’années-lumière (Gaia), l’angle de la barre, les directions le long des bras et les bras les plus proches (Reid et al. 2019). Déduit : l’autre côté, au-delà du centre, caché par la poussière ; ses bras sont les bras proches prolongés."
+        "split": "Mesuré : les étoiles à quelques milliers d’années-lumière (Gaia), l’angle de la barre, les directions le long des bras et les bras les plus proches (Reid et al. 2019). Déduit : l’autre côté, au-delà du centre, caché par la poussière ; ses bras sont les bras proches prolongés. Quatre courants d’étoiles (Sagittaire, Orphan-Chenab, GD-1, Palomar 5) sont dessinés d’après la bibliothèque galstreams (Mateu 2023) : la place de chacun dans le ciel est mesurée, ainsi que sa distance sauf pour GD-1, dont la distance est supposée ; le ruban d’étoiles autour de chaque ligne est illustratif."
       }
     }
   },
@@ -1930,6 +1932,8 @@ export const COPY = {
     "earthsEstimated": "{n} × la largeur de la Terre, estimation de l’archive d’après sa masse",
     "massEstimated": "{n} × la Terre, estimation de l’archive d’après sa taille",
     "massLeast": "Au moins {n} × la Terre",
+    "massLimit": "Moins de {n} × la Terre : une limite supérieure, pas une mesure",
+    "massLimitKnown": "Sa masse n’est connue que par une limite supérieure.",
     "sizeDefault": "Non mesurée : dessinée à la taille de la Terre",
     "temperature": "{k} K ({c} °C), si elle réfléchit {pct} % de sa lumière comme la Terre",
     "zone": {
@@ -2193,7 +2197,7 @@ export const COPY = {
       "launch": "Launch Library 2",
       "shower": "le calendrier des pluies de l’IMO",
       "moon": "Astronomy Engine",
-      "crew": "Open Notify",
+      "crew": "Launch Library 2",
       "storms": "GDACS",
       "approach": "NASA JPL",
       "launched": "CelesTrak",
@@ -3136,7 +3140,7 @@ export const COPY = {
       "near": "l’une des plus proches qui existent",
       "seenAs": "vue telle qu’elle était il y a {n} ans",
       "seenAsMonths": "vue telle qu’elle était il y a {n} mois",
-      "luminosity": "brillant {n} fois plus que le Soleil",
+      "luminosity": "brillant {n} fois plus que le Soleil en lumière visible",
       "dimmer": "brillant à {n} de l’éclat du Soleil",
       "colours": {
         "O": "bleue",
@@ -3616,7 +3620,7 @@ export const COPY = {
         "match": [
           "kpc"
         ],
-        "say": "Environ 3,26 années-lumière : la distance à laquelle l’orbite de la Terre paraîtrait large d’une seconde d’arc. Les articles écrivent pc, et kpc pour mille."
+        "say": "Environ 3,26 années-lumière : la distance à laquelle la distance entre la Terre et le Soleil paraîtrait large d’une seconde d’arc. Les articles écrivent pc, et kpc pour mille."
       },
       {
         "term": "million d’années-lumière",
@@ -4891,7 +4895,7 @@ Object.assign(COPY, {
       "white dwarf": "Le cœur chaud qui reste quand une étoile comme le Soleil a perdu ses couches extérieures. À peu près grosse comme la Terre, elle ne fabrique plus de chaleur et refroidit lentement.",
       "brown dwarf": "Un objet trop gros pour être une planète et trop petit pour briller comme une étoile : environ 13 à 80 fois la masse de Jupiter. Il ne donne presque pas de lumière visible.",
       "nebula": "Un nuage de gaz et de poussière dans l’espace. Certains brillent, d’autres cachent les étoiles qui sont derrière, et dans certains naissent de nouvelles étoiles.",
-      "galaxy": "Une immense famille d’étoiles, de gaz et de poussière tenue ensemble par la gravité. La nôtre, la Voie lactée, est une spirale large de plus de 100 000 années-lumière.",
+      "galaxy": "Une immense famille d’étoiles, de gaz et de poussière tenue ensemble par la gravité. La nôtre, la Voie lactée, est une spirale large d’environ 100 000 années-lumière.",
       "globular cluster": "Une boule de dizaines de milliers à des millions d’étoiles serrées par la gravité, plus denses au centre.",
       "habitable zone": "L’éventail de distances à une étoile où une planète pourrait avoir de l’eau liquide à sa surface. Cela dit que la vie pourrait y être possible, pas qu’il y en a.",
       "exoplanet": "Une planète qui tourne autour d’une étoile autre que le Soleil.",
@@ -4904,7 +4908,7 @@ Object.assign(COPY, {
         "sun": "Le Soleil est une étoile : une boule de gaz très chaud et lumineux, faite surtout d’hydrogène et d’hélium, vieille d’environ 4,5 milliards d’années. Il est environ 100 fois plus large que la Terre. Son cœur est à environ 15 millions de degrés Celsius, assez chaud pour la fusion nucléaire, et l’énergie qui en sort est ce dont dépend la plupart de la vie sur Terre. Sa gravité retient tout le Système solaire.",
         "moon": "La Lune est le seul satellite naturel de la Terre, large de moins d’un tiers de la Terre. C’est une boule de roche couverte de cratères, à environ 384 000 km de nous en moyenne. Elle fait le tour de la Terre en environ 27 jours et tourne sur elle-même en autant de temps, si bien que l’on voit toujours la même face. Les taches sombres sont des plaines de lave ancienne. C’est le seul monde au-delà de la Terre que des humains ont visité jusqu’ici.",
         "mercury": "Mercure est la plus petite planète et la plus proche du Soleil, à peine plus grosse que la Lune. Son sol rocheux est couvert de cratères. Elle n’a presque pas d’air pour garder la chaleur : elle passe d’environ 430 °C le jour à environ moins 180 °C la nuit. Elle fait le tour du Soleil en 88 jours, plus vite que toute autre planète.",
-        "venus": "Vénus a presque la taille de la Terre : 12 104 km de large, contre 12 756. Son air épais est surtout du dioxyde de carbone, avec des nuages d’acide sulfurique, et il retient la chaleur. Le sol est à environ 467 °C, plus chaud que sur Mercure et assez chaud pour faire fondre le plomb, et l’air y appuie environ 93 fois plus fort que sur Terre. Vénus tourne lentement et à l’envers : un tour dure 243 jours terrestres, plus longtemps que son année de 225.",
+        "venus": "Vénus a presque la taille de la Terre : 12 104 km de large, contre 12 742. Son air épais est surtout du dioxyde de carbone, avec des nuages d’acide sulfurique, et il retient la chaleur. Le sol est à environ 464 °C, plus chaud que sur Mercure et assez chaud pour faire fondre le plomb, et l’air y appuie environ 92 fois plus fort que sur Terre. Vénus tourne lentement et à l’envers : un tour dure 243 jours terrestres, plus longtemps que son année de 225.",
         "earth": "La Terre est le seul endroit où l’on sait qu’il y a des êtres vivants. C’est la seule planète avec de l’eau liquide à sa surface, en grande partie couverte par l’océan. Un tour sur elle-même dure 23,9 heures et un tour autour du Soleil 365,25 jours, c’est pourquoi on ajoute un jour bissextile tous les quatre ans. La lumière du Soleil met environ huit minutes pour arriver jusqu’ici.",
         "mars": "Mars est un désert froid et poussiéreux, environ deux fois moins large que la Terre. Le fer de ses roches et de sa poussière a rouillé, ce qui la fait paraître rouge. Elle a le plus grand volcan du Système solaire, Olympus Mons, et un réseau de canyons, Valles Marineris, plus de dix fois plus long et plus large que le Grand Canyon. Des rivières et des lacs y ont coulé autrefois ; aujourd’hui l’air est mince et son eau est de la glace ou très salée.",
         "jupiter": "Jupiter est la plus grosse planète : 11 fois plus large que la Terre, avec la place pour environ mille Terres à l’intérieur. Elle est faite surtout d’hydrogène et d’hélium, sans sol solide où se poser. Ses bandes sont des nuages froids et venteux d’ammoniac et d’eau. La Grande Tache rouge est une tempête plus large que la Terre, que l’on observe depuis plus de 300 ans. Un tour sur elle-même ne dure que 9,9 heures, le jour le plus court de toutes les planètes.",
@@ -6439,6 +6443,40 @@ Object.assign(COPY, {
       ]
     },
     "how": "Le gaz qui vient vers nous décale sa lumière vers le bleu et celui qui s’éloigne vers le rouge, et l’Homoncule s’étend de façon uniforme depuis les années 1840 : la vitesse d’un point le long de notre ligne de visée dit donc aussi de combien il est devant l’étoile ou derrière. Les astronomes ont lu la vitesse de son hydrogène le long de 92 bandes de la nébuleuse et en ont construit la forme (Steffen et al., 2014)."
+  },
+  "deepSn1987a": {
+    "card": {
+      "sn1987a": "Les anneaux sont dessinés aux tailles et aux inclinaisons que les astronomes ont mesurées d’après les échos lumineux de l’explosion et le mouvement des anneaux eux-mêmes (Sugerman et al., 2005 ; Panagia, 2003 ; Tziamtzis et al., 2011). Les points qui les marquent et les couleurs sont illustratifs. Pas encore relu par un astronome."
+    },
+    "rows": {
+      "dso-sn-1987a": [
+        [
+          "Anneau équatorial",
+          "Mesuré. Environ 0,8 seconde d’arc de rayon, soit à 51,4 milliers de parsecs environ deux tiers d’année-lumière, incliné de 43° par rapport à une vue de face, son bord nord le plus proche de nous (Panagia, 2003 ; Sugerman et al., 2005)."
+        ],
+        [
+          "Anneaux extérieurs",
+          "Mesuré. Deux anneaux plus grands, d’environ 1,4 et 1,6 année-lumière de rayon, de part et d’autre du plan de l’étoile, inclinés d’environ 45° et 38° (Sugerman et al., 2005 ; Tziamtzis et al., 2011). Celui du sud n’est pas tout à fait une ellipse."
+        ],
+        [
+          "À quelle distance",
+          "Le retard de la lueur de l’anneau intérieur après l’explosion donne sa taille réelle ; sa taille sur le ciel donne alors la distance de la supernova : 51,4 ± 1,2 milliers de parsecs (Panagia, 2003)."
+        ],
+        [
+          "Non dessiné",
+          "Les nœuds brillants de l’anneau, les débris à l’intérieur, les nébuleuses plus grandes plus loin et la lente croissance de l’anneau (environ 10 km/s)."
+        ],
+        [
+          "Points et couleurs",
+          "Illustratif. Chaque anneau est dessiné comme une ellipse plane de points ; les couleurs chaude et bleu pâle servent seulement à distinguer les anneaux."
+        ],
+        [
+          "Relecture",
+          "Ce dessin n’a pas encore été relu par un astronome."
+        ]
+      ]
+    },
+    "how": "Le flash de l’explosion a éclairé les anneaux, et sa lueur nous est parvenue plus tard du côté éloigné de l’anneau que du côté proche. Ce retard donne la taille réelle de l’anneau, et la taille qu’il couvre sur le ciel donne la distance. Les anneaux extérieurs sont placés d’après des échos du flash sur le gaz voisin (Sugerman et al., 2005)."
   },
   "deepCasA": {
     "card": {

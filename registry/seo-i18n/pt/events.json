@@ -292,5 +292,17 @@
  "dc21c5af7e": "magnitude {n1}, a {n2}° do Sol, céu do entardecer, em Sagitário",
  "aee6b0cce1": "Vênus {n1} UA, Marte {n2} UA",
  "44efad8e76": "Uma conjunção é quando dois corpos aparecem juntos no céu. Só parecem perto: Vênus está a {n1} UA da Terra e Marte a {n2} UA, um na frente do outro visto daqui, e muito distantes no espaço.",
- "c84e805bb1": "Olhe para o oeste, baixo, depois do pôr do Sol. Os dois estão a menos de {n1}° do Sol, então um horizonte limpo ajuda; a maior aproximação é dada em UT, e o par continua perto por vários dias antes e depois."
+ "c84e805bb1": "Olhe para o oeste, baixo, depois do pôr do Sol. Os dois estão a menos de {n1}° do Sol, então um horizonte limpo ajuda; a maior aproximação é dada em UT, e o par continua perto por vários dias antes e depois.",
+ "fafdf3f85c": "As Líridas atingem o pico em {d1}, {n1} UT, com até cerca de {n2} meteoros por hora num céu escuro perfeito, vindos de Lira. A Lua está cerca de {n3}% iluminada e minguante no horário que usamos ({d2}, {n4} UT).",
+ "efdc1c2d95": "em Lira",
+ "2039350aea": "As Perseidas atingem o pico em {d1}, {n1} UT, com até cerca de {n2} meteoros por hora num céu escuro perfeito, vindos de Perseu. A Lua está cerca de {n3}% iluminada e crescente no horário que usamos ({d2}, {n4} UT).",
+ "1926ca6d6c": "em Perseu",
+ "f3b70cdbe1": "As Perseidas atingem o pico em {d1}, {n1} UT, com até cerca de {n2} meteoros por hora num céu escuro perfeito, vindos de Perseu. A Lua está cerca de {n3}% iluminada e minguante no horário que usamos ({d2}, {n4} UT).",
+ "4346d47850": "cometa 96P/Machholz (suspeita)",
+ "1ba746076a": "Também nessa noite",
+ "1e5fc3ca07": "um eclipse lunar penumbral, com o máximo em {d1}, {n1} UT",
+ "3d17ebb0d1": "Um eclipse fraco na mesma noite",
+ "467a711085": "Nesta lua cheia, a Lua passa pela sombra externa da Terra, a penumbra: um eclipse lunar penumbral, com o máximo em {d1}, {n1} UT. A Lua escurece um pouco e não é cortada por uma borda escura, então a maioria das pessoas não percebe nada.",
+ "1849e0ca66": "Quanto tempo, e segundo quem",
+ "77d53c86f5": "Os horários e as durações desta página são calculados com o Astronomy Engine, ao minuto mais próximo. As tabelas de eclipses da NASA dimensionam a sombra da Terra de modo um pouco diferente, então as durações que elas dão para o mesmo eclipse são um ou dois minutos mais curtas."
 }

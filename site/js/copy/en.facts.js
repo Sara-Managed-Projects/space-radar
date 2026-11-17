@@ -147,6 +147,10 @@ Object.assign(COPY, {
     methodRow: 'Distance found by',
     // A far record's distance, comoving, from its redshift (spec 0075 stage e, ui/cardfacts.js exotics).
     billionLightYears: '{n} billion light-years',
+    // A number a catalogue gives only as a LIMIT (the NASA Exoplanet Archive's pl_bmasselim / pl_radelim), around the value's own words:
+    // "Less than 3 375× Earth". Here, where ui/cardfacts.js can read them without the card's later words (review 2026-11-16).
+    lessThan: 'Less than {v}',
+    moreThan: 'More than {v}',
     methods: {
       parallax: 'parallax: the shift of its star against the far sky',
       'eclipsing-binary': 'eclipsing binary stars in it',
@@ -181,7 +185,7 @@ Object.assign(COPY, {
     records: {
       'dso-milky-way': {
         drawn: 'an illustration built on measurements',
-        split: 'Measured: the stars within a few thousand light-years (Gaia), the bar’s angle, the directions along the arms and the nearer arms (Reid et al. 2019). Inferred: the far side beyond the centre, hidden by dust; its arms are the near ones carried round.',
+        split: 'Measured: the stars within a few thousand light-years (Gaia), the bar’s angle, the directions along the arms and the nearer arms (Reid et al. 2019). Inferred: the far side beyond the centre, hidden by dust; its arms are the near ones carried round. Four stellar streams (Sagittarius, Orphan-Chenab, GD-1, Palomar 5) are drawn from the galstreams library (Mateu 2023): where each lies on the sky is measured, and so is its distance except GD-1’s, which is assumed; the ribbon of stars about each line is illustrative.',
       },
     },
   },

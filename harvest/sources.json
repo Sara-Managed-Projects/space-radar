@@ -70,22 +70,12 @@
       ]
     },
     {
-      "id": "open-notify-astros",
-      "url": "http://api.open-notify.org/astros.json",
-      "auth": "none",
-      "refresh": "1h",
-      "freshness_max": "24h",
-      "parser": "open_notify",
-      "outputs": [
-        "astros.json"
-      ]
-    },
-    {
       "id": "ll2-upcoming",
       "url": "https://ll.thespacedevs.com/2.3.0/launches/upcoming/?limit=50&mode=detailed",
       "auth": "none",
       "refresh": "2h",
       "freshness_max": "12h",
+      "content_max_age": "7d",
       "parser": "ll2",
       "outputs": [
         "launches.json",
@@ -109,6 +99,7 @@
       "auth": "none",
       "refresh": "6h",
       "freshness_max": "48h",
+      "content_max_age": "200d",
       "parser": "ll2_stations",
       "outputs": [
         "stations-docked.json"
@@ -120,6 +111,7 @@
       "auth": "none",
       "refresh": "6h",
       "freshness_max": "48h",
+      "content_max_age": "300d",
       "parser": "ll2_crew",
       "outputs": [
         "crew.json"
@@ -131,6 +123,7 @@
       "auth": "none",
       "refresh": "6h",
       "freshness_max": "48h",
+      "content_max_age": "30d",
       "parser": "ll2_previous",
       "outputs": [
         "launches-previous.json"
@@ -160,7 +153,7 @@
     },
     {
       "id": "nasa-exoplanet-archive",
-      "url": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+pl_name,hostname,ra,dec,sy_dist,pl_rade,pl_bmasse,pl_orbper,disc_year,discoverymethod,st_teff,st_rad,st_spectype+from+pscomppars&format=csv",
+      "url": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+pl_name,hostname,ra,dec,sy_dist,pl_rade,pl_bmasse,pl_orbper,disc_year,discoverymethod,st_teff,st_rad,st_spectype,pl_bmasselim,pl_radelim+from+pscomppars&format=csv",
       "auth": "none",
       "refresh": "168h",
       "freshness_max": "720h",

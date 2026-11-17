@@ -75,7 +75,7 @@ const sameLocalDay = (a, b) => new Date(a).toDateString() === new Date(b).toDate
  *
  * @param {{nowMs: number, items?: Object[], crew?: Object|null, station?: Object|null,
  *   storms?: Object[], launched?: {count: number, newest?: Object}|null}} input  `items` is the
- *   Coming up list (ui/next.js); `crew` is Open Notify's headcount by craft, or null while it is
+ *   Coming up list (ui/next.js); `crew` is Launch Library 2's headcount by station, or null while it is
  *   not known; `station` is the record a press on the crew clause goes to; `launched` is the
  *   last-30-days layer's count and its newest record.
  */

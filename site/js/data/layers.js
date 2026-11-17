@@ -76,10 +76,10 @@ const C = {
 /** @type {Array<{noradId:number, name:string, why:string}>} */
 export const NOTABLE = [
   { noradId: 25544, name: 'ISS (Zarya)', why: 'People have lived here without a break since November 2000. It is the brightest thing in the sky after the Moon and Venus.' },
-  { noradId: 48274, name: 'CSS (Tianhe)', why: "The core of China's space station, permanently crewed since 2021." },
+  { noradId: 48274, name: 'CSS (Tianhe)', why: "The core of China's space station, first crewed in June 2021 and never empty since June 2022." }, // Shenzhou-13 landed 16 April 2022 (english.www.gov.cn, Xinhua), Shenzhou-14 docked 5 June 2022 (en.cmse.gov.cn/missions/shenzhouXIV/); read 2026-11-16
   { noradId: 20580, name: 'Hubble Space Telescope', why: 'In orbit since April 1990, and the source of the pictures everybody has seen. Still working.' },
   { noradId: 25867, name: 'Chandra X-ray Observatory', why: 'It sees the X-rays from black holes eating. Its orbit reaches a third of the way to the Moon.' },
-  { noradId: 25989, name: 'XMM-Newton', why: "Europe's X-ray telescope, and the largest satellite ESA has ever launched." },
+  { noradId: 25989, name: 'XMM-Newton', why: "Europe's X-ray telescope, the biggest science satellite ever built in Europe." }, // ESA's factsheet, word for word, 3.8 t (esa.int/Science_Exploration/Space_Science/XMM-Newton/XMM-Newton_factsheet); Envisat was 8.2 t; read 2026-11-16
   { noradId: 43435, name: 'TESS', why: 'It found thousands of planets around other stars by watching them dim their own suns.' },
   { noradId: 38358, name: 'NuSTAR', why: 'Its detectors sit ten metres from its mirrors on a mast that unfolded in orbit.' },
   { noradId: 25994, name: 'Terra', why: 'Since 1999 it has taken the picture of the whole planet that most maps of vegetation are built from.' },
@@ -98,12 +98,12 @@ export const NOTABLE = [
   { noradId: 43613, name: 'ICESat-2', why: 'It fires 10 000 laser pulses a second at the ice sheets and counts the photons that come back.' },
   { noradId: 43476, name: 'GRACE-FO 1', why: 'Two satellites chasing each other, weighing groundwater by how the gap between them changes.' },
   { noradId: 40376, name: 'SMAP', why: 'It measures how wet the soil is, everywhere, every three days.' },
-  { noradId: 41866, name: 'GOES 16', why: 'A weather satellite that sits still over one spot, 35 786 km up. It kept the Atlantic hurricane watch until GOES 19 took over in April 2025.' },
-  { noradId: 43226, name: 'GOES 17', why: 'Its Pacific counterpart, now the on-orbit spare.' },
+  { noradId: 41866, name: 'GOES 16', why: 'A weather satellite that sits still over one spot, 35 786 km up. It kept the Atlantic hurricane watch until GOES 19 took over in April 2025. Now a spare.' }, // NOAA NESDIS: GOES-16 and GOES-17 "both serve as on-orbit backups" (nesdis.noaa.gov/our-satellites/currently-flying/geostationary-satellites, read 2026-11-16)
+  { noradId: 43226, name: 'GOES 17', why: 'Its Pacific counterpart until GOES 18 took over, and now a spare in orbit too.' },
   { noradId: 51850, name: 'GOES 18', why: 'The one watching the US west coast and the Pacific storms.' },
   { noradId: 60133, name: 'GOES 19', why: 'The newest of them. It took over the Atlantic hurricane watch in April 2025.' },
   { noradId: 38771, name: 'MetOp-B', why: "Europe's polar weather satellite. Its soundings do more for a 3-day forecast than any other instrument." },
-  { noradId: 43689, name: 'MetOp-C', why: 'The last of that series, flying in formation with its sisters.' },
+  { noradId: 43689, name: 'MetOp-C', why: "The newest of Europe's first three MetOp satellites, working alongside MetOp-B." }, // EUMETSAT: Metop-A retired 30 November 2021, "Metop-B and -C are still operational", Metop-SGA1 launched 13 August 2025 (eumetsat.int/our-satellites/metop-series, read 2026-11-16)
   { noradId: 37846, name: 'GSAT0101 (Galileo-PFM)', why: "The first satellite of Europe's own version of GPS. Your phone probably uses it." },
   { noradId: 32060, name: 'WorldView-1', why: 'A commercial camera sharp enough to count cars, and the reason satellite pictures are in the news.' },
   { noradId: 35946, name: 'WorldView-2', why: 'Its successor, and one of the brighter commercial satellites to spot at dusk.' },
@@ -294,6 +294,10 @@ function milkyWayRecords() {
       hubble: 'SBbc',
       con: 'Sagittarius',
       distLy: Math.round(distKpc * KPC_KM_MW / LY_KM_MW),
+      // One statement of the width, the glossary's (registry/glossary.yaml `galaxy`): NASA Science, "a disk of stars spanning
+      // more than 100,000 light-years" (https://science.nasa.gov/universe/galaxies/, read 2026-11-16). 87 400 was one isophotal
+      // diameter, printed as "about 87 000" beside the glossary's 100 000 (review 2026-11-16).
+      sizeLySaid: 100000, // what the card and the page SAY (ui/cards.js); `sizeLy` below still sizes the haze that is drawn
       sizeLy: 87400,
       aliases: ['Milky Way', 'our galaxy', 'the Galaxy', 'galactic centre', 'galactic center'],
       // No number here: the card's first sentence gives the distance to the centre from distKpc
@@ -587,9 +591,9 @@ export const LAYERS = [
     priority: 62,
     // 178 rows since the hand-kept 68 (dso-hand.yaml) joined the Messier list; the sentence still
     // said "the Messier objects and the Magellanic Clouds" (2026-09-22). And since scene/dsoglow.js
-    // each is drawn as wide as it measures. 211 since thirty-one famous non-Messier objects joined
-    // the hand rows the same day (the Heart and Soul, the Antennae, Thor's Helmet...).
-    sentence: 'The Messier objects and 101 more, from the Local Group\'s dwarf galaxies to the Carina Nebula, at their measured distances and drawn as wide as they measure. Every other NGC and IC object, Harris\'s globular clusters, Green\'s supernova remnants and the open clusters Gaia found are drawn too, as a mark for their kind at a distance the catalogue gives or that is worked out from it; one with no distance says so.', // 0079 a2: was "has no distances written down, so it is not drawn as places"
+    // each is drawn as wide as it measures. 212 since SN 1987A joined (211 since thirty-one famous non-Messier objects joined
+    // the hand rows the same day (the Heart and Soul, the Antennae, Thor's Helmet...)).
+    sentence: 'The Messier objects and 102 more, from the Local Group\'s dwarf galaxies to the Carina Nebula, at their measured distances and drawn as wide as they measure. Every other NGC and IC object, Harris\'s globular clusters, Green\'s supernova remnants and the open clusters Gaia found are drawn too, as a mark for their kind at a distance the catalogue gives or that is worked out from it; one with no distance says so.', // 0079 a2: was "has no distances written down, so it is not drawn as places"
   },
   {
     // The Milky Way as a place (spec 0028 step 6). Mirrors registry/layers.yaml `galaxy`. One record --

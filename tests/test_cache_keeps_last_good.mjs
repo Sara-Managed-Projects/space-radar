@@ -138,7 +138,7 @@ function verify(name, got, wantError) {
     check(wrongShape(SOURCES[id], omm1) === null, `${id}: a list of elements passes`);
     check(wrongShape(SOURCES[id], { error: 'x' }) !== null && wrongShape(SOURCES[id], [{}]) !== null, `${id}: an object, and rows without the fields, do not`);
   }
-  const need = { 'll2-upcoming': 'results', 'll2-previous': 'results', 'll2-stations': 'results', 'll2-astronauts': 'results', 'open-notify-astros': 'people', 'gdacs-tc': 'features', 'eonet-fires': 'events', 'eonet-volcanoes-ice': 'events' };
+  const need = { 'll2-upcoming': 'results', 'll2-previous': 'results', 'll2-stations': 'results', 'll2-astronauts': 'results', 'gdacs-tc': 'features', 'eonet-fires': 'events', 'eonet-volcanoes-ice': 'events' };
   for (const [id, key] of Object.entries(need)) {
     check(wrongShape(SOURCES[id], { [key]: [] }) === null, `${id}: an object with its ${key} list passes`);
     check(wrongShape(SOURCES[id], { [key]: 'x' }) !== null && wrongShape(SOURCES[id], [1]) !== null, `${id}: a ${key} that is not a list, and a bare list, do not`);

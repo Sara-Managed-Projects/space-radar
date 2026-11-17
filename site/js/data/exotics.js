@@ -53,6 +53,8 @@ export const EXOTICS = [
     "raDeg": 187.705931,
     "decDeg": 12.391123,
     "distLy": 54800000,
+    "distLyLow": 52510000,
+    "distLyHigh": 57400000,
     "massMsun": 6500000000
   },
   {
@@ -138,7 +140,9 @@ export const EXOTICS = [
     "source": "https://en.wikipedia.org/wiki/Crab_Pulsar (infobox, read 2026-09-08); period: Jodrell Bank Crab pulsar monthly ephemeris, 15 September 2026",
     "raDeg": 83.633125,
     "decDeg": 22.0145,
-    "distLy": 6200,
+    "distLy": 6500,
+    "distLyLow": 4900,
+    "distLyHigh": 8100,
     "periodS": 0.033859
   },
   {
@@ -281,7 +285,7 @@ export const EXOTICS = [
     "id": "grs-1915-105",
     "name": "GRS 1915+105",
     "kind": "blackhole",
-    "why": "For years our heaviest stellar black hole, the first seen throwing matter out apparently faster than light. A trick of geometry called superluminal motion.",
+    "why": "For years our heaviest stellar black hole, and the first in our galaxy seen throwing matter out apparently faster than light: a trick of geometry.",
     "aliases": [
       "V1487 Aquilae"
     ],

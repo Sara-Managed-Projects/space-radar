@@ -14,3 +14,10 @@ def validate(body) -> None:
 def count(body) -> int:
     validate(body)
     return len(body["results"])
+
+
+def newest(body) -> str | None:
+    """The latest `net` in the list. Upcoming launches are ahead of the clock; a list whose latest
+    is days behind it has stopped being refreshed (registry row `content_max_age`)."""
+    nets = [r.get("net") for r in body.get("results", []) if isinstance(r, dict) and r.get("net")]
+    return max(nets) if nets else None

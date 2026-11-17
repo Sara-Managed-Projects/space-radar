@@ -780,7 +780,7 @@ export const COPY = {
       "catalogueCopy": "Katalogkopie",
       "spectralType": "Art des Sterns",
       "brightness": "Scheinbare Helligkeit",
-      "luminosity": "Lichtleistung",
+      "luminosity": "Lichtleistung im sichtbaren Licht",
       "starWidth": "Durchmesser",
       "catalogue": "Katalog",
       "lightTime": "Funklaufzeit je Richtung",
@@ -1812,6 +1812,8 @@ export const COPY = {
   "deepFacts": {
     "methodRow": "Entfernung bestimmt durch",
     "billionLightYears": "{n} Milliarden Lichtjahre",
+    "lessThan": "Weniger als {v}",
+    "moreThan": "Mehr als {v}",
     "methods": {
       "parallax": "Parallaxe: die Verschiebung seines Sterns vor dem fernen Himmel",
       "eclipsing-binary": "Bedeckungsveränderliche Sterne darin",
@@ -1841,7 +1843,7 @@ export const COPY = {
     "records": {
       "dso-milky-way": {
         "drawn": "eine Illustration auf Grundlage von Messungen",
-        "split": "Gemessen: die Sterne innerhalb weniger tausend Lichtjahre (Gaia), der Winkel des Balkens, die Richtungen entlang der Arme und die näheren Arme (Reid et al. 2019). Erschlossen: die ferne Seite hinter dem Zentrum, vom Staub verdeckt; ihre Arme sind die nahen, um das Zentrum herum fortgesetzt."
+        "split": "Gemessen: die Sterne innerhalb weniger tausend Lichtjahre (Gaia), der Winkel des Balkens, die Richtungen entlang der Arme und die näheren Arme (Reid et al. 2019). Erschlossen: die ferne Seite hinter dem Zentrum, vom Staub verdeckt; ihre Arme sind die nahen, um das Zentrum herum fortgesetzt. Vier Sternströme (Sagittarius, Orphan-Chenab, GD-1, Palomar 5) werden nach der Bibliothek galstreams (Mateu 2023) gezeichnet: Wo jeder am Himmel liegt, ist gemessen, ebenso seine Entfernung, außer bei GD-1, dessen Entfernung angenommen ist; das Band aus Sternen um jede Linie ist illustrativ."
       }
     }
   },
@@ -1927,6 +1929,8 @@ export const COPY = {
     "earthsEstimated": "{n}× so breit wie die Erde, Schätzung des Archivs aus der Masse",
     "massEstimated": "{n}× Erde, Schätzung des Archivs aus der Größe",
     "massLeast": "Mindestens {n}× Erde",
+    "massLimit": "Weniger als {n}× Erde: eine Obergrenze, keine Messung",
+    "massLimitKnown": "Seine Masse ist nur als Obergrenze bekannt.",
     "sizeDefault": "Nicht gemessen: in Erdgröße gezeichnet",
     "temperature": "{k} K ({c} °C), wenn er {pct} % seines Lichts zurückwirft wie die Erde",
     "zone": {
@@ -2190,7 +2194,7 @@ export const COPY = {
       "launch": "Launch Library 2",
       "shower": "der Meteorstrom-Kalender der IMO",
       "moon": "Astronomy Engine",
-      "crew": "Open Notify",
+      "crew": "Launch Library 2",
       "storms": "GDACS",
       "approach": "NASA JPL",
       "launched": "CelesTrak",
@@ -3133,7 +3137,7 @@ export const COPY = {
       "near": "einer der nächstgelegenen überhaupt",
       "seenAs": "gesehen, wie er vor {n} Jahren war",
       "seenAsMonths": "gesehen, wie er vor {n} Monaten war",
-      "luminosity": "{n}-mal so hell wie die Sonne",
+      "luminosity": "im sichtbaren Licht {n}-mal so hell wie die Sonne",
       "dimmer": "mit {n} der Helligkeit der Sonne",
       "colours": {
         "O": "blauer",
@@ -3613,7 +3617,7 @@ export const COPY = {
         "match": [
           "kpc"
         ],
-        "say": "Etwa 3,26 Lichtjahre: die Entfernung, aus der die Erdbahn eine Bogensekunde breit erschiene. In Fachtexten steht pc, und kpc für tausend."
+        "say": "Etwa 3,26 Lichtjahre: die Entfernung, aus der der Abstand zwischen Erde und Sonne eine Bogensekunde breit erschiene. In Fachtexten steht pc, und kpc für tausend."
       },
       {
         "term": "Millionen Lichtjahre",
@@ -4888,7 +4892,7 @@ Object.assign(COPY, {
       "white dwarf": "Der heiße Kern, der übrig bleibt, wenn ein Stern wie die Sonne seine äußeren Schichten abgeworfen hat. Er ist etwa so groß wie die Erde, erzeugt keine neue Wärme und kühlt langsam ab.",
       "brown dwarf": "Ein Objekt, das zu groß für einen Planeten und zu klein ist, um wie ein Stern zu leuchten: etwa 13- bis 80-mal so schwer wie Jupiter. Es gibt fast kein sichtbares Licht ab.",
       "nebula": "Eine Wolke aus Gas und Staub im All. Manche leuchten, manche verdecken die Sterne dahinter, und in manchen entstehen neue Sterne.",
-      "galaxy": "Eine riesige Familie aus Sternen, Gas und Staub, von der Schwerkraft zusammengehalten. Unsere, die Milchstraße, ist eine Spirale von mehr als 100 000 Lichtjahren Durchmesser.",
+      "galaxy": "Eine riesige Familie aus Sternen, Gas und Staub, von der Schwerkraft zusammengehalten. Unsere, die Milchstraße, ist eine Spirale von etwa 100 000 Lichtjahren Durchmesser.",
       "globular cluster": "Eine Kugel aus Zehntausenden bis Millionen Sternen, von der Schwerkraft eng zusammengepackt, in der Mitte am dichtesten.",
       "habitable zone": "Der Bereich von Abständen zu einem Stern, in dem ein Planet flüssiges Wasser an der Oberfläche haben könnte. Er sagt, dass dort Leben möglich sein könnte, nicht, dass dort welches lebt.",
       "exoplanet": "Ein Planet, der einen anderen Stern als die Sonne umkreist.",
@@ -4901,7 +4905,7 @@ Object.assign(COPY, {
         "sun": "Die Sonne ist ein Stern: eine Kugel aus sehr heißem, leuchtendem Gas, vor allem Wasserstoff und Helium, etwa 4,5 Milliarden Jahre alt. Sie ist etwa 100-mal so breit wie die Erde. Ihr Kern ist etwa 15 Millionen Grad Celsius heiß, heiß genug für Kernfusion, und die Energie, die herauskommt, ist das, wovon das meiste Leben auf der Erde abhängt. Ihre Schwerkraft hält das ganze Sonnensystem zusammen.",
         "moon": "Der Mond ist der einzige natürliche Satellit der Erde, weniger als ein Drittel so breit wie sie. Er ist eine Kugel aus Gestein voller Krater, im Durchschnitt etwa 384 000 km entfernt. Er umrundet die Erde in etwa 27 Tagen und dreht sich in derselben Zeit einmal um sich selbst, deshalb sehen wir immer dieselbe Seite. Die dunklen Flecken sind Ebenen aus altem Lavagestein. Er ist die einzige Welt außerhalb der Erde, die Menschen bisher besucht haben.",
         "mercury": "Merkur ist der kleinste Planet und der Sonne am nächsten, nur ein wenig größer als der Mond. Sein felsiger Boden ist voller Krater. Er hat fast keine Luft, die die Wärme hält, und schwankt deshalb von etwa 430 °C am Tag bis etwa minus 180 °C in der Nacht. Er umrundet die Sonne in 88 Tagen, schneller als jeder andere Planet.",
-        "venus": "Die Venus ist fast so groß wie die Erde: 12 104 km breit, gegen 12 756. Ihre dicke Luft besteht vor allem aus Kohlendioxid, mit Wolken aus Schwefelsäure, und sie hält die Wärme fest. Der Boden ist etwa 467 °C heiß, heißer als auf dem Merkur und heiß genug, um Blei zu schmelzen, und die Luft drückt etwa 93-mal stärker auf ihn als auf der Erde. Die Venus dreht sich langsam und rückwärts: Eine Drehung dauert 243 Erdentage, länger als ihr Jahr mit 225.",
+        "venus": "Die Venus ist fast so groß wie die Erde: 12 104 km breit, gegen 12 742. Ihre dicke Luft besteht vor allem aus Kohlendioxid, mit Wolken aus Schwefelsäure, und sie hält die Wärme fest. Der Boden ist etwa 464 °C heiß, heißer als auf dem Merkur und heiß genug, um Blei zu schmelzen, und die Luft drückt etwa 92-mal stärker auf ihn als auf der Erde. Die Venus dreht sich langsam und rückwärts: Eine Drehung dauert 243 Erdentage, länger als ihr Jahr mit 225.",
         "earth": "Die Erde ist der einzige Ort, von dem wir wissen, dass es dort Lebewesen gibt. Sie ist der einzige Planet mit flüssigem Wasser an der Oberfläche, und der größte Teil davon ist von Ozean bedeckt. Eine Drehung dauert 23,9 Stunden und ein Umlauf um die Sonne 365,25 Tage, deshalb fügen wir alle vier Jahre einen Schalttag ein. Das Sonnenlicht braucht etwa acht Minuten bis hierher.",
         "mars": "Der Mars ist eine kalte, staubige Wüste, etwa halb so breit wie die Erde. Das Eisen in seinem Gestein und Staub ist gerostet, deshalb sieht er rot aus. Hier liegt der größte Vulkan des Sonnensystems, der Olympus Mons, und ein Canyon-System, die Valles Marineris, mehr als zehnmal länger und breiter als der Grand Canyon. Früher flossen hier Flüsse und lagen Seen; heute ist die Luft dünn, und sein Wasser ist Eis oder sehr salzig.",
         "jupiter": "Jupiter ist der größte Planet: 11-mal so breit wie die Erde, mit Platz für etwa tausend Erden. Er besteht vor allem aus Wasserstoff und Helium und hat keinen festen Boden, auf dem man stehen könnte. Seine Streifen sind kalte, stürmische Wolken aus Ammoniak und Wasser. Der Große Rote Fleck ist ein Sturm, der breiter ist als die Erde und den Menschen seit mehr als 300 Jahren beobachten. Eine Drehung dauert nur 9,9 Stunden, der kürzeste Tag aller Planeten.",
@@ -6436,6 +6440,40 @@ Object.assign(COPY, {
       ]
     },
     "how": "Gas, das auf uns zukommt, verschiebt sein Licht ins Blaue, Gas, das sich entfernt, ins Rote, und der Homunculus dehnt sich seit den 1840er Jahren gleichmäßig aus; die Geschwindigkeit eines Punkts entlang unserer Sichtlinie sagt also auch, wie weit er vor oder hinter dem Stern liegt. Astronomen lasen die Geschwindigkeit seines Wasserstoffs entlang von 92 Streifen über den Nebel und bauten daraus seine Form (Steffen u. a., 2014)."
+  },
+  "deepSn1987a": {
+    "card": {
+      "sn1987a": "Die Ringe sind in den Größen und Neigungen gezeichnet, die Astronomen aus den Lichtechos der Explosion und der Bewegung der Ringe selbst gemessen haben (Sugerman u. a., 2005; Panagia, 2003; Tziamtzis u. a., 2011). Die Punkte, die sie markieren, und die Farben sind illustrativ. Noch nicht von einem Astronomen geprüft."
+    },
+    "rows": {
+      "dso-sn-1987a": [
+        [
+          "Äquatorialring",
+          "Gemessen. Etwa 0,8 Bogensekunden Radius, bei 51,4 Tausend Parsec rund zwei Drittel eines Lichtjahres, um 43° gegen die Draufsicht geneigt, sein Nordrand uns am nächsten (Panagia, 2003; Sugerman u. a., 2005)."
+        ],
+        [
+          "Äußere Ringe",
+          "Gemessen. Zwei größere Ringe von etwa 1,4 und 1,6 Lichtjahren Radius, auf jeder Seite der Sternebene einer, um etwa 45° und 38° geneigt (Sugerman u. a., 2005; Tziamtzis u. a., 2011). Der südliche ist nicht genau eine Ellipse."
+        ],
+        [
+          "Wie weit entfernt",
+          "Die Verzögerung des Leuchtens des inneren Rings nach der Explosion ergibt seine wahre Größe; seine Größe am Himmel ergibt dann die Entfernung der Supernova: 51,4 ± 1,2 Tausend Parsec (Panagia, 2003)."
+        ],
+        [
+          "Nicht gezeichnet",
+          "Die hellen Knoten des Rings, die Trümmer in seinem Inneren, die größeren Nebel weiter draußen und das langsame Wachstum des Rings (etwa 10 km/s)."
+        ],
+        [
+          "Punkte und Farben",
+          "Illustrativ. Jeder Ring ist als ebene Ellipse aus Punkten gezeichnet; die warme und die hellblaue Farbe unterscheiden die Ringe nur."
+        ],
+        [
+          "Prüfung",
+          "Diese Zeichnung ist noch nicht von einem Astronomen geprüft worden."
+        ]
+      ]
+    },
+    "how": "Der Blitz der Explosion beleuchtete die Ringe, und sein Leuchten erreichte uns von der fernen Seite des Rings später als von der nahen. Diese Verzögerung ergibt die wahre Größe des Rings, und die Größe, die er am Himmel einnimmt, die Entfernung. Die äußeren Ringe sind nach Echos des Blitzes am nahen Gas platziert (Sugerman u. a., 2005)."
   },
   "deepCasA": {
     "card": {

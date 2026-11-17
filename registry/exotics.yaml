@@ -50,7 +50,9 @@ exotics:
     kind: blackhole
     ra: 12h 30m 49.42338s
     dec: +12° 23′ 28.0439″
+    # The same value AND range as the galaxy's own record (site/data/dso.json m87; review 2026-11-16, internal #292).
     dist_ly: 54800000
+    dist_ly_range: [52510000, 57400000]
     distance_note: "16.8 (+0.8 / -0.7) megaparsecs, 54.8 million light-years, the distance the Event Horizon Telescope adopted for its mass; the same one the M87 galaxy's record and the jet in the black-hole drawing use"
     mass_msun: 6500000000
     why: "The first black hole anyone photographed: the glowing ring of 2019. Six and a half billion Suns, at the heart of the galaxy M87."
@@ -130,7 +132,11 @@ exotics:
     kind: pulsar
     ra: 05h 34m 31.95s
     dec: +22° 00′ 52.2″
-    dist_ly: 6200
+    # ONE DISTANCE FOR THE PULSAR AND THE NEBULA IT SITS IN (review 2026-11-16): the Crab Nebula's own row
+    # (site/data/dso.json m1): 6 500 light-years, somewhere between 4 900 and 8 100. NASA's Messier 1 page:
+    # "Distance 6,500 light-years" (https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-1/, read 2026-11-16).
+    dist_ly: 6500
+    dist_ly_range: [4900, 8100]
     period_s: 0.033859
     why: "What was left when a star seen exploding in 1054 collapsed: a city-sized star spinning thirty times a second, inside the Crab Nebula (M1)."
     aliases: [PSR B0531+21]
@@ -248,7 +254,9 @@ exotics:
     distance_note: "8 600 +2 000/-1 600 parsecs; 28 000 light-years is the infobox's round figure"
     # "THE FIRST OBJECT SEEN" to do it was wrong: quasars showed apparent faster-than-light motion
     # in 1971 (3C 279). GRS 1915+105, in 1994, was the first in our own galaxy.
-    why: "For years our heaviest stellar black hole, the first seen throwing matter out apparently faster than light. A trick of geometry called superluminal motion."
+    # The words now say what the comment above always did (review 2026-11-16). Mirabel and Rodriguez's own follow-up,
+    # arXiv:astro-ph/9501038, "... the superluminal galactic source GRS 1915+105": until then such motion had been seen only in galaxies' nuclei.
+    why: "For years our heaviest stellar black hole, and the first in our galaxy seen throwing matter out apparently faster than light: a trick of geometry."
     aliases: [V1487 Aquilae]
     source: "https://en.wikipedia.org/wiki/GRS_1915%2B105 (infobox, read 2026-09-09)"
 

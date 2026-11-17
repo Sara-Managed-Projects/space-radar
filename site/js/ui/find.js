@@ -143,7 +143,7 @@ export function createFind(ctx, host) {
   }
   const slim = {
     stars: (r) => ({ id: r.id, name: r.name, pos: r.pos, meta: { distLy: r.meta && r.meta.distLy, spect: r.meta && r.meta.spect, mag: r.meta && r.meta.mag, lum: r.meta && r.meta.lum } }),
-    exoplanets: (r) => { const m = r.meta || {}; return { id: r.id, name: r.name, pos: r.pos, meta: { host: m.host, distLy: m.distLy, radiusEarths: m.radiusEarths, massEarths: m.massEarths, periodDays: m.periodDays, starTeffK: m.starTeffK, starRadiusSuns: m.starRadiusSuns, discYear: m.discYear } }; },
+    exoplanets: (r) => { const m = r.meta || {}; return { id: r.id, name: r.name, pos: r.pos, meta: { host: m.host, distLy: m.distLy, radiusEarths: m.radiusEarths, massEarths: m.massEarths, massLimit: m.massLimit, radiusLimit: m.radiusLimit, periodDays: m.periodDays, starTeffK: m.starTeffK, starRadiusSuns: m.starRadiusSuns, discYear: m.discYear } }; },
   };
   function catalogue() {
     if (catalogueAsk) return catalogueAsk;

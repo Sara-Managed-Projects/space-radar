@@ -116,7 +116,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Ocean currents, and the sea temperature that colours them | NOAA CoastWatch (altimetry; Copernicus Sentinel, AVISO+); NOAA NCEI OISST v2.1 | free to use and redistribute; citation asked | [4.22](#422-noaa-coastwatch-and-noaa-oisst--ocean-currents-2026-10-12) |
 | Moon and Mars close-up tiles and relief; the Earth close up | NASA Solar System Treks; USGS Astrogeology; NASA GIBS | NASA content; HRSC's share of Mars's relief CC BY-SA 3.0 IGO | [4.16](#416-nasa-solar-system-treks--the-moon-and-mars-close-up-2026-10-03) |
 | Countries and seas | Natural Earth | public domain | [4.15](#415-natural-earth--the-country-or-sea-under-a-satellite-2026-09-29) |
-| Dishes, crews, observatories | NASA DSN Now; Open Notify; Wikidata | see the section; CC0 for Wikidata | [4.3](#43-nasa--dsn-now), [4.18](#418-the-sources-the-harvester-reads) |
+| Dishes, observatories | NASA DSN Now; Wikidata | see the section; CC0 for Wikidata | [4.3](#43-nasa--dsn-now), [4.18](#418-the-sources-the-harvester-reads) |
 | Music and sounds | John Bartmann (Free Music Archive); Freesound contributors | CC0 1.0 | [9](#9-audio--music-and-sounds) |
 | The trips' voice | Kokoro-82M, a synthetic voice | Apache-2.0 | [9b](#9b-audio--the-trips-narration-a-synthetic-voice) |
 | A NASA recording in the Apollo 11 Moment | NASA (Neil Armstrong's first words on the Moon, 1969) | Public domain (NASA) | [9](#9-audio--music-and-sounds) |
@@ -2803,6 +2803,46 @@ blue filaments "are only a representation"), and the neutron star's depth are **
 (**false colour**) and the model holds no brightness: every point of a kind is equally bright, its size the data's
 resolution. The card says so, carries the credit and says no astronomer has reviewed the drawing.
 
+### SN 1987A's rings, at their measured size and tilt (2026-11-17)
+
+`site/js/scene/deep/sn1987a.js` draws the three rings round SN 1987A from the numbers in `registry/deepsky-heroes/sn1987a.yaml`.
+No picture, file or text of the papers is copied: the numbers are published measurements, read from the papers on 2026-11-17 and
+cited per row.
+
+| what | from | licence |
+|---|---|---|
+| The equatorial ring's size (6.23 +/- 0.08 x 10^17 cm, 808 +/- 17 mas) and the distance to the supernova, 51.4 +/- 1.2 kpc | Panagia N. 2003, *A geometric determination of the distance to SN 1987A and the LMC* (arXiv:astro-ph/0309416), the abstract | facts, cited |
+| The three rings as ellipses (semi-major axes, axis ratios, position angles, offsets and heights from the supernova, in light-years at 50 kpc); the equatorial ring's tilt (about 43 degrees) | Sugerman B. E. K., Crotts A. P. S., Kunkel W. E., Heathcote S. R. & Lawrence S. S. 2005, ApJS 159, 60 (arXiv:astro-ph/0502378), Table 3 and section I | facts, cited |
+| The outer rings' tilts (about 45 and 38 degrees) | Tziamtzis A., Lundqvist P., Gröningsson P. & Nasoudi-Shoar S. 2011, A&A 527, A35 (arXiv:1008.3387), section 4.1 | facts, cited |
+| The supernova's place | Wikipedia, SN 1987A, infobox (read 2026-11-17) | CC BY-SA 4.0, a position |
+
+What is measured and what is not. The rings' angular sizes, their offsets and heights from the supernova and their tilts are
+**measured** (light echoes, and the ring's velocities). Each ring as a plane ellipse, and the points that mark it, are
+**modelled**; the colours are **illustrative**. The rings' bright knots, the debris inside, the ring's slow growth and the larger
+nebulae are not drawn. The card says so and no astronomer has reviewed the drawing.
+
+### Stellar streams round the Milky Way, from the galstreams library (2026-11-17)
+
+`site/js/scene/deep/streams.js` draws four stellar streams (Sagittarius, Orphan-Chenab, GD-1, Palomar 5) from the **galstreams**
+library's track files, read at commit `6a304c05bea7f774390a11082ea127719e99b70a` on 2026-11-17 (`registry/streams.yaml` names each
+file, its size and SHA-256). `scripts/build_deep_streams.py` turns each track's (ra, dec, distance from the Sun) into light-years
+in the scene's axes and keeps about one point in 100 (819 points in `site/data/deep/streams.json`, 19 619 B); nothing is
+smoothed or extended. The library is not shipped, only these derived points.
+
+| what | from | licence |
+|---|---|---|
+| The tracks (sky position and distance of each stream) | Mateu C. 2023, *galstreams: A library of Milky Way stellar stream footprints and tracks*, MNRAS 520, 5225 (arXiv:2204.10326, doi:10.1093/mnras/stad321), https://github.com/cmateu/galstreams, copyright (c) 2017 Cecilia Mateu | BSD 3-Clause (the notice is reproduced here as the licence asks; the holder's name is not used to endorse this site) |
+| Sagittarius: sky and proper-motion track; distance track | Antoja T. and others 2020, A&A 635, L3 (arXiv:2001.10012); Ramos P. and others 2020, A&A 640, C5 (RR Lyrae) | the paper's facts, cited |
+| Orphan-Chenab | Koposov S. E. and others 2019, MNRAS 485, 4726 (arXiv:1812.08172) | the paper's facts, cited |
+| GD-1 (its distance is the authors' adopted gradient, not measured) | Price-Whelan A. M. & Bonaca A. 2018, ApJ 863, L20 (arXiv:1805.00425); the frame of Koposov, Rix & Hogg 2010, ApJ 712, 260 | the paper's facts, cited |
+| Palomar 5 | Price-Whelan A. M. and others 2019, AJ 158, 223 (arXiv:1910.00595); Bonaca A. and others 2020, ApJ 889, 70 (arXiv:1910.00592) | the paper's facts, cited |
+| The Sagittarius dwarf's place (the test's check: 26.0 kpc) | McConnachie A. W. 2012, as the library's `mw_satellites_2018.csv` lists it | the paper's fact, cited |
+
+What is measured and what is not. Where each stream lies on the sky is **measured**, and so is its distance for Sagittarius,
+Orphan-Chenab and Palomar 5; GD-1's distance is **adopted** by the library from a gradient its discoverers propose. The ribbon of
+points about each line, its width, brightness and the colours are **illustrative**. The stars themselves are not drawn. The card
+says so and no astronomer has reviewed the drawing.
+
 <!-- 0078 r14-mw-bh: begin -->
 ## 3m. The black holes in 3D (release 1.4.0)
 
@@ -3582,7 +3622,6 @@ Exoplanet Archive §4.7, GDACS §4.14) are repeated only where the credit line d
 | `ocean-currents` | NOAA CoastWatch (NOAA NESDIS, Laboratory for Satellite Altimetry) | the sea's surface current worked out from satellite altimetry, one day, every fourth point of a quarter-degree grid | §4.22: "Data courtesy of NOAA; Sentinel data courtesy of Copernicus Program; Generated using AVISO+ products. The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies." (the dataset's own licence attribute, read 2026-10-12) | Ocean currents: NOAA CoastWatch, from satellite altimetry (Sentinel data courtesy of the Copernicus Programme; generated using AVISO+ products) | `coastwatch.noaa.gov` |
 | `ocean-temperature` | NOAA National Centers for Environmental Information, through the CoastWatch West Coast node (NOAA NMFS SWFSC ERD) | the sea surface temperature (OISST v2.1, near real time), one day, every fourth point | §4.22: "The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies." (the dataset's own licence attribute, read 2026-10-12); NCEI asks for the citation in §4.22 | Sea temperature: NOAA NCEI OISST v2.1, through NOAA CoastWatch West Coast ERDDAP | `coastwatch.pfeg.noaa.gov` |
 | `nasa-exoplanet-archive` | NASA Exoplanet Archive, Caltech/IPAC | every confirmed exoplanet | §4.7 | Exoplanets: NASA Exoplanet Archive (Caltech/IPAC), DOI 10.26133/NEA13 | `exoplanetarchive.ipac.caltech.edu` |
-| `open-notify-astros` | Open Notify (a personal open-source project) | who is aboard the ISS and Tiangong | The site calls itself "an open source project" and states no licence for the data (read 2026-10-05); its footer licenses the site's own pages under CC BY 3.0 and the API's repository carries a GPL-3.0 LICENSE file for the code (both read 2026-11-04); the list is a handful of names and facts. | Who is in space: Open Notify | `api.open-notify.org` |
 | `wikidata-observatories` | Wikidata | where observatories are | CC0 1.0: Wikidata's structured data is dedicated to the public domain (read 2026-11-04) | Observatory locations: Wikidata (CC0) | `query.wikidata.org` |
 | `space-track-tip` | 18th Space Defense Squadron, through Space-Track.org | reentry predictions | **Switched off** (`enabled: false`). Space-Track needs an account and its user agreement restricts passing the data on; nothing from it is fetched, saved or shipped. The row exists so the app can say "could not look" about it by name. | Reentry predictions: 18 SDS via Space-Track.org | `www.space-track.org` |
 

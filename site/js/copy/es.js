@@ -658,7 +658,7 @@ export const COPY = {
       catalogueCopy: "Copia del catálogo",
       spectralType: "Tipo de estrella",
       brightness: "Brillo aparente",
-      luminosity: "Luz que emite",
+      luminosity: "Luz visible que emite",
       starWidth: "Ancho",
       catalogue: "Catálogo",
       lightTime: "Tiempo de radio en cada sentido",
@@ -1668,6 +1668,8 @@ export const COPY = {
   deepFacts: {
     methodRow: "Distancia hallada por",
     billionLightYears: "{n} mil millones de años luz",
+    lessThan: "Menos de {v}",
+    moreThan: "Más de {v}",
     methods: {
       parallax: "paralaje: el desplazamiento de su estrella respecto al cielo lejano",
       "eclipsing-binary": "estrellas binarias eclipsantes en ella",
@@ -1697,7 +1699,7 @@ export const COPY = {
     records: {
       "dso-milky-way": {
         drawn: "una ilustración construida sobre mediciones",
-        split: "Medido: las estrellas a pocos miles de años luz (Gaia), el ángulo de la barra, las direcciones a lo largo de los brazos y los brazos más cercanos (Reid et al. 2019). Deducido: el lado lejano más allá del centro, oculto por el polvo; sus brazos son los cercanos llevados al otro lado."
+        split: "Medido: las estrellas a pocos miles de años luz (Gaia), el ángulo de la barra, las direcciones a lo largo de los brazos y los brazos más cercanos (Reid et al. 2019). Deducido: el lado lejano más allá del centro, oculto por el polvo; sus brazos son los cercanos llevados al otro lado. Cuatro corrientes estelares (Sagitario, Huérfana-Chenab, GD-1, Palomar 5) se dibujan con la biblioteca galstreams (Mateu 2023): se mide dónde está cada una en el cielo y también su distancia, salvo la de GD-1, que se supone; la cinta de estrellas alrededor de cada línea es ilustrativa."
       }
     }
   },
@@ -1783,6 +1785,8 @@ export const COPY = {
     earthsEstimated: "{n}× el ancho de la Tierra, estimación del archivo a partir de su masa",
     massEstimated: "{n}× la Tierra, estimación del archivo a partir de su tamaño",
     massLeast: "Al menos {n}× la Tierra",
+    massLimit: "Menos de {n}× la Tierra: un límite superior, no una medida",
+    massLimitKnown: "De su masa solo se conoce un límite superior.",
     sizeDefault: "Sin medir: se dibuja del tamaño de la Tierra",
     temperature: "{k} K ({c} °C), si refleja el {pct} % de su luz como lo hace la Tierra",
     zone: {
@@ -2036,7 +2040,7 @@ export const COPY = {
       launch: "Launch Library 2",
       shower: "el calendario de lluvias de la IMO",
       moon: "Astronomy Engine",
-      crew: "Open Notify",
+      crew: "Launch Library 2",
       storms: "GDACS",
       approach: "NASA JPL",
       launched: "CelesTrak",
@@ -2979,7 +2983,7 @@ export const COPY = {
       near: "una de las más cercanas que existen",
       seenAs: "lo que vemos es como era hace {n} años",
       seenAsMonths: "lo que vemos es como era hace {n} meses",
-      luminosity: "que brilla {n} veces más que el Sol",
+      luminosity: "que brilla {n} veces más que el Sol en luz visible",
       dimmer: "que brilla con {n} del brillo del Sol",
       colours: {
         O: "azul",
@@ -3432,7 +3436,7 @@ export const COPY = {
       {
         term: "pársec",
         match: ["kpc"],
-        say: "Unos 3.26 años luz: la distancia desde la que la órbita de la Tierra se vería de un segundo de arco de ancho. Los artículos escriben pc, y kpc para mil."
+        say: "Unos 3.26 años luz: la distancia desde la que la distancia entre la Tierra y el Sol se vería de un segundo de arco de ancho. Los artículos escriben pc, y kpc para mil."
       },
       {
         term: "millones de años luz",
@@ -4656,7 +4660,7 @@ Object.assign(COPY, {
       "white dwarf": "El núcleo caliente que queda cuando una estrella como el Sol ha soltado sus capas externas. Es más o menos tan grande como la Tierra, no produce calor nuevo y se enfría poco a poco.",
       "brown dwarf": "Un objeto demasiado grande para ser un planeta y demasiado pequeño para brillar como una estrella: de unas 13 a 80 veces la masa de Júpiter. Casi no da luz visible.",
       "nebula": "Una nube de gas y polvo en el espacio. Algunas brillan, otras tapan las estrellas que tienen detrás, y en algunas se están formando estrellas nuevas.",
-      "galaxy": "Una enorme familia de estrellas, gas y polvo unidos por la gravedad. La nuestra, la Vía Láctea, es una espiral de más de 100 000 años luz de ancho.",
+      "galaxy": "Una enorme familia de estrellas, gas y polvo unidos por la gravedad. La nuestra, la Vía Láctea, es una espiral de unos 100 000 años luz de ancho.",
       "globular cluster": "Una bola de decenas de miles a millones de estrellas muy juntas por la gravedad, más densa en el centro.",
       "habitable zone": "El margen de distancias a una estrella donde un planeta podría tener agua líquida en la superficie. Dice que allí podría ser posible la vida, no que viva alguien.",
       "exoplanet": "Un planeta que gira alrededor de una estrella que no es el Sol.",
@@ -4669,7 +4673,7 @@ Object.assign(COPY, {
         "sun": "El Sol es una estrella: una bola de gas muy caliente y brillante, sobre todo hidrógeno y helio, de unos 4.5 mil millones de años. Es unas 100 veces más ancho que la Tierra. Su núcleo está a unos 15 millones de grados Celsius, lo bastante caliente para la fusión nuclear, y la energía que sale de él es de la que depende casi toda la vida de la Tierra. Su gravedad mantiene unido todo el sistema solar.",
         "moon": "La Luna es el único satélite natural de la Tierra, de menos de un tercio de su ancho. Es una bola de roca llena de cráteres, a unos 384 000 km de distancia de media. Da una vuelta a la Tierra en unos 27 días y gira sobre sí misma una vez en el mismo tiempo, así que siempre vemos la misma cara. Las manchas oscuras son llanuras de lava antigua. Es el único mundo más allá de la Tierra que las personas han visitado hasta ahora.",
         "mercury": "Mercurio es el planeta más pequeño y el más cercano al Sol, solo un poco más grande que la Luna. Su suelo rocoso está lleno de cráteres. Casi no tiene aire que retenga el calor, así que pasa de unos 430 °C de día a unos menos 180 °C de noche. Da una vuelta al Sol en 88 días, más rápido que cualquier otro planeta.",
-        "venus": "Venus es casi del tamaño de la Tierra: 12 104 km de ancho, frente a 12 756. Su aire espeso es sobre todo dióxido de carbono, con nubes de ácido sulfúrico, y retiene el calor. El suelo está a unos 467 °C, más caliente que Mercurio y lo bastante para fundir el plomo, y el aire presiona sobre él unas 93 veces más fuerte que en la Tierra. Venus gira despacio y al revés: una vuelta dura 243 días terrestres, más que su año de 225.",
+        "venus": "Venus es casi del tamaño de la Tierra: 12 104 km de ancho, frente a 12 742. Su aire espeso es sobre todo dióxido de carbono, con nubes de ácido sulfúrico, y retiene el calor. El suelo está a unos 464 °C, más caliente que Mercurio y lo bastante para fundir el plomo, y el aire presiona sobre él unas 92 veces más fuerte que en la Tierra. Venus gira despacio y al revés: una vuelta dura 243 días terrestres, más que su año de 225.",
         "earth": "La Tierra es el único lugar que sabemos que tiene seres vivos. Es el único planeta con agua líquida en la superficie, y la mayor parte está cubierta por océano. Una vuelta sobre sí misma dura 23.9 horas y una vuelta al Sol 365.25 días, por eso añadimos un día bisiesto cada cuatro años. La luz del Sol tarda unos ocho minutos en llegar aquí.",
         "mars": "Marte es un desierto frío y polvoriento, más o menos la mitad de ancho que la Tierra. El hierro de sus rocas y de su polvo se ha oxidado, y por eso se ve rojo. Tiene el volcán más grande del sistema solar, el Olympus Mons, y un sistema de cañones, Valles Marineris, más de diez veces más largo y más ancho que el Gran Cañón. Antes fluían allí ríos y lagos; ahora el aire es delgado y su agua es hielo o muy salada.",
         "jupiter": "Júpiter es el planeta más grande: 11 veces más ancho que la Tierra, con espacio para unas mil Tierras dentro. Es sobre todo hidrógeno y helio, y no tiene suelo sólido donde pisar. Sus franjas son nubes frías y ventosas de amoníaco y agua. La Gran Mancha Roja es una tormenta más ancha que la Tierra que la gente observa desde hace más de 300 años. Una vuelta sobre sí mismo dura solo 9.9 horas, el día más corto de todos los planetas.",
@@ -6215,6 +6219,40 @@ Object.assign(COPY, {
       ]
     },
     "how": "El gas que viene hacia nosotros desplaza su luz al azul y el que se aleja, al rojo, y el Homúnculo se expande de forma pareja desde la década de 1840, así que la velocidad de un punto a lo largo de nuestra línea también dice cuánto está por delante de la estrella o por detrás. Los astrónomos leyeron la velocidad de su hidrógeno a lo largo de 92 franjas de la nebulosa y construyeron su forma a partir de eso (Steffen y otros, 2014)."
+  },
+  "deepSn1987a": {
+    "card": {
+      "sn1987a": "Los anillos se dibujan con los tamaños e inclinaciones que los astrónomos midieron a partir de los ecos de luz de la explosión y del movimiento de los propios anillos (Sugerman y otros, 2005; Panagia, 2003; Tziamtzis y otros, 2011). Los puntos que los marcan y los colores son ilustrativos. Aún no revisado por un astrónomo."
+    },
+    "rows": {
+      "dso-sn-1987a": [
+        [
+          "Anillo ecuatorial",
+          "Medido. Unos 0,8 segundos de arco de radio, que a 51,4 miles de pársecs son unos dos tercios de año luz, inclinado 43° respecto a la vista de frente, con su borde norte más cerca de nosotros (Panagia, 2003; Sugerman y otros, 2005)."
+        ],
+        [
+          "Anillos exteriores",
+          "Medido. Dos anillos mayores, de unos 1,4 y 1,6 años luz de radio, uno a cada lado del plano de la estrella, inclinados unos 45° y 38° (Sugerman y otros, 2005; Tziamtzis y otros, 2011). El del sur no es exactamente una elipse."
+        ],
+        [
+          "A qué distancia",
+          "El retraso del brillo del anillo interior tras la explosión da su tamaño real; su tamaño en el cielo da entonces la distancia a la supernova: 51,4 ± 1,2 miles de pársecs (Panagia, 2003)."
+        ],
+        [
+          "No se dibuja",
+          "Los nudos brillantes del anillo, los restos en su interior, las nebulosas mayores más lejos y el lento crecimiento del anillo (unos 10 km/s)."
+        ],
+        [
+          "Puntos y colores",
+          "Ilustrativo. Cada anillo se dibuja como una elipse plana de puntos; los colores cálido y azul pálido solo distinguen los anillos."
+        ],
+        [
+          "Revisión",
+          "Este dibujo todavía no ha sido revisado por un astrónomo."
+        ]
+      ]
+    },
+    "how": "El destello de la explosión iluminó los anillos, y su brillo nos llegó más tarde desde el lado lejano del anillo que desde el cercano. Ese retraso da el tamaño real del anillo, y el tamaño que ocupa en el cielo da la distancia. Los anillos exteriores se sitúan a partir de ecos del destello en el gas cercano (Sugerman y otros, 2005)."
   },
   "deepCasA": {
     "card": {

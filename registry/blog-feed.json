@@ -3,6 +3,53 @@
  "title": "Space Radar Journal",
  "items": [
   {
+   "title": "Free 3D Models of Real Spacecraft: 203 Satellites, Probes and Rovers to Download",
+   "url": "https://blog.spaceradar.ai/free-3d-spacecraft-models-download/",
+   "date": "2026-11-17",
+   "summary": "Download free 3D models of real spacecraft: 203 satellites, stations, telescopes, probes, landers and rocket stages as glTF files under the MIT licence.",
+   "image": "https://blog.spaceradar.ai/media/free-3d-spacecraft-models-download/share.jpg",
+   "tags": [
+    "Missions & Spacecraft",
+    "3D models",
+    "spacecraft",
+    "satellites",
+    "glTF",
+    "open source",
+    "free download"
+   ]
+  },
+  {
+   "title": "What Is the Heliosphere? The Sun’s Bubble and Where the Voyagers Crossed It",
+   "url": "https://blog.spaceradar.ai/what-is-the-heliosphere-voyager-crossings/",
+   "date": "2026-11-16",
+   "summary": "What is the heliosphere? The Sun’s bubble, its termination shock and heliopause, and the four points where Voyager 1 and 2 crossed them, drawn in 3D.",
+   "image": "https://blog.spaceradar.ai/media/what-is-the-heliosphere-voyager-crossings/share.jpg",
+   "tags": [
+    "Solar System",
+    "heliosphere",
+    "Voyager 1",
+    "Voyager 2",
+    "heliopause",
+    "interstellar space",
+    "IBEX"
+   ]
+  },
+  {
+   "title": "The First Falcon 9 Landing: Landing Zone 1, 21 December 2015",
+   "url": "https://blog.spaceradar.ai/first-falcon-9-landing-landing-zone-1/",
+   "date": "2026-11-15",
+   "summary": "The first Falcon 9 landing: flight 20, ORBCOMM OG2, touchdown at T+9:44 on Landing Zone 1, 21 December 2015. The clock, the pad, and what a replay flies itself.",
+   "image": "https://blog.spaceradar.ai/media/first-falcon-9-landing-landing-zone-1/share.jpg",
+   "tags": [
+    "Missions & Spacecraft",
+    "Falcon 9",
+    "SpaceX",
+    "Landing Zone 1",
+    "reusable rockets",
+    "mission replay"
+   ]
+  },
+  {
    "title": "Constellations in Other Cultures: Sky Stories from Eight Peoples",
    "url": "https://blog.spaceradar.ai/constellations-in-other-cultures-sky-stories/",
    "date": "2026-11-14",

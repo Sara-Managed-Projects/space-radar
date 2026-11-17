@@ -1050,6 +1050,28 @@ objects:
     source: "Thorstensen, Fesen & van den Bergh 2001, AJ 122, 297 (arXiv:astro-ph/0104188, read 2026-11-16): the place and 3.4 kpc; DeLaney et al. 2010, ApJ 725, 2038 (arXiv:1011.3858, read 2026-11-16): the size; https://en.wikipedia.org/wiki/Cassiopeia_A (infobox, read 2026-11-16)"
     why: "What is left of a star that blew up about 350 years ago: the strongest radio source in the sky beyond the Solar System, still flying apart."
 
+  # SN 1987A (review of 2026-11-16, deep space, internal #429): the supernova of 24 February 1987 in the Large Magellanic Cloud
+  # and the three rings round it, drawn at their measured size and tilt (registry/deepsky-heroes/sn1987a.yaml,
+  # site/js/scene/deep/sn1987a.js). It is 20 arcminutes from the Tarantula, inside the LMC's disc, but its own distance is
+  # the one the ring gives: 51.4 +/- 1.2 kpc from the ring's absolute radius (6.23e17 cm) over its angular radius (808 +/-
+  # 17 mas), Panagia 2003 (arXiv:astro-ph/0309416, the abstract, read 2026-11-17), 167 600 ly. The place is Wikipedia's
+  # infobox (read 2026-11-17: 05h 35m 28.03s, -69 deg 16 min 11.79 s). The size on the sky is the outer rings': the
+  # northern outer ring's semi-major axis is 1.77 arcseconds (Sugerman et al. 2005), so they span about 3.7 arcseconds.
+  - id: sn-1987a
+    name: SN 1987A
+    designation: SN 1987A
+    type: SNR
+    what: supernova remnant
+    parent: lmc
+    ra_deg: 83.8667917      # 05h 35m 28.03s
+    dec_deg: -69.2699417    # -69 deg 16 min 11.79 s
+    dist_kly: 167.6         # 51.4 kpc
+    # vmag omitted: it peaked at 2.9 in 1987 and is far fainter now
+    maj_ax_arcmin: 0.06
+    con: Dorado
+    source: "Panagia 2003, arXiv:astro-ph/0309416 (the abstract, read 2026-11-17): 51.4 +/- 1.2 kpc; Sugerman et al. 2005, ApJS 159, 60 (arXiv:astro-ph/0502378, read 2026-11-17): the rings; https://en.wikipedia.org/wiki/SN_1987A (infobox, read 2026-11-17): the place"
+    why: "The star that blew up in the Large Magellanic Cloud in 1987, the nearest supernova in four hundred years, and the three glowing rings of gas it lit up."
+
   - id: coalsack
     name: Coalsack Nebula
     designation: Caldwell 99

@@ -74,3 +74,17 @@ export function orbiterArrival({ generic, r, R }) {
   if (r > 60 * R) return null;
   return Math.min(generic, 3 * Math.max(r, R));
 }
+
+/** Two fingers that turn about their midpoint turn the view (internal #439). Below this many radians a pinch is a pinch. */
+export const TWIST_DEAD_RAD = 0.01;
+/**
+ * The change in the angle of the line between two fingers, from `before` to `after` (radians, screen y down, so
+ * clockwise is positive), wrapped into (-PI, PI] so crossing the +-PI seam is not a jump. A change under the
+ * dead zone, or from a pair that is a point, is 0.
+ */
+export function twistDelta(before, after) {
+  if (!Number.isFinite(before) || !Number.isFinite(after)) return 0;
+  let d = after - before;
+  d -= Math.round(d / (2 * Math.PI)) * 2 * Math.PI;
+  return Math.abs(d) < TWIST_DEAD_RAD ? 0 : d;
+}

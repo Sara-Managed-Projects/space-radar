@@ -12,17 +12,33 @@ also in [CREDITS.md](CREDITS.md), and each release's notes thank the people in i
 [@ionesu](https://github.com/ionesu). The project's own automation account is no longer active.
 See [GOVERNANCE.md](GOVERNANCE.md).
 
+## Trips
+
+[@Agam-Patel-del](https://github.com/Agam-Patel-del), [@proyacht2017](https://github.com/proyacht2017)
+
 ## Facts, sources and data
 
-[@luiksksk](https://github.com/luiksksk)
+[@Agam-Patel-del](https://github.com/Agam-Patel-del), [@cc0006-coder](https://github.com/cc0006-coder), [@Fire162](https://github.com/Fire162), [@luiksksk](https://github.com/luiksksk), [@MahishaKannan](https://github.com/MahishaKannan), [@Prathamesh-Singh](https://github.com/Prathamesh-Singh), [@proyacht2017](https://github.com/proyacht2017), [@SakarPaisen](https://github.com/SakarPaisen), [@siddongare](https://github.com/siddongare), [@vidyamadabattula-ctrl](https://github.com/vidyamadabattula-ctrl)
+
+## Translations
+
+[@proyacht2017](https://github.com/proyacht2017)
+
+## Words and documentation
+
+[@Berciyal-Grace](https://github.com/Berciyal-Grace), [@borderlessboy](https://github.com/borderlessboy), [@cc0006-coder](https://github.com/cc0006-coder), [@Fire162](https://github.com/Fire162), [@proyacht2017](https://github.com/proyacht2017), [@SakarPaisen](https://github.com/SakarPaisen)
+
+## Models, maps and pictures
+
+[@proyacht2017](https://github.com/proyacht2017)
 
 ## Tests and checks
 
-[@luiksksk](https://github.com/luiksksk)
+[@Agam-Patel-del](https://github.com/Agam-Patel-del), [@AnushreeKasturi](https://github.com/AnushreeKasturi), [@Hellz0wnzJ00](https://github.com/Hellz0wnzJ00), [@luiksksk](https://github.com/luiksksk), [@proyacht2017](https://github.com/proyacht2017), [@SakarPaisen](https://github.com/SakarPaisen), [@sh-i-z](https://github.com/sh-i-z)
 
 ## Code
 
-[@luiksksk](https://github.com/luiksksk)
+[@Agam-Patel-del](https://github.com/Agam-Patel-del), [@cc0006-coder](https://github.com/cc0006-coder), [@Fire162](https://github.com/Fire162), [@luiksksk](https://github.com/luiksksk), [@msuneelkrishna2006-blip](https://github.com/msuneelkrishna2006-blip), [@proyacht2017](https://github.com/proyacht2017), [@SakarPaisen](https://github.com/SakarPaisen), [@sh-i-z](https://github.com/sh-i-z), [@SwatiManjari](https://github.com/SwatiManjari)
 
 ## Your name here
 

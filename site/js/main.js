@@ -42,7 +42,7 @@ import { createBeds } from './audio/beds.js';
 import { createStings } from './audio/stings.js';
 import { rungOf } from './audio/pick.js';
 import { AUDIO } from './data/audio.js';
-import { decide, reachFor, LONG_PRESS_MS, TAP_SLOP_PX } from './scene/pickrank.js';
+import { decide, reachFor, labelAt, withLabel, LABEL_PAD, LONG_PRESS_MS, TAP_SLOP_PX } from './scene/pickrank.js';
 import { isPrimaryPress, followIsNear, orbiterArrival, pointerKind } from './scene/gestures.js';
 import { createLod } from './scene/lod.js';
 import { createStars3d, NAMED_STARS, SUN_RADIUS_KM, SUN_TEFF_K } from './scene/stars3d.js';
@@ -1340,7 +1340,8 @@ export async function boot({ setStatus } = {}) {
   // b200-f8-xr: end
   ctx.openAt = (id) => openAt(ctx, id);
   // Names over the scene (spec 0026 req 5): the selection, its train, the nearest notable things.
-  const labels = createLabels(ctx, document.getElementById('labels'));
+  const labelHost = document.getElementById('labels');
+  const labels = createLabels(ctx, labelHost);
   ctx.labels = labels;
   // The tracked object's reticle, tick, tag and off-screen chevron (spec 0047, ui/hud.js). It asks
   // for the selection's position through ctx.positionOfRecord, the same function follow() reads,
@@ -1572,7 +1573,11 @@ export async function boot({ setStatus } = {}) {
     const ndcY = -((clientY - rect.top) / rect.height) * 2 + 1;
     // From the ground the air lifts what is low (internal #418): the pick looks where the thing is before the air.
     const [pickX, pickY] = ctx.skyView && ctx.skyView.trueNdc ? ctx.skyView.trueNdc(ndcX, ndcY) : [ndcX, ndcY];
-    return pick(pickX, pickY, rect, reachFor(type));
+    const d = pick(pickX, pickY, rect, reachFor(type));
+    // A name is a target for what it names (pickrank.js labelAt): the box is in CSS px from the window corner.
+    const hr = labelHost ? labelHost.getBoundingClientRect() : { left: 0, top: 0 };
+    const named = labelAt(labels.boxes(), clientX - hr.left, clientY - hr.top, type === 'mouse' || type === 'pen' ? LABEL_PAD.mouse : LABEL_PAD.touch);
+    return named ? withLabel(d, named) : d;
   }
 
   const BACKDROP_KLASSES = new Set(['star', 'exoplanet', 'dso', 'exotic']);

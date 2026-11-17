@@ -292,5 +292,17 @@
  "dc21c5af7e": "Helligkeit {n1}, {n2}° von der Sonne, Abendhimmel, im Schützen",
  "aee6b0cce1": "Venus {n1} AE, Mars {n2} AE",
  "44efad8e76": "Eine Konjunktion ist, wenn zwei Himmelskörper am Himmel dicht beieinander erscheinen. Sie sehen nur nah aus: Venus ist {n1} AE von der Erde entfernt und Mars {n2} AE, von hier aus gesehen liegt der eine vor dem anderen, und im Raum sind sie weit voneinander entfernt.",
- "c84e805bb1": "Schau nach Westen, tief, nach Sonnenuntergang. Beide stehen innerhalb von {n1}° der Sonne, ein freier Horizont hilft; die größte Annäherung ist in UT angegeben, und das Paar bleibt mehrere Tage davor und danach nah beieinander."
+ "c84e805bb1": "Schau nach Westen, tief, nach Sonnenuntergang. Beide stehen innerhalb von {n1}° der Sonne, ein freier Horizont hilft; die größte Annäherung ist in UT angegeben, und das Paar bleibt mehrere Tage davor und danach nah beieinander.",
+ "fafdf3f85c": "Die Lyriden haben ihr Maximum am {d1} um {n1} UT, mit bis zu etwa {n2} Meteoren pro Stunde unter einem perfekt dunklen Himmel, aus dem Sternbild Leier. Zu der Stunde, für die wir es angeben ({d2}, {n4} UT), ist der Mond zu etwa {n3} Prozent beleuchtet und nimmt ab.",
+ "efdc1c2d95": "im Sternbild Leier",
+ "2039350aea": "Die Perseiden haben ihr Maximum am {d1} um {n1} UT, mit bis zu etwa {n2} Meteoren pro Stunde unter einem perfekt dunklen Himmel, aus dem Sternbild Perseus. Zu der Stunde, für die wir es angeben ({d2}, {n4} UT), ist der Mond zu etwa {n3} Prozent beleuchtet und nimmt zu.",
+ "1926ca6d6c": "im Sternbild Perseus",
+ "f3b70cdbe1": "Die Perseiden haben ihr Maximum am {d1} um {n1} UT, mit bis zu etwa {n2} Meteoren pro Stunde unter einem perfekt dunklen Himmel, aus dem Sternbild Perseus. Zu der Stunde, für die wir es angeben ({d2}, {n4} UT), ist der Mond zu etwa {n3} Prozent beleuchtet und nimmt ab.",
+ "4346d47850": "Komet 96P/Machholz (vermutet)",
+ "1ba746076a": "Auch in dieser Nacht",
+ "1e5fc3ca07": "eine Halbschatten-Mondfinsternis, mit Maximum am {d1} um {n1} UT",
+ "3d17ebb0d1": "Eine schwache Finsternis in derselben Nacht",
+ "467a711085": "Bei diesem Vollmond zieht der Mond durch den äußeren Schatten der Erde, den Halbschatten: eine Halbschatten-Mondfinsternis mit Maximum am {d1} um {n1} UT. Der Mond wird nur etwas dunkler und wird nicht von einem dunklen Rand angeschnitten, deshalb bemerken die meisten nichts.",
+ "1849e0ca66": "Wie lange, und nach wessen Maß",
+ "77d53c86f5": "Die Zeiten und Dauern auf dieser Seite sind mit Astronomy Engine berechnet, auf die Minute genau gerundet. Die Finsternistabellen der NASA setzen die Größe des Erdschattens etwas anders an, daher sind die Dauern, die sie für dieselbe Finsternis angeben, eine oder zwei Minuten kürzer."
 }

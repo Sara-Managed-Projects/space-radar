@@ -5,7 +5,8 @@
 # `equilibrium_k`, `insolation_earths`, `zone`; where `a_ref` is set, the orbit's size is one paper's
 # own value, read from registry/systems-sets.csv). `*_from: estimated` is the Archive's own estimate
 # of a radius from a mass or a mass from a radius; `mass_from: least` is a radial-velocity minimum
-# mass. A null is "not measured", and the card says so.
+# mass; `mass_from: limit` is an UPPER LIMIT (the Archive's pl_bmasselim = 1), the most the planet can
+# weigh and not a measurement of it. A null is "not measured", and the card says so.
 version: 1
 as_of: '2026-11-04'
 albedo: 0.3
@@ -321,7 +322,7 @@ systems:
     radius_earths: 1.31
     radius_from: measured
     mass_earths: 9.0
-    mass_from: measured
+    mass_from: limit
     eccentricity: 0.0
     transit_mid_jd: 2455003.9189
     method: Transit
@@ -337,7 +338,7 @@ systems:
     radius_earths: 0.54
     radius_from: measured
     mass_earths: 4.0
-    mass_from: measured
+    mass_from: limit
     eccentricity: 0.0
     transit_mid_jd: 2454967.651
     method: Transit
@@ -353,7 +354,7 @@ systems:
     radius_earths: 1.95
     radius_from: measured
     mass_earths: 14.0
-    mass_from: measured
+    mass_from: limit
     eccentricity: 0.0
     transit_mid_jd: 2455013.8117
     method: Transit
@@ -369,7 +370,7 @@ systems:
     radius_earths: 1.61
     radius_from: measured
     mass_earths: 36.0
-    mass_from: measured
+    mass_from: limit
     eccentricity: 0.0
     transit_mid_jd: 2454983.404
     method: Transit
@@ -385,7 +386,7 @@ systems:
     radius_earths: 1.41
     radius_from: measured
     mass_earths: 35.0
-    mass_from: measured
+    mass_from: limit
     eccentricity: 0.0
     transit_mid_jd: 2455422.71
     method: Transit
@@ -471,7 +472,7 @@ systems:
     radius_earths: 2.1
     radius_from: measured
     mass_earths: 9.1
-    mass_from: measured
+    mass_from: limit
     eccentricity: 0.72
     transit_mid_jd: 2454966.7001
     method: Transit
@@ -2362,7 +2363,7 @@ systems:
     radius_earths: 3.33
     radius_from: measured
     mass_earths: 25.0
-    mass_from: measured
+    mass_from: limit
     eccentricity: 0.15
     transit_mid_jd: 2455593.8021
     method: Transit
@@ -2404,7 +2405,7 @@ systems:
     radius_earths: null
     radius_from: null
     mass_earths: 2741.58783878
-    mass_from: measured
+    mass_from: limit
     eccentricity: 0.073
     method: Radial Velocity
     year: 2010
@@ -2419,7 +2420,7 @@ systems:
     radius_earths: null
     radius_from: null
     mass_earths: 3295.88058059
-    mass_from: measured
+    mass_from: limit
     eccentricity: 0.131
     method: Radial Velocity
     year: 2010
@@ -2464,7 +2465,7 @@ systems:
     radius_earths: null
     radius_from: null
     mass_earths: 3375.33768234
-    mass_from: measured
+    mass_from: limit
     eccentricity: 0.263
     method: Radial Velocity
     year: 2010
@@ -2742,7 +2743,7 @@ systems:
     radius_earths: null
     radius_from: null
     mass_earths: 3464.3296363
-    mass_from: measured
+    mass_from: limit
     eccentricity: 0.57
     method: Imaging
     year: 2015

@@ -36,6 +36,23 @@ import { lookbackGyr } from '../data/cosmology.js';
 let systemRows = null;
 export function setSystemRows(source) { systemRows = source; }
 
+/**
+ * A number the NASA Exoplanet Archive publishes as a LIMIT, worded as one (review 2026-11-16: 225 of the
+ * table's masses are upper limits -- HD 10180 g "3 375 Earths", 51 Eri b "3 464" -- and the card printed
+ * them as masses). `limit` is the record's `massLimit` / `radiusLimit`: 'upper', 'lower' or nothing.
+ * Returns the words, or null when the limit's words are not loaded: a limit is never printed bare.
+ */
+export function limitWords(limit, words) {
+  if (limit !== 'upper' && limit !== 'lower') return words;
+  const C = COPY.deepFacts || {};
+  const tpl = limit === 'upper' ? C.lessThan : C.moreThan;
+  return tpl ? t(tpl, { v: words }) : null;
+}
+function pushLimited(rows, label, limit, words) {
+  const value = limitWords(limit, words);
+  if (value !== null) rows.push([label, value]);
+}
+
 export const MAX_NAME = 72; // keeps the first sentence inside its limit whatever a feed sends
 export const PASS_WINDOW_HOURS = 24;
 export const DEG = 180 / Math.PI;
@@ -357,6 +374,57 @@ export function roughly(n) {
   return Math.round(n / step) * step;
 }
 
+/** `n` to `figures` significant figures (a number, not words). */
+export function toFigures(n, figures) {
+  if (!Number.isFinite(n) || n === 0) return n;
+  const step = 10 ** (Math.floor(Math.log10(Math.abs(n))) - (figures - 1));
+  return step >= 1 ? Math.round(n / step) * step : Number((Math.round(n / step) * step).toFixed(Math.max(0, -Math.floor(Math.log10(step)))));
+}
+
+/**
+ * A STAR'S DISTANCE TO THE FIGURES ITS PARALLAX SUPPORTS (review 2026-11-16, a regression of internal #290).
+ * The catalogue (HYG) carries no error, and the page printed "Alnilam 1 977 light-years", "Deneb 1 412",
+ * "Antares 554". Their Hipparcos parallaxes (van Leeuwen 2007, read on SIMBAD 2026-11-16) are 1.65 +/- 0.45,
+ * 2.31 +/- 0.32 and 5.89 +/- 1.00 mas: good to 27, 14 and 17 per cent. A parallax good to about half a
+ * milliarcsecond is good to one per cent at 65 light-years and ten at 650, so past 100 light-years a
+ * distance is said to two figures ("2 000", "1 400", "550"); nearer than that the catalogue's own digits stand.
+ */
+export function starLy(distLy) {
+  return Number.isFinite(distLy) && distLy >= 100 ? toFigures(distLy, 2) : distLy;
+}
+
+/** A deep-sky object's one distance: three figures at most ("4 895 light-years" for a cluster was five). */
+export function deepSkyLy(distLy) {
+  return Number.isFinite(distLy) && distLy >= 1000 ? toFigures(distLy, 3) : distLy;
+}
+
+/**
+ * The two ends of a distance range, rounded to a tenth of the range's own width: "84 638 to 86 790" says
+ * the distance is known to a light-year when its two ends are 2 000 apart ("84 600 to 86 800").
+ */
+export function rangeLy(lo, hi) {
+  const width = Math.abs(hi - lo);
+  if (!(width > 0) || !(lo >= 100)) return [lo, hi];
+  const step = 10 ** (Math.floor(Math.log10(width)) - 1);
+  if (step <= 1) return [Math.round(lo), Math.round(hi)];
+  return [Math.round(lo / step) * step, Math.round(hi / step) * step];
+}
+
+/**
+ * A star's light against the Sun's IN VISIBLE LIGHT, to two figures (one decimal under ten). The number is
+ * 10^(0.4 (4.83 - M_V)) from the catalogue's V magnitude and distance: what the eye sees, not the star's
+ * whole output (Rigel is about 52 000 here and "around 120 000 times as luminous" over all colours), and it
+ * inherits the distance's error twice over, so five figures of it were four too many.
+ */
+/** A number as the registry wrote it: at most two decimals under a hundred, none above, and never a padded zero. */
+export function plainNumber(v) {
+  return fmt.tidy(v, Math.abs(v) >= 100 ? 0 : 2);
+}
+
+export function visibleSuns(lum) {
+  return lum < 10 ? fmt.tidy(lum, 1) : fmt.int(toFigures(lum, 2));
+}
+
 /**
  * How long before the moment on screen a storm's advisory was: "3 hours ago", or "in 2 hours" when
  * the clock stands in the six hours before it (data/parsers.js STORM_BEFORE_MS). Exported for the test.
@@ -661,7 +729,7 @@ export function rightNowRows(record, m, passInfo) {
     const distLy = pickNumber(md, 'distLy');
     const lo = pickNumber(md, 'distLyLow');
     const hi = pickNumber(md, 'distLyHigh');
-    if (lo !== null && hi !== null) rows.push([R.distanceRange, t(V.lightYearsRange, { lo: fmt.int(lo), hi: fmt.int(hi) })]);
+    if (lo !== null && hi !== null) { const [a, b] = rangeLy(lo, hi); rows.push([R.distanceRange, t(V.lightYearsRange, { lo: fmt.int(a), hi: fmt.int(b) })]); }
     else if (distLy !== null && distLy >= 1e9 && Number.isFinite(md.redshift)) rows.push([R.distanceFromSun, t(COPY.deepFacts.billionLightYears, { n: fmt.smart(Math.round(distLy / 1e8) / 10) })]);
     else rows.push([R.distanceFromSun, distLy !== null ? t(V.lightYears, { n: distLy < 100 ? fmt.smart(distLy) : fmt.int(distLy) }) : COPY.card.couldNotLook]); // 0079 r15-a45: under a hundred, a decimal
     // Past the Local Group the distance is comoving (how far it is now) and the light-travel time is
@@ -676,21 +744,22 @@ export function rightNowRows(record, m, passInfo) {
     const mass = pickNumber(md, 'massMsun');
     const mLo = pickNumber(md, 'massMsunLow');
     const mHi = pickNumber(md, 'massMsunHigh');
-    if (mLo !== null && mHi !== null) rows.push([R.mass, t(V.sunsRange, { lo: fmt.smart(mLo), hi: fmt.smart(mHi) })]);
-    else if (mass !== null) rows.push([R.mass, mass >= 1e9 ? t(V.billionSuns, { n: fmt.smart(mass / 1e9) }) : mass >= 1e6 ? t(V.millionSuns, { n: fmt.smart(mass / 1e6) }) : t(V.suns, { n: fmt.smart(mass) })]);
+    // The registry's digits and no padding ("14.0 Suns", "237.00 milliseconds": a regression of internal #290).
+    if (mLo !== null && mHi !== null) rows.push([R.mass, t(V.sunsRange, { lo: plainNumber(mLo), hi: plainNumber(mHi) })]);
+    else if (mass !== null) rows.push([R.mass, mass >= 1e9 ? t(V.billionSuns, { n: plainNumber(mass / 1e9) }) : mass >= 1e6 ? t(V.millionSuns, { n: plainNumber(mass / 1e6) }) : t(V.suns, { n: plainNumber(mass) })]);
     const period = pickNumber(md, 'periodS');
-    if (period !== null) rows.push([R.spin, period < 1 ? t(V.milliseconds, { n: fmt.smart(period * 1000) }) : t(V.seconds, { n: fmt.smart(period) })]);
+    if (period !== null) rows.push([R.spin, period < 1 ? t(V.milliseconds, { n: plainNumber(period * 1000) }) : t(V.seconds, { n: plainNumber(period) })]);
     const src = pick(md, 'source');
     if (src) rows.push([R.source, String(src)]);
   } else if (klassOf(record) === 'dso') {
     const distLy = pickNumber(md, 'distLy');
     const lo = pickNumber(md, 'distLyLow');
     const hi = pickNumber(md, 'distLyHigh');
-    if (lo !== null && hi !== null) rows.push([R.distanceRange, t(V.lightYearsRange, { lo: fmt.int(lo), hi: fmt.int(hi) })]);
+    if (lo !== null && hi !== null) { const [a, b] = rangeLy(lo, hi); rows.push([R.distanceRange, t(V.lightYearsRange, { lo: fmt.int(a), hi: fmt.int(b) })]); }
     // The Sun is inside the Milky Way: the distance is to its centre, rounded (the sources differ by 400 light-years), and the sky position is the centre's (internal #270).
     else if (md.home === true && distLy !== null) rows.push([R.distanceToCentre, t(V.lightYearsAbout, { n: fmt.int(roughly(distLy)) })]);
-    else rows.push([R.distanceFromSun, distLy !== null ? t(V.lightYears, { n: fmt.int(distLy) }) : COPY.card.couldNotLook]);
-    if (distLy !== null && md.home !== true) rows.push([R.lightLeft, distLy >= 1e6 ? t(V.millionYearsAgo, { n: fmt.smart(distLy / 1e6) }) : t(V.yearsAgo, { n: fmt.int(distLy) })]);
+    else rows.push([R.distanceFromSun, distLy !== null ? t(V.lightYears, { n: fmt.int(deepSkyLy(distLy)) }) : COPY.card.couldNotLook]);
+    if (distLy !== null && md.home !== true) rows.push([R.lightLeft, distLy >= 1e6 ? t(V.millionYearsAgo, { n: fmt.smart(distLy / 1e6) }) : t(V.yearsAgo, { n: fmt.int(deepSkyLy(distLy)) })]);
     // How the distance was found (spec 0075 task 6): where the registry says (registry/dso-hand.yaml).
     const est = distanceEstimate(record);
     if (est.method && COPY.deepFacts.methods[est.method]) rows.push([COPY.deepFacts.methodRow, COPY.deepFacts.methods[est.method]]);
@@ -703,7 +772,7 @@ export function rightNowRows(record, m, passInfo) {
     const here = type ? typeWords(String(type)) : '';
     const typeShown = here && here.toLowerCase() !== String(type).toLowerCase() ? here.charAt(0).toUpperCase() + here.slice(1) : type;
     if (type) rows.push([R.objectType, String(typeShown) + (pick(md, 'hubble') ? ` (${pick(md, 'hubble')})` : '')]);
-    const sizeLy = pickNumber(md, 'sizeLy');
+    const sizeLy = pickNumber(md, 'sizeLySaid') ?? pickNumber(md, 'sizeLy');
     // (0076 W3-b) under a light-year, one decimal (the Ring at Gaia's distance is 0.95 ly): a real value, never a dash.
     if (sizeLy !== null && sizeLy >= 1) rows.push([R.across, t(V.lightYears, { n: fmt.int(roughly(sizeLy)) })]);
     else if (sizeLy !== null && sizeLy >= 0.05) rows.push([R.across, t(V.lightYears, { n: fmt.num(sizeLy, 1) })]);
@@ -729,10 +798,10 @@ export function rightNowRows(record, m, passInfo) {
     const facts = systemRows ? systemRows.planet(record) : null;
     const rade = pickNumber(md, 'radiusEarths');
     if (facts && facts.radius) rows.push([R.planetRadius, facts.radius]);
-    else if (rade !== null) rows.push([R.planetRadius, t(V.earthsWide, { n: fmt.tidy(rade, 2) })]);
+    else if (rade !== null) pushLimited(rows, R.planetRadius, pick(md, 'radiusLimit'), t(V.earthsWide, { n: fmt.tidy(rade, 2) }));
     const mass = pickNumber(md, 'massEarths');
     if (facts && facts.mass) rows.push([R.planetMass, facts.mass]);
-    else if (mass !== null) rows.push([R.planetMass, t(V.earths, { n: fmt.smart(mass) })]);
+    else if (mass !== null) pushLimited(rows, R.planetMass, pick(md, 'massLimit'), t(V.earths, { n: fmt.smart(mass) }));
     const period = pickNumber(md, 'periodDays');
     if (period !== null) rows.push([R.yearLength, period >= 2 ? t(V.days, { n: fmt.smart(period) }) : t(V.hours, { n: fmt.smart(period * 24) })]);
     const year = pickNumber(md, 'discYear');
@@ -752,11 +821,11 @@ export function rightNowRows(record, m, passInfo) {
     const starHi = pickNumber(md, 'distLyHigh');
     const starRange = starLo !== null && starHi !== null;
     if (starRange) rows.push([R.distanceRange, t(V.lightYearsRange, { lo: fmt.int(starLo), hi: fmt.int(starHi) })]);
-    else rows.push([R.distanceFromSun, distLy !== null ? t(V.lightYears, { n: fmt.smart(distLy) }) : pick(md, 'noDistance') ? COPY.unplaced.noDistanceRow : COPY.card.couldNotLook]);
+    else rows.push([R.distanceFromSun, distLy !== null ? t(V.lightYears, { n: fmt.smart(starLy(distLy)) }) : pick(md, 'noDistance') ? COPY.unplaced.noDistanceRow : COPY.card.couldNotLook]);
     const starNote = pick(md, 'distanceNote');
     if (starNote) rows.push([R.distanceNote, String(starNote)]);
     if (distLy !== null && !starRange) {
-      rows.push([R.lightLeft, distLy >= 1.5 ? t(V.yearsAgo, { n: fmt.int(distLy) }) : t(V.monthsAgo, { n: fmt.int(distLy * 12) })]);
+      rows.push([R.lightLeft, distLy >= 1.5 ? t(V.yearsAgo, { n: fmt.int(starLy(distLy)) }) : t(V.monthsAgo, { n: fmt.int(distLy * 12) })]);
     }
     const spect = pick(md, 'spect');
     if (spect) rows.push([R.spectralType, starClassLine(spect)]);
@@ -764,7 +833,9 @@ export function rightNowRows(record, m, passInfo) {
     // A magnitude is read to a hundredth at best (0.03, not 0.030), and a star that varies by a magnitude or more says so (internal #290).
     if (mag !== null) rows.push([R.brightness, t(Array.isArray(md.magVaries) ? V.magnitudeVaries : V.magnitude, { n: fmt.tidy(mag, Array.isArray(md.magVaries) ? 1 : 2) })]);
     const lum = pickNumber(md, 'lum');
-    if (lum !== null && lum > 0) rows.push([R.luminosity, t(V.suns, { n: fmt.smart(lum) })]);
+    // In visible light, to two figures, and not for a star whose one catalogue magnitude is a moment of a
+    // swing of several (Mira: 6.5 in the catalogue, between about 2 and 10 in the sky). visibleSuns() says why.
+    if (lum !== null && lum > 0 && !Array.isArray(md.magVaries)) rows.push([R.luminosity, t(V.suns, { n: lum >= 1 ? visibleSuns(lum) : fmt.smart(lum) })]);
     // Worked out from its brightness and colour (scene/stars3d.js starPhysical), and it says so:
     // the same number the disc on the scene is drawn from.
     const width = pickNumber(md, 'widthSuns');
@@ -1264,7 +1335,7 @@ export function honestyClause(record, m) {
     // new hero's source sentence shows without a line here; and a record a hero draws as its child (the Tarantula, M43)
     // by its own id, `card[recordId]`; the blocks below as well, so a hero's sentence shows before it first draws (its
     // id is stamped at once). r13Deep holds the sentences of release 1.3.0 for records another block lacks.
-    const blocks = [md.heroCopy, 'deepHelix', 'deepLmc', 'deepGalaxy', 'deepOrion', 'deepRing', 'r12Dust', 'deepCarina', 'deepSmc', 'r13Deep', 'deepNebulae', 'deepHomunculus', 'deepCasA']; // 0078 r14-neb-a: deepNebulae; 2026-11-16: the two objects drawn from published 3D data
+    const blocks = [md.heroCopy, 'deepHelix', 'deepLmc', 'deepGalaxy', 'deepOrion', 'deepRing', 'r12Dust', 'deepCarina', 'deepSmc', 'r13Deep', 'deepNebulae', 'deepHomunculus', 'deepCasA', 'deepSn1987a']; // 0078 r14-neb-a: deepNebulae; 2026-11-16: the two objects drawn from published 3D data
     const own = (md.heroId || md.heroCopy) && Array.isArray(md.heroDrawn) ? blocks.map((b) => b && COPY[b] && COPY[b].card && ((md.heroId && COPY[b].card[md.heroId]) || COPY[b].card[record.id])).find(Boolean) : null;
     // 0077 W2-e: end
     return words.length ? t(F.drawnLine, { drawn: words.join(F.drawnJoin) }) + (own ? ` ${own}` : '') : null;

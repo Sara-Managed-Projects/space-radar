@@ -325,27 +325,6 @@ export const SOURCES = {
     note: '6.9 kB, 81 rows measured 2026-09-06.',
   },
 
-  // --- Who is aboard -------------------------------------------------------------------------
-  // registry/sources.yaml open-notify-astros says why: CORS allows a page to read this, but the
-  // API has no https endpoint at all, and this app is served over https, so a browser here hits
-  // mixed-content, not a CORS refusal. The harvester's plain-HTTP fetch is unaffected; the browser
-  // reads the saved copy, snapshot-only.
-  'open-notify-astros': {
-    id: 'open-notify-astros',
-    registryId: 'open-notify-astros',
-    label: 'Open Notify — astronauts aboard',
-    publisher: 'Open Notify',
-    url: 'http://api.open-notify.org/astros.json',
-    cadenceMs: 1 * HOUR,
-    freshnessMaxMs: 24 * HOUR,
-    browser: false,
-    kind: 'json',
-    shape: { object: ['people'] },
-    attribution: 'Who is in space: Open Notify',
-    note: 'No https endpoint at all (TLS refused), so a page served over https cannot reach it ' +
-      'even though it sends Access-Control-Allow-Origin `*`. Read from our snapshot only.',
-  },
-
   // Launch Library 2's stations, crew and past launches (registry/sources.yaml says the terms and
   // the budget). Snapshot-only on purpose: a visitor never spends the publisher's 15 calls an hour.
   'll2-stations': {
@@ -558,7 +537,7 @@ export const SOURCES = {
     registryId: 'nasa-exoplanet-archive',
     label: 'NASA Exoplanet Archive — confirmed planets',
     publisher: 'Caltech/IPAC for NASA',
-    url: 'https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+pl_name,hostname,ra,dec,sy_dist,pl_rade,pl_bmasse,pl_orbper,disc_year,discoverymethod,st_teff,st_rad,st_spectype+from+pscomppars&format=csv',
+    url: 'https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+pl_name,hostname,ra,dec,sy_dist,pl_rade,pl_bmasse,pl_orbper,disc_year,discoverymethod,st_teff,st_rad,st_spectype,pl_bmasselim,pl_radelim+from+pscomppars&format=csv',
     cadenceMs: 168 * HOUR,
     freshnessMaxMs: 720 * HOUR,
     browser: false,

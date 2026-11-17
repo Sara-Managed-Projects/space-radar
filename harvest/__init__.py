@@ -8,7 +8,7 @@ and writes these files:
 
     <prefix>/<source-id>.json       the snapshot: the upstream body, verbatim, with its stamps
     <prefix>/<id>.cols.json         beside a big catalogue, the same rows as columns (publish.py)
-    <prefix>/celestrak-notable.json, -geo, -starlink-recent, and jpl-sbdb-neo cut to jpl-cad's rows (publish.py)
+    <prefix>/celestrak-notable.json, -geo, -starlink-recent, and jpl-sbdb-neo cut to jpl-cad's rows (publish.py), those rows' elements asked of Horizons at each approach (neo_elements.py)
     <prefix>/index.json             the manifest: one entry per source, with timestamps and status. WRITTEN LAST.
 
 A source that fails never overwrites its file: the manifest lists it as the last good copy with its old stamps and

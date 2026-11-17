@@ -121,7 +121,7 @@ for path in seo_reach.COMPARISONS:
 # Our own counts are read at build time, never typed (the coordinator's review): a different saved catalogue, a
 # different number on the page; the first load is registry/first-load.yaml's live measurement, with its day.
 moved = {p.path: p for p in seo_reach.comparison_pages(HOST, {"active": 23456})}
-check(all("about 23,000" in plain(moved[f"{c}/index.html"].body).lower() for c in ("spaceengine-alternative-mac", "live-satellite-tracker-3d", "solar-system-scope-alternative")),
+check(all("about 23 000" in plain(moved[f"{c}/index.html"].body).lower() for c in ("spaceengine-alternative-mac", "live-satellite-tracker-3d", "solar-system-scope-alternative")),
       "the satellite count comes from the saved catalogue's index")
 check(seo_reach.first_load() in pages["spaceengine-in-the-browser/index.html"].body and "MB (measured " in seo_reach.first_load(), "the first load is the registry's measurement")
 src = (ROOT / "scripts/seo_reach.py").read_text(encoding="utf-8")
