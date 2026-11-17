@@ -82,6 +82,14 @@ for (const def of HEROES) {
     sampled += 1;
   }
 }
+// The rule for depth made from ONE photograph (internal #431, the deep-space review of 2026-11-16, idea 15): the distance of a gas pixel
+// is never measured, so every emission hero's card says its depth is reconstructed or not measured, and that it is not measured, in the
+// row that every one of them carries ("Its shape in depth"). A card that dropped the row, or called the depth measured, fails here.
+for (const def of HEROES.filter((h) => MODULES[h.id] === 'emission')) {
+  const rows = (COPY.deepNebulae.rows[`dso-${def.record.replace(/^dso-/, '')}`] || []);
+  const depth = rows.find((r) => /depth/i.test(r[0]));
+  check(depth && /^(Reconstructed|Not measured)/.test(depth[1]) && /depths?\b[^.]*\b(not|neither|never)\b|\b(not|neither|never)\b[^.]*\bmeasured/i.test(depth[1]), `${def.id}: its card has a depth row that says the depth is reconstructed or not measured (one photograph gives no distance for gas)`);
+}
 check(shipped >= 10 && sampled >= shipped + 1, `every shipped hero and its children sampled (${shipped} heroes, ${sampled} records)`);
 for (const [id, hero] of [['dso-carina-nebula', 'carina'], ['dso-smc', 'smc'], ['dso-tarantula-nebula', null], ['dso-helix-nebula', 'helix'], ['dso-m31', 'm31']]) check(records.has(id), `${id} (${hero || 'a child'}) is sampled`);
 
