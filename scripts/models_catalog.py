@@ -112,7 +112,13 @@ CLASS_MISSION = {"telescope": "astronomy", "probe": "planetary", "site": "lander
                  "satellite": "technology", "asteroid": "planetary", "moon": "planetary", "comet": "planetary"}
 MISSION_NAMES = {k: n for k, n, _ in MISSIONS}
 MISSION_OF = {"proba-3-csc": "astronomy", "proba-3-osc": "astronomy", "formosat-7": "weather", "sbirs-geo": "earth",
-              "r7-8k72k": "launch", "vostok-blok-e": "launch"}
+              "r7-8k72k": "launch", "vostok-blok-e": "launch", "proba-v": "earth",
+              # the words 'rocket' and 'launch' in used_for caught these: none of them is a launch vehicle
+              "sputnik-1": "technology", "sert-2": "technology", "msl-descent-stage": "planetary", "msl-entry": "planetary",
+              "shuttle-rms": "crewed"}
+# The registry's `class` drives the map's routing and stays as it is; the catalogue shows the class a visitor would
+# expect. `station` is the registry's catch-all for parts staged in Moments, so these rows are shown under their own.
+CLASS_OF = {"msl-descent-stage": "probe", "msl-entry": "probe", "shuttle-rms": "station"}
 
 # Size bands for the filter, by the largest length the row gives in metres.
 SIZES = (("small", "Under 2 m", 2.0), ("medium", "2 to 10 m", 10.0), ("large", "10 to 30 m", 30.0), ("huge", "Over 30 m", float("inf")))
@@ -246,12 +252,17 @@ def reach_of(mid: str, file: str, reach: dict | None, norad: list[int], row: dic
     return {"state": "none", "count": 0, "examples": [], "moments": []}, ""
 
 
+def class_of(row: dict) -> str:
+    """The class the catalogue shows (CLASS_OF over the registry's `class`)."""
+    return CLASS_OF.get(row["id"]) or row.get("class") or ""
+
+
 def mission_of(row: dict) -> str:
     """The class decides for rockets, telescopes, probes and surface sites; satellites and stations are grouped by
     the first rule that matches their id, then their `used_for`; MISSION_OF names the few the words get wrong."""
     if row["id"] in MISSION_OF:
         return MISSION_OF[row["id"]]
-    klass = row.get("class") or ""
+    klass = class_of(row)
     if klass in ("rocket", "telescope", "probe", "site"):
         return CLASS_MISSION[klass]
     text = f"{row['id']} {row.get('used_for') or ''}".lower()
@@ -404,7 +415,7 @@ def entry(row: dict, root: Path, added: dict[str, str], changed: dict[str, str] 
     return {
         "id": row["id"],
         "name": name,
-        "class": row.get("class") or "",
+        "class": class_of(row),
         "mission": mission_of(row),
         "look": "pbr" if row.get("look") == "pbr" else "toon",
         "kind": row["kind"],
