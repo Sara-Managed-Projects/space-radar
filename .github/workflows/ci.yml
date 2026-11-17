@@ -726,6 +726,8 @@ jobs:
         run: node tests/test_worlds_layer.mjs
       - name: what a pointer means, by tier, occlusion, reach and ambiguity (spec 0028 step 1, and the 1.5.2 pick review); the icon as drawn, a crowd, a model as one target (internal #341, #342)
         run: node tests/test_pickrank.mjs
+      - name: pointer, wheel and key rules (a drag dead zone, the primary button, the trackpad pinch, keys in panels, zoom toward the pointer; internal #433-#440)
+        run: node tests/test_gestures.mjs
       - name: on the way to it a model is the size it will be on arrival, and a drawn model is hit on its outline (internal #340, #341)
         run: node tests/test_flight_size.mjs
       - name: the hover's screen grid agrees with a full scan and is quick

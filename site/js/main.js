@@ -45,6 +45,7 @@ import { createStings } from './audio/stings.js';
 import { rungOf } from './audio/pick.js';
 import { AUDIO } from './data/audio.js';
 import { decide, reachFor, LONG_PRESS_MS, TAP_SLOP_PX } from './scene/pickrank.js';
+import { isPrimaryPress, followIsNear, orbiterArrival, pointerKind } from './scene/gestures.js';
 import { createLod } from './scene/lod.js';
 import { createStars3d, NAMED_STARS, SUN_RADIUS_KM, SUN_TEFF_K } from './scene/stars3d.js';
 import { createGalaxy } from './scene/galaxy.js';
@@ -1434,33 +1435,69 @@ export async function boot({ setStatus } = {}) {
   // long it was held. The rules themselves are scene/pickrank.js.
   const pointers = new Set();
   let gesture = null;
+  let lastTap = null;
+  const DOUBLE_TAP_MS = 400;
+  const DOUBLE_TAP_PX = { mouse: 6, touch: 24 };
+  let holdTimer = 0;
+  const clearHold = () => { if (holdTimer) { clearTimeout(holdTimer); holdTimer = 0; } };
+  // A press that is not the primary button is not a tap (internal #434): a right or middle click does nothing on the map.
   canvas.addEventListener('pointerdown', (e) => {
     pointers.add(e.pointerId);
-    if (pointers.size > 1) { if (gesture) gesture.pinched = true; return; }
-    const type = e.pointerType === 'touch' ? 'touch' : 'mouse';
+    if (pointers.size > 1) { if (gesture) gesture.pinched = true; clearHold(); return; }
+    if (!isPrimaryPress(e)) { gesture = null; return; }
+    const type = pointerKind(e.pointerType);
     // `t` is the EVENT's own time, not the handler's: on a slow frame the up of a quick tap is handled most of a second after
     // its down, and by the handlers' clock every tap on a slow phone was a long press and opened the list (measured 2026-11-16).
-    gesture = { id: e.pointerId, type, x: e.clientX, y: e.clientY, t: e.timeStamp > 0 ? e.timeStamp : performance.now(), pinched: false, decision: decisionAt(e.clientX, e.clientY, type) };
+    gesture = { id: e.pointerId, type, x: e.clientX, y: e.clientY, t: e.timeStamp > 0 ? e.timeStamp : performance.now(), pinched: false, moved: false, shown: false, decision: decisionAt(e.clientX, e.clientY, type) };
+    // THE LIST OPENS AT THE END OF THE HOLD, finger still down (internal #437), not when it lifts.
+    clearHold();
+    if (type === 'touch') {
+      const g = gesture;
+      holdTimer = setTimeout(() => {
+        holdTimer = 0;
+        if (gesture !== g || g.pinched || g.moved || inTrip()) return;
+        const list = g.decision.list.slice(0, 6);
+        if (list.length < 2) return;
+        g.shown = true;
+        if (navigator.vibrate) { try { navigator.vibrate(12); } catch { /* a cue only */ } }
+        showChooser(list, g.x, g.y, (rec) => select(rec, pickOpts(list.find((x) => x.record === rec), null)), { layers: LAYERS });
+      }, LONG_PRESS_MS);
+    }
+  });
+  window.addEventListener('pointermove', (e) => {
+    const g = gesture;
+    if (g && g.id === e.pointerId && !g.moved && Math.hypot(e.clientX - g.x, e.clientY - g.y) > TAP_SLOP_PX[g.type]) { g.moved = true; clearHold(); }
   });
   window.addEventListener('pointerup', (e) => { pointers.delete(e.pointerId); });
-  const cancelGesture = () => { pointers.clear(); gesture = null; };
+  const cancelGesture = () => { pointers.clear(); clearHold(); gesture = null; };
   window.addEventListener('pointercancel', cancelGesture);
   canvas.addEventListener('pointerup', (e) => {
     const g = gesture;
     if (!g || g.id !== e.pointerId) return;
     gesture = null;
-    if (g.pinched || pointers.size > 1) return;
+    clearHold();
+    if (g.pinched || pointers.size > 1 || g.shown) return; // `shown`: the hold already opened its list
     // A drag is a camera move, not a tap: 5 px for a mouse, 10 for a finger.
     if (Math.hypot(e.clientX - g.x, e.clientY - g.y) > TAP_SLOP_PX[g.type]) return;
     const held = (e.timeStamp > 0 ? e.timeStamp : performance.now()) - g.t;
     hideChooser();
     const d = g.decision;
     // A long press on a crowded spot, and a tap the two best of which are too close to tell apart, list what is there instead of guessing.
-    if ((g.type === 'touch' && held >= LONG_PRESS_MS) || d.ambiguous) {
+    if ((g.type === 'touch' && held >= LONG_PRESS_MS) || d.ambiguous) { // (the hold's own timer shows the list while the finger is down; this is a slow frame's late up)
       const list = d.list.slice(0, 6);
       if (list.length > 1) { showChooser(list, e.clientX, e.clientY, (rec) => select(rec, pickOpts(list.find((x) => x.record === rec), null)), { layers: LAYERS }); return; }
     }
     let hit = d.winner;
+    // A DOUBLE CLICK OR TAP (internal #439): the second tap near the first, soon after, flies to what is under it,
+    // or zooms in on the spot when nothing is.
+    const at = e.timeStamp > 0 ? e.timeStamp : performance.now();
+    const twice = lastTap && at - lastTap.t < DOUBLE_TAP_MS && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) <= DOUBLE_TAP_PX[g.type];
+    lastTap = twice ? null : { t: at, x: e.clientX, y: e.clientY };
+    if (twice && !(ctx.skyView && ctx.skyView.ownsSky) && !inTrip()) {
+      if (hit) { hopTo(hit); return; }
+      cameraRig.zoomToward(e.clientX, e.clientY, -Math.LN2);
+      return;
+    }
     // From the ground a tap asks "what is that" (sky/skyview.js tapSky): a satellite's dot or a
     // photograph answers as before with its card; a star, a planet or anything else in the sky is
     // named in a tag first, and the same thing tapped again is its card.
@@ -1671,7 +1708,7 @@ export async function boot({ setStatus } = {}) {
     if (ctx.groundTrack) ctx.groundTrack.set(record);
     if (opts.fly !== false) flyToRecord(record, opts.flyMs, opts.flight);
     else if (opts.cardOnly) cameraRig.stopFollow();
-    else if (!(record && record.meta && record.meta.noDistance)) cameraRig.follow(() => positionOfRecord(record)); // 0079 r15-a45: nothing to follow
+    else if (!(record && record.meta && record.meta.noDistance)) followWithoutFlight(record); // 0079 r15-a45: nothing to follow
     window.dispatchEvent(new CustomEvent('sr:select', { detail: record }));
     // A place met on the night side is met from the whole Earth's distance, and the toast says why
     // (flyToRecord): with the way back when the view was moved for the visitor, alone when they
@@ -1679,6 +1716,19 @@ export async function boot({ setStatus } = {}) {
     const night = !!record && nightArrival === record && opts.fly !== false;
     if (offer) offerUndo(opts.undoName || labelName(record) || record.name, night);
     else if (night && !inTrip() && opts.from !== 'drift') import('./ui/camundo.js').then((m) => m.sayNight(labelName(record) || record.name)).catch(() => {});
+  }
+
+  /**
+   * Select without a flight (a mission's event step, Undo, a trip's stop): follow the object only when it is already
+   * about where the camera looks. From far away that was a cut onto it at the old distance (internal #440); now the
+   * camera stays, the card opens and the HUD's chevron points the way.
+   */
+  function followWithoutFlight(record) {
+    const pos = positionOfRecord(record);
+    const t = cameraRig.saveState().target;
+    const dist = pos && t ? Math.hypot(pos.x - t.x, pos.y - t.y, pos.z - t.z) : NaN;
+    if (inTrip() || followIsNear(dist, cameraRig.state.distance)) cameraRig.follow(() => positionOfRecord(record));
+    else cameraRig.stopFollow();
   }
 
   // --- the view before an automatic move, and the way back (internal #274) ------------------------
@@ -1864,6 +1914,12 @@ export async function boot({ setStatus } = {}) {
    * The world a record stands on, when that is not the stage's own: a landing site on the Moon or
    * Mars, seen from the Earth stage. Null for everything else, the stage's own ground included.
    */
+  /** The planet a craft in orbit round it is met with (data/sample.js PLANET_ORBITERS meta.orbits), when it is drawn on this stage. */
+  function orbitedWorldOf(record) {
+    const w = record && record.klass !== 'world' && record.meta && record.meta.construction === 'round-a-world' ? record.meta.orbits : null;
+    if (!w || w === stage.worldId || !WORLDS.some((x) => x.id === w)) return null;
+    return worlds.drawnPositionOf(w) ? w : null;
+  }
   function surfaceWorldOf(record) {
     const f = record && record.propagator === 'fixed' ? parseFrame(record.frame) : null;
     if (!f || f.kind !== 'fixed' || f.world === stage.worldId) return null;
@@ -1881,7 +1937,7 @@ export async function boot({ setStatus } = {}) {
    * another world's ground. Returns the world it taught, or null.
    */
   function teachRigWorld(record) {
-    const on = surfaceWorldOf(record);
+    const on = surfaceWorldOf(record) || orbitedWorldOf(record);
     if (on) {
       cameraRig.setWorldRadius(worlds.drawnRadiusUnits(on));
       cameraRig.setWorldCentre(worlds.drawnPositionOf(on));
@@ -2052,6 +2108,16 @@ export async function boot({ setStatus } = {}) {
       return Math.max(0.05, (widthKm / tanN) / stage.unitKm);
     }
     // 0077 W3-d: end
+    // A craft in orbit round a planet is met WITH the planet in the picture (internal #433): 350 000 km out, Mars was a 2 px dot.
+    const orbited = orbitedWorldOf(record);
+    if (orbited && pos) {
+      const c = worlds.drawnPositionOf(orbited);
+      const near = orbiterArrival({ generic: arrivalGeneric(record, pos), r: Math.hypot(pos.x - c.x, pos.y - c.y, pos.z - c.z), R: worlds.drawnRadiusUnits(orbited) });
+      if (near) return near;
+    }
+    return arrivalGeneric(record, pos);
+  }
+  function arrivalGeneric(record, pos) {
     const layer = layerRec(record.layer);
     const nearKm = (layer && layer.nearKm) || 2000;
     // No farther than the selected model can be drawn at full size (scene/heroes.js
