@@ -1364,6 +1364,8 @@ jobs:
         run: node tests/test_homunculus.mjs
       - name: "Cassiopeia A from its published 3D reconstruction: the source's parts, the place and the growth of each, the legend and the credit on the card"
         run: node tests/test_casa.mjs
+      - name: "SN 1987A's rings at their measured size and tilt: the papers' numbers, 0.82 arcseconds at 51.4 kpc against Panagia's 808 mas, the 43 degree tilt, one draw call (internal #429)"
+        run: node tests/test_sn1987a.mjs
       - name: "Stellar streams from the galstreams tracks: the points are the files' own, Sagittarius by its dwarf, GD-1's adopted ends, two draw calls (internal #420)"
         run: node tests/test_streams.mjs
       - name: "The streams file matches its registry (internal #420)"

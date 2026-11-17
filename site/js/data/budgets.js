@@ -63,6 +63,8 @@ export const BUDGETS = {
   "deep_ring_draw_calls": 3,
   "deep_sheets_bytes": 300000,
   "deep_sheets_draw_calls": 3,
+  "deep_sn1987a_bytes": 30000,
+  "deep_sn1987a_draw_calls": 1,
   "deep_streams_bytes": 40000,
   "deep_streams_draw_calls": 2,
   "deep_homunculus_bytes": 80000,

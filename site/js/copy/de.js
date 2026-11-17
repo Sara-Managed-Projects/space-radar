@@ -6462,6 +6462,40 @@ Object.assign(COPY, {
     },
     "how": "Gas, das auf uns zukommt, verschiebt sein Licht ins Blaue, Gas, das sich entfernt, ins Rote, und der Homunculus dehnt sich seit den 1840er Jahren gleichmäßig aus; die Geschwindigkeit eines Punkts entlang unserer Sichtlinie sagt also auch, wie weit er vor oder hinter dem Stern liegt. Astronomen lasen die Geschwindigkeit seines Wasserstoffs entlang von 92 Streifen über den Nebel und bauten daraus seine Form (Steffen u. a., 2014)."
   },
+  "deepSn1987a": {
+    "card": {
+      "sn1987a": "Die Ringe sind in den Größen und Neigungen gezeichnet, die Astronomen aus den Lichtechos der Explosion und der Bewegung der Ringe selbst gemessen haben (Sugerman u. a., 2005; Panagia, 2003; Tziamtzis u. a., 2011). Die Punkte, die sie markieren, und die Farben sind illustrativ. Noch nicht von einem Astronomen geprüft."
+    },
+    "rows": {
+      "dso-sn-1987a": [
+        [
+          "Äquatorialring",
+          "Gemessen. Etwa 0,8 Bogensekunden Radius, bei 51,4 Tausend Parsec rund zwei Drittel eines Lichtjahres, um 43° gegen die Draufsicht geneigt, sein Nordrand uns am nächsten (Panagia, 2003; Sugerman u. a., 2005)."
+        ],
+        [
+          "Äußere Ringe",
+          "Gemessen. Zwei größere Ringe von etwa 1,4 und 1,6 Lichtjahren Radius, auf jeder Seite der Sternebene einer, um etwa 45° und 38° geneigt (Sugerman u. a., 2005; Tziamtzis u. a., 2011). Der südliche ist nicht genau eine Ellipse."
+        ],
+        [
+          "Wie weit entfernt",
+          "Die Verzögerung des Leuchtens des inneren Rings nach der Explosion ergibt seine wahre Größe; seine Größe am Himmel ergibt dann die Entfernung der Supernova: 51,4 ± 1,2 Tausend Parsec (Panagia, 2003)."
+        ],
+        [
+          "Nicht gezeichnet",
+          "Die hellen Knoten des Rings, die Trümmer in seinem Inneren, die größeren Nebel weiter draußen und das langsame Wachstum des Rings (etwa 10 km/s)."
+        ],
+        [
+          "Punkte und Farben",
+          "Illustrativ. Jeder Ring ist als ebene Ellipse aus Punkten gezeichnet; die warme und die hellblaue Farbe unterscheiden die Ringe nur."
+        ],
+        [
+          "Prüfung",
+          "Diese Zeichnung ist noch nicht von einem Astronomen geprüft worden."
+        ]
+      ]
+    },
+    "how": "Der Blitz der Explosion beleuchtete die Ringe, und sein Leuchten erreichte uns von der fernen Seite des Rings später als von der nahen. Diese Verzögerung ergibt die wahre Größe des Rings, und die Größe, die er am Himmel einnimmt, die Entfernung. Die äußeren Ringe sind nach Echos des Blitzes am nahen Gas platziert (Sugerman u. a., 2005)."
+  },
   "deepCasA": {
     "card": {
       "casa": "Jeder Punkt ist ein Ort, an dem dieses Gas gemessen wurde: Seine Geschwindigkeit auf uns zu oder von uns weg ergibt seine Tiefe (DeLaney u. a., 2010). Die Farben sind eine Legende, nicht das, was ein Auge sähe. Modell: NASA/CXC/MIT/T. Delaney u. a. Noch nicht von einem Astronomen geprüft."

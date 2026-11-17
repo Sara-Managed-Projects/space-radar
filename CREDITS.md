@@ -2802,6 +2802,24 @@ blue filaments "are only a representation"), and the neutron star's depth are **
 (**false colour**) and the model holds no brightness: every point of a kind is equally bright, its size the data's
 resolution. The card says so, carries the credit and says no astronomer has reviewed the drawing.
 
+### SN 1987A's rings, at their measured size and tilt (2026-11-17)
+
+`site/js/scene/deep/sn1987a.js` draws the three rings round SN 1987A from the numbers in `registry/deepsky-heroes/sn1987a.yaml`.
+No picture, file or text of the papers is copied: the numbers are published measurements, read from the papers on 2026-11-17 and
+cited per row.
+
+| what | from | licence |
+|---|---|---|
+| The equatorial ring's size (6.23 +/- 0.08 x 10^17 cm, 808 +/- 17 mas) and the distance to the supernova, 51.4 +/- 1.2 kpc | Panagia N. 2003, *A geometric determination of the distance to SN 1987A and the LMC* (arXiv:astro-ph/0309416), the abstract | facts, cited |
+| The three rings as ellipses (semi-major axes, axis ratios, position angles, offsets and heights from the supernova, in light-years at 50 kpc); the equatorial ring's tilt (about 43 degrees) | Sugerman B. E. K., Crotts A. P. S., Kunkel W. E., Heathcote S. R. & Lawrence S. S. 2005, ApJS 159, 60 (arXiv:astro-ph/0502378), Table 3 and section I | facts, cited |
+| The outer rings' tilts (about 45 and 38 degrees) | Tziamtzis A., Lundqvist P., Gröningsson P. & Nasoudi-Shoar S. 2011, A&A 527, A35 (arXiv:1008.3387), section 4.1 | facts, cited |
+| The supernova's place | Wikipedia, SN 1987A, infobox (read 2026-11-17) | CC BY-SA 4.0, a position |
+
+What is measured and what is not. The rings' angular sizes, their offsets and heights from the supernova and their tilts are
+**measured** (light echoes, and the ring's velocities). Each ring as a plane ellipse, and the points that mark it, are
+**modelled**; the colours are **illustrative**. The rings' bright knots, the debris inside, the ring's slow growth and the larger
+nebulae are not drawn. The card says so and no astronomer has reviewed the drawing.
+
 ### Stellar streams round the Milky Way, from the galstreams library (2026-11-17)
 
 `site/js/scene/deep/streams.js` draws four stellar streams (Sagittarius, Orphan-Chenab, GD-1, Palomar 5) from the **galstreams**

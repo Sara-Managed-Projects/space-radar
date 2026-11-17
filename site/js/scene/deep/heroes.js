@@ -85,6 +85,8 @@ export const HEROES = [
   // growing on the clock at its measured rate (scene/deep/casa.js). `extent`: the jets reach half as far again as the
   // blast wave, whose width is the record's size.
   { id: 'casa', record: 'dso-cassiopeia-a', stage: 'ds2', stub: { shipped: true, drawn: ['reconstruction', 'model'], children: [], extent: 1.5 }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./casa.js'), import('../../data/hero-casa.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
+  // SN 1987A: the three rings at their measured size and tilt, computed from the papers' numbers (scene/deep/sn1987a.js).
+  { id: 'sn1987a', record: 'dso-sn-1987a', stage: 'ds2', stub: { shipped: true, drawn: ['reconstruction', 'illustration'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./sn1987a.js'), import('../../data/hero-sn1987a.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
 ];
 
 // Deep layers that are not one object: the local volume's galaxies (stage e). Built on the stages named.

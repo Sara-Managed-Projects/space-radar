@@ -70,6 +70,7 @@ domains:
       smc: {credit: "### The SMC and the Magellanic Stream (0077 W2-e)"}  # 0077 W2-e
       homunculus: {credit: "### The Homunculus from its published 3D model (2026-11-16)"}
       casa: {credit: "### Cassiopeia A from its published 3D reconstruction (2026-11-16)"}
+      sn1987a: {credit: "### SN 1987A's rings, at their measured size and tilt (2026-11-17)"}
       # 0077 W3-f: begin
       m51: {credit: "### Galaxies from their structure (0077 W3-f)"}
       m81: {credit: "### Galaxies from their structure (0077 W3-f)"}
@@ -604,10 +605,10 @@ classes:
 
   - id: SUPERNOVA_REMNANT
     title: Supernova remnants
-    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js, site/js/scene/deep/remnant.js, site/js/scene/deep/casa.js]
+    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js, site/js/scene/deep/remnant.js, site/js/scene/deep/casa.js, site/js/scene/deep/sn1987a.js]
     honesty: measured
     fallback: The photograph of the Crab or the Veil; the glow elsewhere.
-    heroes: {crab: registry/deepsky-heroes/crab.yaml, veil: registry/deepsky-heroes/veil.yaml, casa: registry/deepsky-heroes/casa.yaml}
+    heroes: {crab: registry/deepsky-heroes/crab.yaml, veil: registry/deepsky-heroes/veil.yaml, casa: registry/deepsky-heroes/casa.yaml, sn1987a: registry/deepsky-heroes/sn1987a.yaml}
     issue: "internal #784 (shells, W3-c); internal #549 (NASA meshes wait on a licence)"
     note:
       source: "Photographs of M1 (the Crab) and the Veil; OpenNGC."
@@ -617,7 +618,7 @@ classes:
     records:
       - {domain: dso, where: {typeCode: SNR}}
       - {domain: photographs, ids: [m1, veil-nebula]}
-      - {domain: heroes, ids: [crab, veil, casa]}
+      - {domain: heroes, ids: [crab, veil, casa, sn1987a]}
 
   # --- galaxies and beyond -----------------------------------------------------------------------------
   - id: GALAXY_SPIRAL

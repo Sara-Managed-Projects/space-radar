@@ -6451,6 +6451,40 @@ Object.assign(COPY, {
     },
     "how": "O gás que vem na nossa direção desloca a sua luz para o azul e o que se afasta para o vermelho, e o Homúnculo expande-se de modo uniforme desde a década de 1840; assim, a velocidade de um ponto ao longo da nossa linha de visão diz também quanto está à frente da estrela ou atrás. Os astrónomos leram a velocidade do seu hidrogénio ao longo de 92 faixas da nebulosa e construíram a forma a partir daí (Steffen e outros, 2014)."
   },
+  "deepSn1987a": {
+    "card": {
+      "sn1987a": "Os anéis são desenhados com os tamanhos e inclinações que os astrônomos mediram a partir dos ecos de luz da explosão e do movimento dos próprios anéis (Sugerman e outros, 2005; Panagia, 2003; Tziamtzis e outros, 2011). Os pontos que os marcam e as cores são ilustrativos. Ainda não revisado por um astrônomo."
+    },
+    "rows": {
+      "dso-sn-1987a": [
+        [
+          "Anel equatorial",
+          "Medido. Cerca de 0,8 segundo de arco de raio, o que a 51,4 mil parsecs é cerca de dois terços de um ano-luz, inclinado 43° em relação à vista de frente, com a borda norte mais perto de nós (Panagia, 2003; Sugerman e outros, 2005)."
+        ],
+        [
+          "Anéis externos",
+          "Medido. Dois anéis maiores, de cerca de 1,4 e 1,6 ano-luz de raio, um de cada lado do plano da estrela, inclinados cerca de 45° e 38° (Sugerman e outros, 2005; Tziamtzis e outros, 2011). O do sul não é exatamente uma elipse."
+        ],
+        [
+          "A que distância",
+          "O atraso do brilho do anel interno após a explosão dá o seu tamanho real; o seu tamanho no céu dá então a distância da supernova: 51,4 ± 1,2 mil parsecs (Panagia, 2003)."
+        ],
+        [
+          "Não desenhado",
+          "Os nós brilhantes do anel, os destroços dentro dele, as nebulosas maiores mais longe e o lento crescimento do anel (cerca de 10 km/s)."
+        ],
+        [
+          "Pontos e cores",
+          "Ilustrativo. Cada anel é desenhado como uma elipse plana de pontos; as cores quente e azul-claro apenas distinguem os anéis."
+        ],
+        [
+          "Revisão",
+          "Este desenho ainda não foi revisado por um astrônomo."
+        ]
+      ]
+    },
+    "how": "O clarão da explosão iluminou os anéis, e o seu brilho chegou até nós mais tarde do lado distante do anel do que do lado próximo. Esse atraso dá o tamanho real do anel, e o tamanho que ele ocupa no céu dá a distância. Os anéis externos são colocados a partir de ecos do clarão no gás próximo (Sugerman e outros, 2005)."
+  },
   "deepCasA": {
     "card": {
       "casa": "Cada ponto é um lugar onde esse gás foi medido: a sua velocidade para nós ou em sentido contrário dá a profundidade (DeLaney e outros, 2010). As cores são uma legenda, não o que um olho veria. Modelo: NASA/CXC/MIT/T. Delaney e outros. Ainda não revisto por um astrónomo."
