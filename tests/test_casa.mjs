@@ -14,7 +14,6 @@ const JS = join(ROOT, 'site/js');
 const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
 const { MeshoptDecoder } = await import(join(ROOT, 'site/vendor/meshopt_decoder.module.js'));
 const C = await import(join(JS, 'scene/deep/casa.js'));
-const S = await import(join(JS, 'scene/deep/skyplace.js'));
 const M = await import(join(JS, 'scene/deep/meshfile.js'));
 const B = await import(join(ROOT, 'scripts/build_deep_casa.mjs'));
 const { HEROES } = await import(join(JS, 'scene/deep/heroes.js'));
