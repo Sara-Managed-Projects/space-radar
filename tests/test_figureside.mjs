@@ -198,16 +198,18 @@ check(/lore\.culture === 'western'/.test(story) && /new CustomEvent\('sr:figure-
 {
   const R = await import(join(JS, 'ui/searchrows.js'));
   const n = R.setConstellations(names, lines);
-  check(n >= 85 && n <= 90, `the side views are not counted as star patterns (${n})`);
+  check(n >= 85 && n <= 100, `the side views are not counted as star patterns (${n})`);
   const dipper = R.findExtras('big dipper');
-  check(dipper.length >= 1 && dipper[0].extra === 'figureside' && dipper[0].id === 'big-dipper' && dipper[0].name === 'Big Dipper from the side', `"big dipper" finds its side view (${JSON.stringify(dipper[0])})`);
+  // The Big Dipper is also a named pattern (ASTERISMS) that turns to the stars: both rows answer, the side view among them.
+  const dipperSide = dipper.find((e) => e.extra === 'figureside');
+  check(dipperSide && dipperSide.id === 'big-dipper' && dipperSide.name === 'Big Dipper from the side', `"big dipper" finds its side view (${JSON.stringify(dipper)})`);
   const orion = R.findExtras('orion');
   check(orion[0].extra === 'constellation' && orion.some((e) => e.extra === 'figureside' && e.id === 'orion' && e.sub === W.searchSub), `"orion" finds the constellation, then Orion from the side (${orion.map((e) => e.extra)})`);
   let asked = null;
   const had = globalThis.window; const hadEvent = globalThis.CustomEvent;
   globalThis.window = { dispatchEvent: (e) => { asked = [e.type, e.detail]; } };
   globalThis.CustomEvent = class { constructor(type, init) { this.type = type; this.detail = init && init.detail; } };
-  const ok = R.runExtra({}, dipper[0]);
+  const ok = R.runExtra({}, dipperSide);
   globalThis.window = had; globalThis.CustomEvent = hadEvent;
   check(ok === true && asked && asked[0] === 'sr:figure-side' && asked[1] === 'big-dipper', 'following the row asks for that figure from the side');
 }

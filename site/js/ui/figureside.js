@@ -201,7 +201,7 @@ export function createFigureSide(ctx, opts = {}) {
   function toScene(ly, out) {
     return stage.toSceneInto({ x: ly[0] * LY_KM, y: ly[1] * LY_KM, z: ly[2] * LY_KM }, SUN_INERTIAL, out, stage.tMs) ? out : null;
   }
-  const _sun = new THREE.Vector3(); const _t = new THREE.Vector3(); const _v = new THREE.Vector3();
+  const _sun = new THREE.Vector3();
 
   function setLayer(id, on) {
     try {
