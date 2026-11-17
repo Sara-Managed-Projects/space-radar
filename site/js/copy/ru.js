@@ -2601,7 +2601,8 @@ export const COPY = {
   "source": {
     "prefix": "Источник",
     "unknown": "Источник не записан",
-    "fetched": "прочитано {age}"
+    "fetched": "прочитано {age}",
+    "waypoint": "Положение: путевая точка NASA за сол {sol} ({date})"
   },
   "photo": {
     "title": "Составить картинку",

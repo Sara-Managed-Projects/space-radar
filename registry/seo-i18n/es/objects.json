@@ -939,7 +939,6 @@
  "0f2609ae51": "Se fotografió directamente en {n1}, como un punto débil junto al resplandor de su estrella. Su órbita está más lejos de su estrella que la zona habitable calculada para ella. La tabla compuesta del Exoplanet Archive le da {n2} UA, lo que no cumple la tercera ley de Kepler; la página usa la distancia de Keppler et al. {n3}, un único artículo cuyos propios periodo y masa de la estrella sí la cumplen.",
  "3a9ac54961": "Fuente: NASA Exoplanet Archive, tabla Planetary Systems Composite Parameters (DOI de la tabla <1>{n1}/NEA13</1>), consultada el {n2}-{n3}-{n4}; https://exoplanetarchive.ipac.caltech.edu/overview/PDS%{n5}. Zona habitable: Kopparapu et al. {n6}, <2>ApJ Letters {n7}, L29</2>. Las temperaturas suponen la reflectividad de la Tierra ({n8}). Esta página se generó el {n9}-{n10}-{n11} a partir de esos registros; las cifras no son en vivo.",
  "aed02bb526": "{n1}, por E. Karkoschka",
- "ed84e6abf6": "Un róver del tamaño de un coche que recoge muestras de roca en un cráter que antes fue el delta de un río.",
  "aabb82c6da": "Dibujado a partir de un modelo publicado de Perseverance.",
  "011bb6c050": "{name} es un objeto cercano a la Tierra con su propia órbita alrededor del Sol. De él vienen las Gemínidas.",
  "e8b37bd7eb": "De él vienen las Gemínidas. Se acerca al Sol más que Mercurio y suelta polvo cuando llega allí.",
@@ -1248,5 +1247,8 @@
  "6e881752f0": "Dibujado como la etapa de descenso de Luna {n1}, en pie; Luna {n2} cayó de lado y conservó su etapa de ascenso — el tipo de objeto, no este en concreto · forma construida a partir de medidas e imágenes publicadas; detalles simplificados.",
  "eb816396cb": "Dibujado como la etapa de descenso de Luna {n1}; Luna {n2} era el modelo posterior, con un taladro más profundo — el tipo de objeto, no este en concreto · forma construida a partir de medidas e imágenes publicadas; detalles simplificados.",
  "8d10d6deb2": "Dibujado como el Surveyor {n1}, sin su instrumento de dispersión alfa · forma construida a partir de medidas e imágenes publicadas; detalles simplificados.",
- "66ba90603d": "Dibujado como WorldView-{n1}, una nave más alta sobre la misma plataforma — el tipo de objeto, no este en concreto · forma construida a partir de medidas e imágenes publicadas; detalles simplificados."
+ "66ba90603d": "Dibujado como WorldView-{n1}, una nave más alta sobre la misma plataforma — el tipo de objeto, no este en concreto · forma construida a partir de medidas e imágenes publicadas; detalles simplificados.",
+ "c90413fd85": "Aquí aterrizó Curiosity el {d1}. El róver ha seguido su camino y tiene su propia marca.",
+ "3262df82d7": "Aquí aterrizó Perseverance el {d1}. El róver ha seguido su camino y tiene su propia marca.",
+ "cbdf08776a": "Un róver del tamaño de un coche que recoge muestras de roca. Aterrizó en el cráter Jezero en {n1} y desde entonces ha subido y cruzado el borde occidental del cráter."
 }

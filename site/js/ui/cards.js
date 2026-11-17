@@ -1534,6 +1534,20 @@ export function sourceLine(record, ctx) {
 }
 
 /**
+ * "Position: NASA’s waypoint for sol 5073 (13 November 2026)", for a rover that still drives (registry/sites.yaml
+ * `as_of_sol`, `as_of`, written by scripts/refresh_rover_positions.py): which of NASA's waypoints the marker stands at,
+ * so nobody reads a month-old place as this minute's. A sol is a label, as a year is: not grouped. Null for every other
+ * record. Exported for the test.
+ */
+export function positionAsOfLine(record) {
+  const md = meta(record);
+  const sol = pickNumber(md, 'asOfSol');
+  const ms = Date.parse(`${pick(md, 'asOf')}T12:00:00Z`);
+  if (sol === null || !Number.isFinite(ms) || !COPY.source.waypoint) return null;
+  return t(COPY.source.waypoint, { sol: String(sol), date: timeText.utcLong(ms) });
+}
+
+/**
  * What the card says about `record` right now, as strings and no DOM: the name, the badge, the
  * first sentence, the "right now" rows, the honesty line and the source line. The share sheet's
  * words are read from here (spec 0033 req 2, 3, 7; ui/sharesheet.js), so a post can never state a
@@ -2937,6 +2951,8 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
     // A star system's line says what is measured and what is illustrative: the legend says what those mean (internal #908).
     drawn && systemLine(record) ? legendLink() : null,
     el('p', 'sr-card__source', sourceLine(record, ctx)),
+    // A rover that still drives: which of NASA's waypoints it stands at, by sol and day.
+    positionAsOfLine(record) ? el('p', 'sr-card__source', positionAsOfLine(record)) : null,
   ]));
 
   // How we know (internal spec 0076 W1-c): the legend of the honesty line's words, last, straight above

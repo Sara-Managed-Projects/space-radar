@@ -2587,7 +2587,8 @@ export const COPY = {
   "source": {
     "prefix": "स्रोत",
     "unknown": "स्रोत दर्ज नहीं",
-    "fetched": "{age} पढ़ा"
+    "fetched": "{age} पढ़ा",
+    "waypoint": "स्थिति: सोल {sol} ({date}) के लिए NASA का वेपॉइंट"
   },
   "photo": {
     "title": "एक तस्वीर बनाएँ",

@@ -939,7 +939,6 @@
  "0f2609ae51": "It was photographed directly, a faint dot beside the glare of its star in {n1}. Its orbit is farther from its star than the habitable zone computed for it. The Archive's composite table gives {n2} AU for it, which does not agree with Kepler's third law; the page uses the distance in Keppler et al. {n3}, a single paper whose own period and star's mass do.",
  "3a9ac54961": "Source: NASA Exoplanet Archive, Planetary Systems Composite Parameters table (table DOI <1>{n1}/NEA13</1>), read {n2}-{n3}-{n4}; https://exoplanetarchive.ipac.caltech.edu/overview/PDS%{n5}. Habitable zone: Kopparapu et al. {n6}, <2>ApJ Letters {n7}, L29</2>. Temperatures assume the Earth's reflectivity ({n8}). This page was built {n9}-{n10}-{n11} from those registries; the numbers are not live.",
  "aed02bb526": "{n1}, by E. Karkoschka",
- "ed84e6abf6": "A rover the size of a car, collecting rock samples in a crater that was once a river delta.",
  "aabb82c6da": "Drawn from a published model of Perseverance.",
  "011bb6c050": "{name} is a near-Earth object on its own orbit around the Sun. The Geminids come from this one.",
  "e8b37bd7eb": "The Geminids come from this one. It swings closer to the Sun than Mercury does and sheds dust when it gets there.",
@@ -1248,5 +1247,8 @@
  "6e881752f0": "Drawn as Luna {n1}'s descent stage, standing; Luna {n2} fell on its side and kept its ascent stage — the kind of thing, not this exact one · shape built from published dimensions and pictures; details simplified.",
  "eb816396cb": "Drawn as Luna {n1}'s descent stage; Luna {n2} was the later type with a deeper drill — the kind of thing, not this exact one · shape built from published dimensions and pictures; details simplified.",
  "8d10d6deb2": "Drawn as Surveyor {n1}, without its alpha-scattering instrument · shape built from published dimensions and pictures; details simplified.",
- "66ba90603d": "Drawn as WorldView-{n1}, a taller craft on the same bus — the kind of thing, not this exact one · shape built from published dimensions and pictures; details simplified."
+ "66ba90603d": "Drawn as WorldView-{n1}, a taller craft on the same bus — the kind of thing, not this exact one · shape built from published dimensions and pictures; details simplified.",
+ "c90413fd85": "Where Curiosity landed on {d1}. The rover has driven on, and has a marker of its own.",
+ "3262df82d7": "Where Perseverance landed on {d1}. The rover has driven on, and has a marker of its own.",
+ "cbdf08776a": "A rover the size of a car, collecting rock samples. It landed in Jezero crater in {n1} and has since climbed up and over the crater's western rim."
 }

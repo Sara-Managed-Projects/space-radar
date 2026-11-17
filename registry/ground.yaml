@@ -2,7 +2,8 @@ version: 1
 # THE GROUND AT THE LANDING SITES (release 2.0.0 batch f7-ground, forge #146). One row per site a visitor can stand
 # on (`#ground=<id>`); scripts/build-ground.py reads each row's three sources by HTTP range requests and writes
 # site/data/ground/<id>/ (scene/groundstage.js draws it). The lander's coordinates are its registry/sites.yaml row's
-# (`site:`), which is where the stage puts the lander's model.
+# (`site:`), which is where the stage puts the lander's model, or the row's own `at:` where the ground stands somewhere
+# else than that row (Opportunity's, at the end of its traverse; Curiosity's and Perseverance's, at their landing places).
 #
 #   dtm      the stereo terrain model: the heights within a kilometre of the lander, and within 30 km where its
 #            strip reaches. `post_m` is its post spacing.
@@ -72,6 +73,11 @@ grounds:
     name: "Curiosity, Gale crater"
     world: mars
     site: gale
+    # THE LANDING PLACE, NOT WHERE THE ROVER IS (2026-11-16). The registry/sites.yaml row `gale` is now Curiosity at NASA's
+    # latest waypoint, 14 km away and off this strip; the ground a visitor stands on is still Bradbury Landing, where the
+    # rover's model stands "where it landed". `at:` is the row `bradbury-landing`'s coordinates (the ones this ground
+    # was built at, so site/data/ground/gale is unchanged).
+    at: {lat: -4.5895, lon: 137.4417, source: "registry/sites.yaml, the row bradbury-landing"}
     radius_km: 3396.19
     tint: [118, 72, 40]
     model: {file: curiosity.glb, heading_deg: 0, metres_per_unit: 1, what: "Curiosity, where it landed (it has since driven more than 35 km)"}
@@ -112,6 +118,9 @@ grounds:
     name: "Perseverance, Jezero crater"
     world: mars
     site: jezero
+    # The landing place, as Gale's above: the row `jezero` is now Perseverance at NASA's latest waypoint, 12 km west on
+    # the crater's rim. `at:` is the row `octavia-e-butler-landing`'s coordinates, the ones this ground was built at.
+    at: {lat: 18.4446, lon: 77.4509, source: "registry/sites.yaml, the row octavia-e-butler-landing"}
     radius_km: 3396.19
     tint: [118, 72, 40]
     model: {file: perseverance.glb, heading_deg: 0, size_m: 3.0, what: "Perseverance, where it landed"}

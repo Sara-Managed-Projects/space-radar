@@ -8,8 +8,8 @@ certainty that one latitude among them would one day differ from its row. So the
 here and data/sample.js's handKeptSites() builds the records from them, the same split the
 oddities already use (generated data and code never share a file).
 
-The whitelist leaves out `landed:`, `source:`, `uncertainty_m:` and the `references:` block:
-they are the evidence a reviewer reads, and nothing in the browser reads them.
+The whitelist leaves out `landed:`, `source:`, `uncertainty_m:`, `dist_total_m:` and the `references:`
+block: they are the evidence a reviewer reads, and nothing in the browser reads them.
 
 Run:  python3 scripts/gen_sites_js.py           # write it
       python3 scripts/gen_sites_js.py --check   # exit 1 if the checked-in file is stale
@@ -23,7 +23,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _genmirror import Mirror, pick  # noqa: E402
 
-FIELDS = ("id", "display", "class", "world", "lat", "lon", "alt_m", "diameter_m", "shape", "record", "aliases", "liftoffs", "doing")
+# `as_of_sol` and `as_of` (2026-11-16): the sol and the UTC day of NASA's waypoint a rover that still drives is drawn at
+# (the rows `gale` and `jezero`; scripts/refresh_rover_positions.py writes them). The card prints them.
+FIELDS = ("id", "display", "class", "world", "lat", "lon", "alt_m", "diameter_m", "shape", "record", "aliases", "liftoffs", "as_of_sol", "as_of", "doing")
 
 
 def render(doc: dict) -> list:

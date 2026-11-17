@@ -2414,6 +2414,9 @@ function siteRecord(row) {
   if (Array.isArray(row.liftoffs)) meta.liftoffs = row.liftoffs.slice();
   // Other names search matches (ui/search.js reads meta.aliases): Sojourner, Tranquility Base.
   if (Array.isArray(row.aliases) && row.aliases.length) meta.aliases = row.aliases.slice();
+  // A rover that still drives is drawn at NASA's latest waypoint (registry/sites.yaml `as_of_sol`, `as_of`): the sol and
+  // the UTC day of that waypoint, which the card prints (ui/cards.js positionAsOfLine).
+  if (row.as_of_sol != null) { meta.asOfSol = row.as_of_sol; meta.asOf = row.as_of; }
   meta.latDeg = row.lat;
   meta.lonDeg = row.lon;
   return {

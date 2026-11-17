@@ -2586,7 +2586,8 @@ export const COPY = {
   "source": {
     "prefix": "المصدر",
     "unknown": "المصدر غير مسجّل",
-    "fetched": "قُرئ {age}"
+    "fetched": "قُرئ {age}",
+    "waypoint": "الموقع: نقطة مسار NASA لليوم المريخي {sol} ({date})"
   },
   "photo": {
     "title": "ركّب صورة",

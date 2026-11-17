@@ -29,7 +29,7 @@ export const SHELF = [
   { id: 'apollo-13', minutes: 14, picture: 286300, records: ['saturn-v-lc-39a'], hue: '210, 40, 70', models: ['saturn-v', 'apollo-csm', 'lunar-module'] },
   { id: 'sts-1', minutes: 15, picture: 60, records: ['saturn-v-lc-39a', 'edwards-afb-runway-23'], hue: '36, 12, 90', models: ['shuttle-sts-stack', 'shuttle-orbiter'] },
   { id: 'artemis-ii', minutes: 11, picture: 20, records: ['shuttle-lc-39b'], hue: '36, 64, 100', models: ['sls-block1', 'orion-esm'] },
-  { id: 'curiosity-edl', minutes: 6, picture: 420, records: ['gale'], hue: '18, 62, 48', models: ['msl-entry', 'msl-descent-stage', 'curiosity'] },
+  { id: 'curiosity-edl', minutes: 6, picture: 420, records: ['gale', 'bradbury-landing'], hue: '18, 62, 48', models: ['msl-entry', 'msl-descent-stage', 'curiosity'] },
   { id: 'new-horizons-pluto', minutes: 6, picture: -12, pictureTop: 0.5, records: ['pluto', 'charon', 'deep-new-horizons'], hue: '224, 28, 46', models: ['new-horizons'] },
   { id: 'vostok-1', minutes: 5, picture: 4700, records: ['baikonur-site-1', 'vostok-1-landing'], hue: '100, 50, 40', models: ['r7-8k72k', 'vostok-3ka', 'vostok-seat'] },
   { id: 'sputnik-1', minutes: 4, picture: 1500, records: ['baikonur-site-1'], hue: '210, 14, 60', models: ['r7-8k72k', 'sputnik-1'] },
