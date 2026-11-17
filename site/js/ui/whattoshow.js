@@ -655,7 +655,8 @@ export function createWhatToShow(ctx, opts = {}) {
     if (ctx && ctx.rail && typeof ctx.rail.closeShow === 'function') ctx.rail.closeShow();
     if (ctx && ctx.keyhint && typeof ctx.keyhint.show === 'function') ctx.keyhint.show({ all: true });
   });
-  root.appendChild(el('div', 'sr-show__section sr-show__keys')).appendChild(keys);
+  const keysSection = root.appendChild(el('div', 'sr-show__section sr-show__keys'));
+  keysSection.appendChild(keys);
 
   // --- Reset: the defaults again, and nothing kept. Shown only while this browser keeps a choice. ---
   const M = COPY.showMemory;
@@ -684,7 +685,8 @@ export function createWhatToShow(ctx, opts = {}) {
     if (first) first.focus({ preventScroll: true });
   });
   resetRow.appendChild(resetBtn);
-  root.appendChild(resetRow);
+  // Reset sits above Keys: Keys stays the popover's last row (#321).
+  root.insertBefore(resetRow, keysSection);
   paintReset = () => { resetRow.hidden = !hasShow(storage); };
   paintReset();
   // Colour by and Earth data are their own modules: their choices are heard here. A key or a map put back by
