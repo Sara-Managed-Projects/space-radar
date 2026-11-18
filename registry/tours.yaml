@@ -825,9 +825,13 @@ tours:
         climb: true
         drift: none
         chapter: "The edge"
+        # ONE AGE (internal #389, 2026-11-18): 370 000 years, the figure the sphere's own label, the ladder's last rung ("The oldest light" in
+        # "Out to the edge", below) and tests/test_cmb.mjs already use: data/cosmology.js zCmb = 1089.8 (Planck 2018 VI, the map's one cosmology), in the
+        # age that cosmology gives, to the nearest 10 000. ESA's and NASA's popular pages round the same event to "380,000" (an older rounding
+        # of the Planck 2013 result); this card was the one place that printed it, beside a sphere that said 370 000.
         # read 2026-10-09, https://www.esa.int/Science_Exploration/Space_Science/Planck/Planck_and_the_cosmic_microwave_background:
         # ESA: "It formed about 380,000 years after the Big Bang." ... "the visible Universe is at least 93 billion light years across."
-        # (card figure = page figure: about 380 000 years after the Big Bang = 380,000 (ESA Planck; NASA Physics of the Cosmos page also "just 380,000 years after the Big Bang") ; 46.5 billion light-years = half of ESA's 93 billion across (46.5 exactly); NASA expert says "about 92 billion light-years across" (46 radius))
+        # (card figure = page figure: about 370 000 years after the Big Bang = the map's own cosmology (zCmb 1089.8, Planck 2018), which ESA and NASA round to 380,000 ; 46.5 billion light-years = half of ESA's 93 billion across (46.5 exactly); NASA expert says "about 92 billion light-years across" (46 radius))
         # 2026-10-14 (spec 0075 task 17): the sphere is now the map's one cosmology's horizon,
         # data/cosmology.js horizonLy() = 46.2 billion light-years (Planck 2018; NASA's "about 92
         # billion light-years across"), so the card says "about 46" as the sphere's own label does; the
@@ -838,7 +842,7 @@ tours:
           body: >-
             The sphere is the edge of what can be seen at all, about 46 billion light-years away now.
             No light has travelled for longer than 13.8 billion years: space stretched while it came.
-            The microwave background, released about 380 000 years after the Big Bang, reaches us
+            The microwave background, released about 370 000 years after the Big Bang, reaches us
             from just inside it. It is a horizon around us, not a wall. Every place has its own.
 
   # =============================================================================================
@@ -3952,12 +3956,15 @@ tours:
         chapter: "Moving one"
         # read 2026-10-09, https://www.esa.int/Space_Safety/Hera/ESA_s_Hera_targets_early_arrival_at_Didymos_asteroids:
         # Hera is on track to arrive at Didymos in November 2026 ... a well-understood and repeatable technique for protecting Earth
+        # ARRIVED (internal #389, 2026-11-18): ESA, 11 November 2026, "Hera ... has arrived at its target asteroids. Positioned just 30-25 km away from
+        # the binary Didymos system" (https://www.esa.int/articles/about-us/directorates/operations/space-safety/hera/hera-spacecraft-in-rectangular-orbit-around-target-asteroids,
+        # as quoted in site/js/data/sample.js beside Hera's record), so the card no longer says "due".
         # (card figure = page figure: November 2026 = November 2026 (rendezvous burns start October 2026, arrival November) ; "measure its mass" = ESA page fetched does not state it (the fetch summaries did not mention mass), no number involved ; survey of the pair = "humankind's first thorough survey of a binary asteroid")
         card:
           title: "Hera, going to check"
           body: >-
-            This is Hera, a European spacecraft sent to the same pair of asteroids, due
-            there in November 2026. It will survey the little moon after the crash and
+            This is Hera, a European spacecraft sent to the same pair of asteroids, which it
+            reached in November 2026. It will survey the little moon after the crash and
             measure its mass, to turn that one experiment into a method that can be
             repeated if a dangerous rock is ever found.
 

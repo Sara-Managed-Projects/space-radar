@@ -6,7 +6,7 @@
 //
 // What it holds, on the shipped data (data/systems-index.js's rows through data/layers.js systemHostRecords, and
 // data/stars3d.names.json through scene/stars3d.js recordsFromNames):
-//   1. Barnard's Star's host record finds HYG's Barnard's Star, and after adoptTwin its card reads 5.95 ly, 9.54, HYG's
+//   1. Barnard's Star's host record finds HYG's Barnard's Star, and after adoptTwin its card reads 5.96 ly (Gaia DR3), 9.54, HYG's
 //      class, with its own id, place and the archive's radius kept, and both sources cited; a second adoptTwin is a no-op.
 //   2. The twin's place matches the motion file (scene/stardeep.js matchStars at its 0.02 degrees), where the host
 //      record's own place does not: the reason the line was missing.
@@ -41,7 +41,8 @@ if (host) {
   if (twin) {
     const radius = host.meta.radiusSuns;
     adoptTwin(host, twin);
-    check(host.meta.distLy === 5.95 && host.meta.mag === 9.54 && host.meta.spect === twin.meta.spect, `the card's facts are the stars rung's: ${host.meta.distLy} ly, ${host.meta.mag}, ${host.meta.spect}`);
+    // The stars rung's distance is Gaia DR3's now (registry/stars-notable.yaml, internal #383): 5.96 ly, where HYG's was 5.95.
+    check(host.meta.distLy === 5.96 && host.meta.mag === 9.54 && host.meta.spect === twin.meta.spect, `the card's facts are the stars rung's: ${host.meta.distLy} ly, ${host.meta.mag}, ${host.meta.spect}`);
     check(host.id === 'star-barnards-star' && host.layer === 'systems' && host.meta.radiusSuns === radius && host.meta.twin === twin.id, 'the host keeps its id, its layer and the archive\'s radius');
     check(/HYG/.test(host.meta.cite) && /Exoplanet Archive/.test(host.meta.cite), `both sources cited: ${host.meta.cite}`);
     const cite = host.meta.cite;

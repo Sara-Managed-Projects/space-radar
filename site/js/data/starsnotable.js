@@ -19,7 +19,10 @@ export const STARS_NOTABLE = [
     "radius_err_suns": 0.007,
     "teff_k": 3054,
     "teff_err_k": 79,
-    "physical_source": "https://arxiv.org/abs/1208.2431 (read 2026-10-09)"
+    "physical_source": "https://arxiv.org/abs/1208.2431 (read 2026-10-09)",
+    "gaia_dr3": "5853498713190525696",
+    "plx_mas": 768.0665,
+    "plx_err_mas": 0.0499
   },
   {
     "hip": 71683,
@@ -48,13 +51,19 @@ export const STARS_NOTABLE = [
     "radius_err_suns": 0.0012,
     "teff_k": 3222,
     "teff_err_k": 10,
-    "physical_source": "https://arxiv.org/abs/1208.2431 (read 2026-10-09)"
+    "physical_source": "https://arxiv.org/abs/1208.2431 (read 2026-10-09)",
+    "gaia_dr3": "4472832130942575872",
+    "plx_mas": 546.9759,
+    "plx_err_mas": 0.0401
   },
   {
     "proper": "Wolf 359",
     "name": "Wolf 359",
     "why": "A red dwarf so faint it takes a large telescope, yet only Alpha Centauri, Barnard's Star and two brown dwarfs are nearer. Star Trek set a battle here.",
-    "source": "https://en.wikipedia.org/wiki/Wolf_359 (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Wolf_359 (read 2026-09-22)",
+    "gaia_dr3": "3864972938605115520",
+    "plx_mas": 415.1794,
+    "plx_err_mas": 0.0684
   },
   {
     "hip": 32349,
@@ -89,7 +98,10 @@ export const STARS_NOTABLE = [
     "radius_err_suns": 0.0048,
     "teff_k": 4361,
     "teff_err_k": 17,
-    "physical_source": "https://arxiv.org/abs/1208.2431 (read 2026-10-09)"
+    "physical_source": "https://arxiv.org/abs/1208.2431 (read 2026-10-09)",
+    "gaia_dr3": "1872046609345556480",
+    "plx_mas": 285.9949,
+    "plx_err_mas": 0.0599
   },
   {
     "hip": 37279,
@@ -117,14 +129,20 @@ export const STARS_NOTABLE = [
     "radius_suns": 0.29,
     "radius_err_suns": 0.03,
     "physical_source": "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=II/345/jmdc (read 2026-11-15)",
-    "spect": "M1VIp"
+    "spect": "M1VIp",
+    "gaia_dr3": "4810594479418041856",
+    "plx_mas": 254.1986,
+    "plx_err_mas": 0.0168
   },
   {
     "hip": 3829,
     "name": "Van Maanen's Star",
     "why": "The nearest lone white dwarf. A 1917 photograph of its spectrum holds the earliest known evidence of planetary matter outside the Solar System.",
     "source": "https://en.wikipedia.org/wiki/Van_Maanen_2 (read 2026-09-22); class: SIMBAD, Wolf 28 (read 2026-11-16)",
-    "spect": "DZ7.5"
+    "spect": "DZ7.5",
+    "gaia_dr3": "2552928187080872832",
+    "plx_mas": 231.78,
+    "plx_err_mas": 0.0183
   },
   {
     "hip": 30438,

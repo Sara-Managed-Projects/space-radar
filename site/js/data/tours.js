@@ -811,7 +811,7 @@ export const TOURS = [
 "climb": true,
 "card": {
 "title": "The oldest light",
-"body": "The sphere is the edge of what can be seen at all, about 46 billion light-years away now. No light has travelled for longer than 13.8 billion years: space stretched while it came. The microwave background, released about 380 000 years after the Big Bang, reaches us from just inside it. It is a horizon around us, not a wall. Every place has its own."
+"body": "The sphere is the edge of what can be seen at all, about 46 billion light-years away now. No light has travelled for longer than 13.8 billion years: space stretched while it came. The microwave background, released about 370 000 years after the Big Bang, reaches us from just inside it. It is a horizon around us, not a wall. Every place has its own."
 },
 "frame_radii": 5.0,
 "drift_deg": 34,
@@ -4407,7 +4407,7 @@ export const TOURS = [
 "chapter": "Moving one",
 "card": {
 "title": "Hera, going to check",
-"body": "This is Hera, a European spacecraft sent to the same pair of asteroids, due there in November 2026. It will survey the little moon after the crash and measure its mass, to turn that one experiment into a method that can be repeated if a dangerous rock is ever found."
+"body": "This is Hera, a European spacecraft sent to the same pair of asteroids, which it reached in November 2026. It will survey the little moon after the crash and measure its mass, to turn that one experiment into a method that can be repeated if a dangerous rock is ever found."
 },
 "frame_radii": 5.0,
 "drift_deg": 34,
@@ -4416,7 +4416,7 @@ export const TOURS = [
 "key_light_deg": 125,
 "ease": "auto",
 "on_unresolved": "drop",
-"dwell_ms": 19150
+"dwell_ms": 19483
 },
 {
 "id": "bennu",
@@ -4486,7 +4486,7 @@ export const TOURS = [
 "dwell_ms": 18817
 }
 ],
-"estimate_ms": 180035
+"estimate_ms": 180368
 },
 {
 "id": "satellites-and-junk",

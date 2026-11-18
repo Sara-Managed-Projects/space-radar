@@ -270,7 +270,7 @@ clips:
   - {trip: "roof-to-the-edge", stop: "radio", hash: "5c17e9a4ec1d91da", seconds: 20.51, words: 58, lufs: -16.4, opus: 80939, m4a: 105900, vtt: 425, wer: 0.0, heard: "28e87aeed45b0394", voice: 0}
   - {trip: "roof-to-the-edge", stop: "milky-way", hash: "396bdfe3743543f8", seconds: 14.97, words: 39, lufs: -16.5, opus: 58464, m4a: 77647, vtt: 323, wer: 0.0, heard: "9fd2824a7a1e82fe", voice: 0}
   - {trip: "roof-to-the-edge", stop: "local-group", hash: "079389490fe0848a", seconds: 16.4, words: 42, lufs: -16.5, opus: 65177, m4a: 85036, vtt: 318, wer: 0.0, heard: "1632be83f7b29742", voice: 0}
-  - {trip: "roof-to-the-edge", stop: "edge", hash: "8b9a519a0cbd0cbc", seconds: 26.76, words: 73, lufs: -16.4, opus: 106843, m4a: 137848, vtt: 526, wer: 0.0, heard: "fd3a1c2ba5ad3664", voice: 0}
+  - {trip: "roof-to-the-edge", stop: "edge", hash: "3c3fd7b56b932ff7", seconds: 26.83, words: 73, lufs: -16.3, opus: 107102, m4a: 138066, vtt: 526, wer: 0.0, heard: "e3e997d59ea3d7b1", voice: 0}
   - {trip: "travel-to-exoplanets", stop: "all", hash: "1d484c40d627d939", seconds: 19.63, words: 58, lufs: -16.4, opus: 79052, m4a: 101554, vtt: 381, wer: 0.0, heard: "f9a6010898f891b3", voice: 0}
   - {trip: "travel-to-exoplanets", stop: "proxima-b", hash: "e6b65efc612f8dab", seconds: 12.41, words: 34, lufs: -16.5, opus: 48456, m4a: 64607, vtt: 262, wer: 0.0, heard: "0360c1a0116a1c61", voice: 0}
   - {trip: "travel-to-exoplanets", stop: "trappist", hash: "5c6e1e960288ec92", seconds: 15.73, words: 45, lufs: -16.4, opus: 62854, m4a: 81559, vtt: 315, wer: 0.0, heard: "85b57d8e9120dba3", voice: 0}
@@ -411,7 +411,7 @@ clips:
   - {trip: "asteroids-that-come-close", stop: "ceres", hash: "bba8130468f4d775", seconds: 20.41, words: 56, lufs: -16.4, opus: 81438, m4a: 105466, vtt: 401, wer: 0.0, heard: "936a663b47521391", voice: 0}
   - {trip: "asteroids-that-come-close", stop: "near", hash: "a84cb7018ca77107", seconds: 18.74, words: 55, lufs: -16.4, opus: 73351, m4a: 96990, vtt: 432, wer: 0.0, heard: "f6301ea24f3d32b2", voice: 0}
   - {trip: "asteroids-that-come-close", stop: "didymos", hash: "74a1066fdf913e72", seconds: 19.38, words: 51, lufs: -16.3, opus: 76049, m4a: 100250, vtt: 415, wer: 0.0, heard: "ef83b9ea3ad53d8f", voice: 0}
-  - {trip: "asteroids-that-come-close", stop: "hera", hash: "b2be1a559262a196", seconds: 20.6, words: 55, lufs: -16.4, opus: 82633, m4a: 106335, vtt: 371, wer: 0.0, heard: "db320d49b262ff1f", voice: 0}
+  - {trip: "asteroids-that-come-close", stop: "hera", hash: "a3ebe72370a7a2f4", seconds: 20.95, words: 56, lufs: -16.4, opus: 84450, m4a: 108291, vtt: 378, wer: 0.0, heard: "269401139713b72f", voice: 0}
   - {trip: "asteroids-that-come-close", stop: "bennu", hash: "a47468668ca0e6e0", seconds: 20.84, words: 55, lufs: -16.2, opus: 83723, m4a: 107639, vtt: 413, wer: 0.0, heard: "8428b15e57662fb0", voice: 0}
   - {trip: "asteroids-that-come-close", stop: "apophis", hash: "6685f4e31f5a1608", seconds: 24.97, words: 61, lufs: -16.4, opus: 99760, m4a: 128720, vtt: 505, wer: 0.0, heard: "81c2867652821d7d", voice: 0}
   - {trip: "asteroids-that-come-close", stop: "home", hash: "0a950f7a956c7a88", seconds: 17.59, words: 52, lufs: -16.4, opus: 69018, m4a: 91122, vtt: 407, wer: 0.0, heard: "1ab1c0b93f6b194d", voice: 0}

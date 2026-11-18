@@ -205,6 +205,13 @@ def build_showers(refresh: bool) -> None:
             reg = ours[ours_by_code[code]]
             row["ours"] = reg["id"]
             row["zhr"] = reg.get("zhr")
+            # ONE PEAK DAY PER SHOWER (internal #391, review 2026-11-16). The Data Center's day is where the median of its solutions' solar
+            # longitude falls; the event pages and the sky view use the IMO calendar's maximum for the 13 showers the app features
+            # (registry/showers.yaml `peak`, the calendar's own date for 2026). The list gave the Southern Taurids' peak as 31 October and
+            # the page 5 November. For these rows `peak` is the IMO's day, `peakIau` the Data Center's, and `peakFrom` says which is which.
+            row["peakIau"] = row["peak"]
+            row["peak"] = reg["peak"]
+            row["peakFrom"] = "IMO Meteor Shower Calendar 2026"
         out.append(row)
     ids = [r["id"] for r in out]
     assert len(ids) == len(set(ids)), "shower ids collide"

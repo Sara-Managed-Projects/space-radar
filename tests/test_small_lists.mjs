@@ -39,6 +39,11 @@ const say = (r) => C.firstSentence(r, {}, m, null);
   }
   const ours = rows.filter((r) => r.ours);
   check(ours.length === SHOWERS.length && ours.length === 13 && SHOWERS.every((s) => ours.some((r) => r.ours === s.id)), 'the thirteen showers of registry/showers.yaml are matched, none is a fourteenth');
+  // one peak day per shower (internal #391): a featured shower's day is the IMO calendar's, as on its event page, and the Data Center's is kept beside it
+  check(ours.every((r) => SHOWERS.find((s) => s.id === r.ours).peak === r.peak && /^\d\d-\d\d$/.test(r.peakIau) && /IMO/.test(r.peakFrom)), 'a featured shower carries the IMO calendar\'s peak day, the Data Center\'s as peakIau, and says which is which');
+  const sta = rows.find((r) => r.ours === 'southern-taurids');
+  check(sta.peak === '11-05' && sta.peakIau === '10-31', `the Southern Taurids peak on the IMO's 5 November, not the Data Center's 31 October (${sta.peak}, ${sta.peakIau})`);
+  check(rows.filter((r) => !r.ours).every((r) => r.peakFrom === undefined), 'a catalogue-only shower keeps the Data Center\'s day and has no peakFrom');
   check(rows.find((r) => r.code === 'PER').ours === 'perseids' && rows.find((r) => r.code === 'GEM').zhr === 150, 'the Perseids and Geminids are the registry\'s own rows (and carry its rate)');
   const rec = S.showerRecords(doc);
   check(rec.length === 172 && rec.every((r) => r.klass === 'shower' && r.layer === 'meteor-showers' && !r.propagator), 'a record each, with no place: a radiant is a direction');
