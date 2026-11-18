@@ -155,7 +155,7 @@ export function sampleAt(positionAt, times, close) {
   let first = null;
   for (let k = 0; k < times.length; k++) {
     const p = positionAt(times[k]);
-    if (!p || !Number.isFinite(p.x)) continue;
+    if (!p || !Number.isFinite(p.x) || !Number.isFinite(p.y) || !Number.isFinite(p.z)) continue; // all three: a NaN vertex makes the bounding sphere's radius NaN
     if (!first) first = [p.x, p.y, p.z];
     out.push(p.x, p.y, p.z);
   }

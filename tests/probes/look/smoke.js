@@ -12,6 +12,11 @@ out.sunDetail = sr.sunDetail ? sr.sunDetail.state().on : false;
 await go('saturn', '6-saturn');
 await go('earth', '7-earth', 5000);
 try {
+  // ASKED ONLY WHEN THE COPIES ARE ON THIS SERVER (18 Nov). The workflow saves the live snapshots of 1.2 MB or less, and the two
+  // ocean fields are 4.4 and 3.8 MB: not saved, so asking for the overlay anyway made the page fetch a copy that this server
+  // answers 404 for, and log it. A visitor is only offered the overlay when the manifest lists the copies; the probe does the same.
+  const have = async (f) => { try { return (await fetch('data/v1/' + f, { method: 'HEAD', cache: 'no-store' })).ok; } catch { return false; } };
+  if (!(await have('ocean-currents.json') && await have('ocean-temperature.json'))) throw Object.assign(new Error('no ocean copies here'), { skipped: true });
   sr.setOverlay('currents');
   await until(() => { const s = sr.overlayState(); return s && s.status && s.status !== 'loading'; }, 20000);
   out.currents = sr.overlayState();
@@ -22,7 +27,10 @@ try {
     await shot('9-currents-turned', 'ocean currents, a quarter turn on', 4000);
   } else look.missing.push('ocean currents: ' + JSON.stringify(out.currents && out.currents.status));
   sr.setOverlay(null);
-} catch (e) { look.errors.push('probe: the currents step threw: ' + (e && e.stack || e)); }
+} catch (e) {
+  if (e && e.skipped) look.missing.push('ocean currents: the copies are not saved on this server (too large for the workflow), so the overlay was not asked for');
+  else look.errors.push('probe: the currents step threw: ' + (e && e.stack || e));
+}
 try {
   const d = await sr.wantDrift({ drift: 'craft,worlds,brisk' }, 'link');
   out.drift = [];
