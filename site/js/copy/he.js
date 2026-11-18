@@ -5770,7 +5770,7 @@ COPY.truth.exoPacked = "העותק הדחוס שלנו מ־{date}"; // forge #88
 COPY.truth.exoLive = "הרשימה של הארכיון, נקראה ב־{date}";
 // The deep-sky catalogue's type phrases (data/dso.json `typeText`), lowercased, in this language: the card's lead and its
 // "What it is" row read them through RULES.typeWords; a phrase not here stays English, which is data.
-const S1_TYPES = {"two-lobed nebula of dust and gas": "ערפילית דו־אונית של אבק וגז", "globular cluster": "צביר כדורי", "open cluster": "צביר פתוח", "dwarf spheroidal galaxy": "גלקסיה ננסית ספרואידלית", "spiral galaxy": "גלקסיה ספירלית", "emission nebula": "ערפילית פליטה", "planetary nebula": "ערפילית פלנטרית", "dwarf irregular galaxy": "גלקסיה ננסית אי־סדירה", "barred spiral galaxy": "גלקסיה ספירלית מוטה", "elliptical galaxy": "גלקסיה אליפטית", "lenticular galaxy": "גלקסיה עדשתית", "h ii region nebula with cluster": "אזור H II עם צביר", "dwarf elliptical galaxy": "גלקסיה ננסית אליפטית", "h ii region nebula": "אזור H II", "barred irregular galaxy": "גלקסיה אי־סדירה מוטה", "ultra-faint dwarf galaxy": "גלקסיה ננסית חיוורת במיוחד", "dark nebula": "ערפילית אפלה", "young open cluster in an emission nebula": "צביר פתוח צעיר בתוך ערפילית פליטה", "supernova remnant": "שארית סופרנובה", "pulsar wind nebula": "ערפילית רוח פולסר", "nebula with cluster": "ערפילית עם צביר", "milky way star cloud": "ענן כוכבים של שביל החלב", "optical double": "כפולה אופטית", "asterism": "אסטריזם", "diffuse nebula": "ערפילית מפוזרת", "starburst galaxy": "גלקסיית התפרצות כוכבים", "dwarf irregular starburst galaxy": "גלקסיה ננסית אי־סדירה עם התפרצות כוכבים", "transition dwarf galaxy, part irregular, part spheroidal": "גלקסיה ננסית מעבר, חלקה אי־סדירה וחלקה ספרואידלית", "barred irregular galaxy, seen edge-on": "גלקסיה אי־סדירה מוטה, נראית מהצד", "ultra-faint dwarf galaxy, or perhaps a star cluster": "גלקסיה ננסית חיוורת במיוחד, ואולי צביר כוכבים", "transition dwarf galaxy, part spheroidal, part irregular": "גלקסיה ננסית מעבר, חלקה ספרואידלית וחלקה אי־סדירה", "spiral galaxy, seen nearly edge-on and bursting with new stars": "גלקסיה ספירלית, נראית כמעט מהצד ומלאה בכוכבים חדשים", "peculiar galaxy with a giant black hole firing radio jets": "גלקסיה חריגה עם חור שחור ענק שיורה סילוני רדיו", "pair of open clusters": "זוג צבירים פתוחים", "spiral galaxy seen exactly edge-on": "גלקסיה ספירלית הנראית בדיוק מהצד", "reflection nebula": "ערפילית החזרה", "reflection and emission nebula": "ערפילית החזרה ופליטה", "spiral galaxy seen edge-on": "גלקסיה ספירלית הנראית מהצד", "barred spiral galaxy seen edge-on": "גלקסיה ספירלית מוטה הנראית מהצד", "spiral galaxy seen face-on": "גלקסיה ספירלית הנראית מלפנים", "barred spiral galaxy seen nearly edge-on": "גלקסיה ספירלית מוטה הנראית כמעט מהצד", "pair of colliding galaxies": "זוג גלקסיות מתנגשות", "cavity in the interstellar medium": "חלל חלול במדיום הבין-כוכבי"};
+const S1_TYPES = {"two-lobed nebula of dust and gas": "ערפילית דו־אונית של אבק וגז", "globular cluster": "צביר כדורי", "open cluster": "צביר פתוח", "dwarf spheroidal galaxy": "גלקסיה ננסית ספרואידלית", "spiral galaxy": "גלקסיה ספירלית", "emission nebula": "ערפילית פליטה", "planetary nebula": "ערפילית פלנטרית", "dwarf irregular galaxy": "גלקסיה ננסית אי־סדירה", "barred spiral galaxy": "גלקסיה ספירלית מוטה", "elliptical galaxy": "גלקסיה אליפטית", "lenticular galaxy": "גלקסיה עדשתית", "h ii region nebula with cluster": "אזור H II עם צביר", "dwarf elliptical galaxy": "גלקסיה ננסית אליפטית", "h ii region nebula": "אזור H II", "barred irregular galaxy": "גלקסיה אי־סדירה מוטה", "ultra-faint dwarf galaxy": "גלקסיה ננסית חיוורת במיוחד", "dark nebula": "ערפילית אפלה", "young open cluster in an emission nebula": "צביר פתוח צעיר בתוך ערפילית פליטה", "supernova remnant": "שארית סופרנובה", "pulsar wind nebula": "ערפילית רוח פולסר", "nebula with cluster": "ערפילית עם צביר", "milky way star cloud": "ענן כוכבים של שביל החלב", "optical double": "כפולה אופטית", "asterism": "אסטריזם", "diffuse nebula": "ערפילית מפוזרת", "starburst galaxy": "גלקסיית התפרצות כוכבים", "dwarf irregular starburst galaxy": "גלקסיה ננסית אי־סדירה עם התפרצות כוכבים", "transition dwarf galaxy, part irregular, part spheroidal": "גלקסיה ננסית מעבר, חלקה אי־סדירה וחלקה ספרואידלית", "barred irregular galaxy, seen edge-on": "גלקסיה אי־סדירה מוטה, נראית מהצד", "ultra-faint dwarf galaxy, or perhaps a star cluster": "גלקסיה ננסית חיוורת במיוחד, ואולי צביר כוכבים", "transition dwarf galaxy, part spheroidal, part irregular": "גלקסיה ננסית מעבר, חלקה ספרואידלית וחלקה אי־סדירה", "spiral galaxy, seen nearly edge-on and bursting with new stars": "גלקסיה ספירלית, נראית כמעט מהצד ומלאה בכוכבים חדשים", "peculiar galaxy with a giant black hole firing radio jets": "גלקסיה חריגה עם חור שחור ענק שיורה סילוני רדיו", "pair of open clusters": "זוג צבירים פתוחים", "spiral galaxy seen exactly edge-on": "גלקסיה ספירלית הנראית בדיוק מהצד", "reflection nebula": "ערפילית החזרה", "reflection and emission nebula": "ערפילית החזרה ופליטה", "spiral galaxy seen edge-on": "גלקסיה ספירלית הנראית מהצד", "barred spiral galaxy seen edge-on": "גלקסיה ספירלית מוטה הנראית מהצד", "spiral galaxy seen face-on": "גלקסיה ספירלית הנראית מלפנים", "barred spiral galaxy seen nearly edge-on": "גלקסיה ספירלית מוטה הנראית כמעט מהצד", "pair of colliding galaxies": "זוג גלקסיות מתנגשות", "cavity in the interstellar medium": "חלל חלול במדיום הבין-כוכבי", "light echo round an erupted star": "הד אור סביב כוכב שהתפרץ"};
 const S1_PLACES = [[" in the large magellanic cloud", " בענן מגלן הגדול"], [" in the small magellanic cloud", " בענן מגלן הקטן"], [" in the milky way", " בשביל החלב"], [" in the local group", " בקבוצה המקומית"]];
 RULES.typeWords = (text) => {
   let base = String(text || '').trim();
@@ -6517,6 +6517,43 @@ Object.assign(COPY, {
         [
           "בדיקה",
           "הציור הזה טרם נבדק בידי אסטרונום."
+        ]
+      ]
+    }
+  },
+  "deepV838": {
+    "card": {
+      "v838": "אור התפרצות הכוכב ב-2002, מפוזר על ידי האבק סביבו ומצויר על המשטח שמתארים המאמרים על הדים של אור (Sparks ואחרים, 2008; Bond ואחרים, 2003). האבק ממודל; הצבעים להמחשה. עדיין לא נבדק על ידי אסטרונום."
+    },
+    "rows": {
+      "dso-v838-monocerotis": [
+        [
+          "ההד",
+          "פיזיקה. האבק שמואר עכשיו שוכן על פרבולואיד סביב הכוכב: מרחקו מהכוכב פחות מרחקו אלינו לאורך קו הראייה שווה למהירות האור כפול הזמן מאז שההתפרצות הגיעה אלינו (Sparks ואחרים, 2008). הטבעות נראות כגדלות מהר מהאור כי המשטח הזה נע, לא האבק (Bond ואחרים, 2003)."
+        ],
+        [
+          "הזמן",
+          "נמדד. ההתפרצות החלה בתחילת ינואר 2002; סופרים מתאריכה הממוצע, 9 במרץ 2002, ועקומת האור נמשכה מ-36 ימים לפניו עד 61 ימים אחריו (Sparks ואחרים, 2008). על השעון ההד גדל משם; לפני כן אין הד, ואחרי אמצע 2008 הוא נשאר קפוא, כי האבק הממודל נגמר שם."
+        ],
+        [
+          "המרחק",
+          "נמדד. 6.1 ± 0.6 קילופארסק, כ-19,900 שנות אור, מטבעת האור המקוטב שההד יוצר (Sparks ואחרים, 2008). הספק העיקרי הוא שיטתי."
+        ],
+        [
+          "האבק",
+          "ממודל. המאמרים אומרים שהאבק גושי ואינם נותנים עומק לאף חלק ממנו. הוא מצויר כשבע קונכיות של גושים סביב אמצע ריק ברוחב 0.15 פארסק (נמדד), עד 2 פארסק, האבק הרחוק ביותר שנראה (Bond ואחרים, 2003). איפה טבעת מוארת ובאיזו בהירות הוא ממודל; שטבעת בגודל כזה מוארת בתאריך הזה היא פיזיקה."
+        ],
+        [
+          "צבע ובהירות",
+          "להמחשה. האור המוקדם היה כחול יותר מהמאוחר (Sparks ואחרים, 2008); כאן מכחול לאדום, והבהירות היא חלון פשוט."
+        ],
+        [
+          "התמונות של האבל",
+          "לא מצורפות: הן אצל ESA/Hubble, heic0304a (NASA, ESA ו-H. E. Bond (STScI), מרץ 2003) ו-heic0503a (NASA, ESA וצוות Hubble Heritage (AURA/STScI), פברואר 2005), CC BY 4.0."
+        ],
+        [
+          "בדיקה",
+          "הציור הזה טרם נבדק על ידי אסטרונום."
         ]
       ]
     }

@@ -77,6 +77,8 @@ export const BUDGETS = {
   "deep_pointheroes_bytes": 75000,
   "deep_vela_draw_calls": 2,
   "deep_catseye_draw_calls": 1,
+  "deep_v838_bytes": 30000,
+  "deep_v838_draw_calls": 2,
   "deep_sstars_bytes": 30000,
   "deep_sstars_draw_calls": 3,
   "deep_nebula_bytes": 600000,

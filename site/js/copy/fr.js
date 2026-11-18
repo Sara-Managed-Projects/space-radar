@@ -126,6 +126,7 @@ const TYPES = {
   'barred spiral galaxy seen nearly edge-on': 'galaxie spirale barrée vue presque par la tranche',
   'pair of colliding galaxies': 'paire de galaxies en collision',
   'cavity in the interstellar medium': 'cavité dans le milieu interstellaire',
+  'light echo round an erupted star': 'écho de lumière autour d’une étoile en éruption',
   'barred spiral galaxy — the one we live in': 'galaxie spirale barrée — celle où nous vivons',
 };
 
@@ -6603,6 +6604,43 @@ Object.assign(COPY, {
         [
           "Couleur",
           "Illustrative. Les fausses couleurs de Hubble, que le modèle n’a pas. Le rendu Mesuré les montre en gris."
+        ],
+        [
+          "Relecture",
+          "Ce dessin n’a pas encore été relu par un astronome."
+        ]
+      ]
+    }
+  },
+  "deepV838": {
+    "card": {
+      "v838": "La lumière de l’éruption de 2002 de l’étoile, diffusée par la poussière qui l’entoure et dessinée sur la surface que décrivent les articles sur les échos de lumière (Sparks et autres, 2008 ; Bond et autres, 2003). La poussière est modélisée ; les couleurs sont illustratives. Pas encore relu par un astronome."
+    },
+    "rows": {
+      "dso-v838-monocerotis": [
+        [
+          "L’écho",
+          "Physique. La poussière éclairée en ce moment se trouve sur un paraboloïde autour de l’étoile : sa distance à l’étoile moins sa distance vers nous le long de la ligne de visée vaut la vitesse de la lumière fois le temps écoulé depuis que l’éruption nous a atteints (Sparks et autres, 2008). Les anneaux semblent grandir plus vite que la lumière parce que c’est cette surface qui se déplace, non la poussière (Bond et autres, 2003)."
+        ],
+        [
+          "Le temps",
+          "Mesuré. L’éruption a commencé début janvier 2002 ; on compte depuis sa date moyenne, le 9 mars 2002, et la courbe de lumière s’étendait de 36 jours avant à 61 jours après (Sparks et autres, 2008). Sur l’horloge, l’écho grandit à partir de là ; avant, il n’y en a pas, et après la mi-2008 il reste figé, car la poussière modélisée s’arrête là."
+        ],
+        [
+          "La distance",
+          "Mesuré. 6,1 ± 0,6 kiloparsecs, environ 19 900 années-lumière, d’après l’anneau de lumière polarisée que forme l’écho (Sparks et autres, 2008). Le principal doute est systématique."
+        ],
+        [
+          "La poussière",
+          "Modélisé. Les articles disent que la poussière est grumeleuse et ne donnent la profondeur d’aucune de ses parties. Elle est dessinée en sept coquilles de grumeaux autour d’un centre vide de 0,15 parsec (mesuré), jusqu’à 2 parsecs, la poussière la plus lointaine vue (Bond et autres, 2003). Où un anneau est éclairé, et avec quelle intensité, est modélisé ; qu’un anneau de cette taille soit éclairé à cette date relève de la physique."
+        ],
+        [
+          "Couleur et luminosité",
+          "Illustratif. La lumière du début était plus bleue que celle de la fin (Sparks et autres, 2008) ; ici elle va du bleu au rouge, et la luminosité est une simple fenêtre."
+        ],
+        [
+          "Les images de Hubble",
+          "Non incluses : elles sont chez ESA/Hubble, heic0304a (NASA, ESA et H. E. Bond (STScI), mars 2003) et heic0503a (NASA, ESA et l’équipe Hubble Heritage (AURA/STScI), février 2005), CC BY 4.0."
         ],
         [
           "Relecture",

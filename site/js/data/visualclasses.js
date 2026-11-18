@@ -1342,6 +1342,7 @@ export const VISUAL_CLASSES = [
 "dso": [
 "dso-m78",
 "dso-homunculus-nebula",
+"dso-v838-monocerotis",
 "dso-iris-nebula"
 ],
 "photographs": [
@@ -1351,7 +1352,8 @@ export const VISUAL_CLASSES = [
 "dso-homunculus-nebula",
 "dso-iris-nebula",
 "dso-m45",
-"dso-m78"
+"dso-m78",
+"dso-v838-monocerotis"
 ]
 }
 },
