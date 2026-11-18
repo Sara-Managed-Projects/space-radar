@@ -5634,7 +5634,7 @@ COPY.truth.exoPacked = "nuestra copia comprimida del {date}"; // forge #88: whic
 COPY.truth.exoLive = "la lista del Archivo, leída el {date}";
 // The deep-sky catalogue's type phrases (data/dso.json `typeText`), lowercased, in this language: the card's lead and its
 // "What it is" row read them through RULES.typeWords; a phrase not here stays English, which is data.
-const S1_TYPES = {"two-lobed nebula of dust and gas": "nebulosa bilobulada de polvo y gas", "globular cluster": "cúmulo globular", "open cluster": "cúmulo abierto", "dwarf spheroidal galaxy": "galaxia esferoidal enana", "spiral galaxy": "galaxia espiral", "emission nebula": "nebulosa de emisión", "planetary nebula": "nebulosa planetaria", "dwarf irregular galaxy": "galaxia irregular enana", "barred spiral galaxy": "galaxia espiral barrada", "elliptical galaxy": "galaxia elíptica", "lenticular galaxy": "galaxia lenticular", "h ii region nebula with cluster": "región H II con cúmulo", "dwarf elliptical galaxy": "galaxia elíptica enana", "h ii region nebula": "región H II", "barred irregular galaxy": "galaxia irregular barrada", "ultra-faint dwarf galaxy": "galaxia enana ultradébil", "dark nebula": "nebulosa oscura", "young open cluster in an emission nebula": "cúmulo abierto joven dentro de una nebulosa de emisión", "supernova remnant": "remanente de supernova", "nebula with cluster": "nebulosa con cúmulo", "milky way star cloud": "nube estelar de la Vía Láctea", "optical double": "doble óptica", "asterism": "asterismo", "diffuse nebula": "nebulosa difusa", "starburst galaxy": "galaxia con brote estelar", "dwarf irregular starburst galaxy": "galaxia irregular enana con brote estelar", "transition dwarf galaxy, part irregular, part spheroidal": "galaxia enana de transición, en parte irregular, en parte esferoidal", "barred irregular galaxy, seen edge-on": "galaxia irregular barrada, vista de canto", "ultra-faint dwarf galaxy, or perhaps a star cluster": "galaxia enana ultradébil, o quizá un cúmulo estelar", "transition dwarf galaxy, part spheroidal, part irregular": "galaxia enana de transición, en parte esferoidal, en parte irregular", "spiral galaxy, seen nearly edge-on and bursting with new stars": "galaxia espiral, vista casi de canto y llena de estrellas nuevas", "peculiar galaxy with a giant black hole firing radio jets": "galaxia peculiar con un agujero negro gigante que lanza chorros de radio", "pair of open clusters": "par de cúmulos abiertos", "spiral galaxy seen exactly edge-on": "galaxia espiral vista exactamente de canto", "reflection nebula": "nebulosa de reflexión", "reflection and emission nebula": "nebulosa de reflexión y de emisión", "spiral galaxy seen edge-on": "galaxia espiral vista de canto", "barred spiral galaxy seen edge-on": "galaxia espiral barrada vista de canto", "spiral galaxy seen face-on": "galaxia espiral vista de frente", "barred spiral galaxy seen nearly edge-on": "galaxia espiral barrada vista casi de canto", "pair of colliding galaxies": "par de galaxias en colisión", "cavity in the interstellar medium": "cavidad en el medio interestelar"};
+const S1_TYPES = {"two-lobed nebula of dust and gas": "nebulosa bilobulada de polvo y gas", "globular cluster": "cúmulo globular", "open cluster": "cúmulo abierto", "dwarf spheroidal galaxy": "galaxia esferoidal enana", "spiral galaxy": "galaxia espiral", "emission nebula": "nebulosa de emisión", "planetary nebula": "nebulosa planetaria", "dwarf irregular galaxy": "galaxia irregular enana", "barred spiral galaxy": "galaxia espiral barrada", "elliptical galaxy": "galaxia elíptica", "lenticular galaxy": "galaxia lenticular", "h ii region nebula with cluster": "región H II con cúmulo", "dwarf elliptical galaxy": "galaxia elíptica enana", "h ii region nebula": "región H II", "barred irregular galaxy": "galaxia irregular barrada", "ultra-faint dwarf galaxy": "galaxia enana ultradébil", "dark nebula": "nebulosa oscura", "young open cluster in an emission nebula": "cúmulo abierto joven dentro de una nebulosa de emisión", "supernova remnant": "remanente de supernova", "nebula with cluster": "nebulosa con cúmulo", "milky way star cloud": "nube estelar de la Vía Láctea", "optical double": "doble óptica", "asterism": "asterismo", "diffuse nebula": "nebulosa difusa", "starburst galaxy": "galaxia con brote estelar", "dwarf irregular starburst galaxy": "galaxia irregular enana con brote estelar", "transition dwarf galaxy, part irregular, part spheroidal": "galaxia enana de transición, en parte irregular, en parte esferoidal", "barred irregular galaxy, seen edge-on": "galaxia irregular barrada, vista de canto", "ultra-faint dwarf galaxy, or perhaps a star cluster": "galaxia enana ultradébil, o quizá un cúmulo estelar", "transition dwarf galaxy, part spheroidal, part irregular": "galaxia enana de transición, en parte esferoidal, en parte irregular", "spiral galaxy, seen nearly edge-on and bursting with new stars": "galaxia espiral, vista casi de canto y llena de estrellas nuevas", "peculiar galaxy with a giant black hole firing radio jets": "galaxia peculiar con un agujero negro gigante que lanza chorros de radio", "pair of open clusters": "par de cúmulos abiertos", "spiral galaxy seen exactly edge-on": "galaxia espiral vista exactamente de canto", "reflection nebula": "nebulosa de reflexión", "reflection and emission nebula": "nebulosa de reflexión y de emisión", "spiral galaxy seen edge-on": "galaxia espiral vista de canto", "barred spiral galaxy seen edge-on": "galaxia espiral barrada vista de canto", "spiral galaxy seen face-on": "galaxia espiral vista de frente", "barred spiral galaxy seen nearly edge-on": "galaxia espiral barrada vista casi de canto", "pair of colliding galaxies": "par de galaxias en colisión", "cavity in the interstellar medium": "cavidad en el medio interestelar", "light echo round an erupted star": "eco de luz alrededor de una estrella en erupción"};
 const S1_PLACES = [[" in the large magellanic cloud", " en la Gran Nube de Magallanes"], [" in the small magellanic cloud", " en la Pequeña Nube de Magallanes"], [" in the milky way", " en la Vía Láctea"], [" in the local group", " en el Grupo Local"]];
 RULES.typeWords = (text) => {
   let base = String(text || '').trim();
@@ -6377,6 +6377,43 @@ Object.assign(COPY, {
         [
           "Color",
           "Ilustrativo. El falso color de Hubble, que el modelo no tiene. El aspecto Medido lo muestra en gris."
+        ],
+        [
+          "Revisión",
+          "Este dibujo aún no ha sido revisado por un astrónomo."
+        ]
+      ]
+    }
+  },
+  "deepV838": {
+    "card": {
+      "v838": "La luz de la erupción de 2002 de la estrella, dispersada por el polvo que la rodea y dibujada sobre la superficie que describen los artículos sobre ecos de luz (Sparks y otros, 2008; Bond y otros, 2003). El polvo es modelado; los colores son ilustrativos. Aún no revisado por un astrónomo."
+    },
+    "rows": {
+      "dso-v838-monocerotis": [
+        [
+          "El eco",
+          "Física. El polvo que se ilumina ahora está sobre un paraboloide alrededor de la estrella: su distancia a la estrella menos su distancia hacia nosotros a lo largo de la visual es la velocidad de la luz por el tiempo transcurrido desde que la erupción nos alcanzó (Sparks y otros, 2008). Los anillos parecen crecer más rápido que la luz porque lo que se mueve es esa superficie, no el polvo (Bond y otros, 2003)."
+        ],
+        [
+          "El tiempo",
+          "Medido. La erupción empezó a principios de enero de 2002; se cuenta desde su fecha media, el 9 de marzo de 2002, y la curva de luz abarcó desde 36 días antes hasta 61 después (Sparks y otros, 2008). En el reloj el eco crece desde entonces; antes no hay ninguno, y después de mediados de 2008 se queda fijo, porque el polvo modelado termina ahí."
+        ],
+        [
+          "La distancia",
+          "Medido. 6,1 ± 0,6 kiloparsecs, unos 19 900 años luz, a partir del anillo de luz polarizada que forma el eco (Sparks y otros, 2008). La duda principal es sistemática."
+        ],
+        [
+          "El polvo",
+          "Modelado. Los artículos dicen que el polvo es grumoso y no dan la profundidad de ninguna parte. Se dibuja como siete capas de grumos alrededor de un centro vacío de 0,15 parsecs (medido), hasta 2 parsecs, el polvo más lejano visto (Bond y otros, 2003). Dónde se ilumina un anillo y con qué brillo es modelado; que un anillo de ese tamaño se ilumine en esa fecha es física."
+        ],
+        [
+          "Color y brillo",
+          "Ilustrativo. La luz temprana era más azul que la tardía (Sparks y otros, 2008); aquí va del azul al rojo, y el brillo es una simple ventana."
+        ],
+        [
+          "Las imágenes de Hubble",
+          "No se incluyen: están en ESA/Hubble, heic0304a (NASA, ESA y H. E. Bond (STScI), marzo de 2003) y heic0503a (NASA, ESA y el Hubble Heritage Team (AURA/STScI), febrero de 2005), CC BY 4.0."
         ],
         [
           "Revisión",

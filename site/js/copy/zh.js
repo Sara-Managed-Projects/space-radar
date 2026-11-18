@@ -5763,7 +5763,7 @@ COPY.truth.exoPacked = "我们 {date} 的压缩副本"; // forge #88: which list
 COPY.truth.exoLive = "档案馆的列表，读取于 {date}";
 // The deep-sky catalogue's type phrases (data/dso.json `typeText`), lowercased, in this language: the card's lead and its
 // "What it is" row read them through RULES.typeWords; a phrase not here stays English, which is data.
-const S1_TYPES = {"two-lobed nebula of dust and gas": "由尘埃和气体构成的双叶星云", "globular cluster": "球状星团", "open cluster": "疏散星团", "dwarf spheroidal galaxy": "矮椭球星系", "spiral galaxy": "旋涡星系", "emission nebula": "发射星云", "planetary nebula": "行星状星云", "dwarf irregular galaxy": "矮不规则星系", "barred spiral galaxy": "棒旋星系", "elliptical galaxy": "椭圆星系", "lenticular galaxy": "透镜状星系", "h ii region nebula with cluster": "带星团的电离氢区", "dwarf elliptical galaxy": "矮椭圆星系", "h ii region nebula": "电离氢区", "barred irregular galaxy": "棒状不规则星系", "ultra-faint dwarf galaxy": "超暗弱矮星系", "dark nebula": "暗星云", "young open cluster in an emission nebula": "发射星云中的年轻疏散星团", "supernova remnant": "超新星遗迹", "nebula with cluster": "带星团的星云", "milky way star cloud": "银河星云", "optical double": "光学双星", "asterism": "星群", "diffuse nebula": "弥漫星云", "starburst galaxy": "星暴星系", "dwarf irregular starburst galaxy": "矮不规则星暴星系", "transition dwarf galaxy, part irregular, part spheroidal": "过渡型矮星系，部分不规则、部分椭球", "barred irregular galaxy, seen edge-on": "棒状不规则星系，侧向可见", "ultra-faint dwarf galaxy, or perhaps a star cluster": "超暗弱矮星系，也可能是星团", "transition dwarf galaxy, part spheroidal, part irregular": "过渡型矮星系，部分椭球、部分不规则", "spiral galaxy, seen nearly edge-on and bursting with new stars": "旋涡星系，近乎侧向可见，充满新生恒星", "peculiar galaxy with a giant black hole firing radio jets": "特殊星系，中心巨型黑洞喷出射电喷流", "pair of open clusters": "一对疏散星团", "spiral galaxy seen exactly edge-on": "完全侧向的旋涡星系", "reflection nebula": "反射星云", "reflection and emission nebula": "反射兼发射星云", "spiral galaxy seen edge-on": "侧向的旋涡星系", "barred spiral galaxy seen edge-on": "侧向的棒旋星系", "spiral galaxy seen face-on": "正向的旋涡星系", "barred spiral galaxy seen nearly edge-on": "近乎侧向的棒旋星系", "pair of colliding galaxies": "一对正在碰撞的星系", "cavity in the interstellar medium": "星际介质中的空洞"};
+const S1_TYPES = {"two-lobed nebula of dust and gas": "由尘埃和气体构成的双叶星云", "globular cluster": "球状星团", "open cluster": "疏散星团", "dwarf spheroidal galaxy": "矮椭球星系", "spiral galaxy": "旋涡星系", "emission nebula": "发射星云", "planetary nebula": "行星状星云", "dwarf irregular galaxy": "矮不规则星系", "barred spiral galaxy": "棒旋星系", "elliptical galaxy": "椭圆星系", "lenticular galaxy": "透镜状星系", "h ii region nebula with cluster": "带星团的电离氢区", "dwarf elliptical galaxy": "矮椭圆星系", "h ii region nebula": "电离氢区", "barred irregular galaxy": "棒状不规则星系", "ultra-faint dwarf galaxy": "超暗弱矮星系", "dark nebula": "暗星云", "young open cluster in an emission nebula": "发射星云中的年轻疏散星团", "supernova remnant": "超新星遗迹", "nebula with cluster": "带星团的星云", "milky way star cloud": "银河星云", "optical double": "光学双星", "asterism": "星群", "diffuse nebula": "弥漫星云", "starburst galaxy": "星暴星系", "dwarf irregular starburst galaxy": "矮不规则星暴星系", "transition dwarf galaxy, part irregular, part spheroidal": "过渡型矮星系，部分不规则、部分椭球", "barred irregular galaxy, seen edge-on": "棒状不规则星系，侧向可见", "ultra-faint dwarf galaxy, or perhaps a star cluster": "超暗弱矮星系，也可能是星团", "transition dwarf galaxy, part spheroidal, part irregular": "过渡型矮星系，部分椭球、部分不规则", "spiral galaxy, seen nearly edge-on and bursting with new stars": "旋涡星系，近乎侧向可见，充满新生恒星", "peculiar galaxy with a giant black hole firing radio jets": "特殊星系，中心巨型黑洞喷出射电喷流", "pair of open clusters": "一对疏散星团", "spiral galaxy seen exactly edge-on": "完全侧向的旋涡星系", "reflection nebula": "反射星云", "reflection and emission nebula": "反射兼发射星云", "spiral galaxy seen edge-on": "侧向的旋涡星系", "barred spiral galaxy seen edge-on": "侧向的棒旋星系", "spiral galaxy seen face-on": "正向的旋涡星系", "barred spiral galaxy seen nearly edge-on": "近乎侧向的棒旋星系", "pair of colliding galaxies": "一对正在碰撞的星系", "cavity in the interstellar medium": "星际介质中的空洞", "light echo round an erupted star": "爆发恒星周围的光回波"};
 const S1_PLACES = [[" in the large magellanic cloud", "（位于大麦哲伦云）"], [" in the small magellanic cloud", "（位于小麦哲伦云）"], [" in the milky way", "（位于银河系）"], [" in the local group", "（位于本星系群）"]];
 RULES.typeWords = (text) => {
   let base = String(text || '').trim();
@@ -6510,6 +6510,43 @@ Object.assign(COPY, {
         [
           "审阅",
           "这幅图尚未经天文学家审阅。"
+        ]
+      ]
+    }
+  },
+  "deepV838": {
+    "card": {
+      "v838": "这颗恒星 2002 年爆发的光，被周围的尘埃散射，画在光回波论文所描述的曲面上（Sparks 等，2008；Bond 等，2003）。尘埃是模型；颜色是示意性的。还没有经过天文学家审阅。"
+    },
+    "rows": {
+      "dso-v838-monocerotis": [
+        [
+          "回波",
+          "物理。此刻被照亮的尘埃位于绕恒星的抛物面上：它到恒星的距离减去它沿视线朝向我们的距离，等于光速乘以爆发的光到达我们之后经过的时间（Sparks 等，2008）。光环看起来比光还快地扩大，是因为移动的是这个曲面，而不是尘埃（Bond 等，2003）。"
+        ],
+        [
+          "时间",
+          "实测。爆发始于 2002 年 1 月初；这里从它的平均日期 2002 年 3 月 9 日算起，光变曲线从之前 36 天延续到之后 61 天（Sparks 等，2008）。在时钟上，回波从那时起增长；之前没有，2008 年年中之后则保持不变，因为模型尘埃到那里就结束了。"
+        ],
+        [
+          "距离",
+          "实测。6.1 ± 0.6 千秒差距，约 19 900 光年，来自回波形成的偏振光环（Sparks 等，2008）。主要的不确定性是系统性的。"
+        ],
+        [
+          "尘埃",
+          "模型。论文说尘埃成团块状，没有给出任何一部分的深度。这里画成七层团块壳，围着一个 0.15 秒差距宽的空心（实测），向外到 2 秒差距，即见到的最远的尘埃（Bond 等，2003）。光环在哪里被照亮、有多亮是模型；这个大小的光环在这个日期被照亮，则是物理。"
+        ],
+        [
+          "颜色与亮度",
+          "示意性的。早期的光比晚期的更蓝（Sparks 等，2008）；这里由蓝到红，亮度只是一个简单的窗口。"
+        ],
+        [
+          "哈勃的图像",
+          "未随附：可在 ESA/Hubble 查看，heic0304a（NASA、ESA 和 H. E. Bond（STScI），2003 年 3 月）和 heic0503a（NASA、ESA 和哈勃遗产团队（AURA/STScI），2005 年 2 月），CC BY 4.0。"
+        ],
+        [
+          "审阅",
+          "这幅图还没有经过天文学家审阅。"
         ]
       ]
     }

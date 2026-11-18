@@ -73,6 +73,7 @@ domains:
       sn1987a: {credit: "### SN 1987A's rings, at their measured size and tilt (2026-11-17)"}
       vela: {credit: "### Pulsar wind nebulae and the Cat's Eye (2026-11-17)"}
       catseye: {credit: "### Pulsar wind nebulae and the Cat's Eye (2026-11-17)"}
+      v838: {credit: "### V838 Monocerotis' light echo (2026-11-18)"}
       # 0077 W3-f: begin
       m51: {credit: "### Galaxies from their structure (0077 W3-f)"}
       m81: {credit: "### Galaxies from their structure (0077 W3-f)"}
@@ -591,10 +592,10 @@ classes:
 
   - id: REFLECTION_NEBULA
     title: Reflection nebulae
-    renderer: [site/js/scene/dsoglow.js, site/js/scene/deep/dustsheet.js, site/js/scene/deep/reflection.js, site/js/scene/deep/homunculus.js]  # 0078 r14-neb-b; the Homunculus, 2026-11-16
+    renderer: [site/js/scene/dsoglow.js, site/js/scene/deep/dustsheet.js, site/js/scene/deep/reflection.js, site/js/scene/deep/homunculus.js, site/js/scene/deep/v838.js, site/js/scene/deep/softpoints.js]  # 0078 r14-neb-b; the Homunculus, 2026-11-16
     honesty: illustrative
     fallback: The reflection glow.  # 0078 r14-neb-b
-    heroes: {m78: registry/deepsky-heroes/m78.yaml, iris: registry/deepsky-heroes/iris.yaml, m45: registry/deepsky-heroes/m45.yaml, homunculus: registry/deepsky-heroes/homunculus.yaml}  # 0078 r14-neb-b
+    heroes: {m78: registry/deepsky-heroes/m78.yaml, iris: registry/deepsky-heroes/iris.yaml, m45: registry/deepsky-heroes/m45.yaml, homunculus: registry/deepsky-heroes/homunculus.yaml, v838: registry/deepsky-heroes/v838.yaml}  # 0078 r14-neb-b; V838 Monocerotis' light echo
     issue: "internal #784 (pale-blue sheets lit by their star, W3-c)"
     note:
       source: "OpenNGC; the photograph of M45."
@@ -604,7 +605,7 @@ classes:
     records:
       - {domain: dso, where: {typeCode: RfN}}
       - {domain: photographs, ids: [m45]}
-      - {domain: heroes, ids: [m78, iris, m45, homunculus]}  # 0078 r14-neb-b
+      - {domain: heroes, ids: [m78, iris, m45, homunculus, v838]}  # 0078 r14-neb-b; V838 Monocerotis
 
   - id: SUPERNOVA_REMNANT
     title: Supernova remnants

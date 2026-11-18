@@ -1392,6 +1392,8 @@ jobs:
         run: python3 scripts/build_deep_streams.py --check
       - name: "the Vela pulsar wind nebula's fitted tori and the Cat's Eye's morpho-kinematic model: the papers' numbers, the records, the near side bright, the Measured look, the card's words and the credit"
         run: node tests/test_pointheroes.mjs
+      - name: "V838 Monocerotis' light echo: the paraboloid r - z = ct, the clock's date at the papers' epochs, 6.1 kpc, the modelled dust, lit on a skin only, held after mid-2008, the card in eleven languages with Hubble credited (internal #428)"
+        run: node tests/test_v838.mjs
       # 0076 W3-d
       - name: "where you are and the way back: a chain from the Sun or the Milky Way on every card, Back along the visitor's own path (20 steps, never sent), the ladder's rung and a note at each join (internal spec 0076 W3-d)"
         run: node tests/test_navigate.mjs

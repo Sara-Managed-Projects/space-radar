@@ -5760,7 +5760,7 @@ COPY.truth.exoPacked = "{date} की हमारी संक्षिप्�
 COPY.truth.exoLive = "संग्रह की सूची, {date} को पढ़ी गई";
 // The deep-sky catalogue's type phrases (data/dso.json `typeText`), lowercased, in this language: the card's lead and its
 // "What it is" row read them through RULES.typeWords; a phrase not here stays English, which is data.
-const S1_TYPES = {"two-lobed nebula of dust and gas": "धूल और गैस की दो-पालियों वाली नेबुला", "globular cluster": "गोलाकार तारागुच्छ", "open cluster": "खुला तारागुच्छ", "dwarf spheroidal galaxy": "बौनी गोलाभ आकाशगंगा", "spiral galaxy": "सर्पिल आकाशगंगा", "emission nebula": "उत्सर्जन नीहारिका", "planetary nebula": "ग्रहीय नीहारिका", "dwarf irregular galaxy": "बौनी अनियमित आकाशगंगा", "barred spiral galaxy": "दंडयुक्त सर्पिल आकाशगंगा", "elliptical galaxy": "दीर्घवृत्ताकार आकाशगंगा", "lenticular galaxy": "लेंसाकार आकाशगंगा", "h ii region nebula with cluster": "तारागुच्छ सहित H II क्षेत्र", "dwarf elliptical galaxy": "बौनी दीर्घवृत्ताकार आकाशगंगा", "h ii region nebula": "H II क्षेत्र", "barred irregular galaxy": "दंडयुक्त अनियमित आकाशगंगा", "ultra-faint dwarf galaxy": "अत्यंत धुंधली बौनी आकाशगंगा", "dark nebula": "काली नीहारिका", "young open cluster in an emission nebula": "उत्सर्जन नीहारिका में युवा खुला तारागुच्छ", "supernova remnant": "सुपरनोवा अवशेष", "nebula with cluster": "तारागुच्छ सहित नीहारिका", "milky way star cloud": "आकाशगंगा (मिल्की वे) का तारा-बादल", "optical double": "प्रकाशीय युग्म", "asterism": "तारामंडल-आकृति (एस्टरिज़्म)", "diffuse nebula": "विसरित नीहारिका", "starburst galaxy": "तारा-विस्फोट आकाशगंगा", "dwarf irregular starburst galaxy": "तारा-विस्फोट वाली बौनी अनियमित आकाशगंगा", "transition dwarf galaxy, part irregular, part spheroidal": "संक्रमणशील बौनी आकाशगंगा, कुछ अनियमित, कुछ गोलाभ", "barred irregular galaxy, seen edge-on": "दंडयुक्त अनियमित आकाशगंगा, किनारे से दिखती", "ultra-faint dwarf galaxy, or perhaps a star cluster": "अत्यंत धुंधली बौनी आकाशगंगा, या शायद एक तारागुच्छ", "transition dwarf galaxy, part spheroidal, part irregular": "संक्रमणशील बौनी आकाशगंगा, कुछ गोलाभ, कुछ अनियमित", "spiral galaxy, seen nearly edge-on and bursting with new stars": "सर्पिल आकाशगंगा, लगभग किनारे से दिखती और नए तारों से भरी", "peculiar galaxy with a giant black hole firing radio jets": "विचित्र आकाशगंगा, जिसका विशाल ब्लैक होल रेडियो जेट छोड़ता है", "pair of open clusters": "खुले तारागुच्छों की जोड़ी", "spiral galaxy seen exactly edge-on": "ठीक किनारे से दिखती सर्पिल आकाशगंगा", "reflection nebula": "परावर्तन नीहारिका", "reflection and emission nebula": "परावर्तन और उत्सर्जन नीहारिका", "spiral galaxy seen edge-on": "किनारे से दिखती सर्पिल आकाशगंगा", "barred spiral galaxy seen edge-on": "किनारे से दिखती दंडयुक्त सर्पिल आकाशगंगा", "spiral galaxy seen face-on": "सामने से दिखती सर्पिल आकाशगंगा", "barred spiral galaxy seen nearly edge-on": "लगभग किनारे से दिखती दंडयुक्त सर्पिल आकाशगंगा", "pair of colliding galaxies": "टकराती आकाशगंगाओं की जोड़ी", "cavity in the interstellar medium": "अंतरतारकीय माध्यम में खोखला"};
+const S1_TYPES = {"two-lobed nebula of dust and gas": "धूल और गैस की दो-पालियों वाली नेबुला", "globular cluster": "गोलाकार तारागुच्छ", "open cluster": "खुला तारागुच्छ", "dwarf spheroidal galaxy": "बौनी गोलाभ आकाशगंगा", "spiral galaxy": "सर्पिल आकाशगंगा", "emission nebula": "उत्सर्जन नीहारिका", "planetary nebula": "ग्रहीय नीहारिका", "dwarf irregular galaxy": "बौनी अनियमित आकाशगंगा", "barred spiral galaxy": "दंडयुक्त सर्पिल आकाशगंगा", "elliptical galaxy": "दीर्घवृत्ताकार आकाशगंगा", "lenticular galaxy": "लेंसाकार आकाशगंगा", "h ii region nebula with cluster": "तारागुच्छ सहित H II क्षेत्र", "dwarf elliptical galaxy": "बौनी दीर्घवृत्ताकार आकाशगंगा", "h ii region nebula": "H II क्षेत्र", "barred irregular galaxy": "दंडयुक्त अनियमित आकाशगंगा", "ultra-faint dwarf galaxy": "अत्यंत धुंधली बौनी आकाशगंगा", "dark nebula": "काली नीहारिका", "young open cluster in an emission nebula": "उत्सर्जन नीहारिका में युवा खुला तारागुच्छ", "supernova remnant": "सुपरनोवा अवशेष", "nebula with cluster": "तारागुच्छ सहित नीहारिका", "milky way star cloud": "आकाशगंगा (मिल्की वे) का तारा-बादल", "optical double": "प्रकाशीय युग्म", "asterism": "तारामंडल-आकृति (एस्टरिज़्म)", "diffuse nebula": "विसरित नीहारिका", "starburst galaxy": "तारा-विस्फोट आकाशगंगा", "dwarf irregular starburst galaxy": "तारा-विस्फोट वाली बौनी अनियमित आकाशगंगा", "transition dwarf galaxy, part irregular, part spheroidal": "संक्रमणशील बौनी आकाशगंगा, कुछ अनियमित, कुछ गोलाभ", "barred irregular galaxy, seen edge-on": "दंडयुक्त अनियमित आकाशगंगा, किनारे से दिखती", "ultra-faint dwarf galaxy, or perhaps a star cluster": "अत्यंत धुंधली बौनी आकाशगंगा, या शायद एक तारागुच्छ", "transition dwarf galaxy, part spheroidal, part irregular": "संक्रमणशील बौनी आकाशगंगा, कुछ गोलाभ, कुछ अनियमित", "spiral galaxy, seen nearly edge-on and bursting with new stars": "सर्पिल आकाशगंगा, लगभग किनारे से दिखती और नए तारों से भरी", "peculiar galaxy with a giant black hole firing radio jets": "विचित्र आकाशगंगा, जिसका विशाल ब्लैक होल रेडियो जेट छोड़ता है", "pair of open clusters": "खुले तारागुच्छों की जोड़ी", "spiral galaxy seen exactly edge-on": "ठीक किनारे से दिखती सर्पिल आकाशगंगा", "reflection nebula": "परावर्तन नीहारिका", "reflection and emission nebula": "परावर्तन और उत्सर्जन नीहारिका", "spiral galaxy seen edge-on": "किनारे से दिखती सर्पिल आकाशगंगा", "barred spiral galaxy seen edge-on": "किनारे से दिखती दंडयुक्त सर्पिल आकाशगंगा", "spiral galaxy seen face-on": "सामने से दिखती सर्पिल आकाशगंगा", "barred spiral galaxy seen nearly edge-on": "लगभग किनारे से दिखती दंडयुक्त सर्पिल आकाशगंगा", "pair of colliding galaxies": "टकराती आकाशगंगाओं की जोड़ी", "cavity in the interstellar medium": "अंतरतारकीय माध्यम में खोखला", "light echo round an erupted star": "विस्फोट वाले तारे के चारों ओर प्रकाश-प्रतिध्वनि"};
 const S1_PLACES = [[" in the large magellanic cloud", " बड़े मैगेलैनिक बादल में"], [" in the small magellanic cloud", " छोटे मैगेलैनिक बादल में"], [" in the milky way", " आकाशगंगा (मिल्की वे) में"], [" in the local group", " स्थानीय समूह में"]];
 RULES.typeWords = (text) => {
   let base = String(text || '').trim();
@@ -6507,6 +6507,43 @@ Object.assign(COPY, {
         [
           "समीक्षा",
           "इस चित्र की अभी किसी खगोलविद ने समीक्षा नहीं की है।"
+        ]
+      ]
+    }
+  },
+  "deepV838": {
+    "card": {
+      "v838": "तारे के 2002 के विस्फोट की रोशनी, जो उसके आसपास की धूल से बिखरी और प्रकाश-प्रतिध्वनि पर शोध-पत्रों के बताए तल पर खींची गई है (Sparks व अन्य, 2008; Bond व अन्य, 2003)। धूल मॉडल से बनी है; रंग चित्रात्मक हैं। किसी खगोलशास्त्री ने अभी इसकी समीक्षा नहीं की है।"
+    },
+    "rows": {
+      "dso-v838-monocerotis": [
+        [
+          "प्रतिध्वनि",
+          "भौतिकी। जो धूल अभी रोशन है वह तारे के चारों ओर एक परवलयज पर है: तारे से उसकी दूरी में से दृष्टि-रेखा पर हमारी ओर उसकी दूरी घटाने पर प्रकाश की गति गुणा विस्फोट की रोशनी के हम तक पहुँचने के बाद बीता समय मिलता है (Sparks व अन्य, 2008)। छल्ले प्रकाश से तेज़ बढ़ते दिखते हैं क्योंकि यही तल चलता है, धूल नहीं (Bond व अन्य, 2003)।"
+        ],
+        [
+          "समय",
+          "मापा गया। विस्फोट जनवरी 2002 की शुरुआत में शुरू हुआ; गिनती उसकी औसत तारीख 9 मार्च 2002 से होती है, और प्रकाश-वक्र उससे 36 दिन पहले से 61 दिन बाद तक चला (Sparks व अन्य, 2008)। घड़ी पर प्रतिध्वनि तभी से बढ़ती है; उससे पहले कोई नहीं, और 2008 के मध्य के बाद वह ठहरी रहती है, क्योंकि मॉडल की धूल वहीं खत्म हो जाती है।"
+        ],
+        [
+          "दूरी",
+          "मापी गई। 6.1 ± 0.6 किलोपारसेक, लगभग 19,900 प्रकाश-वर्ष, प्रतिध्वनि से बने ध्रुवीकृत प्रकाश के छल्ले से (Sparks व अन्य, 2008)। मुख्य संदेह व्यवस्थित है।"
+        ],
+        [
+          "धूल",
+          "मॉडल से। शोध-पत्र कहते हैं कि धूल गुच्छेदार है और उसके किसी भी हिस्से की गहराई नहीं देते। इसे 0.15 पारसेक चौड़े खाली बीच (मापा गया) के चारों ओर गुच्छों के सात खोलों के रूप में खींचा गया है, 2 पारसेक तक, जो देखी गई सबसे दूर की धूल है (Bond व अन्य, 2003)। छल्ला कहाँ और कितना चमकता है, यह मॉडल से है; इस आकार का छल्ला इस तारीख को चमके, यह भौतिकी है।"
+        ],
+        [
+          "रंग और चमक",
+          "चित्रात्मक। शुरुआती रोशनी बाद वाली से ज़्यादा नीली थी (Sparks व अन्य, 2008); यहाँ नीले से लाल, और चमक एक सादी खिड़की है।"
+        ],
+        [
+          "हबल के चित्र",
+          "साथ नहीं भेजे गए: वे ESA/Hubble पर हैं, heic0304a (NASA, ESA और H. E. Bond (STScI), मार्च 2003) और heic0503a (NASA, ESA और हबल हेरिटेज टीम (AURA/STScI), फ़रवरी 2005), CC BY 4.0।"
+        ],
+        [
+          "समीक्षा",
+          "इस चित्र की अभी किसी खगोलशास्त्री ने समीक्षा नहीं की है।"
         ]
       ]
     }

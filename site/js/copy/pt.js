@@ -109,6 +109,7 @@ const TYPES = {
   'barred spiral galaxy seen nearly edge-on': 'galáxia espiral barrada vista quase de perfil',
   'pair of colliding galaxies': 'par de galáxias em colisão',
   'cavity in the interstellar medium': 'cavidade no meio interestelar',
+  'light echo round an erupted star': 'eco de luz em torno de uma estrela em erupção',
   'barred spiral galaxy — the one we live in': 'galáxia espiral barrada — a nossa',
 };
 
@@ -6592,6 +6593,43 @@ Object.assign(COPY, {
         [
           "Revisão",
           "Este desenho ainda não foi revisto por um astrónomo."
+        ]
+      ]
+    }
+  },
+  "deepV838": {
+    "card": {
+      "v838": "A luz da erupção de 2002 da estrela, espalhada pela poeira ao seu redor e desenhada na superfície que os artigos sobre ecos de luz descrevem (Sparks e outros, 2008; Bond e outros, 2003). A poeira é modelada; as cores são ilustrativas. Ainda não revisado por um astrônomo."
+    },
+    "rows": {
+      "dso-v838-monocerotis": [
+        [
+          "O eco",
+          "Física. A poeira iluminada agora está num paraboloide em torno da estrela: a sua distância à estrela menos a sua distância em direção a nós ao longo da linha de visão é a velocidade da luz vezes o tempo desde que a erupção nos alcançou (Sparks e outros, 2008). Os anéis parecem crescer mais depressa que a luz porque é essa superfície que se move, não a poeira (Bond e outros, 2003)."
+        ],
+        [
+          "O tempo",
+          "Medido. A erupção começou no início de janeiro de 2002; conta-se a partir da sua data média, 9 de março de 2002, e a curva de luz foi de 36 dias antes a 61 depois (Sparks e outros, 2008). No relógio o eco cresce a partir daí; antes não há nenhum, e depois de meados de 2008 fica parado, porque a poeira modelada termina ali."
+        ],
+        [
+          "A distância",
+          "Medido. 6,1 ± 0,6 quiloparsecs, cerca de 19 900 anos-luz, a partir do anel de luz polarizada que o eco forma (Sparks e outros, 2008). A principal dúvida é sistemática."
+        ],
+        [
+          "A poeira",
+          "Modelado. Os artigos dizem que a poeira é irregular e não dão a profundidade de nenhuma parte. Ela é desenhada como sete cascas de aglomerados em torno de um centro vazio de 0,15 parsec (medido), até 2 parsecs, a poeira mais distante vista (Bond e outros, 2003). Onde um anel se ilumina e com que brilho é modelado; que um anel desse tamanho se ilumine nessa data é física."
+        ],
+        [
+          "Cor e brilho",
+          "Ilustrativo. A luz do início era mais azul que a do fim (Sparks e outros, 2008); aqui vai do azul ao vermelho, e o brilho é uma simples janela."
+        ],
+        [
+          "As imagens do Hubble",
+          "Não incluídas: estão no ESA/Hubble, heic0304a (NASA, ESA e H. E. Bond (STScI), março de 2003) e heic0503a (NASA, ESA e a equipe Hubble Heritage (AURA/STScI), fevereiro de 2005), CC BY 4.0."
+        ],
+        [
+          "Revisão",
+          "Este desenho ainda não foi revisado por um astrônomo."
         ]
       ]
     }

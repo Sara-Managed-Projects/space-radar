@@ -14,9 +14,9 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 |---|---:|---:|
 | worlds | 31 | 31 |
 | rings | 1 | 1 |
-| dso | 214 | 214 |
+| dso | 215 | 215 |
 | photographs | 30 | 30 |
-| heroes | 38 | 38 |
+| heroes | 39 | 39 |
 | exotics | 27 | 27 |
 | systems | 51 | 51 |
 | planets | 134 | 134 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 40 | 40 |
-| **all** | **1209** | **111 396** |
+| **all** | **1211** | **111 398** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -63,7 +63,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [EMISSION_NEBULA](#emission_nebula) | 44 | `dsoglow.js`, `gasmat.js`, `orion.js`, `carina.js` | measured | carina, orion |
 | [PLANETARY_NEBULA](#planetary_nebula) | 24 | `dsoglow.js`, `helix.js`, `ring.js`, `shellneb.js`, `gasmat.js`, `catseye.js`, `softpoints.js` | measured | catseye, helix, m27, m57, southern-ring |
 | [DARK_NEBULA](#dark_nebula) | 5 | `dsoglow.js`, `dustsheet.js` | measured | coalsack, horsehead |
-| [REFLECTION_NEBULA](#reflection_nebula) | 8 | `dsoglow.js`, `dustsheet.js`, `reflection.js`, `homunculus.js` | illustrative | homunculus, iris, m45, m78 |
+| [REFLECTION_NEBULA](#reflection_nebula) | 10 | `dsoglow.js`, `dustsheet.js`, `reflection.js`, `homunculus.js`, `v838.js`, `softpoints.js` | illustrative | homunculus, iris, m45, m78, v838 |
 | [SUPERNOVA_REMNANT](#supernova_remnant) | 12 | `nebulae.js`, `dsoglow.js`, `remnant.js`, `casa.js`, `crab.js`, `sn1987a.js`, `vela.js`, `softpoints.js` | measured | casa, crab, sn1987a, veil, vela |
 | [GALAXY_SPIRAL](#galaxy_spiral) | 56 | `galaxy.js`, `spiral.js`, `dsoglow.js` | illustrative | m101, m104, m31, m33, m51, m81, m83, ngc1300 |
 | [GALAXY_IRREGULAR](#galaxy_irregular) | 19 | `lmc.js`, `smc.js`, `magellanic.js`, `dsoglow.js` | illustrative | lmc, smc |
@@ -84,7 +84,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 1209 records: 377 measured, 462 modelled, 370 illustrative.
+Honesty over the 1211 records: 377 measured, 463 modelled, 371 illustrative.
 
 ## The classes
 
@@ -517,19 +517,19 @@ Honesty over the 1209 records: 377 measured, 462 modelled, 370 illustrative.
 
 **Reflection nebulae**
 
-- **Drawn by:** `site/js/scene/dsoglow.js`, `site/js/scene/deep/dustsheet.js`, `site/js/scene/deep/reflection.js`, `site/js/scene/deep/homunculus.js`
+- **Drawn by:** `site/js/scene/dsoglow.js`, `site/js/scene/deep/dustsheet.js`, `site/js/scene/deep/reflection.js`, `site/js/scene/deep/homunculus.js`, `site/js/scene/deep/v838.js`, `site/js/scene/deep/softpoints.js`
 - **Default honesty:** illustrative
 - **On a weak device (T0, or after the frame latch):** The reflection glow.
-- **Hero overrides:** `m78` (registry/deepsky-heroes/m78.yaml), `iris` (registry/deepsky-heroes/iris.yaml), `m45` (registry/deepsky-heroes/m45.yaml), `homunculus` (registry/deepsky-heroes/homunculus.yaml)
+- **Hero overrides:** `m78` (registry/deepsky-heroes/m78.yaml), `iris` (registry/deepsky-heroes/iris.yaml), `m45` (registry/deepsky-heroes/m45.yaml), `homunculus` (registry/deepsky-heroes/homunculus.yaml), `v838` (registry/deepsky-heroes/v838.yaml)
 - **Source:** OpenNGC; the photograph of M45.
 - **Dates and filters:** As the photograph's row.
 - **Measured, modelled or reconstructed:** Measured: places and the photograph. Illustrative: the glow.
 - **Rights:** OpenNGC CC BY-SA 4.0; the photograph CC BY 4.0.
 - **What is missing is tracked in:** internal #784 (pale-blue sheets lit by their star, W3-c)
-- **Records (8):**
-  - dso (3): `m78`, `homunculus-nebula`, `iris-nebula`
+- **Records (10):**
+  - dso (4): `m78`, `homunculus-nebula`, `v838-monocerotis`, `iris-nebula`
   - photographs (1): `m45`
-  - heroes (4): `homunculus`, `iris`, `m45`, `m78`
+  - heroes (5): `homunculus`, `iris`, `m45`, `m78`, `v838`
 
 ### SUPERNOVA_REMNANT
 

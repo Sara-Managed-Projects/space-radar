@@ -146,6 +146,7 @@ const TYPES = {
   'barred spiral galaxy seen nearly edge-on': 'Balkenspiralgalaxie, fast von der Kante gesehen',
   'pair of colliding galaxies': 'Paar kollidierender Galaxien',
   'cavity in the interstellar medium': 'Hohlraum im interstellaren Medium',
+  'light echo round an erupted star': 'Lichtecho um einen ausgebrochenen Stern',
 };
 
 export const COPY = {
@@ -6599,6 +6600,43 @@ Object.assign(COPY, {
         [
           "Farbe",
           "Illustrativ. Hubbles Falschfarben, die das Modell nicht hat. Der Look „Gemessen“ zeigt Grau."
+        ],
+        [
+          "Prüfung",
+          "Diese Zeichnung wurde noch nicht von einem Astronomen geprüft."
+        ]
+      ]
+    }
+  },
+  "deepV838": {
+    "card": {
+      "v838": "Das Licht des Ausbruchs des Sterns von 2002, vom Staub um ihn gestreut und auf der Fläche gezeichnet, die die Arbeiten über Lichtechos beschreiben (Sparks und andere, 2008; Bond und andere, 2003). Der Staub ist modelliert, die Farben sind illustrativ. Noch nicht von einem Astronomen geprüft."
+    },
+    "rows": {
+      "dso-v838-monocerotis": [
+        [
+          "Das Echo",
+          "Physik. Der Staub, der jetzt leuchtet, liegt auf einem Paraboloid um den Stern: sein Abstand vom Stern minus sein Abstand zu uns entlang der Blickrichtung ist die Lichtgeschwindigkeit mal die Zeit seit dem Eintreffen des Ausbruchs (Sparks und andere, 2008). Die Ringe scheinen schneller als das Licht zu wachsen, weil sich diese Fläche bewegt, nicht der Staub (Bond und andere, 2003)."
+        ],
+        [
+          "Die Zeit",
+          "Gemessen. Der Ausbruch begann Anfang Januar 2002; gezählt wird ab seinem mittleren Datum, dem 9. März 2002, und die Lichtkurve reichte von 36 Tagen davor bis 61 Tage danach (Sparks und andere, 2008). Auf der Uhr wächst das Echo ab da; davor gibt es keines, und nach Mitte 2008 bleibt es stehen, weil der modellierte Staub dort endet."
+        ],
+        [
+          "Die Entfernung",
+          "Gemessen. 6,1 ± 0,6 Kiloparsec, etwa 19 900 Lichtjahre, aus dem Ring polarisierten Lichts, den das Echo bildet (Sparks und andere, 2008). Der Hauptzweifel ist systematisch."
+        ],
+        [
+          "Der Staub",
+          "Modelliert. Die Arbeiten sagen, der Staub sei klumpig, und geben für keinen Teil eine Tiefe an. Er ist als sieben Schalen aus Klumpen um eine leere Mitte von 0,15 Parsec gezeichnet (gemessen), bis 2 Parsec, dem fernsten gesehenen Staub (Bond und andere, 2003). Wo ein Ring leuchtet und wie hell, ist modelliert; dass ein Ring dieser Größe an diesem Datum leuchtet, ist Physik."
+        ],
+        [
+          "Farbe und Helligkeit",
+          "Illustrativ. Das frühe Licht war blauer als das späte (Sparks und andere, 2008); hier läuft es von Blau zu Rot, und die Helligkeit ist ein schlichtes Fenster."
+        ],
+        [
+          "Hubbles Bilder",
+          "Nicht mitgeliefert: Sie liegen bei ESA/Hubble, heic0304a (NASA, ESA und H. E. Bond (STScI), März 2003) und heic0503a (NASA, ESA und das Hubble Heritage Team (AURA/STScI), Februar 2005), CC BY 4.0."
         ],
         [
           "Prüfung",

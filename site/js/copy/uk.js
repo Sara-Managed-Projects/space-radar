@@ -5772,7 +5772,7 @@ COPY.truth.exoPacked = "наша стиснута копія від {date}"; // 
 COPY.truth.exoLive = "список Архіву, прочитаний {date}";
 // The deep-sky catalogue's type phrases (data/dso.json `typeText`), lowercased, in this language: the card's lead and its
 // "What it is" row read them through RULES.typeWords; a phrase not here stays English, which is data.
-const S1_TYPES = {"two-lobed nebula of dust and gas": "дволопатева туманність із пилу й газу", "globular cluster": "кулясте скупчення", "open cluster": "розсіяне скупчення", "dwarf spheroidal galaxy": "карликова сфероїдальна галактика", "spiral galaxy": "спіральна галактика", "emission nebula": "емісійна туманність", "planetary nebula": "планетарна туманність", "dwarf irregular galaxy": "карликова неправильна галактика", "barred spiral galaxy": "спіральна галактика з перемичкою", "elliptical galaxy": "еліптична галактика", "lenticular galaxy": "лінзоподібна галактика", "h ii region nebula with cluster": "область H II зі скупченням", "dwarf elliptical galaxy": "карликова еліптична галактика", "h ii region nebula": "область H II", "barred irregular galaxy": "неправильна галактика з перемичкою", "ultra-faint dwarf galaxy": "надтьмяна карликова галактика", "dark nebula": "темна туманність", "young open cluster in an emission nebula": "молоде розсіяне скупчення в емісійній туманності", "supernova remnant": "залишок наднової", "nebula with cluster": "туманність зі скупченням", "milky way star cloud": "зоряна хмара Чумацького Шляху", "optical double": "оптична подвійна", "asterism": "астеризм", "diffuse nebula": "дифузна туманність", "starburst galaxy": "галактика зі спалахом зореутворення", "dwarf irregular starburst galaxy": "карликова неправильна галактика зі спалахом зореутворення", "transition dwarf galaxy, part irregular, part spheroidal": "перехідна карликова галактика, частково неправильна, частково сфероїдальна", "barred irregular galaxy, seen edge-on": "неправильна галактика з перемичкою, видима з ребра", "ultra-faint dwarf galaxy, or perhaps a star cluster": "надтьмяна карликова галактика або, можливо, зоряне скупчення", "transition dwarf galaxy, part spheroidal, part irregular": "перехідна карликова галактика, частково сфероїдальна, частково неправильна", "spiral galaxy, seen nearly edge-on and bursting with new stars": "спіральна галактика, видима майже з ребра, повна нових зір", "peculiar galaxy with a giant black hole firing radio jets": "пекулярна галактика з гігантською чорною дірою, що викидає радіострумені", "pair of open clusters": "пара розсіяних скупчень", "spiral galaxy seen exactly edge-on": "спіральна галактика, видима точно з ребра", "reflection nebula": "відбивна туманність", "reflection and emission nebula": "відбивна й емісійна туманність", "spiral galaxy seen edge-on": "спіральна галактика, видима з ребра", "barred spiral galaxy seen edge-on": "спіральна галактика з перемичкою, видима з ребра", "spiral galaxy seen face-on": "спіральна галактика, видима пласко", "barred spiral galaxy seen nearly edge-on": "спіральна галактика з перемичкою, видима майже з ребра", "pair of colliding galaxies": "пара галактик, що зіштовхуються", "cavity in the interstellar medium": "порожнина в міжзоряному середовищі"};
+const S1_TYPES = {"two-lobed nebula of dust and gas": "дволопатева туманність із пилу й газу", "globular cluster": "кулясте скупчення", "open cluster": "розсіяне скупчення", "dwarf spheroidal galaxy": "карликова сфероїдальна галактика", "spiral galaxy": "спіральна галактика", "emission nebula": "емісійна туманність", "planetary nebula": "планетарна туманність", "dwarf irregular galaxy": "карликова неправильна галактика", "barred spiral galaxy": "спіральна галактика з перемичкою", "elliptical galaxy": "еліптична галактика", "lenticular galaxy": "лінзоподібна галактика", "h ii region nebula with cluster": "область H II зі скупченням", "dwarf elliptical galaxy": "карликова еліптична галактика", "h ii region nebula": "область H II", "barred irregular galaxy": "неправильна галактика з перемичкою", "ultra-faint dwarf galaxy": "надтьмяна карликова галактика", "dark nebula": "темна туманність", "young open cluster in an emission nebula": "молоде розсіяне скупчення в емісійній туманності", "supernova remnant": "залишок наднової", "nebula with cluster": "туманність зі скупченням", "milky way star cloud": "зоряна хмара Чумацького Шляху", "optical double": "оптична подвійна", "asterism": "астеризм", "diffuse nebula": "дифузна туманність", "starburst galaxy": "галактика зі спалахом зореутворення", "dwarf irregular starburst galaxy": "карликова неправильна галактика зі спалахом зореутворення", "transition dwarf galaxy, part irregular, part spheroidal": "перехідна карликова галактика, частково неправильна, частково сфероїдальна", "barred irregular galaxy, seen edge-on": "неправильна галактика з перемичкою, видима з ребра", "ultra-faint dwarf galaxy, or perhaps a star cluster": "надтьмяна карликова галактика або, можливо, зоряне скупчення", "transition dwarf galaxy, part spheroidal, part irregular": "перехідна карликова галактика, частково сфероїдальна, частково неправильна", "spiral galaxy, seen nearly edge-on and bursting with new stars": "спіральна галактика, видима майже з ребра, повна нових зір", "peculiar galaxy with a giant black hole firing radio jets": "пекулярна галактика з гігантською чорною дірою, що викидає радіострумені", "pair of open clusters": "пара розсіяних скупчень", "spiral galaxy seen exactly edge-on": "спіральна галактика, видима точно з ребра", "reflection nebula": "відбивна туманність", "reflection and emission nebula": "відбивна й емісійна туманність", "spiral galaxy seen edge-on": "спіральна галактика, видима з ребра", "barred spiral galaxy seen edge-on": "спіральна галактика з перемичкою, видима з ребра", "spiral galaxy seen face-on": "спіральна галактика, видима пласко", "barred spiral galaxy seen nearly edge-on": "спіральна галактика з перемичкою, видима майже з ребра", "pair of colliding galaxies": "пара галактик, що зіштовхуються", "cavity in the interstellar medium": "порожнина в міжзоряному середовищі", "light echo round an erupted star": "світлове відлуння навколо зорі, що спалахнула"};
 const S1_PLACES = [[" in the large magellanic cloud", " у Великій Магеллановій Хмарі"], [" in the small magellanic cloud", " у Малій Магеллановій Хмарі"], [" in the milky way", " у Чумацькому Шляху"], [" in the local group", " у Місцевій групі"]];
 RULES.typeWords = (text) => {
   let base = String(text || '').trim();
@@ -6519,6 +6519,43 @@ Object.assign(COPY, {
         [
           "Перевірка",
           "Цей малюнок ще не перевірив астроном."
+        ]
+      ]
+    }
+  },
+  "deepV838": {
+    "card": {
+      "v838": "Світло спалаху зорі 2002 року, розсіяне навколишнім пилом і намальоване на поверхні, яку описують праці про світлові відлуння (Sparks та ін., 2008; Bond та ін., 2003). Пил змодельовано; кольори ілюстративні. Ще не перевірено астрономом."
+    },
+    "rows": {
+      "dso-v838-monocerotis": [
+        [
+          "Відлуння",
+          "Фізика. Освітлений нині пил лежить на параболоїді навколо зорі: його відстань від зорі мінус відстань до нас уздовж променя зору дорівнює швидкості світла, помноженій на час відтоді, як спалах дійшов до нас (Sparks та ін., 2008). Кільця здаються такими, що ростуть швидше за світло, бо рухається ця поверхня, а не пил (Bond та ін., 2003)."
+        ],
+        [
+          "Час",
+          "Виміряно. Спалах почався на початку січня 2002 року; відлік ведеться від його середньої дати, 9 березня 2002 року, а крива блиску тривала від 36 діб до неї до 61 доби після (Sparks та ін., 2008). На годиннику відлуння росте відтоді; раніше його немає, а після середини 2008 року воно залишається незмінним, бо змодельований пил там закінчується."
+        ],
+        [
+          "Відстань",
+          "Виміряно. 6,1 ± 0,6 кілопарсека, близько 19 900 світлових років, за кільцем поляризованого світла, яке утворює відлуння (Sparks та ін., 2008). Головна невизначеність систематична."
+        ],
+        [
+          "Пил",
+          "Змодельовано. У працях сказано, що пил грудкуватий, і глибини жодної його частини не вказано. Його намальовано як сім оболонок із грудок навколо порожньої середини в 0,15 парсека (виміряно), до 2 парсеків, найдальшого баченого пилу (Bond та ін., 2003). Де кільце освітлене і наскільки яскраво, змодельовано; те, що кільце такого розміру освітлене цієї дати, — фізика."
+        ],
+        [
+          "Колір і яскравість",
+          "Ілюстративно. Раннє світло було блакитнішим за пізнє (Sparks та ін., 2008); тут від синього до червоного, а яскравість — просте вікно."
+        ],
+        [
+          "Знімки «Габбла»",
+          "Не постачаються: вони в ESA/Hubble, heic0304a (NASA, ESA і H. E. Bond (STScI), березень 2003) та heic0503a (NASA, ESA і команда Hubble Heritage (AURA/STScI), лютий 2005), CC BY 4.0."
+        ],
+        [
+          "Перевірка",
+          "Цей малюнок ще не перевірено астрономом."
         ]
       ]
     }

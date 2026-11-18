@@ -251,6 +251,10 @@ budgets:
   - {id: deep_pointheroes_bytes, value: 75000, unit: B, since: 2026-11-17, reason: "spec 0076 design section 4 allows a hero 1.5 MB; the two modules, the shared points shader and the two profiles measured at about 43 000 B on 2026-11-17 (the hero's points are generated, nothing is downloaded)"}
   - {id: deep_vela_draw_calls, value: 2, unit: calls, since: 2026-11-17, reason: "spec 0076 design section 4: at most +5 for a hero; the fitted tori with the pulsar are one instanced call and the jets another, so the Measured look can drop the modelled jets"}
   - {id: deep_catseye_draw_calls, value: 1, unit: calls, since: 2026-11-17, reason: "spec 0076 design section 4: at most +5 for a hero; every surface's points are one instanced call"}
+  # V838 Monocerotis' light echo (scene/deep/v838.js, internal #428): the module and its profile, fetched when the star is near, never at
+  # boot; the dust is 16 000 generated points (nothing downloaded). tests/test_v838.mjs.
+  - {id: deep_v838_bytes, value: 30000, unit: B, since: 2026-11-18, reason: "spec 0076 design section 4 allows a hero 1.5 MB; the module and its profile measured at about 19 000 B on 2026-11-18 (the shared points shader is deep_pointheroes_bytes')"}
+  - {id: deep_v838_draw_calls, value: 2, unit: calls, since: 2026-11-18, reason: "spec 0076 design section 4: at most +5 for a hero; the lit dust is one instanced call and the star another, so the Measured look can drop the modelled dust"}
   # The S-stars round Sagittarius A* (scene/sstars.js, internal #419): the module and its table (data/sstars.js), fetched the first
   # time the hole's picture is drawn for it, never at boot. tests/test_sstars.mjs.
   - {id: deep_sstars_bytes, value: 30000, unit: B, since: 2026-11-17, reason: "spec 0076 design section 4 allows a hero 1.5 MB; the module and the 39 orbits' table are about 21 kB on 2026-11-17 (no mesh, no texture: the orbits are computed)"}
