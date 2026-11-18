@@ -186,6 +186,8 @@ const DEFERRED = {
   'js/data/plumes.js': 'the plumes\' registry: with scene/plumes.js',
   // 0076 W3-a (globular.js)
   'js/scene/deep/globular.js': 'star clusters as stars: the deep-sky coordinator fetches it on the first rung of the ladder (release 1.2.0, internal #819, #871)',
+  // internal #423 (localdust.js)
+  'js/scene/deep/localdust.js': 'the Sun\'s neighbourhood in dust: the deep-sky coordinator fetches it when the stellar rung is entered (internal #423)',
   // 0076 W3-b (ring.js, shellneb.js)
   'js/scene/deep/ring.js': 'the Ring Nebula hero: the coordinator fetches it when M57 is near (release 1.2.0, internal #872)',
   'js/scene/deep/shellneb.js': 'the planetary nebulae\'s shared part: with the Helix or the Ring',
@@ -210,6 +212,12 @@ const DEFERRED = {
   'js/scene/deep/sn1987a.js': 'SN 1987A\'s rings: the coordinator fetches it when the remnant is near',
   'js/data/hero-sn1987a.js': 'a hero\'s profile: with the coordinator',
   'js/scene/deep/streams.js': 'the stellar streams: scene/deep/heroes.js DEEP_LAYERS builds it on the three outer stages',
+  // the Vela pulsar wind nebula and the Cat's Eye, soft points from published geometry (the deep-space review, 2026-11-17)
+  'js/scene/deep/vela.js': 'the Vela pulsar wind nebula\'s fitted tori and jets: the coordinator fetches it when the nebula is near',
+  'js/scene/deep/catseye.js': 'the Cat\'s Eye from its published morpho-kinematic model: the coordinator fetches it when the nebula is near',
+  'js/scene/deep/softpoints.js': 'soft additive points with an optional Doppler boost: with the objects that draw them',
+  'js/data/hero-vela.js': 'a hero\'s profile: with the coordinator',
+  'js/data/hero-catseye.js': 'a hero\'s profile: with the coordinator',
   'js/copy/en.deepdata.js': 'the words of the objects built from published 3D data: with their modules',
   // the S-stars round Sagittarius A* (internal #419): fetched by scene/portraits.js when the hole's picture is drawn for it
   'js/scene/sstars.js': 'the S-stars on their measured orbits: scene/portraits.js fetches it with the Sagittarius A* picture',

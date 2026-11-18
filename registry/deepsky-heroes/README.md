@@ -20,3 +20,13 @@ d: `m31.yaml` and `m33.yaml`). Stage a created them empty, with `shipped: false`
 | `sources` | papers and pictures the geometry is from |
 | `review` | **the science checklist**: `{data_vs_model, geometry, colours, distance, credits, by, date}`. The generator refuses a shipped hero whose `by` is empty |
 | `credits` | the CREDITS.md lines (section 3h, the hero's sub-heading). The generator refuses a shipped hero without one |
+
+## Depth made from one photograph, and how a card says so (internal #431, the deep-space review of 2026-11-16)
+
+A photograph gives no distance for any pixel of gas. A hero built from one therefore says so on its card, in the row every
+emission-nebula hero carries ("Its shape in depth"): it begins `Reconstructed.` or `Not measured.` and says the depths are not
+measured (`tests/test_deep_labels.mjs` holds every emission hero to it). What can honestly be added from a single image, and
+is not yet: the stars in front of and among the gas at their Gaia DR3 distances (measured); the ORDER of layers from physics
+(dust seen dark against glow is in front of it; the high-ionisation line sits nearer the exciting star than H-alpha), which
+gives order, not distance; and a thickness from an assumption, labelled as one. An on-screen caption while the view is more
+than about 20 degrees off the Sun's line is not built.

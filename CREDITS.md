@@ -30,8 +30,8 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | The Milky Way | our illustration, from Reid et al. 2019 | measurements, cited | [3e](#3e-the-milky-way-model--an-illustration-built-from-published-measurements) |
 | 3D spacecraft models | NASA 3D Resources | public domain (NASA media guidelines) | [3b](#3b-3d-models--nasa-public-domain) |
 | The Cygnus cargo ship's shape | generated from a NASA photograph with TRELLIS (Microsoft Research), cleaned by us | public domain; MIT; ours | [3b-2](#3b-2-a-model-made-from-photographs--cygnus-2026-10-12) |
-| The shapes of XRISM, Seasat and NuSTAR | two generated from NASA and JPL artist's renders with TRELLIS (Microsoft Research) and repaired by us; NuSTAR built by us from published dimensions | public domain; MIT; ours | [3b-3](#3b-3-four-models-made-here--xrism-noaa-21-seasat-nustar-2026-10-13) |
-| The shapes of LAGEOS, Ajisai, the Soyuz, NOAA-21 and Hitomi | four built by us in code from published dimensions; Hitomi is XRISM's generated body with its own optical bench built by us | public domain; MIT; ours | [3b-4](#3b-4-five-more-made-here--lageos-ajisai-soyuz-ms-noaa-21-rebuilt-hitomi-2026-10-13) |
+| The shapes of XRISM, Seasat and NuSTAR | Seasat generated from a JPL artist's concept with TRELLIS (Microsoft Research) and repaired by us; NuSTAR built by us from published dimensions; XRISM was generated the same way and was rebuilt in code from published dimensions on 2026-11-17 (internal #402) | public domain; MIT; ours | [3b-3](#3b-3-four-models-made-here--xrism-noaa-21-seasat-nustar-2026-10-13) |
+| The shapes of LAGEOS, Ajisai, the Soyuz, NOAA-21 and Hitomi | four built by us in code from published dimensions; Hitomi was XRISM's generated body with its own optical bench built by us, and since 2026-11-17 is built in code throughout (internal #402) | public domain; MIT; ours | [3b-4](#3b-4-five-more-made-here--lageos-ajisai-soyuz-ms-noaa-21-rebuilt-hitomi-2026-10-13) |
 | The shapes of the Progress, both Dragons, Shenzhou, Tianzhou, and five more laser-ranging balls | built by us in code from published dimensions | public domain where a picture was used; ours | [3b-5](#3b-5-ten-more-built-from-dimensions--progress-ms-crew-and-cargo-dragon-shenzhou-tianzhou-and-five-laser-ranging-balls-2026-10-13) |
 | The shapes of SWOT, NISAR, IXPE and PACE | SWOT is JPL's own published model; the other three built by us in code from published dimensions | public domain; ours | [3b-6](#3b-6-four-nasa-craft--swot-from-jpls-own-model-nisar-ixpe-and-pace-built-from-dimensions-2026-10-13) |
 | The shapes of the first Starlink generation, Umbra and ICEYE | built by us in code from published dimensions | ours; one render compared with is CC BY 4.0 | [3b-7](#3b-7-three-commercial-craft-built-from-dimensions--the-first-starlink-generation-umbra-iceye-2026-10-13) |
@@ -891,7 +891,7 @@ not fixed.
 
 | File | What | Whose | Licence | Where |
 |---|---|---|---|---|
-| `xrism.glb` (141 KB, 13 731 triangles) | Generated from two frames of one turntable render, "XRISM 001" and "XRISM 004"; compared with "XRISM 002" | NASA's Goddard Space Flight Center Conceptual Image Lab | public domain | <https://commons.wikimedia.org/wiki/File:XRISM_001.png>, <https://commons.wikimedia.org/wiki/File:XRISM_004.png>, <https://commons.wikimedia.org/wiki/File:XRISM_002.png> (read 2026-10-13; from <https://svs.gsfc.nasa.gov/20374/>) |
+| `xrism.glb` (72 KB, 9 068 triangles) | REBUILT IN CODE 2026-11-17 (internal #402, tools/xrism-builder) from the published envelope and panel sizes; the first file was generated from two frames of one turntable render, "XRISM 001" and "XRISM 004" (TRELLIS), and is replaced. The renders, with "XRISM 002", are looked at only | NASA's Goddard Space Flight Center Conceptual Image Lab | public domain | <https://commons.wikimedia.org/wiki/File:XRISM_001.png>, <https://commons.wikimedia.org/wiki/File:XRISM_004.png>, <https://commons.wikimedia.org/wiki/File:XRISM_002.png> (read 2026-10-13; from <https://svs.gsfc.nasa.gov/20374/>) |
 | `seasat.glb` (66 KB, 8 468 triangles) | The trunk generated from the artist's concept "Seasat"; compared with "Seasat in orbit" | NASA/JPL | public domain | <https://commons.wikimedia.org/wiki/File:Seasat.jpg>, <https://commons.wikimedia.org/wiki/File:Seasat_in_orbit.jpg> (read 2026-10-13) |
 | both | The generator: TRELLIS, image-large weights | Microsoft Research | MIT (code and weights, each read on its own page 2026-10-12) | <https://github.com/microsoft/TRELLIS>, <https://huggingface.co/microsoft/TRELLIS-image-large> |
 | both | The cuts, the parts built in code, the proportions, the colours | this project | this repository's licence | `registry/models.yaml`, rows `xrism`, `seasat`, `modified:` |
@@ -941,21 +941,21 @@ lists what is drawn differently from the craft.
 `3D model: built by Space Radar from published dimensions, a NASA photograph and NASA drawings of the Soyuz`;
 `3D model: built by Space Radar from published dimensions and NOAA's drawings and render of NOAA-21`
 
-**One wears another craft's generated body.** Hitomi (ASTRO-H) flew on the bus XRISM was later
-built on. `hitomi.glb` (138 KB) is the body TRELLIS generated from NASA Goddard's render **of
-XRISM** (section 3b-3), with what only Hitomi had built in code from cited metres: the 6.4 m
+**Hitomi is built in code since 2026-11-17 (internal #402, tools/xrism-builder).** Hitomi (ASTRO-H) flew on the bus XRISM was later
+built on. `hitomi.glb` (98 KB, 12 580 triangles) was the body TRELLIS generated from NASA Goddard's render **of
+XRISM** (section 3b-3); that mesh is replaced by XRISM's bus built in code from the published panel sizes, with what only Hitomi had built from cited metres: the 6.4 m
 extensible optical bench, the plate at its end with the two hard X-ray imagers, the two soft
-gamma-ray detectors. Hitomi broke apart in March 2016; the file is the craft as launched, and its
+gamma-ray detectors. No generated mesh is in the file now; the renders and drawings are looked at only. Hitomi broke apart in March 2016; the file is the craft as launched, and its
 card says that what is tracked today is the main body.
 
 | What | Whose | Licence | Where |
 |---|---|---|---|
-| The renders of XRISM the body was generated from: "XRISM 001", "XRISM 004" | NASA's Goddard Space Flight Center Conceptual Image Lab | public domain | <https://commons.wikimedia.org/wiki/File:XRISM_001.png>, <https://commons.wikimedia.org/wiki/File:XRISM_004.png> (read 2026-10-13) |
+| The renders of XRISM the earlier, now replaced, body was generated from and the bus is now compared with: "XRISM 001", "XRISM 004" | NASA's Goddard Space Flight Center Conceptual Image Lab | public domain | <https://commons.wikimedia.org/wiki/File:XRISM_001.png>, <https://commons.wikimedia.org/wiki/File:XRISM_004.png> (read 2026-10-13) |
 | The drawing and the labelled schematic of Hitomi its own parts were drawn from: "Hitomi", "Astro-H schema (en)" | NASA; NASA/HEASARC | public domain | <https://commons.wikimedia.org/wiki/File:Hitomi.png>, <https://commons.wikimedia.org/wiki/File:Astro-H_schema_(en).png> (read 2026-10-13) |
 | The generator: TRELLIS, image-large weights | Microsoft Research | MIT (code and weights) | <https://github.com/microsoft/TRELLIS>, <https://huggingface.co/microsoft/TRELLIS-image-large> |
 | The repairs, the parts built in code, the colours | this project | this repository's licence | `registry/models.yaml`, row `hitomi`, `modified:` |
 
-**Credit line:** `3D model: body generated from NASA Goddard renders of XRISM with TRELLIS (Microsoft Research, MIT); Hitomi's optical bench and detectors built by Space Radar from published dimensions and NASA drawings`
+**Credit line:** `3D model: built by Space Radar from published dimensions; compared with NASA's drawing and NASA/HEASARC's schematic of Hitomi (public domain)`
 
 No agency insignia, flag or maker's mark is on any of the five; NASA, NOAA, JAXA, Roscosmos and
 the craft's builders do not endorse Space Radar. "Soyuz" names the spacecraft and nothing here is
@@ -2519,6 +2519,30 @@ explicitely cited", and tables from A&A "are free for a scientific usage". Space
 | The members' absolute magnitudes and colours less the clusters' extinction: A_G = 0.789 A_V, E(BP−RP) = 0.413 A_V | Wang S. & Chen X. 2019, ApJ 877, 116 | facts, cited |
 | Gaia DR3's global parallax offset, −0.017 mas | Lindegren L. et al. 2021, A&A 649, A4 | facts, cited |
 
+The Sun's neighbourhood in dust (internal #423; `scene/deep/localdust.js`, `scripts/build_deep_localdust.py`, read 2026-11-17
+into `site/data/deep/localdust.json` and `.bin`): Edenhofer G., Zucker C., Frank P., Saydjari A.K., Speagle J.S.,
+Finkbeiner D. & Ensslin T. 2024, A&A 685, A82, *A parsec-scale Galactic 3D dust map out to 1.25 kpc from the Sun*,
+Zenodo [10.5281/zenodo.8187943](https://doi.org/10.5281/zenodo.8187943), licence CC BY 4.0 (the record's metadata, read
+that day); it is built from Gaia DR3 (CC BY-NC 3.0 IGO, ESA) and 2MASS, so the file keeps the non-commercial term. The posterior
+mean of the dust's extinction density within 640 pc of the Sun, in 8 pc cells, is sampled into 40 000 points in proportion to
+the density. Measured: where the dust is and how dense; modelled: the points, a random sample (not grains, not a mass);
+illustrative: the colour and brightness. The Local Bubble's shell, 170 pc on average: O'Neill T.J., Zucker C., Goodman A.A.
+& Edenhofer G. 2024, ApJ 973, 138, *The Local Bubble is a Local Chimney* (arXiv:2403.04961).
+
+Real members of twelve globulars (internal #417, #425; `scripts/build_globular_members.py`, read 2026-11-17 into
+`site/data/deep/globular-members.json` and `.bin`): Vasiliev E. & Baumgardt H. 2021, MNRAS 505, 5978, *Gaia EDR3 view
+on Galactic globular clusters*, the catalogue of stars with membership probabilities, Zenodo
+[10.5281/zenodo.4891252](https://doi.org/10.5281/zenodo.4891252), licence CC BY 4.0 (the record's metadata, read that
+day). The stars are Gaia EDR3 measurements, so the file keeps ESA's CC BY-NC 3.0 IGO term like `clusters.bin`. For M2, M3,
+M4, M5, M10, M13, M15, M22, M92, 47 Tucanae, NGC 6397 and Omega Centauri the 3 000 brightest members (probability at
+least 0.5, a quality flag of the catalogue, inside Harris's tidal radius) are drawn at their measured places on the sky,
+with their G magnitude and BP-RP colour. Their depth along the line of sight is not measured (a parallax at 10 kpc is
+smaller than its error): it is drawn from King's profile at each star's projected radius with Harris's core radius and
+concentration, seeded by the Gaia source id. Their absolute magnitudes use the map's distance and Harris's E(B-V)
+(A_G = 0.789 A_V, A_V = 3.1 E(B-V)); the colour is the same linear fit as the open clusters'. Gaia cannot separate the
+crowded centre, so the centre is missing stars; the card says so and the glow stands for them. The other 21 globulars
+stay a model.
+
 What is measured and what is not. A globular's core and tidal radius are Harris's; its stars are a model of its
 kind, not its own stars: their number, brightness and colour follow a luminosity function and an illustrative
 colour scale that are ours (the card says so), and their light is shared with the glow so the two together
@@ -2780,6 +2804,29 @@ others find the near lobe departs from that by about a tenth, which is not drawn
 tilt is not written in it: it was read off the mesh against the paper's figures 4 and 5 and checked against figure 5 from
 both sides. The surface's brightness, its mottling and the star's glare are **illustrative**; the Measured look takes
 the mottling off. The card carries the credit line and says no astronomer has reviewed the drawing.
+
+### Pulsar wind nebulae and the Cat's Eye (2026-11-17)
+
+The Vela pulsar's wind nebula (`site/js/scene/deep/vela.js`, `registry/deepsky-heroes/vela.yaml`) and the Cat's Eye Nebula
+(`site/js/scene/deep/catseye.js`, `registry/deepsky-heroes/catseye.yaml`) are drawn from geometry published in papers, as
+soft points (`site/js/scene/deep/softpoints.js`). No picture, mesh or data file of anyone's is shipped: the numbers are facts,
+cited, and each dot is generated.
+
+| what | from | licence |
+|---|---|---|
+| Vela's two tori (position angle 130.63 degrees, tilt 63.60 degrees, radius 21.25 arcseconds, thickness 3.0, separation 11.61, flow 0.44 c) and the jets' speed (0.45 c) | Ng C.-Y. & Romani R. W. 2004, ApJ 601, 479, *Fitting pulsar wind tori* (arXiv:astro-ph/0310155), Table 1; Ng & Romani 2008, ApJ 673, 411 (arXiv:0710.4168), Table 1: fits to Chandra X-ray pictures | facts, cited |
+| The Cat's Eye's parts and shapes, the partial rings' cone (38 degrees, tilt 17 degrees, 300 degrees), the jets (26 degrees, 19 arcseconds), the speeds, the age (2 136 years) | Clairmont R., Steffen W. & Koning N. 2022, MNRAS, *Morpho-kinematic modeling of the point-symmetric Cat's Eye, NGC 6543* (arXiv:2209.01313): a SHAPE model fitted to Hubble's [N II] picture and five position-velocity diagrams | facts, cited |
+| The Cat's Eye's distance, 1.31 kpc | Chornay N. & Walton N. 2021 (arXiv:2102.13654), Gaia EDR3, as Clairmont et al. use it | facts, cited |
+| The Cat's Eye's axis (position angle 1 and 181 degrees) and the sizes of its parts, read off the picture | ESA/Hubble heic0414a, NASA, ESA, HEIC and the Hubble Heritage Team (STScI/AURA), [CC BY 4.0](https://esahubble.org/images/heic0414a/), read 2026-11-17: its stated orientation and field; the picture itself is not shipped | CC BY 4.0, credited |
+
+What is measured and what is not. Vela's tori and the jets' speed are **measured** (fits, with systematic errors that
+dominate for Vela); the jets' length, which end of the axis is nearer and the scatter of dots are **modelled**; the colour
+is **illustrative** (X-rays drawn violet-blue). The Cat's Eye's parts, angles and speeds are **measured** (a published
+model); the axis' position angle and the sizes are read off Hubble's picture to about 10 per cent; the axis' tilt (the
+paper says "slightly tilted"), the rings' gaps and lean and the jets' direction round the axis are **modelled**; the colours
+are **illustrative**, and the Measured look takes them to grey. The cards carry the sources and say no astronomer has
+reviewed the drawings. The Cat's Eye record's distance changed with this work from 3.3 +/- 0.9 kly (Wikipedia's infobox)
+to 4 272 ly (Gaia).
 
 ### Cassiopeia A from its published 3D reconstruction (2026-11-16)
 

@@ -465,6 +465,9 @@ def entry(row: dict, root: Path, added: dict[str, str], changed: dict[str, str] 
         "modified": (changed or {}).get(row["file"], "") or added.get(row["file"], ""),
         "changes": str(row.get("modified") or ""),
         "pictures": pictures_of(row["id"]),
+        # nodes of the .glb the catalogue pictures leave out (the launcher's fairing round Sputnik 1, the Hubble berth beside the
+        # Canadarm): tools/shape-sheet.html `hide`, models/tools/render-media.py. The viewer and the download keep the whole file.
+        "picture_hide": [str(x) for x in row.get("picture_hide") or []],
         "viewer": f"{SITE}/model/?id={row['id']}",
         "page": f"{MODELS_SITE}/{row['id']}/",
         "downloads": {"glb": GITHUB_RAW + fname, "fallback": FORGE_RAW + fname},

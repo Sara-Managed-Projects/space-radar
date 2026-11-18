@@ -1,0 +1,183 @@
+// GENERATED from registry/deepsky-heroes/catseye.yaml by scripts/gen_deepsky_heroes_js.py. Do not edit.
+// A deep-sky hero's authored profile (internal spec 0075, design section 3): read by
+// scene/deep/heroes.js when the hero comes near, never at boot.
+export const HERO = {
+  "id": "catseye",
+  "record": "dso-cats-eye-nebula",
+  "stage": "ds-2026-11-17",
+  "shipped": true,
+  "children": [],
+  "levels": {
+    "2": "structure: the shells, rings, ansae and jets as about 5 000 soft points in one draw",
+    "3": "close-up: the same; the camera may go inside the outer shell"
+  },
+  "frame": {
+    "units_ly": 1,
+    "distance_ly": 4272,
+    "ra_deg": 269.6393,
+    "dec_deg": 66.6332,
+    "axes": "x west, y north, z toward the Sun; the central star (the record's place) at the origin"
+  },
+  "layers": [
+    {
+      "part": "axis",
+      "kind": "orientation",
+      "what": "the nebula's symmetry axis: its far (south) end points to position angle 181 degrees, 80 degrees from our line of sight",
+      "pa_deg": 181,
+      "incl_deg": 80,
+      "near": "north",
+      "check": "the ansae in heic0414a, turned by its stated orientation, lie at position angle 1 and 181 degrees (read off by Space Radar, about 3 degrees); the north end is blue-shifted (Clairmont et al. 2022, section 3.1)",
+      "source": "Position angle: read off ESA/Hubble heic0414a (CC BY 4.0) by Space Radar. Which end is near: Clairmont, Steffen & Koning 2022, section 3.1. Tilt: modelled (the paper: 'slightly tilted')"
+    },
+    {
+      "part": "outer",
+      "kind": "shell",
+      "what": "the outer shell: two nearly spherical lobes joined at the waist",
+      "lobe_radius_arcsec": 10.7,
+      "lobe_centre_arcsec": 4.7,
+      "points": 1800,
+      "size_arcsec": 0.55,
+      "amp": 0.5,
+      "speed_kms": {
+        "pole": 33.5,
+        "waist": 25
+      },
+      "check": "the lobes reach 4.7 + 10.7 = 15.4 arcseconds along the axis, across 10.7; the waist is sqrt(10.7^2 - 4.7^2) = 9.6 across",
+      "source": "Clairmont et al. 2022, sections 1, 3.1 and 6 (shape and speeds); sizes read off heic0414a by Space Radar"
+    },
+    {
+      "part": "inner",
+      "kind": "shell",
+      "what": "the inner shell: a prolate ellipsoid nested in the outer shell",
+      "semi_axis_arcsec": 5.9,
+      "semi_across_arcsec": 4.7,
+      "points": 1400,
+      "size_arcsec": 0.4,
+      "amp": 0.7,
+      "source": "Clairmont et al. 2022, sections 1 and 6 (a prolate ellipsoid; modelled from the picture alone, it is not seen in their position-velocity diagrams); sizes read off heic0414a by Space Radar"
+    },
+    {
+      "part": "equatorial",
+      "kind": "ring",
+      "what": "the equatorial ring at the waist, expanding at 24 km/s",
+      "radius_arcsec": 8.5,
+      "tube_arcsec": 0.7,
+      "points": 500,
+      "size_arcsec": 0.5,
+      "amp": 0.9,
+      "speed_kms": 24,
+      "source": "Clairmont et al. 2022, section 3.2 (speed) and 6; the radius read off heic0414a by Space Radar"
+    },
+    {
+      "part": "partial_rings",
+      "kind": "ring",
+      "what": "the two partial rings, point-symmetric: the base of a cone of half-opening 38 degrees whose axis is 17 degrees off the nebula's, open over 300 degrees",
+      "half_opening_deg": 38,
+      "tilt_deg": 17,
+      "span_deg": 300,
+      "slant_arcsec": 12,
+      "tube_arcsec": 0.6,
+      "tilt_azimuth_deg": 0,
+      "gap_after_deg": 30,
+      "points": 700,
+      "size_arcsec": 0.55,
+      "amp": 1.0,
+      "speed_kms": {
+        "north": 19.5,
+        "south": 21.5
+      },
+      "source": "Clairmont et al. 2022, sections 3.6, 5.1 and 6: the angles, the span and the speeds. The slant length is read off heic0414a by Space Radar; the lean's direction (tilt_azimuth_deg) and where the gap lies (gap_after_deg) are modelled"
+    },
+    {
+      "part": "ansae",
+      "kind": "knots",
+      "what": "the two ansae on the axis, outside the outer shell, expanding at 44 km/s",
+      "at_arcsec": 21.5,
+      "width_arcsec": 1.1,
+      "length_arcsec": 1.8,
+      "points": 160,
+      "size_arcsec": 0.6,
+      "amp": 1.1,
+      "speed_kms": 44,
+      "source": "Clairmont et al. 2022, sections 3.4 and 6; the distance from the star read off heic0414a by Space Radar"
+    },
+    {
+      "part": "jets",
+      "kind": "knots",
+      "what": "the two jets on an axis 26 degrees off the nebula's, out to 19 arcseconds, expanding at 72 km/s",
+      "tilt_deg": 26,
+      "azimuth_deg": 90,
+      "from_arcsec": 12,
+      "to_arcsec": 19,
+      "points": 120,
+      "size_arcsec": 0.5,
+      "amp": 0.9,
+      "speed_kms": 72,
+      "source": "Clairmont et al. 2022, sections 3.5 and 6 (the tilt, the 19 arcseconds and the speed); the azimuth of the tilt is modelled"
+    },
+    {
+      "part": "look",
+      "kind": "model",
+      "what": "how the points are drawn",
+      "seed": 6543,
+      "min_px": 1.5,
+      "gain": 0.6,
+      "star_amp": 3.0,
+      "colours": {
+        "outer": [
+          0.95,
+          0.62,
+          0.88
+        ],
+        "inner": [
+          0.58,
+          0.78,
+          1.0
+        ],
+        "ring": [
+          1.0,
+          0.64,
+          0.3
+        ],
+        "ansa": [
+          1.0,
+          0.5,
+          0.26
+        ],
+        "jet": [
+          1.0,
+          0.45,
+          0.3
+        ]
+      },
+      "source": "Space Radar's; the colours are illustrative (Hubble's false colour: blue for the hot inner shell, pink for the outer, orange for the rings and knots)"
+    }
+  ],
+  "colours": {
+    "mode": "enhanced",
+    "lines": {},
+    "note": "ILLUSTRATIVE. Hubble's false colour, the picture's makers': blue for the inner shell, pink for the outer, orange for the rings and knots. The model has no colour. The Measured look takes it to grey"
+  },
+  "drawn": [
+    "reconstruction",
+    "model"
+  ],
+  "sources": [
+    "Clairmont, R., Steffen, W. & Koning, N. 2022, Morpho-kinematic modeling of the point-symmetric Cat's Eye, NGC 6543: ring-like remnants of a precessing jet, MNRAS (https://arxiv.org/abs/2209.01313), read 2026-11-17",
+    "Chornay, N. & Walton, N. 2021, Gaia EDR3 distances of planetary nebulae (https://arxiv.org/abs/2102.13654), as Clairmont et al. quote it: 1.31 kpc",
+    "ESA/Hubble heic0414a, the Cat's Eye (NASA, ESA, HEIC and the Hubble Heritage Team (STScI/AURA), CC BY 4.0: https://esahubble.org/images/heic0414a/), read 2026-11-17: its stated orientation and field, and the sizes and axis read off it"
+  ],
+  "review": {
+    "data_vs_model": "Measured: the parts and their shapes, the partial rings' cone (38 degrees, tilt 17 degrees, span 300 degrees), the jets' tilt (26 degrees) and reach (19 arcseconds), every speed, the kinematic age and the distance (Clairmont et al. 2022). Read off Hubble's picture by Space Radar: the axis' position angle and the sizes of the parts (about 10 per cent). Modelled: the axis' tilt, the rings' gaps and lean, the jets' azimuth, the scatter of points. Illustrative: the colours",
+    "geometry": "Each surface a seeded scatter of soft points: two spherical lobes 10.7 arcseconds in radius with centres 4.7 either side of the star, a prolate ellipsoid 5.9 by 4.7, a ring of radius 8.5, two partial rings on a 38-degree cone, two ansae 21.5 out, two jets out to 19. Not drawn: the halo, and the model's inner details the paper does not publish",
+    "colours": "Illustrative, declared on the card; the Measured look shows the shapes in grey",
+    "distance": "4 272 ly, the record's: 1.31 kpc from Gaia (Chornay & Walton 2021), the paper's own",
+    "credits": "CREDITS.md, Pulsar wind nebulae and the Cat's Eye (2026-11-17); the card's rows name the model, its paper and that no astronomer has reviewed the drawing",
+    "by": "Space Radar maintainers",
+    "date": "2026-11-17",
+    "astronomer": "not yet; the card says so"
+  },
+  "credits": [
+    "The Cat's Eye Nebula's shapes, rings and speeds: Clairmont, Steffen & Koning 2022 (morpho-kinematic model in SHAPE); its sizes and axis read off ESA/Hubble heic0414a (NASA, ESA, HEIC and the Hubble Heritage Team, CC BY 4.0); drawn by Space Radar"
+  ]
+};

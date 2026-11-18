@@ -432,7 +432,41 @@ sources:
     checked: 2026-10-16
     pins:
       - {file: site/data/deep/clusters.bin, sha256: f793f1f7943ebdbb844aaafc8224bdc4e9c4aa7dbf1c1964f6eef2edbbba1380}
-      - {file: site/data/deep/clusters.json, sha256: dbe3c3f5d49b9f909ea067e622fb31320f56af10f1d20e647ac5fcabe803ca2b}
+      - {file: site/data/deep/clusters.json, sha256: 3229c97fd2a2133c7e3262e9fbb408612e6e0e26afeefd57da79dd5cedc0ea7d}
+  # Real member stars of the best-known globular clusters (internal #417, #425): scripts/build_globular_members.py reads
+  # Vasiliev and Baumgardt's catalogue (one zip) and bakes the 3 000 brightest members of 12 clusters.
+  - id: zenodo-vasiliev-baumgardt-globulars
+    name: "Zenodo record 4891252 (Vasiliev and Baumgardt 2021, catalogues of stars in 170 globular clusters from Gaia EDR3, with membership probabilities), read by scripts/build_globular_members.py"
+    match: ["https://zenodo.org/api/records/4891252/files/clusters.zip/content", "scripts/build_globular_members.py"]
+    url: https://doi.org/10.5281/zenodo.4891252
+    licence: "CC BY 4.0 (the catalogue, attributed: Vasiliev E. and Baumgardt H. 2021, MNRAS 505, 5978); the stars are Gaia EDR3 measurements, CC BY-NC 3.0 IGO (ESA)"
+    licence_read: "license: cc-by-4.0 (the record's metadata, https://zenodo.org/api/records/4891252, read 2026-11-17); Gaia: \"Gaia data are distributed under the CC BY-NC 3.0 IGO license.\" (https://www.cosmos.esa.int/web/gaia-users/license, read 2026-10-16)"
+    licence_url: https://zenodo.org/records/4891252
+    licence_note: "clusters.zip is 118 940 646 bytes; the build keeps memberprob at least 0.5, a quality flag that passed the catalogue's filters, inside Harris's tidal radius, the 3 000 brightest of 12 clusters (site/data/deep/globular-members.bin keeps the Gaia non-commercial term; Space Radar is free and non-commercial). Depth along the line of sight is modelled, not in the catalogue."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-17
+    pins:
+      - {file: site/data/deep/globular-members.bin, sha256: 3cac41ebcda92510e09473f96211c653ff17f096b8d1ce373dd77ab2c637bd62}
+      - {file: site/data/deep/globular-members.json, sha256: fa909ab8f413aea0e70bd097cce909a8345f0d27ffd548730c43d11e2ff0b4cb}
+  # The Sun's neighbourhood as real 3D dust (internal #423): scripts/build_deep_localdust.py reads, by HTTP range, 640 slabs of
+  # Edenhofer et al.'s Cartesian cube (15.7 GB; about 2 GB are read) and bakes 40 000 sampled points.
+  - id: zenodo-edenhofer-3d-dust
+    name: "Zenodo record 8187943 (Edenhofer et al. 2024, a parsec-scale Galactic 3D dust map out to 1.25 kpc), mean_and_std_xyz.fits, read by scripts/build_deep_localdust.py"
+    match: ["https://zenodo.org/api/records/8187943/files/mean_and_std_xyz.fits/content", "scripts/build_deep_localdust.py"]
+    url: https://doi.org/10.5281/zenodo.8187943
+    licence: "CC BY 4.0 (Edenhofer G. et al. 2024, A&A 685, A82); the map is built from Gaia DR3, CC BY-NC 3.0 IGO (ESA)"
+    licence_read: "license: cc-by-4.0 (the record metadata, https://zenodo.org/api/records/8187943, read 2026-11-17); Gaia: \"Gaia data are distributed under the CC BY-NC 3.0 IGO license.\" (https://www.cosmos.esa.int/web/gaia-users/license, read 2026-10-16)"
+    licence_url: https://zenodo.org/records/8187943
+    licence_note: "mean_and_std_xyz.fits is 15 662 543 040 bytes (two arrays of 1251^3 float32 voxels of 2 pc, the mean and the standard deviation); the build reads the mean in the box within 640 pc of the Sun and keeps neither array. site/data/deep/localdust.bin keeps the Gaia non-commercial term; Space Radar is free and non-commercial."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-11-17
+    pins:
+      - {file: site/data/deep/localdust.bin, sha256: 99759bd1f1a8e1b52b2dcad82f7ced6d7d728c5b6dea88298506a3c6befe9e82}
+      - {file: site/data/deep/localdust.json, sha256: 2b11a032122343be6ab7bbfbbe3068c1e27d4cd86b968a064a8ba015a3a5fcf7}
   # 0076 W3-b
   # The Ring Nebula hero's light (internal spec 0076 W3-b, #872): scripts/build_deep_ring.py takes the stars out of the
   # ESA/Hubble photograph already shipped (heic1310a, the esa-hubble row above) and nothing is fetched. A row of its

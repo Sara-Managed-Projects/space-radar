@@ -87,6 +87,11 @@ export const HEROES = [
   { id: 'casa', record: 'dso-cassiopeia-a', stage: 'ds2', stub: { shipped: true, drawn: ['reconstruction', 'model'], children: [], extent: 1.5 }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./casa.js'), import('../../data/hero-casa.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
   // SN 1987A: the three rings at their measured size and tilt, computed from the papers' numbers (scene/deep/sn1987a.js).
   { id: 'sn1987a', record: 'dso-sn-1987a', stage: 'ds2', stub: { shipped: true, drawn: ['reconstruction', 'illustration'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./sn1987a.js'), import('../../data/hero-sn1987a.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
+  // The pulsar wind nebula of the Vela pulsar (Ng & Romani's fitted tori, scene/deep/vela.js) and the Cat's Eye (Clairmont, Steffen &
+  // Koning's morpho-kinematic model, scene/deep/catseye.js), both soft points in one instanced draw (scene/deep/softpoints.js).
+  // `extent`: how much wider than its catalogue size each draws its object (the jets, the ansae).
+  { id: 'vela', record: 'dso-vela-pulsar-wind-nebula', stage: 'ds-2026-11-17', stub: { shipped: true, drawn: ['reconstruction', 'model'], children: [], extent: 2.4 }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./vela.js'), import('../../data/hero-vela.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
+  { id: 'catseye', record: 'dso-cats-eye-nebula', stage: 'ds-2026-11-17', stub: { shipped: true, drawn: ['reconstruction', 'model'], children: [], extent: 2.2 }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./catseye.js'), import('../../data/hero-catseye.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
 ];
 
 // Deep layers that are not one object: the local volume's galaxies (stage e). Built on the stages named.
@@ -97,6 +102,8 @@ export const DEEP_LAYERS = [
   // 0079 a2: begin (every NGC and IC object, Harris, Green and the open clusters: scene/deep/catalogue.js; two files fetched on the first rung entered)
   { id: 'catalogue', stage: 'A2', stages: ['stellar', 'galaxy', 'local-group'], build: () => import('./catalogue.js') },
   // 0079 a2: end
+  // internal #423: the Sun's neighbourhood as real 3D dust (the Local Bubble), seen from outside it; the stellar rung only
+  { id: 'localdust', stage: 'r2-dust', stages: ['stellar'], build: () => import('./localdust.js') },
   { id: 'galclusters', stage: 'W4-b', stages: ['local-group'], build: () => import('./galclusters.js'), ask: (env, on) => ({ recordById: env.recordById, on }) },
   // 0077 W2-e: begin
   // The Magellanic Bridge and Stream (scene/deep/magellanic.js: HI4PI's hydrogen at a modelled distance, false colour) ship

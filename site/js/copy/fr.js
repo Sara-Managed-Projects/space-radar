@@ -3694,6 +3694,8 @@ export const COPY = {
       "reviewLabel": "Relecture",
       "globularStars": "Un modèle de son genre, pas ses propres étoiles : {n} étoiles plus brillantes que le point de retournement, placées d’après le profil de King avec le rayon de cœur de Harris ({rc} années-lumière) et le rayon de marée ({rt}). Leur nombre, leur éclat et leurs couleurs sont un modèle.",
       "globularLight": "Ensemble, environ {pct} % de la lumière de l’amas (magnitude absolue {mv}) ; les étoiles faibles qu’aucun point ne représente forment la lueur. Dessiné jusqu’à la magnitude 10, comme le montre la pose d’un appareil photo.",
+      "globularReal": "Ses propres étoiles : les {n} plus brillantes des {of} membres mesurés par Gaia (Vasiliev et Baumgardt 2021, probabilité d’appartenance d’au moins {p}, à l’intérieur du rayon de marée), dessinées jusqu’à la magnitude 10, comme les montre la pose d’un appareil. Mesuré : leur place dans le ciel, leur éclat et leur couleur. Gaia ne sépare pas le centre encombré, des étoiles y manquent ; la lueur les représente.",
+      "globularRealDepth": "Modélisé : de combien chaque étoile se trouve devant ou derrière le centre de l’amas. Gaia ne peut pas le mesurer à cette distance ; il est tiré du profil de King avec le rayon du cœur de Harris ({rc} années-lumière) et le rayon de marée ({rt}). L’éclat absolu utilise la distance de la carte et le rougissement de Harris ; les couleurs sont approximatives.",
       "openStars": "{n} membres issus de Gaia (Hunt et Reffert 2023, {name}), chacun avec une probabilité d’appartenance d’au moins {p}, à l’intérieur de son rayon de marée. Dessinés jusqu’à la magnitude 10, comme le montre la pose d’un appareil photo.",
       "openStarsHyg": "{n} membres issus de Gaia (Hunt et Reffert 2023, {name}), chacun avec une probabilité d’appartenance d’au moins {p}, à l’intérieur de son rayon de marée ; {h} plus brillants sont les propres étoiles du catalogue de la carte. Dessinés jusqu’à la magnitude 10, comme le montre la pose d’un appareil photo.",
       "openDepthSome": "{m} sont placés d’après leur propre parallaxe ; les {k} autres à la distance de l’amas, leur profondeur à l’intérieur étant modélisée.",
@@ -6530,6 +6532,80 @@ Object.assign(COPY, {
   }
 });
 // ds2: end
+// ds3: begin -- the words of the Vela pulsar wind nebula and the Cat's Eye (copy/en.deepdata.js), machine-drafted
+Object.assign(COPY, {
+  "deepVela": {
+    "card": {
+      "vela": "Deux anneaux de lumière X et deux jets, dessinés d’après la géométrie ajustée à l’image de Chandra (Ng et Romani, 2004 et 2008). La longueur des jets et l’extrémité de l’axe la plus proche sont modélisées ; la couleur est illustrative. Pas encore relu par un astronome."
+    },
+    "rows": {
+      "dso-vela-pulsar-wind-nebula": [
+        [
+          "Les deux anneaux",
+          "Mesurés. Ajustés sur l’image X de Chandra : chaque anneau de 21,25 secondes d’arc de rayon, l’axe de rotation incliné de 63,6° sur notre ligne de visée et à l’angle de position 130,6° sur le ciel, les anneaux distants de 11,61 secondes d’arc tels que nous les voyons (Ng et Romani, 2004, 2008)."
+        ],
+        [
+          "Pourquoi un côté est plus brillant",
+          "Mesuré. Le flux le long de chaque anneau va à 0,44 fois la vitesse de la lumière, ce qui éclaire le côté qui vient vers la caméra ; le motif change quand la vue tourne."
+        ],
+        [
+          "Les jets",
+          "Leur vitesse est mesurée (0,45 celle de la lumière). Leur longueur et leur éclat sont modélisés : le vrai jet se courbe et change d’une année à l’autre."
+        ],
+        [
+          "Quelle extrémité est proche",
+          "Modélisé. Les articles ne disent pas quelle extrémité de l’axe pointe vers nous."
+        ],
+        [
+          "Couleur",
+          "Illustrative. Les rayons X ne sont pas une lumière que l’œil voit ; ils sont dessinés en violet-bleu."
+        ],
+        [
+          "Relecture",
+          "Ce dessin n’a pas encore été relu par un astronome."
+        ]
+      ]
+    }
+  },
+  "deepCatsEye": {
+    "card": {
+      "catseye": "Ses parties, ses angles et ses vitesses viennent d’un modèle 3D publié (Clairmont, Steffen et Koning, 2022) ; les tailles sont lues sur l’image de Hubble. Les couleurs sont illustratives. Pas encore relu par un astronome."
+    },
+    "rows": {
+      "dso-cats-eye-nebula": [
+        [
+          "Ses parties",
+          "Mesurées. Une coque intérieure en forme d’œuf dans une coque extérieure à deux lobes ronds, un anneau à la taille, deux amas sur l’axe et deux jets : un modèle ajusté sur l’image de Hubble et cinq cartes de la vitesse du gaz (Clairmont et al., 2022)."
+        ],
+        [
+          "Les deux anneaux partiels",
+          "Mesurés. Chacun est la base d’un cône à 38° de l’axe, incliné de 17°, ouvert sur 300° de son tour : la trace d’un jet qui oscillait et n’a jamais fini un cercle. L’emplacement de chaque brèche est modélisé."
+        ],
+        [
+          "Vitesses",
+          "Mesurées. Tout part en ligne droite : la coque extérieure à 25–33,5 km/s, l’anneau de la taille à 24, les amas à 44, les jets à 72. L’âge du modèle est de 2 136 ans, à 4 272 années-lumière (Gaia)."
+        ],
+        [
+          "Tailles et axe",
+          "Lus sur l’image de Hubble par Space Radar, à un dixième près : l’article montre son modèle en images, pas en tableau."
+        ],
+        [
+          "Inclinaison",
+          "Modélisée. L’article dit seulement que l’axe est légèrement incliné ; il est dessiné à 80° de notre ligne de visée, l’extrémité nord vers nous."
+        ],
+        [
+          "Couleur",
+          "Illustrative. Les fausses couleurs de Hubble, que le modèle n’a pas. Le rendu Mesuré les montre en gris."
+        ],
+        [
+          "Relecture",
+          "Ce dessin n’a pas encore été relu par un astronome."
+        ]
+      ]
+    }
+  }
+});
+// ds3: end
 // A constellation seen from the side (ui/figureside.js, copy/en.side.js): begin
 COPY.figureSide = {
   "open": "La voir de côté",

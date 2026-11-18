@@ -1,0 +1,183 @@
+{
+ "version": 1,
+ "built": "2026-11-17",
+ "stride": 12,
+ "count": 36000,
+ "bin": {
+  "bytes": 432016,
+  "sha256": "3cac41ebcda92510e09473f96211c653ff17f096b8d1ce373dd77ab2c637bd62"
+ },
+ "cuts": {
+  "prob": 0.5,
+  "qualityBit": 2,
+  "insideTidalRadius": true,
+  "maxStars": 3000
+ },
+ "measured": "each star's sky position (Gaia EDR3 RA, Dec), G magnitude and BP-RP colour",
+ "modelled": "depth along the line of sight (King 1962 at the star's projected radius, Harris 1996 rc and c, seeded by Gaia source id), absolute magnitude (the map's distance, Harris E(B-V)) and the approximate B-V",
+ "sources": {
+  "members": "Vasiliev E. & Baumgardt H. 2021, MNRAS 505, 5978 (arXiv:2102.09568); Zenodo 10.5281/zenodo.4891252, clusters.zip, CC BY 4.0",
+  "profile": "Harris W.E. 1996, AJ 112, 1487 (VizieR VII/202); King I.R. 1962, AJ 67, 471",
+  "gaia": "ESA/Gaia/DPAC, Gaia Collaboration 2021, A&A 649, A1 (EDR3); CC BY-NC 3.0 IGO",
+  "extinction": "Wang S. & Chen X. 2019, ApJ 877, 116 (A_G / A_V = 0.789, E(BP-RP) / A_V = 0.413)"
+ },
+ "licence": "Vasiliev & Baumgardt 2021 catalogue: CC BY 4.0; the stars are Gaia EDR3 measurements, CC BY-NC 3.0 IGO (ESA)",
+ "clusters": [
+  {
+   "id": "omega-centauri",
+   "harris": "NGC 5139",
+   "file": "NGC_5139_oCen",
+   "offset": 0,
+   "count": 3000,
+   "scaleLy": 213.27,
+   "membersInRt": 74138,
+   "brightestKept": true,
+   "rcLy": 13.29,
+   "rtLy": 231.0,
+   "faintestG": 16.57
+  },
+  {
+   "id": "47-tucanae",
+   "harris": "NGC 104",
+   "file": "NGC_104_47Tuc",
+   "offset": 3000,
+   "count": 3000,
+   "scaleLy": 158.297,
+   "membersInRt": 56990,
+   "brightestKept": true,
+   "rcLy": 1.59,
+   "rtLy": 174.0,
+   "faintestG": 17.0
+  },
+  {
+   "id": "m13",
+   "harris": "NGC 6205",
+   "file": "NGC_6205_M_13",
+   "offset": 6000,
+   "count": 3000,
+   "scaleLy": 169.765,
+   "membersInRt": 14805,
+   "brightestKept": true,
+   "rcLy": 6.2,
+   "rtLy": 191.4,
+   "faintestG": 18.69
+  },
+  {
+   "id": "m3",
+   "harris": "NGC 5272",
+   "file": "NGC_5272_M_3",
+   "offset": 9000,
+   "count": 3000,
+   "scaleLy": 293.227,
+   "membersInRt": 13399,
+   "brightestKept": true,
+   "rcLy": 4.83,
+   "rtLy": 341.9,
+   "faintestG": 19.05
+  },
+  {
+   "id": "m5",
+   "harris": "NGC 5904",
+   "file": "NGC_5904_M_5",
+   "offset": 12000,
+   "count": 3000,
+   "scaleLy": 180.464,
+   "membersInRt": 11923,
+   "brightestKept": true,
+   "rcLy": 2.84,
+   "rtLy": 210.4,
+   "faintestG": 18.77
+  },
+  {
+   "id": "m15",
+   "harris": "NGC 7078",
+   "file": "NGC_7078_M_15",
+   "offset": 15000,
+   "count": 3000,
+   "scaleLy": 187.924,
+   "membersInRt": 8011,
+   "brightestKept": true,
+   "rcLy": 0.71,
+   "rtLy": 224.9,
+   "faintestG": 19.59
+  },
+  {
+   "id": "m22",
+   "harris": "NGC 6656",
+   "file": "NGC_6656_M_22",
+   "offset": 18000,
+   "count": 3000,
+   "scaleLy": 76.605,
+   "membersInRt": 8544,
+   "brightestKept": true,
+   "rcLy": 4.45,
+   "rtLy": 90.8,
+   "faintestG": 18.37
+  },
+  {
+   "id": "m4",
+   "harris": "NGC 6121",
+   "file": "NGC_6121_M_4",
+   "offset": 21000,
+   "count": 3000,
+   "scaleLy": 50.624,
+   "membersInRt": 14680,
+   "brightestKept": true,
+   "rcLy": 1.46,
+   "rtLy": 56.7,
+   "faintestG": 17.57
+  },
+  {
+   "id": "m92",
+   "harris": "NGC 6341",
+   "file": "NGC_6341_M_92",
+   "offset": 24000,
+   "count": 3000,
+   "scaleLy": 118.298,
+   "membersInRt": 7143,
+   "brightestKept": true,
+   "rcLy": 1.85,
+   "rtLy": 119.8,
+   "faintestG": 19.59
+  },
+  {
+   "id": "m2",
+   "harris": "NGC 7089",
+   "file": "NGC_7089_M_2",
+   "offset": 27000,
+   "count": 3000,
+   "scaleLy": 201.546,
+   "membersInRt": 4933,
+   "brightestKept": true,
+   "rcLy": 3.77,
+   "rtLy": 237.9,
+   "faintestG": 19.95
+  },
+  {
+   "id": "m10",
+   "harris": "NGC 6254",
+   "file": "NGC_6254_M_10",
+   "offset": 30000,
+   "count": 3000,
+   "scaleLy": 91.948,
+   "membersInRt": 10783,
+   "brightestKept": true,
+   "rcLy": 4.14,
+   "rtLy": 103.9,
+   "faintestG": 18.9
+  },
+  {
+   "id": "ngc-6397",
+   "harris": "NGC 6397",
+   "file": "NGC_6397",
+   "offset": 33000,
+   "count": 3000,
+   "scaleLy": 37.149,
+   "membersInRt": 17457,
+   "brightestKept": true,
+   "rcLy": 0.12,
+   "rtLy": 37.2,
+   "faintestG": 17.33
+  }
+ ]
+}

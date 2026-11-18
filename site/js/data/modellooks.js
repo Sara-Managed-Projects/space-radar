@@ -43,6 +43,7 @@ export const MODEL_LOOKS = {
   "gk2b.glb": "pbr",
   "h2a-stage2.glb": "pbr",
   "hawkeye360-block1.glb": "pbr",
+  "hitomi.glb": "pbr",
   "hubble-sts31.glb": "pbr",
   "hubble.glb": "pbr",
   "insat-3d.glb": "pbr",
@@ -75,6 +76,7 @@ export const MODEL_LOOKS = {
   "sert-2.glb": "pbr",
   "shuttle-rms.glb": "pbr",
   "slim.glb": "pbr",
+  "sputnik-1.glb": "pbr",
   "swarm.glb": "pbr",
   "timed.glb": "pbr",
   "tracers.glb": "pbr",
@@ -83,5 +85,6 @@ export const MODEL_LOOKS = {
   "vostok-blok-e.glb": "pbr",
   "vostok-chutes.glb": "pbr",
   "vostok-seat.glb": "pbr",
-  "worldview-3.glb": "pbr"
+  "worldview-3.glb": "pbr",
+  "xrism.glb": "pbr"
 };

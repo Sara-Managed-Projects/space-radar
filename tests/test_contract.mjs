@@ -182,7 +182,9 @@ const CONTRACT = {
   // 0076 W1-e (perf.js)
   'scene/perf.js': ['createPerf', 'sceneBytes', 'textureBytes', 'geometryBytes', 'quantile', 'RING', 'LOOK_SEED'],
   // 0076 W3-a (globular.js): star clusters as stars; its King profile, its luminosity function and its members' file are pure for tests/test_globular.mjs.
-  'scene/deep/globular.js': ['createLayer', 'kingDensity', 'kingSurface', 'kingTable', 'sampleRadius', 'giantCount', 'sampleGlobular', 'visibleLight', 'parseMembers', 'membersOf', 'fadeFor', 'seedOf', 'mulberry32', 'POINTS', 'MAX_DRAWN', 'FROM_PX', 'FULL_PX', 'LIMIT_MAG', 'limitFor', 'OPEN_MEMBERS', 'FLOOR', 'LF', 'UNDER_MEASURED', 'COPY_BLOCK', 'DRAWN'],
+  // internal #423 (localdust.js): the Sun's neighbourhood in dust; the coordinator fetches it on the stellar rung
+  'scene/deep/localdust.js': ['createLayer', 'parseDust', 'pointsOf', 'galToEcl', 'lookFor', 'fadeFor', 'UNDER_MEASURED', 'SHAPE', 'FILES', 'SHADERS'],
+  'scene/deep/globular.js': ['createLayer', 'kingDensity', 'kingSurface', 'kingTable', 'sampleRadius', 'giantCount', 'sampleGlobular', 'visibleLight', 'parseMembers', 'membersOf', 'fadeFor', 'seedOf', 'mulberry32', 'POINTS', 'MAX_DRAWN', 'FROM_PX', 'FULL_PX', 'LIMIT_MAG', 'limitFor', 'OPEN_MEMBERS', 'FLOOR', 'LF', 'UNDER_MEASURED', 'COPY_BLOCK', 'DRAWN', 'DRAWN_REAL', 'GM_FILES'],
   // 0076 W2-a (traverse.js): the Apollo 15 and 17 rover traverses, fetched by scene/tiles.js close to the Moon; pure parts for tests/test_traverse.mjs.
   'scene/traverse.js': ['createTraverses', 'parsePath', 'pathLengthKm', 'traverseFade', 'ribbonArrays', 'TRAVERSE_LOOK', 'DEPTH_PULL'],
   'scene/airtint.js': ['AIR_REDDENING', 'setAirReddening', 'airReddeningOn', 'airTransmission', 'sunlightOn', 'AIR_TINT_GLSL', 'EARTH_RADIUS_KM'],

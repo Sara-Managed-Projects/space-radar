@@ -14,9 +14,9 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 |---|---:|---:|
 | worlds | 31 | 31 |
 | rings | 1 | 1 |
-| dso | 212 | 212 |
+| dso | 213 | 213 |
 | photographs | 30 | 30 |
-| heroes | 36 | 36 |
+| heroes | 38 | 38 |
 | exotics | 27 | 27 |
 | systems | 51 | 51 |
 | planets | 134 | 134 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 40 | 40 |
-| **all** | **1205** | **111 392** |
+| **all** | **1208** | **111 395** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -61,10 +61,10 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [OPEN_CLUSTER](#open_cluster) | 38 | `clusters.js`, `dsoglow.js`, `globular.js` | illustrative | - |
 | [GLOBULAR_CLUSTER](#globular_cluster) | 33 | `dsoglow.js`, `globular.js` | illustrative | - |
 | [EMISSION_NEBULA](#emission_nebula) | 44 | `dsoglow.js`, `gasmat.js`, `orion.js`, `carina.js` | measured | carina, orion |
-| [PLANETARY_NEBULA](#planetary_nebula) | 23 | `dsoglow.js`, `helix.js`, `ring.js`, `shellneb.js`, `gasmat.js` | measured | helix, m27, m57, southern-ring |
+| [PLANETARY_NEBULA](#planetary_nebula) | 24 | `dsoglow.js`, `helix.js`, `ring.js`, `shellneb.js`, `gasmat.js`, `catseye.js`, `softpoints.js` | measured | catseye, helix, m27, m57, southern-ring |
 | [DARK_NEBULA](#dark_nebula) | 5 | `dsoglow.js`, `dustsheet.js` | measured | coalsack, horsehead |
 | [REFLECTION_NEBULA](#reflection_nebula) | 8 | `dsoglow.js`, `dustsheet.js`, `reflection.js`, `homunculus.js` | illustrative | homunculus, iris, m45, m78 |
-| [SUPERNOVA_REMNANT](#supernova_remnant) | 10 | `nebulae.js`, `dsoglow.js`, `remnant.js`, `casa.js`, `crab.js`, `sn1987a.js` | measured | casa, crab, sn1987a, veil |
+| [SUPERNOVA_REMNANT](#supernova_remnant) | 12 | `nebulae.js`, `dsoglow.js`, `remnant.js`, `casa.js`, `crab.js`, `sn1987a.js`, `vela.js`, `softpoints.js` | measured | casa, crab, sn1987a, veil, vela |
 | [GALAXY_SPIRAL](#galaxy_spiral) | 56 | `galaxy.js`, `spiral.js`, `dsoglow.js` | illustrative | m101, m104, m31, m33, m51, m81, m83, ngc1300 |
 | [GALAXY_IRREGULAR](#galaxy_irregular) | 19 | `lmc.js`, `smc.js`, `magellanic.js`, `dsoglow.js` | illustrative | lmc, smc |
 | [GALAXY_ELLIPTICAL](#galaxy_elliptical) | 42 | `dsoglow.js`, `spiral.js` | illustrative | cena |
@@ -72,6 +72,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [AGN_QUASAR](#agn_quasar) | 3 | `glyphs.js`, `stage.js`, `galclusters.js` | illustrative | - |
 | [GALAXY_GROUP](#galaxy_group) | 1 | `localvolume.js` | measured | - |
 | [GALAXY_CLUSTER](#galaxy_cluster) | 0 | `galclusters.js` | modelled | - |
+| [LOCAL_DUST](#local_dust) *house* | 0 | `localdust.js` | modelled | - |
 | [COSMIC_WEB](#cosmic_web) | 0 | none yet (1.3+ (internal #826, #828; spec 0075 tasks 23 and 24): the DESI DR1 wedge with its footprint) | illustrative | - |
 | [CMB_AND_HORIZON](#cmb_and_horizon) | 2 | `shells.js`, `cmb.js` | measured | - |
 | [HELIOSPHERE](#heliosphere) *house* | 1 | `heliosphere.js` | modelled | - |
@@ -83,7 +84,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 1205 records: 377 measured, 460 modelled, 368 illustrative.
+Honesty over the 1208 records: 377 measured, 462 modelled, 369 illustrative.
 
 ## The classes
 
@@ -449,12 +450,12 @@ Honesty over the 1205 records: 377 measured, 460 modelled, 368 illustrative.
 
 - **Drawn by:** `site/js/scene/dsoglow.js`, `site/js/scene/deep/globular.js`
 - **Default honesty:** illustrative
-- **On a weak device (T0, or after the frame latch):** The globular glow profile with its holder; near, stars by King's profile from Harris's radii (scene/deep/globular.js, 0076 W3-a).
+- **On a weak device (T0, or after the frame latch):** The globular glow profile with its holder; near, the real Gaia members of 12 of them (M2, M3, M4, M5, M10, M13, M15, M22, M92, 47 Tucanae, NGC 6397, Omega Centauri; scene/deep/globular.js, internal
 - **Source:** OpenNGC for place, size and magnitude; the Messier distances.
 - **Dates and filters:** As OPEN_CLUSTER.
-- **Measured, modelled or reconstructed:** Measured: place, size, distance, core and tidal radius (Harris 1996, VizieR VII/202). Modelled: the stars, by King's (1962) profile, their number, brightness and colour. Illustrative: the glow standing in for the faint stars.
-- **Rights:** OpenNGC CC BY-SA 4.0; VizieR's terms (free of usage in a scientific context, authors cited).
-- **What is missing is tracked in:** internal #819 (King-profile points, spec 0075 task 19, W3-a)
+- **Measured, modelled or reconstructed:** Measured: place, size, distance, core and tidal radius (Harris 1996, VizieR VII/202). Modelled: the stars, by King's (1962) profile, their number, brightness and colour. Illustrative: the glow standing in for the faint stars. For 12 of the 33 (Vasiliev and Baumgardt 2021, Zenodo 4891252, membership probability at least 0.5): measured, each member's place on the sky, brightness and colour (Gaia EDR3); modelled, its depth along the line of sight (King's profile at its projected radius), its absolute magnitude (the map's distance, Harris's reddening) and its approximate B-V; the crowded centre is missing stars Gaia could not separate.
+- **Rights:** OpenNGC CC BY-SA 4.0; VizieR's terms (free of usage in a scientific context, authors cited); the 12 clusters' members: Vasiliev and Baumgardt 2021 CC BY 4.0, Gaia EDR3 CC BY-NC 3.0 IGO (ESA).
+- **What is missing is tracked in:** internal #819 (King-profile points, spec 0075 task 19, W3-a); internal #417, #425 (real members)
 - **Records (33):**
   - dso (33): `m2`, `m3`, `m4`, `m5`, `m9`, `m10`, `m12`, `m13`, `m14`, `m15`, `m19`, `m22`, `m28`, `m30`, `m53`, `m54`, `m55`, `m56`, `m62`, `m68`, `m69`, `m70`, `m71`, `m72`, `m75`, `m79`, `m80`, `m92`, `m107`, `omega-centauri`, `47-tucanae`, `ngc-2419`, `ngc-6397`
 
@@ -480,19 +481,19 @@ Honesty over the 1205 records: 377 measured, 460 modelled, 368 illustrative.
 
 **Planetary nebulae**
 
-- **Drawn by:** `site/js/scene/dsoglow.js`, `site/js/scene/deep/helix.js`, `site/js/scene/deep/ring.js`, `site/js/scene/deep/shellneb.js`, `site/js/scene/deep/gasmat.js`
+- **Drawn by:** `site/js/scene/dsoglow.js`, `site/js/scene/deep/helix.js`, `site/js/scene/deep/ring.js`, `site/js/scene/deep/shellneb.js`, `site/js/scene/deep/gasmat.js`, `site/js/scene/deep/catseye.js`, `site/js/scene/deep/softpoints.js`
 - **Default honesty:** measured
 - **On a weak device (T0, or after the frame latch):** The glow; the Helix's rings and the Ring's, the Dumbbell's and the Southern Ring's layers unmarched after the latch.
-- **Hero overrides:** `helix` (registry/deepsky-heroes/helix.yaml), `m57` (registry/deepsky-heroes/m57.yaml), `m27` (registry/deepsky-heroes/m27.yaml), `southern-ring` (registry/deepsky-heroes/southern-ring.yaml)
+- **Hero overrides:** `helix` (registry/deepsky-heroes/helix.yaml), `m57` (registry/deepsky-heroes/m57.yaml), `m27` (registry/deepsky-heroes/m27.yaml), `southern-ring` (registry/deepsky-heroes/southern-ring.yaml), `catseye` (registry/deepsky-heroes/catseye.yaml)
 - **Source:** Photographs of M27, M57, the Helix and the Southern Ring; the Helix hero from O'Dell, McCullough & Meixner 2004 (two rings) and the knots of Meixner et al. 2005 and Matsuura et al. 2009.
 - **Dates and filters:** Photographs as registry/nebulae.yaml dates them; the Helix's light from eso0907a.
 - **Measured, modelled or reconstructed:** Measured: the photographs, the rings' sizes and tilts. Reconstructed: which ring each point's light belongs to, the slabs' thickness. Illustrative: the knots' places (seeded).
 - **Rights:** ESO, ESA/Hubble, ESA/Webb CC BY 4.0; papers cited.
 - **What is missing is tracked in:** #872 (M57 as a shell, W3-b)
-- **Records (23):**
+- **Records (24):**
   - dso (15): `m27`, `m57`, `m76`, `m97`, `helix-nebula`, `cats-eye-nebula`, `eskimo-nebula`, `saturn-nebula`, `butterfly-nebula`, `ghost-of-jupiter`, `blue-snowball`, `skull-nebula`, `blinking-planetary`, `southern-ring-nebula`, `ngc-7027`
   - photographs (4): `helix-nebula`, `m27`, `m57`, `southern-ring-nebula`
-  - heroes (4): `helix`, `m27`, `m57`, `southern-ring`
+  - heroes (5): `catseye`, `helix`, `m27`, `m57`, `southern-ring`
 
 ### DARK_NEBULA
 
@@ -534,19 +535,19 @@ Honesty over the 1205 records: 377 measured, 460 modelled, 368 illustrative.
 
 **Supernova remnants**
 
-- **Drawn by:** `site/js/scene/nebulae.js`, `site/js/scene/dsoglow.js`, `site/js/scene/deep/remnant.js`, `site/js/scene/deep/casa.js`, `site/js/scene/deep/crab.js`, `site/js/scene/deep/sn1987a.js`
+- **Drawn by:** `site/js/scene/nebulae.js`, `site/js/scene/dsoglow.js`, `site/js/scene/deep/remnant.js`, `site/js/scene/deep/casa.js`, `site/js/scene/deep/crab.js`, `site/js/scene/deep/sn1987a.js`, `site/js/scene/deep/vela.js`, `site/js/scene/deep/softpoints.js`
 - **Default honesty:** measured
 - **On a weak device (T0, or after the frame latch):** The photograph of the Crab or the Veil; the glow elsewhere.
-- **Hero overrides:** `crab` (registry/deepsky-heroes/crab.yaml), `veil` (registry/deepsky-heroes/veil.yaml), `casa` (registry/deepsky-heroes/casa.yaml), `sn1987a` (registry/deepsky-heroes/sn1987a.yaml)
-- **Source:** Photographs of M1 (the Crab) and the Veil; OpenNGC; for the Crab's model Martin, Milisavljevic & Drissen 2021 (the outline and the filaments' scale) and Ng & Romani 2004, 2008 (the pulsar wind's rings).
+- **Hero overrides:** `crab` (registry/deepsky-heroes/crab.yaml), `veil` (registry/deepsky-heroes/veil.yaml), `casa` (registry/deepsky-heroes/casa.yaml), `sn1987a` (registry/deepsky-heroes/sn1987a.yaml), `vela` (registry/deepsky-heroes/vela.yaml)
+- **Source:** Photographs of M1 (the Crab) and the Veil; OpenNGC; for the Crab's model Martin, Milisavljevic & Drissen 2021 (the outline and the filaments' scale) and Ng & Romani 2004, 2008 (the pulsar wind's rings, and the Vela pulsar wind nebula's two tori).
 - **Dates and filters:** As the photographs' rows.
 - **Measured, modelled or reconstructed:** Measured: the photographs; the Crab's outline, empty middle, pinched waist, lobes and honeycomb scale, its pulsar wind's two rings and its growth rate. Reconstructed: the Veil's shell in depth, its light the photograph's (W3-c). Modelled: the Crab as a cage of filaments round a glow (since 2026-11-16): each filament's place, the jets, the growth law from 1054. Illustrative: the Crab's colours (Hubble's false-colour mosaic; X-rays violet-blue), and the glow elsewhere.
 - **Rights:** CC BY 4.0 photographs; OpenNGC CC BY-SA 4.0.
 - **What is missing is tracked in:** internal #784 (shells, W3-c); internal #549 (NASA meshes wait on a licence)
-- **Records (10):**
-  - dso (4): `m1`, `veil-nebula`, `cassiopeia-a`, `sn-1987a`
+- **Records (12):**
+  - dso (5): `m1`, `veil-nebula`, `cassiopeia-a`, `sn-1987a`, `vela-pulsar-wind-nebula`
   - photographs (2): `m1`, `veil-nebula`
-  - heroes (4): `casa`, `crab`, `sn1987a`, `veil`
+  - heroes (5): `casa`, `crab`, `sn1987a`, `veil`, `vela`
 
 ### GALAXY_SPIRAL
 
@@ -663,6 +664,20 @@ Honesty over the 1205 records: 377 measured, 460 modelled, 368 illustrative.
 - **Measured, modelled or reconstructed:** Measured: each galaxy's direction, and its size and light in the catalogue's band. Measured or inferred: its distance (its own by SBF for 71 Virgo galaxies, its cluster's by SBF or by the members' mean redshift otherwise). Modelled: its depth inside the cluster where it has no distance of its own. Illustrative: the round, centrally peaked shape.
 - **Rights:** VizieR: free of usage in a scientific context, the original authors cited; SDSS: public domain.
 - **What is missing is tracked in:** internal #784 (clusters as searchable records with a card: 1.3+; they are drawn, not yet records)
+- **Records:** none on the map today.
+
+### LOCAL_DUST
+
+**The Sun's neighbourhood in dust (the Local Bubble)** (a class of the house, not of the package)
+
+- **Drawn by:** `site/js/scene/deep/localdust.js`
+- **Default honesty:** modelled
+- **On a weak device (T0, or after the frame latch):** Nothing is drawn on tier 0 or under the Eye exposure; on every other look one Points draw of 40 000 points, faded in as the camera leaves the neighbourhood (300 to 1 500 ly out of the Sun) and out far away (8 000 to 30 000 ly).
+- **Source:** Edenhofer G., Zucker C., Frank P., Saydjari A.K., Speagle J.S., Finkbeiner D., Ensslin T. 2024, A&A 685, A82, A parsec-scale Galactic 3D dust map out to 1.25 kpc from the Sun (arXiv:2308.01295), Zenodo 10.5281/zenodo.8187943, mean_and_std_xyz.fits; the Local Bubble's shell from O'Neill T.J., Zucker C., Goodman A.A., Edenhofer G. 2024, ApJ 973, 138 (arXiv:2403.04961).
+- **Dates and filters:** The map is built from Gaia DR3 (2022) and 2MASS; data record read 2026-11-17.
+- **Measured, modelled or reconstructed:** Measured: where the dust is and how dense (the posterior mean of the extinction density from Gaia starlight) in 8 pc cells within 640 pc of the Sun, in the map's own Galactic axes; its resolution is the map's (about 14 arcminutes on the sky), and its far field is less certain. Modelled: the points, a seeded random sample of 40 000 drawn in proportion to the density (capped at its 99.7th percentile so the densest clouds do not take them all), each at a random place in its cell and quantised to 5 pc: a point is not a dust grain and their number is not a mass. Illustrative: the soft warm colour (real dust is dark against the stars and glows only in the infrared), the brightness law. Not drawn: the dust dimming the stars behind it, the standard deviation of the map, anything beyond 640 pc.
+- **Rights:** Edenhofer et al. 2024 data: CC BY 4.0 (the Zenodo record's licence field); built from Gaia DR3, CC BY-NC 3.0 IGO (ESA), so site/data/deep/localdust.bin keeps the non-commercial term. Space Radar is free and non-commercial.
+- **What is missing is tracked in:** internal #423 (a searchable record with a card, and the dust dimming the stars behind it: later; this is drawn, not yet a record)
 - **Records:** none on the map today.
 
 ### COSMIC_WEB

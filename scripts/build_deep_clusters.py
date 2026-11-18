@@ -60,6 +60,7 @@ DSO = ROOT / "site" / "data" / "dso.json"
 STARS = ROOT / "site" / "data" / "stars3d.bin"
 OUT_JSON = ROOT / "site" / "data" / "deep" / "clusters.json"
 OUT_BIN = ROOT / "site" / "data" / "deep" / "clusters.bin"
+GLOBULAR_MEMBERS = ROOT / "site" / "data" / "deep" / "globular-members.json"  # scripts/build_globular_members.py (run it first; optional)
 DEFAULT_CACHE = Path.home() / "space-radar-handoff" / "release-1.2" / "W3-a" / "cache"
 ASU = "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
 UA = "space-radar (https://github.com/Sara-Managed-Projects/space-radar)"
@@ -184,6 +185,9 @@ def bake(cache: Path) -> tuple[dict, bytes]:
     recs = {o["id"]: o for o in dso["objects"]}
     harris = harris_rows(cache)
 
+    # The globulars that also have their real Gaia members (internal #425): the count drawn and the count inside rt,
+    # so the card can say it before the member file (fetched lazily) has arrived.
+    gm = {c["id"]: c for c in json.loads(GLOBULAR_MEMBERS.read_text())["clusters"]} if GLOBULAR_MEMBERS.exists() else {}
     globulars = []
     for o in dso["objects"]:
         if o.get("typeCode") != "GCl":
@@ -201,6 +205,9 @@ def bake(cache: Path) -> tuple[dict, bytes]:
             "mHB": round(d_hb, 2) if d_hb is not None else None, "logRhoc": num(h["log(rhoc)"]), "rsunKpc": num(h["Rsun"]),
             "ebv": num(h["E(B-V)"]),
         })
+        if o["id"] in gm:
+            globulars[-1]["gaiaMembers"] = gm[o["id"]]["count"]
+            globulars[-1]["gaiaInRt"] = gm[o["id"]]["membersInRt"]
 
     clusters = {r["Name"]: r for r in rows((cache / "hr23-clusters.tsv").read_text())}
     hyg = hyg_directions()
@@ -291,6 +298,7 @@ def bake(cache: Path) -> tuple[dict, bytes]:
         "sources": {
             "globular": "Harris W.E. 1996, AJ 112, 1487 (VizieR VII/202)",
             "open": "Hunt E.L. & Reffert S. 2023, A&A 673, A114 (VizieR J/A+A/673/A114), Gaia DR3 members",
+            **({"globularMembers": "Vasiliev E. & Baumgardt H. 2021, MNRAS 505, 5978 (Zenodo 10.5281/zenodo.4891252, CC BY 4.0): the real members of %d globulars, in globular-members.{json,bin}" % len(gm)} if gm else {}),
             "gaia": "ESA/Gaia/DPAC, Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1; CC BY-NC 3.0 IGO",
             "extinction": "Wang S. & Chen X. 2019, ApJ 877, 116 (A_G / A_V = 0.789, E(BP-RP) / A_V = 0.413)",
         },
