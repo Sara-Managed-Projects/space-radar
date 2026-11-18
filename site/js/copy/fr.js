@@ -124,6 +124,7 @@ const TYPES = {
   'spiral galaxy seen face-on': 'galaxie spirale vue de face',
   'barred spiral galaxy seen nearly edge-on': 'galaxie spirale barrée vue presque par la tranche',
   'pair of colliding galaxies': 'paire de galaxies en collision',
+  'cavity in the interstellar medium': 'cavité dans le milieu interstellaire',
   'barred spiral galaxy — the one we live in': 'galaxie spirale barrée — celle où nous vivons',
 };
 
@@ -1847,6 +1848,10 @@ export const COPY = {
       "dso-milky-way": {
         "drawn": "une illustration construite sur des mesures",
         "split": "Mesuré : les étoiles à quelques milliers d’années-lumière (Gaia), l’angle de la barre, les directions le long des bras et les bras les plus proches (Reid et al. 2019). Déduit : l’autre côté, au-delà du centre, caché par la poussière ; ses bras sont les bras proches prolongés. Quatre courants d’étoiles (Sagittaire, Orphan-Chenab, GD-1, Palomar 5) sont dessinés d’après la bibliothèque galstreams (Mateu 2023) : la place de chacun dans le ciel est mesurée, ainsi que sa distance sauf pour GD-1, dont la distance est supposée ; le ruban d’étoiles autour de chaque ligne est illustratif."
+      },
+      "dso-local-bubble": {
+        "drawn": "des points de poussière tirés d’une carte mesurée",
+        "split": "Mesuré : où est la poussière et quelle est sa densité, par cellules de 8 parsecs, d’après la lumière des étoiles de Gaia (Edenhofer et autres, 2024), et avec elle le creux autour du Soleil : aucune poussière à moins de 40 parsecs et une paroi à 170 parsecs en moyenne, épaisse d’environ 35 (O’Neill et autres, 2024). Modélisé : chaque point est un tirage au hasard dans cette densité, ni un grain ni un nuage, et la poussière n’atténue pas encore les étoiles derrière elle. Illustratif : la couleur chaude, car la poussière est sombre devant les étoiles. Non mesuré ici : le gaz dans le creux, son âge et sa formation. L’article ne donne pas de centre ; cette fiche se tient au milieu que montrent les points, à environ 10 parsecs près. Pas encore relu par un astronome."
       }
     }
   },

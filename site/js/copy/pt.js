@@ -108,6 +108,7 @@ const TYPES = {
   'spiral galaxy seen face-on': 'galáxia espiral vista de frente',
   'barred spiral galaxy seen nearly edge-on': 'galáxia espiral barrada vista quase de perfil',
   'pair of colliding galaxies': 'par de galáxias em colisão',
+  'cavity in the interstellar medium': 'cavidade no meio interestelar',
   'barred spiral galaxy — the one we live in': 'galáxia espiral barrada — a nossa',
 };
 
@@ -1833,6 +1834,10 @@ export const COPY = {
       "dso-milky-way": {
         "drawn": "uma ilustração construída sobre medições",
         "split": "Medido: as estrelas a poucos milhares de anos-luz (Gaia), o ângulo da barra, as direções ao longo dos braços e os braços mais próximos (Reid et al. 2019). Deduzido: o lado distante, além do centro, escondido pela poeira; os braços dele são os próximos levados para lá. Quatro correntes estelares (Sagitário, Órfã-Chenab, GD-1, Palomar 5) são desenhadas a partir da biblioteca galstreams (Mateu 2023): onde cada uma está no céu é medido, e também a sua distância, exceto a de GD-1, que é presumida; a faixa de estrelas em volta de cada linha é ilustrativa."
+      },
+      "dso-local-bubble": {
+        "drawn": "pontos de poeira amostrados de um mapa medido",
+        "split": "Medido: onde está a poeira e quão densa é, em células de 8 parsecs, a partir da luz estelar do Gaia (Edenhofer e outros, 2024), e com isso o vazio em torno do Sol: nenhuma poeira a menos de 40 parsecs e uma parede a 170 parsecs em média, com cerca de 35 de espessura (O’Neill e outros, 2024). Modelado: cada ponto é um sorteio aleatório dessa densidade, não um grão nem uma nuvem, e a poeira ainda não escurece as estrelas atrás dela. Ilustrativo: a cor quente, pois a poeira é escura diante das estrelas. Não medido aqui: o gás dentro do vazio, a sua idade e como se formou. O artigo não dá um centro; este registro fica no meio que os pontos mostram, com cerca de 10 parsecs de margem. Ainda não revisado por um astrônomo."
       }
     }
   },

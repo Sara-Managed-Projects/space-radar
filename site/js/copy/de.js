@@ -145,6 +145,7 @@ const TYPES = {
   'spiral galaxy seen face-on': 'Spiralgalaxie in Draufsicht',
   'barred spiral galaxy seen nearly edge-on': 'Balkenspiralgalaxie, fast von der Kante gesehen',
   'pair of colliding galaxies': 'Paar kollidierender Galaxien',
+  'cavity in the interstellar medium': 'Hohlraum im interstellaren Medium',
 };
 
 export const COPY = {
@@ -1844,6 +1845,10 @@ export const COPY = {
       "dso-milky-way": {
         "drawn": "eine Illustration auf Grundlage von Messungen",
         "split": "Gemessen: die Sterne innerhalb weniger tausend Lichtjahre (Gaia), der Winkel des Balkens, die Richtungen entlang der Arme und die näheren Arme (Reid et al. 2019). Erschlossen: die ferne Seite hinter dem Zentrum, vom Staub verdeckt; ihre Arme sind die nahen, um das Zentrum herum fortgesetzt. Vier Sternströme (Sagittarius, Orphan-Chenab, GD-1, Palomar 5) werden nach der Bibliothek galstreams (Mateu 2023) gezeichnet: Wo jeder am Himmel liegt, ist gemessen, ebenso seine Entfernung, außer bei GD-1, dessen Entfernung angenommen ist; das Band aus Sternen um jede Linie ist illustrativ."
+      },
+      "dso-local-bubble": {
+        "drawn": "Staubpunkte, aus einer gemessenen Karte gezogen",
+        "split": "Gemessen: wo der Staub ist und wie dicht, in Zellen von 8 Parsec, aus dem Sternlicht von Gaia (Edenhofer und andere, 2024), und damit die Höhle um die Sonne: kein Staub innerhalb von 40 Parsec und eine Wand bei durchschnittlich 170 Parsec, etwa 35 dick (O’Neill und andere, 2024). Modelliert: Jeder Punkt ist eine Zufallsziehung aus dieser Dichte, kein Korn und keine Wolke, und der Staub dunkelt die Sterne dahinter noch nicht ab. Illustrativ: die warme Farbe, denn Staub ist vor den Sternen dunkel. Hier nicht gemessen: das Gas in der Höhle, ihr Alter und wie sie entstand. Die Arbeit gibt keinen Mittelpunkt an; dieser Eintrag steht in der Mitte, die die Punkte zeigen, auf etwa 10 Parsec genau. Noch nicht von einem Astronomen geprüft."
       }
     }
   },
