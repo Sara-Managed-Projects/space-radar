@@ -102,6 +102,7 @@ const TYPES = {
   'dark nebula': 'nébuleuse sombre',
   'young open cluster in an emission nebula': 'jeune amas ouvert dans une nébuleuse en émission',
   'supernova remnant': 'rémanent de supernova',
+  'pulsar wind nebula': 'nébuleuse de vent de pulsar',
   'nebula with cluster': 'nébuleuse avec un amas',
   'milky way star cloud': 'nuage d’étoiles de la Voie lactée',
   'optical double': 'étoile double optique',

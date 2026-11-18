@@ -123,6 +123,7 @@ const TYPES = {
   'dark nebula': 'Dunkelnebel',
   'young open cluster in an emission nebula': 'junger offener Sternhaufen in einem Emissionsnebel',
   'supernova remnant': 'Supernova-Überrest',
+  'pulsar wind nebula': 'Pulsarwindnebel',
   'nebula with cluster': 'Nebel mit Sternhaufen',
   'milky way star cloud': 'Sternwolke der Milchstraße',
   'optical double': 'optischer Doppelstern',
