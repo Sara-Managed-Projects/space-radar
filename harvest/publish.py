@@ -44,6 +44,7 @@ from . import columnar
 from . import snapshot as snap
 
 NEO_ID = "jpl-sbdb-neo"
+COMETS_ID = "jpl-sbdb-comets"
 CAD_ID = "jpl-cad"
 USABLE = ("ok", "not-modified", "not-due")
 OFF_NOTE = "switched off in registry/sources.yaml (enabled: false): not fetched and not published"
@@ -152,7 +153,7 @@ def force_due(previous: snap.Manifest, now: datetime, slack_s: int = 0) -> set[s
 
 
 def finish(store: snap.Store, manifest: snap.Manifest, previous: snap.Manifest, sources, now: datetime,
-           log=print, notable: set[int] | None = None, refine_neo=None) -> None:
+           log=print, notable: set[int] | None = None, refine_neo=None, refine_comets=None) -> None:
     """Apply rules 1 to 5 above to `manifest` (this run's rows) and write the files they make to `store`."""
     notable = notable_ids() if notable is None else notable
 
@@ -170,6 +171,7 @@ def finish(store: snap.Store, manifest: snap.Manifest, previous: snap.Manifest, 
 
     # 3. the cut
     _cut_neo(store, manifest, now, log, refine_neo)
+    _refine_comets(store, manifest, now, log, refine_comets)
 
     # 4. the derived files
     for parent, child, keep, what in derived(notable):
@@ -210,6 +212,30 @@ def _cut_neo(store, manifest, now, log, refine=None) -> None:
     neo.items = len(cut["data"])
     neo.note = neo_doc["note"]
     log(f"    {NEO_ID}: {before} rows -> {len(cut['data'])} published ({wanted} close approaches)")
+
+
+def _refine_comets(store, manifest, now, log, refine=None) -> None:
+    """Internal #393: the short list of comets the app draws by name or ranks brightest gets Horizons' elements at the start of
+    today (harvest/comet_elements.py). Once per fetched copy: a copy that says so in its note is left alone. Never raises."""
+    e = manifest.snapshots.get(COMETS_ID)
+    if refine is None or not _usable(e) or e.note:
+        return
+    try:
+        doc = snap.read_snapshot(store, COMETS_ID)
+        if doc is None:
+            return
+        body, was_str = _rows_of(doc)
+        new, refined = refine(body, now, log=log)
+        if not refined:
+            return
+        doc["body"] = json.dumps(new) if was_str else new
+        doc["note"] = (f"{refined} comets (the ones the app draws by name and the brightest now) carry JPL Horizons' osculating "
+                       f"elements at the start of {now.strftime('%Y-%m-%d')} UT in place of SBDB's own (comet_elements.py)")
+        e.bytes = snap.write_snapshot(store, doc, now=now)
+        e.note = doc["note"]
+        log(f"    {COMETS_ID}: {refined} comets with Horizons' elements")
+    except Exception as ex:
+        log(f"    {COMETS_ID}: Horizons elements skipped ({str(ex)[:80]})")
 
 
 def _derive(store, manifest, previous, parent_id, child_id, keep, what, now, log) -> None:
@@ -264,8 +290,8 @@ def finish_and_queue(store: snap.Store, manifest: snap.Manifest, previous: snap.
                      log=print, deadline: float | None = None) -> None:
     """`finish`, then the daily slow-job queue (harvest/slowjobs.py: tile sets), which writes beside the snapshots
     and puts nothing in the manifest. What the hourly run and `python3 -m harvest` pass to `run`."""
-    from . import neo_elements
-    finish(store, manifest, previous, sources, now, log, refine_neo=neo_elements.refine_body)
+    from . import comet_elements, neo_elements
+    finish(store, manifest, previous, sources, now, log, refine_neo=neo_elements.refine_body, refine_comets=comet_elements.refine_body)
     from . import slowjobs
     slowjobs.run_due(store, now, log=log, deadline=deadline)
 

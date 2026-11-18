@@ -175,5 +175,19 @@ check(whyLine({ klass: 'station', name: 'ISS (ZARYA)', meta: { why: 'Seven peopl
   const capella = STARS_NOTABLE.find((r) => r.name === 'Capella');
   check(capella && capella.radius_suns === 11.98 && capella.radius_err_suns === 0.57 && capella.teff_k === 4970 && capella.teff_err_k === 50, `Capella carries the radius and temperature of Capella Aa, 11.98±0.57 Rsun and 4970±50 K (got ${capella && capella.radius_suns}±${capella && capella.radius_err_suns} Rsun, ${capella && capella.teff_k}±${capella && capella.teff_err_k} K)`);
 }
+// Gaia DR3 distances (internal #383): the record's distance is 3261.5638 / parallax, its position lies at that distance along HYG's direction,
+// and the card's source row says which Gaia source it came from. Asserted by value so a row on the wrong star fails.
+{
+  const gaia = STARS_NOTABLE.filter((r) => r.plx_mas);
+  check(gaia.length === 6, `six famous stars carry a Gaia DR3 parallax (${gaia.length})`);
+  const want = { 'Wolf 359': 7.86, "Van Maanen's Star": 14.07, 'Proxima Centauri': 4.25, "Barnard's Star": 5.96, "Kapteyn's Star": 12.83, '61 Cygni A': 11.40 };
+  for (const row of gaia) {
+    const rec = recs.find((r) => r.name === row.name);
+    check(rec && Math.abs(rec.meta.distLy - want[row.name]) < 0.006, `${row.name}: distance ${rec && rec.meta.distLy} ly from parallax ${row.plx_mas} mas, expected ${want[row.name]}`);
+    check(rec && Math.abs(Math.hypot(rec.pos.x, rec.pos.y, rec.pos.z) / 9460730472580.8 - rec.meta.distLy) < 0.02, `${row.name}: the drawn position is at the card's distance`);
+    check(rec && rec.meta.distSource.includes(`Gaia DR3 ${row.gaia_dr3}`) && /^\d{17,19}$/.test(row.gaia_dr3), `${row.name}: the card names its Gaia source`);
+  }
+  check(!recs.find((r) => r.name === 'Alpha Centauri A').meta.distSource, 'Alpha Centauri A keeps HYG (no Gaia DR3 solution)');
+}
 if (problems.length) { console.error('famous stars FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`famous stars ok: ${famous.length} rows each reach one star record with its line and source, labels name them on the ladder, the card prints the line, search finds renamed stars both ways`);

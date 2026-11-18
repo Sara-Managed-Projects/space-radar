@@ -207,6 +207,8 @@ jobs:
         run: python3 tests/test_harvest_publish.py
       - name: "Horizons elements at each close approach: parsed to SBDB units, kept row by row, fail-soft (internal #392)"
         run: python3 tests/test_harvest_neo_elements.py
+      - name: "Horizons elements for the comets the app names or ranks brightest: short list, hyperbolas, fail-soft (internal #393)"
+        run: python3 tests/test_harvest_comet_elements.py
       # 0078 r14-data: end
       # Every user-visible string lives in site/js/copy/en.js. Three files cited this check by name
       # before it existed; on the first run it was ever given it found three real leaks in

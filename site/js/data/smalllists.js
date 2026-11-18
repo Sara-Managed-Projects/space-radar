@@ -43,11 +43,11 @@ export function showerRecords(doc) {
         iauNo: r.iau, code: r.code || null,
         losDeg: r.los, losFromDeg: r.los0 ?? null, losToDeg: r.los1 ?? null,
         raDeg: r.ra, decDeg: r.dec, vgKms: r.vg,
-        peakMd: r.peak, solutions: r.n,
+        peakMd: r.peak, peakIauMd: r.peakIau || null, peakFrom: r.peakFrom || null, solutions: r.n, // a featured shower's peak day is the IMO calendar's (internal #391)
         parent: r.parent || null, activity: r.activity || null,
         oursId: r.ours || null, zhr: r.zhr ?? null, clsLine: 'shower',
         asOf: doc.asOf,
-        cite: 'IAU Meteor Data Center, established meteor showers, median of the published solutions',
+        cite: 'IAU Meteor Data Center, established meteor showers, median of the published solutions' + (r.peakFrom ? `; peak day: ${r.peakFrom}` : ''),
       },
     });
   }
