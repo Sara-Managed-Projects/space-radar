@@ -5716,6 +5716,7 @@ COPY.momentStories['fengyun-1c'] = {
 // b200-c3-learn: end
 // b200-c2-deep: begin -- the 3D stars over deep time, the variable stars worth going out for, the black holes against the EHT's pictures and the cards in the trips' voice (copy/en.deep.js, forge #141, #142, #149, #151), machine-drafted
 Object.assign(COPY, {
+  "depthNote": { "modelled": "العمق مُنمذج: المقيس هو مسافات النجوم فقط." },
   "starDeep": {
     "moved": "نجوم {year}: كل نجم أُزيح بحركته المقيسة (هيباركوس وغايا، عبر HYG)؛ ومدّ هذه الحركات في خطوط مستقيمة طوال هذا الزمن منمذج.",
     "hidden": "لا تُرسم النجوم التي لم تُقس حركتها على هذا البعد من اليوم.",

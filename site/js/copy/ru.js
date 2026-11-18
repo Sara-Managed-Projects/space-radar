@@ -5731,6 +5731,7 @@ COPY.momentStories['fengyun-1c'] = {
 // b200-c3-learn: end
 // b200-c2-deep: begin -- the 3D stars over deep time, the variable stars worth going out for, the black holes against the EHT's pictures and the cards in the trips' voice (copy/en.deep.js, forge #141, #142, #149, #151), machine-drafted
 Object.assign(COPY, {
+  "depthNote": { "modelled": "Глубина смоделирована: измерены только расстояния до звёзд." },
   "starDeep": {
     "moved": "Звёзды {year}: каждая смещена по собственному измеренному движению (Hipparcos и Gaia, через HYG); продолжать эти движения по прямой так долго — модель.",
     "hidden": "Звёзды без измеренного движения так далеко от сегодняшнего дня не рисуются.",

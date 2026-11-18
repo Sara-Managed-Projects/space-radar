@@ -8,6 +8,8 @@ import { HOOK } from './lang.js';
 const KEYS_BEFORE = HOOK.localise ? new Set(Object.keys(COPY)) : null;
 
 Object.assign(COPY, {
+  // scene/depthnote.js (internal #431): the caption while a reconstructed hero is turned more than 20 degrees off the Sun's line.
+  depthNote: { modelled: 'Depth modelled: only the stars’ distances are measured.' },
   // scene/stardeep.js: the line under the time bar while the 3D stars are moved.
   starDeep: {
     moved: 'The stars of {year}: each moved by its own measured motion (Hipparcos and Gaia, through HYG); carrying them in straight lines for so long is modelled.',

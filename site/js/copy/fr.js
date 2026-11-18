@@ -5823,6 +5823,7 @@ COPY.momentStories['fengyun-1c'] = {
 // b200-c3-learn: end
 // b200-c2-deep: begin -- the 3D stars over deep time, the variable stars worth going out for, the black holes against the EHT's pictures and the cards in the trips' voice (copy/en.deep.js, forge #141, #142, #149, #151), machine-drafted
 Object.assign(COPY, {
+  "depthNote": { "modelled": "Profondeur modélisée : seules les distances des étoiles sont mesurées." },
   "starDeep": {
     "moved": "Les étoiles de {year} : chacune déplacée de son propre mouvement mesuré (Hipparcos et Gaia, via HYG) ; les prolonger en ligne droite aussi longtemps est modélisé.",
     "hidden": "Les étoiles sans mouvement mesuré ne sont pas dessinées aussi loin d’aujourd’hui.",

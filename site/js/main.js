@@ -340,11 +340,14 @@ export async function boot({ setStatus } = {}) {
   // b200-s4b-look: a failed fetch is tried once more, five seconds on, before the stars stay unmoved (2.0.0 final look, 15)
   const starDeep = (again) => import('./scene/stardeep.js').then((m) => { ctx.starDeep = m.attachStarDeep(ctx, clock); }).catch((e) => (again ? console.warn('stardeep', e) : setTimeout(starDeep, 5000, 1)));
   // b200-c2-deep: end
+  // internal #431: "Depth modelled" while a reconstructed hero is seen more than 20 degrees off the Sun's line (scene/depthnote.js)
+  const depthNote = () => import('./scene/depthnote.js').then((m) => { ctx.depthNote = m.attachDepthNote(ctx); }).catch((e) => console.warn('depthnote', e));
   // b200-s5-ci: begin -- both modules wait for sr:layers-ready, as everything else afterFirstVisit runs does. Their timer started
   // here at boot fired before the layers on a slow boot: it wrote window.__srFirstVisitOver early, so the byte gate left out
   // part of the real first visit, and it fetched these modules and their data inside it. sr:layers-ready comes later in boot().
   window.addEventListener('sr:layers-ready', () => afterFirstVisit(WORLDLIGHTS_IMPORT_MS, () => {
     starDeep();
+    depthNote();
     import('./scene/stars3dtiles.js').then((m) => { ctx.starTiers = m.attachStarTiers(ctx); }).catch((e) => console.warn('stars3d tiers', e)); // b200-f10-stars3d: AT-HYG's stars by octree node round the camera (scene/stars3dtiles.js, forge #140)
   }), { once: true });
   // b200-s5-ci: end
