@@ -69,6 +69,7 @@ const MASCULINE = new Set(['planeta', 'cometa', 'mapa', 'dia', 'sistema', 'progr
 const TYPES = {
   'two-lobed nebula of dust and gas': "nebulosa bilobada de poeira e gás",
   'supernova remnant': 'remanescente de supernova',
+  'pulsar wind nebula': 'nebulosa de vento de pulsar',
   'globular cluster': 'aglomerado globular',
   'open cluster': 'aglomerado aberto',
   'nebula with cluster': 'nebulosa com aglomerado',
