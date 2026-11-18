@@ -1164,7 +1164,7 @@ objects:
     maj_ax_arcmin: 2.25     # 4 pc across at 6.1 kpc: the dust Bond et al. 2003 saw lies within 2 pc of the star
     con: Monoceros
     source: "Sparks et al. 2008, AJ 135, 605 (arXiv:0711.1495, read 2026-11-18): the distance 6.1 +/- 0.6 kpc from the echo's polarisation ring, and the echo's paraboloid; Bond et al. 2003, Nature 422, 405 (arXiv:astro-ph/0303513, read 2026-11-18): the outburst in early 2002 January, its peaks on February 6.4 and March 10.0, and the dust within 2 pc; the place: Wikipedia's infobox (ICRS, read 2026-11-18), checked against the centre of ESA/Hubble heic0503a"
-    why: "A star that swelled to a red supergiant in 2002 and lit up the dust round it: its flash is still running outward, and Hubble watched rings of that light seem to race away faster than light."
+    why: "A star that swelled in 2002 and lit the dust round it: Hubble watched rings of its flash seem to race outward faster than light."
 
   - id: bubble-nebula
     name: Bubble Nebula
