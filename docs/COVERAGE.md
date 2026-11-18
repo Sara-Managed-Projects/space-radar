@@ -14,7 +14,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 |---|---:|---:|
 | worlds | 31 | 31 |
 | rings | 1 | 1 |
-| dso | 213 | 213 |
+| dso | 214 | 214 |
 | photographs | 30 | 30 |
 | heroes | 38 | 38 |
 | exotics | 27 | 27 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 40 | 40 |
-| **all** | **1208** | **111 395** |
+| **all** | **1209** | **111 396** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -72,7 +72,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [AGN_QUASAR](#agn_quasar) | 3 | `glyphs.js`, `stage.js`, `galclusters.js` | illustrative | - |
 | [GALAXY_GROUP](#galaxy_group) | 1 | `localvolume.js` | measured | - |
 | [GALAXY_CLUSTER](#galaxy_cluster) | 0 | `galclusters.js` | modelled | - |
-| [LOCAL_DUST](#local_dust) *house* | 0 | `localdust.js` | modelled | - |
+| [LOCAL_DUST](#local_dust) *house* | 1 | `localdust.js` | modelled | - |
 | [COSMIC_WEB](#cosmic_web) | 0 | none yet (1.3+ (internal #826, #828; spec 0075 tasks 23 and 24): the DESI DR1 wedge with its footprint) | illustrative | - |
 | [CMB_AND_HORIZON](#cmb_and_horizon) | 2 | `shells.js`, `cmb.js` | measured | - |
 | [HELIOSPHERE](#heliosphere) *house* | 1 | `heliosphere.js` | modelled | - |
@@ -84,7 +84,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 1208 records: 377 measured, 462 modelled, 369 illustrative.
+Honesty over the 1209 records: 377 measured, 462 modelled, 370 illustrative.
 
 ## The classes
 
@@ -677,8 +677,9 @@ Honesty over the 1208 records: 377 measured, 462 modelled, 369 illustrative.
 - **Dates and filters:** The map is built from Gaia DR3 (2022) and 2MASS; data record read 2026-11-17.
 - **Measured, modelled or reconstructed:** Measured: where the dust is and how dense (the posterior mean of the extinction density from Gaia starlight) in 8 pc cells within 640 pc of the Sun, in the map's own Galactic axes; its resolution is the map's (about 14 arcminutes on the sky), and its far field is less certain. Modelled: the points, a seeded random sample of 40 000 drawn in proportion to the density (capped at its 99.7th percentile so the densest clouds do not take them all), each at a random place in its cell and quantised to 5 pc: a point is not a dust grain and their number is not a mass. Illustrative: the soft warm colour (real dust is dark against the stars and glows only in the infrared), the brightness law. Not drawn: the dust dimming the stars behind it, the standard deviation of the map, anything beyond 640 pc.
 - **Rights:** Edenhofer et al. 2024 data: CC BY 4.0 (the Zenodo record's licence field); built from Gaia DR3, CC BY-NC 3.0 IGO (ESA), so site/data/deep/localdust.bin keeps the non-commercial term. Space Radar is free and non-commercial.
-- **What is missing is tracked in:** internal #423 (a searchable record with a card, and the dust dimming the stars behind it: later; this is drawn, not yet a record)
-- **Records:** none on the map today.
+- **What is missing is tracked in:** internal #423 (the dust dimming the stars behind it: later; the record and its card are in)
+- **Records (1):**
+  - dso (1): `local-bubble`
 
 ### COSMIC_WEB
 

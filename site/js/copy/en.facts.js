@@ -187,6 +187,10 @@ Object.assign(COPY, {
         drawn: 'an illustration built on measurements',
         split: 'Measured: the stars within a few thousand light-years (Gaia), the bar’s angle, the directions along the arms and the nearer arms (Reid et al. 2019). Inferred: the far side beyond the centre, hidden by dust; its arms are the near ones carried round. Four stellar streams (Sagittarius, Orphan-Chenab, GD-1, Palomar 5) are drawn from the galstreams library (Mateu 2023): where each lies on the sky is measured, and so is its distance except GD-1’s, which is assumed; the ribbon of stars about each line is illustrative.',
       },
+      'dso-local-bubble': {
+        drawn: "dust points sampled from a measured map",
+        split: "Measured: where the dust is and how dense, in 8 parsec cells, from the starlight of Gaia (Edenhofer and others, 2024), and with it the hollow round the Sun: no dust within 40 parsecs and a wall at 170 parsecs on average, about 35 thick (O’Neill and others, 2024). Modelled: each point is a random draw from that density, not a grain or a cloud, and the dust does not yet dim the stars behind it. Illustrative: the warm colour, since dust is dark against the stars. Not measured here: the gas inside the hollow, its age and how it formed. The paper gives no centre; this record stands at the middle the points show, to about 10 parsecs. Not yet reviewed by an astronomer.",
+      },
     },
   },
 

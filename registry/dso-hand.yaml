@@ -1117,6 +1117,28 @@ objects:
     source: "https://en.wikipedia.org/wiki/Coalsack_Nebula (infobox, read 2026-09-09)"
     why: "A hole in the Milky Way next to the Southern Cross: not a hole but a cloud of dust so thick no starlight gets through."
 
+  # THE LOCAL BUBBLE (internal #423, the review of 2026-11-16, idea 5): the cavity of thin gas the Sun sits in, whose wall of
+  # dust is drawn from Edenhofer et al. 2024's map (site/js/scene/deep/localdust.js, LOCAL_DUST). It has no catalogue place:
+  # it SURROUNDS us. So the row stands at the middle of the cavity as the map shows it, which tests/test_localbubble_record.mjs
+  # finds from the shipped points (the mean of the wall's first dense point in 200 directions, within 25 degrees of each):
+  # (-7, 0, -2) pc in the map's Galactic axes (to the nearest parsec; the estimate's scatter is about 10 pc, so read it as
+  # "within a few tens of light-years of the Sun, which is near the middle"). That is RA 71.97, Dec +19.87, 23.7 ly away.
+  # Its size is the wall's mean distance doubled: O'Neill, Zucker, Goodman & Edenhofer 2024, ApJ 973, 138 (arXiv:2403.04961,
+  # abstract, read 2026-11-16): the shell lies at 170 pc on average (70 to 600+ pc), about 35 pc thick, 340 pc = 1 109 ly across,
+  # seen from the middle at 2 x atan(554.5 / 23.7) = 175.1 deg = 10 506 arcmin. The paper gives no centre, orientation or age.
+  - id: local-bubble
+    name: Local Bubble
+    designation: the Sun's cavity
+    type: Other
+    what: cavity in the interstellar medium
+    ra_deg: 71.9669         # the cavity's middle, from the map: see above
+    dec_deg: 19.8739
+    dist_kly: 0.0237        # 23.7 ly (7.3 pc)
+    maj_ax_arcmin: 10506    # 340 pc across, seen from its middle
+    con: Taurus
+    source: "O'Neill, Zucker, Goodman & Edenhofer 2024, ApJ 973, 138 (arXiv:2403.04961, abstract read 2026-11-16): the wall at 170 pc on average, 35 pc thick; the dust: Edenhofer et al. 2024, A&A 685, A82 (Zenodo 10.5281/zenodo.8187943, CC BY 4.0); the middle: found from that map's points by tests/test_localbubble_record.mjs"
+    why: "A hollow of very thin gas, about 1 100 light-years across, in which the Sun sits: its wall is a shell of dust, mapped from the light of Gaia's stars."
+
   - id: bubble-nebula
     name: Bubble Nebula
     designation: NGC 7635

@@ -1410,6 +1410,10 @@ jobs:
         run: node tests/test_localdust.mjs
       - name: "the dust points are the size and hash their manifest says (internal #423)"
         run: python3 scripts/build_deep_localdust.py --check
+      - name: "the Local Bubble is a searchable record, placed at the middle the dust points show, sized by its wall, with its words in eleven languages (internal #423)"
+        run: node tests/test_localbubble_record.mjs
+      - name: "Depth modelled: the caption beyond 20 degrees off the Sun's line, for the heroes whose depth is a reconstruction, in eleven languages (internal #431)"
+        run: node tests/test_depthnote.mjs
       # 0076 W4-c
       - name: "readable without WebGL, without motion, and a full link: the page without JavaScript or WebGL 2 lists every trip and the crawlable pages, a shared link carries v=1 and the build, the scene summary's words, Motion off is an instant flight and still gas (internal spec 0076 W4-c)"
         run: node tests/test_access.mjs
