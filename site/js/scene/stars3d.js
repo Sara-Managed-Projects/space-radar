@@ -238,10 +238,23 @@ export function recordsFromNames(rows) {
       // A width read off an interferometer, with its source (registry/stars-notable.yaml): the card then says "measured".
       if (famous.radius_suns > 0) { meta.measuredRadiusSuns = famous.radius_suns; meta.measuredTeffK = famous.teff_k; meta.widthSource = famous.physical_source; }
     }
-    out.push(starRecord(idx, name, { x, y, z }, meta));
+    let pos = { x, y, z };
+    // Gaia DR3 parallax (registry/stars-notable.yaml, internal #383): HYG's distance for a few near stars is older than DR3. The record takes
+    // DR3's, and its position moves along HYG's direction to it, so the card, the page and the selected star agree.
+    if (famous && famous.plx_mas > 0) {
+      const old = Math.hypot(x, y, z);
+      const ly = Math.round(PC_LY_MAS / famous.plx_mas * 100) / 100;
+      if (old > 0) pos = { x: x * ly / old, y: y * ly / old, z: z * ly / old };
+      meta.distLy = ly;
+      meta.distSource = `Gaia DR3 ${famous.gaia_dr3}, parallax ${famous.plx_mas} ± ${famous.plx_err_mas} mas`;
+    }
+    out.push(starRecord(idx, name, pos, meta));
   }
   return out;
 }
+
+// Light-years per parsec times a parallax in milliarcseconds: distance_ly = 3261.5638 / plx_mas (1 pc = 3.26156378 ly).
+const PC_LY_MAS = 3261.5637769;
 
 // The Sun's nominal radius, effective temperature and absolute bolometric magnitude (IAU 2015 B3, B2).
 export const SUN_RADIUS_KM = 695700;
