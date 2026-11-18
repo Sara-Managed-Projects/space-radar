@@ -174,8 +174,8 @@ jobs:
           except Exception as e:
               print(f"::warning::the live index could not be read ({e}); the page will ask each source itself")
               raise SystemExit(0)
-          open(dest + "index.json", "wb").write(raw)
-          for sid, row in sorted(json.loads(raw).get("snapshots", {}).items()):
+          idx = json.loads(raw); left_out = []
+          for sid, row in sorted(idx.get("snapshots", {}).items()):
               size = row.get("bytes") if isinstance(row, dict) else None
               if not isinstance(size, int) or size > 1_200_000:
                   # THE MODEL PROBE LOOKS AT ONE SATELLITE, and most satellites worth a model are on the
@@ -191,12 +191,21 @@ jobs:
                       except Exception as e:
                           print(f"no     {sid} twin: {e}")
                   else:
-                      print(f"left   {sid} ({size} B)")
+                      print(f"left   {sid} ({size} B)"); left_out.append(sid)
                   continue
               try:
                   open(dest + sid + ".json", "wb").write(get(sid + ".json", 90)); print(f"saved  {sid} ({size} B)")
               except Exception as e:
-                  print(f"no     {sid}: {e}")
+                  print(f"no     {sid}: {e}"); left_out.append(sid)
+          # A COPY NOT SAVED IS NOT OFFERED (18 Nov): the Earth data panel offers ocean currents and wind when
+          # the index names their copy (data/sources.js snapshotAvailable; no copy, no feature), so a 4.4 MB
+          # ocean-currents left out above was still offered, asked for, and answered 404 on this server: a smoke
+          # error that was the workflow's, not the page's. Only these leave the index: a layer whose copy is
+          # missing asks its upstream instead, which is not what the probes were written against.
+          for sid in left_out:
+              if sid in ("ocean-currents", "ocean-temperature", "wind"):
+                  idx.get("snapshots", {}).pop(sid, None)
+          open(dest + "index.json", "w").write(json.dumps(idx))
           PY
 
       # `harvest`: a source the live site has no copy of yet (a feature merged and not deployed), or
