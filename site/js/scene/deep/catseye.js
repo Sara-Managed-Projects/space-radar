@@ -28,7 +28,7 @@
 import { stage } from '../stage.js';
 import { drawnUnder } from '../exposure.js';
 import { placeSky, axisOnSky } from './skyplace.js';
-import { pointsMesh, packPoints, seeded, cameraIn } from './softpoints.js';
+import { pointsMesh, packPoints, seeded } from './softpoints.js';
 import '../../copy/en.deepdata.js'; // the card's words (deepCatsEye), fetched with the hero
 
 export const COPY_BLOCK = 'deepCatsEye';
@@ -44,7 +44,6 @@ const norm = (v) => { const l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] 
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const add = (a, b, k = 1) => [a[0] + b[0] * k, a[1] + b[1] * k, a[2] + b[2] * k];
 const scale = (a, k) => [a[0] * k, a[1] * k, a[2] * k];
-const mix = (a, b, t) => a.map((x, i) => x + (b[i] - x) * t);
 
 /** Light-years in an arcsecond at a distance. Pure. */
 export const arcsecLy = (distLy) => distLy * ARCSEC;
