@@ -239,5 +239,18 @@ check(!field.group.visible && field.state().calls === 0, 'off when the layer is 
 }
 field.dispose();
 
+// A hyperbola just above e = 1, years from perihelion (look smoke, 18 Nov): this file's own Newton used to walk off to 1e53 au, which
+// is Infinity as float32 and made the points' bounding sphere radius NaN. Elements of C/2012 S1 (ISON) and C/1962 C1 as the SBDB gave them.
+for (const [name, el] of [
+  ['ISON', { qKm: 1864995.5283963175, e: 1.00000509491957, iRad: 1.0849472114283036, omRad: 5.160703702690624, wRad: 6.030831583531114, tpMs: 1385662855492.8079 }],
+  ['Seki-Lines', { qKm: 4697026.834359933, e: 1.000004460412146, iRad: 1.1347167737332677, omRad: 5.317628882861394, wRad: 0.2002467513069911, tpMs: -244627517117.18292 }],
+]) {
+  for (const years of [-10, -1, 0.1, 1, 5, 10, 100]) {
+    const p = F.keplerPosAu(el, el.tpMs + years * 365.25 * 864e5, [0, 0, 0, 0]);
+    check(p && [p[0], p[1], p[2]].every((v) => Number.isFinite(Math.fround(v))), `${name} ${years} y from perihelion has a place a float32 can hold (${p && p.slice(0, 3)})`);
+    check(p && p[3] < 5000 * Math.max(1, Math.abs(years)), `${name} ${years} y from perihelion is ${p && p[3].toExponential(2)} au out: a hyperbolic comet is not farther than its speed gives`);
+  }
+}
+
 if (problems.length) { console.error(problems.map((p) => `FAIL ${p}`).join('\n')); process.exit(1); }
 console.log('cometfield: ok');
