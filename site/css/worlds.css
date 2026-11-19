@@ -290,6 +290,18 @@ html.sr-phone .sr-helio-legend {
   max-height: 44vh;
 }
 
+/* The note steps one rail row lower when the scale rail is up under the size badge, or on a launch day (finishers.css):
+   the chip and its legend step with it, or the chip lands on the note's Sources and Close buttons (CI ui walk,
+   Planets tab at 390 px, 2026-11-19: both cut to 23 px tall). */
+html.sr-phone:has(.sr-scalebadge:not([hidden])):has(.sr-scalerail:not([hidden])) .sr-helio-chip,
+html.sr-phone.sr-launchday:not([data-sheet='full']):has(.sr-scalerail:not([hidden])) .sr-helio-chip {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + max(44px, var(--sr-badge-h, 44px)) + 44px + var(--sp-2) + 84px);
+}
+html.sr-phone:has(.sr-scalebadge:not([hidden])):has(.sr-scalerail:not([hidden])) .sr-helio-legend,
+html.sr-phone.sr-launchday:not([data-sheet='full']):has(.sr-scalerail:not([hidden])) .sr-helio-legend {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + max(44px, var(--sr-badge-h, 44px)) + 44px + var(--sp-2) + 136px);
+}
+
 html.sr-clean .sr-helio-chip,
 html.sr-trip-mode .sr-helio-chip,
 html.sr-sharing .sr-helio-chip,
