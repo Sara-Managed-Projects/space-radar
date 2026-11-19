@@ -22,6 +22,12 @@
 # source   the page, and the day it was read.
 # mag_range   OPTIONAL. [brightest, faintest] for a star whose brightness swings by magnitudes (Mira): the card says it varies and
 #          prints no light output from one catalogue moment.
+# gaia_dr3, plx_mas, plx_err_mas  OPTIONAL (internal #383). The star's Gaia DR3 source id and parallax, read from the Gaia archive. The record's
+#          distance is 1000/plx_mas parsecs (3261.5638 light-years per parsec-mas), and its position is moved along its HYG direction to that
+#          distance, so the card, the page and the selected star agree. Only stars whose DR3 solution is good (RUWE under 1.4, error under 0.5 %).
+#          NOT given for Alpha Centauri A and B, Sirius, Procyon and Altair (too bright: SIMBAD lists no Gaia DR3 source for Sirius, Procyon or Altair, and a
+#          Gaia archive cone search around alpha Cen found no source brighter than G = 8), nor for Epsilon Eridani and Tau Ceti (RUWE 2.7 and 2.6, a poor fit). Those keep HYG's.
+#          The drawn point in stars3d.bin keeps HYG's place (under 1.3 % of the distance, at most 0.17 light-years) until that file is rebuilt.
 # mag, spect  OPTIONAL. A card value that replaces HYG's for this star when HYG's is known to be off (Sirius, internal #311); the
 #          `source` line then says where each came from.
 #
@@ -39,6 +45,10 @@ stars:
     name: Proxima Centauri
     why: "The nearest star to the Sun, a red dwarf too faint to see without a telescope. Its planet Proxima b, found in 2016, orbits in its habitable zone."
     source: "https://en.wikipedia.org/wiki/Proxima_Centauri (read 2026-09-22)"
+    # Distance (internal #383), Gaia DR3 5853498713190525696, read from the Gaia archive (gaiadr3.gaia_source) 2026-11-18, RUWE 0.97: HYG's distance for this star is older than DR3.
+    gaia_dr3: "5853498713190525696"
+    plx_mas: 768.0665
+    plx_err_mas: 0.0499
     radius_suns: 0.141
     radius_err_suns: 0.007
     teff_k: 3054
@@ -68,6 +78,10 @@ stars:
     name: Barnard's Star
     why: "It crosses the sky faster than any other star, 10.3 arcseconds a year. Four small planets were found around it in 2024 and 2025."
     source: "https://en.wikipedia.org/wiki/Barnard%27s_Star (read 2026-09-22)"
+    # Distance (internal #383), Gaia DR3 4472832130942575872, read from the Gaia archive (gaiadr3.gaia_source) 2026-11-18, RUWE 1.08: HYG's distance for this star is older than DR3.
+    gaia_dr3: "4472832130942575872"
+    plx_mas: 546.9759
+    plx_err_mas: 0.0401
     radius_suns: 0.1869
     radius_err_suns: 0.0012
     teff_k: 3222
@@ -79,6 +93,10 @@ stars:
     name: Wolf 359
     why: "A red dwarf so faint it takes a large telescope, yet only Alpha Centauri, Barnard's Star and two brown dwarfs are nearer. Star Trek set a battle here."
     source: "https://en.wikipedia.org/wiki/Wolf_359 (read 2026-09-22)"
+    # Distance (internal #383), Gaia DR3 3864972938605115520, read from the Gaia archive (gaiadr3.gaia_source) 2026-11-18, RUWE 0.84: HYG's distance for this star is older than DR3.
+    gaia_dr3: "3864972938605115520"
+    plx_mas: 415.1794
+    plx_err_mas: 0.0684
 
   - hip: 32349
     name: Sirius
@@ -111,6 +129,10 @@ stars:
     name: 61 Cygni A
     why: "The first star after the Sun to have its distance measured, by Friedrich Bessel in 1838. It moves so fast across the sky it was called the Flying Star."
     source: "https://en.wikipedia.org/wiki/61_Cygni (read 2026-09-22)"
+    # Distance (internal #383), Gaia DR3 1872046609345556480, read from the Gaia archive (gaiadr3.gaia_source) 2026-11-18, RUWE 1.20: HYG's distance for this star is older than DR3.
+    gaia_dr3: "1872046609345556480"
+    plx_mas: 285.9949
+    plx_err_mas: 0.0599
     radius_suns: 0.6611
     radius_err_suns: 0.0048
     teff_k: 4361
@@ -141,6 +163,10 @@ stars:
     why: "The nearest halo star: about 11 billion years old, going round the galaxy the wrong way. It may once have belonged to Omega Centauri."
     # Class (review 2026-11-16): SIMBAD, read 2026-11-16 (https://simbad.harvard.edu/simbad/sim-id?Ident=Kapteyn+star): M1VIp, a subdwarf. HYG carries M0V.
     source: "https://en.wikipedia.org/wiki/Kapteyn%27s_Star (read 2026-09-22); class: SIMBAD, HD 33793 (read 2026-11-16)"
+    # Distance (internal #383), Gaia DR3 4810594479418041856, read from the Gaia archive (gaiadr3.gaia_source) 2026-11-18, RUWE 1.17: HYG's distance for this star is older than DR3.
+    gaia_dr3: "4810594479418041856"
+    plx_mas: 254.1986
+    plx_err_mas: 0.0168
     spect: M1VIp
     radius_suns: 0.29
     radius_err_suns: 0.03
@@ -151,9 +177,12 @@ stars:
     name: Van Maanen's Star
     why: "The nearest lone white dwarf. A 1917 photograph of its spectrum holds the earliest known evidence of planetary matter outside the Solar System."
     # Class (review 2026-11-16): SIMBAD, read 2026-11-16 (https://simbad.harvard.edu/simbad/sim-id?Ident=van+Maanen+2): DZ7.5, a white dwarf with metal
-    # lines. HYG carries "DG", which no card can turn into a colour word. Its Gaia DR3 parallax there, 231.78 mas, is 14.07 light-years where the
-    # star map's HYG row gives 13.9: the distance is the drawn star's position and is left to the next rebuild of site/data/stars3d.
+    # lines. HYG carries "DG", which no card can turn into a colour word. Its distance now comes from Gaia DR3 (gaia_dr3 below).
     source: "https://en.wikipedia.org/wiki/Van_Maanen_2 (read 2026-09-22); class: SIMBAD, Wolf 28 (read 2026-11-16)"
+    # Distance (internal #383), Gaia DR3 2552928187080872832, read from the Gaia archive (gaiadr3.gaia_source) 2026-11-18, RUWE 1.21: HYG's distance for this star is older than DR3.
+    gaia_dr3: "2552928187080872832"
+    plx_mas: 231.7800
+    plx_err_mas: 0.0183
     spect: DZ7.5
 
   # --- the brightest in the sky ----------------------------------------------------------------

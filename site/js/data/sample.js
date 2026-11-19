@@ -704,8 +704,8 @@ export const NAMED_ASTEROIDS = [
     hMag: 18.11,
     diameterKm: 0.78,
     moons: null,
-    why: "An asteroid 780 metres across with a small moon, Dimorphos. NASA’s DART was flown into the moon in September 2022 and shortened its orbit by 32 minutes. ESA’s Hera is due there in November 2026.",
-    whySource: "NASA Science, DART (science.nasa.gov/planetary-defense-dart), ESA, Hera (esa.int/Space_Safety/Hera) and the JPL Small-Body Database (size, Naidu et al. 2020), read 6 October 2026",
+    why: "An asteroid 780 metres across with a small moon, Dimorphos. NASA’s DART was flown into the moon in September 2022 and shortened its orbit by 32 minutes. ESA’s Hera reached it in November 2026.",
+    whySource: "NASA Science, DART (science.nasa.gov/planetary-defense-dart), ESA, Hera (esa.int/Space_Safety/Hera) and the JPL Small-Body Database (size, Naidu et al. 2020), read 6 October 2026; Hera's arrival: ESA, 11 November 2026",
   },
   {
     id: 'asteroid-4',

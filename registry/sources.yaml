@@ -254,6 +254,8 @@ sources:
   # law layers.js cometMagNow already uses, and `tp` (perihelion passage, Julian date) read
   # directly instead of derived. One parser, jpl_sbdb, reads both rows: it only checks for
   # full_name/e/a/q/i/om/w/epoch, which this query carries too.
+  # Internal #393: after the fetch, harvest/comet_elements.py replaces the elements of the comets the app names (and the brightest
+  # now) with JPL Horizons' osculating elements at the start of the day, so a periodic comet is not two-body drift from an old epoch.
   - id: jpl-sbdb-comets
     url: https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name,e,a,q,i,om,w,ma,tp,epoch,M1,K1&sb-kind=c&full-prec=1
     auth: none
