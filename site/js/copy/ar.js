@@ -1760,6 +1760,10 @@ export const COPY = {
       "dso-milky-way": {
         "drawn": "رسم توضيحي مبني على قياسات",
         "split": "مقيس: النجوم ضمن بضعة آلاف من السنوات الضوئية (Gaia)، وزاوية القضيب، والاتجاهات على امتداد الأذرع والأذرع الأقرب (Reid et al. 2019). مستنتج: الجانب البعيد وراء المركز، تحجبه الغيوم الغبارية؛ وأذرعه هي الأذرع القريبة مُدارة إلى هناك. تُرسم أربعة تيارات نجمية (القوس، أورفان-تشيناب، GD-1، بالومار 5) اعتمادًا على مكتبة galstreams‏ (Mateu 2023): موضع كل منها في السماء مقيس، وكذلك بُعده باستثناء GD-1 الذي افتُرض بُعده؛ وشريط النجوم حول كل خط توضيحي فحسب."
+      },
+      "dso-local-bubble": {
+        "drawn": "نقاط غبار مأخوذة عيّنةً من خريطة مقيسة",
+        "split": "مقيس: أين الغبار وما كثافته، في خلايا من 8 فرسخ فلكي، من ضوء نجوم Gaia (إيدنهوفر وآخرون، 2024)، ومعه التجويف حول الشمس: لا غبار ضمن 40 فرسخًا فلكيًا وجدار على بُعد 170 فرسخًا في المتوسط، بسُمك نحو 35 (أونيل وآخرون، 2024). مُنمذج: كل نقطة سحبٌ عشوائي من تلك الكثافة، لا حبّة ولا سحابة، والغبار لا يخفّت بعدُ النجوم التي خلفه. توضيحي: اللون الدافئ، لأن الغبار معتم أمام النجوم. غير مقيس هنا: الغاز داخل التجويف وعمره وكيف تكوّن. لا تذكر الورقة مركزًا؛ وهذا السجل يقف في الوسط الذي تُظهره النقاط، بدقة نحو 10 فرسخ. لم يراجعه فلكي بعد."
       }
     }
   },
@@ -5712,6 +5716,7 @@ COPY.momentStories['fengyun-1c'] = {
 // b200-c3-learn: end
 // b200-c2-deep: begin -- the 3D stars over deep time, the variable stars worth going out for, the black holes against the EHT's pictures and the cards in the trips' voice (copy/en.deep.js, forge #141, #142, #149, #151), machine-drafted
 Object.assign(COPY, {
+  "depthNote": { "modelled": "العمق مُنمذج: المقيس هو مسافات النجوم فقط." },
   "starDeep": {
     "moved": "نجوم {year}: كل نجم أُزيح بحركته المقيسة (هيباركوس وغايا، عبر HYG)؛ ومدّ هذه الحركات في خطوط مستقيمة طوال هذا الزمن منمذج.",
     "hidden": "لا تُرسم النجوم التي لم تُقس حركتها على هذا البعد من اليوم.",
@@ -5758,7 +5763,7 @@ COPY.truth.exoPacked = "نسختنا المضغوطة بتاريخ {date}"; // f
 COPY.truth.exoLive = "قائمة الأرشيف، قُرئت في {date}";
 // The deep-sky catalogue's type phrases (data/dso.json `typeText`), lowercased, in this language: the card's lead and its
 // "What it is" row read them through RULES.typeWords; a phrase not here stays English, which is data.
-const S1_TYPES = {"two-lobed nebula of dust and gas": "سديم ثنائي الفصّ من الغبار والغاز", "globular cluster": "عنقود كروي", "open cluster": "عنقود مفتوح", "dwarf spheroidal galaxy": "مجرة قزمة شبه كروية", "spiral galaxy": "مجرة حلزونية", "emission nebula": "سديم انبعاث", "planetary nebula": "سديم كوكبي", "dwarf irregular galaxy": "مجرة قزمة غير منتظمة", "barred spiral galaxy": "مجرة حلزونية ذات قضيب", "elliptical galaxy": "مجرة إهليلجية", "lenticular galaxy": "مجرة عدسية", "h ii region nebula with cluster": "منطقة هيدروجين متأين مع عنقود", "dwarf elliptical galaxy": "مجرة قزمة إهليلجية", "h ii region nebula": "منطقة هيدروجين متأين", "barred irregular galaxy": "مجرة غير منتظمة ذات قضيب", "ultra-faint dwarf galaxy": "مجرة قزمة شديدة الخفوت", "dark nebula": "سديم مظلم", "young open cluster in an emission nebula": "عنقود مفتوح فتي داخل سديم انبعاث", "supernova remnant": "بقايا مستعر أعظم", "pulsar wind nebula": "سديم رياح نجم نابض", "nebula with cluster": "سديم مع عنقود", "milky way star cloud": "سحابة نجمية في درب التبانة", "optical double": "نجم مزدوج بصري", "asterism": "كوكبة نجمية صغيرة", "diffuse nebula": "سديم منتشر", "starburst galaxy": "مجرة انفجار نجمي", "dwarf irregular starburst galaxy": "مجرة قزمة غير منتظمة بانفجار نجمي", "transition dwarf galaxy, part irregular, part spheroidal": "مجرة قزمة انتقالية، غير منتظمة جزئيًا وشبه كروية جزئيًا", "barred irregular galaxy, seen edge-on": "مجرة غير منتظمة ذات قضيب، تُرى من الحافة", "ultra-faint dwarf galaxy, or perhaps a star cluster": "مجرة قزمة شديدة الخفوت، أو ربما عنقود نجمي", "transition dwarf galaxy, part spheroidal, part irregular": "مجرة قزمة انتقالية، شبه كروية جزئيًا وغير منتظمة جزئيًا", "spiral galaxy, seen nearly edge-on and bursting with new stars": "مجرة حلزونية تُرى من الحافة تقريبًا وتعج بنجوم جديدة", "peculiar galaxy with a giant black hole firing radio jets": "مجرة شاذة فيها ثقب أسود عملاق يطلق نفاثات راديوية", "pair of open clusters": "زوج من العناقيد المفتوحة", "spiral galaxy seen exactly edge-on": "مجرة حلزونية تُرى من الحافة تمامًا", "reflection nebula": "سديم انعكاس", "reflection and emission nebula": "سديم انعكاس وانبعاث", "spiral galaxy seen edge-on": "مجرة حلزونية تُرى من الحافة", "barred spiral galaxy seen edge-on": "مجرة حلزونية ذات قضيب تُرى من الحافة", "spiral galaxy seen face-on": "مجرة حلزونية تُرى من الأمام", "barred spiral galaxy seen nearly edge-on": "مجرة حلزونية ذات قضيب تُرى من الحافة تقريبًا", "pair of colliding galaxies": "زوج من المجرات المتصادمة"};
+const S1_TYPES = {"two-lobed nebula of dust and gas": "سديم ثنائي الفصّ من الغبار والغاز", "globular cluster": "عنقود كروي", "open cluster": "عنقود مفتوح", "dwarf spheroidal galaxy": "مجرة قزمة شبه كروية", "spiral galaxy": "مجرة حلزونية", "emission nebula": "سديم انبعاث", "planetary nebula": "سديم كوكبي", "dwarf irregular galaxy": "مجرة قزمة غير منتظمة", "barred spiral galaxy": "مجرة حلزونية ذات قضيب", "elliptical galaxy": "مجرة إهليلجية", "lenticular galaxy": "مجرة عدسية", "h ii region nebula with cluster": "منطقة هيدروجين متأين مع عنقود", "dwarf elliptical galaxy": "مجرة قزمة إهليلجية", "h ii region nebula": "منطقة هيدروجين متأين", "barred irregular galaxy": "مجرة غير منتظمة ذات قضيب", "ultra-faint dwarf galaxy": "مجرة قزمة شديدة الخفوت", "dark nebula": "سديم مظلم", "young open cluster in an emission nebula": "عنقود مفتوح فتي داخل سديم انبعاث", "supernova remnant": "بقايا مستعر أعظم", "pulsar wind nebula": "سديم رياح نجم نابض", "nebula with cluster": "سديم مع عنقود", "milky way star cloud": "سحابة نجمية في درب التبانة", "optical double": "نجم مزدوج بصري", "asterism": "كوكبة نجمية صغيرة", "diffuse nebula": "سديم منتشر", "starburst galaxy": "مجرة انفجار نجمي", "dwarf irregular starburst galaxy": "مجرة قزمة غير منتظمة بانفجار نجمي", "transition dwarf galaxy, part irregular, part spheroidal": "مجرة قزمة انتقالية، غير منتظمة جزئيًا وشبه كروية جزئيًا", "barred irregular galaxy, seen edge-on": "مجرة غير منتظمة ذات قضيب، تُرى من الحافة", "ultra-faint dwarf galaxy, or perhaps a star cluster": "مجرة قزمة شديدة الخفوت، أو ربما عنقود نجمي", "transition dwarf galaxy, part spheroidal, part irregular": "مجرة قزمة انتقالية، شبه كروية جزئيًا وغير منتظمة جزئيًا", "spiral galaxy, seen nearly edge-on and bursting with new stars": "مجرة حلزونية تُرى من الحافة تقريبًا وتعج بنجوم جديدة", "peculiar galaxy with a giant black hole firing radio jets": "مجرة شاذة فيها ثقب أسود عملاق يطلق نفاثات راديوية", "pair of open clusters": "زوج من العناقيد المفتوحة", "spiral galaxy seen exactly edge-on": "مجرة حلزونية تُرى من الحافة تمامًا", "reflection nebula": "سديم انعكاس", "reflection and emission nebula": "سديم انعكاس وانبعاث", "spiral galaxy seen edge-on": "مجرة حلزونية تُرى من الحافة", "barred spiral galaxy seen edge-on": "مجرة حلزونية ذات قضيب تُرى من الحافة", "spiral galaxy seen face-on": "مجرة حلزونية تُرى من الأمام", "barred spiral galaxy seen nearly edge-on": "مجرة حلزونية ذات قضيب تُرى من الحافة تقريبًا", "pair of colliding galaxies": "زوج من المجرات المتصادمة", "cavity in the interstellar medium": "تجويف في الوسط بين النجمي", "light echo round an erupted star": "صدى ضوئي حول نجم متفجّر"};
 const S1_PLACES = [[" in the large magellanic cloud", " في سحابة ماجلان الكبرى"], [" in the small magellanic cloud", " في سحابة ماجلان الصغرى"], [" in the milky way", " في درب التبانة"], [" in the local group", " في المجموعة المحلية"]];
 RULES.typeWords = (text) => {
   let base = String(text || '').trim();
@@ -6501,6 +6506,43 @@ Object.assign(COPY, {
         [
           "اللون",
           "للتوضيح. ألوان هابل الزائفة، وليست للنموذج. يعرضها المظهر «المقيس» بالرمادي."
+        ],
+        [
+          "المراجعة",
+          "لم يراجع فلكي هذا الرسم بعد."
+        ]
+      ]
+    }
+  },
+  "deepV838": {
+    "card": {
+      "v838": "ضوء انفجار النجم عام 2002، مبعثرًا بالغبار المحيط به ومرسومًا على السطح الذي تصفه أوراق أصداء الضوء (سباركس وآخرون، 2008؛ بوند وآخرون، 2003). الغبار مُنمذج؛ والألوان توضيحية. لم يراجعه فلكي بعد."
+    },
+    "rows": {
+      "dso-v838-monocerotis": [
+        [
+          "الصدى",
+          "فيزياء. الغبار المضاء الآن يقع على مجسّم مكافئ حول النجم: بُعده عن النجم ناقص بُعده نحونا على خط النظر يساوي سرعة الضوء مضروبة في الزمن منذ وصل إلينا الانفجار (سباركس وآخرون، 2008). تبدو الحلقات وكأنها تكبر أسرع من الضوء لأن هذا السطح هو الذي يتحرك لا الغبار (بوند وآخرون، 2003)."
+        ],
+        [
+          "الزمن",
+          "مقيس. بدأ الانفجار في أوائل يناير 2002؛ ويُعدّ الزمن من تاريخه المتوسط، 9 مارس 2002، وامتد منحنى الضوء من 36 يومًا قبله إلى 61 يومًا بعده (سباركس وآخرون، 2008). على الساعة ينمو الصدى من ذلك التاريخ؛ وقبله لا صدى، وبعد منتصف 2008 يبقى ثابتًا لأن الغبار المنمذج ينتهي هناك."
+        ],
+        [
+          "المسافة",
+          "مقيس. 6.1 ± 0.6 كيلو فرسخ فلكي، نحو 19900 سنة ضوئية، من حلقة الضوء المستقطب التي يكوّنها الصدى (سباركس وآخرون، 2008). الشك الرئيسي منهجي."
+        ],
+        [
+          "الغبار",
+          "مُنمذج. تقول الأوراق إن الغبار متكتل ولا تعطي عمقًا لأي جزء منه. وهو مرسوم سبع قشرات من التكتلات حول وسط فارغ عرضه 0.15 فرسخ فلكي (مقيس)، حتى 2 فرسخ فلكي، أبعد غبار شوهد (بوند وآخرون، 2003). أين تُضاء الحلقة وبأي سطوع مُنمذج؛ أما أن تُضاء حلقة بهذا الحجم في هذا التاريخ فهو فيزياء."
+        ],
+        [
+          "اللون والسطوع",
+          "توضيحي. كان الضوء المبكر أزرق من المتأخر (سباركس وآخرون، 2008)؛ هنا من الأزرق إلى الأحمر، والسطوع نافذة بسيطة."
+        ],
+        [
+          "صور هابل",
+          "غير مرفقة: هي عند ESA/Hubble، heic0304a (NASA وESA وH. E. Bond (STScI)، مارس 2003) وheic0503a (NASA وESA وفريق Hubble Heritage (AURA/STScI)، فبراير 2005)، CC BY 4.0."
         ],
         [
           "المراجعة",

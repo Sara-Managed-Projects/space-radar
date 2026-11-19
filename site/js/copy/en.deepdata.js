@@ -103,6 +103,23 @@ Object.assign(COPY, {
       ],
     },
   },
+  deepV838: {
+    // The hero's own source, after the honesty line.
+    card: {
+      v838: 'Light from the star’s 2002 outburst, scattered by the dust round it, drawn on the surface the light-echo papers describe (Sparks and others, 2008; Bond and others, 2003). The dust is modelled; the colours are illustrative. Not yet reviewed by an astronomer.',
+    },
+    rows: {
+      'dso-v838-monocerotis': [
+        ['The echo', 'Physics. The dust lit now lies on a paraboloid about the star: its distance from the star less its distance toward us along the line of sight is the speed of light times the time since the outburst reached us (Sparks and others, 2008). The rings seem to grow faster than light because that surface moves, not the dust (Bond and others, 2003).'],
+        ['The time', 'Measured. The outburst began in early January 2002; time is counted from its mean date, 9 March 2002, and the light curve ran from 36 days before it to 61 days after (Sparks and others, 2008). On the clock the echo grows from then; before it there is none, and after mid-2008 it is held, because the modelled dust ends there.'],
+        ['The distance', 'Measured. 6.1 ± 0.6 kiloparsecs, about 19 900 light-years, from the ring of polarised light the echo makes (Sparks and others, 2008). The main doubt is systematic.'],
+        ['The dust', 'Modelled. The papers say the dust is clumpy and give no depth for any part of it. It is drawn as seven shells of clumps round an empty middle 0.15 parsecs wide (measured), out to 2 parsecs, the farthest dust seen (Bond and others, 2003). Where a ring is lit, and how brightly, is modelled; that a ring of its size is lit on that date is physics.'],
+        ['Colour and brightness', 'Illustrative. The early light was bluer than the late (Sparks and others, 2008); it runs from blue to red here, and the brightness is a plain window.'],
+        ['Hubble’s pictures', 'Not shipped: they are at ESA/Hubble, heic0304a (NASA, ESA and H.E. Bond (STScI), March 2003) and heic0503a (NASA, ESA and the Hubble Heritage Team (AURA/STScI), February 2005), CC BY 4.0.'],
+        ['Review', 'This drawing has not yet been reviewed by an astronomer.'],
+      ],
+    },
+  },
 });
 
 // The sections this file added, in the visitor's language when a translation has them (copy/lang.js, as en.later.js does).

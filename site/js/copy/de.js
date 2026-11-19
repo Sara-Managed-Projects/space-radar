@@ -146,6 +146,8 @@ const TYPES = {
   'spiral galaxy seen face-on': 'Spiralgalaxie in Draufsicht',
   'barred spiral galaxy seen nearly edge-on': 'Balkenspiralgalaxie, fast von der Kante gesehen',
   'pair of colliding galaxies': 'Paar kollidierender Galaxien',
+  'cavity in the interstellar medium': 'Hohlraum im interstellaren Medium',
+  'light echo round an erupted star': 'Lichtecho um einen ausgebrochenen Stern',
 };
 
 export const COPY = {
@@ -1845,6 +1847,10 @@ export const COPY = {
       "dso-milky-way": {
         "drawn": "eine Illustration auf Grundlage von Messungen",
         "split": "Gemessen: die Sterne innerhalb weniger tausend Lichtjahre (Gaia), der Winkel des Balkens, die Richtungen entlang der Arme und die näheren Arme (Reid et al. 2019). Erschlossen: die ferne Seite hinter dem Zentrum, vom Staub verdeckt; ihre Arme sind die nahen, um das Zentrum herum fortgesetzt. Vier Sternströme (Sagittarius, Orphan-Chenab, GD-1, Palomar 5) werden nach der Bibliothek galstreams (Mateu 2023) gezeichnet: Wo jeder am Himmel liegt, ist gemessen, ebenso seine Entfernung, außer bei GD-1, dessen Entfernung angenommen ist; das Band aus Sternen um jede Linie ist illustrativ."
+      },
+      "dso-local-bubble": {
+        "drawn": "Staubpunkte, aus einer gemessenen Karte gezogen",
+        "split": "Gemessen: wo der Staub ist und wie dicht, in Zellen von 8 Parsec, aus dem Sternlicht von Gaia (Edenhofer und andere, 2024), und damit die Höhle um die Sonne: kein Staub innerhalb von 40 Parsec und eine Wand bei durchschnittlich 170 Parsec, etwa 35 dick (O’Neill und andere, 2024). Modelliert: Jeder Punkt ist eine Zufallsziehung aus dieser Dichte, kein Korn und keine Wolke, und der Staub dunkelt die Sterne dahinter noch nicht ab. Illustrativ: die warme Farbe, denn Staub ist vor den Sternen dunkel. Hier nicht gemessen: das Gas in der Höhle, ihr Alter und wie sie entstand. Die Arbeit gibt keinen Mittelpunkt an; dieser Eintrag steht in der Mitte, die die Punkte zeigen, auf etwa 10 Parsec genau. Noch nicht von einem Astronomen geprüft."
       }
     }
   },
@@ -5816,6 +5822,7 @@ COPY.momentStories['fengyun-1c'] = {
 // b200-c3-learn: end
 // b200-c2-deep: begin -- the 3D stars over deep time, the variable stars worth going out for, the black holes against the EHT's pictures and the cards in the trips' voice (copy/en.deep.js, forge #141, #142, #149, #151), machine-drafted
 Object.assign(COPY, {
+  "depthNote": { "modelled": "Tiefe modelliert: nur die Entfernungen der Sterne sind gemessen." },
   "starDeep": {
     "moved": "Die Sterne von {year}: jeder um seine eigene gemessene Bewegung versetzt (Hipparcos und Gaia, über HYG); sie so lange geradlinig fortzuschreiben, ist modelliert.",
     "hidden": "Sterne ohne gemessene Bewegung werden so weit von heute nicht gezeichnet.",
@@ -6594,6 +6601,43 @@ Object.assign(COPY, {
         [
           "Farbe",
           "Illustrativ. Hubbles Falschfarben, die das Modell nicht hat. Der Look „Gemessen“ zeigt Grau."
+        ],
+        [
+          "Prüfung",
+          "Diese Zeichnung wurde noch nicht von einem Astronomen geprüft."
+        ]
+      ]
+    }
+  },
+  "deepV838": {
+    "card": {
+      "v838": "Das Licht des Ausbruchs des Sterns von 2002, vom Staub um ihn gestreut und auf der Fläche gezeichnet, die die Arbeiten über Lichtechos beschreiben (Sparks und andere, 2008; Bond und andere, 2003). Der Staub ist modelliert, die Farben sind illustrativ. Noch nicht von einem Astronomen geprüft."
+    },
+    "rows": {
+      "dso-v838-monocerotis": [
+        [
+          "Das Echo",
+          "Physik. Der Staub, der jetzt leuchtet, liegt auf einem Paraboloid um den Stern: sein Abstand vom Stern minus sein Abstand zu uns entlang der Blickrichtung ist die Lichtgeschwindigkeit mal die Zeit seit dem Eintreffen des Ausbruchs (Sparks und andere, 2008). Die Ringe scheinen schneller als das Licht zu wachsen, weil sich diese Fläche bewegt, nicht der Staub (Bond und andere, 2003)."
+        ],
+        [
+          "Die Zeit",
+          "Gemessen. Der Ausbruch begann Anfang Januar 2002; gezählt wird ab seinem mittleren Datum, dem 9. März 2002, und die Lichtkurve reichte von 36 Tagen davor bis 61 Tage danach (Sparks und andere, 2008). Auf der Uhr wächst das Echo ab da; davor gibt es keines, und nach Mitte 2008 bleibt es stehen, weil der modellierte Staub dort endet."
+        ],
+        [
+          "Die Entfernung",
+          "Gemessen. 6,1 ± 0,6 Kiloparsec, etwa 19 900 Lichtjahre, aus dem Ring polarisierten Lichts, den das Echo bildet (Sparks und andere, 2008). Der Hauptzweifel ist systematisch."
+        ],
+        [
+          "Der Staub",
+          "Modelliert. Die Arbeiten sagen, der Staub sei klumpig, und geben für keinen Teil eine Tiefe an. Er ist als sieben Schalen aus Klumpen um eine leere Mitte von 0,15 Parsec gezeichnet (gemessen), bis 2 Parsec, dem fernsten gesehenen Staub (Bond und andere, 2003). Wo ein Ring leuchtet und wie hell, ist modelliert; dass ein Ring dieser Größe an diesem Datum leuchtet, ist Physik."
+        ],
+        [
+          "Farbe und Helligkeit",
+          "Illustrativ. Das frühe Licht war blauer als das späte (Sparks und andere, 2008); hier läuft es von Blau zu Rot, und die Helligkeit ist ein schlichtes Fenster."
+        ],
+        [
+          "Hubbles Bilder",
+          "Nicht mitgeliefert: Sie liegen bei ESA/Hubble, heic0304a (NASA, ESA und H. E. Bond (STScI), März 2003) und heic0503a (NASA, ESA und das Hubble Heritage Team (AURA/STScI), Februar 2005), CC BY 4.0."
         ],
         [
           "Prüfung",

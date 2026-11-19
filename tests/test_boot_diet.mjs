@@ -218,6 +218,8 @@ const DEFERRED = {
   'js/scene/deep/softpoints.js': 'soft additive points with an optional Doppler boost: with the objects that draw them',
   'js/data/hero-vela.js': 'a hero\'s profile: with the coordinator',
   'js/data/hero-catseye.js': 'a hero\'s profile: with the coordinator',
+  'js/scene/deep/v838.js': 'V838 Monocerotis\' light echo, the light-echo paraboloid on a modelled dust: the coordinator fetches it when the star is near',
+  'js/data/hero-v838.js': 'a hero\'s profile: with the coordinator',
   'js/copy/en.deepdata.js': 'the words of the objects built from published 3D data: with their modules',
   // the S-stars round Sagittarius A* (internal #419): fetched by scene/portraits.js when the hole's picture is drawn for it
   'js/scene/sstars.js': 'the S-stars on their measured orbits: scene/portraits.js fetches it with the Sagittarius A* picture',

@@ -126,14 +126,20 @@ def stamp_app_link(text: str, app: str | None) -> str:
 
 def filter_form(codes: dict) -> str:
     """The filter above the cards: three fields and a count, labelled for a screen reader."""
-    band_opts = "".join(f'<option value="{b}">Ages {b}</option>' for b in BANDS)
+    band_chips = '<button type="button" class="ui-chip" data-band="" aria-pressed="true">All ages</button>' + "".join(
+        f'<button type="button" class="ui-chip" data-band="{b}" aria-pressed="false">Ages {b}</button>' for b in BANDS)
     groups = "".join(
         f'<optgroup label="{esc(label)}">' + "".join(f'<option value="{fw}:{esc(str(c))}">{esc(str(c))}: {esc(str(t))[:70]}</option>'
                                                      for c, t in (codes.get(fw) or {}).items()) + "</optgroup>" for fw, label in FRAMEWORKS)
+    # The same rows as the journal, games and models filters: a small caps key on the left, the control on the right. The age
+    # is a row of the shared pills (.ui-chip, aria-pressed), the curriculum the shared .ui-select, the words a pill field.
     return ('<form class="lfilter" id="lfilter" role="search" aria-label="Filter the simulators">'
-            '<label>Age <select name="band"><option value="">All ages</option>' + band_opts + "</select></label>"
-            '<label>Curriculum <select name="code"><option value="">Any curriculum</option>' + groups + "</select></label>"
-            '<label>Words <input type="search" name="q" placeholder="gravity, Moon, light"></label>'
+            '<div class="lfilter__r"><p class="lfilter__k" id="lf-band">Age</p><div class="lfilter__v" role="group" aria-labelledby="lf-band">'
+            + band_chips + '<input type="hidden" name="band" value=""></div></div>'
+            '<div class="lfilter__r"><label class="lfilter__k" for="lf-code">Curriculum</label><div class="lfilter__v">'
+            '<select class="ui-select ui-select--block" id="lf-code" name="code"><option value="">Any curriculum</option>' + groups + "</select></div></div>"
+            '<div class="lfilter__r"><label class="lfilter__k" for="lf-q">Words</label><div class="lfilter__v">'
+            '<input class="lfilter__in" id="lf-q" type="search" name="q" placeholder="gravity, Moon, light"></div></div>'
             '<p class="lcount" id="lcount" role="status" aria-live="polite"></p></form>')
 
 
@@ -141,23 +147,29 @@ def filter_form(codes: dict) -> str:
 # address (#band=11-14&code=gcse:4.8.1.3) so /teachers/ can link to one level. Nothing is fetched.
 FILTER_JS = """(function(){var f=document.getElementById('lfilter');if(!f)return;var cards=[].slice.call(document.querySelectorAll('.grid>li'));
 function read(){var h={};location.hash.slice(1).split('&').forEach(function(p){var i=p.indexOf('=');if(i>0)h[p.slice(0,i)]=decodeURIComponent(p.slice(i+1))});
-['band','code','q'].forEach(function(k){if(h[k]!=null&&f.elements[k])f.elements[k].value=h[k]})}
+['band','code','q'].forEach(function(k){if(h[k]!=null&&f.elements[k])f.elements[k].value=h[k]});pills()}
+function pills(){var v=f.elements.band.value;[].forEach.call(f.querySelectorAll('[data-band]'),function(c){c.setAttribute('aria-pressed',c.dataset.band===v?'true':'false')})}
 function run(write){var b=f.elements.band.value,c=f.elements.code.value,q=f.elements.q.value.trim().toLowerCase(),n=0;
 cards.forEach(function(li){var a=li.firstElementChild,ok=(!b||(' '+a.dataset.band+' ').indexOf(' '+b+' ')>=0)&&(!c||(' '+a.dataset.code+' ').indexOf(' '+c+' ')>=0)&&(!q||a.textContent.toLowerCase().indexOf(q)>=0);li.hidden=!ok;if(ok)n++});
 [].forEach.call(document.querySelectorAll('h2.cat'),function(h){var ul=h.nextElementSibling,k=[].filter.call(ul.children,function(li){return!li.hidden}).length,chip=document.querySelector('.topics a[href="#'+h.id+'"]');h.hidden=ul.hidden=!k;if(chip){chip.textContent=chip.dataset.name+' ('+k+')';chip.parentNode.hidden=!k}});
 var all=!b&&!c&&!q;document.getElementById('lcount').textContent=all?'':(n===1?'1 simulator matches':n+' simulators match');
 if(write){var p=[];if(b)p.push('band='+encodeURIComponent(b));if(c)p.push('code='+encodeURIComponent(c));if(q)p.push('q='+encodeURIComponent(q));history.replaceState(null,'',p.length?'#'+p.join('&'):location.pathname)}}
-f.addEventListener('input',function(){run(true)});f.addEventListener('submit',function(e){e.preventDefault()});read();run(false)})();"""
+f.addEventListener('click',function(e){var c=e.target.closest&&e.target.closest('button[data-band]');if(!c)return;f.elements.band.value=c.dataset.band;pills();run(true)});f.addEventListener('input',function(){run(true)});f.addEventListener('submit',function(e){e.preventDefault()});read();run(false)})();"""
 # b200-f6-learn: end
 
 
 LAB_CSS = """
 .lab .wrap>.topics{margin:0 0 .5rem}
-.lfilter{display:flex;flex-wrap:wrap;gap:.8rem 1rem;align-items:end;margin:0 0 1.4rem}
-.lfilter label{display:grid;gap:.5rem;font:600 .74rem/1 var(--cap);letter-spacing:.16em;text-transform:uppercase;color:var(--dim);min-width:0;flex:1 1 13rem;max-width:100%}
-.lfilter select,.lfilter input{width:100%;min-height:48px;max-width:100%;margin:0;border-radius:999px;border:0;box-shadow:inset 0 0 0 1px var(--line);background:var(--bg2);color:var(--tx);font:400 1rem/1.2 var(--sans);letter-spacing:0;text-transform:none;padding:0 1.1rem}
-.lfilter select option,.lfilter select optgroup{background:var(--bg);color:var(--tx)}
-.lfilter input{-webkit-appearance:none;appearance:none;background-image:none}
+.lfilter{display:grid;gap:.6rem;margin:0 0 1.4rem}
+.lfilter__r{display:grid;align-items:center;gap:.4rem 1rem}
+.lfilter__k{margin:0;font:600 .72rem/1 var(--cap);letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.lfilter__v{display:flex;flex-wrap:wrap;gap:8px;min-width:0}
+.lfilter__v>.ui-select{max-width:36rem}
+.lfilter__in{-webkit-appearance:none;appearance:none;width:100%;max-width:36rem;min-height:var(--ui-h);margin:0;padding:0 16px;font:400 var(--ui-fs-field)/1.2 var(--sans);color:var(--tx);background:var(--ui-wash);border:1px solid var(--ui-edge);border-radius:var(--ui-r-pill);transition:border-color var(--ui-fast) var(--ui-ease)}
+.lfilter__in:hover{border-color:var(--ui-sel-line)}
+.lfilter__in:focus-visible{outline:2px solid var(--atm);outline-offset:2px}
+@media(min-width:760px){.lfilter__r{grid-template-columns:6.5rem minmax(0,1fr)}}
+@media(pointer:coarse){.lfilter__in{min-height:44px}}
 .lcount{flex-basis:100%;margin:0;font-size:.9rem;color:var(--dim);min-height:1.3rem}
 .lab h2.cat{font:600 clamp(1.6rem,2.8vw,2.2rem)/1.08 var(--head);letter-spacing:-.012em;margin:2.8rem 0 1.1rem;scroll-margin-top:5.5rem}
 .lab ul.grid{list-style:none;margin:0;padding:0}
@@ -219,6 +231,7 @@ def build() -> str:
 <meta name="twitter:image" content="{HOST}/og/default.png">
 <link rel="icon" href="{icon}">
 {styles("../")}
+<link rel="stylesheet" href="../css/controls.css">
 <style>
 {LAB_CSS}</style>
 </head>

@@ -92,6 +92,9 @@ export const HEROES = [
   // `extent`: how much wider than its catalogue size each draws its object (the jets, the ansae).
   { id: 'vela', record: 'dso-vela-pulsar-wind-nebula', stage: 'ds-2026-11-17', stub: { shipped: true, drawn: ['reconstruction', 'model'], children: [], extent: 2.4 }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./vela.js'), import('../../data/hero-vela.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
   { id: 'catseye', record: 'dso-cats-eye-nebula', stage: 'ds-2026-11-17', stub: { shipped: true, drawn: ['reconstruction', 'model'], children: [], extent: 2.2 }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./catseye.js'), import('../../data/hero-catseye.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
+  // V838 Monocerotis' light echo (internal #428): the paraboloid of the light-echo papers cutting a modelled dust, at the app clock's date
+  // (scene/deep/v838.js, soft points, scene/deep/softpoints.js). `extent`: the draw reaches the 2 pc the record's size is.
+  { id: 'v838', record: 'dso-v838-monocerotis', stage: 'ds-2026-11-18', stub: { shipped: true, drawn: ['reconstruction', 'model'], children: [], extent: 1.1 }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./v838.js'), import('../../data/hero-v838.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
 ];
 
 // Deep layers that are not one object: the local volume's galaxies (stage e). Built on the stages named.

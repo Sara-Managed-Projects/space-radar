@@ -149,7 +149,7 @@ def load_dso(_d):
         if o.get("positionSource") and o.get("positionSource") != src:
             src = f"{o['positionSource']}; {src}"
         out.append(_rec("dso", o["id"], ref=f"dso-{o['id']}", name=o.get("name"),
-                        fields={"typeCode": o.get("typeCode") or "", "hubble": o.get("hubble") or "",
+                        fields={"id": o["id"], "typeCode": o.get("typeCode") or "", "hubble": o.get("hubble") or "",
                                 "kind": o.get("kind") or "", "hand": "yes" if h else "no"},
                         source=src, honesty=honest, words=[o.get("name")]))
     return out

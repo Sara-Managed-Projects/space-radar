@@ -1775,6 +1775,10 @@ export const COPY = {
       "dso-milky-way": {
         "drawn": "иллюстрация, построенная на измерениях",
         "split": "Измерено: звёзды в пределах нескольких тысяч световых лет (Gaia), угол перемычки, направления вдоль рукавов и ближние рукава (Reid et al. 2019). Рассчитано: дальняя сторона за центром, скрытая пылью; её рукава — это ближние, продолженные по кругу. Четыре звёздных потока (Стрелец, Орфан-Ченаб, GD-1, Паломар 5) нарисованы по библиотеке galstreams (Mateu 2023): положение каждого на небе измерено, как и расстояние до него, кроме GD-1, расстояние до которого принято; полоса звёзд вокруг каждой линии иллюстративна."
+      },
+      "dso-local-bubble": {
+        "drawn": "точки пыли, выбранные из измеренной карты",
+        "split": "Измерено: где находится пыль и какова её плотность, в ячейках по 8 парсек, по свету звёзд Gaia (Эденхофер и др., 2024), а с ней и полость вокруг Солнца: ни пыли ближе 40 парсек и стенка на среднем расстоянии 170 парсек толщиной около 35 (О’Нил и др., 2024). Смоделировано: каждая точка — случайный выбор из этой плотности, а не пылинка и не облако, и пыль пока не ослабляет звёзды за ней. Иллюстративно: тёплый цвет, ведь пыль тёмная на фоне звёзд. Здесь не измерено: газ в полости, её возраст и как она возникла. В статье нет центра; эта запись стоит в середине, которую показывают точки, с точностью около 10 парсек. Ещё не проверено астрономом."
       }
     }
   },
@@ -5727,6 +5731,7 @@ COPY.momentStories['fengyun-1c'] = {
 // b200-c3-learn: end
 // b200-c2-deep: begin -- the 3D stars over deep time, the variable stars worth going out for, the black holes against the EHT's pictures and the cards in the trips' voice (copy/en.deep.js, forge #141, #142, #149, #151), machine-drafted
 Object.assign(COPY, {
+  "depthNote": { "modelled": "Глубина смоделирована: измерены только расстояния до звёзд." },
   "starDeep": {
     "moved": "Звёзды {year}: каждая смещена по собственному измеренному движению (Hipparcos и Gaia, через HYG); продолжать эти движения по прямой так долго — модель.",
     "hidden": "Звёзды без измеренного движения так далеко от сегодняшнего дня не рисуются.",
@@ -5773,7 +5778,7 @@ COPY.truth.exoPacked = "наша сжатая копия от {date}"; // forge 
 COPY.truth.exoLive = "список Архива, прочитанный {date}";
 // The deep-sky catalogue's type phrases (data/dso.json `typeText`), lowercased, in this language: the card's lead and its
 // "What it is" row read them through RULES.typeWords; a phrase not here stays English, which is data.
-const S1_TYPES = {"two-lobed nebula of dust and gas": "двухлопастная туманность из пыли и газа", "globular cluster": "шаровое скопление", "open cluster": "рассеянное скопление", "dwarf spheroidal galaxy": "карликовая сфероидальная галактика", "spiral galaxy": "спиральная галактика", "emission nebula": "эмиссионная туманность", "planetary nebula": "планетарная туманность", "dwarf irregular galaxy": "карликовая неправильная галактика", "barred spiral galaxy": "спиральная галактика с перемычкой", "elliptical galaxy": "эллиптическая галактика", "lenticular galaxy": "линзовидная галактика", "h ii region nebula with cluster": "область H II со скоплением", "dwarf elliptical galaxy": "карликовая эллиптическая галактика", "h ii region nebula": "область H II", "barred irregular galaxy": "неправильная галактика с перемычкой", "ultra-faint dwarf galaxy": "сверхтусклая карликовая галактика", "dark nebula": "тёмная туманность", "young open cluster in an emission nebula": "молодое рассеянное скопление в эмиссионной туманности", "supernova remnant": "остаток сверхновой", "pulsar wind nebula": "туманность пульсарного ветра", "nebula with cluster": "туманность со скоплением", "milky way star cloud": "звёздное облако Млечного Пути", "optical double": "оптическая двойная", "asterism": "астеризм", "diffuse nebula": "диффузная туманность", "starburst galaxy": "галактика со вспышкой звездообразования", "dwarf irregular starburst galaxy": "карликовая неправильная галактика со вспышкой звездообразования", "transition dwarf galaxy, part irregular, part spheroidal": "переходная карликовая галактика, отчасти неправильная, отчасти сфероидальная", "barred irregular galaxy, seen edge-on": "неправильная галактика с перемычкой, видимая с ребра", "ultra-faint dwarf galaxy, or perhaps a star cluster": "сверхтусклая карликовая галактика или, возможно, звёздное скопление", "transition dwarf galaxy, part spheroidal, part irregular": "переходная карликовая галактика, отчасти сфероидальная, отчасти неправильная", "spiral galaxy, seen nearly edge-on and bursting with new stars": "спиральная галактика, видимая почти с ребра, полная новых звёзд", "peculiar galaxy with a giant black hole firing radio jets": "пекулярная галактика с гигантской чёрной дырой, выбрасывающей радиоджеты", "pair of open clusters": "пара рассеянных скоплений", "spiral galaxy seen exactly edge-on": "спиральная галактика, видимая точно с ребра", "reflection nebula": "отражательная туманность", "reflection and emission nebula": "отражательная и эмиссионная туманность", "spiral galaxy seen edge-on": "спиральная галактика, видимая с ребра", "barred spiral galaxy seen edge-on": "спиральная галактика с перемычкой, видимая с ребра", "spiral galaxy seen face-on": "спиральная галактика, видимая плашмя", "barred spiral galaxy seen nearly edge-on": "спиральная галактика с перемычкой, видимая почти с ребра", "pair of colliding galaxies": "пара сталкивающихся галактик"};
+const S1_TYPES = {"two-lobed nebula of dust and gas": "двухлопастная туманность из пыли и газа", "globular cluster": "шаровое скопление", "open cluster": "рассеянное скопление", "dwarf spheroidal galaxy": "карликовая сфероидальная галактика", "spiral galaxy": "спиральная галактика", "emission nebula": "эмиссионная туманность", "planetary nebula": "планетарная туманность", "dwarf irregular galaxy": "карликовая неправильная галактика", "barred spiral galaxy": "спиральная галактика с перемычкой", "elliptical galaxy": "эллиптическая галактика", "lenticular galaxy": "линзовидная галактика", "h ii region nebula with cluster": "область H II со скоплением", "dwarf elliptical galaxy": "карликовая эллиптическая галактика", "h ii region nebula": "область H II", "barred irregular galaxy": "неправильная галактика с перемычкой", "ultra-faint dwarf galaxy": "сверхтусклая карликовая галактика", "dark nebula": "тёмная туманность", "young open cluster in an emission nebula": "молодое рассеянное скопление в эмиссионной туманности", "supernova remnant": "остаток сверхновой", "pulsar wind nebula": "туманность пульсарного ветра", "nebula with cluster": "туманность со скоплением", "milky way star cloud": "звёздное облако Млечного Пути", "optical double": "оптическая двойная", "asterism": "астеризм", "diffuse nebula": "диффузная туманность", "starburst galaxy": "галактика со вспышкой звездообразования", "dwarf irregular starburst galaxy": "карликовая неправильная галактика со вспышкой звездообразования", "transition dwarf galaxy, part irregular, part spheroidal": "переходная карликовая галактика, отчасти неправильная, отчасти сфероидальная", "barred irregular galaxy, seen edge-on": "неправильная галактика с перемычкой, видимая с ребра", "ultra-faint dwarf galaxy, or perhaps a star cluster": "сверхтусклая карликовая галактика или, возможно, звёздное скопление", "transition dwarf galaxy, part spheroidal, part irregular": "переходная карликовая галактика, отчасти сфероидальная, отчасти неправильная", "spiral galaxy, seen nearly edge-on and bursting with new stars": "спиральная галактика, видимая почти с ребра, полная новых звёзд", "peculiar galaxy with a giant black hole firing radio jets": "пекулярная галактика с гигантской чёрной дырой, выбрасывающей радиоджеты", "pair of open clusters": "пара рассеянных скоплений", "spiral galaxy seen exactly edge-on": "спиральная галактика, видимая точно с ребра", "reflection nebula": "отражательная туманность", "reflection and emission nebula": "отражательная и эмиссионная туманность", "spiral galaxy seen edge-on": "спиральная галактика, видимая с ребра", "barred spiral galaxy seen edge-on": "спиральная галактика с перемычкой, видимая с ребра", "spiral galaxy seen face-on": "спиральная галактика, видимая плашмя", "barred spiral galaxy seen nearly edge-on": "спиральная галактика с перемычкой, видимая почти с ребра", "pair of colliding galaxies": "пара сталкивающихся галактик", "cavity in the interstellar medium": "полость в межзвёздной среде", "light echo round an erupted star": "световое эхо вокруг вспыхнувшей звезды"};
 const S1_PLACES = [[" in the large magellanic cloud", " в Большом Магеллановом Облаке"], [" in the small magellanic cloud", " в Малом Магеллановом Облаке"], [" in the milky way", " в Млечном Пути"], [" in the local group", " в Местной группе"]];
 RULES.typeWords = (text) => {
   let base = String(text || '').trim();
@@ -6516,6 +6521,43 @@ Object.assign(COPY, {
         [
           "Цвет",
           "Иллюстративно. Ложные цвета «Хаббла», которых в модели нет. Вид «Измеренный» показывает серый."
+        ],
+        [
+          "Проверка",
+          "Этот рисунок ещё не проверен астрономом."
+        ]
+      ]
+    }
+  },
+  "deepV838": {
+    "card": {
+      "v838": "Свет вспышки звезды 2002 года, рассеянный окружающей её пылью и нарисованный на поверхности, которую описывают работы о световых эхо (Sparks и др., 2008; Bond и др., 2003). Пыль смоделирована; цвета иллюстративны. Ещё не проверено астрономом."
+    },
+    "rows": {
+      "dso-v838-monocerotis": [
+        [
+          "Эхо",
+          "Физика. Освещённая сейчас пыль лежит на параболоиде вокруг звезды: её расстояние от звезды минус расстояние к нам вдоль луча зрения равно скорости света, умноженной на время с тех пор, как вспышка дошла до нас (Sparks и др., 2008). Кольца кажутся растущими быстрее света, потому что движется эта поверхность, а не пыль (Bond и др., 2003)."
+        ],
+        [
+          "Время",
+          "Измерено. Вспышка началась в начале января 2002 года; отсчёт ведётся от её средней даты, 9 марта 2002 года, а кривая блеска шла от 36 суток до неё до 61 суток после (Sparks и др., 2008). На часах эхо растёт с этой даты; раньше его нет, а после середины 2008 года оно остаётся неизменным, потому что смоделированная пыль там кончается."
+        ],
+        [
+          "Расстояние",
+          "Измерено. 6,1 ± 0,6 килопарсека, около 19 900 световых лет, по кольцу поляризованного света, которое образует эхо (Sparks и др., 2008). Главная неопределённость систематическая."
+        ],
+        [
+          "Пыль",
+          "Смоделировано. В работах сказано, что пыль комковатая, и глубина ни одной её части не указана. Она нарисована как семь оболочек из комков вокруг пустой середины в 0,15 парсека (измерено), до 2 парсеков, самой дальней увиденной пыли (Bond и др., 2003). Где кольцо освещено и как ярко, смоделировано; то, что кольцо такого размера освещено в эту дату, — физика."
+        ],
+        [
+          "Цвет и яркость",
+          "Иллюстративно. Ранний свет был голубее позднего (Sparks и др., 2008); здесь от синего к красному, а яркость — простое окно."
+        ],
+        [
+          "Снимки «Хаббла»",
+          "Не поставляются: они у ESA/Hubble, heic0304a (NASA, ESA и H. E. Bond (STScI), март 2003) и heic0503a (NASA, ESA и команда Hubble Heritage (AURA/STScI), февраль 2005), CC BY 4.0."
         ],
         [
           "Проверка",

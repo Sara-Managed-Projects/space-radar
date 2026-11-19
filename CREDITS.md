@@ -2828,6 +2828,25 @@ are **illustrative**, and the Measured look takes them to grey. The cards carry 
 reviewed the drawings. The Cat's Eye record's distance changed with this work from 3.3 +/- 0.9 kly (Wikipedia's infobox)
 to 4 272 ly (Gaia).
 
+### V838 Monocerotis' light echo (2026-11-18)
+
+V838 Monocerotis' light echo (`site/js/scene/deep/v838.js`, `registry/deepsky-heroes/v838.yaml`) is drawn from geometry and numbers
+published in papers, as soft points (`site/js/scene/deep/softpoints.js`). No picture, mesh or data file of anyone's is shipped: the
+numbers are facts, cited, and each dot is generated.
+
+| what | from | licence |
+|---|---|---|
+| The lit surface of a light echo, the paraboloid z = x^2 / (2ct) - ct/2; the outburst's intensity-weighted mean date HJD 2 452 343 (2002 March 9) and the 97 days (HJD 2 452 307 to 2 452 404) of light modelled; the distance 6.1 +/- 0.6 kpc; the cavity (the 2002 September polarisation ring at 99 pixels of 0.0015 pc); the early light bluer than the late | Sparks W. B. et al. 2008, AJ 135, 605, *V838 Monocerotis: a geometric distance from Hubble Space Telescope polarimetric imaging of its light echo* (arXiv:0711.1495), read 2026-11-18 | facts, cited |
+| The outburst in early 2002 January, its blue peaks on 2002 February 6.4 and March 10.0, the dust within 2 pc of the star, the apparent speed of a ring | Bond H. E. et al. 2003, Nature 422, 405, *An energetic stellar outburst accompanied by circumstellar light echoes* (arXiv:astro-ph/0303513), read 2026-11-18 | facts, cited |
+| The star's place (ICRS 07h 04m 04.822s, -03 deg 50 min 50.53 s) | Wikipedia's infobox for V838 Monocerotis, read 2026-11-18, checked against the centre of ESA/Hubble heic0503a (07h 04m 05.13s, -03 deg 50 min 48.56 s) | facts, cited |
+| Hubble's pictures of the echo, referenced on the card and not shipped: heic0304a, *Hubble watches light echo from mysterious erupting star (composite)*, 26 March 2003, NASA, ESA and H.E. Bond (STScI); heic0503a, *Light continues to echo three years after stellar outburst*, 3 February 2005, NASA, ESA and The Hubble Heritage Team (AURA/STScI) | ESA/Hubble, [CC BY 4.0](https://esahubble.org/copyright/), read 2026-11-18 | CC BY 4.0, credit "ESA/Hubble" |
+
+What is measured and what is not. The lit surface is **physics**; the outburst's dates, its length, the distance, the 2 pc limit
+and the cavity are **measured**; the dust (seven shells of clumps at radii of Space Radar's choosing: the papers give no depth for any
+dust), where a ring is lit and how brightly are **modelled**; the brightness window and the colours are **illustrative**. The echo
+is held as of mid-2008 for later dates, because the modelled dust ends there. The card carries the sources and says no
+astronomer has reviewed the drawing.
+
 ### Cassiopeia A from its published 3D reconstruction (2026-11-16)
 
 Cassiopeia A (`site/js/scene/deep/casa.js`, `registry/deepsky-heroes/casa.yaml`) is drawn from the three-dimensional
