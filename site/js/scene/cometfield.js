@@ -33,6 +33,7 @@
 import { load } from '../data/sources.js';
 import { parseComets } from '../data/parsers.js';
 import { stage } from './stage.js';
+import { solveKeplerHyperbolic } from '../propagate/kepler.js';
 import { cometTailGain } from './comettail.js';
 
 export const AU_KM = 149597870.7;
@@ -70,13 +71,10 @@ function solveKepler(M, e) {
     }
     return E;
   }
-  let H = Math.asinh(M / e);
-  for (let k = 0; k < 40; k++) {
-    const d = (e * Math.sinh(H) - H - M) / (e * Math.cosh(H) - 1);
-    H -= d;
-    if (Math.abs(d) < 1e-12) break;
-  }
-  return H;
+  // The bracketed solver of propagate/kepler.js. This file's plain Newton walked off to H of 100 and more for a comet just above
+  // e = 1 a few years from perihelion (C/2012 S1 ISON, C/1962 C1 Seki-Lines): a place of 1e53 au, which is Infinity as float32,
+  // and made the points' bounding sphere radius NaN (the look smoke, 18 Nov; scene/orbitline.js and the console named comet-points).
+  return solveKeplerHyperbolic(M, e);
 }
 
 /** Rotate an orbital-plane point (x, y) by the argument of perihelion, inclination and node into the ecliptic J2000 axes. */
@@ -476,7 +474,7 @@ export function createCometField(THREE, env = {}) {
     tailRows.length = 0;
     for (let i = 0; i < S.n; i++) {
       const p = keplerPosAu(S.els[i], tMs, scratch);
-      if (!p || !Number.isFinite(p[0])) { S.pos[i * 3] = S.pos[i * 3 + 1] = S.pos[i * 3 + 2] = 0; S.r[i] = 0; wAttr.array[i] = 0; shown.array[i] = 0; S.rows[i].mag = NaN; continue; }
+      if (!p || !Number.isFinite(Math.fround(p[0])) || !Number.isFinite(Math.fround(p[1])) || !Number.isFinite(Math.fround(p[2]))) { S.pos[i * 3] = S.pos[i * 3 + 1] = S.pos[i * 3 + 2] = 0; S.r[i] = 0; wAttr.array[i] = 0; shown.array[i] = 0; S.rows[i].mag = NaN; continue; }
       S.pos[i * 3] = p[0]; S.pos[i * 3 + 1] = p[1]; S.pos[i * 3 + 2] = p[2]; S.r[i] = p[3];
       shown.array[i] = p[3] > POINT_MAX_AU ? 0 : shownOf(i); // a two-body place thousands of au out is not drawn
       const m = magNow(S.H[i], p[3]);
