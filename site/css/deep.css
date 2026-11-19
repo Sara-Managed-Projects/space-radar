@@ -39,3 +39,25 @@ html.sr-phone:is(.sr-launchday, .sr-card-open):not([data-sheet='full']) .sr-star
 html.sr-phone .sr-stardeep.is-open { display: block; max-height: 50vh; overflow: auto; padding-bottom: var(--sp-2); border-bottom: 1px solid var(--sr-line); }
 html.sr-phone[data-sheet='full'] .sr-stardeep { display: none; }
 /* b200-s4b-look: end */
+
+/* internal #431: begin -- scene/depthnote.js, "Depth modelled": one line over the picture, the stars' deep-time line's sibling
+   (the same glass, place and type), a status line that takes no click. Nothing moves, so nothing is turned off for reduced motion. */
+.sr-depthnote {
+  position: fixed; left: calc(50% + var(--sr-scene-left, 0px) / 2); bottom: calc(var(--sr-time-h, 102px) + 64px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  max-width: min(560px, calc(100vw - var(--sr-scene-left, 0px) - 32px)); margin: 0; padding: var(--sp-2) var(--sp-3);
+  font-size: var(--sr-fs-sm); line-height: 18px; color: var(--sr-text);
+  border-radius: var(--sr-radius-sm); pointer-events: none;
+  z-index: var(--sr-z-status); background: var(--sr-glass-strong);
+}
+.sr-depthnote[hidden] { display: none; }
+.sr-stardeep:not([hidden]) ~ .sr-depthnote { bottom: calc(var(--sr-time-h, 102px) + 64px + 2 * var(--sp-6) + env(safe-area-inset-bottom, 0px)); }
+html.sr-phone .sr-depthnote {
+  bottom: auto; left: 50%; width: calc(100vw - 2 * var(--sp-4)); max-width: none;
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 44px + var(--sp-2));
+}
+html.sr-phone:is(.sr-launchday, .sr-card-open):not([data-sheet='full']) .sr-depthnote {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 2 * (44px + var(--sp-2)));
+}
+html.sr-phone[data-sheet='full'] .sr-depthnote { display: none; }
+/* internal #431: end */

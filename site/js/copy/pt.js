@@ -109,6 +109,8 @@ const TYPES = {
   'spiral galaxy seen face-on': 'galáxia espiral vista de frente',
   'barred spiral galaxy seen nearly edge-on': 'galáxia espiral barrada vista quase de perfil',
   'pair of colliding galaxies': 'par de galáxias em colisão',
+  'cavity in the interstellar medium': 'cavidade no meio interestelar',
+  'light echo round an erupted star': 'eco de luz em torno de uma estrela em erupção',
   'barred spiral galaxy — the one we live in': 'galáxia espiral barrada — a nossa',
 };
 
@@ -1834,6 +1836,10 @@ export const COPY = {
       "dso-milky-way": {
         "drawn": "uma ilustração construída sobre medições",
         "split": "Medido: as estrelas a poucos milhares de anos-luz (Gaia), o ângulo da barra, as direções ao longo dos braços e os braços mais próximos (Reid et al. 2019). Deduzido: o lado distante, além do centro, escondido pela poeira; os braços dele são os próximos levados para lá. Quatro correntes estelares (Sagitário, Órfã-Chenab, GD-1, Palomar 5) são desenhadas a partir da biblioteca galstreams (Mateu 2023): onde cada uma está no céu é medido, e também a sua distância, exceto a de GD-1, que é presumida; a faixa de estrelas em volta de cada linha é ilustrativa."
+      },
+      "dso-local-bubble": {
+        "drawn": "pontos de poeira amostrados de um mapa medido",
+        "split": "Medido: onde está a poeira e quão densa é, em células de 8 parsecs, a partir da luz estelar do Gaia (Edenhofer e outros, 2024), e com isso o vazio em torno do Sol: nenhuma poeira a menos de 40 parsecs e uma parede a 170 parsecs em média, com cerca de 35 de espessura (O’Neill e outros, 2024). Modelado: cada ponto é um sorteio aleatório dessa densidade, não um grão nem uma nuvem, e a poeira ainda não escurece as estrelas atrás dela. Ilustrativo: a cor quente, pois a poeira é escura diante das estrelas. Não medido aqui: o gás dentro do vazio, a sua idade e como se formou. O artigo não dá um centro; este registro fica no meio que os pontos mostram, com cerca de 10 parsecs de margem. Ainda não revisado por um astrônomo."
       }
     }
   },
@@ -5805,6 +5811,7 @@ COPY.momentStories['fengyun-1c'] = {
 // b200-c3-learn: end
 // b200-c2-deep: begin -- the 3D stars over deep time, the variable stars worth going out for, the black holes against the EHT's pictures and the cards in the trips' voice (copy/en.deep.js, forge #141, #142, #149, #151), machine-drafted
 Object.assign(COPY, {
+  "depthNote": { "modelled": "Profundidade modelada: só as distâncias das estrelas são medidas." },
   "starDeep": {
     "moved": "As estrelas de {year}: cada uma deslocada pelo seu próprio movimento medido (Hipparcos e Gaia, via HYG); prolongá-los em linha reta por tanto tempo é modelado.",
     "hidden": "Estrelas sem movimento medido não são desenhadas tão longe de hoje.",
@@ -6587,6 +6594,43 @@ Object.assign(COPY, {
         [
           "Revisão",
           "Este desenho ainda não foi revisto por um astrónomo."
+        ]
+      ]
+    }
+  },
+  "deepV838": {
+    "card": {
+      "v838": "A luz da erupção de 2002 da estrela, espalhada pela poeira ao seu redor e desenhada na superfície que os artigos sobre ecos de luz descrevem (Sparks e outros, 2008; Bond e outros, 2003). A poeira é modelada; as cores são ilustrativas. Ainda não revisado por um astrônomo."
+    },
+    "rows": {
+      "dso-v838-monocerotis": [
+        [
+          "O eco",
+          "Física. A poeira iluminada agora está num paraboloide em torno da estrela: a sua distância à estrela menos a sua distância em direção a nós ao longo da linha de visão é a velocidade da luz vezes o tempo desde que a erupção nos alcançou (Sparks e outros, 2008). Os anéis parecem crescer mais depressa que a luz porque é essa superfície que se move, não a poeira (Bond e outros, 2003)."
+        ],
+        [
+          "O tempo",
+          "Medido. A erupção começou no início de janeiro de 2002; conta-se a partir da sua data média, 9 de março de 2002, e a curva de luz foi de 36 dias antes a 61 depois (Sparks e outros, 2008). No relógio o eco cresce a partir daí; antes não há nenhum, e depois de meados de 2008 fica parado, porque a poeira modelada termina ali."
+        ],
+        [
+          "A distância",
+          "Medido. 6,1 ± 0,6 quiloparsecs, cerca de 19 900 anos-luz, a partir do anel de luz polarizada que o eco forma (Sparks e outros, 2008). A principal dúvida é sistemática."
+        ],
+        [
+          "A poeira",
+          "Modelado. Os artigos dizem que a poeira é irregular e não dão a profundidade de nenhuma parte. Ela é desenhada como sete cascas de aglomerados em torno de um centro vazio de 0,15 parsec (medido), até 2 parsecs, a poeira mais distante vista (Bond e outros, 2003). Onde um anel se ilumina e com que brilho é modelado; que um anel desse tamanho se ilumine nessa data é física."
+        ],
+        [
+          "Cor e brilho",
+          "Ilustrativo. A luz do início era mais azul que a do fim (Sparks e outros, 2008); aqui vai do azul ao vermelho, e o brilho é uma simples janela."
+        ],
+        [
+          "As imagens do Hubble",
+          "Não incluídas: estão no ESA/Hubble, heic0304a (NASA, ESA e H. E. Bond (STScI), março de 2003) e heic0503a (NASA, ESA e a equipe Hubble Heritage (AURA/STScI), fevereiro de 2005), CC BY 4.0."
+        ],
+        [
+          "Revisão",
+          "Este desenho ainda não foi revisado por um astrônomo."
         ]
       ]
     }

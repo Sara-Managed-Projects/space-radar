@@ -125,6 +125,8 @@ const TYPES = {
   'spiral galaxy seen face-on': 'galaxie spirale vue de face',
   'barred spiral galaxy seen nearly edge-on': 'galaxie spirale barrée vue presque par la tranche',
   'pair of colliding galaxies': 'paire de galaxies en collision',
+  'cavity in the interstellar medium': 'cavité dans le milieu interstellaire',
+  'light echo round an erupted star': 'écho de lumière autour d’une étoile en éruption',
   'barred spiral galaxy — the one we live in': 'galaxie spirale barrée — celle où nous vivons',
 };
 
@@ -1848,6 +1850,10 @@ export const COPY = {
       "dso-milky-way": {
         "drawn": "une illustration construite sur des mesures",
         "split": "Mesuré : les étoiles à quelques milliers d’années-lumière (Gaia), l’angle de la barre, les directions le long des bras et les bras les plus proches (Reid et al. 2019). Déduit : l’autre côté, au-delà du centre, caché par la poussière ; ses bras sont les bras proches prolongés. Quatre courants d’étoiles (Sagittaire, Orphan-Chenab, GD-1, Palomar 5) sont dessinés d’après la bibliothèque galstreams (Mateu 2023) : la place de chacun dans le ciel est mesurée, ainsi que sa distance sauf pour GD-1, dont la distance est supposée ; le ruban d’étoiles autour de chaque ligne est illustratif."
+      },
+      "dso-local-bubble": {
+        "drawn": "des points de poussière tirés d’une carte mesurée",
+        "split": "Mesuré : où est la poussière et quelle est sa densité, par cellules de 8 parsecs, d’après la lumière des étoiles de Gaia (Edenhofer et autres, 2024), et avec elle le creux autour du Soleil : aucune poussière à moins de 40 parsecs et une paroi à 170 parsecs en moyenne, épaisse d’environ 35 (O’Neill et autres, 2024). Modélisé : chaque point est un tirage au hasard dans cette densité, ni un grain ni un nuage, et la poussière n’atténue pas encore les étoiles derrière elle. Illustratif : la couleur chaude, car la poussière est sombre devant les étoiles. Non mesuré ici : le gaz dans le creux, son âge et sa formation. L’article ne donne pas de centre ; cette fiche se tient au milieu que montrent les points, à environ 10 parsecs près. Pas encore relu par un astronome."
       }
     }
   },
@@ -5819,6 +5825,7 @@ COPY.momentStories['fengyun-1c'] = {
 // b200-c3-learn: end
 // b200-c2-deep: begin -- the 3D stars over deep time, the variable stars worth going out for, the black holes against the EHT's pictures and the cards in the trips' voice (copy/en.deep.js, forge #141, #142, #149, #151), machine-drafted
 Object.assign(COPY, {
+  "depthNote": { "modelled": "Profondeur modélisée : seules les distances des étoiles sont mesurées." },
   "starDeep": {
     "moved": "Les étoiles de {year} : chacune déplacée de son propre mouvement mesuré (Hipparcos et Gaia, via HYG) ; les prolonger en ligne droite aussi longtemps est modélisé.",
     "hidden": "Les étoiles sans mouvement mesuré ne sont pas dessinées aussi loin d’aujourd’hui.",
@@ -6597,6 +6604,43 @@ Object.assign(COPY, {
         [
           "Couleur",
           "Illustrative. Les fausses couleurs de Hubble, que le modèle n’a pas. Le rendu Mesuré les montre en gris."
+        ],
+        [
+          "Relecture",
+          "Ce dessin n’a pas encore été relu par un astronome."
+        ]
+      ]
+    }
+  },
+  "deepV838": {
+    "card": {
+      "v838": "La lumière de l’éruption de 2002 de l’étoile, diffusée par la poussière qui l’entoure et dessinée sur la surface que décrivent les articles sur les échos de lumière (Sparks et autres, 2008 ; Bond et autres, 2003). La poussière est modélisée ; les couleurs sont illustratives. Pas encore relu par un astronome."
+    },
+    "rows": {
+      "dso-v838-monocerotis": [
+        [
+          "L’écho",
+          "Physique. La poussière éclairée en ce moment se trouve sur un paraboloïde autour de l’étoile : sa distance à l’étoile moins sa distance vers nous le long de la ligne de visée vaut la vitesse de la lumière fois le temps écoulé depuis que l’éruption nous a atteints (Sparks et autres, 2008). Les anneaux semblent grandir plus vite que la lumière parce que c’est cette surface qui se déplace, non la poussière (Bond et autres, 2003)."
+        ],
+        [
+          "Le temps",
+          "Mesuré. L’éruption a commencé début janvier 2002 ; on compte depuis sa date moyenne, le 9 mars 2002, et la courbe de lumière s’étendait de 36 jours avant à 61 jours après (Sparks et autres, 2008). Sur l’horloge, l’écho grandit à partir de là ; avant, il n’y en a pas, et après la mi-2008 il reste figé, car la poussière modélisée s’arrête là."
+        ],
+        [
+          "La distance",
+          "Mesuré. 6,1 ± 0,6 kiloparsecs, environ 19 900 années-lumière, d’après l’anneau de lumière polarisée que forme l’écho (Sparks et autres, 2008). Le principal doute est systématique."
+        ],
+        [
+          "La poussière",
+          "Modélisé. Les articles disent que la poussière est grumeleuse et ne donnent la profondeur d’aucune de ses parties. Elle est dessinée en sept coquilles de grumeaux autour d’un centre vide de 0,15 parsec (mesuré), jusqu’à 2 parsecs, la poussière la plus lointaine vue (Bond et autres, 2003). Où un anneau est éclairé, et avec quelle intensité, est modélisé ; qu’un anneau de cette taille soit éclairé à cette date relève de la physique."
+        ],
+        [
+          "Couleur et luminosité",
+          "Illustratif. La lumière du début était plus bleue que celle de la fin (Sparks et autres, 2008) ; ici elle va du bleu au rouge, et la luminosité est une simple fenêtre."
+        ],
+        [
+          "Les images de Hubble",
+          "Non incluses : elles sont chez ESA/Hubble, heic0304a (NASA, ESA et H. E. Bond (STScI), mars 2003) et heic0503a (NASA, ESA et l’équipe Hubble Heritage (AURA/STScI), février 2005), CC BY 4.0."
         ],
         [
           "Relecture",
