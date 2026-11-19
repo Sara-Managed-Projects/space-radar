@@ -87,5 +87,12 @@ check(orbitLineLine({ propagator: 'sgp4', meta: { periodMin: 93 } }).includes('o
   stage.setWorld('earth');
 }
 
+// a sample with a finite x and a NaN y or z is left out: it would make the line's bounding sphere radius NaN (the look smoke, 18 Nov)
+{
+  const { sampleAt } = await import(join(JS, 'scene/orbitline.js'));
+  const bad = sampleAt((t) => (t === 1 ? { x: 1, y: NaN, z: 0 } : t === 2 ? { x: 1, y: 0, z: NaN } : { x: t, y: 0, z: 0 }), [0, 1, 2, 3, 4], false);
+  check(bad.length === 9 && Array.from(bad).every(Number.isFinite), `samples with a NaN y or z are dropped (${bad.length / 3} kept of 3)`);
+}
+
 if (problems.length) { console.error('orbit line FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('orbit line ok: a closed lap from the record\'s own propagator; the ISS loops at 6 700 km; MRO rings Mars at 3 650 km; things that do not lap get no line');

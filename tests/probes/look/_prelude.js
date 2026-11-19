@@ -12,7 +12,23 @@ const look = { probe: '', errors: [], warns: [], shots: [], missing: [] };
 {
   const text = (a) => a.map((x) => (x && x.stack ? String(x.stack) : String(x))).join(' ');
   const ce = console.error.bind(console);
-  console.error = (...a) => { look.errors.push('console.error: ' + text(a).slice(0, 600)); ce(...a); };
+  // THREE logs "Computed radius is NaN" with the geometry as its second argument and nothing else to say whose it is (18 Nov: the
+  // smoke failed on it for a day with no way to tell). So: name the object that wears the geometry, its parent chain, how many vertices
+  // hold a NaN and where the first is, and the call stack. Cheap: it runs only for that message.
+  const whose = (a) => {
+    try {
+      const g = a.find((x) => x && x.isBufferGeometry);
+      if (!g) return '';
+      const pos = g.attributes && g.attributes.position;
+      let bad = 0, first = -1;
+      if (pos && pos.array) for (let i = 0; i < pos.count; i++) { const k = i * pos.itemSize; if (!(Number.isFinite(pos.array[k]) && Number.isFinite(pos.array[k + 1]) && Number.isFinite(pos.array[k + 2]))) { if (first < 0) first = i; bad++; } }
+      const owners = [];
+      const sc = window.spaceRadar && window.spaceRadar.scene;
+      if (sc) sc.traverse((o) => { if (o.geometry === g) { const chain = []; for (let p = o; p; p = p.parent) chain.push((p.type || '?') + ':' + (p.name || '')); owners.push(chain.join(' < ') + ' ' + JSON.stringify(o.userData || {}).slice(0, 120)); } });
+      return ' || geometry ' + g.type + ' ' + (g.name || '') + ' verts=' + (pos ? pos.count : 0) + ' withNaN=' + bad + ' firstNaN=' + first + ' drawRange=' + JSON.stringify(g.drawRange) + ' userData=' + JSON.stringify(g.userData || {}).slice(0, 120) + ' owners=[' + (owners.join(' ;; ') || 'not in the scene graph') + '] stack=' + String(new Error().stack).split('\n').slice(2, 9).join(' <- ').replace(/\s+/g, ' ');
+    } catch (e) { return ' || (the reporter failed: ' + e + ')'; }
+  };
+  console.error = (...a) => { look.errors.push('console.error: ' + (text(a) + (/Computed radius is NaN/.test(text(a)) ? whose(a) : '')).slice(0, 1800)); ce(...a); };
   const cw = console.warn.bind(console);
   console.warn = (...a) => { look.warns.push(text(a).slice(0, 300)); cw(...a); };
   window.addEventListener('error', (e) => look.errors.push('uncaught: ' + String(e.message).slice(0, 600)));
