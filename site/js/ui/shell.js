@@ -287,7 +287,8 @@ export function createShell(ctx, opts = {}) {
   reopen.type = 'button';
   const reopenName = el('span', 'ui-row__t sr-side__reopen-name');
   reopen.appendChild(reopenName);
-  reopen.addEventListener('click', () => { show('card'); landFocus(); });
+  // Back to the card the visitor stepped away from: its back row keeps the words it had (they came from that home).
+  reopen.addEventListener('click', () => { show('card', { again: true }); landFocus(); });
   const unselect = el('button', 'ui-close sr-side__unselect');
   unselect.type = 'button';
   unselect.dataset.icon = 'x';
@@ -376,7 +377,7 @@ export function createShell(ctx, opts = {}) {
   stripCard.hidden = true;
   const stripCardName = el('span', 'sr-strip__name');
   stripCard.appendChild(stripCardName);
-  stripCard.addEventListener('click', () => { collapse(false); show('card'); });
+  stripCard.addEventListener('click', () => { collapse(false); show('card', { again: true }); });
   strip.append(stripOpen, stripTools, stripCard);
   side.appendChild(strip);
 
@@ -588,11 +589,11 @@ export function createShell(ctx, opts = {}) {
     try { homeCrumb = homeSays.crumb() || {}; } catch { homeCrumb = {}; }
   }
 
-  function show(view) {
+  function show(view, how = {}) {
     const held = heldFocus();
     if (view === 'home') { stack.reset(); lastDir = 'pop'; paint(); if (held) landFocus(); return true; }
     if (view === 'sources') ensureSources();
-    if (stack.current() === 'home' && view !== 'trip') noteHome();
+    if (stack.current() === 'home' && view !== 'trip' && !how.again) noteHome();
     if (!stack.push(view)) { paint(); return false; }
     lastDir = 'push';
     // A card or the sources sheet opened on a collapsed sidebar opens it for as long as it is up.

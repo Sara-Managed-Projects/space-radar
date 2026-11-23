@@ -312,6 +312,7 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   check(step && !/deselect/.test(step) && /back\(\);/.test(step) && /homeSays\.restore\(crumb\)/.test(step), 'Back steps one view and keeps the selection, and puts the home back as it was (the results reopen)');
   check(/escapeCard\(\) \{[\s\S]{0,300}if \(view === 'card'\) \{ stepBack\(\); return true; \}/.test(shellSrc)
     && /shell\.escapeCard\(\)\) return;\s*hideCard\(\);/.test(cardsSrc) && /event\.defaultPrevented\) return;/.test(cardsSrc), 'Escape on a card steps back the same way; with the card not on top it closes it, and an Escape the search took is the search\'s');
+  check((shellSrc.match(/show\('card', \{ again: true \}\)/g) || []).length === 2 && /!how\.again\) noteHome\(\);/.test(shellSrc), 'going back to the open card (its row, the strip) keeps the breadcrumb it had');
   check(/window\.addEventListener\('sr:select'/.test(shellSrc) && /if \(stack\.current\(\) !== 'card'\) \{ show\('card'\); return; \}/.test(shellSrc), 'a new selection under an open card brings the card back to the top');
   check(/crumb\.button\.setAttribute\('aria-label', t\(COPY\.shell\.backTo, \{ where: words \}\)\)/.test(shellSrc), 'the back row\'s name is "Back to …" with the same words');
   // The panel's own control: Lucide's icon, never the back row's chevron, and the strip in place of the "S ›" handle.
