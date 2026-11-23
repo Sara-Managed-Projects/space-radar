@@ -53,6 +53,10 @@ if (!phone) {
   const mars = sr.recordById('mars');
   if (mars) sr.select(mars, { fly: false });
   await settle(3000);
+  // Before the fix the hide control lived in the home view only: with a card open there was none, so the old way was
+  // back first (which put the card down), then the chevron.
+  out.steps.hideWithCard = !!(find('.sr-side__hide') || find('.sr-explore__collapse'));
+  if (!out.steps.hideWithCard) { const b = find('.sr-side__back'); if (b) b.click(); await settle(1500); }
   const hide = find('.sr-side__hide') || find('.sr-explore__collapse');
   out.steps.hideWas = hide ? (hide.getAttribute('aria-label') || hide.textContent.trim()) : null;
   if (hide) hide.click();
