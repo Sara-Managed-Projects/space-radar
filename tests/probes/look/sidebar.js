@@ -32,7 +32,8 @@ input.dispatchEvent(new Event('input', { bubbles: true }));
 await until(() => find('.sr-search__list [role="option"]'), 20000);
 await settle(1500);
 await snap('2-results');
-const row = [...document.querySelectorAll('.sr-search__list [role="option"]')].find((o) => shown(o) && /^\s*Mars\b/.test(o.textContent)) || find('.sr-search__list [role="option"]');
+// The planet's row, which leads the list ("MarsPlanet" as text): never the trip "Mars, where we have driven" under it.
+const row = [...document.querySelectorAll('.sr-search__list [role="option"]')].find((o) => shown(o) && /^\s*Mars(?![a-z,])/.test(o.textContent)) || find('.sr-search__list [role="option"]');
 if (row) row.click();
 await until(() => shown(document.getElementById('sr-card')), 30000);
 await settle(5000);
