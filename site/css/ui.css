@@ -5598,6 +5598,16 @@ html.sr-phone #sr-side > .sr-side__open {
   padding: 0 0 0 var(--sp-2);
 }
 
+/* A pushed view starts right under the handle (the head and the open row step aside for it), and its slide-in makes it
+   the box its back row is placed in: so the row is placed against the view, one handle's height up. */
+html.sr-phone #sr-side > .sr-side__view {
+  position: relative;
+}
+
+html.sr-phone #sr-side > .sr-side__view > .sr-side__bar {
+  top: calc(-1 * var(--sr-sheet-handle));
+}
+
 html.sr-phone #sr-side > .sr-side__open .sr-side__unselect {
   display: none;
 }
@@ -7134,6 +7144,17 @@ html.sr-phone-land #sr-side {
 }
 
 html.sr-phone-land .sr-sheet__handle { display: none; }
+
+/* No handle sideways, so no handle's row: the breadcrumb and the open card's row are back in the column's flow. */
+html.sr-phone-land #sr-side > .sr-side__view > .sr-side__bar,
+html.sr-phone-land #sr-side > .sr-side__open {
+  position: static;
+  height: auto;
+  max-width: none;
+  padding: var(--sp-2) var(--sp-4) 0;
+}
+
+html.sr-phone-land #sr-side > .sr-side__open .sr-side__unselect { display: inline-grid; }
 
 html.sr-phone-land #sr-side :is(.sr-explore__body, .sr-side__cardslot, .sr-side__sourceshost, .sr-side__trip) {
   overflow-y: auto;
