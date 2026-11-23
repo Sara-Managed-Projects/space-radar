@@ -3351,18 +3351,65 @@ html.sr-phone .sr-chevron {
   to { opacity: 1; transform: none; }
 }
 
-/* "‹ Explore" and the view's own scroll under it. */
+/* The pinned head (ui/shell.js): the wordmark, the hide control, the search and the tabs, above every view but a trip's. */
+.sr-side__head {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.sr-side[data-view='trip'] > :is(.sr-side__head, .sr-side__open) {
+  display: none;
+}
+
+/* The breadcrumb, "‹ Results for “mars”", and the view's own scroll under it. One line: a long name is cut. */
 .sr-side__bar {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
-  padding: var(--sp-3) var(--sp-4) 0;
+  min-width: 0;
+  padding: 0 var(--sp-4);
+}
+
+.sr-side__crumb {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The open card while another view shows: "Mars ›" to go back to it, and its close. */
+.sr-side__open {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-width: 0;
+  padding: 0 var(--sp-4) var(--sp-2);
+}
+
+.sr-side__open[hidden] {
+  display: none;
+}
+
+.sr-side__reopen {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.sr-side__reopen-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sr-side__back {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
+  min-width: 0;
+  max-width: 100%;
   height: 36px;
   padding: 0 var(--sp-3) 0 var(--sp-1);
   font: inherit;
@@ -3393,44 +3440,68 @@ html.sr-phone .sr-chevron {
   overscroll-behavior: contain;
 }
 
-/* The collapsed handle: the wordmark's first letter and a chevron, in the sidebar's corner. */
-.sr-side__handle {
+/* THE HIDDEN PANEL is a slim strip in its corner (ui/shell.js): show it again, the search, the four tabs, and the open
+   card's name written down the strip. The views, the head and the open row are out of sight and out of the tab order. */
+.sr-strip {
   display: none;
 }
 
 .sr-side.is-collapsed {
   bottom: auto;
-  width: 64px;
-  height: 48px;
+  width: 56px;
+  max-height: calc(100% - 2 * var(--sr-inset));
   border-radius: var(--sr-radius-shell);
 }
 
-.sr-side.is-collapsed .sr-side__view {
+.sr-side.is-collapsed > :is(.sr-side__view, .sr-side__head, .sr-side__open) {
   display: none;
 }
 
-.sr-side.is-collapsed .sr-side__handle {
+.sr-side.is-collapsed > .sr-strip {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  width: 100%;
-  height: 100%;
-  padding: 0;
-  font: 600 var(--sr-fs-name-sm)/1 var(--sr-font-hud);
+  gap: var(--sp-1);
+  min-height: 0;
+  padding: var(--sp-2);
+}
+
+.sr-strip__tools {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding-top: var(--sp-1);
+  border-top: 1px solid var(--sr-line);
+}
+
+.sr-strip__card {
+  min-height: 0;
+  max-height: 200px;
+  margin: var(--sp-1) 0 0;
+  padding: var(--sp-3) 0;
+  overflow: hidden;
+  font: inherit;
+  font-size: var(--sr-fs-label);
+  line-height: 40px;
   color: var(--sr-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  writing-mode: vertical-rl;
   background: transparent;
   border: 0;
+  border-top: 1px solid var(--sr-line);
+  border-radius: 0;
   cursor: pointer;
+  transition: color var(--sr-fast) var(--sr-ease);
 }
 
-.sr-side.is-collapsed .sr-side__handle .sr-side__chev {
-  font-family: var(--sr-font);
-  font-weight: 400;
-  color: var(--sr-text-dim);
+.sr-strip__card[hidden] {
+  display: none;
 }
 
-.sr-side__handle:hover .sr-side__chev { color: var(--sr-ember); }
+@media (hover: hover) {
+  .sr-strip__card:hover { color: var(--sr-ember-light); }
+}
 
 /* --- the explore view ----------------------------------------------------------------- */
 
@@ -3459,7 +3530,7 @@ html.sr-phone .sr-chevron {
   justify-content: space-between;
   row-gap: var(--sp-2);
   min-height: 32px;
-  padding-right: 40px;
+  padding-inline-end: 40px;
 }
 
 /* The wordmark: Barlow Semi Condensed 600 at 27 px. */
@@ -3471,27 +3542,11 @@ html.sr-phone .sr-chevron {
   color: var(--sr-text);
 }
 
-.sr-explore__collapse {
+/* The hide control, Lucide's panel-left-close in the set's 32 px quiet icon button, on the panel's outer edge. */
+.sr-side__hide {
   position: absolute;
-  top: -4px;
-  right: -8px;
-  width: 36px;
-  height: 36px;
-  margin: 0;
-  padding: 0;
-  font: 400 var(--sr-fs-glyph)/1 var(--sr-font);
-  color: var(--sr-text-soft);
-  background: transparent;
-  border: 0;
-  border-radius: var(--sr-radius);
-  cursor: pointer;
-  transition: color var(--sr-fast) var(--sr-ease), background var(--sr-fast) var(--sr-ease);
-}
-
-
-.sr-explore__collapse:hover {
-  color: var(--sr-text);
-  background: var(--sr-wash);
+  top: 0;
+  inset-inline-end: -8px;
 }
 
 /* Search, mounted from ui/search.js: its field becomes row D's 44 px well with a magnifier, and its
@@ -3554,15 +3609,24 @@ html.sr-phone .sr-chevron {
   display: none;
 }
 
-html:not(.sr-phone) .sr-explore.is-searching .sr-tabs {
+/* While the results are open they take the column (ui/explore.js `is-results`): the tabs, the view under the head and
+   the open card's row step aside, over the home's lists and over a card alike. */
+html:not(.sr-phone) .sr-side.is-results .sr-tabs,
+html:not(.sr-phone) .sr-side.is-results > :is(.sr-side__view, .sr-side__open) {
   display: none;
+}
+
+html:not(.sr-phone) .sr-side.is-results > .sr-side__head {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 /* What the search could not look in, said while it is used (spec 0021): quiet, never a boxed
    warning in the sidebar, where it sits under the results it qualifies. One line (0061 req 11):
    the count of what is and is not searched; which layers, and why, is its tooltip. */
-.sr-explore.is-searching .sr-search__note,
-.sr-explore.is-searching .sr-search__note.is-warning {
+.sr-side.is-results .sr-search__note,
+.sr-side.is-results .sr-search__note.is-warning {
   display: block;
   margin: var(--sp-3) 0 0;
   padding: var(--sp-3) 0 0;
@@ -3652,9 +3716,6 @@ html.sr-phone .sr-top .sr-search__emptyhint {
   max-height: none;
 }
 
-html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
-  display: none;
-}
 
 /* The tabs: a segmented control (css/controls.css .ui-seg, the tab with aria-selected), four equal pills. */
 .sr-tabs > .ui-seg__btn {
@@ -5494,7 +5555,12 @@ html.sr-phone #sr-side[data-detent='full'] :is(.sr-explore__body, .sr-side__card
    page starts on a phone) and the tabs grow to 44 px segments in a 48 px track. Collapsing is a
    desktop idea. */
 html.sr-phone .sr-explore__brand,
-html.sr-phone .sr-explore__collapse {
+html.sr-phone .sr-side__hide {
+  display: none;
+}
+
+/* The head is the tabs on a phone (the search is in the top bar): the home's, at peek. A card or a sheet has the height. */
+html.sr-phone #sr-side:not([data-view='home']) > .sr-side__head {
   display: none;
 }
 
@@ -5518,9 +5584,21 @@ html.sr-phone .sr-statusline {
   padding-left: var(--sp-4);
 }
 
-/* The card at half: row D's phone card. No "‹ Explore" row (the × beside the name is the way back,
-   and peek is one drag down); the name at the phone's size, the numbers at 20, the actions 52. */
-html.sr-phone .sr-side__card > .sr-side__bar {
+/* THE BREADCRUMB IS IN THE HANDLE'S ROW (2026-11-23): "‹ Planets" at the row's start, the grabber in its middle, so a
+   card at half starts with its name and the way back is where the thumb grabs the sheet. At home the open card's row
+   sits there instead, "Mars ›". Both are cut before the grabber. */
+html.sr-phone #sr-side > .sr-side__view > .sr-side__bar,
+html.sr-phone #sr-side > .sr-side__open {
+  position: absolute;
+  top: 0;
+  inset-inline-start: 0;
+  z-index: 1;
+  height: var(--sr-sheet-handle);
+  max-width: calc(50% - 28px);
+  padding: 0 0 0 var(--sp-2);
+}
+
+html.sr-phone #sr-side > .sr-side__open .sr-side__unselect {
   display: none;
 }
 

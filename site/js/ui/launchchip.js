@@ -131,7 +131,7 @@ export function createLaunchChip(ctx, opts = {}) {
     const phone = doc.documentElement.classList.contains('sr-phone');
     const host = phone ? (ctx.shell && ctx.shell.lineHost) : doc.querySelector('.sr-explore__brand');
     if (!host || root.parentNode === host) return;
-    const before = phone ? null : host.querySelector('.sr-explore__collapse');
+    const before = phone ? null : host.querySelector('.sr-side__hide');
     host.insertBefore(root, before);
   }
 

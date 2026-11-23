@@ -1,6 +1,6 @@
 // ui/search.js -- find an object by name or catalogue number, and fly to it.
 //
-// Contract export: createSearch(ctx, host) -> { destroy(), focus(), refresh() }
+// Contract export: createSearch(ctx, host) -> { destroy(), focus(), reopen(), refresh() }
 // Also exported, and pure, so the ranking can be measured without a DOM:
 //   buildIndex(records, layers) -> Index
 //   findMatches(index, query, limit) -> { hits, total, query }
@@ -1221,6 +1221,11 @@ export function createSearch(ctx, host) {
     focus() {
       input.focus();
       input.select();
+    },
+    /** Back to the results a pick closed (the sidebar's "‹ Results for …"): the field, and its list as it was. */
+    reopen() {
+      input.focus({ preventScroll: true });
+      if (input.value && state.hits.length) setOpen(true);
     },
     destroy() {
       window.clearTimeout(state.inputTimer);

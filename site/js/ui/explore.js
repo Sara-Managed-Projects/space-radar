@@ -14,7 +14,7 @@
 // answers "what is there to look at" and moves the rest out: the layers to the tool rail
 // (ui/rail.js), the clock to the pill (ui/timepill.js), the sources to their sheet (ui/status.js).
 //
-//   Space Radar                               ‹       the wordmark; ‹ collapses to the handle
+//   Space Radar                               [⇤]     the wordmark; the panel's own icon hides it to the strip ([)
 //   [ Search planets, stars, satellites     ]         ui/search.js, mounted here
 //   [ Earth | Planets | Stars | Tonight ]             places, not settings: a tab flies there
 //   RIGHT NOW   at most three lines from live state, a missing one left out, never filler
@@ -44,6 +44,7 @@ import { createSearch } from './search.js';
 import { createNext, auroraItem } from './next.js';
 import { tagLines } from './cardgate.js';
 import { revealInColumn } from './reveal.js';
+import { panelKey } from './shell.js';
 
 export const TABS = ['earth', 'planets', 'stars', 'tonight'];
 const TARGETS = {
@@ -52,6 +53,8 @@ const TARGETS = {
   stars: { stage: 'stellar', moment: 'wonder' },
   tonight: { stage: 'earth', moment: 'now' },
 };
+/** Each tab's icon in the hidden panel's strip (ui/icons.js, Lucide). */
+const TAB_ICONS = { earth: 'earth', planets: 'orbit', stars: 'sparkles', tonight: 'moon' };
 /** The trips each tab lists, by registry/tours.yaml `group`. Earth, the first view, lists them all. */
 const TAB_GROUPS = { earth: null, planets: ['solar-system'], stars: ['beyond'], tonight: ['events'] };
 /** How many trip cards before "All trips": two rows of two, which is row D's first view. */
@@ -385,13 +388,19 @@ export function createExplore(ctx, host) {
   const root = el('div', 'sr-explore');
   (host || document.body).appendChild(root);
 
-  // --- the head: the wordmark, collapse, search, tabs -------------------------------------------
+  // --- the head: the wordmark, the hide control, search, tabs -----------------------------------
+  // PINNED (2026-11-23): the shell keeps it above every view, so a card opens under the search and the tabs, not in
+  // their place (ui/shell.js THE WAY BACK SAYS WHERE IT GOES). Without a shell it is the top of this view, as it was.
+  const shell0 = ctx && ctx.shell;
   const head = el('div', 'sr-explore__head');
   const brand = el('div', 'sr-explore__brand');
   brand.appendChild(el('p', 'sr-wordmark', COPY.app.name));
-  const collapse = button('sr-explore__collapse', COPY.shell.backChevron);
+  // Its own icon, on the panel's outer edge: never the back row's chevron (the review: the two read as one).
+  const collapse = button('ui-btn ui-btn--quiet ui-btn--icon ui-btn--sm sr-side__hide');
+  collapse.dataset.icon = 'panel-left-close';
   collapse.setAttribute('aria-label', COPY.shell.collapse);
-  collapse.title = COPY.shell.collapse;
+  collapse.setAttribute('aria-keyshortcuts', COPY.shell.panelKey);
+  collapse.title = t(COPY.shell.keyed, { label: COPY.shell.collapse, key: COPY.shell.panelKey });
   collapse.addEventListener('click', () => { if (ctx.shell) ctx.shell.collapse(true); });
   brand.appendChild(collapse);
   head.appendChild(brand);
@@ -421,18 +430,22 @@ export function createExplore(ctx, host) {
     const cls = document.documentElement.classList;
     // Not over a clear screen (H owns it) and not in a trip (its sheet has the sidebar).
     if (cls.contains('sr-clean') || cls.contains('sr-trip-mode')) return;
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     const shell = ctx && ctx.shell;
-    if (shell) {
-      // The field lives in the home view: unfold the sidebar and come back to it. The card is left
-      // by putting the selection down, as its own back row does; the sources sheet by going back.
-      if (typeof shell.collapsed === 'function' && shell.collapsed()) shell.collapse(false);
-      if (shell.view() === 'card' && typeof ctx.deselect === 'function') ctx.deselect();
-      while (shell.view() !== 'home' && shell.stack().length > 1) shell.back();
-    }
+    // The field is pinned over every view: a hidden panel is shown, and whatever is open stays open under the field.
+    if (shell && typeof shell.collapsed === 'function' && shell.collapsed()) shell.collapse(false);
     search.focus();
   };
   document.addEventListener('keydown', (e) => { if (wantsSearch(e, document.activeElement)) toSearch(e); });
+  // `[` hides the panel or shows it again (a desktop's: a phone's panel is the sheet), never over a clear screen or a trip.
+  document.addEventListener('keydown', (e) => {
+    const shell = ctx && ctx.shell;
+    if (!shell || shell.isPhone() || !panelKey(e, document.activeElement, isTypingIn)) return;
+    const cls = document.documentElement.classList;
+    if (cls.contains('sr-clean') || cls.contains('sr-trip-mode')) return;
+    e.preventDefault();
+    shell.collapse(!shell.collapsed());
+  });
   // The skip links of index.html (public #315). "Skip to search" does what `/` does. "Skip to the
   // map" puts the focus on <main>, which takes it for that moment only: a <main> that kept a
   // tabindex would take the focus on every click of the map, and the keys would follow it there.
@@ -449,12 +462,18 @@ export function createExplore(ctx, host) {
   // While a query is typed the results REPLACE the lists (design §2): one column, one answer. On a
   // phone the box is in the top bar and its results drop from it (ui/shell.js seatSearch), so the
   // flag is on the box as well, where the phone's rules read it.
+  // THE RESULTS TAKE THE COLUMN while they are open: over the home's lists, and over a card too now the field is pinned
+  // above it (`is-results` on the sidebar, read by ui.css on a desktop). Closed, the view under the field is back.
+  const pop = searchHost.querySelector('.sr-search__pop');
   const onType = () => {
     const on = !!(input && input.value.trim().length >= 2);
     root.classList.toggle('is-searching', on);
     searchHost.classList.toggle('is-searching', on);
+    const side = head.closest('.sr-side');
+    if (side) side.classList.toggle('is-results', on && !!pop && !pop.hidden);
   };
   if (input) { input.addEventListener('input', onType); input.addEventListener('change', onType); input.addEventListener('blur', () => setTimeout(onType, 0)); }
+  if (pop && typeof MutationObserver === 'function') new MutationObserver(onType).observe(pop, { attributes: true, attributeFilter: ['hidden'] });
   // The named stars and the exoplanets load after the first visit (main.js OFF THE FIRST VISIT);
   // a visitor reaching for the search box wants them now, so the first focus asks for them.
   if (input) input.addEventListener('focus', () => { if (typeof ctx.loadAfterFirstVisit === 'function') ctx.loadAfterFirstVisit(); if (typeof ctx.loadMoreCatalogues === 'function') ctx.loadMoreCatalogues(); }); // 0079 r15-a45: the catalogues of stages A4 and A5 too
@@ -464,12 +483,40 @@ export function createExplore(ctx, host) {
   tabs.dataset.tour = 'tabs';
   tabs.setAttribute('aria-label', COPY.tabs.label);
   head.appendChild(tabs);
-  root.appendChild(head);
+  if (shell0 && shell0.headHost) shell0.headHost.appendChild(head);
+  else root.appendChild(head);
   // The shell seats the search: here on a desktop, in the phone's top bar under 900 px.
   if (ctx && ctx.shell && typeof ctx.shell.seatSearch === 'function') ctx.shell.seatSearch(searchHost);
 
+  // The hidden panel's strip (ui/shell.js): the search, then the four tabs, each an icon that shows the panel and goes there.
+  const stripButton = (iconName, label, onClick) => {
+    const b = button('ui-btn ui-btn--quiet ui-btn--icon');
+    b.dataset.icon = iconName;
+    b.setAttribute('aria-label', label);
+    b.title = label;
+    b.addEventListener('click', onClick);
+    return b;
+  };
+  const stripTabs = shell0 && shell0.stripHost ? shell0.stripHost : null;
+  if (stripTabs) stripTabs.appendChild(stripButton('search', COPY.shell.search, toSearch));
+
   const body = el('div', 'sr-explore__body');
   root.appendChild(body);
+  // WHERE A CARD WAS OPENED FROM, for its back row ("‹ Planets"): a row of this tab's lists, until a press elsewhere
+  // (the map, the rail) says the next card came from there. The search's own text says "Results for …" by itself.
+  let fromTab = null;
+  body.addEventListener('click', () => { fromTab = current; }, true);
+  document.addEventListener('pointerdown', (e) => { if (!body.contains(e.target)) fromTab = null; }, true);
+  if (shell0 && typeof shell0.setHome === 'function') {
+    shell0.setHome({
+      crumb: () => {
+        const q = input ? input.value.trim() : '';
+        return q.length >= 2 ? { q } : { tab: fromTab };
+      },
+      // Back to the results: the field again, which opens them as they were (ui/search.js, on focus).
+      restore: (c) => { if (c && c.q && input && input.value.trim() === c.q) search.reopen(); },
+    });
+  }
   const panes = new Map();
   const tabButtons = new Map();
   for (const id of TABS) {
@@ -481,6 +528,7 @@ export function createExplore(ctx, host) {
     b.addEventListener('click', () => goTab(id));
     tabs.appendChild(b);
     tabButtons.set(id, b);
+    if (stripTabs) stripTabs.appendChild(stripButton(TAB_ICONS[id], COPY.tabs[id], () => { ctx.shell.collapse(false); goTab(id); }));
     const pane = el('div', 'sr-pane');
     pane.id = `sr-pane-${id}`;
     pane.setAttribute('role', 'tabpanel');
@@ -761,6 +809,8 @@ export function createExplore(ctx, host) {
 
   function goTab(id) {
     if (!TABS.includes(id)) return;
+    // A tab is a place in the home: pressed over a card or a sheet, the home comes back with it (the card stays open).
+    if (ctx.shell && typeof ctx.shell.view === 'function' && !['home', 'trip'].includes(ctx.shell.view())) ctx.shell.show('home');
     wanted = id;
     paintTabs(id);
     const apply = () => {
@@ -1091,7 +1141,8 @@ export function createExplore(ctx, host) {
   }
 
   // `crew` is Launch Library 2's headcount by station, or null until it is read (ui/sentence.js).
-  const api = { root, tab: () => current, setTab: goTab, refresh, search, subscribeHost, next, todayHost, crew: () => crewCounts, mountTab };
+  if (shell0 && typeof shell0.drawIcons === 'function') shell0.drawIcons();
+  const api = { root, head, tab: () => current, setTab: goTab, refresh, search, subscribeHost, next, todayHost, crew: () => crewCounts, mountTab };
   if (ctx) ctx.explore = api;
   return api;
 }

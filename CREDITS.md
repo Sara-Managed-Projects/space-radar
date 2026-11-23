@@ -200,12 +200,13 @@ In `site/js/ui/cards.js` (`ICONS`, where `chevron` is Lucide's `chevron-right`):
 `lucide-static` 0.544.0, read 2026-10-07): `satellite`, `rocket`, `globe`, `moon`, `star`, `sun`,
 `sparkles`, `map-pin`, `tornado`, `flag`. In `site/js/ui/embed.js`: `external-link`. In
 `site/js/ui/rail.js`: `share`, `ellipsis-vertical`, `eye-off`. In `site/js/ui/keyhint.js`: `move`,
-`mouse`. In `site/js/ui/launchchip.js`: `rocket`, the same shapes as the search row's. The only change is the
+`mouse`. In `site/js/ui/launchchip.js`: `rocket`, the same shapes as the search row's. In `site/js/ui/icons.js` for the
+hidden panel's strip (read 2026-11-23): `search`, `earth`, `sparkles`, `moon`. The only change is the
 stroke, 1.75 instead of Lucide's default 2, which `docs/ui-guide.md` §3.16 sets for every icon in
 the app (`tests/test_a11y_static.mjs` holds it); Lucide draws at any stroke width by design. These
 are on Lucide's own list of icons derived from Feather (its `LICENSE`, read 2026-10-05), which are
 MIT, © Cole Bemis: `x`, `crosshair`, `chevron-right`, `chevron-left`, `navigation`, `share`,
-`compass`, `copy`, `download`, `move`, `crop`, `code`, `chevron-down`, `external-link`, and
+`compass`, `copy`, `download`, `move`, `crop`, `code`, `chevron-down`, `external-link`, `search`, `moon`, and
 `ellipsis-vertical` under its Feather name
 `more-vertical`; the rest are ISC. Both notices are in [§6](#6-full-licence-notices).
 `tests/test_a11y_static.mjs` refuses an `ICONS` name this paragraph does not list.

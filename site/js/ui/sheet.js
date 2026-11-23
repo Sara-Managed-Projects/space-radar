@@ -239,7 +239,10 @@ export function createSheet(root, opts = {}) {
     handle.title = t(COPY.sheet.title, { height: wordFor(detent) });
   }
 
-  /** Go to a height. `how.silent` skips onChange (a resize re-applying the same height). */
+  /**
+   * Go to a height. `how.silent` skips onChange (a resize re-applying the same height); `how.user` says the visitor moved
+   * it (a drag, a tap or a key on the handle), which onChange is told: the shell reads a move down to peek as a step back.
+   */
   function set(next, how = {}) {
     if (next === 'closed' && canDismiss) {
       paint(0);
@@ -260,7 +263,7 @@ export function createSheet(root, opts = {}) {
       if (root.matches(scrollers)) root.scrollTop = 0;
       for (const n of root.querySelectorAll(scrollers)) n.scrollTop = 0;
     }
-    if (!how.silent && typeof opts.onChange === 'function') opts.onChange(detent, h, changed);
+    if (!how.silent && typeof opts.onChange === 'function') opts.onChange(detent, h, changed, how);
   }
 
   // --- the drag ------------------------------------------------------------------------------
@@ -311,7 +314,7 @@ export function createSheet(root, opts = {}) {
     clearTimeout(swallowTimer);
     swallowTimer = setTimeout(() => root.removeEventListener('click', swallow, true), SWALLOW_MS);
     const v = e.type === 'pointercancel' ? 0 : velocityOf(d.samples);
-    set(snapDetent(h, v, heights(), allowed()) || detent);
+    set(snapDetent(h, v, heights(), allowed()) || detent, { user: true });
   }
 
   root.addEventListener('pointerdown', onDown);
@@ -323,7 +326,7 @@ export function createSheet(root, opts = {}) {
   handle.addEventListener('click', () => {
     const c = cycleDetent(detent, dir, order);
     dir = c.dir;
-    set(c.detent);
+    set(c.detent, { user: true });
   });
   handle.addEventListener('keydown', (e) => {
     let to = null;
@@ -333,7 +336,7 @@ export function createSheet(root, opts = {}) {
     else if (e.key === 'End') to = order[order.length - 1];
     if (!to) return;
     e.preventDefault();
-    set(to);
+    set(to, { user: true });
   });
 
   // Keyboard and screen-reader visitors tab into content the sheet hides below the screen's edge:

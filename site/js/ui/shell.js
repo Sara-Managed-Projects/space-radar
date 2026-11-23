@@ -19,12 +19,15 @@
 //
 //   #sr-shell
 //     #sr-side         the sidebar: 360 px, 20 px in from the left, top and bottom (row D's inset)
-//       .sr-side__view[data-view=home]      ui/explore.js
-//       .sr-side__view[data-view=card]      "‹ Explore", then the #sr-card host ui/cards.js fills
-//       .sr-side__view[data-view=sources]   "‹ Explore", then ui/status.js
+//       .sr-side__head                      PINNED: the wordmark, the hide control, the search and the
+//                                           tabs (ui/explore.js fills it); every view but a trip's opens under it
+//       .sr-side__open                      the open card's row ("Mars ›" and its close) while another view shows
+//       .sr-side__view[data-view=home]      ui/explore.js's lists
+//       .sr-side__view[data-view=card]      the breadcrumb, then the #sr-card host ui/cards.js fills
+//       .sr-side__view[data-view=sources]   the breadcrumb, then ui/status.js
 //       .sr-side__view[data-view=trip]      a guided trip's sheet: the intro, the stop card, the end
 //                                           (ui/tripframe.js fills it; spec 0061 task 7)
-//       .sr-side__handle                    the 48 px handle while collapsed
+//       .sr-strip                           the slim strip while the panel is hidden
 //     #sr-top          the phone's top bar: the search, the rail, the live line (display: none on a
 //                      desktop, where the search is in the sidebar and the rail in its corner)
 //     #sr-rail         ui/rail.js
@@ -35,13 +38,19 @@
 // every width now that the phone's sidebar is a sheet (0061 task 3), and, during a trip, in the slot
 // the trip frame hands over with seatTrip(slot), which is in the trip view of this sidebar.
 // appendChild MOVES a node, so the card keeps its listeners, its scroll and its focus across the move. A MutationObserver on its `hidden` attribute
-// is how the shell learns it opened or closed: cards.js is not edited to call the shell, which keeps
-// it one of the two modules a parallel tracking PR is allowed to touch.
+// is how the shell learns it opened or closed, and `sr:select` how it learns the selection changed under a card already open.
 //
-// COLLAPSE. The handle is 48 px: the wordmark's first letter and a chevron. The choice is
-// localStorage['sr:side'] ('collapsed' or absent), read in a try/catch because Safari's private mode
-// throws on it, and a card opening un-collapses the sidebar for as long as it is open without
-// writing the choice down.
+// THE WAY BACK SAYS WHERE IT GOES (2026-11-23). A visitor's review: once something was clicked it was hard to get back to
+// the search, and the arrow that hid the panel looked like the arrow that went back. So the search and the tabs are pinned
+// above every view (typing works while a card is open), and each pushed view's back row names the view under it --
+// "‹ Results for “mars”", "‹ Planets", "‹ Search" (crumbFor) -- and returns to exactly that: the same results open again, the
+// same tab. Back and Escape step back one view and keep the selection; only the card's own close puts it down. The open
+// card waits in a row under the tabs ("Mars ›") until it is closed or chosen again.
+//
+// HIDING THE PANEL. Its own control, Lucide's panel-left-close on the panel's outer edge, "Hide panel", and the `[` key
+// (panelKey). Hidden, the panel is a slim strip: show it again, the search, the four tabs and the open card's name. The
+// choice is localStorage['sr:side'] ('collapsed' or absent), read in a try/catch because Safari's private mode throws on
+// it, and a card opening un-hides the panel for as long as it is open without writing the choice down.
 //
 // THE SCENE MOVES OUT FROM UNDER IT. scene/viewshift.js measures #sr-side and moves the view right
 // by half its right edge (row D draws the Earth 150 px right of the window's middle at 1440); the
@@ -59,13 +68,14 @@
 // box moves from the explore view's head to a top bar (seatSearch), the rail moves into that bar
 // beside it, and the time pill's live line sits under them. Each view picks its height when it
 // comes up: a card at half (its name, numbers and actions, and the scene above), the sources at
-// full (a page of rows), a trip at half; closing a card puts the sheet back at peek. The scene
-// moves up out from under it by scene/viewshift.js, which measures the sheet and the top bar.
+// full (a page of rows), a trip at half; closing a card puts the sheet back at peek. The breadcrumb
+// sits in the handle's row, and a swipe down to peek is a step back: peek is the home's height.
+// The scene moves up out from under it by scene/viewshift.js, which measures the sheet and the top bar.
 //
 // `sr:shell` {view, collapsed, phone, sheet} is said on every change, for anything that wants to
 // follow it.
 
-import { COPY } from '../copy/en.js';
+import { COPY, t } from '../copy/en.js';
 import { createSheet } from './sheet.js';
 
 export const SIDE_KEY = 'sr:side';
@@ -87,7 +97,7 @@ const COLLAPSED_CLASS = 'sr-side-collapsed';
 const PHONE_CLASS = 'sr-phone';
 const LAND_CLASS = 'sr-phone-land';
 /** What drags the sheet at full, besides its handle: each view's head (ui/sheet.js THE DRAG). */
-const SHEET_GRAB = '.sr-explore__head, .sr-side__bar, .sr-card__header, .sr-tripsheet__head';
+const SHEET_GRAB = '.sr-explore__head, .sr-side__bar, .sr-side__open, .sr-card__header, .sr-tripsheet__head';
 /** What scrolls in the sheet at full and is put back to its top below it. */
 const SHEET_SCROLL = '.sr-explore__body, .sr-side__cardslot, .sr-side__sourceshost, .sr-side__trip';
 
@@ -104,6 +114,50 @@ export function sheetFor(view, from) {
   if (view === 'sources' || view === 'passport') return 'full';
   if (view === 'home') return from === 'sources' || from === 'passport' ? 'half' : from ? 'peek' : null;
   return null;
+}
+
+/** A query longer than this is cut, with an ellipsis, so the back row stays one line of chrome (60 characters). */
+export const CRUMB_QUERY_MAX = 24;
+
+/**
+ * What the back row of a pushed view says: the name of the view under it. Pure, for tests/test_shell.mjs.
+ * `under` is that view's id; `info.home` is what the home showed when the view was pushed over it ({q} a query whose
+ * results were open, {tab} the tab a row was chosen from, or neither: a click on the map, a link), `info.card` the open
+ * card's name. "Results for “mars”" / "Planets" / "Search" / "Sources" / "Mars".
+ */
+export function crumbFor(under, info = {}, words = COPY) {
+  const S = words.shell;
+  if (under === 'home') {
+    const home = info.home || {};
+    const q = String(home.q || '').trim();
+    if (q.length >= 2) return t(S.results, { q: q.length > CRUMB_QUERY_MAX ? `${q.slice(0, CRUMB_QUERY_MAX - 1)}…` : q });
+    if (home.tab && words.tabs && words.tabs[home.tab]) return words.tabs[home.tab];
+    return S.search;
+  }
+  if (under === 'card') return String(info.card || '').trim() || S.card;
+  if (under === 'sources' || under === 'passport' || under === 'find') return S[under];
+  return S.search;
+}
+
+/**
+ * Whether a key press hides or shows the panel: `[` alone, never while something is typed, never with a modifier, never
+ * mid-composition. Pure. `typing` says whether an element is a place a person types (ui/explore.js isTypingIn).
+ */
+export function panelKey(event, activeElement, typing = () => false) {
+  if (!event || event.defaultPrevented || event.key !== COPY.shell.panelKey) return false;
+  if (event.ctrlKey || event.metaKey || event.altKey) return false;
+  if (event.isComposing || event.keyCode === 229) return false;
+  const path = typeof event.composedPath === 'function' ? event.composedPath() : [];
+  const sentTo = (path && path[0]) || event.target || null;
+  return !(typing(activeElement) || typing(sentTo));
+}
+
+/**
+ * A move of the phone's sheet the visitor made: is it a step back? Down to peek from any pushed view but a trip's, yes
+ * (peek is the home's height: its handle and its tabs). Pure.
+ */
+export function swipeIsBack(view, detent, how) {
+  return !!(how && how.user) && detent === 'peek' && view !== 'home' && view !== 'trip';
 }
 
 /** The stored choice. Anything but 'collapsed' is open; a storage that throws is open too. */
@@ -169,17 +223,24 @@ function el(tag, className, text) {
   return node;
 }
 
-/** The "‹ Explore" row at the top of a pushed view. */
-function backRow(label, onBack) {
+/** The back row at the top of a pushed view: "‹ Planets". Its words are set by paint(), from the view under it. */
+function backRow(onBack) {
   const row = el('div', 'sr-side__bar');
   const b = el('button', 'sr-side__back');
   b.type = 'button';
   b.appendChild(el('span', 'sr-side__chev', COPY.shell.backChevron));
-  b.appendChild(el('span', null, label));
-  b.setAttribute('aria-label', COPY.shell.backLabel);
+  const words = el('span', 'sr-side__crumb', COPY.shell.search);
+  b.appendChild(words);
   b.addEventListener('click', onBack);
   row.appendChild(b);
-  return { row, button: b };
+  return { row, button: b, words };
+}
+
+/** One of the icons (ui/icons.js), drawn into `node` once the module is here: it is not a first visit's module. */
+let iconsLoad = null;
+function iconInto(node, name, size = 20) {
+  if (!iconsLoad) iconsLoad = import('./icons.js').catch((e) => { iconsLoad = null; console.warn('the icons did not load', e); return null; });
+  iconsLoad.then((m) => { if (m && !node.querySelector('svg')) node.prepend(m.icon(name, size)); });
 }
 
 export function createShell(ctx, opts = {}) {
@@ -204,6 +265,9 @@ export function createShell(ctx, opts = {}) {
   let collapsedChoice = readCollapsed(storage);
   let collapsedNow = collapsedChoice;
   let lastDir = 'push';
+  // What the home showed when a view was pushed over it (the explore view says: its query, the tab a row was chosen from).
+  let homeCrumb = {};
+  let homeSays = null; // {crumb() -> {q, tab}, restore(crumb)}: ui/explore.js, through setHome
 
   const shell = el('div', 'sr-shell');
   shell.id = 'sr-shell';
@@ -212,67 +276,80 @@ export function createShell(ctx, opts = {}) {
   side.id = 'sr-side';
   side.setAttribute('aria-label', COPY.shell.sideLabel);
 
+  // The pinned head: ui/explore.js puts the wordmark, the hide control, the search and the tabs in it.
+  const headHost = el('div', 'sr-side__head');
+  side.appendChild(headHost);
+
+  // The open card, while another view shows: its name to go back to it, and its close.
+  const openRow = el('div', 'sr-side__open');
+  openRow.hidden = true;
+  const reopen = el('button', 'ui-row sr-side__reopen');
+  reopen.type = 'button';
+  const reopenName = el('span', 'ui-row__t sr-side__reopen-name');
+  reopen.appendChild(reopenName);
+  reopen.addEventListener('click', () => { show('card'); landFocus(); });
+  const unselect = el('button', 'ui-close sr-side__unselect');
+  unselect.type = 'button';
+  unselect.dataset.icon = 'x';
+  unselect.addEventListener('click', () => { if (ctx && typeof ctx.deselect === 'function') ctx.deselect(); landFocus(); });
+  openRow.append(reopen, unselect);
+  side.appendChild(openRow);
+
   const views = new Map();
+  const crumbs = new Map(); // view -> its back row
   const home = el('div', 'sr-side__view sr-side__home');
   home.dataset.view = 'home';
   views.set('home', home);
 
-  const card = el('div', 'sr-side__view sr-side__card');
-  card.dataset.view = 'card';
-  // Back from the card is "put the selection down": the camera stops following, the HUD clears and
-  // `at` leaves the address bar, which is what the card's own × has always done through deselect().
-  const cardBack = backRow(COPY.shell.back, () => {
-    if (ctx && typeof ctx.deselect === 'function') ctx.deselect();
-    else back();
+  // Back is one step: the view under this one, exactly as it was. It never puts the selection down; the card's close does.
+  function stepBack() {
+    const to = stack.list()[stack.depth() - 2];
+    const crumb = homeCrumb;
+    back();
+    if (to === 'home' && homeSays && typeof homeSays.restore === 'function') {
+      try { homeSays.restore(crumb); } catch { /* the home is there all the same */ }
+    }
     landFocus();
-    // And once more when everything the deselect set off has run (internal #460, seen in a real
-    // tab on 2026-10-08): the card gives focus back to where the visitor was before it opened, and
-    // when that was nowhere (a card opened from the map, or by a link) the focus this button held
-    // ended on <body>. landFocus leaves a focus that found a home alone.
+    // And once more when everything the step set off has run (internal #460, seen in a real tab on 2026-10-08): focus
+    // hidden with its view falls to <body>. landFocus leaves a focus that found a home alone.
     setTimeout(landFocus, 0);
     if (typeof requestAnimationFrame === 'function') requestAnimationFrame(() => landFocus());
-  });
-  card.appendChild(cardBack.row);
-  const cardSlot = el('div', 'sr-side__cardslot');
-  cardSlot.dataset.tour = 'card'; // the tour's hook (registry/onboarding.yaml)
-  card.appendChild(cardSlot);
-  views.set('card', card);
+  }
 
-  const sources = el('div', 'sr-side__view sr-side__sources');
-  sources.dataset.view = 'sources';
-  const sourcesBack = backRow(COPY.shell.back, () => { back(); landFocus(); });
+  function pushedView(id, className, hostClass) {
+    const node = el('div', `sr-side__view ${className}`);
+    node.dataset.view = id;
+    const crumb = backRow(stepBack);
+    crumbs.set(id, crumb);
+    node.appendChild(crumb.row);
+    const box = el('div', hostClass);
+    node.appendChild(box);
+    views.set(id, node);
+    return box;
+  }
+
+  const cardSlot = pushedView('card', 'sr-side__card', 'sr-side__cardslot');
+  cardSlot.dataset.tour = 'card'; // the tour's hook (registry/onboarding.yaml)
+  const sourcesHost = pushedView('sources', 'sr-side__sources', 'sr-side__sourceshost');
 
   // The back button that was pressed has just been hidden with its view, and focus hidden with it
   // falls to <body> (measured): a keyboard visitor would start again from the top of the page. It
   // lands on the view now showing -- the chosen tab at home -- as the disclosure pattern asks.
   function landFocus() {
     const a = document.activeElement;
-    if (a && a !== document.body && a.isConnected && !a.closest('[hidden]')) return;
+    if (a && a !== document.body && !a.closest('[inert]') && a.isConnected && !a.closest('[hidden]')) return;
     const view = views.get(stack.current());
-    const target = view && (view.querySelector('[role="tab"][aria-selected="true"]') || view.querySelector('button, [href], input'));
+    const at = stack.current() === 'home' ? headHost : view;
+    const target = (at && at.querySelector('[role="tab"][aria-selected="true"]')) || (view && view.querySelector('button, [href], input'));
     if (target) target.focus({ preventScroll: true });
   }
-  sources.appendChild(sourcesBack.row);
-  const sourcesHost = el('div', 'sr-side__sourceshost');
-  sources.appendChild(sourcesHost);
-  views.set('sources', sources);
 
   // The passport (ui/passport.js, spec 0041): a pushed view like the sources sheet, filled by its
   // own module when it is opened. Its body scrolls as the sources sheet's does.
-  const passport = el('div', 'sr-side__view sr-side__passport');
-  passport.dataset.view = 'passport';
-  passport.appendChild(backRow(COPY.shell.back, () => { back(); landFocus(); }).row);
-  const passportHost = el('div', 'sr-side__sourceshost');
-  passport.appendChild(passportHost);
-  views.set('passport', passport);
+  const passportHost = pushedView('passport', 'sr-side__passport', 'sr-side__sourceshost');
 
   // b200-f1-find: begin -- the Find view (ui/find.js fills its host when it is first opened)
-  const findView = el('div', 'sr-side__view sr-side__find');
-  findView.dataset.view = 'find';
-  findView.appendChild(backRow(COPY.shell.back, () => { back(); landFocus(); }).row);
-  const findHost = el('div', 'sr-side__sourceshost sr-side__findhost');
-  findView.appendChild(findHost);
-  views.set('find', findView);
+  const findHost = pushedView('find', 'sr-side__find', 'sr-side__sourceshost sr-side__findhost');
   // b200-f1-find: end
 
   // The trip view: empty until ui/tripframe.js seats its sheet in it (host('trip')).
@@ -283,16 +360,25 @@ export function createShell(ctx, opts = {}) {
 
   for (const v of views.values()) side.appendChild(v);
 
-  // The collapsed handle: the wordmark's first letter and a chevron, 48 px, in the sidebar's place.
-  const handle = el('button', 'sr-side__handle');
-  handle.type = 'button';
-  handle.appendChild(el('span', 'sr-side__handle-mark', COPY.shell.handleMark));
-  handle.appendChild(el('span', 'sr-side__chev', COPY.shell.openChevron));
-  handle.setAttribute('aria-label', COPY.shell.expand);
-  handle.title = COPY.shell.expand;
-  handle.setAttribute('aria-expanded', 'false');
-  handle.addEventListener('click', () => collapse(false));
-  side.appendChild(handle);
+  // The hidden panel's strip: show it again, then what ui/explore.js puts in (the search and the tabs), then the open card.
+  const strip = el('div', 'sr-strip');
+  const stripOpen = el('button', 'ui-btn ui-btn--quiet ui-btn--icon sr-strip__open');
+  stripOpen.type = 'button';
+  stripOpen.setAttribute('aria-label', COPY.shell.expand);
+  stripOpen.setAttribute('aria-keyshortcuts', COPY.shell.panelKey);
+  stripOpen.title = t(COPY.shell.keyed, { label: COPY.shell.expand, key: COPY.shell.panelKey });
+  stripOpen.setAttribute('aria-expanded', 'false');
+  stripOpen.dataset.icon = 'panel-left-open';
+  stripOpen.addEventListener('click', () => collapse(false));
+  const stripTools = el('div', 'sr-strip__tools');
+  const stripCard = el('button', 'sr-strip__card');
+  stripCard.type = 'button';
+  stripCard.hidden = true;
+  const stripCardName = el('span', 'sr-strip__name');
+  stripCard.appendChild(stripCardName);
+  stripCard.addEventListener('click', () => { collapse(false); show('card'); });
+  strip.append(stripOpen, stripTools, stripCard);
+  side.appendChild(strip);
 
   const railHost = el('div', 'sr-rail-host');
   const timeHost = el('div', 'sr-time-host');
@@ -328,6 +414,15 @@ export function createShell(ctx, opts = {}) {
 
   const isPhone = () => !(mm ? mm.matches : true);
   const tripOn = () => root.classList.contains(TRIP_CLASS);
+  const cardOpen = () => !cardHost.hidden && !tripOn();
+  /** The open card's name, as its heading prints it (the page's language), else the selection's. */
+  function cardName() {
+    const h = cardHost.querySelector('#sr-card-title, #sr-card-lead-title, .sr-card__name');
+    const words = h ? h.textContent.trim() : '';
+    if (words) return words;
+    const rec = ctx && typeof ctx.selected === 'function' ? ctx.selected() : null;
+    return rec && rec.name ? String(rec.name) : '';
+  }
 
   function placeCard() {
     let want = cardSlot;
@@ -341,6 +436,7 @@ export function createShell(ctx, opts = {}) {
   let searchNode = null;
   let searchHome = null;
   let shownView = null;
+  let holdSheet = false;
 
   /** The explore view hands its search box over once; the shell seats it by the width (ui/explore.js). */
   function seatSearch(node) {
@@ -365,7 +461,18 @@ export function createShell(ctx, opts = {}) {
           publish: true,
           grab: SHEET_GRAB,
           scrollers: SHEET_SCROLL,
-          onChange: (detent) => announce(detent),
+          onChange: (detent, h, changed, how) => {
+            // A swipe down to peek is a step back to the home, the selection kept (peek is the home's height).
+            if (swipeIsBack(stack.current(), detent, how)) {
+              holdSheet = true;
+              stack.reset();
+              lastDir = 'pop';
+              paint();
+              landFocus();
+              return;
+            }
+            announce(detent);
+          },
         });
       }
     } else {
@@ -376,7 +483,14 @@ export function createShell(ctx, opts = {}) {
       }
       if (sheet) { sheet.destroy(); sheet = null; }
       placeholder(COPY.search.placeholder);
+      drawIcons();
     }
+  }
+
+  /** The panel's icons, drawn when ui/icons.js is here: a desktop's only (a phone has no strip and no hide control). */
+  function drawIcons() {
+    if (isPhone()) return;
+    for (const node of side.querySelectorAll('[data-icon]')) iconInto(node, node.dataset.icon, Number(node.dataset.iconSize) || 20);
   }
 
   function placeholder(words) {
@@ -405,6 +519,33 @@ export function createShell(ctx, opts = {}) {
     }
   }
 
+  /** The words of every back row in the stack, the open card's row and the strip's name. */
+  function paintCrumbs() {
+    const list = stack.list();
+    const name = cardName();
+    for (let i = 1; i < list.length; i += 1) {
+      const crumb = crumbs.get(list[i]);
+      if (!crumb) continue;
+      const words = crumbFor(list[i - 1], { home: homeCrumb, card: name });
+      if (crumb.words.textContent !== words) crumb.words.textContent = words;
+      crumb.button.setAttribute('aria-label', t(COPY.shell.backTo, { where: words }));
+    }
+    const open = cardOpen() && !!name;
+    const away = open && stack.current() !== 'card' && stack.current() !== 'trip';
+    openRow.hidden = !away;
+    if (open) {
+      if (reopenName.textContent !== name) reopenName.textContent = name;
+      reopen.setAttribute('aria-label', t(COPY.shell.reopen, { name }));
+      unselect.setAttribute('aria-label', t(COPY.shell.close, { name }));
+      unselect.title = t(COPY.shell.close, { name });
+      if (stripCardName.textContent !== name) stripCardName.textContent = name;
+      stripCard.setAttribute('aria-label', t(COPY.shell.reopen, { name }));
+      stripCard.title = name;
+    }
+    stripCard.hidden = !open;
+    side.classList.toggle('has-card', open);
+  }
+
   function paint() {
     const view = stack.current();
     for (const [id, node] of views) {
@@ -417,14 +558,19 @@ export function createShell(ctx, opts = {}) {
     const folded = collapsedNow && !isPhone() && view !== 'trip';
     side.classList.toggle('is-collapsed', folded);
     root.classList.toggle(COLLAPSED_CLASS, folded);
-    handle.setAttribute('aria-expanded', collapsedNow ? 'false' : 'true');
-    // A collapsed sidebar's views are out of the tab order as well as out of sight.
+    stripOpen.setAttribute('aria-expanded', folded ? 'false' : 'true');
+    // A hidden panel's views are out of the tab order as well as out of sight, and the strip is out while it is open.
     for (const node of views.values()) node.inert = folded;
+    headHost.inert = folded;
+    openRow.inert = folded;
+    strip.inert = !folded;
+    paintCrumbs();
     // On a phone a view comes up at its own height (sheetFor), and only when it changed.
     const from = shownView;
     shownView = view;
     // Sideways the sheet is a column, always as tall as the screen: it has one height, half, whatever the view.
-    const want = sheet ? (root.classList.contains(LAND_CLASS) ? 'half' : sheetFor(view, from)) : null;
+    const want = sheet && !holdSheet ? (root.classList.contains(LAND_CLASS) ? 'half' : sheetFor(view, from)) : null;
+    holdSheet = false;
     if (want && sheet.detent() !== want) sheet.set(want);
     else announce(sheet ? sheet.detent() : null);
   }
@@ -436,10 +582,17 @@ export function createShell(ctx, opts = {}) {
   // in the time pill -- is never taken: a click on a satellite must not hand Space to a Back button.
   const heldFocus = () => side.contains(document.activeElement);
 
+  /** What the home shows now, kept for the back row of the view pushed over it. */
+  function noteHome() {
+    if (!homeSays || typeof homeSays.crumb !== 'function') { homeCrumb = {}; return; }
+    try { homeCrumb = homeSays.crumb() || {}; } catch { homeCrumb = {}; }
+  }
+
   function show(view) {
     const held = heldFocus();
     if (view === 'home') { stack.reset(); lastDir = 'pop'; paint(); if (held) landFocus(); return true; }
     if (view === 'sources') ensureSources();
+    if (stack.current() === 'home' && view !== 'trip') noteHome();
     if (!stack.push(view)) { paint(); return false; }
     lastDir = 'push';
     // A card or the sources sheet opened on a collapsed sidebar opens it for as long as it is up.
@@ -464,14 +617,15 @@ export function createShell(ctx, opts = {}) {
     collapsedChoice = !!on;
     collapsedNow = collapsedChoice;
     writeCollapsed(storage, collapsedChoice);
+    const wasInStrip = strip.contains(document.activeElement);
     paint();
     if (!collapsedNow) {
-      // Focus follows the visitor's hand: into the sidebar they just opened, onto the control that
+      // Focus follows the visitor's hand: into the panel they just opened, onto the control that
       // opens it again when they close it.
-      const target = home.querySelector('.sr-explore__collapse');
-      if (target && document.activeElement === handle) target.focus({ preventScroll: true });
+      const target = headHost.querySelector('.sr-side__hide');
+      if (target && wasInStrip) target.focus({ preventScroll: true });
     } else if (side.contains(document.activeElement) || document.activeElement === document.body) {
-      handle.focus({ preventScroll: true });
+      stripOpen.focus({ preventScroll: true });
     }
   }
 
@@ -482,10 +636,13 @@ export function createShell(ctx, opts = {}) {
     const open = !cardHost.hidden;
     if (open && !tripOn()) {
       if (stack.current() !== 'card') show('card');
+      else paintCrumbs();
     } else if (!open && stack.remove('card')) {
       lastDir = 'pop';
       if (stack.current() === 'home') collapsedNow = collapsedChoice;
       paint();
+    } else {
+      paintCrumbs();
     }
   }
   if (typeof MutationObserver === 'function') {
@@ -499,18 +656,30 @@ export function createShell(ctx, opts = {}) {
       onCardChange();
     }).observe(root, { attributes: true, attributeFilter: ['class'] });
   }
+  // A new selection under a card already open (the card stays up, so its `hidden` never moves): the card comes back to
+  // the top, and the way back is asked again, once the search has had its say about its own text (after this event).
+  window.addEventListener('sr:select', (e) => {
+    const rec = e && e.detail;
+    Promise.resolve().then(() => {
+      if (!rec || !cardOpen()) { paintCrumbs(); return; }
+      const list = stack.list();
+      if (stack.current() !== 'card') { show('card'); return; }
+      if (list[list.length - 2] === 'home') noteHome();
+      paintCrumbs();
+    });
+  });
   if (mm && mm.addEventListener) mm.addEventListener('change', () => { layout(); onCardChange(); paint(); });
   if (mmLand && mmLand.addEventListener) mmLand.addEventListener('change', () => { layout(); paint(); });
   // A turned phone or a resized window: the heights are the window's, so they are measured again.
   window.addEventListener('resize', () => { if (sheet) sheet.refresh(); });
 
-  // Escape in the sources sheet goes back to where the visitor was. The card handles its own
-  // (ui/cards.js), and a clear screen takes Escape before either (ui/cleanview.js, capture phase).
+  // Escape in the sources sheet goes back to where the visitor was. The card's Escape comes here first (escapeCard,
+  // ui/cards.js), and a clear screen takes Escape before either (ui/cleanview.js, capture phase).
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape' || e.defaultPrevented) return;
-    if (stack.current() === 'sources' || stack.current() === 'passport') { back(); landFocus(); }
+    if (stack.current() === 'sources' || stack.current() === 'passport') stepBack();
     // b200-f1-find: begin
-    else if (stack.current() === 'find' && !(document.activeElement && document.activeElement.closest && document.activeElement.closest('.sr-datejump'))) { back(); landFocus(); }
+    else if (stack.current() === 'find' && !(document.activeElement && document.activeElement.closest && document.activeElement.closest('.sr-datejump'))) stepBack();
     // b200-f1-find: end
   });
 
@@ -523,12 +692,29 @@ export function createShell(ctx, opts = {}) {
     side,
     show,
     back,
+    /** Back as the back row does it: one view, the selection kept, the home's results or tab as they were. */
+    stepBack,
     view: () => stack.current(),
     stack: () => stack.list(),
     collapse,
     collapsed: () => collapsedNow,
     isPhone,
     host: (view) => (view === 'home' ? home : view === 'card' ? cardSlot : view === 'sources' ? sourcesHost : view === 'trip' ? tripView : view === 'passport' ? passportHost : null),
+    /** The pinned head (ui/explore.js fills it) and the hidden panel's strip (it adds the search and the tabs). */
+    headHost,
+    stripHost: stripTools,
+    /** The home says what it shows ({q, tab}) for the back row, and puts it back on the way back (ui/explore.js). */
+    setHome(says) { homeSays = says || null; },
+    /**
+     * Escape with the card up (ui/cards.js asks before closing it): on the card view it steps back, the selection kept;
+     * over another pushed view that view's own Escape steps back. Returns whether the shell took it. In a trip, never.
+     */
+    escapeCard() {
+      if (tripOn()) return false;
+      const view = stack.current();
+      if (view === 'card') { stepBack(); return true; }
+      return view !== 'home';
+    },
     /** Where the card sits while a trip runs (ui/tripframe.js): its sheet's slot, or null for <body>. */
     seatTrip(slot) {
       tripSlot = slot || null;
@@ -551,6 +737,8 @@ export function createShell(ctx, opts = {}) {
     },
     /** Resolves once the sources sheet is built; for the phone's drawer and for probes. */
     ensureSources,
+    /** Draw the icons of the controls marked data-icon, once ui/icons.js is here (on a desktop; ui/explore.js asks). */
+    drawIcons,
   };
   // b200-f1-find: begin -- host('find'): the Find view's box
   const hostBefore = api.host;
