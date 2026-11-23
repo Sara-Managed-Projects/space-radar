@@ -1,0 +1,41 @@
+# Refresh craft paths from JPL Horizons on a GitHub runner (the maintainer's laptop cannot always reach JPL).
+# Push a branch named eph/<anything> whose .eph-only file lists craft ids (comma-separated, as in
+# registry/ephemerides.yaml). The run prints each craft's Horizons header lines that say how far its
+# trajectory runs, fetches those craft (scripts/build_ephemerides.py --fetch --only ...), runs --check,
+# and commits the regenerated files back to the same branch. Nothing runs on main.
+name: ephemerides-fetch
+on:
+  push:
+    branches: ['eph/**']
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Horizons' own span for each craft
+        run: |
+          set -eu
+          for id in $(tr ',' ' ' < .eph-only); do
+            cmd=$(python3 -c "import re,sys;t=open('registry/ephemerides.yaml').read();m=re.search(r'id: '+re.escape(sys.argv[1])+r'\n(?:.*\n){0,3}?\s+command: \"([^\"]+)\"',t);print(m.group(1) if m else '')" "$id")
+            echo "== $id (command $cmd)"
+            curl -sS -m 60 "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27${cmd}%27&OBJ_DATA=%27YES%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27VECTORS%27&CENTER=%27500@10%27&START_TIME=%272099-01-01%27&STOP_TIME=%272099-01-02%27&STEP_SIZE=%271d%27" \
+              | grep -iE "prior to|after .*UT|trajectory|ephemeris|span|planning|predict|reconstruct" | head -20 || true
+          done
+      - name: Fetch
+        run: python3 scripts/build_ephemerides.py --fetch --only "$(cat .eph-only)"
+      - name: Check
+        run: python3 scripts/build_ephemerides.py --check
+      - name: Commit the regenerated files
+        run: |
+          set -eu
+          git config user.name "space-radar"
+          git config user.email "space-radar@users.noreply.github.com"
+          git add -A site/data/eph site/js/data tests/fixtures
+          if git diff --cached --quiet; then echo "nothing changed"; exit 0; fi
+          git commit -q -m "Ephemerides refreshed from JPL Horizons: $(cat .eph-only)"
+          git push -q origin HEAD:${GITHUB_REF_NAME}
