@@ -1,0 +1,44 @@
+{
+ "format": 1,
+ "id": "as-506",
+ "flight": "apollo11",
+ "moment": "apollo-11",
+ "rocket": "saturn-v",
+ "serial": "AS-506",
+ "epoch": "1969-07-16T13:32:00Z",
+ "clock": "seconds from range zero, the table's ground elapsed time (GET)",
+ "truth": "reconstructed",
+ "truthNote": "the book's statistical tables are compiled from the Saturn launch vehicle reports and the trajectory reconstruction reports: values worked out after the flight",
+ "units": {
+  "t": "s",
+  "alt": "nmi",
+  "range": "nmi",
+  "vEarth": "ft/s",
+  "vSpace": "ft/s",
+  "q": "lb/ft2",
+  "altFt": "ft"
+ },
+ "maxQ": {
+  "t": 83.0,
+  "q": 735.17,
+  "altFt": 44512,
+  "src": "weather"
+ },
+ "points": [
+  {"t": 0.63, "event": "liftoff", "alt": 0.032, "range": 0.0, "vEarth": 1.5, "vSpace": 1340.7, "src": "ascent"},
+  {"t": 66.3, "event": "mach1", "alt": 4.236, "range": 1.044, "vEarth": 1054.1, "vSpace": 2023.9, "src": "ascent"},
+  {"t": 83.0, "event": "maxQ", "alt": 7.326, "range": 3.012, "vEarth": 1653.4, "vSpace": 2671.9, "src": "ascent"},
+  {"t": 135.2, "event": "sicCeco", "alt": 23.761, "range": 25.067, "vEarth": 5320.8, "vSpace": 6492.8, "src": "ascent", "note": "commanded"},
+  {"t": 161.63, "event": "sicOeco", "alt": 35.701, "range": 50.529, "vEarth": 7851.9, "vSpace": 9068.6, "src": "ascent"},
+  {"t": 162.3, "event": "sicSep", "alt": 36.029, "range": 51.323, "vEarth": 7882.9, "vSpace": 9100.6, "src": "ascent", "note": "commanded"},
+  {"t": 460.62, "event": "siiCeco", "alt": 97.28, "range": 601.678, "vEarth": 17404.8, "vSpace": 18725.5, "src": "ascent"},
+  {"t": 548.22, "event": "siiOeco", "alt": 101.142, "range": 873.886, "vEarth": 21368.2, "vSpace": 22690.8, "src": "ascent"},
+  {"t": 549.0, "event": "siiSep", "alt": 101.175, "range": 876.55, "vEarth": 21377.0, "vSpace": 22699.6, "src": "ascent", "note": "commanded"},
+  {"t": 699.33, "event": "sivbCutoff", "alt": 103.202, "range": 1421.959, "vEarth": 24237.6, "vSpace": 25561.6, "src": "ascent"},
+  {"t": 709.33, "event": "orbit", "alt": 103.176, "range": 1460.697, "vEarth": 24243.9, "vSpace": 25567.8, "src": "ascent"}
+ ],
+ "sources": {
+  "ascent": {"title": "Richard W. Orloff, Apollo by the Numbers: A Statistical Reference (NASA SP-2000-4029, NASA History Division, 2000)", "number": "NASA SP-2000-4029", "table": "Apollo 11 Ascent Phase", "page": 113, "pageOf": "page of the PDF (344 pages)", "url": "https://www.nasa.gov/wp-content/uploads/2023/04/sp-4029.pdf", "read": "2026-11-24", "licence": "A NASA History Series publication; the numbers are facts, copied as published, and credited", "note": "columns used: event, GET, altitude, range, Earth-fixed velocity, space-fixed velocity; Footnote 3 of the table: only the commanded time is available for S-IC centre engine cut-off, S-IC/S-II separation and S-II/S-IVB separation."},
+  "weather": {"title": "Richard W. Orloff, Apollo by the Numbers: A Statistical Reference (NASA SP-2000-4029, NASA History Division, 2000)", "number": "NASA SP-2000-4029", "table": "Launch Weather (Statistical Tables), Maximum Dynamic Pressure", "page": 289, "pageOf": "page of the PDF (344 pages)", "url": "https://www.nasa.gov/wp-content/uploads/2023/04/sp-4029.pdf", "read": "2026-11-24", "licence": "A NASA History Series publication; the numbers are facts, copied as published, and credited", "note": "the time, the dynamic pressure and the altitude of maximum dynamic pressure, one column per mission"}
+ }
+}

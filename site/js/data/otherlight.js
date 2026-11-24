@@ -6,6 +6,25 @@
 /** One all-sky survey per band: its HiPS at CDS, the baked whole-sky picture, the frame its tiles are cut in, and its credit. */
 export const OTHER_LIGHT = [
   {
+    "id": "nearinfrared",
+    "hips_id": "CDS/P/2MASS/color",
+    "base": "https://irsa.ipac.caltech.edu/data/hips/CDS/2MASS/Color",
+    "file": "site/images/otherlight/nearinfrared.webp",
+    "frame": "equatorial",
+    "max_order": 9,
+    "tile_width": 512,
+    "format": "jpg",
+    "stream": true,
+    "gain": 2.5,
+    "mission": "2MASS",
+    "credit": "NASA/NSF, UMass and IPAC/Caltech (2MASS)",
+    "terms": "https://www.ipac.caltech.edu/2mass/releases/allsky/faq.html",
+    "observed": {
+      "taken": "1997-06..2001-02",
+      "by": "2MASS, J, H and Ks"
+    }
+  },
+  {
     "id": "infrared",
     "hips_id": "CDS/P/allWISE/color",
     "base": "https://alasky.cds.unistra.fr/AllWISE/RGB-W4-W2-W1",

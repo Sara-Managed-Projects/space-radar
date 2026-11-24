@@ -26,6 +26,8 @@ FILES.push('site/css/controls.css');
 // The Buy Me a Coffee link (2026-11-12): the shared piece of every site, linked with ui.css; the kit's token names and its own
 // warm colours in :root.
 FILES.push('site/css/coffee.css');
+// Name the stars in your photo (forge #572): the tool's layout on /sky-photo/, in the kit's names, held like the set it lays out.
+FILES.push('site/css/skyphoto.css');
 // Comments out, positions kept, so nothing quoted in a comment counts as a rule.
 const strip = (css) => css.replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' '));
 

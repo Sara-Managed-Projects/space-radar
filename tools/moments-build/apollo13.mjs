@@ -307,6 +307,8 @@ let playS = 0; for (const q of pace) playS += (q.to - q.from) / q.rate;
 console.log('play time s', playS.toFixed(0));
 const moment = {
   format: 1, id: 'apollo-13', words: 'apollo-13', wordsFile: 'en.moments.apollo13.js',
+  // forge #571: the published heights and speeds of the ascent (site/data/moments/telemetry/), and the other Saturn V flight beside them
+  telemetry: { flight: 'as-508', compare: ['as-506'] },
   epoch: '1970-04-11T19:13:00Z', span: [-9.5, T.splash], pace, place,
   places: [{ from: T.ei - 300, place: { name: 'South Pacific Ocean, 21.6 S 165.4 W', lat: SPLASH.lat, lon: SPLASH.lon, alt: 0, ground: { kind: 'sea' } } }],
   trajectories: {

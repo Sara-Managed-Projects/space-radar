@@ -22,7 +22,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | planets | 134 | 134 |
 | stars_notable | 55 | 55 |
 | catalogues | 5 | 110 192 |
-| other_light | 3 | 3 |
+| other_light | 4 | 4 |
 | sites | 62 | 62 |
 | real_models | 311 | 311 |
 | model_kinds | 52 | 52 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 40 | 40 |
-| **all** | **1211** | **111 398** |
+| **all** | **1212** | **111 399** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -76,7 +76,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [COSMIC_WEB](#cosmic_web) | 0 | none yet (1.3+ (internal #826, #828; spec 0075 tasks 23 and 24): the DESI DR1 wedge with its footprint) | illustrative | - |
 | [CMB_AND_HORIZON](#cmb_and_horizon) | 2 | `shells.js`, `cmb.js` | measured | - |
 | [HELIOSPHERE](#heliosphere) *house* | 1 | `heliosphere.js` | modelled | - |
-| [SPECTRAL_SKY](#spectral_sky) | 3 | `otherlight.js` | measured | - |
+| [SPECTRAL_SKY](#spectral_sky) | 4 | `otherlight.js` | measured | - |
 | [EARTH_LIVE](#earth_live) *house* | 6 | `aurora.js`, `lightning.js`, `liveclouds.js`, `glyphs.js` | measured | - |
 | [GROUND_SITE](#ground_site) *house* | 6 | `models.js`, `glyphs.js` | measured | - |
 | [ODDITY](#oddity) *house* | 10 | `models.js`, `glyphs.js` | modelled | - |
@@ -84,7 +84,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 1211 records: 377 measured, 463 modelled, 371 illustrative.
+Honesty over the 1212 records: 378 measured, 463 modelled, 371 illustrative.
 
 ## The classes
 
@@ -734,8 +734,8 @@ Honesty over the 1211 records: 377 measured, 463 modelled, 371 illustrative.
 - **Measured, modelled or reconstructed:** Measured: each band's brightness, in declared false colour.
 - **Rights:** NASA data, credited per band; HiPS through CDS under its terms.
 - **What is missing is tracked in:** #877 (radio, X-ray, UV, H-alpha)
-- **Records (3):**
-  - other_light (3): `infrared`, `microwave`, `gamma`
+- **Records (4):**
+  - other_light (4): `nearinfrared`, `infrared`, `microwave`, `gamma`
 
 ### EARTH_LIVE
 

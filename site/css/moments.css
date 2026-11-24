@@ -316,3 +316,180 @@ html.sr-moment-on :is(#sr-side, #sr-rail, #sr-time, .sr-top, .sr-toast, .sr-scen
   .sr-moment__truth--fold .sr-moment__truthmore { display: inline-block; }
 }
 /* b200-c3-learn: end */
+
+/* forge #571: the flight-data panel (moments/telemetrychart.js), in the dock above the strip like the chapters. Two small charts on
+   one time axis; the moment's flight in the rocket's class colour with dots for the published rows, another flight of the same
+   rocket dashed in the dim text colour behind it; the cursor is the clock. Nothing here moves on its own. */
+.sr-moment__telemetry {
+  pointer-events: auto;
+  align-self: flex-end;
+  box-sizing: border-box;
+  width: min(400px, 100%);
+  margin: 0;
+  padding: var(--sp-3) var(--sp-4);
+}
+
+.sr-moment__telemetry[hidden] {
+  display: none;
+}
+
+.sr-moment__telhead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-1) var(--sp-3);
+}
+
+.sr-moment__teltitle {
+  margin: 0;
+  font: 600 var(--sr-fs-sm)/1.2 var(--sr-font-hud);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sr-text-dim);
+}
+
+.sr-moment__tellegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font: 400 var(--sr-fs-sm)/1.3 var(--sr-font);
+  color: var(--sr-text);
+}
+
+.sr-moment__telkey {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.sr-moment__telswatch {
+  width: var(--sp-4);
+  height: 0;
+  border-top: 2px solid var(--sr-rocket);
+}
+
+.sr-moment__telkey--compare .sr-moment__telswatch {
+  border-top: 2px dashed var(--sr-text-dim);
+}
+
+.sr-moment__telread {
+  margin: var(--sp-2) 0 var(--sp-1);
+  min-height: 1.4em;
+  font: 400 var(--sr-fs-sm)/1.4 var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text);
+}
+
+.sr-moment__telchart {
+  display: block;
+  width: 100%;
+  height: auto;
+  cursor: pointer;
+  touch-action: manipulation;
+  direction: ltr;
+}
+
+.sr-moment__telgrid {
+  stroke: var(--sr-line);
+  stroke-width: 1;
+}
+
+.sr-moment__telbase {
+  stroke: var(--sr-line-strong);
+  stroke-width: 1;
+}
+
+.sr-moment__telaxis,
+.sr-moment__telname,
+.sr-moment__telmarklabel {
+  font-family: var(--sr-font-mono);
+  font-size: var(--sr-fs-sm);
+  fill: var(--sr-text-dim);
+}
+
+.sr-moment__telname {
+  font-family: var(--sr-font);
+  fill: var(--sr-text);
+}
+
+.sr-moment__telmarklabel {
+  fill: var(--sr-text);
+}
+
+.sr-moment__telmark {
+  stroke: var(--sr-line-strong);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+
+.sr-moment__telline {
+  fill: none;
+  stroke: var(--sr-rocket);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.sr-moment__telline--compare {
+  stroke: var(--sr-text-dim);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+
+.sr-moment__teldot {
+  fill: var(--sr-rocket);
+  stroke: var(--sr-glass-solid);
+  stroke-width: 2;
+}
+
+.sr-moment__teldot--compare {
+  fill: var(--sr-glass-solid);
+  stroke: var(--sr-text-dim);
+  stroke-width: 1.5;
+}
+
+.sr-moment__teldot[aria-current='true'] {
+  stroke: var(--sr-text);
+}
+
+.sr-moment__telcursor {
+  stroke: var(--sr-atmosphere);
+  stroke-width: 1.5;
+}
+
+.sr-moment__telnote {
+  margin: var(--sp-1) 0 0;
+  font: 400 var(--sr-fs-sm)/1.4 var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-moment__tellink {
+  color: var(--sr-atmosphere);
+}
+
+.sr-moment__telbtn {
+  pointer-events: auto;
+}
+
+/* The rows as a table for a screen reader; out of sight. */
+.sr-moment__vh {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .sr-moment__telemetry {
+    align-self: stretch;
+    width: auto;
+    padding: var(--sp-2) var(--sp-3);
+  }
+}

@@ -235,6 +235,10 @@ jobs:
           node-version: "22"
       - name: The validator actually refuses, and every card sentence is held to 160 characters (#915)
         run: python3 tests/test_refusals.py
+      # Forge #566: three questions at the end of a trip, each resting on words its own stop's card says; a card changed
+      # under a question fails here, and the browser's mirror of which answer is right is current.
+      - name: The trip questions rest on their stops' cards, and their mirror matches the registry (forge #566)
+        run: python3 scripts/gen_trip_quiz_js.py --check && python3 tests/test_trip_quiz.py
       # A pull request that changes what is drawn shows a picture (the maintainer, 2026-10-12, after five
       # features were merged unseen). The rule is one small script; this holds it and the documents
       # that state it. The check itself is .github/workflows/pictures.yml.
@@ -248,6 +252,10 @@ jobs:
         run: python3 tests/test_check_truth.py
       - name: A picture's text chunk is written and read back (spec 0043 req 6)
         run: node tests/test_png_text.mjs
+      # 2026-11-24, forge #559: "View in your room" on the one-model viewer: the way in per device, real size from the
+      # file and the published size, the viewer's words in eleven languages, nothing third-party, stored or sent.
+      - name: The viewer's AR picks an honest way in and draws at real size
+        run: node tests/test_model_ar.mjs
       - name: The object pages' where-is-it-now line (internal #294)
         run: node tests/test_objectnow.mjs
       - name: "The KTX2 plan, its flags and GPU bytes, run against a fake encoder (internal #156)"
@@ -307,6 +315,9 @@ jobs:
       # The Space Radar Lab (docs/ADD_A_SIMULATOR.md): the list is written from the simulators' own heads, and a stale one is refused.
       - name: The Lab's list matches the simulators in site/lab/
         run: python3 scripts/gen_lab_index.py --check
+      # Forge #566: the learning paths, their page and the path box on each simulator, and the one small script they share.
+      - name: The Lab's learning paths hold to the Lab, and their page and boxes build (forge #566)
+        run: python3 tests/test_lab_paths.py && node tests/test_lab_paths.mjs
       - name: The pages build, with one share picture each, and titles, descriptions, canonicals, pictures, JSON-LD, robots.txt, the sitemap and the image sitemap hold
         run: python3 scripts/build_seo.py --out "$RUNNER_TEMP/seo" --require-share && python3 scripts/check_seo.py --out "$RUNNER_TEMP/seo" --require-share
       # The pages in other languages (scripts/seo_i18n.py, docs/TRANSLATING.md "The pages a search engine reads"): the catalog of what
@@ -596,6 +607,8 @@ jobs:
       # Start and sound as a toggle, the end with one next trip, the top bar of title and Leave.
       - name: "Trips in the new language: the toolbar, the keyboard, the intro and the end (spec 0061 task 7)"
         run: node tests/test_tripframe.mjs
+      - name: "The end-of-trip questions: what is kept, the score, and fetched on the press with no second ember (forge #566)"
+        run: node tests/test_trip_quiz.mjs
       # Spec 0036: the reel's order, the dwell with and without the voice, the watchdog's decisions,
       # the hands-on and hands-off machine, the reload rule, and the controller on a stub trip.
       - name: "A screen that plays on its own: the reel, the watchdog, the take-over (spec 0036)"
@@ -718,6 +731,9 @@ jobs:
       # tests (tests/test_moment_stories.mjs, above).
       - name: "Moments: part poses, carried riders, the shot's lookAt"
         run: node tests/test_moments_pose.mjs
+      # forge #571: a launch's published heights and speeds beside its replay (site/data/moments/telemetry/, moments/telemetrychart.js)
+      - name: "Moments: flight data from the published tables (Apollo 11 and Apollo 13)"
+        run: node tests/test_moment_telemetry.mjs
       # 1.7.7: end
       - name: Satellite positions move and reject stale orbital elements
         run: node tests/test_sgp4.mjs
@@ -731,6 +747,8 @@ jobs:
         run: node tests/test_skyview.mjs
       - name: The air and the eye as numbers; the planets against Astronomy Engine (pub 454)
         run: node tests/test_skymath.mjs
+      - name: Name the stars in your photo, two-star alignment and the photo never sent (forge 572)
+        run: node tests/test_skyphoto.mjs
       - name: Tonight's best and a pass as a row (pub 448)
         run: node tests/test_tonightbest.mjs
       - name: "The Tonight slot hands the platform's checklist the list's own rows, with no place, and builds empty and hidden (internal #549)"

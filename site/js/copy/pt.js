@@ -2530,26 +2530,37 @@ export const COPY = {
     "panelTitle": "Outra luz",
     "bands": {
       "visible": "Visível",
-      "infrared": "Infravermelho",
+      "nearinfrared": "Infravermelho próximo",
+      "infrared": "Infravermelho médio",
       "microwave": "Micro-ondas",
       "gamma": "Raios gama"
     },
     "notes": {
       "visible": "O céu como os olhos e as câmeras o veem.",
-      "infrared": "O céu em infravermelho, em cor falsa: poeira morna e estrelas frias.",
+      "nearinfrared": "Infravermelho próximo, em cor falsa: luz das estrelas através da poeira.",
+      "infrared": "Infravermelho médio, em cor falsa: poeira morna e estrelas frias.",
       "microwave": "Micro-ondas, como brilho: a Galáxia sobre a luz mais antiga.",
       "gamma": "Raios gama, em cor falsa: pulsares, blazares, o brilho dos raios cósmicos."
     },
     "colours": {
+      "nearinfrared": "Vermelho é 2,2 µm, verde 1,7 µm, azul 1,2 µm (2MASS)",
       "infrared": "Vermelho é 22 µm, verde 4,6 µm, azul 3,4 µm (WISE)",
       "microwave": "Uma banda, 94 GHz, desenhada como brilho (WMAP)",
       "gamma": "Vermelho é 0,3 a 1 GeV, verde 1 a 3, azul acima de 3 (Fermi)"
     },
     "mixLabel": "Do céu visível para {band}",
+    "mixLabelFrom": "De {from} para {band}",
     "mixValue": "{pct}% {band}",
+    "fromLabel": "De",
+    "fromGroup": "A luz de onde o controle começa",
+    "blink": "Piscar",
+    "blinkTitle": "Pular para a outra ponta do controle",
+    "whyPair": { "nearinfrared_infrared": "O infravermelho próximo atravessa a poeira; o médio a vê brilhar." },
+    "whyAny": "Duas luzes, um céu: cada uma mostra o que a outra esconde.",
     "loading": "Buscando a imagem do céu inteiro.",
     "failed": "Essa imagem não chegou. O céu continua como estava.",
     "creditLead": "Levantamento: ",
+    "creditAnd": " e ",
     "creditTail": ". Mosaicos: CDS, Estrasburgo."
   },
   "overlay": {
@@ -2998,6 +3009,203 @@ export const COPY = {
       "honesty": "Estrelas medidas, planetas calculados, ar modelado, solo desenhado"
     }
   },
+  "tripQuiz": {
+    "open": "Três perguntas",
+    "openTitle": "Três perguntas sobre esta viagem, cada uma respondida por uma das suas paradas",
+    "intro": "Cada resposta está em uma das paradas desta viagem.",
+    "groupLabel": "Pergunta {n} de {total}",
+    "right": "Certo.",
+    "wrong": "Não exatamente. A resposta: {answer}",
+    "from": "Onde a viagem diz isso: parada {n}, {title}",
+    "score": "{n} de {total} certas",
+    "kept": "Guardado só neste navegador.",
+    "again": "Perguntar de novo",
+    "trips": {
+      "people-in-space": [
+        {
+          "q": "Quanto tempo a estação espacial leva para dar uma volta na Terra?",
+          "a": [
+            "Cerca de um dia",
+            "Cerca de 93 minutos",
+            "Cerca de oito minutos"
+          ]
+        },
+        {
+          "q": "Quantos nasceres do sol a tripulação da estação vê por dia?",
+          "a": [
+            "Um, como nós",
+            "Quinze ou dezesseis",
+            "Cerca de cem"
+          ]
+        },
+        {
+          "q": "Quantas pessoas vivem ao mesmo tempo na Tiangong?",
+          "a": [
+            "Três",
+            "Sete",
+            "Doze"
+          ]
+        }
+      ],
+      "moon-landings": [
+        {
+          "q": "Quanto tempo Neil Armstrong e Buzz Aldrin ficaram na Lua?",
+          "a": [
+            "Cerca de duas horas",
+            "21 horas e 36 minutos",
+            "Três dias"
+          ]
+        },
+        {
+          "q": "Quem dirigia o rover Lunokhod 1?",
+          "a": [
+            "Dois cosmonautas a bordo",
+            "Uma equipe de cinco controladores na Terra",
+            "Ninguém: ele escolhia o próprio caminho"
+          ]
+        },
+        {
+          "q": "A Chang’e 4 pousou no lado da Lua que nunca fica de frente para nós. Como ela falava com a Terra?",
+          "a": [
+            "Por um satélite retransmissor, Queqiao",
+            "Direto para a Terra, por rádio",
+            "Nunca conseguiu"
+          ]
+        }
+      ],
+      "outer-solar-system": [
+        {
+          "q": "Por que Io tem centenas de vulcões?",
+          "a": [
+            "É a lua mais perto do Sol",
+            "Júpiter e outras duas luas não param de amassá-la",
+            "Cometas vivem caindo nela"
+          ]
+        },
+        {
+          "q": "Qual é a espessura dos anéis de Saturno em alguns lugares?",
+          "a": [
+            "Cerca de dez metros",
+            "Cerca de mil quilômetros",
+            "A largura da Terra"
+          ]
+        },
+        {
+          "q": "Quantas naves já visitaram Netuno?",
+          "a": [
+            "Nenhuma",
+            "Uma, a Voyager 2",
+            "Cinco"
+          ]
+        }
+      ],
+      "the-sun-today": [
+        {
+          "q": "Quanto tempo a luz do Sol leva para chegar à Terra?",
+          "a": [
+            "Nenhum tempo",
+            "Cerca de oito minutos e vinte segundos",
+            "Cerca de um dia"
+          ]
+        },
+        {
+          "q": "Mais ou menos de quanto em quanto tempo o número de manchas solares sobe e desce?",
+          "a": [
+            "Todo ano",
+            "Mais ou menos a cada onze anos",
+            "Mais ou menos a cada mil anos"
+          ]
+        },
+        {
+          "q": "Quantas Terras caberiam dentro do Sol?",
+          "a": [
+            "Cerca de dez",
+            "Cerca de mil",
+            "Mais de um milhão"
+          ]
+        }
+      ],
+      "life-of-a-star": [
+        {
+          "q": "O que faz o Sol brilhar?",
+          "a": [
+            "Ele queima como um fogo de carvão",
+            "Lá no fundo, ele transforma hidrogênio em hélio",
+            "Ele reflete a luz de outras estrelas"
+          ]
+        },
+        {
+          "q": "O que resta no centro da Nebulosa da Hélice?",
+          "a": [
+            "Um buraco negro",
+            "Uma estrela pequena e muito quente: uma anã branca",
+            "Nada"
+          ]
+        },
+        {
+          "q": "Quem viu, no ano de 1054, a explosão que deixou a Nebulosa do Caranguejo?",
+          "a": [
+            "Astrônomos chineses",
+            "Galileu, com seu telescópio",
+            "O Telescópio Espacial Hubble"
+          ]
+        }
+      ],
+      "black-holes": [
+        {
+          "q": "O que é um buraco negro?",
+          "a": [
+            "Um buraco vazio no espaço",
+            "Um lugar onde a gravidade é tão forte que nada sai, nem a luz",
+            "Uma estrela que se apagou por um tempo"
+          ]
+        },
+        {
+          "q": "Qual é a massa do buraco negro no centro da nossa galáxia?",
+          "a": [
+            "Mais ou menos a do Sol",
+            "Cerca de quatro milhões de vezes a do Sol",
+            "A da galáxia inteira"
+          ]
+        },
+        {
+          "q": "Se trocássemos o Sol por um buraco negro de mesma massa, o que os planetas fariam?",
+          "a": [
+            "Cairiam nele",
+            "Continuariam em suas órbitas, e ficaria muito mais frio",
+            "Sairiam voando pelo espaço"
+          ]
+        }
+      ],
+      "mars-where-we-have-driven": [
+        {
+          "q": "Quanto dura um dia em Marte?",
+          "a": [
+            "Quarenta minutos a mais que o nosso",
+            "O dobro do nosso",
+            "Metade do nosso"
+          ]
+        },
+        {
+          "q": "O Opportunity foi feito para durar noventa dias marcianos. Por quanto tempo ele continuou?",
+          "a": [
+            "Noventa dias, como planejado",
+            "Mais de catorze anos",
+            "Cerca de um ano"
+          ]
+        },
+        {
+          "q": "Quantos voos o pequeno helicóptero Ingenuity fez?",
+          "a": [
+            "Um",
+            "Doze",
+            "72"
+          ]
+        }
+      ]
+    }
+  },
+
   "keyHint": {
     "title": "Controles",
     "titleTouch": "Gestos",
@@ -3064,6 +3272,55 @@ export const COPY = {
   "glossary": {
     "title": "Palavras desta página",
     "hint": "Toque em um termo para ver uma frase simples."
+  },
+  // forge #571: a Moment's flight data (copy/en.moments.telemetry.js), machine-drafted 2026-11-24, not native-reviewed
+  "momentTelemetry": {
+    "button": "Dados de voo",
+    "buttonTitle": "Mostrar ou ocultar as altitudes e velocidades publicadas",
+    "title": "Dados de voo",
+    "rocket": {
+      "saturn-v": "Saturno V"
+    },
+    "flights": {
+      "apollo11": "Apollo 11",
+      "apollo13": "Apollo 13"
+    },
+    "legendCompare": "{flight}, o mesmo foguete",
+    "height": "Altitude",
+    "speed": "Velocidade em relação à Terra",
+    "unitKm": "km",
+    "unitKms": "km/s",
+    "unitMin": "min",
+    "events": {
+      "liftoff": "Decolagem",
+      "mach1": "Mach 1",
+      "maxQ": "Max Q",
+      "sicCeco": "Motor central do primeiro estágio desligado",
+      "sicOeco": "Motores do primeiro estágio desligados",
+      "sicSep": "O primeiro estágio se solta",
+      "siiCeco": "Motor central do segundo estágio desligado",
+      "siiPlannedCeco": "Quando esse motor devia desligar",
+      "siiOeco": "Motores do segundo estágio desligados",
+      "siiSep": "O segundo estágio se solta",
+      "sivbCutoff": "Motor do terceiro estágio desligado",
+      "orbit": "Em órbita"
+    },
+    "markStaging": "Separação",
+    "before": "Esperando a decolagem",
+    "readout": "{event}, {time}: a {height} km de altitude, {speed} km/s",
+    "commanded": "(horário comandado)",
+    "after": "A tabela termina na órbita, {time}",
+    "maxQLine": "Max Q {kpa} kPa em {time}, a {height} km de altitude",
+    "dots": "Os pontos são a tabela publicada pela NASA; as linhas entre eles não são medições.",
+    "truth": "Calculado depois do voo a partir dos relatórios do voo.",
+    "source": "Apollo by the Numbers, NASA SP-2000-4029",
+    "sourceTitle": "O livro, um PDF da NASA; tabelas nas páginas {pages}",
+    "tableCaption": "As linhas publicadas de {flight}",
+    "colTime": "Hora",
+    "colEvent": "Evento",
+    "colHeight": "Altitude, km",
+    "colSpeed": "Velocidade, km/s",
+    "seekHint": "Escolha um ponto para ir a esse segundo"
   },
   "templates": {
     "earthevent": {
@@ -4748,6 +5005,83 @@ Object.assign(COPY, {
 
 // b200-f2-worlds: begin (forge #144, #145, #148) -- the Size and Distance sliders, the cutaways and the heliosphere (copy/en.later.js orrery, cutaway, helio). Machine-drafted like the rest of this file, not read by a native speaker.
 Object.assign(COPY, {
+  // forge #572 (Name the stars in your photo): begin
+  "skyPhoto": {
+    "pick": "Escolher uma foto",
+    "drop": "ou solte-a aqui",
+    "private": "Sua foto é lida neste aparelho e nunca é enviada. Nada dela é salvo ou transmitido.",
+    "loading": "Lendo a foto…",
+    "notImage": "Esse arquivo não é uma imagem que este navegador consiga abrir.",
+    "tooBig": "A foto é mostrada em {w} × {h} pixels: grande o bastante para nomear suas estrelas, pequena o bastante para este aparelho.",
+    "another": "Outra foto",
+    "modeLabel": "Como alinhar",
+    "modeStars": "Duas estrelas",
+    "modeRough": "Hora e direção",
+    "howStars": "Toque na foto em uma estrela que você conhece e diga qual é. Duas estrelas alinham o céu; uma terceira confere.",
+    "howRough": "Diga quando, onde e para que lado a câmera apontava para um primeiro céu aproximado. Depois fixe-o com duas estrelas.",
+    "tapStar": "Toque na estrela {n} da foto",
+    "whichStar": "Que estrela é esta?",
+    "allStars": "Todas as estrelas brilhantes",
+    "starMark": "Estrela {n}: {name}",
+    "undo": "Desfazer a última estrela",
+    "aligned": "Alinhada em {count} estrelas: a foto tem {w}° de largura.",
+    "alignedTwo": "Alinhada em duas estrelas. Adicione uma terceira para conferir o ajuste.",
+    "fit": "As estrelas ficam, em média, a {px} pixels do seu lugar.",
+    "fitPoor": "As estrelas erram o lugar por {px} pixels em média: uma lente grande-angular ou olho de peixe curva o céu, ou uma estrela foi nomeada errado.",
+    "mirrored": "Esta foto está espelhada, como uma câmera frontal a tira. Ela é lida assim.",
+    "snap": "Encaixar nas estrelas da foto",
+    "snapped": "Encaixada em {count} estrelas encontradas na foto.",
+    "snapNone": "Nenhuma estrela se destacou o bastante para encaixar. As que você nomeou continuam valendo.",
+    "when": "Quando foi tirada",
+    "whenNote": "No fuso horário deste aparelho.",
+    "whenFromPhoto": "Lida da foto, neste aparelho.",
+    "whenNone": "Sem uma hora não há planetas nem Lua: eles se movem em relação às estrelas.",
+    "where": "Onde foi tirada",
+    "whereNone": "Em algum lugar da Terra",
+    "whereNote": "Uma cidade perto de você basta. Sem ela, a Lua pode sair até um grau do lugar.",
+    "facing": "A câmera apontava para",
+    "height": "Altura acima do horizonte",
+    "heightValue": "{n}°",
+    "field": "Largura da foto",
+    "fieldValue": "{n}°",
+    "fieldNote": "A câmera principal de um celular cobre cerca de 65°; o zoom, de 25 a 35°.",
+    "drawRough": "Desenhar o céu",
+    "roughDone": "Um céu aproximado a partir da hora e da direção. Toque em duas estrelas para fixá-lo.",
+    "roughNeeds": "Escolha primeiro uma hora e um lugar.",
+    "compass": {
+      "n": "N",
+      "ne": "NE",
+      "e": "L",
+      "se": "SE",
+      "s": "S",
+      "sw": "SO",
+      "w": "O",
+      "nw": "NO"
+    },
+    "show": "Mostrar",
+    "showLines": "Linhas das constelações",
+    "showNames": "Nomes das constelações",
+    "showStars": "Nomes das estrelas",
+    "showBodies": "Planetas e Lua",
+    "save": "Salvar a imagem",
+    "saved": "Salva como {file}.",
+    "saveFailed": "Não foi possível criar a imagem neste aparelho.",
+    "credit": "Estrelas e constelações nomeadas pelo Space Radar, spaceradar.ai/sky-photo",
+    "creditData": "Estrelas: HYG e d3-celestial. Planetas: Astronomy Engine.",
+    "canvasLabel": "Sua foto com as estrelas nomeadas",
+    "planetsFailed": "Não foi possível calcular os planetas aqui.",
+    "bodies": {
+      "moon": "Lua",
+      "mercury": "Mercúrio",
+      "venus": "Vênus",
+      "mars": "Marte",
+      "jupiter": "Júpiter",
+      "saturn": "Saturno",
+      "uranus": "Urano",
+      "neptune": "Netuno"
+    }
+  },
+  // forge #572: end
   "orrery": {
     "title": "Tamanho e distância",
     "size": "Tamanho extra",

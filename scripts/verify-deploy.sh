@@ -81,15 +81,16 @@ if [ "$SOURCE" = 0 ]; then
   python3 scripts/minify_site.py --out "$MIN/min" --quiet ${REAL[@]+"${REAL[@]}"}
 fi
 
-# What deploy.sh uploads that is not site/'s file as it stands: the Lab from the build (seo_lab.py, with the
+# What deploy.sh uploads that is not site/'s file as it stands: the Lab from the build (seo_lab.py and seo_lab_paths.py, with the
 # host build_seo.py defaults to, as deploy.sh runs it) and the worker stamped over the same js/ and css/ that
 # are compared above (no overlay with --source: that deploy stamps site/ as written).
 python3 - "$WORK/built" <<'PY'
 import sys
 from pathlib import Path
 sys.path.insert(0, "scripts")
-import build_seo, seo_lab
+import build_seo, seo_lab, seo_lab_paths
 seo_lab.build(Path(sys.argv[1]), build_seo.DEFAULT_HOST)
+seo_lab_paths.build(Path(sys.argv[1]), build_seo.DEFAULT_HOST)  # forge #566: the path boxes, and lab/paths/
 PY
 OVERLAY=(); [ -n "$MIN" ] && OVERLAY=(--overlay "$MIN/min")
 python3 scripts/stamp_sw.py --site site ${OVERLAY[@]+"${OVERLAY[@]}"} --out "$WORK/sw.js" >/dev/null

@@ -121,7 +121,7 @@ try {
   sr.deselect();
   if (sr.otherLight && sr.otherLight.set) sr.otherLight.set('infrared', 1);
   await stage('mars', 9000);
-  if (await need('mars', 7000)) await scene('05-mars-infrared', 'Mars, the sky behind it in infrared (WISE)', 'mars', { legend: ['Sky shown', 'Infrared', 'WISE', '2010 to 2011'] });
+  if (await need('mars', 7000)) await scene('05-mars-infrared', 'Mars, the sky behind it in infrared (WISE)', 'mars', { legend: ['Sky shown', 'Mid infrared', 'WISE', '2010 to 2011'] });
   if (sr.otherLight && sr.otherLight.set) sr.otherLight.set(null, 1);
 } catch (e) {
   look.errors.push('probe threw: ' + (e && e.stack || e));

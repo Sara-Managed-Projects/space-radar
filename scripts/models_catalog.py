@@ -45,7 +45,7 @@ The date needs the git history: a shallow clone gives no date rather than a wron
 compare dates, so CI's two-commit checkout passes.
 
 THE INDEX (site/model/models.json, committed) is the small half the viewer page (site/model/index.html) reads to turn
-?id= into a file: id, name, file. --check fails when it is stale: run this script after adding a row.
+?id= into a file: id, name, file, and `size_m` where the row has one (the viewer's AR says "real size" by it). --check fails when it is stale: run this script after adding a row.
 """
 
 from __future__ import annotations
@@ -497,8 +497,14 @@ def catalog(root: Path = ROOT, doc: dict | None = None, with_dates: bool = True,
 
 
 def index_of(cat: dict) -> dict:
-    """The viewer's index: only what turning ?id= into a file needs."""
-    return {"version": VERSION, "models": {m["id"]: {"name": m["name"], "file": m["file"]} for m in cat["models"]}}
+    """The viewer's index: what turning ?id= into a file needs, and the published overall size where the row has one
+    (`size_m`, metres): the viewer's "View in your room" says "real size" only for a model with one (forge #559)."""
+    def row(m: dict) -> dict:
+        r = {"name": m["name"], "file": m["file"]}
+        if m.get("size_m"):
+            r["size_m"] = m["size_m"]
+        return r
+    return {"version": VERSION, "models": {m["id"]: row(m) for m in cat["models"]}}
 
 
 def dumps(obj: dict, compact: bool = False) -> str:

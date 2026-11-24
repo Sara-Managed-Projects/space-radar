@@ -230,6 +230,39 @@ domain, and credited). Only when the visitor has sound on, and only when the pla
 names the part whose engines feed the flames the deflector throws along the trench while the stack is on the pad.
 `effect: "plasma"`: an entry's shock layer from `t` to `until`, brightest at `peak`, on `vehicle`.
 
+## Flight data (forge #571)
+
+A launch Moment may carry the published heights and speeds of its ascent, drawn as two small charts beside the replay with a
+cursor on the moment's clock. On the moment: `telemetry: {flight: "<id>", compare: ["<id>", ...]}`, where each id is a file
+`site/data/moments/telemetry/<id>.json`; `compare` is another flight of the same rocket (the same `rocket`), drawn dashed and
+grey behind it. The player fetches the files and `moments/telemetrychart.js` only for a moment that names them.
+
+A telemetry file is ONE PUBLISHED TABLE, COPIED AS IT IS PRINTED, never a curve of ours:
+
+| field | what |
+|---|---|
+| `format`, `id` | `1`; the id is the file's name (the vehicle's serial, `as-506`) |
+| `flight`, `rocket`, `serial`, `moment` | the words keys of the flight (`COPY.momentTelemetry.flights`) and the rocket (`.rocket`), the serial, the moment it belongs to |
+| `epoch` | the table's zero as an ISO time in UTC: the moment's own `epoch` when the table counts from range zero, as Apollo's does |
+| `truth`, `truthNote` | `measured` or `reconstructed`, as the source describes its numbers, and that description in a sentence |
+| `units` | the table's own units, fixed: `t` s, `alt` and `range` nmi, `vEarth` and `vSpace` ft/s, `q` lb/ft2, `altFt` ft. The reader converts (exactly: 1 nmi = 1.852 km, 1 ft = 0.3048 m) |
+| `points` | the rows, in time order: `{t, event, alt, range, vEarth, vSpace, src, note?}`; `event` is one of `moments/telemetry.js` EVENTS, `src` a key of `sources`, `note: "commanded"` where the table gives only the commanded time |
+| `maxQ` | `{t, q, altFt, src}`: the second, the dynamic pressure and the height of max Q, from its own table |
+| `sources` | `{key: {title, number, table, page, url, read, licence, note}}`: the document, its table and the page of the PDF it is on |
+
+`node tests/test_moment_telemetry.mjs` holds every file to `validateTelemetry` (time going forward, the units, every row's
+source, max Q inside the rows and agreeing with the max-Q row to half a second) and holds a few of the published numbers.
+
+What the panel does: each row is a dot and the lines between dots are straight, and the panel says they are not
+measurements; the readout is the last row the clock has passed, with that row's own time, never a value between rows; Max Q
+and the stagings are marked; a press on the chart goes to the nearest row's second. The 3D path is still the moment's own
+profile (`trajectories`), whose sentence says how it is known.
+
+The two flights, from Richard W. Orloff's *Apollo by the Numbers* (NASA SP-2000-4029, 2000; the NASA PDF, read 2026-11-24):
+Apollo 11 (AS-506) from the table "Apollo 11 Ascent Phase" (PDF page 113) and Apollo 13 (AS-508) from "Apollo 13 Ascent
+Phase" (page 160), max Q for both from "Launch Weather" (page 289). Not used: the webcast-derived Falcon 9 telemetry sets
+(Launch Dashboard API and the like), which state no licence for their data.
+
 ## Words
 
 `COPY.momentStories[<words>]` holds `title`, `blurb`, the chapter names, the captions, the trajectory's `say` and

@@ -91,7 +91,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 <!-- 0078 r14-m4: end -->
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
-| The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
+| The sky in other light | NASA's WISE, WMAP and Fermi, and 2MASS, as HiPS from CDS | NASA data, no copyright claimed; 2MASS: IRSA's CC0 and 2MASS's public-domain pictures; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
 | Constellation pictures, borders, other peoples' skies | Johan Meuris and the sky-culture authors, through Stellarium; CDS catalogue VI/49 | Free Art License 1.3; CC BY-SA 4.0; a public catalogue, cited | [3i](#3i-constellation-pictures-borders-and-other-peoples-skies--stellarium-and-cds) |
 <!-- 0079 a3: begin -->
 | Every moon, the moons of asteroids and far worlds, dwarf-planet candidates | NASA/JPL Solar System Dynamics, Horizons and Small-Body Database; the papers named on each card, read through Wikipedia | JPL: no licence text, NASA content generally not copyrighted in the United States; Wikipedia CC BY-SA 4.0; Johnston's Archive NOT used | [3o](#3o-every-moon--nasajpl-solar-system-dynamics-horizons-and-the-small-body-database-release-150) |
@@ -120,6 +120,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Music and sounds | John Bartmann (Free Music Archive); Freesound contributors | CC0 1.0 | [9](#9-audio--music-and-sounds) |
 | The trips' voice | Kokoro-82M, a synthetic voice | Apache-2.0 | [9b](#9b-audio--the-trips-narration-a-synthetic-voice) |
 | A NASA recording in the Apollo 11 Moment | NASA (Neil Armstrong's first words on the Moon, 1969) | Public domain (NASA) | [9](#9-audio--music-and-sounds) |
+| The flight data of the Apollo 11 and Apollo 13 Moments | NASA, *Apollo by the Numbers* (SP-2000-4029) | numbers from a NASA History Series book (facts), credited | [3b-telemetry](#3b-telemetry-the-flight-data-of-the-moments--nasas-apollo-by-the-numbers-2026-11-24) |
 | Typefaces | Inter, Barlow Semi Condensed, JetBrains Mono | SIL OFL 1.1 | [10](#10-fonts) |
 | The GitHub mark | GitHub, Inc. | a trademark, used under GitHub's logo rules | [4.6](#46-third-party-trademarks-the-app-names-or-draws) |
 
@@ -1911,6 +1912,24 @@ and NASA Science's 3D models have neither the telescope as it left Discovery nor
 "Somebody Get a Camera" (the arrays, the antennas, the thruster pulses; 3:37 p.m. EDT). No audio plays.
 <!-- 1.7.7 hubble: end -->
 
+## 3b-telemetry. The flight data of the Moments — NASA's Apollo by the Numbers (2026-11-24)
+
+The heights and speeds the Apollo 11 and Apollo 13 Moments draw beside their ascent (forge #571; `site/data/moments/telemetry/as-506.json`
+and `as-508.json`, `site/js/moments/telemetrychart.js`) are the rows of three tables of Richard W. Orloff, *Apollo by the Numbers: A
+Statistical Reference*, NASA SP-2000-4029 (NASA History Division, 2000), read on 2026-11-24 in NASA's PDF
+(<https://www.nasa.gov/wp-content/uploads/2023/04/sp-4029.pdf>, where `history.nasa.gov/SP-4029/` now leads): "Apollo 11 Ascent Phase"
+(page 113 of the PDF), "Apollo 13 Ascent Phase" (page 160) and "Launch Weather", maximum dynamic pressure (page 289). The book says its
+statistical tables are compiled from the Saturn launch vehicle reports and the trajectory reconstruction reports. What was taken: the
+event, its ground elapsed time, the altitude and range (nautical miles), the Earth-fixed and space-fixed velocity (feet a second), and the
+time, dynamic pressure and altitude of max Q; copied as printed, converted by the reader with the exact factors. Nothing between two rows
+is ours: the chart joins the rows with straight lines and says they are not measurements.
+
+**Terms.** A NASA publication (NASA History Series); the numbers are facts and are credited, not its text. **Credit line:** `Flight data:
+R. W. Orloff, Apollo by the Numbers (NASA SP-2000-4029, 2000)`.
+
+**Not used, and why (2026-11-24):** the Falcon 9 telemetry read off SpaceX's webcasts (the Launch Dashboard API and the sets made like
+it): no licence is stated for their data, and a number read off a video overlay is not a published table.
+
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 
 `site/images/` holds two pictures, shown on the cards for the only two objects in
@@ -2024,7 +2043,8 @@ deeper, the survey's own tiles streamed from CDS when the field of view is narro
 
 | band | survey (HiPS id) | mission and credit | terms | what the colours are | baked file |
 |---|---|---|---|---|---|
-| Infrared | `CDS/P/allWISE/color` | **NASA/JPL-Caltech/UCLA (WISE)** | [AllWISE release](https://irsa.ipac.caltech.edu/data/WISE/docs/release/All-Sky/) | red 22 µm, green 4.6 µm, blue 3.4 µm | `infrared.webp`, 62 570 B; tiles streamed to order 8 |
+| Near infrared | `CDS/P/2MASS/color` | **NASA/NSF, UMass and IPAC/Caltech (2MASS)** | [2MASS FAQ](https://www.ipac.caltech.edu/2mass/releases/allsky/faq.html), [IRSA data use terms](https://irsa.ipac.caltech.edu/data_use_terms.html) | red 2.16 µm (Ks), green 1.66 µm (H), blue 1.23 µm (J) | `nearinfrared.webp`, 78 246 B; tiles streamed to order 9 from IRSA's mirror |
+| Mid infrared | `CDS/P/allWISE/color` | **NASA/JPL-Caltech/UCLA (WISE)** | [AllWISE release](https://irsa.ipac.caltech.edu/data/WISE/docs/release/All-Sky/) | red 22 µm, green 4.6 µm, blue 3.4 µm | `infrared.webp`, 62 570 B; tiles streamed to order 8 |
 | Microwave | `CDS/P/WMAP/W/9yr` | **NASA/WMAP Science Team (LAMBDA)** | [WMAP nine-year maps](https://lambda.gsfc.nasa.gov/product/wmap/dr5/maps_band_r9_i_9yr_get.html) | one band, 94 GHz, as brightness | `microwave.webp`, 186 852 B |
 | Gamma rays | `CDS/P/Fermi/color` | **NASA/DOE/Fermi LAT Collaboration** | [Fermi data policy](https://fermi.gsfc.nasa.gov/ssc/data/policy/) | red 0.3 to 1 GeV, green 1 to 3 GeV, blue 3 to 300 GeV | `gamma.webp`, 222 396 B |
 
@@ -2038,11 +2058,27 @@ Propulsion Laboratory/California Institute of Technology, funded by the National
 Space Administration." WMAP: "We acknowledge the use of the Legacy Archive for Microwave Background
 Data Analysis (LAMBDA), part of the High Energy Astrophysics Science Archive Center (HEASARC)."
 
+**2MASS** (added 2026-11-24, forge #565) is not NASA's own copyright-free data in the same words:
+its `properties` give `obs_copyright = University of Massachusetts & IPAC/Caltech` and
+`prov_progenitor = IPAC/NASA`. It is used because NASA's archive that serves it says, in its data
+use terms (<https://irsa.ipac.caltech.edu/data_use_terms.html>, read 2026-11-24), that "most data
+served by IRSA are public, with no usage restrictions, and fall under a CC0 license as per NASA
+policy", naming Euclid and the Digitized Sky Survey as the exceptions, and because 2MASS's own FAQ
+(<https://www.ipac.caltech.edu/2mass/releases/allsky/faq.html>) says its gallery images are in the
+public domain and asks for this acknowledgement, which is ours: **This publication makes use of
+data products from the Two Micron All Sky Survey, which is a joint project of the University of
+Massachusetts and the Infrared Processing and Analysis Center/California Institute of Technology,
+funded by the National Aeronautics and Space Administration and the National Science Foundation.**
+On 2026-11-24 CDS's own host answered every survey with a 404 page ("currently unavailable"), so the
+2MASS picture was baked from, and its deeper tiles are streamed from, IRSA's public mirror of CDS's
+HiPS (`https://irsa.ipac.caltech.edu/data/hips/CDS/2MASS/Color`, 200 with
+`Access-Control-Allow-Origin: *`). The faint vertical stripes in it are 2MASS's own scan strips.
+
 **The tiles** are the work of the Centre de Données astronomiques de Strasbourg: every `properties`
 file says `hips_copyright = CNRS/Unistra` and `hips_license = ODbL-1.0`. The Open Database License
 allows using the tiles and making pictures from them ("Produced Works") with a notice of where they
 came from, which is this one: the baked skies **contain information from the HiPS surveys
-`CDS/P/allWISE/color`, `CDS/P/WMAP/W/9yr` and `CDS/P/Fermi/color`, made available by CDS under the
+`CDS/P/2MASS/color`, `CDS/P/allWISE/color`, `CDS/P/WMAP/W/9yr` and `CDS/P/Fermi/color`, made available by CDS under the
 ODbL 1.0** (<https://opendatacommons.org/licenses/odbl/1-0/>). This work has made use of CDS HiPS
 (Aladin, <https://aladin.cds.unistra.fr/hips/>; Fernique et al. 2015, A&A 578, A114), CDS,
 Strasbourg Astronomical Observatory, France. Every tile URL answered `200` with
@@ -2057,7 +2093,9 @@ stripes are the survey's own: WISE's 1.56-degree atlas frames and its scan patte
 header): the Digitized Sky Survey and Mellinger's panorama (not ours to use); Planck (`obs_copyright`
 "EUROPEAN SPACE AGENCY. ALL RIGHTS RESERVED" on release 3, no licence text found for release 2:
 WMAP is NASA's microwave sky); Finkbeiner's H-alpha composite and ROSAT (no licence text found);
-GALEX (NASA's, but its order-3 sky is 4.9 MB of survey masks along the Galactic plane).
+GALEX (NASA's, but its order-3 sky is 4.9 MB of survey masks along the Galactic plane); SPHEREx's
+DR1 all-sky cube at IRSA (NASA's newest infrared sky, but its HiPS `properties` give
+`hips_copyright = Caltech/IPAC` and no licence line, read 2026-11-24: left out until IRSA confirms).
 
 ## 3i. Constellation pictures, borders and other peoples' skies — Stellarium and CDS
 

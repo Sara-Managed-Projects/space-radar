@@ -119,7 +119,7 @@ pictures, sizes and downloads at [models.spaceradar.ai](https://models.spacerada
 apart from the map: the model alone, to turn and zoom.
 
 ```html
-<iframe src="https://www.spaceradar.ai/model/?id=hubble" title="Hubble Space Telescope, 3D model by Space Radar" width="600" height="450" loading="lazy" style="border:0;max-width:100%"></iframe>
+<iframe src="https://www.spaceradar.ai/model/?id=hubble" title="Hubble Space Telescope, 3D model by Space Radar" width="600" height="450" loading="lazy" allow="xr-spatial-tracking" style="border:0;max-width:100%"></iframe>
 ```
 
 | parameter | what it does | example |
@@ -135,6 +135,14 @@ apart from the map: the model alone, to turn and zoom.
 - **What a reader gets:** drag to turn, scroll or pinch to zoom, the arrow keys and `+`/`-` once the frame has focus,
   double-click or the reset button to frame the model again, and a button that stops the turning (motion that lasts
   longer than five seconds can be paused, WCAG 2.2.2). The name links to the model's page on models.spaceradar.ai.
+- **View in your room** (augmented reality): on an Android phone with Google Play Services for AR, Chrome's own
+  WebXR places the model on the floor through the camera, at its real size (the files are in metres) or, for a craft
+  bigger than a room, 1.5 m across. It runs on the page's own three.js and fetches nothing more until it is pressed
+  (then only `ar.js` from this site). To let it run inside your frame, add `allow="xr-spatial-tracking"` to the
+  `<iframe>`; without it the button opens the viewer on its own page instead. iPhone and iPad get a note, not a
+  button: AR Quick Look needs USDZ files, which this project does not make yet. Google's Scene Viewer is not used:
+  its documented glTF support does not include the compression our files need. The words follow `?lang=` (one of the
+  map's eleven languages) or the browser's own.
 - **Credit:** the models are under this repository's MIT licence. Say where it is from, for example "Hubble Space
   Telescope 3D model by Space Radar (spaceradar.ai), MIT License"; each model page has the line to copy.
 - **Where the list comes from:** `scripts/models_catalog.py` reads `registry/models.yaml` and keeps the rows this project

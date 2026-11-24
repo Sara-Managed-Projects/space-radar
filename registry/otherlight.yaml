@@ -14,7 +14,10 @@
 #
 # WHICH SURVEYS, AND WHICH NOT. A band is here only if (a) the mission's data are NASA's, which
 # does not claim copyright on them, and the HiPS `properties` file read on `checked:` says so in
-# `obs_copyright` / `prov_progenitor`, and (b) the tiles answered 200 with
+# `obs_copyright` / `prov_progenitor`, OR (2026-11-24, forge #565) the data are served by NASA's
+# own archive IRSA, whose terms put its public data under CC0 "as per NASA policy" and name the few
+# that are not (https://irsa.ipac.caltech.edu/data_use_terms.html: Euclid, the DSS), and the
+# mission says so of its own pictures; and (b) the tiles answered 200 with
 # `Access-Control-Allow-Origin: *` to a request carrying our Origin on that day. Refused, with the
 # reason, so nobody adds them back without new evidence:
 #   CDS/P/DSS2/color            plates (c) Caltech/ROE/AAO, terms on request to STScI
@@ -30,6 +33,18 @@
 #                               Galactic plane is survey masks and bright-star artefacts: not a
 #                               picture of the ultraviolet sky at this scale. Left for the
 #                               streaming reader at narrow fields (filed).
+#   ivo://IPAC/P/SPHEREx/DR1/cube   NASA's newest infrared sky (102 wavelengths, 0.75 to 5 µm, HiPS
+#                               released by IRSA on 2026-11-01), and the one the research asked for
+#                               (forge #565). Its `properties` say obs_copyright = NASA/SPHEREx but
+#                               hips_copyright = Caltech/IPAC and carry NO hips_license line (read
+#                               2026-11-24). IRSA's general terms would make it CC0; the tiles' own
+#                               file does not say so. Left out until IRSA confirms (a question for
+#                               the maintainer to ask), and its tiles are a 102-frame PNG cube, not
+#                               a picture: baking a few frames is the work then.
+#   unWISE (Lang; Meisner et al.)   no unWISE survey is listed by CDS's MocServer or in IRSA's HiPS
+#                               list on 2026-11-24; AllWISE above is the mid-infrared sky.
+#   an epoch blink (NEOWISE years)  no all-sky HiPS of single epochs is published; the blink is
+#                               between wavelengths only.
 #
 # A ROW
 #   id          the band, as the chooser and copy/en.js `otherLight.bands` name it.
@@ -53,6 +68,35 @@ hips_licence:
   ack: "This work has made use of CDS HiPS (Aladin / hips2fits), CDS, Strasbourg Astronomical Observatory, France."
   page: https://aladin.cds.unistra.fr/hips/
 bands:
+  - id: nearinfrared
+    hips_id: CDS/P/2MASS/color
+    # CDS's own host answered 404 "currently unavailable" for every survey on 2026-11-24; IRSA's mirror of the same HiPS
+    # (`hips_service_url_2`, "public mirror unclonable": tile by tile, never whole) served the tiles and the picture.
+    base: https://irsa.ipac.caltech.edu/data/hips/CDS/2MASS/Color
+    file: site/images/otherlight/nearinfrared.webp
+    frame: equatorial
+    max_order: 9
+    tile_width: 512
+    format: jpg
+    stream: true
+    gain: 2.5
+    colours: "red 2.16 µm (Ks), green 1.66 µm (H), blue 1.23 µm (J)"
+    mission: 2MASS
+    credit: NASA/NSF, UMass and IPAC/Caltech (2MASS)
+    licence: "IRSA public data, CC0 as per NASA policy; 2MASS: images in the public domain, acknowledgement asked"
+    terms: https://www.ipac.caltech.edu/2mass/releases/allsky/faq.html
+    # t_min 50600 and t_max 51941 (MJD): 7 June 1997 to 7 February 2001, the two telescopes' survey years.
+    observed: {taken: "1997-06..2001-02", by: "2MASS, J, H and Ks"}
+    checked: 2026-11-24
+    evidence: "obs_copyright = University of Massachusetts & IPAC/Caltech; prov_progenitor = IPAC/NASA; hips_copyright = CNRS/Unistra; hips_license = ODbL-1.0; obs_description: Funding is provided primarily by NASA and the NSF"
+    cors: "200, Access-Control-Allow-Origin: * (IRSA mirror: Norder3/Allsky.jpg 1 031 257 B; Norder5/Dir0/Npix1234.jpg 80 638 B)"
+    # 2MASS's own words (the FAQ above, read 2026-11-24): the acknowledgement "This publication makes use of data products
+    # from the Two Micron All Sky Survey, which is a joint project of the University of Massachusetts and the Infrared
+    # Processing and Analysis Center/California Institute of Technology, funded by the National Aeronautics and Space
+    # Administration and the National Science Foundation", and "Images in the 2MASS Image Galleries are in the public
+    # domain". IRSA's terms (https://irsa.ipac.caltech.edu/data_use_terms.html, read 2026-11-24): "Most data served by IRSA
+    # are public, with no usage restrictions, and fall under a CC0 license as per NASA policy"; the exceptions it names are
+    # Euclid and the Digitized Sky Survey.
   - id: infrared
     hips_id: CDS/P/allWISE/color
     base: https://alasky.cds.unistra.fr/AllWISE/RGB-W4-W2-W1

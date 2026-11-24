@@ -800,24 +800,36 @@ Object.assign(COPY, {
   // show. Each note is the honest line: which light, and that its colours are not an eye's.
   otherLight: {
     panelTitle: 'Other light',
-    bands: { visible: 'Visible', infrared: 'Infrared', microwave: 'Microwave', gamma: 'Gamma rays' },
+    bands: { visible: 'Visible', nearinfrared: 'Near infrared', infrared: 'Mid infrared', microwave: 'Microwave', gamma: 'Gamma rays' },
     notes: {
       visible: 'The sky as eyes and cameras see it.',
-      infrared: 'The sky in infrared, false colour: warm dust and cool stars.',
+      nearinfrared: 'Near infrared, false colour: starlight through the dust.',
+      infrared: 'Mid infrared, false colour: warm dust and cool stars.',
       microwave: 'Microwaves, as brightness: the Galaxy over the oldest light.',
       gamma: 'Gamma rays, false colour: pulsars, blazars, cosmic-ray glow.',
     },
     // What the survey's own composite shows as red, green and blue (the buttons' tooltips).
     colours: {
+      nearinfrared: 'Red is 2.2 µm, green 1.7 µm, blue 1.2 µm (2MASS)',
       infrared: 'Red is 22 µm, green 4.6 µm, blue 3.4 µm (WISE)',
       microwave: 'One band, 94 GHz, drawn as brightness (WMAP)',
       gamma: 'Red is 0.3 to 1 GeV, green 1 to 3, blue above 3 (Fermi)',
     },
     mixLabel: 'From the visible sky to {band}',
+    mixLabelFrom: 'From {from} to {band}',
     mixValue: '{pct} % {band}',
+    // Forge #565: the slider can start from a second band instead of the visible sky.
+    fromLabel: 'From',
+    fromGroup: 'The light the slider starts from',
+    blink: 'Blink',
+    blinkTitle: 'Jump to the other end of the slider',
+    // Why two lights show different skies: a pair's own sentence (key "<from>_<to>", either order), or the general one.
+    whyPair: { nearinfrared_infrared: 'Near infrared sees past the dust; mid infrared sees it glow.' },
+    whyAny: 'Two lights, one sky: each shows what the other hides.',
     loading: 'Fetching the picture of the whole sky.',
     failed: 'That picture did not arrive. The sky is as it was.',
     creditLead: 'Survey: ',
+    creditAnd: ' and ',
     creditTail: '. Tiles: CDS, Strasbourg.',
   },
 
@@ -1263,6 +1275,15 @@ Object.assign(COPY, {
       redTitle: 'Turn the page red to keep your eyes used to the dark',
       honesty: 'Stars measured, planets computed, air modelled, land drawn.',
     },
+  },
+
+  // The three questions at the end of a trip (forge #566, ui/tripquiz.js): each answered by one of the trip's own
+  // stops. Which answer is right, and the card words it rests on, are registry/trip-quizzes.yaml
+  // (tests/test_trip_quiz.py holds them together); {answer} is the right answer, {title} a stop's title.
+  // The end card's button (ui/tripframe.js, forge #566); the questions themselves are copy/en.tripquiz.js, fetched with the quiz.
+  tripQuiz: {
+    "open": "Three questions",
+    "openTitle": "Three questions about this trip, each answered by one of its stops"
   },
 
   // The controls hint (spec 0068 task 2, ui/keyhint.js): once per visitor, bottom-right. Each
