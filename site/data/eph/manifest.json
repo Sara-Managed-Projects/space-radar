@@ -8,7 +8,7 @@
   "credit": "NASA/JPL-Caltech, Solar System Dynamics Group, Horizons On-Line Ephemeris System"
  },
  "frame": "ecliptic J2000 axes (Horizons REF_PLANE=ECLIPTIC, REF_SYSTEM=ICRF), relative to each segment's centre; km and km/s; times UTC (TIME_TYPE=UT)",
- "retrieved": "2026-11-14",
+ "retrieved": "2026-11-23",
  "craft": [
   {
    "id": "deep-voyager-1",
@@ -546,19 +546,19 @@
    "name": "Juno",
    "command": "-61",
    "file": "deep-juno.bin",
-   "bytes": 140144,
-   "sha256": "bd71ed0a592f7e2d30a74999aaa7304499226e9f754ec0974816c5aa834ebf7e",
+   "bytes": 162544,
+   "sha256": "2bf0e753615eea9aa075488ca62ff7eaf6ae05a7d323468d4cb80214760edd70",
    "span": [
     "2011-08-05T17:19:00Z",
-    "2027-01-20T23:00:00Z"
+    "2028-09-02T01:00:00Z"
    ],
-   "samples": 4872,
+   "samples": 5672,
    "solution": "Juno_merged",
    "header_revised": "Nov 03, 2026",
-   "retrieved": "2026-11-07",
-   "fit_max_km": 59.998,
+   "retrieved": "2026-11-23",
+   "fit_max_km": 59.999,
    "heldout": {
-    "n": 316,
+    "n": 370,
     "max_km": 64.309
    },
    "good_to_km": 100.0,
@@ -650,24 +650,24 @@
     {
      "centre": "jupiter",
      "from": "2016-06-05T00:00:00Z",
-     "to": "2027-01-20T23:00:00Z",
-     "samples": 4509,
+     "to": "2028-09-02T01:00:00Z",
+     "samples": 5309,
      "tol_km": 60.0,
-     "fit_max_km": 59.998,
-     "fetched": 99319,
+     "fit_max_km": 59.999,
+     "fetched": 114678,
      "step_min_s": 900.0,
      "step_max_s": 489600.0,
      "steps": {
-      "10 min to 1 h": 887,
-      "1 h to 6 h": 980,
-      "6 h to 1 d": 945,
-      "1 d to 10 d": 1696
+      "10 min to 1 h": 1045,
+      "1 h to 6 h": 1170,
+      "6 h to 1 d": 1126,
+      "1 d to 10 d": 1967
      },
      "closest": {
       "at": "2025-06-08T20:30:00Z",
       "km": 71378.8
      },
-     "passes": 92,
+     "passes": 110,
      "centre_source": "Juno_merged"
     }
    ],

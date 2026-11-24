@@ -126,9 +126,9 @@ check(total <= 2e6, `the files are ${total} bytes in all, over 2 MB`);
   const far = propagate(v1, at('2040-01-01T00:00:00Z'));
   check(far && !far.eph && far.cls === 'sample', 'beyond the file the stand-in answers, as before');
   const juno = rec('deep-juno');
-  // forge #87: the file now runs to 20 January 2027 (JPL's planning prediction); after that the stand-in
-  const now = propagate(juno, at('2027-03-01T00:00:00Z'));
-  check(now && !now.eph && now.frame === 'jupiter-inertial', 'Juno after its file ends (20 January 2027) is the map\'s own stand-in');
+  // forge #87, then PR #1471: the file now runs to 2 September 2028 (JPL's end-of-mission prediction); after that the stand-in
+  const now = propagate(juno, at('2028-11-01T00:00:00Z'));
+  check(now && !now.eph && now.frame === 'jupiter-inertial', 'Juno after its file ends (2 September 2028) is the map\'s own stand-in');
   const inFile = propagate(juno, at('2026-11-08T00:00:00Z'));
   check(inFile && inFile.eph === true, 'Juno today (8 November 2026) is drawn from its file');
   const then = propagate(juno, at('2016-07-05T03:53:00Z'));
