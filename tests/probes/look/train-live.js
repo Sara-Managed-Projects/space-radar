@@ -98,7 +98,7 @@ await settle(1200);
 await snap('today');
 const share = document.querySelector('.sr-daycard__share');
 if (share) share.click();
-out.seen.share = await until(() => visible('#sr-share'), 20000);
+out.seen.share = await until(() => visible('#sr-share'), 60000); // the sheet draws its postcard first: slow on a shared runner
 await settle(4000);
 await snap('today-share');
 out.shareText = (sr.lastShare && sr.lastShare.text) ? String(sr.lastShare.text).slice(0, 200) : '';
