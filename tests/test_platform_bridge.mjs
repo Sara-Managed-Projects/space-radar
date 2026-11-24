@@ -94,6 +94,7 @@ const F = await import(join(JS, 'ui/favs.js'));
   for (const h of yes) check(B.platformAllowed({ hostname: h, search: '' }), `the platform may run on ${h}`);
   for (const h of no) check(!B.platformAllowed({ hostname: h, search: '' }), `and never on ${JSON.stringify(h)}`);
   check(!B.platformAllowed({ hostname: 'www.spaceradar.ai', search: '?sr-noplatform' }) && !B.platformAllowed({ hostname: 'www.spaceradar.ai', search: '?lang=de&sr-noplatform=1' }), '?sr-noplatform turns it off');
+  check(!B.platformAllowed({ hostname: 'www.spaceradar.ai', search: '?embed=1' }) && !B.platformAllowed({ hostname: 'www.spaceradar.ai', search: '?lang=de&embed=1' }) && B.platformAllowed({ hostname: 'www.spaceradar.ai', search: '?embed=10' }), 'an embed (?embed=1) never loads the platform');
   check(B.platformAllowed({ hostname: 'www.spaceradar.ai', search: '?sr-noplatformer=1' }), 'and only that key does');
   check(!B.platformAllowed(null) && !B.platformAllowed({}), 'no location, no platform');
 }

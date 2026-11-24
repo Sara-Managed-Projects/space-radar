@@ -60,13 +60,20 @@ export function platformAllowed(loc) {
   if (!loc) return false;
   const host = String(loc.hostname || '').toLowerCase().replace(/\.$/, '');
   if (host !== HOST && !host.endsWith(`.${HOST}`)) return false;
-  return !/[?&]sr-noplatform(?:[=&]|$)/.test(String(loc.search || ''));
+  const q = String(loc.search || '');
+  // an embed (?embed=1, docs/EMBEDDING.md) stores nothing and shows no cookie notice inside someone else's page
+  return !/[?&]sr-noplatform(?:[=&]|$)/.test(q) && !/[?&]embed=1(?:[&#]|$)/.test(q);
+}
+
+/** Inside a frame (an embed on another site, or any page framing ours) the platform stays away. */
+function framed(win) {
+  try { return win.self !== win.top; } catch { return true; }
 }
 
 /** Add the platform's script once, where the host check passes. Answers whether a tag is (or was already) there. */
 export function loadPlatform(win = typeof window !== 'undefined' ? window : null) {
   try {
-    if (!win || !win.document || !platformAllowed(win.location)) return false;
+    if (!win || !win.document || !platformAllowed(win.location) || framed(win)) return false;
     queue(win);
     const doc = win.document;
     if (doc.querySelector(`script[src="${PLATFORM_SRC}"]`)) return true;
