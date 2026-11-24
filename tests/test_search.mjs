@@ -285,6 +285,7 @@ check(JSON.stringify(findMatches(index, 'starlink').hits.map((h) => h.record.id)
     'ui/shell.js': 'Escape only, and only for a view of its own (Sources, Passport)',
     'ui/cards.js': 'Escape only: closes the card',
     'ui/isscam.js': 'Escape only, and only while focus is inside the camera panel: closes it',
+    'ui/yourstar.js': 'Escape only, and only while focus is inside the birthday-star panel: closes it',
     'ui/sharesheet.js': 'Escape and Tab only, while the share sheet is open and holds the focus',
     'ui/whattoshow.js': 'Tab only, on its own panel, and only at the panel\'s first and last control (b200-s1-fixes, forge #49): a field inside keeps every key',
     'ui/chooser.js': 'Escape only, while the pick list is open',
