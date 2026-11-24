@@ -128,6 +128,15 @@ html.sr-phone.sr-launchday:not([data-sheet='full']) .sr-top__line {
   align-items: center;
 }
 
+/* With the line under the search up, the scene note stands under it (css/ui.css), where the phone's search popover reaches
+   while it is open: the ui gate measured the note's Sources and close at 43 px of reach in the search's empty state at
+   390 x 844 (2026-11-24, the first CI run with a chip up: Gaia DR4's day, forge #547). The note is about the scene, which
+   the open search covers, so it waits until the search closes. */
+html.sr-phone.sr-launchday:has(.sr-top .sr-search__pop:not([hidden])) .sr-scenenote {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 html.sr-phone.sr-launchday:not(.sr-card-open) .sr-liveline {
   display: none;
 }
