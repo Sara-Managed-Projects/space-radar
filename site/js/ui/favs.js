@@ -109,7 +109,8 @@ export function wireHeart(b, words, opts = {}) {
   };
   const paint = (on) => { b.setAttribute('aria-pressed', on ? 'true' : 'false'); label(); };
   b.setAttribute('data-sr-fav-host', '');
-  if (!b.hasAttribute('aria-pressed') || !signedIn) paint(readFavs(storage).includes(key));
+  // getAttribute, not hasAttribute: the same answer, and the only reads the cards' small test elements give (tests/test_share.mjs).
+  if (b.getAttribute('aria-pressed') == null || !signedIn) paint(readFavs(storage).includes(key));
   else label();
   const win = doc && doc.defaultView;
   if (win && typeof win.MutationObserver === 'function') new win.MutationObserver(label).observe(b, { attributes: true, attributeFilter: ['aria-pressed'] });
