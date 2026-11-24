@@ -275,6 +275,14 @@ export function createRail(ctx, host) {
   // --- The repository: GitHub's own mark, after the eye ---------------------------------------------
   const gitHub = createGitHubMark(root, { className: 'sr-rail__btn sr-rail__btn--github' });
 
+  // --- The account: an empty slot for the platform (ui/platform-bridge.js), filled by ui/platformtrack.js only when the
+  // platform has loaded and said who is here. On localhost, in a fork or offline it stays hidden and empty.
+  const account = document.createElement('div');
+  account.className = 'sr-rail__slot';
+  account.setAttribute('data-sr-account', '');
+  account.hidden = true;
+  root.appendChild(account);
+
   // --- More: the phone's menu of the three tools that fold away (ON A PHONE above) -----------------
   const moreBtn = document.createElement('button');
   moreBtn.type = 'button';

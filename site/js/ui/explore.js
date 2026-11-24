@@ -45,6 +45,7 @@ import { createNext, auroraItem } from './next.js';
 import { tagLines } from './cardgate.js';
 import { revealInColumn } from './reveal.js';
 import { panelKey } from './shell.js';
+import { heartButton } from './favs.js';
 
 export const TABS = ['earth', 'planets', 'stars', 'tonight'];
 const TARGETS = {
@@ -948,6 +949,7 @@ export function createExplore(ctx, host) {
     // visitor is on (or that leaving a trip gave focus back to) would drop focus to <body>.
     const active = typeof document !== 'undefined' ? document.activeElement : null;
     const focusedTrip = active && hostT.grid.contains(active) && active.dataset ? active.dataset.trip : null;
+    const focusedFav = active && hostT.grid.contains(active) && active.getAttribute ? active.getAttribute('data-sr-fav') : null;
     while (hostT.grid.firstChild) hostT.grid.removeChild(hostT.grid.firstChild);
     const nowMs = ctx.clock && typeof ctx.clock.now === 'function' ? ctx.clock.now() : Date.now();
     for (const row of shown) {
@@ -976,8 +978,14 @@ export function createExplore(ctx, host) {
         const done = () => { starting(row.id, false); if (resume && trip.state.tourId === row.id) trip.jumpTo(resume.index); };
         if (begun && typeof begun.then === 'function') { starting(row.id, true); begun.then(done, done); } else if (resume) done();
       });
-      hostT.grid.appendChild(card);
+      // The card and its heart (ui/favs.js) side by side in one cell: a button cannot hold another button.
+      const cell = el('div', 'sr-tripcell');
+      cell.appendChild(card);
+      const heart = heartButton(`trip:${row.id}`, { add: t(COPY.favs.addTrip, { name: row.title }), remove: t(COPY.favs.removeTrip, { name: row.title }) }, { className: 'sr-tripcell__fav' });
+      cell.appendChild(heart);
+      hostT.grid.appendChild(cell);
       if (focusedTrip && row.id === focusedTrip) card.focus({ preventScroll: true });
+      if (focusedFav && focusedFav === `trip:${row.id}`) heart.focus({ preventScroll: true });
     }
     hostT.more.hidden = rows.length <= TRIPS_SHOWN;
     // The ones that cannot run are below the fold: say there are some, and why (public #241).

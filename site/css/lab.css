@@ -21,8 +21,8 @@ main.sim>*{min-width:0}
 .sim .controls label{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.15rem .8rem;font-size:.86rem;line-height:1.4;color:var(--dim)}
 .sim .controls label input{grid-column:1/-1;width:100%;min-height:44px;margin:0;accent-color:var(--atm)}
 .sim .controls output{font:400 .86rem/1.4 var(--mono);color:var(--tx);font-variant-numeric:tabular-nums}
-.sim button{justify-self:start;display:inline-flex;align-items:center;min-height:44px;padding:0 1.4rem;border:0;border-radius:999px;background:var(--ember);color:var(--ink-ember);font:600 .95rem/1 var(--sans);cursor:pointer;transition:filter .2s,translate .2s}
-.sim button:hover{filter:brightness(1.1);translate:0 -1px}
+.sim button:not(.ui-btn){justify-self:start;display:inline-flex;align-items:center;min-height:44px;padding:0 1.4rem;border:0;border-radius:999px;background:var(--ember);color:var(--ink-ember);font:600 .95rem/1 var(--sans);cursor:pointer;transition:filter .2s,translate .2s}
+.sim button:not(.ui-btn):hover{filter:brightness(1.1);translate:0 -1px}
 
 /* What is and is not to scale, and how it was made. */
 .sim .honest{margin:0 0 1.1rem;padding:.9rem 1.1rem;max-width:34rem;border-radius:14px;background:var(--panel);box-shadow:inset 3px 0 0 var(--ember),0 0 0 1px var(--line);color:var(--dim);font-size:.86rem;line-height:1.5}
@@ -32,6 +32,9 @@ main.sim>*{min-width:0}
 .sim .srcl{margin:0 0 .4rem;font-size:.86rem;line-height:1.5;color:var(--dim);white-space:pre-wrap;overflow-wrap:anywhere}
 .sim .more{display:flex;flex-wrap:wrap;gap:0 1.2rem;margin:0;padding-bottom:1rem;font-size:.95rem}
 .sim .more a{display:inline-flex;align-items:center;min-height:44px}
+/* The heart (js/ui/favs.js through js/platform-boot.js; scripts/gen_lab_index.py writes it between chrome:fav markers): the control set's icon button, filled when pressed. */
+.sim .more .sr-heart{align-self:center}
+.sim .sr-heart[aria-pressed='true'] svg{fill:currentColor}
 
 @media(min-width:900px){
  main.sim{grid-template-columns:minmax(0,1fr) 25rem;padding-top:2rem}

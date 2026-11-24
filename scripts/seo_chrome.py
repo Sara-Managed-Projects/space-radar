@@ -7,7 +7,8 @@ filled for a page whose site root is `root` ("../" from o/x.html, "../../" from 
                                               site's links in the kit's columns (scripts/seo_footer.py), and the Buy
                                               Me a Coffee link (templates/partials/coffee.html, css/coffee.css: a row
                                               under the brand; from 1416 px the cup alone in the page's right gutter)
-    styles(root)                              the stylesheets, tokens.css first, as a page's head links them
+    styles(root)                              the stylesheets, tokens.css first, as a page's head links them, and the
+                                              platform bridge (js/platform-boot.js: nothing but on spaceradar.ai)
     lab_styles(root)                          the same, and css/lab.css after them, as a Lab simulator's head links them
     lab_footer(root)                          the Lab simulators' slim footer: the brand and one row of site links, no
                                               coffee link and no subscribe band (the header's Subscribe goes to the band on the Lab's list)
@@ -32,7 +33,9 @@ def styles(root: str) -> str:
             f'<link rel="preload" href="{root}fonts/barlow-semi-condensed-600-latin.woff2" as="font" type="font/woff2" crossorigin>\n'
             f'<link rel="stylesheet" href="{root}css/tokens.css">\n'
             f'<link rel="stylesheet" href="{root}css/static.css">\n'
-            f'<link rel="stylesheet" href="{root}css/coffee.css">')
+            f'<link rel="stylesheet" href="{root}css/coffee.css">\n'
+            # The platform bridge (js/ui/platform-bridge.js): the Space Radar platform's script on spaceradar.ai only.
+            f'<script type="module" src="{root}js/platform-boot.js"></script>')
 
 
 def lab_styles(root: str) -> str:

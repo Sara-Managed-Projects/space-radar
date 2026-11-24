@@ -118,6 +118,37 @@ def stamp_chrome(text: str) -> str:
     return CHROME_FOOT.sub(lambda _: foot, CHROME_HEAD.sub(lambda _: head, text, count=1), count=1)
 
 
+# THE PLATFORM BRIDGE (the platform contract, js/ui/platform-bridge.js). Between the chrome:head markers, before </head>:
+# js/platform-boot.js, which adds the Space Radar platform's script on spaceradar.ai only, and css/controls.css for the
+# heart. Between the chrome:fav markers, first in the links under the simulator: the heart, `lab:<slug>`, which keeps the
+# simulator in this browser's favourites (sr:favs) with or without the platform. A file without the markers gets them.
+CHROME_PLATFORM = re.compile(r"<!-- chrome:head[^\n]*-->\n(?:.*?\n)?<!-- /chrome:head -->\n", re.S)
+CHROME_FAV = re.compile(r"<!-- chrome:fav[^\n]*-->(?:.*?)<!-- /chrome:fav -->", re.S)
+FAV_ADD = "Add this simulator to your favourites"
+FAV_REMOVE = "This simulator is in your favourites. Press to take it out"
+HEART_SVG = ('<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" '
+             'stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>')
+
+
+def stamp_platform(text: str, slug: str) -> str:
+    """A simulator's file with the platform bridge in its head and its heart under it. Pure; idempotent."""
+    head = ("<!-- chrome:head (written by scripts/gen_lab_index.py: the platform bridge, js/ui/platform-bridge.js; do not edit) -->\n"
+            '<link rel="stylesheet" href="../../css/controls.css">\n'
+            '<script type="module" src="../../js/platform-boot.js"></script>\n'
+            "<!-- /chrome:head -->\n")
+    if CHROME_PLATFORM.search(text):
+        text = CHROME_PLATFORM.sub(lambda _: head, text, count=1)
+    elif "</head>" in text:
+        text = text.replace("</head>", head + "</head>", 1)
+    fav = ("<!-- chrome:fav (written by scripts/gen_lab_index.py; do not edit) -->"
+           f'<button type="button" class="ui-btn ui-btn--icon ui-btn--sm sr-heart" data-sr-fav="lab:{esc(slug)}" aria-pressed="false" '
+           f'aria-label="{FAV_ADD}" title="{FAV_ADD}" data-sr-add="{FAV_ADD}" data-sr-remove="{FAV_REMOVE}">{HEART_SVG}</button>'
+           "<!-- /chrome:fav -->")
+    if CHROME_FAV.search(text):
+        return CHROME_FAV.sub(lambda _: fav, text, count=1)
+    return text.replace('<p class="more">', '<p class="more">' + fav, 1)
+
+
 def stamp_app_link(text: str, app: str | None) -> str:
     """A simulator's file with its way into the 3D map set from its row (or put back to the plain one). Pure."""
     want = f'<a id="sr-app" href="../../index.html{esc(app)}">See this in the 3D map</a>' if app else APP_PLAIN
@@ -269,7 +300,7 @@ def stamped() -> list[tuple[Path, str, str]]:
     out = []
     for p in sorted(LAB.glob("*/index.html")):
         text = p.read_text(encoding="utf-8")
-        out.append((p, text, stamp_chrome(stamp_app_link(text, (labs.get(p.parent.name) or {}).get("app")))))
+        out.append((p, text, stamp_platform(stamp_chrome(stamp_app_link(text, (labs.get(p.parent.name) or {}).get("app"))), p.parent.name)))
     return out
 
 
@@ -282,7 +313,7 @@ def main(argv: list[str]) -> int:
             print("site/lab/index.html is stale: run python3 scripts/gen_lab_index.py and commit it", file=sys.stderr)
             return 1
         if stale_links:
-            print(f"{len(stale_links)} simulator(s) carry a stale 3D-map link, header or footer ({stale_links[0].parent.name} ...): run python3 scripts/gen_lab_index.py", file=sys.stderr)
+            print(f"{len(stale_links)} simulator(s) carry a stale 3D-map link, header, footer or platform bridge ({stale_links[0].parent.name} ...): run python3 scripts/gen_lab_index.py", file=sys.stderr)
             return 1
         print(f"site/lab/index.html is current ({len(simulators())} simulators)")
         return 0

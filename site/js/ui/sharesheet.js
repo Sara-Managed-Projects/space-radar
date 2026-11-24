@@ -65,6 +65,7 @@ import '../copy/en.later.js';
 import { cardWords } from './cards.js';
 import { shareUrl, shareState, tripWords, appBase, toast } from './share.js';
 import { camValue } from './urlstate.js';
+import { sr } from './platform-bridge.js';
 import { makePostcard, pdfFromJpeg, saveBlob } from './printcompose.js';
 import { createSheet, sheetHeights } from './sheet.js';
 import { embedSnippet, embedState } from './embed.js';
@@ -822,11 +823,14 @@ export function createShareSheet(ctx) {
       return false;
     }
   }
-  copyBtn.addEventListener('click', () => cur && copy(shareText(cur.parts, 'copy'), S.copied));
-  copyLinkBtn.addEventListener('click', () => cur && copy(cur.parts.link, S.linkCopied));
+  // The platform hears which way a view left (ui/platform-bridge.js), never what it said.
+  const told = (method) => sr('track', 'share', { method, content_type: cur && cur.trip ? 'trip' : cur && cur.record ? 'object' : 'view' });
+  copyBtn.addEventListener('click', () => cur && (told('copy'), copy(shareText(cur.parts, 'copy'), S.copied)));
+  copyLinkBtn.addEventListener('click', () => cur && (told('link'), copy(cur.parts.link, S.linkCopied)));
 
   nativeBtn.addEventListener('click', async () => {
     if (!cur) return;
+    told('native');
     const nav = navigator;
     const p = cur.parts;
     let file = null;
@@ -850,6 +854,7 @@ export function createShareSheet(ctx) {
 
   jpegBtn.addEventListener('click', () => {
     if (!cur || !cur.made) return;
+    told('jpeg');
     saveBlob(cur.made.jpeg, cur.made.name);
     toast(COPY.print.saved);
   });
