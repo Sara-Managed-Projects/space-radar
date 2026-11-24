@@ -83,6 +83,7 @@ export const VIEWS = ['home', 'card', 'sources', 'trip', 'passport'];
 // b200-f1-find: begin -- Find (ui/find.js, forge #150/#152/#153): a pushed view like the sources sheet
 VIEWS.push('find');
 // b200-f1-find: end
+VIEWS.push('ops'); // research train (ops): live operations (ui/ops.js), a pushed view like Find
 /** The spec's line between the sidebar and the phone's sheet (0061 req 1 and 8). */
 export const DESKTOP_QUERY = '(min-width: 900px)';
 /**
@@ -110,6 +111,7 @@ export function sheetFor(view, from) {
   // b200-f1-find: begin -- Find comes up at half: what it lights is on the globe above it
   if (view === 'find') return 'half';
   // b200-f1-find: end
+  if (view === 'ops') return 'half'; // research train (ops): a row flies the globe above it
   if (view === 'card' || view === 'trip') return 'half';
   if (view === 'sources' || view === 'passport') return 'full';
   if (view === 'home') return from === 'sources' || from === 'passport' ? 'half' : from ? 'peek' : null;
@@ -136,6 +138,7 @@ export function crumbFor(under, info = {}, words = COPY) {
   }
   if (under === 'card') return String(info.card || '').trim() || S.card;
   if (under === 'sources' || under === 'passport' || under === 'find') return S[under];
+  if (under === 'ops') return (words.ops && words.ops.label) || S.search; // research train (ops): its words come with it (copy/en.ops.js)
   return S.search;
 }
 
@@ -352,6 +355,7 @@ export function createShell(ctx, opts = {}) {
   // b200-f1-find: begin -- the Find view (ui/find.js fills its host when it is first opened)
   const findHost = pushedView('find', 'sr-side__find', 'sr-side__sourceshost sr-side__findhost');
   // b200-f1-find: end
+  const opsHost = pushedView('ops', 'sr-side__ops', 'sr-side__sourceshost sr-side__findhost'); // research train (ops)
 
   // The trip view: empty until ui/tripframe.js seats its sheet in it (host('trip')).
   const tripView = el('div', 'sr-side__view sr-side__trip');
@@ -680,7 +684,7 @@ export function createShell(ctx, opts = {}) {
     if (e.key !== 'Escape' || e.defaultPrevented) return;
     if (stack.current() === 'sources' || stack.current() === 'passport') stepBack();
     // b200-f1-find: begin
-    else if (stack.current() === 'find' && !(document.activeElement && document.activeElement.closest && document.activeElement.closest('.sr-datejump'))) stepBack();
+    else if ((stack.current() === 'find' || stack.current() === 'ops') && !(document.activeElement && document.activeElement.closest && document.activeElement.closest('.sr-datejump'))) stepBack();
     // b200-f1-find: end
   });
 
@@ -743,7 +747,7 @@ export function createShell(ctx, opts = {}) {
   };
   // b200-f1-find: begin -- host('find'): the Find view's box
   const hostBefore = api.host;
-  api.host = (view) => (view === 'find' ? findHost : hostBefore(view));
+  api.host = (view) => (view === 'find' ? findHost : view === 'ops' ? opsHost : hostBefore(view));
   // b200-f1-find: end
   if (ctx) ctx.shell = api;
   return api;

@@ -129,6 +129,7 @@ labs:
   inverse-square-flashlight: {band: [14-16, 16-18], ngss: [5-ESS1-1], ks3: [light-waves], gcse: [], ib: [B.1], app: "#trip=outer-solar-system"}
   light-speed-road-trip: {band: [7-11, 11-14], ngss: [MS-ESS1-3], ks3: [light-waves, space-light-year], gcse: [], ib: [], app: "#at=neptune"}
   radio-ping-pong-with-mars: {band: [11-14, 14-16], ngss: [MS-ESS1-3], ks3: [light-waves, motion-speed], gcse: ["4.6.2"], ib: [], app: "#trip=mars-where-we-have-driven"}
+  light-time-to-the-spacecraft: {band: [11-14, 14-16], ngss: [MS-ESS1-3], ks3: [light-waves, motion-speed], gcse: ["4.6.2"], ib: [], app: "#at=voyager-1"}
   redshift-stripes: {band: [14-16, 16-18], ngss: [HS-ESS1-2], ks3: [], gcse: ["4.8.2"], ib: [C.5], app: "#stage=local-group"}
   stars-bunch-up-ahead: {band: [16-18, 18+], ngss: [], ks3: [], gcse: [], ib: [A.5], app: "#stage=stellar"}
   sunshine-by-planet: {band: [11-14, 14-16], ngss: [5-ESS1-1], ks3: [light-waves], gcse: [], ib: [B.1], app: "#trip=outer-solar-system"}

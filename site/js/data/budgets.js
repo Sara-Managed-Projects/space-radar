@@ -10,7 +10,7 @@ export const BUDGETS = {
   "phone_first_frame_ms": 15900,
   "boot_longest_task_ms": 3000,
   "boot_blocking_ms": 6000,
-  "deployed_boot_js_bytes": 2010000,
+  "deployed_boot_js_bytes": 2010700,
   "after_first_visit_bytes": 1992000,
   "embed_first_visit_bytes": 2105000,
   "audio_at_boot_bytes": 0,
@@ -93,5 +93,10 @@ export const BUDGETS = {
   "card_voice_total_kb": 34000,
   "stars3d_athyg_total_bytes": 40000000,
   "stars3d_athyg_node_bytes": 110000,
-  "stars3d_tiers_boot_bytes": 300
+  "stars3d_tiers_boot_bytes": 300,
+  "ops_view_bytes": 90000,
+  "ops_saved_copies_bytes": 40000,
+  "state_of_space_frozen_bytes": 12000,
+  "socrates_range_bytes": 400000,
+  "dsn_lines_draw_calls": 1
 };

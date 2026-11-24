@@ -141,7 +141,7 @@ your clicker.
 <td valign="top">
 <img src="assets/screenshots/lab.webp" alt="The Lab's Gravity Slingshot Steal simulator: a probe swinging past Jupiter, its speed against the Sun, and a note on what is and is not to scale">
 <h3>The Lab</h3>
-105 tiny simulators, one idea each, every number quoted from its source: orbits near a black hole,
+106 tiny simulators, one idea each, every number quoted from its source: orbits near a black hole,
 the rocket equation, a gravity slingshot, the seasons. Each is tagged by age and curriculum, and
 <a href="docs/ADD_A_SIMULATOR.md">you can add one</a> in a single HTML file.
 </td>

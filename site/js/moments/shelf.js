@@ -39,6 +39,9 @@ export const SHELF = [
   // b200-c3-learn: begin -- forge #153: a told story, no vehicle model (the satellite is the ringed mark, its pieces the cloud)
   { id: 'fengyun-1c', minutes: 4, picture: 250000000, pictureTop: 0.5, records: ['sat-25730'], hue: '14, 58, 52', models: [] },
   // b200-c3-learn: end
+  // research train (ops): begin -- forge #561: the first collision of two whole satellites, told; Iridium 33 wears the Iridium shape
+  { id: 'iridium-cosmos-2009', minutes: 3, picture: -20, pictureTop: 0.5, records: ['sat-24946', 'sat-22675'], hue: '214, 52, 58', models: [] },
+  // research train (ops): end
 ];
 
 /** The story a card for record `id` can replay, or null (the first, when several are about it: see `momentsFor`). */
@@ -74,6 +77,8 @@ const VEHICLES = [
 ];
 // b200-c3-learn: the satellite's own card (FENGYUN 1C, 1999-025A) offers its story; its pieces are FENGYUN 1C DEB and are not offered it
 VEHICLES.push({ id: 'fengyun-1c', rocket: /(?!)/, craft: /^fengyun[ -]?1c$/i });
+// research train (ops), forge #561: the two satellites' own cards (IRIDIUM 33, 1997-051C; COSMOS 2251, 1993-036A); their pieces are DEB and are not offered it
+VEHICLES.push({ id: 'iridium-cosmos-2009', rocket: /(?!)/, craft: /^(iridium 33|[ck]osmos[ -]2251)$/i });
 const CRAFT_LAYERS = new Set(['launches', 'stations', 'notable', 'active', 'deep-space', 'just-launched']);
 
 /**

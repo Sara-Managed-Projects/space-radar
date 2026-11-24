@@ -44,7 +44,8 @@ check(c18c && Math.abs(c18c.meta.sizeKm2 - 68.6) < 0.1, `20 square nautical mile
 const telica = recs.find((r) => r.name === 'Telica Volcano, Nicaragua');
 check(telica && telica.meta.kind === 'volcano' && telica.meta.sizeKm2 === null && telica.meta.agencies[0] === 'SIVolcano', 'a volcano has no size, and the Smithsonian is its source');
 check(E.sizeKm2(100, 'hectares') === 1 && E.sizeKm2(5, 'kts') === null && E.sizeKm2(null, 'acres') === null && E.sizeKm2(-3, 'acres') === null, 'an unknown unit or no number is no size, never a guess');
-check(E.eventKind({ categories: [{ id: 'severeStorms' }] }) === null && E.parseEonet({ events: [{ id: 'EONET_1', title: 'A storm', categories: [{ id: 'severeStorms' }], geometry: [{ date: '2026-10-01T00:00:00Z', type: 'Point', coordinates: [1, 2] }] }] }).length === 0, 'severe storms are the storms layer\'s and are not drawn twice');
+// research train (ops): eventKind knows a storm now, for the Earth events list; the LAYER still leaves it to the storms layer.
+check(E.eventKind({ categories: [{ id: 'severeStorms' }] }) === 'storm' && E.parseEonet({ events: [{ id: 'EONET_1', title: 'A storm', categories: [{ id: 'severeStorms' }], geometry: [{ date: '2026-10-01T00:00:00Z', type: 'Point', coordinates: [1, 2] }] }] }).length === 0, 'severe storms are the storms layer\'s and are not drawn twice');
 check(E.parseEonet('not json').length === 0 && E.parseEonet({ events: [{ id: 'x', categories: [{ id: 'volcanoes' }], geometry: [{ type: 'Polygon', coordinates: [] }] }] }).length === 0 && E.parseEonet([fires, fires], { nowMs: READ }).length === 4, 'a broken answer, a shape that is not a point and a repeat give nothing extra');
 check(E.parseEonet({ events: [{ id: 'y', title: 'Closed', closed: '2026-10-01T00:00:00Z', categories: [{ id: 'wildfires' }], geometry: [{ date: '2026-09-30T00:00:00Z', type: 'Point', coordinates: [1, 2] }] }] }).length === 0, 'a closed event is not drawn');
 

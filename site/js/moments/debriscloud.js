@@ -5,6 +5,7 @@
 //   fillCloud(out, pieces, cloud, tMs, origin) -> how many points were written into `out` (Float32Array, x y z each),
 //                                         metres in the stage's three.js axes, relative to `origin` (the floating origin)
 //   createDebrisCloud({count, colour, sizePx, pixelRatio}) -> { points, positions, set(n), dispose() }
+//   cloudFor(cloud, fx)                -> the cloud with the effect's plane at the event (`nodeDeg`, `argLatDeg`), or the row itself
 //
 // WHAT IT DRAWS. The pieces of a breakup of data/clouds.js (CLOUDS: Fengyun-1C, Cosmos 1408 ...) where its spreadAt()
 // puts them at the mission's instant: at the event every piece is at the perigee of the orbit the catalogue gives it
@@ -35,6 +36,17 @@ export function readPieces(doc) {
     if (Number.isFinite(apo) && Number.isFinite(peri) && Number.isFinite(inc)) out.push({ meta: { apogeeKm: apo, perigeeKm: peri, inclinationDeg: inc } });
   }
   return out;
+}
+
+/**
+ * The cloud an effect draws: data/clouds.js's row, with the parent's plane at the event when the effect gives it (`nodeDeg`, the node's
+ * right ascension, and `argLatDeg`, the argument of latitude at the event, both degrees; research train (ops), forge #561: the
+ * Iridium-Cosmos Moment, whose clouds are born at the point of the collision). Without them the row itself (the illustrative node 0).
+ */
+export function cloudFor(cloud, fx) {
+  if (!cloud || !fx || (!Number.isFinite(fx.nodeDeg) && !Number.isFinite(fx.argLatDeg))) return cloud;
+  const D = Math.PI / 180;
+  return { ...cloud, nodeRad: (Number(fx.nodeDeg) || 0) * D, argLatRad: (Number(fx.argLatDeg) || 0) * D };
 }
 
 const scratch = { x: 0, y: 0, z: 0 };

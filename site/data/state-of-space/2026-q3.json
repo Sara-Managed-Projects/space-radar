@@ -1,0 +1,143 @@
+{
+ "quarter": "2026-q3",
+ "as_of": "2026-09-30",
+ "frozen": "2026-11-24",
+ "how": "counted back",
+ "source": {
+  "id": "celestrak-satcat",
+  "publisher": "CelesTrak",
+  "url": "https://celestrak.org/pub/satcat.csv",
+  "format": "https://celestrak.org/satcat/satcat-format.php",
+  "read": "2026-11-23"
+ },
+ "note": "Counted back on 2026-11-24 from CelesTrak's satellite catalogue read on 2026-11-23: an object counts if it was launched, not yet down and already catalogued on 2026-09-30 (harvest/stateofspace.py). Launches are orbital launches that reached orbit, one international designator each. Working flags and people in space are not counted back.",
+ "numbers": [
+  {
+   "id": "earth_orbit",
+   "value": 34913,
+   "source": "celestrak-satcat",
+   "as_of": "2026-09-30",
+   "how": "counted back"
+  },
+  {
+   "id": "payloads",
+   "value": 20077,
+   "source": "celestrak-satcat",
+   "as_of": "2026-09-30",
+   "how": "counted back"
+  },
+  {
+   "id": "rocket_bodies",
+   "value": 2301,
+   "source": "celestrak-satcat",
+   "as_of": "2026-09-30",
+   "how": "counted back"
+  },
+  {
+   "id": "debris",
+   "value": 12527,
+   "source": "celestrak-satcat",
+   "as_of": "2026-09-30",
+   "how": "counted back"
+  },
+  {
+   "id": "starlink",
+   "value": 11154,
+   "source": "celestrak-satcat",
+   "as_of": "2026-09-30",
+   "how": "counted back"
+  },
+  {
+   "id": "owners",
+   "value": 106,
+   "source": "celestrak-satcat",
+   "as_of": "2026-09-30",
+   "how": "counted back"
+  },
+  {
+   "id": "launches_year",
+   "value": 225,
+   "source": "celestrak-satcat",
+   "as_of": "2026-09-30",
+   "how": "counted back"
+  },
+  {
+   "id": "beyond_earth",
+   "value": 164,
+   "source": "celestrak-satcat",
+   "as_of": "2026-09-30",
+   "how": "counted back"
+  },
+  {
+   "id": "came_down_30d",
+   "value": 114,
+   "source": "celestrak-satcat",
+   "as_of": "2026-09-30",
+   "how": "counted back"
+  }
+ ],
+ "payload_owners": [
+  {
+   "owner": "US",
+   "value": 13788,
+   "source": "celestrak-satcat",
+   "as_of": "2026-09-30"
+  },
+  {
+   "owner": "CIS",
+   "value": 1680,
+   "source": "celestrak-satcat",
+   "as_of": "2026-09-30"
+  },
+  {
+   "owner": "PRC",
+   "value": 1632,
+   "source": "celestrak-satcat",
+   "as_of": "2026-09-30"
+  },
+  {
+   "owner": "UK",
+   "value": 724,
+   "source": "celestrak-satcat",
+   "as_of": "2026-09-30"
+  },
+  {
+   "owner": "JPN",
+   "value": 237,
+   "source": "celestrak-satcat",
+   "as_of": "2026-09-30"
+  },
+  {
+   "owner": "TBD",
+   "value": 144,
+   "source": "celestrak-satcat",
+   "as_of": "2026-09-30"
+  },
+  {
+   "owner": "FR",
+   "value": 129,
+   "source": "celestrak-satcat",
+   "as_of": "2026-09-30"
+  },
+  {
+   "owner": "IND",
+   "value": 118,
+   "source": "celestrak-satcat",
+   "as_of": "2026-09-30"
+  },
+  {
+   "owner": "ITSO",
+   "value": 100,
+   "source": "celestrak-satcat",
+   "as_of": "2026-09-30"
+  },
+  {
+   "owner": "ESA",
+   "value": 99,
+   "source": "celestrak-satcat",
+   "as_of": "2026-09-30"
+  }
+ ],
+ "payload_owners_other": 1426,
+ "launch_year": 2026
+}

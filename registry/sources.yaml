@@ -132,6 +132,28 @@ sources:
     terms_recorded: 2026-09-07
     publisher: CelesTrak
 
+  # research train (ops): begin -- close approaches (forge #561). CelesTrak's SOCRATES Plus, the week's predicted
+  # conjunctions of active satellites with the whole catalogue, ranked by CelesTrak's own maximum probability
+  # (harvest/parsers/celestrak_socrates.py says the file and why only its first 400 kB are asked for, with a Range
+  # header). MEASURED 2026-11-24: 21 457 717 bytes whole, no CORS header, Last-Modified 2026-11-23 19:15 UTC; the usage
+  # policy (read 2026-11-24) says SOCRATES "updates every 14+ hours" and asks for one download per update, hence 24 h.
+  # The format page states no licence; the policy is about load, not reuse, so this is the same honest line as every
+  # CelesTrak row. We publish CelesTrak's numbers, labelled as theirs; we compute no probability of our own.
+  - id: celestrak-socrates
+    url: https://celestrak.org/SOCRATES/sort-maxProb.csv
+    auth: none
+    browser: false
+    cadence: 24h
+    freshness_max: 72h
+    parser: celestrak_socrates
+    outputs: [socrates.json]
+    attribution: "Close approaches: CelesTrak SOCRATES Plus (T. S. Kelso)"
+    licence: "Free to use under CelesTrak's usage policy (no licence text; the rate limits are enforced)"
+    terms_url: https://celestrak.org/usage-policy.php
+    terms_recorded: 2026-11-24
+    publisher: CelesTrak
+  # research train (ops): end
+
   # --- Who is aboard --------------------------------------------------------------------
   # RETIRED 2026-11-16: `open-notify-astros` (http://api.open-notify.org/astros.json). Its body had
   # not changed since mid-2024 -- nine names on the ISS (Kononenko, Chub, Caldwell Dyson, Dominick,
@@ -452,6 +474,26 @@ sources:
     terms_url: https://www.nasa.gov/nasa-brand-center/images-and-media/
     terms_recorded: 2026-10-09
     publisher: NASA EONET
+
+  # research train (ops): begin -- Earth events (forge #563): the two kinds the rows above do not ask for, so the
+  # "Earth events" list has all four of the issue's: severe storms and floods, open, with a report in the last 30
+  # days (2 storms and no flood on 2026-11-24, 9 147 bytes). MEASURED 2026-11-24: `Access-Control-Allow-Origin: *`.
+  # EONET's storms are JTWC's and NHC's advisories; the `storms` layer still draws GDACS's with their alert level.
+  # Same publisher, same terms and disclaimer as the two rows above (data/eonet.js says the disclaimer).
+  - id: eonet-storms-floods
+    url: https://eonet.gsfc.nasa.gov/api/v3/events?status=open&category=severeStorms,floods&days=30
+    auth: none
+    browser: true
+    cadence: 1h
+    freshness_max: 12h
+    parser: eonet
+    outputs: [eonet-storms-floods.json]
+    attribution: "Storms and floods: NASA EONET"
+    licence: "NASA content, generally not subject to copyright in the United States (read 2026-10-09)"
+    terms_url: https://www.nasa.gov/nasa-brand-center/images-and-media/
+    terms_recorded: 2026-10-09
+    publisher: NASA EONET
+  # research train (ops): end
 
   # Today's sunspot groups (data/sunregions.js). Measured by that file's header: CORS open, `max-age=60`.
   - id: swpc-solar-regions

@@ -73,6 +73,7 @@ EXPECTED_COUNTS = {
     "sdo_aia": 1,          # one picture: the Sun of the day (internal spec 0076 W1-d)
     "gibs_clouds": 1,      # 0078 r14-data: one satellite's picture in the fixture (a run saves up to three)
     "nowcoast_lightning": 1,  # 0078 r14-data: the newest 15-minute picture
+    "celestrak_socrates": 20,  # research train (ops): the first twenty close approaches of a SOCRATES sort-maxProb.csv
 }
 
 CELESTRAK_TEXT = "GP data has not updated since your last successful download"
@@ -562,7 +563,7 @@ ENTRY_KEYS = {"fetched_at", "valid_until", "items", "bytes", "duration_ms", "sta
 # Present only on a published row, and only when they apply (harvest/publish.py).
 OPTIONAL_ENTRY_KEYS = {"kept_after", "columns", "note"}
 # The files cut from a bigger one, listed in the manifest beside the registry's rows (harvest/publish.py derived()).
-DERIVED_IDS = {"celestrak-notable", "celestrak-geo", "celestrak-starlink-recent"}
+DERIVED_IDS = {"celestrak-notable", "celestrak-geo", "celestrak-starlink-recent", "state-of-space", "reentry-watch"}
 
 
 def assert_valid_index(tc: unittest.TestCase, doc: dict, source_ids: set[str]) -> None:

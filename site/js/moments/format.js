@@ -202,6 +202,8 @@ export function parseT(value, table) {
 const isNum = Number.isFinite;
 const isVec = (v, n = 3) => Array.isArray(v) && v.length === n && v.every(isNum);
 const sorted = (list) => list.every((x, i) => i === 0 || x.t >= list[i - 1].t);
+/** A procedural shape of scene/models.js, [klass, variant] (research train (ops), forge #561). */
+const isShape = (v) => Array.isArray(v) && v.length === 2 && v.every((x) => typeof x === 'string' && /^[a-z0-9-]+$/.test(x));
 
 /**
  * Everything wrong with a Moment, as sentences (an empty list is a valid one). `opts.models` is the list of model ids
@@ -256,7 +258,10 @@ export function validateMoment(m, opts = {}) {
   for (const v of vehicles) {
     if (!isMomentId(v.id)) say(`vehicle ${JSON.stringify(v.id)}: id`);
     // b200-c3-learn: `model: null` with `marker: true` is a craft there is no model of, drawn as the ringed mark only (forge #153)
-    if (v.model === null && v.marker !== true) say(`vehicle ${v.id}: model null is only for a vehicle drawn as its mark (marker: true)`);
+    // research train (ops), forge #561: `model: null` with `shape: [klass, variant]` is drawn with the app's own procedural shape
+    // (scene/models.js modelFor; Iridium 33 with the Iridium family's), at the shape's real size
+    if (v.shape !== undefined && !(v.model === null && isShape(v.shape))) say(`vehicle ${v.id}: shape is [klass, variant] of scene/models.js, with model null`);
+    if (v.model === null && v.marker !== true && !isShape(v.shape)) say(`vehicle ${v.id}: model null is only for a vehicle drawn as its mark (marker: true) or with a shape`);
     else if (v.model !== null && opts.models && !opts.models.includes(v.model)) say(`vehicle ${v.id}: model ${v.model} is not a row of registry/models.yaml`);
     if (!(v.lengthM > 0)) say(`vehicle ${v.id}: lengthM, its real length in metres`);
     if (v.path && !trajs[v.path]) say(`vehicle ${v.id}: path ${v.path} is not a trajectory`);
@@ -321,6 +326,8 @@ export function validateMoment(m, opts = {}) {
     if (typeof fx.cloud !== 'string' || typeof fx.file !== 'string' || !/^paths\/[\w.-]+\.json$/.test(fx.file)) say(`effect at ${fx.t}: a debris-cloud names its cloud (data/clouds.js) and its file under paths/`);
     if (!(isNum(fx.until) && fx.until > fx.t)) say(`effect at ${fx.t}: a debris-cloud needs until after t`);
     if (fx.say !== undefined) need(fx.say, `effect at ${fx.t}`);
+    // research train (ops): the parent's plane at the event (moments/debriscloud.js cloudFor), degrees
+    for (const k of ['nodeDeg', 'argLatDeg']) if (fx[k] !== undefined && !isNum(fx[k])) say(`effect at ${fx.t}: ${k} is a number of degrees`);
   }
   if (m.drawn !== undefined) need(m.drawn, 'drawn');
   if (m.footFold !== undefined && typeof m.footFold !== 'boolean') say('footFold is true or false');

@@ -127,7 +127,7 @@ Object.assign(COPY, {
   // The card of a wildfire, a volcano or an iceberg (ui/cards.js; data/eonet.js says what each
   // field is). Nothing here is a number: the dates, the size and the names are EONET's.
   earthEvent: {
-    kinds: { wildfire: 'Fire', volcano: 'Erupting volcano', iceberg: 'Iceberg' },
+    kinds: { wildfire: 'Fire', volcano: 'Erupting volcano', iceberg: 'Iceberg', storm: 'Severe storm', flood: 'Flood' }, // storm, flood: research train (ops), the Earth events list
     rows: { kind: 'What it is', reported: 'Last report', since: 'Erupting since', first: 'First reported', size: 'Size', where: 'Where', by: 'Reported by' },
     sizeValue: '{n} km²',
     sizeSmall: 'under 1 km²',

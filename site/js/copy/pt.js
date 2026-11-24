@@ -5818,6 +5818,48 @@ COPY.momentStories['fengyun-1c'] = {
   "srcWiki": "Wikipédia, 2007 Chinese anti-satellite missile test: a velocidade de aproximação"
 };
 // b200-c3-learn: end
+// research train (ops): the Iridium-Cosmos Moment: begin -- copy/en.moments.iridium.js and its shelf card (forge #561), machine-drafted
+COPY.momentShelf.cards['iridium-cosmos-2009'] = {
+  "title": "2009: Iridium 33 e Kosmos 2251",
+  "when": "10 de fevereiro de 2009 até hoje",
+  "blurb": "Um satélite telefônico em funcionamento e um russo já desativado colidem a 789 km sobre a Sibéria, e seus 2 370 pedaços catalogados viram duas nuvens ao redor da Terra."
+};
+COPY.momentStories['iridium-cosmos-2009'] = {
+  "title": "2009: Iridium 33 e Kosmos 2251",
+  "blurb": "Dois satélites se encontram por acidente a 789 km sobre a Sibéria, e cada um vira uma nuvem de pedaços que ainda circula a Terra.",
+  "chBefore": "Dois satélites",
+  "chClose": "Aproximação",
+  "chHit": "A colisão",
+  "chRing": "Dois anéis",
+  "chDays": "Dias",
+  "chFan": "Abrindo em leque",
+  "chShell": "Três anos depois",
+  "chToday": "Hoje",
+  "c1a": "10 de fevereiro de 2009, quinze minutos antes. O Iridium 33, um satélite em funcionamento da rede telefônica Iridium, de 556 kg, voa para o norte sobre o Ártico a cerca de 789 km de altitude.",
+  "c1b": "O Kosmos 2251, um satélite militar russo de 900 kg, voa para o sul numa órbita inclinada 74 graus. Estava fora de serviço desde 1995 e não tinha motor para se desviar.",
+  "c2a": "Suas trajetórias se cruzam sobre a península de Taimyr, na Sibéria. A triagem do CelesTrak daquele dia previa que passariam a 584 m, e não era a passagem mais próxima da lista.",
+  "c2b": "Esta é a forma da família Iridium, em tamanho real: um corpo de 3,1 m de comprimento com asas de 9,4 m de ponta a ponta. O Kosmos 2251 não tem modelo aqui; visto de longe, é uma marca com anel.",
+  "c3a": "16:55:59 UTC: eles se encontram quase em ângulo reto, a cerca de 11,7 km/s um contra o outro, e ambos se despedaçam.",
+  "c4a": "Duas nuvens, não uma: os pedaços de cada satélite ficam perto da própria órbita, e formam-se dois anéis que se cruzam onde os satélites se cruzaram.",
+  "c5a": "Um pedaço mais alto leva mais tempo para dar a volta. Volta após volta, cada nuvem se estica ao longo da órbita.",
+  "c6a": "O achatamento da Terra gira cada plano num ritmo que depende da altitude e da inclinação. Os pedaços do Kosmos 2251, inclinados 74 graus, se abrem em leque cerca de quatro vezes mais rápido que os do Iridium polar.",
+  "c7a": "Em 22 de junho de 2012, o CelesTrak contava 598 pedaços do Iridium 33, 93 já caídos, e 1 603 do Kosmos 2251, 222 caídos.",
+  "c8a": "Hoje o catálogo tem 656 pedaços do Iridium 33 e 1 714 do Kosmos 2251; 115 e 604 continuam em órbita, mais de dezessete anos depois.",
+  "c8b": "As contagens são medidas. A imagem é um modelo: os sobreviventes de hoje nas órbitas de hoje, espalhados para trás até o instante da colisão.",
+  "pathIridium": "O Iridium 33 como um círculo a 789 km (NASA ODQN 13(2)), inclinado 86,4 graus e rumo ao norte (CelesTrak), passando por um ponto que escolhemos na península de Taimyr; sua órbita real ficava a cerca de 15 km dele",
+  "pathKosmos": "O Kosmos 2251 como um círculo na mesma altitude, inclinado 74,0 graus e rumo ao sul, passando pelo mesmo ponto: os dois se encontram a 101,5 graus e 11,55 km/s, perto dos 11,7 publicados",
+  "cloudNote": "Os pedaços são os 115 do Iridium 33 e os 604 do Kosmos 2251 que o catálogo ainda mantém, nas órbitas que ele dá hoje, espalhados a partir do ponto da colisão por um modelo (movimento de dois corpos e a deriva causada pelo achatamento da Terra); pedaços que caíram não são desenhados, e as contagens das legendas são medidas. No instante da colisão, cada pedaço parte do seu próprio ponto mais baixo de hoje, então cada nuvem começa como uma linha curta e não como um ponto: o arrasto baixou muitas órbitas desde 2009.",
+  "drawnNote": "Ilustrativo: o Iridium 33 tem a forma da família Iridium (o corpo dos primeiros satélites era diferente), o Kosmos 2251 é uma marca com anel e cada pedaço um ponto do mesmo tamanho; a colisão em si não é desenhada.",
+  "drawnNoteLamp": "Ilustrativo: a colisão aconteceu na sombra da Terra, então o Iridium 33 é iluminado por uma lâmpada para ser visto; ele tem a forma da família Iridium (o corpo dos primeiros satélites era diferente), o Kosmos 2251 é uma marca com anel e cada pedaço um ponto do mesmo tamanho; a colisão em si não é desenhada.",
+  "footMore": "Mais",
+  "footLess": "Menos",
+  "srcOdqn09": "NASA Orbital Debris Quarterly News 13(2), abril de 2009: a colisão e sua altitude",
+  "srcCelestrak": "CelesTrak, Iridium 33/Cosmos 2251 Collision: o segundo, o sentido de cada um, as massas, a distância prevista, as contagens de 2012",
+  "srcJsr": "Jonathan's Space Report 606: a península de Taimyr, e o Kosmos 2251 fora de serviço desde 1995 e sem motor",
+  "srcSatcat": "Catálogo de satélites do CelesTrak (SATCAT), lido em 2026-11-23: as contagens de hoje e a órbita de cada pedaço",
+  "srcWiki": "Wikipédia, colisão de satélites de 2009: a velocidade de aproximação de cerca de 11,7 km/s"
+};
+// research train (ops): the Iridium-Cosmos Moment: end
 // b200-c2-deep: begin -- the 3D stars over deep time, the variable stars worth going out for, the black holes against the EHT's pictures and the cards in the trips' voice (copy/en.deep.js, forge #141, #142, #149, #151), machine-drafted
 Object.assign(COPY, {
   "depthNote": { "modelled": "Profundidade modelada: só as distâncias das estrelas são medidas." },
@@ -6679,6 +6721,184 @@ COPY.figureSide = {
   }
 };
 // A constellation seen from the side: end
+
+// research train (ops): begin -- machine-translated, agent-reviewed 2026-11-24 (not native-reviewed): forge #558, #561, #562, #563.
+// The live operations view (copy/en.ops.js), and the two kinds an Earth event card gains (copy/en.facts.js, en.later.js).
+COPY.ops = {
+  "label": "Operações ao vivo",
+  "tabs": {
+    "state": "Números",
+    "reentry": "Por um triz",
+    "dsn": "Rede DSN",
+    "events": "Terra"
+  },
+  "titles": {
+    "state": "O estado do espaço",
+    "reentry": "Reentradas e quase colisões",
+    "dsn": "Quem fala com quem",
+    "events": "Eventos na Terra"
+  },
+  "loading": "Lendo nossa cópia…",
+  "couldNot": "Não foi possível consultar: nossa cópia ainda não está aqui.",
+  "retry": "Tentar de novo",
+  "asOf": "Em {date}",
+  "read": "lido {ago}",
+  "source": "Fonte: {source}",
+  "flyTo": "Voar até lá",
+  "openCard": "Abrir a ficha",
+  "entry": {
+    "title": "Ao vivo",
+    "state": "O estado do espaço",
+    "reentry": "Reentradas e quase colisões",
+    "dsn": "Rede do Espaço Profundo agora",
+    "events": "Incêndios, tempestades, vulcões, enchentes"
+  },
+  "state": {
+    "lead": "O que há lá em cima, contado a partir de catálogos públicos.",
+    "live": "Ao vivo",
+    "frozen": "Congelado {quarter}",
+    "quarter": "{n}º tri. {year}",
+    "heroLabel": "Os três números",
+    "labels": {
+      "earth_orbit": "Objetos em órbita da Terra",
+      "payloads": "Satélites em órbita da Terra",
+      "working_payloads": "Satélites ainda em operação",
+      "rocket_bodies": "Estágios de foguete gastos",
+      "debris": "Detritos rastreados",
+      "starlink": "Satélites Starlink em órbita",
+      "owners": "Países e grupos que têm algum",
+      "launches_year": "Lançamentos orbitais em {year}",
+      "beyond_earth": "Naves além da órbita da Terra",
+      "beyond_working": "Delas, ainda em operação",
+      "came_down_30d": "Caíram nos últimos 30 dias",
+      "people": "Pessoas nas estações espaciais",
+      "dsn_now": "Naves falando agora com a DSN"
+    },
+    "short": {
+      "earth_orbit": "objetos em órbita da Terra",
+      "people": "pessoas nas estações",
+      "launches_year": "lançamentos orbitais em {year}"
+    },
+    "ownersHead": "Satélites por dono",
+    "ownersOther": "Todos os outros",
+    "sparkHead": "Desde 2016, um ponto por trimestre",
+    "sparkPayloads": "Satélites em órbita",
+    "sparkDebris": "Detritos rastreados",
+    "sparkLaunches": "Lançamentos por trimestre",
+    "howLive": "Contado a partir do catálogo da CelesTrak lido em {date}.",
+    "howBack": "Contado para trás até {date} a partir do catálogo de hoje.",
+    "peopleSource": "Launch Library 2, The Space Devs",
+    "dsnSource": "DSN Now da NASA",
+    "cite": "Citar",
+    "citeText": "Space Radar, “O estado do espaço”, {quarter}, congelado em {frozen}, spaceradar.ai/state-of-space/ (dados: CelesTrak SATCAT).",
+    "copied": "Copiado",
+    "pageLink": "A página, com cada trimestre",
+    "owners": {
+      "US": "Estados Unidos",
+      "PRC": "China",
+      "CIS": "Rússia e a antiga URSS",
+      "UK": "Reino Unido",
+      "JPN": "Japão",
+      TBD: "Dono ainda desconhecido",
+      "FR": "França",
+      "IND": "Índia",
+      "IT": "Itália",
+      "GER": "Alemanha",
+      "ITSO": "Intelsat",
+      "ESA": "Agência Espacial Europeia",
+      "CA": "Canadá",
+      "SKOR": "Coreia do Sul"
+    },
+    "note": "Um lançamento conta quando chegou à órbita. Em operação quer dizer que a CelesTrak o lista como operando."
+  },
+  "reentry": {
+    "recentHead": "Caíram nos últimos 30 dias",
+    "recentNone": "Nada do catálogo caiu nos últimos 30 dias.",
+    "recentRow": "{kind}, {owner} · caiu em {date}",
+    "lowestHead": "Os mais baixos agora",
+    "lowestLead": "As {n} órbitas inteiras mais baixas de {total} abaixo de {km} km: as próximas a cair.",
+    "lowestRow": "de {peri} a {apo} km",
+    "noPrediction": "Nenhuma data: o catálogo diz quão baixo, não quando. As janelas da Space-Track exigem uma conta.",
+    "closeHead": "Aproximações mais próximas da semana",
+    "closeLead": "As previsões da CelesTrak, a maior chance primeiro. Não calculamos nenhuma.",
+    "closeRow": "a {range} m · {speed} km/s",
+    "closeWhen": "{date} UTC",
+    "closeChance": "1 em {n}",
+    "closeChanceHigh": "mais de 1 em 10",
+    "closeNote": "A chance da CelesTrak supõe que ninguém manobra. A maioria dos pares em operação são Starlinks que podem desviar.",
+    "filters": {
+      "all": "Todos",
+      "debris": "Com detrito",
+      "rocket": "Com estágio de foguete",
+      "working": "Dois em operação"
+    },
+    "filterLabel": "Mostrar aproximações",
+    "closeNone": "Nenhuma deste tipo na lista da CelesTrak.",
+    "closeCouldNot": "Não foi possível consultar: nossa cópia da lista da CelesTrak ainda não está aqui.",
+    "kinds": {
+      "payload": "Satélite",
+      "rocket_body": "Estágio de foguete",
+      "debris": "Detrito",
+      "unknown": "Desconhecido"
+    },
+    "momentHead": "2009: a primeira colisão entre dois satélites",
+    "moment": "Ver Iridium 33 e Kosmos 2251",
+    "momentHint": "Um momento: o choque e as duas nuvens ao longo dos anos",
+    "sources": "O catálogo: CelesTrak SATCAT, lido em {date}. Aproximações: CelesTrak SOCRATES Plus, lido em {close}."
+  },
+  "dsn": {
+    "lead": "Qual antena fala com qual nave, segundo o DSN Now da NASA.",
+    "lines": "Linhas no mapa",
+    "linesTitle": "Traçar uma linha de cada antena até a nave que ela ouve",
+    "linesNote": "Só há linha para uma nave que o mapa mostra; as linhas precisam de Sondas e telescópios ligado.",
+    "none": "Nenhuma nave está em contato agora.",
+    "stale": "Os dados têm {ago}: estes contatos podem ter terminado.",
+    "row": "{dishes} · {dir}",
+    "both": "nos dois sentidos",
+    "down": "enviando para a Terra",
+    "up": "ouvindo a Terra",
+    "light": "{t} só de ida",
+    "lightS": "{n} s",
+    "lightMin": "{m} min {s} s",
+    "lightH": "{h} h {m} min",
+    "notDrawn": "fora deste mapa",
+    "sites": {
+      "gdscc": "Goldstone",
+      "mdscc": "Madri",
+      "cdscc": "Camberra"
+    },
+    "sources": "Rede do Espaço Profundo da NASA, DSN Now, lido {ago}. Um canal não oficial, sem termos próprios."
+  },
+  "events": {
+    "lead": "Eventos em aberto que a NASA acompanha, com o último local informado.",
+    "filterLabel": "Mostrar eventos",
+    "kinds": {
+      "all": "Todos",
+      "wildfire": "Incêndios",
+      "storm": "Tempestades",
+      "volcano": "Vulcões",
+      "flood": "Enchentes"
+    },
+    "kindOne": {
+      "wildfire": "Incêndio",
+      "storm": "Tempestade",
+      "volcano": "Vulcão",
+      "flood": "Enchente"
+    },
+    "row": "{kind} · {date}",
+    "none": "Nenhum evento em aberto deste tipo na lista da NASA.",
+    "map": "Com o mapa de {map}",
+    "noMap": "Não há mapa diário disso aqui",
+    "mapOff": "Tirar o mapa",
+    "disclaimer": "EONET da NASA: para olhar, não um registro oficial de onde nem de quando.",
+    "sources": "NASA EONET, lido {ago}. Mapas: NASA GIBS."
+  }
+};
+COPY.earthEvent.kinds.storm = "Tempestade forte";
+COPY.earthEvent.kinds.flood = "Enchente";
+COPY.templates.earthevent.lead.storm = "{name} é uma tempestade forte cujo centro estava aqui no último aviso, em {date}";
+COPY.templates.earthevent.lead.flood = "{name} é uma enchente informada aqui, pela última vez em {date}";
+// research train (ops): end
 // The platform bridge (copy/en.js favs, copy/en.later.js account): begin -- machine-drafted, agent-read, not native-reviewed
 COPY.favs = {"add": "Adicionar aos seus favoritos", "remove": "Nos seus favoritos. Toque para tirar", "addTrip": "Adicionar {name} aos seus favoritos", "removeTrip": "{name} está nos seus favoritos. Toque para tirar"};
 COPY.account = {"signIn": "Entrar", "open": "Sua conta", "openNamed": "Sua conta, {name}"};

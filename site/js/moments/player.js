@@ -35,7 +35,7 @@ import { loadVehicle, disposeVehicle } from './vehicles.js';
 import { partPoseAt, carrierAt, quatColumns, poseKeys } from './pose.js';
 import { createTether, createExhaustCloud } from './effects.js';
 // b200-c3-learn: begin -- forge #153: a breakup's pieces (`debris-cloud`) and a told story's voice
-import { readPieces, fillCloud, createDebrisCloud } from './debriscloud.js';
+import { readPieces, fillCloud, createDebrisCloud, cloudFor } from './debriscloud.js';
 import { cloudById } from '../data/clouds.js';
 import { createMomentVoice } from './voice.js';
 // b200-c3-learn: end
@@ -455,7 +455,7 @@ export function createMomentPlayer(ctx, opts = {}) {
     }
     // b200-c3-learn: begin -- the pieces of a named breakup (data/clouds.js), drawn where its modelled spread puts them
     for (const fx of m.tracks.effects || []) {
-      const cloud = fx.effect === 'debris-cloud' ? cloudById(fx.cloud) : null;
+      const cloud = fx.effect === 'debris-cloud' ? cloudFor(cloudById(fx.cloud), fx) : null; // research train (ops): the plane at the event, when given
       if (!cloud || typeof fx.file !== 'string') continue;
       try {
         const res = await fetch(new URL(fx.file, DATA).href);

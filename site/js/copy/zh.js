@@ -5723,6 +5723,48 @@ COPY.momentStories['fengyun-1c'] = {
   "srcWiki": "维基百科，2007 Chinese anti-satellite missile test：接近速度"
 };
 // b200-c3-learn: end
+// research train (ops): the Iridium-Cosmos Moment: begin -- copy/en.moments.iridium.js and its shelf card (forge #561), machine-drafted
+COPY.momentShelf.cards['iridium-cosmos-2009'] = {
+  "title": "2009：铱星33号与宇宙2251号",
+  "when": "2009 年 2 月 10 日至今",
+  "blurb": "一颗在役的电话卫星和一颗已报废的俄罗斯卫星在西伯利亚上空 789 千米处相撞，编入目录的 2 370 块碎片变成了环绕地球的两团云。"
+};
+COPY.momentStories['iridium-cosmos-2009'] = {
+  "title": "2009：铱星33号与宇宙2251号",
+  "blurb": "两颗卫星在西伯利亚上空 789 千米处意外相遇，各自变成一团至今仍绕着地球转的碎片云。",
+  "chBefore": "两颗卫星",
+  "chClose": "逼近",
+  "chHit": "相撞",
+  "chRing": "两个环",
+  "chDays": "几天之内",
+  "chFan": "扇形散开",
+  "chShell": "三年之后",
+  "chToday": "今天",
+  "c1a": "2009 年 2 月 10 日，相撞前一刻钟。铱星33号是铱星电话网中一颗在役卫星，重 556 千克，正在约 789 千米高处向北飞越北极地区。",
+  "c1b": "宇宙2251号是一颗 900 千克的俄罗斯军用卫星，在倾角 74 度的轨道上向南飞行。它在 1995 年停止工作，也没有发动机可以避让。",
+  "c2a": "它们的路径在西伯利亚的泰梅尔半岛上空交汇。CelesTrak 当天的筛查预测两者会相距 584 米擦过，而这并不是它清单上最近的一次交会。",
+  "c2b": "这是铱星家族的外形，按真实大小绘制：星体长 3.1 米，两翼展开 9.4 米。宇宙2251号在这里没有模型；从远处看，它是一个带圈的标记。",
+  "c3a": "16:55:59 UTC：两者几乎成直角相遇，以约 11.7 千米/秒的速度相撞，双双解体。",
+  "c4a": "是两团云，而不是一团：每颗卫星的碎片都留在它自己的轨道附近，于是形成两个环，在两颗卫星相撞的地方相交。",
+  "c5a": "较高的碎片绕一圈用的时间更长。一圈又一圈，每团云都沿着自己的轨道拉长。",
+  "c6a": "地球的扁率让每个轨道面以由高度和倾角决定的速度转动。宇宙2251号的碎片倾角 74 度，散开的速度约为近极轨道铱星碎片的四倍。",
+  "c7a": "截至 2012 年 6 月 22 日，CelesTrak 统计到铱星33号碎片 598 块，其中 93 块已坠落；宇宙2251号碎片 1 603 块，其中 222 块已坠落。",
+  "c8a": "今天目录中有铱星33号碎片 656 块、宇宙2251号碎片 1 714 块；17 年多过去了，仍有 115 块和 604 块在轨道上。",
+  "c8b": "这些数字是测量值。画面是一个模型：今天仍在的碎片按今天的轨道，倒推回相撞那一刻散开。",
+  "pathIridium": "铱星33号画成 789 千米高的圆轨道（NASA ODQN 13(2)），倾角 86.4 度，向北飞行（CelesTrak），经过我们在泰梅尔半岛选定的一点；它的真实轨道与此相差约 15 千米",
+  "pathKosmos": "宇宙2251号画成同一高度的圆轨道，倾角 74.0 度，向南飞行，经过同一点：两者以 101.5 度、11.55 千米/秒相遇，接近公布的 11.7",
+  "cloudNote": "碎片是目录中仍在的铱星33号 115 块和宇宙2251号 604 块，按目录今天给出的轨道，由一个模型（二体运动加地球扁率引起的漂移）从相撞点散开；已坠落的碎片不画，字幕中的数字是测量值。相撞那一刻每块碎片都从它今天的最低点出发，所以每团云起初是一条短线而不是一个点：自 2009 年以来，大气阻力已使许多轨道降低。",
+  "drawnNote": "示意：铱星33号用铱星家族的外形表示（第一代卫星的星体并不相同），宇宙2251号是带圈的标记，每块碎片都是同样大小的点；相撞本身没有画出。",
+  "drawnNoteLamp": "示意：相撞发生在地球的阴影里，所以用一盏灯照亮铱星33号以便看见；它用铱星家族的外形表示（第一代卫星的星体并不相同），宇宙2251号是带圈的标记，每块碎片都是同样大小的点；相撞本身没有画出。",
+  "footMore": "更多",
+  "footLess": "收起",
+  "srcOdqn09": "NASA 轨道碎片季刊 13(2)，2009 年 4 月：相撞及其高度",
+  "srcCelestrak": "CelesTrak，Iridium 33/Cosmos 2251 Collision：时刻、各自的飞行方向、质量、预测的距离、2012 年的统计",
+  "srcJsr": "Jonathan’s Space Report 606：泰梅尔半岛，以及宇宙2251号自 1995 年起停用且没有发动机",
+  "srcSatcat": "CelesTrak 卫星目录（SATCAT），读取于 2026-11-23：今天的计数和每块碎片的轨道",
+  "srcWiki": "维基百科，2009 年卫星相撞事件：约 11.7 千米/秒的相对速度"
+};
+// research train (ops): the Iridium-Cosmos Moment: end
 // b200-c2-deep: begin -- the 3D stars over deep time, the variable stars worth going out for, the black holes against the EHT's pictures and the cards in the trips' voice (copy/en.deep.js, forge #141, #142, #149, #151), machine-drafted
 Object.assign(COPY, {
   "depthNote": { "modelled": "纵深是模型给出的：只有恒星的距离是实测的。" },
@@ -6595,6 +6637,184 @@ COPY.figureSide = {
   }
 };
 // A constellation seen from the side: end
+
+// research train (ops): begin -- machine-translated, agent-reviewed 2026-11-24 (not native-reviewed): forge #558, #561, #562, #563.
+// The live operations view (copy/en.ops.js), and the two kinds an Earth event card gains (copy/en.facts.js, en.later.js).
+COPY.ops = {
+  "label": "实时运行",
+  "tabs": {
+    "state": "数字",
+    "reentry": "险情",
+    "dsn": "深空",
+    "events": "地球"
+  },
+  "titles": {
+    "state": "太空现状",
+    "reentry": "再入与险些相撞",
+    "dsn": "谁在和谁通话",
+    "events": "地球上的事件"
+  },
+  "loading": "正在读取我们的副本…",
+  "couldNot": "无法查看：我们的副本还没有。",
+  "retry": "重试",
+  "asOf": "截至 {date}",
+  "read": "{ago}读取",
+  "source": "来源：{source}",
+  "flyTo": "飞过去",
+  "openCard": "打开卡片",
+  "entry": {
+    "title": "实时",
+    "state": "太空现状",
+    "reentry": "再入与险些相撞",
+    "dsn": "深空网络现在",
+    "events": "火灾、风暴、火山、洪水"
+  },
+  "state": {
+    "lead": "上面有什么，按公开目录统计。",
+    "live": "实时",
+    "frozen": "已冻结 {quarter}",
+    "quarter": "{year} 年第 {n} 季度",
+    "heroLabel": "三个数字",
+    "labels": {
+      "earth_orbit": "地球轨道上的物体",
+      "payloads": "地球轨道上的卫星",
+      "working_payloads": "仍在工作的卫星",
+      "rocket_bodies": "用过的火箭级",
+      "debris": "被跟踪的碎片",
+      "starlink": "在轨星链卫星",
+      "owners": "拥有卫星的国家和组织",
+      "launches_year": "{year} 年的入轨发射",
+      "beyond_earth": "地球轨道以外的航天器",
+      "beyond_working": "其中仍在工作",
+      "came_down_30d": "最近 30 天坠落",
+      "people": "空间站上的人",
+      "dsn_now": "正与 DSN 通话的航天器"
+    },
+    "short": {
+      "earth_orbit": "个地球轨道物体",
+      "people": "人在空间站上",
+      "launches_year": "次 {year} 年入轨发射"
+    },
+    "ownersHead": "按所有者分的卫星",
+    "ownersOther": "其他所有",
+    "sparkHead": "2016 年以来，每季度一个点",
+    "sparkPayloads": "在轨卫星",
+    "sparkDebris": "被跟踪的碎片",
+    "sparkLaunches": "每季度发射",
+    "howLive": "按 {date} 读取的 CelesTrak 目录统计。",
+    "howBack": "用今天的目录倒推到 {date}。",
+    "peopleSource": "Launch Library 2, The Space Devs",
+    "dsnSource": "NASA 的 DSN Now",
+    "cite": "引用",
+    "citeText": "Space Radar，“太空现状”，{quarter}，{frozen} 冻结，spaceradar.ai/state-of-space/（数据：CelesTrak SATCAT）。",
+    "copied": "已复制",
+    "pageLink": "包含每个季度的页面",
+    "owners": {
+      "US": "美国",
+      "PRC": "中国",
+      "CIS": "俄罗斯和前苏联",
+      "UK": "英国",
+      "JPN": "日本",
+      TBD: "所有者尚不明确",
+      "FR": "法国",
+      "IND": "印度",
+      "IT": "意大利",
+      "GER": "德国",
+      "ITSO": "国际通信卫星组织",
+      "ESA": "欧洲航天局",
+      "CA": "加拿大",
+      "SKOR": "韩国"
+    },
+    "note": "发射进入轨道才算一次。仍在工作指 CelesTrak 列为在工作。"
+  },
+  "reentry": {
+    "recentHead": "最近 30 天坠落",
+    "recentNone": "最近 30 天，目录里没有东西坠落。",
+    "recentRow": "{kind}，{owner} · {date} 坠落",
+    "lowestHead": "现在最低的",
+    "lowestLead": "{km} 千米以下 {total} 条完整轨道中最低的 {n} 条：接下来就会坠落。",
+    "lowestRow": "{peri} 至 {apo} 千米",
+    "noPrediction": "不给日期：目录只说多低，不说何时。Space-Track 的时间窗需要账号。",
+    "closeHead": "本周最近的接近",
+    "closeLead": "CelesTrak 的预测，概率最高的在前。我们自己不计算。",
+    "closeRow": "相距 {range} 米 · {speed} 千米/秒",
+    "closeWhen": "{date} UTC",
+    "closeChance": "{n} 分之 1",
+    "closeChanceHigh": "超过 10 分之 1",
+    "closeNote": "CelesTrak 的概率假设没有人变轨。大多数在工作的组合是能够避让的星链卫星。",
+    "filters": {
+      "all": "全部",
+      "debris": "含碎片",
+      "rocket": "含火箭级",
+      "working": "两颗在工作"
+    },
+    "filterLabel": "显示接近",
+    "closeNone": "CelesTrak 的列表里没有这一类。",
+    "closeCouldNot": "无法查看：我们的 CelesTrak 列表副本还没有。",
+    "kinds": {
+      "payload": "卫星",
+      "rocket_body": "火箭级",
+      "debris": "碎片",
+      "unknown": "未知"
+    },
+    "momentHead": "2009：两颗卫星的第一次相撞",
+    "moment": "观看铱星33号与宇宙2251号",
+    "momentHint": "一个时刻：撞击，以及多年来的两团碎片云",
+    "sources": "目录：CelesTrak SATCAT，{date} 读取。接近：CelesTrak SOCRATES Plus，{close} 读取。"
+  },
+  "dsn": {
+    "lead": "哪副天线在和哪个航天器通话，来自 NASA 的 DSN Now。",
+    "lines": "地图上的连线",
+    "linesTitle": "从每副天线画一条线到它在收听的航天器",
+    "linesNote": "只为地图上显示的航天器画线；需要打开“探测器和望远镜”。",
+    "none": "此刻没有航天器在通信。",
+    "stale": "数据已有 {ago}：这些通信可能已经结束。",
+    "row": "{dishes} · {dir}",
+    "both": "双向",
+    "down": "向地球发送",
+    "up": "收听地球",
+    "light": "单程 {t}",
+    "lightS": "{n} 秒",
+    "lightMin": "{m} 分 {s} 秒",
+    "lightH": "{h} 小时 {m} 分",
+    "notDrawn": "不在这张地图上",
+    "sites": {
+      "gdscc": "戈尔德斯通",
+      "mdscc": "马德里",
+      "cdscc": "堪培拉"
+    },
+    "sources": "NASA 深空网络，DSN Now，{ago}读取。一个非官方数据源，没有自己的条款。"
+  },
+  "events": {
+    "lead": "NASA 正在跟踪的未结束事件，以及最后报告的位置。",
+    "filterLabel": "显示事件",
+    "kinds": {
+      "all": "全部",
+      "wildfire": "火灾",
+      "storm": "风暴",
+      "volcano": "火山",
+      "flood": "洪水"
+    },
+    "kindOne": {
+      "wildfire": "火灾",
+      "storm": "风暴",
+      "volcano": "火山",
+      "flood": "洪水"
+    },
+    "row": "{kind} · {date}",
+    "none": "NASA 的列表里没有这一类未结束的事件。",
+    "map": "叠加“{map}”地图",
+    "noMap": "这里没有这类的每日地图",
+    "mapOff": "关掉地图",
+    "disclaimer": "NASA 的 EONET：用于观看，不是地点或时间的官方记录。",
+    "sources": "NASA EONET，{ago}读取。地图：NASA GIBS。"
+  }
+};
+COPY.earthEvent.kinds.storm = "强风暴";
+COPY.earthEvent.kinds.flood = "洪水";
+COPY.templates.earthevent.lead.storm = "{name} 是一场强风暴，最后一次报告（{date}）时它的中心在这里";
+COPY.templates.earthevent.lead.flood = "{name} 是在这里报告的洪水，最后一次报告于 {date}";
+// research train (ops): end
 // The platform bridge (copy/en.js favs, copy/en.later.js account): begin -- machine-drafted, agent-read, not native-reviewed
 COPY.favs = {"add": "加入你的收藏", "remove": "已在你的收藏中。按一下取消", "addTrip": "把{name}加入你的收藏", "removeTrip": "{name}已在你的收藏中。按一下取消"};
 COPY.account = {"signIn": "登录", "open": "你的账户", "openNamed": "你的账户：{name}"};
