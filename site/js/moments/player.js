@@ -39,6 +39,8 @@ import { readPieces, fillCloud, createDebrisCloud, cloudFor } from './debrisclou
 import { cloudById } from '../data/clouds.js';
 import { createMomentVoice } from './voice.js';
 // b200-c3-learn: end
+// forge #571: a launch's published heights and speeds; the chart module is fetched only for a moment that names them
+import { telemetryOf, validateTelemetry, toSeries } from './telemetry.js';
 
 const DATA = new URL('../../data/moments/', import.meta.url);
 const W = () => COPY.momentPlayer;
@@ -128,6 +130,7 @@ export function createMomentPlayer(ctx, opts = {}) {
   let debris = [];
   let voice = null;
   // b200-c3-learn: end
+  let telem = null;        // forge #571: the flight-data panel (moments/telemetrychart.js), or null
   let t = 0, p = 0, playing = false, lastNow = 0;
   let free = null;         // a visitor's own camera { az, el, dist }
   let ui = null;
@@ -332,6 +335,7 @@ export function createMomentPlayer(ctx, opts = {}) {
     if (doc.activeElement !== ui.scrub) ui.scrub.value = String(p);
     if (m.vehicles.length > 1 && leadAt(t).id !== truthLead) paintTruth();
     ui.scrub.setAttribute('aria-valuetext', `${formatMet(t, W())}, ${chText}`);
+    if (telem) telem.update(t);
     const end = p >= table.total - 1e-6;
     const label = playing ? W().pause : end ? W().replay : W().play;
     if (ui.playBtn.dataset.state !== label) {
@@ -467,6 +471,9 @@ export function createMomentPlayer(ctx, opts = {}) {
     }
     if (!voice) voice = createMomentVoice(ctx.audio);
     // b200-c3-learn: end
+    // forge #571: the flight data arrive when they arrive; the replay does not wait for its chart.
+    const tm = telemetryOf(m);
+    if (tm) loadTelemetry(id, tm);
     title();
     buildChapters();
     ui.scrub.max = String(table.total);
@@ -492,6 +499,33 @@ export function createMomentPlayer(ctx, opts = {}) {
       });
     }
     return true;
+  }
+
+  // forge #571: the moment's flight and the flights it is compared with, each a file of telemetry/ (docs/MOMENTS.md, "Flight
+  // data"). A file that does not load or does not hold its rules is left out with a warning; without the moment's own there is no panel.
+  async function loadTelemetry(id, tm) {
+    const read = async (fid) => {
+      try {
+        const res = await fetch(new URL(`telemetry/${fid}.json`, DATA).href);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const d = await res.json();
+        const bad = validateTelemetry(d);
+        if (bad.length) throw new Error(bad[0]);
+        return toSeries(d);
+      } catch (err) { console.warn(`moment ${id}: flight data ${fid} left out`, err && err.message); return null; }
+    };
+    const [main, ...others] = await Promise.all([read(tm.flight), ...tm.compare.map(read)]);
+    if (!main || opened !== id || !m || telem) return;
+    let mod;
+    try { mod = await import('./telemetrychart.js'); } catch (err) { console.warn(`moment ${id}: the flight-data panel did not load`, err && err.message); return; }
+    if (opened !== id || !m || telem || !ui) return;
+    telem = mod.createTelemetryPanel({ doc, main, compare: others.filter((s) => s && s.rocket === main.rocket), seek: (s) => { seek(s); writeTime(); }, time: (s) => formatMet(s, W()) });
+    ui.bar.parentNode.insertBefore(telem.root, ui.bar);
+    ui.chaptersBtn.parentNode.insertBefore(telem.toggle, ui.chaptersBtn);
+    let wide = true;
+    try { wide = !window.matchMedia('(max-width: 720px)').matches; } catch { /* a test's window */ }
+    telem.setOpen(wide);
+    telem.update(t);
   }
 
   // A vehicle too small to see at the scale of the Earth and the Moon is marked by a dot of fixed size on the screen.
@@ -969,6 +1003,7 @@ export function createMomentPlayer(ctx, opts = {}) {
     debris = [];
     if (voice) voice.stop();
     // b200-c3-learn: end
+    if (telem) { telem.destroy(); telem = null; }
     clouds = [];
     setWorld('earth');
     if (stage) stage.dispose();

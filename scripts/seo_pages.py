@@ -9,6 +9,7 @@
     /teachers/index.html                                    for the classroom
     /first-pull-request/index.html                          for a first contribution
     /moon-phases-tides-orbits/index.html                    the Lab simulators for moon phases, tides and orbits
+    /sky-photo/index.html                                   name the stars in your own photo (scripts/seo_skyphoto.py)
     /support/index.html                                     where money for the project goes (only once registry/support.yaml names the fund)
     /o/<system>.html                                        the 40 star systems (scripts/seo_systems.py)
 
@@ -59,6 +60,7 @@ import seo_print  # noqa: E402
 import seo_reach  # noqa: E402
 # b200-f9-reach: end
 import seo_ops  # noqa: E402  (research train "ops": /state-of-space/ and /close-calls/, forge #558 #561)
+import seo_skyphoto  # noqa: E402  (/sky-photo/, name the stars in your photo: forge #572)
 from seo_common import (ACCOUNTS, ACCURACY_FORM, CLASSROOM_FORM, GITHUB, ON_GITHUB, ROOT, Ctx, Page, esc, footer_nav,  # noqa: E402
                         make_ctx, place_picker, render, url_of, webpage)
 from seo_share import Spec  # noqa: E402
@@ -1449,6 +1451,7 @@ def build_pages(host: str, objects: list[dict], today: str, snapshot_index: dict
     import seo_neo  # noqa: E402  (the near-Earth asteroids' page, forge #560)
     pages += seo_neo.pages(host)
     # research train (catalogues): asteroids: end
+    pages += seo_skyphoto.pages(host)
     return pages
 
 

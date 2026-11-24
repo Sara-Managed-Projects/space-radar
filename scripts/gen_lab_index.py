@@ -319,6 +319,7 @@ def build() -> str:
 <p class="eyebrow">Space Radar Lab</p>
 <h1>Tiny space simulators</h1>
 <p class="lead">{len(sims)} small pages, each teaching one idea about space. Every number is quoted from its source, and every page says what is and is not to scale. Open one and move the slider.</p>
+<ul class="tagcloud"><li><a href="paths/index.html">Learning paths: the Lab in course order</a></li></ul>
 </div></header>
 <div class="wrap">
 {filter_form(lv["codes"], topic_row(chips))}

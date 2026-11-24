@@ -112,6 +112,7 @@ import { read as readUrl, write as writeUrl } from './urlstate.js';
 import { openShare } from './share.js';
 import { icon } from './icons.js';
 import { tripPicture } from './trippics.js';
+import { TRIP_QUIZ } from '../data/tripquiz.js'; // forge #566: which trips have three questions
 // Spec 0069. Static imports, and still not on the first visit: this whole module is imported when
 // the first trip starts (main.js), and these come with it.
 import { createNarration, clipKey } from '../audio/narration.js';
@@ -1054,6 +1055,9 @@ export function createTripFrame(ctx) {
     act('ui-btn ui-btn--tile', 'rotate-ccw', T.endReplay, T.endReplayTitle, () => trip.start(st.tourId));
     act('ui-btn ui-btn--tile', 'share', T.share, T.endShareTitle, () => onShare(false));
     p.appendChild(row);
+    // THREE QUESTIONS (forge #566): for a trip registry/trip-quizzes.yaml has, each answered by one of its stops.
+    // A secondary button, so Keep flying stays the one ember; ui/tripquiz.js is fetched on the first press.
+    if (st.tourId && Array.isArray(TRIP_QUIZ[st.tourId])) quizButton(p, st);
     // THE PICTURE TO SEND (public #444). The trip's own picture, the one its card and its page
     // carry, as a button: it opens the share sheet, whose postcard is the view the camera is
     // holding now, the last stop, with the trip's words and the link under it.
@@ -1085,6 +1089,35 @@ export function createTripFrame(ctx) {
     // nextTripOrder), then the positional walk it was before the field existed, so a named
     // follow-on that cannot run today falls back to what the card offered before.
     offerNext(nextTripOrder(trip.tours(), st.tourId), nextHost, st.tourId);
+  }
+
+  /** The end card's "Three questions": opens and closes the quiz under it (ui/tripquiz.js, forge #566). */
+  function quizButton(p, st) {
+    const Q = COPY.tripQuiz;
+    const b = el('button', 'ui-btn ui-btn--secondary ui-btn--block sr-tripsheet__quizbtn');
+    b.type = 'button';
+    b.title = Q.openTitle;
+    b.setAttribute('aria-expanded', 'false');
+    b.appendChild(el('span', 'ui-btn__label', Q.open));
+    const box = el('div', 'sr-tripsheet__quiz');
+    box.id = 'sr-tripquiz';
+    box.hidden = true;
+    b.setAttribute('aria-controls', box.id);
+    let mounted = null;
+    b.addEventListener('click', () => {
+      const open = b.getAttribute('aria-expanded') !== 'true';
+      b.setAttribute('aria-expanded', open ? 'true' : 'false');
+      box.hidden = !open;
+      if (!open || mounted) return;
+      mounted = import('./tripquiz.js').then((m) => {
+        if (!box.isConnected) return null;
+        let storage = null;
+        try { storage = window.localStorage; } catch { /* no storage: nothing is kept */ }
+        return m.mountQuiz(box, { tripId: st.tourId, stops: trip.state.stops || [], storage, onStop: (i) => trip.jumpTo(i) });
+      }).catch((e) => { console.warn('the questions did not load', e); mounted = null; });
+    });
+    p.appendChild(b);
+    p.appendChild(box);
   }
 
   /**

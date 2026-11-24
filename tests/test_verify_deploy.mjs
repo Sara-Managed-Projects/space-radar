@@ -26,8 +26,8 @@ const check = (ok, what) => { if (!ok) { fails++; console.error(`FAIL ${what}`);
 // What a clean deploy uploads, built the way deploy.sh builds it.
 const BUILT = mkdtempSync(join(tmpdir(), 'verify-deploy-test-'));
 const py = spawnSync('python3', ['-c', [
-  'import sys', 'from pathlib import Path', 'sys.path.insert(0, "scripts")', 'import build_seo, seo_lab',
-  'seo_lab.build(Path(sys.argv[1]), build_seo.DEFAULT_HOST)'].join('\n'), join(BUILT, 'built')], { cwd: ROOT, encoding: 'utf8' });
+  'import sys', 'from pathlib import Path', 'sys.path.insert(0, "scripts")', 'import build_seo, seo_lab, seo_lab_paths',
+  'seo_lab.build(Path(sys.argv[1]), build_seo.DEFAULT_HOST)', 'seo_lab_paths.build(Path(sys.argv[1]), build_seo.DEFAULT_HOST)'].join('\n'), join(BUILT, 'built')], { cwd: ROOT, encoding: 'utf8' });
 check(py.status === 0, `the Lab builds (${py.stderr})`);
 const sw = spawnSync('python3', ['scripts/stamp_sw.py', '--site', 'site', '--out', join(BUILT, 'sw.js')], { cwd: ROOT, encoding: 'utf8' });
 check(sw.status === 0, `the worker stamps (${sw.stderr})`);
@@ -76,7 +76,7 @@ check(v.status === 1 && new RegExp(`DIFFERS {2}lab/${labDirs[0]}/index\\.html`).
 // 4. The verifier builds with the deploy's own code.
 const verifier = readFileSync(join(ROOT, 'scripts/verify-deploy.sh'), 'utf8');
 const deploy = readFileSync(join(ROOT, 'scripts/deploy.sh'), 'utf8');
-check(/seo_lab\.build\(Path\(sys\.argv\[1\]\), build_seo\.DEFAULT_HOST\)/.test(verifier) && /stamp_sw\.py --site site/.test(verifier), 'verify-deploy.sh builds the Lab and the worker with seo_lab.py and stamp_sw.py');
+check(/seo_lab\.build\(Path\(sys\.argv\[1\]\), build_seo\.DEFAULT_HOST\)/.test(verifier) && /seo_lab_paths\.build\(Path\(sys\.argv\[1\]\), build_seo\.DEFAULT_HOST\)/.test(verifier) && /stamp_sw\.py --site site/.test(verifier), 'verify-deploy.sh builds the Lab and the worker with seo_lab.py and stamp_sw.py');
 check(/build_seo\.py" --out "\$BUILT"/.test(deploy) && /stamp_sw\.py" --site "\$SITE" \$\{OVERLAY/.test(deploy), 'deploy.sh builds them the same way (host default, overlay of the stripped tree)');
 
 server.close();

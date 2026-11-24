@@ -1628,6 +1628,7 @@ export const VISUAL_CLASSES = [
 "honesty": "measured",
 "members": {
 "other_light": [
+"nearinfrared",
 "infrared",
 "microwave",
 "gamma"

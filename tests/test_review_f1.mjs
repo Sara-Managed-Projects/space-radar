@@ -188,8 +188,8 @@ const W = await import(join(JS, 'ui/whenparse.js'));
   check(/try \{ await import\(`\.\.\/copy\/\$\{file\.wordsFile\}`\); \} catch[^\n]*\n\s*\/\/[^\n]*\n\s*if \(opened !== id\) return false;\s*\}\s*m = file;/.test(player), 'a load overtaken by close() returns quietly after its words arrive, before it reads the moment');
   // the model viewer
   const viewer = read('site/model/viewer.js');
-  check(/let renderer;\s*try \{\s*renderer = new THREE\.WebGLRenderer\(/.test(viewer) && /say\('No 3D here'/.test(viewer), 'the model viewer says when the browser cannot draw 3D');
-  check(/if \(!r\.ok\) throw new Error\(`HTTP \$\{r\.status\}`\);\s*entry = \(await r\.json\(\)\)\.models\[id\];\s*\} catch \{\s*say\('Could not load the catalog'/.test(viewer), 'a catalog that did not arrive is not "Not one of ours"');
+  check(/let renderer;\s*try \{\s*renderer = new THREE\.WebGLRenderer\(/.test(viewer) && /say\(W\.noGlTitle, W\.noGlText/.test(viewer) && /noGlTitle: 'No 3D here'/.test(read('site/model/words.js')), 'the model viewer says when the browser cannot draw 3D');
+  check(/if \(!r\.ok\) throw new Error\(`HTTP \$\{r\.status\}`\);\s*entry = \(await r\.json\(\)\)\.models\[id\];\s*\} catch \{\s*say\(W\.noCatTitle/.test(viewer) && /noCatTitle: 'Could not load the catalog'/.test(read('site/model/words.js')), 'a catalog that did not arrive is not "Not one of ours"');
   check(/addEventListener\('webglcontextrestored', wake\)/.test(viewer) && /addEventListener\('webglcontextlost', \(e\) => e\.preventDefault\(\)\)/.test(viewer), 'and it draws again when a lost context returns');
   // the daily challenge
   const play = read('site/js/ui/play.js');

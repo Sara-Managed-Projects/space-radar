@@ -2544,26 +2544,37 @@ export const COPY = {
     "panelTitle": "Autres lumières",
     "bands": {
       "visible": "Visible",
-      "infrared": "Infrarouge",
+      "nearinfrared": "Proche infrarouge",
+      "infrared": "Infrarouge moyen",
       "microwave": "Micro-ondes",
       "gamma": "Rayons gamma"
     },
     "notes": {
       "visible": "Le ciel tel que le voient les yeux et les appareils photo.",
-      "infrared": "Le ciel en infrarouge, en fausses couleurs : poussière chaude et étoiles froides.",
+      "nearinfrared": "Proche infrarouge, en fausses couleurs : la lumière des étoiles à travers la poussière.",
+      "infrared": "Infrarouge moyen, en fausses couleurs : poussière chaude et étoiles froides.",
       "microwave": "Les micro-ondes, en luminosité : la Galaxie devant la plus vieille lumière.",
       "gamma": "Les rayons gamma, en fausses couleurs : pulsars, blazars, lueur des rayons cosmiques."
     },
     "colours": {
+      "nearinfrared": "Le rouge est 2,2 µm, le vert 1,7 µm, le bleu 1,2 µm (2MASS)",
       "infrared": "Le rouge est 22 µm, le vert 4,6 µm, le bleu 3,4 µm (WISE)",
       "microwave": "Une seule bande, 94 GHz, dessinée en luminosité (WMAP)",
       "gamma": "Le rouge est 0,3 à 1 GeV, le vert 1 à 3, le bleu au-dessus de 3 (Fermi)"
     },
     "mixLabel": "Du ciel visible vers {band}",
+    "mixLabelFrom": "De {from} vers {band}",
     "mixValue": "{pct} % {band}",
+    "fromLabel": "Depuis",
+    "fromGroup": "La lumière d’où part le curseur",
+    "blink": "Clignoter",
+    "blinkTitle": "Passer à l’autre bout du curseur",
+    "whyPair": { "nearinfrared_infrared": "Le proche infrarouge traverse la poussière ; l’infrarouge moyen la voit briller." },
+    "whyAny": "Deux lumières, un ciel : chacune montre ce que l’autre cache.",
     "loading": "Chargement de l’image du ciel entier.",
     "failed": "Cette image n’est pas arrivée. Le ciel reste comme il était.",
     "creditLead": "Relevé : ",
+    "creditAnd": " et ",
     "creditTail": ". Tuiles : CDS, Strasbourg."
   },
   "overlay": {
@@ -3012,6 +3023,203 @@ export const COPY = {
       "honesty": "Étoiles mesurées, planètes calculées, air modélisé, sol dessiné."
     }
   },
+  "tripQuiz": {
+    "open": "Trois questions",
+    "openTitle": "Trois questions sur ce voyage, chacune répondue par une de ses étapes",
+    "intro": "Chaque réponse se trouve à une étape de ce voyage.",
+    "groupLabel": "Question {n} sur {total}",
+    "right": "Exact.",
+    "wrong": "Pas tout à fait. La réponse : {answer}",
+    "from": "Où le voyage le dit : étape {n}, {title}",
+    "score": "{n} sur {total} justes",
+    "kept": "Gardé dans ce navigateur seulement.",
+    "again": "Reposer les questions",
+    "trips": {
+      "people-in-space": [
+        {
+          "q": "Combien de temps met la station spatiale pour faire le tour de la Terre ?",
+          "a": [
+            "Environ un jour",
+            "Environ 93 minutes",
+            "Environ huit minutes"
+          ]
+        },
+        {
+          "q": "Combien de levers de soleil l’équipage de la station voit-il par jour ?",
+          "a": [
+            "Un, comme nous",
+            "Quinze ou seize",
+            "Une centaine"
+          ]
+        },
+        {
+          "q": "Combien de personnes vivent à la fois dans Tiangong ?",
+          "a": [
+            "Trois",
+            "Sept",
+            "Douze"
+          ]
+        }
+      ],
+      "moon-landings": [
+        {
+          "q": "Combien de temps Neil Armstrong et Buzz Aldrin sont-ils restés sur la Lune ?",
+          "a": [
+            "Environ deux heures",
+            "21 heures et 36 minutes",
+            "Trois jours"
+          ]
+        },
+        {
+          "q": "Qui conduisait le rover Lunokhod 1 ?",
+          "a": [
+            "Deux cosmonautes à bord",
+            "Une équipe de cinq pilotes sur Terre",
+            "Personne : il choisissait sa route"
+          ]
+        },
+        {
+          "q": "Chang’e 4 s’est posé sur la face de la Lune qui ne nous regarde jamais. Comment parlait-il à la Terre ?",
+          "a": [
+            "Par un satellite relais, Queqiao",
+            "Directement par radio vers la Terre",
+            "Il n’a jamais pu"
+          ]
+        }
+      ],
+      "outer-solar-system": [
+        {
+          "q": "Pourquoi Io a-t-il des centaines de volcans ?",
+          "a": [
+            "C’est la lune la plus proche du Soleil",
+            "Jupiter et deux autres lunes le pétrissent sans cesse",
+            "Des comètes s’y écrasent sans arrêt"
+          ]
+        },
+        {
+          "q": "Quelle est l’épaisseur des anneaux de Saturne par endroits ?",
+          "a": [
+            "Environ dix mètres",
+            "Environ mille kilomètres",
+            "La largeur de la Terre"
+          ]
+        },
+        {
+          "q": "Combien de sondes ont déjà visité Neptune ?",
+          "a": [
+            "Aucune",
+            "Une, Voyager 2",
+            "Cinq"
+          ]
+        }
+      ],
+      "the-sun-today": [
+        {
+          "q": "Combien de temps la lumière du Soleil met-elle pour atteindre la Terre ?",
+          "a": [
+            "Aucun temps",
+            "Environ huit minutes et vingt secondes",
+            "Environ un jour"
+          ]
+        },
+        {
+          "q": "À peu près tous les combien le nombre de taches solaires monte-t-il et baisse-t-il ?",
+          "a": [
+            "Chaque année",
+            "À peu près tous les onze ans",
+            "À peu près tous les mille ans"
+          ]
+        },
+        {
+          "q": "Combien de Terres tiendraient dans le Soleil ?",
+          "a": [
+            "Une dizaine",
+            "Un millier",
+            "Plus d’un million"
+          ]
+        }
+      ],
+      "life-of-a-star": [
+        {
+          "q": "Qu’est-ce qui fait briller le Soleil ?",
+          "a": [
+            "Il brûle comme un feu de charbon",
+            "En son cœur, il change l’hydrogène en hélium",
+            "Il renvoie la lumière d’autres étoiles"
+          ]
+        },
+        {
+          "q": "Que reste-t-il au centre de la nébuleuse de l’Hélice ?",
+          "a": [
+            "Un trou noir",
+            "Une petite étoile très chaude : une naine blanche",
+            "Rien du tout"
+          ]
+        },
+        {
+          "q": "Qui a vu, en 1054, l’explosion qui a laissé la nébuleuse du Crabe ?",
+          "a": [
+            "Des astronomes chinois",
+            "Galilée, avec sa lunette",
+            "Le télescope spatial Hubble"
+          ]
+        }
+      ],
+      "black-holes": [
+        {
+          "q": "Qu’est-ce qu’un trou noir ?",
+          "a": [
+            "Un trou vide dans l’espace",
+            "Un lieu où la gravité est si forte que rien n’en sort, pas même la lumière",
+            "Une étoile éteinte pour un temps"
+          ]
+        },
+        {
+          "q": "Quelle est la masse du trou noir au centre de notre galaxie ?",
+          "a": [
+            "À peu près celle du Soleil",
+            "Environ quatre millions de fois celle du Soleil",
+            "Celle de la galaxie entière"
+          ]
+        },
+        {
+          "q": "Si l’on remplaçait le Soleil par un trou noir de même masse, que feraient les planètes ?",
+          "a": [
+            "Elles tomberaient dedans",
+            "Elles resteraient sur leurs orbites, et il ferait bien plus froid",
+            "Elles partiraient dans l’espace"
+          ]
+        }
+      ],
+      "mars-where-we-have-driven": [
+        {
+          "q": "Combien dure une journée sur Mars ?",
+          "a": [
+            "Quarante minutes de plus que la nôtre",
+            "Deux fois la nôtre",
+            "La moitié de la nôtre"
+          ]
+        },
+        {
+          "q": "Opportunity était prévu pour durer quatre-vingt-dix jours martiens. Combien de temps a-t-il tenu ?",
+          "a": [
+            "Quatre-vingt-dix jours, comme prévu",
+            "Plus de quatorze ans",
+            "Environ un an"
+          ]
+        },
+        {
+          "q": "Combien de vols le petit hélicoptère Ingenuity a-t-il faits ?",
+          "a": [
+            "Un",
+            "Douze",
+            "72"
+          ]
+        }
+      ]
+    }
+  },
+
   "keyHint": {
     "title": "Commandes",
     "titleTouch": "Gestes",
@@ -3078,6 +3286,55 @@ export const COPY = {
   "glossary": {
     "title": "Mots de cette page",
     "hint": "Touche un terme pour une phrase simple."
+  },
+  // forge #571: a Moment's flight data (copy/en.moments.telemetry.js), machine-drafted 2026-11-24, not native-reviewed
+  "momentTelemetry": {
+    "button": "Données de vol",
+    "buttonTitle": "Afficher ou masquer les altitudes et vitesses publiées",
+    "title": "Données de vol",
+    "rocket": {
+      "saturn-v": "Saturn V"
+    },
+    "flights": {
+      "apollo11": "Apollo 11",
+      "apollo13": "Apollo 13"
+    },
+    "legendCompare": "{flight}, la même fusée",
+    "height": "Altitude",
+    "speed": "Vitesse par rapport à la Terre",
+    "unitKm": "km",
+    "unitKms": "km/s",
+    "unitMin": "min",
+    "events": {
+      "liftoff": "Décollage",
+      "mach1": "Mach 1",
+      "maxQ": "Max Q",
+      "sicCeco": "Moteur central du premier étage coupé",
+      "sicOeco": "Moteurs du premier étage coupés",
+      "sicSep": "Le premier étage se détache",
+      "siiCeco": "Moteur central du deuxième étage coupé",
+      "siiPlannedCeco": "Quand ce moteur devait s’arrêter",
+      "siiOeco": "Moteurs du deuxième étage coupés",
+      "siiSep": "Le deuxième étage se détache",
+      "sivbCutoff": "Moteur du troisième étage coupé",
+      "orbit": "En orbite"
+    },
+    "markStaging": "Séparation",
+    "before": "En attente du décollage",
+    "readout": "{event}, {time} : {height} km d’altitude, {speed} km/s",
+    "commanded": "(heure commandée)",
+    "after": "Le tableau s’arrête à la mise en orbite, {time}",
+    "maxQLine": "Max Q {kpa} kPa à {time}, à {height} km d’altitude",
+    "dots": "Les points sont le tableau publié par la NASA ; les lignes entre eux ne sont pas des mesures.",
+    "truth": "Établi après le vol à partir des rapports de vol.",
+    "source": "Apollo by the Numbers, NASA SP-2000-4029",
+    "sourceTitle": "Le livre, un PDF de la NASA ; tableaux à ses pages {pages}",
+    "tableCaption": "Les lignes publiées de {flight}",
+    "colTime": "Heure",
+    "colEvent": "Événement",
+    "colHeight": "Altitude, km",
+    "colSpeed": "Vitesse, km/s",
+    "seekHint": "Choisis un point pour aller à cette seconde"
   },
   "templates": {
     "earthevent": {
@@ -4762,6 +5019,83 @@ Object.assign(COPY, {
 
 // b200-f2-worlds: begin (forge #144, #145, #148) -- the Size and Distance sliders, the cutaways and the heliosphere (copy/en.later.js orrery, cutaway, helio). Machine-drafted like the rest of this file, not read by a native speaker.
 Object.assign(COPY, {
+  // forge #572 (Name the stars in your photo): begin
+  "skyPhoto": {
+    "pick": "Choisir une photo",
+    "drop": "ou la déposer ici",
+    "private": "Ta photo est lue sur cet appareil et n’est jamais envoyée. Rien d’elle n’est gardé ni transmis.",
+    "loading": "Lecture de la photo…",
+    "notImage": "Ce fichier n’est pas une image que ce navigateur sait ouvrir.",
+    "tooBig": "La photo est affichée en {w} × {h} pixels : assez grande pour nommer ses étoiles, assez petite pour cet appareil.",
+    "another": "Une autre photo",
+    "modeLabel": "Comment la caler",
+    "modeStars": "Deux étoiles",
+    "modeRough": "Heure et direction",
+    "howStars": "Touche une étoile que tu connais sur la photo, puis dis laquelle c’est. Deux étoiles calent le ciel ; une troisième le vérifie.",
+    "howRough": "Indique quand, où et dans quelle direction visait l’appareil pour un premier ciel approximatif. Puis fixe-le avec deux étoiles.",
+    "tapStar": "Touche l’étoile {n} sur la photo",
+    "whichStar": "Quelle est cette étoile ?",
+    "allStars": "Toutes les étoiles brillantes",
+    "starMark": "Étoile {n} : {name}",
+    "undo": "Retirer la dernière étoile",
+    "aligned": "Calée sur {count} étoiles : la photo couvre {w}° de large.",
+    "alignedTwo": "Calée sur deux étoiles. Ajoute une troisième pour vérifier.",
+    "fit": "Les étoiles sont en moyenne à {px} pixels de leur place.",
+    "fitPoor": "Les étoiles manquent leur place de {px} pixels en moyenne : un objectif grand-angle ou fisheye courbe le ciel, ou une étoile a été mal nommée.",
+    "mirrored": "Cette photo est inversée, comme la prend une caméra frontale. Elle est lue ainsi.",
+    "snap": "Caler sur les étoiles de la photo",
+    "snapped": "Calée sur {count} étoiles trouvées dans la photo.",
+    "snapNone": "Aucune étoile ne ressortait assez pour s’y caler. Celles que tu as nommées tiennent toujours.",
+    "when": "Quand elle a été prise",
+    "whenNote": "Dans le fuseau horaire de cet appareil.",
+    "whenFromPhoto": "Lue dans la photo, sur cet appareil.",
+    "whenNone": "Sans heure, pas de planètes ni de Lune : elles bougent par rapport aux étoiles.",
+    "where": "Où elle a été prise",
+    "whereNone": "Quelque part sur Terre",
+    "whereNote": "Une ville proche suffit. Sans elle, la Lune peut être décalée jusqu’à un degré.",
+    "facing": "L’appareil visait",
+    "height": "Hauteur au-dessus de l’horizon",
+    "heightValue": "{n}°",
+    "field": "Largeur de la photo",
+    "fieldValue": "{n}°",
+    "fieldNote": "L’appareil principal d’un téléphone couvre environ 65° ; son zoom, 25 à 35°.",
+    "drawRough": "Dessiner le ciel",
+    "roughDone": "Un ciel approximatif d’après l’heure et la direction. Touche deux étoiles pour le fixer.",
+    "roughNeeds": "Choisis d’abord une heure et un lieu.",
+    "compass": {
+      "n": "N",
+      "ne": "NE",
+      "e": "E",
+      "se": "SE",
+      "s": "S",
+      "sw": "SO",
+      "w": "O",
+      "nw": "NO"
+    },
+    "show": "Afficher",
+    "showLines": "Lignes des constellations",
+    "showNames": "Noms des constellations",
+    "showStars": "Noms des étoiles",
+    "showBodies": "Planètes et Lune",
+    "save": "Enregistrer l’image",
+    "saved": "Enregistrée sous {file}.",
+    "saveFailed": "L’image n’a pas pu être créée sur cet appareil.",
+    "credit": "Étoiles et constellations nommées par Space Radar, spaceradar.ai/sky-photo",
+    "creditData": "Étoiles : HYG et d3-celestial. Planètes : Astronomy Engine.",
+    "canvasLabel": "Ta photo avec les étoiles nommées",
+    "planetsFailed": "Les planètes n’ont pas pu être calculées ici.",
+    "bodies": {
+      "moon": "Lune",
+      "mercury": "Mercure",
+      "venus": "Vénus",
+      "mars": "Mars",
+      "jupiter": "Jupiter",
+      "saturn": "Saturne",
+      "uranus": "Uranus",
+      "neptune": "Neptune"
+    }
+  },
+  // forge #572: end
   "orrery": {
     "title": "Taille et distance",
     "size": "Taille en plus",

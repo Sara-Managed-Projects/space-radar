@@ -83,5 +83,6 @@ def lab_footer(root: str) -> str:
 
 
 def has_action(body: str) -> bool:
-    """Whether a page's own text carries its main action (an ember .btn--map)."""
-    return "btn--map" in body
+    """Whether a page's own text carries its main action (an ember .btn--map), or a box its script fills with one
+    (`data-main-action`: /sky-photo/'s "Choose a photo", forge #572), so the header's map link is not a second ember."""
+    return "btn--map" in body or "data-main-action" in body

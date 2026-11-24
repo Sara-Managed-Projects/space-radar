@@ -1,0 +1,67 @@
+version: 1
+# The Lab's learning paths (forge #566): the simulators of site/lab/ in course order, a few at a time, so a visitor or
+# a class can go from one idea to the next instead of picking from a flat list of a hundred.
+#
+# WHAT A PATH IS. An ordered list of simulators that already exist, each building on the one before, and nothing else:
+# no words of its own beyond a name and one sentence, no new numbers. The ages and the curriculum codes a path shows are
+# NOT written here: scripts/seo_lab_paths.py reads them off registry/lab-levels.yaml for the simulators the path holds,
+# so the paths page filters with the same ages and codes as /lab/ and can never disagree with it.
+#
+# WHERE IT IS BUILT. scripts/build_seo.py calls scripts/seo_lab_paths.py, which writes /lab/paths/index.html (every path,
+# with the Lab's age and curriculum filter) and adds a small "learning path" box to each simulator a path holds, shown
+# only when the simulator was opened from that path (?path=<id>). Progress is a tick per simulator, kept in this browser
+# only (localStorage `sr:paths`, {pathId: [slug, ...]}): no account, no request. tests/test_lab_paths.py holds the rules.
+#
+# THE ORDER. Each simulator leans on the ones before it: a path opens with something to see (a ball thrown, a beam of
+# light, a spot on the Sun) and ends with the idea that needs the others; the ages printed beside each one say where it
+# is pitched, so a class can stop early. `after:` names the paths worth doing first, only where a simulator of this path leans on one of that
+# path's ideas (rockets lean on orbits; the stars lean on light; black holes lean on gravity and on how stars end).
+#
+# A ROW
+#   id      lower-case words with dashes; the anchor on the paths page and the ?path= value
+#   name    the path's name, sentence case, at most 40 characters
+#   say     one sentence: what the path takes you through
+#   after   ids of paths to do first (optional)
+#   sims    the simulators, in order, by folder name under site/lab/; between 4 and 8; each in one path at most twice
+#
+# NOT HERE, ON PURPOSE: Saving Planets' courses (CC BY-NC-SA) are a source of inspiration only; nothing of their text
+# is copied. Teacher packs (printable sheets) are a later, paid extra and are not part of the free paths.
+paths:
+  - id: orbits
+    name: Orbits and gravity
+    say: "Why things fall, why some never land, and how the height of an orbit sets the time of a lap."
+    sims: [throw-it-faster, the-iss-always-falls, orbit-zoo-height-sets-the-lap-time, kepler-equal-areas,
+           keplers-third-law-race, escape-velocity-ladder, gravity-slingshot-steal]
+  - id: light
+    name: Light and time
+    say: "Light is fast but not instant: what that delay means from the Moon to the farthest galaxies."
+    sims: [light-speed-road-trip, the-sun-vanishes-eight-minutes-later, radio-ping-pong-with-mars,
+           inverse-square-flashlight, doppler-siren-waves, redshift-stripes]
+  - id: stars
+    name: The Sun and the stars
+    say: "From the spots on our own star to the colours, sizes and endings of the others."
+    after: [light]
+    sims: [sunspot-cycle-counter, star-colour-is-temperature, hr-diagram-of-our-neighbours, big-stars-burn-fast,
+           what-happens-to-our-sun, supernova-shockwave]
+  - id: black-holes
+    name: Black holes and the universe
+    say: "Gravity at its strongest, then the whole universe: how it grows and how old it is."
+    after: [orbits, stars]
+    sims: [gravity-well-rubber-sheet, squeeze-earth-into-a-marble, spaghettification, the-shadow-of-m87s-black-hole,
+           every-galaxy-moves-away, universe-timeline-scrub]
+  - id: rockets
+    name: Rockets and spaceflight
+    say: "Getting up, getting round and getting there: the hundred kilometres, the stages and the transfers."
+    after: [orbits]
+    sims: [from-ground-to-space-in-100-km, staging-drop-the-dead-weight, rocket-equation, to-catch-up-slow-down,
+           hohmann-transfer-hop, mars-launch-window, reentry-heat-speed-squared]
+  - id: planets
+    name: Planets and moons
+    say: "How big the worlds are, why their days and seasons differ, and what heats them."
+    sims: [earths-in-jupiter, venus-day-race, tilt-makes-the-seasons, greenhouse-dial-why-venus-is-hot,
+           two-tides-not-one, io-the-squeezed-moon, habitable-zone-slider]
+  - id: sky
+    name: Sky from Earth
+    say: "What you see when you look up, and the geometry behind the phases, eclipses and wandering planets."
+    sims: [moon-phases-from-above, sun-and-moon-look-the-same-size, two-eclipses-one-geometry, star-trails-by-latitude,
+           mars-loop-in-the-sky, meteor-shower-radiant, venus-phases-galileos-proof]

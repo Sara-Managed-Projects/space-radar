@@ -450,13 +450,16 @@ export async function boot({ setStatus } = {}) {
   const otherLight = {
     band: null,
     mix: 1,
+    under: null, // forge #565: a second band the slider starts from instead of the visible sky
     layer: null,
     listeners: new Set(),
-    set(band, mix) {
+    set(band, mix, under = this.under) {
       const nextMix = Number.isFinite(mix) ? Math.min(1, Math.max(0, mix)) : this.mix;
-      if (band === this.band && nextMix === this.mix) return;
+      const nextUnder = band && under && under !== band ? under : null;
+      if (band === this.band && nextMix === this.mix && nextUnder === this.under) return;
       this.band = band || null;
       this.mix = nextMix;
+      this.under = nextUnder;
       if (this.band && !this.layer && !this.asked) {
         this.asked = import('./scene/otherlight.js').then((m) => {
           this.layer = m.createOtherLight({ parent: starfield.group, saveData: typeof navigator !== 'undefined' && shouldSaveData(navigator.connection) });
@@ -472,7 +475,7 @@ export async function boot({ setStatus } = {}) {
   function updateOtherLight() {
     const layer = otherLight.layer;
     if (!layer) return;
-    layer.set(otherLight.band);
+    layer.set(otherLight.band, otherLight.under);
     layer.setMix(otherLight.mix);
     // The star sphere's own axes are equatorial J2000: the camera's direction, turned into them.
     ctx.camera.getWorldDirection(_olDir).applyQuaternion(starfield.group.getWorldQuaternion(_olQ).invert());

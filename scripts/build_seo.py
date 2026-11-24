@@ -57,6 +57,7 @@ import seo_share  # noqa: E402
 import seo_dates  # noqa: E402
 import seo_embed  # noqa: E402
 import seo_lab  # noqa: E402
+import seo_lab_paths  # noqa: E402  (forge #566: /lab/paths/ and the path boxes on the simulators)
 import seo_llms  # noqa: E402  (llms.txt and llms-full.txt)
 import indexnow  # noqa: E402
 import seo_sitemaps  # noqa: E402  (the www sitemap is an index of every site's)
@@ -302,12 +303,15 @@ def build(out: Path, host: str, today: str | None = None, snapshot_index: dict |
     # The Lab's simulators with a canonical, Open Graph and a LearningResource block, from their own heads
     # (scripts/seo_lab.py); deploy.sh uploads lab/ from here, so the committed files stay as contributors wrote them.
     seo_lab.build(out, host)
+    lab_paths = seo_lab_paths.build(out, host)  # forge #566: after seo_lab, whose copies it adds the path boxes to
     indexnow.write_key(out)
     dates = page_dates(host, pages)
+    for path in lab_paths:  # forge #566: dated by what it is built from
+        dates[f"{host}/{path}"] = seo_dates.page_date(["registry/lab-paths.yaml", "registry/lab-levels.yaml", "scripts/seo_lab_paths.py"], ROOT, lastmod())
     dates[f"{host}/embed/index.html"] = seo_dates.page_date(
         ["templates/embed.html", "templates/embed/generate.js", "scripts/seo_embed.py", "registry/embedders.yaml"], ROOT, lastmod())
     pages_xml = sitemap(host, slugs, press=(out / "press" / "index.html").is_file(), dates=dates,
-                        extra=["embed/index.html"] + lab_pages(), growth=extra["sitemap"])
+                        extra=["embed/index.html"] + lab_pages() + lab_paths, growth=extra["sitemap"])
     (out / seo_sitemaps.PAGES).write_text(pages_xml, encoding="utf-8")
     # The other languages (scripts/seo_i18n.py, docs/TRANSLATING.md "The pages a search engine reads"): every page whose own
     # text a language's catalog (registry/seo-i18n/<lang>/) covers whole, under <lang>/, with hreflang on both sides, and

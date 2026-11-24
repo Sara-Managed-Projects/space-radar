@@ -1,0 +1,46 @@
+version: 1
+# Three questions at the end of a trip (forge #566), each answered by one of that trip's own stops.
+#
+# THE RULE: NO FACT OF ITS OWN. A question asks what a stop's card already says, and nothing else: `quote` is the words
+# of the card (registry/tours.yaml, the stop's `card.body`) the answer rests on, copied exactly, and `answer_has` is the
+# part of the right answer (copy/en.later.js `tripQuiz.trips`) that says it. tests/test_trip_quiz.py fails when the
+# quote is no longer on its card or the right answer no longer carries `answer_has`: change a card, and the question
+# that leaned on it breaks in CI instead of asking a visitor something the trip no longer says. The other two answers
+# are plainly wrong by the same card, never a trick.
+#
+# The words (the question, the three answers) are in copy/en.later.js `tripQuiz.trips.<trip>`, in all the app's
+# languages; this file holds what is not words: which stop, which answer is right, and the evidence. The quiz links each
+# answer to its stop (#trip=<id>&stop=<stop>), so "where did it say that" is one press away. scripts/gen_trip_quiz_js.py
+# mirrors this into site/js/data/tripquiz.js (CI runs --check). Results are kept in this browser only (localStorage
+# `sr:quiz`, {tripId: {right, of, at}}), never sent.
+#
+# A ROW: trips.<trip id>: three of {stop, right (0, 1 or 2: the index of the right answer), quote, answer_has}.
+trips:
+  people-in-space:
+    - {stop: iss, right: 1, quote: "goes all the way round the Earth every ninety-three minutes", answer_has: "93 minutes"}
+    - {stop: iss, right: 1, quote: "the crew see fifteen or sixteen sunrises a day", answer_has: "Fifteen or sixteen"}
+    - {stop: tiangong, right: 0, quote: "Three people live here at a time", answer_has: "Three"}
+  moon-landings:
+    - {stop: apollo-11, right: 1, quote: "Neil Armstrong and Buzz Aldrin stayed 21 hours and 36 minutes", answer_has: "21 hours and 36 minutes"}
+    - {stop: lunokhod-1, right: 1, quote: "A team of five controllers on Earth drove it", answer_has: "five controllers on Earth"}
+    - {stop: change-4, right: 0, quote: "put a relay satellite, Queqiao, out beyond the Moon, and the lander spoke to Earth through it", answer_has: "Queqiao"}
+  outer-solar-system:
+    - {stop: io, right: 1, quote: "pulled one way by the planet and the other by two moons further out", answer_has: "two other moons"}
+    - {stop: saturn, right: 0, quote: "in places are ten metres from top to bottom", answer_has: "ten metres"}
+    - {stop: triton, right: 1, quote: "One spacecraft has ever visited Neptune: Voyager 2", answer_has: "Voyager 2"}
+  the-sun-today:
+    - {stop: eight-minutes, right: 1, quote: "Sunlight takes eight minutes and twenty seconds to get there", answer_has: "eight minutes and twenty seconds"}
+    - {stop: spots, right: 1, quote: "Their number rises and falls about every eleven years", answer_has: "eleven years"}
+    - {stop: scale, right: 2, quote: "More than a million Earths would fit inside it", answer_has: "More than a million"}
+  life-of-a-star:
+    - {stop: sun, right: 1, quote: "Deep inside, it turns hydrogen into helium, and that is what makes it shine", answer_has: "hydrogen into helium"}
+    - {stop: letting-go, right: 1, quote: "The small, very hot star at its centre is all that is left: a white dwarf", answer_has: "white dwarf"}
+    - {stop: explosion, right: 0, quote: "in the year 1054 Chinese astronomers recorded a new star", answer_has: "Chinese astronomers"}
+  black-holes:
+    - {stop: what, right: 1, quote: "a place where gravity is so strong that nothing gets out, not even light", answer_has: "not even light"}
+    - {stop: from-home, right: 1, quote: "a black hole four million times as massive as the Sun", answer_has: "four million times"}
+    - {stop: sun, right: 1, quote: "the planets would stay in their orbits. It would only get a lot colder", answer_has: "stay in their orbits"}
+  mars-where-we-have-driven:
+    - {stop: planet, right: 0, quote: "its day is forty minutes longer than ours", answer_has: "forty minutes longer"}
+    - {stop: opportunity, right: 1, quote: "It drove forty-five kilometres in more than fourteen years", answer_has: "fourteen years"}
+    - {stop: jezero, right: 2, quote: "Ingenuity, which made seventy-two flights", answer_has: "72"}

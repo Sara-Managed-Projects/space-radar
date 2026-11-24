@@ -2459,26 +2459,37 @@ export const COPY = {
     "panelTitle": "其他波段",
     "bands": {
       "visible": "可见光",
-      "infrared": "红外",
+      "nearinfrared": "近红外",
+      "infrared": "中红外",
       "microwave": "微波",
       "gamma": "伽马射线"
     },
     "notes": {
       "visible": "眼睛和相机看到的天空。",
-      "infrared": "红外下的天空，伪彩色：温暖的尘埃和较冷的恒星。",
+      "nearinfrared": "近红外，伪彩色：穿过尘埃的星光。",
+      "infrared": "中红外，伪彩色：温暖的尘埃和较冷的恒星。",
       "microwave": "微波，以亮度显示：银河系叠在最古老的光之上。",
       "gamma": "伽马射线，伪彩色：脉冲星、耀变体、宇宙射线的辉光。"
     },
     "colours": {
+      "nearinfrared": "红色是 2.2 µm，绿色是 1.7 µm，蓝色是 1.2 µm （2MASS）",
       "infrared": "红色是 22 µm，绿色是 4.6 µm，蓝色是 3.4 µm （WISE）",
       "microwave": "一个波段，94 GHz，以亮度显示 （WMAP）",
       "gamma": "红色是 0.3 到 1 GeV，绿色是 1 到 3，蓝色是 3 以上 （Fermi）"
     },
     "mixLabel": "从可见光的天空到{band}",
+    "mixLabelFrom": "从{from}到{band}",
     "mixValue": "{pct}% {band}",
+    "fromLabel": "起点",
+    "fromGroup": "滑块起始的光",
+    "blink": "切换",
+    "blinkTitle": "跳到滑块的另一端",
+    "whyPair": { "nearinfrared_infrared": "近红外穿透尘埃；中红外看见尘埃发光。" },
+    "whyAny": "两种光，同一片天：各自显出对方藏起的东西。",
     "loading": "正在获取整片天空的图片。",
     "failed": "那张图片没有送到。天空保持原样。",
     "creditLead": "巡天：",
+    "creditAnd": "和",
     "creditTail": "。图块：CDS，斯特拉斯堡。"
   },
   "overlay": {
@@ -2927,6 +2938,203 @@ export const COPY = {
       "honesty": "恒星是实测的，行星是计算得出的，大气是模拟的，陆地是画的。"
     }
   },
+  "tripQuiz": {
+    "open": "三个问题",
+    "openTitle": "关于这次旅程的三个问题，答案都在它的某个站点里",
+    "intro": "每个答案都在这次旅程的某个站点上。",
+    "groupLabel": "第 {n} 题，共 {total} 题",
+    "right": "答对了。",
+    "wrong": "不太对。答案是：{answer}",
+    "from": "旅程在哪里说过：第 {n} 站，{title}",
+    "score": "答对 {n} 题，共 {total} 题",
+    "kept": "只保存在这个浏览器里。",
+    "again": "再问一次",
+    "trips": {
+      "people-in-space": [
+        {
+          "q": "空间站绕地球一圈要多久？",
+          "a": [
+            "大约一天",
+            "大约 93 分钟",
+            "大约八分钟"
+          ]
+        },
+        {
+          "q": "空间站的航天员一天能看到几次日出？",
+          "a": [
+            "一次，和我们一样",
+            "十五或十六次",
+            "大约一百次"
+          ]
+        },
+        {
+          "q": "天宫上同时住着几个人？",
+          "a": [
+            "三个",
+            "七个",
+            "十二个"
+          ]
+        }
+      ],
+      "moon-landings": [
+        {
+          "q": "尼尔·阿姆斯特朗和巴兹·奥尔德林在月球上待了多久？",
+          "a": [
+            "大约两小时",
+            "21 小时 36 分钟",
+            "三天"
+          ]
+        },
+        {
+          "q": "是谁驾驶月球车一号（Lunokhod 1）？",
+          "a": [
+            "车上的两名宇航员",
+            "地球上一个五人的操控小组",
+            "没有人：它自己选路"
+          ]
+        },
+        {
+          "q": "嫦娥四号降落在月球永远背对我们的那一面。它怎样和地球通话？",
+          "a": [
+            "通过中继卫星鹊桥",
+            "直接用无线电联系地球",
+            "根本联系不上"
+          ]
+        }
+      ],
+      "outer-solar-system": [
+        {
+          "q": "为什么木卫一上有几百座火山？",
+          "a": [
+            "它是离太阳最近的卫星",
+            "木星和另外两颗卫星不停地揉捏它",
+            "彗星不停地撞击它"
+          ]
+        },
+        {
+          "q": "土星环有些地方有多厚？",
+          "a": [
+            "大约十米",
+            "大约一千公里",
+            "和地球一样宽"
+          ]
+        },
+        {
+          "q": "有多少艘探测器到访过海王星？",
+          "a": [
+            "一艘也没有",
+            "一艘，旅行者 2 号",
+            "五艘"
+          ]
+        }
+      ],
+      "the-sun-today": [
+        {
+          "q": "阳光到达地球要多久？",
+          "a": [
+            "一点时间都不用",
+            "大约八分二十秒",
+            "大约一天"
+          ]
+        },
+        {
+          "q": "太阳黑子的数量大约多久起落一次？",
+          "a": [
+            "每年",
+            "大约每十一年",
+            "大约每一千年"
+          ]
+        },
+        {
+          "q": "太阳里能装下多少个地球？",
+          "a": [
+            "大约十个",
+            "大约一千个",
+            "一百多万个"
+          ]
+        }
+      ],
+      "life-of-a-star": [
+        {
+          "q": "是什么让太阳发光？",
+          "a": [
+            "它像煤火一样燃烧",
+            "它在深处把氢变成氦",
+            "它反射其他恒星的光"
+          ]
+        },
+        {
+          "q": "螺旋星云的中心剩下了什么？",
+          "a": [
+            "一个黑洞",
+            "一颗又小又热的星：白矮星",
+            "什么也没有"
+          ]
+        },
+        {
+          "q": "1054 年那次留下蟹状星云的爆炸，是谁看到的？",
+          "a": [
+            "中国的天文学家",
+            "用望远镜的伽利略",
+            "哈勃空间望远镜"
+          ]
+        }
+      ],
+      "black-holes": [
+        {
+          "q": "黑洞是什么？",
+          "a": [
+            "太空里一个空空的洞",
+            "引力强到任何东西都逃不出去的地方，连光也不行",
+            "一颗暂时熄灭的恒星"
+          ]
+        },
+        {
+          "q": "我们银河系中心的黑洞有多重？",
+          "a": [
+            "大约和太阳一样重",
+            "大约是太阳的四百万倍",
+            "和整个银河系一样重"
+          ]
+        },
+        {
+          "q": "如果把太阳换成一个同样质量的黑洞，行星会怎样？",
+          "a": [
+            "掉进去",
+            "照样留在轨道上，只是会冷得多",
+            "飞进太空"
+          ]
+        }
+      ],
+      "mars-where-we-have-driven": [
+        {
+          "q": "火星上的一天有多长？",
+          "a": [
+            "比我们的一天长四十分钟",
+            "是我们的两倍",
+            "是我们的一半"
+          ]
+        },
+        {
+          "q": "机遇号原本设计工作九十个火星日。它实际坚持了多久？",
+          "a": [
+            "九十天，和计划一样",
+            "十四年多",
+            "大约一年"
+          ]
+        },
+        {
+          "q": "小直升机机智号一共飞了多少次？",
+          "a": [
+            "一次",
+            "十二次",
+            "72 次"
+          ]
+        }
+      ]
+    }
+  },
+
   "keyHint": {
     "title": "控制",
     "titleTouch": "手势",
@@ -2993,6 +3201,55 @@ export const COPY = {
   "glossary": {
     "title": "本页的词语",
     "hint": "点一个术语，看一句简单的解释。"
+  },
+  // forge #571: a Moment's flight data (copy/en.moments.telemetry.js), machine-drafted 2026-11-24, not native-reviewed
+  "momentTelemetry": {
+    "button": "飞行数据",
+    "buttonTitle": "显示或隐藏公布的高度和速度",
+    "title": "飞行数据",
+    "rocket": {
+      "saturn-v": "土星五号"
+    },
+    "flights": {
+      "apollo11": "阿波罗 11 号",
+      "apollo13": "阿波罗 13 号"
+    },
+    "legendCompare": "{flight}，同一型火箭",
+    "height": "高度",
+    "speed": "相对地球的速度",
+    "unitKm": "公里",
+    "unitKms": "公里/秒",
+    "unitMin": "分钟",
+    "events": {
+      "liftoff": "起飞",
+      "mach1": "1 马赫",
+      "maxQ": "Max Q",
+      "sicCeco": "第一级中央发动机关机",
+      "sicOeco": "第一级发动机关机",
+      "sicSep": "第一级分离",
+      "siiCeco": "第二级中央发动机关机",
+      "siiPlannedCeco": "那台发动机原定关机的时刻",
+      "siiOeco": "第二级发动机关机",
+      "siiSep": "第二级分离",
+      "sivbCutoff": "第三级发动机关机",
+      "orbit": "入轨"
+    },
+    "markStaging": "级间分离",
+    "before": "等待起飞",
+    "readout": "{event}，{time}：高度 {height} 公里，{speed} 公里/秒",
+    "commanded": "（指令时刻）",
+    "after": "表格止于入轨，{time}",
+    "maxQLine": "Max Q {kpa} 千帕，于 {time}，高度 {height} 公里",
+    "dots": "圆点是 NASA 公布的表格；点之间的连线不是测量值。",
+    "truth": "飞行后根据飞行报告算出。",
+    "source": "Apollo by the Numbers, NASA SP-2000-4029",
+    "sourceTitle": "这本书是 NASA 的 PDF；表格在第 {pages} 页",
+    "tableCaption": "{flight} 公布的各行数据",
+    "colTime": "时间",
+    "colEvent": "事件",
+    "colHeight": "高度（公里）",
+    "colSpeed": "速度（公里/秒）",
+    "seekHint": "选一个圆点，跳到那一秒"
   },
   "templates": {
     "earthevent": {
@@ -4653,6 +4910,83 @@ export const COPY = {
 
 // b200-f2-worlds: begin (forge #144, #145, #148) -- the Size and Distance sliders, the cutaways and the heliosphere (copy/en.later.js orrery, cutaway, helio). Machine-drafted like the rest of this file, not read by a native speaker.
 Object.assign(COPY, {
+  // forge #572 (Name the stars in your photo): begin
+  "skyPhoto": {
+    "pick": "选择照片",
+    "drop": "或拖到这里",
+    "private": "你的照片只在这台设备上读取，绝不上传。照片的任何内容都不会被保存或发送。",
+    "loading": "正在读取照片…",
+    "notImage": "这个文件不是本浏览器能打开的图片。",
+    "tooBig": "照片以 {w} × {h} 像素显示：足以标出星星，也不会让这台设备吃力。",
+    "another": "换一张照片",
+    "modeLabel": "如何对准",
+    "modeStars": "两颗星",
+    "modeRough": "时间和方向",
+    "howStars": "在照片里点一颗你认识的星，再说出它是哪颗。两颗星就能对准星空，第三颗用来检验。",
+    "howRough": "填写拍摄的时间、地点和相机朝向，先得到一个粗略的星空。然后用两颗星把它定准。",
+    "tapStar": "点照片里的第 {n} 颗星",
+    "whichStar": "这是哪颗星？",
+    "allStars": "所有亮星",
+    "starMark": "第 {n} 颗星：{name}",
+    "undo": "撤回上一颗星",
+    "aligned": "已用 {count} 颗星对准：照片横跨 {w}°。",
+    "alignedTwo": "已用两颗星对准。再加一颗星来检验吻合程度。",
+    "fit": "星星与其位置平均相差 {px} 像素。",
+    "fitPoor": "星星平均偏离其位置 {px} 像素：广角或鱼眼镜头会让星空变形，或者某颗星选错了。",
+    "mirrored": "这张照片是镜像的，就像前置摄像头拍的那样。已按镜像读取。",
+    "snap": "吸附到照片里的星星",
+    "snapped": "已吸附到照片中找到的 {count} 颗星。",
+    "snapNone": "没有星星足够清晰，无法吸附。你选定的星星仍然有效。",
+    "when": "拍摄时间",
+    "whenNote": "按这台设备的时区。",
+    "whenFromPhoto": "从照片中读取，在这台设备上。",
+    "whenNone": "没有时间就没有行星和月亮：它们在群星间移动。",
+    "where": "拍摄地点",
+    "whereNone": "地球上某处",
+    "whereNote": "附近的一座城市就够了。没有地点时，月亮可能偏差一度左右。",
+    "facing": "相机朝向",
+    "height": "离地平线的高度",
+    "heightValue": "{n}°",
+    "field": "照片宽度",
+    "fieldValue": "{n}°",
+    "fieldNote": "手机主摄像头横跨约 65°；长焦为 25 到 35°。",
+    "drawRough": "画出星空",
+    "roughDone": "根据时间和方向画出的粗略星空。点两颗星把它定准。",
+    "roughNeeds": "请先选择时间和地点。",
+    "compass": {
+      "n": "北",
+      "ne": "东北",
+      "e": "东",
+      "se": "东南",
+      "s": "南",
+      "sw": "西南",
+      "w": "西",
+      "nw": "西北"
+    },
+    "show": "显示",
+    "showLines": "星座连线",
+    "showNames": "星座名称",
+    "showStars": "星名",
+    "showBodies": "行星和月亮",
+    "save": "保存图片",
+    "saved": "已保存为 {file}。",
+    "saveFailed": "这台设备无法生成图片。",
+    "credit": "星星和星座由 Space Radar 标注，spaceradar.ai/sky-photo",
+    "creditData": "恒星：HYG 和 d3-celestial。行星：Astronomy Engine。",
+    "canvasLabel": "标出星星的你的照片",
+    "planetsFailed": "这里无法计算行星位置。",
+    "bodies": {
+      "moon": "月亮",
+      "mercury": "水星",
+      "venus": "金星",
+      "mars": "火星",
+      "jupiter": "木星",
+      "saturn": "土星",
+      "uranus": "天王星",
+      "neptune": "海王星"
+    }
+  },
+  // forge #572: end
   "orrery": {
     "title": "大小和距离",
     "size": "额外放大",

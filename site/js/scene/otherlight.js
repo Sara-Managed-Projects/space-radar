@@ -1,8 +1,8 @@
 // scene/otherlight.js -- the sky in light an eye cannot see: infrared, microwaves, gamma rays
 // (public #456; internal #283 the bands, #284 the crossfade, #286 the HiPS reader).
 //
-// Contract: createOtherLight(opts) -> { set(bandId | null), setMix(k), update(view), band(),
-//             state(), dispose(), group }
+// Contract: createOtherLight(opts) -> { set(bandId | null, underId?), setMix(k), update(view), band(),
+//             under(), state(), dispose(), group }
 //   opts: { parent, rot?: THREE.Matrix3, radius?: number, ground?: boolean, transparent?: boolean,
 //           renderOrder?: number, bands?, base?, load?, saveData?, tileCap? }
 //   view: { dirEq: [x, y, z], fovDeg, heightPx, aspect, strength? }
@@ -30,6 +30,12 @@
 // layer is drawn OVER the Milky Way with that opacity (not added to it), so at 1 the panorama is
 // gone and in between the two are a true mix; the stars stay, because they are how a visitor
 // keeps their bearings.
+//
+// TWO LIGHTS, ONE SLIDER (forge #565). `set(band, under)`: with a second band `under`, that band is
+// drawn whole beneath the first instead of the visible sky, and the same slider fades from it to
+// `band` (2MASS's near infrared to WISE's, say). Only the band on top streams deeper tiles; the one
+// beneath is its baked picture. Nothing blinks by itself: ui/otherlight.js moves the slider when a
+// visitor drags it or presses Blink.
 //
 // HONESTY. Every band is a false-colour picture: the survey's own choice of which wavelength is
 // shown as red, green and blue (registry/otherlight.yaml `colours`). `gain` is a display stretch,
@@ -138,12 +144,27 @@ export function createOtherLight(opts = {}) {
     blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.SrcAlphaFactor, blendDst: THREE.OneMinusSrcAlphaFactor,
   });
 
-  const sphere = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 24), material(FRAG_SKY));
+  const sphereGeo = new THREE.SphereGeometry(1, 48, 24);
+  const sphere = new THREE.Mesh(sphereGeo, material(FRAG_SKY));
   sphere.name = 'other-light-sky';
   sphere.frustumCulled = false;
   sphere.renderOrder = renderOrder;
   sphere.visible = false;
   group.add(sphere);
+  // The light the slider starts from when it is not the visible sky: drawn whole, just beneath.
+  // Its own mix and gain (the shared ones are the top band's).
+  const underMat = material(FRAG_SKY);
+  underMat.uniforms = { ...underMat.uniforms, uMix: { value: 0 }, uGain: { value: 1 } };
+  const underSphere = new THREE.Mesh(sphereGeo, underMat);
+  underSphere.name = 'other-light-under';
+  underSphere.frustumCulled = false;
+  underSphere.renderOrder = renderOrder - 0.0005;
+  underSphere.visible = false;
+  group.add(underSphere);
+  let under = null;      // the registry row drawn beneath
+  let underWanted = null;
+  let underTex = null;
+  let underAsked = 0;
 
   let band = null;      // the registry row drawn now
   let wanted = null;    // the id asked for; the picture may still be on its way
@@ -240,8 +261,46 @@ export function createOtherLight(opts = {}) {
     }
   }
 
+  // ---- the band beneath ---------------------------------------------------------------------------
+  function setUnder(id) {
+    const next = id ? bandOf(id, bands) : null;
+    const nextId = next ? next.id : null;
+    if (nextId === underWanted) return;
+    underWanted = nextId;
+    const mine = ++underAsked;
+    if (!next) {
+      under = null;
+      underSphere.visible = false;
+      if (underTex) { underTex.dispose(); underTex = null; underMat.uniforms.map.value = null; }
+      return;
+    }
+    const url = String(new URL(String(next.file).replace(/^site\//, ''), base));
+    let p;
+    try { p = Promise.resolve(loader(url)); } catch (e) { p = Promise.reject(e); }
+    p.then((tex) => {
+      if (disposed || mine !== underAsked) { if (tex && tex.dispose) tex.dispose(); return; }
+      tex.colorSpace = THREE.NoColorSpace;
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.ClampToEdgeWrapping;
+      tex.generateMipmaps = false;
+      tex.minFilter = tex.magFilter = THREE.LinearFilter;
+      tex.needsUpdate = true;
+      if (underTex) underTex.dispose();
+      underTex = tex;
+      under = next;
+      underMat.uniforms.map.value = tex;
+      underMat.uniforms.uGain.value = Number(next.gain) || 1;
+    }).catch((e) => {
+      if (mine !== underAsked) return;
+      underWanted = under ? under.id : null;
+      console.warn('other light (beneath):', nextId, e && e.message ? e.message : e);
+    });
+  }
+
   // ---- the band ---------------------------------------------------------------------------------
-  function set(id) {
+  function set(id, underId = null) {
+    // A band beneath itself is no comparison; with no band on top there is nothing to fade to.
+    setUnder(id && underId && underId !== id ? underId : null);
     const next = id ? bandOf(id, bands) : null;
     const nextId = next ? next.id : null;
     if (nextId === wanted) return;
@@ -290,6 +349,9 @@ export function createOtherLight(opts = {}) {
     strength = Number.isFinite(view.strength) ? Math.min(1, Math.max(0, view.strength)) : 1;
     shared.uMix.value = mix * strength;
     sphere.visible = !!band && state !== 'idle' && !!skyTex && shared.uMix.value > 0.002;
+    // Beneath: whole wherever the sky is drawn at all (the top band fades over it), and only once its own picture is in.
+    underMat.uniforms.uMix.value = strength;
+    underSphere.visible = !!band && !!under && !!underTex && strength > 0.002 && mix < 0.998;
     if (band && view.dirEq && Number.isFinite(view.fovDeg)) updateTiles(view, typeof performance !== 'undefined' ? performance.now() : Date.now());
   }
 
@@ -298,9 +360,11 @@ export function createOtherLight(opts = {}) {
     setMix(k) { mix = Math.min(1, Math.max(0, Number(k) || 0)); },
     update,
     band: () => (band ? band.id : null),
+    under: () => (under ? under.id : null),
     group,
     state: () => ({
       wanted, band: band ? band.id : null, state, mix, strength, drawn: sphere.visible,
+      under: under ? under.id : null, underDrawn: underSphere.visible,
       tiles: tiles.size(), tilesDrawn: tiles.keys().filter((k) => { const t = tiles.get(k); return t && t.mesh.visible; }).length,
       tileOrder, tilesWanted, pending: pending.size, failed: failed.size, tileFetches: stats.tileFetches,
     }),
@@ -308,8 +372,10 @@ export function createOtherLight(opts = {}) {
       disposed = true;
       clearTiles();
       if (skyTex) skyTex.dispose();
-      sphere.geometry.dispose();
+      if (underTex) underTex.dispose();
+      sphereGeo.dispose();
       sphere.material.dispose();
+      underMat.dispose();
       if (opts.parent) opts.parent.remove(group);
     },
   };

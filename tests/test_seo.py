@@ -113,6 +113,8 @@ sims = [p for p in sorted(LAB.glob("*/index.html")) if not p.parent.name.startsw
 ok(len(sims) >= 75, f"the Lab has its simulators in site/lab/ ({len(sims)})")
 ok(not any('rel="canonical"' in p.read_text(encoding="utf-8") for p in sims),
    "no committed simulator carries a canonical: contributors do not write them")
+sys.path.insert(0, str(ROOT / "scripts"))
+import seo_lab_paths  # noqa: E402  (forge #566)
 missing, wrong, body_changed, schema, crumb_wrong = [], [], [], [], []
 for src in sims:
     f = BUILT / "lab" / src.parent.name / "index.html"
@@ -120,6 +122,8 @@ for src in sims:
         missing.append(src.parent.name)
         continue
     text, orig = f.read_text(encoding="utf-8"), src.read_text(encoding="utf-8")
+    # Forge #566: a simulator a learning path holds also carries the path's hidden box and its script (seo_lab_paths.py)
+    text = seo_lab_paths.without_boxes(text)
     url = f"https://www.spaceradar.ai/lab/{src.parent.name}/index.html"
     if text.count('rel="canonical"') != 1 or f'<link rel="canonical" href="{url}">' not in text \
             or f'<meta property="og:url" content="{url}">' not in text or 'property="og:image"' not in text:

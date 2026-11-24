@@ -2359,6 +2359,80 @@ html.sr-present.sr-trip-mode:not([data-trip-names]) #labels .label:not(.is-subje
   width: 100%;
 }
 
+/* Three questions at the end (forge #566, ui/tripquiz.js): the control set's radios in a fieldset per question,
+   answered in words. Right is the blue of a selection, wrong only says so: no colour carries the answer alone. */
+.sr-tripsheet__quiz {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.sr-tripquiz {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.sr-tripquiz > p {
+  margin: 0;
+}
+
+.sr-tripquiz__q {
+  display: grid;
+  gap: var(--sp-1);
+  min-width: 0;
+  margin: 0;
+  padding: var(--sp-3);
+  border: 1px solid var(--sr-line);
+  border-radius: var(--ui-r);
+}
+
+.sr-tripquiz__q[data-answer='right'] {
+  border-color: var(--ui-sel-line);
+}
+
+/* Floated, a legend is laid out as the box's first row instead of being drawn across its border (a long question
+   wrapped over the line). */
+.sr-tripquiz__ask {
+  float: left;
+  width: 100%;
+  padding: 0;
+  font: 600 var(--sr-fs-body)/20px var(--sr-font);
+  color: var(--sr-text);
+}
+
+.sr-tripquiz__n,
+.sr-tripquiz__say,
+.sr-tripquiz__score {
+  margin: 0;
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-tripquiz__say {
+  color: var(--sr-text);
+}
+
+.sr-tripquiz__opts {
+  display: grid;
+}
+
+.sr-tripquiz__from {
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  color: var(--sr-atmosphere);
+}
+
+.sr-tripquiz__from:focus-visible {
+  outline: 2px solid var(--sr-atmosphere);
+  outline-offset: 2px;
+}
+
+.sr-tripsheet__quiz[hidden],
+.sr-tripquiz__say[hidden],
+.sr-tripquiz__from[hidden],
+.sr-tripquiz__score[hidden],
+.sr-tripquiz__again[hidden] {
+  display: none;
+}
+
 /* --- the stop card (ui/cards.js renderStop) ------------------------------------------------ */
 
 .sr-card__header--stop {

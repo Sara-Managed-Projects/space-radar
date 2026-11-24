@@ -25,10 +25,11 @@ const credits = readFileSync(join(ROOT, 'CREDITS.md'), 'utf8');
 check(OTHER_LIGHT.length >= 2 && OTHER_LIGHT.length <= 6, `${OTHER_LIGHT.length} bands: a chooser, not a catalogue`);
 for (const b of OTHER_LIGHT) {
   const where = `otherlight.yaml ${b.id}`;
-  check(/^https:\/\/alasky\.cds\.unistra\.fr\//.test(b.base), `${where}: tiles come from CDS over https`);
+  // CDS's HiPS, from CDS or from IRSA's public mirror of it (2MASS, 2026-11-24: CDS's host was down that day).
+  check(/^https:\/\/(alasky\.cds\.unistra\.fr\/|irsa\.ipac\.caltech\.edu\/data\/hips\/CDS\/)/.test(b.base), `${where}: tiles come from CDS (or IRSA's mirror of CDS) over https`);
   check(['equatorial', 'galactic'].includes(b.frame), `${where}: frame ${b.frame}`);
   check(b.max_order >= 3 && (!b.stream || b.max_order > 3), `${where}: a streamed survey goes deeper than the baked picture`);
-  check(/^NASA/.test(b.credit) && /^https:\/\//.test(b.terms), `${where}: a NASA mission's data, with the page that says so`);
+  check(/^NASA/.test(b.credit) && /^https:\/\//.test(b.terms), `${where}: a NASA-funded mission's data, credited NASA first, with the page that says so`);
   check(!/DSS|Mellinger|Digitized Sky/i.test(`${b.hips_id} ${b.credit}`), `${where}: not the Digitized Sky Survey and not Mellinger's panorama`);
   const file = join(ROOT, b.file);
   check(existsSync(file), `${where}: ${b.file} is in the tree (scripts/build_otherlight.py)`);
@@ -104,6 +105,43 @@ check(bandOf('infrared') && bandOf('nope') === null, 'bandOf');
   check(layer.state().tiles === 0 && !layer.state().drawn && parent.children.length === 2, 'back to the visible sky: the tiles are let go');
   layer.dispose(); saver.dispose();
   check(parent.children.length === 0, 'dispose takes the layer out of the scene');
+}
+
+// ------------------------------------------------------------------ 3b. two lights on one slider (forge #565)
+{
+  check(!!bandOf('nearinfrared'), 'a near-infrared band (2MASS) beside WISE\'s');
+  const parent = new THREE.Group();
+  const asked = [];
+  const tex = () => ({ dispose() { this.gone = true; } });
+  const layer = createOtherLight({ parent, load: (url) => { asked.push(url); return Promise.resolve(tex()); } });
+  layer.set('infrared', 'nearinfrared');
+  await new Promise((r) => setTimeout(r, 0));
+  layer.setMix(0.4);
+  layer.update({ dirEq: [1, 0, 0], fovDeg: 60, heightPx: 900, aspect: 1.6 });
+  check(asked.length === 2 && asked.some((u) => /nearinfrared\.webp$/.test(u)) && asked.some((u) => /\/infrared\.webp$/.test(u)), `both baked skies, ours, one each: ${asked.join(', ')}`);
+  check(layer.under() === 'nearinfrared' && layer.state().underDrawn && layer.state().drawn, 'the band beneath is drawn whole and the band on top fades over it');
+  layer.setMix(1);
+  layer.update({ dirEq: [1, 0, 0], fovDeg: 60, heightPx: 900, aspect: 1.6 });
+  check(!layer.state().underDrawn, 'at the top band\'s end the one beneath is not drawn');
+  layer.set('infrared', 'infrared');
+  check(layer.under() === null, 'a band is not compared with itself');
+  layer.set('infrared', 'gamma');
+  await new Promise((r) => setTimeout(r, 0));
+  layer.update({ dirEq: [1, 0, 0], fovDeg: 8, heightPx: 900, aspect: 1.6 });
+  check(asked.filter((u) => /gamma/.test(u)).length === 1 && asked.slice(3).every((u) => !/gamma/.test(u)), 'only the band on top streams tiles; the one beneath is its picture');
+  check(asked.filter((u) => /\/infrared\.webp$/.test(u)).length === 1, 'changing what is beneath does not fetch the top band again');
+  layer.set(null, 'gamma');
+  check(layer.under() === null && !layer.state().underDrawn, 'back to the visible sky lets the band beneath go too');
+  layer.dispose();
+  check(parent.children.length === 0, 'dispose takes both skies out');
+  // The words: a reason for the pair the research asked for, a general one, and a Blink that is a press.
+  const C = COPY.otherLight;
+  check(typeof C.whyPair.nearinfrared_infrared === 'string' && C.whyPair.nearinfrared_infrared.length <= 60, 'why near and mid infrared differ, in one line');
+  check(typeof C.whyAny === 'string' && C.whyAny.length <= 60 && /\{from\}/.test(C.mixLabelFrom) && C.blink && C.fromLabel, 'the general reason, the slider\'s two-band label, Blink and From');
+  const ui = readFileSync(join(JS, 'ui/otherlight.js'), 'utf8');
+  check(!/setInterval|requestAnimationFrame/.test(ui), 'nothing in the panel blinks by itself: the slider and the Blink press only');
+  check(/ui-btn ui-btn--secondary ui-btn--sm/.test(ui) && !/ui-btn--primary/.test(ui), 'Blink is a secondary button of the shared set, not a second ember action');
+  check(/sr\('track', 'layer_toggle'/.test(ui), 'turning a band on or off is told to the platform as layer_toggle (CONTRACT.md)');
 }
 
 // ------------------------------------------------------------------ 4. nothing at boot

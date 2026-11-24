@@ -233,6 +233,14 @@ export function validateMoment(m, opts = {}) {
     else if (q.place.ground && !GROUNDS.includes(q.place.ground.kind)) say(`places: ground.kind must be one of ${GROUNDS.join(', ')}`);
   }
   if (m.moonSite !== undefined && !(isNum(m.moonSite.lat) && isNum(m.moonSite.lon))) say('moonSite needs lat and lon in degrees');
+  // forge #571: the flight data, files of telemetry/ by id (moments/telemetry.js validateTelemetry holds each file).
+  if (m.telemetry !== undefined) {
+    const tm = m.telemetry || {};
+    const okId = (v) => typeof v === 'string' && ID.test(v);
+    if (!okId(tm.flight)) say('telemetry.flight must be the id of a file in telemetry/');
+    if (tm.compare !== undefined && !(Array.isArray(tm.compare) && tm.compare.every(okId))) say('telemetry.compare must be a list of ids of files in telemetry/');
+    if (Array.isArray(tm.compare) && tm.compare.includes(tm.flight)) say('telemetry.compare names the flight itself');
+  }
   // Trajectories.
   const trajs = m.trajectories || {};
   for (const [id, tr] of Object.entries(trajs)) {

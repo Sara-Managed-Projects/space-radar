@@ -12,10 +12,20 @@
 // The slow auto-turn starts only under prefers-reduced-motion: no-preference, stops for good once the reader takes
 // the camera, has a pause button (motion over five seconds, WCAG 2.2.2) and stops drawing while the frame is off
 // screen or the tab is hidden.
+//
+// THE WORDS are ./words.js, in the app's eleven languages (?lang=, else the browser's own list; nothing stored).
+//
+// VIEW IN YOUR ROOM (forge #559): ./arplan.js decides the way in (WebXR on Android; the viewer on its own page when a
+// frame may not use the camera; an honest note on iPhone, where Quick Look needs USDZ files we do not make, and
+// elsewhere); ./ar.js, fetched with import() only on the press, runs the session with this page's own three.js. No
+// third-party request before the press or after it.
 
 import * as THREE from '../vendor/three.module.min.js';
 import { GLTFLoader } from '../vendor/GLTFLoader.js';
 import { MeshoptDecoder } from '../vendor/meshopt_decoder.module.js';
+import { icon } from '../js/ui/icons.js';
+import { WORDS, RTL, pickWordsLanguage, fill, metres } from './words.js';
+import { arWay, isIOS, sizeLine, topUrl, widest } from './arplan.js';
 
 const q = new URLSearchParams(location.search);
 const id = String(q.get('id') || '').trim().toLowerCase();
@@ -23,6 +33,17 @@ const $ = (s) => document.getElementById(s);
 const msg = $('msg');
 const canvas = $('c');
 const PAGE = 'https://models.spaceradar.ai/';
+const LANG = pickWordsLanguage(location.search, navigator.languages || [navigator.language]);
+const W = WORDS[LANG];
+if (LANG !== 'en') {
+  document.documentElement.lang = LANG === 'zh' ? 'zh-Hans' : LANG;
+  if (RTL.includes(LANG)) document.documentElement.dir = 'rtl';
+}
+msg.firstElementChild.textContent = W.loading;
+$('hint').textContent = W.hintMouse;
+canvas.setAttribute('aria-label', W.canvas);
+$('reset').setAttribute('aria-label', W.reset);
+$('reset').title = W.reset;
 
 if (q.get('bg') === 'none') document.body.classList.add('clear');
 if (q.get('ui') === '0') document.querySelector('.bar').hidden = true;
@@ -37,7 +58,7 @@ function say(title, text, link) {
   msg.append(b, s);
   if (link) {
     const a = document.createElement('a');
-    a.href = link; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'See all the models';
+    a.href = link; a.target = '_blank'; a.rel = 'noopener'; a.textContent = W.seeAll;
     msg.append(a);
   }
 }
@@ -51,7 +72,7 @@ let renderer;
 try {
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'low-power' });
 } catch (err) {
-  say('No 3D here', 'This browser cannot draw 3D on this page (WebGL is off or not available).', PAGE);
+  say(W.noGlTitle, W.noGlText, PAGE);
   throw err;
 }
 renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
@@ -171,7 +192,8 @@ const turnBtn = $('turn');
 function syncTurnButton() {
   turnBtn.hidden = reduce.matches && !autoTurn;
   turnBtn.setAttribute('aria-pressed', String(autoTurn));
-  turnBtn.setAttribute('aria-label', autoTurn ? 'Stop turning' : 'Turn slowly');
+  turnBtn.setAttribute('aria-label', autoTurn ? W.stop : W.turn);
+  turnBtn.title = autoTurn ? W.stop : W.turn;
   turnBtn.innerHTML = autoTurn
     ? '<svg viewBox="0 0 24 24"><path d="M9 6v12M15 6v12"/></svg>'
     : '<svg viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></svg>';
@@ -180,12 +202,12 @@ turnBtn.addEventListener('click', () => { autoTurn = !autoTurn; syncTurnButton()
 reduce.addEventListener?.('change', () => { if (reduce.matches) autoTurn = false; syncTurnButton(); });
 
 let hinted = false;
-if (matchMedia('(pointer: coarse)').matches) $('hint').textContent = 'Drag to turn · pinch to zoom';
+if (matchMedia('(pointer: coarse)').matches) $('hint').textContent = W.hintTouch;
 function hint() { if (!hinted) { hinted = true; $('hint').classList.add('gone'); } }
 setTimeout(hint, 6000);
 
 // DRAWING only when something moves, and never off screen.
-let visible = true, model = null, raf = 0, last = 0;
+let visible = true, model = null, raf = 0, last = 0, inAR = false;
 function resize() {
   const w = canvas.clientWidth || innerWidth, h = canvas.clientHeight || innerHeight;
   renderer.setSize(w, h, false);
@@ -194,7 +216,7 @@ function resize() {
 }
 function frame(t) {
   raf = 0;
-  if (!model || !visible || document.hidden) return;
+  if (!model || !visible || document.hidden || inAR) return;
   const dt = last ? Math.min(0.05, (t - last) / 1000) : 0;
   last = t;
   if (autoTurn) view.yaw += dt * 0.16;
@@ -229,7 +251,7 @@ async function main() {
   syncTurnButton();
   resize();
   if (!/^[a-z0-9][a-z0-9-]{0,80}$/.test(id)) {
-    say('No model named', 'Add ?id= and a model of Space Radar\'s own, for example ?id=hubble.', PAGE);
+    say(W.noIdTitle, W.noIdText, PAGE);
     return;
   }
   // The catalog not arriving (offline, a server error, an answer that is not JSON) is not "no such model".
@@ -239,19 +261,19 @@ async function main() {
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     entry = (await r.json()).models[id];
   } catch {
-    say('Could not load the catalog', 'The list of models did not arrive. Try again in a moment.', PAGE);
+    say(W.noCatTitle, W.noCatText, PAGE);
     return;
   }
-  if (!entry) { say('Not one of ours', `There is no model "${id}" in Space Radar's catalog.`, PAGE); return; }
+  if (!entry) { say(W.notOursTitle, fill(W.notOursText, { id }), PAGE); return; }
 
   const name = $('name');
   const a = document.createElement('a');
   a.href = `${PAGE}${id}/`; a.target = '_blank'; a.rel = 'noopener'; a.textContent = entry.name;
   const small = document.createElement('small');
-  small.textContent = '3D model by Space Radar · MIT';
+  small.textContent = W.credit;
   name.append(a, small);
-  document.title = `${entry.name}, 3D model | Space Radar`;
-  canvas.setAttribute('aria-label', `${entry.name}, 3D model: drag to turn, scroll or pinch to zoom, arrow keys to turn, plus and minus to zoom`);
+  document.title = fill(W.docTitle, { name: entry.name });
+  canvas.setAttribute('aria-label', fill(W.canvasNamed, { name: entry.name }));
 
   const loader = new GLTFLoader();
   loader.setMeshoptDecoder(MeshoptDecoder);
@@ -259,13 +281,96 @@ async function main() {
     const gltf = await loader.loadAsync(new URL(`../models/${entry.file}`, location.href).href);
     model = gltf.scene;
   } catch {
-    say('Could not load the model', 'The file did not arrive. Try again in a moment.', PAGE);
+    say(W.noFileTitle, W.noFileText, PAGE);
     return;
   }
   scene.add(model);
   fit(model);
   msg.hidden = true;
   wake();
+  room(entry);
+}
+
+// A short line where the hint was, gone after six seconds: AR that did not start is not a broken page.
+function tell(text) {
+  const h = $('hint');
+  h.textContent = text;
+  h.classList.remove('gone');
+  setTimeout(() => h.classList.add('gone'), 6000);
+}
+
+// VIEW IN YOUR ROOM. Which button (or note) this device gets is arplan.js's arWay(); the session is ar.js's.
+async function room(entry) {
+  let xr = false;
+  try { xr = !!(navigator.xr && await navigator.xr.isSessionSupported('immersive-ar')); } catch { xr = false; }
+  const framed = window.top !== window.self;
+  const policy = document.permissionsPolicy || document.featurePolicy;
+  const allowed = policy?.allowsFeature ? policy.allowsFeature('xr-spatial-tracking') : true;
+  const ua = navigator.userAgent || '';
+  const way = arWay({ xr, framed, allowed, android: /Android/.test(ua), ios: isIOS(ua, navigator.platform, navigator.maxTouchPoints) });
+  const wide = widest(new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3()));
+  const line = sizeLine('real', wide, entry.size_m);
+  const sizeText = fill(W[line.key], { m: metres(line.m, LANG) });
+  const dress = (el) => {
+    el.prepend(icon('house', 20));
+    el.querySelector('.ui-btn__label').textContent = W.ar;
+    el.setAttribute('aria-label', W.ar);
+    if (!el.title) el.title = W.ar;
+    el.hidden = false;
+  };
+  if (way === 'webxr') {
+    const btn = $('ar');
+    dress(btn);
+    btn.title = sizeText;
+    const overlay = $('aroverlay');
+    overlay.querySelector('[data-ar="done"]').textContent = W.arDone;
+    overlay.querySelector('[data-ar="seg"]').setAttribute('aria-label', W.arSize);
+    overlay.querySelector('[data-mode="real"]').textContent = W.arReal;
+    overlay.querySelector('[data-mode="room"]').textContent = W.arRoom;
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      inAR = true;
+      try {
+        const { startAR } = await import('./ar.js');
+        const r = await startAR({ renderer, scene, model, W, lang: LANG, sizeM: entry.size_m || null, overlay });
+        if (!r.ok) tell(W.arFail);
+      } catch {
+        tell(W.arFail);
+      } finally {
+        inAR = false;
+        btn.disabled = false;
+        resize(); fit(model); wake();
+      }
+    });
+    if (q.get('ar') === '1') btn.focus();
+    return;
+  }
+  if (way === 'open-top') {
+    const a = $('arout');
+    a.href = topUrl(location.href);
+    a.title = W.arOut;
+    dress(a);
+    return;
+  }
+  // A note, never a button that would fail: iPhone (no USDZ of ours yet), or a device without AR.
+  const info = $('arinfo');
+  const note = $('arnote');
+  dress(info);
+  $('arnote-t').textContent = W.arTitle;
+  $('arnote-text').textContent = way === 'ios' ? W.arIos : W.arHow;
+  $('arnote-size').textContent = sizeText;
+  const close = $('arclose');
+  close.append(icon('x', 20));
+  close.setAttribute('aria-label', W.close);
+  close.title = W.close;
+  const show = (on) => {
+    note.hidden = !on;
+    info.setAttribute('aria-expanded', String(on));
+    if (on) close.focus(); else info.focus();
+  };
+  info.addEventListener('click', () => show(note.hidden));
+  close.addEventListener('click', () => show(false));
+  note.addEventListener('keydown', (e) => { if (e.key === 'Escape') show(false); });
 }
 
 main();

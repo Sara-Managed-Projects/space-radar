@@ -264,6 +264,8 @@ console.log('play time s', playS.toFixed(0));
 const nearAt = (id) => [0, 0, 0];
 const moment = {
   format: 1, id: 'apollo-11', words: 'apollo-11', wordsFile: 'en.moments.apollo11.js',
+  // forge #571: the published heights and speeds of the ascent (site/data/moments/telemetry/), and the other Saturn V flight beside them
+  telemetry: { flight: 'as-506', compare: ['as-508'] },
   epoch: '1969-07-16T13:32:00Z', span: [-9.5, T.splash], pace, place,
   places: [{ from: T.ei - 300, place: { name: 'Pacific Ocean, 13.3 N 169.2 W', lat: SPLASH.lat, lon: SPLASH.lon, alt: 0, ground: { kind: 'sea' } } }],
   moonSite: { name: 'Tranquility Base', lat: SITE.lat, lon: SITE.lon },

@@ -12,6 +12,7 @@
 <link rel="modulepreload" href="../vendor/GLTFLoader.js">
 <link rel="modulepreload" href="../vendor/meshopt_decoder.module.js">
 <link rel="stylesheet" href="../css/tokens.css">
+<link rel="stylesheet" href="../css/controls.css">
 <!-- THE ONE-MODEL VIEWER (docs/EMBEDDING.md, "One 3D model"). A tiny page: no app boot, no service worker, no storage,
      nothing but the site's own three.js, its glTF loader and the meshopt decoder, the index scripts/models_catalog.py
      writes (models.json) and the one .glb. models.spaceradar.ai frames it on every model page; anyone may. -->
@@ -38,6 +39,18 @@ body.clear .bar{background:none}
 .hint{position:fixed;top:10px;left:12px;font:400 .72rem/1.3 var(--mono);color:var(--dim);opacity:.85;pointer-events:none;transition:opacity .6s}
 .hint.gone{opacity:0}
 @media(max-width:360px){.name small{display:none}}
+/* "View in your room" (forge #559): the kit's button in the bar, the kit's popover for the note, the kit's popover again
+   over the camera while AR runs (the browser's dom-overlay). Laid out here; their looks are controls.css's. */
+.bar .ui-btn{flex:none}
+.arnote{position:fixed;right:12px;bottom:68px;width:min(360px,calc(100vw - 24px));z-index:2}
+.aroverlay{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;padding:12px 12px max(12px,env(safe-area-inset-bottom))}
+.aroverlay>.ui-pop{width:min(420px,100%)}
+.aroverlay[hidden]{display:none}
+.aroverlay p{margin:0}
+/* On a phone the note's button is its icon alone (named by aria-label and title), so the model's name keeps the bar;
+   the AR button itself, the phone's one main action, keeps its words down to 360 px. */
+@media(max-width:480px){.bar .ui-btn--quiet .ui-btn__label{display:none}.bar .ui-btn--quiet{padding:0 10px}}
+@media(max-width:360px){.bar .ui-btn__label{display:none}.bar .ui-btn{padding:0 10px}}
 </style>
 </head>
 <body>
@@ -47,7 +60,27 @@ body.clear .bar{background:none}
 <div class="bar">
   <div class="name" id="name"></div>
   <button class="btn" id="turn" type="button" aria-pressed="true" aria-label="Stop turning" hidden><svg viewBox="0 0 24 24"><path d="M9 6v12M15 6v12"/></svg></button>
+  <button class="ui-btn ui-btn--primary" id="ar" type="button" hidden><span class="ui-btn__label">View in your room</span></button>
+  <a class="ui-btn ui-btn--primary" id="arout" target="_blank" rel="noopener" hidden><span class="ui-btn__label">View in your room</span></a>
+  <button class="ui-btn ui-btn--quiet" id="arinfo" type="button" aria-expanded="false" aria-controls="arnote" hidden><span class="ui-btn__label">View in your room</span></button>
   <button class="btn" id="reset" type="button" aria-label="Reset the view"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/></svg></button>
+</div>
+<section class="ui-pop ui-pop--surface arnote" id="arnote" role="dialog" aria-labelledby="arnote-t" hidden>
+  <div class="ui-pop__head"><h2 class="ui-pop__title" id="arnote-t">In your room</h2><button class="ui-close" id="arclose" type="button" aria-label="Close" title="Close"></button></div>
+  <div class="ui-pop__body"><p class="ui-pop__note" id="arnote-text"></p><p class="ui-pop__note" id="arnote-size"></p></div>
+</section>
+<div class="aroverlay" id="aroverlay" hidden>
+  <div class="ui-pop ui-pop--surface">
+    <div class="ui-pop__body">
+      <p data-ar="step"></p>
+      <p class="ui-pop__note" data-ar="size"></p>
+      <div class="ui-seg ui-seg--block" data-ar="seg" role="group" aria-label="Size">
+        <button class="ui-seg__btn" type="button" data-mode="real" aria-pressed="true">Real size</button>
+        <button class="ui-seg__btn" type="button" data-mode="room" aria-pressed="false">Room size</button>
+      </div>
+    </div>
+    <div class="ui-pop__foot"><button class="ui-btn" type="button" data-ar="done">Done</button></div>
+  </div>
 </div>
 <script type="module" src="./viewer.js"></script>
 </body>

@@ -1145,7 +1145,7 @@ export function createGroundSky(ctx, env) {
       }).catch((e) => { otherAsked = false; console.warn('ground sky: the other-light layer did not load', e); });
     }
     if (!other) return;
-    other.set(ol.band);
+    other.set(ol.band, ol.under);
     other.setMix(ol.mix);
     other.update({ dirEq: lookEq(frame.camera), fovDeg: frame.fovDeg, heightPx: h, aspect: w / Math.max(1, h) });
   }
