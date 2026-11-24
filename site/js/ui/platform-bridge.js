@@ -9,6 +9,8 @@
 //           onPlatform(cb, doc)         cb(detail) on each `sr:platform` event (and at once with the last one, if
 //                                       one came before cb was there); returns the function that stops it
 //           queue(win)                  window.srq, made if missing
+//           bridgeSeen(passport, win)   the platform's Tonight checklist asks this map's passport to keep a tick
+//                                       (window event `sr:seen` {id, on}); answers the function that stops it
 //           PLATFORM_SRC, QUEUE_CAP
 //
 // WHAT THE QUEUE IS. A plain array. The page pushes commands as things happen; platform.js, once it has loaded, reads
@@ -93,4 +95,23 @@ export function onPlatform(cb, doc = typeof document !== 'undefined' ? document 
   doc.addEventListener('sr:platform', on);
   if (last) { try { cb(last); } catch { /* the page goes on */ } }
   return () => doc.removeEventListener('sr:platform', on);
+}
+
+/**
+ * The one way back (internal research #549, the platform's Tonight checklist in the `[data-sr-tonight]` slot): a tick "I saw
+ * it" is kept by THIS map's passport, with its own rules (passport.js markSeen -> recordSeen: the first tick's day is kept, a
+ * tick taken back is removed), never written by the platform. The platform dispatches `window` event `sr:seen` with
+ * `detail = {id, on}`; this answers by setting `detail.kept` (true when the browser keeps the record). Ids only; no request.
+ */
+export function bridgeSeen(passport, win = typeof window !== 'undefined' ? window : null) {
+  if (!win || !passport || typeof passport.markSeen !== 'function') return () => {};
+  const on = (e) => {
+    try {
+      const d = e && e.detail;
+      if (!d || typeof d.id !== 'string' || !d.id || d.id.length > 80) return;
+      d.kept = passport.markSeen(d.id, d.on !== false) === true;
+    } catch { /* the page goes on */ }
+  };
+  win.addEventListener('sr:seen', on);
+  return () => win.removeEventListener('sr:seen', on);
 }
