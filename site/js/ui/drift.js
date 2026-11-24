@@ -766,6 +766,7 @@ export function createDrift(ctx, env = {}) {
     poolCount = -1;
     if (doc) linkCss(doc);
     if (root) root.classList.add(ROOT_CLASS);
+    if (win) win.dispatchEvent(new CustomEvent('sr:drift', { detail: { on: true } })); // ui/platformtrack.js: drift_start
     screenBefore = ctx.cleanView ? ctx.cleanView.state() : 'full';
     wantLayers();
     setScreen();

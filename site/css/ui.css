@@ -3799,6 +3799,25 @@ html.sr-phone .sr-top .sr-search__emptyhint {
   color: var(--sr-text-dim);
 }
 
+/* A trip card and its heart (ui/favs.js) share one cell of the grid: the card fills it, the heart sits in its top right
+   corner above the picture and the fade. Two buttons side by side, never one inside the other. */
+.sr-tripcell {
+  position: relative;
+  display: grid;
+  min-width: 0;
+}
+
+/* Two classes: the control set (css/controls.css, linked after this file) gives every .ui-btn `position: relative`. */
+.sr-tripcell > .sr-tripcell__fav {
+  position: absolute;
+  top: var(--sp-2);
+  right: var(--sp-2);
+  z-index: 2;
+}
+
+/* A heart that is pressed is filled with its ink: the selected look of the control set, and the shape says it too. */
+.sr-heart[aria-pressed='true'] svg { fill: currentColor; }
+
 /* Trips as cards: two columns, a wash of the trip's group colour falling to near-black (row D), and
    since spec 0068 the trip's own picture over that wash, fading into the card's glass under the
    title (the maintainer, 2026-10-02: "gradual image on the grid square"). The wash is what shows until the
@@ -4432,6 +4451,20 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 }
 
 .sr-rail__btn + .sr-rail__btn { border-top: 1px solid var(--sr-line); }
+
+/* The account slot (ui/platformtrack.js), last in the rail: shown only once the platform has said who is here. Signed in,
+   the nickname's first letter in a ring of the selected blue. */
+.sr-rail__slot { border-top: 1px solid var(--sr-line); }
+.sr-rail__avatar {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  font: 600 var(--sr-fs-sm)/1 var(--sr-font);
+  color: var(--sr-text);
+  border-radius: var(--sr-radius-pill);
+  box-shadow: inset 0 0 0 1.5px var(--sr-atmosphere);
+}
 
 /* 0077 W3-e: begin (ui/confidence.js: a confidence filter is on, and the shut popover says so with one dot, in the text colour: a mark, not a second ember) */
 .sr-rail__btn.is-filtered { position: relative; }
@@ -5340,7 +5373,8 @@ html.sr-phone .sr-rail__btn--blog,
 html.sr-phone .sr-rail__btn--games,
 html.sr-phone .sr-rail__btn--sub,
 html.sr-phone .sr-rail__btn--lang,
-html.sr-phone .sr-rail__btn--github {
+html.sr-phone .sr-rail__btn--github,
+html.sr-phone .sr-rail__slot {
   display: none;
 }
 
@@ -6784,6 +6818,10 @@ html.sr-phone .sr-passport {
   color: var(--sr-text-dim);
   white-space: nowrap;
 }
+
+/* The platform's slots (ui/platform-bridge.js): empty, and so taking no room, wherever the platform does not run. */
+.sr-passport__slot:empty { display: none; }
+.sr-passport__slot { padding: var(--sp-2) 20px 0; }
 
 /* The passport's view (ui/passport.js), in the sidebar's pushed-view body. */
 .sr-passport {

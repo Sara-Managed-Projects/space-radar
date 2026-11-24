@@ -2205,7 +2205,7 @@ export const COPY = {
     "remindTitle": "Завантажує файл календаря з нагадуванням: {title}",
     "forget": "Забути мене",
     "forgetConfirm": "Так, забути",
-    "forgetTitle": "Очищає паспорт і вибір звуку з цього браузера",
+    "forgetTitle": "Очищає тут паспорт, сердечка й вибір звуку",
     "forgotten": "Забуто. Цей браузер тепер нічого не зберігає.",
     "stamp": "Подорож {n} з {total} · {date}",
     "stampPlaces": "{places} (відкрито досі)",
@@ -2215,6 +2215,7 @@ export const COPY = {
     "title": "Що цей сайт зберігає на вашому пристрої",
     "lines": [
       "Ваш паспорт: відкриті місця, завершені подорожі, позначене як бачене.",
+      "Ваші сердечка: те, що ви додали до обраного.",
       "Ваш вибір звуку й голосу та те, як ви залишили панелі.",
       "Копія даних, які він прочитав востаннє, щоб мапа відкривалася без з’єднання.",
       "Поки екран грає сам, короткий журнал його подорожей, лише для цієї вкладки."
@@ -6603,3 +6604,7 @@ COPY.figureSide = {
   }
 };
 // A constellation seen from the side: end
+// The platform bridge (copy/en.js favs, copy/en.later.js account): begin -- machine-drafted, agent-read, not native-reviewed
+COPY.favs = {"add": "Додати до обраного", "remove": "В обраному. Натисніть, щоб прибрати", "addTrip": "Додати «{name}» до обраного", "removeTrip": "«{name}» в обраному. Натисніть, щоб прибрати"};
+COPY.account = {"signIn": "Увійти", "open": "Ваш обліковий запис", "openNamed": "Ваш обліковий запис, {name}"};
+// The platform bridge: end

@@ -2281,7 +2281,7 @@ export const COPY = {
     "remindTitle": "Télécharge un fichier de calendrier avec un rappel : {title}",
     "forget": "M’oublier",
     "forgetConfirm": "Oui, oublier",
-    "forgetTitle": "Efface le passeport et le choix du son de ce navigateur",
+    "forgetTitle": "Efface ici le passeport, les cœurs et le choix du son",
     "forgotten": "Oublié. Ce navigateur ne garde plus rien.",
     "stamp": "Voyage {n} sur {total} · {date}",
     "stampPlaces": "{places} ouverts jusqu’ici",
@@ -2291,6 +2291,7 @@ export const COPY = {
     "title": "Ce que ce site garde sur ton appareil",
     "lines": [
       "Ton passeport : lieux ouverts, voyages terminés, choses cochées comme vues.",
+      "Tes cœurs : ce que tu gardes en favori.",
       "Ton choix de son et de voix, et la façon dont tu as laissé les panneaux.",
       "Une copie des dernières données lues, pour que la carte s’ouvre sans connexion.",
       "Quand un écran tourne tout seul, un court journal de ses voyages, pour cet onglet seulement."
@@ -6692,3 +6693,7 @@ COPY.figureSide = {
   }
 };
 // A constellation seen from the side: end
+// The platform bridge (copy/en.js favs, copy/en.later.js account): begin -- machine-drafted, agent-read, not native-reviewed
+COPY.favs = {"add": "Ajouter à tes favoris", "remove": "Dans tes favoris. Appuie pour le retirer", "addTrip": "Ajouter {name} à tes favoris", "removeTrip": "{name} est dans tes favoris. Appuie pour le retirer"};
+COPY.account = {"signIn": "Se connecter", "open": "Ton compte", "openNamed": "Ton compte, {name}"};
+// The platform bridge: end

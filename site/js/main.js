@@ -30,6 +30,7 @@ import { showCard, hideCard, wantCards } from './ui/cardgate.js';
 import { createShell } from './ui/shell.js';
 import { createExplore } from './ui/explore.js';
 import { createRail } from './ui/rail.js';
+import { loadPlatform } from './ui/platform-bridge.js';
 import { toast } from './ui/share.js';
 import { createTimePill } from './ui/timepill.js';
 import { createSceneNote } from './ui/scenenote.js';
@@ -1063,6 +1064,9 @@ export async function boot({ setStatus } = {}) {
     import('./ui/tonight.js').then((m) => m.renderTonight(host, ctx)).catch((e) => console.warn('the Tonight tab did not load', e));
   }, { replace: true });
   createRail(ctx, shell.railHost);
+  // THE PLATFORM (ui/platform-bridge.js): on spaceradar.ai only, its one async script and the small module that tells it
+  // what happens here. Elsewhere (localhost, a fork, an embed, offline) neither is fetched and the map is the map.
+  if (!embed && loadPlatform(window)) import('./ui/platformtrack.js').then((m) => m.trackMap(ctx)).catch((e) => console.warn('the platform bridge did not load', e));
   // Issue #251: email alerts, a row that opens in place under Coming up (ui/subscribe.js says why
   // it is there and not over the scene). Imported once the layers have settled: the row is below
   // the fold of the sidebar, and a first visit's bytes are the map's. Since 2026-11-10 it holds the

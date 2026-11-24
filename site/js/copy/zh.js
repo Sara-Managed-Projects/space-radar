@@ -2196,7 +2196,7 @@ export const COPY = {
     "remindTitle": "下载一个带提醒的日历文件：{title}",
     "forget": "忘掉我",
     "forgetConfirm": "是的，忘掉",
-    "forgetTitle": "从这个浏览器清除护照和声音设置",
+    "forgetTitle": "清除这里的护照、收藏和声音设置",
     "forgotten": "已忘掉。这个浏览器现在什么都没有保存。",
     "stamp": "第 {n} 个旅程，共 {total} 个 · {date}",
     "stampPlaces": "到目前为止打开了 {places}",
@@ -2206,6 +2206,7 @@ export const COPY = {
     "title": "这个网站在你的设备上保存了什么",
     "lines": [
       "你的护照：打开过的地方、走完的旅程、打钩见过的东西。",
+      "你的收藏：你用爱心留下的东西。",
       "你对声音和朗读的选择，以及你离开时面板的样子。",
       "它最近读取的数据的副本，这样地图没有网络也能打开。",
       "屏幕自动播放时，会记一份简短的旅程日志，只属于这个标签页。"
@@ -6594,3 +6595,7 @@ COPY.figureSide = {
   }
 };
 // A constellation seen from the side: end
+// The platform bridge (copy/en.js favs, copy/en.later.js account): begin -- machine-drafted, agent-read, not native-reviewed
+COPY.favs = {"add": "加入你的收藏", "remove": "已在你的收藏中。按一下取消", "addTrip": "把{name}加入你的收藏", "removeTrip": "{name}已在你的收藏中。按一下取消"};
+COPY.account = {"signIn": "登录", "open": "你的账户", "openNamed": "你的账户：{name}"};
+// The platform bridge: end

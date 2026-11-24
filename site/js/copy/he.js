@@ -2203,7 +2203,7 @@ export const COPY = {
     "remindTitle": "מוריד קובץ יומן עם תזכורת: {title}",
     "forget": "לשכוח אותי",
     "forgetConfirm": "כן, לשכוח",
-    "forgetTitle": "מוחק את הדרכון ואת בחירת הצליל מהדפדפן הזה",
+    "forgetTitle": "מוחק מכאן את הדרכון, הלבבות ובחירת הצליל",
     "forgotten": "נשכח. הדפדפן הזה לא מחזיק כלום עכשיו.",
     "stamp": "מסע {n} מתוך {total} · {date}",
     "stampPlaces": "{places} נפתחו עד עכשיו",
@@ -2213,6 +2213,7 @@ export const COPY = {
     "title": "מה האתר הזה שומר במכשיר שלכם",
     "lines": [
       "הדרכון שלכם: מקומות שנפתחו, מסעות שהסתיימו, דברים שסומנו כנראו.",
+      "הלבבות שלכם: הדברים ששמרתם כמועדפים.",
       "בחירת הצליל והקול שלכם, והאופן שבו השארת את הלוחות.",
       "עותק של הנתונים האחרונים שנקראו, כדי שהמפה תיפתח בלי חיבור.",
       "כשמסך מנגן בעצמו, יומן קצר של המסעות שלו, ללשונית הזאת בלבד."
@@ -6601,3 +6602,7 @@ COPY.figureSide = {
   }
 };
 // A constellation seen from the side: end
+// The platform bridge (copy/en.js favs, copy/en.later.js account): begin -- machine-drafted, agent-read, not native-reviewed
+COPY.favs = {"add": "הוספה למועדפים שלכם", "remove": "במועדפים שלכם. לחצו כדי להסיר", "addTrip": "הוספת {name} למועדפים שלכם", "removeTrip": "{name} במועדפים שלכם. לחצו כדי להסיר"};
+COPY.account = {"signIn": "התחברות", "open": "החשבון שלכם", "openNamed": "החשבון שלכם, {name}"};
+// The platform bridge: end

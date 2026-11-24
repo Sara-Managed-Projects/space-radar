@@ -143,7 +143,9 @@ for (const slug of folders) {
   if (!cat) bad(where, '<meta name="sr-lab-category" content="..."> is missing');
   // the rules about requests: read with comments removed
   // The site's header and footer (written by scripts/gen_lab_index.py between chrome: markers) are not the simulator's own code: left out here, as the comments are.
-  const code = text.replace(/<!-- chrome:(header|footer)[\s\S]*?<!-- \/chrome:\1 -->/g, '').replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  // Nor are the platform bridge in the head and the heart (chrome:head, chrome:fav, the same generator; tests/test_platform_bridge.mjs
+  // holds them): on localhost and in a copy run from a folder they ask for nothing, and the simulator still makes no request of its own.
+  const code = text.replace(/<!-- chrome:(header|footer|head|fav)[\s\S]*?<!-- \/chrome:\1 -->/g, '').replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
   for (const [re, what] of NETWORK) if (re.test(code)) bad(where, `uses ${what}: a simulator is one file that makes no request (its only neighbours are the site's own faces and stylesheets, see SHEETS)`);
   const links = [...code.matchAll(/<link\b[^>]*>/gi)].map((m) => m[0]);
   // Since the Lab moved onto the site's design (css/lab.css): the faces (two preloads) and the three stylesheets, nothing else.

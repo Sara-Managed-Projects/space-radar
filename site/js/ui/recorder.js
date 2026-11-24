@@ -43,6 +43,7 @@ import { camValue, read as readUrl } from './urlstate.js';
 import { saveBlob } from './printcompose.js';
 import { muxWebm } from './webm.js';
 import { icon } from './icons.js';
+import { sr } from './platform-bridge.js';
 
 export const FPS = 30;
 export const END_S = 3;
@@ -363,6 +364,7 @@ export function createRecorder(ctx) {
 
   async function start() {
     if (job) return false;
+    sr('track', 'record_start');
     const crop = cropNow();
     const source = sourceNow();
     if (smoothBox.checked) return toFilm(crop, source);
@@ -618,6 +620,7 @@ export async function filmRecord(ctx, film, search, g = window) {
       blob = new Blob(paced.parts, { type: paced.mime.mime.split(';')[0] });
     }
     const name = fileName(opts.crop, Date.now(), ext);
+    sr('track', 'record_export', { format: ext });
     Object.assign(state, { stage: 'done', done: true, bytes: blob.size, type: blob.type, name, url: URL.createObjectURL(blob) });
     line.textContent = t(R.filmDone, { mb: fmt.num(blob.size / 1e6, 1), s: fmt.int(opts.seconds + END_S) });
     again.hidden = false;

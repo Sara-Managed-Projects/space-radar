@@ -37,6 +37,7 @@ import { COPY, t, fmt } from '../copy/en.js';
 import { ALIASES } from '../data/aliases.js';
 import { catalogNumber } from '../data/catnum.js'; // 0077 W2-d: a catalogue number is read in one place
 import { labelParentId } from './labels.js';
+import { sr } from './platform-bridge.js';
 
 // Ids are per instance, not per module. aria-controls and aria-activedescendant are id
 // REFERENCES, so two panels sharing one id silently point a screen reader at the other panel's
@@ -1062,6 +1063,7 @@ export function createSearch(ctx, host) {
   function pick(record) {
     if (!record) return;
     state.pickedId = record.id;
+    sr('track', 'search', { search_term: input.value.trim() }); // the platform's, where it runs (ui/platform-bridge.js cuts it to 60)
     try {
       if (typeof ctx.isLayerOn === 'function' && typeof ctx.setLayerOn === 'function') {
         if (!ctx.isLayerOn(record.layer)) {

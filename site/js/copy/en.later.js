@@ -477,7 +477,7 @@ Object.assign(COPY, {
     remindTitle: 'Downloads a calendar file with a reminder: {title}',
     forget: 'Forget me',
     forgetConfirm: 'Yes, forget',
-    forgetTitle: 'Clears the passport and the sound choice from this browser',
+    forgetTitle: 'Clears the passport, the hearts and the sound choice here',
     forgotten: 'Forgotten. This browser holds nothing now.',
     // The end card's stamp: "Trip 7 of 25 · 7 October 2026". {date} is the visitor's own day.
     stamp: 'Trip {n} of {total} · {date}',
@@ -487,6 +487,14 @@ Object.assign(COPY, {
     resume: 'Continue from stop {n}',
   },
 
+  // The account slot of the tool rail (ui/platformtrack.js): drawn only where the Space Radar platform has loaded and said
+  // who is here, never on a copy of the map run from a folder. {name} is the nickname the visitor chose.
+  account: {
+    signIn: 'Sign in',
+    open: 'Your account',
+    openNamed: 'Your account, {name}',
+  },
+
   // The Sources sheet's last section (ui/status.js; spec 0041 task 4, internal #437): what the site
   // keeps in this browser, in the place that already says where everything comes from. Each line
   // is held to the code by tests/test_passport.mjs and tests/test_place_privacy.mjs.
@@ -494,6 +502,7 @@ Object.assign(COPY, {
     title: 'What this site keeps on your device',
     lines: [
       'Your passport: places opened, trips finished, things ticked as seen.',
+      'Your hearts: the things you keep as favourites.',
       'Your sound and voice choice, and how you left the panels.',
       'A copy of the data it last read, so the map opens without a connection.',
       'While a screen plays on its own, a short log of its trips, for this tab only.',

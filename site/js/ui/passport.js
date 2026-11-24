@@ -156,16 +156,22 @@ export function writePassport(storage, p) {
  * tests/test_passport.mjs holds the three to those constants.
  */
 export const SOUND_KEYS = ['sr.audio', 'sr.audio.volume', 'sr.voice'];
+/**
+ * The hearts (ui/favs.js FAVS_KEY) and the badges the platform keeps beside the passport (its contract's `sr:badges`):
+ * the visitor's own, so Forget me takes them too. Written out here for the same reason as the sound keys.
+ */
+export const OWN_KEYS = ['sr:favs', 'sr:badges'];
 
 /**
- * Forget me (spec 0041 task 4, internal #437): the passport and the sound choices go. What is
- * left is how the panels were arranged, which says nothing about where anybody has been.
+ * Forget me (spec 0041 task 4, internal #437): the passport, the sound choices, the hearts and the badges go. What
+ * is left is how the panels were arranged, which says nothing about where anybody has been.
  */
 export function forgetPassport(storage) {
   try {
     if (!storage) return false;
     storage.removeItem(KEY);
     for (const k of SOUND_KEYS) storage.removeItem(k);
+    for (const k of OWN_KEYS) storage.removeItem(k);
     return true;
   } catch { return false; }
 }
@@ -347,6 +353,8 @@ export function createPassport(ctx, opts = {}) {
     if (!rec || !okId(rec.id) || p.visited[rec.id]) return;
     p = recordVisit(p, rec.id, now(), familyOfKlass(rec.klass)); // 0077 W2-d: the kind
     changed();
+    // A new place in the passport, said on the page: ui/platformtrack.js passes it on where the platform runs.
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('sr:stamp', { detail: { id: rec.id, cls: rec.klass || '' } }));
   };
   let lastStop = '';
   const onTrip = (st) => {
@@ -396,6 +404,21 @@ export function createPassport(ctx, opts = {}) {
   let confirming = false;
   let forgotten = false;
   const host = () => (ctx && ctx.shell && typeof ctx.shell.host === 'function' ? ctx.shell.host('passport') : null);
+  // THE PLATFORM'S SLOT (its contract's `[data-sr-passport]`): an empty element above the view, the same one every time
+  // the view is drawn, so what the platform puts there stays. Where the platform does not run it stays empty and takes
+  // no room. `srLookup(id)` answers the map's name and class of a place it holds, the one thing the slot cannot read.
+  let slot = null;
+  const passportSlot = () => {
+    if (slot || typeof document === 'undefined') return slot;
+    slot = el('div', 'sr-passport__slot');
+    slot.setAttribute('data-sr-passport', '');
+    slot.srLookup = (id) => {
+      const r = ctx && typeof ctx.recordById === 'function' ? ctx.recordById(id) : null;
+      return r && r.name ? { name: r.name, klass: r.klass || '', kind: (r.meta && r.meta.kind) || '' } : null;
+    };
+    document.dispatchEvent(new CustomEvent('sr:slot', { detail: { slot: 'passport', el: slot } }));
+    return slot;
+  };
 
   function selectRecord(record) {
     if (!record || typeof ctx.select !== 'function') return;
@@ -411,6 +434,8 @@ export function createPassport(ctx, opts = {}) {
     if (!h) return;
     viewBuilt = true;
     h.textContent = '';
+    const s = passportSlot();
+    if (s) h.appendChild(s);
     const page = el('div', 'sr-passport');
     const title = el('h2', 'sr-passport__title', P.title);
     title.tabIndex = -1;
@@ -506,7 +531,9 @@ export function createPassport(ctx, opts = {}) {
     const forget = el('button', 'sr-passport__forget', confirming ? P.forgetConfirm : P.forget);
     forget.type = 'button';
     forget.title = P.forgetTitle;
-    forget.disabled = !c.places && !Object.keys(p.trips).length && !seenRows.length;
+    let own = false; // a heart kept, or a badge, is something to forget too
+    try { own = !!storage && OWN_KEYS.some((k) => !!storage.getItem(k)); } catch { own = false; }
+    forget.disabled = !c.places && !Object.keys(p.trips).length && !seenRows.length && !own;
     forget.addEventListener('click', () => {
       if (!confirming) {
         // One step: the same button asks, and goes back to what it was if nobody answers.

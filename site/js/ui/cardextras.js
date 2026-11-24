@@ -10,6 +10,7 @@ import { load } from '../data/sources.js';
 import { altitudeInWords, azimuthInWords } from '../sky/skywords.js';
 import { riseHighestSetOf } from '../sky/riseany.js';
 import { LINKS } from '../data/links.js';
+import { heartButton } from './favs.js';
 import { stationCrew, STATION_RECORD, CREW_STALE_MS, daysBetween } from '../data/crew.js';
 import {
   liveDistanceWords, liveKey, distanceSamples, closestApproach, sparkGeometry, closestWords, shortUtcDate,
@@ -98,6 +99,10 @@ export function skyControls(record, ctx, lead) {
       b.addEventListener('click', () => { api.markSeen(record.id, !api.seenAt(record.id)); paint(api); });
     }).catch(() => { b.remove(); });
     row.appendChild(b);
+  }
+  // The heart (ui/favs.js): this browser's favourite, and the platform's where it runs.
+  if (record && typeof record.id === 'string' && record.id && COPY.favs) {
+    row.appendChild(heartButton(`map:${record.id}`, { add: COPY.favs.add, remove: COPY.favs.remove }, { tile: true }));
   }
   // More than three tiles (a Saturn V: two replays, the lamp, Seen it) are two to a line, not four slivers.
   row.classList.toggle('is-many', row.childElementCount > 3);

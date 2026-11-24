@@ -72,9 +72,11 @@ check(P.KEY === 'sr:passport', 'one key, sr:passport');
   check(P.forgetPassport(throwing) === false, 'so is a forget');
   // Forget me also clears the sound choices (internal #437), and nothing else.
   {
-    const kept = new Map([[P.KEY, '{}'], ['sr.audio', 'on'], ['sr.audio.volume', '0.4'], ['sr.voice', 'off'], ['sr:side', 'open']]);
+    const kept = new Map([[P.KEY, '{}'], ['sr.audio', 'on'], ['sr.audio.volume', '0.4'], ['sr.voice', 'off'], ['sr:side', 'open'], ['sr:favs', '["map:moon"]'], ['sr:badges', '{"first-light":1}']]);
     const st = { getItem: (k) => (kept.has(k) ? kept.get(k) : null), setItem: (k, v) => kept.set(k, v), removeItem: (k) => kept.delete(k) };
-    check(P.forgetPassport(st) === true && [...kept.keys()].join() === 'sr:side', `Forget me clears the passport and the three sound keys and leaves the layout (${[...kept.keys()]})`);
+    check(P.forgetPassport(st) === true && [...kept.keys()].join() === 'sr:side', `Forget me clears the passport, the three sound keys, the hearts and the badges, and leaves the layout (${[...kept.keys()]})`);
+    const favs = readFileSync(join(JS, 'ui/favs.js'), 'utf8');
+    check(P.OWN_KEYS.join() === 'sr:favs,sr:badges' && favs.includes("FAVS_KEY = 'sr:favs'"), 'the hearts key Forget me clears is ui/favs.js\'s own, and sr:badges is the platform contract\'s');
     const engine = readFileSync(join(JS, 'audio/engine.js'), 'utf8');
     const narration = readFileSync(join(JS, 'audio/narration.js'), 'utf8');
     check(engine.includes("STORE_KEY = 'sr.audio'") && engine.includes("VOLUME_KEY = 'sr.audio.volume'") && narration.includes("VOICE_KEY = 'sr.voice'") && P.SOUND_KEYS.join() === 'sr.audio,sr.audio.volume,sr.voice', 'the sound keys Forget me clears are the audio engine\'s own');

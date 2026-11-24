@@ -29,6 +29,7 @@ import { COPY } from '../copy/en.js';
 import '../copy/en.later.js';
 import { LANG, LANGUAGES, LANG_KEY, pathLanguage, pickLanguage } from '../copy/lang.js';
 import { camValue } from './urlstate.js';
+import { sr } from './platform-bridge.js';
 import { icon } from './icons.js';
 
 /** Each language by its own name: what its file says of itself (copy/<code>.js META.name; the test holds them equal). */
@@ -129,7 +130,7 @@ export function mountLanguage(ctx, button, more) {
     a.dataset.lang = code;
     if (code === LANG) a.setAttribute('aria-current', 'true');
     // The choice is kept when the link is followed (a press, Enter, a middle click's new tab alike).
-    a.addEventListener('click', () => { try { localStorage.setItem(LANG_KEY, code); } catch { /* no storage: the address carries it */ } });
+    a.addEventListener('click', () => { sr('track', 'language_change', { lang: code }); try { localStorage.setItem(LANG_KEY, code); } catch { /* no storage: the address carries it */ } });
     list.appendChild(a);
     rows.push(a);
   }
