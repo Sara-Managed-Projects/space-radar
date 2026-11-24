@@ -70,6 +70,17 @@
       ]
     },
     {
+      "id": "celestrak-socrates",
+      "url": "https://celestrak.org/SOCRATES/sort-maxProb.csv",
+      "auth": "none",
+      "refresh": "24h",
+      "freshness_max": "72h",
+      "parser": "celestrak_socrates",
+      "outputs": [
+        "socrates.json"
+      ]
+    },
+    {
       "id": "ll2-upcoming",
       "url": "https://ll.thespacedevs.com/2.3.0/launches/upcoming/?limit=50&mode=detailed",
       "auth": "none",
@@ -446,6 +457,17 @@
       "parser": "eonet",
       "outputs": [
         "eonet-volcanoes-ice.json"
+      ]
+    },
+    {
+      "id": "eonet-storms-floods",
+      "url": "https://eonet.gsfc.nasa.gov/api/v3/events?status=open&category=severeStorms,floods&days=30",
+      "auth": "none",
+      "refresh": "1h",
+      "freshness_max": "12h",
+      "parser": "eonet",
+      "outputs": [
+        "eonet-storms-floods.json"
       ]
     },
     {

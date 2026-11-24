@@ -174,6 +174,20 @@ of today, over almost twenty years. Three additions:
   its first sentence and a More button. Past 30 days the mission clock reads in years and days (`T+3 y 339 d`), not thousands of hours.
 
 <!-- b200-c3-learn: end -->
+<!-- research train (ops): begin -->
+**Research train "ops" notes: a collision (forge internal #561).** "2009: Iridium 33 and Kosmos 2251" (`iridium-cosmos-2009.json`, written by
+`scripts/build_moment_iridium_cosmos.py`) is told like Fengyun-1C, with captions and no voice, and adds two things:
+
+- A vehicle may say `model: null` with `shape: [klass, variant]`: it is drawn with the app's own procedural shape of `scene/models.js`
+  (`modelFor`), in metres from the shape's `userData.realSizeM`, stood on y = 0 at its own height (`lengthM` is that height). Iridium 33 wears
+  the Iridium family's shape, and the foot line says the first generation's bus differed. The validator refuses a `shape` beside a model file.
+- A `debris-cloud` may carry `nodeDeg` and `argLatDeg`, its parent's plane at the event (the node's right ascension and the argument of latitude,
+  degrees): `moments/debriscloud.js` `cloudFor` hands them to `data/clouds.js` `spreadAt`, so the pieces are born where the satellite broke up
+  instead of at the illustrative node 0. Without them nothing changes (Fengyun-1C, the Find view's "Play from the event").
+
+`tests/test_moment_iridium.mjs` holds the point of the collision, the two passes (Iridium 33 northbound, Kosmos 2251 southbound, about 11.7 km/s),
+the clouds born there, the shape at its real size and every count against its source.
+<!-- research train (ops): end -->
 ## Tracks
 
 **`parts`**: `{t, part, action, vehicle?}`: at second `t`, the part named `part` does `action`. `vehicle` defaults to the lead. The actions:

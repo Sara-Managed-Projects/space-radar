@@ -1347,6 +1347,9 @@ Object.assign(COPY, {
         wildfire: '{name} is a fire that was here at its last report, {date}',
         volcano: '{name} has been erupting since {date}',
         iceberg: '{name} was here at its last report, {date}',
+        // research train (ops): the Earth events list reads EONET's storms and floods too (data/eonet.js)
+        storm: '{name} is a severe storm whose centre was here at its last report, {date}',
+        flood: '{name} is a flood reported here, last on {date}',
       },
       size: 'about {n} km² at that report',
     },

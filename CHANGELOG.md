@@ -58,6 +58,34 @@ tagged, and their dates are the day the last change in each landed.
   agency's own page for a mission, and links to search NASA's Image and Video Library (and ESA/Hubble and ESA/Webb for deep
   space). Nothing is fetched from anybody else: the archives are plain links. An object we hold nothing about says so and still
   offers the archives. The row's code and data load only when it is first opened (`scripts/gen_media.py`, forge internal #556).
+- **Live operations** (research train "ops"; forge #558, #561, #562, #563). A new view of the sidebar, opened from the Live
+  rows of the Earth and Planets tabs or a link (`#ops=state`, `#ops=reentry`, `#ops=dsn`, `#ops=events:volcano`), with four tabs:
+  - **State of Space.** Objects in Earth orbit, satellites and those still working, spent stages, debris tracked, Starlink,
+    owners, orbital launches this year, craft beyond Earth orbit, what came down in 30 days, people on the space stations and
+    craft talking to the Deep Space Network now. Every number names its source and its date and ticks up once when shown (not
+    under reduced motion). The catalogue's numbers are counted by our harvester from its copy of CelesTrak's catalogue
+    (`harvest/stateofspace.py`); a finished quarter is frozen in the repository as dated JSON (`site/data/state-of-space/`,
+    `scripts/state_of_space.py`), the first being 2026 Q3, counted back and labelled so, with sparklines of every quarter since
+    2016 and a cite-this line. A page, `/state-of-space/`, carries the frozen quarter with its sources and a Dataset entry.
+  - **Re-entries and close calls.** What the catalogue records as come down in the last 30 days, the lowest whole orbits still
+    up (no date is predicted: the public windows need a Space-Track account), and the week's closest approaches from
+    CelesTrak's SOCRATES Plus, labelled as CelesTrak's, with chips for debris, rocket stages and two working satellites. A page,
+    `/close-calls/`, says where these come from and tells the three breakups people name.
+  - **Who is talking to whom.** NASA's DSN Now as a list by complex (Goldstone, Madrid, Canberra): each craft, its dishes,
+    whether it is sending or hearing us, and the one-way light time from the feed's own range; a button draws a line from each
+    complex to every craft the map shows.
+  - **Earth events.** NASA EONET's open fires, severe storms, volcanoes and floods, newest first, with a chip for each kind. A row
+    flies the globe to the place, switches on the layer that marks it and lays NASA GIBS's rain map for a storm or a flood (no
+    daily map of fire or ash is in the registry, and the row says so).
+- **A Moment, "2009: Iridium 33 and Kosmos 2251"** (`#moment=iridium-cosmos-2009`, forge #561): the first accidental collision of
+  two whole satellites, from a quarter of an hour before to today's catalogue, with captions in eleven languages. Iridium 33
+  wears the app's own Iridium shape; both debris clouds start at the point of the collision. Moments can now draw a procedural
+  shape (`shape`) and start a debris cloud in a given plane (`nodeDeg`, `argLatDeg`).
+- **Lab: Light time to the spacecraft** (forge #562): the one-way light time of a command to the Moon, Mars, Juno, New Horizons and
+  both Voyagers on 24 November 2026, ticking as it travels (JPL Horizons).
+- **Two new feeds, saved by the harvester:** `celestrak-socrates` (the first 400 kB of SOCRATES Plus once a day, by an HTTP Range
+  request; never asked for by a visitor's browser) and `eonet-storms-floods`; and two summaries counted from the catalogue's copy,
+  `state-of-space` and `reentry-watch` (`harvest/publish.py` rule 6). They are published once the harvester is redeployed.
 
 - **A language menu.** The tool rail has a language button (a row of More on a phone) that lists the eleven languages by
   their own names. Choosing one loads the same view again in that language (the selection, the clock, the stage and the

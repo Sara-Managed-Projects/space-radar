@@ -211,6 +211,8 @@ jobs:
       # an hourly schedule reads an hourly source, the cut / derived files / column twins, the handler.
       - name: The harvester never overwrites good data with a failure, and publishes what the old script did
         run: python3 tests/test_harvest_publish.py
+      - name: "State of Space and the re-entry watch counted from the catalogue (and counted back), SOCRATES read by range, every frozen quarter dated (research train ops)"
+        run: python3 tests/test_state_of_space.py
       - name: "Horizons elements at each close approach: parsed to SBDB units, kept row by row, fail-soft (internal #392)"
         run: python3 tests/test_harvest_neo_elements.py
       - name: "Horizons elements for the comets the app names or ranks brightest: short list, hyperbolas, fail-soft (internal #393)"
@@ -1724,6 +1726,12 @@ jobs:
       - name: "The Fengyun-1C Moment: the cloud born at one point and spread round the Earth, the voice inside each chapter, every count its source's, the clips heard (forge #153)"
         run: node tests/test_moment_fengyun.mjs
       # b200-c3-learn: end
+      # research train (ops): begin -- forge #558, #561, #562, #563
+      - name: "The Iridium-Cosmos Moment: both satellites at the point of the collision, about 11.7 km/s, the two clouds born there, the Iridium shape at its real size, every count its source's (forge #561)"
+        run: node tests/test_moment_iridium.mjs
+      - name: "Live operations: every State of Space number with its source and date, CelesTrak's close approaches as CelesTrak's, the DSN's contacts and light time, Earth events flown to, nothing at boot"
+        run: node tests/test_research_ops.mjs
+      # research train (ops): end
       # b200-c2-deep: begin
       - name: "The 3D and orbital stars over deep time on the GPU: the patched shaders, Barnard's Star by the same formula as the ground sky's (forge #141, #142)"
         run: node tests/test_stardeep.mjs

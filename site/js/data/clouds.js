@@ -157,8 +157,10 @@ export function spreadAt(frag, cloud, tMs, out = { x: 0, y: 0, z: 0 }) {
   const p = s.a * (1 - s.e * s.e);
   const k = J2 * (R_EARTH_KM / p) ** 2;
   const ci = Math.cos(s.i);
-  const node = -1.5 * n * k * ci * dt;
-  const argp = 0.75 * n * k * (5 * ci * ci - 1) * dt;
+  // research train (ops), forge #561: a cloud may carry its parent's plane at the event (`nodeRad`, `argLatRad`: the Iridium-Cosmos
+  // Moment, moments/debriscloud.js cloudFor), so the pieces are born where it broke up; without them both are 0, the illustrative node.
+  const node = (Number(cloud.nodeRad) || 0) - 1.5 * n * k * ci * dt;
+  const argp = (Number(cloud.argLatRad) || 0) + 0.75 * n * k * (5 * ci * ci - 1) * dt;
   const mean = n * (1 + 0.75 * k * Math.sqrt(1 - s.e * s.e) * (3 * ci * ci - 1)) * dt;
   const M = ((mean % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
   const E = solveKeplerElliptic(M, s.e);

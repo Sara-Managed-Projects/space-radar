@@ -39,6 +39,34 @@ export function standInMetres(model, lengthM, keepXZ = false) {
   return k;
 }
 
+/**
+ * A procedural shape of scene/models.js (modelFor(klass, variant)) in metres, for a vehicle with `model: null` and `shape` (research
+ * train (ops), forge #561: Iridium 33 drawn with the Iridium family's shape). A builder draws its shape with its longest side 1 and says
+ * the real length in `userData.realSizeM`; it is scaled by that. A satellite's Earth face is the shape's +Z (scene/models.js, the
+ * `sun-panels` attitude); a Moment's vehicle has its nose (+Y) along the velocity and its X up, so the shape is turned a quarter about
+ * Y to put that face down (-X). Resolves to null when the shape cannot be built (the path and the ringed mark still draw).
+ */
+export async function shapeInMetres(shape) {
+  try {
+    const { modelFor } = await import('../scene/models.js');
+    const obj = modelFor(shape[0], shape[1]);
+    const metres = Number(obj.userData.realSizeM) > 0 ? Number(obj.userData.realSizeM) : 1;
+    obj.scale.multiplyScalar(metres);
+    if (shape[0] === 'satellite') obj.rotation.y = -Math.PI / 2;
+    const top = new THREE.Group();
+    top.name = `shape:${shape.join(':')}`;
+    top.add(obj);
+    top.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(top);
+    top.userData.shapeHeightM = box.max.y - box.min.y;
+    top.userData.realSizeM = metres;
+    return top;
+  } catch (err) {
+    console.warn(`moment shape ${shape && shape.join(':')}: ${err && err.message}`);
+    return null;
+  }
+}
+
 /** The meshes of a tree, in traversal order (a clone's are in the same order). */
 function meshesOf(root) {
   const out = [];
@@ -106,13 +134,17 @@ export async function loadVehicle(spec, events = [], { tier = 1 } = {}) {
   root.name = `moment-vehicle:${spec.id}`;
   const parts = new Map();
   // b200-c3-learn: `model: null` is a craft there is no model of, drawn as the player's ringed mark only (forge #153: Fengyun-1C)
-  const src = spec.model === null ? null : await loadRealModel({ file: `${spec.model}.glb`, colour: spec.colour || 'rocket' });
+  // research train (ops), forge #561: `model: null` with `shape` is the app's own procedural shape (shapeInMetres, below)
+  const src = spec.model === null ? (Array.isArray(spec.shape) ? await shapeInMetres(spec.shape) : null)
+    : await loadRealModel({ file: `${spec.model}.glb`, colour: spec.colour || 'rocket' });
   let split = 'none';
   if (src) {
     const holder = new THREE.Group();
-    const model = src.clone(true);
+    const model = src.name.startsWith('shape:') ? src : src.clone(true); // a shape is built for this vehicle alone: no copy (its userData holds materials)
     holder.add(model);
-    standInMetres(model, spec.lengthM, !!spec.keepXZ);
+    // A shape is already in metres: it is stood at its own height, so its real size is kept (its lengthM is that height: the
+    // Iridium bus, 3.1 m along the way it flies; its wings span 9.4 m across).
+    standInMetres(model, src.userData.shapeHeightM || spec.lengthM, !!spec.keepXZ);
     const named = Array.isArray(spec.parts) ? spec.parts.filter((n) => model.getObjectByName(n)) : [];
     if (named.length) {
       split = 'named';

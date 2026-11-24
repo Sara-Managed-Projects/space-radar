@@ -1,0 +1,38 @@
+/* css/ops.css -- live operations (ui/ops.js and its panes; research train "ops", forge #558, #561, #562, #563). Fetched with the
+   view (ui/latercss.js), never on a first visit. The rows, tabs and numbers are ui.css's own (.sr-list, .sr-tabs, .sr-hero), the
+   chips and buttons css/controls.css's, the head and the scroller Find's (css/find.css): only the layout is here, in tokens. */
+
+.sr-ops { padding: 0 20px 20px; }
+.sr-ops__head { position: sticky; top: 0; z-index: 1; margin: 0 -20px; padding: var(--sp-2) 20px; background: var(--sr-panel-solid); }
+.sr-ops__head > .sr-micro { padding: var(--sp-1) 0 var(--sp-2); }
+.sr-ops__tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.sr-ops__title { margin: var(--sp-3) 0 0; font: 600 var(--sr-fs-body)/1.25 var(--sr-font); color: var(--sr-text); }
+.sr-ops__pane[hidden] { display: none; }
+.sr-ops__pane .sr-micro { padding: var(--sp-4) 0 var(--sp-1); }
+
+.sr-ops__lead, .sr-ops__status, .sr-ops__wait { margin: var(--sp-3) 0 var(--sp-2); font-size: var(--sr-fs-sm); line-height: 1.4; color: var(--sr-text-dim); }
+.sr-ops__status { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); }
+.sr-ops__stale { color: var(--sr-stale); }
+
+.sr-ops__filters { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: var(--sp-2) 0; }
+.sr-ops__acts { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); margin: var(--sp-3) 0; }
+.sr-ops__mapline { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); min-height: 0; }
+.sr-ops__mapline:not(:empty) { margin: var(--sp-2) 0; }
+
+.sr-ops__row { align-items: center; gap: var(--sp-3); }
+.sr-ops__rowtext { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 auto; text-align: start; }
+.sr-ops__rowtext > .sr-list__name { overflow-wrap: anywhere; }
+.sr-ops__meta { font-size: var(--sr-fs-sm); line-height: 1.3; color: var(--sr-text-dim); overflow-wrap: anywhere; }
+.sr-ops__row > .sr-list__value { text-align: end; }
+
+.sr-ops__hero { margin-top: var(--sp-2); }
+.sr-ops__hero .sr-ops__meta { font-size: var(--sr-fs-unit); }
+.sr-ops__numrow, .sr-ops__sparkrow { align-items: center; }
+.sr-ops__sparkrow > .sr-list__name { flex: 1 1 auto; }
+.sr-ops__spark { flex: 0 0 auto; width: 120px; height: 28px; }
+.sr-ops__spark polyline { stroke: var(--sr-atmosphere); stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
+
+.sr-ops__story { margin: var(--sp-3) 0 var(--sp-2); padding-bottom: var(--sp-3); border-bottom: 1px solid var(--sr-line); }
+.sr-ops__storybtn { max-width: 100%; white-space: normal; line-height: 1.2; text-align: center; }
+.sr-ops__foot { margin-top: var(--sp-4); }
+.sr-ops__source { margin: var(--sp-2) 0 0; }

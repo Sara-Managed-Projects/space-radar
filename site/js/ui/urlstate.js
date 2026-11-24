@@ -76,6 +76,8 @@ KEYS.splice(KEYS.indexOf('cam'), 0, 'play');
 // registry/sideviews.yaml, ui/figureside.js), in the same call because every byte of this file is a first visit's.
 KEYS.splice(KEYS.indexOf('cam'), 0, 'ground', 'sky', 'figure', 'born'); // `born` the star of your year's day (ui/yourstar.js)
 // b200-f7-ground: end
+// research train (ops): `ops` the live operations view open in the sidebar and its pane (`#ops=state`, `#ops=events:volcano`; ui/ops.js).
+KEYS.splice(KEYS.indexOf('cam'), 0, 'ops');
 export const VERSION = '1';
 /** The release this code is (0076 W4-c). A release bumps it with CHANGELOG.md; tests/test_access.mjs holds its shape. */
 export const BUILD = '2.0.1';

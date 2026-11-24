@@ -53,6 +53,7 @@ for (const f of files) {
   for (const p of F.validateMoment(m, { models: models.map((x) => x.id), words: words || {} })) problems.push(`${f}: ${p}`);
   for (const v of m.vehicles || []) {
     if (v.model === null && v.marker === true) continue; // b200-c3-learn: a craft with no model, drawn as its mark (forge #153)
+    if (v.model === null && Array.isArray(v.shape)) continue; // research train (ops): the app's own procedural shape, no file (tests/test_moment_iridium.mjs builds it)
     const row = models.find((x) => x.id === v.model);
     check(row && existsSync(join(ROOT, row.file)), `${f}: the model file of ${v.model} is on disk`);
   }

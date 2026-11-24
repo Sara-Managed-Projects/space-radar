@@ -102,6 +102,9 @@ Object.assign(COPY, {
 // b200-c3-learn: begin -- forge #153: the Fengyun-1C story's card on the shelf (its words are copy/en.moments.fengyun.js)
 COPY.momentShelf.cards['fengyun-1c'] = { title: '2007: Fengyun-1C', when: '11 January 2007 to today', blurb: 'A Chinese missile destroys an old weather satellite 865 km up, and its 3 531 catalogued pieces spread from one point into a shell round the Earth, told by a voice.' };
 // b200-c3-learn: end
+// research train (ops): begin -- forge #561: the Iridium-Cosmos story's card on the shelf (its words are copy/en.moments.iridium.js)
+COPY.momentShelf.cards['iridium-cosmos-2009'] = { title: '2009: Iridium 33 and Kosmos 2251', when: '10 February 2009 to today', blurb: 'A working phone satellite and a dead Russian one collide 789 km over Siberia, and their 2 370 catalogued pieces become two clouds round the Earth.' };
+// research train (ops): end
 
 // b200-s1-fixes: begin -- the long mission clock's units (moments/format.js formatMet past 30 days: "T+3 y 339 d")
 COPY.momentPlayer.metYears = '{y} y {d} d';

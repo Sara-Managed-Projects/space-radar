@@ -1151,6 +1151,18 @@ export async function boot({ setStatus } = {}) {
   };
   if (window.__srLayersReady) findLater(); else window.addEventListener('sr:layers-ready', findLater, { once: true });
   // b200-f1-find: end
+  // research train (ops): begin -- live operations (ui/ops.js; forge #558, #561, #562, #563), a pushed view like Find, its doors
+  // on the explore tabs (ui/opsentry.js); an `ops=` link opens it. The DSN lines (scene/dsnlines.js) tick in the frame loop.
+  let opsP = null;
+  ctx.wantOps = () => opsP || (opsP = import('./ui/ops.js').then((m) => m.createOps(ctx, shell.host('ops')))
+    .catch((e) => { opsP = null; console.warn('the live operations did not load', e); return null; }));
+  const opsLater = () => {
+    afterFirstVisit(TODAY_MS, () => import('./ui/opsentry.js').then((m) => m.mountOpsEntry(ctx)).catch((e) => console.warn('the live rows did not load', e)));
+    const k = readUrlKeys().ops;
+    if (!embed && k) ctx.wantOps().then((o) => o && o.openLink(k));
+  };
+  if (window.__srLayersReady) opsLater(); else window.addEventListener('sr:layers-ready', opsLater, { once: true });
+  // research train (ops): end
   // b200-f6-learn: begin -- forge #160: a `#play=` link opens a daily challenge (ui/play.js), fetched for that link only;
   // `sr-play-on` at once keeps the first visit's controls hint off the card (ui/keyhint.js whyNot)
   const playLink = () => { const k = readUrlKeys().play; if (!k || embed) return; document.documentElement.classList.add('sr-play-on'); import('./ui/play.js').then((m) => m.openPlay(ctx, k)).catch((e) => { document.documentElement.classList.remove('sr-play-on'); console.warn('play did not load', e); }); };
@@ -3297,6 +3309,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (ctx.orrery) ctx.orrery.frame();
     if (ctx.cutaway) ctx.cutaway.frame(t);
     if (ctx.heliosphere) ctx.heliosphere.update(ctx.camera, t);
+    if (ctx.dsnLines) ctx.dsnLines.update(t); // research train (ops): who is talking to whom (scene/dsnlines.js)
     else if (ctx.wantHeliosphere && !ctx.embed && stage.worldId === 'sun' && ctx.camera.position.length() * stage.unitKm > 40 * 1.495978707e8) ctx.wantHeliosphere();
     // b200-f2-worlds: end
     if (ctx.dsoGlow) ctx.dsoGlow.update(ctx.camera, ctx.renderer, ctx.isLayerDrawable(layerRec('deep-sky')) && !ctx.deepGlowOff);

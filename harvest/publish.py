@@ -23,6 +23,10 @@ bucket). Nothing here fetches.
        satellites site/js/data/layers.js NOTABLE names, mirrored in harvest/notable.json), `celestrak-geo`
        (the geostationary ring by the browser's own thresholds) and `celestrak-starlink-recent` (Starlink's
        twelve latest launches, which is where a train can be). Rebuilt only when the parent's stamps changed.
+    6. THE SUMMARIES (research train "ops", forge #558, #561; harvest/stateofspace.py): `state-of-space` (the numbers the
+       State of Space view and page show) and `reentry-watch` (what came down in the last 30 days and the lowest whole orbits
+       still up), each a few kilobytes, counted from `celestrak-satcat` of the same publish and copying its stamps, so the
+       page never reads the 7 MB catalogue for them. Rebuilt only when the catalogue's stamps changed, like rule 4.
     5. THE COLUMN TWINS (internal #523, harvest/columnar.py): `<id>.cols.json` beside a big catalogue, named in
        the manifest row as `columns`. After the cuts, so a cut that is big enough gets one, and last, so the
        twin is of the file exactly as it is published.
@@ -124,6 +128,57 @@ def derived(notable: set[int]):
     )
 
 
+def summaries():
+    """(parent, child, make(rows, day) -> (body, items), what) for every summary counted from a catalogue (rule 6)."""
+    from . import stateofspace as sos
+
+    def state(rows, day):
+        body = sos.summary(rows, day, live=True)
+        return body, body["earth_orbit"]["total"]
+
+    def watch(rows, day):
+        body = sos.reentry_watch(rows, day)
+        return body, len(body["recent"]) + len(body["lowest"])
+
+    return (
+        ("celestrak-satcat", "state-of-space", state, "the State of Space numbers (harvest/stateofspace.py summary)"),
+        ("celestrak-satcat", "reentry-watch", watch, "what came down in 30 days and the lowest orbits still up (harvest/stateofspace.py reentry_watch)"),
+    )
+
+
+def _summarise(store, manifest, previous, parent_id, child_id, make, what, now, log) -> None:
+    from . import stateofspace as sos
+    parent = manifest.snapshots.get(parent_id)
+    if not _usable(parent):
+        return
+    prev_child = previous.snapshots.get(child_id)
+    if prev_child is not None and prev_child.holds_snapshot() and _same_stamps(prev_child, parent):
+        manifest.snapshots[child_id] = replace(prev_child, status=parent.status, last_error=parent.last_error,
+                                               kept_after=parent.kept_after, columns=None, note=prev_child.note)
+        return
+    doc = snap.read_snapshot(store, parent_id)
+    if doc is None or not isinstance(doc.get("body"), str):
+        return
+    try:
+        rows = sos.rows_of(doc["body"])
+        day = snap.parse_iso(doc.get("fetched_at") or parent.fetched_at).date()
+        body, items = make(rows, day)
+    except Exception as e:  # a summary that cannot be counted is left out, never a crash of the publish
+        log(f"    {child_id}: not counted ({type(e).__name__}: {str(e)[:80]})")
+        return
+    out = {k: v for k, v in doc.items() if k != "body"}
+    out.setdefault("fetched_at", parent.fetched_at)
+    out.setdefault("valid_until", parent.valid_until)
+    out["source"] = child_id
+    out["content_type"] = "application/json"
+    out["body"] = body
+    out["items"] = items
+    out["note"] = f"{what}, counted from the {len(rows)} rows of {parent_id}.json of the same publish"
+    size = snap.write_snapshot(store, out, now=now)
+    manifest.snapshots[child_id] = replace(parent, items=items, bytes=size, etag=None, duration_ms=0, columns=None, note=out["note"])
+    log(f"    {child_id}: {items} rows ({size} B)")
+
+
 def _usable(e: snap.Entry | None) -> bool:
     return e is not None and e.status in USABLE and e.holds_snapshot()
 
@@ -176,6 +231,10 @@ def finish(store: snap.Store, manifest: snap.Manifest, previous: snap.Manifest, 
     # 4. the derived files
     for parent, child, keep, what in derived(notable):
         _derive(store, manifest, previous, parent, child, keep, what, now, log)
+
+    # 6. the summaries (research train "ops")
+    for parent, child, make, what in summaries():
+        _summarise(store, manifest, previous, parent, child, make, what, now, log)
 
     # 5. the column twins, last
     for sid, e in list(manifest.snapshots.items()):

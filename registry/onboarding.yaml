@@ -335,3 +335,10 @@ features:
     surfaces: ["rail:headset"]
     not: "Its button is there only in a browser with a headset runtime, a Quest or a Vision Pro, and opens a note on comfort first; no first visit on a phone or a desktop has it."
   # b200-s3-suite: end
+  # research train (ops): begin
+  - id: live-operations
+    name: Live operations, State of Space, close calls, the Deep Space Network and Earth events (forge #558, #561, #562, #563)
+    files: [site/js/ui/ops.js, site/js/ui/opsentry.js]
+    surfaces: ["want:wantOps"]
+    not: "Its doors are rows under Live on the Earth and Planets tabs, beside Find's, which the search step already shows; a first visit's nine steps are about the map, and these are lists to read after it."
+  # research train (ops): end

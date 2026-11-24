@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Light Time to the Spacecraft | Space Radar Lab</title>
+<meta name="description" content="A command to a spacecraft travels at light speed, yet it takes over a second to reach the Moon, ten minutes to reach Mars and a whole day to reach Voyager 1.">
+<meta name="sr-lab-category" content="Light and time">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b0e14">
+<link rel="preload" href="../../fonts/inter-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../../fonts/barlow-semi-condensed-600-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../css/tokens.css">
+<link rel="stylesheet" href="../../css/static.css">
+<link rel="stylesheet" href="../../css/lab.css">
+<!-- chrome:head (written by scripts/gen_lab_index.py: the platform bridge, js/ui/platform-bridge.js; do not edit) -->
+<link rel="stylesheet" href="../../css/controls.css">
+<script type="module" src="../../js/platform-boot.js"></script>
+<!-- /chrome:head -->
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<!-- chrome:header (written by scripts/gen_lab_index.py from templates/partials/header.html; do not edit) -->
+<header class="top top--x"><div class="top__in"><a class="brand" href="../../" aria-label="Space Radar, home"><span class="ring"><svg viewBox="0 0 48 48" width="40" height="40" aria-hidden="true"><circle class="ring__t" cx="24" cy="24" r="21" pathLength="1"/><circle class="ring__p" cx="24" cy="24" r="21" pathLength="1"/></svg><img src="../../images/icons/favicon.svg" width="22" height="22" alt=""></span><span class="brand__t">Space Radar</span></a>
+<nav class="xnav" aria-label="Space Radar sites"><a href="../../">Map</a><a href="https://blog.spaceradar.ai/">Journal</a><a href="https://games.spaceradar.ai/">Games</a><a href="https://models.spaceradar.ai/">Models</a><a href="https://video.spaceradar.ai/">Video</a><a href="../../lab/index.html" aria-current="true">Lab</a></nav>
+<div class="top__r"><a class="btn btn--sub" href="../index.html#subscribe" aria-label="Subscribe to email updates"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M4 7.5l8 6 8-6"/></svg><span>Subscribe</span></a><a class="btn btn--map" href="../../"><span><span class="xs">Open the </span>3D map</span></a></div></div></header>
+<!-- /chrome:header -->
+<main id="main" class="sim">
+<p class="micro" id="cat"></p>
+<h1 id="h">Light Time to the Spacecraft</h1>
+<p class="lead" id="lesson">Every command to a spacecraft, and every picture it sends home, crosses space at the speed of light. That is fast, yet it takes more than a second to reach the Moon, ten minutes to reach Mars and a whole day to reach Voyager 1, so a probe far away has to look after itself.</p>
+<div class="stage"><canvas id="c" role="img" aria-label="Light Time to the Spacecraft"></canvas></div>
+<p class="line" id="line"></p>
+<noscript><p class="ns">This simulator needs JavaScript. It is one small file, with no libraries and no network requests: read it with View source.</p></noscript>
+<div class="controls">
+<button type="button" id="pb">Pause</button>
+<label>Time <input type="range" id="ts" min="0" value="0" aria-label="Time through the animation"></label>
+<label id="pl">Value <output id="po"></output><input type="range" id="ps"></label>
+</div>
+<p class="honest"><b>What is and is not to scale.</b> <span id="honest"></span></p>
+<details><summary>How this was made and sources</summary>
+<p class="srcl">One HTML file: no libraries, no network requests. Every number below was read on the date shown, from the page named next to it.</p>
+<div id="src"></div>
+</details>
+<p class="more"><!-- chrome:fav (written by scripts/gen_lab_index.py; do not edit) --><button type="button" class="ui-btn ui-btn--icon ui-btn--sm sr-heart" data-sr-fav="lab:light-time-to-the-spacecraft" aria-pressed="false" aria-label="Add this simulator to your favourites" title="Add this simulator to your favourites" data-sr-add="Add this simulator to your favourites" data-sr-remove="This simulator is in your favourites. Press to take it out"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></button><!-- /chrome:fav --><a id="sr-app" href="../../index.html#at=voyager-1">See this in the 3D map</a><a href="../index.html">All simulators</a><a id="add" href="https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/ADD_A_SIMULATOR.md">Add your own simulator</a><a id="edit" href="https://github.com/Sara-Managed-Projects/space-radar/tree/main/site/lab">Fix a mistake on GitHub</a></p>
+</main>
+<!-- chrome:footer (written by scripts/gen_lab_index.py from templates/partials/footer.html; do not edit) -->
+<footer class="foot"><div class="foot__in"><div><a class="brand brand--f" href="../../"><span class="brand__t">Space Radar</span></a><p>A free, open-source live 3D map of space: the satellites and the space station, launches, probes, planets, stars and galaxies, each drawn where it really is, with where the numbers come from.</p><p class="foot__n">The map needs no account. Analytics only if you say yes; no advertising, ever. MIT licence, <a href="https://github.com/Sara-Managed-Projects/space-radar">source on GitHub</a>.</p></div>
+<nav class="sitelinks" aria-label="Space Radar on the web">
+<div><p class="foot__h">Sites</p><ul><li><a href="../../">The 3D map</a></li><li><a href="https://blog.spaceradar.ai/">Journal</a></li><li><a href="https://games.spaceradar.ai/">Games</a></li><li><a href="https://models.spaceradar.ai/">Models</a></li><li><a href="https://video.spaceradar.ai/">Video</a></li><li><a href="../../lab/index.html">All simulators</a></li></ul></div>
+<div><p class="foot__h">More</p><ul><li><a href="../../about/index.html">About</a></li><li><a href="../../sources/index.html">Sources</a></li><li><a href="https://www.spaceradar.ai/legal/privacy/index.html">Privacy</a></li><li><a href="https://www.spaceradar.ai/legal/index.html">Legal</a></li><li><a href="https://www.spaceradar.ai/legal/cookies/index.html#choices" data-sr-consent>Cookie settings</a></li><li><a href="https://github.com/Sara-Managed-Projects/space-radar">GitHub</a></li></ul></div>
+</nav>
+</div></footer>
+<!-- /chrome:footer -->
+<!-- Sources
+Sources, read on 2026-11-24:
+ NASA Moon Fact Sheet (https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html), "Semimajor axis (10^6 km) 0.3844": the Moon's mean distance, 384 400 km (perigee 0.3633, apogee 0.4055).
+ JPL Horizons (https://ssd.jpl.nasa.gov/horizons/app.html, the API at https://ssd.jpl.nasa.gov/api/horizons.api), observer the Earth's centre (500@399), 2026-Nov-24 00:00 UT, "delta" (au) and "1-way_down_LT" (minutes):
+  Mars (499) 1.23844598662577 au, 10.29984120 min; Jupiter (599, where Juno orbits) 5.14179868696562 au, 42.76303571 min;
+  New Horizons (-98) 66.8060141551216 au, 555.60867754 min; Voyager 2 (-32) 145.052727317908 au, 1206.36674734 min; Voyager 1 (-31) 173.213037936885 au, 1440.56890922 min.
+ JPL Astrodynamic Parameters (https://ssd.jpl.nasa.gov/astro_par.html): speed of light c = 299792.458 km/s; astronomical unit 1 au = 149597870.7 km.
+ NASA, "Where are Voyager 1 and Voyager 2 now?" (https://science.nasa.gov/mission/voyager/where-are-voyager-1-and-voyager-2-now/): Voyager 1 reached one light-day, "25.902 billion kilometers", at 2:16:07 a.m. PST on 18 November 2026.
+ Physics: one-way light time t = distance / c. Distance = delta (au) x 149597870.7 km.
+ Check by hand: Mars 1.23844598662577 x 149597870.7 = 185268883 km; 185268883 / 299792.458 = 617.99 s = 10 min 18 s, as Horizons' 10.2998 min.
+  Voyager 1 173.213037936885 x 149597870.7 = 25912301653 km; / 299792.458 = 86434 s = 24 h 0 min, a little over the light-day it passed on 18 November. The Moon 384400 / 299792.458 = 1.28 s.
+-->
+<script>
+// ============================================ 0. HELPERS (shared; do not edit) ====================================
+// Defined first, so a simulator may use them while it loads (top-level tables). Colours: EMBER for the point of the lesson, INK for text, DIM for the quiet.
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x)),seg=(t,a,b)=>clamp((t-a)/(b-a),0,1),ease=x=>{x=clamp(x,0,1);return x*x*(3-2*x)},lerp=(a,b,x)=>a+(b-a)*x;
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const EMBER='#ff9f43',INK='#e8ecf4',DIM='#a3adc0',FONT='Inter,system-ui,-apple-system,"Segoe UI",sans-serif',Y0=430,Y1=1440,MINPX=34;
+// ============================================ 1. THE SIMULATOR (yours) ============================================
+// START HERE. Change the numbers, the words and the drawing below; leave section 2 alone. Docs: docs/ADD_A_SIMULATOR.md
+// Every constant has a source in the "Sources" comment above this script. This one: how long a radio command takes to reach six spacecraft and worlds, one way.
+const C=299792.458,AU=149597870.7;                          // km/s and km, JPL (Sources)
+const TG=[{n:'the Moon',s:'Moon',km:384400,col:'#c9ccd4'},{n:'Mars',s:'Mars',km:1.23844598662577*AU,col:'#e2734a'},
+ {n:'Juno at Jupiter',s:'Juno',km:5.14179868696562*AU,col:'#d9b38c'},{n:'New Horizons',s:'New Horizons',km:66.8060141551216*AU,col:'#9ec3ff'},
+ {n:'Voyager 2',s:'Voyager 2',km:145.052727317908*AU,col:'#9ec3ff'},{n:'Voyager 1',s:'Voyager 1',km:173.213037936885*AU,col:'#9ec3ff'}]; // 24 Nov 2026
+const lt=k=>TG[clamp(Math.round(k)-1,0,5)].km/C,tg=k=>TG[clamp(Math.round(k)-1,0,5)];   // one-way light time in seconds
+function dur(s){if(s<60)return s.toFixed(s<10?1:0)+' s';const h=Math.floor(s/3600),m=Math.floor(s%3600/60),r=Math.floor(s%60);
+ return h?h+' h '+m+' min':m+' min '+r+' s'}
+const km=v=>v<1e9?Math.round(v/1e3).toLocaleString('en-US')+' thousand km':(v/1e9).toFixed(v<1e10?2:1)+' billion km';
+const GO=1,LEN=10;                                          // the signal leaves at second GO and arrives LEN seconds later
+const SIM={
+ dur:13,reveal:7,
+ hook:'SENT AT LIGHT SPEED,|STILL WAITING',
+ honest:'The times are real one-way light times on 24 November 2026; the trip is sped up to ten seconds. Sizes and distances are not to scale.',
+ param:{label:'spacecraft, 1 Moon to 6 Voyager 1',min:1,max:6,step:1,value:2},
+ line(k,t){const L=lt(k),f=seg(t,GO,GO+LEN),T=tg(k);
+  if(f<=0)return`A command for ${T.n}, ${km(T.km)} away, is about to leave the Deep Space Network's dish. One way it takes ${dur(L)}.`;
+  if(f>=1)return`It has arrived at ${T.n} after ${dur(L)}. The reply needs ${dur(L)} more, so a question and its answer take ${dur(2*L)}.`;
+  return`The command left ${dur(f*L)} ago and arrives at ${T.n} in ${dur((1-f)*L)}: ${dur(L)} one way, at ${C.toLocaleString('en-US')} km/s.`},
+ draw(c,t,k){
+  stars(c,70);const T=tg(k),L=lt(k),f=seg(t,GO,GO+LEN),Y=760,X0=150,X1=930;
+  c.strokeStyle='rgba(163,173,192,.45)';c.lineWidth=3;c.setLineDash([10,14]);c.beginPath();c.moveTo(X0,Y);c.lineTo(X1,Y);c.stroke();c.setLineDash([]);
+  disc(c,X0,Y,46,'#4f9bff');text('Earth',X0,Y+110,40,INK,700);
+  disc(c,X1,Y,T.s==='Moon'||T.s==='Mars'?34:18,T.col);text(T.s,X1,Y+110,40,INK,700);
+  if(f>0&&f<1){const x=lerp(X0,X1,f);glow(c,x,Y,70,'rgba(255,159,67,.9)',.8);disc(c,x,Y,14,EMBER);
+   for(let i=1;i<4;i++){c.strokeStyle='rgba(255,159,67,'+(.5/i)+')';c.lineWidth=3;c.beginPath();c.arc(x,Y,14+i*22,-.9,.9);c.stroke()}}
+  if(f>=1)glow(c,X1,Y,90,'rgba(255,159,67,.9)',.7);
+  text(f<=0?'ready to send':f>=1?'arrived':'on its way',540,560,40,DIM,600);
+  text(f<=0?dur(L):f>=1?dur(L):dur((1-f)*L),540,650,76,EMBER,800);
+  text(f>0&&f<1?'to go, left '+dur(f*L)+' ago':'one way',540,710,36,DIM,600);
+  // every target's one-way time, on a log scale from 1 s to 2 days: the same speed, very different waits
+  const lx=s=>lerp(330,1000,Math.log10(s)/Math.log10(172800));
+  text('One-way light time, same speed of light',540,980,38,INK,700);
+  TG.forEach((g,i)=>{const s=g.km/C,y=1060+i*62,on=g===T,e=lx(s),inside=e>800;c.fillStyle=on?EMBER:'rgba(163,173,192,.55)';c.fillRect(330,y-28,Math.max(6,e-330),34);
+   text(g.s,310,y,34,on?INK:DIM,on?700:600,'right');text(dur(s),inside?e-12:e+12,y,34,inside?'#05070d':on?EMBER:DIM,700,inside?'right':'left')})}};
+// ============================================ 2. THE PAGE (shared; rarely needs a change) =========================
+// The stage is 1080 units wide; the page shows the band y 270..1470 of it. Draw only inside it, and put no text under 34 units.
+// `draw(c, t, P)` gets the 2D context, the time t in seconds (it loops over SIM.dur) and the slider value P. `line(P, t)` is the caption under the picture.
+// SIM.reveal is the second at which the animation shows its point; with a slider (SIM.param) the picture follows the slider, so rev(t) is 1.
+function rev(t){return SIM.param?1:ease(seg(t,SIM.reveal-.3,SIM.reveal+.9))}
+let S=1,P=SIM.param?SIM.param.value:0,T=0;
+function text(s,x,y,size,col,w,al){cx.font=(w||600)+' '+Math.max(size,MINPX)+'px '+FONT;cx.fillStyle=col||INK;cx.textAlign=al||'center';cx.textBaseline='alphabetic';cx.fillText(s,x,y)}
+function wrap(s,x,y,size,col,maxW,lh,w,al){cx.font=(w||600)+' '+Math.max(size,MINPX)+'px '+FONT;let ln='';for(const wd of s.split(' ')){const tr=ln?ln+' '+wd:wd;if(cx.measureText(tr).width>maxW&&ln){text(ln,x,y,size,col,w,al);y+=lh;ln=wd}else ln=tr}text(ln,x,y,size,col,w,al);return y+lh}
+function glow(c,x,y,r,col,a){const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,col);g.addColorStop(1,'rgba(0,0,0,0)');c.globalAlpha=a==null?1:a;c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,6.2832);c.fill();c.globalAlpha=1}
+function disc(c,x,y,r,col){c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,6.2832);c.fill()}
+function stars(c,n){let s=7;const r=()=>(s=(s*16807)%2147483647)/2147483647;for(let i=0;i<(n||90);i++){c.globalAlpha=.25+.5*r();c.fillStyle='#fff';c.fillRect(r()*1080,r()*1920,2,2)}c.globalAlpha=1} // a fixed starfield
+function draw(t){cx.setTransform(1,0,0,1,0,0);cx.fillStyle='#05070d';cx.fillRect(0,0,cv.width,cv.height);
+  cx.setTransform(S,0,0,S,0,-270*S);cx.save();cx.beginPath();cx.rect(0,0,1080,1920);cx.clip();SIM.draw(cx,t,P);
+  const h=SIM.hook.split('|');text(h[0],540,330,60,EMBER,800);if(h[1])text(h[1],540,396,60,EMBER,800);cx.restore()}
+{
+  const byId=id=>document.getElementById(id),LOOP=SIM.dur,meta=n=>(document.querySelector('meta[name="'+n+'"]')||{}).content||'';
+  byId('cat').textContent=meta('sr-lab-category');byId('honest').textContent=SIM.honest;
+  cv.setAttribute('aria-label',byId('h').textContent+'. '+meta('description'));
+  // "How this was made": the comment that starts with "Sources" in this file, with its web addresses made into links.
+  const walk=document.createTreeWalker(document,NodeFilter.SHOW_COMMENT);let node,src='';
+  while((node=walk.nextNode()))if(/^\s*sources?\b/i.test(node.data)){src=node.data.trim();break}
+  for(const ln of src.split('\n')){if(!ln.trim())continue;const p=document.createElement('p');p.className='srcl';
+    ln.split(/(\w+:\/\/[^\s)]+)/).forEach((part,i)=>{let ok=false;if(i%2)try{ok=new URL(part).protocol==='https:'}catch(e){}
+      if(ok){const a=document.createElement('a');a.href=part;a.rel='noopener';a.textContent=part;p.append(a)}else p.append(part)});byId('src').append(p)}
+  // Where this file lives in the repository, for the "fix a mistake" link.
+  const parts=location.pathname.split('/').filter(Boolean);if(parts[parts.length-1]==='index.html')parts.pop();
+  const slug=parts[parts.length-1]||'',edit=byId('edit');if(slug&&slug!=='lab')edit.href=edit.href.replace('/tree/','/edit/')+'/'+slug+'/index.html';
+  const pb=byId('pb'),ts=byId('ts'),ps=byId('ps'),po=byId('po'),calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let play=!calm,t0=performance.now(),dirty=true,last='';
+  ts.max=LOOP;ts.step=.01;
+  if(calm){T=Math.min(SIM.reveal+1.2,LOOP-.1);ts.value=T;pb.textContent='Play'}
+  const p=SIM.param;
+  if(p){const dec=(String(p.step).split('.')[1]||'').length,fmt=v=>(+v).toLocaleString('en-US',{maximumFractionDigits:dec,minimumFractionDigits:dec});
+    ps.min=p.min;ps.max=p.max;ps.step=p.step;ps.value=p.value;ps.setAttribute('aria-label',p.label);byId('pl').firstChild.textContent=p.label+' ';po.textContent=fmt(P);
+    ps.oninput=()=>{P=+ps.value;po.textContent=fmt(P);dirty=true}}
+  else byId('pl').hidden=true;
+  pb.onclick=()=>{play=!play;pb.textContent=play?'Pause':'Play';t0=performance.now()-T*1000};
+  ts.oninput=()=>{play=false;pb.textContent='Play';T=+ts.value;dirty=true};
+  function fit(){const d=Math.min(devicePixelRatio||1,2);cv.width=Math.round(cv.clientWidth*d);cv.height=Math.round(cv.clientHeight*d);S=cv.width/1080;dirty=true}
+  new ResizeObserver(fit).observe(cv);fit();
+  (function frame(){if(play){T=((performance.now()-t0)/1000)%LOOP;ts.value=T;dirty=true}
+    if(dirty){dirty=false;draw(T);const l=SIM.line(P,T);if(l!==last){last=l;byId('line').textContent=l}}
+    requestAnimationFrame(frame)})();
+}
+</script>
+</body>
+</html>

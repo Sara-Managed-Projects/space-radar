@@ -45,9 +45,13 @@ export const EONET_URLS = [
 export const EVENT_KEPT_MS = 3 * DAY_MS;
 const FETCH_TIMEOUT_MS = 20000;
 
-const KIND_OF = { wildfires: 'wildfire', volcanoes: 'volcano', seaLakeIce: 'iceberg' };
+// research train (ops), forge #563: severe storms and floods are read too, for the Earth events list (ui/opsevents.js), from
+// the third saved list `eonet-storms-floods`. The LAYER still draws only its three kinds (LAYER_KINDS): a storm's mark on
+// the globe is the `storms` layer's (GDACS, with its alert level), and two marks for one storm would be one too many.
+const KIND_OF = { wildfires: 'wildfire', volcanoes: 'volcano', seaLakeIce: 'iceberg', severeStorms: 'storm', floods: 'flood' };
+export const LAYER_KINDS = ['wildfire', 'volcano', 'iceberg'];
 
-/** What kind of event this is, or null for a category the layer does not draw. */
+/** What kind of event this is, or null for a category nothing here reads. */
 export function eventKind(event) {
   const cats = event && Array.isArray(event.categories) ? event.categories : [];
   for (const c of cats) if (c && KIND_OF[c.id]) return KIND_OF[c.id];
@@ -82,6 +86,7 @@ function pointOf(g) {
  */
 export function parseEonet(docs, opts = {}) {
   const nowMs = Number.isFinite(opts.nowMs) ? opts.nowMs : Date.now();
+  const kinds = new Set(Array.isArray(opts.kinds) ? opts.kinds : LAYER_KINDS);
   const out = [];
   const seen = new Set();
   for (let doc of Array.isArray(docs) ? docs : [docs]) {
@@ -89,7 +94,7 @@ export function parseEonet(docs, opts = {}) {
     const events = doc && Array.isArray(doc.events) ? doc.events : [];
     for (const e of events) {
       const kind = eventKind(e);
-      if (!kind || !e || !e.id || e.closed) continue;
+      if (!kind || !kinds.has(kind) || !e || !e.id || e.closed) continue;
       const points = (Array.isArray(e.geometry) ? e.geometry : []).map(pointOf).filter(Boolean).sort((a, b) => a.tMs - b.tMs);
       if (!points.length) continue;
       const last = points[points.length - 1];

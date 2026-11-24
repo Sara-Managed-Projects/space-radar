@@ -58,6 +58,7 @@ import seo_print  # noqa: E402
 # b200-f9-reach: begin -- /assets/, /creators/ and five comparisons (forge #165, #166, #168)
 import seo_reach  # noqa: E402
 # b200-f9-reach: end
+import seo_ops  # noqa: E402  (research train "ops": /state-of-space/ and /close-calls/, forge #558 #561)
 from seo_common import (ACCOUNTS, ACCURACY_FORM, CLASSROOM_FORM, GITHUB, ON_GITHUB, ROOT, Ctx, Page, esc, footer_nav,  # noqa: E402
                         make_ctx, place_picker, render, url_of, webpage)
 from seo_share import Spec  # noqa: E402
@@ -1436,6 +1437,7 @@ def build_pages(host: str, objects: list[dict], today: str, snapshot_index: dict
     # b200-f9-reach: begin
     pages += seo_reach.pages(host, counts)
     # b200-f9-reach: end
+    pages += seo_ops.pages(host)  # research train (ops)
     return pages
 
 
