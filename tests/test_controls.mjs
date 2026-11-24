@@ -131,11 +131,13 @@ for (const f of files) {
   const css = readFileSync(join(ROOT, 'site/css/controls.css'), 'utf8');
   for (const cls of ['ui-btn', 'ui-btn--primary', 'ui-btn--secondary', 'ui-btn--ghost', 'ui-btn--quiet', 'ui-btn--icon', 'ui-btn--sm', 'ui-btn--tile',
     'ui-seg', 'ui-seg__btn', 'ui-select', 'ui-radio', 'ui-check', 'ui-opt', 'ui-range', 'ui-close', 'ui-pop', 'ui-pop__head', 'ui-pop__title',
-    'ui-pop__body', 'ui-pop__sect', 'ui-pop__eyebrow', 'ui-row', 'ui-chip']) check(new RegExp(`\\.${cls}(?![\\w-])[^{]*\\{`).test(css), `css/controls.css defines .${cls}`);
+    'ui-pop__body', 'ui-pop__sect', 'ui-pop__eyebrow', 'ui-row', 'ui-chip', 'ui-orbit', 'ui-orbit__disc', 'ui-orbit__n', 'ui-field', 'ui-field__in']) check(new RegExp(`\\.${cls}(?![\\w-])[^{]*\\{`).test(css), `css/controls.css defines .${cls}`);
   check(/\.ui-select\{[^}]*appearance:none/.test(css), '.ui-select resets the browser\'s own look (appearance: none), so a phone draws it too');
   check(/:focus-visible\{outline:2px solid var\(--atm\)/.test(css), 'the set has the 2 px blue focus ring');
   check(/@media \(pointer: coarse\)\{[\s\S]*\.ui-btn,\.ui-btn--sm,\.ui-select,\.ui-select--sm,\.ui-row,\.ui-seg__btn,\.ui-close,:is\(button,a\)\.ui-chip\{min-height:44px\}/.test(css), 'on touch every control is 44 px on its own box (the CI ui walk measures the element, not a hit area)');
   check(!/#[0-9a-f]{3,8}\b/i.test(css.replace(/%23[0-9a-f]{6}/gi, '')), 'no colour literal in the set but the chevron\'s, inside its data URL');
+  // The orbit pill (2026-11-24, the models catalog's filters): 44 px on every screen, as the kit's, and its ring stands still.
+  check(/\.ui-orbit\{[^}]*min-height:44px/.test(css) && !/\.ui-orbit[^{]*\{[^}]*animation/.test(css), '.ui-orbit is 44 px everywhere and nothing in it turns');
 }
 
 // --- 6. Games is on the rail (the maintainer, 2026-11-11), not in the explore panel's head -----------------------------

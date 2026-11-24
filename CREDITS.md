@@ -201,7 +201,7 @@ In `site/js/ui/cards.js` (`ICONS`, where `chevron` is Lucide's `chevron-right`):
 `sparkles`, `map-pin`, `tornado`, `flag`. In `site/js/ui/embed.js`: `external-link`. In
 `site/js/ui/rail.js`: `share`, `ellipsis-vertical`, `eye-off`. In `site/js/ui/keyhint.js`: `move`,
 `mouse`. In `site/js/ui/launchchip.js`: `rocket`, the same shapes as the search row's. In `site/js/ui/icons.js` for the
-hidden panel's strip (read 2026-11-23): `search`, `earth`, `sparkles`, `moon`. The only change is the
+hidden panel's strip (read 2026-11-23): `search`, `earth`, `sparkles`, `moon`. On the Lab's list (`scripts/gen_lab_index.py`, 2026-11-24): `orbit`, `ruler`, `clock`, `rocket`, `star`, `eye`, `sun-moon`, `search` and `book-open` (orbit, rocket and star the same shapes as above); its ringed planet, black hole and galaxy are drawn in Lucide's style for that page and are this project's (MIT). The only change is the
 stroke, 1.75 instead of Lucide's default 2, which `docs/ui-guide.md` §3.16 sets for every icon in
 the app (`tests/test_a11y_static.mjs` holds it); Lucide draws at any stroke width by design. These
 are on Lucide's own list of icons derived from Feather (its `LICENSE`, read 2026-10-05), which are

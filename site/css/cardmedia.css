@@ -1,0 +1,62 @@
+/* css/cardmedia.css -- a card's "Pictures and news" (ui/cardmedia.js, forge internal #556). Fetched with the module
+   (ui/latercss.js), never on a first visit. The photograph and its credit are ui.css's own (.sr-card__figure,
+   .sr-card__photo-credit) and the microlabel is .sr-card__label: only what is new is here. Every credit sits under its
+   picture at the 13 px floor, never in a tooltip, because CC BY 4.0 asks for it "in a clear and readable manner". */
+
+.sr-media { display: flex; flex-direction: column; gap: var(--sp-4); }
+.sr-media__group { display: flex; flex-direction: column; }
+.sr-media__list { display: flex; flex-direction: column; gap: var(--sp-3); margin: 0; padding: 0; list-style: none; }
+.sr-media__list--row { flex-direction: row; flex-wrap: wrap; gap: var(--sp-2); }
+.sr-media__item { margin: 0; min-width: 0; }
+
+.sr-media__figure { margin: 0; }
+.sr-media__piclink { display: block; border-radius: var(--sr-radius); }
+.sr-media__figure .sr-media__thumb {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: var(--sr-radius);
+  background: var(--sr-space-edge); /* pictures of the dark: no white flash while loading */
+}
+
+.sr-media__row { display: flex; align-items: flex-start; gap: var(--sp-3); }
+.sr-media__row > .sr-media__thumb {
+  flex: none;
+  width: 72px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: var(--sr-radius-sm);
+  background: var(--sr-space-edge);
+}
+.sr-media__words { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
+
+.sr-media__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  font-size: var(--sr-fs-body);
+  line-height: 20px;
+  color: var(--sr-text);
+  text-decoration: underline;
+  text-decoration-color: var(--sr-line-strong);
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+.sr-media__link--quiet { font-size: var(--sr-fs-sm); color: var(--sr-text-dim); }
+.sr-media__link:hover { color: var(--sr-atmosphere); }
+.sr-media__link:focus-visible, .sr-media__piclink:focus-visible { outline: 2px solid var(--sr-atmosphere); outline-offset: 2px; }
+
+.sr-media__meta, .sr-media__note {
+  margin: 0;
+  font-size: var(--sr-fs-sm);
+  line-height: 18px;
+  color: var(--sr-text-dim);
+}
+.sr-media__note { margin-top: var(--sp-2); }
+.sr-media__arch { white-space: normal; }
+
+@media (pointer: coarse) {
+  .sr-media__link, .sr-media__link--quiet, .sr-media__piclink { min-height: 44px; }
+}

@@ -120,6 +120,7 @@ labs:
   the-solar-system-is-mostly-empty: {band: [7-11, 11-14], ngss: [MS-ESS1-3], ks3: [], gcse: ["4.8.1.1"], ib: [], app: "#trip=outer-solar-system"}
   the-sun-as-a-marble: {band: [7-11, 11-14], ngss: [MS-ESS1-3], ks3: [], gcse: [], ib: [], app: "#at=sun"}
   voyagers-odometer: {band: [11-14, 14-16], ngss: [MS-ESS1-3], ks3: [motion-speed], gcse: [], ib: [], app: "#at=voyager-1"}
+  solar-system-in-your-street: {band: [7-11, 11-14], ngss: [MS-ESS1-3], ks3: [], gcse: ["4.8.1.1"], ib: [], app: "#trip=outer-solar-system"}
   walk-the-solar-system: {band: [7-11, 11-14], ngss: [MS-ESS1-3], ks3: [], gcse: ["4.8.1.1"], ib: [], app: "#trip=outer-solar-system"}
   your-closest-stars: {band: [11-14, 14-16], ngss: [5-ESS1-1, MS-ESS1-3], ks3: [space-stars, space-light-year], gcse: [], ib: [E.5], app: "#stage=stellar"}
   # Light and time

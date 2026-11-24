@@ -319,6 +319,26 @@ Object.assign(COPY, {
     group: 'Constellation · {n} satellites on the map · press to list them',
     nearMe: 'Near me tonight',
     nearMeSub: 'What is up in your sky',
+    // The star of your year (ui/yourstar.js, forge internal #545): the row, and the words it is found by, in this language.
+    yourStar: 'The star of your year',
+    yourStarSub: 'Whose light left it when you were born',
+    yourStarWords: 'birthday born birth year my star star of my year star of your year how old age light years',
+    // A question in plain words (ui/ask.js, forge internal #555): the row that says what was understood, and the words
+    // each piece is found by in this language (English is always read as well). `|` separates the words of one piece.
+    ask: 'Understood: {what}',
+    askSub: 'Press to light it on the map',
+    askJoin: ' · ',
+    askGroups: { starlink: 'Starlink', oneweb: 'OneWeb', kuiper: 'Kuiper', qianfan: 'Qianfan', gps: 'GPS', glonass: 'GLONASS', galileo: 'Galileo', beidou: 'BeiDou', iridium: 'Iridium', stations: 'crewed stations', debris: 'debris', geo: 'the geostationary ring', sats: 'satellites' },
+    askPlace: 'over {place}',
+    askOwner: 'from {owner}',
+    askToday: 'launched today',
+    askDays: 'launched in the last {n} days',
+    askYear: 'launched in {year}',
+    askWords: {
+      over: 'over|above|in', from: 'from|of', launched: 'launched|launch|new', today: 'today', week: 'this week|week',
+      month: 'this month|month', year: 'this year',
+      groups: { stations: 'stations|space stations', debris: 'debris|space junk', geo: 'geostationary|geo', sats: 'satellites|satellite' },
+    },
   },
 
   // A launch within a day (ui/countdown.js). The states are Launch Library's own status field;
@@ -2589,6 +2609,16 @@ Object.assign(COPY.skyLore, {
 // in copy/en.js: nothing at boot reads it. 2552 is grouped with U+202F where a language groups four digits.
 Object.assign(COPY, {
   layerSentence: { pha: 'The 2 552 asteroids whose orbits come within 0.05 AU of the Earth’s and that are bigger than about 140 metres, each where it is today on JPL’s orbit. A name for a size and an orbit, not a forecast.' },
+});
+
+// A card's Pictures and news (forge internal #556): the row's name and what it says while ui/cardmedia.js loads. The rest
+// of its words are copy/en.media.js, fetched with that module.
+Object.assign(COPY, {
+  mediaRow: {
+    row: 'Pictures and news',
+    loading: 'Gathering what we hold…',
+    failed: 'The list did not load. Close this row and open it again.',
+  },
 });
 
 if (HOOK.localise) HOOK.localise({ COPY }, Object.keys(COPY).filter((k) => !KEYS_BEFORE.has(k)));

@@ -74,7 +74,7 @@ KEYS.splice(KEYS.indexOf('cam'), 0, 'play');
 // `#sky=europa:10,200`; sky/worldframe.js parseSkyLink). scene/groundstage.js writes them; before `cam`, which stays last.
 // `figure` a constellation seen from the side (`#figure=orion`, `#figure=big-dipper`, or an IAU code, `#figure=Cyg`;
 // registry/sideviews.yaml, ui/figureside.js), in the same call because every byte of this file is a first visit's.
-KEYS.splice(KEYS.indexOf('cam'), 0, 'ground', 'sky', 'figure');
+KEYS.splice(KEYS.indexOf('cam'), 0, 'ground', 'sky', 'figure', 'born'); // `born` the star of your year's day (ui/yourstar.js)
 // b200-f7-ground: end
 export const VERSION = '1';
 /** The release this code is (0076 W4-c). A release bumps it with CHANGELOG.md; tests/test_access.mjs holds its shape. */

@@ -6,7 +6,9 @@ no search, no tool rail, no clock control.
 
 ## The snippet
 
-Open the object in the app, press **Share** (or `P`), then **Embed**: the code is copied. Or build it
+Open the object (or any view: a trip, a world, the whole map) in the app, press **Share** (or `P`), then the **Embed**
+tab: choose a size (small 400 x 300, medium 600 x 400, large 800 x 500) and whether a credit line goes under it, then
+**Copy embed code**; **Preview** opens the frame by itself. Or build it
 on the site's embed page (`/embed/index.html`: an object, a guided trip or the whole map, with a size
 and an optional credit line). It looks like this:
 

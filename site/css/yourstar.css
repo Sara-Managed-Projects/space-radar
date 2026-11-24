@@ -1,0 +1,125 @@
+/* yourstar.css -- the star of your year (ui/yourstar.js, forge internal #545).
+ *
+ * Linked by ui/yourstar.js when the panel first opens, never at boot: a first visit carries none of it. Tokens only.
+ * The panel is the shared .ui-pop (css/controls.css) on the map's glass, in the share sheet's place: left of the tools
+ * rail on a desktop, as wide as the sidebar; on a phone the screen's width under the top bar, scrolling inside. The card
+ * is a picture (a canvas drawn by the module), shown at the panel's width. Nothing moves in or out, so reduced motion has
+ * nothing to stop.
+ */
+
+.sr-yourstar {
+  position: fixed;
+  top: calc(var(--sr-inset) + env(safe-area-inset-top, 0px));
+  right: calc(var(--sr-inset) + env(safe-area-inset-right, 0px) + 48px + 12px);
+  z-index: var(--sr-z-modal);
+  box-sizing: border-box;
+  width: var(--sr-side-w);
+  max-height: calc(100vh - 2 * var(--sr-inset));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  font-family: var(--sr-font);
+  color: var(--sr-text);
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius-shell);
+}
+
+.sr-yourstar[hidden] { display: none; }
+.sr-yourstar.sr-float { background: var(--sr-glass-strong); }
+@media (prefers-reduced-transparency: reduce) {
+  .sr-yourstar.sr-float { background: var(--sr-glass-solid); }
+}
+.sr-yourstar:focus,
+.sr-yourstar .ui-pop__title:focus { outline: none; }
+.sr-yourstar * { box-sizing: border-box; }
+
+.sr-yourstar__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.sr-yourstar__lede,
+.sr-yourstar__line,
+.sr-yourstar__where,
+.sr-yourstar__sky,
+.sr-yourstar__note,
+.sr-yourstar__status {
+  margin: 0;
+  font-size: var(--sr-fs-sm);
+  line-height: 20px;
+}
+.sr-yourstar__lede,
+.sr-yourstar__note,
+.sr-yourstar__sky { color: var(--sr-text-dim); }
+.sr-yourstar__status:empty { display: none; }
+.sr-yourstar__where { color: var(--sr-atmosphere); }
+
+.sr-yourstar__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.sr-yourstar__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+.sr-yourstar__field .ui-field { padding-inline-start: var(--sp-4); }
+.sr-yourstar__field input[type='date'] { color-scheme: dark; }
+
+.sr-yourstar__result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.sr-yourstar__result[hidden] { display: none; }
+
+.sr-yourstar__pic {
+  margin: 0;
+  overflow: hidden;
+  background: var(--sr-wash);
+  border-radius: var(--sr-radius);
+}
+.sr-yourstar__img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.sr-yourstar__pic.is-tall { align-self: center; width: 62%; }
+
+.sr-yourstar__facts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.sr-yourstar__name {
+  margin: 0;
+  font: 600 var(--sr-fs-name-sm)/1.15 var(--sr-font-hud);
+  color: var(--sr-text);
+}
+
+.sr-yourstar__acts {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--sp-2);
+}
+.sr-yourstar__acts > .ui-btn { min-width: 0; padding: 0 var(--sp-2); }
+/* The two ways into the map share the last row. */
+.sr-yourstar__acts > .ui-btn--secondary:nth-last-child(2) { grid-column: 1 / span 2; }
+@media (max-width: 359px) {
+  .sr-yourstar__acts { grid-template-columns: 1fr; }
+  .sr-yourstar__acts > .ui-btn--secondary:nth-last-child(2) { grid-column: auto; }
+}
+
+/* A phone: the screen's width under the top bar, down to the foot of the screen, scrolling inside. */
+html.sr-phone .sr-yourstar {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2));
+  right: max(var(--sp-4), env(safe-area-inset-right, 0px));
+  left: max(var(--sp-4), env(safe-area-inset-left, 0px));
+  width: auto;
+  max-height: calc(100vh - var(--sr-top-y) - var(--sr-top-bar) - var(--sp-4) - env(safe-area-inset-bottom, 0px));
+}
+
+html.sr-clean .sr-yourstar,
+html.sr-trip-mode .sr-yourstar,
+html.sr-sharing .sr-yourstar { display: none; }

@@ -189,6 +189,43 @@ When: a status or a tag (a span), or a filter you press (a button with `aria-pre
 
 `--accent` tints it with the thing's own `--a`. Don't: a chip as an action button (use `.ui-btn--sm`).
 
+### Orbit pill: `.ui-orbit`
+
+When: a filter or a category that has a family of its own (a topic, a class of model, an age band), in a labelled row of
+them. It is the kit's category pill (the journal's, games' and models' `.orbits` rows), in the set since 2026-11-24, when
+the Lab's filters were made to match the models catalog's.
+
+```html
+<button class="ui-orbit" type="button" aria-pressed="true" style="--a:var(--tint-grey)">
+  <span class="ui-orbit__disc"><svg …>…</svg></span><span>Ages 7-11</span></button>
+<a class="ui-orbit" href="#cat-orbits" style="--a:var(--tint-sky)">
+  <span class="ui-orbit__disc"><svg …>…</svg></span><span>Orbits and gravity</span><span class="ui-orbit__n">20</span></a>
+```
+
+A capsule led by a round `__disc` (a Lucide icon, or a dot for a scale such as an age or a size) with a dashed orbit ring
+round it, the label in the condensed caps, and `__n`, the count, a plain number with no brackets. `--a` is the family's
+tint, one of the `--tint-*` tokens (`site/css/tokens.css`: sky, mint, violet, gold, rose, ember, sand, silver, cyan, blue,
+lilac, grey); it colours the ring, the border, the icon and the wash, never the words. Pressed (`aria-pressed`) or current
+(`aria-current`), and on hover, it takes its tint's wash and a full border. 44 px on every screen, as the kit's. The ring
+does not turn (the kit's turns; nothing in this set loops). A row of them is laid out by the page: a key on the left in
+the condensed caps, the pills wrapping on a desktop and scrolling sideways on a phone (`site/lab/index.html`,
+`scripts/gen_lab_index.py`). Don't: brackets round the count; a tint as the colour of text; a second ember.
+
+### Field: `.ui-field`
+
+When: a search box, or a select with many options, in a row of orbit pills: the kit's search capsule, with its icon.
+
+```html
+<label for="q">Words</label>
+<span class="ui-field"><span class="ui-orbit__disc"><svg …magnifier…></svg></span>
+  <input class="ui-field__in" id="q" type="search" placeholder="gravity, Moon, light"></span>
+```
+
+The orbit pill's height and corners, the panel's ground and a hairline, led by the same disc; the control inside is
+`.ui-field__in` (an `<input>` or a `<select>`, which gets the set's chevron). The whole capsule takes the focus ring.
+Use it for a select when a row would hold more than about eight pills (the Lab's 52 curriculum codes). Don't: a field
+without a visible label.
+
 ## Beside the set: the Buy Me a Coffee link, `.coffee`
 
 Not a control but one shared piece, on every site: a drawn cup with steam and two coins, a plain link to

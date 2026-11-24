@@ -27,6 +27,37 @@ tagged, and their dates are the day the last change in each landed.
 - **A day card at the head of Today.** This day in space from the missions' dated events, the latitude where the Sun is
   overhead and the days to the next solstice or equinox, the Moon and the planets clear of the Sun's glare; each opens the map
   there, and Share is the share sheet's own.
+- **The star of your year.** Type a birthday (and, if you like, a town) and the map finds the named star whose distance in
+  light-years is your age: the light you see from it tonight left it when you were born. The card says how sure that day is
+  (Gaia's parallax error where the record has one, else Hipparcos's precision, and says which), and under four years old it
+  says the truth: no star is that close yet, and the light that left Proxima Centauri on your birthday lands on a date it
+  names. Beside it, the sky on that day: the Moon's phase and the planets in the evening sky. The card is drawn in three
+  shapes (wide, square, story) to download or share, with a link `#born=1990-06-12`; "Fly to the star" and "See that night"
+  open it in the map. Nothing is stored or sent: the date stays in the page and its hash, the town never leaves it. Find it in
+  the search ("birthday", "my star") in eleven languages (forge internal #545).
+- **An Embed tab on every Share.** The share sheet has two tabs, Share and Embed. Embed shows the code for the view on screen
+  (an object, a trip or the map), at three sizes, with the embed page's credit line under it unless unticked, a Copy button
+  and a Preview; the embed itself (`?embed=1`) is the one already documented in `docs/EMBEDDING.md`. A read-only JSON API and
+  white-label classroom embeds are specified, not built: `specs/embed-api-and-white-label.md` (forge internal #554).
+- **Satellite networks one tap away, and questions in plain words.** The Earth tab starts with a row of chips (Starlink,
+  OneWeb, GPS, GLONASS, Galileo, BeiDou, Iridium, Kuiper, Qianfan, the stations, debris, the geostationary ring), each with how
+  many of it the map holds now once the catalogue is loaded, never a guessed number; a tap lights it on the globe, and Clear
+  puts every dot back. The search understands short questions, read in the page with no service: "starlink over Spain",
+  "satellites launched this week", "chinese satellites", "satellites from India launched in 2020", "debris over Japan", and
+  says what it understood ("Understood: Starlink · over Spain") before it lights the group and turns the globe. Find gained a
+  `d` token for days since launch (`#find=sats_d-7`) (forge internal #555).
+- **The Solar System in your street, a Lab simulator.** Pick the space you have (a football for the Sun, a room, a football
+  pitch, your street) or type the metres from the Sun to Neptune, from 1 m to 10 km, and every world's size and distance
+  comes out at that one scale, in walking order, from NASA's fact sheets. A sheet to print on A4 draws each world at its true
+  size with a 100 mm control line that shows whether the printer scaled the page, and the address keeps the scale
+  (`/lab/solar-system-in-your-street/index.html#neptune=105m`). In all eleven languages.
+
+- **Pictures and news on a card.** A new row, "Pictures and news", gathers what the project already holds about an object:
+  the photographs our registries credit (the nebulae's ESA/Hubble, ESA/Webb, ESO and NOIRLab pictures and the two Event Horizon
+  Telescope images, each with its credit and CC BY 4.0 under it), the Journal's posts tagged with it, our long reads, the
+  agency's own page for a mission, and links to search NASA's Image and Video Library (and ESA/Hubble and ESA/Webb for deep
+  space). Nothing is fetched from anybody else: the archives are plain links. An object we hold nothing about says so and still
+  offers the archives. The row's code and data load only when it is first opened (`scripts/gen_media.py`, forge internal #556).
 
 - **A language menu.** The tool rail has a language button (a row of More on a phone) that lists the eleven languages by
   their own names. Choosing one loads the same view again in that language (the selection, the clock, the stage and the
@@ -87,6 +118,13 @@ tagged, and their dates are the day the last change in each landed.
 
 ### Changed
 
+- **Lab filters now match the models site.** The Lab's list filters by age, curriculum and words, and jumps to a topic, in
+  the models catalog's rows: a key on the left, orbit pills on the right (a round icon disc with a dashed ring, the label in
+  the condensed caps, the count a plain number), each topic in its own tint with its own icon, the ages with a dot, the
+  curriculum and the words in the same capsule with an icon. The pill and the field are in the control set
+  (`.ui-orbit`, `.ui-field`, `docs/UI_COMPONENTS.md`, the specimen), with the family tints in `tokens.css` (`--tint-*`).
+  The filters behave as before, with the same links (`#band=`, `#code=`, `#q=`) and counts; a topic's count no longer
+  switches its name back to English on a translated page.
 - **The Hazardous asteroids layer has its name and sentence in all eleven languages.** They sit in `copy/en.js` (`controls.layerName`, `controls.layerSentence`) like the layers' other words, and the What to show row reads them.
 - **Landing-site ground draws far fewer triangles.** The measured terrain of Hadley, Jezero, Gale and the other ground stops is
   cut into blocks that grow coarser with distance and are thrown out when out of view, so a stop draws about 60 000 to

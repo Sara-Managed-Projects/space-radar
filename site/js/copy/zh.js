@@ -6700,3 +6700,181 @@ COPY.dayCard = {
   "sourceSky": "太阳、月球和行星的位置在这里推算（Astronomy Engine）"
 };
 // research train (live): end
+// A card's Pictures and news (ui/cardmedia.js, copy/en.media.js; forge internal #556), machine-drafted: begin
+COPY.media = {
+  "pictures": "照片",
+  "journal": "来自日志",
+  "reads": "长文",
+  "pages": "官方页面",
+  "archives": "在档案库中搜索",
+  "credit": "{credit}，{licence}",
+  "photoAlt": "{name}，由{by}拍摄",
+  "photoAltPlain": "{name}的照片",
+  "photoOpen": "在 {site} 上查看这张图片",
+  "own": "我们自己的图片",
+  "posted": "发布于 {date}",
+  "readOnTitle": "本站上的长文，附图",
+  "onJournal": "在日志上",
+  "pageTitle": "{name}：航天机构自己的页面，在新标签页中打开",
+  "nasa": "NASA 图片与视频库",
+  "nasaTitle": "NASA 关于{name}的图片、影片和声音，在新标签页中打开",
+  "esahubble": "ESA/Hubble 图片",
+  "esahubbleTitle": "ESA/Hubble 拍摄的{name}图片，在新标签页中打开",
+  "esawebb": "ESA/Webb 图片",
+  "esawebbTitle": "ESA/Webb 拍摄的{name}图片，在新标签页中打开",
+  "archivesNote": "这些链接会打开各档案库自己的名称搜索；使用条款见其页面，我们在这里不显示它们的任何内容。",
+  "empty": "关于{name}，我们还没有照片、文章或长文。下面的档案库里也许会有。"
+};
+COPY.mediaRow = {
+  "row": "图片与新闻",
+  "loading": "正在整理我们已有的内容…",
+  "failed": "列表未能加载。请关闭这一栏后再打开。"
+};
+// A card's Pictures and news: end
+
+// The train of 2026-11-24 (forge internal #545, #554, #555): begin -- the Embed tab of the share sheet (copy/en.embedtab.js), the star of your year (copy/en.yourstar.js), the network chips (copy/en.networks.js) and the search's new rows (copy/en.later.js searchRows), machine-drafted
+COPY.embedTab = {
+  "tabsLabel": "分享或嵌入",
+  "share": "分享",
+  "embed": "嵌入",
+  "lede": "把这个实时画面放进你自己的网页：班级网站、博客或幻灯片。",
+  "size": "尺寸",
+  "sizes": {
+    "small": "小",
+    "medium": "中",
+    "large": "大"
+  },
+  "sizeTitle": "{w} × {h} 像素；在手机上会变窄",
+  "credit": "在下方加一行署名",
+  "creditLine": "实时画面来自 {link}",
+  "code": "要粘贴的代码",
+  "copy": "复制嵌入代码",
+  "copyTitle": "复制把这个实时画面放进网页的代码",
+  "preview": "预览",
+  "previewTitle": "在新标签页中单独打开嵌入画面",
+  "note": "读者会看到实时画面和一个“在 Space Radar 中打开”链接。他们的设备上不会存储任何东西：没有 Cookie，没有追踪器。",
+  "docs": "更多尺寸、旅程和整张地图：嵌入页面"
+};
+COPY.yourStar = {
+  "title": "你那一年的星",
+  "close": "关闭“你那一年的星”",
+  "lede": "光走一光年要用一年。所以，离我们的光年数等于你年龄的那颗星，今晚你看到的光，正是在你出生时离开它的。",
+  "dateLabel": "生日",
+  "placeLabel": "城市，用于那晚的星空（可选）",
+  "placeHint": "北京、上海、新加坡……",
+  "placeUnknown": "名单里没有这个城市，所以星空按你的时钟晚上 9 点计算。",
+  "go": "找到我的星",
+  "finding": "正在有名字的恒星中查找……",
+  "needDate": "请先输入生日。",
+  "badDate": "无法读取这一天。请选择 1900 年到今天之间的一天。",
+  "future": "这一天还没到。请选择过去的一天。",
+  "noStars": "恒星还没有加载。请稍后再试。",
+  "eyebrow": "你那一年的星",
+  "eyebrowOnWay": "你的星光还在路上",
+  "where": "位于{constellation}，距离 {ly} 光年",
+  "distance": "距离 {ly} 光年",
+  "left": "你今晚看到的它的光，是在 {when} 离开它的，正是你出生的时候。",
+  "leftYear": "你今晚看到的它的光，是在 {when} 离开它的，大约是你 {year} 年出生的时候。",
+  "band": "它的距离误差大约是前后各 {err} 光年，所以这束光是在 {from} 到 {to} 之间出发的。",
+  "onItsWay": "还没有离我们这么近的恒星。你生日那天离开{name}的光，还在穿越这 {ly} 光年：它将在 {when} 到达。",
+  "errFrom": {
+    "gaia": "误差来自 Gaia：这颗星的视差及其本身的不确定度。",
+    "range": "误差是星表给出的这颗星的距离范围。",
+    "modelled": "误差是按依巴谷（Hipparcos）的精度（半毫角秒）建模的；星表没有给出这颗星的误差。"
+  },
+  "moon": "月亮：{phase}，被照亮 {pct}%",
+  "planetsPlace": "黄昏后在{place}可见：{list}",
+  "planetsClock": "傍晚的天空中：{list}",
+  "planetsNone": "傍晚的天空中没有明亮的行星。",
+  "formatLabel": "卡片形状",
+  "formats": {
+    "landscape": "横版",
+    "square": "方形",
+    "story": "竖版"
+  },
+  "share": "分享",
+  "shareTitle": "分享卡片和它的链接",
+  "download": "下载",
+  "downloadTitle": "把卡片保存为 PNG 图片",
+  "copyLink": "复制链接",
+  "copyLinkTitle": "可以再次打开这张卡片的链接",
+  "fly": "飞向这颗星",
+  "flyTitle": "关闭这里，在 3D 地图中飞向这颗星",
+  "sky": "看看那一晚",
+  "skyTitle": "站到地面上，看看那天傍晚的星空",
+  "copied": "链接已复制",
+  "copyRefused": "刚才无法复制",
+  "shareFailed": "这里无法分享。请改为下载卡片。",
+  "cardAlt": "一张卡片：{name}，在你出生那年发出光的恒星，以及它周围的星。",
+  "privacy": "不会存储或发送任何内容。日期只留在这个页面里，只有你分享时才会出现在链接中；城市永远不会。",
+  "footer": "SPACERADAR.AI · 实时太空地图"
+};
+COPY.networks = {
+  "title": "卫星网络",
+  "names": {
+    "starlink": "Starlink",
+    "oneweb": "OneWeb",
+    "gps": "GPS",
+    "glonass": "GLONASS",
+    "galileo": "Galileo",
+    "beidou": "北斗",
+    "iridium": "Iridium",
+    "kuiper": "Kuiper",
+    "qianfan": "千帆",
+    "stations": "空间站",
+    "debris": "碎片",
+    "geo": "地球静止"
+  },
+  "chipCount": "{name}：现在地图上有 {n} 颗。点亮它们",
+  "chipNoCount": "{name}：在地图上点亮它们",
+  "clear": "清除",
+  "clearTitle": "恢复所有点",
+  "noteLoad": "卫星加载后才显示数量：点一个网络（7 MB）。",
+  "noteCounted": "按现在加载的星表（CelesTrak）统计，依据运营方给它们起的名字。"
+};
+Object.assign(COPY.searchRows, {
+  "yourStar": "你那一年的星",
+  "yourStarSub": "它的光在你出生时出发",
+  "yourStarWords": "生日 出生 出生年 我的星 我那一年的星 你那一年的星 年龄 光年",
+  "ask": "理解为：{what}",
+  "askSub": "点按以在地图上点亮",
+  "askJoin": " · ",
+  "askGroups": {
+    "starlink": "Starlink",
+    "oneweb": "OneWeb",
+    "kuiper": "Kuiper",
+    "qianfan": "千帆",
+    "gps": "GPS",
+    "glonass": "GLONASS",
+    "galileo": "Galileo",
+    "beidou": "北斗",
+    "iridium": "Iridium",
+    "stations": "载人空间站",
+    "debris": "空间碎片",
+    "geo": "地球静止轨道环",
+    "sats": "卫星"
+  },
+  "askPlace": "在{place}上空",
+  "askOwner": "来自{owner}",
+  "askToday": "今天发射的",
+  "askDays": "最近 {n} 天发射的",
+  "askYear": "{year} 年发射的",
+  "askWords": {
+    "over": "上空|上方|在",
+    "from": "来自|的",
+    "launched": "发射|发射的|新",
+    "today": "今天",
+    "week": "本周|这周",
+    "month": "本月|这个月",
+    "year": "今年",
+    "groups": {
+      "stations": "空间站|载人空间站",
+      "debris": "碎片|空间碎片|太空垃圾",
+      "geo": "地球静止|同步轨道",
+      "sats": "卫星"
+    }
+  }
+});
+COPY.yourStar.skyOn = "{date}的星空";
+COPY.yourStar.leftNear = "你今晚看到的它的光，是在{when}出发的：没有哪颗有名字的恒星恰好与你的年龄同样多光年远，这颗是最接近的。";
+// The train of 2026-11-24: end
