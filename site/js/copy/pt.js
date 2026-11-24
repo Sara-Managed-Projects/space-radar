@@ -2282,7 +2282,7 @@ export const COPY = {
       "Enquanto uma tela roda sozinha, um registro curto das viagens dela, só para esta aba."
     ],
     "place": "Seu lugar é arredondado para um décimo de grau e só é guardado enquanto esta página está aberta.",
-    "none": "Sem conta, sem cookies, sem análise de uso. Esquecer de mim, no Passaporte, apaga o passaporte e a escolha de som."
+    "none": "Nada disso é enviado a lugar nenhum. O mapa não precisa de conta, e a análise de uso só funciona se você disser sim. Esquecer de mim, no Passaporte, apaga o passaporte e a escolha de som."
   },
   "buildInfo": {
     "line": "Construído a partir de {sha}, {date}",

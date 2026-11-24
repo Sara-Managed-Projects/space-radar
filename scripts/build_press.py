@@ -68,8 +68,8 @@ def boilerplate(f: dict[str, int]) -> str:
     """Written to be lifted whole: 60 words (tests/test_press.py counts them). The numbers are the README's."""
     return (f"Space Radar (spaceradar.ai) is a free, open-source 3D map of space that runs in a browser. It shows the "
             f"satellites around the Earth, the planets and their moons, {count_facts.spaced(f['stars'])} stars and {f['trips']} narrated "
-            "trips, and labels every picture as measured, modelled or an artist's impression. It has no accounts, advertising or "
-            "tracking, and works fully offline in a classroom.")
+            "trips, and labels every picture as measured, modelled or an artist's impression. It needs no account, shows no advertising, "
+            "and works fully offline in a classroom.")
 
 
 ONE_LINER = "Space Radar is a free, open-source 3D map of space in your browser: real positions, named sources, no account, and an offline copy for classrooms."
@@ -108,8 +108,8 @@ def facts(n: dict[str, int]) -> list[str]:
         "text at each, and a visitor can leave at any moment and keep exploring from there.",
         "Each card says how its numbers were obtained and how old the input is; a sources sheet "
         "lists every source with its age. Nothing computed is presented as measured.",
-        "It is a static web page with no account, no advertising and no tracker, and the code is "
-        "open source.",
+        "It needs no account and shows no advertising, it counts visits only if a visitor agrees, "
+        "and the code is open source.",
     ]
 
 

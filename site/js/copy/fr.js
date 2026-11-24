@@ -2296,7 +2296,7 @@ export const COPY = {
       "Quand un écran tourne tout seul, un court journal de ses voyages, pour cet onglet seulement."
     ],
     "place": "Ton lieu est arrondi au dixième de degré et gardé seulement tant que cette page est ouverte.",
-    "none": "Pas de compte, pas de cookies, pas de statistiques. « M’oublier », dans le Passeport, efface le passeport et le choix du son."
+    "none": "Rien de tout cela n’est envoyé nulle part. La carte ne demande aucun compte, et les statistiques ne fonctionnent que si tu dis oui. « M’oublier », dans le Passeport, efface le passeport et le choix du son."
   },
   "buildInfo": {
     "line": "Construit à partir de {sha}, {date}",

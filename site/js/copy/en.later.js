@@ -499,7 +499,7 @@ Object.assign(COPY, {
       'While a screen plays on its own, a short log of its trips, for this tab only.',
     ],
     place: 'Your place is rounded to a tenth of a degree and held only while this page is open.',
-    none: 'No account, no cookies, no analytics. Forget me, in the Passport, clears the passport and the sound choice.',
+    none: 'None of this is sent anywhere. The map needs no account, and analytics runs only if you say yes. Forget me, in the Passport, clears the passport and the sound choice.',
   },
 
   // Which commit this site was built from (public #291; ui/status.js `builtFrom`): one line at the

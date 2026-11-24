@@ -7,5 +7,5 @@
 # https://opencollective.com/<slug> page; tests/test_support.py then also asks for the same URL in
 # README.md's Support section and for .github/FUNDING.yml (`open_collective: <slug>`).
 #
-# The product stays free whatever is here: no paid tier, no tracker, no popup, no paywall.
+# The map stays free whatever is here: no paywall on the sky, no tracker without a yes, no popup asking for money.
 open_collective: ""

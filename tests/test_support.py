@@ -8,7 +8,7 @@ Held, each by a case that fails when the thing it guards is broken:
   empty     registry/support.yaml as committed: the footer has no Support link, no /support/ page is
             built, /teachers/ says nothing about paying, and .github/FUNDING.yml does not exist
   filled    SPACE_RADAR_SUPPORT_URL set to an Open Collective page: the footer links /support/, the page
-            links the fund and says the product stays free and the money is public, /teachers/ links it
+            links the fund and says the whole map stays free (no account needed) and the money is public, /teachers/ links it
   the file  once registry/support.yaml itself names the fund, README.md carries the same URL and
             .github/FUNDING.yml says `open_collective: <slug>`
   refused   a URL that is not https://opencollective.com/<slug> stops the build
@@ -61,7 +61,7 @@ check(support.slug() == "space-radar-test", f"the slug of {FUND} read as {suppor
 check('<li><a href="../support/index.html">Support</a></li>' in seo_footer.sitelinks("../"), "the footer does not link /support/ once a fund is named")
 body = built("support/index.html")
 check(f'href="{FUND}"' in body, "/support/ does not link the fund")
-check("stays that way" in body and "no paid tier" in body, "/support/ does not say the product stays free")
+check("stays that way" in body and "no account needed" in body, "/support/ does not say the whole map stays free with no account")
 check("public" in body and "invoice" in body, "/support/ does not say the money is public, or how a school pays by invoice")
 check(not re.search(r"<script|<iframe|<form", body), "/support/ carries a script, a frame or a form")
 paying = seo_pages.teachers_paying()

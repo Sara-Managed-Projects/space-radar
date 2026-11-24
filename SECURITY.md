@@ -1,14 +1,18 @@
 # Security
 
-Space Radar is a static website: no accounts, no server-side code, no database, no cookies of its
-own. The things that can still go wrong are worth reporting all the same, for example:
+The map in this repository is a static website: no server-side code, no database, and no cookie of its
+own. On spaceradar.ai it also loads a separate account and consent script (optional sign-in, and
+analytics only after a visitor says yes), which lives in a private repository; what it keeps is in the
+[privacy policy](https://www.spaceradar.ai/legal/privacy/index.html). Problems in either are worth
+reporting here, for example:
 
 - script injection through data the page displays (a satellite's name, a launch description, a
   crafted share link);
 - anything that would send a visitor's location or other personal data somewhere it should not go;
 - a flaw in the deploy or harvest scripts (`scripts/`, `harvest/`, `notify/`) that could expose a
   bucket or a secret;
-- a vulnerable version of a vendored library in `site/vendor/`.
+- a vulnerable version of a vendored library in `site/vendor/`;
+- anything on account.spaceradar.ai or in the sign-in, the session cookie or the cookie notice.
 
 ## Reporting
 

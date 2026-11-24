@@ -10,7 +10,7 @@ check your inbox and error, as the kit's js/subscribe.js does.
 
 THE KIT'S RULES (web-kit/DESIGN.md section 3): one list is a single-purpose form with no checkbox and the button names
 it; several lists are checkboxes with NONE ticked and one needed; "already subscribed" looks like "check your inbox";
-the privacy line under every form, linking the privacy page (here the relative ../privacy/index.html, as every link
+the privacy line under every form, linking the privacy policy (https://www.spaceradar.ai/legal/privacy/index.html#email; it was the relative ../privacy/index.html, as every link
 between the static pages is). A honeypot field `website` stays empty: off screen, tabindex -1, autocomplete off.
 
 Nothing here tracks: the form sends the address, the lists, the page it is on and the empty honeypot, and nothing loads
@@ -80,7 +80,7 @@ def subscribe_form(root: str, source: str, *, lists: tuple[str, ...] = ALL, form
             f'<div class="sub__hp" aria-hidden="true"><label for="{i}-w">Leave this empty</label>'
             f'<input id="{i}-w" type="text" name="website" tabindex="-1" autocomplete="off" value=""></div>'
             f'<p class="sub__s" role="status" aria-live="polite"></p>'
-            f'<p class="sub__p">{esc(PRIVACY_LINE)} <a href="{esc(root)}privacy/index.html">Privacy</a>.</p></div></form>')
+            f'<p class="sub__p">{esc(PRIVACY_LINE)} <a href="https://www.spaceradar.ai/legal/privacy/index.html#email">Privacy</a>.</p></div></form>')
 
 
 def script(root: str) -> str:
