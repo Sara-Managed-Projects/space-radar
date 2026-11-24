@@ -6599,3 +6599,104 @@ COPY.figureSide = {
 COPY.favs = {"add": "加入你的收藏", "remove": "已在你的收藏中。按一下取消", "addTrip": "把{name}加入你的收藏", "removeTrip": "{name}已在你的收藏中。按一下取消"};
 COPY.account = {"signIn": "登录", "open": "你的账户", "openNamed": "你的账户：{name}"};
 // The platform bridge: end
+
+// research train (live): begin -- machine-translated, agent-reviewed 2026-11-24 (not native-reviewed): forge #544, #546, #547, #548.
+// A catalogue's day in Coming up (copy/en.js nextList), and the four sections of copy/en.live.js.
+COPY.nextList.dataRelease = "{name} 将于{date}公开：这是机构给出的日期，没有具体时刻";
+COPY.nextList.classOf.dataRelease = "机构给出的日期；它不公布具体时刻";
+COPY.nextList.row.dataReleaseTitle = "{name} 公开发布";
+COPY.nextList.row.dataRelease = "{date} · 机构给出的日期";
+COPY.releaseDay = {
+  "chipDays": "{name} · {n} 天后",
+  "chipTomorrow": "{name} · 明天",
+  "chipToday": "{name} · 今天",
+  "chipOut": "{name} 已发布",
+  "chipLabel": "{name} 将于{date}公开。打开 {object} 的卡片",
+  "section": "{name}，{date}",
+  "inDays": "{n} 天后发布，即{date}，这是机构给出的日期。没有公布具体时刻。",
+  "tomorrow": "明天发布，即{date}，这是机构给出的日期。没有公布具体时刻。",
+  "today": "今天发布，{date}。机构没有公布具体时刻。",
+  "out": "已于{date}发布。",
+  "hintDays": "{n} 天后",
+  "hintTomorrow": "明天",
+  "hintToday": "今天",
+  "hintOut": "已发布",
+  "sources": "日期和内容：{publisher}，{date}读取。",
+  "sourceLink": "机构的页面",
+  "journal": "在日志里阅读相关文章",
+  "dates": {
+    "gaia-dr4": {
+      "what": "Gaia DR4 是 ESA 的第四份 Gaia 星表：从 2014 年 7 月到 2020 年 1 月共 66 个月的测量，涵盖大约 28 亿颗恒星和其他天体。它的 400 TB 数据大部分是单次测量，平均值就是由它们算出来的。",
+      "stars": "这一天，这张地图上什么都不会变。图上 250 万颗三维恒星来自 HYG 和 AT-HYG 星表，它们的距离大多来自 Gaia DR3，也就是这次之前的那一版。",
+      "after": "那天之后，我们会读取新数据和它的使用条款，再决定更新什么，先从恒星的距离和运动开始。在完成并在这里说明之前，恒星保持原样。",
+      "where": "Gaia 本身已在 2025 年 3 月关机，并被推离 L2，进入一条绕太阳运行的独立轨道。这张卡片显示它现在的位置。",
+      "publisher": "ESA"
+    }
+  }
+};
+COPY.spacePanel = {
+  "section": "空间天气",
+  "hintKp": "Kp {kp}",
+  "hintNone": "NOAA 的 Kp 指数",
+  "measuredHead": "实测",
+  "forecastHead": "预报，未来三天",
+  "day": "{day}",
+  "dayValue": "最高 Kp {kp}",
+  "dayWords": "{word}",
+  "noForecast": "NOAA 的文件里没有未来几天的预报。",
+  "kindNote": "“实测”是 NOAA 对最近几个三小时时段的读数；未来几天是它的预报，每三小时一段，可能会变。",
+  "stormHead": "磁暴会带来什么",
+  "storm": {
+    "satellites": "卫星：从 G2 起，低轨道上的大气阻力会变化，卫星的预测轨迹会偏移；从 G3 起，低轨卫星下降得更快。",
+    "navigation": "导航：从 G3 起，卫星导航可能时不时失灵；到 G4 和 G5，它会连续几小时甚至几天变差。",
+    "radio": "无线电：从 G2 起，两极附近的短波会衰减；到 G5，可能一两天都收不到。",
+    "aurora": "极光：G1 级磁暴时，在极北和极南地区能看到极光；每升一级，极光就向赤道靠近大约 5 度磁纬，到 G5 时可到约 40 度。"
+  },
+  "aurora": "在地球上显示极光",
+  "auroraTitle": "极光图层：NOAA 对未来 30 到 90 分钟的预报",
+  "sources": "Kp：NOAA SWPC，公有领域。磁暴会带来什么：NOAA 的空间天气等级，{date}读取。",
+  "scalesLink": "NOAA 的等级标准",
+  "none": "暂时读取不到 NOAA 的空间天气。"
+};
+COPY.issCam = {
+  "section": "实时摄像头",
+  "hint": "NASA 的直播",
+  "lead": "NASA 直播空间站上摄像头拍到的画面。只有你要求时，它才会从 YouTube 加载。",
+  "watch": "观看空间站实时画面",
+  "watchTitle": "在地图旁打开 NASA 的实时视频；会连接到 YouTube",
+  "privacy": "按下后会以隐私增强模式连接 YouTube；从那时起，适用 YouTube 自己的条款和隐私政策。",
+  "dark": "画面常常是黑色、蓝色或测试图：空间站在大多数轨道圈中有超过三分之一的时间处在地球的阴影里，而且与地面失去联系时，信号会中断。",
+  "sunlit": "此刻空间站在阳光下：如果直播在线，可能会看到白昼面。",
+  "shadow": "此刻空间站在地球的阴影里：画面会很暗，最多能看到城市灯光。",
+  "title": "来自空间站的实时画面",
+  "close": "关闭实时摄像头",
+  "frameTitle": "NASA 在 YouTube 上的国际空间站实时视频",
+  "loading": "正在向 YouTube 请求 NASA 的直播……",
+  "credit": "视频：NASA，来自 YouTube。旁边的地球是我们的地图，不是摄像头画面。",
+  "onYoutube": "在 YouTube 上打开",
+  "nasaLive": "NASA Live",
+  "checked": "直播链接检查于{date}。"
+};
+COPY.dayCard = {
+  "thisDayKicker": "历史上的今天 · {year}",
+  "nearKicker": "{date} {year}",
+  "thisDayTitle": "{mission}：{event}",
+  "earthKicker": "今天的地球",
+  "earthTitleNorth": "太阳直射北纬 {deg}°",
+  "earthTitleSouth": "太阳直射南纬 {deg}°",
+  "earthLine": "距离{season}还有 {n} 天。",
+  "earthLineOne": "明天就是{season}。",
+  "earthLineToday": "今天是{season}。",
+  "skyKicker": "今天的天空",
+  "skyTitle": "月相：{phase}，亮面 {pct}%",
+  "skyMorning": "黎明前：{list}。",
+  "skyEvening": "黄昏后：{list}。",
+  "skyNoPlanets": "没有哪颗明亮的行星避开了太阳的强光。",
+  "share": "分享今天",
+  "shareTitle": "分享今天的卡片：链接、文字和一张图片",
+  "shareName": "今日太空，{date}",
+  "sources": "来源：{list}。",
+  "sourceMission": "{name}",
+  "sourceSky": "太阳、月球和行星的位置在这里推算（Astronomy Engine）"
+};
+// research train (live): end

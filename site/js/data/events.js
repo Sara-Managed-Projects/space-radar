@@ -679,6 +679,48 @@ function seasons(records, nowMs, { horizonMs, type }) {
   return out.sort((a, b) => a.t - b.t);
 }
 
+/**
+ * A big catalogue going public on a day an agency gives (forge #547): the dates are typed in
+ * registry/events.yaml with the page each was read on. The agency gives a day and no hour, so the
+ * record stands at noon UTC of it (registry/missions.yaml `precision: day`), and its row says the
+ * date, never "in 3 hours". The record it is about (Gaia's, for DR4) is the loaded one, when it is.
+ * Exported for tests/test_releaseday.mjs.
+ */
+export function releaseDayMs(date) {
+  const ms = Date.parse(`${String(date || '')}T12:00:00Z`);
+  return Number.isFinite(ms) ? ms : NaN;
+}
+
+function dataReleases(records, nowMs, { horizonMs, type }) {
+  const out = [];
+  const T = COPY.nextList;
+  for (const d of Array.isArray(type.dates) ? type.dates : []) {
+    const tMs = releaseDayMs(d.date);
+    // Still a row on the day itself, until its noon has passed by half a day: the day, not the hour.
+    if (!(tMs + DAY / 2 > nowMs) || tMs - nowMs >= horizonMs) continue;
+    const record = d.object ? (Array.isArray(records) ? records : []).find((r) => r && r.id === d.object) || null : null;
+    out.push({
+      id: `${type.id}:${d.id}`,
+      type: type.id,
+      t: tMs,
+      t_precision: 'day',
+      t_window: [tMs - DAY / 2, tMs + DAY / 2],
+      title: d.name,
+      say: t(T.dataRelease, { name: d.name, date: timeText.longDate(tMs) }),
+      where: null,
+      location_dependent: type.locationDependent,
+      class: 'inferred',
+      prominence: type.prominence,
+      source: d.source || type.source,
+      links: d.source ? [d.source] : [],
+      record,
+      kind: d.id,
+      detail: {},
+    });
+  }
+  return out;
+}
+
 // ---------------------------------------------------------------------------------------
 // The stream
 // ---------------------------------------------------------------------------------------
@@ -704,6 +746,7 @@ const BUILDERS = {
   'lunar-eclipse': lunarEclipses,
   'solstice': seasons,
   'equinox': seasons,
+  'data-release': dataReleases,
 };
 
 /** The types worked out here with no data at all (scripts/check_registry.py COMPUTED_EVENT_TYPES). */

@@ -1133,6 +1133,8 @@ export const COPY = {
     },
     solstice: '{title} on {date}',
     equinox: '{title} on {date}',
+    // A big catalogue's day (registry/events.yaml data-release, forge #547): the agency gives the day, not the hour.
+    dataRelease: '{name} goes public on {date}: the day the agency gives, with no hour',
     eclipseNear: 'near {city}',
     eclipseFrom: 'about {km} km from {city}',
     // With a place set (spec 0031 req 6). Times are the visitor's own clock, as every row's are.
@@ -1154,6 +1156,7 @@ export const COPY = {
       eclipse: 'Worked out here to the minute from the motion of the Sun and Moon',
       season: 'Worked out here to the minute from where the Sun stands',
       conjunction: 'Worked out here for your place, at their closest while both are up in the dark',
+      dataRelease: 'The day the agency gives; it publishes no hour',
     },
     // THE ROW AS DRAWN (spec 0061 task 5, ui/next.js rowParts): a title, then one line. The
     // sentences above are the row's tooltip and its accessible name; these are what fits a 320 px
@@ -1188,6 +1191,8 @@ export const COPY = {
       eclipse: '{date} · worked out to the minute',
       eclipseHere: '{date} · from here {begin} to {end}',
       eclipseNotHere: '{date} · not visible from here',
+      dataReleaseTitle: '{name} goes public',
+      dataRelease: '{date} · the agency’s day',
     },
     // The empty state: one line (docs/ui-guide.md section 3). Which feed is missing is its tooltip.
     none: 'Nothing coming up in what has loaded.',

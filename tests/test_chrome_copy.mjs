@@ -104,6 +104,9 @@ const LINES = [
   ['nextList.row.eclipse', 13, INTER, SIDE],
   ['nextList.row.eclipseHere', 13, INTER, SIDE],
   ['nextList.row.eclipseNotHere', 13, INTER, SIDE],
+  // A catalogue's day (forge #547): the name is a catalogue's, as registry/events.yaml data-release types it.
+  ['nextList.row.dataReleaseTitle', 15, INTER, SIDE, { name: 'Gaia DR4' }],
+  ['nextList.row.dataRelease', 13, INTER, SIDE],
   ['nextList.none', 13, INTER, SIDE],
   // What to show: the three silences beside a name, the failed line, the quality lines
   ['controls.layerCountLoading', 13, MONO, 70],
@@ -201,7 +204,7 @@ const LONG_OK = new Map([
 ]);
 // An event's full sentence (ui/next.js): the row draws COPY.nextList.row.*, held above to a width;
 // these are the row's tooltip and the event's card, where a sentence is the point.
-const EVENT_SENTENCE = /^nextList\.(launchRough|approach|perihelion|train|shower|showerMoon|showerNoMoon|radiantLow|radiantNeverUp|solarEclipse|solarEclipseGrazing|lunarEclipse|lunarEclipsePenumbral|seasons\.\w+|eclipseLocal|eclipseBelowHorizon|classOf\.\w+)$/;
+const EVENT_SENTENCE = /^nextList\.(launchRough|approach|perihelion|train|shower|showerMoon|showerNoMoon|radiantLow|radiantNeverUp|solarEclipse|solarEclipseGrazing|lunarEclipse|lunarEclipsePenumbral|seasons\.\w+|eclipseLocal|eclipseBelowHorizon|dataRelease|classOf\.\w+)$/;
 // Where the longest value of a placeholder is not the table's: a storm count is two digits and a
 // storm's name one word.
 const WORST_FOR = { 'rightNow.storms': { n: '12', name: 'Humberto' } };

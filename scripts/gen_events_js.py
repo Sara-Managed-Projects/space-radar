@@ -38,6 +38,21 @@ def render(doc: dict) -> list:
             "enabled": r.get("enabled", True) is not False,
             "source": r.get("source"),
         })
+        # A type with dates typed in the YAML (`data-release`, forge #547): the dates the browser builds
+        # from, with what its card and chip read. The sources stay in the YAML.
+        if r.get("dates"):
+            rows[-1]["dates"] = [{
+                "id": d.get("id"),
+                "name": d.get("name"),
+                "date": str(d.get("date")),
+                "object": d.get("object"),
+                "chipFrom": str(d.get("chip_from")) if d.get("chip_from") else None,
+                "chipUntil": str(d.get("chip_until")) if d.get("chip_until") else None,
+                "journal": d.get("journal"),
+                "journalFrom": str(d.get("journal_from")) if d.get("journal_from") else None,
+                "source": (d.get("sources") or [{}])[0].get("url"),
+                "read": str((d.get("sources") or [{}])[0].get("read") or "") or None,
+            } for d in r["dates"] if isinstance(d, dict) and d.get("id")]
     return [("Every event type the registry knows, defaults resolved. Order is the registry's.", "EVENT_TYPES", rows)]
 
 

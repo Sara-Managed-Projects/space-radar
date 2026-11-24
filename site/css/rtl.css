@@ -19,6 +19,7 @@ html[dir='rtl']:not(.sr-phone) .sr-side { left: auto; right: var(--sr-inset); }
 html[dir='rtl']:not(.sr-phone) .sr-rail { right: auto; left: var(--sr-inset); }
 html[dir='rtl']:not(.sr-phone) .sr-pop,
 html[dir='rtl']:not(.sr-phone) .sr-share { right: auto; left: calc(var(--sr-inset) + 48px + 12px); }
+html[dir='rtl']:not(.sr-phone) .sr-isscam { right: auto; left: calc(var(--sr-inset) + 48px + 12px); }
 html[dir='rtl']:not(.sr-phone) .sr-figside { right: auto; left: calc(var(--sr-inset) + env(safe-area-inset-left, 0px) + 48px + 12px); }
 html[dir='rtl'] .sr-keyhint { right: auto; left: var(--sr-inset); }
 html[dir='rtl'] .sr-keyhint__head > .ui-close { margin-right: 0; margin-left: calc(-1 * var(--sp-2)); }

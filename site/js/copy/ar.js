@@ -6599,3 +6599,104 @@ COPY.figureSide = {
 COPY.favs = {"add": "أضِف إلى مفضّلاتك", "remove": "في مفضّلاتك. اضغط لإزالته", "addTrip": "أضِف {name} إلى مفضّلاتك", "removeTrip": "{name} في مفضّلاتك. اضغط لإزالتها"};
 COPY.account = {"signIn": "تسجيل الدخول", "open": "حسابك", "openNamed": "حسابك، {name}"};
 // The platform bridge: end
+
+// research train (live): begin -- machine-translated, agent-reviewed 2026-11-24 (not native-reviewed): forge #544, #546, #547, #548.
+// A catalogue's day in Coming up (copy/en.js nextList), and the four sections of copy/en.live.js.
+COPY.nextList.dataRelease = "يُتاح {name} للعموم في {date}: اليوم الذي تحدده الوكالة، بلا ساعة";
+COPY.nextList.classOf.dataRelease = "اليوم الذي تحدده الوكالة؛ ولا تنشر ساعة";
+COPY.nextList.row.dataReleaseTitle = "إتاحة {name} للعموم";
+COPY.nextList.row.dataRelease = "{date} · يوم الوكالة";
+COPY.releaseDay = {
+  "chipDays": "{name} · بعد {n} يوم",
+  "chipTomorrow": "{name} · غدًا",
+  "chipToday": "{name} · اليوم",
+  "chipOut": "{name} · صدر",
+  "chipLabel": "يُتاح {name} للعموم في {date}. يفتح بطاقة {object}",
+  "section": "{name}، {date}",
+  "inDays": "يصدر بعد {n} يوم، في {date}، وهو اليوم الذي تحدده الوكالة. لم تُعلَن ساعة محددة.",
+  "tomorrow": "يصدر غدًا، {date}، وهو اليوم الذي تحدده الوكالة. لم تُعلَن ساعة محددة.",
+  "today": "يصدر اليوم، {date}. لا تعلن الوكالة أي ساعة.",
+  "out": "متاح منذ {date}.",
+  "hintDays": "بعد {n} يوم",
+  "hintTomorrow": "غدًا",
+  "hintToday": "اليوم",
+  "hintOut": "صدر",
+  "sources": "التاريخ والمحتوى: {publisher}، قُرئ في {date}.",
+  "sourceLink": "صفحة الوكالة",
+  "journal": "اقرأ عنه في المجلة",
+  "dates": {
+    "gaia-dr4": {
+      "what": "Gaia DR4 هو فهرس Gaia الرابع من ESA: قياسات 66 شهرًا، من يوليو 2014 إلى يناير 2020، لنحو 2.8 مليار نجم ومصدر آخر. ومعظم تيرابايتاته الـ400 هي القياسات المفردة التي تقوم عليها المتوسطات.",
+      "stars": "لا يتغير شيء على هذه الخريطة في ذلك اليوم. نجومها الـ2.5 مليون ثلاثية الأبعاد تأتي من فهرسَي HYG وAT-HYG، ومعظم مسافاتها من Gaia DR3، الإصدار الذي سبق هذا.",
+      "after": "بعد ذلك اليوم سنقرأ البيانات الجديدة وشروطها، ثم نقرر ما نحدّثه، مسافات النجوم وحركاتها أولًا. وإلى أن يتم ذلك ونقوله هنا، تبقى النجوم كما هي.",
+      "where": "أُطفئ Gaia نفسه في مارس 2025 ودُفع بعيدًا عن L2 إلى مدار خاص به حول الشمس. تُظهر هذه البطاقة أين هو الآن.",
+      "publisher": "ESA"
+    }
+  }
+};
+COPY.spacePanel = {
+  "section": "طقس الفضاء",
+  "hintKp": "Kp {kp}",
+  "hintNone": "مؤشر Kp من NOAA",
+  "measuredHead": "مقيس",
+  "forecastHead": "توقع، الأيام الثلاثة القادمة",
+  "day": "{day}",
+  "dayValue": "حتى Kp {kp}",
+  "dayWords": "{word}",
+  "noForecast": "لا يحوي ملف NOAA أي توقع للأيام القادمة.",
+  "kindNote": "«مقيس» هو قراءة NOAA لآخر فترات الساعات الثلاث؛ أما الأيام القادمة فهي توقعها، المُعدّ ثلاث ساعات في كل مرة، وقد يتغير.",
+  "stormHead": "ماذا تفعل العاصفة",
+  "storm": {
+    "satellites": "الأقمار الاصطناعية: من G2 يتغير الكبح الجوي في المدارات المنخفضة وتنحرف مساراتها المتوقعة؛ ومن G3 تهبط الأقمار المنخفضة أسرع.",
+    "navigation": "الملاحة: من G3 قد تتعطل الملاحة بالأقمار الاصطناعية من حين لآخر؛ وفي G4 وG5 تضعف لساعات، بل لأيام.",
+    "radio": "الراديو: من G2 تخفت الموجات القصيرة قرب القطبين، وفي G5 قد تنقطع ليوم أو يومين.",
+    "aurora": "الشفق: في عاصفة G1 يُرى في أقصى الشمال والجنوب؛ وكل درجة تقرّبه من خط الاستواء بنحو 5 درجات من خط العرض المغنطيسي، حتى نحو 40 عند G5."
+  },
+  "aurora": "أظهر الشفق على الكرة الأرضية",
+  "auroraTitle": "طبقة الشفق: توقع NOAA للفترة من 30 إلى 90 دقيقة القادمة",
+  "sources": "Kp: NOAA SWPC، ملكية عامة. ماذا تفعل العاصفة: مقاييس NOAA لطقس الفضاء، قُرئت في {date}.",
+  "scalesLink": "مقاييس NOAA",
+  "none": "تعذرت قراءة طقس الفضاء من NOAA الآن."
+};
+COPY.issCam = {
+  "section": "الكاميرا المباشرة",
+  "hint": "بث NASA",
+  "lead": "تبث NASA المنظر من كاميرات على المحطة. ولا يُحمَّل البث من YouTube إلا حين تطلبه.",
+  "watch": "شاهد البث المباشر من المحطة",
+  "watchTitle": "يفتح فيديو NASA المباشر بجانب الخريطة؛ ويتصل بـYouTube",
+  "privacy": "الضغط عليه يتصل بـYouTube في وضع الخصوصية المحسّنة؛ ومن ذلك الحين تسري شروط YouTube نفسه وسياسة خصوصيته.",
+  "dark": "كثيرًا ما تكون الصورة سوداء أو زرقاء أو بطاقة اختبار: تقضي المحطة أكثر من ثلث معظم دوراتها في ظل الأرض، وينقطع البث حين تفقد الاتصال بالمحطات الأرضية.",
+  "sunlit": "المحطة الآن في ضوء الشمس: إن كان البث يعمل فقد يُظهر الجانب النهاري.",
+  "shadow": "المحطة الآن في ظل الأرض: توقّع صورة مظلمة، وفي أحسن الأحوال أضواء المدن.",
+  "title": "مباشرة من المحطة",
+  "close": "أغلق الكاميرا المباشرة",
+  "frameTitle": "فيديو NASA المباشر من محطة الفضاء الدولية، على YouTube",
+  "loading": "نطلب بث NASA من YouTube…",
+  "credit": "الفيديو: NASA، على YouTube. الكرة الأرضية بجانبه هي خريطتنا، لا الكاميرا.",
+  "onYoutube": "افتح على YouTube",
+  "nasaLive": "NASA Live",
+  "checked": "فُحص رابط البث في {date}."
+};
+COPY.dayCard = {
+  "thisDayKicker": "في مثل هذا اليوم · {year}",
+  "nearKicker": "{date} {year}",
+  "thisDayTitle": "{mission}: {event}",
+  "earthKicker": "الأرض اليوم",
+  "earthTitleNorth": "الشمس عمودية فوق {deg}° شمالًا",
+  "earthTitleSouth": "الشمس عمودية فوق {deg}° جنوبًا",
+  "earthLine": "{season} بعد {n} يوم.",
+  "earthLineOne": "{season} غدًا.",
+  "earthLineToday": "{season} اليوم.",
+  "skyKicker": "السماء اليوم",
+  "skyTitle": "القمر {phase}، مضاء بنسبة {pct}%",
+  "skyMorning": "قبل الفجر: {list}.",
+  "skyEvening": "بعد الغسق: {list}.",
+  "skyNoPlanets": "لا كوكب ساطعًا بعيد بما يكفي عن وهج الشمس.",
+  "share": "شارك بطاقة اليوم",
+  "shareTitle": "شارك بطاقة اليوم: الرابط والكلمات وصورة",
+  "shareName": "اليوم في الفضاء، {date}",
+  "sources": "المصادر: {list}.",
+  "sourceMission": "{name}",
+  "sourceSky": "الشمس والقمر والكواكب، محسوبة هنا (Astronomy Engine)"
+};
+// research train (live): end

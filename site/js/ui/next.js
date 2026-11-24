@@ -73,6 +73,7 @@ const KIND_OF = {
   'lunar-eclipse': 'lunar-eclipse',
   'solstice': 'season',
   'equinox': 'season',
+  'data-release': 'release',
 };
 const ECLIPSE_KINDS = ['solar-eclipse', 'lunar-eclipse'];
 
@@ -85,6 +86,8 @@ export function toItem(ev) {
   }
   // A solstice or an equinox (internal #384): the record's own sentence is the row.
   if (kind === 'season') return { kind, record: null, tMs: ev.t, label: ev.title, say: ev.say, season: ev.kind };
+  // A catalogue's day (forge #547): the agency's day, its record (Gaia's) when it is loaded.
+  if (kind === 'release') return { kind, record: ev.record || null, tMs: ev.t, label: ev.title, say: ev.say, release: ev.kind };
   return { kind, record: ev.record || null, tMs: ev.t, ...ev.detail };
 }
 
@@ -177,7 +180,7 @@ export function balance(items) {
   // A pair from the visitor's own place comes next: a month has one or none, and at the end of this
   // line a full list never showed it (seen 2026-10-09: three passes, a launch, two eclipses, an
   // approach and a perihelion made eight, and Mars beside Jupiter had no row).
-  for (const kind of ['aurora', 'launch', 'solar-eclipse', 'lunar-eclipse', 'conjunction', 'variable', 'approach', 'perihelion', 'shower']) {
+  for (const kind of ['aurora', 'launch', 'solar-eclipse', 'lunar-eclipse', 'conjunction', 'variable', 'approach', 'perihelion', 'shower', 'release']) {
     const first = events.find((e) => e.kind === kind);
     if (first) take(first);
   }
@@ -270,6 +273,9 @@ export function rowText(item, nowMs) {
     case 'season':
       // The date, never a countdown, as an eclipse: computed, and it does not slip.
       return item.say || item.label;
+    case 'release':
+      // The agency's day, and no hour: a countdown in hours would claim one (forge #547).
+      return item.say || item.label;
     case 'conjunction':
       return `${t(COPY.nextList.row.conjunctionTitle, { a: item.a, b: item.b })}: ${t(COPY.nextList.row.conjunction, { when, sep: fmt.num(item.sepDeg, 1), ...whereWords(item) })}`;
     default:
@@ -342,6 +348,7 @@ export function classText(item, wallMs = Date.now()) {
     case 'solar-eclipse':
     case 'lunar-eclipse': return C.eclipse;
     case 'season': return C.season;
+    case 'release': return C.dataRelease;
     case 'conjunction': return C.conjunction;
     default: return item.classWords || null; // b200-c2-deep
   }
@@ -393,6 +400,8 @@ export function rowParts(item, nowMs) {
     }
     case 'season':
       return { title: name, detail: t(R.eclipse, { date: timeText.longDate(item.tMs) }) };
+    case 'release':
+      return { title: t(R.dataReleaseTitle, { name: item.label || name }), detail: t(R.dataRelease, { date: timeText.longDate(item.tMs) }) };
     case 'conjunction':
       return { title: t(R.conjunctionTitle, { a: item.a, b: item.b }), detail: t(R.conjunction, { when, sep: fmt.num(item.sepDeg, 1), ...whereWords(item) }), value: t(R.conjunctionValue, { sep: fmt.num(item.sepDeg, 1) }) };
     default:

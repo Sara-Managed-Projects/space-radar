@@ -135,7 +135,7 @@ same row; `scripts/check_registry.py` will ask for it.
 | Add a meteor shower | `registry/showers.yaml` | `gen_showers_js.py` |
 | Add a moon or a dwarf planet | `registry/worlds.yaml` (+ `site/js/scene/worlds.js`, the one hand-kept mirror) | `check_registry.py` tells you what is missing |
 | Add a strange thing we sent to space | `registry/oddities.yaml` | `gen_oddities_js.py` |
-| Add a dated event to a mission's timeline | `registry/missions.yaml` | `gen_missions_js.py` |
+| Add a dated event to a mission's timeline | `registry/missions.yaml` | `gen_missions_js.py` and `gen_thisday.py` (the home's day card) |
 | Add a map of Earth data from NASA GIBS | `registry/overlays.yaml`, a credit in `CREDITS.md` §4.19 | `gen_overlays_js.py` |
 | Add a 3D model | `registry/models.yaml` (`real_models:`), the `.glb` in `site/models/`, a row in `CREDITS.md` | `scripts/fetch-model.sh` shows how the existing ones were fetched and slimmed |
 | Fix a card's wording | `site/js/copy/en.js` | `scripts/test.sh copy` |

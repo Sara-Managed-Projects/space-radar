@@ -13,6 +13,21 @@ tagged, and their dates are the day the last change in each landed.
 
 ### Added
 
+- **Gaia DR4's day, 2 December 2026.** From 24 November the top bar's chip counts to it in days ("Gaia DR4 · in 8 days"; ESA
+  gives the day and no hour) when no launch is inside a day, and opens Gaia's card, where a section says what DR4 is, that
+  nothing on the map changes on the day, what we will look at after, and where Gaia itself is now. Coming up has its row and a
+  calendar file for the whole day. The date is a row of `registry/events.yaml` (`data-release`) with ESA's page and the day
+  it was read.
+- **Space weather on the Earth's and the Sun's cards.** NOAA's Kp measured now (from our saved copy first, NOAA's own file
+  when there is none), its forecast for the next three days with the G scale, kept apart and labelled, what a storm does to
+  satellites, navigation, radio and the aurora in NOAA's own scale, and one button for the aurora layer.
+- **The station's live camera.** The ISS card has a Live camera row: one press opens NASA's live video beside the map, played
+  by YouTube in its privacy-enhanced mode. Nothing of YouTube's loads before the press, and the row says the picture is often
+  dark or a test card and whether the station is in sunlight now.
+- **A day card at the head of Today.** This day in space from the missions' dated events, the latitude where the Sun is
+  overhead and the days to the next solstice or equinox, the Moon and the planets clear of the Sun's glare; each opens the map
+  there, and Share is the share sheet's own.
+
 - **A language menu.** The tool rail has a language button (a row of More on a phone) that lists the eleven languages by
   their own names. Choosing one loads the same view again in that language (the selection, the clock, the stage and the
   camera are kept) and the choice is remembered in the browser, so English stays English on a browser set to German.

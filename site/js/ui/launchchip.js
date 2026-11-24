@@ -32,6 +32,11 @@
 // propagate/ascent.js's illustration from a pad and an orbit, not a published trajectory, and a
 // chase camera along it would dress a guess as a tracking shot.
 //
+// A CATALOGUE'S DAY (forge #547, ui/releaseday.js). With no launch inside a day, and inside a row's chip window of
+// registry/events.yaml `data-release` (Gaia DR4, 24 November to 4 December 2026), the same chip counts to that day in
+// whole days ("Gaia DR4 · in 8 days"; the agency gives no hour) and opens its object's card, where the section on it
+// is. A launch inside a day always comes first: its clock is the more urgent one.
+//
 // Fetched after the first visit has settled (main.js), never at boot.
 
 import { COPY, t, fmt } from '../copy/en.js';
@@ -40,7 +45,8 @@ import { loadCss } from './latercss.js';
 import { countdownState } from './countdown.js';
 import { whenText } from './next.js';
 import { launchLabel } from './labels.js';
-import { iconFrom } from './icons.js';
+import { iconFrom, icon } from './icons.js';
+import { chipRelease, chipWords as releaseChipWords } from './releaseday.js';
 
 // Lucide `rocket` (ISC; CREDITS.md), the shapes ui/searchrows.js draws a launch's row with.
 const ROCKET = [
@@ -49,6 +55,10 @@ const ROCKET = [
   ['path', { d: 'M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0' }],
   ['path', { d: 'M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5' }],
 ];
+
+// The platform's queue (site/js/ui/platform-bridge.js, CONTRACT.md) is not on main yet: a no-op until it is.
+// TODO(platform-bridge): call sr('track', name, params) from site/js/ui/platform-bridge.js once that module is on main.
+const track = () => {};
 
 /** The launch the chip counts to, with its state; null when none is inside the day. Pure. */
 export function nextCountable(records, nowMs, ageMs = null) {
@@ -106,7 +116,9 @@ export function createLaunchChip(ctx, opts = {}) {
   root.type = 'button';
   root.className = 'sr-launchchip';
   root.hidden = true;
-  root.appendChild(iconFrom('rocket', ROCKET, 16));
+  const rocket = root.appendChild(iconFrom('rocket', ROCKET, 16));
+  const scope = root.appendChild(icon('telescope', 16));
+  scope.setAttribute('display', 'none');
   const clock = doc.createElement('span');
   clock.className = 'sr-launchchip__clock';
   // A number that changes every second is not read out every second: the name carries the state.
@@ -114,6 +126,7 @@ export function createLaunchChip(ctx, opts = {}) {
   root.appendChild(clock);
 
   let current = null;
+  let release = null; // the catalogue's day the chip counts to, when no launch is inside a day
   // Its rules come with it (css/finishers.css): shown only once they are here.
   let styled = false;
   loadCss('finishers', doc).then(() => { styled = true; refresh(); });
@@ -139,6 +152,10 @@ export function createLaunchChip(ctx, opts = {}) {
     const records = typeof ctx.recordsFor === 'function' ? ctx.recordsFor('launches') : [];
     const hit = nextCountable(records, realNow(), ageMs());
     current = hit ? hit.record : null;
+    release = hit ? null : chipRelease(realNow());
+    if (release) { refreshRelease(); return; }
+    rocket.removeAttribute('display');
+    scope.setAttribute('display', 'none');
     const show = !!hit && styled;
     root.hidden = !show;
     // The phone's line under the search is up while the chip is (finishers.css `html.sr-launchday`).
@@ -153,7 +170,37 @@ export function createLaunchChip(ctx, opts = {}) {
     root.dataset.phase = hit.state.phase;
   }
 
-  root.addEventListener('click', () => { if (current && typeof ctx.select === 'function') ctx.select(current); });
+  /** The catalogue's day on the chip: its object's card opens on press (ui/releaseday.js). */
+  function refreshRelease() {
+    const object = release.row.object && typeof ctx.recordById === 'function' ? ctx.recordById(release.row.object) : null;
+    const show = styled && !!object;
+    root.hidden = !show;
+    doc.documentElement.classList.toggle('sr-launchday', show);
+    if (!show) return;
+    seat();
+    rocket.setAttribute('display', 'none');
+    scope.removeAttribute('display');
+    const words = releaseChipWords(release.row, release.state, object.name);
+    if (clock.textContent !== words.text) clock.textContent = words.text;
+    if (root.getAttribute('aria-label') !== words.label) { root.setAttribute('aria-label', words.label); root.title = words.label; }
+    root.dataset.phase = `release-${release.state.phase}`;
+  }
+
+  root.addEventListener('click', () => {
+    if (typeof ctx.select !== 'function') return;
+    if (current) { ctx.select(current); return; }
+    const object = release && release.row.object && typeof ctx.recordById === 'function' ? ctx.recordById(release.row.object) : null;
+    if (object) {
+      // Its layer on first, as a dated card of Today does, so the craft is drawn where the card says it is.
+      if (object.layer && typeof ctx.isLayerOn === 'function' && !ctx.isLayerOn(object.layer) && typeof ctx.setLayerOn === 'function') {
+        ctx.setLayerOn(object.layer, true);
+        doc.dispatchEvent(new CustomEvent('sr:layer-toggle', { detail: { id: object.layer, on: true, handled: true, from: 'release-chip' } }));
+      }
+      ctx.select(object);
+      // TODO(platform-bridge): sr('track', 'select_object', {...}) through site/js/ui/platform-bridge.js once it is on main.
+      track('select_object', { object_class: String(object.klass || ''), object_id: String(object.id) });
+    }
+  });
   const onAny = () => refresh();
   win.addEventListener('sr:layer', onAny);
   win.addEventListener('sr:shell', onAny);

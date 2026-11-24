@@ -89,6 +89,8 @@ jobs:
         run: python3 scripts/build-galaxy.py --check
       - name: The missions mirror matches the registry (public #452)
         run: python3 scripts/gen_missions_js.py --check
+      - name: "the day card's month files match registry/missions.yaml (forge #546)"
+        run: python3 scripts/gen_thisday.py --check
       - name: The landers' missions mirror matches the registry (release 1.7.3)
         run: python3 scripts/gen_missions_landers_js.py --check
       # The path files (site/data/eph): the registry, the manifest, each .bin, the browser's mirror
@@ -1303,6 +1305,8 @@ jobs:
         run: node tests/test_card_honesty_words.mjs
       - name: "the launch chip: which launch, what it says, the Starlink train's pass, no chase camera (public #289)"
         run: node tests/test_launchchip.mjs
+      - name: "the research train (forge #544, #546, #547, #548): Gaia DR4 in days not hours, NOAA's Kp measured and forecast apart from a frozen feed, no YouTube before the press, every part of the day card sourced"
+        run: node tests/test_research_live.mjs
       - name: "a first visit: once, three lines that fit, two buttons, one ember (public #241, #287)"
         run: node tests/test_welcome.mjs
       - name: "the opening shot: six to ten seconds, never twice, any input lands it, the words are the home's (public #287)"

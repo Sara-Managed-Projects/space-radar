@@ -545,6 +545,8 @@ export function createShareSheet(ctx) {
   function wordsFor(opts) {
     const st = shareState(ctx, null);
     const live = !st.t || st.t === 'now';
+    // Words a caller made for something that is not one record (the home's day card, ui/daycard.js; forge #546).
+    if (opts.words && opts.words.name) return { name: String(opts.words.name), line: String(opts.words.line || ''), link: opts.words.link || shareUrl({}), record: null };
     if (opts.trip) {
       const id = typeof opts.trip === 'string' ? opts.trip : opts.trip && (opts.trip.id || opts.trip.tourId);
       const running = ctx && ctx.trip && ctx.trip.state && ctx.trip.state.phase !== 'idle' ? ctx.trip.state.tourId : null;
