@@ -618,13 +618,24 @@ export const COPY = {
   // explanations live in a card's About or the sources sheet (0061 req 11).
   shell: {
     sideLabel: 'Explore',
-    back: 'Explore',
-    backLabel: 'Back to Explore',
+    // The back row names where it goes (ui/shell.js crumbFor): the results, a tab, the search, a sheet, the card.
+    backTo: 'Back to {where}',
     backChevron: '‹',
     openChevron: '›',
-    handleMark: 'S',
-    expand: 'Show the panel',
-    collapse: 'Hide the panel',
+    results: 'Results for “{q}”',
+    search: 'Search',
+    sources: 'Sources',
+    passport: 'Passport',
+    find: 'Find',
+    card: 'The card',
+    // The open card's row while another view shows, and its close.
+    reopen: 'Back to {name}',
+    close: 'Close {name}',
+    // The panel's own control and its key: a label and the key in brackets, as the rail's tooltips write theirs.
+    expand: 'Show panel',
+    collapse: 'Hide panel',
+    panelKey: '[',
+    keyed: '{label} ({key})',
     // The phone's top bar: the search, What to show and the More menu, and the live line.
     topLabel: 'Search and tools',
   },

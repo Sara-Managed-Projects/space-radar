@@ -3521,7 +3521,13 @@ export function hideCard() {
 }
 
 if (typeof document !== 'undefined') {
+  // Escape steps back as the sidebar's back row does (ui/shell.js escapeCard): from the card to the view under it, the
+  // selection kept; only with the card not on top does it close the card. An Escape somebody else took (the search
+  // field clearing its query, a clear screen) is theirs.
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && current) hideCard();
+    if (event.key !== 'Escape' || !current || event.defaultPrevented) return;
+    const shell = current.ctx && current.ctx.shell;
+    if (shell && typeof shell.escapeCard === 'function' && shell.escapeCard()) return;
+    hideCard();
   });
 }

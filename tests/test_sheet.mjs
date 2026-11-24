@@ -21,7 +21,7 @@ const {
   DETENTS, PEEK_PX, HALF_FRACTION, FULL_GAP_PX, FLING_PX_PER_MS, SLOP_PX,
   sheetHeights, snapDetent, cycleDetent, stepDetent, dragHeight, velocityOf,
 } = await import(join(JS, 'ui/sheet.js'));
-const { sheetFor } = await import(join(JS, 'ui/shell.js'));
+const { sheetFor, swipeIsBack } = await import(join(JS, 'ui/shell.js'));
 const { coveredFromBottom, coveredFromTop, uncoveredBand, MAX_SHIFT_FRACTION } = await import(join(JS, 'scene/viewshift.js'));
 
 const problems = [];
@@ -161,5 +161,27 @@ check(uncoveredBand(844, 0, 0).shift === 0, 'nothing covering, nothing moved');
   check(/html\.sr-phone \.sr-tabs > \.ui-seg__btn \{[^}]*min-height: 44px/.test(css) && /width: calc\(var\(--sr-top-bar\) - 2px\)/.test(css), '44 px targets: the tabs and the top bar\'s tools');
 }
 
+
+// --- a swipe down is a step back (2026-11-23) ---------------------------------------------------------
+// Peek is the home's height: its handle and its tabs. A visitor who drags a card (or a sheet) down to it has asked for
+// the home, so the shell steps back there with the selection kept, and the open card waits in the handle's row.
+{
+  const user = { user: true };
+  check(swipeIsBack('card', 'peek', user) && swipeIsBack('sources', 'peek', user) && swipeIsBack('find', 'peek', user), 'a swipe down to peek from a card or a sheet steps back');
+  check(!swipeIsBack('home', 'peek', user) && !swipeIsBack('trip', 'peek', user), 'not from the home, which is there already, nor from a trip, whose sheet it is');
+  check(!swipeIsBack('card', 'half', user) && !swipeIsBack('card', 'full', user), 'a move up, or down to half, is only a height');
+  check(!swipeIsBack('card', 'peek', {}) && !swipeIsBack('card', 'peek', { silent: true }) && !swipeIsBack('card', 'peek'), 'and a height the page set (a card closing, a resize) is never the visitor\'s step');
+  const sheetSrc = readFileSync(join(JS, 'ui/sheet.js'), 'utf8');
+  const shellSrc = readFileSync(join(JS, 'ui/shell.js'), 'utf8');
+  const css = readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8');
+  check(/set\(snapDetent\(h, v, heights\(\), allowed\(\)\) \|\| detent, \{ user: true \}\)/.test(sheetSrc) && /set\(c\.detent, \{ user: true \}\)/.test(sheetSrc) && /set\(to, \{ user: true \}\)/.test(sheetSrc), 'the sheet says when the visitor moved it: a drag, a tap or a key on the handle');
+  check(/opts\.onChange\(detent, h, changed, how\)/.test(sheetSrc) && /if \(swipeIsBack\(stack\.current\(\), detent, how\)\) \{/.test(shellSrc), 'and the shell reads that as the step back');
+  check(/holdSheet = true;\s*stack\.reset\(\);/.test(shellSrc), 'staying at peek: the home does not raise the sheet it was swiped down to');
+  // The breadcrumb is in the handle's row, at its start, cut before the grabber; the tabs leave a card's sheet to it.
+  check(/html\.sr-phone #sr-side > \.sr-side__view > \.sr-side__bar,\s*html\.sr-phone #sr-side > \.sr-side__open \{\s*position: absolute;\s*top: 0;\s*inset-inline-start: 0;[\s\S]{0,80}height: var\(--sr-sheet-handle\);\s*max-width: calc\(50% - 28px\);/.test(css), 'the phone\'s breadcrumb (or the open card\'s name) sits in the handle\'s row, short of the grabber');
+  check(/html\.sr-phone #sr-side:not\(\[data-view='home'\]\) > \.sr-side__head \{\s*display: none;/.test(css), 'and the tabs show at home only: a card at half starts with its name');
+  check(!/html\.sr-phone \.sr-side__card > \.sr-side__bar \{\s*display: none;/.test(css), 'the card\'s way back is no longer hidden on a phone');
+}
+
 if (problems.length) { console.error('sheet FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
-console.log('sheet ok: peek 96 / half 48 % / full less 60 px, slow releases go to the nearest height and flicks to the next, a tap cycles, a card opens at half and closing returns to peek, the subject sits in the middle of the band between the top bar and the sheet, and the old phone bar is gone');
+console.log('sheet ok: peek 96 / half 48 % / full less 60 px, slow releases go to the nearest height and flicks to the next, a tap cycles, a card opens at half and closing returns to peek, a swipe down to peek steps back with the breadcrumb in the handle row, the subject sits in the middle of the band between the top bar and the sheet, and the old phone bar is gone');

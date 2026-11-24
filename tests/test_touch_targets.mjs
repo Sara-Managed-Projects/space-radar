@@ -165,7 +165,6 @@ for (const cls of ['sr-show__label', 'ui-opt', 'ui-select', 'sr-show__filter', '
 const NOT_A_TARGET = new Map([
   ['sr-card__inline', 'a text button inside a sentence of the card (SC 2.5.8 inline exception): as tall as its line'],
   ['sr-search__fly', 'clipped to 1 px in the explore search: Enter and the row itself are the control (internal #346)'],
-  ['sr-side__handle', 'the collapsed sidebar\'s handle: a desktop state (a phone has the sheet), filling its 64 x 48 box'],
   ['ui-btn--quiet', 'a modifier: the base class (css/controls.css .ui-btn) carries the box'],
   ['ui-btn--primary', 'a modifier: the base class (css/controls.css .ui-btn) carries the box'],
 ]);

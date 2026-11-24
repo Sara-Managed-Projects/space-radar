@@ -213,9 +213,10 @@ export function createSentence(ctx, opts = {}) {
   const home = ctx.explore.root;
   function seat() {
     const phone = !!(ctx.shell && typeof ctx.shell.isPhone === 'function' && ctx.shell.isPhone());
-    const head = home.querySelector('.sr-explore__head');
+    // The head is pinned above the views now (ui/shell.js), out of the explore view's own box.
+    const head = ctx.explore.head || home.querySelector('.sr-explore__head');
     const body = home.querySelector('.sr-explore__body');
-    const brand = home.querySelector('.sr-explore__brand');
+    const brand = head && head.querySelector('.sr-explore__brand');
     if (phone && body) { if (root.parentNode !== body || body.firstChild !== root) body.prepend(root); }
     else if (head && brand) { if (root.previousSibling !== brand) brand.after(root); }
   }

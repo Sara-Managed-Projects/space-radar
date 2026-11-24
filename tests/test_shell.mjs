@@ -10,6 +10,8 @@
 //   5. the status line: counts, the oldest reading, and the dot's state
 //   6. the time pill: the rate cycle, the step, the scrub window, the readout
 //   7. the rail's keys, and main.js building the shell before what it hosts
+//   8. the way back says where it goes (the breadcrumb, in every language), Back keeps the selection, the search and
+//      tabs are pinned over the views, and the panel hides with its own icon and `[` to a strip
 //
 //   node tests/test_shell.mjs
 import { fileURLToPath } from 'node:url';
@@ -21,8 +23,8 @@ const JS = join(ROOT, 'site/js');
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
-const { createViewStack, readCollapsed, writeCollapsed, SIDE_KEY, VIEWS } = await import(join(JS, 'ui/shell.js'));
-const { TABS, tabTarget, tabFor, rightNowLines, statusSummary, tripMeta, wantsSearch, homeTripOrder, offNote, CREWED, HEADCOUNT_STALE_MS, headcountFrom } = await import(join(JS, 'ui/explore.js'));
+const { createViewStack, readCollapsed, writeCollapsed, SIDE_KEY, VIEWS, crumbFor, panelKey, CRUMB_QUERY_MAX } = await import(join(JS, 'ui/shell.js'));
+const { TABS, tabTarget, tabFor, rightNowLines, statusSummary, tripMeta, wantsSearch, isTypingIn, homeTripOrder, offNote, CREWED, HEADCOUNT_STALE_MS, headcountFrom } = await import(join(JS, 'ui/explore.js'));
 const { nextRate, stepMs, clampToWindow, pillText, PILL_RATES } = await import(join(JS, 'ui/timepill.js'));
 const { railKey } = await import(join(JS, 'ui/rail.js'));
 const { COPY } = await import(join(JS, 'copy/en.js'));
@@ -261,5 +263,66 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   check(/#sr-side \[data-trip=/.test(frame), 'and Leave gives focus back to the trip card it was started from');
 }
 
+
+// --- 8. the way back, the pinned search, the panel's own control (2026-11-23) -------------------------
+// A visitor's review: once something was clicked it was hard to get back to the search, and the arrow that hid the
+// panel was the arrow that went back. ui/shell.js THE WAY BACK SAYS WHERE IT GOES.
+{
+  check(crumbFor('home', { home: { q: 'mars' } }) === 'Results for “mars”', `a card opened from the results goes back to them by name (${crumbFor('home', { home: { q: 'mars' } })})`);
+  check(crumbFor('home', { home: { tab: 'planets' } }) === 'Planets' && crumbFor('home', { home: { tab: 'stars' } }) === 'Stars', 'from a tab\'s list, to that tab');
+  check(crumbFor('home', {}) === 'Search' && crumbFor('home', { home: { tab: null } }) === 'Search' && crumbFor('home', { home: { q: 'm' } }) === 'Search', 'from the map or a link (or a one-letter query, which lists nothing), to the search');
+  check(crumbFor('home', { home: { q: 'mars', tab: 'planets' } }).startsWith('Results'), 'a query beats the tab: the results are what was on screen');
+  const long = crumbFor('home', { home: { q: 'x'.repeat(80) } });
+  check(long.includes('…') && long.length <= 60, `a long query is cut to one line of chrome (${long.length} characters)`);
+  check(crumbFor('card', { card: 'Mars' }) === 'Mars' && crumbFor('card', {}) === COPY.shell.card, 'a sheet over a card goes back to the card by its name');
+  check(crumbFor('sources') === 'Sources' && crumbFor('passport') === 'Passport' && crumbFor('find') === 'Find', 'and to a sheet by its name');
+  check(/\{where\}/.test(COPY.shell.backTo) && /\{q\}/.test(COPY.shell.results), 'the button\'s name says Back to where');
+  // Every language has the words, keeps the slots, and stays on one line.
+  for (const lang of ['es', 'fr', 'de', 'pt', 'ru', 'uk', 'zh', 'hi', 'ar', 'he']) {
+    const L = (await import(join(JS, `copy/${lang}.js`))).COPY;
+    const S = L.shell || {};
+    const missing = ['backTo', 'results', 'search', 'sources', 'passport', 'find', 'card', 'reopen', 'close', 'expand', 'collapse', 'panelKey', 'keyed'].filter((k) => typeof S[k] !== 'string' || !S[k]);
+    check(!missing.length, `${lang}: the shell's words are there (${missing.join(', ') || 'all'})`);
+    if (missing.length) continue;
+    check(/\{q\}/.test(S.results) && /\{where\}/.test(S.backTo) && /\{name\}/.test(S.reopen) && /\{label\}/.test(S.keyed) && /\{key\}/.test(S.keyed), `${lang}: every slot kept`);
+    const crumbs = [crumbFor('home', { home: { q: 'y'.repeat(CRUMB_QUERY_MAX + 10) } }, L), crumbFor('home', { home: { tab: 'planets' } }, L), crumbFor('home', {}, L)];
+    check(crumbs.every((c) => c && c.length <= 60) && crumbs[1] === L.tabs.planets && crumbs[2] === S.search, `${lang}: the three breadcrumbs, each one line (${crumbs.map((c) => c.length).join(', ')})`);
+    check(S.panelKey === '[', `${lang}: the key is [ on every keyboard layout's own label`);
+  }
+  // `[` hides and shows the panel, as `/` finds: never while typing, never with a modifier.
+  const body = { tagName: 'BODY' };
+  check(panelKey({ key: '[' }, body, isTypingIn) === true, '[ asks for the panel');
+  check(panelKey({ key: '[' }, { tagName: 'INPUT' }, isTypingIn) === false && panelKey({ key: '[', target: { tagName: 'TEXTAREA' } }, body, isTypingIn) === false, 'a [ typed into a field is a [');
+  check(panelKey({ key: '[', metaKey: true }, body, isTypingIn) === false && panelKey({ key: '[', ctrlKey: true }, body, isTypingIn) === false, 'Cmd+[ and Ctrl+[ stay the browser\'s (Back)');
+  check(panelKey({ key: '[', isComposing: true }, body, isTypingIn) === false && panelKey({ key: '[', defaultPrevented: true }, body, isTypingIn) === false && panelKey({ key: ']' }, body, isTypingIn) === false, 'not mid-composition, not a key somebody took, not ]');
+  check(/\(\[\)/.test(`${COPY.shell.collapse} (${COPY.shell.panelKey})`) && COPY.shell.collapse === 'Hide panel' && COPY.shell.expand === 'Show panel', 'the control is "Hide panel", and its tooltip names [');
+
+  const shellSrc = readFileSync(join(JS, 'ui/shell.js'), 'utf8');
+  const exploreSrc = readFileSync(join(JS, 'ui/explore.js'), 'utf8');
+  const cardsSrc = readFileSync(join(JS, 'ui/cards.js'), 'utf8');
+  const css = readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8');
+  const body8 = (src, name) => { const i = src.indexOf(`function ${name}(`); return i < 0 ? '' : src.slice(i, src.indexOf('\n  }\n', i)); };
+  // Pinned: the head lives in the shell's head box, above the views, so a card opens under the search and the tabs.
+  check(/const headHost = el\('div', 'sr-side__head'\);\s*side\.appendChild\(headHost\);/.test(shellSrc) && shellSrc.indexOf("side.appendChild(headHost)") < shellSrc.indexOf('for (const v of views.values()) side.appendChild(v);'), 'the shell makes the head box first, above every view');
+  check(/if \(shell0 && shell0\.headHost\) shell0\.headHost\.appendChild\(head\);/.test(exploreSrc), 'the explore view puts its wordmark, search and tabs there');
+  check(/html:not\(\.sr-phone\) \.sr-side\.is-results > :is\(\.sr-side__view, \.sr-side__open\)/.test(css), 'open results take the column over whatever view is under them, a card included');
+  check(!/deselect/.test(exploreSrc.slice(exploreSrc.indexOf('const toSearch'), exploreSrc.indexOf('document.addEventListener(\'keydown\', (e) => { if (wantsSearch'))), '/ goes to the field without putting the selection down');
+  // Back is a step, not a deselect; only the card's close (and the open row's) puts the selection down.
+  const step = body8(shellSrc, 'stepBack');
+  check(step && !/deselect/.test(step) && /back\(\);/.test(step) && /homeSays\.restore\(crumb\)/.test(step), 'Back steps one view and keeps the selection, and puts the home back as it was (the results reopen)');
+  check(/escapeCard\(\) \{[\s\S]{0,300}if \(view === 'card'\) \{ stepBack\(\); return true; \}/.test(shellSrc)
+    && /shell\.escapeCard\(\)\) return;\s*hideCard\(\);/.test(cardsSrc) && /event\.defaultPrevented\) return;/.test(cardsSrc), 'Escape on a card steps back the same way; with the card not on top it closes it, and an Escape the search took is the search\'s');
+  check((shellSrc.match(/show\('card', \{ again: true \}\)/g) || []).length === 2 && /!how\.again\) noteHome\(\);/.test(shellSrc), 'going back to the open card (its row, the strip) keeps the breadcrumb it had');
+  check(/window\.addEventListener\('sr:select'/.test(shellSrc) && /if \(stack\.current\(\) !== 'card'\) \{ show\('card'\); return; \}/.test(shellSrc), 'a new selection under an open card brings the card back to the top');
+  check(/crumb\.button\.setAttribute\('aria-label', t\(COPY\.shell\.backTo, \{ where: words \}\)\)/.test(shellSrc), 'the back row\'s name is "Back to …" with the same words');
+  // The panel's own control: Lucide's icon, never the back row's chevron, and the strip in place of the "S ›" handle.
+  check(/collapse\.dataset\.icon = 'panel-left-close';/.test(exploreSrc) && !/button\('[^']*', COPY\.shell\.backChevron\)/.test(exploreSrc) && /aria-keyshortcuts', COPY\.shell\.panelKey/.test(exploreSrc), 'Hide panel is panel-left-close with [ named, not the ‹ of Back');
+  check(/stripOpen\.dataset\.icon = 'panel-left-open';/.test(shellSrc) && !/handleMark|sr-side__handle/.test(shellSrc + css) && !('handleMark' in COPY.shell), 'the hidden panel is a strip that opens with panel-left-open; the "S ›" handle is gone');
+  check(/stripButton\('search', COPY\.shell\.search, toSearch\)/.test(exploreSrc) && /stripButton\(TAB_ICONS\[id\], COPY\.tabs\[id\]/.test(exploreSrc) && /stripCardName/.test(shellSrc), 'the strip has the search, the four tabs and the open card\'s name');
+  check(/\.sr-side\.is-collapsed > :is\(\.sr-side__view, \.sr-side__head, \.sr-side__open\) \{\s*display: none;/.test(css) && /\.sr-side\.is-collapsed > \.sr-strip \{\s*display: flex;/.test(css), 'hidden, only the strip shows');
+  check(/strip\.inert = !folded;/.test(shellSrc) && /headHost\.inert = folded;/.test(shellSrc), 'and only what shows is in the tab order');
+  check(/import\('\.\/icons\.js'\)/.test(shellSrc) && !/^import[^\n]*icons\.js/m.test(shellSrc + exploreSrc), 'the icons arrive with ui/icons.js on a desktop, outside the boot graph');
+}
+
 if (problems.length) { console.error('shell FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
-console.log('shell ok: views push and pop, collapse is remembered (and survives a storage that throws), the four tabs are places and read back from the stage, Right-now lines appear only with their data, the status line counts, the pill cycles, steps and stays in the scrub window, and main.js builds the shell before what it hosts');
+console.log('shell ok: views push and pop, collapse is remembered (and survives a storage that throws), the four tabs are places and read back from the stage, Right-now lines appear only with their data, the status line counts, the pill cycles, steps and stays in the scrub window, main.js builds the shell before what it hosts, and the way back names where it goes in eleven languages, keeps the selection, and the panel hides with its own icon and [ to a strip');
