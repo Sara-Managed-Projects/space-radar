@@ -51,7 +51,6 @@
  "8842e5b447": "Leave this empty",
  "fc8de210d9": "We keep your address and the lists you pick, nothing else. No tracking pixels, no rewritten links. Every email has a one-click unsubscribe. <1>Privacy</1>.",
  "8b437f64cc": "A free, open-source live 3D map of space: the satellites and the space station, launches, probes, planets, stars and galaxies, each drawn where it really is, with where the numbers come from.",
- "b87a138f4f": "No account, no advertising, no tracker and no cookie. MIT licence, <1>source on GitHub</1>.",
  "b965ae66fc": "Explore",
  "819b3a57bf": "Teach and share",
  "5cae88ddf5": "Sites",
@@ -76,5 +75,8 @@
  "295db6b156": "From the journal",
  "a9a1cabc48": "<1>Every story in the Space Radar journal</1> (in English)",
  "1e8ee747ca": "Chang'e {n1}",
- "caf8758241": "Free, with no account and no advertising."
+ "caf8758241": "Free, with no account and no advertising.",
+ "902c91d94e": "Legal",
+ "9e0cba87ad": "Cookie settings",
+ "081ef17923": "The map needs no account. Analytics only if you say yes; no advertising, ever. MIT licence, <1>source on GitHub</1>."
 }

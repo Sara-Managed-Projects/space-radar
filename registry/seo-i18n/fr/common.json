@@ -51,7 +51,6 @@
  "8842e5b447": "Laisse ce champ vide",
  "fc8de210d9": "Nous gardons ton adresse et les listes que tu choisis, rien d’autre. Pas de pixel espion, pas de liens réécrits. Chaque e-mail permet de se désabonner en un clic. <1>Confidentialité</1>.",
  "8b437f64cc": "Une carte 3D de l’espace en direct, gratuite et open source : les satellites et la station spatiale, les lancements, les sondes, les planètes, les étoiles et les galaxies, chaque objet dessiné là où il se trouve vraiment, avec l’origine des chiffres.",
- "b87a138f4f": "Pas de compte, pas de publicité, pas de traceur et pas de cookie. Licence MIT, <1>code source sur GitHub</1>.",
  "b965ae66fc": "Explorer",
  "819b3a57bf": "Enseigner et partager",
  "5cae88ddf5": "Sites",
@@ -76,5 +75,8 @@
  "295db6b156": "Dans le journal",
  "a9a1cabc48": "<1>Tous les articles du journal de Space Radar</1> (en anglais)",
  "1e8ee747ca": "Chang’e {n1}",
- "caf8758241": "Gratuit, sans compte et sans publicité."
+ "caf8758241": "Gratuit, sans compte et sans publicité.",
+ "902c91d94e": "Mentions légales",
+ "9e0cba87ad": "Réglages des cookies",
+ "081ef17923": "La carte n’exige aucun compte. Mesure d’audience seulement si tu dis oui ; jamais de publicité. Licence MIT, <1>code source sur GitHub</1>."
 }
