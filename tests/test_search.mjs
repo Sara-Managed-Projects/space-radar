@@ -307,6 +307,7 @@ check(JSON.stringify(findMatches(index, 'starlink').hits.map((h) => h.record.id)
     'ui/projectpanel.js': 'Escape only, on its own sheet: closes the projection panel',
     'ui/recorder.js': 'Escape only, on its own sheet: closes the recorder',
     'ui/languagepop.js': 'Escape only, and only while its own popover is open: closes the language menu, as the rail\'s other popovers do',
+    'ui/mapapi.js': 'Escape only, on the panel a script opened (window.srMap.ui.panel): closes that panel, as Record\'s does',
     // b200-s2-guards: end
   };
   const guards = { 'ui/onboarding.js': /INPUT\|TEXTAREA\|SELECT/, 'ui/drift.js': /tag === 'INPUT'/, 'ui/keyhint.js': /tag === 'INPUT'/, 'sky/skyview.js': /tag === 'INPUT'/, 'scene/camera.js': /tag === 'input'/, 'moments/player.js': /tag === 'INPUT'/, 'scene/groundstage.js': /isTypingIn\(e\.target\)/, 'ui/play.js': /isTypingIn\(e\.target\)/, 'ui/skystory.js': /isTypingIn\(e\.target\)/ }; // b200-s2-guards: the last three
@@ -321,7 +322,7 @@ check(JSON.stringify(findMatches(index, 'starlink').hits.map((h) => h.record.id)
   for (const rel of Object.keys(CLASSES)) check(found.includes(rel), `${rel} is classified but no longer listens for keys: take it off the list`);
   for (const [rel, re] of Object.entries(guards)) check(re.test(src(rel)), `${rel} no longer checks for a focused field (${re})`);
   // an Escape-only listener must not look at any other key
-  for (const rel of ['ui/shell.js', 'ui/cards.js', 'ui/chooser.js', 'ui/flighteditor.js', 'ui/gamepad.js', 'ui/projectpanel.js', 'ui/recorder.js', 'ui/skystory.js']) { // b200-s2-guards: the last five
+  for (const rel of ['ui/shell.js', 'ui/cards.js', 'ui/chooser.js', 'ui/flighteditor.js', 'ui/gamepad.js', 'ui/projectpanel.js', 'ui/recorder.js', 'ui/skystory.js', 'ui/mapapi.js']) { // b200-s2-guards: the last five; research train 6b: mapapi
     const body = strip(src(rel));
     const handlers = [...body.matchAll(/addEventListener\(\s*'keydown',\s*(?:\(\w*\)\s*=>|function\s*\(\w*\)|\(\w*,?\s*\w*\)\s*=>|onKey)[\s\S]{0,260}/g)].map((m) => m[0]);
     check(handlers.length > 0 && handlers.every((h) => /key (?:!==|===) 'Escape'/.test(h) || /onKey/.test(h)), `${rel}: its key listener is for Escape and nothing else`);
