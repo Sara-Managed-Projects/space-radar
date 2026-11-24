@@ -56,6 +56,11 @@ export function paintAccount(doc, detail) {
   const name = signedIn && typeof detail.nickname === 'string' ? detail.nickname : '';
   const words = signedIn ? (name ? t(A.openNamed, { name }) : A.open) : A.signIn;
   const act = () => sr('ui', signedIn ? 'account' : 'signin');
+  // The same word again (the platform says it after every sync): the button stays, so a menu open beside it stays put.
+  const sig = `${signedIn ? 1 : 0}|${words}`;
+  const had = slot.querySelector('.sr-rail__btn--account');
+  if (had && slot.dataset.sig === sig) { slot.hidden = false; return had; }
+  slot.dataset.sig = sig;
   slot.textContent = '';
   const b = doc.createElement('button');
   b.type = 'button';

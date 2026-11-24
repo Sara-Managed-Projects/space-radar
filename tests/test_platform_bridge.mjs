@@ -275,6 +275,7 @@ const F = await import(join(JS, 'ui/favs.js'));
   check(slot.children.length === 1 && inn.getAttribute('aria-label') === 'Your account, orbit cat' && inn.children[0].textContent === 'O', 'signed in: the initial, and the account by name');
   inn.click();
   check(window.srq[window.srq.length - 1][1] === 'account', 'which opens the account menu');
+  check(T.paintAccount(doc, { signedIn: true, nickname: 'orbit cat', plan: 'free', ent: [], waiting: ['x'] }) === inn, 'the same word again keeps the button (a menu open beside it stays put)');
   check(T.initialOf('  émile') === 'É' && T.initialOf('') === '' && T.initialOf(null) === '', 'the initial is the first letter');
   // What the map tells it: the contract's names only.
   const events = readFileSync(join(JS, 'ui/platformtrack.js'), 'utf8');
