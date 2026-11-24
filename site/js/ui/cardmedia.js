@@ -95,7 +95,9 @@ export function ownSrc(src) {
   const s = String(src || '');
   if (!s) return false;
   if (/^[a-z]+:/i.test(s) || s.startsWith('//')) return OWN_HOSTS.some((h) => s.startsWith(h));
-  return !s.startsWith('/') || s.startsWith('/images/');
+  // A path from the host's root is not ours in a copy served from a subfolder (tests/test_relative_urls.mjs): every
+  // file the registries name is written beside the page (images/...).
+  return !s.startsWith('/');
 }
 
 /** What the section holds for one record. Pure: `d` is {PICTURES, READS, PAGES, JOURNAL} (site/js/data/media.js). */
