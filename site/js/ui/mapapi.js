@@ -130,6 +130,7 @@ export function createMapApi(ctx, win = typeof window !== 'undefined' ? window :
         world: g ? g.world : mode === 'sky' ? 'earth' : (ctx.stage ? ctx.stage.worldId : null),
         ground: g ? g.ground : null,
         selected: typeof ctx.selected === 'function' && ctx.selected() ? ctx.selected().id : null,
+        selectedName: typeof ctx.selected === 'function' && ctx.selected() ? String(ctx.selected().name || ctx.selected().id) : null,
         place: o && fin(o.latDeg) && fin(o.lonDeg) ? { latDeg: o.latDeg, lonDeg: o.lonDeg, source: o.source || null } : null,
       };
     });
@@ -396,7 +397,12 @@ export function createMapApi(ctx, win = typeof window !== 'undefined' ? window :
     b.className = `${slot.getAttribute('data-sr-tools-btn') || 'ui-btn ui-btn--sm'} sr-tool`;
     b.setAttribute('data-sr-tool', spec.id);
     paintButton(b, spec);
-    b.addEventListener('click', () => safe(() => spec.onPress && spec.onPress({ opener: b, where: slot.getAttribute('data-sr-tools') })));
+    b.addEventListener('click', () => safe(() => {
+      const where = slot.getAttribute('data-sr-tools');
+      // In the share sheet a tool is a maker like Record: the sheet closes first, so its panel is not opened under it.
+      if (where === 'make' && ctx.share && typeof ctx.share.close === 'function' && (!ctx.share.isOpen || ctx.share.isOpen())) ctx.share.close();
+      if (spec.onPress) spec.onPress({ opener: b, where });
+    }));
     return b;
   }
   function paintButton(b, spec) {

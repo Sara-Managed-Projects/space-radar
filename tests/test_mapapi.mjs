@@ -130,7 +130,7 @@ function fakeCtx() {
 await ok('view and camera.get in orbit', () => {
   const { ctx } = fakeCtx();
   const api = M.createMapApi(ctx, globalThis);
-  assert.deepEqual(api.view(), { mode: 'orbit', stage: 'earth', world: 'earth', ground: null, selected: null, place: { latDeg: 46.02, lonDeg: 7.75, source: 'set' } });
+  assert.deepEqual(api.view(), { mode: 'orbit', stage: 'earth', world: 'earth', ground: null, selected: null, selectedName: null, place: { latDeg: 46.02, lonDeg: 7.75, source: 'set' } });
   assert.deepEqual(api.camera.get(), { mode: 'orbit', target: null, stage: 'earth', azimuthDeg: 10, polarDeg: 80, distanceKm: 20000, fovDeg: 45 });
 });
 await ok('camera.fly: selects the target, then the pose in the rig units', async () => {
@@ -249,6 +249,8 @@ await ok('tool slots: a slot per place, a button with its label and lock, update
   assert.equal(btn.querySelectorAll('.sr-tool__lock').length, 1);
   btn.click();
   assert.equal(pressed, 'earth');
+  let shareClosed = 0;
+  ctx.share = { isOpen: () => true, close: () => { shareClosed += 1; } };
   t.update({ locked: false, title: '' });
   assert.equal(slot.querySelector('[data-sr-tool]').querySelectorAll('.sr-tool__lock').length, 0);
   // A slot built later is filled when it says so.
@@ -256,6 +258,9 @@ await ok('tool slots: a slot per place, a button with its label and lock, update
   document.body.appendChild(late);
   await tick();
   assert.ok(late.querySelector('[data-sr-tool]'), 'a later slot gets the button through sr:slot');
+  late.querySelector('[data-sr-tool]').click();
+  assert.equal(pressed, 'make');
+  assert.equal(shareClosed, 1, 'a tool in the share sheet closes the sheet first, as Record does');
   t.remove();
   assert.equal(slot.querySelector('[data-sr-tool]'), null);
   assert.equal(slot.hidden, true);
