@@ -40,8 +40,8 @@ check(boxes.map((m) => m[1]).join() === 'news,journal,games,sky,models,video', `
 check(boxes.every((m) => !/checked/.test(m[2])), 'no list starts ticked');
 check(/data-multi/.test(band) && !/data-multi/.test(one) && /<input type="hidden" name="lists" value="journal">/.test(one) && !/type="checkbox"/.test(one), 'one list is a hidden field and no box; several are boxes');
 check(/<p class="sub__s" role="status" aria-live="polite"><\/p>/.test(band), 'the state is announced politely');
-check(/<p class="sub__p">We keep your address and the lists you pick, nothing else\. No tracking pixels, no rewritten links\. Every email has a one-click unsubscribe\. <a href="\.\.\/privacy\/index\.html">Privacy<\/a>\.<\/p>/.test(band), 'the privacy line is under the form and links the privacy page, relatively');
-check(one.includes('href="../../privacy/index.html"'), 'the privacy link follows the page\'s depth');
+check(/<p class="sub__p">We keep your address and the lists you pick, nothing else\. No tracking pixels, no rewritten links\. Every email has a one-click unsubscribe\. <a href="https:\/\/www\.spaceradar\.ai\/legal\/privacy\/index\.html#email">Privacy<\/a>\.<\/p>/.test(band), 'the privacy line is under the form and links the privacy policy\'s email part (the legal hub, 2026-11-24)');
+check(one.includes('href="https://www.spaceradar.ai/legal/privacy/index.html#email"'), 'the privacy link is the same at any depth');
 
 // --- 2. one service ----------------------------------------------------------------------------------------------
 const page = await import(join(ROOT, 'site/js/pages/subscribe.js'));

@@ -57,7 +57,7 @@ def sitelinks(root: str) -> str:
 GROUPS = [
     ("Explore", ("about/", "sources/", "accuracy/", "satellites/", "starlink/", "o/international-space-station",
                  "planets-tonight/", "events/")),
-    ("Teach and share", ("teachers/", "press/", "embed/", "creators/", "support/", "privacy/")),
+    ("Teach and share", ("teachers/", "press/", "embed/", "creators/", "support/", "https://www.spaceradar.ai/legal/")),
     ("Sites", ("https://blog.spaceradar.ai/", "https://games.spaceradar.ai/", "https://models.spaceradar.ai/",
                "https://video.spaceradar.ai/", "lab/")),
     ("Follow", ()),

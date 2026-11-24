@@ -25,7 +25,7 @@
 // WHAT IS SENT, AND WHEN. Nothing until the button is pressed. Then one POST to the subscription service: the address,
 // the lists, `source: 'app:rail'` (the service's own word for the app; no page address, no place, no hash of the view)
 // and the empty honeypot `website`. The service sends one confirmation mail; nothing else is sent until its link is
-// clicked. Its mails carry no pixel and no rewritten link (the privacy page, /privacy/).
+// clicked. Its mails carry no pixel and no rewritten link (the privacy policy, /legal/privacy/).
 
 import { COPY, t } from '../copy/en.js';
 import '../copy/en.subscribe.js';
@@ -35,7 +35,7 @@ import { loadCss } from './latercss.js';
 // The deployed service (internal infra/subscribe/README.md, stack space-radar-subscribe): POST <url>subscribe.
 export const SUBSCRIBE_URL = 'https://xc6vgkqu32sjm6cu4wqgvzrmsa0ytybx.lambda-url.eu-north-1.on.aws/';
 export const LISTS = ['news', 'journal', 'games', 'sky', 'models', 'video'];
-const PRIVACY = 'privacy/index.html';
+const PRIVACY = 'https://www.spaceradar.ai/legal/privacy/index.html#email';
 // Lucide `mail` (ISC): the envelope of the rail's button, at the button's size.
 const MAIL = [['rect', { width: 20, height: 16, x: 2, y: 4, rx: 2 }], ['path', { d: 'm22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7' }]];
 const ERRORS = { invalid_email: 'invalidEmail', rate_limited: 'rateLimited', busy: 'busy', send_failed: 'sendFailed', invalid_lists: 'invalidLists' };

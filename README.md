@@ -3,7 +3,7 @@
 # Space Radar
 
 **A live 3D map of space in your browser, from your own street to the Milky Way.**<br>
-Free, open source, no account. It tells you what is measured and what is modelled.
+Free, open source, no account needed. It tells you what is measured and what is modelled.
 
 ### [Open it: www.spaceradar.ai](https://www.spaceradar.ai/?from=gh)
 
@@ -23,8 +23,8 @@ minute, the rockets about to launch, the planets and their moons, the ground whe
 on the Moon and Mars, tonight's sky over your own street, 2.5 million stars in 3D, and the black
 holes the Event Horizon Telescope photographed. Narrated trips fly the camera for you. Every position
 is worked out in your browser from public data, and every picture says whether it is measured,
-modelled or an artist's impression, with its source. It is a static website: no account, no adverts,
-no tracking, and it runs with no internet too.
+modelled or an artist's impression, with its source. It needs no account, shows no adverts, counts
+visits only if you say yes, and runs with no internet too.
 
 ## Run it in 30 seconds
 
@@ -189,8 +189,8 @@ pixels.
 
 - **VR and the gamepad.** A headset button where the browser can open WebXR, with a comfort note
   first, and an Xbox or PlayStation pad to fly with.
-- **Put it in your page.** One live object or one trip as an [embed](docs/EMBEDDING.md), with no
-  tracker and no cookie.
+- **Put it in your page.** One live object or one trip as an [embed](docs/EMBEDDING.md), which
+  stores nothing on the reader's device.
 - **11 languages.** English, and Arabic, Chinese, French, German, Hebrew, Hindi, Portuguese, Russian,
   Spanish and Ukrainian drafted by machine and waiting for native readers
   ([how to help](docs/TRANSLATING.md), or
@@ -223,8 +223,8 @@ The same map, one sheet, one thumb.
 
 ## Why
 
-- **Learning about space should be free and simple.** No account, no adverts, no tracking, no
-  install. Open a link and you are looking at the sky as it is now.
+- **Learning about space should be free and simple.** No account needed, no adverts, no install.
+  Open a link and you are looking at the sky as it is now.
 - **It should run anywhere.** A school, a university, a kindergarten or a village library can
   [run its own copy](docs/RUN_LOCALLY.md), on an old laptop, with no internet at all.
 - **It should be honest.** Everything drawn is measured, modelled or illustrative, and says which.
@@ -321,8 +321,11 @@ Translations, as they stand (all machine-drafted and not yet shown from a browse
 
 ## Support
 
-Space Radar is free and open source, and it stays that way: no paid tier, no account, no adverts,
-no tracking. If you would like to help pay for the hosting, the data and the time to build, there is a
+Space Radar is free and open source, and the whole map stays that way: no account needed, no adverts.
+Optional accounts (to keep a passport, favourites and badges across devices) and paid plans that add
+extras are coming to spaceradar.ai; analytics there runs only if a visitor says yes. What is kept, and
+why, is in the [privacy policy](https://www.spaceradar.ai/legal/privacy/index.html) and the [legal pages](https://www.spaceradar.ai/legal/index.html).
+If you would like to help pay for the hosting, the data and the time to build, there is a
 page on [Buy Me a Coffee](https://buymeacoffee.com/spaceradar). A star, a
 [data-accuracy report](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=data-accuracy.yml)
 or a [first pull request](docs/FIRST_PR.md) helps just as much.

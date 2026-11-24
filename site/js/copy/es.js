@@ -2136,7 +2136,7 @@ export const COPY = {
       "Mientras una pantalla se reproduce sola, un breve registro de sus viajes, solo para esta pestaña."
     ],
     place: "Tu lugar se redondea a una décima de grado y se conserva solo mientras esta página está abierta.",
-    none: "Sin cuenta, sin cookies, sin analítica. «Olvidarme», en el Pasaporte, borra el pasaporte y la elección de sonido."
+    none: "Nada de esto se envía a ningún sitio. El mapa no necesita cuenta, y la analítica solo funciona si dices que sí. «Olvidarme», en el Pasaporte, borra el pasaporte y la elección de sonido."
   },
   buildInfo: {
     line: "Generado a partir de {sha}, {date}",

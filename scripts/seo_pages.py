@@ -752,7 +752,7 @@ def links_page(host: str) -> Page:
     doc = yml("link-in-bio.yaml")
     posts = doc["posts"][:LINKS_SHOWN]
     short = "Link in bio: open the latest posts in 3D"
-    desc = "The latest Space Radar Instagram posts, each with the simulator or trip it showed, to open and try in your browser. No account, no tracking."
+    desc = "The latest Space Radar Instagram posts, each with the simulator or trip it showed, to open and try in your browser. No account needed."
     cards = ""
     for p in posts:
         door = p["door"]
@@ -817,7 +817,9 @@ def about_page(host: str) -> Page:
         "Anyone can read the code, run a copy, report a wrong number or suggest an idea there, and the people who have contributed are named in the repository's history. "
         "There is no company behind a paywall and no person's name on the page: the project is the code and its sources.</p>\n"
         "<h2>Free, and staying usable</h2>\n"
-        "<p>Space Radar has no account, no advertising and no tracker, and charges nothing. No promise about a website can be a promise about forever, so this is the one that can be kept: "
+        "<p>Space Radar needs no account and shows no advertising, and it counts visits only if you say yes "
+        '(<a href="https://www.spaceradar.ai/legal/privacy/index.html">the privacy policy</a>). Optional paid plans may add extras; the whole sky stays free. '
+        "No promise about a website can be a promise about forever, so this is the one that can be kept: "
         "the code is open, and a copy runs on any computer with no internet at all, from a zip file (see <a href=\"../teachers/index.html\">the page for teachers</a>). "
         "If this site ever went away, the map would not.</p>\n"
         "<h2>The name</h2>\n"
@@ -846,83 +848,29 @@ def about_page(host: str) -> Page:
     return page
 
 
-# THE PRIVACY PAGE (2026-11-10): what the email updates keep, why, for how long, and how to leave; and the promise the
-# README makes for the rest of the site (no account, no tracker, no cookie, no analytics), which a subscription keeps:
-# it is opt-in, and its mails carry no pixel and no rewritten link. Every subscribe form links here
-# (scripts/seo_subscribe.py, the app's popover ui/subscribe.js). The facts are the subscription service's own
-# (internal infra/subscribe/README.md, "What is stored, and for how long"); POLICY is its PolicyVersion.
+# THE OLD PRIVACY PAGE (2026-11-10, moved 2026-11-24). The privacy policy, with the cookie policy, the terms and the rest,
+# is now the legal hub at /legal/ (built from the internal repo's legal/ with the shared web-kit, in every language, and
+# deployed to the bucket's legal/ prefix). Every subscribe form and the footer link there. This address keeps working for
+# old links and for the consent records of the email updates (version 2026-11-10 of this page, whose email part the new
+# policy keeps unchanged): a short page that says where the policy is, sends a browser on, and is not indexed.
 POLICY = "2026-11-10"
+LEGAL_PRIVACY = "https://www.spaceradar.ai/legal/privacy/index.html"
 
 
 def privacy_page(host: str) -> Page:
-    short = "Privacy: what Space Radar keeps, and what it never does"
-    desc = ("What Space Radar's free email updates keep and why, how to leave in one click, and the rest of the promise: "
-            "no tracking, no cookies, no analytics.")
+    short = "Privacy: the policy has moved"
+    desc = ("Space Radar's privacy policy is now one of its legal pages, with the cookie policy and the terms: "
+            "what is kept, why, for how long, and your rights.")
     body = (
-        '<p class="eyebrow">Privacy</p>\n<h1>Privacy</h1>\n'
-        '<p class="lead">Space Radar has no account, no advertising, no tracker, no cookie and no analytics. Beyond the hosting\'s '
-        "short-lived access logs (below), the only thing it keeps about anyone is an email address, and only for a person who asks for "
-        "the free email updates and confirms it.</p>\n"
-        "<h2>The map and these pages</h2>\n"
-        "<ul>\n"
-        "<li>There is nothing to sign in to, and no page sets a cookie.</li>\n"
-        "<li>There is no analytics script, no advertising, no tracking pixel and no social-media widget. Nothing from another company loads "
-        "on these pages until you click it.</li>\n"
-        "<li>The map keeps your own choices, such as a city you picked and a few display settings, in your browser's storage on your device. "
-        "They are not sent to us.</li>\n"
-        "<li>Some layers of the map ask a public data service for fresh numbers, for example NASA's picture of today's clouds. Your browser "
-        f'makes that request, as it would to open their page. Every source is on <a href="../sources/index.html">the Sources page</a>.</li>\n'
-        "<li>The pages are served by Amazon CloudFront, which keeps standard access logs: for each request, the network (IP) address, "
-        "the page asked for, the time and the browser's name. They are kept for 30 days, privately, for security and to fix faults, "
-        "and then deleted. We do not use them to track or profile anyone, they hold no cookie, and nothing in them is linked to a subscription.</li>\n"
-        "</ul>\n"
-        "<h2>Email updates: what is kept</h2>\n"
-        "<p>If you subscribe, one record is kept for your address. It holds:</p>\n"
-        "<ul>\n"
-        "<li>your email address;</li>\n"
-        "<li>the lists you picked: Space Radar news, the Journal, space games (or one game's own list), sky alerts, Space Radar models, Space Radar video;</li>\n"
-        "<li>your consent: when you asked, when you confirmed, the page you signed up on (its address without anything after a <code>?</code>) "
-        "and the version of this page you agreed to;</li>\n"
-        "<li>a short history of those steps (asked, confirmed, changed, left), so we can show that you asked;</li>\n"
-        "<li>a random number that makes the links in your mails work, and stops working when you leave.</li>\n"
-        "</ul>\n"
-        "<p>It holds no name, no IP address, no location, and nothing about whether you opened a mail or clicked a link. "
-        "We could not know: <strong>our mails have no tracking pixel and no image, and no link in them is rewritten</strong>.</p>\n"
-        "<h2>Why</h2>\n"
-        "<p>To send you what you asked for, and nothing else, and to be able to show that you asked. Nobody else gets the list: it is not sold, "
-        "shared or used for advertising.</p>\n"
-        "<h2>How it works, and how to leave</h2>\n"
-        "<ul>\n"
-        "<li><strong>Double opt-in.</strong> After you sign up we send one mail with a button. Nothing more is sent until you press it, and a request "
-        "that is not confirmed is deleted after 48 hours.</li>\n"
-        "<li><strong>One-click unsubscribe.</strong> Every mail has an Unsubscribe link, and the List-Unsubscribe header that mail apps read for their own Unsubscribe button. "
-        "No login, no survey, no \"are you sure\" page that asks twice.</li>\n"
-        "<li><strong>Preferences.</strong> Every mail links to a page where you change your lists; choosing none unsubscribes you.</li>\n"
-        "<li><strong>Erasure.</strong> That page also has an Erase button, which deletes your record at once.</li>\n"
-        "</ul>\n"
-        "<h2>How long it is kept</h2>\n"
-        "<ul>\n"
-        "<li>While you are subscribed, the record stays.</li>\n"
-        "<li>When you unsubscribe (or a mail to you bounces for good, or is marked as spam), your lists are emptied, every link in your old mails stops working, "
-        "and the record is deleted 30 days later.</li>\n"
-        "<li>When you erase it, it is deleted at once. The database's own backups age out within 35 days.</li>\n"
-        "<li>To stop abuse, the service counts sign-up attempts per network for an hour or a day. It keeps a one-way, keyed scramble of the address "
-        "(a hash it cannot turn back), never the address itself, and each count is deleted when its hour or day is over.</li>\n"
-        "</ul>\n"
-        "<h2>Who sends it, and who is responsible</h2>\n"
-        "<p>The mail is sent through <strong>Amazon SES</strong>, and the record is kept in Amazon DynamoDB, both in Amazon Web Services' "
-        "EU (Stockholm) region. Amazon processes them for us, as our service provider. Like every sender on SES, an address whose mail "
-        "bounces for good or is reported as spam is also kept on Amazon's own list of addresses not to mail.</p>\n"
-        "<p>The controller of this data is the maintainer of the Space Radar project. To ask what is kept about you, to have it corrected or deleted, "
-        f'or with any other question, reply to any mail we sent you, or <a href="{GITHUB}/issues/new">open an issue</a> {ON_GITHUB} '
-        "(do not put your address in a public issue). You can also complain to your country's data protection authority.</p>\n"
-        "<h2>Changes</h2>\n"
-        f"<p>This is version {POLICY} of this page. If what is kept ever changes, the version changes with it, and the new one is published here first. "
-        f'The code that does all of this is open: <a href="{GITHUB}">Sara-Managed-Projects/space-radar</a> for the map and these pages.</p>\n')
-    page = Page(path="privacy/index.html", title=short, description=desc, body=body, og_title=short)
-    page.jsonld = [webpage(host, page, [("Privacy", "")], extra={"dateModified": POLICY})]
-    page.share = Spec(key="privacy/index", name="Privacy", number="no tracking, no cookies", caption="Space Radar", kind="plain",
-                      colour="#6ec3ff", alt="Rings and a dot, captioned Privacy.")
+        '<p class="eyebrow">Privacy</p>\n<h1>The privacy policy has moved</h1>\n'
+        f'<p class="lead">It is now at <a href="{LEGAL_PRIVACY}">spaceradar.ai/legal/privacy</a>, beside the cookie policy, the terms '
+        "and the other legal pages.</p>\n"
+        f'<p><a href="{LEGAL_PRIVACY}">Read the privacy policy</a> · <a href="https://www.spaceradar.ai/legal/index.html">All legal pages</a></p>\n'
+        f'<p class="dim">The part about the email updates is unchanged from version {POLICY} of this page, which was here until 24 November 2026.</p>\n')
+    page = Page(path="privacy/index.html", title=short, description=desc, body=body, og_title=short, kind="alias",
+                canonical=LEGAL_PRIVACY, robots="noindex, follow", in_sitemap=False,
+                extra_script=f'<script>location.replace("{LEGAL_PRIVACY}")</script>\n')
+    page.jsonld = [webpage(host, page, [("Privacy", "")], extra={"dateModified": "2026-11-24"})]
     return page
 
 
@@ -941,7 +889,7 @@ def eyes_page(host: str) -> Page:
             "Who makes each, what each shows, offline and source code.")
     rows = [
         ("Who makes it", "NASA's Jet Propulsion Laboratory", f'An open-source project on <a href="{GITHUB}">GitHub</a>, not part of NASA'),
-        ("Cost and account", "Free to use", "Free; no account, no advertising, no tracker"),
+        ("Cost and account", "Free to use", "Free; no account needed, no advertising"),
         ("Where it runs", "A web browser, on a phone, tablet or computer, Linux included", "A web browser, on a phone, tablet or computer"),
         ("Internet", "NASA's FAQ says it needs an internet connection",
          'Online, or with no internet from a copy downloaded once (<a href="../teachers/index.html">three steps</a>)'),
@@ -1271,7 +1219,7 @@ LESSONS = [
 
 def teachers_page(host: str, tours: dict, reels: dict, url_keys: list[str]) -> Page:
     short = "Free 3D solar system for the classroom, works offline"
-    desc = "Space Radar in a classroom or a museum: no account, no tracking, present mode, a kiosk setup, an offline copy and five ten-minute lesson starters."
+    desc = "Space Radar in a classroom or a museum: no account needed, no advertising, present mode, a kiosk setup, an offline copy and five ten-minute lesson starters."
     for tid, *_ in LESSONS:
         if tid not in tours:
             raise SystemExit(f"seo_pages: the lesson trip {tid} is not a trip of registry/tours.yaml")
@@ -1284,7 +1232,7 @@ def teachers_page(host: str, tours: dict, reels: dict, url_keys: list[str]) -> P
     body = (
         '<p class="eyebrow">For teachers</p>\n<h1>Space Radar in the classroom</h1>\n'
         '<p class="lead">A free 3D map of the Solar System, the satellites above you and the stars beyond, in a browser: no account to make, nothing to install, '
-        "no tracking, and it works with no internet from a copy you download once.</p>\n"
+        "no advertising, and it works with no internet from a copy you download once.</p>\n"
         '<div class="cta"><a class="btn btn--map" href="../">Open it now</a><p>Or take it offline: three steps below.</p></div>\n'
         "<h2>What it needs</h2>\n"
         "<p>A computer from the last eight years or so, with Chrome, Edge, Firefox or Safari. No login, no licence key, no personal data in any request: nobody is tracked. "
@@ -1425,7 +1373,7 @@ def support_page(host: str) -> list[Page]:
             "Open Collective fund where every payment and expense can be read.")
     body = (
         '<p class="eyebrow">Support</p>\n<h1>Support Space Radar</h1>\n'
-        '<p class="lead">Space Radar is free and open source, and it stays that way: no paid tier, no account, no adverts, no tracking. '
+        '<p class="lead">Space Radar is free and open source, and the whole map stays that way: no account needed, no adverts. '
         "Money is never a condition for using any part of it.</p>\n"
         f'<div class="cta"><a class="btn btn--map" href="{esc(url)}" rel="noopener">Open the fund</a><p>On Open Collective, hosted by Open Source Collective.</p></div>\n'
         "<h2>Where the money goes</h2>\n"

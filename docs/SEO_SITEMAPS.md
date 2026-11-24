@@ -50,6 +50,9 @@ The rules it keeps:
   A sitemap holds at most 50 000 URLs and 50 MB; a language has about 900.
 - `robots.txt` is written by the build (`site/robots.txt` and one `Sitemap:` line per language sitemap), so it names exactly the
   sitemaps that exist.
+- The legal pages (`/legal/`, 2026-11-24) are built and deployed from the internal repo (`legal/`, with the web-kit) into the
+  bucket's `legal/` prefix, with their own `legal/sitemap.xml` (every page in every language, with alternates).
+  `site/robots.txt` names it; the index does not, because `scripts/check_seo.py` holds the index to files of this build.
 
 `scripts/check_seo.py` holds the build to this. It checks that `sitemap.xml` is a 0.9 `sitemapindex` listing exactly
 these addresses in this order (the language sitemaps exactly those of the languages with a page), that each `www` one is in the build, that each address is https on a spaceradar.ai host,

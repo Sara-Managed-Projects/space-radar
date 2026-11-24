@@ -22,7 +22,9 @@ Space Radar is used to learn, so what it shows has to be either true or plainly 
 - **Publishers are treated with respect.** Their rate limits are honoured by a cache (CelesTrak
   allows one download per file per two hours); nothing is hot-linked without CORS and terms that
   allow it.
-- **Nobody is tracked.** No accounts, no analytics cookies, no personal data in any request.
+- **Nobody is tracked without a yes.** The map needs no account and its own code sends no personal data
+  in any request. On spaceradar.ai an optional account and analytics come from a separate script, and
+  analytics runs only after the visitor accepts it ([privacy policy](https://www.spaceradar.ai/legal/privacy/index.html)).
 
 ## 2. The interface, in brief
 

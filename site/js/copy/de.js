@@ -2293,7 +2293,7 @@ export const COPY = {
       "Während ein Bildschirm von allein läuft, ein kurzes Protokoll seiner Reisen, nur für diesen Tab."
     ],
     "place": "Dein Ort wird auf ein Zehntel Grad gerundet und nur so lange behalten, wie diese Seite offen ist.",
-    "none": "Kein Konto, keine Cookies, keine Analysen. „Vergiss mich“ im Reisepass löscht den Reisepass und die Ton-Auswahl."
+    "none": "Nichts davon wird irgendwohin gesendet. Die Karte braucht kein Konto, und Analysen laufen nur, wenn du zustimmst. „Vergiss mich“ im Reisepass löscht den Reisepass und die Ton-Auswahl."
   },
   "buildInfo": {
     "line": "Gebaut aus {sha}, {date}",

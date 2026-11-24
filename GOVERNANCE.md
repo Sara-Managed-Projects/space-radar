@@ -49,7 +49,7 @@ one is not merged, whoever sends it.
    illustrative, and the card says which. That line is never removed to make a screen prettier.
 4. **A missing answer is shown as missing.** The app may say it could not look. It may not show
    an empty sky as the real one.
-5. **No personal data.** No accounts and no tracking.
+5. **No personal data in the map's code.** The map needs no account and sends nothing about anyone; accounts and analytics (only after a yes) live in the separate platform script.
 
 The longer form is in [CONTRIBUTING.md](CONTRIBUTING.md#the-honesty-rules).
 

@@ -299,7 +299,9 @@ These are the heart of the project, and CI enforces most of them.
    pictures, sounds, fonts, data. No hot-linking somebody's files without their terms allowing it.
 4. **A missing answer is shown as missing.** "Could not look" is a fine thing for the app to say.
    An empty sky presented as the real one is not.
-5. **No personal data.** The app has no accounts and no tracking; keep it that way.
+5. **No personal data.** The map's own code needs no account and sends nothing about anyone; keep it that way. Accounts and analytics
+   (only after a yes) live in a separate script on spaceradar.ai, and every storage key the map writes is listed in the
+   [cookie policy](https://www.spaceradar.ai/legal/cookies/index.html): a new one needs a row there.
 
 If you find something on the site that is wrong, a
 [data-accuracy report](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=data-accuracy.yml)

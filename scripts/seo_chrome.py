@@ -60,7 +60,9 @@ def footer(root: str, source: str) -> str:
 LAB_LINKS = (("Sites", (("", "The 3D map"), ("https://blog.spaceradar.ai/", "Journal"), ("https://games.spaceradar.ai/", "Games"),
                         ("https://models.spaceradar.ai/", "Models"), ("https://video.spaceradar.ai/", "Video"),
                         ("lab/index.html", "All simulators"))),
-             ("More", (("about/index.html", "About"), ("sources/index.html", "Sources"), ("privacy/index.html", "Privacy"),
+             ("More", (("about/index.html", "About"), ("sources/index.html", "Sources"), ("https://www.spaceradar.ai/legal/privacy/index.html", "Privacy"),
+                       ("https://www.spaceradar.ai/legal/index.html", "Legal"),
+                       ("https://www.spaceradar.ai/legal/cookies/index.html#choices", "Cookie settings", " data-sr-consent"),
                        ("https://github.com/Sara-Managed-Projects/space-radar", "GitHub"))))
 
 
@@ -71,7 +73,7 @@ def lab_footer(root: str) -> str:
     text = (TEMPLATES / "partials" / "footer.html").read_text(encoding="utf-8")
     cols = "".join(
         f'<div><p class="foot__h">{h}</p><ul>' + "".join(
-            f'<li><a href="{u if u.startswith("https:") else root + u}">{t}</a></li>' for u, t in links) + "</ul></div>\n"
+            f'<li><a href="{u if u.startswith("https:") else root + u}"{x[0] if x else ""}>{t}</a></li>' for u, t, *x in links) + "</ul></div>\n"
         for h, links in LAB_LINKS)
     nav = f'<nav class="sitelinks" aria-label="Space Radar on the web">\n{cols}</nav>'
     return text.replace("{{subscribe}}", "").replace("{{coffee}}", "").replace("{{footer_nav}}", nav).replace("{{root}}", root).rstrip("\n")

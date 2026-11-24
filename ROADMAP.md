@@ -53,9 +53,12 @@ much as the plan.
 
 ## Not doing
 
-- **No accounts.** Using Space Radar will never need one.
-- **No advertising, no paid tiers.** It is free and MIT-licensed.
-- **No trackers.** No analytics scripts, no cookies, no fingerprinting.
+- **No account needed.** Using the map will never need one; an account is optional, to keep a passport,
+  favourites and badges across devices.
+- **No advertising, and no paywall on the sky.** The whole map is free and MIT-licensed; optional paid
+  plans add extras only.
+- **No tracking without a yes.** Analytics runs only after a visitor accepts it, never for advertising,
+  and never by fingerprinting ([privacy policy](https://www.spaceradar.ai/legal/privacy/index.html)).
 - **No invented detail without a label.** Everything drawn is measured, modelled or an artist's
   impression and says which ([the honesty rules](CONTRIBUTING.md#the-honesty-rules)). A face
   nobody has seen is never drawn as a photograph.
