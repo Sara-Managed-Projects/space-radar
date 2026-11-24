@@ -91,15 +91,19 @@ craft:
   # file runs to the end of that prediction and the card says so from 27 October (`rough.after`).
   # Until 2026-11-08 the file stopped at the reconstruction (2026-Aug-24), and the map had no
   # path for Juno for weeks; tests/test_ephemerides.py now fails 60 days before a span runs out.
+  # 2026-11-24: Horizons (read on a GitHub runner) now gives Juno's trajectory to 2028-SEP-02 01:39 TDB
+  # ("No ephemeris ... after A.D. 2028-SEP-02 01:39:03 TDB"); still a planning prediction after 2026-Oct-27.
   - id: deep-juno
     name: Juno
     command: "-61"
     from: "2011-08-05T17:19:00Z"
-    to: "2027-01-20T23:00:00Z"
+    to: "2028-09-02T01:00:00Z"
     windows:
       - {centre: earth, from: "2011-08-05T17:19:00Z", to: "2011-08-09T00:00:00Z"}
       - {centre: earth, from: "2013-10-05T00:00:00Z", to: "2013-10-14T00:00:00Z"}
-      - {centre: jupiter, from: "2016-06-05T00:00:00Z", to: "2027-01-20T23:00:00Z", tol_km: 60}
+      - {centre: jupiter, from: "2016-06-05T00:00:00Z", to: "2028-09-02T01:00:00Z", tol_km: 60}
+    max_bytes: 170000
+    max_bytes_why: "2026-11-24: the Jupiter window now runs to 2028-09-02 (Horizons' current end); 5 672 samples at 60 km came to 162 544 B on the fetch run, over the 150 000 default. Loaded only when Juno is shown."
     rough:
       after: "2026-10-27T00:00:00Z"
       text: "JPL's navigation team calls Juno's path after 27 October 2026 a planning prediction, redrawn as the tracking comes in."
