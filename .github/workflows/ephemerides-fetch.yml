@@ -2,11 +2,13 @@
 # Push a branch named eph/<anything> whose .eph-only file lists craft ids (comma-separated, as in
 # registry/ephemerides.yaml). The run prints each craft's Horizons header lines that say how far its
 # trajectory runs, fetches those craft (scripts/build_ephemerides.py --fetch --only ...), runs --check,
-# and commits the regenerated files back to the same branch. Nothing runs on main.
+# and commits the regenerated files back to the same branch. Nothing runs on main, and nothing runs
+# when the push removes .eph-only (each step below is skipped without the file).
 name: ephemerides-fetch
 on:
   push:
     branches: ['eph/**']
+    paths: ['.eph-only']
 permissions:
   contents: write
 jobs:
@@ -16,9 +18,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
+        if: hashFiles('.eph-only') != ''
         with: {python-version: '3.12'}
       - run: pip install --disable-pip-version-check pyyaml numpy
+        if: hashFiles('.eph-only') != ''
       - name: Horizons' own span for each craft
+        if: hashFiles('.eph-only') != ''
         run: |
           set -eu
           for id in $(tr ',' ' ' < .eph-only); do
@@ -28,10 +33,13 @@ jobs:
               | grep -iE "prior to|after .*UT|trajectory|ephemeris|span|planning|predict|reconstruct" | head -20 || true
           done
       - name: Fetch
+        if: hashFiles('.eph-only') != ''
         run: python3 scripts/build_ephemerides.py --fetch --only "$(cat .eph-only)"
       - name: Check
+        if: hashFiles('.eph-only') != ''
         run: python3 scripts/build_ephemerides.py --check
       - name: Commit the regenerated files
+        if: hashFiles('.eph-only') != ''
         run: |
           set -eu
           git config user.name "space-radar"
