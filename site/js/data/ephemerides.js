@@ -12,7 +12,7 @@ export const EPH_CENTRES = ["sun", "mercury", "venus", "earth", "moon", "mars", 
 export const EPHEMERIDES = {
   "deep-voyager-1": {
     "file": "deep-voyager-1.bin",
-    "bytes": 29696,
+    "bytes": 29736,
     "name": "Voyager 1",
     "from": "1977-09-05T13:59:00Z",
     "to": "2031-01-01T00:00:00Z",
@@ -116,7 +116,7 @@ export const EPHEMERIDES = {
   },
   "deep-pioneer-10": {
     "file": "deep-pioneer-10.bin",
-    "bytes": 27536,
+    "bytes": 27564,
     "name": "Pioneer 10",
     "from": "1972-03-03T02:04:00Z",
     "to": "2031-01-01T00:00:00Z",
@@ -131,7 +131,7 @@ export const EPHEMERIDES = {
   },
   "deep-pioneer-11": {
     "file": "deep-pioneer-11.bin",
-    "bytes": 33100,
+    "bytes": 33180,
     "name": "Pioneer 11",
     "from": "1973-04-06T02:25:00Z",
     "to": "2031-01-01T00:00:00Z",
@@ -146,7 +146,7 @@ export const EPHEMERIDES = {
   },
   "deep-jwst": {
     "file": "deep-jwst.bin",
-    "bytes": 25148,
+    "bytes": 25176,
     "name": "James Webb Space Telescope",
     "from": "2021-12-25T13:01:00Z",
     "to": "2031-11-01T23:58:00Z",

@@ -15,16 +15,16 @@
    "name": "Voyager 1",
    "command": "-31",
    "file": "deep-voyager-1.bin",
-   "bytes": 29696,
-   "sha256": "4c6b3b51a2c436bdb1e687c40c96b6ce327168cc7bc6c3d79c3441348ec9062a",
+   "bytes": 29736,
+   "sha256": "46ea7af11971d6d8a8d5192bb679a62c6ab5e098787b552314989c61837d2ad3",
    "span": [
     "1977-09-05T13:59:00Z",
     "2031-01-01T00:00:00Z"
    ],
-   "samples": 834,
+   "samples": 835,
    "solution": "Voyager_1_ST+refit2022_m",
    "header_revised": "Aug 19, 2022",
-   "retrieved": "2026-11-23",
+   "retrieved": "2026-10-06",
    "fit_max_km": 4.998,
    "heldout": {
     "n": 48,
@@ -39,7 +39,7 @@
      "samples": 20,
      "tol_km": 1.0,
      "fit_max_km": 0.978,
-     "fetched": 147,
+     "fetched": 149,
      "step_min_s": 300.0,
      "step_max_s": 79260.0,
      "steps": {
@@ -141,7 +141,7 @@
      "centre": "sun",
      "from": "1980-12-12T00:00:00Z",
      "to": "2031-01-01T00:00:00Z",
-     "samples": 388,
+     "samples": 389,
      "tol_km": 5.0,
      "fit_max_km": 4.998,
      "fetched": 19632,
@@ -151,7 +151,7 @@
       "under 10 min": 19,
       "6 h to 1 d": 1,
       "1 d to 10 d": 13,
-      "over 10 d": 354
+      "over 10 d": 355
      },
      "centre_source": "Voyager_1_ST+refit2022_m"
     }
@@ -167,7 +167,7 @@
    "command": "-32",
    "file": "deep-voyager-2.bin",
    "bytes": 33784,
-   "sha256": "9e6c8a96d6dfb5f8f6ca2cf595892ac6bad9e07c4a486b9c7a6b2fcc6690c6e6",
+   "sha256": "7471627dc6a5de219f1cd83b8648329f2be6a9b15ef3ef84bab374fa68dbe6f3",
    "span": [
     "1977-08-20T15:32:00Z",
     "2031-01-01T00:00:00Z"
@@ -175,7 +175,7 @@
    "samples": 965,
    "solution": "Voyager_2_ST+refit2022_m",
    "header_revised": "Aug 19, 2022",
-   "retrieved": "2026-11-23",
+   "retrieved": "2026-10-06",
    "fit_max_km": 4.999,
    "heldout": {
     "n": 48,
@@ -379,10 +379,10 @@
      "fit_max_km": 4.999,
      "fetched": 16008,
      "step_min_s": 60.0,
-     "step_max_s": 8697600.0,
+     "step_max_s": 8704800.0,
      "steps": {
       "under 10 min": 13,
-      "6 h to 1 d": 1,
+      "1 h to 6 h": 1,
       "1 d to 10 d": 3,
       "over 10 d": 281
      },
@@ -408,7 +408,7 @@
    "samples": 488,
    "solution": "NH_merged",
    "header_revised": "Sep 01, 2026",
-   "retrieved": "2026-11-23",
+   "retrieved": "2026-10-06",
    "fit_max_km": 5.0,
    "heldout": {
     "n": 48,
@@ -682,7 +682,7 @@
    "command": "-82",
    "file": "deep-cassini.bin",
    "bytes": 249976,
-   "sha256": "771b299a98d61d922ced7ab5cd90c814d6d26df648e1a5c53d1e136205fc8e65",
+   "sha256": "5bea2e04b994c21b632a0ca8f6dc1e1f96ffd3063c600152f34a946fdf83d20c",
    "span": [
     "1997-10-15T09:27:00Z",
     "2017-09-15T10:30:00Z"
@@ -690,7 +690,7 @@
    "samples": 8750,
    "solution": "cassini_merge",
    "header_revised": "Sep 28, 2018",
-   "retrieved": "2026-11-23",
+   "retrieved": "2026-10-06",
    "fit_max_km": 59.999,
    "heldout": {
     "n": 494,
@@ -705,7 +705,7 @@
      "samples": 24,
      "tol_km": 1.0,
      "fit_max_km": 0.967,
-     "fetched": 161,
+     "fetched": 164,
      "step_min_s": 360.0,
      "step_max_s": 61200.0,
      "steps": {
@@ -942,7 +942,7 @@
    "samples": 2583,
    "solution": "galileo_merged",
    "header_revised": "Feb 23, 2008",
-   "retrieved": "2026-11-23",
+   "retrieved": "2026-10-06",
    "fit_max_km": 60.0,
    "heldout": {
     "n": 145,
@@ -957,7 +957,7 @@
      "samples": 19,
      "tol_km": 1.0,
      "fit_max_km": 0.993,
-     "fetched": 136,
+     "fetched": 137,
      "step_min_s": 1500.0,
      "step_max_s": 61200.0,
      "steps": {
@@ -1062,7 +1062,7 @@
      "samples": 186,
      "tol_km": 5.0,
      "fit_max_km": 4.999,
-     "fetched": 3255,
+     "fetched": 3249,
      "step_min_s": 60.0,
      "step_max_s": 1209600.0,
      "steps": {
@@ -1105,7 +1105,7 @@
      "samples": 157,
      "tol_km": 5.0,
      "fit_max_km": 4.998,
-     "fetched": 3428,
+     "fetched": 3422,
      "step_min_s": 60.0,
      "step_max_s": 2160000.0,
      "steps": {
@@ -1158,7 +1158,7 @@
    "samples": 116,
    "solution": "mariner2_m2_620827_62123",
    "header_revised": "Oct 18, 2012",
-   "retrieved": "2026-11-23",
+   "retrieved": "2026-11-03",
    "fit_max_km": 4.791,
    "heldout": {
     "n": 48,
@@ -1263,7 +1263,7 @@
    "samples": 67,
    "solution": "galileo_probe",
    "header_revised": "Aug 07, 2000",
-   "retrieved": "2026-11-23",
+   "retrieved": "2026-11-03",
    "fit_max_km": 4.973,
    "heldout": {
     "n": 48,
@@ -1278,7 +1278,7 @@
      "samples": 21,
      "tol_km": 5.0,
      "fit_max_km": 4.973,
-     "fetched": 144,
+     "fetched": 153,
      "step_min_s": 109740.0,
      "step_max_s": 1296000.0,
      "steps": {
@@ -1318,16 +1318,16 @@
    "name": "Pioneer 10",
    "command": "-23",
    "file": "deep-pioneer-10.bin",
-   "bytes": 27536,
-   "sha256": "117619c2affb1aa35ecaa627681a0fb0f89323979d6a009d711c2c588e9c1884",
+   "bytes": 27564,
+   "sha256": "4c16285122c581b339d67821862898ed2726e9ee8c84bc68cdb30e483fc2d9ba",
    "span": [
     "1972-03-03T02:04:00Z",
     "2031-01-01T00:00:00Z"
    ],
-   "samples": 744,
+   "samples": 745,
    "solution": "pioneer_10_merged",
    "header_revised": "Jul 27, 2005",
-   "retrieved": "2026-11-23",
+   "retrieved": "2026-10-06",
    "fit_max_km": 5.0,
    "heldout": {
     "n": 48,
@@ -1380,17 +1380,17 @@
      "centre": "jupiter",
      "from": "1973-11-04T00:00:00Z",
      "to": "1974-01-03T00:00:00Z",
-     "samples": 174,
+     "samples": 175,
      "tol_km": 1.0,
      "fit_max_km": 1.0,
      "fetched": 1750,
      "step_min_s": 60.0,
      "step_max_s": 61200.0,
      "steps": {
-      "under 10 min": 3,
-      "10 min to 1 h": 28,
-      "1 h to 6 h": 38,
-      "6 h to 1 d": 104
+      "under 10 min": 4,
+      "10 min to 1 h": 29,
+      "1 h to 6 h": 36,
+      "6 h to 1 d": 105
      },
      "closest": {
       "at": "1973-12-04T02:25:00Z",
@@ -1406,14 +1406,14 @@
      "samples": 450,
      "tol_km": 5.0,
      "fit_max_km": 5.0,
-     "fetched": 22802,
+     "fetched": 22792,
      "step_min_s": 60.0,
      "step_max_s": 8726400.0,
      "steps": {
       "under 10 min": 26,
       "6 h to 1 d": 2,
-      "1 d to 10 d": 14,
-      "over 10 d": 407
+      "1 d to 10 d": 13,
+      "over 10 d": 408
      },
      "centre_source": "pioneer_10_merged"
     }
@@ -1428,16 +1428,16 @@
    "name": "Pioneer 11",
    "command": "-24",
    "file": "deep-pioneer-11.bin",
-   "bytes": 33100,
-   "sha256": "eceadae4991f1494b4a790b19e2356dd9bc367dc3bffd1980299dc2fd3f61be0",
+   "bytes": 33180,
+   "sha256": "a1a218e189a86bdc8e0652ec0ceef4f37bdb5b0851321389375a2fe3d1bc8fa9",
    "span": [
     "1973-04-06T02:25:00Z",
     "2031-01-01T00:00:00Z"
    ],
-   "samples": 920,
+   "samples": 922,
    "solution": "pioneer_11_merged",
    "header_revised": "Jun 15, 2007",
-   "retrieved": "2026-11-23",
+   "retrieved": "2026-10-06",
    "fit_max_km": 4.999,
    "heldout": {
     "n": 48,
@@ -1555,17 +1555,17 @@
      "centre": "sun",
      "from": "1979-10-01T00:00:00Z",
      "to": "2031-01-01T00:00:00Z",
-     "samples": 389,
+     "samples": 391,
      "tol_km": 5.0,
      "fit_max_km": 4.997,
-     "fetched": 20362,
+     "fetched": 20352,
      "step_min_s": 60.0,
      "step_max_s": 8812800.0,
      "steps": {
-      "under 10 min": 22,
+      "under 10 min": 23,
       "6 h to 1 d": 2,
       "1 d to 10 d": 9,
-      "over 10 d": 355
+      "over 10 d": 356
      },
      "centre_source": "pioneer_11_merged"
     }
@@ -1580,16 +1580,16 @@
    "name": "James Webb Space Telescope",
    "command": "-170",
    "file": "deep-jwst.bin",
-   "bytes": 25148,
-   "sha256": "7a13f5dafaf91ac95579b62e4eb858ee367658afd01304d3163ef4e67a1d7fd1",
+   "bytes": 25176,
+   "sha256": "953a761a2428615992c1d97164a7e95d2b45cee519afa6f892c0cab3c559b437",
    "span": [
     "2021-12-25T13:01:00Z",
     "2031-11-01T23:58:00Z"
    ],
-   "samples": 897,
+   "samples": 898,
    "solution": "JWST_merged",
-   "header_revised": "Nov 20, 2026",
-   "retrieved": "2026-11-23",
+   "header_revised": "Nov 03, 2026",
+   "retrieved": "2026-11-07",
    "fit_max_km": 9.999,
    "heldout": {
     "n": 48,
@@ -1601,13 +1601,14 @@
      "centre": "earth",
      "from": "2021-12-25T13:01:00Z",
      "to": "2031-11-01T23:58:00Z",
-     "samples": 897,
+     "samples": 898,
      "tol_km": 10.0,
      "fit_max_km": 9.999,
-     "fetched": 86400,
-     "step_min_s": 1200.0,
+     "fetched": 86439,
+     "step_min_s": 60.0,
      "step_max_s": 493200.0,
      "steps": {
+      "under 10 min": 1,
       "10 min to 1 h": 3,
       "1 h to 6 h": 6,
       "6 h to 1 d": 7,
@@ -1640,7 +1641,7 @@
    "samples": 750,
    "solution": "Euclid_current",
    "header_revised": "Nov 03, 2026",
-   "retrieved": "2026-11-23",
+   "retrieved": "2026-11-14",
    "fit_max_km": 10.0,
    "heldout": {
     "n": 48,
@@ -1691,7 +1692,7 @@
    "samples": 100,
    "solution": "Mars2020_merged",
    "header_revised": "Feb 18, 2021",
-   "retrieved": "2026-11-23",
+   "retrieved": "2026-10-06",
    "fit_max_km": 4.88,
    "heldout": {
     "n": 48,
@@ -1706,7 +1707,7 @@
      "samples": 25,
      "tol_km": 1.0,
      "fit_max_km": 0.998,
-     "fetched": 154,
+     "fetched": 159,
      "step_min_s": 420.0,
      "step_max_s": 61200.0,
      "steps": {
@@ -1778,7 +1779,7 @@
    "samples": 3752,
    "solution": "dawn_final",
    "header_revised": "Jan 03, 2019",
-   "retrieved": "2026-11-23",
+   "retrieved": "2026-10-06",
    "fit_max_km": 999.88,
    "heldout": {
     "n": 48,
@@ -1883,7 +1884,7 @@
    "samples": 270,
    "solution": "rosetta_merged",
    "header_revised": "Oct 24, 2016",
-   "retrieved": "2026-11-23",
+   "retrieved": "2026-10-08",
    "fit_max_km": 999.732,
    "heldout": {
     "n": 48,
@@ -1898,7 +1899,7 @@
      "samples": 28,
      "tol_km": 1.0,
      "fit_max_km": 0.965,
-     "fetched": 292,
+     "fetched": 296,
      "step_min_s": 60.0,
      "step_max_s": 59520.0,
      "steps": {
@@ -1950,7 +1951,7 @@
    "samples": 147,
    "solution": "NEAR_merged",
    "header_revised": "May 05, 2020",
-   "retrieved": "2026-11-23",
+   "retrieved": "2026-10-08",
    "fit_max_km": 999.88,
    "heldout": {
     "n": 48,
@@ -1965,7 +1966,7 @@
      "samples": 38,
      "tol_km": 1000.0,
      "fit_max_km": 999.88,
-     "fetched": 793,
+     "fetched": 795,
      "step_min_s": 60.0,
      "step_max_s": 4320000.0,
      "steps": {
@@ -2031,7 +2032,7 @@
    "samples": 1159,
    "solution": "stardust",
    "header_revised": "Jan 31, 2011",
-   "retrieved": "2026-11-23",
+   "retrieved": "2026-10-08",
    "fit_max_km": 4.998,
    "heldout": {
     "n": 48,
@@ -2069,7 +2070,7 @@
      "samples": 581,
      "tol_km": 5.0,
      "fit_max_km": 4.998,
-     "fetched": 8971,
+     "fetched": 8965,
      "step_min_s": 60.0,
      "step_max_s": 1296000.0,
      "steps": {
@@ -2141,7 +2142,7 @@
    "samples": 1045,
    "solution": "epoxi_merged",
    "header_revised": "Oct 11, 2012",
-   "retrieved": "2026-11-23",
+   "retrieved": "2026-10-08",
    "fit_max_km": 4.998,
    "heldout": {
     "n": 48,
@@ -2179,7 +2180,7 @@
      "samples": 1020,
      "tol_km": 5.0,
      "fit_max_km": 4.998,
-     "fetched": 7317,
+     "fetched": 7327,
      "step_min_s": 60.0,
      "step_max_s": 777600.0,
      "steps": {
@@ -2208,7 +2209,7 @@
    "solution": "JPL#220",
    "header_revised": null,
    "solution_date": "2024-Jun-25_10:48:08",
-   "retrieved": "2026-11-23",
+   "retrieved": "2026-10-06",
    "fit_max_km": 4.99,
    "heldout": {
     "n": 48,
@@ -2289,7 +2290,7 @@
    "samples": 637,
    "solution": "ORX_merged",
    "header_revised": "Sep 18, 2025",
-   "retrieved": "2026-11-23",
+   "retrieved": "2026-10-06",
    "fit_max_km": 4.979,
    "heldout": {
     "n": 48,
