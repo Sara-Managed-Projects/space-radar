@@ -102,7 +102,7 @@ export function skyControls(record, ctx, lead) {
   }
   // The heart (ui/favs.js): this browser's favourite, and the platform's where it runs.
   if (record && typeof record.id === 'string' && record.id && COPY.favs) {
-    row.appendChild(heartButton(`map:${record.id}`, { add: COPY.favs.add, remove: COPY.favs.remove }, { label: COPY.favs.label }));
+    row.appendChild(heartButton(`map:${record.id}`, { add: COPY.favs.add, remove: COPY.favs.remove }, { tile: true }));
   }
   // More than three tiles (a Saturn V: two replays, the lamp, Seen it) are two to a line, not four slivers.
   row.classList.toggle('is-many', row.childElementCount > 3);

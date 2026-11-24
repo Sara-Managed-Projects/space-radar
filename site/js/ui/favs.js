@@ -98,15 +98,10 @@ export function heartButton(key, words, opts = {}) {
   const doc = opts.document || document;
   const b = doc.createElement('button');
   b.type = 'button';
-  // An icon button, or with `label` a button with its word (the card's row of tiles).
-  b.className = `ui-btn${opts.label ? '' : ' ui-btn--icon ui-btn--sm'} sr-heart${opts.className ? ` ${opts.className}` : ''}`;
+  // A small round icon button, or with `tile` a button as wide as its cell in the card's row of tiles (still the icon
+  // alone: a word did not fit beside Look inside and Spotted, and the name is in aria-label and title).
+  b.className = `ui-btn${opts.tile ? '' : ' ui-btn--icon ui-btn--sm'} sr-heart${opts.className ? ` ${opts.className}` : ''}`;
   b.setAttribute('data-sr-fav', key);
   b.appendChild(heartIcon(doc));
-  if (opts.label) {
-    const span = doc.createElement('span');
-    span.className = 'ui-btn__label';
-    span.textContent = opts.label;
-    b.appendChild(span);
-  }
   return wireHeart(b, words, opts);
 }

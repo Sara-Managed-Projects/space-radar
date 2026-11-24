@@ -191,8 +191,8 @@ const F = await import(join(JS, 'ui/favs.js'));
   check(JSON.stringify(window.srq.slice(-2)) === '[["fav","map:moon",true],["track","favourite_add",{"key":"map:moon"}]]', `and the platform is told by the queue alone (${JSON.stringify(window.srq)})`);
   b.click();
   check(b.getAttribute('aria-pressed') === 'false' && F.readFavs(st).length === 0 && window.srq[window.srq.length - 2][2] === false, 'pressed again: gone');
-  const labelled = F.heartButton('map:mars', { add: 'Add', remove: 'Remove' }, { document: doc, storage: st, label: 'Favourite' });
-  check(!/ui-btn--icon/.test(labelled.className) && labelled.children.some((c) => c.className === 'ui-btn__label' && c.textContent === 'Favourite'), 'on a card\'s row of tiles it carries its word');
+  const tile = F.heartButton('map:mars', { add: 'Add', remove: 'Remove' }, { document: doc, storage: st, tile: true });
+  check(!/ui-btn--icon/.test(tile.className) && tile.getAttribute('aria-label') === 'Add' && tile.title === 'Add', 'on a card\'s row of tiles it fills its cell, named by aria-label and title');
   delete globalThis.window;
 }
 

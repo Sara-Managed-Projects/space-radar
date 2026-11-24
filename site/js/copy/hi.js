@@ -6593,6 +6593,6 @@ COPY.figureSide = {
 };
 // A constellation seen from the side: end
 // The platform bridge (copy/en.js favs, copy/en.later.js account): begin -- machine-drafted, agent-read, not native-reviewed
-COPY.favs = {"label": "पसंदीदा", "add": "अपने पसंदीदा में जोड़ें", "remove": "आपके पसंदीदा में है। हटाने के लिए दबाएँ", "addTrip": "{name} को अपने पसंदीदा में जोड़ें", "removeTrip": "{name} आपके पसंदीदा में है। हटाने के लिए दबाएँ"};
+COPY.favs = {"add": "अपने पसंदीदा में जोड़ें", "remove": "आपके पसंदीदा में है। हटाने के लिए दबाएँ", "addTrip": "{name} को अपने पसंदीदा में जोड़ें", "removeTrip": "{name} आपके पसंदीदा में है। हटाने के लिए दबाएँ"};
 COPY.account = {"signIn": "साइन इन करें", "open": "आपका खाता", "openNamed": "आपका खाता, {name}"};
 // The platform bridge: end

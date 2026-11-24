@@ -6691,6 +6691,6 @@ COPY.figureSide = {
 };
 // A constellation seen from the side: end
 // The platform bridge (copy/en.js favs, copy/en.later.js account): begin -- machine-drafted, agent-read, not native-reviewed
-COPY.favs = {"label": "Favorit", "add": "Zu deinen Favoriten hinzufügen", "remove": "In deinen Favoriten. Drücke, um es zu entfernen", "addTrip": "{name} zu deinen Favoriten hinzufügen", "removeTrip": "{name} ist in deinen Favoriten. Drücke, um es zu entfernen"};
+COPY.favs = {"add": "Zu deinen Favoriten hinzufügen", "remove": "In deinen Favoriten. Drücke, um es zu entfernen", "addTrip": "{name} zu deinen Favoriten hinzufügen", "removeTrip": "{name} ist in deinen Favoriten. Drücke, um es zu entfernen"};
 COPY.account = {"signIn": "Anmelden", "open": "Dein Konto", "openNamed": "Dein Konto, {name}"};
 // The platform bridge: end

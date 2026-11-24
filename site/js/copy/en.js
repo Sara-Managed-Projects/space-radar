@@ -790,7 +790,6 @@ export const COPY = {
   // The heart (ui/favs.js): a favourite kept in this browser, on a card's row and on each trip card. Here, not in
   // copy/en.later.js: ui/explore.js draws the trip cards at boot. {name} is the trip's title.
   favs: {
-    label: 'Favourite',
     add: 'Add to your favourites',
     remove: 'In your favourites. Press to take it out',
     addTrip: 'Add {name} to your favourites',

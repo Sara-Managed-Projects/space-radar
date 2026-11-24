@@ -3807,7 +3807,8 @@ html.sr-phone .sr-top .sr-search__emptyhint {
   min-width: 0;
 }
 
-.sr-tripcell__fav {
+/* Two classes: the control set (css/controls.css, linked after this file) gives every .ui-btn `position: relative`. */
+.sr-tripcell > .sr-tripcell__fav {
   position: absolute;
   top: var(--sp-2);
   right: var(--sp-2);
