@@ -18,8 +18,10 @@
 // embed, offline, a blocker) nothing reads the array and nothing leaves the page: the map is exactly the map it was.
 // The array is held to QUEUE_CAP entries (the oldest dropped), so a screen left playing for a week holds a few kB.
 //
-// WHAT GOES IN IT. Ids, class names, layer and tab names, counts: never a name, a place or a word somebody typed,
-// except a search's words cut to 60 characters (`search_term`), as the contract allows. track() refuses a nested value.
+// WHAT GOES IN IT. Ids, class names, layer and tab names, counts: never a person's name, a place or a word somebody
+// typed, except a search's words cut to 60 characters (`search_term`), as the contract allows. track() refuses a nested
+// value. One exception, a thing's own name: `visit` carries the opened record's name from our data (ui/platformtrack.js
+// nameHint) so the stamp passport can say "Starlink-1007" where it would say "cat-44713"; it never reaches analytics.
 
 export const PLATFORM_SRC = 'https://account.spaceradar.ai/v1/platform.js';
 export const QUEUE_CAP = 500;
