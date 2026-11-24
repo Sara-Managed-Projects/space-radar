@@ -71,10 +71,10 @@ const wired = new Set();
 function listen(doc) {
   if (listening || !doc) return;
   listening = true;
-  onPlatform((d) => { signedIn = !!(d && d.signedIn); }, doc);
+  try { onPlatform((d) => { signedIn = !!(d && d.signedIn); }, doc); } catch { /* a document with no events: never signed in */ }
   // Another tab changed the signed-out list: the hearts here follow (signed in, platform.js paints them).
   const win = doc.defaultView;
-  if (win) win.addEventListener('storage', (e) => {
+  if (win && typeof win.addEventListener === 'function') win.addEventListener('storage', (e) => {
     if (signedIn || (e && e.key !== FAVS_KEY && e.key !== null)) return;
     for (const h of [...wired]) { if (!h.b.isConnected) { wired.delete(h); continue; } h.paint(readFavs(h.storage).includes(h.key)); }
   });
