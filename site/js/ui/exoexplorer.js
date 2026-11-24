@@ -183,7 +183,9 @@ function valueText(axis, v) {
 }
 function tickText(axis, v) {
   if (axis === 'year') return String(Math.round(v));
-  return Math.abs(v) >= 1000 ? fmt.int(v) : fmt.smart(Number(v.toPrecision(3)));
+  if (Math.abs(v) >= 1000) return fmt.int(v);
+  // Below one, the digits the number has (0.001, 0.1), never padded to three places (fmt.smart would write 0.000).
+  return Math.abs(v) < 1 && v !== 0 ? String(Number(v.toPrecision(3))) : fmt.smart(Number(v.toPrecision(3)));
 }
 
 export function mountExoExplorer(pane, ctx, api) {
@@ -409,7 +411,8 @@ export function mountExoExplorer(pane, ctx, api) {
     g.textBaseline = 'top';
     g.textAlign = 'center';
     const xt = sx.ticks();
-    const xStep = Math.max(1, Math.ceil((xt.length * 44) / (w - pad.l - pad.r)));
+    const xLabelW = Math.max(0, ...xt.map((v) => g.measureText(tickText(st.x, v)).width)) + 12; // a label's width and a gap
+    const xStep = Math.max(1, Math.ceil((xt.length * xLabelW) / (w - pad.l - pad.r)));
     xt.forEach((v, i) => { if (i % xStep) return; const px = sx.map(v); g.fillText(tickText(st.x, v), px, h - pad.b + 4); });
     g.textAlign = 'right';
     g.textBaseline = 'middle';
