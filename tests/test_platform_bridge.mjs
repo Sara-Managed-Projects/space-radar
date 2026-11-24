@@ -219,7 +219,8 @@ const F = await import(join(JS, 'ui/favs.js'));
   check(T.initialOf('  émile') === 'É' && T.initialOf('') === '' && T.initialOf(null) === '', 'the initial is the first letter');
   // What the map tells it: the contract's names only.
   const events = readFileSync(join(JS, 'ui/platformtrack.js'), 'utf8');
-  const SCHEMA = ['page_view', 'search', 'select_object', 'tab_open', 'layer_toggle', 'language_change', 'trip_start', 'trip_complete', 'drift_start', 'drift_stop', 'ambient_start', 'record_start', 'record_export', 'share', 'time_travel', 'favourite_add', 'favourite_remove', 'passport_stamp', 'badge_earned'];
+  // the contract's whole list (~/space-radar-handoff/platform/CONTRACT.md, internal growth/analytics/events.md)
+  const SCHEMA = ['page_view', 'search', 'select_object', 'tab_open', 'layer_toggle', 'language_change', 'trip_start', 'trip_complete', 'drift_start', 'drift_stop', 'ambient_start', 'record_start', 'record_export', 'share', 'time_travel', 'sign_up', 'login', 'logout', 'favourite_add', 'favourite_remove', 'passport_stamp', 'badge_earned', 'subscribe', 'video_start', 'video_progress', 'video_complete', 'post_read', 'game_start', 'lab_open', 'model_view', 'paywall_view', 'begin_checkout', 'purchase', 'wallpaper_download', 'consent_update', 'embed_copy', 'calendar_add'];
   const pushed = new Set();
   for (const f of readdirSync(join(JS, 'ui'))) {
     if (!f.endsWith('.js')) continue;
