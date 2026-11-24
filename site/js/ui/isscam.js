@@ -10,8 +10,8 @@
 //
 // NOTHING OF YOUTUBE'S BEFORE THE PRESS. The card's row is our own words and our own button: no thumbnail fetched, no
 // script, no preconnect, no frame. The frame is made in openCamera, on the press, from registry/links.yaml `iss-live`
-// `embed:` (YouTube's privacy-enhanced host, www.youtube-nocookie.com, a playlist NASA Live links under "Space Station
-// Views"); the note under the button says where the press connects. When the frame cannot play, the panel still has the
+// `embed:` (YouTube's privacy-enhanced host, www.youtube-nocookie.com: NASA's live video, from the playlist NASA Live links
+// under "Space Station Views"); the note under the button says where the press connects. When the frame cannot play, the panel still has the
 // stream on YouTube's page and NASA Live as plain links, so it degrades to the links the card already had.
 //
 // HONEST ABOUT THE PICTURE. It is NASA's camera, never a simulation: the credit says the globe beside it is our map.

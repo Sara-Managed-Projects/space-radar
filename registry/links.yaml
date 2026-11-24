@@ -24,19 +24,23 @@ links:
     url: "https://www.nasa.gov/live/"
     checked: 2026-10-08
     saw: "NASA Live; under 'Space Station Views': 'Live video from the International Space Station'"
-    # NASA Live's "Space Station Views" links this YouTube playlist (read 2026-11-24): its title is "Live Video from the
-    # International Space Station" and its owner NASA. A playlist and not one video, because NASA restarts the stream
-    # under a new video id; the player plays the playlist's current entry. Terms, read 2026-11-24: NASA's media "generally
+    # NASA Live's "Space Station Views" links a YouTube playlist (read 2026-11-24), "Live Video from the International Space
+    # Station", owner NASA. The player plays ONE video of it, not the playlist: on 2026-11-24 the playlist's first entry was an
+    # ended stream ("This live stream recording is not available", seen in the look run of this branch), and two entries
+    # were live: M3HKLzjvKPc "Live Video from the International Space Station (Official NASA Stream)" (used) and
+    # ROboUHfPUrU "Live High-Definition Views from the International Space Station (Official NASA Stream)", both NASA's
+    # (YouTube oEmbed author "NASA", isLiveNow true). NASA restarts a stream under a new id now and then: when the player
+    # says it is unavailable, the panel's "Open on YouTube" is the playlist, and this row is checked again. Terms, read 2026-11-24: NASA's media "generally
     # are not subject to copyright in the United States" and may not imply NASA endorses us
     # (https://www.nasa.gov/nasa-brand-center/images-and-media/); the player is YouTube's own embed, under YouTube's terms,
     # in its privacy-enhanced mode. NOT SETTLED, for the maintainer: whether the cookie notice should also hold this player
     # behind "marketing" consent; until it does, the press is the visitor's choice and the note under the button says so.
     embed:
-      url: "https://www.youtube-nocookie.com/embed/videoseries?list=PL2aBZuCeDwlQMf6xMgQAUAY_nbHAgW5jz"
+      url: "https://www.youtube-nocookie.com/embed/M3HKLzjvKPc"
       watch: "https://www.youtube.com/playlist?list=PL2aBZuCeDwlQMf6xMgQAUAY_nbHAgW5jz"
       host: www.youtube-nocookie.com
       checked: 2026-11-24
-      saw: "HTTP 200 from the privacy-enhanced embed of the playlist; the playlist page titled 'Live Video from the International Space Station', owner NASA, linked from https://www.nasa.gov/live under 'Space Station Views'"
+      saw: "YouTube oEmbed for M3HKLzjvKPc: 'Live Video from the International Space Station (Official NASA Stream)', author NASA, live now; it is in the playlist 'Live Video from the International Space Station' (owner NASA) that https://www.nasa.gov/live links under 'Space Station Views'"
   - id: earth-today
     for: earth
     words: "See today's Earth"

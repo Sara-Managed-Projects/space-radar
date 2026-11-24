@@ -12,7 +12,7 @@ export const LINKS = {
       "publisher": "NASA",
       "url": "https://www.nasa.gov/live/",
       "embed": {
-        "url": "https://www.youtube-nocookie.com/embed/videoseries?list=PL2aBZuCeDwlQMf6xMgQAUAY_nbHAgW5jz",
+        "url": "https://www.youtube-nocookie.com/embed/M3HKLzjvKPc",
         "watch": "https://www.youtube.com/playlist?list=PL2aBZuCeDwlQMf6xMgQAUAY_nbHAgW5jz",
         "host": "www.youtube-nocookie.com",
         "checked": "2026-11-24"
