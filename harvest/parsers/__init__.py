@@ -13,9 +13,10 @@ A parser module exposes:
                                   that stopped changing (Open Notify did), and a fetch time cannot
                                   see that. None when the body carries no time: nothing is refused.
 
-    pack(body) -> body            optional, and one parser has it (sea_grid): the body to SAVE in
-                                  place of the upstream's, when that is megabytes of repeated
-                                  coordinates. Called after count() and the never-worse guard.
+    pack(body) -> body            optional, and two parsers have it (sea_grid; gcat_launch, which saves
+                                  the orbital attempts of a 13.8 MB launch list): the body to SAVE in
+                                  place of the upstream's, when that is megabytes the page never reads.
+                                  Called after count() and the never-worse guard.
 
 `body` is the parsed JSON when the upstream sent JSON, otherwise the text. A parser never
 normalises: the browser does that, once, in site/js/data/parsers.js. (`pack` drops repetition and

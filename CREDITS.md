@@ -4978,3 +4978,61 @@ CC BY-SA 3.0 IGO. ESA's page, read 2026-11-08, says "Gaia data are distributed u
 archive (<https://www.cosmos.esa.int/web/esdc/terms-and-conditions>). A non-commercial cut cannot be mixed into a
 CC BY-SA file, so nothing was downloaded from the archive for this and the 3D map has no Gaia DR3 tier.
 <!-- b200-f10-stars3d: end -->
+
+## 3f. Every orbital launch since 1957 — GCAT, CC BY 4.0 (read 2026-11-24)
+
+The launch archive (`site/js/ui/launcharchive.js`, `site/data/launches.json`, the saved copy `gcat-launches`, the pages under
+`/launches/`) is GCAT's launch list cut to the orbital launch attempts, and GCAT's site table for where each site is.
+
+- **Credit line:** Launches: GCAT (CC BY 4.0), J. McDowell, planet4589.org/space/gcat
+- **Citation, as GCAT asks for it:** McDowell, Jonathan C., 2020. General Catalog of Artificial Space Objects, Release 1.8.9,
+  https://planet4589.org/space/gcat
+- **Licence:** "GCAT is released under the Creative Commons CC-BY licence. You are free to use the data in GCAT as long as you
+  include a citation to it" (https://planet4589.org/space/gcat/, read 2026-11-24), CC BY 4.0.
+- **Files read:** `tsv/launch/launch.tsv` (the rows whose LaunchCode starts with O) and `tsv/tables/sites.tsv`.
+- **What we changed:** rows that are not orbital attempts are left out; the date is written as ISO to the precision GCAT gives;
+  the vehicle and its variant are joined; GCAT's state codes are mapped to ISO 3166 codes for the country's name. Nothing is
+  filled or corrected. The arcs the replay draws are ours and illustrative (`site/js/scene/launcharcs.js` says how).
+
+
+## 3f. The eclipse of 2 August 2027 — NASA's Besselian elements, Natural Earth's places (2026-11-24)
+
+- **Besselian elements**: "Besselian Elements for the Total Solar Eclipse of 2027 Aug 02", eclipse predictions by Fred
+  Espenak, NASA's GSFC (https://eclipse.gsfc.nasa.gov/SEbeselm/SEbeselm2001/SE2027Aug02Tbeselm.html, read 2026-11-24). NASA
+  content, not copyrighted in the United States. Copied number for number into `site/js/sky/besselian.js`; the path table of
+  the same site (SEpath/SEpath2001/SE2027Aug02Tpath.html) is what `tests/test_eclipse_2027.mjs` holds the arithmetic to.
+- **The method**: the local circumstances of the Explanatory Supplement to the Astronomical Almanac (1961) as set out in
+  J. Meeus, Elements of Solar Eclipses 1951-2200 (1989); written here, no code copied.
+- **Places**: Natural Earth 1:10m populated places v5.1.2, public domain (https://www.naturalearthdata.com/about/terms-of-use/),
+  read 2026-11-24; name, country, latitude and longitude of 587 places, `site/data/eclipse-2027-places.json`.
+- **Test values**: the city pages of timeanddate.com for Luxor, Cadiz, Jeddah and London (read 2026-11-24), used only as
+  numbers to test against; nothing of them is shown.
+
+
+## 3p-2. Near-Earth asteroids and the numbered asteroids' points — NASA/JPL, public domain (read 2026-11-24)
+
+The catalogue "Near-Earth asteroids" (`site/js/ui/neobrowser.js`, forge #560) and its point layer.
+
+- **Orbits, sizes, MOIDs, classes:** the JPL Small-Body Database Query API
+  (`https://ssd-api.jpl.nasa.gov/sbdb_query.api`, group `neo` and the numbered asteroids sorted by H), read 2026-11-24 by
+  `scripts/build-neo-browser.py` and `scripts/build-asteroid-cloud.py`. NASA/JPL content, generally not copyrighted in the
+  United States; the API publishes no licence text. Credit line: "Orbits: NASA/JPL Small-Body Database".
+- **Close approaches:** NASA/JPL CNEOS close-approach data (`cad.api`), the next ten years within 0.05 au, bundled the same day
+  and harvested weekly as `jpl-cad-decade` (`registry/sources.yaml`). Credit line: "Close approaches: NASA/JPL CNEOS".
+- **Sizes from H:** the conversion CNEOS uses, D = 1329 km / sqrt(p) × 10^(-H/5), for albedos 0.25 to 0.05.
+- **Delta-v:** Shoemaker, E. M. and Helin, E. F. (1978), "Earth-approaching asteroids as targets for exploration", NASA
+  CP-2053, in the form Lance Benner publishes his rendezvous table with (echo.jpl.nasa.gov/~lance/delta_v/). Written here from
+  the published formulas; the test checks six of Benner's published values. The idea of ranking asteroids by it is Asterank's;
+  none of its data or code is used (its repository is MIT-licensed; its catalogue states no licence).
+
+
+## 4.7b The exoplanet explorer's extra columns — NASA Exoplanet Archive, read 2026-11-24
+
+- `site/data/exoplanets-explorer.json` (built by `scripts/build-exo-explorer.py`, forge #564): four columns of the same
+  **Planetary Systems Composite Parameters** table as §4.7 for 6 473 planets: `pl_orbsmax` (orbit size, au), `pl_insol`
+  (starlight received, Earth = 1), `pl_eqt` (equilibrium temperature, K) and `st_mass` (star mass, Suns), from
+  `https://exoplanetarchive.ipac.caltech.edu/TAP/sync`. Same terms and credit as §4.7: publicly available, the Archive asks
+  for its acknowledgement and the table's DOI, 10.26133/NEA13. Some of these values the Archive calculated from other
+  columns of the same row; the explorer says so.
+- The explorer's habitable-zone band is Kopparapu et al. 2014 (ApJ Letters 787, L29), the coefficients §4.7 already
+  lists for the star systems, drawn as starlight against the star's temperature.

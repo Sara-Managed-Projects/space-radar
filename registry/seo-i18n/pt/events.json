@@ -298,5 +298,13 @@
  "dc21c5af7e": "magnitude {n1}, a {n2}° do Sol, céu do entardecer, em Sagitário",
  "aee6b0cce1": "Vênus {n1} UA, Marte {n2} UA",
  "44efad8e76": "Uma conjunção é quando dois corpos aparecem juntos no céu. Só parecem perto: Vênus está a {n1} UA da Terra e Marte a {n2} UA, um na frente do outro visto daqui, e muito distantes no espaço.",
- "c84e805bb1": "Olhe para o oeste, baixo, depois do pôr do Sol. Os dois estão a menos de {n1}° do Sol, então um horizonte limpo ajuda; a maior aproximação é dada em UT, e o par continua perto por vários dias antes e depois."
+ "c84e805bb1": "Olhe para o oeste, baixo, depois do pôr do Sol. Os dois estão a menos de {n1}° do Sol, então um horizonte limpo ajuda; a maior aproximação é dada em UT, e o par continua perto por vários dias antes e depois.",
+ "378d09abad": "Vou ver? Vinte lugares",
+ "0d2b45f141": "O que vinte lugares ao longo da faixa e ao redor dela vão ver, calculado a partir dos elementos besselianos da NASA para este eclipse, a mesma conta do verificador do mapa. Para qualquer outro lugar, digite o nome dele lá.",
+ "b6df447b08": "Verifique o seu lugar no mapa",
+ "c32a0147f2": "Lugar",
+ "c079098c3d": "O que se vê",
+ "8574859b6a": "Sol coberto",
+ "b25928c699": "Total",
+ "40a4b78e4f": "{n1} min {n2} s"
 }

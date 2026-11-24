@@ -86,6 +86,46 @@ tagged, and their dates are the day the last change in each landed.
 - **Two new feeds, saved by the harvester:** `celestrak-socrates` (the first 400 kB of SOCRATES Plus once a day, by an HTTP Range
   request; never asked for by a visitor's browser) and `eonet-storms-floods`; and two summaries counted from the catalogue's copy,
   `state-of-space` and `reentry-watch` (`harvest/publish.py` rule 6). They are published once the harvester is redeployed.
+- **Every orbital launch since 1957.** The Earth tab has a new door, "Every launch since 1957": a table of all 7 223 orbital
+  launch attempts in GCAT (Jonathan McDowell's General Catalog of Artificial Space Objects, CC BY 4.0), with the date, the
+  rocket, the launch site, the payload and the outcome, sorted on any column and filtered by outcome, decade or year, the launch
+  site's country and words. Choosing a row flies the globe to its launch site. "Replay" plays the years on the globe, each launch
+  an arc rising from its site (illustrative, and the page says how it is drawn); the slider steps through the years, and under
+  reduced motion it is the only control. A link opens a year: `#cat=launches:1969`. The data is our weekly saved copy of GCAT's
+  launch list (`gcat-launches`), or the copy bundled with the map when there is none. New pages: /launches/ (year by year, the
+  countries, the most flown rockets, the latest launches) and one page for every year since 1957.
+
+
+- **A sky calendar, and "will I see it" for the eclipse of 2 August 2027.** The Tonight tab has two new doors under
+  Catalogues. The sky calendar shows the dated events of the /events/ pages (eclipses, meteor showers, full Moons, planets
+  close together, solstices, mission days) and the launches the map holds, one month at a time in UTC, with a chip per kind;
+  a row opens the map at that moment, "Add to calendar" saves one .ics, and each chip has its own feed to subscribe to
+  (new: `planets.ics`, `seasons.ics`, `missions.ics` beside the old ones). The eclipse checker takes a town by name, from the
+  map's cities and 587 Natural Earth places that see the eclipse, or your location when you ask, and says whether it is
+  total, partial or missed, how much of the Sun is covered, the four contacts and the maximum in UTC and your time, how long
+  totality lasts and how high the Sun stands, worked out in the page from NASA's Besselian elements. Nothing you type or
+  share leaves the page. Links: `#cat=calendar`, `#cat=calendar:2027-08`, `#cat=eclipse`, `#cat=eclipse:Luxor`. The eclipse's
+  page has a table of twenty places too.
+
+
+- **Near-Earth asteroids, as a table.** A catalogue on the Planets tab lists 4 421 of the 43 166 known near-Earth asteroids:
+  every potentially hazardous one, every one about a kilometre across or larger, and every one passing within 0.05 AU of the
+  Earth in the next ten years. Sort by size (measured, or a range estimated from brightness), next pass and its distance in
+  lunar distances, orbit class, MOID, or delta-v (Shoemaker and Helin's estimate of how cheap a rock is to reach); filter by
+  hazard, size, passing close, orbit class or name. A row flies to the asteroid and draws its orbit, and `#cat=asteroids:2024 YR4`
+  opens it. The passes are read from a weekly saved copy of CNEOS's list, with the list bundled with the map as the fallback.
+  A switch adds the brightest numbered asteroids as points, 25 000 at a time up to 99 940 of 895 910, coloured near-Earth,
+  main belt, Trojans and beyond (forge #560).
+
+
+- **The exoplanet explorer.** Under Stars, "Exoplanet explorer" plots every confirmed planet around another star by any two
+  of eleven numbers (year length, size, mass, distance, year found, the star's temperature, size and mass, the orbit's size,
+  the starlight it gets and its temperature), each axis linear or log, coloured by how it was found. The habitable zone is
+  shaded when starlight is on an axis (Kopparapu et al. 2014), a count line says how many planets have no value or cannot
+  sit on a log scale, and a tap on a dot opens the planet's card and flies there, into its drawn system when the map has
+  one. Four views in one tap, a link that keeps the axes (`#cat=exoplanets:insol,starTeff`), and a way to the Lab's
+  habitable-zone simulator. Data: the NASA Exoplanet Archive's composite table, the four extra columns fetched only when
+  the explorer opens (240 kB).
 
 - **A language menu.** The tool rail has a language button (a row of More on a phone) that lists the eleven languages by
   their own names. Choosing one loads the same view again in that language (the selection, the clock, the stage and the

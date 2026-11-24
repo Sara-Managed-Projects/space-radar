@@ -121,6 +121,7 @@ export const COPY = {
     sources: "Fuentes",
     passport: "Pasaporte",
     find: "Encontrar",
+    catalogue: "Catálogos",
     card: "La ficha",
     reopen: "Volver a {name}",
     close: "Cerrar {name}",
@@ -6969,3 +6970,389 @@ Object.assign(COPY.searchRows, {
 COPY.yourStar.skyOn = "El cielo del {date}";
 COPY.yourStar.leftNear = "La luz que ves de ella esta noche salió en {when}: ninguna estrella con nombre está justo a tantos años luz como años tienes, y esta es la más cercana.";
 // The train of 2026-11-24: end
+// research train (catalogues): begin -- machine-translated, agent-reviewed 2026-11-24 (not native-reviewed): forge #551, #553, #560, #564.
+// The catalogues' shared words (copy/en.catalogues.js); each catalogue's own words sit between its markers below.
+COPY.catalogueEntry = {
+  "title": "Catálogos",
+  "launches": "Todos los lanzamientos desde 1957",
+  "calendar": "Calendario del cielo",
+  "eclipse": "Eclipse del 2 de agosto de 2027: ¿lo veré?",
+  "asteroids": "Asteroides cercanos a la Tierra",
+  "exoplanets": "Explorador de exoplanetas"
+};
+COPY.catalogue = {
+  "label": "Catálogos",
+  "titles": {
+    "launches": "Todos los lanzamientos desde 1957",
+    "calendar": "Calendario del cielo",
+    "eclipse": "Eclipse del 2 de agosto de 2027",
+    "asteroids": "Asteroides cercanos a la Tierra",
+    "exoplanets": "Explorador de exoplanetas"
+  },
+  "loading": "Leyendo el catálogo…",
+  "failed": "No se pudo cargar este catálogo. Inténtalo más tarde.",
+  "retry": "Reintentar",
+  "sortTitle": "Ordenar por {col}",
+  "rowTitle": "Ir a {name}",
+  "showing": "Se muestran {shown} de {n}",
+  "showingAll": "{n} filas",
+  "none": "Nada coincide con estos filtros.",
+  "more": "Mostrar {n} más",
+  "all": "Todos",
+  "search": "Filtrar por nombre",
+  "clear": "Quitar filtros",
+  "sourceLabel": "Fuente",
+  "licenceLabel": "Licencia",
+  "sourceTail": ". {text}",
+  "asOf": "A fecha de {date}",
+  "savedCopy": "Nuestra copia guardada, leída el {date}",
+  "bundledCopy": "La copia incluida en el mapa, leída el {date}",
+  "unknown": "—"
+};
+// research train (catalogues): launch archive: begin
+COPY.launchArchive = {
+  "lead": "{n} intentos de lanzamiento orbital desde el Sputnik 1. Elige uno para volar a su sitio de lanzamiento.",
+  "tableLabel": "Intentos de lanzamiento orbital",
+  "columns": {
+    "date": "Fecha (UTC)",
+    "vehicle": "Cohete",
+    "site": "Sitio",
+    "payload": "Carga",
+    "outcome": "Resultado"
+  },
+  "outcome": {
+    "S": "Éxito",
+    "F": "Fallo",
+    "P": "Parcial",
+    "E": "Explosión en la plataforma",
+    "A": "Aborto en la plataforma",
+    "U": "Desconocido"
+  },
+  "partial": "Parcial, {pct} %",
+  "outcomeTitle": "GCAT le cuenta un {pct} % en sus cifras de fiabilidad",
+  "filters": {
+    "outcome": "Resultado",
+    "when": "Cuándo",
+    "country": "Sitio de lanzamiento en",
+    "text": "Cohete, carga o sitio"
+  },
+  "outcomeChips": {
+    "all": "Todos",
+    "S": "Éxito",
+    "F": "Fallo",
+    "P": "Parcial",
+    "other": "Otros"
+  },
+  "whenAny": "Cualquier año",
+  "decades": "Décadas",
+  "years": "Años",
+  "decade": "Los años {d}",
+  "countryAll": "En cualquier lugar",
+  "elsewhere": "En otros lugares",
+  "soviet": "Unión Soviética",
+  "noPlace": "GCAT aún no da un lugar para este sitio, así que el globo no puede ir allí.",
+  "flewTo": "En el globo: {site}, plataforma {pad}",
+  "flewToNoPad": "En el globo: {site}",
+  "replay": {
+    "title": "Repetición en el globo",
+    "play": "Reproducir",
+    "pause": "Pausa",
+    "playTitle": "Reproduce cada lanzamiento desde {year}, dos años por segundo",
+    "year": "Año",
+    "yearValue": "{year}: {n} intentos de lanzamiento",
+    "reduced": "El movimiento está reducido: mueve el control para recorrer los años.",
+    "note": "Arcos ilustrativos: cada uno parte del sitio de lanzamiento real y se dirige como permite la órbita prevista, hacia el ecuador; hacia el este cuando GCAT no da la órbita. Un fallo se queda corto."
+  },
+  "sourceName": "GCAT, Jonathan McDowell",
+  "licence": "CC BY 4.0"
+};
+// research train (catalogues): launch archive: end
+
+// research train (catalogues): sky calendar: begin
+COPY.skyCalendar = {
+  "lead": "Los acontecimientos del cielo con fecha, calculados con la astronomía del propio mapa. Horas en UTC.",
+  "prev": "Mes anterior",
+  "next": "Mes siguiente",
+  "filterLabel": "Mostrar",
+  "cats": {
+    "all": "Todo",
+    "eclipses": "Eclipses",
+    "showers": "Lluvias de estrellas",
+    "moons": "Lunas llenas",
+    "planets": "Planetas",
+    "seasons": "Solsticios",
+    "missions": "Misiones",
+    "launches": "Lanzamientos"
+  },
+  "titles": {
+    "shower": "Máximo de las {shower}",
+    "solarTotal": "Eclipse total de Sol",
+    "solarAnnular": "Eclipse anular de Sol",
+    "solarPartial": "Eclipse parcial de Sol",
+    "lunarTotal": "Eclipse total de Luna",
+    "lunarPartial": "Eclipse parcial de Luna",
+    "fullMoon": "Luna llena",
+    "conjunction": "{a} y {b}, muy juntos",
+    "juneSolstice": "Solsticio de junio",
+    "decemberSolstice": "Solsticio de diciembre",
+    "missionOrbit": "{mission} entra en órbita alrededor de {world}"
+  },
+  "details": {
+    "shower": "Hasta unas {zhr} por hora con un cielo oscuro perfecto",
+    "conjunction": "A {deg}° en su máximo acercamiento",
+    "fullMoon": "A {km} km de la Tierra",
+    "eclipse": "Máximo del eclipse a esta hora",
+    "mission": "La fecha de la agencia, todo el día",
+    "launch": "Tal como lo lista ahora Launch Library 2",
+    "launchRough": "Aún no se ha anunciado una hora exacta"
+  },
+  "when": "{date}, {time} UTC",
+  "allDay": "{date}, todo el día",
+  "open": "Abrir el mapa en ese momento: {name}",
+  "add": "Añadir al calendario",
+  "addTitle": "Añadir {name} a tu calendario (un archivo .ics)",
+  "more": "Saber más",
+  "moreTitle": "La página sobre {name}",
+  "empty": "Nada en nuestro calendario este mes.",
+  "count": "{n} este mes",
+  "subscribe": "Suscribirse",
+  "subscribeLead": "Una app de calendario suscrita vuelve a mirar una vez al día.",
+  "subscribeAll": "Suscribirse a todos los acontecimientos del cielo",
+  "subscribeTitle": "Suscribirse a {name} en tu app de calendario",
+  "sourceName": "El registro de las páginas /events/, calculado con Astronomy Engine",
+  "checked": "revisado por una persona el {date}",
+  "launchesSource": "Lanzamientos: Launch Library 2 (The Space Devs), tal como los tiene el mapa",
+  "showers": {
+    "quadrantids": "Cuadrántidas",
+    "lyrids": "Líridas",
+    "eta-aquariids": "Eta Acuáridas",
+    "alpha-capricornids": "Alfa Capricórnidas",
+    "southern-delta-aquariids": "Delta Acuáridas del Sur",
+    "perseids": "Perseidas",
+    "draconids": "Dracónidas",
+    "orionids": "Oriónidas",
+    "southern-taurids": "Táuridas del Sur",
+    "northern-taurids": "Táuridas del Norte",
+    "leonids": "Leónidas",
+    "geminids": "Gemínidas",
+    "ursids": "Úrsidas"
+  },
+  "feeds": {
+    "sky-events.ics": "Todos los acontecimientos del cielo",
+    "eclipses.ics": "Eclipses de Sol y de Luna",
+    "showers.ics": "Lluvias de estrellas",
+    "moons.ics": "Lunas llenas",
+    "planets.ics": "Planetas muy juntos",
+    "seasons.ics": "Solsticios",
+    "missions.ics": "Acontecimientos de misiones",
+    "sky.ics": "Solsticios, encuentros de planetas y misiones"
+  }
+};
+// research train (catalogues): sky calendar: end
+
+// research train (catalogues): eclipse checker: begin
+COPY.eclipseCheck = {
+  "lead": "El 2 de agosto de 2027 la sombra de la Luna cruza el sur de España, el norte de África y Arabia. Elige un lugar para ver lo que se ve desde allí.",
+  "placeLabel": "Lugar",
+  "placeholder": "Un pueblo o una ciudad",
+  "check": "Comprobar",
+  "useMine": "Usar mi ubicación",
+  "locating": "Preguntando a tu navegador…",
+  "denied": "Tu navegador no ha compartido un lugar.",
+  "noMatch": "No hay ningún lugar con ese nombre en nuestra lista. Prueba con una ciudad más grande cercana.",
+  "suggestions": "Lugares",
+  "placeRow": "{name}, {country}",
+  "yours": "Tu lugar",
+  "at": "En {place}",
+  "total": "Total: {dur} de oscuridad",
+  "annular": "Anular: un anillo de Sol durante {dur}",
+  "partial": "Parcial: {pct} del Sol cubierto",
+  "none": "No se ve desde aquí: la sombra de la Luna no pasa por este lugar.",
+  "below": "No se ve desde aquí: el Sol está bajo el horizonte.",
+  "rises": "El Sol sale con el eclipse ya empezado.",
+  "sets": "El Sol se pone antes de que termine el eclipse.",
+  "low": "El Sol está bajo: necesitas una vista despejada hasta el horizonte.",
+  "rows": {
+    "obscuration": "Sol cubierto",
+    "magnitude": "Magnitud",
+    "c1": "Empieza",
+    "c2": "Empieza la totalidad",
+    "max": "Máximo",
+    "c3": "Termina la totalidad",
+    "c4": "Termina",
+    "duration": "La totalidad dura",
+    "sunAlt": "Altura del Sol en el máximo"
+  },
+  "rowsAnnular": {
+    "c2": "Empieza el anillo",
+    "c3": "Termina el anillo",
+    "duration": "El anillo dura"
+  },
+  "time": "{utc} UTC · {local} tu hora",
+  "dur": "{m} min {s} s",
+  "pct": "{n} %",
+  "deg": "{n}°",
+  "openMap": "Verlo en el globo",
+  "openTitle": "Abrir el mapa en el máximo, sobre la Tierra",
+  "safety": "Mira solo con gafas de eclipse fabricadas según la norma ISO 12312-2. Quítatelas solo mientras el Sol esté cubierto del todo.",
+  "method": "Calculado aquí con los elementos besselianos de la NASA (ΔT 71,7 s), con una precisión de un segundo aproximadamente.",
+  "sourceName": "Predicciones de eclipses del GSFC de la NASA, por Fred Espenak",
+  "licence": "Contenido de la NASA, sin derechos de autor en Estados Unidos",
+  "placesNote": "Lugares de Natural Earth (dominio público) y las ciudades del propio mapa. Lo que escribes se queda en esta página."
+};
+// research train (catalogues): eclipse checker: end
+
+// research train (catalogues): asteroids: begin
+COPY.neo = {
+  "lead": "{rows} de los {neo} asteroides cercanos a la Tierra conocidos: todos los peligrosos, todos los de un kilómetro o más y todos los que pasarán a menos de 0,05 UA en los próximos diez años.",
+  "tableLabel": "Asteroides cercanos a la Tierra",
+  "whichLabel": "Cuáles",
+  "which": {
+    "all": "Todos",
+    "pha": "Peligrosos",
+    "km": "Un kilómetro o más",
+    "close": "Pasan cerca"
+  },
+  "classLabel": "Órbita",
+  "classes": {
+    "APO": "Apolo",
+    "ATE": "Atón",
+    "AMO": "Amor",
+    "IEO": "Atira"
+  },
+  "classTitles": {
+    "APO": "Cruza la órbita de la Tierra desde fuera",
+    "ATE": "Cruza la órbita de la Tierra desde dentro",
+    "AMO": "Se acerca a la órbita de la Tierra desde fuera, sin cruzarla",
+    "IEO": "Toda su órbita queda dentro de la de la Tierra"
+  },
+  "searchPlaceholder": "Apophis, 2024 YR4, 433",
+  "columns": {
+    "name": "Nombre",
+    "size": "Tamaño",
+    "next": "Próximo paso",
+    "dist": "Distancia",
+    "cls": "Órbita",
+    "dv": "Delta-v",
+    "moid": "MOID"
+  },
+  "km": "{n} km",
+  "m": "{n} m",
+  "range": "{min} a {max}",
+  "estimated": "{range} (estimado)",
+  "sizeMeasured": "Medido por el JPL",
+  "sizeEstimated": "Estimado a partir de su brillo (H {h}): una roca clara es el tamaño menor, una oscura el mayor",
+  "ld": "{n} DL",
+  "ldTitle": "{n} veces la distancia a la Luna, {au} UA, a {kms} km/s",
+  "kms": "{n} km/s",
+  "au": "{n} UA",
+  "moidTitle": "Lo más que se acercan las dos órbitas, no un paso",
+  "passes": "{n} pasos en los próximos diez años",
+  "notes": {
+    "size": "Los tamaños son mediciones del JPL cuando existen; si no, un intervalo calculado a partir del brillo, para una roca tan clara como un asteroide rocoso o tan oscura como uno rico en carbono.",
+    "dv": "El delta-v estima lo difícil que es llegar a una roca: el cambio de velocidad desde una órbita baja de la Tierra hasta encontrarse con ella (Shoemaker y Helin, 1978, como lo calcula la tabla de Lance Benner). Una misión real espera su ventana de lanzamiento.",
+    "place": "Al elegir una fila, el mapa vuela hasta la roca y dibuja su órbita. Su posición se calcula a partir de la órbita del JPL con el movimiento de dos cuerpos, así que es inferida y se aleja de la del JPL con los meses desde la fecha de la órbita.",
+    "hazard": "«Peligroso» designa una órbita que se acerca a menos de 0,05 UA de la de la Tierra y una roca de más de unos 140 metros. No es un pronóstico."
+  },
+  "recordWhy": "Está en el catálogo de asteroides cercanos a la Tierra porque {reasons}. La órbita es el ajuste del JPL a observaciones reales; su posición en esa órbita se calcula aquí con el movimiento de dos cuerpos, así que es inferida.",
+  "reasonJoin": ", y ",
+  "reasons": {
+    "pha": "el JPL lo clasifica como potencialmente peligroso",
+    "km": "mide alrededor de un kilómetro o más",
+    "close": "pasa a menos de 0,05 UA de la Tierra en los próximos diez años"
+  },
+  "recordSource": "Base de datos de cuerpos menores del NASA/JPL y acercamientos del CNEOS, leídos el {date}",
+  "cloud": {
+    "title": "Todos los asteroides numerados",
+    "toggle": "Mostrar como puntos los asteroides numerados más brillantes",
+    "shown": "{shown} de {numbered} asteroides numerados, primero los más brillantes (H {h} o más brillantes)",
+    "loading": "Leyendo los puntos…",
+    "failed": "No se pudieron cargar los puntos.",
+    "more": "Añadir {n} más",
+    "all": "Están activos todos los niveles que guardamos",
+    "legend": {
+      "neo": "Cercanos a la Tierra",
+      "belt": "Cinturón principal",
+      "trojan": "Troyanos de Júpiter",
+      "far": "Más allá de Júpiter"
+    },
+    "note": "Solo puntos, calculados a partir de las órbitas del JPL con el movimiento de dos cuerpos y redondeados a una diezmilésima de su distancia al Sol. No son todos los asteroides: faltan los débiles."
+  },
+  "sourceSbdb": "Base de datos de cuerpos menores del NASA/JPL (las órbitas)",
+  "sourceCad": "Acercamientos del NASA/JPL CNEOS (los pasos)",
+  "licence": "Dominio público (NASA/JPL)"
+};
+// research train (catalogues): asteroids: end
+
+// research train (catalogues): exoplanets: begin
+COPY.exoExplorer = {
+  "lead": "Cada planeta confirmado alrededor de otra estrella, dos números cualesquiera frente a frente. Toca un punto para ir allí.",
+  "views": "Vistas",
+  "presets": {
+    "periodRadius": "Duración del año y tamaño",
+    "zone": "Luz de la estrella y estrella (zona habitable)",
+    "massRadius": "Masa y tamaño",
+    "years": "Hallados cada año"
+  },
+  "xLabel": "Horizontal",
+  "yLabel": "Vertical",
+  "scaleLabel": "Escala de {axis}",
+  "linear": "Lineal",
+  "log": "Log",
+  "axes": {
+    "period": "Duración del año",
+    "radius": "Tamaño",
+    "mass": "Masa",
+    "distance": "Distancia",
+    "year": "Año del hallazgo",
+    "starTeff": "Temperatura de la estrella",
+    "starRadius": "Tamaño de la estrella",
+    "aAu": "Tamaño de la órbita",
+    "insol": "Luz recibida",
+    "teq": "Temperatura del planeta",
+    "starMass": "Masa de la estrella"
+  },
+  "units": {
+    "period": "días",
+    "radius": "Tierras",
+    "mass": "Tierras",
+    "distance": "a. l.",
+    "year": "",
+    "starTeff": "K",
+    "starRadius": "Soles",
+    "aAu": "UA",
+    "insol": "Tierra = 1",
+    "teq": "K",
+    "starMass": "Soles"
+  },
+  "axisTitle": "{name} ({unit})",
+  "methods": "Hallado por",
+  "method": {
+    "transit": "Tránsito",
+    "rv": "Bamboleo",
+    "microlensing": "Microlente",
+    "imaging": "Imagen",
+    "other": "Otras vías"
+  },
+  "methodTitle": "Mostrar u ocultar los planetas hallados por {method}",
+  "drawn": "{n} planetas dibujados.",
+  "missing": "{n} no tienen valor en uno de los dos ejes.",
+  "nonPositive": "{n} tienen un valor de cero o menos, que una escala logarítmica no puede colocar.",
+  "hidden": "{n} están ocultos por las fichas de «Hallado por».",
+  "canvasLabel": "{y} frente a {x}: {n} planetas. Las flechas los recorren; Intro abre uno.",
+  "readout": "{name}: {x}, {y}. {method}",
+  "readoutHint": "Señala un punto, o enfoca el gráfico y usa las flechas.",
+  "open": "Abrir {name}",
+  "noRecord": "{name} aún no está en el mapa.",
+  "zoneBoth": "Banda verde: donde el agua líquida podría durar, para cada temperatura de estrella (Kopparapu et al. 2014). Más clara: la banda optimista, más ancha.",
+  "zoneSun": "Banda verde: la zona habitable de una estrella como el Sol (Kopparapu et al. 2014). En las estrellas más frías queda con menos luz.",
+  "zoneNone": "Elige Luz recibida en un eje para ver la zona habitable.",
+  "zoneLab": "Prueba la zona habitable en el Laboratorio",
+  "honesty": "Valores medidos de la tabla combinada del Archivo; el tamaño de la órbita, la luz, la temperatura del planeta y la masa de la estrella son del propio Archivo, y algunos los calculó a partir de los demás. Las masas y tamaños dados solo como límites se dejan fuera.",
+  "extraMissing": "No se pudieron leer las columnas extra: tamaño de la órbita, luz, temperatura del planeta y masa de la estrella no tienen valores.",
+  "source": "NASA Exoplanet Archive, tabla combinada (DOI 10.26133/NEA13)",
+  "licence": "Público; el Archivo pide que se le reconozca"
+};
+// research train (catalogues): exoplanets: end
+
+// research train (catalogues): end

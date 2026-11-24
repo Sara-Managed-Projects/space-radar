@@ -1,0 +1,117 @@
+/* css/catalogue.css -- the catalogues (ui/catalogue.js and the modules it opens; research train "catalogues", forge #551, #553,
+   #560, #564). Fetched with the view (ui/latercss.js), never on a first visit. The table, its sort buttons and the chips are
+   Find's (css/find.css) and the set's (css/controls.css); only what is new is here. Each catalogue's own rules sit below the
+   shared ones, under its own heading. */
+
+.sr-cat { padding: 0 20px 20px; }
+.sr-cat__head { position: sticky; top: 0; z-index: 1; margin: 0 -20px; padding: var(--sp-2) 20px; background: var(--sr-panel-solid); }
+.sr-cat__head > .sr-micro { padding: var(--sp-1) 0 var(--sp-1); }
+.sr-cat__title { margin: 0; font: 600 var(--sr-fs-body)/1.3 var(--sr-font); color: var(--sr-text); }
+.sr-cat__pane[hidden] { display: none; }
+.sr-cat__wait { margin: var(--sp-4) 0 var(--sp-2); font-size: var(--sr-fs-sm); color: var(--sr-text-soft); }
+.sr-cat__pane > .sr-micro, .sr-cat__sect > .sr-micro { padding: var(--sp-4) 0 var(--sp-1); }
+.sr-cat__lead { margin: var(--sp-3) 0 var(--sp-2); font-size: var(--sr-fs-sm); line-height: 1.45; color: var(--sr-text-soft); }
+
+/* The filters: a small label over a row of chips (the Lab's filter rows, made to fit the sidebar). */
+.sr-cat__filter { margin-top: var(--sp-3); }
+.sr-cat__filterlabel { margin: 0; font: 600 var(--sr-fs-sm)/1.2 var(--sr-font-hud); letter-spacing: 0.12em; text-transform: uppercase; color: var(--sr-text-dim); }
+.sr-cat__chips { margin-top: var(--sp-2); }
+.sr-cat__field { display: flex; align-items: center; gap: var(--sp-2); margin-top: var(--sp-3); }
+.sr-cat__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: var(--ui-h-sm);
+  padding: 0 var(--sp-3);
+  font: 400 var(--sr-fs-sm)/1 var(--sr-font);
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius-pill);
+}
+.sr-cat__input:focus-visible { outline: 2px solid var(--sr-atmosphere); outline-offset: 2px; }
+@media (pointer: coarse) { .sr-cat__input { min-height: 44px; font-size: var(--sr-fs-input); } }
+
+/* The table: Find's, with a count line above it and the next rows' button below. */
+.sr-cat__count { margin: var(--sp-3) 0 var(--sp-1); font-size: var(--sr-fs-sm); color: var(--sr-text-soft); }
+.sr-cat__more { margin-top: var(--sp-2); }
+.sr-cat__more[hidden] { display: none; }
+.sr-cat__table th[scope="row"] { max-width: 150px; white-space: normal; }
+.sr-cat__table .sr-find__go { text-align: start; }
+.sr-cat__source { margin-top: var(--sp-4); }
+
+/* research train (catalogues): launch archive: begin */
+/* The replay: the ember button and the year's slider on one line, the year's count under them. */
+.sr-launches__replay { margin-top: var(--sp-2); }
+.sr-launches__bar { display: flex; align-items: center; gap: var(--sp-3); margin-top: var(--sp-2); }
+.sr-launches__bar .ui-range { flex: 1 1 auto; min-width: 0; }
+.sr-launches__play[hidden] { display: none; }
+.sr-launches__yearline { margin: var(--sp-2) 0 0; font: 500 var(--sr-fs-sm)/1.3 var(--sr-font-mono); color: var(--sr-text); }
+.sr-launches__replay .sr-sect__note[hidden] { display: none; }
+.sr-launches__when { margin-top: var(--sp-2); }
+.sr-launches__status:empty { display: none; }
+/* research train (catalogues): launch archive: end */
+
+/* research train (catalogues): sky calendar: begin */
+.sr-cal__nav { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); margin-top: var(--sp-3); }
+.sr-cal__month { flex: 1 1 auto; margin: 0; text-align: center; font: 600 var(--sr-fs-body)/1.3 var(--sr-font); color: var(--sr-text); }
+.sr-cal__row { display: flex; flex-direction: column; }
+.sr-cal__go .ui-row__t { display: flex; flex-direction: column; gap: 2px; }
+.sr-cal__title { color: var(--sr-text); }
+.sr-cal__when { font: 400 var(--sr-fs-sm)/1.3 var(--sr-font-mono); color: var(--sr-text-soft); }
+.sr-cal__detail { font-size: var(--sr-fs-sm); color: var(--sr-text-dim); }
+.sr-cal__acts { display: flex; flex-wrap: wrap; gap: var(--sp-2); padding: 0 var(--sp-3) var(--sp-2); }
+.sr-cal__sub .sr-cat__lead { margin-top: var(--sp-1); }
+.sr-cal__subscribe { margin: var(--sp-1) 0 var(--sp-2); }
+.sr-cal__feeds .ui-row__meta { font-family: var(--sr-font-mono); }
+/* research train (catalogues): sky calendar: end */
+
+/* research train (catalogues): eclipse checker: begin */
+.sr-ecl__form { margin-top: var(--sp-3); }
+.sr-ecl__mine { margin-top: var(--sp-2); }
+.sr-ecl__sugg:empty { display: none; }
+.sr-ecl__result[hidden] { display: none; }
+.sr-ecl__head { margin: 0; font: 600 var(--sr-fs-body)/1.3 var(--sr-font); color: var(--sr-text); }
+.sr-ecl__at { margin: var(--sp-1) 0 var(--sp-2); font-size: var(--sr-fs-sm); color: var(--sr-text-soft); }
+.sr-ecl__facts { display: grid; gap: 0; margin: 0; }
+.sr-ecl__facts > div { display: flex; justify-content: space-between; gap: var(--sp-3); padding: var(--sp-1) 0; border-top: 1px solid var(--sr-line); }
+.sr-ecl__facts dt { font-size: var(--sr-fs-sm); color: var(--sr-text-dim); }
+.sr-ecl__facts dd { margin: 0; text-align: end; font: 400 var(--sr-fs-sm)/1.3 var(--sr-font-mono); color: var(--sr-text); }
+.sr-ecl__see { margin-top: var(--sp-3); }
+.sr-ecl__safety { margin-top: var(--sp-4); }
+/* research train (catalogues): eclipse checker: end */
+
+/* research train (catalogues): asteroids: begin */
+/* The near-Earth asteroids (ui/neobrowser.js): the notes under the table, the point layer's switch and its legend. */
+.sr-cat__notes { margin-top: var(--sp-3); }
+.sr-cat__notes > .sr-sect__note + .sr-sect__note { margin-top: var(--sp-2); }
+.sr-neo__cloud { margin-top: var(--sp-4); }
+.sr-neo__cloud > .ui-opt { margin-top: var(--sp-2); }
+.sr-neo__cloud > .ui-btn { margin-top: var(--sp-2); }
+.sr-neo__cloud > .ui-btn[hidden], .sr-neo__legend[hidden] { display: none; }
+.sr-neo__legend { display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-3); margin: var(--sp-2) 0 0; padding: 0; list-style: none; font-size: var(--sr-fs-sm); color: var(--sr-text-soft); }
+.sr-neo__key { display: inline-flex; align-items: center; gap: var(--sp-2); }
+.sr-neo__dim { opacity: 0.5; }
+/* research train (catalogues): asteroids: end */
+
+/* research train (catalogues): exoplanets: begin */
+/* The explorer (ui/exoexplorer.js): two axis rows, the plot, its readout, and the "Found by" swatches in the class colours. */
+.sr-exo__axes { display: grid; gap: var(--sp-2); margin-top: var(--sp-3); }
+.sr-exo__axis { display: grid; grid-template-columns: 3.5rem minmax(0, 1fr) auto; align-items: center; gap: var(--sp-2); }
+.sr-exo__select { min-width: 0; width: 100%; }
+.sr-exo__figure { margin-top: var(--sp-3); }
+.sr-exo__canvas { display: block; max-width: 100%; border-radius: var(--sr-radius); background: var(--sr-wash); cursor: crosshair; }
+.sr-exo__canvas:focus-visible { outline: 2px solid var(--sr-atmosphere); outline-offset: 2px; }
+.sr-exo__readout { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); margin-top: var(--sp-2); min-height: 40px; }
+.sr-exo__readtext { flex: 1 1 12rem; margin: 0; font-size: var(--sr-fs-sm); line-height: 1.4; color: var(--sr-text-soft); }
+.sr-exo__open[hidden] { display: none; }
+.sr-exo__method { display: inline-flex; align-items: center; gap: var(--sp-2); }
+.sr-exo__sw { display: inline-block; flex: none; width: 10px; height: 10px; border-radius: 50%; }
+.sr-exo__sw--transit { background: var(--sr-exoplanet); }
+.sr-exo__sw--rv { background: var(--sr-probe); }
+.sr-exo__sw--microlensing { background: var(--sr-launch); }
+.sr-exo__sw--imaging { background: var(--sr-site); }
+.sr-exo__sw--other { background: var(--sr-unknown); }
+.sr-exo__method[aria-pressed='false'] .sr-exo__sw { opacity: 0.3; }
+.sr-exo__zone { margin-top: var(--sp-3); }
+.sr-exo__labline { margin: var(--sp-2) 0 0; font-size: var(--sr-fs-sm); }
+/* research train (catalogues): exoplanets: end */

@@ -126,6 +126,7 @@ export const COPY = {
     "sources": "数据源",
     "passport": "护照",
     "find": "查找",
+    "catalogue": "目录",
     "card": "卡片",
     "reopen": "回到{name}",
     "close": "关闭{name}",
@@ -7098,3 +7099,389 @@ Object.assign(COPY.searchRows, {
 COPY.yourStar.skyOn = "{date}的星空";
 COPY.yourStar.leftNear = "你今晚看到的它的光，是在{when}出发的：没有哪颗有名字的恒星恰好与你的年龄同样多光年远，这颗是最接近的。";
 // The train of 2026-11-24: end
+// research train (catalogues): begin -- machine-translated, agent-reviewed 2026-11-24 (not native-reviewed): forge #551, #553, #560, #564.
+// The catalogues' shared words (copy/en.catalogues.js); each catalogue's own words sit between its markers below.
+COPY.catalogueEntry = {
+  "title": "目录",
+  "launches": "1957 年以来的每一次发射",
+  "calendar": "星空日历",
+  "eclipse": "2027 年 8 月 2 日日食：我能看到吗？",
+  "asteroids": "近地小行星",
+  "exoplanets": "系外行星浏览器"
+};
+COPY.catalogue = {
+  "label": "目录",
+  "titles": {
+    "launches": "1957 年以来的每一次发射",
+    "calendar": "星空日历",
+    "eclipse": "2027 年 8 月 2 日日食",
+    "asteroids": "近地小行星",
+    "exoplanets": "系外行星浏览器"
+  },
+  "loading": "正在读取目录…",
+  "failed": "无法加载这个目录。请稍后再试。",
+  "retry": "重试",
+  "sortTitle": "按{col}排序",
+  "rowTitle": "前往{name}",
+  "showing": "显示 {n} 条中的 {shown} 条",
+  "showingAll": "{n} 行",
+  "none": "没有符合这些筛选条件的结果。",
+  "more": "再显示 {n} 条",
+  "all": "全部",
+  "search": "按名称筛选",
+  "clear": "清除筛选",
+  "sourceLabel": "来源",
+  "licenceLabel": "许可",
+  "sourceTail": "。{text}",
+  "asOf": "截至 {date}",
+  "savedCopy": "我们保存的副本，读取于 {date}",
+  "bundledCopy": "地图自带的副本，读取于 {date}",
+  "unknown": "—"
+};
+// research train (catalogues): launch archive: begin
+COPY.launchArchive = {
+  "lead": "自 Sputnik 1 号以来共有 {n} 次轨道发射尝试。选一次，飞到它的发射场。",
+  "tableLabel": "轨道发射尝试",
+  "columns": {
+    "date": "日期 (UTC)",
+    "vehicle": "火箭",
+    "site": "发射场",
+    "payload": "有效载荷",
+    "outcome": "结果"
+  },
+  "outcome": {
+    "S": "成功",
+    "F": "失败",
+    "P": "部分成功",
+    "E": "发射台爆炸",
+    "A": "发射台中止",
+    "U": "未知"
+  },
+  "partial": "部分成功，{pct} %",
+  "outcomeTitle": "GCAT 在可靠性统计中按 {pct} % 计",
+  "filters": {
+    "outcome": "结果",
+    "when": "时间",
+    "country": "发射场所在",
+    "text": "火箭、载荷或发射场"
+  },
+  "outcomeChips": {
+    "all": "全部",
+    "S": "成功",
+    "F": "失败",
+    "P": "部分成功",
+    "other": "其他"
+  },
+  "whenAny": "任何年份",
+  "decades": "年代",
+  "years": "年份",
+  "decade": "{d} 年代",
+  "countryAll": "任何地方",
+  "elsewhere": "其他地方",
+  "soviet": "苏联",
+  "noPlace": "GCAT 还没有给出这个发射场的位置，所以地球仪无法前往。",
+  "flewTo": "在地球上：{site}，发射台 {pad}",
+  "flewToNoPad": "在地球上：{site}",
+  "replay": {
+    "title": "在地球上重放",
+    "play": "重放",
+    "pause": "暂停",
+    "playTitle": "从 {year} 年起重放每一次发射，每秒两年",
+    "year": "年份",
+    "yearValue": "{year} 年：{n} 次发射尝试",
+    "reduced": "已减少动态效果：拖动滑块逐年查看。",
+    "note": "示意弧线：每条都从真实的发射场出发，按计划轨道允许的方向朝赤道延伸；GCAT 未给出轨道时一律向正东。失败的弧线会提前中断。"
+  },
+  "sourceName": "GCAT，Jonathan McDowell",
+  "licence": "CC BY 4.0"
+};
+// research train (catalogues): launch archive: end
+
+// research train (catalogues): sky calendar: begin
+COPY.skyCalendar = {
+  "lead": "天空中有日期的事件，用地图自己的天文计算得出。时间为 UTC。",
+  "prev": "上个月",
+  "next": "下个月",
+  "filterLabel": "显示",
+  "cats": {
+    "all": "全部",
+    "eclipses": "日月食",
+    "showers": "流星雨",
+    "moons": "满月",
+    "planets": "行星",
+    "seasons": "至日",
+    "missions": "任务",
+    "launches": "发射"
+  },
+  "titles": {
+    "shower": "{shower}极大",
+    "solarTotal": "日全食",
+    "solarAnnular": "日环食",
+    "solarPartial": "日偏食",
+    "lunarTotal": "月全食",
+    "lunarPartial": "月偏食",
+    "fullMoon": "满月",
+    "conjunction": "{a}与{b}相互靠近",
+    "juneSolstice": "六月至日（夏至）",
+    "decemberSolstice": "十二月至日（冬至）",
+    "missionOrbit": "{mission}进入环绕{world}的轨道"
+  },
+  "details": {
+    "shower": "在完美的暗夜天空下每小时最多约 {zhr} 颗",
+    "conjunction": "最接近时相距 {deg}°",
+    "fullMoon": "距地球 {km} 公里",
+    "eclipse": "食甚在此时",
+    "mission": "航天机构给出的日期，全天",
+    "launch": "按 Launch Library 2 目前所列",
+    "launchRough": "尚未公布确切时间"
+  },
+  "when": "{date}，{time} UTC",
+  "allDay": "{date}，全天",
+  "open": "在那一刻打开地图：{name}",
+  "add": "添加到日历",
+  "addTitle": "把{name}添加到你的日历（一个 .ics 文件）",
+  "more": "了解更多",
+  "moreTitle": "关于{name}的页面",
+  "empty": "本月我们的日历中没有事件。",
+  "count": "本月 {n} 个",
+  "subscribe": "订阅",
+  "subscribeLead": "订阅后，日历应用每天会再查看一次。",
+  "subscribeAll": "订阅所有天象事件",
+  "subscribeTitle": "在你的日历应用中订阅{name}",
+  "sourceName": "/events/ 页面的登记表，用 Astronomy Engine 计算",
+  "checked": "由人工于 {date} 核对",
+  "launchesSource": "发射：Launch Library 2（The Space Devs），即地图所持有的数据",
+  "showers": {
+    "quadrantids": "象限仪座流星雨",
+    "lyrids": "天琴座流星雨",
+    "eta-aquariids": "宝瓶座η流星雨",
+    "alpha-capricornids": "摩羯座α流星雨",
+    "southern-delta-aquariids": "南宝瓶座δ流星雨",
+    "perseids": "英仙座流星雨",
+    "draconids": "天龙座流星雨",
+    "orionids": "猎户座流星雨",
+    "southern-taurids": "南金牛座流星雨",
+    "northern-taurids": "北金牛座流星雨",
+    "leonids": "狮子座流星雨",
+    "geminids": "双子座流星雨",
+    "ursids": "小熊座流星雨"
+  },
+  "feeds": {
+    "sky-events.ics": "所有天象事件",
+    "eclipses.ics": "日食和月食",
+    "showers.ics": "流星雨",
+    "moons.ics": "满月",
+    "planets.ics": "相互靠近的行星",
+    "seasons.ics": "至日",
+    "missions.ics": "任务事件",
+    "sky.ics": "至日、行星相合与任务"
+  }
+};
+// research train (catalogues): sky calendar: end
+
+// research train (catalogues): eclipse checker: begin
+COPY.eclipseCheck = {
+  "lead": "2027 年 8 月 2 日，月影将掠过西班牙南部、北非和阿拉伯半岛。选择一个地点，看看那里能看到什么。",
+  "placeLabel": "地点",
+  "placeholder": "城镇或城市",
+  "check": "查看",
+  "useMine": "使用我的位置",
+  "locating": "正在询问你的浏览器…",
+  "denied": "你的浏览器没有提供位置。",
+  "noMatch": "我们的列表里没有这个名字的地点。试试附近更大的城市。",
+  "suggestions": "地点",
+  "placeRow": "{name}，{country}",
+  "yours": "你的位置",
+  "at": "地点：{place}",
+  "total": "全食：{dur}的黑暗",
+  "annular": "环食：太阳光环持续 {dur}",
+  "partial": "偏食：太阳被遮住 {pct}",
+  "none": "这里看不到：月影没有经过这个地方。",
+  "below": "这里看不到：太阳在地平线以下。",
+  "rises": "太阳升起时，日食已经开始。",
+  "sets": "日食结束前太阳就落下了。",
+  "low": "太阳很低：你需要一直望到地平线的开阔视野。",
+  "rows": {
+    "obscuration": "太阳被遮比例",
+    "magnitude": "食分",
+    "c1": "初亏",
+    "c2": "食既",
+    "max": "食甚",
+    "c3": "生光",
+    "c4": "复圆",
+    "duration": "全食持续",
+    "sunAlt": "食甚时太阳高度"
+  },
+  "rowsAnnular": {
+    "c2": "环食开始",
+    "c3": "环食结束",
+    "duration": "环食持续"
+  },
+  "time": "{utc} UTC · 你的时间 {local}",
+  "dur": "{m} 分 {s} 秒",
+  "pct": "{n}%",
+  "deg": "{n}°",
+  "openMap": "在地球上查看",
+  "openTitle": "在食甚时刻打开地图，位于地球上方",
+  "safety": "只能透过符合 ISO 12312-2 标准的日食眼镜观看。只有在太阳被完全遮住时才能摘下。",
+  "method": "在这里根据 NASA 的贝塞尔根数计算（ΔT 71.7 秒），精确到约一秒。",
+  "sourceName": "NASA 戈达德太空飞行中心的日食预报，Fred Espenak 编制",
+  "licence": "NASA 内容，在美国不受版权保护",
+  "placesNote": "地点来自 Natural Earth（公有领域）和地图自带的城市。你输入的内容只留在本页面。"
+};
+// research train (catalogues): eclipse checker: end
+
+// research train (catalogues): asteroids: begin
+COPY.neo = {
+  "lead": "已知 {neo} 颗近地小行星中的 {rows} 颗：所有具潜在威胁的、所有直径约一公里或更大的，以及未来十年内从 0.05 天文单位以内经过的。",
+  "tableLabel": "近地小行星",
+  "whichLabel": "哪些",
+  "which": {
+    "all": "全部",
+    "pha": "潜在威胁",
+    "km": "一公里或更大",
+    "close": "近距离经过"
+  },
+  "classLabel": "轨道",
+  "classes": {
+    "APO": "阿波罗型",
+    "ATE": "阿登型",
+    "AMO": "阿莫尔型",
+    "IEO": "阿提拉型"
+  },
+  "classTitles": {
+    "APO": "从外侧穿过地球轨道",
+    "ATE": "从内侧穿过地球轨道",
+    "AMO": "从外侧接近地球轨道，但从不穿过",
+    "IEO": "整条轨道都在地球轨道以内"
+  },
+  "searchPlaceholder": "Apophis, 2024 YR4, 433",
+  "columns": {
+    "name": "名称",
+    "size": "大小",
+    "next": "下次经过",
+    "dist": "距离",
+    "cls": "轨道",
+    "dv": "Delta-v",
+    "moid": "MOID"
+  },
+  "km": "{n} 公里",
+  "m": "{n} 米",
+  "range": "{min} 至 {max}",
+  "estimated": "{range}（估计）",
+  "sizeMeasured": "JPL 测得",
+  "sizeEstimated": "根据亮度估计（H {h}）：明亮的岩石取较小值，暗的取较大值",
+  "ld": "{n} 月距",
+  "ldTitle": "月球距离的 {n} 倍，{au} 天文单位，速度 {kms} 公里/秒",
+  "kms": "{n} 公里/秒",
+  "au": "{n} 天文单位",
+  "moidTitle": "两条轨道彼此最近的距离，并非一次经过",
+  "passes": "未来十年经过 {n} 次",
+  "notes": {
+    "size": "有 JPL 测量值时用测量值，否则按亮度推算一个范围：岩石可能像石质小行星一样亮，也可能像富碳小行星一样暗。",
+    "dv": "Delta-v 估计到达一块岩石有多难：从近地轨道到与它会合所需的速度变化（Shoemaker 与 Helin，1978，按 Lance Benner 的表格算法）。真正的任务还要等发射窗口。",
+    "place": "选中一行会飞到那里并画出它的轨道。它的位置由 JPL 的轨道按二体运动推算，因此是推断的，并随着距轨道历元的月数增加而与 JPL 的位置逐渐偏离。",
+    "hazard": "“潜在威胁”指轨道与地球轨道的距离在 0.05 天文单位以内、且直径大于约 140 米的岩石。这不是预报。"
+  },
+  "recordWhy": "它在近地小行星目录中，因为{reasons}。轨道是 JPL 根据真实观测拟合的；它在轨道上的位置在这里按二体运动推算，因此是推断的。",
+  "reasonJoin": "，并且",
+  "reasons": {
+    "pha": "JPL 将它列为具潜在威胁",
+    "km": "它直径约一公里或更大",
+    "close": "它在未来十年内会从距地球 0.05 天文单位以内经过"
+  },
+  "recordSource": "NASA/JPL 小天体数据库与 CNEOS 近距离接近数据，读取于 {date}",
+  "cloud": {
+    "title": "所有已编号小行星",
+    "toggle": "以点显示最亮的已编号小行星",
+    "shown": "{numbered} 颗已编号小行星中的 {shown} 颗，最亮的优先（H {h} 或更亮）",
+    "loading": "正在读取这些点…",
+    "failed": "无法加载这些点。",
+    "more": "再加 {n} 颗",
+    "all": "我们保存的所有层级都已显示",
+    "legend": {
+      "neo": "近地",
+      "belt": "主带",
+      "trojan": "木星特洛伊",
+      "far": "木星以外"
+    },
+    "note": "只是点：由 JPL 的轨道按二体运动推算，并四舍五入到其日心距离的万分之一。并非所有小行星：暗的没有画出。"
+  },
+  "sourceSbdb": "NASA/JPL 小天体数据库（轨道）",
+  "sourceCad": "NASA/JPL CNEOS 近距离接近（经过）",
+  "licence": "公有领域（NASA/JPL）"
+};
+// research train (catalogues): asteroids: end
+
+// research train (catalogues): exoplanets: begin
+COPY.exoExplorer = {
+  "lead": "其他恒星周围每一颗已确认的行星，任选两个数值对照。点一个点就飞过去。",
+  "views": "视图",
+  "presets": {
+    "periodRadius": "一年的长度与大小",
+    "zone": "星光与恒星（宜居带）",
+    "massRadius": "质量与大小",
+    "years": "每年的发现"
+  },
+  "xLabel": "横轴",
+  "yLabel": "纵轴",
+  "scaleLabel": "{axis}的刻度",
+  "linear": "线性",
+  "log": "对数",
+  "axes": {
+    "period": "一年的长度",
+    "radius": "大小",
+    "mass": "质量",
+    "distance": "距离",
+    "year": "发现年份",
+    "starTeff": "恒星温度",
+    "starRadius": "恒星大小",
+    "aAu": "轨道大小",
+    "insol": "接收的星光",
+    "teq": "行星温度",
+    "starMass": "恒星质量"
+  },
+  "units": {
+    "period": "天",
+    "radius": "地球",
+    "mass": "地球",
+    "distance": "光年",
+    "year": "",
+    "starTeff": "K",
+    "starRadius": "太阳",
+    "aAu": "天文单位",
+    "insol": "地球 = 1",
+    "teq": "K",
+    "starMass": "太阳"
+  },
+  "axisTitle": "{name}（{unit}）",
+  "methods": "发现方法",
+  "method": {
+    "transit": "凌星",
+    "rv": "摆动",
+    "microlensing": "微引力透镜",
+    "imaging": "直接成像",
+    "other": "其他方法"
+  },
+  "methodTitle": "显示或隐藏用{method}发现的行星",
+  "drawn": "已画出 {n} 颗行星。",
+  "missing": "{n} 颗在两条轴之一上没有数值。",
+  "nonPositive": "{n} 颗的数值为零或更小，对数刻度无法放置。",
+  "hidden": "{n} 颗被“发现方法”按钮隐藏。",
+  "canvasLabel": "{y} 对 {x}：{n} 颗行星。方向键逐个浏览，回车键打开。",
+  "readout": "{name}：{x}，{y}。{method}",
+  "readoutHint": "指向一个点，或聚焦图表后用方向键。",
+  "open": "打开{name}",
+  "noRecord": "{name}还不在地图上。",
+  "zoneBoth": "绿色带：对每种恒星温度，液态水可能长期存在的范围（Kopparapu et al. 2014）。较浅的是更宽的乐观范围。",
+  "zoneSun": "绿色带：类太阳恒星的宜居带（Kopparapu et al. 2014）。较冷的恒星，宜居带对应更少的星光。",
+  "zoneNone": "在一条轴上选择“接收的星光”即可看到宜居带。",
+  "zoneLab": "到实验室里试试宜居带",
+  "honesty": "数值取自档案馆的综合表；轨道大小、星光、行星温度和恒星质量是档案馆自己的数值，其中一些由其他列推算而来。只给出上下限的质量和大小不画出。",
+  "extraMissing": "无法读取附加列：轨道大小、星光、行星温度和恒星质量没有数值。",
+  "source": "NASA 系外行星档案馆，综合表（DOI 10.26133/NEA13）",
+  "licence": "公开；档案馆请求注明出处"
+};
+// research train (catalogues): exoplanets: end
+
+// research train (catalogues): end

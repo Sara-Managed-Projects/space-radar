@@ -204,7 +204,7 @@ def run_source(store, source: Source, prev: snap.Entry, *, now: datetime, dry_ru
     if frozen:
         return done(_carry(prev, status="refused", error=frozen))
 
-    # ONE parser packs (harvest/parsers/sea_grid.py says why: megabytes of repeated coordinates). It is
+    # Two parsers pack (harvest/parsers/sea_grid.py and gcat_launch.py say why: megabytes the page never reads). It is
     # asked after the count and the guard, so what was counted is what the upstream sent.
     if callable(getattr(parser, "pack", None)):
         try:

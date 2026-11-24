@@ -603,6 +603,29 @@
         "reentries.json"
       ],
       "enabled": false
+    },
+    {
+      "id": "gcat-launches",
+      "url": "https://planet4589.org/space/gcat/tsv/launch/launch.tsv",
+      "auth": "none",
+      "refresh": "168h",
+      "freshness_max": "720h",
+      "content_max_age": "60d",
+      "parser": "gcat_launch",
+      "outputs": [
+        "gcat-launches.json"
+      ]
+    },
+    {
+      "id": "jpl-cad-decade",
+      "url": "https://ssd-api.jpl.nasa.gov/cad.api?dist-max=0.05&date-min=now&date-max=%2B3650&sort=date&diameter=true&fullname=true",
+      "auth": "none",
+      "refresh": "168h",
+      "freshness_max": "720h",
+      "parser": "jpl_cad",
+      "outputs": [
+        "close-approaches-decade.json"
+      ]
     }
   ]
 }

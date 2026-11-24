@@ -1163,6 +1163,20 @@ export async function boot({ setStatus } = {}) {
   };
   if (window.__srLayersReady) opsLater(); else window.addEventListener('sr:layers-ready', opsLater, { once: true });
   // research train (ops): end
+  // research train (catalogues): begin -- the launch archive, the sky calendar and the eclipse checker, the asteroids and the
+  // exoplanets (ui/catalogue.js; forge #551, #553, #560, #564): a pushed view like Find, its doors on the explore tabs
+  // (ui/catalogueentry.js), and a link with `cat=` opens it.
+  let catP = null;
+  ctx.wantCatalogue = () => catP || (catP = import('./ui/catalogue.js')
+    .then((m) => m.createCatalogue(ctx, shell.host('catalogue')))
+    .catch((e) => { catP = null; console.warn('the catalogues did not load', e); return null; }));
+  const catLater = () => {
+    afterFirstVisit(TODAY_MS, () => import('./ui/catalogueentry.js').then((m) => m.mountCatalogueEntry(ctx)).catch((e) => console.warn('the catalogue rows did not load', e)));
+    const k = readUrlKeys().cat;
+    if (!embed && k) ctx.wantCatalogue().then((c) => c && c.openLink(k));
+  };
+  if (window.__srLayersReady) catLater(); else window.addEventListener('sr:layers-ready', catLater, { once: true });
+  // research train (catalogues): end
   // b200-f6-learn: begin -- forge #160: a `#play=` link opens a daily challenge (ui/play.js), fetched for that link only;
   // `sr-play-on` at once keeps the first visit's controls hint off the card (ui/keyhint.js whyNot)
   const playLink = () => { const k = readUrlKeys().play; if (!k || embed) return; document.documentElement.classList.add('sr-play-on'); import('./ui/play.js').then((m) => m.openPlay(ctx, k)).catch((e) => { document.documentElement.classList.remove('sr-play-on'); console.warn('play did not load', e); }); };

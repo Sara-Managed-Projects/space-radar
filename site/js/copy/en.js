@@ -627,6 +627,7 @@ export const COPY = {
     sources: 'Sources',
     passport: 'Passport',
     find: 'Find',
+    catalogue: 'Catalogues',
     card: 'The card',
     // The open card's row while another view shows, and its close.
     reopen: 'Back to {name}',

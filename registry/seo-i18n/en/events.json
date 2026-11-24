@@ -298,5 +298,13 @@
  "dc21c5af7e": "magnitude {n1}, {n2}° from the Sun, evening sky, in Sagittarius",
  "aee6b0cce1": "Venus {n1} AU, Mars {n2} AU",
  "44efad8e76": "A conjunction is two bodies appearing close together in the sky. They only look close: Venus is {n1} AU from the Earth and Mars {n2} AU, one in front of the other as seen from here, and a long way apart in space.",
- "c84e805bb1": "Look in the west, low, after sunset. Both are within {n1}° of the Sun, so a clear horizon helps; the closest approach is given in UT, and the pair stays close for several days either side."
+ "c84e805bb1": "Look in the west, low, after sunset. Both are within {n1}° of the Sun, so a clear horizon helps; the closest approach is given in UT, and the pair stays close for several days either side.",
+ "378d09abad": "Will I see it? Twenty places",
+ "0d2b45f141": "What twenty places along the path and round it will see, worked out from NASA's Besselian elements of this eclipse, the same arithmetic as the map's checker. For any other place, type its name there.",
+ "b6df447b08": "Check your place on the map",
+ "c32a0147f2": "Place",
+ "c079098c3d": "What it sees",
+ "8574859b6a": "Sun covered",
+ "b25928c699": "Total",
+ "40a4b78e4f": "{n1} min {n2} s"
 }
