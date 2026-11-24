@@ -31,10 +31,10 @@ const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
 // ---- the stylesheets, as rules ------------------------------------------------------------------
-const FILES = ['site/css/site.css', 'site/css/ui.css', 'site/css/share.css', 'site/css/keyhint.css', 'site/css/embed.css', 'site/css/autopilot.css', 'site/css/drift.css', 'site/css/onboarding.css', 'site/css/finishers.css', 'site/css/searchkinds.css', 'site/css/compare.css', 'site/css/subscribe.css', 'site/css/controls.css', 'site/css/coffee.css', 'site/css/live.css']; // live.css: the research train's rows and the station's camera panel (forge #544, #546, #547, #548); 0077 W2-d; subscribe.css: the email updates' popover (ui/subscribepop.js)
+const FILES = ['site/css/site.css', 'site/css/ui.css', 'site/css/share.css', 'site/css/keyhint.css', 'site/css/embed.css', 'site/css/autopilot.css', 'site/css/drift.css', 'site/css/onboarding.css', 'site/css/finishers.css', 'site/css/searchkinds.css', 'site/css/compare.css', 'site/css/subscribe.css', 'site/css/controls.css', 'site/css/coffee.css', 'site/css/live.css', 'site/css/yourstar.css', 'site/css/networks.css']; // live.css: the research train's rows and the station's camera panel (forge #544, #546, #547, #548); yourstar.css and networks.css: the birthday star and the network chips (forge internal #545, #555); 0077 W2-d; subscribe.css: the email updates' popover (ui/subscribepop.js)
 // b200-s2-guards: begin -- the stylesheets that come with their module (ui/latercss.js) hold the boxes of that module's
 // controls: unread, the flight editor's 44 px buttons were "no rule", and the Find table's 32 px ones were never measured.
-FILES.push(...['deep', 'exoface', 'find', 'ground', 'make', 'moments', 'play', 'realsound', 'skystory', 'wikicard', 'worlds', 'xr'].map((n) => `site/css/${n}.css`));
+FILES.push(...['cardmedia', 'deep', 'exoface', 'find', 'ground', 'make', 'moments', 'play', 'realsound', 'skystory', 'wikicard', 'worlds', 'xr'].map((n) => `site/css/${n}.css`));
 for (const f of readdirSync(join(ROOT, 'site/js'), { recursive: true }).filter((n) => n.endsWith('.js'))) {
   for (const m of readFileSync(join(ROOT, 'site/js', f), 'utf8').matchAll(/loadCss\('([\w-]+)'\)/g)) check(FILES.includes(`site/css/${m[1]}.css`), `site/js/${f} loads css/${m[1]}.css, which this test does not read`);
 }

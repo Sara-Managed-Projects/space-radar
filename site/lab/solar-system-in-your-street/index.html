@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Solar System in Your Street | Space Radar Lab</title>
+<meta name="description" content="Pick the space you have, from a room to a long street, and see how big and how far apart the Sun and the planets are at one scale.">
+<meta name="sr-lab-category" content="Scale and distance">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b0e14">
+<link rel="preload" href="../../fonts/inter-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../../fonts/barlow-semi-condensed-600-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../css/tokens.css">
+<link rel="stylesheet" href="../../css/static.css">
+<link rel="stylesheet" href="../../css/lab.css">
+<style>
+.sim .pick{margin:0 0 1.2rem;padding:0;border:0;min-width:0}
+.sim .pick legend{margin:0 0 .6rem;padding:0;font-weight:600}
+.sim .presets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem;margin:0 0 .8rem}
+.sim .presets button,.sim .quiet{display:grid;justify-items:start;align-content:center;width:100%;min-height:44px;padding:.5rem .9rem;border-radius:14px;background:var(--panel);color:var(--tx);box-shadow:inset 0 0 0 1px var(--line);text-align:start;line-height:1.3;font-weight:600}
+.sim .presets small{font-weight:400;font-size:.78rem;color:var(--dim)}
+.sim .presets button[aria-pressed=true]{box-shadow:inset 0 0 0 2px var(--atm)}
+.sim .quiet{display:inline-flex;width:auto;border-radius:999px}
+.sim .len{display:grid;gap:.3rem;font-size:.86rem;color:var(--dim)}
+.sim .len input{min-height:44px;padding:0 .9rem;border:0;border-radius:999px;background:var(--panel);color:var(--tx);box-shadow:inset 0 0 0 1px var(--line);font:400 1rem var(--mono)}
+.sim .tbl__s{margin:0 0 1.2rem}.sim .tab{width:100%;margin:0;border-collapse:collapse;font-size:.86rem}
+.sim .tab caption{margin:0 0 .4rem;text-align:start;color:var(--dim)}
+.sim .tab th,.sim .tab td{padding:.35rem .4rem;border-bottom:1px solid var(--line);text-align:start;vertical-align:top}
+.sim .tab th{white-space:normal}.sim .tab td{font:400 .8rem/1.4 var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.sim .sheet h2{margin:0 0 .5rem;font:600 1.3rem/1.2 var(--head)}
+.sim .note,.sim .ctl p,.sim .also{margin:0 0 1rem;max-width:34rem;font-size:.86rem;line-height:1.5;color:var(--dim)}
+.sim .discs{display:flex;flex-wrap:wrap;align-items:flex-end;gap:4mm;margin:0 0 1rem}
+.sim .discs figure{display:grid;justify-items:center;gap:.2rem;margin:0;font-size:.75rem;color:var(--dim)}
+.sim .discs i{display:block;border-radius:50%;background:var(--atm)}
+.sim .discs figure:first-child i{background:var(--ember)}
+.sim .discs i[data-big]{display:none}
+.sim .bar{display:block;width:100mm;max-width:100%;height:2mm;margin:0 0 .4rem;background:var(--tx)}
+@page{size:A4;margin:12mm}
+@media print{
+.sim .stage,.sim .line,.sim .pick,.sim .controls,.sim .honest,.sim details,.sim .more,.sim .also,.sim .quiet,.sim .micro{display:none!important}
+.sim{display:block!important;width:auto!important;padding:0!important;color:CanvasText}
+.sim h1{font-size:20pt;color:CanvasText}
+.sim .lead,.sim .note,.sim .ctl p,.sim .tab caption,.sim .discs figure,.sim .discs figcaption,.sim .tab th,.sim .tab td{color:CanvasText}
+.sim .tab th,.sim .tab td{border-color:CanvasText}
+.sim .discs i,.sim .bar{background:CanvasText!important;print-color-adjust:exact}.sim .bar{max-width:none}
+}
+</style>
+<!-- chrome:head (written by scripts/gen_lab_index.py: the platform bridge, js/ui/platform-bridge.js; do not edit) -->
+<link rel="stylesheet" href="../../css/controls.css">
+<script type="module" src="../../js/platform-boot.js"></script>
+<!-- /chrome:head -->
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<!-- chrome:header (written by scripts/gen_lab_index.py from templates/partials/header.html; do not edit) -->
+<header class="top top--x"><div class="top__in"><a class="brand" href="../../" aria-label="Space Radar, home"><span class="ring"><svg viewBox="0 0 48 48" width="40" height="40" aria-hidden="true"><circle class="ring__t" cx="24" cy="24" r="21" pathLength="1"/><circle class="ring__p" cx="24" cy="24" r="21" pathLength="1"/></svg><img src="../../images/icons/favicon.svg" width="22" height="22" alt=""></span><span class="brand__t">Space Radar</span></a>
+<nav class="xnav" aria-label="Space Radar sites"><a href="../../">Map</a><a href="https://blog.spaceradar.ai/">Journal</a><a href="https://games.spaceradar.ai/">Games</a><a href="https://models.spaceradar.ai/">Models</a><a href="https://video.spaceradar.ai/">Video</a><a href="../../lab/index.html" aria-current="true">Lab</a></nav>
+<div class="top__r"><a class="btn btn--sub" href="../index.html#subscribe" aria-label="Subscribe to email updates"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M4 7.5l8 6 8-6"/></svg><span>Subscribe</span></a><a class="btn btn--map" href="../../"><span><span class="xs">Open the </span>3D map</span></a></div></div></header>
+<!-- /chrome:header -->
+<main id="main" class="sim">
+<p class="micro" id="cat"></p>
+<h1 id="h">The Solar System in Your Street</h1>
+<p class="lead" id="lesson">Pick the space you have, from a room to a long street, and see how big and how far apart the Sun and the planets are at one scale.</p>
+<div class="stage"><canvas id="c" role="img" aria-label="The Solar System in Your Street"></canvas></div>
+<p class="line" id="line"></p>
+<noscript><p class="ns">This simulator needs JavaScript. It is one small file, with no libraries and no network requests: read it with View source.</p></noscript>
+<fieldset class="pick"><legend>The space you have</legend>
+<div class="presets" role="group" aria-label="The space you have">
+<button type="button" id="p0" data-l="714" aria-pressed="false">A football for the Sun<small>The Sun 22 cm wide</small></button>
+<button type="button" id="p1" data-l="5" aria-pressed="false">A room<small>Neptune 5 m from the Sun</small></button>
+<button type="button" id="p2" data-l="105" aria-pressed="false">A football pitch<small>Neptune 105 m from the Sun</small></button>
+<button type="button" id="p3" data-l="1000" aria-pressed="false">Your street<small>Neptune 1 km from the Sun</small></button>
+</div>
+<label class="len">Or type it: metres from the Sun to Neptune <input type="number" id="len" min="1" max="10000" step="any" inputmode="decimal"></label>
+</fieldset>
+<div class="controls">
+<button type="button" id="pb">Pause</button>
+<label>Time <input type="range" id="ts" min="0" value="0" aria-label="Time through the animation"></label>
+<label id="pl">Value <output id="po"></output><input type="range" id="ps"></label>
+</div>
+<div class="tbl__s"><table class="tab"><caption>Lay them out in this order, walking away from the Sun.</caption>
+<thead><tr><th scope="col">Body</th><th scope="col" id="hs">Size across</th><th scope="col" id="hd">From the Sun</th><th scope="col">From the one before</th></tr></thead>
+<tbody>
+<tr><th scope="row" id="n0">The Sun</th><td id="s0"></td><td>0</td><td></td></tr>
+<tr><th scope="row" id="n1">Mercury</th><td id="s1"></td><td id="d1"></td><td id="w1"></td></tr>
+<tr><th scope="row" id="n2">Venus</th><td id="s2"></td><td id="d2"></td><td id="w2"></td></tr>
+<tr><th scope="row" id="n3">Earth</th><td id="s3"></td><td id="d3"></td><td id="w3"></td></tr>
+<tr><th scope="row" id="n4">Mars</th><td id="s4"></td><td id="d4"></td><td id="w4"></td></tr>
+<tr><th scope="row" id="n5">Jupiter</th><td id="s5"></td><td id="d5"></td><td id="w5"></td></tr>
+<tr><th scope="row" id="n6">Saturn</th><td id="s6"></td><td id="d6"></td><td id="w6"></td></tr>
+<tr><th scope="row" id="n7">Uranus</th><td id="s7"></td><td id="d7"></td><td id="w7"></td></tr>
+<tr><th scope="row" id="n8">Neptune</th><td id="s8"></td><td id="d8"></td><td id="w8"></td></tr>
+</tbody></table></div>
+<p class="honest"><b>What is and is not to scale.</b> <span id="honest"></span></p>
+<section class="sheet" aria-labelledby="sh">
+<h2 id="sh">The sheet to print</h2>
+<p class="note">Print this page on A4 at 100 %, not "fit to page". Each disc below is the true size of its world at this scale; one wider than the paper is left out, and one smaller than 0.3 mm is drawn 0.3 mm so you can find it.</p>
+<div class="discs">
+<figure><i id="q0"></i><figcaption>The Sun</figcaption><small id="z0"></small></figure>
+<figure><i id="q1"></i><figcaption>Mercury</figcaption><small id="z1"></small></figure>
+<figure><i id="q2"></i><figcaption>Venus</figcaption><small id="z2"></small></figure>
+<figure><i id="q3"></i><figcaption>Earth</figcaption><small id="z3"></small></figure>
+<figure><i id="q4"></i><figcaption>Mars</figcaption><small id="z4"></small></figure>
+<figure><i id="q5"></i><figcaption>Jupiter</figcaption><small id="z5"></small></figure>
+<figure><i id="q6"></i><figcaption>Saturn</figcaption><small id="z6"></small></figure>
+<figure><i id="q7"></i><figcaption>Uranus</figcaption><small id="z7"></small></figure>
+<figure><i id="q8"></i><figcaption>Neptune</figcaption><small id="z8"></small></figure>
+</div>
+<div class="ctl"><i class="bar"></i><p>This line is 100 mm long. If your ruler says otherwise, the printer scaled the page, and every size on it is off by the same amount.</p></div>
+<button type="button" id="pr" class="quiet">Print the sheet</button>
+</section>
+<p class="also">Next: <a href="../walk-the-solar-system/index.html">walk the Solar System</a> at a walking pace, or see why <a href="../the-solar-system-is-mostly-empty/index.html">it is mostly empty</a>.</p>
+<ul hidden><li id="hk1">Your Solar System</li><li id="hk2">true to scale</li><li id="lw">Sun to Neptune</li><li id="wp">Play</li><li id="wz">Pause</li><li id="wb">wider than the paper</li></ul>
+<p hidden id="tl">The Sun is <span id="t1"></span> wide, the Earth <span id="t2"></span> wide and <span id="t3"></span> from it, and Neptune <span id="t4"></span> away.</p>
+<details><summary>How this was made and sources</summary>
+<p class="srcl">One HTML file: no libraries, no network requests. Every number below was read on the date shown, from the page named next to it.</p>
+<div id="src"></div>
+</details>
+<p class="more"><!-- chrome:fav (written by scripts/gen_lab_index.py; do not edit) --><button type="button" class="ui-btn ui-btn--icon ui-btn--sm sr-heart" data-sr-fav="lab:solar-system-in-your-street" aria-pressed="false" aria-label="Add this simulator to your favourites" title="Add this simulator to your favourites" data-sr-add="Add this simulator to your favourites" data-sr-remove="This simulator is in your favourites. Press to take it out"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></button><!-- /chrome:fav --><a id="sr-app" href="../../index.html#trip=outer-solar-system">See this in the 3D map</a><a href="../index.html">All simulators</a><a id="add" href="https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/ADD_A_SIMULATOR.md">Add your own simulator</a><a id="edit" href="https://github.com/Sara-Managed-Projects/space-radar/tree/main/site/lab">Fix a mistake on GitHub</a></p>
+</main>
+<!-- chrome:footer (written by scripts/gen_lab_index.py from templates/partials/footer.html; do not edit) -->
+<footer class="foot"><div class="foot__in"><div><a class="brand brand--f" href="../../"><span class="brand__t">Space Radar</span></a><p>A free, open-source live 3D map of space: the satellites and the space station, launches, probes, planets, stars and galaxies, each drawn where it really is, with where the numbers come from.</p><p class="foot__n">The map needs no account. Analytics only if you say yes; no advertising, ever. MIT licence, <a href="https://github.com/Sara-Managed-Projects/space-radar">source on GitHub</a>.</p></div>
+<nav class="sitelinks" aria-label="Space Radar on the web">
+<div><p class="foot__h">Sites</p><ul><li><a href="../../">The 3D map</a></li><li><a href="https://blog.spaceradar.ai/">Journal</a></li><li><a href="https://games.spaceradar.ai/">Games</a></li><li><a href="https://models.spaceradar.ai/">Models</a></li><li><a href="https://video.spaceradar.ai/">Video</a></li><li><a href="../../lab/index.html">All simulators</a></li></ul></div>
+<div><p class="foot__h">More</p><ul><li><a href="../../about/index.html">About</a></li><li><a href="../../sources/index.html">Sources</a></li><li><a href="https://www.spaceradar.ai/legal/privacy/index.html">Privacy</a></li><li><a href="https://www.spaceradar.ai/legal/index.html">Legal</a></li><li><a href="https://www.spaceradar.ai/legal/cookies/index.html#choices" data-sr-consent>Cookie settings</a></li><li><a href="https://github.com/Sara-Managed-Projects/space-radar">GitHub</a></li></ul></div>
+</nav>
+</div></footer>
+<!-- /chrome:footer -->
+<!-- Sources
+Sources, read on 2026-11-24:
+ NASA Planetary Fact Sheet (https://nssdc.gsfc.nasa.gov/planetary/factsheet/): "Diameter (km)": Mercury 4879, Venus 12,104, Earth 12,756, Mars 6792, Jupiter 142,984, Saturn 120,536, Uranus 51,118, Neptune 49,528. "Distance from Sun (10^6 km)": Mercury 57.9, Venus 108.2, Earth 149.6, Mars 228.0, Jupiter 778.5, Saturn 1432.0, Uranus 2867.0, Neptune 4515.0.
+ NASA Sun Fact Sheet (https://nssdc.gsfc.nasa.gov/planetary/factsheet/sunfact.html): Sun "Volumetric mean radius (km)" 695,700, so 1,391,400 km across.
+ The IFAB, Laws of the Game, Law 2 The Ball (https://www.theifab.com/laws/latest/the-ball/): "of a circumference of between 68 cm (27 ins) and 70 cm (28 ins)", so about 22 cm across (69 cm / pi = 21.96 cm).
+ The IFAB, Law 1 The Field of Play (https://www.theifab.com/laws/latest/the-field-of-play/): international matches, "Length (touchline): minimum 100 m (110 yds) maximum 110 m (120 yds)"; we take 105 m.
+The scale is one number: the length you have, L metres from the Sun to Neptune, is 4515.0 million km, so 1 km of space is L / 4.515e9 m. Every size and distance is the fact sheet's value times that.
+Check by hand, with the Sun 1.3914 m wide (L = 4515 m, 1 km = 1 mm): the Earth is 12,756 km x 1e-6 m/km = 12.8 mm wide and 149.6e6 km x 1e-6 = 149.6 m from the Sun; Neptune 49.5 mm wide, 4.515 km away.
+A football for the Sun: 0.22 m / 1,391,400 km x 4515e6 km = 714 m from the Sun to Neptune; the Earth is then 2.0 mm wide and 23.7 m from it.
+-->
+<script>
+// ============================================ 0. HELPERS (shared; do not edit) ====================================
+// Defined first, so a simulator may use them while it loads (top-level tables). Colours: EMBER for the point of the lesson, INK for text, DIM for the quiet.
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x)),seg=(t,a,b)=>clamp((t-a)/(b-a),0,1),ease=x=>{x=clamp(x,0,1);return x*x*(3-2*x)},lerp=(a,b,x)=>a+(b-a)*x;
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const EMBER='#ff9f43',INK='#e8ecf4',DIM='#a3adc0',FONT='Inter,system-ui,-apple-system,"Segoe UI",sans-serif',Y0=430,Y1=1440,MINPX=34;
+// ============================================ 1. THE SIMULATOR (yours) ============================================
+// Every WORD the picture and the caption use is read from the page (the table's headers, the hidden list), so a translated page draws in its language; the code writes numbers only.
+const B=[['The Sun',1391400,0],['Mercury',4879,57.9],['Venus',12104,108.2],['Earth',12756,149.6],['Mars',6792,228],['Jupiter',142984,778.5],['Saturn',120536,1432],['Uranus',51118,2867],['Neptune',49528,4515]]; // diameter km, mean distance 10^6 km
+const NEP_KM=4515e6,DOC=typeof document!=='undefined'?document:null,$=id=>DOC&&DOC.getElementById(id),tx=(id,d)=>{const e=$(id);return String((e&&e.textContent)||'').trim()||d};
+const LANG=()=>(DOC&&DOC.documentElement&&DOC.documentElement.lang)||'en',nf=(v,dg)=>{try{return v.toLocaleString(LANG()+'-u-nu-latn',{maximumFractionDigits:dg,minimumFractionDigits:dg})}catch(e){return v.toFixed(dg)}};
+const dig=v=>v>=100?0:v>=10?1:2;
+/** A length in metres, written with the unit that keeps it between 1 and 1000. */
+function len(m){const u=m>=1000?['km',m/1000]:m>=1?['m',m]:m>=.01?['cm',m*100]:m>=.001?['mm',m*1000]:['µm',m*1e6];return nf(u[1],dig(u[1]))+' '+u[0]}
+/** The whole scale from one length L (metres from the Sun to Neptune): metres per km, and each body's size and distance in metres. */
+function scaleOf(L){const k=L/NEP_KM;return{k,rows:B.map(b=>({name:b[0],size:b[1]*k,dist:b[2]*1e6*k}))}}
+const Lof=P=>Math.pow(10,P),nm=i=>tx('n'+i,B[i][0]);
+const SIM={dur:14,reveal:11,hook:'YOUR SOLAR SYSTEM|TRUE TO SCALE',scaleOf,len,
+ honest:'Sizes and distances share one scale. Distances are mean orbits; the planets are never in one line. The dots on the strip are not to scale.',
+ param:{label:'Sun to Neptune',min:0,max:4,step:.001,value:Math.log10(105),fmt:P=>len(Lof(P))},
+ line(P){const s=scaleOf(Lof(P)).rows,v=[len(s[0].size),len(s[3].size),len(s[3].dist),len(s[8].dist)],t=$('tl');
+  if(t&&t.textContent){v.forEach((x,i)=>{const e=$('t'+(i+1));if(e)e.textContent=x});const w=String(t.textContent).replace(/\s+/g,' ').trim();if(w.length>=40)return w}
+  return`The Sun is ${v[0]} wide, the Earth ${v[1]} wide and ${v[2]} from it, and Neptune ${v[3]} away.`},
+ draw(c,t,P){
+  const L=Lof(P),s=scaleOf(L).rows,X0=90,W=890,LY=860,f=ease(seg(t,.6,11)),x=X0+W*f;let last=0;stars(c,40);
+  text(nm(0).toLocaleUpperCase(LANG()),60,480,34,DIM,600,'left');text(len(s[0].size),60,550,52,EMBER,800,'left');
+  text(nm(8).toLocaleUpperCase(LANG()),1020,480,34,DIM,600,'right');text(len(L),1020,550,52,INK,800,'right');
+  c.strokeStyle='rgba(255,255,255,.35)';c.lineWidth=5;c.beginPath();c.moveTo(X0,LY);c.lineTo(X0+W,LY);c.stroke();glow(c,X0,LY,70,'#ffb347',.9);disc(c,X0,LY,26,'#ffd27a');
+  const off=[0,-230,-185,-140,-95,90,-95,90,-95];
+  for(let i=1;i<9;i++){const px=X0+W*s[i].dist/L,on=f*L>=s[i].dist;if(on)last=i;c.strokeStyle='rgba(255,255,255,.25)';c.lineWidth=2;c.beginPath();c.moveTo(px,LY);c.lineTo(px,LY+off[i]);c.stroke();disc(c,px,LY,on?9:6,on?'#fff':DIM);
+   text(nm(i),clamp(i<5?px+8:px,40,1040),LY+off[i]+(off[i]>0?36:-8),34,on?INK:DIM,on?800:500,px>860?'right':i<5?'left':'center')}
+  c.strokeStyle=EMBER;c.lineWidth=6;c.beginPath();c.moveTo(x,LY-60);c.lineTo(x,LY-24);c.stroke();disc(c,x,LY-72,11,EMBER);
+  // The sizes, side by side at one scale: the Sun as a disc 150 units across and every planet at the same scale (Earth is 1.4 units: a speck).
+  const R=150,sy=1190;disc(c,200,sy,R,'#ffd27a');text(nm(0),200,sy+R+52,34,INK,700);
+  [[3,470],[5,690],[8,900]].forEach(([i,px])=>{const r=Math.max(1.5,R*s[i].size/s[0].size);disc(c,px,sy+R-r,r,i===5?'#e3c79b':'#7fb0ff');text(nm(i),px,sy+R+52,34,INK,700);text(len(s[i].size),px,sy+R+96,34,DIM,500)});
+  text(len(s[0].size),200,sy+R+96,34,EMBER,700);
+  text(last?nm(last)+' · '+len(s[last].dist):nm(0),540,1075,44,t>=SIM.reveal?EMBER:INK,800)}};
+const PRE=[714,5,105,1000];
+SIM.changed=P=>{const L=Lof(P),s=scaleOf(L).rows,put=(id,v)=>{const e=$(id);if(e)e.textContent=v};
+ s.forEach((r,i)=>{put('s'+i,len(r.size));if(i){put('d'+i,len(r.dist));put('w'+i,len(r.dist-s[i-1].dist))}
+  const q=$('q'+i),mm=r.size*1000,big=mm>180;if(q){q.style.width=q.style.height=Math.max(.3,mm).toFixed(2)+'mm';if(big)q.setAttribute('data-big','');else if(q.removeAttribute)q.removeAttribute('data-big')}
+  put('z'+i,len(r.size)+(big?' · '+tx('wb','wider than the paper'):''))});
+ PRE.forEach((v,i)=>{const b=$('p'+i);if(b)b.setAttribute('aria-pressed',Math.abs(Math.log10(v)-P)<.002?'true':'false')});
+ const n=$('len'),m=L>=100?Math.round(L):Math.round(L*10)/10;if(n&&DOC.activeElement!==n)n.value=String(m);
+ if(SIM.ready)try{if(typeof history!=='undefined'&&history.replaceState)history.replaceState(null,'','#neptune='+m+'m')}catch(e){}};
+SIM.wire=(byId,ps)=>{const go=L=>{if(!(L>0))return;ps.value=String(clamp(Math.log10(L),0,4));ps.oninput()};
+ PRE.forEach((v,i)=>{byId('p'+i).onclick=()=>go(v)});const n=byId('len');n.onchange=()=>go(clamp(+n.value,1,1e4));
+ byId('pr').onclick=()=>{try{window.print()}catch(e){}};
+ const m=/neptune=([\d.]+)(km|m)\b/.exec(String((typeof location!=='undefined'&&location.hash)||''));go(m?+m[1]*(m[2]==='km'?1000:1):105);SIM.ready=true};
+// ============================================ 2. THE PAGE (shared; rarely needs a change) =========================
+// The stage is 1080 units wide; the page shows the band y 270..1470 of it. Draw only inside it, and put no text under 34 units.
+// `draw(c, t, P)` gets the 2D context, the time t in seconds (it loops over SIM.dur) and the slider value P. `line(P, t)` is the caption under the picture.
+// SIM.reveal is the second at which the animation shows its point; with a slider (SIM.param) the picture follows the slider, so rev(t) is 1.
+// This page's changes to the shared part: the slider's readout may be SIM.param.fmt, the hook is read from the page and fitted to the width, and SIM.wire() runs last.
+function rev(t){return SIM.param?1:ease(seg(t,SIM.reveal-.3,SIM.reveal+.9))}
+let S=1,P=SIM.param?SIM.param.value:0,T=0;
+function text(s,x,y,size,col,w,al){cx.font=(w||600)+' '+Math.max(size,MINPX)+'px '+FONT;cx.fillStyle=col||INK;cx.textAlign=al||'center';cx.textBaseline='alphabetic';cx.fillText(s,x,y)}
+function wrap(s,x,y,size,col,maxW,lh,w,al){cx.font=(w||600)+' '+Math.max(size,MINPX)+'px '+FONT;let ln='';for(const wd of s.split(' ')){const tr=ln?ln+' '+wd:wd;if(cx.measureText(tr).width>maxW&&ln){text(ln,x,y,size,col,w,al);y+=lh;ln=wd}else ln=tr}text(ln,x,y,size,col,w,al);return y+lh}
+function glow(c,x,y,r,col,a){const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,col);g.addColorStop(1,'rgba(0,0,0,0)');c.globalAlpha=a==null?1:a;c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,6.2832);c.fill();c.globalAlpha=1}
+function disc(c,x,y,r,col){c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,6.2832);c.fill()}
+function stars(c,n){let s=7;const r=()=>(s=(s*16807)%2147483647)/2147483647;for(let i=0;i<(n||90);i++){c.globalAlpha=.25+.5*r();c.fillStyle='#fff';c.fillRect(r()*1080,r()*1920,2,2)}c.globalAlpha=1} // a fixed starfield
+function fitText(s,y){cx.font='800 60px '+FONT;const k=Math.min(1,980/Math.max(1,cx.measureText(s).width||1));text(s,540,y,Math.max(MINPX,60*k),EMBER,800)}
+function draw(t){cx.setTransform(1,0,0,1,0,0);cx.fillStyle='#05070d';cx.fillRect(0,0,cv.width,cv.height);
+  cx.setTransform(S,0,0,S,0,-270*S);cx.save();cx.beginPath();cx.rect(0,0,1080,1920);cx.clip();SIM.draw(cx,t,P);
+  const h=SIM.hook.split('|');fitText(h[0],330);if(h[1])fitText(h[1],396);cx.restore()}
+{
+  const byId=id=>document.getElementById(id),LOOP=SIM.dur,meta=n=>(document.querySelector('meta[name="'+n+'"]')||{}).content||'';
+  const say=(id,d)=>String(byId(id).textContent||'').trim()||d,PLAY=say('wp','Play'),PAUSE=say('wz','Pause');
+  SIM.hook=(say('hk1','')&&say('hk2',''))?(say('hk1','')+'|'+say('hk2','')).toLocaleUpperCase(document.documentElement&&document.documentElement.lang||'en'):SIM.hook;
+  if(SIM.param)SIM.param.label=say('lw',SIM.param.label);
+  byId('cat').textContent=meta('sr-lab-category');byId('honest').textContent=SIM.honest;
+  cv.setAttribute('aria-label',byId('h').textContent+'. '+meta('description'));
+  // "How this was made": the comment that starts with "Sources" in this file, with its web addresses made into links.
+  const walk=document.createTreeWalker(document,NodeFilter.SHOW_COMMENT);let node,src='';
+  while((node=walk.nextNode()))if(/^\s*sources?\b/i.test(node.data)){src=node.data.trim();break}
+  for(const ln of src.split('\n')){if(!ln.trim())continue;const p=document.createElement('p');p.className='srcl';
+    ln.split(/(\w+:\/\/[^\s)]+)/).forEach((part,i)=>{let ok=false;if(i%2)try{ok=new URL(part).protocol==='https:'}catch(e){}
+      if(ok){const a=document.createElement('a');a.href=part;a.rel='noopener';a.textContent=part;p.append(a)}else p.append(part)});byId('src').append(p)}
+  const parts=location.pathname.split('/').filter(Boolean);if(parts[parts.length-1]==='index.html')parts.pop();
+  const slug=parts[parts.length-1]||'',edit=byId('edit');if(slug&&slug!=='lab')edit.href=edit.href.replace('/tree/','/edit/')+'/'+slug+'/index.html';
+  const pb=byId('pb'),ts=byId('ts'),ps=byId('ps'),po=byId('po'),calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let play=!calm,t0=performance.now(),dirty=true,last='';
+  ts.max=LOOP;ts.step=.01;
+  if(calm){T=Math.min(SIM.reveal+1.2,LOOP-.1);ts.value=T;pb.textContent=PLAY}
+  const p=SIM.param;
+  if(p){const dec=(String(p.step).split('.')[1]||'').length,fmt=p.fmt||(v=>(+v).toLocaleString('en-US',{maximumFractionDigits:dec,minimumFractionDigits:dec}));
+    ps.min=p.min;ps.max=p.max;ps.step=p.step;ps.value=p.value;ps.setAttribute('aria-label',p.label);byId('pl').firstChild.textContent=p.label+' ';po.textContent=fmt(P);
+    ps.oninput=()=>{P=+ps.value;po.textContent=fmt(P);ps.setAttribute('aria-valuetext',po.textContent);dirty=true;if(SIM.changed)SIM.changed(P)}}
+  else byId('pl').hidden=true;
+  pb.onclick=()=>{play=!play;pb.textContent=play?PAUSE:PLAY;t0=performance.now()-T*1000};
+  ts.oninput=()=>{play=false;pb.textContent=PLAY;T=+ts.value;dirty=true};
+  function fit(){const d=Math.min(devicePixelRatio||1,2);cv.width=Math.round(cv.clientWidth*d);cv.height=Math.round(cv.clientHeight*d);S=cv.width/1080;dirty=true}
+  new ResizeObserver(fit).observe(cv);fit();
+  if(SIM.wire)SIM.wire(byId,ps);
+  (function frame(){if(play){T=((performance.now()-t0)/1000)%LOOP;ts.value=T;dirty=true}
+    if(dirty){dirty=false;draw(T);const l=SIM.line(P,T);if(l!==last){last=l;byId('line').textContent=l}}
+    requestAnimationFrame(frame)})();
+}
+</script>
+</body>
+</html>

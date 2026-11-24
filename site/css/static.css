@@ -175,3 +175,5 @@ ol.steps li{margin:0 0 .8rem}
 [dir=rtl] .sources ol,[dir=rtl] .doc ul:not([class]),[dir=rtl] .doc ol{padding-left:0;padding-right:1.4rem}
 [dir=rtl] .dot,[dir=rtl] .eyebrow img{margin-right:0;margin-left:.55rem}
 [dir=rtl] code,[dir=rtl] kbd,[dir=rtl] .num{direction:ltr;unicode-bidi:isolate}
+/* Print (forge internal #550, the Lab's printable sheet): a page on paper is its content alone, dark on white. */
+@media print{:root{color-scheme:light}.skip,.top,.foot{display:none!important}html,body{background:none!important;color:CanvasText}a{color:CanvasText}}

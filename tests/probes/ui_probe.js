@@ -89,7 +89,10 @@ const forReadersOnly = (el) => {
 function cutBy(target) {
   const r = target.getBoundingClientRect();
   const T = 1;
-  if (r.left < -T || r.top < -T || r.right > innerWidth + T || r.bottom > innerHeight + T) return 'window';
+  // The window's edge has no tolerance: elementFromPoint finds nothing past it, so a box that ends even one pixel
+  // under the fold is reachable only up to the fold. The network chips (forge internal #555), 44 px tall at y 801 of
+  // an 844 px phone, measured 43 by hit test on 2026-11-24; their box is what a thumb finds once it has scrolled.
+  if (r.left < 0 || r.top < 0 || r.right > innerWidth || r.bottom > innerHeight) return 'window';
   for (let n = target.parentElement; n && n !== document.documentElement; n = n.parentElement) {
     const cs = getComputedStyle(n);
     const ys = /auto|scroll/.test(cs.overflowY) && n.scrollHeight > n.clientHeight + 1;

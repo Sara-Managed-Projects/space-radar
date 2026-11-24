@@ -32,7 +32,8 @@
 // rule), says what kind of thing it is, keeps the catalogue's string beside it when that differs,
 // and, when a place is set, whether it is in that sky now and which way to look.
 
-import { COPY, t, compassWords, timeText, fmt } from '../copy/en.js';
+import { COPY, CITIES, t, compassWords, timeText, fmt } from '../copy/en.js';
+import { parseAsk, askRun } from './ask.js'; // forge internal #555: a question in plain words, read here
 import '../copy/en.later.js';
 import { labelName, labelParentId } from './labels.js';
 import { TOURS_INDEX } from '../data/tours-index.js';
@@ -188,6 +189,8 @@ export function rowIconName(hit) {
   if (hit.extra === 'trip') return 'play';
   if (hit.extra === 'mission' || hit.extra === 'event') return 'flag';
   if (hit.extra === 'suggest') return 'compass';
+  if (hit.extra === 'yourstar') return 'star';
+  if (hit.extra === 'ask') return 'satellite';
   if (hit.extra === 'group') return 'satellite';
   const r = hit.record;
   if (!r) return null;
@@ -394,6 +397,8 @@ export function loadConstellations(doFetch = typeof fetch === 'function' ? fetch
 if (typeof document !== 'undefined') loadConstellations();
 
 const NEAR = () => ({ extra: 'suggest', id: 'near-me-tonight', name: COPY.searchRows.nearMe, sub: COPY.searchRows.nearMeSub, words: 'near me tonight what is up in my sky above' });
+// The star of your year (ui/yourstar.js, forge internal #545): found by its own words in the page's language and in English.
+const YOUR_STAR = () => ({ extra: 'yourstar', id: 'your-star', name: COPY.searchRows.yourStar, sub: COPY.searchRows.yourStarSub, words: norm(`${COPY.searchRows.yourStarWords} birthday born my star`) });
 
 /** What is offered before anything is typed. */
 export function suggestions() { return [NEAR()]; }
@@ -416,10 +421,30 @@ function scoreWords(words, q) {
  * and its landing, not all eight of its events). A query a letter or two off a word still finds
  * it, when nothing matched as typed ("apolo").
  */
+/** The search row's words for a question ui/ask.js understood: "Understood: Starlink · over Spain". Pure. */
+export function askWords(ask) {
+  const A = COPY.searchRows;
+  const words = ask.parts.map((p) => {
+    if (p.kind === 'group') return A.askGroups[p.id] || p.id;
+    if (p.kind === 'place') return t(A.askPlace, { place: p.name });
+    if (p.kind === 'owner') return t(A.askOwner, { owner: ownerWord(p) });
+    if (p.days === 1) return A.askToday;
+    return p.days ? t(A.askDays, { n: p.days }) : t(A.askYear, { year: p.year });
+  });
+  return t(A.ask, { what: words.join(A.askJoin) });
+}
+// The owner's country in the page's language where the browser knows it (data/owners.js: the catalogue's code and ISO).
+const ownerWord = (p) => {
+  try { const iso = p.iso || null; return iso ? new Intl.DisplayNames([document.documentElement.lang || 'en', 'en'], { type: 'region' }).of(iso) || p.name : p.name; } catch { return p.name; }
+};
+
 export function findExtras(query, limit = EXTRA_ROWS) {
   const q = norm(query);
   if (q.length < 3) return [];
-  const pool = all().concat(stars, fleets, NEAR());
+  // A question in plain words (forge internal #555): its row first, saying what was understood, when two pieces were.
+  const asked = parseAsk(query, { ...COPY.searchRows.askWords }, CITIES);
+  const lead = asked ? [{ extra: 'ask', id: 'ask', name: askWords(asked), sub: COPY.searchRows.askSub, record: null, sure: true, ask: asked }] : [];
+  const pool = all().concat(stars, fleets, NEAR(), YOUR_STAR());
   let found = [];
   for (const e of pool) {
     const s = scoreWords(e.words, q);
@@ -431,9 +456,9 @@ export function findExtras(query, limit = EXTRA_ROWS) {
       if (e.words.split(/[^a-z0-9]+/).some((w) => w.length >= 3 && editDistance(q, w, cap) <= cap)) found.push({ e, s: 1 });
     }
   }
-  const order = { suggest: 0, constellation: 1, fleet: 1, figureside: 1, trip: 2, mission: 3, event: 4 };
+  const order = { suggest: 0, yourstar: 0, constellation: 1, fleet: 1, figureside: 1, trip: 2, mission: 3, event: 4 };
   found.sort((a, b) => (order[a.e.extra] - order[b.e.extra]) || (b.s - a.s) || ((b.e.lead || 0) - (a.e.lead || 0)));
-  const out = [];
+  const out = lead;
   const eventsOf = new Map();
   for (const { e, s } of found) {
     if (e.extra === 'event') {
@@ -475,6 +500,8 @@ export function runExtra(ctx, hit) {
     if (hit.extra === 'constellation') return turnToStars(ctx, hit);
     // A fleet of satellites: Find lights it on the globe (ui/find.js openLink, as `#constellation=<id>` does).
     if (hit.extra === 'fleet') { if (typeof ctx.wantFind !== 'function') return false; ctx.wantFind().then((f) => f && f.openLink({ constellation: hit.id })); return true; }
+    if (hit.extra === 'ask') { askRun(ctx, hit.ask, { stations: COPY.searchRows.askGroups.stations }); return true; }
+    if (hit.extra === 'yourstar') { window.dispatchEvent(new CustomEvent('sr:your-star')); return true; } // main.js fetches ui/yourstar.js
     if (hit.extra === 'figureside') { window.dispatchEvent(new CustomEvent('sr:figure-side', { detail: hit.id })); return true; } // main.js fetches ui/figureside.js
     if (hit.extra === 'suggest') { if (ctx.explore && typeof ctx.explore.setTab === 'function') { ctx.explore.setTab('tonight'); return true; } return false; }
     // 0079 a2: begin

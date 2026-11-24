@@ -93,6 +93,10 @@ jobs:
         run: python3 scripts/gen_thisday.py --check
       - name: The landers' missions mirror matches the registry (release 1.7.3)
         run: python3 scripts/gen_missions_landers_js.py --check
+      # A card's Pictures and news (forge internal #556): the photographs, long reads, pages and Journal posts our
+      # registries already credit, gathered per object; every item has a credit and a licence or the script refuses it.
+      - name: The card's pictures and news mirror the registries that credit them (forge internal #556)
+        run: python3 scripts/gen_media.py --check
       # The path files (site/data/eph): the registry, the manifest, each .bin, the browser's mirror
       # and the held-out Horizons positions agree, with no network (internal #277).
       - name: The mission path files are the ones their manifest describes
@@ -448,6 +452,9 @@ jobs:
       # honesty line, a lesson, small, listed), and its draw() runs on a recording canvas with no NaN. This is the contributor's first check.
       - name: The Lab's simulators obey their rules
         run: node tests/test_lab.mjs
+      # forge internal #550: the solar system true to scale in your room or street, its one scale worked by hand.
+      - name: "the Solar System in your street: one km to the mm puts the Earth 12.8 mm wide and 149.6 m out; every word drawn is the page's; a 100 mm control line"
+        run: node tests/test_lab_scale.mjs
       # The harvested JPL snapshots become records: Horizons vectors -> measured sampled probes,
       # close approaches joined to the SBDB -> inferred kepler asteroids. Fixtures are cut
       # from the real snapshots of 2026-09-08, so the frame and the join are checked, not assumed.
@@ -1629,6 +1636,15 @@ jobs:
       # The 2026-11-16 deep-space review, idea 6: a constellation seen from the side (ui/figureside.js, registry/sideviews.yaml).
       - name: "a constellation from the side: six figures offered, the Big Dipper its seven stars, exact from the Sun, apart from the side, eleven languages, out of the first visit"
         run: node tests/test_figureside.mjs
+      - name: "a card's pictures and news: credited, ours, the Journal by tag, the archives as links, fetched on open, eleven languages (forge internal #556)"
+        run: node tests/test_cardmedia.mjs
+      # The research train of 2026-11-24 (forge internal #545, #554, #555).
+      - name: "the star of your year: honest light-years with their error, the sky that day, a card in three shapes, the date only in the hash, eleven languages, out of the first visit (forge internal #545)"
+        run: node tests/test_yourstar.mjs
+      - name: "the share sheet's Embed tab: the app's own frame at three sizes with the embed page's credit; every event of the contract's list with no id or date (forge internal #554)"
+        run: node tests/test_embedtab.mjs
+      - name: "network chips with live counts and a question in plain words: what was understood, a Find link, read in the page, eleven languages (forge internal #555)"
+        run: node tests/test_ask.mjs
       # b200-f2-worlds: end
       # b200-m2-buses: begin
       - name: "registry/geo-buses.yaml and registry/cubesats.yaml and the browser's mirrors of their drawn families agree (forge #117, #118)"

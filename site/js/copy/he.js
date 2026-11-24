@@ -6707,3 +6707,181 @@ COPY.dayCard = {
   "sourceSky": "השמש, הירח וכוכבי הלכת, מחושבים כאן (Astronomy Engine)"
 };
 // research train (live): end
+// A card's Pictures and news (ui/cardmedia.js, copy/en.media.js; forge internal #556), machine-drafted: begin
+COPY.media = {
+  "pictures": "צילומים",
+  "journal": "מתוך היומן",
+  "reads": "כתבות ארוכות",
+  "pages": "דפים רשמיים",
+  "archives": "חיפוש בארכיונים",
+  "credit": "{credit}, {licence}",
+  "photoAlt": "{name}, צילום: {by}",
+  "photoAltPlain": "צילום של {name}",
+  "photoOpen": "התמונה באתר {site}",
+  "own": "תמונה שלנו",
+  "posted": "פורסם ב־{date}",
+  "readOnTitle": "הכתבה הארוכה, עם התמונות שלה, באתר הזה",
+  "onJournal": "ביומן",
+  "pageTitle": "{name}: הדף של סוכנות החלל עצמה, בכרטיסייה חדשה",
+  "nasa": "ספריית התמונות והסרטונים של NASA",
+  "nasaTitle": "תמונות, סרטים וצלילים של NASA על {name}, בכרטיסייה חדשה",
+  "esahubble": "תמונות ESA/Hubble",
+  "esahubbleTitle": "התמונות של ESA/Hubble של {name}, בכרטיסייה חדשה",
+  "esawebb": "תמונות ESA/Webb",
+  "esawebbTitle": "התמונות של ESA/Webb של {name}, בכרטיסייה חדשה",
+  "archivesNote": "הקישורים האלה פותחים את החיפוש של כל ארכיון לפי השם; התנאים שלהם מופיעים בדפים שלהם, ואנחנו לא מציגים כאן שום דבר שלהם.",
+  "empty": "עדיין אין לנו צילום, פוסט או כתבה ארוכה על {name}. אולי יש משהו בארכיונים שלמטה."
+};
+COPY.mediaRow = {
+  "row": "תמונות וחדשות",
+  "loading": "אוספים את מה שיש לנו…",
+  "failed": "הרשימה לא נטענה. סגרו את השורה הזאת ופתחו אותה שוב."
+};
+// A card's Pictures and news: end
+
+// The train of 2026-11-24 (forge internal #545, #554, #555): begin -- the Embed tab of the share sheet (copy/en.embedtab.js), the star of your year (copy/en.yourstar.js), the network chips (copy/en.networks.js) and the search's new rows (copy/en.later.js searchRows), machine-drafted
+COPY.embedTab = {
+  "tabsLabel": "שיתוף או הטמעה",
+  "share": "שיתוף",
+  "embed": "הטמעה",
+  "lede": "שימו את התצוגה החיה הזאת בדף משלכם: אתר של כיתה, בלוג או שקופית.",
+  "size": "גודל",
+  "sizes": {
+    "small": "קטן",
+    "medium": "בינוני",
+    "large": "גדול"
+  },
+  "sizeTitle": "{w} על {h} פיקסלים; בטלפון היא נעשית צרה יותר",
+  "credit": "להוסיף שורת קרדיט מתחת",
+  "creditLine": "תצוגה חיה מאת {link}",
+  "code": "קוד להדבקה",
+  "copy": "העתקת קוד ההטמעה",
+  "copyTitle": "מעתיק את הקוד ששם את התצוגה החיה הזאת בדף אינטרנט",
+  "preview": "תצוגה מקדימה",
+  "previewTitle": "פותח את ההטמעה לבדה בכרטיסייה חדשה",
+  "note": "הקוראים מקבלים את התצוגה החיה וקישור „לפתוח ב-Space Radar”. שום דבר לא נשמר במכשיר שלהם: בלי עוגיות, בלי מעקב.",
+  "docs": "עוד גדלים, מסעות והמפה כולה: דף ההטמעה"
+};
+COPY.yourStar = {
+  "title": "הכוכב של השנה שלך",
+  "close": "סגירת הכוכב של השנה שלך",
+  "lede": "לאור לוקח שנה לעבור שנת אור. לכן הכוכב שרחוק מאיתנו כמספר השנים שלך בשנות אור נראה הלילה באור שיצא ממנו כשנולדת.",
+  "dateLabel": "יום הולדת",
+  "placeLabel": "עיר, בשביל השמיים של אותו לילה (לא חובה)",
+  "placeHint": "תל אביב, ירושלים, חיפה…",
+  "placeUnknown": "העיר הזאת לא ברשימה, לכן השמיים מחושבים לשעה 21:00 לפי השעון שלך.",
+  "go": "למצוא את הכוכב שלי",
+  "finding": "מחפשים בין הכוכבים שיש להם שם…",
+  "needDate": "קודם כתבו יום הולדת.",
+  "badDate": "אי אפשר לקרוא את היום הזה. בחרו יום בין 1900 להיום.",
+  "future": "היום הזה עוד לא הגיע. בחרו יום בעבר.",
+  "noStars": "הכוכבים לא נטענו. נסו שוב בעוד רגע.",
+  "eyebrow": "הכוכב של השנה שלך",
+  "eyebrowOnWay": "האור של הכוכב שלך בדרך",
+  "where": "בקבוצת {constellation}, במרחק {ly} שנות אור",
+  "distance": "במרחק {ly} שנות אור",
+  "left": "האור שרואים ממנו הלילה יצא ממנו ב{when}, כשנולדת.",
+  "leftYear": "האור שרואים ממנו הלילה יצא ממנו ב{when}, בערך כשנולדת ב-{year}.",
+  "band": "המרחק אליו ידוע בדיוק של בערך {err} שנות אור לכל כיוון, ולכן האור הזה יצא לדרך בין {from} ל-{to}.",
+  "onItsWay": "עוד אין כוכב קרוב כל כך. האור שיצא מ{name} ביום הולדתך עדיין חוצה את {ly} שנות האור: הוא יגיע ב{when}.",
+  "errFrom": {
+    "gaia": "השגיאה היא של Gaia: ההיסט (פרלקסה) של הכוכב ואי־הוודאות שלו.",
+    "range": "השגיאה היא הטווח שהקטלוג נותן לכוכב הזה.",
+    "modelled": "השגיאה ממודלת לפי הדיוק של Hipparcos (חצי מילי־שניית קשת); הקטלוג לא נותן שגיאה לכוכב הזה."
+  },
+  "moon": "הירח: {phase}, מואר ב-{pct} %",
+  "planetsPlace": "נראים אחרי הדמדומים מ{place}: {list}",
+  "planetsClock": "בשמי הערב: {list}",
+  "planetsNone": "לא היה כוכב לכת בהיר בשמי הערב.",
+  "formatLabel": "צורת הכרטיס",
+  "formats": {
+    "landscape": "רחב",
+    "square": "ריבוע",
+    "story": "סטורי"
+  },
+  "share": "שיתוף",
+  "shareTitle": "שיתוף הכרטיס והקישור אליו",
+  "download": "הורדה",
+  "downloadTitle": "שמירת הכרטיס כתמונת PNG",
+  "copyLink": "העתקת קישור",
+  "copyLinkTitle": "קישור שפותח שוב את הכרטיס הזה",
+  "fly": "לטוס אל הכוכב",
+  "flyTitle": "לסגור את זה ולטוס אל הכוכב במפה התלת־ממדית",
+  "sky": "לראות את אותו לילה",
+  "skyTitle": "לעמוד על הקרקע ולהסתכל על השמיים של אותו ערב",
+  "copied": "הקישור הועתק",
+  "copyRefused": "ההעתקה נדחתה כרגע",
+  "shareFailed": "השיתוף לא עבד כאן. אפשר להוריד את הכרטיס.",
+  "cardAlt": "כרטיס: {name}, הכוכב שהאור שלו יצא בשנה שבה נולדת, עם הכוכבים שסביבו.",
+  "privacy": "שום דבר לא נשמר ולא נשלח. התאריך נשאר בדף הזה, ובקישור רק אם משתפים אותו; העיר אף פעם לא.",
+  "footer": "SPACERADAR.AI · מפה חיה של החלל"
+};
+COPY.networks = {
+  "title": "רשתות לוויינים",
+  "names": {
+    "starlink": "Starlink",
+    "oneweb": "OneWeb",
+    "gps": "GPS",
+    "glonass": "GLONASS",
+    "galileo": "Galileo",
+    "beidou": "BeiDou",
+    "iridium": "Iridium",
+    "kuiper": "Kuiper",
+    "qianfan": "Qianfan",
+    "stations": "תחנות",
+    "debris": "פסולת",
+    "geo": "גאוסטציונריים"
+  },
+  "chipCount": "{name}: {n} על המפה עכשיו. להאיר אותם",
+  "chipNoCount": "{name}: להאיר אותם על המפה",
+  "clear": "ניקוי",
+  "clearTitle": "להחזיר את כל הנקודות",
+  "noteLoad": "המספרים מופיעים אחרי שהלוויינים נטענים: הקישו על רשת (7 MB).",
+  "noteCounted": "נספרו בקטלוג שנטען עכשיו (CelesTrak), לפי השמות שהמפעילים נותנים להם."
+};
+Object.assign(COPY.searchRows, {
+  "yourStar": "הכוכב של השנה שלך",
+  "yourStarSub": "האור שלו יצא כשנולדת",
+  "yourStarWords": "יום הולדת נולדתי לידה שנה הכוכב שלי כוכב השנה שלי הכוכב של השנה שלך גיל שנות אור",
+  "ask": "הובן: {what}",
+  "askSub": "הקישו כדי להאיר את זה על המפה",
+  "askJoin": " · ",
+  "askGroups": {
+    "starlink": "Starlink",
+    "oneweb": "OneWeb",
+    "kuiper": "Kuiper",
+    "qianfan": "Qianfan",
+    "gps": "GPS",
+    "glonass": "GLONASS",
+    "galileo": "Galileo",
+    "beidou": "BeiDou",
+    "iridium": "Iridium",
+    "stations": "תחנות מאוישות",
+    "debris": "פסולת חלל",
+    "geo": "הטבעת הגאוסטציונרית",
+    "sats": "לוויינים"
+  },
+  "askPlace": "מעל {place}",
+  "askOwner": "מ{owner}",
+  "askToday": "שוגרו היום",
+  "askDays": "שוגרו ב-{n} הימים האחרונים",
+  "askYear": "שוגרו ב-{year}",
+  "askWords": {
+    "over": "מעל|ב",
+    "from": "מ|של",
+    "launched": "שוגרו|שיגור|ששוגרו|חדשים",
+    "today": "היום",
+    "week": "השבוע|שבוע",
+    "month": "החודש|חודש",
+    "year": "השנה",
+    "groups": {
+      "stations": "תחנות|תחנות חלל|תחנת חלל",
+      "debris": "פסולת|פסולת חלל|שברים",
+      "geo": "גאוסטציונרי|גאוסטציונריים",
+      "sats": "לוויינים|לוויין"
+    }
+  }
+});
+COPY.yourStar.skyOn = "השמיים ב-{date}";
+COPY.yourStar.leftNear = "האור שאתה רואה ממנו הלילה יצא ממנו ב{when}: אין כוכב עם שם שנמצא בדיוק במרחק שנות אור כגילך, וזה הקרוב ביותר.";
+// The train of 2026-11-24: end

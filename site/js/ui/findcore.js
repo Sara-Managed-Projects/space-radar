@@ -57,7 +57,8 @@ const HZ_TEFF = [2600, 7200];
 // The ranges a query can hold, by the token's letter(s), and which kind reads each.
 //   ly  distance (ly)    r radius (Earths)   m mass (Earths)    t temperature (K)   s light (Earths)
 //   h   height (km)      y launch year       q perihelion year
-const RANGES = { ly: 'withinLy', r: 'radius', m: 'mass', t: 'teq', s: 'insol', h: 'height', y: 'year', q: 'perihelion' };
+//   d   days since launch (forge internal #555: "satellites launched this week" is `sats_d-7`)
+const RANGES = { ly: 'withinLy', r: 'radius', m: 'mass', t: 'teq', s: 'insol', h: 'height', y: 'year', q: 'perihelion', d: 'launchedDays' };
 const FLAGS = { hz: 'zone', hzw: 'zoneWide', rocky: 'rocky', here: 'fromCamera', working: 'working', desc: 'desc' };
 
 /**
@@ -79,7 +80,7 @@ export function parseFind(text) {
     if (m) { q.operator = m[1]; continue; }
     m = /^by([a-zA-Z]{2,16})$/.exec(tok);
     if (m) { q.sort = m[1]; continue; }
-    m = /^(ly|r|m|t|s|h|y|q)(\d*\.?\d*)(?:-(\d*\.?\d*))?$/.exec(tok);
+    m = /^(ly|r|m|t|s|h|y|q|d)(\d*\.?\d*)(?:-(\d*\.?\d*))?$/.exec(tok);
     if (!m) continue;
     const key = RANGES[m[1]];
     const one = m[3] === undefined;
@@ -195,11 +196,12 @@ export function starRow(record) {
 }
 
 /** A catalogue row (data/owners.js catalogueRows) as the table's row: owner, height, launch year. */
-export function satRow(r, operator = null) {
+export function satRow(r, operator = null, nowMs = Date.now()) {
   const height = Number.isFinite(r.apogeeKm) && Number.isFinite(r.perigeeKm) ? Math.round((r.apogeeKm + r.perigeeKm) / 2) : null;
   return {
     id: `sat-${r.id}`, norad: r.id, name: r.name, owner: r.owner, operator, height, incDeg: r.incDeg,
     year: r.launchMs !== null ? new Date(r.launchMs).getUTCFullYear() : null,
+    launchedDays: r.launchMs !== null && Number.isFinite(r.launchMs) ? (nowMs - r.launchMs) / 86400e3 : null,
     working: r.type === 'PAY' && /^[+PBSX]$/.test(r.ops || ''), payload: r.type === 'PAY', up: r.decayMs === null,
   };
 }
@@ -236,7 +238,7 @@ export function matches(q, row, origin = null) {
     if (q.operator && row.operator !== q.operator) return false;
     if (q.working && !row.working) return false;
     if (!q.working && !row.payload) return false;
-    return inRange(row.height, q.height) && inRange(row.year, q.year);
+    return inRange(row.height, q.height) && inRange(row.year, q.year) && inRange(row.launchedDays, q.launchedDays);
   }
   if (q.kind === 'comets') return inRange(row.perihelion, q.perihelion);
   return true;

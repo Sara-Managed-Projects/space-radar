@@ -523,3 +523,36 @@ html.sr-phone .sr-photo__lens .ui-range { flex: 1 1 auto; width: auto; }
 .sr-share__preset:active,
 .sr-share__viewbtn:active { background: var(--sr-wash-strong); }
 /* 0077 W3-e: end */
+
+/* THE TWO TABS (forge internal #554): Share and Embed, the set's segmented pills as a tablist, under the head. */
+.sr-share__tabs { margin: 0 20px var(--sp-2); width: auto; }
+.sr-share__body[hidden] { display: none; }
+
+/* The Embed tab: the code to paste in the mono face, in the link's wash, read-only, selected on focus. */
+.sr-share__code {
+  display: block;
+  width: 100%;
+  min-height: 112px;
+  margin: 0;
+  padding: var(--sp-2) var(--sp-3);
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font-mono);
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border: 0;
+  border-radius: var(--sr-radius);
+  resize: vertical;
+  word-break: break-all;
+}
+.sr-share__code:focus-visible { outline: 2px solid var(--sr-atmosphere); outline-offset: 2px; }
+.sr-share__embed .sr-share__note { margin: 0; }
+.sr-share__embed .sr-share__acts > .ui-btn { grid-column: 1 / -1; }
+.sr-share__docs {
+  display: inline-block;
+  min-height: 24px;
+  font: 400 var(--sr-fs-sm)/24px var(--sr-font);
+  color: var(--sr-atmosphere);
+}
+.sr-share__docs:hover { color: var(--sr-text); }
+@media (pointer: coarse) {
+  .sr-share__docs { min-height: 44px; line-height: 44px; }
+}

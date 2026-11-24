@@ -120,3 +120,4 @@ html[lang='ar'] {
 html[lang='ar'] * {
   letter-spacing: 0 !important;
 }
+html[dir='rtl']:not(.sr-phone) .sr-yourstar { right: auto; left: calc(var(--sr-inset) + env(safe-area-inset-left, 0px) + 48px + 12px); }

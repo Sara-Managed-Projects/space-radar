@@ -155,26 +155,70 @@ def stamp_app_link(text: str, app: str | None) -> str:
     return APP_LINK.sub(want, text, count=1)
 
 
-def filter_form(codes: dict) -> str:
-    """The filter above the cards: three fields and a count, labelled for a screen reader."""
-    band_chips = '<button type="button" class="ui-chip" data-band="" aria-pressed="true">All ages</button>' + "".join(
-        f'<button type="button" class="ui-chip" data-band="{b}" aria-pressed="false">Ages {b}</button>' for b in BANDS)
+# THE FILTER ROWS ARE THE MODELS CATALOG'S (2026-11-24): a key in the condensed caps on the left, orbit pills on the right
+# (css/controls.css .ui-orbit, the kit's .orbits pill), each family in its own tint (tokens.css --tint-*), the count a plain
+# number. The age is a row of pills with a dot (the models' Size row); the curriculum, 52 codes, is the kit's capsule field
+# round a select; the words the same capsule round a search, led by a magnifier; the topics a row of pills with an icon each.
+# Every word stays in the HTML, so the ten other languages translate it (registry/seo-i18n); the script writes numbers only.
+def _svg(body: str) -> str:
+    """A Lucide-style icon, the guide's way: the 24 box, stroke 1.75, round caps and joins, hidden from a screen reader."""
+    return ('<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" '
+            f'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">{body}</svg>')
+
+
+DOT = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>'
+SEARCH = _svg('<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>')
+BOOK = _svg('<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>')
+# One icon and one tint a topic. Lucide's own drawings (lucide.dev, ISC: CREDITS.md) where it has the thing: orbit, ruler,
+# clock, rocket, star, eye, sun-moon; a ringed planet, a black hole's disc and a two-armed galaxy drawn in the same hand.
+TOPIC_LOOK = {
+    "Orbits and gravity": ("sky", '<path d="M20.341 6.484A10 10 0 0 1 10.266 21.85"/><path d="M3.659 17.516A10 10 0 0 1 13.74 2.152"/><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/>'),
+    "Planets and moons": ("gold", '<circle cx="12" cy="12" r="6"/><path d="M6.6 15.2C3.6 17 2 18.6 2.5 19.4c.8 1.3 6-.6 11.1-4.3s8.6-8.1 7.9-9.4c-.4-.7-2-.6-4.1.3"/>'),
+    "Scale and distance": ("mint", '<path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/>'),
+    "Light and time": ("cyan", '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'),
+    "Rockets and spaceflight": ("ember", '<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>'),
+    "Stars and their lives": ("rose", '<path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>'),
+    "Sky from Earth": ("blue", '<path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/>'),
+    "Cosmology and black holes": ("violet", '<circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="10" ry="3.5"/><path d="M12 5.5a6.5 6.5 0 0 1 6.5 6.5"/><path d="M12 18.5A6.5 6.5 0 0 1 5.5 12"/>'),
+    "Stars and galaxies": ("lilac", '<circle cx="12" cy="12" r="1.5"/><path d="M13.5 12a4 4 0 0 1-7.7 1.5A7 7 0 0 1 12 4"/><path d="M10.5 12a4 4 0 0 1 7.7-1.5A7 7 0 0 1 12 20"/>'),
+    "Earth, Moon and Sun": ("silver", '<path d="M12 8a2.83 2.83 0 0 0 4 4 4 4 0 1 1-4-4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.9 4.9 1.4 1.4"/><path d="m17.7 17.7 1.4 1.4"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.3 17.7-1.4 1.4"/><path d="m19.1 4.9-1.4 1.4"/>'),
+}
+
+
+def orbit_pill(tag: str, attrs: str, tint: str, icon: str, label: str, count: int | None = None) -> str:
+    """One .ui-orbit: the disc, the label, the count. `attrs` are the element's own (href, data-band, aria-pressed). Pure."""
+    n = f'<span class="ui-orbit__n">{count}</span>' if count is not None else ""
+    return (f'<{tag} class="ui-orbit" {attrs} style="--a:var(--tint-{tint})"><span class="ui-orbit__disc">{icon}</span>'
+            f'<span>{esc(label)}</span>{n}</{tag}>')
+
+
+def filter_form(codes: dict, topics: str = "") -> str:
+    """The filter above the cards: the age, the curriculum and the words, the topics under them, and a count, each row
+    labelled for a screen reader. `topics` is the row of topic pills (build() counts them)."""
+    band_chips = orbit_pill("button", 'type="button" data-band="" aria-pressed="true"', "grey", DOT, "All ages") + "".join(
+        orbit_pill("button", f'type="button" data-band="{b}" aria-pressed="false"', "grey", DOT, f"Ages {b}") for b in BANDS)
     groups = "".join(
         f'<optgroup label="{esc(label)}">' + "".join(f'<option value="{fw}:{esc(str(c))}">{esc(str(c))}: {esc(str(t))[:70]}</option>'
                                                      for c, t in (codes.get(fw) or {}).items()) + "</optgroup>" for fw, label in FRAMEWORKS)
-    # The same rows as the journal, games and models filters: a small caps key on the left, the control on the right. The age
-    # is a row of the shared pills (.ui-chip, aria-pressed), the curriculum the shared .ui-select, the words a pill field.
     return ('<form class="lfilter" id="lfilter" role="search" aria-label="Filter the simulators">'
             '<div class="lfilter__r"><p class="lfilter__k" id="lf-band">Age</p><div class="lfilter__v" role="group" aria-labelledby="lf-band">'
             + band_chips + '<input type="hidden" name="band" value=""></div></div>'
-            '<div class="lfilter__r"><label class="lfilter__k" for="lf-code">Curriculum</label><div class="lfilter__v">'
-            '<select class="ui-select ui-select--block" id="lf-code" name="code"><option value="">Any curriculum</option>' + groups + "</select></div></div>"
-            '<div class="lfilter__r"><label class="lfilter__k" for="lf-q">Words</label><div class="lfilter__v">'
-            '<input class="lfilter__in" id="lf-q" type="search" name="q" placeholder="gravity, Moon, light"></div></div>'
-            '<p class="lcount" id="lcount" role="status" aria-live="polite"></p></form>')
+            '<div class="lfilter__r"><label class="lfilter__k" for="lf-code">Curriculum</label><div class="lfilter__f">'
+            f'<span class="ui-field" style="--a:var(--tint-violet)"><span class="ui-orbit__disc">{BOOK}</span>'
+            '<select class="ui-field__in" id="lf-code" name="code"><option value="">Any curriculum</option>' + groups + "</select></span></div></div>"
+            '<div class="lfilter__r"><label class="lfilter__k" for="lf-q">Words</label><div class="lfilter__f">'
+            f'<span class="ui-field"><span class="ui-orbit__disc">{SEARCH}</span>'
+            '<input class="ui-field__in" id="lf-q" type="search" name="q" placeholder="gravity, Moon, light" autocomplete="off" spellcheck="false" enterkeyhint="search"></span></div></div>'
+            + topics + '<p class="lcount" id="lcount" role="status" aria-live="polite"></p></form>')
 
 
-# One small script, no library: hides the cards (and the empty topics) that do not match, counts the topic chips again, and keeps the choice in the
+def topic_row(chips: list[str]) -> str:
+    """The fourth row: a pill a topic, a link to its shelf below with how many simulators it holds."""
+    return ('<div class="lfilter__r"><p class="lfilter__k" id="lf-topic">Topic</p><nav aria-labelledby="lf-topic">'
+            f'<ul class="lfilter__v topics">{"".join(chips)}</ul></nav></div>')
+
+
+# One small script, no library: hides the cards (and the empty topics) that do not match, counts the topic pills again (the number only), and keeps the choice in the
 # address (#band=11-14&code=gcse:4.8.1.3) so /teachers/ can link to one level. Nothing is fetched.
 FILTER_JS = """(function(){var f=document.getElementById('lfilter');if(!f)return;var cards=[].slice.call(document.querySelectorAll('.grid>li'));
 function read(){var h={};location.hash.slice(1).split('&').forEach(function(p){var i=p.indexOf('=');if(i>0)h[p.slice(0,i)]=decodeURIComponent(p.slice(i+1))});
@@ -182,7 +226,7 @@ function read(){var h={};location.hash.slice(1).split('&').forEach(function(p){v
 function pills(){var v=f.elements.band.value;[].forEach.call(f.querySelectorAll('[data-band]'),function(c){c.setAttribute('aria-pressed',c.dataset.band===v?'true':'false')})}
 function run(write){var b=f.elements.band.value,c=f.elements.code.value,q=f.elements.q.value.trim().toLowerCase(),n=0;
 cards.forEach(function(li){var a=li.firstElementChild,ok=(!b||(' '+a.dataset.band+' ').indexOf(' '+b+' ')>=0)&&(!c||(' '+a.dataset.code+' ').indexOf(' '+c+' ')>=0)&&(!q||a.textContent.toLowerCase().indexOf(q)>=0);li.hidden=!ok;if(ok)n++});
-[].forEach.call(document.querySelectorAll('h2.cat'),function(h){var ul=h.nextElementSibling,k=[].filter.call(ul.children,function(li){return!li.hidden}).length,chip=document.querySelector('.topics a[href="#'+h.id+'"]');h.hidden=ul.hidden=!k;if(chip){chip.textContent=chip.dataset.name+' ('+k+')';chip.parentNode.hidden=!k}});
+[].forEach.call(document.querySelectorAll('h2.cat'),function(h){var ul=h.nextElementSibling,k=[].filter.call(ul.children,function(li){return!li.hidden}).length,chip=document.querySelector('.topics a[href="#'+h.id+'"]');h.hidden=ul.hidden=!k;if(chip){chip.querySelector('.ui-orbit__n').textContent=k;chip.parentNode.hidden=!k}});
 var all=!b&&!c&&!q;document.getElementById('lcount').textContent=all?'':(n===1?'1 simulator matches':n+' simulators match');
 if(write){var p=[];if(b)p.push('band='+encodeURIComponent(b));if(c)p.push('code='+encodeURIComponent(c));if(q)p.push('q='+encodeURIComponent(q));history.replaceState(null,'',p.length?'#'+p.join('&'):location.pathname)}}
 f.addEventListener('click',function(e){var c=e.target.closest&&e.target.closest('button[data-band]');if(!c)return;f.elements.band.value=c.dataset.band;pills();run(true)});f.addEventListener('input',function(){run(true)});f.addEventListener('submit',function(e){e.preventDefault()});read();run(false)})();"""
@@ -190,17 +234,17 @@ f.addEventListener('click',function(e){var c=e.target.closest&&e.target.closest(
 
 
 LAB_CSS = """
-.lab .wrap>.topics{margin:0 0 .5rem}
-.lfilter{display:grid;gap:.6rem;margin:0 0 1.4rem}
-.lfilter__r{display:grid;align-items:center;gap:.4rem 1rem}
+.lfilter{display:grid;gap:.2rem;margin:0 0 1.4rem}
+.lfilter__r{display:grid;align-items:center;gap:0 1rem;min-width:0}
 .lfilter__k{margin:0;font:600 .72rem/1 var(--cap);letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
-.lfilter__v{display:flex;flex-wrap:wrap;gap:8px;min-width:0}
-.lfilter__v>.ui-select{max-width:36rem}
-.lfilter__in{-webkit-appearance:none;appearance:none;width:100%;max-width:36rem;min-height:var(--ui-h);margin:0;padding:0 16px;font:400 var(--ui-fs-field)/1.2 var(--sans);color:var(--tx);background:var(--ui-wash);border:1px solid var(--ui-edge);border-radius:var(--ui-r-pill);transition:border-color var(--ui-fast) var(--ui-ease)}
-.lfilter__in:hover{border-color:var(--ui-sel-line)}
-.lfilter__in:focus-visible{outline:2px solid var(--atm);outline-offset:2px}
-@media(min-width:760px){.lfilter__r{grid-template-columns:6.5rem minmax(0,1fr)}}
-@media(pointer:coarse){.lfilter__in{min-height:44px}}
+.lfilter__v{display:flex;gap:12px;min-width:0;margin:0;padding:8px 4px 12px;list-style:none;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x proximity}
+.lfilter__v::-webkit-scrollbar{display:none}
+.lfilter__v>*,.lfilter__v>li>.ui-orbit{scroll-snap-align:start;flex:none}
+.lfilter__f{min-width:0;padding:8px 4px 12px}
+.lfilter__f>.ui-field{max-width:36rem}
+@media(min-width:900px){.lfilter__v{flex-wrap:wrap;overflow:visible}}
+@media(min-width:760px){.lfilter__r{grid-template-columns:6.5rem minmax(0,1fr);align-items:start}.lfilter__k{padding-top:25px}}
+@media(max-width:759px){.lfilter__k{margin-top:.6rem}}
 .lcount{flex-basis:100%;margin:0;font-size:.9rem;color:var(--dim);min-height:1.3rem}
 .lab h2.cat{font:600 clamp(1.6rem,2.8vw,2.2rem)/1.08 var(--head);letter-spacing:-.012em;margin:2.8rem 0 1.1rem;scroll-margin-top:5.5rem}
 .lab ul.grid{list-style:none;margin:0;padding:0}
@@ -238,7 +282,8 @@ def build() -> str:
             continue
         cards = "\n".join(card(s, lv["labs"].get(s["slug"])) for s in mine)
         sections.append(f'<h2 class="cat" id="{anchor(cat)}">{esc(cat)}</h2>\n<ul class="grid">\n{cards}\n</ul>')
-        chips.append(f'<li><a href="#{anchor(cat)}" data-name="{esc(cat)}">{esc(cat)} ({len(mine)})</a></li>')
+        tint, art = TOPIC_LOOK[cat]
+        chips.append('<li>' + orbit_pill("a", f'href="#{anchor(cat)}"', tint, _svg(art), cat, len(mine)) + '</li>')
     icon = ("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12.5' fill='%230B0E14'/>"
             "<circle cx='32' cy='32' r='14.38' fill='%232E6FB8'/></svg>")
     return f"""<!doctype html>
@@ -276,8 +321,7 @@ def build() -> str:
 <p class="lead">{len(sims)} small pages, each teaching one idea about space. Every number is quoted from its source, and every page says what is and is not to scale. Open one and move the slider.</p>
 </div></header>
 <div class="wrap">
-{filter_form(lv["codes"])}
-<nav aria-label="Topics"><ul class="tagcloud topics">{"".join(chips)}</ul></nav>
+{filter_form(lv["codes"], topic_row(chips))}
 {chr(10).join(sections)}
 <section class="add" aria-labelledby="add-h">
 <h2 id="add-h">Add your own simulator</h2>

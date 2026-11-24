@@ -1261,6 +1261,14 @@ export async function boot({ setStatus } = {}) {
       if (v || ctx.figureSide) import('./ui/figureside.js').then((m) => m.sideLink(ctx, v)); // it keeps itself on ctx.figureSide
     });
   }
+  // The star of your year (ui/yourstar.js, forge internal #545): fetched when the search row asks (`sr:your-star`) or the link
+  // carries `born=`, as the side view above is.
+  for (const name of ['sr:your-star', 'sr:layers-ready', 'hashchange']) {
+    window.addEventListener(name, () => {
+      const v = readUrlKeys().born;
+      if (name === 'sr:your-star' || v) import('./ui/yourstar.js').then((m) => m.starLink(ctx, v, name === 'sr:your-star'));
+    });
+  }
   // b200-f2-worlds: end
   // OFFLINE (site/sw.js, ui/offline.js; issues #290, #453): the service worker is registered
   // OFFLINE_MS after sr:layers-ready, past the keys hint, so nothing it does is a first visit's cost.
@@ -1427,6 +1435,8 @@ export async function boot({ setStatus } = {}) {
     window.dispatchEvent(new CustomEvent('sr:layers-ready'));
     // An embed: only what its link names (openAt).
     if (!embed) afterFirstVisit(LATER_LAYERS_MS, () => ctx.loadAfterFirstVisit());
+    // The network chips at the top of the Earth tab (ui/networks.js, forge internal #555), in the same idle moment.
+    if (!embed) afterFirstVisit(LATER_LAYERS_MS, () => import('./ui/networks.js').then((m) => m.mountNetworks(ctx), () => null));
   });
   let shellsLoad = null;
   // A rung of the ladder or a star system's stage draws them: no waiting for the idle moment.

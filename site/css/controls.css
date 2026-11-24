@@ -16,10 +16,10 @@
 @media (prefers-reduced-motion: reduce){:root{--ui-fast:0ms;--ui-ease:linear}}
 
 /* hidden means hidden, whatever display a control has */
-:is(.ui-btn,.ui-seg,.ui-seg__btn,.ui-select,.ui-check,.ui-radio,.ui-opt,.ui-range,.ui-close,.ui-pop,.ui-row,.ui-chip)[hidden]{display:none}
+:is(.ui-btn,.ui-seg,.ui-seg__btn,.ui-select,.ui-check,.ui-radio,.ui-opt,.ui-range,.ui-close,.ui-pop,.ui-row,.ui-chip,.ui-orbit,.ui-field)[hidden]{display:none}
 
 /* the focus ring, one for the whole set */
-:is(.ui-btn,.ui-seg__btn,.ui-select,.ui-check,.ui-radio,.ui-range,.ui-close,.ui-row,.ui-chip):focus-visible{outline:2px solid var(--atm);outline-offset:2px}
+:is(.ui-btn,.ui-seg__btn,.ui-select,.ui-check,.ui-radio,.ui-range,.ui-close,.ui-row,.ui-chip,.ui-orbit):focus-visible{outline:2px solid var(--atm);outline-offset:2px}
 
 /* .ui-btn: the button. Default is a quiet filled pill; --primary is the view's one ember action; --secondary is blue;
    --ghost is an outline; --quiet is words only; --icon is a round icon button; --sm is 32 px; --tile is an icon over a short label (a card's row
@@ -132,6 +132,32 @@
 :is(button,a).ui-chip:hover{box-shadow:inset 0 0 0 1px var(--ui-sel-line)}
 .ui-chip:is([aria-pressed='true'],[aria-checked='true']){background:var(--ui-sel);box-shadow:inset 0 0 0 1px var(--ui-sel-line)}
 .ui-chip:disabled{opacity:0.45;cursor:not-allowed}
+
+/* .ui-orbit: the orbit pill, the kit's category and filter pill (the journal's, games' and models' .orbits rows). A capsule
+   led by a round __disc (an icon, or a dot, in the thing's --a, with a dashed orbit ring round it, the icon drawn in --a), then the label in the
+   condensed caps, then __n, the count, a plain number. --a is the family's tint (tokens.css --tint-*), set on the pill;
+   blue by default. As a <button aria-pressed> it is a filter; as a link, aria-current marks the one you are on. 44 px
+   always, as on the kit. The ring stands still: nothing in the set loops (the kit turns it; this set does not). */
+.ui-orbit{--a:var(--atm);position:relative;display:inline-flex;align-items:center;gap:8px;min-height:44px;margin:0;padding:4px;padding-inline:8px 16px;font-family:var(--cap);font-size:var(--ui-fs-sm);font-weight:600;line-height:1;letter-spacing:0.1em;text-transform:uppercase;color:var(--tx);text-decoration:none;white-space:nowrap;background:transparent;border:0;border-radius:var(--ui-r-pill);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--a) 42%,transparent);cursor:pointer;transition:background-color var(--ui-fast) var(--ui-ease),box-shadow var(--ui-fast) var(--ui-ease)}
+.ui-orbit:hover,.ui-orbit:is([aria-pressed='true'],[aria-current='true'],[aria-current='page']){background:color-mix(in srgb,var(--a) 16%,transparent);box-shadow:inset 0 0 0 1px var(--a)}
+.ui-orbit:disabled{opacity:0.45;cursor:not-allowed}
+.ui-orbit__disc{position:relative;flex:none;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:color-mix(in srgb,var(--a) 14%,var(--bg))}
+.ui-orbit__disc::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1px dashed color-mix(in srgb,var(--a) 60%,transparent)}
+.ui-orbit__disc svg{width:16px;height:16px;stroke:var(--a)}
+.ui-orbit__disc svg [fill='currentColor']{fill:var(--a);stroke:none}
+.ui-orbit__n{font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:0;color:var(--dim)}
+
+/* .ui-field: a search field, or a select, in the orbit pill's capsule, led by the same __disc (a magnifier for a search):
+   the kit's search capsule with its icon. The control inside is .ui-field__in; the whole capsule wears the focus ring. */
+.ui-field{--a:var(--atm);position:relative;display:flex;align-items:center;gap:8px;min-width:0;min-height:44px;margin:0;padding:0;padding-inline-start:8px;background:var(--panel);border-radius:var(--ui-r-pill);box-shadow:inset 0 0 0 1px var(--line);transition:box-shadow var(--ui-fast) var(--ui-ease)}
+.ui-field:hover{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--a) 42%,transparent)}
+.ui-field:has(.ui-field__in:focus-visible),.ui-field:focus-within{outline:2px solid var(--atm);outline-offset:2px;box-shadow:inset 0 0 0 1px var(--a)}
+.ui-field__in{appearance:none;-webkit-appearance:none;flex:1 1 auto;min-width:0;min-height:44px;margin:0;padding:0;padding-inline-end:16px;font-family:var(--sans);font-size:var(--ui-fs-field);font-weight:400;line-height:1.2;color:var(--tx);text-overflow:ellipsis;background:transparent;border:0;border-radius:var(--ui-r-pill);cursor:text}
+.ui-field__in:focus-visible{outline:none}
+.ui-field__in::placeholder{color:var(--dim)}
+select.ui-field__in{padding-inline-end:40px;cursor:pointer;background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239AA4B2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 16px center/16px 16px}
+select.ui-field__in:dir(rtl){background-position:left 16px center}
+.ui-field__in option,.ui-field__in optgroup{color:var(--tx);background:var(--panel)}
 
 /* a finger's target: 44 px on a touch screen, measured on the control's own box (tests/test_touch_targets.mjs and
    the CI ui walk measure the element, not a hit area around it), so every interactive control is 44 px here. */

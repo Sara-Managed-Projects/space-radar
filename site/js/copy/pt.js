@@ -6784,3 +6784,181 @@ COPY.dayCard = {
   "sourceSky": "o Sol, a Lua e os planetas, calculados aqui (Astronomy Engine)"
 };
 // research train (live): end
+// A card's Pictures and news (ui/cardmedia.js, copy/en.media.js; forge internal #556), machine-drafted: begin
+COPY.media = {
+  "pictures": "Fotografias",
+  "journal": "Do Diário",
+  "reads": "Leituras longas",
+  "pages": "Páginas oficiais",
+  "archives": "Buscar nos arquivos",
+  "credit": "{credit}, {licence}",
+  "photoAlt": "{name}, fotografado por {by}",
+  "photoAltPlain": "Uma fotografia de {name}",
+  "photoOpen": "A imagem em {site}",
+  "own": "Imagem nossa",
+  "posted": "Publicado em {date}",
+  "readOnTitle": "A leitura longa, com as imagens, neste site",
+  "onJournal": "No Diário",
+  "pageTitle": "{name}: a página da própria agência, em uma nova aba",
+  "nasa": "Biblioteca de imagens e vídeos da NASA",
+  "nasaTitle": "Imagens, vídeos e sons da NASA sobre {name}, em uma nova aba",
+  "esahubble": "Imagens do ESA/Hubble",
+  "esahubbleTitle": "As imagens do ESA/Hubble de {name}, em uma nova aba",
+  "esawebb": "Imagens do ESA/Webb",
+  "esawebbTitle": "As imagens do ESA/Webb de {name}, em uma nova aba",
+  "archivesNote": "Estes links abrem a busca de cada arquivo pelo nome; as condições estão nas páginas deles, e aqui não mostramos nada deles.",
+  "empty": "Ainda não temos nenhuma fotografia, publicação ou leitura longa sobre {name}. Os arquivos abaixo talvez tenham algo."
+};
+COPY.mediaRow = {
+  "row": "Imagens e notícias",
+  "loading": "Reunindo o que temos…",
+  "failed": "A lista não carregou. Feche esta linha e abra de novo."
+};
+// A card's Pictures and news: end
+
+// The train of 2026-11-24 (forge internal #545, #554, #555): begin -- the Embed tab of the share sheet (copy/en.embedtab.js), the star of your year (copy/en.yourstar.js), the network chips (copy/en.networks.js) and the search's new rows (copy/en.later.js searchRows), machine-drafted
+COPY.embedTab = {
+  "tabsLabel": "Compartilhar ou incorporar",
+  "share": "Compartilhar",
+  "embed": "Incorporar",
+  "lede": "Coloque esta visão ao vivo na sua própria página: o site de uma turma, um blog ou um slide.",
+  "size": "Tamanho",
+  "sizes": {
+    "small": "Pequeno",
+    "medium": "Médio",
+    "large": "Grande"
+  },
+  "sizeTitle": "{w} por {h} pixels; fica mais estreito para caber num celular",
+  "credit": "Adicionar uma linha de crédito embaixo",
+  "creditLine": "Visão ao vivo por {link}",
+  "code": "Código para colar",
+  "copy": "Copiar o código",
+  "copyTitle": "Copia o código que coloca esta visão ao vivo numa página da web",
+  "preview": "Prévia",
+  "previewTitle": "Abre a visão incorporada sozinha numa nova aba",
+  "note": "Os leitores veem a visão ao vivo e um link Abrir no Space Radar. Nada fica guardado no aparelho deles: nem cookie, nem rastreador.",
+  "docs": "Mais tamanhos, viagens e o mapa inteiro: a página de incorporação"
+};
+COPY.yourStar = {
+  "title": "A estrela do seu ano",
+  "close": "Fechar a estrela do seu ano",
+  "lede": "A luz leva um ano para atravessar um ano-luz. Então a estrela que está a tantos anos-luz quantos anos você tem é vista hoje à noite com a luz que saiu dela quando você nasceu.",
+  "dateLabel": "Aniversário",
+  "placeLabel": "Cidade, para o céu daquela noite (opcional)",
+  "placeHint": "São Paulo, Lisboa, Luanda…",
+  "placeUnknown": "Essa cidade não está na lista, então o céu é calculado para as 21h do seu relógio.",
+  "go": "Encontrar minha estrela",
+  "finding": "Procurando entre as estrelas com nome…",
+  "needDate": "Digite um aniversário primeiro.",
+  "badDate": "Não dá para ler esse dia. Escolha um entre 1900 e hoje.",
+  "future": "Esse dia ainda não chegou. Escolha um dia no passado.",
+  "noStars": "As estrelas não carregaram. Tente de novo daqui a pouco.",
+  "eyebrow": "A estrela do seu ano",
+  "eyebrowOnWay": "A luz da sua estrela está a caminho",
+  "where": "Em {constellation}, a {ly} anos-luz",
+  "distance": "A {ly} anos-luz",
+  "left": "A luz que você vê dela hoje à noite saiu em {when}, quando você nasceu.",
+  "leftYear": "A luz que você vê dela hoje à noite saiu em {when}, mais ou menos quando você nasceu, em {year}.",
+  "band": "A distância dela é conhecida com cerca de {err} anos-luz de margem para cada lado, então essa luz partiu entre {from} e {to}.",
+  "onItsWay": "Ainda não há estrela tão perto. A luz que saiu de {name} no seu aniversário ainda está cruzando os {ly} anos-luz: ela chega em {when}.",
+  "errFrom": {
+    "gaia": "O erro é o do Gaia: a paralaxe da estrela e a própria incerteza dela.",
+    "range": "O erro é o intervalo que o catálogo dá para esta estrela.",
+    "modelled": "O erro é modelado a partir da precisão do Hipparcos (meio milissegundo de arco); o catálogo não dá nenhum para esta estrela."
+  },
+  "moon": "A Lua: {phase}, {pct} % iluminada",
+  "planetsPlace": "Visíveis depois do crepúsculo em {place}: {list}",
+  "planetsClock": "No céu do começo da noite: {list}",
+  "planetsNone": "Nenhum planeta brilhante estava no céu do começo da noite.",
+  "formatLabel": "Formato do cartão",
+  "formats": {
+    "landscape": "Largo",
+    "square": "Quadrado",
+    "story": "Story"
+  },
+  "share": "Compartilhar",
+  "shareTitle": "Compartilha o cartão e o link dele",
+  "download": "Baixar",
+  "downloadTitle": "Salva o cartão como imagem PNG",
+  "copyLink": "Copiar link",
+  "copyLinkTitle": "Um link que abre este cartão de novo",
+  "fly": "Voar até a estrela",
+  "flyTitle": "Fecha isto e voa até a estrela no mapa 3D",
+  "sky": "Ver aquela noite",
+  "skyTitle": "Fique no chão e olhe o céu daquela noite",
+  "copied": "Link copiado",
+  "copyRefused": "A cópia foi recusada agora",
+  "shareFailed": "Compartilhar não funcionou aqui. Baixe o cartão.",
+  "cardAlt": "Um cartão: {name}, a estrela cuja luz saiu no ano em que você nasceu, com as estrelas em volta.",
+  "privacy": "Nada é guardado nem enviado. A data fica nesta página, e no link só se você compartilhar; a cidade, nunca.",
+  "footer": "SPACERADAR.AI · UM MAPA DO ESPAÇO AO VIVO"
+};
+COPY.networks = {
+  "title": "Redes de satélites",
+  "names": {
+    "starlink": "Starlink",
+    "oneweb": "OneWeb",
+    "gps": "GPS",
+    "glonass": "GLONASS",
+    "galileo": "Galileo",
+    "beidou": "BeiDou",
+    "iridium": "Iridium",
+    "kuiper": "Kuiper",
+    "qianfan": "Qianfan",
+    "stations": "Estações",
+    "debris": "Detritos",
+    "geo": "Geoestacionários"
+  },
+  "chipCount": "{name}: {n} no mapa agora. Destacar",
+  "chipNoCount": "{name}: destacar no mapa",
+  "clear": "Limpar",
+  "clearTitle": "Mostra todos os pontos de novo",
+  "noteLoad": "Os números aparecem quando os satélites carregam: toque numa rede (7 MB).",
+  "noteCounted": "Contados no catálogo carregado agora (CelesTrak), pelos nomes que os operadores dão a eles."
+};
+Object.assign(COPY.searchRows, {
+  "yourStar": "A estrela do seu ano",
+  "yourStarSub": "A luz dela partiu quando você nasceu",
+  "yourStarWords": "aniversário nascimento nasci ano minha estrela estrela do meu ano estrela do seu ano idade anos-luz anos luz",
+  "ask": "Entendido: {what}",
+  "askSub": "Toque para destacar no mapa",
+  "askJoin": " · ",
+  "askGroups": {
+    "starlink": "Starlink",
+    "oneweb": "OneWeb",
+    "kuiper": "Kuiper",
+    "qianfan": "Qianfan",
+    "gps": "GPS",
+    "glonass": "GLONASS",
+    "galileo": "Galileo",
+    "beidou": "BeiDou",
+    "iridium": "Iridium",
+    "stations": "estações tripuladas",
+    "debris": "detritos",
+    "geo": "o anel geoestacionário",
+    "sats": "satélites"
+  },
+  "askPlace": "sobre {place}",
+  "askOwner": "de {owner}",
+  "askToday": "lançados hoje",
+  "askDays": "lançados nos últimos {n} dias",
+  "askYear": "lançados em {year}",
+  "askWords": {
+    "over": "sobre|acima de|em|no|na",
+    "from": "de|do|da",
+    "launched": "lançados|lançado|lançamento|novos",
+    "today": "hoje",
+    "week": "esta semana|semana",
+    "month": "este mês|mês",
+    "year": "este ano",
+    "groups": {
+      "stations": "estações|estações espaciais|estação espacial",
+      "debris": "detritos|lixo espacial",
+      "geo": "geoestacionários|geoestacionário",
+      "sats": "satélites|satélite"
+    }
+  }
+});
+COPY.yourStar.skyOn = "O céu de {date}";
+COPY.yourStar.leftNear = "A luz que você vê dela esta noite saiu em {when}: nenhuma estrela com nome está exatamente a tantos anos-luz quanto a sua idade, e esta é a mais próxima.";
+// The train of 2026-11-24: end

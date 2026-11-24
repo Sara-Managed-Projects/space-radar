@@ -68,7 +68,8 @@ import { camValue } from './urlstate.js';
 import { sr } from './platform-bridge.js';
 import { makePostcard, pdfFromJpeg, saveBlob } from './printcompose.js';
 import { createSheet, sheetHeights } from './sheet.js';
-import { embedSnippet, embedState } from './embed.js';
+import { embedSnippet, embedState, embedUrl, fullUrl } from './embed.js';
+import '../copy/en.embedtab.js'; // the words of the Embed tab (COPY.embedTab)
 import { objectPages, objectPageUrl, PAGES_INDEX } from './objectpage.js';
 // 0077 W3-e: begin
 import { PRESET_IDS, presetOf, applyPhotoPreset } from './photopresets.js';
@@ -301,6 +302,7 @@ const ICONS = {
   crop: ['M6 2v14a2 2 0 0 0 2 2h14', 'M18 22V8a2 2 0 0 0-2-2H2'],
   code: ['m16 18 6-6-6-6', 'm8 6-6 6 6 6'],
   'chevron-down': ['m6 9 6 6 6-6'],
+  'external-link': ['M15 3h6v6', 'M10 14 21 3', 'M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'], // the Embed tab's Preview (forge internal #554)
 };
 // b200-f5-make: begin -- the three makers' icons (Lucide's route, video and aperture, as paths)
 ICONS.route = ['M3 19a3 3 0 1 0 6 0a3 3 0 1 0-6 0', 'M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15', 'M15 5a3 3 0 1 0 6 0a3 3 0 1 0-6 0'];
@@ -375,6 +377,40 @@ export function withCam(link, ctx) {
   return `${url}${url.includes('#') ? '&' : '#'}cam=${cam}`;
 }
 
+// ------------------------------------------------------------------ the Embed tab (forge internal #554)
+
+/**
+ * Three sizes for the frame: a column of a class site or a blog is about 600 wide, and the frame still gives way
+ * on a phone (`max-width:100%` in embedSnippet).
+ */
+export const EMBED_SIZES = { small: { width: 400, height: 300 }, medium: { width: 600, height: 400 }, large: { width: 800, height: 500 } };
+const attrOf = (v) => String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/**
+ * The credit line under the frame, as the /embed/ page writes it (templates/embed/generate.js `snippet`): one
+ * paragraph, the visitor's language's `words` with `{link}` where the plain link back goes (ui/embed.js fullUrl with
+ * `from: 'embed'`, the one module that writes the tag; no tracker). Pure.
+ */
+export function embedCredit(words, base = 'https://www.spaceradar.ai/') {
+  const link = `<a href="${attrOf(fullUrl({}, base, { from: 'embed' }))}">Space Radar</a>`;
+  const parts = String(words || '').split('{link}');
+  return `<p>${parts.length > 1 ? parts.map(attrOf).join(link) : `${attrOf(parts[0])} ${link}`.trim()}</p>`;
+}
+
+/**
+ * What the Embed tab writes: the frame for this view at a size, and the credit line under it unless it is
+ * unticked. `kind` names the view for the `embed_copy` event (object, trip or map), never its id. Pure.
+ */
+export function embedCode(st, { size = 'medium', credit = true, title = '', creditWords = '', base } = {}) {
+  const dims = EMBED_SIZES[size] || EMBED_SIZES.medium;
+  const frame = embedSnippet(st, { base, title, width: dims.width, height: dims.height });
+  const kind = st && st.trip ? 'trip' : st && st.at ? 'object' : 'map';
+  return { html: credit ? `${frame}\n${embedCredit(creditWords, base)}` : frame, kind, src: embedUrl(st, base) };
+}
+
+/** What a share is of, for the `share` event's content_type: never the object's id or name. */
+export const contentTypeOf = (c) => (c && c.trip ? 'trip' : c && c.record ? 'object' : 'view');
+
 export function createShareSheet(ctx) {
   const S = COPY.share;
   const root = el('div', 'sr-share sr-float sr-over-clean');
@@ -393,6 +429,75 @@ export function createShareSheet(ctx) {
   head.append(title, closeBtn);
 
   const body = el('div', 'sr-share__body');
+  // TWO TABS (forge internal #554): Share, the sheet as it was, and Embed, the code that puts this view in a page.
+  const ET = COPY.embedTab;
+  const tabs = el('div', 'ui-seg ui-seg--block sr-share__tabs');
+  tabs.setAttribute('role', 'tablist');
+  tabs.setAttribute('aria-label', ET.tabsLabel);
+  const tabBtn = (id, label) => {
+    const b = el('button', 'ui-seg__btn', label);
+    b.type = 'button';
+    b.id = `sr-share-tab-${id}`;
+    b.dataset.tab = id;
+    b.setAttribute('role', 'tab');
+    b.setAttribute('aria-controls', `sr-share-${id}`);
+    tabs.appendChild(b);
+    return b;
+  };
+  const shareTab = tabBtn('share', ET.share);
+  const embedTab = tabBtn('embed', ET.embed);
+  body.id = 'sr-share-share';
+  body.setAttribute('role', 'tabpanel');
+  body.setAttribute('aria-labelledby', shareTab.id);
+  const embedBody = el('div', 'sr-share__body sr-share__embed');
+  embedBody.id = 'sr-share-embed';
+  embedBody.setAttribute('role', 'tabpanel');
+  embedBody.setAttribute('aria-labelledby', embedTab.id);
+  embedBody.hidden = true;
+  const embedLede = el('p', 'sr-share__note', ET.lede);
+  const sizeLabel = el('p', 'sr-micro sr-share__micro', ET.size);
+  sizeLabel.id = 'sr-share-embed-size';
+  const sizes = el('div', 'ui-seg ui-seg--block');
+  sizes.setAttribute('role', 'radiogroup');
+  sizes.setAttribute('aria-labelledby', sizeLabel.id);
+  const sizeBtns = new Map();
+  for (const id of Object.keys(EMBED_SIZES)) {
+    const b = el('button', 'ui-seg__btn', ET.sizes[id]);
+    b.type = 'button';
+    b.dataset.size = id;
+    b.setAttribute('role', 'radio');
+    b.title = t(ET.sizeTitle, { w: EMBED_SIZES[id].width, h: EMBED_SIZES[id].height });
+    sizes.appendChild(b);
+    sizeBtns.set(id, b);
+  }
+  const creditRow = el('label', 'ui-opt');
+  const creditBox = el('input', 'ui-check');
+  creditBox.type = 'checkbox';
+  creditBox.checked = true;
+  creditRow.append(creditBox, el('span', null, ET.credit));
+  const codeLabel = el('p', 'sr-micro sr-share__micro', ET.code);
+  codeLabel.id = 'sr-share-embed-code';
+  const codeBox = el('textarea', 'sr-share__code');
+  codeBox.readOnly = true;
+  codeBox.rows = 5;
+  codeBox.spellcheck = false;
+  codeBox.setAttribute('aria-labelledby', codeLabel.id);
+  codeBox.setAttribute('dir', 'ltr');
+  const embedActs = el('div', 'sr-share__acts');
+  const copyEmbedBtn = button('ui-btn ui-btn--primary', ET.copy, ET.copyTitle, 'code');
+  const previewA = el('a', 'ui-btn');
+  previewA.appendChild(icon('external-link'));
+  previewA.appendChild(el('span', 'sr-share__label', ET.preview));
+  previewA.title = ET.previewTitle;
+  previewA.target = '_blank';
+  previewA.rel = 'noopener';
+  embedActs.append(copyEmbedBtn, previewA);
+  const embedNote = el('p', 'sr-share__note', ET.note);
+  const embedDocs = el('a', 'sr-share__docs', ET.docs);
+  embedDocs.href = `${appBase()}embed/index.html`; // the page scripts/seo_embed.py builds at deploy (not a file of site/)
+  embedDocs.target = '_blank';
+  embedDocs.rel = 'noopener';
+  embedBody.append(embedLede, sizeLabel, sizes, creditRow, codeLabel, codeBox, embedActs, embedNote, embedDocs);
 
   // The picture: a skeleton tint of the postcard's own shape until it is drawn (docs/ui-guide.md
   // §2.5: a loading state is a still tint, not a spinner).
@@ -518,7 +623,7 @@ export function createShareSheet(ctx) {
   // the link and the post itself, which is what Copy, Email and the networks carry.
   textPanel.append(textBox, wikiLine);
   body.append(pic, tagRow, acts, mailNote, presetsRow, presetsPanel, viewsRow, viewsPanelBox, netLabel, nets, linkLabel, linkRow, textRow, textPanel); // 0077 W3-e: the two rows after mailNote
-  root.append(head, body);
+  root.append(head, tabs, body, embedBody);
   document.body.appendChild(root);
 
   // ------------------------------------------------------------------------------- state
@@ -526,6 +631,34 @@ export function createShareSheet(ctx) {
   let token = 0;
 
   const fail = (line) => toast(line, 4000);
+  const emb = { size: 'medium', tab: 'share' };
+  /** The Embed tab's code for the view the sheet was opened on. */
+  function embedNow() {
+    if (!cur) return null;
+    const st = embedState(shareState(ctx, cur.record ? cur.record.id : null), cur.trip);
+    return embedCode(st, { size: emb.size, credit: creditBox.checked, title: t(S.embedFrameTitle, { name: cur.parts.name }), creditWords: ET.creditLine, base: appBase() });
+  }
+  function paintEmbed() {
+    for (const [id, b] of sizeBtns) b.setAttribute('aria-checked', id === emb.size ? 'true' : 'false');
+    const code = embedNow();
+    if (!code) return;
+    codeBox.value = code.html;
+    previewA.href = code.src;
+    if (ctx) ctx.lastEmbed = code.html; // for a browser check: the clipboard cannot be read back there
+  }
+  function setTab(id, focus = false) {
+    emb.tab = id === 'embed' ? 'embed' : 'share';
+    for (const b of [shareTab, embedTab]) {
+      const on = b.dataset.tab === emb.tab;
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+      b.tabIndex = on ? 0 : -1;
+    }
+    body.hidden = emb.tab !== 'share';
+    embedBody.hidden = emb.tab !== 'embed';
+    if (emb.tab === 'embed') paintEmbed();
+    if (focus) (emb.tab === 'embed' ? embedTab : shareTab).focus({ preventScroll: true });
+  }
+  const told = (method) => { if (cur) sr('track', 'share', { method, content_type: contentTypeOf(cur) }); };
 
   function render() {
     if (!cur) return;
@@ -649,6 +782,7 @@ export function createShareSheet(ctx) {
     };
     if (cur.opener && cur.opener.hasAttribute('aria-haspopup')) cur.opener.setAttribute('aria-expanded', 'true');
     cur.trip = w.trip || null;
+    setTab(opts.tab === 'embed' ? 'embed' : 'share');
     tagRow.hidden = !w.record;
     setTextOpen(false);
     // 0077 W3-e: begin (the rows shut for every opening; the object card needs an object; the views are made again for this record)
@@ -826,9 +960,10 @@ export function createShareSheet(ctx) {
     }
   }
   // The platform hears which way a view left (ui/platform-bridge.js), never what it said.
-  const told = (method) => sr('track', 'share', { method, content_type: cur && cur.trip ? 'trip' : cur && cur.record ? 'object' : 'view' });
-  copyBtn.addEventListener('click', () => cur && (told('copy'), copy(shareText(cur.parts, 'copy'), S.copied)));
-  copyLinkBtn.addEventListener('click', () => cur && (told('link'), copy(cur.parts.link, S.linkCopied)));
+  copyBtn.addEventListener('click', () => { if (cur) { told('copy'); copy(shareText(cur.parts, 'copy'), S.copied); } });
+  copyLinkBtn.addEventListener('click', () => { if (cur) { told('link'); copy(cur.parts.link, S.linkCopied); } });
+  mailA.addEventListener('click', () => told('email'));
+  for (const n of NETWORKS) netLinks[n].addEventListener('click', () => told(n));
 
   nativeBtn.addEventListener('click', async () => {
     if (!cur) return;
@@ -866,6 +1001,7 @@ export function createShareSheet(ctx) {
     const bytes = new Uint8Array(await m.jpeg.arrayBuffer());
     const pdf = new Blob([pdfFromJpeg(bytes, m.size.w, m.size.h, m.size.ptW, m.size.ptH)], { type: 'application/pdf' });
     saveBlob(pdf, m.name.replace(/\.jpg$/, '.pdf'));
+    told('pdf');
     toast(COPY.print.saved);
   });
 
@@ -883,16 +1019,27 @@ export function createShareSheet(ctx) {
       if (ctx) ctx.lastPhoto = { error: String((e && e.message) || e) };
     }
   });
-  // EMBED (public #439): the <iframe> for this view, on the clipboard. The same keys as the link.
-  embedBtn.addEventListener('click', async () => {
-    if (!cur) return;
-    const st = embedState(shareState(ctx, cur.record ? cur.record.id : null), cur.trip);
-    const html = embedSnippet(st, { base: appBase(), title: t(S.embedFrameTitle, { name: cur.parts.name }) });
-    if (ctx) ctx.lastEmbed = html; // for a browser check: the clipboard cannot be read back there
+  // EMBED (public #439, forge internal #554): the action row's Embed opens the Embed tab, where the code is shown,
+  // sized and copied. The tabs are a tablist: a click or the arrow keys move between them.
+  embedBtn.addEventListener('click', () => setTab('embed', true));
+  for (const b of [shareTab, embedTab]) b.addEventListener('click', () => setTab(b.dataset.tab));
+  tabs.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End') return;
+    e.preventDefault();
+    setTab(emb.tab === 'share' ? 'embed' : 'share', true);
+  });
+  for (const [id, b] of sizeBtns) b.addEventListener('click', () => { emb.size = id; paintEmbed(); });
+  creditBox.addEventListener('change', paintEmbed);
+  codeBox.addEventListener('focus', () => { try { codeBox.select(); } catch { /* nothing to select */ } });
+  copyEmbedBtn.addEventListener('click', async () => {
+    const code = embedNow();
+    if (!code) return;
+    sr('track', 'embed_copy', { view: code.kind });
     try {
-      await navigator.clipboard.writeText(html);
+      await navigator.clipboard.writeText(code.html);
       toast(S.embedCopied);
     } catch {
+      try { codeBox.focus(); codeBox.select(); } catch { /* nothing to select */ }
       fail(S.embedRefused);
     }
   });

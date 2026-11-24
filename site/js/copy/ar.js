@@ -6700,3 +6700,181 @@ COPY.dayCard = {
   "sourceSky": "الشمس والقمر والكواكب، محسوبة هنا (Astronomy Engine)"
 };
 // research train (live): end
+// A card's Pictures and news (ui/cardmedia.js, copy/en.media.js; forge internal #556), machine-drafted: begin
+COPY.media = {
+  "pictures": "صور فوتوغرافية",
+  "journal": "من المجلة",
+  "reads": "مقالات مطوّلة",
+  "pages": "صفحات رسمية",
+  "archives": "ابحث في الأرشيفات",
+  "credit": "{credit}، {licence}",
+  "photoAlt": "{name}، تصوير {by}",
+  "photoAltPlain": "صورة فوتوغرافية لـ{name}",
+  "photoOpen": "الصورة على {site}",
+  "own": "صورة من صنعنا",
+  "posted": "نُشر في {date}",
+  "readOnTitle": "المقال المطوّل مع صوره، على هذا الموقع",
+  "onJournal": "على المجلة",
+  "pageTitle": "{name}: صفحة وكالة الفضاء نفسها، في علامة تبويب جديدة",
+  "nasa": "مكتبة صور وفيديوهات NASA",
+  "nasaTitle": "صور NASA وأفلامها وأصواتها عن {name}، في علامة تبويب جديدة",
+  "esahubble": "صور ESA/Hubble",
+  "esahubbleTitle": "صور ESA/Hubble لـ{name}، في علامة تبويب جديدة",
+  "esawebb": "صور ESA/Webb",
+  "esawebbTitle": "صور ESA/Webb لـ{name}، في علامة تبويب جديدة",
+  "archivesNote": "تفتح هذه الروابط بحث كل أرشيف بالاسم؛ شروطه على صفحاته، ولا نعرض هنا شيئًا منه.",
+  "empty": "ليس لدينا بعد أي صورة أو منشور أو مقال مطوّل عن {name}. قد تجد شيئًا في الأرشيفات أدناه."
+};
+COPY.mediaRow = {
+  "row": "صور وأخبار",
+  "loading": "نجمع ما لدينا…",
+  "failed": "لم تُحمَّل القائمة. أغلق هذا الصف ثم افتحه من جديد."
+};
+// A card's Pictures and news: end
+
+// The train of 2026-11-24 (forge internal #545, #554, #555): begin -- the Embed tab of the share sheet (copy/en.embedtab.js), the star of your year (copy/en.yourstar.js), the network chips (copy/en.networks.js) and the search's new rows (copy/en.later.js searchRows), machine-drafted
+COPY.embedTab = {
+  "tabsLabel": "مشاركة أو تضمين",
+  "share": "مشاركة",
+  "embed": "تضمين",
+  "lede": "ضع هذا العرض المباشر في صفحتك: موقع صف دراسي أو مدونة أو شريحة عرض.",
+  "size": "الحجم",
+  "sizes": {
+    "small": "صغير",
+    "medium": "متوسط",
+    "large": "كبير"
+  },
+  "sizeTitle": "{w} × {h} بكسل؛ يضيق ليناسب الهاتف",
+  "credit": "أضف سطر نسبة تحته",
+  "creditLine": "عرض مباشر من {link}",
+  "code": "الشيفرة للصق",
+  "copy": "انسخ شيفرة التضمين",
+  "copyTitle": "ينسخ الشيفرة التي تضع هذا العرض المباشر في صفحة ويب",
+  "preview": "معاينة",
+  "previewTitle": "يفتح العرض المضمّن وحده في لسان جديد",
+  "note": "يرى القرّاء العرض المباشر ورابط «افتح في Space Radar». لا يُحفظ شيء على أجهزتهم: لا ملفات تعريف ارتباط ولا تتبّع.",
+  "docs": "أحجام أخرى والرحلات والخريطة كلها: صفحة التضمين"
+};
+COPY.yourStar = {
+  "title": "نجم عامك",
+  "close": "أغلق نجم عامك",
+  "lede": "يقطع الضوء سنة ضوئية في سنة. لذلك فالنجم الذي يبعد عنا بعدد السنوات الضوئية مثل عمرك بالسنين يُرى الليلة بضوء غادره يوم وُلدت.",
+  "dateLabel": "عيد الميلاد",
+  "placeLabel": "المدينة، لسماء تلك الليلة (اختياري)",
+  "placeHint": "القاهرة، الرياض، الدار البيضاء…",
+  "placeUnknown": "هذه المدينة ليست في القائمة، لذا حُسبت السماء للساعة 9 مساءً بحسب ساعتك.",
+  "go": "جد نجمي",
+  "finding": "نبحث بين النجوم التي لها أسماء…",
+  "needDate": "اكتب تاريخ ميلاد أولًا.",
+  "badDate": "لا يمكن قراءة هذا اليوم. اختر يومًا بين 1900 واليوم.",
+  "future": "لم يأتِ هذا اليوم بعد. اختر يومًا في الماضي.",
+  "noStars": "لم تُحمَّل النجوم. حاول مرة أخرى بعد قليل.",
+  "eyebrow": "نجم عامك",
+  "eyebrowOnWay": "ضوء نجمك ما زال في الطريق",
+  "where": "في كوكبة {constellation}، على بعد {ly} سنة ضوئية",
+  "distance": "على بعد {ly} سنة ضوئية",
+  "left": "الضوء الذي تراه منه الليلة غادره في {when}، يوم وُلدت.",
+  "leftYear": "الضوء الذي تراه منه الليلة غادره في {when}، نحو وقت ولادتك في {year}.",
+  "band": "بُعده معروف بدقة نحو {err} سنة ضوئية في كل اتجاه، لذا انطلق ذلك الضوء بين {from} و{to}.",
+  "onItsWay": "لا يوجد نجم بهذا القرب بعد. الضوء الذي غادر {name} يوم ميلادك ما زال يعبر الـ{ly} سنة ضوئية: سيصل في {when}.",
+  "errFrom": {
+    "gaia": "الخطأ من Gaia: اختلاف المنظر للنجم وعدم اليقين الخاص به.",
+    "range": "الخطأ هو المدى الذي يعطيه الفهرس لهذا النجم.",
+    "modelled": "الخطأ مُنمذج من دقة Hipparcos (نصف ميلي ثانية قوسية)؛ لا يعطي الفهرس خطأً لهذا النجم."
+  },
+  "moon": "القمر: {phase}، مضاء بنسبة {pct} %",
+  "planetsPlace": "تُرى بعد الغسق من {place}: {list}",
+  "planetsClock": "في سماء المساء: {list}",
+  "planetsNone": "لم يكن في سماء المساء كوكب ساطع.",
+  "formatLabel": "شكل البطاقة",
+  "formats": {
+    "landscape": "عريضة",
+    "square": "مربعة",
+    "story": "قصة"
+  },
+  "share": "مشاركة",
+  "shareTitle": "شارك البطاقة ورابطها",
+  "download": "تنزيل",
+  "downloadTitle": "احفظ البطاقة صورة PNG",
+  "copyLink": "انسخ الرابط",
+  "copyLinkTitle": "رابط يفتح هذه البطاقة من جديد",
+  "fly": "طِر إلى النجم",
+  "flyTitle": "أغلق هذا وطِر إلى النجم في الخريطة ثلاثية الأبعاد",
+  "sky": "شاهد تلك الليلة",
+  "skyTitle": "قف على الأرض وانظر إلى سماء ذلك المساء",
+  "copied": "نُسخ الرابط",
+  "copyRefused": "رُفض النسخ الآن",
+  "shareFailed": "لم تنجح المشاركة هنا. نزّل البطاقة بدلًا من ذلك.",
+  "cardAlt": "بطاقة: {name}، النجم الذي غادره ضوؤه في عام ولادتك، مع النجوم من حوله.",
+  "privacy": "لا يُحفظ شيء ولا يُرسل. يبقى التاريخ في هذه الصفحة، وفي الرابط فقط إن شاركته؛ أما المدينة فلا أبدًا.",
+  "footer": "SPACERADAR.AI · خريطة حية للفضاء"
+};
+COPY.networks = {
+  "title": "شبكات الأقمار الصناعية",
+  "names": {
+    "starlink": "Starlink",
+    "oneweb": "OneWeb",
+    "gps": "GPS",
+    "glonass": "GLONASS",
+    "galileo": "Galileo",
+    "beidou": "BeiDou",
+    "iridium": "Iridium",
+    "kuiper": "Kuiper",
+    "qianfan": "Qianfan",
+    "stations": "المحطات",
+    "debris": "الحطام",
+    "geo": "الثابتة بالنسبة للأرض"
+  },
+  "chipCount": "{name}: {n} على الخريطة الآن. أضئها",
+  "chipNoCount": "{name}: أضئها على الخريطة",
+  "clear": "مسح",
+  "clearTitle": "أعد كل النقاط",
+  "noteLoad": "تظهر الأعداد بعد تحميل الأقمار الصناعية: انقر على شبكة (7 ميغابايت).",
+  "noteCounted": "عُدّت من الفهرس المحمّل الآن (CelesTrak)، بالأسماء التي يعطيها لها مشغّلوها."
+};
+Object.assign(COPY.searchRows, {
+  "yourStar": "نجم عامك",
+  "yourStarSub": "غادره ضوؤه يوم وُلدت",
+  "yourStarWords": "عيد الميلاد ميلاد ولادة سنة نجمي نجم عامي نجم عامك نجمتي العمر سنوات ضوئية",
+  "ask": "فهمنا: {what}",
+  "askSub": "اضغط لإضاءته على الخريطة",
+  "askJoin": " · ",
+  "askGroups": {
+    "starlink": "Starlink",
+    "oneweb": "OneWeb",
+    "kuiper": "Kuiper",
+    "qianfan": "Qianfan",
+    "gps": "GPS",
+    "glonass": "GLONASS",
+    "galileo": "Galileo",
+    "beidou": "BeiDou",
+    "iridium": "Iridium",
+    "stations": "المحطات المأهولة",
+    "debris": "الحطام",
+    "geo": "الحلقة الثابتة بالنسبة للأرض",
+    "sats": "الأقمار الصناعية"
+  },
+  "askPlace": "فوق {place}",
+  "askOwner": "من {owner}",
+  "askToday": "أُطلقت اليوم",
+  "askDays": "أُطلقت في آخر {n} يومًا",
+  "askYear": "أُطلقت في {year}",
+  "askWords": {
+    "over": "فوق|في",
+    "from": "من",
+    "launched": "أطلقت|أُطلقت|إطلاق|المطلقة|جديدة",
+    "today": "اليوم",
+    "week": "هذا الأسبوع|الأسبوع",
+    "month": "هذا الشهر|الشهر",
+    "year": "هذا العام|هذه السنة",
+    "groups": {
+      "stations": "محطات|المحطات|محطة فضائية|المحطات الفضائية",
+      "debris": "حطام|الحطام|النفايات الفضائية",
+      "geo": "ثابتة بالنسبة للأرض|المدار الثابت",
+      "sats": "أقمار صناعية|الأقمار الصناعية|قمر صناعي"
+    }
+  }
+});
+COPY.yourStar.skyOn = "السماء في {date}";
+COPY.yourStar.leftNear = "الضوء الذي تراه منه الليلة غادره في {when}: لا يوجد نجم له اسم يبعد تمامًا بعدد سنوات ضوئية يساوي عمرك، وهذا هو الأقرب.";
+// The train of 2026-11-24: end

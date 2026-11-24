@@ -147,6 +147,8 @@ function el(tag, className, text) {
 }
 
 // 0077 W2-d: begin (the worlds ui/compare.js has NASA's numbers for; tests/test_compare.mjs holds this to registry/compare.yaml)
+// The kinds with nothing to picture or report: a debris piece, a storm, a fire, a shower, a thing with no class.
+const MEDIA_SKIP = new Set(['debris', 'storm', 'earthevent', 'shower', 'unknown']);
 const COMPARABLE = new Set(['sun', 'mercury', 'venus', 'earth', 'moon', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto']);
 // 0077 W2-d: end
 
@@ -2964,6 +2966,20 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
     if (openNow) mountVs();
   }
   // 0077 W2-d: end
+  // PICTURES AND NEWS (forge internal #556): what our registries already credit about this object, the Journal's posts
+  // tagged with it and the archives to search. ui/cardmedia.js and its data are fetched the first time the row opens.
+  if (!MEDIA_SKIP.has(klass) && COPY.mediaRow) {
+    const box = el('div', 'sr-media');
+    box.appendChild(el('p', 'sr-media__note', COPY.mediaRow.loading));
+    const mountMedia = () => {
+      if (box.dataset.mounted) return;
+      import('./cardmedia.js').then((mm) => mm.mountMedia(box, record, { name, klass }))
+        .catch(() => { box.textContent = ''; box.appendChild(el('p', 'sr-media__note', COPY.mediaRow.failed)); });
+    };
+    const openNow = isOpen(rid, 'media');
+    more.appendChild(disclosure('media', COPY.mediaRow.row, null, panelOf([box]), openNow, (on) => { setOpen(rid, 'media', on); if (on) mountMedia(); }));
+    if (openNow) mountMedia();
+  }
   const aboutHead = more.querySelector('[data-section="about"] .sr-disc__head');
   const findPage = () => import('./objectpage.js').then((m) => m.pageFor(record)).then((url) => {
     if (url) { page.href = url; page.hidden = false; }

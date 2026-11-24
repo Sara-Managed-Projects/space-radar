@@ -19,6 +19,7 @@ import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 SNAPSHOT = ROOT / "registry" / "blog-feed.json"
 FEED = "https://blog.spaceradar.ai/feed.json"
 
@@ -53,6 +54,10 @@ def main(argv: list[str]) -> int:
     text = json.dumps(data, ensure_ascii=False, indent=1) + "\n"
     if not SNAPSHOT.is_file() or SNAPSHOT.read_text(encoding="utf-8") != text:
         SNAPSHOT.write_text(text, encoding="utf-8")
+        # The card's Pictures and news mirrors the same snapshot (scripts/gen_media.py): written again with it, so a
+        # refreshed feed never leaves site/js/data/media.js stale for CI or a deploy.
+        import gen_media  # noqa: PLC0415
+        gen_media.main([])
     print(f"refresh_blog_feed: {len(data['items'])} posts, newest {data['items'][0]['date']}")
     return 0
 
