@@ -1196,6 +1196,7 @@ Object.assign(COPY, {
         city: 'Skyline: a city’s, drawn. Not your street.',
         hills: 'Skyline: hills, drawn. Not your own.',
         coast: 'Sea to the {dir}, from the water map. Land drawn.',
+        real: 'Skyline: the real ground, from {what}. Not buildings or trees.',
       },
       artWesternOnly: 'Pictures belong to the western figures',
       // Whose sky (internal #355). Each note says whose reading the figures are and under which

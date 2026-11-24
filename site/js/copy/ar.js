@@ -2853,7 +2853,8 @@ export const COPY = {
       "landscape": {
         "city": "الأفق: لمدينة، مرسوم. وليس شارعك.",
         "hills": "الأفق: تلال، مرسومة. وليست تلالك.",
-        "coast": "بحر نحو {dir}، من خريطة المياه. واليابسة مرسومة."
+        "coast": "بحر نحو {dir}، من خريطة المياه. واليابسة مرسومة.",
+        "real": "خط الأفق: التضاريس الحقيقية، من {what}. دون مبانٍ أو أشجار."
       },
       "artWesternOnly": "الرسوم للأشكال الغربية فقط",
       "culture": "سماء من",
@@ -5584,6 +5585,10 @@ Object.assign(COPY, {
 // b200-c1-culture: end
 // b200-f5-make: begin -- the flight editor, Record and Dome and 360 (copy/en.make.js, forge #155, #156, #157), machine-drafted
 Object.assign(COPY, {
+  "plugins": {
+    "close": "إغلاق هذه اللوحة",
+    "sheet": "{title}: اسحب لتغيير الحجم"
+  },
   "make": {
     "flight": "مسار الطيران",
     "flightTitle": "خطّط لمسار الكاميرا بين المشاهد، وعاينه، وشاركه كرابط",

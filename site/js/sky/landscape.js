@@ -6,8 +6,9 @@
 //   seaSectors(sample, latDeg, lonDeg)   -> 16 numbers, 0 land to 1 water, north first, clockwise (pure)
 //   seaWords(sea)                        -> the middle of the sea's arc as a compass index 0..15, or -1 (pure)
 //   makeProfile(kind, seed, sea)         -> { far(azRad), near(azRad), seaAt(azRad), columns() } radians (pure)
+//   realProfile(deg[360])                -> the same shape for a provided skyline (window.srMap.horizon, pure)
 //   sampleSea(url, latDeg, lonDeg)       -> Promise<number[16] | null>
-//   createLandscape(env)                 -> { set(kind, seed, sea), update(frame), state(), dispose() }
+//   createLandscape(env)                 -> { set(kind, seed, sea, real?), update(frame), skylineDeg(az), state(), dispose() }
 //     env:   { root, radius, glsl }      glsl is sky/skyair.js GLSL_SKY
 //     frame: { sun: [x, y, z], exposure, floorHorizon: [3], day, glow, haze, see }
 // Loaded with sky/groundsky.js; the water mask is fetched only when the sky view opens (it is the
@@ -163,6 +164,29 @@ export function makeProfile(kind, seed = 0, sea = null) {
           out.push({ az, far: far(az), near: near(az), sea: seaAt(az) });
         }
       }
+      return out;
+    },
+  };
+}
+
+/**
+ * A skyline that is not drawn: 360 altitudes in degrees by azimuth (index = degree from north, clockwise), handed in by
+ * a script (window.srMap.horizon.provide, ui/mapapi.js) from elevation data. Both ridges are that one line, so the land
+ * is one silhouette; no hill, roof or sea is added. Same shape as makeProfile's answer. Pure.
+ */
+export function realProfile(deg) {
+  const n = deg.length;
+  const at = (az) => {
+    const x = ((((az % TAU) + TAU) % TAU) / TAU) * n;
+    const i = Math.floor(x) % n;
+    const k = x - Math.floor(x);
+    return (deg[i] + (deg[(i + 1) % n] - deg[i]) * k) * DEG;
+  };
+  return {
+    kind: 'real', far: at, near: at, seaAt: () => 0, lots: 0,
+    columns() {
+      const out = [];
+      for (let i = 0; i <= 1440; i += 1) { const az = (i / 1440) * TAU; out.push({ az, far: at(az), near: at(az), sea: 0 }); }
       return out;
     },
   };
@@ -358,12 +382,14 @@ export function createLandscape(env) {
     return mesh;
   }
 
-  function set(kind, seed, sea) {
-    const seaKey = Array.isArray(sea) ? sea.map((v) => (v >= 0.5 ? 1 : 0)).join('') : '';
+  /** `real` ({key, deg}, a provided skyline) wins over the drawn kinds while it is given. */
+  function set(kind, seed, sea, real = null) {
+    const seaKey = real && real.key ? `real:${real.key}` : Array.isArray(sea) ? sea.map((v) => (v >= 0.5 ? 1 : 0)).join('') : '';
+    if (real && real.deg) kind = 'real';
     if (now.kind === kind && now.seed === seed && now.seaKey === seaKey) return;
     now = { kind, seed, seaKey };
     clear();
-    profile = makeProfile(kind, seed, sea);
+    profile = kind === 'real' ? realProfile(real.deg) : makeProfile(kind, seed, sea);
     const cols = profile.columns();
     const soft = [{ d: 0.06 * DEG, a: 0 }, { d: 0, a: 1 }, { d: -1.6 * DEG, a: 1 }];
     // The haze band: from under the far ridge to four degrees over the horizon.

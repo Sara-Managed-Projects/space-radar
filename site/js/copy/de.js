@@ -2935,7 +2935,8 @@ export const COPY = {
       "landscape": {
         "city": "Horizontlinie: eine Stadt, gezeichnet. Nicht deine Straße.",
         "hills": "Horizontlinie: Hügel, gezeichnet. Nicht deine eigenen.",
-        "coast": "Meer im {dir}, nach der Wasserkarte. Land gezeichnet."
+        "coast": "Meer im {dir}, nach der Wasserkarte. Land gezeichnet.",
+        "real": "Horizont: das echte Gelände, nach {what}. Ohne Gebäude und Bäume."
       },
       "artWesternOnly": "Die Bilder gehören zu den westlichen Figuren",
       "culture": "Wessen Himmel",
@@ -5690,6 +5691,10 @@ Object.assign(COPY, {
 // b200-c1-culture: end
 // b200-f5-make: begin -- the flight editor, Record and Dome and 360 (copy/en.make.js, forge #155, #156, #157), machine-drafted
 Object.assign(COPY, {
+  "plugins": {
+    "close": "Dieses Fenster schließen",
+    "sheet": "{title}: zum Ändern der Größe ziehen"
+  },
   "make": {
     "flight": "Flugbahn",
     "flightTitle": "Eine Kamerabahn zwischen Ansichten planen, vorab ansehen und als Link teilen",

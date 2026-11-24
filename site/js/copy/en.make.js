@@ -7,6 +7,12 @@ import { HOOK } from './lang.js';
 const KEYS_BEFORE = HOOK.localise ? new Set(Object.keys(COPY)) : null;
 
 Object.assign(COPY, {
+  // ui/mapapi.js (window.srMap, docs/PLUGINS.md): the chrome of a panel a script opens on the map.
+  plugins: {
+    close: 'Close this panel',
+    sheet: '{title}: drag to resize',
+  },
+
   // ui/sharesheet.js: the three buttons, last in its actions.
   make: {
     flight: 'Flight path',

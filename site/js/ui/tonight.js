@@ -37,6 +37,7 @@ import { FOV, DARKNESS_IDS, twilightPhase } from '../sky/skymath.js';
 import { NEBULAE } from '../data/nebulae.js';
 import { SCRUB_BACK_MS, SCRUB_FORWARD_MS } from './timepill.js';
 import { mountDeepTime } from './deeptime.js'; // b200-f3-stars
+import { toolSlot } from './toolslot.js';
 
 const LAYERS = ['stations', 'visual'];
 const REFRESH_MS = 30 * 60e3;
@@ -850,6 +851,8 @@ export function renderTonight(host, ctx) {
     node.appendChild(darkNote);
     const landNote = el('p', 'sr-density__note');
     node.appendChild(landNote);
+    // A tool a script puts with the sky's controls (window.srMap.ui.tool, ui/toolslot.js): empty and hidden without one.
+    node.appendChild(toolSlot('sky'));
     const redRow = row(K.red);
     const red = button(redRow, K.red, K.redTitle, () => { if (sky() && sky().setOption) sky().setOption('red', !sky().options.red); });
     node.appendChild(el('p', 'sr-tonight-view__caveat', K.honesty));
@@ -886,7 +889,8 @@ export function renderTonight(host, ctx) {
       // The land: which of the three was drawn, and where the water map puts the sea.
       const g = s && typeof s.groundStats === 'function' ? s.groundStats() : null;
       const land = g && g.landscape ? g.landscape : '';
-      setText(landNote, land ? t(K.landscape[land] || '', { dir: land === 'coast' && g.sea >= 0 ? compassWords(g.sea * 22.5) : '' }) : '');
+      const given = land === 'real' && ctx.horizonOverride ? ctx.horizonOverride : null;
+      setText(landNote, land ? t(K.landscape[land] || '', { dir: land === 'coast' && g.sea >= 0 ? compassWords(g.sea * 22.5) : '', what: given ? (given.label || given.credit) : '' }) : '');
       landNote.hidden = !land;
       for (const [k, b] of toggles) press(b, !!o[k]);
       const culture = o.culture || 'western';
@@ -963,6 +967,9 @@ export function renderTonight(host, ctx) {
   };
   const onSky = () => paintSkybar();
   window.addEventListener('sr:sky', onSky);
+  // A skyline given or taken back (ui/mapapi.js `sr:horizon`): the land's note follows once the ground sky has worn it.
+  const onHorizon = () => setTimeout(paintSkybar, 120);
+  window.addEventListener('sr:horizon', onHorizon);
   const idle = (fn) => (typeof requestIdleCallback === 'function' ? requestIdleCallback(fn, { timeout: 3000 }) : setTimeout(fn, 200));
   const onLayersReady = () => idle(() => ask(SEARCH_HOURS));
   const onLayer = (e) => {
@@ -997,6 +1004,7 @@ export function renderTonight(host, ctx) {
     window.removeEventListener('sr:clean', onVisible);
     window.removeEventListener('sr:observer', onObserver);
     window.removeEventListener('sr:sky', onSky);
+    window.removeEventListener('sr:horizon', onHorizon);
     window.removeEventListener('sr:layers-ready', onLayersReady);
     window.removeEventListener('sr:layer', onLayer);
     if (worker) { try { worker.terminate(); } catch { /* gone */ } worker = null; }

@@ -76,6 +76,7 @@ import { PRESET_IDS, presetOf, applyPhotoPreset } from './photopresets.js';
 import '../copy/en.w3e.js'; // the words of the two rows
 // 0077 W3-e: end
 import '../copy/en.make.js'; // b200-f5-make: the words of Flight path, Record, Dome and 360
+import { toolSlot } from './toolslot.js';
 
 export { objectPageUrl, PAGES_INDEX };
 // The record's article moved to data/wikititles.js (forge #151): the card's Wikipedia block reads it too, without this sheet.
@@ -569,6 +570,8 @@ export function createShareSheet(ctx) {
     return b;
   });
   acts.append(...makeBtns);
+  // A maker a script adds (window.srMap.ui.tool, ui/toolslot.js) goes after these three, in their row: none without one.
+  acts.append(toolSlot('make', { contents: true, btn: 'ui-btn' }));
   // b200-f5-make: end
   const mailNote = el('p', 'sr-share__note', S.emailNote);
 

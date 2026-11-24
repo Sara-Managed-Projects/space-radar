@@ -30,11 +30,14 @@ export function installMakers(ctx, env = {}) {
   ctx.wantRecorder = api.wantRecorder;
   ctx.wantProjection = api.wantProjection;
   ctx.frameHooksChanged = () => {
-    const on = (ctx.projection && ctx.projection.active) || (ctx.recorder && ctx.recorder.active) || ctx.filmCapture;
+    // ctx.frameTaps: a script's own recording (window.srMap.record.start, ui/mapapirecord.js), a Set of functions.
+    const taps = ctx.frameTaps && ctx.frameTaps.size ? ctx.frameTaps : null;
+    const on = (ctx.projection && ctx.projection.active) || (ctx.recorder && ctx.recorder.active) || ctx.filmCapture || taps;
     ctx.makeFrame = on ? (t) => {
       if (ctx.projection && ctx.projection.active) ctx.projection.render(t);
       if (ctx.recorder && ctx.recorder.active) ctx.recorder.frame(t);
       if (ctx.filmCapture) ctx.filmCapture(t);
+      if (taps) for (const f of taps) { try { f(t); } catch (e) { console.warn('a frame tap failed', e); } }
     } : null;
   };
 

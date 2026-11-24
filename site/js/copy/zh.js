@@ -2853,7 +2853,8 @@ export const COPY = {
       "landscape": {
         "city": "天际线：画的是一座城市的，不是你那条街。",
         "hills": "天际线：画的是山丘，不是你那里的。",
-        "coast": "{dir}方是海，取自水域地图。陆地是画的。"
+        "coast": "{dir}方是海，取自水域地图。陆地是画的。",
+        "real": "天际线：真实地形，来自{what}。不含建筑和树木。"
       },
       "artWesternOnly": "插图只属于西方星座",
       "culture": "谁的星空",
@@ -5584,6 +5585,10 @@ Object.assign(COPY, {
 // b200-c1-culture: end
 // b200-f5-make: begin -- the flight editor, Record and Dome and 360 (copy/en.make.js, forge #155, #156, #157), machine-drafted
 Object.assign(COPY, {
+  "plugins": {
+    "close": "关闭此面板",
+    "sheet": "{title}：拖动以调整大小"
+  },
   "make": {
     "flight": "飞行路径",
     "flightTitle": "在视角之间规划镜头路径，预览并以链接分享",

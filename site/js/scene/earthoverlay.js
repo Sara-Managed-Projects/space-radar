@@ -1,7 +1,7 @@
 // scene/earthoverlay.js -- one measured map laid over the Earth: sea temperature, plankton, rain...
 //
 // Contract: createEarthOverlay({ earth, saveData?, now?, onChange? }) ->
-//             { set(id | null), state(), update(), dispose() }
+//             { set(id | null, { date? }), state(), update(), dispose() }
 //   state() -> { id, status, title, what, cls, legend, credit, date, dateWords, rule }
 //   status: 'off' | 'loading' | 'shown' | 'failed' | 'no-earth'
 //
@@ -74,6 +74,7 @@ export function createEarthOverlay(opts = {}) {
 
   let mesh = null;
   let wanted = null; // the registry row asked for, or null
+  let wantedDay = null; // the day asked for with it, or null for the newest
   let shown = null; // { row, date, texture }
   let status = 'off';
   let token = 0;
@@ -110,8 +111,9 @@ export function createEarthOverlay(opts = {}) {
     fade = { from: uniforms.uOpacity.value, to, at: tick() };
   }
 
-  async function fetchPicture(row, my) {
-    const dates = overlayDates(row.date, nowMs());
+  async function fetchPicture(row, my, day) {
+    // A day asked for (window.srMap.gibs.set, ui/mapapi.js) is that day alone; otherwise the rule's newest and its fallbacks.
+    const dates = day ? [day] : overlayDates(row.date, nowMs());
     for (const date of dates) {
       const res = await fetch(overlayUrl(OVERLAY_SERVICE, row, date, scale), { mode: 'cors' });
       if (my !== token) return null;
@@ -140,11 +142,13 @@ export function createEarthOverlay(opts = {}) {
     return null;
   }
 
-  /** Show the overlay with this id, or none. Returns whether the id is one the registry has. */
-  function set(id) {
+  /** Show the overlay with this id, or none; `opts.date` ('YYYY-MM-DD') asks for that day's picture. Returns whether the id is one the registry has. */
+  function set(id, opts = {}) {
     const row = id ? overlayById(OVERLAYS, id) : null;
-    if ((row && wanted && row.id === wanted.id) || (!row && !wanted)) return !!row || !id;
+    const day = opts && typeof opts.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(opts.date) ? opts.date : null;
+    if (((row && wanted && row.id === wanted.id) || (!row && !wanted)) && day === wantedDay) return !!row || !id;
     wanted = row;
+    wantedDay = row ? day : null;
     const my = ++token;
     if (!row) {
       status = 'off';
@@ -160,7 +164,7 @@ export function createEarthOverlay(opts = {}) {
     status = 'loading';
     fadeTo(0);
     onChange();
-    fetchPicture(row, my).then((pic) => {
+    fetchPicture(row, my, wantedDay).then((pic) => {
       if (my !== token) { if (pic) pic.texture.dispose(); return; }
       if (!pic) { status = 'failed'; onChange(); return; }
       const old = shown;

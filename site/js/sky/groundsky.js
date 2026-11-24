@@ -626,8 +626,10 @@ export function createGroundSky(ctx, env) {
     u.uMoonBright.value = (frame.moonBright || 0) * (1 - Math.max(0, Math.min(1, (frame.sunAltDeg + 12) / 10)));
     const moon = discs.get('moon');
     if (moon && moon.apparent) u.uMoonDir.value.set(moon.apparent.local[0], moon.apparent.local[1], moon.apparent.local[2]);
-    const kind = landscapeKind({ darkness: options.darkness, sea });
-    land.set(kind, landSeed, sea);
+    // A skyline a script gave from elevation data (window.srMap.horizon.provide, ui/mapapi.js) wins over the drawn one.
+    const real = ctx.horizonOverride && ctx.horizonOverride.deg ? ctx.horizonOverride : null;
+    const kind = real ? 'real' : landscapeKind({ darkness: options.darkness, sea });
+    land.set(kind, landSeed, sea, real);
     const day = Math.max(0, Math.min(1, (frame.sunAltDeg + 8) / 14));
     land.update({ sun, exposure, floorHorizon: floor.horizon, day, glow, see: options.seeThrough ? 0.4 : 1, haze: (HAZE[options.darkness] || HAZE.dark) * (1 - 0.6 * day) });
     stats.landscape = kind;
@@ -1675,6 +1677,12 @@ export function createGroundSky(ctx, env) {
   return {
     ready,
     update,
+    /** The skyline drawn now, 360 altitudes in degrees by azimuth from north (window.srMap.horizon.get, ui/mapapi.js). */
+    skyline() {
+      const out = new Float32Array(360);
+      for (let i = 0; i < 360; i += 1) out[i] = land.skylineDeg(i * DEG);
+      return out;
+    },
     setOptions(o) {
       Object.assign(options, o || {});
       labels.at = -Infinity;
