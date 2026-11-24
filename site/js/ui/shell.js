@@ -84,6 +84,9 @@ export const VIEWS = ['home', 'card', 'sources', 'trip', 'passport'];
 VIEWS.push('find');
 // b200-f1-find: end
 VIEWS.push('ops'); // research train (ops): live operations (ui/ops.js), a pushed view like Find
+// research train (catalogues): begin -- the catalogues (ui/catalogue.js: launches, sky calendar, asteroids, exoplanets), a pushed view like Find
+VIEWS.push('catalogue');
+// research train (catalogues): end
 /** The spec's line between the sidebar and the phone's sheet (0061 req 1 and 8). */
 export const DESKTOP_QUERY = '(min-width: 900px)';
 /**
@@ -112,6 +115,7 @@ export function sheetFor(view, from) {
   if (view === 'find') return 'half';
   // b200-f1-find: end
   if (view === 'ops') return 'half'; // research train (ops): a row flies the globe above it
+  if (view === 'catalogue') return 'half'; // research train (catalogues): a row flies the globe above it
   if (view === 'card' || view === 'trip') return 'half';
   if (view === 'sources' || view === 'passport') return 'full';
   if (view === 'home') return from === 'sources' || from === 'passport' ? 'half' : from ? 'peek' : null;
@@ -137,7 +141,7 @@ export function crumbFor(under, info = {}, words = COPY) {
     return S.search;
   }
   if (under === 'card') return String(info.card || '').trim() || S.card;
-  if (under === 'sources' || under === 'passport' || under === 'find') return S[under];
+  if (under === 'sources' || under === 'passport' || under === 'find' || under === 'catalogue') return S[under];
   if (under === 'ops') return (words.ops && words.ops.label) || S.search; // research train (ops): its words come with it (copy/en.ops.js)
   return S.search;
 }
@@ -356,6 +360,7 @@ export function createShell(ctx, opts = {}) {
   const findHost = pushedView('find', 'sr-side__find', 'sr-side__sourceshost sr-side__findhost');
   // b200-f1-find: end
   const opsHost = pushedView('ops', 'sr-side__ops', 'sr-side__sourceshost sr-side__findhost'); // research train (ops)
+  const catalogueHost = pushedView('catalogue', 'sr-side__catalogue', 'sr-side__sourceshost sr-side__findhost'); // research train (catalogues)
 
   // The trip view: empty until ui/tripframe.js seats its sheet in it (host('trip')).
   const tripView = el('div', 'sr-side__view sr-side__trip');
@@ -684,7 +689,7 @@ export function createShell(ctx, opts = {}) {
     if (e.key !== 'Escape' || e.defaultPrevented) return;
     if (stack.current() === 'sources' || stack.current() === 'passport') stepBack();
     // b200-f1-find: begin
-    else if ((stack.current() === 'find' || stack.current() === 'ops') && !(document.activeElement && document.activeElement.closest && document.activeElement.closest('.sr-datejump'))) stepBack();
+    else if ((stack.current() === 'find' || stack.current() === 'ops' || stack.current() === 'catalogue') && !(document.activeElement && document.activeElement.closest && document.activeElement.closest('.sr-datejump'))) stepBack();
     // b200-f1-find: end
   });
 
@@ -747,7 +752,7 @@ export function createShell(ctx, opts = {}) {
   };
   // b200-f1-find: begin -- host('find'): the Find view's box
   const hostBefore = api.host;
-  api.host = (view) => (view === 'find' ? findHost : view === 'ops' ? opsHost : hostBefore(view));
+  api.host = (view) => (view === 'find' ? findHost : view === 'ops' ? opsHost : view === 'catalogue' ? catalogueHost : hostBefore(view));
   // b200-f1-find: end
   if (ctx) ctx.shell = api;
   return api;

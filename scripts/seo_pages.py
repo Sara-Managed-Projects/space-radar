@@ -505,6 +505,9 @@ def event_page(ev: dict, host: str, trips: dict) -> Page:
                      + "<h2>Look safely</h2>\n"
                        "<p>Never look at the Sun without eclipse glasses that meet the ISO 12312-2 standard, or a certified solar filter on a telescope or binoculars. "
                        "That holds for an annular eclipse, which has no safe moment of totality, and for every partial phase of a total one.</p>\n")
+        if ev["id"] == "total-eclipse-2027":  # forge #553: the "will I see it" table, and the map's checker (scripts/seo_eclipse2027.py)
+            import seo_eclipse2027
+            sections += seo_eclipse2027.section()
     elif ev["kind"] == "season":  # forge #90
         june = f["season"] == "june-solstice"
         rows += [("Solstice, computed", instant_words(f["instant"])),
@@ -1438,6 +1441,14 @@ def build_pages(host: str, objects: list[dict], today: str, snapshot_index: dict
     pages += seo_reach.pages(host, counts)
     # b200-f9-reach: end
     pages += seo_ops.pages(host)  # research train (ops)
+    # research train (catalogues): launch archive: begin
+    import seo_launches  # noqa: E402  (the launch archive's pages, /launches/: scripts/seo_launches.py, forge #551)
+    pages += seo_launches.pages(host)
+    # research train (catalogues): launch archive: end
+    # research train (catalogues): asteroids: begin
+    import seo_neo  # noqa: E402  (the near-Earth asteroids' page, forge #560)
+    pages += seo_neo.pages(host)
+    # research train (catalogues): asteroids: end
     return pages
 
 

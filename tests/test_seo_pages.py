@@ -526,9 +526,11 @@ ok(not re.search(r"\{\{|\bTODO\b|\blorem\b", "".join(f.read_text(encoding="utf-8
 # b200-f9-reach: "assets", "creators" and the five comparisons (scripts/seo_reach.py, forge #165, #166, #168)
 # research train (ops): "state-of-space" and "close-calls" (scripts/seo_ops.py, forge #558, #561)
 # 2026-11-10: "privacy" is /privacy/; since 2026-11-24 a short page pointing to the legal hub's /legal/privacy/ (scripts/seo_pages.py privacy_page)
+# research train (catalogues): "launches" is /launches/, the launch archive (scripts/seo_launches.py, forge #551)
 import seo_reach  # noqa: E402
-ok((BUILT / "pages-dirs.txt").read_text(encoding="utf-8").split() == sorted({"about", "accuracy", "country", "events", "first-pull-request", "iss", "links", "moon-phases-tides-orbits", "nasa-eyes-alternative", "planets-tonight", "print", "privacy", "read", "satellites", "sources", "starlink", "teachers", "state-of-space", "close-calls"}
-                                                                             | {"assets", "creators", *seo_reach.COMPARISONS}),
+ok((BUILT / "pages-dirs.txt").read_text(encoding="utf-8").split() == sorted({"about", "accuracy", "country", "events", "first-pull-request", "iss", "launches", "links", "moon-phases-tides-orbits", "nasa-eyes-alternative", "planets-tonight", "print", "privacy", "read", "satellites", "sources", "starlink", "teachers", "state-of-space", "close-calls"}
+                                                                             | {"assets", "creators", *seo_reach.COMPARISONS}
+                                                                             | {"near-earth-asteroids"}),  # research train (catalogues): asteroids (scripts/seo_neo.py)
    "pages-dirs.txt lists the directories deploy.sh must ship")
 
 # --- the share pictures ----------------------------------------------------------------------------------

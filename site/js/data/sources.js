@@ -593,6 +593,22 @@ export const SOURCES = {
       'of reentry windows, so v1 shows real past reentries instead of guessing at a live one. ' +
       'See data/sample.js sampleReentries().',
   },
+  // research train (catalogues): asteroids: begin
+  'jpl-cad-decade': {
+    id: 'jpl-cad-decade',
+    registryId: 'jpl-cad-decade',
+    label: 'JPL CNEOS — close approaches, next ten years',
+    publisher: 'NASA/JPL',
+    url: 'https://ssd-api.jpl.nasa.gov/cad.api?dist-max=0.05&date-min=now&date-max=%2B3650&sort=date&diameter=true&fullname=true',
+    cadenceMs: 168 * HOUR,
+    freshnessMaxMs: 720 * HOUR,
+    browser: false,
+    kind: 'json',
+    shape: { object: ['fields', 'data'] },
+    attribution: 'Close approaches: NASA/JPL CNEOS',
+    note: NO_CORS_REASON + ' Read from our snapshot; without it the near-Earth asteroid table shows the approaches bundled in site/data/neo-browser.json and says so.',
+  },
+  // research train (catalogues): asteroids: end
 };
 
 // --- the cache -------------------------------------------------------------------------------

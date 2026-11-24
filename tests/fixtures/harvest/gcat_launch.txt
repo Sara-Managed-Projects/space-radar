@@ -1,0 +1,19 @@
+#Launch_Tag	Launch_JD	Launch_Date	LV_Type	Variant	Fairing	Flight_ID	Flight	Mission	FlightCode	Platform	Launch_Site	Launch_Pad	Ascent_Site	Ascent_Pad	Perigee	Apogee	Apoflag	Inc	Azimuth	Range	RangeFlag	Dest	OrbMass	OrbPay	Agency	LaunchCode	FailCode	Group	Category	LTCite	Cite	Notes
+# Updated 2026 Nov 23 0025:09
+1942-A01  	2430523.95 	1942 Jun 13 1052	A-4	-	-	2	-	-	-	-	HVP	P7	-	-	      -	      1	 	-	   -	    -	 	-	   0.000 	   0.000 	WEHR	MF  	U	-	Test	TTaylor	-	-
+1942-A02  	2430587.97 	1942 Aug 16 1115	A-4	-	-	3	-	-	-	-	HVP	P7	-	-	      -	     11	 	-	   -	    -	 	-	   0.000 	   0.000 	WEHR	MF  	U	-	Test	Stuhlinger	RocketTeam	-
+1942-S01  	2430636.12 	1942 Oct  3 1458	A-4	-	-	4	-	-	-	-	HVP	P7	-	-	      -	     85	 	-	   -	    -	 	-	   0.000 	   0.000 	WEHR	MS  	-	-	Test	Stuhlinger	AE1961A	-
+1942-A03  	2430653.50 	1942 Oct 21	A-4	-	-	5	-	-	-	-	HVP	P7	-	-	      -	     40	?	-	   -	    -	 	-	   0.000 	   0.000 	WEHR	MS  	-	-	Test	AE1961A	-	-
+1957 ALP  	2436116.31 	1957 Oct  4 1928:34	Sputnik 8K71PS	-	-	M1-PS	PS-1	PS-1	-	-	NIIP-5	LC1	-	-	      -	    938	 	-	   -	    -	 	-	   0.000 	   0.084 	MVS	OS  	-	G	Sat LEO O 1	Energiya	SFLT39-331	-
+1957 BET  	2436145.60 	1957 Nov  3 0230:42	Sputnik 8K71PS	-	-	M1-2PS	PS-2	PS-2	-	-	NIIP-5	LC1	-	-	      -	   1656	 	-	   -	    -	 	-	   0.000 	   8.308 	MVS	OS  	-	G	Sat LEO A 1	Grahn-WWW	Energiya	-
+1957-F01  	2436179.20 	1957 Dec  6 1644:35	Vanguard	-	-	TV-3	Vanguard TV3	Vanguard Test Satellite	-	-	CC	LC18A	-	-	      -	      0	 	-	   -	    -	 	-	   0.000 	   0.002 	NRL	OF  	PE	G	Sat MEO O	Vang-ER9948	-	Fuel injector fire
+1957-W01  	2435838.50 	1957	Asp III	-	-	-	Test	-	-	-	WS	-	-	-	      -	     50	?	-	   -	    -	 	-	   0.000 	   0.000 	LRL	SS  	-	LRL/	Test	Morrow	-	-
+1957-W02  	2435838.50 	1957	Asp III	-	-	-	Test	-	-	-	WS	-	-	-	      -	     50	?	-	   -	    -	 	-	   0.000 	   0.000 	LRL	SS  	-	LRL/	Test	Morrow	-	-
+1957-W03  	2435838.50 	1957	Asp III	4L	-	-	Test	-	-	-	WS	-	-	-	      -	     50	?	-	   -	    -	 	-	   0.000 	   0.000 	LRL	SS  	-	LRL/	Test	Morrow	-	-
+1958 ETA  	2436487.86 	1958 Oct 11 0842:13	Thor Able I	-	-	130	Pioneer 1	Able 2	-	-	CC	LC17A	-	-	      -	 113378	 	-	   -	    -	 	-	   0.000 	   0.038 	AFBMD	OS75  	S2U*	G	Sat EEO E	NASA-5-25-59W-V3	-	Early S2 cutoff
+1959-E01  	2436589.50 	1959 Jan 21	Thor Agena A	-	-	160/1019	Discoverer 0	-	TAG000	-	V	75-3-4	-	-	      -	      0	 	-	   -	    -	 	-	   0.000 	   0.000 	AFBMD	OE  	AL	G	Sat LEO A	NRO3E24	-	Accidental Agena sep
+1965-A245  	2439107.12 	1965 Dec 12 1454:06	Titan II GLV	-	-	GLV-6	Gemini 6	Gemini SC6	Pad abort	-	CC	LC19	-	-	      -	      0	 	-	   -	    -	 	-	   0.000 	   0.000 	AFSSD/MSC	OA  	-	G	Sat LEO O	SP-4203	MM/Titan	Abort, no launch
+1961 BET  	2437334.55 	1961 Feb  4 0118:03	Molniya 8K78	-	-	L1-7V	Tyazholiy Sputnik	1VA No. 1	-	-	NIIP-5	LC1	-	-	      -	    334	 	-	   -	    -	 	-	   0.000 	   6.220 	RVSN	OF40  	S4I	G	Sat EEO OE 1	NK9701-29	NezavB	Power failed
+2026-260 	2461365.00 	2026 Nov 20 1159	Chang Zheng 8A	-	-	Y13	WHDW 30	WHDW 30	-	-	HCSLS	LC1	-	-	    150	   1108	 	 50.0 	   -	    -	 	-	   0.000 	   6.000 	ZHSH/CALT	OS  	-	G M	Sat LEO O	nasaspaceflight.com	-	-
+2026-261 	2461365.68 	2026 Nov 21 0420:35	Falcon 9	FT5	-	xxx/B1100.11 F704	USSF-317	SBST R-6	-	-	VSFBS	SLC4E	-	-	    300	    300	?	 70.0 	   -	    -	 	-	   0.000 	  16.000 	SPX	OS  	-	CX/G	Sat LEO D	nasaspaceflight.com	-	-
+2026-262 	2461367.02 	2026 Nov 22 1223:56	Falcon 9	FT5	-	xxx/B1097.14 F705	NROL-136	NRO Starshield A10?	NRO PA15	-	VSFBS	SLC4E	-	-	      -	      -	 	-	   -	    -	 	-	   0.000 	  16.000 	SPX	OS  	-	CX/G m	Sat LEO D	nasaspaceflight.com	-	-

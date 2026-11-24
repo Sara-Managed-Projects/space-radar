@@ -267,6 +267,35 @@ const DEFERRED = {
   'js/ui/subscribepop.js': 'the email updates\' popover: ui/rail.js fetches it on the first press of the envelope',
   'js/copy/en.subscribe.js': 'the email updates\' words: with ui/subscribepop.js',
   // redesign 2026-11-10: end
+  // research train (catalogues): begin
+  'js/ui/catalogue.js': 'the catalogues\' view (forge #551, #553, #560, #564): main.js fetches it on the first press of a door or for a `cat=` link',
+  'js/ui/catalogkit.js': 'the catalogues\' table and chips: with ui/catalogue.js',
+  'js/ui/catalogueentry.js': 'the catalogues\' doors on the explore tabs: main.js fetches it after the first visit has settled',
+  'js/copy/en.catalogues.js': 'the catalogues\' shared words: with their modules',
+  'js/ui/launcharchive.js': 'the launch archive (forge #551): ui/catalogue.js fetches it when it is opened',
+  'js/ui/skycalendar.js': 'the sky calendar (forge #553): ui/catalogue.js fetches it when it is opened',
+  'js/ui/eclipsecheck.js': 'the eclipse checker (forge #553): ui/catalogue.js fetches it when it is opened',
+  'js/ui/neobrowser.js': 'the near-Earth asteroids (forge #560): ui/catalogue.js fetches it when it is opened',
+  'js/ui/exoexplorer.js': 'the exoplanet explorer (forge #564): ui/catalogue.js fetches it when it is opened',
+  // research train (catalogues): launch archive: begin
+  'js/data/launcharchive.js': 'the launch archive\'s rows (forge #551): with ui/launcharchive.js',
+  'js/scene/launcharcs.js': 'the launch archive\'s replay on the globe: ui/launcharchive.js fetches it on the first year drawn',
+  'js/copy/en.launches.js': 'the launch archive\'s words: with ui/launcharchive.js',
+  // research train (catalogues): launch archive: end
+  // research train (catalogues): sky calendar and eclipse checker: begin
+  'js/copy/en.skycalendar.js': 'the sky calendar\'s and the eclipse checker\'s words (forge #553): with their modules',
+  'js/data/skycalendar.js': 'the dated sky events with their instants (forge #553): with ui/skycalendar.js',
+  'js/sky/besselian.js': 'the eclipse arithmetic from Besselian elements (forge #553): with ui/eclipsecheck.js',
+  // research train (catalogues): sky calendar and eclipse checker: end
+  // research train (catalogues): asteroids: begin
+  'js/data/neocat.js': 'the near-Earth catalogue\'s rows (forge #560): with ui/neobrowser.js',
+  'js/copy/en.neo.js': 'the near-Earth catalogue\'s words: with ui/neobrowser.js',
+  'js/scene/asteroidcloud.js': 'the numbered asteroids as points (forge #560): ui/neobrowser.js fetches it when its switch is ticked',
+  // research train (catalogues): asteroids: end
+  // research train (catalogues): exoplanets: begin
+  'js/copy/en.exoexplorer.js': 'the exoplanet explorer\'s words (forge #564): with ui/exoexplorer.js',
+  // research train (catalogues): exoplanets: end
+  // research train (catalogues): end
   // b200-f10-stars3d: end
 };
 // The light embed (js/embedlite.js) has no star systems at all: neither file can reach it.

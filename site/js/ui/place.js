@@ -1,7 +1,8 @@
 // ui/place.js -- where you are: the city box with "Use my location" beside it, Remember and Share this place.
 //
 // Contract: createPlace(ctx) -> { root, refresh(), focus() }
-// Also exported, pure: findCity(query, cities), observerFor(city), placeFromPosition, placeLink
+// Also exported, pure: findCity(query, cities), observerFor(city), placeFromPosition, placeLink; and askPosition(name), the one call
+// that asks the browser where it is (forge #553's eclipse checker uses it too)
 //
 // The controls that set a place, and nothing else. They live INSIDE the Tonight view (ui/tonight.js
 // builds them under its place line, behind "Change place"; internal #455, spec 0051 task 3). Until
@@ -42,6 +43,20 @@ export function placeFromPosition(position, name) {
   const { latDeg, lonDeg } = roundPlace({ latDeg: c.latitude, lonDeg: c.longitude });
   if (!Number.isFinite(latDeg) || !Number.isFinite(lonDeg)) return null;
   return { name, country: '', latDeg, lonDeg, source: 'geolocation' };
+}
+
+/**
+ * The one place the browser is asked where it is (forge #553: the eclipse checker asks through here too). Calls `done` with
+ * {place} -- rounded to 0.1 degree by placeFromPosition before anyone sees it -- or {error: 'denied' | 'failed' | 'none'}.
+ * A callback and not a promise: the place lands in the same turn as the browser's answer, as it always has.
+ */
+export function askPosition(name, done) {
+  if (typeof navigator === 'undefined' || !navigator.geolocation) { done({ error: 'none' }); return; }
+  navigator.geolocation.getCurrentPosition(
+    (position) => { const place = placeFromPosition(position, name); done(place ? { place } : { error: 'failed' }); },
+    (error) => done({ error: error && error.code === 1 ? 'denied' : 'failed' }),
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 },
+  );
 }
 
 export function observerFor(city) {
@@ -144,16 +159,9 @@ export function createPlace(ctx) {
     if (useMine.disabled) return;
     warn(COPY.controls.locationAsking);
     note.classList.remove('is-warning');
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const place = placeFromPosition(position, COPY.controls.locationUseMine);
-        if (!place) { warn(COPY.controls.locationFailed); return; }
-        warn('');
-        setPlace(place);
-      },
-      (error) => warn(error && error.code === 1 ? COPY.controls.locationDenied : COPY.controls.locationFailed),
-      { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 },
-    );
+    askPosition(COPY.controls.locationUseMine, (r) => {
+      if (r.place) { warn(''); setPlace(r.place); } else warn(r.error === 'denied' ? COPY.controls.locationDenied : COPY.controls.locationFailed);
+    });
   });
   const isKept = () => { const k = keptPlace(browserStorage()); const o = ctx && ctx.observer; return !!k && !!o && placeValue(k) === placeValue(o); };
   const renderKeep = () => {

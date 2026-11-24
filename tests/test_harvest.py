@@ -74,6 +74,7 @@ EXPECTED_COUNTS = {
     "gibs_clouds": 1,      # 0078 r14-data: one satellite's picture in the fixture (a run saves up to three)
     "nowcoast_lightning": 1,  # 0078 r14-data: the newest 15-minute picture
     "celestrak_socrates": 20,  # research train (ops): the first twenty close approaches of a SOCRATES sort-maxProb.csv
+    "gcat_launch": 10,    # forge #551: 17 rows of GCAT's launch list, 10 of them orbital attempts (O*)
 }
 
 CELESTRAK_TEXT = "GP data has not updated since your last successful download"

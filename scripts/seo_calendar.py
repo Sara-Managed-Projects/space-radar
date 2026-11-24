@@ -6,6 +6,8 @@
     events/eclipses.ics    the solar and lunar eclipses (registry/events.yaml `ics: eclipses.ics`)
     events/moons.ics       the full Moons
     events/sky.ics         the solstices, the conjunctions and the mission events (registry/events.yaml `ics: sky.ics`)
+    events/planets.ics     the conjunctions; events/seasons.ics the solstices; events/missions.ics the mission events (forge #553:
+                           one feed per chip of the map's sky calendar)
 
 Every entry names its page as URL and ends its description with the link that opens the map at that moment, so each calendar
 entry is a way back. Nothing is personal: the files are built from the registry and carry no address, no name, no tracker.
@@ -26,6 +28,10 @@ FEEDS = {
     "eclipses.ics": ("Space Radar: solar and lunar eclipses", {"eclipse", "lunar-eclipse"}),
     "moons.ics": ("Space Radar: full Moons", {"full-moon"}),
     "sky.ics": ("Space Radar: solstices, conjunctions and missions", {"season", "conjunction", "mission"}),
+    # forge #553 (the map's sky calendar): one feed per chip of its filter, so "subscribe" means what the chip shows.
+    "planets.ics": ("Space Radar: planets close together", {"conjunction"}),
+    "seasons.ics": ("Space Radar: solstices", {"season"}),
+    "missions.ics": ("Space Radar: mission events", {"mission"}),
 }
 
 

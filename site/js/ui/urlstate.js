@@ -78,6 +78,9 @@ KEYS.splice(KEYS.indexOf('cam'), 0, 'ground', 'sky', 'figure', 'born'); // `born
 // b200-f7-ground: end
 // research train (ops): `ops` the live operations view open in the sidebar and its pane (`#ops=state`, `#ops=events:volcano`; ui/ops.js).
 KEYS.splice(KEYS.indexOf('cam'), 0, 'ops');
+// research train (catalogues): `cat` a catalogue open in the sidebar and what it shows (`#cat=launches`, `#cat=launches:1969`,
+// `#cat=eclipse`, `#cat=asteroids`, `#cat=exoplanets:pl_orbper,pl_rade`; ui/catalogue.js parseCat). Before `cam`, which stays last.
+KEYS.splice(KEYS.indexOf('cam'), 0, 'cat');
 export const VERSION = '1';
 /** The release this code is (0076 W4-c). A release bumps it with CHANGELOG.md; tests/test_access.mjs holds its shape. */
 export const BUILD = '2.0.1';

@@ -9,7 +9,7 @@ Each asks for one day, every fourth point of a quarter-degree grid: 180 x 360 ro
 `{"table": {"columnNames": [time, (zlev,) latitude, longitude, <values>], "rows": [...]}}`, with `null`
 where there is no sea (or sea ice, for the currents).
 
-THIS PARSER PACKS, AND IT IS THE ONLY ONE THAT DOES. Every other body is passed through whole and the
+THIS PARSER PACKS (and so, since 2026-11-24, does gcat_launch). Every other body is passed through whole and the
 page normalises it. This one cannot be: the table is 4.4 MB for the currents and 3.8 MB for the
 temperature (measured 2026-10-12), nearly all of it the time, latitude and longitude repeated on 64 800
 rows. `pack(body)` (harvest/run.py calls it when a parser has one) keeps what the page needs:

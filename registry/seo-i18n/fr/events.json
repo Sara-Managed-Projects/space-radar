@@ -298,5 +298,13 @@
  "dc21c5af7e": "magnitude {n1}, à {n2}° du Soleil, ciel du soir, dans le Sagittaire",
  "aee6b0cce1": "Vénus {n1} ua, Mars {n2} ua",
  "44efad8e76": "Une conjonction, c’est deux astres qui paraissent proches dans le ciel. Ils ne font que le paraître : Vénus est à {n1} ua de la Terre et Mars à {n2} ua, l’une devant l’autre vues d’ici, et très loin l’une de l’autre dans l’espace.",
- "c84e805bb1": "Regarde vers l’ouest, bas, après le coucher du Soleil. Toutes deux sont à moins de {n1}° du Soleil, donc un horizon dégagé aide ; le plus grand rapprochement est donné en UT, et le couple reste proche plusieurs jours avant et après."
+ "c84e805bb1": "Regarde vers l’ouest, bas, après le coucher du Soleil. Toutes deux sont à moins de {n1}° du Soleil, donc un horizon dégagé aide ; le plus grand rapprochement est donné en UT, et le couple reste proche plusieurs jours avant et après.",
+ "378d09abad": "La verrai-je ? Vingt lieux",
+ "0d2b45f141": "Ce que verront vingt lieux le long de la bande et autour, calculé à partir des éléments besséliens de la NASA pour cette éclipse, le même calcul que le vérificateur de la carte. Pour tout autre lieu, tapes-y son nom.",
+ "b6df447b08": "Vérifie ton lieu sur la carte",
+ "c32a0147f2": "Lieu",
+ "c079098c3d": "Ce qu’on y voit",
+ "8574859b6a": "Soleil caché",
+ "b25928c699": "Totale",
+ "40a4b78e4f": "{n1} min {n2} s"
 }

@@ -298,5 +298,13 @@
  "dc21c5af7e": "Helligkeit {n1}, {n2}° von der Sonne, Abendhimmel, im Schützen",
  "aee6b0cce1": "Venus {n1} AE, Mars {n2} AE",
  "44efad8e76": "Eine Konjunktion ist, wenn zwei Himmelskörper am Himmel dicht beieinander erscheinen. Sie sehen nur nah aus: Venus ist {n1} AE von der Erde entfernt und Mars {n2} AE, von hier aus gesehen liegt der eine vor dem anderen, und im Raum sind sie weit voneinander entfernt.",
- "c84e805bb1": "Schau nach Westen, tief, nach Sonnenuntergang. Beide stehen innerhalb von {n1}° der Sonne, ein freier Horizont hilft; die größte Annäherung ist in UT angegeben, und das Paar bleibt mehrere Tage davor und danach nah beieinander."
+ "c84e805bb1": "Schau nach Westen, tief, nach Sonnenuntergang. Beide stehen innerhalb von {n1}° der Sonne, ein freier Horizont hilft; die größte Annäherung ist in UT angegeben, und das Paar bleibt mehrere Tage davor und danach nah beieinander.",
+ "378d09abad": "Sehe ich sie? Zwanzig Orte",
+ "0d2b45f141": "Was zwanzig Orte entlang des Streifens und rundherum sehen werden, berechnet aus den Bessel-Elementen der NASA für diese Finsternis, mit derselben Rechnung wie der Prüfer der Karte. Für jeden anderen Ort gib dort seinen Namen ein.",
+ "b6df447b08": "Prüfe deinen Ort auf der Karte",
+ "c32a0147f2": "Ort",
+ "c079098c3d": "Was man sieht",
+ "8574859b6a": "Sonne bedeckt",
+ "b25928c699": "Total",
+ "40a4b78e4f": "{n1} min {n2} s"
 }

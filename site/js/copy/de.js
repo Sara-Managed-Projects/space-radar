@@ -240,6 +240,7 @@ export const COPY = {
     "sources": "Quellen",
     "passport": "Reisepass",
     "find": "Finden",
+    "catalogue": "Kataloge",
     "card": "Die Karte",
     "reopen": "Zurück zu {name}",
     "close": "{name} schließen",
@@ -7193,3 +7194,389 @@ Object.assign(COPY.searchRows, {
 COPY.yourStar.skyOn = "Der Himmel am {date}";
 COPY.yourStar.leftNear = "Das Licht, das du heute Nacht von ihm siehst, ist im {when} losgegangen: Kein benannter Stern ist genau so viele Lichtjahre entfernt, wie du alt bist, und dieser kommt am nächsten.";
 // The train of 2026-11-24: end
+// research train (catalogues): begin -- machine-translated, agent-reviewed 2026-11-24 (not native-reviewed): forge #551, #553, #560, #564.
+// The catalogues' shared words (copy/en.catalogues.js); each catalogue's own words sit between its markers below.
+COPY.catalogueEntry = {
+  "title": "Kataloge",
+  "launches": "Jeder Start seit 1957",
+  "calendar": "Himmelskalender",
+  "eclipse": "Finsternis am 2. August 2027: Sehe ich sie?",
+  "asteroids": "Erdnahe Asteroiden",
+  "exoplanets": "Exoplaneten-Explorer"
+};
+COPY.catalogue = {
+  "label": "Kataloge",
+  "titles": {
+    "launches": "Jeder Start seit 1957",
+    "calendar": "Himmelskalender",
+    "eclipse": "Finsternis am 2. August 2027",
+    "asteroids": "Erdnahe Asteroiden",
+    "exoplanets": "Exoplaneten-Explorer"
+  },
+  "loading": "Der Katalog wird gelesen…",
+  "failed": "Dieser Katalog ließ sich nicht laden. Versuch es später noch einmal.",
+  "retry": "Noch einmal",
+  "sortTitle": "Nach {col} sortieren",
+  "rowTitle": "Zu {name}",
+  "showing": "{shown} von {n} angezeigt",
+  "showingAll": "{n} Zeilen",
+  "none": "Nichts passt zu diesen Filtern.",
+  "more": "{n} weitere zeigen",
+  "all": "Alle",
+  "search": "Nach Namen filtern",
+  "clear": "Filter zurücksetzen",
+  "sourceLabel": "Quelle",
+  "licenceLabel": "Lizenz",
+  "sourceTail": ". {text}",
+  "asOf": "Stand {date}",
+  "savedCopy": "Unsere gespeicherte Kopie, gelesen am {date}",
+  "bundledCopy": "Die mit der Karte gelieferte Kopie, gelesen am {date}",
+  "unknown": "—"
+};
+// research train (catalogues): launch archive: begin
+COPY.launchArchive = {
+  "lead": "{n} Orbitalstartversuche seit Sputnik 1. Wähle einen, um zu seinem Startplatz zu fliegen.",
+  "tableLabel": "Orbitale Startversuche",
+  "columns": {
+    "date": "Datum (UTC)",
+    "vehicle": "Rakete",
+    "site": "Startplatz",
+    "payload": "Nutzlast",
+    "outcome": "Ergebnis"
+  },
+  "outcome": {
+    "S": "Erfolg",
+    "F": "Fehlschlag",
+    "P": "Teilerfolg",
+    "E": "Explosion auf der Startrampe",
+    "A": "Abbruch auf der Startrampe",
+    "U": "Unbekannt"
+  },
+  "partial": "Teilerfolg, {pct} %",
+  "outcomeTitle": "GCAT rechnet ihn in seiner Zuverlässigkeitsstatistik mit {pct} % an",
+  "filters": {
+    "outcome": "Ergebnis",
+    "when": "Wann",
+    "country": "Startplatz in",
+    "text": "Rakete, Nutzlast oder Startplatz"
+  },
+  "outcomeChips": {
+    "all": "Alle",
+    "S": "Erfolg",
+    "F": "Fehlschlag",
+    "P": "Teilerfolg",
+    "other": "Andere"
+  },
+  "whenAny": "Jedes Jahr",
+  "decades": "Jahrzehnte",
+  "years": "Jahre",
+  "decade": "Die {d}er",
+  "countryAll": "Überall",
+  "elsewhere": "Anderswo",
+  "soviet": "Sowjetunion",
+  "noPlace": "GCAT nennt für diesen Startplatz noch keinen Ort, daher kann der Globus nicht dorthin.",
+  "flewTo": "Auf dem Globus: {site}, Rampe {pad}",
+  "flewToNoPad": "Auf dem Globus: {site}",
+  "replay": {
+    "title": "Wiedergabe auf dem Globus",
+    "play": "Abspielen",
+    "pause": "Pause",
+    "playTitle": "Spielt jeden Start ab {year} ab, zwei Jahre pro Sekunde",
+    "year": "Jahr",
+    "yearValue": "{year}: {n} Startversuche",
+    "reduced": "Bewegung ist reduziert: Schieb den Regler, um durch die Jahre zu gehen.",
+    "note": "Bögen zur Veranschaulichung: Jeder beginnt am echten Startplatz und zeigt in die Richtung, die die geplante Bahn erlaubt, zum Äquator hin; genau nach Osten, wo GCAT keine Bahn nennt. Ein Fehlschlag endet früher."
+  },
+  "sourceName": "GCAT, Jonathan McDowell",
+  "licence": "CC BY 4.0"
+};
+// research train (catalogues): launch archive: end
+
+// research train (catalogues): sky calendar: begin
+COPY.skyCalendar = {
+  "lead": "Die datierten Ereignisse am Himmel, berechnet mit der Astronomie der Karte selbst. Zeiten in UTC.",
+  "prev": "Vorheriger Monat",
+  "next": "Nächster Monat",
+  "filterLabel": "Zeigen",
+  "cats": {
+    "all": "Alle",
+    "eclipses": "Finsternisse",
+    "showers": "Sternschnuppenströme",
+    "moons": "Vollmonde",
+    "planets": "Planeten",
+    "seasons": "Sonnenwenden",
+    "missions": "Missionen",
+    "launches": "Starts"
+  },
+  "titles": {
+    "shower": "Maximum der {shower}",
+    "solarTotal": "Totale Sonnenfinsternis",
+    "solarAnnular": "Ringförmige Sonnenfinsternis",
+    "solarPartial": "Partielle Sonnenfinsternis",
+    "lunarTotal": "Totale Mondfinsternis",
+    "lunarPartial": "Partielle Mondfinsternis",
+    "fullMoon": "Vollmond",
+    "conjunction": "{a} und {b} dicht beieinander",
+    "juneSolstice": "Junisonnenwende",
+    "decemberSolstice": "Dezembersonnenwende",
+    "missionOrbit": "{mission} schwenkt in eine Umlaufbahn um {world} ein"
+  },
+  "details": {
+    "shower": "Bis zu etwa {zhr} pro Stunde unter einem perfekt dunklen Himmel",
+    "conjunction": "Am nächsten {deg}° voneinander entfernt",
+    "fullMoon": "{km} km von der Erde entfernt",
+    "eclipse": "Größte Finsternis zu dieser Zeit",
+    "mission": "Das Datum der Agentur, ganztägig",
+    "launch": "So, wie Launch Library 2 ihn jetzt führt",
+    "launchRough": "Noch keine genaue Uhrzeit angekündigt"
+  },
+  "when": "{date}, {time} UTC",
+  "allDay": "{date}, ganztägig",
+  "open": "Die Karte zu diesem Zeitpunkt öffnen: {name}",
+  "add": "Zum Kalender hinzufügen",
+  "addTitle": "{name} zu deinem Kalender hinzufügen (eine .ics-Datei)",
+  "more": "Mehr lesen",
+  "moreTitle": "Die Seite über {name}",
+  "empty": "Diesen Monat steht nichts in unserem Kalender.",
+  "count": "{n} in diesem Monat",
+  "subscribe": "Abonnieren",
+  "subscribeLead": "Eine Kalender-App, die abonniert, schaut einmal am Tag nach.",
+  "subscribeAll": "Alle Himmelsereignisse abonnieren",
+  "subscribeTitle": "{name} in deiner Kalender-App abonnieren",
+  "sourceName": "Das Register der /events/-Seiten, berechnet mit Astronomy Engine",
+  "checked": "von einem Menschen geprüft am {date}",
+  "launchesSource": "Starts: Launch Library 2 (The Space Devs), so wie die Karte sie hat",
+  "showers": {
+    "quadrantids": "Quadrantiden",
+    "lyrids": "Lyriden",
+    "eta-aquariids": "Eta-Aquariiden",
+    "alpha-capricornids": "Alpha-Capricorniden",
+    "southern-delta-aquariids": "Südliche Delta-Aquariiden",
+    "perseids": "Perseiden",
+    "draconids": "Draconiden",
+    "orionids": "Orioniden",
+    "southern-taurids": "Südliche Tauriden",
+    "northern-taurids": "Nördliche Tauriden",
+    "leonids": "Leoniden",
+    "geminids": "Geminiden",
+    "ursids": "Ursiden"
+  },
+  "feeds": {
+    "sky-events.ics": "Alle Himmelsereignisse",
+    "eclipses.ics": "Sonnen- und Mondfinsternisse",
+    "showers.ics": "Sternschnuppenströme",
+    "moons.ics": "Vollmonde",
+    "planets.ics": "Planeten dicht beieinander",
+    "seasons.ics": "Sonnenwenden",
+    "missions.ics": "Ereignisse von Missionen",
+    "sky.ics": "Sonnenwenden, Planetenbegegnungen und Missionen"
+  }
+};
+// research train (catalogues): sky calendar: end
+
+// research train (catalogues): eclipse checker: begin
+COPY.eclipseCheck = {
+  "lead": "Am 2. August 2027 zieht der Schatten des Mondes über Südspanien, Nordafrika und Arabien. Wähle einen Ort, um zu sehen, was man dort sieht.",
+  "placeLabel": "Ort",
+  "placeholder": "Ein Ort oder eine Stadt",
+  "check": "Prüfen",
+  "useMine": "Meinen Standort verwenden",
+  "locating": "Dein Browser wird gefragt…",
+  "denied": "Dein Browser hat keinen Ort mitgeteilt.",
+  "noMatch": "Kein Ort dieses Namens in unserer Liste. Versuch es mit einer größeren Stadt in der Nähe.",
+  "suggestions": "Orte",
+  "placeRow": "{name}, {country}",
+  "yours": "Dein Ort",
+  "at": "In {place}",
+  "total": "Total: {dur} Dunkelheit",
+  "annular": "Ringförmig: ein Sonnenring für {dur}",
+  "partial": "Partiell: {pct} der Sonne bedeckt",
+  "none": "Von hier nicht zu sehen: Der Schatten des Mondes verfehlt diesen Ort.",
+  "below": "Von hier nicht zu sehen: Die Sonne steht unter dem Horizont.",
+  "rises": "Die Sonne geht auf, wenn die Finsternis schon begonnen hat.",
+  "sets": "Die Sonne geht unter, bevor die Finsternis vorbei ist.",
+  "low": "Die Sonne steht tief: Du brauchst freie Sicht bis zum Horizont.",
+  "rows": {
+    "obscuration": "Sonne bedeckt",
+    "magnitude": "Größe",
+    "c1": "Beginn",
+    "c2": "Beginn der Totalität",
+    "max": "Maximum",
+    "c3": "Ende der Totalität",
+    "c4": "Ende",
+    "duration": "Dauer der Totalität",
+    "sunAlt": "Sonnenhöhe beim Maximum"
+  },
+  "rowsAnnular": {
+    "c2": "Beginn des Rings",
+    "c3": "Ende des Rings",
+    "duration": "Dauer des Rings"
+  },
+  "time": "{utc} UTC · {local} deine Zeit",
+  "dur": "{m} min {s} s",
+  "pct": "{n} %",
+  "deg": "{n}°",
+  "openMap": "Auf dem Globus ansehen",
+  "openTitle": "Die Karte beim Maximum öffnen, über der Erde",
+  "safety": "Schau nur durch Finsternisbrillen nach ISO 12312-2. Nimm sie nur ab, solange die Sonne ganz bedeckt ist.",
+  "method": "Hier aus den Bessel-Elementen der NASA berechnet (ΔT 71,7 s), auf etwa eine Sekunde genau.",
+  "sourceName": "Finsternisvorhersagen des GSFC der NASA, von Fred Espenak",
+  "licence": "Inhalt der NASA, in den USA nicht urheberrechtlich geschützt",
+  "placesNote": "Orte von Natural Earth (gemeinfrei) und die Städte der Karte selbst. Was du eingibst, bleibt auf dieser Seite."
+};
+// research train (catalogues): eclipse checker: end
+
+// research train (catalogues): asteroids: begin
+COPY.neo = {
+  "lead": "{rows} der {neo} bekannten erdnahen Asteroiden: alle gefährlichen, alle ab etwa einem Kilometer Größe und alle, die in den nächsten zehn Jahren näher als 0,05 AE vorbeikommen.",
+  "tableLabel": "Erdnahe Asteroiden",
+  "whichLabel": "Welche",
+  "which": {
+    "all": "Alle",
+    "pha": "Gefährlich",
+    "km": "Ein Kilometer oder mehr",
+    "close": "Nahe Vorbeiflüge"
+  },
+  "classLabel": "Bahn",
+  "classes": {
+    "APO": "Apollo",
+    "ATE": "Aten",
+    "AMO": "Amor",
+    "IEO": "Atira"
+  },
+  "classTitles": {
+    "APO": "Kreuzt die Erdbahn von außen",
+    "ATE": "Kreuzt die Erdbahn von innen",
+    "AMO": "Kommt der Erdbahn von außen nahe, kreuzt sie nie",
+    "IEO": "Die ganze Bahn liegt innerhalb der Erdbahn"
+  },
+  "searchPlaceholder": "Apophis, 2024 YR4, 433",
+  "columns": {
+    "name": "Name",
+    "size": "Größe",
+    "next": "Nächster Vorbeiflug",
+    "dist": "Abstand",
+    "cls": "Bahn",
+    "dv": "Delta-v",
+    "moid": "MOID"
+  },
+  "km": "{n} km",
+  "m": "{n} m",
+  "range": "{min} bis {max}",
+  "estimated": "{range} (geschätzt)",
+  "sizeMeasured": "Vom JPL gemessen",
+  "sizeEstimated": "Aus der Helligkeit geschätzt (H {h}): ein heller Brocken ist die kleinere Größe, ein dunkler die größere",
+  "ld": "{n} LD",
+  "ldTitle": "{n}-mal der Mondabstand, {au} AE, mit {kms} km/s",
+  "kms": "{n} km/s",
+  "au": "{n} AE",
+  "moidTitle": "Wie nah sich die beiden Bahnen höchstens kommen, kein Vorbeiflug",
+  "passes": "{n} Vorbeiflüge in den nächsten zehn Jahren",
+  "notes": {
+    "size": "Größen sind Messungen des JPL, wo es eine gibt, sonst ein Bereich aus der Helligkeit, für einen Brocken so hell wie ein Steinasteroid oder so dunkel wie ein kohlenstoffreicher.",
+    "dv": "Delta-v schätzt, wie schwer ein Brocken zu erreichen ist: die Geschwindigkeitsänderung von einer niedrigen Erdumlaufbahn bis zum Treffen (Shoemaker und Helin, 1978, wie Lance Benners Tabelle rechnet). Eine echte Mission wartet auf ihr Startfenster.",
+    "place": "Eine Zeile wählen fliegt hin und zeichnet die Bahn. Der Ort wird aus der JPL-Bahn mit der Zweikörperbewegung berechnet, ist also abgeleitet und entfernt sich mit den Monaten seit dem Datum der Bahn von dem des JPL.",
+    "hazard": "„Gefährlich“ bezeichnet eine Bahn, die der Erdbahn näher als 0,05 AE kommt, und einen Brocken größer als etwa 140 Meter. Es ist keine Vorhersage."
+  },
+  "recordWhy": "Im Katalog der erdnahen Asteroiden, weil {reasons}. Die Bahn ist die Anpassung des JPL an echte Beobachtungen; wo er auf ihr steht, wird hier mit der Zweikörperbewegung berechnet, der Ort ist also abgeleitet.",
+  "reasonJoin": " und ",
+  "reasons": {
+    "pha": "das JPL ihn als potenziell gefährlich führt",
+    "km": "er etwa einen Kilometer groß oder größer ist",
+    "close": "er in den nächsten zehn Jahren näher als 0,05 AE an der Erde vorbeikommt"
+  },
+  "recordSource": "NASA/JPL Small-Body Database und CNEOS-Annäherungen, gelesen am {date}",
+  "cloud": {
+    "title": "Alle nummerierten Asteroiden",
+    "toggle": "Die hellsten nummerierten Asteroiden als Punkte zeigen",
+    "shown": "{shown} von {numbered} nummerierten Asteroiden, die hellsten zuerst (H {h} oder heller)",
+    "loading": "Die Punkte werden gelesen…",
+    "failed": "Die Punkte ließen sich nicht laden.",
+    "more": "{n} weitere",
+    "all": "Alle Stufen, die wir haben, sind an",
+    "legend": {
+      "neo": "Erdnah",
+      "belt": "Hauptgürtel",
+      "trojan": "Jupiter-Trojaner",
+      "far": "Jenseits von Jupiter"
+    },
+    "note": "Nur Punkte, aus den Bahnen des JPL mit der Zweikörperbewegung berechnet und auf ein Zehntausendstel ihres Sonnenabstands gerundet. Nicht jeder Asteroid: die lichtschwachen fehlen."
+  },
+  "sourceSbdb": "NASA/JPL Small-Body Database (die Bahnen)",
+  "sourceCad": "NASA/JPL CNEOS, Annäherungen (die Vorbeiflüge)",
+  "licence": "Gemeinfrei (NASA/JPL)"
+};
+// research train (catalogues): asteroids: end
+
+// research train (catalogues): exoplanets: begin
+COPY.exoExplorer = {
+  "lead": "Jeder bestätigte Planet um einen anderen Stern, zwei beliebige Zahlen gegeneinander. Tippe auf einen Punkt, um hinzufliegen.",
+  "views": "Ansichten",
+  "presets": {
+    "periodRadius": "Jahreslänge und Größe",
+    "zone": "Sternlicht und Stern (habitable Zone)",
+    "massRadius": "Masse und Größe",
+    "years": "Funde pro Jahr"
+  },
+  "xLabel": "Waagrecht",
+  "yLabel": "Senkrecht",
+  "scaleLabel": "Skala für {axis}",
+  "linear": "Linear",
+  "log": "Log",
+  "axes": {
+    "period": "Jahreslänge",
+    "radius": "Größe",
+    "mass": "Masse",
+    "distance": "Entfernung",
+    "year": "Fundjahr",
+    "starTeff": "Sterntemperatur",
+    "starRadius": "Sterngröße",
+    "aAu": "Bahngröße",
+    "insol": "Empfangenes Licht",
+    "teq": "Planetentemperatur",
+    "starMass": "Sternmasse"
+  },
+  "units": {
+    "period": "Tage",
+    "radius": "Erden",
+    "mass": "Erden",
+    "distance": "Lj",
+    "year": "",
+    "starTeff": "K",
+    "starRadius": "Sonnen",
+    "aAu": "AE",
+    "insol": "Erde = 1",
+    "teq": "K",
+    "starMass": "Sonnen"
+  },
+  "axisTitle": "{name} ({unit})",
+  "methods": "Gefunden durch",
+  "method": {
+    "transit": "Transit",
+    "rv": "Wackeln",
+    "microlensing": "Mikrolinse",
+    "imaging": "Direktaufnahme",
+    "other": "Andere Wege"
+  },
+  "methodTitle": "Die durch {method} gefundenen Planeten zeigen oder verbergen",
+  "drawn": "{n} Planeten gezeichnet.",
+  "missing": "{n} haben auf einer der beiden Achsen keinen Wert.",
+  "nonPositive": "{n} haben einen Wert von null oder weniger, den eine logarithmische Skala nicht setzen kann.",
+  "hidden": "{n} sind durch die Chips „Gefunden durch“ ausgeblendet.",
+  "canvasLabel": "{y} gegen {x}: {n} Planeten. Die Pfeiltasten gehen sie durch, Enter öffnet einen.",
+  "readout": "{name}: {x}, {y}. {method}",
+  "readoutHint": "Zeig auf einen Punkt, oder fokussiere das Diagramm und nutze die Pfeiltasten.",
+  "open": "{name} öffnen",
+  "noRecord": "{name} ist noch nicht auf der Karte.",
+  "zoneBoth": "Grünes Band: wo flüssiges Wasser bestehen könnte, für jede Sterntemperatur (Kopparapu et al. 2014). Heller: das breitere, optimistische Band.",
+  "zoneSun": "Grünes Band: die habitable Zone eines Sterns wie der Sonne (Kopparapu et al. 2014). Bei kühleren Sternen liegt sie bei weniger Licht.",
+  "zoneNone": "Wähle Empfangenes Licht auf einer Achse, um die habitable Zone zu sehen.",
+  "zoneLab": "Probier die habitable Zone im Labor aus",
+  "honesty": "Gemessene Werte aus der zusammengeführten Tabelle des Archivs; Bahngröße, Licht, Planetentemperatur und Sternmasse sind die eigenen Werte des Archivs, manche davon hat es aus den anderen berechnet. Massen und Größen, die nur als Grenzen angegeben sind, bleiben weg.",
+  "extraMissing": "Die zusätzlichen Spalten ließen sich nicht lesen: Bahngröße, Licht, Planetentemperatur und Sternmasse haben keine Werte.",
+  "source": "NASA Exoplanet Archive, zusammengeführte Tabelle (DOI 10.26133/NEA13)",
+  "licence": "Öffentlich; das Archiv bittet um Nennung"
+};
+// research train (catalogues): exoplanets: end
+
+// research train (catalogues): end

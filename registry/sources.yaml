@@ -765,3 +765,50 @@ sources:
     terms_url: https://www.space-track.org/
     terms_recorded: 2026-10-05
     publisher: Space-Track.org
+
+  # research train (catalogues): launch archive: begin
+  # EVERY ORBITAL LAUNCH SINCE 1957 (forge #551, the launch archive, ui/launcharchive.js). GCAT, the General Catalog of
+  # Artificial Space Objects, keeps one launch list of everything since 1942: 76 041 rows and 13.8 MB on 2026-11-23, of which
+  # 7 223 are orbital attempts (LaunchCode O*). TERMS, read 2026-11-24 on https://planet4589.org/space/gcat/ : "GCAT is
+  # released under the Creative Commons CC-BY licence. You are free to use the data in GCAT as long as you include a citation
+  # to it." The citation is the attribution line, on the archive's source line, /launches/ and CREDITS.md.
+  # MEASURED 2026-11-24: no Access-Control-Allow-Origin header, and the server sends an ETag. So `browser: false` (the page
+  # reads our copy, and the dated copy bundled in site/data/launches.json when there is none), and a weekly conditional GET:
+  # a week of new launches is a dozen rows, and the 13.8 MB is fetched only when the ETag has changed. The parser PACKS
+  # (harvest/parsers/gcat_launch.py): the copy saved is the archive's own 590 kB cut, the same file the bundled copy is.
+  - id: gcat-launches
+    url: https://planet4589.org/space/gcat/tsv/launch/launch.tsv
+    auth: none
+    browser: false
+    cadence: 168h
+    freshness_max: 720h
+    parser: gcat_launch
+    content_max_age: 60d   # the newest orbital launch in the list; several fly every week
+    outputs: [gcat-launches.json]
+    attribution: "Launches: GCAT (CC BY 4.0), J. McDowell, planet4589.org/space/gcat"
+    licence: "CC BY 4.0: free to use with a citation (McDowell, Jonathan C., 2020. General Catalog of Artificial Space Objects, Release 1.8.9, https://planet4589.org/space/gcat)"
+    terms_url: https://planet4589.org/space/gcat/
+    terms_recorded: 2026-11-24
+    publisher: GCAT
+  # research train (catalogues): launch archive: end
+  # research train (catalogues): asteroids: begin
+  # The near-Earth asteroid browser (ui/neobrowser.js, research train "catalogues", forge #560): CNEOS's close approaches over the
+  # next TEN YEARS within 0.05 au, the same query scripts/build-neo-browser.py bundled (1 441 approaches by 1 331 asteroids on
+  # 2026-11-24, 296 kB). The page reads this saved copy's approaches first and the bundled file's after it, so the table's
+  # "next close approach" is the harvest's; the orbits come from the bundled file (site/data/neo-browser.json), which the build
+  # refreshes. Weekly: the list grows by a few rows a week as new rocks are found, and one call a week is nothing to JPL.
+  # Same parser and guard as jpl-cad (zero rows refused, half the last count refused).
+  - id: jpl-cad-decade
+    url: https://ssd-api.jpl.nasa.gov/cad.api?dist-max=0.05&date-min=now&date-max=%2B3650&sort=date&diameter=true&fullname=true
+    auth: none
+    browser: false
+    cadence: 168h
+    freshness_max: 720h
+    parser: jpl_cad
+    outputs: [close-approaches-decade.json]
+    attribution: "Close approaches: NASA/JPL CNEOS"
+    licence: "NASA/JPL content, generally not copyrighted in the United States; the API publishes no licence text"
+    terms_url: https://ssd-api.jpl.nasa.gov/
+    terms_recorded: 2026-10-05
+    publisher: NASA JPL
+  # research train (catalogues): asteroids: end
