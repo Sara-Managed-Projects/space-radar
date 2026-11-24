@@ -30,7 +30,7 @@ import { sunlitState } from '../scene/shadow.js';
 const LIGHT_MS = 30e3;
 
 // The platform's queue (site/js/ui/platform-bridge.js, CONTRACT.md) is not on main yet: a no-op until it is.
-// TODO(platform-bridge): import { sr } from './platform-bridge.js' and call sr('track', name, params).
+// TODO(platform-bridge): call sr('track', name, params) from site/js/ui/platform-bridge.js once that module is on main.
 const track = () => {};
 
 /** The registry's player for this record: the first link of its card that carries `embed`. Pure. */
@@ -114,7 +114,8 @@ export function openCamera(ctx, record, { opener = null } = {}) {
   if (embed && embed.watch) links.appendChild(linkOut('ui-btn ui-btn--sm', C.onYoutube, embed.watch));
   if (embed && embed.page) links.appendChild(linkOut('ui-btn ui-btn--sm ui-btn--quiet', C.nasaLive, embed.page));
   const checked = embed && embed.checked ? el('p', 'sr-card__source', t(C.checked, { date: timeText.utcLong(Date.parse(`${embed.checked}T12:00:00Z`)) })) : null;
-  body.append(frameBox, light, el('p', 'sr-card__note', C.dark), credit, links);
+  // The dark-picture note is the card row's too: on a phone, where the panel sits over the sheet, it is said there only.
+  body.append(frameBox, light, el('p', 'sr-card__note sr-isscam__dark', C.dark), credit, links);
   if (checked) body.appendChild(checked);
   root.append(head, body);
   document.body.appendChild(root);

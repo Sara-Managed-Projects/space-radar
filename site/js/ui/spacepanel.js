@@ -30,7 +30,7 @@ const SCALES_URL = 'https://www.spaceweather.gov/noaa-scales-explanation';
 const SCALES_READ = '2026-11-24';
 
 // The platform's queue (site/js/ui/platform-bridge.js, CONTRACT.md) is not on main yet: a no-op until it is.
-// TODO(platform-bridge): import { sr } from './platform-bridge.js' and call sr('track', name, params).
+// TODO(platform-bridge): call sr('track', name, params) from site/js/ui/platform-bridge.js once that module is on main.
 const track = () => {};
 
 /** The forecast's highest Kp on each of the next `days` UTC days that have a forecast. Pure. */
@@ -99,8 +99,8 @@ export async function mountSpacePanel(box, ctx, deps = { read: readSpaceWeather 
       const dd = el('dd', 'sr-rows__val');
       // The G-scale, NOAA's own storm level, as a tag; the words beside the number wrap as a sentence does.
       if (d.scale) { dd.appendChild(el('span', 'ui-chip', d.scale)); dd.appendChild(document.createTextNode(' ')); }
-      dd.appendChild(el('span', 'sr-rows__num', d.value));
-      dd.appendChild(el('span', 'sr-rows__unit', COPY.punctuation.separator + d.words));
+      // In words, not the mono of a measured number: a forecast's highest bin and NOAA's word for it.
+      dd.appendChild(document.createTextNode(d.value + COPY.punctuation.separator + d.words));
       dl.appendChild(dd);
     }
     root.appendChild(dl);

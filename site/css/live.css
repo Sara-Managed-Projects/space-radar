@@ -58,6 +58,7 @@ html.sr-phone .sr-isscam {
   max-height: calc(100vh - var(--sr-top-y) - var(--sr-top-bar) - 2 * var(--sp-4));
   background: var(--sr-glass-strong);
 }
+html.sr-phone .sr-isscam__dark { display: none; }
 
 /* The card's row: the button sits on its own line; the notes keep the card's rhythm. */
 .sr-isscam-row { display: grid; gap: var(--sp-2); justify-items: start; }

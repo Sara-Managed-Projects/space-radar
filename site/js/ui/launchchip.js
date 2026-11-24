@@ -57,7 +57,7 @@ const ROCKET = [
 ];
 
 // The platform's queue (site/js/ui/platform-bridge.js, CONTRACT.md) is not on main yet: a no-op until it is.
-// TODO(platform-bridge): import { sr } from './platform-bridge.js' and call sr('track', name, params).
+// TODO(platform-bridge): call sr('track', name, params) from site/js/ui/platform-bridge.js once that module is on main.
 const track = () => {};
 
 /** The launch the chip counts to, with its state; null when none is inside the day. Pure. */
@@ -191,6 +191,11 @@ export function createLaunchChip(ctx, opts = {}) {
     if (current) { ctx.select(current); return; }
     const object = release && release.row.object && typeof ctx.recordById === 'function' ? ctx.recordById(release.row.object) : null;
     if (object) {
+      // Its layer on first, as a dated card of Today does, so the craft is drawn where the card says it is.
+      if (object.layer && typeof ctx.isLayerOn === 'function' && !ctx.isLayerOn(object.layer) && typeof ctx.setLayerOn === 'function') {
+        ctx.setLayerOn(object.layer, true);
+        doc.dispatchEvent(new CustomEvent('sr:layer-toggle', { detail: { id: object.layer, on: true, handled: true, from: 'release-chip' } }));
+      }
       ctx.select(object);
       // TODO(platform-bridge): sr('track', 'select_object', {...}) through site/js/ui/platform-bridge.js once it is on main.
       track('select_object', { object_class: String(object.klass || ''), object_id: String(object.id) });

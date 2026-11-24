@@ -42,7 +42,7 @@ const BODY = { mercury: 'Mercury', venus: 'Venus', mars: 'Mars', jupiter: 'Jupit
 const SEASON_KEYS = [['mar_equinox', 'march'], ['jun_solstice', 'june'], ['sep_equinox', 'september'], ['dec_solstice', 'december']];
 
 // The platform's queue (site/js/ui/platform-bridge.js, CONTRACT.md) is not on main yet: a no-op until it is.
-// TODO(platform-bridge): import { sr } from './platform-bridge.js' and call sr('track', name, params).
+// TODO(platform-bridge): call sr('track', name, params) from site/js/ui/platform-bridge.js once that module is on main.
 const track = () => {};
 
 /** Days from one month-day to another in the same leap-free calendar, signed and within half a year. */

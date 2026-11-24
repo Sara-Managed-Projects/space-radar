@@ -10,6 +10,9 @@ const visible = (sel) => { const e = document.querySelector(sel); return !!e && 
 const esc = () => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
 const snap = async (name) => { await shot(name); out.took.push(name); };
 const into = (sel) => { const e = document.querySelector(sel); if (e) e.scrollIntoView({ block: 'start' }); return !!e; };
+// On a phone the home and the card live in the sheet: up to full before a picture of what is in it.
+const phone = document.documentElement.classList.contains('sr-phone');
+const raise = async () => { try { const s = sr.shell && sr.shell.sheet && sr.shell.sheet(); if (phone && s) { s.set('full'); await settle(900); } } catch { /* the sheet as it is */ } };
 const openRow = async (id) => {
   const head = document.getElementById(`sr-disc-${id}`);
   if (!head) return false;
@@ -33,6 +36,7 @@ const chip = document.querySelector('.sr-launchchip');
 if (chip && /release/.test(out.chipPhase)) chip.click(); else location.hash = '#at=deep-gaia';
 out.seen.release = await until(() => visible('[data-section^="release-"] .sr-release'), 30000);
 await settle(5000);
+await raise();
 into('[data-section^="release-"]');
 await settle(1200);
 await snap('gaia-card');
@@ -44,7 +48,7 @@ location.hash = '';
 await settle(2500);
 const row = [...document.querySelectorAll('.sr-next__row')].find((li) => /Gaia DR4/.test(li.textContent));
 out.seen.nextRow = !!row;
-if (row) { row.scrollIntoView({ block: 'center' }); await settle(1000); await snap('coming-up'); }
+if (row) { await raise(); row.scrollIntoView({ block: 'center' }); await settle(1000); await snap('coming-up'); }
 
 // 3. the Earth's card, the space weather open
 location.hash = '#at=earth';
@@ -53,6 +57,7 @@ await settle(4000);
 await openRow('space-weather');
 out.seen.spaceWeather = await until(() => visible('.sr-spacepanel'), 30000);
 await settle(1500);
+await raise();
 into('[data-section="space-weather"]');
 await settle(800);
 await snap('earth-space-weather');
@@ -66,6 +71,7 @@ await openRow('camera');
 out.seen.cameraRow = await until(() => visible('.sr-isscam-row'), 30000);
 out.framesBeforePress = document.querySelectorAll('iframe[src*="youtube"]').length;
 await settle(1000);
+await raise();
 into('[data-section="camera"]');
 await settle(800);
 await snap('iss-camera-row');
@@ -86,6 +92,7 @@ location.hash = '';
 await settle(3000);
 out.seen.dayCard = await until(() => visible('.sr-daycard'), 30000);
 out.dayParts = [...document.querySelectorAll('.sr-daycard [data-part]')].map((b) => b.dataset.part);
+await raise();
 into('.sr-today');
 await settle(1200);
 await snap('today');
