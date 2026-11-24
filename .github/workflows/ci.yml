@@ -1303,6 +1303,8 @@ jobs:
         run: node tests/test_card_honesty_words.mjs
       - name: "the launch chip: which launch, what it says, the Starlink train's pass, no chase camera (public #289)"
         run: node tests/test_launchchip.mjs
+      - name: "the research train (forge #544, #546, #547, #548): Gaia DR4 in days not hours, NOAA's Kp measured and forecast apart from a frozen feed, no YouTube before the press, every part of the day card sourced"
+        run: node tests/test_research_live.mjs
       - name: "a first visit: once, three lines that fit, two buttons, one ember (public #241, #287)"
         run: node tests/test_welcome.mjs
       - name: "the opening shot: six to ten seconds, never twice, any input lands it, the words are the home's (public #287)"

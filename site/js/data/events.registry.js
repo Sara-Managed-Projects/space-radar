@@ -119,5 +119,27 @@ export const EVENT_TYPES = [
     "locationDependent": false,
     "enabled": false,
     "source": "celestrak-satcat"
+  },
+  {
+    "id": "data-release",
+    "display": "A big catalogue goes public",
+    "prominence": 2,
+    "locationDependent": false,
+    "enabled": true,
+    "source": "registry/events.yaml",
+    "dates": [
+      {
+        "id": "gaia-dr4",
+        "name": "Gaia DR4",
+        "date": "2026-12-02",
+        "object": "deep-gaia",
+        "chipFrom": "2026-11-24",
+        "chipUntil": "2026-12-04",
+        "journal": "https://blog.spaceradar.ai/gaia-dr4-release-day/",
+        "journalFrom": "2026-11-30",
+        "source": "https://www.cosmos.esa.int/web/gaia/release",
+        "read": "2026-11-24"
+      }
+    ]
   }
 ];

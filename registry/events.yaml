@@ -150,3 +150,35 @@ events:
     copy: decay
     ics: ""
     enabled: false              # no builder yet; it comes with the trip that needs one (spec 0031)
+
+  # A dated day an agency gives for a big catalogue going public (forge #547, the awesome-space research of
+  # 2026-11-23). Not computed and not fetched: each date is typed here from the agency's own page, which the
+  # row names with the day it was read, and the browser builds one record per date (data/events.js). The
+  # agency gives a DAY and no hour, so the record stands at noon UTC of that day (the `precision: day` rule
+  # of registry/missions.yaml) and the row says the date, never a countdown in hours.
+  #   dates[].object      the record whose card tells it (its "release" section, ui/releaseday.js)
+  #   dates[].chip_from   from this day the top bar's chip counts to it (ui/launchchip.js, when no launch is
+  #   dates[].chip_until  inside a day), through chip_until; outside them it is only a row of Coming up
+  #   dates[].journal     the Journal post about it, linked from the card on and after `journal_from`
+  # NOTHING ON THE MAP CHANGES ON THE DAY. A refresh of our stars from the new catalogue is a separate change,
+  # made only once its data is usable and its terms have been read (the card says so).
+  - id: data-release
+    display: A big catalogue goes public
+    source: registry/events.yaml
+    location_dependent: false
+    lead_times: [same-day, 1d, 1w]
+    prominence: 2
+    copy: dataRelease
+    ics: ""
+    dates:
+      - id: gaia-dr4
+        name: Gaia DR4
+        date: 2026-12-02
+        object: deep-gaia
+        chip_from: 2026-11-24
+        chip_until: 2026-12-04
+        journal: "https://blog.spaceradar.ai/gaia-dr4-release-day/"
+        journal_from: 2026-11-30
+        sources:
+          - {words: "ESA, Gaia data releases: 'Gaia DR4 (based on 66 months of data) 2 December 2026'", url: "https://www.cosmos.esa.int/web/gaia/release", read: 2026-11-24}
+          - {words: "ESA, Gaia DR4 contents: about 2.8 billion sources, 66 months from 25 July 2014 to 20 January 2020, from the Gaia ESA Archive; no hour published", url: "https://www.cosmos.esa.int/web/gaia/dr4", read: 2026-11-24}

@@ -22,8 +22,12 @@ def render(doc: dict) -> list:
     for r in doc.get("links") or []:
         if not isinstance(r, dict) or not r.get("for"):
             continue
-        links.setdefault(str(r["for"]), []).append(
-            {"id": r.get("id"), "words": r.get("words"), "publisher": r.get("publisher"), "url": r.get("url")})
+        row = {"id": r.get("id"), "words": r.get("words"), "publisher": r.get("publisher"), "url": r.get("url")}
+        # A player offered on a press (forge #544): its address, the stream on its host's page, the day it was checked.
+        e = r.get("embed")
+        if isinstance(e, dict) and e.get("url"):
+            row["embed"] = {"url": e.get("url"), "watch": e.get("watch"), "host": e.get("host"), "checked": str(e.get("checked"))}
+        links.setdefault(str(r["for"]), []).append(row)
     return [("The links out a card shows, by record id. Each is a plain link to the publisher's own page.", "LINKS", links)]
 
 

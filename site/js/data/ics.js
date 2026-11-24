@@ -25,6 +25,7 @@
 //   aurora (forecast)       its start    +3 h                         1 h
 //   pass / train            rise         +10 min / +20 min            15 min
 //   solar / lunar eclipse   global peak  +2 h                         1 day
+//   release (a catalogue)   the agency's day (all day)                1 day
 //
 // The pass's reminder is 15 minutes (the lead session's brief of 2026-10-07), where the issue's
 // first table had an hour: a pass is something to step outside for, not to travel to.
@@ -95,6 +96,9 @@ export function icsEvent(item) {
     case 'perihelion':
       return { allDay: false, startMs: t, endMs: t + HOUR, alarm: '-P1D' };
     case 'shower':
+      return { allDay: true, startMs: t, endMs: t + DAY, alarm: '-P1D' };
+    case 'release':
+      // The agency gives a day and no hour (forge #547): the row stands at its noon UTC, the file is that whole day.
       return { allDay: true, startMs: t, endMs: t + DAY, alarm: '-P1D' };
     case 'aurora':
       return item.now ? null : { allDay: false, startMs: t, endMs: t + 3 * HOUR, alarm: '-PT1H' };

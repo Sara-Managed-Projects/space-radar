@@ -36,10 +36,10 @@ const near = (ms, want, tolS = 60) => Math.abs(ms - Date.parse(want)) <= tolS * 
 // 1. The mirror is the registry, and only what has a builder is built -----------------------------
 {
   const ids = EVENT_TYPES.map((x) => x.id);
-  check(ids.length === 14, `fourteen event types in the mirror (${ids.length})`);
+  check(ids.length === 15, `fifteen event types in the mirror, data-release the newest (forge #547) (${ids.length})`);
   const off = EVENT_TYPES.filter((x) => !x.enabled).map((x) => x.id).sort().join(',');
   check(off === 'conjunction,decay,mission-milestone,reentry', `the four types with no builder or no secret are switched off (${off})`);
-  check(BUILT_TYPES.join(',') === 'launch,meteor-shower,close-approach,solar-eclipse,lunar-eclipse,solstice,equinox,station-pass,starlink-train,aurora', `built types, in registry order: ${BUILT_TYPES}`);
+  check(BUILT_TYPES.join(',') === 'launch,meteor-shower,close-approach,solar-eclipse,lunar-eclipse,solstice,equinox,station-pass,starlink-train,aurora,data-release', `built types, in registry order: ${BUILT_TYPES}`);
 }
 
 // 2. The eclipses of the next 400 days from 2026-09-22 ------------------------------------------

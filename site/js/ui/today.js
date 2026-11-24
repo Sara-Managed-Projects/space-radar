@@ -35,6 +35,7 @@ import { mountCountdown, launchAgeMs, COUNT_WITHIN_MS } from './countdown.js';
 import { createSentence } from './sentence.js';
 import { wonderOfTheDay, dayNumberOf } from './passport.js';
 import { weeklyStory } from './story.js';
+import { mountDayCard } from './daycard.js';
 
 export const MAX_CARDS = 4;
 const DAY_MS = 86400e3;
@@ -226,7 +227,11 @@ export function createToday(ctx, host) {
   const debrisHost = el('div', 'sr-debris-host');
   debrisHost.id = 'sr-debris';
   debrisBtn.setAttribute('aria-controls', debrisHost.id);
-  host.append(title, wonder, grid, story, debrisBtn, debrisHost);
+  host.append(title);
+  // The day card (forge #546, ui/daycard.js): this day in space, the Earth today, the sky today, and Share.
+  let day = null;
+  try { day = mountDayCard(ctx, host, { go: (card) => go(card) }); } catch (e) { day = null; console.warn('the day card did not load', e); }
+  host.append(wonder, grid, story, debrisBtn, debrisHost);
 
   let debris = null;
   debrisBtn.addEventListener('click', () => {
@@ -334,7 +339,9 @@ export function createToday(ctx, host) {
     const skipId = paintWonder(items, nowMs);
     paintHappened(nowMs);
     paintStory(nowMs);
-    const cards = todayCards({ items, nowMs, launched: launched(), skipId });
+    if (day) day.refresh(nowMs);
+    // The day card's sky part already says the Moon: its card is not said twice.
+    const cards = todayCards({ items, nowMs, launched: launched(), skipId }).filter((c) => !(day && day.hasSky && c.id === 'moon'));
     while (counts.length) counts.pop()();
     while (grid.firstChild) grid.removeChild(grid.firstChild);
     host.hidden = false;

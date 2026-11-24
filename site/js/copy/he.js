@@ -6606,3 +6606,104 @@ COPY.figureSide = {
 COPY.favs = {"add": "הוספה למועדפים שלכם", "remove": "במועדפים שלכם. לחצו כדי להסיר", "addTrip": "הוספת {name} למועדפים שלכם", "removeTrip": "{name} במועדפים שלכם. לחצו כדי להסיר"};
 COPY.account = {"signIn": "התחברות", "open": "החשבון שלכם", "openNamed": "החשבון שלכם, {name}"};
 // The platform bridge: end
+
+// research train (live): begin -- machine-translated, agent-reviewed 2026-11-24 (not native-reviewed): forge #544, #546, #547, #548.
+// A catalogue's day in Coming up (copy/en.js nextList), and the four sections of copy/en.live.js.
+COPY.nextList.dataRelease = "פרסום {name} לציבור ב-{date}: היום שהסוכנות נותנת, בלי שעה";
+COPY.nextList.classOf.dataRelease = "היום שהסוכנות נותנת; היא לא מפרסמת שעה";
+COPY.nextList.row.dataReleaseTitle = "פרסום {name} לציבור";
+COPY.nextList.row.dataRelease = "{date} · היום של הסוכנות";
+COPY.releaseDay = {
+  "chipDays": "{name} · בעוד {n} ימים",
+  "chipTomorrow": "{name} · מחר",
+  "chipToday": "{name} · היום",
+  "chipOut": "{name} · פורסם",
+  "chipLabel": "פרסום {name} לציבור ב-{date}. פותח את הכרטיס של {object}",
+  "section": "{name}, {date}",
+  "inDays": "הפרסום בעוד {n} ימים, ב-{date}, היום שהסוכנות נותנת. לא פורסמה שעה.",
+  "tomorrow": "הפרסום מחר, {date}, היום שהסוכנות נותנת. לא פורסמה שעה.",
+  "today": "הפרסום היום, {date}. הסוכנות לא מפרסמת שעה.",
+  "out": "זמין מאז {date}.",
+  "hintDays": "בעוד {n} ימים",
+  "hintTomorrow": "מחר",
+  "hintToday": "היום",
+  "hintOut": "פורסם",
+  "sources": "תאריך ותוכן: {publisher}, נקרא ב-{date}.",
+  "sourceLink": "הדף של הסוכנות",
+  "journal": "לקריאה על זה ביומן",
+  "dates": {
+    "gaia-dr4": {
+      "what": "Gaia DR4 הוא הקטלוג הרביעי של Gaia מבית ESA: 66 חודשים של מדידות, מיולי 2014 עד ינואר 2020, של כ-2.8 מיליארד כוכבים ומקורות אחרים. רוב 400 הטרה-בייט שלו הם המדידות הבודדות שמאחורי הממוצעים.",
+      "stars": "ביום הזה שום דבר לא משתנה במפה. 2.5 מיליון הכוכבים שלה בתלת-ממד באים מהקטלוגים HYG ו-AT-HYG, שהמרחקים בהם הם ברובם מ-Gaia DR3, הפרסום שלפני זה.",
+      "after": "אחרי היום הזה נקרא את הנתונים החדשים ואת התנאים שלהם, ואז נחליט מה לרענן, קודם את מרחקי הכוכבים ואת התנועות שלהם. עד שזה ייעשה ויימסר כאן, הכוכבים נשארים כמו שהם.",
+      "where": "החללית Gaia עצמה כובתה במרץ 2025 והורחקה מ-L2 אל מסלול משלה סביב השמש. הכרטיס הזה מראה איפה היא עכשיו.",
+      "publisher": "ESA"
+    }
+  }
+};
+COPY.spacePanel = {
+  "section": "מזג אוויר בחלל",
+  "hintKp": "Kp {kp}",
+  "hintNone": "מדד Kp של NOAA",
+  "measuredHead": "נמדד",
+  "forecastHead": "תחזית, שלושת הימים הבאים",
+  "day": "{day}",
+  "dayValue": "עד Kp {kp}",
+  "dayWords": "{word}",
+  "noForecast": "בקובץ של NOAA אין תחזית לימים הבאים.",
+  "kindNote": "״נמדד״ הוא הקריאה של NOAA לפרקי שלוש השעות האחרונים; הימים הבאים הם תחזית של NOAA, שנעשית שלוש שעות בכל פעם, והיא יכולה להשתנות.",
+  "stormHead": "מה סערה עושה",
+  "storm": {
+    "satellites": "לוויינים: מ-G2 הגרר במסלולים נמוכים משתנה, והמסלולים החזויים שלהם נסחפים; מ-G3 לוויינים נמוכים שוקעים מהר יותר.",
+    "navigation": "ניווט: מ-G3 ניווט לוויני יכול להיכשל מדי פעם; ב-G4 וב-G5 הוא פגוע במשך שעות, ואפילו ימים.",
+    "radio": "רדיו: מ-G2 הגלים הקצרים נחלשים ליד הקטבים, וב-G5 הם עלולים להיעלם ליום או יומיים.",
+    "aurora": "זוהר קוטבי: בסערת G1 הוא נראה בצפון הרחוק ובדרום הרחוק; כל דרגה מקרבת אותו לקו המשווה בכ-5 מעלות של רוחב מגנטי, עד כ-40 ב-G5."
+  },
+  "aurora": "הצגת הזוהר הקוטבי על הגלובוס",
+  "auroraTitle": "שכבת הזוהר הקוטבי: התחזית של NOAA ל-30 עד 90 הדקות הבאות",
+  "sources": "Kp: NOAA SWPC, נחלת הכלל. מה סערה עושה: סולמות מזג האוויר בחלל של NOAA, נקראו ב-{date}.",
+  "scalesLink": "הסולמות של NOAA",
+  "none": "לא הצלחנו לקרוא כרגע את מזג האוויר בחלל של NOAA."
+};
+COPY.issCam = {
+  "section": "מצלמה בשידור חי",
+  "hint": "השידור של NASA",
+  "lead": "NASA משדרת את התמונה ממצלמות על התחנה. השידור נטען מ-YouTube רק כשמבקשים אותו.",
+  "watch": "צפייה בשידור חי מהתחנה",
+  "watchTitle": "פותח את הווידאו החי של NASA לצד המפה; הוא מתחבר ל-YouTube",
+  "privacy": "לחיצה עליו מתחברת ל-YouTube במצב פרטיות משופרת; מאותו רגע חלים התנאים ומדיניות הפרטיות של YouTube עצמו.",
+  "dark": "התמונה לעיתים קרובות שחורה, כחולה או תמונת בדיקה: התחנה נמצאת יותר משליש מרוב ההקפות בצל של כדור הארץ, והשידור נקטע כשהקשר עם הקרקע אובד.",
+  "sunlit": "כרגע התחנה באור השמש: אם השידור פועל, הוא עשוי להראות את צד היום.",
+  "shadow": "כרגע התחנה בצל של כדור הארץ: צפו לתמונה חשוכה, במקרה הטוב אורות של ערים.",
+  "title": "שידור חי מהתחנה",
+  "close": "סגירת המצלמה החיה",
+  "frameTitle": "וידאו חי של NASA מתחנת החלל הבינלאומית, ב-YouTube",
+  "loading": "מבקשים מ-YouTube את השידור של NASA…",
+  "credit": "וידאו: NASA, ב-YouTube. הגלובוס שלידו הוא המפה שלנו, לא המצלמה.",
+  "onYoutube": "פתיחה ב-YouTube",
+  "nasaLive": "NASA Live",
+  "checked": "קישור השידור נבדק ב-{date}."
+};
+COPY.dayCard = {
+  "thisDayKicker": "ביום הזה · {year}",
+  "nearKicker": "{date} {year}",
+  "thisDayTitle": "{mission}: {event}",
+  "earthKicker": "כדור הארץ היום",
+  "earthTitleNorth": "השמש בזנית מעל {deg}° צפון",
+  "earthTitleSouth": "השמש בזנית מעל {deg}° דרום",
+  "earthLine": "עוד {n} ימים עד {season}.",
+  "earthLineOne": "{season} מחר.",
+  "earthLineToday": "{season} היום.",
+  "skyKicker": "השמיים היום",
+  "skyTitle": "הירח {phase}, מואר ב-{pct}%",
+  "skyMorning": "לפני השחר: {list}.",
+  "skyEvening": "אחרי רדת החשכה: {list}.",
+  "skyNoPlanets": "אף כוכב לכת בהיר לא רחוק מספיק מהבוהק של השמש.",
+  "share": "שיתוף הכרטיס של היום",
+  "shareTitle": "שיתוף הכרטיס של היום: הקישור, המילים ותמונה",
+  "shareName": "היום בחלל, {date}",
+  "sources": "מקורות: {list}.",
+  "sourceMission": "{name}",
+  "sourceSky": "השמש, הירח וכוכבי הלכת, מחושבים כאן (Astronomy Engine)"
+};
+// research train (live): end

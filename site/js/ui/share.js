@@ -6,6 +6,7 @@
 //     record  what to share (its tag, words, page); omitted: the selection, else the view
 //     trip    true, or the running trip's id: it, where it is; another id or {id}: its page. Beats record.
 //     opener  where focus returns on close (default: the focused element)
+//     words   {name, line, link}: what to say for something that is not one record (the home's day card)
 // Also: appBase, shareUrl, shareState, tripWords (pure), toast, openShare, savePostcard, shareButton.
 //
 // WHY ONE ENTRY. There were three. The maintainer, 2026-10-01: "full post, postcard, link and full text".

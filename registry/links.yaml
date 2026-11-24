@@ -8,6 +8,13 @@
 # scripts/check_registry.py refuses a row without `checked`, without `publisher`, without `saw`,
 # with a URL that is not https, or for a record nobody can open; and reports (does not refuse) a
 # row whose `checked` is more than 180 days old.
+#
+# ONE EXCEPTION, ON A PRESS (forge #544, the awesome-space research of 2026-11-23): `embed:` on a row is a player of
+# the publisher's own stream that the card offers as a button. NOTHING IS ASKED OF THE PLAYER'S HOST UNTIL THE VISITOR
+# PRESSES IT (ui/isscam.js builds the frame on the press, never before: no thumbnail, no script, no preconnect), and the
+# button's note says which host it connects to. Only YouTube's privacy-enhanced host, www.youtube-nocookie.com/embed/,
+# is allowed (check_registry.py), with `watch` the same stream on the host's own page for a visitor who would rather
+# open it there, and `checked`/`saw` as for a link.
 version: 1
 links:
   - id: iss-live
@@ -17,6 +24,19 @@ links:
     url: "https://www.nasa.gov/live/"
     checked: 2026-10-08
     saw: "NASA Live; under 'Space Station Views': 'Live video from the International Space Station'"
+    # NASA Live's "Space Station Views" links this YouTube playlist (read 2026-11-24): its title is "Live Video from the
+    # International Space Station" and its owner NASA. A playlist and not one video, because NASA restarts the stream
+    # under a new video id; the player plays the playlist's current entry. Terms, read 2026-11-24: NASA's media "generally
+    # are not subject to copyright in the United States" and may not imply NASA endorses us
+    # (https://www.nasa.gov/nasa-brand-center/images-and-media/); the player is YouTube's own embed, under YouTube's terms,
+    # in its privacy-enhanced mode. NOT SETTLED, for the maintainer: whether the cookie notice should also hold this player
+    # behind "marketing" consent; until it does, the press is the visitor's choice and the note under the button says so.
+    embed:
+      url: "https://www.youtube-nocookie.com/embed/videoseries?list=PL2aBZuCeDwlQMf6xMgQAUAY_nbHAgW5jz"
+      watch: "https://www.youtube.com/playlist?list=PL2aBZuCeDwlQMf6xMgQAUAY_nbHAgW5jz"
+      host: www.youtube-nocookie.com
+      checked: 2026-11-24
+      saw: "HTTP 200 from the privacy-enhanced embed of the playlist; the playlist page titled 'Live Video from the International Space Station', owner NASA, linked from https://www.nasa.gov/live under 'Space Station Views'"
   - id: earth-today
     for: earth
     words: "See today's Earth"

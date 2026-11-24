@@ -45,12 +45,14 @@ import {
   UNITS,
  article, typeWords, NAKED_EYE_LIMIT } from '../copy/en.js';
 import '../copy/en.later.js';
+import '../copy/en.live.js'; // forge #544, #547, #548: the camera's, the catalogue day's and the space weather's words
 import { sizeClause, lapClause } from './moonfacts.js'; // 0079 a3
 import { realModelFor, padVehicleShown } from '../scene/realmodels.js';
 import '../scene/sourcedtables.js'; // b200-s5-ci: the sourced bus and CubeSat routes, before the first card
 import { MODEL_FRAMES } from '../data/modelframes.js';
 import { lawFor, ruleKey } from '../scene/attitude.js';
 import { isGeostationary } from '../data/parsers.js';
+import { releaseFor, releaseSection } from './releaseday.js'; // forge #547: a catalogue's day on its object's card
 import { parseFrame } from '../propagate/frames.js';
 import { periodMsOf, wholePathKind } from '../scene/orbitline.js';
 import {
@@ -2331,6 +2333,11 @@ function heroBlock(heroes) {
 /** Which sections the visitor opened, per record, so a repaint (the clock set, the places
  *  landing) does not close what they opened. */
 const openSections = new Map();
+// A catalogue's day (forge #547) opens by itself, since the top bar's chip opens the card for it; one the visitor shut stays shut.
+const releaseShut = new Set();
+// The rows of the research train (forge #544, #548): what each needs, and the module that fills it when it is opened.
+const SPACE_WEATHER_IDS = new Set(['earth', 'sun']);
+const STATION_CAMERA_ID = 'sat-25544';
 
 function isOpen(recordId, id) {
   const set = openSections.get(recordId);
@@ -2637,6 +2644,23 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
     if (!panel) return;
     more.appendChild(disclosure(id, label, hint, panel, isOpen(rid, id), (on) => setOpen(rid, id, on)));
   };
+  // A row whose panel a module fills the first time it is opened (the live camera, the space weather).
+  const addLater = (id, label, hint, fill) => {
+    const box = el('div', `sr-later sr-later--${id}`);
+    const mount = () => { if (box.dataset.mounted) return; box.dataset.mounted = '1'; fill(box).catch(() => { box.dataset.mounted = ''; }); };
+    const openNow = isOpen(rid, id);
+    more.appendChild(disclosure(id, label, hint, panelOf([box]), openNow, (on) => { setOpen(rid, id, on); if (on) mount(); }));
+    if (openNow) mount();
+  };
+
+  // A catalogue's day (forge #547, ui/releaseday.js): Gaia DR4 on Gaia's card, open by itself.
+  const nowMs = ctx && ctx.timePill && typeof ctx.timePill.anchor === 'function' ? ctx.timePill.anchor() : Date.now();
+  const release = releaseFor(record, nowMs);
+  const rel = release ? releaseSection(release, nowMs, el) : null;
+  if (rel) {
+    const relId = `release-${release.id}`;
+    more.appendChild(disclosure(relId, rel.label, rel.hint, rel.panel, !releaseShut.has(rid), (on) => { if (on) releaseShut.delete(rid); else releaseShut.add(rid); }));
+  }
 
   // When you can see it: the see-it line, the next pass, and See it from here where the action
   // row gave its place to Ride along.
@@ -2654,6 +2678,12 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
   }
   add('see', S.see, seeHint(record, ctx, m, passInfo), panelOf(seeNodes));
 
+  // The station's live camera (forge #544, ui/isscam.js): a button that opens NASA's stream beside the map, and
+  // nothing of YouTube's before it is pressed. Whether the station is in sunlight is the map's own (scene/shadow.js).
+  if (record.id === STATION_CAMERA_ID && COPY.issCam) {
+    addLater('camera', COPY.issCam.section, COPY.issCam.hint, (box) => import('./isscam.js').then((mod) => mod.mountCameraRow(box, record, ctx)));
+  }
+
   // Its path: the time facts' sentences, the trajectory (spec 0026 req 14), the ground track's
   // switch above 2 000 km (spec 0048), and what the line drawn on the scene is.
   const lap = orbitLineLine(record);
@@ -2664,6 +2694,14 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
     lap ? el('p', 'sr-card__note', lap) : null,
     distanceCurve(record, ctx, m),
   ]));
+
+  // The space weather (forge #548, ui/spacepanel.js): NOAA's Kp measured and forecast, what a storm does, the aurora layer.
+  if (SPACE_WEATHER_IDS.has(rid) && COPY.spacePanel) {
+    const sw = ctx && ctx.spaceWeather && ctx.spaceWeather.parsed;
+    const kpNow = sw && Number.isFinite(sw.observedKp) ? sw.observedKp : null;
+    addLater('space-weather', COPY.spacePanel.section, kpNow !== null ? t(COPY.spacePanel.hintKp, { kp: fmt.smart(kpNow) }) : COPY.spacePanel.hintNone,
+      (box) => import('./spacepanel.js').then((mod) => mod.mountSpacePanel(box, ctx)));
+  }
 
   // Who is aboard: what rides on this, or what this rides on (data/attached.js).
   // On a station Launch Library follows, the people and the docked vehicles come first (#133).

@@ -3015,6 +3015,18 @@ def check_links() -> list:
             fail(where, "no `checked:` date -- a link nobody opened is a link that may be dead")
         elif (datetime.date.today() - checked).days > 180:
             print(f"finding: {where} was last opened on {checked}: open it again and move the date")
+        # A player on a press (forge #544): only YouTube's privacy-enhanced host, checked and described like a link.
+        emb = r.get("embed")
+        if emb is not None:
+            if not isinstance(emb, dict):
+                fail(where, "`embed:` is a mapping {url, watch, host, checked, saw}")
+            else:
+                if not str(emb.get("url") or "").startswith("https://www.youtube-nocookie.com/embed/"):
+                    fail(where, "`embed.url:` must be YouTube's privacy-enhanced player, https://www.youtube-nocookie.com/embed/...")
+                if not str(emb.get("watch") or "").startswith("https://"):
+                    fail(where, "`embed.watch:` is the stream on its host's own page, an https address")
+                if not isinstance(emb.get("checked"), datetime.date) or not str(emb.get("saw") or "").strip():
+                    fail(where, "`embed:` needs `checked:` (a date) and `saw:` (what was there that day)")
     return rows_
 
 
@@ -5316,6 +5328,27 @@ def main() -> int:
             fail(where, "must say whether it is location_dependent -- it decides where it is computed")
         if not e.get("copy"):
             fail(where, "no copy template")
+        # Dates typed from an agency's page (`data-release`, forge #547): each says where it was read, and when.
+        for d in e.get("dates") or []:
+            dw = f"{where}.dates[{(d or {}).get('id') or '?'}]" if isinstance(d, dict) else where
+            if not isinstance(d, dict) or not d.get("id") or not d.get("name"):
+                fail(dw, "a date needs an `id:` and a `name:`")
+                continue
+            if not isinstance(d.get("date"), datetime.date):
+                fail(dw, "`date:` must be a YYYY-MM-DD day (the agency's day; no hour is claimed)")
+            for k in ("chip_from", "chip_until", "journal_from"):
+                if k in d and not isinstance(d.get(k), datetime.date):
+                    fail(dw, f"`{k}:` must be a YYYY-MM-DD day")
+            if isinstance(d.get("chip_from"), datetime.date) and isinstance(d.get("chip_until"), datetime.date) and d["chip_from"] > d["chip_until"]:
+                fail(dw, "`chip_from:` is after `chip_until:`")
+            if d.get("journal") and not str(d["journal"]).startswith("https://blog.spaceradar.ai/"):
+                fail(dw, "`journal:` is a post of the Journal (https://blog.spaceradar.ai/...)")
+            srcs = d.get("sources")
+            if not isinstance(srcs, list) or not srcs:
+                fail(dw, "no `sources:` -- the agency's page that gives the date")
+            for sr in srcs if isinstance(srcs, list) else []:
+                if not isinstance(sr, dict) or not str(sr.get("url") or "").startswith("https://") or not sr.get("words") or not isinstance(sr.get("read"), datetime.date):
+                    fail(dw, "each source is {words, url (https), read (a date)}")
 
     # --- real models: NASA geometry, so the licence fields are not optional ---------
     # A row here credits somebody else's work and points at a file we redistribute. Both halves

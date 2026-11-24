@@ -1,0 +1,95 @@
+/* css/live.css -- the research train's rows and panel (forge #544, #547, #548): the station's live camera panel
+   (ui/isscam.js), its row on the card, the space weather row (ui/spacepanel.js) and a catalogue's day (ui/releaseday.js).
+   Linked by ui/latercss.js when the first of them is built, never at boot. Tokens only (css/ui.css :root); the panel is the Record
+   panel's glass and parts (.sr-float, .ui-pop), placed beside the tool rail on a wide screen and under the search
+   on a phone, where the globe and the dot of the station stay in sight below it. */
+.sr-isscam {
+  position: fixed;
+  top: var(--sr-inset);
+  right: calc(var(--sr-inset) + 48px + 12px);
+  z-index: var(--sr-z-pop);
+  display: flex;
+  flex-direction: column;
+  width: min(420px, calc(100vw - 2 * var(--sp-4)));
+  max-height: calc(100vh - 2 * var(--sr-inset) - var(--sr-time-h) - var(--sp-3));
+  overflow: auto;
+  border-radius: var(--sr-radius-shell);
+  font: 400 var(--sr-fs-label)/20px var(--sr-font);
+  color: var(--sr-text);
+}
+.sr-isscam * { box-sizing: border-box; }
+.sr-isscam > .ui-pop__head { border-bottom: 1px solid var(--sr-line); }
+.sr-isscam .ui-pop__title { flex: 1 1 0; outline: none; }
+.sr-isscam .ui-pop__body { display: grid; gap: var(--sp-2); }
+.sr-isscam .ui-pop__body > p { margin: 0; }
+
+.sr-isscam__frame {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--sr-glass-solid);
+  border-radius: var(--sr-radius);
+  box-shadow: inset 0 0 0 1px var(--sr-line);
+}
+.sr-isscam__frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.sr-isscam__wait {
+  margin: 0;
+  padding: var(--sp-3);
+  color: var(--sr-text-soft);
+  font-size: var(--sr-fs-sm);
+  text-align: center;
+}
+.sr-isscam__wait[hidden] { display: none; }
+.sr-isscam__links { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+
+html.sr-phone .sr-isscam {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2));
+  right: var(--sp-4);
+  left: var(--sp-4);
+  width: auto;
+  max-height: calc(100vh - var(--sr-top-y) - var(--sr-top-bar) - 2 * var(--sp-4));
+  background: var(--sr-glass-strong);
+}
+
+/* The card's row: the button sits on its own line; the notes keep the card's rhythm. */
+.sr-isscam-row { display: grid; gap: var(--sp-2); justify-items: start; }
+.sr-isscam-row > p { margin: 0; }
+
+/* The space weather row (ui/spacepanel.js): the forecast's days as the card's rows, NOAA's scale as a list of notes. */
+.sr-spacepanel { display: grid; gap: var(--sp-2); justify-items: start; }
+.sr-spacepanel > p { margin: 0; }
+.sr-spacepanel > .sr-micro { margin-top: var(--sp-2); }
+.sr-spacepanel__days { width: 100%; }
+.sr-spacepanel__days .ui-chip { margin-right: var(--sp-1); }
+.sr-spacepanel__storm { display: grid; gap: var(--sp-1); margin: 0; padding: 0 0 0 var(--sp-4); }
+
+/* A catalogue's day (ui/releaseday.js). */
+.sr-release { display: grid; gap: var(--sp-2); justify-items: start; }
+.sr-release > p { margin: 0; }
+
+/* The home's day card (ui/daycard.js, forge #546): this day in space across the shelf, the Earth and the sky under it,
+   then one line of sources and Share. The cards are Today's own (.sr-today__card, css/ui.css). */
+.sr-daycard[hidden] { display: none; }
+.sr-daycard__grid > .sr-daycard__this-day { grid-column: 1 / -1; min-height: 0; }
+.sr-daycard__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--sp-2);
+}
+.sr-daycard__src {
+  flex: 1 1 12rem;
+  margin: 0;
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
+  color: var(--sr-text-dim);
+}

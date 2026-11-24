@@ -6470,3 +6470,104 @@ COPY.figureSide = {
 COPY.favs = {"add": "Añadir a tus favoritos", "remove": "En tus favoritos. Pulsa para quitarlo", "addTrip": "Añadir {name} a tus favoritos", "removeTrip": "{name} está en tus favoritos. Pulsa para quitarlo"};
 COPY.account = {"signIn": "Iniciar sesión", "open": "Tu cuenta", "openNamed": "Tu cuenta, {name}"};
 // The platform bridge: end
+
+// research train (live): begin -- machine-translated, agent-reviewed 2026-11-24 (not native-reviewed): forge #544, #546, #547, #548.
+// A catalogue's day in Coming up (copy/en.js nextList), and the four sections of copy/en.live.js.
+COPY.nextList.dataRelease = "{name} se publica el {date}: el día que da la agencia, sin hora";
+COPY.nextList.classOf.dataRelease = "El día que da la agencia; no publica ninguna hora";
+COPY.nextList.row.dataReleaseTitle = "{name} se publica";
+COPY.nextList.row.dataRelease = "{date} · el día de la agencia";
+COPY.releaseDay = {
+  "chipDays": "{name} · en {n} días",
+  "chipTomorrow": "{name} · mañana",
+  "chipToday": "{name} · hoy",
+  "chipOut": "{name} ya salió",
+  "chipLabel": "{name} se publica el {date}. Abre la ficha de {object}",
+  "section": "{name}, {date}",
+  "inDays": "Sale en {n} días, el {date}, el día que da la agencia. No se ha publicado ninguna hora.",
+  "tomorrow": "Sale mañana, {date}, el día que da la agencia. No se ha publicado ninguna hora.",
+  "today": "Sale hoy, {date}. La agencia no publica ninguna hora.",
+  "out": "Disponible desde el {date}.",
+  "hintDays": "en {n} días",
+  "hintTomorrow": "mañana",
+  "hintToday": "hoy",
+  "hintOut": "ya salió",
+  "sources": "Fecha y contenido: {publisher}, leído el {date}.",
+  "sourceLink": "La página de la agencia",
+  "journal": "Léelo en el Diario",
+  "dates": {
+    "gaia-dr4": {
+      "what": "Gaia DR4 es el cuarto catálogo de Gaia de la ESA: 66 meses de mediciones, de julio de 2014 a enero de 2020, de unos 2800 millones de estrellas y otras fuentes. La mayor parte de sus 400 terabytes son las mediciones sueltas que hay detrás de los promedios.",
+      "stars": "Ese día no cambia nada en este mapa. Sus 2,5 millones de estrellas en 3D vienen de los catálogos HYG y AT-HYG, cuyas distancias salen sobre todo de Gaia DR3, la publicación anterior a esta.",
+      "after": "Después de ese día leeremos los nuevos datos y sus condiciones de uso, y decidiremos qué actualizar, empezando por las distancias y los movimientos de las estrellas. Hasta que eso esté hecho y lo contemos aquí, las estrellas se quedan como están.",
+      "where": "Gaia se apagó en marzo de 2025 y la alejaron de L2 hacia una órbita propia alrededor del Sol. Esta ficha muestra dónde está ahora.",
+      "publisher": "ESA"
+    }
+  }
+};
+COPY.spacePanel = {
+  "section": "Clima espacial",
+  "hintKp": "Kp {kp}",
+  "hintNone": "Índice Kp de NOAA",
+  "measuredHead": "Medido",
+  "forecastHead": "Pronóstico, próximos tres días",
+  "day": "{day}",
+  "dayValue": "hasta Kp {kp}",
+  "dayWords": "{word}",
+  "noForecast": "El archivo de NOAA no trae ningún pronóstico para los próximos días.",
+  "kindNote": "Medido es la lectura de NOAA de los últimos periodos de tres horas; los próximos días son su pronóstico, hecho de tres en tres horas, y pueden cambiar.",
+  "stormHead": "Qué hace una tormenta",
+  "storm": {
+    "satellites": "Satélites: desde G2 cambia el frenado del aire en las órbitas bajas y sus trayectorias previstas se desvían; desde G3 los satélites bajos caen más rápido.",
+    "navigation": "Navegación: desde G3 la navegación por satélite puede fallar de vez en cuando; con G4 y G5 funciona peor durante horas, incluso días.",
+    "radio": "Radio: la onda corta se debilita cerca de los polos desde G2, y con G5 puede desaparecer uno o dos días.",
+    "aurora": "Auroras: una tormenta G1 se ve en el extremo norte y el extremo sur; cada nivel la acerca unos 5 grados de latitud magnética al ecuador, hasta unos 40 con G5."
+  },
+  "aurora": "Mostrar la aurora en el globo",
+  "auroraTitle": "La capa de auroras: el pronóstico de NOAA para los próximos 30 a 90 minutos",
+  "sources": "Kp: NOAA SWPC, dominio público. Qué hace una tormenta: las escalas de clima espacial de NOAA, leídas el {date}.",
+  "scalesLink": "Las escalas de NOAA",
+  "none": "No se pudo leer el clima espacial de NOAA en este momento."
+};
+COPY.issCam = {
+  "section": "Cámara en vivo",
+  "hint": "Emisión de la NASA",
+  "lead": "La NASA emite lo que ven las cámaras de la estación. Solo se carga cuando lo pides, desde YouTube.",
+  "watch": "Ver en vivo desde la estación",
+  "watchTitle": "Abre el vídeo en vivo de la NASA junto al mapa; se conecta a YouTube",
+  "privacy": "Al pulsarlo te conectas a YouTube en su modo de privacidad mejorada; desde ese momento se aplican las condiciones y la política de privacidad de YouTube.",
+  "dark": "La imagen suele salir negra, azul o con una imagen de prueba: la estación pasa más de un tercio de casi todas sus órbitas en la sombra de la Tierra, y la señal se corta cuando pierde el contacto con tierra.",
+  "sunlit": "Ahora mismo la estación está al sol: si la señal funciona, puede mostrar el lado de día.",
+  "shadow": "Ahora mismo la estación está en la sombra de la Tierra: espera una imagen oscura, como mucho luces de ciudades.",
+  "title": "En vivo desde la estación",
+  "close": "Cerrar la cámara en vivo",
+  "frameTitle": "Vídeo en vivo de la NASA desde la Estación Espacial Internacional, en YouTube",
+  "loading": "Pidiendo a YouTube la emisión de la NASA…",
+  "credit": "Vídeo: NASA, en YouTube. El globo de al lado es nuestro mapa, no la cámara.",
+  "onYoutube": "Abrir en YouTube",
+  "nasaLive": "NASA Live",
+  "checked": "Enlace de la emisión comprobado el {date}."
+};
+COPY.dayCard = {
+  "thisDayKicker": "Un día como hoy · {year}",
+  "nearKicker": "{date} {year}",
+  "thisDayTitle": "{mission}: {event}",
+  "earthKicker": "La Tierra hoy",
+  "earthTitleNorth": "El Sol está en el cenit a {deg}° N",
+  "earthTitleSouth": "El Sol está en el cenit a {deg}° S",
+  "earthLine": "Faltan {n} días para el {season}.",
+  "earthLineOne": "El {season} es mañana.",
+  "earthLineToday": "El {season} es hoy.",
+  "skyKicker": "El cielo hoy",
+  "skyTitle": "Luna: {phase}, iluminada al {pct} %",
+  "skyMorning": "Antes del amanecer: {list}.",
+  "skyEvening": "Después del anochecer: {list}.",
+  "skyNoPlanets": "Ningún planeta brillante se libra del resplandor del Sol.",
+  "share": "Compartir la ficha de hoy",
+  "shareTitle": "Compartir la ficha de hoy: el enlace, el texto y una imagen",
+  "shareName": "Hoy en el espacio, {date}",
+  "sources": "Fuentes: {list}.",
+  "sourceMission": "{name}",
+  "sourceSky": "el Sol, la Luna y los planetas, calculados aquí (Astronomy Engine)"
+};
+// research train (live): end
