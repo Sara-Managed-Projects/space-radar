@@ -55,6 +55,33 @@ const SKY_CULTURES = ['western', 'chinese', 'maori', 'hawaiian', 'samoan', 'tong
 /** Where the "My view" choice is kept: { facing: 'any' | 'n' | 'e' | 's' | 'w', minAltDeg: 0 | 15 | 30 }. */
 export const VIEW_KEY = 'sr.tonight.view';
 
+/**
+ * Tonight's best as the platform slot's rows (internal platform/passport/tonight.js fromMap checks every field): the
+ * passport's own ids (`sat-25544`, `jupiter`, `moon`, `shower-geminids`, `dso-m31`), degrees, and the names this list shows.
+ * Pure. The place is never handed over: only whether it is a guess.
+ */
+export function slotRows(best, observer, nowMs) {
+  const deg = (rad) => (Number.isFinite(rad) ? rad * 180 / Math.PI : null);
+  const rows = [];
+  for (const r of (best && Array.isArray(best.rows) ? best.rows : [])) {
+    const w = bestWords(r);
+    const name = w ? w.title : '';
+    if (r.kind === 'pass') {
+      const p = r.pass || {};
+      const id = p.recordId || (p.record && p.record.id);
+      if (id) rows.push({ id: String(id), kind: 'pass', name, whenMs: p.startMs, endMs: p.endMs, altDeg: deg(p.peakEl), azDeg: deg(p.startAz) });
+    } else if (r.kind === 'planet' || r.kind === 'moon') {
+      rows.push({ id: r.id, kind: r.kind, name, whenMs: r.bestMs, altDeg: r.altDeg, azDeg: r.azDeg, mag: r.mag, percent: r.percent });
+    } else if (r.kind === 'shower') {
+      rows.push({ id: `shower-${r.id}`, kind: 'shower', name, whenMs: r.bestMs, altDeg: r.altDeg, azDeg: r.azDeg, zhr: r.shower && r.shower.zhr });
+    } else if (r.kind === 'dso') {
+      rows.push({ id: `dso-${r.id}`, kind: 'deep', name, whenMs: r.bestMs, altDeg: r.altDeg, azDeg: r.azDeg, mag: r.mag, how: r.needs });
+    }
+  }
+  const win = best && best.window ? { startMs: best.window.startMs, endMs: best.window.endMs } : null;
+  return { observer: { source: observer && observer.source === 'guess' ? 'guess' : 'set' }, nowMs, window: win, rows };
+}
+
 /** The stored view over the default; anything unknown or unreadable is the whole sky. Pure. */
 export function readView(storage) {
   const out = { facing: 'any', minAltDeg: 0 };
@@ -231,6 +258,15 @@ export function renderTonight(host, ctx) {
   root.appendChild(bestEmpty);
   root.appendChild(bestDark);
   root.appendChild(bestNote);
+  // THE PLATFORM'S SLOT (internal research #549, its contract's `[data-sr-tonight]`): empty, hidden and taking no room where
+  // the platform does not run. srTonight() hands it this list's own rows (passport ids, times, heights, the names in the
+  // visitor's language), so its "I saw it" checklist ticks exactly what is listed here; `sr:tonight` says they changed.
+  const tonightSlot = el('div', 'sr-tonight-view__slot');
+  tonightSlot.setAttribute('data-sr-tonight', '');
+  tonightSlot.hidden = true;
+  tonightSlot.srTonight = () => slotRows(st.best, ctx.observer, ctx.clock.now());
+  root.appendChild(tonightSlot);
+  document.dispatchEvent(new CustomEvent('sr:slot', { detail: { slot: 'tonight', el: tonightSlot } }));
   // Answer first, settings behind one fold (internal #305): the next pass and tonight's best are what
   // a first-comer came for; which way the window faces, the lens, the overlays, the sky cultures and
   // the light pollution wait behind "More sky settings".
@@ -572,6 +608,7 @@ export function renderTonight(host, ctx) {
     setText(bestDark, best ? darkWords(best) : '');
     bestDark.hidden = !best;
     bestNote.hidden = !o;
+    window.dispatchEvent(new CustomEvent('sr:tonight')); // internal #549: the platform's checklist follows this list
   }
 
   /**

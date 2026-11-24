@@ -34,6 +34,7 @@ import { COPY, t, fmt, timeText } from '../copy/en.js';
 import '../copy/en.later.js';
 // 0077 W2-d: begin (the passport's kinds and notes, internal i#911)
 import { FAMILIES, ACHIEVEMENTS, familyOfKlass, noteAchievements, kindsSections } from './passportkinds.js';
+import { bridgeSeen } from './platform-bridge.js'; // internal #549: the platform's Tonight checklist ticks through this passport
 // 0077 W2-d: end
 
 export const KEY = 'sr:passport';
@@ -612,6 +613,7 @@ export function createPassport(ctx, opts = {}) {
       if (viewBuilt) render();
     },
     destroy() {
+      unbridge();
       if (typeof window !== 'undefined') window.removeEventListener('sr:select', onSelect);
       if (typeof offTrip === 'function') offTrip();
       openSect.remove();
@@ -627,6 +629,7 @@ export function createPassport(ctx, opts = {}) {
     window.dispatchEvent(new CustomEvent('sr:passport'));
   }
   if (ctx) ctx.passport = api;
+  const unbridge = bridgeSeen(api);
   return api;
 }
 

@@ -156,6 +156,51 @@ const F = await import(join(JS, 'ui/favs.js'));
   check(true, 'a listener that throws does not break the page');
 }
 
+// --- 4b. bridgeSeen: the one way back for the platform's Tonight checklist (internal #549) -------------------
+{
+  const mkWin = () => {
+    const ls = {};
+    return { ls, addEventListener(t, f) { (ls[t] = ls[t] || []).push(f); }, removeEventListener(t, f) { ls[t] = (ls[t] || []).filter((x) => x !== f); },
+      fire(detail) { const e = { type: 'sr:seen', detail }; for (const f of [...(ls['sr:seen'] || [])]) f(e); return e; } };
+  };
+  const mkPassport = () => { const calls = []; return { calls, markSeen(id, on) { calls.push([id, on]); return true; } }; };
+  const win = mkWin();
+  const pp = mkPassport();
+  const off = B.bridgeSeen(pp, win);
+  check(typeof off === 'function', 'bridgeSeen answers the function that stops it');
+  const d1 = { id: 'jupiter', on: true };
+  win.fire(d1);
+  check(pp.calls.length === 1 && pp.calls[0][0] === 'jupiter' && pp.calls[0][1] === true && d1.kept === true, 'sr:seen {jupiter, on} calls markSeen(jupiter, true) and sets kept');
+  const d2 = { id: 'jupiter', on: false };
+  win.fire(d2);
+  check(pp.calls[1] && pp.calls[1][1] === false && d2.kept === true, 'a tick taken back is passed on as on = false');
+  for (const bad of [{ id: 5 }, { id: '' }, { id: 'x'.repeat(81) }, { id: null }, {}]) {
+    const n = pp.calls.length;
+    const d = { ...bad, on: true };
+    win.fire(d);
+    check(pp.calls.length === n && d.kept === undefined, `a bad id is ignored (${JSON.stringify(bad).slice(0, 30)})`);
+  }
+  const d80 = { id: 'x'.repeat(80), on: true };
+  win.fire(d80);
+  check(d80.kept === true, 'an id of 80 characters is allowed');
+  const refuse = B.bridgeSeen({ markSeen: () => false }, mkWin());
+  check(typeof refuse === 'function', 'a passport that keeps nothing still binds');
+  const w3 = mkWin();
+  B.bridgeSeen({ markSeen: () => false }, w3);
+  const d3 = { id: 'moon', on: true };
+  w3.fire(d3);
+  check(d3.kept === false, 'kept is false when the passport does not keep the record');
+  try { win.fire(undefined); win.fire({ get id() { throw new Error('x'); } }); } catch { check(false, 'a bad event never throws into the page'); }
+  const n2 = pp.calls.length;
+  off();
+  win.fire({ id: 'saturn', on: true });
+  check(pp.calls.length === n2 && (win.ls['sr:seen'] || []).length === 0, 'the returned function removes the listener');
+  const w4 = mkWin();
+  B.bridgeSeen({}, w4); B.bridgeSeen(null, w4); B.bridgeSeen({ markSeen: 1 }, w4);
+  check((w4.ls['sr:seen'] || []).length === 0, 'a passport without markSeen binds nothing');
+  check(typeof B.bridgeSeen(pp, null) === 'function', 'no window: nothing bound, no throw');
+}
+
 // --- 5. the hearts, with no platform -----------------------------------------------------------------
 {
   check(F.FAVS_KEY === 'sr:favs' && F.FAVS_CAP === 500, 'the hearts live in sr:favs, 500 at most (the contract\'s row)');
@@ -283,7 +328,8 @@ const F = await import(join(JS, 'ui/favs.js'));
   const rail = readFileSync(join(JS, 'ui/rail.js'), 'utf8');
   check(/setAttribute\('data-sr-account', ''\)/.test(rail) && /account\.hidden = true/.test(rail), 'the rail\'s account slot starts empty and hidden: no Sign in on localhost');
   const passport = readFileSync(join(JS, 'ui/passport.js'), 'utf8');
-  check(/setAttribute\('data-sr-passport', ''\)/.test(passport) && !/platform-bridge/.test(passport), 'the passport view has its empty slot and does not talk to the platform itself');
+  check(/setAttribute\('data-sr-passport', ''\)/.test(passport) && !/loadPlatform|srq|queue\(/.test(passport), 'the passport view has its empty slot and does not talk to the platform itself (it only binds bridgeSeen)');
+  check(/import \{ bridgeSeen \} from '\.\/platform-bridge\.js'/.test(passport) && /const unbridge = bridgeSeen\(api\)/.test(passport) && /unbridge\(\);/.test(passport), 'createPassport binds bridgeSeen and destroy() unbinds it');
   check(/'sr:stamp'/.test(passport), 'it says on the page when it keeps a new place');
   const css = readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8');
   check(/\.sr-passport__slot:empty \{ display: none; \}/.test(css), 'an empty slot takes no room');

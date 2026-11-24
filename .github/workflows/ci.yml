@@ -731,6 +731,8 @@ jobs:
         run: node tests/test_skymath.mjs
       - name: Tonight's best and a pass as a row (pub 448)
         run: node tests/test_tonightbest.mjs
+      - name: "The Tonight slot hands the platform's checklist the list's own rows, with no place, and builds empty and hidden (internal #549)"
+        run: node tests/test_tonight_slot.mjs
       - name: One mark per object -- a dot yields to its 3D model
         run: node tests/test_onemark.mjs
       - name: "Right to left: each panel beside the tools rail mirrors in css/rtl.css (internal 449); a phone held sideways gets a side sheet (internal 455)"
