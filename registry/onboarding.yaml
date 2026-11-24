@@ -342,3 +342,10 @@ features:
     surfaces: ["want:wantOps"]
     not: "Its doors are rows under Live on the Earth and Planets tabs, beside Find's, which the search step already shows; a first visit's nine steps are about the map, and these are lists to read after it."
   # research train (ops): end
+  # research train (catalogues): begin
+  - id: catalogues
+    name: The catalogues, the launch archive, the sky calendar and eclipse checker, the near-Earth asteroids and the exoplanet explorer (forge #551, #553, #560, #564)
+    files: [site/js/ui/catalogue.js, site/js/ui/catalogueentry.js]
+    surfaces: ["want:wantCatalogue"]
+    not: "Its doors are rows on the Earth, Planets, Stars and Tonight tabs, beside Find's, which the search step already shows; a first visit's nine steps are about the map, and these are tables to read after it."
+  # research train (catalogues): end
