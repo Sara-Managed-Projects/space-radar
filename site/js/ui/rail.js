@@ -276,10 +276,12 @@ export function createRail(ctx, host) {
   const gitHub = createGitHubMark(root, { className: 'sr-rail__btn sr-rail__btn--github' });
 
   // --- The account: an empty slot for the platform (ui/platform-bridge.js), filled by ui/platformtrack.js only when the
-  // platform has loaded and said who is here. On localhost, in a fork or offline it stays hidden and empty.
+  // platform has loaded and said who is here. On localhost, in a fork or offline it stays hidden and empty. `host`: the map
+  // draws this cell itself, a rail button like the others (platform contract note, 2026-11-24); platform.js only answers
+  // its press (`sr('ui', 'signin' | 'account')`) and puts its sheet or menu beside it.
   const account = document.createElement('div');
   account.className = 'sr-rail__slot';
-  account.setAttribute('data-sr-account', '');
+  account.setAttribute('data-sr-account', 'host');
   account.hidden = true;
   root.appendChild(account);
 

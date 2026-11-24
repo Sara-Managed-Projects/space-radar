@@ -3520,17 +3520,29 @@ html.sr-phone .sr-chevron {
   padding: 20px 20px var(--sp-3);
 }
 
-/* The head's first row: the wordmark, the launch chip when a launch is inside a day (ui/launchchip.js), and the collapse
-   chevron, which is pinned to the corner so a crowded row wraps the chip to a line of its own, never the wordmark. */
+/* The head's first row: the wordmark, the launch chip when a launch is inside a day (ui/launchchip.js), and the hide
+   control. A grid that never wraps: the wordmark keeps its width, the hide control keeps the row's end, and the chip takes
+   what is left between them, its words shortened before anything moves. Where even that is too little (a narrow column,
+   a long word for the status), the chip drops to a row of its own under them, still never the hide control. The hide
+   control used to be pinned to the corner with position: absolute, which the set's .ui-btn (controls.css, loaded after
+   this file) undid, so it wrapped under the wordmark whenever the chip was up (2026-11-24). */
+.sr-explore__head { container: sr-head / inline-size; }
 .sr-explore__brand {
-  position: relative;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: 'mark chip hide';
   align-items: center;
-  justify-content: space-between;
+  column-gap: var(--sp-2);
   row-gap: var(--sp-2);
   min-height: 32px;
-  padding-inline-end: 40px;
+}
+.sr-explore__brand > .sr-wordmark { grid-area: mark; }
+.sr-explore__brand > .sr-side__hide { grid-area: hide; }
+.sr-explore__brand > .sr-launchchip { grid-area: chip; justify-self: end; min-width: 0; max-width: 100%; margin: 0; overflow: hidden; }
+.sr-explore__brand > .sr-launchchip .sr-launchchip__clock { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+@container sr-head (max-width: 300px) {
+  .sr-explore__brand { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'mark hide' 'chip chip'; }
+  .sr-explore__brand > .sr-launchchip { justify-self: start; }
 }
 
 /* The wordmark: Barlow Semi Condensed 600 at 27 px. */
@@ -3542,11 +3554,10 @@ html.sr-phone .sr-chevron {
   color: var(--sr-text);
 }
 
-/* The hide control, Lucide's panel-left-close in the set's 32 px quiet icon button, on the panel's outer edge. */
+/* The hide control, Lucide's panel-left-close in the set's 32 px quiet icon button, at the end of the wordmark's row and
+   8 px into the padding, on the panel's outer edge (its icon lines up with the search's edge, not its button's). */
 .sr-side__hide {
-  position: absolute;
-  top: 0;
-  inset-inline-end: -8px;
+  margin-inline-end: calc(-1 * var(--sp-2));
 }
 
 /* Search, mounted from ui/search.js: its field becomes row D's 44 px well with a magnifier, and its
@@ -4452,19 +4463,25 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 
 .sr-rail__btn + .sr-rail__btn { border-top: 1px solid var(--sr-line); }
 
-/* The account slot (ui/platformtrack.js), last in the rail: shown only once the platform has said who is here. Signed in,
-   the nickname's first letter in a ring of the selected blue. */
-.sr-rail__slot { border-top: 1px solid var(--sr-line); }
+/* The account slot (ui/platformtrack.js), last in the rail: shown only once the platform has said who is here. Its button
+   is a rail button like the others (the whole 48 px cell, the same line above it, the same inset focus ring): signed out
+   the person icon, named "Sign in" by its label and tooltip; signed in the nickname's first letter in a 32 px disc ringed
+   in the selected blue, centred in the cell. The slot is a block, so nothing it holds can widen the rail. */
+.sr-rail__slot { display: block; width: 48px; border-top: 1px solid var(--sr-line); }
+.sr-rail__slot[hidden] { display: none; }
+.sr-rail__slot + .sr-rail__btn { border-top: 1px solid var(--sr-line); }
 .sr-rail__avatar {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
-  font: 600 var(--sr-fs-sm)/1 var(--sr-font);
+  width: var(--sp-6);
+  height: var(--sp-6);
+  font: 600 var(--sr-fs-label)/1 var(--sr-font);
   color: var(--sr-text);
+  background: var(--sr-wash);
   border-radius: var(--sr-radius-pill);
   box-shadow: inset 0 0 0 1.5px var(--sr-atmosphere);
 }
+.sr-rail__btn--account[aria-expanded='true'] .sr-rail__avatar { background: var(--sr-wash-strong); }
 
 /* 0077 W3-e: begin (ui/confidence.js: a confidence filter is on, and the shut popover says so with one dot, in the text colour: a mark, not a second ember) */
 .sr-rail__btn.is-filtered { position: relative; }

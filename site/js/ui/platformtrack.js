@@ -3,7 +3,9 @@
 // sites): on localhost, in a fork, in an embed or offline this file is never requested.
 //
 // Contract: trackMap(ctx, env) -> stop()     listens to the page's own events and pushes sr() commands
-//           paintAccount(doc, detail)        fills the rail's `[data-sr-account]` slot (and a row of the phone's More)
+//           paintAccount(doc, detail)        fills the rail's `[data-sr-account="host"]` slot (and a row of the phone's More):
+//                                            the map draws its own rail cell; platform.js leaves a `host` slot to its page
+//           nameHint(record) -> string       the record's name for sr('visit', id, cls, name), '' for none
 //           EVENTS                           the analytics names this file can push (the platform contract's schema)
 //
 // WHAT IS SAID. The contract's names, with ids, classes, layer and tab names and on/off: `visit` and `select_object`
@@ -36,6 +38,12 @@ function userIcon(doc) {
   return svg;
 }
 
+/** A record's name for the passport: its own, trimmed and cut to 80; '' for none or a bare catalogue number ("#39676"). */
+export function nameHint(r) {
+  const n = r && typeof r.name === 'string' ? r.name.replace(/\s+/g, ' ').trim().slice(0, 80) : '';
+  return !n || /^#?\d+$/.test(n) || n === r.id ? '' : n;
+}
+
 /** The first letter of a nickname, for the avatar; '' when there is none. */
 export const initialOf = (nickname) => (typeof nickname === 'string' ? (Array.from(nickname.trim())[0] || '').toUpperCase() : '');
 
@@ -48,6 +56,11 @@ export function paintAccount(doc, detail) {
   const name = signedIn && typeof detail.nickname === 'string' ? detail.nickname : '';
   const words = signedIn ? (name ? t(A.openNamed, { name }) : A.open) : A.signIn;
   const act = () => sr('ui', signedIn ? 'account' : 'signin');
+  // The same word again (the platform says it after every sync): the button stays, so a menu open beside it stays put.
+  const sig = `${signedIn ? 1 : 0}|${words}`;
+  const had = slot.querySelector('.sr-rail__btn--account');
+  if (had && slot.dataset.sig === sig) { slot.hidden = false; return had; }
+  slot.dataset.sig = sig;
   slot.textContent = '';
   const b = doc.createElement('button');
   b.type = 'button';
@@ -55,6 +68,8 @@ export function paintAccount(doc, detail) {
   b.setAttribute('aria-label', words);
   b.title = words;
   b.setAttribute('aria-haspopup', 'dialog');
+  // The platform's sheet or menu says it is open here (the rail's blue, as its other popovers), and its menu sits by this cell.
+  b.setAttribute('aria-expanded', 'false');
   const letter = signedIn ? initialOf(name) : '';
   if (letter) {
     const av = doc.createElement('span');
@@ -103,7 +118,9 @@ export function trackMap(ctx, env = {}) {
   on(win, 'sr:select', (e) => {
     const r = e && e.detail;
     if (!r || typeof r.id !== 'string' || !r.id) return;
-    sr('visit', r.id, r.klass || '');
+    // The record's own name rides along as a hint for the stamp passport (platform contract, 2026-11-24 note): the
+    // account's book is drawn where no map runs, and an id ("cat-39676") is not a name. Never a word somebody typed.
+    sr('visit', r.id, r.klass || '', nameHint(r));
     sr('track', 'select_object', { object_class: r.klass || '', object_id: r.id });
   });
   on(win, 'sr:stamp', (e) => sr('track', 'passport_stamp', { object_class: (e && e.detail && e.detail.cls) || '' }));

@@ -13,8 +13,15 @@
 // WHY LOCAL FIRST. A heart works for everyone, signed in or not, on localhost and in a fork: it is a list in this
 // browser, like the passport, and "Forget me" clears it. Where the platform runs, sr('fav', key, on) lets it keep the
 // same list for an account (platform-bridge.js); nothing here builds a request.
+//
+// ONE OWNER FOR A PRESS (2026-11-24). This file answers the press, and only this file: the heart carries
+// `data-sr-fav-host`, which tells platform.js the page handles it (the platform contract's note). platform.js used to answer
+// the same click too, so every press turned the heart on and straight back off. Now it keeps the account in step with
+// sr('fav') and never presses a heart itself. Signed in, the account's list is the truth, not this browser's: the press
+// does not write `sr:favs` (that row is the hearts made signed out, offered to the account at sign-in), platform.js shows
+// the account's state through aria-pressed (and puts a heart back when the account refused it), and the words follow.
 
-import { sr } from './platform-bridge.js';
+import { sr, onPlatform } from './platform-bridge.js';
 
 export const FAVS_KEY = 'sr:favs';
 export const FAVS_CAP = 500;
@@ -57,6 +64,22 @@ export function toggleFav(storage, key, on) {
 
 const localStore = () => { try { return typeof localStorage !== 'undefined' ? localStorage : null; } catch { return null; } };
 
+// Whether the platform said someone is signed in (its `sr:platform` event; never on localhost, in a fork or offline).
+let signedIn = false;
+let listening = false;
+const wired = new Set();
+function listen(doc) {
+  if (listening || !doc) return;
+  listening = true;
+  try { onPlatform((d) => { signedIn = !!(d && d.signedIn); }, doc); } catch { /* a document with no events: never signed in */ }
+  // Another tab changed the signed-out list: the hearts here follow (signed in, platform.js paints them).
+  const win = doc.defaultView;
+  if (win && typeof win.addEventListener === 'function') win.addEventListener('storage', (e) => {
+    if (signedIn || (e && e.key !== FAVS_KEY && e.key !== null)) return;
+    for (const h of [...wired]) { if (!h.b.isConnected) { wired.delete(h); continue; } h.paint(readFavs(h.storage).includes(h.key)); }
+  });
+}
+
 function heartIcon(doc) {
   const svg = doc.createElementNS(SVG_NS, 'svg');
   for (const [k, v] of Object.entries({ viewBox: '0 0 24 24', width: '20', height: '20', fill: 'none', stroke: 'currentColor', 'stroke-width': '1.75', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true', focusable: 'false', class: 'sr-icon sr-icon--heart' })) svg.setAttribute(k, v);
@@ -77,16 +100,26 @@ export function wireHeart(b, words, opts = {}) {
   if (!okKey(key)) return b;
   const storage = opts.storage !== undefined ? opts.storage : localStore();
   const doc = b.ownerDocument;
-  const paint = (on) => {
-    b.setAttribute('aria-pressed', on ? 'true' : 'false');
-    const said = on ? words.remove : words.add;
-    b.setAttribute('aria-label', said);
-    b.title = said;
+  listen(doc);
+  // The words say what a press will do; they follow aria-pressed whoever set it (this file, or platform.js signed in).
+  const label = () => {
+    const said = b.getAttribute('aria-pressed') === 'true' ? words.remove : words.add;
+    if (b.getAttribute('aria-label') !== said) b.setAttribute('aria-label', said);
+    if (b.title !== said) b.title = said;
   };
-  paint(readFavs(storage).includes(key));
+  const paint = (on) => { b.setAttribute('aria-pressed', on ? 'true' : 'false'); label(); };
+  b.setAttribute('data-sr-fav-host', '');
+  // getAttribute, not hasAttribute: the same answer, and the only reads the cards' small test elements give (tests/test_share.mjs).
+  if (b.getAttribute('aria-pressed') == null || !signedIn) paint(readFavs(storage).includes(key));
+  else label();
+  const win = doc && doc.defaultView;
+  if (win && typeof win.MutationObserver === 'function') new win.MutationObserver(label).observe(b, { attributes: true, attributeFilter: ['aria-pressed'] });
+  wired.add({ b, key, storage, paint });
   b.addEventListener('click', () => {
-    const on = toggleFav(storage, key, b.getAttribute('aria-pressed') !== 'true');
-    for (const other of doc.querySelectorAll('[data-sr-fav]')) if (other.getAttribute('data-sr-fav') === key) other.setAttribute('aria-pressed', on ? 'true' : 'false');
+    const want = b.getAttribute('aria-pressed') !== 'true';
+    // Signed out (or with no platform at all) the list is this browser's; signed in it is the account's (platform.js).
+    const on = signedIn ? want : toggleFav(storage, key, want);
+    for (const other of doc.querySelectorAll('[data-sr-fav]')) if (other !== b && other.getAttribute('data-sr-fav') === key) other.setAttribute('aria-pressed', on ? 'true' : 'false');
     paint(on);
     sr('fav', key, on);
     sr('track', on ? 'favourite_add' : 'favourite_remove', { key });

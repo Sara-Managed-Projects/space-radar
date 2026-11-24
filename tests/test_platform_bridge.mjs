@@ -237,6 +237,18 @@ const F = await import(join(JS, 'ui/favs.js'));
   check(JSON.stringify(window.srq.slice(-2)) === '[["fav","map:moon",true],["track","favourite_add",{"key":"map:moon"}]]', `and the platform is told by the queue alone (${JSON.stringify(window.srq)})`);
   b.click();
   check(b.getAttribute('aria-pressed') === 'false' && F.readFavs(st).length === 0 && window.srq[window.srq.length - 2][2] === false, 'pressed again: gone');
+  // One owner for a press: the heart says the page handles it, so platform.js only keeps the account in step (2026-11-24).
+  check(b.hasAttribute('data-sr-fav-host') && twin.hasAttribute('data-sr-fav-host'), 'a heart carries data-sr-fav-host: platform.js leaves its press to the page');
+  // Signed in (the platform's word), the account's list is the truth: a press tells the platform and keeps nothing here.
+  doc.dispatchEvent(new CustomEvent('sr:platform', { detail: { signedIn: true, nickname: 'orbit cat' } }));
+  b.click();
+  check(b.getAttribute('aria-pressed') === 'true' && b.getAttribute('aria-label') === 'Remove' && F.readFavs(st).length === 0 && JSON.stringify(window.srq.slice(-2)) === '[["fav","map:moon",true],["track","favourite_add",{"key":"map:moon"}]]', 'signed in: pressed at once, said to the platform, and not written to sr:favs');
+  b.click();
+  check(b.getAttribute('aria-pressed') === 'false' && window.srq[window.srq.length - 2][2] === false, 'and unpressed the same way, once per press');
+  doc.dispatchEvent(new CustomEvent('sr:platform', { detail: { signedIn: false } }));
+  b.click();
+  check(F.readFavs(st).join() === 'map:moon', 'signed out again: this browser\'s list');
+  b.click();
   const tile = F.heartButton('map:mars', { add: 'Add', remove: 'Remove' }, { document: doc, storage: st, tile: true });
   check(!/ui-btn--icon/.test(tile.className) && tile.getAttribute('aria-label') === 'Add' && tile.title === 'Add', 'on a card\'s row of tiles it fills its cell, named by aria-label and title');
   delete globalThis.window;
@@ -254,13 +266,16 @@ const F = await import(join(JS, 'ui/favs.js'));
   check(T.paintAccount(makeDoc(), { signedIn: false }) === null, 'no slot, nothing drawn');
   globalThis.window = {};
   const out = T.paintAccount(doc, { signedIn: false });
-  check(!slot.hidden && out.getAttribute('aria-label') === COPY.account.signIn, 'signed out: Sign in');
+  check(!slot.hidden && out.getAttribute('aria-label') === COPY.account.signIn && out.title === COPY.account.signIn, 'signed out: Sign in, as its name and tooltip');
+  check(/\bsr-rail__btn\b/.test(out.className) && out.children.length === 1 && out.children[0].tagName === 'SVG' && out.textContent === '', 'an icon-only rail button: no words beside the icon to widen the rail');
+  check(out.getAttribute('aria-expanded') === 'false' && out.getAttribute('aria-haspopup') === 'dialog', 'it says when the platform\'s sheet or menu is open (aria-expanded, set by platform.js)');
   out.click();
   check(JSON.stringify(window.srq[window.srq.length - 1]) === '["ui","signin"]', 'which asks the platform for its sign-in sheet');
   const inn = T.paintAccount(doc, { signedIn: true, nickname: 'orbit cat', plan: 'free', ent: [] });
   check(slot.children.length === 1 && inn.getAttribute('aria-label') === 'Your account, orbit cat' && inn.children[0].textContent === 'O', 'signed in: the initial, and the account by name');
   inn.click();
   check(window.srq[window.srq.length - 1][1] === 'account', 'which opens the account menu');
+  check(T.paintAccount(doc, { signedIn: true, nickname: 'orbit cat', plan: 'free', ent: [], waiting: ['x'] }) === inn, 'the same word again keeps the button (a menu open beside it stays put)');
   check(T.initialOf('  émile') === 'É' && T.initialOf('') === '' && T.initialOf(null) === '', 'the initial is the first letter');
   // What the map tells it: the contract's names only.
   const events = readFileSync(join(JS, 'ui/platformtrack.js'), 'utf8');
@@ -302,10 +317,13 @@ const F = await import(join(JS, 'ui/favs.js'));
   ctx.clock.mode = 'scrub'; clockFns.forEach((f) => f(ctx.clock)); clockFns.forEach((f) => f(ctx.clock));
   ctx.clock.mode = 'live'; clockFns.forEach((f) => f(ctx.clock));
   const got = window.srq.map((c) => (c[0] === 'track' ? `${c[1]}${Object.keys(c[2]).length ? JSON.stringify(c[2]) : ''}` : c.join(':')));
-  const want = ['visit:moon:world', 'select_object{"object_class":"world","object_id":"moon"}', 'passport_stamp{"object_class":"world"}', 'layer_toggle{"layer":"comets","on":true}', 'tab_open{"tab":"passport"}',
+  const want = ['visit:moon:world:The Moon', 'select_object{"object_class":"world","object_id":"moon"}', 'passport_stamp{"object_class":"world"}', 'layer_toggle{"layer":"comets","on":true}', 'tab_open{"tab":"passport"}',
     'drift_start', 'drift_stop', 'ambient_start', 'trip_start{"trip_id":"moon-landings"}', 'trip_complete{"trip_id":"moon-landings"}', 'time_travel'];
   check(JSON.stringify(got) === JSON.stringify(want), `the page's events, once each, as the contract names them:\n      ${got.join('\n      ')}`);
-  check(!JSON.stringify(window.srq).includes('The Moon'), 'a name never goes in the queue');
+  // The record's own name goes with `visit` only, as the stamp passport's hint (platform contract note, 2026-11-24); never
+  // in an analytics event, and never a bare catalogue number.
+  check(window.srq.filter((c) => JSON.stringify(c).includes('The Moon')).every((c) => c[0] === 'visit'), 'a record\'s name rides on visit alone, never on a track');
+  check(T.nameHint({ id: 'cat-39676', name: '#39676' }) === '' && T.nameHint({ id: 'x', name: 'x' }) === '' && T.nameHint({ id: 'cat-1', name: '  COSMOS  2251 DEB ' }) === 'COSMOS 2251 DEB' && T.nameHint({ id: 'a', name: 'n'.repeat(99) }).length === 80 && T.nameHint(null) === '', 'nameHint: the record\'s own name, tidied and cut to 80, none for a number');
   stop();
   const n = window.srq.length;
   fire('sr:select', { id: 'mars', klass: 'world' });
@@ -326,7 +344,7 @@ const F = await import(join(JS, 'ui/favs.js'));
   check(/if \(!embed && loadPlatform\(window\)\) import\('\.\/ui\/platformtrack\.js'\)/.test(main), 'main.js fetches the tracking module only where the platform\'s script was added (never on localhost, in an embed or a fork)');
   check(!/^import .*platformtrack/m.test(main), 'and never in the boot graph');
   const rail = readFileSync(join(JS, 'ui/rail.js'), 'utf8');
-  check(/setAttribute\('data-sr-account', ''\)/.test(rail) && /account\.hidden = true/.test(rail), 'the rail\'s account slot starts empty and hidden: no Sign in on localhost');
+  check(/setAttribute\('data-sr-account', 'host'\)/.test(rail) && /account\.hidden = true/.test(rail), 'the rail\'s account slot starts empty and hidden (no Sign in on localhost), and says the map draws it (host)');
   const passport = readFileSync(join(JS, 'ui/passport.js'), 'utf8');
   check(/setAttribute\('data-sr-passport', ''\)/.test(passport) && !/loadPlatform|srq|queue\(/.test(passport), 'the passport view has its empty slot and does not talk to the platform itself (it only binds bridgeSeen)');
   check(/import \{ bridgeSeen \} from '\.\/platform-bridge\.js'/.test(passport) && /const unbridge = bridgeSeen\(api\)/.test(passport) && /unbridge\(\);/.test(passport), 'createPassport binds bridgeSeen and destroy() unbinds it');
