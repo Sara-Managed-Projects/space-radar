@@ -68,7 +68,7 @@ import { camValue } from './urlstate.js';
 import { sr } from './platform-bridge.js';
 import { makePostcard, pdfFromJpeg, saveBlob } from './printcompose.js';
 import { createSheet, sheetHeights } from './sheet.js';
-import { embedSnippet, embedState, embedUrl } from './embed.js';
+import { embedSnippet, embedState, embedUrl, fullUrl } from './embed.js';
 import '../copy/en.embedtab.js'; // the words of the Embed tab (COPY.embedTab)
 import { objectPages, objectPageUrl, PAGES_INDEX } from './objectpage.js';
 // 0077 W3-e: begin
@@ -388,12 +388,11 @@ const attrOf = (v) => String(v == null ? '' : v).replace(/&/g, '&amp;').replace(
 
 /**
  * The credit line under the frame, as the /embed/ page writes it (templates/embed/generate.js `snippet`): one
- * paragraph, the visitor's language's `words` with `{link}` where the plain link back goes (`?from=embed`, no
- * tracker). Pure.
+ * paragraph, the visitor's language's `words` with `{link}` where the plain link back goes (ui/embed.js fullUrl with
+ * `from: 'embed'`, the one module that writes the tag; no tracker). Pure.
  */
 export function embedCredit(words, base = 'https://www.spaceradar.ai/') {
-  const root = String(base || '/').endsWith('/') ? String(base || '/') : `${base}/`;
-  const link = `<a href="${attrOf(`${root}?from=embed`)}">Space Radar</a>`;
+  const link = `<a href="${attrOf(fullUrl({}, base, { from: 'embed' }))}">Space Radar</a>`;
   const parts = String(words || '').split('{link}');
   return `<p>${parts.length > 1 ? parts.map(attrOf).join(link) : `${attrOf(parts[0])} ${link}`.trim()}</p>`;
 }
