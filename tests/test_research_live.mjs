@@ -113,8 +113,17 @@ check(/often black, blue or a test card/.test(read('site/js/copy/en.live.js')), 
 
 // --- 4. The day card (forge #546): every part has a source -------------------------------------------------------
 const Dc = await import(join(JS, 'ui/daycard.js'));
+// The card reads this month's file (scripts/gen_thisday.py), not the whole missions mirror: the first minute's bytes.
+const monthOf = (iso) => Dc.missionsFromMonth(JSON.parse(read(`site/data/thisday/${iso.slice(5, 7)}.json`)));
+check(!/data\/missions\.js/.test(read('site/js/ui/daycard.js').replace(/\/\/.*$/gm, '')), 'the day card does not import the 30 kB missions mirror');
+const { MISSIONS } = await import(join(JS, 'data/missions.js'));
+for (const iso of ['2026-11-24T10:00:00Z', '2026-07-16T13:00:00Z', '2027-01-03T00:00:00Z', '2026-12-25T18:00:00Z', '2026-05-10T00:00:00Z']) {
+  const full = Dc.thisDay(at(iso), MISSIONS);
+  const small = Dc.thisDay(at(iso), monthOf(iso));
+  check((full && full.id) === (small && small.id), `${iso}: the month's file picks what the whole registry would (${full && full.id} / ${small && small.id})`);
+}
 for (const iso of ['2026-11-24T10:00:00Z', '2026-07-16T13:00:00Z', '2027-03-01T00:00:00Z', '2026-12-25T18:00:00Z']) {
-  const parts = Dc.dayParts(at(iso));
+  const parts = Dc.dayParts(at(iso), monthOf(iso));
   check(parts.length === 3, `three parts on ${iso} (${parts.map((p) => p.id)})`);
   for (const p of parts) {
     check(typeof p.source === 'string' && p.source.length > 3, `${iso} ${p.id}: has a source line`);
@@ -122,15 +131,15 @@ for (const iso of ['2026-11-24T10:00:00Z', '2026-07-16T13:00:00Z', '2027-03-01T0
     check(p.title && p.kicker, `${iso} ${p.id}: a kicker and a title`);
   }
 }
-const july = Dc.thisDay(at('2026-07-16T13:00:00Z'));
+const july = Dc.thisDay(at('2026-07-16T13:00:00Z'), monthOf('2026-07-16'));
 check(!!(july && july.exact), `16 July has an event on the day (${july && july.id})`);
-const nov = Dc.thisDay(at('2026-11-24T10:00:00Z'));
+const nov = Dc.thisDay(at('2026-11-24T10:00:00Z'), monthOf('2026-11-24'));
 check(nov && !nov.exact && nov.tMs < at('2026-11-24T10:00:00Z'), `with none on the day, the nearest within a fortnight, and never a future event (${nov && nov.id})`);
 const earth = Dc.earthToday(at('2026-11-24T10:00:00Z'));
 check(earth && earth.latDeg < -20 && earth.latDeg > -21 && earth.season === 'december' && earth.days === 27, `the Sun overhead at about 20.6 S, 27 days to the December solstice (${earth && earth.latDeg}, ${earth && earth.days})`);
 const sky = Dc.skyToday(at('2026-11-24T10:00:00Z'));
 check(sky && sky.pct >= 99, `the Moon full on 24 November 2026 (${sky && sky.pct} %)`);
-const sw = Dc.shareWords(Dc.dayParts(at('2026-11-24T10:00:00Z')), at('2026-11-24T10:00:00Z'));
+const sw = Dc.shareWords(Dc.dayParts(at('2026-11-24T10:00:00Z'), monthOf('2026-11-24')), at('2026-11-24T10:00:00Z'));
 check(/24 November 2026/.test(sw.name) && sw.line.length > 20, 'the share sheet gets a name and a line');
 check(/opts\.words && opts\.words\.name/.test(read('site/js/ui/sharesheet.js')), 'the share flow is the share sheet\'s own (opts.words)');
 check(!/transition|animation/.test(read('site/css/live.css')), 'nothing in the new sheet moves, so reduced motion has nothing to stop');

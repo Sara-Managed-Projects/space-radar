@@ -4,14 +4,15 @@
 //
 // Contract: mountDayCard(ctx, host, { go }) -> { root, refresh(nowMs), hasSky, destroy() }   (ui/today.js)
 // Also exported, pure, for tests/test_daycard.mjs:
-//   thisDay(nowMs, missions = MISSIONS)  -> { mission, event, exact, tMs, id } | null
+//   thisDay(nowMs, missions)             -> { mission, event, exact, tMs, id } | null
+//   missionsFromMonth(json)              -> the missions' shape, from one site/data/thisday/<MM>.json
 //   earthToday(nowMs)                    -> { latDeg, season, days, tMs } | null
 //   skyToday(nowMs)                      -> { phase, pct, planets: [{ id, when }] } | null
-//   dayParts(nowMs, missions)            -> [{ id, kicker, title, line, source, act, ... }]   each part has a source
+//   dayParts(nowMs, missions = [])       -> [{ id, kicker, title, line, source, act, ... }]   each part has a source
 //   shareWords(parts, nowMs)             -> { name, line }
 //
 // WHERE EACH PART COMES FROM, AND IT SAYS SO.
-//   This day in space   registry/missions.yaml, the missions' dated events (data/missions.js), each read on the page its
+//   This day in space   registry/missions.yaml, the missions' dated events, each read on the page its
 //                       mission names; the card's source line names that mission's page. An event on today's month and
 //                       day is "On this day"; with none, the next one within a fortnight, then the last one within a
 //                       fortnight, each with its own date. Never a plan: an event still in the future is not used. Its
@@ -23,12 +24,16 @@
 //   The sky today       worked out here: the Moon's phase and how much is lit, and which of the five bright planets stand
 //                       more than 18 degrees from the Sun, in the morning or the evening sky. Its press opens Tonight.
 // No picture of anybody else's is fetched: the Earth's card already links NASA EPIC's picture of the day (links.yaml).
+//
+// THE FIRST MINUTE'S BYTES. Today is built a few seconds into a visit, so what the card fetches counts against
+// registry/budgets.yaml after_first_visit_bytes. The events come from site/data/thisday/<MM>.json (scripts/gen_thisday.py:
+// this month's events and those within NEAR_DAYS of it, a few kilobytes), not the 30 kB mirror of every mission; the Earth
+// and the sky are worked out with the Astronomy Engine the page already holds.
 
 import * as Astronomy from '../../vendor/astronomy.js';
 import { COPY, t, fmt, timeText } from '../copy/en.js';
 import '../copy/en.later.js';
 import '../copy/en.live.js';
-import { MISSIONS } from '../data/missions.js';
 import { phaseName } from '../sky/tonightbest.js';
 import { loadCss } from './latercss.js';
 
@@ -59,7 +64,32 @@ function dayDelta(fromMs, month, day) {
 }
 
 /** The event of the missions' registry for today, or the nearest within a fortnight. Pure. */
-export function thisDay(nowMs, missions = MISSIONS) {
+/** One month's file (scripts/gen_thisday.py) as the missions' shape thisDay reads. Pure. */
+export function missionsFromMonth(json) {
+  const byId = new Map();
+  for (const e of (json && Array.isArray(json.events)) ? json.events : []) {
+    if (!e || !e.mission || !e.id || !e.date) continue;
+    if (!byId.has(e.mission)) byId.set(e.mission, { id: e.mission, display: e.display, source: e.source || null, events: [] });
+    byId.get(e.mission).events.push({ id: e.id, date: e.date, title: e.title, text: e.text });
+  }
+  return [...byId.values()];
+}
+
+/** This month's events, fetched once a month; [] when the file is not there (the card then has two parts). */
+const monthFiles = new Map();
+export function loadMonth(nowMs, fetchImpl = (u) => fetch(u)) {
+  const mm = String(new Date(nowMs).getUTCMonth() + 1).padStart(2, '0');
+  if (!monthFiles.has(mm)) {
+    monthFiles.set(mm, Promise.resolve()
+      .then(() => fetchImpl(new URL(`../../data/thisday/${mm}.json`, import.meta.url).href))
+      .then((r) => (r && r.ok ? r.json() : null))
+      .then((j) => missionsFromMonth(j))
+      .catch(() => { monthFiles.delete(mm); return []; }));
+  }
+  return monthFiles.get(mm);
+}
+
+export function thisDay(nowMs, missions = []) {
   const rows = [];
   for (const m of Array.isArray(missions) ? missions : []) {
     for (const e of (m && Array.isArray(m.events)) ? m.events : []) {
@@ -119,7 +149,7 @@ export function skyToday(nowMs) {
 }
 
 /** The three parts, in words, each with its source. Pure. */
-export function dayParts(nowMs, missions = MISSIONS) {
+export function dayParts(nowMs, missions = []) {
   const D = COPY.dayCard;
   const out = [];
   const day = thisDay(nowMs, missions);
@@ -219,9 +249,15 @@ export function mountDayCard(ctx, host, { go } = {}) {
     track('share', { method: 'sheet', content_type: 'today' });
   });
 
+  let missions = [];
   function refresh(nowMs = Date.now()) {
     shownAt = nowMs;
-    parts = dayParts(nowMs);
+    // This month's events arrive once; the card is painted at once with what is here and again when they land.
+    loadMonth(nowMs).then((list) => { if (list !== missions) { missions = list; paint(shownAt); } });
+    paint(nowMs);
+  }
+  function paint(nowMs) {
+    parts = dayParts(nowMs, missions);
     while (grid.firstChild) grid.removeChild(grid.firstChild);
     root.hidden = !parts.length;
     for (const p of parts) {
