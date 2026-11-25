@@ -590,6 +590,7 @@ if [ "$WHAT" != "assets" ]; then
            "$BUILT/object-pages.json:application/json; charset=utf-8" \
            "$BUILT/$KEYFILE:text/plain; charset=utf-8" \
            "$SITE/manifest.webmanifest:application/manifest+json; charset=utf-8" \
+           "$SITE/favicon.ico:image/x-icon" \
            "$BUILT/build.json:application/json; charset=utf-8" \
            "$BUILT/sw.js:text/javascript; charset=utf-8"; do
     path="${f%%:*}"; type="${f#*:}"; name="$(basename "$path")"
@@ -604,7 +605,7 @@ if [ "$WHAT" != "assets" ]; then
 fi
 
 if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
-  PATHS=("/" "/index.html" "/js/*" "/css/*" "/vendor/*" "/t/*" "/model/*" "/lab/*" "/o/*" "/press/*" "/embed/*" "/robots.txt" "/sitemap.xml" "/sitemap-pages.xml" "/sitemap-images.xml" "/llms.txt" "/llms-full.txt" "/404.html" "/object-pages.json" "/manifest.webmanifest" "/build.json" "/sw.js")
+  PATHS=("/" "/index.html" "/js/*" "/css/*" "/vendor/*" "/t/*" "/model/*" "/lab/*" "/o/*" "/press/*" "/embed/*" "/robots.txt" "/sitemap.xml" "/sitemap-pages.xml" "/sitemap-images.xml" "/llms.txt" "/llms-full.txt" "/404.html" "/object-pages.json" "/manifest.webmanifest" "/favicon.ico" "/build.json" "/sw.js")
   # Every language's folder and sitemap, whether it has pages this time or lost them (scripts/seo_i18n.py).
   for code in es fr de pt ru uk zh hi he ar; do PATHS+=("/$code/*" "/sitemap-pages-$code.xml"); done
   # The gzip copies keep their names too.

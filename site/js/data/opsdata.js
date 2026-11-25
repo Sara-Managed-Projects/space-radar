@@ -125,6 +125,10 @@ export function splitStatus(raw) {
 }
 
 const WORKING = new Set(['+', 'P', 'B', 'S', 'X']);
+/** Slower than this is a docked ship or a formation, not a close call (harvest/parsers/celestrak_socrates.py MIN_SPEED_KMS). */
+export const CLOSE_MIN_SPEED_KMS = 0.1;
+/** 'ISS (ZARYA)' -> 'ISS': two parts of one named object (station modules) are never a close call. */
+const family = (name) => { const m = /^(.+?)\s*\(.*\)$/.exec(name); return m ? m[1].toUpperCase() : null; };
 const isDebris = (name) => /\bDEB\b/i.test(name);
 const isRocket = (name) => /\bR\/B\b/i.test(name);
 
@@ -136,6 +140,7 @@ export function parseSocrates(body) {
   const ix = { id1: at('NORAD_CAT_ID_1'), n1: at('OBJECT_NAME_1'), id2: at('NORAD_CAT_ID_2'), n2: at('OBJECT_NAME_2'), tca: at('TCA'), range: at('TCA_RANGE'), speed: at('TCA_RELATIVE_SPEED'), prob: at('MAX_PROB'), dil: at('DILUTION') };
   if (Object.values(ix).some((i) => i < 0)) return [];
   const out = [];
+  const pairs = new Set();
   for (const r of rows) {
     if (!Array.isArray(r)) continue;
     const a = { id: Number(r[ix.id1]), ...splitStatus(r[ix.n1]) };
@@ -145,9 +150,17 @@ export function parseSocrates(body) {
     const rangeKm = Number(r[ix.range]);
     const prob = Number(r[ix.prob]);
     if (!Number.isFinite(tcaMs) || !Number.isFinite(rangeKm) || !Number.isFinite(prob)) continue;
+    // A copy written before the harvester dropped them can still hold docked pairs (ISS and Soyuz, once an orbit).
+    const speed = Number(r[ix.speed]);
+    if (!(speed >= CLOSE_MIN_SPEED_KMS)) continue;
+    const fa = family(a.name);
+    if (fa && fa === family(b.name)) continue;
+    const pair = [a.id, b.id].sort((x, y) => x - y).join('-');
+    if (pairs.has(pair)) continue;
+    pairs.add(pair);
     const names = [a.name, b.name];
     const involves = names.some(isDebris) ? 'debris' : names.some(isRocket) ? 'rocket' : WORKING.has(a.status) && WORKING.has(b.status) ? 'working' : 'other';
-    out.push({ a, b, tcaMs, rangeKm, rangeM: Math.round(rangeKm * 1000), speedKms: Number(r[ix.speed]), maxProb: prob, dilution: Number(r[ix.dil]), involves });
+    out.push({ a, b, tcaMs, rangeKm, rangeM: Math.round(rangeKm * 1000), speedKms: speed, maxProb: prob, dilution: Number(r[ix.dil]), involves });
   }
   return out;
 }

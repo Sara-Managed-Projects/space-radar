@@ -5,7 +5,8 @@
 //           row) or hands it the link's `born` value
 // Pure, for tests/test_yourstar.mjs: parseBorn(value), bornValue(born), bornLink(born, base), bornMs(born),
 //   ageYears(born, nowMs), distanceBand(record), pickStar(stars, age), nearestStar(stars), departureMs(ly, nowMs),
-//   phaseKey(deg), skyOn(born, place, Astronomy), CARD_FORMATS, cardBlocks(result, words, format), projectSky(...)
+//   phaseKey(deg), skyOn(born, place, Astronomy), CARD_FORMATS, cardBlocks(format, mapScale), wrapLines(c, text, w),
+//   cardLayout(c, card, format, fonts) (where every line goes, measured), projectSky(...)
 //
 // WHAT IT SAYS, AND WHY IT IS TRUE. A light-year is the distance light goes in a Julian year (365.25 days), so a star
 // N light-years away is seen tonight by light that left it N years ago. The star of your year is the named star whose
@@ -223,17 +224,19 @@ export const CARD_FORMATS = { landscape: { w: 1200, h: 630 }, square: { w: 1080,
 
 /**
  * Where each part of the card goes, for one shape: the map's circle and the text column. Pure, so the test can hold
- * every block inside the card and the map clear of the words.
+ * every block inside the card and the map clear of the words. `mapScale` (1 and smaller) shrinks the map to give the
+ * words more room: cardLayout asks for a smaller map when the words do not fit at their own size.
  */
-export function cardBlocks(format) {
+export function cardBlocks(format, mapScale = 1) {
   const f = CARD_FORMATS[format] || CARD_FORMATS.landscape;
   const pad = Math.round(f.w * 0.06);
+  const k = Math.max(0.4, Math.min(1, Number(mapScale) || 1));
   if (format === 'landscape' || !CARD_FORMATS[format]) {
-    const r = Math.round(f.h * 0.34);
+    const r = Math.round(f.h * 0.34 * k);
     return { ...f, pad, map: { x: f.w - pad - r, y: Math.round(f.h * 0.46), r }, text: { x: pad, y: pad, w: f.w - 2 * pad - 2 * r - pad }, scale: 1 };
   }
-  const r = Math.round(f.w * (format === 'story' ? 0.34 : 0.26));
-  const mapY = format === 'story' ? Math.round(f.h * 0.2) : pad + r;
+  const r = Math.round(f.w * (format === 'story' ? 0.34 : 0.26) * k);
+  const mapY = Math.max(pad + r, format === 'story' ? Math.round(f.h * 0.2) : 0);
   return { ...f, pad, map: { x: Math.round(f.w / 2), y: mapY, r }, text: { x: pad, y: mapY + r + pad, w: f.w - 2 * pad }, scale: format === 'story' ? 1.5 : 1.05 };
 }
 
@@ -276,26 +279,127 @@ function palette(doc) {
   return { bg: v('--bg', '#0B0E14'), bg2: v('--bg2', '#05070A'), tx: v('--tx', '#E8ECF2'), dim: v('--dim', '#9AA4B2'), atm: v('--atm', '#6EC3FF'), ember: v('--ember', '#FF9F43'), line: v('--line', '#ffffff1f') };
 }
 
-/** Lines of text that fit `w`, at the context's current font. */
-function wrapLines(c, text, w) {
+/**
+ * Lines of text that fit `w`, at the context's current font. A word wider than the line (a sentence in Chinese, which
+ * has no spaces; a very long compound) is broken between its characters, so no line is ever wider than `w`.
+ */
+export function wrapLines(c, text, w) {
   const out = [];
   let ln = '';
-  for (const word of String(text).split(/\s+/)) {
+  const fits = (x) => c.measureText(x).width <= w;
+  for (const word of String(text).split(/\s+/).filter(Boolean)) {
     const tr = ln ? `${ln} ${word}` : word;
-    if (ln && c.measureText(tr).width > w) { out.push(ln); ln = word; } else ln = tr;
+    if (fits(tr)) { ln = tr; continue; }
+    if (ln) out.push(ln);
+    if (fits(word)) { ln = word; continue; }
+    ln = '';
+    for (const ch of Array.from(word)) {
+      if (ln && !fits(ln + ch)) { out.push(ln); ln = ch; } else ln += ch;
+    }
   }
   if (ln) out.push(ln);
   return out;
 }
 
+/** The type of the card, in px on a card of scale 1: size, line height (times the size), space after, font, colour. */
+const CARD_TYPE = {
+  eyebrow: { size: 22, lead: 1.6, after: 4, weight: 600, face: 'cap', colour: 'dim', spacing: 3 },
+  name: { size: 76, wide: 64, lead: 1.05, after: 6, weight: 600, face: 'cap', colour: 'tx' },
+  place: { size: 26, lead: 1.4, after: 14, weight: 400, face: 'sans', colour: 'atm' },
+  line: { size: 24, lead: 1.4, after: 8, weight: 400, face: 'sans', colour: 'tx' },
+  sky: { size: 21, lead: 1.4, after: 4, weight: 400, face: 'sans', colour: 'dim', before: 10 },
+  footer: { size: 24, weight: 600, face: 'cap', colour: 'ember', spacing: 2 },
+};
+/** The smallest the words may get (times their own size) before the map shrinks further or a sky line is left off. */
+export const CARD_MIN_TEXT = 0.62;
+const MAP_STEPS = [1, 0.9, 0.8, 0.7, 0.6];
+const TEXT_STEPS = [1, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.66, CARD_MIN_TEXT];
+
+/**
+ * Where every line of the card's words goes, measured with `c` (a 2D context, or anything with `font` and
+ * `measureText`): {B, lines: [{text, x, y, size, lead, font, colour, spacing, width}], footer: {..}, text, map, dropped}.
+ * Lines are boxes from `y` (top) down `size * lead`. The words are fitted between the column's top and the footer, the
+ * footer inside the side margins: first at their own size with the full map, then a smaller map (more room), then
+ * smaller words down to CARD_MIN_TEXT; only then is a sky line left off, the last first. Pure given `c`.
+ */
+export function cardLayout(c, card, format, fonts = { cap: 'sans-serif', sans: 'sans-serif' }) {
+  const fontOf = (T, px) => `${T.weight} ${px}px ${fonts[T.face] || 'sans-serif'}`;
+  const measure = (text, font, spacing) => {
+    c.font = font;
+    if ('letterSpacing' in c) c.letterSpacing = `${spacing || 0}px`;
+    return c.measureText(text).width;
+  };
+  const wrap = (text, font, spacing, w) => {
+    c.font = font;
+    if ('letterSpacing' in c) c.letterSpacing = `${spacing || 0}px`;
+    return wrapLines(c, text, w);
+  };
+  const attempt = (B, k, sky) => {
+    const s = B.scale * k;
+    const F = CARD_TYPE.footer;
+    // the foot, one line: its own size where it fits the width, else as small as it must be
+    const fw = B.w - 2 * B.pad;
+    let fpx = Math.round(F.size * B.scale);
+    let fwidth = measure(card.footer || '', fontOf(F, fpx), F.spacing);
+    while (fwidth > fw && fpx > 8) { fpx = Math.max(8, Math.min(fpx - 1, Math.floor(fpx * fw / fwidth))); fwidth = measure(card.footer || '', fontOf(F, fpx), F.spacing); }
+    const footer = { text: card.footer || '', x: B.pad, y: B.h - B.pad - fpx, size: fpx, lead: 1, font: fontOf(F, fpx), colour: F.colour, spacing: F.spacing, width: fwidth };
+    const bottom = footer.y - Math.round(24 * B.scale);
+    const lines = [];
+    let y = B.text.y;
+    const block = (text, T, px) => {
+      if (!text) return;
+      const size = Math.max(1, Math.round(px * s));
+      const font = fontOf(T, size);
+      for (const ln of wrap(text, font, T.spacing, B.text.w)) {
+        lines.push({ text: ln, x: B.text.x, y, size, lead: T.lead, font, colour: T.colour, spacing: T.spacing || 0, width: measure(ln, font, T.spacing) });
+        y += Math.round(size * T.lead);
+      }
+      y += Math.round(T.after * s);
+    };
+    block(card.eyebrow, CARD_TYPE.eyebrow, CARD_TYPE.eyebrow.size);
+    block(card.name, CARD_TYPE.name, format === 'landscape' ? CARD_TYPE.name.wide : CARD_TYPE.name.size);
+    block(card.place, CARD_TYPE.place, CARD_TYPE.place.size);
+    for (const l of card.lines || []) block(l, CARD_TYPE.line, CARD_TYPE.line.size);
+    if (sky.length) {
+      y += Math.round(CARD_TYPE.sky.before * s);
+      for (const l of sky) block(l, CARD_TYPE.sky, CARD_TYPE.sky.size);
+    }
+    const last = lines[lines.length - 1];
+    const end = last ? last.y + Math.round(last.size * last.lead) : B.text.y;
+    return { B, k, lines, footer, fits: end <= bottom, bottom };
+  };
+  let sky = (card.sky || []).slice();
+  let got = null;
+  for (;;) {
+    for (const m of MAP_STEPS) {
+      const B = cardBlocks(format, m);
+      // the words shrink only as far as the next map size would not let them grow back
+      for (const k of TEXT_STEPS) {
+        if (m < MAP_STEPS[MAP_STEPS.length - 1] + 1e-9 || k >= 0.85) {
+          got = attempt(B, k, sky);
+          if (got.fits) break;
+        }
+      }
+      if (got && got.fits) break;
+    }
+    if ((got && got.fits) || !sky.length) break;
+    // the first sky line is the heading ("The sky on 12 June 1990"): it goes with the last one under it
+    sky = sky.length > 2 ? sky.slice(0, -1) : [];
+  }
+  got.dropped = (card.sky || []).length - sky.length;
+  return got;
+}
+
 /**
  * Draw the card on a 2D context `c` sized CARD_FORMATS[format]. `card` is what the panel worked out:
- * { eyebrow, name, place, lines: [..], sky: [..], link, footer, sky: { stars: [{x,y,mag,self}], lines: [[[x,y],...]] } }.
+ * { eyebrow, name, place, lines: [..], sky: [..], footer, map }, where `map` is { stars: [{x,y,mag,self}], lines:
+ * [[[x,y],...]] } or a function of the map's radius that gives it (the radius is cardLayout's). Returns the layout.
  */
 export function drawCard(c, card, format, colours, fonts = { cap: 'sans-serif', sans: 'sans-serif' }) {
-  const B = cardBlocks(format);
+  const L = cardLayout(c, card, format, fonts);
+  const B = L.B;
   const P = colours;
-  const s = B.scale;
+  const map = (typeof card.map === 'function' ? card.map(B.map.r) : card.map) || {};
   c.save();
   const g = c.createLinearGradient(0, 0, B.w, B.h);
   g.addColorStop(0, P.bg);
@@ -316,12 +420,12 @@ export function drawCard(c, card, format, colours, fonts = { cap: 'sans-serif', 
   c.clip();
   c.strokeStyle = 'rgba(110,195,255,0.35)';
   c.lineWidth = 2;
-  for (const path of card.map.lines || []) {
+  for (const path of map.lines || []) {
     c.beginPath();
     path.forEach(([x, y], i) => (i ? c.lineTo(x, y) : c.moveTo(x, y)));
     c.stroke();
   }
-  for (const st of card.map.stars || []) {
+  for (const st of map.stars || []) {
     const rad = Math.max(1.4, 5.2 - 0.75 * Math.max(-1, Math.min(6, st.mag)));
     c.beginPath();
     c.arc(st.x, st.y, rad, 0, Math.PI * 2);
@@ -338,42 +442,18 @@ export function drawCard(c, card, format, colours, fonts = { cap: 'sans-serif', 
     }
   }
   c.restore();
-  // the words
-  let y = B.text.y;
-  const x = B.text.x;
-  const w = B.text.w;
-  const line = (text, size, font, colour, gap = 1.25, spacing = 0) => {
-    c.font = `${font}`.replace('{px}', `${Math.round(size * s)}px`);
-    c.fillStyle = colour;
-    c.textAlign = 'left';
-    c.textBaseline = 'top';
-    if ('letterSpacing' in c) c.letterSpacing = `${spacing}px`;
-    for (const ln of wrapLines(c, text, w)) {
-      c.fillText(ln, x, y);
-      y += Math.round(size * s * gap);
-    }
-    if ('letterSpacing' in c) c.letterSpacing = '0px';
-  };
-  line(card.eyebrow, 22, `600 {px} ${fonts.cap}`, P.dim, 1.6, 3);
-  y += 4;
-  line(card.name, format === 'landscape' ? 64 : 76, `600 {px} ${fonts.cap}`, P.tx, 1.05);
-  y += 6;
-  line(card.place, 26, `400 {px} ${fonts.sans}`, P.atm, 1.4);
-  y += 14;
-  for (const l of card.lines) { line(l, 24, `400 {px} ${fonts.sans}`, P.tx, 1.4); y += 8; }
-  if (card.sky && card.sky.length) {
-    y += 10;
-    for (const l of card.sky) { line(l, 21, `400 {px} ${fonts.sans}`, P.dim, 1.4); y += 4; }
+  // the words, then the foot (the name of the site, in the ember), each where cardLayout put it
+  c.textAlign = 'left';
+  c.textBaseline = 'top';
+  for (const ln of [...L.lines, L.footer]) {
+    c.font = ln.font;
+    c.fillStyle = P[ln.colour];
+    if ('letterSpacing' in c) c.letterSpacing = `${ln.spacing}px`;
+    c.fillText(ln.text, ln.x, ln.y);
   }
-  // the foot: the name of the site, in the ember, and the link
-  c.font = `600 ${Math.round(24 * s)}px ${fonts.cap}`;
-  c.fillStyle = P.ember;
-  c.textBaseline = 'alphabetic';
-  if ('letterSpacing' in c) c.letterSpacing = '2px';
-  c.fillText(card.footer, x, B.h - B.pad);
   if ('letterSpacing' in c) c.letterSpacing = '0px';
   c.restore();
-  return B;
+  return L;
 }
 
 // ------------------------------------------------------------------------------------------- the panel
@@ -580,8 +660,7 @@ export function createYourStar(ctx) {
     const cs = getComputedStyle(document.documentElement);
     const fonts = { cap: (cs.getPropertyValue('--cap') || 'sans-serif').trim(), sans: (cs.getPropertyValue('--sans') || 'sans-serif').trim() };
     const words = wordsFor(st.result);
-    const B = cardBlocks(st.format);
-    drawCard(c, { ...words, map: mapFor(st.result, B.map.r) }, st.format, palette(document), fonts);
+    drawCard(c, { ...words, map: (r) => mapFor(st.result, r) }, st.format, palette(document), fonts);
     img.src = canvas.toDataURL('image/png');
     img.alt = t(C.cardAlt, { name: words.name });
     pic.classList.toggle('is-tall', st.format !== 'landscape');

@@ -82,6 +82,15 @@ const src = read('site/js/ui/launchchip.js');
 check(/NO ASCENT TO FOLLOW/.test(src) && !/chase/i.test(src.replace(/\/\/.*$/gm, '')), 'no chase camera along a drawn climb: the header says why');
 check(typeof COPY.launchChip.train === 'string' && typeof COPY.launchChip.opens === 'string', 'its words are in copy/en.later.js');
 
+// Live check 2026-11-25 (1440): "Gaia DR4 · in 7 days" had 98 of the 166 px it needs beside the wordmark and read "Gaia
+// DR4 · ...". A catalogue's day takes the row under the wordmark whole; the hide control keeps the title row's end.
+{
+  const css = read('site/css/ui.css');
+  check(/\.sr-explore__brand:has\(> \.sr-launchchip\[data-phase\^='release-'\]:not\(\[hidden\]\)\) \{ grid-template-columns: minmax\(0, 1fr\) auto; grid-template-areas: 'mark hide' 'chip chip'; \}/.test(css),
+    'a catalogue\'s day puts the chip on its own row under the wordmark, the hide control on the title row');
+  check(/\.sr-explore__brand > \.sr-launchchip\[data-phase\^='release-'\] \.sr-launchchip__clock \{ overflow: visible; text-overflow: clip; \}/.test(css), 'its words are never cut with an ellipsis');
+}
+
 if (problems.length) {
   console.error('launchchip FAILED:\n  ' + problems.join('\n  '));
   process.exit(1);

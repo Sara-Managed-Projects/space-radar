@@ -818,6 +818,19 @@ html.sr-compact .sr-status {
   white-space: normal;
 }
 
+/* The heart is an icon, not words: beside other tiles it takes its own width and the words share the rest. As an equal
+   third it left "Look inside" 100 px and two lines on Mars (live check 2026-11-25). */
+.sr-card__sky:not(.is-many):has(> :nth-child(2)):has(> .sr-heart) {
+  display: flex;
+}
+.sr-card__sky:not(.is-many):has(> :nth-child(2)):has(> .sr-heart) > * {
+  flex: 1 1 0;
+}
+.sr-card__sky:not(.is-many):has(> :nth-child(2)) > .sr-heart {
+  flex: 0 0 auto;
+  min-width: 56px;
+}
+
 /* The object's own page (internal #199): one quiet link at the foot of About it. */
 .sr-card__page {
   display: inline-flex;
@@ -3618,6 +3631,12 @@ html.sr-phone .sr-chevron {
   .sr-explore__brand { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'mark hide' 'chip chip'; }
   .sr-explore__brand > .sr-launchchip { justify-self: start; }
 }
+/* A catalogue's day ("Gaia DR4 · in 7 days", ui/releaseday.js) is words, not a clock: beside the wordmark it had 98 of the
+   166 px it needs and read "Gaia DR4 · ..." (live check 2026-11-25). It takes the row under the wordmark, whole, while the
+   hide control keeps the title row's end; a launch's short clock stays beside the wordmark. */
+.sr-explore__brand:has(> .sr-launchchip[data-phase^='release-']:not([hidden])) { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'mark hide' 'chip chip'; }
+.sr-explore__brand > .sr-launchchip[data-phase^='release-'] { justify-self: start; }
+.sr-explore__brand > .sr-launchchip[data-phase^='release-'] .sr-launchchip__clock { overflow: visible; text-overflow: clip; }
 
 /* The wordmark: Barlow Semi Condensed 600 at 27 px. */
 .sr-wordmark {
@@ -5543,6 +5562,11 @@ html.sr-phone .sr-pop.sr-more {
   left: auto;
   width: 240px;
   padding: var(--sp-2);
+  /* The kit's solid surface (controls.css .ui-pop--surface), not the glass: on a phone the menu sits over the hints and
+     the time bar, which read through it (live check 2026-11-25). */
+  background: var(--panel);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 html.sr-phone .sr-pop.sr-more:not([hidden]) {

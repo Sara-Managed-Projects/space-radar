@@ -132,6 +132,30 @@ check(/open\.target = '_blank'/.test(mod) && /open\.rel = 'noopener'/.test(mod),
 }
 
 // --- the manual ----------------------------------------------------------------------------------
+// An embed stores nothing (live check 2026-11-25: `?embed=1` wrote sr:passport, the day's wonder): installEmbed() first puts
+// a page-only memory in place of the frame's localStorage and sessionStorage, so no module can keep anything on the device.
+{
+  const real = new Map();
+  const device = { getItem: (k) => real.get(k) ?? null, setItem: (k, v) => real.set(k, String(v)), removeItem: (k) => real.delete(k), key: () => null, get length() { return real.size; } };
+  const win = {};
+  Object.defineProperty(win, 'localStorage', { get: () => device, configurable: true, enumerable: true });
+  Object.defineProperty(win, 'sessionStorage', { get: () => device, configurable: true, enumerable: true });
+  E.keepNothing(win);
+  win.localStorage.setItem('sr:passport', '{"v":1,"wonder":{"day":20417,"id":"mars"}}');
+  win.sessionStorage.setItem('sr:platform', '{}');
+  check(win.localStorage.getItem('sr:passport') !== null && win.localStorage.length === 1, 'an embed reads back what it set, for the life of the frame');
+  check(real.size === 0, 'an embed writes nothing to the device\'s storage');
+  win.localStorage.removeItem('sr:passport'); win.localStorage.clear();
+  check(win.localStorage.getItem('sr:passport') === null && win.localStorage.key(0) === null, 'remove and clear work on the page\'s memory');
+  check(win.localStorage !== win.sessionStorage, 'two stores, as the browser has');
+  check(win.caches === undefined, 'no Cache Storage: the catalogues\' bulk store keeps to memory');
+  const before = win.localStorage; E.keepNothing(win);
+  check(win.localStorage === before, 'a second install (the light embed, then the whole app) keeps the same memory');
+  check(/^export async function bootLite\(\) \{\n[^\n]*\n\s*if \(typeof window !== 'undefined'\) keepNothing\(window\);/m.test(read('site/js/embedlite.js')), 'the light embed swaps the storage first, before a catalogue is asked for');
+  const body = mod.slice(mod.indexOf('export async function installEmbed'));
+  check(/^[^\n]*\n\s*keepNothing\(window\);/.test(body), 'installEmbed() swaps the storage before anything else, before the shell and the modules that keep things are built');
+  check(main.indexOf("import('./ui/embed.js')") > 0 && main.indexOf("import('./ui/embed.js')") < main.indexOf('createRenderer(canvas)'), 'main.js installs the embed before the renderer, the panels and the passport');
+}
 const doc = read('docs/EMBEDDING.md');
 for (const k of ['embed', ...E.EMBED_KEYS]) check(doc.includes('`' + k + '`'), `docs/EMBEDDING.md does not describe the parameter \`${k}\``);
 check(doc.includes(E.embedSnippet({ at: 'sat-25544' }, { title: 'The International Space Station, live on Space Radar' })), 'docs/EMBEDDING.md shows the snippet the app copies');
