@@ -4,7 +4,8 @@
      international designators, beyond Earth; COUNTED BACK, a piece of a breakup is not counted before it was catalogued.
   2. THE RE-ENTRY WATCH: what came down in 30 days, the lowest whole orbits under 350 km, no date predicted.
   3. SOCRATES (harvest/parsers/celestrak_socrates.py): the header held, the first rows kept, a Range request, a cut last
-     line dropped, a whole-file answer read the same, a 304 kept.
+     line dropped, a whole-file answer read the same, a 304 kept; docked and formation pairs (slower than 0.1 km/s), two
+     parts of one station and a pair seen before are not kept (tests/fixtures/ops/socrates-docked-2026-11-25.csv).
   4. THE PUBLISH (harvest/publish.py rule 6): `state-of-space` and `reentry-watch` written beside the catalogue's copy with
      its stamps, not rebuilt when the stamps are the same, never a crash on a bad catalogue.
   5. THE FROZEN QUARTERS (scripts/state_of_space.py --check): every number with its source and date.
@@ -123,6 +124,38 @@ class Socrates(unittest.TestCase):
         src = type("S", (), {"url": "u"})()
         prev = snap.Entry(fetched_at="2026-11-23T00:00:00Z", valid_until="2026-11-24T00:00:00Z", items=2, bytes=1, status="ok", etag='"e1"')
         self.assertTrue(soc.fetch(src, prev, now=None, fetcher=fetcher)["not_modified"])
+
+
+class SocratesDocked(unittest.TestCase):
+    """2026-11-25: every one of the first 100 rows was ISS and the docked Soyuz MS-29, so the view listed it 20 times.
+    The fixture's first four rows are that day's file verbatim; the others are shaped like it (a docked Progress, Shenzhou
+    and Dragon, two modules of the Chinese station, the COSMOS 2581/2582 formation of 2026-11-24, a pair met twice with
+    the two names the other way round, and two passes either side of 0.1 km/s)."""
+
+    def setUp(self):
+        self.csv = (ROOT / "tests/fixtures/ops/socrates-docked-2026-11-25.csv").read_text()
+
+    def test_only_real_close_calls_are_kept(self):
+        p = soc.pack(self.csv)
+        names = [(r[1], r[4]) for r in p["rows"]]
+        self.assertEqual(names, [("LAPAN-A3 [+]", "STARLINK-37190 [+]"), ("STARLINK-32927 [+]", "COSMOS 2251 DEB [-]"),
+                                 ("STARLINK-4335 [+]", "STARLINK-38172 [+]"), ("STARLINK-4338 [+]", "STARLINK-38173 [+]")])
+        self.assertEqual(p["read"], 16)
+        self.assertEqual(p["dropped"], {"slow": 10, "same_object": 1, "repeat": 1})
+        self.assertTrue(all(float(r[8]) >= soc.MIN_SPEED_KMS for r in p["rows"]))
+        self.assertFalse(any("ISS" in r[1] or "ISS" in r[4] for r in p["rows"]))
+        pairs = [tuple(sorted((r[0], r[3]))) for r in p["rows"]]
+        self.assertEqual(len(pairs), len(set(pairs)), "a pair is listed once")
+        self.assertEqual(soc.count(self.csv), 16, "the count guard still sees every row CelesTrak sent")
+
+    def test_a_copy_saved_before_the_fix_is_cleaned_when_packed_again(self):
+        old = {"columns": soc.COLUMNS, "rows": [r for r in soc._rows(self.csv) if r[0] == "25544"] * 5}
+        self.assertEqual(soc.pack(old)["rows"], [])
+
+    def test_family(self):
+        self.assertEqual(soc._family(soc._name("ISS (ZARYA) [+]")), "ISS")
+        self.assertIsNone(soc._family(soc._name("STARLINK-4335 [+]")))
+        self.assertIsNone(soc._family(soc._name("COSMOS 2251 DEB [-]")))
 
 
 class Publish(unittest.TestCase):
