@@ -1194,12 +1194,11 @@ export async function boot({ setStatus } = {}) {
   // and under them the way into the debris view (ui/debris.js). TODAY_MS after sr:layers-ready.
   const todayLater = () => afterFirstVisit(TODAY_MS, () => {
     import('./ui/today.js').then((m) => m.createToday(ctx, ctx.explore.todayHost)).catch((e) => console.warn('the dated cards did not load', e));
+    // window.srMap (research train 6b, ui/mapapi.js, docs/PLUGINS.md), the map's scripting API: in the same late moment, never in an embed.
+    if (!embed) import('./ui/mapapi.js').then((m) => m.installMapApi(ctx), () => {});
   });
   if (window.__srLayersReady) todayLater();
   else window.addEventListener('sr:layers-ready', todayLater, { once: true });
-  // window.srMap (research train 6b, ui/mapapi.js, docs/PLUGINS.md): the map's scripting API, after the first visit; not in an embed.
-  const mapApiLater = () => afterFirstVisit(TODAY_MS, () => import('./ui/mapapi.js').then((m) => m.installMapApi(ctx)).catch((e) => console.warn('srMap did not load', e)));
-  if (!embed) { if (window.__srLayersReady) mapApiLater(); else window.addEventListener('sr:layers-ready', mapApiLater, { once: true }); }
   // THE CONTROLS HINT (spec 0068 task 2, ui/keyhint.js): once per visitor, bottom-right, the keys
   // and the gestures that move the camera. Imported KEYHINT_MS after sr:layers-ready, so the first
   // visit's bytes are the map's; it decides for itself whether to show (not seen before, not a

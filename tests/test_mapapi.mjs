@@ -297,9 +297,11 @@ await ok('installMapApi: window.srMap once, frozen, and sr:map', () => {
 // ------------------------------------------------------------------------------------------- the wiring, by text
 await ok('main.js loads it after the layers and the first visit, never in an embed', () => {
   const main = readFileSync(new URL('../site/js/main.js', import.meta.url), 'utf8');
-  const line = main.split('\n').find((l) => l.includes("import('./ui/mapapi.js')"));
-  assert.ok(line && line.includes('afterFirstVisit('), 'behind afterFirstVisit');
-  assert.ok(/if \(!embed\) \{ if \(window\.__srLayersReady\) mapApiLater\(\)/.test(main));
+  const at = main.indexOf("import('./ui/mapapi.js')");
+  assert.ok(at > 0, 'imported by main.js');
+  const before = main.slice(main.lastIndexOf('const todayLater = () => afterFirstVisit(TODAY_MS', at), at);
+  assert.ok(before.length > 0 && before.length < 600, 'inside the dated cards\' late moment (afterFirstVisit after sr:layers-ready)');
+  assert.ok(/if \(!embed\) import\('\.\/ui\/mapapi\.js'\)/.test(main), 'never in an embed');
   assert.ok(!/^import .*mapapi/m.test(main), 'not a static import');
 });
 await ok('the four slots are built where the panels are', () => {
