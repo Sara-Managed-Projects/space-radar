@@ -1173,10 +1173,13 @@ export async function boot({ setStatus } = {}) {
   ctx.wantCatalogue = () => catP || (catP = import('./ui/catalogue.js')
     .then((m) => m.createCatalogue(ctx, shell.host('catalogue')))
     .catch((e) => { catP = null; console.warn('the catalogues did not load', e); return null; }));
+  // A `cat=` link opens it at boot and when the address changes to one (live check 2026-11-25: `#cat=asteroids` typed over
+  // another view did nothing).
+  const catLink = () => { const k = readUrlKeys().cat; if (!embed && k) ctx.wantCatalogue().then((c) => c && c.openLink(k)); };
   const catLater = () => {
     afterFirstVisit(TODAY_MS, () => import('./ui/catalogueentry.js').then((m) => m.mountCatalogueEntry(ctx)).catch((e) => console.warn('the catalogue rows did not load', e)));
-    const k = readUrlKeys().cat;
-    if (!embed && k) ctx.wantCatalogue().then((c) => c && c.openLink(k));
+    catLink();
+    window.addEventListener('hashchange', catLink);
   };
   if (window.__srLayersReady) catLater(); else window.addEventListener('sr:layers-ready', catLater, { once: true });
   // research train (catalogues): end

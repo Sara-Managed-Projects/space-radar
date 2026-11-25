@@ -109,5 +109,17 @@ for (const lang of ['es', 'fr', 'de', 'pt', 'ru', 'uk', 'zh', 'hi', 'he', 'ar'])
   check(/"?catalogue"?: "[^"]+",\n\s+"?card"?:/.test(text), `copy/${lang}.js names the view in the back row (shell.catalogue)`);
 }
 
+// Live check 2026-11-25: Planets had no Near-Earth asteroids door (a tab's second mount replaced its first: Find's doors and
+// the catalogues' both mount on Planets), and `#cat=asteroids` typed over another view did nothing (read at boot only).
+{
+  const ex = readFileSync(join(JS, 'ui/explore.js'), 'utf8');
+  check(/for \(const run of mounts\.get\(id\) \|\| \[\]\) run\(\);/.test(ex) && /mounts\.set\(id, \[\.\.\.\(mounts\.get\(id\) \|\| \[\]\), run\]\);/.test(ex) && !/mounts\.set\(id, run\)/.test(ex),
+    'every mount of a tab is kept and run (Find\'s doors and the catalogues\' on Planets)');
+  const fe = readFileSync(join(JS, 'ui/findentry.js'), 'utf8');
+  check(/mountTab\('planets'/.test(fe) && ENTRY_ROWS.planets.includes('asteroids'), 'Planets carries both Find\'s door and the Near-Earth asteroids door');
+  check(/const catLink = \(\) => \{ const k = readUrlKeys\(\)\.cat; if \(!embed && k\) ctx\.wantCatalogue\(\)\.then\(\(c\) => c && c\.openLink\(k\)\); \};/.test(main)
+    && /catLink\(\);\s*window\.addEventListener\('hashchange', catLink\);/.test(main), 'a `cat=` link opens its catalogue at boot and whenever the address changes to one');
+}
+
 if (problems.length) { console.error(`catalogues FAILED (${problems.length}):\n  ` + problems.join('\n  ')); process.exit(1); }
 console.log(`catalogues ok: the table sorts by value with blanks last and cuts honestly, filters ignore accents, \`cat=\` names one of ${CATALOGUES.length} catalogues, the saved copy comes before the bundled one, the view is the shell's like Find with a door on its tab, and its ${want.length} shared words are in eleven languages`);

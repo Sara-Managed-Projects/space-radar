@@ -68,6 +68,15 @@ check(/--cache-control "\$REVALIDATE" --content-type "\$type"/.test(rootLoop.sli
 check(rootLoop.indexOf('sw.js') > rootLoop.indexOf('index.html') && deploy.indexOf('"$SITE/js"') < deploy.indexOf('stamp_sw.py'),
   'sw.js is uploaded after the files it names');
 check(/"\/sw\.js"/.test(deploy) && /"\/manifest\.webmanifest"/.test(deploy), 'deploy.sh must invalidate /sw.js and /manifest.webmanifest');
+// /favicon.ico (live check 2026-11-25): a page with no icon link of its own (the Lab's simulators) made the browser ask for
+// it and log a 404. An ICO holding the 192 px app icon, uploaded with the root files as image/x-icon and invalidated.
+{
+  const ico = readFileSync(join(SITE, 'favicon.ico'));
+  const png = ico.subarray(ico.readUInt32LE(18));
+  check(ico.readUInt16LE(0) === 0 && ico.readUInt16LE(2) === 1 && ico.readUInt16LE(4) === 1 && ico.readUInt32LE(14) === png.length
+    && png.subarray(1, 4).toString() === 'PNG', 'site/favicon.ico is an icon file holding one PNG');
+  check(/"\$SITE\/favicon\.ico:image\/x-icon"/.test(rootLoop) && /"\/favicon\.ico"/.test(deploy), 'deploy.sh uploads /favicon.ico as image/x-icon and invalidates it');
+}
 const release = readFileSync(join(ROOT, '.github/workflows/release.yml'), 'utf8');
 // The zip is built by scripts/build_release.py since public #471 (tests/test_release_zip.py unpacks
 // one and reads the stamp); the workflow must call it, and it must stamp the copy, never site/.

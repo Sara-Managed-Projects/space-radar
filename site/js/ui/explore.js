@@ -1077,10 +1077,12 @@ export function createExplore(ctx, host) {
     foot.setAttribute('aria-label', t(COPY.statusLine.label, { text: s.text }));
   }
 
+  // A tab may take several mounts (Find's doors and the catalogues' both on Planets): each kept, none replacing another
+  // (live check 2026-11-25: the second replaced the first, and Planets lost its Near-Earth asteroids door).
   const mounts = new Map();
 
   function paintPane(id) {
-    if (mounts.has(id)) mounts.get(id)();
+    for (const run of mounts.get(id) || []) run();
     if (id === 'earth') paintNow();
     if (id === 'planets') paintWorlds();
     if (id === 'planets' && typeof ctx.wantOrrery === 'function') ctx.wantOrrery().then((o) => { if (o) o.mount(orreryHost); }); // b200-f2-worlds
@@ -1143,7 +1145,7 @@ export function createExplore(ctx, host) {
       done = true;
       try { render(mount, ctx); } catch (e) { console.warn(`the ${id} tab's content did not render`, e); }
     };
-    mounts.set(id, run);
+    mounts.set(id, [...(mounts.get(id) || []), run]);
     if (current === id) run();
     return mount;
   }

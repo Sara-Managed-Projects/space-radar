@@ -44,7 +44,7 @@ import * as sources from './data/sources.js';
 import { createLabels } from './ui/labels.js';
 import { createHud } from './ui/hud.js';
 import { wantFacts } from './ui/cardgate.js';
-import { installEmbed, embedLink } from './ui/embed.js';
+import { installEmbed, embedLink, keepNothing } from './ui/embed.js';
 import { COPY } from './copy/en.js';
 
 /** The light maps (registry/textures.yaml tier -1), by the tier-0 file each stands in for. `null`: not drawn. */
@@ -78,6 +78,8 @@ export function liteTarget(search) {
 }
 
 export async function bootLite() {
+  // An embed stores nothing (ui/embed.js keepNothing): the frame's storage is its own memory before a catalogue is asked for.
+  if (typeof window !== 'undefined') keepNothing(window);
   // The app's own hash wins over the query (ui/urlstate.js): a link made by hand is the full app's.
   if (typeof location === 'undefined' || (location.hash && location.hash.length > 1)) return false;
   const target = liteTarget(location.search);
