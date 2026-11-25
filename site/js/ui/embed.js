@@ -150,7 +150,39 @@ function outIcon() {
  * The page's half. Called by main.js before anything is built: the class and the stylesheet are in
  * place before the shell exists, so no panel is ever painted in the frame.
  */
+/** A Storage that lives in this page alone: what is set is read back until the frame closes, and nothing reaches the device. */
+export function memoryStorage() {
+  const m = new Map();
+  return {
+    get length() { return m.size; },
+    key: (i) => { const k = [...m.keys()][i]; return k === undefined ? null : k; },
+    getItem: (k) => (m.has(String(k)) ? m.get(String(k)) : null),
+    setItem: (k, v) => { m.set(String(k), String(v)); },
+    removeItem: (k) => { m.delete(String(k)); },
+    clear: () => m.clear(),
+  };
+}
+
+/**
+ * AN EMBED STORES NOTHING (docs/EMBEDDING.md, the share sheet's Embed tab). The live check of 2026-11-25 found `?embed=1`
+ * writing `sr:passport` (the day's wonder) and the catalogues' fetch notes (`sr.v1.*`) on the reader's device. Rather than
+ * a guard in each of the thirty modules that keep something, the frame's localStorage and sessionStorage are this page's
+ * memory, and Cache Storage is absent, before any of them is built (js/embedlite.js bootLite, else installEmbed): everything
+ * works as on a first visit, and the device keeps nothing.
+ */
+const kept = new WeakSet();
+export function keepNothing(win) {
+  if (!win || kept.has(win)) return; // the light embed has done it; the whole app's install keeps the same memory
+  kept.add(win);
+  for (const name of ['localStorage', 'sessionStorage']) {
+    try { Object.defineProperty(win, name, { value: memoryStorage(), configurable: true, enumerable: true, writable: false }); } catch { /* left as it is */ }
+  }
+  // The catalogues' bulk store (data/sources.js, Cache Storage for what localStorage cannot hold) keeps to memory without it.
+  try { Object.defineProperty(win, 'caches', { value: undefined, configurable: true, enumerable: true, writable: false }); } catch { /* left as it is */ }
+}
+
 export async function installEmbed(search = typeof location !== 'undefined' ? location.search : '') {
+  keepNothing(window);
   const link = embedLink(search);
   document.documentElement.classList.add('sr-embed');
   await loadCss();

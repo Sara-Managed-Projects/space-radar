@@ -47,7 +47,8 @@ address bar, or use **Embed**, which writes the right one for you.
 - The camera is theirs: drag to turn, scroll or pinch to move closer, the arrow keys once the
   frame has focus. No other key does anything inside the frame, and none is taken from your page.
 - "Open in Space Radar" opens the same view in the full map, in a new tab.
-- Nothing is stored on the reader's device by the embed: no cookie, no tracker, no service worker.
+- Nothing is stored on the reader's device by the embed: no cookie, no tracker, no service worker,
+  and nothing in the browser's storage (what the map keeps while it runs lives in the frame and goes with it).
   The page fetches the map's own files and the public catalogues it draws from (see the sources
   sheet in the app).
 - It is a WebGL scene. `loading="lazy"` keeps it from costing a reader who never scrolls to it.

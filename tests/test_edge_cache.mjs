@@ -89,7 +89,8 @@ check(/PATHS\+=\("\/\$KEYFILE"\)/.test(code), 'the IndexNow key file is invalida
 // Nine since build.json (public #291, scripts/build_info.py): the edge would otherwise say last deploy's commit for a year.
 // Eleven since llms.txt and llms-full.txt (2026-11-10, scripts/seo_llms.py): what a language model reads, rebuilt every deploy.
 // Twelve since sitemap-pages.xml (2026-11-12, scripts/seo_sitemaps.py): sitemap.xml became the index of every site's sitemaps.
-check(rootFiles.length === 12 && rootFiles.includes('sitemap-pages.xml') && rootFiles.includes('llms.txt') && rootFiles.includes('llms-full.txt') && rootFiles.includes('build.json') && rootFiles.every((f) => invalidated.includes(`/${f}`)) && invalidated.includes('/'), `every root file is invalidated by name, and "/" itself (${rootFiles})`);
+// Thirteen since favicon.ico (live check 2026-11-25: a page with no icon link of its own, the Lab's, asked for it and got a 404).
+check(rootFiles.length === 13 && rootFiles.includes('favicon.ico') && rootFiles.includes('sitemap-pages.xml') && rootFiles.includes('llms.txt') && rootFiles.includes('llms-full.txt') && rootFiles.includes('build.json') && rootFiles.every((f) => invalidated.includes(`/${f}`)) && invalidated.includes('/'), `every root file is invalidated by name, and "/" itself (${rootFiles})`);
 // vendor/ is the one folder with the long browser lifetime; the maps beside it revalidate.
 check(uses.some(([p, v]) => p === 'vendor' && v === 'LONG') && /LONG="public, max-age=2592000"/.test(code) && /DATA="public, max-age=3600"/.test(code), 'vendor/, the textures and the data keep the lifetimes they had');
 

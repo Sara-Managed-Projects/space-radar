@@ -324,5 +324,15 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   check(/import\('\.\/icons\.js'\)/.test(shellSrc) && !/^import[^\n]*icons\.js/m.test(shellSrc + exploreSrc), 'the icons arrive with ui/icons.js on a desktop, outside the boot graph');
 }
 
+// Live check 2026-11-25 (390): the phone's More menu was the glass, and the hints and the time bar read through it. It wears
+// the kit's solid surface. And on a card the heart tile takes its own width, so "Look inside" keeps one line beside it.
+{
+  const css = readFileSync(join(JS, '../css/ui.css'), 'utf8');
+  const more = css.slice(css.indexOf('html.sr-phone .sr-pop.sr-more {'));
+  check(/^html\.sr-phone \.sr-pop\.sr-more \{[^}]*background: var\(--panel\);[^}]*backdrop-filter: none;/.test(more), 'the phone\'s More menu is the kit\'s solid surface, not glass');
+  check(/\.sr-card__sky:not\(\.is-many\):has\(> :nth-child\(2\)\):has\(> \.sr-heart\) \{\s*display: flex;/.test(css) && /\.sr-card__sky:not\(\.is-many\):has\(> :nth-child\(2\)\) > \.sr-heart \{\s*flex: 0 0 auto;/.test(css),
+    'beside other tiles the heart takes its own width and the words share the rest');
+}
+
 if (problems.length) { console.error('shell FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('shell ok: views push and pop, collapse is remembered (and survives a storage that throws), the four tabs are places and read back from the stage, Right-now lines appear only with their data, the status line counts, the pill cycles, steps and stays in the scrub window, main.js builds the shell before what it hosts, and the way back names where it goes in eleven languages, keeps the selection, and the panel hides with its own icon and [ to a strip');
