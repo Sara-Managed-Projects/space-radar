@@ -19,6 +19,7 @@ import dataclasses
 import datetime as dt
 import html
 import json
+import os
 import re
 from pathlib import Path
 
@@ -204,7 +205,8 @@ def place_picker(hint: str = "") -> str:
 
 
 BLOG = "https://blog.spaceradar.ai/"
-BLOG_SNAPSHOT = ROOT / "registry" / "blog-feed.json"
+# SR_BLOG_FEED points at another copy (scripts/deploy.sh: the refreshed feed lives in its build folder, never in the checkout).
+BLOG_SNAPSHOT = Path(os.environ.get("SR_BLOG_FEED") or ROOT / "registry" / "blog-feed.json")
 
 
 def from_blog(keywords: tuple[str, ...] = (), limit: int = 3, skip: str = "") -> str:

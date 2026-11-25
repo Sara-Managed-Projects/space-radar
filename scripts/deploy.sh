@@ -299,11 +299,29 @@ if [ "$WHAT" != "assets" ]; then
   # and runs the node tests that compute (ephemerides, SGP4, the parsers, the routes...) against
   # the built tree. A dry run skips the tests, not the comparison. --strip-only is the way back.
   command -v node >/dev/null || die "node is not installed; scripts/build_seo.py and scripts/minify_site.py need it"
+  # THE "FROM THE BLOG" LISTS, AND THE CARD'S PICTURES AND NEWS (registry/blog-feed.json -> site/js/data/media.js). The
+  # deploy refreshes the journal's feed, but never writes it into the checkout: the refreshed feed and the media.js made
+  # from it go into $BUILT/feed, the SEO build reads the feed from there (SR_BLOG_FEED), and the media.js is put into the
+  # minified tree below. A deploy, dry or not, leaves every tracked file as it found it (a deploy that rewrote media.js
+  # made the next one refuse with "deploy worktree not clean"). A dry run does not even fetch: it keeps the committed
+  # snapshot. --no-minify uploads the source tree as it is, so it keeps the committed media.js too.
+  FEED_DIR="$BUILT/feed"
+  if [ "$DRY_RUN" = "1" ]; then
+    echo "    (dry run: the blog snapshot is not refreshed; registry/blog-feed.json stays as committed)"
+  elif [ "$MINIFY" != "1" ]; then
+    echo "    (--no-minify: the blog snapshot is not refreshed; the committed one is used)"
+  else
+    python3 "$HERE/refresh_blog_feed.py" --if-online --out-dir "$FEED_DIR" || true   # offline: keeps the committed snapshot
+    if [ -f "$FEED_DIR/blog-feed.json" ]; then export SR_BLOG_FEED="$FEED_DIR/blog-feed.json"; fi
+  fi
   APP="$SITE"
   OVERLAY=()
   if [ "$MINIFY" = "1" ]; then
     python3 "$HERE/minify_site.py" --site "$SITE" --out "$BUILT/min" --node node ${REAL[@]+"${REAL[@]}"} \
       || die "scripts/minify_site.py produced a file node refuses, or could not run the minifier; nothing was uploaded (--strip-only skips the minifier, --no-minify deploys the source)"
+    if [ -f "$FEED_DIR/media.js" ]; then
+      python3 "$HERE/refresh_blog_feed.py" --out-dir "$FEED_DIR" --place "$BUILT/min" || die "scripts/refresh_blog_feed.py could not place the refreshed media.js"
+    fi
     if [ ${#REAL[@]} -gt 0 ]; then
       TESTS=(--tests); [ "$DRY_RUN" = "1" ] && TESTS=()
       node "$HERE/check_built_tree.mjs" --built "$BUILT/min" ${TESTS[@]+"${TESTS[@]}"} \
@@ -408,10 +426,9 @@ if [ "$WHAT" != "assets" ]; then
       echo "    (the saved copy's index could not be read: the pages use registry/seo-facts.yaml's counts and say its date)"
     fi
   fi
-  python3 "$HERE/refresh_blog_feed.py" --if-online || true   # the "From the blog" lists; keeps the committed snapshot when offline
   # b200-f6-learn: begin (print) -- the deploy's build also writes the paper models' PDFs into print/ (scripts/seo_print.py).
   # Not in a dry run: thirty-four sheets are minutes of resampling, and the tests that dry-run this script would pay them.
-  [ "$DRY_RUN" = "1" ] || export SR_PRINT=1
+  [ "$DRY_RUN" = "1" ] || export SR_PRINT="${SR_PRINT:-1}"   # SR_PRINT=0 in the environment skips the sheets (the tests)
   # b200-f6-learn: end
   python3 "$HERE/build_seo.py" --out "$BUILT" ${SNAP[@]+"${SNAP[@]}"} || die "scripts/build_seo.py failed"
   python3 "$HERE/check_seo.py" --out "$BUILT" || die "scripts/check_seo.py refused the built pages"

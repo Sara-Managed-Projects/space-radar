@@ -439,6 +439,8 @@ jobs:
         run: python3 tests/test_structured_data.py
       - name: "The footer on every built page, lastmod per page from git, the IndexNow key file and a ping that cannot fail a deploy"
         run: python3 tests/test_seo_growth.py
+      - name: "A dry run of scripts/deploy.sh does not refresh the blog snapshot: no tracked file changes (a stray copy was committed once)"
+        run: python3 tests/test_deploy_dryrun_clean.py
       - name: "The embed page: the generator writes the app's own snippet for every object and trip, and the list of embedders starts empty and honest"
         run: python3 tests/test_seo_embed.py
       # The email updates (2026-11-10): the static pages' form works with no script and posts what the subscription
