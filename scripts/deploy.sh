@@ -428,7 +428,7 @@ if [ "$WHAT" != "assets" ]; then
   fi
   # b200-f6-learn: begin (print) -- the deploy's build also writes the paper models' PDFs into print/ (scripts/seo_print.py).
   # Not in a dry run: thirty-four sheets are minutes of resampling, and the tests that dry-run this script would pay them.
-  [ "$DRY_RUN" = "1" ] || export SR_PRINT="${SR_PRINT:-1}"   # SR_PRINT=0 in the environment skips the sheets (the tests)
+  [ "$DRY_RUN" = "1" ] || [ "${SR_NO_PRINT:-}" = "1" ] || export SR_PRINT=1   # SR_NO_PRINT=1 skips the sheets (tests/test_deploy_dryrun_clean.py)
   # b200-f6-learn: end
   python3 "$HERE/build_seo.py" --out "$BUILT" ${SNAP[@]+"${SNAP[@]}"} || die "scripts/build_seo.py failed"
   python3 "$HERE/check_seo.py" --out "$BUILT" || die "scripts/check_seo.py refused the built pages"

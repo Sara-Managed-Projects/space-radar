@@ -86,7 +86,7 @@ feed.write_text(json.dumps({"title": "Journal", "items": [{
     "title": POST, "url": "https://blog.spaceradar.ai/p/zzstub/", "date_published": "2099-01-01T00:00:00Z",
     "summary": "A made-up post.", "image": "", "tags": ["iss"]}]}))
 
-env = dict(os.environ, PATH=f"{bindir}{os.pathsep}{os.environ.get('PATH', '')}", MODELS_BUCKET="", SR_PRINT="0",
+env = dict(os.environ, PATH=f"{bindir}{os.pathsep}{os.environ.get('PATH', '')}", MODELS_BUCKET="", SR_NO_PRINT="1",
            SNAPSHOT_INDEX_URL="file:///nonexistent")
 env.pop("INDEXNOW", None)
 env.pop("SR_BLOG_FEED", None)
