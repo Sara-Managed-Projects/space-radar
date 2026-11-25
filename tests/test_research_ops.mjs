@@ -6,8 +6,8 @@
 // catalogue, the first rows of SOCRATES, our copy of DSN Now, EONET's storms), with no network:
 //   1. State of Space: every number has a source and a date, live or frozen; the frozen quarter in the repo says so;
 //      a sparkline is drawn in its box; a ticking number lands on its value;
-//   2. close approaches: CelesTrak's numbers read as theirs, its working flags split off, the filters; re-entries: no date
-//      is predicted;
+//   2. close approaches: CelesTrak's numbers read as theirs, its working flags split off, the filters, docked and
+//      formation pairs and repeats left out; re-entries: no date is predicted;
 //   3. the DSN: contacts per craft and complex, the light time from the feed's own range, a line to a drawn craft only,
 //      and the segment brought in on the Earth's stage;
 //   4. Earth events: four kinds, the layer still draws only its three, a row's plan (layer, record, map);
@@ -71,7 +71,18 @@ check(D.countUp(0, 35269, 0) === 0 && D.countUp(0, 35269, 1) === 35269 && D.coun
 
 // ---- 2. close approaches and re-entries --------------------------------------------------------------------------
 const soc = D.parseSocrates(JSON.parse(read('socrates-2026-11-24.json')));
-check(soc.length === 52, `the 52 whole rows of the fixture's first 6 000 bytes (${soc.length})`);
+check(soc.length === 20, `the 52 whole rows of the fixture's first 6 000 bytes are 20 close calls once the COSMOS 2581/2582 formation (32 passes at 0.005 km/s) is left out (${soc.length})`);
+// 2026-11-25: the live copy's first 100 rows were all ISS and the docked Soyuz MS-29, and the view showed it 20 times.
+const docked = (() => {
+  const [head, ...lines] = read('socrates-docked-2026-11-25.csv').trim().split('\n');
+  return { columns: head.split(','), rows: lines.map((l) => l.split(',')) };
+})();
+const dock = D.parseSocrates(docked);
+check(dock.length === 4 && dock.every((r) => r.speedKms >= D.CLOSE_MIN_SPEED_KMS), `docked ships, station modules and formations are not close calls (${dock.map((r) => r.a.name).join(', ')})`);
+check(!dock.some((r) => /^(ISS|CSS)\b/.test(r.a.name) || /^(ISS|CSS)\b/.test(r.b.name)), 'no station and its own docked ship or module');
+check(new Set(dock.map((r) => [r.a.id, r.b.id].sort().join('-'))).size === dock.length, 'a pair met twice (its names either way round) is listed once, its first pass');
+check(dock[0].a.name === 'LAPAN-A3' && dock[0].maxProb === 1, 'the pair kept is its highest-probability pass');
+check(D.parseSocrates({ columns: docked.columns, rows: docked.rows.slice(0, 4).concat(docked.rows.slice(0, 4)) }).length === 0, 'a copy of docked passes only gives no rows (the view says there are none), never the same pair twenty times');
 const first = soc[0];
 check(first.a.name === 'LAPAN-A3' && first.a.status === '+' && first.b.name === 'STARLINK-37190' && first.rangeM === 4 && first.maxProb === 1 && first.tcaMs === Date.parse('2026-11-27T19:37:34.527Z'), 'the first row is CelesTrak\'s own: names, flags, 4 m, its probability, the time in UTC');
 check(soc.some((r) => r.involves === 'debris' && /COSMOS 2251 DEB/.test(r.b.name)), 'a pass with a piece of Cosmos 2251 is filed under debris');
