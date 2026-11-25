@@ -12,7 +12,8 @@
 //      and the band always holds the distance.
 //   4. THE SKY ON THE DAY: the Moon's phase and the evening planets from astronomy-engine, for a place and for a clock.
 //   5. THE CARD: three shapes, every block inside the card and the map clear of the words; drawn with no NaN; the sky
-//      map centred on the star.
+//      map centred on the star; every line of the words measured inside the margins, clear of the map and the footer,
+//      in all three shapes and eleven languages with their longest words.
 //   6. PRIVACY, THE WORDS AND THE BOOT: the date is only in the hash (`born`, before `cam`), the one event names no date,
 //      nothing is stored; every string in eleven languages; the module is fetched on demand, never at boot.
 import { readFileSync } from 'node:fs';
@@ -123,6 +124,68 @@ for (const f of Object.keys(Y.CARD_FORMATS)) {
   Y.drawCard(rec, { eyebrow: 'THE STAR OF YOUR YEAR', name: 'Altair', place: 'In Aquila, 16.7 light-years away', lines: ['The light you see from it tonight left it in March 2010.'], sky: ['The sky on 12 March 2010', 'The Moon: waning crescent, 12 % lit'], footer: 'SPACERADAR.AI', map: { stars: pts, lines: [[[0, 0], [10, 10]]] } }, f, { bg: '#000', bg2: '#000', tx: '#fff', dim: '#999', atm: '#6ec3ff', ember: '#ff9f43', line: '#333' });
 }
 check(bad === 0, `the card draws with no NaN or Infinity (${bad})`);
+
+// THE WORDS FIT, in every shape and language (2026-11-25: on the Wide card the footer printed over the last sky line, on
+// the Square one the sky lines ran off the bottom). A measuring context with a generous width model: an em of 0.7 for a
+// capital or a digit, 0.6 for any other letter, a full em for a Chinese character, plus the letter spacing; real Barlow
+// Semi Condensed and Inter are narrower, so what fits here fits on the card. The words are each language's longest:
+// the "nearest" line, the error band, the sky heading, the Moon, all five planets from a long town's name.
+const fontPx = (f) => Number((/(\d+(?:\.\d+)?)px/.exec(f) || [0, 16])[1]);
+const em = (ch) => (/[\u2E80-\u9FFF\uF900-\uFAFF\uFF00-\uFFEF]/.test(ch) ? 1 : /\s/.test(ch) ? 0.3 : /[A-Z0-9\u0410-\u042F]/.test(ch) ? 0.7 : 0.6);
+const meter = () => {
+  const c = { font: '10px sans-serif', letterSpacing: '0px' };
+  c.measureText = (text) => {
+    const px = fontPx(c.font);
+    const sp = Number.parseFloat(c.letterSpacing) || 0;
+    const chars = Array.from(String(text));
+    return { width: chars.reduce((a, ch) => a + em(ch) * px + sp, 0) };
+  };
+  return c;
+};
+const fill = (str, vars) => String(str).replace(/\{(\w+)\}/g, (_, k) => (k in vars ? vars[k] : ''));
+const LANGS = ['en', 'es', 'fr', 'de', 'pt', 'ru', 'uk', 'zh', 'hi', 'he', 'ar'];
+let fitted = 0;
+let smallest = 1;
+for (const lang of LANGS) {
+  const m = lang === 'en' ? { COPY } : await import(join(JS, `copy/${lang}.js`));
+  const C = m.COPY.yourStar;
+  const planets = ['mercury', 'venus', 'mars', 'jupiter', 'saturn'].map((p) => (m.COPY.sky && m.COPY.sky.bodies && m.COPY.sky.bodies[p]) || p).join(', ');
+  const phase = (m.COPY.tonight && m.COPY.tonight.best && m.COPY.tonight.best.phases && m.COPY.tonight.best.phases.waningGibbous) || 'waning gibbous';
+  const when = 'September 1993';
+  const cards = [
+    { eyebrow: C.eyebrow.toUpperCase(), name: 'Alpha Centauri A', place: fill(C.where, { constellation: 'Camelopardalis', ly: '33.2' }),
+      lines: [fill(C.leftNear, { when }), fill(C.band, { err: '0.45', from: 'March 1993', to: 'November 1993' })],
+      sky: [fill(C.skyOn, { date: '28 September 1993' }), fill(C.moon, { phase, pct: 100 }), fill(C.planetsPlace, { place: 'Thiruvananthapuram', list: planets })] },
+    { eyebrow: C.eyebrowOnWay.toUpperCase(), name: 'Proxima Centauri', place: fill(C.where, { constellation: 'Centaurus', ly: '4.25' }),
+      lines: [fill(C.onItsWay, { name: 'Proxima Centauri', ly: '4.25', when: 'February 2027' })],
+      sky: [fill(C.skyOn, { date: '28 September 2022' }), fill(C.moon, { phase, pct: 12 }), fill(C.planetsClock, { list: planets })] },
+  ];
+  for (const card of cards) {
+    for (const f of Object.keys(Y.CARD_FORMATS)) {
+      const L = Y.cardLayout(meter(), { ...card, footer: C.footer }, f, { cap: 'Barlow', sans: 'Inter' });
+      const B = L.B;
+      const where = `${lang} ${f} (${card.eyebrow.slice(0, 18)})`;
+      const box = (ln) => ({ x0: ln.x, x1: ln.x + ln.width, y0: ln.y, y1: ln.y + ln.size * ln.lead });
+      const all = [...L.lines, L.footer].map(box);
+      check(all.every((b) => b.x0 >= B.pad && b.x1 <= B.w - B.pad && b.y0 >= B.pad && b.y1 <= B.h - B.pad + 1), `${where}: a line runs outside the card's margins`);
+      const foot = box(L.footer);
+      check(L.lines.map(box).every((b) => b.y1 <= foot.y0), `${where}: a line runs into the footer`);
+      if (f === 'landscape') check(L.lines.map(box).every((b) => b.x1 <= B.map.x - B.map.r), `${where}: a line runs into the map`);
+      else check(L.lines.map(box).every((b) => b.y0 >= B.map.y + B.map.r), `${where}: a line starts over the map`);
+      check(L.lines.every((ln, i, a) => i === 0 || ln.y >= a[i - 1].y + a[i - 1].size * a[i - 1].lead - 0.5), `${where}: two lines overlap`);
+      check(L.lines.some((ln) => ln.text.length) && L.lines.length >= 8, `${where}: the words are on the card (${L.lines.length} lines)`);
+      check(L.dropped === 0, `${where}: ${L.dropped} sky line(s) had to be left off`);
+      check(L.k >= Y.CARD_MIN_TEXT && B.map.r >= 0.55 * Y.cardBlocks(f).map.r, `${where}: the words or the map got too small (${L.k}, r ${B.map.r})`);
+      fitted += 1;
+      smallest = Math.min(smallest, L.k);
+    }
+  }
+}
+check(fitted === 66, `every shape in every language was laid out (${fitted})`);
+// The old bug, said plainly: the English card at its own size used to run past the footer on the Square card.
+const enSquare = Y.cardLayout(meter(), { eyebrow: 'THE STAR OF YOUR YEAR', name: 'Altair', place: 'In Aquila, 16.7 light-years away', lines: [COPY.yourStar.leftNear, COPY.yourStar.band], sky: ['The sky on 12 June 1993', 'The Moon: waning gibbous, 80 % lit', 'Up after dusk from London: Mercury, Venus, Mars, Jupiter, Saturn'], footer: COPY.yourStar.footer }, 'square');
+check(enSquare.B.map.r < Y.cardBlocks('square').map.r || enSquare.k < 1, 'a full Square card makes room by shrinking the map or the words, not by running off the bottom');
+check(Y.wrapLines(meter(), '星的光在你出生那年离开了它而今晚你看到的正是那道光', 100).every((ln) => meter().measureText(ln).width <= 100), 'a sentence with no spaces is broken between its characters');
 
 // ---------------------------------------------------------------- 6. privacy, words, boot
 const src = readFileSync(join(JS, 'ui/yourstar.js'), 'utf8');

@@ -2,7 +2,7 @@
  *
  * Linked by ui/yourstar.js when the panel first opens, never at boot: a first visit carries none of it. Tokens only.
  * The panel is the shared .ui-pop (css/controls.css) on the map's glass, in the share sheet's place: left of the tools
- * rail on a desktop, as wide as the sidebar; on a phone the screen's width under the top bar, scrolling inside. The card
+ * rail on a desktop, as wide as the sidebar, ending above the time pill; on a phone the screen's width under the top bar, scrolling inside. The card
  * is a picture (a canvas drawn by the module), shown at the panel's width. Nothing moves in or out, so reduced motion has
  * nothing to stop.
  */
@@ -14,7 +14,9 @@
   z-index: var(--sr-z-modal);
   box-sizing: border-box;
   width: var(--sr-side-w);
-  max-height: calc(100vh - 2 * var(--sr-inset));
+  /* It ends above the time pill (--sr-time-h), as the flight editor and the live views do: at 1440 px a full-height
+     panel lay over the pill's right half, its speed and calendar buttons (live check 2026-11-25). It scrolls inside. */
+  max-height: calc(100vh - 2 * var(--sr-inset) - var(--sr-time-h) - var(--sp-3));
   overflow-y: auto;
   overscroll-behavior: contain;
   font-family: var(--sr-font);
