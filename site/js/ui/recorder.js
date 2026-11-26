@@ -163,11 +163,14 @@ export function parseRecord(search) {
 
 function fontPx(H) { return Math.max(12, Math.round(H * 0.022)); }
 
-/** The scene, cropped, and the corner's two lines over a shade. */
-function compose(g, src, W, H, crop, clockMs) {
+/**
+ * The scene, cropped, and the corner's two lines over a shade; `extra` lines (a script's own credit, window.srMap.record,
+ * ui/mapapirecord.js) go under them. Exported for ui/mapapirecord.js.
+ */
+export function compose(g, src, W, H, crop, clockMs, extra = []) {
   const r = cropRect(src.width, src.height, crop);
   g.drawImage(src, r.sx, r.sy, r.sw, r.sh, 0, 0, W, H);
-  const lines = [creditLine(), dateLine(clockMs)];
+  const lines = [creditLine(), dateLine(clockMs), ...extra];
   let px = fontPx(Math.min(W, H) * 1.6);
   let padPx = Math.round(px * 0.9);
   g.font = `500 ${px}px Inter, system-ui, sans-serif`;
@@ -179,17 +182,17 @@ function compose(g, src, W, H, crop, clockMs) {
     g.font = `500 ${px}px Inter, system-ui, sans-serif`;
     w = Math.max(...lines.map((l) => g.measureText(l).width));
   }
-  const boxH = px * 2 * 1.35 + padPx;
+  const boxH = px * lines.length * 1.35 + padPx;
   const grad = g.createLinearGradient(0, H - boxH - padPx * 2, 0, H);
   grad.addColorStop(0, 'rgba(11,14,20,0)');
   grad.addColorStop(1, 'rgba(11,14,20,0.55)');
   g.fillStyle = grad;
   g.fillRect(0, H - boxH - padPx * 2, Math.min(W, w + padPx * 4), boxH + padPx * 2);
-  g.fillStyle = 'rgba(232,236,242,0.92)';
   g.textBaseline = 'alphabetic';
-  g.fillText(lines[0], padPx, H - padPx - px * 1.35);
-  g.fillStyle = 'rgba(232,236,242,0.72)';
-  g.fillText(lines[1], padPx, H - padPx);
+  for (let i = 0; i < lines.length; i += 1) {
+    g.fillStyle = i === 0 ? 'rgba(232,236,242,0.92)' : 'rgba(232,236,242,0.72)';
+    g.fillText(lines[i], padPx, H - padPx - px * 1.35 * (lines.length - 1 - i));
+  }
 }
 
 /** The end card: where to see it yourself, the link in ember, the credit under it. */
@@ -489,7 +492,8 @@ export function createRecorder(ctx) {
 
 // --------------------------------------------------------------------------------------- frame by frame
 
-async function frameEncoder(W, H, g) {
+/** The first WebCodecs configuration this browser can encode at W x H (VP9, then VP8), or null. Exported for ui/mapapirecord.js. */
+export async function frameEncoder(W, H, g) {
   if (typeof g.VideoEncoder !== 'function') return null;
   for (const codec of FRAME_CODECS) {
     const config = { codec, width: W, height: H, bitrate: Math.round(W * H * FPS * 0.15), framerate: FPS, latencyMode: 'quality' };

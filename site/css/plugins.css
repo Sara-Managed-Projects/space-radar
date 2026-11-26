@@ -1,0 +1,11 @@
+/* css/plugins.css -- what a script on the page puts in the map's chrome (window.srMap, ui/mapapi.js, docs/PLUGINS.md):
+   the tool slots (ui/toolslot.js) and the body of a panel it opens. Layout only: the buttons are the set's own
+   (.ui-btn), the panel is Record's (css/make.css). Linked by ui/mapapi.js when a script opens a panel. */
+.sr-tools { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: var(--sp-2) 0 0; }
+.sr-tools--contents { display: contents; }
+.sr-tools[hidden] { display: none; }
+.sr-tool__lock { margin-inline-start: var(--sp-1); }
+.sr-plugin__body { padding-top: var(--sp-3); }
+/* On a landing site the panel stands under the site's own bar (css/ground.css .sr-ground__bar, a 40 px row at --sp-4),
+   so Drive, Look up, Leave and the tool's own button stay in reach. The phone's sheet is at the foot already. */
+html.sr-ground-on:not(.sr-phone) .sr-plugin { top: calc(var(--sp-4) * 2 + 40px + var(--sp-6)); max-height: calc(100vh - var(--sp-4) * 3 - 40px - var(--sp-6)); }

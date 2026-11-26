@@ -3,7 +3,7 @@
 //
 // Contract: boot(ctx) -> stage (main.js's whole wiring: one line fetches this module on a `ground=` or `sky=` link)
 //           createGroundStage(ctx, { scene, clock, write, note }) -> { open(spec), close(), render(tMs), fromLink(keys, o),
-//             look(v), active, state(), dispose() }
+//             look(v), active, state(), dispose(), terrain(), sunAt(ms), setLift(m) }   (the last three: window.srMap, ui/mapapi.js)
 //   spec: { ground: 'apollo-15' } (stand and walk at a site with a terrain model) or { sky: 'mars:jezero' } (stand
 //         anywhere on the Moon, Mars, Titan or Europa and look up; a site with a terrain model stands on it).
 //   write(patch) is ui/urlstate.js write (the stage keeps `ground` and `sky` in the address); note(line, deadKeys) the
@@ -57,6 +57,7 @@ import {
 import { skyLook, srgbToLinear } from '../sky/worldair.js';
 import { planGround, blockArrays, latticePosts, mergeArrays, groupBlocks, MERGE_FROM } from './groundlod.js';
 import { isTypingIn } from '../ui/explore.js';
+import { toolSlot } from '../ui/toolslot.js';
 
 const DEG = Math.PI / 180;
 const SKY_R = 150000; // metres: the dome and the stars, inside the camera's far plane
@@ -609,6 +610,7 @@ export function createGroundStage(ctx, opts = {}) {
     clearGround();
     plainGround(false);
     place = null;
+    lift = 0;
     if (writing && typeof opts.write === 'function') opts.write({ ground: null, sky: null });
   }
 
@@ -706,7 +708,8 @@ export function createGroundStage(ctx, opts = {}) {
     for (const b of [drive, skyBtn, leave]) b.type = 'button';
     drive.setAttribute('aria-pressed', 'false');
     skyBtn.setAttribute('aria-expanded', 'false');
-    bar.append(drive, skyBtn, leave);
+    // A tool a script puts on the site's bar (window.srMap.ui.tool, ui/toolslot.js): empty and hidden without one.
+    bar.append(drive, skyBtn, toolSlot('ground', { contents: true, btn: 'ui-btn' }, doc) || '', leave);
     const panel = el(doc, 'div', 'sr-ground__panel sr-float');
     panel.hidden = true;
     panel.id = 'sr-ground-sky';
@@ -980,6 +983,8 @@ export function createGroundStage(ctx, opts = {}) {
 
   // --- each frame -----------------------------------------------------------------------------------------------
   let sunNow = null;
+  // How far the eye is lifted over the walker's ground, in metres: a script's jump (window.srMap.terrain.lift, ui/mapapi.js).
+  let lift = 0;
   /** What lights this world: the Sun, or its own star. */
   function lightOf() { return (place && SKY_WORLDS[place.world] && SKY_WORLDS[place.world].light) || 'sun'; }
   /** A disc's plain colour: a star's from its temperature (scene/starfield.js), a body's from DISC_COLOURS. */
@@ -1154,7 +1159,7 @@ export function createGroundStage(ctx, opts = {}) {
       g.model.quaternion.copy(qa.multiply(qb));
       g.modelOffset = [walker.x, walker.z];
     } else {
-      camera.position.set(walker.x, (Number.isFinite(h) ? h : 0) + EYE_M, walker.z);
+      camera.position.set(walker.x, (Number.isFinite(h) ? h : 0) + EYE_M + lift, walker.z);
       camera.lookAt(camera.position.x + look.x, camera.position.y + look.y, camera.position.z + look.z);
     }
     camera.updateMatrixWorld();
@@ -1291,8 +1296,31 @@ export function createGroundStage(ctx, opts = {}) {
     if (ui) ui.root.remove();
   }
 
+  // Research train 6b, for window.srMap.terrain (ui/mapapi.js, docs/PLUGINS.md): the site's measured grids as they are
+  // held (the horizon, the walker's feet and the lander read the same ones), the light at an instant from the same
+  // solver the stage draws with, and a lift of the eye. Nothing is copied here; srMap copies what it hands out.
+  function terrain() {
+    if (!ground || !place || !place.manifest) return null;
+    const m = place.manifest;
+    return {
+      manifest: m, near: ground.near, far: ground.far, profile: ground.profile,
+      heightAt: (x, z) => groundHeight(ground.near, ground.far, x, z),
+      xz: (latDeg, lonDeg) => tangentXZ(latDeg, lonDeg, m.latDeg, m.lonDeg, m.radiusKm),
+    };
+  }
+  function sunAt(ms) {
+    if (!place || !Number.isFinite(ms)) return null;
+    const pl = { world: place.world, latDeg: place.latDeg, lonDeg: place.lonDeg };
+    const v = worldBodyView(lightOf(), ms, pl, { obs: observerHelioEqjKm(pl.world, pl.latDeg, pl.lonDeg, ms), m: worldEqjToLocal(pl.world, pl.latDeg, pl.lonDeg, ms) });
+    return v ? { altDeg: v.altDeg, azDeg: v.azDeg } : null;
+  }
+  function setLift(m) {
+    lift = Number.isFinite(m) ? Math.max(0, Math.min(1000, m)) : 0;
+    return lift;
+  }
+
   return {
-    open, close, render, fromLink, look, state, dispose,
+    open, close, render, fromLink, look, state, dispose, terrain, sunAt, setLift,
     // 2.0.1: the card's "Stand here and drive" (ui/cards.js): straight into the rover's seat, the how-to with it.
     drive: () => setMode('drive'),
     get active() { return active; },

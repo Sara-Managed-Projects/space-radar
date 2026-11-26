@@ -885,6 +885,8 @@ jobs:
         run: node tests/test_passport.mjs
       - name: The platform bridge, the hearts and the account slot, and the map with no platform (the platform contract)
         run: node tests/test_platform_bridge.mjs
+      - name: window.srMap, the map's scripting API, its tool slots and panel, loaded late and never in an embed (docs/PLUGINS.md)
+        run: node tests/test_mapapi.mjs
       - name: Two bright things close together in your sky, worked out in a worker (internal #359)
         run: node tests/test_conjunctions.mjs
       - name: One true sentence on the home (public #395, #450)

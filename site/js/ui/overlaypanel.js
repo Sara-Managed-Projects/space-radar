@@ -12,6 +12,7 @@ import { COPY } from '../copy/en.js';
 import '../copy/en.later.js';
 import { OVERLAYS } from '../data/overlays.js';
 import { legendNode, paintLegend, overlayLine } from './overlaylegend.js';
+import { toolSlot } from './toolslot.js';
 
 /** The overlay id main.js hands to scene/wind.js instead of scene/earthoverlay.js. */
 export const WIND_OPTION = 'wind';
@@ -76,6 +77,8 @@ export function overlayPanel(ctx) {
   const why = document.createElement('p');
   why.className = 'sr-colourkey__why';
   wrap.appendChild(why);
+  // A tool a script puts beside the Earth's maps (window.srMap.ui.tool, ui/toolslot.js): empty and hidden without one.
+  wrap.appendChild(toolSlot('earth'));
 
   const paint = () => {
     const st = typeof ctx.overlayState === 'function' ? ctx.overlayState() : null;

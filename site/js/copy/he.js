@@ -2860,7 +2860,8 @@ export const COPY = {
       "landscape": {
         "city": "קו רקיע: של עיר, מצויר. לא הרחוב שלכם.",
         "hills": "קו רקיע: גבעות, מצויר. לא שלכם.",
-        "coast": "ים בכיוון {dir}, ממפת המים. היבשה מצוירת."
+        "coast": "ים בכיוון {dir}, ממפת המים. היבשה מצוירת.",
+        "real": "קו האופק: פני השטח האמיתיים, לפי {what}. בלי בניינים ועצים."
       },
       "artWesternOnly": "הציורים שייכים לדמויות המערביות",
       "culture": "השמיים של מי",
@@ -5591,6 +5592,10 @@ Object.assign(COPY, {
 // b200-c1-culture: end
 // b200-f5-make: begin -- the flight editor, Record and Dome and 360 (copy/en.make.js, forge #155, #156, #157), machine-drafted
 Object.assign(COPY, {
+  "plugins": {
+    "close": "סגירת החלונית",
+    "sheet": "{title}: גררו כדי לשנות גודל"
+  },
   "make": {
     "flight": "מסלול טיסה",
     "flightTitle": "לתכנן מסלול מצלמה בין מבטים, לצפות בו מראש ולשתף אותו כקישור",

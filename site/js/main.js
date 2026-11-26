@@ -1194,6 +1194,8 @@ export async function boot({ setStatus } = {}) {
   // and under them the way into the debris view (ui/debris.js). TODAY_MS after sr:layers-ready.
   const todayLater = () => afterFirstVisit(TODAY_MS, () => {
     import('./ui/today.js').then((m) => m.createToday(ctx, ctx.explore.todayHost)).catch((e) => console.warn('the dated cards did not load', e));
+    // window.srMap (research train 6b, ui/mapapi.js, docs/PLUGINS.md), the map's scripting API: in the same late moment, never in an embed.
+    if (!embed) import('./ui/mapapi.js').then((m) => m.installMapApi(ctx), () => {});
   });
   if (window.__srLayersReady) todayLater();
   else window.addEventListener('sr:layers-ready', todayLater, { once: true });

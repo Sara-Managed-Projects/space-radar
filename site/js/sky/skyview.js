@@ -1711,6 +1711,8 @@ export function createSkyView(ctx, options = {}) {
     get ownsSky() {
       return isActive && !!ground;
     },
+    /** The skyline drawn now, 360 degrees by azimuth, or null before the ground sky loads (window.srMap.horizon). */
+    skyline: () => (isActive && ground && typeof ground.skyline === 'function' ? ground.skyline() : null),
     /** What the ground sky has drawn and fetched, or null before it loads: for the probes. */
     groundStats: () => (ground ? ground.stats() : null),
     /** The deep-sky pictures and the other-light layer as the ground sky draws them, for the probes. */

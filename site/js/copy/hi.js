@@ -2854,7 +2854,8 @@ export const COPY = {
       "landscape": {
         "city": "क्षितिज-रेखा: किसी शहर की, बनाई हुई। आपकी गली नहीं।",
         "hills": "क्षितिज-रेखा: पहाड़ियाँ, बनाई हुई। आपकी अपनी नहीं।",
-        "coast": "{dir} में समुद्र, पानी के नक्शे से। ज़मीन बनाई हुई।"
+        "coast": "{dir} में समुद्र, पानी के नक्शे से। ज़मीन बनाई हुई।",
+        "real": "क्षितिज: असली ज़मीन, {what} से। इमारतें और पेड़ शामिल नहीं।"
       },
       "artWesternOnly": "चित्र पश्चिमी आकृतियों के ही हैं",
       "culture": "किसका आसमान",
@@ -5581,6 +5582,10 @@ Object.assign(COPY, {
 // b200-c1-culture: end
 // b200-f5-make: begin -- the flight editor, Record and Dome and 360 (copy/en.make.js, forge #155, #156, #157), machine-drafted
 Object.assign(COPY, {
+  "plugins": {
+    "close": "यह पैनल बंद करें",
+    "sheet": "{title}: आकार बदलने के लिए खींचें"
+  },
   "make": {
     "flight": "उड़ान पथ",
     "flightTitle": "दृश्यों के बीच कैमरे का रास्ता बनाएँ, पहले देखें और लिंक से साझा करें",

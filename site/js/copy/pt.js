@@ -2924,7 +2924,8 @@ export const COPY = {
       "landscape": {
         "city": "Horizonte: o de uma cidade, desenhado. Não a sua rua.",
         "hills": "Horizonte: morros, desenhados. Não os seus.",
-        "coast": "Mar ao {dir}, a partir do mapa de água. Terra desenhada."
+        "coast": "Mar ao {dir}, a partir do mapa de água. Terra desenhada.",
+        "real": "Horizonte: o relevo real, segundo {what}. Sem prédios nem árvores."
       },
       "artWesternOnly": "As imagens são das figuras ocidentais",
       "culture": "De quem é o céu",
@@ -5679,6 +5680,10 @@ Object.assign(COPY, {
 // b200-c1-culture: end
 // b200-f5-make: begin -- the flight editor, Record and Dome and 360 (copy/en.make.js, forge #155, #156, #157), machine-drafted
 Object.assign(COPY, {
+  "plugins": {
+    "close": "Fechar este painel",
+    "sheet": "{title}: arraste para redimensionar"
+  },
   "make": {
     "flight": "Trajetória",
     "flightTitle": "Planeje um trajeto de câmera entre vistas, veja antes e compartilhe como link",
