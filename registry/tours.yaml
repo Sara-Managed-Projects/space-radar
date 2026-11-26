@@ -77,6 +77,9 @@
 #                 lists every trip (spec 0029). Written on the trip and not derived from its
 #                 stage, because the Moon trip is "around the Solar System" and the stations trip
 #                 is "around the Earth" for reasons a stage id does not carry.
+#   early_until   optional, a day `YYYY-MM-DD` (2026-11-26, docs/PLUGINS.md "Trips"): a new trip listed for everyone whose
+#                 Play, until that day (UTC), asks the page's trip gate first (window.srMap.trips.gate; the Space Radar
+#                 platform answers with Pro's early access). With no gate on the page it plays. None is set today.
 #   requires_observer  true when a stop is `target: {observer: true}`: the trip starts from the
 #                 visitor's own place and is greyed with "Needs a place" when there is none.
 #   next          the trip the end card offers first, by id, still only if it can run that day

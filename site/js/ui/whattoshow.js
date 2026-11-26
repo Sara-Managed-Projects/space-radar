@@ -51,6 +51,7 @@ import { soundButton, volumeSlider } from './sound.js';
 import { densityPanel } from './density.js';
 import { exposurePanel, lookPanel } from './exposure.js';
 import { qualityPanel } from './qualitypanel.js';
+import { toolSlot } from './toolslot.js';
 // 0076 W4-c: the Motion row below is built here, in the Quality row's shape.
 import { overlayPanel } from './overlaypanel.js';
 import { otherLightPanel } from './otherlight.js';
@@ -643,6 +644,9 @@ export function createWhatToShow(ctx, opts = {}) {
   const motionRow = motionPanel();
   motionRow.classList.add('sr-show__section', 'sr-show__setting');
   root.appendChild(motionRow);
+  // The tools' place for this device (ui/toolslot.js, docs/PLUGINS.md): empty and hidden unless a script puts a button there.
+  const deviceTools = toolSlot('device');
+  if (deviceTools) { deviceTools.classList.add('sr-show__section', 'sr-show__setting'); root.appendChild(deviceTools); }
 
   // --- Keys: the controls hint again, on request (issue #321) ----------------------------------
   const touch = isTouch();

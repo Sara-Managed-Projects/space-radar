@@ -229,7 +229,7 @@ await ok('place: get and set (rounded nowhere, named source set)', () => {
 });
 await ok('tool slots: a slot per place, a button with its label and lock, updated and removed', async () => {
   assert.equal(toolSlot('nowhere'), null);
-  assert.deepEqual(TOOL_PLACES, ['earth', 'ground', 'sky', 'make']);
+  assert.deepEqual(TOOL_PLACES, ['earth', 'ground', 'sky', 'make', 'drift', 'device']);
   const slot = toolSlot('earth');
   assert.equal(slot.getAttribute('data-sr-tools'), 'earth');
   assert.equal(slot.hidden, true);
@@ -314,6 +314,88 @@ await ok('the four slots are built where the panels are', () => {
 await ok('the overlay can be asked for one day', () => {
   const src = readFileSync(new URL('../site/js/scene/earthoverlay.js', import.meta.url), 'utf8');
   assert.ok(src.includes('const dates = day ? [day] : overlayDates(row.date, nowMs());'));
+});
+
+// ---------------------------------------------------------------------------- 2026-11-26: the extras' generic hooks
+await ok('cleanDrift and driftWords: the drift choices a script gives, and #drift= words back', async () => {
+  assert.deepEqual(M.cleanDrift({ through: ['deep', 'stars', 'nope'], pace: 'calm', seed: 42, tags: false }), { through: ['stars', 'deep'], tags: false, pace: 'calm', seed: 42 });
+  assert.equal(M.cleanDrift({ through: [] }), null);
+  assert.equal(M.cleanDrift({ pace: 'fast' }), null);
+  assert.equal(M.cleanDrift({ seed: 1.5 }), null);
+  assert.equal(M.cleanDrift({ bare: 'yes' }), null);
+  const words = M.driftWords(M.cleanDrift({ through: ['worlds'], realOnly: false, bare: true, pace: 'brisk', seed: 7 }));
+  assert.equal(words, 'worlds,any,bare,brisk,seed7');
+  const { readOptions, writeOptions, seededRandom } = await import('../site/js/ui/driftplan.js');
+  const back = readOptions(words, null);
+  assert.deepEqual([back.through, back.realOnly, back.bare, back.pace, back.seed], [['worlds'], false, true, 'brisk', 7]);
+  assert.ok(writeOptions(back).endsWith('seed7'));
+  assert.equal(readOptions('1', null).seed, null);
+  assert.ok(readOptions('seed0', null).notes.includes('unknown:seed0'));
+  const a = seededRandom(42), b = seededRandom(42);
+  assert.deepEqual([a(), a(), a()], [b(), b(), b()], 'one seed, one walk');
+});
+await ok('offlineRoute: only the map\'s own files, in the worker\'s own caches', () => {
+  const base = 'https://www.spaceradar.ai/';
+  assert.deepEqual(M.offlineRoute('textures/earth.jpg?v=3#x', base), { cache: 'sr-sw-assets-v1', key: 'https://www.spaceradar.ai/textures/earth.jpg' });
+  assert.deepEqual(M.offlineRoute('https://www.spaceradar.ai/data/v1/ll2-upcoming.json', base), { cache: 'sr-sw-data-v1', key: 'https://www.spaceradar.ai/data/v1/ll2-upcoming.json' });
+  for (const u of ['js/main.js', 'index.html', 'https://celestrak.org/x.json', 't/abc', 'textures/']) assert.equal(M.offlineRoute(u, base), null, u);
+  const sw = readFileSync(new URL('../site/sw.js', import.meta.url), 'utf8');
+  assert.ok(sw.includes("const ASSET_CACHE = PREFIX + 'assets-v1';") && sw.includes("const PREFIX = 'sr-sw-';") && sw.includes("const DATA_CACHE = PREFIX + 'data-v1';"), 'site/sw.js still names the two caches SW_CACHES names');
+  assert.ok(sw.includes("const ASSET_DIRS = ['textures/', 'models/', 'audio/', 'images/', 'og/', 'data/'];"), 'and the same folders');
+});
+await ok('cleanVoice: https clips of one trip, with a length', () => {
+  const v = M.cleanVoice({ credit: 'Voice: x', clips: { iss: { opus: 'https://a.example/iss.opus', m4a: 'https://a.example/iss.m4a', vtt: 'https://a.example/iss.vtt', seconds: 12.5 }, bad: { opus: 'http://a/x', seconds: 3 }, short: { opus: 'https://a/x', seconds: 0.1 } } }, 'people-in-space');
+  assert.deepEqual(Object.keys(v.rows), ['people-in-space/iss']);
+  assert.equal(v.rows['people-in-space/iss'].twin, 'https://a.example/iss.m4a');
+  assert.equal(M.cleanVoice(null, 'x'), null);
+  assert.equal(M.cleanVoice({ clips: {} }, 'x'), null);
+});
+await ok('the recorder: no corner, a sharp buffer, tiles for a large still', () => {
+  assert.equal(R.sharpRatio(1440, 900, 'wide', 3840, 2160, 16384, 2), 2.667);
+  assert.equal(R.sharpRatio(1440, 900, 'wide', 1920, 1080, 16384, 2), null, 'already sharp enough');
+  assert.equal(R.sharpRatio(1440, 900, 'wide', 3840, 2160, 2048, 1), 1.422, 'the GPU\'s limit');
+  const t = R.tilesFor(7016, 4961, 4096);
+  assert.equal(t.length, 4);
+  assert.deepEqual(t[3], { x: 4096, y: 4096, w: 2920, h: 865 });
+  const rec = readFileSync(new URL('../site/js/ui/recorder.js', import.meta.url), 'utf8');
+  assert.ok(rec.includes('if (corner === false) return;'));
+});
+await ok('drift, layers, trips and offline on the api', async () => {
+  const { ctx } = fakeCtx();
+  let started = null;
+  ctx.layers = [{ id: 'stars' }, { id: 'worlds' }];
+  const on = new Set(['worlds']);
+  ctx.isLayerOn = (id) => on.has(id);
+  ctx.setLayerOn = (id, v) => { if (v) on.add(id); else on.delete(id); };
+  ctx.wantDrift = async (keys) => { started = keys; ctx.drift = { active: true, state: () => ({ active: true, options: { through: ['stars'], realOnly: true, tags: true, bare: false, pace: 'calm', seed: 3 }, place: 'sirius', visits: 1 }), start: () => true, stop: () => { ctx.drift.active = false; } }; return ctx.drift; };
+  ctx.trip = { tours: () => [{ id: 'a', title: 'A', group: 'g', early_until: '2099-01-01' }, { id: 'b', title: 'B' }], onChange: () => () => {}, state: { phase: 'idle' } };
+  const api = M.createMapApi(ctx, globalThis);
+  assert.equal(await api.drift.start({ through: ['stars'], pace: 'calm', seed: 3 }), true);
+  assert.deepEqual(started, { drift: 'stars,calm,seed3' });
+  assert.equal(api.drift.get().options.seed, 3);
+  assert.equal(await api.drift.start({ pace: 'warp' }), false);
+  api.drift.stop();
+  assert.equal(ctx.drift.active, false);
+  assert.deepEqual(api.layers.list(), [{ id: 'stars', on: false }, { id: 'worlds', on: true }]);
+  assert.equal(api.layers.set('stars', true), true);
+  assert.equal(api.layers.set('nope', true), false);
+  assert.deepEqual(api.trips.list()[0], { id: 'a', title: 'A', group: 'g', earlyUntil: '2099-01-01' });
+  const fn = () => false;
+  const off = api.trips.gate(fn);
+  assert.equal(ctx.tripGate, fn);
+  off();
+  assert.equal(ctx.tripGate, null);
+  assert.deepEqual(await api.offline.has(['textures/x.jpg']), 0, 'no caches here: nothing kept');
+  const stopVoice = api.voice.provide(() => null);
+  assert.equal(typeof stopVoice, 'function');
+});
+await ok('the new places are built where their panels are', () => {
+  const read = (f) => readFileSync(new URL(`../site/js/${f}`, import.meta.url), 'utf8');
+  assert.ok(TOOL_PLACES.includes('drift') && TOOL_PLACES.includes('device'));
+  assert.ok(read('ui/drift.js').includes("toolSlot('drift'"));
+  assert.ok(read('ui/whattoshow.js').includes("toolSlot('device')"));
+  assert.ok(read('ui/trip.js').includes('ctx.tripGate'), 'an early trip asks the gate');
+  assert.ok(read('audio/narration.js').includes('opts.alt'), 'the narration takes a provided voice');
 });
 
 console.log(`test_mapapi: ${passed} passed`);

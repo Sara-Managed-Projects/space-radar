@@ -67,6 +67,7 @@ import { nextShower } from '../sky/radiants.js';
 import { SHOWERS } from '../data/showers.js';
 import { azimuthInWords, altitudeInWords } from '../sky/skyview.js';
 import { COPY, CITIES, UNITS, t, fmt, timeText } from '../copy/en.js';
+import { platformAllowed } from './platform-bridge.js';
 import { CHAIN } from '../scene/handoff.js';
 
 const DEG = Math.PI / 180;
@@ -3438,9 +3439,42 @@ export function createTrip(ctx) {
     notify();
   }
 
+  // EARLY ACCESS (registry/tours.yaml `early_until`, docs/PLUGINS.md "Trips"). The trip is listed for everyone; until that
+  // day (UTC) its Play asks the page's trip gate first (window.srMap.trips.gate, ctx.tripGate). With no gate on the page (a
+  // fork, localhost, the platform blocked) it plays: the words and the data are open either way. On our own hosts the
+  // platform's gate comes a few seconds after the map, so a Play pressed sooner waits for it, ten seconds at most.
+  const earlyOk = new Set();
+  function earlyLeft(tour) {
+    const until = tour && tour.early_until ? Date.parse(`${tour.early_until}T00:00:00Z`) : NaN;
+    return Number.isFinite(until) && Date.now() < until;
+  }
+  function askGate(tour) {
+    const ask = (fn) => Promise.resolve().then(() => fn({ id: tour.id, title: tour.title, earlyUntil: tour.early_until })).then((v) => v !== false, () => true);
+    if (typeof ctx.tripGate === 'function') return ask(ctx.tripGate);
+    if (typeof location === 'undefined' || !platformAllowed(location)) return Promise.resolve(true);
+    return new Promise((resolve) => {
+      let n = 0;
+      const look = setInterval(() => {
+        if (typeof ctx.tripGate === 'function') { clearInterval(look); resolve(ask(ctx.tripGate)); } else if ((n += 1) >= 40) { clearInterval(look); resolve(true); }
+      }, 250);
+    });
+  }
+  function earlyWords(tour) {
+    let day = tour.early_until;
+    try { day = new Intl.DateTimeFormat(document.documentElement.lang || 'en', { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(`${tour.early_until}T00:00:00Z`)); } catch { /* the plain day */ }
+    return t(COPY.trip.early, { date: day });
+  }
+
   function start(id) {
     const tour = tourById(id);
     if (!tour) return Promise.resolve(null);
+    if (earlyLeft(tour) && !earlyOk.has(tour.id)) {
+      return askGate(tour).then((ok) => {
+        if (!ok) return { id: tour.id, count: 0, offerable: false, early: true, reason: earlyWords(tour) };
+        earlyOk.add(tour.id);
+        return start(id);
+      });
+    }
 
     if (run && run.tour.id === id) {
       // The same trip again is a RESTART, not a reload: the furniture stays up.

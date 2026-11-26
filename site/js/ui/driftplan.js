@@ -626,13 +626,14 @@ const OFF_WORDS = ['0', 'off', 'false', 'no'];
  *   notags                              no names on screen
  *   bare                                only space: no names, marks, lines or panels at all
  *   calm, steady, brisk                 the pace
+ *   seed<N>                             the same walk every time (N a whole number, 1 to 999999999); none: a new one
  * A word that names nothing is dropped and listed in `notes`. `stored` is what ui/drift.js kept in
  * this browser the last time the options were changed.
  *
- * @returns {{on:boolean, through:string[], realOnly:boolean, tags:boolean, bare:boolean, pace:string, notes:string[]}}
+ * @returns {{on:boolean, through:string[], realOnly:boolean, tags:boolean, bare:boolean, pace:string, seed:number|null, notes:string[]}}
  */
 export function readOptions(value, stored) {
-  const base = { ...DEFAULTS, through: DEFAULTS.through.slice() };
+  const base = { ...DEFAULTS, through: DEFAULTS.through.slice(), seed: null };
   const s = stored && typeof stored === 'object' ? stored : {};
   if (Array.isArray(s.through)) {
     const kept = CATEGORIES.filter((c) => s.through.includes(c));
@@ -658,6 +659,7 @@ export function readOptions(value, stored) {
     else if (w === 'bare') base.bare = true;
     else if (w === 'nobare') base.bare = false;
     else if (PACES[w]) base.pace = w;
+    else if (/^seed[1-9]\d{0,8}$/.test(w)) base.seed = Number(w.slice(4));
     else notes.push(`unknown:${w}`);
   }
   if (through.length) base.through = CATEGORIES.filter((c) => through.includes(c));
@@ -675,5 +677,18 @@ export function writeOptions(options) {
   if (o.tags === false) words.push('notags');
   if (o.bare === true) words.push('bare');
   if (o.pace && o.pace !== DEFAULTS.pace && PACES[o.pace]) words.push(o.pace);
+  if (Number.isInteger(o.seed) && o.seed > 0 && o.seed < 1e9) words.push(`seed${o.seed}`);
   return words.length ? words.join(',') : '1';
+}
+
+/** A seeded dice (Mulberry32, as scene/lookrandom.js): `#drift=...,seed42` walks the same way every time. Pure. */
+export function seededRandom(seed) {
+  let a = (Number(seed) * 0x9e3779b1) >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
 }

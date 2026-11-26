@@ -165,11 +165,13 @@ function fontPx(H) { return Math.max(12, Math.round(H * 0.022)); }
 
 /**
  * The scene, cropped, and the corner's two lines over a shade; `extra` lines (a script's own credit, window.srMap.record,
- * ui/mapapirecord.js) go under them. Exported for ui/mapapirecord.js.
+ * ui/mapapirecord.js) go under them; `corner` false draws the scene alone. Exported for ui/mapapirecord.js.
  */
-export function compose(g, src, W, H, crop, clockMs, extra = []) {
+export function compose(g, src, W, H, crop, clockMs, extra = [], corner = true) {
   const r = cropRect(src.width, src.height, crop);
   g.drawImage(src, r.sx, r.sy, r.sw, r.sh, 0, 0, W, H);
+  // `corner` false (window.srMap.record.start({corner: 'none'})): the scene alone, edge to edge, and no lines at all.
+  if (corner === false) return;
   const lines = [creditLine(), dateLine(clockMs), ...extra];
   let px = fontPx(Math.min(W, H) * 1.6);
   let padPx = Math.round(px * 0.9);

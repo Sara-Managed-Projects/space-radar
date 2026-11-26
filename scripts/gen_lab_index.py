@@ -124,6 +124,11 @@ def stamp_chrome(text: str) -> str:
 # simulator in this browser's favourites (sr:favs) with or without the platform. A file without the markers gets them.
 CHROME_PLATFORM = re.compile(r"<!-- chrome:head[^\n]*-->\n(?:.*?\n)?<!-- /chrome:head -->\n", re.S)
 CHROME_FAV = re.compile(r"<!-- chrome:fav[^\n]*-->(?:.*?)<!-- /chrome:fav -->", re.S)
+# THE TOOLS' PLACE (docs/PLUGINS.md "The Lab"): an empty, hidden div[data-sr-tools="lab"] after the controls, where a script on
+# the page (the platform's Lab exports) puts its buttons; the page's own hook, window.srLab, is in its shared script part.
+CHROME_TOOLS = re.compile(r"<!-- chrome:tools[^\n]*-->(?:.*?)<!-- /chrome:tools -->\n", re.S)
+TOOLS_SLOT = ('<!-- chrome:tools (written by scripts/gen_lab_index.py; do not edit) --><div class="lab-tools" data-sr-tools="lab" hidden>'
+              "</div><!-- /chrome:tools -->\n")
 FAV_ADD = "Add this simulator to your favourites"
 FAV_REMOVE = "This simulator is in your favourites. Press to take it out"
 HEART_SVG = ('<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" '
@@ -144,6 +149,10 @@ def stamp_platform(text: str, slug: str) -> str:
            f'<button type="button" class="ui-btn ui-btn--icon ui-btn--sm sr-heart" data-sr-fav="lab:{esc(slug)}" aria-pressed="false" '
            f'aria-label="{FAV_ADD}" title="{FAV_ADD}" data-sr-add="{FAV_ADD}" data-sr-remove="{FAV_REMOVE}">{HEART_SVG}</button>'
            "<!-- /chrome:fav -->")
+    if CHROME_TOOLS.search(text):
+        text = CHROME_TOOLS.sub(lambda _: TOOLS_SLOT, text, count=1)
+    else:
+        text = text.replace('<p class="honest">', TOOLS_SLOT + '<p class="honest">', 1)
     if CHROME_FAV.search(text):
         return CHROME_FAV.sub(lambda _: fav, text, count=1)
     return text.replace('<p class="more">', '<p class="more">' + fav, 1)

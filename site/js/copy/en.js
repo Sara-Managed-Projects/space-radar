@@ -2056,6 +2056,8 @@ export const COPY = {
     observerDevice: 'Your place: near where your device says you are.',
     observerGuess: 'Your place is a guess from your clock’s time zone: {place}. Set it under Where you are for a better one.',
     needsPlace: 'Needs a place. Set where you are first.',
+    // registry/tours.yaml `early_until` (docs/PLUGINS.md "Trips"): Play waited for the page's trip gate, which said no.
+    early: 'Early access for Pro until {date}, then free for everyone.',
     // Recomputed while the stop is up: the station moves eight kilometres every second.
     stationFromYou: 'Right now it is {km} km from you.',
     // `px` is scene/heroes.js SELECTED_PX, interpolated so the sentence cannot outlive the number.

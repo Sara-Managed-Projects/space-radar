@@ -1242,6 +1242,7 @@ export const COPY = {
     "observerDevice": "Dein Ort: in der Nähe dessen, was dein Gerät als deinen Standort angibt.",
     "observerGuess": "Dein Ort ist eine Vermutung anhand der Zeitzone deiner Uhr: {place}. Lege ihn unter „Wo du bist“ fest, dann wird er genauer.",
     "needsPlace": "Braucht einen Ort. Lege zuerst fest, wo du bist.",
+    "early": "Früher Zugang für Pro bis {date}, danach kostenlos für alle.",
     "stationFromYou": "Gerade ist sie {km} km von dir entfernt.",
     "drawnAtClassSize": "Das Modell wird unabhängig von der Entfernung {px} Pixel breit gezeichnet; die echte Station wäre ein heller Punkt.",
     "passNight": "Bei diesem Überflug wird sie von der Sonne beleuchtet, vor dunklem Himmel: Du könntest sie sehen, wenn das Wetter mitspielt.",

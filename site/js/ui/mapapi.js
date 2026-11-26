@@ -3,7 +3,11 @@
 // Contract: installMapApi(ctx, win?) -> api   sets window.srMap (once), then `document` event `sr:map {version}`
 //           createMapApi(ctx, win?) -> api    the same object without installing it (tests)
 // Pure, for tests/test_mapapi.mjs: VERSION, cleanPose(p), clockOf(clock), poseToRig(pose, unitKm), binsFrom(deg),
-//   sampleBins(fn, n), crossKm(a, b), boxAround(lat, lon, spanKm)
+//   sampleBins(fn, n), crossKm(a, b), boxAround(lat, lon, spanKm), cleanDrift(o), driftWords(o), offlineRoute(url, base),
+//   cleanVoice(res, tripId), SW_CACHES
+//
+// Added 2026-11-26 (v1 adds, nothing renamed): picture(), drift, layers, trips, offline, voice, record.start's `corner` and
+// `sharp`, and the tool places 'drift' and 'device'. All generic: the platform's Pro and Ultra extras are built on them.
 //
 // WHAT IT IS. Capabilities anyone may script from the page's console, a bookmarklet or a script of their own: where the
 // camera stands and a flight to a pose, the clock (time travel), a recording of the canvas that comes back as a Blob, the
@@ -39,6 +43,10 @@ const GLYPHS = {
   route: [['circle', { cx: 6, cy: 19, r: 3 }], ['path', { d: 'M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15' }], ['circle', { cx: 18, cy: 5, r: 3 }]],
   film: [['rect', { width: 18, height: 18, x: 3, y: 3, rx: 2 }], ['path', { d: 'M7 3v18' }], ['path', { d: 'M3 7.5h4' }], ['path', { d: 'M3 12h18' }], ['path', { d: 'M3 16.5h4' }], ['path', { d: 'M17 3v18' }], ['path', { d: 'M17 7.5h4' }], ['path', { d: 'M17 16.5h4' }]],
   users: [['path', { d: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' }], ['circle', { cx: 9, cy: 7, r: 4 }], ['path', { d: 'M22 21v-2a4 4 0 0 0-3-3.87' }], ['path', { d: 'M16 3.13a4 4 0 0 1 0 7.75' }]],
+  download: [['path', { d: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4' }], ['path', { d: 'm7 10 5 5 5-5' }], ['path', { d: 'M12 15V3' }]],
+  printer: [['path', { d: 'M6 9V2h12v7' }], ['path', { d: 'M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2' }], ['rect', { width: 12, height: 8, x: 6, y: 14 }]],
+  bookmark: [['path', { d: 'm19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z' }]],
+  video: [['path', { d: 'm16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5' }], ['rect', { x: 2, y: 6, width: 14, height: 12, rx: 2 }]],
   sunrise: [['path', { d: 'M12 2v8' }], ['path', { d: 'm4.93 10.93 1.41 1.41' }], ['path', { d: 'M2 18h2' }], ['path', { d: 'M20 18h2' }], ['path', { d: 'm19.07 10.93-1.41 1.41' }], ['path', { d: 'M22 22H2' }], ['path', { d: 'm8 6 4-4 4 4' }], ['path', { d: 'M16 18a4 4 0 0 0-8 0' }]],
 };
 const glyph = (name) => (GLYPHS[name] ? iconFrom(name, GLYPHS[name]) : icon(name));
@@ -109,6 +117,73 @@ export function boxAround(latDeg, lonDeg, spanKm) {
   return { south: Math.max(-90, latDeg - halfLat), north: Math.min(90, latDeg + halfLat), west: Math.max(-180, lonDeg - halfLon), east: Math.min(180, lonDeg + halfLon) };
 }
 
+/** The drift's choices as a script gives them, checked (ui/driftplan.js's words), or null. Pure. */
+export const DRIFT_CATS = ['craft', 'worlds', 'small', 'stars', 'deep'];
+export function cleanDrift(o) {
+  if (!o || typeof o !== 'object') return null;
+  const out = {};
+  if (o.through !== undefined) {
+    if (!Array.isArray(o.through)) return null;
+    const t = DRIFT_CATS.filter((c) => o.through.includes(c));
+    if (!t.length) return null;
+    out.through = t;
+  }
+  for (const k of ['realOnly', 'tags', 'bare']) if (o[k] !== undefined) { if (typeof o[k] !== 'boolean') return null; out[k] = o[k]; }
+  if (o.pace !== undefined) { if (!['calm', 'steady', 'brisk'].includes(o.pace)) return null; out.pace = o.pace; }
+  if (o.seed !== undefined && o.seed !== null) { if (!Number.isInteger(o.seed) || o.seed < 1 || o.seed > 999999999) return null; out.seed = o.seed; }
+  else if (o.seed === null) out.seed = null;
+  return out;
+}
+/** `#drift=`'s words for checked choices (ui/driftplan.js readOptions reads them back). Pure. */
+export function driftWords(o) {
+  const w = [...(o.through || [])];
+  if (o.realOnly === true) w.push('real'); else if (o.realOnly === false) w.push('any');
+  if (o.tags === true) w.push('tags'); else if (o.tags === false) w.push('notags');
+  if (o.bare === true) w.push('bare'); else if (o.bare === false) w.push('nobare');
+  if (o.pace) w.push(o.pace);
+  if (o.seed) w.push(`seed${o.seed}`);
+  return w.length ? w.join(',') : '1';
+}
+
+/** The service worker's caches (site/sw.js ASSET_CACHE, DATA_CACHE): tests/test_mapapi.mjs holds the two files to one name. */
+export const SW_CACHES = { asset: 'sr-sw-assets-v1', data: 'sr-sw-data-v1' };
+const ASSET_DIRS = ['textures/', 'models/', 'audio/', 'images/', 'og/', 'data/'];
+/**
+ * Where site/sw.js keeps a file of the map's own: {cache, key} (key: the address with no query or fragment), or null for
+ * anything it does not keep that way (another site, the page, js/, a share page). Pure.
+ */
+export function offlineRoute(url, base) {
+  let u, b;
+  try { u = new URL(String(url), base); b = new URL(base); } catch { return null; }
+  if (u.origin !== b.origin || !u.pathname.startsWith(b.pathname)) return null;
+  const rel = u.pathname.slice(b.pathname.length);
+  const key = `${u.origin}${u.pathname}`;
+  if (rel.startsWith('data/v1/')) return { cache: SW_CACHES.data, key };
+  if (ASSET_DIRS.some((d) => rel.startsWith(d)) && rel.length > 0 && !rel.endsWith('/')) return { cache: SW_CACHES.asset, key };
+  return null;
+}
+
+/**
+ * A voice a script gave for one trip, checked: {credit, rows: {'<trip>/<stop>': {file, twin, vtt, seconds}}}, or null.
+ * Addresses are https only; a clip is 0.5 to 600 seconds. Pure.
+ */
+export function cleanVoice(res, tripId) {
+  if (!res || typeof res !== 'object' || !res.clips || typeof res.clips !== 'object' || typeof tripId !== 'string') return null;
+  const https = (v) => (typeof v === 'string' && /^https:\/\/[^\s]+$/.test(v) && v.length < 2048 ? v : '');
+  const rows = {};
+  let n = 0;
+  for (const [stop, c] of Object.entries(res.clips)) {
+    if (!/^[a-z0-9][a-z0-9-]{0,60}$/.test(stop) || !c || typeof c !== 'object') continue;
+    const file = https(c.opus) || https(c.file) || https(c.m4a);
+    const seconds = Number(c.seconds);
+    if (!file || !(seconds >= 0.5 && seconds <= 600)) continue;
+    rows[`${tripId}/${stop}`] = { file, twin: https(c.m4a) || file, vtt: https(c.vtt), seconds };
+    n += 1;
+    if (n >= 80) break;
+  }
+  return n ? { credit: String(res.credit || '').slice(0, 200), rows } : null;
+}
+
 // --------------------------------------------------------------------------------------------------------- the api
 
 export function createMapApi(ctx, win = typeof window !== 'undefined' ? window : null) {
@@ -137,7 +212,7 @@ export function createMapApi(ctx, win = typeof window !== 'undefined' ? window :
   }
 
   // -- events: the map's own, under plain names ----------------------------------------------------------------------
-  const EVENTS = { select: 'sr:select', sky: 'sr:sky', observer: 'sr:observer', overlay: 'sr:overlay', layers: 'sr:layers-ready' };
+  const EVENTS = { select: 'sr:select', sky: 'sr:sky', observer: 'sr:observer', overlay: 'sr:overlay', layers: 'sr:layers-ready', drift: 'sr:drift' };
   const clockFns = new Set();
   let clockHooked = false;
   function on(name, fn) {
@@ -274,6 +349,152 @@ export function createMapApi(ctx, win = typeof window !== 'undefined' ? window :
     }, { live: false, frames: false }),
     start: async (opts = {}) => (await wantRec()).startLive(ctx, opts, win),
     frames: async (opts = {}) => (await wantRec()).createFrameEncoder(opts, win),
+  };
+  /** One still frame of the scene at any size (no chrome, no lines): a canvas. Orbit view only. */
+  const picture = async (opts = {}) => {
+    if (groundUp() || skyUp()) throw new Error('a picture is of the orbit view');
+    return (await wantRec()).picture(ctx, opts, win);
+  };
+
+  // -- the drift (ui/drift.js), loaded on the first ask ----------------------------------------------------------------
+  const drift = {
+    get: () => safe(() => {
+      const st = ctx.drift && typeof ctx.drift.state === 'function' ? ctx.drift.state() : null;
+      if (!st) return { active: false, options: null, place: null, visits: 0 };
+      const o = st.options || {};
+      return { active: !!st.active, options: { through: (o.through || []).slice(), realOnly: !!o.realOnly, tags: !!o.tags, bare: !!o.bare, pace: o.pace, seed: Number.isInteger(o.seed) ? o.seed : null }, place: st.place, visits: st.visits };
+    }),
+    /** Start the drift with these choices, or change them while it runs: resolves true when it is drifting. */
+    start: async (o = {}) => {
+      const want = cleanDrift(o);
+      if (!want || typeof ctx.wantDrift !== 'function') return false;
+      if (ctx.drift && ctx.drift.active) return safe(() => !!ctx.drift.start(want, 'plugin'), false);
+      const d = await ctx.wantDrift({ drift: driftWords(want) }, 'plugin');
+      return !!(d && d.active);
+    },
+    stop: () => safe(() => { if (ctx.drift && ctx.drift.active) ctx.drift.stop('plugin'); return true; }, false),
+  };
+
+  // -- the layers (What to show) ----------------------------------------------------------------------------------------
+  const layers = {
+    list: () => safe(() => (ctx.layers || []).map((l) => ({ id: l.id, on: typeof ctx.isLayerOn === 'function' ? !!ctx.isLayerOn(l.id) : !!l.on })), []),
+    set: (id, on) => safe(() => {
+      if (typeof id !== 'string' || typeof on !== 'boolean' || typeof ctx.setLayerOn !== 'function' || !(ctx.layers || []).some((l) => l.id === id)) return false;
+      ctx.setLayerOn(id, on);
+      return true;
+    }, false),
+  };
+
+  // -- the trips: their list, and the gate an early trip's Play asks (ui/trip.js, registry/tours.yaml early_until) --------
+  const trips = {
+    list: () => safe(() => (typeof ctx.trip.tours === 'function' ? ctx.trip.tours() : []).map((x) => ({ id: x.id, title: x.title, group: x.group || null, earlyUntil: x.early_until || null })), []),
+    /** `fn({id, title, earlyUntil}) -> boolean | Promise<boolean>`: false keeps the trip shut. Answers the stop function. */
+    gate(fn) {
+      if (typeof fn !== 'function') return () => {};
+      ctx.tripGate = fn;
+      return () => { if (ctx.tripGate === fn) ctx.tripGate = null; };
+    },
+  };
+
+  // -- offline: what the service worker keeps (site/sw.js), kept on purpose ---------------------------------------------
+  const pageBase = () => new URL('./', (doc && doc.baseURI) || win.location.href).href;
+  const cachesOk = () => !!(win && win.caches && typeof win.caches.open === 'function');
+  const offline = {
+    /** {worker, persisted, usage, quota}: whether a worker serves this page, and the browser's own estimate (bytes). */
+    state: async () => {
+      const nav = (win && win.navigator) || {};
+      const est = nav.storage && typeof nav.storage.estimate === 'function' ? await nav.storage.estimate().catch(() => ({})) : {};
+      const persisted = nav.storage && typeof nav.storage.persisted === 'function' ? await nav.storage.persisted().catch(() => false) : false;
+      return { worker: !!(nav.serviceWorker && nav.serviceWorker.controller), caches: cachesOk(), persisted: !!persisted, usage: est.usage || 0, quota: est.quota || 0 };
+    },
+    /** Ask the browser not to clear what is kept when space is short: resolves true when it agreed. */
+    persist: async () => { const nav = (win && win.navigator) || {}; try { return !!(nav.storage && await nav.storage.persist()); } catch { return false; } },
+    /** How many of these files are kept already. */
+    has: async (urls) => {
+      if (!cachesOk()) return 0;
+      let n = 0;
+      for (const u of Array.isArray(urls) ? urls : []) {
+        const r = offlineRoute(u, pageBase());
+        if (r) { try { if (await (await win.caches.open(r.cache)).match(r.key)) n += 1; } catch { /* none */ } }
+      }
+      return n;
+    },
+    /**
+     * Keep these files of the map's own for use with no network, as the worker keeps what a visit used: `{onProgress(done,
+     * total, bytes), signal}`. Resolves {kept, already, failed, refused, bytes}. A file of another site is refused.
+     */
+    keep: async (urls, { onProgress, signal } = {}) => {
+      const out = { kept: 0, already: 0, failed: 0, refused: 0, bytes: 0 };
+      if (!cachesOk()) { out.refused = Array.isArray(urls) ? urls.length : 0; return out; }
+      const list = (Array.isArray(urls) ? urls : []).slice(0, 20000);
+      const routes = list.map((u) => offlineRoute(u, pageBase()));
+      let done = 0;
+      const queue = routes.map((r, i) => [r, i]);
+      const work = async () => {
+        while (queue.length) {
+          if (signal && signal.aborted) return;
+          const [r] = queue.shift();
+          if (!r) out.refused += 1;
+          else {
+            try {
+              const cache = await win.caches.open(r.cache);
+              if (await cache.match(r.key)) out.already += 1;
+              else {
+                const res = await win.fetch(r.key, { credentials: 'same-origin', signal });
+                if (!res.ok || res.status !== 200) throw new Error(String(res.status));
+                const len = Number(res.headers.get('content-length')) || 0;
+                await cache.put(r.key, res);
+                out.kept += 1;
+                out.bytes += len;
+              }
+            } catch { out.failed += 1; }
+          }
+          done += 1;
+          if (typeof onProgress === 'function') safe(() => onProgress(done, list.length, out.bytes));
+        }
+      };
+      await Promise.all(Array.from({ length: 4 }, work));
+      return out;
+    },
+    /** Let these go again (the worker fetches them anew when they are next used). Resolves how many were removed. */
+    forget: async (urls) => {
+      if (!cachesOk()) return 0;
+      let n = 0;
+      for (const u of Array.isArray(urls) ? urls : []) {
+        const r = offlineRoute(u, pageBase());
+        if (r) { try { if (await (await win.caches.open(r.cache)).delete(r.key)) n += 1; } catch { /* none */ } }
+      }
+      return n;
+    },
+  };
+
+  // -- a voice in the visitor's language for the trips (audio/narration.js, ui/tripframe.js) ----------------------------
+  let voiceFn = null;
+  let voiceTrip = '';
+  let voiceHooked = false;
+  function askVoice(st) {
+    const id = st && st.phase !== 'idle' ? st.tourId : null;
+    if (!id) { voiceTrip = ''; return; }
+    if (!voiceFn || id === voiceTrip) return;
+    voiceTrip = id;
+    const fn = voiceFn;
+    const lang = api.lang;
+    const p = Promise.resolve().then(() => fn({ tripId: id, lang })).then((res) => cleanVoice(res, id), () => null)
+      .then((table) => { if (voiceFn === fn && voiceTrip === id) ctx.voiceAlt = table; return table; });
+    ctx.voiceAlt = p;
+  }
+  const voice = {
+    /** `fn({tripId, lang}) -> {credit, clips: {stopId: {opus, m4a, vtt, seconds}}} | null`, asked once a trip starts. */
+    provide(fn) {
+      if (typeof fn !== 'function') return () => {};
+      voiceFn = fn;
+      voiceTrip = '';
+      ctx.voiceAlt = null;
+      if (!voiceHooked && ctx.trip && typeof ctx.trip.onChange === 'function') { voiceHooked = true; ctx.trip.onChange((st) => safe(() => askVoice(st))); }
+      safe(() => askVoice(ctx.trip && ctx.trip.state));
+      return () => { if (voiceFn === fn) { voiceFn = null; voiceTrip = ''; ctx.voiceAlt = null; } };
+    },
+    get: () => safe(() => { const a = ctx.voiceAlt; return a && typeof a.then !== 'function' ? { credit: a.credit, stops: Object.keys(a.rows).length } : null; }),
   };
 
   // -- a landing site's ground (scene/groundstage.js) ----------------------------------------------------------------
@@ -530,7 +751,7 @@ export function createMapApi(ctx, win = typeof window !== 'undefined' ? window :
     view, on,
     camera: { get: cameraGet, fly: cameraFly, set: (p) => cameraFly(p, { ms: 0 }), earthPoint, earthView },
     clock: { get: () => safe(() => clockOf(ctx.clock)), set: clockSet, onChange: (fn) => on('clock', fn) },
-    record, terrain, horizon, place, gibs,
+    record, picture, terrain, horizon, place, gibs, drift, layers, trips, offline, voice,
     ui: { panel, tool, toast },
   };
   return api;

@@ -141,8 +141,13 @@ export function createNarration(engine, beds, NARRATION, opts = {}) {
 
   // A context to play in, as well as the choice: what beds.js and stings.js ask before a fetch.
   const live = () => !!(engine && typeof engine.live === 'function' && engine.live());
-  const has = (key) => Number(clips[key]) > 0;
-  const secondsOf = (key) => Number(clips[key]) || 0;
+  // A VOICE IN THE VISITOR'S LANGUAGE that a script on the page gave (window.srMap.voice.provide, docs/PLUGINS.md):
+  // `opts.alt()` is null, a promise of one, or {rows: {key: {file, twin, vtt, seconds}}, credit}. A clip it has wins over
+  // ours for that stop; a stop it does not have is read by our own voice, as before.
+  const altNow = () => { const a = typeof opts.alt === 'function' ? opts.alt() : null; return a && typeof a.then !== 'function' ? a : null; };
+  const altRow = (key) => { const a = altNow(); return a && a.rows && a.rows[key] ? a.rows[key] : null; };
+  const has = (key) => !!altRow(key) || Number(clips[key]) > 0;
+  const secondsOf = (key) => { const r = altRow(key); return r ? Number(r.seconds) || 0 : Number(clips[key]) || 0; };
   /** Whether this stop will be read aloud: sound on, voice on, and a clip to read. */
   const willSpeak = (key) => !!(engine && typeof engine.isOn === 'function' && engine.isOn() && on && has(key));
 
@@ -158,7 +163,10 @@ export function createNarration(engine, beds, NARRATION, opts = {}) {
 
   /** The clip's row, with the version its words were rendered at. */
   const versions = data.versions || {};
-  const rowOf = (key) => clipRow(base, key, versions[key]);
+  const rowOf = (key) => {
+    const r = altRow(key);
+    return r ? { id: `voice-alt:${key}`, file: r.file, twin: r.twin || r.file, vtt: r.vtt || '' } : clipRow(base, key, versions[key]);
+  };
 
   function remember(key) {
     const i = kept.indexOf(key);
@@ -166,23 +174,24 @@ export function createNarration(engine, beds, NARRATION, opts = {}) {
     kept.push(key);
     while (kept.length > KEEP) {
       const old = kept.shift();
-      if (typeof loader.forget === 'function') loader.forget(clipRow(base, old).id);
+      if (typeof loader.forget === 'function') loader.forget(rowOf(old).id);
     }
   }
 
   function load(key) {
     if (!has(key) || !live()) return Promise.resolve(null);
     remember(key);
-    if (!cueCache.has(key)) {
-      cueCache.set(key, []);
+    const row = rowOf(key);
+    if (!cueCache.has(row.id) && row.vtt) {
+      cueCache.set(row.id, []);
       // The captions are a nicety: a failure here is a clip with no sentence lit, never a refusal.
       Promise.resolve()
-        .then(() => doFetch(rowOf(key).vtt))
+        .then(() => doFetch(row.vtt))
         .then((res) => (res && res.ok !== false ? res.text() : ''))
-        .then((text) => cueCache.set(key, parseVtt(text)))
+        .then((text) => cueCache.set(row.id, parseVtt(text)))
         .catch(() => {});
     }
-    return loader.load(rowOf(key));
+    return loader.load(row);
   }
 
   /** Fetch a clip ahead of its stop. Not on a lean connection, and never before sound is live. */
@@ -242,6 +251,12 @@ export function createNarration(engine, beds, NARRATION, opts = {}) {
     waiting = false;
     if (!willSpeak(key) || !live()) return false;
     const mine = ++token;
+    // A voice in the visitor's language still on its way (opts.alt): waited for, four seconds at most.
+    const pending = typeof opts.alt === 'function' ? opts.alt() : null;
+    if (pending && typeof pending.then === 'function') {
+      await Promise.race([pending.catch(() => null), new Promise((r) => setTimeout(r, 4000))]);
+      if (mine !== token || !willSpeak(key) || !live()) return false;
+    }
     // Asked for at once, from the manifest's length, so the stop is already held while the clip
     // loads; asked again below with what is really left once it starts.
     hold(holdFor(secondsOf(key)));
@@ -250,7 +265,7 @@ export function createNarration(engine, beds, NARRATION, opts = {}) {
     if (mine !== token) return false;
     loading = false;
     if (!buffer || !willSpeak(key) || !live()) return false;
-    now = { key, buffer, source: null, gain: null, startedAt: 0, offset: 0, playing: false };
+    now = { key, row: rowOf(key).id, buffer, source: null, gain: null, startedAt: 0, offset: 0, playing: false };
     // Paused while it loaded: kept at its first word, for resume().
     if (waiting) return true;
     startSource(0);
@@ -352,7 +367,7 @@ export function createNarration(engine, beds, NARRATION, opts = {}) {
     /** The sentence being said now, for the card to light; '' when nothing is. */
     cue() {
       if (!now) return '';
-      return cueAt(cueCache.get(now.key), position());
+      return cueAt(cueCache.get(now.row), position());
     },
     /**
      * How much longer than the cards' own dwells a trip runs when it is read aloud, in ms, over

@@ -780,6 +780,17 @@ def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: se
             fail(where, "`clock: freeze` and a stop with `rate:`: the trip says the clock stands "
                         "still and a stop says how fast it runs. Drop one")
 
+        # EARLY ACCESS (2026-11-26, docs/PLUGINS.md "Trips"): `early_until` is a plain day, YYYY-MM-DD, that is a real date.
+        early = tour.get("early_until")
+        if early is not None:
+            early_s = early.isoformat() if hasattr(early, "isoformat") else str(early)
+            try:
+                ok = bool(re.fullmatch(r"\d{4}-\d{2}-\d{2}", early_s)) and datetime.date.fromisoformat(early_s) is not None
+            except ValueError:
+                ok = False
+            if not ok:
+                fail(where, f"`early_until: {early!r}` is a day written YYYY-MM-DD (until that day, UTC, Play asks the trip gate)")
+
         # A TRIP FROM THE VISITOR'S OWN PLACE SAYS SO (spec 0038), so the picker can grey it with
         # "Needs a place" when there is none; and one that says so has such a stop, or it greys
         # itself for nothing. Its station stops need the stations layer loaded before it is planned.

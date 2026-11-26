@@ -13,7 +13,9 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const LAB = join(ROOT, 'site', 'lab');
-const MAX_BYTES = 26000, MAX_LINES = 240;
+// 27 000 since 2026-11-26: the Lab's hook (window.srLab, docs/PLUGINS.md) and the tools' place added 1 kB to the shared part of every file;
+// the largest simulator was 25 938 B before it, and the longest 240 lines (MAX_LINES 250 for the same seven lines).
+const MAX_BYTES = 27000, MAX_LINES = 250;
 const problems = [];
 const bad = (where, msg) => problems.push(`${where}: ${msg}`);
 const decode = (s) => s.replace(/&quot;/g, '"').replace(/&#x27;|&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');

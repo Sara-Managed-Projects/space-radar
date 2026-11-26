@@ -58,8 +58,9 @@ import { propagate } from '../propagate/index.js';
 import { icon } from './icons.js';
 import { lookRandom } from '../scene/lookrandom.js';
 import {
-  CATEGORIES, PACES, URL_KEY, buildPlaces, createWalk, flightMs, planFlight, dwellFor, readOptions, writeOptions,
+  CATEGORIES, PACES, URL_KEY, buildPlaces, createWalk, flightMs, planFlight, dwellFor, readOptions, writeOptions, seededRandom,
 } from './driftplan.js';
+import { toolSlot } from './toolslot.js';
 import { write as writeUrl, clear as clearUrl } from './urlstate.js';
 
 export const ROOT_CLASS = 'sr-drift';
@@ -252,7 +253,9 @@ export function createBar(doc, handlers = {}) {
     paces.set(p, b);
     pace.appendChild(b);
   }
-  panel.append(through, show, pace);
+  // The tools' place (ui/toolslot.js, docs/PLUGINS.md): empty and hidden unless a script on the page puts a button there.
+  const tools = toolSlot('drift', {}, doc);
+  panel.append(through, show, pace, ...(tools ? [tools] : []));
   bar.append(panel, row);
   host.appendChild(bar);
 
@@ -290,7 +293,8 @@ export function createDrift(ctx, env = {}) {
   const win = env.window || (doc && doc.defaultView) || (typeof window !== 'undefined' ? window : null);
   const nav = env.navigator || (win && win.navigator) || {};
   const now = env.now || (() => Date.now());
-  const rng = env.rng || lookRandom(4); // a fixed seed under ?look=1 (internal #779); Math.random for a visitor
+  const dice = env.rng || lookRandom(4); // a fixed seed under ?look=1 (internal #779); Math.random for a visitor
+  let rng = dice; // a seeded walk (`seed<N>`, ui/driftplan.js) while one is asked for
   const setTick = env.setInterval || ((fn, ms) => setInterval(fn, ms));
   const clearTick = env.clearInterval || ((id) => clearInterval(id));
   const storage = env.storage !== undefined ? env.storage : (() => { try { return win && win.localStorage; } catch { return null; } })();
@@ -752,7 +756,10 @@ export function createDrift(ctx, env = {}) {
   // ------------------------------------------------------------------------------- the mode
 
   function start(wanted, from) {
+    const seedWas = options.seed;
     if (wanted) options = { ...options, ...wanted, through: (wanted.through || options.through).slice() };
+    if (!Number.isInteger(options.seed)) options.seed = null;
+    if (!active || options.seed !== seedWas) rng = options.seed ? seededRandom(options.seed) : dice;
     if (active) { rebuild(true); setScreen(); paintBar(); writeLink(); return true; }
     // From the ground nothing flies (main.js select); a reel has the screen already.
     if (ctx.skyView && ctx.skyView.active) { say(COPY.drift.notFromGround); return false; }

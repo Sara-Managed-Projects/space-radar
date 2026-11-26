@@ -1245,6 +1245,7 @@ export const COPY = {
     "observerDevice": "Ton lieu : près de l’endroit où ton appareil dit que tu es.",
     "observerGuess": "Ton lieu est une estimation d’après le fuseau horaire de ton horloge : {place}. Règle-le sous « Où tu es » pour plus de précision.",
     "needsPlace": "Il faut un lieu. Indique d’abord où tu es.",
+    "early": "Accès anticipé pour Pro jusqu’au {date}, puis gratuit pour tous.",
     "stationFromYou": "En ce moment, elle est à {km} km de toi.",
     "drawnAtClassSize": "Le modèle est dessiné sur {px} pixels de large quelle que soit la distance ; la vraie station ne serait qu’un point brillant.",
     "passNight": "Pendant ce passage, elle est éclairée par le Soleil sur un ciel sombre : tu pourrais la voir, si la météo le permet.",

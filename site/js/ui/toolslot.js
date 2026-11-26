@@ -4,7 +4,7 @@
 //
 // Contract: toolSlot(where, { contents?, btn? }, doc?) -> HTMLElement `div.sr-tools[data-sr-tools=<where>][hidden]`
 //             where: 'earth' (What to show, Earth data) | 'ground' (a landing site's bar) | 'sky' (the sky's controls)
-//                    | 'make' (the share sheet's Make row)
+//                    | 'make' (the share sheet's Make row) | 'drift' (the drift's options) | 'device' (What to show, this device)
 //             contents: the slot lays its buttons out in its parent's own row (display: contents)
 //             btn: the classes of a button put there, the parent's own (`ui-btn` in a row of `ui-btn`s)
 //           and, once the element is in the page, `document` event `sr:slot {slot: 'tools', where, el}`.
@@ -12,7 +12,7 @@
 // Imports nothing and draws nothing: with no script on the page (a fork, localhost without one, an embed) the slot stays
 // an empty hidden div, and the panel is exactly the panel it was.
 
-export const TOOL_PLACES = ['earth', 'ground', 'sky', 'make'];
+export const TOOL_PLACES = ['earth', 'ground', 'sky', 'make', 'drift', 'device'];
 
 export function toolSlot(where, { contents = false, btn = 'ui-btn ui-btn--sm' } = {}, doc = typeof document !== 'undefined' ? document : null) {
   if (!doc || !TOOL_PLACES.includes(where)) return null;
