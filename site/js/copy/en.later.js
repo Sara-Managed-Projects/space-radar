@@ -497,7 +497,7 @@ Object.assign(COPY, {
     remindTitle: 'Downloads a calendar file with a reminder: {title}',
     forget: 'Forget me',
     forgetConfirm: 'Yes, forget',
-    forgetTitle: 'Clears the passport, the hearts and the sound choice here',
+    forgetTitle: 'Clears your passport, hearts, scores, path ticks and sound',
     forgotten: 'Forgotten. This browser holds nothing now.',
     // The end card's stamp: "Trip 7 of 25 · 7 October 2026". {date} is the visitor's own day.
     stamp: 'Trip {n} of {total} · {date}',
@@ -523,12 +523,13 @@ Object.assign(COPY, {
     lines: [
       'Your passport: places opened, trips finished, things ticked as seen.',
       'Your hearts: the things you keep as favourites.',
+      'Your score on each trip’s three questions, and the learning-path steps you marked as done.',
       'Your sound and voice choice, and how you left the panels.',
       'A copy of the data it last read, so the map opens without a connection.',
       'While a screen plays on its own, a short log of its trips, for this tab only.',
     ],
     place: 'Your place is rounded to a tenth of a degree and held only while this page is open.',
-    none: 'None of this is sent anywhere. The map needs no account, and analytics runs only if you say yes. Forget me, in the Passport, clears the passport and the sound choice.',
+    none: 'None of this is sent anywhere. The map needs no account, and analytics runs only if you say yes. Forget me, in the Passport, clears the passport, the hearts, the scores, the path ticks and the sound choice.',
   },
 
   // Which commit this site was built from (public #291; ui/status.js `builtFrom`): one line at the

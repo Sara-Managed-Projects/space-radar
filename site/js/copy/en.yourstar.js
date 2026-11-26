@@ -29,6 +29,12 @@ Object.assign(COPY, {
     leftNear: 'The light you see from it tonight left it in {when}: no named star is exactly as far as you are old, and this is the nearest.',
     leftYear: 'The light you see from it tonight left it in {when}, about when you were born in {year}.',
     band: 'Its distance is known to about {err} light-years either way, so that light set off between {from} and {to}.',
+    // A month after a preposition, for the languages that decline it there (ui/yourstar.js monthYearText): twelve
+    // space-separated forms for {when} (monthsIn) and for {from}/{to} (monthsFrom), joined to the year by monthYear.
+    // English leaves both empty, and the browser writes "August 1990".
+    monthsIn: '',
+    monthsFrom: '',
+    monthYear: '{month} {year}',
     onItsWay: 'No star is that close yet. The light that left {name} on your birthday is still crossing the {ly} light-years: it arrives in {when}.',
     errFrom: {
       gaia: 'The error is Gaia’s: the star’s parallax and its own uncertainty.',

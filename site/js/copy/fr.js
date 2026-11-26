@@ -2283,7 +2283,7 @@ export const COPY = {
     "remindTitle": "Télécharge un fichier de calendrier avec un rappel : {title}",
     "forget": "M’oublier",
     "forgetConfirm": "Oui, oublier",
-    "forgetTitle": "Efface ici le passeport, les cœurs et le choix du son",
+    "forgetTitle": "Efface ici le passeport, les cœurs, les scores, les parcours et le son",
     "forgotten": "Oublié. Ce navigateur ne garde plus rien.",
     "stamp": "Voyage {n} sur {total} · {date}",
     "stampPlaces": "{places} ouverts jusqu’ici",
@@ -2294,12 +2294,13 @@ export const COPY = {
     "lines": [
       "Ton passeport : lieux ouverts, voyages terminés, choses cochées comme vues.",
       "Tes cœurs : ce que tu gardes en favori.",
+      "Ton score aux trois questions de chaque voyage, et les étapes des parcours d’apprentissage que tu as marquées comme faites.",
       "Ton choix de son et de voix, et la façon dont tu as laissé les panneaux.",
       "Une copie des dernières données lues, pour que la carte s’ouvre sans connexion.",
       "Quand un écran tourne tout seul, un court journal de ses voyages, pour cet onglet seulement."
     ],
     "place": "Ton lieu est arrondi au dixième de degré et gardé seulement tant que cette page est ouverte.",
-    "none": "Rien de tout cela n’est envoyé nulle part. La carte ne demande aucun compte, et les statistiques ne fonctionnent que si tu dis oui. « M’oublier », dans le Passeport, efface le passeport et le choix du son."
+    "none": "Rien de tout cela n’est envoyé nulle part. La carte ne demande aucun compte, et les statistiques ne fonctionnent que si tu dis oui. « M’oublier », dans le Passeport, efface le passeport, les cœurs, les scores, les parcours cochés et le choix du son."
   },
   "buildInfo": {
     "line": "Construit à partir de {sha}, {date}",
@@ -7435,6 +7436,9 @@ COPY.yourStar = {
   "left": "La lumière que tu vois d’elle ce soir en est partie en {when}, à ta naissance.",
   "leftYear": "La lumière que tu vois d’elle ce soir en est partie en {when}, vers ta naissance en {year}.",
   "band": "Sa distance est connue à environ {err} années-lumière près dans chaque sens : cette lumière est partie entre {from} et {to}.",
+  "monthsIn": "",
+  "monthsFrom": "",
+  "monthYear": "{month} {year}",
   "onItsWay": "Aucune étoile n’est encore aussi proche. La lumière partie de {name} le jour de ta naissance traverse encore les {ly} années-lumière : elle arrive en {when}.",
   "errFrom": {
     "gaia": "L’erreur est celle de Gaia : la parallaxe de l’étoile et sa propre incertitude.",

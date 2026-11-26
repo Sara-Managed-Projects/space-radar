@@ -2123,7 +2123,7 @@ export const COPY = {
     remindTitle: "Descarga un archivo de calendario con un recordatorio: {title}",
     forget: "Olvidarme",
     forgetConfirm: "Sí, olvidar",
-    forgetTitle: "Borra de aquí el pasaporte, los corazones y el sonido",
+    forgetTitle: "Borra de aquí el pasaporte, los corazones, los resultados, las rutas y el sonido",
     forgotten: "Olvidado. Este navegador ya no guarda nada.",
     stamp: "Viaje {n} de {total} · {date}",
     stampPlaces: "Lugares abiertos hasta ahora: {places}",
@@ -2134,12 +2134,13 @@ export const COPY = {
     lines: [
       "Tu pasaporte: lugares abiertos, viajes terminados, cosas marcadas como vistas.",
       "Tus corazones: lo que guardas como favorito.",
+      "Tu resultado en las tres preguntas de cada viaje y los pasos de las rutas de aprendizaje que marcaste como hechos.",
       "Tu elección de sonido y de voz, y cómo dejaste los paneles.",
       "Una copia de los últimos datos que leyó, para que el mapa se abra sin conexión.",
       "Mientras una pantalla se reproduce sola, un breve registro de sus viajes, solo para esta pestaña."
     ],
     place: "Tu lugar se redondea a una décima de grado y se conserva solo mientras esta página está abierta.",
-    none: "Nada de esto se envía a ningún sitio. El mapa no necesita cuenta, y la analítica solo funciona si dices que sí. «Olvidarme», en el Pasaporte, borra el pasaporte y la elección de sonido."
+    none: "Nada de esto se envía a ningún sitio. El mapa no necesita cuenta, y la analítica solo funciona si dices que sí. «Olvidarme», en el Pasaporte, borra el pasaporte, los corazones, los resultados, las rutas marcadas y la elección de sonido."
   },
   buildInfo: {
     line: "Generado a partir de {sha}, {date}",
@@ -7208,6 +7209,9 @@ COPY.yourStar = {
   "left": "La luz que ves de ella esta noche salió en {when}, cuando naciste.",
   "leftYear": "La luz que ves de ella esta noche salió en {when}, más o menos cuando naciste en {year}.",
   "band": "Su distancia se conoce con unos {err} años luz de margen hacia cada lado, así que esa luz salió entre {from} y {to}.",
+  "monthsIn": "",
+  "monthsFrom": "",
+  "monthYear": "{month} {year}",
   "onItsWay": "Todavía no hay ninguna estrella tan cerca. La luz que salió de {name} el día que naciste aún cruza los {ly} años luz: llega en {when}.",
   "errFrom": {
     "gaia": "El error es el de Gaia: el paralaje de la estrella y su propia incertidumbre.",
