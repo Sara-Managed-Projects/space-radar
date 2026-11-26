@@ -34,6 +34,10 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      # A merge made with GITHUB_TOKEN starts no workflow, so ci never ran on the merged main and the deployers, which
+      # wait for a green ci on main, never saw it (FOLLOWUPS 2026-11-26). After each merge this asks for ci on main
+      # with workflow_dispatch, the one event GITHUB_TOKEN may start; the deployers accept a dispatched run.
+      actions: write
     steps:
       - name: Squash-merge into main
         env:
@@ -52,6 +56,13 @@ jobs:
           # finished and said "heroes is not defined". main was broken until #143.
           # Anything not yet SUCCESS / SKIPPED / NEUTRAL is a reason to wait, and "could not ask"
           # counts as not green.
+          # ci on main, by hand, once a merge is in (see `actions: write` above). A run that could not be asked for is a
+          # warning, not a failed merge: the next real push to main runs ci anyway.
+          dispatched() {
+            echo "merged #$1"
+            gh workflow run ci --repo "$REPO" --ref main && echo "ci dispatched on main" \
+              || echo "::warning::could not dispatch ci on main after merging #$1"
+          }
           green() {
             BAD=$(gh pr checks "$1" --repo "$REPO" --json state \
               --jq '[.[] | select(.state != "SUCCESS" and .state != "SKIPPED" and .state != "NEUTRAL")] | length' 2>/dev/null) || BAD=1
@@ -65,7 +76,7 @@ jobs:
                 --jq '[.[] | select(.isDraft==false and .mergeStateStatus=="CLEAN")] | sort_by(.number) | .[].number'); do
               if held "$PR"; then echo "PR #$PR held by label"; continue; fi
               if ! green "$PR"; then echo "PR #$PR has a check that is not green yet"; continue; fi
-              if gh pr merge "$PR" --repo "$REPO" --squash --delete-branch; then echo "merged #$PR"; break; fi
+              if gh pr merge "$PR" --repo "$REPO" --squash --delete-branch; then dispatched "$PR"; break; fi
               echo "PR #$PR did not merge; leaving it for the next sweep"
             done
             exit 0
@@ -82,7 +93,7 @@ jobs:
           # must rebase, and the rebased head comes back through ci and this file; stop then.
           for attempt in 1 2 3 4 5 6 7 8 9 10; do
             if ! green "$PR"; then echo "attempt $attempt: a check on PR #$PR is not green yet"; sleep 30; continue; fi
-            if gh pr merge "$PR" --repo "$REPO" --squash --delete-branch; then echo "merged #$PR"; exit 0; fi
+            if gh pr merge "$PR" --repo "$REPO" --squash --delete-branch; then dispatched "$PR"; exit 0; fi
             STATE=$(gh pr view "$PR" --repo "$REPO" --json state,mergeStateStatus --jq '.state + " " + .mergeStateStatus')
             echo "attempt $attempt: refused; PR #$PR is $STATE"
             case "$STATE" in
