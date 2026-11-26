@@ -26,7 +26,7 @@ const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
 const Y = await import(join(JS, 'ui/yourstar.js'));
-const { COPY } = await import(join(JS, 'copy/en.js'));
+const { COPY, t } = await import(join(JS, 'copy/en.js'));
 await import(join(JS, 'copy/en.yourstar.js'));
 const Astronomy = await import(join(ROOT, 'site/vendor/astronomy.js'));
 const { recordsFromNames } = await import(join(JS, 'scene/stars3d.js'));
@@ -198,7 +198,10 @@ const { KEYS } = await import(join(JS, 'ui/urlstate.js'));
 check(KEYS.includes('born') && KEYS.indexOf('born') < KEYS.indexOf('cam'), '`born` is a key of the link, before `cam`');
 const W = COPY.yourStar;
 const flat = (o, p = '') => Object.entries(o).flatMap(([k, v]) => (typeof v === 'string' ? [[p + k, v]] : flat(v, `${p}${k}.`)));
-for (const [k, v] of flat(W)) check(v.length > 0 && !/!/.test(v), `yourStar.${k} is a sentence with no exclamation mark`);
+// monthsIn / monthsFrom are grammar, not words to show: twelve declined months, empty where the browser's own will do.
+const FORMS = new Set(['monthsIn', 'monthsFrom']);
+const words = (o) => flat(o).filter(([k]) => !FORMS.has(k));
+for (const [k, v] of words(W)) check(v.length > 0 && !/!/.test(v), `yourStar.${k} is a sentence with no exclamation mark`);
 for (const k of ['go', 'share', 'download', 'copyLink', 'fly', 'sky', 'dateLabel', 'formatLabel']) check(W[k].length <= 60, `yourStar.${k} is a short line of chrome`);
 check(/light-year/.test(W.lede) && /when you were born/.test(W.lede), 'the lede says the rule: a light-year of light is a year');
 check(/modelled/.test(W.errFrom.modelled) && /Gaia/.test(W.errFrom.gaia), 'the error says where it comes from');
@@ -209,11 +212,31 @@ for (const lang of ['es', 'fr', 'de', 'pt', 'ru', 'uk', 'zh', 'hi', 'he', 'ar'])
   const sec = m.COPY.yourStar;
   const mine = sec ? flat(sec) : [];
   const have = new Map(mine);
-  const all = flat(W).every(([k]) => typeof have.get(k) === 'string' && have.get(k));
-  const own = flat(W).filter(([k, v]) => have.get(k) && have.get(k) !== v).length;
+  const all = words(W).every(([k]) => typeof have.get(k) === 'string' && have.get(k)) && [...FORMS].every((k) => typeof have.get(k) === 'string');
+  const own = words(W).filter(([k, v]) => have.get(k) && have.get(k) !== v).length;
+  // A month after a preposition (FOLLOWUPS 2026-11-26: Russian read "в август 1990 г." and ended "г.."): either the
+  // browser's words, or twelve forms of the language's own, and never a date that brings its own full stop.
+  for (const k of FORMS) check(!sec[k] || sec[k].split(' ').length === 12, `copy/${lang}.js yourStar.${k} is empty or twelve months`);
+  const when = Y.monthYearText(Date.UTC(1990, 7, 15), sec, 'monthsIn', lang);
+  const from = Y.monthYearText(Date.UTC(1992, 4, 15), sec, 'monthsFrom', lang);
+  for (const k of ['left', 'leftNear', 'onItsWay', 'band']) {
+    const line = t(sec[k], { when, from, to: when, year: '1990', name: 'Vega', ly: '25.0', err: '0.1' });
+    check(!/\.\.(\s|$)/.test(line) && !/[гр]\.[,:]/.test(line), `copy/${lang}.js yourStar.${k} has no doubled full stop: ${line}`);
+  }
   check(all && own >= 40, `copy/${lang}.js has every string of yourStar, in its own words (${own} differ)`);
   const rows = m.COPY.searchRows || {};
   check(rows.yourStar && rows.yourStarSub && rows.yourStarWords && rows.yourStarWords !== COPY.searchRows.yourStarWords, `copy/${lang}.js has the search row and its own words`);
+}
+{
+  const ru = (await import(join(JS, 'copy/ru.js'))).COPY.yourStar;
+  const uk = (await import(join(JS, 'copy/uk.js'))).COPY.yourStar;
+  const aug = Date.UTC(1990, 7, 15), may = Date.UTC(1992, 4, 15);
+  check(t(ru.left, { when: Y.monthYearText(aug, ru, 'monthsIn', 'ru') }).includes('в августе 1990 года, когда'), `Russian: "в августе 1990 года" (${t(ru.left, { when: Y.monthYearText(aug, ru, 'monthsIn', 'ru') })})`);
+  check(t(ru.onItsWay, { name: 'Проксимы', ly: '4.2', when: Y.monthYearText(may, ru, 'monthsIn', 'ru') }).endsWith('в мае 1992 года.'), 'Russian: the light arrives "в мае 1992 года." with one full stop');
+  check(t(ru.band, { err: '1', from: Y.monthYearText(aug, ru, 'monthsFrom', 'ru'), to: Y.monthYearText(may, ru, 'monthsFrom', 'ru') }).endsWith('от августа 1990 года до мая 1992 года.'), 'Russian: the band runs "от августа 1990 года до мая 1992 года."');
+  check(t(uk.left, { when: Y.monthYearText(aug, uk, 'monthsIn', 'uk') }).includes('в серпні 1990 року, коли'), 'Ukrainian: "в серпні 1990 року"');
+  check(t(uk.band, { err: '1', from: Y.monthYearText(aug, uk, 'monthsFrom', 'uk'), to: Y.monthYearText(may, uk, 'monthsFrom', 'uk') }).endsWith('від серпня 1990 року до травня 1992 року.'), 'Ukrainian: the band runs "від серпня 1990 року до травня 1992 року."');
+  check(Y.monthYearText(aug, COPY.yourStar, 'monthsIn', 'en-GB') === 'August 1990' && Y.monthYearText(aug, { monthsIn: 'a b' }, 'monthsIn', 'de') === 'August 1990', 'English, and a list that is not twelve months, take the browser\'s words');
 }
 const main = readFileSync(join(JS, 'main.js'), 'utf8');
 check(/import\('\.\/ui\/yourstar\.js'\)/.test(main) && !/^import[^\n]*yourstar/m.test(main), 'main.js fetches ui/yourstar.js when it is asked for, never at boot');

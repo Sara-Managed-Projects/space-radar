@@ -481,7 +481,20 @@ function button(className, text, title, iconName) {
 }
 // The site writes dates day first in English too ("13 November 2026"): en is en-GB here.
 const lang = () => { const l = (typeof document !== 'undefined' && document.documentElement.lang) || 'en'; return l === 'en' ? 'en-GB' : l; };
-const monthYear = (ms) => { try { return new Intl.DateTimeFormat(lang(), { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(ms)); } catch { return new Date(ms).toISOString().slice(0, 7); } };
+/**
+ * A month and year as a sentence takes it after its preposition ("in August 1990", "between ... and ..."). A language
+ * whose month changes its ending there gives the twelve forms in its copy, space-separated: `monthsIn` for {when} and
+ * `monthsFrom` for {from} and {to}, with `monthYear` putting month and year together (Russian "в августе 1990 года", not
+ * the browser's "в август 1990 г.", whose own full stop doubled at a sentence's end). English and the rest leave them
+ * empty and take the browser's words. Pure given `C`.
+ */
+export function monthYearText(ms, C, form, locale) {
+  const forms = String((C && C[form]) || '').split(' ').filter(Boolean);
+  const d = new Date(ms);
+  if (forms.length === 12 && C.monthYear) return t(C.monthYear, { month: forms[d.getUTCMonth()], year: String(d.getUTCFullYear()) });
+  try { return new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(d); } catch { return d.toISOString().slice(0, 7); }
+}
+const monthYear = (ms, form = 'monthsIn') => monthYearText(ms, COPY.yourStar, form, lang());
 const dayText = (b) => { try { return new Intl.DateTimeFormat(lang(), { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(bornMs(b))); } catch { return bornValue(b); } };
 const lyText = (v) => (v >= 100 ? fmt.int(Math.round(v)) : (Math.round(v * 10) / 10).toFixed(1));
 
@@ -606,8 +619,8 @@ export function createYourStar(ctx) {
       const held = band && band.low <= res.age && band.high >= res.age;
       lines.push(t(!st.born.m ? C.leftYear : held ? C.left : C.leftNear, { when: monthYear(departureMs(ly, res.nowMs)), year: String(st.born.y) }));
       if (err !== null && Number.isFinite(err)) {
-        const from = monthYear(departureMs(Number.isFinite(band.high) ? band.high : ly * 2, res.nowMs));
-        const to = monthYear(departureMs(band.low, res.nowMs));
+        const from = monthYear(departureMs(Number.isFinite(band.high) ? band.high : ly * 2, res.nowMs), 'monthsFrom');
+        const to = monthYear(departureMs(band.low, res.nowMs), 'monthsFrom');
         lines.push(t(C.band, { err: lyText(err), from, to }));
       }
     }

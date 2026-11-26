@@ -72,11 +72,16 @@ check(P.KEY === 'sr:passport', 'one key, sr:passport');
   check(P.forgetPassport(throwing) === false, 'so is a forget');
   // Forget me also clears the sound choices (internal #437), and nothing else.
   {
-    const kept = new Map([[P.KEY, '{}'], ['sr.audio', 'on'], ['sr.audio.volume', '0.4'], ['sr.voice', 'off'], ['sr:side', 'open'], ['sr:favs', '["map:moon"]'], ['sr:badges', '{"first-light":1}']]);
+    const kept = new Map([[P.KEY, '{}'], ['sr.audio', 'on'], ['sr.audio.volume', '0.4'], ['sr.voice', 'off'], ['sr:side', 'open'], ['sr:show', '{}'], ['sr:lang', 'de'], ['sr:favs', '["map:moon"]'], ['sr:badges', '{"first-light":1}'], ['sr:names', '{"moon":"Moon"}'], ['sr:paths', '{"orbits":["throw-it-faster"]}'], ['sr:quiz', '{"moon-landings":{"right":2,"of":3,"at":1}}']]);
     const st = { getItem: (k) => (kept.has(k) ? kept.get(k) : null), setItem: (k, v) => kept.set(k, v), removeItem: (k) => kept.delete(k) };
-    check(P.forgetPassport(st) === true && [...kept.keys()].join() === 'sr:side', `Forget me clears the passport, the three sound keys, the hearts and the badges, and leaves the layout (${[...kept.keys()]})`);
+    check(P.forgetPassport(st) === true && [...kept.keys()].join() === 'sr:side,sr:show,sr:lang', `Forget me clears the passport, the three sound keys, the hearts, the badges, the names, the learning-path ticks and the quiz scores, and leaves the layout and settings (${[...kept.keys()]})`);
     const favs = readFileSync(join(JS, 'ui/favs.js'), 'utf8');
-    check(P.OWN_KEYS.join() === 'sr:favs,sr:badges' && favs.includes("FAVS_KEY = 'sr:favs'"), 'the hearts key Forget me clears is ui/favs.js\'s own, and sr:badges is the platform contract\'s');
+    const quiz = readFileSync(join(JS, 'ui/tripquiz.js'), 'utf8');
+    const paths = readFileSync(join(ROOT, 'scripts/seo_lab_paths.py'), 'utf8');
+    check(P.OWN_KEYS.join() === 'sr:favs,sr:badges,sr:names,sr:paths,sr:quiz' && favs.includes("FAVS_KEY = 'sr:favs'") && quiz.includes("QKEY = 'sr:quiz'") && paths.includes('KEY = "sr:paths"') && paths.includes("var K='sr:paths'"),
+      'the keys Forget me clears are ui/favs.js\'s, ui/tripquiz.js\'s and the learning paths\' own, and sr:badges and sr:names are the platform contract\'s');
+    // The forget button is live when only a quiz score or a path tick is kept: that is something to forget too.
+    check(/OWN_KEYS\.some\(\(k\) => !!storage\.getItem\(k\)\)/.test(readFileSync(join(JS, 'ui/passport.js'), 'utf8')), 'the forget button counts every key it clears beside the passport');
     const engine = readFileSync(join(JS, 'audio/engine.js'), 'utf8');
     const narration = readFileSync(join(JS, 'audio/narration.js'), 'utf8');
     check(engine.includes("STORE_KEY = 'sr.audio'") && engine.includes("VOLUME_KEY = 'sr.audio.volume'") && narration.includes("VOICE_KEY = 'sr.voice'") && P.SOUND_KEYS.join() === 'sr.audio,sr.audio.volume,sr.voice', 'the sound keys Forget me clears are the audio engine\'s own');

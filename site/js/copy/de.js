@@ -2280,7 +2280,7 @@ export const COPY = {
     "remindTitle": "Lädt eine Kalenderdatei mit einer Erinnerung herunter: {title}",
     "forget": "Vergiss mich",
     "forgetConfirm": "Ja, vergessen",
-    "forgetTitle": "Löscht hier den Reisepass, die Herzen und die Ton-Auswahl",
+    "forgetTitle": "Löscht hier Reisepass, Herzen, Punkte, Lernpfad-Haken und Ton-Auswahl",
     "forgotten": "Vergessen. Dieser Browser speichert jetzt nichts mehr.",
     "stamp": "Reise {n} von {total} · {date}",
     "stampPlaces": "bisher {places} geöffnet",
@@ -2291,12 +2291,13 @@ export const COPY = {
     "lines": [
       "Dein Reisepass: geöffnete Orte, beendete Reisen, als gesehen abgehakte Dinge.",
       "Deine Herzen: was du als Favoriten behältst.",
+      "Deine Punkte bei den drei Fragen jeder Reise und die Schritte der Lernpfade, die du als erledigt markiert hast.",
       "Deine Auswahl für Ton und Stimme und wie du die Bereiche hinterlassen hast.",
       "Eine Kopie der Daten, die zuletzt gelesen wurden, damit sich die Karte ohne Verbindung öffnet.",
       "Während ein Bildschirm von allein läuft, ein kurzes Protokoll seiner Reisen, nur für diesen Tab."
     ],
     "place": "Dein Ort wird auf ein Zehntel Grad gerundet und nur so lange behalten, wie diese Seite offen ist.",
-    "none": "Nichts davon wird irgendwohin gesendet. Die Karte braucht kein Konto, und Analysen laufen nur, wenn du zustimmst. „Vergiss mich“ im Reisepass löscht den Reisepass und die Ton-Auswahl."
+    "none": "Nichts davon wird irgendwohin gesendet. Die Karte braucht kein Konto, und Analysen laufen nur, wenn du zustimmst. „Vergiss mich“ im Reisepass löscht den Reisepass, die Herzen, die Punkte, die Lernpfad-Haken und die Ton-Auswahl."
   },
   "buildInfo": {
     "line": "Gebaut aus {sha}, {date}",
@@ -7432,6 +7433,9 @@ COPY.yourStar = {
   "left": "Das Licht, das du heute Nacht von ihm siehst, hat ihn im {when} verlassen, als du geboren wurdest.",
   "leftYear": "Das Licht, das du heute Nacht von ihm siehst, hat ihn im {when} verlassen, etwa als du {year} geboren wurdest.",
   "band": "Seine Entfernung ist auf etwa {err} Lichtjahre in jede Richtung bekannt, also ist das Licht zwischen {from} und {to} aufgebrochen.",
+  "monthsIn": "",
+  "monthsFrom": "",
+  "monthYear": "{month} {year}",
   "onItsWay": "So nah ist noch kein Stern. Das Licht, das {name} an deinem Geburtstag verlassen hat, ist noch auf den {ly} Lichtjahren unterwegs: Es kommt im {when} an.",
   "errFrom": {
     "gaia": "Der Fehler ist der von Gaia: die Parallaxe des Sterns und ihre eigene Unsicherheit.",

@@ -158,14 +158,18 @@ export function writePassport(storage, p) {
  */
 export const SOUND_KEYS = ['sr.audio', 'sr.audio.volume', 'sr.voice'];
 /**
- * The hearts (ui/favs.js FAVS_KEY) and the badges the platform keeps beside the passport (its contract's `sr:badges`):
- * the visitor's own, so Forget me takes them too. Written out here for the same reason as the sound keys.
+ * The rest of the visitor's own record, so Forget me takes it too: the hearts (ui/favs.js FAVS_KEY), the badges and the
+ * places' names the platform keeps beside the passport (its contract's `sr:badges`, `sr:names`), the Lab's learning-path
+ * ticks (scripts/seo_lab_paths.py KEY) and the trips' quiz scores (ui/tripquiz.js QKEY). Written out here for the same
+ * reason as the sound keys; tests/test_passport.mjs holds them to those constants, and the internal cookie policy's
+ * checker (legal/tools/check-cookie-keys.py) holds this list to every row whose life is "until you press Forget me".
  */
-export const OWN_KEYS = ['sr:favs', 'sr:badges'];
+export const OWN_KEYS = ['sr:favs', 'sr:badges', 'sr:names', 'sr:paths', 'sr:quiz'];
 
 /**
- * Forget me (spec 0041 task 4, internal #437): the passport, the sound choices, the hearts and the badges go. What
- * is left is how the panels were arranged, which says nothing about where anybody has been.
+ * Forget me (spec 0041 task 4, internal #437): the passport, the sound choices, the hearts, the badges, the names, the
+ * learning-path ticks and the quiz scores go. What is left is how the panels were arranged and the map's settings,
+ * which say nothing about where anybody has been.
  */
 export function forgetPassport(storage) {
   try {
@@ -532,7 +536,7 @@ export function createPassport(ctx, opts = {}) {
     const forget = el('button', 'sr-passport__forget', confirming ? P.forgetConfirm : P.forget);
     forget.type = 'button';
     forget.title = P.forgetTitle;
-    let own = false; // a heart kept, or a badge, is something to forget too
+    let own = false; // a heart, a badge, a quiz score or a path tick is something to forget too
     try { own = !!storage && OWN_KEYS.some((k) => !!storage.getItem(k)); } catch { own = false; }
     forget.disabled = !c.places && !Object.keys(p.trips).length && !seenRows.length && !own;
     forget.addEventListener('click', () => {
