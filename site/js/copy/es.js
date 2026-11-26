@@ -1112,6 +1112,7 @@ export const COPY = {
     observerDevice: "Tu lugar: cerca de donde dice tu dispositivo que estás.",
     observerGuess: "Tu lugar es una suposición a partir de la zona horaria de tu reloj: {place}. Fíjalo en «Dónde estás» para tener uno mejor.",
     needsPlace: "Necesita un lugar. Fija primero dónde estás.",
+    early: "Acceso anticipado para Pro hasta el {date}; después, gratis para todos.",
     stationFromYou: "Ahora mismo está a {km} km de ti.",
     drawnAtClassSize: "El modelo se dibuja con {px} píxeles de ancho sea cual sea la distancia; la estación real sería un punto brillante.",
     passNight: "En este paso está iluminada por el Sol sobre un cielo oscuro: podrías verla, si el tiempo lo permite.",

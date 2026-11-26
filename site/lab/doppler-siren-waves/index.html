@@ -37,6 +37,7 @@
 <label>Time <input type="range" id="ts" min="0" value="0" aria-label="Time through the animation"></label>
 <label id="pl">Value <output id="po"></output><input type="range" id="ps"></label>
 </div>
+<!-- chrome:tools (written by scripts/gen_lab_index.py; do not edit) --><div class="lab-tools" data-sr-tools="lab" hidden></div><!-- /chrome:tools -->
 <p class="honest"><b>What is and is not to scale.</b> <span id="honest"></span></p>
 <details><summary>How this was made and sources</summary>
 <p class="srcl">One HTML file: no libraries, no network requests. Every number below was read on the date shown, from the page named next to it.</p>
@@ -124,6 +125,12 @@ function draw(t){cx.setTransform(1,0,0,1,0,0);cx.fillStyle='#05070d';cx.fillRect
   (function frame(){if(play){T=((performance.now()-t0)/1000)%LOOP;ts.value=T;dirty=true}
     if(dirty){dirty=false;draw(T);const l=SIM.line(P,T);if(l!==last){last=l;byId('line').textContent=l}}
     requestAnimationFrame(frame)})();
+  // The Lab's hook (docs/PLUGINS.md "The Lab"): a script on this page may read the simulator and draw it larger, nothing else.
+  try{self.srLab=Object.freeze({version:1,slug,title:byId('h').textContent,dur:LOOP,param:p?{label:p.label,min:+p.min,max:+p.max,step:+p.step}:null,
+    get:()=>({t:T,value:p?P:null,line:String(SIM.line(P,T)),playing:play}),line:(v,t)=>String(SIM.line(v==null?P:+v,t==null?T:+t)),
+    picture(w,type){w=Math.round(clamp(+w||2160,540,4320));const W=cv.width,H=cv.height,s=S;let done;const out=new Promise(r=>done=r);
+      try{cv.width=w;cv.height=Math.round(w*H/W);S=w/1080;draw(T);cv.toBlob(done,type||'image/png')}catch(e){done(null)}finally{cv.width=W;cv.height=H;S=s;draw(T)}return out}});
+    document.dispatchEvent(new CustomEvent('sr:lab',{detail:{version:1}}))}catch(e){}
 }
 </script>
 </body>

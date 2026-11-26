@@ -354,6 +354,8 @@ export function createTripFrame(ctx) {
   // data or the low tier it fetches each clip when its stop arrives, never ahead.
   const voice = !ctx.audio ? null : ctx.audio.narration || (ctx.audio.narration = createNarration(ctx.audio, ctx.audio.beds, NARRATION, {
     hold: (ms) => (typeof trip.holdDwell === 'function' ? trip.holdDwell(ms) : false),
+    // A voice in the visitor's language a script gave (window.srMap.voice.provide, ui/mapapi.js), for the trip that is up.
+    alt: () => ctx.voiceAlt || null,
     lean: () => (ctx.quality && ctx.quality.tier === 0)
       || (typeof navigator !== 'undefined' && shouldSaveData(navigator.connection)),
   }));

@@ -51,7 +51,10 @@ TRIP_FIELDS = ("id", "title", "blurb", "pacing", "requires", "min_stops", "stage
                "next", "requires_observer", "og_stop", "orbits", "hides",
                # `return: true`: after the last stop, one continuous flight home before the end card
                # (ui/trip.js flyHome, internal #304).
-               "return")
+               "return",
+               # `early_until: YYYY-MM-DD` (2026-11-26, docs/PLUGINS.md "Trips"): the trip is listed for everyone, and
+               # until that day (UTC) its Play asks the page's trip gate (window.srMap.trips.gate) first.
+               "early_until")
 # A `groups:` row: the id a trip names, the heading the picker prints, and where it sits.
 GROUP_FIELDS = ("id", "display", "order")
 STOP_FIELDS = (
@@ -234,6 +237,8 @@ def stop_of(stop: dict, defaults: dict) -> dict:
 
 def trip_of(trip: dict, defaults: dict) -> dict:
     out = pick(trip, TRIP_FIELDS)
+    if "early_until" in out:
+        out["early_until"] = str(out["early_until"])  # YAML reads a bare day as a date
     for key in TRIP_DEFAULTS:
         if key not in out and key in defaults:
             out[key] = defaults[key]
@@ -309,7 +314,7 @@ MIRROR = Mirror(
 # under, `next`, how many stops the registry gives it and how long they run (the card's line until
 # the trip has been planned against today's sky), and the event type an event trip is timed by
 # (ui/trippicker.js eventTypeOf, which reads the same thing from a full trip's stops).
-INDEX_FIELDS = ("id", "title", "blurb", "group", "next", "requires_observer", "min_stops")
+INDEX_FIELDS = ("id", "title", "blurb", "group", "next", "requires_observer", "min_stops", "early_until")
 EVENT_REF = re.compile(r"^([a-z0-9-]+)\.next$")
 
 
@@ -327,6 +332,8 @@ def event_of(trip: dict):
 
 def index_row(trip: dict) -> dict:
     out = pick(trip, INDEX_FIELDS)
+    if "early_until" in out:
+        out["early_until"] = str(out["early_until"])
     out["count"] = len(trip["stops"])
     out["estimate_ms"] = trip["estimate_ms"]
     event = event_of(trip)

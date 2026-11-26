@@ -21,6 +21,10 @@ main.sim>*{min-width:0}
 .sim .controls label{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.15rem .8rem;font-size:.86rem;line-height:1.4;color:var(--dim)}
 .sim .controls label input{grid-column:1/-1;width:100%;min-height:44px;margin:0;accent-color:var(--atm)}
 .sim .controls output{font:400 .86rem/1.4 var(--mono);color:var(--tx);font-variant-numeric:tabular-nums}
+/* The tools' place (docs/PLUGINS.md "The Lab"): empty and hidden with no script; a script's buttons sit in one row. */
+.sim .lab-tools{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.sim .lab-tools[hidden]{display:none}
+.sim .lab-tools > p{flex-basis:100%;margin:0;color:var(--dim);font-size:.86rem;line-height:1.4}
 .sim button:not(.ui-btn){justify-self:start;display:inline-flex;align-items:center;min-height:44px;padding:0 1.4rem;border:0;border-radius:999px;background:var(--ember);color:var(--ink-ember);font:600 .95rem/1 var(--sans);cursor:pointer;transition:filter .2s,translate .2s}
 .sim button:not(.ui-btn):hover{filter:brightness(1.1);translate:0 -1px}
 

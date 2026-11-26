@@ -1149,6 +1149,7 @@ export const COPY = {
     "observerDevice": "你的位置：在你的设备所报告的位置附近。",
     "observerGuess": "你的位置是根据你时钟的时区猜的：{place}。想要更准确，请在“你的位置”里设置。",
     "needsPlace": "需要一个位置。请先设置你在哪里。",
+    "early": "Pro 抢先体验至 {date}，之后对所有人免费。",
     "stationFromYou": "此刻它离你 {km} 公里。",
     "drawnAtClassSize": "不管距离多远，模型都画成 {px} 像素宽；真实的空间站只会是一个亮点。",
     "passNight": "这一次飞越时，它被阳光照亮，背景是黑暗的天空：天气允许的话，你可以看到它。",
