@@ -24,6 +24,7 @@ pictures are this project's own (MIT site, the Journal's own posts), and say so.
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -32,6 +33,8 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 TARGET = ROOT / "site/js/data/media.js"
+# SR_BLOG_FEED: read the Journal feed from another copy (scripts/deploy.sh). --out PATH: write there, not to TARGET.
+FEED = Path(os.environ.get("SR_BLOG_FEED") or ROOT / "registry" / "blog-feed.json")
 OWN = "Space Radar"
 OWN_LICENCE = "Space Radar's own picture"
 BLOG_HOSTS = ("https://blog.spaceradar.ai/",)
@@ -112,7 +115,7 @@ def build() -> tuple[dict, list[str]]:
         publisher = name.split(",")[0].strip() or name
         pages.setdefault(rec, []).append({"name": name, "url": src["url"], "credit": publisher, "licence": "link"})
 
-    feed = json.loads((ROOT / "registry" / "blog-feed.json").read_text(encoding="utf-8"))
+    feed = json.loads(FEED.read_text(encoding="utf-8"))
     journal = []
     for p in feed.get("items") or []:
         url = str(p.get("url", ""))
@@ -146,19 +149,23 @@ def text() -> tuple[str, list[str]]:
 
 
 def main(argv: list[str]) -> int:
+    target = TARGET
+    if "--out" in argv:
+        target = Path(argv[argv.index("--out") + 1])
     want, problems = text()
     if problems:
         print("gen_media: refused rows (every item needs a credit and a licence):\n  " + "\n  ".join(problems), file=sys.stderr)
         return 1
     if "--check" in argv:
-        have = TARGET.read_text(encoding="utf-8") if TARGET.exists() else ""
+        have = target.read_text(encoding="utf-8") if target.exists() else ""
         if have == want:
             print(f"media.js is current ({want.count(chr(10))} lines)")
             return 0
         print(f"{TARGET.relative_to(ROOT)} is STALE. Run: python3 scripts/gen_media.py")
         return 1
-    TARGET.write_text(want, encoding="utf-8")
-    print(f"wrote {TARGET.relative_to(ROOT)}")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(want, encoding="utf-8")
+    print(f"wrote {target.relative_to(ROOT) if target.is_relative_to(ROOT) else target}")
     return 0
 
 
